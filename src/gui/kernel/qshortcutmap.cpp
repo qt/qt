@@ -751,6 +751,7 @@ bool QShortcutMap::correctGraphicsWidgetContext(Qt::ShortcutContext context, QGr
                 tw = tw->parentWidget();
             return tw == w;
         }
+        return false;
     }
 
     // Below is Qt::WindowShortcut context

@@ -686,7 +686,10 @@ QNetworkReply *QNetworkAccessManager::createRequest(QNetworkAccessManager::Opera
         priv->urlForLastAuthentication = url;
     }
 
-    // third step: setup the reply
+    // third step: find a backend
+    priv->backend = d->findBackend(op, request);
+
+    // fourth step: setup the reply
     priv->setup(op, request, outgoingData);
     if (request.attribute(QNetworkRequest::CacheLoadControlAttribute, QNetworkRequest::PreferNetwork).toInt() !=
         QNetworkRequest::AlwaysNetwork)
@@ -695,9 +698,6 @@ QNetworkReply *QNetworkAccessManager::createRequest(QNetworkAccessManager::Opera
     QList<QNetworkProxy> proxyList = d->queryProxy(QNetworkProxyQuery(request.url()));
     priv->proxyList = proxyList;
 #endif
-
-    // fourth step: find a backend
-    priv->backend = d->findBackend(op, request);
     if (priv->backend) {
         priv->backend->setParent(reply);
         priv->backend->reply = priv;

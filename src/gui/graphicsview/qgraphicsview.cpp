@@ -1691,6 +1691,7 @@ void QGraphicsView::setScene(QGraphicsScene *scene)
         disconnect(d->scene, SIGNAL(sceneRectChanged(QRectF)),
                    this, SLOT(updateSceneRect(QRectF)));
         d->scene->d_func()->views.removeAll(this);
+        d->connectedToScene = false;
     }
 
     // Assign the new scene and update the contents (scrollbars, etc.)).

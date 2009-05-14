@@ -52,6 +52,7 @@
 #include <QtNetwork/QTcpSocket>
 #include <QtNetwork/QLocalSocket>
 #include <QtNetwork/QLocalServer>
+#include <QtNetwork/QHostInfo>
 #include <QtNetwork/QFtp>
 #include <QtNetwork/qauthenticator.h>
 #include <QtNetwork/qnetworkaccessmanager.h>
@@ -91,6 +92,15 @@ class tst_QNetworkReply: public QObject
 {
     Q_OBJECT
 
+    struct ProxyData {
+        ProxyData(const QNetworkProxy &p, const QByteArray &t, bool auth)
+            : tag(t), proxy(p), requiresAuthentication(auth)
+        { }
+        QByteArray tag;
+        QNetworkProxy proxy;
+        bool requiresAuthentication;
+    };
+
     QEventLoop *loop;
     enum RunSimpleRequestReturn { Timeout = 0, Success, Failure };
     int returnCode;
@@ -99,6 +109,7 @@ class tst_QNetworkReply: public QObject
     QString wronlyFileName;
 #endif
     QString uniqueExtension;
+    QList<ProxyData> proxies;
     QNetworkAccessManager manager;
     MyCookieJar *cookieJar;
 #ifndef QT_NO_OPENSSL
@@ -172,6 +183,8 @@ private Q_SLOTS:
     void ioGetFromHttpsWithIgnoreSslErrors();
     void ioGetFromHttpsWithSslHandshakeError();
 #endif
+    void ioGetFromHttpBrokenServer_data();
+    void ioGetFromHttpBrokenServer();
 
     void ioGetWithManyProxies_data();
     void ioGetWithManyProxies();
@@ -190,11 +203,20 @@ private Q_SLOTS:
     void ioPutToHttpFromFile();
     void ioPostToHttpFromFile_data();
     void ioPostToHttpFromFile();
+    void ioPostToHttpFromSocket_data();
+    void ioPostToHttpFromSocket();
+    void ioPostToHttpFromMiddleOfFileToEnd();
+    void ioPostToHttpFromMiddleOfFileFiveBytes();
+    void ioPostToHttpFromMiddleOfQBufferFiveBytes();
+    void ioPostToHttpNoBufferFlag();
+    void ioPostToHttpUploadProgress();
+    void ioPostToHttpEmtpyUploadProgress();
 
     void rateControl_data();
     void rateControl();
     void downloadPerformance();
     void uploadPerformance();
+    void httpUploadPerformance();
     void performanceControlRate();
 
     void downloadProgress_data();
@@ -364,6 +386,63 @@ public slots:
     }
 };
 
+class FixedSizeDataGenerator : public QIODevice
+{
+    Q_OBJECT
+    enum { Idle, Started, Stopped } state;
+public:
+    FixedSizeDataGenerator(qint64 size) : state(Idle)
+    { open(ReadOnly | Unbuffered);
+      toBeGeneratedTotalCount = toBeGeneratedCount = size;
+    }
+
+    virtual qint64 bytesAvailable() const
+    {
+        return state == Started ? toBeGeneratedCount + QIODevice::bytesAvailable() : 0;
+    }
+
+    virtual bool isSequential() const{
+        return false;
+    }
+
+    virtual bool reset() const{
+        return false;
+    }
+
+    qint64 size() const {
+        return toBeGeneratedTotalCount;
+    }
+
+public slots:
+    void start() { state = Started; emit readyRead(); }
+
+protected:
+    virtual qint64 readData(char *data, qint64 maxlen)
+    {
+        memset(data, '@', maxlen);
+
+        if (toBeGeneratedCount <= 0) {
+            return -1;
+        }
+
+        qint64 n = qMin(maxlen, toBeGeneratedCount);
+        toBeGeneratedCount -= n;
+
+        if (toBeGeneratedCount <= 0) {
+            // make sure this is a queued connection!
+            emit readChannelFinished();
+        }
+
+        return n;
+    }
+    virtual qint64 writeData(const char *, qint64)
+    { return -1; }
+
+    qint64 toBeGeneratedCount;
+    qint64 toBeGeneratedTotalCount;
+};
+
+
 class DataGenerator: public QIODevice
 {
     Q_OBJECT
@@ -384,6 +463,7 @@ protected:
     {
         if (state == Stopped)
             return -1;          // EOF
+
         // return as many bytes as are wanted
         memset(data, '@', maxlen);
         return maxlen;
@@ -391,6 +471,8 @@ protected:
     virtual qint64 writeData(const char *, qint64)
     { return -1; }
 };
+
+
 
 class SocketPair: public QObject
 {
@@ -629,7 +711,7 @@ protected:
             return;
 
         transferRate = totalBytes * 1000 / timer.elapsed();
-        qDebug() << "receive rate:" << (transferRate / 1024) << "kB/s in"
+        qDebug() << "TimedSender::run" << "receive rate:" << (transferRate / 1024) << "kB/s in"
                  << timer.elapsed() << "ms";
     }
 
@@ -643,12 +725,13 @@ protected:
 class ThreadedDataReader: public QThread
 {
     Q_OBJECT
+    // used to make the constructor only return after the tcp server started listening
     QSemaphore ready;
     QTcpSocket *client;
     int timeout;
     int port;
 public:
-    int transferRate;
+    qint64 transferRate;
     ThreadedDataReader()
         : port(-1), transferRate(-1)
     {
@@ -676,11 +759,64 @@ protected:
         QTime timer;
         timer.start();
         eventLoop.exec();
+        qint64 elapsed = timer.elapsed();
 
-        transferRate = reader.totalBytes * 1000 / timer.elapsed();
-        qDebug() << "send rate:" << (transferRate / 1024) << "kB/s";
+        transferRate = reader.totalBytes * 1000 / elapsed;
+        qDebug() << "ThreadedDataReader::run" << "send rate:" << (transferRate / 1024) << "kB/s in" << elapsed << "msec";
     }
 };
+
+class ThreadedDataReaderHttpServer: public QThread
+{
+    Q_OBJECT
+    // used to make the constructor only return after the tcp server started listening
+    QSemaphore ready;
+    QTcpSocket *client;
+    int timeout;
+    int port;
+public:
+    qint64 transferRate;
+    ThreadedDataReaderHttpServer()
+        : port(-1), transferRate(-1)
+    {
+        start();
+        ready.acquire();
+    }
+
+    inline int serverPort() const { return port; }
+
+protected:
+    void run()
+    {
+        QTcpServer server;
+        server.listen();
+        port = server.serverPort();
+        ready.release();
+
+        server.waitForNewConnection(-1);
+        client = server.nextPendingConnection();
+        client->write("HTTP/1.0 200 OK\r\n");
+        client->write("Content-length: 0\r\n");
+        client->write("\r\n");
+        client->flush();
+
+        QCoreApplication::processEvents();
+
+        QEventLoop eventLoop;
+        DataReader reader(client, false);
+        QObject::connect(client, SIGNAL(disconnected()), &eventLoop, SLOT(quit()));
+
+        QTime timer;
+        timer.start();
+        eventLoop.exec();
+        qint64 elapsed = timer.elapsed();
+
+        transferRate = reader.totalBytes * 1000 / elapsed;
+        qDebug() << "ThreadedDataReaderHttpServer::run" << "send rate:" << (transferRate / 1024) << "kB/s in" << elapsed << "msec";
+    }
+};
+
+
 
 tst_QNetworkReply::tst_QNetworkReply()
 {
@@ -692,7 +828,27 @@ tst_QNetworkReply::tst_QNetworkReply()
 #endif
     cookieJar = new MyCookieJar;
     manager.setCookieJar(cookieJar);
+
+    QHostInfo hostInfo = QHostInfo::fromName(QtNetworkSettings::serverName());
+
+    proxies << ProxyData(QNetworkProxy::NoProxy, "", false);
+
+    if (hostInfo.error() == QHostInfo::NoError && !hostInfo.addresses().isEmpty()) {
+        QString proxyserver = hostInfo.addresses().first().toString();
+        proxies << ProxyData(QNetworkProxy(QNetworkProxy::HttpProxy, proxyserver, 3128), "+proxy", false)
+                << ProxyData(QNetworkProxy(QNetworkProxy::HttpProxy, proxyserver, 3129), "+proxyauth", true)
+                // currently unsupported
+                // << ProxyData(QNetworkProxy(QNetworkProxy::HttpProxy, proxyserver, 3130), "+proxyauth-ntlm", true);
+                << ProxyData(QNetworkProxy(QNetworkProxy::Socks5Proxy, proxyserver, 1080), "+socks", false)
+                << ProxyData(QNetworkProxy(QNetworkProxy::Socks5Proxy, proxyserver, 1081), "+socksauth", true);
+    } else {
+        printf("==================================================================\n");
+        printf("Proxy could not be looked up. No proxy will be used while testing!\n");
+        printf("==================================================================\n");
+    }
 }
+
+
 
 void tst_QNetworkReply::authenticationRequired(QNetworkReply*, QAuthenticator* auth)
 {
@@ -1887,6 +2043,53 @@ void tst_QNetworkReply::ioGetFromHttpsWithSslHandshakeError()
 }
 #endif
 
+void tst_QNetworkReply::ioGetFromHttpBrokenServer_data()
+{
+    QTest::addColumn<QByteArray>("dataToSend");
+    QTest::addColumn<bool>("doDisconnect");
+
+    QTest::newRow("no-newline") << QByteArray("Hello World") << false;
+    QTest::newRow("just-newline") << QByteArray("\r\n") << false;
+    QTest::newRow("just-2newline") << QByteArray("\r\n\r\n") << false;
+    QTest::newRow("with-newlines") << QByteArray("Long first line\r\nLong second line") << false;
+    QTest::newRow("with-newlines2") << QByteArray("\r\nSecond line") << false;
+    QTest::newRow("with-newlines3") << QByteArray("ICY\r\nSecond line") << false;
+    QTest::newRow("invalid-version") << QByteArray("HTTP/123 200 \r\n") << false;
+    QTest::newRow("invalid-version2") << QByteArray("HTTP/a.\033 200 \r\n") << false;
+    QTest::newRow("invalid-reply-code") << QByteArray("HTTP/1.0 fuu \r\n") << false;
+
+    QTest::newRow("empty+disconnect") << QByteArray() << true;
+
+    QTest::newRow("no-newline+disconnect") << QByteArray("Hello World") << true;
+    QTest::newRow("just-newline+disconnect") << QByteArray("\r\n") << true;
+    QTest::newRow("just-2newline+disconnect") << QByteArray("\r\n\r\n") << true;
+    QTest::newRow("with-newlines+disconnect") << QByteArray("Long first line\r\nLong second line") << true;
+    QTest::newRow("with-newlines2+disconnect") << QByteArray("\r\nSecond line") << true;
+    QTest::newRow("with-newlines3+disconnect") << QByteArray("ICY\r\nSecond line") << true;
+
+    QTest::newRow("invalid-version+disconnect") << QByteArray("HTTP/123 200 ") << true;
+    QTest::newRow("invalid-version2+disconnect") << QByteArray("HTTP/a.\033 200 ") << true;
+    QTest::newRow("invalid-reply-code+disconnect") << QByteArray("HTTP/1.0 fuu ") << true;
+}
+
+void tst_QNetworkReply::ioGetFromHttpBrokenServer()
+{
+    QFETCH(QByteArray, dataToSend);
+    QFETCH(bool, doDisconnect);
+    MiniHttpServer server(dataToSend);
+    server.doClose = doDisconnect;
+
+    QNetworkRequest request(QUrl("http://localhost:" + QString::number(server.serverPort())));
+    QNetworkReplyPtr reply = manager.get(request);
+
+    connect(reply, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
+    QTestEventLoop::instance().enterLoop(10);
+    QVERIFY(!QTestEventLoop::instance().timeout());
+
+    QCOMPARE(reply->url(), request.url());
+    QVERIFY(reply->error() != QNetworkReply::NoError);
+}
+
 void tst_QNetworkReply::ioGetWithManyProxies_data()
 {
     QTest::addColumn<QList<QNetworkProxy> >("proxyList");
@@ -2452,6 +2655,320 @@ void tst_QNetworkReply::ioPostToHttpFromFile()
     QCOMPARE(reply->readAll().trimmed(), md5sum(sourceFile.readAll()).toHex());
 }
 
+void tst_QNetworkReply::ioPostToHttpFromSocket_data()
+{
+    QTest::addColumn<QByteArray>("data");
+    QTest::addColumn<QByteArray>("md5sum");
+    QTest::addColumn<QUrl>("url");
+    QTest::addColumn<QNetworkProxy>("proxy");
+    QTest::addColumn<int>("authenticationRequiredCount");
+    QTest::addColumn<int>("proxyAuthenticationRequiredCount");
+
+    for (int i = 0; i < proxies.count(); ++i)
+        for (int auth = 0; auth < 2; ++auth) {
+            QUrl url;
+            if (auth)
+                url = "http://" + QtNetworkSettings::serverName() + "/qtest/protected/cgi-bin/md5sum.cgi";
+            else
+                url = "http://" + QtNetworkSettings::serverName() + "/qtest/cgi-bin/md5sum.cgi";
+
+            QNetworkProxy proxy = proxies.at(i).proxy;
+            QByteArray testsuffix = QByteArray(auth ? "+auth" : "") + proxies.at(i).tag;
+            int proxyauthcount = proxies.at(i).requiresAuthentication;
+
+            QByteArray data;
+            data = "";
+            QTest::newRow("empty" + testsuffix) << data << md5sum(data) << url << proxy << auth << proxyauthcount;
+
+            data = "This is a normal message.";
+            QTest::newRow("generic" + testsuffix) << data << md5sum(data) << url << proxy << auth << proxyauthcount;
+
+            data = "This is a message to show that Qt rocks!\r\n\n";
+            QTest::newRow("small" + testsuffix) << data << md5sum(data) << url << proxy << auth << proxyauthcount;
+
+            data = QByteArray("abcd\0\1\2\abcd",12);
+            QTest::newRow("with-nul" + testsuffix) << data << md5sum(data) << url << proxy << auth << proxyauthcount;
+
+            data = QByteArray(4097, '\4');
+            QTest::newRow("4k+1" + testsuffix) << data << md5sum(data) << url << proxy << auth << proxyauthcount;
+
+            data = QByteArray(128*1024+1, '\177');
+            QTest::newRow("128k+1" + testsuffix) << data << md5sum(data) << url << proxy << auth << proxyauthcount;
+        }
+}
+
+void tst_QNetworkReply::ioPostToHttpFromSocket()
+{
+    qRegisterMetaType<QNetworkProxy>(); // for QSignalSpy
+    qRegisterMetaType<QAuthenticator *>();
+    qRegisterMetaType<QNetworkReply *>();
+
+    QFETCH(QByteArray, data);
+    QFETCH(QUrl, url);
+    QFETCH(QNetworkProxy, proxy);
+    SocketPair socketpair;
+    socketpair.create();
+    QVERIFY(socketpair.endPoints[0] && socketpair.endPoints[1]);
+
+    socketpair.endPoints[0]->write(data);
+
+    QNetworkRequest request(url);
+    manager.setProxy(proxy);
+    QNetworkReplyPtr reply = manager.post(QNetworkRequest(url), socketpair.endPoints[1]);
+    socketpair.endPoints[0]->close();
+
+    connect(reply, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
+    connect(&manager, SIGNAL(proxyAuthenticationRequired(QNetworkProxy,QAuthenticator*)),
+            SLOT(proxyAuthenticationRequired(QNetworkProxy,QAuthenticator*)));
+    connect(&manager, SIGNAL(authenticationRequired(QNetworkReply*,QAuthenticator*)),
+            SLOT(authenticationRequired(QNetworkReply*,QAuthenticator*)));
+
+    QSignalSpy authenticationRequiredSpy(&manager, SIGNAL(authenticationRequired(QNetworkReply*,QAuthenticator*)));
+    QSignalSpy proxyAuthenticationRequiredSpy(&manager, SIGNAL(proxyAuthenticationRequired(QNetworkProxy,QAuthenticator*)));
+
+    QTestEventLoop::instance().enterLoop(1);
+
+    disconnect(&manager, SIGNAL(proxyAuthenticationRequired(QNetworkProxy,QAuthenticator*)),
+               this, SLOT(proxyAuthenticationRequired(QNetworkProxy,QAuthenticator*)));
+    disconnect(&manager, SIGNAL(authenticationRequired(QNetworkReply*,QAuthenticator*)),
+               this, SLOT(authenticationRequired(QNetworkReply*,QAuthenticator*)));
+    QVERIFY(!QTestEventLoop::instance().timeout());
+
+    QCOMPARE(reply->url(), url);
+    QCOMPARE(reply->error(), QNetworkReply::NoError);
+    // verify that the HTTP status code is 200 Ok
+    QCOMPARE(reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt(), 200);
+
+    QCOMPARE(reply->readAll().trimmed(), md5sum(data).toHex());
+
+    QTEST(authenticationRequiredSpy.count(), "authenticationRequiredCount");
+    QTEST(proxyAuthenticationRequiredSpy.count(), "proxyAuthenticationRequiredCount");
+ }
+
+// this tests checks if rewinding the POST-data to some place in the middle
+// worked.
+void tst_QNetworkReply::ioPostToHttpFromMiddleOfFileToEnd()
+{
+    QFile sourceFile(SRCDIR "/rfc3252.txt");
+    QVERIFY(sourceFile.open(QIODevice::ReadOnly));
+    // seeking to the middle
+    sourceFile.seek(sourceFile.size() / 2);
+
+    QUrl url = "http://" + QtNetworkSettings::serverName() + "/qtest/protected/cgi-bin/md5sum.cgi";
+    QNetworkRequest request(url);
+    QNetworkReplyPtr reply = manager.post(QNetworkRequest(url), &sourceFile);
+
+    connect(reply, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
+    connect(&manager, SIGNAL(authenticationRequired(QNetworkReply*,QAuthenticator*)),
+            SLOT(authenticationRequired(QNetworkReply*,QAuthenticator*)));
+
+    QTestEventLoop::instance().enterLoop(2);
+    disconnect(&manager, SIGNAL(authenticationRequired(QNetworkReply*,QAuthenticator*)),
+               this, SLOT(authenticationRequired(QNetworkReply*,QAuthenticator*)));
+    QVERIFY(!QTestEventLoop::instance().timeout());
+
+    // compare half data
+    sourceFile.seek(sourceFile.size() / 2);
+    QByteArray data = sourceFile.readAll();
+    QCOMPARE(reply->readAll().trimmed(), md5sum(data).toHex());
+}
+
+void tst_QNetworkReply::ioPostToHttpFromMiddleOfFileFiveBytes()
+{
+    QFile sourceFile(SRCDIR "/rfc3252.txt");
+    QVERIFY(sourceFile.open(QIODevice::ReadOnly));
+    // seeking to the middle
+    sourceFile.seek(sourceFile.size() / 2);
+
+    QUrl url = "http://" + QtNetworkSettings::serverName() + "/qtest/protected/cgi-bin/md5sum.cgi";
+    QNetworkRequest request(url);
+    // only send 5 bytes
+    request.setHeader(QNetworkRequest::ContentLengthHeader, 5);
+    QVERIFY(request.header(QNetworkRequest::ContentLengthHeader).isValid());
+    QNetworkReplyPtr reply = manager.post(request, &sourceFile);
+
+    connect(reply, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
+    connect(&manager, SIGNAL(authenticationRequired(QNetworkReply*,QAuthenticator*)),
+            SLOT(authenticationRequired(QNetworkReply*,QAuthenticator*)));
+
+    QTestEventLoop::instance().enterLoop(2);
+    disconnect(&manager, SIGNAL(authenticationRequired(QNetworkReply*,QAuthenticator*)),
+               this, SLOT(authenticationRequired(QNetworkReply*,QAuthenticator*)));
+    QVERIFY(!QTestEventLoop::instance().timeout());
+
+    // compare half data
+    sourceFile.seek(sourceFile.size() / 2);
+    QByteArray data = sourceFile.read(5);
+    QCOMPARE(reply->readAll().trimmed(), md5sum(data).toHex());
+}
+
+void tst_QNetworkReply::ioPostToHttpFromMiddleOfQBufferFiveBytes()
+{
+    // test needed since a QBuffer goes with a different codepath than the QFile
+    // tested in ioPostToHttpFromMiddleOfFileFiveBytes
+    QBuffer uploadBuffer;
+    uploadBuffer.open(QIODevice::ReadWrite);
+    uploadBuffer.write("1234567890");
+    uploadBuffer.seek(5);
+
+    QUrl url = "http://" + QtNetworkSettings::serverName() + "/qtest/protected/cgi-bin/md5sum.cgi";
+    QNetworkRequest request(url);
+    QNetworkReplyPtr reply = manager.post(request, &uploadBuffer);
+
+    connect(reply, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
+    connect(&manager, SIGNAL(authenticationRequired(QNetworkReply*,QAuthenticator*)),
+            SLOT(authenticationRequired(QNetworkReply*,QAuthenticator*)));
+
+    QTestEventLoop::instance().enterLoop(2);
+    disconnect(&manager, SIGNAL(authenticationRequired(QNetworkReply*,QAuthenticator*)),
+               this, SLOT(authenticationRequired(QNetworkReply*,QAuthenticator*)));
+    QVERIFY(!QTestEventLoop::instance().timeout());
+
+    // compare half data
+    uploadBuffer.seek(5);
+    QByteArray data = uploadBuffer.read(5);
+    QCOMPARE(reply->readAll().trimmed(), md5sum(data).toHex());
+}
+
+
+void tst_QNetworkReply::ioPostToHttpNoBufferFlag()
+{
+    QByteArray data = QByteArray("daaaaaaataaaaaaa");
+    // create a sequential QIODevice by feeding the data into a local TCP server
+    SocketPair socketpair;
+    socketpair.create();
+    QVERIFY(socketpair.endPoints[0] && socketpair.endPoints[1]);
+    socketpair.endPoints[0]->write(data);
+
+    QUrl url = "http://" + QtNetworkSettings::serverName() + "/qtest/protected/cgi-bin/md5sum.cgi";
+    QNetworkRequest request(url);
+    // disallow buffering
+    request.setAttribute(QNetworkRequest::DoNotBufferUploadDataAttribute, true);
+    request.setHeader(QNetworkRequest::ContentLengthHeader, data.size());
+    QNetworkReplyPtr reply = manager.post(request, socketpair.endPoints[1]);
+    socketpair.endPoints[0]->close();
+
+    connect(reply, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
+    connect(&manager, SIGNAL(authenticationRequired(QNetworkReply*,QAuthenticator*)),
+            SLOT(authenticationRequired(QNetworkReply*,QAuthenticator*)));
+
+    QTestEventLoop::instance().enterLoop(2);
+    disconnect(&manager, SIGNAL(authenticationRequired(QNetworkReply*,QAuthenticator*)),
+               this, SLOT(authenticationRequired(QNetworkReply*,QAuthenticator*)));
+
+    // verify: error code is QNetworkReply::ContentReSendError
+    QCOMPARE(reply->error(), QNetworkReply::ContentReSendError);
+}
+
+
+void tst_QNetworkReply::ioPostToHttpUploadProgress()
+{
+    QFile sourceFile(SRCDIR "/bigfile");
+    QVERIFY(sourceFile.open(QIODevice::ReadOnly));
+
+    // emulate a minimal http server
+    QTcpServer server;
+    server.listen(QHostAddress(QHostAddress::LocalHost), 0);
+
+    // create the request
+    QUrl url = QUrl(QString("http://127.0.0.1:%1/").arg(server.serverPort()));
+    QNetworkRequest request(url);
+    QNetworkReplyPtr reply = manager.post(request, &sourceFile);
+    QSignalSpy spy(reply, SIGNAL(uploadProgress(qint64,qint64)));
+    connect(&server, SIGNAL(newConnection()), &QTestEventLoop::instance(), SLOT(exitLoop()));
+
+    // get the request started and the incoming socket connected
+    QTestEventLoop::instance().enterLoop(10);
+    QVERIFY(!QTestEventLoop::instance().timeout());
+    QTcpSocket *incomingSocket = server.nextPendingConnection();
+    QVERIFY(incomingSocket);
+    disconnect(&server, SIGNAL(newConnection()), &QTestEventLoop::instance(), SLOT(exitLoop()));
+
+    incomingSocket->setReadBufferSize(1*1024);
+    QTestEventLoop::instance().enterLoop(2);
+    // some progress should have been made
+    QList<QVariant> args = spy.last();
+    QVERIFY(!args.isEmpty());
+    QVERIFY(args.at(0).toLongLong() > 0);
+
+    incomingSocket->setReadBufferSize(32*1024);
+    incomingSocket->read(16*1024);
+    QTestEventLoop::instance().enterLoop(2);
+    // some more progress than before
+    QList<QVariant> args2 = spy.last();
+    QVERIFY(!args2.isEmpty());
+    QVERIFY(args2.at(0).toLongLong() > args.at(0).toLongLong());
+
+    // set the read buffer to unlimited
+    incomingSocket->setReadBufferSize(0);
+    QTestEventLoop::instance().enterLoop(10);
+    // progress should be finished
+    QList<QVariant> args3 = spy.last();
+    QVERIFY(!args3.isEmpty());
+    QVERIFY(args3.at(0).toLongLong() > args2.at(0).toLongLong());
+    QCOMPARE(args3.at(0).toLongLong(), args3.at(1).toLongLong());
+    QCOMPARE(args3.at(0).toLongLong(), sourceFile.size());
+
+    // after sending this, the QNAM should emit finished()
+    connect(reply, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
+    incomingSocket->write("HTTP/1.0 200 OK\r\n");
+    incomingSocket->write("Content-Length: 0\r\n");
+    incomingSocket->write("\r\n");
+    QTestEventLoop::instance().enterLoop(10);
+    // not timeouted -> finished() was emitted
+    QVERIFY(!QTestEventLoop::instance().timeout());
+
+    incomingSocket->close();
+    server.close();
+}
+
+void tst_QNetworkReply::ioPostToHttpEmtpyUploadProgress()
+{
+    QByteArray ba;
+    ba.resize(0);
+    QBuffer buffer(&ba,0);
+    QVERIFY(buffer.open(QIODevice::ReadOnly));
+
+    // emulate a minimal http server
+    QTcpServer server;
+    server.listen(QHostAddress(QHostAddress::LocalHost), 0);
+
+    // create the request
+    QUrl url = QUrl(QString("http://127.0.0.1:%1/").arg(server.serverPort()));
+    QNetworkRequest request(url);
+    QNetworkReplyPtr reply = manager.post(request, &buffer);
+    QSignalSpy spy(reply, SIGNAL(uploadProgress(qint64,qint64)));
+    connect(&server, SIGNAL(newConnection()), &QTestEventLoop::instance(), SLOT(exitLoop()));
+
+
+    // get the request started and the incoming socket connected
+    QTestEventLoop::instance().enterLoop(10);
+    QVERIFY(!QTestEventLoop::instance().timeout());
+    QTcpSocket *incomingSocket = server.nextPendingConnection();
+    QVERIFY(incomingSocket);
+
+    // after sending this, the QNAM should emit finished()
+    connect(reply, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
+    incomingSocket->write("HTTP/1.0 200 OK\r\n");
+    incomingSocket->write("Content-Length: 0\r\n");
+    incomingSocket->write("\r\n");
+    incomingSocket->flush();
+    QTestEventLoop::instance().enterLoop(10);
+    // not timeouted -> finished() was emitted
+    QVERIFY(!QTestEventLoop::instance().timeout());
+
+    // final check: only 1 uploadProgress has been emitted
+    QVERIFY(spy.length() == 1);
+    QList<QVariant> args = spy.last();
+    QVERIFY(!args.isEmpty());
+    QCOMPARE(args.at(0).toLongLong(), buffer.size());
+    QCOMPARE(args.at(0).toLongLong(), buffer.size());
+
+    incomingSocket->close();
+    server.close();
+}
+
+
 void tst_QNetworkReply::rateControl_data()
 {
     QTest::addColumn<int>("rate");
@@ -2488,8 +3005,8 @@ void tst_QNetworkReply::rateControl()
     QTestEventLoop::instance().enterLoop(40);
     int elapsedTime = loopTime.elapsed();
 
-    qDebug() << "send rate:" << sender.transferRate;
-    qDebug() << "receive rate:" << reader.totalBytesRead * 1000 / elapsedTime
+    qDebug() << "tst_QNetworkReply::rateControl" << "send rate:" << sender.transferRate;
+    qDebug() << "tst_QNetworkReply::rateControl" << "receive rate:" << reader.totalBytesRead * 1000 / elapsedTime
              << "(it received" << reader.totalBytesRead << "bytes in" << elapsedTime << "ms)";
 
     sender.wait();
@@ -2523,22 +3040,53 @@ void tst_QNetworkReply::downloadPerformance()
     sender.wait();
 
     qint64 receivedBytes = reader.totalBytes;
-    qDebug() << "receive rate:" << (receivedBytes * 1000 / elapsedTime / 1024) << "kB/s and"
+    qDebug() << "tst_QNetworkReply::downloadPerformance" << "receive rate:" << (receivedBytes * 1000 / elapsedTime / 1024) << "kB/s and"
              << elapsedTime << "ms";
 }
 
 void tst_QNetworkReply::uploadPerformance()
 {
-    ThreadedDataReader reader;
-    DataGenerator generator;
-    QNetworkRequest request("debugpipe://127.0.0.1:" + QString::number(reader.serverPort()) + "/?bare=1");
-    QNetworkReplyPtr reply = manager.put(request, &generator);
+      ThreadedDataReader reader;
+      DataGenerator generator;
 
-    connect(&reader, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
-    QTimer::singleShot(5000, &generator, SLOT(stop()));
-    generator.start();
-    QTestEventLoop::instance().enterLoop(40);
+
+      QNetworkRequest request("debugpipe://127.0.0.1:" + QString::number(reader.serverPort()) + "/?bare=1");
+      QNetworkReplyPtr reply = manager.put(request, &generator);
+      generator.start();
+      connect(&reader, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
+      QTimer::singleShot(5000, &generator, SLOT(stop()));
+
+      QTestEventLoop::instance().enterLoop(10);
+      QVERIFY(!QTestEventLoop::instance().timeout());
 }
+
+void tst_QNetworkReply::httpUploadPerformance()
+{
+      enum {UploadSize = 1000*1024*1024}; // 1000 MB
+      ThreadedDataReaderHttpServer reader;
+      FixedSizeDataGenerator generator(UploadSize);
+
+      QNetworkRequest request(QUrl("http://127.0.0.1:" + QString::number(reader.serverPort()) + "/?bare=1"));
+      request.setHeader(QNetworkRequest::ContentLengthHeader,UploadSize);
+
+      QNetworkReplyPtr reply = manager.put(request, &generator);
+
+      connect(reply, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
+
+      QTime time;
+      generator.start();
+      time.start();
+      QTestEventLoop::instance().enterLoop(40);
+      QVERIFY(!QTestEventLoop::instance().timeout());
+
+      qint64 elapsed = time.elapsed();
+      qWarning() << "tst_QNetworkReply::httpUploadPerformance" << elapsed << "msec, "
+              << ((UploadSize/1024.0)/(elapsed/1000.0)) << " kB/sec";
+
+      reader.exit();
+      reader.wait(3000);
+}
+
 
 void tst_QNetworkReply::performanceControlRate()
 {
@@ -2560,7 +3108,7 @@ void tst_QNetworkReply::performanceControlRate()
     sender.wait();
 
     qint64 receivedBytes = reader.totalBytes;
-    qDebug() << "receive rate:" << (receivedBytes * 1000 / elapsedTime / 1024) << "kB/s and"
+    qDebug() << "tst_QNetworkReply::performanceControlRate" << "receive rate:" << (receivedBytes * 1000 / elapsedTime / 1024) << "kB/s and"
              << elapsedTime << "ms";
 }
 
@@ -2592,6 +3140,7 @@ void tst_QNetworkReply::downloadProgress()
 
     QByteArray data(128, 'a');
     QTcpSocket *sender = server.nextPendingConnection();
+    QVERIFY(sender);
 
     QFETCH(int, loopCount);
     for (int i = 1; i <= loopCount; ++i) {
