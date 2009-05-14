@@ -29,7 +29,6 @@
 
 #include "javascriptengine_p.h"
 #include "javascriptnodepool_p.h"
-#include "javascriptvalue.h"
 #include <qnumeric.h>
 #include <QHash>
 
@@ -37,7 +36,7 @@ QT_BEGIN_NAMESPACE
 
 namespace JavaScript {
 
-QString numberToString(qjsreal value)
+QString numberToString(double value)
 { return QString::number(value); }
 
 int Ecma::RegExp::flagFromChar(const QChar &ch)
@@ -93,12 +92,12 @@ static int toDigit(char c)
     return -1;
 }
 
-qjsreal integerFromString(const char *buf, int size, int radix)
+double integerFromString(const char *buf, int size, int radix)
 {
     if (size == 0)
         return qSNaN();
 
-    qjsreal sign = 1.0;
+    double sign = 1.0;
     int i = 0;
     if (buf[0] == '+') {
         ++i;
@@ -130,7 +129,7 @@ qjsreal integerFromString(const char *buf, int size, int radix)
         if ((d == -1) || (d >= radix))
             break;
     }
-    qjsreal result;
+    double result;
     if (j == i) {
         if (!qstrcmp(buf, "Infinity"))
             result = qInf();
@@ -138,7 +137,7 @@ qjsreal integerFromString(const char *buf, int size, int radix)
             result = qSNaN();
     } else {
         result = 0;
-        qjsreal multiplier = 1;
+        double multiplier = 1;
         for (--i ; i >= j; --i, multiplier *= radix)
             result += toDigit(buf[i]) * multiplier;
     }
@@ -146,7 +145,7 @@ qjsreal integerFromString(const char *buf, int size, int radix)
     return result;
 }
 
-qjsreal integerFromString(const QString &str, int radix)
+double integerFromString(const QString &str, int radix)
 {
     QByteArray ba = str.trimmed().toUtf8();
     return integerFromString(ba.constData(), ba.size(), radix);

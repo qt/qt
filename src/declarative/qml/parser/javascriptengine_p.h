@@ -30,7 +30,6 @@
 #ifndef JAVASCRIPTENGINE_P_H
 #define JAVASCRIPTENGINE_P_H
 
-#include "javascriptvalue.h"
 #include <QString>
 #include <QSet>
 

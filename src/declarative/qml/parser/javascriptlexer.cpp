@@ -73,7 +73,7 @@ extern double qstrtod(const char *s00, char const **se, bool *ok);
     while (0)
 
 namespace JavaScript {
-extern qjsreal integerFromString(const char *buf, int size, int radix);
+extern double integerFromString(const char *buf, int size, int radix);
 }
 
 JavaScript::Lexer::Lexer(JavaScriptEnginePrivate *eng)
