@@ -141,9 +141,10 @@ LifeCycle::LifeCycle(StickMan *stickMan, GraphicsView *keyReceiver)
     m_alive->setInitialState(m_idle);
 
     // Lightning strikes at random
+//! [0]
     m_alive->addTransition(new LightningStrikesTransition(lightningBlink));
-    //m_alive->addTransition(new KeyPressTransition(m_keyReceiver, Qt::Key_L, lightningBlink));
     connectByAnimation(lightningBlink, m_dead, new QSignalTransition(timer, SIGNAL(timeout())));
+//! [0]
 
     m_machine->setInitialState(m_alive);
 }
@@ -159,8 +160,8 @@ void LifeCycle::start()
     m_machine->start();
 }
 
-void LifeCycle::connectByAnimation(QState *s1, QAbstractState *s2, 
-                                   QAbstractTransition *transition)
+//! [1]
+void LifeCycle::connectByAnimation(QState *s1, QAbstractState *s2, QAbstractTransition *transition)
 {
     if (transition == 0) {
         transition = s1->addTransition(s2);
@@ -170,6 +171,7 @@ void LifeCycle::connectByAnimation(QState *s1, QAbstractState *s2,
     }
     transition->addAnimation(m_animationGroup);
 }
+//! [1]
 
 void LifeCycle::addActivity(const QString &fileName, Qt::Key key)
 {
