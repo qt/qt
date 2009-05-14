@@ -105,7 +105,7 @@ MyRecord record(int row) const
     behavior.  The indexes can be checked by using areIndexesValid()
 
     In most cases the indexes will not exceed 0 to INT_MAX, and
-    normalizeIndexes() will not need to be be used.
+    normalizeIndexes() will not need to be used.
 
     See the \l{Contiguous Cache Example}{Contiguous Cache} example.
 */
