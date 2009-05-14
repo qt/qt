@@ -266,10 +266,10 @@ public:
     };
 
 public:
-    Parser();
+    Parser(Engine *engine);
     ~Parser();
 
-    bool parse(Engine *driver);
+    bool parse();
 
     AST::UiProgram *ast()
     { return program; }
@@ -306,6 +306,7 @@ protected:
     { return location_stack [tos + index - 1]; }
 
 protected:
+    Engine *driver;
     int tos;
     int stack_size;
     Value *sym_stack;
@@ -373,7 +374,8 @@ inline static bool automatic(Engine *driver, int token)
 }
 
 
-Parser::Parser():
+Parser::Parser(Engine *engine):
+    driver(engine),
     tos(0),
     stack_size(0),
     sym_stack(0),
@@ -403,7 +405,7 @@ static inline AST::SourceLocation location(Lexer *lexer)
     return loc;
 }
 
-bool Parser::parse(Engine *driver)
+bool Parser::parse()
 {
     Lexer *lexer = driver->lexer();
     bool hadErrors = false;

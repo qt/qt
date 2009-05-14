@@ -83,7 +83,8 @@ inline static bool automatic(Engine *driver, int token)
 }
 
 
-Parser::Parser():
+Parser::Parser(Engine *engine):
+    driver(engine),
     tos(0),
     stack_size(0),
     sym_stack(0),
@@ -113,7 +114,7 @@ static inline AST::SourceLocation location(Lexer *lexer)
     return loc;
 }
 
-bool Parser::parse(Engine *driver)
+bool Parser::parse()
 {
     Lexer *lexer = driver->lexer();
     bool hadErrors = false;

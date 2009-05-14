@@ -121,10 +121,10 @@ public:
     };
 
 public:
-    Parser();
+    Parser(Engine *engine);
     ~Parser();
 
-    bool parse(Engine *driver);
+    bool parse();
 
     AST::UiProgram *ast()
     { return program; }
@@ -161,6 +161,7 @@ protected:
     { return location_stack [tos + index - 1]; }
 
 protected:
+    Engine *driver;
     int tos;
     int stack_size;
     Value *sym_stack;

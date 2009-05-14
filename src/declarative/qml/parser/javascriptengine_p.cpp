@@ -72,6 +72,7 @@ QString Ecma::RegExp::flagsToString(int flags)
 NodePool::NodePool(const QString &fileName, Engine *engine)
     : m_fileName(fileName), m_engine(engine)
 {
+    m_engine->setNodePool(this);
 }
 
 NodePool::~NodePool()
