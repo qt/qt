@@ -66,6 +66,9 @@ private:
 QML_DECLARE_TYPE(MyQmlContainer);
 QML_DEFINE_TYPE(MyQmlContainer,MyQmlContainer);
 
+#define TEST_FILE(filename) \
+    QUrl::fromLocalFile(QApplication::applicationDirPath() + "/" + filename)
+
 class tst_qmlbindengine : public QObject
 {
     Q_OBJECT
@@ -86,13 +89,13 @@ private:
 void tst_qmlbindengine::boolPropertiesEvaluateAsBool()
 {
     {
-        QmlComponent component(&engine, "MyQmlObject { stringProperty: trueProperty?'pass':'fail' }");
+        QmlComponent component(&engine, TEST_FILE("boolPropertiesEvaluateAsBool.1.txt"));
         MyQmlObject *object = qobject_cast<MyQmlObject *>(component.create());
         QVERIFY(object != 0);
         QCOMPARE(object->stringProperty(), QLatin1String("pass"));
     }
     {
-        QmlComponent component(&engine, "MyQmlObject { stringProperty: falseProperty?'fail':'pass' }");
+        QmlComponent component(&engine, TEST_FILE("boolPropertiesEvaluateAsBool.2.txt"));
         MyQmlObject *object = qobject_cast<MyQmlObject *>(component.create());
         QVERIFY(object != 0);
         QCOMPARE(object->stringProperty(), QLatin1String("pass"));
@@ -102,7 +105,7 @@ void tst_qmlbindengine::boolPropertiesEvaluateAsBool()
 void tst_qmlbindengine::signalAssignment()
 {
     {
-        QmlComponent component(&engine, "MyQmlObject { onBasicSignal: setString('pass') }");
+        QmlComponent component(&engine, TEST_FILE("signalAssignment.1.txt"));
         MyQmlObject *object = qobject_cast<MyQmlObject *>(component.create());
         QVERIFY(object != 0);
         QCOMPARE(object->string(), QString());
@@ -111,7 +114,7 @@ void tst_qmlbindengine::signalAssignment()
     }
 
     {
-        QmlComponent component(&engine, "MyQmlObject { onArgumentSignal: setString('pass ' + a + ' ' + b + ' ' + c) }");
+        QmlComponent component(&engine, TEST_FILE("signalAssignment.2.txt"));
         MyQmlObject *object = qobject_cast<MyQmlObject *>(component.create());
         QVERIFY(object != 0);
         QCOMPARE(object->string(), QString());
@@ -123,7 +126,7 @@ void tst_qmlbindengine::signalAssignment()
 void tst_qmlbindengine::methods()
 {
     {
-        QmlComponent component(&engine, "MyQmlObject { id: MyObject; onBasicSignal: MyObject.method() }");
+        QmlComponent component(&engine, TEST_FILE("methods.1.txt"));
         MyQmlObject *object = qobject_cast<MyQmlObject *>(component.create());
         QVERIFY(object != 0);
         QCOMPARE(object->methodCalled(), false);
@@ -134,7 +137,7 @@ void tst_qmlbindengine::methods()
     }
 
     {
-        QmlComponent component(&engine, "MyQmlObject { id: MyObject; onBasicSignal: MyObject.method(163) }");
+        QmlComponent component(&engine, TEST_FILE("methods.2.txt"));
         MyQmlObject *object = qobject_cast<MyQmlObject *>(component.create());
         QVERIFY(object != 0);
         QCOMPARE(object->methodCalled(), false);
@@ -147,11 +150,8 @@ void tst_qmlbindengine::methods()
 
 void tst_qmlbindengine::bindingLoop()
 {
-    QmlComponent component(&engine, "MyQmlContainer { children : [ "\
-                                    "MyQmlObject { id: Object1; stringProperty: \"hello\" + Object2.stringProperty }, "\
-                                    "MyQmlObject { id: Object2; stringProperty: \"hello\" + Object1.stringProperty } ] }");
-    //### ignoreMessage doesn't seem to work here
-    //QTest::ignoreMessage(QtWarningMsg, "QML MyQmlObject (unknown location): Binding loop detected for property \"stringProperty\"");
+    QmlComponent component(&engine, TEST_FILE("bindingLoop.txt"));
+    QTest::ignoreMessage(QtWarningMsg, "QML MyQmlObject (unknown location): Binding loop detected for property \"stringProperty\" ");
     QObject *object = component.create();
     QVERIFY(object != 0);
 }
