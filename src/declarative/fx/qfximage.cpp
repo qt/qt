@@ -365,8 +365,8 @@ void QFxImage::paintContents(QPainter &p)
         const int sgr = d->_scaleGrid->right();
         const int sgt = d->_scaleGrid->top();
         const int sgb = d->_scaleGrid->bottom();
-        const int xSide = sgl + sgr;
-        const int ySide = sgt + sgb;
+        const int xSide = qMin(sgl + sgr, int(width()));
+        const int ySide = qMin(sgt + sgb, int(height()));
 
         // Upper left
         if (sgt && sgl)
