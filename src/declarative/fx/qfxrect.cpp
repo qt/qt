@@ -486,8 +486,8 @@ void QFxRect::drawRect(QPainter &p)
         }
 
         //basically same code as QFxImage uses to paint sci images
-        int xSide = offset * 2;
-        int ySide = offset * 2;
+        int xSide = qMin(offset * 2, int(width()));
+        int ySide = qMin(offset * 2, int(height()));;
 
         // Upper left
         p.drawImage(QRect(0, 0, offset, offset), d->_rectImage, QRect(0, 0, offset, offset));
