@@ -251,7 +251,7 @@ void QUrlModel::addUrls(const QList<QUrl> &list, int row, bool move)
 #if defined(Q_OS_WIN)
             if (QDir::cleanPath(index(j, 0).data(UrlRole).toUrl().toLocalFile()).toLower() == QDir::cleanPath(url.toLocalFile()).toLower()) {
 #else
-            if (QDir::cleanPath(index(j, 0).data(UrlRole)) == QDir::cleanPath(url)) {
+            if (QDir::cleanPath(index(j, 0).data(UrlRole).toUrl().toLocalFile()) == QDir::cleanPath(url.toLocalFile())) {
 #endif
                 removeRow(j);
                 if (j <= row)
