@@ -57,6 +57,7 @@ class QSoftKeyAction;
 
 class Q_GUI_EXPORT QSoftKeyStack : public QObject
 {
+    Q_OBJECT
 public:
     QSoftKeyStack(QWidget *parent);
     ~QSoftKeyStack();
@@ -66,6 +67,9 @@ public:
     void pop();
 
     void handleSoftKeyPress(int command);
+
+private Q_SLOTS:
+    void handleFocusChanged(QWidget *old, QWidget *now);
 
 private:
     Q_DECLARE_PRIVATE(QSoftKeyStack)

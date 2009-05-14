@@ -41,6 +41,8 @@
 
 #include "qsoftkeystack.h"
 #include "qsoftkeystack_p.h"
+#include "qapplication.h"
+#include "qmainwindow.h"
 
 QSoftKeyStackPrivate::QSoftKeyStackPrivate()
 {
@@ -76,6 +78,7 @@ void QSoftKeyStackPrivate::pop()
 QSoftKeyStack::QSoftKeyStack(QWidget *parent)
     : QObject(*new QSoftKeyStackPrivate, parent)
 {
+    connect(qApp, SIGNAL(focusChanged(QWidget*, QWidget*)), SLOT(handleFocusChanged(QWidget*, QWidget*)));
 }
 
 QSoftKeyStack::~QSoftKeyStack()
@@ -100,3 +103,26 @@ void QSoftKeyStack::pop()
     d->pop();
 }
 
+void QSoftKeyStack::handleFocusChanged(QWidget *old, QWidget *now)
+{
+    if (!now)
+        return;
+    bool nowInOurMainWindow = false;
+    const QMainWindow *ourMainWindow = qobject_cast<const QMainWindow*>(parent());
+    Q_ASSERT(ourMainWindow);
+
+    // "ourMainWindow" in parent chain of "now"? Isn't there a helper in Qt for this?
+    QWidget *nowParent = now;
+    while (nowParent = nowParent->parentWidget()) {
+        if (nowParent == ourMainWindow) {
+            nowInOurMainWindow = true;
+            break;
+        }
+    }
+
+    if (!nowInOurMainWindow)
+        return;
+
+    QList<QAction*> actions = now->actions();
+    // Do something with these actions.
+}
