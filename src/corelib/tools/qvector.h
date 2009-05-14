@@ -82,19 +82,9 @@ struct Q_CORE_EXPORT QVectorData
 };
 
 template <typename T>
-struct QVectorTypedData
-{
-    QBasicAtomicInt ref;
-    int alloc;
-    int size;
-#if defined(QT_ARCH_SPARC) && defined(Q_CC_GNU) && defined(__LP64__) && defined(QT_BOOTSTRAPPED)
-    // workaround for bug in gcc 3.4.2
-    uint sharable;
-    uint capacity;
-#else
-    uint sharable : 1;
-    uint capacity : 1;
-#endif
+struct QVectorTypedData : private QVectorData
+{ // private inheritance as we must not access QVectorData member thought QVectorTypedData
+  // as this would break strict aliasing rules. (in the case of shared_null)
     T array[1];
 };
 
