@@ -23,14 +23,15 @@ MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
 {
 
-    QWidget *central = new QWidget(this);    
+    QWidget *central = new QWidget(this);
+    central->setLayout(new QVBoxLayout);
+    central->layout()->addWidget(new QPushButton);
+    central->layout()->addWidget(new QPushButton);
+    central->layout()->addWidget(new QPushButton);
     
     QMenuBar* menuBar = new QMenuBar(this);
     menuBar->addAction("MyMenuItem1");
     this->setMenuBar(menuBar);
-
-    QSoftKeyStack *stack = new QSoftKeyStack(central);
-    setSoftKeyStack(stack);
 
     QSoftKeyAction action1(central);
     action1.setText(QString("Ok"));
@@ -54,16 +55,16 @@ MainWindow::MainWindow(QWidget *parent)
     myActionList.append(&action1);
     myActionList.append(&action2);
     myActionList.append(&action3);
-    stack->push(myActionList);
-    stack->pop();
-    stack->push(&action1);
-    stack->pop();
+    softKeyStack()->push(myActionList);
+    softKeyStack()->pop();
+    softKeyStack()->push(&action1);
+    softKeyStack()->pop();
 
     QList<QSoftKeyAction*> myActionList2;
     myActionList2.append(&action4);
     myActionList2.append(&action1);
     myActionList2.append(&action5);
-    stack->push(myActionList2);
+    softKeyStack()->push(myActionList2);
     
     
     setCentralWidget(central);
