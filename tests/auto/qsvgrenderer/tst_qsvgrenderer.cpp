@@ -82,6 +82,7 @@ private slots:
     void displayMode();
     void strokeInherit();
     void testFillInheritance();
+    void testStopOffsetOpacity();
 
 #ifndef QT_NO_COMPRESS
     void testGzLoading();
@@ -1121,5 +1122,88 @@ void tst_QSvgRenderer::testFillInheritance()
         }
     }
 }
+void tst_QSvgRenderer::testStopOffsetOpacity()
+{
+    static const char *svgs[] = {
+        //reference
+        "<svg  viewBox=\"0 0 64 64\">"
+         "<radialGradient id=\"MyGradient1\" gradientUnits=\"userSpaceOnUse\" cx=\"50\" cy=\"50\" r=\"30\" fx=\"20\" fy=\"20\">"
+          "<stop offset=\"0.0\" style=\"stop-color:red\"  stop-opacity=\"0.3\"/>"
+          "<stop offset=\"0.5\" style=\"stop-color:green\"  stop-opacity=\"1\"/>"
+          "<stop offset=\"1\" style=\"stop-color:yellow\"  stop-opacity=\"1\"/>"
+         "</radialGradient>"
+         "<radialGradient id=\"MyGradient2\" gradientUnits=\"userSpaceOnUse\" cx=\"50\" cy=\"70\" r=\"70\" fx=\"20\" fy=\"20\">"
+          "<stop offset=\"0.0\" style=\"stop-color:blue\"  stop-opacity=\"0.3\"/>"
+          "<stop offset=\"0.5\" style=\"stop-color:violet\"  stop-opacity=\"1\"/>"
+          "<stop offset=\"1\" style=\"stop-color:orange\"  stop-opacity=\"1\"/>"
+         "</radialGradient>"
+         "<rect  x=\"5\" y=\"5\" width=\"55\" height=\"55\" fill=\"url(#MyGradient1)\" stroke=\"black\" />"
+         "<rect  x=\"20\" y=\"20\" width=\"35\" height=\"35\" fill=\"url(#MyGradient2)\"/>"
+        "</svg>",
+        //Stop Offset
+        "<svg  viewBox=\"0 0 64 64\">"
+         "<radialGradient id=\"MyGradient1\" gradientUnits=\"userSpaceOnUse\" cx=\"50\" cy=\"50\" r=\"30\" fx=\"20\" fy=\"20\">"
+          "<stop offset=\"abc\" style=\"stop-color:red\"  stop-opacity=\"0.3\"/>"
+          "<stop offset=\"0.5\" style=\"stop-color:green\"  stop-opacity=\"1\"/>"
+          "<stop offset=\"1\" style=\"stop-color:yellow\"  stop-opacity=\"1\"/>"
+         "</radialGradient>"
+         "<radialGradient id=\"MyGradient2\" gradientUnits=\"userSpaceOnUse\" cx=\"50\" cy=\"70\" r=\"70\" fx=\"20\" fy=\"20\">"
+          "<stop offset=\"-3.bc\" style=\"stop-color:blue\"  stop-opacity=\"0.3\"/>"
+          "<stop offset=\"0.5\" style=\"stop-color:violet\"  stop-opacity=\"1\"/>"
+          "<stop offset=\"1\" style=\"stop-color:orange\"  stop-opacity=\"1\"/>"
+         "</radialGradient>"
+         "<rect  x=\"5\" y=\"5\" width=\"55\" height=\"55\" fill=\"url(#MyGradient1)\" stroke=\"black\" />"
+         "<rect  x=\"20\" y=\"20\" width=\"35\" height=\"35\" fill=\"url(#MyGradient2)\"/>"
+        "</svg>",
+        //Stop Opacity
+        "<svg  viewBox=\"0 0 64 64\">"
+         "<radialGradient id=\"MyGradient1\" gradientUnits=\"userSpaceOnUse\" cx=\"50\" cy=\"50\" r=\"30\" fx=\"20\" fy=\"20\">"
+          "<stop offset=\"0.0\" style=\"stop-color:red\"  stop-opacity=\"0.3\"/>"
+          "<stop offset=\"0.5\" style=\"stop-color:green\"  stop-opacity=\"x.45\"/>"
+          "<stop offset=\"1\" style=\"stop-color:yellow\"  stop-opacity=\"-3.abc\"/>"
+         "</radialGradient>"
+         "<radialGradient id=\"MyGradient2\" gradientUnits=\"userSpaceOnUse\" cx=\"50\" cy=\"70\" r=\"70\" fx=\"20\" fy=\"20\">"
+          "<stop offset=\"0.0\" style=\"stop-color:blue\"  stop-opacity=\"0.3\"/>"
+          "<stop offset=\"0.5\" style=\"stop-color:violet\"  stop-opacity=\"-0.xy\"/>"
+          "<stop offset=\"1\" style=\"stop-color:orange\"  stop-opacity=\"z.5\"/>"
+         "</radialGradient>"
+         "<rect  x=\"5\" y=\"5\" width=\"55\" height=\"55\" fill=\"url(#MyGradient1)\" stroke=\"black\" />"
+         "<rect  x=\"20\" y=\"20\" width=\"35\" height=\"35\" fill=\"url(#MyGradient2)\"/>"
+        "</svg>",
+        //Stop offset and Stop opacity
+        "<svg  viewBox=\"0 0 64 64\">"
+         "<radialGradient id=\"MyGradient1\" gradientUnits=\"userSpaceOnUse\" cx=\"50\" cy=\"50\" r=\"30\" fx=\"20\" fy=\"20\">"
+          "<stop offset=\"abc\" style=\"stop-color:red\"  stop-opacity=\"0.3\"/>"
+          "<stop offset=\"0.5\" style=\"stop-color:green\"  stop-opacity=\"x.45\"/>"
+          "<stop offset=\"1\" style=\"stop-color:yellow\"  stop-opacity=\"-3.abc\"/>"
+         "</radialGradient>"
+         "<radialGradient id=\"MyGradient2\" gradientUnits=\"userSpaceOnUse\" cx=\"50\" cy=\"70\" r=\"70\" fx=\"20\" fy=\"20\">"
+          "<stop offset=\"-3.bc\" style=\"stop-color:blue\"  stop-opacity=\"0.3\"/>"
+          "<stop offset=\"0.5\" style=\"stop-color:violet\"  stop-opacity=\"-0.xy\"/>"
+          "<stop offset=\"1\" style=\"stop-color:orange\"  stop-opacity=\"z.5\"/>"
+         "</radialGradient>"
+         "<rect  x=\"5\" y=\"5\" width=\"55\" height=\"55\" fill=\"url(#MyGradient1)\" stroke=\"black\" />"
+         "<rect  x=\"20\" y=\"20\" width=\"35\" height=\"35\" fill=\"url(#MyGradient2)\"/>"
+        "</svg>"
+    };
+
+    QImage images[4];
+    QPainter p;
+
+    for (int i = 0; i < 4; ++i) {
+        QByteArray data(svgs[i]);
+        QSvgRenderer renderer(data);
+        QVERIFY(renderer.isValid());
+        images[i] = QImage(64, 64, QImage::Format_ARGB32_Premultiplied);
+        images[i].fill(-1);
+        p.begin(&images[i]);
+        renderer.render(&p);
+        p.end();
+    }
+    QCOMPARE(images[0], images[1]);
+    QCOMPARE(images[0], images[2]);
+    QCOMPARE(images[0], images[3]);
+}
+
 QTEST_MAIN(tst_QSvgRenderer)
 #include "tst_qsvgrenderer.moc"

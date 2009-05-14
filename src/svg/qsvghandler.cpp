@@ -68,6 +68,7 @@
 
 QT_BEGIN_NAMESPACE
 
+
 double qstrtod(const char *s00, char const **se, bool *ok);
 
 static bool parsePathDataFast(const QStringRef &data, QPainterPath &path);
@@ -320,6 +321,7 @@ static qreal toDouble(const QChar *&str)
             ++str;
         }
     }
+
     temp[pos] = '\0';
 
     qreal val;
@@ -365,16 +367,24 @@ static qreal toDouble(const QChar *&str)
     return val;
 
 }
-static qreal toDouble(const QString &str)
+static qreal toDouble(const QString &str, bool *ok = NULL)
 {
     const QChar *c = str.constData();
-    return toDouble(c);
+    qreal res = toDouble(c);
+    if (ok) {
+        *ok = ((*c) == QLatin1Char('\0'));
+    }
+    return res;
 }
 
-static qreal toDouble(const QStringRef &str)
+static qreal toDouble(const QStringRef &str, bool *ok = NULL)
 {
     const QChar *c = str.constData();
-    return toDouble(c);
+    qreal res = toDouble(c);
+    if (ok) {
+        *ok = (c == (str.constData() + str.length()));
+    }
+    return res;
 }
 
 static QVector<qreal> parseNumbersList(const QChar *&str)
@@ -497,14 +507,17 @@ static bool constructColor(const QString &colorStr, const QString &opacity,
     if (!resolveColor(colorStr, color, handler))
         return false;
     if (!opacity.isEmpty()) {
-        qreal op = qMin(qreal(1.0), qMax(qreal(0.0), toDouble(opacity)));
+        bool ok = true;
+        qreal op = qMin(qreal(1.0), qMax(qreal(0.0), toDouble(opacity, &ok)));
+        if (!ok)
+            op = 1.0;
         color.setAlphaF(op);
     }
     return true;
 }
 
 static qreal parseLength(const QString &str, QSvgHandler::LengthType &type,
-                         QSvgHandler *handler)
+                         QSvgHandler *handler, bool *ok = NULL)
 {
     QString numStr = str.trimmed();
 
@@ -533,15 +546,15 @@ static qreal parseLength(const QString &str, QSvgHandler::LengthType &type,
         type = handler->defaultCoordinateSystem();
         //type = QSvgHandler::LT_OTHER;
     }
-    qreal len = toDouble(numStr);
+    qreal len = toDouble(numStr, ok);
     //qDebug()<<"len is "<<len<<", from '"<<numStr << "'";
     return len;
 }
 
-static inline qreal convertToNumber(const QString &str, QSvgHandler *handler)
+static inline qreal convertToNumber(const QString &str, QSvgHandler *handler, bool *ok = NULL)
 {
     QSvgHandler::LengthType type;
-    qreal num = parseLength(str, type, handler);
+    qreal num = parseLength(str, type, handler, ok);
     if (type == QSvgHandler::LT_PERCENT) {
         num = num/100.0;
     }
@@ -3019,7 +3032,11 @@ static bool parseStopNode(QSvgStyleProperty *parent,
     QString colorStr    = attrs.value(QString(), QLatin1String("stop-color")).toString();
     QString opacityStr  = attrs.value(QString(), QLatin1String("stop-opacity")).toString();
     QColor color;
-    qreal offset = convertToNumber(offsetStr, handler);
+
+    bool ok = true;
+    qreal offset = convertToNumber(offsetStr, handler, &ok);
+    if (!ok)
+        offset = 0.0;
     if (colorStr.isEmpty()) {
         colorStr = QLatin1String("#000000");
     }
@@ -3108,11 +3125,15 @@ static QSvgNode *createSvgNode(QSvgNode *parent,
         QStringList lst = viewBoxStr.split(QLatin1Char(' '), QString::SkipEmptyParts);
         if (lst.count() != 4)
             lst = viewBoxStr.split(QLatin1Char(','), QString::SkipEmptyParts);
+        int count = lst.count();
+        while (count < 4) {
+            lst.append(QLatin1String(""));
+            count++;
+        }
         QString xStr      = lst.at(0).trimmed();
         QString yStr      = lst.at(1).trimmed();
         QString widthStr  = lst.at(2).trimmed();
         QString heightStr = lst.at(3).trimmed();
-
 
         QSvgHandler::LengthType lt;
         qreal x = parseLength(xStr, lt, handler);
@@ -3121,15 +3142,14 @@ static QSvgNode *createSvgNode(QSvgNode *parent,
         qreal h = parseLength(heightStr, lt, handler);
 
         node->setViewBox(QRectF(x, y, w, h));
-    } else if (width && height){
+
+    } else if (width && height) {
         if (type == QSvgHandler::LT_PT) {
             width = convertToPixels(width, false, type);
             height = convertToPixels(height, false, type);
         }
-
         node->setViewBox(QRectF(0, 0, width, height));
     }
-
     handler->setDefaultCoordinateSystem(QSvgHandler::LT_PX);
 
     return node;
