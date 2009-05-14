@@ -6,4 +6,4 @@ HEADERS = testtypes.h
 macx:CONFIG -= app_bundle
 
 # QMAKE_CXXFLAGS = -fprofile-arcs -ftest-coverage
-LIBS += -lgcov
+# LIBS += -lgcov
