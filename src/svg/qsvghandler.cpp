@@ -2025,6 +2025,7 @@ static bool parseAnimateTransformNode(QSvgNode *parent,
     QString fillStr    = attributes.value(QLatin1String("fill")).toString();
     QString fromStr    = attributes.value(QLatin1String("from")).toString();
     QString toStr      = attributes.value(QLatin1String("to")).toString();
+    QString addtv      = attributes.value(QLatin1String("additive")).toString();
 
     QVector<qreal> vals;
     if (values.isEmpty()) {
@@ -2087,8 +2088,11 @@ static bool parseAnimateTransformNode(QSvgNode *parent,
         return false;
     }
 
+    QSvgAnimateTransform::Additive additive = QSvgAnimateTransform::Replace;
+    if (addtv == QLatin1String("sum"))
+        additive = QSvgAnimateTransform::Sum;
     QSvgAnimateTransform *anim = new QSvgAnimateTransform(begin, end, 0);
-    anim->setArgs(type, vals);
+    anim->setArgs(type, additive, vals);
     anim->setFreeze(fillStr == QLatin1String("freeze"));
     anim->setRepeatCount(
             (repeatStr == QLatin1String("indefinite"))? -1 :

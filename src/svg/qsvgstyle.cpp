@@ -509,10 +509,36 @@ void QSvgStyle::apply(QPainter *p, const QRectF &rect, QSvgNode *node, QSvgExtra
     //animated transforms have to be applied
     //_after_ the original object transformations
     if (!animateTransforms.isEmpty()) {
-        QList<QSvgRefCounter<QSvgAnimateTransform> >::const_iterator itr;
-        for (itr = animateTransforms.constBegin(); itr != animateTransforms.constEnd();
-             ++itr) {
-            (*itr)->apply(p, rect, node, states);
+        QList<QSvgRefCounter<QSvgAnimateTransform> >::const_iterator itr, temp, replace;
+        bool replaced = false;
+        qreal totalTimeElapsed = 0;
+        for (itr = animateTransforms.constBegin(); itr!= animateTransforms.constEnd(); ++itr) {
+            totalTimeElapsed = node->document()->currentElapsed();
+            if ((totalTimeElapsed >= (*itr)->animStartTime()) && (!(*itr)->animFinished(totalTimeElapsed) || (*itr)->frozen())) {
+                if ((*itr)->additiveType() == QSvgAnimateTransform::Replace) {
+                    if (!replaced) {
+                        //set the flag to show replace is already encountered
+                        //store the itr, which can be used if we encounter other animateTransform with additive = "replace"
+                        replaced = true;
+                        replace = itr;
+                        //revert the first animateTransform with additive = "sum"
+                        temp = animateTransforms.constBegin();
+                        if (temp != itr)
+                            (*temp)->revert(p, states);
+
+                        //revert the transform if already applied
+                        if (transform)
+                            transform->revert(p, states);
+                    } else {
+                        //if animateTransform with additive = "replace" is encountered already
+                        //then just revert that old animateTransform
+                        (*replace)->revert(p,states);
+                        replace = itr; //store the latest replace transform
+                    }
+                }
+                (*itr)->apply(p, rect, node, states);
+                (*itr)->setTransformApplied(true);
+            }
         }
     }
 
@@ -559,11 +585,23 @@ void QSvgStyle::revert(QPainter *p, QSvgExtraStates &states)
     //the native transforms
     if (!animateTransforms.isEmpty()) {
         QList<QSvgRefCounter<QSvgAnimateTransform> >::const_iterator itr;
-        itr = animateTransforms.constBegin();
-        //only need to rever the first one because that
-        //one has the original world matrix for the primitve
-        if (itr != animateTransforms.constEnd()) {
-            (*itr)->revert(p, states);
+        bool reverted = false;
+        for (itr = animateTransforms.constEnd(); itr != animateTransforms.constBegin(); --itr) {
+            //if there is an animate transform with additive = "replace"
+            //then revert the last applied animateTransform with additive = "replace"
+            if (((*(itr-1))->transformApplied()) && ((*(itr-1))->additiveType() == QSvgAnimateTransform::Replace)) {
+                reverted = true;
+                (*(itr-1))->revert(p,states);
+                break;
+            }
+        }
+        //if there are no animateTransform with additive = "replace" then
+        //revert the first applied animateTransform with additive = "sum"
+        if (!reverted) {
+            while (itr != animateTransforms.constEnd() && !(*itr)->transformApplied())
+                itr++;
+            if (itr != animateTransforms.constEnd())
+                (*itr)->revert(p, states);
         }
     }
 
@@ -587,15 +625,16 @@ void QSvgStyle::revert(QPainter *p, QSvgExtraStates &states)
 QSvgAnimateTransform::QSvgAnimateTransform(int startMs, int endMs, int byMs )
     : QSvgStyleProperty(),
       m_from(startMs), m_to(endMs), m_by(byMs),
-      m_type(Empty), m_count(0), m_finished(false)
+      m_type(Empty), m_count(0), m_finished(false), m_additive(Replace), m_transformApplied(false)
 {
     m_totalRunningTime = m_to - m_from;
 }
 
-void QSvgAnimateTransform::setArgs(TransformType type, const QVector<qreal> &args)
+void QSvgAnimateTransform::setArgs(TransformType type, Additive additive, const QVector<qreal> &args)
 {
     m_type = type;
     m_args = args;
+    m_additive = additive;
     Q_ASSERT(!(args.count()%3));
     m_count = args.count() / 3;
 }
@@ -604,15 +643,12 @@ void QSvgAnimateTransform::apply(QPainter *p, const QRectF &, QSvgNode *node, QS
 {
     m_oldWorldTransform = p->worldTransform();
     resolveMatrix(node);
-    if (!m_finished || m_freeze)
-        p->setWorldTransform(m_transform, true);
+    p->setWorldTransform(m_transform, true);
 }
 
 void QSvgAnimateTransform::revert(QPainter *p, QSvgExtraStates &)
 {
-    if (!m_finished || m_freeze) {
-        p->setWorldTransform(m_oldWorldTransform, false /* don't combine */);
-    }
+    p->setWorldTransform(m_oldWorldTransform, false /* don't combine */);
 }
 
 void QSvgAnimateTransform::resolveMatrix(QSvgNode *node)
