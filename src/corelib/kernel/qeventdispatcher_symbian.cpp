@@ -155,7 +155,7 @@ void QTimerActiveObject::RunL()
 
         iStatus = KRequestPending;
         SetActive();
-        // We complete it after the processEvents is done.
+        // We complete it when the QCompleteZeroTimersActiveObject is run.
     }
 }
 
