@@ -75,9 +75,8 @@ private:
 };
 QML_DECLARE_TYPE(QmlSetProperties);
 
-#endif // QMLSETPROPERTIES_H
-
-
 QT_END_NAMESPACE
 
 QT_END_HEADER
+
+#endif // QMLSETPROPERTIES_H
