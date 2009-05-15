@@ -87,11 +87,8 @@ public:
 
     virtual void open();
     virtual void closeDownstreamChannel();
-    virtual void closeUpstreamChannel();
     virtual bool waitForDownstreamReadyRead(int msecs);
-    virtual bool waitForUpstreamBytesWritten(int msecs);
 
-    virtual void upstreamReadyRead();
     virtual void downstreamReadyWrite();
 
     void disconnectFromFtp();
@@ -105,7 +102,7 @@ public slots:
 private:
     friend class QNetworkAccessFtpIODevice;
     QPointer<QNetworkAccessFtpFtp> ftp;
-    QNetworkAccessFtpIODevice *uploadDevice;
+    QIODevice *uploadDevice;
     qint64 totalBytes;
     int helpId, sizeId, mdtmId;
     bool supportsSize, supportsMdtm;

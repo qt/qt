@@ -780,7 +780,7 @@ QString QFSFileEngine::fileName(FileName file) const
 #endif
             if (len > 0) {
                 QString ret;
-                if (S_ISDIR(d->st.st_mode) && s[0] != '/') {
+                if (d->doStat() && S_ISDIR(d->st.st_mode) && s[0] != '/') {
                     QDir parent(d->filePath);
                     parent.cdUp();
                     ret = parent.path();

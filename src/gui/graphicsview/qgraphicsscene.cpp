@@ -1330,8 +1330,7 @@ void QGraphicsScenePrivate::mousePressEventHandler(QGraphicsSceneMouseEvent *mou
         bool disabled = !item->isEnabled();
         bool isWindow = item->isWindow();
         if (mouseEvent->type() == QEvent::GraphicsSceneMouseDoubleClick
-            && item != lastMouseGrabberItem && lastMouseGrabberItem)
-        {
+            && item != lastMouseGrabberItem && lastMouseGrabberItem) {
             // If this item is different from the item that received the last
             // mouse event, and mouseEvent is a doubleclick event, then the
             // event is converted to a press. Known limitation:
@@ -2326,12 +2325,7 @@ void QGraphicsScene::render(QPainter *painter, const QRectF &target, const QRect
         // Calculate a simple level-of-detail metric.
         // ### almost identical code in QGraphicsView::paintEvent()
         //     and QGraphicsView::render() - consider refactoring
-        QTransform itemToDeviceTransform;
-        if (item->d_ptr->itemIsUntransformable()) {
-            itemToDeviceTransform = item->deviceTransform(painterTransform);
-        } else {
-            itemToDeviceTransform = item->sceneTransform() * painterTransform;
-        }
+        QTransform itemToDeviceTransform = item->deviceTransform(painterTransform);
 
         option.levelOfDetail = qSqrt(itemToDeviceTransform.map(v1).length() * itemToDeviceTransform.map(v2).length());
         option.matrix = itemToDeviceTransform.toAffine(); //### discards perspective
@@ -5135,11 +5129,7 @@ void QGraphicsScene::drawItems(QPainter *painter,
                 // optimization, but it's hit very rarely.
                 for (int i = clippers.size() - 1; i >= 0; --i) {
                     QGraphicsItem *clipper = clippers[i];
-                    if (clipper->d_ptr->itemIsUntransformable()) {
-                        painter->setWorldTransform(clipper->deviceTransform(viewTransform), false);
-                    } else {
-                        painter->setWorldTransform(clipper->sceneTransform() * viewTransform, false);
-                    }
+                    painter->setWorldTransform(clipper->deviceTransform(viewTransform), false);
 
                     childClippers.append(clipper);
                     painter->save();
@@ -5150,12 +5140,8 @@ void QGraphicsScene::drawItems(QPainter *painter,
         }
 
         // Set up the painter transform
-        if (item->d_ptr->itemIsUntransformable()) {
-            painter->setWorldTransform(item->deviceTransform(viewTransform), false);
-        } else {
-            painter->setWorldTransform(item->sceneTransform() * viewTransform, false);
-        }
-       
+        painter->setWorldTransform(item->deviceTransform(viewTransform), false);
+
         // Save painter
         bool saveState = (d->painterStateProtection || (item->flags() & QGraphicsItem::ItemClipsToShape));
         if (saveState)

@@ -72,7 +72,6 @@ static void initResources()
     Q_INIT_RESOURCE(shared);
     Q_INIT_RESOURCE(ClamshellPhone);
     Q_INIT_RESOURCE(PDAPhone);
-    Q_INIT_RESOURCE(pda);
     Q_INIT_RESOURCE(PortableMedia);
     Q_INIT_RESOURCE(S60_nHD_Touchscreen);
     Q_INIT_RESOURCE(S60_QVGA_Candybar);

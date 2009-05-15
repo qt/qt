@@ -1664,6 +1664,7 @@ void QCommonStyle::drawControl(ControlElement element, const QStyleOption *opt,
                 if (!styleHint(SH_UnderlineShortcut, opt, widget))
                     alignment |= Qt::TextHideMnemonic;
                 rect.translate(shiftX, shiftY);
+                p->setFont(toolbutton->font);
                 drawItemText(p, rect, alignment, toolbutton->palette,
                              opt->state & State_Enabled, toolbutton->text,
                              QPalette::ButtonText);
