@@ -4344,6 +4344,7 @@ void QClipData::initialize()
 
     m_clipLines = (ClipLine *)calloc(sizeof(ClipLine), clipSpanHeight);
     m_spans = (QSpan *)malloc(clipSpanHeight*sizeof(QSpan));
+    allocated = clipSpanHeight;
 
     if (hasRectClip) {
         int y = 0;
@@ -4388,6 +4389,7 @@ void QClipData::initialize()
 
         int y = 0;
         int firstInBand = 0;
+        count = 0;
         while (firstInBand < numRects) {
             const int currMinY = rects.at(firstInBand).y();
             const int currMaxY = currMinY + rects.at(firstInBand).height();
@@ -4502,7 +4504,7 @@ void QClipData::setClipRect(const QRect &rect)
     ymax = qMin(rect.y() + rect.height(), clipSpanHeight);
 
     if (m_spans) {
-        delete m_spans;
+        free(m_spans);
         m_spans = 0;
     }
 
@@ -4532,7 +4534,7 @@ void QClipData::setClipRegion(const QRegion &region)
     }
 
     if (m_spans) {
-        delete m_spans;
+        free(m_spans);
         m_spans = 0;
     }
 
