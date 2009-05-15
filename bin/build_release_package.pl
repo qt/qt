@@ -9,34 +9,68 @@
 
 use Cwd;
 
-my $releaseDir = "\\_qt_release_package_dir_";
-my $releaseDirQt = "${releaseDir}\\qt";
-my $releaseDirEpocroot = "${releaseDir}\\epocroot";
-my $releaseDirSis = "${releaseDir}\\sis";
-my $qtRootDir = cwd();
-$qtRootDir =~ s/\//\\/g; # Fix dir separators
-my $qtRootDirForMatch = $qtRootDir; # Double backslashes so that variable can be used in matching
-$qtRootDirForMatch =~ s/\\/\\\\/;
-
 if (@ARGV)
 {
     my $platform = shift(@ARGV);
     my $build = shift(@ARGV);
     my $cert = shift(@ARGV);
     my $certKey = shift(@ARGV);
+    my $releaseDir = shift(@ARGV);
     my $epocroot = shift(@ARGV);
-    my $pkgFileName = "src\\s60installs\\qt_libs_${platform}_${build}.pkg";
+
+    if ($build eq "")
+    {
+        print("HW build parameter required!\n");
+        exit;
+    }
+
+    if ($cert eq "")
+    {
+        print("Signing certificate parameter required!\n");
+        exit;
+    }
+
+    if ($certKey eq "")
+    {
+        print("Signing certificate key parameter required!\n");
+        exit;
+    }
+
+    if ($releaseDir eq "")
+    {
+        print("Release directory parameter required!\n");
+        exit;
+    }
 
     if ($epocroot eq "")
     {
         $epocroot = "\\";
     }
 
+    if ($epocroot =~ m/.*[^\\]$/)
+    {
+        $epocroot = "${epocroot}\\";
+    }
+
+    $epocroot =~ s/.://;
+
+    my $releaseDirQt = "${releaseDir}\\qt";
+    my $releaseDirEpocroot = "${releaseDir}\\epocroot";
+    my $releaseDirSis = "${releaseDir}\\sis";
+
+    my $qtRootDir = cwd();
+    $qtRootDir =~ s/\//\\/g; # Fix dir separators
+
+    my $qtRootDirForMatch = $qtRootDir; # Double backslashes so that variable can be used in matching
+    $qtRootDirForMatch =~ s/\\/\\\\/;
+
+    my $pkgFileName = "src\\s60installs\\qt_libs_${platform}_${build}.pkg";
+
     my $hwBuildDir = "${epocroot}epoc32\\release\\$platform\\$build";
     my $armDbgDir = "epoc32\\release\\armv5\\udeb";
     my $armRelDir = "epoc32\\release\\armv5\\urel";
-    #my $gcceDbgDir = "epoc32\\release\\gcce\\udeb"; #is this needed?
-    #my $gcceRelDir = "epoc32\\release\\gcce\\urel"; #is this needed?
+    my $gcceDbgDir = "epoc32\\release\\gcce\\udeb";
+    my $gcceRelDir = "epoc32\\release\\gcce\\urel";
     my $armLibDir = "epoc32\\release\\armv5\\lib";
     my $winscwDbgDir = "epoc32\\release\\winscw\\udeb";
 
@@ -46,7 +80,11 @@ if (@ARGV)
 
     # Copy the whole thing over to the release dir before it gets polluted
     print("Copying clean tree...\n");
-    runSystemCmd("xcopy ${qtRootDir} ${releaseDirQt} /E /I /H /Q");
+    my $tempExcludeFile = "${releaseDir}\\__temp_exclude.txt";
+    system("mkdir ${releaseDir} 2>NUL");
+    runSystemCmd("echo \\.git\\ > ${tempExcludeFile}");
+    runSystemCmd("xcopy ${qtRootDir} ${releaseDirQt} /E /I /H /Q /EXCLUDE:${tempExcludeFile}");
+    system("del /F /Q ${tempExcludeFile} 2> NUL");
 
     # Clear archive flag from all items in \epoc32\release\armv5\urel and \epoc32\release\armv5\lib
     # as those will have the binaries used for all platforms and builds.
@@ -97,6 +135,10 @@ if (@ARGV)
             else
             {
                 $destinationPath =~ s/.://;
+                if ($epocroot !~ m/\\/)
+                {
+                    $destinationPath =~ s/($epocroot)//i;
+                }
                 $destinationPath = $releaseDirEpocroot.$destinationPath;
             }
 
@@ -108,19 +150,26 @@ if (@ARGV)
                 $pkgDestinationPath =~ s/!:/${releaseDirEpocroot}\\epoc32\\winscw\\c/g;
                 runSystemCmd("echo f|xcopy ${sourcePath} ${pkgDestinationPath} /F /R /Y /I /D");
             }
+            else
+            {
+                # For binaries, copy also winscw versions (needed for deployed binaries that are not actually built)
+                $sourcePath =~ s/epoc32\\release\\${platform}\\${build}/epoc32\\release\\winscw\\udeb/;
+                $destinationPath =~ s/epoc32\\release\\${platform}\\${build}/epoc32\\release\\winscw\\udeb/;
+                runSystemCmd("echo f|xcopy ${sourcePath} ${destinationPath} /F /R /Y /I /D");
+            }
 
         }
     }
     close (PKG);
 
-    # Copy binaries
-    runSystemCmd("xcopy ${hwBuildDir}\\* ${releaseDirEpocroot}\\${armDbgDir} /A /F /I /D");
-    runSystemCmd("xcopy ${releaseDirEpocroot}\\${armDbgDir}\\* ${releaseDirEpocroot}\\${armRelDir} /F /I");
+    # Copy any other binaries and related files built not included in pkg
+    runSystemCmd("xcopy ${hwBuildDir}\\* ${releaseDirEpocroot}\\${armDbgDir} /A /F /R /Y /I /D ");
+    runSystemCmd("xcopy ${releaseDirEpocroot}\\${armDbgDir}\\* ${releaseDirEpocroot}\\${armRelDir} /F /R /Y /I /D");
     system("del /F /Q ${releaseDirEpocroot}\\${armRelDir}\\*.sym 2> NUL");
-    #runSystemCmd("xcopy ${releaseDirEpocroot}\\${armDbgDir}\\* ${releaseDirEpocroot}\\${gcceDbgDir} /F /I");
-    #runSystemCmd("xcopy ${releaseDirEpocroot}\\${armRelDir}\\* ${releaseDirEpocroot}\\${gcceRelDir} /F /I");
-    runSystemCmd("xcopy ${epocroot}${armLibDir}\\* ${releaseDirEpocroot}\\${armLibDir} /A /F /I");
-    runSystemCmd("xcopy ${epocroot}${winscwDbgDir}\\* ${releaseDirEpocroot}\\${winscwDbgDir} /A /F /I");
+    runSystemCmd("xcopy ${releaseDirEpocroot}\\${armDbgDir}\\* ${releaseDirEpocroot}\\${gcceDbgDir} /F /R /Y /I /D");
+    runSystemCmd("xcopy ${releaseDirEpocroot}\\${armRelDir}\\* ${releaseDirEpocroot}\\${gcceRelDir} /F /R /Y /I /D");
+    runSystemCmd("xcopy ${epocroot}${armLibDir}\\* ${releaseDirEpocroot}\\${armLibDir} /A /F /R /Y /I /D");
+    runSystemCmd("xcopy ${epocroot}${winscwDbgDir}\\* ${releaseDirEpocroot}\\${winscwDbgDir} /A /F /R /Y /I /D");
 
     # Create unsigned sis and Rnd signed sisx
     my @pkgPathElements = split(/\\/, $pkgFileName);
@@ -135,14 +184,14 @@ if (@ARGV)
 else
 {
     print("Usage:\n");
-    print("build_release_package.pl <hw platform> <hw build> <signing cert> <signing cert key> [EPOCROOT]\n");
+    print("build_release_package.pl <hw platform> <hw build> <signing cert> <signing cert key> <release directory> [EPOCROOT]\n");
     print("EPOCROOT is optional, defaults to '\\'\n");
     print("1) Clean up the env. (abld reallyclean & delete \\my\\epoc\\root\\build folder)\n");
-    print("2) Run \"build_release_package.pl armv5 udeb \\rd.cer \\rd-key.pem [\\my\\epoc\\root\\]>\"\n");
+    print("2) Run \"build_release_package.pl armv5 udeb \\rd.cer \\rd-key.pem \\my_release_dir [\\my\\epoc\\root\\]>\"\n");
     print("   to build Qt and create the release package structure and sis file.\n");
     print("   Note: Run in the Qt root directory.\n");
     print("3) Optional: Get the sis signed with commercial certificate\n");
-    print("4) Zip up the ${releaseDir} contents\n");
+    print("4) Zip up the release directory contents\n");
 }
 
 sub runSystemCmd
