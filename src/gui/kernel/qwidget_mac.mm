@@ -4035,8 +4035,8 @@ void QWidgetPrivate::applyMaxAndMinSizeOnWindow()
     NSSize max = NSMakeSize(SF(extra->maxw), SF(extra->maxh));
     NSSize min = NSMakeSize(SF(extra->minw), SF(extra->minh));
 #undef SF
-    [qt_mac_window_for(q) setMinSize:min];
-    [qt_mac_window_for(q) setMaxSize:max];
+    [qt_mac_window_for(q) setContentMinSize:min];
+    [qt_mac_window_for(q) setContentMaxSize:max];
 #endif
 }
 
