@@ -137,7 +137,7 @@ int main(int argc, char ** argv)
         viewer.setRecordPeriod(period);
     if (autorecord_to)
         viewer.setAutoRecord(autorecord_from,autorecord_to);
-    if (QDir(skin).exists())
+    if (!skin.isEmpty() && QDir(skin).exists())
         viewer.setSkin(skin);
     if (devkeys)
         viewer.setDeviceKeys(true);
