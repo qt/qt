@@ -80,7 +80,7 @@ template <typename T> inline const T *ptr(const T &t) { return &t; }
 template <> inline const bool* ptr<bool>(const bool &) { return 0; }
 template <typename device, typename T1, typename T2, typename T3>
 static void rasterFallbackWarn(const char *msg, const char *func, const device *dev,
-                               QDirectFBPaintEnginePrivate::Scale scale, bool matrixRotShear, bool simplePen,
+                               int scale, bool matrixRotShear, bool simplePen,
                                bool dfbHandledClip, bool forceRasterPrimitives,
                                const char *nameOne, const T1 &one,
                                const char *nameTwo, const T2 &two,
@@ -211,6 +211,8 @@ static QCache<qint64, CachedImage> imageCache(4*1024*1024); // 4 MB
 class QDirectFBPaintEnginePrivate : public QRasterPaintEnginePrivate
 {
 public:
+    enum Scale { NoScale, Scaled, NegativeScale };
+
     QDirectFBPaintEnginePrivate(QDirectFBPaintEngine *p);
     ~QDirectFBPaintEnginePrivate();
 
@@ -266,14 +268,13 @@ private:
     bool simplePen;
 
     bool matrixRotShear;
-    enum Scale { NoScale, Scaled, NegativeScale } scale;
+    Scale scale;
 
     SurfaceCache *surfaceCache;
     QTransform transform;
     int lastLockedHeight;
 
     IDirectFB *fb;
-    DFBSurfaceDescription fbDescription;
     int fbWidth;
     int fbHeight;
 

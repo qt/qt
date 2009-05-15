@@ -563,7 +563,6 @@ QChar QODBCDriverPrivate::quoteChar() const
     static QChar quote = QChar::fromLatin1('"');
     if (!isQuoteInitialized) {
         char driverResponse[4];
-        SQLUSMALLINT casing;
         SQLSMALLINT length;
         int r = SQLGetInfo(hDbc,
                 SQL_IDENTIFIER_QUOTE_CHAR,

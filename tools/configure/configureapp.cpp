@@ -351,6 +351,7 @@ Configure::Configure( int& argc, char** argv )
     dictionary[ "QMAKESPEC" ] = tmp;
 
     dictionary[ "INCREDIBUILD_XGE" ] = "auto";
+    dictionary[ "LTCG" ]            = "no";
 }
 
 Configure::~Configure()
@@ -486,6 +487,12 @@ void Configure::parseCmdLine()
         }
         else if( configCmdLine.at(i) == "-commercial" ) {
             dictionary[ "BUILDTYPE" ] = "commercial";
+        }
+        else if( configCmdLine.at(i) == "-ltcg" ) {
+            dictionary[ "LTCG" ] = "yes";
+        }
+        else if( configCmdLine.at(i) == "-no-ltcg" ) {
+            dictionary[ "LTCG" ] = "no";
         }
 #endif
 
@@ -1464,6 +1471,9 @@ bool Configure::displayHelp()
 
         desc("SHARED", "yes",   "-shared",              "Create and use shared Qt libraries.");
         desc("SHARED", "no",    "-static",              "Create and use static Qt libraries.\n");
+
+        desc("LTCG", "yes",   "-ltcg",                  "Use Link Time Code Generation. (Release builds only)");
+        desc("LTCG", "no",    "-no-ltcg",               "Do not use Link Time Code Generation.\n");
 
         desc("FAST", "no",      "-no-fast",             "Configure Qt normally by generating Makefiles for all project files.");
         desc("FAST", "yes",     "-fast",                "Configure Qt quickly by generating Makefiles only for library and "
@@ -2494,6 +2504,8 @@ void Configure::generateCachefile()
         else
             configStream << " static";
 
+        if( dictionary[ "LTCG" ] == "yes" )
+            configStream << " ltcg";
         if( dictionary[ "STL" ] == "yes" )
             configStream << " stl";
         if ( dictionary[ "EXCEPTIONS" ] == "yes" )
@@ -2916,6 +2928,7 @@ void Configure::displayConfig()
     cout << "Architecture................" << dictionary[ "ARCHITECTURE" ] << endl;
     cout << "Maketool...................." << dictionary[ "MAKE" ] << endl;
     cout << "Debug symbols..............." << (dictionary[ "BUILD" ] == "debug" ? "yes" : "no") << endl;
+    cout << "Link Time Code Generation..." << dictionary[ "LTCG" ] << endl;
     cout << "Accessibility support......." << dictionary[ "ACCESSIBILITY" ] << endl;
     cout << "STL support................." << dictionary[ "STL" ] << endl;
     cout << "Exception support..........." << dictionary[ "EXCEPTIONS" ] << endl;

@@ -4926,7 +4926,7 @@ QSize QStyleSheetStyle::sizeFromContents(ContentsType ct, const QStyleOption *op
     case CT_LineEdit:
 #ifndef QT_NO_SPINBOX
         // ### hopelessly broken QAbstractSpinBox (part 2)
-        if (QAbstractSpinBox *spinBox = qobject_cast<QAbstractSpinBox *>(w->parentWidget())) {
+        if (QAbstractSpinBox *spinBox = qobject_cast<QAbstractSpinBox *>(w ? w->parentWidget() : 0)) {
             QRenderRule rule = renderRule(spinBox, opt);
             if (rule.hasBox() || !rule.hasNativeBorder())
                 return csz;

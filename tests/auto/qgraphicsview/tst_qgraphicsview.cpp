@@ -200,6 +200,7 @@ private slots:
     void task239729_noViewUpdate();
     void task239047_fitInViewSmallViewport();
     void task245469_itemsAtPointWithClip();
+    void task253415_reconnectUpdateSceneOnSceneChanged();
 };
 
 void tst_QGraphicsView::initTestCase()
@@ -3042,6 +3043,29 @@ void tst_QGraphicsView::centerOnDirtyItem()
     QPixmap after = QPixmap::grabWindow(view.viewport()->winId());
 
     QCOMPARE(before, after);
+}
+
+void tst_QGraphicsView::task253415_reconnectUpdateSceneOnSceneChanged()
+{
+    QGraphicsView view;
+    QGraphicsView dummyView;
+    view.setWindowFlags(view.windowFlags() | Qt::WindowStaysOnTopHint);
+    view.resize(200, 200);
+
+    QGraphicsScene scene1;
+    QObject::connect(&scene1, SIGNAL(changed(QList<QRectF>)), &dummyView, SLOT(updateScene(QList<QRectF>)));
+    view.setScene(&scene1);
+
+    QTest::qWait(125);
+
+    QGraphicsScene scene2;
+    QObject::connect(&scene2, SIGNAL(changed(QList<QRectF>)), &dummyView, SLOT(updateScene(QList<QRectF>)));
+    view.setScene(&scene2);
+
+    QTest::qWait(125);
+
+    bool wasConnected2 = QObject::disconnect(&scene2, SIGNAL(changed(QList<QRectF>)), &view, 0);
+    QVERIFY(wasConnected2);
 }
 
 QTEST_MAIN(tst_QGraphicsView)
