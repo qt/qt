@@ -42,6 +42,7 @@
 #include <QtTest/QtTest>
 
 #include <QtCore/qpropertyanimation.h>
+#include <QtCore/qvariantanimation.h>
 #include <QtGui/qwidget.h>
 
 //TESTED_CLASS=QPropertyAnimation
@@ -96,6 +97,7 @@ private slots:
     void operationsInStates_data();
     void operationsInStates();
     void oneKeyValue();
+    void updateOnSetKeyValues();
 };
 
 tst_QPropertyAnimation::tst_QPropertyAnimation()
@@ -879,6 +881,38 @@ void tst_QPropertyAnimation::oneKeyValue()
     QVERIFY(animation.currentValue().isValid());
     QCOMPARE(animation.currentValue().toInt(), 43);
     QCOMPARE(o.property("ole").toInt(), 42);
+}
+
+void tst_QPropertyAnimation::updateOnSetKeyValues()
+{
+    QObject o;
+    o.setProperty("ole", 100);
+    QCOMPARE(o.property("ole").toInt(), 100);
+
+    QPropertyAnimation animation(&o, "ole");
+    animation.setStartValue(100);
+    animation.setEndValue(200);
+    animation.setDuration(100);
+
+    animation.setCurrentTime(50);
+    QCOMPARE(animation.currentValue().toInt(), 150);
+    animation.setKeyValueAt(0.0, 300);
+    QCOMPARE(animation.currentValue().toInt(), 250);
+
+    o.setProperty("ole", 100);
+    QPropertyAnimation animation2(&o, "ole");
+    QVariantAnimation::KeyValues kValues;
+    kValues << QVariantAnimation::KeyValue(0.0, 100) << QVariantAnimation::KeyValue(1.0, 200);
+    animation2.setKeyValues(kValues);
+    animation2.setDuration(100);
+    animation2.setCurrentTime(50);
+    QCOMPARE(animation2.currentValue().toInt(), 150);
+
+    kValues.clear();
+    kValues << QVariantAnimation::KeyValue(0.0, 300) << QVariantAnimation::KeyValue(1.0, 200);
+    animation2.setKeyValues(kValues);
+
+    QCOMPARE(animation2.currentValue().toInt(), animation.currentValue().toInt());
 }
 
 QTEST_MAIN(tst_QPropertyAnimation)

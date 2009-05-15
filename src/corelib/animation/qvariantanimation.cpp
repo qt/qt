@@ -550,6 +550,7 @@ void QVariantAnimation::setKeyValues(const KeyValues &keyValues)
     d->keyValues = keyValues;
     qSort(d->keyValues.begin(), d->keyValues.end(), animationValueLessThan);
     d->currentInterval.start.first = 2; // this will force the refresh
+    d->updateCurrentValue();
     d->hasStartValue = !d->keyValues.isEmpty() && d->keyValues.at(0).first == 0;
 }
 
