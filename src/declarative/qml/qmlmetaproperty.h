@@ -121,7 +121,7 @@ public:
 
     bool operator==(const QmlMetaProperty &) const;
 
-    const QMetaProperty &property() const;
+    QMetaProperty property() const;
 
     QmlBindableValue *binding();
     static int findSignal(const QObject *, const char *);
