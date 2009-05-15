@@ -113,8 +113,6 @@ public:
         AssignSignalObject,       /* assignSignalObject */
         AssignCustomType,          /* assignCustomType */
 
-        AssignBinding,            /* assignBinding */
-        AssignCompiledBinding,    /* assignBinding */
         AssignValueSource,        /* assignValueSource */
         StoreBinding,             /* assignBinding */
         StoreCompiledBinding,     /* assignBinding */

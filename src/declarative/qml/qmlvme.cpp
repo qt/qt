@@ -89,8 +89,6 @@ Q_DECLARE_PERFORMANCE_LOG(QFxCompiler) {
     Q_DECLARE_PERFORMANCE_METRIC(InstrStoreObjectQmlList);
     Q_DECLARE_PERFORMANCE_METRIC(InstrAssignConstant);
     Q_DECLARE_PERFORMANCE_METRIC(InstrAssignSignalObject);
-    Q_DECLARE_PERFORMANCE_METRIC(InstrAssignBinding);
-    Q_DECLARE_PERFORMANCE_METRIC(InstrAssignCompiledBinding);
     Q_DECLARE_PERFORMANCE_METRIC(InstrAssignValueSource);
     Q_DECLARE_PERFORMANCE_METRIC(InstrStoreBinding);
     Q_DECLARE_PERFORMANCE_METRIC(InstrStoreCompiledBinding);
@@ -138,8 +136,6 @@ Q_DEFINE_PERFORMANCE_LOG(QFxCompiler, "QFxCompiler") {
     Q_DEFINE_PERFORMANCE_METRIC(InstrStoreObjectQmlList, "StoreObjectQmlList");
     Q_DEFINE_PERFORMANCE_METRIC(InstrAssignConstant, "AssignConstant");
     Q_DEFINE_PERFORMANCE_METRIC(InstrAssignSignalObject, "AssignSignalObject");
-    Q_DEFINE_PERFORMANCE_METRIC(InstrAssignBinding, "AssignBinding");
-    Q_DEFINE_PERFORMANCE_METRIC(InstrAssignCompiledBinding, "AssignCompiledBinding");
     Q_DEFINE_PERFORMANCE_METRIC(InstrAssignValueSource, "AssignValueSource");
     Q_DEFINE_PERFORMANCE_METRIC(InstrStoreBinding, "StoreBinding");
     Q_DEFINE_PERFORMANCE_METRIC(InstrStoreCompiledBinding, "StoreCompiledBinding");
@@ -469,31 +465,6 @@ QObject *QmlVME::run(QmlContext *ctxt, QmlCompiledComponent *comp, int start, in
                 QObject *target = stack.top();
                 QmlParserStatus *status = reinterpret_cast<QmlParserStatus *>(reinterpret_cast<char *>(target) + instr.complete.castValue);
                 status->classComplete();
-            }
-            break;
-
-        case QmlInstruction::AssignCompiledBinding:
-        case QmlInstruction::AssignBinding:
-            {
-#ifdef Q_ENABLE_PERFORMANCE_LOG
-                QFxCompilerTimer<QFxCompiler::InstrAssignBinding> cc;
-#endif
-                QObject *target = stack.top();
-                const QByteArray &pr = datas.at(instr.fetch.property);
-                int idx = qIndexOfProperty(target, pr);
-
-                // XXX - need to check if the type is QmlBindableValue*
-                if (idx == -1) {
-                    VME_EXCEPTION("Unknown property" << pr);
-                } else {
-                    if (QmlInstruction::AssignCompiledBinding == instr.type)
-                        instr.type = QmlInstruction::StoreCompiledBinding;
-                    else
-                        instr.type = QmlInstruction::StoreBinding;
-                    instr.assignBinding.property = idx;
-                    instr.assignBinding.category = QmlMetaProperty::Unknown;
-                }
-                ii--;
             }
             break;
 
