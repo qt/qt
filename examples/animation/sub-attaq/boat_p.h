@@ -67,7 +67,7 @@ public:
         this->key = key;
     }
 protected:
-    virtual bool eventTest(QEvent *event) const
+    virtual bool eventTest(QEvent *event)
     {
         Q_UNUSED(event);
         if (!QKeyEventTransition::eventTest(event))
@@ -93,7 +93,7 @@ public:
         this->key = key;
     }
 protected:
-    virtual bool eventTest(QEvent *event) const
+    virtual bool eventTest(QEvent *event)
     {
         Q_UNUSED(event);
         if (!QKeyEventTransition::eventTest(event))
@@ -131,7 +131,7 @@ public:
         this->key = key;
     }
 protected:
-    virtual bool eventTest(QEvent *event) const
+    virtual bool eventTest(QEvent *event)
     {
         Q_UNUSED(event);
         if (!QKeyEventTransition::eventTest(event))

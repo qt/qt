@@ -125,9 +125,9 @@ QStateMachine *QAbstractTransitionPrivate::machine() const
     return 0;
 }
 
-bool QAbstractTransitionPrivate::callEventTest(QEvent *e) const
+bool QAbstractTransitionPrivate::callEventTest(QEvent *e)
 {
-    Q_Q(const QAbstractTransition);
+    Q_Q(QAbstractTransition);
     return q->eventTest(e);
 }
 

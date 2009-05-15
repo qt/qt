@@ -41,6 +41,7 @@ signals:
     void collision(const QLineF &collidedLine);
     void actionCompleted();
     void cannonFired();
+    void aboutToBeDestroyed();
 
 public slots:
     void moveForwards(qreal length = 10.0);

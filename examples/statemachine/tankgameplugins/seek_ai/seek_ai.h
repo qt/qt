@@ -81,7 +81,7 @@ public:
     }
 
 protected:
-    bool eventTest(QEvent *event) const
+    bool eventTest(QEvent *event)
     {
         bool b = QSignalTransition::eventTest(event);
         if (b) {
@@ -105,7 +105,7 @@ protected:
     }
 
 private:
-    mutable QLineF m_lastLine;
+    QLineF m_lastLine;
     QObject *m_tank;
     QState *m_turnTo;
 };
@@ -137,16 +137,20 @@ public:
     ChaseState(QObject *tank, QState *parentState = 0) : QState(parentState), m_tank(tank)
     {
         QState *fireCannon = new QState(this);
+        fireCannon->setObjectName("fireCannon");
         connect(fireCannon, SIGNAL(entered()), tank, SLOT(fireCannon()));
         setInitialState(fireCannon);
 
-        m_goToLocation = new GoToLocationState(this);
+        m_goToLocation = new GoToLocationState(tank, this);
+        m_goToLocation->setObjectName("goToLocation");
         fireCannon->addTransition(tank, SIGNAL(actionCompleted()), m_goToLocation);
 
         m_turnToDirection = new QState(this);
+        m_turnToDirection->setObjectName("turnToDirection");
         m_goToLocation->addTransition(tank, SIGNAL(actionCompleted()), m_turnToDirection);
 
         QFinalState *finalState = new QFinalState(this);
+        finalState->setObjectName("finalState");
         m_turnToDirection->addTransition(tank, SIGNAL(actionCompleted()), finalState);
     }
 
@@ -176,7 +180,7 @@ public:
     }
 
 protected:
-    bool eventTest(QEvent *event) const
+    bool eventTest(QEvent *event)
     {
         bool b = QSignalTransition::eventTest(event);
         if (b) {

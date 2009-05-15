@@ -252,7 +252,7 @@ void QEventTransition::setEventObject(QObject *object)
 /*!
   \reimp
 */
-bool QEventTransition::eventTest(QEvent *event) const
+bool QEventTransition::eventTest(QEvent *event)
 {
     Q_D(const QEventTransition);
     if (event->type() == QEvent::Wrapped) {

@@ -1124,7 +1124,7 @@ public:
     InitialTransition(QAbstractState *target)
         : QAbstractTransition(QList<QAbstractState*>() << target) {}
 protected:
-    virtual bool eventTest(QEvent *) const { return true; }
+    virtual bool eventTest(QEvent *) { return true; }
     virtual void onTransition(QEvent *) {}
 };
 

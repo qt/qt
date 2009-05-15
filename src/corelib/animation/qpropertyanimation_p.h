@@ -70,7 +70,6 @@ public:
     {
     }
 
-
     QPointer<QObject> target;
 
     //for the QProperty

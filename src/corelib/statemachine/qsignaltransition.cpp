@@ -225,7 +225,7 @@ void QSignalTransition::setSignal(const QByteArray &signal)
   true if the event's sender and signal index match this transition, and
   returns false otherwise.
 */
-bool QSignalTransition::eventTest(QEvent *event) const
+bool QSignalTransition::eventTest(QEvent *event)
 {
     Q_D(const QSignalTransition);
     if (event->type() == QEvent::Signal) {

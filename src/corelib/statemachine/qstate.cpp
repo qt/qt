@@ -363,7 +363,7 @@ public:
         : QAbstractTransition(QList<QAbstractState*>() << target) {}
 protected:
     void onTransition(QEvent *) {}
-    bool eventTest(QEvent *) const { return true; }
+    bool eventTest(QEvent *) { return true; }
 };
 
 } // namespace

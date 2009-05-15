@@ -82,6 +82,8 @@
     "Add tank" menu item should be disabled. This is implemented by giving the "stopped" state two
     children which define whether the map is full or not. 
     
+    \snippet examples/statemachine/tankgame/mainwindow.cpp 5
+    
     To make sure that we go into the correct child state when returning from the "running" state 
     (if the "Stop game" menu item is selected while the game is running) we also give the "stopped" 
     state a history state which we make the initial state of "stopped" state.

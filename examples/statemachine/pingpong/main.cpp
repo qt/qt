@@ -86,7 +86,7 @@ public:
     PongTransition() {}
 
 protected:
-    virtual bool eventTest(QEvent *e) const {
+    virtual bool eventTest(QEvent *e) {
         return (e->type() == QEvent::User+3);
     }
     virtual void onTransition(QEvent *)
@@ -104,7 +104,7 @@ public:
     PingTransition() {}
 
 protected:
-    virtual bool eventTest(QEvent *e) const {
+    virtual bool eventTest(QEvent *e) {
         return (e->type() == QEvent::User+2);
     }
     virtual void onTransition(QEvent *)

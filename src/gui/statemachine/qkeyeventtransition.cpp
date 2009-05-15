@@ -140,7 +140,7 @@ void QKeyEventTransition::setModifiersMask(Qt::KeyboardModifiers modifiersMask)
 /*!
   \reimp
 */
-bool QKeyEventTransition::eventTest(QEvent *event) const
+bool QKeyEventTransition::eventTest(QEvent *event)
 {
     Q_D(const QKeyEventTransition);
     if (!QEventTransition::eventTest(event))

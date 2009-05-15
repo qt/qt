@@ -72,7 +72,7 @@ public:
     void setSignal(const QByteArray &signal);
 
 protected:
-    bool eventTest(QEvent *event) const;
+    bool eventTest(QEvent *event);
     void onTransition(QEvent *event);
 
     bool event(QEvent *e);
