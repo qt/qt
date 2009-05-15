@@ -216,9 +216,7 @@ private:
     RProcess m_processHandle;
 };
 
-#define DEBUG_REQUEST_COMPLETE
-
-#ifdef DEBUG_REQUEST_COMPLETE
+#ifdef QT_DEBUG
 // EActive is defined to 1 and ERequestPending to 2, but they are both private.
 // A little dangerous to rely on, but it is only for debugging.
 # define REQUEST_STATUS_ACTIVE_AND_PENDING 3
@@ -230,7 +228,7 @@ private:
 #endif
 
 // Convenience functions for doing some sanity checking on our own complete code.
-// Unless you define DEBUG_REQUEST_COMPLETE, it is exactly equivalent to the Symbian version.
+// Unless QT_DEBUG is defined, it is exactly equivalent to the Symbian version.
 inline void QEventDispatcherSymbian::RequestComplete(TRequestStatus *&status, TInt reason)
 {
     VERIFY_PENDING_REQUEST_STATUS
