@@ -15,6 +15,7 @@ public:
     tst_qmlbindengine() {}
 
 private slots:
+    void idShortcutInvalidates();
     void boolPropertiesEvaluateAsBool();
     void methods();
     void signalAssignment();
@@ -28,6 +29,27 @@ private slots:
 private:
     QmlEngine engine;
 };
+
+void tst_qmlbindengine::idShortcutInvalidates()
+{
+    {
+        QmlComponent component(&engine, TEST_FILE("idShortcutInvalidates.txt"));
+        MyQmlObject *object = qobject_cast<MyQmlObject *>(component.create());
+        QVERIFY(object != 0);
+        QVERIFY(object->objectProperty() != 0);
+        delete object->objectProperty();
+        QVERIFY(object->objectProperty() == 0);
+    }
+
+    {
+        QmlComponent component(&engine, TEST_FILE("idShortcutInvalidates.1.txt"));
+        MyQmlObject *object = qobject_cast<MyQmlObject *>(component.create());
+        QVERIFY(object != 0);
+        QVERIFY(object->objectProperty() != 0);
+        delete object->objectProperty();
+        QVERIFY(object->objectProperty() == 0);
+    }
+}
 
 void tst_qmlbindengine::boolPropertiesEvaluateAsBool()
 {

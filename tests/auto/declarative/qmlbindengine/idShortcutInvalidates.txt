@@ -1,0 +1,9 @@
+MyQmlObject {
+    objectProperty: OtherObject
+
+    property var obj
+
+    obj: Object {
+        id: OtherObject
+    }
+}
