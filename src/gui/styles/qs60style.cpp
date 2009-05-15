@@ -1229,6 +1229,16 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
     case CE_ToolButtonLabel:
         if (const QStyleOptionToolButton *toolBtn = qstyleoption_cast<const QStyleOptionToolButton *>(option)) {
             QStyleOptionToolButton optionToolButton = *toolBtn;
+            
+            if (!optionToolButton.icon.isNull() && (optionToolButton.state & QStyle::State_Sunken) 
+                    && (optionToolButton.state & State_Enabled)) {
+                    
+                    const QIcon::State state = optionToolButton.state & State_On ? QIcon::On : QIcon::Off;
+                    const QPixmap pm(optionToolButton.icon.pixmap(optionToolButton.rect.size().boundedTo(optionToolButton.iconSize),
+                            QIcon::Normal, state));                
+                    optionToolButton.icon = generatedIconPixmap(QIcon::Selected, pm, &optionToolButton);
+            }
+
             QCommonStyle::drawControl(element, &optionToolButton, painter, widget);
         }
         break;
