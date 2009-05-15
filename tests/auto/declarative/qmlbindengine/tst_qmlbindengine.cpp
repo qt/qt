@@ -3,10 +3,21 @@
 #include <QtDeclarative/qmlengine.h>
 #include <QtDeclarative/qmlexpression.h>
 #include <QtDeclarative/qmlcontext.h>
+#include <QtCore/qfileinfo.h>
+#include <QtCore/qdebug.h>
+#include <QtCore/qdir.h>
 #include "testtypes.h"
 
-#define TEST_FILE(filename) \
-    QUrl::fromLocalFile(QApplication::applicationDirPath() + "/" + filename)
+inline QUrl TEST_FILE(const QString &filename)
+{
+    QFileInfo fileInfo(__FILE__);
+    return QUrl::fromLocalFile(fileInfo.absoluteDir().filePath(filename));
+}
+
+inline QUrl TEST_FILE(const char *filename)
+{
+    return TEST_FILE(QLatin1String(filename));
+}
 
 class tst_qmlbindengine : public QObject
 {
