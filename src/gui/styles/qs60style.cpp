@@ -2258,6 +2258,12 @@ QSize QS60Style::sizeFromContents(ContentsType ct, const QStyleOption *opt,
 {
     QSize sz(csz);
     switch (ct) {
+        case CT_PushButton:
+            sz = QCommonStyle::sizeFromContents( ct, opt, csz, widget);
+            if (const QAbstractButton *buttonWidget = (qobject_cast<const QAbstractButton *>(widget)))
+                if (buttonWidget->isCheckable()) 
+                    sz += QSize(pixelMetric(PM_IndicatorWidth) + pixelMetric(PM_CheckBoxLabelSpacing), 0);
+            break;
         case CT_LineEdit:
             if (const QStyleOptionFrame *f = qstyleoption_cast<const QStyleOptionFrame *>(opt))
                 sz += QSize(2*f->lineWidth, 4*f->lineWidth);
