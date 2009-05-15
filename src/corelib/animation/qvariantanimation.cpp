@@ -174,27 +174,24 @@ void QVariantAnimationPrivate::convertValues(int t)
         if (pair.second.userType() != t)
             pair.second.convert(static_cast<QVariant::Type>(t));
     }
-    currentInterval.start.first = 2; // this will force the refresh
-    interpolator = 0;               // if the type changed we need to update the interpolator
+    interpolator = 0; // if the type changed we need to update the interpolator
 }
 
 /*!
-    \fn void QVariantAnimation::updateCurrentValue(const QVariant &value) = 0;
-    This pure virtual function is called when the animated value is changed.
-    \a value is the new value.
+    \internal
+    The goal of this function is to update the currentInterval member. As a consequence, we also
+    need to update the currentValue.
+    Set \a force to true to always recalculate the interval.
 */
-
-void QVariantAnimationPrivate::updateCurrentValue()
+void QVariantAnimationPrivate::recalculateCurrentInterval(bool force/*=false*/)
 {
     // can't interpolate if we have only 1 key value
     if (keyValues.count() <= 1)
         return;
 
-    Q_Q(QVariantAnimation);
-
     const qreal progress = easing.valueForProgress(((duration == 0) ? qreal(1) : qreal(currentTime) / qreal(duration)));
 
-    if (progress < currentInterval.start.first || progress > currentInterval.end.first) {
+    if (force || progress < currentInterval.start.first || progress > currentInterval.end.first) {
         //let's update currentInterval
         QVariantAnimation::KeyValues::const_iterator itStart = qLowerBound(keyValues.constBegin(),
                                                                            keyValues.constEnd(),
@@ -205,22 +202,33 @@ void QVariantAnimationPrivate::updateCurrentValue()
         // If we are at the end we should continue to use the last keyValues in case of extrapolation (progress > 1.0).
         // This is because the easing function can return a value slightly outside the range [0, 1]
         if (itStart != keyValues.constEnd()) {
-
-            //this can't happen because we always prepend the default start value there
+            // this can't happen because we always prepend the default start value there
             if (itStart == keyValues.constBegin()) {
                 ++itEnd;
             } else {
                 --itStart;
             }
 
-            //update all the values of the currentInterval
+            // update all the values of the currentInterval
             currentInterval.start = *itStart;
             currentInterval.end = *itEnd;
         }
     }
+    setCurrentValueForProgress(progress);
+}
 
-    const qreal startProgress = currentInterval.start.first,
-                endProgress = currentInterval.end.first;
+void QVariantAnimationPrivate::setCurrentValue()
+{
+    const qreal progress = easing.valueForProgress(((duration == 0) ? qreal(1) : qreal(currentTime) / qreal(duration)));
+    setCurrentValueForProgress(progress);
+}
+
+void QVariantAnimationPrivate::setCurrentValueForProgress(const qreal progress)
+{
+    Q_Q(QVariantAnimation);
+
+    const qreal startProgress = currentInterval.start.first;
+    const qreal endProgress = currentInterval.end.first;
     const qreal localProgress = (progress - startProgress) / (endProgress - startProgress);
 
     QVariant ret = q->interpolated(currentInterval.start.second,
@@ -261,15 +269,14 @@ void QVariantAnimationPrivate::setValueAt(qreal step, const QVariant &value)
         keyValues.insert(result, pair);
     } else {
         if (value.isValid())
-            result->second = value; //remove the previous value
+            result->second = value; // replaces the previous value
         else if (step == 0 && !hasStartValue && defaultStartValue.isValid())
-            result->second = defaultStartValue; //we reset to the default start value
+            result->second = defaultStartValue; // resets to the default start value
         else
-            keyValues.erase(result); //replace the previous value
+            keyValues.erase(result); // removes the previous value
     }
 
-    currentInterval.start.first = 2; // this will force the refresh
-    updateCurrentValue();
+    recalculateCurrentInterval(/*force=*/true);
 }
 
 void QVariantAnimationPrivate::setDefaultStartValue(const QVariant &value)
@@ -328,7 +335,7 @@ void QVariantAnimation::setEasingCurve(const QEasingCurve &easing)
 {
     Q_D(QVariantAnimation);
     d->easing = easing;
-    d->updateCurrentValue();
+    d->recalculateCurrentInterval();
 }
 
 Q_GLOBAL_STATIC(QVector<QVariantAnimation::Interpolator>, registeredInterpolators)
@@ -439,7 +446,7 @@ void QVariantAnimation::setDuration(int msecs)
     if (d->duration == msecs)
         return;
     d->duration = msecs;
-    d->updateCurrentValue();
+    d->recalculateCurrentInterval();
 }
 
 /*!
@@ -549,9 +556,8 @@ void QVariantAnimation::setKeyValues(const KeyValues &keyValues)
     Q_D(QVariantAnimation);
     d->keyValues = keyValues;
     qSort(d->keyValues.begin(), d->keyValues.end(), animationValueLessThan);
-    d->currentInterval.start.first = 2; // this will force the refresh
-    d->updateCurrentValue();
     d->hasStartValue = !d->keyValues.isEmpty() && d->keyValues.at(0).first == 0;
+    d->recalculateCurrentInterval(/*force=*/true);
 }
 
 /*!
@@ -576,7 +582,7 @@ QVariant QVariantAnimation::currentValue() const
 {
     Q_D(const QVariantAnimation);
     if (!d->currentValue.isValid())
-        const_cast<QVariantAnimationPrivate*>(d)->updateCurrentValue();
+        const_cast<QVariantAnimationPrivate*>(d)->recalculateCurrentInterval();
     return d->currentValue;
 }
 
@@ -640,7 +646,7 @@ void QVariantAnimation::updateCurrentTime(int msecs)
 {
     Q_D(QVariantAnimation);
     Q_UNUSED(msecs);
-    d->updateCurrentValue();
+    d->recalculateCurrentInterval();
 }
 
 QT_END_NAMESPACE
