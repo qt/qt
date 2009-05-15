@@ -749,7 +749,16 @@ void QFxText::paintContents(QPainter &p)
         break;
     }
 
+    bool needClip = !clip() && (d->imgCache.width() > width() || 
+                                d->imgCache.height() > height());
+
+    if (needClip) {
+        p.save();
+        p.setClipRect(boundingRect());
+    }
     p.drawImage(x, y, d->imgCache);
+    if (needClip)
+        p.restore();
 }
 
 #elif defined(QFX_RENDER_OPENGL2)
