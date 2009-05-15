@@ -45,6 +45,24 @@ QT_BEGIN_NAMESPACE
 class QEventDispatcherSymbian;
 class QTimerActiveObject;
 
+class QActiveObject : public CActive
+{
+public:
+    QActiveObject(TInt priority, QEventDispatcherSymbian *dispatcher);
+    ~QActiveObject();
+
+    bool okToRun();
+
+    void reactivateAndComplete();
+
+protected:
+    QEventDispatcherSymbian *m_dispatcher;
+
+private:
+    bool m_hasAlreadyRun : 1;
+    bool m_hasRunAgain : 1;
+};
+
 class QWakeUpActiveObject : public CActive
 {
 public:
@@ -76,10 +94,10 @@ struct SymbianTimerInfo : public QSharedData
 typedef QExplicitlySharedDataPointer<SymbianTimerInfo> SymbianTimerInfoPtr;
 
 // This is a bit of a proxy class. See comments in SetActive and Start for details.
-class QTimerActiveObject : public CActive
+class QTimerActiveObject : public QActiveObject
 {
 public:
-    QTimerActiveObject(SymbianTimerInfo *timerInfo);
+    QTimerActiveObject(QEventDispatcherSymbian *dispatcher, SymbianTimerInfo *timerInfo);
     ~QTimerActiveObject();
 
     void Start();
@@ -93,25 +111,23 @@ private:
     RTimer m_rTimer;
 };
 
-class QCompleteZeroTimersActiveObject : public CActive
+class QCompleteDeferredAOs : public CActive
 {
 public:
-    QCompleteZeroTimersActiveObject(QEventDispatcherSymbian *dispatcher);
-    ~QCompleteZeroTimersActiveObject();
+    QCompleteDeferredAOs(QEventDispatcherSymbian *dispatcher);
+    ~QCompleteDeferredAOs();
 
-    bool ref();
-    bool deref();
+    void complete();
 
 protected:
     void DoCancel();
     void RunL();
 
 private:
-    int m_refCount;
     QEventDispatcherSymbian *m_dispatcher;
 };
 
-class QSocketActiveObject : public CActive
+class QSocketActiveObject : public QActiveObject
 {
 public:
     QSocketActiveObject(QEventDispatcherSymbian *dispatcher, QSocketNotifier *notifier);
@@ -124,7 +140,6 @@ protected:
     void RunL();
 
 private:
-    QEventDispatcherSymbian *m_dispatcher;
     QSocketNotifier *m_notifier;
     bool m_inSocketEvent;
     bool m_deleteLater;
@@ -187,7 +202,10 @@ public:
     void socketFired(QSocketActiveObject *socketAO);
     void wakeUpWasCalled();
     void reactivateSocketNotifier(QSocketNotifier *notifier);
-    void completeZeroTimers();
+
+    void addDeferredActiveObject(QActiveObject *object);
+    void removeDeferredActiveObject(QActiveObject *object);
+    void reactivateDeferredActiveObjects();
 
     static void RequestComplete(TRequestStatus *&status, TInt reason);
     static void RequestComplete(RThread &threadHandle, TRequestStatus *&status, TInt reason);
@@ -205,13 +223,15 @@ private:
     QHash<QSocketNotifier *, QSocketActiveObject *> m_notifiers;
 
     QWakeUpActiveObject *m_wakeUpAO;
-    QCompleteZeroTimersActiveObject *m_completeZeroTimersAO;
+    QCompleteDeferredAOs *m_completeDeferredAOs;
 
     volatile bool m_interrupt;
     QAtomicInt m_wakeUpDone;
 
     bool m_noSocketEvents;
     QList<QSocketActiveObject *> m_deferredSocketEvents;
+
+    QList<QActiveObject *> m_deferredActiveObjects;
 
     RProcess m_processHandle;
 };

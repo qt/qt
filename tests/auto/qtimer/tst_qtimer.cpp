@@ -528,9 +528,6 @@ void tst_QTimer::timerFiresOnlyOncePerProcessEvents()
         QCoreApplication::processEvents(QEventLoop::WaitForMoreEvents);
     }
 
-#ifdef Q_OS_SYMBIAN
-    QEXPECT_FAIL("non-zero timer", "Will be fixed in next commit", Abort);
-#endif
     QCOMPARE(longSlot.count, 1);
 }
 
