@@ -599,9 +599,6 @@ bool QEventDispatcherSymbian::processEvents ( QEventLoop::ProcessEventsFlags fla
             timeState = SubsequentRun;
     };
 
-    // Complete zero timers so that we get them next time.
-    completeZeroTimers();
-
     emit awake();
 
     m_noSocketEvents = oldNoSocketEventsValue;
