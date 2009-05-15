@@ -39,6 +39,7 @@
 **
 ****************************************************************************/
 #include "randomlistmodel.h"
+#include <stdlib.h>
 
 static const int bufferSize(500);
 static const int lookAhead(100);
