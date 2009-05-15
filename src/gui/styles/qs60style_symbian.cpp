@@ -80,6 +80,7 @@ public:
         const QSize &size, QS60StylePrivate::SkinElementFlags flags);
     static QColor colorValue(const TAknsItemID &colorGroup, int colorIndex);
     static QPixmap fromFbsBitmap(CFbsBitmap *icon, CFbsBitmap *mask, QS60StylePrivate::SkinElementFlags flags, QImage::Format format);
+    static QPixmap generateMissingThemeGraphic(QS60StyleEnums::SkinParts &part, const QSize &size, QS60StylePrivate::SkinElementFlags flags);
 
 private:
     static QPixmap createSkinnedGraphicsL(QS60StyleEnums::SkinParts part,
@@ -140,6 +141,11 @@ const partMapEntry QS60StyleModeSpecifics::m_partMap[] = {
     /* SP_QgnPropFolderSmall */         {KAknsIIDQgnPropFolderSmall,          EDrawIcon,   ES60_AllReleases,  -1,-1},
     /* SP_QgnPropFolderSmallNew */      {KAknsIIDQgnPropFolderSmallNew,       EDrawIcon,   ES60_AllReleases,  -1,-1},
     /* SP_QgnPropPhoneMemcLarge */      {KAknsIIDQgnPropPhoneMemcLarge,       EDrawIcon,   ES60_AllReleases,  -1,-1},
+
+    // 3.1 & 3.2 do not have pressed state for scrollbar, so use normal scrollbar graphics instead.
+    /* SP_QsnCpScrollHandleBottomPressed*/ {KAknsIIDQsnCpScrollHandleBottom,    EDrawIcon,   ES60_3_1 | ES60_3_2,  EAknsMajorGeneric, 0x20f8}, /*KAknsIIDQsnCpScrollHandleBottomPressed*/
+    /* SP_QsnCpScrollHandleMiddlePressed*/ {KAknsIIDQsnCpScrollHandleMiddle,    EDrawIcon,   ES60_3_1 | ES60_3_2,  EAknsMajorGeneric, 0x20f9}, /*KAknsIIDQsnCpScrollHandleMiddlePressed*/
+    /* SP_QsnCpScrollHandleTopPressed*/    {KAknsIIDQsnCpScrollHandleTop,       EDrawIcon,   ES60_3_1 | ES60_3_2,  EAknsMajorGeneric, 0x20fa}, /*KAknsIIDQsnCpScrollHandleTopPressed*/
 
     /* SP_QsnBgScreen */                {KAknsIIDQsnBgScreen,                 EDrawBackground,   ES60_AllReleases, -1,-1},
 
@@ -981,6 +987,47 @@ short QS60StylePrivate::pixelMetric(int metric)
 #endif // QT_S60STYLE_LAYOUTDATA_SIMULATED
 }
 
+QPixmap QS60StyleModeSpecifics::generateMissingThemeGraphic(QS60StyleEnums::SkinParts &part,
+        const QSize &size, QS60StylePrivate::SkinElementFlags flags)
+{
+    if (!QS60StylePrivate::isTouchSupported())
+        return QPixmap();
+
+    QS60StyleEnums::SkinParts updatedPart = part;
+    switch(part){
+    // AVKON UI has a abnormal handling for scrollbar graphics. It is possible that the root
+    // skin does not contain mandatory graphics for scrollbar pressed states. Therefore, AVKON UI
+    // creates dynamically these graphics by modifying the normal state scrollbar graphics slightly.
+    // S60Style needs to work similarly. Therefore if skingraphics call provides to be a miss 
+    // (i.e. result is not valid), style needs to draw normal graphics instead and apply some 
+    // modifications (similar to generatedIconPixmap()) to the result.
+    case QS60StyleEnums::SP_QsnCpScrollHandleBottomPressed:
+        updatedPart = QS60StyleEnums::SP_QsnCpScrollHandleBottom;
+        break;
+    case QS60StyleEnums::SP_QsnCpScrollHandleMiddlePressed:
+        updatedPart = QS60StyleEnums::SP_QsnCpScrollHandleMiddle;
+        break;
+    case QS60StyleEnums::SP_QsnCpScrollHandleTopPressed:
+        updatedPart = QS60StyleEnums::SP_QsnCpScrollHandleTop;
+        break;
+    default:
+        break;
+    }
+    if (part==updatedPart) {
+        return QPixmap();
+    } else {
+        QPixmap result = skinnedGraphics(updatedPart, size, flags);
+        // TODO: fix this
+        QStyleOption opt;
+        //        opt.palette = q->standardPalette();
+        
+        // For now, always generate new icon based on "selected". In the future possibly, expand
+        // this to consist other possibilities as well.
+        result = QApplication::style()->generatedIconPixmap(QIcon::Selected, result, &opt);
+        return result;
+    }
+}
+
 QPixmap QS60StylePrivate::part(QS60StyleEnums::SkinParts part,
     const QSize &size, SkinElementFlags flags)
 {
@@ -996,6 +1043,10 @@ QPixmap QS60StylePrivate::part(QS60StyleEnums::SkinParts part,
 //        opt.palette = q->standardPalette();
         result = QApplication::style()->generatedIconPixmap(QIcon::Disabled, result, &opt);
     }
+
+    if (!result)
+        result = QS60StyleModeSpecifics::generateMissingThemeGraphic(part, size, flags);
+    
     return result;
 }
 

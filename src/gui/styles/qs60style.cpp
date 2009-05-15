@@ -323,6 +323,14 @@ void QS60StylePrivate::drawSkinElement(SkinElements element, QPainter *painter,
     case SE_PanelBackground:
         drawFrame(SF_PanelBackground, painter, rect, flags | SF_PointNorth);
         break;
+    case SE_ScrollBarHandlePressedHorizontal:
+        drawRow(QS60StyleEnums::SP_QsnCpScrollHandleBottomPressed, QS60StyleEnums::SP_QsnCpScrollHandleMiddlePressed,
+            QS60StyleEnums::SP_QsnCpScrollHandleTopPressed, Qt::Horizontal, painter, rect, flags | SF_PointEast);
+        break;
+    case SE_ScrollBarHandlePressedVertical:
+        drawRow(QS60StyleEnums::SP_QsnCpScrollHandleTopPressed, QS60StyleEnums::SP_QsnCpScrollHandleMiddlePressed,
+            QS60StyleEnums::SP_QsnCpScrollHandleBottomPressed, Qt::Vertical, painter, rect, flags | SF_PointNorth);
+        break;
     default:
         break;
     }
@@ -795,8 +803,17 @@ void QS60Style::drawComplexControl(ComplexControl control, const QStyleOptionCom
             const QS60StylePrivate::SkinElements grooveElement =
                 horizontal ? QS60StylePrivate::SE_ScrollBarGrooveHorizontal : QS60StylePrivate::SE_ScrollBarGrooveVertical;
             QS60StylePrivate::drawSkinElement(grooveElement, painter, grooveRect, flags);
+            
+            // select correct slider (horizontal/vertical/pressed)
+            const bool sliderPressed = ((optionSlider->state & QStyle::State_Sunken) && (subControls & SC_ScrollBarSlider));
             const QS60StylePrivate::SkinElements handleElement =
-                horizontal ? QS60StylePrivate::SE_ScrollBarHandleHorizontal : QS60StylePrivate::SE_ScrollBarHandleVertical;
+                horizontal ? 
+                    ( sliderPressed ? 
+                        QS60StylePrivate::SE_ScrollBarHandlePressedHorizontal : 
+                        QS60StylePrivate::SE_ScrollBarHandleHorizontal ) : 
+                    ( sliderPressed ? 
+                        QS60StylePrivate::SE_ScrollBarHandlePressedVertical : 
+                        QS60StylePrivate::SE_ScrollBarHandleVertical);
             QS60StylePrivate::drawSkinElement(handleElement, painter, scrollBarSlider, flags);
         }
         break;
