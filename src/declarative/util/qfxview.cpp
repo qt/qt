@@ -93,7 +93,7 @@ class QFxViewPrivate
 {
 public:
     QFxViewPrivate(QFxView *w)
-        : q(w), root(0), component(0) {}
+        : q(w), root(0), component(0), resizable(false) {}
 
     QFxView *q;
     QFxItem *root;
@@ -106,6 +106,7 @@ public:
     QBasicTimer resizetimer;
 
     QSize initialSize;
+    bool resizable;
 
     void init();
 };
@@ -344,7 +345,18 @@ void QFxView::continueExecute()
             d->root = item;
             connect(item, SIGNAL(widthChanged()), this, SLOT(sizeChanged()));
             connect(item, SIGNAL(heightChanged()), this, SLOT(sizeChanged()));
-            emit sceneResized(QSize(d->root->width(),d->root->height()));
+            if (d->initialSize.height() <= 0 && d->root->width() > 0)
+                d->initialSize.setWidth(d->root->width());
+            if (d->initialSize.height() <= 0 && d->root->height() > 0)
+                d->initialSize.setHeight(d->root->height());
+            if (d->resizable) {
+                d->root->setWidth(width());
+                d->root->setHeight(height());
+            } else {
+                QSize sz(d->root->width(),d->root->height());
+                emit sceneResized(sz);
+                resize(sz);
+            }
         } else if (QWidget *wid = qobject_cast<QWidget *>(obj)) {
             window()->setAttribute(Qt::WA_OpaquePaintEvent, false);
             window()->setAttribute(Qt::WA_NoSystemBackground, false);
@@ -381,13 +393,54 @@ void QFxView::sizeChanged()
  */
 void QFxView::timerEvent(QTimerEvent* e)
 {
-    if (e->timerId() == d->resizetimer.timerId()) {
-        if (d->root)
-            emit sceneResized(QSize(d->root->width(),d->root->height()));
+    if (!e || e->timerId() == d->resizetimer.timerId()) {
+        if (d->root) {
+            QSize sz(d->root->width(),d->root->height());
+            emit sceneResized(sz);
+            //if (!d->resizable)
+                //resize(sz);
+        }
         d->resizetimer.stop();
         updateGeometry();
     }
 }
+
+// modelled on QScrollArea::widgetResizable
+/*!
+    \property QFxView::contentResizable
+    \brief whether the view should resize the canvas contents
+
+    If this property is set to false (the default), the view
+    resizes with the root item in the QML.
+
+    If this property is set to true, the view will
+    automatically resize the root item.
+
+    Regardless of this property, the sizeHint of the view
+    is the initial size of the root item.
+*/
+
+void QFxView::setContentResizable(bool on)
+{
+    if (d->resizable != on) {
+        d->resizable = on;
+        if (d->root) {
+            if (on) {
+                d->root->setWidth(width());
+                d->root->setHeight(height());
+            } else {
+                d->root->setWidth(d->initialSize.width());
+                d->root->setHeight(d->initialSize.height());
+            }
+        }
+    }
+}
+
+bool QFxView::contentResizable() const
+{
+    return d->resizable;
+}
+
 
 /*!
     The size hint is the size of the root item.
@@ -481,7 +534,7 @@ QFxItem *QFxView::root() const
  */
 void QFxView::resizeEvent(QResizeEvent *e)
 {
-    if (d->root) {
+    if (d->resizable && d->root) {
         d->root->setWidth(width());
         d->root->setHeight(height());
     }

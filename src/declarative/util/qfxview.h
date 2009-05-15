@@ -82,6 +82,8 @@ public:
 
     virtual QFxItem *root() const;
 
+    void setContentResizable(bool);
+    bool contentResizable() const;
     QSize sizeHint() const;
 
     void dumpRoot();
