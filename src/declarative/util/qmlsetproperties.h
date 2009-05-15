@@ -50,7 +50,7 @@ QT_BEGIN_HEADER
 QT_BEGIN_NAMESPACE
 
 QT_MODULE(Declarative)
-class QmlSetPropertiesMetaObject;
+    
 class QmlSetPropertiesPrivate;
 class Q_DECLARATIVE_EXPORT QmlSetProperties : public QmlStateOperation
 {
@@ -58,20 +58,14 @@ class Q_DECLARATIVE_EXPORT QmlSetProperties : public QmlStateOperation
     Q_DECLARE_PRIVATE(QmlSetProperties);
 
     Q_PROPERTY(QObject *target READ object WRITE setObject);
-
 public:
     QmlSetProperties();
-    QmlSetProperties(QObject *parent);
     ~QmlSetProperties();
 
-    QObject *object();
+    QObject *object() const;
     void setObject(QObject *);
 
     virtual ActionList actions();
-
-private:
-    ActionList doAction(QmlSetPropertiesMetaObject *, QObject *);
-    //QmlSetProperties::ActionList appendDotActions(const QVariant &, const QVariant &);
 };
 QML_DECLARE_TYPE(QmlSetProperties);
 

@@ -65,6 +65,8 @@ public:
     QByteArray name() const;
 
     bool isList() const;
+    // Will be one of QmlParser::Variant, QmlCustomParserProperty or 
+    // QmlCustomParserNode
     QList<QVariant> assignedValues() const;
 
 private:
