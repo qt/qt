@@ -92,19 +92,19 @@ const short *QS60StylePrivate::m_pmPointer = QS60StylePrivate::data[0];
 bool QS60StylePrivate::m_backgroundValid = false;
 
 const struct QS60StylePrivate::frameElementCenter QS60StylePrivate::m_frameElementsData[] = {
-    {SE_ButtonNormal,         QS60StyleEnums::SP_QsnFrButtonTbCenter},
-    {SE_ButtonPressed,        QS60StyleEnums::SP_QsnFrButtonTbCenterPressed},
-    {SE_FrameLineEdit,        QS60StyleEnums::SP_QsnFrInputCenter},
-    {SE_ListHighlight,        QS60StyleEnums::SP_QsnFrListCenter},
-    {SE_OptionsMenu,          QS60StyleEnums::SP_QsnFrPopupCenter},
-    {SE_SettingsList,         QS60StyleEnums::SP_QsnFrSetOptCenter},
-    {SE_TableItem,            QS60StyleEnums::SP_QsnFrCaleCenter},
-    {SE_TableHeaderItem,      QS60StyleEnums::SP_QsnFrCaleHeadingCenter},
-    {SE_ToolTip,              QS60StyleEnums::SP_QsnFrPopupPreviewCenter},
-    {SE_ToolBar,              QS60StyleEnums::SP_QsnFrPopupSubCenter},
-    {SE_ToolBarButton,        QS60StyleEnums::SP_QsnFrSctrlButtonCenter},
-    {SE_ToolBarButtonPressed, QS60StyleEnums::SP_QsnFrSctrlButtonCenterPressed},
-    {SE_PanelBackground,      QS60StyleEnums::SP_QsnFrSetOptCenter},
+    {SE_ButtonNormal,           QS60StyleEnums::SP_QsnFrButtonTbCenter},
+    {SE_ButtonPressed,          QS60StyleEnums::SP_QsnFrButtonTbCenterPressed},
+    {SE_FrameLineEdit,          QS60StyleEnums::SP_QsnFrInputCenter},
+    {SE_ListHighlight,          QS60StyleEnums::SP_QsnFrListCenter},
+    {SE_OptionsMenu,            QS60StyleEnums::SP_QsnFrPopupCenter},
+    {SE_SettingsList,           QS60StyleEnums::SP_QsnFrSetOptCenter},
+    {SE_TableItem,              QS60StyleEnums::SP_QsnFrCaleCenter},
+    {SE_TableHeaderItem,        QS60StyleEnums::SP_QsnFrCaleHeadingCenter},
+    {SE_ToolTip,                QS60StyleEnums::SP_QsnFrPopupPreviewCenter},
+    {SE_ToolBar,                QS60StyleEnums::SP_QsnFrPopupSubCenter},
+    {SE_ToolBarButton,          QS60StyleEnums::SP_QsnFrSctrlButtonCenter},
+    {SE_ToolBarButtonPressed,   QS60StyleEnums::SP_QsnFrSctrlButtonCenterPressed},
+    {SE_PanelBackground,        QS60StyleEnums::SP_QsnFrSetOptCenter},
 };
 static const int frameElementsCount =
     int(sizeof(QS60StylePrivate::m_frameElementsData)/sizeof(QS60StylePrivate::m_frameElementsData[0]));
