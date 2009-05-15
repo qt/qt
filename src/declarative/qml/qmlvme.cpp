@@ -409,64 +409,6 @@ QObject *QmlVME::run(QmlContext *ctxt, QmlCompiledComponent *comp, int start, in
             }
             break;
 
-        case QmlInstruction::AssignConstant:
-            {
-#ifdef Q_ENABLE_PERFORMANCE_LOG
-                QFxCompilerTimer<QFxCompiler::InstrAssignConstant> cc;
-#endif
-                // Fixup instruction
-                QObject *target = stack.top();
-                int propIdx = instr.assignConstant.property;
-                int idx = instr.assignConstant.constant;
-                QByteArray pr;
-                if (propIdx == -1) {
-                    pr = QmlMetaType::defaultProperty(target).name();
-                    if (pr.isEmpty())
-                        VME_EXCEPTION("Cannot resolve defalt property on type" << target->metaObject()->className());
-                } else {
-                    pr = datas.at(propIdx);
-                }
-
-                int coreIdx = qIndexOfProperty(target, pr);
-
-                if (coreIdx != -1) {
-                    QMetaProperty prop = 
-                        target->metaObject()->property(coreIdx);
-                    bool replace = !prop.isDynamic();
-
-                    QmlInstruction *writeInstr = 0;
-                    QmlInstruction dummy;
-                    if (replace) {
-                        writeInstr = &instr;
-                    } else {
-                        writeInstr = &dummy;
-                        dummy = instr;
-                    }
-
-                    QmlCompiler::StoreInstructionResult r = QmlCompiler::generateStoreInstruction(*comp, *writeInstr, prop,
-                                                 coreIdx, idx, &primitives.at(idx));
-                    if (r != QmlCompiler::Ok) {
-                        if (prop.isEnumType()){
-                            VME_EXCEPTION(primitives.at(idx) << "is not a valid enumeration value");
-                        } else if (r == QmlCompiler::UnknownType) {
-                            VME_EXCEPTION("Property" << prop.name() << "is of an unknown type");
-                        } else if (r == QmlCompiler::InvalidData) {
-                            VME_EXCEPTION("Cannot assign value" << primitives.at(idx) << "to property" << prop.name());
-                        } else if (r == QmlCompiler::ReadOnly) {
-                            VME_EXCEPTION("Cannot assign value" << primitives.at(idx) << "to read-only property" << prop.name());
-                        } else {
-                            VME_EXCEPTION("Invalid property assignment for property" << prop.name());
-                        }
-                    } else {
-                        runStoreInstruction(stack, *writeInstr, comp);
-                    }
-
-                } else {
-                    VME_EXCEPTION("Unknown property" << pr);
-                }
-            }
-            break;
-
         case QmlInstruction::TryBeginObject:
             {
 #ifdef Q_ENABLE_PERFORMANCE_LOG

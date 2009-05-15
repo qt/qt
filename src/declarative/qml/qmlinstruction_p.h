@@ -110,9 +110,6 @@ public:
         //
         // Unresolved single assignment
         //
-        //    AssignConstant - Store a value in a property.  Will resolve into
-        //                     a Store* instruction.
-        AssignConstant,           /* assignConstant */
         AssignSignalObject,       /* assignSignalObject */
         AssignCustomType,          /* assignCustomType */
 
@@ -185,10 +182,6 @@ public:
             int value;
             int save;
         } setId;
-        struct {
-            int property;
-            int constant;
-        } assignConstant;
         struct {
             int property;
             int castValue;

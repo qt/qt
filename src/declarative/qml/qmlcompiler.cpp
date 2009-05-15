@@ -1214,37 +1214,24 @@ bool QmlCompiler::compilePropertyLiteralAssignment(QmlParser::Property *prop,
         QmlInstruction assign;
         assign.line = v->location.start.line;
 
-        bool doassign = true;
         if (prop->index != -1) {
             QString value = v->primitive();
             StoreInstructionResult r = 
                 generateStoreInstruction(*output, assign, obj->metaObject()->property(prop->index), prop->index, -1, &value);
 
             if (r == Ok) {
-                doassign = false;
             } else if (r == InvalidData) {
                 //### we are restricted to a rather generic message here. If we can find a way to move
                 //    the exception into generateStoreInstruction we could potentially have better messages.
                 //    (the problem is that both compile and run exceptions can be generated, though)
                 COMPILE_EXCEPTION2(v, "Cannot assign value" << v->primitive() << "to property" << obj->metaObject()->property(prop->index).name());
-                doassign = false;
             } else if (r == ReadOnly) {
                 COMPILE_EXCEPTION2(v, "Cannot assign value" << v->primitive() << "to the read-only property" << obj->metaObject()->property(prop->index).name());
             } else {
-                doassign = true;
+                COMPILE_EXCEPTION2(prop, "Cannot assign value to property" << obj->metaObject()->property(prop->index).name() << "of unknown type");
             }
-        }
-
-        if (doassign) {
-            assign.type = QmlInstruction::AssignConstant;
-            if (prop->isDefault) {
-                assign.assignConstant.property = -1;
-            } else {
-                assign.assignConstant.property = 
-                    output->indexForByteArray(prop->name);
-            }
-            assign.assignConstant.constant = 
-                output->indexForString(v->primitive());
+        } else {
+            COMPILE_EXCEPTION2(prop, "Cannot assign value to non-existant property" << prop->name);
         }
 
         output->bytecode << assign;
