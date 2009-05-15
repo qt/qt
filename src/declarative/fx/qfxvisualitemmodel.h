@@ -62,7 +62,7 @@ class QFxItem;
 class QmlComponent;
 class QmlPackage;
 class QFxVisualItemModelPrivate;
-class QFxVisualItemModel : public QObject
+class Q_DECLARATIVE_EXPORT QFxVisualItemModel : public QObject
 {
     Q_OBJECT
     Q_DECLARE_PRIVATE(QFxVisualItemModel)
