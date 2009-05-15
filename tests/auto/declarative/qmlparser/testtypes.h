@@ -7,6 +7,7 @@
 #include <QtGui/qmatrix.h>
 #include <QtGui/qcolor.h>
 #include <QtDeclarative/qml.h>
+#include <QtDeclarative/qmlcomponent.h>
 #include <QtDeclarative/qmlparserstatus.h>
 #include <QtDeclarative/qmlpropertyvaluesource.h>
 
