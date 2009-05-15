@@ -75,6 +75,11 @@ void QSoftKeyStackPrivate::pop()
     setNativeSoftKeys();
 }
 
+const QSoftkeySet& QSoftKeyStackPrivate::top()
+{
+    return softKeyStack.top();
+}
+
 QSoftKeyStack::QSoftKeyStack(QWidget *parent)
     : QObject(*new QSoftKeyStackPrivate, parent)
 {
@@ -101,6 +106,12 @@ void QSoftKeyStack::pop()
 {
     Q_D(QSoftKeyStack);
     d->pop();
+}
+
+const QSoftkeySet& QSoftKeyStack::top()
+{
+    Q_D(QSoftKeyStack);
+    return d->top();
 }
 
 void QSoftKeyStack::handleFocusChanged(QWidget *old, QWidget *now)
