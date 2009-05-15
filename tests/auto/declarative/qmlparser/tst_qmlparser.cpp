@@ -3,6 +3,8 @@
 #include <QtDeclarative/qmlcomponent.h>
 #include <QtCore/qfile.h>
 #include <QtCore/qdebug.h>
+#include <QtCore/qfileinfo.h>
+#include <QtCore/qdir.h>
 #include "testtypes.h"
 
 class tst_qmlparser : public QObject
@@ -73,8 +75,16 @@ private:
         QCOMPARE(expected, actual); \
     }
 
-#define TEST_FILE(filename) \
-    QUrl::fromLocalFile(QApplication::applicationDirPath() + "/" + filename)
+inline QUrl TEST_FILE(const QString &filename)
+{
+    QFileInfo fileInfo(__FILE__);
+    return QUrl::fromLocalFile(fileInfo.absoluteDir().filePath(filename));
+}
+
+inline QUrl TEST_FILE(const char *filename)
+{
+    return TEST_FILE(QLatin1String(filename));
+}
 
 void tst_qmlparser::errors_data()
 {
