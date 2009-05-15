@@ -602,8 +602,6 @@ void QVariantAnimation::updateState(QAbstractAnimation::State oldState,
 {
     Q_UNUSED(oldState);
     Q_UNUSED(newState);
-    Q_D(QVariantAnimation);
-    d->currentValue = QVariant(); // this will force the refresh
 }
 
 /*!
