@@ -29,7 +29,6 @@
 
 #include "javascriptengine_p.h"
 #include "javascriptnodepool_p.h"
-#include "javascriptvalue.h"
 #include <qnumeric.h>
 #include <QHash>
 
@@ -37,7 +36,10 @@ QT_BEGIN_NAMESPACE
 
 namespace JavaScript {
 
-QString numberToString(qjsreal value)
+uint qHash(const JavaScript::NameId &id)
+{ return qHash(id.asString()); }
+
+QString numberToString(double value)
 { return QString::number(value); }
 
 int Ecma::RegExp::flagFromChar(const QChar &ch)
@@ -67,9 +69,10 @@ QString Ecma::RegExp::flagsToString(int flags)
     return result;
 }
 
-NodePool::NodePool(const QString &fileName, JavaScriptEnginePrivate *engine)
+NodePool::NodePool(const QString &fileName, Engine *engine)
     : m_fileName(fileName), m_engine(engine)
 {
+    m_engine->setNodePool(this);
 }
 
 NodePool::~NodePool()
@@ -93,12 +96,12 @@ static int toDigit(char c)
     return -1;
 }
 
-qjsreal integerFromString(const char *buf, int size, int radix)
+double integerFromString(const char *buf, int size, int radix)
 {
     if (size == 0)
         return qSNaN();
 
-    qjsreal sign = 1.0;
+    double sign = 1.0;
     int i = 0;
     if (buf[0] == '+') {
         ++i;
@@ -130,7 +133,7 @@ qjsreal integerFromString(const char *buf, int size, int radix)
         if ((d == -1) || (d >= radix))
             break;
     }
-    qjsreal result;
+    double result;
     if (j == i) {
         if (!qstrcmp(buf, "Infinity"))
             result = qInf();
@@ -138,7 +141,7 @@ qjsreal integerFromString(const char *buf, int size, int radix)
             result = qSNaN();
     } else {
         result = 0;
-        qjsreal multiplier = 1;
+        double multiplier = 1;
         for (--i ; i >= j; --i, multiplier *= radix)
             result += toDigit(buf[i]) * multiplier;
     }
@@ -146,11 +149,42 @@ qjsreal integerFromString(const char *buf, int size, int radix)
     return result;
 }
 
-qjsreal integerFromString(const QString &str, int radix)
+double integerFromString(const QString &str, int radix)
 {
     QByteArray ba = str.trimmed().toUtf8();
     return integerFromString(ba.constData(), ba.size(), radix);
 }
+
+
+Engine::Engine()
+    : _lexer(0), _nodePool(0)
+{ }
+
+Engine::~Engine()
+{ }
+
+QSet<NameId> Engine::literals() const
+{ return _literals; }
+
+NameId *Engine::intern(const QChar *u, int s)
+{ return const_cast<NameId *>(&*_literals.insert(NameId(u, s))); }
+
+QString Engine::toString(NameId *id)
+{ return id->asString(); }
+
+Lexer *Engine::lexer() const
+{ return _lexer; }
+
+void Engine::setLexer(Lexer *lexer)
+{ _lexer = lexer; }
+
+NodePool *Engine::nodePool() const
+{ return _nodePool; }
+
+void Engine::setNodePool(NodePool *nodePool)
+{ _nodePool = nodePool; }
+
+
 
 } // end of namespace JavaScript
 

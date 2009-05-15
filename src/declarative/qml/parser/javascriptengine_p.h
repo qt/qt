@@ -30,23 +30,50 @@
 #ifndef JAVASCRIPTENGINE_P_H
 #define JAVASCRIPTENGINE_P_H
 
-#include "javascriptvalue.h"
 #include <QString>
 #include <QSet>
+
+#include "javascriptastfwd_p.h"
 
 QT_BEGIN_NAMESPACE
 
 namespace JavaScript {
+class NameId
+{
+    QString _text;
 
-class Node;
+public:
+    NameId(const QChar *u, int s)
+        : _text(u, s)
+    { }
+
+    const QString asString() const
+    { return _text; }
+
+    bool operator == (const NameId &other) const
+    { return _text == other._text; }
+
+    bool operator != (const NameId &other) const
+    { return _text != other._text; }
+
+    bool operator < (const NameId &other) const
+    { return _text < other._text; }
+};
+
+uint qHash(const JavaScript::NameId &id);
+
+} // end of namespace JavaScript
+
+#if defined(Q_CC_MSVC) && _MSC_VER <= 1300
+//this ensures that code outside JavaScript can use the hash function
+//it also a workaround for some compilers
+inline uint qHash(const JavaScript::NameId &nameId) { return JavaScript::qHash(nameId); }
+#endif
+
+namespace JavaScript {
+
 class Lexer;
 class NodePool;
-
-namespace AST {
-
-class Node;
-
-} // end of namespace AST
 
 namespace Ecma {
 
@@ -66,78 +93,52 @@ public:
 
 } // end of namespace Ecma
 
+class DiagnosticMessage
+{
+public:
+    enum Kind { Warning, Error };
+
+    DiagnosticMessage()
+        : kind(Error) {}
+
+    DiagnosticMessage(Kind kind, const AST::SourceLocation &loc, const QString &message)
+        : kind(kind), loc(loc), message(message) {}
+
+    bool isWarning() const
+    { return kind == Warning; }
+
+    bool isError() const
+    { return kind == Error; }
+
+    Kind kind;
+    AST::SourceLocation loc;
+    QString message;
+};
+
+class Engine
+{
+    Lexer *_lexer;
+    NodePool *_nodePool;
+    QSet<NameId> _literals;
+
+public:
+    Engine();
+    ~Engine();
+
+    QSet<NameId> literals() const;
+
+    NameId *intern(const QChar *u, int s);
+
+    static QString toString(NameId *id);
+
+    Lexer *lexer() const;
+    void setLexer(Lexer *lexer);
+
+    NodePool *nodePool() const;
+    void setNodePool(NodePool *nodePool);
+};
+
 } // end of namespace JavaScript
-
-
-
-class JavaScriptNameIdImpl
-{
-    QString _text;
-
-public:
-    JavaScriptNameIdImpl(const QChar *u, int s)
-        : _text(u, s)
-    { }
-
-    const QString asString() const
-    { return _text; }
-
-    bool operator == (const JavaScriptNameIdImpl &other) const
-    { return _text == other._text; }
-
-    bool operator != (const JavaScriptNameIdImpl &other) const
-    { return _text != other._text; }
-
-    bool operator < (const JavaScriptNameIdImpl &other) const
-    { return _text < other._text; }
-};
-
-inline uint qHash(const JavaScriptNameIdImpl &id)
-{ return qHash(id.asString()); }
-
-class JavaScriptEnginePrivate
-{
-    JavaScript::Lexer *_lexer;
-    JavaScript::NodePool *_nodePool;
-    JavaScript::AST::Node *_ast;
-    QSet<JavaScriptNameIdImpl> _literals;
-
-public:
-    JavaScriptEnginePrivate()
-        : _lexer(0), _nodePool(0), _ast(0)
-    { }
-
-    QSet<JavaScriptNameIdImpl> literals() const
-    { return _literals; }
-
-    JavaScriptNameIdImpl *intern(const QChar *u, int s)
-    { return const_cast<JavaScriptNameIdImpl *>(&*_literals.insert(JavaScriptNameIdImpl(u, s))); }
-
-    static QString toString(JavaScriptNameIdImpl *id)
-    { return id->asString(); }
-
-    JavaScript::Lexer *lexer() const
-    { return _lexer; }
-
-    void setLexer(JavaScript::Lexer *lexer)
-    { _lexer = lexer; }
-
-    JavaScript::NodePool *nodePool() const
-    { return _nodePool; }
-
-    void setNodePool(JavaScript::NodePool *nodePool)
-    { _nodePool = nodePool; }
-
-    JavaScript::AST::Node *ast() const
-    { return _ast; }
-
-    JavaScript::AST::Node *changeAbstractSyntaxTree(JavaScript::AST::Node *node)
-    {
-        JavaScript::AST::Node *previousAST = _ast;
-        _ast = node;
-        return previousAST;
-    }
-};
 
 QT_END_NAMESPACE
 
