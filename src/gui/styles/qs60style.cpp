@@ -355,6 +355,10 @@ QSize QS60StylePrivate::partSize(QS60StyleEnums::SkinParts part, SkinElementFlag
             result.scale(pixelMetric(QStyle::PM_SliderLength),
                 pixelMetric(QStyle::PM_SliderControlThickness), Qt::IgnoreAspectRatio);
             break;
+
+        case QS60StyleEnums::SP_QsnCpScrollHandleBottomPressed:
+        case QS60StyleEnums::SP_QsnCpScrollHandleTopPressed:
+        case QS60StyleEnums::SP_QsnCpScrollHandleMiddlePressed:
         case QS60StyleEnums::SP_QsnCpScrollBgBottom:
         case QS60StyleEnums::SP_QsnCpScrollBgMiddle:
         case QS60StyleEnums::SP_QsnCpScrollBgTop:
@@ -803,6 +807,8 @@ void QS60Style::drawComplexControl(ComplexControl control, const QStyleOptionCom
             const QS60StylePrivate::SkinElements grooveElement =
                 horizontal ? QS60StylePrivate::SE_ScrollBarGrooveHorizontal : QS60StylePrivate::SE_ScrollBarGrooveVertical;
             QS60StylePrivate::drawSkinElement(grooveElement, painter, grooveRect, flags);
+            
+            QStyle::SubControls subControls = optionSlider->subControls;  
             
             // select correct slider (horizontal/vertical/pressed)
             const bool sliderPressed = ((optionSlider->state & QStyle::State_Sunken) && (subControls & SC_ScrollBarSlider));
