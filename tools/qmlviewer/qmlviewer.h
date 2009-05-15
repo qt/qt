@@ -80,6 +80,7 @@ private:
     int record_autotime;
     bool devicemode;
     QAction *recordAction;
+    QString currentSkin;
 
     QFxTestEngine *testEngine;
 };

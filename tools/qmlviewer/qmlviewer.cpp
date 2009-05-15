@@ -112,6 +112,9 @@ void QmlViewer::createMenu(QMenuBar *menu, QMenu *flatmenu)
     QDir dir(":/skins/","*.skin");
     const QFileInfoList l = dir.entryInfoList();
     QAction *skinAction = new QAction(tr("None"), parent);
+    skinAction->setCheckable(true);
+    if (currentSkin.isEmpty())
+        skinAction->setChecked(true);
     skinActions->addAction(skinAction);
     skinMenu->addAction(skinAction);
     mapper->setMapping(skinAction, "");
@@ -123,6 +126,9 @@ void QmlViewer::createMenu(QMenuBar *menu, QMenu *flatmenu)
         skinAction = new QAction(name, parent);
         skinActions->addAction(skinAction);
         skinMenu->addAction(skinAction);
+        skinAction->setCheckable(true);
+        if (file == currentSkin)
+            skinAction->setChecked(true);
         mapper->setMapping(skinAction, file);
         connect(skinAction, SIGNAL(triggered()), mapper, SLOT(map()));
     }
@@ -237,7 +243,10 @@ void QmlViewer::openQml(const QString& fileName)
     canvas->execute();
     qWarning() << "Wall startup time:" << t.elapsed();
 
-    resize(sizeHint());
+    canvas->resize(canvas->sizeHint());
+
+    if (!skin)
+        resize(sizeHint());
 
 #ifdef QTOPIA
     show();
@@ -260,6 +269,7 @@ public:
         fit = fit.scale(qreal(size.width())/m_screenSize.width(),
             qreal(size.height())/m_screenSize.height());
         setTransform(fit);
+        QApplication::syncX();
     }
 
     QMenu* menu;
@@ -297,7 +307,6 @@ void PreviewDeviceSkin::setPreview(QWidget *formWidget)
 void PreviewDeviceSkin::setPreviewAndScale(QWidget *formWidget)
 {
     setScreenSize(formWidget->sizeHint());
-    formWidget->setFixedSize(formWidget->sizeHint());
     formWidget->setParent(this, Qt::SubWindow);
     formWidget->setAutoFillBackground(true);
     setView(formWidget);
@@ -331,6 +340,11 @@ void QmlViewer::setSkin(const QString& skinDirectory)
     // XXX have been signalled from an item in a menu we're replacing,
     // XXX hence some rather convoluted resetting here...
 
+    if (currentSkin == skinDirectory)
+        return;
+
+    currentSkin = skinDirectory;
+
     QString err;
     if (skin) {
         skin->hide();
@@ -339,15 +353,15 @@ void QmlViewer::setSkin(const QString& skinDirectory)
 
     DeviceSkinParameters parameters;
     if (!skinDirectory.isEmpty() && parameters.read(skinDirectory,DeviceSkinParameters::ReadAll,&err)) {
-        if (menuBar())
-            menuBar()->deleteLater();
+        layout()->setEnabled(false);
+        setMenuBar(0);
         if (!err.isEmpty())
             qWarning() << err;
         skin = new PreviewDeviceSkin(parameters,this);
+        canvas->resize(canvas->sizeHint());
         skin->setPreviewAndScale(canvas);
         createMenu(0,skin->menu);
         skin->show();
-        QApplication::syncX();
     } else {
         skin = 0;
         clearMask();
@@ -361,6 +375,7 @@ void QmlViewer::setSkin(const QString& skinDirectory)
         setParent(0,windowFlags()); // recreate
         canvas->move(0,menuBar()->sizeHint().height()+1);
         setGeometry(g);
+        layout()->setEnabled(true);
         show();
     }
     canvas->show();
@@ -395,8 +410,8 @@ void QmlViewer::setRecordPeriod(int ms)
 void QmlViewer::sceneResized(QSize size)
 {
     if (size.width() > 0 && size.height() > 0) {
-        //if (skin)
-            //skin->setScreenSize(size);
+        if (skin)
+            skin->setScreenSize(size);
     }
 }
 
