@@ -694,8 +694,13 @@ QStringList qmake_feature_paths(QMakeProperty *prop=0)
             concat << base_concat + QDir::separator() + "unix";
             break;
         case Option::TARG_UNIX_MODE:
-            concat << base_concat + QDir::separator() + "unix";
-            break;
+            {
+                if (isForSymbian())
+                    concat << base_concat + QDir::separator() + "symbian";
+                else
+                    concat << base_concat + QDir::separator() + "unix";
+                break;
+            }
         case Option::TARG_WIN_MODE:
             {
                 if (isForSymbian())
