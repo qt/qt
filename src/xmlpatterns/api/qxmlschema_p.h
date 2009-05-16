@@ -54,14 +54,14 @@ class QXmlSchemaPrivate : public QSharedData
         QUrl documentUri() const;
         void setMessageHandler(QAbstractMessageHandler *handler);
         QAbstractMessageHandler *messageHandler() const;
-        void setUriResolver(QAbstractUriResolver *resolver);
-        QAbstractUriResolver *uriResolver() const;
+        void setUriResolver(const QAbstractUriResolver *resolver);
+        const QAbstractUriResolver *uriResolver() const;
         void setNetworkAccessManager(QNetworkAccessManager *networkmanager);
         QNetworkAccessManager *networkAccessManager() const;
 
         QXmlNamePool                                                     m_namePool;
         QAbstractMessageHandler*                                         m_userMessageHandler;
-        QAbstractUriResolver*                                            m_uriResolver;
+        const QAbstractUriResolver*                                      m_uriResolver;
         QNetworkAccessManager*                                           m_userNetworkAccessManager;
         QPatternist::ReferenceCountedValue<QAbstractMessageHandler>::Ptr m_messageHandler;
         QPatternist::ReferenceCountedValue<QNetworkAccessManager>::Ptr   m_networkAccessManager;

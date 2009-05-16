@@ -33,9 +33,7 @@ NamespaceSupport::NamespaceSupport(const NamePool::Ptr &namePool)
     : m_namePool(namePool)
 {
     // the XML namespace
-    const QXmlName binding = namePool->allocateBinding(QLatin1String("xml"),
-                                                       QLatin1String("http://www.w3.org/XML/1998/namespace"));
-    m_ns.insert(binding.prefix(), binding.namespaceURI());
+    m_ns.insert(StandardPrefixes::xml, StandardNamespaces::xml);
 }
 
 void NamespaceSupport::setPrefix(const QXmlName::PrefixCode prefixCode, const QXmlName::NamespaceCode namespaceCode)

@@ -113,6 +113,12 @@ namespace QPatternist
             bool proceed(TransitionType transition);
 
             /**
+             * Returns the list of transitions that are reachable from the current
+             * state.
+             */
+            QList<TransitionType> possibleTransitions() const;
+
+            /**
              * Continues execution of the machine with the given @p input.
              *
              * @note To use this method, inputEqualsTransition must be implemented

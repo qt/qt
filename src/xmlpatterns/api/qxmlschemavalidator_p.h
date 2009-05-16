@@ -77,15 +77,18 @@ public:
         m_context = QPatternist::XsdSchemaContext::Ptr(new QPatternist::XsdSchemaContext(m_namePool.d));
         m_context->m_schemaTypeFactory = schema.d->m_schemaContext->m_schemaTypeFactory;
         m_context->m_builtinTypesFacetList = schema.d->m_schemaContext->m_builtinTypesFacetList;
+
+        m_originalSchema = schema;
     }
 
     QXmlNamePool                                                     m_namePool;
     QAbstractMessageHandler*                                         m_userMessageHandler;
-    QAbstractUriResolver*                                            m_uriResolver;
+    const QAbstractUriResolver*                                      m_uriResolver;
     QNetworkAccessManager*                                           m_userNetworkAccessManager;
     QPatternist::ReferenceCountedValue<QAbstractMessageHandler>::Ptr m_messageHandler;
     QPatternist::ReferenceCountedValue<QNetworkAccessManager>::Ptr   m_networkAccessManager;
 
+    QXmlSchema                                                       m_originalSchema;
     QPatternist::XsdSchemaContext::Ptr                               m_context;
     QPatternist::XsdSchema::Ptr                                      m_schema;
     QUrl                                                             m_schemaDocumentUri;

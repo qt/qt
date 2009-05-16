@@ -20,7 +20,7 @@ QT_BEGIN_NAMESPACE
 using namespace QPatternist;
 
 XsdValidatedXmlNodeModel::XsdValidatedXmlNodeModel(const QAbstractXmlNodeModel *model)
-    : m_internalModel(const_cast<QAbstractXmlNodeModel*>(model))
+    : m_internalModel(model)
 {
 }
 

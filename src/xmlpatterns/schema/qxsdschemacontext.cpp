@@ -67,7 +67,7 @@ QSourceLocation XsdSchemaContext::locationFor(const SourceLocationReflection *co
     return QSourceLocation();
 }
 
-void XsdSchemaContext::setUriResolver(QAbstractUriResolver *uriResolver)
+void XsdSchemaContext::setUriResolver(const QAbstractUriResolver *uriResolver)
 {
     m_uriResolver = uriResolver;
 }

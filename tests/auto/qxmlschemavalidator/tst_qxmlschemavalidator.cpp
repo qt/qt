@@ -16,33 +16,8 @@
 #include <QXmlSchema>
 #include <QXmlSchemaValidator>
 
-class DummyMessageHandler : public QAbstractMessageHandler
-{
-    public:
-        DummyMessageHandler(QObject *parent = 0)
-            : QAbstractMessageHandler(parent)
-        {
-        }
-
-    protected:
-        virtual void handleMessage(QtMsgType, const QString&, const QUrl&, const QSourceLocation&)
-        {
-        }
-};
-
-class DummyUriResolver : public QAbstractUriResolver
-{
-    public:
-        DummyUriResolver(QObject *parent = 0)
-            : QAbstractUriResolver(parent)
-        {
-        }
-
-        virtual QUrl resolve(const QUrl&, const QUrl&) const
-        {
-            return QUrl();
-        }
-};
+#include "../qabstracturiresolver/TestURIResolver.h"
+#include "../qxmlquery/MessageSilencer.h"
 
 /*!
  \class tst_QXmlSchemaValidatorValidator
@@ -60,6 +35,13 @@ private Q_SLOTS:
     void defaultConstructor() const;
     void propertyInitialization() const;
 
+    void loadInstanceUrlSuccess() const;
+    void loadInstanceUrlFail() const;
+    void loadInstanceDeviceSuccess() const;
+    void loadInstanceDeviceFail() const;
+    void loadInstanceDataSuccess() const;
+    void loadInstanceDataFail() const;
+
     void networkAccessManagerSignature() const;
     void networkAccessManagerDefaultValue() const;
     void networkAccessManager() const;
@@ -72,6 +54,26 @@ private Q_SLOTS:
     void uriResolverDefaultValue() const;
     void uriResolver() const;
 };
+
+static QXmlSchema createValidSchema()
+{
+    const QByteArray data( "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
+                           "<xsd:schema"
+                           "        xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\""
+                           "        xmlns=\"http://www.qtsoftware.com/xmlschematest\""
+                           "        targetNamespace=\"http://www.qtsoftware.com/xmlschematest\""
+                           "        version=\"1.0\""
+                           "        elementFormDefault=\"qualified\">"
+                           "  <xsd:element name=\"myRoot\" type=\"xsd:string\"/>"
+                           "</xsd:schema>" );
+
+    const QUrl documentUri("http://www.qtsoftware.com/xmlschematest");
+
+    QXmlSchema schema;
+    schema.load(data, documentUri);
+
+    return schema;
+}
 
 void tst_QXmlSchemaValidator::defaultConstructor() const
 {
@@ -101,8 +103,8 @@ void tst_QXmlSchemaValidator::propertyInitialization() const
 {
     /* Verify that properties set in the schema are used as default values for the validator */
     {
-        DummyMessageHandler handler;
-        DummyUriResolver resolver;
+        MessageSilencer handler;
+        TestURIResolver resolver;
         QNetworkAccessManager manager;
 
         QXmlSchema schema;
@@ -115,6 +117,72 @@ void tst_QXmlSchemaValidator::propertyInitialization() const
         QCOMPARE(validator.uriResolver(), &resolver);
         QCOMPARE(validator.networkAccessManager(), &manager);
     }
+}
+
+void tst_QXmlSchemaValidator::loadInstanceUrlSuccess() const
+{
+/*
+    TODO: put valid schema file on given url and enable test
+    const QXmlSchema schema(createValidSchema());
+    const QUrl url("http://notavailable/");
+
+    QXmlSchemaValidator validator(schema);
+    QVERIFY(!validator.validate(url));
+*/
+}
+
+void tst_QXmlSchemaValidator::loadInstanceUrlFail() const
+{
+    const QXmlSchema schema(createValidSchema());
+    const QUrl url("http://notavailable/");
+
+    QXmlSchemaValidator validator(schema);
+    QVERIFY(!validator.validate(url));
+}
+
+void tst_QXmlSchemaValidator::loadInstanceDeviceSuccess() const
+{
+    const QXmlSchema schema(createValidSchema());
+
+    QByteArray data( "<myRoot xmlns=\"http://www.qtsoftware.com/xmlschematest\">Testme</myRoot>" );
+    QBuffer buffer(&data);
+    buffer.open(QIODevice::ReadOnly);
+
+    QXmlSchemaValidator validator(schema);
+    QVERIFY(validator.validate(&buffer));
+}
+
+void tst_QXmlSchemaValidator::loadInstanceDeviceFail() const
+{
+    const QXmlSchema schema(createValidSchema());
+
+    QByteArray data( "<myRoot xmlns=\"http://www.qtsoftware.com/xmlschematest\">Testme</myRoot>" );
+    QBuffer buffer(&data);
+    // a closed device can not be loaded
+
+    QXmlSchemaValidator validator(schema);
+    QVERIFY(!validator.validate(&buffer));
+}
+
+void tst_QXmlSchemaValidator::loadInstanceDataSuccess() const
+{
+    const QXmlSchema schema(createValidSchema());
+
+    const QByteArray data( "<myRoot xmlns=\"http://www.qtsoftware.com/xmlschematest\">Testme</myRoot>" );
+
+    QXmlSchemaValidator validator(schema);
+    QVERIFY(validator.validate(data));
+}
+
+void tst_QXmlSchemaValidator::loadInstanceDataFail() const
+{
+    const QXmlSchema schema(createValidSchema());
+
+    // empty instance can not be loaded
+    const QByteArray data;
+
+    QXmlSchemaValidator validator(schema);
+    QVERIFY(!validator.validate(data));
 }
 
 void tst_QXmlSchemaValidator::networkAccessManagerSignature() const
@@ -202,7 +270,7 @@ void tst_QXmlSchemaValidator::messageHandlerDefaultValue() const
     {
         QXmlSchema schema;
 
-        DummyMessageHandler handler;
+        MessageSilencer handler;
         schema.setMessageHandler(&handler);
 
         const QXmlSchemaValidator validator(schema);
@@ -214,7 +282,7 @@ void tst_QXmlSchemaValidator::messageHandler() const
 {
     /* Test that we return the message handler that was set. */
     {
-        DummyMessageHandler handler;
+        MessageSilencer handler;
 
         const QXmlSchema schema;
         QXmlSchemaValidator validator(schema);
@@ -225,7 +293,7 @@ void tst_QXmlSchemaValidator::messageHandler() const
 
     /* Test that we return the message handler that was set, even if the schema changed in between. */
     {
-        DummyMessageHandler handler;
+        MessageSilencer handler;
 
         const QXmlSchema schema;
         QXmlSchemaValidator validator(schema);
@@ -248,6 +316,13 @@ void tst_QXmlSchemaValidator::uriResolverSignature() const
 
     /* The function should be const. */
     validator.uriResolver();
+
+    /* Const object. */
+    const TestURIResolver resolver;
+
+    /* This should compile */
+    QXmlSchema schema2;
+    schema2.setUriResolver(&resolver);
 }
 
 void tst_QXmlSchemaValidator::uriResolverDefaultValue() const
@@ -263,7 +338,7 @@ void tst_QXmlSchemaValidator::uriResolverDefaultValue() const
     {
         QXmlSchema schema;
 
-        DummyUriResolver resolver;
+        TestURIResolver resolver;
         schema.setUriResolver(&resolver);
 
         const QXmlSchemaValidator validator(schema);
@@ -275,7 +350,7 @@ void tst_QXmlSchemaValidator::uriResolver() const
 {
     /* Test that we return the uri resolver that was set. */
     {
-        DummyUriResolver resolver;
+        TestURIResolver resolver;
 
         const QXmlSchema schema;
         QXmlSchemaValidator validator(schema);
@@ -286,7 +361,7 @@ void tst_QXmlSchemaValidator::uriResolver() const
 
     /* Test that we return the uri resolver that was set, even if the schema changed in between. */
     {
-        DummyUriResolver resolver;
+        TestURIResolver resolver;
 
         const QXmlSchema schema;
         QXmlSchemaValidator validator(schema);

@@ -125,4 +125,16 @@ ItemType::Ptr XPathHelper::typeFromKind(const QXmlNodeModelIndex::NodeKind nodeK
     }
 }
 
+QUrl XPathHelper::normalizeQueryURI(const QUrl &uri)
+{
+    Q_ASSERT_X(uri.isEmpty() || uri.isValid(), Q_FUNC_INFO,
+               "The URI passed to QXmlQuery::setQuery() must be valid or empty.");
+    if(uri.isEmpty())
+        return QUrl::fromLocalFile(QCoreApplication::applicationFilePath());
+    else if(uri.isRelative())
+        return QUrl::fromLocalFile(QCoreApplication::applicationFilePath()).resolved(uri);
+    else
+        return uri;
+}
+
 QT_END_NAMESPACE

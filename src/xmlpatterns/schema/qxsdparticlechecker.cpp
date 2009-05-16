@@ -180,9 +180,9 @@ static bool derivedTermValid(const XsdTerm::Ptr &baseTerm, const XsdTerm::Ptr &d
             // check that the constraints of the derived element are more strict then the constraints of the base element
             const XsdElement::BlockingConstraints baseConstraints = element->disallowedSubstitutions();
             const XsdElement::BlockingConstraints derivedConstraints = derivedElement->disallowedSubstitutions();
-            if ((baseConstraints & XsdElement::RestrictionConstraint) && !(derivedConstraints & XsdElement::RestrictionConstraint) ||
-                (baseConstraints & XsdElement::ExtensionConstraint) && !(derivedConstraints & XsdElement::ExtensionConstraint) ||
-                (baseConstraints & XsdElement::SubstitutionConstraint) && !(derivedConstraints & XsdElement::SubstitutionConstraint)) {
+            if (((baseConstraints & XsdElement::RestrictionConstraint) && !(derivedConstraints & XsdElement::RestrictionConstraint)) ||
+                ((baseConstraints & XsdElement::ExtensionConstraint) && !(derivedConstraints & XsdElement::ExtensionConstraint)) ||
+                ((baseConstraints & XsdElement::SubstitutionConstraint) && !(derivedConstraints & XsdElement::SubstitutionConstraint))) {
                 errorMsg = QtXmlPatterns::tr("block constraints of derived element %1 must not be more weaker than in the base element").arg(formatKeyword(derivedElement->displayName(namePool)));
                 return false;
             }

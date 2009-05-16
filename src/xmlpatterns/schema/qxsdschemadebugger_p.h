@@ -85,7 +85,7 @@ namespace QPatternist
             void dumpSchema(const XsdSchema::Ptr &schema);
 
         private:
-            NamePool::Ptr m_namePool;
+            const NamePool::Ptr m_namePool;
     };
 
 }

@@ -13,6 +13,7 @@
 #define QXMLSCHEMA_H
 
 #include <QtCore/QSharedDataPointer>
+#include <QtCore/QUrl>
 #include <QtXmlPatterns/QXmlNamePool>
 
 QT_BEGIN_HEADER
@@ -37,9 +38,9 @@ class Q_XMLPATTERNS_EXPORT QXmlSchema
         QXmlSchema(const QXmlSchema &other);
         ~QXmlSchema();
 
-        void load(const QUrl &source);
-        void load(QIODevice *source, const QUrl &documentUri);
-        void load(const QByteArray &data, const QUrl &documentUri);
+        bool load(const QUrl &source);
+        bool load(QIODevice *source, const QUrl &documentUri = QUrl());
+        bool load(const QByteArray &data, const QUrl &documentUri = QUrl());
 
         bool isValid() const;
 
@@ -49,8 +50,8 @@ class Q_XMLPATTERNS_EXPORT QXmlSchema
         void setMessageHandler(QAbstractMessageHandler *handler);
         QAbstractMessageHandler *messageHandler() const;
 
-        void setUriResolver(QAbstractUriResolver *resolver);
-        QAbstractUriResolver *uriResolver() const;
+        void setUriResolver(const QAbstractUriResolver *resolver);
+        const QAbstractUriResolver *uriResolver() const;
 
         void setNetworkAccessManager(QNetworkAccessManager *networkmanager);
         QNetworkAccessManager *networkAccessManager() const;

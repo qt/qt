@@ -427,7 +427,7 @@ void QXmlQuery::setQuery(QIODevice *sourceCode, const QUrl &documentURI)
         return;
     }
 
-    d->queryURI = QXmlQueryPrivate::normalizeQueryURI(documentURI);
+    d->queryURI = QPatternist::XPathHelper::normalizeQueryURI(documentURI);
     d->expression(sourceCode);
 }
 
@@ -475,12 +475,12 @@ void QXmlQuery::setQuery(const QUrl &queryURI, const QUrl &baseURI)
 {
     Q_ASSERT_X(queryURI.isValid(), Q_FUNC_INFO, "The passed URI must be valid.");
 
-    const QUrl canonicalURI(QXmlQueryPrivate::normalizeQueryURI(queryURI));
+    const QUrl canonicalURI(QPatternist::XPathHelper::normalizeQueryURI(queryURI));
     Q_ASSERT(canonicalURI.isValid());
     Q_ASSERT(!canonicalURI.isRelative());
     Q_ASSERT(baseURI.isValid() || baseURI.isEmpty());
 
-    d->queryURI = QXmlQueryPrivate::normalizeQueryURI(baseURI.isEmpty() ? queryURI : baseURI);
+    d->queryURI = QPatternist::XPathHelper::normalizeQueryURI(baseURI.isEmpty() ? queryURI : baseURI);
 
     QPatternist::AutoPtr<QIODevice> result;
 

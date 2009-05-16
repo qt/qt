@@ -114,6 +114,20 @@ bool XsdStateMachine<TransitionType>::proceed(TransitionType transition)
 }
 
 template <typename TransitionType>
+QList<TransitionType> XsdStateMachine<TransitionType>::possibleTransitions() const
+{
+    // check that we are not in an invalid state
+    if (!m_transitions.contains(m_currentState)) {
+        return QList<TransitionType>();
+    }
+
+    // fetch the transition entry for the current state
+    const QHash<TransitionType, QVector<StateId> > &entry = m_transitions[m_currentState];
+
+    return entry.keys();
+}
+
+template <typename TransitionType>
 template <typename InputType>
 bool XsdStateMachine<TransitionType>::proceed(InputType input)
 {
@@ -259,7 +273,7 @@ typename XsdStateMachine<TransitionType>::StateId XsdStateMachine<TransitionType
     }
 
     // check if the NFA state set contains a Start or End
-    // state, in that case our new DFA state will be a 
+    // state, in that case our new DFA state will be a
     // Start or End state as well
     StateType type = InternalState;
     QSetIterator<StateId> it(nfaState);

@@ -115,7 +115,7 @@ namespace QPatternist
              * Sets the uri @p resolver that is used for resolving URIs in the
              * schema parser.
              */
-            void setUriResolver(QAbstractUriResolver *resolver);
+            void setUriResolver(const QAbstractUriResolver *resolver);
 
             /**
              * Returns the uri resolver that is used for resolving URIs in the
@@ -145,7 +145,7 @@ namespace QPatternist
             NamePool::Ptr                                 m_namePool;
             QNetworkAccessManager*                        m_networkAccessManager;
             QUrl                                          m_baseURI;
-            QAbstractUriResolver*                         m_uriResolver;
+            const QAbstractUriResolver*                   m_uriResolver;
             QAbstractMessageHandler*                      m_messageHandler;
     };
 }

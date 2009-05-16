@@ -15,33 +15,8 @@
 #include <QXmlName>
 #include <QXmlSchema>
 
-class DummyMessageHandler : public QAbstractMessageHandler
-{
-    public:
-        DummyMessageHandler(QObject *parent = 0)
-            : QAbstractMessageHandler(parent)
-        {
-        }
-
-    protected:
-        virtual void handleMessage(QtMsgType, const QString&, const QUrl&, const QSourceLocation&)
-        {
-        }
-};
-
-class DummyUriResolver : public QAbstractUriResolver
-{
-    public:
-        DummyUriResolver(QObject *parent = 0)
-            : QAbstractUriResolver(parent)
-        {
-        }
-
-        virtual QUrl resolve(const QUrl&, const QUrl&) const
-        {
-            return QUrl();
-        }
-};
+#include "../qabstracturiresolver/TestURIResolver.h"
+#include "../qxmlquery/MessageSilencer.h"
 
 /*!
  \class tst_QXmlSchema
@@ -59,6 +34,17 @@ private Q_SLOTS:
     void defaultConstructor() const;
     void copyConstructor() const;
     void constructorQXmlNamePool() const;
+    void copyMutationTest() const;
+
+    void isValid() const;
+    void documentUri() const;
+
+    void loadSchemaUrlSuccess() const;
+    void loadSchemaUrlFail() const;
+    void loadSchemaDeviceSuccess() const;
+    void loadSchemaDeviceFail() const;
+    void loadSchemaDataSuccess() const;
+    void loadSchemaDataFail() const;
 
     void networkAccessManagerSignature() const;
     void networkAccessManagerDefaultValue() const;
@@ -134,6 +120,150 @@ void tst_QXmlSchema::constructorQXmlNamePool() const
     QCOMPARE(name.prefix(np2), QString::fromLatin1("prefix"));
 }
 
+void tst_QXmlSchema::copyMutationTest() const
+{
+    QXmlSchema schema1;
+    QXmlSchema schema2(schema1);
+
+    // check that everything is equal
+    QVERIFY(schema2.messageHandler() == schema1.messageHandler());
+    QVERIFY(schema2.uriResolver() == schema1.uriResolver());
+    QVERIFY(schema2.networkAccessManager() == schema1.networkAccessManager());
+
+    MessageSilencer handler;
+    const TestURIResolver resolver;
+    QNetworkAccessManager manager;
+
+    // modify schema1
+    schema1.setMessageHandler(&handler);
+    schema1.setUriResolver(&resolver);
+    schema1.setNetworkAccessManager(&manager);
+
+    // check that schema2 is not effected by the modifications of schema1
+    QVERIFY(schema2.messageHandler() != schema1.messageHandler());
+    QVERIFY(schema2.uriResolver() != schema1.uriResolver());
+    QVERIFY(schema2.networkAccessManager() != schema1.networkAccessManager());
+
+    // modify schema1 further
+    const QByteArray data( "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
+                           "<xsd:schema"
+                           "        xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\""
+                           "        xmlns=\"http://www.qtsoftware.com/xmlschematest\""
+                           "        targetNamespace=\"http://www.qtsoftware.com/xmlschematest\""
+                           "        version=\"1.0\""
+                           "        elementFormDefault=\"qualified\">"
+                           "</xsd:schema>" );
+
+    const QUrl documentUri("http://www.qtsoftware.com/xmlschematest");
+    schema1.load(data, documentUri);
+
+    QVERIFY(schema2.isValid() != schema1.isValid());
+}
+
+void tst_QXmlSchema::isValid() const
+{
+    /* Check default value. */
+    QXmlSchema schema;
+    QVERIFY(!schema.isValid());
+}
+
+void tst_QXmlSchema::documentUri() const
+{
+    const QByteArray data( "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
+                           "<xsd:schema"
+                           "        xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\""
+                           "        xmlns=\"http://www.qtsoftware.com/xmlschematest\""
+                           "        targetNamespace=\"http://www.qtsoftware.com/xmlschematest\""
+                           "        version=\"1.0\""
+                           "        elementFormDefault=\"qualified\">"
+                           "</xsd:schema>" );
+
+    const QUrl documentUri("http://www.qtsoftware.com/xmlschematest");
+    QXmlSchema schema;
+    schema.load(data, documentUri);
+
+    QCOMPARE(documentUri, schema.documentUri());
+}
+
+void tst_QXmlSchema::loadSchemaUrlSuccess() const
+{
+/**
+    TODO: put valid schema file on given url and enable test
+    const QUrl url("http://notavailable/");
+
+    QXmlSchema schema;
+    QVERIFY(!schema.load(url));
+*/
+}
+
+void tst_QXmlSchema::loadSchemaUrlFail() const
+{
+    const QUrl url("http://notavailable/");
+
+    QXmlSchema schema;
+    QVERIFY(!schema.load(url));
+}
+
+void tst_QXmlSchema::loadSchemaDeviceSuccess() const
+{
+    QByteArray data( "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
+                     "<xsd:schema"
+                     "        xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\""
+                     "        xmlns=\"http://www.qtsoftware.com/xmlschematest\""
+                     "        targetNamespace=\"http://www.qtsoftware.com/xmlschematest\""
+                     "        version=\"1.0\""
+                     "        elementFormDefault=\"qualified\">"
+                     "</xsd:schema>" );
+
+    QBuffer buffer(&data);
+    buffer.open(QIODevice::ReadOnly);
+
+    QXmlSchema schema;
+    QVERIFY(schema.load(&buffer));
+}
+
+void tst_QXmlSchema::loadSchemaDeviceFail() const
+{
+    QByteArray data( "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
+                     "<xsd:schema"
+                     "        xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\""
+                     "        xmlns=\"http://www.qtsoftware.com/xmlschematest\""
+                     "        targetNamespace=\"http://www.qtsoftware.com/xmlschematest\""
+                     "        version=\"1.0\""
+                     "        elementFormDefault=\"qualified\">"
+                     "</xsd:schema>" );
+
+    QBuffer buffer(&data);
+    // a closed device can not be loaded
+
+    QXmlSchema schema;
+    QVERIFY(!schema.load(&buffer));
+}
+
+void tst_QXmlSchema::loadSchemaDataSuccess() const
+{
+    const QByteArray data( "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
+                           "<xsd:schema"
+                           "        xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\""
+                           "        xmlns=\"http://www.qtsoftware.com/xmlschematest\""
+                           "        targetNamespace=\"http://www.qtsoftware.com/xmlschematest\""
+                           "        version=\"1.0\""
+                           "        elementFormDefault=\"qualified\">"
+                           "</xsd:schema>" );
+    QXmlSchema schema;
+    QVERIFY(schema.load(data));
+}
+
+void tst_QXmlSchema::loadSchemaDataFail() const
+{
+    // empty schema can not be loaded
+    const QByteArray data;
+
+    QXmlSchema schema;
+    QVERIFY(!schema.load(data));
+}
+
+
 void tst_QXmlSchema::networkAccessManagerSignature() const
 {
     /* Const object. */
@@ -185,7 +315,7 @@ void tst_QXmlSchema::messageHandler() const
 {
     /* Test that we return the message handler that was set. */
     {
-        DummyMessageHandler handler;
+        MessageSilencer handler;
 
         QXmlSchema schema;
         schema.setMessageHandler(&handler);
@@ -200,6 +330,13 @@ void tst_QXmlSchema::uriResolverSignature() const
 
     /* The function should be const. */
     schema.uriResolver();
+
+    /* Const object. */
+    const TestURIResolver resolver;
+
+    /* This should compile */
+    QXmlSchema schema2;
+    schema2.setUriResolver(&resolver);
 }
 
 void tst_QXmlSchema::uriResolverDefaultValue() const
@@ -215,7 +352,7 @@ void tst_QXmlSchema::uriResolver() const
 {
     /* Test that we return the uri resolver that was set. */
     {
-        DummyUriResolver resolver;
+        TestURIResolver resolver;
 
         QXmlSchema schema;
         schema.setUriResolver(&resolver);

@@ -19,22 +19,29 @@
 
 QT_USE_NAMESPACE
 
-enum ExecutionMode
-{
-    InvalidMode,
-    SchemaOnlyMode,
-    SchemaAndInstanceMode,
-    InstanceOnlyMode
-};
-
 int main(int argc, char **argv)
 {
+    enum ExitCode
+    {
+        Valid = 0,
+        Invalid,
+        ParseError
+    };
+
+    enum ExecutionMode
+    {
+        InvalidMode,
+        SchemaOnlyMode,
+        SchemaAndInstanceMode,
+        InstanceOnlyMode
+    };
+
     const QCoreApplication app(argc, argv);
     QCoreApplication::setApplicationName(QLatin1String("xmlpatternsvalidator"));
 
     if (argc != 2 && argc != 3) {
         qDebug() << QXmlPatternistCLI::tr("usage: xmlpatternsvalidator (<schema url> | <instance url> <schema url> | <instance url>)");
-        return 2;
+        return ParseError;
     }
 
     // parse command line arguments
@@ -63,9 +70,9 @@ int main(int argc, char **argv)
         schema.load(QUrl(schemaUri));
 
         if (schema.isValid())
-            return 0;
+            return Valid;
         else
-            return 1;
+            return Invalid;
     } else if (mode == SchemaAndInstanceMode) {
         const QString instanceUri = QFile::decodeName(argv[1]);
         const QString schemaUri = QFile::decodeName(argv[2]);
@@ -73,24 +80,24 @@ int main(int argc, char **argv)
         schema.load(QUrl(schemaUri));
 
         if (!schema.isValid())
-            return 1;
+            return Invalid;
 
         QXmlSchemaValidator validator(schema);
         if (validator.validate(QUrl(instanceUri)))
-            return 0;
+            return Valid;
         else
-            return 1;
+            return Invalid;
     } else if (mode == InstanceOnlyMode) {
         const QString instanceUri = QFile::decodeName(argv[1]);
 
         QXmlSchemaValidator validator(schema);
         if (validator.validate(QUrl(instanceUri)))
-            return 0;
+            return Valid;
         else
-            return 1;
+            return Invalid;
     }
 
     Q_ASSERT(false);
 
-    return 1;
+    return Invalid;
 }

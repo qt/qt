@@ -12,6 +12,7 @@
 #ifndef QXMLSCHEMAVALIDATOR_H
 #define QXMLSCHEMAVALIDATOR_H
 
+#include <QtCore/QUrl>
 #include <QtXmlPatterns/QXmlNamePool>
 
 QT_BEGIN_HEADER
@@ -31,22 +32,24 @@ class QXmlSchemaValidatorPrivate;
 class Q_XMLPATTERNS_EXPORT QXmlSchemaValidator
 {
     public:
+        QXmlSchemaValidator();
         QXmlSchemaValidator(const QXmlSchema &schema);
         ~QXmlSchemaValidator();
 
         void setSchema(const QXmlSchema &schema);
 
-        bool validate(const QUrl &source);
-        bool validate(QIODevice *source, const QUrl &documentUri);
-        bool validate(const QByteArray &data, const QUrl &documentUri);
+        bool validate(const QUrl &source) const;
+        bool validate(QIODevice *source, const QUrl &documentUri = QUrl()) const;
+        bool validate(const QByteArray &data, const QUrl &documentUri = QUrl()) const;
 
         QXmlNamePool namePool() const;
+        QXmlSchema schema() const;
 
         void setMessageHandler(QAbstractMessageHandler *handler);
         QAbstractMessageHandler *messageHandler() const;
 
-        void setUriResolver(QAbstractUriResolver *resolver);
-        QAbstractUriResolver *uriResolver() const;
+        void setUriResolver(const QAbstractUriResolver *resolver);
+        const QAbstractUriResolver *uriResolver() const;
 
         void setNetworkAccessManager(QNetworkAccessManager *networkmanager);
         QNetworkAccessManager *networkAccessManager() const;

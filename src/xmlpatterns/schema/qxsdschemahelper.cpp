@@ -409,7 +409,7 @@ bool XsdSchemaHelper::isValidlySubstitutable(const SchemaType::Ptr &type, const 
     return false;
 }
 
-bool XsdSchemaHelper::isSimpleDerivationOk(const SchemaType::Ptr &derivedType, const SchemaType::Ptr baseType, const SchemaType::DerivationConstraints &constraints)
+bool XsdSchemaHelper::isSimpleDerivationOk(const SchemaType::Ptr &derivedType, const SchemaType::Ptr &baseType, const SchemaType::DerivationConstraints &constraints)
 {
     // @see http://www.w3.org/TR/xmlschema11-1/#cos-st-derived-ok
 
@@ -453,7 +453,7 @@ bool XsdSchemaHelper::isSimpleDerivationOk(const SchemaType::Ptr &derivedType, c
     return false;
 }
 
-bool XsdSchemaHelper::isComplexDerivationOk(const SchemaType::Ptr &derivedType, const SchemaType::Ptr baseType, const SchemaType::DerivationConstraints &constraints)
+bool XsdSchemaHelper::isComplexDerivationOk(const SchemaType::Ptr &derivedType, const SchemaType::Ptr &baseType, const SchemaType::DerivationConstraints &constraints)
 {
     if (!derivedType)
         return false;

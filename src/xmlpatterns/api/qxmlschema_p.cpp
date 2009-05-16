@@ -61,7 +61,7 @@ QXmlSchemaPrivate::QXmlSchemaPrivate(const QXmlSchemaPrivate &other)
 
 void QXmlSchemaPrivate::load(const QUrl &source, const QString &targetNamespace)
 {
-    m_documentUri = source;
+    m_documentUri = QPatternist::XPathHelper::normalizeQueryURI(source);
 
     m_schemaContext->setMessageHandler(messageHandler());
     m_schemaContext->setUriResolver(uriResolver());
@@ -98,7 +98,7 @@ void QXmlSchemaPrivate::load(QIODevice *source, const QUrl &documentUri, const Q
         return;
     }
 
-    m_documentUri = documentUri;
+    m_documentUri = QPatternist::XPathHelper::normalizeQueryURI(documentUri);
     m_schemaContext->setMessageHandler(messageHandler());
     m_schemaContext->setUriResolver(uriResolver());
     m_schemaContext->setNetworkAccessManager(networkAccessManager());
@@ -145,12 +145,12 @@ QAbstractMessageHandler *QXmlSchemaPrivate::messageHandler() const
     return m_messageHandler.data()->value;
 }
 
-void QXmlSchemaPrivate::setUriResolver(QAbstractUriResolver *resolver)
+void QXmlSchemaPrivate::setUriResolver(const QAbstractUriResolver *resolver)
 {
     m_uriResolver = resolver;
 }
 
-QAbstractUriResolver *QXmlSchemaPrivate::uriResolver() const
+const QAbstractUriResolver *QXmlSchemaPrivate::uriResolver() const
 {
     return m_uriResolver;
 }

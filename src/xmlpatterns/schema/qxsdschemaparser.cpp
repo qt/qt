@@ -5,6 +5,7 @@
 #include "qacceltreeresourceloader_p.h"
 #include "qautoptr_p.h"
 #include "qboolean_p.h"
+#include "qcommonnamespaces_p.h"
 #include "qderivedinteger_p.h"
 #include "qderivedstring_p.h"
 #include "qqnamevalue_p.h"
@@ -119,12 +120,28 @@ class TagValidationHandler
         void validate(XsdSchemaToken::NodeName token)
         {
             if (token == XsdSchemaToken::NoKeyword) {
-                m_parser->error(QtXmlPatterns::tr("can not process unknown element %1").arg(formatElement(m_parser->name().toString())));
+                const QList<XsdSchemaToken::NodeName> tokens = m_machine.possibleTransitions();
+
+                QStringList elementNames;
+                for (int i = 0; i < tokens.count(); ++i)
+                    elementNames.append(formatElement(XsdSchemaToken::toString(tokens.at(i))));
+
+                m_parser->error(QtXmlPatterns::tr("can not process unknown element %1, expected elements are: %2")
+                                                 .arg(formatElement(m_parser->name().toString()))
+                                                 .arg(elementNames.join(QLatin1String(", "))));
                 return;
             }
 
             if (!m_machine.proceed(token)) {
-                m_parser->error(QtXmlPatterns::tr("element %1 is not allowed in this scope").arg(formatElement(XsdSchemaToken::toString(token))));
+                const QList<XsdSchemaToken::NodeName> tokens = m_machine.possibleTransitions();
+
+                QStringList elementNames;
+                for (int i = 0; i < tokens.count(); ++i)
+                    elementNames.append(formatElement(XsdSchemaToken::toString(tokens.at(i))));
+
+                m_parser->error(QtXmlPatterns::tr("element %1 is not allowed in this scope, possible elements are: %2")
+                                                 .arg(formatElement(XsdSchemaToken::toString(token)))
+                                                 .arg(elementNames.join(QLatin1String(", "))));
                 return;
             }
         }
@@ -132,7 +149,14 @@ class TagValidationHandler
         void finalize() const
         {
             if (!m_machine.inEndState()) {
-                m_parser->error(QtXmlPatterns::tr("child element is missing in that scope"));
+                const QList<XsdSchemaToken::NodeName> tokens = m_machine.possibleTransitions();
+
+                QStringList elementNames;
+                for (int i = 0; i < tokens.count(); ++i)
+                    elementNames.append(formatElement(XsdSchemaToken::toString(tokens.at(i))));
+
+                m_parser->error(QtXmlPatterns::tr("child element is missing in that scope, possible child elements are: %1")
+                                                 .arg(elementNames.join(QLatin1String(", "))));
             }
         }
 
@@ -425,8 +449,8 @@ void XsdSchemaParser::parseSchema(ParserType parserType)
         const QString version = readAttribute(QString::fromLatin1("version"));
     }
 
-    if (hasAttribute(QString::fromLatin1("http://www.w3.org/XML/1998/namespace"), QString::fromLatin1("lang"))) {
-        const QString value = readAttribute(QString::fromLatin1("lang"), QString::fromLatin1("http://www.w3.org/XML/1998/namespace"));
+    if (hasAttribute(CommonNamespaces::XML, QString::fromLatin1("lang"))) {
+        const QString value = readAttribute(QString::fromLatin1("lang"), CommonNamespaces::XML);
 
         const QRegExp exp(QString::fromLatin1("[a-zA-Z]{1,8}(-[a-zA-Z0-9]{1,8})*"));
         if (!exp.exactMatch(value)) {
@@ -750,7 +774,7 @@ void XsdSchemaParser::parseRedefine()
     if (url.isRelative()) {
         Q_ASSERT(m_documentURI.isValid());
 
-        url = m_documentURI.resolved(url); 
+        url = m_documentURI.resolved(url);
     }
 
     // we parse the schema given in the redefine tag into its own context
@@ -1176,8 +1200,8 @@ XsdDocumentation::Ptr XsdSchemaParser::parseDocumentation()
         }
     }
 
-    if (hasAttribute(QString::fromLatin1("http://www.w3.org/XML/1998/namespace"), QString::fromLatin1("lang"))) {
-        const QString value = readAttribute(QString::fromLatin1("lang"), QString::fromLatin1("http://www.w3.org/XML/1998/namespace"));
+    if (hasAttribute(CommonNamespaces::XML, QString::fromLatin1("lang"))) {
+        const QString value = readAttribute(QString::fromLatin1("lang"), CommonNamespaces::XML);
 
         const QRegExp exp(QString::fromLatin1("[a-zA-Z]{1,8}(-[a-zA-Z0-9]{1,8})*"));
         if (!exp.exactMatch(value)) {
@@ -3948,7 +3972,7 @@ XsdAttribute::Ptr XsdSchemaParser::parseGlobalAttribute()
         error(QtXmlPatterns::tr("content of %1 attribute of %2 element must not be from namespace %3")
                                .arg(formatAttribute("name"))
                                .arg(formatElement("attribute"))
-                               .arg(formatURI(QLatin1String("http://www.w3.org/2001/XMLSchema-instance"))));
+                               .arg(formatURI(CommonNamespaces::XSI)));
         return attribute;
     }
     if (m_namePool->stringForLocalName(objectName.localName()) == QString::fromLatin1("xmlns")) {
@@ -4170,7 +4194,7 @@ XsdAttributeUse::Ptr XsdSchemaParser::parseLocalAttribute(const NamedSchemaCompo
                 error(QtXmlPatterns::tr("content of %1 attribute of %2 element must not be from namespace %3")
                                        .arg(formatAttribute("name"))
                                        .arg(formatElement("attribute"))
-                                       .arg(formatURI(QLatin1String("http://www.w3.org/2001/XMLSchema-instance"))));
+                                       .arg(formatURI(CommonNamespaces::XSI)));
                 return attributeUse;
             }
             if (m_namePool->stringForLocalName(objectName.localName()) == QString::fromLatin1("xmlns")) {
@@ -5858,7 +5882,7 @@ QString XsdSchemaParser::readXPathAttribute(const QString &attributeName, XPathT
 
     QXmlNamePool namePool(m_namePool.data());
 
-    QXmlQuery::QueryLanguage language;
+    QXmlQuery::QueryLanguage language = QXmlQuery::XPath20;
     switch (type) {
         case XPath20: language = QXmlQuery::XPath20; break;
         case XPathSelector: language = QXmlQuery::XmlSchema11IdentityConstraintSelector; break;

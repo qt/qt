@@ -21,7 +21,7 @@
   \brief The QXmlSchema class provides loading and validation of a W3C XML Schema.
 
   \reentrant
-  \since 4.X
+  \since 4.6
   \ingroup xml-tools
 
   The QXmlSchema class loads, compiles and validates W3C XML Schema files
@@ -31,7 +31,7 @@
 
 /*!
   Constructs an invalid, empty schema that cannot be used until
-  setSchema() is called.
+  load() is called.
  */
 QXmlSchema::QXmlSchema()
     : d(new QXmlSchemaPrivate(QXmlNamePool()))
@@ -59,9 +59,10 @@ QXmlSchema::~QXmlSchema()
   Sets this QXmlSchema to a schema loaded from the \a source
   URI.
  */
-void QXmlSchema::load(const QUrl &source)
+bool QXmlSchema::load(const QUrl &source)
 {
     d->load(source, QString());
+    return d->isValid();
 }
 
 /*!
@@ -78,9 +79,10 @@ void QXmlSchema::load(const QUrl &source)
   a valid URI, behavior is undefined.
   \sa isValid()
  */
-void QXmlSchema::load(QIODevice *source, const QUrl &documentUri)
+bool QXmlSchema::load(QIODevice *source, const QUrl &documentUri)
 {
     d->load(source, documentUri, QString());
+    return d->isValid();
 }
 
 /*!
@@ -94,9 +96,10 @@ void QXmlSchema::load(QIODevice *source, const QUrl &documentUri)
   If \a documentUri is not a valid URI, behavior is undefined.
   \sa isValid()
  */
-void QXmlSchema::load(const QByteArray &data, const QUrl &documentUri)
+bool QXmlSchema::load(const QByteArray &data, const QUrl &documentUri)
 {
     d->load(data, documentUri, QString());
+    return d->isValid();
 }
 
 /*!
@@ -183,14 +186,14 @@ QAbstractMessageHandler *QXmlSchema::messageHandler() const
 
   \sa uriResolver()
  */
-void QXmlSchema::setUriResolver(QAbstractUriResolver *resolver)
+void QXmlSchema::setUriResolver(const QAbstractUriResolver *resolver)
 {
     d->setUriResolver(resolver);
 }
 
 /*!
   Returns the schema's URI resolver. If no URI resolver has been set,
-  QtXmlPatterns will use the URIs in queries as they are.
+  QtXmlPatterns will use the URIs in schemas as they are.
 
   The URI resolver provides a level of abstraction, or \e{polymorphic
   URIs}. A resolver can rewrite \e{logical} URIs to physical ones, or
@@ -202,7 +205,7 @@ void QXmlSchema::setUriResolver(QAbstractUriResolver *resolver)
 
   \sa setUriResolver()
  */
-QAbstractUriResolver *QXmlSchema::uriResolver() const
+const QAbstractUriResolver *QXmlSchema::uriResolver() const
 {
     return d->uriResolver();
 }

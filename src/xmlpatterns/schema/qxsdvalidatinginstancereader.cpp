@@ -15,6 +15,7 @@
 #include "qacceltreeresourceloader_p.h"
 #include "qbase64binary_p.h"
 #include "qboolean_p.h"
+#include "qcommonnamespaces_p.h"
 #include "qderivedinteger_p.h"
 #include "qduration_p.h"
 #include "qgenericstaticcontext_p.h"
@@ -64,14 +65,14 @@ namespace QPatternist
     }
 }
 
-XsdValidatingInstanceReader::XsdValidatingInstanceReader(const XsdValidatedXmlNodeModel *model, const QUrl &documentUri, const XsdSchemaContext::Ptr &context)
+XsdValidatingInstanceReader::XsdValidatingInstanceReader(XsdValidatedXmlNodeModel *model, const QUrl &documentUri, const XsdSchemaContext::Ptr &context)
     : XsdInstanceReader(model, context)
-    , m_model(const_cast<XsdValidatedXmlNodeModel*>(model))
+    , m_model(model)
     , m_namePool(m_context->namePool())
-    , m_xsiNilName(m_namePool->allocateQName(QLatin1String("http://www.w3.org/2001/XMLSchema-instance"), QLatin1String("nil")))
-    , m_xsiTypeName(m_namePool->allocateQName(QLatin1String("http://www.w3.org/2001/XMLSchema-instance"), QLatin1String("type")))
-    , m_xsiSchemaLocationName(m_namePool->allocateQName(QLatin1String("http://www.w3.org/2001/XMLSchema-instance"), QLatin1String("schemaLocation")))
-    , m_xsiNoNamespaceSchemaLocationName(m_namePool->allocateQName(QLatin1String("http://www.w3.org/2001/XMLSchema-instance"), QLatin1String("noNamespaceSchemaLocation")))
+    , m_xsiNilName(m_namePool->allocateQName(CommonNamespaces::XSI, QLatin1String("nil")))
+    , m_xsiTypeName(m_namePool->allocateQName(CommonNamespaces::XSI, QLatin1String("type")))
+    , m_xsiSchemaLocationName(m_namePool->allocateQName(CommonNamespaces::XSI, QLatin1String("schemaLocation")))
+    , m_xsiNoNamespaceSchemaLocationName(m_namePool->allocateQName(CommonNamespaces::XSI, QLatin1String("noNamespaceSchemaLocation")))
     , m_documentUri(documentUri)
 {
     m_idRefsType = m_context->schemaTypeFactory()->createSchemaType(m_namePool->allocateQName(CommonNamespaces::WXS, QLatin1String("IDREFS")));
@@ -152,7 +153,7 @@ bool XsdValidatingInstanceReader::read()
 
 void XsdValidatingInstanceReader::error(const QString &msg) const
 {
-    const_cast<XsdSchemaContext*>(m_context.data())->error(msg, XsdSchemaContext::XSDError, sourceLocation());
+    m_context.data()->error(msg, XsdSchemaContext::XSDError, sourceLocation());
 }
 
 bool XsdValidatingInstanceReader::loadSchema(const QString &targetNamespace, const QUrl &location)

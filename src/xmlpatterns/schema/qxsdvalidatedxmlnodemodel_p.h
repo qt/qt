@@ -134,11 +134,11 @@ namespace QPatternist
             virtual QVector<QXmlNodeModelIndex> attributes(const QXmlNodeModelIndex &element) const;
 
         private:
-            QAbstractXmlNodeModel::Ptr                        m_internalModel;
-            QHash<QXmlNodeModelIndex, XsdElement::Ptr>        m_assignedElements;
-            QHash<QXmlNodeModelIndex, XsdAttribute::Ptr>      m_assignedAttributes;
-            QHash<QXmlNodeModelIndex, SchemaType::Ptr>        m_assignedTypes;
-            QHash<QString, QSet<NamedSchemaComponent::Ptr> >  m_idIdRefBindings;
+            QExplicitlySharedDataPointer<const QAbstractXmlNodeModel> m_internalModel;
+            QHash<QXmlNodeModelIndex, XsdElement::Ptr>                m_assignedElements;
+            QHash<QXmlNodeModelIndex, XsdAttribute::Ptr>              m_assignedAttributes;
+            QHash<QXmlNodeModelIndex, SchemaType::Ptr>                m_assignedTypes;
+            QHash<QString, QSet<NamedSchemaComponent::Ptr> >          m_idIdRefBindings;
     };
 }
 

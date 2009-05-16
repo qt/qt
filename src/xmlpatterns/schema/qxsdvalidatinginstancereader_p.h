@@ -59,7 +59,7 @@ namespace QPatternist
              * @param documentUri The uri of the document the model is from.
              * @param context The context that is used to report errors etc.
              */
-            XsdValidatingInstanceReader(const XsdValidatedXmlNodeModel *model, const QUrl &documentUri, const XsdSchemaContext::Ptr &context);
+            XsdValidatingInstanceReader(XsdValidatedXmlNodeModel *model, const QUrl &documentUri, const XsdSchemaContext::Ptr &context);
 
             /**
              * Adds a new @p schema to the pool of schemas that shall be used

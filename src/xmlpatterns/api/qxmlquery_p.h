@@ -212,19 +212,6 @@ public:
         return m_resourceLoader;
     }
 
-
-    static inline QUrl normalizeQueryURI(const QUrl &uri)
-    {
-        Q_ASSERT_X(uri.isEmpty() || uri.isValid(), Q_FUNC_INFO,
-                   "The URI passed to QXmlQuery::setQuery() must be valid or empty.");
-        if(uri.isEmpty())
-            return QUrl::fromLocalFile(QCoreApplication::applicationFilePath());
-        else if(uri.isRelative())
-            return QUrl::fromLocalFile(QCoreApplication::applicationFilePath()).resolved(uri);
-        else
-            return uri;
-    }
-
     void setRequiredType(const QPatternist::SequenceType::Ptr &seqType)
     {
         Q_ASSERT(seqType);

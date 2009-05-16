@@ -27,12 +27,22 @@
   \brief The QXmlSchemaValidator class validates XML instance documents against a W3C XML Schema.
 
   \reentrant
-  \since 4.X
+  \since 4.6
   \ingroup xml-tools
 
   The QXmlSchemaValidator class loads, parses an XML instance document and validates it
   against a W3C XML Schema that has been compiled with \l{QXmlSchema}.
 */
+
+/*!
+  Constructs a schema validator.
+  The schema used for validation must be referenced in the XML instance document
+  via the xsi:schemaLocation attribute.
+ */
+QXmlSchemaValidator::QXmlSchemaValidator()
+    : d(new QXmlSchemaValidatorPrivate(QXmlSchema()))
+{
+}
 
 /*!
   Constructs a schema validator that will use \a schema for validation.
@@ -65,7 +75,7 @@ void QXmlSchemaValidator::setSchema(const QXmlSchema &schema)
   Returns \c true if the XML instance document is valid according the
   schema, \c false otherwise.
  */
-bool QXmlSchemaValidator::validate(const QByteArray &data, const QUrl &documentUri)
+bool QXmlSchemaValidator::validate(const QByteArray &data, const QUrl &documentUri) const
 {
     QByteArray localData(data);
 
@@ -81,7 +91,7 @@ bool QXmlSchemaValidator::validate(const QByteArray &data, const QUrl &documentU
   Returns \c true if the XML instance document is valid according the
   schema, \c false otherwise.
  */
-bool QXmlSchemaValidator::validate(const QUrl &source)
+bool QXmlSchemaValidator::validate(const QUrl &source) const
 {
     d->m_context->setMessageHandler(messageHandler());
     d->m_context->setUriResolver(uriResolver());
@@ -102,7 +112,7 @@ bool QXmlSchemaValidator::validate(const QUrl &source)
   Returns \c true if the XML instance document is valid according the
   schema, \c false otherwise.
  */
-bool QXmlSchemaValidator::validate(QIODevice *source, const QUrl &documentUri)
+bool QXmlSchemaValidator::validate(QIODevice *source, const QUrl &documentUri) const
 {
     if (!source) {
         qWarning("A null QIODevice pointer cannot be passed.");
@@ -113,6 +123,8 @@ bool QXmlSchemaValidator::validate(QIODevice *source, const QUrl &documentUri)
         qWarning("The device must be readable.");
         return false;
     }
+
+    const QUrl normalizedUri = QPatternist::XPathHelper::normalizeQueryURI(documentUri);
 
     d->m_context->setMessageHandler(messageHandler());
     d->m_context->setUriResolver(uriResolver());
@@ -125,7 +137,7 @@ bool QXmlSchemaValidator::validate(QIODevice *source, const QUrl &documentUri)
 
     QPatternist::Item item;
     try {
-        item = loader.openDocument(source, documentUri, d->m_context);
+        item = loader.openDocument(source, normalizedUri, d->m_context);
     } catch (QPatternist::Exception exception) {
         return false;
     }
@@ -135,7 +147,7 @@ bool QXmlSchemaValidator::validate(QIODevice *source, const QUrl &documentUri)
 
     QPatternist::XsdValidatedXmlNodeModel *validatedModel = new QPatternist::XsdValidatedXmlNodeModel(model);
 
-    QPatternist::XsdValidatingInstanceReader reader(validatedModel, documentUri, d->m_context);
+    QPatternist::XsdValidatingInstanceReader reader(validatedModel, normalizedUri, d->m_context);
     if (d->m_schema)
         reader.addSchema(d->m_schema, d->m_schemaDocumentUri);
     try {
@@ -155,6 +167,14 @@ bool QXmlSchemaValidator::validate(QIODevice *source, const QUrl &documentUri)
 QXmlNamePool QXmlSchemaValidator::namePool() const
 {
     return d->m_namePool;
+}
+
+/*!
+  Returns the schema that is used for validation.
+ */
+QXmlSchema QXmlSchemaValidator::schema() const
+{
+    return d->m_originalSchema;
 }
 
 /*!
@@ -215,14 +235,14 @@ QAbstractMessageHandler *QXmlSchemaValidator::messageHandler() const
 
   \sa uriResolver()
  */
-void QXmlSchemaValidator::setUriResolver(QAbstractUriResolver *resolver)
+void QXmlSchemaValidator::setUriResolver(const QAbstractUriResolver *resolver)
 {
     d->m_uriResolver = resolver;
 }
 
 /*!
   Returns the schema's URI resolver. If no URI resolver has been set,
-  QtXmlPatterns will use the URIs in queries as they are.
+  QtXmlPatterns will use the URIs in instance documents as they are.
 
   The URI resolver provides a level of abstraction, or \e{polymorphic
   URIs}. A resolver can rewrite \e{logical} URIs to physical ones, or
@@ -234,7 +254,7 @@ void QXmlSchemaValidator::setUriResolver(QAbstractUriResolver *resolver)
 
   \sa setUriResolver()
  */
-QAbstractUriResolver *QXmlSchemaValidator::uriResolver() const
+const QAbstractUriResolver *QXmlSchemaValidator::uriResolver() const
 {
     return d->m_uriResolver;
 }
