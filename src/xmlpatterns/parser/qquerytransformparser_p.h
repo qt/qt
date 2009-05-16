@@ -49,6 +49,27 @@
 //
 // We mean it.
 
+/****************************************************************************
+**
+** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Contact: Qt Software Information (qt-info@nokia.com)
+**
+** This file is part of the $MODULE$ of the Qt Toolkit.
+**
+** $TROLLTECH_DUAL_LICENSE$
+**
+****************************************************************************/
+
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists purely as an
+// implementation detail.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+
 /* A Bison parser, made by GNU Bison 2.3a.  */
 
 /* Skeleton interface for Bison's Yacc-like parsers in C
@@ -84,6 +105,25 @@
    This special exception was added by the Free Software Foundation in
    version 2.2 of Bison.  */
 
+
+/* These tokens are defined to nothing on Windows because they're
+ * used in their documentation parser, for use in things like:
+ *
+ * int foo(IN char* name, OUT char* path);
+ *
+ * Hence this un-break fix. Note that this file was auto generated. */
+#ifdef IN
+#  undef IN
+#endif
+#ifdef INSTANCE
+#  undef INSTANCE
+#endif
+#ifdef STRICT
+#  undef STRICT
+#endif
+#ifdef SELF
+#  undef SELF
+#endif
 
 /* These tokens are defined to nothing on Windows because they're
  * used in their documentation parser, for use in things like:

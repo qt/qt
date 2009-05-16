@@ -49,15 +49,17 @@ template <bool FromDocument>
 AccelTreeBuilder<FromDocument>::AccelTreeBuilder(const QUrl &docURI,
                                                  const QUrl &baseURI,
                                                  const NamePool::Ptr &np,
-                                                 ReportContext *const context) : m_preNumber(-1)
-                                                                               , m_isPreviousAtomic(false)
-                                                                               , m_hasCharacters(false)
-                                                                               , m_isCharactersCompressed(false)
-                                                                               , m_namePool(np)
-                                                                               , m_document(new AccelTree(docURI, baseURI))
-                                                                               , m_skippedDocumentNodes(0)
-                                                                               , m_documentURI(docURI)
-                                                                               , m_context(context)
+                                                 ReportContext *const context,
+                                                 Features features) : m_preNumber(-1)
+                                                                    , m_isPreviousAtomic(false)
+                                                                    , m_hasCharacters(false)
+                                                                    , m_isCharactersCompressed(false)
+                                                                    , m_namePool(np)
+                                                                    , m_document(new AccelTree(docURI, baseURI))
+                                                                    , m_skippedDocumentNodes(0)
+                                                                    , m_documentURI(docURI)
+                                                                    , m_context(context)
+                                                                    , m_features(features)
 {
     Q_ASSERT(m_namePool);
 
@@ -126,9 +128,18 @@ void AccelTreeBuilder<FromDocument>::item(const Item &it)
 template <bool FromDocument>
 void AccelTreeBuilder<FromDocument>::startElement(const QXmlName &name)
 {
+    startElement(name, 1, 1);
+}
+
+template <bool FromDocument>
+void AccelTreeBuilder<FromDocument>::startElement(const QXmlName &name, qint64 line, qint64 column)
+{
     startStructure();
 
-    m_document->basicData.append(AccelTree::BasicNodeData(currentDepth(), currentParent(), QXmlNodeModelIndex::Element, -1, name));
+    AccelTree::BasicNodeData data(currentDepth(), currentParent(), QXmlNodeModelIndex::Element, -1, name);
+    m_document->basicData.append(data);
+    if (m_features & SourceLocationsFeature)
+        m_document->sourcePositions.insert(m_document->maximumPreNumber(), qMakePair(line, column));
 
     ++m_preNumber;
     m_ancestors.push(m_preNumber);

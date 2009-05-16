@@ -72,4 +72,9 @@ bool SchemaType::isComplexType() const
     return category() == ComplexType;
 }
 
+bool SchemaType::isDefinedBySchema() const
+{
+    return false;
+}
+
 QT_END_NAMESPACE

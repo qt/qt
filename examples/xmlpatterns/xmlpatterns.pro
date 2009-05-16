@@ -2,7 +2,8 @@ TEMPLATE      = subdirs
 SUBDIRS       = recipes \
                 trafficinfo \
                 xquery  \
-                filetree
+                filetree \
+                schema
 
 # This example depends on QtWebkit as well.
 contains(QT_CONFIG, webkit):SUBDIRS += qobjectxmlmodel

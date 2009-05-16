@@ -114,6 +114,16 @@ namespace QPatternist
          */
         virtual DerivationMethod derivationMethod() const;
 
+        /**
+         * @returns an empty set of derivation constraint flags.
+         */
+        virtual DerivationConstraints derivationConstraints() const;
+
+        /**
+         * Always returns @c true.
+         */
+        virtual bool isComplexType() const;
+
     protected:
         /**
          * @short This constructor is protected, because this

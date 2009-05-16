@@ -151,6 +151,10 @@ namespace QPatternist
          */
         enum ErrorCode
         {
+            /**
+             * XML Schema error code.
+             */
+            XSDError,
 
             /**
              * It is a static error if analysis of an expression relies on some

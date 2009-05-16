@@ -61,7 +61,7 @@ protected:
     virtual void catalogPath(QString &write) const;
 };
 
-tst_XmlPatternsXSLTS::tst_XmlPatternsXSLTS() : tst_SuiteTest(false, true)
+tst_XmlPatternsXSLTS::tst_XmlPatternsXSLTS() : tst_SuiteTest(tst_SuiteTest::XQuerySuite, true)
 {
 }
 

@@ -52,12 +52,12 @@
 #ifndef Patternist_AccelTreeResourceLoader_H
 #define Patternist_AccelTreeResourceLoader_H
 
-#include <QtCore/QHash>
 #include <QtCore/QEventLoop>
 #include <QtNetwork/QNetworkReply>
 
 #include "qabstractxmlreceiver.h"
 #include "qacceltree_p.h"
+#include "qacceltreebuilder_p.h"
 #include "qdeviceresourceloader_p.h"
 #include "qnamepool_p.h"
 #include "qnetworkaccessdelegator_p.h"
@@ -115,12 +115,24 @@ namespace QPatternist
     {
     public:
         /**
+         * Describes the behaviour of the resource loader in case of an
+         * error.
+         */
+        enum ErrorHandling
+        {
+            FailOnError,        ///< The resource loader will report the error via the report context.
+            ContinueOnError     ///< The resource loader will report no error and return an empty QNetworkReply.
+        };
+
+        /**
          * AccelTreeResourceLoader does not own @p context.
          */
         AccelTreeResourceLoader(const NamePool::Ptr &np,
-                                const NetworkAccessDelegator::Ptr &networkDelegator);
+                                const NetworkAccessDelegator::Ptr &networkDelegator, AccelTreeBuilder<true>::Features = AccelTreeBuilder<true>::NoneFeature);
 
         virtual Item openDocument(const QUrl &uri,
+                                  const ReportContext::Ptr &context);
+        virtual Item openDocument(QIODevice *source, const QUrl &documentUri,
                                   const ReportContext::Ptr &context);
         virtual SequenceType::Ptr announceDocument(const QUrl &uri, const Usage usageHint);
         virtual bool isDocumentAvailable(const QUrl &uri);
@@ -132,7 +144,6 @@ namespace QPatternist
                                       const QString &encoding,
                                       const ReportContext::Ptr &context,
                                       const SourceLocationReflection *const where);
-
 
         /**
          * @short Helper function that do NetworkAccessDelegator::get(), but
@@ -149,14 +160,14 @@ namespace QPatternist
          */
         static QNetworkReply *load(const QUrl &uri,
                                    QNetworkAccessManager *const networkManager,
-                                   const ReportContext::Ptr &context);
+                                   const ReportContext::Ptr &context, ErrorHandling handling = FailOnError);
 
         /**
          * @overload
          */
         static QNetworkReply *load(const QUrl &uri,
                                    const NetworkAccessDelegator::Ptr &networkDelegator,
-                                   const ReportContext::Ptr &context);
+                                   const ReportContext::Ptr &context, ErrorHandling handling = FailOnError);
 
         /**
          * @short Returns the URIs this AccelTreeResourceLoader has loaded
@@ -165,13 +176,16 @@ namespace QPatternist
         virtual QSet<QUrl> deviceURIs() const;
 
         virtual void clear(const QUrl &uri);
+
     private:
         static bool streamToReceiver(QIODevice *const dev,
-                                     QAbstractXmlReceiver *const receiver,
+                                     AccelTreeBuilder<true> *const receiver,
                                      const NamePool::Ptr &np,
                                      const ReportContext::Ptr &context,
                                      const QUrl &uri);
         bool retrieveDocument(const QUrl &uri,
+                              const ReportContext::Ptr &context);
+        bool retrieveDocument(QIODevice *source, const QUrl &documentUri,
                               const ReportContext::Ptr &context);
         /**
          * If @p context is @c null, no error reporting should be done.
@@ -185,6 +199,7 @@ namespace QPatternist
         const NamePool::Ptr                     m_namePool;
         const NetworkAccessDelegator::Ptr       m_networkAccessDelegator;
         QHash<QPair<QUrl, QString>, QString>    m_unparsedTexts;
+        AccelTreeBuilder<true>::Features        m_features;
     };
 }
 

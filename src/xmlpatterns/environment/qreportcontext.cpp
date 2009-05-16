@@ -448,6 +448,7 @@ QString ReportContext::codeToString(const ReportContext::ErrorCode code)
         case XTTE1545: result = "XTTE1545"; break;
         case XTTE1550: result = "XTTE1550"; break;
         case XTTE1555: result = "XTTE1555"; break;
+        case XSDError: result = "XSDError"; break;
     }
 
     Q_ASSERT_X(result, Q_FUNC_INFO, "Unknown enum value.");

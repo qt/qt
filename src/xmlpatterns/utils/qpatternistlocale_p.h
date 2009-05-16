@@ -168,6 +168,16 @@ namespace QPatternist
     }
 
     /**
+     * @short Formats name of any type.
+     */
+    static inline QString formatType(const NamePool::Ptr &np, const QXmlName &name)
+    {
+        return QLatin1String("<span class='XQuery-type'>")  +
+               escape(np->displayName(name))                +
+               QLatin1String("</span>");
+    }
+
+    /**
      * @short Formats Cardinality.
      */
     static inline QString formatType(const Cardinality &type)

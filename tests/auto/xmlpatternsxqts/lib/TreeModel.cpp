@@ -118,9 +118,14 @@ QVariant TreeModel::headerData(int section, Qt::Orientation orientation, int rol
     return QVariant();
 }
 
-void TreeModel::childChanged(TreeItem *)
+void TreeModel::childChanged(TreeItem *item)
 {
-    layoutChanged();
+    if (item) {
+        const QModelIndex index = createIndex(item->row(), 0, item);
+        dataChanged(index, index);
+    } else {
+        layoutChanged();
+    }
 }
 
 QModelIndex TreeModel::index(int row, int column, const QModelIndex &p) const

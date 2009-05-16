@@ -45,6 +45,7 @@
 
 #ifdef QTEST_XMLPATTERNS
 
+#include <QSourceLocation>
 #include <QXmlFormatter>
 #include <QXmlNamePool>
 #include <QXmlQuery>
@@ -80,6 +81,7 @@ private Q_SLOTS:
     void id() const;
     void idref() const;
     void typedValue() const;
+    void sourceLocation() const;
 
 private:
     QAbstractXmlNodeModel::Ptr  m_nodeModel;
@@ -387,6 +389,12 @@ void tst_QAbstractXmlNodeModel::typedValue() const
     QVERIFY(query.evaluateTo(&serializer));
 
     QVERIFY(output.isEmpty());
+}
+
+void tst_QAbstractXmlNodeModel::sourceLocation() const
+{
+    const QAbstractXmlNodeModel* const constModel = m_nodeModel.data();
+    const QSourceLocation location = constModel->sourceLocation(m_rootNode);
 }
 
 QTEST_MAIN(tst_QAbstractXmlNodeModel)

@@ -1666,4 +1666,20 @@ void QAbstractXmlNodeModel::copyNodeTo(const QXmlNodeModelIndex &node,
                "This function is not expected to be called.");
 }
 
+/*!
+  Returns the source location for the object with the given \a index
+  or a default constructed QSourceLocation in case no location
+  information is available.
+
+  \since TODO
+ */
+QSourceLocation QAbstractXmlNodeModel::sourceLocation(const QXmlNodeModelIndex &index) const
+{
+    // TODO: make this method virtual in Qt5 to allow source location support in custom models
+    if (d_ptr)
+        return d_ptr->sourceLocation(index);
+    else
+        return QSourceLocation();
+}
+
 QT_END_NAMESPACE

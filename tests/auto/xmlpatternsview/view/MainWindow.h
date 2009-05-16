@@ -88,6 +88,7 @@
 
 #include "ui_ui_MainWindow.h"
 #include "DebugExpressionFactory.h"
+#include "TestSuite.h"
 
 QT_BEGIN_HEADER
 
@@ -142,6 +143,8 @@ namespace QPatternistSDK
 
         void on_actionOpenXSLTSCatalog_triggered();
 
+        void on_actionOpenXSDTSCatalog_triggered();
+
         /**
          * Executes the selected test case or test group.
          */
@@ -153,7 +156,7 @@ namespace QPatternistSDK
          * an informative message box will be displayed, if any errors occurred.
          */
         void openCatalog(const QUrl &file, const bool reportError,
-                         const bool isXSLT);
+                         const TestSuite::SuiteType suitType);
 
         void openRecentFile();
 
@@ -205,6 +208,7 @@ namespace QPatternistSDK
         TestCaseView *              testCaseView;
         TestResultView *            testResultView;
         FunctionSignaturesView *    functionView;
+        TestSuite::SuiteType        m_currentSuiteType;
     };
 }
 QT_END_NAMESPACE

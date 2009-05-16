@@ -69,6 +69,7 @@ RegExpDialog::RegExpDialog(QWidget *parent)
     syntaxComboBox->addItem(tr("Regular expression v2"), QRegExp::RegExp2);
     syntaxComboBox->addItem(tr("Wildcard"), QRegExp::Wildcard);
     syntaxComboBox->addItem(tr("Fixed string"), QRegExp::FixedString);
+    syntaxComboBox->addItem(tr("W3C Xml Schema 1.1"), QRegExp::W3CXmlSchema11);
 
     syntaxLabel = new QLabel(tr("&Pattern Syntax:"));
     syntaxLabel->setBuddy(syntaxComboBox);

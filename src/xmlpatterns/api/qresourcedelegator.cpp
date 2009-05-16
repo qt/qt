@@ -45,14 +45,6 @@ QT_BEGIN_NAMESPACE
 
 using namespace QPatternist;
 
-/**
- * Duplicated in qacceltreeresourceloader.cpp.
- */
-static inline uint qHash(const QUrl &uri)
-{
-        return qHash(uri.toString());
-}
-
 bool ResourceDelegator::isUnparsedTextAvailable(const QUrl &uri,
                                                 const QString &encoding)
 {

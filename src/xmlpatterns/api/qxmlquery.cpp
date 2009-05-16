@@ -231,6 +231,18 @@ QT_BEGIN_NAMESPACE
 
  \value XQuery10 XQuery 1.0.
  \value XSLT20 XSLT 2.0
+ \omitvalue XmlSchema11IdentityConstraintSelector The selector, the restricted
+            XPath pattern found in W3C XML Schema 1.1 for uniqueness
+            contraints. Apart from restricting the syntax, the type check stage
+            for the expression assumes a sequence of nodes to be the focus.
+ \omitvalue XmlSchema11IdentityConstraintField The field, the restricted
+            XPath pattern found in W3C XML Schema 1.1 for uniqueness
+            contraints. Apart from restricting the syntax, the type check stage
+            for the expression assumes a sequence of nodes to be the focus.
+ \omitvalue XPath20 Signifies XPath 2.0. Has no effect in the public API, it's
+            used internally. As With XmlSchema11IdentityConstraintSelector and
+            XmlSchema11IdentityConstraintField, the type check stage
+            for the expression assumes a sequence of nodes to be the focus.
 
  \sa setQuery()
  */

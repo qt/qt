@@ -91,6 +91,7 @@ namespace QPatternist
      */
     class AccelTree : public QAbstractXmlNodeModel
     {
+        friend class AccelTreePrivate;
     public:
         using QAbstractXmlNodeModel::createIndex;
 
@@ -99,15 +100,7 @@ namespace QPatternist
         typedef PreNumber PostNumber;
         typedef qint8 Depth;
 
-        inline AccelTree(const QUrl &docURI,
-                         const QUrl &bURI) : m_documentURI(docURI),
-                                             m_baseURI(bURI)
-        {
-            /* Pre-allocate at least a little bit. */
-            // TODO. Do it according to what an average 4 KB doc contains.
-            basicData.reserve(100);
-            data.reserve(30);
-        }
+        AccelTree(const QUrl &docURI, const QUrl &bURI);
 
         /**
          * @short Houses data for a node, and that all node kinds have.
@@ -280,6 +273,7 @@ namespace QPatternist
         QHash<PreNumber, QString> data;
 
         QVector<BasicNodeData> basicData;
+        QHash<PreNumber, QPair<qint64, qint64> > sourcePositions;
 
         inline QUrl documentUri() const
         {
@@ -380,6 +374,11 @@ namespace QPatternist
         virtual QVector<QXmlNodeModelIndex> attributes(const QXmlNodeModelIndex &element) const;
 
     private:
+        /**
+         * Returns the source location for the object with the given @p index.
+         */
+        QSourceLocation sourceLocation(const QXmlNodeModelIndex &index) const;
+
         /**
          * Copies the children of @p node to @p receiver.
          */

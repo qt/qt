@@ -168,7 +168,14 @@ namespace QPatternistSDK
              * because an implementation does not support the feature is not
              * considered a correct result.
              */
-            ExpectedError
+            ExpectedError,
+
+            /**
+             * A special comparison for the schema validation tests. The details
+             * can only be 'true' or 'false' depending on whether it is a valid
+             * schema or not.
+             */
+            SchemaIsValid
         };
 
         /**

@@ -46,7 +46,6 @@
 
 #include <QtNetwork/QNetworkRequest>
 
-#include "qacceltreebuilder_p.h"
 #include "qatomicstring_p.h"
 #include "qautoptr_p.h"
 #include "qcommonsequencetypes_p.h"
@@ -57,14 +56,12 @@ QT_BEGIN_NAMESPACE
 
 using namespace QPatternist;
 
-static inline uint qHash(const QUrl &uri)
-{
-        return qHash(uri.toString());
-}
-
 AccelTreeResourceLoader::AccelTreeResourceLoader(const NamePool::Ptr &np,
-                                                 const NetworkAccessDelegator::Ptr &manager) : m_namePool(np)
-                                                                                             , m_networkAccessDelegator(manager)
+                                                 const NetworkAccessDelegator::Ptr &manager,
+                                                 AccelTreeBuilder<true>::Features features)
+    : m_namePool(np)
+    , m_networkAccessDelegator(manager)
+    , m_features(features)
 {
     Q_ASSERT(m_namePool);
     Q_ASSERT(m_networkAccessDelegator);
@@ -74,7 +71,7 @@ bool AccelTreeResourceLoader::retrieveDocument(const QUrl &uri,
                                                const ReportContext::Ptr &context)
 {
     Q_ASSERT(uri.isValid());
-    AccelTreeBuilder<true> builder(uri, uri, m_namePool, context.data());
+    AccelTreeBuilder<true> builder(uri, uri, m_namePool, context.data(), m_features);
 
     const AutoPtr<QNetworkReply> reply(load(uri, m_networkAccessDelegator, context));
 
@@ -88,18 +85,35 @@ bool AccelTreeResourceLoader::retrieveDocument(const QUrl &uri,
     return success;
 }
 
+bool AccelTreeResourceLoader::retrieveDocument(QIODevice *source, const QUrl &documentUri, const ReportContext::Ptr &context)
+{
+    Q_ASSERT(source);
+    Q_ASSERT(source->isReadable());
+    Q_ASSERT(documentUri.isValid());
+
+    AccelTreeBuilder<true> builder(documentUri, documentUri, m_namePool, context.data(), m_features);
+
+    bool success = false;
+    success = streamToReceiver(source, &builder, m_namePool, context, documentUri);
+
+    m_loadedDocuments.insert(documentUri, builder.builtDocument());
+
+    return success;
+}
+
 QNetworkReply *AccelTreeResourceLoader::load(const QUrl &uri,
                                              const NetworkAccessDelegator::Ptr &networkDelegator,
-                                             const ReportContext::Ptr &context)
+                                             const ReportContext::Ptr &context, ErrorHandling errorHandling)
 {
     return load(uri,
                 networkDelegator->managerFor(uri),
-                context);
+                context, errorHandling);
 }
 
 QNetworkReply *AccelTreeResourceLoader::load(const QUrl &uri,
                                              QNetworkAccessManager *const networkManager,
-                                             const ReportContext::Ptr &context)
+                                             const ReportContext::Ptr &context, ErrorHandling errorHandling)
+
 {
     Q_ASSERT(networkManager);
     Q_ASSERT(uri.isValid());
@@ -120,7 +134,7 @@ QNetworkReply *AccelTreeResourceLoader::load(const QUrl &uri,
 
         const QSourceLocation location(uri);
 
-        if(context)
+        if(context && (errorHandling == FailOnError))
             context->error(errorMessage, ReportContext::FODC0002, location);
 
         return 0;
@@ -130,7 +144,7 @@ QNetworkReply *AccelTreeResourceLoader::load(const QUrl &uri,
 }
 
 bool AccelTreeResourceLoader::streamToReceiver(QIODevice *const dev,
-                                               QAbstractXmlReceiver *const receiver,
+                                               AccelTreeBuilder<true> *const receiver,
                                                const NamePool::Ptr &np,
                                                const ReportContext::Ptr &context,
                                                const QUrl &uri)
@@ -154,7 +168,7 @@ bool AccelTreeResourceLoader::streamToReceiver(QIODevice *const dev,
             {
                 /* Send the name. */
                 receiver->startElement(np->allocateQName(reader.namespaceUri().toString(), reader.name().toString(),
-                                                         reader.prefix().toString()));
+                                                         reader.prefix().toString()), reader.lineNumber(), reader.columnNumber());
 
                 /* Send namespace declarations. */
                 const QXmlStreamNamespaceDeclarations &nss = reader.namespaceDeclarations();
@@ -258,6 +272,22 @@ Item AccelTreeResourceLoader::openDocument(const QUrl &uri,
     {
         if(retrieveDocument(uri, context))
             return m_loadedDocuments.value(uri)->root(QXmlNodeModelIndex()); /* Pass in dummy object. We know AccelTree doesn't use it. */
+        else
+            return Item();
+    }
+}
+
+Item AccelTreeResourceLoader::openDocument(QIODevice *source, const QUrl &documentUri,
+                                           const ReportContext::Ptr &context)
+{
+    const AccelTree::Ptr doc(m_loadedDocuments.value(documentUri));
+
+    if(doc)
+        return doc->root(QXmlNodeModelIndex()); /* Pass in dummy object. We know AccelTree doesn't use it. */
+    else
+    {
+        if(retrieveDocument(source, documentUri, context))
+            return m_loadedDocuments.value(documentUri)->root(QXmlNodeModelIndex()); /* Pass in dummy object. We know AccelTree doesn't use it. */
         else
             return Item();
     }

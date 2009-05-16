@@ -94,7 +94,7 @@ TestGroup::TestGroup(TreeItem *p) : m_parent(p)
 
 QVariant TestGroup::data(const Qt::ItemDataRole role, int column) const
 {
-    if(role != Qt::DisplayRole && role != Qt::BackgroundRole)
+    if(role != Qt::DisplayRole && role != Qt::BackgroundRole && role != Qt::ToolTipRole)
         return QVariant();
 
     /* In ResultSummary, the first is the amount of passes and the second is the total. */
@@ -153,6 +153,10 @@ QVariant TestGroup::data(const Qt::ItemDataRole role, int column) const
                 default:
                     return QVariant();
             }
+        }
+        case Qt::ToolTipRole:
+        {
+            return description();
         }
         default:
         {

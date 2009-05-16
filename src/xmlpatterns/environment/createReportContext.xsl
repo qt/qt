@@ -242,6 +242,11 @@ namespace QPatternist
          */]]></xsl:text>
         enum ErrorCode
         {
+            /**
+             * XML Schema error code.
+             */
+            XSDError,
+
 <!-- The order of the calls is significant. The templates takes into account
      to avoid the last comma(extractXSLT20 does this). -->
 <xsl:call-template name="extractXQuery10"/>

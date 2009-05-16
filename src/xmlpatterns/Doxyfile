@@ -1157,7 +1157,7 @@ DOT_PATH               =
 # contain dot files that are included in the documentation (see the
 # \dotfile command).
 
-DOTFILE_DIRS           =
+DOTFILE_DIRS           = schema/doc/
 
 # Set the DOT_TRANSPARENT tag to YES to generate images with a transparent
 # background. This is disabled by default, which results in a white background.

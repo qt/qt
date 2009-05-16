@@ -55,11 +55,11 @@
 
 using namespace QPatternistSDK;
 
-tst_SuiteTest::tst_SuiteTest(const bool isXSLT,
+tst_SuiteTest::tst_SuiteTest(const SuiteType suiteType,
                              const bool alwaysRun) : m_existingBaseline(inputFile(QLatin1String("Baseline.xml")))
                                                    , m_candidateBaseline(inputFile(QLatin1String("CandidateBaseline.xml")))
                                                    , m_abortRun(!alwaysRun && !QFile::exists(QLatin1String("runTests")))
-                                                   , m_isXSLT(isXSLT)
+                                                   , m_suiteType(suiteType)
 {
 }
 
@@ -86,7 +86,16 @@ void tst_SuiteTest::runTestSuite() const
     QString errMsg;
     const QFileInfo fi(m_catalogPath);
     const QUrl catalogPath(QUrl::fromLocalFile(fi.absoluteFilePath()));
-    TestSuite *const ts = TestSuite::openCatalog(catalogPath, errMsg, true, m_isXSLT);
+
+    TestSuite::SuiteType suiteType;
+    switch (m_suiteType) {
+        case XQuerySuite: suiteType = TestSuite::XQuerySuite;
+        case XsltSuite: suiteType = TestSuite::XsltSuite;
+        case XsdSuite: suiteType = TestSuite::XsdSuite;
+        default: break;
+    }
+
+    TestSuite *const ts = TestSuite::openCatalog(catalogPath, errMsg, true, suiteType);
 
     QVERIFY2(ts, qPrintable(QString::fromLatin1("Failed to open the catalog, maybe it doesn't exist or is broken: %1").arg(errMsg)));
 

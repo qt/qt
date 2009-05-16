@@ -24,6 +24,7 @@ HEADERS += $$PWD/qabstractnodetest_p.h              \
            $$PWD/qitemtype_p.h                      \
            $$PWD/qlocalnametest_p.h                 \
            $$PWD/qmultiitemtype_p.h                 \
+           $$PWD/qnamedschemacomponent_p.h          \
            $$PWD/qnamespacenametest_p.h             \
            $$PWD/qnonetype_p.h                      \
            $$PWD/qnumerictype_p.h                   \
@@ -57,6 +58,7 @@ SOURCES += $$PWD/qabstractnodetest.cpp            \
            $$PWD/qitemtype.cpp                    \
            $$PWD/qlocalnametest.cpp               \
            $$PWD/qmultiitemtype.cpp               \
+           $$PWD/qnamedschemacomponent.cpp        \
            $$PWD/qnamespacenametest.cpp           \
            $$PWD/qnonetype.cpp                    \
            $$PWD/qnumerictype.cpp                 \

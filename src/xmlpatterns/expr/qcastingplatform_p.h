@@ -52,16 +52,17 @@
 #ifndef Patternist_CastingPlatform_H
 #define Patternist_CastingPlatform_H
 
-#include "qatomiccaster_p.h"
-#include "qqnamevalue_p.h"
-#include "qatomicstring_p.h"
-#include "qvalidationerror_p.h"
 #include "qatomiccasterlocator_p.h"
+#include "qatomiccaster_p.h"
+#include "qatomicstring_p.h"
 #include "qatomictype_p.h"
 #include "qbuiltintypes_p.h"
 #include "qcommonsequencetypes_p.h"
-#include "qschematypefactory_p.h"
 #include "qpatternistlocale_p.h"
+#include "qqnamevalue_p.h"
+#include "qschematypefactory_p.h"
+#include "qstaticcontext_p.h"
+#include "qvalidationerror_p.h"
 
 QT_BEGIN_HEADER
 
@@ -101,6 +102,7 @@ namespace QPatternist
      * function targetType() must be implemented such that CastingPlatform knows
      * what type it shall cast to.
      *
+     * @see ValueFactory
      * @author Frans Englich <fenglich@trolltech.com>
      * @ingroup Patternist_expressions
      */
@@ -167,9 +169,16 @@ namespace QPatternist
          *
          * @p castImpossible is not initialized. Initialize it to @c false.
          */
-        AtomicCaster::Ptr locateCaster(const ItemType::Ptr &sourceType,
-                                       const ReportContext::Ptr &context,
-                                       bool &castImpossible) const;
+        static AtomicCaster::Ptr locateCaster(const ItemType::Ptr &sourceType,
+                                              const ReportContext::Ptr &context,
+                                              bool &castImpossible,
+                                              const SourceLocationReflection *const location,
+                                              const ItemType::Ptr &targetType);
+    private:
+        inline Item castWithCaster(const Item &sourceValue,
+                                   const AtomicCaster::Ptr &caster,
+                                   const DynamicContext::Ptr &context) const;
+
 
         inline ItemType::Ptr targetType() const
         {

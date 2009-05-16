@@ -50,6 +50,8 @@ HEADERS = ASTItem.h                     \
           Worker.h                      \
           XMLWriter.h                   \
           XQTSTestCase.h                \
+          XSDTestSuiteHandler.h         \
+          XSDTSTestCase.h               \
           XSLTTestSuiteHandler.h
 
 SOURCES = ASTItem.cpp                   \
@@ -75,4 +77,6 @@ SOURCES = ASTItem.cpp                   \
           Worker.cpp                    \
           XMLWriter.cpp                 \
           XQTSTestCase.cpp              \
+          XSDTestSuiteHandler.cpp       \
+          XSDTSTestCase.cpp             \
           XSLTTestSuiteHandler.cpp

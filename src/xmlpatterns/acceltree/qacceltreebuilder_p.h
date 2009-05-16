@@ -90,15 +90,27 @@ namespace QPatternist
         typedef QExplicitlySharedDataPointer<AccelTreeBuilder> Ptr;
 
         /**
+         * Describes the memory relevant features the builder shall support.
+         */
+        enum Feature
+        {
+            NoneFeature,                ///< No special features are enabled.
+            SourceLocationsFeature = 1  ///< The accel tree builder will store source locations for each start element.
+        };
+        Q_DECLARE_FLAGS(Features, Feature)
+
+        /**
          * @param context may be @c null.
          */
         AccelTreeBuilder(const QUrl &docURI,
                          const QUrl &baseURI,
                          const NamePool::Ptr &np,
-                         ReportContext *const context);
+                         ReportContext *const context,
+                         Features features = NoneFeature);
         virtual void startDocument();
         virtual void endDocument();
         virtual void startElement(const QXmlName &name);
+        void startElement(const QXmlName &name, qint64 line, qint64 column);
         virtual void endElement();
         virtual void attribute(const QXmlName &name, const QStringRef &value);
         virtual void characters(const QStringRef &ch);
@@ -175,7 +187,12 @@ namespace QPatternist
          * a member.
          */
         ReportContext *const            m_context;
+
+        Features                        m_features;
     };
+
+    Q_DECLARE_OPERATORS_FOR_FLAGS(AccelTreeBuilder<true>::Features)
+    Q_DECLARE_OPERATORS_FOR_FLAGS(AccelTreeBuilder<false>::Features)
 
 #include "qacceltreebuilder.cpp"
 }

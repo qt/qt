@@ -128,6 +128,11 @@ namespace QPatternist
         typedef QExplicitlySharedDataPointer<AtomicValue> Ptr;
 
         /**
+         * A list if smart pointers wrapping AtomicValue instances.
+         */
+        typedef QList<AtomicValue::Ptr> List;
+
+        /**
          * Determines whether this atomic value has an error. This is used
          * for implementing casting.
          *

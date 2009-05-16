@@ -53,6 +53,8 @@
 #define Patternist_Primitives_H
 
 #include <QtGlobal>
+#include <QtCore/QHash>
+#include <QtCore/QUrl>
 
 /**
  * @file
@@ -70,6 +72,17 @@ QT_BEGIN_HEADER
 QT_BEGIN_NAMESPACE
 
 class QString;
+
+/**
+ * @internal
+ *
+ * A method to allow a QHash or QSet with QUrl
+ * as key type.
+ */
+inline uint qHash(const QUrl &uri)
+{
+    return qHash(uri.toString());
+}
 
 /**
  * @short The namespace for the internal API of QtXmlPatterns

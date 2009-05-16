@@ -54,6 +54,8 @@ QT_MODULE(XmlPatterns)
 namespace QPatternist
 {
     class NamePool;
+    class XsdSchemaParser;
+    class XsdValidatingInstanceReader;
 }
 
 namespace QPatternistSDK
@@ -73,10 +75,15 @@ public:
     QXmlNamePool &operator=(const QXmlNamePool &other);
 
 private:
+    QXmlNamePool(QPatternist::NamePool *namePool);
     friend class QXmlQueryPrivate;
     friend class QXmlQuery;
+    friend class QXmlSchemaPrivate;
+    friend class QXmlSchemaValidatorPrivate;
     friend class QXmlSerializerPrivate;
     friend class QXmlName;
+    friend class QPatternist::XsdSchemaParser;
+    friend class QPatternist::XsdValidatingInstanceReader;
     friend class QPatternistSDK::Global;
     QExplicitlySharedDataPointer<QPatternist::NamePool> d;
 };
