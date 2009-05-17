@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 #include <qcoreapplication.h>
-#include <qdir.h>
+#include <qdiriterator.h>
 #include <qfile.h>
 #include <qmetaobject.h>
 #include <qstring.h>
@@ -140,18 +140,14 @@ void check(const QString &fileName)
 
 void traverse(const QString &path)
 {
-    QDir dir(path);
-    dir.setFilter(QDir::Dirs | QDir::Files | QDir::NoSymLinks);
+    QDirIterator dirIterator(path, QDir::NoDotAndDotDot | QDir::Dirs | QDir::Files | QDir::NoSymLinks);
 
-    const QFileInfoList list = dir.entryInfoList();
-    for (int i = 0; i < list.count(); ++i) {
-        const QFileInfo fi = list.at(i);
-        if (fi.fileName() == QLatin1String(".") || fi.fileName() == QLatin1String(".."))
-            continue;
-        if (fi.fileName().endsWith(".cpp"))
-            check(path + fi.fileName());
-        if (fi.isDir())
-            traverse(path + fi.fileName() + "/"); // recurse
+    while (dirIterator.hasNext()) {
+        QString filePath = dirIterator.next();
+        if (filePath.endsWith(".cpp"))
+            check(filePath);
+        else if (QFileInfo(filePath).isDir())
+            traverse(filePath); // recurse
     }
 }
 
