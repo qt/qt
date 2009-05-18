@@ -723,6 +723,7 @@ void QHttpNetworkConnectionPrivate::handleStatus(QAbstractSocket *socket, QHttpN
                 // proxy or server connections..
                 channels[i].resendCurrent = true;
                 QMetaObject::invokeMethod(q, "_q_startNextRequest", Qt::QueuedConnection);
+            }
         } else {
             int i = indexOf(socket);
             emit channels[i].reply->headerChanged();
