@@ -1,14 +1,12 @@
 TEMPLATE      = subdirs
 SUBDIRS       = \
-                clockticking \
-                composition \
                 eventtransitions \
                 factorial \
-                helloworld \
-                pauseandresume \
                 pingpong \
                 trafficlight \
-                twowaybutton
+                twowaybutton \
+                tankgame \
+                tankgameplugins
 
 # install
 target.path = $$[QT_INSTALL_EXAMPLES]/statemachine

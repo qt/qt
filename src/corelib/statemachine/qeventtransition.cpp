@@ -252,14 +252,10 @@ void QEventTransition::setEventObject(QObject *object)
 /*!
   \reimp
 */
-bool QEventTransition::eventTest(QEvent *event) const
+bool QEventTransition::eventTest(QEvent *event)
 {
     Q_D(const QEventTransition);
-#ifdef QT_STATEMACHINE_SOLUTION
-    if (event->type() == QEvent::Type(QEvent::User-3)) {
-#else
     if (event->type() == QEvent::Wrapped) {
-#endif
         QWrappedEvent *we = static_cast<QWrappedEvent*>(event);
         return (we->object() == d->object)
             && (we->event()->type() == d->eventType);

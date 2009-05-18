@@ -53,9 +53,7 @@
 // We mean it.
 //
 
-#ifndef QT_STATEMACHINE_SOLUTION
 #include <private/qobject_p.h>
-#endif
 
 QT_BEGIN_NAMESPACE
 
@@ -63,9 +61,7 @@ class QStateMachine;
 
 class QAbstractState;
 class Q_CORE_EXPORT QAbstractStatePrivate
-#ifndef QT_STATEMACHINE_SOLUTION
     : public QObjectPrivate
-#endif
 {
     Q_DECLARE_PUBLIC(QAbstractState)
 
@@ -82,10 +78,6 @@ public:
 
     void emitEntered();
     void emitExited();
-
-#ifdef QT_STATEMACHINE_SOLUTION
-    QAbstractState *q_ptr;
-#endif
 };
 
 QT_END_NAMESPACE

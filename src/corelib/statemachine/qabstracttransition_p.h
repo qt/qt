@@ -53,11 +53,10 @@
 // We mean it.
 //
 
-#ifndef QT_STATEMACHINE_SOLUTION
 #include <private/qobject_p.h>
-#endif
 
 #include <QtCore/qlist.h>
+#include <QtCore/qpointer.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -67,9 +66,7 @@ class QStateMachine;
 
 class QAbstractTransition;
 class Q_CORE_EXPORT QAbstractTransitionPrivate
-#ifndef QT_STATEMACHINE_SOLUTION
     : public QObjectPrivate
-#endif
 {
     Q_DECLARE_PUBLIC(QAbstractTransition)
 public:
@@ -78,19 +75,15 @@ public:
     static QAbstractTransitionPrivate *get(QAbstractTransition *q);
     static const QAbstractTransitionPrivate *get(const QAbstractTransition *q);
 
-    bool callEventTest(QEvent *e) const;
+    bool callEventTest(QEvent *e);
     void callOnTransition(QEvent *e);
     QState *sourceState() const;
     QStateMachine *machine() const;
 
-    QList<QAbstractState*> targetStates;
+    QList<QPointer<QAbstractState> > targetStates;
 
 #ifndef QT_NO_ANIMATION
     QList<QAbstractAnimation*> animations;
-#endif
-
-#ifdef QT_STATEMACHINE_SOLUTION
-    QAbstractTransition *q_ptr;
 #endif
 };
 
