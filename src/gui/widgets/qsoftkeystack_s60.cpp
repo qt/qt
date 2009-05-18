@@ -90,15 +90,22 @@ void QSoftKeyStackPrivate::setNativeSoftKeys()
             if (softKeyAction->role() == QSoftKeyAction::Menu) {
                 nativeContainer->SetCommandL(softKeyAction->nativePosition(), EAknSoftkeyOptions, *text);
             } else {
-                nativeContainer->SetCommandL(softKeyAction->nativePosition(), SOFTKEYSTART + softKeyAction->qtContextKey(), *text);
+                nativeContainer->SetCommandL(softKeyAction->nativePosition(), SOFTKEYSTART + softKeyAction->qtContextKey()-Qt::Key_Context1, *text);
             }
             CleanupStack::PopAndDestroy();
         }
     }
 }
 
-void QSoftKeyStack::handleSoftKeyPress(int command)
+void QSoftKeyStackPrivate::handleSoftKeyPress(int command)
 {
-    // Do the magic, here.
-    // Map the command back to actual softkey on the top of the stack and handle it
+    const QSoftkeySet top = softKeyStack.top();
+    int index = command-SOFTKEYSTART;
+    if( index<0 || index>=top.count()){
+        // ### FIX THIS, add proper error handling, now fail quietly
+        return;
+    }
+
+    top.at(index)->activate(QAction::Trigger);
 }
+

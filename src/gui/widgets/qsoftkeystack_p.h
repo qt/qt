@@ -78,6 +78,7 @@ public:
     void push(const QList<QSoftKeyAction*> &softKeys);
     void pop();
     const QSoftkeySet& top();
+    void handleSoftKeyPress(int command);
     
 private:
     void mapSoftKeys(const QSoftkeySet &top);

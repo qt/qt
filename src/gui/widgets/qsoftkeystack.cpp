@@ -137,3 +137,9 @@ void QSoftKeyStack::handleFocusChanged(QWidget *old, QWidget *now)
     QList<QAction*> actions = now->actions();
     // Do something with these actions.
 }
+
+void QSoftKeyStack::handleSoftKeyPress(int command)
+{
+    Q_D(QSoftKeyStack);
+    d->handleSoftKeyPress(command);
+}
