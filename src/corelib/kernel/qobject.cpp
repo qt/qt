@@ -752,14 +752,18 @@ QObject::~QObject()
         }
 
         // disconnect all senders
-        for (int i = 0; i < d->senders.count(); ++i) {
+        for (int i = 0; i < d->senders.count(); ) {
             QObjectPrivate::Connection *s = d->senders[i];
-            if (!s->sender)
-                continue;
 
             QMutex *m = &s->sender->d_func()->threadData->mutex;
             bool needToUnlock = QOrderedMutexLocker::relock(locker.mutex(), m);
-            s = d->senders[i];
+            if (m < locker.mutex()) {
+                if (i >= d->senders.count() || s != d->senders[i]) {
+                    if (needToUnlock)
+                        m->unlock();
+                    continue;
+                }
+            }
             s->receiver = 0;
             if (s->sender) {
                 QObjectConnectionListVector *senderLists = s->sender->d_func()->connectionLists;
@@ -769,6 +773,7 @@ QObject::~QObject()
 
             if (needToUnlock)
                 m->unlock();
+            ++i;
         }
 
         d->senders.clear();

@@ -52,6 +52,7 @@
 #include <qalgorithms.h>
 #include <qtimer.h>
 #include <qpointer.h>
+#include <qendian.h>
 
 #include <unistd.h>
 #include <stdlib.h>
@@ -335,7 +336,13 @@ public:
     virtual int readySamples(int) = 0;
 
     int getSample(int off, int bps) {
-        return (bps == 1) ? (data[out+off] - 128) * 128 : ((short*)data)[(out/2)+off];
+
+        //
+        //  16-bit audio data is converted to native endian so that it can be scaled
+        //  Yes, this is ugly on a BigEndian machine
+        //  Perhaps it shouldn't be scaled at all
+        //
+        return (bps == 1) ? (data[out+off] - 128) * 128 : qToLittleEndian(((short*)data)[(out/2)+off]);
     }
 
     int add(int* mixl, int* mixr, int count)
@@ -547,7 +554,7 @@ public:
 		    wavedata_remaining = 0;
 		    mFinishedRead = true;
 		} else if ( qstrncmp(chunk.id,"data",4) == 0 ) {
-		    wavedata_remaining = chunk.size;
+		    wavedata_remaining = qToLittleEndian( chunk.size );
 
 		    //out = max = sound_buffer_size;
 
@@ -572,10 +579,23 @@ public:
 			//qDebug("couldn't ready chunkdata");
 			mFinishedRead = true;
 		    }
+
 #define WAVE_FORMAT_PCM 1
-		    else if ( chunkdata.formatTag != WAVE_FORMAT_PCM ) {
-			//qDebug("WAV file: UNSUPPORTED FORMAT %d",chunkdata.formatTag);
-			mFinishedRead = true;
+		    else
+            {
+                /*
+                **  Endian Fix the chuck data
+                */
+                chunkdata.formatTag         = qToLittleEndian( chunkdata.formatTag );
+                chunkdata.channels          = qToLittleEndian( chunkdata.channels );
+                chunkdata.samplesPerSec     = qToLittleEndian( chunkdata.samplesPerSec );
+                chunkdata.avgBytesPerSec    = qToLittleEndian( chunkdata.avgBytesPerSec );
+                chunkdata.blockAlign        = qToLittleEndian( chunkdata.blockAlign );
+                chunkdata.wBitsPerSample    = qToLittleEndian( chunkdata.wBitsPerSample );
+                if ( chunkdata.formatTag != WAVE_FORMAT_PCM ) {
+                    qWarning("WAV file: UNSUPPORTED FORMAT %d",chunkdata.formatTag);
+                    mFinishedRead = true;
+                }
 		    }
 		} else {
 		    // ignored chunk
@@ -1166,9 +1186,15 @@ bool QWSSoundServerPrivate::openDevice()
             if (ioctl(fd, SNDCTL_DSP_SETFRAGMENT, &v))
                 qWarning("Could not set fragments to %08x",v);
 #ifdef QT_QWS_SOUND_16BIT
-            v=AFMT_S16_LE; if (ioctl(fd, SNDCTL_DSP_SETFMT, &v))
+            //
+            //  Use native endian
+            //  Since we have manipulated the data volume the data
+            //  is now in native format, even though its stored
+            //  as little endian in the WAV file
+            //
+            v=AFMT_S16_NE; if (ioctl(fd, SNDCTL_DSP_SETFMT, &v))
                 qWarning("Could not set format %d",v);
-            if (AFMT_S16_LE != v)
+            if (AFMT_S16_NE != v)
                 qDebug("Want format %d got %d", AFMT_S16_LE, v);
 #else
             v=AFMT_U8; if (ioctl(fd, SNDCTL_DSP_SETFMT, &v))

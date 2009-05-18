@@ -47,6 +47,8 @@
 #include <qspinbox.h>
 #include <qmenu.h>
 #include <qdebug.h>
+#include <qdatetime.h>
+#include <qtextformat.h>
 
 
 //TESTED_CLASS=
@@ -68,6 +70,11 @@ public slots:
 private slots:
     void getSetCheck();
     void buttonClickCheck();
+
+    void setTextFormat();
+    void resetTextFormat();
+
+    void setWeekdayFormat();
 };
 
 // Testing get/set functions
@@ -215,6 +222,52 @@ void tst_QCalendarWidget::buttonClickCheck()
 
 }
 
+void tst_QCalendarWidget::setTextFormat()
+{
+    QCalendarWidget calendar;
+    QTextCharFormat format;
+    format.setFontItalic(true);
+    format.setForeground(Qt::green);
+
+    const QDate date(1984, 10, 20);
+    calendar.setDateTextFormat(date, format);
+    QCOMPARE(calendar.dateTextFormat(date), format);
+}
+
+void tst_QCalendarWidget::resetTextFormat()
+{
+    QCalendarWidget calendar;
+    QTextCharFormat format;
+    format.setFontItalic(true);
+    format.setForeground(Qt::green);
+
+    const QDate date(1984, 10, 20);
+    calendar.setDateTextFormat(date, format);
+
+    calendar.setDateTextFormat(QDate(), QTextCharFormat());
+    QCOMPARE(calendar.dateTextFormat(date), QTextCharFormat());
+}
+
+void tst_QCalendarWidget::setWeekdayFormat()
+{
+    QCalendarWidget calendar;
+
+    QTextCharFormat format;
+    format.setFontItalic(true);
+    format.setForeground(Qt::green);
+
+    calendar.setWeekdayTextFormat(Qt::Wednesday, format);
+
+    // check the format of the a given month
+    for (int i = 1; i <= 31; ++i) {
+        const QDate date(1984, 10, i);
+        const Qt::DayOfWeek dayOfWeek = static_cast<Qt::DayOfWeek>(date.dayOfWeek());
+        if (dayOfWeek == Qt::Wednesday)
+            QCOMPARE(calendar.weekdayTextFormat(dayOfWeek), format);
+        else
+            QVERIFY(calendar.weekdayTextFormat(dayOfWeek) != format);
+    }
+}
 
 tst_QCalendarWidget::tst_QCalendarWidget()
 {
