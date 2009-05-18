@@ -15,6 +15,12 @@ class MainWindow : public QMainWindow
 {
     Q_OBJECT
 public:
+    
+private slots:
+    void context1Slot();
+    void context3Slot();
+public:
+    
     MainWindow(QWidget *parent = 0);
     ~MainWindow();
     QMenu *contextMenu;
@@ -54,6 +60,8 @@ MainWindow::MainWindow(QWidget *parent)
     context2->setMenu(contextMenu);
     contextMenu->addAction(context3);
     
+    connect(context1, SIGNAL(triggered()), this, SLOT(context1Slot()));
+    connect(context3, SIGNAL(triggered()), this, SLOT(context3Slot()));
     action1 = new QSoftKeyAction(QSoftKeyAction::Ok, QString("Ok"), central);
     action2 = new QSoftKeyAction(QSoftKeyAction::Back, QString("Back"), central);
     action3 = new QSoftKeyAction(QSoftKeyAction::Cancel, QString("Cancel"), central);
@@ -90,6 +98,13 @@ MainWindow::~MainWindow()
     delete action5;
     delete contextMenu;
 }
+
+void MainWindow::context1Slot()
+    {
+    }
+void MainWindow::context3Slot()
+    {
+    }
 
 int main(int argc, char *argv[])
 {
