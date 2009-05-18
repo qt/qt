@@ -206,8 +206,6 @@ static int numerusHelper(int n, const uchar *rules, int rulesSize)
     return -1;
 }
 
-extern bool qt_detectRTLLanguage();
-
 class QTranslatorPrivate : public QObjectPrivate
 {
     Q_DECLARE_PUBLIC(QTranslator)
