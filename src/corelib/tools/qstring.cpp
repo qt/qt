@@ -195,139 +195,52 @@ static int ucstrnicmp(const ushort *a, const ushort *b, int l)
     return ucstricmp(a, a + l, b, b + l);
 }
 
-#if 0
-static bool qMemEquals(const quint8 *a, const quint8 *b, int bytes)
-{
-    if (a == b)
-        return true;
-
-    // check alignement
-    qptrdiff align = ((quintptr)a - (quintptr)b);
-//     if (sizeof(void *) == 8 && !(align & 7)) {
-//     } else
-    if (!(align & 3)) {
-        quintptr pa = (quintptr)a;
-        if (pa & 3) {
-            if (pa & 1) {
-                if (*a != *b)
-                    return false;
-                ++a;
-                ++b;
-                --bytes;
-            }
-            if (pa & 2) {
-                if (*reinterpret_cast<const quint16 *>(a) != *reinterpret_cast<const quint16 *>(b))
-                    return false;
-                a += 2;
-                b += 2;
-                bytes -= 2;
-            }
-        }
-        int tail = (bytes & 3);
-        const quint32 *sa = reinterpret_cast<const quint32 *>(a);
-        const quint32 *sb = reinterpret_cast<const quint32 *>(b);
-        const quint32 *e = sa + (bytes >> 2);
-        while (sa < e) {
-            if (*sa != *sb)
-                return false;
-            ++sa;
-            ++sb;
-        }
-        a = reinterpret_cast<const quint8 *>(sa);
-        b = reinterpret_cast<const quint8 *>(sb);
-        if (tail) {
-            if (tail & 2) {
-                if (*reinterpret_cast<const quint16 *>(a) != *reinterpret_cast<const quint16 *>(b))
-                    return false;
-                sa += 2;
-                sb += 2;
-            }
-            if (tail & 1) {
-                if (*a != *b)
-                    return false;
-            }
-        }
-    } else if (!(align & 1)) {
-        quintptr pa = (quintptr)a;
-        if (pa & 1) {
-            if (*a != *b)
-                return false;
-            ++a;
-            ++b;
-            --bytes;
-        }
-        bool tail = (bytes & 1);
-        const quint16 *sa = reinterpret_cast<const quint16 *>(a);
-        const quint16 *sb = reinterpret_cast<const quint16 *>(b);
-        const quint16 *e = sa + (bytes >> 1);
-        while (sa < e) {
-            if (*sa != *sb)
-                return false;
-            ++sa;
-            ++sb;
-        }
-        a = reinterpret_cast<const quint8 *>(sa);
-        b = reinterpret_cast<const quint8 *>(sb);
-        if (tail) {
-            if (*a != *b)
-                return false;
-        }
-    } else {
-        const quint8 *e = a + bytes;
-        while (a < e) {
-            if (*a != *b)
-                return false;
-            ++a;
-            ++b;
-        }
-    }
-    return true;
-}
-#endif
-
 static bool qMemEquals(const quint16 *a, const quint16 *b, int length)
 {
+    // Benchmarking indicates that doing memcmp is much slower than
+    // executing the comparison ourselves.
+    // To make it even faster, we do a 32-bit comparison, comparing
+    // twice the amount of data as a normal word-by-word comparison.
+    //
+    // Benchmarking results on a 2.33 GHz Core2 Duo, with a 64-QChar
+    // block of data, with 4194304 iterations (per iteration):
+    //    operation             usec            cpu ticks
+    //     memcmp                330               710
+    //     16-bit                135             285-290
+    //  32-bit aligned          69.7             135-145
+    //
+    // Testing also indicates that unaligned 32-bit loads are as
+    // performant as 32-bit aligned.
     if (a == b)
         return true;
-    
-    // check alignement
-    qptrdiff align = ((quintptr)a - (quintptr)b);
-    Q_ASSERT(!(align & 1));
-//     if (sizeof(void *) == 8 && !(align & 7)) {
-//     } else
-    if (!(align & 3)) {
-        quintptr pa = (quintptr)a;
-        if (pa & 2) {
-            if (*a != *b)
-                return false;
-            ++a;
-            ++b;
-            --length;
-        }
-        int tail = (length & 1);
-        const quint32 *sa = reinterpret_cast<const quint32 *>(a);
-        const quint32 *sb = reinterpret_cast<const quint32 *>(b);
-        const quint32 *e = sa + (length >> 1);
-        while (sa < e) {
-            if (*sa != *sb)
-                return false;
-            ++sa;
-            ++sb;
-        }
-        a = reinterpret_cast<const quint16 *>(sa);
-        b = reinterpret_cast<const quint16 *>(sb);
-        if (tail) {
-            if (*a != *b)
+
+    register union {
+        const quint16 *w;
+        const quint32 *d;
+        quintptr value;
+    } sa, sb;
+    sa.w = a;
+    sb.w = b;
+
+    // check alignment
+    bool unaligned = (sa.value | sb.value) & 2;
+#if defined(__i386__) || defined(__x86_64__) || defined(_M_X64_)
+    unaligned = false;
+#endif
+    if (!unaligned) {
+        // both addresses are 4-bytes aligned (or this is an x86)
+        // do a fast 32-bit comparison
+        for (register int halfLength = length / 2; halfLength; --halfLength, ++sa.d, ++sb.d) {
+            if (*sa.d != *sb.d)
                 return false;
         }
-    } else if (!(align & 1)) {
-        const quint16 *e = a + length;
-        while (a < e) {
-            if (*a != *b)
-                return false;
-            ++a;
-            ++b;
-        }
+        return length & 1 ? (*sa.w == *sb.w) : true;
+    }
+
+    // one or both of the addresses isn't 2-byte aligned
+    for ( ; length; --length, ++sa.w, ++sb.w) {
+        if (*sa.w != *sb.w)
+            return false;
     }
     return true;
 }
