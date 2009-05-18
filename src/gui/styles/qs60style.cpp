@@ -881,13 +881,8 @@ void QS60Style::drawComplexControl(ComplexControl control, const QStyleOptionCom
             QS60StylePrivate::drawSkinElement(skinElement, painter, cmbxEditField, flags);
 
             if (sub & SC_ComboBoxArrow) {
-                const int iconRectWidth = buttonOption.rect.width()>>1;
-                const int nudgeWidth = iconRectWidth>>1;
-
                 // Draw the little arrow
-                const QRect arrowRect(((buttonOption.rect.left()+buttonOption.rect.right())>>1) - nudgeWidth,
-                    buttonOption.rect.center().y()-(buttonOption.rect.height()>>2)+nudgeWidth, iconRectWidth, iconRectWidth);
-
+                buttonOption.rect.adjust(1, 1, -1, -1);               
                 painter->save();
                 painter->setPen(option->palette.buttonText().color());
                 drawPrimitive(PE_IndicatorSpinDown, &buttonOption, painter, widget);
@@ -1968,70 +1963,43 @@ void QS60Style::drawPrimitive(PrimitiveElement element, const QStyleOption *opti
     case PE_IndicatorArrowRight:
     case PE_IndicatorArrowUp:
         {
-        if (option->rect.width() <= 1 || option->rect.height() <= 1)
-            break;
-        QRect r = option->rect;
-        int size = qMin(r.height(), r.width());
-        int border = size/5;
-        int sqsize = 2*(size>>1);
-        QImage image(sqsize, sqsize, QImage::Format_ARGB32);
-        image.fill(Qt::transparent);
-        QPainter imagePainter(&image);
-
-        QPolygon a;
-        int halfsqsize = sqsize>>1;
-        int borderlessSqSize = sqsize - border;
-        switch (element) {
-            case PE_IndicatorArrowUp:
-                a.setPoints(3, border, halfsqsize,  halfsqsize, border,  borderlessSqSize, halfsqsize);
-                break;
-            case PE_IndicatorArrowDown:
-                a.setPoints(3, border, halfsqsize,  halfsqsize, borderlessSqSize,  borderlessSqSize, halfsqsize);
-                break;
-            case PE_IndicatorArrowRight:
-                a.setPoints(3, borderlessSqSize, halfsqsize,  halfsqsize, border,  halfsqsize, borderlessSqSize);
-                break;
-            case PE_IndicatorArrowLeft:
-                a.setPoints(3, border, halfsqsize,  halfsqsize, border,  halfsqsize, borderlessSqSize);
-                break;
-            default:
-                break;
-        }
-
-        int bsx = 0;
-        int bsy = 0;
-
-        if (option->state & State_Sunken) {
-            bsx = pixelMetric(PM_ButtonShiftHorizontal);
-            bsy = pixelMetric(PM_ButtonShiftVertical);
-        }
-
-        QRect bounds = a.boundingRect();
-        int sx = halfsqsize - bounds.center().x() - 1;
-        int sy = halfsqsize - bounds.center().y() - 1;
-        QPalette themeColor = option->palette;
-        imagePainter.translate(sx + bsx, sy + bsy);
-        imagePainter.setPen(themeColor.buttonText().color());
-
-        if (!(option->state & State_Enabled)) {
-            imagePainter.translate(1, 1);
-            imagePainter.setPen(themeColor.light().color());
-            imagePainter.drawPolygon(a);
-            imagePainter.translate(-1, -1);
-            imagePainter.setPen(themeColor.mid().color());
-        }
-        imagePainter.drawPolygon(a);
-        imagePainter.end();
-        int xOffset = r.x() + ((r.width() - size)>>1);
-        int yOffset = r.y() + ((r.height() - size)>>1);
-
-        painter->drawImage(xOffset, yOffset, image);
+        QS60StyleEnums::SkinParts skinPart;
+        if (element==PE_IndicatorArrowDown)
+            skinPart = QS60StyleEnums::SP_QgnGrafScrollArrowDown;
+        else if (element==PE_IndicatorArrowLeft)
+            skinPart = QS60StyleEnums::SP_QgnGrafScrollArrowLeft;
+        else if (element==PE_IndicatorArrowRight)
+            skinPart = QS60StyleEnums::SP_QgnGrafScrollArrowRight;
+        else if (element==PE_IndicatorArrowUp)
+            skinPart = QS60StyleEnums::SP_QgnGrafScrollArrowUp;
+        
+        QS60StylePrivate::drawSkinPart(skinPart, painter, option->rect, flags);
         }
         break;
 #endif //QT_NO_TOOLBUTTON
 #ifndef QT_NO_SPINBOX
     case PE_IndicatorSpinDown:
     case PE_IndicatorSpinUp:
+        if (const QStyleOptionSpinBox *spinBox = qstyleoption_cast<const QStyleOptionSpinBox *>(option)) {
+            QStyleOptionSpinBox optionSpinBox = *spinBox;
+            const QS60StyleEnums::SkinParts part = (element == PE_IndicatorSpinUp) ? 
+                QS60StyleEnums::SP_QgnGrafScrollArrowUp : 
+                QS60StyleEnums::SP_QgnGrafScrollArrowDown;
+            const int adjustment = qMin(optionSpinBox.rect.width(), optionSpinBox.rect.height())/6;
+            optionSpinBox.rect.translate(0, (element == PE_IndicatorSpinDown) ? adjustment : -adjustment );  
+            QS60StylePrivate::drawSkinPart(part, painter, optionSpinBox.rect,flags);
+        }
+#ifndef QT_NO_COMBOBOX
+        else if (const QStyleOptionFrame *cmb = qstyleoption_cast<const QStyleOptionFrame *>(option)) {
+            // We want to draw down arrow here for comboboxes as well.
+            const QS60StyleEnums::SkinParts part = QS60StyleEnums::SP_QgnGrafScrollArrowDown;
+            QStyleOptionFrame comboBox = *cmb;
+            const int adjustment = qMin(comboBox.rect.width(), comboBox.rect.height())/6;
+            comboBox.rect.translate(0, (element == PE_IndicatorSpinDown) ? adjustment : -adjustment );  
+            QS60StylePrivate::drawSkinPart(part, painter, comboBox.rect,flags);
+        }
+#endif //QT_NO_COMBOBOX
+        break;    
     case PE_IndicatorSpinMinus:
     case PE_IndicatorSpinPlus:
         if (const QStyleOptionSpinBox *spinBox = qstyleoption_cast<const QStyleOptionSpinBox *>(option)) {
@@ -2191,7 +2159,6 @@ void QS60Style::drawPrimitive(PrimitiveElement element, const QStyleOption *opti
                 if (option->rect.width() <= option->rect.height()) 
                     verticalMagic = 3;                
                 iconRect.translate(3, verticalMagic - resizeValue);
-                iconRect.adjust(-3,5,0,0);
                 QS60StylePrivate::drawSkinPart(skinPart, painter, iconRect, flags);            
             }            
         }
@@ -2392,10 +2359,8 @@ QRect QS60Style::subControlRect(ComplexControl control, const QStyleOptionComple
     case CC_SpinBox:
         if (const QStyleOptionSpinBox *spinbox = qstyleoption_cast<const QStyleOptionSpinBox *>(option)) {
             const int frameThickness = spinbox->frame ? pixelMetric(PM_SpinBoxFrameWidth, spinbox, widget) : 0;
-            const int buttonMargin = 2; //spinbox->frame ? /*QS60StylePrivate::pixelMetric(QStyle::PM_ButtonMargin)*/2 : 0;
-            const int buttonWidth =
-                QS60StylePrivate::pixelMetric(QStyle::PM_ButtonIconSize) + 2*buttonMargin;
-            //todo: buttonMargin commented out as WAY too big in pixel metrics
+            const int buttonMargin = spinbox->frame ? 2 : 0;
+            const int buttonWidth = QS60StylePrivate::pixelMetric(QStyle::PM_ButtonIconSize) + 2*buttonMargin;
             QSize buttonSize;
             buttonSize.setHeight(qMax(8, spinbox->rect.height() - frameThickness));
             buttonSize.setWidth(buttonWidth);
@@ -2443,8 +2408,7 @@ QRect QS60Style::subControlRect(ComplexControl control, const QStyleOptionComple
             ret = cmb->rect;
             const int width = cmb->rect.width();
             const int height = cmb->rect.height();
-            //todo: buttonMargin commented out as WAY too big in pixel metrics
-            const int buttonMargin = cmb->frame ? /*QS60StylePrivate::pixelMetric(QStyle::PM_ButtonMargin)*/2 : 0;
+            const int buttonMargin = cmb->frame ? 2 : 0;
             // lets use spinbox frame here as well, as no combobox specific value available.
             const int frameThickness = cmb->frame ? pixelMetric(PM_SpinBoxFrameWidth, cmb, widget) : 0;
             const int buttonWidth = QS60StylePrivate::pixelMetric(QStyle::PM_ButtonIconSize);
