@@ -720,6 +720,7 @@ bool QTemporaryFile::open(OpenMode flags)
         return true;
     }
 
+    flags |= QIODevice::ReadWrite;
     if (QFile::open(flags)) {
         d->fileName = d->fileEngine->fileName(QAbstractFileEngine::DefaultName);
         return true;

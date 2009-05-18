@@ -87,6 +87,8 @@ private slots:
     void stressTest();
     void rename();
     void renameFdLeak();
+    void reOpenThroughQFile();
+
 public:
 };
 
@@ -422,6 +424,19 @@ void tst_QTemporaryFile::renameFdLeak()
     // check if QTemporaryFile closed the file
     QVERIFY(::close(fd) == -1 && errno == EBADF);
 #endif
+}
+
+void tst_QTemporaryFile::reOpenThroughQFile()
+{
+    QByteArray data("abcdefghij");
+
+    QTemporaryFile file;
+    QVERIFY(((QFile &)file).open(QIODevice::WriteOnly));
+    QCOMPARE(file.write(data), (qint64)data.size());
+
+    file.close();
+    QVERIFY(file.open());
+    QCOMPARE(file.readAll(), data);
 }
 
 QTEST_MAIN(tst_QTemporaryFile)
