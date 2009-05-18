@@ -880,7 +880,7 @@ bool QGraphicsProxyWidget::event(QEvent *event)
         if (d->widget && d->widget->isVisible()) {
             QGraphicsSceneGestureEvent *ge = static_cast<QGraphicsSceneGestureEvent*>(event);
             //### TODO: widget->childAt(): decompose gesture event and find widget under hotspots.
-            QGestureManager::instance()->sendGestureEvent(d->widget, ge->gestures().toSet(), ge->cancelledGestures());
+            //QGestureManager::instance()->sendGestureEvent(d->widget, ge->gestures().toSet(), ge->cancelledGestures());
             return true;
         }
         break;

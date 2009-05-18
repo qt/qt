@@ -86,7 +86,9 @@ public:
     // declared in qapplication.cpp
     static QGestureManager* instance();
 
-    bool sendGestureEvent(QWidget *receiver, const QSet<QGesture*> &gestures,
+    bool sendGestureEvent(QWidget *receiver,
+                          const QSet<QGesture*> &startedGestures,
+                          const QSet<QGesture*> &updatedGestures,
                           const QSet<QString> &cancelled = QSet<QString>());
 
 protected:
