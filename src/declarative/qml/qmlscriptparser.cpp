@@ -451,7 +451,7 @@ bool ProcessAST::visit(AST::UiObjectDefinition *node)
                               node->lastSourceLocation());
 
     defineObjectBinding(/*propertyName = */ 0,
-                        node->qualifiedObjectNameId,
+                        node->qualifiedTypeNameId,
                         l,
                         node->initializer);
 
@@ -462,11 +462,11 @@ bool ProcessAST::visit(AST::UiObjectDefinition *node)
 // UiObjectMember: UiQualifiedId T_COLON UiQualifiedId UiObjectInitializer ;
 bool ProcessAST::visit(AST::UiObjectBinding *node)
 {
-    LocationSpan l = location(node->qualifiedObjectNameId->identifierToken,
+    LocationSpan l = location(node->qualifiedTypeNameId->identifierToken,
                               node->initializer->rbraceToken);
 
     defineObjectBinding(node->qualifiedId,
-                        node->qualifiedObjectNameId,
+                        node->qualifiedTypeNameId,
                         l,
                         node->initializer);
 
