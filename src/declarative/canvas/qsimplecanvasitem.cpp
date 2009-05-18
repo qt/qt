@@ -1505,11 +1505,8 @@ void QSimpleCanvasItemPrivate::convertToGraphicsItem(QGraphicsItem *parent)
 
     q->setClipType(clip);
 
-    for (int ii = 0; ii < children.count(); ++ii) {
+    for (int ii = 0; ii < children.count(); ++ii) 
         static_cast<QSimpleCanvasItemPrivate*>(children.at(ii)->d_ptr)->convertToGraphicsItem(graphicsItem);
-        if (children.at(ii)->z() == 0)
-            children.at(ii)->setZ(ii);
-    }
 }
 
 /*!
