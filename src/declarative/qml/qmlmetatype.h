@@ -64,8 +64,10 @@ public:
 
     static bool copy(int type, void *data, const void *copy = 0);
 
-    static QmlType *qmlType(const QByteArray &);
     static QList<QByteArray> qmlTypeNames();
+
+    static QmlType *qmlType(const QByteArray &);
+    static QmlType *qmlType(const QMetaObject *);
 
     static QMetaProperty defaultProperty(const QMetaObject *);
     static QMetaProperty defaultProperty(QObject *);
@@ -108,7 +110,7 @@ public:
 };
 
 class QmlTypePrivate;
-class QmlType
+class Q_DECLARATIVE_EXPORT QmlType
 {
 public:
     QByteArray typeName() const;
