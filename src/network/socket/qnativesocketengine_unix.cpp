@@ -518,8 +518,14 @@ int QNativeSocketEnginePrivate::nativeAccept()
 #if defined (QNATIVESOCKETENGINE_DEBUG)
     qDebug("QNativeSocketEnginePrivate::nativeAccept() == %i", acceptedDescriptor);
 #endif
-    // Ensure that the socket is closed on exec*()
-    qt_socket_fcntl(acceptedDescriptor, F_SETFD, FD_CLOEXEC);
+
+    //check if we have vaild descriptor at all
+    if(acceptedDescriptor > 0) {
+        // Ensure that the socket is closed on exec*()
+        qt_socket_fcntl(acceptedDescriptor, F_SETFD, FD_CLOEXEC);
+    } else {
+        qWarning("QNativeSocketEnginePrivate::nativeAccept() - acceptedDescriptor <= 0");
+    }
 
     return acceptedDescriptor;
 }
