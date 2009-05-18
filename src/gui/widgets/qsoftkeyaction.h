@@ -56,7 +56,7 @@ class Q_GUI_EXPORT QSoftKeyAction : public QAction
 {
 public:
     enum StandardRole {
-        Options,
+        Options=0,
         Select,
         Back,
         Next,

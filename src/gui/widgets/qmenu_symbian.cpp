@@ -26,7 +26,8 @@
 #include <eikbtgpc.h>
 #include <QtCore/qlibrary.h>
 #include <avkon.rsg>
-
+#include <qsoftkeystack.h>
+#include <qsoftkeyaction.h>
 #ifndef QT_NO_MENUBAR
 
 QT_BEGIN_NAMESPACE
@@ -47,6 +48,7 @@ struct SymbianMenuItem
 static QList<SymbianMenuItem*> symbianMenus;
 static QList<QMenuBar*> nativeMenuBars;
 static uint qt_symbian_menu_static_cmd_id = QT_FIRST_MENU_ITEM;
+static QWidget* widgetWithContextMenu=0;
 
 bool menuExists()
 {
@@ -177,6 +179,22 @@ static void rebuildMenu()
 {
     QMenuBarPrivate *mb = 0;
     QWidget *w = qApp->activeWindow();
+    QMainWindow *mainWindow = qobject_cast<QMainWindow*>(w);
+    QSoftKeyStack* softKeyStack = mainWindow->softKeyStack();
+    const QSoftkeySet& softKeyTop = softKeyStack->top();
+    
+    int index=0;
+    bool found=false;
+    while( index<softKeyTop.count() && !found)
+    {
+        QSoftKeyAction* softAction = softKeyTop.at(index);
+        QSoftKeyAction::StandardRole role = softAction->role();
+        if(softAction->role() == QSoftKeyAction::ContextMenu) {
+            widgetWithContextMenu = softAction->parentWidget();
+            found=true;
+            }
+        index++;
+    }
     if (w)
     {
         mb = menubars()->value(w);
@@ -186,7 +204,8 @@ static void rebuildMenu()
             return;
         mb->symbian_menubar->rebuild();
     }
- }
+    widgetWithContextMenu = 0;
+}
 
 Q_GUI_EXPORT void qt_symbian_show_toplevel( CEikMenuPane* menuPane)
 {
@@ -358,21 +377,27 @@ void QMenuBarPrivate::QSymbianMenuBarPrivate::removeAction(QSymbianMenuAction *a
     rebuild();
 }
 
+void QMenuBarPrivate::QSymbianMenuBarPrivate::InsertNativeMenuItems(const QList<QAction*> &actions)
+{
+    for (int i = 0; i <actions.size(); ++i) {
+        QSymbianMenuAction *symbianActionTopLevel = new QSymbianMenuAction;
+        symbianActionTopLevel->action = actions.at(i);
+        symbianActionTopLevel->parent = 0;
+        symbianActionTopLevel->command = qt_symbian_menu_static_cmd_id++;
+        qt_symbian_insert_action(symbianActionTopLevel, &symbianMenus);
+    }    
+}
+
 void QMenuBarPrivate::QSymbianMenuBarPrivate::rebuild()
 {
     qt_symbian_menu_static_cmd_id = QT_FIRST_MENU_ITEM;
     deleteAll( &symbianMenus );
-    if (!d)
-        return;
-    for (int i = 0; i < d->actions.size(); ++i) {
-        QSymbianMenuAction *symbianActionTopLevel = new QSymbianMenuAction;
-        symbianActionTopLevel->action = d->actions.at(i);
-        symbianActionTopLevel->parent = 0;
-        symbianActionTopLevel->command = qt_symbian_menu_static_cmd_id++;
-        qt_symbian_insert_action(symbianActionTopLevel, &symbianMenus);
-    }
-}
+    if (d)
+        InsertNativeMenuItems(d->actions);
 
+    if (widgetWithContextMenu)
+        InsertNativeMenuItems(widgetWithContextMenu->actions());
+    }
 QT_END_NAMESPACE
 
 #endif //QT_NO_MENUBAR
