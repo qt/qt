@@ -95,8 +95,8 @@ struct QmlMetaTypeData
     QBitArray qmllists;
     QBitArray lists;
 };
-Q_GLOBAL_STATIC(QmlMetaTypeData, metaTypeData);
-Q_GLOBAL_STATIC(QReadWriteLock, metaTypeDataLock);
+Q_GLOBAL_STATIC(QmlMetaTypeData, metaTypeData)
+Q_GLOBAL_STATIC(QReadWriteLock, metaTypeDataLock)
 
 class QmlTypePrivate
 {
@@ -388,7 +388,8 @@ int QmlMetaType::registerInterface(const QmlPrivate::MetaTypeIds &id,
     data->idToType.insert(type->typeId(), type);
     data->idToType.insert(type->qListTypeId(), type);
     data->idToType.insert(type->qmlListTypeId(), type);
-    data->nameToType.insert(type->qmlTypeName(), type);
+    if (!type->qmlTypeName().isEmpty())
+        data->nameToType.insert(type->qmlTypeName(), type);
 
     if (data->interfaces.size() < id.typeId) 
         data->interfaces.resize(id.typeId + 16);
@@ -862,6 +863,14 @@ QmlType *QmlMetaType::qmlType(const QByteArray &name)
     QmlMetaTypeData *data = metaTypeData();
 
     return data->nameToType.value(name);
+}
+
+QmlType *QmlMetaType::qmlType(const QMetaObject *metaObject)
+{
+    QReadLocker lock(metaTypeDataLock());
+    QmlMetaTypeData *data = metaTypeData();
+
+    return data->metaObjectToType.value(metaObject);
 }
 
 QList<QByteArray> QmlMetaType::qmlTypeNames()
