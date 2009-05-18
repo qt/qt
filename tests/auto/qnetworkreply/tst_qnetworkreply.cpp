@@ -2146,7 +2146,7 @@ void tst_QNetworkReply::ioGetWithManyProxies()
 #ifndef Q_OS_SYMBIAN    
     QTestEventLoop::instance().enterLoop(10);
 #else   
-    QTestEventLoop::instance().enterLoop(30);
+    QTestEventLoop::instance().enterLoop(60);
 #endif     
     QVERIFY(!QTestEventLoop::instance().timeout());
 
