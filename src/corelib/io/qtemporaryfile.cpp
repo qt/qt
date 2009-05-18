@@ -322,7 +322,6 @@ bool QTemporaryFileEngine::open(QIODevice::OpenMode openMode)
         qfilename += QLatin1String(".XXXXXX");
 
     int suffixLength = qfilename.length() - (qfilename.lastIndexOf(QLatin1String("XXXXXX"), -1, Qt::CaseSensitive) + 6);
-    d->closeFileHandle = true;
     char *filename = qstrdup(qfilename.toLocal8Bit());
 
 #ifndef Q_WS_WIN
@@ -330,16 +329,19 @@ bool QTemporaryFileEngine::open(QIODevice::OpenMode openMode)
     if (fd != -1) {
         // First open the fd as an external file descriptor to
         // initialize the engine properly.
-        QFSFileEngine::open(openMode, fd);
+        if (QFSFileEngine::open(openMode, fd)) {
 
-        // Allow the engine to close the handle even if it's "external".
-        d->closeFileHandle = true;
+            // Allow the engine to close the handle even if it's "external".
+            d->closeFileHandle = true;
 
-        // Restore the file names (open() resets them).
-        d->filePath = QString::fromLocal8Bit(filename); //changed now!
-        d->nativeInitFileName();
-        delete [] filename;
-        return true;
+            // Restore the file names (open() resets them).
+            d->filePath = QString::fromLocal8Bit(filename); //changed now!
+            d->nativeInitFileName();
+            delete [] filename;
+            return true;
+        }
+
+        QT_CLOSE(fd);
     }
     delete [] filename;
     setError(errno == EMFILE ? QFile::ResourceError : QFile::OpenError, qt_error_string(errno));
