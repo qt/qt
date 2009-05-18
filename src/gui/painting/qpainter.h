@@ -50,6 +50,7 @@
 #include <QtGui/qimage.h>
 #include <QtGui/qtextoption.h>
 #include <QtGui/qdrawutil.h>
+#include <QtGui/qstatictext.h>
 
 #ifndef QT_INCLUDE_COMPAT
 #include <QtGui/qpolygon.h>
@@ -368,6 +369,8 @@ public:
 
     void setLayoutDirection(Qt::LayoutDirection direction);
     Qt::LayoutDirection layoutDirection() const;
+
+    void drawStaticText(const QPointF &p, const QStaticText &staticText);
 
     void drawText(const QPointF &p, const QString &s);
     inline void drawText(const QPoint &p, const QString &s);
