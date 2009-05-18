@@ -294,6 +294,7 @@ public:
     QTemporaryFileEngine(const QString &file) : QFSFileEngine(file) { }
     ~QTemporaryFileEngine();
 
+    bool isReallyOpen();
     void setFileName(const QString &file);
 
     bool open(QIODevice::OpenMode flags);
@@ -306,6 +307,21 @@ QTemporaryFileEngine::~QTemporaryFileEngine()
     QFSFileEngine::close();
 }
 
+bool QTemporaryFileEngine::isReallyOpen()
+{
+    Q_D(QFSFileEngine);
+
+    if (!((0 == d->fh) && (-1 == d->fd)
+#if defined Q_OS_WIN
+                && (INVALID_HANDLE_VALUE == d->fileHandle)
+#endif
+            ))
+        return true;
+
+    return false;
+
+}
+
 void QTemporaryFileEngine::setFileName(const QString &file)
 {
     // Really close the file, so we don't leak
@@ -316,6 +332,7 @@ void QTemporaryFileEngine::setFileName(const QString &file)
 bool QTemporaryFileEngine::open(QIODevice::OpenMode openMode)
 {
     Q_D(QFSFileEngine);
+    Q_ASSERT(!isReallyOpen());
 
     QString qfilename = d->filePath;
     if(!qfilename.contains(QLatin1String("XXXXXX")))
@@ -716,8 +733,10 @@ bool QTemporaryFile::open(OpenMode flags)
 {
     Q_D(QTemporaryFile);
     if (!d->fileName.isEmpty()) {
-        setOpenMode(flags);
-        return true;
+        if (static_cast<QTemporaryFileEngine*>(fileEngine())->isReallyOpen()) {
+            setOpenMode(flags);
+            return true;
+        }
     }
 
     flags |= QIODevice::ReadWrite;
