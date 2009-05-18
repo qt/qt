@@ -62,6 +62,10 @@ protected:
 
     void createMenu(QMenuBar *menu, QMenu *flatmenu);
 
+private slots:
+    void setScaleSkin();
+    void setScaleView();
+
 private:
     QString currentFileName;
     PreviewDeviceSkin *skin;
@@ -80,6 +84,8 @@ private:
     int record_autotime;
     bool devicemode;
     QAction *recordAction;
+    QString currentSkin;
+    bool scaleSkin;
 
     QFxTestEngine *testEngine;
 };
