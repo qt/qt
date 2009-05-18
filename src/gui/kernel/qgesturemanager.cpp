@@ -546,19 +546,20 @@ bool QGestureManager::sendGestureEvent(QWidget *receiver,
         for(QSet<QGesture*>::iterator it = gestures.begin(), e = gestures.end(); it != e; ++it)
             (*it)->ignore();
         // TODO: send cancelled gesture event to the widget that received the original gesture!
-        QGestureEvent event(it.value(), cancelled);
+        QGestureEvent event(gestures, cancelled);
         DEBUG() << "QGestureManager::sendGestureEvent: sending now to" << receiver
-                << "gestures" << it.value();
+                << "gestures" << gestures;
         bool processed = qt_sendSpontaneousEvent(receiver, &event);
-        QSet<QGesture*> started = startedGestures & it.value();
-        if (event.isAccepted()) {
-            DEBUG() << "QGestureManager::sendGestureEvent: all gestures were accepted";
-            foreach(QGesture *g, started)
-                g->accept();
-        }
+        QSet<QGesture*> started = startedGestures & gestures;
+        DEBUG() << "QGestureManager::sendGestureEvent:" <<
+            (event.isAccepted() ? "" : "not") << "all gestures were accepted";
         if (!started.isEmpty() && !(processed && event.isAccepted())) {
             // there are started gestures events that weren't
             // accepted, so propagating each gesture independently.
+            if (event.isAccepted()) {
+                foreach(QGesture *g, started)
+                    g->accept();
+            }
             QSet<QGesture*>::const_iterator it = started.begin(),
                                              e = started.end();
             for(; it != e; ++it) {
