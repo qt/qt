@@ -299,7 +299,7 @@ case 21: {
     sym(1).Node = 0;
 
     diagnostic_messages.append(DiagnosticMessage(DiagnosticMessage::Error, loc(2),
-      "Expected a type name after token `:'"));
+      QLatin1String("Expected a type name after token `:'")));
 
     return false; // ### recover
   }

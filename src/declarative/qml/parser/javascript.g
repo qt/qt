@@ -46,7 +46,7 @@
 %decl           javascriptparser_p.h
 %impl           javascriptparser.cpp
 %expect         2
-%expect-rr      1
+%expect-rr      2
 
 %token T_AND "&"                T_AND_AND "&&"              T_AND_EQ "&="
 %token T_BREAK "break"          T_CASE "case"               T_CATCH "catch"
@@ -656,7 +656,7 @@ case $rule_number: {
     sym(1).Node = 0;
 
     diagnostic_messages.append(DiagnosticMessage(DiagnosticMessage::Error, loc(2),
-      "Expected a type name after token `:'"));
+      QLatin1String("Expected a type name after token `:'")));
 
     return false; // ### recover
   }
