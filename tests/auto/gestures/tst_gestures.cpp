@@ -40,8 +40,7 @@
 ****************************************************************************/
 
 
-#include <qapplication.h>
-#include <qlayout.h>
+#include <QtGui>
 
 #include <QtTest/QtTest>
 
@@ -85,6 +84,58 @@ public:
     static void setSpont(QEvent *event, bool spont) { event->spont = spont; }
 };
 
+struct GestureState
+{
+    int seenGestureEvent;
+    struct LastGestureEvent
+    {
+        struct SingleshotGesture
+        {
+            bool delivered;
+            QPoint offset;
+        } singleshot;
+        struct PinchGesture
+        {
+            bool delivered;
+            TouchPoint startPoints[2];
+            TouchPoint lastPoints[2];
+            TouchPoint points[2];
+            QPoint offset;
+        } pinch;
+        struct SecondFingerGesture
+        {
+            bool delivered;
+            TouchPoint startPoint;
+            TouchPoint lastPoint;
+            TouchPoint point;
+            QPoint offset;
+        } secondfinger;
+        QSet<QString> cancelled;
+    } last;
+
+    GestureState() { reset(); }
+    void reset()
+    {
+        seenGestureEvent = 0;
+        last.singleshot.delivered = false;
+        last.singleshot.offset = QPoint();
+        last.pinch.delivered = false;
+        last.pinch.startPoints[0] = TouchPoint();
+        last.pinch.startPoints[1] = TouchPoint();
+        last.pinch.lastPoints[0] = TouchPoint();
+        last.pinch.lastPoints[1] = TouchPoint();
+        last.pinch.points[0] = TouchPoint();
+        last.pinch.points[1] = TouchPoint();
+        last.pinch.offset = QPoint();
+        last.secondfinger.delivered = false;
+        last.secondfinger.startPoint = TouchPoint();
+        last.secondfinger.lastPoint = TouchPoint();
+        last.secondfinger.point = TouchPoint();
+        last.secondfinger.offset = QPoint();
+        last.cancelled.clear();
+    }
+};
+
 class GestureWidget : public QWidget
 {
     Q_OBJECT
@@ -124,7 +175,6 @@ public:
         if (type == GrabAllGestures || type == GrabSecondFinger) {
             secondFingerGestureId = grabGesture(SecondFingerGestureRecognizer::Name);
         }
-
         reset();
     }
     ~GestureWidget()
@@ -163,91 +213,49 @@ public:
     bool shouldAcceptPinchGesture;
     bool shouldAcceptSecondFingerGesture;
 
-    int seenGestureEvent;
-    struct LastGestureEvent
-    {
-        struct SingleshotGesture
-        {
-            bool delivered;
-            QPoint offset;
-        } singleshot;
-        struct PinchGesture
-        {
-            bool delivered;
-            TouchPoint startPoints[2];
-            TouchPoint lastPoints[2];
-            TouchPoint points[2];
-            QPoint offset;
-        } pinch;
-        struct SecondFingerGesture
-        {
-            bool delivered;
-            TouchPoint startPoint;
-            TouchPoint lastPoint;
-            TouchPoint point;
-            QPoint offset;
-        } secondfinger;
-        QSet<QString> cancelled;
-    } last;
+    GestureState gesture;
+
     void reset()
     {
-        seenGestureEvent = 0;
-        last.singleshot.delivered = false;
-        last.singleshot.offset = QPoint();
-        last.pinch.delivered = false;
-        last.pinch.startPoints[0] = TouchPoint();
-        last.pinch.startPoints[1] = TouchPoint();
-        last.pinch.lastPoints[0] = TouchPoint();
-        last.pinch.lastPoints[1] = TouchPoint();
-        last.pinch.points[0] = TouchPoint();
-        last.pinch.points[1] = TouchPoint();
-        last.pinch.offset = QPoint();
-        last.secondfinger.delivered = false;
-        last.secondfinger.startPoint = TouchPoint();
-        last.secondfinger.lastPoint = TouchPoint();
-        last.secondfinger.point = TouchPoint();
-        last.secondfinger.offset = QPoint();
-        last.cancelled.clear();
-
         shouldAcceptSingleshotGesture = true;
         shouldAcceptPinchGesture = true;
         shouldAcceptSecondFingerGesture = true;
+        gesture.reset();
     }
-
 protected:
     bool event(QEvent *event)
     {
         if (event->type() == QEvent::Gesture) {
             QGestureEvent *e = static_cast<QGestureEvent*>(event);
-            ++seenGestureEvent;
+            ++gesture.seenGestureEvent;
             if (SingleshotGesture *g = (SingleshotGesture*)e->gesture(SingleshotGestureRecognizer::Name)) {
-                last.singleshot.delivered = true;
-                last.singleshot.offset = g->offset;
+                gesture.last.singleshot.delivered = true;
+                gesture.last.singleshot.offset = g->offset;
                 if (shouldAcceptSingleshotGesture)
                     g->accept();
             }
             if (PinchGesture *g = (PinchGesture*)e->gesture(PinchGestureRecognizer::Name)) {
-                last.pinch.delivered = true;
-                last.pinch.startPoints[0] = g->startPoints[0];
-                last.pinch.startPoints[1] = g->startPoints[1];
-                last.pinch.lastPoints[0] = g->lastPoints[0];
-                last.pinch.lastPoints[1] = g->lastPoints[1];
-                last.pinch.points[0] = g->points[0];
-                last.pinch.points[1] = g->points[1];
-                last.pinch.offset = g->offset;
+                gesture.last.pinch.delivered = true;
+                gesture.last.pinch.startPoints[0] = g->startPoints[0];
+                gesture.last.pinch.startPoints[1] = g->startPoints[1];
+                gesture.last.pinch.lastPoints[0] = g->lastPoints[0];
+                gesture.last.pinch.lastPoints[1] = g->lastPoints[1];
+                gesture.last.pinch.points[0] = g->points[0];
+                gesture.last.pinch.points[1] = g->points[1];
+                gesture.last.pinch.offset = g->offset;
                 if (shouldAcceptPinchGesture)
                     g->accept();
             }
             if (SecondFingerGesture *g = (SecondFingerGesture*)e->gesture(SecondFingerGestureRecognizer::Name)) {
-                last.secondfinger.delivered = true;
-                last.secondfinger.startPoint = g->startPoint;
-                last.secondfinger.lastPoint = g->lastPoint;
-                last.secondfinger.point = g->point;
-                last.secondfinger.offset = g->offset;
+                gesture.last.secondfinger.delivered = true;
+                gesture.last.secondfinger.startPoint = g->startPoint;
+                gesture.last.secondfinger.lastPoint = g->lastPoint;
+                gesture.last.secondfinger.point = g->point;
+                gesture.last.secondfinger.offset = g->offset;
                 if (shouldAcceptSecondFingerGesture)
                     g->accept();
             }
-            last.cancelled = e->cancelledGestures();
+            gesture.last.cancelled = e->cancelledGestures();
             return true;
         }
         return QWidget::event(event);
@@ -255,6 +263,61 @@ protected:
 };
 QVector<QColor> GestureWidget::colors;
 int GestureWidget::numberOfWidgets = 0;
+
+class GraphicsScene : public QGraphicsScene
+{
+public:
+    GraphicsScene()
+    {
+        shouldAcceptSingleshotGesture = false;
+        shouldAcceptPinchGesture = false;
+        shouldAcceptSecondFingerGesture = false;
+    }
+    bool shouldAcceptSingleshotGesture;
+    bool shouldAcceptPinchGesture;
+    bool shouldAcceptSecondFingerGesture;
+    GestureState gesture;
+
+protected:
+    bool event(QEvent *event)
+    {
+        if (event->type() == QEvent::GraphicsSceneGesture) {
+            QGraphicsSceneGestureEvent *e = static_cast<QGraphicsSceneGestureEvent*>(event);
+            ++gesture.seenGestureEvent;
+            QGraphicsScene::event(event);
+            if (SingleshotGesture *g = (SingleshotGesture*)e->gesture(SingleshotGestureRecognizer::Name)) {
+                gesture.last.singleshot.delivered = true;
+                gesture.last.singleshot.offset = g->offset;
+                if (shouldAcceptSingleshotGesture)
+                    g->accept();
+            }
+            if (PinchGesture *g = (PinchGesture*)e->gesture(PinchGestureRecognizer::Name)) {
+                gesture.last.pinch.delivered = true;
+                gesture.last.pinch.startPoints[0] = g->startPoints[0];
+                gesture.last.pinch.startPoints[1] = g->startPoints[1];
+                gesture.last.pinch.lastPoints[0] = g->lastPoints[0];
+                gesture.last.pinch.lastPoints[1] = g->lastPoints[1];
+                gesture.last.pinch.points[0] = g->points[0];
+                gesture.last.pinch.points[1] = g->points[1];
+                gesture.last.pinch.offset = g->offset;
+                if (shouldAcceptPinchGesture)
+                    g->accept();
+            }
+            if (SecondFingerGesture *g = (SecondFingerGesture*)e->gesture(SecondFingerGestureRecognizer::Name)) {
+                gesture.last.secondfinger.delivered = true;
+                gesture.last.secondfinger.startPoint = g->startPoint;
+                gesture.last.secondfinger.lastPoint = g->lastPoint;
+                gesture.last.secondfinger.point = g->point;
+                gesture.last.secondfinger.offset = g->offset;
+                if (shouldAcceptSecondFingerGesture)
+                    g->accept();
+            }
+            gesture.last.cancelled = e->cancelledGestures();
+            return true;
+        }
+        return QGraphicsScene::event(event);
+    }
+};
 
 class tst_Gestures : public QObject
 {
@@ -277,6 +340,8 @@ private slots:
     void simplePropagation();
     void simplePropagation2();
     void acceptedGesturePropagation();
+
+    void simpleGraphicsView();
 
 private:
     SingleshotGestureRecognizer *singleshotRecognizer;
@@ -338,9 +403,9 @@ void tst_Gestures::singleshotGesture()
     mainWidget->grabSingleshotGesture();
     SingleshotEvent event;
     sendSpontaneousEvent(mainWidget, &event);
-    QVERIFY(mainWidget->seenGestureEvent);
-    QVERIFY(mainWidget->last.singleshot.delivered);
-    QVERIFY(mainWidget->last.cancelled.isEmpty());
+    QVERIFY(mainWidget->gesture.seenGestureEvent);
+    QVERIFY(mainWidget->gesture.last.singleshot.delivered);
+    QVERIFY(mainWidget->gesture.last.cancelled.isEmpty());
 }
 
 void tst_Gestures::sendPinchEvents(QWidget *receiver, const QPoint &fromFinger1, const QPoint &fromFinger2)
@@ -376,13 +441,13 @@ void tst_Gestures::pinchGesture()
     mainWidget->grabPinchGesture();
     sendPinchEvents(mainWidget, QPoint(10,10), QPoint(20,20));
 
-    QVERIFY(mainWidget->seenGestureEvent);
-    QVERIFY(!mainWidget->last.singleshot.delivered);
-    QVERIFY(mainWidget->last.cancelled.isEmpty());
-    QVERIFY(mainWidget->last.pinch.delivered);
-    QCOMPARE(mainWidget->last.pinch.startPoints[0].pt, QPoint(10,10));
-    QCOMPARE(mainWidget->last.pinch.startPoints[1].pt, QPoint(20,20));
-    QCOMPARE(mainWidget->last.pinch.offset, QPoint(0,0));
+    QVERIFY(mainWidget->gesture.seenGestureEvent);
+    QVERIFY(!mainWidget->gesture.last.singleshot.delivered);
+    QVERIFY(mainWidget->gesture.last.cancelled.isEmpty());
+    QVERIFY(mainWidget->gesture.last.pinch.delivered);
+    QCOMPARE(mainWidget->gesture.last.pinch.startPoints[0].pt, QPoint(10,10));
+    QCOMPARE(mainWidget->gesture.last.pinch.startPoints[1].pt, QPoint(20,20));
+    QCOMPARE(mainWidget->gesture.last.pinch.offset, QPoint(0,0));
 }
 
 void tst_Gestures::simplePropagation()
@@ -397,12 +462,12 @@ void tst_Gestures::simplePropagation()
 
     SingleshotEvent event;
     sendSpontaneousEvent(&nonGestureWidget, &event);
-    QVERIFY(!offsetWidget.seenGestureEvent);
-    QVERIFY(!nonGestureWidget.seenGestureEvent);
-    QVERIFY(mainWidget->seenGestureEvent);
-    QVERIFY(mainWidget->last.cancelled.isEmpty());
-    QVERIFY(mainWidget->last.singleshot.delivered);
-    QCOMPARE(mainWidget->last.singleshot.offset, QPoint(GestureWidget::LeftMargin, 30 + GestureWidget::TopMargin));
+    QVERIFY(!offsetWidget.gesture.seenGestureEvent);
+    QVERIFY(!nonGestureWidget.gesture.seenGestureEvent);
+    QVERIFY(mainWidget->gesture.seenGestureEvent);
+    QVERIFY(mainWidget->gesture.last.cancelled.isEmpty());
+    QVERIFY(mainWidget->gesture.last.singleshot.delivered);
+    QCOMPARE(mainWidget->gesture.last.singleshot.offset, QPoint(GestureWidget::LeftMargin, 30 + GestureWidget::TopMargin));
 }
 
 void tst_Gestures::simplePropagation2()
@@ -417,26 +482,26 @@ void tst_Gestures::simplePropagation2()
 
     SingleshotEvent event;
     sendSpontaneousEvent(&secondGestureWidget, &event);
-    QVERIFY(!secondGestureWidget.seenGestureEvent);
-    QVERIFY(!nonGestureMiddleWidget.seenGestureEvent);
-    QVERIFY(mainWidget->seenGestureEvent);
-    QVERIFY(mainWidget->last.singleshot.delivered);
-    QVERIFY(mainWidget->last.cancelled.isEmpty());
-    QCOMPARE(mainWidget->last.singleshot.offset, QPoint(GestureWidget::LeftMargin*2,GestureWidget::TopMargin*2));
+    QVERIFY(!secondGestureWidget.gesture.seenGestureEvent);
+    QVERIFY(!nonGestureMiddleWidget.gesture.seenGestureEvent);
+    QVERIFY(mainWidget->gesture.seenGestureEvent);
+    QVERIFY(mainWidget->gesture.last.singleshot.delivered);
+    QVERIFY(mainWidget->gesture.last.cancelled.isEmpty());
+    QCOMPARE(mainWidget->gesture.last.singleshot.offset, QPoint(GestureWidget::LeftMargin*2,GestureWidget::TopMargin*2));
 
     mainWidget->reset();
     nonGestureMiddleWidget.reset();
     secondGestureWidget.reset();
 
     sendPinchEvents(&secondGestureWidget, QPoint(10,10), QPoint(20,20));
-    QVERIFY(secondGestureWidget.seenGestureEvent);
-    QVERIFY(!secondGestureWidget.last.singleshot.delivered);
-    QVERIFY(secondGestureWidget.last.pinch.delivered);
-    QCOMPARE(secondGestureWidget.last.pinch.startPoints[0].pt, QPoint(10,10));
-    QCOMPARE(secondGestureWidget.last.pinch.startPoints[1].pt, QPoint(20,20));
-    QCOMPARE(secondGestureWidget.last.pinch.offset, QPoint(0,0));
-    QVERIFY(!nonGestureMiddleWidget.seenGestureEvent);
-    QVERIFY(!mainWidget->seenGestureEvent);
+    QVERIFY(secondGestureWidget.gesture.seenGestureEvent);
+    QVERIFY(!secondGestureWidget.gesture.last.singleshot.delivered);
+    QVERIFY(secondGestureWidget.gesture.last.pinch.delivered);
+    QCOMPARE(secondGestureWidget.gesture.last.pinch.startPoints[0].pt, QPoint(10,10));
+    QCOMPARE(secondGestureWidget.gesture.last.pinch.startPoints[1].pt, QPoint(20,20));
+    QCOMPARE(secondGestureWidget.gesture.last.pinch.offset, QPoint(0,0));
+    QVERIFY(!nonGestureMiddleWidget.gesture.seenGestureEvent);
+    QVERIFY(!mainWidget->gesture.seenGestureEvent);
 }
 
 void tst_Gestures::acceptedGesturePropagation()
@@ -453,18 +518,18 @@ void tst_Gestures::acceptedGesturePropagation()
     QApplication::processEvents();
 
     sendPinchEvents(&secondGestureWidget, QPoint(10, 10), QPoint(40, 40));
-    QVERIFY(secondGestureWidget.seenGestureEvent);
-    QVERIFY(!secondGestureWidget.last.singleshot.delivered);
-    QVERIFY(!secondGestureWidget.last.pinch.delivered);
-    QVERIFY(secondGestureWidget.last.secondfinger.delivered);
-    QCOMPARE(secondGestureWidget.last.secondfinger.startPoint.pt, QPoint(40,40));
-    QVERIFY(!nonGestureMiddleWidget.seenGestureEvent);
-    QVERIFY(mainWidget->seenGestureEvent);
-    QVERIFY(!mainWidget->last.singleshot.delivered);
-    QVERIFY(!mainWidget->last.secondfinger.delivered);
-    QVERIFY(mainWidget->last.pinch.delivered);
-    QCOMPARE(mainWidget->last.pinch.startPoints[0].pt, QPoint(10,10));
-    QCOMPARE(mainWidget->last.pinch.startPoints[1].pt, QPoint(40,40));
+    QVERIFY(secondGestureWidget.gesture.seenGestureEvent);
+    QVERIFY(!secondGestureWidget.gesture.last.singleshot.delivered);
+    QVERIFY(!secondGestureWidget.gesture.last.pinch.delivered);
+    QVERIFY(secondGestureWidget.gesture.last.secondfinger.delivered);
+    QCOMPARE(secondGestureWidget.gesture.last.secondfinger.startPoint.pt, QPoint(40,40));
+    QVERIFY(!nonGestureMiddleWidget.gesture.seenGestureEvent);
+    QVERIFY(mainWidget->gesture.seenGestureEvent);
+    QVERIFY(!mainWidget->gesture.last.singleshot.delivered);
+    QVERIFY(!mainWidget->gesture.last.secondfinger.delivered);
+    QVERIFY(mainWidget->gesture.last.pinch.delivered);
+    QCOMPARE(mainWidget->gesture.last.pinch.startPoints[0].pt, QPoint(10,10));
+    QCOMPARE(mainWidget->gesture.last.pinch.startPoints[1].pt, QPoint(40,40));
 
     mainWidget->reset();
     nonGestureMiddleWidget.reset();
@@ -473,15 +538,33 @@ void tst_Gestures::acceptedGesturePropagation()
     // don't accept it and make sure it propagates to parent
     secondGestureWidget.shouldAcceptSecondFingerGesture = false;
     sendPinchEvents(&secondGestureWidget, QPoint(10, 10), QPoint(40, 40));
-    QVERIFY(secondGestureWidget.seenGestureEvent);
-    QVERIFY(secondGestureWidget.last.secondfinger.delivered);
-    QVERIFY(!nonGestureMiddleWidget.seenGestureEvent);
-    QVERIFY(mainWidget->seenGestureEvent);
-    QVERIFY(!mainWidget->last.singleshot.delivered);
-    QVERIFY(mainWidget->last.secondfinger.delivered);
-    QVERIFY(mainWidget->last.pinch.delivered);
+    QVERIFY(secondGestureWidget.gesture.seenGestureEvent);
+    QVERIFY(secondGestureWidget.gesture.last.secondfinger.delivered);
+    QVERIFY(!nonGestureMiddleWidget.gesture.seenGestureEvent);
+    QVERIFY(mainWidget->gesture.seenGestureEvent);
+    QVERIFY(!mainWidget->gesture.last.singleshot.delivered);
+    QVERIFY(mainWidget->gesture.last.secondfinger.delivered);
+    QVERIFY(mainWidget->gesture.last.pinch.delivered);
 }
 
+void tst_Gestures::simpleGraphicsView()
+{
+    mainWidget->grabSingleshotGesture();
+    GraphicsScene scene;
+    QGraphicsView view(&scene);
+    view.grabGesture(SingleshotGestureRecognizer::Name);
+    mainWidget->layout()->addWidget(&view);
+    QApplication::processEvents();
+
+    scene.shouldAcceptSingleshotGesture = true;
+
+    SingleshotEvent event;
+    sendSpontaneousEvent(&view, &event);
+    QVERIFY(!mainWidget->gesture.seenGestureEvent);
+    QVERIFY(scene.gesture.seenGestureEvent);
+    QVERIFY(scene.gesture.last.singleshot.delivered);
+    QVERIFY(scene.gesture.last.cancelled.isEmpty());
+}
 
 QTEST_MAIN(tst_Gestures)
 #include "tst_gestures.moc"

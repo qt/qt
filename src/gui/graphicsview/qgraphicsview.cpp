@@ -2787,7 +2787,7 @@ bool QGraphicsView::event(QEvent *event)
             break;
         case QEvent::Gesture:
             viewportEvent(event);
-            break;
+            return true;
         default:
             break;
         }
@@ -2876,8 +2876,7 @@ bool QGraphicsView::viewportEvent(QEvent *event)
         gestureEvent.setCancelledGestures(ev->cancelledGestures());
         QApplication::sendEvent(d->scene, &gestureEvent);
         event->setAccepted(gestureEvent.isAccepted());
-        if (gestureEvent.isAccepted())
-            return true;
+        return true;
     }
         break;
     case QEvent::TouchBegin:
