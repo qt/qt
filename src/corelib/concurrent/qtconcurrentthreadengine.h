@@ -51,6 +51,7 @@
 #include <QtCore/qdebug.h>
 #include <QtCore/qtconcurrentexception.h>
 #include <QtCore/qwaitcondition.h>
+#include <QtCore/qmutex.h>
 
 QT_BEGIN_HEADER
 QT_BEGIN_NAMESPACE
