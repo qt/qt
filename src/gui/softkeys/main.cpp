@@ -19,6 +19,7 @@ public:
 private slots:
     void context1Slot();
     void context3Slot();
+    void softKeySlot();
 public:
     
     MainWindow(QWidget *parent = 0);
@@ -68,7 +69,8 @@ MainWindow::MainWindow(QWidget *parent)
     action4 = new QSoftKeyAction(QSoftKeyAction::Menu, QString("Menu"), central);
     action5 = new QSoftKeyAction(QSoftKeyAction::ContextMenu,QString("ContextMenu"), central);
     
-   
+    connect(action2, SIGNAL(triggered()), this, SLOT(softKeySlot()));
+    
     QList<QSoftKeyAction*> myActionList;
     myActionList.append(action1);
     myActionList.append(action2);
@@ -80,6 +82,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     QList<QSoftKeyAction*> myActionList2;
     myActionList2.append(action4);
+    myActionList2.append(action2);
     myActionList2.append(action5);
     softKeyStack()->push(myActionList2);
     
@@ -105,6 +108,11 @@ void MainWindow::context1Slot()
 void MainWindow::context3Slot()
     {
     }
+
+void MainWindow::softKeySlot()
+{
+
+}
 
 int main(int argc, char *argv[])
 {
