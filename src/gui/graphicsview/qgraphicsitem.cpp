@@ -978,6 +978,7 @@ void QGraphicsItemPrivate::initStyleOption(QStyleOptionGraphicsItem *option, con
 void QGraphicsItemCache::purge()
 {
     QPixmapCache::remove(key);
+    key = QPixmapCache::Key();
     QMutableMapIterator<QPaintDevice *, DeviceData> it(deviceData);
     while (it.hasNext()) {
         DeviceData &data = it.next().value();
@@ -1426,12 +1427,6 @@ void QGraphicsItem::setCacheMode(CacheMode mode, const QSize &logicalCacheSize)
         cache->purge();
 
         if (mode == ItemCoordinateCache) {
-            if (cache->key.isEmpty()) {
-                // Generate new simple pixmap cache key.
-                QString tmp;
-                tmp.sprintf("qgv-%p", this);
-                cache->key = tmp;
-            }
             if (lastMode == mode && cache->fixedSize == logicalCacheSize)
                 noVisualChange = true;
             cache->fixedSize = logicalCacheSize;
@@ -4205,7 +4200,7 @@ void QGraphicsItem::scroll(qreal dx, qreal dy, const QRectF &rect)
                            && (d->cacheMode == ItemCoordinateCache && !c->fixedSize.isValid());
         if (scrollCache) {
             QPixmap pix;
-            if (QPixmapCache::find(c->key, pix)) {
+            if (QPixmapCache::find(c->key, &pix)) {
                 // Adjust with 2 pixel margin. Notice the loss of precision
                 // when converting to QRect.
                 int adjust = 2;
@@ -4214,7 +4209,7 @@ void QGraphicsItem::scroll(qreal dx, qreal dy, const QRectF &rect)
 
                 _q_scrollPixmap(&pix, irect, dx, dy);
 
-                QPixmapCache::insert(c->key, pix);
+                QPixmapCache::replace(c->key, pix);
 
                 // Translate the existing expose.
                 foreach (QRectF exposedRect, c->exposed)

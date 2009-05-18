@@ -39,54 +39,54 @@
 **
 ****************************************************************************/
 
-#ifndef QPIXMAPCACHE_H
-#define QPIXMAPCACHE_H
+#ifndef QPIXMAPCACHE_P_H
+#define QPIXMAPCACHE_P_H
 
-#include <QtGui/qpixmap.h>
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API. This header
+// file may change from version to version without notice, or even be removed.
+//
+// We mean it.
+//
 
-QT_BEGIN_HEADER
+#include "qpixmapcache.h"
+#include "qpaintengine.h"
+#include <private/qimage_p.h>
+#include <private/qpixmap_raster_p.h>
+#include "qcache.h"
 
-QT_BEGIN_NAMESPACE
-
-QT_MODULE(Gui)
-
-class Q_GUI_EXPORT QPixmapCache
+class QPixmapCache::KeyData
 {
 public:
-    class KeyData;
-    class Key
-    {
-    public:
-        Key();
-        Key(const Key &other);
-        ~Key();
-        bool operator ==(const Key &key) const;
-        inline bool operator !=(const Key &key) const
-        { return !operator==(key); }
-        Key &operator =(const Key &other);
+    KeyData() : isValid(true), key(0), ref(1) {}
+    KeyData(const KeyData &other)
+     : isValid(other.isValid), key(other.key), ref(1) {}
+    ~KeyData() {}
 
-    private:
-        KeyData *d;
-        friend class QPMCache;
-        friend class QPixmapCache;
-    };
-
-    static int cacheLimit();
-    static void setCacheLimit(int);
-    static QPixmap *find(const QString &key);
-    static bool find(const QString &key, QPixmap &pixmap);
-    static bool find(const QString &key, QPixmap *pixmap);
-    static bool find(const Key &key, QPixmap *pixmap);
-    static bool insert(const QString &key, const QPixmap &pixmap);
-    static Key insert(const QPixmap &pixmap);
-    static bool replace(const Key &key, const QPixmap &pixmap);
-    static void remove(const QString &key);
-    static void remove(const Key &key);
-    static void clear();
+    bool isValid;
+    int key;
+    int ref;
 };
 
-QT_END_NAMESPACE
+// XXX: hw: is this a general concept we need to abstract?
+class QDetachedPixmap : public QPixmap
+{
+public:
+    QDetachedPixmap(const QPixmap &pix) : QPixmap(pix)
+    {
+        if (data && data->classId() == QPixmapData::RasterClass) {
+            QRasterPixmapData *d = static_cast<QRasterPixmapData*>(data);
+            if (!d->image.isNull() && d->image.d->paintEngine
+                && !d->image.d->paintEngine->isActive())
+            {
+                delete d->image.d->paintEngine;
+                d->image.d->paintEngine = 0;
+            }
+        }
+    }
+};
 
-QT_END_HEADER
-
-#endif // QPIXMAPCACHE_H
+#endif // QPIXMAPCACHE_P_H

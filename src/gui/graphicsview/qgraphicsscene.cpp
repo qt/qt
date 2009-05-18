@@ -4743,8 +4743,9 @@ void QGraphicsScenePrivate::drawItemHelper(QGraphicsItem *item, QPainter *painte
         return;
 
     // Fetch the off-screen transparent buffer and exposed area info.
-    QString pixmapKey;
+    QPixmapCache::Key pixmapKey;
     QPixmap pix;
+    bool pixmapFound;
     QGraphicsItemCache *itemCache = itemd->extraItemCache();
     if (cacheMode == QGraphicsItem::ItemCoordinateCache) {
         if (itemCache->boundingRect != brect.toRect()) {
@@ -4754,17 +4755,14 @@ void QGraphicsScenePrivate::drawItemHelper(QGraphicsItem *item, QPainter *painte
         }
         pixmapKey = itemCache->key;
     } else {
-        if ((pixmapKey = itemCache->deviceData.value(widget).key).isEmpty()) {
-            pixmapKey.sprintf("qgv-%p-%p", item, widget);
-            QGraphicsItemCache::DeviceData data;
-            data.key = pixmapKey;
-            itemCache->deviceData.insert(widget, data);
-        }
+        pixmapKey = itemCache->deviceData.value(widget).key;
     }
 
     // Find pixmap in cache.
     if (!itemCache->allExposed)
-        QPixmapCache::find(pixmapKey, pix);
+       pixmapFound = QPixmapCache::find(pixmapKey, &pix);
+    else
+       pixmapFound = false;
 
     // Render using item coordinate cache mode.
     if (cacheMode == QGraphicsItem::ItemCoordinateCache) {
@@ -4817,8 +4815,12 @@ void QGraphicsScenePrivate::drawItemHelper(QGraphicsItem *item, QPainter *painte
             _q_paintIntoCache(&pix, item, pixmapExposed, itemToPixmap, painter->renderHints(),
                               &cacheOption, painterStateProtection);
 
-            // Reinsert this pixmap into the cache.
-            QPixmapCache::insert(pixmapKey, pix);
+            if (!pixmapFound) {
+                // insert this pixmap into the cache.
+                itemCache->key = QPixmapCache::insert(pix);
+            } else {
+                QPixmapCache::replace(pixmapKey, pix);
+            }
 
             // Reset expose data.
             itemCache->allExposed = false;
@@ -4985,8 +4987,13 @@ void QGraphicsScenePrivate::drawItemHelper(QGraphicsItem *item, QPainter *painte
         }
 
         if (pixModified) {
-            // Reinsert this pixmap into the cache
-            QPixmapCache::insert(pixmapKey, pix);
+            if (!pixmapFound) {
+                // Insert this pixmap into the cache.
+                deviceData->key = QPixmapCache::insert(pix);
+            } else {
+                //otherwise we replace the pixmap in the cache
+                QPixmapCache::replace(pixmapKey, pix);
+            }
         }
 
         // Redraw the exposed area using an untransformed painter. This
