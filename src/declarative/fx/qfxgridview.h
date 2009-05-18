@@ -42,7 +42,7 @@
 #ifndef QFXGRIDVIEW_H
 #define QFXGRIDVIEW_H
 
-#include <qfxflickable.h>
+#include <QtDeclarative/qfxflickable.h>
 
 QT_BEGIN_HEADER
 

@@ -42,9 +42,9 @@
 #ifndef QMLPROPERTYVALUESOURCE_H
 #define QMLPROPERTYVALUESOURCE_H
 
-#include <qfxglobal.h>
-#include <qml.h>
-#include <QObject>
+#include <QtDeclarative/qfxglobal.h>
+#include <QtDeclarative/qml.h>
+#include <QtCore/QObject>
 
 
 QT_BEGIN_HEADER

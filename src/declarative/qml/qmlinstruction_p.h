@@ -42,7 +42,7 @@
 #ifndef QMLINSTRUCTION_P_H
 #define QMLINSTRUCTION_P_H
 
-#include <qfxglobal.h>
+#include <QtDeclarative/qfxglobal.h>
 
 
 QT_BEGIN_NAMESPACE

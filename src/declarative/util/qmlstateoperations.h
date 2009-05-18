@@ -42,7 +42,7 @@
 #ifndef QMLSTATEOPERATIONS_H
 #define QMLSTATEOPERATIONS_H
 
-#include <qmlstate.h>
+#include <QtDeclarative/qmlstate.h>
 
 QT_BEGIN_HEADER
 

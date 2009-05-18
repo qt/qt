@@ -42,7 +42,7 @@
 #ifndef QFXRECT_H
 #define QFXRECT_H
 
-#include <qfxitem.h>
+#include <QtDeclarative/qfxitem.h>
 
 
 QT_BEGIN_HEADER

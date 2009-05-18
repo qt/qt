@@ -42,7 +42,7 @@
 #ifndef QFXKEYPROXY_H
 #define QFXKEYPROXY_H
 
-#include <qfxitem.h>
+#include <QtDeclarative/qfxitem.h>
 
 QT_BEGIN_HEADER
 

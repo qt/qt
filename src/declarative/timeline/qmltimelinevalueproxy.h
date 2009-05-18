@@ -42,7 +42,7 @@
 #ifndef QMLTIMELINEVALUEPROXY_H
 #define QMLTIMELINEVALUEPROXY_H
 
-#include "qmltimeline.h"
+#include <QtDeclarative/qmltimeline.h>
 
 QT_BEGIN_HEADER
 

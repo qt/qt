@@ -43,7 +43,7 @@
 #define QMLMETAPROPERTY_H
 
 #include <QtDeclarative/qfxglobal.h>
-#include <QMetaProperty>
+#include <QtCore/QMetaProperty>
 
 QT_BEGIN_HEADER
 

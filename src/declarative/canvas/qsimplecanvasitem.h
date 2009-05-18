@@ -47,13 +47,13 @@
 #include <QtDeclarative/qsimplecanvas.h>
 #include <QtCore/qobject.h>
 #include <QtGui/qgraphicsitem.h>
-class QPainter;
 
 QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
 QT_MODULE(Declarative)
+class QPainter;
 class QRect;
 class QSimpleCanvas;
 class QMouseEvent;

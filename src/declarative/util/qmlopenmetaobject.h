@@ -42,9 +42,9 @@
 #ifndef QMLOPENMETAOBJECT_H
 #define QMLOPENMETAOBJECT_H
 
-#include <QMetaObject>
+#include <QtCore/QMetaObject>
 #include <QtCore/private/qobject_p.h>
-#include <QObject>
+#include <QtCore/QObject>
 
 QT_BEGIN_HEADER
 

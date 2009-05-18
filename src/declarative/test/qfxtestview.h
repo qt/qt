@@ -42,7 +42,7 @@
 #ifndef _QFXTESTVIEW_H_
 #define _QFXTESTVIEW_H_
 
-#include <QFxView>
+#include <QtDeclarative/QFxView>
 
 
 QT_BEGIN_HEADER

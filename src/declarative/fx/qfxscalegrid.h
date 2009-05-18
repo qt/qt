@@ -42,13 +42,13 @@
 #ifndef QFXSCALEGRID_H
 #define QFXSCALEGRID_H
 
-#include <qfxglobal.h>
-#include <QImage>
-#include <QString>
-#include <QObject>
-#include <qsimplecanvas.h>
-#include <qfxpixmap.h>
-#include <qml.h>
+#include <QtCore/QString>
+#include <QtCore/QObject>
+#include <QtGui/QImage>
+#include <QtDeclarative/qfxglobal.h>
+#include <QtDeclarative/qsimplecanvas.h>
+#include <QtDeclarative/qfxpixmap.h>
+#include <QtDeclarative/qml.h>
 
 
 QT_BEGIN_HEADER

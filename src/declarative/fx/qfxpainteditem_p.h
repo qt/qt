@@ -53,8 +53,8 @@
 // We mean it.
 //
 
-#include "qfxitem_p.h"
-#include <qsimplecanvas.h>
+#include <private/qfxitem_p.h>
+#include <QtDeclarative/qsimplecanvas.h>
 
 #if defined(QFX_RENDER_OPENGL)
 #include "gltexture.h"

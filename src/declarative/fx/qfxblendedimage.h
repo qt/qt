@@ -42,7 +42,7 @@
 #ifndef QFXBLENDEDIMAGE_H
 #define QFXBLENDEDIMAGE_H
 
-#include <qfxitem.h>
+#include <QtDeclarative/qfxitem.h>
 #if defined(QFX_RENDER_OPENGL2)
 #include <gltexture.h>
 #endif

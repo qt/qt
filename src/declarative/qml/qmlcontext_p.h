@@ -42,11 +42,11 @@
 #ifndef QMLCONTEXT_P_H
 #define QMLCONTEXT_P_H
 
-#include <qmlcontext.h>
+#include <QtDeclarative/qmlcontext.h>
 #include <private/qobject_p.h>
 #include <private/qmldeclarativedata_p.h>
-#include <qhash.h>
-#include <qscriptvalue.h>
+#include <QtCore/qhash.h>
+#include <QtScript/qscriptvalue.h>
 #include <QtCore/qset.h>
 
 QT_BEGIN_NAMESPACE

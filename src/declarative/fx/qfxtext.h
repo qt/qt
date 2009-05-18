@@ -42,8 +42,8 @@
 #ifndef QFXTEXT_H
 #define QFXTEXT_H
 
-#include <qfxitem.h>
-#include <qmlfont.h>
+#include <QtDeclarative/qfxitem.h>
+#include <QtDeclarative/qmlfont.h>
 
 
 QT_BEGIN_HEADER
