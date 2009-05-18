@@ -53,7 +53,7 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Declarative)
 
-class QFxBlendedImage : public QFxItem
+class Q_DECLARATIVE_EXPORT QFxBlendedImage : public QFxItem
 {
     Q_OBJECT
 

@@ -44,61 +44,12 @@
 #include "qmlsetproperties.h"
 #include <QtCore/qdebug.h>
 #include <QtDeclarative/qmlinfo.h>
+#include <private/qmlcustomparser_p.h>
+#include <private/qmlparser_p.h>
+#include <QtDeclarative/qmlexpression.h>
 
 
 QT_BEGIN_NAMESPACE
-class QmlSetPropertiesMetaObject : public QmlOpenMetaObject
-{
-public:
-    QmlSetPropertiesMetaObject(QObject *);
-
-protected:
-    virtual void propertyRead(int);
-    virtual void propertyWrite(int);
-};
-
-class QmlSetPropertiesProxyObject : public QObject
-{
-Q_OBJECT
-public:
-    QmlSetPropertiesProxyObject(QObject *);
-
-    QmlSetPropertiesMetaObject *fxMetaObject() const { return _mo; }
-private:
-    QmlSetPropertiesMetaObject *_mo;
-};
-
-QmlSetPropertiesProxyObject::QmlSetPropertiesProxyObject(QObject *parent)
-: QObject(parent), _mo(new QmlSetPropertiesMetaObject(this))
-{
-}
-
-QmlSetPropertiesMetaObject::QmlSetPropertiesMetaObject(QObject *obj)
-: QmlOpenMetaObject(obj)
-{
-}
-
-void QmlSetPropertiesMetaObject::propertyRead(int id)
-{
-    if (!value(id).isValid())  
-        setValue(id, QVariant::fromValue((QObject *)new QmlSetPropertiesProxyObject(object())));
-
-    QmlOpenMetaObject::propertyRead(id);
-}
-
-void QmlSetPropertiesMetaObject::propertyWrite(int id)
-{
-    if (value(id).userType() == qMetaTypeId<QObject *>()) {
-        QObject *val = qvariant_cast<QObject *>(value(id));
-        QmlSetPropertiesProxyObject *proxy = qobject_cast<QmlSetPropertiesProxyObject *>(val);
-        if (proxy) {
-            setValue(id, QVariant());
-            delete proxy;
-        }
-    }
-    QmlOpenMetaObject::propertyWrite(id);
-}
-
 /*!
     \qmlclass SetProperties QmlSetProperties
     \brief The SetProperties element describes new property values for a state.
@@ -149,34 +100,6 @@ void QmlSetPropertiesMetaObject::propertyWrite(int id)
     \sa QmlSetProperty
 */
 
-class QmlSetPropertiesPrivate : public QObjectPrivate
-{
-public:
-    QmlSetPropertiesPrivate() : obj(0), mo(0) {}
-
-    QObject *obj;
-    QmlSetPropertiesMetaObject *mo;
-};
-
-QML_DEFINE_TYPE(QmlSetProperties,SetProperties);
-QmlSetProperties::QmlSetProperties()
-    : QmlStateOperation(*(new QmlSetPropertiesPrivate))
-{
-    Q_D(QmlSetProperties);
-    d->mo = new QmlSetPropertiesMetaObject(this);
-}
-
-QmlSetProperties::QmlSetProperties(QObject *parent)
-    : QmlStateOperation(*(new QmlSetPropertiesPrivate), parent)
-{
-    Q_D(QmlSetProperties);
-    d->mo = new QmlSetPropertiesMetaObject(this);
-}
-
-QmlSetProperties::~QmlSetProperties()
-{
-}
-
 /*!
     \qmlproperty Object SetProperties::target
     This property holds the object that the properties to change belong to
@@ -186,72 +109,239 @@ QmlSetProperties::~QmlSetProperties()
     \property QmlSetProperties::target
     \brief the object that the properties to change belong to
 */
-QObject *QmlSetProperties::object()
+class QmlSetPropertiesPrivate : public QObjectPrivate
+{
+    Q_DECLARE_PUBLIC(QmlSetProperties)
+public:
+    QmlSetPropertiesPrivate() : object(0), decoded(true) {}
+
+    QObject *object;
+    QByteArray data;
+    bool decoded;
+    void decode();
+
+    QList<QPair<QByteArray, QVariant> > properties;
+    QList<QPair<QByteArray, QmlExpression *> > expressions;
+
+    QmlMetaProperty property(const QByteArray &);
+};
+
+class QmlSetPropertiesParser : public QmlCustomParser
+{
+public:
+    void compileList(QList<QPair<QByteArray, QVariant> > &list, const QByteArray &pre, const QmlCustomParserProperty &prop);
+
+    virtual QByteArray compile(const QList<QmlCustomParserProperty> &, bool *ok);
+    virtual void setCustomData(QObject *, const QByteArray &);
+};
+
+void 
+QmlSetPropertiesParser::compileList(QList<QPair<QByteArray, QVariant> > &list, 
+                                     const QByteArray &pre, 
+                                     const QmlCustomParserProperty &prop)
+{
+    QByteArray propName = pre + prop.name();
+
+    QList<QVariant> values = prop.assignedValues();
+    for (int ii = 0; ii < values.count(); ++ii) {
+        const QVariant &value = values.at(ii);
+
+        if (value.userType() == qMetaTypeId<QmlCustomParserNode>()) {
+            continue;
+        } else if(value.userType() == qMetaTypeId<QmlCustomParserProperty>()) {
+
+            QmlCustomParserProperty prop = 
+                qvariant_cast<QmlCustomParserProperty>(value);
+            QByteArray pre = propName + ".";
+            compileList(list, pre, prop);
+
+        } else {
+            list << qMakePair(propName, value);
+        }
+    }
+}
+
+QByteArray 
+QmlSetPropertiesParser::compile(const QList<QmlCustomParserProperty> &props, 
+                                bool *ok)
+{
+    *ok = true;
+
+    QList<QPair<QByteArray, QVariant> > data;
+    for(int ii = 0; ii < props.count(); ++ii)
+        compileList(data, QByteArray(), props.at(ii));
+
+    QByteArray rv;
+    QDataStream ds(&rv, QIODevice::WriteOnly);
+
+    ds << data.count();
+    for(int ii = 0; ii < data.count(); ++ii) {
+        QmlParser::Variant v = qvariant_cast<QmlParser::Variant>(data.at(ii).second);
+        QVariant var;
+        bool isScript = v.isScript();
+        switch(v.type()) {
+        case QmlParser::Variant::Boolean:
+            var = QVariant(v.asBoolean());
+            break;
+        case QmlParser::Variant::Number:
+            var = QVariant(v.asNumber());
+            break;
+        case QmlParser::Variant::String:
+            var = QVariant(v.asString());
+            break;
+        case QmlParser::Variant::Invalid:
+        case QmlParser::Variant::Script:
+            var = QVariant(v.asScript());
+            break;
+        }
+
+        ds << data.at(ii).first << isScript << var;
+    }
+
+    return rv;
+}
+
+void QmlSetPropertiesPrivate::decode()
+{
+    if (decoded)
+        return;
+
+    QDataStream ds(&data, QIODevice::ReadOnly);
+
+    int count;
+    ds >> count;
+    for (int ii = 0; ii < count; ++ii) {
+        QByteArray name;
+        bool isScript;
+        QVariant data;
+        ds >> name;
+        ds >> isScript;
+        ds >> data;
+
+        if (isScript) {
+            QmlExpression *expression = new QmlExpression(qmlContext(object), data.toString(), object);
+            expression->setTrackChange(false);
+            expressions << qMakePair(name, expression);
+        } else {
+            properties << qMakePair(name, data);
+        }
+    }
+
+    decoded = true;
+    data.clear();
+}
+
+void QmlSetPropertiesParser::setCustomData(QObject *object, 
+                                            const QByteArray &data)
+{
+    QmlSetPropertiesPrivate *p = 
+        static_cast<QmlSetPropertiesPrivate *>(QObjectPrivate::get(object));
+    p->data = data;
+    p->decoded = false;
+}
+
+QmlSetProperties::QmlSetProperties()
+: QmlStateOperation(*(new QmlSetPropertiesPrivate))
+{
+}
+
+QmlSetProperties::~QmlSetProperties()
 {
     Q_D(QmlSetProperties);
-    return d->obj;
+    for(int ii = 0; ii < d->expressions.count(); ++ii)
+        delete d->expressions.at(ii).second;
+}
+
+QObject *QmlSetProperties::object() const
+{
+    Q_D(const QmlSetProperties);
+    return d->object;
 }
 
 void QmlSetProperties::setObject(QObject *o)
 {
     Q_D(QmlSetProperties);
-    d->obj = o;
+    d->object = o;
 }
 
-QmlSetProperties::ActionList 
-QmlSetProperties::doAction(QmlSetPropertiesMetaObject *metaObject, 
-                           QObject *object)
+QmlMetaProperty 
+QmlSetPropertiesPrivate::property(const QByteArray &property) 
 {
-    ActionList list;
+    Q_Q(QmlSetProperties);
+    QList<QByteArray> path = property.split('.');
 
-    for (int ii = 0; ii < metaObject->count(); ++ii) {
+    QObject *obj = this->object;
 
-        QByteArray name = metaObject->name(ii);
-        QVariant value = metaObject->value(ii);
-
-        QmlSetPropertiesProxyObject *po = qobject_cast<QmlSetPropertiesProxyObject *>(qvariant_cast<QObject *>(value));
-
-        QmlMetaProperty prop(object, QLatin1String(name));
-
-        if (po) {
-            QObject *objVal = QmlMetaType::toQObject(prop.read());
-            if (!objVal) {
-                qmlInfo(this) << object->metaObject()->className()
-                              << "has no object property named" << name;
-                continue;
-            }
-
-            list << doAction(po->fxMetaObject(), objVal);
-        } else if (!prop.isValid()) {
-            qmlInfo(this) << object->metaObject()->className()
-                          << "has no property named" << name;
-            continue;
-        } else if (!prop.isWritable()) {
-            qmlInfo(this) << object->metaObject()->className()
-                          << name << "is not writable, and cannot be set.";
-            continue;
-        } else {
-            //append action
-            Action a;
-            a.property = prop;
-            a.fromValue = prop.read();
-            a.toValue = value;
-
-            list << a;
+    for (int jj = 0; jj < path.count() - 1; ++jj) {
+        const QByteArray &pathName = path.at(jj);
+        QmlMetaProperty prop(obj, QLatin1String(pathName));
+        QObject *objVal = QmlMetaType::toQObject(prop.read());
+        if (!objVal) {
+            qmlInfo(q) << obj->metaObject()->className()
+                       << "has no object property named" << pathName;
+            return QmlMetaProperty();
         }
+        obj = objVal;
     }
 
-    return list;
+    const QByteArray &name = path.last();
+    QmlMetaProperty prop(obj, QLatin1String(name));
+    if (!prop.isValid()) {
+        qmlInfo(q) << obj->metaObject()->className()
+                   << "has no property named" << name;
+        return QmlMetaProperty();
+    } else if (!prop.isWritable()) {
+        qmlInfo(q) << obj->metaObject()->className()
+                   << name << "is not writable, and cannot be set.";
+        return QmlMetaProperty();
+    } else {
+        return prop;
+    }
 }
 
 QmlSetProperties::ActionList QmlSetProperties::actions()
 {
     Q_D(QmlSetProperties);
-    if (!d->obj)
-        return ActionList();
 
-    return doAction(d->mo, d->obj);
+    d->decode();
+
+    ActionList list;
+
+    for (int ii = 0; ii < d->properties.count(); ++ii) {
+
+        QByteArray property = d->properties.at(ii).first;
+        QmlMetaProperty prop = d->property(property);
+
+        if (prop.isValid()) {
+            Action a;
+            a.property = prop;
+            a.fromValue = a.property.read();
+            a.toValue = d->properties.at(ii).second;
+
+            list << a;
+        }
+    }
+
+    for (int ii = 0; ii < d->expressions.count(); ++ii) {
+
+        QByteArray property = d->expressions.at(ii).first;
+        QmlMetaProperty prop = d->property(property);
+
+        if (prop.isValid()) {
+            Action a;
+            a.property = prop;
+            a.fromValue = a.property.read();
+            a.toValue = d->expressions.at(ii).second->value();
+
+            list << a;
+        }
+
+    }
+
+    return list;
 }
+
+QML_DEFINE_CUSTOM_TYPE(QmlSetProperties,SetProperties,QmlSetPropertiesParser);
 
 QT_END_NAMESPACE
 #include "qmlsetproperties.moc"

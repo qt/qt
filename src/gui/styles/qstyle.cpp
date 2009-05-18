@@ -1333,7 +1333,7 @@ void QStyle::drawItemPixmap(QPainter *painter, const QRect &rect, int alignment,
     \value PM_LayoutVerticalSpacing  Default \l{QLayout::spacing}{vertical spacing} for a QLayout.
 
     \value PM_MaximumDragDistance The maximum allowed distance between
-    the mouse and a slider when dragging. Exceeding the specified
+    the mouse and a scrollbar when dragging. Exceeding the specified
     distance will cause the slider to jump back to the original
     position; a value of -1 disables this behavior.
 

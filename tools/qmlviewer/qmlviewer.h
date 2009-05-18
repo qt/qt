@@ -40,7 +40,6 @@ public:
     void setRecording(bool on);
     bool isRecording() const { return recordTimer.isActive(); }
     void setAutoRecord(int from, int to);
-    void setSkin(const QString& skinDirectory);
     void setDeviceKeys(bool);
     void setCacheEnabled(bool);
 
@@ -55,12 +54,17 @@ public slots:
     void toggleRecording();
     void toggleRecordingWithSelection();
     void ffmpegFinished(int code);
+    void setSkin(const QString& skinDirectory);
 
 protected:
     virtual void keyPressEvent(QKeyEvent *);
     virtual void timerEvent(QTimerEvent *);
 
     void createMenu(QMenuBar *menu, QMenu *flatmenu);
+
+private slots:
+    void setScaleSkin();
+    void setScaleView();
 
 private:
     QString currentFileName;
@@ -80,6 +84,8 @@ private:
     int record_autotime;
     bool devicemode;
     QAction *recordAction;
+    QString currentSkin;
+    bool scaleSkin;
 
     QFxTestEngine *testEngine;
 };

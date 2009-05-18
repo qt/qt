@@ -164,7 +164,7 @@ private:
                                           int ctxt);
 
     bool compileDynamicMeta(QmlParser::Object *obj);
-    void compileBinding(const QString &, QmlParser::Property *prop,
+    bool compileBinding(const QString &, QmlParser::Property *prop,
                         int ctxt, const QMetaObject *, qint64);
 
     int optimizeExpressions(int start, int end, int patch = -1);

@@ -146,8 +146,7 @@ private:
 #ifndef QT_NO_NETWORKPROXY
     Q_PRIVATE_SLOT(d_func(), void _q_proxyAuthenticationRequired(const QNetworkProxy&, QAuthenticator*))
 #endif
-    Q_PRIVATE_SLOT(d_func(), void _q_dataReadyReadBuffer())
-    Q_PRIVATE_SLOT(d_func(), void _q_dataReadyReadNoBuffer())
+    Q_PRIVATE_SLOT(d_func(), void _q_uploadDataReadyRead())
 
 #ifndef QT_NO_OPENSSL
     Q_PRIVATE_SLOT(d_func(), void _q_encrypted())
@@ -209,8 +208,8 @@ public:
 #ifndef QT_NO_NETWORKPROXY
     void _q_proxyAuthenticationRequired(const QNetworkProxy &proxy, QAuthenticator *auth); // from transparent proxy
 #endif
-    void _q_dataReadyReadNoBuffer();
-    void _q_dataReadyReadBuffer();
+
+    void _q_uploadDataReadyRead();
 
     void createAuthorization(QAbstractSocket *socket, QHttpNetworkRequest &request);
     bool ensureConnection(QAbstractSocket *socket);
@@ -219,7 +218,6 @@ public:
 #ifndef QT_NO_COMPRESS
     bool expand(QAbstractSocket *socket, QHttpNetworkReply *reply, bool dataComplete);
 #endif
-    void bufferData(HttpMessagePair &request);
     void removeReply(QHttpNetworkReply *reply);
 
     QString hostName;

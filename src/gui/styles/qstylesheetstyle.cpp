@@ -3030,6 +3030,7 @@ void QStyleSheetStyle::drawComplexControl(ComplexControl cc, const QStyleOptionC
         if (const QStyleOptionToolButton *tool = qstyleoption_cast<const QStyleOptionToolButton *>(opt)) {
             QStyleOptionToolButton toolOpt(*tool);
             rule.configurePalette(&toolOpt.palette, QPalette::ButtonText, QPalette::Button);
+            toolOpt.font = rule.font.resolve(toolOpt.font);
             toolOpt.rect = rule.borderRect(opt->rect);
             bool customArrow = (tool->features & (QStyleOptionToolButton::HasMenu | QStyleOptionToolButton::MenuButtonPopup));
             bool customDropDown = tool->features & QStyleOptionToolButton::MenuButtonPopup;

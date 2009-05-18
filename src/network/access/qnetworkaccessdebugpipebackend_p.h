@@ -66,35 +66,38 @@ class QNetworkAccessDebugPipeBackend: public QNetworkAccessBackend
 {
     Q_OBJECT
 public:
-    struct DataPacket;
     QNetworkAccessDebugPipeBackend();
     virtual ~QNetworkAccessDebugPipeBackend();
 
     virtual void open();
     virtual void closeDownstreamChannel();
-    virtual void closeUpstreamChannel();
     virtual bool waitForDownstreamReadyRead(int msecs);
-    virtual bool waitForUpstreamBytesWritten(int msecs);
 
-    virtual void upstreamReadyRead();
     virtual void downstreamReadyWrite();
 
+protected:
+    void pushFromSocketToDownstream();
+    void pushFromUpstreamToSocket();
+    void possiblyFinish();
+    QNonContiguousByteDevice *uploadByteDevice;
+
 private slots:
+    void uploadReadyReadSlot();
     void socketReadyRead();
     void socketBytesWritten(qint64 bytes);
     void socketError();
     void socketDisconnected();
+    void socketConnected();
 
 private:
     QTcpSocket socket;
-    qint32 incomingPacketSize;
-    bool readyReadEmitted;
-    bool bytesWrittenEmitted;
     bool bareProtocol;
+    bool hasUploadFinished;
+    bool hasDownloadFinished;
+    bool hasEverythingFinished;
 
-    bool send(const DataPacket &packet);
-    bool canReceive();
-    bool receive(DataPacket &packet);
+    qint64 bytesDownloaded;
+    qint64 bytesUploaded;
 };
 
 class QNetworkAccessDebugPipeBackendFactory: public QNetworkAccessBackendFactory

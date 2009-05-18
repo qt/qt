@@ -43,6 +43,7 @@
 #include <QtCore/qstack.h>
 #include <QXmlStreamReader>
 #include <private/qmlcustomparser_p.h>
+#include <private/qmlparser_p.h>
 #include "qmlopenmetaobject.h"
 #include <qmlcontext.h>
 #include <qmlbindablevalue.h>
@@ -414,8 +415,11 @@ bool ListModelParser::compileProperty(const QmlCustomParserProperty &prop, QList
 
         } else {
 
+            QmlParser::Variant variant = 
+                qvariant_cast<QmlParser::Variant>(value);
+
             int ref = data.count();
-            QByteArray d = value.toString().toLatin1();
+            QByteArray d = variant.asScript().toLatin1();
             d.append('\0');
             data.append(d);
 

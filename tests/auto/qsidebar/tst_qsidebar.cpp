@@ -185,6 +185,13 @@ void tst_QSidebar::addUrls()
     qsidebar.addUrls(doubleUrls, 1);
     QCOMPARE(qsidebar.urls().size(), 1);
 
+    // Two paths that are effectively pointing to the same location
+    doubleUrls << QUrl::fromLocalFile(QDir::home().absolutePath());
+    doubleUrls << QUrl::fromLocalFile(QDir::home().absolutePath() + "/.");
+    qsidebar.setUrls(emptyUrls);
+    qsidebar.addUrls(doubleUrls, 1);
+    QCOMPARE(qsidebar.urls().size(), 1);
+
 #if defined(Q_OS_WIN)
     //Windows is case insensitive so no duplicate entries in that case
     doubleUrls << QUrl::fromLocalFile(QDir::home().absolutePath());
@@ -200,8 +207,6 @@ void tst_QSidebar::addUrls()
     qsidebar.addUrls(doubleUrls, 1);
     QCOMPARE(qsidebar.urls().size(), 2);
 #endif
-
-
 }
 
 void tst_QSidebar::goToUrl()
