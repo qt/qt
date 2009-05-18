@@ -129,6 +129,7 @@ public:
         }
         return _anchors;
     }
+    QList<QFxAnchors *> dependantAnchors;
     QFxAnchors *_anchors;
     QFxContents *_contents;
     QFxItem *qmlItem;
@@ -171,9 +172,6 @@ public:
 
     QmlStateGroup *states();
     QmlStateGroup *_stateGroup;
-
-    void handleWidthChange(int xoffset);
-    void handleHeightChange(int xoffset);
 };
 
 QT_END_NAMESPACE

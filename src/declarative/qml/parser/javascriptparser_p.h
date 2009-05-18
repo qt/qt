@@ -160,6 +160,8 @@ protected:
     inline AST::SourceLocation &loc(int index)
     { return location_stack [tos + index - 1]; }
 
+    AST::UiQualifiedId *reparseAsQualifiedId(AST::ExpressionNode *expr);
+
 protected:
     Engine *driver;
     int tos;
@@ -194,9 +196,9 @@ protected:
 
 
 
-#define J_SCRIPT_REGEXPLITERAL_RULE1 57
+#define J_SCRIPT_REGEXPLITERAL_RULE1 56
 
-#define J_SCRIPT_REGEXPLITERAL_RULE2 58
+#define J_SCRIPT_REGEXPLITERAL_RULE2 57
 
 QT_END_NAMESPACE
 

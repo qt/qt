@@ -52,6 +52,7 @@
 #include "qmlengine.h"
 #include "qmlstate.h"
 #include "qlistmodelinterface.h"
+#include "qfxanchors_p.h"
 
 #include "qfxtransform.h"
 #include "qfxscalegrid.h"
@@ -434,6 +435,14 @@ void QFxItem::doUpdate()
 QFxItem::~QFxItem()
 {
     Q_D(QFxItem);
+    for (int ii = 0; ii < d->dependantAnchors.count(); ++ii) {
+        QFxAnchors *anchor = d->dependantAnchors.at(ii);
+        anchor->d_func()->clearItem(this);
+    }
+    for (int ii = 0; ii < d->dependantAnchors.count(); ++ii) {
+        QFxAnchors *anchor = d->dependantAnchors.at(ii);
+        anchor->d_func()->updateOnComplete();
+    }
     delete d->_anchorLines; d->_anchorLines = 0;
 }
 
@@ -1062,85 +1071,30 @@ void QFxItem::geometryChanged(const QRectF &newGeometry,
                               const QRectF &oldGeometry)
 {
     Q_D(QFxItem);
-    if (newGeometry.width() != oldGeometry.width()) {
-        int xoffset = oldGeometry.width() - newGeometry.width();
-        d->handleWidthChange(xoffset);
+
+    if (d->_anchors)
+        d->_anchors->d_func()->updateMe();
+
+    if (newGeometry.size() != oldGeometry.size()) {
+        if (rotation() && transformOrigin() != QFxItem::TopLeft)
+            setRotation(rotation());
+        if (scale() && transformOrigin() != QFxItem::TopLeft)
+            setScale(scale());
     }
 
-    if (newGeometry.height() != oldGeometry.height()) {
-        int yoffset = oldGeometry.height() - newGeometry.height();
-        d->handleHeightChange(yoffset);
-    }
-
-    if (newGeometry.x() != oldGeometry.x()) {
+    if (newGeometry.x() != oldGeometry.x()) 
         emit leftChanged();
-        emit hcenterChanged();
-        emit rightChanged();
-    }
-
-    if (newGeometry.y() != oldGeometry.y()) {
+    if (newGeometry.width() != oldGeometry.width())
+        emit widthChanged();
+    if (newGeometry.y() != oldGeometry.y()) 
         emit topChanged();
-        emit vcenterChanged();
-        emit bottomChanged();
-    }
-}
+    if (newGeometry.height() != oldGeometry.height())
+        emit heightChanged();
 
-void QFxItemPrivate::handleWidthChange(int xoffset)
-{
-    Q_Q(QFxItem);
-    if (!_anchors) {
-        emit q->hcenterChanged();
-        emit q->rightChanged();
-    } else {
-        QFxAnchors::UsedAnchors used = anchors()->usedAnchors();
-        if (used & QFxAnchors::HasHCenterAnchor) {
-            q->setX(q->x() + xoffset/2);
-            emit q->rightChanged();
-        } else if ((used & QFxAnchors::HasRightAnchor) && !(used & QFxAnchors::HasLeftAnchor)) {
-            q->setX(q->x() + xoffset);
-            emit q->hcenterChanged();
-        } else {
-            emit q->hcenterChanged();
-            emit q->rightChanged();
-        }
+    for(int ii = 0; ii < d->dependantAnchors.count(); ++ii) {
+        QFxAnchors *anchor = d->dependantAnchors.at(ii);
+        anchor->d_func()->update(this, newGeometry, oldGeometry);
     }
-    if (q->rotation() && q->transformOrigin() != QFxItem::TopLeft)
-        q->setRotation(q->rotation());
-    if (q->scale() && q->transformOrigin() != QFxItem::TopLeft)
-        q->setScale(q->scale());
-    emit q->widthChanged();
-}
-
-void QFxItemPrivate::handleHeightChange(int yoffset)
-{
-    Q_Q(QFxItem);
-    if (!_anchors) {
-        emit q->vcenterChanged();
-        emit q->bottomChanged();
-        emit q->baselineChanged();
-    } else {
-        QFxAnchors::UsedAnchors used = anchors()->usedAnchors();
-        if (used & QFxAnchors::HasBaselineAnchor) {
-            q->setY(q->y() + yoffset - q->baselineOffset());
-            emit q->bottomChanged();
-            emit q->vcenterChanged();
-        } else if (used & QFxAnchors::HasVCenterAnchor) {
-            q->setY(q->y() + yoffset/2);
-            emit q->bottomChanged();
-        } else if ((used & QFxAnchors::HasBottomAnchor) && !(used & QFxAnchors::HasTopAnchor)) {
-            q->setY(q->y() + yoffset);
-            emit q->vcenterChanged();
-        } else {
-            emit q->vcenterChanged();
-            emit q->bottomChanged();
-            emit q->baselineChanged();
-        }
-    }
-    if (q->rotation() && q->transformOrigin() != QFxItem::TopLeft)
-        q->setRotation(q->rotation());
-    if (q->scale() && q->transformOrigin() != QFxItem::TopLeft)
-        q->setScale(q->scale());
-    emit q->heightChanged();
 }
 
 /*!
@@ -1483,7 +1437,6 @@ void QFxItem::setBaselineOffset(int offset)
 
     d->_baselineOffset = offset;
     emit baselineOffsetChanged();
-    emit baselineChanged();
 }
 
 /*!
@@ -2075,10 +2028,8 @@ void QFxItem::componentComplete()
     d->_componentComplete = true;
     if (d->_stateGroup)
         d->_stateGroup->componentComplete();
-    if (d->_anchors) {
-        d->anchors()->connectHAnchors();
-        d->anchors()->connectVAnchors();
-    }
+    if (d->_anchors) 
+        d->anchors()->d_func()->updateOnComplete();
     if (!d->_transform.isEmpty())
         updateTransform();
 }

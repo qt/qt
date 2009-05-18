@@ -213,14 +213,9 @@ public Q_SLOTS:
 
 Q_SIGNALS:
     void leftChanged();
-    void rightChanged();
     void widthChanged();
     void heightChanged();
     void topChanged();
-    void bottomChanged();
-    void hcenterChanged();
-    void vcenterChanged();
-    void baselineChanged();
     void baselineOffsetChanged();
     void stateChanged(const QString &);
     void focusChanged();
