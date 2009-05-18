@@ -234,7 +234,7 @@ glyph_metrics_t QFontEngineS60::boundingBox_const(glyph_t glyph) const
         glyphBounds.Width(),
         glyphBounds.Height(),
         metrics.HorizAdvance(),
-        metrics.VertAdvance()
+        0
     );
     return result;
 }

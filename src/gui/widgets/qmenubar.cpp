@@ -1648,6 +1648,8 @@ QSize QMenuBar::minimumSizeHint() const
     const bool as_gui_menubar = !d->mac_menubar;
 #elif defined (Q_OS_WINCE)
     const bool as_gui_menubar = !d->wce_menubar;
+#elif defined (Q_OS_SYMBIAN)
+    const bool as_gui_menubar = !d->symbian_menubar;
 #else
     const bool as_gui_menubar = true;
 #endif
@@ -1708,6 +1710,8 @@ QSize QMenuBar::sizeHint() const
     const bool as_gui_menubar = !d->mac_menubar;
 #elif defined (Q_OS_WINCE)
     const bool as_gui_menubar = !d->wce_menubar;
+#elif defined (Q_OS_SYMBIAN)
+    const bool as_gui_menubar = !d->symbian_menubar;
 #else
     const bool as_gui_menubar = true;
 #endif
@@ -1771,6 +1775,8 @@ int QMenuBar::heightForWidth(int) const
     const bool as_gui_menubar = !d->mac_menubar;
 #elif defined (Q_OS_WINCE)
     const bool as_gui_menubar = !d->wce_menubar;
+#elif defined (Q_OS_SYMBIAN)
+    const bool as_gui_menubar = !d->symbian_menubar;
 #else
     const bool as_gui_menubar = true;
 #endif
