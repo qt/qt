@@ -73,8 +73,8 @@ class Q_GUI_EXPORT QGesture : public QObject
     Q_PROPERTY(QPoint pos READ pos)
 
 public:
-    explicit QGesture(QObject *parent, const QString &type,
-                      Qt::GestureState state = Qt::GestureStarted);
+    QGesture(QObject *parent, const QString &type,
+             Qt::GestureState state = Qt::GestureStarted);
     QGesture(QObject *parent,
              const QString &type, const QPoint &startPos,
              const QPoint &lastPos, const QPoint &pos, const QRect &rect,
@@ -110,6 +110,8 @@ private:
 
     friend class QGestureManager;
     friend class QApplication;
+    friend class QGraphicsScene;
+    friend class QGraphicsScenePrivate;
     friend class QGestureRecognizerPan;
     friend class QDoubleTapGestureRecognizer;
     friend class QTapAndHoldGestureRecognizer;

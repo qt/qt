@@ -1895,6 +1895,15 @@ void QGraphicsSceneGestureEvent::setGestures(const QList<QGesture*> &gestures)
 }
 
 /*!
+    Set a list of gesture objects containing extended information about \a gestures.
+*/
+void QGraphicsSceneGestureEvent::setGestures(const QSet<QGesture*> &gestures)
+{
+    foreach(QGesture *g, gestures)
+        m_gestures.insert(g->type(), g);
+}
+
+/*!
     Sets the accept flag of the all gestures inside the event object,
     the equivalent of calling \l{QEvent::accept()}{accept()} or
     \l{QEvent::setAccepted()}{setAccepted(true)}.

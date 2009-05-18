@@ -248,6 +248,7 @@ static const int QGRAPHICSSCENE_INDEXTIMER_TIMEOUT = 2000;
 #include <private/qt_x11_p.h>
 #endif
 #include <private/qgesturemanager_p.h>
+#include <private/qgesture_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -3919,40 +3920,44 @@ bool QGraphicsScene::event(QEvent *event)
         update();
         break;
     case QEvent::GraphicsSceneGesture: {
+        qDebug() << "GraphicsSceneGesture";
         QGraphicsSceneGestureEvent *ev = static_cast<QGraphicsSceneGestureEvent*>(event);
-        QList<QString> gestureTypes = ev->gestureTypes();
         QGraphicsView *view = qobject_cast<QGraphicsView*>(ev->widget());
         if (!view) {
             qWarning("QGraphicsScene::event: gesture event was received without a view");
             break;
         }
 
-        // find graphics items that intersects with gestures hot spots.
-        QPolygonF poly;
-        QMap<QString, QPointF> sceneHotSpots;
-        foreach(const QString &type, gestureTypes) {
-            QPointF pt = ev->mapToScene(ev->gesture(type)->hotSpot());
-            sceneHotSpots.insert(type, pt);
-            poly << pt;
+        // get a list of gestures that just started.
+        QSet<QGesture*> startedGestures;
+        QList<QGesture*> gestures = ev->gestures();
+        for(QList<QGesture*>::const_iterator it = gestures.begin(), e = gestures.end();
+            it != e; ++it) {
+            QGesture *g = *it;
+            QGesturePrivate *gd = g->d_func();
+            if (g->state() == Qt::GestureStarted || gd->singleshot) {
+                startedGestures.insert(g);
+            }
         }
-        QList<QGraphicsItem*> itemsInGestureArea = items(poly, Qt::IntersectsItemBoundingRect);
-
-        foreach(QGraphicsItem *item, itemsInGestureArea) {
-            QMap<QString, QPointF>::const_iterator it = sceneHotSpots.begin(),
-                                                    e = sceneHotSpots.end();
-            for(; it != e; ++it) {
-                if (item->contains(item->mapFromScene(it.value()))) {
-                    const QString gestureName = it.key();
-                    foreach(int gestureId, item->d_ptr->gestures) {
-                        if (QGestureManager::instance()->gestureNameFromId(gestureId) == gestureName) {
-                            d->sendEvent(item, ev);
-                            if (ev->isAccepted())
-                                break;
-                        }
+        if (!startedGestures.isEmpty()) {
+            // find a target for each started gesture.
+            for(QSet<QGesture*>::const_iterator it = startedGestures.begin(), e = startedGestures.end();
+                it != e; ++it) {
+                QGesture *g = *it;
+                QGesturePrivate *gd = g->d_func();
+                QList<QGraphicsItem*> itemsInGestureArea = items(g->hotSpot());
+                const QString gestureName = g->type();
+                foreach(QGraphicsItem *item, itemsInGestureArea) {
+                    if (item->d_func()->hasGesture(gestureName)) {
+                        Q_ASSERT(gd->graphicsItem == 0);
+                        gd->graphicsItem = item;
+                        d->itemsWithGestures[item].insert(g);
+                        break;
                     }
                 }
             }
         }
+        d->sendGestureEvent(ev->gestures().toSet(), ev->cancelledGestures());
     }
         break;
     case QEvent::GraphicsSceneTouchBegin:
@@ -3974,6 +3979,74 @@ bool QGraphicsScene::event(QEvent *event)
         return QObject::event(event);
     }
     return true;
+}
+
+void QGraphicsScenePrivate::sendGestureEvent(const QSet<QGesture*> &gestures, const QSet<QString> &cancelled)
+{
+    qDebug() << "QGraphicsScenePrivate::sendGestureEvent:" << gestures;
+    Q_Q(QGraphicsScene);
+    typedef QMap<QGraphicsItem*, QSet<QGesture*> > ItemGesturesMap;
+    ItemGesturesMap itemGestures;
+    QSet<QGesture*> startedGestures;
+    for(QSet<QGesture*>::const_iterator it = gestures.begin(), e = gestures.end();
+        it != e; ++it) {
+        QGesture *g = *it;
+        Q_ASSERT(g != 0);
+        QGesturePrivate *gd = g->d_func();
+        if (gd->graphicsItem != 0) {
+            itemGestures[gd->graphicsItem].insert(g);
+            if (g->state() == Qt::GestureStarted || gd->singleshot)
+                startedGestures.insert(g);
+        }
+    }
+
+    qDebug() << "QGraphicsScenePrivate::sendGestureEvent: started: " << startedGestures;
+    QSet<QGesture*> ignoredGestures;
+    for(ItemGesturesMap::const_iterator it = itemGestures.begin(), e = itemGestures.end();
+        it != e; ++it) {
+        QGraphicsItem *receiver = it.key();
+        Q_ASSERT(receiver != 0);
+        QGraphicsSceneGestureEvent event;
+        event.setGestures(it.value());
+        event.setCancelledGestures(cancelled);
+        qDebug() << "QGraphicsScenePrivate::sendGestureEvent: sending to " << receiver << it.value();
+        bool processed = sendEvent(receiver, &event);
+        QSet<QGesture*> started = startedGestures.intersect(it.value());
+        if (event.isAccepted())
+            foreach(QGesture *g, started)
+                g->accept();
+        if (!started.isEmpty() && !(processed && event.isAccepted())) {
+            // there are started gestures event that weren't
+            // accepted, so propagating each gesture independently.
+            QSet<QGesture*>::const_iterator it = started.begin(),
+                                             e = started.end();
+            for(; it != e; ++it) {
+                QGesture *g = *it;
+                qDebug() << "result: " << g << ":" << processed << g->isAccepted();
+                if (processed && g->isAccepted()) {
+                    continue;
+                }
+                QGesturePrivate *gd = g->d_func();
+                QGraphicsItem *item = gd->graphicsItem;
+                gd->graphicsItem = 0;
+
+                //### THIS IS BS, DONT FORGET TO REWRITE THIS CODE
+                // need to make sure we try to deliver event just once to each widget 
+                const QString gestureType = g->type();
+                QList<QGraphicsItem*> itemsUnderGesture = q->items(g->hotSpot());
+                for (int i = 0; i < itemsUnderGesture.size(); ++i) {
+                    QGraphicsItem *item = itemsUnderGesture.at(i);
+                    if (item != receiver && item->d_func()->hasGesture(gestureType)) {
+                        ignoredGestures.insert(g);
+                        gd->graphicsItem = item;
+                        break;
+                    }
+                }
+            }
+        }
+    }
+    if (!ignoredGestures.isEmpty())
+        sendGestureEvent(ignoredGestures, cancelled);
 }
 
 /*!
@@ -5606,12 +5679,13 @@ void QGraphicsScenePrivate::grabGesture(QGraphicsItem *item, int gestureId)
         foreach(QGraphicsView *view, views)
             view->d_func()->grabGesture(gestureId);
     }
-    itemsWithGestures << item;
+    (void)itemsWithGestures[item];
     grabbedGestures << gestureId;
 }
 
 void QGraphicsScenePrivate::releaseGesture(QGraphicsItem *item, int gestureId)
 {
+    itemsWithGestures.remove(item);
     //###
 }
 

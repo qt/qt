@@ -2875,6 +2875,7 @@ bool QGraphicsView::viewportEvent(QEvent *event)
         gestureEvent.setGestures(ev->gestures());
         gestureEvent.setCancelledGestures(ev->cancelledGestures());
         QApplication::sendEvent(d->scene, &gestureEvent);
+        event->setAccepted(gestureEvent.isAccepted());
         if (gestureEvent.isAccepted())
             return true;
     }

@@ -60,7 +60,7 @@ public:
     {
         Ignore,
         NotGesture,
-        GestureStarted,
+        GestureStarted, //TODO: rename to just Gesture?
         GestureFinished,
         MaybeGesture
     };

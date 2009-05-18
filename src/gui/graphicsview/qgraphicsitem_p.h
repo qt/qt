@@ -305,7 +305,11 @@ public:
     int depth;
     QSet<int> gestures;
 
-    // Packed 32 bits
+    bool hasGesture(const QString &gesture) const;
+    void grabGesture(int id);
+    bool releaseGesture(int id);
+
+    // Packed 32 bytes
     quint32 acceptedMouseButtons : 5;
     quint32 visible : 1;
     quint32 explicitlyHidden : 1;

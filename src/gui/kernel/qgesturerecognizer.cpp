@@ -108,6 +108,9 @@ QString qt_getStandardGestureTypeName(Qt::GestureType gestureType);
     to QGestureRecognizer::GestureStarted or
     QGestureRecognizer::GestureFinished.
 
+    The returned QGesture object must point to the same object in a
+    single gesture sequence.
+
     The gesture object is owned by the recognizer itself.
 */
 

@@ -424,7 +424,8 @@ public:
                                       QEvent::Type type, Qt::MouseButtons buttons,
                                       QWidget *buttonDown, QWidget *alienWidget);
     static bool sendMouseEvent(QWidget *receiver, QMouseEvent *event, QWidget *alienWidget,
-                               QWidget *native, QWidget **buttonDown, QPointer<QWidget> &lastMouseReceiver);
+                               QWidget *native, QWidget **buttonDown, QPointer<QWidget> &lastMouseReceiver,
+                               bool spontaneous = true);
 #if defined(Q_WS_WIN) || defined(Q_WS_X11)
     void sendSyntheticEnterLeave(QWidget *widget);
 #endif

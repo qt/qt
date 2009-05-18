@@ -64,7 +64,7 @@
 QT_BEGIN_NAMESPACE
 
 class QWidget;
-class Q_GUI_EXPORT QGestureManager : public QObject
+class Q_AUTOTEST_EXPORT QGestureManager : public QObject
 {
     Q_OBJECT
 public:
@@ -86,6 +86,11 @@ public:
     // declared in qapplication.cpp
     static QGestureManager* instance();
 
+    bool sendGestureEvent(QWidget *receiver,
+                          const QSet<QGesture*> &startedGestures,
+                          const QSet<QGesture*> &updatedGestures,
+                          const QSet<QString> &cancelled = QSet<QString>());
+
 protected:
     void timerEvent(QTimerEvent *event);
 
@@ -93,10 +98,6 @@ private slots:
     void recognizerStateChanged(QGestureRecognizer::Result);
 
 private:
-    bool widgetHasGesture(QWidget *widget, QGesture *gesture) const;
-    bool sendGestureEvent(QWidget *receiver, const QSet<QGesture*> &gestures,
-                          const QSet<QString> &cancelled = QSet<QString>());
-
     QSet<QGestureRecognizer*> activeGestures;
     QMap<QGestureRecognizer*, int> maybeGestures;
     QSet<QGestureRecognizer*> recognizers;

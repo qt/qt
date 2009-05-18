@@ -5857,6 +5857,7 @@ QVariant QGraphicsItem::inputMethodQuery(Qt::InputMethodQuery query) const
 */
 int QGraphicsItem::grabGesture(Qt::GestureType gesture)
 {
+    /// TODO: if we are QGraphicsProxyWidget we should subscribe the widget to gesture as well.
     return grabGesture(qt_getStandardGestureTypeName(gesture));
 }
 
@@ -5872,10 +5873,28 @@ int QGraphicsItem::grabGesture(Qt::GestureType gesture)
 int QGraphicsItem::grabGesture(const QString &gesture)
 {
     int id = QGestureManager::instance()->makeGestureId(gesture);
-    d_ptr->gestures << id;
-    if (d_ptr->scene)
-        d_ptr->scene->d_func()->grabGesture(this, id);
+    d_ptr->grabGesture(id);
     return id;
+}
+
+void QGraphicsItemPrivate::grabGesture(int id)
+{
+    Q_Q(QGraphicsItem);
+    gestures << id;
+    if (scene)
+        scene->d_func()->grabGesture(q, id);
+}
+
+bool QGraphicsItemPrivate::releaseGesture(int id)
+{
+    Q_Q(QGraphicsItem);
+    if (gestures.contains(id)) {
+        if (scene)
+            scene->d_func()->releaseGesture(q, id);
+        gestures.remove(id);
+        return true;
+    }
+    return false;
 }
 
 /*!
@@ -5888,10 +5907,9 @@ int QGraphicsItem::grabGesture(const QString &gesture)
 */
 void QGraphicsItem::releaseGesture(int gestureId)
 {
-    if (d_ptr->scene)
-        d_ptr->scene->d_func()->releaseGesture(this, gestureId);
-    QGestureManager::instance()->releaseGestureId(gestureId);
-    d_ptr->gestures.remove(gestureId);
+    /// TODO: if we are QGraphicsProxyWidget we should unsubscribe the widget from gesture as well.
+    if (d_ptr->releaseGesture(gestureId))
+        QGestureManager::instance()->releaseGestureId(gestureId);
 }
 
 /*!
@@ -5907,6 +5925,18 @@ void QGraphicsItem::releaseGesture(int gestureId)
 void QGraphicsItem::setGestureEnabled(int gestureId, bool enable)
 {
     //###
+}
+
+bool QGraphicsItemPrivate::hasGesture(const QString &name) const
+{
+    QGestureManager *gm = QGestureManager::instance();
+    QSet<int>::const_iterator it = gestures.begin(),
+                               e = gestures.end();
+    for (; it != e; ++it) {
+        if (gm->gestureNameFromId(*it) == name)
+            return true;
+    }
+    return false;
 }
 
 /*!
