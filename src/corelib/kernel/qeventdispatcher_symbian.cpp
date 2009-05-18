@@ -299,6 +299,9 @@ void QSelectThread::run()
                 //     ones that return -1 in select
                 // after loop update notifiers for all of them
 
+                // as we dont have "exception" notifier type
+                // we should force monitoring fd_set of this
+                // type as well
 
                 // clean @ start
                 FD_ZERO(&readfds);
@@ -311,6 +314,11 @@ void QSelectThread::run()
                     fd_set onefds;
                     FD_ZERO(&onefds);
                     FD_SET(i.key()->socket(), &onefds);
+
+                    fd_set excfds;
+                    FD_ZERO(&excfds);
+                    FD_SET(i.key()->socket(), &excfds);
+
                     maxfd = i.key()->socket() + 1;
 
                     struct timeval timeout;
@@ -320,14 +328,11 @@ void QSelectThread::run()
                     ret = 0;
 
                     if(i.key()->type() == QSocketNotifier::Read) {
-                        ret = ::select(maxfd, &onefds, 0, 0, &timeout);
+                        ret = ::select(maxfd, &onefds, 0, &excfds, &timeout);
                         if(ret != 0) FD_SET(i.key()->socket(), &readfds);
                     } else if(i.key()->type() == QSocketNotifier::Write) {
-                        ret = ::select(maxfd, 0, &onefds, 0, &timeout);
+                        ret = ::select(maxfd, 0, &onefds, &excfds, &timeout);
                         if(ret != 0) FD_SET(i.key()->socket(), &writefds);
-                    } else { // must be exception fds then
-                        ret = ::select(maxfd, 0, 0, &onefds, &timeout);
-                        if(ret != 0) FD_SET(i.key()->socket(), &exceptionfds);
                     }
 
                 } // end for
