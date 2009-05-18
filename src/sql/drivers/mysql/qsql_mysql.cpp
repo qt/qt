@@ -163,18 +163,21 @@ static inline QVariant qDateTimeFromString(QString &val)
 #endif
 }
 
-class QMYSQLResultPrivate
+class QMYSQLResultPrivate : public QObject
 {
+    Q_OBJECT
 public:
-    QMYSQLResultPrivate(QMYSQLDriverPrivate* dp) : d(dp), result(0),
+    QMYSQLResultPrivate(const QMYSQLDriver* dp) : driver(dp), result(0),
         rowsAffected(0), hasBlobs(false)
 #if MYSQL_VERSION_ID >= 40108
         , stmt(0), meta(0), inBinds(0), outBinds(0)
 #endif
         , precisionPolicy(QSql::HighPrecision)
-        {}
+        {
+            connect(dp, SIGNAL(destroyed()), this, SLOT(driverDestroyed()));
+        }
 
-    QMYSQLDriverPrivate* d;
+    const QMYSQLDriver* driver;
     MYSQL_RES *result;
     MYSQL_ROW row;
 
@@ -207,6 +210,8 @@ public:
     MYSQL_BIND *outBinds;
 #endif
     QSql::NumericalPrecisionPolicy precisionPolicy;
+private Q_SLOTS:
+    void driverDestroyed() { driver = NULL; }
 };
 
 #ifndef QT_NO_TEXTCODEC
@@ -379,7 +384,7 @@ bool QMYSQLResultPrivate::bindInValues()
 QMYSQLResult::QMYSQLResult(const QMYSQLDriver* db)
 : QSqlResult(db)
 {
-    d = new QMYSQLResultPrivate(db->d);
+    d = new QMYSQLResultPrivate(db);
 }
 
 QMYSQLResult::~QMYSQLResult()
@@ -391,7 +396,7 @@ QMYSQLResult::~QMYSQLResult()
 QVariant QMYSQLResult::handle() const
 {
 #if MYSQL_VERSION_ID >= 40108
-    if(d->d->preparedQuerys)
+    if(d->driver && d->driver->d->preparedQuerys)
         return d->meta ? qVariantFromValue(d->meta) : qVariantFromValue(d->stmt);
     else
 #endif
@@ -406,8 +411,8 @@ void QMYSQLResult::cleanup()
 // must iterate trough leftover result sets from multi-selects or stored procedures
 // if this isn't done subsequent queries will fail with "Commands out of sync"
 #if MYSQL_VERSION_ID >= 40100
-    while (d->d->mysql && mysql_next_result(d->d->mysql) == 0) {
-        MYSQL_RES *res = mysql_store_result(d->d->mysql);
+    while (d->driver && d->driver->d->mysql && mysql_next_result(d->driver->d->mysql) == 0) {
+        MYSQL_RES *res = mysql_store_result(d->driver->d->mysql);
         if (res)
             mysql_free_result(res);
     }
@@ -447,11 +452,14 @@ void QMYSQLResult::cleanup()
     setAt(-1);
     setActive(false);
 
-    d->d->preparedQuerys = d->d->preparedQuerysEnabled;
+    if(d->driver)
+        d->driver->d->preparedQuerys = d->driver->d->preparedQuerysEnabled;
 }
 
 bool QMYSQLResult::fetch(int i)
 {
+    if(!d->driver)
+        return false;
     if (isForwardOnly()) { // fake a forward seek
         if (at() < i) {
             int x = i - at();
@@ -463,7 +471,7 @@ bool QMYSQLResult::fetch(int i)
     }
     if (at() == i)
         return true;
-    if (d->d->preparedQuerys) {
+    if (d->driver->d->preparedQuerys) {
 #if MYSQL_VERSION_ID >= 40108
         mysql_stmt_data_seek(d->stmt, i);
 
@@ -494,7 +502,9 @@ bool QMYSQLResult::fetch(int i)
 
 bool QMYSQLResult::fetchNext()
 {
-    if (d->d->preparedQuerys) {
+    if(!d->driver)
+        return false;
+    if (d->driver->d->preparedQuerys) {
 #if MYSQL_VERSION_ID >= 40108
         if (mysql_stmt_fetch(d->stmt))
             return false;
@@ -512,6 +522,8 @@ bool QMYSQLResult::fetchNext()
 
 bool QMYSQLResult::fetchLast()
 {
+    if(!d->driver)
+        return false;
     if (isForwardOnly()) { // fake this since MySQL can't seek on forward only queries
         bool success = fetchNext(); // did we move at all?
         while (fetchNext()) {};
@@ -519,7 +531,7 @@ bool QMYSQLResult::fetchLast()
     }
 
     my_ulonglong numRows;
-    if (d->d->preparedQuerys) {
+    if (d->driver->d->preparedQuerys) {
 #if MYSQL_VERSION_ID >= 40108
         numRows = mysql_stmt_num_rows(d->stmt);
 #else
@@ -553,15 +565,18 @@ QVariant QMYSQLResult::data(int field)
         return QVariant();
     }
 
+    if (!d->driver)
+        return QVariant();
+
     int fieldLength = 0;
     const QMYSQLResultPrivate::QMyField &f = d->fields.at(field);
     QString val;
-    if (d->d->preparedQuerys) {
+    if (d->driver->d->preparedQuerys) {
         if (f.nullIndicator)
             return QVariant(f.type);
 
         if (f.type != QVariant::ByteArray)
-            val = toUnicode(d->d->tc, f.outField, f.bufLength);
+            val = toUnicode(d->driver->d->tc, f.outField, f.bufLength);
     } else {
         if (d->row[field] == NULL) {
             // NULL value
@@ -569,7 +584,7 @@ QVariant QMYSQLResult::data(int field)
         }
         fieldLength = mysql_fetch_lengths(d->result)[field];
         if (f.type != QVariant::ByteArray)
-            val = toUnicode(d->d->tc, d->row[field], fieldLength);
+            val = toUnicode(d->driver->d->tc, d->row[field], fieldLength);
     }
 
     switch(f.type) {
@@ -614,7 +629,7 @@ QVariant QMYSQLResult::data(int field)
     case QVariant::ByteArray: {
 
         QByteArray ba;
-        if (d->d->preparedQuerys) {
+        if (d->driver->d->preparedQuerys) {
             ba = QByteArray(f.outField, f.bufLength);
         } else {
             ba = QByteArray(d->row[field], fieldLength);
@@ -631,7 +646,7 @@ QVariant QMYSQLResult::data(int field)
 
 bool QMYSQLResult::isNull(int field)
 {
-   if (d->d->preparedQuerys)
+   if (d->driver->d->preparedQuerys)
        return d->fields.at(field).nullIndicator;
    else
        return d->row[field] == NULL;
@@ -639,31 +654,31 @@ bool QMYSQLResult::isNull(int field)
 
 bool QMYSQLResult::reset (const QString& query)
 {
-    if (!driver() || !driver()->isOpen() || driver()->isOpenError())
+    if (!driver() || !driver()->isOpen() || driver()->isOpenError() || !d->driver)
         return false;
 
-    if(d->d->preparedQuerysEnabled && prepare(query)) {
-        d->d->preparedQuerys = true;
+    if(d->driver->d->preparedQuerysEnabled && prepare(query)) {
+        d->driver->d->preparedQuerys = true;
         return exec();
     }
-    d->d->preparedQuerys = false;
+    d->driver->d->preparedQuerys = false;
 
-    const QByteArray encQuery(fromUnicode(d->d->tc, query));
-    if (mysql_real_query(d->d->mysql, encQuery.data(), encQuery.length())) {
+    const QByteArray encQuery(fromUnicode(d->driver->d->tc, query));
+    if (mysql_real_query(d->driver->d->mysql, encQuery.data(), encQuery.length())) {
         setLastError(qMakeError(QCoreApplication::translate("QMYSQLResult", "Unable to execute query"),
-                     QSqlError::StatementError, d->d));
+                     QSqlError::StatementError, d->driver->d));
         return false;
     }
-    d->result = mysql_store_result(d->d->mysql);
-    if (!d->result && mysql_field_count(d->d->mysql) > 0) {
+    d->result = mysql_store_result(d->driver->d->mysql);
+    if (!d->result && mysql_field_count(d->driver->d->mysql) > 0) {
         setLastError(qMakeError(QCoreApplication::translate("QMYSQLResult", "Unable to store result"),
-                    QSqlError::StatementError, d->d));
+                    QSqlError::StatementError, d->driver->d));
         return false;
     }
-    int numFields = mysql_field_count(d->d->mysql);
+    int numFields = mysql_field_count(d->driver->d->mysql);
     setSelect(numFields != 0);
     d->fields.resize(numFields);
-    d->rowsAffected = mysql_affected_rows(d->d->mysql);
+    d->rowsAffected = mysql_affected_rows(d->driver->d->mysql);
     if (isSelect()) {
         for(int i = 0; i < numFields; i++) {
             MYSQL_FIELD* field = mysql_fetch_field_direct(d->result, i);
@@ -677,8 +692,8 @@ bool QMYSQLResult::reset (const QString& query)
 
 int QMYSQLResult::size()
 {
-    if (isSelect())
-        if (d->d->preparedQuerys)
+    if (d->driver && isSelect())
+        if (d->driver->d->preparedQuerys)
 #if MYSQL_VERSION_ID >= 40108
             return mysql_stmt_num_rows(d->stmt);
 #else
@@ -697,17 +712,17 @@ int QMYSQLResult::numRowsAffected()
 
 QVariant QMYSQLResult::lastInsertId() const
 {
-    if (!isActive())
+    if (!isActive() || !d->driver)
         return QVariant();
 
-    if (d->d->preparedQuerys) {
+    if (d->driver->d->preparedQuerys) {
 #if MYSQL_VERSION_ID >= 40108
         quint64 id = mysql_stmt_insert_id(d->stmt);
         if (id)
             return QVariant(id);
 #endif
     } else {
-        quint64 id = mysql_insert_id(d->d->mysql);
+        quint64 id = mysql_insert_id(d->driver->d->mysql);
         if (id)
             return QVariant(id);
     }
@@ -718,20 +733,20 @@ QSqlRecord QMYSQLResult::record() const
 {
     QSqlRecord info;
     MYSQL_RES *res;
-    if (!isActive() || !isSelect())
+    if (!isActive() || !isSelect() || !d->driver)
         return info;
 
 #if MYSQL_VERSION_ID >= 40108
-    res = d->d->preparedQuerys ? d->meta : d->result;
+    res = d->driver->d->preparedQuerys ? d->meta : d->result;
 #else
     res = d->result;
 #endif
 
-    if (!mysql_errno(d->d->mysql)) {
+    if (!mysql_errno(d->driver->d->mysql)) {
         mysql_field_seek(res, 0);
         MYSQL_FIELD* field = mysql_fetch_field(res);
         while(field) {
-            info.append(qToField(field, d->d->tc));
+            info.append(qToField(field, d->driver->d->tc));
             field = mysql_fetch_field(res);
         }
     }
@@ -741,6 +756,8 @@ QSqlRecord QMYSQLResult::record() const
 
 bool QMYSQLResult::nextResult()
 {
+    if(!d->driver)
+        return false;
 #if MYSQL_VERSION_ID >= 40100 
     setAt(-1);
     setActive(false);
@@ -754,26 +771,26 @@ bool QMYSQLResult::nextResult()
         delete[] d->fields[i].outField;
     d->fields.clear();
 
-    int status = mysql_next_result(d->d->mysql);
+    int status = mysql_next_result(d->driver->d->mysql);
     if (status > 0) {
         setLastError(qMakeError(QCoreApplication::translate("QMYSQLResult", "Unable to execute next query"),
-                     QSqlError::StatementError, d->d));
+                     QSqlError::StatementError, d->driver->d));
         return false;
     } else if (status == -1) {
         return false;   // No more result sets
     }
 
-    d->result = mysql_store_result(d->d->mysql);
-    int numFields = mysql_field_count(d->d->mysql);
+    d->result = mysql_store_result(d->driver->d->mysql);
+    int numFields = mysql_field_count(d->driver->d->mysql);
     if (!d->result && numFields > 0) {
         setLastError(qMakeError(QCoreApplication::translate("QMYSQLResult", "Unable to store next result"),
-                     QSqlError::StatementError, d->d));
+                     QSqlError::StatementError, d->driver->d));
         return false;
     }
 
     setSelect(numFields > 0);
     d->fields.resize(numFields);
-    d->rowsAffected = mysql_affected_rows(d->d->mysql);
+    d->rowsAffected = mysql_affected_rows(d->driver->d->mysql);
 
     if (isSelect()) {
         for (int i = 0; i < numFields; i++) {
@@ -833,9 +850,11 @@ static MYSQL_TIME *toMySqlDate(QDate date, QTime time, QVariant::Type type)
 
 bool QMYSQLResult::prepare(const QString& query)
 {
+    if(!d->driver)
+        return false;
 #if MYSQL_VERSION_ID >= 40108
     cleanup();
-    if (!d->d->preparedQuerys)
+    if (!d->driver->d->preparedQuerys)
         return QSqlResult::prepare(query);
 
     int r;
@@ -844,14 +863,14 @@ bool QMYSQLResult::prepare(const QString& query)
         return false;
 
     if (!d->stmt)
-        d->stmt = mysql_stmt_init(d->d->mysql);
+        d->stmt = mysql_stmt_init(d->driver->d->mysql);
     if (!d->stmt) {
         setLastError(qMakeError(QCoreApplication::translate("QMYSQLResult", "Unable to prepare statement"),
-                     QSqlError::StatementError, d->d));
+                     QSqlError::StatementError, d->driver->d));
         return false;
     }
 
-    const QByteArray encQuery(fromUnicode(d->d->tc, query));
+    const QByteArray encQuery(fromUnicode(d->driver->d->tc, query));
     r = mysql_stmt_prepare(d->stmt, encQuery.constData(), encQuery.length());
     if (r != 0) {
         setLastError(qMakeStmtError(QCoreApplication::translate("QMYSQLResult",
@@ -873,7 +892,9 @@ bool QMYSQLResult::prepare(const QString& query)
 
 bool QMYSQLResult::exec()
 {
-    if (!d->d->preparedQuerys)
+    if (!d->driver)
+        return false;
+    if (!d->driver->d->preparedQuerys)
         return QSqlResult::exec();
     if (!d->stmt)
         return false;
@@ -963,7 +984,7 @@ bool QMYSQLResult::exec()
                     break;
                 case QVariant::String:
                 default: {
-                    QByteArray ba = fromUnicode(d->d->tc, val.toString());
+                    QByteArray ba = fromUnicode(d->driver->d->tc, val.toString());
                     stringVector.append(ba);
                     currBind->buffer_type = MYSQL_TYPE_STRING;
                     currBind->buffer = const_cast<char *>(ba.constData());
@@ -1459,3 +1480,5 @@ bool QMYSQLDriver::isIdentifierEscapedImplementation(const QString &identifier, 
 }
 
 QT_END_NAMESPACE
+
+#include "qsql_mysql.moc"

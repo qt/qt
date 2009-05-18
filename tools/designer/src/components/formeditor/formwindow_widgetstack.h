@@ -51,7 +51,6 @@ QT_BEGIN_NAMESPACE
 class QDesignerFormWindowToolInterface;
 
 class QStackedLayout;
-class QVBoxLayout;
 class QWidget;
 
 namespace qdesigner_internal {
@@ -92,7 +91,7 @@ protected:
 private:
     QList<QDesignerFormWindowToolInterface*> m_tools;
     QWidget *m_formContainer;
-    QVBoxLayout *m_formContainerLayout;
+    QStackedLayout *m_formContainerLayout;
     QStackedLayout *m_layout;
 };
 

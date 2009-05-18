@@ -1153,11 +1153,7 @@ void QGraphicsViewPrivate::generateStyleOptions(const QList<QGraphicsItem *> &it
         // Calculate a simple level-of-detail metric.
         // ### almost identical code in QGraphicsScene::render()
         //     and QGraphicsView::render() - consider refactoring
-        if (item->d_ptr->itemIsUntransformable()) {
-            itemToViewportTransform = item->deviceTransform(worldTransform);
-        } else {
-            itemToViewportTransform = item->sceneTransform() * worldTransform;
-        }
+        itemToViewportTransform = item->deviceTransform(worldTransform);
 
         if (itemToViewportTransform.type() <= QTransform::TxTranslate) {
             // Translation and rotation only? The LOD is 1.
@@ -1681,6 +1677,7 @@ void QGraphicsView::setScene(QGraphicsScene *scene)
         disconnect(d->scene, SIGNAL(sceneRectChanged(QRectF)),
                    this, SLOT(updateSceneRect(QRectF)));
         d->scene->d_func()->views.removeAll(this);
+        d->connectedToScene = false;
     }
 
     // Assign the new scene and update the contents (scrollbars, etc.)).
@@ -2159,12 +2156,7 @@ void QGraphicsView::render(QPainter *painter, const QRectF &target, const QRect 
         // Calculate a simple level-of-detail metric.
         // ### almost identical code in QGraphicsScene::render()
         //     and QGraphicsView::paintEvent() - consider refactoring
-        QTransform itemToViewportTransform;
-        if (item->d_ptr->itemIsUntransformable()) {
-            itemToViewportTransform = item->deviceTransform(painterMatrix);
-        } else {
-            itemToViewportTransform = item->sceneTransform() * painterMatrix;
-        }
+        QTransform itemToViewportTransform = item->deviceTransform(painterMatrix);
 
         option->levelOfDetail = qSqrt(itemToViewportTransform.map(v1).length() * itemToViewportTransform.map(v2).length());
         option->matrix = itemToViewportTransform.toAffine();

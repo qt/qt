@@ -1408,10 +1408,10 @@ bool QMainWindow::event(QEvent *event)
 
     This property is false by default and only has any effect on Mac OS X 10.4 or higher.
 
-    If set to true, then the top toolbar area is replaced with a Carbon
-    HIToolbar and all toolbars in the top toolbar area are moved to that. Any
-    toolbars added afterwards will also be added to the Carbon HIToolbar. This
-    means a couple of things.
+    If set to true, then the top toolbar area is replaced with a Carbon HIToolbar
+    or a Cocoa NSToolbar (depending on whether Qt was built with Carbon or Cocoa).
+    All toolbars in the top toolbar area and any toolbars added afterwards are
+    moved to that. This means a couple of things.
 
     \list
     \i QToolBars in this toolbar area are not movable and you cannot drag other

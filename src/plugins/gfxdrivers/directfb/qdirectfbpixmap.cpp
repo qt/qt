@@ -271,7 +271,7 @@ void QDirectFBPixmapData::fill(const QColor &color)
         forceRaster = false;
         setSerialNumber(++global_ser_no);
         if (!dfbSurface) {
-            qWarning("QDirecttFBPixmapData::fill()");
+            qWarning("QDirectFBPixmapData::fill()");
             invalidate();
             return;
         }
