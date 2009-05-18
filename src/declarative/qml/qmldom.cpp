@@ -477,8 +477,7 @@ QmlDomObjectPrivate::properties(QmlParser::Property *property) const
             iter->second.prepend(name);
 
     } else {
-        if (property->values.count() != 1)
-            rv << qMakePair(property, property->name);
+        rv << qMakePair(property, property->name);
     }
 
     return rv;
