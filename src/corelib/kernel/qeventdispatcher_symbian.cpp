@@ -393,9 +393,27 @@ void QSelectThread::restart()
 int QSelectThread::updateSocketSet(QSocketNotifier::Type type, fd_set *fds)
 {
     int maxfd = 0;
-    for (QHash<QSocketNotifier *, TRequestStatus *>::const_iterator i = m_AOStatuses.begin();
+    if(m_AOStatuses.isEmpty()) {
+        /*
+         * Wonder if should return -1
+         * to signal that no descriptors
+         * added to fds
+        */
+        return maxfd;
+    }
+    for ( QHash<QSocketNotifier *, TRequestStatus *>::const_iterator i = m_AOStatuses.begin();
             i != m_AOStatuses.end(); ++i) {
         if (i.key()->type() == type) {
+            FD_SET(i.key()->socket(), fds);
+            maxfd = qMax(maxfd, i.key()->socket());
+        } else if(type == QSocketNotifier::Exception) {
+            /*
+             * We are registering existing sockets
+             * always to exception set
+             *
+             * Doing double FD_SET shouldn't
+             * matter
+             */
             FD_SET(i.key()->socket(), fds);
             maxfd = qMax(maxfd, i.key()->socket());
         }
@@ -407,7 +425,9 @@ int QSelectThread::updateSocketSet(QSocketNotifier::Type type, fd_set *fds)
 void QSelectThread::updateActivatedNotifiers(QSocketNotifier::Type type, fd_set *fds)
 {
     Q_D(QThread);
-
+    if(m_AOStatuses.isEmpty()) {
+        return;
+    }
     QList<QSocketNotifier *> toRemove;
     for (QHash<QSocketNotifier *, TRequestStatus *>::const_iterator i = m_AOStatuses.begin();
             i != m_AOStatuses.end(); ++i) {
@@ -415,6 +435,15 @@ void QSelectThread::updateActivatedNotifiers(QSocketNotifier::Type type, fd_set 
             toRemove.append(i.key());
             TRequestStatus *status = i.value();
             // Thread data is still owned by the main thread.
+            QEventDispatcherSymbian::RequestComplete(d->threadData->symbian_thread_handle, status, KErrNone);
+        } else if(type == QSocketNotifier::Exception && FD_ISSET(i.key()->socket(), fds)) {
+            /*
+             * check if socket is in exception set
+             * then signal RequestComplete for it
+             */
+            qWarning("exception on %d", i.key()->socket());
+            toRemove.append(i.key());
+            TRequestStatus *status = i.value();
             QEventDispatcherSymbian::RequestComplete(d->threadData->symbian_thread_handle, status, KErrNone);
         }
     }
