@@ -1872,10 +1872,6 @@
 
            \snippet doc/src/snippets/code/doc_src_stylesheet.qdoc 54
 
-        \note If you specify more than one parameter in \c font-family,
-        e.g., \c{font-family: Verdana, Arial}, Qt will only use the first
-        font. If it cannot be found, Qt uses the system fallbacks instead.
-
     \row
         \o \c font-size
         \o \l{#Font Size}{Font Size}
