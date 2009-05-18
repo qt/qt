@@ -39,13 +39,14 @@
 **
 ****************************************************************************/
 
-#include <QMainWindow>
+#include <QtGui>
 
 QT_BEGIN_NAMESPACE
 class QWebView;
 class QLineEdit;
 QT_END_NAMESPACE
 
+//! [1]
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
@@ -73,4 +74,5 @@ private:
     QWebView *view;
     QLineEdit *locationEdit;
     int progress;
+//! [1]
 };

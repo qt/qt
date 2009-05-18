@@ -115,6 +115,7 @@ public:
 class QAccessibleLineEdit : public QAccessibleWidgetEx, public QAccessibleTextInterface,
                             public QAccessibleSimpleEditableTextInterface
 {
+    Q_ACCESSIBLE_OBJECT
 public:
     explicit QAccessibleLineEdit(QWidget *o, const QString &name = QString());
 

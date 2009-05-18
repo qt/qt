@@ -181,6 +181,8 @@ private Q_SLOTS:
     void ioGetFromHttpsWithIgnoreSslErrors();
     void ioGetFromHttpsWithSslHandshakeError();
 #endif
+    void ioGetFromHttpBrokenServer_data();
+    void ioGetFromHttpBrokenServer();
 
     void ioGetWithManyProxies_data();
     void ioGetWithManyProxies();
@@ -224,6 +226,8 @@ private Q_SLOTS:
     void httpProxyCommands_data();
     void httpProxyCommands();
     void proxyChange();
+    void authorizationError_data();
+    void authorizationError();
 };
 
 QT_BEGIN_NAMESPACE
@@ -1914,6 +1918,53 @@ void tst_QNetworkReply::ioGetFromHttpsWithSslHandshakeError()
 }
 #endif
 
+void tst_QNetworkReply::ioGetFromHttpBrokenServer_data()
+{
+    QTest::addColumn<QByteArray>("dataToSend");
+    QTest::addColumn<bool>("doDisconnect");
+
+    QTest::newRow("no-newline") << QByteArray("Hello World") << false;
+    QTest::newRow("just-newline") << QByteArray("\r\n") << false;
+    QTest::newRow("just-2newline") << QByteArray("\r\n\r\n") << false;
+    QTest::newRow("with-newlines") << QByteArray("Long first line\r\nLong second line") << false;
+    QTest::newRow("with-newlines2") << QByteArray("\r\nSecond line") << false;
+    QTest::newRow("with-newlines3") << QByteArray("ICY\r\nSecond line") << false;
+    QTest::newRow("invalid-version") << QByteArray("HTTP/123 200 \r\n") << false;
+    QTest::newRow("invalid-version2") << QByteArray("HTTP/a.\033 200 \r\n") << false;
+    QTest::newRow("invalid-reply-code") << QByteArray("HTTP/1.0 fuu \r\n") << false;
+
+    QTest::newRow("empty+disconnect") << QByteArray() << true;
+
+    QTest::newRow("no-newline+disconnect") << QByteArray("Hello World") << true;
+    QTest::newRow("just-newline+disconnect") << QByteArray("\r\n") << true;
+    QTest::newRow("just-2newline+disconnect") << QByteArray("\r\n\r\n") << true;
+    QTest::newRow("with-newlines+disconnect") << QByteArray("Long first line\r\nLong second line") << true;
+    QTest::newRow("with-newlines2+disconnect") << QByteArray("\r\nSecond line") << true;
+    QTest::newRow("with-newlines3+disconnect") << QByteArray("ICY\r\nSecond line") << true;
+
+    QTest::newRow("invalid-version+disconnect") << QByteArray("HTTP/123 200 ") << true;
+    QTest::newRow("invalid-version2+disconnect") << QByteArray("HTTP/a.\033 200 ") << true;
+    QTest::newRow("invalid-reply-code+disconnect") << QByteArray("HTTP/1.0 fuu ") << true;
+}
+
+void tst_QNetworkReply::ioGetFromHttpBrokenServer()
+{
+    QFETCH(QByteArray, dataToSend);
+    QFETCH(bool, doDisconnect);
+    MiniHttpServer server(dataToSend);
+    server.doClose = doDisconnect;
+
+    QNetworkRequest request(QUrl("http://localhost:" + QString::number(server.serverPort())));
+    QNetworkReplyPtr reply = manager.get(request);
+
+    connect(reply, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
+    QTestEventLoop::instance().enterLoop(10);
+    QVERIFY(!QTestEventLoop::instance().timeout());
+
+    QCOMPARE(reply->url(), request.url());
+    QVERIFY(reply->error() != QNetworkReply::NoError);
+}
+
 void tst_QNetworkReply::ioGetWithManyProxies_data()
 {
     QTest::addColumn<QList<QNetworkProxy> >("proxyList");
@@ -3006,6 +3057,56 @@ void tst_QNetworkReply::proxyChange()
     QVERIFY(!QTestEventLoop::instance().timeout());
 
     QVERIFY(int(reply3->error()) > 0);
+}
+
+void tst_QNetworkReply::authorizationError_data()
+{
+
+    QTest::addColumn<QString>("url");
+    QTest::addColumn<int>("errorSignalCount");
+    QTest::addColumn<int>("finishedSignalCount");
+    QTest::addColumn<int>("error");
+    QTest::addColumn<int>("httpStatusCode");
+    QTest::addColumn<QString>("httpBody");
+
+    QTest::newRow("unknown-authorization-method") << "http://" + QtNetworkSettings::serverName() +
+                                                     "/cgi-bin/http-unknown-authentication-method.cgi?401-authorization-required" << 1 << 1
+                                                  << int(QNetworkReply::AuthenticationRequiredError) << 401 << "authorization required";
+    QTest::newRow("unknown-proxy-authorization-method") << "http://" + QtNetworkSettings::serverName() +
+                                                           "/cgi-bin/http-unknown-authentication-method.cgi?407-proxy-authorization-required" << 1 << 1
+                                                        << int(QNetworkReply::ProxyAuthenticationRequiredError) << 407
+                                                        << "authorization required";
+}
+
+void tst_QNetworkReply::authorizationError()
+{
+    QFETCH(QString, url);
+    QNetworkRequest request(url);
+    QNetworkReplyPtr reply = manager.get(request);
+
+    QCOMPARE(reply->error(), QNetworkReply::NoError);
+
+    qRegisterMetaType<QNetworkReply::NetworkError>("QNetworkReply::NetworkError");
+    QSignalSpy errorSpy(reply, SIGNAL(error(QNetworkReply::NetworkError)));
+    QSignalSpy finishedSpy(reply, SIGNAL(finished()));
+    // now run the request:
+    connect(reply, SIGNAL(finished()),
+            &QTestEventLoop::instance(), SLOT(exitLoop()));
+    QTestEventLoop::instance().enterLoop(10);
+    QVERIFY(!QTestEventLoop::instance().timeout());
+
+    QFETCH(int, errorSignalCount);
+    QCOMPARE(errorSpy.count(), errorSignalCount);
+    QFETCH(int, finishedSignalCount);
+    QCOMPARE(finishedSpy.count(), finishedSignalCount);
+    QFETCH(int, error);
+    QCOMPARE(reply->error(), QNetworkReply::NetworkError(error));
+
+    QFETCH(int, httpStatusCode);
+    QCOMPARE(reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt(), httpStatusCode);
+
+    QFETCH(QString, httpBody);
+    QCOMPARE(QString(reply->readAll()), httpBody);
 }
 
 QTEST_MAIN(tst_QNetworkReply)
