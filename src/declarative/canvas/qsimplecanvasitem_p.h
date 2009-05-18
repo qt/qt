@@ -102,6 +102,7 @@ public:
 
     QSimpleCanvas::Matrix *transformUser;
     QSimpleCanvas::Matrix transformActive;
+    int transformVersion;
 
     float activeOpacity;
 
@@ -238,7 +239,6 @@ public:
 #endif
 
     void zOrderChildren();
-    static int nextTransformVersion;
     bool freshenNeeded() const;
     void doFreshenTransforms() const;
 

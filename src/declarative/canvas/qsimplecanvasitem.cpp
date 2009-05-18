@@ -50,8 +50,9 @@
 QT_BEGIN_NAMESPACE
 QSimpleCanvasItemData::QSimpleCanvasItemData()
 : buttons(Qt::NoButton), flip(QSimpleCanvasItem::NoFlip), 
-  dirty(false), transformValid(true), doNotPaint(false), doNotPaintChildren(false), x(0), y(0), z(0), visible(1),
-  transformUser(0), activeOpacity(1)
+  dirty(false), transformValid(true), doNotPaint(false), 
+  doNotPaintChildren(false), x(0), y(0), z(0), visible(1),
+  transformUser(0), transformVersion(0), activeOpacity(1)
 {
 }
 
@@ -933,8 +934,6 @@ QRectF QSimpleCanvasItem::mapToScene(const QRectF &r) const
         return d->adjustTo(rr);
     }
 }
-
-int QSimpleCanvasItemPrivate::nextTransformVersion = 1;
 
 void QSimpleCanvasItemPrivate::freshenTransforms() const
 {
