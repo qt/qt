@@ -486,45 +486,57 @@ void QFxRect::drawRect(QPainter &p)
         }
 
         //basically same code as QFxImage uses to paint sci images
-        int xSide = qMin(offset * 2, int(width()));
-        int ySide = qMin(offset * 2, int(height()));;
+        int w = width();
+        int h = height();
+        int xOffset = offset;
+        int xSide = xOffset * 2;
+        if (xSide > w) {
+            xOffset = w/2;
+            xSide = xOffset * 2;
+        }
+        int yOffset = offset;
+        int ySide = yOffset * 2;
+        if (ySide > h) {
+            yOffset = h/2;
+            ySide = yOffset * 2;
+        }
 
         // Upper left
-        p.drawImage(QRect(0, 0, offset, offset), d->_rectImage, QRect(0, 0, offset, offset));
+        p.drawImage(QRect(0, 0, xOffset, yOffset), d->_rectImage, QRect(0, 0, xOffset, yOffset));
 
         // Upper middle
         if (d->_rectImage.width() - xSide)
-            p.drawImage(QRect(offset, 0, width() - xSide, offset), d->_rectImage,
-                                  QRect(offset, 0, d->_rectImage.width() - xSide, offset));
+            p.drawImage(QRect(xOffset, 0, w - xSide, yOffset), d->_rectImage,
+                                  QRect(xOffset, 0, d->_rectImage.width() - xSide, yOffset));
         // Upper right
-        if (d->_rectImage.width() - offset) {
-            p.drawImage(QPoint(width()-offset, 0), d->_rectImage,
-                                  QRect(d->_rectImage.width()-offset, 0, offset, offset));
+        if (d->_rectImage.width() - xOffset) {
+            p.drawImage(QPoint(w-xOffset, 0), d->_rectImage,
+                                  QRect(d->_rectImage.width()-xOffset, 0, xOffset, yOffset));
         }
         // Middle left
         if (d->_rectImage.height() - ySide)
-            p.drawImage(QRect(0, offset, offset, height() - ySide), d->_rectImage,
-                                  QRect(0, offset, offset, d->_rectImage.height() - ySide));
+            p.drawImage(QRect(0, yOffset, xOffset, height() - ySide), d->_rectImage,
+                                  QRect(0, yOffset, xOffset, d->_rectImage.height() - ySide));
 
         // Middle
         if (d->_rectImage.width() - xSide && d->_rectImage.height() - ySide)
-            p.drawImage(QRect(offset, offset, width() - xSide, height() - ySide), d->_rectImage,
-                                QRect(offset, offset, d->_rectImage.width() - xSide, d->_rectImage.height() - ySide));
+            p.drawImage(QRect(xOffset, yOffset, w - xSide, height() - ySide), d->_rectImage,
+                                QRect(xOffset, yOffset, d->_rectImage.width() - xSide, d->_rectImage.height() - ySide));
         // Midlle right
         if (d->_rectImage.height() - ySide)
-            p.drawImage(QRect(width()-offset, offset, offset, height() - ySide), d->_rectImage,
-                                QRect(d->_rectImage.width()-offset, offset, offset, d->_rectImage.height() - ySide));
+            p.drawImage(QRect(w-xOffset, yOffset, xOffset, height() - ySide), d->_rectImage,
+                                QRect(d->_rectImage.width()-xOffset, yOffset, xOffset, d->_rectImage.height() - ySide));
         // Lower left 
-        p.drawImage(QPoint(0, height() - offset), d->_rectImage, QRect(0, d->_rectImage.height() - offset, offset, offset));
+        p.drawImage(QPoint(0, height() - yOffset), d->_rectImage, QRect(0, d->_rectImage.height() - yOffset, xOffset, yOffset));
 
         // Lower Middle
         if (d->_rectImage.width() - xSide)
-            p.drawImage(QRect(offset, height() - offset, width() - xSide, offset), d->_rectImage,
-                                QRect(offset, d->_rectImage.height() - offset, d->_rectImage.width() - xSide, offset));
+            p.drawImage(QRect(xOffset, height() - yOffset, w - xSide, yOffset), d->_rectImage,
+                                QRect(xOffset, d->_rectImage.height() - yOffset, d->_rectImage.width() - xSide, yOffset));
         // Lower Right
-        if (d->_rectImage.width() - offset)
-            p.drawImage(QPoint(width()-offset, height() - offset), d->_rectImage,
-                            QRect(d->_rectImage.width()-offset, d->_rectImage.height() - offset, offset, offset));
+        if (d->_rectImage.width() - xOffset)
+            p.drawImage(QPoint(w-xOffset, height() - yOffset), d->_rectImage,
+                            QRect(d->_rectImage.width()-xOffset, d->_rectImage.height() - yOffset, xOffset, yOffset));
     }
 }
 #endif
