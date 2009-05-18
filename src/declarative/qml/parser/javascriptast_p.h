@@ -2345,28 +2345,22 @@ class UiObjectDefinition: public UiObjectMember
 public:
     JAVASCRIPT_DECLARE_AST_NODE(UiObjectDefinition)
 
-    UiObjectDefinition(NameId *name,
+    UiObjectDefinition(UiQualifiedId *qualifiedObjectNameId,
                        UiObjectInitializer *initializer)
-        : name(name), initializer(initializer)
+        : qualifiedObjectNameId(qualifiedObjectNameId), initializer(initializer)
     { kind = K; }
 
     virtual SourceLocation firstSourceLocation() const
-    { return identifierToken; }
+    { return qualifiedObjectNameId->identifierToken; }
 
     virtual SourceLocation lastSourceLocation() const
-    {
-      if (initializer)
-	return initializer->rbraceToken;
-
-      return identifierToken;
-    }
+    { return initializer->rbraceToken; }
 
     virtual void accept0(Visitor *visitor);
 
 // attributes
-    NameId *name;
+    UiQualifiedId *qualifiedObjectNameId;
     UiObjectInitializer *initializer;
-    SourceLocation identifierToken;
 };
 
 class UiSourceElement: public UiObjectMember
@@ -2411,10 +2405,10 @@ public:
     JAVASCRIPT_DECLARE_AST_NODE(UiObjectBinding)
 
     UiObjectBinding(UiQualifiedId *qualifiedId,
-                    NameId *name,
+                    UiQualifiedId *qualifiedObjectNameId,
                     UiObjectInitializer *initializer)
         : qualifiedId(qualifiedId),
-          name(name),
+          qualifiedObjectNameId(qualifiedObjectNameId),
           initializer(initializer)
     { kind = K; }
 
@@ -2428,10 +2422,9 @@ public:
 
 // attributes
     UiQualifiedId *qualifiedId;
-    NameId *name;
+    UiQualifiedId *qualifiedObjectNameId;
     UiObjectInitializer *initializer;
     SourceLocation colonToken;
-    SourceLocation identifierToken;
 };
 
 class UiScriptBinding: public UiObjectMember

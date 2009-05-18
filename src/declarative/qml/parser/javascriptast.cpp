@@ -813,6 +813,7 @@ void UiPublicMember::accept0(Visitor *visitor)
 void UiObjectDefinition::accept0(Visitor *visitor)
 {
     if (visitor->visit(this)) {
+        acceptChild(qualifiedObjectNameId, visitor);
         acceptChild(initializer, visitor);
     }
 
@@ -833,6 +834,7 @@ void UiObjectBinding::accept0(Visitor *visitor)
 {
     if (visitor->visit(this)) {
         acceptChild(qualifiedId, visitor);
+        acceptChild(qualifiedObjectNameId, visitor);
         acceptChild(initializer, visitor);
     }
 
