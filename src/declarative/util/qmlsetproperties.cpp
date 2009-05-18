@@ -344,4 +344,3 @@ QmlSetProperties::ActionList QmlSetProperties::actions()
 QML_DEFINE_CUSTOM_TYPE(QmlSetProperties,SetProperties,QmlSetPropertiesParser);
 
 QT_END_NAMESPACE
-#include "qmlsetproperties.moc"
