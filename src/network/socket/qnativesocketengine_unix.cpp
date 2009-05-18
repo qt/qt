@@ -895,7 +895,7 @@ int QNativeSocketEnginePrivate::nativeSelect(int timeout, bool selectForRead) co
     fd_set fdexec;
     FD_ZERO(&fdexec);
     FD_SET(socketDescriptor, &fdexec);    
-#endif   
+#endif
 
     QTime timer;
     timer.start();
@@ -917,7 +917,13 @@ int QNativeSocketEnginePrivate::nativeSelect(int timeout, bool selectForRead) co
 
             
 #ifdef Q_OS_SYMBIAN            
-        bool selectForExec = FD_ISSET(socketDescriptor, &fdexec);        
+        bool selectForExec = false;
+        if(retval != 0) {
+            if(retval < 0) {
+                qWarning("nativeSelect(....) returned < 0 for socket %d", socketDescriptor);
+            }
+            selectForExec = FD_ISSET(socketDescriptor, &fdexec);
+        }
         if(selectForExec) {
             qWarning("nativeSelect (selectForRead %d, retVal %d, errno %d) Unexpected expectfds ready in fd %d", 
             		selectForRead, retval, errno, socketDescriptor);
@@ -977,7 +983,13 @@ int QNativeSocketEnginePrivate::nativeSelect(int timeout, bool checkRead, bool c
         ret = qt_socket_select(socketDescriptor + 1, &fdread, &fdwrite, 0, timeout < 0 ? 0 : &tv);
 #else            
         ret = qt_socket_select(socketDescriptor + 1, &fdread, &fdwrite, &fdexec, timeout < 0 ? 0 : &tv);
-        bool selectForExec = FD_ISSET(socketDescriptor, &fdexec);        
+        bool selectForExec = false;
+        if(ret != 0) {
+            if(ret < 0) {
+                qWarning("nativeSelect(....) returned < 0 for socket %d", socketDescriptor);
+            }
+            selectForExec = FD_ISSET(socketDescriptor, &fdexec);
+        }
         if(selectForExec) {
         	qWarning("nativeSelect (checkRead %d, checkWrite %d, ret %d, errno %d): Unexpected expectfds ready in fd %d", 
         			checkRead, checkWrite, ret, errno, socketDescriptor);
