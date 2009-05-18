@@ -296,7 +296,6 @@ QFxFlipable::Side QFxFlipable::side() const
 //(the logic here should be kept in sync with setBackTransform and setRotation)
 void QFxFlipable::transformChanged(const QSimpleCanvas::Matrix &trans)
 {
-    qWarning("Transform changed");
     Q_D(QFxFlipable);
     QPointF p1(0, 0);
     QPointF p2(1, 0);
