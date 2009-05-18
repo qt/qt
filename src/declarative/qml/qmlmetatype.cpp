@@ -388,7 +388,8 @@ int QmlMetaType::registerInterface(const QmlPrivate::MetaTypeIds &id,
     data->idToType.insert(type->typeId(), type);
     data->idToType.insert(type->qListTypeId(), type);
     data->idToType.insert(type->qmlListTypeId(), type);
-    data->nameToType.insert(type->qmlTypeName(), type);
+    if (!type->qmlTypeName().isEmpty())
+        data->nameToType.insert(type->qmlTypeName(), type);
 
     if (data->interfaces.size() < id.typeId) 
         data->interfaces.resize(id.typeId + 16);
