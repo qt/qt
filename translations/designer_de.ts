@@ -339,7 +339,7 @@ ate the goose who was loose.</source>
     <message>
         <location line="-220"/>
         <source>Change signal-slot connection</source>
-        <translation type="unfinished"></translation>
+        <translation>Signale-Slotverbindung ändern</translation>
     </message>
     <message>
         <location line="+234"/>
@@ -1384,7 +1384,7 @@ ate the goose who was loose.</source>
     <message>
         <location filename="../tools/designer/src/lib/shared/plugindialog.ui"/>
         <source>Plugin Information</source>
-        <translation type="unfinished">Plugins</translation>
+        <translation>Plugins</translation>
     </message>
     <message>
         <location/>
@@ -4026,7 +4026,7 @@ Möchten Sie sie überschreiben?</translation>
     <message>
         <location line="+1"/>
         <source>Go to slot...</source>
-        <translation type="unfinished">Slot anzeigen...</translation>
+        <translation>Slot anzeigen...</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -5963,14 +5963,14 @@ Please select another name.</source>
         <translation>Detailansicht</translation>
     </message>
     <message>
-        <location line="+596"/>
+        <location line="+597"/>
         <source>Object: %1
 Class: %2</source>
         <translation>Objekt: %1
 Klasse: %2</translation>
     </message>
     <message>
-        <location line="-599"/>
+        <location line="-600"/>
         <source>Sorting</source>
         <translation>Sortiert</translation>
     </message>
@@ -5980,7 +5980,7 @@ Klasse: %2</translation>
         <translation>Farbige Hervorhebung</translation>
     </message>
     <message>
-        <location line="+65"/>
+        <location line="+66"/>
         <source>Configure Property Editor</source>
         <translation>Anzeige der Eigenschaften konfigurieren</translation>
     </message>
