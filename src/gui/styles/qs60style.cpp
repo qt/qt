@@ -1919,8 +1919,12 @@ void QS60Style::drawPrimitive(PrimitiveElement element, const QStyleOption *opti
                     drawPrimitive(PE_IndicatorCheckBox, option, painter, widget);
                 // ... or normal "tick" selection at the end.
                 } else if (option->state & QStyle::State_Selected) {
+                    QRect tickRect = option->rect;
+                    const int frameBorderWidth = QS60StylePrivate::pixelMetric(PM_Custom_FrameCornerWidth);
+                    // adjust tickmark rect to exclude frame border 
+                    tickRect.adjust(0,-frameBorderWidth,0,-frameBorderWidth);
                     QS60StyleEnums::SkinParts skinPart = QS60StyleEnums::SP_QgnIndiMarkedAdd;
-                    QS60StylePrivate::drawSkinPart(skinPart, painter, option->rect,
+                    QS60StylePrivate::drawSkinPart(skinPart, painter, tickRect,
                         (flags | QS60StylePrivate::SF_ColorSkinned));
                 }
             }
