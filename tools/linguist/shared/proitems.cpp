@@ -116,7 +116,8 @@ bool ProBlock::Accept(AbstractProItemVisitor *visitor)
         if (!item->Accept(visitor))
             return false;
     }
-    return visitor->visitEndProBlock(this);
+    visitor->visitEndProBlock(this);
+    return true;
 }
 
 // --------------- ProVariable ----------------
@@ -155,7 +156,8 @@ bool ProVariable::Accept(AbstractProItemVisitor *visitor)
         if (!item->Accept(visitor))
             return false;
     }
-    return visitor->visitEndProVariable(this);
+    visitor->visitEndProVariable(this);
+    return true;
 }
 
 // --------------- ProValue ----------------
@@ -192,7 +194,8 @@ ProItem::ProItemKind ProValue::kind() const
 
 bool ProValue::Accept(AbstractProItemVisitor *visitor)
 {
-    return visitor->visitProValue(this);
+    visitor->visitProValue(this);
+    return true;
 }
 
 // --------------- ProFunction ----------------
@@ -218,7 +221,8 @@ ProItem::ProItemKind ProFunction::kind() const
 
 bool ProFunction::Accept(AbstractProItemVisitor *visitor)
 {
-    return visitor->visitProFunction(this);
+    visitor->visitProFunction(this);
+    return true;
 }
 
 // --------------- ProCondition ----------------
@@ -244,7 +248,8 @@ ProItem::ProItemKind ProCondition::kind() const
 
 bool ProCondition::Accept(AbstractProItemVisitor *visitor)
 {
-    return visitor->visitProCondition(this);
+    visitor->visitProCondition(this);
+    return true;
 }
 
 // --------------- ProOperator ----------------
@@ -270,7 +275,8 @@ ProItem::ProItemKind ProOperator::kind() const
 
 bool ProOperator::Accept(AbstractProItemVisitor *visitor)
 {
-    return visitor->visitProOperator(this);
+    visitor->visitProOperator(this);
+    return true;
 }
 
 // --------------- ProFile ----------------
