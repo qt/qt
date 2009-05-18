@@ -271,10 +271,10 @@
 
     \code
         QPushButton *bonnie = new QPushButton("Bonnie");
-        bonnie.show();
+        bonnie->show();
 
         QPushButton *clyde = new QPushButton("Clyde");
-        clyde.show();
+        clyde->show();
 
         QPropertyAnimation *anim1 = new QPropertyAnimation(bonnie, "geometry");
         // Set up anim1
