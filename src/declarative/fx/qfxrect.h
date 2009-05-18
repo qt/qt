@@ -62,7 +62,7 @@ public:
     {}
 
     int width() const { return _width; }
-    void setWidth(int w) { _width = w; emit updated(); _valid = (_width < 1) ? false : true; }
+    void setWidth(int w);
 
     QColor color() const { return _color; }
     void setColor(const QColor &c);
