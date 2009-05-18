@@ -111,12 +111,15 @@ private slots:
 
     void toRgb_data();
     void toRgb();
+    void toRgbNonDestructive();
 
     void toHsv_data();
     void toHsv();
+    void toHsvNonDestructive();
 
     void toCmyk_data();
     void toCmyk();
+    void toCmykNonDestructive();
 
     void convertTo();
 
@@ -1124,6 +1127,12 @@ void tst_QColor::toHsv_data()
         << QColor::fromCmykF(0., 1., 1., 0.);
 }
 
+void tst_QColor::toRgbNonDestructive()
+{
+    QColor aColor = QColor::fromRgbF(0.11, 0.22, 0.33, 0.44);
+    QCOMPARE(aColor, aColor.toRgb());
+}
+
 void tst_QColor::toHsv()
 {
     // invalid should remain invalid
@@ -1134,6 +1143,12 @@ void tst_QColor::toHsv()
     QFETCH(QColor, cmykColor);
     QCOMPARE(rgbColor.toHsv(), expectedColor);
     QCOMPARE(cmykColor.toHsv(), expectedColor);
+}
+
+void tst_QColor::toHsvNonDestructive()
+{
+    QColor aColor = QColor::fromHsvF(0.11, 0.22, 0.33, 0.44);
+    QCOMPARE(aColor, aColor.toHsv());
 }
 
 void tst_QColor::toCmyk_data()
@@ -1163,6 +1178,12 @@ void tst_QColor::toCmyk()
     QFETCH(QColor, hsvColor);
     QCOMPARE(rgbColor.toHsv().toCmyk(), expectedColor);
     QCOMPARE(hsvColor.toCmyk(), expectedColor);
+}
+
+void tst_QColor::toCmykNonDestructive()
+{
+    QColor aColor = QColor::fromCmykF(0.11, 0.22, 0.33, 0.44);
+    QCOMPARE(aColor, aColor.toCmyk());
 }
 
 void tst_QColor::convertTo()

@@ -275,7 +275,6 @@ private:
     int lastLockedHeight;
 
     IDirectFB *fb;
-    DFBSurfaceDescription fbDescription;
     int fbWidth;
     int fbHeight;
 
