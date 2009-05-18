@@ -63,9 +63,10 @@ class QFxAnchorsPrivate : public QObjectPrivate
     Q_DECLARE_PUBLIC(QFxAnchors)
 public:
     QFxAnchorsPrivate()
-      : item(0), usedAnchors(0), fill(0), centeredIn(0), leftMargin(0), rightMargin(0),
-        topMargin(0), bottomMargin(0), vCenterOffset(0), hCenterOffset(0),
-        updatingHorizontalAnchor(false), updatingVerticalAnchor(false)
+      : updatingMe(false), updatingHorizontalAnchor(false), 
+        updatingVerticalAnchor(false), item(0), usedAnchors(0), fill(0), 
+        centeredIn(0), leftMargin(0), rightMargin(0), topMargin(0), 
+        bottomMargin(0), vCenterOffset(0), hCenterOffset(0)
     {
     }
 
@@ -73,13 +74,36 @@ public:
     {
     }
 
+    void clearItem(QFxItem *);
+
+    void addDepend(QFxItem *);
+    void remDepend(QFxItem *);
+    bool isItemComplete() const;
+
+    bool updatingMe:1;
+    bool updatingHorizontalAnchor:1;
+    bool updatingVerticalAnchor:1;
+
+    void setItemHeight(qreal);
+    void setItemWidth(qreal);
+    void setItemX(qreal);
+    void setItemY(qreal);
+    void setItemPos(const QPointF &);
+
+    void updateOnComplete();
+    void updateMe();
+    void update(QFxItem *, const QRectF &, const QRectF &);
+
     bool checkHValid() const;
     bool checkVValid() const;
     bool checkHAnchorValid(QFxAnchorLine anchor) const;
     bool checkVAnchorValid(QFxAnchorLine anchor) const;
-    void connectHHelper(const QFxAnchorLine &anchorLine);
-    void connectVHelper(const QFxAnchorLine &anchorLine);
     bool calcStretch(const QFxAnchorLine &edge1, const QFxAnchorLine &edge2, int offset1, int offset2, QFxAnchorLine::AnchorLine line, int &stretch);
+
+    void updateHorizontalAnchors();
+    void updateVerticalAnchors();
+    void fillChanged();
+    void centeredInChanged();
 
     QFxItem *item;
     QFxAnchors::UsedAnchors usedAnchors;
@@ -101,8 +125,6 @@ public:
     int vCenterOffset;
     int hCenterOffset;
 
-    bool updatingHorizontalAnchor;
-    bool updatingVerticalAnchor;
 };
 
 QT_END_NAMESPACE
