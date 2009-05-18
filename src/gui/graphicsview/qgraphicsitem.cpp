@@ -1055,6 +1055,7 @@ QGraphicsItem::~QGraphicsItem()
     clearFocus();
 
     d_ptr->removeExtraItemCache();
+    d_ptr->removeExtraGestures();
     QList<QGraphicsItem *> oldChildren = d_ptr->children;
     qDeleteAll(oldChildren);
     Q_ASSERT(d_ptr->children.isEmpty());
@@ -5880,7 +5881,7 @@ int QGraphicsItem::grabGesture(const QString &gesture)
 void QGraphicsItemPrivate::grabGesture(int id)
 {
     Q_Q(QGraphicsItem);
-    gestures << id;
+    extraGestures()->gestures << id;
     if (scene)
         scene->d_func()->grabGesture(q, id);
 }
@@ -5888,10 +5889,11 @@ void QGraphicsItemPrivate::grabGesture(int id)
 bool QGraphicsItemPrivate::releaseGesture(int id)
 {
     Q_Q(QGraphicsItem);
-    if (gestures.contains(id)) {
+    QGestureExtraData *extra = maybeExtraGestures();
+    if (extra && extra->gestures.contains(id)) {
         if (scene)
             scene->d_func()->releaseGesture(q, id);
-        gestures.remove(id);
+        extra->gestures.remove(id);
         return true;
     }
     return false;
@@ -5929,12 +5931,14 @@ void QGraphicsItem::setGestureEnabled(int gestureId, bool enable)
 
 bool QGraphicsItemPrivate::hasGesture(const QString &name) const
 {
-    QGestureManager *gm = QGestureManager::instance();
-    QSet<int>::const_iterator it = gestures.begin(),
-                               e = gestures.end();
-    for (; it != e; ++it) {
-        if (gm->gestureNameFromId(*it) == name)
-            return true;
+    if (QGestureExtraData *extra = maybeExtraGestures()) {
+        QGestureManager *gm = QGestureManager::instance();
+        QSet<int>::const_iterator it = extra->gestures.begin(),
+                                   e = extra->gestures.end();
+        for (; it != e; ++it) {
+            if (gm->gestureNameFromId(*it) == name)
+                return true;
+        }
     }
     return false;
 }
@@ -5964,16 +5968,19 @@ QVariant QGraphicsItem::itemChange(GraphicsItemChange change, const QVariant &va
 {
     Q_UNUSED(change);
     if (change == QGraphicsItem::ItemSceneChange) {
-        if (!qVariantValue<QGraphicsScene*>(value)) {
+        QGestureExtraData *extra = d_ptr->maybeExtraGestures();
+        if (!qVariantValue<QGraphicsScene*>(value) && extra) {
             // the item has been removed from a scene, unsubscribe gestures.
             Q_ASSERT(d_ptr->scene);
-            foreach(int id, d_ptr->gestures)
+            foreach(int id, extra->gestures)
                 d_ptr->scene->d_func()->releaseGesture(this, id);
         }
     } else if (change == QGraphicsItem::ItemSceneHasChanged) {
-        if (QGraphicsScene *scene = qVariantValue<QGraphicsScene*>(value)) {
+        QGraphicsScene *scene = qVariantValue<QGraphicsScene*>(value);
+        QGestureExtraData *extra = d_ptr->maybeExtraGestures();
+        if (scene && extra) {
             // item has been added to the scene
-            foreach(int id, d_ptr->gestures)
+            foreach(int id, extra->gestures)
                 scene->d_func()->grabGesture(this, id);
         }
     }
