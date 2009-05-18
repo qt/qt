@@ -603,7 +603,8 @@ void QTemporaryFile::setAutoRemove(bool b)
 
 QString QTemporaryFile::fileName() const
 {
-    if(!isOpen())
+    Q_D(const QTemporaryFile);
+    if(d->fileName.isEmpty())
         return QString();
     return fileEngine()->fileName(QAbstractFileEngine::DefaultName);
 }

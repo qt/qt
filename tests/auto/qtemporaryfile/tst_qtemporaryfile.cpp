@@ -77,6 +77,7 @@ private slots:
     void fileTemplate_data();
     void getSetCheck();
     void fileName();
+    void fileNameIsEmpty();
     void autoRemove();
     void write();
     void openCloseOpenClose();
@@ -187,6 +188,27 @@ void tst_QTemporaryFile::fileName()
     absoluteTempPath = absoluteTempPath.toLower();
 #endif
     QCOMPARE(absoluteFilePath, absoluteTempPath);
+}
+
+void tst_QTemporaryFile::fileNameIsEmpty()
+{
+    QString filename;
+    {
+        QTemporaryFile file;
+        QVERIFY(file.fileName().isEmpty());
+
+        QVERIFY(file.open());
+        QVERIFY(!file.fileName().isEmpty());
+
+        filename = file.fileName();
+        QVERIFY(QFile::exists(filename));
+
+        file.close();
+        QVERIFY(!file.isOpen());
+        QVERIFY(QFile::exists(filename));
+        QVERIFY(!file.fileName().isEmpty());
+    }
+    QVERIFY(!QFile::exists(filename));
 }
 
 void tst_QTemporaryFile::autoRemove()
@@ -358,6 +380,7 @@ void tst_QTemporaryFile::rename()
         QVERIFY(file.rename("temporary-file.txt"));
         QVERIFY(!dir.exists(tempname));
         QVERIFY(dir.exists("temporary-file.txt"));
+        QCOMPARE(file.fileName(), QString("temporary-file.txt"));
     }
 
     QVERIFY(!dir.exists(tempname));
