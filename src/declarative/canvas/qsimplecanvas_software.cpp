@@ -51,52 +51,56 @@ QRect QSimpleCanvasItemPrivate::setupPainting(int version, const QRect &bounding
     QRectF boundingRectActive = q->boundingRect();
     QRect rv = 
         data()->transformActive.mapRect(boundingRectActive).toAlignedRect() & bounding;
+    data()->doNotPaint = rv.isEmpty();
+    data()->doNotPaintChildren = data()->doNotPaint && q->clip();
     QRect myBounding = bounding;
     if (q->clip())
         myBounding &= rv;
 
-    for (int ii = 0; ii < children.count(); ++ii) {
-        QSimpleCanvasItem *child = children.at(ii);
-
-        qreal visible = child->visible();
-        child->d_func()->data()->activeOpacity = data()->activeOpacity;
-        if (visible != 1)
-            child->d_func()->data()->activeOpacity *= visible;
-
-        if (child->d_func()->data()->activeOpacity != 0) {
-            // Calculate child's transform
-            qreal x = child->x();
-            qreal y = child->y();
-            qreal scale = child->scale();
-            QSimpleCanvasItem::Flip flip = child->flip();
-
-            QSimpleCanvas::Matrix &am = child->d_func()->data()->transformActive;
-            am = data()->transformActive;
-            if (x != 0 || y != 0)
-                am.translate(x, y);
-            if (scale != 1) {
-                QPointF to = child->d_func()->transformOrigin();
-                if (to.x() != 0. || to.y() != 0.)
-                    am.translate(to.x(), to.y());
-                am.scale(scale, scale);
-                if (to.x() != 0. || to.y() != 0.)
-                    am.translate(-to.x(), -to.y());
-            }
-
-            if (child->d_func()->data()->transformUser)
-                am = *child->d_func()->data()->transformUser * am;
-
-            if (flip) {
-                QRectF br = child->boundingRect();
-                am.translate(br.width() / 2., br.height() / 2);
-                am.scale((flip & QSimpleCanvasItem::HorizontalFlip)?-1:1,
-                        (flip & QSimpleCanvasItem::VerticalFlip)?-1:1);
-                am.translate(-br.width() / 2., -br.height() / 2);
-            }
-            child->d_func()->data()->transformValid = true;
-            rv |= child->d_func()->setupPainting(version, myBounding);
-        }
-    }
+    if (!data()->doNotPaintChildren) {
+       for (int ii = 0; ii < children.count(); ++ii) {
+           QSimpleCanvasItem *child = children.at(ii);
+    
+           qreal visible = child->visible();
+           child->d_func()->data()->activeOpacity = data()->activeOpacity;
+           if (visible != 1)
+               child->d_func()->data()->activeOpacity *= visible;
+    
+           if (child->d_func()->data()->activeOpacity != 0) {
+               // Calculate child's transform
+               qreal x = child->x();
+               qreal y = child->y();
+               qreal scale = child->scale();
+               QSimpleCanvasItem::Flip flip = child->flip();
+    
+               QSimpleCanvas::Matrix &am = child->d_func()->data()->transformActive;
+               am = data()->transformActive;
+               if (x != 0 || y != 0)
+                   am.translate(x, y);
+               if (scale != 1) {
+                   QPointF to = child->d_func()->transformOrigin();
+                   if (to.x() != 0. || to.y() != 0.)
+                       am.translate(to.x(), to.y());
+                   am.scale(scale, scale);
+                   if (to.x() != 0. || to.y() != 0.)
+                       am.translate(-to.x(), -to.y());
+               }
+    
+               if (child->d_func()->data()->transformUser)
+                   am = *child->d_func()->data()->transformUser * am;
+    
+               if (flip) {
+                   QRectF br = child->boundingRect();
+                   am.translate(br.width() / 2., br.height() / 2);
+                   am.scale((flip & QSimpleCanvasItem::HorizontalFlip)?-1:1,
+                           (flip & QSimpleCanvasItem::VerticalFlip)?-1:1);
+                   am.translate(-br.width() / 2., -br.height() / 2);
+               }
+               child->d_func()->data()->transformValid = true;
+               rv |= child->d_func()->setupPainting(version, myBounding);
+           }
+       }
+    } 
 
     data()->lastPaintRect = rv;
     return rv;
@@ -162,13 +166,17 @@ void QSimpleCanvasItemPrivate::paint(QPainter &p)
         }
     }
 
-    p.setWorldTransform(data()->transformActive);
-    q->paintContents(p);
+    if (!data()->doNotPaint) {
+        p.setWorldTransform(data()->transformActive);
+        q->paintContents(p);
+    } 
 
-    for (; upto < children.count(); ++upto) {
-        QSimpleCanvasItem *c = children.at(upto);
-        paintChild(p, c);
-    }
+    if (!data()->doNotPaintChildren) {
+        for (; upto < children.count(); ++upto) {
+            QSimpleCanvasItem *c = children.at(upto);
+	    paintChild(p, c);
+	}
+    } 
 
     if (clip) 
         p.restore();

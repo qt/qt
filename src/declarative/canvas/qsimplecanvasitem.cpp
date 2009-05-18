@@ -50,7 +50,7 @@
 QT_BEGIN_NAMESPACE
 QSimpleCanvasItemData::QSimpleCanvasItemData()
 : buttons(Qt::NoButton), flip(QSimpleCanvasItem::NoFlip), 
-  dirty(false), transformValid(true), x(0), y(0), z(0), visible(1), 
+  dirty(false), transformValid(true), doNotPaint(false), doNotPaintChildren(false), x(0), y(0), z(0), visible(1),
   transformUser(0), activeOpacity(1)
 {
 }
