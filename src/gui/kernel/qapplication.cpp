@@ -2037,12 +2037,10 @@ QWidget *QApplication::focusWidget()
 
 void QApplicationPrivate::setFocusWidget(QWidget *focus, Qt::FocusReason reason)
 {
-    if (focus && focus->window()
 #ifndef QT_NO_GRAPHICSVIEW
-        && focus->window()->graphicsProxyWidget()
-#endif
-       )
+    if (focus && focus->window()->graphicsProxyWidget())
         return;
+#endif
 
     hidden_focus_widget = 0;
 

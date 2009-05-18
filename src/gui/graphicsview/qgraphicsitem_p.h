@@ -55,6 +55,7 @@
 
 #include "qgraphicsitem.h"
 #include "qset.h"
+#include "qpixmapcache.h"
 
 #if !defined(QT_NO_GRAPHICSVIEW) || (QT_EDITION & QT_MODULE_GRAPHICSVIEW) != QT_MODULE_GRAPHICSVIEW
 
@@ -70,13 +71,14 @@ public:
     // ItemCoordinateCache only
     QRect boundingRect;
     QSize fixedSize;
-    QString key;
+    QPixmapCache::Key key;
 
     // DeviceCoordinateCache only
     struct DeviceData {
+        DeviceData() {}
         QTransform lastTransform;
         QPoint cacheIndent;
-        QString key;
+        QPixmapCache::Key key;
     };
     QMap<QPaintDevice *, DeviceData> deviceData;
 
@@ -133,7 +135,6 @@ public:
         ancestorFlags(0),
         cacheMode(0),
         hasBoundingRegionGranularity(0),
-        flags(0),
         hasOpacity(0),
         hasEffectiveOpacity(0),
         isWidget(0),
@@ -143,8 +144,10 @@ public:
         dirtyClipPath(1),
         emptyClipPath(0),
         inSetPosHelper(0),
+        flags(0),
         allChildrenCombineOpacity(1),
         acceptTouchEvents(0),
+        acceptedTouchBeginEvent(0),
         globalStackingOrder(-1),
         sceneTransformIndex(-1),
         q_ptr(0)
@@ -180,6 +183,8 @@ public:
     void removeChild(QGraphicsItem *child);
     void setParentItemHelper(QGraphicsItem *parent, bool deleting);
     void childrenBoundingRectHelper(QTransform *x, QRectF *rect);
+    void initStyleOption(QStyleOptionGraphicsItem *option, const QTransform &worldTransform,
+                         const QRegion &exposedRegion, bool allItems = false) const;
 
     virtual void resolveFont(uint inheritedMask)
     {
@@ -300,7 +305,7 @@ public:
     int depth;
     QSet<int> gestures;
 
-    // Packed 32 bytes
+    // Packed 32 bits
     quint32 acceptedMouseButtons : 5;
     quint32 visible : 1;
     quint32 explicitlyHidden : 1;
@@ -317,9 +322,6 @@ public:
     quint32 ancestorFlags : 3;
     quint32 cacheMode : 2;
     quint32 hasBoundingRegionGranularity : 1;
-    quint32 flags : 9;
-
-    // New 32 bytes
     quint32 hasOpacity : 1;
     quint32 hasEffectiveOpacity : 1;
     quint32 isWidget : 1;
@@ -329,9 +331,13 @@ public:
     quint32 dirtyClipPath : 1;
     quint32 emptyClipPath : 1;
     quint32 inSetPosHelper : 1;
+
+    // New 32 bits
+    quint32 flags : 10;
     quint32 allChildrenCombineOpacity : 1;
     quint32 acceptTouchEvents : 1;
     quint32 acceptedTouchBeginEvent : 1;
+    quint32 padding : 19; // feel free to use
 
     // Optional stacking order
     int globalStackingOrder;

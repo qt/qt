@@ -3030,6 +3030,7 @@ void QStyleSheetStyle::drawComplexControl(ComplexControl cc, const QStyleOptionC
         if (const QStyleOptionToolButton *tool = qstyleoption_cast<const QStyleOptionToolButton *>(opt)) {
             QStyleOptionToolButton toolOpt(*tool);
             rule.configurePalette(&toolOpt.palette, QPalette::ButtonText, QPalette::Button);
+            toolOpt.font = rule.font.resolve(toolOpt.font);
             toolOpt.rect = rule.borderRect(opt->rect);
             bool customArrow = (tool->features & (QStyleOptionToolButton::HasMenu | QStyleOptionToolButton::MenuButtonPopup));
             bool customDropDown = tool->features & QStyleOptionToolButton::MenuButtonPopup;
@@ -4805,13 +4806,10 @@ QSize QStyleSheetStyle::sizeFromContents(ContentsType ct, const QStyleOption *op
             if ((pe == PseudoElement_MenuSeparator) && subRule.hasContentsSize()) {
                 return QSize(sz.width(), subRule.size().height());
             } else if ((pe == PseudoElement_Item) && (subRule.hasBox() || subRule.hasBorder())) {
-                int width = csz.width(), height = qMax(csz.height(), mi->fontMetrics.height());
-                if (!mi->icon.isNull()) {
-                    int iconExtent = pixelMetric(PM_SmallIconSize);
-                    height = qMax(height, mi->icon.actualSize(QSize(iconExtent, iconExtent)).height());
-                }
-                width += mi->tabWidth;
-               return subRule.boxSize(csz.expandedTo(subRule.minimumContentsSize()));
+                int width = csz.width();
+                if (mi->text.contains(QLatin1Char('\t')))
+                    width += 12; //as in QCommonStyle
+                return subRule.boxSize(subRule.adjustSize(QSize(width, csz.height())));
             }
         }
         break;

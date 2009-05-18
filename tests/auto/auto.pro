@@ -209,6 +209,7 @@ SUBDIRS += bic \
            qnumeric \
            qobject \
            qobjectrace \
+           qcontiguouscache \
            qpaintengine \
            qpainter \
            qpainterpath \
