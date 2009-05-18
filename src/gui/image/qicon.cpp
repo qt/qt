@@ -854,6 +854,9 @@ void QIcon::addPixmap(const QPixmap &pixmap, Mode mode, State state)
     QImageWriter::supportedImageFormats() functions to retrieve a
     complete list of the supported file formats.
 
+    Note: When you add a non-empty filename to a QIcon, the icon becomes
+    non-null, even if the file doesn't exist or points to a corrupt file.
+
     \sa addPixmap()
  */
 void QIcon::addFile(const QString &fileName, const QSize &size, Mode mode, State state)

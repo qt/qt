@@ -1036,21 +1036,39 @@ QNetworkCacheMetaData QNetworkAccessHttpBackend::fetchCacheMetaData(const QNetwo
     if (it != cacheHeaders.rawHeaders.constEnd())
         metaData.setLastModified(QNetworkHeadersPrivate::fromHttpDate(it->second));
 
-    bool canDiskCache = true; // Everything defaults to being cacheable on disk
+    bool canDiskCache;
+    // only cache GET replies by default, all other replies (POST, PUT, DELETE)
+    //  are not cacheable by default (according to RFC 2616 section 9)
+    if (httpReply->request().operation() == QHttpNetworkRequest::Get) {
 
-    // 14.32
-    // HTTP/1.1 caches SHOULD treat "Pragma: no-cache" as if the client
-    // had sent "Cache-Control: no-cache".
-    it = cacheHeaders.findRawHeader("pragma");
-    if (it != cacheHeaders.rawHeaders.constEnd()
-        && it->second == "no-cache")
-        canDiskCache = false;
+        canDiskCache = true;
+        // 14.32
+        // HTTP/1.1 caches SHOULD treat "Pragma: no-cache" as if the client
+        // had sent "Cache-Control: no-cache".
+        it = cacheHeaders.findRawHeader("pragma");
+        if (it != cacheHeaders.rawHeaders.constEnd()
+            && it->second == "no-cache")
+            canDiskCache = false;
 
-    // HTTP/1.1. Check the Cache-Control header
-    if (cacheControl.contains("no-cache"))
+        // HTTP/1.1. Check the Cache-Control header
+        if (cacheControl.contains("no-cache"))
+            canDiskCache = false;
+        else if (cacheControl.contains("no-store"))
+            canDiskCache = false;
+
+    // responses to POST might be cacheable
+    } else if (httpReply->request().operation() == QHttpNetworkRequest::Post) {
+
         canDiskCache = false;
-    else if (cacheControl.contains("no-store"))
+        // some pages contain "expires:" and "cache-control: no-cache" field,
+        // so we only might cache POST requests if we get "cache-control: max-age ..."
+        if (cacheControl.contains("max-age"))
+            canDiskCache = true;
+
+    // responses to PUT and DELETE are not cacheable
+    } else {
         canDiskCache = false;
+    }
 
     metaData.setSaveToDisk(canDiskCache);
     int statusCode = httpReply->statusCode();
