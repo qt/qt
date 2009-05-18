@@ -92,19 +92,19 @@ const short *QS60StylePrivate::m_pmPointer = QS60StylePrivate::data[0];
 bool QS60StylePrivate::m_backgroundValid = false;
 
 const struct QS60StylePrivate::frameElementCenter QS60StylePrivate::m_frameElementsData[] = {
-    {SE_ButtonNormal,         QS60StyleEnums::SP_QsnFrButtonTbCenter},
-    {SE_ButtonPressed,        QS60StyleEnums::SP_QsnFrButtonTbCenterPressed},
-    {SE_FrameLineEdit,        QS60StyleEnums::SP_QsnFrInputCenter},
-    {SE_ListHighlight,        QS60StyleEnums::SP_QsnFrListCenter},
-    {SE_OptionsMenu,          QS60StyleEnums::SP_QsnFrPopupCenter},
-    {SE_SettingsList,         QS60StyleEnums::SP_QsnFrSetOptCenter},
-    {SE_TableItem,            QS60StyleEnums::SP_QsnFrCaleCenter},
-    {SE_TableHeaderItem,      QS60StyleEnums::SP_QsnFrCaleHeadingCenter},
-    {SE_ToolTip,              QS60StyleEnums::SP_QsnFrPopupPreviewCenter},
-    {SE_ToolBar,              QS60StyleEnums::SP_QsnFrPopupSubCenter},
-    {SE_ToolBarButton,        QS60StyleEnums::SP_QsnFrSctrlButtonCenter},
-    {SE_ToolBarButtonPressed, QS60StyleEnums::SP_QsnFrSctrlButtonCenterPressed},
-    {SE_PanelBackground,      QS60StyleEnums::SP_QsnFrSetOptCenter},
+    {SE_ButtonNormal,           QS60StyleEnums::SP_QsnFrButtonTbCenter},
+    {SE_ButtonPressed,          QS60StyleEnums::SP_QsnFrButtonTbCenterPressed},
+    {SE_FrameLineEdit,          QS60StyleEnums::SP_QsnFrInputCenter},
+    {SE_ListHighlight,          QS60StyleEnums::SP_QsnFrListCenter},
+    {SE_OptionsMenu,            QS60StyleEnums::SP_QsnFrPopupCenter},
+    {SE_SettingsList,           QS60StyleEnums::SP_QsnFrSetOptCenter},
+    {SE_TableItem,              QS60StyleEnums::SP_QsnFrCaleCenter},
+    {SE_TableHeaderItem,        QS60StyleEnums::SP_QsnFrCaleHeadingCenter},
+    {SE_ToolTip,                QS60StyleEnums::SP_QsnFrPopupPreviewCenter},
+    {SE_ToolBar,                QS60StyleEnums::SP_QsnFrPopupSubCenter},
+    {SE_ToolBarButton,          QS60StyleEnums::SP_QsnFrSctrlButtonCenter},
+    {SE_ToolBarButtonPressed,   QS60StyleEnums::SP_QsnFrSctrlButtonCenterPressed},
+    {SE_PanelBackground,        QS60StyleEnums::SP_QsnFrSetOptCenter},
 };
 static const int frameElementsCount =
     int(sizeof(QS60StylePrivate::m_frameElementsData)/sizeof(QS60StylePrivate::m_frameElementsData[0]));
@@ -323,6 +323,14 @@ void QS60StylePrivate::drawSkinElement(SkinElements element, QPainter *painter,
     case SE_PanelBackground:
         drawFrame(SF_PanelBackground, painter, rect, flags | SF_PointNorth);
         break;
+    case SE_ScrollBarHandlePressedHorizontal:
+        drawRow(QS60StyleEnums::SP_QsnCpScrollHandleBottomPressed, QS60StyleEnums::SP_QsnCpScrollHandleMiddlePressed,
+            QS60StyleEnums::SP_QsnCpScrollHandleTopPressed, Qt::Horizontal, painter, rect, flags | SF_PointEast);
+        break;
+    case SE_ScrollBarHandlePressedVertical:
+        drawRow(QS60StyleEnums::SP_QsnCpScrollHandleTopPressed, QS60StyleEnums::SP_QsnCpScrollHandleMiddlePressed,
+            QS60StyleEnums::SP_QsnCpScrollHandleBottomPressed, Qt::Vertical, painter, rect, flags | SF_PointNorth);
+        break;
     default:
         break;
     }
@@ -347,6 +355,10 @@ QSize QS60StylePrivate::partSize(QS60StyleEnums::SkinParts part, SkinElementFlag
             result.scale(pixelMetric(QStyle::PM_SliderLength),
                 pixelMetric(QStyle::PM_SliderControlThickness), Qt::IgnoreAspectRatio);
             break;
+
+        case QS60StyleEnums::SP_QsnCpScrollHandleBottomPressed:
+        case QS60StyleEnums::SP_QsnCpScrollHandleTopPressed:
+        case QS60StyleEnums::SP_QsnCpScrollHandleMiddlePressed:
         case QS60StyleEnums::SP_QsnCpScrollBgBottom:
         case QS60StyleEnums::SP_QsnCpScrollBgMiddle:
         case QS60StyleEnums::SP_QsnCpScrollBgTop:
@@ -795,8 +807,19 @@ void QS60Style::drawComplexControl(ComplexControl control, const QStyleOptionCom
             const QS60StylePrivate::SkinElements grooveElement =
                 horizontal ? QS60StylePrivate::SE_ScrollBarGrooveHorizontal : QS60StylePrivate::SE_ScrollBarGrooveVertical;
             QS60StylePrivate::drawSkinElement(grooveElement, painter, grooveRect, flags);
+            
+            QStyle::SubControls subControls = optionSlider->subControls;  
+            
+            // select correct slider (horizontal/vertical/pressed)
+            const bool sliderPressed = ((optionSlider->state & QStyle::State_Sunken) && (subControls & SC_ScrollBarSlider));
             const QS60StylePrivate::SkinElements handleElement =
-                horizontal ? QS60StylePrivate::SE_ScrollBarHandleHorizontal : QS60StylePrivate::SE_ScrollBarHandleVertical;
+                horizontal ? 
+                    ( sliderPressed ? 
+                        QS60StylePrivate::SE_ScrollBarHandlePressedHorizontal : 
+                        QS60StylePrivate::SE_ScrollBarHandleHorizontal ) : 
+                    ( sliderPressed ? 
+                        QS60StylePrivate::SE_ScrollBarHandlePressedVertical : 
+                        QS60StylePrivate::SE_ScrollBarHandleVertical);
             QS60StylePrivate::drawSkinElement(handleElement, painter, scrollBarSlider, flags);
         }
         break;
@@ -1206,6 +1229,16 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
     case CE_ToolButtonLabel:
         if (const QStyleOptionToolButton *toolBtn = qstyleoption_cast<const QStyleOptionToolButton *>(option)) {
             QStyleOptionToolButton optionToolButton = *toolBtn;
+            
+            if (!optionToolButton.icon.isNull() && (optionToolButton.state & QStyle::State_Sunken) 
+                    && (optionToolButton.state & State_Enabled)) {
+                    
+                    const QIcon::State state = optionToolButton.state & State_On ? QIcon::On : QIcon::Off;
+                    const QPixmap pm(optionToolButton.icon.pixmap(optionToolButton.rect.size().boundedTo(optionToolButton.iconSize),
+                            QIcon::Normal, state));                
+                    optionToolButton.icon = generatedIconPixmap(QIcon::Selected, pm, &optionToolButton);
+            }
+
             QCommonStyle::drawControl(element, &optionToolButton, painter, widget);
         }
         break;
@@ -2225,6 +2258,12 @@ QSize QS60Style::sizeFromContents(ContentsType ct, const QStyleOption *opt,
 {
     QSize sz(csz);
     switch (ct) {
+        case CT_PushButton:
+            sz = QCommonStyle::sizeFromContents( ct, opt, csz, widget);
+            if (const QAbstractButton *buttonWidget = (qobject_cast<const QAbstractButton *>(widget)))
+                if (buttonWidget->isCheckable()) 
+                    sz += QSize(pixelMetric(PM_IndicatorWidth) + pixelMetric(PM_CheckBoxLabelSpacing), 0);
+            break;
         case CT_LineEdit:
             if (const QStyleOptionFrame *f = qstyleoption_cast<const QStyleOptionFrame *>(opt))
                 sz += QSize(2*f->lineWidth, 4*f->lineWidth);
