@@ -291,7 +291,11 @@ class QTemporaryFileEngine : public QFSFileEngine
 {
     Q_DECLARE_PRIVATE(QFSFileEngine)
 public:
-    QTemporaryFileEngine(const QString &file) : QFSFileEngine(file) { }
+    QTemporaryFileEngine(const QString &file, bool fileIsTemplate = true)
+        : QFSFileEngine(file), filePathIsTemplate(fileIsTemplate)
+    {
+    }
+
     ~QTemporaryFileEngine();
 
     bool isReallyOpen();
@@ -300,6 +304,8 @@ public:
     bool open(QIODevice::OpenMode flags);
     bool remove();
     bool close();
+
+    bool filePathIsTemplate;
 };
 
 QTemporaryFileEngine::~QTemporaryFileEngine()
@@ -334,6 +340,9 @@ bool QTemporaryFileEngine::open(QIODevice::OpenMode openMode)
     Q_D(QFSFileEngine);
     Q_ASSERT(!isReallyOpen());
 
+    if (!filePathIsTemplate)
+        return QFSFileEngine::open(openMode);
+
     QString qfilename = d->filePath;
     if(!qfilename.contains(QLatin1String("XXXXXX")))
         qfilename += QLatin1String(".XXXXXX");
@@ -353,6 +362,7 @@ bool QTemporaryFileEngine::open(QIODevice::OpenMode openMode)
 
             // Restore the file names (open() resets them).
             d->filePath = QString::fromLocal8Bit(filename); //changed now!
+            filePathIsTemplate = false;
             d->nativeInitFileName();
             delete [] filename;
             return true;
@@ -370,6 +380,7 @@ bool QTemporaryFileEngine::open(QIODevice::OpenMode openMode)
     }
 
     d->filePath = QString::fromLocal8Bit(filename);
+    filePathIsTemplate = false;
     d->nativeInitFileName();
     d->closeFileHandle = true;
     delete [] filename;
@@ -714,8 +725,12 @@ QTemporaryFile *QTemporaryFile::createLocalFile(QFile &file)
 QAbstractFileEngine *QTemporaryFile::fileEngine() const
 {
     Q_D(const QTemporaryFile);
-    if(!d->fileEngine)
-        d->fileEngine = new QTemporaryFileEngine(d->templateName);
+    if(!d->fileEngine) {
+        if (d->fileName.isEmpty())
+            d->fileEngine = new QTemporaryFileEngine(d->templateName);
+        else
+            d->fileEngine = new QTemporaryFileEngine(d->fileName, false);
+    }
     return d->fileEngine;
 }
 
