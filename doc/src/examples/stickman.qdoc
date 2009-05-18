@@ -56,7 +56,7 @@
     represents a frame in the animation by setting the position of each joint in the stickman's 
     skeleton to the positions defined for the particular frame. The frames are then bound together 
     with animated transitions that trigger on the source state's polished() signal. Thus, the 
-    machine will enter the state representing the next state in the animation immediately after it
+    machine will enter the state representing the next frame in the animation immediately after it
     has finished animating into the previous frame.
     
     \image stickman-example1.png
@@ -74,7 +74,7 @@
     The last frame state is given a transition to the first one, so that the animation will loop
     until it is interrupted when a transition out from the animation state is taken. To get smooth 
     animations between the different key frames, we set a default animation on the state machine. 
-    This is a parallel animation group which contain animations for all the "position" properties 
+    This is a parallel animation group which contains animations for all the "position" properties 
     and will be selected by default when taking any transition that leads into a state that assigns 
     values to these properties.
     
@@ -91,12 +91,12 @@
     applying the default animation when interrupting one and starting another.
         
     Finally, there is a transition out from the "alive" state and into the "dead" state. This is 
-    a custom transition type called LightningStrikesTransition which samples every second and 
+    a custom transition type called LightningSrikesTransition which samples every second and 
     triggers at random (one out of fifty times on average.) 
     
     \snippet examples/animation/stickman/lifecycle.cpp 4
     
-    When it triggers, the machine will first enter a "lightningStrike" state which uses a timer to 
+    When it triggers, the machine will first enter a "lightningBlink" state which uses a timer to 
     pause for a brief period of time while the background color of the scene is white. This gives us 
     a flash effect when the lightning strikes.
     
