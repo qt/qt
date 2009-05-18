@@ -79,6 +79,10 @@ public:
         SP_QgnGrafBarFrameSideL,
         SP_QgnGrafBarFrameSideR,
         SP_QgnGrafBarProgress,
+        SP_QgnGrafScrollArrowDown,
+        SP_QgnGrafScrollArrowLeft,
+        SP_QgnGrafScrollArrowRight,
+        SP_QgnGrafScrollArrowUp,
         SP_QgnGrafTabActiveL,
         SP_QgnGrafTabActiveM,
         SP_QgnGrafTabActiveR,
@@ -109,7 +113,10 @@ public:
         SP_QgnPropFolderCurrent,
         SP_QgnPropFolderSmall,
         SP_QgnPropFolderSmallNew,
-        SP_QgnPropPhoneMemcLarge,
+        SP_QgnPropPhoneMemcLarge,        
+        SP_QsnCpScrollHandleBottomPressed, //ScrollBar handle, pressed state
+        SP_QsnCpScrollHandleMiddlePressed,
+        SP_QsnCpScrollHandleTopPressed,
         SP_QsnBgScreen,
         SP_QsnCpScrollBgBottom,
         SP_QsnCpScrollBgMiddle,
@@ -282,7 +289,9 @@ public:
         SE_ToolBar,
         SE_ToolBarButton,
         SE_ToolBarButtonPressed,
-        SE_PanelBackground
+        SE_PanelBackground,
+        SE_ScrollBarHandlePressedHorizontal, //only for 5.0+
+        SE_ScrollBarHandlePressedVertical,
     };
 
     enum SkinFrameElements {
