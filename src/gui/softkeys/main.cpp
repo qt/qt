@@ -16,58 +16,71 @@ class MainWindow : public QMainWindow
     Q_OBJECT
 public:
     MainWindow(QWidget *parent = 0);
-    ~MainWindow() {}
+    ~MainWindow();
+    QAction* context1;
+    QAction* context2;
+    QAction* context3;
+    QSoftKeyAction *action1;
+    QSoftKeyAction *action2;
+    QSoftKeyAction *action3;
+    QSoftKeyAction *action4;
+    QSoftKeyAction *action5;
 };
 
 MainWindow::MainWindow(QWidget *parent)
-    : QMainWindow(parent)
+    : QMainWindow(parent),
+      context1(0), context2(0), context3(0),
+      action1(0),action2(0),action3(0),action4(0),action5(0)
+      
 {
-
     QWidget *central = new QWidget(this);
     central->setLayout(new QVBoxLayout);
     central->layout()->addWidget(new QPushButton);
     central->layout()->addWidget(new QPushButton);
     central->layout()->addWidget(new QPushButton);
-    
+    context1 = new QAction(QString("Context1"), central);
+    context2 = new QAction(QString("Context2"), central);
+    context3 = new QAction(QString("Context3"), context2);
+    central->addAction(context1);
+    central->addAction(context2);
     QMenuBar* menuBar = new QMenuBar(this);
     menuBar->addAction("MyMenuItem1");
     this->setMenuBar(menuBar);
 
-    QSoftKeyAction action1(central);
-    action1.setText(QString("Ok"));
-    action1.setRole(QSoftKeyAction::Ok);
-    QSoftKeyAction action2(central);
-    action2.setText(QString("Back"));
-    action2.setRole(QSoftKeyAction::Back);
-    QSoftKeyAction action3(central);
-    action3.setText(QString("Cancel"));
-    action3.setRole(QSoftKeyAction::Cancel);
-    QSoftKeyAction action4(central);
-    action4.setText(QString("Menu"));
-    action4.setRole(QSoftKeyAction::Menu);
-
-    QSoftKeyAction action5(central);
-    action5.setText(QString("ContextMenu"));
-    action5.setRole(QSoftKeyAction::ContextMenu);
+    action1 = new QSoftKeyAction(QSoftKeyAction::Ok, QString("Ok"), central);
+    action2 = new QSoftKeyAction(QSoftKeyAction::Back, QString("Back"), central);
+    action3 = new QSoftKeyAction(QSoftKeyAction::Cancel, QString("Cancel"), central);
+    action4 = new QSoftKeyAction(QSoftKeyAction::Menu, QString("Menu"), central);
+    action5 = new QSoftKeyAction(QSoftKeyAction::ContextMenu,QString("ContextMenu"), central);
     
-    
+   
     QList<QSoftKeyAction*> myActionList;
-    myActionList.append(&action1);
-    myActionList.append(&action2);
-    myActionList.append(&action3);
+    myActionList.append(action1);
+    myActionList.append(action2);
+    myActionList.append(action3);
     softKeyStack()->push(myActionList);
     softKeyStack()->pop();
-    softKeyStack()->push(&action1);
+    softKeyStack()->push(action1);
     softKeyStack()->pop();
 
     QList<QSoftKeyAction*> myActionList2;
-    myActionList2.append(&action4);
-    myActionList2.append(&action1);
-    myActionList2.append(&action5);
+    myActionList2.append(action4);
+    myActionList2.append(action5);
     softKeyStack()->push(myActionList2);
     
     
     setCentralWidget(central);
+}
+MainWindow::~MainWindow()
+{
+    delete context1;
+    delete context2;
+    delete context3;
+    delete action1;
+    delete action2;
+    delete action3;
+    delete action4;
+    delete action5;
 }
 
 int main(int argc, char *argv[])
