@@ -518,6 +518,8 @@ int main(int argc, char **argv)
             else if (it->endsWith(QLatin1String(".js"), Qt::CaseInsensitive)
                      || it->endsWith(QLatin1String(".qs"), Qt::CaseInsensitive))
                 loadQScript(fetchedTor, *it, cd);
+            else if (it->endsWith(QLatin1String(".qml"), Qt::CaseInsensitive))
+                loadQml(fetchedTor, *it, cd);
             else
                 sourceFilesCpp << *it;
         }

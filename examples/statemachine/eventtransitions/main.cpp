@@ -46,6 +46,7 @@
 #include <qeventtransition.h>
 #endif
 
+//! [0]
 class Window : public QWidget
 {
 public:
@@ -54,7 +55,9 @@ public:
     {
         QPushButton *button = new QPushButton(this);
         button->setGeometry(QRect(100, 100, 100, 100));
+//! [0]
 
+//! [1]
         QStateMachine *machine = new QStateMachine(this);
 
         QState *s1 = new QState();
@@ -62,15 +65,21 @@ public:
 
         QState *s2 = new QState();
         s2->assignProperty(button, "text", "Inside");
+//! [1]
 
+//! [2]
         QEventTransition *enterTransition = new QEventTransition(button, QEvent::Enter);
         enterTransition->setTargetState(s2);
         s1->addTransition(enterTransition);
+//! [2]
 
+//! [3]
         QEventTransition *leaveTransition = new QEventTransition(button, QEvent::Leave);
         leaveTransition->setTargetState(s1);
         s2->addTransition(leaveTransition);
+//! [3]
 
+//! [4]
         QState *s3 = new QState();
         s3->assignProperty(button, "text", "Pressing...");
 
@@ -81,16 +90,20 @@ public:
         QEventTransition *releaseTransition = new QEventTransition(button, QEvent::MouseButtonRelease);
         releaseTransition->setTargetState(s2);
         s3->addTransition(releaseTransition);
+//! [4]
 
+//! [5]
         machine->addState(s1);
         machine->addState(s2);
         machine->addState(s3);
+
         machine->setInitialState(s1);
-        QObject::connect(machine, SIGNAL(finished()), qApp, SLOT(quit()));
         machine->start();
     }
 };
+//! [5]
 
+//! [6]
 int main(int argc, char **argv)
 {
     QApplication app(argc, argv);
@@ -100,3 +113,4 @@ int main(int argc, char **argv)
 
     return app.exec();
 }
+//! [6]

@@ -88,16 +88,13 @@ public:
 #endif
 
 protected:
-    virtual bool eventTest(QEvent *event) const = 0;
+    virtual bool eventTest(QEvent *event) = 0;
 
     virtual void onTransition(QEvent *event) = 0;
 
     bool event(QEvent *e);
 
 protected:
-#ifdef QT_STATEMACHINE_SOLUTION
-    QAbstractTransitionPrivate *d_ptr;
-#endif
     QAbstractTransition(QAbstractTransitionPrivate &dd, QState *parent);
     QAbstractTransition(QAbstractTransitionPrivate &dd,
                         const QList<QAbstractState*> &targets, QState *parent);

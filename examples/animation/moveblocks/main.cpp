@@ -95,7 +95,7 @@ public:
     }
 
 protected:
-    virtual bool eventTest(QEvent *event) const
+    virtual bool eventTest(QEvent *event)
     {
         return (event->type() == QEvent::Type(StateSwitchEvent::StateSwitchType))
             && (static_cast<StateSwitchEvent *>(event)->rand() == m_rand);
