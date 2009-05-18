@@ -1737,6 +1737,7 @@ void QGraphicsSceneMoveEvent::setNewPos(const QPointF &pos)
 QGraphicsSceneGestureEvent::QGraphicsSceneGestureEvent()
     : QGraphicsSceneEvent(QEvent::GraphicsSceneGesture)
 {
+    setAccepted(false);
 }
 
 /*!
