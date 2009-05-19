@@ -499,36 +499,39 @@ void tst_QSslSocket::sslErrors_data()
 {
     QTest::addColumn<QString>("host");
     QTest::addColumn<int>("port");
-    QTest::addColumn<SslErrorList>("errors");
+    QTest::addColumn<SslErrorList>("expected");
 
-    QTest::newRow("imap.troll.no") << "imap.troll.no" << 993
-                                   << (SslErrorList()
-                                       << QSslError::HostNameMismatch
-                                       << QSslError::SelfSignedCertificateInChain);
-    QTest::newRow("imap.trolltech.com") << "imap.trolltech.com" << 993
-                                        << (SslErrorList()
-                                            << QSslError::SelfSignedCertificateInChain);
+    QTest::newRow(qPrintable(QtNetworkSettings::serverLocalName()))
+        << QtNetworkSettings::serverLocalName()
+        << 993
+        << (SslErrorList() << QSslError::HostNameMismatch
+                           << QSslError::SelfSignedCertificate);
+
+    QTest::newRow("imap.trolltech.com")
+        << "imap.trolltech.com"
+        << 993
+        << (SslErrorList() << QSslError::SelfSignedCertificateInChain);
 }
 
 void tst_QSslSocket::sslErrors()
 {
     QFETCH(QString, host);
     QFETCH(int, port);
-    QFETCH(SslErrorList, errors);
+    QFETCH(SslErrorList, expected);
 
     QSslSocketPtr socket = newSocket();
     socket->connectToHostEncrypted(host, port);
     socket->waitForEncrypted(5000);
 
-    SslErrorList list;
+    SslErrorList output;
     foreach (QSslError error, socket->sslErrors())
-        list << error.error();
+        output << error.error();
 
 #ifdef QSSLSOCKET_CERTUNTRUSTED_WORKAROUND
-    if (list.last() == QSslError::CertificateUntrusted)
-        list.takeLast();
+    if (output.last() == QSslError::CertificateUntrusted)
+        output.takeLast();
 #endif
-    QCOMPARE(list, errors);
+    QCOMPARE(output, expected);
 }
 
 void tst_QSslSocket::addCaCertificate()
