@@ -215,7 +215,11 @@ void tst_QFile::cleanup()
 // This will be executed immediately after each test is run.
 
     // for copyFallback()
-    QFile::remove("file-copy-destination.txt");
+    if (QFile::exists("file-copy-destination.txt")) {
+        QFile::setPermissions("file-copy-destination.txt",
+                QFile::ReadOwner | QFile::WriteOwner);
+        QFile::remove("file-copy-destination.txt");
+    }
 
     // for renameFallback()
     QFile::remove("file-rename-destination.txt");
@@ -925,6 +929,9 @@ void tst_QFile::copyFallback()
     QVERIFY(QFile::exists("file-copy-destination.txt"));
     QVERIFY(!file.isOpen());
 
+    // Need to reset permissions on Windows to be able to delete
+    QVERIFY(QFile::setPermissions("file-copy-destination.txt",
+            QFile::ReadOwner | QFile::WriteOwner));
     QVERIFY(QFile::remove("file-copy-destination.txt"));
 
     // Fallback copy of open file.
