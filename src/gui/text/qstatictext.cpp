@@ -44,11 +44,11 @@
 
 QT_BEGIN_NAMESPACE
 
-QStaticText::QStaticText(const QString &text, const QFont &font)
+QStaticText::QStaticText(const QString &text, const QFont &font, const QSizeF &size)
     : d_ptr(new QStaticTextPrivate) 
 {
     Q_D(QStaticText);
-    d->init(text, font);
+    d->init(text, font, size.isValid() ? size.width() : -1.0);
 }
 
 QStaticTextPrivate::QStaticTextPrivate()
@@ -61,7 +61,7 @@ QStaticTextPrivate *QStaticTextPrivate::get(const QStaticText *q)
     return q->d_ptr;
 }
 
-void QStaticTextPrivate::init(const QString &text, const QFont &font)
+void QStaticTextPrivate::init(const QString &text, const QFont &font, qreal width)
 {
     Q_ASSERT(textLayout == 0);
     textLayout = new QTextLayout(text, font);
@@ -70,10 +70,10 @@ void QStaticTextPrivate::init(const QString &text, const QFont &font)
     QFontMetrics fontMetrics(font);
 
     textLayout->beginLayout();
-    int h = -fontMetrics.ascent();
+    int h = width >= 0.0 ? 0 : -fontMetrics.ascent();
     QTextLine line;
     if ((line = textLayout->createLine()).isValid()) {
-        line.setLineWidth(fontMetrics.width(text));
+        line.setLineWidth(width >= 0.0 ? width : fontMetrics.width(text));
         line.setPosition(QPointF(0, h));
         h += line.height();
     }

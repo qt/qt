@@ -10,7 +10,7 @@ class QStaticTextPrivate
 {
 public:
     QStaticTextPrivate();
-    void init(const QString &text, const QFont &font);
+    void init(const QString &text, const QFont &font, qreal width);
 
     QTextLayout *textLayout;
     
