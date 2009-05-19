@@ -97,12 +97,6 @@ int main(int argc, char **argv)
         }
     }
 
-    // Check for SDK Name, otherwise use Windows Mobile as default
-    if (sdkName.isEmpty()) {
-        qWarning("No SDK specified: Defaulting to Windows Mobile 5.0 Pocket PC SDK");
-        sdkName = QString::fromLatin1("Windows Mobile 5.0 Pocket PC SDK (ARMV4I)");
-    }
-
     CeSdkHandler handler;
     if (!handler.parse()) {
         qWarning("Could not find any installed SDK, aborting!");
@@ -116,6 +110,12 @@ int main(int argc, char **argv)
         for (QList<CeSdkInfo>::iterator it = list.begin(); it != list.end(); ++it)
             qDebug() << "SDK Name:" << it->name();
         return 0;
+    }
+
+    // Check for SDK Name, otherwise use Windows Mobile as default
+    if (sdkName.isEmpty()) {
+        qWarning("No SDK specified: Defaulting to Windows Mobile 5.0 Pocket PC SDK");
+        sdkName = QString::fromLatin1("Windows Mobile 5.0 Pocket PC SDK (ARMV4I)");
     }
 
     // finally find the given SDK and prompt out the environment to be set

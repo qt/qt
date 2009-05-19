@@ -1,11 +1,11 @@
 /****************************************************************************
- **
- ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+**
+** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
 ** Contact: Qt Software Information (qt-info@nokia.com)
- **
- ** This file is part of the QtGui module of the Qt Toolkit.
- **
- ** $QT_BEGIN_LICENSE:LGPL$
+**
+** This file is part of the QtGui module of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
 ** This file contains pre-release code and may not be distributed.
 ** You may use this file in accordance with the terms and conditions
@@ -36,11 +36,11 @@
 ** If you are unsure which license is appropriate for your use, please
 ** contact the sales department at qt-sales@nokia.com.
 ** $QT_END_LICENSE$
- **
- ** This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
- ** WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
- **
- ****************************************************************************/
+**
+** This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
+** WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+**
+****************************************************************************/
 
 #include "qmacdefines_mac.h"
 #include "qapplication.h"
@@ -55,10 +55,16 @@
 QT_FORWARD_DECLARE_CLASS(QAction)
 QT_FORWARD_DECLARE_CLASS(QWidget)
 QT_FORWARD_DECLARE_CLASS(QApplication)
+QT_FORWARD_DECLARE_CLASS(QCoreApplication)
+QT_FORWARD_DECLARE_CLASS(QApplicationPrivate)
+QT_FORWARD_DECLARE_CLASS(QKeyEvent)
+QT_FORWARD_DECLARE_CLASS(QEvent)
 
 QT_BEGIN_NAMESPACE
 extern bool qt_sendSpontaneousEvent(QObject*, QEvent*); //qapplication.cpp
 QT_END_NAMESPACE
+
+QT_USE_NAMESPACE
 
 @implementation QT_MANGLE_NAMESPACE(QCocoaMenu)
 
@@ -134,8 +140,9 @@ QT_END_NAMESPACE
     // If it does, then we will first send the key sequence to the QWidget that has focus
     // since (in Qt's eyes) it needs to a chance at the key event first. If the widget
     // accepts the key event, we then return YES, but set the target and action to be nil,
-    // which means that the action should not be triggered. In every other case we return
-    // NO, which means that Cocoa can do as it pleases (i.e., fire the menu action).
+    // which means that the action should not be triggered, and instead dispatch the event ourselves.
+    // In every other case we return NO, which means that Cocoa can do as it pleases
+    // (i.e., fire the menu action).
     NSMenuItem *whichItem;
     if ([self hasShortcut:menu
                    forKey:[event characters]
@@ -158,9 +165,11 @@ QT_END_NAMESPACE
             accel_ev.ignore();
             qt_sendSpontaneousEvent(widget, &accel_ev);
             if (accel_ev.isAccepted()) {
-                *target = nil;
-                *action = nil;
-                return YES;
+                if (qt_dispatchKeyEvent(event, widget)) {
+                    *target = nil;
+                    *action = nil;
+                    return YES;
+                }
             }
         }
     }

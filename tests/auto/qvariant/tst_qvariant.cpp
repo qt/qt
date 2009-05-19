@@ -2414,13 +2414,9 @@ void tst_QVariant::url()
 
 void tst_QVariant::globalColor()
 {
-#if QT_VERSION >= 0x040200
     QVariant variant(Qt::blue);
     QVERIFY(variant.type() == QVariant::Color);
     QVERIFY(qVariantValue<QColor>(variant) == QColor(Qt::blue));
-#else
-    QSKIP("Implemented/fixed in 4.2", SkipSingle);
-#endif
 }
 
 void tst_QVariant::variantMap()

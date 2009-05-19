@@ -1039,11 +1039,6 @@ void tst_QMainWindow::toolBarArea()
         QMainWindow mw;
         QToolBar tb(&mw);
 
-#if QT_VERSION <= 0x040103
-        // this would assert in previous versions
-        QCOMPARE(mw.toolBarArea(&tb), Qt::ToolBarArea(0));
-#endif
-
         for (int j = 0; j < areaCount; ++j) {
             Qt::ToolBarArea otherArea = areas[j];
 
@@ -1204,11 +1199,6 @@ void tst_QMainWindow::dockWidgetArea()
 
         QMainWindow mw;
         QDockWidget dw(&mw);
-
-#if QT_VERSION <= 0x040103
-        // this would assert in previous versions
-        QCOMPARE(mw.dockWidgetArea(&dw), Qt::DockWidgetArea(0));
-#endif
 
         for (int j = 0; j < areaCount; ++j) {
             Qt::DockWidgetArea otherArea = areas[i];

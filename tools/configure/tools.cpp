@@ -58,6 +58,13 @@ using namespace std;
 void Tools::checkLicense(QMap<QString,QString> &dictionary, QMap<QString,QString> &licenseInfo,
                          const QString &path)
 {
+    if (dictionary[ "BUILDNOKIA" ] == "yes") {
+        dictionary["EDITION"] = "NokiaInternalBuild";
+        dictionary["LICENSE_FILE"] = ""; // No License for nokia developers
+        dictionary["QT_EDITION"] = "QT_EDITION_OPENSOURCE";
+        return; // No license key checking in internal builds
+    }
+
     QString tpLicense = dictionary["QT_SOURCE_TREE"] + "/LICENSE.PREVIEW.OPENSOURCE";
     if (QFile::exists(tpLicense)) {
         dictionary["EDITION"] = "Preview";
@@ -142,25 +149,28 @@ void Tools::checkLicense(QMap<QString,QString> &dictionary, QMap<QString,QString
             dictionary["EDITION"] = "GUIFramework";
             dictionary["QT_EDITION"] = "QT_EDITION_DESKTOPLIGHT";
         }
+
+        if (platforms == 'X') {
+            dictionary["LICENSE_EXTENSION"] = "-ALLOS";
+        } else if (strchr("3679ACDEHJKMSUWX", platforms)) {
+            dictionary["LICENSE_EXTENSION"] = "-EMBEDDED";
+        } else if (strchr("4BFPQRTY", platforms)) {
+            dictionary["LICENSE_EXTENSION"] = "-DESKTOP";
+        }
     } else if (strcmp(licenseSchema,"Z4M") == 0 || strcmp(licenseSchema,"R4M") == 0 || strcmp(licenseSchema,"Q4M") == 0) {
         if (products == 'B') {
             dictionary["EDITION"] = "Evaluation";
             dictionary["QT_EDITION"] = "QT_EDITION_EVALUATION";
+            dictionary["LICENSE_EXTENSION"] = "-EVALUATION";
         }
     }
 
-    // Determine license extension -----------------------------------------------------------------
     if (QFile::exists(dictionary["QT_SOURCE_TREE"] + "/.LICENSE")) {
         // Generic, no-suffix license
         dictionary["LICENSE_EXTENSION"] = QString();
-    } else if (platforms == 'X') {
-        dictionary["LICENSE_EXTENSION"] = "-ALLOS";
-    } else if (/*Windows CE */platforms  == '6' || /*Embedded */ platforms == '8' || /*Embedded + Windows CE*/platforms  == 'K' || /*Windows + Windows CE*/ platforms  == 'H') {
-        dictionary["LICENSE_EXTENSION"] = "-EMBEDDED";
-    } else if (/*Windows*/ platforms == 'R' || /*Mac+X11+Windows*/ platforms  == 'F') {
-        dictionary["LICENSE_EXTENSION"] = "-DESKTOP";
-    } else if (dictionary["EDITION"] == "Evaluation") {
-        dictionary["LICENSE_EXTENSION"] = "-EVALUATION";
+    } else if (dictionary["LICENSE_EXTENSION"].isEmpty()) {
+        cout << "License file does not contain proper license key." << endl;
+        dictionary["DONE"] = "error";
     }
     if (licenseType.isEmpty()
         || dictionary["EDITION"].isEmpty()
@@ -170,19 +180,9 @@ void Tools::checkLicense(QMap<QString,QString> &dictionary, QMap<QString,QString
         return;
     }
 
-    // verify that we are licensed to use Qt for Windows
     if (dictionary["PLATFORM NAME"].contains("Windows CE")) {
-        // verify that we are licensed to use Qt for Windows AND Qt for Windows CE
-        if (platforms != 'H') {
-            cout << "You are not licensed for the " << dictionary["PLATFORM NAME"] << " platform." << endl << endl;
-            cout << "Please contact sales@trolltech.com to upgrade your license" << endl;
-            cout << "to include the " << dictionary["PLATFORM NAME"] << " platform, or install the" << endl;
-            cout << "Qt Open Source Edition if you intend to develop free software." << endl;
-            dictionary["DONE"] = "error";
-            return;
-        }
-    } else {
-        if (!( platforms == 'R' || ( platforms == '6' )|| platforms == '8' )) {
+        // verify that we are licensed to use Qt for Windows CE
+        if (dictionary["LICENSE_EXTENSION"] != "-EMBEDDED" && dictionary["LICENSE_EXTENSION"] != "-ALLOS") {
             cout << "You are not licensed for the " << dictionary["PLATFORM NAME"] << " platform." << endl << endl;
             cout << "Please contact sales@trolltech.com to upgrade your license" << endl;
             cout << "to include the " << dictionary["PLATFORM NAME"] << " platform, or install the" << endl;

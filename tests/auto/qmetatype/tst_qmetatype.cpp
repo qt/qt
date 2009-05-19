@@ -127,7 +127,6 @@ protected:
 
 void tst_QMetaType::threadSafety()
 {
-#if QT_VERSION >= 0x040100
     MetaTypeTorturer t1;
     MetaTypeTorturer t2;
     MetaTypeTorturer t3;
@@ -139,7 +138,6 @@ void tst_QMetaType::threadSafety()
     QVERIFY(t1.wait());
     QVERIFY(t2.wait());
     QVERIFY(t3.wait());
-#endif
 }
 
 namespace TestSpace

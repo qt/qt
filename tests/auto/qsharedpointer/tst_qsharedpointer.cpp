@@ -57,8 +57,11 @@ private slots:
     void downCast();
     void upCast();
     void differentPointers();
+    void virtualBaseDifferentPointers();
 #ifndef QTEST_NO_RTTI
     void dynamicCast();
+    void dynamicCastDifferentPointers();
+    void dynamicCastVirtualBase();
     void dynamicCastFailure();
 #endif
     void customDeleter();
@@ -321,6 +324,10 @@ class DiffPtrDerivedData: public Stuffing, public Data
 {
 };
 
+class VirtualDerived: virtual public Data
+{
+};
+
 void tst_QSharedPointer::downCast()
 {
     {
@@ -439,7 +446,7 @@ void tst_QSharedPointer::differentPointers()
         DiffPtrDerivedData *aData = new DiffPtrDerivedData;
         Data *aBase = aData;
         Q_ASSERT(aData == aBase);
-        Q_ASSERT(quintptr(&aData) != quintptr(&aBase));
+        Q_ASSERT(*reinterpret_cast<quintptr *>(&aData) != *reinterpret_cast<quintptr *>(&aBase));
 
         QSharedPointer<Data> baseptr = QSharedPointer<Data>(aData);
         QSharedPointer<DiffPtrDerivedData> ptr = qSharedPointerCast<DiffPtrDerivedData>(baseptr);
@@ -453,7 +460,7 @@ void tst_QSharedPointer::differentPointers()
         DiffPtrDerivedData *aData = new DiffPtrDerivedData;
         Data *aBase = aData;
         Q_ASSERT(aData == aBase);
-        Q_ASSERT(quintptr(&aData) != quintptr(&aBase));
+        Q_ASSERT(*reinterpret_cast<quintptr *>(&aData) != *reinterpret_cast<quintptr *>(&aBase));
 
         QSharedPointer<DiffPtrDerivedData> ptr = QSharedPointer<DiffPtrDerivedData>(aData);
         QSharedPointer<Data> baseptr = ptr;
@@ -464,23 +471,53 @@ void tst_QSharedPointer::differentPointers()
         QVERIFY(baseptr == aData);
         QVERIFY(baseptr == aBase);
     }
+}
 
-    // there is no possibility for different pointers in
-    // internal reference counting right now
-    //
-    // to do that, it's necessary to first implement the ability to
-    // call (virtual) functions, so that the two differing bases have
-    // the same reference counter
+void tst_QSharedPointer::virtualBaseDifferentPointers()
+{
+    {
+        VirtualDerived *aData = new VirtualDerived;
+        Data *aBase = aData;
+        Q_ASSERT(aData == aBase);
+        Q_ASSERT(*reinterpret_cast<quintptr *>(&aData) != *reinterpret_cast<quintptr *>(&aBase));
+
+        QSharedPointer<VirtualDerived> ptr = QSharedPointer<VirtualDerived>(aData);
+        QSharedPointer<Data> baseptr = qSharedPointerCast<Data>(ptr);
+        QVERIFY(ptr == baseptr);
+        QVERIFY(ptr.data() == baseptr.data());
+        QVERIFY(ptr == aBase);
+        QVERIFY(ptr == aData);
+        QVERIFY(baseptr == aData);
+        QVERIFY(baseptr == aBase);
+    }
+
+    {
+        VirtualDerived *aData = new VirtualDerived;
+        Data *aBase = aData;
+        Q_ASSERT(aData == aBase);
+        Q_ASSERT(*reinterpret_cast<quintptr *>(&aData) != *reinterpret_cast<quintptr *>(&aBase));
+
+        QSharedPointer<VirtualDerived> ptr = QSharedPointer<VirtualDerived>(aData);
+        QSharedPointer<Data> baseptr = ptr;
+        QVERIFY(ptr == baseptr);
+        QVERIFY(ptr.data() == baseptr.data());
+        QVERIFY(ptr == aBase);
+        QVERIFY(ptr == aData);
+        QVERIFY(baseptr == aData);
+        QVERIFY(baseptr == aBase);
+    }
 }
 
 #ifndef QTEST_NO_RTTI
 void tst_QSharedPointer::dynamicCast()
 {
-    QSharedPointer<Data> baseptr = QSharedPointer<Data>(new DerivedData);
+    DerivedData *aData = new DerivedData;
+    QSharedPointer<Data> baseptr = QSharedPointer<Data>(aData);
 
     {
         QSharedPointer<DerivedData> derivedptr = qSharedPointerDynamicCast<DerivedData>(baseptr);
         QVERIFY(baseptr == derivedptr);
+        QCOMPARE(derivedptr.data(), aData);
         QCOMPARE(static_cast<Data *>(derivedptr.data()), baseptr.data());
     }
     QCOMPARE(int(baseptr.d->weakref), 1);
@@ -490,6 +527,7 @@ void tst_QSharedPointer::dynamicCast()
         QWeakPointer<Data> weakptr = baseptr;
         QSharedPointer<DerivedData> derivedptr = qSharedPointerDynamicCast<DerivedData>(weakptr);
         QVERIFY(baseptr == derivedptr);
+        QCOMPARE(derivedptr.data(), aData);
         QCOMPARE(static_cast<Data *>(derivedptr.data()), baseptr.data());
     }
     QCOMPARE(int(baseptr.d->weakref), 1);
@@ -498,6 +536,87 @@ void tst_QSharedPointer::dynamicCast()
     {
         QSharedPointer<DerivedData> derivedptr = baseptr.dynamicCast<DerivedData>();
         QVERIFY(baseptr == derivedptr);
+        QCOMPARE(derivedptr.data(), aData);
+        QCOMPARE(static_cast<Data *>(derivedptr.data()), baseptr.data());
+    }
+    QCOMPARE(int(baseptr.d->weakref), 1);
+    QCOMPARE(int(baseptr.d->strongref), 1);
+}
+
+void tst_QSharedPointer::dynamicCastDifferentPointers()
+{
+    // DiffPtrDerivedData derives from both Data and Stuffing
+    DiffPtrDerivedData *aData = new DiffPtrDerivedData;
+    QSharedPointer<Data> baseptr = QSharedPointer<Data>(aData);
+
+    {
+        QSharedPointer<DiffPtrDerivedData> derivedptr = qSharedPointerDynamicCast<DiffPtrDerivedData>(baseptr);
+        QVERIFY(baseptr == derivedptr);
+        QCOMPARE(derivedptr.data(), aData);
+        QCOMPARE(static_cast<Data *>(derivedptr.data()), baseptr.data());
+    }
+    QCOMPARE(int(baseptr.d->weakref), 1);
+    QCOMPARE(int(baseptr.d->strongref), 1);
+
+    {
+        QWeakPointer<Data> weakptr = baseptr;
+        QSharedPointer<DiffPtrDerivedData> derivedptr = qSharedPointerDynamicCast<DiffPtrDerivedData>(weakptr);
+        QVERIFY(baseptr == derivedptr);
+        QCOMPARE(derivedptr.data(), aData);
+        QCOMPARE(static_cast<Data *>(derivedptr.data()), baseptr.data());
+    }
+    QCOMPARE(int(baseptr.d->weakref), 1);
+    QCOMPARE(int(baseptr.d->strongref), 1);
+
+    {
+        QSharedPointer<DiffPtrDerivedData> derivedptr = baseptr.dynamicCast<DiffPtrDerivedData>();
+        QVERIFY(baseptr == derivedptr);
+        QCOMPARE(derivedptr.data(), aData);
+        QCOMPARE(static_cast<Data *>(derivedptr.data()), baseptr.data());
+    }
+    QCOMPARE(int(baseptr.d->weakref), 1);
+    QCOMPARE(int(baseptr.d->strongref), 1);
+
+    {
+        Stuffing *nakedptr = dynamic_cast<Stuffing *>(baseptr.data());
+        QVERIFY(nakedptr);
+
+        QSharedPointer<Stuffing> otherbaseptr = qSharedPointerDynamicCast<Stuffing>(baseptr);
+        QVERIFY(!otherbaseptr.isNull());
+        QVERIFY(otherbaseptr == nakedptr);
+        QCOMPARE(otherbaseptr.data(), nakedptr);
+        QCOMPARE(static_cast<DiffPtrDerivedData*>(otherbaseptr.data()), aData);
+    }
+}
+
+void tst_QSharedPointer::dynamicCastVirtualBase()
+{
+    VirtualDerived *aData = new VirtualDerived;
+    QSharedPointer<Data> baseptr = QSharedPointer<Data>(aData);
+
+    {
+        QSharedPointer<VirtualDerived> derivedptr = qSharedPointerDynamicCast<VirtualDerived>(baseptr);
+        QVERIFY(baseptr == derivedptr);
+        QCOMPARE(derivedptr.data(), aData);
+        QCOMPARE(static_cast<Data *>(derivedptr.data()), baseptr.data());
+    }
+    QCOMPARE(int(baseptr.d->weakref), 1);
+    QCOMPARE(int(baseptr.d->strongref), 1);
+
+    {
+        QWeakPointer<Data> weakptr = baseptr;
+        QSharedPointer<VirtualDerived> derivedptr = qSharedPointerDynamicCast<VirtualDerived>(weakptr);
+        QVERIFY(baseptr == derivedptr);
+        QCOMPARE(derivedptr.data(), aData);
+        QCOMPARE(static_cast<Data *>(derivedptr.data()), baseptr.data());
+    }
+    QCOMPARE(int(baseptr.d->weakref), 1);
+    QCOMPARE(int(baseptr.d->strongref), 1);
+
+    {
+        QSharedPointer<VirtualDerived> derivedptr = baseptr.dynamicCast<VirtualDerived>();
+        QVERIFY(baseptr == derivedptr);
+        QCOMPARE(derivedptr.data(), aData);
         QCOMPARE(static_cast<Data *>(derivedptr.data()), baseptr.data());
     }
     QCOMPARE(int(baseptr.d->weakref), 1);

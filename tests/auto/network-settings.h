@@ -39,6 +39,7 @@
 **
 ****************************************************************************/
 #include <QString>
+#include <QtNetwork/QHostInfo>
 
 class QtNetworkSettings
 {
@@ -63,4 +64,12 @@ public:
     {
         return "qt-test-server.wildcard.dev." + serverDomainName();
     }
+
+#ifdef QT_NETWORK_LIB
+    static QHostAddress serverIP()
+    {
+        return QHostInfo::fromName(serverName()).addresses().first();
+    }
+#endif
+
 };

@@ -456,7 +456,7 @@ void ActionEditor::slotNewAction()
         if (actionData.checkable)
             setInitialProperty(sheet, QLatin1String(checkablePropertyC), QVariant(true));
 
-        if (!actionData.keysequence.isEmpty())
+        if (!actionData.keysequence.value().isEmpty())
             setInitialProperty(sheet, QLatin1String(shortcutPropertyC), qVariantFromValue(actionData.keysequence));
 
         sheet->setProperty(sheet->indexOf(QLatin1String(iconPropertyC)), qVariantFromValue(actionData.icon));
@@ -491,10 +491,10 @@ static QDesignerFormWindowCommand *setIconPropertyCommand(const PropertySheetIco
 // return a FormWindow command to apply a QKeySequence or a reset command
 // in case it is empty.
 
-static QDesignerFormWindowCommand *setKeySequencePropertyCommand(const QKeySequence &ks, QAction *action, QDesignerFormWindowInterface *fw)
+static QDesignerFormWindowCommand *setKeySequencePropertyCommand(const PropertySheetKeySequenceValue &ks, QAction *action, QDesignerFormWindowInterface *fw)
 {
     const QString shortcutProperty = QLatin1String(shortcutPropertyC);
-    if (ks.isEmpty()) {
+    if (ks.value().isEmpty()) {
         ResetPropertyCommand *cmd = new ResetPropertyCommand(fw);
         cmd->init(action, shortcutProperty);
         return cmd;
@@ -544,7 +544,7 @@ void ActionEditor::editAction(QAction *action)
     oldActionData.text = action->text();
     oldActionData.toolTip = textPropertyValue(sheet, QLatin1String(toolTipPropertyC));
     oldActionData.icon = qVariantValue<PropertySheetIconValue>(sheet->property(sheet->indexOf(QLatin1String(iconPropertyC))));
-    oldActionData.keysequence = qVariantValue<QKeySequence>(sheet->property(sheet->indexOf(QLatin1String(shortcutPropertyC))));
+    oldActionData.keysequence = ActionModel::actionShortCut(sheet);
     oldActionData.checkable =  action->isCheckable();
     dlg.setActionData(oldActionData);
 

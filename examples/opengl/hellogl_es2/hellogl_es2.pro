@@ -25,3 +25,9 @@ target.path = $$[QT_INSTALL_EXAMPLES]/opengl/hellogl_es2
 sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS hellogl_es2.pro
 sources.path = $$[QT_INSTALL_EXAMPLES]/opengl/hellogl_es2
 INSTALLS += target sources
+
+
+wince*: {
+   QMAKE_LIBS += "libGLESv2.lib"
+
+}

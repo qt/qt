@@ -138,7 +138,11 @@ void QColormap::cleanup()
 }
 
 QColormap QColormap::instance(int)
-{ return QColormap(); }
+{
+    Q_ASSERT_X(screenMap, "QColormap",
+               "A QApplication object needs to be constructed before QColormap is used.");
+    return QColormap();
+}
 
 QColormap::QColormap()
     : d(screenMap)

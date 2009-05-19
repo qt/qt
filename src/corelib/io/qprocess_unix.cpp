@@ -850,10 +850,10 @@ bool QProcessPrivate::processStarted()
 
 qint64 QProcessPrivate::bytesAvailableFromStdout() const
 {
-    size_t nbytes = 0;
+    int nbytes = 0;
     qint64 available = 0;
     if (::ioctl(stdoutChannel.pipe[0], FIONREAD, (char *) &nbytes) >= 0)
-        available = (qint64) *((int *) &nbytes);
+        available = (qint64) nbytes;
 #if defined (QPROCESS_DEBUG)
     qDebug("QProcessPrivate::bytesAvailableFromStdout() == %lld", available);
 #endif
@@ -862,10 +862,10 @@ qint64 QProcessPrivate::bytesAvailableFromStdout() const
 
 qint64 QProcessPrivate::bytesAvailableFromStderr() const
 {
-    size_t nbytes = 0;
+    int nbytes = 0;
     qint64 available = 0;
     if (::ioctl(stderrChannel.pipe[0], FIONREAD, (char *) &nbytes) >= 0)
-        available = (qint64) *((int *) &nbytes);
+        available = (qint64) nbytes;
 #if defined (QPROCESS_DEBUG)
     qDebug("QProcessPrivate::bytesAvailableFromStderr() == %lld", available);
 #endif

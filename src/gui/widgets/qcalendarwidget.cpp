@@ -2791,7 +2791,7 @@ QTextCharFormat QCalendarWidget::dateTextFormat(const QDate &date) const
 void QCalendarWidget::setDateTextFormat(const QDate &date, const QTextCharFormat &format)
 {
     Q_D(QCalendarWidget);
-    if ( date.isNull() && !format.isValid() )
+    if (date.isNull())
         d->m_model->m_dateFormats.clear();
     else
         d->m_model->m_dateFormats[date] = format;

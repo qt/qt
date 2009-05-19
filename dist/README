@@ -114,7 +114,7 @@ HOW TO REPORT A BUG
 If you think you have found a bug in Qt, we would like to hear about
 it so that we can fix it. Before reporting a bug, please check
 http://qtsoftware.com/developer/faqs/ and
-http://qtsoftware.com/products/appdev/platform/platforms/ to see if the to see if
+http://qtsoftware.com/products/appdev/platform/platforms/ to see if
 the issue is already known.
 
 Always include the following information in your bug report: the name

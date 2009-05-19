@@ -72,7 +72,7 @@ static int pvrQwsInitFbScreen(int screen)
     /* Bail out if already initialized, or the number is incorrect */
     if (screen < 0 || screen >= PVRQWS_MAX_SCREENS)
         return 0;
-    if (pvrQwsDisplay.screens[screen].mapped)
+    if (pvrQwsDisplay.screens[screen].initialized)
         return 1;
 
     /* Open the framebuffer and fetch its properties */
@@ -125,25 +125,32 @@ static int pvrQwsInitFbScreen(int screen)
     start = fix.smem_start;
     length = var.xres_virtual * var.yres_virtual * bytesPerPixel;
 
-    /* Map the framebuffer region into memory */
-    mapped = mmap(0, length, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
-    if (!mapped || mapped == (void *)(-1)) {
-        perror("mmap");
-        close(fd);
-        return 0;
-    }
-
-    /* Allocate a PVR2D memory region for the framebuffer */
-    memInfo = 0;
-    if (pvrQwsDisplay.context) {
-        pageAddresses[0] = start & 0xFFFFF000;
-        pageAddresses[1] = 0;
-        if (PVR2DMemWrap
-                (pvrQwsDisplay.context, mapped, PVR2D_WRAPFLAG_CONTIGUOUS,
-                 length, pageAddresses, &memInfo) != PVR2D_OK) {
-            munmap(mapped, length);
+    if (screen == 0) {
+        /* We use PVR2DGetFrameBuffer to map the first screen.
+           On some chipsets it is more reliable than using PVR2DMemWrap */
+        mapped = 0;
+        memInfo = 0;
+    } else {
+        /* Other screens: map the framebuffer region into memory */
+        mapped = mmap(0, length, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+        if (!mapped || mapped == (void *)(-1)) {
+            perror("mmap");
             close(fd);
             return 0;
+        }
+
+        /* Allocate a PVR2D memory region for the framebuffer */
+        memInfo = 0;
+        if (pvrQwsDisplay.context) {
+            pageAddresses[0] = start & 0xFFFFF000;
+            pageAddresses[1] = 0;
+            if (PVR2DMemWrap
+                    (pvrQwsDisplay.context, mapped, PVR2D_WRAPFLAG_CONTIGUOUS,
+                     length, pageAddresses, &memInfo) != PVR2D_OK) {
+                munmap(mapped, length);
+                close(fd);
+                return 0;
+            }
         }
     }
 
@@ -158,11 +165,17 @@ static int pvrQwsInitFbScreen(int screen)
     pvrQwsDisplay.screens[screen].screenStride = stride;
     pvrQwsDisplay.screens[screen].pixelFormat = format;
     pvrQwsDisplay.screens[screen].bytesPerPixel = bytesPerPixel;
-    pvrQwsDisplay.screens[screen].frameBuffer = memInfo;
     pvrQwsDisplay.screens[screen].screenDrawable = 0;
-    pvrQwsDisplay.screens[screen].mapped = mapped;
+    if (mapped) {
+        /* Don't set these fields if mapped is 0, because PVR2DGetFrameBuffer
+           may have already been called and set them */
+        pvrQwsDisplay.screens[screen].frameBuffer = memInfo;
+        pvrQwsDisplay.screens[screen].mapped = mapped;
+    }
     pvrQwsDisplay.screens[screen].mappedLength = length;
     pvrQwsDisplay.screens[screen].screenStart = start;
+    pvrQwsDisplay.screens[screen].needsUnmap = (mapped != 0);
+    pvrQwsDisplay.screens[screen].initialized = 1;
     return 1;
 }
 
@@ -209,7 +222,7 @@ static int pvrQwsAddDrawable(void)
 
     /* Create the PVR2DMEMINFO blocks for the active framebuffers */
     for (screen = 0; screen < PVRQWS_MAX_SCREENS; ++screen) {
-        if (pvrQwsDisplay.screens[screen].mapped) {
+        if (screen != 0 && pvrQwsDisplay.screens[screen].mapped) {
             pageAddresses[0]
                 = pvrQwsDisplay.screens[screen].screenStart & 0xFFFFF000;
             pageAddresses[1] = 0;
@@ -224,6 +237,17 @@ static int pvrQwsAddDrawable(void)
                 return 0;
             }
             pvrQwsDisplay.screens[screen].frameBuffer = memInfo;
+        } else if (screen == 0) {
+            if (PVR2DGetFrameBuffer
+                    (pvrQwsDisplay.context,
+                     PVR2D_FB_PRIMARY_SURFACE, &memInfo) != PVR2D_OK) {
+                fprintf(stderr, "QWSWSEGL: could not get the primary framebuffer surface\n");
+                PVR2DDestroyDeviceContext(pvrQwsDisplay.context);
+                pvrQwsDisplay.context = 0;
+                return 0;
+            }
+            pvrQwsDisplay.screens[screen].frameBuffer = memInfo;
+            pvrQwsDisplay.screens[screen].mapped = memInfo->pBase;
         }
     }
 
@@ -330,7 +354,7 @@ void pvrQwsDisplayClose(void)
             pvrQwsDestroyDrawableForced(info->screenDrawable);
         if (info->frameBuffer)
             PVR2DMemFree(pvrQwsDisplay.context, info->frameBuffer);
-        if (info->mapped)
+        if (info->mapped && info->needsUnmap)
             munmap(info->mapped, info->mappedLength);
     }
 

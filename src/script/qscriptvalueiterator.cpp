@@ -106,6 +106,7 @@ QScriptValueIteratorPrivate::QScriptValueIteratorPrivate()
 */
 QScriptValueIteratorPrivate::~QScriptValueIteratorPrivate()
 {
+    delete it;
 }
 
 /*!
@@ -130,7 +131,6 @@ QScriptValueIterator::QScriptValueIterator(const QScriptValue &object)
 QScriptValueIterator::~QScriptValueIterator()
 {
     if (d_ptr) {
-        delete d_ptr->it;
         delete d_ptr;
         d_ptr = 0;
     }
@@ -312,7 +312,7 @@ void QScriptValueIterator::remove()
 QScriptValueIterator& QScriptValueIterator::operator=(QScriptValue &object)
 {
     if (d_ptr) {
-        delete d_ptr->it;
+        delete d_ptr;
         d_ptr = 0;
     }
     QScriptValueImpl val = QScriptValuePrivate::valueOf(object);

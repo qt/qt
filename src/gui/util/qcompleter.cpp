@@ -824,7 +824,7 @@ void QCompleterPrivate::_q_complete(QModelIndex index, bool highlighted)
     Q_Q(QCompleter);
     QString completion;
 
-    if (!index.isValid() || (index.row() >= proxy->engine->matchCount())) {
+    if (!index.isValid() || (!proxy->showAll && (index.row() >= proxy->engine->matchCount()))) {
         completion = prefix;
     } else {
         QModelIndex si = proxy->mapToSource(index);
@@ -1079,7 +1079,14 @@ void QCompleter::setPopup(QAbstractItemView *popup)
         popup->setModel(d->proxy);
     popup->hide();
     popup->setParent(0, Qt::Popup);
+
+    Qt::FocusPolicy origPolicy = Qt::NoFocus;
+    if (d->widget)
+        origPolicy = d->widget->focusPolicy();
     popup->setFocusPolicy(Qt::NoFocus);
+    if (d->widget)
+        d->widget->setFocusPolicy(origPolicy);
+
     popup->setFocusProxy(d->widget);
     popup->installEventFilter(this);
     popup->setItemDelegate(new QCompleterItemDelegate(popup));

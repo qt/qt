@@ -44,7 +44,6 @@
 //TESTED_CLASS=QCss
 //TESTED_FILES=gui/text/qcssparser.cpp gui/text/qcssparser_p.h
 
-#if QT_VERSION >= 0x040200
 #include "private/qcssparser_p.h"
 
 class tst_CssParser : public QObject
@@ -124,7 +123,7 @@ static void debug(const QVector<QCss::Symbol> &symbols, int index = -1)
         qDebug() << "failure at index" << index;
 }
 
-static void debug(const QCss::Parser &p) { debug(p.symbols); }
+//static void debug(const QCss::Parser &p) { debug(p.symbols); }
 
 void tst_CssParser::scanner()
 {
@@ -272,7 +271,7 @@ void tst_CssParser::term_data()
     val.variant = QVariant(QColor("#ffbb00"));
     QTest::newRow("hexcolor2") << true << "#fb0" << val;
 
-    QTest::ignoreMessage(QtWarningMsg, "QColor::setNamedColor: Could not parse color '#cafebabe'");
+    QTest::ignoreMessage(QtWarningMsg, "QCssParser::parseHexColor: Unknown color name '#cafebabe'");
     QTest::newRow("hexcolor_failure") << false << "#cafebabe" << val;
 
     val.type = QCss::Value::Uri;
@@ -1474,7 +1473,12 @@ void tst_CssParser::extractFontFamily_data()
     QTest::newRow("quoted-family-name") << "font-family: 'Times New Roman'" << QString("Times New Roman");
     QTest::newRow("unquoted-family-name") << "font-family: Times New Roman" << QString("Times New Roman");
     QTest::newRow("unquoted-family-name2") << "font-family: Times        New     Roman" << QString("Times New Roman");
-    QTest::newRow("multiple") << "font-family: Times New   Roman  , foobar, 'baz'" << QString("Times New Roman");
+    QTest::newRow("multiple") << "font-family: Times New Roman  , foobar, 'baz'" << QString("Times New Roman");
+    QTest::newRow("multiple2") << "font-family: invalid,  Times New   Roman " << QString("Times New Roman");
+    QTest::newRow("invalid") << "font-family: invalid" << QFont().family();
+    QTest::newRow("shorthand") << "font: 12pt Times New Roman" << QString("Times New Roman");
+    QTest::newRow("shorthand multiple quote") << "font: 12pt invalid, \"Times New Roman\" " << QString("Times New Roman");
+    QTest::newRow("shorthand multiple") << "font: 12pt invalid, Times New Roman " << QString("Times New Roman");
 }
 
 void tst_CssParser::extractFontFamily()
@@ -1498,8 +1502,8 @@ void tst_CssParser::extractFontFamily()
     int adjustment = 0;
     QFont fnt;
     extractor.extractFont(&fnt, &adjustment);
-
-    QTEST(fnt.family(), "expectedFamily");
+    QFontInfo info(fnt);
+    QTEST(info.family(), "expectedFamily");
 }
 
 void tst_CssParser::extractBorder_data()
@@ -1592,13 +1596,13 @@ void tst_CssParser::quotedAndUnquotedIdentifiers()
     QCss::Parser parser("foo { font-style: \"italic\"; font-weight: bold }");
     QCss::StyleSheet sheet;
     QVERIFY(parser.parse(&sheet));
-    
+
     QCOMPARE(sheet.styleRules.count() + sheet.nameIndex.count(), 1);
     QCss::StyleRule rule = (!sheet.styleRules.isEmpty()) ?
            sheet.styleRules.at(0) : *sheet.nameIndex.begin();
     const QVector<QCss::Declaration> decls = rule.declarations;
     QCOMPARE(decls.size(), 2);
-    
+
     QCOMPARE(decls.at(0).d->values.first().type, QCss::Value::String);
     QCOMPARE(decls.at(0).d->property, QLatin1String("font-style"));
     QCOMPARE(decls.at(0).d->values.first().toString(), QLatin1String("italic"));
@@ -1610,6 +1614,3 @@ void tst_CssParser::quotedAndUnquotedIdentifiers()
 
 QTEST_MAIN(tst_CssParser)
 #include "tst_cssparser.moc"
-#else
-QTEST_NOOP_MAIN
-#endif

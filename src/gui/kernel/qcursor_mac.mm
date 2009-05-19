@@ -95,9 +95,19 @@ protected:
     }
 };
 
+void *nsCursorForQCursor(const QCursor &c)
+{
+    c.d->update();
+    return [[static_cast<NSCursor *>(c.d->curs.cp.nscursor) retain] autorelease];
+}
+
 static QCursorData *currentCursor = 0; //current cursor
 void qt_mac_set_cursor(const QCursor *c, const QPoint &)
 {
+#ifdef QT_MAC_USE_COCOA
+    Q_UNUSED(c);
+    return;
+#else
     if (!c) {
         currentCursor = 0;
         return;
@@ -128,10 +138,15 @@ void qt_mac_set_cursor(const QCursor *c, const QPoint &)
         }
     }
     currentCursor = c->d;
+#endif
 }
 
 void qt_mac_update_cursor_at_global_pos(const QPoint &globalPos)
 {
+#ifdef QT_MAC_USE_COCOA
+    Q_UNUSED(globalPos);
+    return;
+#else
     QCursor cursor(Qt::ArrowCursor);
     if (QApplication::overrideCursor()) {
         cursor = *QApplication::overrideCursor();
@@ -144,6 +159,7 @@ void qt_mac_update_cursor_at_global_pos(const QPoint &globalPos)
         }
     }
     qt_mac_set_cursor(&cursor, globalPos);
+#endif
 }
 
 void qt_mac_update_cursor()

@@ -83,18 +83,6 @@ class QSvgWidgetPrivate : public QWidgetPrivate
 {
     Q_DECLARE_PUBLIC(QSvgWidget)
 public:
-    QSvgWidgetPrivate()
-        : QWidgetPrivate()
-    {
-        Q_Q(QSvgWidget);
-        renderer = new QSvgRenderer(q);
-    }
-    QSvgWidgetPrivate(const QString &file)
-        : QWidgetPrivate()
-    {
-        Q_Q(QSvgWidget);
-        renderer = new QSvgRenderer(file, q);
-    }
     QSvgRenderer *renderer;
 };
 
@@ -104,6 +92,7 @@ public:
 QSvgWidget::QSvgWidget(QWidget *parent)
     : QWidget(*new QSvgWidgetPrivate, parent, 0)
 {
+    d_func()->renderer = new QSvgRenderer(this);
     QObject::connect(d_func()->renderer, SIGNAL(repaintNeeded()),
                      this, SLOT(update()));
 }
@@ -113,8 +102,9 @@ QSvgWidget::QSvgWidget(QWidget *parent)
     of the specified \a file.
 */
 QSvgWidget::QSvgWidget(const QString &file, QWidget *parent)
-    : QWidget(*new QSvgWidgetPrivate(file), parent, 0)
+    : QWidget(*new QSvgWidgetPrivate, parent, 0)
 {
+    d_func()->renderer = new QSvgRenderer(file, this);
     QObject::connect(d_func()->renderer, SIGNAL(repaintNeeded()),
                      this, SLOT(update()));
 }

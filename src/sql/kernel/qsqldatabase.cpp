@@ -378,7 +378,7 @@ void QSqlDatabasePrivate::disable()
     the connection name argument, if you don't pass the connection
     name argument, the default connection is assumed. The following
     snippet shows how to create and open a default connection to a
-    MySQL database:
+    PostgreSQL database:
 
     \snippet doc/src/snippets/sqldatabase/sqldatabase.cpp 0
 

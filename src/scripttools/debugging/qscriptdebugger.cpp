@@ -663,11 +663,7 @@ QString QScriptDebuggerPrivate::toolTip(int frameIndex, int lineNumber,
         objects.append(ctx->thisObject());
         ++pathIndex;
     } else {
-#if QT_VERSION >= 0x040500
         objects << ctx->scopeChain();
-#else
-        objects.append(ctx->activationObject());
-#endif
     }
     for (int i = 0; i < objects.size(); ++i) {
         QScriptValue val = objects.at(i);
@@ -991,13 +987,11 @@ public:
             qint64 scriptId = m_added.at(m_index);
             m_debugger->scriptsModel->addScript(scriptId, data);
 
-#if QT_VERSION >= 0x040500
             // ### could be slow, might want to do this in a separate thread
             QString xml = qt_scriptToXml(data.contents(), data.baseLineNumber());
             QScriptXmlParser::Result extraInfo = QScriptXmlParser::parse(xml);
             m_debugger->scriptsModel->addExtraScriptInfo(
                 scriptId, extraInfo.functionsInfo, extraInfo.executableLineNumbers);
-#endif
 
             if (++m_index < m_added.size())
                 frontend.scheduleGetScriptData(m_added.at(m_index));
