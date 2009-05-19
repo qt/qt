@@ -47,6 +47,7 @@
 
 #include <QtGui>
 #include <math.h>
+#include "../../shared/util.h"
 
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
 #include <windows.h>
@@ -3537,8 +3538,7 @@ void tst_QGraphicsScene::changedSignal()
     scene.addItem(rect);
 
     QCOMPARE(cl.changes.size(), 0);
-    qApp->processEvents();
-    QCOMPARE(cl.changes.size(), 1);
+    QTRY_COMPARE(cl.changes.size(), 1);
     QCOMPARE(cl.changes.at(0).size(), 1);
     QCOMPARE(cl.changes.at(0).first(), QRectF(0, 0, 10, 10));
 

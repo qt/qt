@@ -529,7 +529,7 @@ void tst_QHttpSocketEngine::tcpSocketNonBlockingTest()
     // Read greeting
     QVERIFY(!tcpSocketNonBlocking_data.isEmpty());
     QCOMPARE(tcpSocketNonBlocking_data.at(0).toLatin1().constData(),
-            "* OK esparsett Cyrus IMAP4 v2.2.8 server ready\r\n");
+            "* OK [CAPABILITY IMAP4 IMAP4rev1 LITERAL+ ID STARTTLS LOGINDISABLED] qt-test-server.qt-test-net Cyrus IMAP4 v2.3.11-Mandriva-RPM-2.3.11-6mdv2008.1 server ready\r\n");
     tcpSocketNonBlocking_data.clear();
 
     tcpSocketNonBlocking_totalWritten = 0;

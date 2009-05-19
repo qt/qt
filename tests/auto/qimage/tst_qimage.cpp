@@ -1454,9 +1454,9 @@ void tst_QImage::smoothScale3()
                 QRgb cb = b.pixel(x, y);
 
                 // tolerate a little bit of rounding errors
-                QVERIFY(compare(qRed(ca), qRed(cb), 2));
-                QVERIFY(compare(qGreen(ca), qGreen(cb), 2));
-                QVERIFY(compare(qBlue(ca), qBlue(cb), 2));
+                QVERIFY(compare(qRed(ca), qRed(cb), 3));
+                QVERIFY(compare(qGreen(ca), qGreen(cb), 3));
+                QVERIFY(compare(qBlue(ca), qBlue(cb), 3));
             }
         }
     }

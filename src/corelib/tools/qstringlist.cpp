@@ -397,7 +397,7 @@ void QtPrivate::QStringList_replaceInStrings(QStringList *that, const QRegExp &r
     \fn QString QStringList::join(const QString &separator) const
 
     Joins all the string list's strings into a single string with each
-    element separated by the the given \a separator (which can be an
+    element separated by the given \a separator (which can be an
     empty string).
 
     \sa QString::split()
