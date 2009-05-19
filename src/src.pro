@@ -31,10 +31,11 @@ contains(QT_CONFIG, webkit)  {
     #exists($$QT_SOURCE_TREE/src/3rdparty/webkit/JavaScriptCore/JavaScriptCore.pro): SRC_SUBDIRS += src_javascriptcore
     SRC_SUBDIRS += src_webkit
 }
-contains(QT_CONFIG, phonon): SRC_SUBDIRS += src_phonon
 contains(QT_CONFIG, scripttools): SRC_SUBDIRS += src_scripttools
 SRC_SUBDIRS += src_plugins
 }
+
+contains(QT_CONFIG, phonon): SRC_SUBDIRS += src_phonon
 
 src_s60main.subdir = $$QT_SOURCE_TREE/src/s60main
 src_s60main.target = sub-s60main

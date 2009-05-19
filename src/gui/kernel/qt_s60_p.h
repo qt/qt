@@ -108,6 +108,7 @@ public:
     void setWidget(QWidget *w);
     void sendInputEvent(QWidget *widget, QInputEvent *inputEvent);
     void setIgnoreFocusChanged(bool enabled) { m_ignoreFocusChanged = enabled; }
+    void CancelLongTapTimer();
 
 protected:
     void Draw(const TRect& aRect) const;

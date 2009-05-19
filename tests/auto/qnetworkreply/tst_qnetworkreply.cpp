@@ -2197,7 +2197,7 @@ void tst_QNetworkReply::ioGetWithManyProxies()
 #ifndef Q_OS_SYMBIAN    
     QTestEventLoop::instance().enterLoop(10);
 #else   
-    QTestEventLoop::instance().enterLoop(30);
+    QTestEventLoop::instance().enterLoop(60);
 #endif     
     QVERIFY(!QTestEventLoop::instance().timeout());
 
@@ -2677,6 +2677,11 @@ void tst_QNetworkReply::downloadProgress()
 
     QFETCH(int, loopCount);
     for (int i = 1; i <= loopCount; ++i) {
+#ifdef Q_OS_SYMBIAN
+        if(i % 500 == 0) {
+            qWarning("iteration %d", i);
+        }
+#endif
         sender->write(data);
         QVERIFY2(sender->waitForBytesWritten(2000), "Network timeout");
 
