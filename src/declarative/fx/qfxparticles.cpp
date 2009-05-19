@@ -340,6 +340,32 @@ void QFxParticleMotionWander::destroy(QFxParticle &p)
 }
 
 //---------------------------------------------------------------------------
+class QFxParticlesPainter : public QFxItem
+{
+public:
+    QFxParticlesPainter(QFxParticlesPrivate *p, QFxItem* parent)
+        : QFxItem(parent), d(p)
+    {
+        setOptions(HasContents);
+        maxX = minX = maxY = minY = 0;
+    }
+
+#if defined(QFX_RENDER_QPAINTER)
+    void paintContents(QPainter &p);
+#elif defined(QFX_RENDER_OPENGL2)
+    void paintGLContents(GLPainter &);
+#endif
+
+    void updateSize();
+
+    qreal maxX;
+    qreal minX;
+    qreal maxY;
+    qreal minY;
+    QFxParticlesPrivate* d;
+};
+
+//---------------------------------------------------------------------------
 class QFxParticlesPrivate : public QFxItemPrivate
 {
     Q_DECLARE_PUBLIC(QFxParticles)
@@ -359,7 +385,12 @@ public:
     {
     }
 
-    void init() {}
+    void init()
+    {
+        Q_Q(QFxParticles);
+        paintItem = new QFxParticlesPainter(this, q);
+    }
+
     void tick(int time);
     void createParticle(int time);
     void updateOpacity(QFxParticle &p, int age);
@@ -383,6 +414,7 @@ public:
     int streamDelay;
     bool emitting;
     QFxParticleMotion *motion;
+    QFxParticlesPainter *paintItem;
 
     QList<QFxParticle> particles;
     QTickAnimationProxy<QFxParticlesPrivate, &QFxParticlesPrivate::tick> clock;
@@ -1040,27 +1072,75 @@ QString QFxParticles::propertyInfo() const
     return d->url.toString();
 }
 
+void QFxParticlesPainter::updateSize(){
+    setX(-500);
+    setY(-500);
+    setWidth(1000);
+    setHeight(1000);
+    return ;
+    const int parentX = parent()->x();
+    const int parentY = parent()->y();
+    //Have to use statistical approach to needed size as arbitrary particle
+    //motions make it impossible to calculate.
+    //max/min vars stored to give a never shrinking rect
+    for (int i = 0; i < d->particles.count(); ++i) {
+        const QFxParticle &particle = d->particles.at(i);
+        if(particle.x > maxX)
+            maxX = particle.x;
+        if(particle.x < minX)
+            minX = particle.x;
+        if(particle.y > maxY)
+            maxY = particle.y;
+        if(particle.y < minY)
+            minY = particle.y;
+    }
+
+    int myWidth = (int)(maxX-minX+0.5)+d->image.width();
+    int myX = (int)(minX - parentX);
+    int myHeight = (int)(maxY-minY+0.5)+d->image.height();
+    int myY = (int)(minY - parentY);
+    setWidth(myWidth);
+    setHeight(myHeight);
+    setX(myX);
+    setY(myY);
+}
+
 #if defined(QFX_RENDER_QPAINTER) 
 void QFxParticles::paintContents(QPainter &p)
 {
-    Q_D(QFxParticles);
+    Q_UNUSED(p);
+    //painting is done by the ParticlesPainter, so it can have the right size
+}
+
+void QFxParticlesPainter::paintContents(QPainter &p)
+{
     if (d->image.isNull())
         return;
 
-    const int myX = x();
-    const int myY = y();
+    updateSize();
+    const int myX = x() + parent()->x();
+    const int myY = y() + parent()->y();
+
     for (int i = 0; i < d->particles.count(); ++i) {
         const QFxParticle &particle = d->particles.at(i);
         p.setOpacity(particle.opacity);
-        p.drawImage(particle.x-myX, particle.y-myY, d->image);
+        p.drawImage(particle.x - myX, particle.y - myY, d->image);
     }
+    update();//Should I need this? (GV does)
 }
 #elif defined(QFX_RENDER_OPENGL2)
 void QFxParticles::paintGLContents(GLPainter &p)
 {
-    Q_D(QFxParticles);
+    //painting is done by the ParticlesPainter, so it can have the right size
+}
+
+void QFxParticlesPainter::paintGLContents(GLPainter &p)
+{
+
     if (d->image.isNull())
         return;
+
+    updateSize();
 
     if (d->texDirty && !d->image.isNull()) {
         d->tex.setImage(d->image);
@@ -1075,8 +1155,8 @@ void QFxParticles::paintGLContents(GLPainter &p)
 
     glBindTexture(GL_TEXTURE_2D, d->tex.texture());
 
-    const int myX = (int)x();
-    const int myY = (int)y();
+    const int myX = (int)(x() + parent->x());
+    const int myY = (int)(y() + parent->y());
     float widthV = d->image.width();
     float heightV = d->image.height();
     for (int i = 0; i < d->particles.count(); ++i) {
