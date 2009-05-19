@@ -234,7 +234,6 @@ void QFxAnchorsPrivate::remDepend(QFxItem *item)
 
 bool QFxAnchorsPrivate::isItemComplete() const
 {
-    return true;
     return item->isComponentComplete();
 }
 

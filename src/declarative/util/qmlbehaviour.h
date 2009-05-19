@@ -42,9 +42,9 @@
 #ifndef QMLBEHAVIOUR_H
 #define QMLBEHAVIOUR_H
 
-#include <qmlpropertyvaluesource.h>
-#include <qml.h>
-#include <qmlstate.h>
+#include <QtDeclarative/qmlpropertyvaluesource.h>
+#include <QtDeclarative/qml.h>
+#include <QtDeclarative/qmlstate.h>
 
 QT_BEGIN_HEADER
 

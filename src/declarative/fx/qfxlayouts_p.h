@@ -53,11 +53,11 @@
 // We mean it.
 //
 
-#include "qfxlayouts.h"
-#include "qfxitem_p.h"
-#include <QObject>
-#include <QString>
-#include <qmlstate.h>
+#include <private/qfxitem_p.h>
+#include <QtCore/QObject>
+#include <QtCore/QString>
+#include <QtDeclarative/qfxlayouts.h>
+#include <QtDeclarative/qmlstate.h>
 
 
 QT_BEGIN_NAMESPACE

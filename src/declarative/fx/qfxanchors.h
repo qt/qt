@@ -42,9 +42,9 @@
 #ifndef QFXANCHORS_H
 #define QFXANCHORS_H
 
-#include <qfxglobal.h>
-#include <QObject>
-#include <qml.h>
+#include <QtCore/QObject>
+#include <QtDeclarative/qfxglobal.h>
+#include <QtDeclarative/qml.h>
 
 
 QT_BEGIN_HEADER

@@ -42,8 +42,8 @@
 #ifndef QFXGLOBAL_H
 #define QFXGLOBAL_H
 
-#include <qglobal.h>
-#include <QObject>
+#include <QtCore/qglobal.h>
+#include <QtCore/QObject>
 
 
 QT_BEGIN_HEADER

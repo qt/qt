@@ -11,7 +11,7 @@
 #ifndef LEXER_H
 #define LEXER_H
 
-#include <QList>
+#include <QtCore/QList>
 #include "tokens.h"
 
 

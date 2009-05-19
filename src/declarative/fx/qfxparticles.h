@@ -42,7 +42,7 @@
 #ifndef QFXPARTICLES_H
 #define QFXPARTICLES_H
 
-#include <qfxitem.h>
+#include <QtDeclarative/qfxitem.h>
 
 #if defined(QFX_RENDER_OPENGL)
 #include "gltexture.h"

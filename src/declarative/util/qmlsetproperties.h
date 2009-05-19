@@ -42,7 +42,7 @@
 #ifndef QMLSETPROPERTIES_H
 #define QMLSETPROPERTIES_H
 
-#include <qmlstateoperations.h>
+#include <QtDeclarative/qmlstateoperations.h>
 
 
 QT_BEGIN_HEADER
