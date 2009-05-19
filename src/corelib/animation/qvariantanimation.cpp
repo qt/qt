@@ -217,12 +217,6 @@ void QVariantAnimationPrivate::recalculateCurrentInterval(bool force/*=false*/)
     setCurrentValueForProgress(progress);
 }
 
-void QVariantAnimationPrivate::setCurrentValue()
-{
-    const qreal progress = easing.valueForProgress(((duration == 0) ? qreal(1) : qreal(currentTime) / qreal(duration)));
-    setCurrentValueForProgress(progress);
-}
-
 void QVariantAnimationPrivate::setCurrentValueForProgress(const qreal progress)
 {
     Q_Q(QVariantAnimation);
