@@ -2079,17 +2079,7 @@ void HtmlGenerator::generateSectionList(const Section& section, const Node *rela
                                         CodeMarker *marker, CodeMarker::SynopsisStyle style)
 {
     if (!section.members.isEmpty()) {
-        bool twoColumn = false;
-        if (style == CodeMarker::SeparateList) {
-            twoColumn = (section.members.count() >= 16);
-        } else if (section.members.first()->type() == Node::Property) {
-            twoColumn = (section.members.count() >= 5);
-        }
-        if (twoColumn)
-            out() << "<p><table width=\"100%\" border=\"0\" cellpadding=\"0\""
-                     " cellspacing=\"0\">\n"
-                  << "<tr><td width=\"45%\" valign=\"top\">";
-        out() << "<ul>\n";
+        out() << "<table border=\"0\" cellpadding=\"0\" cellspacing=\"0\">\n";
 
         int i = 0;
         NodeList::ConstIterator m = section.members.begin();
@@ -2099,22 +2089,17 @@ void HtmlGenerator::generateSectionList(const Section& section, const Node *rela
                 continue;
             }
 
-            if (twoColumn && i == (int) (section.members.count() + 1) / 2)
-                out() << "</ul></td><td valign=\"top\"><ul>\n";
-
-            out() << "<li><div class=\"fn\"></div>";
+            out() << "<tr><td class=\"memItemLeft\" nowrap align=\"right\" valign=\"top\">";
             if (style == CodeMarker::Accessors)
                 out() << "<b>";
             generateSynopsis(*m, relative, marker, style);
             if (style == CodeMarker::Accessors)
                 out() << "</b>";
-            out() << "</li>\n";
+            out() << "</td></tr>\n";
             i++;
             ++m;
         }
-        out() << "</ul>\n";
-        if (twoColumn)
-            out() << "</td></tr>\n</table></p>\n";
+        out() << "</table>\n";
     }
 
     if (style == CodeMarker::Summary && !section.inherited.isEmpty()) {
@@ -2129,7 +2114,7 @@ void HtmlGenerator::generateSectionInheritedList(const Section& section, const N
 {
     QList<QPair<ClassNode *, int> >::ConstIterator p = section.inherited.begin();
     while (p != section.inherited.end()) {
-        out() << "<li><div class=\"fn\"></div>";
+        out() << "<li><div bar=2 class=\"fn\"></div>";
         out() << (*p).second << " ";
         if ((*p).second == 1) {
             out() << section.singularMember;
@@ -2425,7 +2410,9 @@ QString HtmlGenerator::highlightedCode(const QString& markedCode,
     // replace all <@link> tags: "(<@link node=\"([^\"]+)\">).*(</@link>)"
     static const QString linkTag("link");
     for (int i = 0, n = src.size(); i < n;) {
-        if (src.at(i) == charLangle && src.at(i + 1) == charAt) {
+        if (src.at(i) == charLangle && src.at(i + 1).unicode() == '@') {
+            if (i != 0)
+                html += "&nbsp;</td><td class=\"memItemRight\" valign=\"bottom\">";
             i += 2;
             if (parseArg(src, linkTag, &i, n, &arg, &par1)) {
                 QString link = linkForNode(

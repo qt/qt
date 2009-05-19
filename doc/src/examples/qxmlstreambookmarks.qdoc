@@ -103,8 +103,9 @@
 
     The \c read() function accepts a QIODevice and sets it using
     \l{QXmlStreamReader::setDevice()}{setDevice()}. The actual process
-    of reading only takes place in event the file is a valid XBEL 1.0
-    file. Otherwise, the \l{QXmlStreamReader::raiseError()}
+    of reading only takes place if the file is a valid XBEL 1.0 file. 
+    Note that the XML input needs to be well-formed to be accepted by 
+    QXmlStreamReader. Otherwise, the \l{QXmlStreamReader::raiseError()}
     {raiseError()} function is used to display an error message.
 
     \snippet examples/xml/streambookmarks/xbelreader.cpp 1

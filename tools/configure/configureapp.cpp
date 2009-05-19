@@ -351,6 +351,7 @@ Configure::Configure( int& argc, char** argv )
     dictionary[ "QMAKESPEC" ] = tmp;
 
     dictionary[ "INCREDIBUILD_XGE" ] = "auto";
+    dictionary[ "LTCG" ]            = "no";
 }
 
 Configure::~Configure()
@@ -474,6 +475,9 @@ void Configure::parseCmdLine()
         else if( configCmdLine.at(i) == "-developer-build" )
             dictionary[ "BUILDDEV" ] = "yes";
         else if( configCmdLine.at(i) == "-nokia-developer" ) {
+            cout << "Detected -nokia-developer option" << endl;
+            cout << "Nokia employees and agents are allowed to use this software under" << endl;
+            cout << "the authority of Nokia Corporation and/or its subsidiary(-ies)" << endl;
             dictionary[ "BUILDNOKIA" ] = "yes";
             dictionary[ "BUILDDEV" ] = "yes";
             dictionary["LICENSE_CONFIRMED"] = "yes";
@@ -483,6 +487,12 @@ void Configure::parseCmdLine()
         }
         else if( configCmdLine.at(i) == "-commercial" ) {
             dictionary[ "BUILDTYPE" ] = "commercial";
+        }
+        else if( configCmdLine.at(i) == "-ltcg" ) {
+            dictionary[ "LTCG" ] = "yes";
+        }
+        else if( configCmdLine.at(i) == "-no-ltcg" ) {
+            dictionary[ "LTCG" ] = "no";
         }
 #endif
 
@@ -675,6 +685,9 @@ void Configure::parseCmdLine()
         } else if ( configCmdLine.at(i) == "-opengl-es-cl" ) {
             dictionary[ "OPENGL" ]          = "yes";
             dictionary[ "OPENGL_ES_CL" ]    = "yes";
+        } else if ( configCmdLine.at(i) == "-opengl-es-2" ) {
+            dictionary[ "OPENGL" ]          = "yes";
+            dictionary[ "OPENGL_ES_2" ]     = "yes";
         }
         // Databases ------------------------------------------------
         else if( configCmdLine.at(i) == "-qt-sql-mysql" )
@@ -1459,6 +1472,9 @@ bool Configure::displayHelp()
         desc("SHARED", "yes",   "-shared",              "Create and use shared Qt libraries.");
         desc("SHARED", "no",    "-static",              "Create and use static Qt libraries.\n");
 
+        desc("LTCG", "yes",   "-ltcg",                  "Use Link Time Code Generation. (Release builds only)");
+        desc("LTCG", "no",    "-no-ltcg",               "Do not use Link Time Code Generation.\n");
+
         desc("FAST", "no",      "-no-fast",             "Configure Qt normally by generating Makefiles for all project files.");
         desc("FAST", "yes",     "-fast",                "Configure Qt quickly by generating Makefiles only for library and "
                                                         "subdirectory targets.  All other Makefiles are created as wrappers "
@@ -1632,6 +1648,7 @@ bool Configure::displayHelp()
         desc(                      "-signature <file>",    "Use file for signing the target project");
         desc("OPENGL_ES_CM", "no", "-opengl-es-cm",        "Enable support for OpenGL ES Common");
         desc("OPENGL_ES_CL", "no", "-opengl-es-cl",        "Enable support for OpenGL ES Common Lite");
+        desc("OPENGL_ES_2",  "no", "-opengl-es-2",         "Enable support for OpenGL ES 2.0");
         desc("DIRECTSHOW", "no",   "-phonon-wince-ds9",    "Enable Phonon Direct Show 9 backend for Windows CE");
 
         return true;
@@ -1784,6 +1801,8 @@ bool Configure::checkAvailability(const QString &part)
     else if (part == "OPENGL_ES_CM")
         available = (dictionary[ "ARCHITECTURE" ]  == "windowsce");
     else if (part == "OPENGL_ES_CL")
+        available = (dictionary[ "ARCHITECTURE" ]  == "windowsce");
+    else if (part == "OPENGL_ES_2")
         available = (dictionary[ "ARCHITECTURE" ]  == "windowsce");
     else if (part == "DIRECTSHOW")
         available = (dictionary[ "ARCHITECTURE" ]  == "windowsce");
@@ -2264,6 +2283,10 @@ void Configure::generateOutputVars()
         qtConfig += "opengles1";
     }
 
+    if ( dictionary["OPENGL_ES_2"] == "yes" ) {
+        qtConfig += "opengles2";
+    }
+
     if ( dictionary["OPENGL_ES_CL"] == "yes" ) {
         qtConfig += "opengles1cl";
     }
@@ -2481,6 +2504,8 @@ void Configure::generateCachefile()
         else
             configStream << " static";
 
+        if( dictionary[ "LTCG" ] == "yes" )
+            configStream << " ltcg";
         if( dictionary[ "STL" ] == "yes" )
             configStream << " stl";
         if ( dictionary[ "EXCEPTIONS" ] == "yes" )
@@ -2664,9 +2689,11 @@ void Configure::generateConfigfiles()
         if(dictionary["SCRIPTTOOLS"] == "no")       qconfigList += "QT_NO_SCRIPTTOOLS";
 
         if(dictionary["OPENGL_ES_CM"] == "yes" ||
-           dictionary["OPENGL_ES_CL"] == "yes")     qconfigList += "QT_OPENGL_ES";
+           dictionary["OPENGL_ES_CL"] == "yes" ||
+           dictionary["OPENGL_ES_2"]  == "yes")     qconfigList += "QT_OPENGL_ES";
 
         if(dictionary["OPENGL_ES_CM"] == "yes")     qconfigList += "QT_OPENGL_ES_1";
+        if(dictionary["OPENGL_ES_2"]  == "yes")     qconfigList += "QT_OPENGL_ES_2";
         if(dictionary["OPENGL_ES_CL"] == "yes")     qconfigList += "QT_OPENGL_ES_1_CL";
 
         if(dictionary["SQL_MYSQL"] == "yes")        qconfigList += "QT_SQL_MYSQL";
@@ -2901,6 +2928,7 @@ void Configure::displayConfig()
     cout << "Architecture................" << dictionary[ "ARCHITECTURE" ] << endl;
     cout << "Maketool...................." << dictionary[ "MAKE" ] << endl;
     cout << "Debug symbols..............." << (dictionary[ "BUILD" ] == "debug" ? "yes" : "no") << endl;
+    cout << "Link Time Code Generation..." << dictionary[ "LTCG" ] << endl;
     cout << "Accessibility support......." << dictionary[ "ACCESSIBILITY" ] << endl;
     cout << "STL support................." << dictionary[ "STL" ] << endl;
     cout << "Exception support..........." << dictionary[ "EXCEPTIONS" ] << endl;
@@ -3500,7 +3528,7 @@ void Configure::readLicense()
 #else
     } else {
         Tools::checkLicense(dictionary, licenseInfo, firstLicensePath());
-        if (dictionary["DONE"] != "error") {
+        if (dictionary["DONE"] != "error" && dictionary["BUILDNOKIA"] != "yes") {
             // give the user some feedback, and prompt for license acceptance
             cout << endl << "This is the " << dictionary["PLATFORM NAME"] << " " << dictionary["EDITION"] << " Edition."<< endl << endl;
             if (!showLicense(dictionary["LICENSE FILE"])) {

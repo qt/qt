@@ -1129,11 +1129,7 @@ void tst_QUrl::setUrl()
     check("host",ulong.host(),"swww.gad.de");
     check("path",ulong.path(),"/servlet/CookieAccepted");
 
-#if QT_VERSION < 300
-    qt_set_locale_codec( KGlobal::charsets()->codecForName( "iso-8859-1" ) );
-#else
     QTextCodec::setCodecForLocale( KGlobal::charsets()->codecForName( "iso-8859-1" ) );
-#endif
 // UTF8 tests
     KURL uloc("/home/dfaure/konqtests/Matériel");
     check("locale8bit",uloc.url().latin1(),"file:/home/dfaure/konqtests/Mat%E9riel"); // escaping the letter would be correct too
@@ -1155,11 +1151,7 @@ void tst_QUrl::setUrl()
     uloc = KURL::fromPathOrURL( "" );
     check("fromPathOrURL url", uloc.isValid()?"valid":"malformed", "malformed");
 
-#if QT_VERSION < 300
-    qt_set_locale_codec( KGlobal::charsets()->codecForName( "koi8-r" ) );
-#else
     QTextCodec::setCodecForLocale( KGlobal::charsets()->codecForName( "koi8-r" ) );
-#endif
     baseURL = "file:/home/coolo";
     KURL russian = baseURL.directory(false, true) + QString::fromLocal8Bit( "ÆÇÎ7" );
     check( "russian", russian.url(), "file:/home/%C6%C7%CE7" );

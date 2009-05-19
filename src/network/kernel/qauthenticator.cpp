@@ -52,7 +52,7 @@
 
 QT_BEGIN_NAMESPACE
 
-#include <../3rdparty/des/des.cpp>
+#include "../../3rdparty/des/des.cpp"
 
 static QByteArray qNtlmPhase1();
 static QByteArray qNtlmPhase3(QAuthenticatorPrivate *ctx, const QByteArray& phase2data);
@@ -72,6 +72,15 @@ static QByteArray qNtlmPhase3(QAuthenticatorPrivate *ctx, const QByteArray& phas
   QAbstractSocket. The class provides a way to pass back the required
   authentication information to the socket when accessing services that
   require authentication.
+
+  QAuthenticator supports the following authentication methods:
+  \list
+    \o Basic
+    \o NTLM version 1
+    \o Digest-MD5
+  \endlist
+
+  Note that, in particular, NTLM version 2 is not supported.
 
   \sa QSslSocket
 */

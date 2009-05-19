@@ -49,8 +49,10 @@
 
 #include <QtGui/QWidget>
 
+QT_FORWARD_DECLARE_CLASS(QWidget);
+QT_BEGIN_NAMESPACE
 extern Qt::MouseButton cocoaButton2QtButton(NSInteger buttonNum); // qcocoaview.mm
-
+QT_END_NAMESPACE
 QT_USE_NAMESPACE
 
 @implementation QT_MANGLE_NAMESPACE(QCocoaPanel)
@@ -108,7 +110,7 @@ QT_USE_NAMESPACE
     [self retain];
 
     QWidget *widget = [[QT_MANGLE_NAMESPACE(QCocoaWindowDelegate) sharedDelegate] qt_qwidgetForWindow:self];
-    QCocoaView *view = static_cast<QCocoaView *>(qt_mac_nativeview_for(widget));
+    QT_MANGLE_NAMESPACE(QCocoaView) *view = static_cast<QT_MANGLE_NAMESPACE(QCocoaView) *>(qt_mac_nativeview_for(widget));
     Qt::MouseButton mouseButton = cocoaButton2QtButton([event buttonNumber]);
 
     // sometimes need to redirect mouse events to the popup.
@@ -157,10 +159,11 @@ QT_USE_NAMESPACE
     [self release];
 }
 
-
 - (BOOL)makeFirstResponder:(NSResponder *)responder
 {
-    if (responder == nil)
+    // For some reason Cocoa wants to flip the first responder
+    // when Qt doesn't want to, sorry, but "No" :-)
+    if (responder == nil && qApp->focusWidget())
         return NO;
     return [super makeFirstResponder:responder];
 }
@@ -171,7 +174,7 @@ QT_USE_NAMESPACE
 + (Class)frameViewClassForStyleMask:(NSUInteger)styleMask
 {
     if (styleMask & QtMacCustomizeWindow)
-        return [QCocoaWindowCustomThemeFrame class];
+        return [QT_MANGLE_NAMESPACE(QCocoaWindowCustomThemeFrame) class];
     return [super frameViewClassForStyleMask:styleMask];
 }
 

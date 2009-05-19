@@ -277,7 +277,7 @@ void XmlOutput::closeTag()
 void XmlOutput::closeTo(const QString &tag)
 {
     bool cont = true;
-    if (!tagStack.contains(tag) && tag != QString()) {
+    if (!tagStack.contains(tag) && !tag.isNull()) {
         //warn_msg(WarnLogic, "<%s>: Cannot close to tag <%s>, not on stack", tagStack.last().latin1(), tag.latin1());
         qDebug("<%s>: Cannot close to tag <%s>, not on stack", tagStack.last().toLatin1().constData(), tag.toLatin1().constData());
         return;

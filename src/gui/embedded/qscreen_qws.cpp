@@ -1394,7 +1394,7 @@ QImage::Format QScreenPrivate::preferredImageFormat() const
     altered. Note that the default implementations of these functions
     do nothing.
 
-    Reimplement the the mapFromDevice() and mapToDevice() functions to
+    Reimplement the mapFromDevice() and mapToDevice() functions to
     map objects from the framebuffer coordinate system to the
     coordinate space used by the application, and vice versa. Be aware
     that the default implementations simply return the given objects

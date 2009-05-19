@@ -108,7 +108,7 @@
     pointing to the removed member become invalid. Inserting into the
     list does not invalidate any iterator. For convenience, the
     function last() returns a reference to the last item in the list,
-    and first() returns a reference to the the first item. If the
+    and first() returns a reference to the first item. If the
     list is empty(), both last() and first() have undefined behavior
     (your application will crash or do unpredictable things). Use
     last() and first() with caution, for example:

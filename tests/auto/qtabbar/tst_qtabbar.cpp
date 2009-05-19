@@ -92,6 +92,8 @@ private slots:
 
     void moveTab_data();
     void moveTab();
+
+    void task251184_removeTab();
 };
 
 // Testing get/set functions
@@ -502,6 +504,36 @@ void tst_QTabBar::moveTab()
         bar.addTab(QString::number(tabs));
     bar.callMoveTab(from, to);
 }
+
+
+class MyTabBar : public QTabBar
+{
+    Q_OBJECT
+public slots:
+    void onCurrentChanged()
+    {
+        //we just want this to be done once
+        disconnect(this, SIGNAL(currentChanged(int)), this, SLOT(onCurrentChanged()));
+        removeTab(0);
+    }
+};
+
+void tst_QTabBar::task251184_removeTab()
+{
+    MyTabBar bar;
+    bar.addTab("bar1");
+    bar.addTab("bar2");
+    QCOMPARE(bar.count(), 2);
+    QCOMPARE(bar.currentIndex(), 0);
+
+    bar.connect(&bar, SIGNAL(currentChanged(int)), SLOT(onCurrentChanged()));
+    bar.setCurrentIndex(1);
+
+    QCOMPARE(bar.count(), 1);
+    QCOMPARE(bar.currentIndex(), 0);
+    QCOMPARE(bar.tabText(bar.currentIndex()), QString("bar2"));    
+}
+
 
 QTEST_MAIN(tst_QTabBar)
 #include "tst_qtabbar.moc"

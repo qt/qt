@@ -120,6 +120,7 @@ QByteArrayMatcher::QByteArrayMatcher()
     : d(0)
 {
     p.p = 0;
+    p.l = 0;
     qMemSet(p.q_skiptable, 0, sizeof(p.q_skiptable));
 }
 
@@ -170,7 +171,7 @@ QByteArrayMatcher::~QByteArrayMatcher()
 QByteArrayMatcher &QByteArrayMatcher::operator=(const QByteArrayMatcher &other)
 {
     q_pattern = other.q_pattern;
-    qMemCopy(p.q_skiptable, other.p.q_skiptable, sizeof(p.q_skiptable));
+    qMemCopy(&p, &other.p, sizeof(p));
     return *this;
 }
 

@@ -121,12 +121,10 @@ void tst_QPicture::boundingRect()
     // default value
     QVERIFY( !p1.boundingRect().isValid() );
 
-#if QT_VERSION >= 0x030100
     QRect r1( 20, 30, 5, 15 );
     p1.setBoundingRect( r1 );
     QCOMPARE( p1.boundingRect(), r1 );
     p1.setBoundingRect(QRect());
-#endif
 
     QPainter pt( &p1 );
     pt.drawLine( 10, 20, 110, 80 );

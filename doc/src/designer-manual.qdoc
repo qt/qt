@@ -344,10 +344,14 @@
     of a QLineEdit or the width and height of item view widgets. This is where
     the widget size constraints -- \l{QWidget::minimumSize()}{minimumSize} and
     \l{QWidget::maximumSize()}{maximumSize} constraints come into play. These
-    are properties you can set in the property editor. Alternatively, to use
-    the current size as a size constraint value, choose one of the
-    \gui{Size Constraint} options from the widget's context menu. The layout
-    will then ensure that those constraints are met.
+    are properties you can set in the property editor. For example, to override
+    the default \l{QWidget::}{sizeHint()}, simply set
+    \l{QWidget::minimumSize()}{minimumSize} and \l{QWidget::maximumSize()}
+    {maximumSize} to the same value. Alternatively, to use the current size as
+    a size constraint value, choose one of the \gui{Size Constraint} options
+    from the widget's context menu. The layout  will then ensure that those
+    constraints are met. To control the size of your widgets via code, you can
+    reimplement \l{QWidget::}{sizeHint()} in your code.
 
     The screenshot below shows the breakdown of a basic user interface designed
     using a grid. The coordinates on the screenshot show the position of each

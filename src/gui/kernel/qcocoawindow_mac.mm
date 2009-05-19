@@ -1,11 +1,11 @@
 /****************************************************************************
- **
- ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+**
+** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
 ** Contact: Qt Software Information (qt-info@nokia.com)
- **
- ** This file is part of the QtGui module of the Qt Toolkit.
- **
- ** $QT_BEGIN_LICENSE:LGPL$
+**
+** This file is part of the QtGui module of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
 ** This file contains pre-release code and may not be distributed.
 ** You may use this file in accordance with the terms and conditions
@@ -36,11 +36,11 @@
 ** If you are unsure which license is appropriate for your use, please
 ** contact the sales department at qt-sales@nokia.com.
 ** $QT_END_LICENSE$
- **
- ** This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
- ** WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
- **
- ****************************************************************************/
+**
+** This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
+** WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+**
+****************************************************************************/
 
 #include "qmacdefines_mac.h"
 #ifdef QT_MAC_USE_COCOA
@@ -53,9 +53,10 @@
 #include <QtGui/QWidget>
 
 QT_FORWARD_DECLARE_CLASS(QWidget);
-QT_USE_NAMESPACE
-
+QT_BEGIN_NAMESPACE
 extern Qt::MouseButton cocoaButton2QtButton(NSInteger buttonNum); // qcocoaview.mm
+QT_END_NAMESPACE
+QT_USE_NAMESPACE
 
 @implementation NSWindow (QT_MANGLE_NAMESPACE(QWidgetIntegration))
 
@@ -130,7 +131,7 @@ extern Qt::MouseButton cocoaButton2QtButton(NSInteger buttonNum); // qcocoaview.
     [self retain];
 
     QWidget *widget = [[QT_MANGLE_NAMESPACE(QCocoaWindowDelegate) sharedDelegate] qt_qwidgetForWindow:self];
-    QCocoaView *view = static_cast<QCocoaView *>(qt_mac_nativeview_for(widget));
+    QT_MANGLE_NAMESPACE(QCocoaView) *view = static_cast<QT_MANGLE_NAMESPACE(QCocoaView) *>(qt_mac_nativeview_for(widget));
     Qt::MouseButton mouseButton = cocoaButton2QtButton([event buttonNumber]);
 
     // sometimes need to redirect mouse events to the popup.
@@ -182,7 +183,9 @@ extern Qt::MouseButton cocoaButton2QtButton(NSInteger buttonNum); // qcocoaview.
 
 - (BOOL)makeFirstResponder:(NSResponder *)responder
 {
-    if (responder == nil)
+    // For some reason Cocoa wants to flip the first responder
+    // when Qt doesn't want to, sorry, but "No" :-)
+    if (responder == nil && qApp->focusWidget())
         return NO;
     return [super makeFirstResponder:responder];
 }

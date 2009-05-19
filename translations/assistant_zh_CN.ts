@@ -1,11 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE TS>
 <TS version="2.0" language="zh">
-<defaultcodec></defaultcodec>
 <context>
     <name>AboutDialog</name>
     <message>
-        <location filename="../tools/assistant/tools/assistant/aboutdialog.cpp" line="+80"/>
+        <location filename="../tools/assistant/tools/assistant/aboutdialog.cpp" line="+110"/>
         <source>&amp;Close</source>
         <translation>关闭(&amp;C)</translation>
     </message>
@@ -33,7 +32,7 @@
 <context>
     <name>BookmarkDialog</name>
     <message>
-        <location filename="../tools/assistant/tools/assistant/bookmarkmanager.cpp" line="+155"/>
+        <location filename="../tools/assistant/tools/assistant/bookmarkmanager.cpp" line="+185"/>
         <location line="+18"/>
         <location line="+36"/>
         <location line="+24"/>
@@ -164,7 +163,7 @@
 <context>
     <name>CentralWidget</name>
     <message>
-        <location filename="../tools/assistant/tools/assistant/centralwidget.cpp" line="+163"/>
+        <location filename="../tools/assistant/tools/assistant/centralwidget.cpp" line="+195"/>
         <source>Add new page</source>
         <translation>添加新页面</translation>
     </message>
@@ -174,12 +173,12 @@
         <translation>关闭当前页面</translation>
     </message>
     <message>
-        <location line="+266"/>
+        <location line="+265"/>
         <source>Print Document</source>
         <translation>打印文档</translation>
     </message>
     <message>
-        <location line="+124"/>
+        <location line="+147"/>
         <location line="+2"/>
         <source>unknown</source>
         <translation>未知的</translation>
@@ -205,7 +204,7 @@
         <translation>把这个页面添加为书签...</translation>
     </message>
     <message>
-        <location line="+227"/>
+        <location line="+257"/>
         <source>Search</source>
         <translation>搜索</translation>
     </message>
@@ -213,7 +212,7 @@
 <context>
     <name>ContentWindow</name>
     <message>
-        <location filename="../tools/assistant/tools/assistant/contentwindow.cpp" line="+115"/>
+        <location filename="../tools/assistant/tools/assistant/contentwindow.cpp" line="+155"/>
         <source>Open Link</source>
         <translation>打开链接</translation>
     </message>
@@ -243,7 +242,7 @@
 <context>
     <name>FindWidget</name>
     <message>
-        <location filename="../tools/assistant/tools/assistant/centralwidget.cpp" line="-809"/>
+        <location filename="../tools/assistant/tools/assistant/centralwidget.cpp" line="-863"/>
         <source>Previous</source>
         <translation>上一个</translation>
     </message>
@@ -271,7 +270,7 @@
 <context>
     <name>FontPanel</name>
     <message>
-        <location filename="../tools/shared/fontpanel/fontpanel.cpp" line="+33"/>
+        <location filename="../tools/shared/fontpanel/fontpanel.cpp" line="+63"/>
         <source>Font</source>
         <translation>字体</translation>
     </message>
@@ -299,7 +298,7 @@
 <context>
     <name>HelpViewer</name>
     <message>
-        <location filename="../tools/assistant/tools/assistant/helpviewer.cpp" line="+310"/>
+        <location filename="../tools/assistant/tools/assistant/helpviewer.cpp" line="+481"/>
         <source>Help</source>
         <translation>帮助</translation>
     </message>
@@ -315,12 +314,12 @@
         <translation>确定</translation>
     </message>
     <message>
-        <location line="+17"/>
+        <location line="-62"/>
         <source>&lt;title&gt;Error 404...&lt;/title&gt;&lt;div align=&quot;center&quot;&gt;&lt;br&gt;&lt;br&gt;&lt;h1&gt;The page could not be found&lt;/h1&gt;&lt;br&gt;&lt;h3&gt;&apos;%1&apos;&lt;/h3&gt;&lt;/div&gt;</source>
         <translation>&lt;title&gt;404 错误...&lt;/title&gt;&lt;div align=&quot;center&quot;&gt;&lt;br&gt;&lt;br&gt;&lt;h1&gt;不能找到该页面&lt;/h1&gt;&lt;br&gt;&lt;h3&gt;&apos;%1&apos;&lt;/h3&gt;&lt;/div&gt;</translation>
     </message>
     <message>
-        <location line="+90"/>
+        <location line="+125"/>
         <source>Copy &amp;Link Location</source>
         <translation>复制链接地址(&amp;L)</translation>
     </message>
@@ -330,12 +329,12 @@
         <translation>在新标签页中打开链接	Ctrl+LMB</translation>
     </message>
     <message>
-        <location line="-238"/>
+        <location line="-267"/>
         <source>Open Link in New Tab</source>
         <translation>在新标签页中打开链接</translation>
     </message>
     <message>
-        <location line="+128"/>
+        <location line="+201"/>
         <source>Unable to launch external application.
 </source>
         <translation>不能启动外部应用程序。
@@ -345,12 +344,12 @@
 <context>
     <name>IndexWindow</name>
     <message>
-        <location filename="../tools/assistant/tools/assistant/indexwindow.cpp" line="+36"/>
+        <location filename="../tools/assistant/tools/assistant/indexwindow.cpp" line="+66"/>
         <source>&amp;Look for:</source>
         <translation>查找(&amp;L)：</translation>
     </message>
     <message>
-        <location line="+70"/>
+        <location line="+68"/>
         <source>Open Link</source>
         <translation>打开链接</translation>
     </message>
@@ -363,7 +362,7 @@
 <context>
     <name>InstallDialog</name>
     <message>
-        <location filename="../tools/assistant/tools/assistant/installdialog.cpp" line="+45"/>
+        <location filename="../tools/assistant/tools/assistant/installdialog.cpp" line="+75"/>
         <location filename="../tools/assistant/tools/assistant/installdialog.ui"/>
         <source>Install Documentation</source>
         <translation>安装文档</translation>
@@ -463,38 +462,38 @@
 <context>
     <name>MainWindow</name>
     <message>
-        <location filename="../tools/assistant/tools/assistant/mainwindow.cpp" line="+78"/>
-        <location line="+345"/>
+        <location filename="../tools/assistant/tools/assistant/mainwindow.cpp" line="+108"/>
+        <location line="+350"/>
         <source>Index</source>
         <translation>索引</translation>
     </message>
     <message>
-        <location line="-339"/>
-        <location line="+337"/>
+        <location line="-344"/>
+        <location line="+342"/>
         <source>Contents</source>
         <translation>内容</translation>
     </message>
     <message>
-        <location line="-332"/>
-        <location line="+336"/>
+        <location line="-337"/>
+        <location line="+341"/>
         <source>Bookmarks</source>
         <translation>书签</translation>
     </message>
     <message>
-        <location line="-324"/>
-        <location line="+326"/>
+        <location line="-329"/>
+        <location line="+331"/>
         <source>Search</source>
         <translation>搜索</translation>
     </message>
     <message>
-        <location line="-314"/>
-        <location line="+185"/>
-        <location line="+488"/>
+        <location line="-319"/>
+        <location line="+192"/>
+        <location line="+470"/>
         <source>Qt Assistant</source>
         <translation>Qt 助手</translation>
     </message>
     <message>
-        <location line="-519"/>
+        <location line="-501"/>
         <location line="+4"/>
         <source>Unfiltered</source>
         <translation>未过滤的</translation>
@@ -504,47 +503,44 @@
         <translation type="obsolete">文件</translation>
     </message>
     <message>
-        <location line="+82"/>
+        <location line="+84"/>
         <source>Page Set&amp;up...</source>
         <translation>页面设置(&amp;U)...</translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="+2"/>
         <source>Print Preview...</source>
         <translation>打印预览...</translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="+3"/>
         <source>&amp;Print...</source>
         <translation>打印(&amp;P)...</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>CTRL+P</source>
-        <translation>CTRL+P</translation>
+        <translation type="obsolete">CTRL+P</translation>
     </message>
     <message>
-        <location line="+4"/>
+        <location line="+6"/>
         <source>New &amp;Tab</source>
         <translation>新建标签页(&amp;T)</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>CTRL+T</source>
-        <translation>CTRL+T</translation>
+        <translation type="obsolete">CTRL+T</translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="+3"/>
         <source>&amp;Close Tab</source>
         <translation>关闭标签页(&amp;C)</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>CTRL+W</source>
-        <translation>CTRL+W</translation>
+        <translation type="obsolete">CTRL+W</translation>
     </message>
     <message>
-        <location line="+2"/>
+        <location line="+4"/>
         <source>&amp;Quit</source>
         <translation>退出(&amp;Q)</translation>
     </message>
@@ -563,42 +559,38 @@
         <translation>复制选中的文本(&amp;C)</translation>
     </message>
     <message>
-        <location line="+4"/>
         <source>Ctrl+C</source>
-        <translation>Ctrl+C</translation>
+        <translation type="obsolete">Ctrl+C</translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location line="+6"/>
         <source>&amp;Find in Text...</source>
         <translation>在文本中查找(&amp;F)...</translation>
     </message>
     <message>
-        <location line="+4"/>
         <source>Ctrl+F</source>
-        <translation>Ctrl+F</translation>
+        <translation type="obsolete">Ctrl+F</translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location line="+5"/>
         <source>Find &amp;Next</source>
         <translation>查找下一个(&amp;N)</translation>
     </message>
     <message>
-        <location line="+2"/>
         <source>F3</source>
-        <translation>F3</translation>
+        <translation type="obsolete">F3</translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location line="+4"/>
         <source>Find &amp;Previous</source>
         <translation>查找上一个(&amp;P)</translation>
     </message>
     <message>
-        <location line="+2"/>
         <source>Shift+F3</source>
-        <translation>Shift+F3</translation>
+        <translation type="obsolete">Shift+F3</translation>
     </message>
     <message>
-        <location line="+4"/>
+        <location line="+5"/>
         <source>Preferences...</source>
         <translation>首选项...</translation>
     </message>
@@ -612,27 +604,25 @@
         <translation>放大(&amp;I)</translation>
     </message>
     <message>
-        <location line="+4"/>
         <source>Ctrl++</source>
-        <translation>Ctrl++</translation>
+        <translation type="obsolete">Ctrl++</translation>
     </message>
     <message>
-        <location line="+2"/>
+        <location line="+5"/>
         <source>Zoom &amp;out</source>
         <translation>缩小(&amp;O)</translation>
     </message>
     <message>
-        <location line="+4"/>
         <source>Ctrl+-</source>
-        <translation>Ctrl+-</translation>
+        <translation type="obsolete">Ctrl+-</translation>
     </message>
     <message>
-        <location line="+2"/>
+        <location line="+5"/>
         <source>Normal &amp;Size</source>
         <translation>正常大小(&amp;S)</translation>
     </message>
     <message>
-        <location line="+4"/>
+        <location line="+3"/>
         <source>Ctrl+0</source>
         <translation>Ctrl+0</translation>
     </message>
@@ -665,27 +655,27 @@
         <translation>主页(&amp;H)</translation>
     </message>
     <message>
-        <location line="+2"/>
+        <location line="+1"/>
         <source>Ctrl+Home</source>
         <translation>Ctrl+Home</translation>
     </message>
     <message>
-        <location line="+4"/>
+        <location line="+3"/>
         <source>&amp;Back</source>
         <translation>后退(&amp;B)</translation>
     </message>
     <message>
-        <location line="+7"/>
+        <location line="+5"/>
         <source>&amp;Forward</source>
         <translation>前进(&amp;F)</translation>
     </message>
     <message>
-        <location line="+7"/>
+        <location line="+5"/>
         <source>Sync with Table of Contents</source>
         <translation>同步目录</translation>
     </message>
     <message>
-        <location line="+7"/>
+        <location line="+6"/>
         <source>Next Page</source>
         <translation>下一页</translation>
     </message>
@@ -700,7 +690,7 @@
         <translation>上一页</translation>
     </message>
     <message>
-        <location line="+2"/>
+        <location line="+1"/>
         <source>Ctrl+Alt+Left</source>
         <translation>Ctrl+Alt+Left</translation>
     </message>
@@ -728,7 +718,7 @@
         <translation>导航工具栏</translation>
     </message>
     <message>
-        <location line="+75"/>
+        <location line="+74"/>
         <source>Toolbars</source>
         <translation>工具栏</translation>
     </message>
@@ -743,7 +733,7 @@
         <translation>过滤器为：</translation>
     </message>
     <message>
-        <location line="+21"/>
+        <location line="+23"/>
         <source>Address Toolbar</source>
         <translation>地址工具栏</translation>
     </message>
@@ -753,27 +743,24 @@
         <translation>地址：</translation>
     </message>
     <message>
-        <location line="+108"/>
+        <location line="+110"/>
         <source>Could not find the associated content item.</source>
         <translation>不能找到相关内容项目。</translation>
     </message>
     <message>
-        <location line="+60"/>
         <source>Open Source Edition</source>
-        <translation>开源版本</translation>
+        <translation type="obsolete">开源版本</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>This version of Qt Assistant is part of the Qt Open Source Edition, for use in the development of Open Source applications. Qt is a comprehensive C++ framework for cross-platform application development.</source>
-        <translation>这个版本的 Qt 助手是 Qt 开源版本的一部分，用于开发开源应用程序。Qt 是一个用于跨平台应用程序开发的综合 C++ 框架。</translation>
+        <translation type="obsolete">这个版本的 Qt 助手是 Qt 开源版本的一部分，用于开发开源应用程序。Qt 是一个用于跨平台应用程序开发的综合 C++ 框架。</translation>
     </message>
     <message>
-        <location line="+10"/>
         <source>This program is licensed to you under the terms of the Qt Commercial License Agreement. For details, see the file LICENSE that came with this software distribution.</source>
-        <translation>我们已经允许您在 Qt 商业许可协议下使用本程序。有关细节，请阅读本软件发行中所带的 LICENSE 文件。</translation>
+        <translation type="obsolete">我们已经允许您在 Qt 商业许可协议下使用本程序。有关细节，请阅读本软件发行中所带的 LICENSE 文件。</translation>
     </message>
     <message>
-        <location line="+20"/>
+        <location line="+81"/>
         <source>About %1</source>
         <translation>关于 %1</translation>
     </message>
@@ -783,17 +770,17 @@
         <translation>正在更新搜索索引</translation>
     </message>
     <message>
-        <location line="-614"/>
+        <location line="-597"/>
         <source>Looking for Qt Documentation...</source>
         <translation>正在查找 Qt 文档...</translation>
     </message>
     <message>
-        <location line="+205"/>
+        <location line="+195"/>
         <source>&amp;Window</source>
         <translation>窗口(&amp;W)</translation>
     </message>
     <message>
-        <location line="+2"/>
+        <location line="+3"/>
         <source>Minimize</source>
         <translation>最小化</translation>
     </message>
@@ -803,7 +790,7 @@
         <translation>Ctrl+M</translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="-2"/>
         <source>Zoom</source>
         <translation>缩放</translation>
     </message>
@@ -816,27 +803,26 @@
         <translation type="obsolete">移除</translation>
     </message>
     <message>
-        <location line="+264"/>
         <source>You need a commercial Qt license for development of proprietary (closed source) applications. Please see &lt;a href=&quot;http://qtsoftware.com/company/about/businessmodel&quot;&gt;http://qtsoftware.com/company/about/businessmodel&lt;/a&gt; for an overview of Qt licensing.</source>
-        <translation>开发商业（闭源）应用程序，你需要商业 Qt 许可。对于 Qt 许可的概览，请参考&lt;a href=&quot;http://qtsoftware.com/company/about/businessmodel&quot;&gt;qtsoftware.com/company/about/businessmodel&lt;/a&gt;。</translation>
+        <translation type="obsolete">开发商业（闭源）应用程序，你需要商业 Qt 许可。对于 Qt 许可的概览，请参考&lt;a href=&quot;http://qtsoftware.com/company/about/businessmodel&quot;&gt;qtsoftware.com/company/about/businessmodel&lt;/a&gt;。</translation>
     </message>
     <message>
-        <location line="-414"/>
+        <location line="-136"/>
         <source>&amp;File</source>
         <translation>文件(&amp;F)</translation>
     </message>
     <message>
-        <location line="+20"/>
+        <location line="+24"/>
         <source>&amp;Edit</source>
         <translation>编辑(&amp;E)</translation>
     </message>
     <message>
-        <location line="+29"/>
+        <location line="+24"/>
         <source>&amp;View</source>
         <translation>查看(&amp;V)</translation>
     </message>
     <message>
-        <location line="+26"/>
+        <location line="+23"/>
         <source>ALT+O</source>
         <translation>ALT+O</translation>
     </message>
@@ -846,7 +832,7 @@
         <translation>前往(&amp;G)</translation>
     </message>
     <message>
-        <location line="+37"/>
+        <location line="+29"/>
         <source>&amp;Bookmarks</source>
         <translation>书签(&amp;B)</translation>
     </message>
@@ -864,7 +850,7 @@
 <context>
     <name>PreferencesDialog</name>
     <message>
-        <location filename="../tools/assistant/tools/assistant/preferencesdialog.cpp" line="+238"/>
+        <location filename="../tools/assistant/tools/assistant/preferencesdialog.cpp" line="+237"/>
         <location line="+7"/>
         <location line="+6"/>
         <source>Add Documentation</source>
@@ -886,7 +872,27 @@
         <translation>命名空间 %1 已经被注册！</translation>
     </message>
     <message>
-        <location line="+122"/>
+        <location line="+23"/>
+        <source>Remove Documentation</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Some documents currently opened in Assistant reference the documentation you are attempting to remove. Removing the documentation will close those documents.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Cancel</source>
+        <translation type="unfinished">取消</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>OK</source>
+        <translation type="unfinished">确定</translation>
+    </message>
+    <message>
+        <location line="+86"/>
         <source>Use custom settings</source>
         <translation>使用自定义设定</translation>
     </message>
@@ -964,24 +970,20 @@
         <translation>添加...</translation>
     </message>
     <message>
-        <location/>
         <source>Network</source>
-        <translation>网络</translation>
+        <translation type="obsolete">网络</translation>
     </message>
     <message>
-        <location/>
         <source>Use Http Proxy</source>
-        <translation>使用 HTTP 代理</translation>
+        <translation type="obsolete">使用 HTTP 代理</translation>
     </message>
     <message>
-        <location/>
         <source>Http Proxy:</source>
-        <translation>HTTP 代理：</translation>
+        <translation type="obsolete">HTTP 代理：</translation>
     </message>
     <message>
-        <location/>
         <source>Port:</source>
-        <translation>端口：</translation>
+        <translation type="obsolete">端口：</translation>
     </message>
     <message>
         <location/>
@@ -1011,7 +1013,7 @@
         <translation type="obsolete">新建文件夹</translation>
     </message>
     <message>
-        <location filename="../tools/assistant/tools/assistant/cmdlineparser.cpp" line="+79"/>
+        <location filename="../tools/assistant/tools/assistant/cmdlineparser.cpp" line="+110"/>
         <source>The specified collection file does not exist!</source>
         <translation>指定的收藏文件并不存在！</translation>
     </message>
@@ -1057,6 +1059,11 @@
         <translation>缺少帮助文件！</translation>
     </message>
     <message>
+        <location line="+7"/>
+        <source>Missing filter argument!</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location line="+10"/>
         <source>Unknown option: %1</source>
         <translation>未知的选项：%1</translation>
@@ -1068,7 +1075,7 @@
         <translation>Qt 助手</translation>
     </message>
     <message>
-        <location filename="../tools/assistant/tools/assistant/main.cpp" line="+58"/>
+        <location filename="../tools/assistant/tools/assistant/main.cpp" line="+190"/>
         <source>Could not register documentation file
 %1
 
@@ -1086,7 +1093,7 @@ Reason:
         <translation>文档已经成功注册。</translation>
     </message>
     <message>
-        <location line="+6"/>
+        <location line="+11"/>
         <source>Could not unregister documentation file
 %1
 
@@ -1099,12 +1106,12 @@ Reason:
 %2</translation>
     </message>
     <message>
-        <location line="+4"/>
+        <location line="-3"/>
         <source>Documentation successfully unregistered.</source>
         <translation>文档已经成功取消注册。</translation>
     </message>
     <message>
-        <location line="+13"/>
+        <location line="+18"/>
         <source>Cannot load sqlite database driver!</source>
         <translation>无法加载sqlite数据库驱动！</translation>
     </message>
@@ -1123,7 +1130,7 @@ Reason:
 <context>
     <name>RemoteControl</name>
     <message>
-        <location filename="../tools/assistant/tools/assistant/remotecontrol.cpp" line="+128"/>
+        <location filename="../tools/assistant/tools/assistant/remotecontrol.cpp" line="+157"/>
         <source>Debugging Remote Control</source>
         <translation>正在调试遥控器</translation>
     </message>
@@ -1136,7 +1143,7 @@ Reason:
 <context>
     <name>SearchWidget</name>
     <message>
-        <location filename="../tools/assistant/tools/assistant/searchwidget.cpp" line="+163"/>
+        <location filename="../tools/assistant/tools/assistant/searchwidget.cpp" line="+193"/>
         <source>&amp;Copy</source>
         <translation>复制(&amp;C)</translation>
     </message>
@@ -1165,7 +1172,7 @@ Reason:
 <context>
     <name>TopicChooser</name>
     <message>
-        <location filename="../tools/assistant/tools/assistant/topicchooser.cpp" line="+24"/>
+        <location filename="../tools/assistant/tools/assistant/topicchooser.cpp" line="+54"/>
         <source>Choose a topic for &lt;b&gt;%1&lt;/b&gt;:</source>
         <translation>为&lt;b&gt;%1&lt;/b&gt;选择一个主题</translation>
     </message>

@@ -59,7 +59,7 @@ Dialog::Dialog(QWidget *parent)
     integerLabel = new QLabel;
     integerLabel->setFrameStyle(frameStyle);
     QPushButton *integerButton =
-            new QPushButton(tr("QInputDialog::get&Integer()"));
+            new QPushButton(tr("QInputDialog::get&Int()"));
 
     doubleLabel = new QLabel;
     doubleLabel->setFrameStyle(frameStyle);
@@ -198,8 +198,8 @@ void Dialog::setInteger()
 {
 //! [0]
     bool ok;
-    int i = QInputDialog::getInteger(this, tr("QInputDialog::getInteger()"),
-                                     tr("Percentage:"), 25, 0, 100, 1, &ok);
+    int i = QInputDialog::getInt(this, tr("QInputDialog::getInteger()"),
+                                 tr("Percentage:"), 25, 0, 100, 1, &ok);
     if (ok)
         integerLabel->setText(tr("%1%").arg(i));
 //! [0]

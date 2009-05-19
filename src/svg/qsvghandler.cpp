@@ -1673,10 +1673,19 @@ static void parseCSStoXMLAttrs(const QVector<QCss::Declaration> &declarations,
         const QCss::Declaration &decl = declarations.at(i);
         if (decl.d->property.isEmpty())
             continue;
-        if (decl.d->values.count() != 1)
-            continue;
         QCss::Value val = decl.d->values.first();
-        QString valueStr = val.toString();
+        QString valueStr;
+        if (decl.d->values.count() != 1) {
+            for (int i=0; i<decl.d->values.count(); ++i) {
+                const QString &value = decl.d->values[i].toString();
+                if (value.isEmpty())
+                    valueStr += QLatin1Char(',');
+                else
+                    valueStr += value;
+            }
+        } else {
+            valueStr = val.toString();
+        }
         if (val.type == QCss::Value::Uri) {
             valueStr.prepend(QLatin1String("url("));
             valueStr.append(QLatin1Char(')'));
@@ -2587,10 +2596,12 @@ static void parseBaseGradient(QSvgNode *node,
         if (prop && prop->type() == QSvgStyleProperty::GRADIENT) {
             QSvgGradientStyle *inherited =
                 static_cast<QSvgGradientStyle*>(prop);
-            if (!inherited->stopLink().isEmpty())
+            if (!inherited->stopLink().isEmpty()) {
                 gradProp->setStopLink(inherited->stopLink(), handler->document());
-            else
+            } else {
                 grad->setStops(inherited->qgradient()->stops());
+                gradProp->setGradientStopsSet(inherited->gradientStopsSet());
+            }
 
             matrix = inherited->qmatrix();
         } else {
@@ -2649,7 +2660,6 @@ static QSvgStyleProperty *createLinearGradientNode(QSvgNode *node,
     }
 
     QLinearGradient *grad = new QLinearGradient(nx1, ny1, nx2, ny2);
-    grad->setColorAt(qQNaN(), QColor());
     grad->setInterpolationMode(QGradient::ComponentInterpolation);
     QSvgGradientStyle *prop = new QSvgGradientStyle(grad);
     parseBaseGradient(node, attributes, prop, handler);
@@ -2783,7 +2793,6 @@ static QSvgStyleProperty *createRadialGradientNode(QSvgNode *node,
         nfy = toDouble(fy);
 
     QRadialGradient *grad = new QRadialGradient(ncx, ncy, nr, nfx, nfy);
-    grad->setColorAt(qQNaN(), QColor());
     grad->setInterpolationMode(QGradient::ComponentInterpolation);
 
     QSvgGradientStyle *prop = new QSvgGradientStyle(grad);
@@ -2929,12 +2938,9 @@ static bool parseStopNode(QSvgStyleProperty *parent,
     QGradient *grad = style->qgradient();
 
     offset = qMin(qreal(1), qMax(qreal(0), offset)); // Clamp to range [0, 1]
-    QGradientStops stops = grad->stops();
-    // Check if the gradient is marked as empty (marked with one single stop at NaN).
-    if ((stops.size() == 1) && qIsNaN(stops.at(0).first)) {
-        stops.clear();
-        grad->setStops(stops);
-    } else {
+    QGradientStops stops;
+    if (style->gradientStopsSet()) {
+        stops = grad->stops();
         // If the stop offset equals the one previously added, add an epsilon to make it greater.
         if (offset <= stops.back().first)
             offset = stops.back().first + FLT_EPSILON;
@@ -2950,6 +2956,7 @@ static bool parseStopNode(QSvgStyleProperty *parent,
     }
 
     grad->setColorAt(offset, color);
+    style->setGradientStopsSet(true);
     if (!colorOK)
         style->addResolve(offset);
     return true;

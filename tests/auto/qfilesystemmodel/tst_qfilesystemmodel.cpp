@@ -45,6 +45,7 @@
 #include <QFileIconProvider>
 #include "../../shared/util.h"
 #include <QTime>
+#include <QStyle>
 #include <QtGlobal>
 
 //TESTED_CLASS=
@@ -284,6 +285,33 @@ void tst_QFileSystemModel::readOnly()
     QVERIFY(model->flags(model->index(file.fileName())) & Qt::ItemIsEditable);
 }
 
+class CustomFileIconProvider : public QFileIconProvider
+{
+public:
+    CustomFileIconProvider() : QFileIconProvider() {
+        mb = qApp->style()->standardIcon(QStyle::SP_MessageBoxCritical);
+        dvd = qApp->style()->standardIcon(QStyle::SP_DriveDVDIcon);
+    }
+
+    virtual QIcon icon(const QFileInfo &info) const
+    {
+        if (info.isDir())
+            return mb;
+
+        return QFileIconProvider::icon(info);
+    }
+    virtual QIcon icon(IconType type) const
+    {
+        if (type == QFileIconProvider::Folder)
+            return dvd;
+
+        return QFileIconProvider::icon(type);
+    }
+private:
+    QIcon mb;
+    QIcon dvd;
+};
+
 void tst_QFileSystemModel::iconProvider()
 {
     QVERIFY(model->iconProvider());
@@ -292,6 +320,19 @@ void tst_QFileSystemModel::iconProvider()
     QCOMPARE(model->iconProvider(), p);
     model->setIconProvider(0);
     delete p;
+
+    QFileSystemModel *myModel = new QFileSystemModel();
+    myModel->setRootPath(QDir::homePath());
+    //Let's wait to populate the model
+    QTest::qWait(250);
+    //We change the provider, icons must me updated
+    CustomFileIconProvider *custom = new CustomFileIconProvider();
+    myModel->setIconProvider(custom);
+
+    QPixmap mb = qApp->style()->standardIcon(QStyle::SP_MessageBoxCritical).pixmap(50, 50);
+    QCOMPARE(myModel->fileIcon(myModel->index(QDir::homePath())).pixmap(50, 50), mb);
+    delete myModel;
+    delete custom;
 }
 
 bool tst_QFileSystemModel::createFiles(const QString &test_path, const QStringList &initial_files, int existingFileCount, const QStringList &initial_dirs, const QString &dir)

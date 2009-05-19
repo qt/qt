@@ -88,11 +88,12 @@ void QTextureGlyphCache::populate(const QTextItemInt &ti,
                ti.ascent.toReal(),
                ti.descent.toReal());
 #endif
-        int glyph_width = metrics.width.ceil().toInt() + margin * 2;
-        int glyph_height = metrics.height.ceil().toInt() + margin * 2;
+        int glyph_width = metrics.width.ceil().toInt();
+        int glyph_height = metrics.height.ceil().toInt();
         if (glyph_height == 0 || glyph_width == 0)
             continue;
-
+        glyph_width += margin * 2 + 2;
+        glyph_height += margin * 2 + 2;
         // align to 8-bit boundary
         if (m_type == QFontEngineGlyphCache::Raster_Mono)
             glyph_width = (glyph_width+7)&~7;
@@ -188,11 +189,7 @@ void QImageTextureGlyphCache::createTextureData(int width, int height)
 
 int QImageTextureGlyphCache::glyphMargin() const
 {
-#ifdef Q_WS_MAC
     return 2;
-#else
-    return m_type == QFontEngineGlyphCache::Raster_RGBMask ? 2 : 0;
-#endif
 }
 
 void QImageTextureGlyphCache::fillTexture(const Coord &c, glyph_t g)

@@ -205,14 +205,15 @@ PropertyEditor::PropertyEditor(QDesignerFormEditorInterface *core, QWidget *pare
     colors.push_back(QColor(234, 191, 255));
     colors.push_back(QColor(255, 191, 239));
     m_colors.reserve(colors.count());
+    const int darknessFactor = 250;
     for (int i = 0; i < colors.count(); i++) {
         QColor c = colors.at(i);
-        m_colors.push_back(qMakePair(c, c.darker(150)));
+        m_colors.push_back(qMakePair(c, c.darker(darknessFactor)));
     }
     QColor dynamicColor(191, 207, 255);
     QColor layoutColor(255, 191, 191);
-    m_dynamicColor = qMakePair(dynamicColor, dynamicColor.darker(150));
-    m_layoutColor = qMakePair(layoutColor, layoutColor.darker(150));
+    m_dynamicColor = qMakePair(dynamicColor, dynamicColor.darker(darknessFactor));
+    m_layoutColor = qMakePair(layoutColor, layoutColor.darker(darknessFactor));
 
     updateForegroundBrightness();
 

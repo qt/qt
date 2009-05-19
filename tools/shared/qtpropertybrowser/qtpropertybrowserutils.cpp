@@ -48,9 +48,7 @@
 #include <QtGui/QLineEdit>
 #include <QtGui/QMenu>
 
-#if QT_VERSION >= 0x040400
 QT_BEGIN_NAMESPACE
-#endif
 
 QtCursorDatabase::QtCursorDatabase()
 {
@@ -426,9 +424,4 @@ bool QtKeySequenceEdit::event(QEvent *e)
     return QWidget::event(e);
 }
 
-
-
-
-#if QT_VERSION >= 0x040400
 QT_END_NAMESPACE
-#endif

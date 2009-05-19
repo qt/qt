@@ -128,30 +128,22 @@ private slots:
     void physicalDpi_data();
     void physicalDpi();
 
-#if QT_VERSION > 0x040100
     void sizeBeforeRead_data();
     void sizeBeforeRead();
-#endif
 
-#if QT_VERSION > 0x040400
     void imageFormatBeforeRead_data();
     void imageFormatBeforeRead();
-#endif
 
 #if defined QTEST_HAVE_GIF
     void gifHandlerBugs();
 #endif
 
-#if QT_VERSION >= 0x040200
     void readCorruptImage_data();
     void readCorruptImage();
-#endif
     void readCorruptBmp();
 
-#if QT_VERSION >= 0x040200
     void supportsOption_data();
     void supportsOption();
-#endif
 
 #if defined QTEST_HAVE_TIFF
     void tiffCompression_data();
@@ -210,9 +202,7 @@ void tst_QImageReader::readImage_data()
     QTest::newRow("BMP: 4bpp RLE") << QString("4bpp-rle.bmp") << true << QByteArray("bmp");
     QTest::newRow("BMP: 4bpp uncompressed") << QString("tst7.bmp") << true << QByteArray("bmp");
     QTest::newRow("BMP: 16bpp") << QString("16bpp.bmp") << true << QByteArray("bmp");
-#if QT_VERSION >= 0x040200
     QTest::newRow("BMP: negative height") << QString("negativeheight.bmp") << true << QByteArray("bmp");
-#endif
     QTest::newRow("XPM: marble") << QString("marble.xpm") << true << QByteArray("xpm");
     QTest::newRow("PNG: kollada") << QString("kollada.png") << true << QByteArray("png");
     QTest::newRow("PPM: teapot") << QString("teapot.ppm") << true << QByteArray("ppm");
@@ -604,7 +594,6 @@ void tst_QImageReader::supportsAnimation()
     QCOMPARE(io.supportsAnimation(), success);
 }
 
-#if QT_VERSION > 0x040100
 void tst_QImageReader::sizeBeforeRead_data()
 {
     imageFormat_data();
@@ -627,9 +616,7 @@ void tst_QImageReader::sizeBeforeRead()
     QVERIFY(!image.isNull());
     QCOMPARE(size, image.size());
 }
-#endif // QT_VERSION
 
-#if QT_VERSION > 0x040400
 void tst_QImageReader::imageFormatBeforeRead_data()
 {
     imageFormat_data();
@@ -649,7 +636,6 @@ void tst_QImageReader::imageFormatBeforeRead()
         QCOMPARE(image.format(), fileFormat);
     }
 }
-#endif
 
 #if defined QTEST_HAVE_GIF
 void tst_QImageReader::gifHandlerBugs()
@@ -662,7 +648,6 @@ void tst_QImageReader::gifHandlerBugs()
         QVERIFY(count == 34);
     }
 
-#if QT_VERSION >= 0x040102
     // Task 95166
     {
         QImageReader io1("images/bat1.gif");
@@ -675,9 +660,7 @@ void tst_QImageReader::gifHandlerBugs()
         QVERIFY(!im2.isNull());
         QCOMPARE(im1, im2);
     }
-#endif
 
-#if QT_VERSION >= 0x040104
     // Task 9994
     {
         QImageReader io1("images/noclearcode.gif");
@@ -687,7 +670,6 @@ void tst_QImageReader::gifHandlerBugs()
         QVERIFY(!im1.isNull());  QVERIFY(!im2.isNull());
         QCOMPARE(im1.convertToFormat(QImage::Format_ARGB32), im2.convertToFormat(QImage::Format_ARGB32));
     }
-#endif
 }
 #endif
 
@@ -872,11 +854,7 @@ void tst_QImageReader::readFromFileAfterJunk()
     QVERIFY(!imageData.isNull());
 
     int iterations = 10;
-#if QT_VERSION < 0x040200
-    if (format == "ppm" || format == "pbm" || format == "pgm" || format == "xpm" || format == "jpeg")
-#else
     if (format == "ppm" || format == "pbm" || format == "pgm")
-#endif
         iterations = 1;
 
     if (format == "mng" || !QImageWriter::supportedImageFormats().contains(format)) {
@@ -1175,7 +1153,6 @@ void tst_QImageReader::readFromResources()
     QCOMPARE(QImageReader(fileName).read(), QImageReader(":/" + fileName).read());
 }
 
-#if QT_VERSION >= 0x040200
 void tst_QImageReader::readCorruptImage_data()
 {
     QTest::addColumn<QString>("fileName");
@@ -1203,6 +1180,7 @@ void tst_QImageReader::readCorruptImage_data()
     QTest::newRow("corrupt tiff") << QString("images/corrupt-data.tif") << true << QString("");
 #endif
 }
+
 void tst_QImageReader::readCorruptImage()
 {
     QFETCH(QString, fileName);
@@ -1214,14 +1192,12 @@ void tst_QImageReader::readCorruptImage()
     QVERIFY(reader.canRead());
     QCOMPARE(reader.read().isNull(), shouldFail);
 }
-#endif // QT_VERSION
 
 void tst_QImageReader::readCorruptBmp()
 {
     QCOMPARE(QImage("images/tst7.bmp").convertToFormat(QImage::Format_ARGB32_Premultiplied), QImage("images/tst7.png").convertToFormat(QImage::Format_ARGB32_Premultiplied));
 }
 
-#if QT_VERSION >= 0x040200
 void tst_QImageReader::supportsOption_data()
 {
     QTest::addColumn<QString>("fileName");
@@ -1264,7 +1240,6 @@ void tst_QImageReader::supportsOption()
     foreach (QImageIOHandler::ImageOption option, allOptions)
         QVERIFY(!reader.supportsOption(option));
 }
-#endif
 
 #if defined QTEST_HAVE_TIFF
 void tst_QImageReader::tiffCompression_data()

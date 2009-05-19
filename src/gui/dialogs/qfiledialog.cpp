@@ -96,9 +96,8 @@ Q_GUI_EXPORT _qt_filedialog_save_filename_hook qt_filedialog_save_filename_hook 
   order to select one or many files or a directory.
 
   The easiest way to create a QFileDialog is to use the static
-  functions. On Windows, these static functions will call the native
-  Windows file dialog, and on Mac OS X these static function will call
-  the native Mac OS X file dialog.
+  functions. On Windows, Mac OS X, KDE and GNOME, these static functions will
+  call the native file dialog when possible.
 
   \snippet doc/src/snippets/code/src_gui_dialogs_qfiledialog.cpp 0
 
@@ -216,7 +215,7 @@ Q_GUI_EXPORT _qt_filedialog_save_filename_hook qt_filedialog_save_filename_hook 
     are resolved.
     \value DontConfirmOverwrite Don't ask for confirmation if an existing file is selected.
     By default confirmation is requested.
-    \value DontUseNativeDialog Don't use the native file dialog. By default on Mac OS X and Windows,
+    \value DontUseNativeDialog Don't use the native file dialog. By default on Mac OS X,
     the native file dialog is used unless you use a subclass of QFileDialog that contains the
     Q_OBJECT macro.
     \value ReadOnly Indicates that the model is readonly.
@@ -693,7 +692,10 @@ void QFileDialog::setVisible(bool visible)
 */
 void QFileDialogPrivate::_q_goToUrl(const QUrl &url)
 {
-    QModelIndex idx = model->index(url.toLocalFile());
+    //The shortcut in the side bar may have a parent that is not fetched yet (e.g. an hidden file)
+    //so we force the fetching
+    QFileSystemModelPrivate::QFileSystemNode *node = model->d_func()->node(url.toLocalFile(), true);
+    QModelIndex idx =  model->d_func()->index(node);
     _q_enterDirectory(idx);
 }
 
@@ -957,25 +959,29 @@ void QFileDialog::setNameFilters(const QStringList &filters)
 {
     Q_D(QFileDialog);
     d->defaultFileTypes = (filters == QStringList(QFileDialog::tr("All Files (*)")));
-    d->nameFilters = filters;
+    QStringList cleanedFilters;
+    for (int i = 0; i < filters.count(); ++i) {
+        cleanedFilters << filters[i].simplified();
+    }
+    d->nameFilters = cleanedFilters;
 
     if (d->nativeDialogInUse){
-        d->setNameFilters_sys(filters);
+        d->setNameFilters_sys(cleanedFilters);
         return;
     }
 
     d->qFileDialogUi->fileTypeCombo->clear();
-    if (filters.isEmpty())
+    if (cleanedFilters.isEmpty())
         return;
 
     if (testOption(HideNameFilterDetails)) {
         QStringList strippedFilters;
-        for (int i = 0; i < filters.count(); ++i) {
-            strippedFilters.append(filters[i].mid(0, filters[i].indexOf(QLatin1String(" ("))));
+        for (int i = 0; i < cleanedFilters.count(); ++i) {
+            strippedFilters.append(cleanedFilters[i].mid(0, cleanedFilters[i].indexOf(QLatin1String(" ("))));
         }
         d->qFileDialogUi->fileTypeCombo->addItems(strippedFilters);
     } else {
-        d->qFileDialogUi->fileTypeCombo->addItems(filters);
+        d->qFileDialogUi->fileTypeCombo->addItems(cleanedFilters);
     }
     d->_q_useNameFilter(0);
 }
@@ -1433,6 +1439,8 @@ void QFileDialog::setIconProvider(QFileIconProvider *provider)
 {
     Q_D(QFileDialog);
     d->model->setIconProvider(provider);
+    //It forces the refresh of all entries in the side bar, then we can get new icons
+    d->qFileDialogUi->sidebar->setUrls(d->qFileDialogUi->sidebar->urls());
 }
 
 /*!
@@ -1529,52 +1537,51 @@ extern QString qt_win_get_existing_directory(const QFileDialogArgs &args);
 #endif
 
 /*!
-  This is a convenience static function that returns an existing file
-  selected by the user. If the user presses Cancel, it returns a null
-  string.
+    This is a convenience static function that returns an existing file
+    selected by the user. If the user presses Cancel, it returns a null string.
 
-  \snippet doc/src/snippets/code/src_gui_dialogs_qfiledialog.cpp 8
+    \snippet doc/src/snippets/code/src_gui_dialogs_qfiledialog.cpp 8
 
-  The function creates a modal file dialog with the given \a parent widget.
-  If the parent is not 0, the dialog will be shown centered over the
-  parent widget.
+    The function creates a modal file dialog with the given \a parent widget.
+    If \a parent is not 0, the dialog will be shown centered over the parent
+    widget.
 
-  The file dialog's working directory will be set to \a dir.  If \a
-  dir includes a file name, the file will be selected. Only files
-  that match the given \a filter are shown. The filter selected is
-  set to \a selectedFilter. The parameters \a dir, \a
-  selectedFilter, and \a filter may be empty strings. If you want
-  multiple filters, separate them with ';;', for example:
+    The file dialog's working directory will be set to \a dir. If \a dir
+    includes a file name, the file will be selected. Only files that match the
+    given \a filter are shown. The filter selected is set to \a selectedFilter.
+    The parameters \a dir, \a selectedFilter, and \a filter may be empty
+    strings. If you want multiple filters, separate them with ';;', for
+    example:
 
-  \code
+    \code
     "Images (*.png *.xpm *.jpg);;Text files (*.txt);;XML files (*.xml)"
-  \endcode
+    \endcode
 
-  The \a options argument holds various
-  options about how to run the dialog, see the QFileDialog::Option enum for
-  more information on the flags you can pass.
+    The \a options argument holds various options about how to run the dialog,
+    see the QFileDialog::Option enum for more information on the flags you can
+    pass.
 
-  The dialog's caption is set to \a caption. If \a caption is not
-  specified then a default caption will be used.
+    The dialog's caption is set to \a caption. If \a caption is not specified
+    then a default caption will be used.
 
-  Under Windows and Mac OS X, this static function will use the native
-  file dialog and not a QFileDialog.
+    On Windows and Mac OS X, this static function will use the native file
+    dialog and not a QFileDialog.
 
-  Note that on Windows the dialog will spin a blocking modal event loop
-  that will not dispatch any QTimers, and if parent is not 0 then it will
-  position the dialog just under the parent's title bar.
+    On Windows the dialog will spin a blocking modal event loop that will not
+    dispatch any QTimers, and if \a parent is not 0 then it will position the
+    dialog just below the parent's title bar.
 
-  Under Unix/X11, the normal behavior of the file dialog is to resolve
-  and follow symlinks. For example, if \c{/usr/tmp} is a symlink to
-  \c{/var/tmp}, the file dialog will change to \c{/var/tmp} after
-  entering \c{/usr/tmp}. If \a options includes DontResolveSymlinks,
-  the file dialog will treat symlinks as regular directories.
+    On Unix/X11, the normal behavior of the file dialog is to resolve and
+    follow symlinks. For example, if \c{/usr/tmp} is a symlink to \c{/var/tmp},
+    the file dialog will change to \c{/var/tmp} after entering \c{/usr/tmp}. If
+    \a options includes DontResolveSymlinks, the file dialog will treat
+    symlinks as regular directories.
 
-  \warning Do not delete \a parent during the execution of the dialog.
-           If you want to do this, you should create the dialog
-           yourself using one of the QFileDialog constructors.
+    \warning Do not delete \a parent during the execution of the dialog. If you
+    want to do this, you should create the dialog yourself using one of the
+    QFileDialog constructors.
 
-  \sa getOpenFileNames(), getSaveFileName(), getExistingDirectory()
+    \sa getOpenFileNames(), getSaveFileName(), getExistingDirectory()
 */
 QString QFileDialog::getOpenFileName(QWidget *parent,
                                const QString &caption,
@@ -1589,7 +1596,12 @@ QString QFileDialog::getOpenFileName(QWidget *parent,
     args.parent = parent;
     args.caption = caption;
     args.directory = QFileDialogPrivate::workingDirectory(dir);
-    args.selection = QFileDialogPrivate::initialSelection(dir);
+    //If workingDirectory returned a different path than the initial one,
+    //it means that the initial path was invalid. There is no point to try select a file
+    if (args.directory != QFileInfo(dir).path())
+        args.selection = QString();
+    else
+        args.selection = QFileDialogPrivate::initialSelection(dir);
     args.filter = filter;
     args.mode = ExistingFile;
     args.options = options;
@@ -1612,54 +1624,53 @@ QString QFileDialog::getOpenFileName(QWidget *parent,
 }
 
 /*!
-  This is a convenience static function that will return one or more
-  existing files selected by the user.
+    This is a convenience static function that will return one or more existing
+    files selected by the user.
 
-  \snippet doc/src/snippets/code/src_gui_dialogs_qfiledialog.cpp 9
+    \snippet doc/src/snippets/code/src_gui_dialogs_qfiledialog.cpp 9
 
-  This function creates a modal file dialog with the given \a parent
-  widget. If the parent is not 0, the dialog will be shown centered
-  over the parent widget.
+    This function creates a modal file dialog with the given \a parent widget.
+    If \a parent is not 0, the dialog will be shown centered over the parent
+    widget.
 
-  The file dialog's working directory will be set to \a dir. If \a
-  dir includes a file name, the file will be selected. The filter
-  is set to \a filter so that only those files which match the filter
-  are shown. The filter selected is set to \a selectedFilter. The parameters
-  \a dir, \a selectedFilter and \a filter may be empty strings. If you
-  need multiple filters, separate them with ';;', for instance:
+    The file dialog's working directory will be set to \a dir. If \a dir
+    includes a file name, the file will be selected. The filter is set to
+    \a filter so that only those files which match the filter are shown. The
+    filter selected is set to \a selectedFilter. The parameters \a dir,
+    \a selectedFilter and \a filter may be empty strings. If you need multiple
+    filters, separate them with ';;', for instance:
 
-  \code
+    \code
     "Images (*.png *.xpm *.jpg);;Text files (*.txt);;XML files (*.xml)"
-  \endcode
+    \endcode
 
-  The dialog's caption is set to \a caption. If \a caption is not
-  specified then a default caption will be used.
+    The dialog's caption is set to \a caption. If \a caption is not specified
+    then a default caption will be used.
 
-  Under Windows and Mac OS X, this static function will use the native
-  file dialog and not a QFileDialog. On Mac OS X, the \a dir argument
-  is ignored, the native dialog always displays the last visited directory.
+    On Windows and Mac OS X, this static function will use the native file
+    dialog and not a QFileDialog.
 
-  Note that on Windows the dialog will spin a blocking modal event loop
-  that will not dispatch any QTimers, and if parent is not 0 then it will
-  position the dialog just under the parent's title bar.
+    On Windows the dialog will spin a blocking modal event loop that will not
+    dispatch any QTimers, and if \a parent is not 0 then it will position the
+    dialog just below the parent's title bar.
 
-  Under Unix/X11, the normal behavior of the file dialog is to resolve
-  and follow symlinks. For example, if \c{/usr/tmp} is a symlink to
-  \c{/var/tmp}, the file dialog will change to \c{/var/tmp} after
-  entering \c{/usr/tmp}. The \a options argument holds various
-  options about how to run the dialog, see the QFileDialog::Option enum for
-  more information on the flags you can pass.
+    On Unix/X11, the normal behavior of the file dialog is to resolve and
+    follow symlinks. For example, if \c{/usr/tmp} is a symlink to \c{/var/tmp},
+    the file dialog will change to \c{/var/tmp} after entering \c{/usr/tmp}.
+    The \a options argument holds various options about how to run the dialog,
+    see the QFileDialog::Option enum for more information on the flags you can
+    pass.
 
-  Note that if you want to iterate over the list of files, you should
-  iterate over a copy. For example:
+    \note If you want to iterate over the list of files, you should iterate
+    over a copy. For example:
 
     \snippet doc/src/snippets/code/src_gui_dialogs_qfiledialog.cpp 10
 
-  \warning Do not delete \a parent during the execution of the dialog.
-           If you want to do this, you should create the dialog
-           yourself using one of the QFileDialog constructors.
+    \warning Do not delete \a parent during the execution of the dialog. If you
+    want to do this, you should create the dialog yourself using one of the
+    QFileDialog constructors.
 
-  \sa getOpenFileName(), getSaveFileName(), getExistingDirectory()
+    \sa getOpenFileName(), getSaveFileName(), getExistingDirectory()
 */
 QStringList QFileDialog::getOpenFileNames(QWidget *parent,
                                           const QString &caption,
@@ -1674,7 +1685,12 @@ QStringList QFileDialog::getOpenFileNames(QWidget *parent,
     args.parent = parent;
     args.caption = caption;
     args.directory = QFileDialogPrivate::workingDirectory(dir);
-    args.selection = QFileDialogPrivate::initialSelection(dir);
+    //If workingDirectory returned a different path than the initial one,
+    //it means that the initial path was invalid. There is no point to try select a file
+    if (args.directory != QFileInfo(dir).path())
+        args.selection = QString();
+    else
+        args.selection = QFileDialogPrivate::initialSelection(dir);
     args.filter = filter;
     args.mode = ExistingFiles;
     args.options = options;
@@ -1698,54 +1714,54 @@ QStringList QFileDialog::getOpenFileNames(QWidget *parent,
 }
 
 /*!
-  This is a convenience static function that will return a file name
-  selected by the user. The file does not have to exist.
+    This is a convenience static function that will return a file name selected
+    by the user. The file does not have to exist.
 
-  It creates a modal file dialog with the given \a parent widget. If the
-  parent is not 0, the dialog will be shown centered over the parent
-  widget.
+    It creates a modal file dialog with the given \a parent widget. If
+    \a parent is not 0, the dialog will be shown centered over the parent
+    widget.
 
-  \snippet doc/src/snippets/code/src_gui_dialogs_qfiledialog.cpp 11
+    \snippet doc/src/snippets/code/src_gui_dialogs_qfiledialog.cpp 11
 
-  The file dialog's working directory will be set to \a dir. If \a
-  dir includes a file name, the file will be selected. Only files that
-  match the \a filter are shown. The filter selected is set to
-  \a selectedFilter. The parameters \a dir, \a selectedFilter, and
-  \a filter may be empty strings. Multiple filters are separated with ';;'.
-  For instance:
+    The file dialog's working directory will be set to \a dir. If \a dir
+    includes a file name, the file will be selected. Only files that match the
+    \a filter are shown. The filter selected is set to \a selectedFilter. The
+    parameters \a dir, \a selectedFilter, and \a filter may be empty strings.
+    Multiple filters are separated with ';;'. For instance:
 
-  \code
+    \code
     "Images (*.png *.xpm *.jpg);;Text files (*.txt);;XML files (*.xml)"
-  \endcode
+    \endcode
 
-  The \a options argument holds various
-  options about how to run the dialog, see the QFileDialog::Option enum for
-  more information on the flags you can pass.
+    The \a options argument holds various options about how to run the dialog,
+    see the QFileDialog::Option enum for more information on the flags you can
+    pass.
 
-  The default filter can be chosen by setting \a selectedFilter to the desired value.
+    The default filter can be chosen by setting \a selectedFilter to the
+    desired value.
 
-  The dialog's caption is set to \a caption. If \a caption is not
-  specified then a default caption will be used.
+    The dialog's caption is set to \a caption. If \a caption is not specified,
+    a default caption will be used.
 
-  Under Windows and Mac OS X, this static function will use the native
-  file dialog and not a QFileDialog.
+    On Windows and Mac OS X, this static function will use the native file
+    dialog and not a QFileDialog.
 
-  Note that on Windows the dialog will spin a blocking modal event loop
-  that will not dispatch any QTimers, and if parent is not 0 then it will
-  position the dialog just under the parent's title bar.
-  On Mac OS X, the filter argument is ignored.
+    On Windows the dialog will spin a blocking modal event loop that will not
+    dispatch any QTimers, and if \a parent is not 0 then it will position the
+    dialog just below the parent's title bar. On Mac OS X, with its native file
+    dialog, the filter argument is ignored.
 
-  Under Unix/X11, the normal behavior of the file dialog is to resolve
-  and follow symlinks. For example, if \c{/usr/tmp} is a symlink to
-  \c{/var/tmp}, the file dialog will change to \c{/var/tmp} after
-  entering \c{/usr/tmp}. If \a options includes DontResolveSymlinks,
-  the file dialog will treat symlinks as regular directories.
+    On Unix/X11, the normal behavior of the file dialog is to resolve and
+    follow symlinks. For example, if \c{/usr/tmp} is a symlink to \c{/var/tmp},
+    the file dialog will change to \c{/var/tmp} after entering \c{/usr/tmp}. If
+    \a options includes DontResolveSymlinks the file dialog will treat symlinks
+    as regular directories.
 
-  \warning Do not delete \a parent during the execution of the dialog.
-           If you want to do this, you should create the dialog
-           yourself using one of the QFileDialog constructors.
+    \warning Do not delete \a parent during the execution of the dialog. If you
+    want to do this, you should create the dialog yourself using one of the
+    QFileDialog constructors.
 
-  \sa getOpenFileName(), getOpenFileNames(), getExistingDirectory()
+    \sa getOpenFileName(), getOpenFileNames(), getExistingDirectory()
 */
 QString QFileDialog::getSaveFileName(QWidget *parent,
                                      const QString &caption,
@@ -1760,7 +1776,12 @@ QString QFileDialog::getSaveFileName(QWidget *parent,
     args.parent = parent;
     args.caption = caption;
     args.directory = QFileDialogPrivate::workingDirectory(dir);
-    args.selection = QFileDialogPrivate::initialSelection(dir);
+    //If workingDirectory returned a different path than the initial one,
+    //it means that the initial path was invalid. There is no point to try select a file
+    if (args.directory != QFileInfo(dir).path())
+        args.selection = QString();
+    else
+        args.selection = QFileDialogPrivate::initialSelection(dir);
     args.filter = filter;
     args.mode = AnyFile;
     args.options = options;
@@ -1786,46 +1807,43 @@ QString QFileDialog::getSaveFileName(QWidget *parent,
 }
 
 /*!
-  This is a convenience static function that will return an existing
-  directory selected by the user.
+    This is a convenience static function that will return an existing
+    directory selected by the user.
 
-  \snippet doc/src/snippets/code/src_gui_dialogs_qfiledialog.cpp 12
+    \snippet doc/src/snippets/code/src_gui_dialogs_qfiledialog.cpp 12
 
-  This function creates a modal file dialog with the given \a parent
-  widget. If the parent is not 0, the dialog will be shown centered over
-  the parent widget.
+    This function creates a modal file dialog with the given \a parent widget.
+    If \a parent is not 0, the dialog will be shown centered over the parent
+    widget.
 
-  The dialog's working directory is set to \a dir, and the caption is
-  set to \a caption. Either of these may be an empty string in which case
-  the current directory and a default caption will be used
-  respectively.
+    The dialog's working directory is set to \a dir, and the caption is set to
+    \a caption. Either of these may be an empty string in which case the
+    current directory and a default caption will be used respectively.
 
-  The \a options argument holds various
-  options about how to run the dialog, see the QFileDialog::Option enum for
-  more information on the flags you can pass. Note that \l{QFileDialog::}{ShowDirsOnly}
-  must be set to ensure a native file dialog.
+    The \a options argument holds various options about how to run the dialog,
+    see the QFileDialog::Option enum for more information on the flags you can
+    pass. To ensure a native file dialog, \l{QFileDialog::}{ShowDirsOnly} must
+    be set.
 
-  Under Windows and Mac OS X, this static function will use the native
-  file dialog and not a QFileDialog. On Mac OS X, the \a dir argument
-  is ignored, the native dialog always displays the last visited directory.
-  On Windows CE, if the device has no native file dialog, a QFileDialog
-  will be used.
+    On Windows and Mac OS X, this static function will use the native file
+    dialog and not a QFileDialog. On Windows CE, if the device has no native
+    file dialog, a QFileDialog will be used.
 
-  Under Unix/X11, the normal behavior of the file dialog is to resolve
-  and follow symlinks. For example, if \c{/usr/tmp} is a symlink to
-  \c{/var/tmp}, the file dialog will change to \c{/var/tmp} after
-  entering \c{/usr/tmp}. If \a options includes DontResolveSymlinks,
-  the file dialog will treat symlinks as regular directories.
+    On Unix/X11, the normal behavior of the file dialog is to resolve and
+    follow symlinks. For example, if \c{/usr/tmp} is a symlink to \c{/var/tmp},
+    the file dialog will change to \c{/var/tmp} after entering \c{/usr/tmp}. If
+    \a options includes DontResolveSymlinks, the file dialog will treat
+    symlinks as regular directories.
 
-  Note that on Windows the dialog will spin a blocking modal event loop
-  that will not dispatch any QTimers, and if parent is not 0 then it will
-  position the dialog just under the parent's title bar.
+    On Windows the dialog will spin a blocking modal event loop that will not
+    dispatch any QTimers, and if \a parent is not 0 then it will position the
+    dialog just below the parent's title bar.
 
-  \warning Do not delete \a parent during the execution of the dialog.
-           If you want to do this, you should create the dialog
-           yourself using one of the QFileDialog constructors.
+    \warning Do not delete \a parent during the execution of the dialog. If you
+    want to do this, you should create the dialog yourself using one of the
+    QFileDialog constructors.
 
-  \sa getOpenFileName(), getOpenFileNames(), getSaveFileName()
+    \sa getOpenFileName(), getOpenFileNames(), getSaveFileName()
 */
 QString QFileDialog::getExistingDirectory(QWidget *parent,
                                           const QString &caption,
@@ -2246,12 +2264,21 @@ void QFileDialog::setProxyModel(QAbstractProxyModel *proxyModel)
         proxyModel->setSourceModel(d->model);
         d->qFileDialogUi->listView->setModel(d->proxyModel);
         d->qFileDialogUi->treeView->setModel(d->proxyModel);
+#ifndef QT_NO_COMPLETER
+        d->completer->setModel(d->proxyModel);
+        d->completer->proxyModel = d->proxyModel;
+#endif
         connect(d->proxyModel, SIGNAL(rowsInserted(const QModelIndex &, int, int)),
             this, SLOT(_q_rowsInserted(const QModelIndex &)));
     } else {
         d->proxyModel = 0;
         d->qFileDialogUi->listView->setModel(d->model);
         d->qFileDialogUi->treeView->setModel(d->model);
+#ifndef QT_NO_COMPLETER
+        d->completer->setModel(d->model);
+        d->completer->sourceModel = d->model;
+        d->completer->proxyModel = 0;
+#endif
         connect(d->model, SIGNAL(rowsInserted(const QModelIndex &, int, int)),
             this, SLOT(_q_rowsInserted(const QModelIndex &)));
     }
@@ -2764,8 +2791,9 @@ void QFileDialogPrivate::_q_enterDirectory(const QModelIndex &index)
 {
     Q_Q(QFileDialog);
     // My Computer or a directory
-    QString path = index.data(QFileSystemModel::FilePathRole).toString();
-    if (path.isEmpty() || model->isDir(index)) {
+    QModelIndex sourceIndex = index.model() == proxyModel ? mapToSource(index) : index;
+    QString path = sourceIndex.data(QFileSystemModel::FilePathRole).toString();
+    if (path.isEmpty() || model->isDir(sourceIndex)) {
         q->setDirectory(path);
         emit q->directoryEntered(path);
         if (fileMode == QFileDialog::Directory
@@ -3139,7 +3167,11 @@ void QFileDialogLineEdit::keyPressEvent(QKeyEvent *e)
 
 QString QFSCompletor::pathFromIndex(const QModelIndex &index) const
 {
-    const QFileSystemModel *dirModel = static_cast<const QFileSystemModel *>(model());
+    const QFileSystemModel *dirModel;
+    if (proxyModel)
+        dirModel = qobject_cast<const QFileSystemModel *>(proxyModel->sourceModel());
+    else
+        dirModel = sourceModel;
     QString currentLocation = dirModel->rootPath();
     QString path = index.data(QFileSystemModel::FilePathRole).toString();
     if (!currentLocation.isEmpty() && path.startsWith(currentLocation)) {
@@ -3185,7 +3217,11 @@ QStringList QFSCompletor::splitPath(const QString &path) const
     bool startsFromRoot = path[0] == sep[0];
 #endif
     if (parts.count() == 1 || (parts.count() > 1 && !startsFromRoot)) {
-        const QFileSystemModel *dirModel = static_cast<const QFileSystemModel *>(model());
+        const QFileSystemModel *dirModel;
+        if (proxyModel)
+            dirModel = qobject_cast<const QFileSystemModel *>(proxyModel->sourceModel());
+        else
+            dirModel = sourceModel;
         QString currentLocation = QDir::toNativeSeparators(dirModel->rootPath());
         if (currentLocation.contains(sep) && path != currentLocation) {
             QStringList currentLocationList = splitPath(currentLocation);

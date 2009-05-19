@@ -2295,7 +2295,7 @@ void QConfFileSettingsPrivate::ensureSectionParsed(QConfFile *confFile,
     As mentioned in the \l{Fallback Mechanism} section, QSettings
     stores settings for an application in up to four locations,
     depending on whether the settings are user-specific or
-    system-wide and whether the the settings are application-specific
+    system-wide and whether the settings are application-specific
     or organization-wide. For simplicity, we're assuming the
     organization is called MySoft and the application is called Star
     Runner.
@@ -2329,6 +2329,10 @@ void QConfFileSettingsPrivate::ensureSectionParsed(QConfFile *confFile,
     \o \c{HKEY_LOCAL_MACHINE\Software\MySoft\Star Runner}
     \o \c{HKEY_LOCAL_MACHINE\Software\MySoft}
     \endlist
+
+    \note On Windows, for 32-bit programs running in WOW64 mode, settings are
+    stored in the following registry path:
+    \c{HKEY_LOCAL_MACHINE\Software\WOW6432node}.
 
     If the file format is IniFormat, the following files are
     used on Unix and Mac OS X:

@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2006 Nikolas Zimmermann <zimmermann@kde.org>
  * Copyright (C) 2008 Holger Hans Peter Freyther
+ * Copyright (C) 2009 Dirk Schulze <krit@webkit.org>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -31,10 +32,11 @@
 #include "GraphicsContext.h"
 #include "ImageData.h"
 #include "MIMETypeRegistry.h"
-#include "NotImplemented.h"
 #include "StillImageQt.h"
 
 #include <QBuffer>
+#include <QColor>
+#include <QImage>
 #include <QImageWriter>
 #include <QPainter>
 #include <QPixmap>
@@ -45,7 +47,24 @@ ImageBufferData::ImageBufferData(const IntSize& size)
     : m_pixmap(size)
 {
     m_pixmap.fill(QColor(Qt::transparent));
-    m_painter.set(new QPainter(&m_pixmap));
+
+    QPainter* painter = new QPainter(&m_pixmap);
+    m_painter.set(painter);
+
+    // Since ImageBuffer is used mainly for Canvas, explicitly initialize
+    // its painter's pen and brush with the corresponding canvas defaults
+    // NOTE: keep in sync with CanvasRenderingContext2D::State
+    QPen pen = painter->pen();
+    pen.setColor(Qt::black);
+    pen.setWidth(1);
+    pen.setCapStyle(Qt::FlatCap);
+    pen.setJoinStyle(Qt::MiterJoin);
+    pen.setMiterLimit(10);
+    painter->setPen(pen);
+    QBrush brush = painter->brush();
+    brush.setColor(Qt::black);
+    painter->setBrush(brush);
+    painter->setCompositionMode(QPainter::CompositionMode_SourceOver);
 }
 
 ImageBuffer::ImageBuffer(const IntSize& size, bool grayScale, bool& success)
@@ -79,15 +98,109 @@ Image* ImageBuffer::image() const
     return m_image.get();
 }
 
-PassRefPtr<ImageData> ImageBuffer::getImageData(const IntRect&) const
+PassRefPtr<ImageData> ImageBuffer::getImageData(const IntRect& rect) const
 {
-    notImplemented();
-    return 0;
+    PassRefPtr<ImageData> result = ImageData::create(rect.width(), rect.height());
+    unsigned char* data = result->data()->data();
+
+    if (rect.x() < 0 || rect.y() < 0 || (rect.x() + rect.width()) > m_size.width() || (rect.y() + rect.height()) > m_size.height())
+        memset(data, 0, result->data()->length());
+
+    int originx = rect.x();
+    int destx = 0;
+    if (originx < 0) {
+        destx = -originx;
+        originx = 0;
+    }
+    int endx = rect.x() + rect.width();
+    if (endx > m_size.width())
+        endx = m_size.width();
+    int numColumns = endx - originx;
+
+    int originy = rect.y();
+    int desty = 0;
+    if (originy < 0) {
+        desty = -originy;
+        originy = 0;
+    }
+    int endy = rect.y() + rect.height();
+    if (endy > m_size.height())
+        endy = m_size.height();
+    int numRows = endy - originy;
+
+    QImage image = m_data.m_pixmap.toImage().convertToFormat(QImage::Format_ARGB32);
+    ASSERT(!image.isNull());
+
+    unsigned destBytesPerRow = 4 * rect.width();
+    unsigned char* destRows = data + desty * destBytesPerRow + destx * 4;
+    for (int y = 0; y < numRows; ++y) {
+        for (int x = 0; x < numColumns; x++) {
+            QRgb value = image.pixel(x + originx, y + originy);
+            int basex = x * 4;
+
+            destRows[basex] = qRed(value);
+            destRows[basex + 1] = qGreen(value);
+            destRows[basex + 2] = qBlue(value);
+            destRows[basex + 3] = qAlpha(value);
+        }
+        destRows += destBytesPerRow;
+    }
+
+    return result;
 }
 
-void ImageBuffer::putImageData(ImageData*, const IntRect&, const IntPoint&)
+void ImageBuffer::putImageData(ImageData* source, const IntRect& sourceRect, const IntPoint& destPoint)
 {
-    notImplemented();
+    ASSERT(sourceRect.width() > 0);
+    ASSERT(sourceRect.height() > 0);
+
+    int originx = sourceRect.x();
+    int destx = destPoint.x() + sourceRect.x();
+    ASSERT(destx >= 0);
+    ASSERT(destx < m_size.width());
+    ASSERT(originx >= 0);
+    ASSERT(originx <= sourceRect.right());
+
+    int endx = destPoint.x() + sourceRect.right();
+    ASSERT(endx <= m_size.width());
+
+    int numColumns = endx - destx;
+
+    int originy = sourceRect.y();
+    int desty = destPoint.y() + sourceRect.y();
+    ASSERT(desty >= 0);
+    ASSERT(desty < m_size.height());
+    ASSERT(originy >= 0);
+    ASSERT(originy <= sourceRect.bottom());
+
+    int endy = destPoint.y() + sourceRect.bottom();
+    ASSERT(endy <= m_size.height());
+    int numRows = endy - desty;
+
+    unsigned srcBytesPerRow = 4 * source->width();
+
+    bool isPainting = m_data.m_painter->isActive();
+    if (isPainting)
+        m_data.m_painter->end();
+
+    QImage image = m_data.m_pixmap.toImage().convertToFormat(QImage::Format_ARGB32);
+    ASSERT(!image.isNull());
+
+    unsigned char* srcRows = source->data()->data() + originy * srcBytesPerRow + originx * 4;
+    for (int y = 0; y < numRows; ++y) {
+        quint32* scanLine = reinterpret_cast<quint32*>(image.scanLine(y + desty));
+        for (int x = 0; x < numColumns; x++) {
+            int basex = x * 4;
+            scanLine[x + destx] = reinterpret_cast<quint32*>(srcRows + basex)[0];
+        }
+
+        srcRows += srcBytesPerRow;
+    }
+
+    m_data.m_pixmap = QPixmap::fromImage(image);
+
+    if (isPainting)
+        m_data.m_painter->begin(&m_data.m_pixmap);
 }
 
 // We get a mimeType here but QImageWriter does not support mimetypes but

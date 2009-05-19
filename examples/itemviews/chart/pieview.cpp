@@ -254,7 +254,7 @@ void PieView::mousePressEvent(QMouseEvent *event)
     QAbstractItemView::mousePressEvent(event);
     origin = event->pos();
     if (!rubberBand)
-        rubberBand = new QRubberBand(QRubberBand::Rectangle, this);
+        rubberBand = new QRubberBand(QRubberBand::Rectangle, viewport());
     rubberBand->setGeometry(QRect(origin, QSize()));
     rubberBand->show();
 }

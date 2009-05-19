@@ -62,9 +62,7 @@
 #    pragma warning(disable: 4786) /* MS VS 6: truncating debug info after 255 characters */
 #endif
 
-#if QT_VERSION >= 0x040400
 QT_BEGIN_NAMESPACE
-#endif
 
 // Set a hard coded left margin to account for the indentation
 // of the tree view icon when switching to an editor
@@ -2583,9 +2581,7 @@ void QtFontEditorFactory::disconnectPropertyManager(QtFontPropertyManager *manag
     disconnect(manager, SIGNAL(valueChanged(QtProperty*,QFont)), this, SLOT(slotPropertyChanged(QtProperty*,QFont)));
 }
 
-#if QT_VERSION >= 0x040400
 QT_END_NAMESPACE
-#endif
 
 #include "moc_qteditorfactory.cpp"
 #include "qteditorfactory.moc"

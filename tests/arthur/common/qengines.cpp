@@ -243,11 +243,7 @@ void GLEngine::prepare(const QSize &_size, const QColor &color)
     size = _size;
     fillColor = color;
     if (usePixelBuffers) {
-#if (QT_VERSION < 0x040200) && defined(Q_WS_MAC)
-        pbuffer = new QGLPixelBuffer(QSize(512, 512), QGLFormat(QGL::SampleBuffers));
-#else
         pbuffer = new QGLPixelBuffer(size, QGLFormat(QGL::SampleBuffers));
-#endif
     } else {
         widget = new QGLWidget(QGLFormat(QGL::SampleBuffers));
         widget->setAutoFillBackground(false);

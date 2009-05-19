@@ -109,7 +109,7 @@ QStyleOptionMenuItem QComboMenuDelegate::getStyleOption(const QStyleOptionViewIt
                                                         const QModelIndex &index) const
 {
     QStyleOptionMenuItem menuOption;
-    menuOption.palette = QComboBoxPrivate::viewContainerPalette(mCombo).resolve(QApplication::palette("QMenu"));
+    menuOption.palette = option.palette.resolve(QApplication::palette("QMenu"));
     menuOption.state = QStyle::State_None;
     if (mCombo->window()->isActiveWindow())
         menuOption.state = QStyle::State_Active;

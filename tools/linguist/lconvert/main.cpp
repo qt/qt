@@ -210,6 +210,7 @@ int main(int argc, char *argv[])
         qWarning() << qPrintable(cd.error());
         return 2;
     }
+    Translator::reportDuplicates(tr.resolveDuplicates(), inFiles[0].name, verbose);
 
     for (int i = 1; i < inFiles.size(); ++i) {
         Translator tr2;
@@ -217,6 +218,7 @@ int main(int argc, char *argv[])
             qWarning() << qPrintable(cd.error());
             return 2;
         }
+        Translator::reportDuplicates(tr2.resolveDuplicates(), inFiles[i].name, verbose);
         for (int j = 0; j < tr2.messageCount(); ++j)
             tr.replaceSorted(tr2.message(j));
     }

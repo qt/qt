@@ -605,8 +605,9 @@ void tst_QStyleSheetStyle::palettePropagation()
     QVERIFY(COLOR(gb) == Qt::red);
     QVERIFY(COLOR(pb) == APPCOLOR(pb)); // palette shouldn't propagate
     gb.setStyleSheet("QGroupBox * { color: red }");
+
     QVERIFY(COLOR(pb) == Qt::red);
-    QVERIFY(COLOR(gb) == APPCOLOR(pb));
+    QVERIFY(COLOR(gb) == APPCOLOR(gb));
 
     QWidget window;
     window.setStyleSheet("* { color: white; }");

@@ -48,9 +48,7 @@
 #include <QtGui/QToolButton>
 #include <QtGui/QStyle>
 
-#if QT_VERSION >= 0x040400
 QT_BEGIN_NAMESPACE
-#endif
 
 class QtButtonPropertyBrowserPrivate
 {
@@ -626,8 +624,6 @@ bool QtButtonPropertyBrowser::isExpanded(QtBrowserItem *item) const
     return false;
 }
 
-#if QT_VERSION >= 0x040400
 QT_END_NAMESPACE
-#endif
 
 #include "moc_qtbuttonpropertybrowser.cpp"

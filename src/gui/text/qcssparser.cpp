@@ -278,19 +278,15 @@ static const QCssKnownValue values[NumKnownValues - 1] = {
     { "xx-large", Value_XXLarge }
 };
 
+//Map id to strings as they appears in the 'values' array above
+static const int indexOfId[NumKnownValues] = { 0, 40, 47, 41, 48, 53, 34, 26, 68, 69, 25, 42, 5, 62, 46,
+    29, 57, 58, 27, 50, 60, 6, 10, 38, 55, 19, 13, 17, 18, 20, 21, 49, 24, 45, 65, 36, 3, 2, 39, 61, 16,
+    11, 56, 14, 32, 63, 54, 64, 33, 67, 8, 28, 37, 12, 35, 59, 7, 9, 4, 66, 52, 22, 23, 30, 31, 1, 15, 0,
+    51, 44, 43 };
+
 QString Value::toString() const
 {
-    static int indexOfId[NumKnownValues - 1];
-    static bool hasCachedIndexes = false;
-
     if (type == KnownIdentifier) {
-        if (!hasCachedIndexes) {
-            for (int i = 0; i < NumKnownValues - 1; ++i)
-                indexOfId[values[i].id] = i;
-
-            hasCachedIndexes = true;
-        }
-
         return QLatin1String(values[indexOfId[variant.toInt()]].name);
     } else {
         return variant.toString();
@@ -1165,13 +1161,20 @@ static bool setFontWeightFromValue(const Value &value, QFont *font)
     return true;
 }
 
-static bool setFontFamilyFromValues(const QVector<Value> &values, QFont *font)
+/** \internal
+ * parse the font family from the values (starting from index \a start)
+ * and set it the \a font
+ * \returns true if a family was extracted.
+ */
+static bool setFontFamilyFromValues(const QVector<Value> &values, QFont *font, int start = 0)
 {
     QString family;
-    for (int i = 0; i < values.count(); ++i) {
+    for (int i = start; i < values.count(); ++i) {
         const Value &v = values.at(i);
-        if (v.type == Value::TermOperatorComma)
-            break;
+        if (v.type == Value::TermOperatorComma) {
+            family += QLatin1Char(',');
+            continue;
+        }
         const QString str = v.variant.toString();
         if (str.isEmpty())
             break;
@@ -1225,9 +1228,7 @@ static void parseShorthandFontProperty(const QVector<Value> &values, QFont *font
     }
 
     if (i < values.count()) {
-        QString fam = values.at(i).variant.toString();
-        if (!fam.isEmpty())
-            font->setFamily(fam);
+        setFontFamilyFromValues(values, font, i);
     }
 }
 
