@@ -164,3 +164,14 @@ void QSoftKeyStack::handleSoftKeyPress(int command)
     Q_D(QSoftKeyStack);
     d->handleSoftKeyPress(command);
 }
+
+#if !defined(Q_WS_S60)
+void QSoftKeyStackPrivate::handleSoftKeyPress(int command)
+{
+    Q_UNUSED(command)
+}
+
+void QSoftKeyStackPrivate::setNativeSoftKeys()
+{
+}
+#endif // !defined(Q_WS_S60)
