@@ -118,6 +118,24 @@ void QSoftKeyStack::handleFocusChanged(QWidget *old, QWidget *now)
 {
     if (!now)
         return;
+    QWidget *w = qApp->activeWindow();
+    QMainWindow *mainWindow = qobject_cast<QMainWindow*>(w);
+    QSoftKeyStack* softKeyStack = mainWindow->softKeyStack();
+    if (old)
+        softKeyStack->pop();
+    
+    Qt::ContextMenuPolicy policy = now->contextMenuPolicy();
+    if (policy != Qt::NoContextMenu && policy != Qt::PreventContextMenu ) {
+        QList<QSoftKeyAction*> actionList;
+        QSoftKeyAction* menu = new QSoftKeyAction(QSoftKeyAction::Menu, QString("Menu"), now);
+        QSoftKeyAction* contextMenu = new QSoftKeyAction(QSoftKeyAction::ContextMenu, QString("ContextMenu"), now);
+        actionList.append(menu);
+        actionList.append(contextMenu);
+        softKeyStack->push(actionList);
+        }
+
+/*    if (!now)
+        return;
     bool nowInOurMainWindow = false;
     const QMainWindow *ourMainWindow = qobject_cast<const QMainWindow*>(parent());
     Q_ASSERT(ourMainWindow);
@@ -136,6 +154,7 @@ void QSoftKeyStack::handleFocusChanged(QWidget *old, QWidget *now)
 
     QList<QAction*> actions = now->actions();
     // Do something with these actions.
+*/
 }
 
 void QSoftKeyStack::handleSoftKeyPress(int command)
