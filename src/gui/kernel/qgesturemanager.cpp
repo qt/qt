@@ -507,6 +507,7 @@ bool QGestureManager::sendGestureEvent(QWidget *receiver,
         if (receiver) {
             // find the target widget
             gd->widget = 0;
+            gd->graphicsItem = 0;
             QWidget *w = receiver;
             QPoint offset;
             const QString gestureType = g->type();

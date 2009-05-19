@@ -9,7 +9,11 @@ class SingleshotEvent : public QEvent
 {
 public:
     static const int Type = QEvent::User + 1;
-    SingleshotEvent() : QEvent(QEvent::Type(Type)) { }
+
+    QPoint point;
+
+    explicit SingleshotEvent(int x = 0, int y = 0)
+        : QEvent(QEvent::Type(Type)), point(x, y) { }
 };
 
 class SingleshotGesture : public QGesture

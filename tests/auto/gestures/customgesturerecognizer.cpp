@@ -14,6 +14,7 @@ SingleshotGestureRecognizer::SingleshotGestureRecognizer(QObject *parent)
 QGestureRecognizer::Result SingleshotGestureRecognizer::filterEvent(const QEvent *event)
 {
     if (event->type() == SingleshotEvent::Type) {
+        gesture->setHotSpot(static_cast<const SingleshotEvent*>(event)->point);
         return QGestureRecognizer::GestureFinished;
     }
     return QGestureRecognizer::NotGesture;
@@ -21,6 +22,7 @@ QGestureRecognizer::Result SingleshotGestureRecognizer::filterEvent(const QEvent
 
 void SingleshotGestureRecognizer::reset()
 {
+    gesture->setHotSpot(QPoint());
     gesture->offset = QPoint();
 }
 

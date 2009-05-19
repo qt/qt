@@ -3945,6 +3945,7 @@ bool QGraphicsScene::event(QEvent *event)
                 it != e; ++it) {
                 QGesture *g = *it;
                 QGesturePrivate *gd = g->d_func();
+                gd->graphicsItem = 0;
                 QList<QGraphicsItem*> itemsInGestureArea = items(g->hotSpot());
                 const QString gestureName = g->type();
                 foreach(QGraphicsItem *item, itemsInGestureArea) {

@@ -269,15 +269,20 @@ class GraphicsScene : public QGraphicsScene
 public:
     GraphicsScene()
     {
-        shouldAcceptSingleshotGesture = false;
-        shouldAcceptPinchGesture = false;
-        shouldAcceptSecondFingerGesture = false;
+        reset();
     }
     bool shouldAcceptSingleshotGesture;
     bool shouldAcceptPinchGesture;
     bool shouldAcceptSecondFingerGesture;
     GestureState gesture;
 
+    void reset()
+    {
+        shouldAcceptSingleshotGesture = false;
+        shouldAcceptPinchGesture = false;
+        shouldAcceptSecondFingerGesture = false;
+        gesture.reset();
+    }
 protected:
     bool event(QEvent *event)
     {
@@ -319,6 +324,103 @@ protected:
     }
 };
 
+class GraphicsItem : public QGraphicsItem
+{
+public:
+    GraphicsItem()
+    {
+        reset();
+    }
+
+    QRectF boundingRect() const
+    {
+        return QRectF(0, 0, 100, 100);
+    }
+
+    void paint(QPainter *painter, const QStyleOptionGraphicsItem*, QWidget*)
+    {
+        painter->setBrush(Qt::green);
+        painter->drawRect(0, 0, 100, 100);
+    }
+
+    void grabSingleshotGesture()
+    {
+        singleshotGestureId = grabGesture(SingleshotGestureRecognizer::Name);
+    }
+    void grabPinchGesture()
+    {
+        pinchGestureId = grabGesture(PinchGestureRecognizer::Name);
+    }
+    void grabSecondFingerGesture()
+    {
+        secondFingerGestureId = grabGesture(SecondFingerGestureRecognizer::Name);
+    }
+    void ungrabGestures()
+    {
+        releaseGesture(singleshotGestureId);
+        singleshotGestureId = -1;
+        releaseGesture(pinchGestureId);
+        pinchGestureId = -1;
+        releaseGesture(secondFingerGestureId);
+        secondFingerGestureId = -1;
+    }
+
+    int singleshotGestureId;
+    int pinchGestureId;
+    int secondFingerGestureId;
+
+    bool shouldAcceptSingleshotGesture;
+    bool shouldAcceptPinchGesture;
+    bool shouldAcceptSecondFingerGesture;
+    GestureState gesture;
+
+    void reset()
+    {
+        shouldAcceptSingleshotGesture = true;
+        shouldAcceptPinchGesture = true;
+        shouldAcceptSecondFingerGesture = true;
+        gesture.reset();
+    }
+protected:
+    bool sceneEvent(QEvent *event)
+    {
+        if (event->type() == QEvent::GraphicsSceneGesture) {
+            QGraphicsSceneGestureEvent *e = static_cast<QGraphicsSceneGestureEvent*>(event);
+            ++gesture.seenGestureEvent;
+            if (SingleshotGesture *g = (SingleshotGesture*)e->gesture(SingleshotGestureRecognizer::Name)) {
+                gesture.last.singleshot.delivered = true;
+                gesture.last.singleshot.offset = g->offset;
+                if (shouldAcceptSingleshotGesture)
+                    g->accept();
+            }
+            if (PinchGesture *g = (PinchGesture*)e->gesture(PinchGestureRecognizer::Name)) {
+                gesture.last.pinch.delivered = true;
+                gesture.last.pinch.startPoints[0] = g->startPoints[0];
+                gesture.last.pinch.startPoints[1] = g->startPoints[1];
+                gesture.last.pinch.lastPoints[0] = g->lastPoints[0];
+                gesture.last.pinch.lastPoints[1] = g->lastPoints[1];
+                gesture.last.pinch.points[0] = g->points[0];
+                gesture.last.pinch.points[1] = g->points[1];
+                gesture.last.pinch.offset = g->offset;
+                if (shouldAcceptPinchGesture)
+                    g->accept();
+            }
+            if (SecondFingerGesture *g = (SecondFingerGesture*)e->gesture(SecondFingerGestureRecognizer::Name)) {
+                gesture.last.secondfinger.delivered = true;
+                gesture.last.secondfinger.startPoint = g->startPoint;
+                gesture.last.secondfinger.lastPoint = g->lastPoint;
+                gesture.last.secondfinger.point = g->point;
+                gesture.last.secondfinger.offset = g->offset;
+                if (shouldAcceptSecondFingerGesture)
+                    g->accept();
+            }
+            gesture.last.cancelled = e->cancelledGestures();
+            return true;
+        }
+        return QGraphicsItem::sceneEvent(event);
+    }
+};
+
 class tst_Gestures : public QObject
 {
     Q_OBJECT
@@ -342,6 +444,7 @@ private slots:
     void acceptedGesturePropagation();
 
     void simpleGraphicsView();
+    void simpleGraphicsItem();
 
 private:
     SingleshotGestureRecognizer *singleshotRecognizer;
@@ -564,6 +667,36 @@ void tst_Gestures::simpleGraphicsView()
     QVERIFY(scene.gesture.seenGestureEvent);
     QVERIFY(scene.gesture.last.singleshot.delivered);
     QVERIFY(scene.gesture.last.cancelled.isEmpty());
+}
+
+void tst_Gestures::simpleGraphicsItem()
+{
+    mainWidget->grabSingleshotGesture();
+    GraphicsScene scene;
+    QGraphicsView view(&scene);
+    mainWidget->layout()->addWidget(&view);
+    GraphicsItem *item = new GraphicsItem;
+    item->grabSingleshotGesture();
+    item->setPos(30, 50);
+    scene.addItem(item);
+    QApplication::processEvents();
+
+    SingleshotEvent event(50, 80);
+    sendSpontaneousEvent(&view, &event);
+    QVERIFY(item->gesture.seenGestureEvent);
+    QVERIFY(scene.gesture.seenGestureEvent);
+    QVERIFY(!mainWidget->gesture.seenGestureEvent);
+
+    item->reset();
+    scene.reset();
+    mainWidget->reset();
+
+    item->shouldAcceptSingleshotGesture = false;
+    SingleshotEvent event2(20, 40);
+    sendSpontaneousEvent(&view, &event2);
+    QVERIFY(!item->gesture.seenGestureEvent);
+    QVERIFY(scene.gesture.seenGestureEvent);
+    QVERIFY(mainWidget->gesture.seenGestureEvent);
 }
 
 QTEST_MAIN(tst_Gestures)
