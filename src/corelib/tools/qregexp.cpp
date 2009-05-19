@@ -3700,6 +3700,9 @@ static void invalidateEngine(QRegExpPrivate *priv)
     equivalent to using the RegExp pattern on a string in
     which all metacharacters are escaped using escape().
 
+    \value W3CXmlSchema11 The pattern is a regular expression as
+    defined by the W3C XML Schema 1.1 specification.
+
     \sa setPatternSyntax()
 */
 
