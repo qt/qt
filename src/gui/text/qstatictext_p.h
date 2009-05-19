@@ -9,10 +9,10 @@ class QStaticText;
 class QStaticTextPrivate
 {
 public:
+    QStaticTextPrivate();
     void init(const QString &text, const QFont &font);
 
-    QTextEngine engine;
-    QVarLengthArray<int> visualOrder;
+    QTextLayout *textLayout;
     
     static QStaticTextPrivate *get(const QStaticText *q);
 };

@@ -51,6 +51,11 @@ QStaticText::QStaticText(const QString &text, const QFont &font)
     d->init(text, font);
 }
 
+QStaticTextPrivate::QStaticTextPrivate()
+    : textLayout(0)
+{
+}
+
 QStaticTextPrivate *QStaticTextPrivate::get(const QStaticText *q)
 {
     return q->d_ptr;
@@ -58,34 +63,21 @@ QStaticTextPrivate *QStaticTextPrivate::get(const QStaticText *q)
 
 void QStaticTextPrivate::init(const QString &text, const QFont &font)
 {
-    engine.text = text; 
-    engine.fnt = font;
+    Q_ASSERT(textLayout == 0);
+    textLayout = new QTextLayout(text, font);
+    textLayout->setCacheEnabled(true); 
 
-    /*engine.option.setTextDirection(d->state->layoutDirection);
-    if (tf & (Qt::TextForceLeftToRight|Qt::TextForceRightToLeft)) {
-        engine.ignoreBidi = true;
-        engine.option.setTextDirection((tf & Qt::TextForceLeftToRight) ? Qt::LeftToRight : Qt::RightToLeft);
-    }*/
+    QFontMetrics fontMetrics(font);
 
-    engine.itemize();
-    QScriptLine line;
-    line.length = text.length();
-    engine.shapeLine(line);
+    textLayout->beginLayout();
+    int h = fontMetrics.ascent();
+    QTextLine line;
+    if ((line = textLayout->createLine()).isValid()) {
+        line.setLineWidth(fontMetrics.width(text));    
+        line.setPosition(QPointF(0, h));
+        h += line.height();
+    }
 
-    int nItems = engine.layoutData->items.size();
-    visualOrder = QVarLengthArray<int>(nItems);
-    QVarLengthArray<uchar> levels(nItems);
-    for (int i = 0; i < nItems; ++i)
-        levels[i] = engine.layoutData->items[i].analysis.bidiLevel;
-    QTextEngine::bidiReorder(nItems, levels.data(), visualOrder.data());
-
-    /*if (justificationPadding > 0) {
-        engine.option.setAlignment(Qt::AlignJustify);
-        engine.forceJustification = true;
-        // this works because justify() is only interested in the difference between width and textWidth
-        line.width = justificationPadding;
-        engine.justify(line);
-    }*/
 }
 
 QT_END_NAMESPACE

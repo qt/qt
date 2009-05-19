@@ -5707,32 +5707,9 @@ void QPainter::drawText(const QPointF &p, const QString &str)
 void QPainter::drawStaticText(const QPointF &p, const QStaticText &staticText)
 {
     const QStaticTextPrivate *staticText_d = QStaticTextPrivate::get(&staticText);
-    const QTextEngine &engine = staticText_d->engine;
-    const QVarLengthArray<int> &visualOrder = staticText_d->visualOrder;
+    QTextLayout *textLayout = staticText_d->textLayout;
 
-    QFixed x = QFixed::fromReal(p.x());
-    QFixed ox = x;
-
-    int nItems = engine.layoutData->items.size();
-    for (int i = 0; i < nItems; ++i) {
-        int item = visualOrder[i];
-        const QScriptItem &si = engine.layoutData->items.at(item);
-        if (si.analysis.flags >= QScriptAnalysis::TabOrObject) {
-            x += si.width;
-            continue;
-        }
-        QFont f = engine.font(si);
-        QTextItemInt gf(si, &f);
-        gf.glyphs = engine.shapedGlyphs(&si);
-        gf.chars = engine.layoutData->string.unicode() + si.position;
-        gf.num_chars = engine.length(item);
-        gf.width = si.width;
-        gf.logClusters = engine.logClusters(&si);
-
-        drawTextItem(QPointF(x.toReal(), p.y()), gf);
-
-        x += si.width;
-    }
+    textLayout->draw(this, p);
 }
 
 /*!
