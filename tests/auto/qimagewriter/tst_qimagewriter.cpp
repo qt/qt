@@ -97,6 +97,9 @@ private slots:
     void saveWithNoFormat_data();
     void saveWithNoFormat();
 
+    void resolution_data();
+    void resolution();
+
     void saveToTemporaryFile();
 };
 
@@ -162,7 +165,7 @@ tst_QImageWriter::tst_QImageWriter()
 
 tst_QImageWriter::~tst_QImageWriter()
 {
-    QDir dir("images");
+    QDir dir(prefix + QLatin1String("images"));
     QStringList filesToDelete = dir.entryList(QStringList() << "gen-*" , QDir::NoDotAndDotDot | QDir::Files);
     foreach( QString file, filesToDelete) {
         QFile::remove(dir.absoluteFilePath(file));
@@ -528,6 +531,39 @@ void tst_QImageWriter::saveWithNoFormat()
 
     QImage outImage = reader.read();
     QVERIFY2(!outImage.isNull(), qPrintable(reader.errorString()));
+}
+
+void tst_QImageWriter::resolution_data()
+{
+    QTest::addColumn<QString>("filename");
+    QTest::addColumn<int>("expectedDotsPerMeterX");
+    QTest::addColumn<int>("expectedDotsPerMeterY");
+#if defined QTEST_HAVE_TIFF
+    QTest::newRow("TIFF: 100 dpi") << ("image_100dpi.tif") << qRound(100 * (100 / 2.54)) << qRound(100 * (100 / 2.54));
+    QTest::newRow("TIFF: 50 dpi") << ("image_50dpi.tif") << qRound(50 * (100 / 2.54)) << qRound(50 * (100 / 2.54));
+    QTest::newRow("TIFF: 300 dot per meter") << ("image_300dpm.tif") << 300 << 300;
+#endif
+}
+
+void tst_QImageWriter::resolution()
+{
+    QFETCH(QString, filename);
+    QFETCH(int, expectedDotsPerMeterX);
+    QFETCH(int, expectedDotsPerMeterY);
+
+    QImage image(prefix + QLatin1String("colorful.bmp"));
+    image.setDotsPerMeterX(expectedDotsPerMeterX);
+    image.setDotsPerMeterY(expectedDotsPerMeterY);
+    const QString generatedFilepath = prefix + "gen-" + filename;
+    {
+        QImageWriter writer(generatedFilepath);
+        QVERIFY(writer.write(image));
+    }
+    QImageReader reader(generatedFilepath);
+    const QImage generatedImage = reader.read();
+
+    QCOMPARE(expectedDotsPerMeterX, generatedImage.dotsPerMeterX());
+    QCOMPARE(expectedDotsPerMeterY, generatedImage.dotsPerMeterY());
 }
 
 void tst_QImageWriter::saveToTemporaryFile()
