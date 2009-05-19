@@ -30,7 +30,7 @@ contains(QT_BUILD_PARTS, tools):{
 wince*: SUBDIRS += demos_sqlbrowser
 }
 }
-contains(QT_CONFIG, phonon)!static:SUBDIRS += demos_mediaplayer
+contains(QT_CONFIG, phonon):!static:SUBDIRS += demos_mediaplayer
 contains(QT_CONFIG, webkit):contains(QT_CONFIG, svg):SUBDIRS += demos_browser
 
 # install

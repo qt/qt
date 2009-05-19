@@ -527,7 +527,7 @@
     on plugins, consult the plugins \l{How to Create Qt
     Plugins}{overview document}.
 
-    You can omit the the first macro unless you want the plugin
+    You can omit the first macro unless you want the plugin
     to be statically linked with the application.
 
     \section2 Implementing Interface Factories

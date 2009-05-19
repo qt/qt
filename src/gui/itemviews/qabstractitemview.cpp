@@ -1338,7 +1338,7 @@ QSize QAbstractItemView::iconSize() const
 /*!
     \property QAbstractItemView::textElideMode
 
-    \brief the the position of the "..." in elided text.
+    \brief the position of the "..." in elided text.
 
     The default value for all item views is Qt::ElideRight.
 */

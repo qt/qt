@@ -316,6 +316,10 @@ Qt::Alignment variantToAlignment(const QVariant & q)
 // find changed subproperties of a variant
 unsigned compareSubProperties(const QVariant & q1, const QVariant & q2, qdesigner_internal::SpecialProperty specialProperty)
 {
+    // Do not clobber new value in the comparison function in
+    // case someone sets a QString on a PropertySheetStringValue.
+    if (q1.type() != q2.type())
+        return SubPropertyAll;
     switch (q1.type()) {
     case QVariant::Rect:
         return compareSubProperties(q1.toRect(), q2.toRect());

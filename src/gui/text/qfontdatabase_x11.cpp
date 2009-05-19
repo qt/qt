@@ -494,7 +494,7 @@ static inline bool isFixedPitch(char **tokens)
   Fills in a font definition (QFontDef) from an XLFD (X Logical Font
   Description).
 
-  Returns true if the the given xlfd is valid.
+  Returns true if the given xlfd is valid.
 */
 bool qt_fillFontDef(const QByteArray &xlfd, QFontDef *fd, int dpi, QtFontDesc *desc)
 {

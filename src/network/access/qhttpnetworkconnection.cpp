@@ -643,10 +643,21 @@ void QHttpNetworkConnectionPrivate::handleStatus(QAbstractSocket *socket, QHttpN
     switch (statusCode) {
     case 401:
     case 407:
-        handleAuthenticateChallenge(socket, reply, (statusCode == 407), resend);
-        if (resend) {
-            eraseData(reply);
-            sendRequest(socket);
+        if (handleAuthenticateChallenge(socket, reply, (statusCode == 407), resend)) {
+            if (resend) {
+                eraseData(reply);
+                sendRequest(socket);
+            }
+        } else {
+            int i = indexOf(socket);
+            emit channels[i].reply->headerChanged();
+            emit channels[i].reply->readyRead();
+            QNetworkReply::NetworkError errorCode = (statusCode == 407)
+                ? QNetworkReply::ProxyAuthenticationRequiredError
+                : QNetworkReply::AuthenticationRequiredError;
+            reply->d_func()->errorString = errorDetail(errorCode, socket);
+            emit q->error(errorCode, reply->d_func()->errorString);
+            emit channels[i].reply->finished();
         }
         break;
     default:
@@ -749,7 +760,6 @@ bool QHttpNetworkConnectionPrivate::handleAuthenticateChallenge(QAbstractSocket 
             // authentication is cancelled, send the current contents to the user.
             emit channels[i].reply->headerChanged();
             emit channels[i].reply->readyRead();
-            emit channels[i].reply->finished();
             QNetworkReply::NetworkError errorCode =
                 isProxy
                 ? QNetworkReply::ProxyAuthenticationRequiredError

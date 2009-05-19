@@ -2343,13 +2343,26 @@ void QWidgetPrivate::setStyle_helper(QStyle *newStyle, bool propagate, bool
         )
 {
     Q_Q(QWidget);
-    createExtra();
-
     QStyle *oldStyle  = q->style();
 #ifndef QT_NO_STYLE_STYLESHEET
-    QStyle *origStyle = extra->style;
+    QStyle *origStyle = 0;
 #endif
-    extra->style = newStyle;
+
+#ifdef Q_WS_MAC
+    // the metalhack boolean allows Qt/Mac to do a proper re-polish depending
+    // on how the Qt::WA_MacBrushedMetal attribute is set. It is only ever
+    // set when changing that attribute and passes the widget's CURRENT style.
+    // therefore no need to do a reassignment.
+    if (!metalHack)
+#endif
+    {
+        createExtra();
+
+#ifndef QT_NO_STYLE_STYLESHEET
+        origStyle = extra->style;
+#endif
+        extra->style = newStyle;
+    }
 
     // repolish
     if (q->windowType() != Qt::Desktop) {
@@ -6269,7 +6282,7 @@ QByteArray QWidget::saveGeometry() const
     returns false.
 
     If the restored geometry is off-screen, it will be modified to be
-    inside the the available screen geometry.
+    inside the available screen geometry.
 
     To restore geometry saved using QSettings, you can use code like
     this:

@@ -249,7 +249,7 @@
     provide an API that allows you to sort your model data
     programmatically. In addition, you can enable interactive sorting
     (i.e. allowing the users to sort the data by clicking the view's
-    headers), by connecting the QHeaderView::sectionClicked() signal
+    headers), by connecting the QHeaderView::sortIndicatorChanged() signal
     to the QTableView::sortByColumn() slot or the
     QTreeView::sortByColumn() slot, respectively.
 
