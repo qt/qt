@@ -428,7 +428,8 @@ int main(int argc, char **argv)
                     if (!fn.endsWith(QLatin1String(".java"))
                         && !fn.endsWith(QLatin1String(".ui"))
                         && !fn.endsWith(QLatin1String(".js"))
-                        && !fn.endsWith(QLatin1String(".qs"))) {
+                        && !fn.endsWith(QLatin1String(".qs"))
+                        && !fn.endsWith(QLatin1String(".qml"))) {
                         int offset = 0;
                         int depth = 0;
                         do {

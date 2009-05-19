@@ -94,18 +94,18 @@ protected:
                     const QString source = literal->value->asString();
 
                     QString comment;
+                    bool plural = false;
                     AST::ArgumentList *commentNode = node->arguments->next;
                     if (commentNode) {
                         literal = AST::cast<AST::StringLiteral *>(commentNode->expression);
                         comment = literal->value->asString();
-                    }
 
-                    bool plural = false;
-                    AST::ArgumentList *nNode = commentNode->next;
-                    if (nNode) {
-                        AST::NumericLiteral *literal3 = AST::cast<AST::NumericLiteral *>(nNode->expression);
-                        if (literal3) {
-                            plural = true;
+                        AST::ArgumentList *nNode = commentNode->next;
+                        if (nNode) {
+                            AST::NumericLiteral *literal3 = AST::cast<AST::NumericLiteral *>(nNode->expression);
+                            if (literal3) {
+                                plural = true;
+                            }
                         }
                     }
 

@@ -169,7 +169,6 @@ void QFxFlipable::setBack(QFxItem *back)
     children()->append(d->back);
     if (Front == d->current)
         d->back->setOpacity(0.);
-    d->setBackTransform();
 }
 
 /*!
@@ -203,8 +202,6 @@ void QFxFlipablePrivate::_q_updateAxis()
     axisRotation.axis()->setEndX(axis->endX());
     axisRotation.axis()->setEndY(axis->endY());
     axisRotation.axis()->setEndZ(axis->endZ());
-
-    setBackTransform();
 }
 
 void QFxFlipablePrivate::setBackTransform()
@@ -273,8 +270,10 @@ void QFxFlipable::setRotation(qreal angle)
         d->current = newSide;
         if (d->front)
             d->front->setOpacity((d->current==Front)?1.:0.);
-        if (d->back)
+        if (d->back) {
+            d->setBackTransform();
             d->back->setOpacity((d->current==Back)?1.:0.);
+        }
         emit sideChanged();
     }
 }
@@ -296,7 +295,6 @@ QFxFlipable::Side QFxFlipable::side() const
 //(the logic here should be kept in sync with setBackTransform and setRotation)
 void QFxFlipable::transformChanged(const QSimpleCanvas::Matrix &trans)
 {
-    qWarning("Transform changed");
     Q_D(QFxFlipable);
     QPointF p1(0, 0);
     QPointF p2(1, 0);

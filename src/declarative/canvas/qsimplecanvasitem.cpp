@@ -181,10 +181,18 @@ void QSimpleCanvasItem::childrenChanged()
 {
 }
 
+int QSimpleCanvasItem::setPaintMargin(qreal margin)
+{
+    Q_D(QSimpleCanvasItem);
+    if (margin < d->paintmargin)
+        update(); // schedule repaint of old boundingRect
+    d->paintmargin = margin;
+}
+
 QRectF QSimpleCanvasItem::boundingRect() const
 {
     Q_D(const QSimpleCanvasItem);
-    return QRectF(0., 0., d->width, d->height);
+    return QRectF(-d->paintmargin, -d->paintmargin, d->width+d->paintmargin*2, d->height+d->paintmargin*2);
 }
 
 void QSimpleCanvasItem::paintContents(QPainter &)

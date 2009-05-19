@@ -615,6 +615,35 @@ QUrl QmlEngine::componentUrl(const QUrl& src, const QUrl& baseUrl) const
 }
 
 /*!
+  Returns the list of base urls the engine browses to find sub-components.
+
+  The search path consists of the base of the \a url, and, in the case of local files,
+  the directories imported using the "import" statement in \a qml.
+  */
+QList<QUrl> QmlEngine::componentSearchPath(const QByteArray &qml, const QUrl &url) const
+{
+    QList<QUrl> searchPath;
+
+    searchPath << url.resolved(QUrl(QLatin1String(".")));
+
+    if (QFileInfo(url.toLocalFile()).exists()) {
+        QmlScriptParser parser;
+        if (parser.parse(qml, url)) {
+            for (int i = 0; i < parser.imports().size(); ++i) {
+                QUrl importUrl = QUrl(parser.imports().at(i).uri);
+                if (importUrl.isRelative()) {
+                    searchPath << url.resolved(importUrl);
+                } else {
+                    searchPath << importUrl;
+                }
+            }
+        }
+    }
+
+    return searchPath;
+}
+
+/*!
     Sets the common QNetworkAccessManager, \a network, used by all QML elements instantiated
     by this engine.
 

@@ -186,8 +186,10 @@ void QFxAnchorsPrivate::clearItem(QFxItem *item)
         fill = 0;
     if (centeredIn == item)
         centeredIn = 0;
-    if (left.item == item)
+    if (left.item == item) {
         left.item = 0;
+        usedAnchors &= ~QFxAnchors::HasLeftAnchor;
+    }
     if (right.item == item) {
         right.item = 0;
         usedAnchors &= ~QFxAnchors::HasRightAnchor;
@@ -232,7 +234,6 @@ void QFxAnchorsPrivate::remDepend(QFxItem *item)
 
 bool QFxAnchorsPrivate::isItemComplete() const
 {
-    return true;
     return item->isComponentComplete();
 }
 
