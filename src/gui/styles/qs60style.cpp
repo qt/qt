@@ -645,7 +645,6 @@ void QS60Style::polish(QWidget *widget)
         widgetPalette.setColor(QPalette::Light, color.lighter());
         QApplication::setPalette(widgetPalette, "QDial");
     }
-    }
 }
 
 void QS60Style::unpolish(QApplication *application)

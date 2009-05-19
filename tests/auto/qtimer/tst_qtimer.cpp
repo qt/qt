@@ -84,6 +84,8 @@ private slots:
     void deleteLaterOnQTimer(); // long name, don't want to shadow QObject::deleteLater()
     void moveToThread();
     void restartedTimerFiresTooSoon();
+    void timerFiresOnlyOncePerProcessEvents_data();
+    void timerFiresOnlyOncePerProcessEvents();
 };
 
 class TimerHelper : public QObject
@@ -478,6 +480,55 @@ void tst_QTimer::restartedTimerFiresTooSoon()
     RestartedTimerFiresTooSoonObject object;
     object.timerFired();
     QVERIFY(object.eventLoop.exec() == 0);
+}
+
+class LongLastingSlotClass : public QObject
+{
+    Q_OBJECT
+
+public:
+    LongLastingSlotClass(QTimer *timer) : count(0), timer(timer) {}
+
+public slots:
+    void longLastingSlot()
+    {
+        // Don't use timers for this, because we are testing them.
+        QTime time;
+        time.start();
+        while (time.elapsed() < 200) {
+            for (int c = 0; c < 100000; c++) {} // Mindless looping.
+        }
+        if (++count >= 2) {
+            timer->stop();
+        }
+    }
+
+public:
+    int count;
+    QTimer *timer;
+};
+
+void tst_QTimer::timerFiresOnlyOncePerProcessEvents_data()
+{
+    QTest::addColumn<int>("interval");
+    QTest::newRow("zero timer") << 0;
+    QTest::newRow("non-zero timer") << 10;
+}
+
+void tst_QTimer::timerFiresOnlyOncePerProcessEvents()
+{
+    QFETCH(int, interval);
+
+    QTimer t;
+    LongLastingSlotClass longSlot(&t);
+    t.start(interval);
+    connect(&t, SIGNAL(timeout()), &longSlot, SLOT(longLastingSlot()));
+    // Loop because there may be other events pending.
+    while (longSlot.count == 0) {
+        QCoreApplication::processEvents(QEventLoop::WaitForMoreEvents);
+    }
+
+    QCOMPARE(longSlot.count, 1);
 }
 
 QTEST_MAIN(tst_QTimer)
