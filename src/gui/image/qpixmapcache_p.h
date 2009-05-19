@@ -58,6 +58,8 @@
 #include <private/qpixmap_raster_p.h>
 #include "qcache.h"
 
+QT_BEGIN_NAMESPACE
+
 class QPixmapCache::KeyData
 {
 public:
@@ -88,5 +90,7 @@ public:
         }
     }
 };
+
+QT_END_NAMESPACE
 
 #endif // QPIXMAPCACHE_P_H

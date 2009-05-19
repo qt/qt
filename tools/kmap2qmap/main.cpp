@@ -384,10 +384,12 @@ static const symbol_synonyms_t symbol_synonyms[] = {
 static const int symbol_synonyms_size = sizeof(symbol_synonyms)/sizeof(symbol_synonyms_t);
 
 // makes the generated array in --header mode a bit more human readable
+QT_BEGIN_NAMESPACE
 static bool operator<(const QWSKeyboard::Mapping &m1, const QWSKeyboard::Mapping &m2)
 {
     return m1.keycode != m2.keycode ? m1.keycode < m2.keycode : m1.modifiers < m2.modifiers;
 }
+QT_END_NAMESPACE
 
 class KeymapParser {
 public:
