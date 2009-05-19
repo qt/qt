@@ -17,7 +17,7 @@ H3 {
 
 h3.fn,span.fn
 {
-  background-color: #d5e1e8;
+  background-color: #d5e1d5;
   border-width: 1px;
   border-style: solid;
   border-color: #84b0c7;
@@ -112,7 +112,7 @@ table td.memItemRight {
   border-right-style: none;
   border-bottom-style: none;
   border-left-style: none;
-  background-color: #FAFAFA;
+  background-color: #d5e1d5;
   font-size: 80%;
 }
 
