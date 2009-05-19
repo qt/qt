@@ -1,5 +1,5 @@
 #include <string.h>// bogus
-/* ANSI-C code produced by gperf version 3.0.3 */
+/* ANSI-C code produced by gperf version 3.0.2 */
 /* Command-line: gperf -CDEot -L ANSI-C --key-positions='*' -N findColor -D -s 2  */
 
 #if !((' ' == 32) && ('!' == 33) && ('"' == 34) && ('#' == 35) \
@@ -141,9 +141,6 @@ hash (register const char *str, register unsigned int len)
 
 #ifdef __GNUC__
 __inline
-#ifdef __GNUC_STDC_INLINE__
-__attribute__ ((__gnu_inline__))
-#endif
 #endif
 const struct NamedColor *
 findColor (register const char *str, register unsigned int len)

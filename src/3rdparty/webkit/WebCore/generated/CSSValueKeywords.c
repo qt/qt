@@ -1,4 +1,4 @@
-/* ANSI-C code produced by gperf version 3.0.3 */
+/* ANSI-C code produced by gperf version 3.0.2 */
 /* Command-line: gperf -L ANSI-C -E -C -n -o -t --key-positions='*' -NfindValue -Hhash_val -Wwordlist_value -D CSSValueKeywords.gperf  */
 
 #if !((' ' == 32) && ('!' == 33) && ('"' == 34) && ('#' == 35) \
@@ -179,9 +179,6 @@ hash_val (register const char *str, register unsigned int len)
 
 #ifdef __GNUC__
 __inline
-#ifdef __GNUC_STDC_INLINE__
-__attribute__ ((__gnu_inline__))
-#endif
 #endif
 const struct css_value *
 findValue (register const char *str, register unsigned int len)
