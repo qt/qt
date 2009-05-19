@@ -251,7 +251,6 @@ void XsdSchemaParser::setTargetNamespaceExtended(const QString &targetNamespace)
 
 void XsdSchemaParser::setDocumentURI(const QUrl &uri)
 {
-    qDebug("%s", qPrintable(uri.toString()));
     m_documentURI = uri;
 
     // prevent to get included/imported/redefined twice
