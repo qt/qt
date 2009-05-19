@@ -340,11 +340,7 @@ bool QEasingCurveFunction::operator==(const QEasingCurveFunction& other)
            _o == other._o;
 }
 
-#ifdef QT_EXPERIMENTAL_SOLUTION
-# include "easing.cpp"
-#else
-# include "../3rdparty/easing/easing.cpp"
-#endif
+#include "../3rdparty/easing/easing.cpp"
 
 class QEasingCurvePrivate
 {

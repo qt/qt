@@ -352,42 +352,22 @@ void QAbstractAnimationPrivate::setState(QAbstractAnimation::State newState)
 
     \sa QVariantAnimation, QAnimationGroup
 */
-#ifdef QT_EXPERIMENTAL_SOLUTION
-QAbstractAnimation::QAbstractAnimation(QObject *parent)
-    : d_ptr(new QAbstractAnimationPrivate)
-{
-    // Allow auto-add on reparent
-    setParent(parent);
-    d_ptr->q_ptr = this;
-}
-#else
 QAbstractAnimation::QAbstractAnimation(QObject *parent)
     : QObject(*new QAbstractAnimationPrivate, 0)
 {
     // Allow auto-add on reparent
     setParent(parent);
 }
-#endif
 
 /*!
     \internal
 */
-#ifdef QT_EXPERIMENTAL_SOLUTION
-QAbstractAnimation::QAbstractAnimation(QAbstractAnimationPrivate &dd, QObject *parent)
-    : d_ptr(&dd)
-{
-    // Allow auto-add on reparent
-   setParent(parent);
-   d_ptr->q_ptr = this;
-}
-#else
 QAbstractAnimation::QAbstractAnimation(QAbstractAnimationPrivate &dd, QObject *parent)
     : QObject(dd, 0)
 {
     // Allow auto-add on reparent
    setParent(parent);
 }
-#endif
 
 /*!
     Stops the animation if it's running, then destroys the

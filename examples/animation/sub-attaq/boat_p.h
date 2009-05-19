@@ -47,11 +47,7 @@
 #include "graphicsscene.h"
 
 // Qt
-#if defined(QT_EXPERIMENTAL_SOLUTION)
-# include "qkeyeventtransition.h"
-#else
-# include <QtGui/QKeyEventTransition>
-#endif
+#include <QtGui/QKeyEventTransition>
 
 static const int MAX_BOMB = 5;
 

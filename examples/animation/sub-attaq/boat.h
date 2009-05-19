@@ -46,11 +46,7 @@
 #include <QtCore/QObject>
 #include <QtGui/QKeyEvent>
 
-#if defined(QT_EXPERIMENTAL_SOLUTION)
-# include "qtgraphicswidget.h"
-#else
-# include <QtGui/QGraphicsWidget>
-#endif
+#include <QtGui/QGraphicsWidget>
 
 class PixmapItem;
 class Bomb;

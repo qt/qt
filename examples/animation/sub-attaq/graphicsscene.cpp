@@ -53,21 +53,12 @@
 #include "progressitem.h"
 
 //Qt
-#if defined(QT_EXPERIMENTAL_SOLUTION)
-#include "qpropertyanimation.h"
-#include "qsequentialanimationgroup.h"
-#include "qparallelanimationgroup.h"
-#include "qstatemachine.h"
-#include "qfinalstate.h"
-#include "qpauseanimation.h"
-#else
 #include <QtCore/QPropertyAnimation>
 #include <QtCore/QSequentialAnimationGroup>
 #include <QtCore/QParallelAnimationGroup>
 #include <QtCore/QStateMachine>
 #include <QtCore/QFinalState>
 #include <QtCore/QPauseAnimation>
-#endif
 #include <QtGui/QAction>
 #include <QtCore/QDir>
 #include <QtGui/QApplication>

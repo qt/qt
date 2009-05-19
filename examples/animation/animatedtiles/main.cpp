@@ -40,18 +40,7 @@
 ****************************************************************************/
 
 #include <QtGui>
-#ifdef QT_EXPERIMENTAL_SOLUTION
-# include "qgraphicswidget.h"
-# include "qstate.h"
-# include "qstatemachine.h"
-# include "qabstracttransition.h"
-# include "qgraphicswidget.h"
-# include "qparallelanimationgroup.h"
-# include "qpropertyanimation.h"
-# include "qsignaltransition.h"
-#else
 #include <QtCore/qstate.h>
-#endif
 
 class Pixmap : public QObject, public QGraphicsPixmapItem
 {

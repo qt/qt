@@ -56,19 +56,13 @@
 #include <QtCore/qbasictimer.h>
 #include <QtCore/qdatetime.h>
 #include <QtCore/qtimer.h>
-#ifndef QT_EXPERIMENTAL_SOLUTION
 #include <private/qobject_p.h>
-#endif
 
 QT_BEGIN_NAMESPACE
 
 class QAnimationGroup;
 class QAbstractAnimation;
-#ifdef QT_EXPERIMENTAL_SOLUTION
-class QAbstractAnimationPrivate
-#else
 class QAbstractAnimationPrivate : public QObjectPrivate
-#endif
 {
 public:
     QAbstractAnimationPrivate()
@@ -101,9 +95,6 @@ public:
     int currentLoop;
 
     QAnimationGroup *group;
-#ifdef QT_EXPERIMENTAL_SOLUTION
-    QAbstractAnimation *q_ptr;
-#endif
 
 private:
     Q_DECLARE_PUBLIC(QAbstractAnimation)

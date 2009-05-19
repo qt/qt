@@ -48,11 +48,7 @@
 #include "qanimationstate.h"
 
 //Qt
-#if defined(QT_EXPERIMENTAL_SOLUTION)
-#include "qpropertyanimation.h"
-#else
 #include <QtCore/QPropertyAnimation>
-#endif
 #include <QtGui/QGraphicsScene>
 
 //This state is describing when the boat is moving right

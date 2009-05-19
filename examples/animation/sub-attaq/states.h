@@ -43,17 +43,10 @@
 #define STATES_H
 
 //Qt
-#if defined(QT_EXPERIMENTAL_SOLUTION)
-#include "qstate.h"
-#include "qsignaltransition.h"
-#include "qpropertyanimation.h"
-#include "qkeyeventtransition.h"
-#else
 #include <QtCore/QState>
 #include <QtCore/QSignalTransition>
 #include <QtCore/QPropertyAnimation>
-# include <QtGui/QKeyEventTransition>
-#endif
+#include <QtGui/QKeyEventTransition>
 #include <QtCore/QSet>
 
 class GraphicsScene;

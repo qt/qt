@@ -45,12 +45,7 @@
 //Qt
 #include <QtGui/QGraphicsScene>
 #include <QtCore/QSet>
-
-#if defined(QT_EXPERIMENTAL_SOLUTION)
-# include "qstate.h"
-#else
-# include <QtCore/QState>
-#endif
+#include <QtCore/QState>
 
 
 class Boat;

@@ -42,13 +42,8 @@
 #ifndef QANIMATION_H
 #define QANIMATION_H
 
-#if defined(QT_EXPERIMENTAL_SOLUTION)
-# include "qabstractanimation.h"
-# include "qeasingcurve.h"
-#else
-# include <QtCore/qeasingcurve.h>
-# include <QtCore/qabstractanimation.h>
-#endif
+#include <QtCore/qeasingcurve.h>
+#include <QtCore/qabstractanimation.h>
 #include <QtCore/qvector.h>
 #include <QtCore/qvariant.h>
 #include <QtCore/qpair.h>

@@ -41,13 +41,8 @@
 
 #ifndef QT_NO_ANIMATION
 
-#ifdef QT_EXPERIMENTAL_SOLUTION
-# include "qvariantanimation.h"
-# include "qvariantanimation_p.h"
-#else
 #include <QtCore/qvariantanimation.h>
 #include <private/qvariantanimation_p.h>
-#endif
 
 #include <QtGui/qcolor.h>
 

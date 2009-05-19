@@ -42,11 +42,7 @@
 #ifndef QANIMATIONGROUP_H
 #define QANIMATIONGROUP_H
 
-#if defined(QT_EXPERIMENTAL_SOLUTION)
-# include "qabstractanimation.h"
-#else
-# include <QtCore/qabstractanimation.h>
-#endif
+#include <QtCore/qabstractanimation.h>
 
 QT_BEGIN_HEADER
 

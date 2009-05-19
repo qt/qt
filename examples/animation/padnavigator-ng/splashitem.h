@@ -40,11 +40,7 @@
 ****************************************************************************/
 
 #include <QtCore/qobject.h>
-#ifdef QT_EXPERIMENTAL_SOLUTION
-#include "qtgraphicswidget.h"
-#else
 #include <QtGui/qgraphicswidget.h>
-#endif
 
 class SplashItem : public QGraphicsWidget
 {

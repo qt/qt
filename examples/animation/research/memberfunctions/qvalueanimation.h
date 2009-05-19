@@ -42,11 +42,7 @@
 #ifndef QVALUEANIMATION_H
 #define QVALUEANIMATION_H
 
-#if defined(QT_EXPERIMENTAL_SOLUTION)
-# include "qvariantanimation.h"
-#else
-# include <QtCore/qvariantanimation.h>
-#endif
+#include <QtCore/qvariantanimation.h>
 
 QT_BEGIN_HEADER
 

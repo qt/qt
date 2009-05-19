@@ -40,11 +40,7 @@
 ****************************************************************************/
 
 #include <QtGui/qgraphicsview.h>
-#ifdef QT_EXPERIMENTAL_SOLUTION
-#include "qtgraphicswidget.h"
-#else
 #include <QtGui/qgraphicswidget.h>
-#endif
 
 QT_BEGIN_NAMESPACE
 class Ui_BackSide;

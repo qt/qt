@@ -43,11 +43,7 @@
 #include "animationmanager.h"
 
 //Qt
-#if defined(QT_EXPERIMENTAL_SOLUTION)
-# include "qabstractanimation.h"
-#else
-# include <QtCore/QAbstractAnimation>
-#endif
+#include <QtCore/QAbstractAnimation>
 #include <QtCore/QDebug>
 
 // the universe's only animation manager

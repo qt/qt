@@ -54,11 +54,7 @@
 //
 
 #include "qvariantanimation.h"
-#if defined(QT_EXPERIMENTAL_SOLUTION)
-# include "qeasingcurve.h"
-#else
-# include <QtCore/qeasingcurve.h>
-#endif
+#include <QtCore/qeasingcurve.h>
 #include <QtCore/qmetaobject.h>
 #include <QtCore/qvector.h>
 

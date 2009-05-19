@@ -47,15 +47,6 @@
 
 #include <QtCore>
 #include <QtGui>
-#if defined(QT_EXPERIMENTAL_SOLUTION)
-#include "qstatemachine.h"
-#include "qstate.h"
-#include "qeventtransition.h"
-#include "qsignaltransition.h"
-#include "qsignalevent.h"
-#include "qpropertyanimation.h"
-#include "qparallelanimationgroup.h"
-#endif
 
 class KeyPressTransition: public QSignalTransition
 {
