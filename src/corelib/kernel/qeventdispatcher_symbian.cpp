@@ -98,7 +98,8 @@ inline QActiveObject::QActiveObject(TInt priority, QEventDispatcherSymbian *disp
     : CActive(priority),
       m_dispatcher(dispatcher),
       m_hasAlreadyRun(false),
-      m_hasRunAgain(false)
+      m_hasRunAgain(false),
+      m_iterationCount(1)
 {
 }
 
@@ -112,13 +113,16 @@ bool QActiveObject::okToRun()
 {
     Q_ASSERT(!m_hasRunAgain);
 
-    if (m_hasAlreadyRun) {
+    if (!m_hasAlreadyRun || m_dispatcher->iterationCount() != m_iterationCount) {
+        // First occurrence of this event in this iteration.
+        m_hasAlreadyRun = true;
+        m_iterationCount = m_dispatcher->iterationCount();
+        return true;
+    } else {
+        // The event has already occurred.
         m_dispatcher->addDeferredActiveObject(this);
         m_hasRunAgain = true;
         return false;
-    } else {
-        m_hasAlreadyRun = true;
-        return true;
     }
 }
 
@@ -528,6 +532,7 @@ QEventDispatcherSymbian::QEventDispatcherSymbian(QObject *parent)
       m_completeDeferredAOs(0),
       m_interrupt(false),
       m_wakeUpDone(0),
+      m_iterationCount(0),
       m_noSocketEvents(false)
 {
 }
@@ -565,6 +570,10 @@ void QEventDispatcherSymbian::closingDown()
 bool QEventDispatcherSymbian::processEvents ( QEventLoop::ProcessEventsFlags flags )
 {
     Q_D(QAbstractEventDispatcher);
+
+    // It is safe if this counter overflows. The main importance is that each
+    // iteration count is different from the last.
+    m_iterationCount++;
 
     RThread &thread = d->threadData->symbian_thread_handle;
 

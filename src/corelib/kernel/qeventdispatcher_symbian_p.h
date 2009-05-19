@@ -61,6 +61,7 @@ protected:
 private:
     bool m_hasAlreadyRun : 1;
     bool m_hasRunAgain : 1;
+    int m_iterationCount;
 };
 
 class QWakeUpActiveObject : public CActive
@@ -207,6 +208,8 @@ public:
     void removeDeferredActiveObject(QActiveObject *object);
     void reactivateDeferredActiveObjects();
 
+    inline int iterationCount() const { return m_iterationCount; }
+
     static void RequestComplete(TRequestStatus *&status, TInt reason);
     static void RequestComplete(RThread &threadHandle, TRequestStatus *&status, TInt reason);
 
@@ -228,6 +231,7 @@ private:
     volatile bool m_interrupt;
     QAtomicInt m_wakeUpDone;
 
+    unsigned char m_iterationCount;
     bool m_noSocketEvents;
     QList<QSocketActiveObject *> m_deferredSocketEvents;
 
