@@ -63,6 +63,9 @@ public:
     enum ProItemReturn {
         ReturnFalse,
         ReturnTrue,
+        ReturnBreak,
+        ReturnNext,
+        ReturnLoop,
         ReturnSkip,
         ReturnReturn
    };
