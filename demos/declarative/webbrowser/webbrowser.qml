@@ -135,6 +135,7 @@ Item {
                             wrap: false
                             font.size: 11
                             color: "#555555"
+                            focusOnPress: true
 
                             anchors.left: UrlBox.left
                             anchors.right: UrlBox.right
@@ -142,10 +143,6 @@ Item {
                             anchors.verticalCenter: UrlBox.verticalCenter
                             anchors.verticalCenterOffset: 1
                         }
-                    }
-                    MouseRegion {
-                        anchors.fill: UrlBox
-                        onClicked: { EditUrl.focus=true }
                     }
                 }
 
