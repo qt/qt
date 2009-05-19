@@ -38,7 +38,7 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#include <testtessellator.h>
+#include "testtessellator.h"
 #include <private/qtessellator_p.h>
 
 #include "math.h"
