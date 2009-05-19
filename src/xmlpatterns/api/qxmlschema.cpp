@@ -88,6 +88,9 @@ QXmlSchema::~QXmlSchema()
 /*!
   Sets this QXmlSchema to a schema loaded from the \a source
   URI.
+
+  If the schema \l {isValid()} {is invalid}, \c{false} is returned
+  and the behavior is undefined.
  */
 bool QXmlSchema::load(const QUrl &source)
 {
@@ -107,6 +110,10 @@ bool QXmlSchema::load(const QUrl &source)
 
   If \a source is \c null or not readable, or if \a documentUri is not
   a valid URI, behavior is undefined.
+
+  If the schema \l {isValid()} {is invalid}, \c{false} is returned
+  and the behavior is undefined.
+
   \sa isValid()
  */
 bool QXmlSchema::load(QIODevice *source, const QUrl &documentUri)
@@ -125,6 +132,9 @@ bool QXmlSchema::load(QIODevice *source, const QUrl &documentUri)
 
   If \a documentUri is not a valid URI, behavior is undefined.
   \sa isValid()
+
+  If the schema \l {isValid()} {is invalid}, \c{false} is returned
+  and the behavior is undefined.
  */
 bool QXmlSchema::load(const QByteArray &data, const QUrl &documentUri)
 {

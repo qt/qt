@@ -69,7 +69,8 @@ class MessageHandler : public QAbstractMessageHandler
         }
 
     protected:
-        virtual void handleMessage(QtMsgType type, const QString &description, const QUrl &identifier, const QSourceLocation &sourceLocation)
+        virtual void handleMessage(QtMsgType type, const QString &description,
+                                   const QUrl &identifier, const QSourceLocation &sourceLocation)
         {
             Q_UNUSED(type);
             Q_UNUSED(identifier);
@@ -127,7 +128,7 @@ void MainWindow::schemaSelected(int index)
 
     QFile schemaFile(QString(":/schema_%1.xsd").arg(index));
     schemaFile.open(QIODevice::ReadOnly);
-    const QString schemaText(QString::fromLatin1(schemaFile.readAll()));
+    const QString schemaText(QString::fromUtf8(schemaFile.readAll()));
     schemaView->setPlainText(schemaText);
 
     validate();
@@ -137,7 +138,7 @@ void MainWindow::instanceSelected(int index)
 {
     QFile instanceFile(QString(":/instance_%1.xml").arg((2*schemaSelection->currentIndex()) + index));
     instanceFile.open(QIODevice::ReadOnly);
-    const QString instanceText(QString::fromLatin1(instanceFile.readAll()));
+    const QString instanceText(QString::fromUtf8(instanceFile.readAll()));
     instanceEdit->setPlainText(instanceText);
 
     validate();
@@ -145,22 +146,22 @@ void MainWindow::instanceSelected(int index)
 
 void MainWindow::validate()
 {
-    const QByteArray schemaData = schemaView->toPlainText().toLatin1();
-    const QByteArray instanceData = instanceEdit->toPlainText().toLatin1();
+    const QByteArray schemaData = schemaView->toPlainText().toUtf8();
+    const QByteArray instanceData = instanceEdit->toPlainText().toUtf8();
 
     MessageHandler messageHandler;
 
     QXmlSchema schema;
     schema.setMessageHandler(&messageHandler);
 
-    schema.load(schemaData, QUrl("http://dummySchemaUrl/"));
+    schema.load(schemaData);
 
     bool errorOccurred = false;
     if (!schema.isValid()) {
         errorOccurred = true;
     } else {
         QXmlSchemaValidator validator(schema);
-        if (!validator.validate(instanceData, QUrl("http://dummyInstanceUrl")))
+        if (!validator.validate(instanceData))
             errorOccurred = true;
     }
 
@@ -171,7 +172,9 @@ void MainWindow::validate()
         validationStatus->setText(tr("validation successful"));
     }
 
-    QString styleSheet = QString("QLabel {background: %1; padding: 3px}").arg(errorOccurred ? QColor(Qt::red).lighter(160).name() : QColor(Qt::green).lighter(160).name());
+    const QString styleSheet = QString("QLabel {background: %1; padding: 3px}")
+                                      .arg(errorOccurred ? QColor(Qt::red).lighter(160).name() :
+                                                           QColor(Qt::green).lighter(160).name());
     validationStatus->setStyleSheet(styleSheet);
 }
 
