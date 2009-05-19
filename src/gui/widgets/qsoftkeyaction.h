@@ -54,6 +54,7 @@ class QSoftKeyActionPrivate;
 
 class Q_GUI_EXPORT QSoftKeyAction : public QAction
 {
+    Q_OBJECT
 public:
     enum StandardRole {
         Options=0,
