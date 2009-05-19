@@ -74,8 +74,8 @@ void tst_QString::equals_data() const
             64, 64, 64, 64,  64, 64, 64, 64, // 48
             64, 64, 64, 64,  64, 64, 64, 64,
             64, 64, 64, 64,  64, 64, 64, 64, // 64
-            64, 64, 64, 64,  64, 64, 64, 64,
-            96, 96, 96, 96,  96, 96, 96, 96  // 80
+            64, 64, 64, 64,  96, 96, 96, 96,
+            64, 64, 96, 96,  96, 96, 96, 96  // 80
         }, 0
     };
     const QChar *ptr = reinterpret_cast<const QChar *>(data.data);
@@ -88,15 +88,34 @@ void tst_QString::equals_data() const
     QTest::newRow("same-string") << base << base;
     QTest::newRow("same-data") << base << QString::fromRawData(ptr, 64);
 
-    // don't use length > 64, since that crosses a cache line
-    QTest::newRow("aligned-odd")
-        << QString::fromRawData(ptr, 63) << QString::fromRawData(ptr + 2, 63);
-    QTest::newRow("aligned-even")
-        << QString::fromRawData(ptr, 64) << QString::fromRawData(ptr + 2, 64);
-    QTest::newRow("unaligned-even")
-        << QString::fromRawData(ptr, 63) << QString::fromRawData(ptr + 1, 63);
-    QTest::newRow("unaligned-odd")
-        << QString::fromRawData(ptr, 64) << QString::fromRawData(ptr + 1, 64);
+    // try to avoid crossing a cache line (that is, at ptr[64])
+    QTest::newRow("aligned-aligned-4n")
+            << QString::fromRawData(ptr, 60) << QString::fromRawData(ptr + 2, 60);
+    QTest::newRow("aligned-unaligned-4n")
+            << QString::fromRawData(ptr, 60) << QString::fromRawData(ptr + 1, 60);
+    QTest::newRow("unaligned-unaligned-4n")
+            << QString::fromRawData(ptr + 1, 60) << QString::fromRawData(ptr + 3, 60);
+
+    QTest::newRow("aligned-aligned-4n+1")
+            << QString::fromRawData(ptr, 61) << QString::fromRawData(ptr + 2, 61);
+    QTest::newRow("aligned-unaligned-4n+1")
+            << QString::fromRawData(ptr, 61) << QString::fromRawData(ptr + 1, 61);
+    QTest::newRow("unaligned-unaligned-4n+1")
+            << QString::fromRawData(ptr + 1, 61) << QString::fromRawData(ptr + 3, 61);
+
+    QTest::newRow("aligned-aligned-4n-1")
+            << QString::fromRawData(ptr, 59) << QString::fromRawData(ptr + 2, 59);
+    QTest::newRow("aligned-unaligned-4n-1")
+            << QString::fromRawData(ptr, 59) << QString::fromRawData(ptr + 1, 59);
+    QTest::newRow("unaligned-unaligned-4n-1")
+            << QString::fromRawData(ptr + 1, 59) << QString::fromRawData(ptr + 3, 59);
+
+    QTest::newRow("aligned-aligned-2n")
+            << QString::fromRawData(ptr, 58) << QString::fromRawData(ptr + 2, 58);
+    QTest::newRow("aligned-unaligned-2n")
+            << QString::fromRawData(ptr, 58) << QString::fromRawData(ptr + 1, 58);
+    QTest::newRow("unaligned-unaligned-2n")
+            << QString::fromRawData(ptr + 1, 58) << QString::fromRawData(ptr + 3, 58);
 }
 
 QTEST_MAIN(tst_QString)

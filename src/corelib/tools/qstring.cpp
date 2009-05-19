@@ -206,12 +206,12 @@ static bool qMemEquals(const quint16 *a, const quint16 *b, int length)
     // block of data, with 4194304 iterations (per iteration):
     //    operation             usec            cpu ticks
     //     memcmp                330               710
-    //     16-bit                135             285-290
-    //  32-bit aligned          69.7             135-145
+    //     16-bit                 79             167-171
+    //  32-bit aligned            49             105-109
     //
     // Testing also indicates that unaligned 32-bit loads are as
     // performant as 32-bit aligned.
-    if (a == b)
+    if (a == b || !length)
         return true;
 
     register union {
@@ -223,24 +223,37 @@ static bool qMemEquals(const quint16 *a, const quint16 *b, int length)
     sb.w = b;
 
     // check alignment
-    bool unaligned = (sa.value | sb.value) & 2;
-#if defined(__i386__) || defined(__x86_64__) || defined(_M_X64_)
-    unaligned = false;
-#endif
-    if (!unaligned) {
-        // both addresses are 4-bytes aligned (or this is an x86)
+    if ((sa.value & 2) == (sb.value & 2)) {
+        // both addresses have the same alignment
+        if (sa.value & 2) {
+            // both addresses are not aligned to 4-bytes boundaries
+            // compare the first character
+            if (*sa.w != *sb.w)
+                return false;
+            --length;
+            ++sa.w;
+            ++sb.w;
+
+            // now both addresses are 4-bytes aligned
+        }
+
+        // both addresses are 4-bytes aligned
         // do a fast 32-bit comparison
-        for (register int halfLength = length / 2; halfLength; --halfLength, ++sa.d, ++sb.d) {
+        register const quint32 *e = sa.d + (length >> 1);
+        for ( ; sa.d != e; ++sa.d, ++sb.d) {
             if (*sa.d != *sb.d)
                 return false;
         }
-        return length & 1 ? (*sa.w == *sb.w) : true;
-    }
 
-    // one or both of the addresses isn't 2-byte aligned
-    for ( ; length; --length, ++sa.w, ++sb.w) {
-        if (*sa.w != *sb.w)
-            return false;
+        // do we have a tail?
+        return (length & 1) ? *sa.w == *sb.w : true;
+    } else {
+        // one of the addresses isn't 4-byte aligned but the other is
+        register const quint16 *e = sa.w + length;
+        for ( ; sa.w != e; ++sa.w, ++sb.w) {
+            if (*sa.w != *sb.w)
+                return false;
+        }
     }
     return true;
 }
