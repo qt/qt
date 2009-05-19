@@ -10,33 +10,37 @@
 ****************************************************************************/
 
 #include "qs60style_p.h"
+
 #include "qapplication.h"
 #include "qpainter.h"
 #include "qstyleoption.h"
 #include "qresizeevent"
 #include "qpixmapcache"
-#include "qlistview.h"
+
 #include "qcalendarwidget.h"
-#include "qtabbar.h"
-#include "qlistwidget.h"
-#include "qmenu.h"
-#include "qpushbutton.h"
-#include "qmenubar.h"
-#include "qtablewidget.h"
-#include "qtoolbar.h"
+#include "qdial.h"
+#include "qdialog.h"
+#include "qerrormessage.h"
 #include "qgroupbox.h"
+#include "qheaderview.h"
+#include "qlist.h"
+#include "qlistwidget.h"
+#include "qlistview.h"
+#include "qmenu.h"
+#include "qmenubar.h"
+#include "qmessagebox.h"
+#include "qpushbutton.h"
+#include "qscrollbar.h"
+#include "qtabbar.h"
+#include "qtablewidget.h"
+#include "qtableview.h"
+#include "qtoolbar.h"
 #include "qtoolbutton.h"
+#include "qtreeview.h"
+
 #include "private/qtoolbarextension_p.h"
 #include "private/qcombobox_p.h"
 #include "private/qwidget_p.h"
-#include "qscrollbar.h"
-#include "qlist.h"
-#include "qtableview.h"
-#include "qheaderview.h"
-#include "qtreeview.h"
-#include "qdialog.h"
-#include "qmessagebox.h"
-#include "qerrormessage.h"
 
 #if !defined(QT_NO_STYLE_S60) || defined(QT_PLUGIN)
 
@@ -524,7 +528,7 @@ void QS60StylePrivate::setThemePalette(QApplication *app) const
     widgetPalette.setBrush(QPalette::Window, QS60StylePrivate::backgroundTexture());
     widgetPalette.setColor(QPalette::Base, Qt::transparent);
     // set button and tooltipbase based on pixel colors
-    QColor buttonColor = colorFromFrameGraphics(QS60StylePrivate::SF_ButtonNormal);
+    const QColor buttonColor = colorFromFrameGraphics(QS60StylePrivate::SF_ButtonNormal);
     widgetPalette.setColor(QPalette::Button, buttonColor );
     widgetPalette.setColor(QPalette::Light, widgetPalette.color(QPalette::Button).lighter());
     widgetPalette.setColor(QPalette::Dark, widgetPalette.color(QPalette::Button).darker());
@@ -633,7 +637,14 @@ void QS60Style::polish(QWidget *widget)
         widgetPalette.setColor(QPalette::All, QPalette::HighlightedText, 
             QS60StylePrivate::s60Color(QS60StyleEnums::CL_QsnTextColors, 24, 0));
         QApplication::setPalette(widgetPalette, "QLineEdit");
-                
+    } else if (qobject_cast<QDial *> (widget)) {
+        const QColor color(QS60StylePrivate::s60Color(QS60StyleEnums::CL_QsnTextColors, 6, 0));
+        widgetPalette.setColor(QPalette::WindowText, color);
+        widgetPalette.setColor(QPalette::Button, QApplication::palette().color(QPalette::Button));
+        widgetPalette.setColor(QPalette::Dark, color.darker());
+        widgetPalette.setColor(QPalette::Light, color.lighter());
+        QApplication::setPalette(widgetPalette, "QDial");
+    }
     }
 }
 
@@ -1124,15 +1135,20 @@ void QS60Style::drawComplexControl(ComplexControl control, const QStyleOptionCom
         }
         break;
 #endif //QT_NO_GROUPBOX
+#ifndef QT_NO_DIAL
+    case CC_Dial:
+        if (const QStyleOptionSlider *slider = qstyleoption_cast<const QStyleOptionSlider *>(option)) {
+            QStyleOptionSlider optionSlider = *slider;
+            QCommonStyle::drawComplexControl(control, &optionSlider, painter, widget);
+        }
+        break;
+#endif //QT_NO_DIAL
 
         //todo: remove non-used complex widgets in final version
     case CC_TitleBar:
 #ifdef QT3_SUPPORT
     case CC_Q3ListView:
 #endif //QT3_SUPPORT
-#ifndef QT_NO_DIAL
-    case CC_Dial:
-#endif //QT_NO_DIAL
 #ifndef QT_NO_WORKSPACE
     case CC_MdiControls:
 #endif //QT_NO_WORKSPACE
@@ -2276,6 +2292,8 @@ int QS60Style::styleHint(StyleHint sh, const QStyleOption *opt, const QWidget *w
         case SH_ComboBox_PopupFrameStyle:
             retValue = QFrame::NoFrame;
             break;
+        case SH_Dial_BackgroundRole:
+            retValue = QPalette::Base;
         default:
             break;
     }
