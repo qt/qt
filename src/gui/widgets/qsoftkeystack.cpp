@@ -120,6 +120,8 @@ void QSoftKeyStack::handleFocusChanged(QWidget *old, QWidget *now)
         return;
     QWidget *w = qApp->activeWindow();
     QMainWindow *mainWindow = qobject_cast<QMainWindow*>(w);
+    if( !mainWindow)
+        return;
     QSoftKeyStack* softKeyStack = mainWindow->softKeyStack();
     if (old)
         softKeyStack->pop();
