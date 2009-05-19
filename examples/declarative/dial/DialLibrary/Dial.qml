@@ -3,10 +3,10 @@ Item {
 
     width: 210; height: 210
 
-    Image { id: Background; source: "background.svg" }
+    Image { id: Background; source: "background.png" }
 
     Image {
-        source: "needle_shadow.svg"
+        source: "needle_shadow.png"
         transform: Rotation {
             originX: 104; originY: 102
             angle: NeedleRotation.angle
@@ -14,7 +14,7 @@ Item {
     }
     Image {
         id: Needle
-        source: "needle.svg"
+        source: "needle.png"
         transform: Rotation {
             id: NeedleRotation
             originX: 102; originY: 98
@@ -26,5 +26,5 @@ Item {
             }
         }
     }
-    Image { source: "overlay.svg" }
+    Image { source: "overlay.png" }
 }
