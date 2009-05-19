@@ -65,7 +65,7 @@ void QStaticTextPrivate::init(const QString &text, const QFont &font)
 {
     Q_ASSERT(textLayout == 0);
     textLayout = new QTextLayout(text, font);
-    textLayout->setCacheEnabled(true); 
+    textLayout->setCacheEnabled(true);
 
     QFontMetrics fontMetrics(font);
 
@@ -73,11 +73,10 @@ void QStaticTextPrivate::init(const QString &text, const QFont &font)
     int h = -fontMetrics.ascent();
     QTextLine line;
     if ((line = textLayout->createLine()).isValid()) {
-        line.setLineWidth(fontMetrics.width(text));    
+        line.setLineWidth(fontMetrics.width(text));
         line.setPosition(QPointF(0, h));
         h += line.height();
     }
-
 }
 
 QT_END_NAMESPACE
