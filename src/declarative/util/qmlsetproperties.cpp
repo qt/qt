@@ -113,12 +113,14 @@ class QmlSetPropertiesPrivate : public QObjectPrivate
 {
     Q_DECLARE_PUBLIC(QmlSetProperties)
 public:
-    QmlSetPropertiesPrivate() : object(0), decoded(true) {}
+    QmlSetPropertiesPrivate() : object(0), decoded(true), restore(true) {}
 
     QObject *object;
     QByteArray data;
     bool decoded;
     void decode();
+
+    bool restore;
 
     QList<QPair<QByteArray, QVariant> > properties;
     QList<QPair<QByteArray, QmlExpression *> > expressions;
@@ -264,6 +266,18 @@ void QmlSetProperties::setObject(QObject *o)
     d->object = o;
 }
 
+bool QmlSetProperties::restoreEntryValues() const
+{
+    Q_D(const QmlSetProperties);
+    return d->restore;
+}
+
+void QmlSetProperties::setRestoreEntryValues(bool v)
+{
+    Q_D(QmlSetProperties);
+    d->restore = v;
+}
+
 QmlMetaProperty 
 QmlSetPropertiesPrivate::property(const QByteArray &property) 
 {
@@ -314,6 +328,7 @@ QmlSetProperties::ActionList QmlSetProperties::actions()
 
         if (prop.isValid()) {
             Action a;
+            a.restore = restoreEntryValues();
             a.property = prop;
             a.fromValue = a.property.read();
             a.toValue = d->properties.at(ii).second;
@@ -329,6 +344,7 @@ QmlSetProperties::ActionList QmlSetProperties::actions()
 
         if (prop.isValid()) {
             Action a;
+            a.restore = restoreEntryValues();
             a.property = prop;
             a.fromValue = a.property.read();
             a.toValue = d->expressions.at(ii).second->value();

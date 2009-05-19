@@ -53,7 +53,7 @@ QT_BEGIN_NAMESPACE
 
 DEFINE_BOOL_CONFIG_OPTION(stateChangeDebug, STATECHANGE_DEBUG);
 
-Action::Action() : bv(0), event(0), actionDone(false)
+Action::Action() : restore(true), bv(0), event(0), actionDone(false)
 {
 }
 
@@ -344,7 +344,7 @@ void QmlState::apply(QmlStateGroup *group, QmlTransition *trans, QmlState *rever
 
     for (int ii = 0; ii < applyList.count(); ++ii) {
         const Action &action = applyList.at(ii);
-        if (action.event)
+        if (action.event || !action.restore)
             continue;
 
         bool found = false;

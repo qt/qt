@@ -61,6 +61,7 @@ public:
     Action();
 
     QmlMetaProperty property;
+    bool restore;
     QVariant fromValue;
     QVariant toValue;
     QString fromBinding;
