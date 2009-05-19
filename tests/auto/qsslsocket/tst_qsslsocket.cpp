@@ -416,7 +416,7 @@ void tst_QSslSocket::simpleConnect()
     connect(&socket, SIGNAL(sslErrors(const QList<QSslError> &)), this, SLOT(exitLoop()));
 
     // Start connecting
-    socket.connectToHost("imap.troll.no", 993);
+    socket.connectToHost(QtNetworkSettings::serverName(), 993);
     QCOMPARE(socket.state(), QAbstractSocket::HostLookupState);
     enterLoop(10);
 
@@ -471,7 +471,7 @@ void tst_QSslSocket::simpleConnectWithIgnore()
     connect(&socket, SIGNAL(sslErrors(const QList<QSslError> &)), this, SLOT(exitLoop()));
 
     // Start connecting
-    socket.connectToHost("imap.troll.no", 993);
+    socket.connectToHost(QtNetworkSettings::serverName(), 993);
     QCOMPARE(socket.state(), QAbstractSocket::HostLookupState);
     enterLoop(10);
 
@@ -490,7 +490,7 @@ void tst_QSslSocket::simpleConnectWithIgnore()
     if (!socket.canReadLine())
         enterLoop(10);
 
-    QCOMPARE(socket.readAll(), QByteArray("* OK esparsett Cyrus IMAP4 v2.2.8 server ready\r\n"));
+    QCOMPARE(socket.readAll(), QByteArray("* OK [CAPABILITY IMAP4 IMAP4rev1 LITERAL+ ID AUTH=PLAIN SASL-IR] qt-test-server.qt-test-net Cyrus IMAP4 v2.3.11-Mandriva-RPM-2.3.11-6mdv2008.1 server ready\r\n"));
 
     socket.disconnectFromHost();
 }
