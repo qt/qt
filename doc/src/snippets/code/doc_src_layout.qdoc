@@ -67,7 +67,9 @@ void CardLayout::addItem(QLayoutItem *item)
 //! [5]
 CardLayout::~CardLayout()
 {
-    deleteAllItems();
+     QLayoutItem *item;
+     while ((item = takeAt(0)))
+         delete item;
 }
 //! [5]
 

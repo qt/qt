@@ -1446,7 +1446,7 @@ QString QHttpRequestHeader::toString() const
     that indicates if the request finished with an error.
 
     To make an HTTP request you must set up suitable HTTP headers. The
-    following example demonstrates, how to request the main HTML page
+    following example demonstrates how to request the main HTML page
     from the Trolltech home page (i.e., the URL
     \c http://qtsoftware.com/index.html):
 

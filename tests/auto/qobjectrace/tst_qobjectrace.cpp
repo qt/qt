@@ -50,6 +50,7 @@ class tst_QObjectRace: public QObject
     Q_OBJECT
 private slots:
     void moveToThreadRace();
+    void destroyRace();
 };
 
 class RaceObject : public QObject
@@ -146,6 +147,94 @@ void tst_QObjectRace::moveToThreadRace()
         delete threads[i];
     delete object;
 }
+
+
+class MyObject : public QObject
+{   Q_OBJECT
+    public slots:
+        void slot1() { emit signal1(); }
+        void slot2() { emit signal2(); }
+        void slot3() { emit signal3(); }
+        void slot4() { emit signal4(); }
+        void slot5() { emit signal5(); }
+        void slot6() { emit signal6(); }
+        void slot7() { emit signal7(); }
+    signals:
+        void signal1();
+        void signal2();
+        void signal3();
+        void signal4();
+        void signal5();
+        void signal6();
+        void signal7();
+};
+
+
+
+class DestroyThread : public QThread
+{
+    Q_OBJECT
+    QObject **objects;
+    int number;
+
+public:
+    void setObjects(QObject **o, int n)
+    {
+        objects = o;
+        number = n;
+        for(int i = 0; i < number; i++)
+            objects[i]->moveToThread(this);
+    }
+
+    void run() {
+        for(int i = 0; i < number; i++)
+            delete objects[i];
+    }
+};
+
+void tst_QObjectRace::destroyRace()
+{
+    enum { ThreadCount = 10, ObjectCountPerThread = 733, 
+           ObjectCount = ThreadCount * ObjectCountPerThread };
+
+    const char *_slots[] = { SLOT(slot1()) , SLOT(slot2()) , SLOT(slot3()),
+                             SLOT(slot4()) , SLOT(slot5()) , SLOT(slot6()),
+                             SLOT(slot7()) };
+
+    const char *_signals[] = { SIGNAL(signal1()), SIGNAL(signal2()), SIGNAL(signal3()),
+                               SIGNAL(signal4()), SIGNAL(signal5()), SIGNAL(signal6()),
+                               SIGNAL(signal7()) };
+
+    QObject *objects[ObjectCount];
+    for (int i = 0; i < ObjectCount; ++i)
+        objects[i] = new MyObject;
+
+
+    for (int i = 0; i < ObjectCount * 11; ++i) {
+        connect(objects[(i*13) % ObjectCount], _signals[(2*i)%7],
+                objects[((i+2)*17) % ObjectCount],  _slots[(3*i+2)%7] );
+        connect(objects[((i+6)*23) % ObjectCount], _signals[(5*i+4)%7],
+                objects[((i+8)*41) % ObjectCount],  _slots[(i+6)%7] );
+    }
+
+    DestroyThread *threads[ThreadCount];
+    for (int i = 0; i < ThreadCount; ++i) {
+        threads[i] = new DestroyThread;
+        threads[i]->setObjects(objects + i*ObjectCountPerThread, ObjectCountPerThread);
+    }
+
+    for (int i = 0; i < ThreadCount; ++i)
+        threads[i]->start();
+
+    QVERIFY(threads[0]->wait(TwoMinutes));
+    // the other threads should finish pretty quickly now
+    for (int i = 1; i < ThreadCount; ++i)
+        QVERIFY(threads[i]->wait(3000));
+
+    for (int i = 0; i < ThreadCount; ++i)
+        delete threads[i];
+}
+
 
 QTEST_MAIN(tst_QObjectRace)
 #include "tst_qobjectrace.moc"

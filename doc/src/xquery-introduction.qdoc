@@ -347,7 +347,7 @@ has a more detailed section on the shorthand form, which it calls the
 \l{http://www.w3.org/TR/xquery/#abbrev} {abbreviated syntax}. More
 examples of path expressions written in the shorthand form are found
 there. There is also a section listing examples of path expressions
-written in the the \l{http://www.w3.org/TR/xquery/#unabbrev} {longhand
+written in the \l{http://www.w3.org/TR/xquery/#unabbrev} {longhand
 form}.
 
 \target Name Tests

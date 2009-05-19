@@ -237,6 +237,8 @@ private Q_SLOTS:
     void httpProxyCommands_data();
     void httpProxyCommands();
     void proxyChange();
+    void authorizationError_data();
+    void authorizationError();
 };
 
 QT_BEGIN_NAMESPACE
@@ -3510,6 +3512,56 @@ void tst_QNetworkReply::proxyChange()
     QVERIFY(!QTestEventLoop::instance().timeout());
 
     QVERIFY(int(reply3->error()) > 0);
+}
+
+void tst_QNetworkReply::authorizationError_data()
+{
+
+    QTest::addColumn<QString>("url");
+    QTest::addColumn<int>("errorSignalCount");
+    QTest::addColumn<int>("finishedSignalCount");
+    QTest::addColumn<int>("error");
+    QTest::addColumn<int>("httpStatusCode");
+    QTest::addColumn<QString>("httpBody");
+
+    QTest::newRow("unknown-authorization-method") << "http://" + QtNetworkSettings::serverName() +
+                                                     "/cgi-bin/http-unknown-authentication-method.cgi?401-authorization-required" << 1 << 1
+                                                  << int(QNetworkReply::AuthenticationRequiredError) << 401 << "authorization required";
+    QTest::newRow("unknown-proxy-authorization-method") << "http://" + QtNetworkSettings::serverName() +
+                                                           "/cgi-bin/http-unknown-authentication-method.cgi?407-proxy-authorization-required" << 1 << 1
+                                                        << int(QNetworkReply::ProxyAuthenticationRequiredError) << 407
+                                                        << "authorization required";
+}
+
+void tst_QNetworkReply::authorizationError()
+{
+    QFETCH(QString, url);
+    QNetworkRequest request(url);
+    QNetworkReplyPtr reply = manager.get(request);
+
+    QCOMPARE(reply->error(), QNetworkReply::NoError);
+
+    qRegisterMetaType<QNetworkReply::NetworkError>("QNetworkReply::NetworkError");
+    QSignalSpy errorSpy(reply, SIGNAL(error(QNetworkReply::NetworkError)));
+    QSignalSpy finishedSpy(reply, SIGNAL(finished()));
+    // now run the request:
+    connect(reply, SIGNAL(finished()),
+            &QTestEventLoop::instance(), SLOT(exitLoop()));
+    QTestEventLoop::instance().enterLoop(10);
+    QVERIFY(!QTestEventLoop::instance().timeout());
+
+    QFETCH(int, errorSignalCount);
+    QCOMPARE(errorSpy.count(), errorSignalCount);
+    QFETCH(int, finishedSignalCount);
+    QCOMPARE(finishedSpy.count(), finishedSignalCount);
+    QFETCH(int, error);
+    QCOMPARE(reply->error(), QNetworkReply::NetworkError(error));
+
+    QFETCH(int, httpStatusCode);
+    QCOMPARE(reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt(), httpStatusCode);
+
+    QFETCH(QString, httpBody);
+    QCOMPARE(QString(reply->readAll()), httpBody);
 }
 
 QTEST_MAIN(tst_QNetworkReply)

@@ -22,7 +22,7 @@
 <context>
     <name>CloseButton</name>
     <message>
-        <location filename="../src/gui/widgets/qtabbar.cpp" line="+2251"/>
+        <location filename="../src/gui/widgets/qtabbar.cpp" line="+2252"/>
         <source>Close Tab</source>
         <translation>Schließen</translation>
     </message>
@@ -186,7 +186,7 @@ Bitte prüfen Sie die Gstreamer-Installation und stellen Sie sicher, dass das Pa
 <context>
     <name>Q3FileDialog</name>
     <message>
-        <location filename="../src/qt3support/dialogs/q3filedialog.cpp" line="+864"/>
+        <location filename="../src/qt3support/dialogs/q3filedialog.cpp" line="+865"/>
         <source>Copy or Move a File</source>
         <translation>Datei kopieren oder verschieben</translation>
     </message>
@@ -203,7 +203,7 @@ Bitte prüfen Sie die Gstreamer-Installation und stellen Sie sicher, dass das Pa
     </message>
     <message>
         <location line="-22"/>
-        <location line="+1575"/>
+        <location line="+1579"/>
         <source>Cancel</source>
         <translation>Abbrechen</translation>
     </message>
@@ -886,7 +886,7 @@ nach
 <context>
     <name>QApplication</name>
     <message>
-        <location filename="../src/gui/kernel/qapplication.cpp" line="+2248"/>
+        <location filename="../src/gui/kernel/qapplication.cpp" line="+2247"/>
         <source>QT_LAYOUT_DIRECTION</source>
         <comment>Translate this string to the string &apos;LTR&apos; in left-to-right languages or to &apos;RTL&apos; in right-to-left languages (such as Hebrew and Arabic) to get proper widget layout.</comment>
         <translation>LTR</translation>
@@ -1170,7 +1170,7 @@ nach
 <context>
     <name>QDialogButtonBox</name>
     <message>
-        <location filename="../src/gui/dialogs/qmessagebox.cpp" line="+1866"/>
+        <location filename="../src/gui/dialogs/qmessagebox.cpp" line="+1869"/>
         <location line="+464"/>
         <location filename="../src/gui/widgets/qdialogbuttonbox.cpp" line="+561"/>
         <source>OK</source>
@@ -1392,7 +1392,7 @@ nach
     <message>
         <location line="-108"/>
         <source>Cannot remove source file</source>
-        <translation type="unfinished"></translation>
+        <translation>Die Quelldatei kann nicht entfernt werden</translation>
     </message>
     <message>
         <location line="+120"/>
@@ -1418,8 +1418,8 @@ nach
 <context>
     <name>QFileDialog</name>
     <message>
-        <location filename="../src/gui/dialogs/qfiledialog.cpp" line="+515"/>
-        <location line="+444"/>
+        <location filename="../src/gui/dialogs/qfiledialog.cpp" line="+514"/>
+        <location line="+447"/>
         <source>All Files (*)</source>
         <translation>Alle Dateien (*)</translation>
     </message>
@@ -1448,7 +1448,7 @@ nach
         <translation>Datei</translation>
     </message>
     <message>
-        <location filename="../src/gui/dialogs/qfiledialog.cpp" line="-461"/>
+        <location filename="../src/gui/dialogs/qfiledialog.cpp" line="-464"/>
         <source>Open</source>
         <translation>Öffnen</translation>
     </message>
@@ -1458,26 +1458,26 @@ nach
         <translation>Speichern unter</translation>
     </message>
     <message>
-        <location line="+678"/>
+        <location line="+681"/>
         <location line="+50"/>
-        <location line="+1471"/>
+        <location line="+1467"/>
         <location line="+75"/>
         <source>&amp;Open</source>
         <translation>&amp;Öffnen</translation>
     </message>
     <message>
-        <location line="-1596"/>
+        <location line="-1592"/>
         <location line="+50"/>
         <source>&amp;Save</source>
         <translation>S&amp;peichern</translation>
     </message>
     <message>
-        <location line="+1822"/>
+        <location line="+1818"/>
         <source>Recent Places</source>
         <translation>Zuletzt besucht</translation>
     </message>
     <message>
-        <location line="-2521"/>
+        <location line="-2520"/>
         <source>&amp;Rename</source>
         <translation>&amp;Umbenennen</translation>
     </message>
@@ -1492,17 +1492,17 @@ nach
         <translation>&amp;Versteckte Dateien anzeigen</translation>
     </message>
     <message>
-        <location line="+1964"/>
+        <location line="+1963"/>
         <source>New Folder</source>
         <translation>Neues Verzeichnis</translation>
     </message>
     <message>
-        <location line="-1999"/>
+        <location line="-1998"/>
         <source>Find Directory</source>
         <translation>Verzeichnis suchen</translation>
     </message>
     <message>
-        <location line="+685"/>
+        <location line="+688"/>
         <source>Directories</source>
         <translation>Verzeichnisse</translation>
     </message>
@@ -1512,13 +1512,13 @@ nach
         <translation>Alle Dateien (*.*)</translation>
     </message>
     <message>
-        <location filename="../src/gui/dialogs/qfiledialog.cpp" line="-644"/>
-        <location line="+648"/>
+        <location filename="../src/gui/dialogs/qfiledialog.cpp" line="-647"/>
+        <location line="+651"/>
         <source>Directory:</source>
         <translation>Verzeichnis:</translation>
     </message>
     <message>
-        <location line="+828"/>
+        <location line="+825"/>
         <source>%1 already exists.
 Do you want to replace it?</source>
         <translation>Die Datei %1 existiert bereits.
@@ -1552,7 +1552,7 @@ Stellen Sie sicher, dass der Dateiname richtig ist.</translation>
     </message>
     <message>
         <location filename="../src/gui/dialogs/qfiledialog.cpp" line="-54"/>
-        <location line="+862"/>
+        <location line="+861"/>
         <source>%1
 Directory not found.
 Please verify the correct directory name was given.</source>
@@ -1588,7 +1588,7 @@ Möchten sie die Datei trotzdem löschen?</translation>
         <translation>Unbekannt</translation>
     </message>
     <message>
-        <location filename="../src/gui/dialogs/qfiledialog.cpp" line="-2118"/>
+        <location filename="../src/gui/dialogs/qfiledialog.cpp" line="-2117"/>
         <source>Show </source>
         <translation>Anzeigen </translation>
     </message>
@@ -1604,19 +1604,19 @@ Möchten sie die Datei trotzdem löschen?</translation>
         <translation>&amp;Neues Verzeichnis</translation>
     </message>
     <message>
-        <location line="+656"/>
+        <location line="+659"/>
         <location line="+38"/>
         <source>&amp;Choose</source>
         <translation>&amp;Auswählen</translation>
     </message>
     <message>
-        <location filename="../src/gui/dialogs/qsidebar.cpp" line="+418"/>
+        <location filename="../src/gui/dialogs/qsidebar.cpp" line="+437"/>
         <source>Remove</source>
         <translation>Löschen</translation>
     </message>
     <message>
-        <location filename="../src/gui/dialogs/qfiledialog.cpp" line="-687"/>
-        <location line="+652"/>
+        <location filename="../src/gui/dialogs/qfiledialog.cpp" line="-690"/>
+        <location line="+655"/>
         <source>File &amp;name:</source>
         <translation>Datei&amp;name:</translation>
     </message>
@@ -1698,7 +1698,7 @@ Möchten sie die Datei trotzdem löschen?</translation>
         <translation>Änderungsdatum</translation>
     </message>
     <message>
-        <location filename="../src/gui/dialogs/qfilesystemmodel_p.h" line="+234"/>
+        <location filename="../src/gui/dialogs/qfilesystemmodel_p.h" line="+242"/>
         <source>My Computer</source>
         <translation>Mein Computer</translation>
     </message>
@@ -2161,7 +2161,7 @@ Möchten sie die Datei trotzdem löschen?</translation>
 <context>
     <name>QHttp</name>
     <message>
-        <location filename="../src/network/access/qhttpnetworkconnection.cpp" line="+876"/>
+        <location filename="../src/network/access/qhttpnetworkconnection.cpp" line="+901"/>
         <location filename="../src/qt3support/network/q3http.cpp" line="+1836"/>
         <source>Connection refused</source>
         <translation>Verbindung verweigert</translation>
@@ -2253,7 +2253,7 @@ Möchten sie die Datei trotzdem löschen?</translation>
     <message>
         <location line="+28"/>
         <source>Unknown authentication method</source>
-        <translation type="unfinished"></translation>
+        <translation>Unbekannte Authentifizierungsmethode</translation>
     </message>
     <message>
         <location line="+97"/>
@@ -2365,7 +2365,7 @@ Möchten sie die Datei trotzdem löschen?</translation>
 <context>
     <name>QIBaseDriver</name>
     <message>
-        <location filename="../src/sql/drivers/ibase/qsql_ibase.cpp" line="+1428"/>
+        <location filename="../src/sql/drivers/ibase/qsql_ibase.cpp" line="+1435"/>
         <source>Error opening database</source>
         <translation>Die Datenbankverbindung konnte nicht geöffnet werden</translation>
     </message>
@@ -2643,7 +2643,7 @@ Möchten sie die Datei trotzdem löschen?</translation>
     <name>QLocalServer</name>
     <message>
         <location filename="../src/network/socket/qlocalserver.cpp" line="+226"/>
-        <location filename="../src/network/socket/qlocalserver_unix.cpp" line="+231"/>
+        <location filename="../src/network/socket/qlocalserver_unix.cpp" line="+233"/>
         <source>%1: Name error</source>
         <translation>%1: Fehlerhafter Name</translation>
     </message>
@@ -2738,7 +2738,7 @@ Möchten sie die Datei trotzdem löschen?</translation>
 <context>
     <name>QMYSQLDriver</name>
     <message>
-        <location filename="../src/sql/drivers/mysql/qsql_mysql.cpp" line="+1231"/>
+        <location filename="../src/sql/drivers/mysql/qsql_mysql.cpp" line="+1252"/>
         <source>Unable to open database &apos;</source>
         <translation>Die Datenbankverbindung konnte nicht geöffnet werden &apos;</translation>
     </message>
@@ -2766,12 +2766,12 @@ Möchten sie die Datei trotzdem löschen?</translation>
 <context>
     <name>QMYSQLResult</name>
     <message>
-        <location line="-922"/>
+        <location line="-935"/>
         <source>Unable to fetch data</source>
         <translation>Es konnten keine Daten abgeholt werden</translation>
     </message>
     <message>
-        <location line="+176"/>
+        <location line="+183"/>
         <source>Unable to execute query</source>
         <translation>Die Abfrage konnte nicht ausgeführt werden</translation>
     </message>
@@ -2781,13 +2781,13 @@ Möchten sie die Datei trotzdem löschen?</translation>
         <translation>Das Ergebnis konnte nicht gespeichert werden</translation>
     </message>
     <message>
-        <location line="+190"/>
+        <location line="+194"/>
         <location line="+8"/>
         <source>Unable to prepare statement</source>
         <translation>Der Befehl konnte nicht initialisiert werden</translation>
     </message>
     <message>
-        <location line="+34"/>
+        <location line="+36"/>
         <source>Unable to reset statement</source>
         <translation>Der Befehl konnte nicht zurückgesetzt werden</translation>
     </message>
@@ -2813,7 +2813,7 @@ Möchten sie die Datei trotzdem löschen?</translation>
         <translation>Die Ergebnisse des Befehls konnten nicht gespeichert werden</translation>
     </message>
     <message>
-        <location line="-253"/>
+        <location line="-257"/>
         <source>Unable to execute next query</source>
         <translation>Die folgende Abfrage kann nicht ausgeführt werden</translation>
     </message>
@@ -2971,7 +2971,7 @@ Möchten sie die Datei trotzdem löschen?</translation>
         <translation type="obsolete">&lt;p&gt;Dieses Programm verwendet Qt-Version %1.&lt;/p&gt;</translation>
     </message>
     <message>
-        <location line="-1097"/>
+        <location line="-1100"/>
         <source>Show Details...</source>
         <translation>Details einblenden...</translation>
     </message>
@@ -2981,7 +2981,7 @@ Möchten sie die Datei trotzdem löschen?</translation>
         <translation>Details ausblenden...</translation>
     </message>
     <message>
-        <location line="+1570"/>
+        <location line="+1573"/>
         <source>&lt;h3&gt;About Qt&lt;/h3&gt;&lt;p&gt;This program uses Qt version %1.&lt;/p&gt;&lt;p&gt;Qt is a C++ toolkit for cross-platform application development.&lt;/p&gt;&lt;p&gt;Qt provides single-source portability across MS&amp;nbsp;Windows, Mac&amp;nbsp;OS&amp;nbsp;X, Linux, and all major commercial Unix variants. Qt is also available for embedded devices as Qt for Embedded Linux and Qt for Windows CE.&lt;/p&gt;&lt;p&gt;Qt is available under three different licensing options designed to accommodate the needs of our various users.&lt;/p&gt;Qt licensed under our commercial license agreement is appropriate for development of proprietary/commercial software where you do not want to share any source code with third parties or otherwise cannot comply with the terms of the GNU LGPL version 2.1 or GNU GPL version 3.0.&lt;/p&gt;&lt;p&gt;Qt licensed under the GNU LGPL version 2.1 is appropriate for the development of Qt applications (proprietary or open source) provided you can comply with the terms and conditions of the GNU LGPL version 2.1.&lt;/p&gt;&lt;p&gt;Qt licensed under the GNU General Public License version 3.0 is appropriate for the development of Qt applications where you wish to use such applications in combination with software subject to the terms of the GNU GPL version 3.0 or where you are otherwise willing to comply with the terms of the GNU GPL version 3.0.&lt;/p&gt;&lt;p&gt;Please see &lt;a href=&quot;http://www.qtsoftware.com/products/licensing&quot;&gt;www.qtsoftware.com/products/licensing&lt;/a&gt; for an overview of Qt licensing.&lt;/p&gt;&lt;p&gt;Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).&lt;/p&gt;&lt;p&gt;Qt is a Nokia product. See &lt;a href=&quot;http://www.qtsoftware.com/qt/&quot;&gt;www.qtsoftware.com/qt&lt;/a&gt; for more information.&lt;/p&gt;</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3310,7 +3310,7 @@ Möchten sie die Datei trotzdem löschen?</translation>
 <context>
     <name>QODBCDriver</name>
     <message>
-        <location filename="../src/sql/drivers/odbc/qsql_odbc.cpp" line="+1785"/>
+        <location filename="../src/sql/drivers/odbc/qsql_odbc.cpp" line="+1781"/>
         <source>Unable to connect</source>
         <translation>Es kann keine Verbindung aufgebaut werden</translation>
     </message>
@@ -3444,7 +3444,7 @@ Möchten sie die Datei trotzdem löschen?</translation>
 <context>
     <name>QPPDOptionsModel</name>
     <message>
-        <location filename="../src/gui/dialogs/qprintdialog_unix.cpp" line="+1195"/>
+        <location filename="../src/gui/dialogs/qprintdialog_unix.cpp" line="+1197"/>
         <source>Name</source>
         <translation>Name</translation>
     </message>
@@ -4009,7 +4009,7 @@ Bitte wählen Sie einen anderen Dateinamen.</translation>
         <translation>Benutzerdefiniert</translation>
     </message>
     <message>
-        <location filename="../src/gui/dialogs/qprintdialog_unix.cpp" line="-522"/>
+        <location filename="../src/gui/dialogs/qprintdialog_unix.cpp" line="-524"/>
         <location line="+68"/>
         <source>&amp;Options &gt;&gt;</source>
         <translation>&amp;Einstellungen &gt;&gt;</translation>
@@ -4030,7 +4030,7 @@ Bitte wählen Sie einen anderen Dateinamen.</translation>
         <translation>Druck in Postscript-Datei</translation>
     </message>
     <message>
-        <location line="+45"/>
+        <location line="+47"/>
         <source>Local file</source>
         <translation>Lokale Datei</translation>
     </message>
@@ -4040,7 +4040,7 @@ Bitte wählen Sie einen anderen Dateinamen.</translation>
         <translation>Schreiben der Datei %1</translation>
     </message>
     <message>
-        <location line="-367"/>
+        <location line="-369"/>
         <source>&amp;Print</source>
         <translation>&amp;Drucken</translation>
     </message>
@@ -4373,7 +4373,7 @@ Bitte wählen Sie einen anderen Dateinamen.</translation>
     <message>
         <location line="+912"/>
         <source>No program defined</source>
-        <translation type="unfinished"></translation>
+        <translation>Es wurde kein Programm angegeben</translation>
     </message>
     <message>
         <location filename="../src/corelib/io/qprocess_win.cpp" line="-341"/>
@@ -5985,7 +5985,7 @@ Bitte wählen Sie einen anderen Dateinamen.</translation>
         <translation>%1 (%2x%3 Pixel)</translation>
     </message>
     <message>
-        <location filename="../src/3rdparty/webkit/WebCore/platform/network/qt/QNetworkReplyHandler.cpp" line="+382"/>
+        <location filename="../src/3rdparty/webkit/WebCore/platform/network/qt/QNetworkReplyHandler.cpp" line="+384"/>
         <source>Bad HTTP request</source>
         <translation>Ungültige HTTP-Anforderung</translation>
     </message>
@@ -6077,15 +6077,15 @@ Bitte wählen Sie einen anderen Dateinamen.</translation>
     <message>
         <location line="+15"/>
         <source>JavaScript Confirm - %1</source>
-        <translation type="unfinished">JavaScript-Bestätigung - %1</translation>
+        <translation>JavaScript-Bestätigung - %1</translation>
     </message>
     <message>
         <location line="+17"/>
         <source>JavaScript Prompt - %1</source>
-        <translation type="unfinished">JavaScript-Eingabeaufforderung - %1</translation>
+        <translation>JavaScript-Eingabeaufforderung - %1</translation>
     </message>
     <message>
-        <location line="+333"/>
+        <location line="+340"/>
         <source>Move the cursor to the next character</source>
         <translation>Positionsmarke auf folgendes Zeichen setzen</translation>
     </message>
@@ -6147,7 +6147,7 @@ Bitte wählen Sie einen anderen Dateinamen.</translation>
     <message>
         <location line="+3"/>
         <source>Select all</source>
-        <translation type="unfinished"></translation>
+        <translation>Alles auswählen</translation>
     </message>
     <message>
         <location line="+3"/>
@@ -6222,12 +6222,12 @@ Bitte wählen Sie einen anderen Dateinamen.</translation>
     <message>
         <location line="+33"/>
         <source>Insert a new paragraph</source>
-        <translation type="unfinished"></translation>
+        <translation>Neuen Abschnitt einfügen</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Insert a new line</source>
-        <translation type="unfinished"></translation>
+        <translation>Neue Zeile einfügen</translation>
     </message>
 </context>
 <context>
@@ -6241,7 +6241,7 @@ Bitte wählen Sie einen anderen Dateinamen.</translation>
 <context>
     <name>QWidget</name>
     <message>
-        <location filename="../src/gui/kernel/qwidget.cpp" line="+5326"/>
+        <location filename="../src/gui/kernel/qwidget.cpp" line="+5340"/>
         <source>*</source>
         <translation>*</translation>
     </message>
@@ -6787,7 +6787,7 @@ Bitte wählen Sie einen anderen Dateinamen.</translation>
         <translation>%1 ist kein gültiger regulärer Ausdruck: %2</translation>
     </message>
     <message>
-        <location filename="../src/xmlpatterns/functions/qsequencefns.cpp" line="+347"/>
+        <location filename="../src/xmlpatterns/functions/qsequencefns.cpp" line="+346"/>
         <source>It will not be possible to retrieve %1.</source>
         <translation>%1 kann nicht bestimmt werden.</translation>
     </message>
@@ -7508,7 +7508,7 @@ Bitte wählen Sie einen anderen Dateinamen.</translation>
     <message>
         <location filename="../src/xmlpatterns/expr/qcomputednamespaceconstructor.cpp" line="+69"/>
         <source>In a namespace constructor, the value for a namespace cannot be an empty string.</source>
-        <translation type="unfinished"></translation>
+        <translation>Im Konstruktor eines Namensraums darf der Wert des Namensraumes keine leere Zeichenkette sein.</translation>
     </message>
     <message>
         <location line="+11"/>
