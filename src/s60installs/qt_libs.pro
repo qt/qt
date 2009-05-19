@@ -66,7 +66,7 @@ symbian: {
     }
 
     contains(QT_CONFIG, phonon): {
-    	qtlibraries.sources += QtPhonon.dll
+       qtlibraries.sources += Phonon.dll
     }    
 
     BLD_INF_RULES.prj_exports += "qt.iby $$CORE_MW_LAYER_IBY_EXPORT_PATH(qt.iby)"
