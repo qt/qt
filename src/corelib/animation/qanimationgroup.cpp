@@ -159,7 +159,7 @@ int QAnimationGroup::animationCount() const
     Returns the index of \a animation. The returned index can be passed
     to the other functions that take an index as an argument.
 
-    \sa insertAnimationAt() animationAt(), takeAnimationAt()
+    \sa insertAnimationAt(), animationAt(), takeAnimationAt()
 */
 int QAnimationGroup::indexOfAnimation(QAbstractAnimation *animation) const
 {
@@ -169,7 +169,11 @@ int QAnimationGroup::indexOfAnimation(QAbstractAnimation *animation) const
 
 /*!
     Adds \a animation to this group. This will call insertAnimationAt with
-    index equals to animationCount()
+    index equals to animationCount().
+
+    \note The group takes ownership of the animation.
+
+    \sa removeAnimation()
 */
 void QAnimationGroup::addAnimation(QAbstractAnimation *animation)
 {
@@ -181,7 +185,10 @@ void QAnimationGroup::addAnimation(QAbstractAnimation *animation)
     Inserts \a animation into this animation group at \a index.
     If \a index is 0 the animation is inserted at the beginning.
     If \a index is animationCount(), the animation is inserted at the end.
-    \sa takeAnimationAt(), addAnimation(), indexOfAnimation()
+
+    \note The group takes ownership of the animation.
+
+    \sa takeAnimationAt(), addAnimation(), indexOfAnimation(), removeAnimation()
 */
 void QAnimationGroup::insertAnimationAt(int index, QAbstractAnimation *animation)
 {
@@ -226,11 +233,11 @@ void QAnimationGroup::removeAnimation(QAbstractAnimation *animation)
 }
 
 /*!
-    Removes the animation at \a index from this animation group. The ownership
-    of the animation is transferred to the caller, and a pointer to the removed
-    animation is returned.
+    Returns the animation at \a index and removes it from the animation group.
 
-    \sa addAnimation()
+    \note The ownership of the animation is transferred to the caller.
+
+    \sa removeAnimation(), addAnimation(), insertAnimation(), indexOfAnimation()
 */
 QAbstractAnimation *QAnimationGroup::takeAnimationAt(int index)
 {
