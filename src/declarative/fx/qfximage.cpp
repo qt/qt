@@ -361,49 +361,57 @@ void QFxImage::paintContents(QPainter &p)
             p.drawImage(0, 0, pix);
         }
     } else {
-        const int sgl = d->_scaleGrid->left();
-        const int sgr = d->_scaleGrid->right();
-        const int sgt = d->_scaleGrid->top();
-        const int sgb = d->_scaleGrid->bottom();
-        const int xSide = qMin(sgl + sgr, int(width()));
-        const int ySide = qMin(sgt + sgb, int(height()));
+        int sgl = d->_scaleGrid->left();
+        int sgr = d->_scaleGrid->right();
+        int sgt = d->_scaleGrid->top();
+        int sgb = d->_scaleGrid->bottom();
+
+        int w = width();
+        int h = height();
+        if (sgt + sgb > h)
+            sgt = sgb = h/2;
+        if (sgl + sgr > w)
+            sgl = sgr = w/2;
+
+        const int xSide = sgl + sgr;
+        const int ySide = sgt + sgb;
 
         // Upper left
         if (sgt && sgl)
             p.drawImage(QRect(0, 0, sgl, sgt), pix, QRect(0, 0, sgl, sgt));
         // Upper middle
         if (pix.width() - xSide && sgt)
-            p.drawImage(QRect(sgl, 0, width() - xSide, sgt), pix,
+            p.drawImage(QRect(sgl, 0, w - xSide, sgt), pix,
                         QRect(sgl, 0, pix.width() - xSide, sgt));
         // Upper right
         if (sgt && pix.width() - sgr) 
-            p.drawImage(QPoint(width()-sgr, 0), pix,
+            p.drawImage(QPoint(w-sgr, 0), pix,
                         QRect(pix.width()-sgr, 0, sgr, sgt));
         // Middle left
         if (sgl && pix.height() - ySide)
-            p.drawImage(QRect(0, sgt, sgl, height() - ySide), pix,
+            p.drawImage(QRect(0, sgt, sgl, h - ySide), pix,
                         QRect(0, sgt, sgl, pix.height() - ySide));
 
         // Middle
         if (pix.width() - xSide && pix.height() - ySide)
-            p.drawImage(QRect(sgl, sgt, width() - xSide, height() - ySide), 
+            p.drawImage(QRect(sgl, sgt, w - xSide, h - ySide),
                         pix, 
                         QRect(sgl, sgt, pix.width() - xSide, pix.height() - ySide));
         // Middle right
         if (sgr && pix.height() - ySide)
-            p.drawImage(QRect(width()-sgr, sgt, sgr, height() - ySide), pix,
+            p.drawImage(QRect(w-sgr, sgt, sgr, h - ySide), pix,
                         QRect(pix.width()-sgr, sgt, sgr, pix.height() - ySide));
         // Lower left 
         if (sgl && sgr)
-            p.drawImage(QPoint(0, height() - sgb), pix,
+            p.drawImage(QPoint(0, h - sgb), pix,
                         QRect(0, pix.height() - sgb, sgl, sgb));
         // Lower Middle
         if (pix.width() - xSide && sgb)
-            p.drawImage(QRect(sgl, height() - sgb, width() - xSide, sgb), pix,
+            p.drawImage(QRect(sgl, h - sgb, w - xSide, sgb), pix,
                         QRect(sgl, pix.height() - sgb, pix.width() - xSide, sgb));
         // Lower Right
         if (sgr && sgb)
-            p.drawImage(QPoint(width()-sgr, height() - sgb), pix,
+            p.drawImage(QPoint(w-sgr, h - sgb), pix,
                         QRect(pix.width()-sgr, pix.height() - sgb, sgr, sgb));
     }
 

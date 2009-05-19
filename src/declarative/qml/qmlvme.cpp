@@ -89,8 +89,6 @@ Q_DECLARE_PERFORMANCE_LOG(QFxCompiler) {
     Q_DECLARE_PERFORMANCE_METRIC(InstrStoreObjectQmlList);
     Q_DECLARE_PERFORMANCE_METRIC(InstrAssignConstant);
     Q_DECLARE_PERFORMANCE_METRIC(InstrAssignSignalObject);
-    Q_DECLARE_PERFORMANCE_METRIC(InstrAssignBinding);
-    Q_DECLARE_PERFORMANCE_METRIC(InstrAssignCompiledBinding);
     Q_DECLARE_PERFORMANCE_METRIC(InstrAssignValueSource);
     Q_DECLARE_PERFORMANCE_METRIC(InstrStoreBinding);
     Q_DECLARE_PERFORMANCE_METRIC(InstrStoreCompiledBinding);
@@ -138,8 +136,6 @@ Q_DEFINE_PERFORMANCE_LOG(QFxCompiler, "QFxCompiler") {
     Q_DEFINE_PERFORMANCE_METRIC(InstrStoreObjectQmlList, "StoreObjectQmlList");
     Q_DEFINE_PERFORMANCE_METRIC(InstrAssignConstant, "AssignConstant");
     Q_DEFINE_PERFORMANCE_METRIC(InstrAssignSignalObject, "AssignSignalObject");
-    Q_DEFINE_PERFORMANCE_METRIC(InstrAssignBinding, "AssignBinding");
-    Q_DEFINE_PERFORMANCE_METRIC(InstrAssignCompiledBinding, "AssignCompiledBinding");
     Q_DEFINE_PERFORMANCE_METRIC(InstrAssignValueSource, "AssignValueSource");
     Q_DEFINE_PERFORMANCE_METRIC(InstrStoreBinding, "StoreBinding");
     Q_DEFINE_PERFORMANCE_METRIC(InstrStoreCompiledBinding, "StoreCompiledBinding");
@@ -409,64 +405,6 @@ QObject *QmlVME::run(QmlContext *ctxt, QmlCompiledComponent *comp, int start, in
             }
             break;
 
-        case QmlInstruction::AssignConstant:
-            {
-#ifdef Q_ENABLE_PERFORMANCE_LOG
-                QFxCompilerTimer<QFxCompiler::InstrAssignConstant> cc;
-#endif
-                // Fixup instruction
-                QObject *target = stack.top();
-                int propIdx = instr.assignConstant.property;
-                int idx = instr.assignConstant.constant;
-                QByteArray pr;
-                if (propIdx == -1) {
-                    pr = QmlMetaType::defaultProperty(target).name();
-                    if (pr.isEmpty())
-                        VME_EXCEPTION("Cannot resolve defalt property on type" << target->metaObject()->className());
-                } else {
-                    pr = datas.at(propIdx);
-                }
-
-                int coreIdx = qIndexOfProperty(target, pr);
-
-                if (coreIdx != -1) {
-                    QMetaProperty prop = 
-                        target->metaObject()->property(coreIdx);
-                    bool replace = !prop.isDynamic();
-
-                    QmlInstruction *writeInstr = 0;
-                    QmlInstruction dummy;
-                    if (replace) {
-                        writeInstr = &instr;
-                    } else {
-                        writeInstr = &dummy;
-                        dummy = instr;
-                    }
-
-                    QmlCompiler::StoreInstructionResult r = QmlCompiler::generateStoreInstruction(*comp, *writeInstr, prop,
-                                                 coreIdx, idx, &primitives.at(idx));
-                    if (r != QmlCompiler::Ok) {
-                        if (prop.isEnumType()){
-                            VME_EXCEPTION(primitives.at(idx) << "is not a valid enumeration value");
-                        } else if (r == QmlCompiler::UnknownType) {
-                            VME_EXCEPTION("Property" << prop.name() << "is of an unknown type");
-                        } else if (r == QmlCompiler::InvalidData) {
-                            VME_EXCEPTION("Cannot assign value" << primitives.at(idx) << "to property" << prop.name());
-                        } else if (r == QmlCompiler::ReadOnly) {
-                            VME_EXCEPTION("Cannot assign value" << primitives.at(idx) << "to read-only property" << prop.name());
-                        } else {
-                            VME_EXCEPTION("Invalid property assignment for property" << prop.name());
-                        }
-                    } else {
-                        runStoreInstruction(stack, *writeInstr, comp);
-                    }
-
-                } else {
-                    VME_EXCEPTION("Unknown property" << pr);
-                }
-            }
-            break;
-
         case QmlInstruction::TryBeginObject:
             {
 #ifdef Q_ENABLE_PERFORMANCE_LOG
@@ -530,31 +468,6 @@ QObject *QmlVME::run(QmlContext *ctxt, QmlCompiledComponent *comp, int start, in
             }
             break;
 
-        case QmlInstruction::AssignCompiledBinding:
-        case QmlInstruction::AssignBinding:
-            {
-#ifdef Q_ENABLE_PERFORMANCE_LOG
-                QFxCompilerTimer<QFxCompiler::InstrAssignBinding> cc;
-#endif
-                QObject *target = stack.top();
-                const QByteArray &pr = datas.at(instr.fetch.property);
-                int idx = qIndexOfProperty(target, pr);
-
-                // XXX - need to check if the type is QmlBindableValue*
-                if (idx == -1) {
-                    VME_EXCEPTION("Unknown property" << pr);
-                } else {
-                    if (QmlInstruction::AssignCompiledBinding == instr.type)
-                        instr.type = QmlInstruction::StoreCompiledBinding;
-                    else
-                        instr.type = QmlInstruction::StoreBinding;
-                    instr.assignBinding.property = idx;
-                    instr.assignBinding.category = QmlMetaProperty::Unknown;
-                }
-                ii--;
-            }
-            break;
-
         case QmlInstruction::AssignValueSource:
             {
                 QObject *target = stack.at(stack.count() - 2);
@@ -613,6 +526,7 @@ QObject *QmlVME::run(QmlContext *ctxt, QmlCompiledComponent *comp, int start, in
                 QFx_setParent_noEvent(bind, target);
 
                 bind->setTarget(mp);
+                bind->setSourceLocation(comp->url.toString(), instr.line);
             }
             break;
 
@@ -638,6 +552,7 @@ QObject *QmlVME::run(QmlContext *ctxt, QmlCompiledComponent *comp, int start, in
                 QFx_setParent_noEvent(bind, target);
 
                 bind->setTarget(mp);
+                bind->setSourceLocation(comp->url.toString(), instr.line);
             }
             break;
 

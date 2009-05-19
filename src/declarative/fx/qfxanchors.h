@@ -80,6 +80,7 @@ public:
 
 Q_DECLARE_METATYPE(QFxAnchorLine);
 
+class QFxAnchorsPrivate;
 class Q_DECLARATIVE_EXPORT QFxAnchors : public QObject
 {
     Q_OBJECT
@@ -101,6 +102,7 @@ class Q_DECLARATIVE_EXPORT QFxAnchors : public QObject
 
 public:
     QFxAnchors(QObject *parent=0);
+    virtual ~QFxAnchors();
 
     enum UsedAnchor { 
         HasLeftAnchor = 0x01,
@@ -167,9 +169,6 @@ public:
 
     void setItem(QFxItem *item);
 
-    void connectHAnchors();
-    void connectVAnchors();
-
 Q_SIGNALS:
     void leftMarginChanged();
     void rightMarginChanged();
@@ -178,13 +177,8 @@ Q_SIGNALS:
     void verticalCenterOffsetChanged();
     void horizontalCenterOffsetChanged();
 
-private Q_SLOTS:
-    void fillChanged();
-    void updateHorizontalAnchors();
-    void updateVerticalAnchors();
-
 private:
-    //### should item be a friend? (and make some of the public methods private or protected)
+    friend class QFxItem;
     Q_DISABLE_COPY(QFxAnchors)
     Q_DECLARE_PRIVATE(QFxAnchors)
 };

@@ -193,6 +193,7 @@ void QmlEnginePrivate::clear(SimpleList<QmlParserStatus> &pss)
 
 void QmlEnginePrivate::init()
 {
+    scriptEngine.installTranslatorFunctions();
     contextClass = new QmlContextScriptClass(q);
     objectClass = new QmlObjectScriptClass(q);
     rootContext = new QmlContext(q);
@@ -781,17 +782,17 @@ QmlEngine *QmlEngine::activeEngine()
 
 
 QmlExpressionPrivate::QmlExpressionPrivate(QmlExpression *b)
-: q(b), ctxt(0), sseData(0), proxy(0), me(0), trackChange(false), id(0), log(0)
+: q(b), ctxt(0), sseData(0), proxy(0), me(0), trackChange(false), line(-1), id(0), log(0)
 {
 }
 
 QmlExpressionPrivate::QmlExpressionPrivate(QmlExpression *b, void *expr, QmlRefCount *rc)
-: q(b), ctxt(0), sse((const char *)expr, rc), sseData(0), proxy(0), me(0), trackChange(true), id(0), log(0)
+: q(b), ctxt(0), sse((const char *)expr, rc), sseData(0), proxy(0), me(0), trackChange(true), line(-1), id(0), log(0)
 {
 }
 
 QmlExpressionPrivate::QmlExpressionPrivate(QmlExpression *b, const QString &expr, bool ssecompile)
-: q(b), ctxt(0), expression(expr), sseData(0), proxy(0), me(0), trackChange(true), id(0), log(0)
+: q(b), ctxt(0), expression(expr), sseData(0), proxy(0), me(0), trackChange(true), line(-1), id(0), log(0)
 {
     if (ssecompile) {
 #ifdef Q_ENABLE_PERFORMANCE_LOG
@@ -996,7 +997,7 @@ QVariant QmlExpression::value()
         for (int i = context()->d_func()->scopeChain.size() - 1; i > -1; --i) {
             scriptEngine->currentContext()->pushScope(context()->d_func()->scopeChain.at(i));
         }
-        QScriptValue svalue = scriptEngine->evaluate(expression());
+        QScriptValue svalue = scriptEngine->evaluate(expression(), d->fileName, d->line);
         if (scriptEngine->hasUncaughtException()) {
             if (scriptEngine->uncaughtException().isError()){
                 QScriptValue exception = scriptEngine->uncaughtException();
@@ -1148,6 +1149,16 @@ bool QmlExpression::trackChange() const
 void QmlExpression::setTrackChange(bool trackChange)
 {
     d->trackChange = trackChange;
+}
+
+/*!
+    Set the location of this expression to \a line of \a fileName. This information
+    is used by the script engine.
+*/
+void QmlExpression::setSourceLocation(const QString &fileName, int line)
+{
+    d->fileName = fileName;
+    d->line = line;
 }
 
 /*!

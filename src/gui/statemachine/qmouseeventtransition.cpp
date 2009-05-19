@@ -170,7 +170,7 @@ void QMouseEventTransition::setPath(const QPainterPath &path)
 /*!
   \reimp
 */
-bool QMouseEventTransition::eventTest(QEvent *event) const
+bool QMouseEventTransition::eventTest(QEvent *event)
 {
     Q_D(const QMouseEventTransition);
     if (!QEventTransition::eventTest(event))

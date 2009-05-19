@@ -17,6 +17,8 @@
 #include <QDir>
 #include "qfxtestengine.h"
 #include <QApplication>
+#include <QTranslator>
+#include <QDebug>
 
 void usage()
 {
@@ -38,6 +40,7 @@ void usage()
     qWarning("  -cache ................................... disk cache remote content");
     qWarning("  -recordtest <directory> .................. record an autotest");
     qWarning("  -runtest <directory> ..................... run a previously recorded test");
+    qWarning("  -translation <translationfile> ........... set the language to run in");
     qWarning(" ");
     qWarning(" Press F1 for interactive help");
     exit(1);
@@ -83,6 +86,7 @@ int main(int argc, char ** argv)
     bool cache = false;
     QFxTestEngine::TestMode testMode = QFxTestEngine::NoTest;
     QString testDir;
+    QString translationFile;
 
     for (int i = 1; i < newargc; ++i) {
         QString arg = newargv[i];
@@ -123,11 +127,22 @@ int main(int argc, char ** argv)
         } else if (arg == QLatin1String("-v") || arg == QLatin1String("-version")) {
             fprintf(stderr, "Qt Declarative UI Viewer version %s\n", QT_VERSION_STR);
             return 0;
+        } else if (arg == "-translation") {
+            if(i + 1 >= newargc)
+                usage();
+            translationFile = newargv[i + 1];
+            ++i;
         } else if (arg[0] != '-') {
             fileName = arg;
         } else if (1 || arg == "-help") {
             usage();
         }
+    }
+
+    QTranslator qmlTranslator;
+    if (!translationFile.isEmpty()) {
+        qmlTranslator.load(translationFile);
+        app.installTranslator(&qmlTranslator);
     }
 
     QmlViewer viewer(testMode, testDir, 0, frameless ? Qt::FramelessWindowHint : Qt::Widget);

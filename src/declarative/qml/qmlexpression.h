@@ -78,6 +78,8 @@ public:
     bool trackChange() const;
     void setTrackChange(bool);
 
+    void setSourceLocation(const QString &fileName, int line);
+
     QObject *scopeObject() const;
 
     quint32 id() const;

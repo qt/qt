@@ -45,34 +45,42 @@
 #include <qstatemachine.h>
 #endif
 
+//! [0]
 int main(int argc, char **argv)
 {
     QApplication app(argc, argv);
-
     QPushButton button;
-
     QStateMachine machine;
-    QState *first = new QState();
-    first->setObjectName("first");
+//! [0]
 
+//! [1]
     QState *off = new QState();
     off->assignProperty(&button, "text", "Off");
     off->setObjectName("off");
-    first->addTransition(off);
 
     QState *on = new QState();
     on->setObjectName("on");
     on->assignProperty(&button, "text", "On");
+//! [1]
+
+//! [2]
     off->addTransition(&button, SIGNAL(clicked()), on);
     on->addTransition(&button, SIGNAL(clicked()), off);
+//! [2]
 
-    machine.addState(first);
+//! [3]
     machine.addState(off);
     machine.addState(on);
-    machine.setInitialState(first);
-    machine.start();
+//! [3]
 
+//! [4]
+    machine.setInitialState(off);
+    machine.start();
+//! [4]
+
+//! [5]
     button.resize(100, 50);
     button.show();
     return app.exec();
 }
+//! [5]

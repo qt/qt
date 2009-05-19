@@ -42,11 +42,7 @@
 #ifndef QSIGNALTRANSITION_H
 #define QSIGNALTRANSITION_H
 
-#ifndef QT_STATEMACHINE_SOLUTION
 #include <QtCore/qabstracttransition.h>
-#else
-#include "qabstracttransition.h"
-#endif
 
 QT_BEGIN_HEADER
 
@@ -76,7 +72,7 @@ public:
     void setSignal(const QByteArray &signal);
 
 protected:
-    bool eventTest(QEvent *event) const;
+    bool eventTest(QEvent *event);
     void onTransition(QEvent *event);
 
     bool event(QEvent *e);

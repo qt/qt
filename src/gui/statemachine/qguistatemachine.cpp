@@ -9,13 +9,8 @@
 **
 ****************************************************************************/
 
-#ifdef QT_STATEMACHINE_SOLUTION
-#include "qstatemachine.h"
-#include "qstatemachine_p.h"
-#else
 #include <QtCore/qstatemachine.h>
 #include <private/qstatemachine_p.h>
-#endif
 #include <QtGui/qevent.h>
 #include <QtGui/qgraphicssceneevent.h>
 

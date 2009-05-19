@@ -277,6 +277,8 @@ public:
     BindExpressionProxy *proxy;
     QObject *me;
     bool trackChange;
+    QString fileName;
+    int line;
 
     quint32 id;
 

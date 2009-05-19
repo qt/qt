@@ -92,6 +92,8 @@ public:
     QSimpleCanvasItem::Flip flip:2;
     bool dirty:1;
     bool transformValid:1;
+    bool doNotPaint:1;
+    bool doNotPaintChildren:1;
 
     qreal x;
     qreal y;
@@ -100,6 +102,7 @@ public:
 
     QSimpleCanvas::Matrix *transformUser;
     QSimpleCanvas::Matrix transformActive;
+    int transformVersion;
 
     float activeOpacity;
 
@@ -237,7 +240,6 @@ public:
 #endif
 
     void zOrderChildren();
-    static int nextTransformVersion;
     bool freshenNeeded() const;
     void doFreshenTransforms() const;
 

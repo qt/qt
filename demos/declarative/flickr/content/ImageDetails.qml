@@ -89,7 +89,6 @@ Flipable {
                     // Center image if it is smaller than the flickable area.
                     x: ImageContainer.width > width*scale ? (ImageContainer.width - width*scale) / 2 : 0
                     y: ImageContainer.height > height*scale ? (ImageContainer.height - height*scale) / 2 : 0
-                    anchors.centeredIn: parent
                     onStatusChanged : {
                         // Default scale shows the entire image.
                         if (status == 0 && width != 0) {

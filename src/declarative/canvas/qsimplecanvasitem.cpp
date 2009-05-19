@@ -50,8 +50,9 @@
 QT_BEGIN_NAMESPACE
 QSimpleCanvasItemData::QSimpleCanvasItemData()
 : buttons(Qt::NoButton), flip(QSimpleCanvasItem::NoFlip), 
-  dirty(false), transformValid(true), x(0), y(0), z(0), visible(1), 
-  transformUser(0), activeOpacity(1)
+  dirty(false), transformValid(true), doNotPaint(false), 
+  doNotPaintChildren(false), x(0), y(0), z(0), visible(1),
+  transformUser(0), transformVersion(0), activeOpacity(1)
 {
 }
 
@@ -942,8 +943,6 @@ QRectF QSimpleCanvasItem::mapToScene(const QRectF &r) const
     }
 }
 
-int QSimpleCanvasItemPrivate::nextTransformVersion = 1;
-
 void QSimpleCanvasItemPrivate::freshenTransforms() const
 {
     if (freshenNeeded()) 
@@ -1514,11 +1513,8 @@ void QSimpleCanvasItemPrivate::convertToGraphicsItem(QGraphicsItem *parent)
 
     q->setClipType(clip);
 
-    for (int ii = 0; ii < children.count(); ++ii) {
+    for (int ii = 0; ii < children.count(); ++ii) 
         static_cast<QSimpleCanvasItemPrivate*>(children.at(ii)->d_ptr)->convertToGraphicsItem(graphicsItem);
-        if (children.at(ii)->z() == 0)
-            children.at(ii)->setZ(ii);
-    }
 }
 
 /*!

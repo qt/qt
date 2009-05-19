@@ -477,12 +477,7 @@ QmlDomObjectPrivate::properties(QmlParser::Property *property) const
             iter->second.prepend(name);
 
     } else {
-
-        // We don't display "id" sets as a property in the dom
-        if (property->values.count() != 1 || 
-           property->values.at(0)->type != QmlParser::Value::Id)
-            rv << qMakePair(property, property->name);
-
+        rv << qMakePair(property, property->name);
     }
 
     return rv;
