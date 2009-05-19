@@ -8371,6 +8371,7 @@ void tst_QWidget::translucentWidget()
     ColorRedWidget label;
     label.setFixedSize(16,16);
     label.setAttribute(Qt::WA_TranslucentBackground);
+    label.move(qApp->desktop()->availableGeometry().topLeft());
     label.show();
 #ifdef Q_WS_X11
     qt_x11_wait_for_window_manager(&label);
