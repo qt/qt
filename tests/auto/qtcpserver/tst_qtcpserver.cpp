@@ -364,7 +364,7 @@ void tst_QTcpServer::ipv6LoopbackPerformanceTest()
 void tst_QTcpServer::ipv4PerformanceTest()
 {
     QTcpSocket probeSocket;
-    probeSocket.connectToHost("imap.troll.no", 143);
+    probeSocket.connectToHost(QtNetworkSettings::serverName(), 143);
     QVERIFY(probeSocket.waitForConnected(5000));
 
     QTcpServer server;
