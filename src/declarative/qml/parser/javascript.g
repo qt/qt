@@ -823,25 +823,6 @@ case $rule_number: {
 }
 ./
 
-UiQualifiedId: JsIdentifier ;
-/.
-case $rule_number: {
-    AST::UiQualifiedId *node = makeAstNode<AST::UiQualifiedId> (driver->nodePool(), sym(1).sval);
-    node->identifierToken = loc(1);
-    sym(1).Node = node;
-}   break;
-./
-
-UiQualifiedId: UiQualifiedId T_DOT JsIdentifier ;
-/.
-case $rule_number: {
-    AST::UiQualifiedId *node = makeAstNode<AST::UiQualifiedId> (driver->nodePool(), sym(1).UiQualifiedId, sym(3).sval);
-    node->identifierToken = loc(3);
-    sym(1).Node = node;
-}   break;
-./
-
-
 --------------------------------------------------------------------------------------------------------
 -- Expressions
 --------------------------------------------------------------------------------------------------------
@@ -943,10 +924,20 @@ case $rule_number: {
 } break;
 ./
 
-PrimaryExpression: T_LBRACKET ElisionOpt T_RBRACKET ;
+PrimaryExpression: T_LBRACKET T_RBRACKET ;
 /.
 case $rule_number: {
-  AST::ArrayLiteral *node = makeAstNode<AST::ArrayLiteral> (driver->nodePool(), sym(2).Elision);
+  AST::ArrayLiteral *node = makeAstNode<AST::ArrayLiteral> (driver->nodePool(), (AST::Elision *) 0);
+  node->lbracketToken = loc(1);
+  node->rbracketToken = loc(2);
+  sym(1).Node = node;
+} break;
+./
+
+PrimaryExpression: T_LBRACKET Elision T_RBRACKET ;
+/.
+case $rule_number: {
+  AST::ArrayLiteral *node = makeAstNode<AST::ArrayLiteral> (driver->nodePool(), sym(2).Elision->finish());
   node->lbracketToken = loc(1);
   node->rbracketToken = loc(3);
   sym(1).Node = node;
@@ -963,10 +954,23 @@ case $rule_number: {
 } break;
 ./
 
-PrimaryExpression: T_LBRACKET ElementList T_COMMA ElisionOpt T_RBRACKET ;
+PrimaryExpression: T_LBRACKET ElementList T_COMMA T_RBRACKET ;
 /.
 case $rule_number: {
-  AST::ArrayLiteral *node = makeAstNode<AST::ArrayLiteral> (driver->nodePool(), sym(2).ElementList->finish (), sym(4).Elision);
+  AST::ArrayLiteral *node = makeAstNode<AST::ArrayLiteral> (driver->nodePool(), sym(2).ElementList->finish (),
+    (AST::Elision *) 0);
+  node->lbracketToken = loc(1);
+  node->commaToken = loc(3);
+  node->rbracketToken = loc(4);
+  sym(1).Node = node;
+} break;
+./
+
+PrimaryExpression: T_LBRACKET ElementList T_COMMA Elision T_RBRACKET ;
+/.
+case $rule_number: {
+  AST::ArrayLiteral *node = makeAstNode<AST::ArrayLiteral> (driver->nodePool(), sym(2).ElementList->finish (),
+    sym(4).Elision->finish());
   node->lbracketToken = loc(1);
   node->commaToken = loc(3);
   node->rbracketToken = loc(5);
@@ -1017,17 +1021,53 @@ case $rule_number: {
 } break;
 ./
 
-ElementList: ElisionOpt AssignmentExpression ;
+UiQualifiedId: JsIdentifier ;
 /.
 case $rule_number: {
-  sym(1).Node = makeAstNode<AST::ElementList> (driver->nodePool(), sym(1).Elision, sym(2).Expression);
+    AST::UiQualifiedId *node = makeAstNode<AST::UiQualifiedId> (driver->nodePool(), sym(1).sval);
+    node->identifierToken = loc(1);
+    sym(1).Node = node;
+}   break;
+./
+
+UiQualifiedId: UiQualifiedId T_DOT JsIdentifier ;
+/.
+case $rule_number: {
+    AST::UiQualifiedId *node = makeAstNode<AST::UiQualifiedId> (driver->nodePool(), sym(1).UiQualifiedId, sym(3).sval);
+    node->identifierToken = loc(3);
+    sym(1).Node = node;
+}   break;
+./
+
+ElementList: AssignmentExpression ;
+/.
+case $rule_number: {
+  sym(1).Node = makeAstNode<AST::ElementList> (driver->nodePool(), (AST::Elision *) 0, sym(1).Expression);
 } break;
 ./
 
-ElementList: ElementList T_COMMA ElisionOpt AssignmentExpression ;
+ElementList: Elision AssignmentExpression ;
 /.
 case $rule_number: {
-  AST::ElementList *node = makeAstNode<AST::ElementList> (driver->nodePool(), sym(1).ElementList, sym(3).Elision, sym(4).Expression);
+  sym(1).Node = makeAstNode<AST::ElementList> (driver->nodePool(), sym(1).Elision->finish(), sym(2).Expression);
+} break;
+./
+
+ElementList: ElementList T_COMMA AssignmentExpression ;
+/.
+case $rule_number: {
+  AST::ElementList *node = makeAstNode<AST::ElementList> (driver->nodePool(), sym(1).ElementList,
+    (AST::Elision *) 0, sym(3).Expression);
+  node->commaToken = loc(2);
+  sym(1).Node = node;
+} break;
+./
+
+ElementList: ElementList T_COMMA Elision AssignmentExpression ;
+/.
+case $rule_number: {
+  AST::ElementList *node = makeAstNode<AST::ElementList> (driver->nodePool(), sym(1).ElementList, sym(3).Elision->finish(),
+    sym(4).Expression);
   node->commaToken = loc(2);
   sym(1).Node = node;
 } break;
@@ -1048,20 +1088,6 @@ case $rule_number: {
   AST::Elision *node = makeAstNode<AST::Elision> (driver->nodePool(), sym(1).Elision);
   node->commaToken = loc(2);
   sym(1).Node = node;
-} break;
-./
-
-ElisionOpt: %prec SHIFT_THERE ;
-/.
-case $rule_number: {
-  sym(1).Node = 0;
-} break;
-./
-
-ElisionOpt: Elision ;
-/.
-case $rule_number: {
-  sym(1).Elision = sym(1).Elision->finish ();
 } break;
 ./
 
