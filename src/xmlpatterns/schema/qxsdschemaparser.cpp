@@ -290,6 +290,9 @@ bool XsdSchemaParser::parse(ParserType parserType)
     m_schemaResolver->addComponentLocationHash(m_componentLocationHash);
     m_schemaResolver->setDefaultOpenContent(m_defaultOpenContent, m_defaultOpenContentAppliesToEmpty);
 
+    if (QXmlStreamReader::error() != QXmlStreamReader::NoError)
+        error(errorString());
+
     return true;
 }
 
