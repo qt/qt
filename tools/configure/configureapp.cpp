@@ -1886,14 +1886,14 @@ bool Configure::checkAvailability(const QString &part)
     else if (part == "SQL_DB2")
         available = findFile("sqlcli.h") && findFile("sqlcli1.h") && findFile("db2cli.lib");
     else if (part == "SQL_SQLITE")
-        if (dictionary["XQMAKESPEC"].startsWith("symbian"))
+        if (dictionary.contains("XQMAKESPEC") && dictionary["XQMAKESPEC"].startsWith("symbian"))
             available = false; // In Symbian we only support system sqlite option
         else
             available = true; // Built in, we have a fork
     else if (part == "SQL_SQLITE_LIB") {
         if (dictionary[ "SQL_SQLITE_LIB" ] == "system") {
 		    // Symbian has multiple .lib/.dll files we need to find
-		    if (dictionary["XQMAKESPEC"].startsWith("symbian")) {
+            if (dictionary.contains("XQMAKESPEC") && dictionary["XQMAKESPEC"].startsWith("symbian")) {
 			    available = true; // There is sqlite_symbian plugin which exports the necessary stuff
 			    dictionary[ "QT_LFLAGS_SQLITE" ] += "-lsqlite3";
 		    } else {
