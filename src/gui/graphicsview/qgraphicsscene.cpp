@@ -3920,7 +3920,6 @@ bool QGraphicsScene::event(QEvent *event)
         update();
         break;
     case QEvent::GraphicsSceneGesture: {
-        qDebug() << "GraphicsSceneGesture";
         QGraphicsSceneGestureEvent *ev = static_cast<QGraphicsSceneGestureEvent*>(event);
         QGraphicsView *view = qobject_cast<QGraphicsView*>(ev->widget());
         if (!view) {
@@ -3984,7 +3983,6 @@ bool QGraphicsScene::event(QEvent *event)
 
 void QGraphicsScenePrivate::sendGestureEvent(const QSet<QGesture*> &gestures, const QSet<QString> &cancelled)
 {
-    qDebug() << "QGraphicsScenePrivate::sendGestureEvent:" << gestures;
     Q_Q(QGraphicsScene);
     typedef QMap<QGraphicsItem*, QSet<QGesture*> > ItemGesturesMap;
     ItemGesturesMap itemGestures;
@@ -4001,7 +3999,6 @@ void QGraphicsScenePrivate::sendGestureEvent(const QSet<QGesture*> &gestures, co
         }
     }
 
-    qDebug() << "QGraphicsScenePrivate::sendGestureEvent: started: " << startedGestures;
     QSet<QGesture*> ignoredGestures;
     for(ItemGesturesMap::const_iterator it = itemGestures.begin(), e = itemGestures.end();
         it != e; ++it) {
@@ -4010,7 +4007,6 @@ void QGraphicsScenePrivate::sendGestureEvent(const QSet<QGesture*> &gestures, co
         QGraphicsSceneGestureEvent event;
         event.setGestures(it.value());
         event.setCancelledGestures(cancelled);
-        qDebug() << "QGraphicsScenePrivate::sendGestureEvent: sending to " << receiver << it.value();
         bool processed = sendEvent(receiver, &event);
         QSet<QGesture*> started = startedGestures.intersect(it.value());
         if (event.isAccepted())
@@ -4023,7 +4019,6 @@ void QGraphicsScenePrivate::sendGestureEvent(const QSet<QGesture*> &gestures, co
                                              e = started.end();
             for(; it != e; ++it) {
                 QGesture *g = *it;
-                qDebug() << "result: " << g << ":" << processed << g->isAccepted();
                 if (processed && g->isAccepted()) {
                     continue;
                 }
