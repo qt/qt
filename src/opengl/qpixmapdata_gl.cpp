@@ -167,6 +167,8 @@ void QGLPixmapData::ensureCreated() const
         glBindTexture(target, m_textureId);
         glTexImage2D(target, 0, GL_RGBA, m_width, m_height, 0,
                 GL_RGBA, GL_UNSIGNED_BYTE, 0);
+        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     }
 
     if (!m_source.isNull()) {
