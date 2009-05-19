@@ -64,13 +64,14 @@ class Q_GUI_EXPORT QGesture : public QObject
     Q_PROPERTY(QString type READ type)
     Q_PROPERTY(Qt::GestureState state READ state)
 
-    Q_PROPERTY(QRect rect READ rect)
-    Q_PROPERTY(QPoint hotSpot READ hotSpot)
     Q_PROPERTY(QDateTime startTime READ startTime)
     Q_PROPERTY(uint duration READ duration)
-    Q_PROPERTY(QPoint startPos READ startPos)
-    Q_PROPERTY(QPoint lastPos READ lastPos)
-    Q_PROPERTY(QPoint pos READ pos)
+
+    Q_PROPERTY(QRect rect READ rect WRITE setRect)
+    Q_PROPERTY(QPoint hotSpot READ hotSpot WRITE setHotSpot)
+    Q_PROPERTY(QPoint startPos READ startPos WRITE setStartPos)
+    Q_PROPERTY(QPoint lastPos READ lastPos WRITE setLastPos)
+    Q_PROPERTY(QPoint pos READ pos WRITE setPos)
 
 public:
     QGesture(QObject *parent, const QString &type,
@@ -91,14 +92,20 @@ public:
     QString type() const;
     Qt::GestureState state() const;
 
-    QRect rect() const;
-    QPoint hotSpot() const;
     QDateTime startTime() const;
     uint duration() const;
 
+    QRect rect() const;
+    void setRect(const QRect &rect);
+    QPoint hotSpot() const;
+    void setHotSpot(const QPoint &point);
+
     QPoint startPos() const;
+    void setStartPos(const QPoint &point);
     QPoint lastPos() const;
+    void setLastPos(const QPoint &point);
     QPoint pos() const;
+    void setPos(const QPoint &point);
 
 protected:
     QGesture(QGesturePrivate &dd, QObject *parent, const QString &type,

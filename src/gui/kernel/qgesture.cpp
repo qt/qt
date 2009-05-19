@@ -181,6 +181,11 @@ QRect QGesture::rect() const
     return d_func()->rect;
 }
 
+void QGesture::setRect(const QRect &rect)
+{
+    d_func()->rect = rect;
+}
+
 /*!
     \property QGesture::hotSpot
 
@@ -189,6 +194,11 @@ QRect QGesture::rect() const
 QPoint QGesture::hotSpot() const
 {
     return d_func()->hotSpot;
+}
+
+void QGesture::setHotSpot(const QPoint &point)
+{
+    d_func()->hotSpot = point;
 }
 
 /*!
@@ -221,6 +231,11 @@ QPoint QGesture::startPos() const
     return d_func()->startPos;
 }
 
+void QGesture::setStartPos(const QPoint &point)
+{
+    d_func()->startPos = point;
+}
+
 /*!
     \property QGesture::lastPos
 
@@ -231,6 +246,11 @@ QPoint QGesture::lastPos() const
     return d_func()->lastPos;
 }
 
+void QGesture::setLastPos(const QPoint &point)
+{
+    d_func()->lastPos = point;
+}
+
 /*!
     \property QGesture::pos
 
@@ -239,6 +259,11 @@ QPoint QGesture::lastPos() const
 QPoint QGesture::pos() const
 {
     return d_func()->pos;
+}
+
+void QGesture::setPos(const QPoint &point)
+{
+    d_func()->pos = point;
 }
 
 /*!
