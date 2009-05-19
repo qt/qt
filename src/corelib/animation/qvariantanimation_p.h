@@ -108,7 +108,9 @@ public:
 
     quint32 changedSignalMask;
 
-    void updateCurrentValue();
+    void setCurrentValue();
+    void setCurrentValueForProgress(const qreal progress);
+    void recalculateCurrentInterval(bool force=false);
     void setValueAt(qreal, const QVariant &);
     QVariant valueAt(qreal step) const;
     void convertValues(int t);

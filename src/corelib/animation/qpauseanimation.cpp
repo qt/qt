@@ -52,7 +52,7 @@
     \l{QAbstractAnimation::finished()}{finish} before a specified
     number of milliseconds have elapsed from when it was started. You
     specify the duration of the pause in the constructor. It can also
-    be set directly with setDuration().    
+    be set directly with setDuration().
 
     It is not necessary to construct a QPauseAnimation yourself.
     QSequentialAnimationGroup provides the convenience functions

@@ -64,7 +64,10 @@
 
     We will in this section take a high-level look at the animation
     framework's architecture and how it is used to animate Qt
-    properties.
+    properties. The following diagram shows the most important classes
+    in the animation framework.
+
+    \image animations-architecture.png
 
     The animation framework foundation consists of the base class
     QAbstractAnimation, and its two subclasses QVariantAnimation and
@@ -268,10 +271,10 @@
 
     \code
         QPushButton *bonnie = new QPushButton("Bonnie");
-        bonnie.show();
+        bonnie->show();
 
         QPushButton *clyde = new QPushButton("Clyde");
-        clyde.show();
+        clyde->show();
 
         QPropertyAnimation *anim1 = new QPropertyAnimation(bonnie, "geometry");
         // Set up anim1

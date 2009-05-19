@@ -62,7 +62,7 @@
 
         group->start();
     \endcode
-    
+
     In this example, \c anim1 and \c anim2 are two
     \l{QPropertyAnimation}s that have already been set up.
 
