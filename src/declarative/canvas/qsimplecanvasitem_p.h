@@ -142,7 +142,7 @@ public:
       focusable(false), wantsActiveFocusPanelPendingCanvas(false),
       hasBeenActiveFocusPanel(false),
       hasFocus(false), hasActiveFocus(false), needsZOrder(false), 
-      widthValid(false), heightValid(false), width(0), height(0), scale(1), 
+      widthValid(false), heightValid(false), width(0), height(0), paintmargin(0), scale(1), 
       graphicsItem(0), data_ptr(0)
     {
     }
@@ -176,6 +176,7 @@ public:
 
     qreal width;
     qreal height;
+    qreal paintmargin;
     qreal scale;
 
     QSimpleGraphicsItem *graphicsItem;

@@ -5,7 +5,7 @@ Item {
 
     Rect {
         id: Container; anchors.fill: parent; gradientColor: "#66000000";
-        pen.color: "white"; pen.width: 1;  color: "#66343434"; radius: height/2 - 2
+        pen.color: "white"; pen.width: 0;  color: "#66343434"; radius: height/2 - 2
     }
 
     Rect {
