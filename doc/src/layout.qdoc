@@ -315,7 +315,11 @@
 
     \snippet doc/src/snippets/code/doc_src_layout.qdoc 1
 
-    First we define two functions that iterate over the layout: \c{itemAt()}
+    First we define \c{count()} to fetch the number of items in the list.
+
+    \snippet doc/src/snippets/code/doc_src_layout.qdoc 2
+
+    Then we define two functions that iterate over the layout: \c{itemAt()}
     and \c{takeAt()}. These functions are used internally by the layout system
     to handle deletion of widgets. They are also available for application
     programmers. 
@@ -326,7 +330,7 @@
     structure, we may have to spend more effort defining a linear order for the
     items.
 
-    \snippet doc/src/snippets/code/doc_src_layout.qdoc 2
+    \snippet doc/src/snippets/code/doc_src_layout.qdoc 3
 
     \c{addItem()} implements the default placement strategy for layout items.
     This function must be implemented. It is used by QLayout::add(), by the
@@ -336,26 +340,26 @@
     QGridLayout::addItem(), QGridLayout::addWidget(), and
     QGridLayout::addLayout().
 
-    \snippet doc/src/snippets/code/doc_src_layout.qdoc 3
+    \snippet doc/src/snippets/code/doc_src_layout.qdoc 4
 
     The layout takes over responsibility of the items added. Since QLayoutItem
-    does not inherit QObject, we must delete the items manually. The function
-    QLayout::deleteAllItems() uses \c{takeAt()} defined above to delete all the
-    items in the layout.
+    does not inherit QObject, we must delete the items manually. In the 
+    destructor, we remove each item from the list using \c{takeAt()}, and
+    then delete it.
 
-    \snippet doc/src/snippets/code/doc_src_layout.qdoc 4
+    \snippet doc/src/snippets/code/doc_src_layout.qdoc 5
 
     The \c{setGeometry()} function actually performs the layout. The rectangle
     supplied as an argument does not include \c{margin()}. If relevant, use
     \c{spacing()} as the distance between items.
 
-    \snippet doc/src/snippets/code/doc_src_layout.qdoc 5
+    \snippet doc/src/snippets/code/doc_src_layout.qdoc 6
 
     \c{sizeHint()} and \c{minimumSize()} are normally very similar in
     implementation. The sizes returned by both functions should include
     \c{spacing()}, but not \c{margin()}.
 
-    \snippet doc/src/snippets/code/doc_src_layout.qdoc 6
+    \snippet doc/src/snippets/code/doc_src_layout.qdoc 7
 
 
     \section2 Further Notes

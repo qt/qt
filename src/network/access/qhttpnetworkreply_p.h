@@ -154,7 +154,7 @@ public:
     QHttpNetworkReplyPrivate(const QUrl &newUrl = QUrl());
     ~QHttpNetworkReplyPrivate();
     qint64 readStatus(QAbstractSocket *socket);
-    void parseStatus(const QByteArray &status);
+    bool parseStatus(const QByteArray &status);
     qint64 readHeader(QAbstractSocket *socket);
     void parseHeader(const QByteArray &header);
     qint64 readBody(QAbstractSocket *socket, QIODevice *out);

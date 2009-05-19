@@ -302,7 +302,6 @@ void QSymbianControl::HandleLongTapEventL( const TPoint& aPenEventLocation, cons
     QWidget *alienWidget;
     QPoint widgetPos = QPoint(aPenEventLocation.iX, aPenEventLocation.iY);
     QPoint globalPos = QPoint(aPenEventScreenLocation.iX,aPenEventScreenLocation.iY);
-    //### possible bug, within manhattan lenght if the target is slipped outside ....
     alienWidget = qwidget->childAt(widgetPos);
     if (!alienWidget)
         alienWidget = qwidget;
@@ -321,6 +320,7 @@ void QSymbianControl::HandlePointerEventL(const TPointerEvent& pEvent)
     QMouseEvent::Type type;
     Qt::MouseButton button;
     mapS60MouseEventTypeToQt(&type, &button, &pEvent);
+
     if (m_previousEventLongTap)
         if (type == QEvent::MouseButtonRelease){
             button = Qt::RightButton;
@@ -368,27 +368,30 @@ void QSymbianControl::HandlePointerEventL(const TPointerEvent& pEvent)
                     button, QApplicationPrivate::mouse_buttons, mapToQtModifiers(pEvent.iModifiers));
                 events.append(Event(S60->lastPointerEventTarget,mEventLeave));
             }
-            QMouseEvent mEventEnter(QEvent::Enter, alienWidget->mapFrom(qwidget, widgetPos), globalPos,
+            QMouseEvent mEventEnter(QEvent::Enter, alienWidget->mapFromGlobal(globalPos), globalPos,
                 button, QApplicationPrivate::mouse_buttons, mapToQtModifiers(pEvent.iModifiers));        
+
             events.append(Event(alienWidget,mEventEnter));
         }
     S60->lastCursorPos = globalPos;
     S60->lastPointerEventPos = widgetPos;
     S60->lastPointerEventTarget = alienWidget;
-
-    QMouseEvent mEvent(type, alienWidget->mapFrom(qwidget, widgetPos), globalPos,
-        button, QApplicationPrivate::mouse_buttons, mapToQtModifiers(pEvent.iModifiers));
-    events.append(Event(alienWidget,mEvent));
-    QEventDispatcherS60 *dispatcher;
-    // It is theoretically possible for someone to install a different event dispatcher.
-    if (dispatcher = qobject_cast<QEventDispatcherS60 *>(alienWidget->d_func()->threadData->eventDispatcher)) {
-        if (dispatcher->excludeUserInputEvents()) {
-            for (int i=0;i < events.count();++i)
-            {
-                Event next = events[i];
-                dispatcher->saveInputEvent(this, next.first, new QMouseEvent(next.second));
+    if (alienWidget)
+    {
+        QMouseEvent mEvent(type, alienWidget->mapFromGlobal(globalPos), globalPos,
+            button, QApplicationPrivate::mouse_buttons, mapToQtModifiers(pEvent.iModifiers));
+        events.append(Event(alienWidget,mEvent));
+        QEventDispatcherS60 *dispatcher;
+        // It is theoretically possible for someone to install a different event dispatcher.
+        if (dispatcher = qobject_cast<QEventDispatcherS60 *>(alienWidget->d_func()->threadData->eventDispatcher)) {
+            if (dispatcher->excludeUserInputEvents()) {
+                for (int i=0;i < events.count();++i)
+                {
+                    Event next = events[i];
+                    dispatcher->saveInputEvent(this, next.first, new QMouseEvent(next.second));
+                }
+                return;
             }
-            return;
         }
     }
     for (int i=0;i < events.count();++i)
@@ -672,6 +675,10 @@ void QSymbianControl::HandleResourceChange(int resourceType)
     CCoeControl::HandleResourceChange(resourceType);
 
 }
+void QSymbianControl::CancelLongTapTimer()
+{
+    m_longTapDetector->Cancel();
+}
 
 TTypeUid::Ptr QSymbianControl::MopSupplyObject(TTypeUid id)
 {
@@ -786,6 +793,7 @@ void QApplicationPrivate::openPopup(QWidget *popup)
         Q_ASSERT(popup->testAttribute(Qt::WA_WState_Created));
         WId id = popup->effectiveWinId();
         id->SetPointerCapture(true);
+        id->SetGloballyCapturing(true);
 
         autoGrabWindow = id;
     }
@@ -797,6 +805,7 @@ void QApplicationPrivate::openPopup(QWidget *popup)
         popup->focusWidget()->setFocus(Qt::PopupFocusReason);
     } else if (QApplicationPrivate::popupWidgets->count() == 1) { // this was the first popup
         if (QWidget *fw = QApplication::focusWidget()) {
+            static_cast<QSymbianControl*>(fw->effectiveWinId())->CancelLongTapTimer();
             QFocusEvent e(QEvent::FocusOut, Qt::PopupFocusReason);
             q_func()->sendEvent(fw, &e);
         }
@@ -816,6 +825,7 @@ void QApplicationPrivate::closePopup(QWidget *popup)
             Q_ASSERT(popup->testAttribute(Qt::WA_WState_Created));
             WId id = popup->effectiveWinId();
             id->SetPointerCapture(false);
+            id->SetGloballyCapturing(false);
             if (QWidgetPrivate::mouseGrabber != 0)
                 QWidgetPrivate::mouseGrabber->grabMouse();
 

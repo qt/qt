@@ -80,6 +80,7 @@ public:
         const QSize &size, QS60StylePrivate::SkinElementFlags flags);
     static QColor colorValue(const TAknsItemID &colorGroup, int colorIndex);
     static QPixmap fromFbsBitmap(CFbsBitmap *icon, CFbsBitmap *mask, QS60StylePrivate::SkinElementFlags flags, QImage::Format format);
+    static QPixmap generateMissingThemeGraphic(QS60StyleEnums::SkinParts &part, const QSize &size, QS60StylePrivate::SkinElementFlags flags);
 
 private:
     static QPixmap createSkinnedGraphicsL(QS60StyleEnums::SkinParts part,
@@ -94,54 +95,11 @@ private:
     static void unCompressBitmapL(const TRect& aTrgRect, CFbsBitmap* aTrgBitmap, CFbsBitmap* aSrcBitmap);
     static void colorGroupAndIndex(QS60StyleEnums::SkinParts skinID,
         TAknsItemID &colorGroup, int colorIndex);
-    static const TDesC& mapFallBackFileName(const int fileID);
+    static void fallbackInfo(const QS60StyleEnums::SkinParts &stylepart, TDes& fallbackFileName, TInt& fallbackIndex);
     static bool checkSupport(const int supportedRelease);
     static TAknsItemID checkAndUpdateReleaseSpecificGraphics(int part);
     // Array to match the skin ID, fallback graphics and Qt widget graphics.
     static const partMapEntry m_partMap[];
-    static const fallbackMapEntry m_fallbackMap[];
-};
-
-//FallbackMap has fallback graphics from various mbm-files in case that the requested icon is not in
-//active or root skin.
-// No fallback graphics for screen elements (it is guaranteed that the root skin contains these).
-const fallbackMapEntry QS60StyleModeSpecifics::m_fallbackMap[] = {
-    {QS60StyleEnums::SP_QgnGrafBarWait,         EAvkonMbm,    EMbmAvkonQgn_graf_bar_wait_1},
-    {QS60StyleEnums::SP_QgnGrafBarFrameCenter,  EAvkonMbm,    EMbmAvkonQgn_graf_bar_frame_center},
-    {QS60StyleEnums::SP_QgnGrafBarFrameSideL,   EAvkonMbm,    EMbmAvkonQgn_graf_bar_frame_side_l},
-    {QS60StyleEnums::SP_QgnGrafBarFrameSideR,   EAvkonMbm,    EMbmAvkonQgn_graf_bar_frame_side_r},
-    {QS60StyleEnums::SP_QgnGrafBarProgress,     EAvkonMbm,    EMbmAvkonQgn_graf_bar_progress},
-    {QS60StyleEnums::SP_QgnGrafTabActiveL,      EAvkonMbm,    EMbmAvkonQgn_graf_tab_active_l},
-    {QS60StyleEnums::SP_QgnGrafTabActiveM,      EAvkonMbm,    EMbmAvkonQgn_graf_tab_active_m},
-    {QS60StyleEnums::SP_QgnGrafTabActiveR,      EAvkonMbm,    EMbmAvkonQgn_graf_tab_active_r},
-    {QS60StyleEnums::SP_QgnGrafTabPassiveL,     EAvkonMbm,    EMbmAvkonQgn_graf_tab_passive_l},
-    {QS60StyleEnums::SP_QgnGrafTabPassiveM,     EAvkonMbm,    EMbmAvkonQgn_graf_tab_passive_m},
-    {QS60StyleEnums::SP_QgnGrafTabPassiveR,     EAvkonMbm,    EMbmAvkonQgn_graf_tab_passive_r},
-    {QS60StyleEnums::SP_QgnIndiCheckboxOff,     EAvkonMbm,    EMbmAvkonQgn_indi_checkbox_off},
-    {QS60StyleEnums::SP_QgnIndiCheckboxOn,      EAvkonMbm,    EMbmAvkonQgn_indi_checkbox_on},
-    {QS60StyleEnums::SP_QgnIndiHlColSuper,      EAvkonMbm,    0x4456 }, /* EMbmAvkonQgn_indi_hl_col_super */
-    {QS60StyleEnums::SP_QgnIndiHlExpSuper,      EAvkonMbm,    0x4458 }, /* EMbmAvkonQgn_indi_hl_exp_super */
-    {QS60StyleEnums::SP_QgnIndiHlLineBranch,    EAvkonMbm,    0x445A }, /* EMbmAvkonQgn_indi_hl_line_branch */
-    {QS60StyleEnums::SP_QgnIndiHlLineEnd,       EAvkonMbm,    0x445C }, /* EMbmAvkonQgn_indi_hl_line_end */
-    {QS60StyleEnums::SP_QgnIndiHlLineStraight,  EAvkonMbm,    0x445E }, /* EMbmAvkonQgn_indi_hl_line_straight */
-    {QS60StyleEnums::SP_QgnIndiMarkedAdd,       EAvkonMbm,    EMbmAvkonQgn_indi_marked_add      },
-    {QS60StyleEnums::SP_QgnIndiNaviArrowLeft,   EAvkonMbm,    EMbmAvkonQgn_indi_navi_arrow_left },
-    {QS60StyleEnums::SP_QgnIndiNaviArrowRight,  EAvkonMbm,    EMbmAvkonQgn_indi_navi_arrow_right},
-    {QS60StyleEnums::SP_QgnIndiRadiobuttOff,    EAvkonMbm,    EMbmAvkonQgn_indi_radiobutt_off   },
-    {QS60StyleEnums::SP_QgnIndiRadiobuttOn,     EAvkonMbm,    EMbmAvkonQgn_indi_radiobutt_on    },
-    {QS60StyleEnums::SP_QgnIndiSliderEdit,      EAvkonMbm,    EMbmAvkonQgn_indi_slider_edit     },
-    {QS60StyleEnums::SP_QgnIndiSubMenu,         EAvkonMbm,    EMbmAvkonQgn_indi_submenu         },
-    {QS60StyleEnums::SP_QgnNoteErased,          EAvkonMbm,    EMbmAvkonQgn_note_erased          },
-    {QS60StyleEnums::SP_QgnNoteError,           EAvkonMbm,    EMbmAvkonQgn_note_error           },
-    {QS60StyleEnums::SP_QgnNoteInfo,            EAvkonMbm,    EMbmAvkonQgn_note_info            },
-    {QS60StyleEnums::SP_QgnNoteOk,              EAvkonMbm,    EMbmAvkonQgn_note_ok              },
-    {QS60StyleEnums::SP_QgnNoteQuery,           EAvkonMbm,    EMbmAvkonQgn_note_query           },
-    {QS60StyleEnums::SP_QgnNoteWarning,         EAvkonMbm,    EMbmAvkonQgn_note_warning         },
-    {QS60StyleEnums::SP_QgnPropFileSmall,       EAvkonMbm,    EMbmAvkonQgn_prop_file_small      },
-    {QS60StyleEnums::SP_QgnPropFolderCurrent,   EAvkonMbm,    EMbmAvkonQgn_prop_folder_current  },
-    {QS60StyleEnums::SP_QgnPropFolderSmall,     EAvkonMbm,    EMbmAvkonQgn_prop_folder_small    },
-    {QS60StyleEnums::SP_QgnPropFolderSmallNew,  EAvkonMbm,    EMbmAvkonQgn_prop_folder_small_new},
-    {QS60StyleEnums::SP_QgnPropPhoneMemcLarge,  EAvkonMbm,    EMbmAvkonQgn_prop_phone_memc_large}
 };
 
 const partMapEntry QS60StyleModeSpecifics::m_partMap[] = {
@@ -150,6 +108,10 @@ const partMapEntry QS60StyleModeSpecifics::m_partMap[] = {
     /* SP_QgnGrafBarFrameSideL */       {KAknsIIDQgnGrafBarFrameSideL,        EDrawIcon,   ES60_AllReleases,  -1,-1},
     /* SP_QgnGrafBarFrameSideR */       {KAknsIIDQgnGrafBarFrameSideR,        EDrawIcon,   ES60_AllReleases,  -1,-1},
     /* SP_QgnGrafBarProgress */         {KAknsIIDQgnGrafBarProgress,          EDrawIcon,   ES60_AllReleases,  -1,-1},
+    /* SP_QgnGrafScrollArrowDown */     {KAknsIIDQgnGrafScrollArrowDown,      EDrawIcon,   ES60_AllReleases,  -1,-1},
+    /* SP_QgnGrafScrollArrowLeft */     {KAknsIIDQgnGrafScrollArrowLeft,      EDrawIcon,   ES60_AllReleases,  -1,-1},
+    /* SP_QgnGrafScrollArrowRight */    {KAknsIIDQgnGrafScrollArrowRight,     EDrawIcon,   ES60_AllReleases,  -1,-1},
+    /* SP_QgnGrafScrollArrowUp */       {KAknsIIDQgnGrafScrollArrowUp,        EDrawIcon,   ES60_AllReleases,  -1,-1},
     /* SP_QgnGrafTabActiveL */          {KAknsIIDQgnGrafTabActiveL,           EDrawIcon,   ES60_AllReleases,  -1,-1},
     /* SP_QgnGrafTabActiveM */          {KAknsIIDQgnGrafTabActiveM,           EDrawIcon,   ES60_AllReleases,  -1,-1},
     /* SP_QgnGrafTabActiveR */          {KAknsIIDQgnGrafTabActiveR,           EDrawIcon,   ES60_AllReleases,  -1,-1},
@@ -183,6 +145,11 @@ const partMapEntry QS60StyleModeSpecifics::m_partMap[] = {
     /* SP_QgnPropFolderSmall */         {KAknsIIDQgnPropFolderSmall,          EDrawIcon,   ES60_AllReleases,  -1,-1},
     /* SP_QgnPropFolderSmallNew */      {KAknsIIDQgnPropFolderSmallNew,       EDrawIcon,   ES60_AllReleases,  -1,-1},
     /* SP_QgnPropPhoneMemcLarge */      {KAknsIIDQgnPropPhoneMemcLarge,       EDrawIcon,   ES60_AllReleases,  -1,-1},
+
+    // 3.1 & 3.2 do not have pressed state for scrollbar, so use normal scrollbar graphics instead.
+    /* SP_QsnCpScrollHandleBottomPressed*/ {KAknsIIDQsnCpScrollHandleBottom,    EDrawIcon,   ES60_3_1 | ES60_3_2,  EAknsMajorGeneric, 0x20f8}, /*KAknsIIDQsnCpScrollHandleBottomPressed*/
+    /* SP_QsnCpScrollHandleMiddlePressed*/ {KAknsIIDQsnCpScrollHandleMiddle,    EDrawIcon,   ES60_3_1 | ES60_3_2,  EAknsMajorGeneric, 0x20f9}, /*KAknsIIDQsnCpScrollHandleMiddlePressed*/
+    /* SP_QsnCpScrollHandleTopPressed*/    {KAknsIIDQsnCpScrollHandleTop,       EDrawIcon,   ES60_3_1 | ES60_3_2,  EAknsMajorGeneric, 0x20fa}, /*KAknsIIDQsnCpScrollHandleTopPressed*/
 
     /* SP_QsnBgScreen */                {KAknsIIDQsnBgScreen,                 EDrawBackground,   ES60_AllReleases, -1,-1},
 
@@ -355,14 +322,157 @@ QPixmap QS60StyleModeSpecifics::colorSkinnedGraphics(
     return error ? QPixmap() : colorGraphics;
 }
 
-const TDesC& QS60StyleModeSpecifics::mapFallBackFileName(const int fileID)
-{
-    switch(fileID){
-        case ELastMbm:
-            return KNullDesC();
-        case EAvkonMbm:
+void QS60StyleModeSpecifics::fallbackInfo(const QS60StyleEnums::SkinParts &stylepart, TDes& fallbackFileName, TInt& fallbackIndex)
+{ 
+    switch(stylepart) {
+        case QS60StyleEnums::SP_QgnGrafBarWait:
+            fallbackFileName = KAvkonBitmapFile();
+            fallbackIndex = EMbmAvkonQgn_graf_bar_wait_1;
+            break;
+        case QS60StyleEnums::SP_QgnGrafBarFrameCenter:
+            fallbackFileName = KAvkonBitmapFile();
+            fallbackIndex = EMbmAvkonQgn_graf_bar_frame_center;
+            break;
+        case QS60StyleEnums::SP_QgnGrafBarFrameSideL:
+            fallbackFileName = KAvkonBitmapFile();
+            fallbackIndex = EMbmAvkonQgn_graf_bar_frame_side_l;
+            break;
+        case QS60StyleEnums::SP_QgnGrafBarFrameSideR:
+            fallbackFileName = KAvkonBitmapFile();
+            fallbackIndex = EMbmAvkonQgn_graf_bar_frame_side_r;
+            break;
+        case QS60StyleEnums::SP_QgnGrafBarProgress:
+            fallbackFileName = KAvkonBitmapFile();
+            fallbackIndex = EMbmAvkonQgn_graf_bar_progress;
+            break;
+        case QS60StyleEnums::SP_QgnGrafTabActiveL:
+            fallbackFileName = KAvkonBitmapFile();
+            fallbackIndex = EMbmAvkonQgn_graf_tab_active_l;
+            break;
+        case QS60StyleEnums::SP_QgnGrafTabActiveM:
+            fallbackFileName = KAvkonBitmapFile();
+            fallbackIndex = EMbmAvkonQgn_graf_tab_active_m;
+            break;
+        case QS60StyleEnums::SP_QgnGrafTabActiveR:
+            fallbackFileName = KAvkonBitmapFile();
+            fallbackIndex = EMbmAvkonQgn_graf_tab_active_r;
+            break;
+        case QS60StyleEnums::SP_QgnGrafTabPassiveL:
+            fallbackFileName = KAvkonBitmapFile();
+            fallbackIndex = EMbmAvkonQgn_graf_tab_passive_l;
+            break;
+        case QS60StyleEnums::SP_QgnGrafTabPassiveM:
+            fallbackFileName = KAvkonBitmapFile();
+            fallbackIndex = EMbmAvkonQgn_graf_tab_passive_m;
+            break;
+        case QS60StyleEnums::SP_QgnGrafTabPassiveR:
+            fallbackFileName = KAvkonBitmapFile();
+            fallbackIndex = EMbmAvkonQgn_graf_tab_passive_r;
+            break;
+        case QS60StyleEnums::SP_QgnIndiCheckboxOff:
+            fallbackFileName = KAvkonBitmapFile();
+            fallbackIndex = EMbmAvkonQgn_indi_checkbox_off;
+            break;
+        case QS60StyleEnums::SP_QgnIndiCheckboxOn:
+            fallbackFileName = KAvkonBitmapFile();
+            fallbackIndex = EMbmAvkonQgn_indi_checkbox_on;
+            break;
+        case QS60StyleEnums::SP_QgnIndiHlColSuper: 
+            fallbackFileName = KAvkonBitmapFile();
+            fallbackIndex = 0x4456; /* EMbmAvkonQgn_indi_hl_col_super */
+            break;
+        case QS60StyleEnums::SP_QgnIndiHlExpSuper: 
+            fallbackFileName = KAvkonBitmapFile();
+            fallbackIndex = 0x4458; /* EMbmAvkonQgn_indi_hl_exp_super */
+            break;
+        case QS60StyleEnums::SP_QgnIndiHlLineBranch: 
+            fallbackFileName = KAvkonBitmapFile();
+            fallbackIndex = 0x445A; /* EMbmAvkonQgn_indi_hl_line_branch */
+            break;
+        case QS60StyleEnums::SP_QgnIndiHlLineEnd: 
+            fallbackFileName = KAvkonBitmapFile();
+            fallbackIndex = 0x445C; /* EMbmAvkonQgn_indi_hl_line_end */
+            break;
+        case QS60StyleEnums::SP_QgnIndiHlLineStraight:
+            fallbackFileName = KAvkonBitmapFile();
+            fallbackIndex = 0x445E; /* EMbmAvkonQgn_indi_hl_line_straight */
+            break;
+        case QS60StyleEnums::SP_QgnIndiMarkedAdd:
+            fallbackFileName = KAvkonBitmapFile();
+            fallbackIndex = EMbmAvkonQgn_indi_marked_add;
+            break;
+        case QS60StyleEnums::SP_QgnIndiNaviArrowLeft:
+            fallbackFileName = KAvkonBitmapFile();
+            fallbackIndex = EMbmAvkonQgn_indi_navi_arrow_left;
+            break;
+        case QS60StyleEnums::SP_QgnIndiNaviArrowRight:
+            fallbackFileName = KAvkonBitmapFile();
+            fallbackIndex = EMbmAvkonQgn_indi_navi_arrow_right;
+            break;
+        case QS60StyleEnums::SP_QgnIndiRadiobuttOff:
+            fallbackFileName = KAvkonBitmapFile();
+            fallbackIndex = EMbmAvkonQgn_indi_radiobutt_off;
+            break;
+        case QS60StyleEnums::SP_QgnIndiRadiobuttOn:
+            fallbackFileName = KAvkonBitmapFile();
+            fallbackIndex = EMbmAvkonQgn_indi_radiobutt_on;
+            break;
+        case QS60StyleEnums::SP_QgnIndiSliderEdit:
+            fallbackFileName = KAvkonBitmapFile();
+            fallbackIndex = EMbmAvkonQgn_indi_slider_edit;
+            break;
+        case QS60StyleEnums::SP_QgnIndiSubMenu:
+            fallbackFileName = KAvkonBitmapFile();
+            fallbackIndex = EMbmAvkonQgn_indi_submenu;
+            break;
+        case QS60StyleEnums::SP_QgnNoteErased:
+            fallbackFileName = KAvkonBitmapFile();
+            fallbackIndex = EMbmAvkonQgn_note_erased;
+            break;
+        case QS60StyleEnums::SP_QgnNoteError:
+            fallbackFileName = KAvkonBitmapFile();
+            fallbackIndex = EMbmAvkonQgn_note_error;
+            break;
+        case QS60StyleEnums::SP_QgnNoteInfo:
+            fallbackFileName = KAvkonBitmapFile();
+            fallbackIndex = EMbmAvkonQgn_note_info;
+            break;
+        case QS60StyleEnums::SP_QgnNoteOk:
+            fallbackFileName = KAvkonBitmapFile();
+            fallbackIndex = EMbmAvkonQgn_note_ok;
+            break;
+        case QS60StyleEnums::SP_QgnNoteQuery:
+            fallbackFileName = KAvkonBitmapFile();
+            fallbackIndex = EMbmAvkonQgn_note_query;
+            break;
+        case QS60StyleEnums::SP_QgnNoteWarning:
+            fallbackFileName = KAvkonBitmapFile();
+            fallbackIndex = EMbmAvkonQgn_note_warning;
+            break;
+        case QS60StyleEnums::SP_QgnPropFileSmall:
+            fallbackFileName = KAvkonBitmapFile();
+            fallbackIndex = EMbmAvkonQgn_prop_file_small;
+            break;
+        case QS60StyleEnums::SP_QgnPropFolderCurrent:
+            fallbackFileName = KAvkonBitmapFile();
+            fallbackIndex = EMbmAvkonQgn_prop_folder_current;
+            break;
+        case QS60StyleEnums::SP_QgnPropFolderSmall:
+            fallbackFileName = KAvkonBitmapFile();
+            fallbackIndex = EMbmAvkonQgn_prop_folder_small;
+            break;
+        case QS60StyleEnums::SP_QgnPropFolderSmallNew:
+            fallbackFileName = KAvkonBitmapFile();
+            fallbackIndex = EMbmAvkonQgn_prop_folder_small_new;
+            break;
+        case QS60StyleEnums::SP_QgnPropPhoneMemcLarge:
+            fallbackFileName = KAvkonBitmapFile();
+            fallbackIndex = EMbmAvkonQgn_prop_phone_memc_large;
+            break;
         default:
-            return KAvkonBitmapFile();
+            fallbackFileName = KNullDesC();
+            fallbackIndex = -1;
+            break;
     }
 }
 
@@ -372,10 +482,12 @@ QPixmap QS60StyleModeSpecifics::colorSkinnedGraphicsL(
 {
     const int stylepartIndex = (int)stylepart;
     const TAknsItemID skinId = m_partMap[stylepartIndex].skinID;
-    const TDesC& fallbackFileName = mapFallBackFileName(m_fallbackMap[stylepartIndex].fallbackGraphicID);
-    const TInt fallbackGraphicID =
-        (fallbackFileName!=KNullDesC) ? m_fallbackMap[stylepartIndex].fallbackGraphicID : KErrNotFound;
 
+    TInt fallbackGraphicID = -1;
+    HBufC* iconFile = HBufC::NewLC( KMaxFileName );
+    TPtr fileNamePtr = iconFile->Des();
+    fallbackInfo(stylepart, fileNamePtr, fallbackGraphicID);    
+    
     TAknsItemID colorGroup = KAknsIIDQsnIconColors;
     int colorIndex = 0;
     colorGroupAndIndex(stylepart, colorGroup, colorIndex);
@@ -390,11 +502,11 @@ QPixmap QS60StyleModeSpecifics::colorSkinnedGraphicsL(
         fallbackGraphicID == KErrNotFound?KErrNotFound:fallbackGraphicID+1; //masks are auto-generated as next in mif files
     MAknsSkinInstance* skinInstance = AknsUtils::SkinInstance();
     AknsUtils::CreateColorIconLC(
-        skinInstance, skinId, colorGroup, colorIndex, icon, iconMask, fallbackFileName, fallbackGraphicID , fallbackGraphicsMaskID, KRgbBlack);
+        skinInstance, skinId, colorGroup, colorIndex, icon, iconMask, fileNamePtr, fallbackGraphicID , fallbackGraphicsMaskID, KRgbBlack);
     User::LeaveIfError(AknIconUtils::SetSize(icon, targetSize, EAspectRatioNotPreserved));
     User::LeaveIfError(AknIconUtils::SetSize(iconMask, targetSize, EAspectRatioNotPreserved));
     QPixmap result = fromFbsBitmap(icon, iconMask, flags, qt_TDisplayMode2Format(icon->DisplayMode()));
-    CleanupStack::PopAndDestroy(2); //icon, iconMask
+    CleanupStack::PopAndDestroy(3); //icon, iconMask, iconFile
     return result;
 }
 
@@ -537,20 +649,21 @@ QPixmap QS60StyleModeSpecifics::createSkinnedGraphicsL(
     switch (drawType) {
     case EDrawIcon:
     {
-        const TDesC& fallbackFileName = mapFallBackFileName(m_fallbackMap[stylepartIndex].fallbackGraphicID);
-        const TInt fallbackGraphicID =
-            (fallbackFileName!=KNullDesC) ? m_fallbackMap[stylepartIndex].fallbackGraphicID : KErrNotFound;
+        TInt fallbackGraphicID = -1;
+        HBufC* iconFile = HBufC::NewLC( KMaxFileName );
+        TPtr fileNamePtr = iconFile->Des();
+        fallbackInfo(part, fileNamePtr, fallbackGraphicID);
 
         CFbsBitmap *icon = 0;
         CFbsBitmap *iconMask = 0;
         const TInt fallbackGraphicsMaskID =
             fallbackGraphicID == KErrNotFound?KErrNotFound:fallbackGraphicID+1; //masks are auto-generated as next in mif files
 //        QS60WindowSurface::unlockBitmapHeap();
-        AknsUtils::CreateIconLC(skinInstance, skinId, icon, iconMask, fallbackFileName, fallbackGraphicID , fallbackGraphicsMaskID);
+        AknsUtils::CreateIconLC(skinInstance, skinId, icon, iconMask, fileNamePtr, fallbackGraphicID , fallbackGraphicsMaskID);
         User::LeaveIfError(AknIconUtils::SetSize(icon, targetSize, EAspectRatioNotPreserved));
         User::LeaveIfError(AknIconUtils::SetSize(iconMask, targetSize, EAspectRatioNotPreserved));
         result = fromFbsBitmap(icon, iconMask, flags, qt_TDisplayMode2Format(icon->DisplayMode()));
-        CleanupStack::PopAndDestroy(2); // iconMask, icon
+        CleanupStack::PopAndDestroy(3); // iconMask, icon, iconFile
 //        QS60WindowSurface::lockBitmapHeap();
         break;
     }
@@ -878,6 +991,47 @@ short QS60StylePrivate::pixelMetric(int metric)
 #endif // QT_S60STYLE_LAYOUTDATA_SIMULATED
 }
 
+QPixmap QS60StyleModeSpecifics::generateMissingThemeGraphic(QS60StyleEnums::SkinParts &part,
+        const QSize &size, QS60StylePrivate::SkinElementFlags flags)
+{
+    if (!QS60StylePrivate::isTouchSupported())
+        return QPixmap();
+
+    QS60StyleEnums::SkinParts updatedPart = part;
+    switch(part){
+    // AVKON UI has a abnormal handling for scrollbar graphics. It is possible that the root
+    // skin does not contain mandatory graphics for scrollbar pressed states. Therefore, AVKON UI
+    // creates dynamically these graphics by modifying the normal state scrollbar graphics slightly.
+    // S60Style needs to work similarly. Therefore if skingraphics call provides to be a miss 
+    // (i.e. result is not valid), style needs to draw normal graphics instead and apply some 
+    // modifications (similar to generatedIconPixmap()) to the result.
+    case QS60StyleEnums::SP_QsnCpScrollHandleBottomPressed:
+        updatedPart = QS60StyleEnums::SP_QsnCpScrollHandleBottom;
+        break;
+    case QS60StyleEnums::SP_QsnCpScrollHandleMiddlePressed:
+        updatedPart = QS60StyleEnums::SP_QsnCpScrollHandleMiddle;
+        break;
+    case QS60StyleEnums::SP_QsnCpScrollHandleTopPressed:
+        updatedPart = QS60StyleEnums::SP_QsnCpScrollHandleTop;
+        break;
+    default:
+        break;
+    }
+    if (part==updatedPart) {
+        return QPixmap();
+    } else {
+        QPixmap result = skinnedGraphics(updatedPart, size, flags);
+        // TODO: fix this
+        QStyleOption opt;
+        //        opt.palette = q->standardPalette();
+        
+        // For now, always generate new icon based on "selected". In the future possibly, expand
+        // this to consist other possibilities as well.
+        result = QApplication::style()->generatedIconPixmap(QIcon::Selected, result, &opt);
+        return result;
+    }
+}
+
 QPixmap QS60StylePrivate::part(QS60StyleEnums::SkinParts part,
     const QSize &size, SkinElementFlags flags)
 {
@@ -893,6 +1047,10 @@ QPixmap QS60StylePrivate::part(QS60StyleEnums::SkinParts part,
 //        opt.palette = q->standardPalette();
         result = QApplication::style()->generatedIconPixmap(QIcon::Disabled, result, &opt);
     }
+
+    if (!result)
+        result = QS60StyleModeSpecifics::generateMissingThemeGraphic(part, size, flags);
+    
     return result;
 }
 

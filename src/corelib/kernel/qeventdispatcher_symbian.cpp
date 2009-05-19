@@ -299,6 +299,9 @@ void QSelectThread::run()
                 //     ones that return -1 in select
                 // after loop update notifiers for all of them
 
+                // as we dont have "exception" notifier type
+                // we should force monitoring fd_set of this
+                // type as well
 
                 // clean @ start
                 FD_ZERO(&readfds);
@@ -311,6 +314,11 @@ void QSelectThread::run()
                     fd_set onefds;
                     FD_ZERO(&onefds);
                     FD_SET(i.key()->socket(), &onefds);
+
+                    fd_set excfds;
+                    FD_ZERO(&excfds);
+                    FD_SET(i.key()->socket(), &excfds);
+
                     maxfd = i.key()->socket() + 1;
 
                     struct timeval timeout;
@@ -320,14 +328,11 @@ void QSelectThread::run()
                     ret = 0;
 
                     if(i.key()->type() == QSocketNotifier::Read) {
-                        ret = ::select(maxfd, &onefds, 0, 0, &timeout);
+                        ret = ::select(maxfd, &onefds, 0, &excfds, &timeout);
                         if(ret != 0) FD_SET(i.key()->socket(), &readfds);
                     } else if(i.key()->type() == QSocketNotifier::Write) {
-                        ret = ::select(maxfd, 0, &onefds, 0, &timeout);
+                        ret = ::select(maxfd, 0, &onefds, &excfds, &timeout);
                         if(ret != 0) FD_SET(i.key()->socket(), &writefds);
-                    } else { // must be exception fds then
-                        ret = ::select(maxfd, 0, 0, &onefds, &timeout);
-                        if(ret != 0) FD_SET(i.key()->socket(), &exceptionfds);
                     }
 
                 } // end for
@@ -393,9 +398,27 @@ void QSelectThread::restart()
 int QSelectThread::updateSocketSet(QSocketNotifier::Type type, fd_set *fds)
 {
     int maxfd = 0;
-    for (QHash<QSocketNotifier *, TRequestStatus *>::const_iterator i = m_AOStatuses.begin();
+    if(m_AOStatuses.isEmpty()) {
+        /*
+         * Wonder if should return -1
+         * to signal that no descriptors
+         * added to fds
+        */
+        return maxfd;
+    }
+    for ( QHash<QSocketNotifier *, TRequestStatus *>::const_iterator i = m_AOStatuses.begin();
             i != m_AOStatuses.end(); ++i) {
         if (i.key()->type() == type) {
+            FD_SET(i.key()->socket(), fds);
+            maxfd = qMax(maxfd, i.key()->socket());
+        } else if(type == QSocketNotifier::Exception) {
+            /*
+             * We are registering existing sockets
+             * always to exception set
+             *
+             * Doing double FD_SET shouldn't
+             * matter
+             */
             FD_SET(i.key()->socket(), fds);
             maxfd = qMax(maxfd, i.key()->socket());
         }
@@ -407,7 +430,9 @@ int QSelectThread::updateSocketSet(QSocketNotifier::Type type, fd_set *fds)
 void QSelectThread::updateActivatedNotifiers(QSocketNotifier::Type type, fd_set *fds)
 {
     Q_D(QThread);
-
+    if(m_AOStatuses.isEmpty()) {
+        return;
+    }
     QList<QSocketNotifier *> toRemove;
     for (QHash<QSocketNotifier *, TRequestStatus *>::const_iterator i = m_AOStatuses.begin();
             i != m_AOStatuses.end(); ++i) {
@@ -415,6 +440,15 @@ void QSelectThread::updateActivatedNotifiers(QSocketNotifier::Type type, fd_set 
             toRemove.append(i.key());
             TRequestStatus *status = i.value();
             // Thread data is still owned by the main thread.
+            QEventDispatcherSymbian::RequestComplete(d->threadData->symbian_thread_handle, status, KErrNone);
+        } else if(type == QSocketNotifier::Exception && FD_ISSET(i.key()->socket(), fds)) {
+            /*
+             * check if socket is in exception set
+             * then signal RequestComplete for it
+             */
+            qWarning("exception on %d", i.key()->socket());
+            toRemove.append(i.key());
+            TRequestStatus *status = i.value();
             QEventDispatcherSymbian::RequestComplete(d->threadData->symbian_thread_handle, status, KErrNone);
         }
     }
