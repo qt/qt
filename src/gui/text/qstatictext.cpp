@@ -70,7 +70,7 @@ void QStaticTextPrivate::init(const QString &text, const QFont &font)
     QFontMetrics fontMetrics(font);
 
     textLayout->beginLayout();
-    int h = fontMetrics.ascent();
+    int h = -fontMetrics.ascent();
     QTextLine line;
     if ((line = textLayout->createLine()).isValid()) {
         line.setLineWidth(fontMetrics.width(text));    
