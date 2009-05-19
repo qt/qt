@@ -400,7 +400,7 @@ void QAbstractPrintDialogPrivate::setPrinter(QPrinter *newPrinter)
     QAbstractPrintDialog::setEnabledOptions() and
     QAbstractPrintDialog::addEnabledOption() have no effect.
 
-    In Qt 4.4, it was possible to use the satic functions to show a sheet on
+    In Qt 4.4, it was possible to use the static functions to show a sheet on
     Mac OS X. This is no longer supported in Qt 4.5. If you want this
     functionality, use QPrintDialog::open().
 

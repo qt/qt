@@ -42,6 +42,7 @@
 #include "actionrepository_p.h"
 #include "qtresourceview_p.h"
 #include "iconloader_p.h"
+#include "qdesigner_utils_p.h"
 
 #include <QtDesigner/QDesignerFormEditorInterface>
 #include <QtDesigner/QDesignerPropertySheetExtension>
@@ -168,16 +169,20 @@ QWidgetList ActionModel::associatedWidgets(const QAction *action)
 }
 
 // shortcut is a fake property, need to retrieve it via property sheet.
-static QString actionShortCut(QDesignerFormEditorInterface *core, QAction *action)
+PropertySheetKeySequenceValue ActionModel::actionShortCut(QDesignerFormEditorInterface *core, QAction *action)
 {
     QDesignerPropertySheetExtension *sheet = qt_extension<QDesignerPropertySheetExtension*>(core->extensionManager(), action);
     if (!sheet)
-        return QString();
+        return PropertySheetKeySequenceValue();
+    return actionShortCut(sheet);
+}
+
+PropertySheetKeySequenceValue ActionModel::actionShortCut(const QDesignerPropertySheetExtension *sheet)
+{
     const int index = sheet->indexOf(QLatin1String("shortcut"));
     if (index == -1)
-        return QString();
-    const QKeySequence keysequence = qvariant_cast<QKeySequence>(sheet->property(index));
-    return keysequence.toString();
+        return PropertySheetKeySequenceValue();
+    return qvariant_cast<PropertySheetKeySequenceValue>(sheet->property(index));
 }
 
 void  ActionModel::setItems(QDesignerFormEditorInterface *core, QAction *action, QStandardItemList &sl)
@@ -221,7 +226,7 @@ void  ActionModel::setItems(QDesignerFormEditorInterface *core, QAction *action,
     item->setText(action->text());
     item->setToolTip(action->text());
     // shortcut
-    const QString shortcut = actionShortCut(core, action);
+    const QString shortcut = actionShortCut(core, action).value().toString();
     item = sl[ShortCutColumn];
     item->setText(shortcut);
     item->setToolTip(shortcut);

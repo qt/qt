@@ -265,11 +265,9 @@ void tst_QProcess::simpleStart()
 //-----------------------------------------------------------------------------
 void tst_QProcess::startDetached()
 {
-#if QT_VERSION >= 0x040200
     QProcess proc;
     QVERIFY(proc.startDetached("testProcessNormal/testProcessNormal",
                                QStringList() << "arg1" << "arg2"));
-#endif
     QCOMPARE(QProcess::startDetached("nonexistingexe"), false);
 }
 

@@ -158,6 +158,8 @@ private:
     Q_PRIVATE_SLOT(d_func(), void _q_performDelayedSort())
     Q_PRIVATE_SLOT(d_func(), void _q_fileSystemChanged(const QString &path, const QList<QPair<QString, QFileInfo> > &))
     Q_PRIVATE_SLOT(d_func(), void _q_resolvedName(const QString &fileName, const QString &resolvedName))
+
+    friend class QFileDialogPrivate;
 };
 
 inline bool QFileSystemModel::rmdir(const QModelIndex &aindex) const

@@ -242,7 +242,7 @@ bool TSReader::read(Translator &translator)
     STRING(userdata);
     STRING(utf8);
     STRING(value);
-    STRING(version);
+    //STRING(version);
     STRING(yes);
 
     static const QString strextrans(QLatin1String("extra-"));
@@ -266,15 +266,13 @@ bool TSReader::read(Translator &translator)
             QString currentFile;
 
             QXmlStreamAttributes atts = attributes();
-            QString version = atts.value(strversion).toString();
+            //QString version = atts.value(strversion).toString();
             translator.setLanguageCode(atts.value(strlanguage).toString());
             translator.setSourceLanguageCode(atts.value(strsourcelanguage).toString());
             while (!atEnd()) {
                 readNext();
                 if (isEndElement()) {
                     // </TS> found, finish local loop
-                    if (version == QLatin1String("1.1"))
-                        translator.resolveDualEncoded();
                     break;
                 } else if (isWhiteSpace()) {
                     // ignore these, just whitespace

@@ -255,8 +255,17 @@ inline qreal QTransform::dy() const
     return affine._dy;
 }
 
+#if defined(Q_CC_GNU)
+#    define Q_CC_GNU_VERSION (((__GNUC__)<<16)|((__GNUC_MINOR__)<<8)|(__GNUC_PATCHLEVEL__))
+#    if Q_CC_GNU_VERSION >= 0x040201
+#        pragma GCC diagnostic ignored "-Wfloat-equal"
+#    endif
+#endif
+
 inline QTransform &QTransform::operator*=(qreal num)
 {
+    if (num == 1.)
+        return *this;
     affine._m11 *= num;
     affine._m12 *= num;
     m_13        *= num;
@@ -271,11 +280,15 @@ inline QTransform &QTransform::operator*=(qreal num)
 }
 inline QTransform &QTransform::operator/=(qreal div)
 {
+    if (div == 0)
+        return *this;
     div = 1/div;
     return operator*=(div);
 }
 inline QTransform &QTransform::operator+=(qreal num)
 {
+    if (num == 0)
+        return *this;
     affine._m11 += num;
     affine._m12 += num;
     m_13        += num;
@@ -290,6 +303,8 @@ inline QTransform &QTransform::operator+=(qreal num)
 }
 inline QTransform &QTransform::operator-=(qreal num)
 {
+    if (num == 0)
+        return *this;
     affine._m11 -= num;
     affine._m12 -= num;
     m_13        -= num;
@@ -302,6 +317,13 @@ inline QTransform &QTransform::operator-=(qreal num)
     m_dirty     |= TxProject;
     return *this;
 }
+
+#if defined(Q_CC_GNU_VERSION)
+#    if Q_CC_GNU_VERSION >= 0x040201
+#        pragma GCC diagnostic warning "-Wfloat-equal"
+#    endif
+#    undef Q_GCC_GNU_VERSION
+#endif
 
 /****** stream functions *******************/
 Q_GUI_EXPORT QDataStream &operator<<(QDataStream &, const QTransform &);

@@ -932,6 +932,7 @@
     \o \l{qmake Variable Reference#QT}{QT}
     \o \l{qmake Variable Reference#RCC_DIR}{RCC_DIR}
     \o \l{qmake Variable Reference#REQUIRES}{REQUIRES}
+    \o \l{qmake Variable Reference#RESOURCES}{RESOURCES}
     \o \l{qmake Variable Reference#SOURCES}{SOURCES}
     \o \l{qmake Variable Reference#SUBDIRS}{SUBDIRS}
     \o \l{qmake Variable Reference#TARGET}{TARGET}
@@ -2420,6 +2421,12 @@
 
     This is mainly used in Qt's build system for building the examples.
 
+    \section1 RESOURCES
+
+    This variable contains the name of the resource collection file (qrc) 
+    for the application. Further information about the resource collection
+    file can be found at \l{The Qt Resource System}.
+
     \section1 RES_FILE
 
     This variable contains the name of the resource file for the application.
@@ -3079,6 +3086,9 @@
     \c -nocache is not specified when \c qmake is run, it will try to find a file
     called \c{.qmake.cache} in parent directories of the current directory. If
     it fails to find this file, it will silently ignore this step of processing.
+
+    If it finds a \c{.qmake.cache} file then it will process this file first before
+    it processes the project file.
 
     \target LibDepend
     \section1 Library Dependencies

@@ -727,7 +727,9 @@ void QUnixPrintWidgetPrivate::updateWidget()
             widget.printers->removeItem(widget.printers->count()-1); // remove separator
         filePrintersAdded = false;
     }
-    if (printer && filePrintersAdded && printer->printerName().isEmpty()) {
+    if (printer && filePrintersAdded && (printer->outputFormat() != QPrinter::NativeFormat
+                                         || printer->printerName().isEmpty()))
+    {
         if (printer->outputFormat() == QPrinter::PdfFormat)
             widget.printers->setCurrentIndex(widget.printers->count() - 2);
         else if (printer->outputFormat() == QPrinter::PostScriptFormat)

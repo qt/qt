@@ -1,0 +1,144 @@
+Qt 4.5.2 is a bug-fix release. It maintains both forward and backward
+compatibility (source and binary) with Qt 4.5.0.  For more details,
+refer to the online documentation included in this distribution. The
+documentation is also available online:
+
+  http://doc.trolltech.com/4.5
+
+The Qt version 4.5 series is binary compatible with the 4.4.x series.
+Applications compiled for 4.4 will continue to run with 4.5.
+
+Some of the changes listed in this file include issue tracking numbers
+corresponding to tasks in the Task Tracker:
+
+  http://www.qtsoftware.com/developer/task-tracker
+
+Each of these identifiers can be entered in the task tracker to obtain more
+information about a particular change.
+
+****************************************************************************
+*                           General                                        *
+****************************************************************************
+
+General Improvements
+--------------------
+
+- Documentation and Examples
+
+Third party components
+----------------------
+
+
+****************************************************************************
+*                          Library                                         *
+****************************************************************************
+
+- QtWebKit
+   * Backported fixes for critical bugs, memory leaks, and crashes from
+     WebKit trunk (with revision numbers) related to:
+       Canvas (r40546, r41221 r41355, r42996, r43645)
+       Memory (r41527, r43764, r43828, r43830)
+       JavaScript (r39882, r40086, r40131, r40133)
+       Rendering (r41285, r41296, r41659, r42887)
+       Network (r41664, r42516)
+       Plugins (r41346)
+       Clipboard (r41360)
+
+****************************************************************************
+*                          Database Drivers                                *
+****************************************************************************
+
+
+****************************************************************************
+*                      Platform Specific Changes                           *
+****************************************************************************
+
+Qt for Linux/X11
+----------------
+
+
+Qt for Windows
+--------------
+
+
+Qt for Mac OS X
+---------------
+
+
+Qt for Embedded Linux
+---------------------
+
+
+Qt for Windows CE
+-----------------
+
+
+****************************************************************************
+*                      Compiler Specific Changes                           *
+****************************************************************************
+
+
+****************************************************************************
+*                          Tools                                           *
+****************************************************************************
+
+- Build System
+
+- Assistant
+
+
+- Designer
+   * [248769] Fixed a bug affecting the display of keyboard shortcuts in
+     the detailed view of the action editor.
+   * [251092] Fixed a bug preventing entering local file names for QUrl-type
+     properties on Windows.
+   * [251691] Fixed dynamic re-translation of table headers.
+   * [252251] Improved readability of the property editor when using the
+     KDE Obsidian Coast theme.
+   * [253236] Fixed a regression bug triggered by forms with a size policy
+     of 'Fixed' on the main cointainer.
+   * [253278] Made it possible to set QString-type properties using
+     QDesignerFormWindowCursor::setProperty().
+
+- Linguist
+  - Linguist GUI
+
+  - lupdate
+
+  - lrelease
+
+
+- rcc
+
+
+- moc
+
+
+- uic
+  * [252333] Fixed a regression crash triggered by using icons with
+    different pixmaps for QIcon states.
+
+- uic3
+
+
+- qmake
+
+
+- configure
+
+
+- qtconfig
+
+
+- qt3to4
+
+
+****************************************************************************
+*                          Plugins                                         *
+****************************************************************************
+
+
+****************************************************************************
+*                   Important Behavior Changes                             *
+****************************************************************************
+

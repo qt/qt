@@ -257,11 +257,7 @@ private slots:
     void on_child1_destroyed() { ++invokeCount2; }
 };
 
-#if QT_VERSION >= 0x040200
 #define FUNCTION(x) "QMetaObject::" x ": "
-#else
-#define FUNCTION(x) "QMetaObject::" x "(): "
-#endif
 
 void tst_QMetaObject::connectSlotsByName()
 {

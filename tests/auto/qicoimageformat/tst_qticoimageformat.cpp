@@ -264,42 +264,35 @@ void tst_QtIcoImageFormat::nextImageDelay_data()
 {
     QTest::addColumn<QString>("fileName");
     QTest::addColumn<int>("count");
-    QTest::addColumn<int>("delay");
 
-    QTest::newRow("floppy (16px,32px - 16 colors)") << "valid/35FLOPPY.ICO" << 2 << 0;
-    QTest::newRow("16px,32px,48px - 256,16M colors") << "valid/abcardWindow.ico" << 6 << 0;
-    QTest::newRow("16px - 16 colors") << "valid/App.ico" << 1 << 0;
-    QTest::newRow("16px,32px,48px - 16,256,16M colors") << "valid/Obj_N2_Internal_Mem.ico" << 9 << 0;
-    QTest::newRow("16px - 16,256,16M colors") << "valid/Status_Play.ico" << 3 << 0;
-    QTest::newRow("16px,32px - 16 colors") << "valid/TIMER01.ICO" << 2 << 0;
-    QTest::newRow("16px16c, 32px32c, 32px256c") << "valid/WORLD.ico" << 3 << 0;
-    QTest::newRow("16px16c, 32px32c, 32px256c") << "valid/WORLDH.ico" << 3 << 0;
-    QTest::newRow("invalid floppy (first 8 bytes = 0xff)") << "invalid/35floppy.ico" << -1 << -1;
-    QTest::newRow("includes 32BPP w/alpha") << "valid/semitransparent.ico" << 9 << 0;
+    QTest::newRow("floppy (16px,32px - 16 colors)") << "valid/35FLOPPY.ICO" << 2;
+    QTest::newRow("16px,32px,48px - 256,16M colors") << "valid/abcardWindow.ico" << 6;
+    QTest::newRow("16px - 16 colors") << "valid/App.ico" << 1;
+    QTest::newRow("16px,32px,48px - 16,256,16M colors") << "valid/Obj_N2_Internal_Mem.ico" << 9;
+    QTest::newRow("16px - 16,256,16M colors") << "valid/Status_Play.ico" << 3;
+    QTest::newRow("16px,32px - 16 colors") << "valid/TIMER01.ICO" << 2;
+    QTest::newRow("16px16c, 32px32c, 32px256c") << "valid/WORLD.ico" << 3;
+    QTest::newRow("16px16c, 32px32c, 32px256c") << "valid/WORLDH.ico" << 3;
+    QTest::newRow("invalid floppy (first 8 bytes = 0xff)") << "invalid/35floppy.ico" << -1;
+    QTest::newRow("includes 32BPP w/alpha") << "valid/semitransparent.ico" << 9;
 }
 
 void tst_QtIcoImageFormat::nextImageDelay()
 {
     QFETCH(QString, fileName);
     QFETCH(int, count);
-    QFETCH(int, delay);
-
-#if QT_VERSION > 0x040001
-    delay = 0;
-#endif
 
     QImageReader reader(m_IconPath + "/" + fileName);
     if (count == -1) {
-        QCOMPARE(reader.nextImageDelay(), delay);
-
+        QCOMPARE(reader.nextImageDelay(), 0);
     } else {
         int i;
         for (i = 0; i < count; i++) {
-
             QVERIFY(reader.jumpToImage(i));
-            QCOMPARE(reader.nextImageDelay(), delay);
+            QCOMPARE(reader.nextImageDelay(), 0);
         }
     }
 }
+
 QTEST_MAIN(tst_QtIcoImageFormat)
 #include "tst_qticoimageformat.moc"

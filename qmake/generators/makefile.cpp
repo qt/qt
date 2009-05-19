@@ -1492,7 +1492,7 @@ MakefileGenerator::replaceExtraCompilerVariables(const QString &orig_var, const 
             val += project->values(varname);
         }
         if(val.isEmpty() && var.startsWith(QLatin1String("QMAKE_VAR_FIRST_"))) {
-            const QString varname = var.mid(12);
+            const QString varname = var.mid(16);
             val += project->first(varname);
         }
 
@@ -2735,16 +2735,9 @@ MakefileGenerator::fileFixify(const QString& file, const QString &out_d, const Q
             ret.prepend(pwd);
         ret = Option::fixPathToTargetOS(ret, false, canon);
     } else { //fix it..
-        QString qfile(Option::fixPathToLocalOS(ret, true, canon)), in_dir(in_d), out_dir(out_d);
+        QString out_dir = QDir(Option::output_dir).absoluteFilePath(out_d);
+        QString in_dir  = QDir(pwd).absoluteFilePath(in_d);
         {
-            if(out_dir.isNull() || QDir::isRelativePath(out_dir))
-                out_dir.prepend(Option::output_dir + "/");
-            else if(out_dir == ".")
-                out_dir = pwd;
-            if(in_dir.isEmpty() || QDir::isRelativePath(in_dir))
-                in_dir.prepend(pwd);
-            else if(in_dir == ".")
-                in_dir = pwd;
             QFileInfo in_fi(fileInfo(in_dir));
             if(in_fi.exists())
                 in_dir = in_fi.canonicalFilePath();
@@ -2753,6 +2746,7 @@ MakefileGenerator::fileFixify(const QString& file, const QString &out_d, const Q
                 out_dir = out_fi.canonicalFilePath();
         }
 
+        QString qfile(Option::fixPathToLocalOS(ret, true, canon));
         QFileInfo qfileinfo(fileInfo(qfile));
         if(out_dir != in_dir || !qfileinfo.isRelative()) {
             if(qfileinfo.isRelative()) {

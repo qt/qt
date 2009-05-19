@@ -675,12 +675,13 @@ QWheelEvent::QWheelEvent(const QPoint &pos, const QPoint& globalPos, int delta, 
     The \a type parameter must be QEvent::KeyPress, QEvent::KeyRelease,
     or QEvent::ShortcutOverride.
 
-    If \a key is 0, the event is not a result of
-    a known key; for example, it may be the result of a compose
-    sequence or keyboard macro. The \a modifiers holds the keyboard
-    modifiers, and the given \a text is the Unicode text that the
-    key generated. If \a autorep is true, isAutoRepeat() will be
-    true. \a count is the number of keys involved in the event.
+    Int \a key is the code for the Qt::Key that the event loop should listen 
+    for. If \a key is 0, the event is not a result of a known key; for 
+    example, it may be the result of a compose sequence or keyboard macro.
+    The \a modifiers holds the keyboard modifiers, and the given \a text 
+    is the Unicode text that the key generated. If \a autorep is true, 
+    isAutoRepeat() will be true. \a count is the number of keys involved 
+    in the event.
 */
 QKeyEvent::QKeyEvent(Type type, int key, Qt::KeyboardModifiers modifiers, const QString& text,
                      bool autorep, ushort count)

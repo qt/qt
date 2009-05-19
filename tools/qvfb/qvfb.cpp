@@ -217,16 +217,10 @@ QVFb::QVFb( int display_id, int w, int h, int d, int r, const QString &skin, Dis
     setWindowIcon( pix );
     rateDlg = 0;
     refreshRate = 30;
-#if QT_VERSION >= 0x030000
-    // When compiling with Qt 3 we need to create the menu first to
-    // avoid scroll bars in the main window
+    // Create the menu first to avoid scroll bars in the main window
     createMenu( menuBar() );
     init( display_id, w, h, d, r, skin );
     enableCursor( true );
-#else
-    init( display_id, w, h, d, r, skin );
-    createMenu( menuBar() );
-#endif
 }
 
 QVFb::~QVFb()
@@ -354,9 +348,7 @@ void QVFb::init( int display_id, int pw, int ph, int d, int r, const QString& sk
 	scroller->setWidget(view);
 	view->setContentsMargins( 0, 0, 0, 0 );
 	setCentralWidget(scroller);
-#if QT_VERSION >= 0x030000
 	ph += 2;					// avoid scrollbar
-#endif
 	scroller->show();
 	// delete defaultbuttons.conf if it was left behind...
 	unlink(QFileInfo(QString("/tmp/qtembedded-%1/defaultbuttons.conf").arg(view->displayId())).absoluteFilePath().toLatin1().constData());

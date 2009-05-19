@@ -178,6 +178,12 @@ private slots:
     void task_217003_data() { generic_data(); }
     void task_217003();
 #endif
+    void task_250026_data() { generic_data("QODBC"); }
+    void task_250026();
+    void task_205701_data() { generic_data("QMYSQL"); }
+    void task_205701();
+
+
 
 private:
     // returns all database connections
@@ -293,6 +299,7 @@ void tst_QSqlQuery::dropTestTables( QSqlDatabase db )
 #ifdef NOT_READY_YET
     tablenames <<  qTableName( "Planet" );
 #endif
+    tablenames << qTableName( "task_250026" );
 
     tst_Databases::safeDropTables( db, tablenames );
 }
@@ -2676,6 +2683,51 @@ void tst_QSqlQuery::task_217003()
     QCOMPARE( q.value( 0 ).toString(), QString( "Venus" ) );
 }
 #endif
+
+void tst_QSqlQuery::task_250026()
+{
+    QString data258, data1026;
+    QFETCH( QString, dbName );
+    QSqlDatabase db = QSqlDatabase::database( dbName );
+    CHECK_DATABASE( db );
+    QSqlQuery q( db );
+
+    QString tableName = qTableName( "task_250026" );
+
+    if ( !q.exec( "create table " + tableName + " (longfield varchar(1100))" ) ) {
+        qDebug() << "Error" << q.lastError();
+        QSKIP( "Db doesn't support \"1100\" as a size for fields", SkipSingle );
+    }
+
+    data258.fill( 'A', 258 );
+    data1026.fill( 'A', 1026 );
+    QVERIFY_SQL( q, prepare( "insert into " + tableName + "(longfield) VALUES (:longfield)" ) );
+    q.bindValue( "longfield", data258 );
+    QVERIFY_SQL( q, exec() );
+    q.bindValue( "longfield", data1026 );
+    QVERIFY_SQL( q, exec() );
+    QVERIFY_SQL( q, exec( "select * from " + tableName ) );
+    QVERIFY_SQL( q, next() );
+    QCOMPARE( q.value( 0 ).toString().length(), data258.length() );
+    QVERIFY_SQL( q, next() );
+	QCOMPARE( q.value( 0 ).toString().length(), data1026.length() );
+}
+
+void tst_QSqlQuery::task_205701()
+{
+    QSqlDatabase qsdb = QSqlDatabase::addDatabase("QMYSQL", "atest"); 
+    qsdb.setHostName("test"); 
+    qsdb.setDatabaseName("test"); 
+    qsdb.setUserName("test"); 
+    qsdb.setPassword("test"); 
+    qsdb.open(); 
+
+//     {
+        QSqlQuery query(qsdb);
+//     }
+    QSqlDatabase::removeDatabase("atest");
+}
+
 
 QTEST_MAIN( tst_QSqlQuery )
 #include "tst_qsqlquery.moc"

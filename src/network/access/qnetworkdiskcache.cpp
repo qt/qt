@@ -191,7 +191,11 @@ QIODevice *QNetworkDiskCache::prepare(const QNetworkCacheMetaData &metaData)
     } else {
         QString templateName = d->tmpCacheFileName();
         cacheItem->file = new QTemporaryFile(templateName, &cacheItem->data);
-        cacheItem->file->open();
+        if (!cacheItem->file->open()) {
+            qWarning() << "QNetworkDiskCache::prepare() unable to open temporary file";
+            delete cacheItem;
+            return 0;
+        }
         cacheItem->writeHeader(cacheItem->file);
         device = cacheItem->file;
     }
@@ -229,7 +233,7 @@ void QNetworkDiskCachePrivate::storeItem(QCacheItem *cacheItem)
 
     if (QFile::exists(fileName)) {
         if (!QFile::remove(fileName)) {
-            qWarning() << "QNetworkDiskCache: could't remove the cache file " << fileName;
+            qWarning() << "QNetworkDiskCache: couldn't remove the cache file " << fileName;
             return;
         }
     }
@@ -253,7 +257,8 @@ void QNetworkDiskCachePrivate::storeItem(QCacheItem *cacheItem)
         // ### use atomic rename rather then remove & rename
         if (cacheItem->file->rename(fileName))
             currentCacheSize += cacheItem->file->size();
-        cacheItem->file->setAutoRemove(true);
+        else
+            cacheItem->file->setAutoRemove(true);
     }
     if (cacheItem->metaData.url() == lastItem.metaData.url())
         lastItem.reset();
@@ -489,21 +494,21 @@ qint64 QNetworkDiskCache::expire()
     QDir::Filters filters = QDir::AllDirs | QDir:: Files | QDir::NoDotAndDotDot;
     QDirIterator it(cacheDirectory(), filters, QDirIterator::Subdirectories);
 
-    QMap<QDateTime, QString> cacheItems;
+    QMultiMap<QDateTime, QString> cacheItems;
     qint64 totalSize = 0;
     while (it.hasNext()) {
         QString path = it.next();
         QFileInfo info = it.fileInfo();
         QString fileName = info.fileName();
         if (fileName.endsWith(CACHE_POSTFIX) && fileName.startsWith(CACHE_PREFIX)) {
-            cacheItems[info.created()] = path;
+            cacheItems.insert(info.created(), path);
             totalSize += info.size();
         }
     }
 
     int removedFiles = 0;
     qint64 goal = (maximumCacheSize() * 9) / 10;
-    QMap<QDateTime, QString>::const_iterator i = cacheItems.constBegin();
+    QMultiMap<QDateTime, QString>::const_iterator i = cacheItems.constBegin();
     while (i != cacheItems.constEnd()) {
         if (totalSize < goal)
             break;

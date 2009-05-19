@@ -1465,7 +1465,7 @@ void QWizardPrivate::handleAeroStyleChange()
         return; // prevent recursion
     inHandleAeroStyleChange = true;
 
-    vistaHelper->backButton()->disconnect();
+    vistaHelper->disconnectBackButton();
     q->removeEventFilter(vistaHelper);
 
     if (isVistaThemeEnabled()) {
@@ -1491,7 +1491,7 @@ void QWizardPrivate::handleAeroStyleChange()
         q->setMouseTracking(true); // ### original value possibly different
         q->unsetCursor(); // ### ditto
         antiFlickerWidget->move(0, 0);
-        vistaHelper->backButton()->hide();
+        vistaHelper->hideBackButton();
         vistaHelper->setTitleBarIconAndCaptionVisible(true);
     }
 

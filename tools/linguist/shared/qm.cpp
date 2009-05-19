@@ -659,7 +659,6 @@ bool loadQM(Translator &translator, QIODevice &dev, ConversionData &cd)
         msg.setComment(comment);
         translator.append(msg);
     }
-    translator.resolveDualEncoded();
     return ok;
 }
 

@@ -1327,13 +1327,21 @@ QImage qt_gl_read_framebuffer(const QSize &size, bool alpha_format, bool include
             // This is an old legacy fix for PowerPC based Macs, which
             // we shouldn't remove
             while (p < end) {
-                *p = 0xFF000000 | (*p>>8);
+                *p = 0xff000000 | (*p>>8);
                 ++p;
             }
         }
     } else {
         // OpenGL gives ABGR (i.e. RGBA backwards); Qt wants ARGB
-        img = img.rgbSwapped();
+        for (int y = 0; y < h; y++) {
+            uint *q = (uint*)img.scanLine(y);
+            for (int x=0; x < w; ++x) {
+                const uint pixel = *q;
+                *q = ((pixel << 16) & 0xff0000) | ((pixel >> 16) & 0xff) | (pixel & 0xff00ff00);
+                q++;
+            }
+        }
+
     }
     return img.mirrored();
 }
@@ -2398,6 +2406,10 @@ bool QGLContext::create(const QGLContext* shareContext)
         return false;
     reset();
     d->valid = chooseContext(shareContext);
+    if (d->valid && d->paintDevice->devType() == QInternal::Widget) {
+        QWidgetPrivate *wd = qt_widget_private(static_cast<QWidget *>(d->paintDevice));
+        wd->usesDoubleBufferedGLContext = d->glFormat.doubleBuffer();
+    }
     if (d->sharing)  // ok, we managed to share
         qgl_share_reg()->addShare(this, shareContext);
     return d->valid;
@@ -2576,7 +2588,7 @@ const QGLContext* QGLContext::currentContext()
     \i paintGL() - Renders the OpenGL scene. Gets called whenever the widget
     needs to be updated.
     \i resizeGL() - Sets up the OpenGL viewport, projection, etc. Gets
-    called whenever the the widget has been resized (and also when it
+    called whenever the widget has been resized (and also when it
     is shown for the first time because all newly created widgets get a
     resize event automatically).
     \i initializeGL() - Sets up the OpenGL rendering context, defines display
@@ -2614,6 +2626,10 @@ const QGLContext* QGLContext::currentContext()
     widget and then reparenting the dummy widget, instead of the
     QGLWidget. This will side-step the issue altogether, and is what
     we recommend for users that need this kind of functionality.
+
+    On Mac OS X, when Qt is built with Cocoa support, a QGLWidget
+    can't have any sibling widgets placed ontop of itself. This is due
+    to limitations in the Cocoa API and is not supported by Apple.
 
     \section1 Overlays
 
@@ -3230,6 +3246,10 @@ bool QGLWidget::event(QEvent *e)
             update();
         }
         return true;
+#  if defined(QT_MAC_USE_COCOA)
+    } else if (e->type() == QEvent::MacGLClearDrawable) {
+        d->glcx->d_ptr->clearDrawable();
+#  endif
     }
 #endif
 

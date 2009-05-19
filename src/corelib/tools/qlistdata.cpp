@@ -764,6 +764,10 @@ void **QListData::erase(void **xi)
     This function requires the value type to have an implementation of
     \c operator==().
 
+    Note that QList uses 0-based indexes, just like C++ arrays. Negative
+    indexes are not supported with the exception of the value mentioned
+    above.
+
     \sa lastIndexOf(), contains()
 */
 
@@ -779,6 +783,10 @@ void **QListData::erase(void **xi)
 
     This function requires the value type to have an implementation of
     \c operator==().
+
+    Note that QList uses 0-based indexes, just like C++ arrays. Negative 
+    indexes are not supported with the exception of the value mentioned
+    above.
 
     \sa indexOf()
 */
@@ -1193,7 +1201,7 @@ void **QListData::erase(void **xi)
     Constructs an uninitialized iterator.
 
     Functions like operator*() and operator++() should not be called
-    on an uninitialized iterartor. Use operator=() to assign a value
+    on an uninitialized iterator. Use operator=() to assign a value
     to it before using it.
 
     \sa QList::begin() QList::end()
@@ -1416,7 +1424,7 @@ void **QListData::erase(void **xi)
     Constructs an uninitialized iterator.
 
     Functions like operator*() and operator++() should not be called
-    on an uninitialized iterartor. Use operator=() to assign a value
+    on an uninitialized iterator. Use operator=() to assign a value
     to it before using it.
 
     \sa QList::constBegin() QList::constEnd()

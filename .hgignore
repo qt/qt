@@ -5,6 +5,8 @@ syntax: glob
 
 *~
 *.a
+*.la
+*.pc
 *.core
 *.moc
 *.o
@@ -45,7 +47,9 @@ bin/rcc*
 bin/uic*
 bin/qcollectiongenerator
 bin/qhelpgenerator
+bin/macdeployqt
 tools/qdoc3/qdoc3*
+tools/macdeployqt/macchangeqt/macchangeqt
 #configure.cache
 mkspecs/default
 mkspecs/qconfig.pri

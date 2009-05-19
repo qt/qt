@@ -283,6 +283,11 @@ private slots:
     void render_task217815();
     void render_windowOpacity();
     void render_systemClip();
+    void render_systemClip2_data();
+    void render_systemClip2();
+    void render_systemClip3_data();
+    void render_systemClip3();
+    void render_task252837();
 
     void setContentsMargins();
 
@@ -2564,9 +2569,6 @@ void tst_QWidget::setGeometry()
 
 void tst_QWidget::windowOpacity()
 {
-#if defined(Q_WS_X11) && QT_VERSION < 0x040200
-    QSKIP("QWidget::windowOpacity is broken in Qt < 4.2 on X11", SkipAll);
-#else
 #ifdef Q_OS_WINCE
     QSKIP( "Windows CE does not support windowOpacity", SkipAll);
 #endif
@@ -2576,43 +2578,27 @@ void tst_QWidget::windowOpacity()
     // Initial value should be 1.0
     QCOMPARE(widget.windowOpacity(), 1.0);
     // children should always return 1.0
-#if QT_VERSION < 0x040200
-    QEXPECT_FAIL("", "Prior to 4.2, all children widgets returned 0.0", Continue);
-#endif
     QCOMPARE(child.windowOpacity(), 1.0);
 
     widget.setWindowOpacity(0.0);
     QCOMPARE(widget.windowOpacity(), 0.0);
     child.setWindowOpacity(0.0);
-#if QT_VERSION < 0x040200
-    QEXPECT_FAIL("", "Prior to 4.2, all children widgets returned 0.0", Continue);
-#endif
     QCOMPARE(child.windowOpacity(), 1.0);
 
     widget.setWindowOpacity(1.0);
     QCOMPARE(widget.windowOpacity(), 1.0);
     child.setWindowOpacity(1.0);
-#if QT_VERSION < 0x040200
-    QEXPECT_FAIL("", "Prior to 4.2, all children widgets returned 0.0", Continue);
-#endif
     QCOMPARE(child.windowOpacity(), 1.0);
 
     widget.setWindowOpacity(2.0);
     QCOMPARE(widget.windowOpacity(), 1.0);
     child.setWindowOpacity(2.0);
-#if QT_VERSION < 0x040200
-    QEXPECT_FAIL("", "Prior to 4.2, all children widgets returned 0.0", Continue);
-#endif
     QCOMPARE(child.windowOpacity(), 1.0);
 
     widget.setWindowOpacity(-1.0);
     QCOMPARE(widget.windowOpacity(), 0.0);
     child.setWindowOpacity(-1.0);
-#if QT_VERSION < 0x040200
-    QEXPECT_FAIL("", "Prior to 4.2, all children widgets returned 0.0", Continue);
-#endif
     QCOMPARE(child.windowOpacity(), 1.0);
-#endif
 }
 
 class UpdateWidget : public QWidget
@@ -5321,7 +5307,7 @@ void tst_QWidget::subtractOpaqueSiblings()
 {
 #ifdef QT_MAC_USE_COCOA
     QSKIP("Cocoa only has rect granularity.", SkipAll);
-#elif defined(Q_WIDGET_USE_DIRTYLIST) || (QT_VERSION >= 0x040400)
+#else
     QWidget w;
     w.setGeometry(50, 50, 300, 300);
 
@@ -6916,6 +6902,212 @@ void tst_QWidget::render_systemClip()
 #endif
 }
 
+void tst_QWidget::render_systemClip2_data()
+{
+    QTest::addColumn<bool>("autoFillBackground");
+    QTest::addColumn<bool>("usePaintEvent");
+    QTest::addColumn<QColor>("expectedColor");
+
+    QTest::newRow("Only auto-fill background") << true << false << QColor(Qt::blue);
+    QTest::newRow("Only draw in paintEvent") << false << true << QColor(Qt::green);
+    QTest::newRow("Auto-fill background and draw in paintEvent") << true << true << QColor(Qt::green);
+}
+
+void tst_QWidget::render_systemClip2()
+{
+    QFETCH(bool, autoFillBackground);
+    QFETCH(bool, usePaintEvent);
+    QFETCH(QColor, expectedColor);
+
+    Q_ASSERT_X(expectedColor != QColor(Qt::red), Q_FUNC_INFO,
+               "Qt::red is the reference color for the image, pick another color");
+
+    class MyWidget : public QWidget
+    {
+    public:
+        bool usePaintEvent;
+        void paintEvent(QPaintEvent *)
+        {
+            if (usePaintEvent)
+                QPainter(this).fillRect(rect(), Qt::green);
+        }
+    };
+
+    MyWidget widget;
+    widget.usePaintEvent = usePaintEvent;
+    widget.setPalette(Qt::blue);
+    // NB! widget.setAutoFillBackground(autoFillBackground) won't do the
+    // trick here since the widget is a top-level. The background is filled
+    // regardless, unless Qt::WA_OpaquePaintEvent or Qt::WA_NoSystemBackground
+    // is set. We therefore use the opaque attribute to turn off auto-fill.
+    if (!autoFillBackground)
+        widget.setAttribute(Qt::WA_OpaquePaintEvent);
+    widget.resize(100, 100);
+
+    QImage image(widget.size(), QImage::Format_RGB32);
+    image.fill(QColor(Qt::red).rgb());
+
+    QPaintEngine *paintEngine = image.paintEngine();
+    QVERIFY(paintEngine);
+
+    QRegion systemClip(QRegion(50, 0, 50, 10));
+    systemClip += QRegion(90, 10, 10, 40);
+    paintEngine->setSystemClip(systemClip);
+
+    // Render entire widget directly onto device.
+    widget.render(&image);
+
+#ifdef RENDER_DEBUG
+    image.save("systemclip_with_device.png");
+#endif
+    // All pixels within the system clip should now be
+    // the expectedColor, and the rest should be red.
+    for (int i = 0; i < image.height(); ++i) {
+        for (int j = 0; j < image.width(); ++j) {
+            if (systemClip.contains(QPoint(j, i)))
+                QCOMPARE(image.pixel(j, i), expectedColor.rgb());
+            else
+                QCOMPARE(image.pixel(j, i), QColor(Qt::red).rgb());
+        }
+    }
+
+    // Refill image with red.
+    image.fill(QColor(Qt::red).rgb());
+    paintEngine->setSystemClip(systemClip);
+
+    // Do the same with an untransformed painter.
+    QPainter painter(&image);
+    //Make sure we're using the same paint engine and has the right clip set.
+    QCOMPARE(painter.paintEngine(), paintEngine);
+    QCOMPARE(paintEngine->systemClip(), systemClip);
+
+    widget.render(&painter);
+
+#ifdef RENDER_DEBUG
+    image.save("systemclip_with_untransformed_painter.png");
+#endif
+    // All pixels within the system clip should now be
+    // the expectedColor, and the rest should be red.
+    for (int i = 0; i < image.height(); ++i) {
+        for (int j = 0; j < image.width(); ++j) {
+            if (systemClip.contains(QPoint(j, i)))
+                QCOMPARE(image.pixel(j, i), expectedColor.rgb());
+            else
+                QCOMPARE(image.pixel(j, i), QColor(Qt::red).rgb());
+        }
+    }
+}
+
+void tst_QWidget::render_systemClip3_data()
+{
+    QTest::addColumn<QSize>("size");
+    QTest::addColumn<bool>("useSystemClip");
+
+    // Reference: http://en.wikipedia.org/wiki/Flag_of_Norway
+    QTest::newRow("Norwegian Civil Flag") << QSize(220, 160) << false;
+    QTest::newRow("Norwegian War Flag") << QSize(270, 160) << true;
+}
+
+// This test ensures that the current engine clip (systemClip + painter clip)
+// is preserved after QPainter::setClipRegion(..., Qt::ReplaceClip);
+void tst_QWidget::render_systemClip3()
+{
+    QFETCH(QSize, size);
+    QFETCH(bool, useSystemClip);
+
+    // Calculate the inner/outer cross of the flag.
+    QRegion outerCross(0, 0, size.width(), size.height());
+    outerCross -= QRect(0, 0, 60, 60);
+    outerCross -= QRect(100, 0, size.width() - 100, 60);
+    outerCross -= QRect(0, 100, 60, 60);
+    outerCross -= QRect(100, 100, size.width() - 100, 60);
+
+    QRegion innerCross(0, 0, size.width(), size.height());
+    innerCross -= QRect(0, 0, 70, 70);
+    innerCross -= QRect(90, 0, size.width() - 90, 70);
+    innerCross -= QRect(0, 90, 70, 70);
+    innerCross -= QRect(90, 90, size.width() - 90, 70);
+
+    const QRegion redArea(QRegion(0, 0, size.width(), size.height()) - outerCross);
+    const QRegion whiteArea(outerCross - innerCross);
+    const QRegion blueArea(innerCross);
+    QRegion systemClip;
+
+    // Okay, here's the image that should look like a Norwegian civil/war flag in the end.
+    QImage flag(size, QImage::Format_ARGB32);
+    flag.fill(QColor(Qt::transparent).rgba());
+
+    if (useSystemClip) {
+        QPainterPath warClip(QPoint(size.width(), 0));
+        warClip.lineTo(size.width() - 110, 60);
+        warClip.lineTo(size.width(), 80);
+        warClip.lineTo(size.width() - 110, 100);
+        warClip.lineTo(size.width(), 160);
+        warClip.closeSubpath();
+        systemClip = QRegion(0, 0, size.width(), size.height()) - QRegion(warClip.toFillPolygon().toPolygon());
+        flag.paintEngine()->setSystemClip(systemClip);
+    }
+
+    QPainter painter(&flag);
+    painter.fillRect(QRect(QPoint(), size), Qt::red); // Fill image background with red.
+    painter.setClipRegion(outerCross); // Limit widget painting to inside the outer cross.
+
+    // Here's the widget that's supposed to draw the inner/outer cross of the flag.
+    // The outer cross (white) should be drawn when the background is auto-filled, and
+    // the inner cross (blue) should be drawn in the paintEvent.
+    class MyWidget : public QWidget
+    { public:
+        void paintEvent(QPaintEvent *)
+        {
+            QPainter painter(this);
+            // Be evil and try to paint outside the outer cross. This should not be
+            // possible since the shared painter is clipped to the outer cross.
+            painter.setClipRect(0, 0, 60, 60, Qt::ReplaceClip);
+            painter.fillRect(rect(), Qt::green);
+            painter.setClipRegion(clip, Qt::ReplaceClip);
+            painter.fillRect(rect(), Qt::blue);
+        }
+        QRegion clip;
+    };
+
+    MyWidget widget;
+    widget.clip = innerCross;
+    widget.setFixedSize(size);
+    widget.setPalette(Qt::white);
+    widget.setAutoFillBackground(true);
+    widget.render(&painter);
+
+#ifdef RENDER_DEBUG
+    flag.save("flag.png");
+#endif
+
+    // Let's make sure we got a Norwegian flag.
+    for (int i = 0; i < flag.height(); ++i) {
+        for (int j = 0; j < flag.width(); ++j) {
+            const QPoint pixel(j, i);
+            const QRgb pixelValue = flag.pixel(pixel);
+            if (useSystemClip && !systemClip.contains(pixel))
+                QCOMPARE(pixelValue, QColor(Qt::transparent).rgba());
+            else if (redArea.contains(pixel))
+                QCOMPARE(pixelValue, QColor(Qt::red).rgba());
+            else if (whiteArea.contains(pixel))
+                QCOMPARE(pixelValue, QColor(Qt::white).rgba());
+            else
+                QCOMPARE(pixelValue, QColor(Qt::blue).rgba());
+        }
+    }
+}
+
+void tst_QWidget::render_task252837()
+{
+    QWidget widget;
+    widget.resize(200, 200);
+
+    QPixmap pixmap(widget.size());
+    QPainter painter(&pixmap);
+    // Please do not crash.
+    widget.render(&painter);
+}
 void tst_QWidget::setContentsMargins()
 {
     QLabel label("why does it always rain on me?");
@@ -8179,6 +8371,7 @@ void tst_QWidget::translucentWidget()
     ColorRedWidget label;
     label.setFixedSize(16,16);
     label.setAttribute(Qt::WA_TranslucentBackground);
+    label.move(qApp->desktop()->availableGeometry().topLeft());
     label.show();
 #ifdef Q_WS_X11
     qt_x11_wait_for_window_manager(&label);
@@ -8734,7 +8927,9 @@ void tst_QWidget::toplevelLineEditFocus()
 
     QLineEdit w;
     w.show();
+#ifdef Q_WS_X11
     qt_x11_wait_for_window_manager(&w);
+#endif
     QTest::qWait(200);
 
     QCOMPARE(QApplication::activeWindow(), &w);

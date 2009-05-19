@@ -1,9 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!DOCTYPE TS><TS version="2.0">
+<!DOCTYPE TS>
+<TS version="2.0">
 <context>
     <name>MainWindow</name>
     <message>
-        <location filename="../tools/qtconfig/mainwindow.cpp" line="+344"/>
+        <location filename="../tools/qtconfig/mainwindow.cpp" line="+202"/>
+        <source>Desktop Settings (Default)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Choose style and palette based on your desktop settings.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+144"/>
         <source>On The Spot</source>
         <translation type="unfinished"></translation>
     </message>
@@ -75,7 +86,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+26"/>
+        <location line="+27"/>
         <source>No changes to be saved.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -85,7 +96,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+44"/>
+        <location line="+48"/>
         <source>Over The Spot</source>
         <translation type="unfinished"></translation>
     </message>
@@ -100,17 +111,17 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+455"/>
+        <location line="+466"/>
         <source>Select a Directory</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+17"/>
-        <source>&lt;h3&gt;%1&lt;/h3&gt;&lt;br/&gt;Version %2</source>
+        <source>&lt;h3&gt;%1&lt;/h3&gt;&lt;br/&gt;Version %2&lt;br/&gt;&lt;br/&gt;Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).&lt;br/&gt;&lt;br/&gt;The program is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.&lt;br/&gt; </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+20"/>
+        <location line="+6"/>
         <location line="+1"/>
         <location line="+8"/>
         <source>Qt Configuration</source>
@@ -792,6 +803,14 @@ p, li { white-space: pre-wrap; }
     <message>
         <location/>
         <source>Close dialog and discard all changes.</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>PreviewFrame</name>
+    <message>
+        <location filename="../tools/qtconfig/previewframe.cpp" line="+81"/>
+        <source>Desktop settings will only take effect after an application restart.</source>
         <translation type="unfinished"></translation>
     </message>
 </context>

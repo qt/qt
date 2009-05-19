@@ -515,6 +515,18 @@ Qt::KeyboardModifiers qt_cocoaModifiers2QtModifiers(ulong modifierFlags)
     return qtMods;
 }
 
+Qt::KeyboardModifiers qt_cocoaDragOperation2QtModifiers(uint dragOperations)
+{
+    Qt::KeyboardModifiers qtMods =Qt::NoModifier;
+    if (dragOperations &  NSDragOperationLink)
+        qtMods |= Qt::MetaModifier;
+    if (dragOperations & NSDragOperationGeneric)
+        qtMods |= Qt::ControlModifier;
+    if (dragOperations & NSDragOperationCopy)
+        qtMods |= Qt::AltModifier;
+    return qtMods;
+}
+
 static inline QEvent::Type cocoaEvent2QtEvent(NSUInteger eventType)
 {
     // Handle the trivial cases that can be determined from the type.
@@ -555,12 +567,15 @@ bool qt_dispatchKeyEventWithCocoa(void * /*NSEvent * */ keyEvent, QWidget *widge
     int keyLength = [keyChars length];
     if (keyLength == 0)
         return false; // Dead Key, nothing to do!
+    bool ignoreText = false;
     Qt::Key qtKey = Qt::Key_unknown;
     if (keyLength == 1) {
         QChar ch([keyChars characterAtIndex:0]);
         if (ch.isLower())
             ch = ch.toUpper();
         qtKey = cocoaKey2QtKey(ch);
+        // Do not set the text for Function-Key Unicodes characters (0xF700–0xF8FF).
+        ignoreText = (ch.unicode() >= 0xF700 && ch.unicode() <= 0xF8FF);
     }
     Qt::KeyboardModifiers keyMods = qt_cocoaModifiers2QtModifiers([event modifierFlags]);
     QString text;
@@ -568,7 +583,7 @@ bool qt_dispatchKeyEventWithCocoa(void * /*NSEvent * */ keyEvent, QWidget *widge
     // To quote from the Carbon port: This is actually wrong--but it is the best that
     // can be done for now because of the Control/Meta mapping issues
     // (we always get text on the Mac)
-    if (!(keyMods & (Qt::ControlModifier | Qt::MetaModifier)))
+    if (!ignoreText && !(keyMods & (Qt::ControlModifier | Qt::MetaModifier)))
         text = QCFString::toQString(reinterpret_cast<CFStringRef>(keyChars));
 
     UInt32 macScanCode = 1;
@@ -811,13 +826,28 @@ bool qt_mac_handleMouseEvent(void * /* NSView * */view, void * /* NSEvent * */ev
     QWidget *qwidget = [theView qt_qwidget];
     QWidget *widgetToGetMouse = qwidget;
     QWidget *popup = qAppInstance()->activePopupWidget();
-    if (popup && popup != qwidget->window())
-        widgetToGetMouse = popup;
     NSView *tmpView = theView;
-    if (widgetToGetMouse != qwidget) {
-        tmpView = qt_mac_nativeview_for(widgetToGetMouse);
+
+    if (popup && popup != qwidget->window()) {
+        widgetToGetMouse = popup;
+        tmpView = qt_mac_nativeview_for(popup);
         windowPoint = [[tmpView window] convertScreenToBase:globalPoint];
+
+        QPoint qWindowPoint(windowPoint.x, windowPoint.y);
+        if (widgetToGetMouse->rect().contains(qWindowPoint)) {
+            // Keeping the mouse pressed on a combobox button will make
+            // the popup pop in front of the mouse. But all mouse events
+            // will be sendt to the button. Since we want mouse events
+            // to be sendt to widgets inside the popup, we search for the
+            // widget in front of the mouse:
+            tmpView = [tmpView hitTest:windowPoint];
+            if (!tmpView)
+                return false;
+            widgetToGetMouse =
+                [static_cast<QT_MANGLE_NAMESPACE(QCocoaView) *>(tmpView) qt_qwidget];
+        }
     }
+
     NSPoint localPoint = [tmpView convertPoint:windowPoint fromView:nil];
     QPoint qlocalPoint(localPoint.x, localPoint.y);
 

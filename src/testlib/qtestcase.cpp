@@ -1481,7 +1481,7 @@ int QTest::qExec(QObject *testObject, int argc, char **argv)
     }
 #endif
 
-#if defined(QTEST_NOEXITCODE) || (defined(QT_BUILD_INTERNAL) && !defined(QTEST_FORCE_EXITCODE))
+#if defined(QTEST_NOEXITCODE)
     return 0;
 #else
 

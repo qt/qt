@@ -66,7 +66,7 @@
 
     \section1 Mouse Class Definition
 
-    The \c mouse class inherits both QObject and QGraphicsItem. The
+    The \c mouse class inherits from QGraphicsItem. The
     QGraphicsItem class is the base class for all graphical items in
     the Graphics View framework, and provides a light-weight
     foundation for writing your own custom items.
@@ -78,14 +78,11 @@
     {QGraphicsItem::}{boundingRect()}, which returns an estimate of
     the area painted by the item, and \l {QGraphicsItem::}{paint()},
     which implements the actual painting. In addition, we reimplement
-    the \l {QGraphicsItem::}{shape()} function to return an accurate
+    the \l {QGraphicsItem::}{shape()} and \l {QGraphicsItem::}{advance()}.
+    We reimplement \l {QGraphicsItem::}{shape()} to return an accurate
     shape of our mouse item; the default implementation simply returns
-    the item's bounding rectangle.
-
-    The rationale for deriving from QObject in addition to
-    QGraphicsItem is to be able to animate our items by reimplementing
-    QObject's \l {QObject::}{timerEvent()} function and use
-    QObject::startTimer() to generate timer events.
+    the item's bounding rectangle. We reimplement \l {QGraphicsItem::}{advance()}
+    to handle the animation so it all happens on one update.
 
     \section1 Mouse Class Definition
 
@@ -105,19 +102,18 @@
     calling the item's \l {QGraphicsItem::rotate()}{rotate()} function
     we alter the direction in which the mouse will start moving.
 
-    In the end we call QObject's \l {QObject::}{startTimer()}
-    function, emitting a timer event every 1000/33 millisecond. This
-    enables us to animate our mouse item using our reimplementation of
-    the \l {QObject::}{timerEvent()} function; whenever a mouse
-    receives a timer event it will trigger \l
-    {QObject::}{timerEvent()}:
-
+	When the QGraphicsScene decides to advance the scene a frame it will call 
+	QGraphicsItem::advance() on each of the items. This enables us to animate
+	our mouse using our reimplementation of the advance() function.
+	
     \snippet examples/graphicsview/collidingmice/mouse.cpp 4
     \snippet examples/graphicsview/collidingmice/mouse.cpp 5
     \snippet examples/graphicsview/collidingmice/mouse.cpp 6
 
-    First we ensure that the mice stays within a circle with a radius
-    of 150 pixels.
+    First, we don't bother doing any advance if the step is 0 since we want to our advance in 
+	the actual advance (advance() is called twice, once with step == 0 indicating that items 
+	are about to advance and with step == 1 for the actual advance). We also ensure that the 
+	mice stays within a circle with a radius of 150 pixels.
 
     Note the \l {QGraphicsItem::mapFromScene()}{mapFromScene()}
     function provided by QGraphicsItem. This function maps a position
@@ -275,5 +271,12 @@
     In the end, we set the application window's title and size before
     we enter the main event loop using the QApplication::exec()
     function.
-*/
 
+	Finally, we create a QTimer and connect its timeout() signal to the advance()
+	slot of the scene. Every time the timer fires, the scene will advance one frame.
+	We then tell the timer to fire every 1000/33 millisecond. This will 
+	give us a frame rate of 30 frames a second, which is fast enough for most animations. 
+	Doing the animation with a single timer connect to advance the scene ensures that all the 
+	mice are moved at one point and, more importantly, only one update is sent to the screen 
+	after all the mice have moved.
+*/

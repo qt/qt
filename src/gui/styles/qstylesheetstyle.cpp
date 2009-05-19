@@ -1514,20 +1514,11 @@ void QRenderRule::configurePalette(QPalette *p, QPalette::ColorRole fr, QPalette
 
 void QRenderRule::configurePalette(QPalette *p, QPalette::ColorGroup cg, const QWidget *w, bool embedded)
 {
-#ifdef QT_NO_COMBOBOX
-    const bool isReadOnlyCombo = false;
-#else
-    const bool isReadOnlyCombo = qobject_cast<const QComboBox *>(w) != 0;
-#endif
-
     if (bg && bg->brush.style() != Qt::NoBrush) {
-        if (isReadOnlyCombo) {
-            p->setBrush(cg, QPalette::Base, bg->brush); // for windows, windowxp
-            p->setBrush(cg, QPalette::Button, bg->brush); // for plastique
-        } else {
-            p->setBrush(cg, w->backgroundRole(), bg->brush);
-            //p->setBrush(cg, QPalette::Window, bg->brush);
-        }
+        p->setBrush(cg, QPalette::Base, bg->brush); // for windows, windowxp
+        p->setBrush(cg, QPalette::Button, bg->brush); // for plastique
+        p->setBrush(cg, w->backgroundRole(), bg->brush);
+        p->setBrush(cg, QPalette::Window, bg->brush);
     }
 
     if (embedded) {
@@ -1542,12 +1533,9 @@ void QRenderRule::configurePalette(QPalette *p, QPalette::ColorGroup cg, const Q
         return;
 
     if (pal->foreground.style() != Qt::NoBrush) {
-        if (isReadOnlyCombo) {
-            p->setBrush(cg, QPalette::ButtonText, pal->foreground);
-        } else {
-            p->setBrush(cg, w->foregroundRole(), pal->foreground);
-            p->setBrush(cg, QPalette::WindowText, pal->foreground);
-        }
+        p->setBrush(cg, QPalette::ButtonText, pal->foreground);
+        p->setBrush(cg, w->foregroundRole(), pal->foreground);
+        p->setBrush(cg, QPalette::WindowText, pal->foreground);
         p->setBrush(cg, QPalette::Text, pal->foreground);
     }
     if (pal->selectionBackground.style() != Qt::NoBrush)
@@ -4938,7 +4926,7 @@ QSize QStyleSheetStyle::sizeFromContents(ContentsType ct, const QStyleOption *op
     case CT_LineEdit:
 #ifndef QT_NO_SPINBOX
         // ### hopelessly broken QAbstractSpinBox (part 2)
-        if (QAbstractSpinBox *spinBox = qobject_cast<QAbstractSpinBox *>(w->parentWidget())) {
+        if (QAbstractSpinBox *spinBox = qobject_cast<QAbstractSpinBox *>(w ? w->parentWidget() : 0)) {
             QRenderRule rule = renderRule(spinBox, opt);
             if (rule.hasBox() || !rule.hasNativeBorder())
                 return csz;
@@ -5854,7 +5842,7 @@ QRect QStyleSheetStyle::subElementRect(SubElement se, const QStyleOption *opt, c
 
 bool QStyleSheetStyle::event(QEvent *e)
 {
-    return baseStyle()->event(e) || ParentStyle::event(e);
+    return (baseStyle()->event(e) && e->isAccepted()) || ParentStyle::event(e);
 }
 
 void QStyleSheetStyle::updateStyleSheetFont(QWidget* w) const

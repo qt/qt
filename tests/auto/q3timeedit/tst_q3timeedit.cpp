@@ -130,10 +130,8 @@ void tst_Q3TimeEdit::init()
     QTime maximumTime(23, 59, 59);
     testWidget->setMinValue(minimumTime);
     testWidget->setMaxValue(maximumTime);
-#if QT_VERSION >= 0x030100
     // We don't want the locale impacting on the test
     testWidget->setDisplay(Q3TimeEdit::Hours | Q3TimeEdit::Minutes | Q3TimeEdit::Seconds);
-#endif
     testWidget->setTime(QTime(11, 0, 0));
 
     // make sure we start with the hour focused
@@ -174,10 +172,8 @@ void tst_Q3TimeEdit::valueRange()
     QTime maximumTime(maximumHours, maximumMinutes, maximumSeconds);
     testWidget->setMinValue(minimumTime);
     testWidget->setMaxValue(maximumTime);
-#if QT_VERSION >= 0x030100
     // We don't want the locale impacting on the test
     testWidget->setDisplay(Q3TimeEdit::Hours | Q3TimeEdit::Minutes | Q3TimeEdit::Seconds);
-#endif
 
     // When pressing Key_Up we want to check it goes to the minimum time
     testWidget->setTime(maximumTime);

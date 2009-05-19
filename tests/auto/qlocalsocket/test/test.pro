@@ -1,7 +1,5 @@
 load(qttest_p4)
 
-include(../src/src.pri)
-
 DEFINES += QLOCALSERVER_DEBUG
 DEFINES += QLOCALSOCKET_DEBUG
 !wince*: {
@@ -14,14 +12,16 @@ DEFINES += QLOCALSOCKET_DEBUG
 QT = core network
 
 SOURCES += ../tst_qlocalsocket.cpp
-TARGET = ../tst_qlocalsocket
 
-win32 {
+TARGET = tst_qlocalsocket
+CONFIG(debug_and_release) {
   CONFIG(debug, debug|release) {
-    TARGET = ../../debug/tst_qlocalsocket
-} else {
-    TARGET = ../../release/tst_qlocalsocket
+    DESTDIR = ../debug
+  } else {
+    DESTDIR = ../release
   }
+} else {
+  DESTDIR = ..
 }
 
 wince* {

@@ -25,18 +25,16 @@ HEADERS += qgl.h \
 	   qglcolormap.h \
 	   qglpixelbuffer.h \
 	   qglframebufferobject.h  \
-	   qglpixmapfilter_p.h 
 
 SOURCES	+= qgl.cpp \
 	   qglcolormap.cpp \
 	   qglpixelbuffer.cpp \
 	   qglframebufferobject.cpp \
            qglextensions.cpp \
-           qglpixmapfilter.cpp
 
 !contains(QT_CONFIG, opengles2) {
-    HEADERS += qpaintengine_opengl_p.h
-    SOURCES += qpaintengine_opengl.cpp
+    HEADERS += qpaintengine_opengl_p.h qglpixmapfilter_p.h 
+    SOURCES += qpaintengine_opengl.cpp qglpixmapfilter.cpp
 }
 
 contains(QT_CONFIG, opengles2) {
@@ -130,6 +128,10 @@ wince*: {
     contains(QT_CONFIG,opengles1cl) {
         QMAKE_LIBS += "libGLES_CL.lib"
     }
+    contains(QT_CONFIG,opengles2) {
+        QMAKE_LIBS += "libGLESv2.lib"
+    }
+
 } else {
     QMAKE_LIBS += $$QMAKE_LIBS_OPENGL
 }

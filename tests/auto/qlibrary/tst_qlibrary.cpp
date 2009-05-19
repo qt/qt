@@ -187,7 +187,7 @@ void tst_QLibrary::version()
     QFETCH( int, loadversion );
     QFETCH( int, resultversion );
 
-#if QT_VERSION >= 0x040200 && !defined(Q_OS_AIX) && !defined(Q_OS_WIN)
+#if !defined(Q_OS_AIX) && !defined(Q_OS_WIN)
     QString currDir = QDir::currentPath();
     QLibrary library( currDir + QLatin1Char('/') + lib, loadversion );
     bool ok = library.load();
@@ -218,7 +218,6 @@ void tst_QLibrary::load_data()
     QTest::newRow("ok (libmylib ver. 1)") << currDir + "/libmylib" <<(bool)true;
 #endif
 
-#if QT_VERSION >= 0x040103
 # if defined(Q_OS_WIN32) || defined(Q_OS_WINCE)
     QTest::newRow( "ok01 (with suffix)" ) << currDir + "/mylib.dll" << (bool)true;
     QTest::newRow( "ok02 (with non-standard suffix)" ) << currDir + "/mylib.dl2" << (bool)true;
@@ -228,7 +227,6 @@ void tst_QLibrary::load_data()
     QTest::newRow( "ok02 (with non-standard suffix)" ) << currDir + "/libmylib.so2" << (bool)true;
     QTest::newRow( "ok03 (with non-standard suffix)" ) << currDir + "/system.trolltech.test.mylib.so" << (bool)true;
 # endif  // Q_OS_UNIX
-#endif   // QT_VERSION
 }
 
 void tst_QLibrary::load()
@@ -438,7 +436,7 @@ void tst_QLibrary::loadHints_data()
     QTest::addColumn<bool>("result");
 
     QLibrary::LoadHints lh;
-#if QT_VERSION >= 0x040300 && defined(Q_OS_AIX)
+#if defined(Q_OS_AIX)
     if (QFile::exists("/usr/lib/libGL.a") || QFile::exists("/usr/X11R6/lib/libGL.a")) {
 # if QT_POINTER_SIZE == 4
         QTest::newRow( "ok03 (Archive member)" ) << "libGL.a(shr.o)" << int(QLibrary::LoadArchiveMemberHint) << (bool)TRUE;
@@ -446,9 +444,8 @@ void tst_QLibrary::loadHints_data()
         QTest::newRow( "ok03 (Archive member)" ) << "libGL.a(shr_64.o)" << int(QLibrary::LoadArchiveMemberHint) << (bool)TRUE;
 #endif
     }
-#endif	// QT_VERSION
+#endif
 
-#if QT_VERSION >= 0x040103
     QString currDir = QDir::currentPath();
     lh |= QLibrary::ResolveAllSymbolsHint;
 # if defined(Q_OS_WIN32) || defined(Q_OS_WINCE)
@@ -460,8 +457,6 @@ void tst_QLibrary::loadHints_data()
     QTest::newRow( "ok02 (with non-standard suffix)" ) << currDir + "/libmylib.so2" << int(lh) << (bool)TRUE;
     QTest::newRow( "ok03 (with many dots)" ) << currDir + "/system.trolltech.test.mylib.so" << int(lh) << (bool)TRUE;
 # endif  // Q_OS_UNIX
-#endif   // QT_VERSION
-
 }
 
 void tst_QLibrary::loadHints()

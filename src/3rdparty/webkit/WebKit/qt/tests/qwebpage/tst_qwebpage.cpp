@@ -106,6 +106,8 @@ private slots:
     void textSelection();
     void textEditing();
 
+    void requestCache();
+
 private:
 
 
@@ -870,14 +872,6 @@ void tst_QWebPage::textSelection()
         "<p>May the source<br/>be with you!</p></body></html>");
     page->mainFrame()->setHtml(content);
 
-    // this will select the first paragraph
-    QString script = "var range = document.createRange(); " \
-        "var node = document.getElementById(\"one\"); " \
-        "range.selectNode(node); " \
-        "getSelection().addRange(range);";
-    page->mainFrame()->evaluateJavaScript(script);
-    QCOMPARE(page->selectedText().trimmed(), QString::fromLatin1("The quick brown fox"));
-
     // these actions must exist
     QVERIFY(page->action(QWebPage::SelectAll) != 0);
     QVERIFY(page->action(QWebPage::SelectNextChar) != 0);
@@ -893,7 +887,8 @@ void tst_QWebPage::textSelection()
     QVERIFY(page->action(QWebPage::SelectStartOfDocument) != 0);
     QVERIFY(page->action(QWebPage::SelectEndOfDocument) != 0);
 
-    // right now they are disabled because contentEditable is false
+    // right now they are disabled because contentEditable is false and
+    // there isn't an existing selection to modify
     QCOMPARE(page->action(QWebPage::SelectNextChar)->isEnabled(), false);
     QCOMPARE(page->action(QWebPage::SelectPreviousChar)->isEnabled(), false);
     QCOMPARE(page->action(QWebPage::SelectNextWord)->isEnabled(), false);
@@ -910,11 +905,37 @@ void tst_QWebPage::textSelection()
     // ..but SelectAll is awalys enabled
     QCOMPARE(page->action(QWebPage::SelectAll)->isEnabled(), true);
 
+    // this will select the first paragraph
+    QString selectScript = "var range = document.createRange(); " \
+        "var node = document.getElementById(\"one\"); " \
+        "range.selectNode(node); " \
+        "getSelection().addRange(range);";
+    page->mainFrame()->evaluateJavaScript(selectScript);
+    QCOMPARE(page->selectedText().trimmed(), QString::fromLatin1("The quick brown fox"));
+
+    // here the actions are enabled after a selection has been created
+    QCOMPARE(page->action(QWebPage::SelectNextChar)->isEnabled(), true);
+    QCOMPARE(page->action(QWebPage::SelectPreviousChar)->isEnabled(), true);
+    QCOMPARE(page->action(QWebPage::SelectNextWord)->isEnabled(), true);
+    QCOMPARE(page->action(QWebPage::SelectPreviousWord)->isEnabled(), true);
+    QCOMPARE(page->action(QWebPage::SelectNextLine)->isEnabled(), true);
+    QCOMPARE(page->action(QWebPage::SelectPreviousLine)->isEnabled(), true);
+    QCOMPARE(page->action(QWebPage::SelectStartOfLine)->isEnabled(), true);
+    QCOMPARE(page->action(QWebPage::SelectEndOfLine)->isEnabled(), true);
+    QCOMPARE(page->action(QWebPage::SelectStartOfBlock)->isEnabled(), true);
+    QCOMPARE(page->action(QWebPage::SelectEndOfBlock)->isEnabled(), true);
+    QCOMPARE(page->action(QWebPage::SelectStartOfDocument)->isEnabled(), true);
+    QCOMPARE(page->action(QWebPage::SelectEndOfDocument)->isEnabled(), true);
+
     // make it editable before navigating the cursor
     page->setContentEditable(true);
 
+    // cursor will be before the word "The", this makes sure there is a charet
+    page->triggerAction(QWebPage::MoveToStartOfDocument);
+    QVERIFY(page->isSelectionCollapsed());
+    QCOMPARE(page->selectionStartOffset(), 0);
+
     // here the actions are enabled after contentEditable is true
-    QCOMPARE(page->action(QWebPage::SelectAll)->isEnabled(), true);
     QCOMPARE(page->action(QWebPage::SelectNextChar)->isEnabled(), true);
     QCOMPARE(page->action(QWebPage::SelectPreviousChar)->isEnabled(), true);
     QCOMPARE(page->action(QWebPage::SelectNextWord)->isEnabled(), true);
@@ -989,6 +1010,32 @@ void tst_QWebPage::textEditing()
     delete page;
 }
 
+void tst_QWebPage::requestCache()
+{
+    TestPage page;
+    QSignalSpy loadSpy(&page, SIGNAL(loadFinished(bool)));
+
+    page.mainFrame()->setUrl(QString("data:text/html,<a href=\"data:text/html,Reached\" target=\"_blank\">Click me</a>"));
+    QTRY_COMPARE(loadSpy.count(), 1);
+    QTRY_COMPARE(page.navigations.count(), 1);
+
+    page.mainFrame()->setUrl(QString("data:text/html,<a href=\"data:text/html,Reached\" target=\"_blank\">Click me2</a>"));
+    QTRY_COMPARE(loadSpy.count(), 2);
+    QTRY_COMPARE(page.navigations.count(), 2);
+
+    page.triggerAction(QWebPage::Stop);
+    QVERIFY(page.history()->canGoBack());
+    page.triggerAction(QWebPage::Back);
+
+    QTRY_COMPARE(loadSpy.count(), 3);
+    QTRY_COMPARE(page.navigations.count(), 3);
+    QCOMPARE(page.navigations.at(0).request.attribute(QNetworkRequest::CacheLoadControlAttribute, QNetworkRequest::PreferNetwork).toInt(),
+             (int)QNetworkRequest::PreferNetwork);
+    QCOMPARE(page.navigations.at(1).request.attribute(QNetworkRequest::CacheLoadControlAttribute, QNetworkRequest::PreferNetwork).toInt(),
+             (int)QNetworkRequest::PreferNetwork);
+    QCOMPARE(page.navigations.at(2).request.attribute(QNetworkRequest::CacheLoadControlAttribute, QNetworkRequest::PreferNetwork).toInt(),
+             (int)QNetworkRequest::PreferCache);
+}
 
 QTEST_MAIN(tst_QWebPage)
 #include "tst_qwebpage.moc"

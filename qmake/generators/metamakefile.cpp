@@ -360,7 +360,7 @@ SubdirsMetaMakefileGenerator::init()
 
         }
         --recurseDepth;
-	Option::output.setFileName(old_output);
+        Option::output.setFileName(old_output);
         Option::output_dir = old_output_dir;
         qmake_setpwd(oldpwd);
     }
