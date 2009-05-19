@@ -388,15 +388,16 @@ QPaintEngine *QGLPixelBuffer::paintEngine() const
 #endif
 }
 
-extern int qt_defaultDpi();
+extern int qt_defaultDpiX();
+extern int qt_defaultDpiY();
 
 /*! \reimp */
 int QGLPixelBuffer::metric(PaintDeviceMetric metric) const
 {
     Q_D(const QGLPixelBuffer);
 
-    float dpmx = qt_defaultDpi()*100./2.54;
-    float dpmy = qt_defaultDpi()*100./2.54;
+    float dpmx = qt_defaultDpiX()*100./2.54;
+    float dpmy = qt_defaultDpiY()*100./2.54;
     int w = d->req_size.width();
     int h = d->req_size.height();
     switch (metric) {
@@ -419,16 +420,16 @@ int QGLPixelBuffer::metric(PaintDeviceMetric metric) const
         return 32;//d->depth;
 
     case PdmDpiX:
-        return (int)(dpmx * 0.0254);
+        return qRound(dpmx * 0.0254);
 
     case PdmDpiY:
-        return (int)(dpmy * 0.0254);
+        return qRound(dpmy * 0.0254);
 
     case PdmPhysicalDpiX:
-        return (int)(dpmx * 0.0254);
+        return qRound(dpmx * 0.0254);
 
     case PdmPhysicalDpiY:
-        return (int)(dpmy * 0.0254);
+        return qRound(dpmy * 0.0254);
 
     default:
         qWarning("QGLPixelBuffer::metric(), Unhandled metric type: %d\n", metric);

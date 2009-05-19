@@ -985,15 +985,16 @@ void QGLFramebufferObject::drawTexture(const QPointF &point, QMacCompatGLuint te
 }
 #endif
 
-extern int qt_defaultDpi();
+extern int qt_defaultDpiX();
+extern int qt_defaultDpiY();
 
 /*! \reimp */
 int QGLFramebufferObject::metric(PaintDeviceMetric metric) const
 {
     Q_D(const QGLFramebufferObject);
 
-    float dpmx = qt_defaultDpi()*100./2.54;
-    float dpmy = qt_defaultDpi()*100./2.54;
+    float dpmx = qt_defaultDpiX()*100./2.54;
+    float dpmy = qt_defaultDpiY()*100./2.54;
     int w = d->size.width();
     int h = d->size.height();
     switch (metric) {
@@ -1016,16 +1017,16 @@ int QGLFramebufferObject::metric(PaintDeviceMetric metric) const
         return 32;//d->depth;
 
     case PdmDpiX:
-        return (int)(dpmx * 0.0254);
+        return qRound(dpmx * 0.0254);
 
     case PdmDpiY:
-        return (int)(dpmy * 0.0254);
+        return qRound(dpmy * 0.0254);
 
     case PdmPhysicalDpiX:
-        return (int)(dpmx * 0.0254);
+        return qRound(dpmx * 0.0254);
 
     case PdmPhysicalDpiY:
-        return (int)(dpmy * 0.0254);
+        return qRound(dpmy * 0.0254);
 
     default:
         qWarning("QGLFramebufferObject::metric(), Unhandled metric type: %d.\n", metric);
