@@ -354,6 +354,7 @@ public:
           config(0),
           func(&easeNone)
     { }
+    ~QEasingCurvePrivate() { delete config; }
     void setType_helper(QEasingCurve::Type);
 
     QEasingCurve::Type type;
