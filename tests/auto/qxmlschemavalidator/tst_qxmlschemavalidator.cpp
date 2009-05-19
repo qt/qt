@@ -33,7 +33,9 @@ class tst_QXmlSchemaValidator : public QObject
 
 private Q_SLOTS:
     void defaultConstructor() const;
+    void constructorQXmlNamePool() const;
     void propertyInitialization() const;
+    void resetSchemaNamePool() const;
 
     void loadInstanceUrlSuccess() const;
     void loadInstanceUrlFail() const;
@@ -116,6 +118,66 @@ void tst_QXmlSchemaValidator::propertyInitialization() const
         QCOMPARE(validator.messageHandler(), &handler);
         QCOMPARE(validator.uriResolver(), &resolver);
         QCOMPARE(validator.networkAccessManager(), &manager);
+    }
+}
+
+void tst_QXmlSchemaValidator::constructorQXmlNamePool() const
+{
+    // test that the name pool from the schema is used by
+    // the schema validator as well
+    QXmlSchema schema;
+
+    QXmlNamePool np = schema.namePool();
+
+    const QXmlName name(np, QLatin1String("localName"),
+                            QLatin1String("http://example.com/"),
+                            QLatin1String("prefix"));
+
+    QXmlSchemaValidator validator(schema);
+
+    QXmlNamePool np2(validator.namePool());
+    QCOMPARE(name.namespaceUri(np2), QString::fromLatin1("http://example.com/"));
+    QCOMPARE(name.localName(np2), QString::fromLatin1("localName"));
+    QCOMPARE(name.prefix(np2), QString::fromLatin1("prefix"));
+
+    // make sure namePool() is const
+    const QXmlSchemaValidator constValidator(schema);
+    np = constValidator.namePool();
+}
+
+void tst_QXmlSchemaValidator::resetSchemaNamePool() const
+{
+    QXmlSchema schema1;
+    QXmlNamePool np1 = schema1.namePool();
+
+    const QXmlName name1(np1, QLatin1String("localName"),
+                              QLatin1String("http://example.com/"),
+                              QLatin1String("prefix"));
+
+    QXmlSchemaValidator validator(schema1);
+
+    {
+        QXmlNamePool compNamePool(validator.namePool());
+        QCOMPARE(name1.namespaceUri(compNamePool), QString::fromLatin1("http://example.com/"));
+        QCOMPARE(name1.localName(compNamePool), QString::fromLatin1("localName"));
+        QCOMPARE(name1.prefix(compNamePool), QString::fromLatin1("prefix"));
+    }
+
+    QXmlSchema schema2;
+    QXmlNamePool np2 = schema2.namePool();
+
+    const QXmlName name2(np2, QLatin1String("remoteName"),
+                              QLatin1String("http://trolltech.com/"),
+                              QLatin1String("suffix"));
+
+    // make sure that after re-setting the schema, the new namepool is used
+    validator.setSchema(schema2);
+
+    {
+        QXmlNamePool compNamePool(validator.namePool());
+        QCOMPARE(name2.namespaceUri(compNamePool), QString::fromLatin1("http://trolltech.com/"));
+        QCOMPARE(name2.localName(compNamePool), QString::fromLatin1("remoteName"));
+        QCOMPARE(name2.prefix(compNamePool), QString::fromLatin1("suffix"));
     }
 }
 

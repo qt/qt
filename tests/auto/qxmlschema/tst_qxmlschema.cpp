@@ -118,6 +118,10 @@ void tst_QXmlSchema::constructorQXmlNamePool() const
     QCOMPARE(name.namespaceUri(np2), QString::fromLatin1("http://example.com/"));
     QCOMPARE(name.localName(np2), QString::fromLatin1("localName"));
     QCOMPARE(name.prefix(np2), QString::fromLatin1("prefix"));
+
+    // make sure namePool() is const
+    const QXmlSchema constSchema;
+    np = constSchema.namePool();
 }
 
 void tst_QXmlSchema::copyMutationTest() const
