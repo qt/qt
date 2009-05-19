@@ -589,14 +589,14 @@ void tst_QSocks5SocketEngine::tcpSocketBlockingTest()
     QTcpSocket socket;
 
     // Connect
-    socket.connectToHost("imap.troll.no", 143);
+    socket.connectToHost(QtNetworkSettings::serverName(), 143);
     QVERIFY(socket.waitForConnected());
     QCOMPARE(socket.state(), QTcpSocket::ConnectedState);
 
     // Read greeting
     QVERIFY(socket.waitForReadyRead(5000));
     QString s = socket.readLine();
-    QCOMPARE(s.toLatin1().constData(), "* OK esparsett Cyrus IMAP4 v2.2.8 server ready\r\n");
+    QCOMPARE(s.toLatin1().constData(), "* OK [CAPABILITY IMAP4 IMAP4rev1 LITERAL+ ID STARTTLS LOGINDISABLED] qt-test-server.qt-test-net Cyrus IMAP4 v2.3.11-Mandriva-RPM-2.3.11-6mdv2008.1 server ready\r\n");
 
     // Write NOOP
     QCOMPARE((int) socket.write("1 NOOP\r\n", 8), 8);
@@ -646,7 +646,7 @@ void tst_QSocks5SocketEngine::tcpSocketNonBlockingTest()
     tcpSocketNonBlocking_socket = &socket;
 
     // Connect
-    socket.connectToHost("imap.troll.no", 143);
+    socket.connectToHost(QtNetworkSettings::serverName(), 143);
     QCOMPARE(socket.state(), QTcpSocket::HostLookupState);
 
     QTestEventLoop::instance().enterLoop(30);
@@ -671,7 +671,7 @@ void tst_QSocks5SocketEngine::tcpSocketNonBlockingTest()
     // Read greeting
     QVERIFY(!tcpSocketNonBlocking_data.isEmpty());
     QCOMPARE(tcpSocketNonBlocking_data.at(0).toLatin1().constData(),
-            "* OK esparsett Cyrus IMAP4 v2.2.8 server ready\r\n");
+            "* OK [CAPABILITY IMAP4 IMAP4rev1 LITERAL+ ID STARTTLS LOGINDISABLED] qt-test-server.qt-test-net Cyrus IMAP4 v2.3.11-Mandriva-RPM-2.3.11-6mdv2008.1 server ready\r\n");
     tcpSocketNonBlocking_data.clear();
 
     tcpSocketNonBlocking_totalWritten = 0;
