@@ -115,7 +115,7 @@ class Q_DECLARATIVE_EXPORT QFxRotation : public QFxTransform
 
     Q_PROPERTY(qreal originX READ originX WRITE setOriginX)
     Q_PROPERTY(qreal originY READ originY WRITE setOriginY)
-    Q_PROPERTY(qreal angle READ angle WRITE setAngle)
+    Q_PROPERTY(qreal angle READ angle WRITE setAngle NOTIFY angleChanged())
 public:
     QFxRotation(QObject *parent=0);
     ~QFxRotation();
@@ -131,6 +131,9 @@ public:
 
     virtual bool isIdentity() const;
     virtual QSimpleCanvas::Matrix transform() const;
+
+Q_SIGNALS:
+    void angleChanged();
 
 private Q_SLOTS:
     void update();
