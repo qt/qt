@@ -425,8 +425,8 @@ bool QmlEnginePrivate::loadCache(QmlBasicScriptNodeCache &cache, const QString &
     
     \code
     QmlEngine engine;
-    QmlComponent component("Text { text: \"Hello world!\" }");
-    QFxItem *item = qobject_cast<QFxItem *>(component.create(&engine));
+    QmlComponent component(&engine, "Text { text: \"Hello world!\" }");
+    QFxItem *item = qobject_cast<QFxItem *>(component.create());
 
     //add item to view, etc
     ...
