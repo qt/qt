@@ -1291,6 +1291,7 @@ void QS60Style::handleSkinChange()
     foreach (QWidget *topLevelWidget, QApplication::allWidgets()){
         QEvent e(QEvent::StyleChange);
         QApplication::sendEvent(topLevelWidget, &e);
+        d->setThemePalette(topLevelWidget);
         topLevelWidget->ensurePolished();
     }
 }

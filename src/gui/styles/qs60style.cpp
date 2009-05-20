@@ -541,6 +541,79 @@ void QS60StylePrivate::setThemePalette(QApplication *app) const
     app->setPalette(widgetPalette);
 }
 
+void QS60StylePrivate::setThemePalette(QWidget *widget) const
+{
+    if(!widget)
+        return;
+    QPalette widgetPalette = widget->palette();
+
+    // widget specific colors and fonts
+    if (qobject_cast<QSlider *>(widget)){
+        widgetPalette.setColor(QPalette::All, QPalette::WindowText,
+            QS60StylePrivate::s60Color(QS60StyleEnums::CL_QsnLineColors, 8, 0));
+        QApplication::setPalette(widgetPalette, "QSlider");
+    } else if (qobject_cast<QPushButton *>(widget)){
+        const QFont suggestedFont = s60Font(
+            QS60StyleEnums::FC_Primary, widget->font().pointSizeF());
+        widget->setFont(suggestedFont);
+        widgetPalette.setColor(QPalette::Active, QPalette::ButtonText,
+            QS60StylePrivate::s60Color(QS60StyleEnums::CL_QsnTextColors, 6, 0));
+        widgetPalette.setColor(QPalette::Inactive, QPalette::ButtonText,
+            QS60StylePrivate::s60Color(QS60StyleEnums::CL_QsnTextColors, 6, 0));
+        const QStyleOption opt;
+        widgetPalette.setColor(QPalette::Disabled, QPalette::ButtonText,
+            QS60StylePrivate::s60Color(QS60StyleEnums::CL_QsnTextColors, 6, &opt));        
+        QApplication::setPalette(widgetPalette, "QPushButton");
+    } else if (qobject_cast<QToolButton *>(widget)){
+        const QFont suggestedFont = s60Font(
+            QS60StyleEnums::FC_Primary, widget->font().pointSizeF());
+        widget->setFont(suggestedFont);
+        widgetPalette.setColor(QPalette::Active, QPalette::ButtonText,
+            QS60StylePrivate::s60Color(QS60StyleEnums::CL_QsnTextColors, 6, 0));
+        widgetPalette.setColor(QPalette::Inactive, QPalette::ButtonText,
+            QS60StylePrivate::s60Color(QS60StyleEnums::CL_QsnTextColors, 6, 0));
+        QApplication::setPalette(widgetPalette, "QToolButton");
+    } else if (qobject_cast<QHeaderView *>(widget)){
+        const QFont suggestedFont = s60Font(
+                QS60StyleEnums::FC_Secondary, widget->font().pointSizeF());
+        widget->setFont(suggestedFont);
+        widgetPalette.setColor(QPalette::Active, QPalette::ButtonText,
+            QS60StylePrivate::s60Color(QS60StyleEnums::CL_QsnTextColors, 23, 0));
+        QHeaderView* header = qobject_cast<QHeaderView *>(widget);
+        widgetPalette.setColor(QPalette::Button, Qt::transparent );
+        if ( header->viewport() )
+            header->viewport()->setPalette(widgetPalette);
+        QApplication::setPalette(widgetPalette, "QHeaderView");
+    } else if (qobject_cast<QMenuBar *>(widget)){
+        widgetPalette.setColor(QPalette::All, QPalette::ButtonText,
+            QS60StylePrivate::s60Color(QS60StyleEnums::CL_QsnTextColors, 8, 0));
+        QApplication::setPalette(widgetPalette, "QMenuBar");
+    } else if (qobject_cast<QTabBar *>(widget)){
+        widgetPalette.setColor(QPalette::Active, QPalette::WindowText,
+            QS60StylePrivate::s60Color(QS60StyleEnums::CL_QsnTextColors, 4, 0));
+        QApplication::setPalette(widgetPalette, "QTabBar");
+    } else if (qobject_cast<QTableView *>(widget)){
+        widgetPalette.setColor(QPalette::All, QPalette::Text,
+            QS60StylePrivate::s60Color(QS60StyleEnums::CL_QsnTextColors, 22, 0));
+        QApplication::setPalette(widgetPalette, "QTableView");
+    } else if (qobject_cast<QGroupBox *>(widget)){
+        const QFont suggestedFont = s60Font(
+                QS60StyleEnums::FC_Title, widget->font().pointSizeF());
+        widget->setFont(suggestedFont);
+    } else if (qobject_cast<QLineEdit *>(widget)) {
+        widgetPalette.setColor(QPalette::All, QPalette::HighlightedText, 
+            QS60StylePrivate::s60Color(QS60StyleEnums::CL_QsnTextColors, 24, 0));
+        QApplication::setPalette(widgetPalette, "QLineEdit");
+    } else if (qobject_cast<QDial *> (widget)) {
+        const QColor color(QS60StylePrivate::s60Color(QS60StyleEnums::CL_QsnTextColors, 6, 0));
+        widgetPalette.setColor(QPalette::WindowText, color);
+        widgetPalette.setColor(QPalette::Button, QApplication::palette().color(QPalette::Button));
+        widgetPalette.setColor(QPalette::Dark, color.darker());
+        widgetPalette.setColor(QPalette::Light, color.lighter());
+        QApplication::setPalette(widgetPalette, "QDial");
+    }
+}
+
 void QS60StylePrivate::setBackgroundTexture(QApplication *app) const
 {
     if (!app)
@@ -580,71 +653,7 @@ void QS60Style::polish(QWidget *widget)
         ) {
         widget->setAttribute(Qt::WA_StyledBackground);
     }
-
-    QPalette widgetPalette = widget->palette();
-
-    // widget specific colors and fonts
-    if (qobject_cast<QSlider *>(widget)){
-        widgetPalette.setColor(QPalette::All, QPalette::WindowText,
-            QS60StylePrivate::s60Color(QS60StyleEnums::CL_QsnLineColors, 8, 0));
-        QApplication::setPalette(widgetPalette, "QSlider");
-    } else if (qobject_cast<QPushButton *>(widget)){
-        const QFont suggestedFont = d->s60Font(
-            QS60StyleEnums::FC_Primary, widget->font().pointSizeF());
-        widget->setFont(suggestedFont);
-        widgetPalette.setColor(QPalette::Active, QPalette::ButtonText,
-            QS60StylePrivate::s60Color(QS60StyleEnums::CL_QsnTextColors, 6, 0));
-        widgetPalette.setColor(QPalette::Inactive, QPalette::ButtonText,
-            QS60StylePrivate::s60Color(QS60StyleEnums::CL_QsnTextColors, 6, 0));
-        QApplication::setPalette(widgetPalette, "QPushButton");
-    } else if (qobject_cast<QToolButton *>(widget)){
-        const QFont suggestedFont = d->s60Font(
-            QS60StyleEnums::FC_Primary, widget->font().pointSizeF());
-        widget->setFont(suggestedFont);
-        widgetPalette.setColor(QPalette::Active, QPalette::ButtonText,
-            QS60StylePrivate::s60Color(QS60StyleEnums::CL_QsnTextColors, 6, 0));
-        widgetPalette.setColor(QPalette::Inactive, QPalette::ButtonText,
-            QS60StylePrivate::s60Color(QS60StyleEnums::CL_QsnTextColors, 6, 0));
-        QApplication::setPalette(widgetPalette, "QToolButton");
-    } else if (qobject_cast<QHeaderView *>(widget)){
-        const QFont suggestedFont = d->s60Font(
-                QS60StyleEnums::FC_Secondary, widget->font().pointSizeF());
-        widget->setFont(suggestedFont);
-        widgetPalette.setColor(QPalette::Active, QPalette::ButtonText,
-            QS60StylePrivate::s60Color(QS60StyleEnums::CL_QsnTextColors, 23, 0));
-        QHeaderView* header = qobject_cast<QHeaderView *>(widget);
-        widgetPalette.setColor(QPalette::Button, Qt::transparent );
-        if ( header->viewport() )
-            header->viewport()->setPalette(widgetPalette);
-        QApplication::setPalette(widgetPalette, "QHeaderView");
-    } else if (qobject_cast<QMenuBar *>(widget)){
-        widgetPalette.setColor(QPalette::All, QPalette::ButtonText,
-            QS60StylePrivate::s60Color(QS60StyleEnums::CL_QsnTextColors, 8, 0));
-        QApplication::setPalette(widgetPalette, "QMenuBar");
-    } else if (qobject_cast<QTabBar *>(widget)){
-        widgetPalette.setColor(QPalette::Active, QPalette::WindowText,
-            QS60StylePrivate::s60Color(QS60StyleEnums::CL_QsnTextColors, 4, 0));
-        QApplication::setPalette(widgetPalette, "QTabBar");
-    } else if (qobject_cast<QTableView *>(widget)){
-        widgetPalette.setColor(QPalette::All, QPalette::Text,
-            QS60StylePrivate::s60Color(QS60StyleEnums::CL_QsnTextColors, 22, 0));
-        QApplication::setPalette(widgetPalette, "QTableView");
-    } else if (qobject_cast<QGroupBox *>(widget)){
-        const QFont suggestedFont = d->s60Font(
-                QS60StyleEnums::FC_Title, widget->font().pointSizeF());
-        widget->setFont(suggestedFont);
-    } else if (qobject_cast<QLineEdit *>(widget)) {
-        widgetPalette.setColor(QPalette::All, QPalette::HighlightedText, 
-            QS60StylePrivate::s60Color(QS60StyleEnums::CL_QsnTextColors, 24, 0));
-        QApplication::setPalette(widgetPalette, "QLineEdit");
-    } else if (qobject_cast<QDial *> (widget)) {
-        const QColor color(QS60StylePrivate::s60Color(QS60StyleEnums::CL_QsnTextColors, 6, 0));
-        widgetPalette.setColor(QPalette::WindowText, color);
-        widgetPalette.setColor(QPalette::Button, QApplication::palette().color(QPalette::Button));
-        widgetPalette.setColor(QPalette::Dark, color.darker());
-        widgetPalette.setColor(QPalette::Light, color.lighter());
-        QApplication::setPalette(widgetPalette, "QDial");
-    }
+    d->setThemePalette(widget);
 }
 
 void QS60Style::unpolish(QApplication *application)
