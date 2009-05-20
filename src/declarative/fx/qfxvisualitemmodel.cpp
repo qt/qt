@@ -73,9 +73,53 @@ public:
     QList<int> m_roles;
     QHash<int,QString> m_roleNames;
 
-    QHash<int, QObject *> m_cache;
+    struct ObjectRef {
+        ObjectRef(QObject *object=0) : obj(object), ref(1) {}
+        QObject *obj;
+        int ref;
+    };
+    class Cache : public QHash<int, ObjectRef> {
+    public:
+        QObject *getItem(int index) {
+            QObject *item = 0;
+            QHash<int,ObjectRef>::iterator it = find(index);
+            if (it != end()) {
+                (*it).ref++;
+                item = (*it).obj;
+                qDebug() << "ref" << item << (*it).ref;
+            }
+            return item;
+        }
+        QObject *item(int index) {
+            QObject *item = 0;
+            QHash<int, ObjectRef>::const_iterator it = find(index);
+            if (it != end())
+                item = (*it).obj;
+            return item;
+        }
+        void insertItem(int index, QObject *obj) {
+            insert(index, ObjectRef(obj));
+        }
+        bool releaseItem(QObject *obj) {
+            QHash<int, ObjectRef>::iterator it = begin();
+            for (; it != end(); ++it) {
+                ObjectRef &objRef = *it;
+                if (objRef.obj == obj) {
+                    if (--objRef.ref == 0) {
+                        erase(it);
+                        qDebug() << "released item" << obj << "item count" << count();
+                        return true;
+                    }
+                    qDebug() << "not releasing" << obj << "ref" << objRef.ref;
+                    break;
+                }
+            }
+            return false;
+        }
+    };
+
+    Cache m_cache;
     QHash<QObject *, QmlPackage*> m_packaged;
-    QHash<QmlPackage*, int> m_packageRef;
 
     QFxVisualItemModelParts *m_parts;
     friend class QFxVisualItemParts;
@@ -337,8 +381,8 @@ void QFxVisualItemModel::setModel(const QVariant &model)
                          this, SIGNAL(itemsRemoved(int,int)));
         QObject::disconnect(d->m_visualItemModel, SIGNAL(itemsMoved(int,int,int)),
                          this, SIGNAL(itemsMoved(int,int,int)));
-        QObject::disconnect(d->m_visualItemModel, SIGNAL(packageCreated(int,QmlPackage*)),
-                         this, SLOT(_q_packageCreated(int,QmlPackage*)));
+        QObject::disconnect(d->m_visualItemModel, SIGNAL(createdPackage(int,QmlPackage*)),
+                         this, SLOT(_q_createdPackage(int,QmlPackage*)));
         QObject::disconnect(d->m_visualItemModel, SIGNAL(destroyingPackage(QmlPackage*)),
                          this, SLOT(_q_destroyingPackage(QmlPackage*)));
         d->m_visualItemModel = 0;
@@ -390,8 +434,8 @@ void QFxVisualItemModel::setModel(const QVariant &model)
                          this, SIGNAL(itemsRemoved(int,int)));
         QObject::connect(d->m_visualItemModel, SIGNAL(itemsMoved(int,int,int)),
                          this, SIGNAL(itemsMoved(int,int,int)));
-        QObject::connect(d->m_visualItemModel, SIGNAL(packageCreated(int,QmlPackage*)),
-                         this, SLOT(_q_packageCreated(int,QmlPackage*)));
+        QObject::connect(d->m_visualItemModel, SIGNAL(createdPackage(int,QmlPackage*)),
+                         this, SLOT(_q_createdPackage(int,QmlPackage*)));
         QObject::connect(d->m_visualItemModel, SIGNAL(destroyingPackage(QmlPackage*)),
                          this, SLOT(_q_destroyingPackage(QmlPackage*)));
         return;
@@ -445,41 +489,39 @@ QFxItem *QFxVisualItemModel::item(int index, bool complete)
     return item(index, QByteArray(), complete);
 }
 
-void QFxVisualItemModel::release(QFxItem *item)
+/*
+  Returns ReleaseStatus flags.
+*/
+QFxVisualItemModel::ReleaseFlags QFxVisualItemModel::release(QFxItem *item)
 {
     Q_D(QFxVisualItemModel);
-    if (d->m_visualItemModel) {
-        d->m_visualItemModel->release(item);
-        return;
-    }
-    item->setItemParent(0);
-    QObject *obj = item;
+    if (d->m_visualItemModel)
+        return d->m_visualItemModel->release(item);
 
+    ReleaseFlags stat = 0;
+    QObject *obj = item;
     bool inPackage = false;
-    if (QmlPackage *package = d->m_packaged.value(item)) {
-        static_cast<QObject*>(item)->setParent(package);
-        d->m_packaged.remove(item);
-        //XXX Inefficient
-        for (QHash<QObject *, QmlPackage *>::Iterator iter = d->m_packaged.begin();
-                iter != d->m_packaged.end(); ++iter) {
-            if (*iter == package)
-                return;
-        }
+
+    QHash<QObject*,QmlPackage*>::iterator it = d->m_packaged.find(item);
+    if (it != d->m_packaged.end()) {
+        QmlPackage *package = *it;
+        d->m_packaged.erase(it);
+        if (d->m_packaged.contains(item))
+            stat |= Referenced;
         inPackage = true;
         obj = package; // fall through and delete
     }
 
-    //XXX Inefficient
-    for (QHash<int, QObject *>::Iterator iter = d->m_cache.begin();
-        iter != d->m_cache.end(); ++iter) {
-        if (*iter == obj) {
-            if (inPackage)
-                emit destroyingPackage(qobject_cast<QmlPackage*>(obj));
-            delete obj;
-            d->m_cache.erase(iter);
-            return;
-        }
+    if (d->m_cache.releaseItem(obj)) {
+        if (inPackage)
+            emit destroyingPackage(qobject_cast<QmlPackage*>(obj));
+        stat |= Destroyed;
+        delete obj;
+    } else if (!inPackage) {
+        stat |= Referenced;
     }
+
+    return stat;
 }
 
 QObject *QFxVisualItemModel::parts() 
@@ -499,10 +541,8 @@ QFxItem *QFxVisualItemModel::item(int index, const QByteArray &viewId, bool comp
     if (d->modelCount() <= 0 || !d->m_delegate)
         return 0;
 
-    QObject *nobj = 0;
-    if (d->m_cache.contains(index)) {
-        nobj = d->m_cache[index];
-    } else {
+    QObject *nobj = d->m_cache.getItem(index);
+    if (!nobj) {
         QmlContext *ccontext = d->m_context;
         if (!ccontext) ccontext = qmlContext(this);
         QmlContext *ctxt = new QmlContext(ccontext);
@@ -515,8 +555,9 @@ QFxItem *QFxVisualItemModel::item(int index, const QByteArray &viewId, bool comp
         if (nobj) {
             ctxt->setParent(nobj);
             data->setParent(nobj);
-
-            d->m_cache.insert(index, nobj);
+            d->m_cache.insertItem(index, nobj);
+            if (QmlPackage *package = qobject_cast<QmlPackage *>(nobj))
+                emit createdPackage(index, package);
         } else {
             delete data;
             delete ctxt;
@@ -529,8 +570,7 @@ QFxItem *QFxVisualItemModel::item(int index, const QByteArray &viewId, bool comp
         if (package) {
             QObject *o = package->part(QLatin1String(viewId));
             item = qobject_cast<QFxItem *>(o);
-            d->m_packaged[o] = package;
-            emit packageCreated(index, package);
+            d->m_packaged.insertMulti(item, package);
         }
     }
 
@@ -558,8 +598,8 @@ QVariant QFxVisualItemModel::evaluate(int index, const QString &expression, QObj
         return QVariant();
 
     QVariant value;
-    if (d->m_cache.contains(index)) {
-        QObject *nobj = d->m_cache[index];
+    QObject *nobj = d->m_cache.item(index);
+    if (nobj) {
         QFxItem *item = qobject_cast<QFxItem *>(nobj);
         if (item) {
             QmlExpression e(qmlContext(item), expression, objectContext);
@@ -582,6 +622,16 @@ QVariant QFxVisualItemModel::evaluate(int index, const QString &expression, QObj
     return value;
 }
 
+int QFxVisualItemModel::indexOf(QFxItem *item, QObject *objectContext) const
+{
+    QmlExpression e(qmlContext(item), "index", objectContext);
+    e.setTrackChange(false);
+    QVariant value = e.value();
+    if (value.isValid())
+        return value.toInt();
+    return -1;
+}
+
 void QFxVisualItemModel::_q_itemsChanged(int index, int count, 
                                          const QList<int> &roles)
 {
@@ -589,9 +639,7 @@ void QFxVisualItemModel::_q_itemsChanged(int index, int count,
     // XXX - highly inefficient
     for (int ii = index; ii < index + count; ++ii) {
 
-        if (d->m_cache.contains(ii)) {
-
-            QObject *item = d->m_cache[ii];
+        if (QObject *item = d->m_cache.item(ii)) {
             QFxVisualItemModelData *data = d->data(item);
 
             for (int prop = 0; prop < data->count(); ++prop) {
@@ -615,18 +663,18 @@ void QFxVisualItemModel::_q_itemsInserted(int index, int count)
 {
     Q_D(QFxVisualItemModel);
     // XXX - highly inefficient
-    QHash<int, QObject *> items;
-    for (QHash<int, QObject *>::Iterator iter = d->m_cache.begin();
+    QHash<int,QFxVisualItemModelPrivate::ObjectRef> items;
+    for (QHash<int,QFxVisualItemModelPrivate::ObjectRef>::Iterator iter = d->m_cache.begin();
         iter != d->m_cache.end(); ) {
 
         if (iter.key() >= index) {
-            QObject *item = *iter;
+            QFxVisualItemModelPrivate::ObjectRef objRef = *iter;
             int index = iter.key() + count;
             iter = d->m_cache.erase(iter);
 
-            items.insert(index, item);
+            items.insert(index, objRef);
 
-            QFxVisualItemModelData *data = d->data(item);
+            QFxVisualItemModelData *data = d->data(objRef.obj);
             data->setIndex(index);
         } else {
             ++iter;
@@ -641,21 +689,21 @@ void QFxVisualItemModel::_q_itemsRemoved(int index, int count)
 {
     Q_D(QFxVisualItemModel);
     // XXX - highly inefficient
-    QHash<int, QObject *> items;
-    for (QHash<int, QObject *>::Iterator iter = d->m_cache.begin();
+    QHash<int, QFxVisualItemModelPrivate::ObjectRef> items;
+    for (QHash<int, QFxVisualItemModelPrivate::ObjectRef>::Iterator iter = d->m_cache.begin();
         iter != d->m_cache.end(); ) {
         if (iter.key() >= index && iter.key() < index + count) {
-            QObject *item = *iter;
+            QFxVisualItemModelPrivate::ObjectRef objRef = *iter;
             iter = d->m_cache.erase(iter);
-            items.insertMulti(-1, item); //XXX perhaps better to maintain separately
-            QFxVisualItemModelData *data = d->data(item);
+            items.insertMulti(-1, objRef); //XXX perhaps better to maintain separately
+            QFxVisualItemModelData *data = d->data(objRef.obj);
             data->setIndex(-1);
         } else if (iter.key() >= index + count) {
-            QObject *item = *iter;
+            QFxVisualItemModelPrivate::ObjectRef objRef = *iter;
             int index = iter.key() - count;
             iter = d->m_cache.erase(iter);
-            items.insert(index, item);
-            QFxVisualItemModelData *data = d->data(item);
+            items.insert(index, objRef);
+            QFxVisualItemModelData *data = d->data(objRef.obj);
             data->setIndex(index);
         } else {
             ++iter;
@@ -670,18 +718,18 @@ void QFxVisualItemModel::_q_itemsMoved(int from, int to, int count)
 {
     Q_D(QFxVisualItemModel);
     // XXX - highly inefficient
-    QHash<int, QObject *> items;
-    for (QHash<int, QObject *>::Iterator iter = d->m_cache.begin();
+    QHash<int,QFxVisualItemModelPrivate::ObjectRef> items;
+    for (QHash<int,QFxVisualItemModelPrivate::ObjectRef>::Iterator iter = d->m_cache.begin();
         iter != d->m_cache.end(); ) {
 
         if (iter.key() >= from && iter.key() < from + count) {
-            QObject *item = *iter;
+            QFxVisualItemModelPrivate::ObjectRef objRef = *iter;
             int index = iter.key() - from + to;
             iter = d->m_cache.erase(iter);
 
-            items.insert(index, item);
+            items.insert(index, objRef);
 
-            QFxVisualItemModelData *data = d->data(item);
+            QFxVisualItemModelData *data = d->data(objRef.obj);
             data->setIndex(index);
         } else {
             ++iter;
@@ -708,10 +756,10 @@ void QFxVisualItemModel::_q_dataChanged(const QModelIndex &begin, const QModelIn
     _q_itemsChanged(begin.row(), end.row() - begin.row() + 1, d->m_roles);
 }
 
-void QFxVisualItemModel::_q_packageCreated(int index, QmlPackage *package)
+void QFxVisualItemModel::_q_createdPackage(int index, QmlPackage *package)
 {
     Q_D(QFxVisualItemModel);
-    emit itemCreated(index, qobject_cast<QFxItem*>(package->part(d->m_part)));
+    emit createdItem(index, qobject_cast<QFxItem*>(package->part(d->m_part)));
 }
 
 void QFxVisualItemModel::_q_destroyingPackage(QmlPackage *package)

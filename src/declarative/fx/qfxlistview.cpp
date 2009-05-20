@@ -171,15 +171,14 @@ public:
     QFxListViewPrivate()
         : model(0), currentItem(0), tmpCurrent(0), orient(Qt::Vertical)
         , visiblePos(0), visibleIndex(0)
-        , averageSize(100), currentIndex(-1), currItemMode(QFxListView::Free)
-        , snapPos(0), highlightComponent(0), highlight(0), trackedItem(0)
+        , averageSize(100), currentIndex(-1), requestedIndex(-1)
+        , currItemMode(QFxListView::Free), snapPos(0), highlightComponent(0), highlight(0), trackedItem(0)
         , moveReason(Other), buffer(0), highlightPosAnimator(0), highlightSizeAnimator(0)
         , keyPressed(false), ownModel(false), wrap(false), autoHighlight(true)
         , fixCurrentVisibility(false) {}
 
     void init();
     void clear();
-    FxListItem *getItem(int modelIndex);
     FxListItem *createItem(int modelIndex);
     void releaseItem(FxListItem *item);
 
@@ -333,6 +332,8 @@ public:
 
     void refill(qreal from, qreal to);
     void layout();
+    void updateUnrequestedIndexes();
+    void updateUnrequestedPositions();
     void updateTrackedItem();
     void createHighlight();
     void updateHighlight();
@@ -347,6 +348,7 @@ public:
     QFxVisualItemModel *model;
     QVariant modelVariant;
     QList<FxListItem*> visibleItems;
+    QHash<QFxItem*,int> unrequestedItems;
     FxListItem *currentItem;
     QFxItem *tmpCurrent;
     Qt::Orientation orient;
@@ -354,6 +356,7 @@ public:
     int visibleIndex;
     qreal averageSize;
     int currentIndex;
+    int requestedIndex;
     QFxListView::CurrentItemPositioning currItemMode;
     int snapPos;
     QmlComponent *highlightComponent;
@@ -390,29 +393,18 @@ void QFxListViewPrivate::clear()
     visibleItems.clear();
     visiblePos = 0;
     visibleIndex = 0;
-    if (currentItem) {
-        FxListItem *tmpItem = currentItem;
-        currentItem = 0;
-        currentIndex = -1;
-        releaseItem(tmpItem);
-    }
+    releaseItem(currentItem);
+    currentItem = 0;
+    currentIndex = -1;
     createHighlight();
     trackedItem = 0;
-}
-
-FxListItem *QFxListViewPrivate::getItem(int modelIndex)
-{
-    if (currentItem && modelIndex == currentIndex)
-        return currentItem;
-    if (FxListItem *listItem = visibleItem(modelIndex))
-        return listItem;
-    return createItem(modelIndex);
 }
 
 FxListItem *QFxListViewPrivate::createItem(int modelIndex)
 {
     Q_Q(QFxListView);
     // create object
+    requestedIndex = modelIndex;
     FxListItem *listItem = 0;
     if (QFxItem *item = model->item(modelIndex, false)) {
         listItem = new FxListItem(item, q);
@@ -438,6 +430,7 @@ FxListItem *QFxListViewPrivate::createItem(int modelIndex)
         else
             QObject::connect(listItem->item, SIGNAL(widthChanged()), q, SLOT(itemResized()));
     }
+    requestedIndex = -1;
 
     return listItem;
 }
@@ -445,21 +438,24 @@ FxListItem *QFxListViewPrivate::createItem(int modelIndex)
 void QFxListViewPrivate::releaseItem(FxListItem *item)
 {
     Q_Q(QFxListView);
-    if (item != currentItem) {
-        if (orient == Qt::Vertical)
-            QObject::disconnect(item->item, SIGNAL(heightChanged()), q, SLOT(itemResized()));
-        else
-            QObject::disconnect(item->item, SIGNAL(widthChanged()), q, SLOT(itemResized()));
-        if (trackedItem == item) {
-            const char *notifier1 = orient == Qt::Vertical ? SIGNAL(topChanged()) : SIGNAL(leftChanged());
-            const char *notifier2 = orient == Qt::Vertical ? SIGNAL(heightChanged()) : SIGNAL(widthChanged());
-            QObject::disconnect(trackedItem->item, notifier1, q, SLOT(trackedPositionChanged()));
-            QObject::disconnect(trackedItem->item, notifier2, q, SLOT(trackedPositionChanged()));
-            trackedItem = 0;
-        }
-        model->release(item->item);
-        delete item;
+    if (!item)
+        return;
+    if (orient == Qt::Vertical)
+        QObject::disconnect(item->item, SIGNAL(heightChanged()), q, SLOT(itemResized()));
+    else
+        QObject::disconnect(item->item, SIGNAL(widthChanged()), q, SLOT(itemResized()));
+    if (trackedItem == item) {
+        const char *notifier1 = orient == Qt::Vertical ? SIGNAL(topChanged()) : SIGNAL(leftChanged());
+        const char *notifier2 = orient == Qt::Vertical ? SIGNAL(heightChanged()) : SIGNAL(widthChanged());
+        QObject::disconnect(trackedItem->item, notifier1, q, SLOT(trackedPositionChanged()));
+        QObject::disconnect(trackedItem->item, notifier2, q, SLOT(trackedPositionChanged()));
+        trackedItem = 0;
     }
+    if (model->release(item->item) == 0) {
+        // item was not destroyed, and we no longer reference it.
+        unrequestedItems.insert(item->item, model->indexOf(item->item, q));
+    }
+    delete item;
 }
 
 void QFxListViewPrivate::refill(qreal from, qreal to)
@@ -485,7 +481,7 @@ void QFxListViewPrivate::refill(qreal from, qreal to)
     int pos = itemEnd + 1;
     while (modelIndex < model->count() && pos <= to) {
         //qDebug() << "refill: append item" << modelIndex;
-        if (!(item = getItem(modelIndex)))
+        if (!(item = createItem(modelIndex)))
             break;
         item->setPosition(pos);
         pos += item->size();
@@ -495,7 +491,7 @@ void QFxListViewPrivate::refill(qreal from, qreal to)
     }
     while (visibleIndex > 0 && visibleIndex <= model->count() && visiblePos > from) {
         //qDebug() << "refill: prepend item" << visibleIndex-1 << "current top pos" << visiblePos;
-        if (!(item = getItem(visibleIndex-1)))
+        if (!(item = createItem(visibleIndex-1)))
             break;
         --visibleIndex;
         visiblePos -= item->size();
@@ -561,6 +557,29 @@ void QFxListViewPrivate::layout()
     } else {
         fixupX();
         q->setViewportWidth(endPosition() - startPosition());
+    }
+    updateUnrequestedPositions();
+}
+
+void QFxListViewPrivate::updateUnrequestedIndexes()
+{
+    Q_Q(QFxListView);
+    QHash<QFxItem*,int>::iterator it;
+    for (it = unrequestedItems.begin(); it != unrequestedItems.end(); ++it)
+        *it = model->indexOf(it.key(), q);
+}
+
+void QFxListViewPrivate::updateUnrequestedPositions()
+{
+    QHash<QFxItem*,int>::const_iterator it;
+    for (it = unrequestedItems.begin(); it != unrequestedItems.end(); ++it) {
+        qDebug() << "pos of" << (*it) << positionAt(*it);
+        if (visibleItem(*it))
+            continue;
+        if (orient == Qt::Vertical)
+            it.key()->setY(positionAt(*it));
+        else
+            it.key()->setX(positionAt(*it));
     }
 }
 
@@ -695,13 +714,11 @@ void QFxListViewPrivate::updateCurrent(int modelIndex)
     Q_Q(QFxListView);
     if (!isValid() || modelIndex < 0 || modelIndex >= model->count()) {
         if (currentItem) {
-            FxListItem *item = currentItem;
-            int index = currentIndex;
+            currentItem->attached->setIsCurrentItem(false);
+            releaseItem(currentItem);
             currentItem = 0;
-            currentIndex = 0;
+            currentIndex = -1;
             updateHighlight();
-            if (!visibleItem(index))
-                releaseItem(item);
             emit q->currentIndexChanged();
         }
         return;
@@ -716,40 +733,28 @@ void QFxListViewPrivate::updateCurrent(int modelIndex)
         delete tmpCurrent;
         tmpCurrent = 0;
     }
-    int oldCurrentIndex = currentIndex;
     FxListItem *oldCurrentItem = currentItem;
-    currentIndex = -1;
-    currentItem = visibleItem(modelIndex);
-    if (!currentItem) {
-        currentItem = getItem(modelIndex);
-        if (currentItem) {
-            if (modelIndex == visibleIndex - 1) {
-                // We can calculate exact postion in this case
-                currentItem->setPosition(visibleItems.first()->position() - currentItem->size());
-            } else {
-                // Create current item now and position as best we can.
-                // Its position will be corrected when it becomes visible.
-                currentItem->setPosition(positionAt(modelIndex));
-            }
-        }
-    }
     currentIndex = modelIndex;
+    currentItem = createItem(modelIndex);
     fixCurrentVisibility = true;
     if (oldCurrentItem && (!currentItem || oldCurrentItem->item != currentItem->item))
         oldCurrentItem->attached->setIsCurrentItem(false);
     if (currentItem) {
+        if (modelIndex == visibleIndex - 1) {
+            // We can calculate exact postion in this case
+            currentItem->setPosition(visibleItems.first()->position() - currentItem->size());
+        } else {
+            // Create current item now and position as best we can.
+            // Its position will be corrected when it becomes visible.
+            currentItem->setPosition(positionAt(modelIndex));
+        }
         currentItem->item->setFocus(true);
         currentItem->attached->setIsCurrentItem(true);
     }
     updateHighlight();
     emit q->currentIndexChanged();
     // Release the old current item
-    if (oldCurrentItem && !visibleItem(oldCurrentIndex)) {
-        if (!currentItem || oldCurrentItem->item == currentItem->item)
-            delete oldCurrentItem;
-        else
-            releaseItem(oldCurrentItem);
-    }
+    releaseItem(oldCurrentItem);
 }
 
 void QFxListViewPrivate::updateAverage()
@@ -884,6 +889,8 @@ void QFxListView::setModel(const QVariant &model)
     if (d->model) {
         disconnect(d->model, SIGNAL(itemsInserted(int,int)), this, SLOT(itemsInserted(int,int)));
         disconnect(d->model, SIGNAL(itemsRemoved(int,int)), this, SLOT(itemsRemoved(int,int)));
+        disconnect(d->model, SIGNAL(createdItem(int, QFxItem*)), this, SLOT(createdItem(int,QFxItem*)));
+        disconnect(d->model, SIGNAL(destroyingItem(QFxItem*)), this, SLOT(destroyingItem(QFxItem*)));
     }
     d->clear();
     d->modelVariant = model;
@@ -909,6 +916,8 @@ void QFxListView::setModel(const QVariant &model)
             d->updateCurrent(d->currentIndex);
         connect(d->model, SIGNAL(itemsInserted(int,int)), this, SLOT(itemsInserted(int,int)));
         connect(d->model, SIGNAL(itemsRemoved(int,int)), this, SLOT(itemsRemoved(int,int)));
+        connect(d->model, SIGNAL(createdItem(int, QFxItem*)), this, SLOT(createdItem(int,QFxItem*)));
+        connect(d->model, SIGNAL(destroyingItem(QFxItem*)), this, SLOT(destroyingItem(QFxItem*)));
         refill();
         emit countChanged();
     }
@@ -1417,6 +1426,7 @@ void QFxListView::itemResized()
 void QFxListView::itemsInserted(int modelIndex, int count)
 {
     Q_D(QFxListView);
+    d->updateUnrequestedIndexes();
     if (!d->visibleItems.count() || d->model->count() <= 1) {
         d->layout();
         d->updateCurrent(qMax(0, qMin(d->currentIndex, d->model->count()-1)));
@@ -1437,7 +1447,7 @@ void QFxListView::itemsInserted(int modelIndex, int count)
                 d->visibleIndex += count;
                 for (int i = 0; i < d->visibleItems.count(); ++i) {
                     FxListItem *listItem = d->visibleItems.at(i);
-                    if (listItem->index != -1 && listItem != d->currentItem)
+                    if (listItem->index != -1)
                         listItem->index += count;
                 }
             }
@@ -1487,29 +1497,29 @@ void QFxListView::itemsInserted(int modelIndex, int count)
         // Update the indexes of the following visible items.
         for (; index < d->visibleItems.count(); ++index) {
             FxListItem *listItem = d->visibleItems.at(index);
-            if (listItem != d->currentItem) {
-                listItem->setPosition(listItem->position() + (pos - initialPos));
-                if (listItem->index != -1)
-                    listItem->index += count;
-            }
+            listItem->setPosition(listItem->position() + (pos - initialPos));
+            if (listItem->index != -1)
+                listItem->index += count;
         }
     }
     // everything is in order now - emit add() signal
     for (int j = 0; j < added.count(); ++j)
         added.at(j)->attached->emitAdd();
+    d->updateUnrequestedPositions();
     emit countChanged();
 }
 
 void QFxListView::itemsRemoved(int modelIndex, int count)
 {
     Q_D(QFxListView);
+    d->updateUnrequestedIndexes();
     if (!d->mapRangeFromModel(modelIndex, count)) {
         if (modelIndex + count - 1 < d->visibleIndex) {
             // Items removed before our visible items.
             d->visibleIndex -= count;
             for (int i = 0; i < d->visibleItems.count(); ++i) {
                 FxListItem *listItem = d->visibleItems.at(i);
-                if (listItem->index != -1 && listItem != d->currentItem)
+                if (listItem->index != -1)
                     listItem->index -= count;
             }
         }
@@ -1519,11 +1529,8 @@ void QFxListView::itemsRemoved(int modelIndex, int count)
                 d->currentItem->index -= count;
         } else if (d->currentIndex >= modelIndex && d->currentIndex < modelIndex + count) {
             // current item has been removed.
-            if (d->currentItem) {
-                FxListItem *item = d->currentItem;
-                d->currentItem = 0;
-                d->releaseItem(item);
-            }
+            d->releaseItem(d->currentItem);
+            d->currentItem = 0;
             d->currentIndex = -1;
             d->updateCurrent(qMin(modelIndex, d->model->count()-1));
         }
@@ -1541,8 +1548,7 @@ void QFxListView::itemsRemoved(int modelIndex, int count)
             ++it;
         } else if (item->index >= modelIndex + count) {
             // after removed items
-            if (item != d->currentItem)
-                item->index -= count;
+            item->index -= count;
             ++it;
         } else {
             // removed item
@@ -1565,11 +1571,7 @@ void QFxListView::itemsRemoved(int modelIndex, int count)
             d->currentItem->index -= count;
     } else if (d->currentIndex >= modelIndex && d->currentIndex < modelIndex + count) {
         // current item has been removed.
-        if (d->currentItem && !d->currentItem->attached->delayRemove()) {
-            FxListItem *item = d->currentItem;
-            d->currentItem = 0;
-            d->releaseItem(item);
-        }
+        d->releaseItem(d->currentItem);
         d->currentItem = 0;
         d->currentIndex = -1;
         d->updateCurrent(qMin(modelIndex, d->model->count()-1));
@@ -1616,6 +1618,25 @@ void QFxListView::destroyRemoved()
 
     // Correct the positioning of the items
     d->layout();
+}
+
+void QFxListView::createdItem(int index, QFxItem *item)
+{
+    Q_D(QFxListView);
+    if (d->requestedIndex != index) {
+        item->setItemParent(viewport());
+        d->unrequestedItems.insert(item, index);
+        if (d->orient == Qt::Vertical)
+            item->setY(d->positionAt(index));
+        else
+            item->setX(d->positionAt(index));
+    }
+}
+
+void QFxListView::destroyingItem(QFxItem *item)
+{
+    Q_D(QFxListView);
+    d->unrequestedItems.remove(item);
 }
 
 QObject *QFxListView::qmlAttachedProperties(QObject *obj)
