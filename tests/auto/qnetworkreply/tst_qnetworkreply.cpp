@@ -424,11 +424,19 @@ public:
 
         QTcpSocket *active = new QTcpSocket(this);
         active->connectToHost("127.0.0.1", server.serverPort());
+#ifndef Q_OS_SYMBIAN
         if (!active->waitForConnected(10))
             return false;
 
         if (!server.waitForNewConnection(10))
             return false;
+#else
+        if (!active->waitForConnected(5000))
+            return false;
+
+        if (!server.waitForNewConnection(5000))
+            return false;
+#endif
         QTcpSocket *passive = server.nextPendingConnection();
         passive->setParent(this);
 
@@ -2327,8 +2335,13 @@ void tst_QNetworkReply::ioPutToFileFromLocalSocket()
     }
     QLocalSocket active;
     active.connectToServer(socketname);
+#ifndef Q_OS_SYMBIAN
     QVERIFY2(server.waitForNewConnection(10), server.errorString().toLatin1().constData());
     QVERIFY2(active.waitForConnected(10), active.errorString().toLatin1().constData());
+#else
+    QVERIFY2(server.waitForNewConnection(5000), server.errorString().toLatin1().constData());
+    QVERIFY2(active.waitForConnected(5000), active.errorString().toLatin1().constData());
+#endif
     QVERIFY2(server.hasPendingConnections(), server.errorString().toLatin1().constData());
     QLocalSocket *passive = server.nextPendingConnection();
 
@@ -2343,7 +2356,11 @@ void tst_QNetworkReply::ioPutToFileFromLocalSocket()
     passive->setParent(reply);
 
     connect(reply, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
+#ifndef Q_OS_SYMBIAN
     QTestEventLoop::instance().enterLoop(10);
+#else
+    QTestEventLoop::instance().enterLoop(30);
+#endif
     QVERIFY(!QTestEventLoop::instance().timeout());
 
     QCOMPARE(reply->url(), url);
@@ -2652,7 +2669,11 @@ void tst_QNetworkReply::downloadProgress_data()
 
     QTest::newRow("empty") << 0;
     QTest::newRow("small") << 4;
+#ifndef Q_OS_SYMBIAN
     QTest::newRow("big") << 4096;
+#else
+    QTest::newRow("big") << 1024;
+#endif
 }
 
 void tst_QNetworkReply::downloadProgress()
