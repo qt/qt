@@ -70,5 +70,6 @@ Q_DEFINE_PERFORMANCE_LOG(QFxPerf, "QFx") {
     Q_DEFINE_PERFORMANCE_METRIC(BaseLayoutComponentComplete, "QFxBaseLayout::componentComplete");
     Q_DEFINE_PERFORMANCE_METRIC(TextComponentComplete, "QFxText::componentComplete");
     Q_DEFINE_PERFORMANCE_METRIC(QFxText_setText, "QFxText::setText");
+    Q_DEFINE_PERFORMANCE_METRIC(AddScript, "QmlScript::addScriptToEngine");
 }
 QT_END_NAMESPACE
