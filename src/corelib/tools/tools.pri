@@ -19,6 +19,7 @@ HEADERS +=  \
 	tools/qlocale_p.h \
 	tools/qlocale_data_p.h \
 	tools/qmap.h \
+        tools/qcontiguouscache.h \
         tools/qpodlist_p.h \
         tools/qpoint.h \
 	tools/qqueue.h \
@@ -45,7 +46,6 @@ SOURCES += \
 	tools/qbytearraymatcher.cpp \
 	tools/qcryptographichash.cpp \
 	tools/qdatetime.cpp \
-	tools/qdumper.cpp \
 	tools/qhash.cpp \
         tools/qline.cpp \
 	tools/qlinkedlist.cpp \
@@ -53,6 +53,7 @@ SOURCES += \
 	tools/qlocale.cpp \
         tools/qpoint.cpp \
 	tools/qmap.cpp \
+	tools/qcontiguouscache.cpp \
         tools/qrect.cpp \
 	tools/qregexp.cpp \
 	tools/qshareddata.cpp \

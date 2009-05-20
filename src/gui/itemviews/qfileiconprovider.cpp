@@ -416,26 +416,22 @@ QString QFileIconProvider::type(const QFileInfo &info) const
     }
 
     if (info.isDir())
-        return QApplication::translate("QFileDialog",
 #ifdef Q_WS_WIN
-                                       "File Folder", "Match Windows Explorer"
+        return QApplication::translate("QFileDialog", "File Folder", "Match Windows Explorer");
 #else
-                                       "Folder", "All other platforms"
+        return QApplication::translate("QFileDialog", "Folder", "All other platforms");
 #endif
-            );
     // Windows   - "File Folder"
     // OS X      - "Folder"
     // Konqueror - "Folder"
     // Nautilus  - "folder"
 
     if (info.isSymLink())
-        return QApplication::translate("QFileDialog",
 #ifdef Q_OS_MAC
-                                       "Alias", "Mac OS X Finder"
+        return QApplication::translate("QFileDialog", "Alias", "Mac OS X Finder");
 #else
-                                       "Shortcut", "All other platforms"
+        return QApplication::translate("QFileDialog", "Shortcut", "All other platforms");
 #endif
-            );
     // OS X      - "Alias"
     // Windows   - "Shortcut"
     // Konqueror - "Folder" or "TXT File" i.e. what it is pointing to

@@ -1006,7 +1006,7 @@ void QPainterPath::addPolygon(const QPolygonF &polygon)
 /*!
     \fn void QPainterPath::addEllipse(const QRectF &boundingRectangle)
 
-    Creates an ellipse within the the specified \a boundingRectangle
+    Creates an ellipse within the specified \a boundingRectangle
     and adds it to the painter path as a closed subpath.
 
     The ellipse is composed of a clockwise curve, starting and

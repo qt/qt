@@ -39,7 +39,7 @@
     <message>
         <location line="+22"/>
         <source>Cannot load sqlite database driver!</source>
-        <translation type="unfinished"></translation>
+        <translation>Der Datenbanktreiber für SQLite kann nicht geladen werden!</translation>
     </message>
     <message>
         <location line="+11"/>

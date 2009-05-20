@@ -844,7 +844,7 @@ QGraphicsSceneContextMenuEvent::~QGraphicsSceneContextMenuEvent()
 
 /*!
     Returns the position of the mouse cursor in item coordinates at the moment
-    the the context menu was requested.
+    the context menu was requested.
 
     \sa scenePos(), screenPos()
 */
@@ -992,7 +992,7 @@ QGraphicsSceneHoverEvent::~QGraphicsSceneHoverEvent()
 
 /*!
     Returns the position of the mouse cursor in item coordinates at the moment
-    the the hover event was sent.
+    the hover event was sent.
 
     \sa scenePos(), screenPos()
 */
@@ -1017,7 +1017,7 @@ void QGraphicsSceneHoverEvent::setPos(const QPointF &pos)
 
 /*!
     Returns the position of the mouse cursor in scene coordinates at the
-    moment the the hover event was sent.
+    moment the hover event was sent.
 
     \sa pos(), screenPos()
 */
@@ -1042,7 +1042,7 @@ void QGraphicsSceneHoverEvent::setScenePos(const QPointF &pos)
 
 /*!
     Returns the position of the mouse cursor in screen coordinates at the
-    moment the the hover event was sent.
+    moment the hover event was sent.
 
     \sa pos(), scenePos()
 */
@@ -1138,7 +1138,7 @@ void QGraphicsSceneHoverEvent::setLastScreenPos(const QPoint &pos)
 /*!
     \since 4.4
 
-    Returns the keyboard modifiers at the moment the the hover event was sent.
+    Returns the keyboard modifiers at the moment the hover event was sent.
 */
 Qt::KeyboardModifiers QGraphicsSceneHoverEvent::modifiers() const
 {
@@ -1184,7 +1184,7 @@ QGraphicsSceneHelpEvent::~QGraphicsSceneHelpEvent()
 
 /*!
     Returns the position of the mouse cursor in scene coordinates at the
-    moment the the help event was sent.
+    moment the help event was sent.
 
     \sa screenPos()
 */
@@ -1209,7 +1209,7 @@ void QGraphicsSceneHelpEvent::setScenePos(const QPointF &pos)
 
 /*!
     Returns the position of the mouse cursor in screen coordinates at the
-    moment the the help event was sent.
+    moment the help event was sent.
 
   \sa scenePos()
 */

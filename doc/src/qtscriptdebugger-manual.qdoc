@@ -367,7 +367,7 @@
   \section3 continue
 
   Continues execution normally, i.e, gives the execution control over
-  the script back the the QScriptEngine.
+  the script back to the QScriptEngine.
 
   \section3 eval <program>
 

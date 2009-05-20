@@ -1127,73 +1127,6 @@ QList<QGraphicsItem *> QGraphicsViewPrivate::findItems(const QRegion &exposedReg
     return itemsInArea(exposedPath, Qt::IntersectsItemBoundingRect, Qt::DescendingOrder);
 }
 
-void QGraphicsViewPrivate::generateStyleOptions(const QList<QGraphicsItem *> &itemList,
-                                                QGraphicsItem **itemArray,
-                                                QStyleOptionGraphicsItem *styleOptionArray,
-                                                const QTransform &worldTransform,
-                                                bool allItems,
-                                                const QRegion &exposedRegion) const
-{
-    // Two unit vectors.
-    QLineF v1(0, 0, 1, 0);
-    QLineF v2(0, 0, 0, 1);
-    QTransform itemToViewportTransform;
-    QRectF brect;
-    QTransform reverseMap;
-
-    for (int i = 0; i < itemList.size(); ++i) {
-        QGraphicsItem *item = itemArray[i] = itemList[i];
-
-        QStyleOptionGraphicsItem &option = styleOptionArray[i];
-        brect = item->boundingRect();
-        option.state = QStyle::State_None;
-        option.rect = brect.toRect();
-        option.exposedRect = QRectF();
-        if (item->d_ptr->selected)
-            option.state |= QStyle::State_Selected;
-        if (item->d_ptr->enabled)
-            option.state |= QStyle::State_Enabled;
-        if (item->hasFocus())
-            option.state |= QStyle::State_HasFocus;
-        if (scene->d_func()->hoverItems.contains(item))
-            option.state |= QStyle::State_MouseOver;
-        if (item == scene->mouseGrabberItem())
-            option.state |= QStyle::State_Sunken;
-
-        // Calculate a simple level-of-detail metric.
-        // ### almost identical code in QGraphicsScene::render()
-        //     and QGraphicsView::render() - consider refactoring
-        if (item->d_ptr->itemIsUntransformable()) {
-            itemToViewportTransform = item->deviceTransform(worldTransform);
-        } else {
-            itemToViewportTransform = item->sceneTransform() * worldTransform;
-        }
-
-        if (itemToViewportTransform.type() <= QTransform::TxTranslate) {
-            // Translation and rotation only? The LOD is 1.
-            option.levelOfDetail = 1;
-        } else {
-            // LOD is the transformed area of a 1x1 rectangle.
-            option.levelOfDetail = qSqrt(itemToViewportTransform.map(v1).length() * itemToViewportTransform.map(v2).length());
-        }
-        option.matrix = itemToViewportTransform.toAffine(); //### discards perspective
-
-        if (!allItems) {
-            // Determine the item's exposed area
-            reverseMap = itemToViewportTransform.inverted();
-            foreach (const QRect &rect, exposedRegion.rects()) {
-                option.exposedRect |= reverseMap.mapRect(QRectF(rect.adjusted(-1, -1, 1, 1)));
-                if (option.exposedRect.contains(brect))
-                    break;
-            }
-            option.exposedRect &= brect;
-        } else {
-            // The whole item is exposed
-            option.exposedRect = brect;
-        }
-    }
-}
-
 /*!
     Constructs a QGraphicsView. \a parent is passed to QWidget's constructor.
 */
@@ -2150,45 +2083,10 @@ void QGraphicsView::render(QPainter *painter, const QRectF &target, const QRect 
                      .scale(xratio, yratio)
                      .translate(-sourceRect.left(), -sourceRect.top());
 
-    // Two unit vectors.
-    QLineF v1(0, 0, 1, 0);
-    QLineF v2(0, 0, 0, 1);
-
     // Generate the style options
     QStyleOptionGraphicsItem *styleOptionArray = d->allocStyleOptionsArray(numItems);
-    QStyleOptionGraphicsItem* option = styleOptionArray;
-    for (int i = 0; i < numItems; ++i, ++option) {
-        QGraphicsItem *item = itemArray[i];
-
-        option->state = QStyle::State_None;
-        option->rect = item->boundingRect().toRect();
-        if (item->isSelected())
-            option->state |= QStyle::State_Selected;
-        if (item->isEnabled())
-            option->state |= QStyle::State_Enabled;
-        if (item->hasFocus())
-            option->state |= QStyle::State_HasFocus;
-        if (d->scene->d_func()->hoverItems.contains(item))
-            option->state |= QStyle::State_MouseOver;
-        if (item == d->scene->mouseGrabberItem())
-            option->state |= QStyle::State_Sunken;
-
-        // Calculate a simple level-of-detail metric.
-        // ### almost identical code in QGraphicsScene::render()
-        //     and QGraphicsView::paintEvent() - consider refactoring
-        QTransform itemToViewportTransform;
-        if (item->d_ptr->itemIsUntransformable()) {
-            itemToViewportTransform = item->deviceTransform(painterMatrix);
-        } else {
-            itemToViewportTransform = item->sceneTransform() * painterMatrix;
-        }
-
-        option->levelOfDetail = qSqrt(itemToViewportTransform.map(v1).length() * itemToViewportTransform.map(v2).length());
-        option->matrix = itemToViewportTransform.toAffine();
-
-        option->exposedRect = item->boundingRect();
-        option->exposedRect &= itemToViewportTransform.inverted().mapRect(targetRect);
-    }
+    for (int i = 0; i < numItems; ++i)
+        itemArray[i]->d_ptr->initStyleOption(&styleOptionArray[i], painterMatrix, targetRect.toRect());
 
     painter->save();
 
@@ -3547,15 +3445,17 @@ void QGraphicsView::paintEvent(QPaintEvent *event)
     int backgroundTime = stopWatch.elapsed() - exposedTime;
 #endif
 
-    // Generate the style options
-    QGraphicsItem **itemArray = new QGraphicsItem *[itemList.size()];
-    QStyleOptionGraphicsItem *styleOptionArray = d->allocStyleOptionsArray(itemList.size());
-
-    d->generateStyleOptions(itemList, itemArray, styleOptionArray, viewTransform,
-                            allItems, exposedRegion);
-
-    // Items
-    drawItems(&painter, itemList.size(), itemArray, styleOptionArray);
+    if (!itemList.isEmpty()) {
+        // Generate the style options.
+        const int numItems = itemList.size();
+        QGraphicsItem **itemArray = &itemList[0]; // Relies on QList internals, but is perfectly valid.
+        QStyleOptionGraphicsItem *styleOptionArray = d->allocStyleOptionsArray(numItems);
+        for (int i = 0; i < numItems; ++i)
+            itemArray[i]->d_ptr->initStyleOption(&styleOptionArray[i], viewTransform, exposedRegion, allItems);
+        // Draw the items.
+        drawItems(&painter, numItems, itemArray, styleOptionArray);
+        d->freeStyleOptionsArray(styleOptionArray);
+    }
 
 #ifdef QGRAPHICSVIEW_DEBUG
     int itemsTime = stopWatch.elapsed() - exposedTime - backgroundTime;
@@ -3563,9 +3463,6 @@ void QGraphicsView::paintEvent(QPaintEvent *event)
 
     // Foreground
     drawForeground(&painter, exposedSceneRect);
-
-    delete [] itemArray;
-    d->freeStyleOptionsArray(styleOptionArray);
 
 #ifdef QGRAPHICSVIEW_DEBUG
     int foregroundTime = stopWatch.elapsed() - exposedTime - backgroundTime - itemsTime;

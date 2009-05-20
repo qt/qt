@@ -1,8 +1,8 @@
 /********************************************************************************
 ** Form generated from reading ui file 'languagesdialog.ui'
 **
-** Created: Mon Jun 16 17:57:32 2008
-**      by: Qt User Interface Compiler version 4.5.0
+** Created: Fri May 15 16:58:03 2009
+**      by: Qt User Interface Compiler version 4.5.2
 **
 ** WARNING! All changes made in this file will be lost when recompiling ui file!
 ********************************************************************************/
@@ -57,7 +57,7 @@ public:
         upButton->setObjectName(QString::fromUtf8("upButton"));
         upButton->setEnabled(false);
         QIcon icon;
-        icon.addPixmap(QPixmap(QString::fromUtf8(":/images/up.png")), QIcon::Normal, QIcon::Off);
+        icon.addFile(QString::fromUtf8(":/images/up.png"), QSize(), QIcon::Normal, QIcon::Off);
         upButton->setIcon(icon);
 
         hboxLayout->addWidget(upButton);
@@ -66,7 +66,7 @@ public:
         downButton->setObjectName(QString::fromUtf8("downButton"));
         downButton->setEnabled(false);
         QIcon icon1;
-        icon1.addPixmap(QPixmap(QString::fromUtf8(":/images/down.png")), QIcon::Normal, QIcon::Off);
+        icon1.addFile(QString::fromUtf8(":/images/down.png"), QSize(), QIcon::Normal, QIcon::Off);
         downButton->setIcon(icon1);
 
         hboxLayout->addWidget(downButton);
@@ -75,7 +75,7 @@ public:
         removeButton->setObjectName(QString::fromUtf8("removeButton"));
         removeButton->setEnabled(false);
         QIcon icon2;
-        icon2.addPixmap(QPixmap(QString::fromUtf8(":/images/editdelete.png")), QIcon::Normal, QIcon::Off);
+        icon2.addFile(QString::fromUtf8(":/images/editdelete.png"), QSize(), QIcon::Normal, QIcon::Off);
         removeButton->setIcon(icon2);
 
         hboxLayout->addWidget(removeButton);
@@ -84,7 +84,7 @@ public:
         openFileButton->setObjectName(QString::fromUtf8("openFileButton"));
         openFileButton->setEnabled(true);
         QIcon icon3;
-        icon3.addPixmap(QPixmap(QString::fromUtf8(":/images/mac/fileopen.png")), QIcon::Normal, QIcon::Off);
+        icon3.addFile(QString::fromUtf8(":/images/mac/fileopen.png"), QSize(), QIcon::Normal, QIcon::Off);
         openFileButton->setIcon(icon3);
 
         hboxLayout->addWidget(openFileButton);

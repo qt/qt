@@ -953,8 +953,9 @@ void tst_QPrinter::printDialogCompleter()
 
     QTest::qWait(100);
 
-    QTest::keyClick(0, Qt::Key_Tab);
-    QTest::keyClick(0, 'P');
+    QTest::keyClick(&dialog, Qt::Key_Tab);
+    QTest::keyClick(&dialog, 'P');
+    // The test passes if it doesn't crash.
 #endif
 }
 
