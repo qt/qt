@@ -201,7 +201,7 @@ void MainWindow::gameOver()
     TankItem *lastTankStanding = 0;
     foreach (QGraphicsItem *item, items) {
         if (GameItem *gameItem = qgraphicsitem_cast<GameItem *>(item)) {
-            if (lastTankStanding = qobject_cast<TankItem *>(gameItem))
+            if ((lastTankStanding = qobject_cast<TankItem *>(gameItem)) != 0)
                 break;
         }
     }

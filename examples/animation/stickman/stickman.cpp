@@ -178,7 +178,7 @@ Node *StickMan::node(int idx) const
         return 0;
 }
 
-void StickMan::timerEvent(QTimerEvent *e)
+void StickMan::timerEvent(QTimerEvent *)
 {
     update();
 }
