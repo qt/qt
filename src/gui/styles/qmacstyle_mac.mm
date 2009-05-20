@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-/*!
+/*
   Note: The qdoc comments for QMacStyle are contained in
   .../doc/src/qstyles.qdoc. 
 */
