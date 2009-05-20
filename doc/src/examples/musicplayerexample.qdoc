@@ -154,7 +154,7 @@
 
     \snippet examples/phonon/musicplayer/mainwindow.cpp 5
 
-    We move on to the the slots of \c MainWindow, starting with \c
+    We move on to the slots of \c MainWindow, starting with \c
     addFiles(): 
 
     \snippet examples/phonon/musicplayer/mainwindow.cpp 6

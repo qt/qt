@@ -1247,7 +1247,7 @@
     \snippet doc/src/snippets/code/doc_src_deployment.qdoc 48
 
     Then we update the source code in \c tools/plugandpaint/main.cpp
-    to look for the the new plugins. After constructing the
+    to look for the new plugins. After constructing the
     QApplication, we add the following code:
 
     \snippet doc/src/snippets/code/doc_src_deployment.qdoc 49

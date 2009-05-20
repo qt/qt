@@ -632,7 +632,7 @@
 /*!
     \fn void QDesignerContainerExtension::setCurrentIndex(int index)
 
-    Sets the the currently selected page in the container to be the
+    Sets the currently selected page in the container to be the
     page at the given \a index in the extension's list of pages.
 
     \sa currentIndex()

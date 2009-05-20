@@ -61,6 +61,127 @@ QT_BEGIN_NAMESPACE
 
 static bool showBrokenLinks = false;
 
+static QRegExp linkTag("(<@link node=\"([^\"]+)\">).*(</@link>)");
+static QRegExp funcTag("(<@func target=\"([^\"]*)\">)(.*)(</@func>)");
+static QRegExp typeTag("(<@(type|headerfile|func)(?: +[^>]*)?>)(.*)(</@\\2>)");
+static QRegExp spanTag("</@(?:comment|preprocessor|string|char)>");
+static QRegExp unknownTag("</?@[^>]*>");
+
+bool parseArg(const QString &src,
+              const QString &tag,
+              int *pos,
+              int n,
+              QStringRef *contents,
+              QStringRef *par1 = 0,
+              bool debug = false)
+{
+#define SKIP_CHAR(c) \
+    if (debug) \
+        qDebug() << "looking for " << c << " at " << QString(src.data() + i, n - i); \
+    if (i >= n || src[i] != c) { \
+        if (debug) \
+            qDebug() << " char '" << c << "' not found"; \
+        return false; \
+    } \
+    ++i;
+
+
+#define SKIP_SPACE \
+    while (i < n && src[i] == ' ') \
+        ++i;
+
+    int i = *pos;
+    int j = i;
+
+    // assume "<@" has been parsed outside
+    //SKIP_CHAR('<');
+    //SKIP_CHAR('@');
+
+    if (tag != QStringRef(&src, i, tag.length())) {
+        if (0 && debug)
+            qDebug() << "tag " << tag << " not found at " << i;
+        return false;
+    }
+
+    if (debug)
+        qDebug() << "haystack:" << src << "needle:" << tag << "i:" <<i;
+
+    // skip tag
+    i += tag.length();
+
+    // parse stuff like:  linkTag("(<@link node=\"([^\"]+)\">).*(</@link>)");
+    if (par1) {
+        SKIP_SPACE;
+        // read parameter name
+        j = i;
+        while (i < n && src[i].isLetter())
+            ++i;
+        if (src[i] == '=') {
+            if (debug)
+                qDebug() << "read parameter" << QString(src.data() + j, i - j);
+            SKIP_CHAR('=');
+            SKIP_CHAR('"');
+            // skip parameter name
+            j = i;
+            while (i < n && src[i] != '"')
+                ++i;
+            *par1 = QStringRef(&src, j, i - j);
+            SKIP_CHAR('"');
+            SKIP_SPACE;
+        } else {
+            if (debug)
+                qDebug() << "no optional parameter found";
+        }
+    }
+    SKIP_SPACE;
+    SKIP_CHAR('>');
+
+    // find contents up to closing "</@tag>
+    j = i;
+    for (; true; ++i) {
+        if (i + 4 + tag.length() > n)
+            return false;
+        if (src[i] != '<')
+            continue;
+        if (src[i + 1] != '/')
+            continue;
+        if (src[i + 2] != '@')
+            continue;
+        if (tag != QStringRef(&src, i + 3, tag.length()))
+            continue;
+        if (src[i + 3 + tag.length()] != '>')
+            continue;
+        break;
+    }
+
+    *contents = QStringRef(&src, j, i - j);
+
+    i += tag.length() + 4;
+
+    *pos = i;
+    if (debug)
+        qDebug() << " tag " << tag << " found: pos now: " << i;
+    return true;
+#undef SKIP_CHAR
+}
+
+static void addLink(const QString &linkTarget,
+                    const QStringRef &nestedStuff,
+                    QString *res)
+{
+    if (!linkTarget.isEmpty()) {
+        *res += "<a href=\"";
+        *res += linkTarget;
+        *res += "\">";
+        *res += nestedStuff;
+        *res += "</a>";
+    }
+    else {
+        *res += nestedStuff;
+    }
+}
+
+
 HtmlGenerator::HtmlGenerator()
     : helpProjectWriter(0), inLink(false), inContents(false),
       inSectionHeading(false), inTableHeader(false), numTableRows(0),
@@ -1928,40 +2049,6 @@ void HtmlGenerator::generateLegaleseList(const Node *relative, CodeMarker *marke
     }
 }
 
-void HtmlGenerator::generateSynopsis(const Node *node, const Node *relative,
-                                     CodeMarker *marker, CodeMarker::SynopsisStyle style)
-{
-    QString marked = marker->markedUpSynopsis(node, relative, style);
-    QRegExp templateTag("(<[^@>]*>)");
-    if (marked.indexOf(templateTag) != -1) {
-        QString contents = protect(marked.mid(templateTag.pos(1),
-                                              templateTag.cap(1).length()));
-        marked.replace(templateTag.pos(1), templateTag.cap(1).length(),
-                        contents);
-    }
-    marked.replace(QRegExp("<@param>([a-z]+)_([1-9n])</@param>"), "<i>\\1<sub>\\2</sub></i>");
-    marked.replace("<@param>", "<i>");
-    marked.replace("</@param>", "</i>");
-
-    if (style == CodeMarker::Summary)
-        marked.replace("@name>", "b>");
-
-    if (style == CodeMarker::SeparateList) {
-        QRegExp extraRegExp("<@extra>.*</@extra>");
-        extraRegExp.setMinimal(true);
-        marked.replace(extraRegExp, "");
-    } else {
-        marked.replace("<@extra>", "&nbsp;&nbsp;<tt>");
-        marked.replace("</@extra>", "</tt>");
-    }
-
-    if (style != CodeMarker::Detailed) {
-        marked.replace("<@type>", "");
-        marked.replace("</@type>", "");
-    }
-    out() << highlightedCode(marked, marker, relative);
-}
-
 void HtmlGenerator::generateOverviewList(const Node *relative, CodeMarker * /* marker */)
 {
     QMap<const FakeNode *, QMap<QString, FakeNode *> > fakeNodeMap;
@@ -2075,8 +2162,315 @@ void HtmlGenerator::generateOverviewList(const Node *relative, CodeMarker * /* m
     }
 }
 
-void HtmlGenerator::generateSectionList(const Section& section, const Node *relative,
-                                        CodeMarker *marker, CodeMarker::SynopsisStyle style)
+#ifdef QDOC_NAME_ALIGNMENT
+void HtmlGenerator::generateSectionList(const Section& section,
+                                        const Node *relative,
+                                        CodeMarker *marker,
+                                        CodeMarker::SynopsisStyle style)
+{
+    bool name_alignment = true;
+    if (!section.members.isEmpty()) {
+        bool twoColumn = false;
+        if (style == CodeMarker::SeparateList) {
+            name_alignment = false;
+            twoColumn = (section.members.count() >= 16);
+        }
+        else if (section.members.first()->type() == Node::Property) {
+            twoColumn = (section.members.count() >= 5);
+            name_alignment = false;
+        }
+        if (name_alignment) {
+            out() << "<table border=\"0\" cellpadding=\"0\" "
+                  << "cellspacing=\"0\">\n";
+        }
+        else {
+            if (twoColumn)
+                out() << "<p><table width=\"100%\" "
+                      << "border=\"0\" cellpadding=\"0\""
+                      << " cellspacing=\"0\">\n"
+                      << "<tr><td width=\"45%\" valign=\"top\">";
+            out() << "<ul>\n";
+        }
+
+        int i = 0;
+        NodeList::ConstIterator m = section.members.begin();
+        while (m != section.members.end()) {
+            if ((*m)->access() == Node::Private) {
+                ++m;
+                continue;
+            }
+
+            if (name_alignment) {
+                out() << "<tr><td class=\"memItemLeft\" "
+                      << "nowrap align=\"right\" valign=\"top\">";
+            }
+            else {
+                if (twoColumn && i == (int) (section.members.count() + 1) / 2)
+                    out() << "</ul></td><td valign=\"top\"><ul>\n";
+                out() << "<li><div class=\"fn\"></div>";
+            }
+
+            if (style == CodeMarker::Accessors)
+                out() << "<b>";
+            generateSynopsis(*m, relative, marker, style, name_alignment);
+            if (style == CodeMarker::Accessors)
+                out() << "</b>";
+            if (name_alignment)
+                out() << "</td></tr>\n";
+            else
+                out() << "</li>\n";
+            i++;
+            ++m;
+        }
+        if (name_alignment)
+            out() << "</table>\n";
+        else {
+            out() << "</ul>\n";
+            if (twoColumn)
+                out() << "</td></tr>\n</table></p>\n";
+        }
+    }
+
+    if (style == CodeMarker::Summary && !section.inherited.isEmpty()) {
+        out() << "<ul>\n";
+        generateSectionInheritedList(section, relative, marker, name_alignment);
+        out() << "</ul>\n";
+    }
+}
+
+void HtmlGenerator::generateSectionInheritedList(const Section& section,
+                                                 const Node *relative,
+                                                 CodeMarker *marker,
+                                                 bool nameAlignment)
+{
+    QList<QPair<ClassNode *, int> >::ConstIterator p = section.inherited.begin();
+    while (p != section.inherited.end()) {
+        if (nameAlignment)
+            out() << "<li><div bar=2 class=\"fn\"></div>";
+        else
+            out() << "<li><div class=\"fn\"></div>";
+        out() << (*p).second << " ";
+        if ((*p).second == 1) {
+            out() << section.singularMember;
+        }
+        else {
+            out() << section.pluralMember;
+        }
+        out() << " inherited from <a href=\"" << fileName((*p).first)
+              << "#" << HtmlGenerator::cleanRef(section.name.toLower()) << "\">"
+              << protect(marker->plainFullName((*p).first, relative))
+              << "</a></li>\n";
+        ++p;
+    }
+}
+
+void HtmlGenerator::generateSynopsis(const Node *node,
+                                     const Node *relative,
+                                     CodeMarker *marker,
+                                     CodeMarker::SynopsisStyle style,
+                                     bool nameAlignment)
+{
+    QString marked = marker->markedUpSynopsis(node, relative, style);
+    QRegExp templateTag("(<[^@>]*>)");
+    if (marked.indexOf(templateTag) != -1) {
+        QString contents = protect(marked.mid(templateTag.pos(1),
+                                              templateTag.cap(1).length()));
+        marked.replace(templateTag.pos(1), templateTag.cap(1).length(),
+                        contents);
+    }
+    marked.replace(QRegExp("<@param>([a-z]+)_([1-9n])</@param>"),
+                   "<i>\\1<sub>\\2</sub></i>");
+    marked.replace("<@param>", "<i>");
+    marked.replace("</@param>", "</i>");
+
+    if (style == CodeMarker::Summary)
+        marked.replace("@name>", "b>");
+
+    if (style == CodeMarker::SeparateList) {
+        QRegExp extraRegExp("<@extra>.*</@extra>");
+        extraRegExp.setMinimal(true);
+        marked.replace(extraRegExp, "");
+    } else {
+        marked.replace("<@extra>", "&nbsp;&nbsp;<tt>");
+        marked.replace("</@extra>", "</tt>");
+    }
+
+    if (style != CodeMarker::Detailed) {
+        marked.replace("<@type>", "");
+        marked.replace("</@type>", "");
+    }
+    out() << highlightedCode(marked, marker, relative, nameAlignment);
+}
+
+QString HtmlGenerator::highlightedCode(const QString& markedCode,
+                                       CodeMarker *marker,
+                                       const Node *relative,
+                                       bool nameAlignment)
+{
+    QString src = markedCode;
+    QString html;
+    QStringRef arg;
+    QStringRef par1;
+
+    const QChar charLangle = '<';
+    const QChar charAt = '@';
+
+    // replace all <@link> tags: "(<@link node=\"([^\"]+)\">).*(</@link>)"
+    static const QString linkTag("link");
+    for (int i = 0, n = src.size(); i < n;) {
+        if (src.at(i) == charLangle && src.at(i + 1).unicode() == '@') {
+            if (nameAlignment && (i != 0))
+                html += "&nbsp;</td><td class=\"memItemRight\" valign=\"bottom\">";
+            i += 2;
+            if (parseArg(src, linkTag, &i, n, &arg, &par1)) {
+                QString link = linkForNode(
+                    CodeMarker::nodeForString(par1.toString()), relative);
+                addLink(link, arg, &html);
+            }
+            else {
+                html += charLangle;
+                html += charAt;
+            }
+        }
+        else {
+            html += src.at(i++);
+        }
+    }
+
+
+    if (slow) {
+        // is this block ever used at all?
+        // replace all <@func> tags: "(<@func target=\"([^\"]*)\">)(.*)(</@func>)"
+        src = html;
+        html = QString();
+        static const QString funcTag("func");
+        for (int i = 0, n = src.size(); i < n;) {
+            if (src.at(i) == charLangle && src.at(i + 1) == charAt) {
+                i += 2;
+                if (parseArg(src, funcTag, &i, n, &arg, &par1)) {
+                    QString link = linkForNode(
+                            marker->resolveTarget(par1.toString(),
+                                                  tre,
+                                                  relative),
+                            relative);
+                    addLink(link, arg, &html);
+                    par1 = QStringRef();
+                }
+                else {
+                    html += charLangle;
+                    html += charAt;
+                }
+            }
+            else {
+                html += src.at(i++);
+            }
+        }
+    }
+
+    // replace all "(<@(type|headerfile|func)(?: +[^>]*)?>)(.*)(</@\\2>)" tags
+    src = html;
+    html = QString();
+    static const QString typeTags[] = { "type", "headerfile", "func" };
+    for (int i = 0, n = src.size(); i < n;) {
+        if (src.at(i) == charLangle && src.at(i + 1) == charAt) {
+            i += 2;
+            bool handled = false;
+            for (int k = 0; k != 3; ++k) {
+                if (parseArg(src, typeTags[k], &i, n, &arg, &par1)) {
+                    par1 = QStringRef();
+                    QString link = linkForNode(
+                            marker->resolveTarget(arg.toString(), tre, relative),
+                            relative);
+                    addLink(link, arg, &html);
+                    handled = true;
+                    break;
+                }
+            }
+            if (!handled) {
+                html += charLangle;
+                html += charAt;
+            }
+        }
+        else {
+            html += src.at(i++);
+        }
+    }
+
+    // replace all
+    // "<@comment>" -> "<span class=\"comment\">";
+    // "<@preprocessor>" -> "<span class=\"preprocessor\">";
+    // "<@string>" -> "<span class=\"string\">";
+    // "<@char>" -> "<span class=\"char\">";
+    // "</@(?:comment|preprocessor|string|char)>" -> "</span>"
+    src = html;
+    html = QString();
+    static const QString spanTags[] = {
+        "<@comment>",      "<span class=\"comment\">",
+        "<@preprocessor>", "<span class=\"preprocessor\">",
+        "<@string>",       "<span class=\"string\">",
+        "<@char>",         "<span class=\"char\">",
+        "</@comment>",     "</span>",
+        "</@preprocessor>","</span>",
+        "</@string>",      "</span>",
+        "</@char>",        "</span>"
+        // "<@char>",      "<font color=blue>",
+        // "</@char>",     "</font>",
+        // "<@func>",      "<font color=green>",
+        // "</@func>",     "</font>",
+        // "<@id>",        "<i>",
+        // "</@id>",       "</i>",
+        // "<@keyword>",   "<b>",
+        // "</@keyword>",  "</b>",
+        // "<@number>",    "<font color=yellow>",
+        // "</@number>",   "</font>",
+        // "<@op>",        "<b>",
+        // "</@op>",       "</b>",
+        // "<@param>",     "<i>",
+        // "</@param>",    "</i>",
+        // "<@string>",    "<font color=green>",
+        // "</@string>",  "</font>",
+    };
+    for (int i = 0, n = src.size(); i < n;) {
+        if (src.at(i) == charLangle) {
+            bool handled = false;
+            for (int k = 0; k != 8; ++k) {
+                const QString & tag = spanTags[2 * k];
+                if (tag == QStringRef(&src, i, tag.length())) {
+                    html += spanTags[2 * k + 1];
+                    i += tag.length();
+                    handled = true;
+                    break;
+                }
+            }
+            if (!handled) {
+                ++i;
+                if (src.at(i) == charAt ||
+                    (src.at(i) == QLatin1Char('/') && src.at(i + 1) == charAt)) {
+                    // drop 'our' unknown tags (the ones still containing '@')
+                    while (i < n && src.at(i) != QLatin1Char('>'))
+                        ++i;
+                    ++i;
+                }
+                else {
+                    // retain all others
+                    html += charLangle;
+                }
+            }
+        }
+        else {
+            html += src.at(i);
+            ++i;
+        }
+    }
+
+    return html;
+}
+
+#else
+void HtmlGenerator::generateSectionList(const Section& section,
+                                        const Node *relative,
+                                        CodeMarker *marker,
+                                        CodeMarker::SynopsisStyle style)
 {
     if (!section.members.isEmpty()) {
         bool twoColumn = false;
@@ -2124,12 +2518,13 @@ void HtmlGenerator::generateSectionList(const Section& section, const Node *rela
     }
 }
 
-void HtmlGenerator::generateSectionInheritedList(const Section& section, const Node *relative,
+void HtmlGenerator::generateSectionInheritedList(const Section& section,
+                                                 const Node *relative,
                                                  CodeMarker *marker)
 {
     QList<QPair<ClassNode *, int> >::ConstIterator p = section.inherited.begin();
     while (p != section.inherited.end()) {
-        out() << "<li><div class=\"fn\"></div>";
+        out() << "<li><div bar=2 class=\"fn\"></div>";
         out() << (*p).second << " ";
         if ((*p).second == 1) {
             out() << section.singularMember;
@@ -2144,270 +2539,40 @@ void HtmlGenerator::generateSectionInheritedList(const Section& section, const N
     }
 }
 
-void HtmlGenerator::generateLink(const Atom *atom, const Node * /* relative */, CodeMarker *marker)
+void HtmlGenerator::generateSynopsis(const Node *node,
+                                     const Node *relative,
+                                     CodeMarker *marker,
+                                     CodeMarker::SynopsisStyle style)
 {
-    static QRegExp camelCase("[A-Z][A-Z][a-z]|[a-z][A-Z0-9]|_");
+    QString marked = marker->markedUpSynopsis(node, relative, style);
+    QRegExp templateTag("(<[^@>]*>)");
+    if (marked.indexOf(templateTag) != -1) {
+        QString contents = protect(marked.mid(templateTag.pos(1),
+                                              templateTag.cap(1).length()));
+        marked.replace(templateTag.pos(1), templateTag.cap(1).length(),
+                        contents);
+    }
+    marked.replace(QRegExp("<@param>([a-z]+)_([1-9n])</@param>"), "<i>\\1<sub>\\2</sub></i>");
+    marked.replace("<@param>", "<i>");
+    marked.replace("</@param>", "</i>");
 
-    if (funcLeftParen.indexIn(atom->string()) != -1 && marker->recognizeLanguage("Cpp")) {
-        // hack for C++: move () outside of link
-        int k = funcLeftParen.pos(1);
-        out() << protect(atom->string().left(k));
-        if (link.isEmpty()) {
-            if (showBrokenLinks)
-                out() << "</i>";
-        } else {
-            out() << "</a>";
-        }
-        inLink = false;
-        out() << protect(atom->string().mid(k));
-    } else if (marker->recognizeLanguage("Java")) {
-	// hack for Java: remove () and use <tt> when appropriate
-        bool func = atom->string().endsWith("()");
-        bool tt = (func || atom->string().contains(camelCase));
-        if (tt)
-            out() << "<tt>";
-        if (func) {
-            out() << protect(atom->string().left(atom->string().length() - 2));
-        } else {
-            out() << protect(atom->string());
-        }
-        out() << "</tt>";
+    if (style == CodeMarker::Summary)
+        marked.replace("@name>", "b>");
+
+    if (style == CodeMarker::SeparateList) {
+        QRegExp extraRegExp("<@extra>.*</@extra>");
+        extraRegExp.setMinimal(true);
+        marked.replace(extraRegExp, "");
     } else {
-        out() << protect(atom->string());
-    }
-}
-
-QString HtmlGenerator::cleanRef(const QString& ref)
-{
-    QString clean;
-
-    if (ref.isEmpty())
-        return clean;
-
-    clean.reserve(ref.size() + 20);
-    const QChar c = ref[0];
-    const uint u = c.unicode();
-
-    if ((u >= 'a' && u <= 'z') ||
-         (u >= 'A' && u <= 'Z') ||
-         (u >= '0' && u <= '9')) {
-        clean += c;
-    } else if (u == '~') {
-        clean += "dtor.";
-    } else if (u == '_') {
-        clean += "underscore.";
-    } else {
-        clean += "A";
+        marked.replace("<@extra>", "&nbsp;&nbsp;<tt>");
+        marked.replace("</@extra>", "</tt>");
     }
 
-    for (int i = 1; i < (int) ref.length(); i++) {
-        const QChar c = ref[i];
-        const uint u = c.unicode();
-        if ((u >= 'a' && u <= 'z') ||
-             (u >= 'A' && u <= 'Z') ||
-             (u >= '0' && u <= '9') || u == '-' ||
-             u == '_' || u == ':' || u == '.') {
-            clean += c;
-        } else if (c.isSpace()) {
-            clean += "-";
-        } else if (u == '!') {
-            clean += "-not";
-        } else if (u == '&') {
-            clean += "-and";
-        } else if (u == '<') {
-            clean += "-lt";
-        } else if (u == '=') {
-            clean += "-eq";
-        } else if (u == '>') {
-            clean += "-gt";
-        } else if (u == '#') {
-            clean += "#";
-        } else {
-            clean += "-";
-            clean += QString::number((int)u, 16);
-        }
+    if (style != CodeMarker::Detailed) {
+        marked.replace("<@type>", "");
+        marked.replace("</@type>", "");
     }
-    return clean;
-}
-
-QString HtmlGenerator::registerRef(const QString& ref)
-{
-    QString clean = HtmlGenerator::cleanRef(ref);
-
-    for (;;) {
-        QString& prevRef = refMap[clean.toLower()];
-        if (prevRef.isEmpty()) {
-            prevRef = ref;
-            break;
-        } else if (prevRef == ref) {
-            break;
-        }
-        clean += "x";
-    }
-    return clean;
-}
-
-QString HtmlGenerator::protect(const QString& string)
-{
-#define APPEND(x) \
-    if (html.isEmpty()) { \
-        html = string; \
-        html.truncate(i); \
-    } \
-    html += (x);
-
-    QString html;
-    int n = string.length();
-
-    for (int i = 0; i < n; ++i) {
-        QChar ch = string.at(i);
-
-        if (ch == QLatin1Char('&')) {
-            APPEND("&amp;");
-        } else if (ch == QLatin1Char('<')) {
-            APPEND("&lt;");
-        } else if (ch == QLatin1Char('>')) {
-            APPEND("&gt;");
-        } else if (ch == QLatin1Char('"')) {
-            APPEND("&quot;");
-        } else if (ch.unicode() > 0x007F
-                   || (ch == QLatin1Char('*') && i + 1 < n && string.at(i) == QLatin1Char('/'))
-                   || (ch == QLatin1Char('.') && i > 2 && string.at(i - 2) == QLatin1Char('.'))) {
-            // we escape '*/' and the last dot in 'e.g.' and 'i.e.' for the Javadoc generator
-            APPEND("&#x");
-            html += QString::number(ch.unicode(), 16);
-            html += QLatin1Char(';');
-        } else {
-            if (!html.isEmpty())
-                html += ch;
-        }
-    }
-
-    if (!html.isEmpty())
-        return html;
-    return string;
-
-#undef APPEND
-}
-
-static QRegExp linkTag("(<@link node=\"([^\"]+)\">).*(</@link>)");
-static QRegExp funcTag("(<@func target=\"([^\"]*)\">)(.*)(</@func>)");
-static QRegExp typeTag("(<@(type|headerfile|func)(?: +[^>]*)?>)(.*)(</@\\2>)");
-static QRegExp spanTag("</@(?:comment|preprocessor|string|char)>");
-static QRegExp unknownTag("</?@[^>]*>");
-
-bool parseArg(const QString &src,
-              const QString &tag,
-              int *pos,
-              int n,
-              QStringRef *contents,
-              QStringRef *par1 = 0,
-              bool debug = false)
-{
-#define SKIP_CHAR(c) \
-    if (debug) \
-        qDebug() << "looking for " << c << " at " << QString(src.data() + i, n - i); \
-    if (i >= n || src[i] != c) { \
-        if (debug) \
-            qDebug() << " char '" << c << "' not found"; \
-        return false; \
-    } \
-    ++i;
-
-
-#define SKIP_SPACE \
-    while (i < n && src[i] == ' ') \
-        ++i;
-
-    int i = *pos;
-    int j = i;
-
-    // assume "<@" has been parsed outside
-    //SKIP_CHAR('<');
-    //SKIP_CHAR('@');
-
-    if (tag != QStringRef(&src, i, tag.length())) {
-        if (0 && debug)
-            qDebug() << "tag " << tag << " not found at " << i;
-        return false;
-    }
-
-    if (debug)
-        qDebug() << "haystack:" << src << "needle:" << tag << "i:" <<i;
-
-    // skip tag
-    i += tag.length();
-
-    // parse stuff like:  linkTag("(<@link node=\"([^\"]+)\">).*(</@link>)");
-    if (par1) {
-        SKIP_SPACE;
-        // read parameter name
-        j = i;
-        while (i < n && src[i].isLetter())
-            ++i;
-        if (src[i] == '=') {
-            if (debug)
-                qDebug() << "read parameter" << QString(src.data() + j, i - j);
-            SKIP_CHAR('=');
-            SKIP_CHAR('"');
-            // skip parameter name
-            j = i;
-            while (i < n && src[i] != '"')
-                ++i;
-            *par1 = QStringRef(&src, j, i - j);
-            SKIP_CHAR('"');
-            SKIP_SPACE;
-        } else {
-            if (debug)
-                qDebug() << "no optional parameter found";
-        }
-    }
-    SKIP_SPACE;
-    SKIP_CHAR('>');
-
-    // find contents up to closing "</@tag>
-    j = i;
-    for (; true; ++i) {
-        if (i + 4 + tag.length() > n)
-            return false;
-        if (src[i] != '<')
-            continue;
-        if (src[i + 1] != '/')
-            continue;
-        if (src[i + 2] != '@')
-            continue;
-        if (tag != QStringRef(&src, i + 3, tag.length()))
-            continue;
-        if (src[i + 3 + tag.length()] != '>')
-            continue;
-        break;
-    }
-
-    *contents = QStringRef(&src, j, i - j);
-
-    i += tag.length() + 4;
-
-    *pos = i;
-    if (debug)
-        qDebug() << " tag " << tag << " found: pos now: " << i;
-    return true;
-#undef SKIP_CHAR
-}
-
-static void addLink(const QString &linkTarget,
-                    const QStringRef &nestedStuff,
-                    QString *res)
-{
-    if (!linkTarget.isEmpty()) {
-        *res += "<a href=\"";
-        *res += linkTarget;
-        *res += "\">";
-        *res += nestedStuff;
-        *res += "</a>";
-    }
-    else {
-        *res += nestedStuff;
-    }
+    out() << highlightedCode(marked, marker, relative);
 }
 
 QString HtmlGenerator::highlightedCode(const QString& markedCode,
@@ -2569,6 +2734,153 @@ QString HtmlGenerator::highlightedCode(const QString& markedCode,
     }
 
     return html;
+}
+#endif
+
+void HtmlGenerator::generateLink(const Atom *atom, const Node * /* relative */, CodeMarker *marker)
+{
+    static QRegExp camelCase("[A-Z][A-Z][a-z]|[a-z][A-Z0-9]|_");
+
+    if (funcLeftParen.indexIn(atom->string()) != -1 && marker->recognizeLanguage("Cpp")) {
+        // hack for C++: move () outside of link
+        int k = funcLeftParen.pos(1);
+        out() << protect(atom->string().left(k));
+        if (link.isEmpty()) {
+            if (showBrokenLinks)
+                out() << "</i>";
+        } else {
+            out() << "</a>";
+        }
+        inLink = false;
+        out() << protect(atom->string().mid(k));
+    } else if (marker->recognizeLanguage("Java")) {
+	// hack for Java: remove () and use <tt> when appropriate
+        bool func = atom->string().endsWith("()");
+        bool tt = (func || atom->string().contains(camelCase));
+        if (tt)
+            out() << "<tt>";
+        if (func) {
+            out() << protect(atom->string().left(atom->string().length() - 2));
+        } else {
+            out() << protect(atom->string());
+        }
+        out() << "</tt>";
+    } else {
+        out() << protect(atom->string());
+    }
+}
+
+QString HtmlGenerator::cleanRef(const QString& ref)
+{
+    QString clean;
+
+    if (ref.isEmpty())
+        return clean;
+
+    clean.reserve(ref.size() + 20);
+    const QChar c = ref[0];
+    const uint u = c.unicode();
+
+    if ((u >= 'a' && u <= 'z') ||
+         (u >= 'A' && u <= 'Z') ||
+         (u >= '0' && u <= '9')) {
+        clean += c;
+    } else if (u == '~') {
+        clean += "dtor.";
+    } else if (u == '_') {
+        clean += "underscore.";
+    } else {
+        clean += "A";
+    }
+
+    for (int i = 1; i < (int) ref.length(); i++) {
+        const QChar c = ref[i];
+        const uint u = c.unicode();
+        if ((u >= 'a' && u <= 'z') ||
+             (u >= 'A' && u <= 'Z') ||
+             (u >= '0' && u <= '9') || u == '-' ||
+             u == '_' || u == ':' || u == '.') {
+            clean += c;
+        } else if (c.isSpace()) {
+            clean += "-";
+        } else if (u == '!') {
+            clean += "-not";
+        } else if (u == '&') {
+            clean += "-and";
+        } else if (u == '<') {
+            clean += "-lt";
+        } else if (u == '=') {
+            clean += "-eq";
+        } else if (u == '>') {
+            clean += "-gt";
+        } else if (u == '#') {
+            clean += "#";
+        } else {
+            clean += "-";
+            clean += QString::number((int)u, 16);
+        }
+    }
+    return clean;
+}
+
+QString HtmlGenerator::registerRef(const QString& ref)
+{
+    QString clean = HtmlGenerator::cleanRef(ref);
+
+    for (;;) {
+        QString& prevRef = refMap[clean.toLower()];
+        if (prevRef.isEmpty()) {
+            prevRef = ref;
+            break;
+        } else if (prevRef == ref) {
+            break;
+        }
+        clean += "x";
+    }
+    return clean;
+}
+
+QString HtmlGenerator::protect(const QString& string)
+{
+#define APPEND(x) \
+    if (html.isEmpty()) { \
+        html = string; \
+        html.truncate(i); \
+    } \
+    html += (x);
+
+    QString html;
+    int n = string.length();
+
+    for (int i = 0; i < n; ++i) {
+        QChar ch = string.at(i);
+
+        if (ch == QLatin1Char('&')) {
+            APPEND("&amp;");
+        } else if (ch == QLatin1Char('<')) {
+            APPEND("&lt;");
+        } else if (ch == QLatin1Char('>')) {
+            APPEND("&gt;");
+        } else if (ch == QLatin1Char('"')) {
+            APPEND("&quot;");
+        } else if (ch.unicode() > 0x007F
+                   || (ch == QLatin1Char('*') && i + 1 < n && string.at(i) == QLatin1Char('/'))
+                   || (ch == QLatin1Char('.') && i > 2 && string.at(i - 2) == QLatin1Char('.'))) {
+            // we escape '*/' and the last dot in 'e.g.' and 'i.e.' for the Javadoc generator
+            APPEND("&#x");
+            html += QString::number(ch.unicode(), 16);
+            html += QLatin1Char(';');
+        } else {
+            if (!html.isEmpty())
+                html += ch;
+        }
+    }
+
+    if (!html.isEmpty())
+        return html;
+    return string;
+
+#undef APPEND
 }
 
 QString HtmlGenerator::fileBase(const Node *node)

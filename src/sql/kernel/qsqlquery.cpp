@@ -1195,7 +1195,7 @@ void QSqlQuery::finish()
   The query will be repositioned on an \e invalid record in the new
   result set and must be navigated to a valid record before data
   values can be retrieved. If a new result set isn't available the
-  function returns false and the the query is set to inactive. In any
+  function returns false and the query is set to inactive. In any
   case the old result set will be discarded.
 
   When one of the statements is a non-select statement a count of

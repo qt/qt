@@ -174,13 +174,6 @@ public:
     bool updateSceneSlotReimplementedChecked;
 
     QList<QGraphicsItem *> findItems(const QRegion &exposedRegion, bool *allItems) const;
-
-    void generateStyleOptions(const QList<QGraphicsItem *> &itemList,
-			      QGraphicsItem **itemArray,
-			      QStyleOptionGraphicsItem *styleOptionArray,
-			      const QTransform &worldTransform,
-			      bool allItems,
-			      const QRegion &exposedRegion) const;
 };
 
 QT_END_NAMESPACE

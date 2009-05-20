@@ -873,21 +873,22 @@ bool QAbstractScrollArea::event(QEvent *e)
     case QEvent::Resize:
             d->layoutChildren();
             break;
-    case QEvent::Paint:
+    case QEvent::Paint: {
+        QStyleOption option;
+        option.initFrom(this);
         if (d->cornerPaintingRect.isValid()) {
-            QStyleOption option;
             option.rect = d->cornerPaintingRect;
             QPainter p(this);
             style()->drawPrimitive(QStyle::PE_PanelScrollAreaCorner, &option, &p, this);
         }
 #ifdef Q_WS_MAC
         if (d->reverseCornerPaintingRect.isValid()) {
-            QStyleOption option;
             option.rect = d->reverseCornerPaintingRect;
             QPainter p(this);
             style()->drawPrimitive(QStyle::PE_PanelScrollAreaCorner, &option, &p, this);
         }
 #endif
+        }
         QFrame::paintEvent((QPaintEvent*)e);
         break;
 #ifndef QT_NO_CONTEXTMENU

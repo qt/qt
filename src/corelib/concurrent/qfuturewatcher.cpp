@@ -465,7 +465,7 @@ void QFutureWatcherBasePrivate::sendCallOutEvent(QFutureCallOutEvent *event)
                 break;
 
             emit q->progressValueChanged(event->index1);
-            if (event->text != QString()) // ###
+            if (!event->text.isNull()) // ###
                 q->progressTextChanged(event->text);
         break;
         case QFutureCallOutEvent::ProgressRange:

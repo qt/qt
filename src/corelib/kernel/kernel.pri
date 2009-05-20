@@ -53,7 +53,8 @@ SOURCES += \
 	kernel/qvariant.cpp \
         kernel/qcoreglobaldata.cpp \
         kernel/qsharedmemory.cpp \
-        kernel/qsystemsemaphore.cpp
+        kernel/qsystemsemaphore.cpp \
+        kernel/qpointer.cpp
 
 win32 {
 	SOURCES += \

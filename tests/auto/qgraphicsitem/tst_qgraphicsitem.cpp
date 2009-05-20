@@ -217,6 +217,8 @@ private slots:
     void tabChangesFocus_data();
     void cacheMode();
     void updateCachedItemAfterMove();
+    void deviceTransform_data();
+    void deviceTransform();
 
     // task specific tests below me
     void task141694_textItemEnsureVisible();
@@ -245,50 +247,59 @@ void tst_QGraphicsItem::construction()
             QCOMPARE(int(item->type()), int(QGraphicsEllipseItem::Type));
             QCOMPARE(qgraphicsitem_cast<QGraphicsEllipseItem *>(item), (QGraphicsEllipseItem *)item);
             QCOMPARE(qgraphicsitem_cast<QGraphicsRectItem *>(item), (QGraphicsRectItem *)0);
+            QCOMPARE(item->flags(), 0);
             break;
         case 1:
             item = new QGraphicsLineItem;
             QCOMPARE(int(item->type()), int(QGraphicsLineItem::Type));
             QCOMPARE(qgraphicsitem_cast<QGraphicsLineItem *>(item), (QGraphicsLineItem *)item);
             QCOMPARE(qgraphicsitem_cast<QGraphicsRectItem *>(item), (QGraphicsRectItem *)0);
+            QCOMPARE(item->flags(), 0);
             break;
         case 2:
             item = new QGraphicsPathItem;
             QCOMPARE(int(item->type()), int(QGraphicsPathItem::Type));
             QCOMPARE(qgraphicsitem_cast<QGraphicsPathItem *>(item), (QGraphicsPathItem *)item);
             QCOMPARE(qgraphicsitem_cast<QGraphicsRectItem *>(item), (QGraphicsRectItem *)0);
+            QCOMPARE(item->flags(), 0);
             break;
         case 3:
             item = new QGraphicsPixmapItem;
             QCOMPARE(int(item->type()), int(QGraphicsPixmapItem::Type));
             QCOMPARE(qgraphicsitem_cast<QGraphicsPixmapItem *>(item), (QGraphicsPixmapItem *)item);
             QCOMPARE(qgraphicsitem_cast<QGraphicsRectItem *>(item), (QGraphicsRectItem *)0);
+            QCOMPARE(item->flags(), 0);
             break;
         case 4:
             item = new QGraphicsPolygonItem;
             QCOMPARE(int(item->type()), int(QGraphicsPolygonItem::Type));
             QCOMPARE(qgraphicsitem_cast<QGraphicsPolygonItem *>(item), (QGraphicsPolygonItem *)item);
             QCOMPARE(qgraphicsitem_cast<QGraphicsRectItem *>(item), (QGraphicsRectItem *)0);
+            QCOMPARE(item->flags(), 0);
             break;
         case 5:
             item = new QGraphicsRectItem;
             QCOMPARE(int(item->type()), int(QGraphicsRectItem::Type));
             QCOMPARE(qgraphicsitem_cast<QGraphicsRectItem *>(item), (QGraphicsRectItem *)item);
             QCOMPARE(qgraphicsitem_cast<QGraphicsLineItem *>(item), (QGraphicsLineItem *)0);
+            QCOMPARE(item->flags(), 0);
             break;
         case 6:
-        default:
             item = new QGraphicsTextItem;
             QCOMPARE(int(item->type()), int(QGraphicsTextItem::Type));
             QCOMPARE(qgraphicsitem_cast<QGraphicsTextItem *>(item), (QGraphicsTextItem *)item);
             QCOMPARE(qgraphicsitem_cast<QGraphicsRectItem *>(item), (QGraphicsRectItem *)0);
+            // This is the only item that uses an extended style option.
+            QCOMPARE(item->flags(), QGraphicsItem::GraphicsItemFlags(QGraphicsItem::ItemUsesExtendedStyleOption));
+            break;
+        default:
+            qFatal("You broke the logic, please fix!");
             break;
         }
 
         QCOMPARE(item->scene(), (QGraphicsScene *)0);
         QCOMPARE(item->parentItem(), (QGraphicsItem *)0);
         QVERIFY(item->children().isEmpty());
-        QCOMPARE(item->flags(), 0);
         QVERIFY(item->isVisible());
         QVERIFY(item->isEnabled());
         QVERIFY(!item->isSelected());
@@ -6269,6 +6280,114 @@ void tst_QGraphicsItem::updateCachedItemAfterMove()
     tester->update();
     QTest::qWait(125);
     QCOMPARE(tester->repaints, 1);
+}
+
+class Track : public QGraphicsRectItem
+{
+public:
+    Track(const QRectF &rect)
+        : QGraphicsRectItem(rect)
+    {
+        setAcceptHoverEvents(true);
+    }
+
+    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget = 0)
+    {
+        QGraphicsRectItem::paint(painter, option, widget);
+        painter->drawText(boundingRect(), Qt::AlignCenter, QString("%1x%2\n%3x%4").arg(p.x()).arg(p.y()).arg(sp.x()).arg(sp.y()));
+    }
+    
+protected:
+    void hoverMoveEvent(QGraphicsSceneHoverEvent *event)
+    {
+        p = event->pos();
+        sp = event->widget()->mapFromGlobal(event->screenPos());
+        update();
+    }
+private:
+    QPointF p;
+    QPoint sp;
+};
+
+void tst_QGraphicsItem::deviceTransform_data()
+{
+    QTest::addColumn<bool>("untransformable1");
+    QTest::addColumn<bool>("untransformable2");
+    QTest::addColumn<bool>("untransformable3");
+    QTest::addColumn<qreal>("rotation1");
+    QTest::addColumn<qreal>("rotation2");
+    QTest::addColumn<qreal>("rotation3");
+    QTest::addColumn<QTransform>("deviceX");
+    QTest::addColumn<QPointF>("mapResult1");
+    QTest::addColumn<QPointF>("mapResult2");
+    QTest::addColumn<QPointF>("mapResult3");
+
+    QTest::newRow("nil") << false << false << false
+                         << qreal(0.0) << qreal(0.0) << qreal(0.0)
+                         << QTransform()
+                         << QPointF(150, 150) << QPointF(250, 250) << QPointF(350, 350);
+    QTest::newRow("deviceX rot 90") << false << false << false
+                         << qreal(0.0) << qreal(0.0) << qreal(0.0)
+                         << QTransform().rotate(90)
+                         << QPointF(-150, 150) << QPointF(-250, 250) << QPointF(-350, 350);
+    QTest::newRow("deviceX rot 90 100") << true << false << false
+                         << qreal(0.0) << qreal(0.0) << qreal(0.0)
+                         << QTransform().rotate(90)
+                         << QPointF(-50, 150) << QPointF(50, 250) << QPointF(150, 350);
+    QTest::newRow("deviceX rot 90 010") << false << true << false
+                         << qreal(0.0) << qreal(0.0) << qreal(0.0)
+                         << QTransform().rotate(90)
+                         << QPointF(-150, 150) << QPointF(-150, 250) << QPointF(-50, 350);
+    QTest::newRow("deviceX rot 90 001") << false << false << true
+                         << qreal(0.0) << qreal(0.0) << qreal(0.0)
+                         << QTransform().rotate(90)
+                         << QPointF(-150, 150) << QPointF(-250, 250) << QPointF(-250, 350);
+    QTest::newRow("deviceX rot 90 111") << true << true << true
+                         << qreal(0.0) << qreal(0.0) << qreal(0.0)
+                         << QTransform().rotate(90)
+                         << QPointF(-50, 150) << QPointF(50, 250) << QPointF(150, 350);
+    QTest::newRow("deviceX rot 90 101") << true << false << true
+                         << qreal(0.0) << qreal(0.0) << qreal(0.0)
+                         << QTransform().rotate(90)
+                         << QPointF(-50, 150) << QPointF(50, 250) << QPointF(150, 350);
+}
+
+void tst_QGraphicsItem::deviceTransform()
+{
+    QFETCH(bool, untransformable1);
+    QFETCH(bool, untransformable2);
+    QFETCH(bool, untransformable3);
+    QFETCH(qreal, rotation1);
+    QFETCH(qreal, rotation2);
+    QFETCH(qreal, rotation3);
+    QFETCH(QTransform, deviceX);
+    QFETCH(QPointF, mapResult1);
+    QFETCH(QPointF, mapResult2);
+    QFETCH(QPointF, mapResult3);
+
+    QGraphicsScene scene;
+    Track *rect1 = new Track(QRectF(0, 0, 100, 100));
+    Track *rect2 = new Track(QRectF(0, 0, 100, 100));
+    Track *rect3 = new Track(QRectF(0, 0, 100, 100));
+    rect2->setParentItem(rect1);
+    rect3->setParentItem(rect2);
+    rect1->setPos(100, 100);
+    rect2->setPos(100, 100);
+    rect3->setPos(100, 100);
+    rect1->rotate(rotation1);
+    rect2->rotate(rotation2);
+    rect3->rotate(rotation3);
+    rect1->setFlag(QGraphicsItem::ItemIgnoresTransformations, untransformable1);
+    rect2->setFlag(QGraphicsItem::ItemIgnoresTransformations, untransformable2);
+    rect3->setFlag(QGraphicsItem::ItemIgnoresTransformations, untransformable3);
+    rect1->setBrush(Qt::red);
+    rect2->setBrush(Qt::green);
+    rect3->setBrush(Qt::blue);
+    scene.addItem(rect1);
+
+    QCOMPARE(rect1->deviceTransform(deviceX).map(QPointF(50, 50)), mapResult1);
+    QCOMPARE(rect2->deviceTransform(deviceX).map(QPointF(50, 50)), mapResult2);
+    QCOMPARE(rect3->deviceTransform(deviceX).map(QPointF(50, 50)), mapResult3);
 }
 
 QTEST_MAIN(tst_QGraphicsItem)
