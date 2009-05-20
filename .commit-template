@@ -1,10 +1,8 @@
-# ===[ Subject ]==========[ one line, please wrap at 72 characters ]===|
+qdoc: Moved qdoc comments from qmacstyle_mac.mm to qstyles.qdoc 
 
-# ---[ Details ]---------[ remember extra blank line after subject ]---|
+The .mm file is not read by qdoc for packages other than for the MAC.
+This problem is overcome by moving the qdoc comments from the .mm file
+to a .qdoc file in doc/src, because all these files are read by qdoc 
+for each of the packages.
 
-# ---[ Fields ]-----------------[ uncomment and edit as applicable ]---|
-
-#Task-number:
-#Reviewed-by:
-
-# ==================================[ please wrap at 72 characters ]===|
+#Task-number: 252566
