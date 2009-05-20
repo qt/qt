@@ -1,1 +1,1 @@
-0:0:Syntax error
+0:0:Expected token `identifier'

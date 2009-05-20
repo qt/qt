@@ -1,1 +1,1 @@
-1:-1:Unknown property "something"
+1:15:Cannot assign value to non-existant property "something"
