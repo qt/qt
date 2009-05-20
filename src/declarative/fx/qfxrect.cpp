@@ -751,6 +751,8 @@ void QFxRect::paintGLContents(GLPainter &p)
                          1, 1,
                          1, texbottom };
 
+        glBindTexture(GL_TEXTURE_2D, d->_rectTexture.texture());
+
         shader->setAttributeArray(SingleTextureShader::Vertices, vert1, 2);
         shader->setAttributeArray(SingleTextureShader::TextureCoords, tex1, 2);
         glDrawArrays(GL_TRIANGLE_STRIP, 0, 8);
