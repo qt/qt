@@ -62,6 +62,8 @@
 
   The QXmlSchemaValidator class loads, parses an XML instance document and validates it
   against a W3C XML Schema that has been compiled with \l{QXmlSchema}.
+
+  \sa QXmlSchema, {xmlpatterns/schema}{XML Schema Validation Example}
 */
 
 /*!

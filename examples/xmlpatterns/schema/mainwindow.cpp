@@ -45,6 +45,7 @@
 #include "mainwindow.h"
 #include "xmlsyntaxhighlighter.h"
 
+//! [4]
 class MessageHandler : public QAbstractMessageHandler
 {
     public:
@@ -85,7 +86,9 @@ class MessageHandler : public QAbstractMessageHandler
         QString m_description;
         QSourceLocation m_sourceLocation;
 };
+//! [4]
 
+//! [0]
 MainWindow::MainWindow()
 {
     setupUi(this);
@@ -110,7 +113,9 @@ MainWindow::MainWindow()
     schemaSelected(0);
     instanceSelected(0);
 }
+//! [0]
 
+//! [1]
 void MainWindow::schemaSelected(int index)
 {
     instanceSelection->clear();
@@ -133,7 +138,9 @@ void MainWindow::schemaSelected(int index)
 
     validate();
 }
+//! [1]
 
+//! [2]
 void MainWindow::instanceSelected(int index)
 {
     QFile instanceFile(QString(":/instance_%1.xml").arg((2*schemaSelection->currentIndex()) + index));
@@ -143,7 +150,9 @@ void MainWindow::instanceSelected(int index)
 
     validate();
 }
+//! [2]
 
+//! [3]
 void MainWindow::validate()
 {
     const QByteArray schemaData = schemaView->toPlainText().toUtf8();
@@ -177,6 +186,7 @@ void MainWindow::validate()
                                                            QColor(Qt::green).lighter(160).name());
     validationStatus->setStyleSheet(styleSheet);
 }
+//! [3]
 
 void MainWindow::textChanged()
 {
