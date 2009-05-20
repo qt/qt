@@ -778,7 +778,7 @@ void QPaintEngineEx::drawTiledPixmap(const QRectF &r, const QPixmap &pixmap, con
 {
     QBrush brush(state()->pen.color(), pixmap);
     QTransform xform;
-    xform.translate(-s.x(), -s.y());
+    xform.translate(r.x() - s.x(), r.y() - s.y());
     brush.setTransform(xform);
 
     qreal pts[] = { r.x(), r.y(),
