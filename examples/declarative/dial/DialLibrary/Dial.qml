@@ -6,18 +6,22 @@ Item {
     Image { id: Background; source: "background.png" }
 
     Image {
+        x: 93
+        y: 35
         source: "needle_shadow.png"
         transform: Rotation {
-            originX: 104; originY: 102
+            originX: 11; originY: 67
             angle: NeedleRotation.angle
         }
     }
     Image {
         id: Needle
+        x: 95
+        y: 33
         source: "needle.png"
         transform: Rotation {
             id: NeedleRotation
-            originX: 102; originY: 98
+            originX: 7; originY: 65
             angle: -130
             angle: Follow {
                 spring: 1.4
@@ -26,5 +30,5 @@ Item {
             }
         }
     }
-    Image { source: "overlay.png" }
+    Image { x: 21; y: 18; source: "overlay.png" }
 }

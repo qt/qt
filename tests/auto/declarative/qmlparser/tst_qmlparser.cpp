@@ -92,10 +92,10 @@ void tst_qmlparser::errors_data()
     QTest::addColumn<QString>("errorFile");
     QTest::addColumn<bool>("create");
 
-    QTest::newRow("nonExistantProperty.1") << "nonexistantProperty.1.txt" << "nonexistantProperty.1.errors.txt" << true;
-    QTest::newRow("nonExistantProperty.2") << "nonexistantProperty.2.txt" << "nonexistantProperty.2.errors.txt" << true;
-    QTest::newRow("nonExistantProperty.3") << "nonexistantProperty.3.txt" << "nonexistantProperty.3.errors.txt" << true;
-    QTest::newRow("nonExistantProperty.4") << "nonexistantProperty.4.txt" << "nonexistantProperty.4.errors.txt" << true;
+    QTest::newRow("nonExistantProperty.1") << "nonexistantProperty.1.txt" << "nonexistantProperty.1.errors.txt" << false;
+    QTest::newRow("nonExistantProperty.2") << "nonexistantProperty.2.txt" << "nonexistantProperty.2.errors.txt" << false;
+    QTest::newRow("nonExistantProperty.3") << "nonexistantProperty.3.txt" << "nonexistantProperty.3.errors.txt" << false;
+    QTest::newRow("nonExistantProperty.4") << "nonexistantProperty.4.txt" << "nonexistantProperty.4.errors.txt" << false;
     QTest::newRow("nonExistantProperty.5") << "nonexistantProperty.5.txt" << "nonexistantProperty.5.errors.txt" << false;
     QTest::newRow("nonExistantProperty.6") << "nonexistantProperty.6.txt" << "nonexistantProperty.6.errors.txt" << true;
 
@@ -127,7 +127,7 @@ void tst_qmlparser::errors_data()
     QTest::newRow("invalidID.3") << "invalidID.3.txt" << "invalidID.3.errors.txt" << false;
     QTest::newRow("invalidID.4") << "invalidID.4.txt" << "invalidID.4.errors.txt" << false;
 
-    QTest::newRow("unsupportedProperty") << "unsupportedProperty.txt" << "unsupportedProperty.errors.txt" << true;
+    QTest::newRow("unsupportedProperty") << "unsupportedProperty.txt" << "unsupportedProperty.errors.txt" << false;
     QTest::newRow("nullDotProperty") << "nullDotProperty.txt" << "nullDotProperty.errors.txt" << true;
     QTest::newRow("fakeDotProperty") << "fakeDotProperty.txt" << "fakeDotProperty.errors.txt" << true;
     QTest::newRow("duplicateIDs") << "duplicateIDs.txt" << "duplicateIDs.errors.txt" << false;
@@ -135,7 +135,7 @@ void tst_qmlparser::errors_data()
     QTest::newRow("empty") << "empty.txt" << "empty.errors.txt" << false;
     QTest::newRow("missingObject") << "missingObject.txt" << "missingObject.errors.txt" << false;
     QTest::newRow("failingComponent") << "failingComponent.txt" << "failingComponent.errors.txt" << true;
-    QTest::newRow("missingSignal") << "missingSignal.txt" << "missingSignal.errors.txt" << true;
+    QTest::newRow("missingSignal") << "missingSignal.txt" << "missingSignal.errors.txt" << false;
 }
 
 void tst_qmlparser::errors()

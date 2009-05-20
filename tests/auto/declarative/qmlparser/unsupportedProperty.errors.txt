@@ -1,1 +1,1 @@
-2:-1:Property matrix is of an unknown type
+2:5:Cannot assign value to property matrix of unknown type
