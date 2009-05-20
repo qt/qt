@@ -146,6 +146,14 @@ void QPropertyAnimationPrivate::updateProperty(const QVariant &newValue)
     }
 }
 
+void QPropertyAnimationPrivate::_q_targetDestroyed()
+{
+    Q_Q(QPropertyAnimation);
+    //we stop here so that this animation is removed from the global hash
+    q->stop();
+    target = 0;
+}
+
 /*!
     Construct a QPropertyAnimation object. \a parent is passed to QObject's
     constructor.
@@ -188,11 +196,24 @@ QObject *QPropertyAnimation::targetObject() const
     Q_D(const QPropertyAnimation);
     return d->target;
 }
+
 void QPropertyAnimation::setTargetObject(QObject *target)
 {
     Q_D(QPropertyAnimation);
     if (d->target == target)
         return;
+
+    if (d->state != QAbstractAnimation::Stopped) {
+        qWarning("QPropertyAnimation::setTargetObject: you can't change the target of a running animation");
+        return;
+    }
+
+    //we need to get notified when the target is destroyed
+    if (d->target)
+        disconnect(d->target, SIGNAL(destroyed()), this, SLOT(_q_targetDestroyed()));
+
+    if (target)
+        connect(target, SIGNAL(destroyed()), SLOT(_q_targetDestroyed()));
 
     d->target = target;
     d->hasMetaProperty = 0;
@@ -211,9 +232,15 @@ QByteArray QPropertyAnimation::propertyName() const
     Q_D(const QPropertyAnimation);
     return d->propertyName;
 }
+
 void QPropertyAnimation::setPropertyName(const QByteArray &propertyName)
 {
     Q_D(QPropertyAnimation);
+    if (d->state != QAbstractAnimation::Stopped) {
+        qWarning("QPropertyAnimation::setPropertyName: you can't change the property name of a running animation");
+        return;
+    }
+
     d->propertyName = propertyName;
     d->hasMetaProperty = 0;
     d->updateMetaProperty();

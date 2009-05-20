@@ -55,7 +55,6 @@
 
 #include "qpropertyanimation.h"
 #include <QtCore/qmetaobject.h>
-#include <QtCore/qpointer.h>
 
 #include "qvariantanimation_p.h"
 
@@ -70,7 +69,9 @@ public:
     {
     }
 
-    QPointer<QObject> target;
+    void _q_targetDestroyed();
+
+    QObject *target;
 
     //for the QProperty
     QMetaProperty property;
