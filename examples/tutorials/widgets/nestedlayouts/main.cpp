@@ -48,7 +48,8 @@ int main(int argc, char *argv[])
     QApplication app(argc, argv);
     QWidget window;
 
-    QLabel *queryLabel = new QLabel(QObject::tr("Query:"));
+    QLabel *queryLabel = new QLabel(
+        QApplication::translate("nestedlayouts", "Query:"));
     QLineEdit *queryEdit = new QLineEdit();
     QTableView *resultView = new QTableView();
 
@@ -67,7 +68,8 @@ int main(int argc, char *argv[])
 //! [set up the model]
     QStandardItemModel model;
     model.setHorizontalHeaderLabels(
-        QStringList() << QObject::tr("Name") << QObject::tr("Office"));
+        QStringList() << QApplication::translate("nestedlayouts", "Name")
+                      << QApplication::translate("nestedlayouts", "Office"));
 
     QList<QStringList> rows = QList<QStringList>()
         << (QStringList() << "Verne Nilsen" << "123")
@@ -93,7 +95,8 @@ int main(int argc, char *argv[])
     resultView->horizontalHeader()->setStretchLastSection(true);
 //! [set up the model]
 //! [last part]
-    window.setWindowTitle(QObject::tr("Nested layouts"));
+    window.setWindowTitle(
+        QApplication::translate("nestedlayouts", "Nested layouts"));
     window.show();
     return app.exec();
 }

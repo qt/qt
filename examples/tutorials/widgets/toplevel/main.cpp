@@ -50,7 +50,8 @@ int main(int argc, char *argv[])
     window.resize(320, 240);
     window.show();
 //! [create, resize and show]
-    window.setWindowTitle(QObject::tr("Top-level widget"));
+    window.setWindowTitle(
+        QApplication::translate("toplevel", "Top-level widget"));
     return app.exec();
 }
 //! [main program]

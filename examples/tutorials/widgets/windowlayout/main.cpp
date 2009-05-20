@@ -47,7 +47,7 @@ int main(int argc, char *argv[])
     QApplication app(argc, argv);
     QWidget window;
 //! [create, lay out widgets and show]
-    QLabel *label = new QLabel(QObject::tr("Name:"));
+    QLabel *label = new QLabel(QApplication::translate("windowlayout", "Name:"));
     QLineEdit *lineEdit = new QLineEdit();
 
     QHBoxLayout *layout = new QHBoxLayout();
@@ -55,7 +55,8 @@ int main(int argc, char *argv[])
     layout->addWidget(lineEdit);
     window.setLayout(layout);
 //! [create, lay out widgets and show]
-    window.setWindowTitle(QObject::tr("Window layout"));
+    window.setWindowTitle(
+        QApplication::translate("windowlayout", "Window layout"));
     window.show();
     return app.exec();
 }
