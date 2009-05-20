@@ -559,7 +559,6 @@ bool QFxPathView::mouseFilter(QGraphicsSceneMouseEvent *e)
 void QFxPathViewPrivate::regenerate()
 {
     Q_Q(QFxPathView);
-    qDebug() << "relaease all pathview";
     for (int i=0; i<items.count(); i++){
         QFxItem *p = items[i];
         releaseItem(p);
@@ -699,7 +698,6 @@ void QFxPathView::itemsInserted(int modelIndex, int count)
 
 void QFxPathView::itemsRemoved(int modelIndex, int count)
 {
-    qDebug() << "QFxPathView::itemsRemoved";
     //XXX support animated removal
     Q_D(QFxPathView);
     if (!d->isValid())

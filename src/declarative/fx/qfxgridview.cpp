@@ -529,7 +529,6 @@ void QFxGridViewPrivate::updateUnrequestedPositions()
 {
     QHash<QFxItem*,int>::const_iterator it;
     for (it = unrequestedItems.begin(); it != unrequestedItems.end(); ++it) {
-        qDebug() << "pos of" << (*it) << colPosAt(*it) << rowPosAt(*it);
         if (flow == QFxGridView::LeftToRight) {
             it.key()->setPos(QPointF(colPosAt(*it), rowPosAt(*it)));
         } else {
@@ -646,7 +645,6 @@ void QFxGridViewPrivate::updateCurrent(int modelIndex)
     FxGridItem *oldCurrentItem = currentItem;
     currentIndex = modelIndex;
     currentItem = createItem(modelIndex);
-    qDebug() << "got current" << currentItem->item;
     fixCurrentVisibility = true;
     if (oldCurrentItem && (!currentItem || oldCurrentItem->item != currentItem->item))
         oldCurrentItem->attached->setIsCurrentItem(false);
@@ -1287,7 +1285,6 @@ void QFxGridView::itemsInserted(int modelIndex, int count)
 void QFxGridView::itemsRemoved(int modelIndex, int count)
 {
     Q_D(QFxGridView);
-    qDebug() << "QFxGridView::itemsRemoved";
     int index = d->mapFromModel(modelIndex);
     if (index == -1) {
         if (modelIndex + count - 1 < d->visibleIndex) {
@@ -1314,8 +1311,6 @@ void QFxGridView::itemsRemoved(int modelIndex, int count)
         emit countChanged();
         return;
     }
-
-    qDebug() << "release gridview";
 
     // Remove the items from the visible list, skipping anything already marked for removal
     QList<FxGridItem*>::Iterator it = d->visibleItems.begin();
@@ -1349,9 +1344,7 @@ void QFxGridView::itemsRemoved(int modelIndex, int count)
             d->currentItem->index -= count;
     } else if (d->currentIndex >= modelIndex && d->currentIndex < modelIndex + count) {
         // current item has been removed.
-        qDebug() << "release current" << d->currentItem;
         d->releaseItem(d->currentItem);
-        qDebug() << "done";
         d->currentItem = 0;
         d->currentIndex = -1;
         d->updateCurrent(qMin(modelIndex, d->model->count()-1));
@@ -1399,7 +1392,6 @@ void QFxGridView::createdItem(int index, QFxItem *item)
     Q_D(QFxGridView);
     item->setItemParent(this);
     if (d->requestedIndex != index) {
-        qDebug() << "Added unrequested" << index;
         item->setItemParent(this);
         d->unrequestedItems.insert(item, index);
         if (d->flow == QFxGridView::LeftToRight) {

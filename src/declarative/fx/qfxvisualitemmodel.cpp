@@ -86,7 +86,6 @@ public:
             if (it != end()) {
                 (*it).ref++;
                 item = (*it).obj;
-                qDebug() << "ref" << item << (*it).ref;
             }
             return item;
         }
@@ -107,10 +106,8 @@ public:
                 if (objRef.obj == obj) {
                     if (--objRef.ref == 0) {
                         erase(it);
-                        qDebug() << "released item" << obj << "item count" << count();
                         return true;
                     }
-                    qDebug() << "not releasing" << obj << "ref" << objRef.ref;
                     break;
                 }
             }

@@ -573,7 +573,6 @@ void QFxListViewPrivate::updateUnrequestedPositions()
 {
     QHash<QFxItem*,int>::const_iterator it;
     for (it = unrequestedItems.begin(); it != unrequestedItems.end(); ++it) {
-        qDebug() << "pos of" << (*it) << positionAt(*it);
         if (visibleItem(*it))
             continue;
         if (orient == Qt::Vertical)
