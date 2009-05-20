@@ -266,7 +266,8 @@ class QmlXmlListModelPrivate : public QObjectPrivate
 public:
     QmlXmlListModelPrivate()
         : isClassComplete(false), size(-1), highestRole(Qt::UserRole)
-        , reply(0), queryId(-1), roleObjects(this) {}
+        , reply(0), status(QmlXmlListModel::Idle), progress(0.0)
+        , queryId(-1), roleObjects(this) {}
 
     bool isClassComplete;
     QString src;
@@ -277,6 +278,8 @@ public:
     QStringList roleNames;
     int highestRole;
     QNetworkReply *reply;
+    QmlXmlListModel::Status status;
+    qreal progress;
     QmlXmlQuery qmlXmlQuery;
     int queryId;
     QmlXmlRoleList roleObjects;
@@ -344,7 +347,6 @@ QmlXmlListModel::QmlXmlListModel(QObject *parent)
 
 QmlXmlListModel::~QmlXmlListModel()
 {
-    Q_D(QmlXmlListModel);
 }
 
 QmlList<XmlListModelRole *> *QmlXmlListModel::roleObjects()
@@ -430,6 +432,17 @@ void QmlXmlListModel::setNamespaceDeclarations(const QString &declarations)
         reload();
     }
 }
+QmlXmlListModel::Status QmlXmlListModel::status() const
+{
+    Q_D(const QmlXmlListModel);
+    return d->status;
+}
+
+qreal QmlXmlListModel::progress() const
+{
+    Q_D(const QmlXmlListModel);
+    return d->progress;
+}
 
 void QmlXmlListModel::classComplete()
 {
@@ -465,12 +478,17 @@ void QmlXmlListModel::reload()
         d->reply->deleteLater();
         d->reply = 0;
     }
+    d->progress = 0.0;
+    d->status = Loading;
+    emit progressChanged(d->progress);
+    emit statusChanged(d->status);
 
     QNetworkRequest req((QUrl(d->src)));
     req.setAttribute(QNetworkRequest::CacheLoadControlAttribute, QNetworkRequest::PreferCache);
     d->reply = qmlContext(this)->engine()->networkAccessManager()->get(req);
-    QObject::connect(d->reply, SIGNAL(finished()),
-                    this, SLOT(requestFinished()));
+    QObject::connect(d->reply, SIGNAL(finished()), this, SLOT(requestFinished()));
+    QObject::connect(d->reply, SIGNAL(downloadProgress(qint64,qint64)),
+                     this, SLOT(requestProgress(qint64,qint64)));
 }
 
 void QmlXmlListModel::requestFinished()
@@ -479,11 +497,25 @@ void QmlXmlListModel::requestFinished()
     if (d->reply->error() != QNetworkReply::NoError) {
         d->reply->deleteLater();
         d->reply = 0;
+        d->status = Error;
     } else {
+        d->status = Idle;
         QByteArray data = d->reply->readAll();
         d->queryId = d->qmlXmlQuery.doQuery(d->query, d->namespaces, data, &d->roleObjects);
         d->reply->deleteLater();
         d->reply = 0;
+    }
+    d->progress = 1.0;
+    emit progressChanged(d->progress);
+    emit statusChanged(d->status);
+}
+
+void QmlXmlListModel::requestProgress(qint64 received, qint64 total)
+{
+    Q_D(QmlXmlListModel);
+    if (d->status == Loading && total > 0) {
+        d->progress = qreal(received)/total;
+        emit progressChanged(d->progress);
     }
 }
 
