@@ -41,6 +41,7 @@ void usage()
     qWarning("  -recordtest <directory> .................. record an autotest");
     qWarning("  -runtest <directory> ..................... run a previously recorded test");
     qWarning("  -translation <translationfile> ........... set the language to run in");
+    qWarning("  -L <directory> ........................... prepend to the library search path");
     qWarning(" ");
     qWarning(" Press F1 for interactive help");
     exit(1);
@@ -81,6 +82,7 @@ int main(int argc, char ** argv)
     QString dither = "none";
     QString recordfile;
     QStringList recordargs;
+    QStringList libraries;
     QString skin;
     bool devkeys = false;
     bool cache = false;
@@ -132,6 +134,8 @@ int main(int argc, char ** argv)
                 usage();
             translationFile = newargv[i + 1];
             ++i;
+        } else if (arg == "-L") {
+            libraries << QString(argv[++i]);
         } else if (arg[0] != '-') {
             fileName = arg;
         } else if (1 || arg == "-help") {
@@ -146,6 +150,8 @@ int main(int argc, char ** argv)
     }
 
     QmlViewer viewer(testMode, testDir, 0, frameless ? Qt::FramelessWindowHint : Qt::Widget);
+    foreach (QString lib, libraries)
+        viewer.addLibraryPath(lib);
     viewer.setCacheEnabled(cache);
     viewer.setRecordFile(recordfile);
     if (period>0)

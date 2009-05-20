@@ -12,6 +12,8 @@
 #include <QStack>
 #include <QtDebug>
 
+#include <qfxperf.h>
+
 QT_BEGIN_NAMESPACE
 
 using namespace JavaScript;
@@ -203,7 +205,10 @@ ProcessAST::defineObjectBinding_helper(AST::UiQualifiedId *propertyName,
                                        LocationSpan location,
                                        AST::UiObjectInitializer *initializer)
 {
-    bool isType = !objectType.isEmpty() && objectType.at(0).isUpper() && !objectType.contains(QLatin1Char('.'));
+    int lastTypeDot = objectType.lastIndexOf(QLatin1Char('.'));
+    bool isType = !objectType.isEmpty() &&
+                    (objectType.at(0).isUpper() |
+                        lastTypeDot >= 0 && objectType.at(lastTypeDot+1).isUpper());
 
     int propertyCount = 0;
     for (; propertyName; propertyName = propertyName->next){
@@ -234,15 +239,21 @@ ProcessAST::defineObjectBinding_helper(AST::UiQualifiedId *propertyName,
         return 0;
 
     } else {
-
         // Class
-        const int typeId = _parser->findOrCreateTypeId(objectType);
+
+        QString resolvableObjectType = objectType;
+        if (lastTypeDot >= 0)
+            resolvableObjectType.replace(QLatin1Char('.'),QLatin1Char('/'));
+        const int typeId = _parser->findOrCreateTypeId(resolvableObjectType);
 
         Object *obj = new Object;
         obj->type = typeId;
-        _scope.append(objectType);
+
+        // XXX this doesn't do anything (_scope never builds up)
+        _scope.append(resolvableObjectType);
         obj->typeName = qualifiedNameId().toLatin1();
         _scope.removeLast();
+
         obj->location = location;
 
         if (propertyCount) {
@@ -621,6 +632,9 @@ QmlScriptParser::~QmlScriptParser()
 
 bool QmlScriptParser::parse(const QByteArray &data, const QUrl &url)
 {
+#ifdef Q_ENABLE_PERFORMANCE_LOG
+    QFxPerfTimer<QFxPerf::QmlParsing> pt;
+#endif
     const QString fileName = url.toString();
 
     QTextStream stream(data, QIODevice::ReadOnly);

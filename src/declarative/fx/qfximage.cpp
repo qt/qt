@@ -863,6 +863,9 @@ QString QFxImage::source() const
 
 void QFxImage::setSource(const QString &url)
 {
+#ifdef Q_ENABLE_PERFORMANCE_LOG
+    QFxPerfTimer<QFxPerf::PixmapLoad> perf;
+#endif
     Q_D(QFxImage);
     if (url == d->source)
         return;

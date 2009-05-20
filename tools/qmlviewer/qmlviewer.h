@@ -42,6 +42,7 @@ public:
     void setAutoRecord(int from, int to);
     void setDeviceKeys(bool);
     void setCacheEnabled(bool);
+    void addLibraryPath(const QString& lib);
 
     QSize sizeHint() const;
 
