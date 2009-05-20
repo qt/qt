@@ -154,7 +154,7 @@ QGLEngineShaderManager::QGLEngineShaderManager(QGLContext* context)
     simpleShaderProg->addShader(compiledShaders[MainFragmentShader]);
     simpleShaderProg->addShader(compiledShaders[ShockingPinkSrcFragmentShader]);
     simpleShaderProg->link();
-    if (!simpleShaderProg->isValid()) {
+    if (!simpleShaderProg->isLinked()) {
         qCritical() << "Errors linking simple shader:"
                     << simpleShaderProg->log();
     }
@@ -418,7 +418,7 @@ bool QGLEngineShaderManager::useCorrectShaderProg()
         requiredProgram.program->bindAttributeLocation("textureCoordArray", QT_TEXTURE_COORDS_ATTR);
 
     requiredProgram.program->link();
-    if (!requiredProgram.program->isValid()) {
+    if (!requiredProgram.program->isLinked()) {
         QString error;
         qWarning() <<  "Shader program failed to link,"
 #if defined(QT_DEBUG)

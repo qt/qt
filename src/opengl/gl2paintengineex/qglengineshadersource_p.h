@@ -284,7 +284,7 @@ static const char* const qglslNonPremultipliedImageSrcFragmentShader = "\
 
 static const char* const qglslShockingPinkSrcFragmentShader = "\
     lowp vec4 srcPixel() { \
-        return lowp vec4(0.98, 0.06, 0.75, 1.0); \
+        return vec4(0.98, 0.06, 0.75, 1.0); \
     }";
 
 
