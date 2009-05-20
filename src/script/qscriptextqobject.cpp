@@ -425,7 +425,7 @@ static void callQtMethod(QScriptContextPrivate *context, QMetaMethod::MethodType
                             matchDistance += 10;
                         }
                     }
-                } else if (actual.isNumber()) {
+                } else if (actual.isNumber() || actual.isString()) {
                     // see if it's an enum value
                     QMetaEnum m;
                     if (argType.isMetaEnum()) {
@@ -436,11 +436,21 @@ static void callQtMethod(QScriptContextPrivate *context, QMetaMethod::MethodType
                             m = meta->enumerator(mi);
                     }
                     if (m.isValid()) {
-                        int ival = actual.toInt32();
-                        if (m.valueToKey(ival) != 0) {
-                            qVariantSetValue(v, ival);
-                            converted = true;
-                            matchDistance += 10;
+                        if (actual.isNumber()) {
+                            int ival = actual.toInt32();
+                            if (m.valueToKey(ival) != 0) {
+                                qVariantSetValue(v, ival);
+                                converted = true;
+                                matchDistance += 10;
+                            }
+                        } else {
+                            QString sval = actual.toString();
+                            int ival = m.keyToValue(sval.toLatin1());
+                            if (ival != -1) {
+                                qVariantSetValue(v, ival);
+                                converted = true;
+                                matchDistance += 10;
+                            }
                         }
                     }
                 }
@@ -1809,7 +1819,16 @@ void QScript::QtPropertyFunction::execute(QScriptContextPrivate *context)
         }
     } else {
         // set
-        QVariant v = variantFromValue(eng_p, prop.userType(), context->argument(0));
+        QScriptValueImpl arg = context->argument(0);
+        QVariant v;
+        if (prop.isEnumType() && arg.isString()
+            && !eng_p->demarshalFunction(prop.userType())) {
+            // give QMetaProperty::write() a chance to convert from
+            // string to enum value
+            v = arg.toString();
+        } else {
+            v = variantFromValue(eng_p, prop.userType(), arg);
+        }
 
         QScriptable *scriptable = scriptableFromQObject(qobject);
         QScriptEngine *oldEngine = 0;

@@ -1275,7 +1275,7 @@ bool QLCDNumber::event(QEvent *e)
 
 /*!
     \fn int QLCDNumber::margin() const
-    Returns the with of the the margin around the contents of the widget.
+    Returns the width of the margin around the contents of the widget.
     
     Use QWidget::getContentsMargins() instead.
     \sa setMargin(), QWidget::getContentsMargins()

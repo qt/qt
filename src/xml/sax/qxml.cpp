@@ -2107,7 +2107,7 @@ events are reported.
     You can set the lexical handler with
     QXmlReader::setLexicalHandler().
 
-    This interface's design is based on the the SAX2 extension
+    This interface's design is based on the SAX2 extension
     LexicalHandler.
 
     The interface provides the startDTD(), endDTD(), startEntity(),
