@@ -218,7 +218,7 @@ QSizeF QItemDelegatePrivate::doTextLayout(int lineWidth) const
     editor widget, which is a widget that is placed on top of the view
     while editing takes place. Editors are created with a
     QItemEditorFactory; a default static instance provided by
-    QItemEditorFactory is installed on all item delagates. You can set
+    QItemEditorFactory is installed on all item delegates. You can set
     a custom factory using setItemEditorFactory() or set a new default
     factory with QItemEditorFactory::setDefaultFactory(). It is the
     data stored in the item model with the Qt::EditRole that is edited.

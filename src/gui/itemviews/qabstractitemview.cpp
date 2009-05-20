@@ -3218,9 +3218,9 @@ QStyleOptionViewItem QAbstractItemView::viewOptions() const
     option.state &= ~QStyle::State_MouseOver;
     option.font = font();
 
-#ifdef Q_WS_WIN
-    // Note this is currently required on Windows
-    // do give non-focused item views inactive appearance
+#ifndef Q_WS_MAC
+    // On mac the focus appearance follows window activation
+    // not widget activation
     if (!hasFocus())
         option.state &= ~QStyle::State_Active;
 #endif

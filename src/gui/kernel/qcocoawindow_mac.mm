@@ -128,12 +128,19 @@ QT_USE_NAMESPACE
 
 - (void)sendEvent:(NSEvent *)event
 {
-    [self retain];
-
     QWidget *widget = [[QT_MANGLE_NAMESPACE(QCocoaWindowDelegate) sharedDelegate] qt_qwidgetForWindow:self];
+
+    // Cocoa can hold onto the window after we've disavowed its knowledge. So,
+    // if we get sent an event afterwards just have it go through the super's
+    // version and don't do any stuff with Qt.
+    if (!widget) {
+        [super sendEvent:event];
+        return;
+    }
+
+    [self retain];
     QT_MANGLE_NAMESPACE(QCocoaView) *view = static_cast<QT_MANGLE_NAMESPACE(QCocoaView) *>(qt_mac_nativeview_for(widget));
     Qt::MouseButton mouseButton = cocoaButton2QtButton([event buttonNumber]);
-
     // sometimes need to redirect mouse events to the popup.
     QWidget *popup = qAppInstance()->activePopupWidget();
     if (popup && popup != widget) {
