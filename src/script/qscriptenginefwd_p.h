@@ -350,6 +350,7 @@ public:
     QScriptValueImpl create(int type, const void *ptr);
     static bool convert(const QScriptValueImpl &value, int type, void *ptr,
                         QScriptEnginePrivate *eng);
+    QScriptEngine::DemarshalFunction demarshalFunction(int type) const;
 
     QScriptValueImpl arrayFromStringList(const QStringList &lst);
     static QStringList stringListFromArray(const QScriptValueImpl &arr);
