@@ -187,7 +187,7 @@ QPixmap QS60StylePrivate::cachedPart(QS60StyleEnums::SkinParts part,
 {
     QPixmap result;
     const QString cacheKey =
-        QString::fromLatin1("S60Style: SkinParts=%1 QSize=%2|%3 SkinElementFlags=%4")
+        QString::fromLatin1("S60Style: SkinParts=%1 QSize=%2|%3 SkinPartFlags=%4")
             .arg((int)part).arg(size.width()).arg(size.height()).arg((int)flags);
     if (!QPixmapCache::find(cacheKey, result)) {
         result = QS60StylePrivate::part(part, size, flags);
