@@ -183,7 +183,7 @@ public:
     };
 
 
-    int setPaintMargin(qreal margin);
+    void setPaintMargin(qreal margin);
     QRectF boundingRect() const;
     virtual void paintContents(QPainter &);
     virtual void paintGLContents(GLPainter &);

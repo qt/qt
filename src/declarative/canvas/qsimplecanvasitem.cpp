@@ -181,7 +181,7 @@ void QSimpleCanvasItem::childrenChanged()
 {
 }
 
-int QSimpleCanvasItem::setPaintMargin(qreal margin)
+void QSimpleCanvasItem::setPaintMargin(qreal margin)
 {
     Q_D(QSimpleCanvasItem);
     if (margin < d->paintmargin)
