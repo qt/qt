@@ -256,7 +256,7 @@ private:
 };
 
 class QComboMenuDelegate : public QAbstractItemDelegate
-{
+{ Q_OBJECT
 public:
     QComboMenuDelegate(QObject *parent, QComboBox *cmb) : QAbstractItemDelegate(parent), mCombo(cmb) {}
 
@@ -285,7 +285,7 @@ private:
 // Vista does not use the new theme for combo boxes and there might 
 // be other side effects from using the new class
 class QComboBoxDelegate : public QItemDelegate
-{
+{ Q_OBJECT
 public:
     QComboBoxDelegate(QObject *parent, QComboBox *cmb) : QItemDelegate(parent), mCombo(cmb) {}
 
@@ -367,7 +367,7 @@ public:
     int itemRole() const;
     void updateLayoutDirection();
     void setCurrentIndex(const QModelIndex &index);
-    void updateDelegate();
+    void updateDelegate(bool force = false);
     void keyboardSearchString(const QString &text);
     void modelChanged();
 
