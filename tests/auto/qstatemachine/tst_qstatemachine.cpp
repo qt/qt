@@ -522,8 +522,7 @@ void tst_QStateMachine::customLocalErrorStateInParentOfBrokenState()
     QState *parentOfBrokenState = new QState();
     machine.addState(parentOfBrokenState);
     parentOfBrokenState->setObjectName("parentOfBrokenState");
-    parentOfBrokenState->setErrorState(customErrorState);
-    
+    parentOfBrokenState->setErrorState(customErrorState);    
 
     QState *brokenState = new QState(parentOfBrokenState);
     brokenState->setObjectName("brokenState");
@@ -891,7 +890,7 @@ void tst_QStateMachine::brokenStateIsNeverEntered()
 {
     QStateMachine machine;
 
-    QObject *entryController = new QObject();
+    QObject *entryController = new QObject(&machine);
     entryController->setProperty("brokenStateEntered", false);
     entryController->setProperty("childStateEntered", false);
     entryController->setProperty("errorStateEntered", false);
@@ -927,15 +926,15 @@ void tst_QStateMachine::transitionToStateNotInGraph()
 {
     s_countWarnings = false;
 
-    QStateMachine machine;
+    QStateMachine machine;    
 
     QState *initialState = new QState(machine.rootState());
     initialState->setObjectName("initialState");
     machine.setInitialState(initialState);
 
-    QState *independentState = new QState();
-    independentState->setObjectName("independentState");
-    initialState->addTransition(independentState);
+    QState independentState;
+    independentState.setObjectName("independentState");
+    initialState->addTransition(&independentState);
 
     machine.start();
     QCoreApplication::processEvents();
@@ -950,10 +949,10 @@ void tst_QStateMachine::customErrorStateNotInGraph()
 
     QStateMachine machine;
 
-    QState *errorState = new QState();
-    errorState->setObjectName("errorState");
-    machine.setErrorState(errorState);
-    QVERIFY(errorState != machine.errorState());
+    QState errorState;
+    errorState.setObjectName("errorState");
+    machine.setErrorState(&errorState);
+    QVERIFY(&errorState != machine.errorState());
 
     QState *initialBrokenState = new QState(machine.rootState());
     initialBrokenState->setObjectName("initialBrokenState");
@@ -969,12 +968,12 @@ void tst_QStateMachine::customErrorStateNotInGraph()
 
 void tst_QStateMachine::restoreProperties()
 {
-    QObject *object = new QObject();
-    object->setProperty("a", 1);
-    object->setProperty("b", 2);
-
     QStateMachine machine;
     machine.setGlobalRestorePolicy(QStateMachine::RestoreProperties);
+
+    QObject *object = new QObject(&machine);
+    object->setProperty("a", 1);
+    object->setProperty("b", 2);
 
     QState *S1 = new QState();
     S1->setObjectName("S1");
@@ -2025,8 +2024,8 @@ void tst_QStateMachine::targetStateWithNoParent()
     QStateMachine machine;
     QState *s1 = new QState(machine.rootState());
     s1->setObjectName("s1");
-    QState *s2 = new QState();
-    s1->addTransition(s2);
+    QState s2;
+    s1->addTransition(&s2);
     machine.setInitialState(s1);
     QSignalSpy startedSpy(&machine, SIGNAL(started()));
     QSignalSpy stoppedSpy(&machine, SIGNAL(stopped()));
@@ -2058,7 +2057,7 @@ void tst_QStateMachine::defaultGlobalRestorePolicy()
 {
     QStateMachine machine;    
 
-    QObject *propertyHolder = new QObject();
+    QObject *propertyHolder = new QObject(&machine);
     propertyHolder->setProperty("a", 1);
     propertyHolder->setProperty("b", 2);
 
@@ -2147,7 +2146,7 @@ void tst_QStateMachine::globalRestorePolicySetToDoNotRestore()
     QStateMachine machine;
     machine.setGlobalRestorePolicy(QStateMachine::DoNotRestoreProperties);
 
-    QObject *propertyHolder = new QObject();
+    QObject *propertyHolder = new QObject(&machine);
     propertyHolder->setProperty("a", 1);
     propertyHolder->setProperty("b", 2);
 
@@ -2308,7 +2307,7 @@ void tst_QStateMachine::globalRestorePolicySetToRestore()
     QStateMachine machine;    
     machine.setGlobalRestorePolicy(QStateMachine::RestoreProperties);
 
-    QObject *propertyHolder = new QObject();
+    QObject *propertyHolder = new QObject(&machine);
     propertyHolder->setProperty("a", 1);
     propertyHolder->setProperty("b", 2);
 
@@ -2428,7 +2427,7 @@ void tst_QStateMachine::simpleAnimation()
 {
     QStateMachine machine;
 
-    QObject *object = new QObject();
+    QObject *object = new QObject(&machine);
     object->setProperty("fooBar", 1.0);
 
     QState *s1 = new QState(machine.rootState());
@@ -2471,7 +2470,7 @@ void tst_QStateMachine::twoAnimations()
 {
     QStateMachine machine;
 
-    QObject *object = new QObject();
+    QObject *object = new QObject(&machine);
     object->setProperty("foo", 1.0);
     object->setProperty("bar", 3.0);
 
@@ -2515,7 +2514,7 @@ void tst_QStateMachine::twoAnimatedTransitions()
 {
     QStateMachine machine;
 
-    QObject *object = new QObject();
+    QObject *object = new QObject(&machine);
     object->setProperty("foo", 1.0);
 
     QState *s1 = new QState(machine.rootState());
@@ -2559,7 +2558,7 @@ void tst_QStateMachine::playAnimationTwice()
 {
     QStateMachine machine;
 
-    QObject *object = new QObject();
+    QObject *object = new QObject(&machine);
     object->setProperty("foo", 1.0);
 
     QState *s1 = new QState(machine.rootState());
@@ -2602,7 +2601,7 @@ void tst_QStateMachine::nestedTargetStateForAnimation()
 {
     QStateMachine machine;
 
-    QObject *object = new QObject();
+    QObject *object = new QObject(&machine);
     object->setProperty("foo", 1.0);
     object->setProperty("bar", 3.0);
 
@@ -2659,7 +2658,7 @@ void tst_QStateMachine::animatedGlobalRestoreProperty()
     QStateMachine machine;
     machine.setGlobalRestorePolicy(QStateMachine::RestoreProperties);
 
-    QObject *object = new QObject();
+    QObject *object = new QObject(&machine);
     object->setProperty("foo", 1.0);
 
     SlotCalledCounter counter;
@@ -2705,7 +2704,7 @@ void tst_QStateMachine::specificTargetValueOfAnimation()
 {
     QStateMachine machine;
 
-    QObject *object = new QObject();
+    QObject *object = new QObject(&machine);
     object->setProperty("foo", 1.0);
 
     QState *s1 = new QState(machine.rootState());
@@ -2769,7 +2768,7 @@ void tst_QStateMachine::addDefaultAnimationWithUnusedAnimation()
 {
     QStateMachine machine;
 
-    QObject *object = new QObject();
+    QObject *object = new QObject(&machine);
     object->setProperty("foo", 1.0);
     object->setProperty("bar", 2.0);
 
@@ -2848,7 +2847,7 @@ void tst_QStateMachine::overrideDefaultAnimationWithSpecific()
 {
     QStateMachine machine;
 
-    QObject *object = new QObject();
+    QObject *object = new QObject(&machine);
     object->setProperty("foo", 1.0);
 
     SlotCalledCounter counter;
