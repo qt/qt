@@ -23,12 +23,7 @@
 // We mean it.
 //
 
-#if defined(QT_EXPERIMENTAL_SOLUTION)
-# include "qabstracttransition.h"
-#else
-# include <QtCore/qabstracttransition.h>
-#endif
-
+#include <QtCore/qabstracttransition.h>
 #include <QtGui/qevent.h>
 
 QT_BEGIN_NAMESPACE

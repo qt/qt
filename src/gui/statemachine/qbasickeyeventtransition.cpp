@@ -12,13 +12,7 @@
 #include "qbasickeyeventtransition_p.h"
 #include <QtGui/qevent.h>
 #include <qdebug.h>
-
-#if defined(QT_EXPERIMENTAL_SOLUTION)
-# include "qabstracttransition_p.h"
-#else
-# include <private/qabstracttransition_p.h>
-#endif
-
+#include <private/qabstracttransition_p.h>
 
 QT_BEGIN_NAMESPACE
 

@@ -128,22 +128,6 @@ namespace QT_NAMESPACE {}
 
 #endif /* __cplusplus */
 
-/**
- * For animation framework to work seamlessly as a solution
- */
-#if 0
-# define QT_EXPERIMENTAL_BEGIN_NAMESPACE namespace QtExperimental {
-# define QT_EXPERIMENTAL_END_NAMESPACE }
-# define QT_EXPERIMENTAL_USE_NAMESPACE using namespace QtExperimental;
-# define QT_EXPERIMENTAL_PREPEND_NAMESPACE(name) QtExperimental::name
-namespace QtExperimental {}
-#else
-# define QT_EXPERIMENTAL_BEGIN_NAMESPACE
-# define QT_EXPERIMENTAL_END_NAMESPACE
-# define QT_EXPERIMENTAL_USE_NAMESPACE
-# define QT_EXPERIMENTAL_PREPEND_NAMESPACE(name) name
-#endif
-
 #if defined(Q_OS_MAC) && !defined(Q_CC_INTEL)
 #define QT_BEGIN_HEADER extern "C++" {
 #define QT_END_HEADER }

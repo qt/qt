@@ -13,12 +13,7 @@
 #include "qbasicmouseeventtransition_p.h"
 #include <QtCore/qwrappedevent.h>
 #include <QtGui/qpainterpath.h>
-
-#if defined(QT_EXPERIMENTAL_SOLUTION)
-# include "qeventtransition_p.h"
-#else
-# include <private/qeventtransition_p.h>
-#endif
+#include <private/qeventtransition_p.h>
 
 QT_BEGIN_NAMESPACE
 

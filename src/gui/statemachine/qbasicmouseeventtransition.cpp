@@ -13,12 +13,7 @@
 #include <QtGui/qevent.h>
 #include <QtGui/qpainterpath.h>
 #include <qdebug.h>
-
-#if defined(QT_EXPERIMENTAL_SOLUTION)
-# include "qabstracttransition_p.h"
-#else
-# include <private/qabstracttransition_p.h>
-#endif
+#include <private/qabstracttransition_p.h>
 
 QT_BEGIN_NAMESPACE
 

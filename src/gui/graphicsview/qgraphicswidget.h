@@ -59,7 +59,6 @@ class QGraphicsLayout;
 class QGraphicsSceneMoveEvent;
 class QGraphicsWidgetPrivate;
 class QGraphicsSceneResizeEvent;
-class QGraphicsWidgetAnimator;
 class QStyle;
 class QStyleOption;
 

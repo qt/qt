@@ -12,11 +12,8 @@
 #ifndef QKEYEVENTTRANSITION_H
 #define QKEYEVENTTRANSITION_H
 
-#if defined(QT_EXPERIMENTAL_SOLUTION)
-# include "qeventtransition.h"
-#else
-# include <QtCore/qeventtransition.h>
-#endif
+#include <QtCore/qeventtransition.h>
+
 QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
