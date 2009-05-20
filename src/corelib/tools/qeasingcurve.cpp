@@ -53,6 +53,7 @@
 
 /*!
     \class QEasingCurve
+    \since 4.6
     \ingroup animation
     \brief The QEasingCurve class provides easing curves for controlling animation.
 

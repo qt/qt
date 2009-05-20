@@ -56,8 +56,7 @@ QT_BEGIN_NAMESPACE
     \class QVariantAnimation
     \ingroup animation
     \brief The QVariantAnimation class provides an abstract base class for animations.
-    \since 4.5
-    \preliminary
+    \since 4.6
 
     This class is part of \l{The Animation Framework}. It serves as a
     base class for property and item animations, with functions for

@@ -42,9 +42,8 @@
 /*!
     \class QParallelAnimationGroup
     \brief The QParallelAnimationGroup class provides a parallel group of animations.
-    \since 4.5
+    \since 4.6
     \ingroup animation
-    \preliminary
 
     QParallelAnimationGroup--a \l{QAnimationGroup}{container for
     animations}--starts all its animations when it is

@@ -43,8 +43,7 @@
     \class QAbstractAnimation
     \ingroup animation
     \brief The QAbstractAnimation class is the base of all animations.
-    \since 4.5
-    \preliminary
+    \since 4.6
 
     The class defines the functions for the functionality shared by
     all animations. By inheriting this class, you can create custom

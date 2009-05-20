@@ -42,9 +42,8 @@
 /*!
     \class QAnimationGroup
     \brief The QAnimationGroup class is an abstract base class for groups of animations.
-    \since 4.5
+    \since 4.6
     \ingroup animation
-    \preliminary
 
     An animation group is a container for animations (subclasses of
     QAbstractAnimation). A group is usually responsible for managing
