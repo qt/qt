@@ -3,7 +3,7 @@
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
 ** Contact: Qt Software Information (qt-info@nokia.com)
 **
-** This file is part of the test suite of the Qt Toolkit.
+** This file is part of the QtGui module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -38,38 +38,59 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#include <QString>
-#include <QtNetwork/QHostInfo>
 
-class QtNetworkSettings
+#ifndef QPIXMAPCACHE_P_H
+#define QPIXMAPCACHE_P_H
+
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API. This header
+// file may change from version to version without notice, or even be removed.
+//
+// We mean it.
+//
+
+#include "qpixmapcache.h"
+#include "qpaintengine.h"
+#include <private/qimage_p.h>
+#include <private/qpixmap_raster_p.h>
+#include "qcache.h"
+
+QT_BEGIN_NAMESPACE
+
+class QPixmapCache::KeyData
 {
 public:
-    static QString serverLocalName()
-    {
-        return QString("qt-test-server");
-    }
-    static QString serverDomainName()
-    {
-        return QString("qt-test-net");
-    }
-    static QString serverName()
-    {
-        return serverLocalName() + "." + serverDomainName();
-    }
-    static QString winServerName()
-    {
-        return serverName();
-    }
-    static QString wildcardServerName()
-    {
-        return "qt-test-server.wildcard.dev." + serverDomainName();
-    }
+    KeyData() : isValid(true), key(0), ref(1) {}
+    KeyData(const KeyData &other)
+     : isValid(other.isValid), key(other.key), ref(1) {}
+    ~KeyData() {}
 
-#ifdef QT_NETWORK_LIB
-    static QHostAddress serverIP()
-    {
-        return QHostInfo::fromName(serverName()).addresses().first();
-    }
-#endif
-
+    bool isValid;
+    int key;
+    int ref;
 };
+
+// XXX: hw: is this a general concept we need to abstract?
+class QDetachedPixmap : public QPixmap
+{
+public:
+    QDetachedPixmap(const QPixmap &pix) : QPixmap(pix)
+    {
+        if (data && data->classId() == QPixmapData::RasterClass) {
+            QRasterPixmapData *d = static_cast<QRasterPixmapData*>(data);
+            if (!d->image.isNull() && d->image.d->paintEngine
+                && !d->image.d->paintEngine->isActive())
+            {
+                delete d->image.d->paintEngine;
+                d->image.d->paintEngine = 0;
+            }
+        }
+    }
+};
+
+QT_END_NAMESPACE
+
+#endif // QPIXMAPCACHE_P_H

@@ -146,8 +146,13 @@ bool IndexWindow::eventFilter(QObject *obj, QEvent *e)
         && e->type() == QEvent::MouseButtonRelease) {
         QMouseEvent *mouseEvent = static_cast<QMouseEvent*>(e);
         QModelIndex idx = m_indexWidget->indexAt(mouseEvent->pos());
-        if (idx.isValid() && mouseEvent->button()==Qt::MidButton)
-            open(m_indexWidget, idx);
+        if (idx.isValid()) {
+            Qt::MouseButtons button = mouseEvent->button();
+            if (((button == Qt::LeftButton) && (mouseEvent->modifiers() & Qt::ControlModifier))
+                || (button == Qt::MidButton)) {
+                open(m_indexWidget, idx);
+            }
+        }
     }
 #ifdef Q_OS_MAC
     else if (obj == m_indexWidget && e->type() == QEvent::KeyPress) {

@@ -54,6 +54,7 @@
 //
 
 #include "qgraphicsitem.h"
+#include "qpixmapcache.h"
 
 #if !defined(QT_NO_GRAPHICSVIEW) || (QT_EDITION & QT_MODULE_GRAPHICSVIEW) != QT_MODULE_GRAPHICSVIEW
 
@@ -69,13 +70,14 @@ public:
     // ItemCoordinateCache only
     QRect boundingRect;
     QSize fixedSize;
-    QString key;
+    QPixmapCache::Key key;
 
     // DeviceCoordinateCache only
     struct DeviceData {
+        DeviceData() {}
         QTransform lastTransform;
         QPoint cacheIndent;
-        QString key;
+        QPixmapCache::Key key;
     };
     QMap<QPaintDevice *, DeviceData> deviceData;
 

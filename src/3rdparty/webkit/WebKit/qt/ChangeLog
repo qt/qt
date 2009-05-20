@@ -1,3 +1,14 @@
+2009-03-27  Erik L. Bunce  <elbunce@xendom.com>
+
+        Reviewed by Simon Hausmann.
+
+        https://bugs.webkit.org/show_bug.cgi?id=24746
+
+        Improved selection tests.
+
+        * tests/qwebpage/tst_qwebpage.cpp:
+        (tst_QWebPage::textSelection):
+
 2009-04-24  Simon Hausmann  <simon.hausmann@nokia.com>
 
         Rubber-stamped by Ariya Hidayat.

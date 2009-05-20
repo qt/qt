@@ -1,7 +1,29 @@
+BODY,H1,H2,H3,H4,H5,H6,P,CENTER,TD,TH,UL,DL,DIV {
+  font-family: Geneva, Arial, Helvetica, sans-serif;
+}
+BODY,TD {
+  font-size: 90%;
+}
+H1 {
+  text-align: center;
+  font-size: 160%;
+}
+H2 {
+  font-size: 120%;
+}
+H3 {
+  font-size: 100%;
+}
+
 h3.fn,span.fn
 {
-  margin-left: 1cm;
-  text-indent: -1cm;
+  background-color: #d5e1d5;
+  border-width: 1px;
+  border-style: solid;
+  border-color: #84b0c7;
+  font-weight: bold;
+  -moz-border-radius: 8px 8px 8px 8px;
+  padding: 6px 0px 6px 10px;
 }
 
 a:link
@@ -54,6 +76,44 @@ body
 {
   background: #ffffff;
   color: black
+}
+
+table td.memItemLeft {
+  width: 200px;
+  padding: 1px 0px 0px 8px;
+  margin: 4px;
+  border-top-width: 1px;
+  border-right-width: 1px;
+  border-bottom-width: 1px;
+  border-left-width: 1px;
+  border-top-color: #E0E0E0;
+  border-right-color: #E0E0E0;
+  border-bottom-color: #E0E0E0;
+  border-left-color: #E0E0E0;
+  border-top-style: solid;
+  border-right-style: none;
+  border-bottom-style: none;
+  border-left-style: none;
+  background-color: #FAFAFA;
+  font-size: 80%;
+}
+table td.memItemRight {
+  padding: 1px 8px 0px 8px;
+  margin: 4px;
+  border-top-width: 1px;
+  border-right-width: 1px;
+  border-bottom-width: 1px;
+  border-left-width: 1px;
+  border-top-color: #E0E0E0;
+  border-right-color: #E0E0E0;
+  border-bottom-color: #E0E0E0;
+  border-left-color: #E0E0E0;
+  border-top-style: solid;
+  border-right-style: none;
+  border-bottom-style: none;
+  border-left-style: none;
+  background-color: #d5e1d5;
+  font-size: 80%;
 }
 
 table tr.odd {

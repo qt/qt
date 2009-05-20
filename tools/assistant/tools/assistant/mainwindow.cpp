@@ -926,25 +926,27 @@ void MainWindow::expandTOC(int depth)
 
 void MainWindow::indexingStarted()
 {
-    m_progressWidget = new QWidget();
-    QLayout* hlayout = new QHBoxLayout(m_progressWidget);
+    if (!m_progressWidget) {
+        m_progressWidget = new QWidget();
+        QLayout* hlayout = new QHBoxLayout(m_progressWidget);
 
-    QSizePolicy sizePolicy(QSizePolicy::Preferred, QSizePolicy::Maximum);
+        QSizePolicy sizePolicy(QSizePolicy::Preferred, QSizePolicy::Maximum);
 
-    QLabel *label = new QLabel(tr("Updating search index"));
-    label->setSizePolicy(sizePolicy);
-    hlayout->addWidget(label);
+        QLabel *label = new QLabel(tr("Updating search index"));
+        label->setSizePolicy(sizePolicy);
+        hlayout->addWidget(label);
 
-    QProgressBar *progressBar = new QProgressBar();
-    progressBar->setRange(0, 0);
-    progressBar->setTextVisible(false);
-    progressBar->setSizePolicy(sizePolicy);
+        QProgressBar *progressBar = new QProgressBar();
+        progressBar->setRange(0, 0);
+        progressBar->setTextVisible(false);
+        progressBar->setSizePolicy(sizePolicy);
 
-    hlayout->setSpacing(6);
-    hlayout->setMargin(0);
-    hlayout->addWidget(progressBar);
+        hlayout->setSpacing(6);
+        hlayout->setMargin(0);
+        hlayout->addWidget(progressBar);
 
-    statusBar()->addPermanentWidget(m_progressWidget);
+        statusBar()->addPermanentWidget(m_progressWidget);
+    }
 }
 
 void MainWindow::indexingFinished()

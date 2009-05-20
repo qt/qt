@@ -2248,7 +2248,8 @@ void HtmlGenerator::generateSectionInheritedList(const Section& section,
         if (nameAlignment)
             out() << "<li><div bar=2 class=\"fn\"></div>";
         else
-            out() << (*p).second << " ";
+            out() << "<li><div class=\"fn\"></div>";
+        out() << (*p).second << " ";
         if ((*p).second == 1) {
             out() << section.singularMember;
         }
