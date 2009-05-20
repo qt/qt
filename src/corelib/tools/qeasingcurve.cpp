@@ -295,6 +295,11 @@
 
 #include "qeasingcurve.h"
 
+#ifndef QT_NO_DEBUG_STREAM
+#include <QtCore/qdebug.h>
+#include <QtCore/QString>
+#endif
+
 QT_BEGIN_NAMESPACE
 
 static bool isConfigFunction(QEasingCurve::Type type)
@@ -341,7 +346,9 @@ bool QEasingCurveFunction::operator==(const QEasingCurveFunction& other)
            _o == other._o;
 }
 
+QT_BEGIN_INCLUDE_NAMESPACE
 #include "../3rdparty/easing/easing.cpp"
+QT_END_INCLUDE_NAMESPACE
 
 class QEasingCurvePrivate
 {
@@ -823,8 +830,6 @@ qreal QEasingCurve::valueForProgress(qreal progress) const
 }
 
 #ifndef QT_NO_DEBUG_STREAM
-#include <QtCore/qdebug.h>
-#include <QtCore/QString>
 QDebug operator<<(QDebug debug, const QEasingCurve &item)
 {
     debug << "type:" << item.d_ptr->type
