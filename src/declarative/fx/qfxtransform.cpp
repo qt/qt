@@ -272,7 +272,9 @@ QMatrix4x4 QFxRotation::transform() const
     if (_dirty) {
         _transform = QMatrix4x4();
         _dirty = false;
-        _transform.rotate(_angle, _originX, _originY);
+        _transform.translate(_originX, _originY);
+        _transform.rotate(_angle, 0, 0, 1);
+        _transform.translate(-_originX, -_originY);
     }
     return _transform;
 }
