@@ -120,12 +120,9 @@ public:
 public Q_SLOTS:
     void reload();
 
-protected:
-    void doQuery(QByteArray &rawData);
-    void doSubquery(int index) const;
-
 private Q_SLOTS:
     void requestFinished();
+    void queryCompleted(int,int);
 
 private:
     Q_DECLARE_PRIVATE(QmlXmlListModel)
