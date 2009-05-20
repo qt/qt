@@ -432,8 +432,8 @@ QTemporaryFilePrivate::~QTemporaryFilePrivate()
     file will exist and be kept open internally by QTemporaryFile.
 
     The file name of the temporary file can be found by calling fileName().
-    Note that this is only defined while the file is open; the function returns
-    an empty string before the file is opened and after it is closed.
+    Note that this is only defined after the file is first opened; the function
+    returns an empty string before this.
 
     A temporary file will have some static part of the name and some
     part that is calculated to be unique. The default filename \c
