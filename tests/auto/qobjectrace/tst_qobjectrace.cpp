@@ -43,6 +43,7 @@
 #include <QtCore>
 #include <QtTest/QtTest>
 
+
 enum { OneMinute = 60 * 1000, TwoMinutes = OneMinute * 2 };
 
 class tst_QObjectRace: public QObject
@@ -70,12 +71,18 @@ public:
 public slots:
     void theSlot()
     {
-        enum { step = 1000 };
+        enum { step = 35 };
         if ((++count % step) == 0) {
             QThread *nextThread = threads.at((count / step) % threads.size());
             moveToThread(nextThread);
         }
     }
+
+    void destroSlot() {
+        emit theSignal();
+    }
+signals:
+    void theSignal();
 };
 
 class RaceThread : public QThread
@@ -120,6 +127,10 @@ private slots:
         if (stopWatch.elapsed() >= OneMinute / 2)
 #endif
             quit();
+
+        QObject o;
+        connect(&o, SIGNAL(destroyed()) , object, SLOT(destroSlot()));
+        connect(object, SIGNAL(destroyed()) , &o, SLOT(deleteLater()));
     }
 };
 
@@ -138,10 +149,17 @@ void tst_QObjectRace::moveToThreadRace()
 
     for (int i = 0; i < ThreadCount; ++i)
         threads[i]->start();
-    QVERIFY(threads[0]->wait(TwoMinutes));
+
+    while(!threads[0]->isFinished()) {
+        QPointer<RaceObject> foo (object);
+        QObject o;
+        connect(&o, SIGNAL(destroyed()) , object, SLOT(destroSlot()));
+        connect(object, SIGNAL(destroyed()) , &o, SLOT(deleteLater()));
+        QTest::qWait(10);
+    }
     // the other threads should finish pretty quickly now
     for (int i = 1; i < ThreadCount; ++i)
-        QVERIFY(threads[i]->wait(30000));
+        QVERIFY(threads[i]->wait(300));
 
     for (int i = 0; i < ThreadCount; ++i)
         delete threads[i];

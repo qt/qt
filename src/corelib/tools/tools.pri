@@ -46,7 +46,6 @@ SOURCES += \
 	tools/qbytearraymatcher.cpp \
 	tools/qcryptographichash.cpp \
 	tools/qdatetime.cpp \
-	tools/qdumper.cpp \
 	tools/qhash.cpp \
         tools/qline.cpp \
 	tools/qlinkedlist.cpp \
