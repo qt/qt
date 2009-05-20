@@ -62,8 +62,10 @@ class Q_CORE_EXPORT QRingBuffer
 {
 public:
     inline QRingBuffer(int growth = 4096) : basicBlockSize(growth) {
+        head = tail = 0;
+        tailBuffer = 0;
+        bufferSize = 0;
         buffers << QByteArray();
-        clear();
     }
 
     inline int nextDataBlockSize() const {
@@ -104,8 +106,12 @@ public:
     }
 
     inline char *reserve(int bytes) {
+        if (isEmpty()) {
+            buffers[tailBuffer].resize(qMax(basicBlockSize, bytes));
+            bufferSize = tail = bytes;
+            return buffers[tailBuffer].data();
+        }
         bufferSize += bytes;
-
         // if there is already enough space, simply return.
         if (tail + bytes <= buffers.at(tailBuffer).size()) {
             char *writePtr = buffers[tailBuffer].data() + tail;
@@ -198,7 +204,7 @@ public:
     }
 
     inline void clear() {
-        if(!buffers.isEmpty()) {
+        if(!isEmpty()) {
             QByteArray tmp = buffers[0];
             buffers.clear();
             buffers << tmp;
