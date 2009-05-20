@@ -3,7 +3,9 @@
 
 #include <QGraphicsItem>
 
+QT_BEGIN_NAMESPACE
 class QLineF;
+QT_END_NAMESPACE
 class GameItem: public QObject, public QGraphicsItem
 {
     Q_OBJECT

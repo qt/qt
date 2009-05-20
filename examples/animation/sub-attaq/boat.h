@@ -50,9 +50,11 @@
 
 class PixmapItem;
 class Bomb;
+QT_BEGIN_NAMESPACE
 class QVariantAnimation;
 class QAbstractAnimation;
 class QStateMachine;
+QT_END_NAMESPACE
 
 class Boat : public QGraphicsWidget
 {

@@ -4,11 +4,14 @@
 #include <QMainWindow>
 #include <QTime>
 
+QT_BEGIN_NAMESPACE
 class QGraphicsScene;
 class QStateMachine;
 class QState;
+QT_END_NAMESPACE
 class GameOverTransition;
 class TankItem;
+
 class MainWindow: public QMainWindow
 {
     Q_OBJECT

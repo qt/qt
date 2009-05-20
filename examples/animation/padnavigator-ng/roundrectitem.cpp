@@ -45,9 +45,9 @@
 
 RoundRectItem::RoundRectItem(const QRectF &rect, const QBrush &brush, QWidget *embeddedWidget)
     : QGraphicsWidget(),
+      m_rect(rect),
       brush(brush),
-      proxyWidget(0),
-      m_rect(rect)
+      proxyWidget(0)
 {
     if (embeddedWidget) {
         proxyWidget = new QGraphicsProxyWidget(this);

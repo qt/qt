@@ -45,11 +45,13 @@
 #include <Qt>
 
 class StickMan;
+QT_BEGIN_NAMESPACE
 class QStateMachine;
 class QAnimationGroup;
 class QState;
 class QAbstractState;
 class QAbstractTransition;
+QT_END_NAMESPACE
 class GraphicsView;
 class LifeCycle
 {

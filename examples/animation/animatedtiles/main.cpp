@@ -132,6 +132,8 @@ protected:
 
 int main(int argc, char **argv)
 {
+    Q_INIT_RESOURCE(animatedtiles);
+
     QApplication app(argc, argv);
 
     QPixmap kineticPix(":/images/kinetic.png");

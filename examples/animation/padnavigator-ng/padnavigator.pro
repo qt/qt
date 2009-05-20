@@ -1,24 +1,24 @@
-HEADERS += \
+HEADERS = \
         panel.h \
         roundrectitem.h \
         splashitem.h
 
-SOURCES += \
+SOURCES = \
         panel.cpp \
         roundrectitem.cpp \
         splashitem.cpp \
         main.cpp
 
-RESOURCES += \
+RESOURCES = \
         padnavigator.qrc
 
-FORMS += \
+FORMS = \
         backside.ui
 
 contains(QT_CONFIG, opengl):QT += opengl
 
 # install
-target.path = $$[QT_INSTALL_EXAMPLES]/graphicsview/padnavigator
+target.path = $$[QT_INSTALL_EXAMPLES]/animation/padnavigator-ng
 sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS padnavigator.pro images
-sources.path = $$[QT_INSTALL_EXAMPLES]/graphicsview/padnavigator
+sources.path = $$[QT_INSTALL_EXAMPLES]/animation/padnavigator-ng
 INSTALLS += target sources

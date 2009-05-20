@@ -54,7 +54,9 @@ class Torpedo;
 class Bomb;
 class PixmapItem;
 class ProgressItem;
+QT_BEGIN_NAMESPACE
 class QAction;
+QT_END_NAMESPACE
 
 class GraphicsScene : public QGraphicsScene
 {

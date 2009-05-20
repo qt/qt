@@ -44,11 +44,11 @@
 
 QT_BEGIN_NAMESPACE
 class Ui_BackSide;
+class QAnimationGroup;
+class QPropertyAnimation;
 QT_END_NAMESPACE;
 
 class RoundRectItem;
-class QAnimationGroup;
-class QPropertyAnimation;
 
 class Panel : public QGraphicsView
 {

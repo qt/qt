@@ -52,7 +52,9 @@
 class GraphicsScene;
 class Boat;
 class SubMarine;
+QT_BEGIN_NAMESPACE
 class QStateMachine;
+QT_END_NAMESPACE
 
 class PlayState : public QState
 {
