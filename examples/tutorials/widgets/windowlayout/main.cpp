@@ -45,18 +45,18 @@
 int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
-    QWidget *window = new QWidget();
+    QWidget window;
 //! [create, lay out widgets and show]
-    QLabel *label = new QLabel(tr("Name:"));
+    QLabel *label = new QLabel(QObject::tr("Name:"));
     QLineEdit *lineEdit = new QLineEdit();
 
     QHBoxLayout *layout = new QHBoxLayout();
     layout->addWidget(label);
     layout->addWidget(lineEdit);
-    window->setLayout(layout);
+    window.setLayout(layout);
 //! [create, lay out widgets and show]
-    window->setWindowTitle(tr("Window layout"));
-    window->show();
+    window.setWindowTitle(QObject::tr("Window layout"));
+    window.show();
     return app.exec();
 }
 //! [main program]
