@@ -466,7 +466,7 @@ void QClipboard::setPixmap(const QPixmap &pixmap, Mode mode)
 
     The \a mode argument is used to control which part of the system
     clipboard is used.  If \a mode is QClipboard::Clipboard, this
-    function clears the the global clipboard contents.  If \a mode is
+    function clears the global clipboard contents.  If \a mode is
     QClipboard::Selection, this function clears the global mouse
     selection contents. If \a mode is QClipboard::FindBuffer, this 
     function clears the search string buffer.

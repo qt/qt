@@ -1279,6 +1279,11 @@ bool QMYSQLDriver::open(const QString& db,
     d->preparedQuerysEnabled = false;
 #endif
 
+#ifndef QT_NO_THREAD
+    mysql_thread_init();
+#endif
+
+
     setOpen(true);
     setOpenError(false);
     return true;
@@ -1287,6 +1292,9 @@ bool QMYSQLDriver::open(const QString& db,
 void QMYSQLDriver::close()
 {
     if (isOpen()) {
+#ifndef QT_NO_THREAD
+        mysql_thread_end();
+#endif
         mysql_close(d->mysql);
         d->mysql = NULL;
         setOpen(false);

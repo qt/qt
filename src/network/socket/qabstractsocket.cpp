@@ -1128,7 +1128,7 @@ bool QAbstractSocketPrivate::readFromSocket()
 
 /*! \internal
 
-    Sets up the the internal state after the connection has succeeded.
+    Sets up the internal state after the connection has succeeded.
 */
 void QAbstractSocketPrivate::fetchConnectionParameters()
 {

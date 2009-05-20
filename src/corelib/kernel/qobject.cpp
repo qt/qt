@@ -345,18 +345,6 @@ void QObjectPrivate::derefSender(QObject *sender, int signal)
     // Q_ASSERT_X(false, "QObjectPrivate::derefSender", "sender not found");
 }
 
-void QObjectPrivate::removeSender(QObject *sender, int signal)
-{
-    for (int i = 0; i < senders.count(); ++i) {
-        Sender &s = senders[i];
-        if (s.sender == sender && s.signal == signal) {
-            senders.removeAt(i);
-            return;
-        }
-    }
-    // Q_ASSERT_X(false, "QObjectPrivate::removeSender", "sender not found");
-}
-
 QObjectPrivate::Sender *QObjectPrivate::setCurrentSender(QObject *receiver,
                                                          Sender *sender)
 {
@@ -790,7 +778,7 @@ QObject::~QObject()
                     bool needToUnlock = QOrderedMutexLocker::relock(locker.mutex(), m);
                     c = &connectionList[i];
                     if (c->receiver)
-                        c->receiver->d_func()->removeSender(this, signal);
+                        c->receiver->d_func()->derefSender(this, signal);
                     if (needToUnlock)
                         m->unlock();
 
@@ -811,18 +799,22 @@ QObject::~QObject()
         }
 
         // disconnect all senders
-        for (int i = 0; i < d->senders.count(); ++i) {
+        for (int i = 0; i < d->senders.count(); ) {
             QObjectPrivate::Sender *s = &d->senders[i];
-            if (!s->sender)
-                continue;
 
             QMutex *m = &s->sender->d_func()->threadData->mutex;
             bool needToUnlock = QOrderedMutexLocker::relock(locker.mutex(), m);
-            s = &d->senders[i];
-            if (s->sender)
-                s->sender->d_func()->removeReceiver(s->signal, this);
+            if (m < locker.mutex()) {
+                if (i >= d->senders.count() || s != &d->senders[i]) {
+                    if (needToUnlock)
+                        m->unlock();
+                    continue;
+                }
+            }
+            s->sender->d_func()->removeReceiver(s->signal, this);
             if (needToUnlock)
                 m->unlock();
+            ++i;
         }
 
         d->senders.clear();

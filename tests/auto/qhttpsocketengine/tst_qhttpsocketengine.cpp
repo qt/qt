@@ -306,7 +306,6 @@ void tst_QHttpSocketEngine::simpleConnectToIMAP()
 
     socketDevice.setProxy(QNetworkProxy(QNetworkProxy::HttpProxy, QtNetworkSettings::serverName(), 3128));
 
-    // Connect to imap.trolltech.com's IP
     QVERIFY(!socketDevice.connectToHost(QHostAddress(QtNetworkSettings::serverIP()), 143));
     QVERIFY(socketDevice.state() == QAbstractSocket::ConnectingState);
     QVERIFY(socketDevice.waitForWrite());
@@ -368,7 +367,6 @@ void tst_QHttpSocketEngine::simpleErrorsAndStates()
         QVERIFY(!socketDevice.connectToHost(QHostAddress(QtNetworkSettings::serverName()), 8088));
         QVERIFY(socketDevice.state() == QAbstractSocket::ConnectingState);
         if (socketDevice.waitForWrite(15000)) {
-        	qDebug() << socketDevice.state();
             QVERIFY(socketDevice.state() == QAbstractSocket::ConnectedState ||
                     socketDevice.state() == QAbstractSocket::UnconnectedState);
         } else {
@@ -697,7 +695,6 @@ void tst_QHttpSocketEngine::passwordAuth()
 
     socketDevice.setProxy(QNetworkProxy(QNetworkProxy::HttpProxy, QtNetworkSettings::serverName(), 3128, "qsockstest", "password"));
 
-    // Connect to imap.trolltech.com's IP
     QVERIFY(!socketDevice.connectToHost(QHostAddress(QtNetworkSettings::serverIP()), 143));
     QVERIFY(socketDevice.state() == QAbstractSocket::ConnectingState);
     QVERIFY(socketDevice.waitForWrite());

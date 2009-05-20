@@ -255,7 +255,7 @@ QGraphicsItem *QGraphicsLayoutItemPrivate::parentItem() const
     passing a QGraphicsLayoutItem pointer to QGraphicsLayoutItem's
     protected constructor, or by calling setParentLayoutItem(). The
     parentLayoutItem() function returns a pointer to the item's layoutItem
-    parent. If the item's parent is 0 or if the the parent does not inherit
+    parent. If the item's parent is 0 or if the parent does not inherit
     from QGraphicsItem, the parentLayoutItem() function then returns 0.
     isLayout() returns true if the QGraphicsLayoutItem subclass is itself a
     layout, or false otherwise.

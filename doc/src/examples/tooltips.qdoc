@@ -353,7 +353,7 @@
     Whenever the user creates a new shape item, we want the new item
     to appear at a random position, and we use the \c
     randomItemPosition() function to calculate such a position. We
-    make sure that the item appears within the the visible area of the
+    make sure that the item appears within the visible area of the
     \c SortingBox widget, using the widget's current width and heigth
     when calculating the random coordinates.
 
