@@ -12,6 +12,8 @@
 #include <QStack>
 #include <QtDebug>
 
+#include <qfxperf.h>
+
 QT_BEGIN_NAMESPACE
 
 using namespace JavaScript;
@@ -621,6 +623,9 @@ QmlScriptParser::~QmlScriptParser()
 
 bool QmlScriptParser::parse(const QByteArray &data, const QUrl &url)
 {
+#ifdef Q_ENABLE_PERFORMANCE_LOG
+    QFxPerfTimer<QFxPerf::QmlParsing> pt;
+#endif
     const QString fileName = url.toString();
 
     QTextStream stream(data, QIODevice::ReadOnly);
