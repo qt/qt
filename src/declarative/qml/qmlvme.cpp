@@ -87,7 +87,6 @@ Q_DECLARE_PERFORMANCE_LOG(QFxCompiler) {
     Q_DECLARE_PERFORMANCE_METRIC(InstrStoreObject);
     Q_DECLARE_PERFORMANCE_METRIC(InstrStoreSignal);
     Q_DECLARE_PERFORMANCE_METRIC(InstrStoreObjectQmlList);
-    Q_DECLARE_PERFORMANCE_METRIC(InstrAssignConstant);
     Q_DECLARE_PERFORMANCE_METRIC(InstrAssignSignalObject);
     Q_DECLARE_PERFORMANCE_METRIC(InstrAssignValueSource);
     Q_DECLARE_PERFORMANCE_METRIC(InstrStoreBinding);
@@ -134,7 +133,6 @@ Q_DEFINE_PERFORMANCE_LOG(QFxCompiler, "QFxCompiler") {
     Q_DEFINE_PERFORMANCE_METRIC(InstrStoreObject, "StoreObject");
     Q_DEFINE_PERFORMANCE_METRIC(InstrStoreSignal, "StoreSignal");
     Q_DEFINE_PERFORMANCE_METRIC(InstrStoreObjectQmlList, "StoreObjectQmlList");
-    Q_DEFINE_PERFORMANCE_METRIC(InstrAssignConstant, "AssignConstant");
     Q_DEFINE_PERFORMANCE_METRIC(InstrAssignSignalObject, "AssignSignalObject");
     Q_DEFINE_PERFORMANCE_METRIC(InstrAssignValueSource, "AssignValueSource");
     Q_DEFINE_PERFORMANCE_METRIC(InstrStoreBinding, "StoreBinding");
