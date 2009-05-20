@@ -204,7 +204,8 @@ QPixmap QS60StylePrivate::backgroundTexture()
 
     if (!m_backgroundValid) {
         result = QPixmap();
-        result = part(QS60StyleEnums::SP_QsnBgScreen, QApplication::activeWindow()->size());
+        const QSize size = QApplication::activeWindow()?QApplication::activeWindow()->size():QSize(100, 100);
+        result = part(QS60StyleEnums::SP_QsnBgScreen, size);
         m_backgroundValid = true;
     }
     return result;
@@ -285,8 +286,10 @@ QStringList QS60Style::colorListKeys()
 void QS60Style::setS60Theme(const QHash<QString, QPicture> &parts,
     const QHash<QPair<QString , int>, QColor> &colors)
 {
+    Q_D(QS60Style);
     QS60StyleModeSpecifics::m_partPictures = parts;
     QS60StyleModeSpecifics::m_colors = colors;
+    d->clearCaches();
 }
 
 QT_END_NAMESPACE
