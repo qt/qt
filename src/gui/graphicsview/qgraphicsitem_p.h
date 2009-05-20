@@ -115,7 +115,7 @@ public:
         opacity(1.),
         scene(0),
         parent(0),
-        transform(0),
+        transformData(0),
         index(-1),
         depth(0),
         acceptedMouseButtons(0x1f),
@@ -147,8 +147,8 @@ public:
         dirtyChildrenBoundingRect(1),
         paintedViewBoundingRectsNeedRepaint(0),
         dirtySceneTransform(1),
-        itemChangesEnabled(0xffff),
         geometryChanged(0),
+        itemChangesEnabled(0xffff),
         globalStackingOrder(-1),
         q_ptr(0)
     {
@@ -352,6 +352,8 @@ public:
                || (childrenCombineOpacity() && isFullyTransparent());
     }
 
+    inline QTransform transformToParent() const;
+
     QPainterPath cachedClipPath;
     QRectF childrenBoundingRect;
     QRectF needsRepaint;
@@ -362,7 +364,8 @@ public:
     QGraphicsScene *scene;
     QGraphicsItem *parent;
     QList<QGraphicsItem *> children;
-    QTransform *transform;
+    class TransformData;
+    TransformData *transformData;
     QTransform sceneTransform;
     int index;
     int depth;
@@ -399,15 +402,56 @@ public:
     quint32 dirtyChildrenBoundingRect : 1;
     quint32 paintedViewBoundingRectsNeedRepaint : 1;
     quint32 dirtySceneTransform  : 1;
-    quint32 itemChangesEnabled : 16;
     quint32 geometryChanged : 1;
-    quint32 padding : 2; // feel free to use
+    quint32 unused : 2; // feel free to use
+    quint32 itemChangesEnabled : 16;
 
     // Optional stacking order
     int globalStackingOrder;
-
     QGraphicsItem *q_ptr;
 };
+
+struct QGraphicsItemPrivate::TransformData {
+    QTransform transform;
+    qreal xScale;
+    qreal yScale;
+    qreal xRotation;
+    qreal yRotation;
+    qreal zRotation;
+    qreal horizontalShear;
+    qreal verticalShear;
+    qreal xOrigin;
+    qreal yOrigin;
+
+    TransformData() :
+        xScale(1.0), yScale(1.0), xRotation(0.0), yRotation(0.0), zRotation(0.0),
+        horizontalShear(0.0), verticalShear(0.0), xOrigin(0.0), yOrigin(0.0)
+    {}
+
+    QTransform computedFullTransform() const
+    {
+        QTransform x;
+        x.translate(xOrigin, yOrigin);
+        x = transform * x;
+        x.rotate(xRotation, Qt::XAxis);
+        x.rotate(yRotation, Qt::YAxis);
+        x.rotate(zRotation, Qt::ZAxis);
+        x.shear(horizontalShear, verticalShear);
+        x.scale(xScale, yScale);
+        x.translate(-xOrigin, -yOrigin);
+        return x;
+    }
+};
+
+/*
+   return the full transform of the item to the parent.  This include the position and all the transform data
+*/
+inline QTransform QGraphicsItemPrivate::transformToParent() const
+{
+    QTransform matrix;
+    combineTransformToParent(&matrix);
+    return matrix;
+}
 
 QT_END_NAMESPACE
 
