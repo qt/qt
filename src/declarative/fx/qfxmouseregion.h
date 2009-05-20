@@ -42,7 +42,7 @@
 #ifndef QFXMOUSEREGION_H
 #define QFXMOUSEREGION_H
 
-#include <qfxitem.h>
+#include <QtDeclarative/qfxitem.h>
 
 QT_BEGIN_HEADER
 

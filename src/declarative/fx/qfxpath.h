@@ -42,10 +42,10 @@
 #ifndef QFXPATH_H
 #define QFXPATH_H
 
-#include <QObject>
-#include <QPainterPath>
-#include <qml.h>
-#include <qfxitem.h>
+#include <QtCore/QObject>
+#include <QtGui/QPainterPath>
+#include <QtDeclarative/qml.h>
+#include <QtDeclarative/qfxitem.h>
 
 
 QT_BEGIN_HEADER

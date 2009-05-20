@@ -14,7 +14,8 @@ SUBDIRS += datetimeformatter \
            qmlmetaproperty \
            qmllist \
            qmllistaccessor \
-           visual
+           visual\
+           qmlengine
 
 # Tests which should run in Pulse
 PULSE_TESTS = $$SUBDIRS

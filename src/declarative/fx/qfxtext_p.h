@@ -56,6 +56,7 @@
 #include "qfxitem.h"
 #include "qfxitem_p.h"
 #include "qml.h"
+#include <QtGui/qtextlayout.h>
 
 #if defined(QFX_RENDER_OPENGL)
 #include "gltexture.h"
@@ -72,7 +73,9 @@ class QFxTextPrivate : public QFxItemPrivate
     Q_DECLARE_PUBLIC(QFxText)
 public:
     QFxTextPrivate()
-      : _font(0), color((QRgb)0), style(QFxText::Normal), imgDirty(true), hAlign(QFxText::AlignLeft), vAlign(QFxText::AlignTop), elideMode(Qt::ElideNone), dirty(false), wrap(false), richText(false), singleline(false), control(0), doc(0)
+      : _font(0), color((QRgb)0), style(QFxText::Normal), imgDirty(true),
+        hAlign(QFxText::AlignLeft), vAlign(QFxText::AlignTop), elideMode(Qt::ElideNone),
+        dirty(false), wrap(false), richText(false), singleline(false), control(0), doc(0)
     {
     }
 
@@ -126,6 +129,8 @@ public:
     bool singleline;
     QTextControl *control;
     QTextDocument *doc;
+    QTextLayout layout;
+    QSize cachedLayoutSize;
 };
 
 QT_END_NAMESPACE

@@ -42,8 +42,8 @@
 #ifndef QFXEVENTS_P_H
 #define QFXEVENTS_P_H
 
-#include <qfxglobal.h>
-#include <qml.h>
+#include <QtDeclarative/qfxglobal.h>
+#include <QtDeclarative/qml.h>
 #include <QtCore/qobject.h>
 #include <QtGui/qevent.h>
 

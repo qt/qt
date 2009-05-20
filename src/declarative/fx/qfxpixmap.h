@@ -42,10 +42,10 @@
 #ifndef QFXPIXMAP_H
 #define QFXPIXMAP_H
 
-#include <QString>
-#include <qsimplecanvas.h>
-#include <qfxglobal.h>
-#include <QPixmap>
+#include <QtCore/QString>
+#include <QtGui/QPixmap>
+#include <QtDeclarative/qsimplecanvas.h>
+#include <QtDeclarative/qfxglobal.h>
 
 
 QT_BEGIN_HEADER

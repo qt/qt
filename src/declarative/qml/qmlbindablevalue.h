@@ -42,10 +42,10 @@
 #ifndef QMLBINDABLEVALUE_H
 #define QMLBINDABLEVALUE_H
 
-#include <QObject>
-#include <qfxglobal.h>
-#include <qml.h>
-#include <qmlpropertyvaluesource.h>
+#include <QtCore/QObject>
+#include <QtDeclarative/qfxglobal.h>
+#include <QtDeclarative/qml.h>
+#include <QtDeclarative/qmlpropertyvaluesource.h>
 #include <QtDeclarative/qmlexpression.h>
 
 

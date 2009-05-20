@@ -42,9 +42,9 @@
 #ifndef QFXITEM_H
 #define QFXITEM_H
 
-#include <QObject>
+#include <QtCore/QObject>
 #include <QtScript/qscriptvalue.h>
-#include <QList>
+#include <QtCore/QList>
 #include <QtDeclarative/qfxanchors.h>
 #include <QtDeclarative/qfxglobal.h>
 #include <QtDeclarative/qml.h>

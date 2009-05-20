@@ -42,9 +42,9 @@
 #ifndef QMLVMEMETAOBJECT_P_H
 #define QMLVMEMETAOBJECT_P_H
 
-#include <qml.h>
-#include <QMetaObject>
-#include <QBitArray>
+#include <QtDeclarative/qml.h>
+#include <QtCore/QMetaObject>
+#include <QtCore/QBitArray>
 #include <private/qobject_p.h>
 
 QT_BEGIN_NAMESPACE

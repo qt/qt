@@ -42,7 +42,7 @@
 #ifndef QFXFOCUSPANEL_H
 #define QFXFOCUSPANEL_H
 
-#include <qfxitem.h>
+#include <QtDeclarative/qfxitem.h>
 
 
 QT_BEGIN_HEADER

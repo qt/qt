@@ -42,10 +42,10 @@
 #ifndef QMLPARSER_P_H
 #define QMLPARSER_P_H
 
-#include <QByteArray>
-#include <QList>
+#include <QtCore/QByteArray>
+#include <QtCore/QList>
 #include <QtCore/qstring.h>
-#include <qml.h>
+#include <QtDeclarative/qml.h>
 #include <private/qmlrefcount_p.h>
 #include <private/qobject_p.h>
 

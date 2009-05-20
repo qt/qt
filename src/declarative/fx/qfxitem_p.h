@@ -53,11 +53,11 @@
 // We mean it.
 //
 
-#include "qfxitem.h"
+#include <QtDeclarative/qfxitem.h>
 #include <private/qsimplecanvasitem_p.h>
 #include <private/qmlnullablevalue_p.h>
-#include <qml.h>
-#include <qmlcontext.h>
+#include <QtDeclarative/qml.h>
+#include <QtDeclarative/qmlcontext.h>
 #include <QtCore/qlist.h>
 
 QT_BEGIN_NAMESPACE

@@ -42,10 +42,10 @@
 #ifndef _GLTEXTURE_H_
 #define _GLTEXTURE_H_
 
-#include <qfxglobal.h>
+#include <QtDeclarative/qfxglobal.h>
 
-#include <QRect>
-#include <QPoint>
+#include <QtCore/QRect>
+#include <QtCore/QPoint>
 #include "glheaders.h"
 
 

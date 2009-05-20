@@ -44,7 +44,7 @@
 
 #include <QtCore/qobject.h>
 #include <QtCore/qabstractitemmodel.h>
-#include <qml.h>
+#include <QtDeclarative/qml.h>
 
 
 QT_BEGIN_HEADER

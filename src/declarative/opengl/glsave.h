@@ -42,9 +42,9 @@
 #ifndef _GLSAVE_H_
 #define _GLSAVE_H_
 
-#include <qglobal.h>
-#include <qfxglobal.h>
-#include <QRect>
+#include <QtCore/qglobal.h>
+#include <QtDeclarative/qfxglobal.h>
+#include <QtCore/QRect>
 #include "glheaders.h"
 
 

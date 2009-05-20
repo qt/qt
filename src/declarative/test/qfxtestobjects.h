@@ -42,10 +42,10 @@
 #ifndef _QFXTESTOBJECTS_H_
 #define _QFXTESTOBJECTS_H_
 
-#include <QObject>
-#include <QPoint>
-#include <QList>
-#include <QXmlStreamWriter>
+#include <QtCore/QObject>
+#include <QtCore/QPoint>
+#include <QtCore/QList>
+#include <QtCore/QXmlStreamWriter>
 
 
 QT_BEGIN_HEADER

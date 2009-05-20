@@ -42,9 +42,9 @@
 #ifndef NUMBERFORMAT_H
 #define NUMBERFORMAT_H 
 
-#include "qml.h"
-#include <QtGui>
-
+#include <QtDeclarative/qml.h>
+#include <QtCore/QLocale>
+#include <QtCore/QTime>
 
 QT_BEGIN_HEADER
 

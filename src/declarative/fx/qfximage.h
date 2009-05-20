@@ -42,7 +42,7 @@
 #ifndef QFXIMAGE_H
 #define QFXIMAGE_H
 
-#include <qfxitem.h>
+#include <QtDeclarative/qfxitem.h>
 #include <QtNetwork/qnetworkreply.h>
 
 

@@ -42,7 +42,7 @@
 #ifndef QFXLISTVIEW_H
 #define QFXLISTVIEW_H
 
-#include <qfxflickable.h>
+#include <QtDeclarative/qfxflickable.h>
 
 
 QT_BEGIN_HEADER

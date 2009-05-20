@@ -43,8 +43,8 @@
 #define QMLBINDABLEVALUE_P_H
 
 #include <private/qobject_p.h>
-#include <qmlbindablevalue.h>
-#include <qmlmetaproperty.h>
+#include <QtDeclarative/qmlbindablevalue.h>
+#include <QtDeclarative/qmlmetaproperty.h>
 
 QT_BEGIN_NAMESPACE
 
