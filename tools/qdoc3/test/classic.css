@@ -1,5 +1,5 @@
 BODY,H1,H2,H3,H4,H5,H6,P,CENTER,TD,TH,UL,DL,DIV {
-  font-family: Geneva, Arial, Helvetica, sans-serif;
+  font-family: Arial, Geneva, Helvetica, sans-serif;
 }
 BODY,TD {
   font-size: 90%;
@@ -20,7 +20,7 @@ h3.fn,span.fn
   background-color: #d5e1d5;
   border-width: 1px;
   border-style: solid;
-  border-color: #84b0c7;
+  border-color: #66bc29;
   font-weight: bold;
   -moz-border-radius: 8px 8px 8px 8px;
   padding: 6px 0px 6px 10px;
@@ -28,7 +28,7 @@ h3.fn,span.fn
 
 a:link
 {
-  color: #004faf;
+  color: #0046ad;
   text-decoration: none
 }
 
@@ -62,16 +62,6 @@ a.compat:visited
   text-decoration: none
 }
 
-td.postheader
-{
-  font-family: sans-serif
-}
-
-tr.address
-{
-  font-family: sans-serif
-}
-
 body
 {
   background: #ffffff;
@@ -86,10 +76,10 @@ table td.memItemLeft {
   border-right-width: 1px;
   border-bottom-width: 1px;
   border-left-width: 1px;
-  border-top-color: #E0E0E0;
-  border-right-color: #E0E0E0;
-  border-bottom-color: #E0E0E0;
-  border-left-color: #E0E0E0;
+  border-top-color: #66bc29;
+  border-right-color: #66bc29;
+  border-bottom-color: #66bc29;
+  border-left-color: #66bc29;
   border-top-style: solid;
   border-right-style: none;
   border-bottom-style: none;
@@ -104,15 +94,15 @@ table td.memItemRight {
   border-right-width: 1px;
   border-bottom-width: 1px;
   border-left-width: 1px;
-  border-top-color: #E0E0E0;
-  border-right-color: #E0E0E0;
-  border-bottom-color: #E0E0E0;
-  border-left-color: #E0E0E0;
+  border-top-color: #66bc29;
+  border-right-color: #66bc29;
+  border-bottom-color: #66bc29;
+  border-left-color: #66bc29;
   border-top-style: solid;
   border-right-style: none;
   border-bottom-style: none;
   border-left-style: none;
-  background-color: #d5e1d5;
+  background-color: #FAFAFA;
   font-size: 80%;
 }
 
