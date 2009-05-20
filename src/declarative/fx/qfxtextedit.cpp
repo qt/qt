@@ -616,6 +616,20 @@ void QFxTextEdit::moveCursor(QTextCursor::MoveOperation operation, QTextCursor::
 
 /*!
 \overload
+Handles the given \a event.
+*/
+bool QFxTextEdit::event(QEvent *event)
+{
+    Q_D(QFxTextEdit);
+    if (event->type() == QEvent::ShortcutOverride) {
+        d->control->processEvent(event, QPointF(0, 0));
+        return true;
+    }
+    return QFxPaintedItem::event(event);
+}
+
+/*!
+\overload
 Handles the given key \a event.
 */
 void QFxTextEdit::keyPressEvent(QKeyEvent *event)

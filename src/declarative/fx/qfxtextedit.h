@@ -174,6 +174,7 @@ protected:
     virtual void geometryChanged(const QRectF &newGeometry, 
                                  const QRectF &oldGeometry);
 
+    bool event(QEvent *);
     void keyPressEvent(QKeyEvent *);
     void keyReleaseEvent(QKeyEvent *);
 

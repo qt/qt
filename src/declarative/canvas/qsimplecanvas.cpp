@@ -957,9 +957,14 @@ bool QSimpleCanvas::event(QEvent *e)
             queueUpdate();
 
         return true;
-    } else {
-        return QWidget::event(e);
     }
+
+    if (e->type() == QEvent::ShortcutOverride) {
+        if (QSimpleCanvasItem *focus = focusItem())
+            return focus->event(e);
+    }
+
+    return QWidget::event(e);
 }
 
 void QSimpleCanvas::paintEvent(QPaintEvent *)
