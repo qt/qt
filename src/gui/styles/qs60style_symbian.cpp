@@ -161,7 +161,7 @@ const partMapEntry QS60StyleModeSpecifics::m_partMap[] = {
     /* SP_QsnCpScrollHandleMiddle */    {KAknsIIDQsnCpScrollHandleMiddle,     EDrawIcon,   ES60_AllReleases,  -1,-1},
     /* SP_QsnCpScrollHandleTop */       {KAknsIIDQsnCpScrollHandleTop,        EDrawIcon,   ES60_AllReleases,  -1,-1},
 
-    /* SP_QsnFrButtonTbCornerTl */      {KAknsIIDQsnFrButtonTbCornerTl,       ENoDraw,     ES60_AllReleases,  -1,-1},
+    /* SP_QsnFrButtonTbCornerTl */      {KAknsIIDQsnFrButtonTbCornerTl,       ENoDraw,     ES60_AllReleases,  -1,-1}, //todo: use "normal button" from 5.0 onwards
     /* SP_QsnFrButtonTbCornerTr */      {KAknsIIDQsnFrButtonTbCornerTr,       ENoDraw,     ES60_AllReleases,  -1,-1},
     /* SP_QsnFrButtonTbCornerBl */      {KAknsIIDQsnFrButtonTbCornerBl,       ENoDraw,     ES60_AllReleases,  -1,-1},
     /* SP_QsnFrButtonTbCornerBr */      {KAknsIIDQsnFrButtonTbCornerBr,       ENoDraw,     ES60_AllReleases,  -1,-1},
@@ -275,15 +275,15 @@ const partMapEntry QS60StyleModeSpecifics::m_partMap[] = {
     /* SP_QsnFrSctrlButtonCenter */     {KAknsIIDQsnFrButtonTbCenter,         ENoDraw,   ES60_3_1 | ES60_3_2,  EAknsMajorSkin, 0x2309}, /*KAknsIIDQgnFrSctrlButtonCenter*/
 
     // No pressed state for toolbar button in 3.1/3.2.
-    /* SP_QsnFrSctrlButtonCornerTlPressed */ {KAknsIIDQsnFrButtonTbCornerTl,  ENoDraw,   ES60_3_1 | ES60_3_2,  EAknsMajorSkin, 0x2621},  /*KAknsIIDQsnFrSctrlButtonCornerTlPressed*/
-    /* SP_QsnFrSctrlButtonCornerTrPressed */ {KAknsIIDQsnFrButtonTbCornerTr,  ENoDraw,   ES60_3_1 | ES60_3_2,  EAknsMajorSkin, 0x2622},
-    /* SP_QsnFrSctrlButtonCornerBlPressed */ {KAknsIIDQsnFrButtonTbCornerBl,  ENoDraw,   ES60_3_1 | ES60_3_2,  EAknsMajorSkin, 0x2623},
-    /* SP_QsnFrSctrlButtonCornerBrPressed */ {KAknsIIDQsnFrButtonTbCornerBl,  ENoDraw,   ES60_3_1 | ES60_3_2,  EAknsMajorSkin, 0x2624},
-    /* SP_QsnFrSctrlButtonSideTPressed */    {KAknsIIDQsnFrButtonTbSideT,     ENoDraw,   ES60_3_1 | ES60_3_2,  EAknsMajorSkin, 0x2625},
-    /* SP_QsnFrSctrlButtonSideBPressed */    {KAknsIIDQsnFrButtonTbSideB,     ENoDraw,   ES60_3_1 | ES60_3_2,  EAknsMajorSkin, 0x2626},
-    /* SP_QsnFrSctrlButtonSideLPressed */    {KAknsIIDQsnFrButtonTbSideL,     ENoDraw,   ES60_3_1 | ES60_3_2,  EAknsMajorSkin, 0x2627},
-    /* SP_QsnFrSctrlButtonSideRPressed */    {KAknsIIDQsnFrButtonTbSideR,     ENoDraw,   ES60_3_1 | ES60_3_2,  EAknsMajorSkin, 0x2628},
-    /* SP_QsnFrSctrlButtonCenterPressed */   {KAknsIIDQsnFrButtonTbCenter,    ENoDraw,   ES60_3_1 | ES60_3_2,  EAknsMajorSkin, 0x2629}
+    /* SP_QsnFrSctrlButtonCornerTlPressed */ {KAknsIIDQsnFrButtonTbCornerTl,  ENoDraw,  ES60_3_1 | ES60_3_2,  EAknsMajorSkin, 0x2621},  /*KAknsIIDQsnFrSctrlButtonCornerTlPressed*/
+    /* SP_QsnFrSctrlButtonCornerTrPressed */ {KAknsIIDQsnFrButtonTbCornerTr,  ENoDraw,  ES60_3_1 | ES60_3_2,  EAknsMajorSkin, 0x2622},
+    /* SP_QsnFrSctrlButtonCornerBlPressed */ {KAknsIIDQsnFrButtonTbCornerBl,  ENoDraw,  ES60_3_1 | ES60_3_2,  EAknsMajorSkin, 0x2623},
+    /* SP_QsnFrSctrlButtonCornerBrPressed */ {KAknsIIDQsnFrButtonTbCornerBr,  ENoDraw,  ES60_3_1 | ES60_3_2,  EAknsMajorSkin, 0x2624},
+    /* SP_QsnFrSctrlButtonSideTPressed */    {KAknsIIDQsnFrButtonTbSideT,     ENoDraw,  ES60_3_1 | ES60_3_2,  EAknsMajorSkin, 0x2625},
+    /* SP_QsnFrSctrlButtonSideBPressed */    {KAknsIIDQsnFrButtonTbSideB,     ENoDraw,  ES60_3_1 | ES60_3_2,  EAknsMajorSkin, 0x2626},
+    /* SP_QsnFrSctrlButtonSideLPressed */    {KAknsIIDQsnFrButtonTbSideL,     ENoDraw,  ES60_3_1 | ES60_3_2,  EAknsMajorSkin, 0x2627},
+    /* SP_QsnFrSctrlButtonSideRPressed */    {KAknsIIDQsnFrButtonTbSideR,     ENoDraw,  ES60_3_1 | ES60_3_2,  EAknsMajorSkin, 0x2628},
+    /* SP_QsnFrSctrlButtonCenterPressed */   {KAknsIIDQsnFrButtonTbCenter,    ENoDraw,  ES60_3_1 | ES60_3_2,  EAknsMajorSkin, 0x2629}
 };
 
 QPixmap QS60StyleModeSpecifics::skinnedGraphics(
