@@ -706,15 +706,10 @@ void QMessageBoxPrivate::_q_buttonClicked(QAbstractButton *button)
     Constructs a message box with no text and no buttons. \a parent is
     passed to the QDialog constructor.
 
-    If \a parent is 0, the message box is an \l{Qt::ApplicationModal}
-    {application modal} dialog box. If \a parent is a widget, the
-    message box is \l{Qt::WindowModal} {window modal} relative to \a
-    parent.
-
-    On Mac OS X, if \a parent is not 0 and you want your message box
-    to appear as a Qt::Sheet of that parent, set the message box's
-    \l{setWindowModality()} {window modality} to Qt::WindowModal
-    (default). Otherwise, the message box will be a standard dialog.
+    On Mac OS X, if you want your message box to appear
+    as a Qt::Sheet of its \a parent, set the message box's
+    \l{setWindowModality()} {window modality} to Qt::WindowModal or use open().
+    Otherwise, the message box will be a standard dialog.
 
 */
 QMessageBox::QMessageBox(QWidget *parent)
