@@ -42,10 +42,10 @@
 #ifndef QFXLAYOUTS_H
 #define QFXLAYOUTS_H
 
-#include <qfxitem.h>
-#include <QObject>
-#include <QString>
-#include <qmlstate.h>
+#include <QtCore/QObject>
+#include <QtCore/QString>
+#include <QtDeclarative/qfxitem.h>
+#include <QtDeclarative/qmlstate.h>
 
 
 QT_BEGIN_HEADER

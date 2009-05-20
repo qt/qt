@@ -13,10 +13,10 @@
 #define QMLBASICSCRIPT_H
 
 #include "instructions.h"
-#include <QList>
-#include <QByteArray>
+#include <QtCore/QList>
+#include <QtCore/QByteArray>
 #include "lexer.h"
-#include <QVariant>
+#include <QtCore/QVariant>
 
 
 QT_BEGIN_HEADER

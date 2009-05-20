@@ -42,11 +42,7 @@
 #ifndef QSTATEMACHINE_H
 #define QSTATEMACHINE_H
 
-#ifndef QT_STATEMACHINE_SOLUTION
-#  include <QtCore/qabstractstate.h>
-#else
-#  include "qabstractstate.h"
-#endif
+#include <QtCore/qabstractstate.h>
 
 #include <QtCore/qlist.h>
 #include <QtCore/qobject.h>
@@ -151,9 +147,6 @@ protected:
     bool event(QEvent *e);
 
 protected:
-#ifdef QT_STATEMACHINE_SOLUTION
-     QStateMachinePrivate *d_ptr;
-#endif
     QStateMachine(QStateMachinePrivate &dd, QObject *parent);
 
 private:

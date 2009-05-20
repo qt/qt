@@ -42,7 +42,7 @@
 #ifndef QSIMPLECANVAS_H
 #define QSIMPLECANVAS_H
 
-#include <qfxglobal.h>
+#include <QtDeclarative/qfxglobal.h>
 
 #ifdef QFX_RENDER_OPENGL
 #include <QtGui/qmatrix4x4.h>

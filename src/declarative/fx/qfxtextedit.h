@@ -42,8 +42,8 @@
 #ifndef QFXTEXTEDIT_H
 #define QFXTEXTEDIT_H
 
-#include <qfxtext.h>
-#include <qfxpainteditem.h>
+#include <QtDeclarative/qfxtext.h>
+#include <QtDeclarative/qfxpainteditem.h>
 
 #include <QtGui/qtextdocument.h>
 #include <QtGui/qtextoption.h>

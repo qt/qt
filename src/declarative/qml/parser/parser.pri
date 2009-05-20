@@ -8,8 +8,7 @@ HEADERS += $$PWD/javascriptast_p.h \
            $$PWD/javascriptmemorypool_p.h \
            $$PWD/javascriptnodepool_p.h \
            $$PWD/javascriptparser_p.h \
-           $$PWD/javascriptprettypretty_p.h \
-           $$PWD/javascriptvalue.h \
+           $$PWD/javascriptprettypretty_p.h
 
 SOURCES += $$PWD/javascriptast.cpp \
            $$PWD/javascriptastvisitor.cpp \

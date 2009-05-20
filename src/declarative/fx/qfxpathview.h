@@ -42,8 +42,8 @@
 #ifndef QFXPATHVIEW_H
 #define QFXPATHVIEW_H
 
-#include <qfxitem.h>
-#include <qfxpath.h>
+#include <QtDeclarative/qfxitem.h>
+#include <QtDeclarative/qfxpath.h>
 
 QT_BEGIN_HEADER
 

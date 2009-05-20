@@ -662,7 +662,6 @@ void QFxTextEdit::keyReleaseEvent(QKeyEvent *event)
 */
 void QFxTextEdit::focusChanged(bool hasFocus)
 {
-    Q_D(QFxTextEdit);
     setCursorVisible(hasFocus);
 }
 
@@ -675,29 +674,6 @@ void QFxTextEdit::selectAll()
     d->control->selectAll();
 }
 
-static QMouseEvent *sceneMouseEventToMouseEvent(QGraphicsSceneMouseEvent *e)
-{
-    QEvent::Type t;
-    switch(e->type()) {
-    default:
-    case QEvent::GraphicsSceneMousePress:
-        t = QEvent::MouseButtonPress;
-        break;
-    case QEvent::GraphicsSceneMouseRelease:
-        t = QEvent::MouseButtonRelease;
-        break;
-    case QEvent::GraphicsSceneMouseMove:
-        t = QEvent::MouseMove;
-        break;
-    case QGraphicsSceneEvent::GraphicsSceneMouseDoubleClick:
-        t = QEvent::MouseButtonDblClick;
-        break;
-    }
-
-    QMouseEvent *me = new QMouseEvent(t, e->pos().toPoint(), e->button(), e->buttons(), 0);
-    return me;
-}
-
 /*!
 \overload
 Handles the given mouse \a event.
@@ -707,10 +683,7 @@ void QFxTextEdit::mousePressEvent(QGraphicsSceneMouseEvent *event)
     Q_D(QFxTextEdit);
     if (d->focusOnPress)
         setFocus(true);
-    QMouseEvent *me = sceneMouseEventToMouseEvent(event);
-    d->control->processEvent(me, QPointF(0, 0));
-    event->setAccepted(me->isAccepted());
-    delete me;
+    d->control->processEvent(event, QPointF(0, 0));
     if (!event->isAccepted())
         QFxPaintedItem::mousePressEvent(event);
 }
@@ -722,10 +695,7 @@ Handles the given mouse \a event.
 void QFxTextEdit::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
 {
     Q_D(QFxTextEdit);
-    QMouseEvent *me = sceneMouseEventToMouseEvent(event);
-    d->control->processEvent(me, QPointF(0, 0));
-    event->setAccepted(me->isAccepted());
-    delete me;
+    d->control->processEvent(event, QPointF(0, 0));
     if (!event->isAccepted())
         QFxPaintedItem::mousePressEvent(event);
 }
@@ -737,10 +707,7 @@ Handles the given mouse \a event.
 void QFxTextEdit::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
 {
     Q_D(QFxTextEdit);
-    QMouseEvent *me = sceneMouseEventToMouseEvent(event);
-    d->control->processEvent(me, QPointF(0, 0));
-    event->setAccepted(me->isAccepted());
-    delete me;
+    d->control->processEvent(event, QPointF(0, 0));
     if (!event->isAccepted())
         QFxPaintedItem::mousePressEvent(event);
 }

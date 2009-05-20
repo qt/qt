@@ -42,7 +42,7 @@
 #ifndef QMLCOMPILEDCOMPONENT_P_H
 #define QMLCOMPILEDCOMPONENT_P_H
 
-#include <qml.h>
+#include <QtDeclarative/qml.h>
 #include <private/qmlinstruction_p.h>
 #include <private/qmlcompiler_p.h>
 #include <private/qmlrefcount_p.h>

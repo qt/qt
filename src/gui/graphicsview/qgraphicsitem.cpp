@@ -2640,6 +2640,10 @@ QTransform QGraphicsItem::sceneTransform() const
 */
 QTransform QGraphicsItem::deviceTransform(const QTransform &viewportTransform) const
 {
+    // Ensure we return the standard transform if we're not untransformable.
+    if (!d_ptr->itemIsUntransformable())
+        return sceneTransform() * viewportTransform;
+
     // Find the topmost item that ignores view transformations.
     const QGraphicsItem *untransformedAncestor = this;
     QList<const QGraphicsItem *> parents;
@@ -2836,7 +2840,7 @@ void QGraphicsItem::setMatrix(const QMatrix &matrix, bool combine)
     if (oldTransform == newTransform)
         return;
 
-    // Notify the item that the matrix is changing.
+    // Notify the item that the transformation matrix is changing.
     QVariant newTransformVariant(itemChange(ItemMatrixChange,
                                             qVariantFromValue<QMatrix>(newTransform.toAffine())));
     newTransform = QTransform(qVariantValue<QMatrix>(newTransformVariant));

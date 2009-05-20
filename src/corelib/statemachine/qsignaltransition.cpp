@@ -225,14 +225,10 @@ void QSignalTransition::setSignal(const QByteArray &signal)
   true if the event's sender and signal index match this transition, and
   returns false otherwise.
 */
-bool QSignalTransition::eventTest(QEvent *event) const
+bool QSignalTransition::eventTest(QEvent *event)
 {
     Q_D(const QSignalTransition);
-#ifndef QT_STATEMACHINE_SOLUTION
     if (event->type() == QEvent::Signal) {
-#else
-    if (event->type() == QEvent::Type(QEvent::User-1)) {
-#endif
         if (d->signalIndex == -1)
             return false;
         QSignalEvent *se = static_cast<QSignalEvent*>(event);

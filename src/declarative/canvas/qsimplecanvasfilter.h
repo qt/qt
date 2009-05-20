@@ -43,9 +43,9 @@
 #define QSIMPLECANVASFILTER_H
 
 #include <QtCore/qobject.h>
-#include <qfxglobal.h>
-#include <qsimplecanvasitem.h>
-#include <qsimplecanvas.h>
+#include <QtDeclarative/qfxglobal.h>
+#include <QtDeclarative/qsimplecanvasitem.h>
+#include <QtDeclarative/qsimplecanvas.h>
 
 
 QT_BEGIN_HEADER

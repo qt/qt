@@ -42,7 +42,7 @@
 #ifndef QFXANIMATEDIMAGEITEM_H
 #define QFXANIMATEDIMAGEITEM_H
 
-#include <qfximage.h>
+#include <QtDeclarative/qfximage.h>
 
 
 QT_BEGIN_HEADER

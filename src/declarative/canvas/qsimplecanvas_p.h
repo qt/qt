@@ -112,6 +112,7 @@ public:
 #if defined(QFX_RENDER_OPENGL)
       ,egl(q, this), basicShadersInstance(0)
 #endif
+      , paintVersion(1)
     {
     }
 
@@ -190,6 +191,7 @@ public:
     void release(QGLFramebufferObject *);
     void paintGL();
 #endif
+    int paintVersion;
 };
 
 #endif

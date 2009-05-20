@@ -42,9 +42,9 @@
 #ifndef QMLSCRIPT_H
 #define QMLSCRIPT_H
 
-#include <qfxglobal.h>
+#include <QtDeclarative/qfxglobal.h>
 #include <QtCore/qobject.h>
-#include "qml.h"
+#include <QtDeclarative/qml.h>
 
 QT_BEGIN_HEADER
 QT_BEGIN_NAMESPACE

@@ -62,7 +62,6 @@ public:
     int tickInterval;
     QSlider::TickPosition tickPosition;
     int clickOffset;
-    int snapBackPosition;
     void init();
 	void resetLayoutItemMargins();
     int pixelPosToRangeValue(int pos) const;
@@ -493,7 +492,6 @@ void QSlider::mousePressEvent(QMouseEvent *ev)
         setRepeatAction(SliderNoAction);
         QRect sr = style()->subControlRect(QStyle::CC_Slider, &opt, QStyle::SC_SliderHandle, this);
         d->clickOffset = d->pick(ev->pos() - sr.topLeft());
-        d->snapBackPosition = d->position;
         update(sr);
         setSliderDown(true);
     }
@@ -513,14 +511,6 @@ void QSlider::mouseMoveEvent(QMouseEvent *ev)
     int newPosition = d->pixelPosToRangeValue(d->pick(ev->pos()) - d->clickOffset);
     QStyleOptionSlider opt;
     initStyleOption(&opt);
-    int m = style()->pixelMetric(QStyle::PM_MaximumDragDistance, &opt, this);
-    if (m >= 0) {
-        QRect r = rect();
-        r.adjust(-m, -m, m, m);
-        if (!r.contains(ev->pos())) {
-            newPosition = d->snapBackPosition;
-    }
-    }
     setSliderPosition(newPosition);
 }
 

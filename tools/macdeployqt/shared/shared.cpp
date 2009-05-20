@@ -357,7 +357,7 @@ DeploymentInfo deployQtFrameworks(QList<FrameworkInfo> frameworks,
         copiedFrameworks.append(framework.frameworkName);
 
         // Get the qt path from one of the Qt frameworks;
-        if (deploymenInfo.qtPath == QString() && framework.frameworkName.contains("Qt")
+        if (deploymenInfo.qtPath.isNull() && framework.frameworkName.contains("Qt") 
             && framework.frameworkDirectory.contains("/lib"))
         {
                 deploymenInfo.qtPath = framework.frameworkDirectory;
@@ -375,7 +375,7 @@ DeploymentInfo deployQtFrameworks(QList<FrameworkInfo> frameworks,
         // Copy farmework to app bundle.
         const QString deployedBinaryPath = copyFramework(framework, bundlePath);
         // Skip the rest if already was deployed.
-        if (deployedBinaryPath == QString())
+        if (deployedBinaryPath.isNull())
             continue;
 
         runStrip(deployedBinaryPath);

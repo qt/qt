@@ -42,8 +42,8 @@
 #ifndef QMLSQLQUERYMODEL_H
 #define QMLSQLQUERYMODEL_H
 
-#include <qml.h>
-#include <QListModelInterface>
+#include <QtDeclarative/qml.h>
+#include <QtDeclarative/QListModelInterface>
 
 QT_BEGIN_HEADER
 

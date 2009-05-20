@@ -42,7 +42,7 @@
 #ifndef QMLREFCOUNT_P_H
 #define QMLREFCOUNT_P_H
 
-#include <qglobal.h>
+#include <QtCore/qglobal.h>
 
 QT_BEGIN_HEADER
 

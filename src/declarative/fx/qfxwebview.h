@@ -42,12 +42,12 @@
 #ifndef QFXWEBVIEW_H
 #define QFXWEBVIEW_H
 
-#include <QAction>
-#include <QUrl>
-#include <qfxglobal.h>
-#include <qfxpainteditem.h>
+#include <QtGui/QAction>
+#include <QtCore/QUrl>
+#include <QtDeclarative/qfxglobal.h>
+#include <QtDeclarative/qfxpainteditem.h>
 #include <QtNetwork/qnetworkaccessmanager.h>
-#include <QWebPage>
+#include <QtWebKit/QWebPage>
 
 
 QT_BEGIN_HEADER

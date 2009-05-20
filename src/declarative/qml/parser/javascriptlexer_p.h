@@ -59,15 +59,15 @@
 
 QT_BEGIN_NAMESPACE
 
-class JavaScriptEnginePrivate;
-class JavaScriptNameIdImpl;
-
 namespace JavaScript {
+
+class Engine;
+class NameId;
 
 class Lexer
 {
 public:
-    Lexer(JavaScriptEnginePrivate *eng);
+    Lexer(Engine *eng);
     ~Lexer();
 
     void setCode(const QString &c, int lineno);
@@ -136,7 +136,7 @@ public:
 
     bool scanRegExp(RegExpBodyPrefix prefix = NoPrefix);
 
-    JavaScriptNameIdImpl *pattern;
+    NameId *pattern;
     int flags;
 
     State lexerState() const
@@ -155,7 +155,7 @@ public:
         { err = NoError; }
 
 private:
-    JavaScriptEnginePrivate *driver;
+    Engine *driver;
     int yylineno;
     bool done;
     char *buffer8;
@@ -194,7 +194,7 @@ public:
 
     inline int ival() const { return qsyylval.ival; }
     inline double dval() const { return qsyylval.dval; }
-    inline JavaScriptNameIdImpl *ustr() const { return qsyylval.ustr; }
+    inline NameId *ustr() const { return qsyylval.ustr; }
 
     const QChar *characterBuffer() const { return buffer16; }
     int characterCount() const { return pos16; }
@@ -219,7 +219,7 @@ private:
     union {
         int ival;
         double dval;
-        JavaScriptNameIdImpl *ustr;
+        NameId *ustr;
     } qsyylval;
 
     // current and following unicode characters

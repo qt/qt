@@ -42,8 +42,8 @@
 #ifndef QFXIMAGEITEM_H
 #define QFXIMAGEITEM_H
 
-#include <qfxglobal.h>
-#include <qfxitem.h>
+#include <QtDeclarative/qfxglobal.h>
+#include <QtDeclarative/qfxitem.h>
 
 
 QT_BEGIN_HEADER

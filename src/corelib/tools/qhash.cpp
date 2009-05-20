@@ -379,6 +379,107 @@ void QHashData::checkSanity()
 #endif
 
 /*!
+    \fn uint qHash(const QPair<T1, T2> &key)
+    \since 4.3
+    \relates QHash
+    
+    Returns the hash value for the \a key.
+
+    Types \c T1 and \c T2 must be supported by qHash().
+*/
+
+/*! \fn uint qHash(char key)
+    \relates QHash
+
+    Returns the hash value for the \a key.
+*/
+
+/*! \fn uint qHash(uchar key)
+    \relates QHash
+
+    Returns the hash value for the \a key.
+*/
+
+/*! \fn uint qHash(signed char key)
+    \relates QHash
+
+    Returns the hash value for the \a key.
+*/
+
+/*! \fn uint qHash(ushort key)
+    \relates QHash
+
+    Returns the hash value for the \a key.
+*/
+
+/*! \fn uint qHash(short key)
+    \relates QHash
+
+    Returns the hash value for the \a key.
+*/
+
+/*! \fn uint qHash(uint key)
+    \relates QHash
+
+    Returns the hash value for the \a key.
+*/
+
+/*! \fn uint qHash(int key)
+    \relates QHash
+
+    Returns the hash value for the \a key.
+*/
+
+/*! \fn uint qHash(ulong key)
+    \relates QHash
+
+    Returns the hash value for the \a key.
+*/
+
+/*! \fn uint qHash(long key)
+    \relates QHash
+
+    Returns the hash value for the \a key.
+*/
+
+/*! \fn uint qHash(quint64 key)
+    \relates QHash
+
+    Returns the hash value for the \a key.
+*/
+
+/*! \fn uint qHash(qint64 key)
+    \relates QHash
+
+    Returns the hash value for the \a key.
+*/
+
+/*! \fn uint qHash(QChar key)
+    \relates QHash
+
+    Returns the hash value for the \a key.
+*/
+
+/*! \fn uint qHash(const QByteArray &key)
+    \fn uint qHash(const QBitArray &key)
+    \relates QHash
+
+    Returns the hash value for the \a key.
+*/
+
+/*! \fn uint qHash(const QString &key)
+    \relates QHash
+
+    Returns the hash value for the \a key.
+*/
+
+/*! \fn uint qHash(const T *key)
+    \relates QHash
+
+    Returns the hash value for the \a key.
+*/
+
+/*!
     \class QHash
     \brief The QHash class is a template class that provides a hash-table-based dictionary.
 
@@ -401,7 +502,8 @@ void QHashData::checkSanity()
        key. With QHash, the items are arbitrarily ordered.
     \i The key type of a QMap must provide operator<(). The key
        type of a QHash must provide operator==() and a global
-       \l{qHash()}{qHash}(Key) function.
+       hash function called qHash() (see the related non-member
+       functions).
     \endlist
 
     Here's an example QHash with QString keys and \c int values:
@@ -732,7 +834,6 @@ void QHashData::checkSanity()
 */
 
 /*! \fn const T QHash::value(const Key &key, const T &defaultValue) const
-
     \overload
 
     If the hash contains no item with the given \a key, the function returns
@@ -1488,121 +1589,6 @@ void QHashData::checkSanity()
     This operation can be slow for large \a j values.
 
     \sa operator+=(), operator-()
-*/
-
-/*! \fn uint qHash(char key)
-    \relates QHash
-
-    Returns the hash value for the \a key.
-*/
-
-/*! \fn uint qHash(uchar key)
-    \relates QHash
-    \overload
-
-    Returns the hash value for the \a key.
-*/
-
-/*! \fn uint qHash(signed char key)
-    \relates QHash
-    \overload
-
-    Returns the hash value for the \a key.
-*/
-
-/*! \fn uint qHash(ushort key)
-    \relates QHash
-    \overload
-
-    Returns the hash value for the \a key.
-*/
-
-/*! \fn uint qHash(short key)
-    \relates QHash
-    \overload
-
-    Returns the hash value for the \a key.
-*/
-
-/*! \fn uint qHash(uint key)
-    \relates QHash
-    \overload
-
-    Returns the hash value for the \a key.
-*/
-
-/*! \fn uint qHash(int key)
-    \relates QHash
-    \overload
-
-    Returns the hash value for the \a key.
-*/
-
-/*! \fn uint qHash(ulong key)
-    \relates QHash
-    \overload
-
-    Returns the hash value for the \a key.
-*/
-
-/*! \fn uint qHash(long key)
-    \relates QHash
-    \overload
-
-    Returns the hash value for the \a key.
-*/
-
-/*! \fn uint qHash(quint64 key)
-    \relates QHash
-    \overload
-
-    Returns the hash value for the \a key.
-*/
-
-/*! \fn uint qHash(qint64 key)
-    \relates QHash
-    \overload
-
-    Returns the hash value for the \a key.
-*/
-
-/*! \fn uint qHash(QChar key)
-    \relates QHash
-    \overload
-
-    Returns the hash value for the \a key.
-*/
-
-/*! \fn uint qHash(const QByteArray &key)
-    \fn uint qHash(const QBitArray &key)
-    \relates QHash
-    \overload
-
-    Returns the hash value for the \a key.
-*/
-
-/*! \fn uint qHash(const QString &key)
-    \relates QHash
-    \overload
-
-    Returns the hash value for the \a key.
-*/
-
-/*! \fn uint qHash(const T *key)
-    \relates QHash
-    \overload
-
-    Returns the hash value for the \a key.
-*/
-
-/*!
-    \fn uint qHash(const QPair<T1, T2> &key)
-    \relates QHash
-    \since 4.3
-
-    Returns the hash value for the \a key.
-
-    Types \c T1 and \c T2 must be supported by qHash().
 */
 
 /*! \fn QDataStream &operator<<(QDataStream &out, const QHash<Key, T>& hash)

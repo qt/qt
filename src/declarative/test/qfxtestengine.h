@@ -42,8 +42,7 @@
 #ifndef _QFXTESTENGINE_H_
 #define _QFXTESTENGINE_H_
 
-#include <QObject>
-class QSimpleCanvas;
+#include <QtCore/QObject>
 
 QT_BEGIN_HEADER
 
@@ -51,6 +50,7 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Declarative)
 
+class QSimpleCanvas;
 class QFxTestEnginePrivate;
 class Q_DECLARATIVE_EXPORT QFxTestEngine : public QObject
 {

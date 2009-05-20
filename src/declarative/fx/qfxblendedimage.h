@@ -42,7 +42,7 @@
 #ifndef QFXBLENDEDIMAGE_H
 #define QFXBLENDEDIMAGE_H
 
-#include <qfxitem.h>
+#include <QtDeclarative/qfxitem.h>
 #if defined(QFX_RENDER_OPENGL2)
 #include <gltexture.h>
 #endif
@@ -53,7 +53,7 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Declarative)
 
-class QFxBlendedImage : public QFxItem
+class Q_DECLARATIVE_EXPORT QFxBlendedImage : public QFxItem
 {
     Q_OBJECT
 

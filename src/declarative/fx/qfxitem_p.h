@@ -53,11 +53,11 @@
 // We mean it.
 //
 
-#include "qfxitem.h"
+#include <QtDeclarative/qfxitem.h>
 #include <private/qsimplecanvasitem_p.h>
 #include <private/qmlnullablevalue_p.h>
-#include <qml.h>
-#include <qmlcontext.h>
+#include <QtDeclarative/qml.h>
+#include <QtDeclarative/qmlcontext.h>
 #include <QtCore/qlist.h>
 
 QT_BEGIN_NAMESPACE
@@ -129,6 +129,7 @@ public:
         }
         return _anchors;
     }
+    QList<QFxAnchors *> dependantAnchors;
     QFxAnchors *_anchors;
     QFxContents *_contents;
     QFxItem *qmlItem;
@@ -171,9 +172,6 @@ public:
 
     QmlStateGroup *states();
     QmlStateGroup *_stateGroup;
-
-    void handleWidthChange(int xoffset);
-    void handleHeightChange(int xoffset);
 };
 
 QT_END_NAMESPACE

@@ -42,7 +42,7 @@
 #ifndef QMLINSTRUCTION_P_H
 #define QMLINSTRUCTION_P_H
 
-#include <qfxglobal.h>
+#include <QtDeclarative/qfxglobal.h>
 
 
 QT_BEGIN_NAMESPACE
@@ -110,14 +110,9 @@ public:
         //
         // Unresolved single assignment
         //
-        //    AssignConstant - Store a value in a property.  Will resolve into
-        //                     a Store* instruction.
-        AssignConstant,           /* assignConstant */
         AssignSignalObject,       /* assignSignalObject */
         AssignCustomType,          /* assignCustomType */
 
-        AssignBinding,            /* assignBinding */
-        AssignCompiledBinding,    /* assignBinding */
         AssignValueSource,        /* assignValueSource */
         StoreBinding,             /* assignBinding */
         StoreCompiledBinding,     /* assignBinding */
@@ -185,10 +180,6 @@ public:
             int value;
             int save;
         } setId;
-        struct {
-            int property;
-            int constant;
-        } assignConstant;
         struct {
             int property;
             int castValue;

@@ -42,8 +42,8 @@
 #ifndef QFXSHADOWFILTER_H
 #define QFXSHADOWFILTER_H
 
-#include <qsimplecanvasfilter.h>
-#include <qml.h>
+#include <QtDeclarative/qsimplecanvasfilter.h>
+#include <QtDeclarative/qml.h>
 
 
 QT_BEGIN_HEADER

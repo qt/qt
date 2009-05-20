@@ -42,9 +42,9 @@
 #ifndef QMLENGINE_P_H
 #define QMLENGINE_P_H
 
-#include <QScriptClass>
-#include <QScriptValue>
-#include <QScriptString>
+#include <QtScript/QScriptClass>
+#include <QtScript/QScriptValue>
+#include <QtScript/QScriptString>
 #include <QtCore/qstring.h>
 #include <QtCore/qlist.h>
 #include <QtCore/qpair.h>
@@ -52,11 +52,11 @@
 #include <private/qobject_p.h>
 #include <private/qmlclassfactory_p.h>
 #include <private/qmlcompositetypemanager_p.h>
-#include <qml.h>
-#include <qmlbasicscript.h>
-#include <qmlcontext.h>
-#include <qmlengine.h>
-#include <qmlexpression.h>
+#include <QtDeclarative/qml.h>
+#include <QtDeclarative/qmlbasicscript.h>
+#include <QtDeclarative/qmlcontext.h>
+#include <QtDeclarative/qmlengine.h>
+#include <QtDeclarative/qmlexpression.h>
 #include <QtScript/qscriptengine.h>
 
 QT_BEGIN_NAMESPACE
@@ -277,6 +277,8 @@ public:
     BindExpressionProxy *proxy;
     QObject *me;
     bool trackChange;
+    QString fileName;
+    int line;
 
     quint32 id;
 

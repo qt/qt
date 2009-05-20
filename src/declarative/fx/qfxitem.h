@@ -42,9 +42,9 @@
 #ifndef QFXITEM_H
 #define QFXITEM_H
 
-#include <QObject>
+#include <QtCore/QObject>
 #include <QtScript/qscriptvalue.h>
-#include <QList>
+#include <QtCore/QList>
 #include <QtDeclarative/qfxanchors.h>
 #include <QtDeclarative/qfxglobal.h>
 #include <QtDeclarative/qml.h>
@@ -213,14 +213,9 @@ public Q_SLOTS:
 
 Q_SIGNALS:
     void leftChanged();
-    void rightChanged();
     void widthChanged();
     void heightChanged();
     void topChanged();
-    void bottomChanged();
-    void hcenterChanged();
-    void vcenterChanged();
-    void baselineChanged();
     void baselineOffsetChanged();
     void stateChanged(const QString &);
     void focusChanged();

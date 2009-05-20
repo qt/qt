@@ -46,7 +46,7 @@
 %decl           javascriptparser_p.h
 %impl           javascriptparser.cpp
 %expect         2
-%expect-rr      1
+%expect-rr      2
 
 %token T_AND "&"                T_AND_AND "&&"              T_AND_EQ "&="
 %token T_BREAK "break"          T_CASE "case"               T_CATCH "catch"
@@ -207,86 +207,71 @@
 
 #include "javascriptgrammar_p.h"
 #include "javascriptast_p.h"
+#include "javascriptengine_p.h"
+
 #include <QtCore/QList>
 
 QT_BEGIN_NAMESPACE
 
 class QString;
-class JavaScriptEnginePrivate;
-class JavaScriptNameIdImpl;
 
-class JavaScriptParser: protected $table
+namespace JavaScript {
+
+class Engine;
+class NameId;
+
+class Parser: protected $table
 {
 public:
     union Value {
       int ival;
       double dval;
-      JavaScriptNameIdImpl *sval;
-      JavaScript::AST::ArgumentList *ArgumentList;
-      JavaScript::AST::CaseBlock *CaseBlock;
-      JavaScript::AST::CaseClause *CaseClause;
-      JavaScript::AST::CaseClauses *CaseClauses;
-      JavaScript::AST::Catch *Catch;
-      JavaScript::AST::DefaultClause *DefaultClause;
-      JavaScript::AST::ElementList *ElementList;
-      JavaScript::AST::Elision *Elision;
-      JavaScript::AST::ExpressionNode *Expression;
-      JavaScript::AST::Finally *Finally;
-      JavaScript::AST::FormalParameterList *FormalParameterList;
-      JavaScript::AST::FunctionBody *FunctionBody;
-      JavaScript::AST::FunctionDeclaration *FunctionDeclaration;
-      JavaScript::AST::Node *Node;
-      JavaScript::AST::PropertyName *PropertyName;
-      JavaScript::AST::PropertyNameAndValueList *PropertyNameAndValueList;
-      JavaScript::AST::SourceElement *SourceElement;
-      JavaScript::AST::SourceElements *SourceElements;
-      JavaScript::AST::Statement *Statement;
-      JavaScript::AST::StatementList *StatementList;
-      JavaScript::AST::Block *Block;
-      JavaScript::AST::VariableDeclaration *VariableDeclaration;
-      JavaScript::AST::VariableDeclarationList *VariableDeclarationList;
+      NameId *sval;
+      AST::ArgumentList *ArgumentList;
+      AST::CaseBlock *CaseBlock;
+      AST::CaseClause *CaseClause;
+      AST::CaseClauses *CaseClauses;
+      AST::Catch *Catch;
+      AST::DefaultClause *DefaultClause;
+      AST::ElementList *ElementList;
+      AST::Elision *Elision;
+      AST::ExpressionNode *Expression;
+      AST::Finally *Finally;
+      AST::FormalParameterList *FormalParameterList;
+      AST::FunctionBody *FunctionBody;
+      AST::FunctionDeclaration *FunctionDeclaration;
+      AST::Node *Node;
+      AST::PropertyName *PropertyName;
+      AST::PropertyNameAndValueList *PropertyNameAndValueList;
+      AST::SourceElement *SourceElement;
+      AST::SourceElements *SourceElements;
+      AST::Statement *Statement;
+      AST::StatementList *StatementList;
+      AST::Block *Block;
+      AST::VariableDeclaration *VariableDeclaration;
+      AST::VariableDeclarationList *VariableDeclarationList;
 
-      JavaScript::AST::UiProgram *UiProgram;
-      JavaScript::AST::UiImportList *UiImportList;
-      JavaScript::AST::UiImport *UiImport;
-      JavaScript::AST::UiPublicMember *UiPublicMember;
-      JavaScript::AST::UiObjectDefinition *UiObjectDefinition;
-      JavaScript::AST::UiObjectInitializer *UiObjectInitializer;
-      JavaScript::AST::UiObjectBinding *UiObjectBinding;
-      JavaScript::AST::UiScriptBinding *UiScriptBinding;
-      JavaScript::AST::UiArrayBinding *UiArrayBinding;
-      JavaScript::AST::UiObjectMember *UiObjectMember;
-      JavaScript::AST::UiObjectMemberList *UiObjectMemberList;
-      JavaScript::AST::UiQualifiedId *UiQualifiedId;
-    };
-
-    struct DiagnosticMessage {
-        enum Kind { Warning, Error };
-
-        DiagnosticMessage()
-            : kind(Error) {}
-
-        DiagnosticMessage(Kind kind, const JavaScript::AST::SourceLocation &loc, const QString &message)
-            : kind(kind), loc(loc), message(message) {}
-
-        bool isWarning() const
-        { return kind == Warning; }
-
-        bool isError() const
-        { return kind == Error; }
-
-        Kind kind;
-        JavaScript::AST::SourceLocation loc;
-        QString message;
+      AST::UiProgram *UiProgram;
+      AST::UiImportList *UiImportList;
+      AST::UiImport *UiImport;
+      AST::UiPublicMember *UiPublicMember;
+      AST::UiObjectDefinition *UiObjectDefinition;
+      AST::UiObjectInitializer *UiObjectInitializer;
+      AST::UiObjectBinding *UiObjectBinding;
+      AST::UiScriptBinding *UiScriptBinding;
+      AST::UiArrayBinding *UiArrayBinding;
+      AST::UiObjectMember *UiObjectMember;
+      AST::UiObjectMemberList *UiObjectMemberList;
+      AST::UiQualifiedId *UiQualifiedId;
     };
 
 public:
-    JavaScriptParser();
-    ~JavaScriptParser();
+    Parser(Engine *engine);
+    ~Parser();
 
-    bool parse(JavaScriptEnginePrivate *driver);
+    bool parse();
 
-    JavaScript::AST::UiProgram *ast()
+    AST::UiProgram *ast()
     { return program; }
 
     QList<DiagnosticMessage> diagnosticMessages() const
@@ -317,17 +302,20 @@ protected:
     inline Value &sym(int index)
     { return sym_stack [tos + index - 1]; }
 
-    inline JavaScript::AST::SourceLocation &loc(int index)
+    inline AST::SourceLocation &loc(int index)
     { return location_stack [tos + index - 1]; }
 
+    AST::UiQualifiedId *reparseAsQualifiedId(AST::ExpressionNode *expr);
+
 protected:
+    Engine *driver;
     int tos;
     int stack_size;
     Value *sym_stack;
     int *state_stack;
-    JavaScript::AST::SourceLocation *location_stack;
+    AST::SourceLocation *location_stack;
 
-    JavaScript::AST::UiProgram *program;
+    AST::UiProgram *program;
 
     // error recovery
     enum { TOKEN_BUFFER_SIZE = 3 };
@@ -335,12 +323,12 @@ protected:
     struct SavedToken {
        int token;
        double dval;
-       JavaScript::AST::SourceLocation loc;
+       AST::SourceLocation loc;
     };
 
     double yylval;
-    JavaScript::AST::SourceLocation yylloc;
-    JavaScript::AST::SourceLocation yyprevlloc;
+    AST::SourceLocation yylloc;
+    AST::SourceLocation yyprevlloc;
 
     SavedToken token_buffer[TOKEN_BUFFER_SIZE];
     SavedToken *first_token;
@@ -349,12 +337,16 @@ protected:
     QList<DiagnosticMessage> diagnostic_messages;
 };
 
+} // end of namespace JavaScript
+
+
 :/
 
 
 /.
 
 #include "javascriptparser_p.h"
+#include <QVarLengthArray>
 
 //
 // This file is automatically generated from javascript.g.
@@ -365,7 +357,7 @@ using namespace JavaScript;
 
 QT_BEGIN_NAMESPACE
 
-void JavaScriptParser::reallocateStack()
+void Parser::reallocateStack()
 {
     if (! stack_size)
         stack_size = 128;
@@ -377,7 +369,7 @@ void JavaScriptParser::reallocateStack()
     location_stack = reinterpret_cast<AST::SourceLocation*> (qRealloc(location_stack, stack_size * sizeof(AST::SourceLocation)));
 }
 
-inline static bool automatic(JavaScriptEnginePrivate *driver, int token)
+inline static bool automatic(Engine *driver, int token)
 {
     return token == $table::T_RBRACE
         || token == 0
@@ -385,7 +377,8 @@ inline static bool automatic(JavaScriptEnginePrivate *driver, int token)
 }
 
 
-JavaScriptParser::JavaScriptParser():
+Parser::Parser(Engine *engine):
+    driver(engine),
     tos(0),
     stack_size(0),
     sym_stack(0),
@@ -396,7 +389,7 @@ JavaScriptParser::JavaScriptParser():
 {
 }
 
-JavaScriptParser::~JavaScriptParser()
+Parser::~Parser()
 {
     if (stack_size) {
         qFree(sym_stack);
@@ -415,7 +408,35 @@ static inline AST::SourceLocation location(Lexer *lexer)
     return loc;
 }
 
-bool JavaScriptParser::parse(JavaScriptEnginePrivate *driver)
+AST::UiQualifiedId *Parser::reparseAsQualifiedId(AST::ExpressionNode *expr)
+{
+    QVarLengthArray<NameId *, 4> nameIds;
+    QVarLengthArray<AST::SourceLocation, 4> locations;
+
+    AST::ExpressionNode *it = expr;
+    while (AST::FieldMemberExpression *m = AST::cast<AST::FieldMemberExpression *>(it)) {
+        nameIds.append(m->name);
+        locations.append(m->identifierToken);
+        it = m->base;
+    }
+
+    if (AST::IdentifierExpression *idExpr = AST::cast<AST::IdentifierExpression *>(it)) {
+        AST::UiQualifiedId *q = makeAstNode<AST::UiQualifiedId>(driver->nodePool(), idExpr->name);
+        q->identifierToken = idExpr->identifierToken;
+
+        AST::UiQualifiedId *currentId = q;
+        for (int i = nameIds.size() - 1; i != -1; --i) {
+            currentId = makeAstNode<AST::UiQualifiedId>(driver->nodePool(), currentId, nameIds[i]);
+            currentId->identifierToken = locations[i];
+        }
+
+        return currentId->finish();
+    }
+
+    return 0;
+}
+
+bool Parser::parse()
 {
     Lexer *lexer = driver->lexer();
     bool hadErrors = false;
@@ -475,7 +496,7 @@ UiProgram: UiImportListOpt UiRootMember ;
 case $rule_number: {
   program = makeAstNode<AST::UiProgram> (driver->nodePool(), sym(1).UiImportList,
         sym(2).UiObjectMemberList->finish());
-  sym(1).UiProgram = program;    
+  sym(1).UiProgram = program;
 } break;
 ./
 
@@ -580,23 +601,11 @@ case $rule_number: {
 }   break;
 ./
 
-UiObjectMember: UiQualifiedId T_COLON T_IDENTIFIER UiObjectInitializer ;
+UiObjectDefinition: UiQualifiedId UiObjectInitializer ;
 /.
 case $rule_number: {
-    AST::UiObjectBinding *node = makeAstNode<AST::UiObjectBinding> (driver->nodePool(), sym(1).UiQualifiedId->finish(),
-        sym(3).sval, sym(4).UiObjectInitializer);
-    node->colonToken = loc(2);
-    node->identifierToken = loc(3);
-    sym(1).Node = node;
-}   break;
-./
-
-UiObjectDefinition: T_IDENTIFIER UiObjectInitializer ;
-/.
-case $rule_number: {
-    AST::UiObjectDefinition *node = makeAstNode<AST::UiObjectDefinition> (driver->nodePool(), sym(1).sval,
+    AST::UiObjectDefinition *node = makeAstNode<AST::UiObjectDefinition> (driver->nodePool(), sym(1).UiQualifiedId->finish(),
         sym(2).UiObjectInitializer);
-    node->identifierToken = loc(1);
     sym(1).Node = node;
 }   break;
 ./
@@ -634,11 +643,46 @@ case $rule_number: {
 } break;
 ./
 
-UiObjectMember: UiQualifiedId T_COLON UiMultilineStringStatement ;
-/.  case $rule_number: ./
-UiObjectMember: UiQualifiedId T_COLON Statement ;
+
+UiObjectMember: UiQualifiedId T_COLON Expression UiObjectInitializer ;
 /.
 case $rule_number: {
+  if (AST::UiQualifiedId *qualifiedId = reparseAsQualifiedId(sym(3).Expression)) {
+    AST::UiObjectBinding *node = makeAstNode<AST::UiObjectBinding> (driver->nodePool(),
+      sym(1).UiQualifiedId->finish(), qualifiedId, sym(4).UiObjectInitializer);
+    node->colonToken = loc(2);
+    sym(1).Node = node;
+  } else {
+    sym(1).Node = 0;
+
+    diagnostic_messages.append(DiagnosticMessage(DiagnosticMessage::Error, loc(2),
+      QLatin1String("Expected a type name after token `:'")));
+
+    return false; // ### recover
+  }
+} break;
+./
+
+UiObjectMember: UiQualifiedId T_COLON Block ;
+/.case $rule_number:./
+
+UiObjectMember: UiQualifiedId T_COLON EmptyStatement ;
+/.case $rule_number:./
+
+UiObjectMember: UiQualifiedId T_COLON ExpressionStatement ;
+/.case $rule_number:./
+
+UiObjectMember: UiQualifiedId T_COLON DebuggerStatement ;
+/.case $rule_number:./
+
+UiObjectMember: UiQualifiedId T_COLON UiMultilineStringStatement ;
+/.case $rule_number:./
+
+UiObjectMember: UiQualifiedId T_COLON IfStatement ; --- ### do we really want if statement in a binding?
+/.case $rule_number:./
+
+/.
+{
     AST::UiScriptBinding *node = makeAstNode<AST::UiScriptBinding> (driver->nodePool(), sym(1).UiQualifiedId->finish(),
         sym(3).Statement);
     node->colonToken = loc(2);
@@ -648,7 +692,7 @@ case $rule_number: {
 
 UiPropertyType: T_VAR ;
 /.
-case $rule_number: 
+case $rule_number:
 ./
 UiPropertyType: T_RESERVED_WORD ;
 /.
@@ -663,7 +707,7 @@ UiPropertyType: T_IDENTIFIER ;
 UiObjectMember: T_SIGNAL T_IDENTIFIER ;
 /.
 case $rule_number: {
-    AST::UiPublicMember *node = makeAstNode<AST::UiPublicMember> (driver->nodePool(), (JavaScriptNameIdImpl *)0, sym(2).sval);
+    AST::UiPublicMember *node = makeAstNode<AST::UiPublicMember> (driver->nodePool(), (NameId *)0, sym(2).sval);
     node->type = AST::UiPublicMember::Signal;
     node->propertyToken = loc(1);
     node->typeToken = loc(2);
@@ -779,25 +823,6 @@ case $rule_number: {
 }
 ./
 
-UiQualifiedId: JsIdentifier ;
-/.
-case $rule_number: {
-    AST::UiQualifiedId *node = makeAstNode<AST::UiQualifiedId> (driver->nodePool(), sym(1).sval);
-    node->identifierToken = loc(1);
-    sym(1).Node = node;
-}   break;
-./
-
-UiQualifiedId: UiQualifiedId T_DOT JsIdentifier ;
-/.
-case $rule_number: {
-    AST::UiQualifiedId *node = makeAstNode<AST::UiQualifiedId> (driver->nodePool(), sym(1).UiQualifiedId, sym(3).sval);
-    node->identifierToken = loc(3);
-    sym(1).Node = node;
-}   break;
-./
-
-
 --------------------------------------------------------------------------------------------------------
 -- Expressions
 --------------------------------------------------------------------------------------------------------
@@ -899,10 +924,20 @@ case $rule_number: {
 } break;
 ./
 
-PrimaryExpression: T_LBRACKET ElisionOpt T_RBRACKET ;
+PrimaryExpression: T_LBRACKET T_RBRACKET ;
 /.
 case $rule_number: {
-  AST::ArrayLiteral *node = makeAstNode<AST::ArrayLiteral> (driver->nodePool(), sym(2).Elision);
+  AST::ArrayLiteral *node = makeAstNode<AST::ArrayLiteral> (driver->nodePool(), (AST::Elision *) 0);
+  node->lbracketToken = loc(1);
+  node->rbracketToken = loc(2);
+  sym(1).Node = node;
+} break;
+./
+
+PrimaryExpression: T_LBRACKET Elision T_RBRACKET ;
+/.
+case $rule_number: {
+  AST::ArrayLiteral *node = makeAstNode<AST::ArrayLiteral> (driver->nodePool(), sym(2).Elision->finish());
   node->lbracketToken = loc(1);
   node->rbracketToken = loc(3);
   sym(1).Node = node;
@@ -919,10 +954,23 @@ case $rule_number: {
 } break;
 ./
 
-PrimaryExpression: T_LBRACKET ElementList T_COMMA ElisionOpt T_RBRACKET ;
+PrimaryExpression: T_LBRACKET ElementList T_COMMA T_RBRACKET ;
 /.
 case $rule_number: {
-  AST::ArrayLiteral *node = makeAstNode<AST::ArrayLiteral> (driver->nodePool(), sym(2).ElementList->finish (), sym(4).Elision);
+  AST::ArrayLiteral *node = makeAstNode<AST::ArrayLiteral> (driver->nodePool(), sym(2).ElementList->finish (),
+    (AST::Elision *) 0);
+  node->lbracketToken = loc(1);
+  node->commaToken = loc(3);
+  node->rbracketToken = loc(4);
+  sym(1).Node = node;
+} break;
+./
+
+PrimaryExpression: T_LBRACKET ElementList T_COMMA Elision T_RBRACKET ;
+/.
+case $rule_number: {
+  AST::ArrayLiteral *node = makeAstNode<AST::ArrayLiteral> (driver->nodePool(), sym(2).ElementList->finish (),
+    sym(4).Elision->finish());
   node->lbracketToken = loc(1);
   node->commaToken = loc(3);
   node->rbracketToken = loc(5);
@@ -973,17 +1021,53 @@ case $rule_number: {
 } break;
 ./
 
-ElementList: ElisionOpt AssignmentExpression ;
+UiQualifiedId: JsIdentifier ;
 /.
 case $rule_number: {
-  sym(1).Node = makeAstNode<AST::ElementList> (driver->nodePool(), sym(1).Elision, sym(2).Expression);
+    AST::UiQualifiedId *node = makeAstNode<AST::UiQualifiedId> (driver->nodePool(), sym(1).sval);
+    node->identifierToken = loc(1);
+    sym(1).Node = node;
+}   break;
+./
+
+UiQualifiedId: UiQualifiedId T_DOT JsIdentifier ;
+/.
+case $rule_number: {
+    AST::UiQualifiedId *node = makeAstNode<AST::UiQualifiedId> (driver->nodePool(), sym(1).UiQualifiedId, sym(3).sval);
+    node->identifierToken = loc(3);
+    sym(1).Node = node;
+}   break;
+./
+
+ElementList: AssignmentExpression ;
+/.
+case $rule_number: {
+  sym(1).Node = makeAstNode<AST::ElementList> (driver->nodePool(), (AST::Elision *) 0, sym(1).Expression);
 } break;
 ./
 
-ElementList: ElementList T_COMMA ElisionOpt AssignmentExpression ;
+ElementList: Elision AssignmentExpression ;
 /.
 case $rule_number: {
-  AST::ElementList *node = makeAstNode<AST::ElementList> (driver->nodePool(), sym(1).ElementList, sym(3).Elision, sym(4).Expression);
+  sym(1).Node = makeAstNode<AST::ElementList> (driver->nodePool(), sym(1).Elision->finish(), sym(2).Expression);
+} break;
+./
+
+ElementList: ElementList T_COMMA AssignmentExpression ;
+/.
+case $rule_number: {
+  AST::ElementList *node = makeAstNode<AST::ElementList> (driver->nodePool(), sym(1).ElementList,
+    (AST::Elision *) 0, sym(3).Expression);
+  node->commaToken = loc(2);
+  sym(1).Node = node;
+} break;
+./
+
+ElementList: ElementList T_COMMA Elision AssignmentExpression ;
+/.
+case $rule_number: {
+  AST::ElementList *node = makeAstNode<AST::ElementList> (driver->nodePool(), sym(1).ElementList, sym(3).Elision->finish(),
+    sym(4).Expression);
   node->commaToken = loc(2);
   sym(1).Node = node;
 } break;
@@ -1007,20 +1091,6 @@ case $rule_number: {
 } break;
 ./
 
-ElisionOpt: %prec SHIFT_THERE ;
-/.
-case $rule_number: {
-  sym(1).Node = 0;
-} break;
-./
-
-ElisionOpt: Elision ;
-/.
-case $rule_number: {
-  sym(1).Elision = sym(1).Elision->finish ();
-} break;
-./
-
 PropertyNameAndValueList: PropertyName T_COLON AssignmentExpression ;
 /.
 case $rule_number: {
@@ -1038,7 +1108,7 @@ case $rule_number: {
       sym(1).PropertyNameAndValueList, sym(3).PropertyName, sym(5).Expression);
   node->commaToken = loc(2);
   node->colonToken = loc(4);
-  sym(1).Node = node;  
+  sym(1).Node = node;
 } break;
 ./
 
@@ -1047,7 +1117,7 @@ PropertyName: T_IDENTIFIER %prec REDUCE_HERE ;
 case $rule_number: {
   AST::IdentifierPropertyName *node = makeAstNode<AST::IdentifierPropertyName> (driver->nodePool(), sym(1).sval);
   node->propertyNameToken = loc(1);
-  sym(1).Node = node;  
+  sym(1).Node = node;
 } break;
 ./
 
@@ -1059,7 +1129,7 @@ PropertyName: T_PROPERTY ;
 case $rule_number: {
   AST::IdentifierPropertyName *node = makeAstNode<AST::IdentifierPropertyName> (driver->nodePool(), driver->intern(lexer->characterBuffer(), lexer->characterCount()));
   node->propertyNameToken = loc(1);
-  sym(1).Node = node;  
+  sym(1).Node = node;
 } break;
 ./
 
@@ -1068,7 +1138,7 @@ PropertyName: T_STRING_LITERAL ;
 case $rule_number: {
   AST::StringLiteralPropertyName *node = makeAstNode<AST::StringLiteralPropertyName> (driver->nodePool(), sym(1).sval);
   node->propertyNameToken = loc(1);
-  sym(1).Node = node;  
+  sym(1).Node = node;
 } break;
 ./
 
@@ -1077,7 +1147,7 @@ PropertyName: T_NUMERIC_LITERAL ;
 case $rule_number: {
   AST::NumericLiteralPropertyName *node = makeAstNode<AST::NumericLiteralPropertyName> (driver->nodePool(), sym(1).dval);
   node->propertyNameToken = loc(1);
-  sym(1).Node = node;  
+  sym(1).Node = node;
 } break;
 ./
 
@@ -1086,7 +1156,7 @@ PropertyName: ReservedIdentifier ;
 case $rule_number: {
   AST::IdentifierPropertyName *node = makeAstNode<AST::IdentifierPropertyName> (driver->nodePool(), sym(1).sval);
   node->propertyNameToken = loc(1);
-  sym(1).Node = node;  
+  sym(1).Node = node;
 } break;
 ./
 

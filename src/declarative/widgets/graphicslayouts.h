@@ -42,9 +42,9 @@
 #ifndef GRAPHICSLAYOUTS_H
 #define GRAPHICSLAYOUTS_H
 
-#include "graphicswidgets.h"
-#include <QGraphicsLinearLayout>
-#include <QGraphicsGridLayout>
+#include <QtDeclarative/graphicswidgets.h>
+#include <QtGui/QGraphicsLinearLayout>
+#include <QtGui/QGraphicsGridLayout>
 
 QT_BEGIN_HEADER
 

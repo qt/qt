@@ -43,12 +43,12 @@
 #define QMLANIMATION_H
 
 #include <QtCore/qvariant.h>
+#include <QtCore/QAbstractAnimation>
 #include <QtGui/qcolor.h>
-#include <qmltransition.h>
-#include <qmlpropertyvaluesource.h>
-#include <qmlstate.h>
-#include <qml.h>
-#include <QAbstractAnimation>
+#include <QtDeclarative/qmltransition.h>
+#include <QtDeclarative/qmlpropertyvaluesource.h>
+#include <QtDeclarative/qmlstate.h>
+#include <QtDeclarative/qml.h>
 
 QT_BEGIN_HEADER
 

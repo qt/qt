@@ -193,9 +193,6 @@ QList<QAbstractState*> QStatePrivate::childStates() const
 {
     QList<QAbstractState*> result;
     QList<QObject*>::const_iterator it;
-#ifdef QT_STATEMACHINE_SOLUTION
-    const QObjectList &children = q_func()->children();
-#endif
     for (it = children.constBegin(); it != children.constEnd(); ++it) {
         QAbstractState *s = qobject_cast<QAbstractState*>(*it);
         if (!s || qobject_cast<QHistoryState*>(s))
@@ -209,9 +206,6 @@ QList<QHistoryState*> QStatePrivate::historyStates() const
 {
     QList<QHistoryState*> result;
     QList<QObject*>::const_iterator it;
-#ifdef QT_STATEMACHINE_SOLUTION
-    const QObjectList &children = q_func()->children();
-#endif
     for (it = children.constBegin(); it != children.constEnd(); ++it) {
         QHistoryState *h = qobject_cast<QHistoryState*>(*it);
         if (h)
@@ -224,9 +218,6 @@ QList<QAbstractTransition*> QStatePrivate::transitions() const
 {
     QList<QAbstractTransition*> result;
     QList<QObject*>::const_iterator it;
-#ifdef QT_STATEMACHINE_SOLUTION
-    const QObjectList &children = q_func()->children();
-#endif
     for (it = children.constBegin(); it != children.constEnd(); ++it) {
         QAbstractTransition *t = qobject_cast<QAbstractTransition*>(*it);
         if (t)
@@ -280,9 +271,13 @@ QAbstractState *QState::errorState() const
 void QState::setErrorState(QAbstractState *state)
 {
     Q_D(QState);
-    if (state != 0 && QAbstractStatePrivate::get(state)->machine() != d->machine()) {
+    if (state != 0 && state->machine() != machine()) {
         qWarning("QState::setErrorState: error state cannot belong "
                  "to a different state machine");
+        return;
+    }
+    if (state != 0 && state->machine() != 0 && state->machine()->rootState() == state) {
+        qWarning("QStateMachine::setErrorState: root state cannot be error state");
         return;
     }
 
@@ -301,7 +296,14 @@ QAbstractTransition *QState::addTransition(QAbstractTransition *transition)
         qWarning("QState::addTransition: cannot add null transition");
         return 0;
     }
-    const QList<QAbstractState*> &targets = QAbstractTransitionPrivate::get(transition)->targetStates;
+
+    // machine() will always be non-null for root state
+    if (machine() != 0 && machine()->rootState() == this) {
+        qWarning("QState::addTransition: cannot add transition from root state");
+        return 0;
+    }
+
+    const QList<QPointer<QAbstractState> > &targets = QAbstractTransitionPrivate::get(transition)->targetStates;
     for (int i = 0; i < targets.size(); ++i) {
         QAbstractState *t = targets.at(i);
         if (!t) {
@@ -316,6 +318,8 @@ QAbstractTransition *QState::addTransition(QAbstractTransition *transition)
         }
     }
     transition->setParent(this);
+    if (machine() != 0 && machine()->configuration().contains(this))
+        QStateMachinePrivate::get(machine())->registerTransitions(this);
     return transition;
 }
 
@@ -335,6 +339,15 @@ QSignalTransition *QState::addTransition(QObject *sender, const char *signal,
         qWarning("QState::addTransition: signal cannot be null");
         return 0;
     }
+    if (!target) {
+        qWarning("QState::addTransition: cannot add transition to null state");
+        return 0;
+    }
+    if (*signal && sender->metaObject()->indexOfSignal(signal+1) == -1) {
+        qWarning("QState::addTransition: no such signal %s::%s",
+                 sender->metaObject()->className(), signal+1);
+        return 0;
+    }
     QSignalTransition *trans = new QSignalTransition(sender, signal, QList<QAbstractState*>() << target);
     addTransition(trans);
     return trans;
@@ -350,7 +363,7 @@ public:
         : QAbstractTransition(QList<QAbstractState*>() << target) {}
 protected:
     void onTransition(QEvent *) {}
-    bool eventTest(QEvent *) const { return true; }
+    bool eventTest(QEvent *) { return true; }
 };
 
 } // namespace
@@ -361,9 +374,12 @@ protected:
 */
 QAbstractTransition *QState::addTransition(QAbstractState *target)
 {
+    if (!target) {
+        qWarning("QState::addTransition: cannot add transition to null state");
+        return 0;
+    }
     UnconditionalTransition *trans = new UnconditionalTransition(target);
-    addTransition(trans);
-    return trans;
+    return addTransition(trans);
 }
 
 /*!

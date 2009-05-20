@@ -46,7 +46,7 @@ public:
 
 protected:
     void onTransition(QEvent *event);
-    bool eventTest(QEvent *event) const;
+    bool eventTest(QEvent *event);
 
 private:
     Q_DISABLE_COPY(QKeyEventTransition)

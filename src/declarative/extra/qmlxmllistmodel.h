@@ -42,8 +42,8 @@
 #ifndef QMLXMLLISTMODEL_H
 #define QMLXMLLISTMODEL_H
 
-#include <qml.h>
-#include <QListModelInterface>
+#include <QtDeclarative/qml.h>
+#include <QtDeclarative/QListModelInterface>
 
 QT_BEGIN_HEADER
 

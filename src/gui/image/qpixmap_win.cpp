@@ -319,6 +319,7 @@ static QImage qt_fromWinHBITMAP(HDC hdc, HBITMAP bitmap, int w, int h)
     } else {
         qWarning("qt_fromWinHBITMAP(), failed to get bitmap bits");
     }
+    qFree(data);
 
     return image;
 }

@@ -42,9 +42,9 @@
 #ifndef QLISTMODELINTERFACE_H
 #define QLISTMODELINTERFACE_H
 
-#include <QHash>
-#include <QVariant>
-#include <qfxglobal.h>
+#include <QtCore/QHash>
+#include <QtCore/QVariant>
+#include <QtDeclarative/qfxglobal.h>
 
 
 QT_BEGIN_HEADER

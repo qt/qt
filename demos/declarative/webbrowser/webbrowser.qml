@@ -114,6 +114,7 @@ Item {
                             opacity: 1-Header.progressOff
                             clip: true
                         }
+                        
                         /*
                         KeyProxy {
                             id: proxy
@@ -134,30 +135,14 @@ Item {
                             wrap: false
                             font.size: 11
                             color: "#555555"
+                            focusOnPress: true
 
                             anchors.left: UrlBox.left
                             anchors.right: UrlBox.right
                             anchors.leftMargin: 6
                             anchors.verticalCenter: UrlBox.verticalCenter
                             anchors.verticalCenterOffset: 1
-
-                            opacity: 0
                         }
-                        Text {
-                            id: ShowUrl
-                            text: WebView.url == '' ? ' ' : WebView.url
-                            font.size: 11
-                            color: "#555555"
-                            anchors.left: UrlBox.left
-                            anchors.right: UrlBox.right
-                            anchors.leftMargin: 6
-                            anchors.verticalCenter: UrlBox.verticalCenter
-                            anchors.verticalCenterOffset: 1
-                        }
-                    }
-                    MouseRegion {
-                        anchors.fill: UrlBox
-                        onClicked: { proxy.focus=true }
                     }
                 }
 

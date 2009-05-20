@@ -3,71 +3,21 @@
 #include <QtDeclarative/qmlengine.h>
 #include <QtDeclarative/qmlexpression.h>
 #include <QtDeclarative/qmlcontext.h>
+#include <QtCore/qfileinfo.h>
+#include <QtCore/qdebug.h>
+#include <QtCore/qdir.h>
+#include "testtypes.h"
 
-class MyQmlObject : public QObject
+inline QUrl TEST_FILE(const QString &filename)
 {
-    Q_OBJECT
-    Q_PROPERTY(bool trueProperty READ trueProperty)
-    Q_PROPERTY(bool falseProperty READ falseProperty)
-    Q_PROPERTY(QString stringProperty READ stringProperty WRITE setStringProperty NOTIFY stringChanged)
-public:
-    MyQmlObject(): m_methodCalled(false), m_methodIntCalled(false) {}
+    QFileInfo fileInfo(__FILE__);
+    return QUrl::fromLocalFile(fileInfo.absoluteDir().filePath(filename));
+}
 
-    bool trueProperty() const { return true; }
-    bool falseProperty() const { return false; }
-
-    QString stringProperty() const { return m_string; }
-    void setStringProperty(const QString &s)
-    {
-        if (s == m_string)
-            return;
-        m_string = s;
-        emit stringChanged();
-    }
-
-    bool methodCalled() const { return m_methodCalled; }
-    bool methodIntCalled() const { return m_methodIntCalled; }
-
-    QString string() const { return m_string; }
-signals:
-    void basicSignal();
-    void argumentSignal(int a, QString b, qreal c);
-    void stringChanged();
-
-public slots:
-    void method() { m_methodCalled = true; }
-    void method(int a) { if(a == 163) m_methodIntCalled = true; }
-    void setString(const QString &s) { m_string = s; }
-
-private:
-    friend class tst_qmlbindengine;
-    bool m_methodCalled;
-    bool m_methodIntCalled;
-
-    QString m_string;
-};
-
-QML_DECLARE_TYPE(MyQmlObject);
-QML_DEFINE_TYPE(MyQmlObject,MyQmlObject);
-
-class MyQmlContainer : public QObject
+inline QUrl TEST_FILE(const char *filename)
 {
-    Q_OBJECT
-    Q_PROPERTY(QList<MyQmlContainer*>* children READ children)
-public:
-    MyQmlContainer() {}
-
-    QList<MyQmlContainer*> *children() { return &m_children; }
-
-private:
-    QList<MyQmlContainer*> m_children;
-};
-
-QML_DECLARE_TYPE(MyQmlContainer);
-QML_DEFINE_TYPE(MyQmlContainer,MyQmlContainer);
-
-#define TEST_FILE(filename) \
-    QUrl::fromLocalFile(QApplication::applicationDirPath() + "/" + filename)
+    return TEST_FILE(QLatin1String(filename));
+}
 
 class tst_qmlbindengine : public QObject
 {
@@ -76,17 +26,41 @@ public:
     tst_qmlbindengine() {}
 
 private slots:
+    void idShortcutInvalidates();
     void boolPropertiesEvaluateAsBool();
     void methods();
     void signalAssignment();
     void bindingLoop();
     void basicExpressions();
     void basicExpressions_data();
+    void arrayExpressions();
     void contextPropertiesTriggerReeval();
+    void objectPropertiesTriggerReeval();
 
 private:
     QmlEngine engine;
 };
+
+void tst_qmlbindengine::idShortcutInvalidates()
+{
+    {
+        QmlComponent component(&engine, TEST_FILE("idShortcutInvalidates.txt"));
+        MyQmlObject *object = qobject_cast<MyQmlObject *>(component.create());
+        QVERIFY(object != 0);
+        QVERIFY(object->objectProperty() != 0);
+        delete object->objectProperty();
+        QVERIFY(object->objectProperty() == 0);
+    }
+
+    {
+        QmlComponent component(&engine, TEST_FILE("idShortcutInvalidates.1.txt"));
+        MyQmlObject *object = qobject_cast<MyQmlObject *>(component.create());
+        QVERIFY(object != 0);
+        QVERIFY(object->objectProperty() != 0);
+        delete object->objectProperty();
+        QVERIFY(object->objectProperty() == 0);
+    }
+}
 
 void tst_qmlbindengine::boolPropertiesEvaluateAsBool()
 {
@@ -158,52 +132,6 @@ void tst_qmlbindengine::bindingLoop()
     QVERIFY(object != 0);
 }
 
-class MyExpression : public QmlExpression
-{
-public:
-    MyExpression(QmlContext *ctxt, const QString &expr)
-        : QmlExpression(ctxt, expr, 0), changed(false)
-    {
-    }
-
-    virtual void valueChanged() {
-        changed = true;
-    }
-    bool changed;
-};
-
-
-class MyDefaultObject1 : public QObject
-{
-    Q_OBJECT
-    Q_PROPERTY(int horseLegs READ horseLegs);
-    Q_PROPERTY(int antLegs READ antLegs);
-public:
-    int horseLegs() const { return 4; }
-    int antLegs() const { return 6; }
-};
-
-class MyDefaultObject2 : public QObject
-{
-    Q_OBJECT
-    Q_PROPERTY(int antLegs READ antLegs);
-    Q_PROPERTY(int emuLegs READ emuLegs);
-public:
-    int antLegs() const { return 5; } // Had an accident
-    int emuLegs() const { return 2; }
-};
-
-class MyDefaultObject3 : public QObject
-{
-    Q_OBJECT
-    Q_PROPERTY(int antLegs READ antLegs);
-    Q_PROPERTY(int humanLegs READ humanLegs);
-public:
-    int antLegs() const { return 7; } // Mutant
-    int humanLegs() const { return 2; }
-    int millipedeLegs() const { return 1000; }
-};
-
 void tst_qmlbindengine::basicExpressions_data()
 {
     QTest::addColumn<QString>("expression");
@@ -264,18 +192,43 @@ void tst_qmlbindengine::basicExpressions()
     QCOMPARE(expr.value(), result);
 }
 
+Q_DECLARE_METATYPE(QList<QObject *>);
+void tst_qmlbindengine::arrayExpressions()
+{
+    QObject obj1;
+    QObject obj2;
+    QObject obj3;
+
+    QmlContext context(engine.rootContext());
+    context.setContextProperty("a", &obj1);
+    context.setContextProperty("b", &obj2);
+    context.setContextProperty("c", &obj3);
+
+    MyExpression expr(&context, "[a, b, c, 10]");
+    QVariant result = expr.value();
+    QCOMPARE(result.userType(), qMetaTypeId<QList<QObject *> >());
+    QList<QObject *> list = qvariant_cast<QList<QObject *> >(result);
+    QCOMPARE(list.count(), 4);
+    QCOMPARE(list.at(0), &obj1);
+    QCOMPARE(list.at(1), &obj2);
+    QCOMPARE(list.at(2), &obj3);
+    QCOMPARE(list.at(3), (QObject *)0);
+}
+
 // Tests that modifying a context property will reevaluate expressions
 void tst_qmlbindengine::contextPropertiesTriggerReeval()
 {
     QmlContext context(engine.rootContext());
     MyQmlObject object1;
     MyQmlObject object2;
+    MyQmlObject *object3 = new MyQmlObject;
 
     object1.setStringProperty("Hello");
     object2.setStringProperty("World");
 
     context.setContextProperty("testProp", QVariant(1));
     context.setContextProperty("testObj", &object1);
+    context.setContextProperty("testObj2", object3);
 
     { 
         MyExpression expr(&context, "testProp + 1");
@@ -315,6 +268,72 @@ void tst_qmlbindengine::contextPropertiesTriggerReeval()
         context.setContextProperty("testObj", &object1);
         QCOMPARE(expr.changed, true);
         QCOMPARE(expr.value(), QVariant("Hello"));
+    }
+
+    { 
+        MyExpression expr(&context, "testObj2");
+        QCOMPARE(expr.changed, false);
+        QCOMPARE(expr.value(), QVariant::fromValue((QObject *)object3));
+
+        delete object3;
+
+        QCOMPARE(expr.changed, true);
+        QCOMPARE(expr.value(), QVariant());
+    }
+
+}
+
+void tst_qmlbindengine::objectPropertiesTriggerReeval()
+{
+    QmlContext context(engine.rootContext());
+    MyQmlObject object1;
+    MyQmlObject object2;
+    MyQmlObject object3;
+    context.setContextProperty("testObj", &object1);
+
+    object1.setStringProperty(QLatin1String("Hello"));
+    object2.setStringProperty(QLatin1String("Dog"));
+    object3.setStringProperty(QLatin1String("Cat"));
+
+    { 
+        MyExpression expr(&context, "testObj.stringProperty");
+        QCOMPARE(expr.changed, false);
+        QCOMPARE(expr.value(), QVariant("Hello"));
+
+        object1.setStringProperty(QLatin1String("World"));
+        QCOMPARE(expr.changed, true);
+        QCOMPARE(expr.value(), QVariant("World"));
+    }
+
+    { 
+        MyExpression expr(&context, "testObj.objectProperty.stringProperty");
+        QCOMPARE(expr.changed, false);
+        QCOMPARE(expr.value(), QVariant());
+
+        object1.setObjectProperty(&object2);
+        QCOMPARE(expr.changed, true);
+        expr.changed = false;
+        QCOMPARE(expr.value(), QVariant("Dog"));
+
+        object1.setObjectProperty(&object3);
+        QCOMPARE(expr.changed, true);
+        expr.changed = false;
+        QCOMPARE(expr.value(), QVariant("Cat"));
+
+        object1.setObjectProperty(0);
+        QCOMPARE(expr.changed, true);
+        expr.changed = false;
+        QCOMPARE(expr.value(), QVariant());
+
+        object1.setObjectProperty(&object3);
+        QCOMPARE(expr.changed, true);
+        expr.changed = false;
+        QCOMPARE(expr.value(), QVariant("Cat"));
+
+        object3.setStringProperty("Donkey");
+        QCOMPARE(expr.changed, true);
+        expr.changed = false;
+        QCOMPARE(expr.value(), QVariant("Donkey"));
     }
 }
 

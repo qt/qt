@@ -458,10 +458,11 @@ void QFxTextPrivate::updateSize()
                 singleline = !tmp.contains(QChar::LineSeparator);
                 if (singleline && elideMode != Qt::ElideNone && q->widthValid())
                     tmp = fm.elidedText(tmp,elideMode,q->width()); // XXX still worth layout...?
-                QTextLayout layout;
+                layout.clearLayout();
                 layout.setFont(f);
                 layout.setText(tmp);
                 size = setupTextLayout(&layout);
+                cachedLayoutSize = size;
             }
         if (richText) {
             singleline = false; // richtext can't elide or be optimized for single-line case
@@ -608,18 +609,11 @@ QImage QFxTextPrivate::wrappedTextImage(bool drawStyle)
     //do layout
     Q_Q(const QFxText);
     QFont f; if (_font) f = _font->font();
-    QString tmp = text;
-    if (singleline && elideMode != Qt::ElideNone && q->widthValid()) {
-        QFontMetrics fm(f);
-        tmp = fm.elidedText(tmp,elideMode,q->width()); // XXX still worth layout...?
-    }
-    tmp.replace(QLatin1Char('\n'), QChar::LineSeparator);
-    QTextLayout textLayout(tmp, f);
-    QSize size = setupTextLayout(&textLayout);
+    QSize size = cachedLayoutSize;
 
     int x = 0;
-    for (int i = 0; i < textLayout.lineCount(); ++i) {
-        QTextLine line = textLayout.lineAt(i);
+    for (int i = 0; i < layout.lineCount(); ++i) {
+        QTextLine line = layout.lineAt(i);
         if (hAlign == QFxText::AlignLeft) {
             x = 0;
         } else if (hAlign == QFxText::AlignRight) {
@@ -640,7 +634,7 @@ QImage QFxTextPrivate::wrappedTextImage(bool drawStyle)
     else 
         p.setPen(color);
     p.setFont(f);
-    textLayout.draw(&p, QPointF(0, 0));
+    layout.draw(&p, QPointF(0, 0));
     return img;
 }
 
@@ -749,7 +743,16 @@ void QFxText::paintContents(QPainter &p)
         break;
     }
 
+    bool needClip = !clip() && (d->imgCache.width() > width() || 
+                                d->imgCache.height() > height());
+
+    if (needClip) {
+        p.save();
+        p.setClipRect(boundingRect());
+    }
     p.drawImage(x, y, d->imgCache);
+    if (needClip)
+        p.restore();
 }
 
 #elif defined(QFX_RENDER_OPENGL2)

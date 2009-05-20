@@ -44,13 +44,6 @@
 #endif
 
 #include "javascriptengine_p.h"
-
-
-
-
-
-
-
 #include "javascriptlexer_p.h"
 #include "javascriptgrammar_p.h"
 
@@ -73,10 +66,12 @@ extern double qstrtod(const char *s00, char const **se, bool *ok);
     while (0)
 
 namespace JavaScript {
-extern qjsreal integerFromString(const char *buf, int size, int radix);
+extern double integerFromString(const char *buf, int size, int radix);
 }
 
-JavaScript::Lexer::Lexer(JavaScriptEnginePrivate *eng)
+using namespace JavaScript;
+
+Lexer::Lexer(Engine *eng)
     : driver(eng),
       yylineno(0),
       done(false),
@@ -101,6 +96,7 @@ JavaScript::Lexer::Lexer(JavaScriptEnginePrivate *eng)
       parenthesesCount(0),
       prohibitAutomaticSemicolon(false)
 {
+    driver->setLexer(this);
     // allocate space for read buffers
     buffer8 = new char[size8];
     buffer16 = new QChar[size16];
@@ -109,13 +105,13 @@ JavaScript::Lexer::Lexer(JavaScriptEnginePrivate *eng)
 
 }
 
-JavaScript::Lexer::~Lexer()
+Lexer::~Lexer()
 {
     delete [] buffer8;
     delete [] buffer16;
 }
 
-void JavaScript::Lexer::setCode(const QString &c, int lineno)
+void Lexer::setCode(const QString &c, int lineno)
 {
     errmsg = QString();
     yylineno = lineno;
@@ -135,7 +131,7 @@ void JavaScript::Lexer::setCode(const QString &c, int lineno)
     next3 = (length > 3) ? code[3].unicode() : 0;
 }
 
-void JavaScript::Lexer::shift(uint p)
+void Lexer::shift(uint p)
 {
     while (p--) {
         ++pos;
@@ -147,13 +143,13 @@ void JavaScript::Lexer::shift(uint p)
     }
 }
 
-void JavaScript::Lexer::setDone(State s)
+void Lexer::setDone(State s)
 {
     state = s;
     done = true;
 }
 
-int JavaScript::Lexer::findReservedWord(const QChar *c, int size) const
+int Lexer::findReservedWord(const QChar *c, int size) const
 {
     switch (size) {
     case 2: {
@@ -454,7 +450,7 @@ int JavaScript::Lexer::findReservedWord(const QChar *c, int size) const
     return -1;
 }
 
-int JavaScript::Lexer::lex()
+int Lexer::lex()
 {
     int token = 0;
     state = Start;
@@ -772,10 +768,10 @@ int JavaScript::Lexer::lex()
     if (state == Number) {
         dval = qstrtod(buffer8, 0, 0);
     } else if (state == Hex) { // scan hex numbers
-        dval = JavaScript::integerFromString(buffer8, pos8, 16);
+        dval = integerFromString(buffer8, pos8, 16);
         state = Number;
     } else if (state == Octal) {   // scan octal number
-        dval = JavaScript::integerFromString(buffer8, pos8, 8);
+        dval = integerFromString(buffer8, pos8, 8);
         state = Number;
     }
 
@@ -843,18 +839,18 @@ int JavaScript::Lexer::lex()
     }
 }
 
-bool JavaScript::Lexer::isWhiteSpace() const
+bool Lexer::isWhiteSpace() const
 {
     return (current == ' ' || current == '\t' ||
              current == 0x0b || current == 0x0c);
 }
 
-bool JavaScript::Lexer::isLineTerminator() const
+bool Lexer::isLineTerminator() const
 {
     return (current == '\n' || current == '\r');
 }
 
-bool JavaScript::Lexer::isIdentLetter(ushort c)
+bool Lexer::isIdentLetter(ushort c)
 {
     /* TODO: allow other legitimate unicode chars */
     return ((c >= 'a' && c <= 'z')
@@ -863,24 +859,24 @@ bool JavaScript::Lexer::isIdentLetter(ushort c)
             || c == '_');
 }
 
-bool JavaScript::Lexer::isDecimalDigit(ushort c)
+bool Lexer::isDecimalDigit(ushort c)
 {
     return (c >= '0' && c <= '9');
 }
 
-bool JavaScript::Lexer::isHexDigit(ushort c) const
+bool Lexer::isHexDigit(ushort c) const
 {
     return ((c >= '0' && c <= '9')
             || (c >= 'a' && c <= 'f')
             || (c >= 'A' && c <= 'F'));
 }
 
-bool JavaScript::Lexer::isOctalDigit(ushort c) const
+bool Lexer::isOctalDigit(ushort c) const
 {
     return (c >= '0' && c <= '7');
 }
 
-int JavaScript::Lexer::matchPunctuator(ushort c1, ushort c2,
+int Lexer::matchPunctuator(ushort c1, ushort c2,
                             ushort c3, ushort c4)
 {
     if (c1 == '>' && c2 == '>' && c3 == '>' && c4 == '=') {
@@ -987,7 +983,7 @@ int JavaScript::Lexer::matchPunctuator(ushort c1, ushort c2,
     }
 }
 
-ushort JavaScript::Lexer::singleEscape(ushort c) const
+ushort Lexer::singleEscape(ushort c) const
 {
     switch(c) {
     case 'b':
@@ -1013,13 +1009,13 @@ ushort JavaScript::Lexer::singleEscape(ushort c) const
     }
 }
 
-ushort JavaScript::Lexer::convertOctal(ushort c1, ushort c2,
+ushort Lexer::convertOctal(ushort c1, ushort c2,
                             ushort c3) const
 {
     return ((c1 - '0') * 64 + (c2 - '0') * 8 + c3 - '0');
 }
 
-unsigned char JavaScript::Lexer::convertHex(ushort c)
+unsigned char Lexer::convertHex(ushort c)
 {
     if (c >= '0' && c <= '9')
         return (c - '0');
@@ -1029,19 +1025,19 @@ unsigned char JavaScript::Lexer::convertHex(ushort c)
         return (c - 'A' + 10);
 }
 
-unsigned char JavaScript::Lexer::convertHex(ushort c1, ushort c2)
+unsigned char Lexer::convertHex(ushort c1, ushort c2)
 {
     return ((convertHex(c1) << 4) + convertHex(c2));
 }
 
-QChar JavaScript::Lexer::convertUnicode(ushort c1, ushort c2,
+QChar Lexer::convertUnicode(ushort c1, ushort c2,
                              ushort c3, ushort c4)
 {
     return QChar((convertHex(c3) << 4) + convertHex(c4),
                   (convertHex(c1) << 4) + convertHex(c2));
 }
 
-void JavaScript::Lexer::record8(ushort c)
+void Lexer::record8(ushort c)
 {
     Q_ASSERT(c <= 0xff);
 
@@ -1057,7 +1053,7 @@ void JavaScript::Lexer::record8(ushort c)
     buffer8[pos8++] = (char) c;
 }
 
-void JavaScript::Lexer::record16(QChar c)
+void Lexer::record16(QChar c)
 {
     // enlarge buffer if full
     if (pos16 >= size16 - 1) {
@@ -1071,14 +1067,14 @@ void JavaScript::Lexer::record16(QChar c)
     buffer16[pos16++] = c;
 }
 
-void JavaScript::Lexer::recordStartPos()
+void Lexer::recordStartPos()
 {
     startpos = pos;
     startlineno = yylineno;
     startcolumn = yycolumn;
 }
 
-bool JavaScript::Lexer::scanRegExp(RegExpBodyPrefix prefix)
+bool Lexer::scanRegExp(RegExpBodyPrefix prefix)
 {
     pos16 = 0;
     bool lastWasEscape = false;
@@ -1110,7 +1106,7 @@ bool JavaScript::Lexer::scanRegExp(RegExpBodyPrefix prefix)
 
     flags = 0;
     while (isIdentLetter(current)) {
-        int flag = JavaScript::Ecma::RegExp::flagFromChar(current);
+        int flag = Ecma::RegExp::flagFromChar(current);
         if (flag == 0) {
             errmsg = QString::fromLatin1("Invalid regular expression flag '%0'")
                      .arg(QChar(current));
@@ -1124,7 +1120,7 @@ bool JavaScript::Lexer::scanRegExp(RegExpBodyPrefix prefix)
     return true;
 }
 
-void JavaScript::Lexer::syncProhibitAutomaticSemicolon()
+void Lexer::syncProhibitAutomaticSemicolon()
 {
     if (parenthesesState == BalancedParentheses) {
         // we have seen something like "if (foo)", which means we should

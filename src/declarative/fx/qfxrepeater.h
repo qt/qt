@@ -42,7 +42,7 @@
 #ifndef QFXREPEATER_H
 #define QFXREPEATER_H
 
-#include <qfxitem.h>
+#include <QtDeclarative/qfxitem.h>
 
 
 QT_BEGIN_HEADER

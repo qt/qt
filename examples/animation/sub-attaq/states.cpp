@@ -281,7 +281,7 @@ UpdateScoreTransition::UpdateScoreTransition(GraphicsScene *scene, PlayState *ga
 {
 }
 
-bool UpdateScoreTransition::eventTest(QEvent *event) const
+bool UpdateScoreTransition::eventTest(QEvent *event)
 {
     if (!QSignalTransition::eventTest(event))
         return false;
@@ -300,7 +300,7 @@ WinTransition::WinTransition(GraphicsScene *scene, PlayState *game, QAbstractSta
 {
 }
 
-bool WinTransition::eventTest(QEvent *event) const
+bool WinTransition::eventTest(QEvent *event)
 {
     if (!QSignalTransition::eventTest(event))
         return false;
@@ -319,7 +319,7 @@ CustomSpaceTransition::CustomSpaceTransition(QWidget *widget, PlayState *game, Q
 {
 }
 
-bool CustomSpaceTransition::eventTest(QEvent *event) const
+bool CustomSpaceTransition::eventTest(QEvent *event)
 {
     Q_UNUSED(event);
     if (!QKeyEventTransition::eventTest(event))
