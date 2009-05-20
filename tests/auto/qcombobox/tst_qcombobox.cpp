@@ -76,6 +76,7 @@
 #endif
 #include <qabstractitemview.h>
 #include "../../shared/util.h"
+#include <qstyleditemdelegate.h>
 
 //TESTED_CLASS=
 //TESTED_FILES=
@@ -141,6 +142,8 @@ private slots:
     void setModelColumn();
     void noScrollbar_data();
     void noScrollbar();
+    void setItemDelegate();
+    void task253944_itemDelegateIsReset();
 
 protected slots:
     void onEditTextChanged( const QString &newString );
@@ -2204,6 +2207,27 @@ void tst_QComboBox::noScrollbar()
         QVERIFY(!comboBox.view()->horizontalScrollBar()->isVisible());
         QVERIFY(!comboBox.view()->verticalScrollBar()->isVisible());
     }
+}
+
+void tst_QComboBox::setItemDelegate()
+{
+    QComboBox comboBox;
+    QStyledItemDelegate *itemDelegate = new QStyledItemDelegate;
+    comboBox.setItemDelegate(itemDelegate);
+    QCOMPARE(comboBox.itemDelegate(), itemDelegate);
+}
+
+void tst_QComboBox::task253944_itemDelegateIsReset()
+{
+    QComboBox comboBox;
+    QStyledItemDelegate *itemDelegate = new QStyledItemDelegate;
+    comboBox.setItemDelegate(itemDelegate);
+
+    comboBox.setEditable(true);
+    QCOMPARE(comboBox.itemDelegate(), itemDelegate);
+
+    comboBox.setStyleSheet("QComboBox { border: 1px solid gray; }");
+    QCOMPARE(comboBox.itemDelegate(), itemDelegate);
 }
 
 QTEST_MAIN(tst_QComboBox)
