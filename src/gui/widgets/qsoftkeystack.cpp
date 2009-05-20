@@ -129,8 +129,8 @@ void QSoftKeyStack::handleFocusChanged(QWidget *old, QWidget *now)
     Qt::ContextMenuPolicy policy = now->contextMenuPolicy();
     if (policy != Qt::NoContextMenu && policy != Qt::PreventContextMenu ) {
         QList<QSoftKeyAction*> actionList;
-        QSoftKeyAction* menu = new QSoftKeyAction(QSoftKeyAction::Menu, QString("Menu"), now);
-        QSoftKeyAction* contextMenu = new QSoftKeyAction(QSoftKeyAction::ContextMenu, QString("ContextMenu"), now);
+        QSoftKeyAction* menu = new QSoftKeyAction(QSoftKeyAction::Menu, QString::fromLatin1("Menu"), now);
+        QSoftKeyAction* contextMenu = new QSoftKeyAction(QSoftKeyAction::ContextMenu, QString::fromLatin1("ContextMenu"), now);
         actionList.append(menu);
         actionList.append(contextMenu);
         softKeyStack->push(actionList);
@@ -164,3 +164,14 @@ void QSoftKeyStack::handleSoftKeyPress(int command)
     Q_D(QSoftKeyStack);
     d->handleSoftKeyPress(command);
 }
+
+#if !defined(Q_WS_S60)
+void QSoftKeyStackPrivate::handleSoftKeyPress(int command)
+{
+    Q_UNUSED(command)
+}
+
+void QSoftKeyStackPrivate::setNativeSoftKeys()
+{
+}
+#endif // !defined(Q_WS_S60)

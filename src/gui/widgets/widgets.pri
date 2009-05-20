@@ -78,8 +78,10 @@ HEADERS += \
         widgets/qtoolbararealayout_p.h \
         widgets/qplaintextedit.h \
         widgets/qplaintextedit_p.h \
-        widgets/qprintpreviewwidget.h
-
+        widgets/qprintpreviewwidget.h \
+        widgets/qsoftkeyaction.h \
+        widgets/qsoftkeystack.h \
+        widgets/qsoftkeystack_p.h
 SOURCES += \
         widgets/qabstractbutton.cpp \
         widgets/qabstractslider.cpp \
@@ -138,8 +140,9 @@ SOURCES += \
         widgets/qwidgetanimator.cpp \
         widgets/qtoolbararealayout.cpp \
         widgets/qplaintextedit.cpp \
-        widgets/qprintpreviewwidget.cpp
-
+        widgets/qprintpreviewwidget.cpp \
+        widgets/qsoftkeyaction.cpp \
+        widgets/qsoftkeystack.cpp
 
 !embedded:mac {
     HEADERS += widgets/qmacnativewidget_mac.h \
@@ -162,14 +165,7 @@ wince*: {
 }
 
 symbian*: {
-    HEADERS += \
-        widgets/qsoftkeyaction.h \
-        widgets/qsoftkeystack.h \
-        widgets/qsoftkeystack_p.h
-
     SOURCES += \
         widgets/qmenu_symbian.cpp \
-        widgets/qsoftkeyaction.cpp \
-        widgets/qsoftkeystack.cpp \
         widgets/qsoftkeystack_s60.cpp
 }
