@@ -2637,7 +2637,8 @@ void tst_QNetworkReply::downloadProgress()
     QVERIFY(spy.isValid());
 
     QCoreApplication::instance()->processEvents();
-    server.waitForNewConnection(0); // ignore result, since processEvents may have got it
+    if (!server.hasPendingConnections())
+        server.waitForNewConnection(1000);
     QVERIFY(server.hasPendingConnections());
     QCOMPARE(spy.count(), 0);
 
@@ -2691,7 +2692,8 @@ void tst_QNetworkReply::uploadProgress()
     QVERIFY(finished.isValid());
 
     QCoreApplication::instance()->processEvents();
-    server.waitForNewConnection(0); // ignore result, since processEvents may have got it
+    if (!server.hasPendingConnections())
+        server.waitForNewConnection(1000);
     QVERIFY(server.hasPendingConnections());
 
     QTcpSocket *receiver = server.nextPendingConnection();

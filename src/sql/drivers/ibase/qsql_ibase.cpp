@@ -55,6 +55,7 @@
 #include <limits.h>
 #include <math.h>
 #include <qdebug.h>
+#include <QVarLengthArray>
 
 QT_BEGIN_NAMESPACE
 
@@ -583,7 +584,7 @@ QVariant QIBaseResultPrivate::fetchArray(int pos, ISC_QUAD *arr)
 
     int arraySize = 1, subArraySize;
     short dimensions = desc.array_desc_dimensions;
-    short *numElements = new short[dimensions];
+    QVarLengthArray<short> numElements(dimensions);
 
     for(int i = 0; i < dimensions; ++i) {
         subArraySize = (desc.array_desc_bounds[i].array_bound_upper -
@@ -612,9 +613,7 @@ QVariant QIBaseResultPrivate::fetchArray(int pos, ISC_QUAD *arr)
                 QSqlError::StatementError))
         return list;
 
-    readArrayBuffer(list, ba.data(), 0, numElements, &desc, tc);
-
-    delete[] numElements;
+    readArrayBuffer(list, ba.data(), 0, numElements.data(), &desc, tc);
 
     return QVariant(list);
 }
