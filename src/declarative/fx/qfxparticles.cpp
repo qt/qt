@@ -1129,7 +1129,7 @@ void QFxParticlesPainter::paintContents(QPainter &p)
     update();//Should I need this? (GV does)
 }
 #elif defined(QFX_RENDER_OPENGL2)
-void QFxParticles::paintGLContents(GLPainter &p)
+void QFxParticles::paintGLContents(GLPainter &)
 {
     //painting is done by the ParticlesPainter, so it can have the right size
 }
@@ -1155,8 +1155,8 @@ void QFxParticlesPainter::paintGLContents(GLPainter &p)
 
     glBindTexture(GL_TEXTURE_2D, d->tex.texture());
 
-    const int myX = (int)(x() + parent->x());
-    const int myY = (int)(y() + parent->y());
+    const int myX = (int)(x() + parent()->x());
+    const int myY = (int)(y() + parent()->y());
     float widthV = d->image.width();
     float heightV = d->image.height();
     for (int i = 0; i < d->particles.count(); ++i) {
