@@ -40,10 +40,12 @@
 ****************************************************************************/
 
 #include <QtGui/qgraphicsview.h>
+#include <QtGui/qgraphicswidget.h>
 
 QT_BEGIN_NAMESPACE
-class QTimeLine;
 class Ui_BackSide;
+class QAnimationGroup;
+class QPropertyAnimation;
 QT_END_NAMESPACE;
 
 class RoundRectItem;
@@ -60,33 +62,24 @@ protected:
     void resizeEvent(QResizeEvent *event);
 
 private Q_SLOTS:
-    void updateSelectionStep(qreal val);
-    void updateFlipStep(qreal val);
     void flip();
 
 private:
-    QPointF posForLocation(int x, int y) const;
+    QPointF posForLocation(int index) const;
 
-    QGraphicsScene *scene;
-    RoundRectItem *selectionItem;
-    RoundRectItem *baseItem;
+    QGraphicsWidget *selectionItem;
+    QGraphicsWidget *baseItem;
     RoundRectItem *backItem;
     QGraphicsWidget *splash;
-    QTimeLine *selectionTimeLine;
-    QTimeLine *flipTimeLine;
-    int selectedX, selectedY;
+    int selectedIndex;
 
-    QGraphicsItem ***grid;
+    QVector<QGraphicsItem*> grid;
     
-    QPointF startPos;
-    QPointF endPos;
-    qreal xrot, yrot;
-    qreal xrot2, yrot2;
-
     int width;
     int height;
     bool flipped;
-    bool flipLeft;
-
     Ui_BackSide *ui;
+
+    QAnimationGroup *flippingGroup;
+    QPropertyAnimation *rotationXanim, *rotationYanim;
 };

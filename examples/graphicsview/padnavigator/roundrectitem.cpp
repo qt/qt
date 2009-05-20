@@ -44,72 +44,61 @@
 #include <QtGui/QtGui>
 
 RoundRectItem::RoundRectItem(const QRectF &rect, const QBrush &brush, QWidget *embeddedWidget)
-    : QGraphicsRectItem(rect),
+    : QGraphicsWidget(),
+      m_rect(rect),
       brush(brush),
-      timeLine(75),
-      lastVal(0),
-      opa(1),
       proxyWidget(0)
 {
-    connect(&timeLine, SIGNAL(valueChanged(qreal)),
-            this, SLOT(updateValue(qreal)));
-    
     if (embeddedWidget) {
         proxyWidget = new QGraphicsProxyWidget(this);
         proxyWidget->setFocusPolicy(Qt::StrongFocus);
         proxyWidget->setWidget(embeddedWidget);
-        proxyWidget->setGeometry(boundingRect().adjusted(25, 25, -25, -25));
     }
 }
 
 void RoundRectItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *)
 {
-    QTransform x = painter->worldTransform();
-
-    QLineF unit = x.map(QLineF(0, 0, 1, 1));
-    if (unit.p1().x() > unit.p2().x() || unit.p1().y() > unit.p2().y()) {
-        if (proxyWidget && proxyWidget->isVisible()) {
+    const bool widgetHidden = parentItem() == 0 || qAbs(static_cast<QGraphicsWidget*>(parentItem())->yRotation()) < 90;
+    
+    if (proxyWidget) {
+        if (widgetHidden) {
             proxyWidget->hide();
-            proxyWidget->setGeometry(rect());
+        } else {
+            if (!proxyWidget->isVisible()) {
+                proxyWidget->setGeometry(boundingRect().adjusted(25, 25, -25, -25));
+                proxyWidget->show();
+                proxyWidget->setFocus();
+            }
+            painter->setBrush(brush);
+            painter->setPen(QPen(Qt::black, 1));
+            painter->setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform);
+            painter->drawRoundRect(m_rect);
         }
-        return;
-    }
+    } else if (widgetHidden) {
+        painter->setPen(Qt::NoPen);
+        painter->setBrush(QColor(0, 0, 0, 64));
+        painter->drawRoundRect(m_rect.translated(2, 2));
 
-    if (proxyWidget && !proxyWidget->isVisible()) {
-        proxyWidget->show();
-        proxyWidget->setFocus();
-    }
-    if (proxyWidget && proxyWidget->pos() != QPoint())
-        proxyWidget->setGeometry(boundingRect().adjusted(25, 25, -25, -25));
-
-    painter->setOpacity(opacity());
-    painter->setPen(Qt::NoPen);
-    painter->setBrush(QColor(0, 0, 0, 64));
-    painter->drawRoundRect(rect().translated(2, 2));
-
-    if (!proxyWidget) {
-        QLinearGradient gradient(rect().topLeft(), rect().bottomRight());
+        QLinearGradient gradient(m_rect.topLeft(), m_rect.bottomRight());
         const QColor col = brush.color();
         gradient.setColorAt(0, col);
-        gradient.setColorAt(1, col.dark(int(200 + lastVal * 50)));
+        gradient.setColorAt(1, col.dark(200));
         painter->setBrush(gradient);
-    } else {
-        painter->setBrush(brush);
+        painter->setPen(QPen(Qt::black, 1));
+        painter->drawRoundRect(m_rect);
+        if (!pix.isNull()) {
+            painter->scale(qreal(1.95), qreal(1.95));
+            painter->drawPixmap(-pix.width() / 2, -pix.height() / 2, pix);
+        }
     }
 
-    painter->setPen(QPen(Qt::black, 1));
-    painter->drawRoundRect(rect());
-    if (!pix.isNull()) {
-        painter->scale(1.95, 1.95);
-        painter->drawPixmap(-pix.width() / 2, -pix.height() / 2, pix);;
-    }
 }
 
 QRectF RoundRectItem::boundingRect() const
 {
-    qreal penW = 0.5;
-    qreal shadowW = 2.0;
-    return rect().adjusted(-penW, -penW, penW + shadowW, penW + shadowW);
+    qreal penW = qreal(.5);
+    qreal shadowW = 2;
+    return m_rect.adjusted(-penW, -penW, penW + shadowW, penW + shadowW);
 }
 
 void RoundRectItem::setPixmap(const QPixmap &pixmap)
@@ -119,46 +108,29 @@ void RoundRectItem::setPixmap(const QPixmap &pixmap)
         update();
 }
 
-qreal RoundRectItem::opacity() const
-{
-    RoundRectItem *parent = parentItem() ? (RoundRectItem *)parentItem() : 0;
-    return opa + (parent ? parent->opacity() : 0);
-}
-
-void RoundRectItem::setOpacity(qreal opacity)
-{
-    opa = opacity;
-    update();
-}
-
 void RoundRectItem::keyPressEvent(QKeyEvent *event)
 {
-    if (event->isAutoRepeat() || event->key() != Qt::Key_Return
-        || (timeLine.state() == QTimeLine::Running && timeLine.direction() == QTimeLine::Forward)) {
-        QGraphicsRectItem::keyPressEvent(event);
+    if (event->isAutoRepeat() || event->key() != Qt::Key_Return) {
+        QGraphicsWidget::keyPressEvent(event);
         return;
     }
 
-    timeLine.stop();
-    timeLine.setDirection(QTimeLine::Forward);
-    timeLine.start();
+    if (!proxyWidget) {
+       setXScale(qreal(.9));
+       setYScale(qreal(.9));
+    }
     emit activated();
 }
 
 void RoundRectItem::keyReleaseEvent(QKeyEvent *event)
 {
-    if (event->key() != Qt::Key_Return) {
-        QGraphicsRectItem::keyReleaseEvent(event);
+    if (event->isAutoRepeat() || event->key() != Qt::Key_Return) {
+        QGraphicsWidget::keyReleaseEvent(event);
         return;
     }
-    timeLine.stop();
-    timeLine.setDirection(QTimeLine::Backward);
-    timeLine.start();
-}
 
-void RoundRectItem::updateValue(qreal value)
-{
-    lastVal = value;
-    if (!proxyWidget)
-        setTransform(QTransform().scale(1 - value / 10.0, 1 - value / 10.0));
+    if (!proxyWidget) {
+        setXScale(1);
+        setYScale(1);
+    }
 }

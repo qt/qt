@@ -40,10 +40,6 @@
 ****************************************************************************/
 
 #include <QtGui>
-#ifndef QT_NO_OPENGL
-#  include <QtOpenGL>
-#endif
-
 #include "panel.h"
 
 int main(int argc, char *argv[])

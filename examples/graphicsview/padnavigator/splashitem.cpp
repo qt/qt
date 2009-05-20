@@ -46,12 +46,6 @@
 SplashItem::SplashItem(QGraphicsItem *parent)
     : QGraphicsWidget(parent)
 {
-    opacity = 1.0;
-
-    
-    timeLine = new QTimeLine(350);
-    timeLine->setCurveShape(QTimeLine::EaseInCurve);
-    connect(timeLine, SIGNAL(valueChanged(qreal)), this, SLOT(setValue(qreal)));
 
     text = tr("Welcome to the Pad Navigator Example. You can use the"
               " keyboard arrows to navigate the icons, and press enter"
@@ -61,7 +55,6 @@ SplashItem::SplashItem(QGraphicsItem *parent)
 
 void SplashItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *)
 {
-    painter->setOpacity(opacity);
     painter->setPen(QPen(Qt::black, 2));
     painter->setBrush(QColor(245, 245, 255, 220));
     painter->setClipRect(rect());
@@ -79,14 +72,14 @@ void SplashItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWid
 
 void SplashItem::keyPressEvent(QKeyEvent * /* event */)
 {
-    if (timeLine->state() == QTimeLine::NotRunning)
-        timeLine->start();
-}
+    QVariantAnimation *anim = new QPropertyAnimation(this, "pos");
+    anim->setEndValue(QPointF(x(), scene()->sceneRect().top() - rect().height()));
+    anim->setDuration(350);
+    anim->start(QAbstractAnimation::DeleteWhenStopped);
 
-void SplashItem::setValue(qreal value)
-{
-    opacity = 1 - value;
-    setPos(x(), scene()->sceneRect().top() - rect().height() * value);
-    if (value == 1)
-        hide();
+    anim = new QPropertyAnimation(this, "opacity");
+    anim->setEndValue(0);
+    anim->start(QAbstractAnimation::DeleteWhenStopped);
+
+    connect(anim, SIGNAL(finished()), SLOT(close()));
 }

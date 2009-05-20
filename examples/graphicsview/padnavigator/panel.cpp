@@ -50,15 +50,15 @@
 #endif
 #include <QtGui/QtGui>
 
-#include <math.h>
-
 Panel::Panel(int width, int height)
-    : selectedX(0),
-      selectedY(0),
+    : selectedIndex(0),
+      grid(width*height),
       width(width),
       height(height),
       flipped(false),
-      flipLeft(true)
+      flippingGroup(0),
+      rotationXanim(0),
+      rotationYanim(0)
 {
     setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
@@ -72,12 +72,9 @@ Panel::Panel(int width, int height)
 #endif
     setMinimumSize(50, 50);
 
-    selectionTimeLine = new QTimeLine(150, this);
-    flipTimeLine = new QTimeLine(500, this);
-
     QRectF bounds((-width / 2.0) * 150, (-height / 2.0) * 150, width * 150, height * 150);
 
-    scene = new QGraphicsScene(bounds, this);
+    QGraphicsScene *scene = new QGraphicsScene(bounds, this);
     scene->setItemIndexMethod(QGraphicsScene::NoIndex);
     setScene(scene);
 
@@ -90,28 +87,24 @@ Panel::Panel(int width, int height)
     ui->hostName->setFocus();
 
     backItem = new RoundRectItem(bounds, embed->palette().window(), embed);
-    backItem->setTransform(QTransform().rotate(180, Qt::YAxis));
+    backItem->setYRotation(180);
     backItem->setParentItem(baseItem);
         
     selectionItem = new RoundRectItem(QRectF(-60, -60, 120, 120), Qt::gray);
     selectionItem->setParentItem(baseItem);
     selectionItem->setZValue(-1);
-    selectionItem->setPos(posForLocation(0, 0));
-    startPos = selectionItem->pos();
+    selectionItem->setPos(posForLocation(0));
 
-    grid = new QGraphicsItem **[height];
-        
+    int currentIndex = 0;
     for (int y = 0; y < height; ++y) {
-        grid[y] = new QGraphicsItem *[width];
-
         for (int x = 0; x < width; ++x) {
             RoundRectItem *item = new RoundRectItem(QRectF(-54, -54, 108, 108),
                                                     QColor(214, 240, 110, 128));
-            item->setPos(posForLocation(x, y));
+            item->setPos(posForLocation(currentIndex));
                 
             item->setParentItem(baseItem);
             item->setFlag(QGraphicsItem::ItemIsFocusable);
-            grid[y][x] = item;
+            grid[currentIndex++] = item;
 
             switch (qrand() % 9) {
             case 0: item->setPixmap(QPixmap(":/images/kontact_contacts.png")); break;
@@ -131,14 +124,10 @@ Panel::Panel(int width, int height)
         }
     }
 
-    grid[0][0]->setFocus();
+    grid.first()->setFocus();
 
     connect(backItem, SIGNAL(activated()),
             this, SLOT(flip()));
-    connect(selectionTimeLine, SIGNAL(valueChanged(qreal)),
-            this, SLOT(updateSelectionStep(qreal)));
-    connect(flipTimeLine, SIGNAL(valueChanged(qreal)),
-            this, SLOT(updateFlipStep(qreal)));
 
     splash = new SplashItem;
     splash->setZValue(5);
@@ -147,16 +136,15 @@ Panel::Panel(int width, int height)
 
     splash->grabKeyboard();
     
-    updateSelectionStep(0);
+    //initialize the position
+    baseItem->setYRotation(selectionItem->x()/6.);
+    baseItem->setXRotation(selectionItem->y()/6.);
 
     setWindowTitle(tr("Pad Navigator Example"));
 }
 
 Panel::~Panel()
 {
-    for (int y = 0; y < height; ++y)
-        delete [] grid[y];
-    delete [] grid;
 }
     
 void Panel::keyPressEvent(QKeyEvent *event)
@@ -166,73 +154,93 @@ void Panel::keyPressEvent(QKeyEvent *event)
         return;
     }
 
-    selectedX = (selectedX + width + (event->key() == Qt::Key_Right) - (event->key() == Qt::Key_Left)) % width;
-    selectedY = (selectedY + height + (event->key() == Qt::Key_Down) - (event->key() == Qt::Key_Up)) % height;
-    grid[selectedY][selectedX]->setFocus();
-    
-    selectionTimeLine->stop();
-    startPos = selectionItem->pos();
-    endPos = posForLocation(selectedX, selectedY);
-    selectionTimeLine->start();
+    selectedIndex = (selectedIndex + grid.count() + (event->key() == Qt::Key_Right) - (event->key() == Qt::Key_Left)
+         + width * ((event->key() == Qt::Key_Down) - (event->key() == Qt::Key_Up))) % grid.count();
+    grid[selectedIndex]->setFocus();
+
+    const QPointF pos = posForLocation(selectedIndex);
+
+    const double angleY = pos.x() / 6.,
+              angleX = pos.y() / 6.;
+
+    QAnimationGroup *group = new QParallelAnimationGroup();
+
+    QVariantAnimation *anim = new QPropertyAnimation(baseItem, "xRotation");
+    anim->setEndValue(angleX);
+    anim->setDuration(150);
+    anim->setEasingCurve(QEasingCurve::OutInSine);
+    group->addAnimation(anim);
+
+    anim = new QPropertyAnimation(baseItem, "yRotation");
+    anim->setEndValue(angleY);
+    anim->setDuration(150);
+    anim->setEasingCurve(QEasingCurve::OutInSine);
+    group->addAnimation(anim);
+
+    anim = new QPropertyAnimation(selectionItem, "pos");
+    anim->setEndValue(pos);
+    anim->setDuration(150);
+    anim->setEasingCurve(QEasingCurve::Linear);
+    group->addAnimation(anim);
+
+    group->start(QAbstractAnimation::DeleteWhenStopped);
 }
 
 void Panel::resizeEvent(QResizeEvent *event)
 {
     QGraphicsView::resizeEvent(event);
-    fitInView(scene->sceneRect(), Qt::KeepAspectRatio);
-}
-
-void Panel::updateSelectionStep(qreal val)
-{
-    QPointF newPos(startPos.x() + (endPos - startPos).x() * val,
-                   startPos.y() + (endPos - startPos).y() * val);
-    selectionItem->setPos(newPos);
-    
-    QTransform transform;
-    yrot = newPos.x() / 6.0;
-    xrot = newPos.y() / 6.0;
-    transform.rotate(newPos.x() / 6.0, Qt::YAxis);
-    transform.rotate(newPos.y() / 6.0, Qt::XAxis);
-    baseItem->setTransform(transform);
-}
-
-void Panel::updateFlipStep(qreal val)
-{
-    qreal finalxrot = xrot - xrot * val;
-    qreal finalyrot;
-    if (flipLeft)
-        finalyrot = yrot - yrot * val - 180 * val;
-    else
-        finalyrot = yrot - yrot * val + 180 * val;
-    QTransform transform;
-    transform.rotate(finalyrot, Qt::YAxis);
-    transform.rotate(finalxrot, Qt::XAxis);
-    qreal scale = 1 - sin(3.14 * val) * 0.3;
-    transform.scale(scale, scale);
-    baseItem->setTransform(transform);
-    if (val == 0)
-        grid[selectedY][selectedX]->setFocus();
+    fitInView(scene()->sceneRect(), Qt::KeepAspectRatio);
 }
 
 void Panel::flip()
 {
-    if (flipTimeLine->state() == QTimeLine::Running)
-        return;
+    grid[selectedIndex]->setFocus();
 
-    if (flipTimeLine->currentValue() == 0) {
-        flipTimeLine->setDirection(QTimeLine::Forward);
-        flipTimeLine->start();
-        flipped = true;
-        flipLeft = selectionItem->pos().x() < 0;
-    } else {
-        flipTimeLine->setDirection(QTimeLine::Backward);
-        flipTimeLine->start();
-        flipped = false;
+    if (flippingGroup == 0) {
+        flippingGroup = new QParallelAnimationGroup(this);
+
+        const qreal zoomOut = qreal(.75);
+
+        //slight scaling down while flipping
+        QVariantAnimation *anim = new QPropertyAnimation(baseItem, "yScale");
+        anim->setKeyValueAt(qreal(.5), zoomOut);
+        anim->setEndValue(1);
+        anim->setEasingCurve(QEasingCurve::OutInSine);
+        anim->setDuration(500);
+        flippingGroup->addAnimation(anim);
+
+        anim = new QPropertyAnimation(baseItem, "xScale");
+        anim->setKeyValueAt(qreal(.5), zoomOut);
+        anim->setEndValue(1);
+        anim->setEasingCurve(QEasingCurve::OutInSine);
+        anim->setDuration(500);
+        flippingGroup->addAnimation(anim);
+
+        rotationXanim = new QPropertyAnimation(baseItem, "xRotation");
+        rotationXanim->setEndValue(0);
+        rotationXanim->setDuration(500);
+        flippingGroup->addAnimation(rotationXanim);
+
+        rotationYanim = new QPropertyAnimation(baseItem, "yRotation");
+        rotationYanim->setStartValue(0);
+        rotationYanim->setEndValue(180);
+        rotationYanim->setDuration(500);
+        flippingGroup->addAnimation(rotationYanim);
     }
+
+    if (flippingGroup->currentTime() != 0 && flippingGroup->direction() == QAbstractAnimation::Forward)
+        flippingGroup->setDirection(QAbstractAnimation::Backward);
+    else
+        flippingGroup->setDirection(QAbstractAnimation::Forward);
+
+	flippingGroup->start();
+    flipped = !flipped;
 }
 
-QPointF Panel::posForLocation(int x, int y) const
+QPointF Panel::posForLocation(int index) const
 {
+    const int x = index % width,
+        y = index / width;
     return QPointF(x * 150, y * 150)
         - QPointF((width - 1) * 75, (height - 1) * 75);
 }
