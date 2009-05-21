@@ -93,6 +93,12 @@ QXmlSchema::~QXmlSchema()
 
   If the schema \l {isValid()} {is invalid}, \c{false} is returned
   and the behavior is undefined.
+
+  Example:
+
+  \snippet doc/src/snippets/qxmlschema/main.cpp 0
+
+  \sa isValid()
  */
 bool QXmlSchema::load(const QUrl &source)
 {
@@ -116,6 +122,10 @@ bool QXmlSchema::load(const QUrl &source)
   If the schema \l {isValid()} {is invalid}, \c{false} is returned
   and the behavior is undefined.
 
+  Example:
+
+  \snippet doc/src/snippets/qxmlschema/main.cpp 1
+
   \sa isValid()
  */
 bool QXmlSchema::load(QIODevice *source, const QUrl &documentUri)
@@ -137,6 +147,12 @@ bool QXmlSchema::load(QIODevice *source, const QUrl &documentUri)
 
   If the schema \l {isValid()} {is invalid}, \c{false} is returned
   and the behavior is undefined.
+
+  Example:
+
+  \snippet doc/src/snippets/qxmlschema/main.cpp 2
+
+  \sa isValid()
  */
 bool QXmlSchema::load(const QByteArray &data, const QUrl &documentUri)
 {

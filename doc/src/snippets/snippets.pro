@@ -73,6 +73,7 @@ SUBDIRS         = brush \
                   quiloader \
                   qx11embedcontainer \
                   qx11embedwidget \
+                  qxmlschema \
                   reading-selections \
                   scribe-overview \
                   separations \
