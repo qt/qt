@@ -5,7 +5,6 @@ SUBDIRS          += \
                  appchooser \
                  easing \
                  moveblocks \
-                 padnavigator-ng \
                  states \
                  stickman \
                  sub-attaq
