@@ -266,8 +266,10 @@ void QmlViewer::createMenu(QMenuBar *menu, QMenu *flatmenu)
     connect(quitAction, SIGNAL(triggered()), qApp, SLOT(quit()));
     fileMenu->addSeparator();
     fileMenu->addAction(quitAction);
-    if (menu)
+    if (menu) {
         menu->setFixedHeight(menu->sizeHint().height());
+        menu->setMinimumWidth(10);
+    }
 }
 
 void QmlViewer::setScaleSkin()
