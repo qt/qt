@@ -106,6 +106,10 @@ void QXmlSchemaValidator::setSchema(const QXmlSchema &schema)
 
   Returns \c true if the XML instance document is valid according the
   schema, \c false otherwise.
+
+  Example:
+
+  \snippet doc/src/snippets/qxmlschemavalidator/main.cpp 2
  */
 bool QXmlSchemaValidator::validate(const QByteArray &data, const QUrl &documentUri) const
 {
@@ -122,6 +126,10 @@ bool QXmlSchemaValidator::validate(const QByteArray &data, const QUrl &documentU
 
   Returns \c true if the XML instance document is valid according the
   schema, \c false otherwise.
+
+  Example:
+
+  \snippet doc/src/snippets/qxmlschemavalidator/main.cpp 0
  */
 bool QXmlSchemaValidator::validate(const QUrl &source) const
 {
@@ -143,6 +151,10 @@ bool QXmlSchemaValidator::validate(const QUrl &source) const
 
   Returns \c true if the XML instance document is valid according the
   schema, \c false otherwise.
+
+  Example:
+
+  \snippet doc/src/snippets/qxmlschemavalidator/main.cpp 1
  */
 bool QXmlSchemaValidator::validate(QIODevice *source, const QUrl &documentUri) const
 {

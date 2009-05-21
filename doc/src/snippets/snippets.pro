@@ -74,6 +74,7 @@ SUBDIRS         = brush \
                   qx11embedcontainer \
                   qx11embedwidget \
                   qxmlschema \
+                  qxmlschemavalidator \
                   reading-selections \
                   scribe-overview \
                   separations \
