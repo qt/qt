@@ -57,7 +57,7 @@ void QmlObjectTree::mousePressEvent(QMouseEvent *me)
 {
     QTreeWidget::mousePressEvent(me);
     if(me->button()  == Qt::RightButton && me->type() == QEvent::MouseButtonPress) {
-        QAction action("Add watch...", 0);
+        QAction action(tr("Add watch..."), 0);
         QList<QAction *> actions;
         actions << &action;
         QmlDebuggerItem *item = static_cast<QmlDebuggerItem *>(currentItem());
@@ -65,7 +65,7 @@ void QmlObjectTree::mousePressEvent(QMouseEvent *me)
            QMenu::exec(actions, me->globalPos())) {
 
             bool ok = false;
-            QString watch = QInputDialog::getText(this, "Watch expression", "Expression:", QLineEdit::Normal, QString(), &ok);
+            QString watch = QInputDialog::getText(this, tr("Watch expression"), tr("Expression:"), QLineEdit::Normal, QString(), &ok);
 
             if(ok && !watch.isEmpty()) 
                 emit addWatch(item->object, watch);

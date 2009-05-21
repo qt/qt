@@ -607,7 +607,6 @@ QSize QFxTextPrivate::setupTextLayout(QTextLayout *layout)
 QImage QFxTextPrivate::wrappedTextImage(bool drawStyle)
 {
     //do layout
-    Q_Q(const QFxText);
     QFont f; if (_font) f = _font->font();
     QSize size = cachedLayoutSize;
 

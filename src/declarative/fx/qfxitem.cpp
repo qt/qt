@@ -1674,6 +1674,7 @@ void QFxItem::setKeepMouseGrab(bool keep)
  */
 void QFxItem::activeFocusChanged(bool flag)
 {
+    Q_UNUSED(flag);
     emit activeFocusChanged();
 }
 
@@ -1683,6 +1684,7 @@ void QFxItem::activeFocusChanged(bool flag)
  */
 void QFxItem::focusChanged(bool flag)
 {
+    Q_UNUSED(flag);
     emit focusChanged();
 }
 
