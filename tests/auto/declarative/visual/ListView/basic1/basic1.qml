@@ -1,7 +1,7 @@
 Rect {
     color: "blue"
-    width: 300
-    height: 200
+    width: 200
+    height: 300
     id: Page
     ListView {
         anchors.fill: parent

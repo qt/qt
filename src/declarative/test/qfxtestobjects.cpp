@@ -143,7 +143,7 @@ void TestFullFrame::save(QTextStream &device, int pad)
     device << padding(pad) << QLatin1String("TestFullFrame {") << endl;
     device << padding(pad+4) << QLatin1String("time: ") << QLatin1String(QByteArray::number(time())) << endl;
     device << padding(pad+4) << QLatin1String("frameId: ") << QLatin1String(QByteArray::number(frameId())) << endl;
-    device << padding(pad) << padding(pad) << QLatin1String("}") << endl;
+    device << padding(pad) << QLatin1String("}") << endl;
 }
 
 TestMouse::TestMouse(QObject *parent)
