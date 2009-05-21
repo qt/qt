@@ -1,7 +1,7 @@
 Rect {
     color: "blue"
-    width: 800
-    height: 600
+    width: 300
+    height: 200
     id: Page
     ListModel {
         id: DataSource
