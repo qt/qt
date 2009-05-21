@@ -165,7 +165,7 @@ tst_QImageWriter::tst_QImageWriter()
 
 tst_QImageWriter::~tst_QImageWriter()
 {
-    QDir dir(prefix + QLatin1String("images"));
+    QDir dir(prefix);
     QStringList filesToDelete = dir.entryList(QStringList() << "gen-*" , QDir::NoDotAndDotDot | QDir::Files);
     foreach( QString file, filesToDelete) {
         QFile::remove(dir.absoluteFilePath(file));
@@ -445,13 +445,13 @@ void tst_QImageWriter::supportsOption_data()
     QTest::addColumn<QString>("fileName");
     QTest::addColumn<QIntList>("options");
 
-    QTest::newRow("png") << QString(prefix + "gen-black.png")
+    QTest::newRow("png") << QString("gen-black.png")
                          << (QIntList() << QImageIOHandler::Gamma
                               << QImageIOHandler::Description
                               << QImageIOHandler::Quality
                               << QImageIOHandler::Size);
 #if defined QTEST_HAVE_TIFF
-    QTest::newRow("tiff") << QString("images/gen-black.tiff")
+    QTest::newRow("tiff") << QString("gen-black.tiff")
                           << (QIntList() << QImageIOHandler::Size
                               << QImageIOHandler::CompressionRatio);
 #endif
@@ -478,7 +478,7 @@ void tst_QImageWriter::supportsOption()
                << QImageIOHandler::Animation
                << QImageIOHandler::BackgroundColor;
 
-    QImageWriter writer(fileName);
+    QImageWriter writer(prefix + fileName);
     for (int i = 0; i < options.size(); ++i) {
         QVERIFY(writer.supportsOption(QImageIOHandler::ImageOption(options.at(i))));
         allOptions.remove(QImageIOHandler::ImageOption(options.at(i)));

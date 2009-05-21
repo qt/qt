@@ -3,7 +3,7 @@
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
 ** Contact: Qt Software Information (qt-info@nokia.com)
 **
-** This file is part of the examples of the Qt Toolkit.
+** This file is part of the documentation of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,32 +39,18 @@
 **
 ****************************************************************************/
 
-#ifndef STATIONDIALOG_H
-#define STATIONDIALOG_H
+//! [main program]
+#include <QtGui>
 
-#include <QtGui/QDialog>
-
-#include "stationquery.h"
-#include "ui_stationdialog.h"
-
-class StationModel;
-
-class StationDialog : public QDialog
+int main(int argc, char *argv[])
 {
-    Q_OBJECT
-
-    public:
-        StationDialog(const QString &id, const QStringList &lineNumbers, QWidget *parent);
-
-        StationInformation selectedStation() const;
-        QStringList lineNumbers() const;
-
-    private Q_SLOTS:
-        void searchStations();
-
-    private:
-        Ui_StationDialog m_ui;
-        StationModel *m_model;
-};
-
-#endif
+    QApplication app(argc, argv);
+//! [create, resize and show]
+    QWidget *window = new QWidget();
+    window->resize(320, 240);
+    window->show();
+//! [create, resize and show]
+    window->setWindowTitle(tr("Top-level widget"));
+    return app.exec();
+}
+//! [main program]

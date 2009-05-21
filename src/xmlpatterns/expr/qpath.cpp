@@ -170,7 +170,7 @@ Expression::Ptr Path::compress(const StaticContext::Ptr &context)
 
     /* We do this as late as we can, such that we pick up the most recent type
      * from the operand. */
-    if(m_isLast && !m_kind == XSLTForEach && m_operand2->staticType()->itemType() == BuiltinTypes::item)
+    if(m_isLast && m_kind != XSLTForEach && m_operand2->staticType()->itemType() == BuiltinTypes::item)
         m_checkXPTY0018 = true;
 
     return me;

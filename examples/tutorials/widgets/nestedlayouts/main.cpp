@@ -3,7 +3,7 @@
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
 ** Contact: Qt Software Information (qt-info@nokia.com)
 **
-** This file is part of the examples of the Qt Toolkit.
+** This file is part of the documentation of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,16 +39,62 @@
 **
 ****************************************************************************/
 
-#include "mainwindow.h"
+//! [main program]
+//! [first part]
+#include <QtGui>
 
-#include <QtGui/QApplication>
-
-int main(int argc, char **argv)
+int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
+    QWidget *window = new QWidget();
 
-    MainWindow window;
-    window.show();
+    QLabel *queryLabel = new QLabel(tr("Query:"));
+    QLineEdit *queryEdit = new QLineEdit();
+    QTableView *resultView = new QTableView();
 
+    QHBoxLayout *queryLayout = new QHBoxLayout();
+    queryLayout->addWidget(queryLabel);
+    queryLayout->addWidget(queryEdit);
+
+    QVBoxLayout *mainLayout = new QVBoxLayout();
+    mainLayout->addLayout(queryLayout);
+    mainLayout->addWidget(resultView);
+    window->setLayout(mainLayout);
+
+    // Set up the model and configure the view...
+//! [first part]
+
+//! [set up the model]
+    QStandardItemModel model;
+    model.setHorizontalHeaderLabels(QStringList() << tr("Name") << tr("Office"));
+
+    QList<QStringList> rows = QList<QStringList>()
+        << (QStringList() << "Verne Nilsen" << "123")
+        << (QStringList() << "Carlos Tang" << "77")
+        << (QStringList() << "Bronwyn Hawcroft" << "119")
+        << (QStringList() << "Alessandro Hanssen" << "32")
+        << (QStringList() << "Andrew John Bakken" << "54")
+        << (QStringList() << "Vanessa Weatherley" << "85")
+        << (QStringList() << "Rebecca Dickens" << "17")
+        << (QStringList() << "David Bradley" << "42")
+        << (QStringList() << "Knut Walters" << "25")
+        << (QStringList() << "Andrea Jones" << "34");
+
+    foreach (QStringList row, rows) {
+        QList<QStandardItem *> items;
+        foreach (QString text, row)
+            items.append(new QStandardItem(text));
+        model.appendRow(items);
+    }
+
+    resultView->setModel(&model);
+    resultView->verticalHeader()->hide();
+    resultView->horizontalHeader()->setStretchLastSection(true);
+//! [set up the model]
+//! [last part]
+    window->setWindowTitle(tr("Nested layouts"));
+    window->show();
     return app.exec();
 }
+//! [last part]
+//! [main program]
