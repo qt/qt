@@ -626,7 +626,7 @@ void Q3HttpHeader::setContentLength( int len )
 }
 
 /*!
-    Returns true if the header has an entry for the the special HTTP
+    Returns true if the header has an entry for the special HTTP
     header field \c content-type; otherwise returns false.
 
     \sa contentType() setContentType()

@@ -1158,7 +1158,7 @@ void QListWidgetPrivate::_q_dataChanged(const QModelIndex &topLeft,
 /*!
     \fn void QListWidget::addItem(QListWidgetItem *item)
 
-    Inserts the \a item at the the end of the list widget.
+    Inserts the \a item at the end of the list widget.
 
     \warning A QListWidgetItem can only be added to a
     QListWidget once. Adding the same QListWidgetItem multiple

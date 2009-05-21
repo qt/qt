@@ -42,7 +42,7 @@
 
 #include <QtTest/QtTest>
 #include <QtCore/QtCore>
-#include <viewstotest.cpp>
+#include "viewstotest.cpp"
 #include <stdlib.h>
 
 #if defined(Q_OS_WIN)

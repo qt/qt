@@ -39,6 +39,7 @@
 **
 ****************************************************************************/
 #include <QString>
+#include <QtNetwork/QHostInfo>
 
 #ifdef Q_OS_SYMBIAN
 #include <sys/socket.h>
@@ -304,6 +305,13 @@ private:
         }
 
         return bTestSettingsLoaded = true;
+    }
+#endif
+
+#ifdef QT_NETWORK_LIB
+    static QHostAddress serverIP()
+    {
+        return QHostInfo::fromName(serverName()).addresses().first();
     }
 #endif
 

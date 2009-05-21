@@ -1517,7 +1517,7 @@ void QSplitter::setOpaqueResize(bool on)
 
 /*!
     \fn int QSplitter::margin() const
-    Returns the with of the the margin around the contents of the widget.
+    Returns the width of the margin around the contents of the widget.
 
     Use QWidget::getContentsMargins() instead.
     \sa setMargin(), QWidget::getContentsMargins()

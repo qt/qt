@@ -406,7 +406,7 @@ QString QResource::absoluteFilePath() const
 }
 
 /*!
-    Returns true if the resource really exists in the resource heirarchy,
+    Returns true if the resource really exists in the resource hierarchy,
     false otherwise.
 
 */
