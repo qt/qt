@@ -35,6 +35,6 @@ Rect {
     MouseRegion {
         id: MyMouseRegion
         anchors.fill: parent
-        onClicked: { Page.currentState= 'hello' }
+        onClicked: { Page.state= 'hello' }
     }
 }

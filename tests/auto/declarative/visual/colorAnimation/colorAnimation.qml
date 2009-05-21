@@ -1,5 +1,6 @@
 Rect {
     id: mainrect
+    width: 200; height: 200
     state: "first"
     states: [
         State {

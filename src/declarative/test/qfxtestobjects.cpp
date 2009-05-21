@@ -42,7 +42,8 @@
 
 #include "qfxtestobjects.h"
 #include <qml.h>
-#include <QIODevice>
+#include <QDebug>
+#include <QTextStream>
 
 
 QT_BEGIN_NAMESPACE
@@ -58,6 +59,14 @@ QML_DECLARE_TYPE(TestKey);
 QML_DEFINE_TYPE(TestKey,TestKey);
 QML_DECLARE_TYPE(TestLog);
 QML_DEFINE_TYPE(TestLog,TestLog);
+
+static QString padding(int pad)
+{
+    QString p;
+    while (pad--)
+        p += QLatin1Char(' ');
+    return p;
+}
 
 TestObject::TestObject(QObject *parent)
 : QObject(parent), _time(-1)
@@ -77,11 +86,11 @@ void TestObject::setTime(int t)
     emit dataChanged();
 }
 
-void TestObject::save(QXmlStreamWriter *device)
+void TestObject::save(QTextStream &device, int pad)
 {
-    device->writeStartElement(QLatin1String("TestObject"));
-    device->writeAttribute(QLatin1String("time"), QString::number(time()));
-    device->writeEndElement();
+    device << padding(pad) << QLatin1String("TestObject {") << endl;
+    device << padding(pad) << QLatin1String("time: ") << QString::number(time()) << endl;
+    device << padding(pad) << QLatin1String("}") << endl;
 }
 
 
@@ -103,12 +112,12 @@ void TestFrame::setHash(const QString &h)
     emit frameChanged();
 }
 
-void TestFrame::save(QXmlStreamWriter *device)
+void TestFrame::save(QTextStream &device, int pad)
 {
-    device->writeStartElement(QLatin1String("TestFrame"));
-    device->writeAttribute(QLatin1String("time"), QLatin1String(QByteArray::number(time())));
-    device->writeAttribute(QLatin1String("hash"), hash());
-    device->writeEndElement();
+    device << padding(pad) << QLatin1String("TestFrame {") << endl;
+    device << padding(pad+4) << QLatin1String("time: ") << QLatin1String(QByteArray::number(time())) << endl;
+    device << padding(pad+4)<< QLatin1String("hash: '") << hash() << QLatin1String("'") << endl;
+    device << padding(pad) << QLatin1Char('}') << endl;
 }
 
 TestFullFrame::TestFullFrame(QObject *parent)
@@ -129,12 +138,12 @@ void TestFullFrame::setFrameId(int id)
     emit frameChanged();
 }
 
-void TestFullFrame::save(QXmlStreamWriter *device)
+void TestFullFrame::save(QTextStream &device, int pad)
 {
-    device->writeStartElement(QLatin1String("TestFullFrame"));
-    device->writeAttribute(QLatin1String("time"), QLatin1String(QByteArray::number(time())));
-    device->writeAttribute(QLatin1String("frameId"), QLatin1String(QByteArray::number(frameId())));
-    device->writeEndElement();
+    device << padding(pad) << QLatin1String("TestFullFrame {") << endl;
+    device << padding(pad+4) << QLatin1String("time: ") << QLatin1String(QByteArray::number(time())) << endl;
+    device << padding(pad+4) << QLatin1String("frameId: ") << QLatin1String(QByteArray::number(frameId())) << endl;
+    device << padding(pad) << padding(pad) << QLatin1String("}") << endl;
 }
 
 TestMouse::TestMouse(QObject *parent)
@@ -207,16 +216,16 @@ void TestMouse::setPos(const QPoint &p)
     emit mouseChanged();
 }
 
-void TestMouse::save(QXmlStreamWriter *device)
+void TestMouse::save(QTextStream &device, int pad)
 {
-    device->writeStartElement(QLatin1String("TestMouse"));
-    device->writeAttribute(QLatin1String("time"), QString::number(time()));
-    device->writeAttribute(QLatin1String("type"), QString::number(type()));
-    device->writeAttribute(QLatin1String("button"), QString::number(button()));
-    device->writeAttribute(QLatin1String("buttons"), QString::number(buttons()));
-    device->writeAttribute(QLatin1String("globalPos"), QString::number(globalPos().x()) + QLatin1String(",") + QString::number(globalPos().y()));
-    device->writeAttribute(QLatin1String("pos"), QString::number(pos().x()) + QLatin1String(",") + QString::number(pos().y()));
-    device->writeEndElement();
+    device << padding(pad) << QLatin1String("TestMouse {") << endl;
+    device << padding(pad+4) << QLatin1String("time: ") << QString::number(time()) << endl;
+    device << padding(pad+4) << QLatin1String("type: ") << QString::number(type()) << endl;
+    device << padding(pad+4) << QLatin1String("button: ") << QString::number(button()) << endl;
+    device << padding(pad+4) << QLatin1String("buttons: ") << QString::number(buttons()) << endl;
+    device << padding(pad+4) << QLatin1String("globalPos: '") << QString::number(globalPos().x()) + QLatin1String(",") + QString::number(globalPos().y()) << QLatin1String("'") << endl;
+    device << padding(pad+4) << QLatin1String("pos: '") << QString::number(pos().x()) + QLatin1String(",") + QString::number(pos().y()) << QLatin1String("'") << endl;
+    device << padding(pad) << QLatin1String("}") << endl;
 }
 
 TestKey::TestKey(QObject *parent)
@@ -276,16 +285,16 @@ void TestKey::setKey(int k)
     emit keyChanged();
 }
 
-void TestKey::save(QXmlStreamWriter *device)
+void TestKey::save(QTextStream &device, int pad)
 {
-    device->writeStartElement(QLatin1String("TestKey"));
-    device->writeAttribute(QLatin1String("time"), QString::number(time()));
-    device->writeAttribute(QLatin1String("type"), QString::number(type()));
-    device->writeAttribute(QLatin1String("modifiers"), QString::number(modifiers()));
-    device->writeAttribute(QLatin1String("key"), QString::number(key()));
+    device << padding(pad) << QLatin1String("TestKey {") << endl;
+    device << padding(pad+4) << QLatin1String("time: ") << QString::number(time()) << endl;
+    device << padding(pad+4) << QLatin1String("type: ") << QString::number(type()) << endl;
+    device << padding(pad+4) << QLatin1String("modifiers: ") << QString::number(modifiers()) << endl;
+    device << padding(pad+4) << QLatin1String("key: ") << QString::number(key()) << endl;
     if (key() != Qt::Key_Escape)
-        device->writeAttribute(QLatin1String("text"), text());
-    device->writeEndElement();
+        device << padding(pad+4) << QLatin1String("text: '") << text() << QLatin1String("'")<< endl;
+    device << padding(pad) << QLatin1String("}") << endl;
 }
 
 TestLog::TestLog(QObject *parent)
@@ -313,14 +322,11 @@ void TestLog::save(QIODevice *device)
     // Order correctly
     qStableSort(_actions.begin(), _actions.end(), lessThan);
 
-    QXmlStreamWriter writer(device);
-    writer.setAutoFormatting(true);
-    writer.writeStartDocument(QLatin1String("1.0"));
-    writer.writeStartElement(QLatin1String("TestLog"));
+    QTextStream writer(device);
+    writer << QLatin1String("TestLog {") << endl;
     for (int ii = 0; ii < _actions.count(); ++ii)
-        _actions.at(ii)->save(&writer);
-    writer.writeEndElement();
-    writer.writeEndDocument();
+        _actions.at(ii)->save(writer, 4);
+    writer << QLatin1String("}") << endl;
 }
 
 TestObject *TestLog::next()
