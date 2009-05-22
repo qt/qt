@@ -81,6 +81,24 @@ static int globalTick;
     QCoreApplication::exec(); \
 }
 
+class SignalEmitter : public QObject
+{
+Q_OBJECT
+    public:
+    SignalEmitter(QObject *parent = 0)
+        : QObject(parent) {}
+    void emitSignalWithNoArg()
+        { emit signalWithNoArg(); }
+    void emitSignalWithIntArg(int arg)
+        { emit signalWithIntArg(arg); }
+    void emitSignalWithStringArg(const QString &arg)
+        { emit signalWithStringArg(arg); }
+Q_SIGNALS:
+    void signalWithNoArg();
+    void signalWithIntArg(int);
+    void signalWithStringArg(const QString &);
+};
+
 class tst_QStateMachine : public QObject
 {
     Q_OBJECT
@@ -1045,6 +1063,20 @@ void tst_QStateMachine::addAndRemoveState()
     QTest::ignoreMessage(QtWarningMsg, "QStateMachine::removeState: cannot remove null state");
     machine.removeState(0);
 
+    {
+        QStateMachine machine2;
+        {
+            char warning[256];
+            sprintf(warning, "QStateMachine::removeState: state %p's machine (%p) is different from this machine (%p)",
+                    machine2.rootState(), &machine2, &machine);
+            QTest::ignoreMessage(QtWarningMsg, warning);
+            machine.removeState(machine2.rootState());
+        }
+        // ### check this behavior
+        machine.addState(machine2.rootState());
+        QCOMPARE(machine2.rootState()->parent(), (QObject*)machine.rootState());
+    }
+
     delete s1;
     delete s2;
     // ### how to deal with this?
@@ -1397,6 +1429,44 @@ void tst_QStateMachine::assignPropertyWithAnimation()
         QCOMPARE(obj.property("foo").toInt(), 321);
         QCOMPARE(obj.property("bar").toInt(), 789);
     }
+    // Aborted animation
+    {
+        QStateMachine machine;
+        SignalEmitter emitter;
+        QObject obj;
+        obj.setProperty("foo", 321);
+        obj.setProperty("bar", 654);
+        QState *group = new QState(machine.rootState());
+        QState *s1 = new QState(group);
+        group->setInitialState(s1);
+        s1->assignProperty(&obj, "foo", 123);
+        QState *s2 = new QState(group);
+        s2->assignProperty(&obj, "foo", 456);
+        s2->assignProperty(&obj, "bar", 789);
+        QAbstractTransition *trans = s1->addTransition(&emitter, SIGNAL(signalWithNoArg()), s2);
+        QPropertyAnimation anim(&obj, "foo");
+        anim.setDuration(8000);
+        trans->addAnimation(&anim);
+        QPropertyAnimation anim2(&obj, "bar");
+        anim2.setDuration(8000);
+        trans->addAnimation(&anim2);
+        QState *s3 = new QState(group);
+        s3->assignProperty(&obj, "foo", 911);
+        s2->addTransition(&emitter, SIGNAL(signalWithNoArg()), s3);
+
+        machine.setInitialState(group);
+        machine.start();
+        QTRY_COMPARE(machine.configuration().contains(s1), true);
+        QSignalSpy polishedSpy(s2, SIGNAL(polished()));
+        emitter.emitSignalWithNoArg();
+        QTRY_COMPARE(machine.configuration().contains(s2), true);
+        QVERIFY(polishedSpy.isEmpty());
+        emitter.emitSignalWithNoArg(); // will cause animations from s1-->s2 to abort
+        QTRY_COMPARE(machine.configuration().contains(s3), true);
+        QVERIFY(polishedSpy.isEmpty());
+        QCOMPARE(obj.property("foo").toInt(), 911);
+        QCOMPARE(obj.property("bar").toInt(), 789);
+    }
 }
 
 struct StringEvent : public QEvent
@@ -1605,24 +1675,6 @@ void tst_QStateMachine::allSourceToTargetConfigurations()
 
     QTRY_COMPARE(finishedSpy.count(), 1);
 }
-
-class SignalEmitter : public QObject
-{
-Q_OBJECT
-    public:
-    SignalEmitter(QObject *parent = 0)
-        : QObject(parent) {}
-    void emitSignalWithNoArg()
-        { emit signalWithNoArg(); }
-    void emitSignalWithIntArg(int arg)
-        { emit signalWithIntArg(arg); }
-    void emitSignalWithStringArg(const QString &arg)
-        { emit signalWithStringArg(arg); }
-Q_SIGNALS:
-    void signalWithNoArg();
-    void signalWithIntArg(int);
-    void signalWithStringArg(const QString &);
-};
 
 class TestSignalTransition : public QSignalTransition
 {
@@ -2097,6 +2149,22 @@ void tst_QStateMachine::eventTransitions()
         QTRY_COMPARE(finishedSpy.count(), 2);
         QCOMPARE(machine.configuration().size(), 1);
         QVERIFY(machine.configuration().contains(s2));
+    }
+    // custom event
+    {
+        QStateMachine machine;
+        QState *s0 = new QState(machine.rootState());
+        QFinalState *s1 = new QFinalState(machine.rootState());
+
+        QEventTransition *trans = new QEventTransition(&button, QEvent::Type(QEvent::User+1));
+        trans->setTargetState(s1);
+        s0->addTransition(trans);
+
+        QSignalSpy startedSpy(&machine, SIGNAL(started()));
+        machine.setInitialState(s0);
+        machine.start();
+        QTest::ignoreMessage(QtWarningMsg, "QObject event transitions are not supported for custom types");
+        QTRY_COMPARE(startedSpy.count(), 1);
     }
 }
 
