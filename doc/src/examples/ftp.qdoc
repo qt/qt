@@ -172,7 +172,7 @@
     no entries were found (in which case our \c addToList() function
     would not have been called). 
 
-    Let's continue with the the \c addToList() slot:
+    Let's continue with the \c addToList() slot:
 
     \snippet examples/network/ftp/ftpwindow.cpp 10
 
@@ -190,7 +190,7 @@
 
     \snippet examples/network/ftp/ftpwindow.cpp 12
 
-    \c cdToParent() is invoked when the the user requests to go to the
+    \c cdToParent() is invoked when the user requests to go to the
     parent directory of the one displayed in the file list. After
     changing the directory, we QFtp::List its contents.
 

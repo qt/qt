@@ -961,7 +961,11 @@ protected:
     {
         bool timedOut = false;
         while (!quit) {
+#ifndef Q_OS_SYMBIAN
             if (server->waitForNewConnection(500, &timedOut))
+#else
+            if (server->waitForNewConnection(5000, &timedOut))
+#endif
                 break;
             if (!timedOut)
                 return;
@@ -972,7 +976,7 @@ protected:
 #ifndef Q_OS_SYMBIAN    
             if (socket->waitForDisconnected(500))
 #else    
-            if (socket->waitForDisconnected(1000))
+            if (socket->waitForDisconnected(5000))
 #endif     
                 break;
             if (socket->error() != QAbstractSocket::SocketTimeoutError)
@@ -1024,7 +1028,7 @@ void tst_QTcpSocket::disconnectWhileConnectingNoEventLoop()
 #ifndef Q_OS_SYMBIAN    
     QVERIFY2(socket->waitForDisconnected(10000), "Network timeout");
 #else    
-    QVERIFY2(socket->waitForDisconnected(20000), "Network timeout");
+    QVERIFY2(socket->waitForDisconnected(30000), "Network timeout");
 #endif     
     QVERIFY(socket->state() == QAbstractSocket::UnconnectedState);
     if (!closeDirectly) {
@@ -1035,7 +1039,7 @@ void tst_QTcpSocket::disconnectWhileConnectingNoEventLoop()
     delete socket;
 
     // check if the other side received everything ok
-    QVERIFY(thread.wait(10000));
+    QVERIFY(thread.wait(30000));
     QVERIFY(thread.ok);
     QCOMPARE(thread.receivedData, data);
 }
@@ -1074,7 +1078,7 @@ void tst_QTcpSocket::disconnectWhileLookingUp()
 #ifndef Q_OS_SYMBIAN    
     QTimer::singleShot(50, &loop, SLOT(quit()));
 #else    
-    QTimer::singleShot(500, &loop, SLOT(quit()));
+    QTimer::singleShot(5000, &loop, SLOT(quit()));
 #endif     
     loop.exec();
 
@@ -1321,11 +1325,19 @@ void tst_QTcpSocket::dontCloseOnTimeout()
 
     QTcpSocket *socket = newSocket();
     socket->connectToHost(serverAddress, server.serverPort());
+#ifndef Q_OS_SYMBIAN
     QVERIFY(!socket->waitForReadyRead(100));
+#else
+    QVERIFY(!socket->waitForReadyRead(5000));
+#endif
     QCOMPARE(socket->error(), QTcpSocket::SocketTimeoutError);
     QVERIFY(socket->isOpen());
 
+#ifndef Q_OS_SYMBIAN
     QVERIFY(!socket->waitForDisconnected(100));
+#else
+    QVERIFY(!socket->waitForDisconnected(5000));
+#endif
     QCOMPARE(socket->error(), QTcpSocket::SocketTimeoutError);
     QVERIFY(socket->isOpen());
 

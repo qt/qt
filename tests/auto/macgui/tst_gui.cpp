@@ -69,8 +69,7 @@ private slots:
 
 QPixmap grabWindowContents(QWidget * widget)
 {
-    const int titleBarHeight = widget->frameGeometry().height() - widget->height();
-    return QPixmap::grabWindow(widget->winId(), 0, titleBarHeight, -1, widget->height());
+    return QPixmap::grabWindow(widget->winId());
 }
 
 /*
@@ -79,10 +78,6 @@ QPixmap grabWindowContents(QWidget * widget)
 */
 void tst_gui::scrollbarPainting()
 {
-#if defined (Q_WS_MAC) && defined (__i386__)
-    QSKIP("This test fails on scruffy when run by the autotest system (but not when you run it manually).", SkipAll);
-#endif
-
     ColorWidget colorWidget;
     colorWidget.resize(400, 400);
 

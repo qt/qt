@@ -45,7 +45,7 @@
 
     The Fortune Server example shows how to create a server for a simple
     network service. It is intended to be run alongside the
-    \l{network/fortuneclient}{Fortune Client} example or the the
+    \l{network/fortuneclient}{Fortune Client} example or the
     \l{network/blockingfortuneclient}{Blocking Fortune Client} example.
 
     \image fortuneserver-example.png Screenshot of the Fortune Server example
