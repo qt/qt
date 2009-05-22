@@ -1815,6 +1815,43 @@ void tst_QStateMachine::signalTransitions()
         QCOMPARE(machine.configuration().size(), 1);
         QVERIFY(machine.configuration().contains(s1));
     }
+    // multiple signal transitions from same source
+    {
+        QStateMachine machine;
+        SignalEmitter emitter;
+        QState *s0 = new QState(machine.rootState());
+        QFinalState *s1 = new QFinalState(machine.rootState());
+        s0->addTransition(&emitter, SIGNAL(signalWithNoArg()), s1);
+        QFinalState *s2 = new QFinalState(machine.rootState());
+        s0->addTransition(&emitter, SIGNAL(signalWithIntArg(int)), s2);
+        QFinalState *s3 = new QFinalState(machine.rootState());
+        s0->addTransition(&emitter, SIGNAL(signalWithStringArg(QString)), s3);
+
+        QSignalSpy startedSpy(&machine, SIGNAL(started()));
+        QSignalSpy finishedSpy(&machine, SIGNAL(finished()));
+        machine.setInitialState(s0);
+
+        machine.start();
+        QTRY_COMPARE(startedSpy.count(), 1);
+        emitter.emitSignalWithNoArg();
+        QTRY_COMPARE(finishedSpy.count(), 1);
+        QCOMPARE(machine.configuration().size(), 1);
+        QVERIFY(machine.configuration().contains(s1));
+
+        machine.start();
+        QTRY_COMPARE(startedSpy.count(), 2);
+        emitter.emitSignalWithIntArg(123);
+        QTRY_COMPARE(finishedSpy.count(), 2);
+        QCOMPARE(machine.configuration().size(), 1);
+        QVERIFY(machine.configuration().contains(s2));
+
+        machine.start();
+        QTRY_COMPARE(startedSpy.count(), 3);
+        emitter.emitSignalWithStringArg("hello");
+        QTRY_COMPARE(finishedSpy.count(), 3);
+        QCOMPARE(machine.configuration().size(), 1);
+        QVERIFY(machine.configuration().contains(s3));
+    }
 }
 
 void tst_QStateMachine::eventTransitions()
@@ -2023,6 +2060,37 @@ void tst_QStateMachine::eventTransitions()
         QCoreApplication::processEvents();
         QCOMPARE(machine.configuration().size(), 1);
         QVERIFY(machine.configuration().contains(s1));
+    }
+    // multiple event transitions from same source
+    {
+        QStateMachine machine;
+        QState *s0 = new QState(machine.rootState());
+        QFinalState *s1 = new QFinalState(machine.rootState());
+        QFinalState *s2 = new QFinalState(machine.rootState());
+        QEventTransition *t0 = new QEventTransition(&button, QEvent::MouseButtonPress);
+        t0->setTargetState(s1);
+        s0->addTransition(t0);
+        QEventTransition *t1 = new QEventTransition(&button, QEvent::MouseButtonRelease);
+        t1->setTargetState(s2);
+        s0->addTransition(t1);
+
+        QSignalSpy startedSpy(&machine, SIGNAL(started()));
+        QSignalSpy finishedSpy(&machine, SIGNAL(finished()));
+        machine.setInitialState(s0);
+
+        machine.start();
+        QTRY_COMPARE(startedSpy.count(), 1);
+        QTest::mousePress(&button, Qt::LeftButton);
+        QTRY_COMPARE(finishedSpy.count(), 1);
+        QCOMPARE(machine.configuration().size(), 1);
+        QVERIFY(machine.configuration().contains(s1));
+
+        machine.start();
+        QTRY_COMPARE(startedSpy.count(), 2);
+        QTest::mouseRelease(&button, Qt::LeftButton);
+        QTRY_COMPARE(finishedSpy.count(), 2);
+        QCOMPARE(machine.configuration().size(), 1);
+        QVERIFY(machine.configuration().contains(s2));
     }
 }
 
