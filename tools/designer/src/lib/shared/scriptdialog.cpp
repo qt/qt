@@ -39,10 +39,6 @@
 **
 ****************************************************************************/
 
-/*
-TRANSLATOR qdesigner_internal::ScriptDialog
-*/
-
 #include "scriptdialog_p.h"
 #include "qscripthighlighter_p.h"
 

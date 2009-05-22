@@ -39,10 +39,6 @@
 **
 ****************************************************************************/
 
-/*
-TRANSLATOR qdesigner_internal::MenuTaskMenu
-*/
-
 #include "menutaskmenu.h"
 
 #include <promotiontaskmenu_p.h>

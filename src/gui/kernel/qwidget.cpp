@@ -167,39 +167,48 @@ static inline bool bypassGraphicsProxyWidget(QWidget *p)
 extern bool qt_sendSpontaneousEvent(QObject*, QEvent*); // qapplication.cpp
 extern QDesktopWidget *qt_desktopWidget; // qapplication.cpp
 
-QWidgetPrivate::QWidgetPrivate(int version) :
-        QObjectPrivate(version), extra(0), focus_child(0)
-        ,layout(0), widgetItem(0)
-        ,leftmargin(0), topmargin(0), rightmargin(0), bottommargin(0)
-        ,leftLayoutItemMargin(0), topLayoutItemMargin(0), rightLayoutItemMargin(0)
-        ,bottomLayoutItemMargin(0)
-        ,fg_role(QPalette::NoRole)
-        ,bg_role(QPalette::NoRole)
-        ,hd(0)
-        ,dirty(0)
-        ,needsFlush(0)
-        ,dirtyOpaqueChildren(1)
-        ,isOpaque(0)
-        ,inDirtyList(0)
-        ,isScrolled(0)
-        ,isMoved(0)
-        ,usesDoubleBufferedGLContext(0)
-#ifdef Q_WS_WIN
-        ,noPaintOnScreen(0)
-#endif
-        ,inheritedFontResolveMask(0)
-        ,inheritedPaletteResolveMask(0)
+QWidgetPrivate::QWidgetPrivate(int version)
+    : QObjectPrivate(version)
+      , extra(0)
+      , focus_next(0)
+      , focus_prev(0)
+      , focus_child(0)
+      , layout(0)
+      , needsFlush(0)
+      , redirectDev(0)
+      , widgetItem(0)
+      , extraPaintEngine(0)
+      , polished(0)
+      , inheritedFontResolveMask(0)
+      , inheritedPaletteResolveMask(0)
+      , leftmargin(0)
+      , topmargin(0)
+      , rightmargin(0)
+      , bottommargin(0)
+      , leftLayoutItemMargin(0)
+      , topLayoutItemMargin(0)
+      , rightLayoutItemMargin(0)
+      , bottomLayoutItemMargin(0)
+      , hd(0)
+      , size_policy(QSizePolicy::Preferred, QSizePolicy::Preferred)
+      , fg_role(QPalette::NoRole)
+      , bg_role(QPalette::NoRole)
+      , dirtyOpaqueChildren(1)
+      , isOpaque(0)
+      , inDirtyList(0)
+      , isScrolled(0)
+      , isMoved(0)
+      , usesDoubleBufferedGLContext(0)
 #if defined(Q_WS_X11)
-        ,picture(0)
+      , picture(0)
+#elif defined(Q_WS_WIN)
+      , noPaintOnScreen(0)
+#elif defined(Q_WS_MAC)
+      , needWindowChange(0)
+      , isGLWidget(0)
+      , window_event(0)
+      , qd_hd(0)
 #endif
-#ifdef Q_WS_MAC
-        ,needWindowChange(0)
-        ,isGLWidget(0)
-#endif
-        ,polished(0)
-
-        , size_policy(QSizePolicy::Preferred, QSizePolicy::Preferred)
-        , redirectDev(0)
 {
     if (!qApp) {
         qFatal("QWidget: Must construct a QApplication before a QPaintDevice");
@@ -1027,7 +1036,7 @@ void QWidgetPrivate::adjustFlags(Qt::WindowFlags &flags, QWidget *w)
     if (customize)
         ; // don't modify window flags if the user explicitely set them.
     else if (type == Qt::Dialog || type == Qt::Sheet)
-#ifndef Q_OS_WINCE
+#ifndef Q_WS_WINCE
         flags |= Qt::WindowTitleHint | Qt::WindowSystemMenuHint | Qt::WindowContextHelpButtonHint | Qt::WindowCloseButtonHint;
 #else
         flags |= Qt::WindowTitleHint | Qt::WindowSystemMenuHint | Qt::WindowCloseButtonHint;
@@ -1094,7 +1103,7 @@ void QWidgetPrivate::init(QWidget *parentWidget, Qt::WindowFlags f)
     if (f & Qt::MSWindowsOwnDC)
         q->setAttribute(Qt::WA_NativeWindow);
 
-#ifdef Q_OS_WINCE
+#ifdef Q_WS_WINCE
     data.window_state_internal = 0;
 #endif
 
@@ -1345,7 +1354,7 @@ QWidget::~QWidget()
     d->setDirtyOpaqueRegion();
 
     if (isWindow() && isVisible() && internalWinId())
-        hide();
+        d->close_helper(QWidgetPrivate::CloseNoEvent);
 #if defined(Q_WS_WIN) || defined(Q_WS_X11)
     else if (!internalWinId() && isVisible())
         qApp->d_func()->sendSyntheticEnterLeave(this);
@@ -1412,36 +1421,26 @@ void QWidgetPrivate::createTLExtra()
         createExtra();
     if (!extra->topextra) {
         QTLWExtra* x = extra->topextra = new QTLWExtra;
+        x->icon = 0;
+        x->iconPixmap = 0;
+        x->backingStore = 0;
         x->windowSurface = 0;
+        x->sharedPainter = 0;
+        x->incw = x->inch = 0;
+        x->basew = x->baseh = 0;
+        x->frameStrut.setCoords(0, 0, 0, 0);
+        x->normalGeometry = QRect(0,0,-1,-1);
+        x->savedFlags = 0;
         x->opacity = 255;
         x->posFromMove = false;
         x->sizeAdjusted = false;
         x->inTopLevelResize = false;
         x->inRepaint = false;
-        x->backingStore = 0;
-        x->icon = 0;
-        x->iconPixmap = 0;
-        x->frameStrut.setCoords(0, 0, 0, 0);
-        x->incw = x->inch = 0;
-        x->basew = x->baseh = 0;
-        x->normalGeometry = QRect(0,0,-1,-1);
-#if defined(Q_WS_WIN) || defined(Q_WS_X11) || defined(Q_WS_MAC)
         x->embedded = 0;
-#endif
-#if defined(Q_WS_X11)
-        x->parentWinId = 0;
-        x->spont_unmapped = 0;
-        x->dnd = 0;
-#endif
-        x->savedFlags = 0;
-#if defined(Q_WS_QWS) && !defined(QT_NO_QWS_MANAGER)
-        x->qwsManager = 0;
-#endif
-        x->sharedPainter = 0;
         createTLSysExtra();
 #ifdef QWIDGET_EXTRA_DEBUG
-    static int count = 0;
-    qDebug() << "tlextra" << ++count;
+        static int count = 0;
+        qDebug() << "tlextra" << ++count;
 #endif
     }
 }
@@ -1455,27 +1454,28 @@ void QWidgetPrivate::createExtra()
 {
     if (!extra) {                                // if not exists
         extra = new QWExtra;
-        extra->minw = extra->minh = 0;
-        extra->maxw = extra->maxh = QWIDGETSIZE_MAX;
+        extra->glContext = 0;
+        extra->topextra = 0;
+        extra->proxyWidget = 0;
+#ifndef QT_NO_CURSOR
+        extra->curs = 0;
+#endif
+        extra->minw = 0;
+        extra->minh = 0;
+        extra->maxw = QWIDGETSIZE_MAX;
+        extra->maxh = QWIDGETSIZE_MAX;
+        extra->customDpiX = 0;
+        extra->customDpiY = 0;
         extra->explicitMinSize = 0;
         extra->explicitMaxSize = 0;
         extra->autoFillBackground = 0;
         extra->nativeChildrenForced = 0;
         extra->inRenderWithPainter = 0;
         extra->hasMask = 0;
-#ifndef QT_NO_CURSOR
-        extra->curs = 0;
-#endif
-        extra->style = 0;
-        extra->topextra = 0;
-        extra->proxyWidget = 0;
-        extra->glContext = 0;
-        extra->customDpiX = 0;
-        extra->customDpiY = 0;
         createSysExtra();
 #ifdef QWIDGET_EXTRA_DEBUG
-    static int count = 0;
-    qDebug() << "extra" << ++count;
+        static int count = 0;
+        qDebug() << "extra" << ++count;
 #endif
     }
 }
@@ -1513,45 +1513,6 @@ void QWidgetPrivate::deleteExtra()
         // extra->xic destroyed in QWidget::destroy()
         extra = 0;
     }
-}
-
-/*
-  Returns true if the background is inherited; otherwise returns
-  false.
-
-  Mainly used in the paintOnScreen case.
-*/
-
-bool QWidgetPrivate::isBackgroundInherited() const
-{
-    Q_Q(const QWidget);
-
-    // windows do not inherit their background
-    if (q->isWindow() || q->windowType() == Qt::SubWindow)
-        return false;
-
-    if (q->testAttribute(Qt::WA_NoSystemBackground) || q->testAttribute(Qt::WA_OpaquePaintEvent))
-        return false;
-
-    const QPalette &pal = q->palette();
-    QPalette::ColorRole bg = q->backgroundRole();
-    QBrush brush = pal.brush(bg);
-
-    // non opaque brushes leaves us no choice, we must inherit
-    if (!q->autoFillBackground() || !brush.isOpaque())
-        return true;
-
-    if (brush.style() == Qt::SolidPattern) {
-        // the background is just a solid color. If there is no
-        // propagated contents, then we claim as performance
-        // optimization that it was not inheritet. This is the normal
-        // case in standard Windows or Motif style.
-        const QWidget *w = q->parentWidget();
-        if (!w->d_func()->isBackgroundInherited())
-            return false;
-    }
-
-    return true;
 }
 
 /*
@@ -1898,24 +1859,6 @@ void QWidgetPrivate::clipToEffectiveMask(QRegion &region) const
         offset -= wd->data.crect.topLeft();
         w = w->parentWidget();
     }
-}
-
-bool QWidgetPrivate::hasBackground() const
-{
-    Q_Q(const QWidget);
-    if (!q->isWindow() && q->parentWidget() && q->parentWidget()->testAttribute(Qt::WA_PaintOnScreen))
-        return true;
-    if (q->testAttribute(Qt::WA_PaintOnScreen))
-        return true;
-    if (!q->testAttribute(Qt::WA_OpaquePaintEvent) && !q->testAttribute(Qt::WA_NoSystemBackground)) {
-        const QPalette &pal = q->palette();
-        QPalette::ColorRole bg = q->backgroundRole();
-        QBrush bgBrush = pal.brush(bg);
-        return (bgBrush.style() != Qt::NoBrush &&
-                ((q->isWindow() || q->windowType() == Qt::SubWindow)
-                 || (QPalette::ColorRole(bg_role) != QPalette::NoRole || (pal.resolve() & (1<<bg)))));
-    }
-    return false;
 }
 
 bool QWidgetPrivate::paintOnScreen() const
@@ -2343,13 +2286,26 @@ void QWidgetPrivate::setStyle_helper(QStyle *newStyle, bool propagate, bool
         )
 {
     Q_Q(QWidget);
-    createExtra();
-
     QStyle *oldStyle  = q->style();
 #ifndef QT_NO_STYLE_STYLESHEET
-    QStyle *origStyle = extra->style;
+    QStyle *origStyle = 0;
 #endif
-    extra->style = newStyle;
+
+#ifdef Q_WS_MAC
+    // the metalhack boolean allows Qt/Mac to do a proper re-polish depending
+    // on how the Qt::WA_MacBrushedMetal attribute is set. It is only ever
+    // set when changing that attribute and passes the widget's CURRENT style.
+    // therefore no need to do a reassignment.
+    if (!metalHack)
+#endif
+    {
+        createExtra();
+
+#ifndef QT_NO_STYLE_STYLESHEET
+        origStyle = extra->style;
+#endif
+        extra->style = newStyle;
+    }
 
     // repolish
     if (q->windowType() != Qt::Desktop) {
@@ -2956,10 +2912,15 @@ void QWidgetPrivate::setEnabled_helper(bool enable)
 #if defined(Q_WS_MAC)
     setEnabled_helper_sys(enable);
 #endif
-#if defined (Q_WS_WIN)
-    if (q->hasFocus())
-        QInputContextPrivate::updateImeStatus(q, true);
-#endif
+    if (q->testAttribute(Qt::WA_InputMethodEnabled) && q->hasFocus()) {
+        QInputContext *qic = inputContext();
+        if (enable) {
+            qic->setFocusWidget(q);
+        } else {
+            qic->reset();
+            qic->setFocusWidget(0);
+        }
+    }
     QEvent e(QEvent::EnabledChange);
     QApplication::sendEvent(q, &e);
 #ifdef QT3_SUPPORT
@@ -4196,7 +4157,7 @@ const QPalette &QWidget::palette() const
     if (!isEnabled()) {
         data->pal.setCurrentColorGroup(QPalette::Disabled);
     } else if ((!isVisible() || isActiveWindow())
-#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
+#if defined(Q_OS_WIN) && !defined(Q_WS_WINCE)
         && !QApplicationPrivate::isBlockedByModal(const_cast<QWidget *>(this))
 #endif
         ) {
@@ -4784,7 +4745,7 @@ void QWidget::render(QPainter *painter, const QPoint &targetOffset,
     }
 
     const qreal opacity = painter->opacity();
-    if (qFuzzyCompare(opacity + 1, qreal(1.0)))
+    if (qFuzzyIsNull(opacity))
         return; // Fully transparent.
 
     Q_D(QWidget);
@@ -5894,10 +5855,24 @@ QWidget *QWidget::focusWidget() const
 
 /*!
     Returns the next widget in this widget's focus chain.
+
+    \sa previousInFocusChain
 */
 QWidget *QWidget::nextInFocusChain() const
 {
     return const_cast<QWidget *>(d_func()->focus_next);
+}
+
+/*!
+    Returns the previous widget in this widget's focus chain.
+
+    \sa nextInFocusChain
+
+    \since 4.6
+*/
+QWidget *QWidget::previousInFocusChain() const
+{
+    return const_cast<QWidget *>(d_func()->focus_prev);
 }
 
 /*!
@@ -6138,14 +6113,6 @@ int QWidgetPrivate::pointToRect(const QPoint &p, const QRect &r)
     return dx + dy;
 }
 
-QRect QWidgetPrivate::fromOrToLayoutItemRect(const QRect &rect, int sign) const
-{
-    QRect r = rect;
-    r.adjust(-sign * leftLayoutItemMargin, -sign * topLayoutItemMargin,
-             +sign * rightLayoutItemMargin, +sign * bottomLayoutItemMargin);
-    return r;
-}
-
 /*!
     \property QWidget::frameSize
     \brief the size of the widget including any window frame
@@ -6269,7 +6236,7 @@ QByteArray QWidget::saveGeometry() const
     returns false.
 
     If the restored geometry is off-screen, it will be modified to be
-    inside the the available screen geometry.
+    inside the available screen geometry.
 
     To restore geometry saved using QSettings, you can use code like
     this:
@@ -7319,7 +7286,7 @@ QSize QWidgetPrivate::adjustedSize() const
 #else // all others
         QRect screen = QApplication::desktop()->screenGeometry(q->pos());
 #endif
-#if defined (Q_OS_WINCE)
+#if defined (Q_WS_WINCE)
         s.setWidth(qMin(s.width(), screen.width()));
         s.setHeight(qMin(s.height(), screen.height()));
 #else
@@ -7627,16 +7594,10 @@ bool QWidget::event(QEvent *event)
         }
         break;
     case QEvent::FocusIn:
-#if defined(Q_WS_WIN)
-        QInputContextPrivate::updateImeStatus(this, true);
-#endif
         focusInEvent((QFocusEvent*)event);
         break;
 
     case QEvent::FocusOut:
-#if defined(Q_WS_WIN)
-        QInputContextPrivate::updateImeStatus(this, false);
-#endif
         focusOutEvent((QFocusEvent*)event);
         break;
 
@@ -9792,27 +9753,6 @@ void QWidget::setAttribute(Qt::WidgetAttribute attribute, bool on)
         QEvent e(QEvent::MouseTrackingChange);
         QApplication::sendEvent(this, &e);
         break; }
-#if !defined(QT_NO_DIRECT3D) && defined(Q_WS_WIN)
-    case Qt::WA_MSWindowsUseDirect3D:
-        if (!qApp->testAttribute(Qt::AA_MSWindowsUseDirect3DByDefault)) {
-            if (on) {
-                if (!d->extra)
-                    d->createExtra();
-                d->extra->had_auto_fill_bg = d->extra->autoFillBackground;
-                d->extra->had_no_system_bg = testAttribute(Qt::WA_NoSystemBackground);
-                d->extra->had_paint_on_screen = testAttribute(Qt::WA_PaintOnScreen);
-                // enforce the opaque widget state D3D needs
-                d->extra->autoFillBackground = true;
-                setAttribute(Qt::WA_PaintOnScreen);
-                setAttribute(Qt::WA_NoSystemBackground);
-            } else if (d->extra) {
-                d->extra->autoFillBackground = d->extra->had_auto_fill_bg;
-                setAttribute(Qt::WA_PaintOnScreen, d->extra->had_paint_on_screen);
-                setAttribute(Qt::WA_NoSystemBackground, d->extra->had_no_system_bg);
-            }
-        }
-        break;
-#endif
     case Qt::WA_NativeWindow: {
         QInputContext *ic = 0;
         if (on && !internalWinId() && testAttribute(Qt::WA_InputMethodEnabled) && hasFocus()) {
@@ -9824,7 +9764,7 @@ void QWidget::setAttribute(Qt::WidgetAttribute attribute, bool on)
             parentWidget()->d_func()->enforceNativeChildren();
         if (on && !internalWinId() && testAttribute(Qt::WA_WState_Created))
             d->createWinId();
-        if (ic)
+        if (ic && isEnabled())
             ic->setFocusWidget(this);
         break;
     }
@@ -9855,10 +9795,6 @@ void QWidget::setAttribute(Qt::WidgetAttribute attribute, bool on)
 #endif
         break;
     case Qt::WA_InputMethodEnabled: {
-#if defined(Q_WS_WIN) || (defined(Q_WS_QWS) && !defined(QT_NO_QWS_INPUTMETHODS))
-        if (hasFocus())
-            QInputContextPrivate::updateImeStatus(this, true);
-#endif
         QInputContext *ic = d->ic;
         if (!ic) {
             // implicitly create input context only if we have a focus
@@ -9866,7 +9802,7 @@ void QWidget::setAttribute(Qt::WidgetAttribute attribute, bool on)
                 ic = d->inputContext();
         }
         if (ic) {
-            if (on && hasFocus() && ic->focusWidget() != this) {
+            if (on && hasFocus() && ic->focusWidget() != this && isEnabled()) {
                 ic->setFocusWidget(this);
             } else if (!on && ic->focusWidget() == this) {
                 ic->reset();

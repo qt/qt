@@ -33,6 +33,7 @@ include(inputmethod/inputmethod.pri)
 include(graphicsview/graphicsview.pri)
 include(util/util.pri)
 include(statemachine/statemachine.pri)
+include(math3d/math3d.pri)
 
 embedded: QT += network
 

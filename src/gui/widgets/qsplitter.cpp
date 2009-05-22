@@ -119,7 +119,6 @@ QSplitterHandle::QSplitterHandle(Qt::Orientation orientation, QSplitter *parent)
 {
     Q_D(QSplitterHandle);
     d->s = parent;
-    d->hover = false;
     setOrientation(orientation);
 }
 
@@ -269,8 +268,11 @@ void QSplitterHandle::mouseMoveEvent(QMouseEvent *e)
 void QSplitterHandle::mousePressEvent(QMouseEvent *e)
 {
     Q_D(QSplitterHandle);
-    if (e->button() == Qt::LeftButton)
+    if (e->button() == Qt::LeftButton) {
         d->mouseOffset = d->pick(e->pos());
+        d->pressed = true;
+        update();
+    }
 }
 
 /*!
@@ -284,6 +286,10 @@ void QSplitterHandle::mouseReleaseEvent(QMouseEvent *e)
                      - d->mouseOffset;
         d->s->setRubberBand(-1);
         moveSplitter(pos);
+    }
+    if (e->button() == Qt::LeftButton) {
+        d->pressed = false;
+        update();
     }
 }
 
@@ -303,6 +309,8 @@ void QSplitterHandle::paintEvent(QPaintEvent *)
         opt.state = QStyle::State_None;
     if (d->hover)
         opt.state |= QStyle::State_MouseOver;
+    if (d->pressed)
+        opt.state |= QStyle::State_Sunken;
     if (isEnabled())
         opt.state |= QStyle::State_Enabled;
     parentWidget()->style()->drawControl(QStyle::CE_Splitter, &opt, &p, d->s);
@@ -1517,7 +1525,7 @@ void QSplitter::setOpaqueResize(bool on)
 
 /*!
     \fn int QSplitter::margin() const
-    Returns the with of the the margin around the contents of the widget.
+    Returns the width of the margin around the contents of the widget.
 
     Use QWidget::getContentsMargins() instead.
     \sa setMargin(), QWidget::getContentsMargins()

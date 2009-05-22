@@ -4611,11 +4611,11 @@ void Q3FileDialog::setPreviewMode(PreviewMode m)
 }
 Q3FileDialog::PreviewMode Q3FileDialog::previewMode() const
 {
-    if (d->infoPreview && d->infoPreviewWidget->isVisible())
+    if (d->infoPreview && d->infoPreviewWidget->isVisibleTo(const_cast<Q3FileDialog *>(this)))
         return Info;
-    else if (d->contentsPreview && d->contentsPreviewWidget->isVisible())
+    else if (d->contentsPreview
+             && d->contentsPreviewWidget->isVisibleTo(const_cast<Q3FileDialog *>(this)))
         return Contents;
-
     return NoPreview;
 }
 

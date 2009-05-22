@@ -65,43 +65,27 @@
 #include <QtCore/QFileInfo>
 #include <QtCore/QSharedData>
 
-// #define DEFAULT_SKINS_FROM_RESOURCE
-#ifdef DEFAULT_SKINS_FROM_RESOURCE
-QT_BEGIN_NAMESPACE
+
 static const char *skinResourcePathC = ":/skins/";
-QT_END_NAMESPACE
-#else
-#  include <QtCore/QLibraryInfo>
-#endif
 
 QT_BEGIN_NAMESPACE
 
 static const char *skinExtensionC = "skin";
 
-namespace {
-    // Pair of skin name, path
-    typedef QPair<QString, QString> SkinNamePath;
-    typedef QList<SkinNamePath> Skins;
-    enum { SkinComboNoneIndex = 0 };
-}
+// Pair of skin name, path
+typedef QPair<QString, QString> SkinNamePath;
+typedef QList<SkinNamePath> Skins;
+enum { SkinComboNoneIndex = 0 };
 
 // find default skins (resources)
 static const Skins &defaultSkins() {
     static Skins rc;
     if (rc.empty()) {
-#ifdef DEFAULT_SKINS_FROM_RESOURCE
         const QString skinPath = QLatin1String(skinResourcePathC);
-#else
-        QString skinPath = QLibraryInfo::location(QLibraryInfo::PrefixPath);
-        skinPath += QDir::separator();
-        skinPath += QLatin1String("tools");
-        skinPath += QDir::separator();
-        skinPath += QLatin1String("qvfb");
-#endif
         QString pattern = QLatin1String("*.");
         pattern += QLatin1String(skinExtensionC);
         const QDir dir(skinPath, pattern);
-        const QFileInfoList list = dir.entryInfoList();
+        const QFileInfoList list = dir.entryInfoList(QDir::Dirs|QDir::NoDotAndDotDot, QDir::Name);
         if (list.empty())
             return rc;
         const QFileInfoList::const_iterator lcend = list.constEnd();

@@ -1673,10 +1673,19 @@ static void parseCSStoXMLAttrs(const QVector<QCss::Declaration> &declarations,
         const QCss::Declaration &decl = declarations.at(i);
         if (decl.d->property.isEmpty())
             continue;
-        if (decl.d->values.count() != 1)
-            continue;
         QCss::Value val = decl.d->values.first();
-        QString valueStr = val.toString();
+        QString valueStr;
+        if (decl.d->values.count() != 1) {
+            for (int i=0; i<decl.d->values.count(); ++i) {
+                const QString &value = decl.d->values[i].toString();
+                if (value.isEmpty())
+                    valueStr += QLatin1Char(',');
+                else
+                    valueStr += value;
+            }
+        } else {
+            valueStr = val.toString();
+        }
         if (val.type == QCss::Value::Uri) {
             valueStr.prepend(QLatin1String("url("));
             valueStr.append(QLatin1Char(')'));
@@ -2540,6 +2549,9 @@ static QSvgNode *createImageNode(QSvgNode *parent,
         qDebug()<<"couldn't create image from "<<filename;
         return 0;
     }
+
+    if (image.format() == QImage::Format_ARGB32)
+        image = image.convertToFormat(QImage::Format_ARGB32_Premultiplied);
 
     QSvgNode *img = new QSvgImage(parent,
                                   image,

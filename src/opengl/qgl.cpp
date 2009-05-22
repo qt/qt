@@ -1297,6 +1297,7 @@ void QGLContextPrivate::init(QPaintDevice *dev, const QGLFormat &format)
     max_texture_size = -1;
     version_flags_cached = false;
     version_flags = QGLFormat::OpenGL_Version_None;
+    current_fbo = 0;
 }
 
 QGLContext* QGLContext::currentCtx = 0;
@@ -1684,58 +1685,105 @@ static void qt_gl_clean_cache(qint64 cacheKey)
 
 static void convertToGLFormatHelper(QImage &dst, const QImage &img, GLenum texture_format)
 {
-    Q_ASSERT(dst.size() == img.size());
     Q_ASSERT(dst.depth() == 32);
     Q_ASSERT(img.depth() == 32);
 
-    const int width = img.width();
-    const int height = img.height();
-    const uint *p = (const uint*) img.scanLine(img.height() - 1);
-    uint *q = (uint*) dst.scanLine(0);
+    if (dst.size() != img.size()) {
+        int target_width = dst.width();
+        int target_height = dst.height();
+        qreal sx = target_width / qreal(img.width());
+        qreal sy = target_height / qreal(img.height());
 
-    if (texture_format == GL_BGRA) {
-        if (QSysInfo::ByteOrder == QSysInfo::BigEndian) {
-            // mirror + swizzle
-            for (int i=0; i < height; ++i) {
-                const uint *end = p + width;
-                while (p < end) {
-                    *q = ((*p << 24) & 0xff000000)
-                         | ((*p >> 24) & 0x000000ff)
-                         | ((*p << 8) & 0x00ff0000)
-                         | ((*p >> 8) & 0x0000ff00);
-                    p++;
-                    q++;
+        quint32 *dest = (quint32 *) dst.scanLine(0); // NB! avoid detach here
+        uchar *srcPixels = (uchar *) img.scanLine(img.height() - 1);
+        int sbpl = img.bytesPerLine();
+        int dbpl = dst.bytesPerLine();
+
+        int ix = 0x00010000 / sx;
+        int iy = 0x00010000 / sy;
+
+        quint32 basex = int(0.5 * ix);
+        quint32 srcy = int(0.5 * iy);
+
+        // scale, swizzle and mirror in one loop
+        while (target_height--) {
+            const uint *src = (const quint32 *) (srcPixels - (srcy >> 16) * sbpl);
+            int srcx = basex;
+            for (int x=0; x<target_width; ++x) {
+                uint src_pixel = src[srcx >> 16];
+                if (texture_format == GL_BGRA) {
+                    if (QSysInfo::ByteOrder == QSysInfo::BigEndian) {
+                        dest[x] = ((src_pixel << 24) & 0xff000000)
+                                  | ((src_pixel >> 24) & 0x000000ff)
+                                  | ((src_pixel << 8) & 0x00ff0000)
+                                  | ((src_pixel >> 8) & 0x0000ff00);
+                    } else {
+                        dest[x] = src_pixel;
+                    }
+                } else {  // GL_RGBA
+                    if (QSysInfo::ByteOrder == QSysInfo::BigEndian) {
+                        dest[x] = (src_pixel << 8) | ((src_pixel >> 24) & 0xff);
+                    } else {
+                        dest[x] = ((src_pixel << 16) & 0xff0000)
+                                  | ((src_pixel >> 16) & 0xff)
+                                  | (src_pixel & 0xff00ff00);
+                    }
                 }
-                p -= 2 * width;
+                srcx += ix;
             }
-        } else {
-            const uint bytesPerLine = img.bytesPerLine();
-            for (int i=0; i < height; ++i) {
-                memcpy(q, p, bytesPerLine);
-                q += width;
-                p -= width;
-            }
+            dest = (quint32 *)(((uchar *) dest) + dbpl);
+            srcy += iy;
         }
     } else {
-        if (QSysInfo::ByteOrder == QSysInfo::BigEndian) {
-            for (int i=0; i < height; ++i) {
-                const uint *end = p + width;
-                while (p < end) {
-                    *q = (*p << 8) | ((*p >> 24) & 0xFF);
-                    p++;
-                    q++;
+        const int width = img.width();
+        const int height = img.height();
+        const uint *p = (const uint*) img.scanLine(img.height() - 1);
+        uint *q = (uint*) dst.scanLine(0);
+
+        if (texture_format == GL_BGRA) {
+            if (QSysInfo::ByteOrder == QSysInfo::BigEndian) {
+                // mirror + swizzle
+                for (int i=0; i < height; ++i) {
+                    const uint *end = p + width;
+                    while (p < end) {
+                        *q = ((*p << 24) & 0xff000000)
+                             | ((*p >> 24) & 0x000000ff)
+                             | ((*p << 8) & 0x00ff0000)
+                             | ((*p >> 8) & 0x0000ff00);
+                        p++;
+                        q++;
+                    }
+                    p -= 2 * width;
                 }
-                p -= 2 * width;
+            } else {
+                const uint bytesPerLine = img.bytesPerLine();
+                for (int i=0; i < height; ++i) {
+                    memcpy(q, p, bytesPerLine);
+                    q += width;
+                    p -= width;
+                }
             }
         } else {
-            for (int i=0; i < height; ++i) {
-                const uint *end = p + width;
-                while (p < end) {
-                    *q = ((*p << 16) & 0xff0000) | ((*p >> 16) & 0xff) | (*p & 0xff00ff00);
-                    p++;
-                    q++;
+            if (QSysInfo::ByteOrder == QSysInfo::BigEndian) {
+                for (int i=0; i < height; ++i) {
+                    const uint *end = p + width;
+                    while (p < end) {
+                        *q = (*p << 8) | ((*p >> 24) & 0xff);
+                        p++;
+                        q++;
+                    }
+                    p -= 2 * width;
                 }
-                p -= 2 * width;
+            } else {
+                for (int i=0; i < height; ++i) {
+                    const uint *end = p + width;
+                    while (p < end) {
+                        *q = ((*p << 16) & 0xff0000) | ((*p >> 16) & 0xff) | (*p & 0xff00ff00);
+                        p++;
+                        q++;
+                    }
+                    p -= 2 * width;
+                }
             }
         }
     }
@@ -1778,19 +1826,18 @@ GLuint QGLContextPrivate::bindTexture(const QImage &image, GLenum target, GLint 
     }
 
     // Scale the pixmap if needed. GL textures needs to have the
-    // dimensions 2^n+2(border) x 2^m+2(border).
+    // dimensions 2^n+2(border) x 2^m+2(border), unless we're using GL
+    // 2.0 or use the GL_TEXTURE_RECTANGLE texture target
     int tx_w = qt_next_power_of_two(image.width());
     int tx_h = qt_next_power_of_two(image.height());
+    bool scale = false;
 
-    // Note: the clean param is only true when a texture is bound
-    // from the QOpenGLPaintEngine - in that case we have to force
-    // a premultiplied texture format
     QImage img = image;
     if (( !(QGLFormat::openGLVersionFlags() & QGLFormat::OpenGL_Version_2_0) &&
           !(QGLFormat::openGLVersionFlags() & QGLFormat::OpenGL_ES_Version_2_0) )
         && (target == GL_TEXTURE_2D && (tx_w != image.width() || tx_h != image.height())))
     {
-        img = image.scaled(tx_w, tx_h);
+        scale = true;
     }
 
     GLuint tx_id;
@@ -1822,17 +1869,24 @@ GLuint QGLContextPrivate::bindTexture(const QImage &image, GLenum target, GLint 
         ptr = reinterpret_cast<uchar *>(glMapBufferARB(GL_PIXEL_UNPACK_BUFFER_ARB, GL_WRITE_ONLY_ARB));
     }
 
-    if (ptr) {
-        QImage::Format target_format = img.format();
-        if (clean || img.format() != QImage::Format_ARGB32)
-            target_format = QImage::Format_ARGB32_Premultiplied;
+    QImage::Format target_format = img.format();
+    // Note: the clean param is only true when a texture is bound
+    // from the QOpenGLPaintEngine - in that case we have to force
+    // a premultiplied texture format
+    if (clean || img.format() != QImage::Format_ARGB32)
+        target_format = QImage::Format_ARGB32_Premultiplied;
+    if (img.format() != target_format)
+        img = img.convertToFormat(target_format);
 
+    if (ptr) {
         QImage buffer(ptr, img.width(), img.height(), target_format);
-        convertToGLFormatHelper(buffer, img.convertToFormat(target_format), texture_format);
+        convertToGLFormatHelper(buffer, img, texture_format);
         glUnmapBufferARB(GL_PIXEL_UNPACK_BUFFER_ARB);
-        glTexImage2D(target, 0, format, img.width(), img.height(), 0, texture_format, GL_UNSIGNED_BYTE, 0);
+        glTexImage2D(target, 0, format, img.width(), img.height(), 0, texture_format,
+                     GL_UNSIGNED_BYTE, 0);
     } else {
-        QImage tx = convertToGLFormat(img, clean, texture_format);
+        QImage tx(scale ? QSize(tx_w, tx_h) : img.size(), target_format);
+        convertToGLFormatHelper(tx, img, texture_format);
         glTexImage2D(target, 0, format, tx.width(), tx.height(), 0, texture_format,
                      GL_UNSIGNED_BYTE, tx.bits());
     }
@@ -2588,7 +2642,7 @@ const QGLContext* QGLContext::currentContext()
     \i paintGL() - Renders the OpenGL scene. Gets called whenever the widget
     needs to be updated.
     \i resizeGL() - Sets up the OpenGL viewport, projection, etc. Gets
-    called whenever the the widget has been resized (and also when it
+    called whenever the widget has been resized (and also when it
     is shown for the first time because all newly created widgets get a
     resize event automatically).
     \i initializeGL() - Sets up the OpenGL rendering context, defines display

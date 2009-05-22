@@ -294,6 +294,10 @@ static const char * x11_atomnames = {
     // XEMBED
     "_XEMBED\0"
     "_XEMBED_INFO\0"
+
+    "Wacom Stylus\0"
+    "Wacom Cursor\0"
+    "Wacom Eraser\0"
 };
 
 Q_GUI_EXPORT QX11Data *qt_x11Data = 0;
@@ -1579,6 +1583,7 @@ static PtrWacomConfigOpenDevice ptrWacomConfigOpenDevice = 0;
 static PtrWacomConfigGetRawParam ptrWacomConfigGetRawParam = 0;
 static PtrWacomConfigCloseDevice ptrWacomConfigCloseDevice = 0;
 static PtrWacomConfigTerm ptrWacomConfigTerm = 0;
+Q_GLOBAL_STATIC(QByteArray, wacomDeviceName)
 #endif
 
 #endif
@@ -2356,13 +2361,6 @@ void qt_init(QApplicationPrivate *priv, int,
             XAxisInfoPtr a;
             XDevice *dev = 0;
 
-#if !defined(Q_OS_IRIX)
-            // XFree86 divides a stylus and eraser into 2 devices, so we must do for both...
-            const QString XFREENAMESTYLUS = QLatin1String("stylus");
-            const QString XFREENAMEPEN = QLatin1String("pen");
-            const QString XFREENAMEERASER = QLatin1String("eraser");
-#endif
-
             if (X11->ptrXListInputDevices) {
                 devices = X11->ptrXListInputDevices(X11->display, &ndev);
                 if (!devices)
@@ -2377,18 +2375,19 @@ void qt_init(QApplicationPrivate *priv, int,
                 gotStylus = false;
                 gotEraser = false;
 
-                QString devName = QString::fromLocal8Bit(devs->name).toLower();
 #if defined(Q_OS_IRIX)
+                QString devName = QString::fromLocal8Bit(devs->name).toLower();
                 if (devName == QLatin1String(WACOM_NAME)) {
                     deviceType = QTabletEvent::Stylus;
                     gotStylus = true;
                 }
 #else
-                if (devName.startsWith(XFREENAMEPEN)
-                    || devName.startsWith(XFREENAMESTYLUS)) {
+                if (devs->type == ATOM(XWacomStylus)) {
                     deviceType = QTabletEvent::Stylus;
+                    if (wacomDeviceName()->isEmpty())
+                        wacomDeviceName()->append(devs->name);
                     gotStylus = true;
-                } else if (devName.startsWith(XFREENAMEERASER)) {
+                } else if (devs->type == ATOM(XWacomEraser)) {
                     deviceType = QTabletEvent::XFreeEraser;
                     gotEraser = true;
                 }
@@ -2979,7 +2978,7 @@ QWidget *QApplication::topLevelAt(const QPoint &p)
 void QApplication::syncX()
 {
     if (X11->display)
-        XSync(X11->display, False);                        // don't discard events
+        XSync(X11->display, False);  // don't discard events
 }
 
 
@@ -4484,8 +4483,7 @@ void fetchWacomToolId(int &deviceType, qint64 &serialId)
     WACOMCONFIG *config = ptrWacomConfigInit(X11->display, 0);
     if (config == 0)
         return;
-    const char *name = "stylus"; // TODO get this from the X config instead (users may have called it differently)
-    WACOMDEVICE *device = ptrWacomConfigOpenDevice (config, name);
+    WACOMDEVICE *device = ptrWacomConfigOpenDevice (config, wacomDeviceName()->constData());
     if (device == 0)
         return;
     unsigned keys[1];

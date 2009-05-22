@@ -1589,7 +1589,7 @@ QDataStream &operator>>(QDataStream &ds, QLocale &l)
        defaults to the default locale (see setDefault()).
     \endlist
 
-    The "C" locale is identical to \l{English}/\l{UnitedStates}.
+    The "C" locale is identical in behavior to \l{English}/\l{UnitedStates}.
 
     Use language() and country() to determine the actual language and
     country values used.
@@ -1632,7 +1632,7 @@ QDataStream &operator>>(QDataStream &ds, QLocale &l)
 
     This enumerated type is used to specify a language.
 
-    \value C The "C" locale is English/UnitedStates.
+    \value C The "C" locale is identical in behavior to English/UnitedStates.
     \value Abkhazian
     \value Afan
     \value Afar
@@ -5367,6 +5367,14 @@ static Bigint *mult(Bigint *a, Bigint *b)
 
 static Bigint *p5s;
 
+struct p5s_deleter
+{
+    ~p5s_deleter()
+    {
+        Bfree(p5s);
+    }
+};
+
 static Bigint *pow5mult(Bigint *b, int k)
 {
     Bigint *b1, *p5, *p51;
@@ -5388,6 +5396,7 @@ static Bigint *pow5mult(Bigint *b, int k)
         return b;
     if (!(p5 = p5s)) {
         /* first time */
+        static p5s_deleter deleter;
         p5 = p5s = i2b(625);
         p5->next = 0;
     }

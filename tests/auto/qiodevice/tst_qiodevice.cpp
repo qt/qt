@@ -120,7 +120,7 @@ void tst_QIODevice::constructing_QTcpSocket()
 
     QVERIFY(!device->isOpen());
 
-    socket.connectToHost("imap.troll.no", 143);
+    socket.connectToHost(QtNetworkSettings::serverName(), 143);
     QVERIFY(socket.waitForConnected(5000));
     QVERIFY(device->isOpen());
 
@@ -134,7 +134,7 @@ void tst_QIODevice::constructing_QTcpSocket()
     QCOMPARE(socket.pos(), qlonglong(0));
 
     socket.close();
-    socket.connectToHost("imap.troll.no", 143);
+    socket.connectToHost(QtNetworkSettings::serverName(), 143);
     QVERIFY(socket.waitForConnected(5000));
 
     while (!device->canReadLine())

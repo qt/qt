@@ -947,8 +947,9 @@ QComboBoxPrivateContainer* QComboBoxPrivate::viewContainer()
     container = new QComboBoxPrivateContainer(new QComboBoxListView(q), q);
     container->itemView()->setModel(model);
     container->itemView()->setTextElideMode(Qt::ElideMiddle);
-    updateDelegate();
+    updateDelegate(true);
     updateLayoutDirection();
+    updateViewContainerPaletteAndOpacity();
     QObject::connect(container, SIGNAL(itemSelected(QModelIndex)),
                      q, SLOT(_q_itemSelected(QModelIndex)));
     QObject::connect(container->itemView()->selectionModel(),
@@ -1050,6 +1051,27 @@ void QComboBoxPrivate::_q_rowsRemoved(const QModelIndex &parent, int /*start*/, 
     }
 }
 
+
+void QComboBoxPrivate::updateViewContainerPaletteAndOpacity()
+{
+    if (!container)
+        return;
+    Q_Q(QComboBox);
+    QStyleOptionComboBox opt;
+    q->initStyleOption(&opt);
+#ifndef QT_NO_MENU
+    if (q->style()->styleHint(QStyle::SH_ComboBox_Popup, &opt, q)) {
+        QMenu menu;
+        menu.ensurePolished();
+        container->setPalette(menu.palette());
+        container->setWindowOpacity(menu.windowOpacity());
+    } else
+#endif
+    {
+        container->setPalette(q->palette());
+        container->setWindowOpacity(1.0);
+    }
+}
 
 /*!
     Initialize \a option with the values from this QComboBox. This method
@@ -1567,15 +1589,25 @@ bool QComboBox::isEditable() const
     return d->lineEdit != 0;
 }
 
-void QComboBoxPrivate::updateDelegate()
+/*! \internal
+    update the default delegate
+    depending on the style's SH_ComboBox_Popup hint, we use a different default delegate.
+
+    but we do not change the delegate is the combobox use a custom delegate,
+    unless \a force is set to true.
+ */
+void QComboBoxPrivate::updateDelegate(bool force)
 {
     Q_Q(QComboBox);
     QStyleOptionComboBox opt;
     q->initStyleOption(&opt);
-    if (q->style()->styleHint(QStyle::SH_ComboBox_Popup, &opt, q))
-        q->setItemDelegate(new QComboMenuDelegate(q->view(), q));
-    else
-        q->setItemDelegate(new QComboBoxDelegate(q->view(), q));
+    if (q->style()->styleHint(QStyle::SH_ComboBox_Popup, &opt, q)) {
+        if (force || qobject_cast<QComboBoxDelegate *>(q->itemDelegate()))
+            q->setItemDelegate(new QComboMenuDelegate(q->view(), q));
+    } else {
+        if (force || qobject_cast<QComboMenuDelegate *>(q->itemDelegate()))
+            q->setItemDelegate(new QComboBoxDelegate(q->view(), q));
+    }
 }
 
 QIcon QComboBoxPrivate::itemIcon(const QModelIndex &index) const
@@ -2572,20 +2604,7 @@ void QComboBox::changeEvent(QEvent *e)
             hidePopup();
         break;
     case QEvent::PaletteChange: {
-        QStyleOptionComboBox opt;
-        initStyleOption(&opt);
-#ifndef QT_NO_MENU
-        if (style()->styleHint(QStyle::SH_ComboBox_Popup, &opt, this)) {
-            QMenu menu;
-            menu.ensurePolished();
-            d->viewContainer()->setPalette(menu.palette());
-            d->viewContainer()->setWindowOpacity(menu.windowOpacity());
-        } else
-#endif
-        {
-            d->viewContainer()->setPalette(palette());
-            d->viewContainer()->setWindowOpacity(1.0);
-        }
+        d->updateViewContainerPaletteAndOpacity();
         break;
     }
     case QEvent::FontChange:

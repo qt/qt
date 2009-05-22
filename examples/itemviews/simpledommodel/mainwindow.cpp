@@ -50,9 +50,9 @@ MainWindow::MainWindow() : QMainWindow(), model(0)
 {
     fileMenu = menuBar()->addMenu(tr("&File"));
     fileMenu->addAction(tr("&Open..."), this, SLOT(openFile()),
-                        QKeySequence(tr("Ctrl+O")));
+                        QKeySequence::Open);
     fileMenu->addAction(tr("E&xit"), this, SLOT(close()),
-                        QKeySequence(tr("Ctrl+Q")));
+                        QKeySequence::Quit);
 
     model = new DomModel(QDomDocument(), this);
     view = new QTreeView(this);

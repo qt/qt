@@ -55,7 +55,7 @@
 #ifndef QT_NO_ACCESSIBILITY
 #include "qaccessible.h"
 #endif
-#if defined(Q_OS_WINCE)
+#if defined(Q_WS_WINCE)
 #include "qt_windows.h"
 #include "qmenubar.h"
 #include "qpointer.h"
@@ -251,7 +251,7 @@ QDialog::QDialog(QWidget *parent, Qt::WindowFlags f)
     : QWidget(*new QDialogPrivate, parent,
               f | QFlag((f & Qt::WindowType_Mask) == 0 ? Qt::Dialog : 0))
 {
-#ifdef Q_OS_WINCE
+#ifdef Q_WS_WINCE
     if (!qt_wince_is_smartphone())
         setWindowFlags(windowFlags() | Qt::WindowOkButtonHint | QFlag(qt_wince_is_mobile() ? 0 : Qt::WindowCancelButtonHint));
 #endif
@@ -280,7 +280,7 @@ QDialog::QDialog(QWidget *parent, const char *name, bool modal, Qt::WindowFlags 
 QDialog::QDialog(QDialogPrivate &dd, QWidget *parent, Qt::WindowFlags f)
     : QWidget(dd, parent, f | QFlag((f & Qt::WindowType_Mask) == 0 ? Qt::Dialog : 0))
 {
-#ifdef Q_OS_WINCE
+#ifdef Q_WS_WINCE
     if (!qt_wince_is_smartphone())
         setWindowFlags(windowFlags() | Qt::WindowOkButtonHint | QFlag(qt_wince_is_mobile() ? 0 : Qt::WindowCancelButtonHint));
 #endif
@@ -364,8 +364,8 @@ void QDialogPrivate::resetModalitySetByOpen()
     resetModalityTo = -1;
 }
 
-#ifdef Q_OS_WINCE
-#ifdef Q_OS_WINCE_WM
+#ifdef Q_WS_WINCE
+#ifdef Q_WS_WINCE_WM
 void QDialogPrivate::_q_doneAction()
 {
     //Done...
@@ -473,7 +473,7 @@ int QDialog::exec()
     setResult(0);
 
 //On Windows Mobile we create an empty menu to hide the current menu
-#ifdef Q_OS_WINCE_WM
+#ifdef Q_WS_WINCE_WM
 #ifndef QT_NO_MENUBAR
     QMenuBar *menuBar = 0;
     if (!findChild<QMenuBar *>())
@@ -484,7 +484,7 @@ int QDialog::exec()
         connect(doneAction, SIGNAL(triggered()), this, SLOT(_q_doneAction()));
     }
 #endif //QT_NO_MENUBAR
-#endif //Q_OS_WINCE_WM
+#endif //Q_WS_WINCE_WM
 
     show();
 
@@ -505,12 +505,12 @@ int QDialog::exec()
     int res = result();
     if (deleteOnClose)
         delete this;
-#ifdef Q_OS_WINCE_WM
+#ifdef Q_WS_WINCE_WM
 #ifndef QT_NO_MENUBAR
     else if (menuBar)
         delete menuBar;
 #endif //QT_NO_MENUBAR
-#endif //Q_OS_WINCE_WM
+#endif //Q_WS_WINCE_WM
     return res;
 }
 

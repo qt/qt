@@ -1196,10 +1196,6 @@ void qt_init(QApplicationPrivate *priv, int)
         [qtMenuLoader release];
     }
 #endif
-    if (QApplication::testAttribute(Qt::AA_MacPluginApplication)) {
-        extern void qt_mac_set_native_menubar(bool);
-        qt_mac_set_native_menubar(false);
-    }
     // Register for Carbon tablet proximity events on the event monitor target.
     // This means that we should receive proximity events even when we aren't the active application.
     if (!tablet_proximity_handler) {
@@ -1642,15 +1638,6 @@ QApplicationPrivate::globalEventProcessor(EventHandlerCallRef er, EventRef event
         bool inNonClientArea = false;
         GetEventParameter(event, kEventParamMouseLocation, typeQDPoint, 0,
                           sizeof(where), 0, &where);
-        if(ekind == kEventMouseMoved && qt_mac_app_fullscreen &&
-            QApplication::desktop()->screenNumber(QPoint(where.h, where.v)) ==
-            QApplication::desktop()->primaryScreen()) {
-            if(where.v <= 0)
-                ShowMenuBar();
-            else if(qt_mac_window_at(where.h, where.v, 0) != inMenuBar)
-                HideMenuBar();
-        }
-
 #if defined(DEBUG_MOUSE_MAPS)
         const char *edesc = 0;
         switch(ekind) {

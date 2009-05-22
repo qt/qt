@@ -39,10 +39,6 @@
 **
 ****************************************************************************/
 
-/*
-TRANSLATOR qdesigner_internal::PlainTextEditorDialog
-*/
-
 #include "plaintexteditor_p.h"
 #include "abstractsettings_p.h"
 

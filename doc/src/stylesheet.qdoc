@@ -332,7 +332,7 @@
     respect to the reference element.
 
     Once positioned, they are treated the same as widgets and can be styled
-    using the the \l{box model}.
+    using the \l{box model}.
 
     See the \l{List of Sub-Controls} below for a list of supported
     sub-controls, and \l{Customizing the QPushButton's Menu Indicator
@@ -398,7 +398,7 @@
     (usually) refers to a single object, not to all instances of a
     class.
 
-    Similarly, selectors with pseudo-states are more specific that
+    Similarly, selectors with pseudo-states are more specific than
     ones that do not specify pseudo-states. Thus, the following style
     sheet specifies that a \l{QPushButton} should have white text
     when the mouse is hovering over it, otherwise red text:
@@ -653,7 +653,7 @@
     \target sub controls
     \section1 Sub-controls
 
-    A widget is considered as a heirarchy (tree) of subcontrols drawn on top 
+    A widget is considered as a hierarchy (tree) of subcontrols drawn on top
     of each other. For example, the QComboBox draws the drop-down sub-control
     followed by the down-arrow sub-control. A QComboBox is thus rendered as
     follows:
@@ -671,7 +671,7 @@
     \l{Qt Style Sheets Reference#subcontrol-origin-prop}{subcontrol-origin}
     properties.
     
-    Once positioned, sub-controls can be styled using the the \l{box model}.
+    Once positioned, sub-controls can be styled using the \l{box model}.
 
     \note With complex widgets such as QComboBox and QScrollBar, if one
     property or sub-control is customized, \bold{all} the other properties or
@@ -1154,7 +1154,7 @@
            \l{#pane-sub}{::pane} subcontrol. The left and right
            corners are styled using the \l{#left-corner-sub}{::left-corner}
            and \l{#right-corner-sub}{::right-corner} respectively.
-           The position of the the tab bar is controlled using the
+           The position of the tab bar is controlled using the
            \l{#tab-bar-sub}{::tab-bar} subcontrol.
 
            By default, the subcontrols have positions of a QTabWidget in 
@@ -1254,7 +1254,7 @@
            the \l{#menu-button-sub}{::menu-button} subcontrol is used to draw the
            menu button. \l{#menu-arrow-sub}{::menu-arrow} subcontrol is used to
            draw the menu arrow inside the menu-button. By default, it is
-           positioned in the center of the Contents rectangle of the the
+           positioned in the center of the Contents rectangle of the
            menu-button subcontrol.
 
            When the QToolButton displays arrows, the \l{#up-arrow-sub}{::up-arrow},
@@ -1871,10 +1871,6 @@
            Example:
 
            \snippet doc/src/snippets/code/doc_src_stylesheet.qdoc 54
-
-        \note If you specify more than one parameter in \c font-family,
-        e.g., \c{font-family: Verdana, Arial}, Qt will only use the first
-        font. If it cannot be found, Qt uses the system fallbacks instead.
 
     \row
         \o \c font-size

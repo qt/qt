@@ -54,6 +54,9 @@
 //
 
 #include "qgraphicsitem.h"
+#include "qpixmapcache.h"
+
+#include <QtCore/qpoint.h>
 
 #if !defined(QT_NO_GRAPHICSVIEW) || (QT_EDITION & QT_MODULE_GRAPHICSVIEW) != QT_MODULE_GRAPHICSVIEW
 
@@ -69,13 +72,14 @@ public:
     // ItemCoordinateCache only
     QRect boundingRect;
     QSize fixedSize;
-    QString key;
+    QPixmapCache::Key key;
 
     // DeviceCoordinateCache only
     struct DeviceData {
+        DeviceData() {}
         QTransform lastTransform;
         QPoint cacheIndent;
-        QString key;
+        QPixmapCache::Key key;
     };
     QMap<QPaintDevice *, DeviceData> deviceData;
 
@@ -108,7 +112,8 @@ public:
         ExtraMaxDeviceCoordCacheSize,
         ExtraBoundingRegionGranularity,
         ExtraOpacity,
-        ExtraEffectiveOpacity
+        ExtraEffectiveOpacity,
+        ExtraDecomposedTransform
     };
 
     enum AncestorFlag {
@@ -122,6 +127,7 @@ public:
         : z(0),
         scene(0),
         parent(0),
+        siblingIndex(-1),
         index(-1),
         depth(0),
         acceptedMouseButtons(0x1f),
@@ -140,7 +146,6 @@ public:
         ancestorFlags(0),
         cacheMode(0),
         hasBoundingRegionGranularity(0),
-        flags(0),
         hasOpacity(0),
         hasEffectiveOpacity(0),
         isWidget(0),
@@ -150,7 +155,11 @@ public:
         dirtyClipPath(1),
         emptyClipPath(0),
         inSetPosHelper(0),
+        flags(0),
         allChildrenCombineOpacity(1),
+        hasDecomposedTransform(0),
+        dirtyTransform(0),
+        dirtyTransformComponents(0),
         globalStackingOrder(-1),
         sceneTransformIndex(-1),
         q_ptr(0)
@@ -182,6 +191,12 @@ public:
     void resolveEffectiveOpacity(qreal effectiveParentOpacity);
     void resolveDepth(int parentDepth);
     void invalidateSceneTransformCache();
+    void addChild(QGraphicsItem *child);
+    void removeChild(QGraphicsItem *child);
+    void setParentItemHelper(QGraphicsItem *parent, bool deleting);
+    void childrenBoundingRectHelper(QTransform *x, QRectF *rect);
+    void initStyleOption(QStyleOptionGraphicsItem *option, const QTransform &worldTransform,
+                         const QRegion &exposedRegion, bool allItems = false) const;
 
     virtual void resolveFont(uint inheritedMask)
     {
@@ -248,6 +263,7 @@ public:
     
     QList<ExtraStruct> extras;
 
+    QGraphicsItemCache *maybeExtraItemCache() const;
     QGraphicsItemCache *extraItemCache() const;
     void removeExtraItemCache();
 
@@ -273,7 +289,7 @@ public:
     void updateCachedClipPathFromSetPosHelper(const QPointF &newPos);
 
     inline bool isFullyTransparent() const
-    { return hasEffectiveOpacity && qFuzzyCompare(q_func()->effectiveOpacity() + 1, qreal(1.0)); }
+    { return hasEffectiveOpacity && qFuzzyIsNull(q_func()->effectiveOpacity()); }
 
     inline bool childrenCombineOpacity() const
     { return allChildrenCombineOpacity || children.isEmpty(); }
@@ -297,10 +313,11 @@ public:
     QGraphicsScene *scene;
     QGraphicsItem *parent;
     QList<QGraphicsItem *> children;
+    int siblingIndex;
     int index;
     int depth;
 
-    // Packed 32 bytes
+    // Packed 32 bits
     quint32 acceptedMouseButtons : 5;
     quint32 visible : 1;
     quint32 explicitlyHidden : 1;
@@ -317,9 +334,6 @@ public:
     quint32 ancestorFlags : 3;
     quint32 cacheMode : 2;
     quint32 hasBoundingRegionGranularity : 1;
-    quint32 flags : 9;
-
-    // New 32 bytes
     quint32 hasOpacity : 1;
     quint32 hasEffectiveOpacity : 1;
     quint32 isWidget : 1;
@@ -329,14 +343,87 @@ public:
     quint32 dirtyClipPath : 1;
     quint32 emptyClipPath : 1;
     quint32 inSetPosHelper : 1;
+
+    // New 32 bits
+    quint32 flags : 10;
     quint32 allChildrenCombineOpacity : 1;
+    quint32 hasDecomposedTransform : 1;
+    quint32 dirtyTransform : 1;
+    quint32 dirtyTransformComponents : 1;
+    quint32 padding : 18; // feel free to use
 
     // Optional stacking order
     int globalStackingOrder;
     int sceneTransformIndex;
 
+    struct DecomposedTransform;    
+    DecomposedTransform *decomposedTransform() const
+    {
+        QGraphicsItemPrivate *that = const_cast<QGraphicsItemPrivate *>(this);
+        DecomposedTransform *decomposed;
+        if (hasDecomposedTransform) {
+            decomposed = qVariantValue<DecomposedTransform *>(extra(ExtraDecomposedTransform));
+        } else {
+            decomposed = new DecomposedTransform;
+            that->setExtra(ExtraDecomposedTransform, qVariantFromValue<DecomposedTransform *>(decomposed));
+            that->hasDecomposedTransform = 1;
+            if (!dirtyTransformComponents)
+                decomposed->reset();
+        }
+        if (dirtyTransformComponents) {
+            decomposed->initFrom(q_ptr->transform());
+            that->dirtyTransformComponents = 0;
+        }
+        return decomposed;
+    }
+
+    struct DecomposedTransform {
+        qreal xScale;
+        qreal yScale;
+        qreal xRotation;
+        qreal yRotation;
+        qreal zRotation;
+        qreal horizontalShear;
+        qreal verticalShear;
+        qreal xOrigin;
+        qreal yOrigin;
+
+        inline void reset()
+        {
+            xScale = 1.0;
+            yScale = 1.0;
+            xRotation = 0.0;
+            yRotation = 0.0;
+            zRotation = 0.0;
+            horizontalShear = 0.0;
+            verticalShear = 0.0;
+            xOrigin = 0.0;
+            yOrigin = 0.0;
+        }
+
+        inline void initFrom(const QTransform &x)
+        {
+            reset();
+            // ### decompose transform
+            Q_UNUSED(x);
+        }
+
+        inline void generateTransform(QTransform *x) const
+        {
+            x->translate(xOrigin, yOrigin);
+            x->rotate(xRotation, Qt::XAxis);
+            x->rotate(yRotation, Qt::YAxis);
+            x->rotate(zRotation, Qt::ZAxis);
+            x->shear(horizontalShear, verticalShear);
+            x->scale(xScale, yScale);
+            x->translate(-xOrigin, -yOrigin);
+        }
+    };
+
     QGraphicsItem *q_ptr;
 };
+
+Q_DECLARE_METATYPE(QGraphicsItemPrivate::DecomposedTransform *)
 
 QT_END_NAMESPACE
 

@@ -50,12 +50,6 @@
 #include <private/qwidget_p.h>
 #include <private/qdrawhelper_p.h>
 
-#if !defined(QT_NO_DIRECT3D) && defined(Q_WS_WIN)
-#include <private/qpaintengine_d3d_p.h>
-#include <d3d9.h>
-extern QDirect3DPaintEngine *qt_d3dEngine();
-#endif
-
 QT_BEGIN_NAMESPACE
 
 const uchar qt_pixmap_bit_mask[] = { 0x01, 0x02, 0x04, 0x08,
@@ -63,9 +57,6 @@ const uchar qt_pixmap_bit_mask[] = { 0x01, 0x02, 0x04, 0x08,
 
 QRasterPixmapData::QRasterPixmapData(PixelType type)
     : QPixmapData(type, RasterClass)
-#if defined(Q_WS_WIN) && !defined(QT_NO_DIRECT3D)
-    , texture(0)
-#endif
 {
 }
 
@@ -179,6 +170,16 @@ void QRasterPixmapData::fromImage(const QImage &sourceImage,
 #endif
 
     setSerialNumber(image.serialNumber());
+}
+
+// from qwindowsurface.cpp
+extern void qt_scrollRectInImage(QImage &img, const QRect &rect, const QPoint &offset);
+
+bool QRasterPixmapData::scroll(int dx, int dy, const QRect &rect)
+{
+    if (!image.isNull())
+        qt_scrollRectInImage(image, rect, QPoint(dx, dy));
+    return true;
 }
 
 void QRasterPixmapData::fill(const QColor &color)

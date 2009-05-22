@@ -51,10 +51,11 @@ SOURCES += \
 	kernel/qtimer.cpp \
 	kernel/qtranslator.cpp \
 	kernel/qvariant.cpp \
-	kernel/qcoreglobaldata.cpp \
-	kernel/qsharedmemory.cpp \
-	kernel/qsystemsemaphore.cpp
-        
+        kernel/qcoreglobaldata.cpp \
+        kernel/qsharedmemory.cpp \
+        kernel/qsystemsemaphore.cpp \
+        kernel/qpointer.cpp
+
 win32 {
 	SOURCES += \
 		kernel/qeventdispatcher_win.cpp \

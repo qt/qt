@@ -347,7 +347,7 @@ bool QEasingCurveFunction::operator==(const QEasingCurveFunction& other)
 }
 
 QT_BEGIN_INCLUDE_NAMESPACE
-#include "../3rdparty/easing/easing.cpp"
+#include "../../3rdparty/easing/easing.cpp"
 QT_END_INCLUDE_NAMESPACE
 
 class QEasingCurvePrivate

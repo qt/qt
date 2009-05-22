@@ -39,10 +39,6 @@
 **
 ****************************************************************************/
 
-/*
-TRANSLATOR qdesigner_internal::TableWidgetTaskMenu
-*/
-
 #include "tablewidget_taskmenu.h"
 #include "tablewidgeteditor.h"
 

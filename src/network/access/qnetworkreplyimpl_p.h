@@ -59,6 +59,7 @@
 #include "qnetworkproxy.h"
 #include "QtCore/qmap.h"
 #include "QtCore/qqueue.h"
+#include "QtCore/qbuffer.h"
 #include "private/qringbuffer_p.h"
 
 QT_BEGIN_NAMESPACE
@@ -91,10 +92,10 @@ public:
 
     Q_DECLARE_PRIVATE(QNetworkReplyImpl)
     Q_PRIVATE_SLOT(d_func(), void _q_startOperation())
-    Q_PRIVATE_SLOT(d_func(), void _q_sourceReadyRead())
-    Q_PRIVATE_SLOT(d_func(), void _q_sourceReadChannelFinished())
     Q_PRIVATE_SLOT(d_func(), void _q_copyReadyRead())
     Q_PRIVATE_SLOT(d_func(), void _q_copyReadChannelFinished())
+    Q_PRIVATE_SLOT(d_func(), void _q_bufferOutgoingData())
+    Q_PRIVATE_SLOT(d_func(), void _q_bufferOutgoingDataFinished())
 };
 
 class QNetworkReplyImplPrivate: public QNetworkReplyPrivate
@@ -102,15 +103,13 @@ class QNetworkReplyImplPrivate: public QNetworkReplyPrivate
 public:
     enum InternalNotifications {
         NotifyDownstreamReadyWrite,
-        NotifyUpstreamReadyRead,
         NotifyCloseDownstreamChannel,
-        NotifyCloseUpstreamChannel,
         NotifyCopyFinished
     };
 
     enum State {
         Idle,
-        Opening,
+        Buffering,
         Working,
         Finished,
         Aborted
@@ -125,6 +124,8 @@ public:
     void _q_sourceReadChannelFinished();
     void _q_copyReadyRead();
     void _q_copyReadChannelFinished();
+    void _q_bufferOutgoingData();
+    void _q_bufferOutgoingDataFinished();
 
     void setup(QNetworkAccessManager::Operation op, const QNetworkRequest &request,
                QIODevice *outgoingData);
@@ -138,9 +139,10 @@ public:
     void setCachingEnabled(bool enable);
     bool isCachingEnabled() const;
     void consume(qint64 count);
+    void emitUploadProgress(qint64 bytesSent, qint64 bytesTotal);
     qint64 nextDownstreamBlockSize() const;
-    void feed(const QByteArray &data);
-    void feed(QIODevice *data);
+    void appendDownstreamData(const QByteArray &data);
+    void appendDownstreamData(QIODevice *data);
     void finished();
     void error(QNetworkReply::NetworkError code, const QString &errorString);
     void metaDataChanged();
@@ -149,6 +151,7 @@ public:
 
     QNetworkAccessBackend *backend;
     QIODevice *outgoingData;
+    QRingBuffer *outgoingDataBuffer;
     QIODevice *copyDevice;
     QAbstractNetworkCache *networkCache;
 

@@ -161,7 +161,7 @@ public:
 
     QString program;
     QStringList arguments;
-    QStringList environment;
+    QHash<QString, QString> *environment;
 
     QRingBuffer outputReadBuffer;
     QRingBuffer errorReadBuffer;

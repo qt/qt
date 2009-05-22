@@ -370,11 +370,16 @@ void QPlainTextDocumentLayout::layoutBlock(const QTextBlock &block)
         extraMargin += fm.width(QChar(0x21B5));
     }
     tl->beginLayout();
+    qreal availableWidth = d->width;
+    if (availableWidth <= 0) {
+        availableWidth = INT_MAX; // similar to text edit with pageSize.width == 0
+    }
+    availableWidth -= 2*margin + extraMargin;
     while (1) {
         QTextLine line = tl->createLine();
         if (!line.isValid())
             break;
-        line.setLineWidth(d->width - 2*margin - extraMargin);
+        line.setLineWidth(availableWidth);
 
         height += leading;
         line.setPosition(QPointF(margin, height));
@@ -555,7 +560,8 @@ QRectF QPlainTextEditControl::blockBoundingRect(const QTextBlock &block) const {
     if (!currentBlock.isValid())
         return QRectF();
     Q_ASSERT(currentBlock.blockNumber() == currentBlockNumber);
-    QPlainTextDocumentLayout *documentLayout = qobject_cast<QPlainTextDocumentLayout*>(document()->documentLayout());
+    QTextDocument *doc = document();
+    QPlainTextDocumentLayout *documentLayout = qobject_cast<QPlainTextDocumentLayout*>(doc->documentLayout());
     Q_ASSERT(documentLayout);
 
     QPointF offset;
@@ -566,13 +572,22 @@ QRectF QPlainTextEditControl::blockBoundingRect(const QTextBlock &block) const {
         offset.ry() += r.height();
         currentBlock = currentBlock.next();
         ++currentBlockNumber;
+        if (!currentBlock.isVisible()) {
+            currentBlock = doc->findBlockByLineNumber(currentBlock.firstLineNumber());
+            currentBlockNumber = currentBlock.blockNumber();
+        }
         r = documentLayout->blockBoundingRect(currentBlock);
     }
     while (currentBlockNumber > blockNumber && offset.y() >= -textEdit->viewport()->height()) {
         currentBlock = currentBlock.previous();
+        --currentBlockNumber;
+        while (!currentBlock.isVisible()) {
+            currentBlock = currentBlock.previous();
+            --currentBlockNumber;
+        }
         if (!currentBlock.isValid())
             break;
-        --currentBlockNumber;
+
         r = documentLayout->blockBoundingRect(currentBlock);
         offset.ry() -= r.height();
     }

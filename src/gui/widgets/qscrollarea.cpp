@@ -127,7 +127,7 @@ QT_BEGIN_NAMESPACE
     setting the layout's \l{QLayout::sizeConstraint}{size constraint}
     property to one which provides constraints on the minimum and/or
     maximum size of the layout (e.g., QLayout::SetMinAndMaxSize) will
-    cause the size of the the scroll area to be updated whenever the
+    cause the size of the scroll area to be updated whenever the
     contents of the layout changes.
 
     For a complete example using the QScrollArea class, see the \l

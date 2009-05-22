@@ -75,6 +75,8 @@ private slots:
     void alternateShortcuts();
     void enabledVisibleInteraction();
     void task200823_tooltip();
+    void task229128TriggeredSignalWithoutActiongroup();
+    void task229128TriggeredSignalWhenInActiongroup();
 
 private:
     int m_lastEventType;
@@ -109,7 +111,7 @@ class MyWidget : public QWidget
 {
     Q_OBJECT
 public:
-    MyWidget(tst_QAction *tst, QWidget *parent=0) : QWidget(parent) { this->tst = tst; }
+    MyWidget(tst_QAction *tst, QWidget *parent = 0) : QWidget(parent) { this->tst = tst; }
 
 protected:
     virtual void actionEvent(QActionEvent *e) { tst->updateState(e); }
@@ -141,7 +143,7 @@ void tst_QAction::initTestCase()
 void tst_QAction::cleanupTestCase()
 {
     QWidget *testWidget = m_tstWidget;
-    if ( testWidget ) {
+    if (testWidget) {
         testWidget->hide();
         delete testWidget;
     }
@@ -189,7 +191,7 @@ void tst_QAction::updateState(QActionEvent *e)
 {
     if (!e) {
         m_lastEventType = 0;
-	m_lastAction = 0;
+        m_lastAction = 0;
     } else {
         m_lastEventType = (int)e->type();
         m_lastAction = e->action();
@@ -249,12 +251,12 @@ void tst_QAction::alternateShortcuts()
 {
     //test the alternate shortcuts (by adding more than 1 shortcut)
 
-    QWidget *wid=m_tstWidget;
+    QWidget *wid = m_tstWidget;
 
     {
         QAction act(wid);
         wid->addAction(&act);
-        QList<QKeySequence> shlist= QList<QKeySequence>() << QKeySequence("CTRL+P") <<QKeySequence("CTRL+A");
+        QList<QKeySequence> shlist = QList<QKeySequence>() << QKeySequence("CTRL+P") << QKeySequence("CTRL+A");
         act.setShortcuts(shlist);
 
         QSignalSpy spy(&act, SIGNAL(triggered()));
@@ -320,6 +322,47 @@ void tst_QAction::task200823_tooltip()
 
     QString ref = QString("foo (%1)").arg(QKeySequence(shortcut).toString());
     QCOMPARE(action->toolTip(), ref);
+}
+
+void tst_QAction::task229128TriggeredSignalWithoutActiongroup()
+{
+    // test without a group
+    QAction *actionWithoutGroup = new QAction("Test", qApp);
+    QSignalSpy spyWithoutGroup(actionWithoutGroup, SIGNAL(triggered(bool)));
+    QCOMPARE(spyWithoutGroup.count(), 0);
+    actionWithoutGroup->trigger();
+    // signal should be emitted
+    QCOMPARE(spyWithoutGroup.count(), 1);
+
+    // it is now a checkable checked action
+    actionWithoutGroup->setCheckable(true);
+    actionWithoutGroup->setChecked(true);
+    spyWithoutGroup.clear();
+    QCOMPARE(spyWithoutGroup.count(), 0);
+    actionWithoutGroup->trigger();
+    // signal should be emitted
+    QCOMPARE(spyWithoutGroup.count(), 1);
+}
+
+void tst_QAction::task229128TriggeredSignalWhenInActiongroup()
+{
+    QActionGroup ag(0);
+    QAction *action = new QAction("Test", &ag);
+    QAction *checkedAction = new QAction("Test 2", &ag);
+    ag.addAction(action);
+    action->setCheckable(true);
+    ag.addAction(checkedAction);
+    checkedAction->setCheckable(true);
+    checkedAction->setChecked(true);
+
+    QSignalSpy actionSpy(checkedAction, SIGNAL(triggered(bool)));
+    QSignalSpy actionGroupSpy(&ag, SIGNAL(triggered(QAction *)));
+    QCOMPARE(actionGroupSpy.count(), 0);
+    QCOMPARE(actionSpy.count(), 0);
+    checkedAction->trigger();
+    // check that both the group and the action have emitted the signal
+    QCOMPARE(actionGroupSpy.count(), 1);
+    QCOMPARE(actionSpy.count(), 1);
 }
 
 QTEST_MAIN(tst_QAction)

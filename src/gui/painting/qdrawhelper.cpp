@@ -157,46 +157,9 @@ static uint * QT_FASTCALL destFetchRGB16(uint *buffer, QRasterBuffer *rasterBuff
     return buffer;
 }
 
-#if defined(Q_CC_MSVC) && _MSC_VER <= 1300 && !defined(Q_CC_INTEL)
-template <typename EnumType, int value>
-class QEnumToType
-{
-public:
-    inline EnumType operator()() const
-    {
-        return EnumType(value);
-    }
-};
-template <QImage::Format format>
-class QImageFormatToType
-{
-public:
-    inline QImage::Format operator()() const
-    {
-        return format;
-    }
-};
-// Would have used QEnumToType instead of creating a specialized version for QImageFormatToType,
-// but that causes internal compiler error on VC6
-#define Q_TEMPLATE_IMAGEFORMAT_FIX(format) , const QImageFormatToType<format> &imageFormatType
-#define Q_TEMPLATE_IMAGEFORMAT_CALL(format) , QImageFormatToType<format>()
-#define Q_TEMPLATE_ENUM_FIX(Type, Value) , const QEnumToType<Type, Value> &enumTemplateType
-#define Q_TEMPLATE_ENUM_CALL(Type, Value) , QEnumToType<Type, Value>()
-#define Q_TEMPLATE_FIX(Type) , const QTypeInfo<Type> &templateType
-#define Q_TEMPLATE_CALL(Type) , QTypeInfo<Type>()
-#else
-#define Q_TEMPLATE_IMAGEFORMAT_FIX(format)
-#define Q_TEMPLATE_IMAGEFORMAT_CALL(format)
-#define Q_TEMPLATE_ENUM_FIX(Type, Value)
-#define Q_TEMPLATE_ENUM_CALL(Type, Value)
-#define Q_TEMPLATE_FIX(Type)
-#define Q_TEMPLATE_CALL(Type)
-#endif
-
 template <class DST>
 Q_STATIC_TEMPLATE_FUNCTION uint * QT_FASTCALL destFetch(uint *buffer, QRasterBuffer *rasterBuffer,
-                                    int x, int y, int length
-                                    Q_TEMPLATE_FIX(DST))
+                                    int x, int y, int length)
 {
     const DST *src = reinterpret_cast<DST*>(rasterBuffer->scanLine(y)) + x;
     quint32 *dest = reinterpret_cast<quint32*>(buffer);
@@ -205,28 +168,7 @@ Q_STATIC_TEMPLATE_FUNCTION uint * QT_FASTCALL destFetch(uint *buffer, QRasterBuf
     return buffer;
 }
 
-#if defined(Q_CC_MSVC) && _MSC_VER <= 1300 && !defined(Q_CC_INTEL)
-#define DEST_FETCH_DECL(DST)                                            \
-    static uint * QT_FASTCALL destFetch_##DST(uint *buffer,             \
-                                              QRasterBuffer *rasterBuffer, \
-                                              int x, int y, int length) \
-    {                                                                   \
-        return destFetch<DST>(buffer, rasterBuffer, x, y, length Q_TEMPLATE_CALL(DST));      \
-    }
-
-DEST_FETCH_DECL(qargb8565)
-DEST_FETCH_DECL(qrgb666)
-DEST_FETCH_DECL(qargb6666)
-DEST_FETCH_DECL(qrgb555)
-DEST_FETCH_DECL(qrgb888)
-DEST_FETCH_DECL(qargb8555)
-DEST_FETCH_DECL(qrgb444)
-DEST_FETCH_DECL(qargb4444)
-#undef DEST_FETCH_DECL
-# define SPANFUNC_POINTER_DESTFETCH(Arg) destFetch_##Arg
-#else // !VC6 && !VC2002
 # define SPANFUNC_POINTER_DESTFETCH(Arg) destFetch<Arg>
-#endif
 
 static const DestFetchProc destFetchProc[QImage::NImageFormats] =
 {
@@ -366,8 +308,7 @@ static void QT_FASTCALL destStoreRGB16(QRasterBuffer *rasterBuffer, int x, int y
 template <class DST>
 Q_STATIC_TEMPLATE_FUNCTION void QT_FASTCALL destStore(QRasterBuffer *rasterBuffer,
                                   int x, int y,
-                                  const uint *buffer, int length
-                                  Q_TEMPLATE_FIX(DST))
+                                  const uint *buffer, int length)
 {
     DST *dest = reinterpret_cast<DST*>(rasterBuffer->scanLine(y)) + x;
     const quint32p *src = reinterpret_cast<const quint32p*>(buffer);
@@ -375,28 +316,7 @@ Q_STATIC_TEMPLATE_FUNCTION void QT_FASTCALL destStore(QRasterBuffer *rasterBuffe
         *dest++ = DST(*src++);
 }
 
-#if defined(Q_CC_MSVC) && _MSC_VER <= 1300 && !defined(Q_CC_INTEL)
-# define DEST_STORE_DECL(DST)                                           \
-    static void QT_FASTCALL destStore_##DST(QRasterBuffer *rasterBuffer, \
-                                            int x, int y,               \
-                                            const uint *buffer, int length) \
-    {                                                                   \
-        destStore<DST>(rasterBuffer, x, y, buffer, length Q_TEMPLATE_CALL(DST));             \
-    }
-
-DEST_STORE_DECL(qargb8565)
-DEST_STORE_DECL(qrgb555)
-DEST_STORE_DECL(qrgb666)
-DEST_STORE_DECL(qargb6666)
-DEST_STORE_DECL(qargb8555)
-DEST_STORE_DECL(qrgb888)
-DEST_STORE_DECL(qrgb444)
-DEST_STORE_DECL(qargb4444)
-# undef DEST_FETCH_DECL
-# define SPANFUNC_POINTER_DESTSTORE(DEST) destStore_##DEST
-#else // !VC6 && !VC2002
 # define SPANFUNC_POINTER_DESTSTORE(DEST) destStore<DEST>
-#endif
 
 static const DestStoreProc destStoreProc[QImage::NImageFormats] =
 {
@@ -425,10 +345,8 @@ static const DestStoreProc destStoreProc[QImage::NImageFormats] =
 
   We need 5 fetch methods per surface type:
   untransformed
-  transformed
-  transformed tiled
-  transformed bilinear
-  transformed bilinear tiled
+  transformed (tiled and not tiled)
+  transformed bilinear (tiled and not tiled)
 
   We don't need bounds checks for untransformed, but we need them for the other ones.
 
@@ -436,14 +354,12 @@ static const DestStoreProc destStoreProc[QImage::NImageFormats] =
 */
 
 template <QImage::Format format>
-Q_STATIC_TEMPLATE_FUNCTION uint QT_FASTCALL qt_fetchPixel(const uchar *scanLine, int x, const QVector<QRgb> *rgb
-                                   Q_TEMPLATE_IMAGEFORMAT_FIX(format));
+Q_STATIC_TEMPLATE_FUNCTION uint QT_FASTCALL qt_fetchPixel(const uchar *scanLine, int x, const QVector<QRgb> *rgb);
 
 template<>
 Q_STATIC_TEMPLATE_SPECIALIZATION
 uint QT_FASTCALL qt_fetchPixel<QImage::Format_Mono>(const uchar *scanLine,
-                                                 int x, const QVector<QRgb> *rgb
-                                                 Q_TEMPLATE_IMAGEFORMAT_FIX(QImage::Format_Mono))
+                                                 int x, const QVector<QRgb> *rgb)
 {
     bool pixel = scanLine[x>>3] & (0x80 >> (x & 7));
     if (rgb) return PREMUL(rgb->at(pixel ? 1 : 0));
@@ -453,8 +369,7 @@ uint QT_FASTCALL qt_fetchPixel<QImage::Format_Mono>(const uchar *scanLine,
 template<>
 Q_STATIC_TEMPLATE_SPECIALIZATION
 uint QT_FASTCALL qt_fetchPixel<QImage::Format_MonoLSB>(const uchar *scanLine,
-                                                    int x, const QVector<QRgb> *rgb
-                                                    Q_TEMPLATE_IMAGEFORMAT_FIX(QImage::Format_MonoLSB))
+                                                    int x, const QVector<QRgb> *rgb)
 {
     bool pixel = scanLine[x>>3] & (0x1 << (x & 7));
     if (rgb) return PREMUL(rgb->at(pixel ? 1 : 0));
@@ -464,8 +379,7 @@ uint QT_FASTCALL qt_fetchPixel<QImage::Format_MonoLSB>(const uchar *scanLine,
 template<>
 Q_STATIC_TEMPLATE_SPECIALIZATION
 uint QT_FASTCALL qt_fetchPixel<QImage::Format_Indexed8>(const uchar *scanLine,
-                                                     int x, const QVector<QRgb> *rgb
-                                                     Q_TEMPLATE_IMAGEFORMAT_FIX(QImage::Format_Indexed8))
+                                                     int x, const QVector<QRgb> *rgb)
 {
     return PREMUL(rgb->at(scanLine[x]));
 }
@@ -473,8 +387,7 @@ uint QT_FASTCALL qt_fetchPixel<QImage::Format_Indexed8>(const uchar *scanLine,
 template<>
 Q_STATIC_TEMPLATE_SPECIALIZATION
 uint QT_FASTCALL qt_fetchPixel<QImage::Format_ARGB32>(const uchar *scanLine,
-                                                   int x, const QVector<QRgb> *
-                                                   Q_TEMPLATE_IMAGEFORMAT_FIX(QImage::Format_ARGB32))
+                                                   int x, const QVector<QRgb> *)
 {
     return PREMUL(((const uint *)scanLine)[x]);
 }
@@ -482,8 +395,7 @@ uint QT_FASTCALL qt_fetchPixel<QImage::Format_ARGB32>(const uchar *scanLine,
 template<>
 Q_STATIC_TEMPLATE_SPECIALIZATION
 uint QT_FASTCALL qt_fetchPixel<QImage::Format_ARGB32_Premultiplied>(const uchar *scanLine,
-                                                                 int x, const QVector<QRgb> *
-                                                                 Q_TEMPLATE_IMAGEFORMAT_FIX(QImage::Format_ARGB32_Premultiplied))
+                                                                 int x, const QVector<QRgb> *)
 {
     return ((const uint *)scanLine)[x];
 }
@@ -491,8 +403,7 @@ uint QT_FASTCALL qt_fetchPixel<QImage::Format_ARGB32_Premultiplied>(const uchar 
 template<>
 Q_STATIC_TEMPLATE_SPECIALIZATION
 uint QT_FASTCALL qt_fetchPixel<QImage::Format_RGB16>(const uchar *scanLine,
-                                                  int x, const QVector<QRgb> *
-                                                  Q_TEMPLATE_IMAGEFORMAT_FIX(QImage::Format_RGB16))
+                                                  int x, const QVector<QRgb> *)
 {
     return qConvertRgb16To32(((const ushort *)scanLine)[x]);
 }
@@ -501,8 +412,7 @@ template<>
 Q_STATIC_TEMPLATE_SPECIALIZATION
 uint QT_FASTCALL qt_fetchPixel<QImage::Format_ARGB8565_Premultiplied>(const uchar *scanLine,
                                                      int x,
-                                                     const QVector<QRgb> *
-                                                     Q_TEMPLATE_IMAGEFORMAT_FIX(QImage::Format_ARGB8565_Premultiplied))
+                                                     const QVector<QRgb> *)
 {
     const qargb8565 color = reinterpret_cast<const qargb8565*>(scanLine)[x];
     return qt_colorConvert<quint32, qargb8565>(color, 0);
@@ -512,8 +422,7 @@ template<>
 Q_STATIC_TEMPLATE_SPECIALIZATION
 uint QT_FASTCALL qt_fetchPixel<QImage::Format_RGB666>(const uchar *scanLine,
                                                    int x,
-                                                   const QVector<QRgb> *
-                                                   Q_TEMPLATE_IMAGEFORMAT_FIX(QImage::Format_RGB666))
+                                                   const QVector<QRgb> *)
 {
     const qrgb666 color = reinterpret_cast<const qrgb666*>(scanLine)[x];
     return qt_colorConvert<quint32, qrgb666>(color, 0);
@@ -523,8 +432,7 @@ template<>
 Q_STATIC_TEMPLATE_SPECIALIZATION
 uint QT_FASTCALL qt_fetchPixel<QImage::Format_ARGB6666_Premultiplied>(const uchar *scanLine,
                                                    int x,
-                                                   const QVector<QRgb> *
-                                                   Q_TEMPLATE_IMAGEFORMAT_FIX(QImage::Format_ARGB6666_Premultiplied))
+                                                   const QVector<QRgb> *)
 {
     const qargb6666 color = reinterpret_cast<const qargb6666*>(scanLine)[x];
     return qt_colorConvert<quint32, qargb6666>(color, 0);
@@ -534,8 +442,7 @@ template<>
 Q_STATIC_TEMPLATE_SPECIALIZATION
 uint QT_FASTCALL qt_fetchPixel<QImage::Format_RGB555>(const uchar *scanLine,
                                                    int x,
-                                                   const QVector<QRgb> *
-                                                   Q_TEMPLATE_IMAGEFORMAT_FIX(QImage::Format_RGB555))
+                                                   const QVector<QRgb> *)
 {
     const qrgb555 color = reinterpret_cast<const qrgb555*>(scanLine)[x];
     return qt_colorConvert<quint32, qrgb555>(color, 0);
@@ -545,8 +452,7 @@ template<>
 Q_STATIC_TEMPLATE_SPECIALIZATION
 uint QT_FASTCALL qt_fetchPixel<QImage::Format_ARGB8555_Premultiplied>(const uchar *scanLine,
                                                      int x,
-                                                     const QVector<QRgb> *
-                                                     Q_TEMPLATE_IMAGEFORMAT_FIX(QImage::Format_ARGB8555_Premultiplied))
+                                                     const QVector<QRgb> *)
 {
     const qargb8555 color = reinterpret_cast<const qargb8555*>(scanLine)[x];
     return qt_colorConvert<quint32, qargb8555>(color, 0);
@@ -556,8 +462,7 @@ template<>
 Q_STATIC_TEMPLATE_SPECIALIZATION
 uint QT_FASTCALL qt_fetchPixel<QImage::Format_RGB888>(const uchar *scanLine,
                                                    int x,
-                                                   const QVector<QRgb> *
-                                                   Q_TEMPLATE_IMAGEFORMAT_FIX(QImage::Format_RGB888))
+                                                   const QVector<QRgb> *)
 {
     const qrgb888 color = reinterpret_cast<const qrgb888*>(scanLine)[x];
     return qt_colorConvert<quint32, qrgb888>(color, 0);
@@ -567,8 +472,7 @@ template<>
 Q_STATIC_TEMPLATE_SPECIALIZATION
 uint QT_FASTCALL qt_fetchPixel<QImage::Format_RGB444>(const uchar *scanLine,
                                                    int x,
-                                                   const QVector<QRgb> *
-                                                   Q_TEMPLATE_IMAGEFORMAT_FIX(QImage::Format_RGB444))
+                                                   const QVector<QRgb> *)
 {
     const qrgb444 color = reinterpret_cast<const qrgb444*>(scanLine)[x];
     return qt_colorConvert<quint32, qrgb444>(color, 0);
@@ -578,47 +482,24 @@ template<>
 Q_STATIC_TEMPLATE_SPECIALIZATION
 uint QT_FASTCALL qt_fetchPixel<QImage::Format_ARGB4444_Premultiplied>(const uchar *scanLine,
                                                      int x,
-                                                     const QVector<QRgb> *
-                                                     Q_TEMPLATE_IMAGEFORMAT_FIX(QImage::Format_ARGB4444_Premultiplied))
+                                                     const QVector<QRgb> *)
 {
     const qargb4444 color = reinterpret_cast<const qargb4444*>(scanLine)[x];
     return qt_colorConvert<quint32, qargb4444>(color, 0);
 }
 
-typedef uint (QT_FASTCALL *FetchPixelProc)(const uchar *scanLine, int x, const QVector<QRgb> *);
-
-#if defined(Q_CC_MSVC) && _MSC_VER <= 1300 && !defined(Q_CC_INTEL)
-
-// explicit template instantiations needed to compile with VC6 and VC2002
-
-#define SPANFUNC_INSTANTIATION_FETCHPIXEL(Arg)  \
-        static inline uint fetchPixel_##Arg(const uchar * scanLine, int x, const QVector<QRgb> * rgb) \
-{ \
-        return qt_fetchPixel<QImage::Arg>(scanLine, x, rgb Q_TEMPLATE_IMAGEFORMAT_CALL(QImage::Arg)); \
+template<>
+Q_STATIC_TEMPLATE_SPECIALIZATION
+uint QT_FASTCALL qt_fetchPixel<QImage::Format_Invalid>(const uchar *,
+                                                     int ,
+                                                     const QVector<QRgb> *)
+{
+    return 0;
 }
 
-SPANFUNC_INSTANTIATION_FETCHPIXEL(Format_Mono);
-SPANFUNC_INSTANTIATION_FETCHPIXEL(Format_MonoLSB);
-SPANFUNC_INSTANTIATION_FETCHPIXEL(Format_Indexed8);
-SPANFUNC_INSTANTIATION_FETCHPIXEL(Format_ARGB32_Premultiplied);
-SPANFUNC_INSTANTIATION_FETCHPIXEL(Format_ARGB32);
-SPANFUNC_INSTANTIATION_FETCHPIXEL(Format_RGB16);
-SPANFUNC_INSTANTIATION_FETCHPIXEL(Format_ARGB8565_Premultiplied);
-SPANFUNC_INSTANTIATION_FETCHPIXEL(Format_RGB666);
-SPANFUNC_INSTANTIATION_FETCHPIXEL(Format_ARGB6666_Premultiplied);
-SPANFUNC_INSTANTIATION_FETCHPIXEL(Format_RGB555);
-SPANFUNC_INSTANTIATION_FETCHPIXEL(Format_ARGB8555_Premultiplied);
-SPANFUNC_INSTANTIATION_FETCHPIXEL(Format_RGB888);
-SPANFUNC_INSTANTIATION_FETCHPIXEL(Format_RGB444);
-SPANFUNC_INSTANTIATION_FETCHPIXEL(Format_ARGB4444_Premultiplied);
+typedef uint (QT_FASTCALL *FetchPixelProc)(const uchar *scanLine, int x, const QVector<QRgb> *);
 
-#undef SPANFUNC_INSTANTIATION_FETCHPIXEL
-
-#define SPANFUNC_POINTER_FETCHPIXEL(Arg) fetchPixel_##Arg
-
-#else // !VC6 && !VC2002
-# define SPANFUNC_POINTER_FETCHPIXEL(Arg) qt_fetchPixel<QImage::Arg>
-#endif
+#define SPANFUNC_POINTER_FETCHPIXEL(Arg) qt_fetchPixel<QImage::Arg>
 
 
 static const FetchPixelProc fetchPixelProc[QImage::NImageFormats] =
@@ -653,11 +534,11 @@ enum TextureBlendType {
 
 template <QImage::Format format>
 Q_STATIC_TEMPLATE_FUNCTION const uint * QT_FASTCALL qt_fetchUntransformed(uint *buffer, const Operator *, const QSpanData *data,
-                                             int y, int x, int length Q_TEMPLATE_IMAGEFORMAT_FIX(format))
+                                             int y, int x, int length)
 {
     const uchar *scanLine = data->texture.scanLine(y);
     for (int i = 0; i < length; ++i)
-        buffer[i] = qt_fetchPixel<format>(scanLine, x + i, data->texture.colorTable Q_TEMPLATE_IMAGEFORMAT_CALL(format));
+        buffer[i] = qt_fetchPixel<format>(scanLine, x + i, data->texture.colorTable);
     return buffer;
 }
 
@@ -665,13 +546,15 @@ template <>
 Q_STATIC_TEMPLATE_SPECIALIZATION const uint * QT_FASTCALL
 qt_fetchUntransformed<QImage::Format_ARGB32_Premultiplied>(uint *, const Operator *,
                                                          const QSpanData *data,
-                                                         int y, int x, int Q_TEMPLATE_IMAGEFORMAT_FIX(QImage::Format_ARGB32_Premultiplied))
+                                                         int y, int x, int)
 {
     const uchar *scanLine = data->texture.scanLine(y);
     return ((const uint *)scanLine) + x;
 }
 
-static const uint * QT_FASTCALL fetchTransformed(uint *buffer, const Operator *, const QSpanData *data,
+template<TextureBlendType blendType>  /* either BlendTransformed or BlendTransformedTiled */
+Q_STATIC_TEMPLATE_FUNCTION
+const uint * QT_FASTCALL fetchTransformed(uint *buffer, const Operator *, const QSpanData *data,
                                                          int y, int x, int length)
 {
     FetchPixelProc fetch = fetchPixelProc[data->texture.format];
@@ -698,84 +581,23 @@ static const uint * QT_FASTCALL fetchTransformed(uint *buffer, const Operator *,
             int px = fx >> 16;
             int py = fy >> 16;
 
-            bool out = (px < 0) || (px >= image_width)
-                       || (py < 0) || (py >= image_height);
+            if (blendType == BlendTransformedTiled) {
+                px %= image_width;
+                py %= image_height;
+                if (px < 0) px += image_width;
+                if (py < 0) py += image_height;
 
-            const uchar *scanLine = data->texture.scanLine(py);
-            *b = out ? uint(0) : fetch(scanLine, px, data->texture.colorTable);
-            fx += fdx;
-            fy += fdy;
-            ++b;
-        }
-    } else {
-        const qreal fdx = data->m11;
-        const qreal fdy = data->m12;
-        const qreal fdw = data->m13;
-
-        qreal fx = data->m21 * cy + data->m11 * cx + data->dx;
-        qreal fy = data->m22 * cy + data->m12 * cx + data->dy;
-        qreal fw = data->m23 * cy + data->m13 * cx + data->m33;
-
-        while (b < end) {
-            const qreal iw = fw == 0 ? 1 : 1 / fw;
-            const qreal tx = fx * iw;
-            const qreal ty = fy * iw;
-            const int px = int(tx) - (tx < 0);
-            const int py = int(ty) - (ty < 0);
-
-            bool out = (px < 0) || (px >= image_width)
-                       || (py < 0) || (py >= image_height);
-
-            const uchar *scanLine = data->texture.scanLine(py);
-            *b = out ? uint(0) : fetch(scanLine, px, data->texture.colorTable);
-            fx += fdx;
-            fy += fdy;
-            fw += fdw;
-            //force increment to avoid /0
-            if (!fw) {
-                fw += fdw;
+                const uchar *scanLine = data->texture.scanLine(py);
+                *b = fetch(scanLine, px, data->texture.colorTable);
+            } else {
+                if ((px < 0) || (px >= image_width)
+                    || (py < 0) || (py >= image_height)) {
+                    *b = uint(0);
+                } else {
+                    const uchar *scanLine = data->texture.scanLine(py);
+                    *b = fetch(scanLine, px, data->texture.colorTable);
+                }
             }
-            ++b;
-        }
-    }
-
-    return buffer;
-}
-
-static const uint * QT_FASTCALL fetchTransformedTiled(uint *buffer, const Operator *, const QSpanData *data,
-                                                              int y, int x, int length)
-{
-    FetchPixelProc fetch = fetchPixelProc[data->texture.format];
-
-    int image_width = data->texture.width;
-    int image_height = data->texture.height;
-
-    const qreal cx = x + 0.5;
-    const qreal cy = y + 0.5;
-
-    const uint *end = buffer + length;
-    uint *b = buffer;
-    if (data->fast_matrix) {
-        // The increment pr x in the scanline
-        int fdx = (int)(data->m11 * fixed_scale);
-        int fdy = (int)(data->m12 * fixed_scale);
-
-        int fx = int((data->m21 * cy
-                      + data->m11 * cx + data->dx) * fixed_scale);
-        int fy = int((data->m22 * cy
-                      + data->m12 * cx + data->dy) * fixed_scale);
-
-        while (b < end) {
-            int px = fx >> 16;
-            int py = fy >> 16;
-
-            px %= image_width;
-            py %= image_height;
-            if (px < 0) px += image_width;
-            if (py < 0) py += image_height;
-
-            const uchar *scanLine = data->texture.scanLine(py);
-            *b = fetch(scanLine, px, data->texture.colorTable);
             fx += fdx;
             fy += fdy;
             ++b;
@@ -796,13 +618,23 @@ static const uint * QT_FASTCALL fetchTransformedTiled(uint *buffer, const Operat
             int px = int(tx) - (tx < 0);
             int py = int(ty) - (ty < 0);
 
-            px %= image_width;
-            py %= image_height;
-            if (px < 0) px += image_width;
-            if (py < 0) py += image_height;
+            if (blendType == BlendTransformedTiled) {
+                px %= image_width;
+                py %= image_height;
+                if (px < 0) px += image_width;
+                if (py < 0) py += image_height;
 
-            const uchar *scanLine = data->texture.scanLine(py);
-            *b = fetch(scanLine, px, data->texture.colorTable);
+                const uchar *scanLine = data->texture.scanLine(py);
+                *b = fetch(scanLine, px, data->texture.colorTable);
+            } else {
+                if ((px < 0) || (px >= image_width)
+                    || (py < 0) || (py >= image_height)) {
+                    *b = uint(0);
+                } else {
+                    const uchar *scanLine = data->texture.scanLine(py);
+                    *b = fetch(scanLine, px, data->texture.colorTable);
+                }
+            }
             fx += fdx;
             fy += fdy;
             fw += fdw;
@@ -817,10 +649,12 @@ static const uint * QT_FASTCALL fetchTransformedTiled(uint *buffer, const Operat
     return buffer;
 }
 
-static const uint * QT_FASTCALL fetchTransformedBilinear(uint *buffer, const Operator *, const QSpanData *data,
-                                                                 int y, int x, int length)
+template<TextureBlendType blendType, QImage::Format format> /* blendType = BlendTransformedBilinear or BlendTransformedBilinearTiled */
+Q_STATIC_TEMPLATE_FUNCTION
+const uint * QT_FASTCALL fetchTransformedBilinear(uint *buffer, const Operator *, const QSpanData *data,
+                                                  int y, int x, int length)
 {
-    FetchPixelProc fetch = fetchPixelProc[data->texture.format];
+    FetchPixelProc fetch = (format != QImage::Format_Invalid) ? FetchPixelProc(qt_fetchPixel<format>) : fetchPixelProc[data->texture.format];
 
     int image_width = data->texture.width;
     int image_height = data->texture.height;
@@ -853,10 +687,27 @@ static const uint * QT_FASTCALL fetchTransformedBilinear(uint *buffer, const Ope
             int idistx = 256 - distx;
             int idisty = 256 - disty;
 
-            x1 = qBound(0, x1, image_width - 1);
-            x2 = qBound(0, x2, image_width - 1);
-            y1 = qBound(0, y1, image_height - 1);
-            y2 = qBound(0, y2, image_height - 1);
+            if (blendType == BlendTransformedBilinearTiled) {
+                x1 %= image_width;
+                x2 %= image_width;
+                y1 %= image_height;
+                y2 %= image_height;
+
+                if (x1 < 0) x1 += image_width;
+                if (x2 < 0) x2 += image_width;
+                if (y1 < 0) y1 += image_height;
+                if (y2 < 0) y2 += image_height;
+
+                Q_ASSERT(x1 >= 0 && x1 < image_width);
+                Q_ASSERT(x2 >= 0 && x2 < image_width);
+                Q_ASSERT(y1 >= 0 && y1 < image_height);
+                Q_ASSERT(y2 >= 0 && y2 < image_height);
+            } else {
+                x1 = qBound(0, x1, image_width - 1);
+                x2 = qBound(0, x2, image_width - 1);
+                y1 = qBound(0, y1, image_height - 1);
+                y2 = qBound(0, y2, image_height - 1);
+            }
 
             const uchar *s1 = data->texture.scanLine(y1);
             const uchar *s2 = data->texture.scanLine(y2);
@@ -898,10 +749,27 @@ static const uint * QT_FASTCALL fetchTransformedBilinear(uint *buffer, const Ope
             int idistx = 256 - distx;
             int idisty = 256 - disty;
 
-            x1 = qBound(0, x1, image_width - 1);
-            x2 = qBound(0, x2, image_width - 1);
-            y1 = qBound(0, y1, image_height - 1);
-            y2 = qBound(0, y2, image_height - 1);
+            if (blendType == BlendTransformedBilinearTiled) {
+                x1 %= image_width;
+                x2 %= image_width;
+                y1 %= image_height;
+                y2 %= image_height;
+
+                if (x1 < 0) x1 += image_width;
+                if (x2 < 0) x2 += image_width;
+                if (y1 < 0) y1 += image_height;
+                if (y2 < 0) y2 += image_height;
+
+                Q_ASSERT(x1 >= 0 && x1 < image_width);
+                Q_ASSERT(x2 >= 0 && x2 < image_width);
+                Q_ASSERT(y1 >= 0 && y1 < image_height);
+                Q_ASSERT(y2 >= 0 && y2 < image_height);
+            } else {
+                x1 = qBound(0, x1, image_width - 1);
+                x2 = qBound(0, x2, image_width - 1);
+                y1 = qBound(0, y1, image_height - 1);
+                y2 = qBound(0, y2, image_height - 1);
+            }
 
             const uchar *s1 = data->texture.scanLine(y1);
             const uchar *s2 = data->texture.scanLine(y2);
@@ -929,169 +797,7 @@ static const uint * QT_FASTCALL fetchTransformedBilinear(uint *buffer, const Ope
     return buffer;
 }
 
-static const uint * QT_FASTCALL fetchTransformedBilinearTiled(uint *buffer, const Operator *, const QSpanData *data,
-                                                                     int y, int x, int length)
-{
-    FetchPixelProc fetch = fetchPixelProc[data->texture.format];
-
-    int image_width = data->texture.width;
-    int image_height = data->texture.height;
-
-    const qreal cx = x + 0.5;
-    const qreal cy = y + 0.5;
-
-    const uint *end = buffer + length;
-    uint *b = buffer;
-    if (data->fast_matrix) {
-        // The increment pr x in the scanline
-        int fdx = (int)(data->m11 * fixed_scale);
-        int fdy = (int)(data->m12 * fixed_scale);
-
-        int fx = int((data->m21 * cy + data->m11 * cx + data->dx) * fixed_scale);
-        int fy = int((data->m22 * cy + data->m12 * cx + data->dy) * fixed_scale);
-
-        fx -= half_point;
-        fy -= half_point;
-        while (b < end) {
-            int x1 = (fx >> 16);
-            int x2 = x1 + 1;
-            int y1 = (fy >> 16);
-            int y2 = y1 + 1;
-
-            int distx = ((fx - (x1 << 16)) >> 8);
-            int disty = ((fy - (y1 << 16)) >> 8);
-            int idistx = 256 - distx;
-            int idisty = 256 - disty;
-
-            x1 %= image_width;
-            x2 %= image_width;
-            y1 %= image_height;
-            y2 %= image_height;
-
-            if (x1 < 0) x1 += image_width;
-            if (x2 < 0) x2 += image_width;
-            if (y1 < 0) y1 += image_height;
-            if (y2 < 0) y2 += image_height;
-
-            Q_ASSERT(x1 >= 0 && x1 < image_width);
-            Q_ASSERT(x2 >= 0 && x2 < image_width);
-            Q_ASSERT(y1 >= 0 && y1 < image_height);
-            Q_ASSERT(y2 >= 0 && y2 < image_height);
-
-            const uchar *s1 = data->texture.scanLine(y1);
-            const uchar *s2 = data->texture.scanLine(y2);
-
-            uint tl = fetch(s1, x1, data->texture.colorTable);
-            uint tr = fetch(s1, x2, data->texture.colorTable);
-            uint bl = fetch(s2, x1, data->texture.colorTable);
-            uint br = fetch(s2, x2, data->texture.colorTable);
-
-            uint xtop = INTERPOLATE_PIXEL_256(tl, idistx, tr, distx);
-            uint xbot = INTERPOLATE_PIXEL_256(bl, idistx, br, distx);
-            *b = INTERPOLATE_PIXEL_256(xtop, idisty, xbot, disty);
-
-            fx += fdx;
-            fy += fdy;
-            ++b;
-        }
-    } else {
-        const qreal fdx = data->m11;
-        const qreal fdy = data->m12;
-        const qreal fdw = data->m13;
-
-        qreal fx = data->m21 * cy + data->m11 * cx + data->dx;
-        qreal fy = data->m22 * cy + data->m12 * cx + data->dy;
-        qreal fw = data->m23 * cy + data->m13 * cx + data->m33;
-
-        while (b < end) {
-            const qreal iw = fw == 0 ? 1 : 1 / fw;
-            const qreal px = fx * iw - 0.5;
-            const qreal py = fy * iw - 0.5;
-
-            int x1 = int(px) - (px < 0);
-            int x2 = x1 + 1;
-            int y1 = int(py) - (py < 0);
-            int y2 = y1 + 1;
-
-            int distx = int((px - x1) * 256);
-            int disty = int((py - y1) * 256);
-            int idistx = 256 - distx;
-            int idisty = 256 - disty;
-
-            x1 %= image_width;
-            x2 %= image_width;
-            y1 %= image_height;
-            y2 %= image_height;
-
-            if (x1 < 0) x1 += image_width;
-            if (x2 < 0) x2 += image_width;
-            if (y1 < 0) y1 += image_height;
-            if (y2 < 0) y2 += image_height;
-
-            Q_ASSERT(x1 >= 0 && x1 < image_width);
-            Q_ASSERT(x2 >= 0 && x2 < image_width);
-            Q_ASSERT(y1 >= 0 && y1 < image_height);
-            Q_ASSERT(y2 >= 0 && y2 < image_height);
-
-            const uchar *s1 = data->texture.scanLine(y1);
-            const uchar *s2 = data->texture.scanLine(y2);
-
-            uint tl = fetch(s1, x1, data->texture.colorTable);
-            uint tr = fetch(s1, x2, data->texture.colorTable);
-            uint bl = fetch(s2, x1, data->texture.colorTable);
-            uint br = fetch(s2, x2, data->texture.colorTable);
-
-            uint xtop = INTERPOLATE_PIXEL_256(tl, idistx, tr, distx);
-            uint xbot = INTERPOLATE_PIXEL_256(bl, idistx, br, distx);
-            *b = INTERPOLATE_PIXEL_256(xtop, idisty, xbot, disty);
-
-            fx += fdx;
-            fy += fdy;
-            fw += fdw;
-            //force increment to avoid /0
-            if (!fw) {
-                fw += fdw;
-            }
-            ++b;
-        }
-    }
-
-    return buffer;
-}
-
-#if defined(Q_CC_MSVC) && _MSC_VER <= 1300 && !defined(Q_CC_INTEL)
-
-// explicit template instantiations needed to compile with VC6 and VC2002
-
-#define SPANFUNC_POINTER_FETCHUNTRANSFORMED(Arg)  \
-        const uint *qt_fetchUntransformed_##Arg(uint *buffer, const Operator *op, const QSpanData *data, \
-                                             int y, int x, int length) \
-{ \
-        return qt_fetchUntransformed<QImage::Arg>(buffer, op, data, y, x, length Q_TEMPLATE_IMAGEFORMAT_CALL(QImage::Arg)); \
-}
-
-SPANFUNC_POINTER_FETCHUNTRANSFORMED(Format_Mono);
-SPANFUNC_POINTER_FETCHUNTRANSFORMED(Format_MonoLSB);
-SPANFUNC_POINTER_FETCHUNTRANSFORMED(Format_Indexed8);
-SPANFUNC_POINTER_FETCHUNTRANSFORMED(Format_ARGB32_Premultiplied);
-SPANFUNC_POINTER_FETCHUNTRANSFORMED(Format_ARGB32);
-SPANFUNC_POINTER_FETCHUNTRANSFORMED(Format_RGB16);
-SPANFUNC_POINTER_FETCHUNTRANSFORMED(Format_ARGB8565_Premultiplied);
-SPANFUNC_POINTER_FETCHUNTRANSFORMED(Format_RGB666);
-SPANFUNC_POINTER_FETCHUNTRANSFORMED(Format_ARGB6666_Premultiplied);
-SPANFUNC_POINTER_FETCHUNTRANSFORMED(Format_RGB555);
-SPANFUNC_POINTER_FETCHUNTRANSFORMED(Format_ARGB8555_Premultiplied);
-SPANFUNC_POINTER_FETCHUNTRANSFORMED(Format_RGB888);
-SPANFUNC_POINTER_FETCHUNTRANSFORMED(Format_RGB444);
-SPANFUNC_POINTER_FETCHUNTRANSFORMED(Format_ARGB4444_Premultiplied);
-
-#undef SPANFUNC_POINTER_FETCHUNTRANSFORMED
-
-#define SPANFUNC_POINTER_FETCHHUNTRANSFORMED(Arg) qt_fetchUntransformed_##Arg
-
-#else // !VC6 && !VC2002
-# define SPANFUNC_POINTER_FETCHHUNTRANSFORMED(Arg) qt_fetchUntransformed<QImage::Arg>
-#endif
+#define SPANFUNC_POINTER_FETCHHUNTRANSFORMED(Arg) qt_fetchUntransformed<QImage::Arg>
 
 static const SourceFetchProc sourceFetch[NBlendTypes][QImage::NImageFormats] = {
     // Untransformed
@@ -1135,75 +841,75 @@ static const SourceFetchProc sourceFetch[NBlendTypes][QImage::NImageFormats] = {
     // Transformed
     {
         0, // Invalid
-        fetchTransformed,   // Mono
-        fetchTransformed,   // MonoLsb
-        fetchTransformed,   // Indexed8
-        fetchTransformed,   // RGB32
-        fetchTransformed,   // ARGB32
-        fetchTransformed,   // ARGB32_Premultiplied
-        fetchTransformed,   // RGB16
-        fetchTransformed,   // ARGB8565_Premultiplied
-        fetchTransformed,   // RGB666
-        fetchTransformed,   // ARGB6666_Premultiplied
-        fetchTransformed,   // RGB555
-        fetchTransformed,   // ARGB8555_Premultiplied
-        fetchTransformed,   // RGB888
-        fetchTransformed,   // RGB444
-        fetchTransformed,   // ARGB4444_Premultiplied
+        fetchTransformed<BlendTransformed>,   // Mono
+        fetchTransformed<BlendTransformed>,   // MonoLsb
+        fetchTransformed<BlendTransformed>,   // Indexed8
+        fetchTransformed<BlendTransformed>,   // RGB32
+        fetchTransformed<BlendTransformed>,   // ARGB32
+        fetchTransformed<BlendTransformed>,   // ARGB32_Premultiplied
+        fetchTransformed<BlendTransformed>,   // RGB16
+        fetchTransformed<BlendTransformed>,   // ARGB8565_Premultiplied
+        fetchTransformed<BlendTransformed>,   // RGB666
+        fetchTransformed<BlendTransformed>,   // ARGB6666_Premultiplied
+        fetchTransformed<BlendTransformed>,   // RGB555
+        fetchTransformed<BlendTransformed>,   // ARGB8555_Premultiplied
+        fetchTransformed<BlendTransformed>,   // RGB888
+        fetchTransformed<BlendTransformed>,   // RGB444
+        fetchTransformed<BlendTransformed>,   // ARGB4444_Premultiplied
     },
     {
         0, // TransformedTiled
-        fetchTransformedTiled,   // Mono
-        fetchTransformedTiled,   // MonoLsb
-        fetchTransformedTiled,   // Indexed8
-        fetchTransformedTiled,   // RGB32
-        fetchTransformedTiled,   // ARGB32
-        fetchTransformedTiled,   // ARGB32_Premultiplied
-        fetchTransformedTiled,   // RGB16
-        fetchTransformedTiled,   // ARGB8565_Premultiplied
-        fetchTransformedTiled,   // RGB666
-        fetchTransformedTiled,   // ARGB6666_Premultiplied
-        fetchTransformedTiled,   // RGB555
-        fetchTransformedTiled,   // ARGB8555_Premultiplied
-        fetchTransformedTiled,   // RGB888
-        fetchTransformedTiled,   // RGB444
-        fetchTransformedTiled,   // ARGB4444_Premultiplied
+        fetchTransformed<BlendTransformedTiled>,   // Mono
+        fetchTransformed<BlendTransformedTiled>,   // MonoLsb
+        fetchTransformed<BlendTransformedTiled>,   // Indexed8
+        fetchTransformed<BlendTransformedTiled>,   // RGB32
+        fetchTransformed<BlendTransformedTiled>,   // ARGB32
+        fetchTransformed<BlendTransformedTiled>,   // ARGB32_Premultiplied
+        fetchTransformed<BlendTransformedTiled>,   // RGB16
+        fetchTransformed<BlendTransformedTiled>,   // ARGB8565_Premultiplied
+        fetchTransformed<BlendTransformedTiled>,   // RGB666
+        fetchTransformed<BlendTransformedTiled>,   // ARGB6666_Premultiplied
+        fetchTransformed<BlendTransformedTiled>,   // RGB555
+        fetchTransformed<BlendTransformedTiled>,   // ARGB8555_Premultiplied
+        fetchTransformed<BlendTransformedTiled>,   // RGB888
+        fetchTransformed<BlendTransformedTiled>,   // RGB444
+        fetchTransformed<BlendTransformedTiled>,   // ARGB4444_Premultiplied
     },
     {
         0, // Bilinear
-        fetchTransformedBilinear,   // Mono
-        fetchTransformedBilinear,   // MonoLsb
-        fetchTransformedBilinear,   // Indexed8
-        fetchTransformedBilinear,   // RGB32
-        fetchTransformedBilinear,   // ARGB32
-        fetchTransformedBilinear,   // ARGB32_Premultiplied
-        fetchTransformedBilinear,   // RGB16
-        fetchTransformedBilinear,   // ARGB8565_Premultiplied
-        fetchTransformedBilinear,   // RGB666
-        fetchTransformedBilinear,   // ARGB6666_Premultiplied
-        fetchTransformedBilinear,   // RGB555
-        fetchTransformedBilinear,   // ARGB8555_Premultiplied
-        fetchTransformedBilinear,   // RGB888
-        fetchTransformedBilinear,   // RGB444
-        fetchTransformedBilinear    // ARGB4444_Premultiplied
+        fetchTransformedBilinear<BlendTransformedBilinear, QImage::Format_Invalid>,   // Mono
+        fetchTransformedBilinear<BlendTransformedBilinear, QImage::Format_Invalid>,   // MonoLsb
+        fetchTransformedBilinear<BlendTransformedBilinear, QImage::Format_Invalid>,   // Indexed8
+        fetchTransformedBilinear<BlendTransformedBilinear, QImage::Format_ARGB32_Premultiplied>,   // RGB32
+        fetchTransformedBilinear<BlendTransformedBilinear, QImage::Format_ARGB32>,   // ARGB32
+        fetchTransformedBilinear<BlendTransformedBilinear, QImage::Format_ARGB32_Premultiplied>,   // ARGB32_Premultiplied
+        fetchTransformedBilinear<BlendTransformedBilinear, QImage::Format_Invalid>,   // RGB16
+        fetchTransformedBilinear<BlendTransformedBilinear, QImage::Format_Invalid>,   // ARGB8565_Premultiplied
+        fetchTransformedBilinear<BlendTransformedBilinear, QImage::Format_Invalid>,   // RGB666
+        fetchTransformedBilinear<BlendTransformedBilinear, QImage::Format_Invalid>,   // ARGB6666_Premultiplied
+        fetchTransformedBilinear<BlendTransformedBilinear, QImage::Format_Invalid>,   // RGB555
+        fetchTransformedBilinear<BlendTransformedBilinear, QImage::Format_Invalid>,   // ARGB8555_Premultiplied
+        fetchTransformedBilinear<BlendTransformedBilinear, QImage::Format_Invalid>,   // RGB888
+        fetchTransformedBilinear<BlendTransformedBilinear, QImage::Format_Invalid>,   // RGB444
+        fetchTransformedBilinear<BlendTransformedBilinear, QImage::Format_Invalid>    // ARGB4444_Premultiplied
     },
     {
         0, // BilinearTiled
-        fetchTransformedBilinearTiled,   // Mono
-        fetchTransformedBilinearTiled,   // MonoLsb
-        fetchTransformedBilinearTiled,   // Indexed8
-        fetchTransformedBilinearTiled,   // RGB32
-        fetchTransformedBilinearTiled,   // ARGB32
-        fetchTransformedBilinearTiled,   // ARGB32_Premultiplied
-        fetchTransformedBilinearTiled,   // RGB16
-        fetchTransformedBilinearTiled,   // ARGB8565_Premultiplied
-        fetchTransformedBilinearTiled,   // RGB666
-        fetchTransformedBilinearTiled,   // ARGB6666_Premultiplied
-        fetchTransformedBilinearTiled,   // RGB555
-        fetchTransformedBilinearTiled,   // ARGB8555_Premultiplied
-        fetchTransformedBilinearTiled,   // RGB888
-        fetchTransformedBilinearTiled,   // RGB444
-        fetchTransformedBilinearTiled    // ARGB4444_Premultiplied
+        fetchTransformedBilinear<BlendTransformedBilinearTiled, QImage::Format_Invalid>,   // Mono
+        fetchTransformedBilinear<BlendTransformedBilinearTiled, QImage::Format_Invalid>,   // MonoLsb
+        fetchTransformedBilinear<BlendTransformedBilinearTiled, QImage::Format_Invalid>,   // Indexed8
+        fetchTransformedBilinear<BlendTransformedBilinearTiled, QImage::Format_ARGB32_Premultiplied>,   // RGB32
+        fetchTransformedBilinear<BlendTransformedBilinearTiled, QImage::Format_ARGB32>,   // ARGB32
+        fetchTransformedBilinear<BlendTransformedBilinearTiled, QImage::Format_ARGB32_Premultiplied>,   // ARGB32_Premultiplied
+        fetchTransformedBilinear<BlendTransformedBilinearTiled, QImage::Format_Invalid>,   // RGB16
+        fetchTransformedBilinear<BlendTransformedBilinearTiled, QImage::Format_Invalid>,   // ARGB8565_Premultiplied
+        fetchTransformedBilinear<BlendTransformedBilinearTiled, QImage::Format_Invalid>,   // RGB666
+        fetchTransformedBilinear<BlendTransformedBilinearTiled, QImage::Format_Invalid>,   // ARGB6666_Premultiplied
+        fetchTransformedBilinear<BlendTransformedBilinearTiled, QImage::Format_Invalid>,   // RGB555
+        fetchTransformedBilinear<BlendTransformedBilinearTiled, QImage::Format_Invalid>,   // ARGB8555_Premultiplied
+        fetchTransformedBilinear<BlendTransformedBilinearTiled, QImage::Format_Invalid>,   // RGB888
+        fetchTransformedBilinear<BlendTransformedBilinearTiled, QImage::Format_Invalid>,   // RGB444
+        fetchTransformedBilinear<BlendTransformedBilinearTiled, QImage::Format_Invalid>    // ARGB4444_Premultiplied
     },
 };
 
@@ -3219,8 +2925,7 @@ static void blend_color_argb(int count, const QSpan *spans, void *userData)
 }
 
 template <class T>
-Q_STATIC_TEMPLATE_FUNCTION void blendColor(int count, const QSpan *spans, void *userData
-                       Q_TEMPLATE_FIX(T))
+Q_STATIC_TEMPLATE_FUNCTION void blendColor(int count, const QSpan *spans, void *userData)
 {
     QSpanData *data = reinterpret_cast<QSpanData *>(userData);
     Operator op = getOperator(data, spans, count);
@@ -3266,28 +2971,7 @@ Q_STATIC_TEMPLATE_FUNCTION void blendColor(int count, const QSpan *spans, void *
     blend_color_generic(count, spans, userData);
 }
 
-#if defined(Q_CC_MSVC) && _MSC_VER <= 1300 && !defined(Q_CC_INTEL)
-#define BLEND_COLOR_DECL(DST)                                           \
-    static void blendColor_##DST(int count,                             \
-                                 const QSpan *spans,                    \
-                                 void *userData)                        \
-    {                                                                   \
-        blendColor<DST>(count, spans, userData Q_TEMPLATE_CALL(DST));   \
-    }
-
-BLEND_COLOR_DECL(qargb8565)
-BLEND_COLOR_DECL(qrgb666)
-BLEND_COLOR_DECL(qargb6666)
-BLEND_COLOR_DECL(qrgb555)
-BLEND_COLOR_DECL(qargb8555)
-BLEND_COLOR_DECL(qrgb888)
-BLEND_COLOR_DECL(qrgb444)
-BLEND_COLOR_DECL(qargb4444)
-#undef DEST_FETCH_DECL
-#define SPANFUNC_POINTER_BLENDCOLOR(DST) blendColor_##DST
-#else // !VC6 && !VC2002
-# define SPANFUNC_POINTER_BLENDCOLOR(DST) blendColor<DST>
-#endif
+#define SPANFUNC_POINTER_BLENDCOLOR(DST) blendColor<DST>
 
 static void blend_color_rgb16(int count, const QSpan *spans, void *userData)
 {
@@ -3365,45 +3049,117 @@ static void blend_color_rgb16(int count, const QSpan *spans, void *userData)
     blend_color_generic(count, spans, userData);
 }
 
-template <SpanMethod spanMethod>
-Q_STATIC_TEMPLATE_FUNCTION void blend_src_generic(int count, const QSpan *spans, void *userData
-                              Q_TEMPLATE_ENUM_FIX(SpanMethod, spanMethod))
+template <typename T>
+void handleSpans(int count, const QSpan *spans, const QSpanData *data, T &handler)
 {
-    QSpanData *data = reinterpret_cast<QSpanData *>(userData);
-
-    uint buffer[buffer_size];
-    uint src_buffer[buffer_size];
-    Operator op = getOperator(data, spans, count);
-
     uint const_alpha = 256;
     if (data->type == QSpanData::Texture)
         const_alpha = data->texture.const_alpha;
 
-    while (count--) {
+    int coverage = 0;
+    while (count) {
         int x = spans->x;
-        int length = spans->len;
-        const int coverage = (spans->coverage * const_alpha) >> 8;
+        const int y = spans->y;
+        int right = x + spans->len;
+
+        // compute length of adjacent spans
+        for (int i = 1; i < count && spans[i].y == y && spans[i].x == right; ++i)
+            right += spans[i].len;
+        int length = right - x;
+
         while (length) {
             int l = qMin(buffer_size, length);
-            const uint *src = op.src_fetch(src_buffer, &op, data, spans->y, x, l);
-            if (spanMethod == RegularSpans) {
-                uint *dest = op.dest_fetch ? op.dest_fetch(buffer, data->rasterBuffer, x, spans->y, l) : buffer;
-                op.func(dest, src, l, coverage);
-                if (op.dest_store)
-                    op.dest_store(data->rasterBuffer, x, spans->y, dest, l);
-            } else {
-                drawBufferSpan(data, src, l, x, spans->y, l, coverage);
-            }
-            x += l;
             length -= l;
+
+            int process_length = l;
+            int process_x = x;
+
+            const uint *src = handler.fetch(process_x, y, process_length);
+            int offset = 0;
+            while (l > 0) {
+                if (x == spans->x) // new span?
+                    coverage = (spans->coverage * const_alpha) >> 8;
+
+                int right = spans->x + spans->len;
+                int len = qMin(l, right - x);
+
+                handler.process(x, y, len, coverage, src, offset);
+
+                l -= len;
+                x += len;
+                offset += len;
+
+                if (x == right) { // done with current span?
+                    ++spans;
+                    --count;
+                }
+            }
+            handler.store(process_x, y, process_length);
         }
-        ++spans;
     }
 }
 
+struct QBlendBase
+{
+    QBlendBase(QSpanData *d, Operator o)
+        : data(d)
+        , op(o)
+        , dest(0)
+    {
+    }
+
+    QSpanData *data;
+    Operator op;
+
+    uint *dest;
+
+    uint buffer[buffer_size];
+    uint src_buffer[buffer_size];
+};
+
 template <SpanMethod spanMethod>
-Q_STATIC_TEMPLATE_FUNCTION void blend_untransformed_generic(int count, const QSpan *spans, void *userData
-                                        Q_TEMPLATE_ENUM_FIX(SpanMethod, spanMethod))
+class BlendSrcGeneric : public QBlendBase
+{
+public:
+    BlendSrcGeneric(QSpanData *d, Operator o)
+        : QBlendBase(d, o)
+    {
+    }
+
+    const uint *fetch(int x, int y, int len)
+    {
+        if (spanMethod == RegularSpans)
+            dest = op.dest_fetch ? op.dest_fetch(buffer, data->rasterBuffer, x, y, len) : buffer;
+
+        return op.src_fetch(src_buffer, &op, data, y, x, len);
+    }
+
+    void process(int x, int y, int len, int coverage, const uint *src, int offset)
+    {
+        if (spanMethod == RegularSpans)
+            op.func(dest + offset, src + offset, len, coverage);
+        else
+            drawBufferSpan(data, src + offset, len, x, y, len, coverage);
+    }
+
+    void store(int x, int y, int len)
+    {
+        if (spanMethod == RegularSpans && op.dest_store) {
+            op.dest_store(data->rasterBuffer, x, y, dest, len);
+        }
+    }
+};
+
+template <SpanMethod spanMethod>
+Q_STATIC_TEMPLATE_FUNCTION void blend_src_generic(int count, const QSpan *spans, void *userData)
+{
+    QSpanData *data = reinterpret_cast<QSpanData *>(userData);
+    BlendSrcGeneric<spanMethod> blend(data, getOperator(data, spans, count));
+    handleSpans(count, spans, data, blend);
+}
+
+template <SpanMethod spanMethod>
+Q_STATIC_TEMPLATE_FUNCTION void blend_untransformed_generic(int count, const QSpan *spans, void *userData)
 {
     QSpanData *data = reinterpret_cast<QSpanData *>(userData);
 
@@ -3454,13 +3210,12 @@ Q_STATIC_TEMPLATE_FUNCTION void blend_untransformed_generic(int count, const QSp
 }
 
 template <SpanMethod spanMethod>
-Q_STATIC_TEMPLATE_FUNCTION void blend_untransformed_argb(int count, const QSpan *spans, void *userData
-                                     Q_TEMPLATE_ENUM_FIX(SpanMethod, spanMethod))
+Q_STATIC_TEMPLATE_FUNCTION void blend_untransformed_argb(int count, const QSpan *spans, void *userData)
 {
     QSpanData *data = reinterpret_cast<QSpanData *>(userData);
     if (data->texture.format != QImage::Format_ARGB32_Premultiplied
         && data->texture.format != QImage::Format_RGB32) {
-        blend_untransformed_generic<spanMethod>(count, spans, userData Q_TEMPLATE_ENUM_CALL(SpanMethod, spanMethod));
+        blend_untransformed_generic<spanMethod>(count, spans, userData);
         return;
     }
 
@@ -4706,8 +4461,7 @@ void QT_FASTCALL blendUntransformed(int count, const QSpan *spans, void *userDat
     if (mode != QPainter::CompositionMode_SourceOver &&
         mode != QPainter::CompositionMode_Source)
     {
-        blend_src_generic<RegularSpans>(count, spans, userData
-                                        Q_TEMPLATE_ENUM_CALL(SpanMethod, RegularSpans));
+        blend_src_generic<RegularSpans>(count, spans, userData);
         return;
     }
 
@@ -4769,8 +4523,7 @@ static void blend_untransformed_rgb888(int count, const QSpan *spans,
         blendUntransformed<qrgb888, qrgb888>(count, spans, userData);
     else
 #endif
-        blend_untransformed_generic<RegularSpans>(count, spans, userData
-                                                  Q_TEMPLATE_ENUM_CALL(SpanMethod, RegularSpans));
+        blend_untransformed_generic<RegularSpans>(count, spans, userData);
 }
 
 static void blend_untransformed_argb6666(int count, const QSpan *spans,
@@ -4785,8 +4538,7 @@ static void blend_untransformed_argb6666(int count, const QSpan *spans,
         blendUntransformed<qargb6666, qrgb666>(count, spans, userData);
     else
 #endif
-        blend_untransformed_generic<RegularSpans>(count, spans, userData
-                                                  Q_TEMPLATE_ENUM_CALL(SpanMethod, RegularSpans));
+        blend_untransformed_generic<RegularSpans>(count, spans, userData);
 }
 
 static void blend_untransformed_rgb666(int count, const QSpan *spans,
@@ -4801,8 +4553,7 @@ static void blend_untransformed_rgb666(int count, const QSpan *spans,
         blendUntransformed<qrgb666, qrgb666>(count, spans, userData);
     else
 #endif
-        blend_untransformed_generic<RegularSpans>(count, spans, userData
-                                                  Q_TEMPLATE_ENUM_CALL(SpanMethod, RegularSpans));
+        blend_untransformed_generic<RegularSpans>(count, spans, userData);
 }
 
 static void blend_untransformed_argb8565(int count, const QSpan *spans,
@@ -4817,8 +4568,7 @@ static void blend_untransformed_argb8565(int count, const QSpan *spans,
         blendUntransformed<qargb8565, qrgb565>(count, spans, userData);
     else
 #endif
-        blend_untransformed_generic<RegularSpans>(count, spans, userData
-                                                  Q_TEMPLATE_ENUM_CALL(SpanMethod, RegularSpans));
+        blend_untransformed_generic<RegularSpans>(count, spans, userData);
 }
 
 static void blend_untransformed_rgb565(int count, const QSpan *spans,
@@ -4833,8 +4583,7 @@ static void blend_untransformed_rgb565(int count, const QSpan *spans,
         blendUntransformed<qrgb565, qrgb565>(count, spans, userData);
     else
 #endif
-        blend_untransformed_generic<RegularSpans>(count, spans, userData
-                                                  Q_TEMPLATE_ENUM_CALL(SpanMethod, RegularSpans));
+        blend_untransformed_generic<RegularSpans>(count, spans, userData);
 }
 
 static void blend_untransformed_argb8555(int count, const QSpan *spans,
@@ -4849,8 +4598,7 @@ static void blend_untransformed_argb8555(int count, const QSpan *spans,
         blendUntransformed<qargb8555, qrgb555>(count, spans, userData);
     else
 #endif
-        blend_untransformed_generic<RegularSpans>(count, spans, userData
-                                                  Q_TEMPLATE_ENUM_CALL(SpanMethod, RegularSpans));
+        blend_untransformed_generic<RegularSpans>(count, spans, userData);
 }
 
 static void blend_untransformed_rgb555(int count, const QSpan *spans,
@@ -4865,8 +4613,7 @@ static void blend_untransformed_rgb555(int count, const QSpan *spans,
         blendUntransformed<qrgb555, qrgb555>(count, spans, userData);
     else
 #endif
-        blend_untransformed_generic<RegularSpans>(count, spans, userData
-                                                  Q_TEMPLATE_ENUM_CALL(SpanMethod, RegularSpans));
+        blend_untransformed_generic<RegularSpans>(count, spans, userData);
 }
 
 static void blend_untransformed_argb4444(int count, const QSpan *spans,
@@ -4881,8 +4628,7 @@ static void blend_untransformed_argb4444(int count, const QSpan *spans,
         blendUntransformed<qargb4444, qrgb444>(count, spans, userData);
     else
 #endif
-        blend_untransformed_generic<RegularSpans>(count, spans, userData
-                                                  Q_TEMPLATE_ENUM_CALL(SpanMethod, RegularSpans));
+        blend_untransformed_generic<RegularSpans>(count, spans, userData);
 }
 
 static void blend_untransformed_rgb444(int count, const QSpan *spans,
@@ -4897,13 +4643,11 @@ static void blend_untransformed_rgb444(int count, const QSpan *spans,
         blendUntransformed<qrgb444, qrgb444>(count, spans, userData);
     else
 #endif
-        blend_untransformed_generic<RegularSpans>(count, spans, userData
-                                                  Q_TEMPLATE_ENUM_CALL(SpanMethod, RegularSpans));
+        blend_untransformed_generic<RegularSpans>(count, spans, userData);
 }
 
 template <SpanMethod spanMethod>
-Q_STATIC_TEMPLATE_FUNCTION void blend_tiled_generic(int count, const QSpan *spans, void *userData
-                                Q_TEMPLATE_ENUM_FIX(SpanMethod, spanMethod))
+Q_STATIC_TEMPLATE_FUNCTION void blend_tiled_generic(int count, const QSpan *spans, void *userData)
 {
     QSpanData *data = reinterpret_cast<QSpanData *>(userData);
 
@@ -4957,13 +4701,12 @@ Q_STATIC_TEMPLATE_FUNCTION void blend_tiled_generic(int count, const QSpan *span
 }
 
 template <SpanMethod spanMethod>
-Q_STATIC_TEMPLATE_FUNCTION void blend_tiled_argb(int count, const QSpan *spans, void *userData
-                             Q_TEMPLATE_ENUM_FIX(SpanMethod, spanMethod))
+Q_STATIC_TEMPLATE_FUNCTION void blend_tiled_argb(int count, const QSpan *spans, void *userData)
 {
     QSpanData *data = reinterpret_cast<QSpanData *>(userData);
     if (data->texture.format != QImage::Format_ARGB32_Premultiplied
         && data->texture.format != QImage::Format_RGB32) {
-        blend_tiled_generic<spanMethod>(count, spans, userData Q_TEMPLATE_ENUM_CALL(SpanMethod, spanMethod));
+        blend_tiled_generic<spanMethod>(count, spans, userData);
         return;
     }
 
@@ -5019,8 +4762,7 @@ Q_STATIC_TEMPLATE_FUNCTION void blendTiled(int count, const QSpan *spans, void *
     if (mode != QPainter::CompositionMode_SourceOver &&
         mode != QPainter::CompositionMode_Source)
     {
-        blend_src_generic<RegularSpans>(count, spans, userData
-                                        Q_TEMPLATE_ENUM_CALL(SpanMethod, RegularSpans));
+        blend_src_generic<RegularSpans>(count, spans, userData);
         return;
     }
 
@@ -5090,8 +4832,7 @@ static void blend_tiled_rgb888(int count, const QSpan *spans, void *userData)
         blendTiled<qrgb888, qrgb888>(count, spans, userData);
     else
 #endif
-        blend_tiled_generic<RegularSpans>(count, spans, userData
-                                          Q_TEMPLATE_ENUM_CALL(SpanMethod, RegularSpans));
+        blend_tiled_generic<RegularSpans>(count, spans, userData);
 }
 
 static void blend_tiled_argb6666(int count, const QSpan *spans, void *userData)
@@ -5105,8 +4846,7 @@ static void blend_tiled_argb6666(int count, const QSpan *spans, void *userData)
         blendTiled<qargb6666, qrgb666>(count, spans, userData);
     else
 #endif
-        blend_tiled_generic<RegularSpans>(count, spans, userData
-                                          Q_TEMPLATE_ENUM_CALL(SpanMethod, RegularSpans));
+        blend_tiled_generic<RegularSpans>(count, spans, userData);
 }
 
 static void blend_tiled_rgb666(int count, const QSpan *spans, void *userData)
@@ -5120,8 +4860,7 @@ static void blend_tiled_rgb666(int count, const QSpan *spans, void *userData)
         blendTiled<qrgb666, qrgb666>(count, spans, userData);
     else
 #endif
-        blend_tiled_generic<RegularSpans>(count, spans, userData
-                                          Q_TEMPLATE_ENUM_CALL(SpanMethod, RegularSpans));
+        blend_tiled_generic<RegularSpans>(count, spans, userData);
 }
 
 static void blend_tiled_argb8565(int count, const QSpan *spans, void *userData)
@@ -5135,8 +4874,7 @@ static void blend_tiled_argb8565(int count, const QSpan *spans, void *userData)
         blendTiled<qargb8565, qrgb565>(count, spans, userData);
     else
 #endif
-        blend_tiled_generic<RegularSpans>(count, spans, userData
-                                          Q_TEMPLATE_ENUM_CALL(SpanMethod, RegularSpans));
+        blend_tiled_generic<RegularSpans>(count, spans, userData);
 }
 
 static void blend_tiled_rgb565(int count, const QSpan *spans, void *userData)
@@ -5150,8 +4888,7 @@ static void blend_tiled_rgb565(int count, const QSpan *spans, void *userData)
         blendTiled<qrgb565, qrgb565>(count, spans, userData);
     else
 #endif
-        blend_tiled_generic<RegularSpans>(count, spans, userData
-                                          Q_TEMPLATE_ENUM_CALL(SpanMethod, RegularSpans));
+        blend_tiled_generic<RegularSpans>(count, spans, userData);
 }
 
 static void blend_tiled_argb8555(int count, const QSpan *spans, void *userData)
@@ -5165,8 +4902,7 @@ static void blend_tiled_argb8555(int count, const QSpan *spans, void *userData)
         blendTiled<qargb8555, qrgb555>(count, spans, userData);
     else
 #endif
-        blend_tiled_generic<RegularSpans>(count, spans, userData
-                                          Q_TEMPLATE_ENUM_CALL(SpanMethod, RegularSpans));
+        blend_tiled_generic<RegularSpans>(count, spans, userData);
 }
 
 static void blend_tiled_rgb555(int count, const QSpan *spans, void *userData)
@@ -5180,8 +4916,7 @@ static void blend_tiled_rgb555(int count, const QSpan *spans, void *userData)
         blendTiled<qrgb555, qrgb555>(count, spans, userData);
     else
 #endif
-        blend_tiled_generic<RegularSpans>(count, spans, userData
-                                          Q_TEMPLATE_ENUM_CALL(SpanMethod, RegularSpans));
+        blend_tiled_generic<RegularSpans>(count, spans, userData);
 }
 
 static void blend_tiled_argb4444(int count, const QSpan *spans, void *userData)
@@ -5195,8 +4930,7 @@ static void blend_tiled_argb4444(int count, const QSpan *spans, void *userData)
         blendTiled<qargb4444, qrgb444>(count, spans, userData);
     else
 #endif
-        blend_tiled_generic<RegularSpans>(count, spans, userData
-                                          Q_TEMPLATE_ENUM_CALL(SpanMethod, RegularSpans));
+        blend_tiled_generic<RegularSpans>(count, spans, userData);
 }
 
 static void blend_tiled_rgb444(int count, const QSpan *spans, void *userData)
@@ -5210,19 +4944,17 @@ static void blend_tiled_rgb444(int count, const QSpan *spans, void *userData)
         blendTiled<qrgb444, qrgb444>(count, spans, userData);
     else
 #endif
-        blend_tiled_generic<RegularSpans>(count, spans, userData
-                                          Q_TEMPLATE_ENUM_CALL(SpanMethod, RegularSpans));
+        blend_tiled_generic<RegularSpans>(count, spans, userData);
 }
 
 
 template <SpanMethod spanMethod>
-Q_STATIC_TEMPLATE_FUNCTION void blend_transformed_bilinear_argb(int count, const QSpan *spans, void *userData
-                                            Q_TEMPLATE_ENUM_FIX(SpanMethod, spanMethod))
+Q_STATIC_TEMPLATE_FUNCTION void blend_transformed_bilinear_argb(int count, const QSpan *spans, void *userData)
 {
     QSpanData *data = reinterpret_cast<QSpanData *>(userData);
     if (data->texture.format != QImage::Format_ARGB32_Premultiplied
         && data->texture.format != QImage::Format_RGB32) {
-        blend_src_generic<spanMethod>(count, spans, userData Q_TEMPLATE_ENUM_CALL(SpanMethod, spanMethod));
+        blend_src_generic<spanMethod>(count, spans, userData);
         return;
     }
 
@@ -5401,8 +5133,7 @@ Q_STATIC_TEMPLATE_FUNCTION void blendTransformedBilinear(int count, const QSpan 
 
 
     if (mode != QPainter::CompositionMode_SourceOver) {
-        blend_src_generic<RegularSpans>(count, spans, userData
-                                        Q_TEMPLATE_ENUM_CALL(SpanMethod, RegularSpans));
+        blend_src_generic<RegularSpans>(count, spans, userData);
         return;
     }
 
@@ -5605,8 +5336,7 @@ static void blend_transformed_bilinear_rgb888(int count, const QSpan *spans, voi
         blendTransformedBilinear<qrgb888, qrgb888>(count, spans, userData);
     else
 #endif
-        blend_src_generic<RegularSpans>(count, spans, userData
-                                        Q_TEMPLATE_ENUM_CALL(SpanMethod, RegularSpans));
+        blend_src_generic<RegularSpans>(count, spans, userData);
 }
 
 static void blend_transformed_bilinear_argb6666(int count, const QSpan *spans, void *userData)
@@ -5620,8 +5350,7 @@ static void blend_transformed_bilinear_argb6666(int count, const QSpan *spans, v
         blendTransformedBilinear<qargb6666, qrgb666>(count, spans, userData);
     else
 #endif
-        blend_src_generic<RegularSpans>(count, spans, userData
-                                        Q_TEMPLATE_ENUM_CALL(SpanMethod, RegularSpans));
+        blend_src_generic<RegularSpans>(count, spans, userData);
 }
 
 static void blend_transformed_bilinear_rgb666(int count, const QSpan *spans, void *userData)
@@ -5635,8 +5364,7 @@ static void blend_transformed_bilinear_rgb666(int count, const QSpan *spans, voi
         blendTransformedBilinear<qrgb666, qrgb666>(count, spans, userData);
     else
 #endif
-        blend_src_generic<RegularSpans>(count, spans, userData
-                                        Q_TEMPLATE_ENUM_CALL(SpanMethod, RegularSpans));
+        blend_src_generic<RegularSpans>(count, spans, userData);
 }
 
 static void blend_transformed_bilinear_argb8565(int count, const QSpan *spans, void *userData)
@@ -5650,8 +5378,7 @@ static void blend_transformed_bilinear_argb8565(int count, const QSpan *spans, v
         blendTransformedBilinear<qargb8565, qrgb565>(count, spans, userData);
     else
 #endif
-        blend_src_generic<RegularSpans>(count, spans, userData
-                                        Q_TEMPLATE_ENUM_CALL(SpanMethod, RegularSpans));
+        blend_src_generic<RegularSpans>(count, spans, userData);
 }
 
 static void blend_transformed_bilinear_rgb565(int count, const QSpan *spans,
@@ -5666,8 +5393,7 @@ static void blend_transformed_bilinear_rgb565(int count, const QSpan *spans,
         blendTransformedBilinear<qrgb565, qargb8565>(count, spans, userData);
     else
 #endif
-        blend_src_generic<RegularSpans>(count, spans, userData
-                                        Q_TEMPLATE_ENUM_CALL(SpanMethod, RegularSpans));
+        blend_src_generic<RegularSpans>(count, spans, userData);
 }
 
 static void blend_transformed_bilinear_argb8555(int count, const QSpan *spans, void *userData)
@@ -5681,8 +5407,7 @@ static void blend_transformed_bilinear_argb8555(int count, const QSpan *spans, v
         blendTransformedBilinear<qargb8555, qrgb555>(count, spans, userData);
     else
 #endif
-        blend_src_generic<RegularSpans>(count, spans, userData
-                                        Q_TEMPLATE_ENUM_CALL(SpanMethod, RegularSpans));
+        blend_src_generic<RegularSpans>(count, spans, userData);
 }
 
 static void blend_transformed_bilinear_rgb555(int count, const QSpan *spans, void *userData)
@@ -5696,8 +5421,7 @@ static void blend_transformed_bilinear_rgb555(int count, const QSpan *spans, voi
         blendTransformedBilinear<qrgb555, qrgb555>(count, spans, userData);
     else
 #endif
-        blend_src_generic<RegularSpans>(count, spans, userData
-                                        Q_TEMPLATE_ENUM_CALL(SpanMethod, RegularSpans));
+        blend_src_generic<RegularSpans>(count, spans, userData);
 }
 
 static void blend_transformed_bilinear_argb4444(int count, const QSpan *spans, void *userData)
@@ -5711,8 +5435,7 @@ static void blend_transformed_bilinear_argb4444(int count, const QSpan *spans, v
         blendTransformedBilinear<qargb4444, qrgb444>(count, spans, userData);
     else
 #endif
-        blend_src_generic<RegularSpans>(count, spans, userData
-                                        Q_TEMPLATE_ENUM_CALL(SpanMethod, RegularSpans));
+        blend_src_generic<RegularSpans>(count, spans, userData);
 }
 
 static void blend_transformed_bilinear_rgb444(int count, const QSpan *spans, void *userData)
@@ -5726,18 +5449,16 @@ static void blend_transformed_bilinear_rgb444(int count, const QSpan *spans, voi
         blendTransformedBilinear<qrgb444, qrgb444>(count, spans, userData);
     else
 #endif
-        blend_src_generic<RegularSpans>(count, spans, userData
-                                        Q_TEMPLATE_ENUM_CALL(SpanMethod, RegularSpans));
+        blend_src_generic<RegularSpans>(count, spans, userData);
 }
 
 template <SpanMethod spanMethod>
-Q_STATIC_TEMPLATE_FUNCTION void blend_transformed_bilinear_tiled_argb(int count, const QSpan *spans, void *userData
-                                                  Q_TEMPLATE_ENUM_FIX(SpanMethod, spanMethod))
+Q_STATIC_TEMPLATE_FUNCTION void blend_transformed_bilinear_tiled_argb(int count, const QSpan *spans, void *userData)
 {
     QSpanData *data = reinterpret_cast<QSpanData *>(userData);
     if (data->texture.format != QImage::Format_ARGB32_Premultiplied
         && data->texture.format != QImage::Format_RGB32) {
-        blend_src_generic<spanMethod>(count, spans, userData Q_TEMPLATE_ENUM_CALL(SpanMethod, spanMethod));
+        blend_src_generic<spanMethod>(count, spans, userData);
         return;
     }
 
@@ -5923,13 +5644,12 @@ Q_STATIC_TEMPLATE_FUNCTION void blend_transformed_bilinear_tiled_argb(int count,
 }
 
 template <SpanMethod spanMethod>
-Q_STATIC_TEMPLATE_FUNCTION void blend_transformed_argb(int count, const QSpan *spans, void *userData
-                                   Q_TEMPLATE_ENUM_FIX(SpanMethod, spanMethod))
+Q_STATIC_TEMPLATE_FUNCTION void blend_transformed_argb(int count, const QSpan *spans, void *userData)
 {
     QSpanData *data = reinterpret_cast<QSpanData *>(userData);
     if (data->texture.format != QImage::Format_ARGB32_Premultiplied
         && data->texture.format != QImage::Format_RGB32) {
-        blend_src_generic<spanMethod>(count, spans, userData Q_TEMPLATE_ENUM_CALL(SpanMethod, spanMethod));
+        blend_src_generic<spanMethod>(count, spans, userData);
         return;
     }
 
@@ -6051,8 +5771,7 @@ Q_STATIC_TEMPLATE_FUNCTION void blendTransformed(int count, const QSpan *spans, 
     QPainter::CompositionMode mode = data->rasterBuffer->compositionMode;
 
     if (mode != QPainter::CompositionMode_SourceOver) {
-        blend_src_generic<RegularSpans>(count, spans, userData
-                                        Q_TEMPLATE_ENUM_CALL(SpanMethod, RegularSpans));
+        blend_src_generic<RegularSpans>(count, spans, userData);
         return;
     }
 
@@ -6201,8 +5920,7 @@ static void blend_transformed_rgb888(int count, const QSpan *spans,
         blendTransformed<qrgb888, qrgb888>(count, spans, userData);
     else
 #endif
-        blend_src_generic<RegularSpans>(count, spans, userData
-                                        Q_TEMPLATE_ENUM_CALL(SpanMethod, RegularSpans));
+        blend_src_generic<RegularSpans>(count, spans, userData);
 }
 
 static void blend_transformed_argb6666(int count, const QSpan *spans,
@@ -6217,8 +5935,7 @@ static void blend_transformed_argb6666(int count, const QSpan *spans,
         blendTransformed<qargb6666, qrgb666>(count, spans, userData);
     else
 #endif
-        blend_src_generic<RegularSpans>(count, spans, userData
-                                        Q_TEMPLATE_ENUM_CALL(SpanMethod, RegularSpans));
+        blend_src_generic<RegularSpans>(count, spans, userData);
 }
 
 static void blend_transformed_rgb666(int count, const QSpan *spans,
@@ -6233,8 +5950,7 @@ static void blend_transformed_rgb666(int count, const QSpan *spans,
         blendTransformed<qrgb666, qrgb666>(count, spans, userData);
     else
 #endif
-        blend_src_generic<RegularSpans>(count, spans, userData
-                                        Q_TEMPLATE_ENUM_CALL(SpanMethod, RegularSpans));
+        blend_src_generic<RegularSpans>(count, spans, userData);
 }
 
 static void blend_transformed_argb8565(int count, const QSpan *spans,
@@ -6249,8 +5965,7 @@ static void blend_transformed_argb8565(int count, const QSpan *spans,
         blendTransformed<qargb8565, qrgb565>(count, spans, userData);
     else
 #endif
-        blend_src_generic<RegularSpans>(count, spans, userData
-                                        Q_TEMPLATE_ENUM_CALL(SpanMethod, RegularSpans));
+        blend_src_generic<RegularSpans>(count, spans, userData);
 }
 
 static void blend_transformed_rgb565(int count, const QSpan *spans,
@@ -6265,8 +5980,7 @@ static void blend_transformed_rgb565(int count, const QSpan *spans,
         blendTransformed<qrgb565, qrgb565>(count, spans, userData);
     else
 #endif
-        blend_src_generic<RegularSpans>(count, spans, userData
-                                        Q_TEMPLATE_ENUM_CALL(SpanMethod, RegularSpans));
+        blend_src_generic<RegularSpans>(count, spans, userData);
 }
 
 static void blend_transformed_argb8555(int count, const QSpan *spans,
@@ -6281,8 +5995,7 @@ static void blend_transformed_argb8555(int count, const QSpan *spans,
         blendTransformed<qargb8555, qrgb555>(count, spans, userData);
     else
 #endif
-        blend_src_generic<RegularSpans>(count, spans, userData
-                                        Q_TEMPLATE_ENUM_CALL(SpanMethod, RegularSpans));
+        blend_src_generic<RegularSpans>(count, spans, userData);
 }
 
 static void blend_transformed_rgb555(int count, const QSpan *spans,
@@ -6297,8 +6010,7 @@ static void blend_transformed_rgb555(int count, const QSpan *spans,
         blendTransformed<qrgb555, qrgb555>(count, spans, userData);
     else
 #endif
-        blend_src_generic<RegularSpans>(count, spans, userData
-                                        Q_TEMPLATE_ENUM_CALL(SpanMethod, RegularSpans));
+        blend_src_generic<RegularSpans>(count, spans, userData);
 }
 
 static void blend_transformed_argb4444(int count, const QSpan *spans,
@@ -6313,8 +6025,7 @@ static void blend_transformed_argb4444(int count, const QSpan *spans,
         blendTransformed<qargb4444, qrgb444>(count, spans, userData);
     else
 #endif
-        blend_src_generic<RegularSpans>(count, spans, userData
-                                        Q_TEMPLATE_ENUM_CALL(SpanMethod, RegularSpans));
+        blend_src_generic<RegularSpans>(count, spans, userData);
 }
 
 static void blend_transformed_rgb444(int count, const QSpan *spans,
@@ -6329,18 +6040,16 @@ static void blend_transformed_rgb444(int count, const QSpan *spans,
         blendTransformed<qrgb444, qrgb444>(count, spans, userData);
     else
 #endif
-        blend_src_generic<RegularSpans>(count, spans, userData
-                                        Q_TEMPLATE_ENUM_CALL(SpanMethod, RegularSpans));
+        blend_src_generic<RegularSpans>(count, spans, userData);
 }
 
 template <SpanMethod spanMethod>
-Q_STATIC_TEMPLATE_FUNCTION void blend_transformed_tiled_argb(int count, const QSpan *spans, void *userData
-                                         Q_TEMPLATE_ENUM_FIX(SpanMethod, spanMethod))
+Q_STATIC_TEMPLATE_FUNCTION void blend_transformed_tiled_argb(int count, const QSpan *spans, void *userData)
 {
     QSpanData *data = reinterpret_cast<QSpanData *>(userData);
     if (data->texture.format != QImage::Format_ARGB32_Premultiplied
         && data->texture.format != QImage::Format_RGB32) {
-        blend_src_generic<spanMethod>(count, spans, userData Q_TEMPLATE_ENUM_CALL(SpanMethod, spanMethod));
+        blend_src_generic<spanMethod>(count, spans, userData);
         return;
     }
 
@@ -6474,8 +6183,7 @@ Q_STATIC_TEMPLATE_FUNCTION void blendTransformedTiled(int count, const QSpan *sp
     QPainter::CompositionMode mode = data->rasterBuffer->compositionMode;
 
     if (mode != QPainter::CompositionMode_SourceOver) {
-        blend_src_generic<RegularSpans>(count, spans, userData
-                                        Q_TEMPLATE_ENUM_CALL(SpanMethod, RegularSpans));
+        blend_src_generic<RegularSpans>(count, spans, userData);
         return;
     }
 
@@ -6625,8 +6333,7 @@ static void blend_transformed_tiled_rgb888(int count, const QSpan *spans,
         blendTransformedTiled<qrgb888, qrgb888>(count, spans, userData);
     else
 #endif
-        blend_src_generic<RegularSpans>(count, spans, userData
-                                        Q_TEMPLATE_ENUM_CALL(SpanMethod, RegularSpans));
+        blend_src_generic<RegularSpans>(count, spans, userData);
 }
 
 static void blend_transformed_tiled_argb6666(int count, const QSpan *spans,
@@ -6641,8 +6348,7 @@ static void blend_transformed_tiled_argb6666(int count, const QSpan *spans,
         blendTransformedTiled<qargb6666, qrgb666>(count, spans, userData);
     else
 #endif
-        blend_src_generic<RegularSpans>(count, spans, userData
-                                        Q_TEMPLATE_ENUM_CALL(SpanMethod, RegularSpans));
+        blend_src_generic<RegularSpans>(count, spans, userData);
 }
 
 static void blend_transformed_tiled_rgb666(int count, const QSpan *spans,
@@ -6657,8 +6363,7 @@ static void blend_transformed_tiled_rgb666(int count, const QSpan *spans,
         blendTransformedTiled<qrgb666, qrgb666>(count, spans, userData);
     else
 #endif
-        blend_src_generic<RegularSpans>(count, spans, userData
-                                        Q_TEMPLATE_ENUM_CALL(SpanMethod, RegularSpans));
+        blend_src_generic<RegularSpans>(count, spans, userData);
 }
 
 static void blend_transformed_tiled_argb8565(int count, const QSpan *spans,
@@ -6673,8 +6378,7 @@ static void blend_transformed_tiled_argb8565(int count, const QSpan *spans,
         blendTransformedTiled<qargb8565, qrgb565>(count, spans, userData);
     else
 #endif
-        blend_src_generic<RegularSpans>(count, spans, userData
-                                        Q_TEMPLATE_ENUM_CALL(SpanMethod, RegularSpans));
+        blend_src_generic<RegularSpans>(count, spans, userData);
 }
 
 static void blend_transformed_tiled_rgb565(int count, const QSpan *spans,
@@ -6689,8 +6393,7 @@ static void blend_transformed_tiled_rgb565(int count, const QSpan *spans,
         blendTransformedTiled<qrgb565, qrgb565>(count, spans, userData);
     else
 #endif
-        blend_src_generic<RegularSpans>(count, spans, userData
-                                        Q_TEMPLATE_ENUM_CALL(SpanMethod, RegularSpans));
+        blend_src_generic<RegularSpans>(count, spans, userData);
 }
 
 static void blend_transformed_tiled_argb8555(int count, const QSpan *spans,
@@ -6705,8 +6408,7 @@ static void blend_transformed_tiled_argb8555(int count, const QSpan *spans,
         blendTransformedTiled<qargb8555, qrgb555>(count, spans, userData);
     else
 #endif
-        blend_src_generic<RegularSpans>(count, spans, userData
-                                        Q_TEMPLATE_ENUM_CALL(SpanMethod, RegularSpans));
+        blend_src_generic<RegularSpans>(count, spans, userData);
 }
 
 static void blend_transformed_tiled_rgb555(int count, const QSpan *spans,
@@ -6721,8 +6423,7 @@ static void blend_transformed_tiled_rgb555(int count, const QSpan *spans,
         blendTransformedTiled<qrgb555, qrgb555>(count, spans, userData);
     else
 #endif
-        blend_src_generic<RegularSpans>(count, spans, userData
-                                        Q_TEMPLATE_ENUM_CALL(SpanMethod, RegularSpans));
+        blend_src_generic<RegularSpans>(count, spans, userData);
 }
 
 static void blend_transformed_tiled_argb4444(int count, const QSpan *spans,
@@ -6737,8 +6438,7 @@ static void blend_transformed_tiled_argb4444(int count, const QSpan *spans,
         blendTransformedTiled<qargb4444, qrgb444>(count, spans, userData);
     else
 #endif
-        blend_src_generic<RegularSpans>(count, spans, userData
-                                        Q_TEMPLATE_ENUM_CALL(SpanMethod, RegularSpans));
+        blend_src_generic<RegularSpans>(count, spans, userData);
 }
 
 static void blend_transformed_tiled_rgb444(int count, const QSpan *spans,
@@ -6753,36 +6453,10 @@ static void blend_transformed_tiled_rgb444(int count, const QSpan *spans,
         blendTransformedTiled<qrgb444, qrgb444>(count, spans, userData);
     else
 #endif
-        blend_src_generic<RegularSpans>(count, spans, userData
-                                        Q_TEMPLATE_ENUM_CALL(SpanMethod, RegularSpans));
+        blend_src_generic<RegularSpans>(count, spans, userData);
 }
 
-#if defined(Q_CC_MSVC) && _MSC_VER <= 1300 && !defined(Q_CC_INTEL)
-
-// explicit template instantiations needed to compile with VC6 and VC2002
-
-#define SPANFUNC_INSTANTIATION(Name, Arg)  \
-static inline void Name##_##Arg(int count, const QSpan *spans, void *userData) \
-{ \
-    Name<Arg>(count, spans, userData Q_TEMPLATE_ENUM_CALL(SpanMethod, Arg)); \
-}
-
-SPANFUNC_INSTANTIATION(blend_untransformed_generic, RegularSpans);
-SPANFUNC_INSTANTIATION(blend_untransformed_argb, RegularSpans);
-SPANFUNC_INSTANTIATION(blend_tiled_generic, RegularSpans);
-SPANFUNC_INSTANTIATION(blend_tiled_argb, RegularSpans);
-SPANFUNC_INSTANTIATION(blend_src_generic, RegularSpans);
-SPANFUNC_INSTANTIATION(blend_transformed_argb, RegularSpans);
-SPANFUNC_INSTANTIATION(blend_transformed_tiled_argb, RegularSpans);
-SPANFUNC_INSTANTIATION(blend_transformed_bilinear_argb, RegularSpans);
-SPANFUNC_INSTANTIATION(blend_transformed_bilinear_tiled_argb, RegularSpans);
-#undef SPANFUNC_INSTANTIATION
-
-#define SPANFUNC_POINTER(Name, Arg) Name##_##Arg
-
-#else // !VC6 && !VC2002
 # define SPANFUNC_POINTER(Name, Arg) Name<Arg>
-#endif
 
 
 /* Image formats here are target formats */
@@ -7149,8 +6823,7 @@ static void qt_gradient_quint32(int count, const QSpan *spans, void *userData)
         }
 
     } else {
-        blend_src_generic<RegularSpans>(count, spans, userData
-                                        Q_TEMPLATE_ENUM_CALL(SpanMethod, RegularSpans));
+        blend_src_generic<RegularSpans>(count, spans, userData);
     }
 }
 
@@ -7198,8 +6871,7 @@ static void qt_gradient_quint16(int count, const QSpan *spans, void *userData)
         data->solid.color = oldColor;
 
     } else {
-        blend_src_generic<RegularSpans>(count, spans, userData
-                                        Q_TEMPLATE_ENUM_CALL(SpanMethod, RegularSpans));
+        blend_src_generic<RegularSpans>(count, spans, userData);
     }
 }
 
@@ -7259,6 +6931,12 @@ static void qt_alphamapblit_quint16(QRasterBuffer *rasterBuffer,
 
 void qt_build_pow_tables() {
     qreal smoothing = qreal(1.7);
+
+#ifdef Q_WS_MAC
+    // decided by testing a few things on an iMac, should probably get this from the
+    // system...
+    smoothing = 2.0;
+#endif
 
 #ifdef Q_WS_WIN
     int winSmooth;
@@ -7404,7 +7082,7 @@ static void qt_alphamapblit_quint32(QRasterBuffer *rasterBuffer,
 #endif
                     {
                         int ialpha = 255 - coverage;
-                        dest[i] = BYTE_MUL(c, uint(coverage)) + BYTE_MUL(dest[i], ialpha);
+                        dest[i] = INTERPOLATE_PIXEL_255(c, coverage, dest[i], ialpha);
                     }
                 }
             }
@@ -7445,7 +7123,7 @@ static void qt_alphamapblit_quint32(QRasterBuffer *rasterBuffer,
 #endif
                         {
                             int ialpha = 255 - coverage;
-                            dest[xp] = BYTE_MUL(c, uint(coverage)) + BYTE_MUL(dest[xp], ialpha);
+                            dest[xp] = INTERPOLATE_PIXEL_255(c, coverage, dest[xp], ialpha);
                         }
                     }
 

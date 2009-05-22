@@ -198,10 +198,12 @@ void QScreenCursor::set(const QImage &image, int hotx, int hoty)
 */
 void QScreenCursor::move(int x, int y)
 {
-    const QRegion r = boundingRect();
+    QRegion r = boundingRect();
     pos = QPoint(x,y);
-    if (enable && !hwaccel)
-        qt_screen->exposeRegion(r | boundingRect(), 0);
+    if (enable && !hwaccel) {
+        r |= boundingRect();
+        qt_screen->exposeRegion(r, 0);
+    }
 }
 
 
@@ -1394,7 +1396,7 @@ QImage::Format QScreenPrivate::preferredImageFormat() const
     altered. Note that the default implementations of these functions
     do nothing.
 
-    Reimplement the the mapFromDevice() and mapToDevice() functions to
+    Reimplement the mapFromDevice() and mapToDevice() functions to
     map objects from the framebuffer coordinate system to the
     coordinate space used by the application, and vice versa. Be aware
     that the default implementations simply return the given objects

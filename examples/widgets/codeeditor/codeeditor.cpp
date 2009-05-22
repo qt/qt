@@ -41,7 +41,7 @@
 
 #include <QtGui>
 
-#include <codeeditor.h>
+#include "codeeditor.h"
 
 //![constructor]
 

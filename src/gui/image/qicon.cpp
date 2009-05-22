@@ -304,6 +304,8 @@ QPixmap QPixmapIconEngine::pixmap(const QSize &size, QIcon::Mode mode, QIcon::St
     QString key = QLatin1String("$qt_icon_")
                   + QString::number(pm.cacheKey())
                   + QString::number(pe->mode)
+                  + QString::number(qApp->palette().cacheKey())
+                  + QLatin1Char('_')
                   + QString::number(actualSize.width())
                   + QLatin1Char('_')
                   + QString::number(actualSize.height())
@@ -854,6 +856,9 @@ void QIcon::addPixmap(const QPixmap &pixmap, Mode mode, State state)
     QImageWriter::supportedImageFormats() functions to retrieve a
     complete list of the supported file formats.
 
+    Note: When you add a non-empty filename to a QIcon, the icon becomes
+    non-null, even if the file doesn't exist or points to a corrupt file.
+
     \sa addPixmap()
  */
 void QIcon::addFile(const QString &fileName, const QSize &size, Mode mode, State state)
@@ -919,7 +924,7 @@ QList<QSize> QIcon::availableSizes(Mode mode, State state) const
     \relates QIcon
     \since 4.2
 
-    Writes the given \a icon to the the given \a stream as a PNG
+    Writes the given \a icon to the given \a stream as a PNG
     image. If the icon contains more than one image, all images will
     be written to the stream. Note that writing the stream to a file
     will not produce a valid image file.

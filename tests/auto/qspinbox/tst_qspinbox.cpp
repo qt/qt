@@ -241,6 +241,12 @@ void tst_QSpinBox::getSetCheck()
     QCOMPARE(0.0, obj2.value());
     obj2.setValue(1.0);
     QCOMPARE(1.0, obj2.value());
+
+    // Make sure we update line edit geometry when updating
+    // buttons - see task 235747
+    QRect oldEditGeometry = obj1.childrenRect();
+    obj1.setButtonSymbols(QAbstractSpinBox::NoButtons);
+    QVERIFY(obj1.childrenRect() != oldEditGeometry);
 }
 
 tst_QSpinBox::tst_QSpinBox()

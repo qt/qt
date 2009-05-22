@@ -39,10 +39,6 @@
 **
 ****************************************************************************/
 
-/*
-TRANSLATOR qdesigner_internal::QDesignerPromotionDialog
-*/
-
 #include "qdesigner_promotiondialog_p.h"
 #include "promotionmodel_p.h"
 #include "iconloader_p.h"

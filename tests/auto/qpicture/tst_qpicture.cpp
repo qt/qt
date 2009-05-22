@@ -47,6 +47,7 @@
 #include <qimage.h>
 #include <qdesktopwidget.h>
 #include <qapplication.h>
+#include <limits.h>
 
 //TESTED_CLASS=
 //TESTED_FILES=
@@ -66,6 +67,9 @@ private slots:
     void operator_lt_lt();
 
     void save_restore();
+
+    void boundaryValues_data();
+    void boundaryValues();
 };
 
 // Testing get/set functions
@@ -233,6 +237,40 @@ void tst_QPicture::save_restore()
 
     QVERIFY( pix1.toImage() == pix2.toImage() );
 }
+
+void tst_QPicture::boundaryValues_data()
+{
+    QTest::addColumn<int>("x");
+    QTest::addColumn<int>("y");
+    QTest::newRow("max x") << INT_MAX << 50;
+    QTest::newRow("max y") << 50 << INT_MAX;
+    QTest::newRow("max x and y") << INT_MAX << INT_MAX;
+
+    QTest::newRow("min x") << INT_MIN << 50;
+    QTest::newRow("min y") << 50 << INT_MIN;
+    QTest::newRow("min x and y") << INT_MIN << INT_MIN;
+
+    QTest::newRow("min x, max y") << INT_MIN << INT_MAX;
+    QTest::newRow("max x, min y") << INT_MAX << INT_MIN;
+
+}
+
+void tst_QPicture::boundaryValues()
+{
+    QPicture picture;
+
+    QPainter painter;
+    painter.begin(&picture);
+
+    QFETCH(int, x);
+    QFETCH(int, y);
+    painter.drawPoint(QPoint(x, y));
+
+    painter.end();
+
+    
+}
+
 
 QTEST_MAIN(tst_QPicture)
 #include "tst_qpicture.moc"

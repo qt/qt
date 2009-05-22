@@ -113,6 +113,7 @@ private:
     Q_PRIVATE_SLOT(d_func(), void slotReloadResources())
     Q_PRIVATE_SLOT(d_func(), void slotCopyResourcePath())
     Q_PRIVATE_SLOT(d_func(), void slotListWidgetContextMenuRequested(const QPoint &pos))
+    Q_PRIVATE_SLOT(d_func(), void slotFilterChanged(const QString &pattern))
 };
 
 class QDESIGNER_SHARED_EXPORT  QtResourceViewDialog : public QDialog

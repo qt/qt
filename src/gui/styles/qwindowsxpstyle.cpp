@@ -46,6 +46,7 @@
 #include <private/qobject_p.h>
 #include <private/qpaintengine_raster_p.h>
 #include <private/qapplication_p.h>
+#include <private/qstylehelper_p.h>
 #include <qlibrary.h>
 #include <qpainter.h>
 #include <qpaintengine.h>
@@ -1791,7 +1792,12 @@ case PE_Frame:
         return;
 
     case PE_IndicatorToolBarSeparator:
-
+        if (option->rect.height() < 3) {
+            // XP style requires a few pixels for the separator
+            // to be visible.
+            QWindowsStyle::drawPrimitive(pe, option, p, widget);
+            return;
+        }
         name = QLatin1String("TOOLBAR");
         partId = TP_SEPARATOR;
 
@@ -3164,6 +3170,12 @@ void QWindowsXPStyle::drawComplexControl(ComplexControl cc, const QStyleOptionCo
         }
         break;
 #endif //QT_NO_WORKSPACE
+#ifndef QT_NO_DIAL
+    case CC_Dial:
+        if (const QStyleOptionSlider *dial = qstyleoption_cast<const QStyleOptionSlider *>(option))
+            QStyleHelper::drawDial(dial, p);
+        break;
+#endif // QT_NO_DIAL
     default:
         QWindowsStyle::drawComplexControl(cc, option, p, widget);
         break;

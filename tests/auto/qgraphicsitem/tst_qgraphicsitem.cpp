@@ -121,6 +121,7 @@ private slots:
     void construction();
     void constructionWithParent();
     void destruction();
+    void deleteChildItem();
     void scene();
     void parentItem();
     void setParentItem();
@@ -170,6 +171,7 @@ private slots:
     void boundingRects2();
     void sceneBoundingRect();
     void childrenBoundingRect();
+    void childrenBoundingRectTransformed();
     void group();
     void setGroup();
     void nestedGroups();
@@ -215,6 +217,10 @@ private slots:
     void tabChangesFocus_data();
     void cacheMode();
     void updateCachedItemAfterMove();
+    void deviceTransform_data();
+    void deviceTransform();
+    void setTransformProperties_data();
+    void setTransformProperties();
 
     // task specific tests below me
     void task141694_textItemEnsureVisible();
@@ -243,50 +249,59 @@ void tst_QGraphicsItem::construction()
             QCOMPARE(int(item->type()), int(QGraphicsEllipseItem::Type));
             QCOMPARE(qgraphicsitem_cast<QGraphicsEllipseItem *>(item), (QGraphicsEllipseItem *)item);
             QCOMPARE(qgraphicsitem_cast<QGraphicsRectItem *>(item), (QGraphicsRectItem *)0);
+            QCOMPARE(item->flags(), 0);
             break;
         case 1:
             item = new QGraphicsLineItem;
             QCOMPARE(int(item->type()), int(QGraphicsLineItem::Type));
             QCOMPARE(qgraphicsitem_cast<QGraphicsLineItem *>(item), (QGraphicsLineItem *)item);
             QCOMPARE(qgraphicsitem_cast<QGraphicsRectItem *>(item), (QGraphicsRectItem *)0);
+            QCOMPARE(item->flags(), 0);
             break;
         case 2:
             item = new QGraphicsPathItem;
             QCOMPARE(int(item->type()), int(QGraphicsPathItem::Type));
             QCOMPARE(qgraphicsitem_cast<QGraphicsPathItem *>(item), (QGraphicsPathItem *)item);
             QCOMPARE(qgraphicsitem_cast<QGraphicsRectItem *>(item), (QGraphicsRectItem *)0);
+            QCOMPARE(item->flags(), 0);
             break;
         case 3:
             item = new QGraphicsPixmapItem;
             QCOMPARE(int(item->type()), int(QGraphicsPixmapItem::Type));
             QCOMPARE(qgraphicsitem_cast<QGraphicsPixmapItem *>(item), (QGraphicsPixmapItem *)item);
             QCOMPARE(qgraphicsitem_cast<QGraphicsRectItem *>(item), (QGraphicsRectItem *)0);
+            QCOMPARE(item->flags(), 0);
             break;
         case 4:
             item = new QGraphicsPolygonItem;
             QCOMPARE(int(item->type()), int(QGraphicsPolygonItem::Type));
             QCOMPARE(qgraphicsitem_cast<QGraphicsPolygonItem *>(item), (QGraphicsPolygonItem *)item);
             QCOMPARE(qgraphicsitem_cast<QGraphicsRectItem *>(item), (QGraphicsRectItem *)0);
+            QCOMPARE(item->flags(), 0);
             break;
         case 5:
             item = new QGraphicsRectItem;
             QCOMPARE(int(item->type()), int(QGraphicsRectItem::Type));
             QCOMPARE(qgraphicsitem_cast<QGraphicsRectItem *>(item), (QGraphicsRectItem *)item);
             QCOMPARE(qgraphicsitem_cast<QGraphicsLineItem *>(item), (QGraphicsLineItem *)0);
+            QCOMPARE(item->flags(), 0);
             break;
         case 6:
-        default:
             item = new QGraphicsTextItem;
             QCOMPARE(int(item->type()), int(QGraphicsTextItem::Type));
             QCOMPARE(qgraphicsitem_cast<QGraphicsTextItem *>(item), (QGraphicsTextItem *)item);
             QCOMPARE(qgraphicsitem_cast<QGraphicsRectItem *>(item), (QGraphicsRectItem *)0);
+            // This is the only item that uses an extended style option.
+            QCOMPARE(item->flags(), QGraphicsItem::GraphicsItemFlags(QGraphicsItem::ItemUsesExtendedStyleOption));
+            break;
+        default:
+            qFatal("You broke the logic, please fix!");
             break;
         }
 
         QCOMPARE(item->scene(), (QGraphicsScene *)0);
         QCOMPARE(item->parentItem(), (QGraphicsItem *)0);
         QVERIFY(item->children().isEmpty());
-        QCOMPARE(item->flags(), 0);
         QVERIFY(item->isVisible());
         QVERIFY(item->isEnabled());
         QVERIFY(!item->isSelected());
@@ -511,6 +526,29 @@ void tst_QGraphicsItem::destruction()
         QCOMPARE(itemDeleted, 59);
     }
     QCOMPARE(itemDeleted, 109);
+    {
+        QGraphicsScene *scene = new QGraphicsScene;
+        QGraphicsRectItem *parent = new QGraphicsRectItem;
+        Item *child = new Item;
+        child->setParentItem(parent);
+        parent->setVisible(false);
+        scene->addItem(parent);
+        QCOMPARE(child->parentItem(), parent);
+        delete scene;
+        QCOMPARE(itemDeleted, 110);
+    }
+}
+
+void tst_QGraphicsItem::deleteChildItem()
+{
+    QGraphicsScene scene;
+    QGraphicsItem *rect = scene.addRect(QRectF());
+    QGraphicsItem *child1 = new QGraphicsRectItem(rect);
+    QGraphicsItem *child2 = new QGraphicsRectItem(rect);
+    QGraphicsItem *child3 = new QGraphicsRectItem(rect);
+    delete child1;
+    child2->setParentItem(0);
+    delete child2;
 }
 
 void tst_QGraphicsItem::scene()
@@ -2893,7 +2931,55 @@ void tst_QGraphicsItem::childrenBoundingRect()
     childChild->setParentItem(child);
     childChild->setPos(500, 500);
     child->rotate(90);
+
+
+    scene.addPolygon(parent->mapToScene(parent->boundingRect() | parent->childrenBoundingRect()))->setPen(QPen(Qt::red));;
+
+    QGraphicsView view(&scene);
+    view.show();
+
+    QTest::qWait(5000);
+
     QCOMPARE(parent->childrenBoundingRect(), QRectF(-500, -100, 600, 800));
+}
+
+void tst_QGraphicsItem::childrenBoundingRectTransformed()
+{
+    QGraphicsScene scene;
+
+    QGraphicsRectItem *rect = scene.addRect(QRectF(0, 0, 100, 100));
+    QGraphicsRectItem *rect2 = scene.addRect(QRectF(0, 0, 100, 100));
+    QGraphicsRectItem *rect3 = scene.addRect(QRectF(0, 0, 100, 100));
+    QGraphicsRectItem *rect4 = scene.addRect(QRectF(0, 0, 100, 100));
+    QGraphicsRectItem *rect5 = scene.addRect(QRectF(0, 0, 100, 100));
+    rect2->setParentItem(rect);
+    rect3->setParentItem(rect2);
+    rect4->setParentItem(rect3);
+    rect5->setParentItem(rect4);
+
+    rect2->setTransform(QTransform().translate(50, 50).rotate(45));
+    rect2->setPos(25, 25);
+    rect3->setTransform(QTransform().translate(50, 50).rotate(45));
+    rect3->setPos(25, 25);
+    rect4->setTransform(QTransform().translate(50, 50).rotate(45));
+    rect4->setPos(25, 25);
+    rect5->setTransform(QTransform().translate(50, 50).rotate(45));
+    rect5->setPos(25, 25);
+
+    QRectF subTreeRect = rect->childrenBoundingRect();
+    QCOMPARE(subTreeRect.left(), qreal(-206.0660171779821));
+    QCOMPARE(subTreeRect.top(), qreal(75.0));
+    QCOMPARE(subTreeRect.width(), qreal(351.7766952966369));
+    QCOMPARE(subTreeRect.height(), qreal(251.7766952966369));
+
+    rect->rotate(45);
+    rect2->rotate(-45);
+    rect3->rotate(45);
+    rect4->rotate(-45);
+    rect5->rotate(45);
+
+    subTreeRect = rect->childrenBoundingRect();
+    QCOMPARE(rect->childrenBoundingRect(), QRectF(-100, 75, 275, 250));
 }
 
 void tst_QGraphicsItem::group()
@@ -3094,150 +3180,134 @@ protected:
     void mouseReleaseEvent(QGraphicsSceneMouseEvent *)
     { ++counter; }
 };
+
 void tst_QGraphicsItem::handlesChildEvents()
 {
-    ChildEventTester *item2_level2 = new ChildEventTester(QRectF(0, 0, 25, 25));
-    ChildEventTester *item1_level1 = new ChildEventTester(QRectF(0, 0, 50, 50));
-    ChildEventTester *item_level0 = new ChildEventTester(QRectF(0, 0, 100, 100));
-    ChildEventTester *item1_level2 = new ChildEventTester(QRectF(0, 0, 25, 25));
-    ChildEventTester *item2_level1 = new ChildEventTester(QRectF(0, 0, 50, 50));
+    ChildEventTester *blue = new ChildEventTester(QRectF(0, 0, 100, 100));
+    ChildEventTester *red = new ChildEventTester(QRectF(0, 0, 50, 50));
+    ChildEventTester *green = new ChildEventTester(QRectF(0, 0, 25, 25));
+    ChildEventTester *gray = new ChildEventTester(QRectF(0, 0, 25, 25));
+    ChildEventTester *yellow = new ChildEventTester(QRectF(0, 0, 50, 50));
 
-    item_level0->setBrush(QBrush(Qt::blue));
-    item1_level1->setBrush(QBrush(Qt::red));
-    item2_level1->setBrush(QBrush(Qt::yellow));
-    item1_level2->setBrush(QBrush(Qt::green));
-    item2_level2->setBrush(QBrush(Qt::gray));
-    item1_level1->setPos(50, 0);
-    item2_level1->setPos(50, 50);
-    item1_level2->setPos(25, 0);
-    item2_level2->setPos(25, 25);
-    item1_level1->setParentItem(item_level0);
-    item2_level1->setParentItem(item_level0);
-    item1_level2->setParentItem(item1_level1);
-    item2_level2->setParentItem(item1_level1);
+    blue->setBrush(QBrush(Qt::blue));
+    red->setBrush(QBrush(Qt::red));
+    yellow->setBrush(QBrush(Qt::yellow));
+    green->setBrush(QBrush(Qt::green));
+    gray->setBrush(QBrush(Qt::gray));
+    red->setPos(50, 0);
+    yellow->setPos(50, 50);
+    green->setPos(25, 0);
+    gray->setPos(25, 25);
+    red->setParentItem(blue);
+    yellow->setParentItem(blue);
+    green->setParentItem(red);
+    gray->setParentItem(red);
 
     QGraphicsScene scene;
-    scene.addItem(item_level0);
-
-    // Pull out the items, closest item first
-    QList<QGraphicsItem *> items = scene.items(scene.itemsBoundingRect());
-    QCOMPARE(items.at(4), (QGraphicsItem *)item_level0);
-    if (item1_level1 < item2_level1) {
-        QCOMPARE(items.at(3), (QGraphicsItem *)item1_level1);
-        if (item1_level2 < item2_level2) {
-            QCOMPARE(items.at(2), (QGraphicsItem *)item1_level2);
-            QCOMPARE(items.at(1), (QGraphicsItem *)item2_level2);
-        } else {
-            QCOMPARE(items.at(2), (QGraphicsItem *)item2_level2);
-            QCOMPARE(items.at(1), (QGraphicsItem *)item1_level2);
-        }
-        QCOMPARE(items.at(0), (QGraphicsItem *)item2_level1);
-    } else {
-        QCOMPARE(items.at(3), (QGraphicsItem *)item2_level1);
-        QCOMPARE(items.at(2), (QGraphicsItem *)item1_level1);
-        if (item1_level2 < item2_level2) {
-            QCOMPARE(items.at(1), (QGraphicsItem *)item1_level2);
-            QCOMPARE(items.at(0), (QGraphicsItem *)item2_level2);
-        } else {
-            QCOMPARE(items.at(1), (QGraphicsItem *)item2_level2);
-            QCOMPARE(items.at(0), (QGraphicsItem *)item1_level2);
-        }
-    }
+    scene.addItem(blue);
 
     QGraphicsView view(&scene);
     view.show();
 
     QTest::qWait(1000);
 
-    QCOMPARE(item_level0->counter, 0);
+    // Pull out the items, closest item first
+    QList<QGraphicsItem *> items = scene.items(scene.itemsBoundingRect());
+    QCOMPARE(items.at(0), (QGraphicsItem *)yellow);
+    QCOMPARE(items.at(1), (QGraphicsItem *)gray);
+    QCOMPARE(items.at(2), (QGraphicsItem *)green);
+    QCOMPARE(items.at(3), (QGraphicsItem *)red);
+    QCOMPARE(items.at(4), (QGraphicsItem *)blue);
+
+    QCOMPARE(blue->counter, 0);
 
     // Send events to the toplevel item
     QGraphicsSceneMouseEvent pressEvent(QEvent::GraphicsSceneMousePress);
     QGraphicsSceneMouseEvent releaseEvent(QEvent::GraphicsSceneMouseRelease);
 
     pressEvent.setButton(Qt::LeftButton);
-    pressEvent.setScenePos(item_level0->mapToScene(5, 5));
+    pressEvent.setScenePos(blue->mapToScene(5, 5));
     pressEvent.setScreenPos(view.mapFromScene(pressEvent.scenePos()));
     releaseEvent.setButton(Qt::LeftButton);
-    releaseEvent.setScenePos(item_level0->mapToScene(5, 5));
+    releaseEvent.setScenePos(blue->mapToScene(5, 5));
     releaseEvent.setScreenPos(view.mapFromScene(pressEvent.scenePos()));
     QApplication::sendEvent(&scene, &pressEvent);
     QApplication::sendEvent(&scene, &releaseEvent);
 
-    QCOMPARE(item_level0->counter, 2);
+    QCOMPARE(blue->counter, 2);
 
     // Send events to a level1 item
-    pressEvent.setScenePos(item1_level1->mapToScene(5, 5));
+    pressEvent.setScenePos(red->mapToScene(5, 5));
     pressEvent.setScreenPos(view.mapFromScene(pressEvent.scenePos()));
-    releaseEvent.setScenePos(item1_level1->mapToScene(5, 5));
+    releaseEvent.setScenePos(red->mapToScene(5, 5));
     releaseEvent.setScreenPos(view.mapFromScene(releaseEvent.scenePos()));
     QApplication::sendEvent(&scene, &pressEvent);
     QApplication::sendEvent(&scene, &releaseEvent);
 
-    QCOMPARE(item_level0->counter, 2);
-    QCOMPARE(item1_level1->counter, 2);
+    QCOMPARE(blue->counter, 2);
+    QCOMPARE(red->counter, 2);
 
     // Send events to a level2 item
-    pressEvent.setScenePos(item1_level2->mapToScene(5, 5));
+    pressEvent.setScenePos(green->mapToScene(5, 5));
     pressEvent.setScreenPos(view.mapFromScene(pressEvent.scenePos()));
-    releaseEvent.setScenePos(item1_level2->mapToScene(5, 5));
+    releaseEvent.setScenePos(green->mapToScene(5, 5));
     releaseEvent.setScreenPos(view.mapFromScene(releaseEvent.scenePos()));
     QApplication::sendEvent(&scene, &pressEvent);
     QApplication::sendEvent(&scene, &releaseEvent);
 
-    QCOMPARE(item_level0->counter, 2);
-    QCOMPARE(item1_level1->counter, 2);
-    QCOMPARE(item1_level2->counter, 2);
+    QCOMPARE(blue->counter, 2);
+    QCOMPARE(red->counter, 2);
+    QCOMPARE(green->counter, 2);
 
-    item_level0->setHandlesChildEvents(true);
+    blue->setHandlesChildEvents(true);
 
     // Send events to a level1 item
-    pressEvent.setScenePos(item1_level1->mapToScene(5, 5));
+    pressEvent.setScenePos(red->mapToScene(5, 5));
     pressEvent.setScreenPos(view.mapFromScene(pressEvent.scenePos()));
-    releaseEvent.setScenePos(item1_level1->mapToScene(5, 5));
+    releaseEvent.setScenePos(red->mapToScene(5, 5));
     releaseEvent.setScreenPos(view.mapFromScene(releaseEvent.scenePos()));
     QApplication::sendEvent(&scene, &pressEvent);
     QApplication::sendEvent(&scene, &releaseEvent);
 
-    QCOMPARE(item_level0->counter, 4);
-    QCOMPARE(item1_level1->counter, 2);
+    QCOMPARE(blue->counter, 4);
+    QCOMPARE(red->counter, 2);
 
     // Send events to a level2 item
-    pressEvent.setScenePos(item1_level2->mapToScene(5, 5));
+    pressEvent.setScenePos(green->mapToScene(5, 5));
     pressEvent.setScreenPos(view.mapFromScene(pressEvent.scenePos()));
-    releaseEvent.setScenePos(item1_level2->mapToScene(5, 5));
+    releaseEvent.setScenePos(green->mapToScene(5, 5));
     releaseEvent.setScreenPos(view.mapFromScene(releaseEvent.scenePos()));
     QApplication::sendEvent(&scene, &pressEvent);
     QApplication::sendEvent(&scene, &releaseEvent);
 
-    QCOMPARE(item_level0->counter, 6);
-    QCOMPARE(item1_level1->counter, 2);
-    QCOMPARE(item1_level2->counter, 2);
+    QCOMPARE(blue->counter, 6);
+    QCOMPARE(red->counter, 2);
+    QCOMPARE(green->counter, 2);
 
-    item_level0->setHandlesChildEvents(false);
+    blue->setHandlesChildEvents(false);
 
     // Send events to a level1 item
-    pressEvent.setScenePos(item1_level1->mapToScene(5, 5));
+    pressEvent.setScenePos(red->mapToScene(5, 5));
     pressEvent.setScreenPos(view.mapFromScene(pressEvent.scenePos()));
-    releaseEvent.setScenePos(item1_level1->mapToScene(5, 5));
+    releaseEvent.setScenePos(red->mapToScene(5, 5));
     releaseEvent.setScreenPos(view.mapFromScene(releaseEvent.scenePos()));
     QApplication::sendEvent(&scene, &pressEvent);
     QApplication::sendEvent(&scene, &releaseEvent);
 
-    QCOMPARE(item_level0->counter, 6);
-    QCOMPARE(item1_level1->counter, 4);
+    QCOMPARE(blue->counter, 6);
+    QCOMPARE(red->counter, 4);
 
     // Send events to a level2 item
-    pressEvent.setScenePos(item1_level2->mapToScene(5, 5));
+    pressEvent.setScenePos(green->mapToScene(5, 5));
     pressEvent.setScreenPos(view.mapFromScene(pressEvent.scenePos()));
-    releaseEvent.setScenePos(item1_level2->mapToScene(5, 5));
+    releaseEvent.setScenePos(green->mapToScene(5, 5));
     releaseEvent.setScreenPos(view.mapFromScene(releaseEvent.scenePos()));
     QApplication::sendEvent(&scene, &pressEvent);
     QApplication::sendEvent(&scene, &releaseEvent);
 
-    QCOMPARE(item_level0->counter, 6);
-    QCOMPARE(item1_level1->counter, 4);
-    QCOMPARE(item1_level2->counter, 4);
+    QCOMPARE(blue->counter, 6);
+    QCOMPARE(red->counter, 4);
+    QCOMPARE(green->counter, 4);
 }
 
 void tst_QGraphicsItem::handlesChildEvents2()
@@ -3831,6 +3901,20 @@ void tst_QGraphicsItem::itemChange()
         QCOMPARE(tester.values.at(tester.changes.size() - 1), QVariant(QPointF(42, 0)));
         QCOMPARE(tester.oldValues.last(), QVariant(QPointF()));
         QCOMPARE(tester.pos(), QPointF(42, 0));
+    }
+    {
+        // ItemZValueChange / ItemZValueHasChanged
+        tester.itemChangeReturnValue = qreal(2.0);
+        tester.setZValue(1.0);
+        ++changeCount; // notification sent too
+        ++changeCount;
+        QCOMPARE(tester.changes.size(), changeCount);
+        QCOMPARE(tester.changes.at(tester.changes.size() - 2), QGraphicsItem::ItemZValueChange);
+        QCOMPARE(tester.changes.at(tester.changes.size() - 1), QGraphicsItem::ItemZValueHasChanged);
+        QCOMPARE(tester.values.at(tester.changes.size() - 2), QVariant(qreal(1.0)));
+        QCOMPARE(tester.values.at(tester.changes.size() - 1), QVariant(qreal(2.0)));
+        QCOMPARE(tester.oldValues.last(), QVariant(qreal(0.0)));
+        QCOMPARE(tester.zValue(), qreal(2.0));
     }
     {
         // ItemFlagsChange
@@ -4641,7 +4725,7 @@ void tst_QGraphicsItem::itemClipsChildrenToShape2()
     QPainter painter(&image);
     scene.render(&painter);
     painter.end();
-    
+
     QCOMPARE(image.pixel(5, 5), QColor(0, 0, 255).rgba());
     QCOMPARE(image.pixel(5, 10), QRgb(0));
     QCOMPARE(image.pixel(10, 5), QRgb(0));
@@ -5298,7 +5382,7 @@ void tst_QGraphicsItem::task240400_clickOnTextItem()
 
     QVERIFY(selectable ? item->isSelected() : !item->isSelected());
 
-    // 
+    //
     if (textFlags & Qt::TextEditorInteraction)
         QVERIFY(item->textCursor().columnNumber() > column);
     else
@@ -5344,7 +5428,7 @@ void tst_QGraphicsItem::task243707_addChildBeforeParent()
     // inconsistent internal state that can cause a crash.  This test shows
     // one such crash.
     QGraphicsScene scene;
-    QGraphicsWidget *widget = new QGraphicsWidget; 
+    QGraphicsWidget *widget = new QGraphicsWidget;
     QGraphicsWidget *widget2 = new QGraphicsWidget(widget);
     scene.addItem(widget2);
     QVERIFY(!widget2->parentItem());
@@ -5460,7 +5544,7 @@ void tst_QGraphicsItem::itemTransform_unrelated()
     QCOMPARE(stranger1->itemTransform(stranger2).map(QPointF(10, 10)), QPointF(10, 10));
     QCOMPARE(stranger2->itemTransform(stranger1).map(QPointF(10, 10)), QPointF(10, 10));
 }
-        
+
 void tst_QGraphicsItem::opacity_data()
 {
     QTest::addColumn<qreal>("p_opacity");
@@ -5754,7 +5838,7 @@ void tst_QGraphicsItem::nestedClipping()
     l1->setData(0, "l1");
     l2->setData(0, "l2");
     l3->setData(0, "l3");
-    
+
     QGraphicsView view(&scene);
     view.show();
 #ifdef Q_WS_X11
@@ -5782,7 +5866,7 @@ void tst_QGraphicsItem::nestedClipping()
     QCOMPARE(image.pixel(80, 130), qRgba(255, 255, 0, 255));
     QCOMPARE(image.pixel(92, 105), qRgba(0, 255, 0, 255));
     QCOMPARE(image.pixel(105, 105), qRgba(0, 0, 255, 255));
-#if 0 
+#if 0
     // Enable this to compare if the test starts failing.
     image.save("nestedClipping_reference.png");
 #endif
@@ -5924,7 +6008,7 @@ void tst_QGraphicsItem::tabChangesFocus_data()
 void tst_QGraphicsItem::tabChangesFocus()
 {
     QFETCH(bool, tabChangesFocus);
-    
+
     QGraphicsScene scene;
     QGraphicsTextItem *item = scene.addText("Hello");
     item->setTabChangesFocus(tabChangesFocus);
@@ -6199,6 +6283,200 @@ void tst_QGraphicsItem::updateCachedItemAfterMove()
     QTest::qWait(125);
     QCOMPARE(tester->repaints, 1);
 }
+
+class Track : public QGraphicsRectItem
+{
+public:
+    Track(const QRectF &rect)
+        : QGraphicsRectItem(rect)
+    {
+        setAcceptHoverEvents(true);
+    }
+
+    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget = 0)
+    {
+        QGraphicsRectItem::paint(painter, option, widget);
+        painter->drawText(boundingRect(), Qt::AlignCenter, QString("%1x%2\n%3x%4").arg(p.x()).arg(p.y()).arg(sp.x()).arg(sp.y()));
+    }
+    
+protected:
+    void hoverMoveEvent(QGraphicsSceneHoverEvent *event)
+    {
+        p = event->pos();
+        sp = event->widget()->mapFromGlobal(event->screenPos());
+        update();
+    }
+private:
+    QPointF p;
+    QPoint sp;
+};
+
+void tst_QGraphicsItem::deviceTransform_data()
+{
+    QTest::addColumn<bool>("untransformable1");
+    QTest::addColumn<bool>("untransformable2");
+    QTest::addColumn<bool>("untransformable3");
+    QTest::addColumn<qreal>("rotation1");
+    QTest::addColumn<qreal>("rotation2");
+    QTest::addColumn<qreal>("rotation3");
+    QTest::addColumn<QTransform>("deviceX");
+    QTest::addColumn<QPointF>("mapResult1");
+    QTest::addColumn<QPointF>("mapResult2");
+    QTest::addColumn<QPointF>("mapResult3");
+
+    QTest::newRow("nil") << false << false << false
+                         << qreal(0.0) << qreal(0.0) << qreal(0.0)
+                         << QTransform()
+                         << QPointF(150, 150) << QPointF(250, 250) << QPointF(350, 350);
+    QTest::newRow("deviceX rot 90") << false << false << false
+                         << qreal(0.0) << qreal(0.0) << qreal(0.0)
+                         << QTransform().rotate(90)
+                         << QPointF(-150, 150) << QPointF(-250, 250) << QPointF(-350, 350);
+    QTest::newRow("deviceX rot 90 100") << true << false << false
+                         << qreal(0.0) << qreal(0.0) << qreal(0.0)
+                         << QTransform().rotate(90)
+                         << QPointF(-50, 150) << QPointF(50, 250) << QPointF(150, 350);
+    QTest::newRow("deviceX rot 90 010") << false << true << false
+                         << qreal(0.0) << qreal(0.0) << qreal(0.0)
+                         << QTransform().rotate(90)
+                         << QPointF(-150, 150) << QPointF(-150, 250) << QPointF(-50, 350);
+    QTest::newRow("deviceX rot 90 001") << false << false << true
+                         << qreal(0.0) << qreal(0.0) << qreal(0.0)
+                         << QTransform().rotate(90)
+                         << QPointF(-150, 150) << QPointF(-250, 250) << QPointF(-250, 350);
+    QTest::newRow("deviceX rot 90 111") << true << true << true
+                         << qreal(0.0) << qreal(0.0) << qreal(0.0)
+                         << QTransform().rotate(90)
+                         << QPointF(-50, 150) << QPointF(50, 250) << QPointF(150, 350);
+    QTest::newRow("deviceX rot 90 101") << true << false << true
+                         << qreal(0.0) << qreal(0.0) << qreal(0.0)
+                         << QTransform().rotate(90)
+                         << QPointF(-50, 150) << QPointF(50, 250) << QPointF(150, 350);
+}
+
+void tst_QGraphicsItem::deviceTransform()
+{
+    QFETCH(bool, untransformable1);
+    QFETCH(bool, untransformable2);
+    QFETCH(bool, untransformable3);
+    QFETCH(qreal, rotation1);
+    QFETCH(qreal, rotation2);
+    QFETCH(qreal, rotation3);
+    QFETCH(QTransform, deviceX);
+    QFETCH(QPointF, mapResult1);
+    QFETCH(QPointF, mapResult2);
+    QFETCH(QPointF, mapResult3);
+
+    QGraphicsScene scene;
+    Track *rect1 = new Track(QRectF(0, 0, 100, 100));
+    Track *rect2 = new Track(QRectF(0, 0, 100, 100));
+    Track *rect3 = new Track(QRectF(0, 0, 100, 100));
+    rect2->setParentItem(rect1);
+    rect3->setParentItem(rect2);
+    rect1->setPos(100, 100);
+    rect2->setPos(100, 100);
+    rect3->setPos(100, 100);
+    rect1->rotate(rotation1);
+    rect2->rotate(rotation2);
+    rect3->rotate(rotation3);
+    rect1->setFlag(QGraphicsItem::ItemIgnoresTransformations, untransformable1);
+    rect2->setFlag(QGraphicsItem::ItemIgnoresTransformations, untransformable2);
+    rect3->setFlag(QGraphicsItem::ItemIgnoresTransformations, untransformable3);
+    rect1->setBrush(Qt::red);
+    rect2->setBrush(Qt::green);
+    rect3->setBrush(Qt::blue);
+    scene.addItem(rect1);
+
+    QCOMPARE(rect1->deviceTransform(deviceX).map(QPointF(50, 50)), mapResult1);
+    QCOMPARE(rect2->deviceTransform(deviceX).map(QPointF(50, 50)), mapResult2);
+    QCOMPARE(rect3->deviceTransform(deviceX).map(QPointF(50, 50)), mapResult3);
+}
+
+void tst_QGraphicsItem::setTransformProperties_data()
+{
+    QTest::addColumn<QPointF>("origin");
+    QTest::addColumn<qreal>("rotationX");
+    QTest::addColumn<qreal>("rotationY");
+    QTest::addColumn<qreal>("rotationZ");
+    QTest::addColumn<qreal>("scaleX");
+    QTest::addColumn<qreal>("scaleY");
+    QTest::addColumn<qreal>("shearX");
+    QTest::addColumn<qreal>("shearY");
+
+    QTest::newRow("nothing") << QPointF() << qreal(0.0) << qreal(0.0) << qreal(0.0)
+                                          << qreal(0.0) << qreal(0.0) << qreal(0.0) << qreal(0.0);
+
+    QTest::newRow("rotationZ") << QPointF() << qreal(0.0) << qreal(0.0) << qreal(42.2)
+                                          << qreal(0.0) << qreal(0.0) << qreal(0.0) << qreal(0.0);
+
+    QTest::newRow("rotationXY") << QPointF() << qreal(12.5) << qreal(53.6) << qreal(0.0)
+                                          << qreal(0.0) << qreal(0.0) << qreal(0.0) << qreal(0.0);
+
+    QTest::newRow("rotationXYZ") << QPointF() << qreal(-25) << qreal(12) << qreal(556)
+                                          << qreal(0.0) << qreal(0.0) << qreal(0.0) << qreal(0.0);
+
+    QTest::newRow("rotationXYZ dicentred") << QPointF(-53, 25.2) 
+                                << qreal(-2578.2) << qreal(4565.2) << qreal(56)
+                                << qreal(0.0) << qreal(0.0) << qreal(0.0) << qreal(0.0);
+
+    QTest::newRow("Scale")    << QPointF() << qreal(0.0) << qreal(0.0) << qreal(0.0)
+                                          << qreal(6) << qreal(0.5) << qreal(0.0) << qreal(0.0);
+
+    QTest::newRow("Shear")    << QPointF() << qreal(0.0) << qreal(0.0) << qreal(0.0)
+                                          << qreal(0.0) << qreal(0.0) << qreal(2.2) << qreal(0.5);
+
+    QTest::newRow("Scale and Shear")    << QPointF() << qreal(0.0) << qreal(0.0) << qreal(0.0)
+                                          << qreal(5.2) << qreal(2.1) << qreal(5.2) << qreal(5.5);
+
+    QTest::newRow("Everything")  << QPointF() << qreal(41) << qreal(-23) << qreal(0.56)
+                                        << qreal(8.2) << qreal(-0.2) << qreal(-12) << qreal(-0.8);
+
+    QTest::newRow("Everything dicentred")  << QPointF(qreal(22.3), qreal(-56.2)) << qreal(-175) << qreal(196) << qreal(-1260)
+                                        << qreal(4) << qreal(2) << qreal(2.56) << qreal(0.8);
+}
+
+void tst_QGraphicsItem::setTransformProperties()
+{
+    QFETCH(QPointF,origin);
+    QFETCH(qreal,rotationX);
+    QFETCH(qreal,rotationY);
+    QFETCH(qreal,rotationZ);
+    QFETCH(qreal,scaleX);
+    QFETCH(qreal,scaleY);
+    QFETCH(qreal,shearX);
+    QFETCH(qreal,shearY);
+
+    QTransform result;
+    result.translate(origin.x(), origin.y());
+    result.rotate(rotationX, Qt::XAxis);
+    result.rotate(rotationY, Qt::YAxis);
+    result.rotate(rotationZ, Qt::ZAxis);
+    result.shear(shearX, shearY);
+    result.scale(scaleX, scaleY);
+    result.translate(-origin.x(), -origin.y());
+
+    QGraphicsScene scene;
+    QGraphicsRectItem *item = new QGraphicsRectItem(QRectF(0, 0, 100, 100));
+    scene.addItem(item);
+    item->setPos(100, 100);
+
+    item->setRotation(rotationX, rotationY, rotationZ);
+    item->setScale(scaleX, scaleY);
+    item->setShear(shearX, shearY);
+    item->setTransformOrigin(origin);
+
+    QCOMPARE(item->xRotation(), rotationX);
+    QCOMPARE(item->yRotation(), rotationY);
+    QCOMPARE(item->zRotation(), rotationZ);
+    QCOMPARE(item->xScale(), scaleX);
+    QCOMPARE(item->yScale(), scaleY);
+    QCOMPARE(item->horizontalShear(), shearX);
+    QCOMPARE(item->verticalShear(), shearY);
+    QCOMPARE(item->transformOrigin(), origin);
+
+    QCOMPARE(result, item->transform());
+}
+
 
 QTEST_MAIN(tst_QGraphicsItem)
 #include "tst_qgraphicsitem.moc"

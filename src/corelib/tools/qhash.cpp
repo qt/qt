@@ -380,9 +380,9 @@ void QHashData::checkSanity()
 
 /*!
     \fn uint qHash(const QPair<T1, T2> &key)
-    \relates QHash
     \since 4.3
-
+    \relates QHash
+    
     Returns the hash value for the \a key.
 
     Types \c T1 and \c T2 must be supported by qHash().
@@ -502,7 +502,8 @@ void QHashData::checkSanity()
        key. With QHash, the items are arbitrarily ordered.
     \i The key type of a QMap must provide operator<(). The key
        type of a QHash must provide operator==() and a global
-       \l{qHash()} {hash} function.
+       hash function called qHash() (see the related non-member
+       functions).
     \endlist
 
     Here's an example QHash with QString keys and \c int values:

@@ -73,6 +73,14 @@ void QPixmapData::copy(const QPixmapData *data, const QRect &rect)
     fromImage(data->toImage().copy(rect), Qt::AutoColor);
 }
 
+bool QPixmapData::scroll(int dx, int dy, const QRect &rect)
+{
+    Q_UNUSED(dx);
+    Q_UNUSED(dy);
+    Q_UNUSED(rect);
+    return false;
+}
+
 void QPixmapData::setMask(const QBitmap &mask)
 {
     if (mask.size().isEmpty()) {

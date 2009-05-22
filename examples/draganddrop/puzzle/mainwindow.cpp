@@ -120,10 +120,10 @@ void MainWindow::setupMenus()
     QMenu *fileMenu = menuBar()->addMenu(tr("&File"));
 
     QAction *openAction = fileMenu->addAction(tr("&Open..."));
-    openAction->setShortcut(QKeySequence(tr("Ctrl+O")));
+    openAction->setShortcuts(QKeySequence::Open);
 
     QAction *exitAction = fileMenu->addAction(tr("E&xit"));
-    exitAction->setShortcut(QKeySequence(tr("Ctrl+Q")));
+    exitAction->setShortcuts(QKeySequence::Quit);
 
     QMenu *gameMenu = menuBar()->addMenu(tr("&Game"));
 

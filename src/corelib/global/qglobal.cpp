@@ -2959,7 +2959,12 @@ bool QInternal::callFunction(InternalFunction func, void **args)
  \relates <QtGlobal>
  \since 4.4
  \threadsafe
- \overload
+
+ Compares the floating point value \a p1 and \a p2 and
+ returns \c true if they are considered equal, otherwise \c false.
+
+ The two numbers are compared in a relative way, where the
+ exactness is stronger the smaller the numbers are.
  */
 
 /*!

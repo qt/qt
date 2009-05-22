@@ -63,7 +63,7 @@
 #include <QtGui/qfontmetrics.h>
 #include <QtGui/qclipboard.h>
 
-#ifdef Q_OS_WINCE
+#ifdef Q_WS_WINCE
 extern bool qt_wince_is_mobile();    //defined in qguifunctions_wince.cpp
 extern bool qt_wince_is_smartphone();//defined in qguifunctions_wince.cpp
 extern bool qt_wince_is_pocket_pc(); //defined in qguifunctions_wince.cpp
@@ -152,7 +152,7 @@ public:
     int layoutMinimumWidth();
     void retranslateStrings();
 
-#ifdef Q_OS_WINCE
+#ifdef Q_WS_WINCE
     void hideSpecial();
 #endif
 
@@ -272,10 +272,7 @@ void QMessageBoxPrivate::updateSize()
         return;
 
     QSize screenSize = QApplication::desktop()->availableGeometry(QCursor::pos()).size();
-#ifdef Q_WS_QWS
-    // the width of the screen, less the window border.
-    int hardLimit = screenSize.width() - (q->frameGeometry().width() - q->geometry().width());
-#elif defined(Q_OS_WINCE)
+#if defined(Q_WS_QWS) || defined(Q_WS_WINCE)
     // the width of the screen, less the window border.
     int hardLimit = screenSize.width() - (q->frameGeometry().width() - q->geometry().width());
 #else
@@ -290,11 +287,11 @@ void QMessageBoxPrivate::updateSize()
     int softLimit = qMin(hardLimit, 500);
 #else
     // note: ideally on windows, hard and soft limits but it breaks compat
-#ifndef Q_OS_WINCE
+#ifndef Q_WS_WINCE
     int softLimit = qMin(screenSize.width()/2, 500);
 #else
     int softLimit = qMin(screenSize.width() * 3 / 4, 500);
-#endif //Q_OS_WINCE
+#endif //Q_WS_WINCE
 #endif
 
     if (informativeLabel)
@@ -351,7 +348,7 @@ void QMessageBoxPrivate::updateSize()
 }
 
 
-#ifdef Q_OS_WINCE
+#ifdef Q_WS_WINCE
 /*!
   \internal
   Hides special buttons which are rather shown in the title bar
@@ -706,15 +703,10 @@ void QMessageBoxPrivate::_q_buttonClicked(QAbstractButton *button)
     Constructs a message box with no text and no buttons. \a parent is
     passed to the QDialog constructor.
 
-    If \a parent is 0, the message box is an \l{Qt::ApplicationModal}
-    {application modal} dialog box. If \a parent is a widget, the
-    message box is \l{Qt::WindowModal} {window modal} relative to \a
-    parent.
-
-    On Mac OS X, if \a parent is not 0 and you want your message box
-    to appear as a Qt::Sheet of that parent, set the message box's
-    \l{setWindowModality()} {window modality} to Qt::WindowModal
-    (default). Otherwise, the message box will be a standard dialog.
+    On Mac OS X, if you want your message box to appear
+    as a Qt::Sheet of its \a parent, set the message box's
+    \l{setWindowModality()} {window modality} to Qt::WindowModal or use open().
+    Otherwise, the message box will be a standard dialog.
 
 */
 QMessageBox::QMessageBox(QWidget *parent)
@@ -1213,7 +1205,7 @@ bool QMessageBox::event(QEvent *e)
         case QEvent::LanguageChange:
             d_func()->retranslateStrings();
             break;
-#ifdef Q_OS_WINCE
+#ifdef Q_WS_WINCE
         case QEvent::OkRequest:
         case QEvent::HelpRequest: {
           QString bName =
@@ -1356,7 +1348,7 @@ void QMessageBox::keyPressEvent(QKeyEvent *e)
     QDialog::keyPressEvent(e);
 }
 
-#ifdef Q_OS_WINCE
+#ifdef Q_WS_WINCE
 /*!
     \reimp
 */
@@ -1425,7 +1417,7 @@ void QMessageBox::showEvent(QShowEvent *e)
     Q_D(QMessageBox);
     if (d->autoAddOkButton) {
         addButton(Ok);
-#if defined(Q_OS_WINCE)
+#if defined(Q_WS_WINCE)
         d->hideSpecial();
 #endif
     }
@@ -1733,7 +1725,7 @@ void QMessageBox::aboutQt(QWidget *parent, const QString &title)
     QPixmap pm(QLatin1String(":/trolltech/qmessagebox/images/qtlogo-64.png"));
     if (!pm.isNull())
         msgBox->setIconPixmap(pm);
-#if defined(Q_OS_WINCE)
+#if defined(Q_WS_WINCE)
     msgBox->setDefaultButton(msgBox->addButton(QMessageBox::Ok));
 #endif
 

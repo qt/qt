@@ -39,10 +39,6 @@
 **
 ****************************************************************************/
 
-/*
-TRANSLATOR qdesigner_internal::TextEditTaskMenu
-*/
-
 #include "textedit_taskmenu.h"
 
 #include <QtDesigner/QDesignerFormWindowInterface>

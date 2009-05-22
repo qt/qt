@@ -65,6 +65,7 @@ public:
         TT_Unknown = 0,
         TT_Application,
         TT_Library,
+        TT_Script,
         TT_Subdirs
     };
 
@@ -73,7 +74,9 @@ public:
 
     ProFileEvaluator::TemplateType templateType();
     virtual bool contains(const QString &variableName) const;
-    void setVerbose(bool on);
+    void setVerbose(bool on); // Default is false
+    void setCumulative(bool on); // Default is true!
+    void setOutputDir(const QString &dir); // Default is empty
 
     bool queryProFile(ProFile *pro);
     bool accept(ProFile *pro);

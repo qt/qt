@@ -39,6 +39,11 @@
 **
 ****************************************************************************/
 
+/*
+  Note: The qdoc comments for QMacStyle are contained in
+  .../doc/src/qstyles.qdoc. 
+*/
+
 #include "qmacstyle_mac.h"
 
 #if defined(Q_WS_MAC) && !defined(QT_NO_STYLE_MAC)
@@ -50,6 +55,7 @@
 #include <private/qpaintengine_mac_p.h>
 #include <private/qpainter_p.h>
 #include <private/qprintengine_mac_p.h>
+#include <private/qstylehelper_p.h>
 #include <qapplication.h>
 #include <qbitmap.h>
 #include <qcheckbox.h>
@@ -125,6 +131,20 @@ static const QColor titlebarSeparatorLineInactive(131, 131, 131);
 static const QColor mainWindowGradientBegin(240, 240, 240);
 static const QColor mainWindowGradientEnd(200, 200, 200);
 
+#if (MAC_OS_X_VERSION_MAX_ALLOWED <= MAC_OS_X_VERSION_10_5)
+enum {
+    kThemePushButtonTextured = 31,
+    kThemePushButtonTexturedSmall = 32,
+    kThemePushButtonTexturedMini = 33
+};
+
+/* Search fields */
+enum {
+    kHIThemeFrameTextFieldRound = 1000,
+    kHIThemeFrameTextFieldRoundSmall = 1001,
+    kHIThemeFrameTextFieldRoundMini = 1002
+};
+#endif
 
 // Resolve these at run-time, since the functions was moved in Leopard.
 typedef HIRect * (*PtrHIShapeGetBounds)(HIShapeRef, HIRect *);
@@ -1988,87 +2008,12 @@ void QMacStylePrivate::drawColorlessButton(const HIRect &macRect, HIThemeButtonD
     p->drawPixmap(int(macRect.origin.x), int(macRect.origin.y) + finalyoff, width, height, pm);
 }
 
-/*!
-    \class QMacStyle
-    \brief The QMacStyle class provides a Mac OS X style using the Apple Appearance Manager.
-
-    \ingroup appearance
-
-    This class is implemented as a wrapper to the HITheme
-    APIs, allowing applications to be styled according to the current
-    theme in use on Mac OS X. This is done by having primitives
-    in QStyle implemented in terms of what Mac OS X would normally theme.
-
-    \warning This style is only available on Mac OS X because it relies on the
-    HITheme APIs.
-
-    There are additional issues that should be taken
-    into consideration to make an application compatible with the
-    \link http://developer.apple.com/documentation/UserExperience/Conceptual/OSXHIGuidelines/index.html
-    Apple Human Interface Guidelines \endlink. Some of these issues are outlined
-    below.
-
-    \list
-
-    \i Layout - The restrictions on window layout are such that some
-    aspects of layout that are style-dependent cannot be achieved
-    using QLayout. Changes are being considered (and feedback would be
-    appreciated) to make layouts QStyle-able. Some of the restrictions
-    involve horizontal and vertical widget alignment and widget size
-    (covered below).
-
-    \i Widget size - Mac OS X allows widgets to have specific fixed sizes.  Qt
-    does not fully implement this behavior so as to maintain cross-platform
-    compatibility. As a result some widgets sizes may be inappropriate (and
-    subsequently not rendered correctly by the HITheme APIs).The
-    QWidget::sizeHint() will return the appropriate size for many
-    managed widgets (widgets enumerated in \l QStyle::ContentsType).
-
-    \i Effects - QMacStyle uses HITheme for performing most of the drawing, but
-    also uses emulation in a few cases where HITheme does not provide the
-    required functionality (for example, tab bars on Panther, the toolbar
-    separator, etc). We tried to make the emulation as close to the original as
-    possible. Please report any issues you see in effects or non-standard
-    widgets.
-
-    \endlist
-
-    There are other issues that need to be considered in the feel of
-    your application (including the general color scheme to match the
-    Aqua colors). The Guidelines mentioned above will remain current
-    with new advances and design suggestions for Mac OS X.
-
-    Note that the functions provided by QMacStyle are
-    reimplementations of QStyle functions; see QStyle for their
-    documentation.
-
-    \img qmacstyle.png
-    \sa QWindowsXPStyle, QWindowsStyle, QPlastiqueStyle, QCDEStyle, QMotifStyle
-*/
-
-
-/*!
-    \enum QMacStyle::WidgetSizePolicy
-
-    \value SizeSmall
-    \value SizeLarge
-    \value SizeMini
-    \value SizeDefault
-    \omitvalue SizeNone
-*/
-
-/*!
-    Constructs a QMacStyle object.
-*/
 QMacStyle::QMacStyle()
     : QWindowsStyle()
 {
     d = new QMacStylePrivate(this);
 }
 
-/*!
-    Destructs a QMacStyle object.
-*/
 QMacStyle::~QMacStyle()
 {
     delete qt_mac_backgroundPattern;
@@ -2142,7 +2087,6 @@ void qt_mac_fill_background(QPainter *painter, const QRegion &rgn, const QPoint 
     }
 }
 
-/*! \reimp */
 void QMacStyle::polish(QPalette &pal)
 {
     if (!qt_mac_backgroundPattern) {
@@ -2166,17 +2110,14 @@ void QMacStyle::polish(QPalette &pal)
     }
 }
 
-/*! \reimp */
 void QMacStyle::polish(QApplication *)
 {
 }
 
-/*! \reimp */
 void QMacStyle::unpolish(QApplication *)
 {
 }
 
-/*! \reimp */
 void QMacStyle::polish(QWidget* w)
 {
     d->addWidget(w);
@@ -2240,7 +2181,6 @@ void QMacStyle::polish(QWidget* w)
     }
 }
 
-/*! \reimp */
 void QMacStyle::unpolish(QWidget* w)
 {
     d->removeWidget(w);
@@ -2271,7 +2211,6 @@ void QMacStyle::unpolish(QWidget* w)
     QWindowsStyle::unpolish(w);
 }
 
-/*! \reimp */
 int QMacStyle::pixelMetric(PixelMetric metric, const QStyleOption *opt, const QWidget *widget) const
 {
     int controlSize = getControlSize(opt, widget);
@@ -2643,6 +2582,9 @@ int QMacStyle::pixelMetric(PixelMetric metric, const QStyleOption *opt, const QW
     case PM_MenuHMargin:
         ret = 0;
         break;
+    case PM_ToolBarFrameWidth:
+        ret = 0;
+        break;
     default:
         ret = QWindowsStyle::pixelMetric(metric, opt, widget);
         break;
@@ -2650,7 +2592,6 @@ int QMacStyle::pixelMetric(PixelMetric metric, const QStyleOption *opt, const QW
     return ret;
 }
 
-/*! \reimp */
 QPalette QMacStyle::standardPalette() const
 {
     QPalette pal = QWindowsStyle::standardPalette();
@@ -2660,7 +2601,6 @@ QPalette QMacStyle::standardPalette() const
     return pal;
 }
 
-/*! \reimp */
 int QMacStyle::styleHint(StyleHint sh, const QStyleOption *opt, const QWidget *w,
                          QStyleHintReturn *hret) const
 {
@@ -2955,7 +2895,6 @@ int QMacStyle::styleHint(StyleHint sh, const QStyleOption *opt, const QWidget *w
     return ret;
 }
 
-/*! \reimp */
 QPixmap QMacStyle::generatedIconPixmap(QIcon::Mode iconMode, const QPixmap &pixmap,
                                        const QStyleOption *opt) const
 {
@@ -2981,7 +2920,6 @@ QPixmap QMacStyle::generatedIconPixmap(QIcon::Mode iconMode, const QPixmap &pixm
 }
 
 
-/*! \reimp */
 QPixmap QMacStyle::standardPixmap(StandardPixmap standardPixmap, const QStyleOption *opt,
                                   const QWidget *widget) const
 {
@@ -3012,31 +2950,7 @@ QPixmap QMacStyle::standardPixmap(StandardPixmap standardPixmap, const QStyleOpt
     }
     return icon.pixmap(size, size);
 }
-/*!
-    \enum QMacStyle::FocusRectPolicy
 
-    This type is used to signify a widget's focus rectangle policy.
-
-    \value FocusEnabled  show a focus rectangle when the widget has focus.
-    \value FocusDisabled  never show a focus rectangle for the widget.
-    \value FocusDefault  show a focus rectangle when the widget has
-    focus and the widget is a QSpinWidget, QDateTimeEdit, QLineEdit,
-    QListBox, QListView, editable QTextEdit, or one of their
-    subclasses.
-*/
-
-/*!
-    \obsolete
-    Sets the focus rectangle policy of \a w. The \a policy can be one of
-    \l{QMacStyle::FocusRectPolicy}.
-
-    This is now simply an interface to the Qt::WA_MacShowFocusRect attribute and the
-    FocusDefault value does nothing anymore. If you want to set a widget back
-    to its default value, you must save the old value of the attribute before
-    you change it.
-
-    \sa focusRectPolicy() QWidget::setAttribute()
-*/
 void QMacStyle::setFocusRectPolicy(QWidget *w, FocusRectPolicy policy)
 {
     switch (policy) {
@@ -3049,29 +2963,11 @@ void QMacStyle::setFocusRectPolicy(QWidget *w, FocusRectPolicy policy)
     }
 }
 
-/*!
-    \obsolete
-    Returns the focus rectangle policy for the widget \a w.
-
-    The focus rectangle policy can be one of \l{QMacStyle::FocusRectPolicy}.
-
-    In 4.3 and up this function will simply test for the
-    Qt::WA_MacShowFocusRect attribute and will never return
-    QMacStyle::FocusDefault.
-
-    \sa setFocusRectPolicy(), QWidget::testAttribute()
-*/
 QMacStyle::FocusRectPolicy QMacStyle::focusRectPolicy(const QWidget *w)
 {
     return w->testAttribute(Qt::WA_MacShowFocusRect) ? FocusEnabled : FocusDisabled;
 }
 
-/*!
-    \obsolete
-
-    Call QWidget::setAttribute() with Qt::WA_MacMiniSize, Qt::WA_MacSmallSize,
-    or Qt::WA_MacNormalSize instead.
-*/
 void QMacStyle::setWidgetSizePolicy(const QWidget *widget, WidgetSizePolicy policy)
 {
     QWidget *wadget = const_cast<QWidget *>(widget);
@@ -3080,12 +2976,6 @@ void QMacStyle::setWidgetSizePolicy(const QWidget *widget, WidgetSizePolicy poli
     wadget->setAttribute(Qt::WA_MacMiniSize, policy == SizeMini);
 }
 
-/*!
-    \obsolete
-
-    Call QWidget::testAttribute() with Qt::WA_MacMiniSize, Qt::WA_MacSmallSize,
-    or Qt::WA_MacNormalSize instead.
-*/
 QMacStyle::WidgetSizePolicy QMacStyle::widgetSizePolicy(const QWidget *widget)
 {
     while (widget) {
@@ -3101,7 +2991,6 @@ QMacStyle::WidgetSizePolicy QMacStyle::widgetSizePolicy(const QWidget *widget)
     return SizeDefault;
 }
 
-/*! \reimp */
 void QMacStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, QPainter *p,
                               const QWidget *w) const
 {
@@ -3534,7 +3423,6 @@ static inline QPixmap darkenPixmap(const QPixmap &pixmap)
 
 
 
-/*! \reimp */
 void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter *p,
                             const QWidget *w) const
 {
@@ -3638,7 +3526,10 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
                 QRect cr = tb->rect;
                 int shiftX = 0;
                 int shiftY = 0;
-                if (tb->state & (State_Sunken | State_On)) {
+                bool needText = false;
+                int alignment = 0;
+                bool down = tb->state & (State_Sunken | State_On);
+                if (down) {
                     shiftX = pixelMetric(PM_ButtonShiftHorizontal, tb, w);
                     shiftY = pixelMetric(PM_ButtonShiftVertical, tb, w);
                 }
@@ -3646,50 +3537,75 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
                 // The text is a bit bolder and gets a drop shadow and the icons are also darkened.
                 // This doesn't really fit into any particular case in QIcon, so we
                 // do the majority of the work ourselves.
-                if (tb->state & State_Sunken
-                        && !(tb->features & QStyleOptionToolButton::Arrow)) {
+                if (!(tb->features & QStyleOptionToolButton::Arrow)) {
                     Qt::ToolButtonStyle tbstyle = tb->toolButtonStyle;
                     if (tb->icon.isNull() && !tb->text.isEmpty())
                         tbstyle = Qt::ToolButtonTextOnly;
 
                     switch (tbstyle) {
-                    case Qt::ToolButtonTextOnly:
-                        drawItemText(p, cr, Qt::AlignCenter, tb->palette,
-                                     tb->state & State_Enabled, tb->text);
-                        break;
+                    case Qt::ToolButtonTextOnly: {
+                        needText = true;
+                        alignment = Qt::AlignCenter;
+                        break; }
                     case Qt::ToolButtonIconOnly:
                     case Qt::ToolButtonTextBesideIcon:
                     case Qt::ToolButtonTextUnderIcon: {
                         QRect pr = cr;
                         QIcon::Mode iconMode = (tb->state & State_Enabled) ? QIcon::Normal
-                                                                                   : QIcon::Disabled;
+                                                                            : QIcon::Disabled;
                         QIcon::State iconState = (tb->state & State_On) ? QIcon::On
-                                                                                : QIcon::Off;
+                                                                         : QIcon::Off;
                         QPixmap pixmap = tb->icon.pixmap(tb->rect.size().boundedTo(tb->iconSize), iconMode, iconState);
 
                         // Draw the text if it's needed.
                         if (tb->toolButtonStyle != Qt::ToolButtonIconOnly) {
-                            int alignment = 0;
+                            needText = true;
                             if (tb->toolButtonStyle == Qt::ToolButtonTextUnderIcon) {
-                                pr.setHeight(pixmap.size().height() + 6);
-                                cr.adjust(0, pr.bottom(), 0, -3);
+                                pr.setHeight(pixmap.size().height());
+                                cr.adjust(0, pr.bottom() + 1, 0, 1);
                                 alignment |= Qt::AlignCenter;
                             } else {
                                 pr.setWidth(pixmap.width() + 8);
                                 cr.adjust(pr.right(), 0, 0, 0);
                                 alignment |= Qt::AlignLeft | Qt::AlignVCenter;
                             }
-                            cr.translate(shiftX, shiftY);
-                            drawItemText(p, cr, alignment, tb->palette,
-                                         tb->state & State_Enabled, tb->text);
-                            cr.adjust(0, 3, 0, -3); // the drop shadow
-                            drawItemText(p, cr, alignment, tb->palette,
-                                         tb->state & State_Enabled, tb->text);
                         }
-                        pr.translate(shiftX, shiftY);
-                        pixmap = darkenPixmap(pixmap);
+                        if (opt->state & State_Sunken) {
+                            pr.translate(shiftX, shiftY);
+                            pixmap = darkenPixmap(pixmap);
+                        }
                         drawItemPixmap(p, pr, Qt::AlignCenter, pixmap);
                         break; }
+                    }
+
+                    if (needText) {
+                        QPalette pal = tb->palette;
+                        QPalette::ColorRole role = QPalette::NoRole;
+                        if (down)
+                            cr.translate(shiftX, shiftY);
+                        if (QSysInfo::MacintoshVersion >= QSysInfo::MV_10_5
+                            && (tbstyle == Qt::ToolButtonTextOnly
+                                || (tbstyle != Qt::ToolButtonTextOnly && !down))) {
+                            QPen pen = p->pen();
+                            QColor light = down ? Qt::black : Qt::white;
+                            light.setAlphaF(0.375f);
+                            p->setPen(light);
+                            p->drawText(cr.adjusted(0, 1, 0, 1), alignment, tb->text);
+                            p->setPen(pen);
+                            if (down && tbstyle == Qt::ToolButtonTextOnly) {
+                                pal = QApplication::palette("QMenu");
+                                pal.setCurrentColorGroup(tb->palette.currentColorGroup());
+                                role = QPalette::HighlightedText;
+                            }
+                        }
+                        drawItemText(p, cr, alignment, pal,
+                                     tb->state & State_Enabled, tb->text, role);
+                        if (QSysInfo::MacintoshVersion < QSysInfo::MV_10_5 &&
+                            (tb->state & State_Sunken)) {
+                            // Draw a "drop shadow" in earlier versions.
+                            drawItemText(p, cr.adjusted(0, 1, 0, 1), alignment,
+                                         tb->palette, tb->state & State_Enabled, tb->text);
+                        }
                     }
                 } else {
                     QWindowsStyle::drawControl(ce, &myTb, p, w);
@@ -4511,9 +4427,10 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
     case CE_ToolBar: {
         // For unified tool bars, draw nothing.
         if (w) {
-            if (QMainWindow * mainWindow = qobject_cast<QMainWindow *>(w->window()))
+            if (QMainWindow * mainWindow = qobject_cast<QMainWindow *>(w->window())) {
                 if (mainWindow->unifiedTitleAndToolBarOnMac())
                     break;
+                }
         }
 
         // draw background gradient
@@ -4558,7 +4475,7 @@ static void setLayoutItemMargins(int left, int top, int right, int bottom, QRect
         rect->adjust(left, top, right, bottom);
     }
 }
-/*! \reimp */
+
 QRect QMacStyle::subElementRect(SubElement sr, const QStyleOption *opt,
                                 const QWidget *widget) const
 {
@@ -4852,7 +4769,6 @@ static inline void drawToolbarButtonArrow(const QRect &toolButtonRect, ThemeDraw
     HIThemeDrawPopupArrow(&hirect, &padi, cg, kHIThemeOrientationNormal);
 }
 
-/*! \reimp */
 void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex *opt, QPainter *p,
                                    const QWidget *widget) const
 {
@@ -5235,20 +5151,27 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
                     arrowOpt.state = tb->state;
                     arrowOpt.palette = tb->palette;
                     drawPrimitive(PE_IndicatorArrowDown, &arrowOpt, p, widget);
-                } else if (tb->features & QStyleOptionToolButton::HasMenu) {
+                } else if ((tb->features & QStyleOptionToolButton::HasMenu)
+                            && (tb->toolButtonStyle != Qt::ToolButtonTextOnly && !tb->icon.isNull())) {
                     drawToolbarButtonArrow(tb->rect, tds, cg);
                 }
                 if (tb->state & State_On) {
-                    QPen oldPen = p->pen();
-                    p->setPen(QColor(0, 0, 0, 0x3a));
-                    p->fillRect(tb->rect.adjusted(1, 1, -1, -1), QColor(0, 0, 0, 0x12));
-                    p->drawLine(tb->rect.left() + 1, tb->rect.top(),
-                                tb->rect.right() - 1, tb->rect.top());
-                    p->drawLine(tb->rect.left() + 1, tb->rect.bottom(),
-                                tb->rect.right() - 1, tb->rect.bottom());
-                    p->drawLine(tb->rect.topLeft(), tb->rect.bottomLeft());
-                    p->drawLine(tb->rect.topRight(), tb->rect.bottomRight());
-                    p->setPen(oldPen);
+                    if (QSysInfo::MacintoshVersion >= QSysInfo::MV_10_5) {
+                        static QPixmap pm(QLatin1String(":/trolltech/mac/style/images/leopard-unified-toolbar-on.png"));
+                        p->setRenderHint(QPainter::SmoothPixmapTransform);
+                        QStyleHelper::drawBorderPixmap(pm, p, tb->rect, 2, 2, 2, 2);
+                    } else {
+                        QPen oldPen = p->pen();
+                        p->setPen(QColor(0, 0, 0, 0x3a));
+                        p->fillRect(tb->rect.adjusted(1, 1, -1, -1), QColor(0, 0, 0, 0x12));
+                        p->drawLine(tb->rect.left() + 1, tb->rect.top(),
+                                    tb->rect.right() - 1, tb->rect.top());
+                        p->drawLine(tb->rect.left() + 1, tb->rect.bottom(),
+                                    tb->rect.right() - 1, tb->rect.bottom());
+                        p->drawLine(tb->rect.topLeft(), tb->rect.bottomLeft());
+                        p->drawLine(tb->rect.topRight(), tb->rect.bottomRight());
+                        p->setPen(oldPen);
+                    }
                 }
                 drawControl(CE_ToolButtonLabel, opt, p, widget);
             } else {
@@ -5343,13 +5266,16 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
             }
         }
         break;
+    case CC_Dial:
+        if (const QStyleOptionSlider *dial = qstyleoption_cast<const QStyleOptionSlider *>(opt))
+            QStyleHelper::drawDial(dial, p);
+        break;
     default:
         QWindowsStyle::drawComplexControl(cc, opt, p, widget);
         break;
     }
 }
 
-/*! \reimp */
 QStyle::SubControl QMacStyle::hitTestComplexControl(ComplexControl cc,
                                                     const QStyleOptionComplex *opt,
                                                     const QPoint &pt, const QWidget *widget) const
@@ -5480,7 +5406,6 @@ QStyle::SubControl QMacStyle::hitTestComplexControl(ComplexControl cc,
     return sc;
 }
 
-/*! \reimp */
 QRect QMacStyle::subControlRect(ComplexControl cc, const QStyleOptionComplex *opt, SubControl sc,
                                 const QWidget *widget) const
 {
@@ -5820,7 +5745,6 @@ QRect QMacStyle::subControlRect(ComplexControl cc, const QStyleOptionComplex *op
     return ret;
 }
 
-/*! \reimp */
 QSize QMacStyle::sizeFromContents(ContentsType ct, const QStyleOption *opt,
                                   const QSize &csz, const QWidget *widget) const
 {
@@ -5984,6 +5908,14 @@ QSize QMacStyle::sizeFromContents(ContentsType ct, const QStyleOption *opt,
         }
         break;
     case CT_ToolButton:
+        if (widget && qobject_cast<const QToolBar *>(widget->parentWidget())) {
+            sz.rwidth() += 4;
+            if (sz.height() <= 32) {
+                // Workaround strange HIToolBar bug when getting constraints.
+                sz.rheight() += 1;
+            }
+            return sz;
+        }
         sz.rwidth() += 10;
         sz.rheight() += 10;
         return sz;
@@ -6107,9 +6039,6 @@ QSize QMacStyle::sizeFromContents(ContentsType ct, const QStyleOption *opt,
     return sz;
 }
 
-/*!
-    \reimp
-*/
 void QMacStyle::drawItemText(QPainter *p, const QRect &r, int flags, const QPalette &pal,
                              bool enabled, const QString &text, QPalette::ColorRole textRole) const
 {
@@ -6118,9 +6047,6 @@ void QMacStyle::drawItemText(QPainter *p, const QRect &r, int flags, const QPale
     QWindowsStyle::drawItemText(p, r, flags, pal, enabled, text, textRole);
 }
 
-/*!
-  \reimp
-*/
 bool QMacStyle::event(QEvent *e)
 {
     if(e->type() == QEvent::FocusIn) {
@@ -6195,9 +6121,6 @@ void qt_mac_constructQIconFromIconRef(const IconRef icon, const IconRef overlayI
     }
 }
 
-/*!
-    \internal
-*/
 QIcon QMacStyle::standardIconImplementation(StandardPixmap standardIcon, const QStyleOption *opt,
                                             const QWidget *widget) const
 {
@@ -6311,9 +6234,6 @@ QIcon QMacStyle::standardIconImplementation(StandardPixmap standardIcon, const Q
     return QWindowsStyle::standardIconImplementation(standardIcon, opt, widget);
 }
 
-/*!
-  \internal
-*/
 int QMacStyle::layoutSpacingImplementation(QSizePolicy::ControlType control1,
                                            QSizePolicy::ControlType control2,
                                            Qt::Orientation orientation,

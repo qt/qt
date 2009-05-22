@@ -115,10 +115,9 @@ void RoundRectItem::keyPressEvent(QKeyEvent *event)
         return;
     }
 
-    if (!proxyWidget) {
-       setXScale(qreal(.9));
-       setYScale(qreal(.9));
-    }
+    if (!proxyWidget)
+       setScale(qreal(.9), qreal(.9));
+
     emit activated();
 }
 
@@ -129,8 +128,6 @@ void RoundRectItem::keyReleaseEvent(QKeyEvent *event)
         return;
     }
 
-    if (!proxyWidget) {
-        setXScale(1);
-        setYScale(1);
-    }
+    if (!proxyWidget)
+        setScale(1, 1);
 }

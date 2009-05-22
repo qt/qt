@@ -509,16 +509,20 @@ bool QRasterPaintEngine::begin(QPaintDevice *device)
 
     if (d->mono_surface)
         d->glyphCacheType = QFontEngineGlyphCache::Raster_Mono;
-#ifdef Q_WS_WIN
-    else if (qt_cleartype_enabled) {
+#if defined(Q_WS_WIN)
+    else if (qt_cleartype_enabled)
+#elif defined (Q_WS_MAC)
+    else if (true)
+#else
+    else if (false)
+#endif
+    {
         QImage::Format format = static_cast<QImage *>(d->device)->format();
         if (format == QImage::Format_ARGB32_Premultiplied || format == QImage::Format_RGB32)
             d->glyphCacheType = QFontEngineGlyphCache::Raster_RGBMask;
         else
             d->glyphCacheType = QFontEngineGlyphCache::Raster_A8;
-    }
-#endif
-    else
+    } else
         d->glyphCacheType = QFontEngineGlyphCache::Raster_A8;
 
     setActive(true);
@@ -618,22 +622,22 @@ void QRasterPaintEngine::updateMatrix(const QTransform &matrix)
     d->isPlain45DegreeRotation = false;
     if (txop >= QTransform::TxRotate) {
         d->isPlain45DegreeRotation =
-            (qFuzzyCompare(matrix.m11() + 1, qreal(1))
-             && qFuzzyCompare(matrix.m12(), qreal(1))
-             && qFuzzyCompare(matrix.m21(), qreal(-1))
-             && qFuzzyCompare(matrix.m22() + 1, qreal(1))
+            (qFuzzyIsNull(matrix.m11())
+             && qFuzzyIsNull(matrix.m12() - qreal(1))
+             && qFuzzyIsNull(matrix.m21() + qreal(1))
+             && qFuzzyIsNull(matrix.m22())
                 )
             ||
-            (qFuzzyCompare(matrix.m11(), qreal(-1))
-             && qFuzzyCompare(matrix.m12() + 1, qreal(1))
-             && qFuzzyCompare(matrix.m21() + 1, qreal(1))
-             && qFuzzyCompare(matrix.m22(), qreal(-1))
+            (qFuzzyIsNull(matrix.m11() + qreal(1))
+             && qFuzzyIsNull(matrix.m12())
+             && qFuzzyIsNull(matrix.m21())
+             && qFuzzyIsNull(matrix.m22() + qreal(1))
                 )
             ||
-            (qFuzzyCompare(matrix.m11() + 1, qreal(1))
-             && qFuzzyCompare(matrix.m12(), qreal(-1))
-             && qFuzzyCompare(matrix.m21(), qreal(1))
-             && qFuzzyCompare(matrix.m22() + 1, qreal(1))
+            (qFuzzyIsNull(matrix.m11())
+             && qFuzzyIsNull(matrix.m12() + qreal(1))
+             && qFuzzyIsNull(matrix.m21() - qreal(1))
+             && qFuzzyIsNull(matrix.m22())
                 )
             ;
     }
@@ -3201,7 +3205,7 @@ void QRasterPaintEngine::drawTextItem(const QPointF &p, const QTextItem &textIte
     // ### cases we should delegate painting to the font engine
     // ### directly...
 
-#if defined(Q_WS_WIN) && !defined(Q_OS_WINCE)
+#if defined(Q_WS_WIN) && !defined(Q_WS_WINCE)
     QFontEngine::Type fontEngineType = ti.fontEngine->type();
     // qDebug() << "type" << fontEngineType << s->matrix.type();
     if ((fontEngineType == QFontEngine::Win && !((QFontEngineWin *) ti.fontEngine)->ttf && s->matrix.type() > QTransform::TxTranslate)

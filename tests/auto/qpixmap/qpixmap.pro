@@ -13,5 +13,4 @@ wince*: {
    win32:LIBS += -lgdi32 -luser32
 }
 
-
-
+RESOURCES += qpixmap.qrc

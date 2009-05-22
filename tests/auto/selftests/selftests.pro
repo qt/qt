@@ -5,7 +5,7 @@ SUBDIRS = subtest test warnings maxwarnings cmptest globaldata skipglobal skip \
           skipinit skipinitdata datetime singleskip assert waitwithoutgui differentexec \
           exception qexecstringlist datatable commandlinedata\
           benchlibwalltime benchlibcallgrind benchlibeventcounter benchlibtickcounter \
-          benchliboptions
+          benchliboptions xunit badxml
 
 INSTALLS =
 

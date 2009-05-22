@@ -361,6 +361,11 @@
 #define QT_NO_MENU
 #endif
 
+// QNetworkDiskCache
+#if !defined(QT_NO_NETWORKDISKCACHE) && (defined(QT_NO_TEMPORARYFILE))
+#define QT_NO_NETWORKDISKCACHE
+#endif
+
 // Phonon::SeekSlider
 #if !defined(QT_NO_PHONON_SEEKSLIDER) && (defined(QT_NO_SLIDER))
 #define QT_NO_PHONON_SEEKSLIDER

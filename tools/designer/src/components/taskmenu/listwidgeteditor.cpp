@@ -39,10 +39,6 @@
 **
 ****************************************************************************/
 
-/*
-TRANSLATOR qdesigner_internal::ListWidgetEditor
-*/
-
 #include "listwidgeteditor.h"
 #include <designerpropertymanager.h>
 #include <abstractformbuilder.h>

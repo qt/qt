@@ -73,6 +73,8 @@ public:
     void fromImage(const QImage &image,
                    Qt::ImageConversionFlags flags);
 
+    bool scroll(int dx, int dy, const QRect &rect);
+
     void fill(const QColor &color);
     bool hasAlphaChannel() const;
     QImage toImage() const;

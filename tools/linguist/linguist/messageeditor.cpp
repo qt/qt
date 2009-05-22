@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-/*  TRANSLATOR MsgEdit
+/*  TRANSLATOR MessageEditor
 
   This is the right panel of the main window.
 */

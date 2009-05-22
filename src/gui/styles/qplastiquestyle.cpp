@@ -51,6 +51,7 @@ static const int ProgressBarFps = 25;
 static const int blueFrameWidth =  2;  // with of line edit focus frame
 
 #include "qwindowsstyle_p.h"
+#include <private/qstylehelper_p.h>
 #include <qapplication.h>
 #include <qbitmap.h>
 #include <qabstractitemview.h>
@@ -4970,6 +4971,12 @@ void QPlastiqueStyle::drawComplexControl(ComplexControl control, const QStyleOpt
             painter->restore();
         }
         break;
+#ifndef QT_NO_DIAL
+    case CC_Dial:
+        if (const QStyleOptionSlider *dial = qstyleoption_cast<const QStyleOptionSlider *>(option))
+            QStyleHelper::drawDial(dial, painter);
+        break;
+#endif // QT_NO_DIAL
     default:
         QWindowsStyle::drawComplexControl(control, option, painter, widget);
         break;

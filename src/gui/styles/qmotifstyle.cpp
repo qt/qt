@@ -2026,10 +2026,6 @@ QMotifStyle::sizeFromContents(ContentsType ct, const QStyleOption *opt,
     QSize sz(contentsSize);
 
     switch(ct) {
-    case CT_Splitter:
-        sz = QSize(10, 10);
-        break;
-
     case CT_RadioButton:
     case CT_CheckBox:
         sz = QCommonStyle::sizeFromContents(ct, opt, contentsSize, widget);

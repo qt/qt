@@ -88,6 +88,9 @@ private slots:
 
     void testMetrics();
 
+    void scroll_data();
+    void scroll();
+
     void fill_data();
     void fill();
     void fill_transparent();
@@ -300,6 +303,99 @@ void tst_QPixmap::convertFromImage()
 
     QPixmap res = QPixmap::fromImage(img2);
     QVERIFY( pixmapsAreEqual(&pix, &res) );
+}
+
+void tst_QPixmap::scroll_data()
+{
+    QTest::addColumn<QImage>("input");
+    QTest::addColumn<int>("dx");
+    QTest::addColumn<int>("dy");
+    QTest::addColumn<QRect>("rect");
+    QTest::addColumn<QRegion>("exposed");
+    QTest::addColumn<bool>("newPix");
+
+    QImage input(":/images/designer.png");
+
+    // Noop tests
+    QTest::newRow("null") << QImage() << 0 << 0 << QRect() << QRegion() << false;
+    QTest::newRow("dx_0_dy_0_null") << input << 0 << 0 << QRect() << QRegion() << false;
+    QTest::newRow("dx_1_dy_0_null") << input << 1 << 0 << QRect() << QRegion() << false;
+    QTest::newRow("dx_0_dy_1_null") << input << 0 << 1 << QRect() << QRegion() << false;
+    QTest::newRow("dx_0_dy_0_x_y_w_h") << input << 0 << 0 << input.rect() << QRegion() << false;
+
+    QRegion r;
+    // Scroll whole pixmap
+    r = QRegion(); r += QRect(0, 0, 128, 10);
+    QTest::newRow("dx_0_dy_10_x_y_w_h") << input << 0 << 10 << input.rect() << r << true;
+    r = QRegion(); r += QRect(0, 0, 10, 128);
+    QTest::newRow("dx_10_dy_0_x_y_w_h") << input << 10 << 0 << input.rect() << r << true;
+    r = QRegion(); r += QRect(0, 0, 128, 10); r += QRect(0, 10, 10, 118);
+    QTest::newRow("dx_10_dy_10_x_y_w_h") << input << 10 << 10 << input.rect() << r << true;
+    r = QRegion(); r += QRect(118, 0, 10, 128);
+    QTest::newRow("dx_-10_dy_0_x_y_w_h") << input << -10 << 0 << input.rect() << r << true;
+    r = QRegion(); r += QRect(0, 118, 128, 10);
+    QTest::newRow("dx_0_dy_-10_x_y_w_h") << input << 0 << -10 << input.rect() << r << true;
+    r = QRegion(); r += QRect(118, 0, 10, 118); r += QRect(0, 118, 128, 10);
+    QTest::newRow("dx_-10_dy_-10_x_y_w_h") << input << -10 << -10 << input.rect() << r << true;
+
+    // Scroll part of pixmap
+    QTest::newRow("dx_0_dy_0_50_50_100_100") << input << 0 << 0 << QRect(50, 50, 100, 100) << QRegion() << false;
+    r = QRegion(); r += QRect(50, 50, 10, 78);
+    QTest::newRow("dx_10_dy_0_50_50_100_100") << input << 10 << 0 << QRect(50, 50, 100, 100) << r << true;
+    r = QRegion(); r += QRect(50, 50, 78, 10);
+    QTest::newRow("dx_0_dy_10_50_50_100_100") << input << 0 << 10 << QRect(50, 50, 100, 100) << r << true;
+    r = QRegion(); r += QRect(50, 50, 78, 10); r += QRect(50, 60, 10, 68);
+    QTest::newRow("dx_10_dy_10_50_50_100_100") << input << 10 << 10 << QRect(50, 50, 100, 100) << r << true;
+    r = QRegion(); r += QRect(118, 50, 10, 78);
+    QTest::newRow("dx_-10_dy_0_50_50_100_100") << input << -10 << 0 << QRect(50, 50, 100, 100) << r << true;
+    r = QRegion(); r += QRect(50, 118, 78, 10);
+    QTest::newRow("dx_0_dy_-10_50_50_100_100") << input << 0 << -10 << QRect(50, 50, 100, 100) << r << true;
+    r = QRegion(); r += QRect(118, 50, 10, 68); r += QRect(50, 118, 78, 10);
+    QTest::newRow("dx_-10_dy_-10_50_50_100_100") << input << -10 << -10 << QRect(50, 50, 100, 100) << r << true;
+
+    // Scroll away the whole pixmap
+    r = input.rect();
+    QTest::newRow("dx_128_dy_0_x_y_w_h") << input << 128 << 0 << input.rect() << r << false;
+    QTest::newRow("dx_0_dy_128_x_y_w_h") << input << 0 << 128 << input.rect() << r << false;
+    QTest::newRow("dx_128_dy_128_x_y_w_h") << input << 128 << 128 << input.rect() << r << false;
+    QTest::newRow("dx_-128_dy_0_x_y_w_h") << input << -128 << 0 << input.rect() << r << false;
+    QTest::newRow("dx_0_dy_-128_x_y_w_h") << input << 0 << -128 << input.rect() << r << false;
+    QTest::newRow("dx_-128_dy_-128_x_y_w_h") << input << -128 << -128 << input.rect() << r << false;
+
+    // Scroll away part of the pixmap
+    r = QRegion(); r += QRect(64, 64, 64, 64);
+    QTest::newRow("dx_128_dy_128_64_64_128_128") << input << 128 << 128 << QRect(64, 64, 128, 128) << r << false;
+}
+
+void tst_QPixmap::scroll()
+{
+    QFETCH(QImage, input);
+    QFETCH(int, dx);
+    QFETCH(int, dy);
+    QFETCH(QRect, rect);
+    QFETCH(QRegion, exposed);
+    QFETCH(bool, newPix);
+
+    QPixmap pixmap(input);
+    QRegion exp;
+    qint64 oldKey = pixmap.cacheKey();
+    pixmap.scroll(dx, dy, rect, &exp);
+    if (!newPix)
+        QCOMPARE(pixmap.cacheKey(), oldKey);
+    else
+        QVERIFY(pixmap.cacheKey() != oldKey);
+
+#if 0
+    // Remember to add to resources.
+    QString fileName = QString("images/%1.png").arg(QTest::currentDataTag());
+    pixmap.toImage().save(fileName);
+#else
+    QString fileName = QString(":/images/%1.png").arg(QTest::currentDataTag());
+#endif
+    QImage output(fileName);
+    QVERIFY(input.isNull() == output.isNull());
+    QCOMPARE(pixmap.toImage(), output);
+    QCOMPARE(exp, exposed);
 }
 
 void tst_QPixmap::fill_data()

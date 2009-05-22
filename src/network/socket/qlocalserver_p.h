@@ -63,7 +63,7 @@
 #   include <qtcpserver.h>
 #elif defined(Q_OS_WIN)
 #   include <qt_windows.h>
-#   include <qthread.h>
+#   include <private/qwineventnotifier_p.h>
 #else
 #   include <private/qnativesocketengine_p.h>
 #   include <qsocketnotifier.h>
@@ -71,52 +71,13 @@
 
 QT_BEGIN_NAMESPACE
 
-#if defined(Q_OS_WIN) && !defined(QT_LOCALSOCKET_TCP)
-
-/*!
-    \internal
-    QLocalServerThread exists because Windows does not have a
-    way to provide notifications when there is a new connections to
-    the server.
-  */
-class QLocalServerThread : public QThread
-{
-    Q_OBJECT
-
-Q_SIGNALS:
-    void connected(HANDLE newSocket);
-    void error(QAbstractSocket::SocketError error, const QString &errorString);
-
-public:
-    QLocalServerThread(QObject *parent = 0);
-    ~QLocalServerThread();
-    void closeServer();
-
-public:
-    QString setName(const QString &name);
-    void run();
-    void stop();
-    bool makeHandle();
-
-    HANDLE gotConnectionEvent;
-    QQueue<HANDLE> pendingHandles;
-    int maxPendingConnections;
-private:
-    HANDLE stopEvent;
-    QString fullServerName;
-};
-
-#endif
-
 class QLocalServerPrivate : public QObjectPrivate
 {
     Q_DECLARE_PUBLIC(QLocalServer)
 
 public:
     QLocalServerPrivate() :
-#if defined(Q_OS_WIN) && !defined(QT_LOCALSOCKET_TCP)
-            inWaitingFunction(false),
-#elif !defined(QT_LOCALSOCKET_TCP)
+#if !defined(QT_LOCALSOCKET_TCP) && !defined(Q_OS_WIN)
             listenSocket(-1), socketNotifier(0),
 #endif
             maxPendingConnections(30), error(QAbstractSocket::UnknownSocketError)
@@ -128,22 +89,26 @@ public:
     static bool removeServer(const QString &name);
     void closeServer();
     void waitForNewConnection(int msec, bool *timedOut);
+    void _q_onNewConnection();
 
 #if defined(QT_LOCALSOCKET_TCP)
-    void _q_onNewConnection();
 
     QTcpServer tcpServer;
     QMap<quintptr, QTcpSocket*> socketMap;
 #elif defined(Q_OS_WIN)
-    void _q_openSocket(HANDLE socket);
-    void _q_stoppedListening();
-    void _q_setError(QAbstractSocket::SocketError error, const QString &errorString);
+    struct Listener {
+        HANDLE handle;
+        OVERLAPPED overlapped;
+    };
 
-    QLocalServerThread waitForConnection;
-    bool inWaitingFunction;
+    void setError(const QString &function);
+    bool addListener();
+
+    QList<Listener> listeners;
+    HANDLE eventHandle;
+    QWinEventNotifier *connectionEventNotifier;
 #else
     void setError(const QString &function);
-    void _q_socketActivated();
 
     int listenSocket;
     QSocketNotifier *socketNotifier;

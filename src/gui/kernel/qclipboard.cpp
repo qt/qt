@@ -50,6 +50,7 @@
 #include "qvariant.h"
 #include "qbuffer.h"
 #include "qimage.h"
+#include "qtextcodec.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -276,11 +277,12 @@ QClipboard::~QClipboard()
 */
 QString QClipboard::text(QString &subtype, Mode mode) const
 {
-    const QMimeData *data = mimeData(mode);
+    const QMimeData *const data = mimeData(mode);
     if (!data)
         return QString();
+
+    const QStringList formats = data->formats();
     if (subtype.isEmpty()) {
-        QStringList formats = data->formats();
         if (formats.contains(QLatin1String("text/plain")))
             subtype = QLatin1String("plain");
         else {
@@ -289,13 +291,21 @@ QString QClipboard::text(QString &subtype, Mode mode) const
                     subtype = formats.at(i).mid(5);
                     break;
                 }
+            if (subtype.isEmpty())
+                return QString();
         }
-    }
-    if (subtype.isEmpty())
+    } else if (!formats.contains(QLatin1String("text/") + subtype)) {
         return QString();
-    if (subtype == QLatin1String("plain"))
-        return data->text();
-    return QString::fromUtf8(data->data(QLatin1String("text/") + subtype));
+    }
+
+    const QByteArray rawData = data->data(QLatin1String("text/") + subtype);
+
+    QTextCodec* codec = QTextCodec::codecForMib(106); // utf-8 is default
+    if (subtype == QLatin1String("html"))
+        codec = QTextCodec::codecForHtml(rawData, codec);
+    else
+        codec = QTextCodec::codecForUtfText(rawData, codec);
+    return codec->toUnicode(rawData);
 }
 
 /*!
@@ -466,7 +476,7 @@ void QClipboard::setPixmap(const QPixmap &pixmap, Mode mode)
 
     The \a mode argument is used to control which part of the system
     clipboard is used.  If \a mode is QClipboard::Clipboard, this
-    function clears the the global clipboard contents.  If \a mode is
+    function clears the global clipboard contents.  If \a mode is
     QClipboard::Selection, this function clears the global mouse
     selection contents. If \a mode is QClipboard::FindBuffer, this 
     function clears the search string buffer.

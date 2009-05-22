@@ -39,10 +39,6 @@
 **
 ****************************************************************************/
 
-/*
-TRANSLATOR qdesigner_internal::ListWidgetTaskMenu
-*/
-
 #include "listwidget_taskmenu.h"
 #include "listwidgeteditor.h"
 #include "qdesigner_utils_p.h"

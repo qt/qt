@@ -537,8 +537,7 @@ QFileInfo &QFileInfo::operator=(const QFileInfo &fileinfo)
 
 void QFileInfo::setFile(const QString &file)
 {
-    Q_D(QFileInfo);
-    d->initFileEngine(file);
+    *this = QFileInfo(file);
 }
 
 /*!
@@ -555,8 +554,7 @@ void QFileInfo::setFile(const QString &file)
 
 void QFileInfo::setFile(const QFile &file)
 {
-    Q_D(QFileInfo);
-    d->initFileEngine(file.fileName());
+    *this = QFileInfo(file.fileName());
 }
 
 /*!
@@ -573,8 +571,7 @@ void QFileInfo::setFile(const QFile &file)
 
 void QFileInfo::setFile(const QDir &dir, const QString &file)
 {
-    Q_D(QFileInfo);
-    d->initFileEngine(dir.filePath(file));
+    *this = QFileInfo(dir.filePath(file));
 }
 
 /*!
@@ -921,7 +918,7 @@ QString QFileInfo::suffix() const
 
   \bold{Note:} The QDir returned always corresponds to the object's
   parent directory, even if the QFileInfo represents a directory.
-  
+
   For each of the follwing, dir() returns a QDir for
   \c{"~/examples/191697"}.
 

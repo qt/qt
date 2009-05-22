@@ -1691,8 +1691,12 @@ void QImage::setColorTable(const QVector<QRgb> colors)
 
     d->colortable = colors;
     d->has_alpha_clut = false;
-    for (int i = 0; i < d->colortable.size(); ++i)
-        d->has_alpha_clut |= (qAlpha(d->colortable.at(i)) != 255);
+    for (int i = 0; i < d->colortable.size(); ++i) {
+        if (qAlpha(d->colortable.at(i)) != 255) {
+            d->has_alpha_clut = true;
+            break;
+        }
+    }
 }
 
 /*!
@@ -4996,7 +5000,7 @@ QPoint QImage::offset() const
 /*!
     \fn void QImage::setOffset(const QPoint& offset)
 
-    Sets the the number of pixels by which the image is intended to be
+    Sets the number of pixels by which the image is intended to be
     offset by when positioning relative to other images, to \a offset.
 
     \sa offset(), {QImage#Image Information}{Image Information}

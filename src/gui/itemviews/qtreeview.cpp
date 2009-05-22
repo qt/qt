@@ -680,10 +680,9 @@ void QTreeView::dataChanged(const QModelIndex &topLeft, const QModelIndex &botto
     // refresh the height cache here; we don't really lose anything by getting the size hint,
     // since QAbstractItemView::dataChanged() will get the visualRect for the items anyway
 
-    QModelIndex top = topLeft.sibling(topLeft.row(), 0);
-    int topViewIndex = d->viewIndex(top);
+    int topViewIndex = d->viewIndex(topLeft);
     if (topViewIndex == 0)
-        d->defaultItemHeight = indexRowSizeHint(top);
+        d->defaultItemHeight = indexRowSizeHint(topLeft);
     bool sizeChanged = false;
     if (topViewIndex != -1) {
         if (topLeft == bottomRight) {
@@ -691,8 +690,7 @@ void QTreeView::dataChanged(const QModelIndex &topLeft, const QModelIndex &botto
             d->invalidateHeightCache(topViewIndex);
             sizeChanged = (oldHeight != d->itemHeight(topViewIndex));
         } else {
-            QModelIndex bottom = bottomRight.sibling(bottomRight.row(), 0);
-            int bottomViewIndex = d->viewIndex(bottom);
+            int bottomViewIndex = d->viewIndex(bottomRight);
             for (int i = topViewIndex; i <= bottomViewIndex; ++i) {
                 int oldHeight = d->itemHeight(i);
                 d->invalidateHeightCache(i);
@@ -1140,7 +1138,7 @@ void QTreeView::scrollTo(const QModelIndex &index, ScrollHint hint)
         if (rect.isEmpty()) {
             // nothing to do
         } else if (hint == EnsureVisible && area.contains(rect)) {
-            d->setDirtyRegion(rect);
+            d->viewport->update(rect);
             // nothing to do
         } else {
             bool above = (hint == EnsureVisible
@@ -1546,7 +1544,7 @@ void QTreeView::drawRow(QPainter *painter, const QStyleOptionViewItem &option,
                                  ? logicalIndexBeforeLeft
                                  : logicalIndices.at(currentLogicalSection - 1);
         if (columnCount == 1 || (nextLogicalSection == 0 && prevLogicalSection == -1)
-            || (headerSection == 0 && nextLogicalSection == -1))
+            || (headerSection == 0 && nextLogicalSection == -1) || spanning)
             opt.viewItemPosition = QStyleOptionViewItemV4::OnlyOne;
         else if (headerSection == 0 || (nextLogicalSection != 0 && prevLogicalSection == -1))
             opt.viewItemPosition = QStyleOptionViewItemV4::Beginning;
@@ -1815,10 +1813,10 @@ void QTreeView::mouseDoubleClickEvent(QMouseEvent *event)
         if (i == -1)
             return; // user clicked outside the items
 
-        const QModelIndex &index = d->viewItems.at(i).index;
+        const QPersistentModelIndex firstColumnIndex = d->viewItems.at(i).index;
 
         int column = d->header->logicalIndexAt(event->x());
-        QPersistentModelIndex persistent = index.sibling(index.row(), column);
+        QPersistentModelIndex persistent = firstColumnIndex.sibling(firstColumnIndex.row(), column);
 
         if (d->pressedIndex != persistent) {
             mousePressEvent(event);
@@ -1841,10 +1839,10 @@ void QTreeView::mouseDoubleClickEvent(QMouseEvent *event)
         if (d->itemsExpandable
             && d->expandsOnDoubleClick
             && d->hasVisibleChildren(persistent)) {
-            if (!((i < d->viewItems.count()) && (d->viewItems.at(i).index == persistent))) {
+            if (!((i < d->viewItems.count()) && (d->viewItems.at(i).index == firstColumnIndex))) {
                 // find the new index of the item
                 for (i = 0; i < d->viewItems.count(); ++i) {
-                    if (d->viewItems.at(i).index == persistent)
+                    if (d->viewItems.at(i).index == firstColumnIndex)
                         break;
                 }
                 if (i == d->viewItems.count())
@@ -2422,14 +2420,10 @@ void QTreeView::rowsInserted(const QModelIndex &parent, int start, int end)
                                                     ? d->viewItems.count()
                                                     : d->viewItems.at(parentItem).total) - 1;
 
-        int firstColumn = 0;
-        while (isColumnHidden(firstColumn) && firstColumn < header()->count() - 1)
-            ++firstColumn;
-
         const int delta = end - start + 1;
         QVector<QTreeViewItem> insertedItems(delta);
         for (int i = 0; i < delta; ++i) {
-            insertedItems[i].index = d->model->index(i + start, firstColumn, parent);
+            insertedItems[i].index = d->model->index(i + start, 0, parent);
             insertedItems[i].level = childLevel;
         }
         if (d->viewItems.isEmpty())
@@ -2612,7 +2606,7 @@ void QTreeView::expandAll()
         d->viewItems[i].expanded = true;
         d->layout(i);
         QModelIndex idx = d->viewItems.at(i).index;
-        d->expandedIndexes.insert(idx.sibling(idx.row(), 0));
+        d->expandedIndexes.insert(idx);
     }
     updateGeometries();
     d->viewport->update();
@@ -3092,10 +3086,6 @@ void QTreeViewPrivate::layout(int i)
     Q_Q(QTreeView);
     QModelIndex current;
     QModelIndex parent = (i < 0) ? (QModelIndex)root : modelIndex(i);
-    // modelIndex() will return an index that don't have a parent if column 0 is hidden,
-    // so we must make sure that parent points to the actual parent that has children.
-    if (parent != root)
-        parent = model->index(parent.row(), 0, parent.parent());
 
     if (i>=0 && !parent.isValid()) {
         //modelIndex() should never return something invalid for the real items.
@@ -3130,13 +3120,9 @@ void QTreeViewPrivate::layout(int i)
     int last = 0;
     int children = 0;
 
-    int firstColumn = 0;
-    while (header->isSectionHidden(firstColumn) && firstColumn < header->count())
-        ++firstColumn;
-
     for (int j = first; j < first + count; ++j) {
-        current = model->index(j - first, firstColumn, parent);
-        if (isRowHidden(current.sibling(current.row(), 0))) {
+        current = model->index(j - first, 0, parent);
+        if (isRowHidden(current)) {
             ++hidden;
             last = j - hidden + children;
         } else {
@@ -3319,15 +3305,11 @@ int QTreeViewPrivate::itemAtCoordinate(int coordinate) const
 
 int QTreeViewPrivate::viewIndex(const QModelIndex &_index) const
 {
-    Q_Q(const QTreeView);
     if (!_index.isValid() || viewItems.isEmpty())
         return -1;
 
     const int totalCount = viewItems.count();
-    int firstColumn = 0;
-    while (q->isColumnHidden(firstColumn) && firstColumn < header->count())
-        ++firstColumn;
-    const QModelIndex index = _index.sibling(_index.row(), firstColumn);
+    const QModelIndex index = _index.sibling(_index.row(), 0);
 
 
     // A quick check near the last item to see if we are just incrementing

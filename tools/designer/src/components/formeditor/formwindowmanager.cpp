@@ -39,10 +39,6 @@
 **
 ****************************************************************************/
 
-/*
-TRANSLATOR qdesigner_internal::FormWindowManager
-*/
-
 // components/formeditor
 #include "formwindowmanager.h"
 #include "formwindow_dnditem.h"

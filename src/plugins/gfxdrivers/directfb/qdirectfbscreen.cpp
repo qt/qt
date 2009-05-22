@@ -294,14 +294,14 @@ IDirectFBSurface *QDirectFBScreen::copyToDFBSurface(const QImage &img,
 
     IDirectFBSurface *dfbSurface = createDFBSurface(image.size(), pixmapFormat, options);
     if (!dfbSurface) {
-        qWarning("QDirectFBPixmapData::fromImage() Couldn't create surface");
+        qWarning("QDirectFBScreen::copyToDFBSurface() Couldn't create surface");
         return 0;
     }
 
 #ifndef QT_NO_DIRECTFB_PREALLOCATED
     IDirectFBSurface *imgSurface = createDFBSurface(image, DontTrackSurface);
     if (!imgSurface) {
-        qWarning("QDirectFBPixmapData::fromImage()");
+        qWarning("QDirectFBScreen::copyToDFBSurface()");
         QDirectFBScreen::releaseDFBSurface(dfbSurface);
         return 0;
     }
@@ -316,7 +316,7 @@ IDirectFBSurface *QDirectFBScreen::copyToDFBSurface(const QImage &img,
     dfbSurface->SetBlittingFlags(dfbSurface, flags);
     DFBResult result = dfbSurface->Blit(dfbSurface, imgSurface, 0, 0, 0);
     if (result != DFB_OK)
-        DirectFBError("QDirectFBPixmapData::fromImage()", result);
+        DirectFBError("QDirectFBScreen::copyToDFBSurface()", result);
     dfbSurface->ReleaseSource(dfbSurface);
     imgSurface->Release(imgSurface);
 #else // QT_NO_DIRECTFB_PREALLOCATED

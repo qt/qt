@@ -1924,15 +1924,15 @@ static void drawTrapezoid(const QGLTrapezoid &trap, const qreal offscreenHeight,
     qreal leftB = trap.bottomLeftX + (trap.topLeftX - trap.bottomLeftX) * reciprocal;
     qreal rightB = trap.bottomRightX + (trap.topRightX - trap.bottomRightX) * reciprocal;
 
-    const bool topZero = qFuzzyCompare(topDist + 1, 1);
+    const bool topZero = qFuzzyIsNull(topDist);
 
     reciprocal = topZero ? 1.0 / bottomDist : 1.0 / topDist;
 
     qreal leftA = topZero ? (trap.bottomLeftX - leftB) * reciprocal : (trap.topLeftX - leftB) * reciprocal;
     qreal rightA = topZero ? (trap.bottomRightX - rightB) * reciprocal : (trap.topRightX - rightB) * reciprocal;
 
-    qreal invLeftA = qFuzzyCompare(leftA + 1, 1) ? 0.0 : 1.0 / leftA;
-    qreal invRightA = qFuzzyCompare(rightA + 1, 1) ? 0.0 : 1.0 / rightA;
+    qreal invLeftA = qFuzzyIsNull(leftA) ? 0.0 : 1.0 / leftA;
+    qreal invRightA = qFuzzyIsNull(rightA) ? 0.0 : 1.0 / rightA;
 
     // fragment program needs the negative of invRightA as it mirrors the line
     glTexCoord4f(topDist, bottomDist, invLeftA, -invRightA);
@@ -2233,7 +2233,7 @@ void QOpenGLPaintEnginePrivate::fillVertexArray(Qt::FillRule fillRule)
 
     // Enable color writes.
     glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
-    glStencilMask(0);
+    glStencilMask(stencilMask);
 
     setGradientOps(cbrush, QRectF(QPointF(min_x, min_y), QSizeF(max_x - min_x, max_y - min_y)));
 
@@ -2245,12 +2245,14 @@ void QOpenGLPaintEnginePrivate::fillVertexArray(Qt::FillRule fillRule)
 
         // Enable stencil func.
         glStencilFunc(GL_NOTEQUAL, 0, stencilMask);
+        glStencilOp(GL_REPLACE, GL_REPLACE, GL_REPLACE);
         composite(rect);
     } else {
         DEBUG_ONCE qDebug() << "QOpenGLPaintEnginePrivate: Drawing polygon using stencil method (no fragment programs)";
 
         // Enable stencil func.
         glStencilFunc(GL_NOTEQUAL, 0, stencilMask);
+        glStencilOp(GL_REPLACE, GL_REPLACE, GL_REPLACE);
 #ifndef QT_OPENGL_ES
         glBegin(GL_QUADS);
         glVertex2f(min_x, min_y);
@@ -2260,24 +2262,6 @@ void QOpenGLPaintEnginePrivate::fillVertexArray(Qt::FillRule fillRule)
         glEnd();
 #endif
     }
-
-    glStencilMask(~0);
-    glStencilFunc(GL_ALWAYS, 0, 0);
-    glStencilOp(GL_ZERO, GL_ZERO, GL_ZERO);
-
-    // clear all stencil values to 0
-    glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
-
-#ifndef QT_OPENGL_ES
-    glBegin(GL_QUADS);
-    glVertex2f(min_x, min_y);
-    glVertex2f(max_x, min_y);
-    glVertex2f(max_x, max_y);
-    glVertex2f(min_x, max_y);
-    glEnd();
-#endif
-
-    glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
 
     // Disable stencil writes.
     glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
@@ -3445,8 +3429,7 @@ QVector<QGLTrapezoid> QGLRectMaskGenerator::generateTrapezoids()
         // manhattan distance (no rotation)
         qreal width = qAbs(delta.x()) + qAbs(delta.y());
 
-        Q_ASSERT(qFuzzyCompare(delta.x() + 1, static_cast<qreal>(1))
-                 || qFuzzyCompare(delta.y() + 1, static_cast<qreal>(1)));
+        Q_ASSERT(qFuzzyIsNull(delta.x()) || qFuzzyIsNull(delta.y()));
 
         tessellator.tessellateRect(first, last, width);
     } else {

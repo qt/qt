@@ -195,14 +195,14 @@ QString qws_dataDir()
     if (!result.isEmpty())
         return result;
     QByteArray dataDir = QString(QLatin1String("/tmp/qtembedded-%1")).arg(qws_display_id).toLocal8Bit();
-    if (mkdir(dataDir, 0700)) {
+    if (QT_MKDIR(dataDir, 0700)) {
         if (errno != EEXIST) {
             qFatal("Cannot create Qt for Embedded Linux data directory: %s", dataDir.constData());
         }
     }
 
-    struct stat buf;
-    if (lstat(dataDir, &buf))
+    QT_STATBUF buf;
+    if (QT_LSTAT(dataDir, &buf))
         qFatal("stat failed for Qt for Embedded Linux data directory: %s", dataDir.constData());
 
     if (!S_ISDIR(buf.st_mode))
@@ -2280,7 +2280,8 @@ void qt_init(QApplicationPrivate *priv, int type)
         qt_appType = QApplication::Type(type);
         qws_single_process = true;
         QWSServer::startup(flags);
-        setenv("QWS_DISPLAY", qws_display_spec.constData(), 0);
+        if (!display) // if not already set
+            qputenv("QWS_DISPLAY", qws_display_spec);
     }
 
     if(qt_is_gui_used) {

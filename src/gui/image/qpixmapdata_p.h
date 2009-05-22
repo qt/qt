@@ -78,6 +78,7 @@ public:
     virtual void fromFile(const QString &filename, const char *format,
                           Qt::ImageConversionFlags flags);
     virtual void copy(const QPixmapData *data, const QRect &rect);
+    virtual bool scroll(int dx, int dy, const QRect &rect);
 
     virtual int metric(QPaintDevice::PaintDeviceMetric metric) const = 0;
     virtual void fill(const QColor &color) = 0;
@@ -121,7 +122,7 @@ private:
 };
 
 #ifdef Q_WS_WIN
-#ifndef Q_OS_WINCE
+#ifndef Q_WS_WINCE
 QPixmap convertHIconToPixmap( const HICON icon);
 #else
 QPixmap convertHIconToPixmap( const HICON icon, bool large = false);

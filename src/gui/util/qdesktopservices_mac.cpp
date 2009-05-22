@@ -96,7 +96,7 @@ OSType translateLocation(QDesktopServices::StandardLocation type)
 
 static bool lsOpen(const QUrl &url)
 {
-    if (!url.isValid())
+    if (!url.isValid() || url.scheme().isEmpty())
         return false;
 
     QCFType<CFURLRef> cfUrl = CFURLCreateWithString(0, QCFString(QString::fromLatin1(url.toEncoded())), 0);

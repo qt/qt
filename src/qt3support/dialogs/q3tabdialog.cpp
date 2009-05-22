@@ -49,6 +49,7 @@
 #include "qapplication.h"
 #include "q3widgetstack.h"
 #include "qlayout.h"
+#include "qevent.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -958,6 +959,16 @@ void Q3TabDialog::resizeEvent(QResizeEvent * e)
 */
 void Q3TabDialog::paintEvent(QPaintEvent *)
 {
+}
+
+
+/*!\reimp
+*/
+void Q3TabDialog::showEvent(QShowEvent *e)
+{
+    if (!e->spontaneous())
+        show();
+    QDialog::showEvent(e);
 }
 
 

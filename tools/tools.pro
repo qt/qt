@@ -22,6 +22,8 @@ mac {
     SUBDIRS += macdeployqt
 }
 
+embedded:SUBDIRS += kmap2qmap
+
 contains(QT_CONFIG, dbus):SUBDIRS += qdbus
 !wince*:contains(QT_CONFIG, xmlpatterns): SUBDIRS += xmlpatterns
 embedded: SUBDIRS += makeqpf
