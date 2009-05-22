@@ -5104,7 +5104,8 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
                     arrowOpt.state = tb->state;
                     arrowOpt.palette = tb->palette;
                     drawPrimitive(PE_IndicatorArrowDown, &arrowOpt, p, widget);
-                } else if (tb->features & QStyleOptionToolButton::HasMenu) {
+                } else if ((tb->features & QStyleOptionToolButton::HasMenu)
+                            && (tb->toolButtonStyle != Qt::ToolButtonTextOnly && !tb->icon.isNull())) {
                     drawToolbarButtonArrow(tb->rect, tds, cg);
                 }
                 if (tb->state & State_On) {

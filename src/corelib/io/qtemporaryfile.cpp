@@ -291,19 +291,42 @@ class QTemporaryFileEngine : public QFSFileEngine
 {
     Q_DECLARE_PRIVATE(QFSFileEngine)
 public:
-    QTemporaryFileEngine(const QString &file) : QFSFileEngine(file) { }
+    QTemporaryFileEngine(const QString &file, bool fileIsTemplate = true)
+        : QFSFileEngine(file), filePathIsTemplate(fileIsTemplate)
+    {
+    }
+
     ~QTemporaryFileEngine();
 
+    bool isReallyOpen();
     void setFileName(const QString &file);
 
     bool open(QIODevice::OpenMode flags);
     bool remove();
+    bool rename(const QString &newName);
     bool close();
+
+    bool filePathIsTemplate;
 };
 
 QTemporaryFileEngine::~QTemporaryFileEngine()
 {
     QFSFileEngine::close();
+}
+
+bool QTemporaryFileEngine::isReallyOpen()
+{
+    Q_D(QFSFileEngine);
+
+    if (!((0 == d->fh) && (-1 == d->fd)
+#if defined Q_OS_WIN
+                && (INVALID_HANDLE_VALUE == d->fileHandle)
+#endif
+            ))
+        return true;
+
+    return false;
+
 }
 
 void QTemporaryFileEngine::setFileName(const QString &file)
@@ -316,13 +339,16 @@ void QTemporaryFileEngine::setFileName(const QString &file)
 bool QTemporaryFileEngine::open(QIODevice::OpenMode openMode)
 {
     Q_D(QFSFileEngine);
+    Q_ASSERT(!isReallyOpen());
+
+    if (!filePathIsTemplate)
+        return QFSFileEngine::open(openMode);
 
     QString qfilename = d->filePath;
     if(!qfilename.contains(QLatin1String("XXXXXX")))
         qfilename += QLatin1String(".XXXXXX");
 
     int suffixLength = qfilename.length() - (qfilename.lastIndexOf(QLatin1String("XXXXXX"), -1, Qt::CaseSensitive) + 6);
-    d->closeFileHandle = true;
     char *filename = qstrdup(qfilename.toLocal8Bit());
 
 #ifndef Q_WS_WIN
@@ -330,16 +356,20 @@ bool QTemporaryFileEngine::open(QIODevice::OpenMode openMode)
     if (fd != -1) {
         // First open the fd as an external file descriptor to
         // initialize the engine properly.
-        QFSFileEngine::open(openMode, fd);
+        if (QFSFileEngine::open(openMode, fd)) {
 
-        // Allow the engine to close the handle even if it's "external".
-        d->closeFileHandle = true;
+            // Allow the engine to close the handle even if it's "external".
+            d->closeFileHandle = true;
 
-        // Restore the file names (open() resets them).
-        d->filePath = QString::fromLocal8Bit(filename); //changed now!
-        d->nativeInitFileName();
-        delete [] filename;
-        return true;
+            // Restore the file names (open() resets them).
+            d->filePath = QString::fromLocal8Bit(filename); //changed now!
+            filePathIsTemplate = false;
+            d->nativeInitFileName();
+            delete [] filename;
+            return true;
+        }
+
+        QT_CLOSE(fd);
     }
     delete [] filename;
     setError(errno == EMFILE ? QFile::ResourceError : QFile::OpenError, qt_error_string(errno));
@@ -351,6 +381,7 @@ bool QTemporaryFileEngine::open(QIODevice::OpenMode openMode)
     }
 
     d->filePath = QString::fromLocal8Bit(filename);
+    filePathIsTemplate = false;
     d->nativeInitFileName();
     d->closeFileHandle = true;
     delete [] filename;
@@ -364,9 +395,17 @@ bool QTemporaryFileEngine::remove()
     // Since the QTemporaryFileEngine::close() does not really close the file,
     // we must explicitly call QFSFileEngine::close() before we remove it.
     QFSFileEngine::close();
-    bool removed = QFSFileEngine::remove();
-    d->filePath.clear();
-    return removed;
+    if (QFSFileEngine::remove()) {
+        d->filePath.clear();
+        return true;
+    }
+    return false;
+}
+
+bool QTemporaryFileEngine::rename(const QString &newName)
+{
+    QFSFileEngine::close();
+    return QFSFileEngine::rename(newName);
 }
 
 bool QTemporaryFileEngine::close()
@@ -388,17 +427,14 @@ protected:
 
     bool autoRemove;
     QString templateName;
-    mutable QTemporaryFileEngine *fileEngine;
 };
 
-QTemporaryFilePrivate::QTemporaryFilePrivate() : autoRemove(true), fileEngine(0)
+QTemporaryFilePrivate::QTemporaryFilePrivate() : autoRemove(true)
 {
 }
 
 QTemporaryFilePrivate::~QTemporaryFilePrivate()
 {
-    delete fileEngine;
-    fileEngine = 0;
 }
 
 //************* QTemporaryFile
@@ -430,8 +466,8 @@ QTemporaryFilePrivate::~QTemporaryFilePrivate()
     file will exist and be kept open internally by QTemporaryFile.
 
     The file name of the temporary file can be found by calling fileName().
-    Note that this is only defined while the file is open; the function returns
-    an empty string before the file is opened and after it is closed.
+    Note that this is only defined after the file is first opened; the function
+    returns an empty string before this.
 
     A temporary file will have some static part of the name and some
     part that is calculated to be unique. The default filename \c
@@ -601,7 +637,8 @@ void QTemporaryFile::setAutoRemove(bool b)
 
 QString QTemporaryFile::fileName() const
 {
-    if(!isOpen())
+    Q_D(const QTemporaryFile);
+    if(d->fileName.isEmpty())
         return QString();
     return fileEngine()->fileName(QAbstractFileEngine::DefaultName);
 }
@@ -695,8 +732,12 @@ QTemporaryFile *QTemporaryFile::createLocalFile(QFile &file)
 QAbstractFileEngine *QTemporaryFile::fileEngine() const
 {
     Q_D(const QTemporaryFile);
-    if(!d->fileEngine)
-        d->fileEngine = new QTemporaryFileEngine(d->templateName);
+    if(!d->fileEngine) {
+        if (d->fileName.isEmpty())
+            d->fileEngine = new QTemporaryFileEngine(d->templateName);
+        else
+            d->fileEngine = new QTemporaryFileEngine(d->fileName, false);
+    }
     return d->fileEngine;
 }
 
@@ -711,10 +752,13 @@ bool QTemporaryFile::open(OpenMode flags)
 {
     Q_D(QTemporaryFile);
     if (!d->fileName.isEmpty()) {
-        setOpenMode(flags);
-        return true;
+        if (static_cast<QTemporaryFileEngine*>(fileEngine())->isReallyOpen()) {
+            setOpenMode(flags);
+            return true;
+        }
     }
 
+    flags |= QIODevice::ReadWrite;
     if (QFile::open(flags)) {
         d->fileName = d->fileEngine->fileName(QAbstractFileEngine::DefaultName);
         return true;
@@ -722,6 +766,8 @@ bool QTemporaryFile::open(OpenMode flags)
     return false;
 }
 
+QT_END_NAMESPACE
+
 #endif // QT_NO_TEMPORARYFILE
 
-QT_END_NAMESPACE
+

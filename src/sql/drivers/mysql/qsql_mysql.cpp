@@ -927,6 +927,7 @@ bool QMYSQLResult::exec()
             nullVector[i] = static_cast<my_bool>(val.isNull());
             currBind->is_null = &nullVector[i];
             currBind->length = 0;
+            currBind->is_unsigned = 0;
 
             switch (val.type()) {
                 case QVariant::ByteArray:
@@ -973,7 +974,6 @@ bool QMYSQLResult::exec()
                     currBind->buffer_type = MYSQL_TYPE_DOUBLE;
                     currBind->buffer = data;
                     currBind->buffer_length = sizeof(double);
-                    currBind->is_unsigned = 0;
                     break;
                 case QVariant::LongLong:
                 case QVariant::ULongLong:
@@ -989,7 +989,6 @@ bool QMYSQLResult::exec()
                     currBind->buffer_type = MYSQL_TYPE_STRING;
                     currBind->buffer = const_cast<char *>(ba.constData());
                     currBind->buffer_length = ba.length();
-                    currBind->is_unsigned = 0;
                     break; }
             }
         }

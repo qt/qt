@@ -312,6 +312,10 @@ bool QFSFileEnginePrivate::openFh(QIODevice::OpenMode openMode, FILE *fh)
         if (ret == -1) {
             q->setError(errno == EMFILE ? QFile::ResourceError : QFile::OpenError,
                         qt_error_string(int(errno)));
+
+            this->openMode = QIODevice::NotOpen;
+            this->fh = 0;
+
             return false;
         }
     }
@@ -335,6 +339,7 @@ bool QFSFileEngine::open(QIODevice::OpenMode openMode, int fd)
     if ((openMode & QFile::WriteOnly) && !(openMode & (QFile::ReadOnly | QFile::Append)))
         openMode |= QFile::Truncate;
 
+    d->openMode = openMode;
     d->lastFlushFailed = false;
     d->closeFileHandle = false;
     d->nativeFilePath.clear();
@@ -367,6 +372,10 @@ bool QFSFileEnginePrivate::openFd(QIODevice::OpenMode openMode, int fd)
         if (ret == -1) {
             q->setError(errno == EMFILE ? QFile::ResourceError : QFile::OpenError,
                         qt_error_string(int(errno)));
+
+            this->openMode = QIODevice::NotOpen;
+            this->fd = -1;
+
             return false;
         }
     }
