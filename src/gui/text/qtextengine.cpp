@@ -1219,7 +1219,7 @@ void QTextEngine::shapeTextWithHarfbuzz(int item) const
         QFontEngine *actualFontEngine = font;
         uint engineIdx = 0;
         if (font->type() == QFontEngine::Multi) {
-            engineIdx = uint(initialGlyphs.glyphs[glyph_pos] >> 24);
+            engineIdx = uint(availableGlyphs(&si).glyphs[glyph_pos] >> 24);
 
             actualFontEngine = static_cast<QFontEngineMulti *>(font)->engine(engineIdx);
         }
