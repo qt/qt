@@ -1474,7 +1474,14 @@
     \snippet doc/src/snippets/code/doc_src_qmake-manual.qdoc 34
 
     See also \l{#SOURCES}{SOURCES}.
-
+    
+    \target ICON
+    \section1 ICON
+    
+    This variable is used only in MAC and S60 to set the application icon.
+    Please see \l{Setting the Application Icon}{the application icon documentation}
+    for more information.
+    
     \target INCLUDEPATH
     \section1 INCLUDEPATH
 
