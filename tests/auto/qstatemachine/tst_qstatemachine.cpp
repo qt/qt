@@ -1836,6 +1836,19 @@ void tst_QStateMachine::eventTransitions()
         QCoreApplication::processEvents();
         QTest::mouseRelease(&button, Qt::LeftButton);
         QTRY_COMPARE(finishedSpy.count(), 2);
+
+        machine.start();
+        QCoreApplication::processEvents();
+        trans->setEventType(QEvent::MouseButtonPress);
+        QTest::mousePress(&button, Qt::LeftButton);
+        QTRY_COMPARE(finishedSpy.count(), 3);
+
+        QPushButton button2;
+        machine.start();
+        QCoreApplication::processEvents();
+        trans->setEventObject(&button2);
+        QTest::mousePress(&button2, Qt::LeftButton);
+        QTRY_COMPARE(finishedSpy.count(), 4);
     }
     for (int x = 0; x < 3; ++x) {
         QStateMachine machine;
