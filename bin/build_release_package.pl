@@ -16,57 +16,58 @@ if (@ARGV)
     my $cert = shift(@ARGV);
     my $certKey = shift(@ARGV);
     my $releaseDir = shift(@ARGV);
+    my $qtRootDir = shift(@ARGV);
     my $epocroot = shift(@ARGV);
 
     if ($build eq "")
     {
         print("HW build parameter required!\n");
-        exit;
+        exit 1;
     }
 
     if ($cert eq "")
     {
         print("Signing certificate parameter required!\n");
-        exit;
+        exit 2;
     }
 
     if ($certKey eq "")
     {
         print("Signing certificate key parameter required!\n");
-        exit;
+        exit 3;
     }
 
     if ($releaseDir eq "")
     {
         print("Release directory parameter required!\n");
-        exit;
+        exit 4;
     }
 
-    if ($epocroot eq "")
+    if ($qtRootDir eq "")
     {
-        $epocroot = "\\";
+        $qtRootDir = cwd();
+        $qtRootDir =~ s/\//\\/g;
     }
 
-    if ($epocroot =~ m/.*[^\\]$/)
-    {
-        $epocroot = "${epocroot}\\";
-    }
+    # Lose the ending separator is any
+    $qtRootDir =~ s/\\$//;
+    $epocroot =~ s/\\$//;
 
+    chdir($qtRootDir);
+
+    # Lose the drive designator from epocroot
     $epocroot =~ s/.://;
 
     my $releaseDirQt = "${releaseDir}\\qt";
     my $releaseDirEpocroot = "${releaseDir}\\epocroot";
-    my $releaseDirSis = "${releaseDir}\\sis";
-
-    my $qtRootDir = cwd();
-    $qtRootDir =~ s/\//\\/g; # Fix dir separators
+    my $releaseDirSis = $releaseDirQt; # Put sis files to Qt source dir root
 
     my $qtRootDirForMatch = $qtRootDir; # Double backslashes so that variable can be used in matching
-    $qtRootDirForMatch =~ s/\\/\\\\/;
+    $qtRootDirForMatch =~ s/\\/\\\\/g;
 
     my $pkgFileName = "src\\s60installs\\qt_libs_${platform}_${build}.pkg";
 
-    my $hwBuildDir = "${epocroot}epoc32\\release\\$platform\\$build";
+    my $hwBuildDir = "${epocroot}\\epoc32\\release\\$platform\\$build";
     my $armDbgDir = "epoc32\\release\\armv5\\udeb";
     my $armRelDir = "epoc32\\release\\armv5\\urel";
     my $gcceDbgDir = "epoc32\\release\\gcce\\udeb";
@@ -76,21 +77,23 @@ if (@ARGV)
 
     # clean up old stuff
     system("rd /S /Q ${releaseDir} 2> NUL");
-    system("rd /S /Q ${epocroot}epoc32\\build 2> NUL"); # Just in case env is not clean
+    system("rd /S /Q ${epocroot}\\epoc32\\build 2> NUL"); # Just in case env is not clean
 
     # Copy the whole thing over to the release dir before it gets polluted
     print("Copying clean tree...\n");
     my $tempExcludeFile = "${releaseDir}\\__temp_exclude.txt";
     system("mkdir ${releaseDir} 2>NUL");
-    runSystemCmd("echo \\.git\\ > ${tempExcludeFile}");
+    runSystemCmd("echo ${qtRootDir}\\.git\\ > ${tempExcludeFile}");
+    runSystemCmd("echo ${qtRootDir}\\tests\\ >> ${tempExcludeFile}");
+    runSystemCmd("echo ${qtRootDir}\\util\\ >> ${tempExcludeFile}");
     runSystemCmd("xcopy ${qtRootDir} ${releaseDirQt} /E /I /H /Q /EXCLUDE:${tempExcludeFile}");
     system("del /F /Q ${tempExcludeFile} 2> NUL");
 
     # Clear archive flag from all items in \epoc32\release\armv5\urel and \epoc32\release\armv5\lib
     # as those will have the binaries used for all platforms and builds.
     runSystemCmd("attrib -A ${hwBuildDir}\\*");
-    runSystemCmd("attrib -A ${epocroot}${armLibDir}\\*");
-    runSystemCmd("attrib -A ${epocroot}${winscwDbgDir}\\*");
+    runSystemCmd("attrib -A ${epocroot}\\${armLibDir}\\*");
+    runSystemCmd("attrib -A ${epocroot}\\${winscwDbgDir}\\*");
 
     # Build Qt
     runSystemCmd("configure -platform win32-mwc -xplatform symbian-abld -openssl-linked -qt-sql-sqlite -system-sqlite -nokia-developer");
@@ -168,8 +171,8 @@ if (@ARGV)
     system("del /F /Q ${releaseDirEpocroot}\\${armRelDir}\\*.sym 2> NUL");
     runSystemCmd("xcopy ${releaseDirEpocroot}\\${armDbgDir}\\* ${releaseDirEpocroot}\\${gcceDbgDir} /F /R /Y /I /D");
     runSystemCmd("xcopy ${releaseDirEpocroot}\\${armRelDir}\\* ${releaseDirEpocroot}\\${gcceRelDir} /F /R /Y /I /D");
-    runSystemCmd("xcopy ${epocroot}${armLibDir}\\* ${releaseDirEpocroot}\\${armLibDir} /A /F /R /Y /I /D");
-    runSystemCmd("xcopy ${epocroot}${winscwDbgDir}\\* ${releaseDirEpocroot}\\${winscwDbgDir} /A /F /R /Y /I /D");
+    runSystemCmd("xcopy ${epocroot}\\${armLibDir}\\* ${releaseDirEpocroot}\\${armLibDir} /A /F /R /Y /I /D");
+    runSystemCmd("xcopy ${epocroot}\\${winscwDbgDir}\\* ${releaseDirEpocroot}\\${winscwDbgDir} /A /F /R /Y /I /D");
 
     # Create unsigned sis and Rnd signed sisx
     my @pkgPathElements = split(/\\/, $pkgFileName);
@@ -177,20 +180,21 @@ if (@ARGV)
     my @pkgSuffixElements = split(/\./, $pathlessPkgFile);
     pop(@pkgSuffixElements);
     my $sisFileName = join("", @pkgSuffixElements).".sis";
+    my $rndSisFileName = join("", @pkgSuffixElements)."_rnd.sisx";
     system("mkdir ${releaseDirSis}");
     runSystemCmd("makesis ${pkgFileName} ${releaseDirSis}\\${sisFileName}");
-    runSystemCmd("signsis ${releaseDirSis}\\${sisFileName} ${releaseDirSis}\\${sisFileName}x ${cert} ${certKey}");
+    runSystemCmd("signsis ${releaseDirSis}\\${sisFileName} ${releaseDirSis}\\${rndSisFileName} ${cert} ${certKey}");
 }
 else
 {
     print("Usage:\n");
-    print("build_release_package.pl <hw platform> <hw build> <signing cert> <signing cert key> <release directory> [EPOCROOT]\n");
-    print("EPOCROOT is optional, defaults to '\\'\n");
+    print("build_release_package.pl <hw platform> <hw build> <signing cert> <signing cert key> <release directory> [QTROOT] [EPOCROOT]\n");
+    print("QTROOT and EPOCROOT are optional; QTROOT defaults to current dir and EPOCROOT defaults to '\\'\n");
     print("1) Clean up the env. (abld reallyclean & delete \\my\\epoc\\root\\build folder)\n");
-    print("2) Run \"build_release_package.pl armv5 udeb \\rd.cer \\rd-key.pem \\my_release_dir [\\my\\epoc\\root\\]>\"\n");
+    print("2) Run \"build_release_package.pl armv5 udeb \\rd.cer \\rd-key.pem \\my_release_dir [\\my\\qt\\root\\] [\\my\\epoc\\root\\]>\"\n");
     print("   to build Qt and create the release package structure and sis file.\n");
     print("   Note: Run in the Qt root directory.\n");
-    print("3) Optional: Get the sis signed with commercial certificate\n");
+    print("3) Optional: Get the sis signed with commercial certificate (can be found in qt directory under release directory)\n");
     print("4) Zip up the release directory contents\n");
 }
 
@@ -200,6 +204,6 @@ sub runSystemCmd
     if ($error_code != 0)
     {
         print("'$_[0]' call failed: error code == $error_code\n");
-        exit;
+        exit 5;
     }
 }

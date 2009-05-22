@@ -505,21 +505,18 @@ void tst_QSslSocket::sslErrors_data()
 {
     QTest::addColumn<QString>("host");
     QTest::addColumn<int>("port");
-    QTest::addColumn<SslErrorList>("errors");
+    QTest::addColumn<SslErrorList>("expected");
 
-    QTest::newRow(QtNetworkSettings::serverName().toAscii() + " port443") << QtNetworkSettings::serverName() << 443
-                                   << (SslErrorList()
-                                       << QSslError::UnableToGetLocalIssuerCertificate
-                                       << QSslError::CertificateUntrusted
-                                       << QSslError::UnableToVerifyFirstCertificate
-                                       );
-    QTest::newRow(QtNetworkSettings::serverName().toAscii() + " port993") << QtNetworkSettings::serverName() << 993
-                                        << (SslErrorList()
-                                        << QSslError::HostNameMismatch
-                                        << QSslError::SelfSignedCertificate  
-                                       );
-    // TODO: Should we have  QtNetworkSettings::serverName alias
-    // in order that we could test with different host name
+    QTest::newRow(qPrintable(QtNetworkSettings::serverLocalName()))
+        << QtNetworkSettings::serverLocalName()
+        << 993
+        << (SslErrorList() << QSslError::HostNameMismatch
+                           << QSslError::SelfSignedCertificate);
+
+    QTest::newRow("imap.trolltech.com")
+        << "imap.trolltech.com"
+        << 993
+        << (SslErrorList() << QSslError::SelfSignedCertificateInChain);
 }
 
 void tst_QSslSocket::sslErrors()
