@@ -66,15 +66,15 @@
         <location filename="../src/3rdparty/phonon/gstreamer/backend.cpp" line="+171"/>
         <source>Warning: You do not seem to have the package gstreamer0.10-plugins-good installed.
           Some video features have been disabled.</source>
-        <translation>Warnung: Das Paket  gstreamer0.10-plugins-good ist nicht installiert.
-Einige Video-Funktionen stehen nicht zur  Verfügung.</translation>
+        <translation>Achtung: Das Paket gstreamer0.10-plugins-good ist nicht installiert.
+Einige Video-Funktionen stehen nicht zur Verfügung.</translation>
     </message>
     <message>
         <location line="+5"/>
         <source>Warning: You do not seem to have the base GStreamer plugins installed.
           All audio and video support has been disabled</source>
-        <translation>Warnung: Die grundlegenden GStreamer-plugins sind nicht installiert.￼
-Die Audio- und Video-Unterstützung wurde abgeschaltet</translation>
+        <translation>Achtung: Die grundlegenden GStreamer-Plugins sind nicht installiert.￼
+Die Audio- und Video-Unterstützung steht nicht zur Verfügung.</translation>
     </message>
 </context>
 <context>
@@ -1373,7 +1373,7 @@ nach
     <message>
         <location line="+3"/>
         <source>Warning:</source>
-        <translation>Warnung:</translation>
+        <translation>Achtung:</translation>
     </message>
     <message>
         <location line="+3"/>
