@@ -295,6 +295,7 @@ SUBDIRS += _networkselftest \
            qstandarditem \
            qstandarditemmodel \
            qstate \
+           qstatemachine \
            qstatusbar \
            qstl \
            qstring \
