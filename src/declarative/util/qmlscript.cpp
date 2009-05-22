@@ -55,10 +55,9 @@
 #include <QNetworkReply>
 #include <QNetworkRequest>
 #include <QtDeclarative/qmlinfo.h>
+#include <qfxperf.h>
 
 QT_BEGIN_NAMESPACE
-
-
 
 class QmlScriptPrivate : public QObjectPrivate
 {
@@ -183,6 +182,9 @@ void QmlScript::replyFinished()
 
 void QmlScriptPrivate::addScriptToEngine(const QString &script, const QString &fileName)
 {
+#ifdef Q_ENABLE_PERFORMANCE_LOG
+    QFxPerfTimer<QFxPerf::AddScript> pt;
+#endif
     Q_Q(QmlScript);
     QmlEngine *engine = qmlEngine(q);
     QmlContext *context = qmlContext(q);

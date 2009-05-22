@@ -14,7 +14,7 @@
 #ifndef QMLVIEWER_H
 #define QMLVIEWER_H
 
-#include <QMainWindow>
+#include <QMenuBar>
 #include <QBasicTimer>
 #include <QTime>
 #include <qfxtestengine.h>
@@ -26,7 +26,7 @@ class PreviewDeviceSkin;
 class QFxTestEngine;
 class QProcess;
 
-class QmlViewer : public QMainWindow
+class QmlViewer : public QWidget
 {
 Q_OBJECT
 public:
@@ -42,8 +42,10 @@ public:
     void setAutoRecord(int from, int to);
     void setDeviceKeys(bool);
     void setCacheEnabled(bool);
+    void addLibraryPath(const QString& lib);
 
     QSize sizeHint() const;
+    QMenuBar *menuBar() const;
 
 public slots:
     void sceneResized(QSize size);
@@ -86,6 +88,7 @@ private:
     QAction *recordAction;
     QString currentSkin;
     bool scaleSkin;
+    mutable QMenuBar *mb;
 
     QFxTestEngine *testEngine;
 };

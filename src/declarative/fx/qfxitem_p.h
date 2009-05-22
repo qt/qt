@@ -157,6 +157,7 @@ public:
         QFxAnchorLine top;
         QFxAnchorLine bottom;
         QFxAnchorLine vCenter;
+        QFxAnchorLine baseline;
     };
     mutable AnchorLines *_anchorLines;
     AnchorLines *anchorLines() const {

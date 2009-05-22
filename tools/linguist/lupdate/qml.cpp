@@ -88,7 +88,8 @@ protected:
     virtual void endVisit(AST::CallExpression *node)
     {
         if (AST::IdentifierExpression *idExpr = AST::cast<AST::IdentifierExpression *>(node->base)) {
-            if (idExpr->name->asString() == QLatin1String("qsTr")) {
+            if (idExpr->name->asString() == QLatin1String("qsTr") ||
+                idExpr->name->asString() == QLatin1String("QT_TR_NOOP")) {
                 if (node->arguments && AST::cast<AST::StringLiteral *>(node->arguments->expression)) {
                     AST::StringLiteral *literal = AST::cast<AST::StringLiteral *>(node->arguments->expression);
                     const QString source = literal->value->asString();
@@ -102,8 +103,8 @@ protected:
 
                         AST::ArgumentList *nNode = commentNode->next;
                         if (nNode) {
-                            AST::NumericLiteral *literal3 = AST::cast<AST::NumericLiteral *>(nNode->expression);
-                            if (literal3) {
+                            AST::NumericLiteral *numLiteral = AST::cast<AST::NumericLiteral *>(nNode->expression);
+                            if (numLiteral) {
                                 plural = true;
                             }
                         }
@@ -115,8 +116,42 @@ protected:
                         TranslatorMessage::Unfinished, plural);
                     m_translator->extend(msg);
                 }
+            } else if (idExpr->name->asString() == QLatin1String("qsTranslate") ||
+                       idExpr->name->asString() == QLatin1String("QT_TRANSLATE_NOOP")) {
+                if (node->arguments && AST::cast<AST::StringLiteral *>(node->arguments->expression)) {
+                    AST::StringLiteral *literal = AST::cast<AST::StringLiteral *>(node->arguments->expression);
+                    const QString context = literal->value->asString();
+
+                    QString source;
+                    QString comment;
+                    bool plural = false;
+                    AST::ArgumentList *sourceNode = node->arguments->next;
+                    if (sourceNode) {
+                        literal = AST::cast<AST::StringLiteral *>(sourceNode->expression);
+                        source = literal->value->asString();
+                        AST::ArgumentList *commentNode = sourceNode->next;
+                        if (commentNode) {
+                            literal = AST::cast<AST::StringLiteral *>(commentNode->expression);
+                            comment = literal->value->asString();
+
+                            AST::ArgumentList *nNode = commentNode->next;
+                            if (nNode) {
+                                AST::NumericLiteral *numLiteral = AST::cast<AST::NumericLiteral *>(nNode->expression);
+                                if (numLiteral) {
+                                    plural = true;
+                                }
+                            }
+                        }
+                    }
+
+                    TranslatorMessage msg(context, source,
+                        comment, QString(), m_fileName,
+                        node->firstSourceLocation().startLine, QStringList(),
+                        TranslatorMessage::Unfinished, plural);
+                    m_translator->extend(msg);
+                }
+
             }
-            //### support qsTranslate, QT_TR_NOOP, and QT_TRANSLATE_NOOP
         }
     }
 

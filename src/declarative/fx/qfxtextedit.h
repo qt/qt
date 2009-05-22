@@ -78,6 +78,7 @@ class Q_DECLARATIVE_EXPORT QFxTextEdit : public QFxPaintedItem
     Q_PROPERTY(bool readOnly READ isReadOnly WRITE setReadOnly)
     Q_PROPERTY(bool cursorVisible READ isCursorVisible WRITE setCursorVisible)
     Q_PROPERTY(bool focusOnPress READ focusOnPress WRITE setFocusOnPress)
+    Q_PROPERTY(bool preserveSelection READ preserveSelection WRITE setPreserveSelection)
     Q_CLASSINFO("DefaultProperty", "text")
 
 public:
@@ -131,6 +132,9 @@ public:
     bool focusOnPress() const;
     void setFocusOnPress(bool on);
 
+    bool preserveSelection() const;
+    void setPreserveSelection(bool on);
+
     virtual void dump(int depth);
     virtual QString propertyInfo() const;
 
@@ -174,6 +178,7 @@ protected:
     virtual void geometryChanged(const QRectF &newGeometry, 
                                  const QRectF &oldGeometry);
 
+    bool event(QEvent *);
     void keyPressEvent(QKeyEvent *);
     void keyReleaseEvent(QKeyEvent *);
 

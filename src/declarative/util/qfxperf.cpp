@@ -44,16 +44,20 @@
 
 QT_BEGIN_NAMESPACE
 Q_DEFINE_PERFORMANCE_LOG(QFxPerf, "QFx") {
-    Q_DEFINE_PERFORMANCE_METRIC(XmlParsing, "XML Parsing");
-    Q_DEFINE_PERFORMANCE_METRIC(Compile, "XML Compilation");
-    Q_DEFINE_PERFORMANCE_METRIC(CompileRun, "XML Compilation Run");
-    Q_DEFINE_PERFORMANCE_METRIC(CssParsing, "CSS Parsing");
+    Q_DEFINE_PERFORMANCE_METRIC(QmlParsing, "QML Parsing");
+    Q_DEFINE_PERFORMANCE_METRIC(Compile, "QML Compilation");
+    Q_DEFINE_PERFORMANCE_METRIC(CompileRun, "QML Compilation Run");
     Q_DEFINE_PERFORMANCE_METRIC(CreateComponent, "Component creation");
     Q_DEFINE_PERFORMANCE_METRIC(BindInit, "BindValue Initialization");
     Q_DEFINE_PERFORMANCE_METRIC(BindCompile, "BindValue compile");
     Q_DEFINE_PERFORMANCE_METRIC(BindValue, "BindValue execution");
     Q_DEFINE_PERFORMANCE_METRIC(BindValueSSE, "BindValue execution SSE");
     Q_DEFINE_PERFORMANCE_METRIC(BindValueQt, "BindValue execution QtScript");
+    Q_DEFINE_PERFORMANCE_METRIC(ContextQuery, "QtScript: Query Context");
+    Q_DEFINE_PERFORMANCE_METRIC(ContextProperty, "QtScript: Context Property");
+    Q_DEFINE_PERFORMANCE_METRIC(ObjectQuery, "QtScript: Query Object");
+    Q_DEFINE_PERFORMANCE_METRIC(ObjectProperty, "QtScript: Object Property");
+    Q_DEFINE_PERFORMANCE_METRIC(ObjectSetProperty, "QtScript: Set Object Property");
     Q_DEFINE_PERFORMANCE_METRIC(BindableValueUpdate, "QmlBindableValue::update");
     Q_DEFINE_PERFORMANCE_METRIC(PixmapLoad, "Pixmap loading");
     Q_DEFINE_PERFORMANCE_METRIC(MetaProperty, "Meta property resolution");
@@ -65,11 +69,7 @@ Q_DEFINE_PERFORMANCE_LOG(QFxPerf, "QFx") {
     Q_DEFINE_PERFORMANCE_METRIC(ComponentInstanceComponentComplete, "QFxComponentInstance::componentComplete");
     Q_DEFINE_PERFORMANCE_METRIC(BaseLayoutComponentComplete, "QFxBaseLayout::componentComplete");
     Q_DEFINE_PERFORMANCE_METRIC(TextComponentComplete, "QFxText::componentComplete");
-    Q_DEFINE_PERFORMANCE_METRIC(ContextQuery, "QtScript: Query Context");
-    Q_DEFINE_PERFORMANCE_METRIC(ContextProperty, "QtScript: Context Property");
-    Q_DEFINE_PERFORMANCE_METRIC(ObjectQuery, "QtScript: Query Object");
-    Q_DEFINE_PERFORMANCE_METRIC(ObjectProperty, "QtScript: Object Property");
-    Q_DEFINE_PERFORMANCE_METRIC(ObjectSetProperty, "QtScript: Set Object Property");
     Q_DEFINE_PERFORMANCE_METRIC(QFxText_setText, "QFxText::setText");
+    Q_DEFINE_PERFORMANCE_METRIC(AddScript, "QmlScript::addScriptToEngine");
 }
 QT_END_NAMESPACE

@@ -117,6 +117,7 @@ public:
     QFxAnchorLine bottom;
     QFxAnchorLine vCenter;
     QFxAnchorLine hCenter;
+    QFxAnchorLine baseline;
 
     int leftMargin;
     int rightMargin;

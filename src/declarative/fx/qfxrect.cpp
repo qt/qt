@@ -55,7 +55,7 @@ QML_DEFINE_TYPE(QFxPen,Pen);
     By default, the pen is invalid and nothing is drawn. You must either set a color (then the default
     width is 0) or a width (then the default color is black).
 
-    A width of 0 is a single-pixel line on the border of the item being painted.
+    A width of 0 indicates a cosmetic pen, a single-pixel line on the border of the item being painted.
 
     Example:
     \qml
@@ -401,7 +401,7 @@ void QFxRect::generateRoundedRect()
     Q_D(QFxRect);
     if (d->_rectImage.isNull()) {
         const int pw = d->_pen && d->_pen->isValid() ? d->_pen->width() : 0;
-        d->_rectImage = QImage(d->_radius*2 + 1 + pw*2, d->_radius*2 + 1 + pw*2, QImage::Format_ARGB32_Premultiplied);
+        d->_rectImage = QImage(d->_radius*2 + 3 + pw*2, d->_radius*2 + 3 + pw*2, QImage::Format_ARGB32_Premultiplied);
         d->_rectImage.fill(0);
         QPainter p(&(d->_rectImage));
         p.setRenderHint(QPainter::Antialiasing);
@@ -421,7 +421,7 @@ void QFxRect::generateBorderedRect()
     Q_D(QFxRect);
     if (d->_rectImage.isNull()) {
         const int pw = d->_pen && d->_pen->isValid() ? d->_pen->width() : 0;
-        d->_rectImage = QImage(d->pen()->width()*2 + 1 + pw*2, d->pen()->width()*2 + 1 + pw*2, QImage::Format_ARGB32_Premultiplied);
+        d->_rectImage = QImage(d->pen()->width()*2 + 3 + pw*2, d->pen()->width()*2 + 3 + pw*2, QImage::Format_ARGB32_Premultiplied);
         d->_rectImage.fill(0);
         QPainter p(&(d->_rectImage));
         p.setRenderHint(QPainter::Antialiasing);
@@ -533,10 +533,10 @@ void QFxRect::drawRect(QPainter &p)
         if (d->_radius > 0) {
             generateRoundedRect();
             //### implicit conversion to int
-            offset = int(d->_radius+0.5+pw);
+            offset = int(d->_radius+1.5+pw);
         } else {
             generateBorderedRect();
-            offset = pw;
+            offset = pw+1;
         }
 
         //basically same code as QFxImage uses to paint sci images

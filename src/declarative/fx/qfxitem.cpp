@@ -197,8 +197,10 @@ void QFxContents::setItem(QFxItem *item)
     const QList<QSimpleCanvasItem *> &children = _item->QSimpleCanvasItem::children();
     for (int i = 0; i < children.count(); ++i) {
         const QSimpleCanvasItem *child = children.at(i);
-        connect(child, SIGNAL(bottomChanged()), this, SLOT(calcHeight()));
-        connect(child, SIGNAL(rightChanged()), this, SLOT(calcWidth()));
+        connect(child, SIGNAL(heightChanged()), this, SLOT(calcHeight()));
+        connect(child, SIGNAL(topChanged()), this, SLOT(calcHeight()));
+        connect(child, SIGNAL(widthChanged()), this, SLOT(calcWidth()));
+        connect(child, SIGNAL(leftChanged()), this, SLOT(calcWidth()));
     }
 
     calcHeight();
@@ -259,24 +261,10 @@ void QFxContents::setItem(QFxItem *item)
 */
 
 /*!
-    \fn void QFxItem::baselineChanged()
-
-    This signal is emitted when the baseline of the item changes. 
-
-    The baseline may change in response to a change to the baselineOffset
-    property or due to the geometry of the item changing.
-*/
-
-/*!
     \fn void QFxItem::baselineOffsetChanged()
 
-    This signal is emitted when the baseline of the item is changed
-    via the baselineOffset property.
-
-    The baseline corresponds to the baseline of the text contained in
-    the item.  It is useful for aligning the text in items placed
-    beside each other.  The default baseline is positioned at
-    2/3 of the height of the item.
+    This signal is emitted when the baseline offset of the item
+    is changed.
 */
 
 /*!
@@ -286,21 +274,9 @@ void QFxContents::setItem(QFxItem *item)
 */
 
 /*!
-    \fn void QFxItem::rightChanged()
-
-    This signal is emitted when the right coordinate of the item changes.
-*/
-
-/*!
     \fn void QFxItem::topChanged()
 
     This signal is emitted when the top coordinate of the item changes.
-*/
-
-/*!
-    \fn void QFxItem::bottomChanged()
-
-    This signal is emitted when the bottom coordinate of the item changes.
 */
 
 /*!
@@ -1282,6 +1258,15 @@ QFxAnchorLine QFxItem::verticalCenter() const
 }
 
 /*!
+    \internal
+*/
+QFxAnchorLine QFxItem::baseline() const
+{
+    Q_D(const QFxItem);
+    return d->anchorLines()->baseline;
+}
+
+/*!
   \property QFxItem::top
 
   One of the anchor lines of the item.
@@ -1336,6 +1321,7 @@ QFxAnchorLine QFxItem::verticalCenter() const
   \qmlproperty AnchorLine Item::right
   \qmlproperty AnchorLine Item::horizontalCenter
   \qmlproperty AnchorLine Item::verticalCenter
+  \qmlproperty AnchorLine Item::baseline
 
   The anchor lines of the item.
 
@@ -1349,6 +1335,7 @@ QFxAnchorLine QFxItem::verticalCenter() const
   \qmlproperty AnchorLine Item::anchors.right
   \qmlproperty AnchorLine Item::anchors.horizontalCenter
   \qmlproperty AnchorLine Item::anchors.verticalCenter
+  \qmlproperty AnchorLine Item::anchors.baseline
 
   \qmlproperty Item Item::anchors.fill
 
@@ -1408,20 +1395,19 @@ QFxAnchorLine QFxItem::verticalCenter() const
 
 /*!
   \property QFxItem::baselineOffset
-  \brief The position of the item's baseline in global (scene) coordinates.
+  \brief The position of the item's baseline in local coordinates.
 
   The baseline of a Text item is the imaginary line on which the text
   sits. Controls containing text usually set their baseline to the
   baseline of their text.
 
-  For non-text items, a default baseline offset of two-thirds of the
-  item's height is used to determine the baseline.
+  For non-text items, a default baseline offset of 0 is used.
 */
 int QFxItem::baselineOffset() const
 {
     Q_D(const QFxItem);
     if (!d->_baselineOffset.isValid()) {
-        return height()*2/3;    //### default baseline is 2/3 of the way to the bottom of the item
+        return 0;
     } else
         return d->_baselineOffset;
 }
@@ -1437,6 +1423,11 @@ void QFxItem::setBaselineOffset(int offset)
 
     d->_baselineOffset = offset;
     emit baselineOffsetChanged();
+
+    for(int ii = 0; ii < d->dependantAnchors.count(); ++ii) {
+        QFxAnchors *anchor = d->dependantAnchors.at(ii);
+        anchor->d_func()->updateVerticalAnchors();
+    }
 }
 
 /*!
@@ -1672,6 +1663,7 @@ void QFxItem::setKeepMouseGrab(bool keep)
  */
 void QFxItem::activeFocusChanged(bool flag)
 {
+    Q_UNUSED(flag);
     emit activeFocusChanged();
 }
 
@@ -1681,6 +1673,7 @@ void QFxItem::activeFocusChanged(bool flag)
  */
 void QFxItem::focusChanged(bool flag)
 {
+    Q_UNUSED(flag);
     emit focusChanged();
 }
 
@@ -2100,6 +2093,8 @@ QFxItemPrivate::AnchorLines::AnchorLines(QFxItem *q)
     bottom.anchorLine = QFxAnchorLine::Bottom;
     vCenter.item = q;
     vCenter.anchorLine = QFxAnchorLine::VCenter;
+    baseline.item = q;
+    baseline.anchorLine = QFxAnchorLine::Baseline;
 }
 
 QT_END_NAMESPACE

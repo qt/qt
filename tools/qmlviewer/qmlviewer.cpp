@@ -124,7 +124,7 @@ void PreviewDeviceSkin::slotPopupMenu()
 
 
 QmlViewer::QmlViewer(QFxTestEngine::TestMode testMode, const QString &testDir, QWidget *parent, Qt::WindowFlags flags)
-    : QMainWindow(parent, flags), frame_stream(0), scaleSkin(true)
+    : QWidget(parent, flags), frame_stream(0), scaleSkin(true), mb(0)
 {
     testEngine = 0;
     devicemode = false;
@@ -133,12 +133,12 @@ QmlViewer::QmlViewer(QFxTestEngine::TestMode testMode, const QString &testDir, Q
     record_autotime = 0;
     record_period = 20;
 
-    setAttribute(Qt::WA_OpaquePaintEvent);
-    setAttribute(Qt::WA_NoSystemBackground);
     if (!(flags & Qt::FramelessWindowHint))
         createMenu(menuBar(),0);
 
     canvas = new QFxView(this);
+    canvas->setAttribute(Qt::WA_OpaquePaintEvent);
+    canvas->setAttribute(Qt::WA_NoSystemBackground);
     canvas->setContentResizable(!skin || !scaleSkin);
 
     if(testMode != QFxTestEngine::NoTest)
@@ -146,17 +146,31 @@ QmlViewer::QmlViewer(QFxTestEngine::TestMode testMode, const QString &testDir, Q
 
     QObject::connect(canvas, SIGNAL(sceneResized(QSize)), this, SLOT(sceneResized(QSize)));
 
-    setCentralWidget(canvas);
+    QVBoxLayout *layout = new QVBoxLayout;
+    layout->setMargin(0);
+    layout->setSpacing(0);
+    setLayout(layout);
+    if (mb)
+        layout->addWidget(mb);
+    layout->addWidget(canvas);
+}
+
+QMenuBar *QmlViewer::menuBar() const
+{
+    if (!mb)
+        mb = new QMenuBar((QWidget*)this);
+
+    return mb;
 }
 
 QSize QmlViewer::sizeHint() const
 {
     if (skin)
-        return QMainWindow::sizeHint();
+        return QWidget::sizeHint();
     else {
         // Kludge to force QMainWindow to be EXACTLY the right size for the canvas.
         QSize sh = canvas->sizeHint();
-        sh.setHeight(sh.height()+menuBar()->sizeHint().height()+1);
+        sh.setHeight(sh.height()+menuBar()->sizeHint().height());
         return sh;
     }
 }
@@ -252,6 +266,10 @@ void QmlViewer::createMenu(QMenuBar *menu, QMenu *flatmenu)
     connect(quitAction, SIGNAL(triggered()), qApp, SLOT(quit()));
     fileMenu->addSeparator();
     fileMenu->addAction(quitAction);
+    if (menu) {
+        menu->setFixedHeight(menu->sizeHint().height());
+        menu->setMinimumWidth(10);
+    }
 }
 
 void QmlViewer::setScaleSkin()
@@ -314,6 +332,10 @@ void QmlViewer::toggleRecording()
     setRecording(recording);
 }
 
+void QmlViewer::addLibraryPath(const QString& lib)
+{
+    canvas->engine()->addNameSpacePath("",lib);
+}
 
 void QmlViewer::reload()
 {
@@ -415,7 +437,9 @@ void QmlViewer::setSkin(const QString& skinDirectory)
     DeviceSkinParameters parameters;
     if (!skinDirectory.isEmpty() && parameters.read(skinDirectory,DeviceSkinParameters::ReadAll,&err)) {
         layout()->setEnabled(false);
-        setMenuBar(0);
+        //setMenuBar(0);
+        if (mb)
+            mb->hide();
         if (!err.isEmpty())
             qWarning() << err;
         skin = new PreviewDeviceSkin(parameters,this);
@@ -432,6 +456,7 @@ void QmlViewer::setSkin(const QString& skinDirectory)
         menuBar()->clear();
         canvas->setParent(this, Qt::SubWindow);
         createMenu(menuBar(),0);
+        mb->show();
         setMinimumSize(QSize(0,0));
         setMaximumSize(QSize(16777215,16777215));
         canvas->setMinimumSize(QSize(0,0));
@@ -439,7 +464,7 @@ void QmlViewer::setSkin(const QString& skinDirectory)
         QRect g = geometry();
         g.setSize(sizeHint());
         setParent(0,windowFlags()); // recreate
-        canvas->move(0,menuBar()->sizeHint().height()+1);
+        canvas->move(0,menuBar()->sizeHint().height());
         setGeometry(g);
         layout()->setEnabled(true);
         show();

@@ -127,6 +127,7 @@ class Q_DECLARATIVE_EXPORT QFxItem : public QSimpleCanvasItem, public QmlParserS
     Q_PROPERTY(QFxAnchorLine top READ top)
     Q_PROPERTY(QFxAnchorLine bottom READ bottom)
     Q_PROPERTY(QFxAnchorLine verticalCenter READ verticalCenter)
+    Q_PROPERTY(QFxAnchorLine baseline READ baseline)
     Q_PROPERTY(qreal rotation READ rotation WRITE setRotation NOTIFY rotationChanged)
     Q_PROPERTY(qreal scale READ scale WRITE setScale NOTIFY scaleChanged)
     Q_PROPERTY(qreal opacity READ opacity WRITE setOpacity NOTIFY opacityChanged)
@@ -258,6 +259,7 @@ private:
     QFxAnchorLine top() const;
     QFxAnchorLine bottom() const;
     QFxAnchorLine verticalCenter() const;
+    QFxAnchorLine baseline() const;
 
     void init(QFxItem *parent);
     friend class QmlStatePrivate;

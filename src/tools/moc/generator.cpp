@@ -758,6 +758,9 @@ void Generator::generateMetacall()
                 else if (cdef->enumDeclarations.value(p.type, false))
                     fprintf(out, "        case %d: *reinterpret_cast<int*>(_v) = QFlag(%s()); break;\n",
                             propindex, p.read.constData());
+                else if (p.type == "qreal")
+                    fprintf(out, "        case %d: *reinterpret_cast< double*>(_v) = %s(); break;\n",
+                            propindex, p.read.constData());
                 else
                     fprintf(out, "        case %d: *reinterpret_cast< %s*>(_v) = %s(); break;\n",
                             propindex, p.type.constData(), p.read.constData());
@@ -781,6 +784,9 @@ void Generator::generateMetacall()
                     continue;
                 if (cdef->enumDeclarations.value(p.type, false)) {
                     fprintf(out, "        case %d: %s(QFlag(*reinterpret_cast<int*>(_v))); break;\n",
+                            propindex, p.write.constData());
+                } else if(p.type == "qreal") {
+                    fprintf(out, "        case %d: %s(*reinterpret_cast< double*>(_v)); break;\n",
                             propindex, p.write.constData());
                 } else {
                     fprintf(out, "        case %d: %s(*reinterpret_cast< %s*>(_v)); break;\n",

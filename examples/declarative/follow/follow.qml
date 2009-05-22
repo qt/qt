@@ -8,8 +8,12 @@ Rect {
         y: SequentialAnimation {
             running: true; repeat: true
             NumericAnimation {
+                to: 20; duration: 500
+                easing: "easeInOutQuad"
+            }
+            NumericAnimation {
                 to: 200; duration: 2000
-                easing: "easeOutBounce(amplitude:180)"
+                easing: "easeOutBounce"
             }
             PauseAnimation { duration: 1000 }
         }

@@ -121,9 +121,9 @@ public:
     qreal rowPos() const { return (view->flow() == QFxGridView::LeftToRight ? item->y() : item->x()); }
     qreal colPos() const { return (view->flow() == QFxGridView::LeftToRight ? item->x() : item->y()); }
     qreal endRowPos() const {
-        return (view->flow() == QFxGridView::LeftToRight
-                                        ? item->y() + (item->height() > 0 ? item->height() : 1)
-                                        : item->x() + (item->width() > 0 ? item->width() : 1)) - 1;
+        return view->flow() == QFxGridView::LeftToRight
+                                ? item->y() + view->cellHeight() - 1
+                                : item->x() + view->cellWidth() - 1;
     }
     void setPosition(qreal col, qreal row) {
         if (view->flow() == QFxGridView::LeftToRight) {
@@ -149,7 +149,7 @@ public:
     QFxGridViewPrivate()
     : model(0), currentItem(0), tmpCurrent(0), flow(QFxGridView::LeftToRight)
     , visiblePos(0), visibleIndex(0) , currentIndex(-1)
-    , cellWidth(100), cellHeight(100), columns(1)
+    , cellWidth(100), cellHeight(100), columns(1), requestedIndex(-1)
     , highlightComponent(0), highlight(0), trackedItem(0)
     , moveReason(Other), buffer(0), highlightXAnimator(0), highlightYAnimator(0)
     , keyPressed(false), ownModel(false), wrap(false), autoHighlight(true)
@@ -157,13 +157,14 @@ public:
 
     void init();
     void clear();
-    FxGridItem *getItem(int modelIndex);
     FxGridItem *createItem(int modelIndex);
     void releaseItem(FxGridItem *item);
     void refill(qreal from, qreal to);
 
     void updateGrid();
     void layout(bool removed=false);
+    void updateUnrequestedIndexes();
+    void updateUnrequestedPositions();
     void updateTrackedItem();
     void createHighlight();
     void updateHighlight();
@@ -290,6 +291,7 @@ public:
     QFxVisualItemModel *model;
     QVariant modelVariant;
     QList<FxGridItem*> visibleItems;
+    QHash<QFxItem*,int> unrequestedItems;
     FxGridItem *currentItem;
     QFxItem *tmpCurrent;
     QFxGridView::Flow flow;
@@ -299,6 +301,7 @@ public:
     int cellWidth;
     int cellHeight;
     int columns;
+    int requestedIndex;
     QmlComponent *highlightComponent;
     FxGridItem *highlight;
     FxGridItem *trackedItem;
@@ -330,29 +333,18 @@ void QFxGridViewPrivate::clear()
     visibleItems.clear();
     visiblePos = 0;
     visibleIndex = 0;
-    if (currentItem) {
-        FxGridItem *tmpItem = currentItem;
-        currentItem = 0;
-        currentIndex = -1;
-        releaseItem(tmpItem);
-    }
+    releaseItem(currentItem);
+    currentItem = 0;
+    currentIndex = -1;
     createHighlight();
     trackedItem = 0;
-}
-
-FxGridItem *QFxGridViewPrivate::getItem(int modelIndex)
-{
-    if (currentItem && modelIndex == currentIndex)
-        return currentItem;
-    if (FxGridItem *listItem = visibleItem(modelIndex))
-        return listItem;
-    return createItem(modelIndex);
 }
 
 FxGridItem *QFxGridViewPrivate::createItem(int modelIndex)
 {
     Q_Q(QFxGridView);
     // create object
+    requestedIndex = modelIndex;
     FxGridItem *listItem = 0;
     if (QFxItem *item = model->item(modelIndex, false)) {
         listItem = new FxGridItem(item, q);
@@ -362,6 +354,7 @@ FxGridItem *QFxGridViewPrivate::createItem(int modelIndex)
         listItem->item->setZ(modelIndex + 1);
         listItem->item->setParent(q->viewport());
     }
+    requestedIndex = 0;
     return listItem;
 }
 
@@ -369,15 +362,18 @@ FxGridItem *QFxGridViewPrivate::createItem(int modelIndex)
 void QFxGridViewPrivate::releaseItem(FxGridItem *item)
 {
     Q_Q(QFxGridView);
-    if (item != currentItem) {
-        if (trackedItem == item) {
-            QObject::disconnect(trackedItem->item, SIGNAL(topChanged()), q, SLOT(trackedPositionChanged()));
-            QObject::disconnect(trackedItem->item, SIGNAL(leftChanged()), q, SLOT(trackedPositionChanged()));
-            trackedItem = 0;
-        }
-        model->release(item->item);
-        delete item;
+    if (!item)
+        return;
+    if (trackedItem == item) {
+        QObject::disconnect(trackedItem->item, SIGNAL(topChanged()), q, SLOT(trackedPositionChanged()));
+        QObject::disconnect(trackedItem->item, SIGNAL(leftChanged()), q, SLOT(trackedPositionChanged()));
+        trackedItem = 0;
     }
+    if (model->release(item->item) == 0) {
+        // item was not destroyed, and we no longer reference it.
+        unrequestedItems.insert(item->item, model->indexOf(item->item, q));
+    }
+    delete item;
 }
 
 void QFxGridViewPrivate::refill(qreal from, qreal to)
@@ -409,7 +405,7 @@ void QFxGridViewPrivate::refill(qreal from, qreal to)
     FxGridItem *item = 0;
     while (modelIndex < model->count() && rowPos <= to) {
         //qDebug() << "refill: append item" << modelIndex;
-        if (!(item = getItem(modelIndex)))
+        if (!(item = createItem(modelIndex)))
             break;
         item->setPosition(colPos, rowPos);
         visibleItems.append(item);
@@ -432,7 +428,7 @@ void QFxGridViewPrivate::refill(qreal from, qreal to)
     }
     while (visibleIndex > 0 && rowPos + rowSize() - 1 >= from){
         //qDebug() << "refill: prepend item" << visibleIndex-1 << "top pos" << rowPos << colPos;
-        if (!(item = getItem(visibleIndex-1)))
+        if (!(item = createItem(visibleIndex-1)))
             break;
         --visibleIndex;
         item->setPosition(colPos, rowPos);
@@ -517,6 +513,27 @@ void QFxGridViewPrivate::layout(bool removed)
     } else {
         q->setViewportWidth(endPosition() - startPosition());
         fixupX();
+    }
+    updateUnrequestedPositions();
+}
+
+void QFxGridViewPrivate::updateUnrequestedIndexes()
+{
+    Q_Q(QFxGridView);
+    QHash<QFxItem*,int>::iterator it;
+    for (it = unrequestedItems.begin(); it != unrequestedItems.end(); ++it)
+        *it = model->indexOf(it.key(), q);
+}
+
+void QFxGridViewPrivate::updateUnrequestedPositions()
+{
+    QHash<QFxItem*,int>::const_iterator it;
+    for (it = unrequestedItems.begin(); it != unrequestedItems.end(); ++it) {
+        if (flow == QFxGridView::LeftToRight) {
+            it.key()->setPos(QPointF(colPosAt(*it), rowPosAt(*it)));
+        } else {
+            it.key()->setPos(QPointF(rowPosAt(*it), colPosAt(*it)));
+        }
     }
 }
 
@@ -606,11 +623,11 @@ void QFxGridViewPrivate::updateCurrent(int modelIndex)
     Q_Q(QFxGridView);
     if (!isValid() || modelIndex < 0 || modelIndex >= model->count()) {
         if (currentItem) {
-            FxGridItem *item = currentItem;
+            currentItem->attached->setIsCurrentItem(false);
+            releaseItem(currentItem);
             currentItem = 0;
-            currentIndex = 0;
+            currentIndex = -1;
             updateHighlight();
-            releaseItem(item);
             emit q->currentIndexChanged();
         }
         return;
@@ -625,28 +642,20 @@ void QFxGridViewPrivate::updateCurrent(int modelIndex)
         delete tmpCurrent;
         tmpCurrent = 0;
     }
-    int oldCurrentIndex = currentIndex;
     FxGridItem *oldCurrentItem = currentItem;
-    currentIndex = -1;
-    currentItem = visibleItem(modelIndex);
-    if (!currentItem) {
-        currentItem = getItem(modelIndex);
-        if (currentItem)
-            currentItem->setPosition(colPosAt(modelIndex), rowPosAt(modelIndex));
-    }
     currentIndex = modelIndex;
+    currentItem = createItem(modelIndex);
     fixCurrentVisibility = true;
     if (oldCurrentItem && (!currentItem || oldCurrentItem->item != currentItem->item))
         oldCurrentItem->attached->setIsCurrentItem(false);
     if (currentItem) {
+        currentItem->setPosition(colPosAt(modelIndex), rowPosAt(modelIndex));
         currentItem->item->setFocus(true);
         currentItem->attached->setIsCurrentItem(true);
     }
     updateHighlight();
     emit q->currentIndexChanged();
-    // Release the old current item
-    if (oldCurrentItem && !visibleItem(oldCurrentIndex))
-        releaseItem(oldCurrentItem);
+    releaseItem(oldCurrentItem);
 }
 
 //----------------------------------------------------------------------------
@@ -711,6 +720,8 @@ void QFxGridView::setModel(const QVariant &model)
     if (d->model) {
         disconnect(d->model, SIGNAL(itemsInserted(int,int)), this, SLOT(itemsInserted(int,int)));
         disconnect(d->model, SIGNAL(itemsRemoved(int,int)), this, SLOT(itemsRemoved(int,int)));
+        disconnect(d->model, SIGNAL(createdItem(int, QFxItem*)), this, SLOT(createdItem(int,QFxItem*)));
+        disconnect(d->model, SIGNAL(destroyingItem(QFxItem*)), this, SLOT(destroyingItem(QFxItem*)));
     }
     d->clear();
     d->modelVariant = model;
@@ -736,6 +747,8 @@ void QFxGridView::setModel(const QVariant &model)
             d->updateCurrent(d->currentIndex);
         connect(d->model, SIGNAL(itemsInserted(int,int)), this, SLOT(itemsInserted(int,int)));
         connect(d->model, SIGNAL(itemsRemoved(int,int)), this, SLOT(itemsRemoved(int,int)));
+        connect(d->model, SIGNAL(createdItem(int, QFxItem*)), this, SLOT(createdItem(int,QFxItem*)));
+        connect(d->model, SIGNAL(destroyingItem(QFxItem*)), this, SLOT(destroyingItem(QFxItem*)));
         refill();
         emit countChanged();
     }
@@ -1182,7 +1195,7 @@ void QFxGridView::itemsInserted(int modelIndex, int count)
                 d->visibleIndex += count;
                 for (int i = 0; i < d->visibleItems.count(); ++i) {
                     FxGridItem *listItem = d->visibleItems.at(i);
-                    if (listItem->index != -1 && listItem != d->currentItem)
+                    if (listItem->index != -1)
                         listItem->index += count;
                 }
             }
@@ -1258,10 +1271,8 @@ void QFxGridView::itemsInserted(int modelIndex, int count)
         // Update the indexes of the following visible items.
         for (; index < d->visibleItems.count(); ++index) {
             FxGridItem *listItem = d->visibleItems.at(index);
-            if (listItem != d->currentItem) {
-                if (listItem->index != -1)
-                    listItem->index += count;
-            }
+            if (listItem->index != -1)
+                listItem->index += count;
         }
     }
     // everything is in order now - emit add() signal
@@ -1274,7 +1285,6 @@ void QFxGridView::itemsInserted(int modelIndex, int count)
 void QFxGridView::itemsRemoved(int modelIndex, int count)
 {
     Q_D(QFxGridView);
-
     int index = d->mapFromModel(modelIndex);
     if (index == -1) {
         if (modelIndex + count - 1 < d->visibleIndex) {
@@ -1282,7 +1292,7 @@ void QFxGridView::itemsRemoved(int modelIndex, int count)
             d->visibleIndex -= count;
             for (int i = 0; i < d->visibleItems.count(); ++i) {
                 FxGridItem *listItem = d->visibleItems.at(i);
-                if (listItem->index != -1 && listItem != d->currentItem)
+                if (listItem->index != -1)
                     listItem->index -= count;
             }
         }
@@ -1292,11 +1302,8 @@ void QFxGridView::itemsRemoved(int modelIndex, int count)
                 d->currentItem->index -= count;
         } else if (d->currentIndex >= modelIndex && d->currentIndex < modelIndex + count) {
             // current item has been removed.
-            if (d->currentItem) {
-                FxGridItem *item = d->currentItem;
-                d->currentItem = 0;
-                d->releaseItem(item);
-            }
+            d->releaseItem(d->currentItem);
+            d->currentItem = 0;
             d->currentIndex = -1;
             d->updateCurrent(qMin(modelIndex, d->model->count()-1));
         }
@@ -1314,8 +1321,7 @@ void QFxGridView::itemsRemoved(int modelIndex, int count)
             ++it;
         } else if (item->index >= modelIndex + count) {
             // after removed items
-            if (item != d->currentItem)
-                item->index -= count;
+            item->index -= count;
             ++it;
         } else {
             // removed item
@@ -1338,11 +1344,7 @@ void QFxGridView::itemsRemoved(int modelIndex, int count)
             d->currentItem->index -= count;
     } else if (d->currentIndex >= modelIndex && d->currentIndex < modelIndex + count) {
         // current item has been removed.
-        if (d->currentItem && !d->currentItem->attached->delayRemove()) {
-            FxGridItem *item = d->currentItem;
-            d->currentItem = 0;
-            d->releaseItem(item);
-        }
+        d->releaseItem(d->currentItem);
         d->currentItem = 0;
         d->currentIndex = -1;
         d->updateCurrent(qMin(modelIndex, d->model->count()-1));
@@ -1384,6 +1386,28 @@ void QFxGridView::destroyRemoved()
     // Correct the positioning of the items
     d->layout();
 }
+
+void QFxGridView::createdItem(int index, QFxItem *item)
+{
+    Q_D(QFxGridView);
+    item->setItemParent(this);
+    if (d->requestedIndex != index) {
+        item->setItemParent(this);
+        d->unrequestedItems.insert(item, index);
+        if (d->flow == QFxGridView::LeftToRight) {
+            item->setPos(QPointF(d->colPosAt(index), d->rowPosAt(index)));
+        } else {
+            item->setPos(QPointF(d->rowPosAt(index), d->colPosAt(index)));
+        }
+    }
+}
+
+void QFxGridView::destroyingItem(QFxItem *item)
+{
+    Q_D(QFxGridView);
+    d->unrequestedItems.remove(item);
+}
+
 
 void QFxGridView::refill()
 {

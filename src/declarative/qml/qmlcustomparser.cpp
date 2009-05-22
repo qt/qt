@@ -224,6 +224,7 @@ QList<QVariant> QmlCustomParserProperty::assignedValues() const
 
 QByteArray QmlCustomParser::compile(const QList<QmlCustomParserProperty> &, bool *ok)
 {
+    Q_UNUSED(ok);
     return QByteArray();
 }
 

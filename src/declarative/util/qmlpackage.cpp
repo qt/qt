@@ -98,6 +98,11 @@ QmlPackage::QmlPackage(QObject *parent)
 
 QmlPackage::~QmlPackage()
 {
+    Q_D(QmlPackage);
+    for (int ii = 0; ii < d->dataList.count(); ++ii) {
+        QObject *obj = d->dataList.at(ii);
+        delete obj;
+    }
 }
 
 QmlList<QObject *> *QmlPackage::data()
