@@ -295,7 +295,8 @@ void QGLWidget::setContext(QGLContext *context, const QGLContext* shareContext, 
         int matchingCount = 0;
         chosenVisualInfo = XGetVisualInfo(x11Info().display(), VisualIDMask, &vi, &matchingCount);
         if (chosenVisualInfo) {
-            memcpy(&vi, chosenVisualInfo, sizeof(XVisualInfo));
+            qDebug("Using X Visual ID (%d) provided by EGL", (int)vi.visualid);
+            vi = *chosenVisualInfo;
             XFree(chosenVisualInfo);
         }
         else {
@@ -305,11 +306,38 @@ void QGLWidget::setContext(QGLContext *context, const QGLContext* shareContext, 
         }
     }
 
+    // If EGL does not know the visual ID, so try to select an appropriate one ourselves, first
+    // using XRender if we're supposed to have an alpha, then falling back to XGetVisualInfo
+
+    bool useArgb = context->format().alpha() && !context->deviceIsPixmap();
+#if !defined(QT_NO_XRENDER)
+    if (vi.visualid == 0 && useArgb) {
+        // Try to use XRender to find an ARGB visual we can use
+        vi.screen  = x11Info().screen();
+        vi.depth   = 32;
+        vi.c_class = TrueColor;
+        XVisualInfo *matchingVisuals;
+        int matchingCount = 0;
+        matchingVisuals = XGetVisualInfo(x11Info().display(),
+                                         VisualScreenMask|VisualDepthMask|VisualClassMask,
+                                         &vi, &matchingCount);
+
+        for (int i = 0; i < matchingCount; ++i) {
+            XRenderPictFormat *format;
+            format = XRenderFindVisualFormat(x11Info().display(), matchingVisuals[i].visual);
+            if (format->type == PictTypeDirect && format->direct.alphaMask) {
+                vi = matchingVisuals[i];
+                qDebug("Using X Visual ID (%d) for ARGB visual as provided by XRender", (int)vi.visualid);
+                break;
+            }
+        }
+        XFree(matchingVisuals);
+    }
+#endif
+
     if (vi.visualid == 0) {
-        // EGL does not know the visual ID, so try to select an appropriate one ourselves:
         EGLint depth;
         qeglCtx->configAttrib(EGL_BUFFER_SIZE, &depth);
-
         int err;
         err = XMatchVisualInfo(x11Info().display(), x11Info().screen(), depth, TrueColor, &vi);
         if (err == 0) {
@@ -320,12 +348,26 @@ void QGLWidget::setContext(QGLContext *context, const QGLContext* shareContext, 
             if (err == 0) {
                 qWarning("Error: Couldn't get any matching X visual!");
                 return;
-            }
-            else
+            } else
                 qWarning("         - Falling back to X11 suggested depth (%d)", depth);
-        }
+        } else
+            qDebug("Using X Visual ID (%d) for EGL provided depth (%d)", (int)vi.visualid, depth);
 
+        // Don't try to use ARGB now unless the visual is 32-bit - even then it might stil fail :-(
+        if (useArgb)
+            useArgb = vi.depth == 32;
     }
+
+//    qDebug("Visual Info:");
+//    qDebug("   bits_per_rgb=%d", vi.bits_per_rgb);
+//    qDebug("   red_mask=0x%x", vi.red_mask);
+//    qDebug("   green_mask=0x%x", vi.green_mask);
+//    qDebug("   blue_mask=0x%x", vi.blue_mask);
+//    qDebug("   colormap_size=%d", vi.colormap_size);
+//    qDebug("   c_class=%d", vi.c_class);
+//    qDebug("   depth=%d", vi.depth);
+//    qDebug("   screen=%d", vi.screen);
+//    qDebug("   visualid=%d", vi.visualid);
 
     XSetWindowAttributes a;
 
@@ -337,9 +379,13 @@ void QGLWidget::setContext(QGLContext *context, const QGLContext* shareContext, 
     a.background_pixel = colmap.pixel(palette().color(backgroundRole()));
     a.border_pixel = colmap.pixel(Qt::black);
 
-    Window w = XCreateWindow(X11->display, p, x(), y(), width(), height(),
-                              0, vi.depth, InputOutput, vi.visual,
-                              CWBackPixel|CWBorderPixel, &a);
+    unsigned int valueMask = CWBackPixel|CWBorderPixel;
+    if(useArgb) {
+        a.colormap = XCreateColormap(x11Info().display(), p, vi.visual, AllocNone);
+        valueMask |= CWColormap;
+    }
+    Window w = XCreateWindow(x11Info().display(), p, x(), y(), width(), height(),
+                             0, vi.depth, InputOutput, vi.visual, valueMask, &a);
 
     if (deleteOldContext)
         delete oldcx;
