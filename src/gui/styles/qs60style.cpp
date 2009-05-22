@@ -664,7 +664,9 @@ void QS60Style::polish(QWidget *widget)
 
 void QS60Style::unpolish(QApplication *application)
 {
-    application->setPalette(originalPalette);
+    QPalette newPalette = qApp->style()->standardPalette();
+    application->setPalette(newPalette);
+    QApplicationPrivate::setSystemPalette(originalPalette);
 }
 
 void QS60Style::unpolish(QWidget *widget)

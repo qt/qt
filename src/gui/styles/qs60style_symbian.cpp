@@ -688,7 +688,6 @@ QPixmap QS60StyleModeSpecifics::createSkinnedGraphicsL(
         CleanupStack::PushL(background);
         User::LeaveIfError(background->Create(targetSize, EColor16MA));
 
-        // todo: push background into CleanupStack
         CFbsBitmapDevice* dev = CFbsBitmapDevice::NewL(background);
         CleanupStack::PushL(dev);
         CFbsBitGc* gc = NULL;
@@ -821,7 +820,7 @@ void QS60StyleModeSpecifics::frameIdAndCenterId(QS60StylePrivate::SkinFrameEleme
 
     switch(frameElement) {
         case QS60StylePrivate::SF_ToolTip:
-            if (QSysInfo::s60Version()==QSysInfo::SV_S60_5_0 || QSysInfo::s60Version()==QSysInfo::SV_S60_3_2) {
+            if (QSysInfo::s60Version()!=QSysInfo::SV_S60_3_1) {
                 centerId.Set(EAknsMajorGeneric, 0x19c2);
                 frameId.Set(EAknsMajorSkin, 0x5300);
             } else {
