@@ -3579,14 +3579,14 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
                     QApplicationPrivate::mouse_buttons |= me->button();
                 else
                     QApplicationPrivate::mouse_buttons &= ~me->button();
-        }
-#if !defined(QT_NO_WHEELEVENT) || !defined(QT_NO_TABLETEVENT)
-        else if (
+        } else if (e->type() == QEvent::TouchBegin
+                   || e->type() == QEvent::TouchUpdate
+                   || e->type() == QEvent::TouchEnd
 #  ifndef QT_NO_WHEELEVENT
-                 e->type() == QEvent::Wheel ||
+                 || e->type() == QEvent::Wheel
 #  endif
 #  ifndef QT_NO_TABLETEVENT
-                 e->type() == QEvent::TabletMove
+                 || e->type() == QEvent::TabletMove
                  || e->type() == QEvent::TabletPress
                  || e->type() == QEvent::TabletRelease
 #  endif
@@ -3594,7 +3594,6 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
             QInputEvent *ie = static_cast<QInputEvent*>(e);
             QApplicationPrivate::modifier_buttons = ie->modifiers();
         }
-#endif // !QT_NO_WHEELEVENT || !QT_NO_TABLETEVENT
     }
 
     if (!d->grabbedGestures.isEmpty() && e->spontaneous() && receiver->isWidgetType()) {
