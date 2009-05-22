@@ -10,6 +10,8 @@ SOURCES += main.cpp \
            lifecycle.cpp \
            graphicsview.cpp
 
+INCLUDEPATH += $$PWD
+
 include(editor/editor.pri)
 
 # install
