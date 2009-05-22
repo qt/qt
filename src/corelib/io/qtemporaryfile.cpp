@@ -766,6 +766,8 @@ bool QTemporaryFile::open(OpenMode flags)
     return false;
 }
 
+QT_END_NAMESPACE
+
 #endif // QT_NO_TEMPORARYFILE
 
-QT_END_NAMESPACE
+
