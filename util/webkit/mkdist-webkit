@@ -185,7 +185,7 @@ fi
 
 rev=`git ls-remote $repository | grep -E "^.+$tag$" | awk '{print $1}'`
 
-tarball=`mktemp /tmp/webkit-snapshot.tar` || exit 1
+tarball=`mktemp /tmp/webkit-snapshot.tar.XXXXXX` || exit 1
 echo "creating $tarball"
 
 echo "archiving webkit from $repository $tag ( $rev )"

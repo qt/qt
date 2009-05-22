@@ -124,10 +124,10 @@ bool ContentWindow::eventFilter(QObject *o, QEvent *e)
         QModelIndex index = m_contentWidget->indexAt(me->pos());
         QItemSelectionModel *sm = m_contentWidget->selectionModel();
 
+        Qt::MouseButtons button = me->button();
         if (index.isValid() && (sm && sm->isSelected(index))) {
-            if (me->button() == Qt::LeftButton) {
-                itemClicked(index);
-            } else if (me->button() == Qt::MidButton) {
+            if ((button == Qt::LeftButton && (me->modifiers() & Qt::ControlModifier))
+                || (button == Qt::MidButton)) {
                 QHelpContentModel *contentModel =
                     qobject_cast<QHelpContentModel*>(m_contentWidget->model());
                 if (contentModel) {
@@ -135,11 +135,14 @@ bool ContentWindow::eventFilter(QObject *o, QEvent *e)
                     if (itm && !isPdfFile(itm))
                         CentralWidget::instance()->setSourceInNewTab(itm->url());
                 }
+            } else if (button == Qt::LeftButton) {
+                itemClicked(index);
             }
         }
     }
     return QWidget::eventFilter(o, e);
 }
+
 
 void ContentWindow::showContextMenu(const QPoint &pos)
 {

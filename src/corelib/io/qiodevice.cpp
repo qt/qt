@@ -945,9 +945,9 @@ QByteArray QIODevice::readAll()
 
     QByteArray tmp;
     if (d->isSequential() || size() == 0) {
-        // Read it in chunks, bytesAvailable() is unreliable for sequential
-        // devices.
-        const int chunkSize = 4096;
+        // Read it in chunks. Use bytesAvailable() as an unreliable hint for
+        // sequential devices, but try to read 4K as a minimum.
+        int chunkSize = qMax(qint64(4096), bytesAvailable());
         qint64 totalRead = 0;
         forever {
             tmp.resize(tmp.size() + chunkSize);
@@ -956,6 +956,7 @@ QByteArray QIODevice::readAll()
             if (readBytes <= 0)
                 return tmp;
             totalRead += readBytes;
+            chunkSize = qMax(qint64(4096), bytesAvailable());
         }
     } else {
         // Read it all in one go.

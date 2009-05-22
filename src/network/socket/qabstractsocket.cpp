@@ -991,7 +991,6 @@ void QAbstractSocketPrivate::_q_connectToNextAddress()
         // Wait for a write notification that will eventually call
         // _q_testConnection().
         socketEngine->setWriteNotificationEnabled(true);
-        socketEngine->setExceptionNotificationEnabled(true);
         break;
     } while (state != QAbstractSocket::ConnectedState);
 }
@@ -1052,7 +1051,6 @@ void QAbstractSocketPrivate::_q_abortConnectionAttempt()
 #endif
     if (socketEngine) {
         socketEngine->setWriteNotificationEnabled(false);
-        socketEngine->setExceptionNotificationEnabled(false);
     }
     connectTimer->stop();
 
@@ -1130,7 +1128,7 @@ bool QAbstractSocketPrivate::readFromSocket()
 
 /*! \internal
 
-    Sets up the the internal state after the connection has succeeded.
+    Sets up the internal state after the connection has succeeded.
 */
 void QAbstractSocketPrivate::fetchConnectionParameters()
 {

@@ -181,7 +181,10 @@ public:
     typedef T ResultType;
 
     IterateKernel(Iterator _begin, Iterator _end)
-#ifndef QT_NO_PARTIAL_TEMPLATE_SPECIALIZATION
+#if defined (QT_NO_STL)
+        : begin(_begin), end(_end), current(_begin), currentIndex(0),
+           forIteration(false), progressReportingEnabled(true)
+#elif !defined(QT_NO_PARTIAL_TEMPLATE_SPECIALIZATION)
         : begin(_begin), end(_end), current(_begin), currentIndex(0),
            forIteration(selectIteration(typename std::iterator_traits<Iterator>::iterator_category())), progressReportingEnabled(true)
 #else
@@ -189,7 +192,12 @@ public:
           forIteration(selectIteration(std::iterator_category(_begin))), progressReportingEnabled(true)
 #endif
     {
+#if defined (QT_NO_STL)
+       iterationCount = 0;
+#else
         iterationCount =  forIteration ? std::distance(_begin, _end) : 0;
+
+#endif
     }
 
     virtual ~IterateKernel() { }

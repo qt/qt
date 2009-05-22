@@ -1,6 +1,4 @@
 /****************************************************************************
-**
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
 ** Contact: Qt Software Information (qt-info@nokia.com)
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -39,6 +37,7 @@
 **
 ****************************************************************************/
 #include <QString>
+#include <QtNetwork/QHostInfo>
 
 #ifdef Q_OS_SYMBIAN
 #include <sys/socket.h>
@@ -306,6 +305,15 @@ private:
         return bTestSettingsLoaded = true;
     }
 #endif
+
+/*
+#ifdef QT_NETWORK_LIB
+    static QHostAddress serverIP()
+    {
+        return QHostInfo::fromName(serverName()).addresses().first();
+    }
+#endif
+*/
 
 };
 #ifdef Q_OS_SYMBIAN

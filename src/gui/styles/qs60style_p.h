@@ -113,7 +113,7 @@ public:
         SP_QgnPropFolderCurrent,
         SP_QgnPropFolderSmall,
         SP_QgnPropFolderSmallNew,
-        SP_QgnPropPhoneMemcLarge,        
+        SP_QgnPropPhoneMemcLarge,
         SP_QsnCpScrollHandleBottomPressed, //ScrollBar handle, pressed state
         SP_QsnCpScrollHandleMiddlePressed,
         SP_QsnCpScrollHandleTopPressed,
@@ -231,7 +231,16 @@ public:
         SP_QsnFrSctrlButtonSideBPressed,
         SP_QsnFrSctrlButtonSideLPressed,
         SP_QsnFrSctrlButtonSideRPressed,
-        SP_QsnFrSctrlButtonCenterPressed
+        SP_QsnFrSctrlButtonCenterPressed,
+        SP_QsnFrButtonCornerTlInactive,     // Inactive button
+        SP_QsnFrButtonCornerTrInactive,
+        SP_QsnFrButtonCornerBlInactive,
+        SP_QsnFrButtonCornerBrInactive,
+        SP_QsnFrButtonSideTInactive,
+        SP_QsnFrButtonSideBInactive,
+        SP_QsnFrButtonSideLInactive,
+        SP_QsnFrButtonSideRInactive,
+        SP_QsnFrButtonCenterInactive
     };
 
     enum ColorLists {
@@ -292,6 +301,7 @@ public:
         SE_PanelBackground,
         SE_ScrollBarHandlePressedHorizontal, //only for 5.0+
         SE_ScrollBarHandlePressedVertical,
+        SE_ButtonInactive,
     };
 
     enum SkinFrameElements {
@@ -307,7 +317,8 @@ public:
         SF_ToolBar,
         SF_ToolBarButton,
         SF_ToolBarButtonPressed,
-        SF_PanelBackground
+        SF_PanelBackground,
+        SF_ButtonInactive,
     };
 
     enum SkinElementFlag {
@@ -360,6 +371,7 @@ public:
     // calculates average color based on button skin graphics (minus borders).
     QColor colorFromFrameGraphics(QS60StylePrivate::SkinFrameElements frame) const;
     void setThemePalette(QApplication *application) const;
+    void setThemePalette(QWidget *application) const;
     void setBackgroundTexture(QApplication *application) const;
 
     static int focusRectPenWidth();

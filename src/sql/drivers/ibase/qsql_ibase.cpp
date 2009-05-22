@@ -55,6 +55,7 @@
 #include <limits.h>
 #include <math.h>
 #include <qdebug.h>
+#include <QVarLengthArray>
 
 QT_BEGIN_NAMESPACE
 
@@ -66,8 +67,11 @@ QT_BEGIN_NAMESPACE
 
 enum { QIBaseChunkSize = SHRT_MAX / 2 };
 
-static bool getIBaseError(QString& msg, ISC_STATUS* status, ISC_LONG &sqlcode,
-                          QTextCodec *tc)
+#if defined(FB_API_VER) && FB_API_VER >= 20
+static bool getIBaseError(QString& msg, const ISC_STATUS* status, ISC_LONG &sqlcode, QTextCodec *tc)
+#else
+static bool getIBaseError(QString& msg, ISC_STATUS* status, ISC_LONG &sqlcode, QTextCodec *tc)
+#endif
 {
     if (status[0] != 1 || status[1] <= 0)
         return false;
@@ -75,7 +79,11 @@ static bool getIBaseError(QString& msg, ISC_STATUS* status, ISC_LONG &sqlcode,
     msg.clear();
     sqlcode = isc_sqlcode(status);
     char buf[512];
+#if defined(FB_API_VER) && FB_API_VER >= 20
+    while(fb_interpret(buf, 512, &status)) {
+#else
     while(isc_interprete(buf, &status)) {
+#endif
         if(!msg.isEmpty())
             msg += QLatin1String(" - ");
         if (tc)
@@ -576,7 +584,7 @@ QVariant QIBaseResultPrivate::fetchArray(int pos, ISC_QUAD *arr)
 
     int arraySize = 1, subArraySize;
     short dimensions = desc.array_desc_dimensions;
-    short *numElements = new short[dimensions];
+    QVarLengthArray<short> numElements(dimensions);
 
     for(int i = 0; i < dimensions; ++i) {
         subArraySize = (desc.array_desc_bounds[i].array_bound_upper -
@@ -605,9 +613,7 @@ QVariant QIBaseResultPrivate::fetchArray(int pos, ISC_QUAD *arr)
                 QSqlError::StatementError))
         return list;
 
-    readArrayBuffer(list, ba.data(), 0, numElements, &desc, tc);
-
-    delete[] numElements;
+    readArrayBuffer(list, ba.data(), 0, numElements.data(), &desc, tc);
 
     return QVariant(list);
 }

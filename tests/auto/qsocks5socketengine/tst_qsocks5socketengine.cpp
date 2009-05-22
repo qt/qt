@@ -319,7 +319,6 @@ void tst_QSocks5SocketEngine::simpleConnectToIMAP()
 
     socketDevice.setProxy(QNetworkProxy(QNetworkProxy::Socks5Proxy, QtNetworkSettings::serverName(), 1080));
 
-    // Connect to imap.trolltech.com's IP
     QVERIFY(!socketDevice.connectToHost(QHostAddress(QtNetworkSettings::serverIP()), 143));
     QVERIFY(socketDevice.state() == QAbstractSocket::ConnectingState);
     QVERIFY(socketDevice.waitForWrite());
@@ -902,7 +901,6 @@ void tst_QSocks5SocketEngine::passwordAuth2()
     socketDevice.setProxy(QNetworkProxy(QNetworkProxy::Socks5Proxy, QtNetworkSettings::serverName(), 1081));
     socketDevice.setReceiver(this);
 
-    // Connect to imap.trolltech.com's IP
     QVERIFY(!socketDevice.connectToHost(QHostAddress(QtNetworkSettings::serverIP()), 143));
     QVERIFY(socketDevice.state() == QAbstractSocket::ConnectingState);
     while (socketDevice.state() == QAbstractSocket::ConnectingState) {

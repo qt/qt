@@ -2588,7 +2588,7 @@ const QGLContext* QGLContext::currentContext()
     \i paintGL() - Renders the OpenGL scene. Gets called whenever the widget
     needs to be updated.
     \i resizeGL() - Sets up the OpenGL viewport, projection, etc. Gets
-    called whenever the the widget has been resized (and also when it
+    called whenever the widget has been resized (and also when it
     is shown for the first time because all newly created widgets get a
     resize event automatically).
     \i initializeGL() - Sets up the OpenGL rendering context, defines display

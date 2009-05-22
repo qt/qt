@@ -493,11 +493,6 @@ void tst_QSslSocket::simpleConnectWithIgnore()
     if (!socket.canReadLine())
         enterLoop(10);
 
-/*
-    QByteArray data(socket.readAll());
-    QBYTEARRAY_DEBUG(data, 4096);
-*/
-
     QCOMPARE(socket.readAll(), QtNetworkSettings::expectedReplySSL()); 
     socket.disconnectFromHost();
 }
@@ -527,7 +522,7 @@ void tst_QSslSocket::sslErrors()
 {
     QFETCH(QString, host);
     QFETCH(int, port);
-    QFETCH(SslErrorList, errors);
+    QFETCH(SslErrorList, expected);
 
     QSslSocketPtr socket = newSocket();
     socket->connectToHostEncrypted(host, port);
@@ -539,6 +534,10 @@ void tst_QSslSocket::sslErrors()
         list << error.error();
     }
 
+#ifdef QSSLSOCKET_CERTUNTRUSTED_WORKAROUND
+    if (output.last() == QSslError::CertificateUntrusted)
+        output.takeLast();
+#endif
     QCOMPARE(list, errors);
 }
 
@@ -585,7 +584,7 @@ void tst_QSslSocket::connectToHostEncrypted()
 
     QSslSocketPtr socket = newSocket();
     this->socket = socket;
-    socket->addCaCertificates(QLatin1String("certs/qt-test-server-cacert.pem"));
+    QVERIFY(socket->addCaCertificates(QLatin1String("certs/qt-test-server-cacert.pem")));
 #ifdef QSSLSOCKET_CERTUNTRUSTED_WORKAROUND
     connect(socket, SIGNAL(sslErrors(QList<QSslError>)),
             this, SLOT(untrustedWorkaroundSlot(QList<QSslError>)));
@@ -657,7 +656,7 @@ void tst_QSslSocket::peerCertificateChain()
     QSslSocketPtr socket = newSocket();
     this->socket = socket;
 
-    QList<QSslCertificate> caCertificates = QSslCertificate::fromPath(QLatin1String("certs/qt-test-server-cacert.pem"));
+    QList<QSslCertificate> caCertificates = QSslCertificate::fromPath(QLatin1String(SRCDIR "certs/qt-test-server-cacert.pem"));
     QVERIFY(caCertificates.count() == 1);
     socket->addCaCertificates(caCertificates);
 #ifdef QSSLSOCKET_CERTUNTRUSTED_WORKAROUND
@@ -717,7 +716,7 @@ void tst_QSslSocket::protocol()
 
     QSslSocketPtr socket = newSocket();
     this->socket = socket;
-    QList<QSslCertificate> certs = QSslCertificate::fromPath("certs/qt-test-server-cacert.pem");
+    QList<QSslCertificate> certs = QSslCertificate::fromPath(SRCDIR "certs/qt-test-server-cacert.pem");
 
 //    qDebug() << "certs:" << certs.at(0).issuerInfo(QSslCertificate::CommonName);
     socket->setCaCertificates(certs);
@@ -800,7 +799,7 @@ void tst_QSslSocket::setCaCertificates()
 
     QSslSocket socket;
     QCOMPARE(socket.caCertificates(), QSslSocket::defaultCaCertificates());
-    socket.setCaCertificates(QSslCertificate::fromPath("certs/qt-test-server-cacert.pem"));
+    socket.setCaCertificates(QSslCertificate::fromPath(SRCDIR "certs/qt-test-server-cacert.pem"));
     QCOMPARE(socket.caCertificates().size(), 1);
     socket.setCaCertificates(socket.defaultCaCertificates());
     QCOMPARE(socket.caCertificates(), QSslSocket::defaultCaCertificates());
@@ -831,13 +830,13 @@ protected:
         socket = new QSslSocket(this);
         connect(socket, SIGNAL(sslErrors(const QList<QSslError> &)), this, SLOT(ignoreErrorSlot()));
 
-        QFile file("certs/fluke.key");
+        QFile file(SRCDIR "certs/fluke.key");
         QVERIFY(file.open(QIODevice::ReadOnly));
         QSslKey key(file.readAll(), QSsl::Rsa, QSsl::Pem, QSsl::PrivateKey);
         QVERIFY(!key.isNull());
         socket->setPrivateKey(key);
 
-        QList<QSslCertificate> localCert = QSslCertificate::fromPath("certs/fluke.cert");
+        QList<QSslCertificate> localCert = QSslCertificate::fromPath(SRCDIR "certs/fluke.cert");
         QVERIFY(!localCert.isEmpty());
         QVERIFY(localCert.first().handle());
         socket->setLocalCertificate(localCert.first());
@@ -951,7 +950,7 @@ void tst_QSslSocket::addDefaultCaCertificate()
     // Reset the global CA chain
     QSslSocket::setDefaultCaCertificates(QSslSocket::systemCaCertificates());
 
-    QList<QSslCertificate> flukeCerts = QSslCertificate::fromPath("certs/qt-test-server-cacert.pem");
+    QList<QSslCertificate> flukeCerts = QSslCertificate::fromPath(SRCDIR "certs/qt-test-server-cacert.pem");
     QCOMPARE(flukeCerts.size(), 1);
     QList<QSslCertificate> globalCerts = QSslSocket::defaultCaCertificates();
     QVERIFY(!globalCerts.contains(flukeCerts.first()));
@@ -1061,7 +1060,7 @@ protected:
         socket->ignoreSslErrors();
 
         // Only set the certificate
-        QList<QSslCertificate> localCert = QSslCertificate::fromPath("certs/fluke.cert");
+        QList<QSslCertificate> localCert = QSslCertificate::fromPath(SRCDIR "certs/fluke.cert");
         QVERIFY(!localCert.isEmpty());
         QVERIFY(localCert.first().handle());
         socket->setLocalCertificate(localCert.first());
@@ -1220,13 +1219,13 @@ protected:
         socket = new QSslSocket(this);
         connect(socket, SIGNAL(sslErrors(const QList<QSslError> &)), this, SLOT(ignoreErrorSlot()));
 
-        QFile file("certs/fluke.key");
+        QFile file(SRCDIR "certs/fluke.key");
         QVERIFY(file.open(QIODevice::ReadOnly));
         QSslKey key(file.readAll(), QSsl::Rsa, QSsl::Pem, QSsl::PrivateKey);
         QVERIFY(!key.isNull());
         socket->setPrivateKey(key);
 
-        QList<QSslCertificate> localCert = QSslCertificate::fromPath("certs/fluke.cert");
+        QList<QSslCertificate> localCert = QSslCertificate::fromPath(SRCDIR "certs/fluke.cert");
         QVERIFY(!localCert.isEmpty());
         QVERIFY(localCert.first().handle());
         socket->setLocalCertificate(localCert.first());
@@ -1388,8 +1387,8 @@ protected:
     {
         socket = new QSslSocket(this);
 
-        socket->setPrivateKey("certs/fluke.key");
-        socket->setLocalCertificate("certs/fluke.cert");
+        socket->setPrivateKey(SRCDIR "certs/fluke.key");
+        socket->setLocalCertificate(SRCDIR "certs/fluke.cert");
         socket->setSocketDescriptor(socketDescriptor);
         socket->startServerEncryption();
     }
@@ -1531,7 +1530,7 @@ void tst_QSslSocket::resetProxy()
     // make sure the connection works, and then set a nonsense proxy, and then
     // make sure it does not work anymore
     QSslSocket socket;
-    socket.addCaCertificates(QLatin1String("certs/qt-test-server-cacert.pem"));
+    socket.addCaCertificates(QLatin1String(SRCDIR "certs/qt-test-server-cacert.pem"));
     socket.setProxy(goodProxy);
     socket.connectToHostEncrypted(QtNetworkSettings::serverName(), 443);
     QVERIFY2(socket.waitForConnected(10000), qPrintable(socket.errorString()));
@@ -1550,7 +1549,7 @@ void tst_QSslSocket::resetProxy()
     // set the nonsense proxy and make sure the connection does not work,
     // and then set the right proxy and make sure it works
     QSslSocket socket2;
-    socket2.addCaCertificates(QLatin1String("certs/qt-test-server-cacert.pem"));
+    socket2.addCaCertificates(QLatin1String(SRCDIR "certs/qt-test-server-cacert.pem"));
     socket2.setProxy(badProxy);
     socket2.connectToHostEncrypted(QtNetworkSettings::serverName(), 443);
     QVERIFY(! socket2.waitForConnected(10000));
