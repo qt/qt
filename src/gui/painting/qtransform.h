@@ -342,7 +342,7 @@ inline QTransform &QTransform::operator-=(qreal num)
 #    if Q_CC_GNU_VERSION >= 0x040201
 #        pragma GCC diagnostic warning "-Wfloat-equal"
 #    endif
-#    undef Q_GCC_GNU_VERSION
+#    undef Q_CC_GNU_VERSION
 #endif
 
 /****** stream functions *******************/
