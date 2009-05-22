@@ -213,6 +213,8 @@ void QS60StylePrivate::refreshUI()
 {
     foreach (QWidget *topLevelWidget, QApplication::allWidgets()) {
         topLevelWidget->updateGeometry();
+        //todo: study how we can get rid of this. Apparently scrollbars cache pixelmetrics values, and we need them to update themselves
+        // maybe styleChanged event is enough?
         QCoreApplication::postEvent(topLevelWidget, new QResizeEvent(topLevelWidget->size(), topLevelWidget->size()));
     }
 }
@@ -1334,21 +1336,24 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
             const QRect iconRect = subElementRect(SE_ItemViewItemDecoration, &voptAdj, widget);
             QRect textRect = subElementRect(SE_ItemViewItemText, &voptAdj, widget);
 
-            // draw the background
-            const QStyleOptionViewItemV4 *tableOption = qstyleoption_cast<const QStyleOptionViewItemV4 *>(option);
-            const QTableView *table = qobject_cast<const QTableView *>(widget);
-            if (table && tableOption) {
-                const QModelIndex index = tableOption->index;
-                //todo: Draw cell background only once - for the first cell.
-                QStyleOptionViewItemV4 voptAdj2 = voptAdj2;
-                const QModelIndex indexFirst = table->model()->index(0,0);
-                const QModelIndex indexLast = table->model()->index(
-                    table->model()->rowCount()-1,table->model()->columnCount()-1);
-                if (table->viewport())
-                    voptAdj2.rect = QRect( table->visualRect(indexFirst).topLeft(),
-                        table->visualRect(indexLast).bottomRight()).intersect(table->viewport()->rect());
-                drawPrimitive(PE_PanelItemViewItem, &voptAdj2, painter, widget);
-            }
+            // draw themed background for table unless background brush has been defined.
+            if (vopt->backgroundBrush == Qt::NoBrush) {            
+                // draw the background
+                const QStyleOptionViewItemV4 *tableOption = qstyleoption_cast<const QStyleOptionViewItemV4 *>(option);
+                const QTableView *table = qobject_cast<const QTableView *>(widget);
+                if (table && tableOption) {
+                    const QModelIndex index = tableOption->index;
+                    //todo: Draw cell background only once - for the first cell.
+                    QStyleOptionViewItemV4 voptAdj2 = voptAdj2;
+                    const QModelIndex indexFirst = table->model()->index(0,0);
+                    const QModelIndex indexLast = table->model()->index(
+                        table->model()->rowCount()-1,table->model()->columnCount()-1);
+                    if (table->viewport())
+                        voptAdj2.rect = QRect( table->visualRect(indexFirst).topLeft(),
+                            table->visualRect(indexLast).bottomRight()).intersect(table->viewport()->rect());
+                    drawPrimitive(PE_PanelItemViewItem, &voptAdj2, painter, widget);
+                }
+            } else { QCommonStyle::drawPrimitive(PE_PanelItemViewItem, option, painter, widget);}
 
             // draw the focus rect
             if (isSelected)
