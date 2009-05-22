@@ -2092,6 +2092,9 @@ void tst_QStateMachine::startAndStop()
     QCOMPARE(machine.configuration().count(), 1);
     QVERIFY(machine.configuration().contains(s1));
 
+    QTest::ignoreMessage(QtWarningMsg, "QStateMachine::start(): already running");
+    machine.start();
+
     machine.stop();
     QTRY_COMPARE(machine.isRunning(), false);
     QTRY_COMPARE(stoppedSpy.count(), 1);
@@ -2100,6 +2103,11 @@ void tst_QStateMachine::startAndStop()
 
     QCOMPARE(machine.configuration().count(), 1);
     QVERIFY(machine.configuration().contains(s1));
+
+    machine.start();
+    machine.stop();
+    QTRY_COMPARE(startedSpy.count(), 2);
+    QCOMPARE(stoppedSpy.count(), 2);
 }
 
 void tst_QStateMachine::targetStateWithNoParent()
