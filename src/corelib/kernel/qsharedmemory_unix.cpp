@@ -47,9 +47,12 @@
 #include <qdir.h>
 #include <qdebug.h>
 
+#include <errno.h>
+
 #ifndef QT_NO_SHAREDMEMORY
 
-#include <errno.h>
+QT_BEGIN_NAMESPACE
+
 #include <sys/types.h>
 #include <sys/ipc.h>
 #include <sys/shm.h>

@@ -119,7 +119,7 @@ static inline void qt_socket_getPortAndAddress(const qt_sockaddr *s, quint16 *po
 #if !defined(QT_NO_IPV6)
     if (s->a.sa_family == AF_INET6) {
         Q_IPV6ADDR tmp;
-        memcpy(&tmp, &s->a6.sin6_addr.s6_addr, sizeof(tmp));
+        memcpy(&tmp, &s->a6.sin6_addr, sizeof(tmp));
         if (addr) {
             QHostAddress tmpAddress;
             tmpAddress.setAddress(tmp);
