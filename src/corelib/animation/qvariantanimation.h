@@ -117,7 +117,7 @@ private:
 };
 
 template <typename T>
-static void qRegisterAnimationInterpolator(QVariant (*func)(const T &from, const T &to, qreal progress)) {
+void qRegisterAnimationInterpolator(QVariant (*func)(const T &from, const T &to, qreal progress)) {
     QVariantAnimation::registerInterpolator(reinterpret_cast<QVariantAnimation::Interpolator>(func), qMetaTypeId<T>());
 }
 
