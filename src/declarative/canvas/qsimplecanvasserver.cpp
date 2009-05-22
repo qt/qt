@@ -44,17 +44,37 @@
 #ifndef Q_OS_WIN32
 #include <arpa/inet.h>
 #endif
+#include <QtCore/qabstractanimation.h>
 
 QT_BEGIN_NAMESPACE
 
+class FrameBreakAnimation : public QAbstractAnimation
+{
+public:
+    FrameBreakAnimation(QSimpleCanvasServer *s)
+    : QAbstractAnimation(s), server(s) 
+    {
+        start();
+    }
+
+    virtual int duration() const { return -1; }
+    virtual void updateCurrentTime(int msecs) {
+        server->frameBreak();
+    }
+
+private:
+    QSimpleCanvasServer *server;
+};
+
 QSimpleCanvasServer::QSimpleCanvasServer(int port, QObject *parent)
-: QObject(parent), _tcpServer(new QTcpServer(this))
+: QObject(parent), _breaks(0), _tcpServer(new QTcpServer(this))
 {
     QObject::connect(_tcpServer, SIGNAL(newConnection()), 
                      this, SLOT(newConnection()));
 
     _time.start();
 
+    new FrameBreakAnimation(this);
     if (!_tcpServer->listen(QHostAddress::Any, port)) {
         qWarning() << "QSimpleCanvasServer: Cannot listen on port" << port;
         return;
@@ -80,14 +100,21 @@ void QSimpleCanvasServer::addTiming(quint32 paint,
     data[2] = ::htonl(timeBetweenFrames);
     */
 
+    bool isFrameBreak = _breaks > 1;
+    _breaks = 0;
     int e = _time.elapsed();
-    QString d = QString::number(paint) + QLatin1String(" ") + QString::number(repaint) + QLatin1String(" ") + QString::number(timeBetweenFrames) + QLatin1String(" ") + QString::number(e) + QLatin1String("\n");
+    QString d = QString::number(paint) + QLatin1String(" ") + QString::number(repaint) + QLatin1String(" ") + QString::number(timeBetweenFrames) + QLatin1String(" ") + QString::number(e) + QLatin1String(" ") + QString::number(isFrameBreak) + QLatin1String("\n");
     QByteArray ba = d.toLatin1();
 
     // XXX
     for (int ii = 0; ii < _tcpClients.count(); ++ii) 
 //        _tcpClients.at(ii)->write((const char *)data, 12);
         _tcpClients.at(ii)->write(ba.constData(), ba.length());
+}
+
+void QSimpleCanvasServer::frameBreak()
+{
+    _breaks++;
 }
 
 void QSimpleCanvasServer::disconnected()

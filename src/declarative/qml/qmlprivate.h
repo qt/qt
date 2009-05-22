@@ -123,57 +123,81 @@ namespace QmlPrivate
         }
     };
 
-    template<typename T, int N>
-    struct AttachedPropertySelector
-    {
-        static inline QmlAttachedPropertiesFunc func()
-        {
-            return 0;
-        }
-    };
-    template<typename T>
-    struct AttachedPropertySelector<T, 1>
-    {
-        static inline QmlAttachedPropertiesFunc func()
-        {
-            return &T::qmlAttachedProperties;
-        }
+    template <typename T>  
+    class has_attachedPropertiesMember
+    {  
+        typedef int yes_type;
+        typedef char no_type;
+        template <int> 
+        struct Selector {};
+
+        template <typename S> 
+        static yes_type test(Selector<sizeof(&S::qmlAttachedProperties)>*); 
+
+        template <typename S> 
+        static no_type test(...); 
+
+    public: 
+        static bool const value = sizeof(test<T>(0)) == sizeof(yes_type);
     };
 
-    template < typename T >
-    class has_attachedProperties {
+    template <typename T, bool hasMember>
+    class has_attachedPropertiesMethod 
+    {
         typedef int yes_type;
         typedef char no_type;
 
-        template<typename S, QObject *(S::*)(QObject *)>
-        struct dummy {};
-
-        template<typename S, QObject *(S::*)(QObject *) const>
-        struct dummy_const {};
-
-        template<typename S, QObject *(*) (QObject *)>
-        struct dummy_static {};
-
-        template<typename S>
-        static no_type check(dummy<S, &S::qmlAttachedProperties> *);
-
-        template<typename S>
-        static no_type check(dummy_const<S, &S::qmlAttachedProperties> *);
-
-        template<typename S>
-        static yes_type check(dummy_static<S, &S::qmlAttachedProperties> *);
-
-        template<typename S>
+        template<typename ReturnType>
+        static yes_type check(ReturnType *(*)(QObject *));
         static no_type check(...);
 
     public:
-        static bool const value = sizeof(check<T>(0)) == sizeof(yes_type);
+        static bool const value = sizeof(check(&T::qmlAttachedProperties)) == sizeof(yes_type);
     }; 
+
+    template <typename T>
+    class has_attachedPropertiesMethod<T, false>
+    {
+    public:
+        static bool const value = false;
+    };
+
+    template<typename T, int N>
+    class AttachedPropertySelector
+    {
+    public:
+        static inline QmlAttachedPropertiesFunc func() { return 0; }
+        static inline const QMetaObject *metaObject() { return 0; }
+    };
+    template<typename T>
+    class AttachedPropertySelector<T, 1>
+    {
+        static inline QObject *attachedProperties(QObject *obj) {
+            return T::qmlAttachedProperties(obj);
+        }
+        template<typename ReturnType>
+        static inline const QMetaObject *attachedPropertiesMetaObject(ReturnType *(*)(QObject *)) {
+            return &ReturnType::staticMetaObject;
+        }
+    public:
+        static inline QmlAttachedPropertiesFunc func() {
+            return &attachedProperties;
+        }
+        static inline const QMetaObject *metaObject() {
+            return attachedPropertiesMetaObject(&T::qmlAttachedProperties);
+        }
+    };
 
     template<typename T>
     inline QmlAttachedPropertiesFunc attachedPropertiesFunc()
     {
-        return AttachedPropertySelector<T, has_attachedProperties<T>::value>::func();
+        return AttachedPropertySelector<T, has_attachedPropertiesMethod<T, has_attachedPropertiesMember<T>::value>::value>::func();
+    }
+
+    template<typename T>
+    inline const QMetaObject *attachedPropertiesMetaObject()
+    {
+        return AttachedPropertySelector<T, has_attachedPropertiesMethod<T, has_attachedPropertiesMember<T>::value>::value>::metaObject();
     }
 
     struct MetaTypeIds {
