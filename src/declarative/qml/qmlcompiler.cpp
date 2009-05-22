@@ -862,6 +862,10 @@ bool QmlCompiler::compileProperty(Property *prop, Object *obj, int ctxt)
                 prop->type = t;
             }
         }
+    } else if(isAttachedProperty(prop->name) && prop->value) {
+        QmlType *type = QmlMetaType::qmlType(prop->name);
+        if (type && type->attachedPropertiesType()) 
+            prop->value->metatype = type->attachedPropertiesType();
     }
 
     if (prop->name == "id") {
