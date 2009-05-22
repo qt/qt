@@ -202,7 +202,7 @@ earlyArgParse()
                 VAL=$1
             fi
             ;;
-        h|help|--help|-help)
+        -h|help|--help|-help)
             if [ "$VAL" = "yes" ]; then
                 OPT_HELP="$VAL"
                 COMMERCIAL_USER="no" #doesn't matter we will display the help
