@@ -5709,7 +5709,23 @@ void QPainter::drawStaticText(const QPointF &p, const QStaticText &staticText)
     const QStaticTextPrivate *staticText_d = QStaticTextPrivate::get(&staticText);
     QTextLayout *textLayout = staticText_d->textLayout;
 
-    textLayout->draw(this, p);
+    QSizeF size = staticText_d->size;
+
+    QRectF clipRect = size.isValid() ? QRectF(p, staticText_d->size) : QRectF();
+    QPainterPath oldClipPath;
+    if (clipRect.isValid()) {
+        oldClipPath = clipPath();
+
+        QPainterPath clipPath;
+        clipPath.addRect(clipRect);
+
+        setClipPath(clipPath, Qt::IntersectClip);
+    }
+
+    textLayout->draw(this, p, QVector<QTextLayout::FormatRange>(), clipRect);
+
+    if (clipRect.isValid())
+        setClipPath(oldClipPath);    
 }
 
 /*!

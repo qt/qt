@@ -44,11 +44,17 @@
 
 QT_BEGIN_NAMESPACE
 
-QStaticText::QStaticText(const QString &text, const QFont &font, const QSizeF &size)
+QStaticText::QStaticText(const QString &text, const QFont &font, const QSizeF &sz)
     : d_ptr(new QStaticTextPrivate) 
 {
     Q_D(QStaticText);
-    d->init(text, font, size.isValid() ? size.width() : -1.0);
+    d->init(text, font, sz);
+}
+
+QStaticText::~QStaticText()
+{
+    Q_D(QStaticText);
+    delete d;
 }
 
 QStaticTextPrivate::QStaticTextPrivate()
@@ -56,24 +62,32 @@ QStaticTextPrivate::QStaticTextPrivate()
 {
 }
 
+QStaticTextPrivate::~QStaticTextPrivate()
+{
+    delete textLayout;
+}
+
 QStaticTextPrivate *QStaticTextPrivate::get(const QStaticText *q)
 {
     return q->d_ptr;
 }
 
-void QStaticTextPrivate::init(const QString &text, const QFont &font, qreal width)
+void QStaticTextPrivate::init(const QString &text, const QFont &font, const QSizeF &sz)
 {
     Q_ASSERT(textLayout == 0);
+    size = sz;
+
     textLayout = new QTextLayout(text, font);
     textLayout->setCacheEnabled(true);
 
     QFontMetrics fontMetrics(font);
 
     textLayout->beginLayout();
-    int h = width >= 0.0 ? 0 : -fontMetrics.ascent();
+    int h = size.isValid() ? 0 : -fontMetrics.ascent();
+
     QTextLine line;
-    if ((line = textLayout->createLine()).isValid()) {
-        line.setLineWidth(width >= 0.0 ? width : fontMetrics.width(text));
+    while ((line = textLayout->createLine()).isValid()) {
+        line.setLineWidth(size.isValid() ? size.width() : fontMetrics.width(text));
         line.setPosition(QPointF(0, h));
         h += line.height();
     }

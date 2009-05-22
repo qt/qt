@@ -57,6 +57,7 @@ class Q_GUI_EXPORT QStaticText
     Q_DECLARE_PRIVATE(QStaticText);
 public:
     QStaticText(const QString &text, const QFont &font, const QSizeF &maximumSize = QSizeF());
+    ~QStaticText();
 
 private:
     QStaticTextPrivate *d_ptr;
