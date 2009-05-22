@@ -40,6 +40,7 @@
 ****************************************************************************/
 
 #include <QtCore/qobject.h>
+#include <QtCore/qtimeline.h>
 #include <QtGui/qgraphicswidget.h>
 
 class SplashItem : public QGraphicsWidget
@@ -52,6 +53,11 @@ public:
 protected:
     void keyPressEvent(QKeyEvent *event);
 
+private Q_SLOTS:
+    void setValue(qreal value);
+
 private:
+    QTimeLine *timeLine;
     QString text;
+    qreal opacity;
 };
