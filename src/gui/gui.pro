@@ -19,7 +19,6 @@ win32:include(kernel/win.pri)
 embedded:include(embedded/embedded.pri)
 
 #modules
-include(animation/animation.pri)
 include(kernel/kernel.pri)
 include(image/image.pri)
 include(painting/painting.pri)
@@ -32,7 +31,6 @@ include(itemviews/itemviews.pri)
 include(inputmethod/inputmethod.pri)
 include(graphicsview/graphicsview.pri)
 include(util/util.pri)
-include(statemachine/statemachine.pri)
 include(math3d/math3d.pri)
 
 embedded: QT += network

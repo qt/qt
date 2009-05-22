@@ -1,7 +1,6 @@
 TEMPLATE = subdirs
 SUBDIRS = containers-associative \
 	containers-sequential \
-        qanimation \
 	qbytearray \
 	qpainter \
 	qtestlib-simple	events \

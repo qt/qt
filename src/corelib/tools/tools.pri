@@ -11,7 +11,6 @@ HEADERS +=  \
 	tools/qcryptographichash.h \
 	tools/qdatetime.h \
 	tools/qdatetime_p.h \
-        tools/qeasingcurve.h \
 	tools/qhash.h \
         tools/qline.h \
 	tools/qlinkedlist.h \
@@ -47,7 +46,6 @@ SOURCES += \
 	tools/qbytearraymatcher.cpp \
 	tools/qcryptographichash.cpp \
 	tools/qdatetime.cpp \
-        tools/qeasingcurve.cpp \
 	tools/qhash.cpp \
         tools/qline.cpp \
 	tools/qlinkedlist.cpp \

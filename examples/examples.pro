@@ -1,6 +1,5 @@
 TEMPLATE      = subdirs
 SUBDIRS       = \
-                animation \
                 desktop \
                 dialogs \
                 draganddrop \
@@ -15,7 +14,6 @@ SUBDIRS       = \
                 qtconcurrent \
                 richtext \
                 sql \
-                statemachine \
                 threads \
                 tools \
                 tutorials \
