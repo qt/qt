@@ -1887,12 +1887,12 @@ Möchten sie die Datei trotzdem löschen?</translation>
     <message>
         <location line="+3"/>
         <source>Simplified Chinese</source>
-        <translation>Vereinfachtes Chinesisch</translation>
+        <translation>Chinesisch (Kurzzeichen)</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Traditional Chinese</source>
-        <translation>Traditionelles Chinesisch</translation>
+        <translation>Chinesisch (Langzeichen)</translation>
     </message>
     <message>
         <location line="+3"/>
