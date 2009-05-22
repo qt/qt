@@ -119,7 +119,7 @@ bool QEglContext::chooseConfig
             if (red == props.value(EGL_RED_SIZE) &&
                     green == props.value(EGL_GREEN_SIZE) &&
                     blue == props.value(EGL_BLUE_SIZE) &&
-                    (props.value(EGL_ALPHA_SIZE) == EGL_DONT_CARE ||
+                    (props.value(EGL_ALPHA_SIZE) == 0 ||
                      alpha == props.value(EGL_ALPHA_SIZE))) {
                 cfg = configs[index];
                 delete [] configs;
@@ -448,7 +448,7 @@ int QEglProperties::value(int name) const
     case EGL_NATIVE_VISUAL_ID:
     case EGL_NONE:
         qWarning("QEglProperties::value() - Attibute %d does not affect config selection", name);
-        return 0;
+        return EGL_DONT_CARE;
     default:
         qWarning("QEglProperties::value() - Attibute %d is unknown in EGL <=1.4", name);
         return EGL_DONT_CARE;
@@ -640,13 +640,13 @@ QString QEglProperties::toString() const
 #endif
 
     val = value(EGL_DEPTH_SIZE);
-    if (val != EGL_DONT_CARE) {
+    if (val != 0) {
         addTag(str, QLatin1String(" depth="));
         str += QString::number(val);
     }
 
     val = value(EGL_STENCIL_SIZE);
-    if (val != EGL_DONT_CARE) {
+    if (val != 0) {
         addTag(str, QLatin1String(" stencil="));
         str += QString::number(val);
     }
@@ -696,7 +696,7 @@ QString QEglProperties::toString() const
     }
 
     val = value(EGL_LEVEL);
-    if (val != EGL_DONT_CARE) {
+    if (val != 0) {
         addTag(str, QLatin1String(" level="));
         str += QString::number(val);
     }
@@ -747,13 +747,13 @@ QString QEglProperties::toString() const
 #endif
 
     val = value(EGL_SAMPLES);
-    if (val != EGL_DONT_CARE) {
+    if (val != 0) {
         addTag(str, QLatin1String(" samples="));
         str += QString::number(val);
     }
 
     val = value(EGL_SAMPLE_BUFFERS);
-    if (val != EGL_DONT_CARE) {
+    if (val != 0) {
         addTag(str, QLatin1String(" sample-buffers="));
         str += QString::number(val);
     }
@@ -802,7 +802,7 @@ QString QEglProperties::toString() const
 
 #ifdef EGL_LUMINANCE_SIZE
     val = value(EGL_LUMINANCE_SIZE);
-    if (val != EGL_DONT_CARE) {
+    if (val != 0) {
         addTag(str, QLatin1String(" luminance="));
         str += QString::number(val);
     }
@@ -810,7 +810,7 @@ QString QEglProperties::toString() const
 
 #ifdef EGL_ALPHA_MASK_SIZE
     val = value(EGL_ALPHA_MASK_SIZE);
-    if (val != EGL_DONT_CARE) {
+    if (val != 0) {
         addTag(str, QLatin1String(" alpha-mask="));
         str += QString::number(val);
     }
@@ -818,7 +818,7 @@ QString QEglProperties::toString() const
 
 #ifdef EGL_CONFORMANT
     val = value(EGL_CONFORMANT);
-    if (val != EGL_DONT_CARE) {
+    if (val != 0) {
         if (val)
             addTag(str, QLatin1String(" conformant=true"));
         else
