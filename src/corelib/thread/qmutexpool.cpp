@@ -96,9 +96,9 @@ Q_GLOBAL_STATIC_WITH_ARGS(QMutexPool, globalMutexPool, (QMutex::Recursive))
     QMutexPool is destructed.
 */
 QMutexPool::QMutexPool(QMutex::RecursionMode recursionMode, int size)
-    : mutexes(size), count(size), recursionMode(recursionMode)
+    : mutexes(size), recursionMode(recursionMode)
 {
-    for (int index = 0; index < count; ++index) {
+    for (int index = 0; index < mutexes.count(); ++index) {
         mutexes[index] = 0;
     }
 }
@@ -109,7 +109,7 @@ QMutexPool::QMutexPool(QMutex::RecursionMode recursionMode, int size)
 */
 QMutexPool::~QMutexPool()
 {
-    for (int index = 0; index < count; ++index) {
+    for (int index = 0; index < mutexes.count(); ++index) {
         delete mutexes[index];
         mutexes[index] = 0;
     }
@@ -130,7 +130,7 @@ QMutexPool *QMutexPool::instance()
 QMutex *QMutexPool::get(const void *address)
 {
     Q_ASSERT_X(address != 0, "QMutexPool::get()", "'address' argument cannot be zero");
-    int index = int((quintptr(address) >> (sizeof(address) >> 1)) % count);
+    int index = int((quintptr(address) >> (sizeof(address) >> 1)) % mutexes.count());
 
     if (!mutexes[index]) {
         // mutex not created, create one
