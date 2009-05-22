@@ -1,0 +1,137 @@
+/****************************************************************************
+**
+** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Contact: Qt Software Information (qt-info@nokia.com)
+**
+** This file is part of the QtCore module of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:LGPL$
+** No Commercial Usage
+** This file contains pre-release code and may not be distributed.
+** You may use this file in accordance with the terms and conditions
+** contained in the either Technology Preview License Agreement or the
+** Beta Release License Agreement.
+**
+** GNU Lesser General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU Lesser
+** General Public License version 2.1 as published by the Free Software
+** Foundation and appearing in the file LICENSE.LGPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU Lesser General Public License version 2.1 requirements
+** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+**
+** In addition, as a special exception, Nokia gives you certain
+** additional rights. These rights are described in the Nokia Qt LGPL
+** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
+** package.
+**
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU
+** General Public License version 3.0 as published by the Free Software
+** Foundation and appearing in the file LICENSE.GPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU General Public License version 3.0 requirements will be
+** met: http://www.gnu.org/copyleft/gpl.html.
+**
+** If you are unsure which license is appropriate for your use, please
+** contact the sales department at qt-sales@nokia.com.
+** $QT_END_LICENSE$
+**
+****************************************************************************/
+
+#ifndef QABSTRACTANIMATION_H
+#define QABSTRACTANIMATION_H
+
+#include <QtCore/qobject.h>
+
+QT_BEGIN_HEADER
+
+QT_BEGIN_NAMESPACE
+
+QT_MODULE(Core)
+
+#ifndef QT_NO_ANIMATION
+
+class QAnimationGroup;
+class QSequentialAnimationGroup;
+
+class QAbstractAnimationPrivate;
+class Q_CORE_EXPORT QAbstractAnimation : public QObject
+{
+    Q_OBJECT
+    Q_PROPERTY(State state READ state NOTIFY stateChanged)
+    Q_PROPERTY(int loopCount READ loopCount WRITE setLoopCount)
+    Q_PROPERTY(int currentTime READ currentTime WRITE setCurrentTime)
+    Q_PROPERTY(int currentLoop READ currentLoop NOTIFY currentLoopChanged)
+    Q_PROPERTY(Direction direction READ direction WRITE setDirection NOTIFY directionChanged)
+    Q_PROPERTY(int duration READ duration)
+
+public:
+    enum Direction {
+        Forward,
+        Backward
+    };
+
+    enum State {
+        Stopped,
+        Paused,
+        Running
+    };
+
+    enum DeletionPolicy {
+        KeepWhenStopped = 0,
+        DeleteWhenStopped
+    };
+
+    QAbstractAnimation(QObject *parent = 0);
+    virtual ~QAbstractAnimation();
+
+    State state() const;
+
+    QAnimationGroup *group() const;
+
+    Direction direction() const;
+    void setDirection(Direction direction);
+
+    int loopCount() const;
+    void setLoopCount(int loopCount);
+    int currentLoop() const;
+
+    virtual int duration() const = 0;
+    int totalDuration() const;
+
+    int currentTime() const;
+
+Q_SIGNALS:
+    void finished();
+    void stateChanged(QAbstractAnimation::State oldState, QAbstractAnimation::State newState);
+    void currentLoopChanged(int currentLoop);
+    void directionChanged(QAbstractAnimation::Direction);
+
+public Q_SLOTS:
+    void start(QAbstractAnimation::DeletionPolicy policy = KeepWhenStopped);
+    void pause();
+    void resume();
+    void stop();
+    void setCurrentTime(int msecs);
+
+protected:
+    QAbstractAnimation(QAbstractAnimationPrivate &dd, QObject *parent = 0);
+    bool event(QEvent *event);
+
+    virtual void updateCurrentTime(int msecs) = 0;
+    virtual void updateState(QAbstractAnimation::State oldState, QAbstractAnimation::State newState);
+    virtual void updateDirection(QAbstractAnimation::Direction direction);
+
+private:
+    Q_DISABLE_COPY(QAbstractAnimation)
+    Q_DECLARE_PRIVATE(QAbstractAnimation)
+};
+
+#endif //QT_NO_ANIMATION
+
+QT_END_NAMESPACE
+
+QT_END_HEADER
+
+#endif // QABSTRACTANIMATION_H
