@@ -76,6 +76,10 @@ Q_DECLARE_METATYPE(QSslError)
 #define QSSLSOCKET_CERTUNTRUSTED_WORKAROUND
 #endif
 
+#ifdef Q_OS_SYMBIAN
+#define SRCDIR ""
+#endif
+
 #ifndef QT_NO_OPENSSL
 class QSslSocketPtr: public QSharedPointer<QSslSocket>
 {
@@ -528,17 +532,17 @@ void tst_QSslSocket::sslErrors()
     socket->connectToHostEncrypted(host, port);
     socket->waitForEncrypted(5000);
 
-    SslErrorList list;
+    SslErrorList output;
     foreach (QSslError error, socket->sslErrors()) {
         //printf("error = %s\n", error.errorString().toAscii().data());
-        list << error.error();
+        output << error.error();
     }
 
 #ifdef QSSLSOCKET_CERTUNTRUSTED_WORKAROUND
     if (output.last() == QSslError::CertificateUntrusted)
         output.takeLast();
 #endif
-    QCOMPARE(list, errors);
+    QCOMPARE(output, expected);
 }
 
 void tst_QSslSocket::addCaCertificate()
