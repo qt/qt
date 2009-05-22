@@ -385,17 +385,10 @@ static void qt_create_pipe(int *pipe)
         qt_native_close(pipe[0]);
     if (pipe[1] != -1)
         qt_native_close(pipe[1]);
-#ifdef Q_OS_IRIX
-    if (::socketpair(AF_UNIX, SOCK_STREAM, 0, pipe) == -1) {
-        qWarning("QProcessPrivate::createPipe: Cannot create pipe %p: %s",
-                 pipe, qPrintable(qt_error_string(errno)));
-    }
-#else
     if (::pipe(pipe) != 0) {
         qWarning("QProcessPrivate::createPipe: Cannot create pipe %p: %s",
                  pipe, qPrintable(qt_error_string(errno)));
     }
-#endif
     ::fcntl(pipe[0], F_SETFD, FD_CLOEXEC);
     ::fcntl(pipe[1], F_SETFD, FD_CLOEXEC);
 }
