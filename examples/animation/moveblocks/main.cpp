@@ -41,7 +41,6 @@
 
 #include <QtCore>
 #include <QtGui>
-#include <time.h>
 
 class StateSwitchEvent: public QEvent
 {
@@ -288,7 +287,7 @@ int main(int argc, char **argv)
     window.resize(300, 300);
     window.show();
 
-    qsrand(time(0));
+    qsrand(QTime(0,0,0).secsTo(QTime::currentTime()));
 
     return app.exec();
 }
