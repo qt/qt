@@ -90,6 +90,15 @@ static inline int qt_socket_socket(int domain, int type, int protocol)
 
 #endif
 
+union qt_sockaddr {
+    sockaddr a;
+    sockaddr_in a4;
+#if !defined(QT_NO_IPV6)
+    sockaddr_in6 a6;
+#endif
+    sockaddr_storage storage;
+};
+
 class QNativeSocketEnginePrivate;
 
 class Q_AUTOTEST_EXPORT QNativeSocketEngine : public QAbstractSocketEngine

@@ -1789,7 +1789,7 @@ bool QOCIResult::prepare(const QString& query)
 bool QOCIResult::exec()
 {
     int r = 0;
-    ub2 stmtType;
+    ub2 stmtType=0;
     ub4 iters;
     ub4 mode;
     QList<QByteArray> tmpStorage;
@@ -1802,6 +1802,16 @@ bool QOCIResult::exec()
                     NULL,
                     OCI_ATTR_STMT_TYPE,
                     d->err);
+
+    if (r != OCI_SUCCESS && r != OCI_SUCCESS_WITH_INFO) {
+        qOraWarning("QOCIResult::exec: Unable to get statement type:", d->err);
+        setLastError(qMakeError(QCoreApplication::translate("QOCIResult",
+                     "Unable to get statement type"), QSqlError::StatementError, d->err));
+#ifdef QOCI_DEBUG
+        qDebug() << "lastQuery()" << lastQuery();
+#endif
+        return false;
+    }
 
     if (stmtType == OCI_STMT_SELECT) {
         iters = 0;
