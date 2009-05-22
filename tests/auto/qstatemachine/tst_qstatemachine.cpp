@@ -1704,6 +1704,12 @@ void tst_QStateMachine::signalTransitions()
         trans->setSenderObject(&emitter2);
         emitter2.emitSignalWithNoArg();
         QTRY_COMPARE(finishedSpy.count(), 4);
+
+        machine.start();
+        QCoreApplication::processEvents();
+        QTest::ignoreMessage(QtWarningMsg, "QSignalTransition: no such signal: SignalEmitter::noSuchSignal()");
+        trans->setSignal(SIGNAL(noSuchSignal()));
+        QCOMPARE(trans->signal(), QByteArray(SIGNAL(noSuchSignal())));
     }
     {
         QStateMachine machine;
