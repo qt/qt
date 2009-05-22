@@ -1184,21 +1184,6 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
             QStyleOptionButton subopt = *btn;
             subopt.rect = subElementRect(SE_PushButtonContents, btn, widget);
 
-            if (const QAbstractButton *buttonWidget = (qobject_cast<const QAbstractButton *>(widget))) {
-                if (buttonWidget->isCheckable()) {
-                    QStyleOptionButton checkopt = subopt;
-
-                    const int indicatorHeight(pixelMetric(PM_IndicatorHeight));
-                    const int verticalAdjust = (option->rect.height() - indicatorHeight) >> 1;
-
-                    checkopt.rect.adjust(pixelMetric(PM_ButtonMargin), verticalAdjust, 0, 0);
-                    checkopt.rect.setWidth(pixelMetric(PM_IndicatorWidth));
-                    checkopt.rect.setHeight(indicatorHeight);
-
-                    drawPrimitive(PE_IndicatorCheckBox, &checkopt, painter, widget);
-                }
-            }
-
             drawControl(CE_PushButtonLabel, &subopt, painter, widget);
             if (btn->state & State_HasFocus) {
                 QStyleOptionFocusRect fropt;
@@ -1215,7 +1200,8 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
             QS60StyleEnums::SkinParts skinPart;
             QS60StylePrivate::SkinElements skinElement;
             if (!isDisabled) {
-                const bool isPressed = option->state & QStyle::State_Sunken;
+                const bool isPressed = (option->state & QStyle::State_Sunken) || 
+                                       (option->state & QStyle::State_On);
                 if (isFlat) {
                     skinPart =
                         isPressed ? QS60StyleEnums::SP_QsnFrButtonTbCenterPressed : QS60StyleEnums::SP_QsnFrButtonTbCenter;
@@ -1238,14 +1224,6 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
     case CE_PushButtonLabel:
         if (const QStyleOptionButton *button = qstyleoption_cast<const QStyleOptionButton *>(option)) {
             QStyleOptionButton optionButton = *button;
-
-            if (const QAbstractButton *buttonWidget = (qobject_cast<const QAbstractButton *>(widget))) {
-                if (buttonWidget->isCheckable()) {
-                // space for check box.
-                optionButton.rect.adjust(pixelMetric(PM_IndicatorWidth)
-                        + pixelMetric(PM_ButtonMargin) + pixelMetric(PM_CheckBoxLabelSpacing), 0, 0, 0);
-                }
-            }
             QCommonStyle::drawControl(element, &optionButton, painter, widget);
         }
         break;
