@@ -291,12 +291,12 @@ Bitte prüfen Sie die Gstreamer-Installation und stellen Sie sicher, dass das Pa
     <message>
         <location line="+9"/>
         <source>Preview File Info</source>
-        <translation>Voransicht der Datei-Information</translation>
+        <translation>Vorschau der Datei-Informationen</translation>
     </message>
     <message>
         <location line="+23"/>
         <source>Preview File Contents</source>
-        <translation>Voransicht des Datei-Inhalts</translation>
+        <translation>Vorschau des Datei-Inhalts</translation>
     </message>
     <message>
         <location line="+88"/>
