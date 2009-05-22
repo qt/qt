@@ -238,6 +238,7 @@ namespace QtSharedPointer {
         template <class X> friend class ExternalRefCount;
         template <class X> friend class QWeakPointer;
         template <class X, class Y> friend QSharedPointer<X> qSharedPointerCastHelper(const QSharedPointer<Y> &src, X *);
+        template <class X, class Y> friend QSharedPointer<X> qSharedPointerDynamicCastHelper(const QSharedPointer<Y> &src, X *);
         template <class X, class Y> friend QSharedPointer<X> qSharedPointerConstCastHelper(const QSharedPointer<Y> &src, X *);
         template <class X, class Y> friend QSharedPointer<X> QtSharedPointer::qStrongRefFromWeakHelper(const QWeakPointer<Y> &src, X *);
 #endif
@@ -509,6 +510,14 @@ namespace QtSharedPointer {
         return result;
     }
     template <class X, class T>
+    Q_INLINE_TEMPLATE QSharedPointer<X> qSharedPointerDynamicCastHelper(const QSharedPointer<T> &src, X *)
+    {
+        QSharedPointer<X> result;
+        register T *ptr = src.data();
+        result.internalSet(src.d, dynamic_cast<X *>(ptr));
+        return result;
+    }
+    template <class X, class T>
     Q_INLINE_TEMPLATE QSharedPointer<X> qSharedPointerConstCastHelper(const QSharedPointer<T> &src, X *)
     {
         QSharedPointer<X> result;
@@ -544,9 +553,7 @@ template <class X, class T>
 Q_INLINE_TEMPLATE QSharedPointer<X> qSharedPointerDynamicCast(const QSharedPointer<T> &src)
 {
     X *x = 0;
-    if (QtSharedPointer::qVerifyDynamicCast(src.data(), x))
-        return QtSharedPointer::qSharedPointerCastHelper(src, x);
-    return QSharedPointer<X>();
+    return QtSharedPointer::qSharedPointerDynamicCastHelper(src, x);
 }
 template <class X, class T>
 Q_INLINE_TEMPLATE QSharedPointer<X> qSharedPointerDynamicCast(const QWeakPointer<T> &src)
@@ -558,17 +565,13 @@ template <class X, class T>
 Q_INLINE_TEMPLATE QSharedPointer<X> qSharedPointerConstCast(const QSharedPointer<T> &src)
 {
     X *x = 0;
-    if (QtSharedPointer::qVerifyConstCast(src.data(), x))
-        return QtSharedPointer::qSharedPointerConstCastHelper(src, x);
-    return QSharedPointer<X>();
+    return QtSharedPointer::qSharedPointerConstCastHelper(src, x);
 }
 template <class X, class T>
 Q_INLINE_TEMPLATE QSharedPointer<X> qSharedPointerConstCast(const QWeakPointer<T> &src)
 {
     X *x = 0;
-    if (QtSharedPointer::qVerifyConstCast(src.data(), x))
-        return QtSharedPointer::qSharedPointerCastHelper(src, x);
-    return QSharedPointer<X>();
+    return QtSharedPointer::qSharedPointerConstCastHelper(src, x);
 }
 
 template <class X, class T>

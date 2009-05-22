@@ -208,7 +208,7 @@ public:
     QString searchBuffer;
     QBasicTimer searchBufferTimer;
 
-    //passing of mouse events up the parent heirarchy
+    //passing of mouse events up the parent hierarchy
     QPointer<QMenu> activeMenu;
     bool mouseEventTaken(QMouseEvent *);
 

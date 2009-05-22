@@ -128,7 +128,7 @@
 
     If you want to build a new dynamic library combining the Qt 4
     dynamic libraries, you need to introduce the \c{ld -r} flag. Then
-    relocation information is stored in the the output file, so that
+    relocation information is stored in the output file, so that
     this file could be the subject of another \c ld run. This is done
     by setting the \c -r flag in the \c .pro file, and the \c LFLAGS
     settings.

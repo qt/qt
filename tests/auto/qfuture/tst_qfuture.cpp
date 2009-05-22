@@ -45,7 +45,7 @@
 
 #include <QtTest/QtTest>
 #include <qfuture.h>
-#include <versioncheck.h>
+#include "versioncheck.h"
 #include <qfuturewatcher.h>
 #include <qtconcurrentresultstore.h>
 #include <qtconcurrentexception.h>

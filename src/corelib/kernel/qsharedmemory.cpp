@@ -129,6 +129,10 @@ QSharedMemoryPrivate::makePlatformSafeKey(const QString &key,
   detached from the segment, and no references to the segment
   remain. Do not mix using QtSharedMemory and QSharedMemory. Port
   everything to QSharedMemory.
+
+  \warning QSharedMemory changes the key in a Qt-specific way.
+  It is therefore currently not possible to use the shared memory of
+  non-Qt applications with QSharedMemory.
  */
 
 /*!

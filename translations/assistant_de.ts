@@ -163,7 +163,7 @@
 <context>
     <name>CentralWidget</name>
     <message>
-        <location filename="../tools/assistant/tools/assistant/centralwidget.cpp" line="+195"/>
+        <location filename="../tools/assistant/tools/assistant/centralwidget.cpp" line="+208"/>
         <source>Add new page</source>
         <translation>Neue Seite hinzufügen</translation>
     </message>
@@ -173,38 +173,38 @@
         <translation>Aktuelle Seite schließen</translation>
     </message>
     <message>
-        <location line="+265"/>
+        <location line="+282"/>
         <source>Print Document</source>
         <translation>Drucken</translation>
     </message>
     <message>
-        <location line="+147"/>
+        <location line="+148"/>
         <location line="+2"/>
         <source>unknown</source>
         <translation>unbekannt</translation>
     </message>
     <message>
-        <location line="+96"/>
+        <location line="+91"/>
         <source>Add New Page</source>
         <translation>Neue Seite hinzufügen</translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="+3"/>
         <source>Close This Page</source>
         <translation>Aktuelle Seite schließen</translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="+3"/>
         <source>Close Other Pages</source>
         <translation>Andere Seiten schließen</translation>
     </message>
     <message>
-        <location line="+2"/>
+        <location line="+5"/>
         <source>Add Bookmark for this Page...</source>
         <translation>Lesezeichen für diese Seite hinzufügen...</translation>
     </message>
     <message>
-        <location line="+257"/>
+        <location line="+259"/>
         <source>Search</source>
         <translation>Suchen</translation>
     </message>
@@ -242,17 +242,17 @@
 <context>
     <name>FindWidget</name>
     <message>
-        <location filename="../tools/assistant/tools/assistant/centralwidget.cpp" line="-863"/>
+        <location filename="../tools/assistant/tools/assistant/centralwidget.cpp" line="-899"/>
         <source>Previous</source>
         <translation>Vorherige</translation>
     </message>
     <message>
-        <location line="+7"/>
+        <location line="+4"/>
         <source>Next</source>
         <translation>Nächste</translation>
     </message>
     <message>
-        <location line="+5"/>
+        <location line="+4"/>
         <source>Case Sensitive</source>
         <translation>Gross/ Kleinschreibung beachten</translation>
     </message>
@@ -298,7 +298,7 @@
 <context>
     <name>HelpViewer</name>
     <message>
-        <location filename="../tools/assistant/tools/assistant/helpviewer.cpp" line="+481"/>
+        <location filename="../tools/assistant/tools/assistant/helpviewer.cpp" line="+492"/>
         <source>Help</source>
         <translation>Hilfe</translation>
     </message>
@@ -329,12 +329,12 @@
         <translation>Link in neuem Tab öffnen	</translation>
     </message>
     <message>
-        <location line="-267"/>
+        <location line="-275"/>
         <source>Open Link in New Tab</source>
         <translation>Link in neuem Tab öffnen</translation>
     </message>
     <message>
-        <location line="+201"/>
+        <location line="+209"/>
         <source>Unable to launch external application.
 </source>
         <translation>Fehler beim Starten der externen Anwendung.
@@ -463,38 +463,37 @@
     <name>MainWindow</name>
     <message>
         <location filename="../tools/assistant/tools/assistant/mainwindow.cpp" line="+108"/>
-        <location line="+350"/>
+        <location line="+354"/>
         <source>Index</source>
         <translation>Index</translation>
     </message>
     <message>
-        <location line="-344"/>
-        <location line="+342"/>
+        <location line="-348"/>
+        <location line="+346"/>
         <source>Contents</source>
         <translation>Inhalt</translation>
     </message>
     <message>
-        <location line="-337"/>
-        <location line="+341"/>
+        <location line="-341"/>
+        <location line="+345"/>
         <source>Bookmarks</source>
         <translation>Lesezeichen</translation>
     </message>
     <message>
-        <location line="-329"/>
-        <location line="+331"/>
+        <location line="+2"/>
         <source>Search</source>
         <translation>Suchen</translation>
     </message>
     <message>
-        <location line="-319"/>
-        <location line="+192"/>
-        <location line="+470"/>
+        <location line="-335"/>
+        <location line="+208"/>
+        <location line="+476"/>
         <source>Qt Assistant</source>
         <translation>Qt Assistant</translation>
     </message>
     <message>
-        <location line="-501"/>
-        <location line="+4"/>
+        <location line="-508"/>
+        <location line="+5"/>
         <source>Unfiltered</source>
         <translation>Ohne Filter</translation>
     </message>
@@ -718,7 +717,7 @@
         <translation>Navigationsleiste</translation>
     </message>
     <message>
-        <location line="+74"/>
+        <location line="+76"/>
         <source>Toolbars</source>
         <translation>Werkzeugleisten</translation>
     </message>
@@ -743,7 +742,7 @@
         <translation>Adresse:</translation>
     </message>
     <message>
-        <location line="+110"/>
+        <location line="+114"/>
         <source>Could not find the associated content item.</source>
         <translation>Der zugehörige Inhaltseintrag konnte nicht gefunden werden.</translation>
     </message>
@@ -769,12 +768,12 @@
         <translation>Über %1</translation>
     </message>
     <message>
-        <location line="+115"/>
+        <location line="+113"/>
         <source>Updating search index</source>
         <translation>Suchindex wird aufgebaut</translation>
     </message>
     <message>
-        <location line="-597"/>
+        <location line="-601"/>
         <source>Looking for Qt Documentation...</source>
         <translation>Suche nach Qt Dokumentationen...</translation>
     </message>
@@ -862,46 +861,45 @@
         <translation type="obsolete">Von Helpserver herunterladen...</translation>
     </message>
     <message>
-        <location filename="../tools/assistant/tools/assistant/preferencesdialog.cpp" line="+237"/>
-        <location line="+7"/>
-        <location line="+6"/>
+        <location filename="../tools/assistant/tools/assistant/preferencesdialog.cpp" line="+256"/>
+        <location line="+43"/>
         <source>Add Documentation</source>
         <translation>Dokumentation hinzufügen</translation>
     </message>
     <message>
-        <location line="-13"/>
+        <location line="-43"/>
         <source>Qt Compressed Help Files (*.qch)</source>
         <translation>Komprimierte Hilfe Dateien (*.qch)</translation>
     </message>
     <message>
-        <location line="+8"/>
+        <location line="+37"/>
         <source>The specified file is not a valid Qt Help File!</source>
         <translation>Die angegebene Datei ist keine Qt Hilfe Datei!</translation>
     </message>
     <message>
-        <location line="+6"/>
+        <location line="-8"/>
         <source>The namespace %1 is already registered!</source>
         <translation>Der Namespace %1 ist bereits registriert!</translation>
     </message>
     <message>
-        <location line="+23"/>
+        <location line="+31"/>
         <source>Remove Documentation</source>
-        <translation type="unfinished"></translation>
+        <translation>Dokumentation entfernen</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Some documents currently opened in Assistant reference the documentation you are attempting to remove. Removing the documentation will close those documents.</source>
-        <translation type="unfinished"></translation>
+        <translation>Einige der gegenwärtig geöffneten Dokumente stammen aus der Dokumentation, die Sie gerade zu löschen versuchen. Sie werden beim Löschen geschlossen.</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Cancel</source>
-        <translation type="unfinished">Abbrechen</translation>
+        <translation>Abbrechen</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>OK</source>
-        <translation type="unfinished">OK</translation>
+        <translation>OK</translation>
     </message>
     <message>
         <location line="+86"/>
@@ -1000,22 +998,22 @@
     <message>
         <location/>
         <source>Options</source>
-        <translation type="unfinished"></translation>
+        <translation>Einstellungen</translation>
     </message>
     <message>
         <location/>
         <source>Current Page</source>
-        <translation type="unfinished"></translation>
+        <translation>Aktuelle Seite</translation>
     </message>
     <message>
         <location/>
         <source>Restore to default</source>
-        <translation type="unfinished"></translation>
+        <translation>Vorgabe wiederherstellen</translation>
     </message>
     <message>
         <location/>
         <source>Homepage</source>
-        <translation type="unfinished"></translation>
+        <translation>Startseite</translation>
     </message>
 </context>
 <context>
@@ -1025,7 +1023,7 @@
         <translation type="obsolete">Neuer Ordner</translation>
     </message>
     <message>
-        <location filename="../tools/assistant/tools/assistant/cmdlineparser.cpp" line="+110"/>
+        <location filename="../tools/assistant/tools/assistant/cmdlineparser.cpp" line="+112"/>
         <source>The specified collection file does not exist!</source>
         <translation>Die angegeben Katalogdatei (collection file) konnte nicht gefunden werden!</translation>
     </message>
@@ -1073,10 +1071,10 @@
     <message>
         <location line="+7"/>
         <source>Missing filter argument!</source>
-        <translation type="unfinished"></translation>
+        <translation>Das Filter-Argument fehlt!</translation>
     </message>
     <message>
-        <location line="+10"/>
+        <location line="+12"/>
         <source>Unknown option: %1</source>
         <translation>Unbekannte Option: %1</translation>
     </message>
@@ -1087,7 +1085,7 @@
         <translation>Qt Assistant</translation>
     </message>
     <message>
-        <location filename="../tools/assistant/tools/assistant/main.cpp" line="+190"/>
+        <location filename="../tools/assistant/tools/assistant/main.cpp" line="+203"/>
         <source>Could not register documentation file
 %1
 
@@ -1115,9 +1113,9 @@ Reason:
         <translation>Dokumentation erfolgreich entfernt.</translation>
     </message>
     <message>
-        <location line="+18"/>
+        <location line="+40"/>
         <source>Cannot load sqlite database driver!</source>
-        <translation type="unfinished"></translation>
+        <translation>Der Datenbanktreiber für SQLite kann nicht geladen werden!</translation>
     </message>
     <message>
         <location line="+9"/>
@@ -1147,7 +1145,7 @@ Reason:
 <context>
     <name>SearchWidget</name>
     <message>
-        <location filename="../tools/assistant/tools/assistant/searchwidget.cpp" line="+193"/>
+        <location filename="../tools/assistant/tools/assistant/searchwidget.cpp" line="+195"/>
         <source>&amp;Copy</source>
         <translation>&amp;Kopieren</translation>
     </message>
@@ -1157,20 +1155,18 @@ Reason:
         <translation>&amp;Link Adresse kopieren</translation>
     </message>
     <message>
-        <location line="+3"/>
-        <location line="+36"/>
+        <location line="+4"/>
         <source>Open Link in New Tab</source>
         <translation>Link in neuem Tab öffnen</translation>
     </message>
     <message>
-        <location line="-29"/>
+        <location line="+8"/>
         <source>Select All</source>
         <translation>Alles markieren</translation>
     </message>
     <message>
-        <location line="+28"/>
         <source>Open Link</source>
-        <translation>Link öffnen</translation>
+        <translation type="obsolete">Link öffnen</translation>
     </message>
 </context>
 <context>

@@ -705,7 +705,6 @@ public:
         QGraphicsPixmapItem::paint(painter,option,widget);
         //We just want to wait, and we don't want to process the event loop with qWait
         QTest::qSleep(3);
-
     }
 protected:
     void advance(int i)
