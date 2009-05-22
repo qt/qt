@@ -76,7 +76,7 @@ QmlCanvasDebugger::QmlCanvasDebugger(QmlWatches *w, QWidget *parent)
     QObject::connect(y, SIGNAL(valueChanged(int)), this, SLOT(setY(int)));
     hlayout->addWidget(x);
     hlayout->addWidget(y);
-    QPushButton *pb = new QPushButton("Refresh", this);
+    QPushButton *pb = new QPushButton(tr("Refresh"), this);
     QObject::connect(pb, SIGNAL(clicked()), this, SLOT(refresh()));
     hlayout->addWidget(pb);
 
@@ -233,7 +233,7 @@ void QmlCanvasDebugger::setCanvas(QSimpleCanvas *canvas)
         return;
 
     QTreeWidgetItem *root = new QmlCanvasDebuggerItem(m_tree);
-    root->setText(0, "Root");
+    root->setText(0, tr("Root"));
     root->setExpanded(true);
     clone(root, m_canvasRoot, m_debugCanvas->root());
 }

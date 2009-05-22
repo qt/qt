@@ -621,7 +621,7 @@ QVariant QFxVisualItemModel::evaluate(int index, const QString &expression, QObj
 
 int QFxVisualItemModel::indexOf(QFxItem *item, QObject *objectContext) const
 {
-    QmlExpression e(qmlContext(item), "index", objectContext);
+    QmlExpression e(qmlContext(item), QLatin1String("index"), objectContext);
     e.setTrackChange(false);
     QVariant value = e.value();
     if (value.isValid())

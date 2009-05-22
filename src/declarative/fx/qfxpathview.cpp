@@ -744,6 +744,7 @@ void QFxPathView::createdItem(int index, QFxItem *item)
 
 void QFxPathView::destroyingItem(QFxItem *item)
 {
+    Q_UNUSED(item);
 }
 
 void QFxPathView::ticked()

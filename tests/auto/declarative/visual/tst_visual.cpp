@@ -25,7 +25,9 @@ void tst_visual::visual()
 {
     QVERIFY(!testdir.isEmpty());
 
-    QFile configFile(QLatin1String(QT_TEST_SOURCE_DIR) + "/" + testdir + "/test");
+    QString filename = QLatin1String(QT_TEST_SOURCE_DIR) + "/" + testdir + "/test";
+    qWarning() << "Using config:" << filename;
+    QFile configFile(filename);
     QVERIFY(configFile.open(QIODevice::ReadOnly));
 
     QString testfile = configFile.readLine().trimmed();

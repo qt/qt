@@ -197,8 +197,10 @@ void QFxContents::setItem(QFxItem *item)
     const QList<QSimpleCanvasItem *> &children = _item->QSimpleCanvasItem::children();
     for (int i = 0; i < children.count(); ++i) {
         const QSimpleCanvasItem *child = children.at(i);
-        connect(child, SIGNAL(bottomChanged()), this, SLOT(calcHeight()));
-        connect(child, SIGNAL(rightChanged()), this, SLOT(calcWidth()));
+        connect(child, SIGNAL(heightChanged()), this, SLOT(calcHeight()));
+        connect(child, SIGNAL(topChanged()), this, SLOT(calcHeight()));
+        connect(child, SIGNAL(widthChanged()), this, SLOT(calcWidth()));
+        connect(child, SIGNAL(leftChanged()), this, SLOT(calcWidth()));
     }
 
     calcHeight();
@@ -1661,6 +1663,7 @@ void QFxItem::setKeepMouseGrab(bool keep)
  */
 void QFxItem::activeFocusChanged(bool flag)
 {
+    Q_UNUSED(flag);
     emit activeFocusChanged();
 }
 
@@ -1670,6 +1673,7 @@ void QFxItem::activeFocusChanged(bool flag)
  */
 void QFxItem::focusChanged(bool flag)
 {
+    Q_UNUSED(flag);
     emit focusChanged();
 }
 

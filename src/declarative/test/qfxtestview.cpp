@@ -57,6 +57,7 @@ QFxTestView::QFxTestView(const QString &filename, const QString &testdir)
 
     testEngine = new QFxTestEngine(QFxTestEngine::PlaybackTest, testdir, this, this);
 
+    qWarning() << "Testing:" << filename;
     QFile file(filename);
     file.open(QFile::ReadOnly);
     QString qml = QString::fromUtf8(file.readAll());
@@ -67,6 +68,8 @@ QFxTestView::QFxTestView(const QString &filename, const QString &testdir)
 
 void QFxTestView::setSceneSize(QSize s)
 {
+    if (s.isNull())
+        qWarning() << "Scene size is invalid";
     setFixedSize(s);
 }
 
