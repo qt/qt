@@ -46,9 +46,10 @@
 int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
-    QWidget *window = new QWidget();
+    QWidget window;
 
-    QLabel *queryLabel = new QLabel(tr("Query:"));
+    QLabel *queryLabel = new QLabel(
+        QApplication::translate("nestedlayouts", "Query:"));
     QLineEdit *queryEdit = new QLineEdit();
     QTableView *resultView = new QTableView();
 
@@ -59,14 +60,16 @@ int main(int argc, char *argv[])
     QVBoxLayout *mainLayout = new QVBoxLayout();
     mainLayout->addLayout(queryLayout);
     mainLayout->addWidget(resultView);
-    window->setLayout(mainLayout);
+    window.setLayout(mainLayout);
 
     // Set up the model and configure the view...
 //! [first part]
 
 //! [set up the model]
     QStandardItemModel model;
-    model.setHorizontalHeaderLabels(QStringList() << tr("Name") << tr("Office"));
+    model.setHorizontalHeaderLabels(
+        QStringList() << QApplication::translate("nestedlayouts", "Name")
+                      << QApplication::translate("nestedlayouts", "Office"));
 
     QList<QStringList> rows = QList<QStringList>()
         << (QStringList() << "Verne Nilsen" << "123")
@@ -92,8 +95,9 @@ int main(int argc, char *argv[])
     resultView->horizontalHeader()->setStretchLastSection(true);
 //! [set up the model]
 //! [last part]
-    window->setWindowTitle(tr("Nested layouts"));
-    window->show();
+    window.setWindowTitle(
+        QApplication::translate("nestedlayouts", "Nested layouts"));
+    window.show();
     return app.exec();
 }
 //! [last part]
