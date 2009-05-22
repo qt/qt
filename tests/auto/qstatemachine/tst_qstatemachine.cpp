@@ -1666,14 +1666,12 @@ void tst_QStateMachine::signalTransitions()
         QTest::ignoreMessage(QtWarningMsg, "QState::addTransition: no such signal SignalEmitter::noSuchSignal()");
         QCOMPARE(s0->addTransition(&emitter, SIGNAL(noSuchSignal()), s1), (QObject*)0);
 
-        {
-            QSignalTransition *trans = s0->addTransition(&emitter, SIGNAL(signalWithNoArg()), s1);
-            QVERIFY(trans != 0);
-            QCOMPARE(trans->sourceState(), s0);
-            QCOMPARE(trans->targetState(), (QAbstractState*)s1);
-            QCOMPARE(trans->senderObject(), (QObject*)&emitter);
-            QCOMPARE(trans->signal(), QByteArray(SIGNAL(signalWithNoArg())));
-        }
+        QSignalTransition *trans = s0->addTransition(&emitter, SIGNAL(signalWithNoArg()), s1);
+        QVERIFY(trans != 0);
+        QCOMPARE(trans->sourceState(), s0);
+        QCOMPARE(trans->targetState(), (QAbstractState*)s1);
+        QCOMPARE(trans->senderObject(), (QObject*)&emitter);
+        QCOMPARE(trans->signal(), QByteArray(SIGNAL(signalWithNoArg())));
 
         QSignalSpy finishedSpy(&machine, SIGNAL(finished()));
         machine.setInitialState(s0);
@@ -1685,6 +1683,27 @@ void tst_QStateMachine::signalTransitions()
         QTRY_COMPARE(finishedSpy.count(), 1);
 
         emitter.emitSignalWithNoArg();
+
+        trans->setSignal(SIGNAL(signalWithIntArg(int)));
+        QCOMPARE(trans->signal(), QByteArray(SIGNAL(signalWithIntArg(int))));
+        machine.start();
+        QCoreApplication::processEvents();
+        emitter.emitSignalWithIntArg(123);
+        QTRY_COMPARE(finishedSpy.count(), 2);
+
+        machine.start();
+        QCoreApplication::processEvents();
+        trans->setSignal(SIGNAL(signalWithNoArg()));
+        QCOMPARE(trans->signal(), QByteArray(SIGNAL(signalWithNoArg())));
+        emitter.emitSignalWithNoArg();
+        QTRY_COMPARE(finishedSpy.count(), 3);
+
+        SignalEmitter emitter2;
+        machine.start();
+        QCoreApplication::processEvents();
+        trans->setSenderObject(&emitter2);
+        emitter2.emitSignalWithNoArg();
+        QTRY_COMPARE(finishedSpy.count(), 4);
     }
     {
         QStateMachine machine;
