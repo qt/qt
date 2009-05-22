@@ -139,9 +139,16 @@ static QVariant fetch_value(QObject *o, int idx, int type)
             }
             break;
         case 135:
+            {
+                float val;
+                void *args[] = { &val, 0 };
+                QMetaObject::metacall(o, QMetaObject::ReadProperty, idx, args);
+                return QVariant(val);
+            }
+            break;
         case QVariant::Double:
             {
-                qreal val;
+                double val;
                 void *args[] = { &val, 0 };
                 QMetaObject::metacall(o, QMetaObject::ReadProperty, idx, args);
                 return QVariant(val);
