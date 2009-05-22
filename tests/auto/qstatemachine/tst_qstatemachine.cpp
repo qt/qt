@@ -985,6 +985,7 @@ void tst_QStateMachine::rootState()
     QVERIFY(qobject_cast<QState*>(machine.rootState()) != 0);
     QCOMPARE(qobject_cast<QState*>(machine.rootState())->parentState(), (QState*)0);
     QCOMPARE(machine.rootState()->parent(), (QObject*)&machine);
+    QCOMPARE(machine.rootState()->machine(), &machine);
 
     QState *s1 = new QState(machine.rootState());
     QCOMPARE(s1->parentState(), machine.rootState());
@@ -1006,7 +1007,9 @@ void tst_QStateMachine::addAndRemoveState()
 
     QState *s1 = new QState();
     QCOMPARE(s1->parentState(), (QState*)0);
+    QCOMPARE(s1->machine(), (QStateMachine*)0);
     machine.addState(s1);
+    QCOMPARE(s1->machine(), &machine);
     QCOMPARE(s1->parentState(), machine.rootState());
     QCOMPARE(root_d->childStates().size(), 2);
     QCOMPARE(root_d->childStates().at(0), (QAbstractState*)machine.errorState());
@@ -1063,8 +1066,29 @@ void tst_QStateMachine::stateEntryAndExit()
 
         TestState *s2 = new TestState(machine.rootState());
         QFinalState *s3 = new QFinalState(machine.rootState());
+
         TestTransition *t = new TestTransition(s2);
+        QCOMPARE(t->machine(), (QStateMachine*)0);
+        QCOMPARE(t->sourceState(), (QState*)0);
+        QCOMPARE(t->targetState(), s2);
+        QCOMPARE(t->targetStates().size(), 1);
+        QCOMPARE(t->targetStates().at(0), s2);
+        t->setTargetState(0);
+        QCOMPARE(t->targetState(), (QState*)0);
+        QVERIFY(t->targetStates().isEmpty());
+        t->setTargetState(s2);
+        QCOMPARE(t->targetState(), s2);
+        QTest::ignoreMessage(QtWarningMsg, "QAbstractTransition::setTargetStates: target state(s) cannot be null");
+        t->setTargetStates(QList<QAbstractState*>() << 0);
+        QCOMPARE(t->targetState(), s2);
+        t->setTargetStates(QList<QAbstractState*>() << s2);
+        QCOMPARE(t->targetState(), s2);
+        QCOMPARE(t->targetStates().size(), 1);
+        QCOMPARE(t->targetStates().at(0), s2);
         QCOMPARE(s1->addTransition(t), (QAbstractTransition*)t);
+        QCOMPARE(t->sourceState(), s1);
+        QCOMPARE(t->machine(), &machine);
+
         {
             QAbstractTransition *trans = s2->addTransition(s3);
             QVERIFY(trans != 0);
@@ -1081,6 +1105,7 @@ void tst_QStateMachine::stateEntryAndExit()
         QSignalSpy stoppedSpy(&machine, SIGNAL(stopped()));
         QSignalSpy finishedSpy(&machine, SIGNAL(finished()));
         machine.setInitialState(s1);
+        QCOMPARE(machine.initialState(), (QAbstractState*)s1);
         QVERIFY(machine.configuration().isEmpty());
         globalTick = 0;
         QVERIFY(!machine.isRunning());
@@ -1222,9 +1247,22 @@ void tst_QStateMachine::assignPropertyWithAnimation()
         s2->assignProperty(&obj, "foo", 456);
         s2->assignProperty(&obj, "bar", 789);
         QAbstractTransition *trans = s1->addTransition(s2);
+        QVERIFY(trans->animations().isEmpty());
+        QTest::ignoreMessage(QtWarningMsg, "QAbstractTransition::addAnimation: cannot add null animation");
+        trans->addAnimation(0);
         QPropertyAnimation anim(&obj, "foo");
         anim.setDuration(250);
         trans->addAnimation(&anim);
+        QCOMPARE(trans->animations().size(), 1);
+        QCOMPARE(trans->animations().at(0), (QAbstractAnimation*)&anim);
+        QCOMPARE(anim.parent(), (QObject*)0);
+        QTest::ignoreMessage(QtWarningMsg, "QAbstractTransition::removeAnimation: cannot remove null animation");
+        trans->removeAnimation(0);
+        trans->removeAnimation(&anim);
+        QVERIFY(trans->animations().isEmpty());
+        trans->addAnimation(&anim);
+        QCOMPARE(trans->animations().size(), 1);
+        QCOMPARE(trans->animations().at(0), (QAbstractAnimation*)&anim);
         QFinalState *s3 = new QFinalState(machine.rootState());
         s2->addTransition(s2, SIGNAL(polished()), s3);
 
@@ -1548,8 +1586,8 @@ Q_SIGNALS:
 class TestSignalTransition : public QSignalTransition
 {
 public:
-    TestSignalTransition()
-        : QSignalTransition() {}
+    TestSignalTransition(QState *sourceState = 0)
+        : QSignalTransition(sourceState) {}
     TestSignalTransition(QObject *sender, const char *signal,
                          QAbstractState *target)
         : QSignalTransition(sender, signal, QList<QAbstractState*>() << target) {}
@@ -1722,15 +1760,23 @@ void tst_QStateMachine::signalTransitions()
 void tst_QStateMachine::eventTransitions()
 {
     QPushButton button;
-    {
+    for (int x = 0; x < 2; ++x) {
         QStateMachine machine;
         QState *s0 = new QState(machine.rootState());
         QFinalState *s1 = new QFinalState(machine.rootState());
 
-        QMouseEventTransition *trans = new QMouseEventTransition(&button, QEvent::MouseButtonPress, Qt::LeftButton);
+        QMouseEventTransition *trans;
+        if (x == 0) {
+            trans = new QMouseEventTransition(&button, QEvent::MouseButtonPress, Qt::LeftButton);
+            QCOMPARE(trans->targetState(), (QAbstractState*)0);
+            trans->setTargetState(s1);
+        } else {
+            trans = new QMouseEventTransition(&button, QEvent::MouseButtonPress,
+                                              Qt::LeftButton, QList<QAbstractState*>() << s1);
+        }
         QCOMPARE(trans->eventType(), QEvent::MouseButtonPress);
         QCOMPARE(trans->button(), Qt::LeftButton);
-        trans->setTargetState(s1);
+        QCOMPARE(trans->targetState(), (QAbstractState*)s1);
         s0->addTransition(trans);
 
         QSignalSpy finishedSpy(&machine, SIGNAL(finished()));
@@ -1739,25 +1785,40 @@ void tst_QStateMachine::eventTransitions()
         QCoreApplication::processEvents();
 
         QTest::mousePress(&button, Qt::LeftButton);
-        QCoreApplication::processEvents();
-
         QTRY_COMPARE(finishedSpy.count(), 1);
 
         QTest::mousePress(&button, Qt::LeftButton);
+
+        trans->setEventType(QEvent::MouseButtonRelease);
+        QCOMPARE(trans->eventType(), QEvent::MouseButtonRelease);
+        machine.start();
+        QCoreApplication::processEvents();
+        QTest::mouseRelease(&button, Qt::LeftButton);
+        QTRY_COMPARE(finishedSpy.count(), 2);
     }
-    {
+    for (int x = 0; x < 3; ++x) {
         QStateMachine machine;
         QState *s0 = new QState(machine.rootState());
         QFinalState *s1 = new QFinalState(machine.rootState());
 
-        QEventTransition *trans = new QEventTransition();
-        QCOMPARE(trans->eventObject(), (QObject*)0);
-        QCOMPARE(trans->eventType(), QEvent::None);
-        trans->setEventObject(&button);
+        QEventTransition *trans;
+        if (x == 0) {
+            trans = new QEventTransition();
+            QCOMPARE(trans->eventObject(), (QObject*)0);
+            QCOMPARE(trans->eventType(), QEvent::None);
+            trans->setEventObject(&button);
+            trans->setEventType(QEvent::MouseButtonPress);
+            trans->setTargetState(s1);
+        } else if (x == 1) {
+            trans = new QEventTransition(&button, QEvent::MouseButtonPress);
+            trans->setTargetState(s1);
+        } else {
+            trans = new QEventTransition(&button, QEvent::MouseButtonPress,
+                                         QList<QAbstractState*>() << s1);
+        }
         QCOMPARE(trans->eventObject(), (QObject*)&button);
-        trans->setEventType(QEvent::MouseButtonPress);
         QCOMPARE(trans->eventType(), QEvent::MouseButtonPress);
-        trans->setTargetState(s1);
+        QCOMPARE(trans->targetState(), (QAbstractState*)s1);
         s0->addTransition(trans);
 
         QSignalSpy finishedSpy(&machine, SIGNAL(finished()));
