@@ -49,7 +49,7 @@ QT_BEGIN_NAMESPACE
 // qt_global_mutexpool is here for backwards compatability only,
 // use QMutexpool::instance() in new clode.
 Q_CORE_EXPORT QMutexPool *qt_global_mutexpool = 0;
-Q_GLOBAL_STATIC_WITH_ARGS(QMutexPool, globalMutexPool, (true))
+Q_GLOBAL_STATIC_WITH_ARGS(QMutexPool, globalMutexPool, (QMutex::Recursive))
 
 /*!
     \class QMutexPool
@@ -88,15 +88,15 @@ Q_GLOBAL_STATIC_WITH_ARGS(QMutexPool, globalMutexPool, (true))
 */
 
 /*!
-    Constructs  a QMutexPool, reserving space for \a size QMutexes. If
-    \a recursive is true, all QMutexes in the pool will be recursive
-    mutexes; otherwise they will all be non-recursive (the default).
+    Constructs  a QMutexPool, reserving space for \a size QMutexes. All
+    mutexes in the pool are created with \a recursionMode. By default,
+    all mutexes are non-recursive.
 
     The QMutexes are created when needed, and deleted when the
     QMutexPool is destructed.
 */
-QMutexPool::QMutexPool(bool recursive, int size)
-    : mutexes(size), count(size), recurs(recursive)
+QMutexPool::QMutexPool(QMutex::RecursionMode recursionMode, int size)
+    : mutexes(size), count(size), recursionMode(recursionMode)
 {
     for (int index = 0; index < count; ++index) {
         mutexes[index] = 0;
@@ -134,7 +134,7 @@ QMutex *QMutexPool::get(const void *address)
 
     if (!mutexes[index]) {
         // mutex not created, create one
-        QMutex *newMutex = new QMutex(recurs ? QMutex::Recursive : QMutex::NonRecursive);
+        QMutex *newMutex = new QMutex(recursionMode);
         if (!mutexes[index].testAndSetOrdered(0, newMutex))
             delete newMutex;
     }
