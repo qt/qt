@@ -165,6 +165,22 @@ void QSoftKeyStack::handleSoftKeyPress(int command)
     d->handleSoftKeyPress(command);
 }
 
+QMainWindow *QSoftKeyStack::mainWindowOfWidget(QWidget *widget)
+{
+    QWidget *widgetParent = widget;
+    while (widgetParent = widgetParent->parentWidget())
+        if (QMainWindow *mainWindow = qobject_cast<QMainWindow*>(widgetParent))
+            return mainWindow;
+
+    return 0;
+}
+
+QSoftKeyStack *QSoftKeyStack::softKeyStackOfWidget(QWidget *widget)
+{
+    QMainWindow *mainWindow = mainWindowOfWidget(widget);
+    return mainWindow ? mainWindow->softKeyStack() : 0;
+}
+
 #if !defined(Q_WS_S60)
 void QSoftKeyStackPrivate::handleSoftKeyPress(int command)
 {

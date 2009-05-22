@@ -69,6 +69,9 @@ public:
 
     void handleSoftKeyPress(int command);
 
+    static QMainWindow *mainWindowOfWidget(QWidget *widget);
+    static QSoftKeyStack *softKeyStackOfWidget(QWidget *widget);
+
 private Q_SLOTS:
     void handleFocusChanged(QWidget *old, QWidget *now);
 
