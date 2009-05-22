@@ -2607,7 +2607,6 @@ QTransform QGraphicsItem::transform() const
         QVariant v(x);
         d_ptr->setExtra(QGraphicsItemPrivate::ExtraTransform, v);
         d_ptr->dirtyTransform = 0;
-        d_ptr->dirtyTransformComponents = 1;
         const_cast<QGraphicsItem *>(this)->itemChange(ItemTransformHasChanged, v);
         return x;
     }
@@ -3200,9 +3199,9 @@ void QGraphicsItem::setMatrix(const QMatrix &matrix, bool combine)
     prepareGeometryChange();
     d_ptr->hasTransform = !newTransform.isIdentity();
     d_ptr->setExtra(QGraphicsItemPrivate::ExtraTransform, newTransform);
+    d_ptr->dirtyTransformComponents = 1;
+    d_ptr->dirtyTransform = 0;
     d_ptr->invalidateSceneTransformCache();
-    if (d_ptr->hasDecomposedTransform)
-        d_ptr->dirtyTransform = 1;
 
     // Send post-notification.
     // NB! We have to change the value from QMatrix to QTransform.
@@ -3253,9 +3252,9 @@ void QGraphicsItem::setTransform(const QTransform &matrix, bool combine)
     prepareGeometryChange();
     d_ptr->hasTransform = !newTransform.isIdentity();
     d_ptr->setExtra(QGraphicsItemPrivate::ExtraTransform, newTransform);
+    d_ptr->dirtyTransformComponents = 1;
+    d_ptr->dirtyTransform = 0;
     d_ptr->invalidateSceneTransformCache();
-    if (d_ptr->hasDecomposedTransform)
-        d_ptr->dirtyTransform = 1;
 
     // Send post-notification.
     itemChange(ItemTransformHasChanged, newTransformVariant);

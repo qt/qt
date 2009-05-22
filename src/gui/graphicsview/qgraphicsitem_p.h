@@ -346,7 +346,7 @@ public:
     int globalStackingOrder;
     int sceneTransformIndex;
 
-    struct DecomposedTransform;    
+    struct DecomposedTransform;
     DecomposedTransform *decomposedTransform() const
     {
         QGraphicsItemPrivate *that = const_cast<QGraphicsItemPrivate *>(this);

@@ -6404,26 +6404,26 @@ void tst_QGraphicsItem::setTransformProperties_data()
     QTest::addColumn<qreal>("shearY");
 
     QTest::newRow("nothing") << QPointF() << qreal(0.0) << qreal(0.0) << qreal(0.0)
-                                          << qreal(0.0) << qreal(0.0) << qreal(0.0) << qreal(0.0);
+                                          << qreal(1) << qreal(1) << qreal(0.0) << qreal(0.0);
 
     QTest::newRow("rotationZ") << QPointF() << qreal(0.0) << qreal(0.0) << qreal(42.2)
-                                          << qreal(0.0) << qreal(0.0) << qreal(0.0) << qreal(0.0);
+                                          << qreal(1) << qreal(1) << qreal(0.0) << qreal(0.0);
 
     QTest::newRow("rotationXY") << QPointF() << qreal(12.5) << qreal(53.6) << qreal(0.0)
-                                          << qreal(0.0) << qreal(0.0) << qreal(0.0) << qreal(0.0);
+                                          << qreal(1) << qreal(1) << qreal(0.0) << qreal(0.0);
 
     QTest::newRow("rotationXYZ") << QPointF() << qreal(-25) << qreal(12) << qreal(556)
-                                          << qreal(0.0) << qreal(0.0) << qreal(0.0) << qreal(0.0);
+                                          << qreal(1) << qreal(1) << qreal(0.0) << qreal(0.0);
 
     QTest::newRow("rotationXYZ dicentred") << QPointF(-53, 25.2) 
                                 << qreal(-2578.2) << qreal(4565.2) << qreal(56)
-                                << qreal(0.0) << qreal(0.0) << qreal(0.0) << qreal(0.0);
+                                << qreal(1) << qreal(1) << qreal(0.0) << qreal(0.0);
 
     QTest::newRow("Scale")    << QPointF() << qreal(0.0) << qreal(0.0) << qreal(0.0)
                                           << qreal(6) << qreal(0.5) << qreal(0.0) << qreal(0.0);
 
     QTest::newRow("Shear")    << QPointF() << qreal(0.0) << qreal(0.0) << qreal(0.0)
-                                          << qreal(0.0) << qreal(0.0) << qreal(2.2) << qreal(0.5);
+                                          << qreal(1) << qreal(1) << qreal(2.2) << qreal(0.5);
 
     QTest::newRow("Scale and Shear")    << QPointF() << qreal(0.0) << qreal(0.0) << qreal(0.0)
                                           << qreal(5.2) << qreal(2.1) << qreal(5.2) << qreal(5.5);
@@ -6473,6 +6473,44 @@ void tst_QGraphicsItem::setTransformProperties()
     QCOMPARE(item->horizontalShear(), shearX);
     QCOMPARE(item->verticalShear(), shearY);
     QCOMPARE(item->transformOrigin(), origin);
+
+    QCOMPARE(result, item->transform());
+
+    //-----------------------------------------------------------------
+    //Change the rotation Z
+    item->setZRotation(45);
+    QTransform result2;
+    result2.translate(origin.x(), origin.y());
+    result2.rotate(rotationX, Qt::XAxis);
+    result2.rotate(rotationY, Qt::YAxis);
+    result2.rotate(45, Qt::ZAxis);
+    result2.shear(shearX, shearY);
+    result2.scale(scaleX, scaleY);
+    result2.translate(-origin.x(), -origin.y());
+
+    QCOMPARE(item->xRotation(), rotationX);
+    QCOMPARE(item->yRotation(), rotationY);
+    QCOMPARE(item->zRotation(), 45.0);
+    QCOMPARE(item->xScale(), scaleX);
+    QCOMPARE(item->yScale(), scaleY);
+    QCOMPARE(item->horizontalShear(), shearX);
+    QCOMPARE(item->verticalShear(), shearY);
+    QCOMPARE(item->transformOrigin(), origin);
+
+    QCOMPARE(result2, item->transform());
+
+    //-----------------------------------------------------------------
+    // calling setTransform() should reset the properties to their default
+    item->setTransform(result);
+
+    QCOMPARE(item->xRotation(), 0.0);
+    QCOMPARE(item->yRotation(), 0.0);
+    QCOMPARE(item->zRotation(), 0.0);
+    QCOMPARE(item->xScale(), 1.0);
+    QCOMPARE(item->yScale(), 1.0);
+    QCOMPARE(item->horizontalShear(), 0.0);
+    QCOMPARE(item->verticalShear(), 0.0);
+    QCOMPARE(item->transformOrigin(), QPointF(0,0));
 
     QCOMPARE(result, item->transform());
 }
