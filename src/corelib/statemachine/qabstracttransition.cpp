@@ -108,11 +108,6 @@ QAbstractTransitionPrivate *QAbstractTransitionPrivate::get(QAbstractTransition 
     return q->d_func();
 }
 
-const QAbstractTransitionPrivate *QAbstractTransitionPrivate::get(const QAbstractTransition *q)
-{
-    return q->d_func();
-}
-
 QStateMachine *QAbstractTransitionPrivate::machine() const
 {
     Q_Q(const QAbstractTransition);

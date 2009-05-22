@@ -73,7 +73,6 @@ public:
     QAbstractTransitionPrivate();
 
     static QAbstractTransitionPrivate *get(QAbstractTransition *q);
-    static const QAbstractTransitionPrivate *get(const QAbstractTransition *q);
 
     bool callEventTest(QEvent *e);
     void callOnTransition(QEvent *e);
