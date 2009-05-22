@@ -54,6 +54,7 @@ QT_MODULE(Gui)
 
 class QSoftKeyStackPrivate;
 class QSoftKeyAction;
+class QMainWindow;
 
 class Q_GUI_EXPORT QSoftKeyStack : public QObject
 {
