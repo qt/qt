@@ -327,20 +327,21 @@ protected:
 class GraphicsItem : public QGraphicsItem
 {
 public:
-    GraphicsItem()
+    GraphicsItem(int w = 100, int h = 100)
+        : width(w), height(h)
     {
         reset();
     }
 
     QRectF boundingRect() const
     {
-        return QRectF(0, 0, 100, 100);
+        return QRectF(0, 0, width, height);
     }
 
     void paint(QPainter *painter, const QStyleOptionGraphicsItem*, QWidget*)
     {
         painter->setBrush(Qt::green);
-        painter->drawRect(0, 0, 100, 100);
+        painter->drawRect(0, 0, width, height);
     }
 
     void grabSingleshotGesture()
@@ -364,6 +365,9 @@ public:
         releaseGesture(secondFingerGestureId);
         secondFingerGestureId = -1;
     }
+
+    int width;
+    int height;
 
     int singleshotGestureId;
     int pinchGestureId;
@@ -445,6 +449,7 @@ private slots:
 
     void simpleGraphicsView();
     void simpleGraphicsItem();
+    void overlappingGraphicsItems();
 
 private:
     SingleshotGestureRecognizer *singleshotRecognizer;
@@ -697,6 +702,57 @@ void tst_Gestures::simpleGraphicsItem()
     QVERIFY(!item->gesture.seenGestureEvent);
     QVERIFY(scene.gesture.seenGestureEvent);
     QVERIFY(mainWidget->gesture.seenGestureEvent);
+}
+
+void tst_Gestures::overlappingGraphicsItems()
+{
+    mainWidget->grabSingleshotGesture();
+    GraphicsScene scene;
+    QGraphicsView view(&scene);
+    mainWidget->layout()->addWidget(&view);
+
+    GraphicsItem *item = new GraphicsItem(300, 100);
+    item->setPos(30, 50);
+    scene.addItem(item);
+    GraphicsItem *subitem1 = new GraphicsItem(50, 70);
+    subitem1->setPos(70, 70);
+    scene.addItem(subitem1);
+    GraphicsItem *subitem2 = new GraphicsItem(50, 70);
+    subitem2->setPos(250, 70);
+    scene.addItem(subitem2);
+    QApplication::processEvents();
+
+    item->grabSingleshotGesture();
+    item->grabPinchGesture();
+    item->grabSecondFingerGesture();
+    subitem1->grabSingleshotGesture();
+    subitem2->grabSecondFingerGesture();
+
+    SingleshotEvent event(100, 100);
+    sendSpontaneousEvent(&view, &event);
+    QVERIFY(subitem1->gesture.seenGestureEvent);
+    QVERIFY(!subitem2->gesture.seenGestureEvent);
+    QVERIFY(!item->gesture.seenGestureEvent);
+    QVERIFY(scene.gesture.seenGestureEvent);
+    QVERIFY(!mainWidget->gesture.seenGestureEvent);
+    QVERIFY(subitem1->gesture.last.singleshot.delivered);
+
+    item->reset();
+    subitem1->reset();
+    subitem2->reset();
+    scene.reset();
+    mainWidget->reset();
+
+    subitem1->shouldAcceptSingleshotGesture = false;
+    SingleshotEvent event2(100, 100);
+    sendSpontaneousEvent(&view, &event2);
+    QVERIFY(subitem1->gesture.seenGestureEvent);
+    QVERIFY(!subitem2->gesture.seenGestureEvent);
+    QVERIFY(item->gesture.seenGestureEvent);
+    QVERIFY(scene.gesture.seenGestureEvent);
+    QVERIFY(!mainWidget->gesture.seenGestureEvent);
+    QVERIFY(subitem1->gesture.last.singleshot.delivered);
+    QVERIFY(item->gesture.last.singleshot.delivered);
 }
 
 QTEST_MAIN(tst_Gestures)
