@@ -92,8 +92,16 @@ QT_BEGIN_NAMESPACE
     passed to QPainter::drawStaticText() and can change from call to call without affecting 
     performance.
 
-    \sa QPainter::drawStaticText().
+    \sa QPainter::drawText(), QPainter::drawStaticText(), QTextLayout, QTextDocument
 */
+
+/*!
+    Constructs an empty QStaticText
+*/
+QStaticText::QStaticText()
+    : d_ptr(new QStaticTextPrivate)
+{
+}
 
 /*!
     \fn QStaticText::QStaticText(const QString &text, const QFont &font, const QSizeF &maximumSize)
@@ -106,7 +114,12 @@ QStaticText::QStaticText(const QString &text, const QFont &font, const QSizeF &s
     : d_ptr(new QStaticTextPrivate) 
 {
     Q_D(QStaticText);
-    d->init(text, font, sz);
+    
+    d->textLayout->setText(text);
+    d->textLayout->setFont(font);
+    d->size = sz;
+
+    d->init();
 }
 
 /*!
@@ -118,8 +131,84 @@ QStaticText::~QStaticText()
     delete d;
 }
 
+/*!
+    Sets the text of the QStaticText to \a text.
+
+    \note This function will cause the layout of the text to be recalculated.
+
+    \sa text()
+*/
+void QStaticText::setText(const QString &text) 
+{
+    Q_D(QStaticText);
+    d->textLayout->setText(text);
+    d->init();
+}
+
+/*!
+    Returns the text of the QStaticText.
+
+    \sa setText()
+*/
+QString QStaticText::text() const 
+{
+    Q_D(const QStaticText);
+    return d->textLayout->text();
+}
+
+/*!
+    Sets the font of the QStaticText to \a font.
+
+    \note This function will cause the layout of the text to be recalculated.
+
+    \sa font()
+*/
+void QStaticText::setFont(const QFont &font)
+{
+    Q_D(QStaticText);
+    d->textLayout->setFont(font);
+    d->init();
+}
+
+/*!
+    Returns the font of the QStaticText.
+
+    \sa setFont()
+*/
+QFont QStaticText::font() const
+{
+    Q_D(const QStaticText);
+    return d->textLayout->font();
+}
+
+/*!
+    Sets the maximum size of the QStaticText to \a maximumSize. If a valid maximum size is set for 
+    the QStaticText, it will be formatted to fit within its width, and clipped by its height.
+
+    \note This function will cause the layout of the text to be recalculated.
+
+    \sa maximumSize()
+*/
+void QStaticText::setMaximumSize(const QSizeF &maximumSize)
+{
+    Q_D(QStaticText);
+    d->size = maximumSize;
+    d->init();
+}
+
+/*!
+    Returns the maximum size of the QStaticText.
+
+    \sa setMaximumSize()
+*/
+QSizeF QStaticText::maximumSize() const
+{
+    Q_D(const QStaticText);
+    return d->size;
+}
+
 QStaticTextPrivate::QStaticTextPrivate()
-    : textLayout(0)
+    : textLayout(new QTextLayout())
 {
 }
 
@@ -133,25 +222,24 @@ QStaticTextPrivate *QStaticTextPrivate::get(const QStaticText *q)
     return q->d_ptr;
 }
 
-void QStaticTextPrivate::init(const QString &text, const QFont &font, const QSizeF &sz)
+void QStaticTextPrivate::init()
 {
-    Q_ASSERT(textLayout == 0);
-    size = sz;
-
-    textLayout = new QTextLayout(text, font);
+    Q_ASSERT(textLayout != 0);
     textLayout->setCacheEnabled(true);
 
-    QFontMetrics fontMetrics(font);
+    QFontMetrics fontMetrics(textLayout->font());
 
     textLayout->beginLayout();
     int h = size.isValid() ? 0 : -fontMetrics.ascent();
 
     QTextLine line;
+    qreal lineWidth = size.isValid() ? size.width() : fontMetrics.width(textLayout->text());
     while ((line = textLayout->createLine()).isValid()) {
-        line.setLineWidth(size.isValid() ? size.width() : fontMetrics.width(text));
+        line.setLineWidth(lineWidth);
         line.setPosition(QPointF(0, h));
         h += line.height();
     }
+    textLayout->endLayout();
 }
 
 QT_END_NAMESPACE

@@ -64,7 +64,7 @@ public:
     QStaticTextPrivate();
     ~QStaticTextPrivate();
 
-    void init(const QString &text, const QFont &font, const QSizeF &size);
+    void init();
 
     QTextLayout *textLayout;
     QSizeF size;

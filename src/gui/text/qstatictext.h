@@ -56,8 +56,22 @@ class Q_GUI_EXPORT QStaticText
 {
     Q_DECLARE_PRIVATE(QStaticText);
 public:
-    QStaticText(const QString &text, const QFont &font, const QSizeF &maximumSize = QSizeF());
+    QStaticText();
+    QStaticText(const QString &text);
+    QStaticText(const QString &text, const QFont &font = QFont(), const QSizeF &maximumSize = QSizeF());
     ~QStaticText();
+
+    void isValid() const;
+
+    void setText(const QString &text);
+    QString text() const;
+
+    void setFont(const QFont &font);
+    QFont font() const;
+
+    void setMaximumSize(const QSizeF &maximumSize);
+    QSizeF maximumSize() const;
+
 
 private:
     QStaticTextPrivate *d_ptr;
