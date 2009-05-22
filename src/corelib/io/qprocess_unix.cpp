@@ -580,28 +580,26 @@ void QProcessPrivate::startProcess()
     processManager()->start();
 
     // Initialize pipes
+    if (!createChannel(stdinChannel) ||
+        !createChannel(stdoutChannel) ||
+        !createChannel(stderrChannel))
+        return;
     qt_create_pipe(childStartedPipe);
+    qt_create_pipe(deathPipe);
+    ::fcntl(deathPipe[0], F_SETFD, FD_CLOEXEC);
+    ::fcntl(deathPipe[1], F_SETFD, FD_CLOEXEC);
+
     if (threadData->eventDispatcher) {
         startupSocketNotifier = new QSocketNotifier(childStartedPipe[0],
                                                     QSocketNotifier::Read, q);
         QObject::connect(startupSocketNotifier, SIGNAL(activated(int)),
                          q, SLOT(_q_startupNotification()));
-    }
 
-    qt_create_pipe(deathPipe);
-    ::fcntl(deathPipe[0], F_SETFD, FD_CLOEXEC);
-    ::fcntl(deathPipe[1], F_SETFD, FD_CLOEXEC);
-    if (threadData->eventDispatcher) {
         deathNotifier = new QSocketNotifier(deathPipe[0],
                                             QSocketNotifier::Read, q);
         QObject::connect(deathNotifier, SIGNAL(activated(int)),
                          q, SLOT(_q_processDied()));
     }
-
-    if (!createChannel(stdinChannel) ||
-        !createChannel(stdoutChannel) ||
-        !createChannel(stderrChannel))
-        return;
 
     // Start the process (platform dependent)
     q->setProcessState(QProcess::Starting);
