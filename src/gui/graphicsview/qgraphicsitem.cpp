@@ -8837,9 +8837,9 @@ bool QGraphicsTextItemPrivate::_q_mouseOnEdge(QGraphicsSceneMouseEvent *event)
     Sets the flags \a flags to specify how the text item should react to user
     input.
 
-    The default for a QGraphicsTextItem is Qt::NoTextInteraction. Setting a
-    value different to Qt::NoTextInteraction will also set the ItemIsFocusable
-    QGraphicsItem flag.
+    The default for a QGraphicsTextItem is Qt::NoTextInteraction. This function
+    also affects the ItemIsFocusable QGraphicsItem flag by setting it if \a flags
+    is different from Qt::NoTextInteraction and clearing it otherwise.
 
     By default, the text is read-only. To transform the item into an editor,
     set the Qt::TextEditable flag.
