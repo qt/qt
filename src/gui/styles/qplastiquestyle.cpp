@@ -5460,6 +5460,11 @@ int QPlastiqueStyle::styleHint(StyleHint hint, const QStyleOption *option, const
     case SH_Menu_SubMenuPopupDelay:
         ret = 96; // from Plastik
         break;
+#ifndef Q_OS_WIN
+    case SH_Menu_AllowActiveAndDisabled:
+        ret = false;
+        break;
+#endif
     default:
         ret = QWindowsStyle::styleHint(hint, option, widget, returnData);
         break;
