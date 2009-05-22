@@ -44,6 +44,64 @@
 
 QT_BEGIN_NAMESPACE
 
+/*!
+    \class QStaticText
+    \brief The QStaticText class enables optimized drawing of text when the text and its layout
+    is updated rarely.
+
+    \ingroup multimedia
+    \ingroup text
+    \mainclass
+
+    QStaticText provides a way to cache layout data for a block of text so that it can be drawn
+    more efficiently than by using QPainter::drawText() in which the layout information is 
+    recalculated with every call. 
+
+    The class primarily provides an optimization for cases where text is static over several paint
+    events. If the text or its layout is changed regularly, QPainter::drawText() is the more 
+    efficient alternative.
+
+    \code
+    class MyWidget: public QWidget
+    {
+    public:
+        MyWidget(QWidget *parent = 0) : QWidget(parent), m_staticText("This is static text")
+
+    protected:
+        void paintEvent(QPaintEvent *)
+        {
+            QPainter painter(this);
+            painter.drawStaticText(0, 0, m_staticText);
+        }
+
+    private:
+        QStaticText m_staticText;
+    };
+    \endcode
+
+    The QStaticText class can be used to mimic the behavior of QPainter::drawText() to a specific
+    point with no boundaries, and also when QPainter::drawText() is called with a bounding 
+    rectangle. 
+
+    If a bounding rectangle is not required, create a QStaticText object without setting a maximum 
+    size. The text will then occupy a single line. 
+
+    If you set a maximum size on the QStaticText object, this will bound the text. The text will
+    be formatted so that no line exceeds the given width. When the object is painted, it will 
+    be clipped vertically at the given height. The position of the text is decided by the argument
+    passed to QPainter::drawStaticText() and can change from call to call without affecting 
+    performance.
+
+    \sa QPainter::drawStaticText().
+*/
+
+/*!
+    \fn QStaticText::QStaticText(const QString &text, const QFont &font, const QSizeF &maximumSize)
+
+    Constructs a QStaticText object with the given \a text which is to be rendered in the given
+    \a font and bounded by the given \a maximumSize. If an invalid size is passed for \a maximumSize
+    the text will be unbounded.         
+*/
 QStaticText::QStaticText(const QString &text, const QFont &font, const QSizeF &sz)
     : d_ptr(new QStaticTextPrivate) 
 {
@@ -51,6 +109,9 @@ QStaticText::QStaticText(const QString &text, const QFont &font, const QSizeF &s
     d->init(text, font, sz);
 }
 
+/*!
+    Destroys the QStaticText.
+*/
 QStaticText::~QStaticText()
 {
     Q_D(QStaticText);

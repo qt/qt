@@ -5704,14 +5704,36 @@ void QPainter::drawText(const QPointF &p, const QString &str)
     drawText(p, str, 0, 0);
 }
 
-void QPainter::drawStaticText(const QPointF &p, const QStaticText &staticText)
+/*!    
+    \fn void QPainter::drawStaticText(const QPoint &position, const QStaticText &staticText)
+
+    \overload
+*/
+
+/*!    
+    \fn void QPainter::drawStaticText(int x, int y, const QStaticText &staticText)
+
+    \overload
+*/
+
+/*!
+    Draws the given \a staticText beginning at the given \a position. 
+
+    This function can be used to optimize drawing text if the text and its layout is updated 
+    seldomly.
+
+    \note To mirror the behavior of QPainter::drawText() the y-position will be used as the baseline
+    of the font if a size not set on \a staticText. If a size is set for \a staticText, \a position
+    is the top left corner of the clipping rectangle of the text.
+*/
+void QPainter::drawStaticText(const QPointF &position, const QStaticText &staticText)
 {
     const QStaticTextPrivate *staticText_d = QStaticTextPrivate::get(&staticText);
     QTextLayout *textLayout = staticText_d->textLayout;
 
     QSizeF size = staticText_d->size;
 
-    QRectF clipRect = size.isValid() ? QRectF(p, staticText_d->size) : QRectF();
+    QRectF clipRect = size.isValid() ? QRectF(position, staticText_d->size) : QRectF();
     QPainterPath oldClipPath;
     if (clipRect.isValid()) {
         oldClipPath = clipPath();
@@ -5722,7 +5744,7 @@ void QPainter::drawStaticText(const QPointF &p, const QStaticText &staticText)
         setClipPath(clipPath, Qt::IntersectClip);
     }
 
-    textLayout->draw(this, p, QVector<QTextLayout::FormatRange>(), clipRect);
+    textLayout->draw(this, position, QVector<QTextLayout::FormatRange>(), clipRect);
 
     if (clipRect.isValid())
         setClipPath(oldClipPath);    
