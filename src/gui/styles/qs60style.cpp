@@ -41,6 +41,7 @@
 #include "private/qtoolbarextension_p.h"
 #include "private/qcombobox_p.h"
 #include "private/qwidget_p.h"
+#include "private/qapplication_p.h"
 
 #if !defined(QT_NO_STYLE_S60) || defined(QT_PLUGIN)
 
