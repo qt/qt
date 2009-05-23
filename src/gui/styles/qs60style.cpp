@@ -30,6 +30,7 @@
 #include "qmenubar.h"
 #include "qmessagebox.h"
 #include "qpushbutton.h"
+#include "qscrollarea.h"
 #include "qscrollbar.h"
 #include "qtabbar.h"
 #include "qtablewidget.h"
