@@ -618,6 +618,9 @@ void QS60StylePrivate::setThemePalette(QWidget *widget) const
         widgetPalette.setColor(QPalette::Dark, color.darker());
         widgetPalette.setColor(QPalette::Light, color.lighter());
         QApplication::setPalette(widgetPalette, "QDial");
+    } else if (qobject_cast<QScrollArea *>(widget)) {
+        widgetPalette.setBrush(QPalette::Window, QBrush());
+        QApplication::setPalette(widgetPalette, "QScrollArea");
     }
 }
 
