@@ -1311,12 +1311,15 @@ void QS60StyleModeSpecifics::colorGroupAndIndex(
         case QS60StyleEnums::SP_QgnIndiHlLineBranch:
         case QS60StyleEnums::SP_QgnIndiHlLineEnd:
         case QS60StyleEnums::SP_QgnIndiHlLineStraight:
+            colorGroup = KAknsIIDQsnIconColors;
+            colorIndex = EAknsCIQsnIconColorsCG1;
+            break;
         case QS60StyleEnums::SP_QgnIndiRadiobuttOff:
         case QS60StyleEnums::SP_QgnIndiRadiobuttOn:
         case QS60StyleEnums::SP_QgnIndiCheckboxOff:
         case QS60StyleEnums::SP_QgnIndiCheckboxOn:
             colorGroup = KAknsIIDQsnIconColors;
-            colorIndex = EAknsCIQsnIconColorsCG1;
+            colorIndex = EAknsCIQsnIconColorsCG14;
             break;
         default:
             break;
