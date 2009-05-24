@@ -62,6 +62,10 @@ private Q_SLOTS:
     void disconnected();
 
 private:
+    friend class FrameBreakAnimation;
+    void frameBreak();
+    int _breaks;
+
     QTcpServer *_tcpServer;
     QList<QTcpSocket *> _tcpClients;
     QTime _time;

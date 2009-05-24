@@ -1021,7 +1021,7 @@ static bool convert(const QVariant::Private *d, QVariant::Type t, void *result, 
 #if !defined(QT_NO_DEBUG_STREAM) && !defined(Q_BROKEN_DEBUG_STREAM)
 static void streamDebug(QDebug dbg, const QVariant &v)
 {
-    switch (v.type()) {
+    switch (v.userType()) {
     case QVariant::Int:
         dbg.nospace() << v.toInt();
         break;
@@ -1033,6 +1033,9 @@ static void streamDebug(QDebug dbg, const QVariant &v)
         break;
     case QVariant::ULongLong:
         dbg.nospace() << v.toULongLong();
+        break;
+    case QMetaType::Float:
+        dbg.nospace() << qVariantValue<float>(v);
         break;
     case QVariant::Double:
         dbg.nospace() << v.toDouble();

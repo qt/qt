@@ -97,10 +97,7 @@ Q_CORE_EXPORT uint qHash(const QBitArray &key);
 #endif
 template <class T> inline uint qHash(const T *key)
 {
-    if (sizeof(const T *) > sizeof(uint))
-        return qHash(reinterpret_cast<quint64>(key));
-    else
-        return uint(reinterpret_cast<ulong>(key));
+    return qHash(reinterpret_cast<quintptr>(key));
 }
 #if defined(Q_CC_MSVC)
 #pragma warning( pop )

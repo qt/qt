@@ -142,7 +142,7 @@ QObject *QmlPackage::part(const QString &name)
     return 0;
 }
 
-QObject *QmlPackage::qmlAttachedProperties(QObject *o)
+QmlPackageAttached *QmlPackage::qmlAttachedProperties(QObject *o)
 {
     return new QmlPackageAttached(o);
 }

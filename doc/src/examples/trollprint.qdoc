@@ -142,7 +142,7 @@
     We can easily determine which file must be changed because the
     translator's "context" is in fact the class name for the class where
     the texts that must be changed appears. In this case the file is \c
-    printpanel.cpp, where the there are four lines to change. Add the
+    printpanel.cpp, where there are four lines to change. Add the
     second argument "two-sided" in the appropriate \c tr() calls to the
     first pair of radio buttons:
 

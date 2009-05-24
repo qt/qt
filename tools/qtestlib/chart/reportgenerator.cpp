@@ -253,7 +253,7 @@ QByteArray printSeriesLabels(const QString &tableName, const QString &seriesColu
     output += "[";
     
     foreach(const QString &serie, series) {
-        output += "\"" + serie.toLocal8Bit() + "\", ";
+        output += "\"" + serie.toLocal8Bit() + "\",";
     }
     output.chop(1); //remove last comma
     output += "]\n";
@@ -446,7 +446,6 @@ void ReportGenerator::writeReports()
     }
 */
     writeReport("Results", "results.html", false);
-    qDebug() << "Supported browsers: Firefox, Safari, Opera, Qt Demo Browser (IE and KDE 3 Konqueror are not supported)";
 }
 
 QString ReportGenerator::fileName()

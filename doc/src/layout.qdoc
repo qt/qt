@@ -343,9 +343,9 @@
     \snippet doc/src/snippets/code/doc_src_layout.qdoc 4
 
     The layout takes over responsibility of the items added. Since QLayoutItem
-    does not inherit QObject, we must delete the items manually. The function
-    QLayout::deleteAllItems() uses \c{takeAt()} defined above to delete all the
-    items in the layout.
+    does not inherit QObject, we must delete the items manually. In the 
+    destructor, we remove each item from the list using \c{takeAt()}, and
+    then delete it.
 
     \snippet doc/src/snippets/code/doc_src_layout.qdoc 5
 

@@ -1017,7 +1017,8 @@ void QmlVME::runStoreInstruction(QStack<QObject *> &stack,
                 QFxCompilerTimer<QFxCompiler::InstrStoreReal> cc;
 #endif
                 QObject *target = stack.top();
-                qreal r = instr.storeReal.value;
+                //### moc treats qreal properties as having type double
+                double r = static_cast<double>(instr.storeReal.value);
                 void *a[1];
                 a[0] = &r;
                 QMetaObject::metacall(target, QMetaObject::WriteProperty, 

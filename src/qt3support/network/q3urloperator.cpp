@@ -543,7 +543,7 @@ const Q3NetworkOperation *Q3UrlOperator::rename( const QString &oldname, const Q
     in mind that the get() and put() operations emit this signal
     through the Q3UrlOperator. The number of transferred bytes and the
     total bytes that you receive as arguments in this signal do not
-    relate to the the whole copy operation; they relate first to the
+    relate to the whole copy operation; they relate first to the
     get() and then to the put() operation. Always check what type of
     operation the signal comes from; this is given in the signal's
     last argument.

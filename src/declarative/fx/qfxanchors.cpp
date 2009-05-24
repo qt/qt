@@ -146,6 +146,7 @@ QFxAnchors::~QFxAnchors()
     d->remDepend(d->bottom.item);
     d->remDepend(d->vCenter.item);
     d->remDepend(d->hCenter.item);
+    d->remDepend(d->baseline.item);
 }
 
 void QFxAnchorsPrivate::fillChanged()
@@ -209,6 +210,10 @@ void QFxAnchorsPrivate::clearItem(QFxItem *item)
     if (hCenter.item == item) {
         hCenter.item = 0;
         usedAnchors &= ~QFxAnchors::HasHCenterAnchor;
+    }
+    if (baseline.item == item) {
+        baseline.item = 0;
+        usedAnchors &= ~QFxAnchors::HasBaselineAnchor;
     }
 }
 
@@ -430,8 +435,6 @@ void QFxAnchorsPrivate::updateVerticalAnchors()
             } else if (bottom.item->itemParent() == item->itemParent()) {
                 setItemY(position(bottom.item, bottom.anchorLine) - item->height() - bottomMargin);
             }
-
-
         } else if (usedAnchors & QFxAnchors::HasVCenterAnchor) {
             //(stetching handled above)
 
@@ -441,6 +444,11 @@ void QFxAnchorsPrivate::updateVerticalAnchors()
                               - item->height()/2 + vCenterOffset);
             } else if (vCenter.item->itemParent() == item->itemParent()) {
                 setItemY(position(vCenter.item, vCenter.anchorLine) - item->height()/2 + vCenterOffset);
+            }
+        } else if (usedAnchors & QFxAnchors::HasBaselineAnchor) {
+            //Handle baseline
+            if (baseline.item->itemParent() == item->itemParent()) {
+                setItemY(position(baseline.item, baseline.anchorLine) - item->baselineOffset());
             }
         }
         updatingVerticalAnchor = false;
@@ -597,6 +605,36 @@ void QFxAnchors::setVerticalCenter(const QFxAnchorLine &edge)
 void QFxAnchors::resetVerticalCenter()
 {
     setVerticalCenter(QFxAnchorLine());
+}
+
+QFxAnchorLine QFxAnchors::baseline() const
+{
+    Q_D(const QFxAnchors);
+    return d->baseline;
+}
+
+void QFxAnchors::setBaseline(const QFxAnchorLine &edge)
+{
+    Q_D(QFxAnchors);
+    if (!d->checkVAnchorValid(edge))
+        return;
+
+    if (edge.item)
+        d->usedAnchors |= HasBaselineAnchor;
+    else
+        d->usedAnchors &= ~HasBaselineAnchor;
+
+    d->checkVValid();
+
+    d->remDepend(d->baseline.item);
+    d->baseline = edge;
+    d->addDepend(d->baseline.item);
+    d->updateVerticalAnchors();
+}
+
+void QFxAnchors::resetBaseline()
+{
+    setBaseline(QFxAnchorLine());
 }
 
 QFxAnchorLine QFxAnchors::left() const
@@ -797,7 +835,7 @@ bool QFxAnchorsPrivate::checkHValid() const
     if (usedAnchors & QFxAnchors::HasLeftAnchor &&
         usedAnchors & QFxAnchors::HasRightAnchor &&
         usedAnchors & QFxAnchors::HasHCenterAnchor) {
-        qmlInfo(item) << "Can't specify left, right, and hcenter anchors";
+        qmlInfo(item) << "Can't specify left, right, and hcenter anchors.";
         return false;
     }
 
@@ -822,7 +860,13 @@ bool QFxAnchorsPrivate::checkVValid() const
     if (usedAnchors & QFxAnchors::HasTopAnchor &&
         usedAnchors & QFxAnchors::HasBottomAnchor &&
         usedAnchors & QFxAnchors::HasVCenterAnchor) {
-        qmlInfo(item) << "Can't specify top, bottom, and vcenter anchors";
+        qmlInfo(item) << "Can't specify top, bottom, and vcenter anchors.";
+        return false;
+    } else if (usedAnchors & QFxAnchors::HasBaselineAnchor &&
+               (usedAnchors & QFxAnchors::HasTopAnchor ||
+                usedAnchors & QFxAnchors::HasBottomAnchor ||
+                usedAnchors & QFxAnchors::HasVCenterAnchor)) {
+        qmlInfo(item) << "Baseline anchor can't be used in conjunction with top, bottom, or vcenter anchors.";
         return false;
     }
 

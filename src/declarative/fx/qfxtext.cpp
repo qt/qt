@@ -571,7 +571,6 @@ QSize QFxTextPrivate::setupTextLayout(QTextLayout *layout)
     QFont f; if (_font) f = _font->font();
     QFontMetrics fm = QFontMetrics(f);
 
-    int leading = fm.leading();
     int height = 0;
     qreal widthUsed = 0;
     qreal lineWidth = 0;
@@ -592,9 +591,6 @@ QSize QFxTextPrivate::setupTextLayout(QTextLayout *layout)
     }
     layout->endLayout();
 
-    if (layout->lineCount() == 1)
-        height -= leading;
-
     for (int i = 0; i < layout->lineCount(); ++i) {
         QTextLine line = layout->lineAt(i);
         widthUsed = qMax(widthUsed, line.naturalTextWidth());
@@ -607,7 +603,6 @@ QSize QFxTextPrivate::setupTextLayout(QTextLayout *layout)
 QImage QFxTextPrivate::wrappedTextImage(bool drawStyle)
 {
     //do layout
-    Q_Q(const QFxText);
     QFont f; if (_font) f = _font->font();
     QSize size = cachedLayoutSize;
 

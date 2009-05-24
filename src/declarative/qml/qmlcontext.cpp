@@ -73,8 +73,6 @@ void QmlContextPrivate::dump(int depth)
 
 void QmlContextPrivate::destroyed(QObject *obj)
 {
-    Q_Q(QmlContext);
-
     defaultObjects.removeAll(obj);
 
     QVariant variantObject = QVariant::fromValue(obj);

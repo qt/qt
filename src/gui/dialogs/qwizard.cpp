@@ -1241,8 +1241,10 @@ void QWizardPrivate::updateMinMaxSizes(const QWizardLayoutInfo &info)
 #endif
     QSize minimumSize = mainLayout->totalMinimumSize() + QSize(0, extraHeight);
     QSize maximumSize;
+    bool skipMaxSize = false;
 #if defined(Q_WS_WIN)
-    if (QSysInfo::WindowsVersion > QSysInfo::WV_Me) // ### See Tasks 164078 and 161660
+    if (QSysInfo::WindowsVersion <= QSysInfo::WV_Me) // ### See Tasks 164078 and 161660
+        skipMaxSize = true;
 #endif
     maximumSize = mainLayout->totalMaximumSize();
     if (info.header && headerWidget->maximumWidth() != QWIDGETSIZE_MAX) {
@@ -1263,11 +1265,13 @@ void QWizardPrivate::updateMinMaxSizes(const QWizardLayoutInfo &info)
     }
     if (q->maximumWidth() == maximumWidth) {
         maximumWidth = maximumSize.width();
-        q->setMaximumWidth(maximumWidth);
+        if (!skipMaxSize)
+            q->setMaximumWidth(maximumWidth);
     }
     if (q->maximumHeight() == maximumHeight) {
         maximumHeight = maximumSize.height();
-        q->setMaximumHeight(maximumHeight);
+        if (!skipMaxSize)
+            q->setMaximumHeight(maximumHeight);
     }
 }
 
@@ -1465,7 +1469,7 @@ void QWizardPrivate::handleAeroStyleChange()
         return; // prevent recursion
     inHandleAeroStyleChange = true;
 
-    vistaHelper->backButton()->disconnect();
+    vistaHelper->disconnectBackButton();
     q->removeEventFilter(vistaHelper);
 
     if (isVistaThemeEnabled()) {
@@ -1491,7 +1495,7 @@ void QWizardPrivate::handleAeroStyleChange()
         q->setMouseTracking(true); // ### original value possibly different
         q->unsetCursor(); // ### ditto
         antiFlickerWidget->move(0, 0);
-        vistaHelper->backButton()->hide();
+        vistaHelper->hideBackButton();
         vistaHelper->setTitleBarIconAndCaptionVisible(true);
     }
 

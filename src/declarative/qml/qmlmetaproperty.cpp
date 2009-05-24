@@ -730,19 +730,19 @@ void QmlMetaPropertyPrivate::writeValueProperty(const QVariant &value)
             switch(t) {
             case QVariant::Double:
                 {
-                    qreal r;
+                    double d;
                     bool found = true;
                     if (vt == QVariant::Int) {
-                        r = value.toInt();
+                        d = value.toInt();
                     } else if (vt == QVariant::UInt) {
-                        r = value.toUInt();
+                        d = value.toUInt();
                     } else {
                         found = false;
                     }
 
                     if (found) {
                         void *a[1];
-                        a[0] = &r;
+                        a[0] = &d;
                         QMetaObject::metacall(object, 
                                               QMetaObject::WriteProperty,
                                               coreIdx, a);
@@ -906,19 +906,19 @@ void QmlMetaProperty::write(const QVariant &value) const
                 switch(t) {
                 case QVariant::Double:
                     {
-                        qreal r;
+                        double dd;
                         bool found = true;
                         if (vt == QVariant::Int) {
-                            r = value.toInt();
+                            dd = value.toInt();
                         } else if (vt == QVariant::UInt) {
-                            r = value.toUInt();
+                            dd = value.toUInt();
                         } else {
                             found = false;
                         }
 
                         if (found) {
                             void *a[1];
-                            a[0] = &r;
+                            a[0] = &dd;
                             QMetaObject::metacall(object(), 
                                                   QMetaObject::WriteProperty,
                                                   d->coreIdx, a);

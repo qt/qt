@@ -91,6 +91,7 @@ class Q_DECLARATIVE_EXPORT QFxAnchors : public QObject
     Q_PROPERTY(QFxAnchorLine top READ top WRITE setTop RESET resetTop);
     Q_PROPERTY(QFxAnchorLine bottom READ bottom WRITE setBottom RESET resetBottom);
     Q_PROPERTY(QFxAnchorLine verticalCenter READ verticalCenter WRITE setVerticalCenter RESET resetVerticalCenter);
+    Q_PROPERTY(QFxAnchorLine baseline READ baseline WRITE setBaseline RESET resetBaseline);
     Q_PROPERTY(int leftMargin READ leftMargin WRITE setLeftMargin NOTIFY leftMarginChanged);
     Q_PROPERTY(int rightMargin READ rightMargin WRITE setRightMargin NOTIFY rightMarginChanged);
     Q_PROPERTY(int horizontalCenterOffset READ horizontalCenterOffset WRITE setHorizontalCenterOffset NOTIFY horizontalCenterOffsetChanged());
@@ -140,6 +141,10 @@ public:
     QFxAnchorLine verticalCenter() const;
     void setVerticalCenter(const QFxAnchorLine &edge);
     void resetVerticalCenter();
+
+    QFxAnchorLine baseline() const;
+    void setBaseline(const QFxAnchorLine &edge);
+    void resetBaseline();
 
     int leftMargin() const;
     void setLeftMargin(int);
