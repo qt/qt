@@ -83,6 +83,7 @@ table td.memItemLeft {
   border-left-style: none;
   background-color: #FAFAFA;
   font-size: 80%;
+  white-space: nowrap
 }
 table td.memItemRight {
   padding: 1px 8px 0px 8px;
