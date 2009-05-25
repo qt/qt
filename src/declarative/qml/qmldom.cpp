@@ -44,12 +44,14 @@
 #include "private/qmlcompiler_p.h"
 #include "private/qmlengine_p.h"
 #include "qmlcompiledcomponent_p.h"
-#include <QtCore/qbytearray.h>
-#include <QtCore/qstring.h>
-
+#include <QtCore/QByteArray>
+#include <QtCore/QDebug>
+#include <QtCore/QString>
 #include "qmlscriptparser_p.h"
 
 QT_BEGIN_NAMESPACE
+
+DEFINE_BOOL_CONFIG_OPTION(compilerDump, QML_COMPILER_DUMP)
 
 QmlDomDocumentPrivate::QmlDomDocumentPrivate()
 : root(0)
@@ -193,7 +195,11 @@ bool QmlDomDocument::load(QmlEngine *engine, const QByteArray &data, const QUrl 
     }
 
     if (td->data.tree()) {
-        td->data.tree()->dump();
+        if (compilerDump()) {
+            qWarning() << "-AST------------------------------------------------------------------------------";
+            td->data.tree()->dump();
+            qWarning() << "----------------------------------------------------------------------------------";
+        }
         d->root = td->data.tree();
         d->root->addref();
     }
