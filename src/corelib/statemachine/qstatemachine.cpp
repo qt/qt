@@ -678,9 +678,11 @@ void QStateMachinePrivate::applyProperties(const QList<QAbstractTransition*> &tr
                                            const QList<QAbstractState*> &exitedStates,
                                            const QList<QAbstractState*> &enteredStates)
 {
-    Q_Q(QStateMachine);
 #ifdef QT_NO_ANIMATION
     Q_UNUSED(transitionList);
+    Q_UNUSED(exitedStates);
+#else
+    Q_Q(QStateMachine);
 #endif
     // Process the property assignments of the entered states.
     QHash<QAbstractState*, QList<QPropertyAssignment> > propertyAssignmentsForState;
@@ -851,7 +853,11 @@ void QStateMachinePrivate::applyProperties(const QList<QAbstractTransition*> &tr
     // Emit polished signal for entered states that have no animated properties.
     for (int i = 0; i < enteredStates.size(); ++i) {
         QState *s = qobject_cast<QState*>(enteredStates.at(i));
-        if (s && !animationsForState.contains(s))
+        if (s 
+#ifndef QT_NO_ANIMATION
+            && !animationsForState.contains(s)
+#endif
+            )
             QStatePrivate::get(s)->emitPolished();
     }
 }
@@ -1442,8 +1448,7 @@ void QStateMachinePrivate::unregisterEventTransition(QEventTransition *transitio
 void QStateMachinePrivate::handleTransitionSignal(const QObject *sender, int signalIndex,
                                                   void **argv)
 {
-    const QVector<int> &connectedSignalIndexes = connections[sender];
-    Q_ASSERT(connectedSignalIndexes.at(signalIndex) != 0);
+    Q_ASSERT(connections[sender].at(signalIndex) != 0);
     const QMetaObject *meta = sender->metaObject();
     QMetaMethod method = meta->method(signalIndex);
     QList<QByteArray> parameterTypes = method.parameterTypes();
