@@ -57,6 +57,7 @@
 
 #if !defined(QT_NO_GRAPHICSVIEW) || (QT_EDITION & QT_MODULE_GRAPHICSVIEW) != QT_MODULE_GRAPHICSVIEW
 
+#include "qgraphicsview.h"
 #include "qgraphicsscene_bsp_p.h"
 #include "qgraphicsitem_p.h"
 
@@ -254,7 +255,7 @@ public:
                         bool painterStateProtection);
     
     void drawSubtreeRecursive(QGraphicsItem *item, QPainter *painter, const QTransform &viewTransform,
-                              const QRegion &exposedRegion, QWidget *widget);
+                              const QRegion &exposedRegion, QWidget *widget, QGraphicsView::OptimizationFlags optimizationFlags);
 
     QStyle *style;
     QFont font;

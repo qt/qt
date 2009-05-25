@@ -5019,12 +5019,22 @@ void QGraphicsScenePrivate::drawItemHelper(QGraphicsItem *item, QPainter *painte
 }
 
 void QGraphicsScenePrivate::drawSubtreeRecursive(QGraphicsItem *item, QPainter *painter, const QTransform &viewTransform,
-                                                 const QRegion &exposedRegion, QWidget *widget)
+                                                 const QRegion &exposedRegion, QWidget *widget,
+                                                 QGraphicsView::OptimizationFlags optimizationFlags)
 {
-    if (item && (!item->isVisible() || qFuzzyIsNull(item->opacity())))
+    if (item && (!item->isVisible()))
         return;
 
-    painter->save();
+    bool hasOpacity = item && item->d_ptr->hasEffectiveOpacity;
+    bool childClip = (item && (item->flags() & QGraphicsItem::ItemClipsChildrenToShape));
+    bool savePainter = !(optimizationFlags & QGraphicsView::DontSavePainterState);
+
+    QTransform restoreTransform;
+    if (childClip || hasOpacity) {
+        painter->save();
+    } else {
+        restoreTransform = painter->worldTransform();
+    }
 
     // Set transform
     if (item) {
@@ -5047,8 +5057,10 @@ void QGraphicsScenePrivate::drawSubtreeRecursive(QGraphicsItem *item, QPainter *
     }
 
     // Setup recursive clipping.
-    if (item && (item->flags() & QGraphicsItem::ItemClipsChildrenToShape))
+    if (childClip)
         painter->setClipPath(item->shape(), Qt::IntersectClip);
+    if (hasOpacity)
+        painter->setOpacity(item->effectiveOpacity());
 
 #if 0
     const QList<QGraphicsItem *> &children = item ? item->d_ptr->children : topLevelItems;
@@ -5065,34 +5077,40 @@ void QGraphicsScenePrivate::drawSubtreeRecursive(QGraphicsItem *item, QPainter *
         QGraphicsItem *child = children.at(i);
         if (!(child->flags() & QGraphicsItem::ItemStacksBehindParent))
             break;
-        drawSubtreeRecursive(child, painter, viewTransform, exposedRegion, widget);
+        drawSubtreeRecursive(child, painter, viewTransform, exposedRegion, widget, optimizationFlags);
     }
 
     // Draw item
-    if (item) {
-        QRect itemViewRect = painter->worldTransform().mapRect(item->boundingRect()).toRect().adjusted(-1, -1, 1, 1);
+    if (item && !item->d_ptr->isFullyTransparent()) {
+        QRectF brect = item->boundingRect();
+        _q_adjustRect(&brect);
+        QRect itemViewRect = painter->worldTransform().mapRect(brect).toRect().adjusted(-1, -1, 1, 1);
         if (itemViewRect.intersects(exposedRegion.boundingRect())) {
             QStyleOptionGraphicsItem option;
             item->d_ptr->initStyleOption(&option, painter->worldTransform(), exposedRegion);
 
             bool clipsToShape = (item->flags() & QGraphicsItem::ItemClipsToShape);
-            if (clipsToShape) {
+            if (savePainter || clipsToShape)
                 painter->save();
+            if (clipsToShape)
                 painter->setClipPath(item->shape(), Qt::IntersectClip);
-            }
 
             drawItemHelper(item, painter, &option, widget, false);
-            
-            if (clipsToShape)
+
+            if (savePainter || clipsToShape)
                 painter->restore();
         }
     }
 
     // Draw children in front
     for (; i < children.size(); ++i)
-        drawSubtreeRecursive(children.at(i), painter, viewTransform, exposedRegion, widget);
+        drawSubtreeRecursive(children.at(i), painter, viewTransform, exposedRegion, widget, optimizationFlags);
 
-    painter->restore();
+    if (childClip || hasOpacity) {
+        painter->restore();
+    } else {
+        painter->setWorldTransform(restoreTransform, /* combine = */ false);
+    }
 }
 
 /*!
