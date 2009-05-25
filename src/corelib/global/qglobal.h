@@ -1118,7 +1118,7 @@ class QDataStream;
 #ifndef Q_DECL_EXPORT
 #  ifdef Q_OS_WIN
 #    define Q_DECL_EXPORT __declspec(dllexport)
-#  elif  defined(Q_CC_NOKIAX86) || defined(Q_CC_RVCT)
+#  elif  defined(Q_CC_NOKIAX86)
 #    define Q_DECL_EXPORT __declspec(dllexport)
 #  elif defined(QT_VISIBILITY_AVAILABLE)
 #    define Q_DECL_EXPORT __attribute__((visibility("default")))
@@ -1130,7 +1130,7 @@ class QDataStream;
 #ifndef Q_DECL_IMPORT
 #  if defined(Q_OS_WIN)
 #    define Q_DECL_IMPORT __declspec(dllimport)
-#  elif defined(Q_CC_NOKIAX86) || defined(Q_CC_RVCT)
+#  elif defined(Q_CC_NOKIAX86)
 #    define Q_DECL_IMPORT __declspec(dllimport)
 #  else
 #    define Q_DECL_IMPORT
