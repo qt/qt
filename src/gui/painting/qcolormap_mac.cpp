@@ -55,11 +55,17 @@ public:
 };
 static QColormap *qt_mac_global_map = 0;
 
+/*!
+  Creates the class's internal colormap.
+ */
 void QColormap::initialize()
 {
     qt_mac_global_map = new QColormap;
 }
 
+/*!
+  Deletes the class's internal colormap.
+ */
 void QColormap::cleanup()
 {
     delete qt_mac_global_map;
