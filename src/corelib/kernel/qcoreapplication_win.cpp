@@ -51,12 +51,11 @@
 
 QT_BEGIN_NAMESPACE
 
-// ############### DON'T EXPORT HERE!!!
-Q_CORE_EXPORT char         appFileName[MAX_PATH+1];                // application file name
-Q_CORE_EXPORT char         theAppName[MAX_PATH+1];                        // application name
-Q_CORE_EXPORT HINSTANCE appInst        = 0;                // handle to app instance
-Q_CORE_EXPORT HINSTANCE appPrevInst        = 0;                // handle to prev app instance
-Q_CORE_EXPORT int appCmdShow = 0;
+char         appFileName[MAX_PATH+1];                // application file name
+char         theAppName[MAX_PATH+1];                        // application name
+HINSTANCE appInst        = 0;                // handle to app instance
+HINSTANCE appPrevInst        = 0;                // handle to prev app instance
+int appCmdShow = 0;
 bool usingWinMain = false;  // whether the qWinMain() is used or not
 
 Q_CORE_EXPORT HINSTANCE qWinAppInst()                // get Windows app handle
@@ -68,6 +67,12 @@ Q_CORE_EXPORT HINSTANCE qWinAppPrevInst()                // get Windows prev app
 {
     return appPrevInst;
 }
+
+Q_CORE_EXPORT int qWinAppCmdShow()                        // get main window show command
+{
+    return appCmdShow;
+}
+
 
 void set_winapp_name()
 {
@@ -89,6 +94,14 @@ void set_winapp_name()
         int l = qstrlen(theAppName);
         if ((l > 4) && !qstricmp(theAppName + l - 4, ".exe"))
             theAppName[l-4] = '\0';                // drop .exe extension
+
+        if (appInst == 0) {
+            QT_WA({
+                appInst = GetModuleHandle(0);
+            }, {
+                appInst = GetModuleHandleA(0);
+            });
+        }
     }
 }
 
@@ -173,14 +186,14 @@ void qWinMain(HINSTANCE instance, HINSTANCE prevInstance, LPSTR cmdParam,
 
   // Create command line
 
-    set_winapp_name();
-
     argv = qWinCmdLine<char>(cmdParam, int(strlen(cmdParam)), argc);
     // Get Windows parameters
 
     appInst = instance;
     appPrevInst = prevInstance;
     appCmdShow = cmdShow;
+
+    set_winapp_name();
 }
 
 /*!
@@ -618,7 +631,7 @@ QString valueCheck(uint actual, ...)
 
 #ifdef Q_CC_BOR
 
-Q_CORE_EXPORT QString decodeMSG(const MSG& msg)
+QString decodeMSG(const MSG& msg)
 {
     return QString::fromLatin1("THis is not supported on Borland");
 }

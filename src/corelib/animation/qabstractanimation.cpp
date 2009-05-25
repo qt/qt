@@ -188,32 +188,6 @@ void QUnifiedTimer::updateRecentlyStartedAnimations()
     animationsToStart.clear();
 }
 
-/*
-  defines the timing interval. Default is DEFAULT_TIMER_INTERVAL
-*/
-void QUnifiedTimer::setTimingInterval(int interval)
-{
-    timingInterval = interval;
-    if (animationTimer.isActive()) {
-        //we changed the timing interval
-        animationTimer.start(timingInterval, this);
-    }
-}
-
-/*
-   this allows to have a consistent timer interval at each tick from the timer
-   not taking the real time that passed into account.
-*/
-void QUnifiedTimer::setConsistentTiming(bool b)
-{
-    consistentTiming = b;
-}
-
-int QUnifiedTimer::elapsedTime() const
-{
-    return lastTick;
-}
-
 void QUnifiedTimer::timerEvent(QTimerEvent *event)
 {
     //this is simply the time we last received a tick
