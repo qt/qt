@@ -1897,6 +1897,20 @@ void QFont::insertSubstitutions(const QString &familyName,
     }
 }
 
+/*! \fn void QFont::initialize()
+  \internal
+
+  Internal function that initializes the font system.  The font cache
+  and font dict do not alloc the keys. The key is a QString which is
+  shared between QFontPrivate and QXFontName.
+*/
+
+/*! \fn void QFont::cleanup()
+  \internal
+
+  Internal function that cleans up the font system.
+*/
+
 // ### mark: should be called removeSubstitutions()
 /*!
     Removes all the substitutions for \a familyName.
