@@ -132,6 +132,7 @@ public:
     void stripNonPluralForms();
     void stripIdenticalSourceTranslations();
     void dropTranslations();
+    void dropUiLines();
     void makeFileNamesAbsolute(const QDir &originalPath);
     QSet<TranslatorMessagePtr> resolveDuplicates();
     static void reportDuplicates(const QSet<TranslatorMessagePtr> &dupes,

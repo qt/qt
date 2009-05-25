@@ -97,6 +97,8 @@ static int usage(const QStringList &args)
         "           Drop obsolete messages.\n\n"
         "    --no-finished\n"
         "           Drop finished messages.\n\n"
+        "    --no-ui-lines\n"
+        "           Drop line numbers from references to .ui files.\n\n"
         "    --verbose\n"
         "           be a bit more verbose\n\n"
         "Long options can be specified with only one leading dash, too.\n\n"
@@ -129,6 +131,7 @@ int main(int argc, char *argv[])
     bool noObsolete = false;
     bool noFinished = false;
     bool verbose = false;
+    bool noUiLines = false;
 
     ConversionData cd;
     Translator tr;
@@ -180,6 +183,8 @@ int main(int argc, char *argv[])
             noObsolete = true;
         } else if (args[i] == QLatin1String("-no-finished")) {
             noFinished = true;
+        } else if (args[i] == QLatin1String("-no-ui-lines")) {
+            noUiLines = true;
         } else if (args[i] == QLatin1String("-verbose")) {
             verbose = true;
         } else if (args[i].startsWith(QLatin1Char('-'))) {
@@ -224,6 +229,8 @@ int main(int argc, char *argv[])
         tr.stripFinishedMessages();
     if (dropTranslations)
         tr.dropTranslations();
+    if (noUiLines)
+        tr.dropUiLines();
 
     if (!tr.save(outFileName, cd, outFormat)) {
         qWarning("%s", qPrintable(cd.error()));
