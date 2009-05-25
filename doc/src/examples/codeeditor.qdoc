@@ -67,7 +67,7 @@
     QTextEdit because it is optimized for handling plain text. See
     the QPlainTextEdit class description for details.
 
-    QPlainTextEdit lets us add selections in addition to the the
+    QPlainTextEdit lets us add selections in addition to the
     selection the user can make with the mouse or keyboard. We use
     this functionality to highlight the current line. More on this
     later.

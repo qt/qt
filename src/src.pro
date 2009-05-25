@@ -23,6 +23,9 @@ win32:{
     !wince*: SRC_SUBDIRS += src_tools_idc
 }
 
+# TODO the following line should be between opengl and webkit when the 'symbian' block is removed
+contains(QT_CONFIG, phonon): SRC_SUBDIRS += src_phonon
+
 !symbian {
 contains(QT_CONFIG, opengl)|contains(QT_CONFIG, opengles1)|contains(QT_CONFIG, opengles2): SRC_SUBDIRS += src_opengl
 contains(QT_CONFIG, xmlpatterns): SRC_SUBDIRS += src_xmlpatterns
@@ -34,8 +37,6 @@ contains(QT_CONFIG, webkit)  {
 contains(QT_CONFIG, scripttools): SRC_SUBDIRS += src_scripttools
 SRC_SUBDIRS += src_plugins
 }
-
-contains(QT_CONFIG, phonon): SRC_SUBDIRS += src_phonon
 
 src_s60main.subdir = $$QT_SOURCE_TREE/src/s60main
 src_s60main.target = sub-s60main

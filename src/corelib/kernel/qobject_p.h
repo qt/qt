@@ -163,7 +163,6 @@ public:
     QList<Sender> senders;
     void refSender(QObject *sender, int signal);
     void derefSender(QObject *sender, int signal);
-    void removeSender(QObject *sender, int signal);
 
     static Sender *setCurrentSender(QObject *receiver,
                                     Sender *sender);

@@ -901,7 +901,7 @@ void QRect::moveCenter(const QPoint &p)
 /*!
     \fn bool QRect::contains(const QPoint &point, bool proper) const
 
-    Returns true if the the given \a point is inside or on the edge of
+    Returns true if the given \a point is inside or on the edge of
     the rectangle, otherwise returns false. If \a proper is true, this
     function only returns true if the given \a point is \e inside the
     rectangle (i.e., not on the edge).

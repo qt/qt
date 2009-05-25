@@ -113,7 +113,7 @@ public:
         SP_QgnPropFolderCurrent,
         SP_QgnPropFolderSmall,
         SP_QgnPropFolderSmallNew,
-        SP_QgnPropPhoneMemcLarge,        
+        SP_QgnPropPhoneMemcLarge,
         SP_QsnCpScrollHandleBottomPressed, //ScrollBar handle, pressed state
         SP_QsnCpScrollHandleMiddlePressed,
         SP_QsnCpScrollHandleTopPressed,
@@ -231,7 +231,16 @@ public:
         SP_QsnFrSctrlButtonSideBPressed,
         SP_QsnFrSctrlButtonSideLPressed,
         SP_QsnFrSctrlButtonSideRPressed,
-        SP_QsnFrSctrlButtonCenterPressed
+        SP_QsnFrSctrlButtonCenterPressed,
+        SP_QsnFrButtonCornerTlInactive,     // Inactive button
+        SP_QsnFrButtonCornerTrInactive,
+        SP_QsnFrButtonCornerBlInactive,
+        SP_QsnFrButtonCornerBrInactive,
+        SP_QsnFrButtonSideTInactive,
+        SP_QsnFrButtonSideBInactive,
+        SP_QsnFrButtonSideLInactive,
+        SP_QsnFrButtonSideRInactive,
+        SP_QsnFrButtonCenterInactive
     };
 
     enum ColorLists {
@@ -292,6 +301,7 @@ public:
         SE_PanelBackground,
         SE_ScrollBarHandlePressedHorizontal, //only for 5.0+
         SE_ScrollBarHandlePressedVertical,
+        SE_ButtonInactive,
     };
 
     enum SkinFrameElements {
@@ -307,7 +317,8 @@ public:
         SF_ToolBar,
         SF_ToolBarButton,
         SF_ToolBarButtonPressed,
-        SF_PanelBackground
+        SF_PanelBackground,
+        SF_ButtonInactive,
     };
 
     enum SkinElementFlag {
@@ -344,14 +355,18 @@ public:
         int index, const QStyleOption *option);
     // gets state specific color
     static QColor stateColor(const QColor &color, const QStyleOption *option);
+    // gets lighter color than base color
     static QColor lighterColor(const QColor &baseColor);
-    static bool isSkinnableDialog(const QWidget *widget);
+    //deduces if the given widget should have separately themeable background
+    static bool drawsOwnThemeBackground(const QWidget *widget);
     // gets layout
     static const QHash<QStyle::PixelMetric, int> &s60StyleLayout();
 
     QFont s60Font(QS60StyleEnums::FontCategories fontCategory,
         int pointSize = -1) const;
+    // clears all style caches (fonts, colors, pixmaps)
     void clearCaches();
+    // returns themed background texture
     static QPixmap backgroundTexture();
 
     static bool isTouchSupported();
@@ -360,6 +375,7 @@ public:
     // calculates average color based on button skin graphics (minus borders).
     QColor colorFromFrameGraphics(QS60StylePrivate::SkinFrameElements frame) const;
     void setThemePalette(QApplication *application) const;
+    void setThemePalette(QWidget *widget) const;
     void setBackgroundTexture(QApplication *application) const;
 
     static int focusRectPenWidth();
@@ -397,18 +413,19 @@ private:
     static void drawFrame(SkinFrameElements frame, QPainter *painter,
         const QRect &rect, SkinElementFlags flags = KDefaultSkinElementFlags);
 
-    static QSize partSize(QS60StyleEnums::SkinParts part,
-        SkinElementFlags flags = KDefaultSkinElementFlags);
-    static QPixmap part(QS60StyleEnums::SkinParts part, const QSize &size,
-        SkinElementFlags flags = KDefaultSkinElementFlags);
     static QPixmap cachedPart(QS60StyleEnums::SkinParts part, const QSize &size,
         SkinElementFlags flags = KDefaultSkinElementFlags);
     static QPixmap cachedFrame(SkinFrameElements frame, const QSize &size,
         SkinElementFlags flags = KDefaultSkinElementFlags);
+    
+    static void refreshUI();
+    
+    static QSize partSize(QS60StyleEnums::SkinParts part,
+        SkinElementFlags flags = KDefaultSkinElementFlags);
+    static QPixmap part(QS60StyleEnums::SkinParts part, const QSize &size,
+        SkinElementFlags flags = KDefaultSkinElementFlags);
 
     static QFont s60Font_specific(QS60StyleEnums::FontCategories fontCategory, int pointSize);
-
-    static void refreshUI();
 
     static QSize screenSize();
 

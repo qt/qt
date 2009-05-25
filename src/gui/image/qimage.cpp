@@ -4996,7 +4996,7 @@ QPoint QImage::offset() const
 /*!
     \fn void QImage::setOffset(const QPoint& offset)
 
-    Sets the the number of pixels by which the image is intended to be
+    Sets the number of pixels by which the image is intended to be
     offset by when positioning relative to other images, to \a offset.
 
     \sa offset(), {QImage#Image Information}{Image Information}
