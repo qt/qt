@@ -125,6 +125,7 @@ private slots:
     void copy();
     void copyRemovesTemporaryFile() const;
     void copyShouldntOverwrite();
+    void copyFallback();
     void link();
     void linkToDir();
     void absolutePathLinkToRelativePath();
@@ -212,6 +213,13 @@ void tst_QFile::cleanup()
 {
 // TODO: Add cleanup code here.
 // This will be executed immediately after each test is run.
+
+    // for copyFallback()
+    if (QFile::exists("file-copy-destination.txt")) {
+        QFile::setPermissions("file-copy-destination.txt",
+                QFile::ReadOwner | QFile::WriteOwner);
+        QFile::remove("file-copy-destination.txt");
+    }
 
     // for renameFallback()
     QFile::remove("file-rename-destination.txt");
@@ -905,6 +913,34 @@ void tst_QFile::copyShouldntOverwrite()
     QVERIFY(ok);
     QVERIFY(!file.copy("tst_qfile.cpy"));
     QFile::remove("tst_qfile.cpy");
+}
+
+void tst_QFile::copyFallback()
+{
+    // Using a resource file to trigger QFile::copy's fallback handling
+    QFile file(":/copy-fallback.qrc");
+    QFile::remove("file-copy-destination.txt");
+
+    QVERIFY2(file.exists(), "test precondition");
+    QVERIFY2(!QFile::exists("file-copy-destination.txt"), "test precondition");
+
+    // Fallback copy of closed file.
+    QVERIFY(file.copy("file-copy-destination.txt"));
+    QVERIFY(QFile::exists("file-copy-destination.txt"));
+    QVERIFY(!file.isOpen());
+
+    // Need to reset permissions on Windows to be able to delete
+    QVERIFY(QFile::setPermissions("file-copy-destination.txt",
+            QFile::ReadOwner | QFile::WriteOwner));
+    QVERIFY(QFile::remove("file-copy-destination.txt"));
+
+    // Fallback copy of open file.
+    QVERIFY(file.open(QIODevice::ReadOnly));
+    QVERIFY(file.copy("file-copy-destination.txt"));
+    QVERIFY(QFile::exists("file-copy-destination.txt"));
+    QVERIFY(!file.isOpen());
+
+    QFile::remove("file-copy-destination.txt");
 }
 
 #ifdef Q_OS_WIN
@@ -2081,6 +2117,7 @@ void tst_QFile::renameFallback()
 
     QVERIFY(!file.rename("file-rename-destination.txt"));
     QVERIFY(!QFile::exists("file-rename-destination.txt"));
+    QVERIFY(!file.isOpen());
 }
 
 void tst_QFile::renameMultiple()

@@ -140,10 +140,7 @@ static const char * const dock_widget_restore_xpm[] =
 class QGtkStyleFilter : public QObject
 {
 public:
-    QGtkStyleFilter() {
-        qApp->installEventFilter(this);
-    }
-
+    QGtkStyleFilter() {}
 private:
     bool eventFilter(QObject *obj, QEvent *e);
 };
@@ -167,7 +164,12 @@ class QGtkStylePrivate : public QCleanlooksStylePrivate
 public:
     QGtkStylePrivate()
             : QCleanlooksStylePrivate()
-    {}
+    {
+        QGtk::initGtkWidgets();
+        if (QGtk::isThemeAvailable())
+            qApp->installEventFilter(&filter);
+
+    }
     QGtkStyleFilter filter;
 };
 
@@ -243,7 +245,6 @@ static QString uniqueName(const QString &key, const QStyleOption *option, const 
 QGtkStyle::QGtkStyle()
     : QCleanlooksStyle(*new QGtkStylePrivate)
 {
-    QGtk::initGtkWidgets();
 }
 
 /*!
