@@ -47,6 +47,7 @@
 #include <qbrush.h>
 #include <qlineedit.h>
 #include <qtextedit.h>
+#include <qplaintextedit.h>
 #include <qpainter.h>
 #include <qpalette.h>
 #include <qpoint.h>
@@ -646,7 +647,7 @@ bool QStyledItemDelegate::eventFilter(QObject *object, QEvent *event)
         case Qt::Key_Enter:
         case Qt::Key_Return:
 #ifndef QT_NO_TEXTEDIT
-            if (qobject_cast<QTextEdit*>(editor))
+            if (qobject_cast<QTextEdit *>(editor) || qobject_cast<QPlainTextEdit *>(editor))
                 return false; // don't filter enter key events for QTextEdit
             // We want the editor to be able to process the key press
             // before committing the data (e.g. so it can do

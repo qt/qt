@@ -633,31 +633,14 @@ GtkStyle* QGtk::gtkStyle(const QString &path)
     return 0;
 }
 
-#ifdef Q_OS_LINUX
-QT_END_NAMESPACE
-
-int getresuid(uid_t *ruid, uid_t *euid, uid_t *suid);
-int getresgid(gid_t *rgid, gid_t *egid, gid_t *sgid);
-
-QT_BEGIN_NAMESPACE
-#endif
-
 void QGtk::initGtkWidgets()
 {
     // From gtkmain.c
-
-    uid_t ruid, rgid, euid, egid, suid, sgid;
-
-#ifdef Q_OS_LINUX
-    if (getresuid (&ruid, &euid, &suid) != 0 || getresgid (&rgid, &egid, &sgid) != 0)
-#endif
-    {
-        suid = ruid = getuid ();
-        sgid = rgid = getgid ();
-        euid = geteuid ();
-        egid = getegid ();
-    }
-    if (ruid != euid || ruid != suid || rgid != egid || rgid != sgid) {
+    uid_t ruid = getuid ();
+    uid_t rgid = getgid ();
+    uid_t euid = geteuid ();
+    uid_t egid = getegid ();
+    if (ruid != euid || rgid != egid) {
         qWarning("\nThis process is currently running setuid or setgid.\nGTK+ does not allow this "
                  "therefore Qt cannot use the GTK+ integration.\nTry launching your app using \'gksudo\', "
                  "\'kdesudo\' or a similar tool.\n\n"
