@@ -246,7 +246,7 @@ void QTreeView::setModel(QAbstractItemModel *model)
     connect(d->model, SIGNAL(modelAboutToBeReset()), SLOT(_q_modelAboutToBeReset()));
 
     if (d->sortingEnabled)
-        sortByColumn(header()->sortIndicatorSection(), header()->sortIndicatorOrder());
+        d->_q_sortIndicatorChanged(header()->sortIndicatorSection(), header()->sortIndicatorOrder());
 }
 
 /*!
@@ -846,17 +846,19 @@ void QTreeView::setExpanded(const QModelIndex &index, bool expanded)
 void QTreeView::setSortingEnabled(bool enable)
 {
     Q_D(QTreeView);
-    d->sortingEnabled = enable;
     header()->setSortIndicatorShown(enable);
     header()->setClickable(enable);
     if (enable) {
+        //sortByColumn has to be called before we connect or set the sortingEnabled flag
+        // because otherwise it will not call sort on the model.
+        sortByColumn(header()->sortIndicatorSection(), header()->sortIndicatorOrder());
         connect(header(), SIGNAL(sortIndicatorChanged(int,Qt::SortOrder)),
                 this, SLOT(_q_sortIndicatorChanged(int, Qt::SortOrder)));
-        sortByColumn(header()->sortIndicatorSection(), header()->sortIndicatorOrder());
     } else {
         disconnect(header(), SIGNAL(sortIndicatorChanged(int,Qt::SortOrder)),
                    this, SLOT(_q_sortIndicatorChanged(int, Qt::SortOrder)));
     }
+    d->sortingEnabled = enable;
 }
 
 bool QTreeView::isSortingEnabled() const
