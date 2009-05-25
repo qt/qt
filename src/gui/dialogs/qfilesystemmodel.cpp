@@ -356,7 +356,7 @@ QFileSystemModelPrivate::QFileSystemNode *QFileSystemModelPrivate::node(const QS
     QStringList pathElements = absolutePath.split(QLatin1Char('/'), QString::SkipEmptyParts);
     if ((pathElements.isEmpty())
 #if !defined(Q_OS_WIN) || defined(Q_OS_WINCE)
-        && QDir::fromNativeSeparators(longPath) != QLatin1Char('/')
+        && QDir::fromNativeSeparators(longPath) != QLatin1String("/")
 #endif
         )
         return const_cast<QFileSystemModelPrivate::QFileSystemNode*>(&root);
