@@ -320,7 +320,7 @@ QColor QS60StylePrivate::lighterColor(const QColor &baseColor)
     return result;
 }
 
-bool QS60StylePrivate::isSkinnableDialog(const QWidget *widget)
+bool QS60StylePrivate::drawsOwnThemeBackground(const QWidget *widget)
 {
     return (qobject_cast<const QMessageBox *> (widget) ||
             qobject_cast<const QErrorMessage *> (widget));
@@ -2014,7 +2014,7 @@ void QS60Style::drawPrimitive(PrimitiveElement element, const QStyleOption *opti
         }
         break;
     case PE_Widget:
-        if (QS60StylePrivate::isSkinnableDialog(widget) ||
+        if (QS60StylePrivate::drawsOwnThemeBackground(widget) ||
             qobject_cast<const QComboBoxListView *>(widget) ||
             qobject_cast<const QMenu *> (widget)) {
                 QS60StylePrivate::SkinElements skinElement = QS60StylePrivate::SE_OptionsMenu;
@@ -2618,7 +2618,7 @@ void QS60Style::polish(QWidget *widget)
     if (!widget)
         return;
 
-    if (QS60StylePrivate::isSkinnableDialog(widget)) {
+    if (QS60StylePrivate::drawsOwnThemeBackground(widget)) {
         widget->setAttribute(Qt::WA_StyledBackground);
     } else if (false
 #ifndef QT_NO_MENU
@@ -2638,7 +2638,7 @@ void QS60Style::polish(QWidget *widget)
 
 void QS60Style::unpolish(QWidget *widget)
 {
-    if (QS60StylePrivate::isSkinnableDialog(widget)) {
+    if (QS60StylePrivate::drawsOwnThemeBackground(widget)) {
         widget->setAttribute(Qt::WA_StyledBackground, false);
     } else if (false
 #ifndef QT_NO_MENU

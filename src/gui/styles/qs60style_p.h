@@ -358,8 +358,7 @@ public:
     // gets lighter color than base color
     static QColor lighterColor(const QColor &baseColor);
     //deduces if the given widget should have separately themeable background
-    //todo: change method name
-    static bool isSkinnableDialog(const QWidget *widget);
+    static bool drawsOwnThemeBackground(const QWidget *widget);
     // gets layout
     static const QHash<QStyle::PixelMetric, int> &s60StyleLayout();
 
