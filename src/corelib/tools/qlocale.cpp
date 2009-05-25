@@ -1136,7 +1136,7 @@ static QString macToQtFormat(const QString &sys_fmt)
                 break;
             case 'S': // fractional second
                 if (repeat < 3)
-                    result += QLatin1String("z");
+                    result += QLatin1Char('z');
                 else
                     result += QLatin1String("zzz");
                 break;
@@ -1150,7 +1150,7 @@ static QString macToQtFormat(const QString &sys_fmt)
                 if (repeat >= 2)
                     result += QLatin1String("dd");
                 else
-                    result += QLatin1String("d");
+                    result += QLatin1Char('d');
                 break;
             case 'a':
                 result += QLatin1String("AP");

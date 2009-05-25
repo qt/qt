@@ -105,7 +105,7 @@ QDebug Q_GUI_EXPORT &operator<<(QDebug &s, const QVectorPath &path)
               vectorPathBounds.x2 - vectorPathBounds.x1, vectorPathBounds.y2 - vectorPathBounds.y1);
     s << "QVectorPath(size:" << path.elementCount()
       << " hints:" << hex << path.hints()
-      << rf << ")";
+      << rf << ')';
     return s;
 }
 #endif

@@ -433,7 +433,7 @@ static QString nativeAbsoluteFilePathW(const QString &path)
     if (retLen != 0)
         ret = QString::fromUtf16((unsigned short *)buf.data(), retLen);
 #else
-    if (path.startsWith(QLatin1String("/")) || path.startsWith(QLatin1String("\\")))
+    if (path.startsWith(QLatin1Char('/')) || path.startsWith(QLatin1Char('\\')))
         ret = QDir::toNativeSeparators(path);
     else
         ret = QDir::toNativeSeparators(QDir::cleanPath(qfsPrivateCurrentDir + QLatin1Char('/') + path));
@@ -1240,7 +1240,7 @@ QString QFSFileEngine::rootPath()
     QString ret = QString::fromLatin1(qgetenv("SystemDrive").constData());
     if(ret.isEmpty())
         ret = QLatin1String("c:");
-    ret += QLatin1String("/");
+    ret += QLatin1Char('/');
 #elif defined(Q_OS_OS2EMX)
     char dir[4];
     _abspath(dir, QLatin1String("/"), _MAX_PATH);
@@ -1288,19 +1288,17 @@ QFileInfoList QFSFileEngine::drives()
 	exit(1);
     driveBits &= 0x3ffffff;
 #endif
-    char driveName[4];
-
-    qstrcpy(driveName, "A:/");
+    char driveName[] = "A:/";
 
     while(driveBits) {
 	if(driveBits & 1)
-	    ret.append(QString::fromLatin1(driveName).toUpper());
+	    ret.append(QString::fromLatin1(driveName));
 	driveName[0]++;
 	driveBits = driveBits >> 1;
     }
     return ret;
 #else
-    ret.append(QString::fromLatin1("/").toUpper());
+    ret.append(QLatin1Char('/'));
     return ret;
 #endif
 }

@@ -2022,12 +2022,12 @@ QDebug operator<<(QDebug dbg, const QColor &c)
     if (!c.isValid())
         dbg.nospace() << "QColor(Invalid)";
     else if (c.spec() == QColor::Rgb)
-        dbg.nospace() << "QColor(ARGB " << c.alphaF() << ", " << c.redF() << ", " << c.greenF() << ", " << c.blueF() << ")";
+        dbg.nospace() << "QColor(ARGB " << c.alphaF() << ", " << c.redF() << ", " << c.greenF() << ", " << c.blueF() << ')';
     else if (c.spec() == QColor::Hsv)
-        dbg.nospace() << "QColor(AHSV " << c.alphaF() << ", " << c.hueF() << ", " << c.saturationF() << ", " << c.valueF() << ")";
+        dbg.nospace() << "QColor(AHSV " << c.alphaF() << ", " << c.hueF() << ", " << c.saturationF() << ", " << c.valueF() << ')';
     else if (c.spec() == QColor::Cmyk)
         dbg.nospace() << "QColor(ACMYK " << c.alphaF() << ", " << c.cyanF() << ", " << c.magentaF() << ", " << c.yellowF() << ", "
-                      << c.blackF()<< ")";
+                      << c.blackF()<< ')';
 
     return dbg.space();
 #else

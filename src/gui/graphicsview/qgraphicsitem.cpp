@@ -9588,17 +9588,17 @@ QDebug operator<<(QDebug debug, QGraphicsItem::GraphicsItemFlag flag)
 
 QDebug operator<<(QDebug debug, QGraphicsItem::GraphicsItemFlags flags)
 {
-    debug << "(";
+    debug << '(';
     bool f = false;
     for (int i = 0; i < 9; ++i) {
         if (flags & (1 << i)) {
             if (f)
-                debug << "|";
+                debug << '|';
             f = true;
             debug << QGraphicsItem::GraphicsItemFlag(int(flags & (1 << i)));
         }
     }
-    debug << ")";
+    debug << ')';
     return debug;
 }
 

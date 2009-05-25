@@ -3389,7 +3389,7 @@ void QGraphicsView::paintEvent(QPaintEvent *event)
 #ifdef QGRAPHICSVIEW_DEBUG
     QTime stopWatch;
     stopWatch.start();
-    qDebug() << "QGraphicsView::paintEvent(" << exposedRegion << ")";
+    qDebug() << "QGraphicsView::paintEvent(" << exposedRegion << ')';
 #endif
 
     // Find all exposed items

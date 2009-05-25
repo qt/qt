@@ -1310,7 +1310,7 @@ void QMessageBox::keyPressEvent(QKeyEvent *e)
         if (e == QKeySequence::Copy) {
             QString separator = QString::fromLatin1("---------------------------\n");
             QString textToCopy = separator;
-            separator.prepend(QLatin1String("\n"));
+            separator.prepend(QLatin1Char('\n'));
             textToCopy += windowTitle() + separator; // title
             textToCopy += d->label->text() + separator; // text
 

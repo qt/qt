@@ -134,11 +134,11 @@ Q_CORE_EXPORT void qWinMsgHandler(QtMsgType t, const char* str)
     staticCriticalSection.lock();
     QT_WA({
         QString s(QString::fromLocal8Bit(str));
-        s += QLatin1String("\n");
+        s += QLatin1Char('\n');
         OutputDebugStringW((TCHAR*)s.utf16());
     }, {
         QByteArray s(str);
-        s += "\n";
+        s += '\n';
         OutputDebugStringA(s.data());
     })
     staticCriticalSection.unlock();

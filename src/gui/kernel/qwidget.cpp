@@ -5236,7 +5236,7 @@ static QString constructWindowTitleFromFilePath(const QString &filePath)
 #ifndef Q_WS_MAC
     QString appName = QApplication::applicationName();
     if (!appName.isEmpty())
-        windowTitle += QLatin1String(" ") + QChar(0x2014) + QLatin1String(" ") + appName;
+        windowTitle += QLatin1Char(' ') + QChar(0x2014) + QLatin1Char(' ') + appName;
 #endif
     return windowTitle;
 }
@@ -5300,7 +5300,7 @@ QString qt_setWindowTitle_helperHelper(const QString &title, const QWidget *widg
              && widget->style()->styleHint(QStyle::SH_TitleBar_ModifyNotification, 0, widget))
                 cap.replace(lastIndex, 3, QWidget::tr("*"));
             else
-                cap.replace(lastIndex, 3, QLatin1String(""));
+                cap.remove(lastIndex, 3);
         }
 
         index = cap.indexOf(placeHolder, index);

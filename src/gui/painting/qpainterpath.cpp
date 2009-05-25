@@ -3348,7 +3348,7 @@ QDebug operator<<(QDebug s, const QPainterPath &p)
     s.nospace() << "QPainterPath: Element count=" << p.elementCount() << endl;
     const char *types[] = {"MoveTo", "LineTo", "CurveTo", "CurveToData"};
     for (int i=0; i<p.elementCount(); ++i) {
-        s.nospace() << " -> " << types[p.elementAt(i).type] << "(x=" << p.elementAt(i).x << ", y=" << p.elementAt(i).y << ")" << endl;
+        s.nospace() << " -> " << types[p.elementAt(i).type] << "(x=" << p.elementAt(i).x << ", y=" << p.elementAt(i).y << ')' << endl;
 
     }
     return s;

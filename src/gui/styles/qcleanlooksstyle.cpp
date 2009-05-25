@@ -1646,8 +1646,8 @@ void QCleanlooksStyle::drawControl(ControlElement element, const QStyleOption *o
         if (const QStyleOptionHeader *header = qstyleoption_cast<const QStyleOptionHeader *>(option)) {
             QPixmap cache;
             QString pixmapName = QStyleHelper::uniqueName(QLatin1String("headersection"), option, option->rect.size());
-            pixmapName += QLatin1String("-") + QString::number(int(header->position));
-            pixmapName += QLatin1String("-") + QString::number(int(header->orientation));
+            pixmapName += QString::number(- int(header->position));
+            pixmapName += QString::number(- int(header->orientation));
             QRect r = option->rect;
             QColor gradientStopColor;
             QColor gradientStartColor = option->palette.button().color();
@@ -3858,7 +3858,7 @@ void QCleanlooksStyle::polish(QApplication *app)
         dataDirs = QLatin1String("/usr/local/share/:/usr/share/");
 
     dataDirs.prepend(QDir::homePath() + QLatin1String("/:"));
-    d->iconDirs = dataDirs.split(QLatin1String(":"));
+    d->iconDirs = dataDirs.split(QLatin1Char(':'));
 #endif
 }
 

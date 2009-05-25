@@ -1202,12 +1202,12 @@ void QRasterPaintEngine::clip(const QVectorPath &path, Qt::ClipOperation op)
     if (path.elements()) {
         for (int i=0; i<path.elementCount(); ++i) {
             qDebug() << " - " << path.elements()[i]
-                     << "(" << path.points()[i*2] << ", " << path.points()[i*2+1] << ")";
+                     << '(' << path.points()[i*2] << ", " << path.points()[i*2+1] << ')';
         }
     } else {
         for (int i=0; i<path.elementCount(); ++i) {
             qDebug() << " ---- "
-                     << "(" << path.points()[i*2] << ", " << path.points()[i*2+1] << ")";
+                     << '(' << path.points()[i*2] << ", " << path.points()[i*2+1] << ')';
         }
     }
 #endif

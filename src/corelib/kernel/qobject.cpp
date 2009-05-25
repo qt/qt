@@ -3461,7 +3461,7 @@ QDebug operator<<(QDebug dbg, const QObject *o) {
 #ifndef Q_BROKEN_DEBUG_STREAM
     if (!o)
         return dbg << "QObject(0x0) ";
-    dbg.nospace() << o->metaObject()->className() << "(" << (void *)o;
+    dbg.nospace() << o->metaObject()->className() << '(' << (void *)o;
     if (!o->objectName().isEmpty())
         dbg << ", name = " << o->objectName();
     dbg << ')';

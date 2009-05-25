@@ -363,7 +363,7 @@ static bool bidiItemize(QTextEngine *engine, QScriptAnalysis *analysis, QBidiCon
 #if (BIDI_DEBUG >= 2)
 //         qDebug() << "pos=" << current << " dir=" << directions[dir]
 //                  << " current=" << directions[dirCurrent] << " last=" << directions[status.last]
-//                  << " eor=" << eor << "/" << directions[status.eor]
+//                  << " eor=" << eor << '/' << directions[status.eor]
 //                  << " sor=" << sor << " lastStrong="
 //                  << directions[status.lastStrong]
 //                  << " level=" << (int)control.level << " override=" << (bool)control.override;
