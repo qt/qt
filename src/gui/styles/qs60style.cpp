@@ -118,109 +118,6 @@ static const int frameElementsCount =
 
 const int KNotFound = -1;
 
-void QS60StylePrivate::drawPart(QS60StyleEnums::SkinParts skinPart,
-    QPainter *painter, const QRect &rect, SkinElementFlags flags)
-{
-    static const bool doCache =
-#if defined(Q_WS_S60)
-        // Freezes on 3.1. Anyways, caching is only really needed on touch UI
-        !(QSysInfo::s60Version() == QSysInfo::SV_S60_3_1 || QSysInfo::s60Version() == QSysInfo::SV_S60_3_2);
-#else
-        true;
-#endif
-    const QPixmap skinPartPixMap((doCache ? cachedPart : part)(skinPart, rect.size(), flags));
-    if (!skinPartPixMap.isNull())
-        painter->drawPixmap(rect.topLeft(), skinPartPixMap);
-}
-
-void QS60StylePrivate::drawFrame(SkinFrameElements frameElement, QPainter *painter, const QRect &rect, SkinElementFlags flags)
-{
-    static const bool doCache =
-#if defined(Q_WS_S60)
-        // Freezes on 3.1. Anyways, caching is only really needed on touch UI
-        !(QSysInfo::s60Version() == QSysInfo::SV_S60_3_1 || QSysInfo::s60Version() == QSysInfo::SV_S60_3_2);
-#else
-        true;
-#endif
-    const QPixmap frameElementPixMap((doCache ? cachedFrame : frame)(frameElement, rect.size(), flags));
-    if (!frameElementPixMap.isNull())
-        painter->drawPixmap(rect.topLeft(), frameElementPixMap);
-}
-
-void QS60StylePrivate::drawRow(QS60StyleEnums::SkinParts start,
-    QS60StyleEnums::SkinParts middle, QS60StyleEnums::SkinParts end,
-    Qt::Orientation orientation, QPainter *painter, const QRect &rect,
-    SkinElementFlags flags)
-{
-    QSize startEndSize(partSize(start, flags));
-    startEndSize.scale(rect.size(), Qt::KeepAspectRatio);
-
-    QRect startRect = QRect(rect.topLeft(), startEndSize);
-    QRect middleRect = rect;
-    QRect endRect;
-
-    if (orientation == Qt::Horizontal) {
-        startRect.setWidth(qMin(rect.width() / 2 - 1, startRect.width()));
-        endRect = startRect.translated(rect.width() - startRect.width(), 0);
-        middleRect.adjust(startRect.width(), 0, -startRect.width(), 0);
-    } else {
-        startRect.setHeight(qMin(rect.height() / 2 - 1, startRect.height()));
-        endRect = startRect.translated(0, rect.height() - startRect.height());
-        middleRect.adjust(0, startRect.height(), 0, -startRect.height());
-    }
-
-#if 0
-    painter->save();
-    painter->setOpacity(.3);
-    painter->fillRect(startRect, Qt::red);
-    painter->fillRect(middleRect, Qt::green);
-    painter->fillRect(endRect, Qt::blue);
-    painter->restore();
-#else
-    drawPart(start, painter, startRect, flags);
-    if (middleRect.isValid())
-        drawPart(middle, painter, middleRect, flags);
-    drawPart(end, painter, endRect, flags);
-#endif
-}
-
-QPixmap QS60StylePrivate::cachedPart(QS60StyleEnums::SkinParts part,
-    const QSize &size, SkinElementFlags flags)
-{
-    QPixmap result;
-    const QString cacheKey =
-        QString::fromLatin1("S60Style: SkinParts=%1 QSize=%2|%3 SkinPartFlags=%4")
-            .arg((int)part).arg(size.width()).arg(size.height()).arg((int)flags);
-    if (!QPixmapCache::find(cacheKey, result)) {
-        result = QS60StylePrivate::part(part, size, flags);
-        QPixmapCache::insert(cacheKey, result);
-    }
-    return result;
-}
-
-QPixmap QS60StylePrivate::cachedFrame(SkinFrameElements frame, const QSize &size, SkinElementFlags flags)
-{
-    QPixmap result;
-    const QString cacheKey =
-        QString::fromLatin1("S60Style: SkinFrameElements=%1 QSize=%2|%3 SkinElementFlags=%4")
-            .arg((int)frame).arg(size.width()).arg(size.height()).arg((int)flags);
-    if (!QPixmapCache::find(cacheKey, result)) {
-        result = QS60StylePrivate::frame(frame, size, flags);
-        QPixmapCache::insert(cacheKey, result);
-    }
-    return result;
-}
-
-void QS60StylePrivate::refreshUI()
-{
-    foreach (QWidget *topLevelWidget, QApplication::allWidgets()) {
-        topLevelWidget->updateGeometry();
-        //todo: study how we can get rid of this. Apparently scrollbars cache pixelmetrics values, and we need them to update themselves
-        // maybe styleChanged event is enough?
-        QCoreApplication::postEvent(topLevelWidget, new QResizeEvent(topLevelWidget->size(), topLevelWidget->size()));
-    }
-}
-
 void QS60StylePrivate::drawSkinElement(SkinElements element, QPainter *painter,
     const QRect &rect, SkinElementFlags flags)
 {
@@ -348,73 +245,6 @@ void QS60StylePrivate::drawSkinElement(SkinElements element, QPainter *painter,
     }
 }
 
-QSize QS60StylePrivate::partSize(QS60StyleEnums::SkinParts part, SkinElementFlags flags)
-{
-    QSize result(20, 20);
-    switch (part)
-        {
-        case QS60StyleEnums::SP_QgnGrafBarProgress:
-            result.setWidth(pixelMetric(QStyle::PM_ProgressBarChunkWidth));
-            break;
-        case QS60StyleEnums::SP_QgnGrafTabActiveM:
-        case QS60StyleEnums::SP_QgnGrafTabPassiveM:
-        case QS60StyleEnums::SP_QgnGrafTabActiveR:
-        case QS60StyleEnums::SP_QgnGrafTabPassiveR:
-        case QS60StyleEnums::SP_QgnGrafTabPassiveL:
-        case QS60StyleEnums::SP_QgnGrafTabActiveL:
-            break;
-        case QS60StyleEnums::SP_QgnIndiSliderEdit:
-            result.scale(pixelMetric(QStyle::PM_SliderLength),
-                pixelMetric(QStyle::PM_SliderControlThickness), Qt::IgnoreAspectRatio);
-            break;
-
-        case QS60StyleEnums::SP_QsnCpScrollHandleBottomPressed:
-        case QS60StyleEnums::SP_QsnCpScrollHandleTopPressed:
-        case QS60StyleEnums::SP_QsnCpScrollHandleMiddlePressed:
-        case QS60StyleEnums::SP_QsnCpScrollBgBottom:
-        case QS60StyleEnums::SP_QsnCpScrollBgMiddle:
-        case QS60StyleEnums::SP_QsnCpScrollBgTop:
-        case QS60StyleEnums::SP_QsnCpScrollHandleBottom:
-        case QS60StyleEnums::SP_QsnCpScrollHandleMiddle:
-        case QS60StyleEnums::SP_QsnCpScrollHandleTop:
-            result.setHeight(pixelMetric(QStyle::PM_ScrollBarExtent));
-            result.setWidth(pixelMetric(QStyle::PM_ScrollBarExtent));
-            break;
-        default:
-            // Generic frame part size gathering.
-            for (int i = 0; i < frameElementsCount; ++i)
-            {
-                switch (m_frameElementsData[i].center - part) {
-                    case 8: /* CornerTl */
-                    case 7: /* CornerTr */
-                    case 6: /* CornerBl */
-                    case 5: /* CornerBr */
-                        result.setWidth(pixelMetric(PM_Custom_FrameCornerWidth));
-                        // Falltrough intended...
-                    case 4: /* SideT */
-                    case 3: /* SideB */
-                        result.setHeight(pixelMetric(PM_Custom_FrameCornerHeight));
-                        break;
-                    case 2: /* SideL */
-                    case 1: /* SideR */
-                        result.setWidth(pixelMetric(PM_Custom_FrameCornerWidth));
-                        break;
-                    case 0: /* center */
-                    default:
-                        break;
-                }
-            }
-            break;
-    }
-    if (flags & (QS60StylePrivate::SF_PointEast | QS60StylePrivate::SF_PointWest)) {
-        const int temp = result.width();
-        result.setWidth(result.height());
-        result.setHeight(temp);
-    }
-    return result;
-}
-
-
 void QS60StylePrivate::drawSkinPart(QS60StyleEnums::SkinParts part,
     QPainter *painter, const QRect &rect, SkinElementFlags flags)
 {
@@ -438,6 +268,96 @@ void QS60StylePrivate::setStyleProperty(const char *name, const QVariant &value)
         qFatal("Cannot set static layout. Dynamic layouts are used!");
 #endif
     }
+}
+
+QVariant QS60StylePrivate::styleProperty(const char *name) const
+{
+    if (name == propertyKeyLayouts) {
+#if !defined(QT_WS_S60) || defined(QT_S60STYLE_LAYOUTDATA_SIMULATED)
+        static QStringList layouts;
+        if (layouts.isEmpty())
+            for (int i = 0; i < QS60StylePrivate::m_numberOfLayouts; i++)
+                layouts.append(QS60StylePrivate::m_layoutHeaders[i].layoutName);
+        return layouts;
+#else
+        qFatal("Cannot return list of 'canned' static layouts. Dynamic layouts are used!");
+#endif
+    }
+    return QVariant();
+}
+
+QColor QS60StylePrivate::stateColor(const QColor& color, const QStyleOption *option)
+{
+    QColor retColor (color);
+    if (option && !(option->state & QStyle::State_Enabled)) {
+        QColor hsvColor = retColor.toHsv();
+        int colorSat = hsvColor.saturation();
+        int colorVal = hsvColor.value();
+        colorSat = (colorSat!=0) ? (colorSat>>1) : 128;
+        colorVal = (colorVal!=0) ? (colorVal>>1) : 128;
+        hsvColor.setHsv(hsvColor.hue(), colorSat, colorVal);
+        retColor = hsvColor.toRgb();
+    }
+    return retColor;
+}
+
+QColor QS60StylePrivate::lighterColor(const QColor &baseColor)
+{
+    QColor result(baseColor);
+    bool modifyColor = false;
+    if (result.saturation() == 0) {
+        result.setHsv(result.hue(), 128, result.value());
+        modifyColor = true;
+    }
+    if (result.value() == 0) {
+        result.setHsv(result.hue(), result.saturation(), 128);
+        modifyColor = true;
+    }
+    if (modifyColor)
+        result = result.lighter(175);
+    else
+        result = result.lighter(225);
+    return result;
+}
+
+bool QS60StylePrivate::isSkinnableDialog(const QWidget *widget)
+{
+    return (qobject_cast<const QMessageBox *> (widget) ||
+            qobject_cast<const QErrorMessage *> (widget));
+}
+
+QFont QS60StylePrivate::s60Font(
+    QS60StyleEnums::FontCategories fontCategory, int pointSize) const
+{
+    QFont result;
+    int actualPointSize = pointSize;
+    if (actualPointSize <= 0) {
+        const QFont appFont = QApplication::font();
+        actualPointSize = appFont.pointSize();
+        if (actualPointSize <= 0)
+            actualPointSize = appFont.pixelSize() * 72 / qt_defaultDpiY();
+    }
+    Q_ASSERT(actualPointSize > 0);
+    const QPair<QS60StyleEnums::FontCategories, int> key(fontCategory, actualPointSize);
+    if (!m_mappedFontsCache.contains(key)) {
+        result = s60Font_specific(fontCategory, actualPointSize);
+        m_mappedFontsCache.insert(key, result);
+    } else {
+        result = m_mappedFontsCache.value(key);
+        if (result.pointSize() != actualPointSize)
+            result.setPointSize(actualPointSize);
+    }
+    return result;
+}
+
+//todo: you could pass a reason to clear cache here, so that we could
+// deduce whether or not the specific cache needs to be cleared
+void QS60StylePrivate::clearCaches()
+{
+    m_colorCache.clear();
+    m_mappedFontsCache.clear();
+    QPixmapCache::clear();
+    m_backgroundValid = false;
 }
 
 // Since S60Style has 'button' and 'tooltip' as a graphic, we don't have any native color which to use
@@ -500,11 +420,6 @@ QColor QS60StylePrivate::colorFromFrameGraphics(QS60StylePrivate::SkinFrameEleme
         return m_colorCache.value(frame);
     }
 
-}
-
-int QS60StylePrivate::focusRectPenWidth()
-{
-    return pixelMetric(QS60Style::PM_DefaultFrameWidth);
 }
 
 void QS60StylePrivate::setThemePalette(QApplication *app) const
@@ -634,144 +549,9 @@ void QS60StylePrivate::setBackgroundTexture(QApplication *app) const
     app->setPalette(applicationPalette);
 }
 
-void QS60Style::polish(QApplication *application)
+int QS60StylePrivate::focusRectPenWidth()
 {
-    Q_D(const QS60Style);
-    originalPalette = application->palette();
-    d->setThemePalette(application);
-}
-
-void QS60Style::polish(QWidget *widget)
-{
-    Q_D(const QS60Style);
-    QCommonStyle::polish(widget);
-
-    if (!widget)
-        return;
-
-    if (QS60StylePrivate::isSkinnableDialog(widget)) {
-        widget->setAttribute(Qt::WA_StyledBackground);
-    } else if (false
-#ifndef QT_NO_MENU
-        || qobject_cast<const QMenu *> (widget)
-#endif // QT_NO_MENU
-    ) {
-        widget->setAttribute(Qt::WA_StyledBackground);
-    } else if (false
-#ifndef QT_NO_COMBOBOX
-        || qobject_cast<const QComboBoxListView *>(widget)
-#endif //QT_NO_COMBOBOX
-        ) {
-        widget->setAttribute(Qt::WA_StyledBackground);
-    }
-    d->setThemePalette(widget);
-}
-
-void QS60Style::unpolish(QApplication *application)
-{
-    QPalette newPalette = qApp->style()->standardPalette();
-    application->setPalette(newPalette);
-    QApplicationPrivate::setSystemPalette(originalPalette);
-}
-
-void QS60Style::unpolish(QWidget *widget)
-{
-    if (QS60StylePrivate::isSkinnableDialog(widget)) {
-        widget->setAttribute(Qt::WA_StyledBackground, false);
-    } else if (false
-#ifndef QT_NO_MENU
-        || qobject_cast<const QMenu *> (widget)
-#endif // QT_NO_MENU
-        ) {
-        widget->setAttribute(Qt::WA_StyledBackground, false);
-    } else if (false
-#ifndef QT_NO_COMBOBOX
-        || qobject_cast<const QComboBoxListView *>(widget)
-#endif //QT_NO_COMBOBOX
-        ) {
-        widget->setAttribute(Qt::WA_StyledBackground, false);
-    }
-
-    if (widget) {
-        widget->setPalette(QPalette());
-    }
-
-    QCommonStyle::unpolish(widget);
-}
-
-QVariant QS60StylePrivate::styleProperty(const char *name) const
-{
-    if (name == propertyKeyLayouts) {
-#if !defined(QT_WS_S60) || defined(QT_S60STYLE_LAYOUTDATA_SIMULATED)
-        static QStringList layouts;
-        if (layouts.isEmpty())
-            for (int i = 0; i < QS60StylePrivate::m_numberOfLayouts; i++)
-                layouts.append(QS60StylePrivate::m_layoutHeaders[i].layoutName);
-        return layouts;
-#else
-        qFatal("Cannot return list of 'canned' static layouts. Dynamic layouts are used!");
-#endif
-    }
-    return QVariant();
-}
-
-QFont QS60StylePrivate::s60Font(
-    QS60StyleEnums::FontCategories fontCategory, int pointSize) const
-{
-    QFont result;
-    int actualPointSize = pointSize;
-    if (actualPointSize <= 0) {
-        const QFont appFont = QApplication::font();
-        actualPointSize = appFont.pointSize();
-        if (actualPointSize <= 0)
-            actualPointSize = appFont.pixelSize() * 72 / qt_defaultDpiY();
-    }
-    Q_ASSERT(actualPointSize > 0);
-    const QPair<QS60StyleEnums::FontCategories, int> key(fontCategory, actualPointSize);
-    if (!m_mappedFontsCache.contains(key)) {
-        result = s60Font_specific(fontCategory, actualPointSize);
-        m_mappedFontsCache.insert(key, result);
-    } else {
-        result = m_mappedFontsCache.value(key);
-        if (result.pointSize() != actualPointSize)
-            result.setPointSize(actualPointSize);
-    }
-    return result;
-}
-
-//todo: you could pass a reason to clear cache here, so that we could
-// deduce whether or not the specific cache needs to be cleared
-void QS60StylePrivate::clearCaches()
-{
-    m_colorCache.clear();
-    m_mappedFontsCache.clear();
-    QPixmapCache::clear();
-    m_backgroundValid = false;
-}
-
-QColor QS60StylePrivate::lighterColor(const QColor &baseColor)
-{
-    QColor result(baseColor);
-    bool modifyColor = false;
-    if (result.saturation() == 0) {
-        result.setHsv(result.hue(), 128, result.value());
-        modifyColor = true;
-    }
-    if (result.value() == 0) {
-        result.setHsv(result.hue(), result.saturation(), 128);
-        modifyColor = true;
-    }
-    if (modifyColor)
-        result = result.lighter(175);
-    else
-        result = result.lighter(225);
-    return result;
-}
-
-bool QS60StylePrivate::isSkinnableDialog(const QWidget *widget)
-{
-    return (qobject_cast<const QMessageBox *> (widget) ||
-            qobject_cast<const QErrorMessage *> (widget));
+    return pixelMetric(QS60Style::PM_DefaultFrameWidth);
 }
 
 #if !defined(QT_WS_S60) || defined(QT_S60STYLE_LAYOUTDATA_SIMULATED)
@@ -781,19 +561,175 @@ void QS60StylePrivate::setCurrentLayout(int index)
 }
 #endif
 
-QColor QS60StylePrivate::stateColor(const QColor& color, const QStyleOption *option)
+
+void QS60StylePrivate::drawPart(QS60StyleEnums::SkinParts skinPart,
+    QPainter *painter, const QRect &rect, SkinElementFlags flags)
 {
-    QColor retColor (color);
-    if (option && !(option->state & QStyle::State_Enabled)) {
-        QColor hsvColor = retColor.toHsv();
-        int colorSat = hsvColor.saturation();
-        int colorVal = hsvColor.value();
-        colorSat = (colorSat!=0) ? (colorSat>>1) : 128;
-        colorVal = (colorVal!=0) ? (colorVal>>1) : 128;
-        hsvColor.setHsv(hsvColor.hue(), colorSat, colorVal);
-        retColor = hsvColor.toRgb();
+    static const bool doCache =
+#if defined(Q_WS_S60)
+        // Freezes on 3.1. Anyways, caching is only really needed on touch UI
+        !(QSysInfo::s60Version() == QSysInfo::SV_S60_3_1 || QSysInfo::s60Version() == QSysInfo::SV_S60_3_2);
+#else
+        true;
+#endif
+    const QPixmap skinPartPixMap((doCache ? cachedPart : part)(skinPart, rect.size(), flags));
+    if (!skinPartPixMap.isNull())
+        painter->drawPixmap(rect.topLeft(), skinPartPixMap);
+}
+
+void QS60StylePrivate::drawFrame(SkinFrameElements frameElement, QPainter *painter, const QRect &rect, SkinElementFlags flags)
+{
+    static const bool doCache =
+#if defined(Q_WS_S60)
+        // Freezes on 3.1. Anyways, caching is only really needed on touch UI
+        !(QSysInfo::s60Version() == QSysInfo::SV_S60_3_1 || QSysInfo::s60Version() == QSysInfo::SV_S60_3_2);
+#else
+        true;
+#endif
+    const QPixmap frameElementPixMap((doCache ? cachedFrame : frame)(frameElement, rect.size(), flags));
+    if (!frameElementPixMap.isNull())
+        painter->drawPixmap(rect.topLeft(), frameElementPixMap);
+}
+
+void QS60StylePrivate::drawRow(QS60StyleEnums::SkinParts start,
+    QS60StyleEnums::SkinParts middle, QS60StyleEnums::SkinParts end,
+    Qt::Orientation orientation, QPainter *painter, const QRect &rect,
+    SkinElementFlags flags)
+{
+    QSize startEndSize(partSize(start, flags));
+    startEndSize.scale(rect.size(), Qt::KeepAspectRatio);
+
+    QRect startRect = QRect(rect.topLeft(), startEndSize);
+    QRect middleRect = rect;
+    QRect endRect;
+
+    if (orientation == Qt::Horizontal) {
+        startRect.setWidth(qMin(rect.width() / 2 - 1, startRect.width()));
+        endRect = startRect.translated(rect.width() - startRect.width(), 0);
+        middleRect.adjust(startRect.width(), 0, -startRect.width(), 0);
+    } else {
+        startRect.setHeight(qMin(rect.height() / 2 - 1, startRect.height()));
+        endRect = startRect.translated(0, rect.height() - startRect.height());
+        middleRect.adjust(0, startRect.height(), 0, -startRect.height());
     }
-    return retColor;
+
+#if 0
+    painter->save();
+    painter->setOpacity(.3);
+    painter->fillRect(startRect, Qt::red);
+    painter->fillRect(middleRect, Qt::green);
+    painter->fillRect(endRect, Qt::blue);
+    painter->restore();
+#else
+    drawPart(start, painter, startRect, flags);
+    if (middleRect.isValid())
+        drawPart(middle, painter, middleRect, flags);
+    drawPart(end, painter, endRect, flags);
+#endif
+}
+
+QPixmap QS60StylePrivate::cachedPart(QS60StyleEnums::SkinParts part,
+    const QSize &size, SkinElementFlags flags)
+{
+    QPixmap result;
+    const QString cacheKey =
+        QString::fromLatin1("S60Style: SkinParts=%1 QSize=%2|%3 SkinPartFlags=%4")
+            .arg((int)part).arg(size.width()).arg(size.height()).arg((int)flags);
+    if (!QPixmapCache::find(cacheKey, result)) {
+        result = QS60StylePrivate::part(part, size, flags);
+        QPixmapCache::insert(cacheKey, result);
+    }
+    return result;
+}
+
+QPixmap QS60StylePrivate::cachedFrame(SkinFrameElements frame, const QSize &size, SkinElementFlags flags)
+{
+    QPixmap result;
+    const QString cacheKey =
+        QString::fromLatin1("S60Style: SkinFrameElements=%1 QSize=%2|%3 SkinElementFlags=%4")
+            .arg((int)frame).arg(size.width()).arg(size.height()).arg((int)flags);
+    if (!QPixmapCache::find(cacheKey, result)) {
+        result = QS60StylePrivate::frame(frame, size, flags);
+        QPixmapCache::insert(cacheKey, result);
+    }
+    return result;
+}
+
+void QS60StylePrivate::refreshUI()
+{
+    foreach (QWidget *topLevelWidget, QApplication::allWidgets()) {
+        topLevelWidget->updateGeometry();
+        //todo: study how we can get rid of this. Apparently scrollbars cache pixelmetrics values, and we need them to update themselves
+        // maybe styleChanged event is enough?
+        //QCoreApplication::postEvent(topLevelWidget, new QEvent(QEvent::StyleChange));
+        QCoreApplication::postEvent(topLevelWidget, new QResizeEvent(topLevelWidget->size(), topLevelWidget->size()));
+    }
+}
+
+QSize QS60StylePrivate::partSize(QS60StyleEnums::SkinParts part, SkinElementFlags flags)
+{
+    QSize result(20, 20);
+    switch (part)
+        {
+        case QS60StyleEnums::SP_QgnGrafBarProgress:
+            result.setWidth(pixelMetric(QStyle::PM_ProgressBarChunkWidth));
+            break;
+        case QS60StyleEnums::SP_QgnGrafTabActiveM:
+        case QS60StyleEnums::SP_QgnGrafTabPassiveM:
+        case QS60StyleEnums::SP_QgnGrafTabActiveR:
+        case QS60StyleEnums::SP_QgnGrafTabPassiveR:
+        case QS60StyleEnums::SP_QgnGrafTabPassiveL:
+        case QS60StyleEnums::SP_QgnGrafTabActiveL:
+            break;
+        case QS60StyleEnums::SP_QgnIndiSliderEdit:
+            result.scale(pixelMetric(QStyle::PM_SliderLength),
+                pixelMetric(QStyle::PM_SliderControlThickness), Qt::IgnoreAspectRatio);
+            break;
+
+        case QS60StyleEnums::SP_QsnCpScrollHandleBottomPressed:
+        case QS60StyleEnums::SP_QsnCpScrollHandleTopPressed:
+        case QS60StyleEnums::SP_QsnCpScrollHandleMiddlePressed:
+        case QS60StyleEnums::SP_QsnCpScrollBgBottom:
+        case QS60StyleEnums::SP_QsnCpScrollBgMiddle:
+        case QS60StyleEnums::SP_QsnCpScrollBgTop:
+        case QS60StyleEnums::SP_QsnCpScrollHandleBottom:
+        case QS60StyleEnums::SP_QsnCpScrollHandleMiddle:
+        case QS60StyleEnums::SP_QsnCpScrollHandleTop:
+            result.setHeight(pixelMetric(QStyle::PM_ScrollBarExtent));
+            result.setWidth(pixelMetric(QStyle::PM_ScrollBarExtent));
+            break;
+        default:
+            // Generic frame part size gathering.
+            for (int i = 0; i < frameElementsCount; ++i)
+            {
+                switch (m_frameElementsData[i].center - part) {
+                    case 8: /* CornerTl */
+                    case 7: /* CornerTr */
+                    case 6: /* CornerBl */
+                    case 5: /* CornerBr */
+                        result.setWidth(pixelMetric(PM_Custom_FrameCornerWidth));
+                        // Falltrough intended...
+                    case 4: /* SideT */
+                    case 3: /* SideB */
+                        result.setHeight(pixelMetric(PM_Custom_FrameCornerHeight));
+                        break;
+                    case 2: /* SideL */
+                    case 1: /* SideR */
+                        result.setWidth(pixelMetric(PM_Custom_FrameCornerWidth));
+                        break;
+                    case 0: /* center */
+                    default:
+                        break;
+                }
+            }
+            break;
+    }
+    if (flags & (QS60StylePrivate::SF_PointEast | QS60StylePrivate::SF_PointWest)) {
+        const int temp = result.width();
+        result.setWidth(result.height());
+        result.setHeight(temp);
+    }
+    return result;
 }
 
 /*!
@@ -2672,6 +2608,71 @@ QRect QS60Style::subElementRect(SubElement element, const QStyleOption *opt, con
             ret = QCommonStyle::subElementRect(element, opt, widget);
     }
     return ret;
+}
+
+void QS60Style::polish(QWidget *widget)
+{
+    Q_D(const QS60Style);
+    QCommonStyle::polish(widget);
+
+    if (!widget)
+        return;
+
+    if (QS60StylePrivate::isSkinnableDialog(widget)) {
+        widget->setAttribute(Qt::WA_StyledBackground);
+    } else if (false
+#ifndef QT_NO_MENU
+        || qobject_cast<const QMenu *> (widget)
+#endif // QT_NO_MENU
+    ) {
+        widget->setAttribute(Qt::WA_StyledBackground);
+    } else if (false
+#ifndef QT_NO_COMBOBOX
+        || qobject_cast<const QComboBoxListView *>(widget)
+#endif //QT_NO_COMBOBOX
+        ) {
+        widget->setAttribute(Qt::WA_StyledBackground);
+    }
+    d->setThemePalette(widget);
+}
+
+void QS60Style::unpolish(QWidget *widget)
+{
+    if (QS60StylePrivate::isSkinnableDialog(widget)) {
+        widget->setAttribute(Qt::WA_StyledBackground, false);
+    } else if (false
+#ifndef QT_NO_MENU
+        || qobject_cast<const QMenu *> (widget)
+#endif // QT_NO_MENU
+        ) {
+        widget->setAttribute(Qt::WA_StyledBackground, false);
+    } else if (false
+#ifndef QT_NO_COMBOBOX
+        || qobject_cast<const QComboBoxListView *>(widget)
+#endif //QT_NO_COMBOBOX
+        ) {
+        widget->setAttribute(Qt::WA_StyledBackground, false);
+    }
+
+    if (widget) {
+        widget->setPalette(QPalette());
+    }
+
+    QCommonStyle::unpolish(widget);
+}
+
+void QS60Style::polish(QApplication *application)
+{
+    Q_D(const QS60Style);
+    originalPalette = application->palette();
+    d->setThemePalette(application);
+}
+
+void QS60Style::unpolish(QApplication *application)
+{
+    QPalette newPalette = qApp->style()->standardPalette();
+    application->setPalette(newPalette);
+    QApplicationPrivate::setSystemPalette(originalPalette);    
 }
 
 void QS60Style::setStyleProperty(const char *name, const QVariant &value)

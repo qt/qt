@@ -667,6 +667,7 @@ QPixmap QS60StyleModeSpecifics::createSkinnedGraphicsL(
         HBufC* iconFile = HBufC::NewLC( KMaxFileName );
         TPtr fileNamePtr = iconFile->Des();
         fallbackInfo(part, fileNamePtr, fallbackGraphicID);
+        // todo: could we instead use   AknIconUtils::AvkonIconFileName(); to avoid allocating each time?
 
         CFbsBitmap *icon = 0;
         CFbsBitmap *iconMask = 0;
@@ -990,6 +991,23 @@ QS60StylePrivate::~QS60StylePrivate()
     m_backgroundValid = false;
 }
 
+void QS60StylePrivate::setStyleProperty_specific(const char *name, const QVariant &value)
+{
+    if (name == QLatin1String("foo")) {
+        // BaR
+    } else {
+        setStyleProperty(name, value);
+    }
+}
+
+QVariant QS60StylePrivate::styleProperty_specific(const char *name) const
+{
+    if (name == QLatin1String("foo"))
+        return QLatin1String("Bar");
+    else
+        return styleProperty(name);
+}
+
 short QS60StylePrivate::pixelMetric(int metric)
 {
 #ifdef QT_S60STYLE_LAYOUTDATA_SIMULATED
@@ -1004,6 +1022,24 @@ short QS60StylePrivate::pixelMetric(int metric)
 #endif // QT_S60STYLE_LAYOUTDATA_SIMULATED
 }
 
+QColor QS60StylePrivate::s60Color(QS60StyleEnums::ColorLists list,
+    int index, const QStyleOption *option)
+{
+    static const TAknsItemID *idMap[] = {
+        &KAknsIIDQsnHighlightColors,
+        &KAknsIIDQsnIconColors,
+        &KAknsIIDQsnLineColors,
+        &KAknsIIDQsnOtherColors,
+        &KAknsIIDQsnParentColors,
+        &KAknsIIDQsnTextColors
+    };
+    Q_ASSERT((int)list <= (int)sizeof(idMap)/sizeof(idMap[0]));
+    const QColor color = QS60StyleModeSpecifics::colorValue(*idMap[(int) list], index - 1);
+    return option ? QS60StylePrivate::stateColor(color, option) : color;
+}
+
+// In some cases, the AVKON UI themegraphic is already in 'disabled state'.
+// If so, return true for these parts.
 bool QS60StyleModeSpecifics::disabledPartGraphic(QS60StyleEnums::SkinParts &part)
 {
     bool disabledGraphic = false;
@@ -1028,6 +1064,8 @@ bool QS60StyleModeSpecifics::disabledPartGraphic(QS60StyleEnums::SkinParts &part
     return disabledGraphic;
 }
 
+// In some cases, the AVKON UI themegraphic is already in 'disabled state'.
+// If so, return true for these frames.
 bool QS60StyleModeSpecifics::disabledFrameGraphic(QS60StylePrivate::SkinFrameElements &frame)
 {
     bool disabledGraphic = false;
@@ -1076,7 +1114,7 @@ QPixmap QS60StyleModeSpecifics::generateMissingThemeGraphic(QS60StyleEnums::Skin
         QPixmap result = skinnedGraphics(updatedPart, size, flags);
         // TODO: fix this
         QStyleOption opt;
-        //        opt.palette = q->standardPalette();
+        //opt.palette = q->standardPalette();
 
         // For now, always generate new icon based on "selected". In the future possibly, expand
         // this to consist other possibilities as well.
@@ -1120,39 +1158,6 @@ QPixmap QS60StylePrivate::frame(SkinFrameElements frame, const QSize &size, Skin
         result = QApplication::style()->generatedIconPixmap(QIcon::Disabled, result, &opt);
     }
     return result;
-}
-
-void QS60StylePrivate::setStyleProperty_specific(const char *name, const QVariant &value)
-{
-    if (name == QLatin1String("foo")) {
-        // BaR
-    } else {
-        setStyleProperty(name, value);
-    }
-}
-
-QVariant QS60StylePrivate::styleProperty_specific(const char *name) const
-{
-    if (name == QLatin1String("foo"))
-        return QLatin1String("Bar");
-    else
-        return styleProperty(name);
-}
-
-QColor QS60StylePrivate::s60Color(QS60StyleEnums::ColorLists list,
-    int index, const QStyleOption *option)
-{
-    static const TAknsItemID *idMap[] = {
-        &KAknsIIDQsnHighlightColors,
-        &KAknsIIDQsnIconColors,
-        &KAknsIIDQsnLineColors,
-        &KAknsIIDQsnOtherColors,
-        &KAknsIIDQsnParentColors,
-        &KAknsIIDQsnTextColors
-    };
-    Q_ASSERT((int)list <= (int)sizeof(idMap)/sizeof(idMap[0]));
-    const QColor color = QS60StyleModeSpecifics::colorValue(*idMap[(int) list], index - 1);
-    return option ? QS60StylePrivate::stateColor(color, option) : color;
 }
 
 // If the public SDK returns compressed images, please let us also uncompress those!
