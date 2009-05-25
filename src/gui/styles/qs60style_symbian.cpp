@@ -849,17 +849,19 @@ void QS60StyleModeSpecifics::frameIdAndCenterId(QS60StylePrivate::SkinFrameEleme
 
 TRect QS60StyleModeSpecifics::innerRectFromElement(QS60StylePrivate::SkinFrameElements frameElement, const TRect &outerRect)
 {
-    TInt widthShrink = 0;
-    TInt heightShrink = 0;
+    TInt widthShrink = QS60StylePrivate::pixelMetric(PM_Custom_FrameCornerWidth);
+    TInt heightShrink = QS60StylePrivate::pixelMetric(PM_Custom_FrameCornerHeight);
     switch(frameElement) {
         case QS60StylePrivate::SF_PanelBackground:
             // panel should have slightly slimmer border to enable thin line of background graphics between closest component
-            widthShrink = QS60StylePrivate::pixelMetric(PM_Custom_FrameCornerWidth)-2;
-            heightShrink = QS60StylePrivate::pixelMetric(PM_Custom_FrameCornerHeight)-2;
+            widthShrink = widthShrink-2;
+            heightShrink = heightShrink-2;
+            break;
+        case QS60StylePrivate::SF_ToolTip:
+            widthShrink = widthShrink>>1;
+            heightShrink = heightShrink>>1;
             break;
         default:
-            widthShrink = QS60StylePrivate::pixelMetric(PM_Custom_FrameCornerWidth);
-            heightShrink = QS60StylePrivate::pixelMetric(PM_Custom_FrameCornerHeight);
             break;
     }
     TRect innerRect(outerRect);
