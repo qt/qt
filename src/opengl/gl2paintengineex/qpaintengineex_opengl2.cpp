@@ -175,8 +175,6 @@ public:
     void updateDepthClip();
     void systemStateChanged();
     uint use_system_clip : 1;
-
-    QPaintEngine *last_engine;
 };
 
 
@@ -830,9 +828,10 @@ void QGL2PaintEngineEx::stroke(const QVectorPath &path, const QPen &pen)
 {
     Q_D(QGL2PaintEngineEx);
 
-    ensureActive();
     if (pen.style() == Qt::NoPen)
         return;
+
+    ensureActive();
 
     if ( (pen.isCosmetic() && (pen.style() == Qt::SolidLine)) && (pen.widthF() < 2.5f) )
     {
@@ -1051,10 +1050,19 @@ bool QGL2PaintEngineEx::begin(QPaintDevice *pdev)
     Q_D(QGL2PaintEngineEx);
 
 //     qDebug("QGL2PaintEngineEx::begin()");
-
     d->drawable.setDevice(pdev);
-    d->drawable.makeCurrent();
     d->ctx = d->drawable.context();
+
+    if (d->ctx->d_ptr->active_engine) {
+        QGL2PaintEngineEx *engine = static_cast<QGL2PaintEngineEx *>(d->ctx->d_ptr->active_engine);
+        QGL2PaintEngineExPrivate *p = static_cast<QGL2PaintEngineExPrivate *>(engine->d_ptr);
+        p->transferMode(BrushDrawingMode);
+        p->drawable.doneCurrent();
+    }
+
+    d->ctx->d_ptr->active_engine = this;
+
+    d->drawable.makeCurrent();
     QSize sz = d->drawable.size();
     d->width = sz.width();
     d->height = sz.height();
@@ -1063,14 +1071,6 @@ bool QGL2PaintEngineEx::begin(QPaintDevice *pdev)
 #if !defined(QT_OPENGL_ES_2)
     qt_resolve_version_2_0_functions(d->ctx);
 #endif
-
-    d->last_engine = d->ctx->d_ptr->active_engine;
-    d->ctx->d_ptr->active_engine = this;
-
-    if (d->last_engine) {
-        QGL2PaintEngineEx *engine = static_cast<QGL2PaintEngineEx *>(d->last_engine);
-        static_cast<QGL2PaintEngineExPrivate *>(engine->d_ptr)->transferMode(BrushDrawingMode);
-    }
 
     if (!d->shaderManager)
         d->shaderManager = new QGLEngineShaderManager(d->ctx);
@@ -1115,8 +1115,8 @@ bool QGL2PaintEngineEx::end()
     Q_D(QGL2PaintEngineEx);
     QGLContext *ctx = d->ctx;
     if (ctx->d_ptr->active_engine != this) {
-        QGL2PaintEngineEx *engine = static_cast<QGL2PaintEngineEx *>(d->last_engine);
-        if (engine) {
+        QGL2PaintEngineEx *engine = static_cast<QGL2PaintEngineEx *>(ctx->d_ptr->active_engine);
+        if (engine && engine->isActive()) {
             QGL2PaintEngineExPrivate *p = static_cast<QGL2PaintEngineExPrivate *>(engine->d_ptr);
             p->transferMode(BrushDrawingMode);
             p->drawable.doneCurrent();
@@ -1128,19 +1128,7 @@ bool QGL2PaintEngineEx::end()
     d->transferMode(BrushDrawingMode);
     d->drawable.swapBuffers();
     d->drawable.doneCurrent();
-    d->ctx->d_ptr->active_engine = d->last_engine;
-
-    if (d->last_engine) {
-        QGL2PaintEngineEx *engine = static_cast<QGL2PaintEngineEx *>(d->last_engine);
-        QGL2PaintEngineExPrivate *p = static_cast<QGL2PaintEngineExPrivate *>(engine->d_ptr);
-
-        glDisable(GL_DEPTH_TEST);
-        glDisable(GL_SCISSOR_TEST);
-
-        glViewport(0, 0, p->width, p->height);
-        engine->setState(engine->state());
-        p->updateDepthClip();
-    }
+    d->ctx->d_ptr->active_engine = 0;
 
     return false;
 }
@@ -1152,7 +1140,7 @@ void QGL2PaintEngineEx::ensureActive()
 
     if (isActive() && ctx->d_ptr->active_engine != this) {
         QGL2PaintEngineEx *engine = static_cast<QGL2PaintEngineEx *>(ctx->d_ptr->active_engine);
-        if (engine) {
+        if (engine && engine->isActive()) {
             QGL2PaintEngineExPrivate *p = static_cast<QGL2PaintEngineExPrivate *>(engine->d_ptr);
             p->transferMode(BrushDrawingMode);
             p->drawable.doneCurrent();

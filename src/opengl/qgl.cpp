@@ -4391,6 +4391,15 @@ void QGLDrawable::swapBuffers()
 
 void QGLDrawable::makeCurrent()
 {
+    previous_fbo = 0;
+    if (!pixmapData && !fbo) {
+        QGLContext *ctx = context();
+        previous_fbo = ctx->d_ptr->current_fbo;
+        ctx->d_ptr->current_fbo = 0;
+        if (previous_fbo)
+            glBindFramebuffer(GL_FRAMEBUFFER_EXT, 0);
+    }
+
     if (widget)
         widget->makeCurrent();
 #if !defined(QT_OPENGL_ES_1) && !defined(QT_OPENGL_ES_1_CL)
@@ -4427,6 +4436,12 @@ void QGLDrawable::doneCurrent()
         return;
     }
 #endif
+
+    if (previous_fbo) {
+        QGLContext *ctx = context();
+        ctx->d_ptr->current_fbo = previous_fbo;
+        glBindFramebuffer(GL_FRAMEBUFFER_EXT, previous_fbo);
+    }
 
     if (fbo && !wasBound)
         fbo->release();

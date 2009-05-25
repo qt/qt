@@ -804,8 +804,10 @@ bool QGLFramebufferObject::bind()
     const QGLContext *context = QGLContext::currentContext();
     if (d->valid && context) {
         // Save the previous setting to automatically restore in release().
-        d->previous_fbo = context->d_ptr->current_fbo;
-        context->d_ptr->current_fbo = d->fbo;
+        if (context->d_ptr->current_fbo != d->fbo) {
+            d->previous_fbo = context->d_ptr->current_fbo;
+            context->d_ptr->current_fbo = d->fbo;
+        }
     }
     return d->valid;
 }
@@ -834,8 +836,10 @@ bool QGLFramebufferObject::release()
     const QGLContext *context = QGLContext::currentContext();
     if (context) {
         // Restore the previous setting for stacked framebuffer objects.
-        context->d_ptr->current_fbo = d->previous_fbo;
-        glBindFramebuffer(GL_FRAMEBUFFER_EXT, d->previous_fbo);
+        if (d->previous_fbo != context->d_ptr->current_fbo) {
+            context->d_ptr->current_fbo = d->previous_fbo;
+            glBindFramebuffer(GL_FRAMEBUFFER_EXT, d->previous_fbo);
+        }
         d->previous_fbo = 0;
     }
 

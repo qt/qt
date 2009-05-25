@@ -333,6 +333,7 @@ private:
 #if !defined(QT_OPENGL_ES_1) && !defined(QT_OPENGL_ES_1_CL)
     QGLPixmapData *pixmapData;
 #endif
+    int previous_fbo;
 };
 
 // GL extension definitions
