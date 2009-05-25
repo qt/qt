@@ -253,6 +253,9 @@ public:
                         const QStyleOptionGraphicsItem *option, QWidget *widget,
                         bool painterStateProtection);
     
+    void drawSubtreeRecursive(QGraphicsItem *item, QPainter *painter, const QTransform &viewTransform,
+                              const QRegion &exposedRegion, QWidget *widget);
+
     QStyle *style;
     QFont font;
     void setFont_helper(const QFont &font);

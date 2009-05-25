@@ -1870,6 +1870,11 @@ inline bool qt_closestLeaf(const QGraphicsItem *item1, const QGraphicsItem *item
     return z1 != z2 ? z1 > z2 : d1->siblingIndex > d2->siblingIndex;
 }
 
+static inline bool qt_notclosestLeaf(const QGraphicsItem *item1, const QGraphicsItem *item2)
+{
+    return qt_closestLeaf(item2, item1);
+}
+
 /*!
     \internal
 
@@ -5011,6 +5016,83 @@ void QGraphicsScenePrivate::drawItemHelper(QGraphicsItem *item, QPainter *painte
         painter->setWorldTransform(restoreTransform);
         return;
     }
+}
+
+void QGraphicsScenePrivate::drawSubtreeRecursive(QGraphicsItem *item, QPainter *painter, const QTransform &viewTransform,
+                                                 const QRegion &exposedRegion, QWidget *widget)
+{
+    if (item && (!item->isVisible() || qFuzzyIsNull(item->opacity())))
+        return;
+
+    painter->save();
+
+    // Set transform
+    if (item) {
+        if (item->d_ptr->itemIsUntransformable()) {
+            painter->setWorldTransform(item->deviceTransform(viewTransform), false);
+        } else {
+            const QPointF &pos = item->d_ptr->pos;
+            bool posNull = pos.isNull();
+            if (!posNull || item->d_ptr->hasTransform) {
+                if (item->d_ptr->hasTransform) {
+                    QTransform x = item->transform();
+                    if (!posNull)
+                        x *= QTransform::fromTranslate(pos.x(), pos.y());
+                    painter->setWorldTransform(x, true);
+                } else {
+                    painter->setWorldTransform(QTransform::fromTranslate(pos.x(), pos.y()), true);
+                }
+            }
+        }
+    }
+
+    // Setup recursive clipping.
+    if (item && (item->flags() & QGraphicsItem::ItemClipsChildrenToShape))
+        painter->setClipPath(item->shape(), Qt::IntersectClip);
+
+#if 0
+    const QList<QGraphicsItem *> &children = item ? item->d_ptr->children : topLevelItems;
+#else
+    // ### if we ensure all children are sorted by Z by default, we don't have
+    // to sort this list for each paint.
+    QList<QGraphicsItem *> children = item ? item->d_ptr->children : topLevelItems;
+    qSort(children.begin(), children.end(), qt_notclosestLeaf);
+#endif
+
+    // Draw children behind
+    int i;
+    for (i = 0; i < children.size(); ++i) {
+        QGraphicsItem *child = children.at(i);
+        if (!(child->flags() & QGraphicsItem::ItemStacksBehindParent))
+            break;
+        drawSubtreeRecursive(child, painter, viewTransform, exposedRegion, widget);
+    }
+
+    // Draw item
+    if (item) {
+        QRect itemViewRect = painter->worldTransform().mapRect(item->boundingRect()).toRect().adjusted(-1, -1, 1, 1);
+        if (itemViewRect.intersects(exposedRegion.boundingRect())) {
+            QStyleOptionGraphicsItem option;
+            item->d_ptr->initStyleOption(&option, painter->worldTransform(), exposedRegion);
+
+            bool clipsToShape = (item->flags() & QGraphicsItem::ItemClipsToShape);
+            if (clipsToShape) {
+                painter->save();
+                painter->setClipPath(item->shape(), Qt::IntersectClip);
+            }
+
+            drawItemHelper(item, painter, &option, widget, false);
+            
+            if (clipsToShape)
+                painter->restore();
+        }
+    }
+
+    // Draw children in front
+    for (; i < children.size(); ++i)
+        drawSubtreeRecursive(children.at(i), painter, viewTransform, exposedRegion, widget);
+
+    painter->restore();
 }
 
 /*!

@@ -3387,10 +3387,6 @@ void QGraphicsView::paintEvent(QPaintEvent *event)
     bool allItems = false;
     QList<QGraphicsItem *> itemList = d->findItems(exposedRegion, &allItems);
 
-#ifdef QGRAPHICSVIEW_DEBUG
-    int exposedTime = stopWatch.elapsed();
-#endif
-
     if ((d->cacheMode & CacheBackground)
 #ifdef Q_WS_X11
         && X11->use_xrender
@@ -3436,16 +3432,26 @@ void QGraphicsView::paintEvent(QPaintEvent *event)
     int backgroundTime = stopWatch.elapsed() - exposedTime;
 #endif
 
-    if (!itemList.isEmpty()) {
-        // Generate the style options.
-        const int numItems = itemList.size();
-        QGraphicsItem **itemArray = &itemList[0]; // Relies on QList internals, but is perfectly valid.
-        QStyleOptionGraphicsItem *styleOptionArray = d->allocStyleOptionsArray(numItems);
-        for (int i = 0; i < numItems; ++i)
-            itemArray[i]->d_ptr->initStyleOption(&styleOptionArray[i], viewTransform, exposedRegion, allItems);
-        // Draw the items.
-        drawItems(&painter, numItems, itemArray, styleOptionArray);
-        d->freeStyleOptionsArray(styleOptionArray);
+    const char *directEnv = getenv("QGRAPHICSVIEW_DIRECT");
+    bool overrideDirectPaint = directEnv && atoi(directEnv) != 0;
+    if (overrideDirectPaint || (d->optimizationFlags & BypassDrawItems)) {
+        d->scene->d_func()->drawSubtreeRecursive(0, &painter, viewTransform, exposedRegion, viewport());
+    } else {
+        // Find all exposed items
+        bool allItems = false;
+        QList<QGraphicsItem *> itemList = d->findItems(exposedRegion, &allItems);
+        
+        if (!itemList.isEmpty()) {
+            // Generate the style options.
+            const int numItems = itemList.size();
+            QGraphicsItem **itemArray = &itemList[0]; // Relies on QList internals, but is perfectly valid.
+            QStyleOptionGraphicsItem *styleOptionArray = d->allocStyleOptionsArray(numItems);
+            for (int i = 0; i < numItems; ++i)
+                itemArray[i]->d_ptr->initStyleOption(&styleOptionArray[i], viewTransform, exposedRegion, allItems);
+            // Draw the items.
+            drawItems(&painter, numItems, itemArray, styleOptionArray);
+            d->freeStyleOptionsArray(styleOptionArray);
+        }
     }
 
 #ifdef QGRAPHICSVIEW_DEBUG

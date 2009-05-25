@@ -112,7 +112,8 @@ public:
     enum OptimizationFlag {
         DontClipPainter = 0x1, // obsolete
         DontSavePainterState = 0x2,
-        DontAdjustForAntialiasing = 0x4
+        DontAdjustForAntialiasing = 0x4,
+        BypassDrawItems = 0x8
     };
     Q_DECLARE_FLAGS(OptimizationFlags, OptimizationFlag)
 
