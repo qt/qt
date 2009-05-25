@@ -1311,11 +1311,6 @@ void QS60StyleModeSpecifics::colorGroupAndIndex(
 {
     switch(skinID) {
         case QS60StyleEnums::SP_QgnIndiSubMenu:
-        case QS60StyleEnums::SP_QgnIndiHlColSuper:
-        case QS60StyleEnums::SP_QgnIndiHlExpSuper:
-        case QS60StyleEnums::SP_QgnIndiHlLineBranch:
-        case QS60StyleEnums::SP_QgnIndiHlLineEnd:
-        case QS60StyleEnums::SP_QgnIndiHlLineStraight:
             colorGroup = KAknsIIDQsnIconColors;
             colorIndex = EAknsCIQsnIconColorsCG1;
             break;

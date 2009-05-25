@@ -2109,10 +2109,8 @@ void QS60Style::drawPrimitive(PrimitiveElement element, const QStyleOption *opti
                 drawSkinPart = true;
             }
 
-            if ( drawSkinPart ) {
-                QS60StylePrivate::drawSkinPart(skinPart, painter, option->rect,
-                        (flags | QS60StylePrivate::SF_ColorSkinned));
-            }
+            if ( drawSkinPart )
+                QS60StylePrivate::drawSkinPart(skinPart, painter, option->rect, flags);
 
             if (option->state & State_Children) {
                 QS60StyleEnums::SkinParts skinPart =
