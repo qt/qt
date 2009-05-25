@@ -129,20 +129,6 @@ QStatePrivate::~QStatePrivate()
 {
 }
 
-QStatePrivate *QStatePrivate::get(QState *q)
-{
-    if (!q)
-        return 0;
-    return q->d_func();
-}
-
-const QStatePrivate *QStatePrivate::get(const QState *q)
-{
-    if (!q)
-        return 0;
-    return q->d_func();
-}
-
 void QStatePrivate::emitFinished()
 {
     Q_Q(QState);

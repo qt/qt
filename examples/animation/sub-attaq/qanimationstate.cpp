@@ -42,8 +42,6 @@
 #include "qanimationstate.h"
 
 #include <QtCore/qstate.h>
-#include <private/qstate_p.h>
-
 
 QT_BEGIN_NAMESPACE
 
@@ -76,25 +74,11 @@ machine.start();
 
 #ifndef QT_NO_ANIMATION
 
-class QAnimationStatePrivate : public QStatePrivate
-{
-    Q_DECLARE_PUBLIC(QAnimationState)
-public:
-    QAnimationStatePrivate()
-        : animation(0)
-    {
-
-    }
-    ~QAnimationStatePrivate() {}
-
-    QAbstractAnimation *animation;
-};
-
 /*!
   Constructs a new state with the given \a parent state.
 */
 QAnimationState::QAnimationState(QState *parent)
-    : QState(*new QAnimationStatePrivate, parent)
+    : QState(parent), m_animation(0)
 {
 }
 
@@ -112,20 +96,18 @@ QAnimationState::~QAnimationState()
 */
 void QAnimationState::setAnimation(QAbstractAnimation *animation)
 {
-    Q_D(QAnimationState);
-
-    if (animation == d->animation)
+    if (animation == m_animation)
         return;
 
     //Disconnect from the previous animation if exist
-    if(d->animation)
-        disconnect(d->animation, SIGNAL(finished()), this, SIGNAL(animationFinished()));
+    if(m_animation)
+        disconnect(m_animation, SIGNAL(finished()), this, SIGNAL(animationFinished()));
 
-    d->animation = animation;
+    m_animation = animation;
 
-    if (d->animation) {
+    if (m_animation) {
         //connect the new animation
-        connect(d->animation, SIGNAL(finished()), this, SIGNAL(animationFinished()));
+        connect(m_animation, SIGNAL(finished()), this, SIGNAL(animationFinished()));
     }
 }
 
@@ -134,8 +116,7 @@ void QAnimationState::setAnimation(QAbstractAnimation *animation)
 */
 QAbstractAnimation* QAnimationState::animation() const
 {
-    Q_D(const QAnimationState);
-    return d->animation;
+    return m_animation;
 }
 
 /*!
@@ -143,9 +124,8 @@ QAbstractAnimation* QAnimationState::animation() const
 */
 void QAnimationState::onEntry(QEvent *)
 {
-    Q_D(QAnimationState);
-    if (d->animation)
-        d->animation->start();
+    if (m_animation)
+        m_animation->start();
 }
 
 /*!
@@ -153,9 +133,8 @@ void QAnimationState::onEntry(QEvent *)
 */
 void QAnimationState::onExit(QEvent *)
 {
-    Q_D(QAnimationState);
-    if (d->animation)
-        d->animation->stop();
+    if (m_animation)
+        m_animation->stop();
 }
 
 /*!

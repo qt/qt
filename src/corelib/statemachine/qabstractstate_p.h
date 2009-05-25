@@ -60,8 +60,7 @@ QT_BEGIN_NAMESPACE
 class QStateMachine;
 
 class QAbstractState;
-class Q_CORE_EXPORT QAbstractStatePrivate
-    : public QObjectPrivate
+class QAbstractStatePrivate : public QObjectPrivate
 {
     Q_DECLARE_PUBLIC(QAbstractState)
 
