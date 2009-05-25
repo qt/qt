@@ -99,7 +99,7 @@
     the client has read the data). Note that Qt does not limit the
     write buffer size. You can monitor its size by listening to this
     signal.
-   
+
     The readyRead() signal is emitted every time a new chunk of data
     has arrived. bytesAvailable() then returns the number of bytes
     that are available for reading. Typically, you would connect the
@@ -199,9 +199,10 @@
     parameter describes the type of error that occurred.
 
     QAbstractSocket::SocketError is not a registered metatype, so for queued
-    connections, you will have to register it with Q_REGISTER_METATYPE.
+    connections, you will have to register it with Q_DECLARE_METATYPE() and
+    qRegisterMetaType().
 
-    \sa error(), errorString()
+    \sa error(), errorString(), {Creating Custom Qt Types}
 */
 
 /*!
@@ -211,9 +212,10 @@
     The \a socketState parameter is the new state.
 
     QAbstractSocket::SocketState is not a registered metatype, so for queued
-    connections, you will have to register it with Q_REGISTER_METATYPE.
+    connections, you will have to register it with Q_REGISTER_METATYPE() and
+    qRegisterMetaType().
 
-    \sa state()
+    \sa state(), {Creating Custom Qt Types}
 */
 
 /*!
@@ -1864,9 +1866,9 @@ bool QAbstractSocket::waitForDisconnected(int msecs)
 }
 
 /*!
-    Aborts the current connection and resets the socket. Unlike
-    disconnectFromHost(), this function immediately closes the socket, discarding
-    any pending data in the write buffer.
+    Aborts the current connection and resets the socket. Unlike disconnectFromHost(),
+    this function immediately closes the socket, discarding any pending data in the
+    write buffer.
 
     \sa disconnectFromHost(), close()
 */
@@ -2163,7 +2165,12 @@ void QAbstractSocket::setPeerName(const QString &name)
 }
 
 /*!
-    Disconnects the socket's connection with the host.
+    Closes the I/O device for the socket, disconnects the socket's connection with the
+    host, closes the socket, and resets the name, address, port number and underlying
+    socket descriptor.
+
+    See QIODevice::close() for a description of the actions that occur when an I/O
+    device is closed.
 
     \sa abort()
 */
@@ -2456,7 +2463,8 @@ QNetworkProxy QAbstractSocket::proxy() const
 #endif // QT_NO_NETWORKPROXY
 
 #ifdef QT3_SUPPORT
-/*! \enum QAbstractSocket::Error
+/*! 
+    \enum QAbstractSocket::Error
     \compat
 
     Use QAbstractSocket::SocketError instead.
