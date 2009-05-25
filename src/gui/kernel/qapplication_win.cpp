@@ -1675,20 +1675,23 @@ LRESULT CALLBACK QtWndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam
                     // send the context menu event is a different one
                     if (!alienWidget->testAttribute(Qt::WA_NativeWindow) && !alienWidget->testAttribute(Qt::WA_PaintOnScreen)) {
                         alienWidget = QApplication::widgetAt(globalPos);
-                        pos = alienWidget->mapFromGlobal(globalPos);
+                        if (alienWidget)
+                            pos = alienWidget->mapFromGlobal(globalPos);
                     }
-                    SHRGINFO shrg;
-                    shrg.cbSize = sizeof(shrg);
-                    shrg.hwndClient = hwnd;
-                    shrg.ptDown.x = GET_X_LPARAM(lParam);
-                    shrg.ptDown.y = GET_Y_LPARAM(lParam);
-                    shrg.dwFlags = SHRG_RETURNCMD | SHRG_NOANIMATION;
-                    resolveAygLibs();
-                    if (ptrRecognizeGesture && (ptrRecognizeGesture(&shrg) == GN_CONTEXTMENU)) {
-                        if (qApp->activePopupWidget())
-                            qApp->activePopupWidget()->close();
-                        QContextMenuEvent e(QContextMenuEvent::Mouse, pos, globalPos);
-                        result = qt_sendSpontaneousEvent(alienWidget, &e);
+                    if (alienWidget) {
+                        SHRGINFO shrg;
+                        shrg.cbSize = sizeof(shrg);
+                        shrg.hwndClient = hwnd;
+                        shrg.ptDown.x = GET_X_LPARAM(lParam);
+                        shrg.ptDown.y = GET_Y_LPARAM(lParam);
+                        shrg.dwFlags = SHRG_RETURNCMD | SHRG_NOANIMATION;
+                        resolveAygLibs();
+                        if (ptrRecognizeGesture && (ptrRecognizeGesture(&shrg) == GN_CONTEXTMENU)) {
+                            if (qApp->activePopupWidget())
+                                qApp->activePopupWidget()->close();
+                            QContextMenuEvent e(QContextMenuEvent::Mouse, pos, globalPos);
+                            result = qt_sendSpontaneousEvent(alienWidget, &e);
+                        }
                     }
                 }
             }
