@@ -5022,15 +5022,14 @@ void QGraphicsScenePrivate::drawSubtreeRecursive(QGraphicsItem *item, QPainter *
                                                  const QRegion &exposedRegion, QWidget *widget,
                                                  QGraphicsView::OptimizationFlags optimizationFlags)
 {
-    if (item && (!item->isVisible()))
+    if (item && !item->d_ptr->visible)
         return;
 
-    bool hasOpacity = item && item->d_ptr->hasEffectiveOpacity;
-    bool childClip = (item && (item->flags() & QGraphicsItem::ItemClipsChildrenToShape));
+    bool childClip = (item && (item->d_ptr->flags & QGraphicsItem::ItemClipsChildrenToShape));
     bool savePainter = !(optimizationFlags & QGraphicsView::DontSavePainterState);
 
     QTransform restoreTransform;
-    if (childClip || hasOpacity) {
+    if (childClip) {
         painter->save();
     } else {
         restoreTransform = painter->worldTransform();
@@ -5059,7 +5058,7 @@ void QGraphicsScenePrivate::drawSubtreeRecursive(QGraphicsItem *item, QPainter *
     // Setup recursive clipping.
     if (childClip)
         painter->setClipPath(item->shape(), Qt::IntersectClip);
-    if (hasOpacity)
+    if (item)
         painter->setOpacity(item->effectiveOpacity());
 
 #if 0
@@ -5075,7 +5074,7 @@ void QGraphicsScenePrivate::drawSubtreeRecursive(QGraphicsItem *item, QPainter *
     int i;
     for (i = 0; i < children.size(); ++i) {
         QGraphicsItem *child = children.at(i);
-        if (!(child->flags() & QGraphicsItem::ItemStacksBehindParent))
+        if (!(child->d_ptr->flags & QGraphicsItem::ItemStacksBehindParent))
             break;
         drawSubtreeRecursive(child, painter, viewTransform, exposedRegion, widget, optimizationFlags);
     }
@@ -5089,7 +5088,7 @@ void QGraphicsScenePrivate::drawSubtreeRecursive(QGraphicsItem *item, QPainter *
             QStyleOptionGraphicsItem option;
             item->d_ptr->initStyleOption(&option, painter->worldTransform(), exposedRegion);
 
-            bool clipsToShape = (item->flags() & QGraphicsItem::ItemClipsToShape);
+            bool clipsToShape = (item->d_ptr->flags & QGraphicsItem::ItemClipsToShape);
             if (savePainter || clipsToShape)
                 painter->save();
             if (clipsToShape)
@@ -5106,7 +5105,7 @@ void QGraphicsScenePrivate::drawSubtreeRecursive(QGraphicsItem *item, QPainter *
     for (; i < children.size(); ++i)
         drawSubtreeRecursive(children.at(i), painter, viewTransform, exposedRegion, widget, optimizationFlags);
 
-    if (childClip || hasOpacity) {
+    if (childClip) {
         painter->restore();
     } else {
         painter->setWorldTransform(restoreTransform, /* combine = */ false);
