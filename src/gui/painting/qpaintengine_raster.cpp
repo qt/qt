@@ -536,8 +536,8 @@ bool QRasterPaintEngine::begin(QPaintDevice *device)
 */
 bool QRasterPaintEngine::end()
 {
-    Q_D(QRasterPaintEngine);
 #ifdef QT_DEBUG_DRAW
+    Q_D(QRasterPaintEngine);
     qDebug() << "QRasterPaintEngine::end devRect:" << d->deviceRect;
     if (d->baseClip) {
         dumpClip(d->rasterBuffer->width(), d->rasterBuffer->height(), d->baseClip);
