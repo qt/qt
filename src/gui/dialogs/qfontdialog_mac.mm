@@ -566,6 +566,7 @@ void *QFontDialogPrivate::openCocoaFontPanel(const QFont &initial,
 
 void QFontDialogPrivate::closeCocoaFontPanel(void *delegate)
 {
+    QMacCocoaAutoReleasePool pool;
     QCocoaFontPanelDelegate *theDelegate = static_cast<QCocoaFontPanelDelegate *>(delegate);
     NSWindow *ourPanel = [theDelegate actualPanel];
     [ourPanel close];
