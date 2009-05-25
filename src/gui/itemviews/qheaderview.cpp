@@ -1267,8 +1267,10 @@ void QHeaderView::setSortIndicator(int logicalIndex, Qt::SortOrder order)
     d->sortIndicatorSection = logicalIndex;
     d->sortIndicatorOrder = order;
 
-    if (logicalIndex >= d->sectionCount)
+    if (logicalIndex >= d->sectionCount) {
+        emit sortIndicatorChanged(logicalIndex, order);
         return; // nothing to do
+    }
 
     if (old != logicalIndex
         && ((logicalIndex >= 0 && resizeMode(logicalIndex) == ResizeToContents)

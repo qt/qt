@@ -1518,7 +1518,8 @@ void QSortFilterProxyModel::setSourceModel(QAbstractItemModel *sourceModel)
 
     d->clear_mapping();
     reset();
-    d->update_source_sort_column();
+    if (d->update_source_sort_column() && d->dynamic_sortfilter)
+        d->sort();
 }
 
 /*!
