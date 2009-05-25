@@ -948,7 +948,7 @@ bool QFSFileEngine::supportsExtension(Extension extension) const
   For Windows, -2 is always returned.
 */
 
-/*! \fn QString QFSFileEngine::owner() const
+/*! \fn QString QFSFileEngine::owner(FileOwner own) const
   \reimp
 */
 

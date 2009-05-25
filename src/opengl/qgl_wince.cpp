@@ -552,9 +552,6 @@ void QGLWidgetPrivate::updateColormap()
     ReleaseDC(q->winId(), hdc);
 }
 
-/*!
-    \reimp
-\*/
 bool QGLWidget::event(QEvent *e)
 {
     Q_D(QGLWidget);

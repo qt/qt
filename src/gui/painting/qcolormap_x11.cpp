@@ -337,8 +337,6 @@ static void init_direct(QColormapPrivate *d, bool ownColormap)
 
 static QColormap **cmaps = 0;
 
-/*! \internal
-*/
 void QColormap::initialize()
 {
     Display *display = QX11Info::display();
@@ -578,8 +576,6 @@ void QColormap::initialize()
     }
 }
 
-/*! \internal
-*/
 void QColormap::cleanup()
 {
     Display *display = QX11Info::display();
