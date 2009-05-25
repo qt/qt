@@ -261,7 +261,7 @@ public:
                 constantAlpha &= (stops.at(i).second.alpha() == alpha);
 
             if (!constantAlpha) {
-                const qreal spacing = 0.02;
+                const qreal spacing = qreal(0.02);
                 QGradientStops newStops;
                 QRgb fromColor = PREMUL(stops.at(0).second.rgba());
                 QRgb toColor;
