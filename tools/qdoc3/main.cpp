@@ -43,6 +43,7 @@
   main.cpp
 */
 
+#include <qglobal.h>
 #include <QtCore>
 #include <stdlib.h>
 #include "apigenerator.h"
@@ -136,7 +137,8 @@ static void printHelp()
  */
 static void printVersion()
 {
-    Location::information(tr("qdoc version 4.4.1"));
+    QString s = QString(tr("qdoc version ")) + QString(QT_VERSION_STR);
+    Location::information(s);
 }
 
 /*!
