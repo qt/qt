@@ -629,8 +629,6 @@ const uint QKeySequencePrivate::numberOfKeyBindings = sizeof(QKeySequencePrivate
 
     This enum represent standard key bindings. They can be used to
     assign platform dependent keyboard shortcuts to a QAction.
-    QKeyEvent also provides the function  QKeyEvent::standardKey() to
-    query if it matches an existing key binding.
 
     Note that the key bindings are platform dependent. The currently
     bound shortcuts can be queried using keyBindings().
