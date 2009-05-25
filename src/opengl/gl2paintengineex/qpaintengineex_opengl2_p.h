@@ -119,6 +119,4 @@ private:
     Q_DISABLE_COPY(QGL2PaintEngineEx)
 };
 
-
-
 #endif

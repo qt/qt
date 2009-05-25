@@ -173,6 +173,7 @@ public:
 
     // Clipping & state stuff stolen from QOpenGLPaintEngine:
     void updateDepthClip();
+    void systemStateChanged();
     uint use_system_clip : 1;
 
     QPaintEngine *last_engine;
@@ -1302,6 +1303,16 @@ void QGL2PaintEngineEx::updateClipRegion(const QRegion &clipRegion, Qt::ClipOper
     d->updateDepthClip();
 }
 
+void QGL2PaintEngineExPrivate::systemStateChanged()
+{
+    Q_Q(QGL2PaintEngineEx);
+    use_system_clip = !systemClip.isEmpty();
+
+    if (q->painter()->hasClipping())
+        q->updateClipRegion(q->painter()->clipRegion(), Qt::ReplaceClip);
+    else
+        q->updateClipRegion(QRegion(), Qt::NoClip);
+}
 
 void QGL2PaintEngineExPrivate::updateDepthClip()
 {
