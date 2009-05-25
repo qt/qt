@@ -95,7 +95,7 @@ public:
     }
             
     QFxScaleGrid *_scaleGrid;
-    QFxPixmap _pix;
+    QPixmap _pix;
     bool _tiled : 1;
     bool _smooth : 1;
     bool _opaque : 1;

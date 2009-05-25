@@ -1852,12 +1852,12 @@ QSimpleCanvasItem *QSimpleCanvasItem::findNextFocus(QSimpleCanvasItem *item)
     return 0;
 }
 
-QImage QSimpleCanvasItem::string(const QString &str, const QColor &c, const QFont &f)
+QPixmap QSimpleCanvasItem::string(const QString &str, const QColor &c, const QFont &f)
 {
     QFontMetrics fm(f);
     QSize size(fm.width(str), fm.height()*(str.count(QLatin1Char('\n'))+1)); //fm.boundingRect(str).size();
-    QImage img(size, QImage::Format_ARGB32_Premultiplied);
-    img.fill(0);
+    QPixmap img(size);
+    img.fill(Qt::transparent);
     QPainter p(&img);
     p.setPen(c);
     p.setFont(f);

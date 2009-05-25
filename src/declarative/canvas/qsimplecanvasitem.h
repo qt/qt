@@ -175,8 +175,8 @@ public:
 
         QGLShaderProgram *useTextureShader();
         QGLShaderProgram *useColorShader(const QColor &);
-        void  drawImage(const QPointF &, const GLTexture &);
-        void  drawImage(const QRectF &, const GLTexture &);
+        void  drawPixmap(const QPointF &, const GLTexture &);
+        void  drawPixmap(const QRectF &, const GLTexture &);
     private:
         GLPainter(const GLPainter &);
         GLPainter &operator=(const GLPainter &);
@@ -228,7 +228,7 @@ public:
 
     GLBasicShaders *basicShaders() const;
   
-    static QImage string(const QString &, const QColor & = Qt::black, const QFont & = QFont());
+    static QPixmap string(const QString &, const QColor & = Qt::black, const QFont & = QFont());
 
 protected:
     virtual void geometryChanged(const QRectF &newGeometry, 

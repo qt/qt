@@ -98,7 +98,7 @@ public:
     QFxPen *_pen;
     qreal _radius;
 #if defined(QFX_RENDER_QPAINTER)
-    QSimpleCanvasConfig::Image _rectImage;
+    QPixmap _rectImage;
 #endif
 };
 
