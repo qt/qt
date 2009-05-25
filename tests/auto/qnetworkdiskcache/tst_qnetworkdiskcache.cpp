@@ -389,7 +389,8 @@ void tst_QNetworkDiskCache::expire()
     qint64 max = cache.maximumCacheSize();
     QCOMPARE(max, limit);
     for (int i = 0; i < 10; ++i) {
-        QTest::qWait(2000);
+        if (i % 3 == 0)
+            QTest::qWait(2000);
         QNetworkCacheMetaData m;
         m.setUrl(QUrl("http://www.foo.com/" + QString::number(i)));
         QIODevice *d = cache.prepare(m);

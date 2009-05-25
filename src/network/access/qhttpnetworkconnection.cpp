@@ -703,27 +703,37 @@ void QHttpNetworkConnectionPrivate::handleStatus(QAbstractSocket *socket, QHttpN
     switch (statusCode) {
     case 401:
     case 407:
-        handleAuthenticateChallenge(socket, reply, (statusCode == 407), resend);
-        if (resend) {
-            int i = indexOf(socket);
+        if (handleAuthenticateChallenge(socket, reply, (statusCode == 407), resend)) {
+            if (resend) {
+                int i = indexOf(socket);
 
-            QNonContiguousByteDevice* uploadByteDevice = channels[i].request.uploadByteDevice();
-            if (uploadByteDevice) {
-                if (uploadByteDevice->reset()) {
-                    channels[i].written = 0;
-                } else {
-                    emitReplyError(socket, reply, QNetworkReply::ContentReSendError);
-                    break;
+                QNonContiguousByteDevice* uploadByteDevice = channels[i].request.uploadByteDevice();
+                if (uploadByteDevice) {
+                    if (uploadByteDevice->reset()) {
+                        channels[i].written = 0;
+                    } else {
+                        emitReplyError(socket, reply, QNetworkReply::ContentReSendError);
+                        break;
+                    }
                 }
+
+                eraseData(reply);
+
+                // also use async _q_startNextRequest so we dont break with closed
+                // proxy or server connections..
+                channels[i].resendCurrent = true;
+                QMetaObject::invokeMethod(q, "_q_startNextRequest", Qt::QueuedConnection);
             }
-
-            eraseData(reply);
-
-            // also use async _q_startNextRequest so we dont break with closed
-            // proxy or server connections..
-            channels[i].resendCurrent = true;
-            QMetaObject::invokeMethod(q, "_q_startNextRequest", Qt::QueuedConnection);
-
+        } else {
+            int i = indexOf(socket);
+            emit channels[i].reply->headerChanged();
+            emit channels[i].reply->readyRead();
+            QNetworkReply::NetworkError errorCode = (statusCode == 407)
+                ? QNetworkReply::ProxyAuthenticationRequiredError
+                : QNetworkReply::AuthenticationRequiredError;
+            reply->d_func()->errorString = errorDetail(errorCode, socket);
+            emit q->error(errorCode, reply->d_func()->errorString);
+            emit channels[i].reply->finished();
         }
         break;
     default:
@@ -826,7 +836,6 @@ bool QHttpNetworkConnectionPrivate::handleAuthenticateChallenge(QAbstractSocket 
             // authentication is cancelled, send the current contents to the user.
             emit channels[i].reply->headerChanged();
             emit channels[i].reply->readyRead();
-            emit channels[i].reply->finished();
             QNetworkReply::NetworkError errorCode =
                 isProxy
                 ? QNetworkReply::ProxyAuthenticationRequiredError

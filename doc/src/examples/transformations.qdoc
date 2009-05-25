@@ -208,7 +208,7 @@
 
     After transforming the coordinate system, we draw the \c
     RenderArea's shape, and then we restore the painter state using
-    the the QPainter::restore() function (i.e. popping the saved state off
+    the QPainter::restore() function (i.e. popping the saved state off
     the stack).
 
     \snippet examples/painting/transformations/renderarea.cpp 7

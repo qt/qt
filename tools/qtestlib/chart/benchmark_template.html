@@ -108,15 +108,25 @@ function checkform()
     this.createChart();
 }
 
+function createElement(nodeName, name) {
+  var node;
+  try {
+    node = document.createElement("<"+nodeName+" name="+name+">");
+  } catch (e) {
+    node = document.createElement(nodeName);
+    node.name = name;
+  }
+  return node;
+}
+
 function createFormSelector(form, value, text, type)
 {
-  var selector = document.createElement('input');
-  form.appendChild(selector);
+  var selector = createElement('input', 'list');
   selector.type = type;
-  selector.name = 'list';
   selector.defaultChecked = true;
   selector.value = value;
 
+  form.appendChild(selector);
   form.appendChild(document.createTextNode(text));
   form.appendChild(document.createElement("BR"));
 }

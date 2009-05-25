@@ -305,7 +305,7 @@
     MultiPageWidget class \l
     {designer/containerextension/multipagewidget.cpp}{implementation}).
     Finally, we implicitly force an update of the page's property
-    sheet by calling the the
+    sheet by calling the
     QDesignerPropertySheetExtension::setChanged() function.
 
     \snippet examples/designer/containerextension/multipagewidgetplugin.cpp 4

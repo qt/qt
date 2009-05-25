@@ -274,6 +274,15 @@
     this flag, the child will be stacked behind it. This flag is useful for
     drop shadow effects and for decoration objects that follow the parent
     item's geometry without drawing on top of it.
+
+    \value ItemUsesExtendedStyleOption The item makes use of either
+    QStyleOptionGraphicsItem::exposedRect or QStyleOptionGraphicsItem::matrix.
+    By default, the exposedRect is initialized to the item's boundingRect and
+    the matrix is untransformed. Enable this flag for more fine-grained values.
+    Note that QStyleOptionGraphicsItem::levelOfDetail is unaffected by this flag
+    and is always initialized to 1.
+    Use QStyleOptionGraphicsItem::levelOfDetailFromTransform for a more
+    fine-grained value.
 */
 
 /*!
@@ -914,6 +923,53 @@ void QGraphicsItemPrivate::childrenBoundingRectHelper(QTransform *x, QRectF *rec
     }
 }
 
+void QGraphicsItemPrivate::initStyleOption(QStyleOptionGraphicsItem *option, const QTransform &worldTransform,
+                                           const QRegion &exposedRegion, bool allItems) const
+{
+    Q_ASSERT(option);
+    Q_Q(const QGraphicsItem);
+
+    // Initialize standard QStyleOption values.
+    const QRectF brect = q->boundingRect();
+    option->state = QStyle::State_None;
+    option->rect = brect.toRect();
+    option->levelOfDetail = 1;
+    option->exposedRect = brect;
+    if (selected)
+        option->state |= QStyle::State_Selected;
+    if (enabled)
+        option->state |= QStyle::State_Enabled;
+    if (q->hasFocus())
+        option->state |= QStyle::State_HasFocus;
+    if (scene) {
+        if (scene->d_func()->hoverItems.contains(q_ptr))
+            option->state |= QStyle::State_MouseOver;
+        if (q == scene->mouseGrabberItem())
+            option->state |= QStyle::State_Sunken;
+    }
+
+    if (!(flags & QGraphicsItem::ItemUsesExtendedStyleOption))
+        return;
+
+    // Initialize QStyleOptionGraphicsItem specific values (matrix, exposedRect).
+
+    const QTransform itemToViewportTransform = q->deviceTransform(worldTransform);
+    option->matrix = itemToViewportTransform.toAffine(); //### discards perspective
+
+    if (!allItems) {
+        // Determine the item's exposed area
+        option->exposedRect = QRectF();
+        const QTransform reverseMap = itemToViewportTransform.inverted();
+        const QVector<QRect> exposedRects(exposedRegion.rects());
+        for (int i = 0; i < exposedRects.size(); ++i) {
+            option->exposedRect |= reverseMap.mapRect(exposedRects.at(i));
+            if (option->exposedRect.contains(brect))
+                break;
+        }
+        option->exposedRect &= brect;
+    }
+}
+
 /*!
     \internal
 
@@ -922,6 +978,7 @@ void QGraphicsItemPrivate::childrenBoundingRectHelper(QTransform *x, QRectF *rec
 void QGraphicsItemCache::purge()
 {
     QPixmapCache::remove(key);
+    key = QPixmapCache::Key();
     QMutableMapIterator<QPaintDevice *, DeviceData> it(deviceData);
     while (it.hasNext()) {
         DeviceData &data = it.next().value();
@@ -1375,12 +1432,6 @@ void QGraphicsItem::setCacheMode(CacheMode mode, const QSize &logicalCacheSize)
         cache->purge();
 
         if (mode == ItemCoordinateCache) {
-            if (cache->key.isEmpty()) {
-                // Generate new simple pixmap cache key.
-                QString tmp;
-                tmp.sprintf("qgv-%p", this);
-                cache->key = tmp;
-            }
             if (lastMode == mode && cache->fixedSize == logicalCacheSize)
                 noVisualChange = true;
             cache->fixedSize = logicalCacheSize;
@@ -3940,7 +3991,7 @@ void QGraphicsItem::setBoundingRegionGranularity(qreal granularity)
 
     All painting is done in local coordinates.
 
-    \sa setCacheMode(), QPen::width(), {Item Coordinates}
+    \sa setCacheMode(), QPen::width(), {Item Coordinates}, ItemUsesExtendedStyleOption
 */
 
 /*!
@@ -4418,7 +4469,7 @@ void QGraphicsItem::scroll(qreal dx, qreal dy, const QRectF &rect)
                            && (d->cacheMode == ItemCoordinateCache && !c->fixedSize.isValid());
         if (scrollCache) {
             QPixmap pix;
-            if (QPixmapCache::find(c->key, pix)) {
+            if (QPixmapCache::find(c->key, &pix)) {
                 // Adjust with 2 pixel margin. Notice the loss of precision
                 // when converting to QRect.
                 int adjust = 2;
@@ -4427,7 +4478,7 @@ void QGraphicsItem::scroll(qreal dx, qreal dy, const QRectF &rect)
 
                 _q_scrollPixmap(&pix, irect, dx, dy);
 
-                QPixmapCache::insert(c->key, pix);
+                QPixmapCache::replace(c->key, pix);
 
                 // Translate the existing expose.
                 foreach (QRectF exposedRect, c->exposed)
@@ -7904,9 +7955,7 @@ void QGraphicsPixmapItem::paint(QPainter *painter, const QStyleOptionGraphicsIte
     painter->setRenderHint(QPainter::SmoothPixmapTransform,
                            (d->transformationMode == Qt::SmoothTransformation));
 
-    QRectF exposed = option->exposedRect.adjusted(-1, -1, 1, 1);
-    exposed &= QRectF(d->offset.x(), d->offset.y(), d->pixmap.width(), d->pixmap.height());
-    painter->drawPixmap(exposed, d->pixmap, exposed.translated(-d->offset));
+    painter->drawPixmap(d->offset, d->pixmap);
 
     if (option->state & QStyle::State_Selected)
         qt_graphicsItem_highlightSelected(this, painter, option);
@@ -8072,6 +8121,7 @@ QGraphicsTextItem::QGraphicsTextItem(const QString &text, QGraphicsItem *parent
         setPlainText(text);
     setAcceptDrops(true);
     setAcceptHoverEvents(true);
+    setFlags(ItemUsesExtendedStyleOption);
 }
 
 /*!
@@ -8091,6 +8141,7 @@ QGraphicsTextItem::QGraphicsTextItem(QGraphicsItem *parent
     dd->qq = this;
     setAcceptDrops(true);
     setAcceptHoverEvents(true);
+    setFlag(ItemUsesExtendedStyleOption);
 }
 
 /*!
@@ -9435,6 +9486,9 @@ QDebug operator<<(QDebug debug, QGraphicsItem::GraphicsItemFlag flag)
         break;
     case QGraphicsItem::ItemStacksBehindParent:
         str = "ItemStacksBehindParent";
+        break;
+    case QGraphicsItem::ItemUsesExtendedStyleOption:
+        str = "ItemUsesExtendedStyleOption";
         break;
     }
     debug << str;

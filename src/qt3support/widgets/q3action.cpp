@@ -497,7 +497,7 @@ Q3Action::Q3Action(const QIcon& icon, const QString& menuText, QKeySequence acce
 }
 
 /*!
-    This constructor results in an icon-less action with the the menu
+    This constructor results in an icon-less action with the menu
     text \a menuText and keyboard accelerator \a accel. It is a child
     of \a parent and called \a name.
 
