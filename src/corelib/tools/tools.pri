@@ -65,6 +65,7 @@ SOURCES += \
 	tools/qvector.cpp \
         tools/qvsnprintf.cpp
 
+symbian:SOURCES+=tools/qlocale_symbian.cpp
 
 #zlib support
 contains(QT_CONFIG, zlib) {
