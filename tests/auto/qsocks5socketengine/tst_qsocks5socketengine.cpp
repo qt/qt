@@ -798,14 +798,14 @@ void tst_QSocks5SocketEngine::downloadBigFile()
     if (QTestEventLoop::instance().timeout())
         QFAIL("Network operation timed out");
 
-    QCOMPARE(bytesAvailable, qint64(10000309));
+    QCOMPARE(bytesAvailable, qint64(10000000));
 
     QVERIFY(tmpSocket->state() == QAbstractSocket::ConnectedState);
 
-    qDebug("\t\t%.1fMB/%.1fs: %.1fMB/s",
+    /*qDebug("\t\t%.1fMB/%.1fs: %.1fMB/s",
            bytesAvailable / (1024.0 * 1024.0),
            stopWatch.elapsed() / 1024.0,
-           (bytesAvailable / (stopWatch.elapsed() / 1000.0)) / (1024 * 1024));
+           (bytesAvailable / (stopWatch.elapsed() / 1000.0)) / (1024 * 1024));*/
 
     delete tmpSocket;
     tmpSocket = 0;
@@ -819,7 +819,10 @@ void tst_QSocks5SocketEngine::exitLoopSlot()
 
 void tst_QSocks5SocketEngine::downloadBigFileSlot()
 {
-    bytesAvailable += tmpSocket->readAll().size();
+    QByteArray tmp=tmpSocket->readAll();
+    int correction=tmp.indexOf((char)0,0); //skip header
+    if (correction==-1) correction=0;
+    bytesAvailable += (tmp.size()-correction);
     if (bytesAvailable >= 10000000)
         QTestEventLoop::instance().exitLoop();
 }

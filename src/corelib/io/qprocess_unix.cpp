@@ -140,15 +140,6 @@ static void qt_native_close(int fd)
     } while (ret == -1 && errno == EINTR);
 }
 
-static void qt_native_sigaction(int signum, const struct sigaction *act,
-                                struct sigaction *oldact)
-{
-    int ret;
-    do {
-        ret = ::sigaction(signum, act, oldact);
-    } while (ret == -1 && errno == EINTR);
-}
-
 static void qt_native_dup2(int oldfd, int newfd)
 {
     int ret;
@@ -255,7 +246,7 @@ QProcessManager::QProcessManager()
     memset(&action, 0, sizeof(action));
     action.sa_handler = qt_sa_sigchld_handler;
     action.sa_flags = SA_NOCLDSTOP;
-    qt_native_sigaction(SIGCHLD, &action, &oldAction);
+    ::sigaction(SIGCHLD, &action, &oldAction);
     if (oldAction.sa_handler != qt_sa_sigchld_handler)
 	qt_sa_old_sigchld_handler = oldAction.sa_handler;
 }
@@ -282,9 +273,9 @@ QProcessManager::~QProcessManager()
     memset(&action, 0, sizeof(action));
     action.sa_handler = qt_sa_old_sigchld_handler;
     action.sa_flags = SA_NOCLDSTOP;
-    qt_native_sigaction(SIGCHLD, &action, &oldAction);
+    ::sigaction(SIGCHLD, &action, &oldAction);
     if (oldAction.sa_handler != qt_sa_sigchld_handler) {
-        qt_native_sigaction(SIGCHLD, &oldAction, 0);
+        ::sigaction(SIGCHLD, &oldAction, 0);
     }
 }
 
@@ -900,7 +891,7 @@ static void qt_ignore_sigpipe()
         struct sigaction noaction;
         memset(&noaction, 0, sizeof(noaction));
         noaction.sa_handler = SIG_IGN;
-        qt_native_sigaction(SIGPIPE, &noaction, 0);
+        ::sigaction(SIGPIPE, &noaction, 0);
     }
 }
 
@@ -1270,7 +1261,7 @@ bool QProcessPrivate::startDetached(const QString &program, const QStringList &a
         struct sigaction noaction;
         memset(&noaction, 0, sizeof(noaction));
         noaction.sa_handler = SIG_IGN;
-        qt_native_sigaction(SIGPIPE, &noaction, 0);
+        ::sigaction(SIGPIPE, &noaction, 0);
 
         ::setsid();
 
@@ -1316,7 +1307,7 @@ bool QProcessPrivate::startDetached(const QString &program, const QStringList &a
             struct sigaction noaction;
             memset(&noaction, 0, sizeof(noaction));
             noaction.sa_handler = SIG_IGN;
-            qt_native_sigaction(SIGPIPE, &noaction, 0);
+            ::sigaction(SIGPIPE, &noaction, 0);
 
             // '\1' means execv failed
             char c = '\1';
@@ -1327,7 +1318,7 @@ bool QProcessPrivate::startDetached(const QString &program, const QStringList &a
             struct sigaction noaction;
             memset(&noaction, 0, sizeof(noaction));
             noaction.sa_handler = SIG_IGN;
-            qt_native_sigaction(SIGPIPE, &noaction, 0);
+            ::sigaction(SIGPIPE, &noaction, 0);
 
             // '\2' means internal error
             char c = '\2';
