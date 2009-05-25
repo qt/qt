@@ -2695,7 +2695,7 @@ qreal QPainterPath::length() const
 /*!
     Returns percentage of the whole path at the specified length \a len.
 
-    Note that similarly to other percent methods, the percentage measurment
+    Note that similarly to other percent methods, the percentage measurement
     is not linear with regards to the length, if curves are present
     in the path. When curves are present the percentage argument is mapped
     to the t parameter of the Bezier equations.
@@ -2812,7 +2812,7 @@ static inline QBezier bezierAtT(const QPainterPath &path, qreal t, qreal *starti
     Returns the point at at the percentage \a t of the current path.
     The argument \a t has to be between 0 and 1.
 
-    Note that similarly to other percent methods, the percentage measurment
+    Note that similarly to other percent methods, the percentage measurement
     is not linear with regards to the length, if curves are present
     in the path. When curves are present the percentage argument is mapped
     to the t parameter of the Bezier equations.
@@ -2843,7 +2843,7 @@ QPointF QPainterPath::pointAtPercent(qreal t) const
     Positive values for the angles mean counter-clockwise while negative values
     mean the clockwise direction. Zero degrees is at the 3 o'clock position.
 
-    Note that similarly to the other percent methods, the percentage measurment
+    Note that similarly to the other percent methods, the percentage measurement
     is not linear with regards to the length if curves are present
     in the path. When curves are present the percentage argument is mapped
     to the t parameter of the Bezier equations.
@@ -2875,7 +2875,7 @@ qreal QPainterPath::angleAtPercent(qreal t) const
     Returns the slope of the path at the percentage \a t. The
     argument \a t has to be between 0 and 1.
 
-    Note that similarly to other percent methods, the percentage measurment
+    Note that similarly to other percent methods, the percentage measurement
     is not linear with regards to the length, if curves are present
     in the path. When curves are present the percentage argument is mapped
     to the t parameter of the Bezier equations.

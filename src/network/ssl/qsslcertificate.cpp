@@ -267,7 +267,7 @@ QByteArray QSslCertificate::serialNumber() const
 
 /*!
     Returns a cryptographic digest of this certificate. By default,
-    and MD5 digest will be generated, but you can also specify a
+    an MD5 digest will be generated, but you can also specify a
     custom \a algorithm.
 */
 QByteArray QSslCertificate::digest(QCryptographicHash::Algorithm algorithm) const
