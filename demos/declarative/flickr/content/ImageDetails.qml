@@ -12,6 +12,7 @@ Flipable {
     property string photoDate
     property string photoUrl
     property int rating: 2
+    property var prevScale: 1.0
 
     signal closed
 
@@ -88,12 +89,12 @@ Flipable {
                     // Center image if it is smaller than the flickable area.
                     x: ImageContainer.width > width*scale ? (ImageContainer.width - width*scale) / 2 : 0
                     y: ImageContainer.height > height*scale ? (ImageContainer.height - height*scale) / 2 : 0
-                    anchors.centeredIn: parent
                     onStatusChanged : {
                         // Default scale shows the entire image.
                         if (status == 0 && width != 0) {
                             Slider.minimum = Math.min(Flick.width / width, Flick.height / height);
-                            Slider.value = Math.min(Slider.minimum, 1);
+                            prevScale = Math.min(Slider.minimum, 1);
+                            Slider.value = prevScale;
                         }
                     }
                 }
@@ -109,7 +110,20 @@ Flipable {
             anchors.centeredIn: parent; color: "white"; font.bold: true
         }
 
-        Slider { id: Slider; x: 25; y: 374; visible: { BigImage.status == 0 && maximum > minimum } }
+        Slider {
+            id: Slider; x: 25; y: 374; visible: { BigImage.status == 0 && maximum > minimum }
+            onValueChanged: {
+                if (BigImage.width * value > Flick.width) {
+                    var xoff = (Flick.width/2 + Flick.xPosition) * value / prevScale;
+                    Flick.xPosition = xoff - Flick.width/2;
+                }
+                if (BigImage.height * value > Flick.height) {
+                    var yoff = (Flick.height/2 + Flick.yPosition) * value / prevScale;
+                    Flick.yPosition = yoff - Flick.height/2;
+                }
+                prevScale = value;
+            }
+        }
     }
 
     states: [

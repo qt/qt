@@ -42,7 +42,7 @@
 #ifndef _GLHEADERS_H_
 #define _GLHEADERS_H_
 
-#include <qfxglobal.h>
+#include <QtDeclarative/qfxglobal.h>
 #define GL_GLEXT_PROTOTYPES 1
 #include <QtOpenGL/qgl.h>
 

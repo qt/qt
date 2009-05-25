@@ -243,8 +243,12 @@ void QmlAbstractAnimation::setRunning(bool r)
             d->startOnCompletion = true;
         emit started();
     } else {
-        if (!d->finishPlaying)
+        if (d->finishPlaying) {
+            if (d->repeat)
+                qtAnimation()->setLoopCount(qtAnimation()->currentLoop()+1);
+        } else
             qtAnimation()->stop();
+
         emit completed();
     }
 
@@ -512,7 +516,11 @@ void QmlAbstractAnimation::transition(QmlStateActions &actions,
 
 void QmlAbstractAnimation::timelineComplete()
 {
+    Q_D(QmlAbstractAnimation);
     setRunning(false);
+    if (d->finishPlaying && d->repeat) {
+        qtAnimation()->setLoopCount(-1);
+    }
 }
 
 /*!

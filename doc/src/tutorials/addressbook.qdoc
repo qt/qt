@@ -242,12 +242,15 @@
 
     \snippet tutorials/addressbook/part1/main.cpp main function
 
-    We construct a new \c AddressBook widget on the heap using the \c new
-    keyword and invoke its \l{QWidget::show()}{show()} function to display it.
+    We construct a new \c AddressBook widget on the stack and invoke
+    its \l{QWidget::show()}{show()} function to display it.
     However, the widget will not be shown until the application's event loop
     is started. We start the event loop by calling the application's
     \l{QApplication::}{exec()} function; the result returned by this function
-    is used as the return value from the \c main() function.
+    is used as the return value from the \c main() function. At this point,
+    it becomes apparent why we instanciated \c AddressBook on the stack: It
+    will now go out of scope. Therefore, \c AddressBook and all its child widgets
+    will be deleted, thus preventing memory leaks.
 */
 
 /*!

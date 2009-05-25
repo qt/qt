@@ -524,7 +524,7 @@ protected:
     bool fetchLast() { return false; }
     int size() { return 0; }
     int numRowsAffected() { return 0; }
-    QSqlRecord record() { return QSqlRecord(); }
+    QSqlRecord record() const { return QSqlRecord(); }
 };
 //! [47]
 

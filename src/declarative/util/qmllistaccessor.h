@@ -42,7 +42,7 @@
 #ifndef QMLLISTACCESSOR_H
 #define QMLLISTACCESSOR_H
 
-#include <QVariant>
+#include <QtCore/QVariant>
 
 QT_BEGIN_HEADER
 

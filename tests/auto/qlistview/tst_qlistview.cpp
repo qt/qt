@@ -106,6 +106,7 @@ private slots:
     void task228566_infiniteRelayout();
     void task248430_crashWith0SizedItem();
     void task250446_scrollChanged();
+    void task196118_visualRegionForSelection();
     void keyboardSearch();
 };
 
@@ -1554,6 +1555,29 @@ void tst_QListView::task250446_scrollChanged()
     QTest::qWait(100);
     QCOMPARE(view.verticalScrollBar()->value(), scrollValue);
     QCOMPARE(view.currentIndex(), index);
+}
+
+void tst_QListView::task196118_visualRegionForSelection()
+{
+    class MyListView : public QListView
+    {
+    public:
+        QRegion visualRegionForSelection() const
+        { return QListView::visualRegionForSelection( selectionModel()->selection()); }
+    } view;
+
+    QStandardItemModel model;
+    QStandardItem top1("top1");
+    QStandardItem sub1("sub1");
+    top1.appendRow(QList<QStandardItem*>() << &sub1);
+    model.appendColumn(QList<QStandardItem*>() << &top1);
+    view.setModel(&model);
+    view.setRootIndex(top1.index());
+
+    view.selectionModel()->select(top1.index(), QItemSelectionModel::Select);
+
+    QCOMPARE(view.selectionModel()->selectedIndexes().count(), 1);
+    QVERIFY(view.visualRegionForSelection().isEmpty());
 }
 
 void tst_QListView::keyboardSearch()

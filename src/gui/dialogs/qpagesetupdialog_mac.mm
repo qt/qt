@@ -251,9 +251,6 @@ QPageSetupDialog::QPageSetupDialog(QWidget *parent)
     d->ep = static_cast<QMacPrintEngine *>(d->printer->paintEngine())->d_func();
 }
 
-/*!
-    \reimp
-*/
 void QPageSetupDialog::setVisible(bool visible)
 {
     Q_D(QPageSetupDialog);

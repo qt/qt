@@ -3,28 +3,32 @@ Item {
 
     width: 210; height: 210
 
-    Image { id: Background; source: "background.svg" }
-    Item {
-        x: 104; y: 102
-        rotation: Needle.rotation
-        Image {
-            source: "needle_shadow.svg"
-            x: -104; y: -102
+    Image { id: Background; source: "background.png" }
+
+    Image {
+        x: 93
+        y: 35
+        source: "needle_shadow.png"
+        transform: Rotation {
+            originX: 11; originY: 67
+            angle: NeedleRotation.angle
         }
     }
-    Item {
+    Image {
         id: Needle
-        x: 102; y: 98
-        rotation: -130
-        rotation: Follow {
-            spring: 1.4
-            damping: .15
-            source: Math.min(Math.max(-130, value*2.2 - 130), 133)
-        }
-        Image {
-            source: "needle.svg"
-            x: -102; y: -98
+        x: 95
+        y: 33
+        source: "needle.png"
+        transform: Rotation {
+            id: NeedleRotation
+            originX: 7; originY: 65
+            angle: -130
+            angle: Follow {
+                spring: 1.4
+                damping: .15
+                source: Math.min(Math.max(-130, value*2.2 - 130), 133)
+            }
         }
     }
-    Image { source: "overlay.svg" }
+    Image { x: 21; y: 18; source: "overlay.png" }
 }

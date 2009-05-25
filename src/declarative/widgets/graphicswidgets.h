@@ -42,11 +42,11 @@
 #ifndef GRAPHICSWIDGETS_H
 #define GRAPHICSWIDGETS_H
 
-#include <qml.h>
-#include <QGraphicsScene>
-#include <QGraphicsView>
-#include <QGraphicsWidget>
-#include <QGraphicsItem>
+#include <QtDeclarative/qml.h>
+#include <QtGui/QGraphicsScene>
+#include <QtGui/QGraphicsView>
+#include <QtGui/QGraphicsWidget>
+#include <QtGui/QGraphicsItem>
 
 QT_BEGIN_NAMESPACE
 

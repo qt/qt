@@ -428,7 +428,8 @@ int main(int argc, char **argv)
                     if (!fn.endsWith(QLatin1String(".java"))
                         && !fn.endsWith(QLatin1String(".ui"))
                         && !fn.endsWith(QLatin1String(".js"))
-                        && !fn.endsWith(QLatin1String(".qs"))) {
+                        && !fn.endsWith(QLatin1String(".qs"))
+                        && !fn.endsWith(QLatin1String(".qml"))) {
                         int offset = 0;
                         int depth = 0;
                         do {
@@ -518,6 +519,8 @@ int main(int argc, char **argv)
             else if (it->endsWith(QLatin1String(".js"), Qt::CaseInsensitive)
                      || it->endsWith(QLatin1String(".qs"), Qt::CaseInsensitive))
                 loadQScript(fetchedTor, *it, cd);
+            else if (it->endsWith(QLatin1String(".qml"), Qt::CaseInsensitive))
+                loadQml(fetchedTor, *it, cd);
             else
                 sourceFilesCpp << *it;
         }

@@ -42,11 +42,11 @@
 #ifndef QMLPROXYMETAOBJECT_P_H
 #define QMLPROXYMETAOBJECT_P_H
 
-#include <QMetaObject>
+#include <QtCore/QMetaObject>
+#include <QtCore/QObject>
 #include <private/qmetaobjectbuilder_p.h>
 #include <private/qobject_p.h>
-#include <QObject>
-#include <qml.h>
+#include <QtDeclarative/qml.h>
 
 QT_BEGIN_HEADER
 

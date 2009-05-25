@@ -92,6 +92,8 @@ public:
     QSimpleCanvasItem::Flip flip:2;
     bool dirty:1;
     bool transformValid:1;
+    bool doNotPaint:1;
+    bool doNotPaintChildren:1;
 
     qreal x;
     qreal y;
@@ -100,6 +102,7 @@ public:
 
     QSimpleCanvas::Matrix *transformUser;
     QSimpleCanvas::Matrix transformActive;
+    int transformVersion;
 
     float activeOpacity;
 
@@ -139,7 +142,7 @@ public:
       focusable(false), wantsActiveFocusPanelPendingCanvas(false),
       hasBeenActiveFocusPanel(false),
       hasFocus(false), hasActiveFocus(false), needsZOrder(false), 
-      widthValid(false), heightValid(false), width(0), height(0), scale(1), 
+      widthValid(false), heightValid(false), width(0), height(0), paintmargin(0), scale(1), 
       graphicsItem(0), data_ptr(0)
     {
     }
@@ -173,6 +176,7 @@ public:
 
     qreal width;
     qreal height;
+    qreal paintmargin;
     qreal scale;
 
     QSimpleGraphicsItem *graphicsItem;
@@ -236,7 +240,6 @@ public:
 #endif
 
     void zOrderChildren();
-    static int nextTransformVersion;
     bool freshenNeeded() const;
     void doFreshenTransforms() const;
 

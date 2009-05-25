@@ -78,6 +78,8 @@ public:
     QMap<QString,QString> nameSpacePaths() const;
     QUrl componentUrl(const QUrl& src, const QUrl& baseUrl) const;
 
+    QList<QUrl> componentSearchPath(const QByteArray &qml, const QUrl &url) const;
+
     void setNetworkAccessManager(QNetworkAccessManager *);
     QNetworkAccessManager *networkAccessManager() const;
 

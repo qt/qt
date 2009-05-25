@@ -42,10 +42,10 @@
 #ifndef _QFXTESTOBJECTS_H_
 #define _QFXTESTOBJECTS_H_
 
-#include <QObject>
-#include <QPoint>
-#include <QList>
-#include <QXmlStreamWriter>
+#include <QtCore/QObject>
+#include <QtCore/QPoint>
+#include <QtCore/QList>
+#include <QtCore/QTextStream>
 
 
 QT_BEGIN_HEADER
@@ -64,7 +64,7 @@ public:
     int time() const;
     void setTime(int);
 
-    virtual void save(QXmlStreamWriter *);
+    virtual void save(QTextStream &, int pad);
 Q_SIGNALS:
     void dataChanged();
 
@@ -82,7 +82,7 @@ public:
     QString hash() const;
     void setHash(const QString &);
 
-    virtual void save(QXmlStreamWriter *);
+    virtual void save(QTextStream &, int pad);
 Q_SIGNALS:
     void frameChanged();
 
@@ -100,7 +100,7 @@ public:
     int frameId() const;
     void setFrameId(int);
 
-    virtual void save(QXmlStreamWriter *);
+    virtual void save(QTextStream &, int pad);
 Q_SIGNALS:
     void frameChanged();
 
@@ -134,7 +134,7 @@ public:
     QPoint pos() const;
     void setPos(const QPoint &);
 
-    virtual void save(QXmlStreamWriter *);
+    virtual void save(QTextStream &, int pad);
 
 Q_SIGNALS:
     void mouseChanged();
@@ -169,7 +169,7 @@ public:
     int key() const;
     void setKey(int);
 
-    virtual void save(QXmlStreamWriter *);
+    virtual void save(QTextStream &, int pad);
 
 Q_SIGNALS:
     void keyChanged();

@@ -42,7 +42,7 @@
 #ifndef QFXCOMPONENTINSTANCE_H
 #define QFXCOMPONENTINSTANCE_H
 
-#include <qfxitem.h>
+#include <QtDeclarative/qfxitem.h>
 
 
 QT_BEGIN_HEADER

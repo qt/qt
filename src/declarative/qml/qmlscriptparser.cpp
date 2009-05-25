@@ -10,7 +10,10 @@
 #include "parser/javascriptast_p.h"
 
 #include <QStack>
+#include <QCoreApplication>
 #include <QtDebug>
+
+#include <qfxperf.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -62,18 +65,16 @@ public:
     void operator()(const QString &code, AST::Node *node);
 
 protected:
-    Object *defineObjectBinding(int line,
-                             AST::UiQualifiedId *propertyName,
-                             const QString &objectType,
-                             AST::SourceLocation typeLocation,
-                             LocationSpan location,
-                             AST::UiObjectInitializer *initializer = 0);
-    Object *defineObjectBinding_helper(int line,
-                             AST::UiQualifiedId *propertyName,
-                             const QString &objectType,
-                             AST::SourceLocation typeLocation,
-                             LocationSpan location,
-                             AST::UiObjectInitializer *initializer = 0);
+    Object *defineObjectBinding(AST::UiQualifiedId *propertyName,
+                                AST::UiQualifiedId *objectTypeName,
+                                LocationSpan location,
+                                AST::UiObjectInitializer *initializer = 0);
+
+    Object *defineObjectBinding_helper(AST::UiQualifiedId *propertyName,
+                                       const QString &objectType,
+                                       AST::SourceLocation typeLocation,
+                                       LocationSpan location,
+                                       AST::UiObjectInitializer *initializer = 0);
 
     QmlParser::Variant getVariant(AST::ExpressionNode *expr);
 
@@ -199,14 +200,16 @@ QString ProcessAST::asString(AST::UiQualifiedId *node) const
 }
 
 Object *
-ProcessAST::defineObjectBinding_helper(int line,
-                                       AST::UiQualifiedId *propertyName,
+ProcessAST::defineObjectBinding_helper(AST::UiQualifiedId *propertyName,
                                        const QString &objectType,
                                        AST::SourceLocation typeLocation,
                                        LocationSpan location,
                                        AST::UiObjectInitializer *initializer)
 {
-    bool isType = !objectType.isEmpty() && objectType.at(0).isUpper() && !objectType.contains(QLatin1Char('.'));
+    int lastTypeDot = objectType.lastIndexOf(QLatin1Char('.'));
+    bool isType = !objectType.isEmpty() &&
+                    (objectType.at(0).isUpper() ||
+                        (lastTypeDot >= 0 && objectType.at(lastTypeDot+1).isUpper()));
 
     int propertyCount = 0;
     for (; propertyName; propertyName = propertyName->next){
@@ -219,7 +222,7 @@ ProcessAST::defineObjectBinding_helper(int line,
 
         if(propertyCount || !currentObject()) {
             QmlError error;
-            error.setDescription("Expected type name");
+            error.setDescription(QCoreApplication::translate("QmlParser","Expected type name"));
             error.setLine(typeLocation.startLine);
             error.setColumn(typeLocation.startColumn);
             _parser->_errors << error;
@@ -237,15 +240,21 @@ ProcessAST::defineObjectBinding_helper(int line,
         return 0;
 
     } else {
-
         // Class
-        const int typeId = _parser->findOrCreateTypeId(objectType);
+
+        QString resolvableObjectType = objectType;
+        if (lastTypeDot >= 0)
+            resolvableObjectType.replace(QLatin1Char('.'),QLatin1Char('/'));
+        const int typeId = _parser->findOrCreateTypeId(resolvableObjectType);
 
         Object *obj = new Object;
         obj->type = typeId;
-        _scope.append(objectType);
+
+        // XXX this doesn't do anything (_scope never builds up)
+        _scope.append(resolvableObjectType);
         obj->typeName = qualifiedNameId().toLatin1();
         _scope.removeLast();
+
         obj->location = location;
 
         if (propertyCount) {
@@ -283,16 +292,17 @@ ProcessAST::defineObjectBinding_helper(int line,
     }
 }
 
-Object *ProcessAST::defineObjectBinding(int line,
-                                     AST::UiQualifiedId *qualifiedId,
-                                     const QString &objectType,
-                                     AST::SourceLocation typeLocation,
-                                     LocationSpan location,
-                                     AST::UiObjectInitializer *initializer)
+Object *ProcessAST::defineObjectBinding(AST::UiQualifiedId *qualifiedId,
+                                        AST::UiQualifiedId *objectTypeName,
+                                        LocationSpan location,
+                                        AST::UiObjectInitializer *initializer)
 {
+    const QString objectType = asString(objectTypeName);
+    const AST::SourceLocation typeLocation = objectTypeName->identifierToken;
+
     if (objectType == QLatin1String("Connection")) {
 
-        Object *obj = defineObjectBinding_helper(line, 0, objectType, typeLocation, location);
+        Object *obj = defineObjectBinding_helper(/*propertyName = */0, objectType, typeLocation, location);
 
         _stateStack.pushObject(obj);
 
@@ -331,7 +341,7 @@ Object *ProcessAST::defineObjectBinding(int line,
         return obj;
     }
 
-    return defineObjectBinding_helper(line, qualifiedId, objectType, typeLocation, location, initializer);
+    return defineObjectBinding_helper(qualifiedId, objectType, typeLocation, location, initializer);
 }
 
 LocationSpan ProcessAST::location(AST::UiQualifiedId *id)
@@ -418,7 +428,7 @@ bool ProcessAST::visit(AST::UiPublicMember *node)
         
         if(!typeFound) {
             QmlError error;
-            error.setDescription("Expected property type");
+            error.setDescription(QCoreApplication::translate("QmlParser","Expected property type"));
             error.setLine(node->typeToken.startLine);
             error.setColumn(node->typeToken.startColumn);
             _parser->_errors << error;
@@ -446,16 +456,14 @@ bool ProcessAST::visit(AST::UiPublicMember *node)
 }
 
 
-// UiObjectMember: T_IDENTIFIER UiObjectInitializer ;
+// UiObjectMember: UiQualifiedId UiObjectInitializer ;
 bool ProcessAST::visit(AST::UiObjectDefinition *node)
 {
     LocationSpan l = location(node->firstSourceLocation(),
-                              node->lastSourceLocation());;
+                              node->lastSourceLocation());
 
-    defineObjectBinding(node->identifierToken.startLine,
-                        0,
-                        node->name->asString(),
-                        node->identifierToken,
+    defineObjectBinding(/*propertyName = */ 0,
+                        node->qualifiedTypeNameId,
                         l,
                         node->initializer);
 
@@ -463,16 +471,14 @@ bool ProcessAST::visit(AST::UiObjectDefinition *node)
 }
 
 
-// UiObjectMember: UiQualifiedId T_COLON T_IDENTIFIER UiObjectInitializer ;
+// UiObjectMember: UiQualifiedId T_COLON UiQualifiedId UiObjectInitializer ;
 bool ProcessAST::visit(AST::UiObjectBinding *node)
 {
-    LocationSpan l;
-    l = location(node->identifierToken, node->initializer->rbraceToken);
+    LocationSpan l = location(node->qualifiedTypeNameId->identifierToken,
+                              node->initializer->rbraceToken);
 
-    defineObjectBinding(node->identifierToken.startLine,
-                        node->qualifiedId,
-                        node->name->asString(),
-                        node->identifierToken,
+    defineObjectBinding(node->qualifiedId,
+                        node->qualifiedTypeNameId,
                         l,
                         node->initializer);
 
@@ -568,7 +574,7 @@ bool ProcessAST::visit(AST::UiSourceElement *node)
 
             if(funDecl->formals) {
                 QmlError error;
-                error.setDescription("Slot declarations must be parameterless");
+                error.setDescription(QCoreApplication::translate("QmlParser","Slot declarations must be parameterless"));
                 error.setLine(funDecl->lparenToken.startLine);
                 error.setColumn(funDecl->lparenToken.startColumn);
                 _parser->_errors << error;
@@ -582,7 +588,7 @@ bool ProcessAST::visit(AST::UiSourceElement *node)
             obj->dynamicSlots << slot;
         } else {
             QmlError error;
-            error.setDescription("JavaScript declaration outside Script element");
+            error.setDescription(QCoreApplication::translate("QmlParser","JavaScript declaration outside Script element"));
             error.setLine(node->firstSourceLocation().startLine);
             error.setColumn(node->firstSourceLocation().startColumn);
             _parser->_errors << error;
@@ -627,25 +633,27 @@ QmlScriptParser::~QmlScriptParser()
 
 bool QmlScriptParser::parse(const QByteArray &data, const QUrl &url)
 {
+#ifdef Q_ENABLE_PERFORMANCE_LOG
+    QFxPerfTimer<QFxPerf::QmlParsing> pt;
+#endif
     const QString fileName = url.toString();
 
     QTextStream stream(data, QIODevice::ReadOnly);
     const QString code = stream.readAll();
 
-    JavaScriptParser parser;
-    JavaScriptEnginePrivate driver;
+    Engine engine;
 
-    NodePool nodePool(fileName, &driver);
-    driver.setNodePool(&nodePool);
+    NodePool nodePool(fileName, &engine);
 
-    Lexer lexer(&driver);
+    Lexer lexer(&engine);
     lexer.setCode(code, /*line = */ 1);
-    driver.setLexer(&lexer);
 
-    if (! parser.parse(&driver) || !_errors.isEmpty()) {
+    Parser parser(&engine);
+
+    if (! parser.parse() || !_errors.isEmpty()) {
 
         // Extract errors from the parser
-        foreach (const JavaScriptParser::DiagnosticMessage &m, parser.diagnosticMessages()) {
+        foreach (const DiagnosticMessage &m, parser.diagnosticMessages()) {
 
             if (m.isWarning())
                 continue;

@@ -60,6 +60,7 @@ class QDial;
 #ifndef QT_NO_SPINBOX
 class QAccessibleAbstractSpinBox: public QAccessibleWidgetEx, public QAccessibleValueInterface
 {
+    Q_ACCESSIBLE_OBJECT
 public:
     explicit QAccessibleAbstractSpinBox(QWidget *w);
 
@@ -132,6 +133,7 @@ protected:
 
 class QAccessibleAbstractSlider: public QAccessibleWidgetEx, public QAccessibleValueInterface
 {
+    Q_ACCESSIBLE_OBJECT
 public:
     explicit QAccessibleAbstractSlider(QWidget *w, Role r = Slider);
 

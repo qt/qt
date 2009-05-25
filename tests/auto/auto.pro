@@ -212,6 +212,7 @@ SUBDIRS += bic \
            qnumeric \
            qobject \
            qobjectrace \
+           qcontiguouscache \
            qpaintengine \
            qpainter \
            qpainterpath \
@@ -243,6 +244,7 @@ SUBDIRS += bic \
            qregexpvalidator \
            qregion \
            qresourceengine \
+           qringbuffer \
            qscriptable \
            qscriptclass \
            qscriptcontext \

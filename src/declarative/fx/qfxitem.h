@@ -42,9 +42,9 @@
 #ifndef QFXITEM_H
 #define QFXITEM_H
 
-#include <QObject>
+#include <QtCore/QObject>
 #include <QtScript/qscriptvalue.h>
-#include <QList>
+#include <QtCore/QList>
 #include <QtDeclarative/qfxanchors.h>
 #include <QtDeclarative/qfxglobal.h>
 #include <QtDeclarative/qml.h>
@@ -127,6 +127,7 @@ class Q_DECLARATIVE_EXPORT QFxItem : public QSimpleCanvasItem, public QmlParserS
     Q_PROPERTY(QFxAnchorLine top READ top)
     Q_PROPERTY(QFxAnchorLine bottom READ bottom)
     Q_PROPERTY(QFxAnchorLine verticalCenter READ verticalCenter)
+    Q_PROPERTY(QFxAnchorLine baseline READ baseline)
     Q_PROPERTY(qreal rotation READ rotation WRITE setRotation NOTIFY rotationChanged)
     Q_PROPERTY(qreal scale READ scale WRITE setScale NOTIFY scaleChanged)
     Q_PROPERTY(qreal opacity READ opacity WRITE setOpacity NOTIFY opacityChanged)
@@ -213,14 +214,9 @@ public Q_SLOTS:
 
 Q_SIGNALS:
     void leftChanged();
-    void rightChanged();
     void widthChanged();
     void heightChanged();
     void topChanged();
-    void bottomChanged();
-    void hcenterChanged();
-    void vcenterChanged();
-    void baselineChanged();
     void baselineOffsetChanged();
     void stateChanged(const QString &);
     void focusChanged();
@@ -263,6 +259,7 @@ private:
     QFxAnchorLine top() const;
     QFxAnchorLine bottom() const;
     QFxAnchorLine verticalCenter() const;
+    QFxAnchorLine baseline() const;
 
     void init(QFxItem *parent);
     friend class QmlStatePrivate;

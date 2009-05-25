@@ -42,7 +42,7 @@
 #ifndef QFXLISTVIEW_H
 #define QFXLISTVIEW_H
 
-#include <qfxflickable.h>
+#include <QtDeclarative/qfxflickable.h>
 
 
 QT_BEGIN_HEADER
@@ -141,6 +141,8 @@ private Q_SLOTS:
     void itemsInserted(int index, int count);
     void itemsRemoved(int index, int count);
     void destroyRemoved();
+    void createdItem(int index, QFxItem *item);
+    void destroyingItem(QFxItem *item);
 };
 
 QML_DECLARE_TYPE(QFxListView);

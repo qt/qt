@@ -2730,6 +2730,7 @@ if [ "$PLATFORM_MAC" = "yes" ]; then
 #   Build commmand line arguments we can pass to the compiler during configure tests
 #   by prefixing each arch with "-arch".
     CFG_MAC_ARCHS_GCC_FORMAT="${CFG_MAC_ARCHS/x86/i386}"
+    CFG_MAC_ARCHS_GCC_FORMAT="${CFG_MAC_ARCHS/i386_64/x86_64}"
     for ARCH in $CFG_MAC_ARCHS_GCC_FORMAT; do
         MAC_ARCHS_COMMANDLINE="$MAC_ARCHS_COMMANDLINE -arch $ARCH"
     done

@@ -42,8 +42,8 @@
 #ifndef QFXPATHVIEW_H
 #define QFXPATHVIEW_H
 
-#include <qfxitem.h>
-#include <qfxpath.h>
+#include <QtDeclarative/qfxitem.h>
+#include <QtDeclarative/qfxpath.h>
 
 QT_BEGIN_HEADER
 
@@ -115,7 +115,7 @@ private Q_SLOTS:
     void ticked();
     void itemsInserted(int index, int count);
     void itemsRemoved(int index, int count);
-    void itemCreated(int index, QFxItem *item);
+    void createdItem(int index, QFxItem *item);
     void destroyingItem(QFxItem *item);
 
 protected:

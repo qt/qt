@@ -43,9 +43,9 @@
 #define QMLSTATE_H
 
 #include <QtCore/qobject.h>
-#include <qfxglobal.h>
-#include <qml.h>
-#include <QSequentialAnimationGroup>
+#include <QtCore/QSequentialAnimationGroup>
+#include <QtDeclarative/qfxglobal.h>
+#include <QtDeclarative/qml.h>
 
 QT_BEGIN_HEADER
 
@@ -61,6 +61,7 @@ public:
     Action();
 
     QmlMetaProperty property;
+    bool restore;
     QVariant fromValue;
     QVariant toValue;
     QString fromBinding;

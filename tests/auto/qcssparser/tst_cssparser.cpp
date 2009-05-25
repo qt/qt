@@ -123,7 +123,7 @@ static void debug(const QVector<QCss::Symbol> &symbols, int index = -1)
         qDebug() << "failure at index" << index;
 }
 
-static void debug(const QCss::Parser &p) { debug(p.symbols); }
+//static void debug(const QCss::Parser &p) { debug(p.symbols); }
 
 void tst_CssParser::scanner()
 {
@@ -1473,7 +1473,12 @@ void tst_CssParser::extractFontFamily_data()
     QTest::newRow("quoted-family-name") << "font-family: 'Times New Roman'" << QString("Times New Roman");
     QTest::newRow("unquoted-family-name") << "font-family: Times New Roman" << QString("Times New Roman");
     QTest::newRow("unquoted-family-name2") << "font-family: Times        New     Roman" << QString("Times New Roman");
-    QTest::newRow("multiple") << "font-family: Times New   Roman  , foobar, 'baz'" << QString("Times New Roman");
+    QTest::newRow("multiple") << "font-family: Times New Roman  , foobar, 'baz'" << QString("Times New Roman");
+    QTest::newRow("multiple2") << "font-family: invalid,  Times New   Roman " << QString("Times New Roman");
+    QTest::newRow("invalid") << "font-family: invalid" << QFont().family();
+    QTest::newRow("shorthand") << "font: 12pt Times New Roman" << QString("Times New Roman");
+    QTest::newRow("shorthand multiple quote") << "font: 12pt invalid, \"Times New Roman\" " << QString("Times New Roman");
+    QTest::newRow("shorthand multiple") << "font: 12pt invalid, Times New Roman " << QString("Times New Roman");
 }
 
 void tst_CssParser::extractFontFamily()
@@ -1497,8 +1502,8 @@ void tst_CssParser::extractFontFamily()
     int adjustment = 0;
     QFont fnt;
     extractor.extractFont(&fnt, &adjustment);
-
-    QTEST(fnt.family(), "expectedFamily");
+    QFontInfo info(fnt);
+    QTEST(info.family(), "expectedFamily");
 }
 
 void tst_CssParser::extractBorder_data()

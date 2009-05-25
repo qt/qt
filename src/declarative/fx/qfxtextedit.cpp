@@ -427,6 +427,8 @@ void QFxTextEdit::setCursorVisible(bool on)
         return;
     d->cursorVisible = on;
     QFocusEvent focusEvent(on ? QEvent::FocusIn : QEvent::FocusOut);
+    if (!on && !d->preserveSelection)
+        d->control->setCursorIsFocusIndicator(true);
     d->control->processEvent(&focusEvent, QPointF(0, 0));
 }
 
@@ -448,6 +450,26 @@ void QFxTextEdit::setFocusOnPress(bool on)
     if (d->focusOnPress == on)
         return;
     d->focusOnPress = on;
+}
+
+/*!
+    \qmlproperty bool TextEdit::preserveSelection
+
+    Whether the TextEdit should keep the selection visible when it loses focus to another
+    item in the scene. By default this is set to true;
+*/
+bool QFxTextEdit::preserveSelection() const
+{
+    Q_D(const QFxTextEdit);
+    return d->preserveSelection;
+}
+
+void QFxTextEdit::setPreserveSelection(bool on)
+{
+    Q_D(QFxTextEdit);
+    if (d->preserveSelection == on)
+        return;
+    d->preserveSelection = on;
 }
 
 void QFxTextEdit::geometryChanged(const QRectF &newGeometry, 
@@ -616,6 +638,20 @@ void QFxTextEdit::moveCursor(QTextCursor::MoveOperation operation, QTextCursor::
 
 /*!
 \overload
+Handles the given \a event.
+*/
+bool QFxTextEdit::event(QEvent *event)
+{
+    Q_D(QFxTextEdit);
+    if (event->type() == QEvent::ShortcutOverride) {
+        d->control->processEvent(event, QPointF(0, 0));
+        return true;
+    }
+    return QFxPaintedItem::event(event);
+}
+
+/*!
+\overload
 Handles the given key \a event.
 */
 void QFxTextEdit::keyPressEvent(QKeyEvent *event)
@@ -662,7 +698,6 @@ void QFxTextEdit::keyReleaseEvent(QKeyEvent *event)
 */
 void QFxTextEdit::focusChanged(bool hasFocus)
 {
-    Q_D(QFxTextEdit);
     setCursorVisible(hasFocus);
 }
 
@@ -675,29 +710,6 @@ void QFxTextEdit::selectAll()
     d->control->selectAll();
 }
 
-static QMouseEvent *sceneMouseEventToMouseEvent(QGraphicsSceneMouseEvent *e)
-{
-    QEvent::Type t;
-    switch(e->type()) {
-    default:
-    case QEvent::GraphicsSceneMousePress:
-        t = QEvent::MouseButtonPress;
-        break;
-    case QEvent::GraphicsSceneMouseRelease:
-        t = QEvent::MouseButtonRelease;
-        break;
-    case QEvent::GraphicsSceneMouseMove:
-        t = QEvent::MouseMove;
-        break;
-    case QGraphicsSceneEvent::GraphicsSceneMouseDoubleClick:
-        t = QEvent::MouseButtonDblClick;
-        break;
-    }
-
-    QMouseEvent *me = new QMouseEvent(t, e->pos().toPoint(), e->button(), e->buttons(), 0);
-    return me;
-}
-
 /*!
 \overload
 Handles the given mouse \a event.
@@ -707,10 +719,7 @@ void QFxTextEdit::mousePressEvent(QGraphicsSceneMouseEvent *event)
     Q_D(QFxTextEdit);
     if (d->focusOnPress)
         setFocus(true);
-    QMouseEvent *me = sceneMouseEventToMouseEvent(event);
-    d->control->processEvent(me, QPointF(0, 0));
-    event->setAccepted(me->isAccepted());
-    delete me;
+    d->control->processEvent(event, QPointF(0, 0));
     if (!event->isAccepted())
         QFxPaintedItem::mousePressEvent(event);
 }
@@ -722,10 +731,7 @@ Handles the given mouse \a event.
 void QFxTextEdit::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
 {
     Q_D(QFxTextEdit);
-    QMouseEvent *me = sceneMouseEventToMouseEvent(event);
-    d->control->processEvent(me, QPointF(0, 0));
-    event->setAccepted(me->isAccepted());
-    delete me;
+    d->control->processEvent(event, QPointF(0, 0));
     if (!event->isAccepted())
         QFxPaintedItem::mousePressEvent(event);
 }
@@ -737,10 +743,7 @@ Handles the given mouse \a event.
 void QFxTextEdit::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
 {
     Q_D(QFxTextEdit);
-    QMouseEvent *me = sceneMouseEventToMouseEvent(event);
-    d->control->processEvent(me, QPointF(0, 0));
-    event->setAccepted(me->isAccepted());
-    delete me;
+    d->control->processEvent(event, QPointF(0, 0));
     if (!event->isAccepted())
         QFxPaintedItem::mousePressEvent(event);
 }

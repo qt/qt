@@ -42,8 +42,8 @@
 #ifndef QMLFOLLOW_H
 #define QMLFOLLOW_H
 
-#include <qmlpropertyvaluesource.h>
-#include <qml.h>
+#include <QtDeclarative/qmlpropertyvaluesource.h>
+#include <QtDeclarative/qml.h>
 
 
 QT_BEGIN_HEADER

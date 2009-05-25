@@ -7,9 +7,6 @@ SUBDIRS          += \
                  example \
                  moveblocks \
                  padnavigator-ng \
-                 photobrowser \
-                 piemenu \
-                 selectbutton \
                  states \
                  stickman \
                  sub-attaq

@@ -100,8 +100,6 @@ private slots:
     void receiveUrgentData();
 };
 
-static const char *IMAP_IP = "62.70.27.18";
-
 tst_QNativeSocketEngine::tst_QNativeSocketEngine()
 {
 }
@@ -155,15 +153,14 @@ void tst_QNativeSocketEngine::simpleConnectToIMAP()
     QVERIFY(socketDevice.initialize(QAbstractSocket::TcpSocket, QAbstractSocket::IPv4Protocol));
     QVERIFY(socketDevice.state() == QAbstractSocket::UnconnectedState);
 
-    // Connect to imap.trolltech.com's IP
-    bool connected = socketDevice.connectToHost(QHostAddress(IMAP_IP), 143);
-    if (!connected) {
+    const bool isConnected = socketDevice.connectToHost(QtNetworkSettings::serverIP(), 143);
+    if (!isConnected) {
         QVERIFY(socketDevice.state() == QAbstractSocket::ConnectingState);
         QVERIFY(socketDevice.waitForWrite());
         QVERIFY(socketDevice.state() == QAbstractSocket::ConnectedState);
     }
     QVERIFY(socketDevice.state() == QAbstractSocket::ConnectedState);
-    QVERIFY(socketDevice.peerAddress() == QHostAddress(IMAP_IP));
+    QVERIFY(socketDevice.peerAddress() == QtNetworkSettings::serverIP());
 
     // Wait for the greeting
     QVERIFY(socketDevice.waitForRead());
@@ -176,7 +173,7 @@ void tst_QNativeSocketEngine::simpleConnectToIMAP()
     QVERIFY(socketDevice.read(array.data(), array.size()) == available);
 
     // Check that the greeting is what we expect it to be
-    QCOMPARE(array.constData(), "* OK esparsett Cyrus IMAP4 v2.2.8 server ready\r\n");
+    QCOMPARE(array.constData(), "* OK [CAPABILITY IMAP4 IMAP4rev1 LITERAL+ ID STARTTLS LOGINDISABLED] qt-test-server.qt-test-net Cyrus IMAP4 v2.3.11-Mandriva-RPM-2.3.11-6mdv2008.1 server ready\r\n");
 
     // Write a logout message
     QByteArray array2 = "ZZZ LOGOUT\r\n";
@@ -580,9 +577,8 @@ void tst_QNativeSocketEngine::networkError()
 
     QVERIFY(client.initialize(QAbstractSocket::TcpSocket, QAbstractSocket::IPv4Protocol));
 
-    // Connect to imap.trolltech.com's IP
-    bool connected = client.connectToHost(QHostAddress(IMAP_IP), 143);
-    if (!connected) {
+    const bool isConnected = client.connectToHost(QHostAddress(QtNetworkSettings::serverIP()), 143);
+    if (!isConnected) {
         QVERIFY(client.state() == QAbstractSocket::ConnectingState);
         QVERIFY(client.waitForWrite());
         QVERIFY(client.state() == QAbstractSocket::ConnectedState);

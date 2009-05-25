@@ -42,11 +42,11 @@
 #ifndef QBINDABLEMAP_H
 #define QBINDABLEMAP_H
 
-#include <qfxglobal.h>
-#include <QObject>
-#include <QHash>
-#include <QStringList>
-#include <QVariant>
+#include <QtDeclarative/qfxglobal.h>
+#include <QtCore/QObject>
+#include <QtCore/QHash>
+#include <QtCore/QStringList>
+#include <QtCore/QVariant>
 
 
 QT_BEGIN_HEADER

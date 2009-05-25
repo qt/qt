@@ -1,0 +1,3 @@
+MyQmlObject { 
+    stringProperty: trueProperty?'pass':'fail' 
+}

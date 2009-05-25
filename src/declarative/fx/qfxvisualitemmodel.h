@@ -44,7 +44,7 @@
 
 #include <QtCore/qobject.h>
 #include <QtCore/qabstractitemmodel.h>
-#include <qml.h>
+#include <QtDeclarative/qml.h>
 
 
 QT_BEGIN_HEADER
@@ -62,7 +62,7 @@ class QFxItem;
 class QmlComponent;
 class QmlPackage;
 class QFxVisualItemModelPrivate;
-class QFxVisualItemModel : public QObject
+class Q_DECLARATIVE_EXPORT QFxVisualItemModel : public QObject
 {
     Q_OBJECT
     Q_DECLARE_PRIVATE(QFxVisualItemModel)
@@ -86,12 +86,17 @@ public:
     QString part() const;
     void setPart(const QString &);
 
+    enum ReleaseFlag { Referenced = 0x01, Destroyed = 0x02 };
+    Q_DECLARE_FLAGS(ReleaseFlags, ReleaseFlag)
+
     int count() const;
     QFxItem *item(int index, bool complete=true);
     QFxItem *item(int index, const QByteArray &, bool complete=true);
-    void release(QFxItem *item);
+    ReleaseFlags release(QFxItem *item);
     void completeItem();
     QVariant evaluate(int index, const QString &expression, QObject *objectContext);
+
+    int indexOf(QFxItem *item, QObject *objectContext) const;
 
     QObject *parts();
 
@@ -99,8 +104,8 @@ Q_SIGNALS:
     void itemsInserted(int index, int count);
     void itemsRemoved(int index, int count);
     void itemsMoved(int from, int to, int count);
-    void itemCreated(int index, QFxItem *item);
-    void packageCreated(int index, QmlPackage *package);
+    void createdItem(int index, QFxItem *item);
+    void createdPackage(int index, QmlPackage *package);
     void destroyingItem(QFxItem *item);
     void destroyingPackage(QmlPackage *package);
 
@@ -112,7 +117,7 @@ private Q_SLOTS:
     void _q_rowsInserted(const QModelIndex &,int,int);
     void _q_rowsRemoved(const QModelIndex &,int,int);
     void _q_dataChanged(const QModelIndex&,const QModelIndex&);
-    void _q_packageCreated(int index, QmlPackage *package);
+    void _q_createdPackage(int index, QmlPackage *package);
     void _q_destroyingPackage(QmlPackage *package);
 
 private:

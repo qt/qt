@@ -47,6 +47,7 @@
 #include <qabstracttransition.h>
 #endif
 
+//! [0]
 class PingEvent : public QEvent
 {
 public:
@@ -60,7 +61,9 @@ public:
     PongEvent() : QEvent(QEvent::Type(QEvent::User+3))
         {}
 };
+//! [0]
 
+//! [1]
 class Pinger : public QState
 {
 public:
@@ -74,14 +77,16 @@ protected:
         fprintf(stdout, "ping?\n");
     }
 };
+//! [1]
 
+//! [3]
 class PongTransition : public QAbstractTransition
 {
 public:
     PongTransition() {}
 
 protected:
-    virtual bool eventTest(QEvent *e) const {
+    virtual bool eventTest(QEvent *e) {
         return (e->type() == QEvent::User+3);
     }
     virtual void onTransition(QEvent *)
@@ -90,14 +95,16 @@ protected:
         fprintf(stdout, "ping?\n");
     }
 };
+//! [3]
 
+//! [2]
 class PingTransition : public QAbstractTransition
 {
 public:
     PingTransition() {}
 
 protected:
-    virtual bool eventTest(QEvent *e) const {
+    virtual bool eventTest(QEvent *e) {
         return (e->type() == QEvent::User+2);
     }
     virtual void onTransition(QEvent *)
@@ -106,7 +113,9 @@ protected:
         fprintf(stdout, "pong!\n");
     }
 };
+//! [2]
 
+//! [4]
 int main(int argc, char **argv)
 {
     QCoreApplication app(argc, argv);
@@ -114,7 +123,9 @@ int main(int argc, char **argv)
     QStateMachine machine;
     QState *group = new QState(QState::ParallelStates);
     group->setObjectName("group");
+//! [4]
 
+//! [5]
     Pinger *pinger = new Pinger(group);
     pinger->setObjectName("pinger");
     pinger->addTransition(new PongTransition());
@@ -122,10 +133,13 @@ int main(int argc, char **argv)
     QState *ponger = new QState(group);
     ponger->setObjectName("ponger");
     ponger->addTransition(new PingTransition());
+//! [5]
 
+//! [6]
     machine.addState(group);
     machine.setInitialState(group);
     machine.start();
 
     return app.exec();
 }
+//! [6]

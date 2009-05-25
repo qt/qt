@@ -862,6 +862,10 @@ bool QmlCompiler::compileProperty(Property *prop, Object *obj, int ctxt)
                 prop->type = t;
             }
         }
+    } else if(isAttachedProperty(prop->name) && prop->value) {
+        QmlType *type = QmlMetaType::qmlType(prop->name);
+        if (type && type->attachedPropertiesType()) 
+            prop->value->metatype = type->attachedPropertiesType();
     }
 
     if (prop->name == "id") {
@@ -1050,8 +1054,9 @@ bool QmlCompiler::compileListProperty(QmlParser::Property *prop,
                     COMPILE_EXCEPTION("Can only assign one binding to lists");
 
                 assignedBinding = true;
-                compileBinding(v->value.asScript(), prop, ctxt, 
-                               obj->metaObject(), v->location.start.line);
+                COMPILE_CHECK(compileBinding(v->value.asScript(), prop, ctxt, 
+                                             obj->metaObject(), 
+                                             v->location.start.line));
                 v->type = Value::PropertyBinding;
             } else {
                 COMPILE_EXCEPTION("Cannot assign primitives to lists");
@@ -1204,8 +1209,9 @@ bool QmlCompiler::compilePropertyLiteralAssignment(QmlParser::Property *prop,
 {
     if (v->value.isScript()) {
 
-        compileBinding(v->value.asScript(), prop, ctxt, obj->metaObject(), 
-                       v->location.start.line);
+        COMPILE_CHECK(compileBinding(v->value.asScript(), prop, ctxt, 
+                                     obj->metaObject(), 
+                                     v->location.start.line));
 
         v->type = Value::PropertyBinding;
 
@@ -1214,37 +1220,24 @@ bool QmlCompiler::compilePropertyLiteralAssignment(QmlParser::Property *prop,
         QmlInstruction assign;
         assign.line = v->location.start.line;
 
-        bool doassign = true;
         if (prop->index != -1) {
             QString value = v->primitive();
             StoreInstructionResult r = 
                 generateStoreInstruction(*output, assign, obj->metaObject()->property(prop->index), prop->index, -1, &value);
 
             if (r == Ok) {
-                doassign = false;
             } else if (r == InvalidData) {
                 //### we are restricted to a rather generic message here. If we can find a way to move
                 //    the exception into generateStoreInstruction we could potentially have better messages.
                 //    (the problem is that both compile and run exceptions can be generated, though)
                 COMPILE_EXCEPTION2(v, "Cannot assign value" << v->primitive() << "to property" << obj->metaObject()->property(prop->index).name());
-                doassign = false;
             } else if (r == ReadOnly) {
                 COMPILE_EXCEPTION2(v, "Cannot assign value" << v->primitive() << "to the read-only property" << obj->metaObject()->property(prop->index).name());
             } else {
-                doassign = true;
+                COMPILE_EXCEPTION2(prop, "Cannot assign value to property" << obj->metaObject()->property(prop->index).name() << "of unknown type");
             }
-        }
-
-        if (doassign) {
-            assign.type = QmlInstruction::AssignConstant;
-            if (prop->isDefault) {
-                assign.assignConstant.property = -1;
-            } else {
-                assign.assignConstant.property = 
-                    output->indexForByteArray(prop->name);
-            }
-            assign.assignConstant.constant = 
-                output->indexForString(v->primitive());
+        } else {
+            COMPILE_EXCEPTION2(prop, "Cannot assign value to non-existant property" << prop->name);
         }
 
         output->bytecode << assign;
@@ -1342,7 +1335,7 @@ bool QmlCompiler::compileDynamicMeta(QmlParser::Object *obj)
     return true;
 }
 
-void QmlCompiler::compileBinding(const QString &bind, QmlParser::Property *prop,
+bool QmlCompiler::compileBinding(const QString &bind, QmlParser::Property *prop,
                                  int ctxt, const QMetaObject *mo, qint64 line)
 {
     QmlBasicScript bs;
@@ -1355,10 +1348,12 @@ void QmlCompiler::compileBinding(const QString &bind, QmlParser::Property *prop,
         bref = output->indexForString(bind);
     }
 
-    QmlInstruction assign;
-    assign.assignBinding.context = ctxt;
-    assign.line = line;
     if (prop->index != -1) {
+
+        QmlInstruction assign;
+        assign.assignBinding.context = ctxt;
+        assign.line = line;
+
         if (bs.isValid()) 
             assign.type = QmlInstruction::StoreCompiledBinding;
         else
@@ -1368,20 +1363,18 @@ void QmlCompiler::compileBinding(const QString &bind, QmlParser::Property *prop,
         assign.assignBinding.value = bref;
         assign.assignBinding.category = QmlMetaProperty::Unknown;
         if (mo) {
-            //XXX we should generate an exception if the property is read-only
+            // ### we should generate an exception if the property is read-only
             QMetaProperty mp = mo->property(assign.assignBinding.property);
             assign.assignBinding.category = QmlMetaProperty::propertyCategory(mp);
         } 
+
+        output->bytecode << assign;
+
     } else {
-        if (bs.isValid())
-            assign.type = QmlInstruction::AssignCompiledBinding;
-        else
-            assign.type = QmlInstruction::AssignBinding;
-        assign.assignBinding.property = output->indexForByteArray(prop->name);
-        assign.assignBinding.value = bref;
-        assign.assignBinding.category = QmlMetaProperty::Unknown;
+        COMPILE_EXCEPTION2(prop, "Cannot assign binding to non-existant property" << prop->name);
     }
-    output->bytecode << assign;
+
+    return true;
 }
 
 int QmlCompiler::optimizeExpressions(int start, int end, int patch)
@@ -1414,9 +1407,7 @@ int QmlCompiler::optimizeExpressions(int start, int end, int patch)
             continue;
         }
         
-        if (instr.type == QmlInstruction::AssignBinding ||
-            instr.type == QmlInstruction::AssignCompiledBinding ||
-            instr.type == QmlInstruction::StoreBinding ||
+        if (instr.type == QmlInstruction::StoreBinding ||
             instr.type == QmlInstruction::StoreCompiledBinding) {
             ++bindingsCount;
         } else if (instr.type == QmlInstruction::TryBeginObject ||

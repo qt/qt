@@ -1161,13 +1161,20 @@ static bool setFontWeightFromValue(const Value &value, QFont *font)
     return true;
 }
 
-static bool setFontFamilyFromValues(const QVector<Value> &values, QFont *font)
+/** \internal
+ * parse the font family from the values (starting from index \a start)
+ * and set it the \a font
+ * \returns true if a family was extracted.
+ */
+static bool setFontFamilyFromValues(const QVector<Value> &values, QFont *font, int start = 0)
 {
     QString family;
-    for (int i = 0; i < values.count(); ++i) {
+    for (int i = start; i < values.count(); ++i) {
         const Value &v = values.at(i);
-        if (v.type == Value::TermOperatorComma)
-            break;
+        if (v.type == Value::TermOperatorComma) {
+            family += QLatin1Char(',');
+            continue;
+        }
         const QString str = v.variant.toString();
         if (str.isEmpty())
             break;
@@ -1221,9 +1228,7 @@ static void parseShorthandFontProperty(const QVector<Value> &values, QFont *font
     }
 
     if (i < values.count()) {
-        QString fam = values.at(i).variant.toString();
-        if (!fam.isEmpty())
-            font->setFamily(fam);
+        setFontFamilyFromValues(values, font, i);
     }
 }
 

@@ -7,6 +7,12 @@ QT -= gui
 
 TARGET = tst_qsslsocket
 
+!wince* {
+DEFINES += SRCDIR=\\\"$$PWD/\\\"
+} else {
+DEFINES += SRCDIR=\\\"./\\\"
+}
+
 win32 {
   CONFIG(debug, debug|release) {
     DESTDIR = debug

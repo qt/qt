@@ -57,7 +57,7 @@
 QT_BEGIN_NAMESPACE
 
 namespace JavaScript {
-QString numberToString(qjsreal value);
+QString numberToString(double value);
 }
 
 using namespace JavaScript;
@@ -182,7 +182,7 @@ void PrettyPretty::endVisit(AST::ThisExpression *node)
 
 bool PrettyPretty::visit(AST::IdentifierExpression *node)
 {
-    out << JavaScriptEnginePrivate::toString(node->name);
+    out << Engine::toString(node->name);
     return true;
 }
 
@@ -229,7 +229,7 @@ void PrettyPretty::endVisit(AST::FalseLiteral *node)
 
 bool PrettyPretty::visit(AST::StringLiteral *node)
 {
-    QString lit = JavaScriptEnginePrivate::toString(node->value);
+    QString lit = Engine::toString(node->value);
     lit.replace(QLatin1String("\\"), QLatin1String("\\\\"));
     out << "\"" << lit << "\"";
     return false;
@@ -253,7 +253,7 @@ void PrettyPretty::endVisit(AST::NumericLiteral *node)
 
 bool PrettyPretty::visit(AST::RegExpLiteral *node)
 {
-    out << "/" << JavaScriptEnginePrivate::toString(node->pattern) << "/";
+    out << "/" << Engine::toString(node->pattern) << "/";
     if (node->flags)
         out << JavaScript::Ecma::RegExp::flagsToString(node->flags);
 
@@ -348,7 +348,7 @@ void PrettyPretty::endVisit(AST::PropertyNameAndValueList *node)
 
 bool PrettyPretty::visit(AST::IdentifierPropertyName *node)
 {
-    out << JavaScriptEnginePrivate::toString(node->id);
+    out << Engine::toString(node->id);
     return false;
 }
 
@@ -359,7 +359,7 @@ void PrettyPretty::endVisit(AST::IdentifierPropertyName *node)
 
 bool PrettyPretty::visit(AST::StringLiteralPropertyName *node)
 {
-    QString lit = JavaScriptEnginePrivate::toString(node->id);
+    QString lit = Engine::toString(node->id);
     lit.replace(QLatin1String("\\"), QLatin1String("\\\\"));
     out << lit;
     return false;
@@ -398,7 +398,7 @@ void PrettyPretty::endVisit(AST::ArrayMemberExpression *node)
 bool PrettyPretty::visit(AST::FieldMemberExpression *node)
 {
     accept(node->base);
-    out << "." << JavaScriptEnginePrivate::toString(node->name);
+    out << "." << Engine::toString(node->name);
     return false;
 }
 
@@ -803,7 +803,7 @@ void PrettyPretty::endVisit(AST::VariableStatement *node)
 
 bool PrettyPretty::visit(AST::VariableDeclaration *node)
 {
-    out << JavaScriptEnginePrivate::toString(node->name);
+    out << Engine::toString(node->name);
     if (node->expression) {
         out << " = ";
         accept(node->expression);
@@ -959,7 +959,7 @@ bool PrettyPretty::visit(AST::ContinueStatement *node)
 {
     out << "continue";
     if (node->label) {
-        out << " " << JavaScriptEnginePrivate::toString(node->label);
+        out << " " << Engine::toString(node->label);
     }
     out << ";";
     return false;
@@ -974,7 +974,7 @@ bool PrettyPretty::visit(AST::BreakStatement *node)
 {
     out << "break";
     if (node->label) {
-        out << " " << JavaScriptEnginePrivate::toString(node->label);
+        out << " " << Engine::toString(node->label);
     }
     out << ";";
     return false;
@@ -1095,7 +1095,7 @@ void PrettyPretty::endVisit(AST::DefaultClause *node)
 
 bool PrettyPretty::visit(AST::LabelledStatement *node)
 {
-    out << JavaScriptEnginePrivate::toString(node->label) << ": ";
+    out << Engine::toString(node->label) << ": ";
     return true;
 }
 
@@ -1123,7 +1123,7 @@ bool PrettyPretty::visit(AST::TryStatement *node)
     out << "try ";
     acceptAsBlock(node->statement);
     if (node->catchExpression) {
-        out << " catch (" << JavaScriptEnginePrivate::toString(node->catchExpression->name) << ") ";
+        out << " catch (" << Engine::toString(node->catchExpression->name) << ") ";
         acceptAsBlock(node->catchExpression->statement);
     }
     if (node->finallyExpression) {
@@ -1166,13 +1166,13 @@ bool PrettyPretty::visit(AST::FunctionDeclaration *node)
     out << "function";
 
     if (node->name)
-        out << " " << JavaScriptEnginePrivate::toString(node->name);
+        out << " " << Engine::toString(node->name);
 
     // the arguments
     out << "(";
     for (AST::FormalParameterList *it = node->formals; it; it = it->next) {
         if (it->name)
-            out << JavaScriptEnginePrivate::toString(it->name);
+            out << Engine::toString(it->name);
 
         if (it->next)
             out << ", ";
@@ -1205,13 +1205,13 @@ bool PrettyPretty::visit(AST::FunctionExpression *node)
     out << "function";
 
     if (node->name)
-        out << " " << JavaScriptEnginePrivate::toString(node->name);
+        out << " " << Engine::toString(node->name);
 
     // the arguments
     out << "(";
     for (AST::FormalParameterList *it = node->formals; it; it = it->next) {
         if (it->name)
-            out << JavaScriptEnginePrivate::toString(it->name);
+            out << Engine::toString(it->name);
 
         if (it->next)
             out << ", ";

@@ -51,7 +51,7 @@
 #include "deviceprofile_p.h"
 #include "qdesigner_utils_p.h"
 
-#include <abstractformbuilder.h>
+#include "qsimpleresource_p.h"
 
 #include <QtDesigner/QDesignerFormEditorInterface>
 #include <QtDesigner/QDesignerContainerExtension>
@@ -476,6 +476,14 @@ void FormWindowBase::triggerDefaultAction(QWidget *widget)
 void FormWindowBase::setupDefaultAction(QDesignerFormWindowInterface *fw)
 {
     QObject::connect(fw, SIGNAL(activated(QWidget*)), fw, SLOT(triggerDefaultAction(QWidget*)));
+}
+
+QString FormWindowBase::fileContents() const
+{
+    const bool oldValue = QSimpleResource::setWarningsEnabled(false);
+    const QString rc = contents();
+    QSimpleResource::setWarningsEnabled(oldValue);
+    return rc;
 }
 
 } // namespace qdesigner_internal

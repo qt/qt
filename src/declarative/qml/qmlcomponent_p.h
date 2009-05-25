@@ -42,21 +42,21 @@
 #ifndef QMLCOMPONENT_P_H
 #define QMLCOMPONENT_P_H
 
-#include <QString>
-#include <QStringList>
-#include <QList>
-#include "private/qobject_p.h"
-#include "private/qmlengine_p.h"
-#include "private/qmlcompositetypemanager_p.h"
-#include <qmlerror.h>
-#include "qmlcomponent.h"
+#include <QtCore/QString>
+#include <QtCore/QStringList>
+#include <QtCore/QList>
+#include <private/qobject_p.h>
+#include <private/qmlengine_p.h>
+#include <private/qmlcompositetypemanager_p.h>
+#include <QtDeclarative/qmlerror.h>
+#include <QtDeclarative/qmlcomponent.h>
+#include <QtDeclarative/qml.h>
+
+QT_BEGIN_NAMESPACE
+
 class QmlComponent;
 class QmlEngine;
 class QmlCompiledComponent;
-#include "qml.h"
-
-
-QT_BEGIN_NAMESPACE
 
 class QmlComponentPrivate : public QObjectPrivate
 {

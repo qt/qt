@@ -41,6 +41,7 @@
 
 #include "qfxanchors_p.h"
 #include "qfxitem.h"
+#include "qfxitem_p.h"
 #include <QDebug>
 #include <QtDeclarative/qmlinfo.h>
 #include <QtDeclarative/qmlbindablevalue.h>
@@ -132,22 +133,180 @@ static qreal adjustedPosition(QFxItem *item, QFxAnchorLine::AnchorLine anchorLin
 QFxAnchors::QFxAnchors(QObject *parent)
   : QObject(*new QFxAnchorsPrivate(), parent)
 {
-
 }
 
-void QFxAnchors::fillChanged()
+QFxAnchors::~QFxAnchors()
 {
     Q_D(QFxAnchors);
-    if (!d->fill)
+    d->remDepend(d->fill);
+    d->remDepend(d->centeredIn);
+    d->remDepend(d->left.item);
+    d->remDepend(d->right.item);
+    d->remDepend(d->top.item);
+    d->remDepend(d->bottom.item);
+    d->remDepend(d->vCenter.item);
+    d->remDepend(d->hCenter.item);
+    d->remDepend(d->baseline.item);
+}
+
+void QFxAnchorsPrivate::fillChanged()
+{
+    if (!fill || !isItemComplete())
         return;
 
-    if (d->fill == d->item->itemParent()) {                         //child-parent
-        d->item->setPos(QPointF(leftMargin(), topMargin()));
-    } else if (d->fill->itemParent() == d->item->itemParent()) {   //siblings
-        d->item->setPos(QPointF(d->fill->x()+leftMargin(), d->fill->y()+topMargin()));
+    if (fill == item->itemParent()) {                         //child-parent
+        setItemPos(QPointF(leftMargin, topMargin));
+    } else if (fill->itemParent() == item->itemParent()) {   //siblings
+        setItemPos(QPointF(fill->x()+leftMargin, fill->y()+topMargin));
     }
-    d->item->setWidth(d->fill->width()-leftMargin()-rightMargin());
-    d->item->setHeight(d->fill->height()-topMargin()-bottomMargin());
+    setItemWidth(fill->width()-leftMargin-rightMargin);
+    setItemHeight(fill->height()-topMargin-bottomMargin);
+}
+
+void QFxAnchorsPrivate::centeredInChanged()
+{
+    if (!centeredIn || fill || !isItemComplete())
+        return;
+
+    if (centeredIn == item->itemParent()) {
+        QPointF p((item->itemParent()->width() - item->width()) / 2.,
+                  (item->itemParent()->height() - item->height()) / 2.);
+        setItemPos(p);
+
+    } else if (centeredIn->itemParent() == item->itemParent()) {
+
+        QPointF p(centeredIn->x() + (centeredIn->width() - item->width()) / 2.,
+                  centeredIn->y() + (centeredIn->height() - item->height()) / 2.);
+        setItemPos(p);
+    }
+}
+
+void QFxAnchorsPrivate::clearItem(QFxItem *item)
+{
+    if (fill == item) 
+        fill = 0;
+    if (centeredIn == item)
+        centeredIn = 0;
+    if (left.item == item) {
+        left.item = 0;
+        usedAnchors &= ~QFxAnchors::HasLeftAnchor;
+    }
+    if (right.item == item) {
+        right.item = 0;
+        usedAnchors &= ~QFxAnchors::HasRightAnchor;
+    }
+    if (top.item == item) {
+        top.item = 0;
+        usedAnchors &= ~QFxAnchors::HasTopAnchor;
+    }
+    if (bottom.item == item) {
+        bottom.item = 0;
+        usedAnchors &= ~QFxAnchors::HasBottomAnchor;
+    }
+    if (vCenter.item == item) {
+        vCenter.item = 0;
+        usedAnchors &= ~QFxAnchors::HasVCenterAnchor;
+    }
+    if (hCenter.item == item) {
+        hCenter.item = 0;
+        usedAnchors &= ~QFxAnchors::HasHCenterAnchor;
+    }
+    if (baseline.item == item) {
+        baseline.item = 0;
+        usedAnchors &= ~QFxAnchors::HasBaselineAnchor;
+    }
+}
+
+void QFxAnchorsPrivate::addDepend(QFxItem *item)
+{
+    Q_Q(QFxAnchors);
+    if (!item)
+        return;
+    QFxItemPrivate *p = 
+        static_cast<QFxItemPrivate *>(QObjectPrivate::get(item));
+    p->dependantAnchors.append(q);
+}
+
+void QFxAnchorsPrivate::remDepend(QFxItem *item)
+{
+    Q_Q(QFxAnchors);
+    if (!item)
+        return;
+    QFxItemPrivate *p = 
+        static_cast<QFxItemPrivate *>(QObjectPrivate::get(item));
+    p->dependantAnchors.removeAll(q);
+}
+
+bool QFxAnchorsPrivate::isItemComplete() const
+{
+    return item->isComponentComplete();
+}
+
+void QFxAnchorsPrivate::setItemHeight(qreal v)
+{
+    updatingMe = true;
+    item->setHeight(v);
+    updatingMe = false;
+}
+
+void QFxAnchorsPrivate::setItemWidth(qreal v)
+{
+    updatingMe = true;
+    item->setWidth(v);
+    updatingMe = false;
+}
+
+void QFxAnchorsPrivate::setItemX(qreal v)
+{
+    updatingMe = true;
+    item->setX(v);
+    updatingMe = false;
+}
+
+void QFxAnchorsPrivate::setItemY(qreal v)
+{
+    updatingMe = true;
+    item->setY(v);
+    updatingMe = false;
+}
+
+void QFxAnchorsPrivate::setItemPos(const QPointF &v)
+{
+    updatingMe = true;
+    item->setPos(v);
+    updatingMe = false;
+}
+
+void QFxAnchorsPrivate::updateMe()
+{
+    if (updatingMe) {
+        updatingMe = false;
+        return;
+    }
+
+    fillChanged();
+    centeredInChanged();
+    updateHorizontalAnchors();
+    updateVerticalAnchors();
+}
+
+void QFxAnchorsPrivate::updateOnComplete()
+{
+    fillChanged();
+    centeredInChanged();
+    updateHorizontalAnchors();
+    updateVerticalAnchors();
+}
+
+void QFxAnchorsPrivate::update(QFxItem *, const QRectF &newG, const QRectF &oldG)
+{
+    fillChanged();
+    centeredInChanged();
+
+    if (newG.x() != oldG.x() || newG.width() != oldG.width())
+        updateHorizontalAnchors();
+    if (newG.y() != oldG.y() || newG.height() != oldG.height())
+        updateVerticalAnchors();
 }
 
 /*!
@@ -166,37 +325,11 @@ QFxItem *QFxAnchors::fill() const
 void QFxAnchors::setFill(QFxItem *f)
 {
     Q_D(QFxAnchors);
-    if (d->fill) {
-        QObject::disconnect(d->fill, SIGNAL(leftChanged()), this, SLOT(fillChanged()));
-        QObject::disconnect(d->fill, SIGNAL(topChanged()), this, SLOT(fillChanged()));
-        QObject::disconnect(d->fill, SIGNAL(widthChanged()), this, SLOT(fillChanged()));
-        QObject::disconnect(d->fill, SIGNAL(heightChanged()), this, SLOT(fillChanged()));
-        QObject::disconnect(this, SIGNAL(leftMarginChanged()), this, SLOT(fillChanged()));
-        QObject::disconnect(this, SIGNAL(topMarginChanged()), this, SLOT(fillChanged()));
-        QObject::disconnect(this, SIGNAL(rightMarginChanged()), this, SLOT(fillChanged()));
-        QObject::disconnect(this, SIGNAL(bottomMarginChanged()), this, SLOT(fillChanged()));
-    }
-
+    d->remDepend(d->fill);
     d->fill = f;
+    d->addDepend(d->fill);
 
-    if (d->fill) {
-        if (d->fill == d->item->itemParent()) {    //child-parent
-            QObject::connect(d->fill, SIGNAL(widthChanged()), this, SLOT(fillChanged()));
-            QObject::connect(d->fill, SIGNAL(heightChanged()), this, SLOT(fillChanged()));
-        } else if (f->itemParent() == d->item->itemParent()) {   //siblings
-            QObject::connect(d->fill, SIGNAL(leftChanged()), this, SLOT(fillChanged()));
-            QObject::connect(d->fill, SIGNAL(topChanged()), this, SLOT(fillChanged()));
-            QObject::connect(d->fill, SIGNAL(widthChanged()), this, SLOT(fillChanged()));
-            QObject::connect(d->fill, SIGNAL(heightChanged()), this, SLOT(fillChanged()));
-        } else {
-            qmlInfo(d->item) << "Can't anchor to an item that isn't a parent or sibling.";
-        }
-    }
-    QObject::connect(this, SIGNAL(leftMarginChanged()), this, SLOT(fillChanged()));
-    QObject::connect(this, SIGNAL(topMarginChanged()), this, SLOT(fillChanged()));
-    QObject::connect(this, SIGNAL(rightMarginChanged()), this, SLOT(fillChanged()));
-    QObject::connect(this, SIGNAL(bottomMarginChanged()), this, SLOT(fillChanged()));
-    fillChanged();  //### can/should we defer until component completion?
+    d->fillChanged();  
 }
 
 /*!
@@ -223,163 +356,12 @@ void QFxAnchors::setCenteredIn(QFxItem* c)
         qmlInfo(d->item) << "Can't anchor to an item that isn't a parent or sibling.";
         return;
     }
+
+    d->remDepend(d->centeredIn);
     d->centeredIn = c;
-    setHorizontalCenter(c->horizontalCenter());
-    setVerticalCenter(c->verticalCenter());
-}
+    d->addDepend(d->centeredIn);
 
-void QFxAnchorsPrivate::connectVHelper(const QFxAnchorLine &edge)
-{
-    //### should we do disconnects first? (will it be called more than once?)
-    Q_Q(QFxAnchors);
-    if (edge.item == item->itemParent()) {    //child-parent
-        switch(edge.anchorLine) {
-        case QFxAnchorLine::Bottom:
-        case QFxAnchorLine::VCenter:
-            QObject::connect(edge.item, SIGNAL(heightChanged()), q, SLOT(updateVerticalAnchors()));
-            break;
-        case QFxAnchorLine::Top: //no connection needed
-        default:
-            break;
-        }
-    } else if (edge.item->itemParent() == item->itemParent()) {   //siblings
-        switch(edge.anchorLine) {
-        case QFxAnchorLine::Top:
-            QObject::connect(edge.item, SIGNAL(topChanged()), q, SLOT(updateVerticalAnchors()));
-            break;
-        case QFxAnchorLine::Bottom:
-            QObject::connect(edge.item, SIGNAL(bottomChanged()), q, SLOT(updateVerticalAnchors()));
-            break;
-        case QFxAnchorLine::VCenter:
-            QObject::connect(edge.item, SIGNAL(vcenterChanged()), q, SLOT(updateVerticalAnchors()));
-            break;
-        default:
-            break;
-        }
-    } else {
-        qmlInfo(item) << "Can't anchor to an item that isn't a parent or sibling.";
-    }
-}
-
-void QFxAnchors::connectVAnchors()
-{
-    Q_D(QFxAnchors);
-    if (!d->checkVValid())
-        return;
-
-    if (d->usedAnchors & HasTopAnchor) {
-        //Handle stretching connections (if we have multiple horizontal anchors)
-        QFxAnchorLine *edge = 0;
-        if (d->usedAnchors & HasBottomAnchor) {
-            edge = &d->bottom;
-            connect(this, SIGNAL(bottomMarginChanged()), this, SLOT(updateVerticalAnchors()));
-        } else if (d->usedAnchors & HasVCenterAnchor) {
-            edge = &d->vCenter;
-            connect(this, SIGNAL(verticalCenterOffsetChanged()), this, SLOT(updateVerticalAnchors()));
-        }
-        if (edge) {
-            //we need to stretch
-            d->connectVHelper(*edge);
-        }
-
-        //Handle top
-        d->connectVHelper(d->top);
-        connect(this, SIGNAL(topMarginChanged()), this, SLOT(updateVerticalAnchors()));
-        updateVerticalAnchors();
-    } else if (d->usedAnchors & HasBottomAnchor) {
-        //Handle stretching connections (if we have multiple horizontal anchors)
-        if (d->usedAnchors & HasVCenterAnchor) {
-            d->connectVHelper(d->vCenter);
-            connect(this, SIGNAL(verticalCenterOffsetChanged()), this, SLOT(updateVerticalAnchors()));
-        }
-
-        //Handle bottom
-        d->connectVHelper(d->bottom);
-        connect(this, SIGNAL(bottomMarginChanged()), this, SLOT(updateVerticalAnchors()));
-        updateVerticalAnchors();
-    } else if (d->usedAnchors & HasVCenterAnchor) {
-        //Handle vCenter
-        d->connectVHelper(d->vCenter);
-        connect(this, SIGNAL(verticalCenterOffsetChanged()), this, SLOT(updateVerticalAnchors()));
-        updateVerticalAnchors();
-    }
-}
-
-void QFxAnchorsPrivate::connectHHelper(const QFxAnchorLine &edge)
-{
-    //### should we do disconnects first? (will it be called more than once?)
-    Q_Q(QFxAnchors);
-    if (edge.item == item->itemParent()) {    //child-parent
-        switch(edge.anchorLine) {
-        case QFxAnchorLine::Right:
-        case QFxAnchorLine::HCenter:
-            QObject::connect(edge.item, SIGNAL(widthChanged()), q, SLOT(updateHorizontalAnchors()));
-            break;
-        case QFxAnchorLine::Left: //no connection needed
-        default:
-            break;
-        }
-    } else if (edge.item->itemParent() == item->itemParent()) {   //siblings
-        switch(edge.anchorLine) {
-        case QFxAnchorLine::Left:
-            QObject::connect(edge.item, SIGNAL(leftChanged()), q, SLOT(updateHorizontalAnchors()));
-            break;
-        case QFxAnchorLine::Right:
-            QObject::connect(edge.item, SIGNAL(rightChanged()), q, SLOT(updateHorizontalAnchors()));
-            break;
-        case QFxAnchorLine::HCenter:
-            QObject::connect(edge.item, SIGNAL(hcenterChanged()), q, SLOT(updateHorizontalAnchors()));
-            break;
-        default:
-            break;
-        }
-    } else {
-        qmlInfo(item) << "Can't anchor to an item that isn't a parent or sibling.";
-    }
-}
-
-void QFxAnchors::connectHAnchors()
-{
-    Q_D(QFxAnchors);
-    if (!d->checkHValid())
-        return;
-
-    if (d->usedAnchors & HasLeftAnchor) {
-        //Handle stretching connections (if we have multiple horizontal anchors)
-        QFxAnchorLine *edge = 0;
-        if (d->usedAnchors & HasRightAnchor) {
-            edge = &d->right;
-            connect(this, SIGNAL(rightMarginChanged()), this, SLOT(updateHorizontalAnchors()));
-        } else if (d->usedAnchors & HasHCenterAnchor) {
-            edge = &d->hCenter;
-            connect(this, SIGNAL(horizontalCenterOffsetChanged()), this, SLOT(updateHorizontalAnchors()));
-        }
-        if (edge) {
-            //we need to stretch
-            d->connectHHelper(*edge);
-        }
-
-        //Handle left
-        d->connectHHelper(d->left);
-        connect(this, SIGNAL(leftMarginChanged()), this, SLOT(updateHorizontalAnchors()));
-        updateHorizontalAnchors();
-    } else if (d->usedAnchors & HasRightAnchor) {
-        //Handle stretching connections (if we have multiple horizontal anchors)
-        if (d->usedAnchors & HasHCenterAnchor) {
-            d->connectHHelper(d->hCenter);
-            connect(this, SIGNAL(horizontalCenterOffsetChanged()), this, SLOT(updateHorizontalAnchors()));
-        }
-
-        //Handle right
-        d->connectHHelper(d->right);
-        connect(this, SIGNAL(rightMarginChanged()), this, SLOT(updateHorizontalAnchors()));
-        updateHorizontalAnchors();
-    } else if (d->usedAnchors & HasHCenterAnchor) {
-        //Handle hCenter
-        d->connectHHelper(d->hCenter);
-        connect(this, SIGNAL(horizontalCenterOffsetChanged()), this, SLOT(updateHorizontalAnchors()));
-        updateHorizontalAnchors();
-    }
+    d->centeredInChanged();
 }
 
 bool QFxAnchorsPrivate::calcStretch(const QFxAnchorLine &edge1,
@@ -411,168 +393,127 @@ bool QFxAnchorsPrivate::calcStretch(const QFxAnchorLine &edge1,
     return invalid;
 }
 
-void QFxAnchors::updateVerticalAnchors()
+void QFxAnchorsPrivate::updateVerticalAnchors()
 {
-    Q_D(QFxAnchors);
-    if (!d->updatingVerticalAnchor) {
-        d->updatingVerticalAnchor = true;
-        if (d->usedAnchors & HasTopAnchor) {
+    if (fill || centeredIn || !isItemComplete())
+        return;
+
+    if (!updatingVerticalAnchor) {
+        updatingVerticalAnchor = true;
+        if (usedAnchors & QFxAnchors::HasTopAnchor) {
             //Handle stretching
             bool invalid = true;
             int height = 0;
-            if (d->usedAnchors & HasBottomAnchor) {
-                invalid = d->calcStretch(d->top, d->bottom, d->topMargin, -d->bottomMargin, QFxAnchorLine::Top, height);
-            } else if (d->usedAnchors & HasVCenterAnchor) {
-                invalid = d->calcStretch(d->top, d->vCenter, d->topMargin, d->vCenterOffset, QFxAnchorLine::Top, height);
+            if (usedAnchors & QFxAnchors::HasBottomAnchor) {
+                invalid = calcStretch(top, bottom, topMargin, -bottomMargin, QFxAnchorLine::Top, height);
+            } else if (usedAnchors & QFxAnchors::HasVCenterAnchor) {
+                invalid = calcStretch(top, vCenter, topMargin, vCenterOffset, QFxAnchorLine::Top, height);
                 height *= 2;
             }
             if (!invalid)
-                d->item->setHeight(height);
+                setItemHeight(height);
 
             //Handle top
-            if (d->top.item == d->item->itemParent()) {
-                d->item->setY(adjustedPosition(d->top.item, d->top.anchorLine) + d->topMargin);
-            } else if (d->top.item->itemParent() == d->item->itemParent()) {
-                d->item->setY(position(d->top.item, d->top.anchorLine) + d->topMargin);
+            if (top.item == item->itemParent()) {
+                setItemY(adjustedPosition(top.item, top.anchorLine) + topMargin);
+            } else if (top.item->itemParent() == item->itemParent()) {
+                setItemY(position(top.item, top.anchorLine) + topMargin);
             }
-        } else if (d->usedAnchors & HasBottomAnchor) {
+        } else if (usedAnchors & QFxAnchors::HasBottomAnchor) {
             //Handle stretching (top + bottom case is handled above)
-            if (d->usedAnchors & HasVCenterAnchor) {
+            if (usedAnchors & QFxAnchors::HasVCenterAnchor) {
                 int height = 0;
-                bool invalid = d->calcStretch(d->vCenter, d->bottom, d->vCenterOffset, -d->bottomMargin,
+                bool invalid = calcStretch(vCenter, bottom, vCenterOffset, -bottomMargin,
                                               QFxAnchorLine::Top, height);
                 if (!invalid)
-                    d->item->setHeight(height*2);
+                    setItemHeight(height*2);
             }
 
             //Handle bottom
-            if (d->bottom.item == d->item->itemParent()) {
-                d->item->setY(adjustedPosition(d->bottom.item, d->bottom.anchorLine) - d->item->height() - d->bottomMargin);
-            } else if (d->bottom.item->itemParent() == d->item->itemParent()) {
-                d->item->setY(position(d->bottom.item, d->bottom.anchorLine) - d->item->height() - d->bottomMargin);
+            if (bottom.item == item->itemParent()) {
+                setItemY(adjustedPosition(bottom.item, bottom.anchorLine) - item->height() - bottomMargin);
+            } else if (bottom.item->itemParent() == item->itemParent()) {
+                setItemY(position(bottom.item, bottom.anchorLine) - item->height() - bottomMargin);
             }
-
-
-        } else if (d->usedAnchors & HasVCenterAnchor) {
+        } else if (usedAnchors & QFxAnchors::HasVCenterAnchor) {
             //(stetching handled above)
 
             //Handle vCenter
-            if (d->vCenter.item == d->item->itemParent()) {
-                d->item->setY(adjustedPosition(d->vCenter.item, d->vCenter.anchorLine)
-                              - d->item->height()/2 + d->vCenterOffset);
-            } else if (d->vCenter.item->itemParent() == d->item->itemParent()) {
-                d->item->setY(position(d->vCenter.item, d->vCenter.anchorLine) - d->item->height()/2 + d->vCenterOffset);
+            if (vCenter.item == item->itemParent()) {
+                setItemY(adjustedPosition(vCenter.item, vCenter.anchorLine)
+                              - item->height()/2 + vCenterOffset);
+            } else if (vCenter.item->itemParent() == item->itemParent()) {
+                setItemY(position(vCenter.item, vCenter.anchorLine) - item->height()/2 + vCenterOffset);
+            }
+        } else if (usedAnchors & QFxAnchors::HasBaselineAnchor) {
+            //Handle baseline
+            if (baseline.item->itemParent() == item->itemParent()) {
+                setItemY(position(baseline.item, baseline.anchorLine) - item->baselineOffset());
             }
         }
-        d->updatingVerticalAnchor = false;
+        updatingVerticalAnchor = false;
     } else {
-        qmlInfo(d->item) << "Anchor loop detected on vertical anchor.";
+        // ### Make this certain :)
+        qmlInfo(item) << "Possible anchor loop detected on vertical anchor.";
     }
 }
 
-void QFxAnchors::updateHorizontalAnchors()
+void QFxAnchorsPrivate::updateHorizontalAnchors()
 {
-    Q_D(QFxAnchors);
-    if (!d->updatingHorizontalAnchor) {
-        d->updatingHorizontalAnchor = true;
+    if (fill || centeredIn || !isItemComplete())
+        return;
 
-        //alternate implementation (needs performance testing)
-        /*switch(d->usedAnchors & QFxAnchors::Horizontal_Mask) {
-        case 0x03:              //(HasLeftAnchor | HasRightAnchor)
-        {
-            int width = 0;
-            if (!d->calcStretch(d->left, d->right, d->leftMargin, -d->rightMargin, QFxAnchorLine::Left, width))
-                d->item->setWidth(width);
-            //fall though
-        }
-        case 0x11:              //(HasLeftAnchor | HasHCenterAnchor)
-        {
-            if (d->usedAnchors & HasHCenterAnchor) {
-                int width = 0;
-                if (!d->calcStretch(d->left, d->hCenter, d->leftMargin, d->hCenterOffset, QFxAnchorLine::Left, width))
-                    d->item->setWidth(width*2);
-            }
-            //fall though
-        }
-        case HasLeftAnchor:
-            if (d->left.item == d->item->itemParent()) {
-                d->item->setX(adjustedPosition(d->left.item, d->left.anchorLine) + d->leftMargin);
-            } else if (d->left.item->itemParent() == d->item->itemParent()) {
-                d->item->setX(position(d->left.item, d->left.anchorLine) + d->leftMargin);
-            }
-            break;
-        case 0x12:              //(HasRightAnchor | HasHCenterAnchor)
-        {
-            int width = 0;
-            if (!d->calcStretch(d->hCenter, d->right, d->hCenterOffset, -d->rightMargin, QFxAnchorLine::Left, width))
-                d->item->setWidth(width*2);
-            //fall though
-        }
-        case HasRightAnchor:
-            if (d->right.item == d->item->itemParent()) {
-                d->item->setX(adjustedPosition(d->right.item, d->right.anchorLine) - d->item->width() - d->rightMargin);
-            } else if (d->right.item->itemParent() == d->item->itemParent()) {
-                d->item->setX(position(d->right.item, d->right.anchorLine) - d->item->width() - d->rightMargin);
-            }
-            break;
-        case HasHCenterAnchor:
-            if (d->hCenter.item == d->item->itemParent()) {
-                d->item->setX(adjustedPosition(d->hCenter.item, d->hCenter.anchorLine) - d->item->width()/2 + d->hCenterOffset);
-            } else if (d->hCenter.item->itemParent() == d->item->itemParent()) {
-                d->item->setX(position(d->hCenter.item, d->hCenter.anchorLine) - d->item->width()/2 + d->hCenterOffset);
-            }
-            break;
-        default:
-            break;
-        }*/
+    if (!updatingHorizontalAnchor) {
+        updatingHorizontalAnchor = true;
 
-        if (d->usedAnchors & HasLeftAnchor) {
+        if (usedAnchors & QFxAnchors::HasLeftAnchor) {
             //Handle stretching
             bool invalid = true;
             int width = 0;
-            if (d->usedAnchors & HasRightAnchor) {
-                invalid = d->calcStretch(d->left, d->right, d->leftMargin, -d->rightMargin, QFxAnchorLine::Left, width);
-            } else if (d->usedAnchors & HasHCenterAnchor) {
-                invalid = d->calcStretch(d->left, d->hCenter, d->leftMargin, d->hCenterOffset, QFxAnchorLine::Left, width);
+            if (usedAnchors & QFxAnchors::HasRightAnchor) {
+                invalid = calcStretch(left, right, leftMargin, -rightMargin, QFxAnchorLine::Left, width);
+            } else if (usedAnchors & QFxAnchors::HasHCenterAnchor) {
+                invalid = calcStretch(left, hCenter, leftMargin, hCenterOffset, QFxAnchorLine::Left, width);
                 width *= 2;
             }
             if (!invalid)
-                d->item->setWidth(width);
+                setItemWidth(width);
 
             //Handle left
-            if (d->left.item == d->item->itemParent()) {
-                d->item->setX(adjustedPosition(d->left.item, d->left.anchorLine) + d->leftMargin);
-            } else if (d->left.item->itemParent() == d->item->itemParent()) {
-                d->item->setX(position(d->left.item, d->left.anchorLine) + d->leftMargin);
+            if (left.item == item->itemParent()) {
+                setItemX(adjustedPosition(left.item, left.anchorLine) + leftMargin);
+            } else if (left.item->itemParent() == item->itemParent()) {
+                setItemX(position(left.item, left.anchorLine) + leftMargin);
             }
-        } else if (d->usedAnchors & HasRightAnchor) {
+        } else if (usedAnchors & QFxAnchors::HasRightAnchor) {
             //Handle stretching (left + right case is handled in updateLeftAnchor)
-            if (d->usedAnchors & HasHCenterAnchor) {
+            if (usedAnchors & QFxAnchors::HasHCenterAnchor) {
                 int width = 0;
-                bool invalid = d->calcStretch(d->hCenter, d->right, d->hCenterOffset, -d->rightMargin,
+                bool invalid = calcStretch(hCenter, right, hCenterOffset, -rightMargin,
                                               QFxAnchorLine::Left, width);
                 if (!invalid)
-                    d->item->setWidth(width*2);
+                    setItemWidth(width*2);
             }
 
             //Handle right
-            if (d->right.item == d->item->itemParent()) {
-                d->item->setX(adjustedPosition(d->right.item, d->right.anchorLine) - d->item->width() - d->rightMargin);
-            } else if (d->right.item->itemParent() == d->item->itemParent()) {
-                d->item->setX(position(d->right.item, d->right.anchorLine) - d->item->width() - d->rightMargin);
+            if (right.item == item->itemParent()) {
+                setItemX(adjustedPosition(right.item, right.anchorLine) - item->width() - rightMargin);
+            } else if (right.item->itemParent() == item->itemParent()) {
+                setItemX(position(right.item, right.anchorLine) - item->width() - rightMargin);
             }
-        } else if (d->usedAnchors & HasHCenterAnchor) {
+        } else if (usedAnchors & QFxAnchors::HasHCenterAnchor) {
             //Handle hCenter
-            if (d->hCenter.item == d->item->itemParent()) {
-                d->item->setX(adjustedPosition(d->hCenter.item, d->hCenter.anchorLine) - d->item->width()/2 + d->hCenterOffset);
-            } else if (d->hCenter.item->itemParent() == d->item->itemParent()) {
-                d->item->setX(position(d->hCenter.item, d->hCenter.anchorLine) - d->item->width()/2 + d->hCenterOffset);
+            if (hCenter.item == item->itemParent()) {
+                setItemX(adjustedPosition(hCenter.item, hCenter.anchorLine) - item->width()/2 + hCenterOffset);
+            } else if (hCenter.item->itemParent() == item->itemParent()) {
+                setItemX(position(hCenter.item, hCenter.anchorLine) - item->width()/2 + hCenterOffset);
             }
         }
 
-        d->updatingHorizontalAnchor = false;
+        updatingHorizontalAnchor = false;
     } else {
-        qmlInfo(d->item) << "Anchor loop detected on horizontal anchor.";
+        // ### Make this certain :)
+        qmlInfo(item) << "Possible anchor loop detected on horizontal anchor.";
     }
 }
 
@@ -588,29 +529,22 @@ void QFxAnchors::setTop(const QFxAnchorLine &edge)
     if (!d->checkVAnchorValid(edge))
         return;
 
-    d->usedAnchors |= HasTopAnchor;
+    if (edge.item)
+        d->usedAnchors |= HasTopAnchor;
+    else
+        d->usedAnchors &= ~HasTopAnchor;
 
     d->checkVValid();
 
+    d->remDepend(d->top.item);
     d->top = edge;
+    d->addDepend(d->top.item);
+    d->updateVerticalAnchors();
 }
 
 void QFxAnchors::resetTop()
 {
-    Q_D(QFxAnchors);
-
-    //update flags
-    d->usedAnchors &= ~HasTopAnchor;
-
-    //clear binding
-    QmlMetaProperty prop(this, "top");
-    prop.binding()->clearExpression();
-
-    //disconnect signal/slot connections as needed
-    disconnect(this, SIGNAL(topMarginChanged()), this, SLOT(updateVerticalAnchors()));
-    disconnect(d->top.item, 0, this, 0);
-
-    updateVerticalAnchors();
+    setTop(QFxAnchorLine());
 }
 
 QFxAnchorLine QFxAnchors::bottom() const
@@ -625,29 +559,22 @@ void QFxAnchors::setBottom(const QFxAnchorLine &edge)
     if (!d->checkVAnchorValid(edge))
         return;
 
-    d->usedAnchors |= HasBottomAnchor;
+    if (edge.item)
+        d->usedAnchors |= HasBottomAnchor;
+    else
+        d->usedAnchors &= ~HasBottomAnchor;
 
     d->checkVValid();
 
+    d->remDepend(d->bottom.item);
     d->bottom = edge;
+    d->addDepend(d->bottom.item);
+    d->updateVerticalAnchors();
 }
 
 void QFxAnchors::resetBottom()
 {
-    Q_D(QFxAnchors);
-
-    //update flags
-    d->usedAnchors &= ~HasBottomAnchor;
-
-    //clear binding
-    QmlMetaProperty prop(this, "bottom");
-    prop.binding()->clearExpression();
-
-    //disconnect signal/slot connections as needed
-    disconnect(this, SIGNAL(bottomMarginChanged()), this, SLOT(updateVerticalAnchors()));
-    disconnect(d->bottom.item, 0, this, 0);
-
-    updateVerticalAnchors();
+    setBottom(QFxAnchorLine());
 }
 
 QFxAnchorLine QFxAnchors::verticalCenter() const
@@ -662,29 +589,52 @@ void QFxAnchors::setVerticalCenter(const QFxAnchorLine &edge)
     if (!d->checkVAnchorValid(edge))
         return;
 
-    d->usedAnchors |= HasVCenterAnchor;
+    if (edge.item)
+        d->usedAnchors |= HasVCenterAnchor;
+    else
+        d->usedAnchors &= ~HasVCenterAnchor;
 
     d->checkVValid();
 
+    d->remDepend(d->vCenter.item);
     d->vCenter = edge;
+    d->addDepend(d->vCenter.item);
+    d->updateVerticalAnchors();
 }
 
 void QFxAnchors::resetVerticalCenter()
 {
+    setVerticalCenter(QFxAnchorLine());
+}
+
+QFxAnchorLine QFxAnchors::baseline() const
+{
+    Q_D(const QFxAnchors);
+    return d->baseline;
+}
+
+void QFxAnchors::setBaseline(const QFxAnchorLine &edge)
+{
     Q_D(QFxAnchors);
+    if (!d->checkVAnchorValid(edge))
+        return;
 
-    //update flags
-    d->usedAnchors &= ~HasVCenterAnchor;
+    if (edge.item)
+        d->usedAnchors |= HasBaselineAnchor;
+    else
+        d->usedAnchors &= ~HasBaselineAnchor;
 
-    //clear binding
-    QmlMetaProperty prop(this, "verticalCenter");
-    prop.binding()->clearExpression();
+    d->checkVValid();
 
-    //disconnect signal/slot connections as needed
-    disconnect(this, SIGNAL(verticalCenterOffsetChanged()), this, SLOT(updateVerticalAnchors()));
-    disconnect(d->vCenter.item, 0, this, 0);
+    d->remDepend(d->baseline.item);
+    d->baseline = edge;
+    d->addDepend(d->baseline.item);
+    d->updateVerticalAnchors();
+}
 
-    updateVerticalAnchors();
+void QFxAnchors::resetBaseline()
+{
+    setBaseline(QFxAnchorLine());
 }
 
 QFxAnchorLine QFxAnchors::left() const
@@ -699,29 +649,22 @@ void QFxAnchors::setLeft(const QFxAnchorLine &edge)
     if (!d->checkHAnchorValid(edge))
         return;
 
-    d->usedAnchors |= HasLeftAnchor;
+    if (edge.item)
+        d->usedAnchors |= HasLeftAnchor;
+    else
+        d->usedAnchors &= ~HasLeftAnchor;
 
     d->checkHValid();
 
+    d->remDepend(d->left.item);
     d->left = edge;
+    d->addDepend(d->left.item);
+    d->updateHorizontalAnchors();
 }
 
 void QFxAnchors::resetLeft()
 {
-    Q_D(QFxAnchors);
-
-    //update flags
-    d->usedAnchors &= ~HasLeftAnchor;
-
-    //clear binding
-    QmlMetaProperty prop(this, "left");
-    prop.binding()->clearExpression();
-
-    //disconnect signal/slot connections as needed
-    disconnect(this, SIGNAL(leftMarginChanged()), this, SLOT(updateHorizontalAnchors()));
-    disconnect(d->left.item, 0, this, 0);
-
-    updateHorizontalAnchors();
+    setLeft(QFxAnchorLine());
 }
 
 QFxAnchorLine QFxAnchors::right() const
@@ -736,29 +679,23 @@ void QFxAnchors::setRight(const QFxAnchorLine &edge)
     if (!d->checkHAnchorValid(edge))
         return;
 
-    d->usedAnchors |= HasRightAnchor;
+    if (edge.item)
+        d->usedAnchors |= HasRightAnchor;
+    else
+        d->usedAnchors &= ~HasRightAnchor;
 
     d->checkHValid();
 
+    d->remDepend(d->right.item);
     d->right = edge;
+    d->addDepend(d->right.item);
+
+    d->updateHorizontalAnchors();
 }
 
 void QFxAnchors::resetRight()
 {
-    Q_D(QFxAnchors);
-
-    //update flags
-    d->usedAnchors &= ~HasRightAnchor;
-
-    //clear binding
-    QmlMetaProperty prop(this, "right");
-    prop.binding()->clearExpression();
-
-    //disconnect signal/slot connections as needed
-    disconnect(this, SIGNAL(rightMarginChanged()), this, SLOT(updateHorizontalAnchors()));
-    disconnect(d->right.item, 0, this, 0);
-
-    updateHorizontalAnchors();
+    setRight(QFxAnchorLine());
 }
 
 QFxAnchorLine QFxAnchors::horizontalCenter() const
@@ -773,29 +710,22 @@ void QFxAnchors::setHorizontalCenter(const QFxAnchorLine &edge)
     if (!d->checkHAnchorValid(edge))
         return;
 
-    d->usedAnchors |= HasHCenterAnchor;
+    if (edge.item)
+        d->usedAnchors |= HasHCenterAnchor;
+    else
+        d->usedAnchors &= ~HasHCenterAnchor;
 
     d->checkHValid();
 
+    d->remDepend(d->hCenter.item);
     d->hCenter = edge;
+    d->addDepend(d->hCenter.item);
+    d->updateHorizontalAnchors();
 }
 
 void QFxAnchors::resetHorizontalCenter()
 {
-    Q_D(QFxAnchors);
-
-    //update flags
-    d->usedAnchors &= ~HasHCenterAnchor;
-
-    //clear binding
-    QmlMetaProperty prop(this, "horizontalCenter");
-    prop.binding()->clearExpression();
-
-    //disconnect signal/slot connections as needed
-    disconnect(this, SIGNAL(horizontalCenterOffsetChanged()), this, SLOT(updateHorizontalAnchors()));
-    disconnect(d->hCenter.item, 0, this, 0);
-
-    updateHorizontalAnchors();
+    setHorizontalCenter(QFxAnchorLine());
 }
 
 int QFxAnchors::leftMargin() const
@@ -888,50 +818,6 @@ void QFxAnchors::setVerticalCenterOffset(int offset)
     emit verticalCenterOffsetChanged();
 }
 
-#if 0
-/*!
-    \property QFxAnchors::baseline
-    \brief what the baseline of the item should be anchored to (aligned with).
-
-    The baseline of a Text item is the imaginary line on which the text sits. Controls containing
-    text usually set their baseline to the baseline of their text.
-
-    For non-text items, a default baseline offset of two-thirds of the item's height is used
-    to determine the baseline.
-*/
-int QFxAnchors::baseline() const
-{
-    return d->item->baseline();
-}
-
-void QFxAnchors::setBaseline(int baseline)
-{
-    d->usedAnchors |= HasBaselineAnchor;
-
-    if (d->usedAnchors & HasTopAnchor && d->usedAnchors & HasBottomAnchor) {
-        qmlInfo(d->item) << "Can't specify top, bottom, and baseline anchors";
-        return;
-    }
-
-    if (d->usedAnchors & HasTopAnchor) {
-        int hoffset = baseline - d->item->baseline();
-        d->item->setHeight(d->item->height() + hoffset);
-    } else {
-        if (d->usedAnchors & HasBottomAnchor) {
-            int hoffset = d->item->baseline() - baseline;
-            d->item->setHeight(d->item->height() + hoffset);
-        }
-
-        int boffset = d->item->baseline() - d->item->top();
-        QFxItem *parentItem = d->item->itemParent();
-        if (parentItem)
-            d->item->setY(baseline - boffset - parentItem->top());
-        else
-            d->item->setY(baseline - boffset);
-    }
-}
-#endif
-
 QFxAnchors::UsedAnchors QFxAnchors::usedAnchors() const
 {
     Q_D(const QFxAnchors);
@@ -949,7 +835,7 @@ bool QFxAnchorsPrivate::checkHValid() const
     if (usedAnchors & QFxAnchors::HasLeftAnchor &&
         usedAnchors & QFxAnchors::HasRightAnchor &&
         usedAnchors & QFxAnchors::HasHCenterAnchor) {
-        qmlInfo(item) << "Can't specify left, right, and hcenter anchors";
+        qmlInfo(item) << "Can't specify left, right, and hcenter anchors.";
         return false;
     }
 
@@ -974,7 +860,13 @@ bool QFxAnchorsPrivate::checkVValid() const
     if (usedAnchors & QFxAnchors::HasTopAnchor &&
         usedAnchors & QFxAnchors::HasBottomAnchor &&
         usedAnchors & QFxAnchors::HasVCenterAnchor) {
-        qmlInfo(item) << "Can't specify top, bottom, and vcenter anchors";
+        qmlInfo(item) << "Can't specify top, bottom, and vcenter anchors.";
+        return false;
+    } else if (usedAnchors & QFxAnchors::HasBaselineAnchor &&
+               (usedAnchors & QFxAnchors::HasTopAnchor ||
+                usedAnchors & QFxAnchors::HasBottomAnchor ||
+                usedAnchors & QFxAnchors::HasVCenterAnchor)) {
+        qmlInfo(item) << "Baseline anchor can't be used in conjunction with top, bottom, or vcenter anchors.";
         return false;
     }
 

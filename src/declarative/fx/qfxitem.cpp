@@ -52,6 +52,7 @@
 #include "qmlengine.h"
 #include "qmlstate.h"
 #include "qlistmodelinterface.h"
+#include "qfxanchors_p.h"
 
 #include "qfxtransform.h"
 #include "qfxscalegrid.h"
@@ -196,8 +197,10 @@ void QFxContents::setItem(QFxItem *item)
     const QList<QSimpleCanvasItem *> &children = _item->QSimpleCanvasItem::children();
     for (int i = 0; i < children.count(); ++i) {
         const QSimpleCanvasItem *child = children.at(i);
-        connect(child, SIGNAL(bottomChanged()), this, SLOT(calcHeight()));
-        connect(child, SIGNAL(rightChanged()), this, SLOT(calcWidth()));
+        connect(child, SIGNAL(heightChanged()), this, SLOT(calcHeight()));
+        connect(child, SIGNAL(topChanged()), this, SLOT(calcHeight()));
+        connect(child, SIGNAL(widthChanged()), this, SLOT(calcWidth()));
+        connect(child, SIGNAL(leftChanged()), this, SLOT(calcWidth()));
     }
 
     calcHeight();
@@ -258,24 +261,10 @@ void QFxContents::setItem(QFxItem *item)
 */
 
 /*!
-    \fn void QFxItem::baselineChanged()
-
-    This signal is emitted when the baseline of the item changes. 
-
-    The baseline may change in response to a change to the baselineOffset
-    property or due to the geometry of the item changing.
-*/
-
-/*!
     \fn void QFxItem::baselineOffsetChanged()
 
-    This signal is emitted when the baseline of the item is changed
-    via the baselineOffset property.
-
-    The baseline corresponds to the baseline of the text contained in
-    the item.  It is useful for aligning the text in items placed
-    beside each other.  The default baseline is positioned at
-    2/3 of the height of the item.
+    This signal is emitted when the baseline offset of the item
+    is changed.
 */
 
 /*!
@@ -285,21 +274,9 @@ void QFxContents::setItem(QFxItem *item)
 */
 
 /*!
-    \fn void QFxItem::rightChanged()
-
-    This signal is emitted when the right coordinate of the item changes.
-*/
-
-/*!
     \fn void QFxItem::topChanged()
 
     This signal is emitted when the top coordinate of the item changes.
-*/
-
-/*!
-    \fn void QFxItem::bottomChanged()
-
-    This signal is emitted when the bottom coordinate of the item changes.
 */
 
 /*!
@@ -434,6 +411,14 @@ void QFxItem::doUpdate()
 QFxItem::~QFxItem()
 {
     Q_D(QFxItem);
+    for (int ii = 0; ii < d->dependantAnchors.count(); ++ii) {
+        QFxAnchors *anchor = d->dependantAnchors.at(ii);
+        anchor->d_func()->clearItem(this);
+    }
+    for (int ii = 0; ii < d->dependantAnchors.count(); ++ii) {
+        QFxAnchors *anchor = d->dependantAnchors.at(ii);
+        anchor->d_func()->updateOnComplete();
+    }
     delete d->_anchorLines; d->_anchorLines = 0;
 }
 
@@ -1062,85 +1047,30 @@ void QFxItem::geometryChanged(const QRectF &newGeometry,
                               const QRectF &oldGeometry)
 {
     Q_D(QFxItem);
-    if (newGeometry.width() != oldGeometry.width()) {
-        int xoffset = oldGeometry.width() - newGeometry.width();
-        d->handleWidthChange(xoffset);
+
+    if (d->_anchors)
+        d->_anchors->d_func()->updateMe();
+
+    if (newGeometry.size() != oldGeometry.size()) {
+        if (rotation() && transformOrigin() != QFxItem::TopLeft)
+            setRotation(rotation());
+        if (scale() && transformOrigin() != QFxItem::TopLeft)
+            setScale(scale());
     }
 
-    if (newGeometry.height() != oldGeometry.height()) {
-        int yoffset = oldGeometry.height() - newGeometry.height();
-        d->handleHeightChange(yoffset);
-    }
-
-    if (newGeometry.x() != oldGeometry.x()) {
+    if (newGeometry.x() != oldGeometry.x()) 
         emit leftChanged();
-        emit hcenterChanged();
-        emit rightChanged();
-    }
-
-    if (newGeometry.y() != oldGeometry.y()) {
+    if (newGeometry.width() != oldGeometry.width())
+        emit widthChanged();
+    if (newGeometry.y() != oldGeometry.y()) 
         emit topChanged();
-        emit vcenterChanged();
-        emit bottomChanged();
-    }
-}
+    if (newGeometry.height() != oldGeometry.height())
+        emit heightChanged();
 
-void QFxItemPrivate::handleWidthChange(int xoffset)
-{
-    Q_Q(QFxItem);
-    if (!_anchors) {
-        emit q->hcenterChanged();
-        emit q->rightChanged();
-    } else {
-        QFxAnchors::UsedAnchors used = anchors()->usedAnchors();
-        if (used & QFxAnchors::HasHCenterAnchor) {
-            q->setX(q->x() + xoffset/2);
-            emit q->rightChanged();
-        } else if ((used & QFxAnchors::HasRightAnchor) && !(used & QFxAnchors::HasLeftAnchor)) {
-            q->setX(q->x() + xoffset);
-            emit q->hcenterChanged();
-        } else {
-            emit q->hcenterChanged();
-            emit q->rightChanged();
-        }
+    for(int ii = 0; ii < d->dependantAnchors.count(); ++ii) {
+        QFxAnchors *anchor = d->dependantAnchors.at(ii);
+        anchor->d_func()->update(this, newGeometry, oldGeometry);
     }
-    if (q->rotation() && q->transformOrigin() != QFxItem::TopLeft)
-        q->setRotation(q->rotation());
-    if (q->scale() && q->transformOrigin() != QFxItem::TopLeft)
-        q->setScale(q->scale());
-    emit q->widthChanged();
-}
-
-void QFxItemPrivate::handleHeightChange(int yoffset)
-{
-    Q_Q(QFxItem);
-    if (!_anchors) {
-        emit q->vcenterChanged();
-        emit q->bottomChanged();
-        emit q->baselineChanged();
-    } else {
-        QFxAnchors::UsedAnchors used = anchors()->usedAnchors();
-        if (used & QFxAnchors::HasBaselineAnchor) {
-            q->setY(q->y() + yoffset - q->baselineOffset());
-            emit q->bottomChanged();
-            emit q->vcenterChanged();
-        } else if (used & QFxAnchors::HasVCenterAnchor) {
-            q->setY(q->y() + yoffset/2);
-            emit q->bottomChanged();
-        } else if ((used & QFxAnchors::HasBottomAnchor) && !(used & QFxAnchors::HasTopAnchor)) {
-            q->setY(q->y() + yoffset);
-            emit q->vcenterChanged();
-        } else {
-            emit q->vcenterChanged();
-            emit q->bottomChanged();
-            emit q->baselineChanged();
-        }
-    }
-    if (q->rotation() && q->transformOrigin() != QFxItem::TopLeft)
-        q->setRotation(q->rotation());
-    if (q->scale() && q->transformOrigin() != QFxItem::TopLeft)
-        q->setScale(q->scale());
-    emit q->heightChanged();
 }
 
 /*!
@@ -1328,6 +1258,15 @@ QFxAnchorLine QFxItem::verticalCenter() const
 }
 
 /*!
+    \internal
+*/
+QFxAnchorLine QFxItem::baseline() const
+{
+    Q_D(const QFxItem);
+    return d->anchorLines()->baseline;
+}
+
+/*!
   \property QFxItem::top
 
   One of the anchor lines of the item.
@@ -1382,6 +1321,7 @@ QFxAnchorLine QFxItem::verticalCenter() const
   \qmlproperty AnchorLine Item::right
   \qmlproperty AnchorLine Item::horizontalCenter
   \qmlproperty AnchorLine Item::verticalCenter
+  \qmlproperty AnchorLine Item::baseline
 
   The anchor lines of the item.
 
@@ -1395,6 +1335,7 @@ QFxAnchorLine QFxItem::verticalCenter() const
   \qmlproperty AnchorLine Item::anchors.right
   \qmlproperty AnchorLine Item::anchors.horizontalCenter
   \qmlproperty AnchorLine Item::anchors.verticalCenter
+  \qmlproperty AnchorLine Item::anchors.baseline
 
   \qmlproperty Item Item::anchors.fill
 
@@ -1454,20 +1395,19 @@ QFxAnchorLine QFxItem::verticalCenter() const
 
 /*!
   \property QFxItem::baselineOffset
-  \brief The position of the item's baseline in global (scene) coordinates.
+  \brief The position of the item's baseline in local coordinates.
 
   The baseline of a Text item is the imaginary line on which the text
   sits. Controls containing text usually set their baseline to the
   baseline of their text.
 
-  For non-text items, a default baseline offset of two-thirds of the
-  item's height is used to determine the baseline.
+  For non-text items, a default baseline offset of 0 is used.
 */
 int QFxItem::baselineOffset() const
 {
     Q_D(const QFxItem);
     if (!d->_baselineOffset.isValid()) {
-        return height()*2/3;    //### default baseline is 2/3 of the way to the bottom of the item
+        return 0;
     } else
         return d->_baselineOffset;
 }
@@ -1483,7 +1423,11 @@ void QFxItem::setBaselineOffset(int offset)
 
     d->_baselineOffset = offset;
     emit baselineOffsetChanged();
-    emit baselineChanged();
+
+    for(int ii = 0; ii < d->dependantAnchors.count(); ++ii) {
+        QFxAnchors *anchor = d->dependantAnchors.at(ii);
+        anchor->d_func()->updateVerticalAnchors();
+    }
 }
 
 /*!
@@ -1719,6 +1663,7 @@ void QFxItem::setKeepMouseGrab(bool keep)
  */
 void QFxItem::activeFocusChanged(bool flag)
 {
+    Q_UNUSED(flag);
     emit activeFocusChanged();
 }
 
@@ -1728,6 +1673,7 @@ void QFxItem::activeFocusChanged(bool flag)
  */
 void QFxItem::focusChanged(bool flag)
 {
+    Q_UNUSED(flag);
     emit focusChanged();
 }
 
@@ -2075,10 +2021,8 @@ void QFxItem::componentComplete()
     d->_componentComplete = true;
     if (d->_stateGroup)
         d->_stateGroup->componentComplete();
-    if (d->_anchors) {
-        d->anchors()->connectHAnchors();
-        d->anchors()->connectVAnchors();
-    }
+    if (d->_anchors) 
+        d->anchors()->d_func()->updateOnComplete();
     if (!d->_transform.isEmpty())
         updateTransform();
 }
@@ -2149,6 +2093,8 @@ QFxItemPrivate::AnchorLines::AnchorLines(QFxItem *q)
     bottom.anchorLine = QFxAnchorLine::Bottom;
     vCenter.item = q;
     vCenter.anchorLine = QFxAnchorLine::VCenter;
+    baseline.item = q;
+    baseline.anchorLine = QFxAnchorLine::Baseline;
 }
 
 QT_END_NAMESPACE

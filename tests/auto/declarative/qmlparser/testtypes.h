@@ -7,6 +7,7 @@
 #include <QtGui/qmatrix.h>
 #include <QtGui/qcolor.h>
 #include <QtDeclarative/qml.h>
+#include <QtDeclarative/qmlcomponent.h>
 #include <QtDeclarative/qmlparserstatus.h>
 #include <QtDeclarative/qmlpropertyvaluesource.h>
 
@@ -65,7 +66,7 @@ public:
     MyInterface *interface() const { return m_interface; }
     void setInterface(MyInterface *iface) { m_interface = iface; }
 
-    static QObject *qmlAttachedProperties(QObject *other) {
+    static MyQmlObject *qmlAttachedProperties(QObject *other) {
         MyQmlObject *rv = new MyQmlObject;
         rv->setParent(other);
         return rv;

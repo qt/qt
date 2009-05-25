@@ -42,8 +42,8 @@
 #ifndef QMLSQLCONNECTION_H
 #define QMLSQLCONNECTION_H
 
-#include <qml.h>
-#include <QSqlDatabase>
+#include <QtDeclarative/qml.h>
+#include <QtSql/QSqlDatabase>
 
 QT_BEGIN_HEADER
 

@@ -42,7 +42,7 @@
 #ifndef QMLSETPROPERTIES_H
 #define QMLSETPROPERTIES_H
 
-#include <qmlstateoperations.h>
+#include <QtDeclarative/qmlstateoperations.h>
 
 
 QT_BEGIN_HEADER
@@ -50,7 +50,7 @@ QT_BEGIN_HEADER
 QT_BEGIN_NAMESPACE
 
 QT_MODULE(Declarative)
-class QmlSetPropertiesMetaObject;
+    
 class QmlSetPropertiesPrivate;
 class Q_DECLARATIVE_EXPORT QmlSetProperties : public QmlStateOperation
 {
@@ -58,26 +58,23 @@ class Q_DECLARATIVE_EXPORT QmlSetProperties : public QmlStateOperation
     Q_DECLARE_PRIVATE(QmlSetProperties);
 
     Q_PROPERTY(QObject *target READ object WRITE setObject);
-
+    Q_PROPERTY(bool restoreEntryValues READ restoreEntryValues WRITE setRestoreEntryValues);
 public:
     QmlSetProperties();
-    QmlSetProperties(QObject *parent);
     ~QmlSetProperties();
 
-    QObject *object();
+    QObject *object() const;
     void setObject(QObject *);
 
-    virtual ActionList actions();
+    bool restoreEntryValues() const;
+    void setRestoreEntryValues(bool);
 
-private:
-    ActionList doAction(QmlSetPropertiesMetaObject *, QObject *);
-    //QmlSetProperties::ActionList appendDotActions(const QVariant &, const QVariant &);
+    virtual ActionList actions();
 };
 QML_DECLARE_TYPE(QmlSetProperties);
-
-#endif // QMLSETPROPERTIES_H
-
 
 QT_END_NAMESPACE
 
 QT_END_HEADER
+
+#endif // QMLSETPROPERTIES_H

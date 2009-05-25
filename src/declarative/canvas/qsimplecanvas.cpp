@@ -621,8 +621,10 @@ QSimpleCanvas::~QSimpleCanvas()
 void QSimpleCanvasPrivate::paint(QPainter &p)
 {
 #if defined(QFX_RENDER_QPAINTER)
-    if (!isSetup)
+    if (!isSetup) {
+        ++paintVersion;
         root->d_func()->setupPainting(0, q->rect());
+    }
 
     lrpTimer.start();
 
@@ -920,6 +922,7 @@ bool QSimpleCanvas::event(QEvent *e)
         unsigned int zero = 0;
         d->root->d_func()->setupPainting(0, rect(), &zero);
 #else
+        ++d->paintVersion;
         d->root->d_func()->setupPainting(0, rect());
 #endif
 
@@ -954,9 +957,14 @@ bool QSimpleCanvas::event(QEvent *e)
             queueUpdate();
 
         return true;
-    } else {
-        return QWidget::event(e);
     }
+
+    if (e->type() == QEvent::ShortcutOverride) {
+        if (QSimpleCanvasItem *focus = focusItem())
+            return focus->event(e);
+    }
+
+    return QWidget::event(e);
 }
 
 void QSimpleCanvas::paintEvent(QPaintEvent *)

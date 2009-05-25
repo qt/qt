@@ -268,10 +268,16 @@ void QGLWidget::setContext(QGLContext *context, const QGLContext* shareContext, 
 
     XVisualInfo vi;
 
-    int err = XMatchVisualInfo(x11Info().display(), x11Info().screen(), x11Info().depth(), TrueColor, &vi);
-    if (err == 0) {
-        qWarning("Error: Couldn't get a matching X visual for format");
-        return;
+    if (parentWidget()) {
+        vi.depth = parentWidget()->x11Info().depth();
+        vi.screen = parentWidget()->x11Info().screen();
+        vi.visual = (Visual *)(parentWidget()->x11Info().visual());
+    } else {
+        int err = XMatchVisualInfo(x11Info().display(), x11Info().screen(), x11Info().depth(), TrueColor, &vi);
+        if (err == 0) {
+            qWarning("Error: Couldn't get a matching X visual for format");
+            return;
+        }
     }
 
     XSetWindowAttributes a;

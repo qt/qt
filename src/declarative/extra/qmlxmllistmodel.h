@@ -42,8 +42,8 @@
 #ifndef QMLXMLLISTMODEL_H
 #define QMLXMLLISTMODEL_H
 
-#include <qml.h>
-#include <QListModelInterface>
+#include <QtDeclarative/qml.h>
+#include <QtDeclarative/QListModelInterface>
 
 QT_BEGIN_HEADER
 
@@ -89,7 +89,10 @@ class Q_DECLARATIVE_EXPORT QmlXmlListModel : public QListModelInterface, public 
 {
     Q_OBJECT
     Q_INTERFACES(QmlParserStatus)
+    Q_ENUMS(Status)
 
+    Q_PROPERTY(Status status READ status NOTIFY statusChanged)
+    Q_PROPERTY(qreal progress READ progress NOTIFY progressChanged)
     Q_PROPERTY(QString source READ source WRITE setSource)
     Q_PROPERTY(QString query READ query WRITE setQuery)
     Q_PROPERTY(QString namespaceDeclarations READ namespaceDeclarations WRITE setNamespaceDeclarations)
@@ -115,17 +118,23 @@ public:
     QString namespaceDeclarations() const;
     void setNamespaceDeclarations(const QString&);
 
+    enum Status { Idle, Loading, Error };
+    Status status() const;
+    qreal progress() const;
+
     virtual void classComplete();
+
+signals:
+    void statusChanged(Status);
+    void progressChanged(qreal progress);
 
 public Q_SLOTS:
     void reload();
 
-protected:
-    void doQuery(QByteArray &rawData);
-    void doSubquery(int index) const;
-
 private Q_SLOTS:
     void requestFinished();
+    void requestProgress(qint64,qint64);
+    void queryCompleted(int,int);
 
 private:
     Q_DECLARE_PRIVATE(QmlXmlListModel)

@@ -42,7 +42,7 @@
 #ifndef QFXPARTICLES_H
 #define QFXPARTICLES_H
 
-#include <qfxitem.h>
+#include <QtDeclarative/qfxitem.h>
 
 #if defined(QFX_RENDER_OPENGL)
 #include "gltexture.h"
@@ -56,7 +56,7 @@ QT_MODULE(Declarative)
 
 class QFxParticle;
 class QFxParticles;
-class QFxParticleMotion : public QObject
+class Q_DECLARATIVE_EXPORT QFxParticleMotion : public QObject
 {
     Q_OBJECT
 public:
@@ -68,7 +68,7 @@ public:
 };
 QML_DECLARE_TYPE(QFxParticleMotion);
 
-class QFxParticleMotionLinear : public QFxParticleMotion
+class Q_DECLARATIVE_EXPORT QFxParticleMotionLinear : public QFxParticleMotion
 {
     Q_OBJECT
 public:
@@ -79,7 +79,7 @@ public:
 };
 QML_DECLARE_TYPE(QFxParticleMotionLinear);
 
-class QFxParticleMotionGravity : public QFxParticleMotion
+class Q_DECLARATIVE_EXPORT QFxParticleMotionGravity : public QFxParticleMotion
 {
     Q_OBJECT
 
@@ -108,7 +108,7 @@ private:
 };
 QML_DECLARE_TYPE(QFxParticleMotionGravity);
 
-class QFxParticleMotionWander : public QFxParticleMotion
+class Q_DECLARATIVE_EXPORT QFxParticleMotionWander : public QFxParticleMotion
 {
     Q_OBJECT
 public:

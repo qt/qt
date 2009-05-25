@@ -543,7 +543,7 @@ bool QX11Data::xdndMimeDataForAtom(Atom a, QMimeData *mimeData, QByteArray *data
                             (dm->xdndMimeTransferedPixmapIndex + 1) % 2;
             }
         } else {
-            DEBUG("QClipboard: xdndMimeDataForAtom(): converting to type '%s' is not supported", atomName);
+            DEBUG("QClipboard: xdndMimeDataForAtom(): converting to type '%s' is not supported", qPrintable(atomName));
         }
     }
     return data;
@@ -624,7 +624,6 @@ QVariant QX11Data::xdndMimeConvertToFormat(Atom a, const QByteArray &data, const
     if (format == QLatin1String("image/ppm")) {
         if (a == XA_PIXMAP && data.size() == sizeof(Pixmap)) {
             Pixmap xpm = *((Pixmap*)data.data());
-            Display *dpy = display;
             if (!xpm)
                 return QByteArray();
             QPixmap qpm = QPixmap::fromX11Pixmap(xpm);

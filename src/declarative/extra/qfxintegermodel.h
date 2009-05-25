@@ -42,9 +42,9 @@
 #ifndef QFXINTMODEL_H
 #define QFXINTMODEL_H
 
-#include <QObject>
-#include "qml.h"
-#include <qlistmodelinterface.h>
+#include <QtCore/QObject>
+#include <QtDeclarative/qml.h>
+#include <QtDeclarative/qlistmodelinterface.h>
 
 
 QT_BEGIN_HEADER

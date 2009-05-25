@@ -44,8 +44,8 @@
 
 #include <QtCore/qbytearray.h>
 #include <QtCore/qset.h>
-#include <qml.h>
-#include <qmlerror.h>
+#include <QtDeclarative/qml.h>
+#include <QtDeclarative/qmlerror.h>
 #include <private/qmlinstruction_p.h>
 #include <private/qmlcompositetypemanager_p.h>
 #include <private/qmlparser_p.h>
@@ -164,7 +164,7 @@ private:
                                           int ctxt);
 
     bool compileDynamicMeta(QmlParser::Object *obj);
-    void compileBinding(const QString &, QmlParser::Property *prop,
+    bool compileBinding(const QString &, QmlParser::Property *prop,
                         int ctxt, const QMetaObject *, qint64);
 
     int optimizeExpressions(int start, int end, int patch = -1);
