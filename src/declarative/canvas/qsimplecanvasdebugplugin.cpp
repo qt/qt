@@ -39,11 +39,8 @@
 **
 ****************************************************************************/
 
-#include "qsimplecanvasserver_p.h"
+#include "qsimplecanvasdebugplugin_p.h"
 #include "qdebug.h"
-#ifndef Q_OS_WIN32
-#include <arpa/inet.h>
-#endif
 #include <QtCore/qabstractanimation.h>
 
 QT_BEGIN_NAMESPACE
@@ -51,7 +48,7 @@ QT_BEGIN_NAMESPACE
 class FrameBreakAnimation : public QAbstractAnimation
 {
 public:
-    FrameBreakAnimation(QSimpleCanvasServer *s)
+    FrameBreakAnimation(QSimpleCanvasDebugPlugin *s)
     : QAbstractAnimation(s), server(s) 
     {
         start();
@@ -63,72 +60,34 @@ public:
     }
 
 private:
-    QSimpleCanvasServer *server;
+    QSimpleCanvasDebugPlugin *server;
 };
 
-QSimpleCanvasServer::QSimpleCanvasServer(int port, QObject *parent)
-: QObject(parent), _breaks(0), _tcpServer(new QTcpServer(this))
+QSimpleCanvasDebugPlugin::QSimpleCanvasDebugPlugin(QObject *parent)
+: QmlDebugServerPlugin("CanvasFrameRate", parent), _breaks(0)
 {
-    QObject::connect(_tcpServer, SIGNAL(newConnection()), 
-                     this, SLOT(newConnection()));
-
     _time.start();
-
     new FrameBreakAnimation(this);
-    if (!_tcpServer->listen(QHostAddress::Any, port)) {
-        qWarning() << "QSimpleCanvasServer: Cannot listen on port" << port;
-        return;
-    }
 }
 
-void QSimpleCanvasServer::newConnection()
+void QSimpleCanvasDebugPlugin::addTiming(quint32 paint, 
+                                         quint32 repaint, 
+                                         quint32 timeBetweenFrames)
 {
-    QTcpSocket *socket = _tcpServer->nextPendingConnection();
-    QObject::connect(socket, SIGNAL(disconnected()), 
-                     this, SLOT(disconnected()));
-    _tcpClients << socket;
-}
-
-void QSimpleCanvasServer::addTiming(quint32 paint, 
-                                quint32 repaint, 
-                                quint32 timeBetweenFrames)
-{
-    /*
-    quint32 data[3];
-    data[0] = ::htonl(paint);
-    data[1] = ::htonl(repaint);
-    data[2] = ::htonl(timeBetweenFrames);
-    */
-
     bool isFrameBreak = _breaks > 1;
     _breaks = 0;
     int e = _time.elapsed();
-    QString d = QString::number(paint) + QLatin1String(" ") + QString::number(repaint) + QLatin1String(" ") + QString::number(timeBetweenFrames) + QLatin1String(" ") + QString::number(e) + QLatin1String(" ") + QString::number(isFrameBreak) + QLatin1String("\n");
-    QByteArray ba = d.toLatin1();
-
-    // XXX
-    for (int ii = 0; ii < _tcpClients.count(); ++ii) 
-//        _tcpClients.at(ii)->write((const char *)data, 12);
-        _tcpClients.at(ii)->write(ba.constData(), ba.length());
+    QByteArray data;
+    QDataStream ds(&data, QIODevice::WriteOnly);
+    ds << (int)paint << (int)repaint << (int)timeBetweenFrames << (int)e 
+       << (bool)isFrameBreak;
+    sendMessage(data);
 }
 
-void QSimpleCanvasServer::frameBreak()
+void QSimpleCanvasDebugPlugin::frameBreak()
 {
     _breaks++;
 }
 
-void QSimpleCanvasServer::disconnected()
-{
-    QTcpSocket *socket = static_cast<QTcpSocket *>(sender());
-
-    for (int ii = 0; ii < _tcpClients.count(); ++ii) {
-        if (_tcpClients.at(ii) == socket) {
-            socket->disconnect();
-            socket->deleteLater();
-            _tcpClients.removeAt(ii);
-            return;
-        }
-    }
-}
-
 QT_END_NAMESPACE
+

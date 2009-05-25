@@ -39,37 +39,30 @@
 **
 ****************************************************************************/
 
-#ifndef QSIMPLECANVASSERVER_P_H
-#define QSIMPLECANVASSERVER_P_H
+#ifndef QSIMPLECANVASDEBUGPLUGIN_P_H
+#define QSIMPLECANVASDEBUGPLUGIN_P_H
 
 #include "qobject.h"
 #include "qtcpserver.h"
 #include "qtcpsocket.h"
 #include "qdatetime.h"
-
+#include <QtDeclarative/qmldebugserver.h>
 
 QT_BEGIN_NAMESPACE
-class QSimpleCanvasServer : public QObject
+class QSimpleCanvasDebugPlugin : public QmlDebugServerPlugin
 {
-Q_OBJECT
 public:
-    QSimpleCanvasServer(int port, QObject *parent);
+    QSimpleCanvasDebugPlugin(QObject *parent = 0);
 
     void addTiming(quint32, quint32, quint32);
-
-private Q_SLOTS:
-    void newConnection();
-    void disconnected();
 
 private:
     friend class FrameBreakAnimation;
     void frameBreak();
     int _breaks;
-
-    QTcpServer *_tcpServer;
-    QList<QTcpSocket *> _tcpClients;
     QTime _time;
 };
-
 QT_END_NAMESPACE
-#endif // GFXCANVASSERVER_P_H
+
+#endif // QSIMPLECANVASDEBUGPLUGIN_P_H
+

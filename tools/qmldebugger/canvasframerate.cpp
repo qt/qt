@@ -1,8 +1,17 @@
-#include <QApplication>
-#include <QWidget>
-#include <QPainter>
-#include <QTcpSocket>
-#include <QScrollBar>
+#include "canvasframerate.h"
+#include <QtGui/qwidget.h>
+#include <QtGui/qpainter.h>
+#include <QtGui/qscrollbar.h>
+#include <QtDeclarative/qmldebugclient.h>
+#include <QtCore/qdebug.h>
+#include <QtCore/qstringlist.h>
+#include <QtCore/qdatastream.h>
+#include <QtGui/qboxlayout.h>
+#include <QResizeEvent>
+#include <QShowEvent>
+#include <QTabWidget>
+#include <QPushButton>
+#include <QLineEdit>
 
 class QLineGraph : public QWidget
 {
@@ -25,7 +34,6 @@ private slots:
     void scrollbarChanged(int);
 
 private:
-    void positionScrollbar();
     void updateScrollbar();
     void drawSample(QPainter *, int, const QRect &);
     void drawTime(QPainter *, const QRect &);
@@ -49,6 +57,10 @@ QLineGraph::QLineGraph(QWidget *parent)
     sb.setMinimum(0);
     sb.setSingleStep(1);
 
+    QVBoxLayout *layout = new QVBoxLayout;
+    setLayout(layout);
+    layout->addStretch(2);
+    layout->addWidget(&sb);
     QObject::connect(&sb, SIGNAL(valueChanged(int)), this, SLOT(scrollbarChanged(int)));
 }
 
@@ -61,22 +73,14 @@ void QLineGraph::scrollbarChanged(int v)
     update();
 }
 
-void QLineGraph::positionScrollbar()
-{
-    sb.setFixedWidth(width());
-    sb.move(0, height() - sb.height());
-}
-
 void QLineGraph::resizeEvent(QResizeEvent *e)
 {
     QWidget::resizeEvent(e);
-    positionScrollbar();
 }
 
 void QLineGraph::showEvent(QShowEvent *e)
 {
     QWidget::showEvent(e);
-    positionScrollbar();
 }
 
 void QLineGraph::mousePressEvent(QMouseEvent *)
@@ -113,6 +117,11 @@ void QLineGraph::addSample(int a, int b, int c, int d, bool isBreak)
     _samples << s;
     updateScrollbar();
     update();
+}
+
+void QLineGraph::setPosition(int p)
+{
+    scrollbarChanged(p);
 }
 
 void QLineGraph::drawTime(QPainter *p, const QRect &rect)
@@ -211,77 +220,86 @@ void QLineGraph::paintEvent(QPaintEvent *)
     drawTime(&p, r);
 }
 
-class MyReader : public QObject
+class CanvasFrameRatePlugin : public QmlDebugClientPlugin
 {
 Q_OBJECT
 public:
-    MyReader(const QString &host, int port);
+    CanvasFrameRatePlugin(QmlDebugClient *client);
 
 signals:
     void sample(int, int, int, int, bool);
 
-private slots:
-    void readyRead();
+protected:
+    virtual void messageReceived(const QByteArray &);
 
 private:
-    QTcpSocket *socket;
-
     int la;
     int lb;
     int ld;
 };
 
-MyReader::MyReader(const QString &host, int port)
-: socket(0), la(-1)
+CanvasFrameRatePlugin::CanvasFrameRatePlugin(QmlDebugClient *client)
+: QmlDebugClientPlugin(QLatin1String("CanvasFrameRate"), client), la(-1)
 {
-    socket = new QTcpSocket(this);
-    QObject::connect(socket, SIGNAL(readyRead()), this, SLOT(readyRead()));
-    socket->connectToHost(host, port);
-    socket->waitForConnected();
 }
 
-void MyReader::readyRead()
+void CanvasFrameRatePlugin::messageReceived(const QByteArray &data)
 {
-    static int la = -1;
-    static int lb;
-    static int ld;
+    QByteArray rwData = data;
+    QDataStream stream(&rwData, QIODevice::ReadOnly);
 
-    if(socket->canReadLine()) {
-        QString line = socket->readLine();
+    int a; int b; int c; int d; bool isBreak;
+    stream >> a >> b >> c >> d >> isBreak;
 
-        int a;
-        int b;
-        int c;
-        int d;
-        int isBreak;
-        sscanf(line.toLatin1().constData(), "%d %d %d %d %d", &a, &b, &c, &d, &isBreak);
+    if (la != -1) 
+        emit sample(c, lb, la, ld, isBreak);
 
-        if (la != -1) 
-            emit sample(c, lb, la, ld, isBreak);
+    la = a;
+    lb = b;
+    ld = d;
+}
 
-        la = a;
-        lb = b;
-        ld = d;
+CanvasFrameRate::CanvasFrameRate(QmlDebugClient *client, QWidget *parent)
+: QWidget(parent)
+{
+    m_plugin = new CanvasFrameRatePlugin(client);
+
+    QVBoxLayout *layout = new QVBoxLayout;
+    layout->setContentsMargins(0,0,0,0);
+    layout->setSpacing(0);
+    setLayout(layout);
+
+    m_tabs = new QTabWidget(this);
+    layout->addWidget(m_tabs);
+
+    QHBoxLayout *bottom = new QHBoxLayout;
+    layout->addLayout(bottom);
+    bottom->addStretch(2);
+
+    QPushButton *pb = new QPushButton(tr("New Tab"), this);
+    QObject::connect(pb, SIGNAL(clicked()), this, SLOT(newTab()));
+    bottom->addWidget(pb);
+
+    newTab();
+}
+
+void CanvasFrameRate::newTab()
+{
+    if (m_tabs->count()) {
+        QWidget *w = m_tabs->widget(m_tabs->count() - 1);
+        QObject::disconnect(m_plugin, SIGNAL(sample(int,int,int,int,bool)), 
+                            w, SLOT(addSample(int,int,int,int,bool)));
     }
+
+    int id = m_tabs->count();
+
+    QLineGraph *graph = new QLineGraph(this);
+    QObject::connect(m_plugin, SIGNAL(sample(int,int,int,int,bool)), 
+                     graph, SLOT(addSample(int,int,int,int,bool)));
+
+    QString name = QLatin1String("Graph ") + QString::number(id);
+    m_tabs->addTab(graph, name);
+    m_tabs->setCurrentIndex(id);
 }
 
-int main(int argc, char ** argv)
-{
-    if(argc != 3) {
-        qWarning() << "Usage:" << argv[0] << "host port";
-        return -1;
-    }
-
-    QApplication app(argc, argv);
-
-    MyReader reader(argv[1], atoi(argv[2]));
-
-    QLineGraph graph;
-    QObject::connect(&reader, SIGNAL(sample(int,int,int,int,bool)), &graph, SLOT(addSample(int,int,int,int,bool)));
-    graph.setFixedSize(800, 600);
-    graph.show();
-
-    return app.exec();
-}
-
-#include "main.moc"
+#include "canvasframerate.moc"
