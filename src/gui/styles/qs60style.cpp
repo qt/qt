@@ -1145,7 +1145,7 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
             QS60StyleEnums::SkinParts skinPart;
             QS60StylePrivate::SkinElements skinElement;
             if (!isDisabled) {
-                const bool isPressed = (option->state & QStyle::State_Sunken) || 
+                const bool isPressed = (option->state & QStyle::State_Sunken) ||
                                        (option->state & QStyle::State_On);
                 if (isFlat) {
                     skinPart =
@@ -1280,7 +1280,7 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
             QRect textRect = subElementRect(SE_ItemViewItemText, &voptAdj, widget);
 
             // draw themed background for table unless background brush has been defined.
-            if (vopt->backgroundBrush == Qt::NoBrush) {            
+            if (vopt->backgroundBrush == Qt::NoBrush) {
                 // draw the background
                 const QStyleOptionViewItemV4 *tableOption = qstyleoption_cast<const QStyleOptionViewItemV4 *>(option);
                 const QTableView *table = qobject_cast<const QTableView *>(widget);
@@ -2616,6 +2616,14 @@ void QS60Style::polish(QWidget *widget)
     if (!widget)
         return;
 
+    if (false
+#ifndef QT_NO_SCROLLBAR
+        || qobject_cast<QScrollBar *>(widget)
+#endif
+        ) {
+        widget->setAttribute(Qt::WA_OpaquePaintEvent, false);
+    }
+
     if (QS60StylePrivate::drawsOwnThemeBackground(widget)) {
         widget->setAttribute(Qt::WA_StyledBackground);
     } else if (false
@@ -2636,6 +2644,14 @@ void QS60Style::polish(QWidget *widget)
 
 void QS60Style::unpolish(QWidget *widget)
 {
+    if (false
+    #ifndef QT_NO_SCROLLBAR
+        || qobject_cast<QScrollBar *>(widget)
+    #endif
+        ) {
+        widget->setAttribute(Qt::WA_OpaquePaintEvent);
+    }
+
     if (QS60StylePrivate::drawsOwnThemeBackground(widget)) {
         widget->setAttribute(Qt::WA_StyledBackground, false);
     } else if (false
@@ -2670,7 +2686,7 @@ void QS60Style::unpolish(QApplication *application)
 {
     QPalette newPalette = qApp->style()->standardPalette();
     application->setPalette(newPalette);
-    QApplicationPrivate::setSystemPalette(originalPalette);    
+    QApplicationPrivate::setSystemPalette(originalPalette);
 }
 
 void QS60Style::setStyleProperty(const char *name, const QVariant &value)
