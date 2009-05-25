@@ -491,8 +491,7 @@ bool QPixmapCache::insert(const QString &key, const QPixmap &pixmap)
 
 /*!
     Inserts a copy of the pixmap \a pm into
-    the cache and return you the key. The key is always greater than 0.
-    If the key is equals 0 then the insertion failed.
+    the cache and return you the key.
 
     When a pixmap is inserted and the cache is about to exceed its
     limit, it removes pixmaps until there is enough room for the
