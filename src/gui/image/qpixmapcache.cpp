@@ -128,6 +128,11 @@ bool QPixmapCache::Key::operator ==(const Key &key) const
 }
 
 /*!
+    \fn bool QPixmapCache::Key::operator !=(const Key &key) const
+    \internal
+*/
+
+/*!
     \internal
 */
 QPixmapCache::Key &QPixmapCache::Key::operator =(const Key &other)
@@ -431,8 +436,10 @@ bool QPixmapCache::find(const QString &key, QPixmap& pixmap)
 
 /*!
     Looks for a cached pixmap associated with the \a key in the cache.
-    If the pixmap is found, the function sets \a pm to that pixmap and
-    returns true; otherwise it leaves \a pm alone and returns false.
+    If the pixmap is found, the function sets \a pixmap to that pixmap and
+    returns true; otherwise it leaves \a pixmap alone and returns false.
+
+    \since 4.6
 
     Example:
     \snippet doc/src/snippets/code/src_gui_image_qpixmapcache.cpp 1
@@ -448,10 +455,12 @@ bool QPixmapCache::find(const QString &key, QPixmap* pixmap)
 
 /*!
     Looks for a cached pixmap associated with the \a key in the cache.
-    If the pixmap is found, the function sets \a pm to that pixmap and
-    returns true; otherwise it leaves \a pm alone and returns false. If
+    If the pixmap is found, the function sets \a pixmap to that pixmap and
+    returns true; otherwise it leaves \a pixmap alone and returns false. If
     the pixmap is not found, it means that the \a key is not valid anymore,
     so it will be released for the next insertion.
+
+    \since 4.6
 */
 bool QPixmapCache::find(const Key &key, QPixmap* pixmap)
 {
@@ -465,7 +474,7 @@ bool QPixmapCache::find(const Key &key, QPixmap* pixmap)
 }
 
 /*!
-    Inserts a copy of the pixmap \a pm associated with the \a key into
+    Inserts a copy of the pixmap \a pixmap associated with the \a key into
     the cache.
 
     All pixmaps inserted by the Qt library have a key starting with
@@ -490,7 +499,7 @@ bool QPixmapCache::insert(const QString &key, const QPixmap &pixmap)
 }
 
 /*!
-    Inserts a copy of the pixmap \a pm into
+    Inserts a copy of the pixmap \a pixmap into
     the cache and return you the key.
 
     When a pixmap is inserted and the cache is about to exceed its
@@ -501,6 +510,8 @@ bool QPixmapCache::insert(const QString &key, const QPixmap &pixmap)
     deleted when more space is needed.
 
     \sa setCacheLimit(), replace()
+
+    \since 4.6
 */
 QPixmapCache::Key QPixmapCache::insert(const QPixmap &pixmap)
 {
@@ -509,10 +520,12 @@ QPixmapCache::Key QPixmapCache::insert(const QPixmap &pixmap)
 
 /*!
     Replace the pixmap associated to the \a key into
-    the cache. It return true if the pixmap \a pm has been correctly
+    the cache. It return true if the pixmap \a pixmap has been correctly
     inserted into the cache false otherwise.
 
     \sa setCacheLimit(), insert()
+
+    \since 4.6
 */
 bool QPixmapCache::replace(const Key &key, const QPixmap &pixmap)
 {
@@ -562,6 +575,8 @@ void QPixmapCache::remove(const QString &key)
 /*!
   Removes the pixmap associated with \a key from the cache and release
   the key for a future insertion.
+
+  \since 4.6
 */
 void QPixmapCache::remove(const Key &key)
 {
