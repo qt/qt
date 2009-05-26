@@ -1352,7 +1352,7 @@ void QS60StyleModeSpecifics::colorGroupAndIndex(
 void QS60Style::handleDynamicLayoutVariantSwitch()
 {
     Q_D(QS60Style);
-    d->clearCaches();
+    d->clearCaches(QS60StylePrivate::CC_LayoutChange);
 #ifdef QT_S60STYLE_LAYOUTDATA_SIMULATED
     d->setActiveLayout();
 #endif // QT_S60STYLE_LAYOUTDATA_SIMULATED
@@ -1365,7 +1365,7 @@ void QS60Style::handleDynamicLayoutVariantSwitch()
 void QS60Style::handleSkinChange()
 {
     Q_D(QS60Style);
-    d->clearCaches();
+    d->clearCaches(QS60StylePrivate::CC_ThemeChange);
     d->setThemePalette(qApp);
     foreach (QWidget *topLevelWidget, QApplication::allWidgets()){
         QEvent e(QEvent::StyleChange);

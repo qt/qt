@@ -289,7 +289,7 @@ void QS60Style::setS60Theme(const QHash<QString, QPicture> &parts,
     Q_D(QS60Style);
     QS60StyleModeSpecifics::m_partPictures = parts;
     QS60StyleModeSpecifics::m_colors = colors;
-    d->clearCaches();
+    d->clearCaches(QS60StylePrivate::CC_ThemeChange);
 }
 
 QT_END_NAMESPACE
