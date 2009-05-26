@@ -55,11 +55,39 @@ public:
         this->role = role;
     }
 
+    static QString roleText(QSoftKeyAction::StandardRole role);
+
     QSoftKeyAction::StandardRole role;
     QString roleName;
     int nativePosition;
     int qtContextKey;
 };
+
+QString QSoftKeyActionPrivate::roleText(QSoftKeyAction::StandardRole role)
+{
+    switch (role) {
+        case QSoftKeyAction::Options:
+            return QSoftKeyAction::tr("Options");
+        case QSoftKeyAction::Select:
+            return QSoftKeyAction::tr("Select");
+        case QSoftKeyAction::Back:
+            return QSoftKeyAction::tr("Back");
+        case QSoftKeyAction::Next:
+            return QSoftKeyAction::tr("Next");
+        case QSoftKeyAction::Previous:
+            return QSoftKeyAction::tr("Previous");
+        case QSoftKeyAction::Ok:
+            return QSoftKeyAction::tr("Ok");
+        case QSoftKeyAction::Cancel:
+            return QSoftKeyAction::tr("Cancel");
+        case QSoftKeyAction::Edit:
+            return QSoftKeyAction::tr("Edit");
+        case QSoftKeyAction::View:
+            return QSoftKeyAction::tr("View");
+        default:
+            return QString();
+    };
+}
 
 /*!
     \enum QSoftKeyAction::StandardRole
@@ -92,6 +120,7 @@ QSoftKeyAction::QSoftKeyAction(StandardRole role, QObject *parent)
 {
     Q_D(QSoftKeyAction);
     d->role = role;
+    setText(QSoftKeyActionPrivate::roleText(role));
 }
 
 QSoftKeyAction::QSoftKeyAction(const QString &text, QObject* parent)
