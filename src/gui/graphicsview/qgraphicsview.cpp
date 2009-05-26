@@ -2888,11 +2888,17 @@ bool QGraphicsView::viewportEvent(QEvent *event)
 
         if (d->scene && d->sceneInteractionAllowed) {
             // Convert and deliver the touch event to the scene.
-            QEvent::Type eventType = event->type() == QEvent::TouchBegin
-                                     ? QEvent::GraphicsSceneTouchBegin
-                                     : event->type() == QEvent::TouchEnd
-                                     ? QEvent::GraphicsSceneTouchEnd
-                                     : QEvent::GraphicsSceneTouchUpdate;
+            QEvent::Type eventType;
+            switch(event->type()) {
+            case QEvent::TouchUpdate:
+                eventType = QEvent::GraphicsSceneTouchUpdate;
+                break;
+            case QEvent::TouchBegin:
+                eventType = QEvent::GraphicsSceneTouchBegin;
+                break;
+            default:
+                eventType = QEvent::GraphicsSceneTouchEnd;
+            }
             QGraphicsSceneTouchEvent touchEvent(eventType);
             touchEvent.setWidget(viewport());
             qt_convertTouchEventToGraphicsSceneTouchEvent(d,
