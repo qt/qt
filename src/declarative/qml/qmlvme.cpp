@@ -604,15 +604,6 @@ QObject *QmlVME::run(QmlContext *ctxt, QmlCompiledComponent *comp, int start, in
 
                     QMetaObject::connect(target, prop.coreIndex(), assign, method.methodIndex());
 
-                } else if (prop.type() & QmlMetaProperty::Property) {
-                    // ### FIXME
-                    /*
-                    instr.type = QmlInstruction::AssignObject;
-                    instr.assignObject.castValue = 0;
-                    instr.assignObject.property = sigIdx;
-                    --ii;
-                    */
-                    VME_EXCEPTION("Cannot assign an object to signal property" << pr);
                 } else {
                     VME_EXCEPTION("Cannot assign an object to signal property" << pr);
                 }
