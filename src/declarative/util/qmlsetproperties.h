@@ -71,7 +71,7 @@ public:
 
     virtual ActionList actions();
 };
-QML_DECLARE_TYPE(QmlSetProperties);
+QML_DECLARE_TYPE(QmlSetProperties)
 
 QT_END_NAMESPACE
 

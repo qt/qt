@@ -82,7 +82,7 @@ private:
     Q_DECLARE_PRIVATE(QmlSqlBind)
 };
 
-QML_DECLARE_TYPE(QmlSqlBind);
+QML_DECLARE_TYPE(QmlSqlBind)
 
 class QSqlQuery;
 class QmlSqlQueryPrivate;
@@ -134,7 +134,7 @@ private:
     Q_DECLARE_PRIVATE(QmlSqlQuery)
 };
 
-QML_DECLARE_TYPE(QmlSqlQuery);
+QML_DECLARE_TYPE(QmlSqlQuery)
 
 QT_END_NAMESPACE
 

@@ -71,9 +71,9 @@ QT_BEGIN_NAMESPACE
 #define INT_MAX 2147483647
 #endif
 
-QML_DEFINE_NOCREATE_TYPE(QFxContents);
-QML_DEFINE_TYPE(QFxItem,Item);
-QML_DEFINE_NOCREATE_TYPE(QSimpleCanvasFilter);
+QML_DEFINE_NOCREATE_TYPE(QFxContents)
+QML_DEFINE_TYPE(QFxItem,Item)
+QML_DEFINE_NOCREATE_TYPE(QSimpleCanvasFilter)
 
 /*!
     \group group_animation

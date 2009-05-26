@@ -80,7 +80,7 @@ protected:
 private:
     Q_DECLARE_PRIVATE(QFxComponentInstance)
 };
-QML_DECLARE_TYPE(QFxComponentInstance);
+QML_DECLARE_TYPE(QFxComponentInstance)
 
 QT_END_NAMESPACE
 

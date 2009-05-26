@@ -92,7 +92,7 @@ Q_SIGNALS:
     void valueChanged(qreal);
 };
 
-QML_DECLARE_TYPE(QmlFollow);
+QML_DECLARE_TYPE(QmlFollow)
 
 
 #endif // QFXFOLLOW_H

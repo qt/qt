@@ -85,7 +85,7 @@ private:
     friend class QmlState;
     void updateAutoState();
 };
-QML_DECLARE_TYPE(QmlStateGroup);
+QML_DECLARE_TYPE(QmlStateGroup)
 
 #endif // QMLSTATEGROUP_H
 

@@ -88,7 +88,7 @@ private:
     Q_DISABLE_COPY(QFxPaintedItem)
     Q_DECLARE_PRIVATE(QFxPaintedItem)
 };
-QML_DECLARE_TYPE(QFxPaintedItem);
+QML_DECLARE_TYPE(QFxPaintedItem)
 
 
 QT_END_NAMESPACE

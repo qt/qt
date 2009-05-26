@@ -137,7 +137,7 @@ QEasingCurve stringToCurve(const QString &curve)
     return easingCurve;
 }
 
-QML_DEFINE_NOCREATE_TYPE(QmlAbstractAnimation);
+QML_DEFINE_NOCREATE_TYPE(QmlAbstractAnimation)
 
 /*!
     \qmlclass Animation
@@ -554,7 +554,7 @@ void QmlAbstractAnimation::timelineComplete()
     \l{xmlPauseAnimation} {&lt;PauseAnimation&gt;}.
 */
 
-QML_DEFINE_TYPE(QmlPauseAnimation,PauseAnimation);
+QML_DEFINE_TYPE(QmlPauseAnimation,PauseAnimation)
 QmlPauseAnimation::QmlPauseAnimation(QObject *parent)
 : QmlAbstractAnimation(*(new QmlPauseAnimationPrivate), parent)
 {
@@ -924,7 +924,7 @@ void QmlColorAnimationPrivate::valueChanged(qreal v)
         property.write(newColor);
     }
 }
-QML_DEFINE_TYPE(QmlColorAnimation,ColorAnimation);
+QML_DEFINE_TYPE(QmlColorAnimation,ColorAnimation)
 
 /*!
     \qmlclass RunScriptAction QmlRunScriptAction
@@ -1018,7 +1018,7 @@ QAbstractAnimation *QmlRunScriptAction::qtAnimation()
     return d->rsa;
 }
 
-QML_DEFINE_TYPE(QmlRunScriptAction, RunScriptAction);
+QML_DEFINE_TYPE(QmlRunScriptAction, RunScriptAction)
 
 /*!
     \qmlclass SetPropertyAction QmlSetPropertyAction
@@ -1215,7 +1215,7 @@ void QmlSetPropertyAction::transition(QmlStateActions &actions,
     }
 }
 
-QML_DEFINE_TYPE(QmlSetPropertyAction,SetPropertyAction);
+QML_DEFINE_TYPE(QmlSetPropertyAction,SetPropertyAction)
 
 /*!
     \qmlclass ParentChangeAction QmlParentChangeAction
@@ -1325,7 +1325,7 @@ void QmlParentChangeAction::transition(QmlStateActions &actions,
     }
 }
 
-QML_DEFINE_TYPE(QmlParentChangeAction,ParentChangeAction);
+QML_DEFINE_TYPE(QmlParentChangeAction,ParentChangeAction)
 
 /*!
     \qmlclass NumericAnimation QmlNumericAnimation
@@ -1707,7 +1707,7 @@ void QmlNumericAnimation::transition(QmlStateActions &actions,
     }
 }
 
-QML_DEFINE_TYPE(QmlNumericAnimation,NumericAnimation);
+QML_DEFINE_TYPE(QmlNumericAnimation,NumericAnimation)
 
 QmlAnimationGroup::QmlAnimationGroup(QObject *parent)
 : QmlAbstractAnimation(*(new QmlAnimationGroupPrivate), parent)
@@ -1799,7 +1799,7 @@ void QmlSequentialAnimation::transition(QmlStateActions &actions,
     //d->ag->setDirection(direction == Backward ? QAbstractAnimation::Backward : QAbstractAnimation::Forward);
 }
 
-QML_DEFINE_TYPE(QmlSequentialAnimation,SequentialAnimation);
+QML_DEFINE_TYPE(QmlSequentialAnimation,SequentialAnimation)
 
 /*!
     \qmlclass ParallelAnimation QmlParallelAnimation
@@ -1875,7 +1875,7 @@ void QmlParallelAnimation::transition(QmlStateActions &actions,
     }
 }
 
-QML_DEFINE_TYPE(QmlParallelAnimation,ParallelAnimation);
+QML_DEFINE_TYPE(QmlParallelAnimation,ParallelAnimation)
 
 QVariant QmlVariantAnimationPrivate::interpolateVariant(const QVariant &from, const QVariant &to, qreal progress)
 {
@@ -2262,6 +2262,6 @@ void QmlVariantAnimation::transition(QmlStateActions &actions,
 }
 
 //XXX whats the best name for this? (just Animation?)
-QML_DEFINE_TYPE(QmlVariantAnimation,VariantAnimation);
+QML_DEFINE_TYPE(QmlVariantAnimation,VariantAnimation)
 
 QT_END_NAMESPACE

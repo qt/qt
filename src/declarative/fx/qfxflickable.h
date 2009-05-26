@@ -186,7 +186,7 @@ private:
     Q_DISABLE_COPY(QFxFlickable)
     Q_DECLARE_PRIVATE(QFxFlickable)
 };
-QML_DECLARE_TYPE(QFxFlickable);
+QML_DECLARE_TYPE(QFxFlickable)
 
 
 QT_END_NAMESPACE

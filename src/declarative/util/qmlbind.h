@@ -81,7 +81,7 @@ public:
 private:
     void eval();
 };
-QML_DECLARE_TYPE(QmlBind);
+QML_DECLARE_TYPE(QmlBind)
 
 QT_END_NAMESPACE
 

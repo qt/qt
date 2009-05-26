@@ -100,7 +100,7 @@ public:
     void data_insert(int, QObject *);
     QObject *data_at(int) const;
     void data_clear();
-    QML_DECLARE_LIST_PROXY(QFxItemPrivate, QObject *, data);
+    QML_DECLARE_LIST_PROXY(QFxItemPrivate, QObject *, data)
 
     // resources property
     void resources_removeAt(int);
@@ -109,7 +109,7 @@ public:
     void resources_insert(int, QObject *);
     QObject *resources_at(int) const;
     void resources_clear();
-    QML_DECLARE_LIST_PROXY(QFxItemPrivate, QObject *, resources);
+    QML_DECLARE_LIST_PROXY(QFxItemPrivate, QObject *, resources)
 
     // children property
     void children_removeAt(int);
@@ -118,7 +118,7 @@ public:
     void children_insert(int, QFxItem *);
     QFxItem *children_at(int) const;
     void children_clear();
-    QML_DECLARE_LIST_PROXY(QFxItemPrivate, QFxItem *, children);
+    QML_DECLARE_LIST_PROXY(QFxItemPrivate, QFxItem *, children)
 
     QList<QFxTransform *> _transform;
     QFxAnchors *anchors() {

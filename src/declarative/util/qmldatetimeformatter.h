@@ -107,7 +107,7 @@ private:
     Q_DECLARE_PRIVATE(QmlDateTimeFormatter)
 };
 
-QML_DECLARE_TYPE(QmlDateTimeFormatter);
+QML_DECLARE_TYPE(QmlDateTimeFormatter)
 
 
 QT_END_NAMESPACE

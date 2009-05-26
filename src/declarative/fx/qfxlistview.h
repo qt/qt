@@ -145,7 +145,7 @@ private Q_SLOTS:
     void destroyingItem(QFxItem *item);
 };
 
-QML_DECLARE_TYPE(QFxListView);
+QML_DECLARE_TYPE(QFxListView)
 
 QT_END_NAMESPACE
 

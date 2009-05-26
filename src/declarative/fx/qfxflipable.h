@@ -97,7 +97,7 @@ private:
     Q_DISABLE_COPY(QFxFlipable)
     Q_DECLARE_PRIVATE(QFxFlipable)
 };
-QML_DECLARE_TYPE(QFxFlipable);
+QML_DECLARE_TYPE(QFxFlipable)
 
 QT_END_NAMESPACE
 

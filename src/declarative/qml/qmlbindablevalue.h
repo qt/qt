@@ -85,7 +85,7 @@ protected:
 private:
     Q_DECLARE_PRIVATE(QmlBindableValue)
 };
-QML_DECLARE_TYPE(QmlBindableValue);
+QML_DECLARE_TYPE(QmlBindableValue)
 
 
 QT_END_NAMESPACE

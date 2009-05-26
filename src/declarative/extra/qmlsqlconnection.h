@@ -108,7 +108,7 @@ private:
     Q_DECLARE_PRIVATE(QmlSqlConnection)
 };
 
-QML_DECLARE_TYPE(QmlSqlConnection);
+QML_DECLARE_TYPE(QmlSqlConnection)
 
 QT_END_NAMESPACE
 

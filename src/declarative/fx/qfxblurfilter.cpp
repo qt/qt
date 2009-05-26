@@ -463,5 +463,5 @@ void QFxBlurFilter::filterGL(QSimpleCanvasItem::GLPainter &p)
 
 }
 
-QML_DEFINE_TYPE(QFxBlurFilter,Blur);
+QML_DEFINE_TYPE(QFxBlurFilter,Blur)
 QT_END_NAMESPACE

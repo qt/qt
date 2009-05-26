@@ -44,7 +44,7 @@
 
 
 QT_BEGIN_NAMESPACE
-QML_DEFINE_TYPE(QFxKeyActions,KeyActions);
+QML_DEFINE_TYPE(QFxKeyActions,KeyActions)
 
 class QFxKeyActionsPrivate
 {

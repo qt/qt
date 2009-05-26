@@ -48,7 +48,7 @@
 
 QT_BEGIN_NAMESPACE
 
-QML_DEFINE_TYPE(QFxAnchors,Anchors);
+QML_DEFINE_TYPE(QFxAnchors,Anchors)
 
 //TODO: should we cache relationships, so we don't have to check each time (parent-child or sibling)?
 //TODO: baseline support

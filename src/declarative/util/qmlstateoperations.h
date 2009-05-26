@@ -70,7 +70,7 @@ public:
 
     virtual ActionList actions();
 };
-QML_DECLARE_TYPE(QmlParentChange);
+QML_DECLARE_TYPE(QmlParentChange)
 
 class QmlRunScriptPrivate;
 class Q_DECLARATIVE_EXPORT QmlRunScript : public QmlStateOperation, public ActionEvent
@@ -95,7 +95,7 @@ public:
 
     virtual void execute();
 };
-QML_DECLARE_TYPE(QmlRunScript);
+QML_DECLARE_TYPE(QmlRunScript)
 
 class QmlSetPropertyPrivate;
 class Q_DECLARATIVE_EXPORT QmlSetProperty : public QmlStateOperation
@@ -123,7 +123,7 @@ public:
 
     virtual ActionList actions();
 };
-QML_DECLARE_TYPE(QmlSetProperty);
+QML_DECLARE_TYPE(QmlSetProperty)
 
 QT_END_NAMESPACE
 

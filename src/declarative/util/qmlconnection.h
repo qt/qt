@@ -81,7 +81,7 @@ private:
     void connectIfValid();
     void componentComplete();
 };
-QML_DECLARE_TYPE(QmlConnection);
+QML_DECLARE_TYPE(QmlConnection)
 
 #endif
 

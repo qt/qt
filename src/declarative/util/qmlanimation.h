@@ -124,7 +124,7 @@ private Q_SLOTS:
     void timelineComplete();
 };
 
-QML_DECLARE_TYPE(QmlAbstractAnimation);
+QML_DECLARE_TYPE(QmlAbstractAnimation)
 
 class QmlPauseAnimationPrivate;
 class QmlPauseAnimation : public QmlAbstractAnimation
@@ -148,7 +148,7 @@ protected:
     virtual QAbstractAnimation *qtAnimation();
     virtual void prepare(QmlMetaProperty &);
 };
-QML_DECLARE_TYPE(QmlPauseAnimation);
+QML_DECLARE_TYPE(QmlPauseAnimation)
 
 class QmlColorAnimationPrivate;
 class QmlColorAnimation : public QmlAbstractAnimation
@@ -195,7 +195,7 @@ Q_SIGNALS:
     void toChanged(const QColor &);
     void easingChanged(const QString &);
 };
-QML_DECLARE_TYPE(QmlColorAnimation);
+QML_DECLARE_TYPE(QmlColorAnimation)
 
 class QmlRunScriptActionPrivate;
 class QmlRunScriptAction : public QmlAbstractAnimation
@@ -223,7 +223,7 @@ Q_SIGNALS:
 protected:
     virtual QAbstractAnimation *qtAnimation();
 };
-QML_DECLARE_TYPE(QmlRunScriptAction);
+QML_DECLARE_TYPE(QmlRunScriptAction)
 
 class QmlSetPropertyActionPrivate;
 class QmlSetPropertyAction : public QmlAbstractAnimation
@@ -260,7 +260,7 @@ protected:
     virtual QAbstractAnimation *qtAnimation();
     virtual void prepare(QmlMetaProperty &);
 };
-QML_DECLARE_TYPE(QmlSetPropertyAction);
+QML_DECLARE_TYPE(QmlSetPropertyAction)
 
 class QmlParentChangeActionPrivate;
 class QmlParentChangeAction : public QmlAbstractAnimation
@@ -281,7 +281,7 @@ protected:
     virtual QAbstractAnimation *qtAnimation();
     virtual void prepare(QmlMetaProperty &);
 };
-QML_DECLARE_TYPE(QmlParentChangeAction);
+QML_DECLARE_TYPE(QmlParentChangeAction)
 
 class QmlNumericAnimationPrivate;
 class QmlNumericAnimation : public QmlAbstractAnimation
@@ -333,7 +333,7 @@ Q_SIGNALS:
     void easingChanged(const QString &);
     void propertiesChanged(const QString &);
 };
-QML_DECLARE_TYPE(QmlNumericAnimation);
+QML_DECLARE_TYPE(QmlNumericAnimation)
 
 #if 0
 class QmlDiscreteAnimation : public QmlAbstractAnimation
@@ -374,7 +374,7 @@ protected:
     virtual QAbstractAnimation *qtAnimation();
     virtual void prepare(QmlMetaProperty &);
 };
-QML_DECLARE_TYPE(QmlSequentialAnimation);
+QML_DECLARE_TYPE(QmlSequentialAnimation)
 
 class QmlParallelAnimation : public QmlAnimationGroup
 {
@@ -392,7 +392,7 @@ protected:
     virtual QAbstractAnimation *qtAnimation();
     virtual void prepare(QmlMetaProperty &);
 };
-QML_DECLARE_TYPE(QmlParallelAnimation);
+QML_DECLARE_TYPE(QmlParallelAnimation)
 
 class QmlVariantAnimationPrivate;
 class QmlVariantAnimation : public QmlAbstractAnimation
@@ -444,7 +444,7 @@ Q_SIGNALS:
     void easingChanged(const QString &);
     void propertiesChanged(const QString &);
 };
-QML_DECLARE_TYPE(QmlVariantAnimation);
+QML_DECLARE_TYPE(QmlVariantAnimation)
 
 #endif // QMLANIMATION_H
 

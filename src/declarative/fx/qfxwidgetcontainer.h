@@ -72,7 +72,7 @@ protected:
 private:
     QGraphicsWidget         *_graphicsWidget;
 };
-QML_DECLARE_TYPE(QFxWidgetContainer);
+QML_DECLARE_TYPE(QFxWidgetContainer)
 
 QT_END_NAMESPACE
 

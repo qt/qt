@@ -87,7 +87,7 @@ private:
     Q_DISABLE_COPY(QFxReflectionFilter)
     QFxReflectionFilterPrivate *d;
 };
-QML_DECLARE_TYPE(QFxReflectionFilter);
+QML_DECLARE_TYPE(QFxReflectionFilter)
 
 QT_END_NAMESPACE
 

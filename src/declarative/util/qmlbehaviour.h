@@ -86,7 +86,7 @@ protected:
 private Q_SLOTS:
     void propertyValueChanged();
 };
-QML_DECLARE_TYPE(QmlBehaviour);
+QML_DECLARE_TYPE(QmlBehaviour)
 
 
 #endif // QMLBEHAVIOUR_H

@@ -54,7 +54,7 @@
 
 
 QT_BEGIN_NAMESPACE
-QML_DECLARE_TYPE(QListModelInterface);
+QML_DECLARE_TYPE(QListModelInterface)
 
 class QFxVisualItemModelParts;
 class QFxVisualItemModelData;
@@ -765,7 +765,7 @@ void QFxVisualItemModel::_q_destroyingPackage(QmlPackage *package)
     emit destroyingItem(qobject_cast<QFxItem*>(package->part(d->m_part)));
 }
 
-QML_DEFINE_TYPE(QFxVisualItemModel,VisualModel);
+QML_DEFINE_TYPE(QFxVisualItemModel,VisualModel)
 
 QT_END_NAMESPACE
 #include "qfxvisualitemmodel.moc"

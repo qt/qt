@@ -77,7 +77,7 @@ public:
 
     static QmlPackageAttached *qmlAttachedProperties(QObject *);
 };
-QML_DECLARE_TYPE(QmlPackage);
+QML_DECLARE_TYPE(QmlPackage)
 
 #endif // QMLPACKAGE_H
 

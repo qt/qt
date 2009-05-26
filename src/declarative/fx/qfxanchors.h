@@ -78,7 +78,7 @@ public:
     AnchorLine anchorLine;
 };
 
-Q_DECLARE_METATYPE(QFxAnchorLine);
+Q_DECLARE_METATYPE(QFxAnchorLine)
 
 class QFxAnchorsPrivate;
 class Q_DECLARATIVE_EXPORT QFxAnchors : public QObject
@@ -188,7 +188,7 @@ private:
     Q_DECLARE_PRIVATE(QFxAnchors)
 };
 
-QML_DECLARE_TYPE(QFxAnchors);
+QML_DECLARE_TYPE(QFxAnchors)
 
 
 QT_END_NAMESPACE

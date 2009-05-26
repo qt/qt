@@ -77,7 +77,7 @@ private:
     QColor _color;
     bool _valid;
 };
-QML_DECLARE_TYPE(QFxPen);
+QML_DECLARE_TYPE(QFxPen)
 
 class QFxRectPrivate;
 class Q_DECLARATIVE_EXPORT QFxRect : public QFxItem
@@ -131,7 +131,7 @@ private:
     Q_DISABLE_COPY(QFxRect)
     Q_DECLARE_PRIVATE(QFxRect)
 };
-QML_DECLARE_TYPE(QFxRect);
+QML_DECLARE_TYPE(QFxRect)
 
 QT_END_NAMESPACE
 

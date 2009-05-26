@@ -163,7 +163,7 @@ private:
         QString _text;
 
 };
-QML_DECLARE_TYPE(QNumberFormat);
+QML_DECLARE_TYPE(QNumberFormat)
 
 
 QT_END_NAMESPACE

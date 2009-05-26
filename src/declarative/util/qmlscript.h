@@ -73,7 +73,7 @@ public:
 private Q_SLOTS:
     void replyFinished();
 };
-QML_DECLARE_TYPE(QmlScript);
+QML_DECLARE_TYPE(QmlScript)
 
 QT_END_NAMESPACE
 QT_END_HEADER

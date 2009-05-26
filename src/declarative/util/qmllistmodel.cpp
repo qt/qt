@@ -519,16 +519,16 @@ void ListModelParser::setCustomData(QObject *obj, const QByteArray &d)
     }
 }
 
-QML_DECLARE_TYPE(ListModel);
-QML_DEFINE_CUSTOM_TYPE(ListModel, ListModel, ListModelParser);
+QML_DECLARE_TYPE(ListModel)
+QML_DEFINE_CUSTOM_TYPE(ListModel, ListModel, ListModelParser)
 
 // ### FIXME
 class ListElement : public QObject
 {
 Q_OBJECT
 };
-QML_DECLARE_TYPE(ListElement);
-QML_DEFINE_TYPE(ListElement,ListElement);
+QML_DECLARE_TYPE(ListElement)
+QML_DEFINE_TYPE(ListElement,ListElement)
 
 static void dump(ModelNode *node, int ind)
 {

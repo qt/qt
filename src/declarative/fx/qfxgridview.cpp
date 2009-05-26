@@ -1421,7 +1421,7 @@ QObject *QFxGridView::qmlAttachedProperties(QObject *obj)
     return QFxGridViewAttached::properties(obj);
 }
 
-QML_DEFINE_TYPE(QFxGridView,GridView);
+QML_DEFINE_TYPE(QFxGridView,GridView)
 
 QT_END_NAMESPACE
 

@@ -87,8 +87,8 @@ private:
     int _height;
     int _width;
 };
-QML_DECLARE_TYPE(QFxContents);
-Q_DECLARE_OPERATORS_FOR_FLAGS(QFxAnchors::UsedAnchors);
+QML_DECLARE_TYPE(QFxContents)
+Q_DECLARE_OPERATORS_FOR_FLAGS(QFxAnchors::UsedAnchors)
 
 class QmlState;
 class QmlTransition;
@@ -267,9 +267,9 @@ private:
     Q_DISABLE_COPY(QFxItem)
     Q_DECLARE_PRIVATE(QFxItem)
 };
-QML_DECLARE_TYPE(QFxItem);
+QML_DECLARE_TYPE(QFxItem)
 
-QML_DECLARE_TYPE(QSimpleCanvasFilter);
+QML_DECLARE_TYPE(QSimpleCanvasFilter)
 
 QT_END_NAMESPACE
 

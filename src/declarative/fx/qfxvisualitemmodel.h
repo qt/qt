@@ -123,7 +123,7 @@ private Q_SLOTS:
 private:
     Q_DISABLE_COPY(QFxVisualItemModel)
 };
-QML_DECLARE_TYPE(QFxVisualItemModel);
+QML_DECLARE_TYPE(QFxVisualItemModel)
 
 QT_END_NAMESPACE
 

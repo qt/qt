@@ -292,6 +292,6 @@ void QFxBlendedImage::paintGLContents(GLPainter &p)
 }
 #endif
 
-QML_DEFINE_TYPE(QFxBlendedImage,BlendedImage);
+QML_DEFINE_TYPE(QFxBlendedImage,BlendedImage)
 
 QT_END_NAMESPACE

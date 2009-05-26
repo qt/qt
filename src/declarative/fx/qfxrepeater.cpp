@@ -71,7 +71,7 @@ QFxItem *QFxRepeaterPrivate::addItem(QmlContext *ctxt, QFxItem *lastItem)
     return item;
 }
 
-QML_DEFINE_TYPE(QFxRepeater,Repeater);
+QML_DEFINE_TYPE(QFxRepeater,Repeater)
 
 /*!
     \qmlclass Repeater

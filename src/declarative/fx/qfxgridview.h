@@ -139,7 +139,7 @@ private:
     void refill();
 };
 
-QML_DECLARE_TYPE(QFxGridView);
+QML_DECLARE_TYPE(QFxGridView)
 
 QT_END_NAMESPACE
 
