@@ -120,7 +120,7 @@ public:
         ExtraBoundingRegionGranularity,
         ExtraOpacity,
         ExtraEffectiveOpacity,
-        ExtraDecomposedTransform
+        ExtraDecomposedTransform,
         ExtraGestures
     };
 
