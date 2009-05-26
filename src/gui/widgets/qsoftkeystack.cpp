@@ -44,6 +44,22 @@
 #include "qapplication.h"
 #include "qmainwindow.h"
 
+static bool isSame(const QSoftkeySet& a, const QSoftkeySet& b)
+{
+    bool isSame=true;
+    if ( a.count() != b.count())
+        return false;
+    int index=0;
+    while (index<a.count()) {
+        if (a.at(index)->role() != b.at(index)->role())
+            return false;
+        if (a.at(index)->text().compare(b.at(index)->text())!=0)
+            return false;
+        index++;
+    }
+    return true;
+}
+
 QSoftKeyStackPrivate::QSoftKeyStackPrivate()
 {
 
@@ -73,6 +89,25 @@ void QSoftKeyStackPrivate::pop()
 {
     softKeyStack.pop();
     setNativeSoftKeys();
+}
+
+void QSoftKeyStackPrivate::popandPush(QSoftKeyAction *softKey)
+{
+    QSoftkeySet oldSoftKeySet = softKeyStack.pop();
+    QSoftkeySet newSoftKeySet;
+    newSoftKeySet.append(newSoftKeySet);
+    softKeyStack.push(newSoftKeySet);
+    if( !isSame(oldSoftKeySet, newSoftKeySet))
+        setNativeSoftKeys();
+}
+
+void QSoftKeyStackPrivate::popandPush(const QList<QSoftKeyAction*> &softkeys)
+{
+    QSoftkeySet oldSoftKeySet = softKeyStack.pop();
+    QSoftkeySet newSoftKeySet(softkeys);
+    softKeyStack.push(newSoftKeySet);
+    if( !isSame(oldSoftKeySet, newSoftKeySet))
+        setNativeSoftKeys();
 }
 
 const QSoftkeySet& QSoftKeyStackPrivate::top()
@@ -108,6 +143,18 @@ void QSoftKeyStack::pop()
     d->pop();
 }
 
+void QSoftKeyStack::popandPush(QSoftKeyAction *softKey)
+{
+    Q_D(QSoftKeyStack);
+    d->popandPush(softKey);
+}
+
+void QSoftKeyStack::popandPush(const QList<QSoftKeyAction*> &softkeys)
+{
+    Q_D(QSoftKeyStack);
+    d->popandPush(softkeys);
+}
+
 const QSoftkeySet& QSoftKeyStack::top()
 {
     Q_D(QSoftKeyStack);
@@ -123,8 +170,6 @@ void QSoftKeyStack::handleFocusChanged(QWidget *old, QWidget *now)
     if( !mainWindow)
         return;
     QSoftKeyStack* softKeyStack = mainWindow->softKeyStack();
-    if (old)
-        softKeyStack->pop();
     
     Qt::ContextMenuPolicy policy = now->contextMenuPolicy();
     if (policy != Qt::NoContextMenu && policy != Qt::PreventContextMenu ) {
@@ -133,7 +178,10 @@ void QSoftKeyStack::handleFocusChanged(QWidget *old, QWidget *now)
         QSoftKeyAction* contextMenu = new QSoftKeyAction(QSoftKeyAction::ContextMenu, QString::fromLatin1("ContextMenu"), now);
         actionList.append(menu);
         actionList.append(contextMenu);
-        softKeyStack->push(actionList);
+        if (old)
+            softKeyStack->popandPush(actionList);
+        else
+            softKeyStack->push(actionList);
     }
 }
 
