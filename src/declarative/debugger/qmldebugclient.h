@@ -39,12 +39,10 @@
 **
 ****************************************************************************/
 
-#ifndef QMLDEBUGGER_H
-#define QMLDEBUGGER_H
+#ifndef QMLDEBUGCLIENT_H
+#define QMLDEBUGCLIENT_H
 
-#include <QtCore/qpointer.h>
-#include <QtCore/qset.h>
-#include <QtGui/qwidget.h>
+#include <QtNetwork/qtcpsocket.h>
 
 QT_BEGIN_HEADER
 
@@ -52,53 +50,47 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Declarative)
 
-class QTreeWidget;
-class QTreeWidgetItem;
-class QPlainTextEdit;
-class QmlDebuggerItem;
-class QTableView;
-class QmlPropertyView;
-class QmlWatches;
-class QmlObjectTree;
-class QmlContext;
-class QSimpleCanvas;
-class QmlDebugger : public QWidget
+class QmlDebugClientPrivate;
+class Q_DECLARATIVE_EXPORT QmlDebugClient : public QTcpSocket
 {
-Q_OBJECT
+    Q_OBJECT
+    Q_DISABLE_COPY(QmlDebugClient)
 public:
-    QmlDebugger(QWidget *parent = 0);
-
-    void setDebugObject(QObject *);
-    void setCanvas(QSimpleCanvas *);
-
-public slots:
-    void refresh();
-
-private slots:
-    void itemClicked(QTreeWidgetItem *);
-    void itemDoubleClicked(QTreeWidgetItem *);
-    void highlightObject(quint32);
-    void addWatch(QObject *, const QString &);
+    QmlDebugClient(QObject * = 0);
 
 private:
-    void buildTree(QObject *obj, QmlDebuggerItem *parent);
-    bool makeItem(QObject *obj, QmlDebuggerItem *item);
-    QmlObjectTree *m_tree;
-    QTreeWidget *m_warnings;
-    QTableView *m_watchTable;
-    QmlWatches *m_watches;
-    QmlPropertyView *m_properties;
-    QPlainTextEdit *m_text;
-    QPointer<QObject> m_object;
-    QPointer<QObject> m_selectedItem;
+    QmlDebugClientPrivate *d;
+    friend class QmlDebugClientPlugin;
+    friend class QmlDebugClientPluginPrivate;
+};
 
-    QTreeWidgetItem *m_highlightedItem;
-    QHash<quint32, QTreeWidgetItem *> m_items;
+class QmlDebugClientPluginPrivate;
+class Q_DECLARATIVE_EXPORT QmlDebugClientPlugin : public QObject
+{
+    Q_OBJECT
+    Q_DECLARE_PRIVATE(QmlDebugClientPlugin)
+    Q_DISABLE_COPY(QmlDebugClientPlugin)
+
+public:
+    QmlDebugClientPlugin(const QString &, QmlDebugClient *parent);
+
+    QString name() const;
+
+    bool isEnabled() const;
+    void setEnabled(bool);
+
+    void sendMessage(const QByteArray &);
+
+protected:
+    virtual void messageReceived(const QByteArray &);
+
+private:
+    friend class QmlDebugClient;
+    friend class QmlDebugClientPrivate;
 };
 
 QT_END_NAMESPACE
 
 QT_END_HEADER
 
-#endif // QMLDEBUGGER_H
-
+#endif // QMLDEBUGCLIENT_H

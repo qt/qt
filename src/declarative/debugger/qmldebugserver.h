@@ -39,66 +39,44 @@
 **
 ****************************************************************************/
 
-#ifndef QMLDEBUGGER_H
-#define QMLDEBUGGER_H
+#ifndef QMLDEBUGSERVER_H
+#define QMLDEBUGSERVER_H
 
-#include <QtCore/qpointer.h>
-#include <QtCore/qset.h>
-#include <QtGui/qwidget.h>
+#include <QtCore/qobject.h>
 
 QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-QT_MODULE(Declarative)
-
-class QTreeWidget;
-class QTreeWidgetItem;
-class QPlainTextEdit;
-class QmlDebuggerItem;
-class QTableView;
-class QmlPropertyView;
-class QmlWatches;
-class QmlObjectTree;
-class QmlContext;
-class QSimpleCanvas;
-class QmlDebugger : public QWidget
+class QmlDebugServerPluginPrivate;
+class QmlDebugServerPlugin : public QObject
 {
-Q_OBJECT
+    Q_OBJECT
+    Q_DECLARE_PRIVATE(QmlDebugServerPlugin)
+    Q_DISABLE_COPY(QmlDebugServerPlugin)
 public:
-    QmlDebugger(QWidget *parent = 0);
+    QmlDebugServerPlugin(const QString &, QObject *parent = 0);
 
-    void setDebugObject(QObject *);
-    void setCanvas(QSimpleCanvas *);
+    QString name() const;
 
-public slots:
-    void refresh();
+    bool isEnabled() const;
 
-private slots:
-    void itemClicked(QTreeWidgetItem *);
-    void itemDoubleClicked(QTreeWidgetItem *);
-    void highlightObject(quint32);
-    void addWatch(QObject *, const QString &);
+    void sendMessage(const QByteArray &);
+
+    static bool isDebuggingEnabled();
+    static QString objectToString(QObject *obj);
+
+protected:
+    virtual void enabledChanged(bool);
+    virtual void messageReceived(const QByteArray &);
 
 private:
-    void buildTree(QObject *obj, QmlDebuggerItem *parent);
-    bool makeItem(QObject *obj, QmlDebuggerItem *item);
-    QmlObjectTree *m_tree;
-    QTreeWidget *m_warnings;
-    QTableView *m_watchTable;
-    QmlWatches *m_watches;
-    QmlPropertyView *m_properties;
-    QPlainTextEdit *m_text;
-    QPointer<QObject> m_object;
-    QPointer<QObject> m_selectedItem;
-
-    QTreeWidgetItem *m_highlightedItem;
-    QHash<quint32, QTreeWidgetItem *> m_items;
+    friend class QmlDebugServer;
 };
 
 QT_END_NAMESPACE
 
 QT_END_HEADER
 
-#endif // QMLDEBUGGER_H
+#endif // QMLDEBUGSERVER_H
 

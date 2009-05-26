@@ -875,7 +875,7 @@ case $rule_number: {
 PrimaryExpression: T_NUMERIC_LITERAL ;
 /.
 case $rule_number: {
-  AST::NumericLiteral *node = makeAstNode<AST::NumericLiteral> (driver->nodePool(), sym(1).dval);
+  AST::NumericLiteral *node = makeAstNode<AST::NumericLiteral> (driver->nodePool(), sym(1).dval, lexer->flags);
   node->literalToken = loc(1);
   sym(1).Node = node;
 } break;
@@ -2830,7 +2830,7 @@ PropertyNameAndValueListOpt: PropertyNameAndValueList ;
                 yytoken = *tk;
                 yylval = 0;
                 yylloc = token_buffer[0].loc;
-		yylloc.length = 0;
+                yylloc.length = 0;
 
                 first_token = &token_buffer[0];
                 last_token = &token_buffer[2];
@@ -2852,7 +2852,7 @@ PropertyNameAndValueListOpt: PropertyNameAndValueList ;
                 yytoken = tk;
                 yylval = 0;
                 yylloc = token_buffer[0].loc;
-		yylloc.length = 0;
+                yylloc.length = 0;
 
                 action = errorState;
                 goto _Lcheck_token;

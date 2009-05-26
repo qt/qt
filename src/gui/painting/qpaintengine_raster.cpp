@@ -6147,7 +6147,7 @@ void dumpClip(int width, int height, QClipData *clip)
     int y1 = 0;
 
     for (int i = 0; i < clip->count; ++i) {
-        QSpan *span = clip->spans + i;
+        QSpan *span = clip->spans() + i;
         for (int j = 0; j < span->len; ++j)
             clipImg.setPixel(span->x + j, span->y, 0xffffff00);
         x0 = qMin(x0, int(span->x));
