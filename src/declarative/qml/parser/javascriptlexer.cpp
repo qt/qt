@@ -758,49 +758,54 @@ int Lexer::lex()
 
         flags = noSuffix;
 
-        if (current == 'e' && next1 == 'm') {
+        const ushort c = QChar::toLower(current);
+        const ushort n1 = QChar::toLower(next1);
+        const ushort n2 = QChar::toLower(next2);
+        const ushort n3 = QChar::toLower(next3);
+
+        if (c == 'e' && n1 == 'm') {
             flags = emSuffix;
             shift(2);
-        } else if (current == 'e' && next1 == 'x') {
+        } else if (c == 'e' && n1 == 'x') {
             flags = exSuffix;
             shift(2);
-        } else if (current == 'p' && next1 == 'x') {
+        } else if (c == 'p' && n1 == 'x') {
             flags = pxSuffix;
             shift(2);
-        } else if (current == 'c' && next1 == 'm') {
+        } else if (c == 'c' && n1 == 'm') {
             flags = cmSuffix;
             shift(2);
-        } else if (current == 'm' && next1 == 'm') {
+        } else if (c == 'm' && n1 == 'm') {
             flags = mmSuffix;
             shift(2);
-        } else if (current == 'i' && next1 == 'n') {
+        } else if (c == 'i' && n1 == 'n') {
             flags = inSuffix;
             shift(2);
-        } else if (current == 'p' && next1 == 't') {
+        } else if (c == 'p' && n1 == 't') {
             flags = ptSuffix;
             shift(2);
-        } else if (current == 'p' && next1 == 'c') {
+        } else if (c == 'p' && n1 == 'c') {
             flags = pcSuffix;
             shift(1);
-        } else if (current == 'd' && next1 == 'e' && next2 == 'g') {
+        } else if (c == 'd' && n1 == 'e' && n2 == 'g') {
             flags = degSuffix;
             shift(3);
-        } else if (current == 'r' && next1 == 'a' && next2 == 'd') {
+        } else if (c == 'r' && n1 == 'a' && n2 == 'd') {
             flags = radSuffix;
             shift(3);
-        } else if (current == 'g' && next1 == 'r' && next2 == 'a' && next3 == 'd') {
+        } else if (c == 'g' && n1 == 'r' && n2 == 'a' && n3 == 'd') {
             flags = gradSuffix;
             shift(4);
-        } else if (current == 'm' && next1 == 's') {
+        } else if (c == 'm' && n1 == 's') {
             flags = msSuffix;
             shift(2);
-        } else if (current == 's') {
+        } else if (c == 's') {
             flags = sSuffix;
             shift(1);
-        } else if (current == 'h' && next1 == 'z') {
+        } else if (c == 'h' && n1 == 'z') {
             flags = hzSuffix;
             shift(2);
-        } else if (current == 'k' && next1 == 'h' && next2 == 'z') {
+        } else if (c == 'k' && n1 == 'h' && n2 == 'z') {
             flags = khzSuffix;
             shift(3);
         }
@@ -811,7 +816,7 @@ int Lexer::lex()
          && isIdentLetter(current)) {
         state = Bad;
         err = IllegalIdentifier;
-        errmsg = QLatin1String("Identifier cannot start with numeric literal `%1'");
+        errmsg = QLatin1String("Identifier cannot start with numeric literal");
     }
 
     // terminate string
