@@ -776,6 +776,7 @@ void QFileDialog::selectFile(const QString &filename)
     }
 
     QModelIndex index = d->model->index(filename);
+    QString file;
     if (!index.isValid()) {
         // save as dialog where we want to input a default value
         QString text = filename;
@@ -790,13 +791,13 @@ void QFileDialog::selectFile(const QString &filename)
                 )
                 text = text.remove(0,1);
         }
-        if (!isVisible() || !d->lineEdit()->hasFocus())
-            d->lineEdit()->setText(text);
+        file = text;
     } else {
-        d->qFileDialogUi->listView->selectionModel()->clear();
-        if (!isVisible() || !d->lineEdit()->hasFocus())
-            d->lineEdit()->setText(index.data().toString());
+        file = index.data().toString();
     }
+    d->qFileDialogUi->listView->selectionModel()->clear();
+    if (!isVisible() || !d->lineEdit()->hasFocus())
+        d->lineEdit()->setText(file);
 }
 
 /**
