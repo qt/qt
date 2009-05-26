@@ -741,7 +741,6 @@ QFile::rename(const QString &newName)
                     error = true;
                 }
                 if(!error) {
-					in.close();
                     if (!remove()) {
                         d->setError(QFile::RenameError, tr("Cannot remove source file"));
                         error = true;
