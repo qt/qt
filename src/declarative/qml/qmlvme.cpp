@@ -204,6 +204,9 @@ QObject *QmlVME::run(QmlContext *ctxt, QmlCompiledComponent *comp, int start, in
     const QList<QByteArray> &datas = comp->datas;
     const QList<QMetaObject *> &synthesizedMetaObjects = comp->synthesizedMetaObjects;;
     const QList<QmlCompiledData::CustomTypeData> &customTypeData = comp->customTypeData;
+    const QList<int> &intData = comp->intData;
+    const QList<float> &floatData = comp->floatData;
+
 
 #ifdef Q_ENABLE_PERFORMANCE_LOG
     QFxPerfTimer<QFxPerf::CompileRun> cr;
@@ -224,13 +227,6 @@ QObject *QmlVME::run(QmlContext *ctxt, QmlCompiledComponent *comp, int start, in
 
     for (int ii = start; !isError() && ii < (start + count); ++ii) {
         QmlInstruction &instr = comp->bytecode[ii];
-
-        if (instr.type >= QmlInstruction::StoreInstructionsStart &&
-           instr.type <= QmlInstruction::StoreInstructionsEnd) {
-
-            runStoreInstruction(stack, instr, comp);
-
-        } else {
 
         switch(instr.type) {
         case QmlInstruction::Init:
@@ -320,6 +316,252 @@ QObject *QmlVME::run(QmlContext *ctxt, QmlCompiledComponent *comp, int start, in
                 new QmlVMEMetaObject(target, synthesizedMetaObjects.at(instr.storeMeta.data), &comp->primitives, instr.storeMeta.slotData, comp);
             }
             break;
+
+        case QmlInstruction::StoreVariant:
+            {
+#ifdef Q_ENABLE_PERFORMANCE_LOG
+                QFxCompilerTimer<QFxCompiler::InstrStoreVariant> cc;
+#endif
+                QObject *target = stack.top();
+                void *a[1];
+                // XXX - can be more efficient
+                QVariant v = QmlStringConverters::variantFromString(primitives.at(instr.storeString.value));
+                a[0] = (void *)&v;
+                QMetaObject::metacall(target, QMetaObject::WriteProperty, 
+                                      instr.storeString.propertyIndex, a);
+            }
+            break;
+
+        case QmlInstruction::StoreString:
+            {
+#ifdef Q_ENABLE_PERFORMANCE_LOG
+                QFxCompilerTimer<QFxCompiler::InstrStoreString> cc;
+#endif
+                QObject *target = stack.top();
+                void *a[1];
+                a[0] = (void *)&primitives.at(instr.storeString.value);
+                QMetaObject::metacall(target, QMetaObject::WriteProperty, 
+                                      instr.storeString.propertyIndex, a);
+            }
+            break;
+
+        case QmlInstruction::StoreReal:
+            {
+#ifdef Q_ENABLE_PERFORMANCE_LOG
+                QFxCompilerTimer<QFxCompiler::InstrStoreReal> cc;
+#endif
+                QObject *target = stack.top();
+                //### moc treats qreal properties as having type double
+                double r = static_cast<double>(instr.storeReal.value);
+                void *a[1];
+                a[0] = &r;
+                QMetaObject::metacall(target, QMetaObject::WriteProperty, 
+                                      instr.storeReal.propertyIndex, a);
+            }
+            break;
+
+        case QmlInstruction::StoreBool:
+            {
+#ifdef Q_ENABLE_PERFORMANCE_LOG
+                QFxCompilerTimer<QFxCompiler::InstrStoreBool> cc;
+#endif
+                QObject *target = stack.top();
+                void *a[1];
+                a[0] = (void *)&instr.storeBool.value;
+                QMetaObject::metacall(target, QMetaObject::WriteProperty, 
+                                      instr.storeBool.propertyIndex, a);
+            }
+            break;
+
+        case QmlInstruction::StoreInteger:
+            {
+#ifdef Q_ENABLE_PERFORMANCE_LOG
+                QFxCompilerTimer<QFxCompiler::InstrStoreInteger> cc;
+#endif
+                QObject *target = stack.top();
+                void *a[1];
+                a[0] = (void *)&instr.storeInteger.value;
+                QMetaObject::metacall(target, QMetaObject::WriteProperty, 
+                                      instr.storeReal.propertyIndex, a);
+            }
+            break;
+
+        case QmlInstruction::StoreColor:
+            {
+#ifdef Q_ENABLE_PERFORMANCE_LOG
+                QFxCompilerTimer<QFxCompiler::InstrStoreColor> cc;
+#endif
+                QObject *target = stack.top();
+                void *a[1];
+                QColor c = QColor::fromRgba(instr.storeColor.value);
+                a[0] = (void *)&c;
+                QMetaObject::metacall(target, QMetaObject::WriteProperty, 
+                                      instr.storeColor.propertyIndex, a);
+            }
+            break;
+
+        case QmlInstruction::StoreDate:
+            {
+#ifdef Q_ENABLE_PERFORMANCE_LOG
+                QFxCompilerTimer<QFxCompiler::InstrStoreDate> cc;
+#endif
+                QObject *target = stack.top();
+                void *a[1];
+                QDate d = QDate::fromJulianDay(instr.storeDate.value);
+                a[0] = (void *)&d;
+                QMetaObject::metacall(target, QMetaObject::WriteProperty, 
+                                      instr.storeDate.propertyIndex, a);
+            }
+            break;
+
+        case QmlInstruction::StoreTime:
+            {
+#ifdef Q_ENABLE_PERFORMANCE_LOG
+                //QFxCompilerTimer<QFxCompiler::InstrStoreTime> cc;
+#endif
+                QObject *target = stack.top();
+                void *a[1];
+                QTime t;
+                t.setHMS(intData.at(instr.storeTime.valueIndex),
+                         intData.at(instr.storeTime.valueIndex+1),
+                         intData.at(instr.storeTime.valueIndex+2),
+                         intData.at(instr.storeTime.valueIndex+3));
+                a[0] = (void *)&t;
+                QMetaObject::metacall(target, QMetaObject::WriteProperty, 
+                                      instr.storeTime.propertyIndex, a);
+            }
+            break;
+
+        case QmlInstruction::StoreDateTime:
+            {
+#ifdef Q_ENABLE_PERFORMANCE_LOG
+                //QFxCompilerTimer<QFxCompiler::InstrStoreDateTime> cc;
+#endif
+                QObject *target = stack.top();
+                void *a[1];
+                QTime t;
+                t.setHMS(intData.at(instr.storeDateTime.valueIndex+1),
+                         intData.at(instr.storeDateTime.valueIndex+2),
+                         intData.at(instr.storeDateTime.valueIndex+3),
+                         intData.at(instr.storeDateTime.valueIndex+4));
+                QDateTime dt(QDate::fromJulianDay(intData.at(instr.storeDateTime.valueIndex)), t);
+                a[0] = (void *)&dt;
+                QMetaObject::metacall(target, QMetaObject::WriteProperty,
+                                      instr.storeDateTime.propertyIndex, a);
+            }
+            break;
+
+        case QmlInstruction::StorePoint:
+            {
+#ifdef Q_ENABLE_PERFORMANCE_LOG
+                QFxCompilerTimer<QFxCompiler::InstrStorePoint> cc;
+#endif
+                QObject *target = stack.top();
+                void *a[1];
+                QPoint p = QPointF(floatData.at(instr.storeRealPair.valueIndex),
+                                   floatData.at(instr.storeRealPair.valueIndex+1)).toPoint();
+                a[0] = (void *)&p;
+                QMetaObject::metacall(target, QMetaObject::WriteProperty, 
+                                      instr.storeRealPair.propertyIndex, a);
+            }
+            break;
+
+        case QmlInstruction::StorePointF:
+            {
+#ifdef Q_ENABLE_PERFORMANCE_LOG
+                QFxCompilerTimer<QFxCompiler::InstrStorePoint> cc;
+#endif
+                QObject *target = stack.top();
+                void *a[1];
+                QPointF p(floatData.at(instr.storeRealPair.valueIndex),
+                          floatData.at(instr.storeRealPair.valueIndex+1));
+                a[0] = (void *)&p;
+                QMetaObject::metacall(target, QMetaObject::WriteProperty, 
+                                      instr.storeRealPair.propertyIndex, a);
+            }
+            break;
+
+        case QmlInstruction::StoreSize:
+            {
+#ifdef Q_ENABLE_PERFORMANCE_LOG
+                QFxCompilerTimer<QFxCompiler::InstrStoreSize> cc;
+#endif
+                QObject *target = stack.top();
+                void *a[1];
+                QSize p = QSizeF(floatData.at(instr.storeRealPair.valueIndex),
+                                 floatData.at(instr.storeRealPair.valueIndex+1)).toSize();
+                a[0] = (void *)&p;
+                QMetaObject::metacall(target, QMetaObject::WriteProperty, 
+                                      instr.storeRealPair.propertyIndex, a);
+            }
+            break;
+
+        case QmlInstruction::StoreSizeF:
+            {
+#ifdef Q_ENABLE_PERFORMANCE_LOG
+                QFxCompilerTimer<QFxCompiler::InstrStoreSize> cc;
+#endif
+                QObject *target = stack.top();
+                void *a[1];
+                QSizeF s(floatData.at(instr.storeRealPair.valueIndex),
+                         floatData.at(instr.storeRealPair.valueIndex+1));
+                a[0] = (void *)&s;
+                QMetaObject::metacall(target, QMetaObject::WriteProperty, 
+                                      instr.storeRealPair.propertyIndex, a);
+            }
+            break;
+
+        case QmlInstruction::StoreRect:
+            {
+#ifdef Q_ENABLE_PERFORMANCE_LOG
+                //QFxCompilerTimer<QFxCompiler::InstrStoreRect> cc;
+#endif
+                QObject *target = stack.top();
+                void *a[1];
+                QRect r = QRectF(floatData.at(instr.storeRect.valueIndex),
+                                 floatData.at(instr.storeRect.valueIndex+1),
+                                 floatData.at(instr.storeRect.valueIndex+2),
+                                 floatData.at(instr.storeRect.valueIndex+3)).toRect();
+                a[0] = (void *)&r;
+                QMetaObject::metacall(target, QMetaObject::WriteProperty, 
+                                      instr.storeRect.propertyIndex, a);
+            }
+            break;
+
+        case QmlInstruction::StoreRectF:
+            {
+#ifdef Q_ENABLE_PERFORMANCE_LOG
+                //QFxCompilerTimer<QFxCompiler::InstrStoreRect> cc;
+#endif
+                QObject *target = stack.top();
+                void *a[1];
+                QRectF r(floatData.at(instr.storeRect.valueIndex),
+                         floatData.at(instr.storeRect.valueIndex+1),
+                         floatData.at(instr.storeRect.valueIndex+2),
+                         floatData.at(instr.storeRect.valueIndex+3));
+                a[0] = (void *)&r;
+                QMetaObject::metacall(target, QMetaObject::WriteProperty, 
+                                      instr.storeRect.propertyIndex, a);
+            }
+            break;
+
+        case QmlInstruction::StoreObject:
+            {
+#ifdef Q_ENABLE_PERFORMANCE_LOG
+                QFxCompilerTimer<QFxCompiler::InstrStoreObject> cc;
+#endif
+                QObject *assignObj = stack.pop();
+                QObject *target = stack.top();
+
+                void *a[1];
+                void *obj = (void *)(((char *)assignObj) + instr.storeObject.cast);
+                a[0] = (void *)&obj;
+
+                QMetaObject::metacall(target, QMetaObject::WriteProperty, 
+                                      instr.storeObject.propertyIndex, a);
+            }
+            break;
+
 
         case QmlInstruction::AssignCustomType:
             {
@@ -817,7 +1059,6 @@ QObject *QmlVME::run(QmlContext *ctxt, QmlCompiledComponent *comp, int start, in
             qFatal("QmlCompiledComponent: Internal error - unknown instruction %d", instr.type);
             break;
         }
-        }
     }
 
     if (isError()) {
@@ -856,266 +1097,6 @@ bool QmlVME::isError() const
 QList<QmlError> QmlVME::errors() const
 {
     return vmeErrors;
-}
-
-void QmlVME::runStoreInstruction(QStack<QObject *> &stack,
-                                 QmlInstruction &instr, 
-                                 QmlCompiledData *comp)
-{
-    const QList<QString> &primitives = comp->primitives;
-    const QList<int> &intData = comp->intData;
-    const QList<float> &floatData = comp->floatData;
-
-    switch(instr.type) {
-        case QmlInstruction::StoreVariant:
-            {
-#ifdef Q_ENABLE_PERFORMANCE_LOG
-                QFxCompilerTimer<QFxCompiler::InstrStoreVariant> cc;
-#endif
-                QObject *target = stack.top();
-                void *a[1];
-                // XXX - can be more efficient
-                QVariant v = QmlStringConverters::variantFromString(primitives.at(instr.storeString.value));
-                a[0] = (void *)&v;
-                QMetaObject::metacall(target, QMetaObject::WriteProperty, 
-                                      instr.storeString.propertyIndex, a);
-            }
-            break;
-
-        case QmlInstruction::StoreString:
-            {
-#ifdef Q_ENABLE_PERFORMANCE_LOG
-                QFxCompilerTimer<QFxCompiler::InstrStoreString> cc;
-#endif
-                QObject *target = stack.top();
-                void *a[1];
-                a[0] = (void *)&primitives.at(instr.storeString.value);
-                QMetaObject::metacall(target, QMetaObject::WriteProperty, 
-                                      instr.storeString.propertyIndex, a);
-            }
-            break;
-
-        case QmlInstruction::StoreReal:
-            {
-#ifdef Q_ENABLE_PERFORMANCE_LOG
-                QFxCompilerTimer<QFxCompiler::InstrStoreReal> cc;
-#endif
-                QObject *target = stack.top();
-                //### moc treats qreal properties as having type double
-                double r = static_cast<double>(instr.storeReal.value);
-                void *a[1];
-                a[0] = &r;
-                QMetaObject::metacall(target, QMetaObject::WriteProperty, 
-                                      instr.storeReal.propertyIndex, a);
-            }
-            break;
-
-        case QmlInstruction::StoreBool:
-            {
-#ifdef Q_ENABLE_PERFORMANCE_LOG
-                QFxCompilerTimer<QFxCompiler::InstrStoreBool> cc;
-#endif
-                QObject *target = stack.top();
-                void *a[1];
-                a[0] = (void *)&instr.storeBool.value;
-                QMetaObject::metacall(target, QMetaObject::WriteProperty, 
-                                      instr.storeBool.propertyIndex, a);
-            }
-            break;
-
-        case QmlInstruction::StoreInteger:
-            {
-#ifdef Q_ENABLE_PERFORMANCE_LOG
-                QFxCompilerTimer<QFxCompiler::InstrStoreInteger> cc;
-#endif
-                QObject *target = stack.top();
-                void *a[1];
-                a[0] = (void *)&instr.storeInteger.value;
-                QMetaObject::metacall(target, QMetaObject::WriteProperty, 
-                                      instr.storeReal.propertyIndex, a);
-            }
-            break;
-
-        case QmlInstruction::StoreColor:
-            {
-#ifdef Q_ENABLE_PERFORMANCE_LOG
-                QFxCompilerTimer<QFxCompiler::InstrStoreColor> cc;
-#endif
-                QObject *target = stack.top();
-                void *a[1];
-                QColor c = QColor::fromRgba(instr.storeColor.value);
-                a[0] = (void *)&c;
-                QMetaObject::metacall(target, QMetaObject::WriteProperty, 
-                                      instr.storeColor.propertyIndex, a);
-            }
-            break;
-
-        case QmlInstruction::StoreDate:
-            {
-#ifdef Q_ENABLE_PERFORMANCE_LOG
-                QFxCompilerTimer<QFxCompiler::InstrStoreDate> cc;
-#endif
-                QObject *target = stack.top();
-                void *a[1];
-                QDate d = QDate::fromJulianDay(instr.storeDate.value);
-                a[0] = (void *)&d;
-                QMetaObject::metacall(target, QMetaObject::WriteProperty, 
-                                      instr.storeDate.propertyIndex, a);
-            }
-            break;
-
-        case QmlInstruction::StoreTime:
-            {
-#ifdef Q_ENABLE_PERFORMANCE_LOG
-                //QFxCompilerTimer<QFxCompiler::InstrStoreTime> cc;
-#endif
-                QObject *target = stack.top();
-                void *a[1];
-                QTime t;
-                t.setHMS(intData.at(instr.storeTime.valueIndex),
-                         intData.at(instr.storeTime.valueIndex+1),
-                         intData.at(instr.storeTime.valueIndex+2),
-                         intData.at(instr.storeTime.valueIndex+3));
-                a[0] = (void *)&t;
-                QMetaObject::metacall(target, QMetaObject::WriteProperty, 
-                                      instr.storeTime.propertyIndex, a);
-            }
-            break;
-
-        case QmlInstruction::StoreDateTime:
-            {
-#ifdef Q_ENABLE_PERFORMANCE_LOG
-                //QFxCompilerTimer<QFxCompiler::InstrStoreDateTime> cc;
-#endif
-                QObject *target = stack.top();
-                void *a[1];
-                QTime t;
-                t.setHMS(intData.at(instr.storeDateTime.valueIndex+1),
-                         intData.at(instr.storeDateTime.valueIndex+2),
-                         intData.at(instr.storeDateTime.valueIndex+3),
-                         intData.at(instr.storeDateTime.valueIndex+4));
-                QDateTime dt(QDate::fromJulianDay(intData.at(instr.storeDateTime.valueIndex)), t);
-                a[0] = (void *)&dt;
-                QMetaObject::metacall(target, QMetaObject::WriteProperty,
-                                      instr.storeDateTime.propertyIndex, a);
-            }
-            break;
-
-        case QmlInstruction::StorePoint:
-            {
-#ifdef Q_ENABLE_PERFORMANCE_LOG
-                QFxCompilerTimer<QFxCompiler::InstrStorePoint> cc;
-#endif
-                QObject *target = stack.top();
-                void *a[1];
-                QPoint p = QPointF(floatData.at(instr.storeRealPair.valueIndex),
-                                   floatData.at(instr.storeRealPair.valueIndex+1)).toPoint();
-                a[0] = (void *)&p;
-                QMetaObject::metacall(target, QMetaObject::WriteProperty, 
-                                      instr.storeRealPair.propertyIndex, a);
-            }
-            break;
-
-        case QmlInstruction::StorePointF:
-            {
-#ifdef Q_ENABLE_PERFORMANCE_LOG
-                QFxCompilerTimer<QFxCompiler::InstrStorePoint> cc;
-#endif
-                QObject *target = stack.top();
-                void *a[1];
-                QPointF p(floatData.at(instr.storeRealPair.valueIndex),
-                          floatData.at(instr.storeRealPair.valueIndex+1));
-                a[0] = (void *)&p;
-                QMetaObject::metacall(target, QMetaObject::WriteProperty, 
-                                      instr.storeRealPair.propertyIndex, a);
-            }
-            break;
-
-        case QmlInstruction::StoreSize:
-            {
-#ifdef Q_ENABLE_PERFORMANCE_LOG
-                QFxCompilerTimer<QFxCompiler::InstrStoreSize> cc;
-#endif
-                QObject *target = stack.top();
-                void *a[1];
-                QSize p = QSizeF(floatData.at(instr.storeRealPair.valueIndex),
-                                 floatData.at(instr.storeRealPair.valueIndex+1)).toSize();
-                a[0] = (void *)&p;
-                QMetaObject::metacall(target, QMetaObject::WriteProperty, 
-                                      instr.storeRealPair.propertyIndex, a);
-            }
-            break;
-
-        case QmlInstruction::StoreSizeF:
-            {
-#ifdef Q_ENABLE_PERFORMANCE_LOG
-                QFxCompilerTimer<QFxCompiler::InstrStoreSize> cc;
-#endif
-                QObject *target = stack.top();
-                void *a[1];
-                QSizeF s(floatData.at(instr.storeRealPair.valueIndex),
-                         floatData.at(instr.storeRealPair.valueIndex+1));
-                a[0] = (void *)&s;
-                QMetaObject::metacall(target, QMetaObject::WriteProperty, 
-                                      instr.storeRealPair.propertyIndex, a);
-            }
-            break;
-
-        case QmlInstruction::StoreRect:
-            {
-#ifdef Q_ENABLE_PERFORMANCE_LOG
-                //QFxCompilerTimer<QFxCompiler::InstrStoreRect> cc;
-#endif
-                QObject *target = stack.top();
-                void *a[1];
-                QRect r = QRectF(floatData.at(instr.storeRect.valueIndex),
-                                 floatData.at(instr.storeRect.valueIndex+1),
-                                 floatData.at(instr.storeRect.valueIndex+2),
-                                 floatData.at(instr.storeRect.valueIndex+3)).toRect();
-                a[0] = (void *)&r;
-                QMetaObject::metacall(target, QMetaObject::WriteProperty, 
-                                      instr.storeRect.propertyIndex, a);
-            }
-            break;
-
-        case QmlInstruction::StoreRectF:
-            {
-#ifdef Q_ENABLE_PERFORMANCE_LOG
-                //QFxCompilerTimer<QFxCompiler::InstrStoreRect> cc;
-#endif
-                QObject *target = stack.top();
-                void *a[1];
-                QRectF r(floatData.at(instr.storeRect.valueIndex),
-                         floatData.at(instr.storeRect.valueIndex+1),
-                         floatData.at(instr.storeRect.valueIndex+2),
-                         floatData.at(instr.storeRect.valueIndex+3));
-                a[0] = (void *)&r;
-                QMetaObject::metacall(target, QMetaObject::WriteProperty, 
-                                      instr.storeRect.propertyIndex, a);
-            }
-            break;
-
-        case QmlInstruction::StoreObject:
-            {
-#ifdef Q_ENABLE_PERFORMANCE_LOG
-                QFxCompilerTimer<QFxCompiler::InstrStoreObject> cc;
-#endif
-                QObject *assignObj = stack.pop();
-                QObject *target = stack.top();
-
-                void *a[1];
-                void *obj = (void *)(((char *)assignObj) + instr.storeObject.cast);
-                a[0] = (void *)&obj;
-
-                QMetaObject::metacall(target, QMetaObject::WriteProperty, 
-                                      instr.storeObject.propertyIndex, a);
-            }
-            break;
-        default:
-            qFatal("QmlCompiledComponent: Internal error - unknown instruction %d", instr.type);
-            break;
-    }
-
 }
 
 QT_END_NAMESPACE

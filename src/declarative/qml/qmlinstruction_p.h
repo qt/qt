@@ -83,7 +83,6 @@ public:
         //    StoreObject - Pop the object on the top of the object stack and
         //                  store it in a core property
         StoreReal,                /* storeReal */
-        StoreInstructionsStart = StoreReal,
         StoreInteger,             /* storeInteger */
         StoreBool,                /* storeBool */
         StoreString,              /* storeString */
@@ -99,7 +98,6 @@ public:
         StoreRectF,               /* storeRect */
         StoreVariant,             /* storeString */
         StoreObject,              /* storeObject */
-        StoreInstructionsEnd = StoreObject,
         StoreVariantObject,       /* storeObject */
         StoreInterface,           /* storeObject */
 
