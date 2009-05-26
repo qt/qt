@@ -235,7 +235,7 @@ QFxVisualItemModelDataMetaObject::propertyCreated(int, QMetaPropertyBuilder &pro
                 if (values.isEmpty())
                     return QVariant();
                 else
-                    return *values.begin();
+                    return values.value(iter.key());
             } 
         }
     } else if (data->m_model->m_abstractItemModel) {
@@ -644,7 +644,7 @@ void QFxVisualItemModel::_q_itemsChanged(int index, int count,
                 int role = data->role(prop);
                 if (roles.contains(role)) {
                     if (d->m_listModelInterface) {
-                        data->setValue(prop, *d->m_listModelInterface->data(ii, QList<int>() << role).begin());
+                        data->setValue(prop, d->m_listModelInterface->data(ii, QList<int>() << role).value(role));
                     } else if (d->m_abstractItemModel) {
                         QModelIndex index = d->m_abstractItemModel->index(ii, 0);
                         data->setValue(prop, d->m_abstractItemModel->data(index, role));

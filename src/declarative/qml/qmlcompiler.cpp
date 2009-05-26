@@ -154,28 +154,18 @@ int QmlCompiledData::indexForLocation(const QmlParser::LocationSpan &l)
 }
 
 QmlCompiler::QmlCompiler()
-: exceptionLine(-1), exceptionColumn(-1), output(0)
+: output(0)
 {
 }
 
 bool QmlCompiler::isError() const
 {
-    return exceptionLine != -1;
+    return !exceptions.isEmpty(); 
 }
 
 QList<QmlError> QmlCompiler::errors() const
 {
-    QList<QmlError> rv;
-
-    if(isError()) {
-        QmlError error;
-        error.setDescription(exceptionDescription);
-        error.setLine(exceptionLine);
-        error.setColumn(exceptionColumn);
-        rv << error;
-    }
-
-    return rv;
+    return exceptions;
 }
 
 bool QmlCompiler::isValidId(const QString &val)
@@ -436,21 +426,29 @@ void QmlCompiler::reset(QmlCompiledComponent *cc, bool deleteMemory)
 
 #define COMPILE_EXCEPTION2(token, desc) \
     {  \
-        exceptionLine = token->location.start.line;  \
-        exceptionColumn = token->location.start.column;  \
+        QString exceptionDescription; \
+        QmlError error; \
+        error.setUrl(output->url); \
+        error.setLine(token->location.start.line); \
+        error.setColumn(token->location.start.column); \
         QDebug d(&exceptionDescription); \
         d << desc;  \
-        exceptionDescription = exceptionDescription.trimmed(); \
+        error.setDescription(exceptionDescription.trimmed()); \
+        exceptions << error; \
         return false; \
     } 
 
 #define COMPILE_EXCEPTION(desc) \
     {  \
-        exceptionLine = obj->location.start.line;  \
-        exceptionColumn = obj->location.start.column;  \
+        QString exceptionDescription; \
+        QmlError error; \
+        error.setUrl(output->url); \
+        error.setLine(obj->location.start.line); \
+        error.setColumn(obj->location.start.column); \
         QDebug d(&exceptionDescription); \
         d << desc;  \
-        exceptionDescription = exceptionDescription.trimmed(); \
+        error.setDescription(exceptionDescription.trimmed()); \
+        exceptions << error; \
         return false; \
     } 
 
@@ -466,7 +464,7 @@ bool QmlCompiler::compile(QmlEngine *engine,
 #ifdef Q_ENABLE_PERFORMANCE_LOG
     QFxPerfTimer<QFxPerf::Compile> pc;
 #endif
-    exceptionLine = -1;
+    exceptions.clear();
 
     Q_ASSERT(out);
     reset(out, true);
@@ -481,6 +479,17 @@ bool QmlCompiler::compile(QmlEngine *engine,
             ref.type = tref.type;
         else if (tref.unit) {
             ref.component = tref.unit->toComponent(engine);
+
+            if (ref.component->isError()) {
+                QmlError error;
+                error.setUrl(output->url); 
+                error.setDescription(QLatin1String("Unable to create type ") + 
+                                     unit->data.types().at(ii));
+                exceptions << error;
+                exceptions << ref.component->errors();
+                reset(out, true);
+                return false;
+            }
             ref.ref = tref.unit;
             ref.ref->addref();
         } 
@@ -552,23 +561,28 @@ bool QmlCompiler::compileObject(Object *obj, int ctxt)
 
     COMPILE_CHECK(compileDynamicMeta(obj));
 
+    int parserStatusCast = -1;
     if (obj->type != -1) {
-        if (output->types.at(obj->type).component) {
-            QmlInstruction begin;
-            begin.type = QmlInstruction::TryBeginObject;
-            begin.line = obj->location.start.line;
-            output->bytecode << begin;
-        } else {
-            int cast = QmlMetaType::qmlParserStatusCast(QmlMetaType::type(output->types.at(obj->type).className));
-            if (cast != -1) {
-                QmlInstruction begin;
-                begin.type = QmlInstruction::BeginObject;
-                begin.begin.castValue = cast;
-                begin.line = obj->location.start.line;
-                output->bytecode << begin;
-            }
+        // ### Optimize
+        const QMetaObject *mo = obj->metatype;
+        QmlType *type = 0;
+        while (!type && mo) {
+            type = QmlMetaType::qmlType(mo);
+            mo = mo->superClass();
         }
-    } 
+
+        Q_ASSERT(type);
+
+        parserStatusCast = type->parserStatusCast();
+    }
+
+    if (parserStatusCast != -1) {
+        QmlInstruction begin;
+        begin.type = QmlInstruction::BeginObject;
+        begin.begin.castValue = parserStatusCast;
+        begin.line = obj->location.start.line;
+        output->bytecode << begin;
+    }
 
     bool isCustomParser = output->types.at(obj->type).type &&  
                           output->types.at(obj->type).type->customParser() != 0;
@@ -611,22 +625,12 @@ bool QmlCompiler::compileObject(Object *obj, int ctxt)
                 output->indexForByteArray(customData);
     }
 
-    if (obj->type != -1) {
-        if (output->types.at(obj->type).component) {
-            QmlInstruction complete;
-            complete.type = QmlInstruction::TryCompleteObject;
-            complete.line = obj->location.start.line;
-            output->bytecode << complete;
-        } else {
-            int cast = QmlMetaType::qmlParserStatusCast(QmlMetaType::type(output->types.at(obj->type).className));
-            if (cast != -1) {
-                QmlInstruction complete;
-                complete.type = QmlInstruction::CompleteObject;
-                complete.complete.castValue = cast;
-                complete.line = obj->location.start.line;
-                output->bytecode << complete;
-            }
-        }
+    if (parserStatusCast != -1) {
+        QmlInstruction complete;
+        complete.type = QmlInstruction::CompleteObject;
+        complete.complete.castValue = parserStatusCast;
+        complete.line = obj->location.start.line;
+        output->bytecode << complete;
     } 
 
     return true;
@@ -671,6 +675,9 @@ bool QmlCompiler::compileComponent(Object *obj, int ctxt)
         id.line = idProp->location.start.line;
         id.setId.value = pref;
         id.setId.save = -1;
+
+        savedTypes.insert(output->bytecode.count(), -1);
+
         output->bytecode << id;
     }
 
@@ -932,6 +939,7 @@ bool QmlCompiler::compileIdProperty(QmlParser::Property *prop,
         id.line = prop->values.at(0)->location.start.line;
         id.setId.value = pref;
         id.setId.save = -1;
+        savedTypes.insert(output->bytecode.count(), obj->type);
         output->bytecode << id;
 
         obj->id = val.toLatin1();
@@ -972,16 +980,16 @@ bool QmlCompiler::compileNestedProperty(QmlParser::Property *prop,
     if (prop->type != 0) 
         prop->value->metatype = QmlMetaType::metaObjectForType(prop->type);
     
+    if (prop->index == -1)
+        COMPILE_EXCEPTION2(prop, "Cannot access non-existant property" << prop->name);
+
+    if (!QmlMetaType::isObject(prop->value->metatype)) 
+        COMPILE_EXCEPTION2(prop, "Cannot nest non-QObject property" << prop->name);
+
     QmlInstruction fetch;
-    if (prop->index != -1 && 
-       QmlMetaType::isObject(prop->value->metatype)) {
-        fetch.type = QmlInstruction::FetchObject;
-        fetch.fetch.property = prop->index;
-        fetch.fetch.isObject = true;
-    } else {
-        fetch.type = QmlInstruction::ResolveFetchObject;
-        fetch.fetch.property = output->indexForByteArray(prop->name);
-    }
+    fetch.type = QmlInstruction::FetchObject;
+    fetch.fetch.property = prop->index;
+    fetch.fetch.isObject = true;
     fetch.line = prop->location.start.line;
     output->bytecode << fetch;
 
@@ -1098,8 +1106,40 @@ bool QmlCompiler::compilePropertyObjectAssignment(QmlParser::Property *prop,
 {
     if (v->object->type != -1) 
         v->object->metatype = output->types.at(v->object->type).metaObject();
+    Q_ASSERT(v->object->metaObject());
 
-    if (v->object->metaObject()) {
+    if (prop->index == -1)
+        COMPILE_EXCEPTION2(prop, "Cannot assign object to non-existant property" << prop->name);
+
+
+    if (QmlMetaType::isInterface(prop->type)) {
+
+        COMPILE_CHECK(compileObject(v->object, ctxt));
+
+        QmlInstruction assign;
+        assign.type = QmlInstruction::StoreInterface;
+        assign.line = v->object->location.start.line;
+        assign.storeObject.propertyIndex = prop->index;
+        assign.storeObject.cast = 0;
+        output->bytecode << assign;
+
+        v->type = Value::CreatedObject;
+
+    } else if (prop->type == -1) {
+
+        // Variant
+        // ### Is it always?
+        COMPILE_CHECK(compileObject(v->object, ctxt));
+
+        QmlInstruction assign;
+        assign.type = QmlInstruction::StoreVariantObject;
+        assign.line = v->object->location.start.line;
+        assign.storeObject.propertyIndex = prop->index;
+        assign.storeObject.cast = 0;
+        output->bytecode << assign;
+
+        v->type = Value::CreatedObject;
+    } else {
 
         const QMetaObject *propmo = 
             QmlMetaType::rawMetaObjectForType(prop->type);
@@ -1124,22 +1164,7 @@ bool QmlCompiler::compilePropertyObjectAssignment(QmlParser::Property *prop,
             }
         }
 
-        if (!propmo && !isPropertyValue) {                            
-            COMPILE_CHECK(compileObject(v->object, ctxt));
-
-            QmlInstruction assign;
-            assign.type = QmlInstruction::AssignObject;
-            assign.line = v->object->location.start.line;
-            assign.assignObject.castValue = 0;
-            if (prop->isDefault)
-                assign.assignObject.property = -1;
-            else
-                assign.assignObject.property = 
-                    output->indexForByteArray(prop->name);
-            output->bytecode << assign;
-
-            v->type = Value::CreatedObject;
-        } else if (isAssignable) {
+        if (isAssignable) {
             COMPILE_CHECK(compileObject(v->object, ctxt));
 
             QmlInstruction assign;
@@ -1167,36 +1192,16 @@ bool QmlCompiler::compilePropertyObjectAssignment(QmlParser::Property *prop,
         } else if (isPropertyValue) {
             COMPILE_CHECK(compileObject(v->object, ctxt));
 
-            if (prop->index != -1) {
-                QmlInstruction assign;
-                assign.type = QmlInstruction::StoreValueSource;
-                assign.line = v->object->location.start.line;
-                assign.assignValueSource.property = prop->index;
-                output->bytecode << assign;
-            } else {
-                QmlInstruction assign;
-                assign.type = QmlInstruction::AssignValueSource;
-                assign.line = v->object->location.start.line;
-                assign.assignValueSource.property = output->indexForByteArray(prop->name);;
-                output->bytecode << assign;
-            }
+            QmlInstruction assign;
+            assign.type = QmlInstruction::StoreValueSource;
+            assign.line = v->object->location.start.line;
+            assign.assignValueSource.property = prop->index;
+            output->bytecode << assign;
 
             v->type = Value::ValueSource;
         } else {
-            COMPILE_EXCEPTION("Unassignable object");
+            COMPILE_EXCEPTION2(v->object, "Unassignable object");
         }
-
-    } else {                        
-        COMPILE_CHECK(compileObject(v->object, ctxt));
-
-        QmlInstruction assign;
-        assign.type = QmlInstruction::AssignObject;
-        assign.line = v->object->location.start.line;
-        assign.assignObject.property = output->indexForByteArray(prop->name);
-        assign.assignObject.castValue = 0;
-        output->bytecode << assign;
-
-        v->type = Value::CreatedObject;
     }
 
     return true;
@@ -1368,6 +1373,7 @@ bool QmlCompiler::compileBinding(const QString &bind, QmlParser::Property *prop,
             assign.assignBinding.category = QmlMetaProperty::propertyCategory(mp);
         } 
 
+        savedTypes.insert(output->bytecode.count(), prop->type);
         output->bytecode << assign;
 
     } else {
@@ -1410,8 +1416,7 @@ int QmlCompiler::optimizeExpressions(int start, int end, int patch)
         if (instr.type == QmlInstruction::StoreBinding ||
             instr.type == QmlInstruction::StoreCompiledBinding) {
             ++bindingsCount;
-        } else if (instr.type == QmlInstruction::TryBeginObject ||
-                   instr.type == QmlInstruction::BeginObject) {
+        } else if (instr.type == QmlInstruction::BeginObject) {
             ++parserStatusCount;
         }
 
@@ -1427,6 +1432,25 @@ int QmlCompiler::optimizeExpressions(int start, int end, int patch)
                 if (ids.contains(slt) && 
                    instr.assignBinding.category == QmlMetaProperty::Object) {
                     int id = ids[slt];
+
+                    int idType = savedTypes.value(id);
+                    int storeType = savedTypes.value(ii);
+
+                    const QMetaObject *idMo = (idType == -1)?&QmlComponent::staticMetaObject:output->types.at(idType).metaObject();
+                    const QMetaObject *storeMo = 
+                        QmlMetaType::rawMetaObjectForType(storeType);
+
+                    bool canAssign = false;
+                    while (!canAssign && idMo) {
+                        if (idMo == storeMo)
+                            canAssign = true;
+                        else
+                            idMo = idMo->superClass();
+                    }
+
+                    if (!canAssign)
+                        continue;
+
                     int saveId = -1;
 
                     if (output->bytecode.at(id).setId.save != -1) {
@@ -1444,7 +1468,7 @@ int QmlCompiler::optimizeExpressions(int start, int end, int patch)
                     rwinstr.pushProperty.property = prop;
 
                     QmlInstruction instr;
-                    instr.type = QmlInstruction::AssignStackObject;
+                    instr.type = QmlInstruction::StoreStackObject;
                     instr.line = 0;
                     instr.assignStackObject.property = newInstrs;
                     instr.assignStackObject.object = saveId;

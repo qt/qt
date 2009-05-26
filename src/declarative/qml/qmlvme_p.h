@@ -64,9 +64,6 @@ public:
     QList<QmlError> errors() const;
 
 private:
-    void runStoreInstruction(QStack<QObject *> &stack,
-                             QmlInstruction &, QmlCompiledData *);
-
     QList<QmlError> vmeErrors;
 };
 

@@ -53,7 +53,7 @@
 #include <glheaders.h>
 #endif
 #include "qboxlayout.h"
-#include "qsimplecanvasserver_p.h"
+#include "qsimplecanvasdebugplugin_p.h"
 #include "qsimplecanvas.h"
 
 
@@ -533,8 +533,8 @@ void QSimpleCanvasGraphicsView::paintEvent(QPaintEvent *pe)
     int frametimer = canvas->frameTimer.elapsed();
     gfxCanvasTiming.append(QSimpleCanvasTiming(r, frametimer, canvas->lrpTime, tbf));
     canvas->lrpTime = 0;
-    if (canvas->canvasServer)
-        canvas->canvasServer->addTiming(canvas->lrpTime, frametimer, tbf);
+    if (canvas->debugPlugin)
+        canvas->debugPlugin->addTiming(canvas->lrpTime, frametimer, tbf);
 }
 
 void QSimpleCanvasGraphicsView::focusInEvent(QFocusEvent *)
@@ -573,11 +573,9 @@ void QSimpleCanvasPrivate::init(QSimpleCanvas::CanvasMode mode)
     if (continuousUpdate())
         qWarning("QSimpleCanvas: Continuous update enabled");
 
-    QByteArray env = qgetenv("GFX_CANVAS_SERVER_PORT");
-    if (!env.isEmpty()){ 
-        int port = env.toInt();
-        if (port >= 1024)
-            canvasServer = new QSimpleCanvasServer(port, q);
+    if (QmlDebugServerPlugin::isDebuggingEnabled()) {
+        debugPlugin = new QSimpleCanvasDebugPlugin(q);
+        new QSimpleCanvasSceneDebugPlugin(q);
     }
 
     root = new QSimpleCanvasRootLayer(q);
@@ -950,8 +948,8 @@ bool QSimpleCanvas::event(QEvent *e)
 
         int frametimer = d->frameTimer.elapsed();
         gfxCanvasTiming.append(QSimpleCanvasTiming(r, frametimer, d->lrpTime, tbf));
-        if (d->canvasServer)
-            d->canvasServer->addTiming(d->lrpTime, frametimer, tbf);
+        if (d->debugPlugin)
+            d->debugPlugin->addTiming(d->lrpTime, frametimer, tbf);
         d->lrpTime = 0;
         if (continuousUpdate())
             queueUpdate();

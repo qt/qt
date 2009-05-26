@@ -398,8 +398,30 @@ class NumericLiteral: public ExpressionNode
 public:
     JAVASCRIPT_DECLARE_AST_NODE(NumericLiteral)
 
-    NumericLiteral(double v):
-        value (v) { kind = K; }
+    enum Suffix { // ### keep it in sync with the Suffix enum in javascriptlexer_p.h
+        noSuffix,
+        emSuffix,
+        exSuffix,
+        pxSuffix,
+        cmSuffix,
+        mmSuffix,
+        inSuffix,
+        ptSuffix,
+        pcSuffix,
+        degSuffix,
+        radSuffix,
+        gradSuffix,
+        msSuffix,
+        sSuffix,
+        hzSuffix,
+        khzSuffix
+    };
+
+    static int suffixLength[];
+    static const char *const suffixSpell[];
+
+    NumericLiteral(double v, int suffix):
+        value(v), suffix(suffix) { kind = K; }
     virtual ~NumericLiteral() {}
 
     virtual void accept0(Visitor *visitor);
@@ -412,6 +434,7 @@ public:
 
 // attributes:
     double value;
+    int suffix;
     SourceLocation literalToken;
 };
 
@@ -2314,7 +2337,7 @@ public:
     virtual SourceLocation firstSourceLocation() const
     {
       if (defaultToken.isValid())
-	return defaultToken;
+        return defaultToken;
 
       return propertyToken;
     }
@@ -2375,9 +2398,9 @@ public:
     virtual SourceLocation firstSourceLocation() const
     {
       if (FunctionDeclaration *funDecl = cast<FunctionDeclaration *>(sourceElement))
-	return funDecl->firstSourceLocation();
+        return funDecl->firstSourceLocation();
       else if (VariableStatement *varStmt = cast<VariableStatement *>(sourceElement))
-	return varStmt->firstSourceLocation();
+        return varStmt->firstSourceLocation();
 
       return SourceLocation();
     }
@@ -2385,9 +2408,9 @@ public:
     virtual SourceLocation lastSourceLocation() const
     {
       if (FunctionDeclaration *funDecl = cast<FunctionDeclaration *>(sourceElement))
-	return funDecl->lastSourceLocation();
+        return funDecl->lastSourceLocation();
       else if (VariableStatement *varStmt = cast<VariableStatement *>(sourceElement))
-	return varStmt->lastSourceLocation();
+        return varStmt->lastSourceLocation();
 
       return SourceLocation();
     }

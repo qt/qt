@@ -430,7 +430,7 @@ case 51: {
 } break;
 
 case 52: {
-  AST::NumericLiteral *node = makeAstNode<AST::NumericLiteral> (driver->nodePool(), sym(1).dval);
+  AST::NumericLiteral *node = makeAstNode<AST::NumericLiteral> (driver->nodePool(), sym(1).dval, lexer->flags);
   node->literalToken = loc(1);
   sym(1).Node = node;
 } break;
@@ -1675,7 +1675,7 @@ case 320: {
                 yytoken = *tk;
                 yylval = 0;
                 yylloc = token_buffer[0].loc;
-		yylloc.length = 0;
+                yylloc.length = 0;
 
                 first_token = &token_buffer[0];
                 last_token = &token_buffer[2];
@@ -1697,7 +1697,7 @@ case 320: {
                 yytoken = tk;
                 yylval = 0;
                 yylloc = token_buffer[0].loc;
-		yylloc.length = 0;
+                yylloc.length = 0;
 
                 action = errorState;
                 goto _Lcheck_token;

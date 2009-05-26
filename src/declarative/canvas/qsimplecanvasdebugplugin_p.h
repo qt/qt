@@ -39,66 +39,47 @@
 **
 ****************************************************************************/
 
-#ifndef QMLDEBUGGER_H
-#define QMLDEBUGGER_H
+#ifndef QSIMPLECANVASDEBUGPLUGIN_P_H
+#define QSIMPLECANVASDEBUGPLUGIN_P_H
 
-#include <QtCore/qpointer.h>
-#include <QtCore/qset.h>
-#include <QtGui/qwidget.h>
-
-QT_BEGIN_HEADER
+#include "qobject.h"
+#include "qtcpserver.h"
+#include "qtcpsocket.h"
+#include "qdatetime.h"
+#include <QtDeclarative/qmldebugserver.h>
 
 QT_BEGIN_NAMESPACE
-
-QT_MODULE(Declarative)
-
-class QTreeWidget;
-class QTreeWidgetItem;
-class QPlainTextEdit;
-class QmlDebuggerItem;
-class QTableView;
-class QmlPropertyView;
-class QmlWatches;
-class QmlObjectTree;
-class QmlContext;
-class QSimpleCanvas;
-class QmlDebugger : public QWidget
+class QSimpleCanvasDebugPlugin : public QmlDebugServerPlugin
 {
-Q_OBJECT
 public:
-    QmlDebugger(QWidget *parent = 0);
+    QSimpleCanvasDebugPlugin(QObject *parent = 0);
 
-    void setDebugObject(QObject *);
-    void setCanvas(QSimpleCanvas *);
-
-public slots:
-    void refresh();
-
-private slots:
-    void itemClicked(QTreeWidgetItem *);
-    void itemDoubleClicked(QTreeWidgetItem *);
-    void highlightObject(quint32);
-    void addWatch(QObject *, const QString &);
+    void addTiming(quint32, quint32, quint32);
 
 private:
-    void buildTree(QObject *obj, QmlDebuggerItem *parent);
-    bool makeItem(QObject *obj, QmlDebuggerItem *item);
-    QmlObjectTree *m_tree;
-    QTreeWidget *m_warnings;
-    QTableView *m_watchTable;
-    QmlWatches *m_watches;
-    QmlPropertyView *m_properties;
-    QPlainTextEdit *m_text;
-    QPointer<QObject> m_object;
-    QPointer<QObject> m_selectedItem;
-
-    QTreeWidgetItem *m_highlightedItem;
-    QHash<quint32, QTreeWidgetItem *> m_items;
+    friend class FrameBreakAnimation;
+    void frameBreak();
+    int _breaks;
+    QTime _time;
 };
+
+class QSimpleCanvas;
+class QSimpleCanvasItem;
+class QSimpleCanvasSceneDebugPlugin : public QmlDebugServerPlugin
+{
+public:
+    QSimpleCanvasSceneDebugPlugin(QSimpleCanvas *parent = 0);
+
+    virtual void messageReceived(const QByteArray &);
+
+private:
+    void refresh();
+    void refresh(QDataStream &, QSimpleCanvasItem *);
+    QSimpleCanvas *m_canvas;
+};
+
 
 QT_END_NAMESPACE
 
-QT_END_HEADER
-
-#endif // QMLDEBUGGER_H
+#endif // QSIMPLECANVASDEBUGPLUGIN_P_H
 

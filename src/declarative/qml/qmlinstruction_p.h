@@ -83,7 +83,6 @@ public:
         //    StoreObject - Pop the object on the top of the object stack and
         //                  store it in a core property
         StoreReal,                /* storeReal */
-        StoreInstructionsStart = StoreReal,
         StoreInteger,             /* storeInteger */
         StoreBool,                /* storeBool */
         StoreString,              /* storeString */
@@ -99,7 +98,8 @@ public:
         StoreRectF,               /* storeRect */
         StoreVariant,             /* storeString */
         StoreObject,              /* storeObject */
-        StoreInstructionsEnd = StoreObject,
+        StoreVariantObject,       /* storeObject */
+        StoreInterface,           /* storeObject */
 
         StoreSignal,              /* storeSignal */
 
@@ -113,24 +113,19 @@ public:
         AssignSignalObject,       /* assignSignalObject */
         AssignCustomType,          /* assignCustomType */
 
-        AssignValueSource,        /* assignValueSource */
         StoreBinding,             /* assignBinding */
         StoreCompiledBinding,     /* assignBinding */
         StoreValueSource,         /* assignValueSource */
 
-        TryBeginObject, 
         BeginObject,              /* begin */
-        TryCompleteObject, 
         CompleteObject,           /* complete */
 
-        AssignObject,             /* assignObject */
         AssignObjectList,         /* assignObject */
 
         FetchAttached,            /* fetchAttached */
         FetchQmlList,             /* fetchQmlList */ 
         FetchQList,               /* fetch */
         FetchObject,              /* fetch */
-        ResolveFetchObject,       /* fetch */
 
         //
         // Stack manipulation
@@ -144,21 +139,12 @@ public:
         // Expression optimizations
         //
         //    PushProperty - Save the property for later use
-        //    AssignStackObject - Assign the stack object
         //    StoreStackObject - Assign the stack object (no checks)
         PushProperty,            /* pushProperty */
-        AssignStackObject,       /* assignStackObject */
-        StoreStackObject,        /* assignStackObject */
-
-
-        // 
-        // Miscellaneous
-        //
-        //    NoOp - Do nothing
-        NoOp
+        StoreStackObject         /* assignStackObject */
     };
     QmlInstruction()
-        : type(NoOp), line(0) {}
+        : line(0) {}
 
     Type type;
     unsigned short line;

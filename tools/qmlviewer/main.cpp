@@ -95,19 +95,19 @@ int main(int argc, char ** argv)
         if (arg == "-frameless") {
             frameless = true;
         } else if (arg == "-skin") {
-            skin = QString(argv[++i]);
+            skin = QString(newargv[++i]);
         } else if (arg == "-cache") {
             cache = true;
         } else if (arg == "-recordperiod") {
-            period = QString(argv[++i]).toInt();
+            period = QString(newargv[++i]).toInt();
         } else if (arg == "-recordfile") {
-            recordfile = QString(argv[++i]);
+            recordfile = QString(newargv[++i]);
         } else if (arg == "-record") {
-            recordargs << QString(argv[++i]);
+            recordargs << QString(newargv[++i]);
         } else if (arg == "-recorddither") {
-            dither = QString(argv[++i]);
+            dither = QString(newargv[++i]);
         } else if (arg == "-autorecord") {
-            QString range = QString(argv[++i]);
+            QString range = QString(newargv[++i]);
             int dash = range.indexOf('-');
             if (dash > 0)
                 autorecord_from = range.left(dash).toInt();
@@ -135,7 +135,7 @@ int main(int argc, char ** argv)
             translationFile = newargv[i + 1];
             ++i;
         } else if (arg == "-L") {
-            libraries << QString(argv[++i]);
+            libraries << QString(newargv[++i]);
         } else if (arg[0] != '-') {
             fileName = arg;
         } else if (1 || arg == "-help") {

@@ -101,12 +101,12 @@ private:
 };
 
 class QGLFramebufferObject;
-class QSimpleCanvasServer;
+class QSimpleCanvasDebugPlugin;
 class QSimpleCanvasPrivate
 {
 public:
     QSimpleCanvasPrivate(QSimpleCanvas *canvas)
-    : q(canvas), timer(0), root(0), lrpTime(0), canvasServer(0), focusItem(0), 
+    : q(canvas), timer(0), root(0), lrpTime(0), debugPlugin(0), focusItem(0), 
       lastFocusItem(0), lastMouseItem(0),
       isSetup(false), view(0)
 #if defined(QFX_RENDER_OPENGL)
@@ -139,7 +139,7 @@ public:
     QTime frameTimer;
     QTime lrpTimer;
 
-    QSimpleCanvasServer *canvasServer;
+    QSimpleCanvasDebugPlugin *debugPlugin;
 
     QStack<QSimpleCanvasItem *> focusPanels;
     QHash<QSimpleCanvasItem *, QSimpleCanvasItem *> focusPanelData;

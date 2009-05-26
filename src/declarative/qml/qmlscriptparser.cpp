@@ -9,6 +9,8 @@
 #include "parser/javascriptastvisitor_p.h"
 #include "parser/javascriptast_p.h"
 
+#include "rewriter/textwriter_p.h"
+
 #include <QStack>
 #include <QCoreApplication>
 #include <QtDebug>
@@ -21,6 +23,46 @@ using namespace JavaScript;
 using namespace QmlParser;
 
 namespace {
+
+class RewriteNumericLiterals: protected AST::Visitor
+{
+    unsigned _position;
+    TextWriter _writer;
+
+public:
+    QString operator()(QString code, unsigned position, AST::Node *node)
+    {
+        _position = position;
+
+        AST::Node::acceptChild(node, this);
+
+        _writer.write(&code);
+
+        return code;
+    }
+
+protected:
+    using AST::Visitor::visit;
+
+    virtual bool visit(AST::NumericLiteral *node)
+    {
+        if (node->suffix != AST::NumericLiteral::noSuffix) {
+            const int suffixLength = AST::NumericLiteral::suffixLength[node->suffix];
+            const char *suffixSpell = AST::NumericLiteral::suffixSpell[node->suffix];
+            QString pre;
+            pre += QLatin1String("qmlNumberFrom");
+            pre += QChar(QLatin1Char(suffixSpell[0])).toUpper();
+            pre += QLatin1String(&suffixSpell[1]);
+            pre += QLatin1Char('(');
+            _writer.replace(node->literalToken.begin() - _position, 0, pre);
+            _writer.replace(node->literalToken.end() - _position - suffixLength,
+                            suffixLength,
+                            QLatin1String(")"));
+        }
+
+        return false;
+    }
+};
 
 class ProcessAST: protected AST::Visitor
 {
@@ -107,24 +149,30 @@ protected:
     QString textAt(const AST::SourceLocation &loc) const
     { return _contents.mid(loc.offset, loc.length); }
 
+
     QString textAt(const AST::SourceLocation &first,
                    const AST::SourceLocation &last) const
     { return _contents.mid(first.offset, last.offset + last.length - first.offset); }
 
-    QString asString(AST::ExpressionNode *expr) const
+    RewriteNumericLiterals rewriteNumericLiterals;
+
+    QString asString(AST::ExpressionNode *expr)
     {
         if (! expr)
             return QString();
 
-        return textAt(expr->firstSourceLocation(), expr->lastSourceLocation());
+        return rewriteNumericLiterals(textAt(expr->firstSourceLocation(), expr->lastSourceLocation()),
+                                      expr->firstSourceLocation().offset, expr);
     }
 
-    QString asString(AST::Statement *stmt) const
+    QString asString(AST::Statement *stmt)
     {
         if (! stmt)
             return QString();
 
-        QString s = textAt(stmt->firstSourceLocation(), stmt->lastSourceLocation());
+        QString s = rewriteNumericLiterals(textAt(stmt->firstSourceLocation(), stmt->lastSourceLocation()),
+                                           stmt->firstSourceLocation().offset, stmt);
+
         s += QLatin1Char('\n');
         return s;
     }
@@ -214,7 +262,7 @@ ProcessAST::defineObjectBinding_helper(AST::UiQualifiedId *propertyName,
     int propertyCount = 0;
     for (; propertyName; propertyName = propertyName->next){
         ++propertyCount;
-        _stateStack.pushProperty(propertyName->name->asString(), 
+        _stateStack.pushProperty(propertyName->name->asString(),
                                  this->location(propertyName));
     }
 
@@ -322,7 +370,7 @@ Object *ProcessAST::defineObjectBinding(AST::UiQualifiedId *qualifiedId,
                     script = asString(scriptBinding->statement);
                 }
 
-                LocationSpan l = this->location(scriptBinding->statement->firstSourceLocation(), 
+                LocationSpan l = this->location(scriptBinding->statement->firstSourceLocation(),
                                                 scriptBinding->statement->lastSourceLocation());
 
                 _stateStack.pushProperty(QLatin1String("script"), l);
@@ -414,7 +462,7 @@ bool ProcessAST::visit(AST::UiPublicMember *node)
             { "var", Object::DynamicProperty::Variant },
             { "variant", Object::DynamicProperty::Variant }
         };
-        const int propTypeNameToTypesCount = sizeof(propTypeNameToTypes) / 
+        const int propTypeNameToTypesCount = sizeof(propTypeNameToTypes) /
                                              sizeof(propTypeNameToTypes[0]);
 
         bool typeFound = false;
@@ -425,7 +473,7 @@ bool ProcessAST::visit(AST::UiPublicMember *node)
                 typeFound = true;
             }
         }
-        
+
         if(!typeFound) {
             QmlError error;
             error.setDescription(QCoreApplication::translate("QmlParser","Expected property type"));
@@ -494,7 +542,11 @@ QmlParser::Variant ProcessAST::getVariant(AST::ExpressionNode *expr)
     } else if (expr->kind == AST::Node::Kind_FalseLiteral) {
         return QmlParser::Variant(false);
     } else if (AST::NumericLiteral *lit = AST::cast<AST::NumericLiteral *>(expr)) {
-        return QmlParser::Variant(lit->value, asString(expr));
+        if (lit->suffix == AST::NumericLiteral::noSuffix)
+            return QmlParser::Variant(lit->value, asString(expr));
+        else
+            return QmlParser::Variant(asString(expr), QmlParser::Variant::Script);
+
     } else {
 
         if (AST::UnaryMinusExpression *unaryMinus = AST::cast<AST::UnaryMinusExpression *>(expr)) {
@@ -515,7 +567,7 @@ bool ProcessAST::visit(AST::UiScriptBinding *node)
     AST::UiQualifiedId *propertyName = node->qualifiedId;
     for (; propertyName; propertyName = propertyName->next){
         ++propertyCount;
-        _stateStack.pushProperty(propertyName->name->asString(), 
+        _stateStack.pushProperty(propertyName->name->asString(),
                                  location(propertyName));
     }
 
@@ -526,7 +578,7 @@ bool ProcessAST::visit(AST::UiScriptBinding *node)
     if (AST::ExpressionStatement *stmt = AST::cast<AST::ExpressionStatement *>(node->statement)) {
         primitive = getVariant(stmt->expression);
     } else { // do binding
-        primitive = QmlParser::Variant(asString(node->statement), 
+        primitive = QmlParser::Variant(asString(node->statement),
                                        QmlParser::Variant::Script);
     }
 
@@ -550,7 +602,7 @@ bool ProcessAST::visit(AST::UiArrayBinding *node)
     AST::UiQualifiedId *propertyName = node->qualifiedId;
     for (; propertyName; propertyName = propertyName->next){
         ++propertyCount;
-        _stateStack.pushProperty(propertyName->name->asString(), 
+        _stateStack.pushProperty(propertyName->name->asString(),
                                  location(propertyName));
     }
 
@@ -608,7 +660,7 @@ bool ProcessAST::visit(AST::UiSourceElement *node)
         }
 
         Value *value = new Value;
-        value->location = location(node->firstSourceLocation(), 
+        value->location = location(node->firstSourceLocation(),
                                    node->lastSourceLocation());
         value->value = QmlParser::Variant(source);
 
@@ -673,7 +725,7 @@ bool QmlScriptParser::parse(const QByteArray &data, const QUrl &url)
         process(code, parser.ast());
 
         // Set the url for process errors
-        for(int ii = 0; ii < _errors.count(); ++ii) 
+        for(int ii = 0; ii < _errors.count(); ++ii)
             _errors[ii].setUrl(url);
     }
 
