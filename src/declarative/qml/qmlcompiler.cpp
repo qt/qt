@@ -194,236 +194,6 @@ bool QmlCompiler::isAttachedProperty(const QByteArray &name)
     return !name.isEmpty() && name.at(0) >= 'A' && name.at(0) <= 'Z';
 }
 
-QmlCompiler::StoreInstructionResult 
-QmlCompiler::generateStoreInstruction(QmlCompiledData &cdata,
-                                      QmlInstruction &instr, 
-                                      const QMetaProperty &prop, 
-                                      int coreIdx, int primitive,
-                                      const QString *string)
-{
-    if (!prop.isWritable())
-        return ReadOnly;
-    if (prop.isEnumType()) {
-        int value;
-        if (prop.isFlagType()) {
-            value = prop.enumerator().keysToValue(string->toLatin1().constData());
-        } else
-            value = prop.enumerator().keyToValue(string->toLatin1().constData());
-        if (value == -1)
-            return InvalidData;
-        instr.type = QmlInstruction::StoreInteger;
-        instr.storeInteger.propertyIndex = coreIdx;
-        instr.storeInteger.value = value;
-        return Ok;
-    }
-    int type = prop.type();
-    switch(type) {
-        case -1:
-            instr.type = QmlInstruction::StoreVariant;
-            instr.storeString.propertyIndex = coreIdx;
-            if (primitive == -1)
-                primitive = cdata.indexForString(*string);
-            instr.storeString.value = primitive;
-            break;
-            break;
-        case QVariant::String:
-            {
-            instr.type = QmlInstruction::StoreString;
-            instr.storeString.propertyIndex = coreIdx;
-            if (primitive == -1)
-                primitive = cdata.indexForString(*string);
-            instr.storeString.value = primitive;
-            }
-            break;
-        case QVariant::UInt:
-            {
-            instr.type = QmlInstruction::StoreInteger;
-            instr.storeInteger.propertyIndex = coreIdx;
-            bool ok;
-            int value = string->toUInt(&ok);
-            if (!ok)
-                return InvalidData;
-            instr.storeInteger.value = value;
-            }
-            break;
-        case QVariant::Int:
-            {
-            instr.type = QmlInstruction::StoreInteger;
-            instr.storeInteger.propertyIndex = coreIdx;
-            bool ok;
-            int value = string->toInt(&ok);
-            if (!ok)
-                return InvalidData;
-            instr.storeInteger.value = value;
-            }
-            break;
-        case 135:
-        case QVariant::Double:
-            {
-            instr.type = QmlInstruction::StoreReal;
-            instr.storeReal.propertyIndex = coreIdx;
-            bool ok;
-            float value = string->toFloat(&ok);
-            if (!ok)
-                return InvalidData;
-            instr.storeReal.value = value;
-            }
-            break;
-        case QVariant::Color:
-            {
-            QColor c = QmlStringConverters::colorFromString(*string);
-            if (!c.isValid())
-                return InvalidData;
-            instr.type = QmlInstruction::StoreColor;
-            instr.storeColor.propertyIndex = coreIdx;
-            instr.storeColor.value = c.rgba();
-            }
-            break;
-        case QVariant::Date:
-            {
-            QDate d = QDate::fromString(*string, Qt::ISODate);
-            if (!d.isValid())
-                return InvalidData;
-            instr.type = QmlInstruction::StoreDate;
-            instr.storeDate.propertyIndex = coreIdx;
-            instr.storeDate.value = d.toJulianDay();
-            }
-            break;
-        case QVariant::Time:
-            {
-            QTime time = QTime::fromString(*string, Qt::ISODate);
-            if (!time.isValid())
-                return InvalidData;
-            int data[] = { time.hour(), time.minute(), time.second(), time.msec() };
-            int index = cdata.indexForInt(data, 4);
-            instr.type = QmlInstruction::StoreTime;
-            instr.storeTime.propertyIndex = coreIdx;
-            instr.storeTime.valueIndex = index;
-            }
-            break;
-        case QVariant::DateTime:
-            {
-            QDateTime dateTime = QDateTime::fromString(*string, Qt::ISODate);
-            if (!dateTime.isValid())
-                return InvalidData;
-            int data[] = { dateTime.date().toJulianDay(),
-                           dateTime.time().hour(),
-                           dateTime.time().minute(),
-                           dateTime.time().second(),
-                           dateTime.time().msec() };
-            int index = cdata.indexForInt(data, 5);
-            instr.type = QmlInstruction::StoreDateTime;
-            instr.storeDateTime.propertyIndex = coreIdx;
-            instr.storeDateTime.valueIndex = index;
-            }
-            break;
-        case QVariant::Point:
-        case QVariant::PointF:
-            {
-                bool ok;
-                QPointF point = QmlStringConverters::pointFFromString(*string, &ok);
-                if (!ok)
-                    return InvalidData;
-                float data[] = { point.x(), point.y() };
-                int index = cdata.indexForFloat(data, 2);
-                if (type == QVariant::PointF)
-                    instr.type = QmlInstruction::StorePointF;
-                else
-                    instr.type = QmlInstruction::StorePoint;
-                instr.storeRealPair.propertyIndex = coreIdx;
-                instr.storeRealPair.valueIndex = index;
-            }
-            break;
-        case QVariant::Size:
-        case QVariant::SizeF:
-            {
-                bool ok;
-                QSizeF size = QmlStringConverters::sizeFFromString(*string, &ok);
-                if (!ok)
-                    return InvalidData;
-                float data[] = { size.width(), size.height() };
-                int index = cdata.indexForFloat(data, 2);
-                if (type == QVariant::SizeF)
-                    instr.type = QmlInstruction::StoreSizeF;
-                else
-                    instr.type = QmlInstruction::StoreSize;
-                instr.storeRealPair.propertyIndex = coreIdx;
-                instr.storeRealPair.valueIndex = index;
-            }
-            break;
-        case QVariant::Rect:
-        case QVariant::RectF:
-            {
-                bool ok;
-                QRectF rect = QmlStringConverters::rectFFromString(*string, &ok);
-                if (!ok)
-                    return InvalidData;
-                float data[] = { rect.x(), rect.y(), 
-                                 rect.width(), rect.height() };
-                int index = cdata.indexForFloat(data, 4);
-                if (type == QVariant::RectF)
-                    instr.type = QmlInstruction::StoreRectF;
-                else
-                    instr.type = QmlInstruction::StoreRect;
-                instr.storeRect.propertyIndex = coreIdx;
-                instr.storeRect.valueIndex = index;
-            }
-            break;
-        case QVariant::Bool:
-            {
-                bool ok;
-                bool b = QmlStringConverters::boolFromString(*string, &ok);
-                if (!ok)
-                    return InvalidData;
-                instr.type = QmlInstruction::StoreBool;
-                instr.storeBool.propertyIndex = coreIdx;
-                instr.storeBool.value = b;
-            }
-            break;
-        default:
-            {
-                int t = prop.type();
-                if (t == QVariant::UserType)
-                    t = prop.userType();
-                QmlMetaType::StringConverter converter = 
-                    QmlMetaType::customStringConverter(t);
-                if (converter) {
-                    int index = cdata.customTypeData.count();
-                    instr.type = QmlInstruction::AssignCustomType;
-                    instr.assignCustomType.propertyIndex = coreIdx;
-                    instr.assignCustomType.valueIndex = index;
-
-                    QmlCompiledData::CustomTypeData data;
-                    if (primitive == -1)
-                        primitive = cdata.indexForString(*string);
-                    data.index = primitive;
-                    data.type = t;
-                    cdata.customTypeData << data;
-                    break;
-                }
-            }
-            return UnknownType;
-            break;
-    }
-    return Ok;
-}
-
-void QmlCompiler::reset(QmlCompiledComponent *cc, bool deleteMemory)
-{
-    cc->types.clear();
-    cc->primitives.clear();
-    cc->floatData.clear();
-    cc->intData.clear();
-    cc->customTypeData.clear();
-    cc->datas.clear();
-    if (deleteMemory) {
-        for (int ii = 0; ii < cc->synthesizedMetaObjects.count(); ++ii)
-            qFree(cc->synthesizedMetaObjects.at(ii));
-    }
-    cc->synthesizedMetaObjects.clear();
-    cc->bytecode.clear();
-}
-
 #define COMPILE_EXCEPTION2(token, desc) \
     {  \
         QString exceptionDescription; \
@@ -456,6 +226,232 @@ void QmlCompiler::reset(QmlCompiledComponent *cc, bool deleteMemory)
     { \
         if (!a) return false; \
     }
+
+bool QmlCompiler::generateStoreInstruction(QmlInstruction &instr, 
+                                           const QMetaProperty &prop, 
+                                           int coreIdx, 
+                                           QmlParser::Value *v)
+{
+    QString string = v->value.asScript();
+
+    if (!prop.isWritable())
+        COMPILE_EXCEPTION2(v, "Cannot assign literal value to read-only property" << prop.name());
+
+    if (prop.isEnumType()) {
+        int value;
+        if (prop.isFlagType()) {
+            value = prop.enumerator().keysToValue(string.toLatin1().constData());
+        } else
+            value = prop.enumerator().keyToValue(string.toLatin1().constData());
+        if (value == -1)
+            COMPILE_EXCEPTION2(v, "Cannot assign unknown enumeration to property" << prop.name());
+        instr.type = QmlInstruction::StoreInteger;
+        instr.storeInteger.propertyIndex = coreIdx;
+        instr.storeInteger.value = value;
+        return true;
+    }
+    int type = prop.type();
+    switch(type) {
+        case -1:
+            {
+            instr.type = QmlInstruction::StoreVariant;
+            instr.storeString.propertyIndex = coreIdx;
+            instr.storeString.value = output->indexForString(string);
+            }
+            break;
+        case QVariant::String:
+            {
+            instr.type = QmlInstruction::StoreString;
+            instr.storeString.propertyIndex = coreIdx;
+            instr.storeString.value = output->indexForString(string);
+            }
+            break;
+        case QVariant::UInt:
+            {
+            instr.type = QmlInstruction::StoreInteger;
+            instr.storeInteger.propertyIndex = coreIdx;
+            bool ok;
+            int value = string.toUInt(&ok);
+            if (!ok)
+                COMPILE_EXCEPTION2(v, "Cannot convert value" << string << "to unsigned integer");
+            instr.storeInteger.value = value;
+            }
+            break;
+        case QVariant::Int:
+            {
+            instr.type = QmlInstruction::StoreInteger;
+            instr.storeInteger.propertyIndex = coreIdx;
+            bool ok;
+            int value = string.toInt(&ok);
+            if (!ok)
+                COMPILE_EXCEPTION2(v, "Cannot convert value" << string << "to integer");
+            instr.storeInteger.value = value;
+            }
+            break;
+        case 135:
+        case QVariant::Double:
+            {
+            instr.type = QmlInstruction::StoreReal;
+            instr.storeReal.propertyIndex = coreIdx;
+            bool ok;
+            float value = string.toFloat(&ok);
+            if (!ok)
+                COMPILE_EXCEPTION2(v, "Cannot convert value" << string << "to real number");
+            instr.storeReal.value = value;
+            }
+            break;
+        case QVariant::Color:
+            {
+            QColor c = QmlStringConverters::colorFromString(string);
+            if (!c.isValid())
+                COMPILE_EXCEPTION2(v, "Cannot convert value" << string << "to color");
+            instr.type = QmlInstruction::StoreColor;
+            instr.storeColor.propertyIndex = coreIdx;
+            instr.storeColor.value = c.rgba();
+            }
+            break;
+        case QVariant::Date:
+            {
+            QDate d = QDate::fromString(string, Qt::ISODate);
+            if (!d.isValid())
+                COMPILE_EXCEPTION2(v, "Cannot convert value" << string << "to date");
+            instr.type = QmlInstruction::StoreDate;
+            instr.storeDate.propertyIndex = coreIdx;
+            instr.storeDate.value = d.toJulianDay();
+            }
+            break;
+        case QVariant::Time:
+            {
+            QTime time = QTime::fromString(string, Qt::ISODate);
+            if (!time.isValid())
+                COMPILE_EXCEPTION2(v, "Cannot convert value" << string << "to time");
+            int data[] = { time.hour(), time.minute(), time.second(), time.msec() };
+            int index = output->indexForInt(data, 4);
+            instr.type = QmlInstruction::StoreTime;
+            instr.storeTime.propertyIndex = coreIdx;
+            instr.storeTime.valueIndex = index;
+            }
+            break;
+        case QVariant::DateTime:
+            {
+            QDateTime dateTime = QDateTime::fromString(string, Qt::ISODate);
+            if (!dateTime.isValid())
+                COMPILE_EXCEPTION2(v, "Cannot convert value" << string << "to date and time");
+            int data[] = { dateTime.date().toJulianDay(),
+                           dateTime.time().hour(),
+                           dateTime.time().minute(),
+                           dateTime.time().second(),
+                           dateTime.time().msec() };
+            int index = output->indexForInt(data, 5);
+            instr.type = QmlInstruction::StoreDateTime;
+            instr.storeDateTime.propertyIndex = coreIdx;
+            instr.storeDateTime.valueIndex = index;
+            }
+            break;
+        case QVariant::Point:
+        case QVariant::PointF:
+            {
+                bool ok;
+                QPointF point = QmlStringConverters::pointFFromString(string, &ok);
+                if (!ok)
+                    COMPILE_EXCEPTION2(v, "Cannot convert value" << string << "to point");
+                float data[] = { point.x(), point.y() };
+                int index = output->indexForFloat(data, 2);
+                if (type == QVariant::PointF)
+                    instr.type = QmlInstruction::StorePointF;
+                else
+                    instr.type = QmlInstruction::StorePoint;
+                instr.storeRealPair.propertyIndex = coreIdx;
+                instr.storeRealPair.valueIndex = index;
+            }
+            break;
+        case QVariant::Size:
+        case QVariant::SizeF:
+            {
+                bool ok;
+                QSizeF size = QmlStringConverters::sizeFFromString(string, &ok);
+                if (!ok)
+                    COMPILE_EXCEPTION2(v, "Cannot convert value" << string << "to size");
+                float data[] = { size.width(), size.height() };
+                int index = output->indexForFloat(data, 2);
+                if (type == QVariant::SizeF)
+                    instr.type = QmlInstruction::StoreSizeF;
+                else
+                    instr.type = QmlInstruction::StoreSize;
+                instr.storeRealPair.propertyIndex = coreIdx;
+                instr.storeRealPair.valueIndex = index;
+            }
+            break;
+        case QVariant::Rect:
+        case QVariant::RectF:
+            {
+                bool ok;
+                QRectF rect = QmlStringConverters::rectFFromString(string, &ok);
+                if (!ok)
+                    COMPILE_EXCEPTION2(v, "Cannot convert value" << string << "to rect");
+                float data[] = { rect.x(), rect.y(), 
+                                 rect.width(), rect.height() };
+                int index = output->indexForFloat(data, 4);
+                if (type == QVariant::RectF)
+                    instr.type = QmlInstruction::StoreRectF;
+                else
+                    instr.type = QmlInstruction::StoreRect;
+                instr.storeRect.propertyIndex = coreIdx;
+                instr.storeRect.valueIndex = index;
+            }
+            break;
+        case QVariant::Bool:
+            {
+                bool ok;
+                bool b = QmlStringConverters::boolFromString(string, &ok);
+                if (!ok)
+                    COMPILE_EXCEPTION2(v, "Cannot convert value" << string << "to boolean");
+                instr.type = QmlInstruction::StoreBool;
+                instr.storeBool.propertyIndex = coreIdx;
+                instr.storeBool.value = b;
+            }
+            break;
+        default:
+            {
+                int t = prop.type();
+                if (t == QVariant::UserType)
+                    t = prop.userType();
+                QmlMetaType::StringConverter converter = 
+                    QmlMetaType::customStringConverter(t);
+                if (converter) {
+                    int index = output->customTypeData.count();
+                    instr.type = QmlInstruction::AssignCustomType;
+                    instr.assignCustomType.propertyIndex = coreIdx;
+                    instr.assignCustomType.valueIndex = index;
+
+                    QmlCompiledData::CustomTypeData data;
+                    data.index = output->indexForString(string);
+                    data.type = t;
+                    output->customTypeData << data;
+                    break;
+                }
+            }
+            COMPILE_EXCEPTION2(v, "Cannot assign to property" << prop.name() << "of unknown type" << prop.type());
+            break;
+    }
+    return true;
+}
+
+void QmlCompiler::reset(QmlCompiledComponent *cc, bool deleteMemory)
+{
+    cc->types.clear();
+    cc->primitives.clear();
+    cc->floatData.clear();
+    cc->intData.clear();
+    cc->customTypeData.clear();
+    cc->datas.clear();
+    if (deleteMemory) {
+        for (int ii = 0; ii < cc->synthesizedMetaObjects.count(); ++ii)
+            qFree(cc->synthesizedMetaObjects.at(ii));
+    }
+    cc->synthesizedMetaObjects.clear();
+    cc->bytecode.clear();
+}
 
 bool QmlCompiler::compile(QmlEngine *engine, 
                           QmlCompositeTypeData *unit,
@@ -1226,21 +1222,7 @@ bool QmlCompiler::compilePropertyLiteralAssignment(QmlParser::Property *prop,
         assign.line = v->location.start.line;
 
         if (prop->index != -1) {
-            QString value = v->primitive();
-            StoreInstructionResult r = 
-                generateStoreInstruction(*output, assign, obj->metaObject()->property(prop->index), prop->index, -1, &value);
-
-            if (r == Ok) {
-            } else if (r == InvalidData) {
-                //### we are restricted to a rather generic message here. If we can find a way to move
-                //    the exception into generateStoreInstruction we could potentially have better messages.
-                //    (the problem is that both compile and run exceptions can be generated, though)
-                COMPILE_EXCEPTION2(v, "Cannot assign value" << v->primitive() << "to property" << obj->metaObject()->property(prop->index).name());
-            } else if (r == ReadOnly) {
-                COMPILE_EXCEPTION2(v, "Cannot assign value" << v->primitive() << "to the read-only property" << obj->metaObject()->property(prop->index).name());
-            } else {
-                COMPILE_EXCEPTION2(prop, "Cannot assign value to property" << obj->metaObject()->property(prop->index).name() << "of unknown type");
-            }
+            COMPILE_CHECK(generateStoreInstruction(assign, obj->metaObject()->property(prop->index), prop->index, v));
         } else {
             COMPILE_EXCEPTION2(prop, "Cannot assign value to non-existant property" << prop->name);
         }
