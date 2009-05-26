@@ -173,6 +173,8 @@ private:
 
     QList<QmlError> exceptions;
     QmlCompiledData *output;
+
+    QHash<int, int> savedTypes;
 };
 
 QT_END_NAMESPACE

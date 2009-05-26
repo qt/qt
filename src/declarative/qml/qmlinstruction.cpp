@@ -166,9 +166,6 @@ void QmlCompiledComponent::dump(QmlInstruction *instr, int idx)
     case QmlInstruction::PushProperty:
         qWarning() << idx << "\t" << line << "\t" << "PUSH_PROPERTY" << "\t\t" << instr->pushProperty.property;
         break;
-    case QmlInstruction::AssignStackObject:
-        qWarning() << idx << "\t" << line << "\t" << "ASSIGN_STACK_OBJ" << "\t" << instr->assignStackObject.property << "\t" << instr->assignStackObject.object;
-        break;
     case QmlInstruction::StoreStackObject:
         qWarning() << idx << "\t" << line << "\t" << "STORE_STACK_OBJ" << "\t" << instr->assignStackObject.property << "\t" << instr->assignStackObject.object;
         break;

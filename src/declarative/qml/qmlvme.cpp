@@ -101,7 +101,6 @@ Q_DECLARE_PERFORMANCE_LOG(QFxCompiler) {
     Q_DECLARE_PERFORMANCE_METRIC(InstrPopFetchedObject);
     Q_DECLARE_PERFORMANCE_METRIC(InstrPopQList);
     Q_DECLARE_PERFORMANCE_METRIC(InstrPushProperty);
-    Q_DECLARE_PERFORMANCE_METRIC(InstrAssignStackObject);
     Q_DECLARE_PERFORMANCE_METRIC(InstrStoreStackObject);
     Q_DECLARE_PERFORMANCE_METRIC(Dummy);
 }
@@ -141,7 +140,6 @@ Q_DEFINE_PERFORMANCE_LOG(QFxCompiler, "QFxCompiler") {
     Q_DEFINE_PERFORMANCE_METRIC(InstrPopFetchedObject, "PopFetchedObject");
     Q_DEFINE_PERFORMANCE_METRIC(InstrPopQList, "PopQList");
     Q_DEFINE_PERFORMANCE_METRIC(InstrPushProperty, "PushProperty");
-    Q_DEFINE_PERFORMANCE_METRIC(InstrAssignStackObject, "AssignStackObject");
     Q_DEFINE_PERFORMANCE_METRIC(InstrStoreStackObject, "StoreStackObject");
     Q_DEFINE_PERFORMANCE_METRIC(Dummy, "Dummy");
 }
@@ -931,37 +929,6 @@ QObject *QmlVME::run(QmlContext *ctxt, QmlCompiledComponent *comp, int start, in
                 QFxCompilerTimer<QFxCompiler::InstrPopFetchedObject> cc;
 #endif
                 stack.pop();
-            }
-            break;
-
-        case QmlInstruction::AssignStackObject:
-            {
-#ifdef Q_ENABLE_PERFORMANCE_LOG
-                QFxCompilerTimer<QFxCompiler::InstrAssignStackObject> cc;
-#endif
-
-                QObject *obj = savedObjects[instr.assignStackObject.object];
-                const QmlMetaProperty &prop = 
-                    pushedProperties.at(instr.assignStackObject.property);
-
-
-                const QMetaObject *mo = 
-                    QmlMetaType::rawMetaObjectForType(prop.propertyType());
-                const QMetaObject *assignMo = obj->metaObject();
-
-                bool found = false;
-                while(!found && assignMo) {
-                    if (assignMo == mo)
-                        found = true;
-                    else
-                        assignMo = assignMo->superClass();
-                }
-
-                if (!found) 
-                    VME_EXCEPTION("Unable to assign object");
-
-                instr.type = QmlInstruction::StoreStackObject;
-                --ii;
             }
             break;
 

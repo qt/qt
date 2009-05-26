@@ -139,10 +139,8 @@ public:
         // Expression optimizations
         //
         //    PushProperty - Save the property for later use
-        //    AssignStackObject - Assign the stack object
         //    StoreStackObject - Assign the stack object (no checks)
         PushProperty,            /* pushProperty */
-        AssignStackObject,       /* assignStackObject */
         StoreStackObject         /* assignStackObject */
     };
     QmlInstruction()

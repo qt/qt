@@ -675,6 +675,9 @@ bool QmlCompiler::compileComponent(Object *obj, int ctxt)
         id.line = idProp->location.start.line;
         id.setId.value = pref;
         id.setId.save = -1;
+
+        savedTypes.insert(output->bytecode.count(), -1);
+
         output->bytecode << id;
     }
 
@@ -936,6 +939,7 @@ bool QmlCompiler::compileIdProperty(QmlParser::Property *prop,
         id.line = prop->values.at(0)->location.start.line;
         id.setId.value = pref;
         id.setId.save = -1;
+        savedTypes.insert(output->bytecode.count(), obj->type);
         output->bytecode << id;
 
         obj->id = val.toLatin1();
@@ -1369,6 +1373,7 @@ bool QmlCompiler::compileBinding(const QString &bind, QmlParser::Property *prop,
             assign.assignBinding.category = QmlMetaProperty::propertyCategory(mp);
         } 
 
+        savedTypes.insert(output->bytecode.count(), prop->type);
         output->bytecode << assign;
 
     } else {
@@ -1427,6 +1432,25 @@ int QmlCompiler::optimizeExpressions(int start, int end, int patch)
                 if (ids.contains(slt) && 
                    instr.assignBinding.category == QmlMetaProperty::Object) {
                     int id = ids[slt];
+
+                    int idType = savedTypes.value(id);
+                    int storeType = savedTypes.value(ii);
+
+                    const QMetaObject *idMo = (idType == -1)?&QmlComponent::staticMetaObject:output->types.at(idType).metaObject();
+                    const QMetaObject *storeMo = 
+                        QmlMetaType::rawMetaObjectForType(storeType);
+
+                    bool canAssign = false;
+                    while (!canAssign && idMo) {
+                        if (idMo == storeMo)
+                            canAssign = true;
+                        else
+                            idMo = idMo->superClass();
+                    }
+
+                    if (!canAssign)
+                        continue;
+
                     int saveId = -1;
 
                     if (output->bytecode.at(id).setId.save != -1) {
@@ -1444,7 +1468,7 @@ int QmlCompiler::optimizeExpressions(int start, int end, int patch)
                     rwinstr.pushProperty.property = prop;
 
                     QmlInstruction instr;
-                    instr.type = QmlInstruction::AssignStackObject;
+                    instr.type = QmlInstruction::StoreStackObject;
                     instr.line = 0;
                     instr.assignStackObject.property = newInstrs;
                     instr.assignStackObject.object = saveId;
