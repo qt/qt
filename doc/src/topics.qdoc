@@ -286,11 +286,9 @@ including ARM, Intel x86, MIPS and SH-4.
     \o \l {Qt for Windows CE Requirements}
     \o \l {Installing Qt on Windows CE}
     \o \l {Windows CE - Introduction to using Qt}{Introduction to using Qt}
-    \o \l {Qt Examples#Qt for Embedded Linux}{Examples}
 \endlist
 \o
 \list
-    \o \l {Qt for Embedded Linux Classes}{Classes}
     \o \l {Windows CE - Using shadow builds}{Using shadow builds}
     \o \l {Windows CE - Working with Custom SDKs}{Working with Custom SDKs}
 \endlist
