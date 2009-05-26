@@ -557,6 +557,7 @@ public:
     void unregisterOleDnd(QWidget *widget, QOleDropTarget *target);
 #endif
     void grabMouseWhileInWindow();
+    void registerTouchWindow();
 #elif defined(Q_WS_MAC) // <--------------------------------------------------------- MAC
     // This is new stuff
     uint needWindowChange : 1;
