@@ -268,7 +268,7 @@ void QWebFrame::addToJavaScriptWindowObject(const QString &name, QObject *object
 }
 
 /*!
-    Returns the frame's content, converted to HTML.
+    Returns the frame's content as HTML, enclosed in HTML and BODY tags.
 
     \sa setHtml(), toPlainText()
 */
@@ -280,7 +280,8 @@ QString QWebFrame::toHtml() const
 }
 
 /*!
-    Returns the content of this frame converted to plain text.
+    Returns the content of this frame converted to plain text, completely
+    stripped of all HTML formatting.
 
     \sa toHtml()
 */
