@@ -269,7 +269,7 @@ class QSingleShotTimer : public QObject
 public:
     ~QSingleShotTimer();
     QSingleShotTimer(int msec, QObject *r, const char * m);
-signals:
+Q_SIGNALS:
     void timeout();
 protected:
     void timerEvent(QTimerEvent *);

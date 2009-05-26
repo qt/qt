@@ -333,7 +333,7 @@ public:
         this->stream = stream;
     }
 
-public slots:
+public Q_SLOTS:
     inline void flushStream() { stream->flush(); }
 
 private:
