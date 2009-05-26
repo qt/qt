@@ -53,7 +53,9 @@
 //TESTED_CLASS=QLocalServer, QLocalSocket
 //TESTED_FILES=network/socket/qlocalserver.cpp network/socket/qlocalsocket.cpp
 #ifdef Q_OS_SYMBIAN
-    #define SRCDIR ""
+    #define STRINGIFY(x) #x
+    #define TOSTRING(x) STRINGIFY(x)
+    #define SRCDIR "C:/Private/" TOSTRING(SYMBIAN_SRCDIR_UID) "/"   
 #endif
 Q_DECLARE_METATYPE(QLocalSocket::LocalSocketError)
 Q_DECLARE_METATYPE(QLocalSocket::LocalSocketState)
@@ -492,11 +494,11 @@ void tst_QLocalSocket::sendData()
     // test creating a connection
     socket.connectToServer(name);
     bool timedOut = true;
+
     QCOMPARE(server.waitForNewConnection(3000, &timedOut), canListen);
-#if defined(QT_LOCALSOCKET_TCP) 
+
+#if defined(QT_LOCALSOCKET_TCP) || defined(Q_OS_SYMBIAN)
     QTest::qWait(250);
-#elif defined(Q_OS_SYMBIAN) 
-    QTest::qWait(10000);
 #endif
     QVERIFY(!timedOut);
     QCOMPARE(spyConnected.count(), canListen ? 1 : 0);
@@ -530,7 +532,9 @@ void tst_QLocalSocket::sendData()
         QCOMPARE(spyReadyRead.count(), 1);
 
         QVERIFY(testLine.startsWith(in.readLine()));
+
         QVERIFY(wrote || serverSocket->waitForBytesWritten(1000));
+
         QCOMPARE(serverSocket->errorString(), QString("Unknown error"));
         QCOMPARE(socket.errorString(), QString("Unknown error"));
     }

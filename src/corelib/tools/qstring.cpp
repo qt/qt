@@ -743,7 +743,9 @@ int QString::grow(int size)
 /*!
     \since 4.2
 
-    Returns a copy of the \a string string encoded in ucs4.
+    Returns a copy of the \a string, where the encoding of \a string depends on 
+    the size of wchar. If wchar is 4 bytes, the \a string is interpreted as ucs-4,
+    if wchar is 2 bytes it is interpreted as ucs-2.
 
     If \a size is -1 (default), the \a string has to be 0 terminated.
 

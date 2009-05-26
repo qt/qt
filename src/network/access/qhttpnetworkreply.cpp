@@ -409,39 +409,62 @@ qint64 QHttpNetworkReplyPrivate::readStatus(QAbstractSocket *socket)
             if (fragment.endsWith('\r')) {
                 fragment.truncate(fragment.length()-1);
             }
-            parseStatus(fragment);
+            bool ok = parseStatus(fragment);
             state = ReadingHeaderState;
             fragment.clear(); // next fragment
+
+            if (!ok)
+                return -1;
             break;
         } else {
             c = 0;
             bytes += socket->read(&c, 1);
             fragment.append(c);
         }
+
+        // is this a valid reply?
+        if (fragment.length() >= 5 && !fragment.startsWith("HTTP/"))
+            return -1;
+
     }
+
     return bytes;
 }
 
-void QHttpNetworkReplyPrivate::parseStatus(const QByteArray &status)
+bool QHttpNetworkReplyPrivate::parseStatus(const QByteArray &status)
 {
-    const QByteArrayMatcher sp(" ");
-    int i = sp.indexIn(status);
-    const QByteArray version = status.mid(0, i);
-    int j = sp.indexIn(status, i + 1);
+    // from RFC 2616:
+    //        Status-Line = HTTP-Version SP Status-Code SP Reason-Phrase CRLF
+    //        HTTP-Version   = "HTTP" "/" 1*DIGIT "." 1*DIGIT
+    // that makes: 'HTTP/n.n xxx Message'
+    // byte count:  0123456789012
+
+    static const int minLength = 11;
+    static const int dotPos = 6;
+    static const int spacePos = 8;
+    static const char httpMagic[] = "HTTP/";
+
+    if (status.length() < minLength
+        || !status.startsWith(httpMagic)
+        || status.at(dotPos) != '.'
+        || status.at(spacePos) != ' ') {
+        // I don't know how to parse this status line
+        return false;
+    }
+
+    // optimize for the valid case: defer checking until the end
+    majorVersion = status.at(dotPos - 1) - '0';
+    minorVersion = status.at(dotPos + 1) - '0';
+
+    int i = spacePos;
+    int j = status.indexOf(' ', i + 1); // j == -1 || at(j) == ' ' so j+1 == 0 && j+1 <= length()
     const QByteArray code = status.mid(i + 1, j - i - 1);
-    const QByteArray reason = status.mid(j + 1, status.count() - j);
 
-    const QByteArrayMatcher slash("/");
-    int k = slash.indexIn(version);
-    const QByteArrayMatcher dot(".");
-    int l = dot.indexIn(version, k);
-    const QByteArray major = version.mid(k + 1, l - k - 1);
-    const QByteArray minor = version.mid(l + 1, version.count() - l);
+    bool ok;
+    statusCode = code.toInt(&ok);
+    reasonPhrase = QString::fromLatin1(status.constData() + j + 1);
 
-    majorVersion = QString::fromAscii(major.constData()).toInt();
-    minorVersion = QString::fromAscii(minor.constData()).toInt();
-    statusCode = QString::fromAscii(code.constData()).toInt();
-    reasonPhrase = QString::fromAscii(reason.constData());
+    return ok && uint(majorVersion) <= 9 && uint(minorVersion) <= 9;
 }
 
 qint64 QHttpNetworkReplyPrivate::readHeader(QAbstractSocket *socket)

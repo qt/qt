@@ -786,16 +786,6 @@ OSStatus QWidgetPrivate::qt_window_event(EventHandlerCallRef er, EventRef event,
             // By also setting the current modal window back into the event, we
             // help Carbon determining which window is supposed to be raised.
             handled_event = qApp->activePopupWidget() ? true : false;
-            QWidget *top = 0;
-            if (!QApplicationPrivate::tryModalHelper(widget, &top) && top && top != widget){
-                if(!qt_mac_is_macsheet(top) || top->parentWidget() != widget) {
-                    handled_event = true;
-                    WindowPtr topWindowRef = qt_mac_window_for(top);
-                    SetEventParameter(event, kEventParamModalWindow, typeWindowRef, sizeof(topWindowRef), &topWindowRef);
-                    HIModalClickResult clickResult = kHIModalClickIsModal;
-                    SetEventParameter(event, kEventParamModalClickResult, typeModalClickResult, sizeof(clickResult), &clickResult);
-                }
-            }
 #endif
         } else if(ekind == kEventWindowClose) {
             widget->d_func()->close_helper(QWidgetPrivate::CloseWithSpontaneousEvent);
@@ -4045,8 +4035,8 @@ void QWidgetPrivate::applyMaxAndMinSizeOnWindow()
     NSSize max = NSMakeSize(SF(extra->maxw), SF(extra->maxh));
     NSSize min = NSMakeSize(SF(extra->minw), SF(extra->minh));
 #undef SF
-    [qt_mac_window_for(q) setMinSize:min];
-    [qt_mac_window_for(q) setMaxSize:max];
+    [qt_mac_window_for(q) setContentMinSize:min];
+    [qt_mac_window_for(q) setContentMaxSize:max];
 #endif
 }
 

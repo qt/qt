@@ -2504,6 +2504,42 @@ const QGLContext* QGLContext::currentContext()
     visual. On other platforms it may work differently.
 */
 
+/*! \fn int QGLContext::choosePixelFormat(void* dummyPfd, HDC pdc)
+  
+    \bold{Win32 only:} This virtual function chooses a pixel format
+    that matches the OpenGL \link setFormat() format\endlink.
+    Reimplement this function in a subclass if you need a custom
+    context.
+
+    \warning The \a dummyPfd pointer and \a pdc are used as a \c
+    PIXELFORMATDESCRIPTOR*. We use \c void to avoid using
+    Windows-specific types in our header files.
+
+    \sa chooseContext()
+*/
+
+/*! \fn void *QGLContext::chooseVisual()
+  
+  \bold{X11 only:} This virtual function tries to find a visual that
+  matches the format, reducing the demands if the original request
+  cannot be met.
+
+  The algorithm for reducing the demands of the format is quite
+  simple-minded, so override this method in your subclass if your
+  application has spcific requirements on visual selection.
+
+  \sa chooseContext()
+*/
+
+/*! \fn void *QGLContext::tryVisual(const QGLFormat& f, int bufDepth)
+  \internal
+
+  \bold{X11 only:} This virtual function chooses a visual that matches
+  the OpenGL \link format() format\endlink. Reimplement this function
+  in a subclass if you need a custom visual.
+
+  \sa chooseContext()
+*/
 
 /*!
     \fn void QGLContext::reset()
@@ -2588,7 +2624,7 @@ const QGLContext* QGLContext::currentContext()
     \i paintGL() - Renders the OpenGL scene. Gets called whenever the widget
     needs to be updated.
     \i resizeGL() - Sets up the OpenGL viewport, projection, etc. Gets
-    called whenever the the widget has been resized (and also when it
+    called whenever the widget has been resized (and also when it
     is shown for the first time because all newly created widgets get a
     resize event automatically).
     \i initializeGL() - Sets up the OpenGL rendering context, defines display
@@ -3020,11 +3056,10 @@ void QGLWidget::setFormat(const QGLFormat &format)
 */
 
 /*
-  \obsolete
-
   \fn void QGLWidget::setContext(QGLContext *context,
-                                  const QGLContext* shareContext,
-                                  bool deleteOldContext)
+                                 const QGLContext* shareContext,
+                                 bool deleteOldContext)
+  \obsolete
 
   Sets a new context for this widget. The QGLContext \a context must
   be created using \e new. QGLWidget will delete \a context when
@@ -3174,9 +3209,10 @@ void QGLWidget::resizeOverlayGL(int, int)
 {
 }
 
-
+/*! \fn bool QGLWidget::event(QEvent *e)
+  \reimp
+*/
 #if !defined(Q_OS_WINCE) && !defined(Q_WS_QWS)
-/*! \reimp */
 bool QGLWidget::event(QEvent *e)
 {
     Q_D(QGLWidget);

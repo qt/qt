@@ -43,6 +43,8 @@
 #include <QtWebKit>
 #include "mainwindow.h"
 
+//! [1]
+
 MainWindow::MainWindow()
 {
     progress = 0;
@@ -52,7 +54,9 @@ MainWindow::MainWindow()
     file.open(QIODevice::ReadOnly);
     jQuery = file.readAll();
     file.close();
+//! [1]
 
+//! [2]
     view = new QWebView(this);
     view->load(QUrl("http://www.google.com/ncr"));
     connect(view, SIGNAL(loadFinished(bool)), SLOT(adjustLocation()));
@@ -70,7 +74,9 @@ MainWindow::MainWindow()
     toolBar->addAction(view->pageAction(QWebPage::Reload));
     toolBar->addAction(view->pageAction(QWebPage::Stop));
     toolBar->addWidget(locationEdit);
+//! [2]
 
+//! [3]
     QMenu *effectMenu = menuBar()->addMenu(tr("&Effect"));
     effectMenu->addAction("Highlight all links", this, SLOT(highlightAllLinks()));
 
@@ -89,7 +95,9 @@ MainWindow::MainWindow()
 
     setCentralWidget(view);
 }
+//! [3]
 
+//! [4]
 void MainWindow::adjustLocation()
 {
     locationEdit->setText(view->url().toString());
@@ -98,11 +106,12 @@ void MainWindow::adjustLocation()
 void MainWindow::changeLocation()
 {
     QUrl url = QUrl(locationEdit->text());
-    locationEdit->setText(url.toString());
     view->load(url);
     view->setFocus();
 }
+//! [4]
 
+//! [5]
 void MainWindow::adjustTitle()
 {
     if (progress <= 0 || progress >= 100)
@@ -116,20 +125,26 @@ void MainWindow::setProgress(int p)
     progress = p;
     adjustTitle();
 }
+//! [5]
 
+//! [6]
 void MainWindow::finishLoading(bool)
 {
     progress = 100;
     adjustTitle();
     view->page()->mainFrame()->evaluateJavaScript(jQuery);
 }
+//! [6]
 
+//! [7]
 void MainWindow::highlightAllLinks()
 {
     QString code = "$('a').each( function () { $(this).css('background-color', 'yellow') } )";
     view->page()->mainFrame()->evaluateJavaScript(code);
 }
+//! [7]
 
+//! [8]
 void MainWindow::rotateImages(bool toggle)
 {
     QString code = "$('img').each( function () { $(this).css('-webkit-transition', '-webkit-transform 2s') } )";
@@ -140,7 +155,9 @@ void MainWindow::rotateImages(bool toggle)
         code = "$('img').each( function () { $(this).css('-webkit-transform', 'rotate(0deg)') } )";
     view->page()->mainFrame()->evaluateJavaScript(code);
 }
+//! [8]
 
+//! [9]
 void MainWindow::removeGifImages()
 {
     QString code = "$('[src*=gif]').remove()";
@@ -164,4 +181,5 @@ void MainWindow::removeEmbeddedElements()
     QString code = "$('embed').remove()";
     view->page()->mainFrame()->evaluateJavaScript(code);
 }
+//! [9]
 

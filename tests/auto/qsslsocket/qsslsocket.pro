@@ -15,14 +15,20 @@ win32 {
   }
 }
 
-
-symbian:{
+wince* {
+    DEFINES += SRCDIR=\\\"./\\\"
+    
+    certFiles.sources = certs ssl.tar.gz
+    certFiles.path    = .
+    DEPLOYMENT += certFiles
+} else:symbian {
     DEFINES += QSSLSOCKET_CERTUNTRUSTED_WORKAROUND
     TARGET.EPOCHEAPSIZE="0x100 0x1000000"
     TARGET.CAPABILITY="ALL -TCB"
-}
-wince*|symbian: {
-   certFiles.sources = certs ssl.tar.gz
-   certFiles.path    = .
-   DEPLOYMENT += certFiles
+    
+    certFiles.sources = certs ssl.tar.gz
+    certFiles.path    = .
+    DEPLOYMENT += certFiles
+} else {
+    DEFINES += SRCDIR=\\\"$$PWD/\\\"
 }

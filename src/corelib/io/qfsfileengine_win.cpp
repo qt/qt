@@ -946,9 +946,6 @@ bool QFSFileEnginePrivate::nativeIsSequential() const
     return false;
 }
 
-/*!
-    \reimp
-*/
 bool QFSFileEngine::remove()
 {
     Q_D(QFSFileEngine);
@@ -959,9 +956,6 @@ bool QFSFileEngine::remove()
     });
 }
 
-/*!
-    \reimp
-*/
 bool QFSFileEngine::copy(const QString &copyName)
 {
     Q_D(QFSFileEngine);
@@ -974,9 +968,6 @@ bool QFSFileEngine::copy(const QString &copyName)
     });
 }
 
-/*!
-    \reimp
-*/
 bool QFSFileEngine::rename(const QString &newName)
 {
     Q_D(QFSFileEngine);
@@ -1017,9 +1008,6 @@ static inline bool mkDir(const QString &path)
     });
 }
 
-/*!
-    \reimp
-*/
 static inline bool rmDir(const QString &path)
 {
     QT_WA({
@@ -1029,9 +1017,6 @@ static inline bool rmDir(const QString &path)
     });
 }
 
-/*!
-    \reimp
-*/
 static inline bool isDirPath(const QString &dirPath, bool *existed)
 {
     QString path = dirPath;
@@ -1054,9 +1039,6 @@ static inline bool isDirPath(const QString &dirPath, bool *existed)
     return fileAttrib & FILE_ATTRIBUTE_DIRECTORY;
 }
 
-/*!
-    \reimp
-*/
 bool QFSFileEngine::mkdir(const QString &name, bool createParentDirectories) const
 {
     QString dirName = name;
@@ -1097,9 +1079,6 @@ bool QFSFileEngine::mkdir(const QString &name, bool createParentDirectories) con
     return mkDir(name);
 }
 
-/*!
-    \reimp
-*/
 bool QFSFileEngine::rmdir(const QString &name, bool recurseParentDirectories) const
 {
     QString dirName = name;
@@ -1120,20 +1099,11 @@ bool QFSFileEngine::rmdir(const QString &name, bool recurseParentDirectories) co
     return rmDir(name);
 }
 
-/*!
-    \reimp
-*/
 bool QFSFileEngine::caseSensitive() const
 {
     return false;
 }
 
-/*!
-    Sets the current path (e.g., for QDir), to \a path. Returns true if the
-    new path exists; otherwise this function does nothing, and returns false.
-
-    \sa currentPath()
-*/
 bool QFSFileEngine::setCurrentPath(const QString &path)
 {
     if (!QDir(path).exists())
@@ -1153,16 +1123,6 @@ bool QFSFileEngine::setCurrentPath(const QString &path)
 #endif
 }
 
-/*!
-    Returns the canonicalized form of the current path used by the file
-    engine for the drive specified by \a fileName.
-
-    On Windows, each drive has its own current directory, so a different
-    path is returned for file names that include different drive names
-    (e.g. A: or C:).
-
-    \sa setCurrentPath()
-*/
 QString QFSFileEngine::currentPath(const QString &fileName)
 {
 #if !defined(Q_OS_WINCE)
@@ -1219,11 +1179,6 @@ QString QFSFileEngine::currentPath(const QString &fileName)
 #endif
 }
 
-/*!
-    Returns the home path of the current user.
-
-    \sa rootPath()
-*/
 QString QFSFileEngine::homePath()
 {
     QString ret;
@@ -1277,11 +1232,6 @@ QString QFSFileEngine::homePath()
     return QDir::fromNativeSeparators(ret);
 }
 
-/*!
-    Returns the root path.
-
-    \sa homePath()
-*/
 QString QFSFileEngine::rootPath()
 {
 #if defined(Q_OS_WINCE)
@@ -1299,10 +1249,6 @@ QString QFSFileEngine::rootPath()
     return ret;
 }
 
-/*!
-    Returns the temporary path (i.e., a path in which it is safe to store
-    temporary files).
-*/
 QString QFSFileEngine::tempPath()
 {
     QString ret;
@@ -1330,11 +1276,6 @@ QString QFSFileEngine::tempPath()
     return ret;
 }
 
-/*!
-    Returns the list of drives in the file system as a list of QFileInfo
-    objects. On unix, Mac OS X and Windows CE, only the root path is returned.
-    On Windows, this function returns all drives (A:\, C:\, D:\, etc.).
-*/
 QFileInfoList QFSFileEngine::drives()
 {
     QFileInfoList ret;
@@ -1556,9 +1497,6 @@ QString QFSFileEnginePrivate::getLink() const
     return readLink(filePath);
 }
 
-/*!
-    \reimp
-*/
 bool QFSFileEngine::link(const QString &newName)
 {
 #if !defined(Q_OS_WINCE)
@@ -1816,9 +1754,6 @@ QAbstractFileEngine::FileFlags QFSFileEngine::fileFlags(QAbstractFileEngine::Fil
     return ret;
 }
 
-/*!
-    \reimp
-*/
 QString QFSFileEngine::fileName(FileName file) const
 {
     Q_D(const QFSFileEngine);
@@ -1912,9 +1847,6 @@ QString QFSFileEngine::fileName(FileName file) const
     return d->filePath;
 }
 
-/*!
-    \reimp
-*/
 bool QFSFileEngine::isRelativePath() const
 {
     Q_D(const QFSFileEngine);
@@ -1924,18 +1856,12 @@ bool QFSFileEngine::isRelativePath() const
         || (d->filePath.at(0) == QLatin1Char('/') && d->filePath.at(1) == QLatin1Char('/')))));                // drive, e.g. a:
 }
 
-/*!
-    \reimp
-*/
 uint QFSFileEngine::ownerId(FileOwner /*own*/) const
 {
     static const uint nobodyID = (uint) -2;
     return nobodyID;
 }
 
-/*!
-    \reimp
-*/
 QString QFSFileEngine::owner(FileOwner own) const
 {
 #if !defined(QT_NO_LIBRARY)
@@ -1974,9 +1900,6 @@ QString QFSFileEngine::owner(FileOwner own) const
     return QString(QLatin1String(""));
 }
 
-/*!
-    \reimp
-*/
 bool QFSFileEngine::setPermissions(uint perms)
 {
     Q_D(QFSFileEngine);
@@ -2003,9 +1926,6 @@ bool QFSFileEngine::setPermissions(uint perms)
    return ret;
 }
 
-/*!
-    \reimp
-*/
 bool QFSFileEngine::setSize(qint64 size)
 {
     Q_D(QFSFileEngine);
@@ -2075,9 +1995,6 @@ static inline QDateTime fileTimeToQDateTime(const FILETIME *time)
     return ret;
 }
 
-/*!
-    \reimp
-*/
 QDateTime QFSFileEngine::fileTime(FileTime time) const
 {
     Q_D(const QFSFileEngine);

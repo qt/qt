@@ -80,6 +80,8 @@ public:
         const QSize &size, QS60StylePrivate::SkinElementFlags flags);
     static QColor colorValue(const TAknsItemID &colorGroup, int colorIndex);
     static QPixmap fromFbsBitmap(CFbsBitmap *icon, CFbsBitmap *mask, QS60StylePrivate::SkinElementFlags flags, QImage::Format format);
+    static bool disabledPartGraphic(QS60StyleEnums::SkinParts &part);
+    static bool disabledFrameGraphic(QS60StylePrivate::SkinFrameElements &frame);
     static QPixmap generateMissingThemeGraphic(QS60StyleEnums::SkinParts &part, const QSize &size, QS60StylePrivate::SkinElementFlags flags);
 
 private:
@@ -108,6 +110,10 @@ const partMapEntry QS60StyleModeSpecifics::m_partMap[] = {
     /* SP_QgnGrafBarFrameSideL */       {KAknsIIDQgnGrafBarFrameSideL,        EDrawIcon,   ES60_AllReleases,  -1,-1},
     /* SP_QgnGrafBarFrameSideR */       {KAknsIIDQgnGrafBarFrameSideR,        EDrawIcon,   ES60_AllReleases,  -1,-1},
     /* SP_QgnGrafBarProgress */         {KAknsIIDQgnGrafBarProgress,          EDrawIcon,   ES60_AllReleases,  -1,-1},
+    /* SP_QgnGrafScrollArrowDown */     {KAknsIIDQgnGrafScrollArrowDown,      EDrawIcon,   ES60_AllReleases,  -1,-1},
+    /* SP_QgnGrafScrollArrowLeft */     {KAknsIIDQgnGrafScrollArrowLeft,      EDrawIcon,   ES60_AllReleases,  -1,-1},
+    /* SP_QgnGrafScrollArrowRight */    {KAknsIIDQgnGrafScrollArrowRight,     EDrawIcon,   ES60_AllReleases,  -1,-1},
+    /* SP_QgnGrafScrollArrowUp */       {KAknsIIDQgnGrafScrollArrowUp,        EDrawIcon,   ES60_AllReleases,  -1,-1},
     /* SP_QgnGrafTabActiveL */          {KAknsIIDQgnGrafTabActiveL,           EDrawIcon,   ES60_AllReleases,  -1,-1},
     /* SP_QgnGrafTabActiveM */          {KAknsIIDQgnGrafTabActiveM,           EDrawIcon,   ES60_AllReleases,  -1,-1},
     /* SP_QgnGrafTabActiveR */          {KAknsIIDQgnGrafTabActiveR,           EDrawIcon,   ES60_AllReleases,  -1,-1},
@@ -157,7 +163,7 @@ const partMapEntry QS60StyleModeSpecifics::m_partMap[] = {
     /* SP_QsnCpScrollHandleMiddle */    {KAknsIIDQsnCpScrollHandleMiddle,     EDrawIcon,   ES60_AllReleases,  -1,-1},
     /* SP_QsnCpScrollHandleTop */       {KAknsIIDQsnCpScrollHandleTop,        EDrawIcon,   ES60_AllReleases,  -1,-1},
 
-    /* SP_QsnFrButtonTbCornerTl */      {KAknsIIDQsnFrButtonTbCornerTl,       ENoDraw,     ES60_AllReleases,  -1,-1},
+    /* SP_QsnFrButtonTbCornerTl */      {KAknsIIDQsnFrButtonTbCornerTl,       ENoDraw,     ES60_AllReleases,  -1,-1}, //todo: use "normal button" from 5.0 onwards
     /* SP_QsnFrButtonTbCornerTr */      {KAknsIIDQsnFrButtonTbCornerTr,       ENoDraw,     ES60_AllReleases,  -1,-1},
     /* SP_QsnFrButtonTbCornerBl */      {KAknsIIDQsnFrButtonTbCornerBl,       ENoDraw,     ES60_AllReleases,  -1,-1},
     /* SP_QsnFrButtonTbCornerBr */      {KAknsIIDQsnFrButtonTbCornerBr,       ENoDraw,     ES60_AllReleases,  -1,-1},
@@ -271,15 +277,27 @@ const partMapEntry QS60StyleModeSpecifics::m_partMap[] = {
     /* SP_QsnFrSctrlButtonCenter */     {KAknsIIDQsnFrButtonTbCenter,         ENoDraw,   ES60_3_1 | ES60_3_2,  EAknsMajorSkin, 0x2309}, /*KAknsIIDQgnFrSctrlButtonCenter*/
 
     // No pressed state for toolbar button in 3.1/3.2.
-    /* SP_QsnFrSctrlButtonCornerTlPressed */ {KAknsIIDQsnFrButtonTbCornerTl,  ENoDraw,   ES60_3_1 | ES60_3_2,  EAknsMajorSkin, 0x2621},  /*KAknsIIDQsnFrSctrlButtonCornerTlPressed*/
-    /* SP_QsnFrSctrlButtonCornerTrPressed */ {KAknsIIDQsnFrButtonTbCornerTr,  ENoDraw,   ES60_3_1 | ES60_3_2,  EAknsMajorSkin, 0x2622},
-    /* SP_QsnFrSctrlButtonCornerBlPressed */ {KAknsIIDQsnFrButtonTbCornerBl,  ENoDraw,   ES60_3_1 | ES60_3_2,  EAknsMajorSkin, 0x2623},
-    /* SP_QsnFrSctrlButtonCornerBrPressed */ {KAknsIIDQsnFrButtonTbCornerBl,  ENoDraw,   ES60_3_1 | ES60_3_2,  EAknsMajorSkin, 0x2624},
-    /* SP_QsnFrSctrlButtonSideTPressed */    {KAknsIIDQsnFrButtonTbSideT,     ENoDraw,   ES60_3_1 | ES60_3_2,  EAknsMajorSkin, 0x2625},
-    /* SP_QsnFrSctrlButtonSideBPressed */    {KAknsIIDQsnFrButtonTbSideB,     ENoDraw,   ES60_3_1 | ES60_3_2,  EAknsMajorSkin, 0x2626},
-    /* SP_QsnFrSctrlButtonSideLPressed */    {KAknsIIDQsnFrButtonTbSideL,     ENoDraw,   ES60_3_1 | ES60_3_2,  EAknsMajorSkin, 0x2627},
-    /* SP_QsnFrSctrlButtonSideRPressed */    {KAknsIIDQsnFrButtonTbSideR,     ENoDraw,   ES60_3_1 | ES60_3_2,  EAknsMajorSkin, 0x2628},
-    /* SP_QsnFrSctrlButtonCenterPressed */   {KAknsIIDQsnFrButtonTbCenter,    ENoDraw,   ES60_3_1 | ES60_3_2,  EAknsMajorSkin, 0x2629}
+    /* SP_QsnFrSctrlButtonCornerTlPressed */ {KAknsIIDQsnFrButtonTbCornerTl,  ENoDraw,  ES60_3_1 | ES60_3_2,  EAknsMajorSkin, 0x2621},  /*KAknsIIDQsnFrSctrlButtonCornerTlPressed*/
+    /* SP_QsnFrSctrlButtonCornerTrPressed */ {KAknsIIDQsnFrButtonTbCornerTr,  ENoDraw,  ES60_3_1 | ES60_3_2,  EAknsMajorSkin, 0x2622},
+    /* SP_QsnFrSctrlButtonCornerBlPressed */ {KAknsIIDQsnFrButtonTbCornerBl,  ENoDraw,  ES60_3_1 | ES60_3_2,  EAknsMajorSkin, 0x2623},
+    /* SP_QsnFrSctrlButtonCornerBrPressed */ {KAknsIIDQsnFrButtonTbCornerBr,  ENoDraw,  ES60_3_1 | ES60_3_2,  EAknsMajorSkin, 0x2624},
+    /* SP_QsnFrSctrlButtonSideTPressed */    {KAknsIIDQsnFrButtonTbSideT,     ENoDraw,  ES60_3_1 | ES60_3_2,  EAknsMajorSkin, 0x2625},
+    /* SP_QsnFrSctrlButtonSideBPressed */    {KAknsIIDQsnFrButtonTbSideB,     ENoDraw,  ES60_3_1 | ES60_3_2,  EAknsMajorSkin, 0x2626},
+    /* SP_QsnFrSctrlButtonSideLPressed */    {KAknsIIDQsnFrButtonTbSideL,     ENoDraw,  ES60_3_1 | ES60_3_2,  EAknsMajorSkin, 0x2627},
+    /* SP_QsnFrSctrlButtonSideRPressed */    {KAknsIIDQsnFrButtonTbSideR,     ENoDraw,  ES60_3_1 | ES60_3_2,  EAknsMajorSkin, 0x2628},
+    /* SP_QsnFrSctrlButtonCenterPressed */   {KAknsIIDQsnFrButtonTbCenter,    ENoDraw,  ES60_3_1 | ES60_3_2,  EAknsMajorSkin, 0x2629},
+
+    // No inactive button graphics in 3.1/3.2
+    /* SP_QsnFrButtonCornerTlInactive */ {KAknsIIDQsnFrButtonTbCornerTl,      ENoDraw,  ES60_3_1 | ES60_3_2,  EAknsMajorSkin, 0x21b1}, /*KAknsIIDQsnFrButtonCornerTlInactive*/
+    /* SP_QsnFrButtonCornerTrInactive */ {KAknsIIDQsnFrButtonTbCornerTr,      ENoDraw,  ES60_3_1 | ES60_3_2,  EAknsMajorSkin, 0x21b2},
+    /* SP_QsnFrButtonCornerBlInactive */ {KAknsIIDQsnFrButtonTbCornerBl,      ENoDraw,  ES60_3_1 | ES60_3_2,  EAknsMajorSkin, 0x21b3},
+    /* SP_QsnFrButtonCornerTrInactive */ {KAknsIIDQsnFrButtonTbCornerBr,      ENoDraw,  ES60_3_1 | ES60_3_2,  EAknsMajorSkin, 0x21b4},
+    /* SP_QsnFrButtonSideTInactive */    {KAknsIIDQsnFrButtonTbSideT,         ENoDraw,  ES60_3_1 | ES60_3_2,  EAknsMajorSkin, 0x21b5},
+    /* SP_QsnFrButtonSideBInactive */    {KAknsIIDQsnFrButtonTbSideB,         ENoDraw,  ES60_3_1 | ES60_3_2,  EAknsMajorSkin, 0x21b6},
+    /* SP_QsnFrButtonSideLInactive */    {KAknsIIDQsnFrButtonTbSideL,         ENoDraw,  ES60_3_1 | ES60_3_2,  EAknsMajorSkin, 0x21b7},
+    /* SP_QsnFrButtonSideRInactive */    {KAknsIIDQsnFrButtonTbSideR,         ENoDraw,  ES60_3_1 | ES60_3_2,  EAknsMajorSkin, 0x21b8},
+    /* SP_QsnFrButtonCenterInactive */   {KAknsIIDQsnFrButtonTbCenter,        EDrawIcon,ES60_3_1 | ES60_3_2,  EAknsMajorSkin, 0x21b9}
+
 };
 
 QPixmap QS60StyleModeSpecifics::skinnedGraphics(
@@ -319,7 +337,7 @@ QPixmap QS60StyleModeSpecifics::colorSkinnedGraphics(
 }
 
 void QS60StyleModeSpecifics::fallbackInfo(const QS60StyleEnums::SkinParts &stylepart, TDes& fallbackFileName, TInt& fallbackIndex)
-{ 
+{
     switch(stylepart) {
         case QS60StyleEnums::SP_QgnGrafBarWait:
             fallbackFileName = KAvkonBitmapFile();
@@ -373,19 +391,19 @@ void QS60StyleModeSpecifics::fallbackInfo(const QS60StyleEnums::SkinParts &style
             fallbackFileName = KAvkonBitmapFile();
             fallbackIndex = EMbmAvkonQgn_indi_checkbox_on;
             break;
-        case QS60StyleEnums::SP_QgnIndiHlColSuper: 
+        case QS60StyleEnums::SP_QgnIndiHlColSuper:
             fallbackFileName = KAvkonBitmapFile();
             fallbackIndex = 0x4456; /* EMbmAvkonQgn_indi_hl_col_super */
             break;
-        case QS60StyleEnums::SP_QgnIndiHlExpSuper: 
+        case QS60StyleEnums::SP_QgnIndiHlExpSuper:
             fallbackFileName = KAvkonBitmapFile();
             fallbackIndex = 0x4458; /* EMbmAvkonQgn_indi_hl_exp_super */
             break;
-        case QS60StyleEnums::SP_QgnIndiHlLineBranch: 
+        case QS60StyleEnums::SP_QgnIndiHlLineBranch:
             fallbackFileName = KAvkonBitmapFile();
             fallbackIndex = 0x445A; /* EMbmAvkonQgn_indi_hl_line_branch */
             break;
-        case QS60StyleEnums::SP_QgnIndiHlLineEnd: 
+        case QS60StyleEnums::SP_QgnIndiHlLineEnd:
             fallbackFileName = KAvkonBitmapFile();
             fallbackIndex = 0x445C; /* EMbmAvkonQgn_indi_hl_line_end */
             break;
@@ -482,8 +500,8 @@ QPixmap QS60StyleModeSpecifics::colorSkinnedGraphicsL(
     TInt fallbackGraphicID = -1;
     HBufC* iconFile = HBufC::NewLC( KMaxFileName );
     TPtr fileNamePtr = iconFile->Des();
-    fallbackInfo(stylepart, fileNamePtr, fallbackGraphicID);    
-    
+    fallbackInfo(stylepart, fileNamePtr, fallbackGraphicID);
+
     TAknsItemID colorGroup = KAknsIIDQsnIconColors;
     int colorIndex = 0;
     colorGroupAndIndex(stylepart, colorGroup, colorIndex);
@@ -649,6 +667,7 @@ QPixmap QS60StyleModeSpecifics::createSkinnedGraphicsL(
         HBufC* iconFile = HBufC::NewLC( KMaxFileName );
         TPtr fileNamePtr = iconFile->Des();
         fallbackInfo(part, fileNamePtr, fallbackGraphicID);
+        // todo: could we instead use   AknIconUtils::AvkonIconFileName(); to avoid allocating each time?
 
         CFbsBitmap *icon = 0;
         CFbsBitmap *iconMask = 0;
@@ -670,7 +689,6 @@ QPixmap QS60StyleModeSpecifics::createSkinnedGraphicsL(
         CleanupStack::PushL(background);
         User::LeaveIfError(background->Create(targetSize, EColor16MA));
 
-        // todo: push background into CleanupStack
         CFbsBitmapDevice* dev = CFbsBitmapDevice::NewL(background);
         CleanupStack::PushL(dev);
         CFbsBitGc* gc = NULL;
@@ -803,7 +821,7 @@ void QS60StyleModeSpecifics::frameIdAndCenterId(QS60StylePrivate::SkinFrameEleme
 
     switch(frameElement) {
         case QS60StylePrivate::SF_ToolTip:
-            if (QSysInfo::s60Version()==QSysInfo::SV_S60_5_0 || QSysInfo::s60Version()==QSysInfo::SV_S60_3_2) {
+            if (QSysInfo::s60Version()!=QSysInfo::SV_S60_3_1) {
                 centerId.Set(EAknsMajorGeneric, 0x19c2);
                 frameId.Set(EAknsMajorSkin, 0x5300);
             } else {
@@ -831,17 +849,19 @@ void QS60StyleModeSpecifics::frameIdAndCenterId(QS60StylePrivate::SkinFrameEleme
 
 TRect QS60StyleModeSpecifics::innerRectFromElement(QS60StylePrivate::SkinFrameElements frameElement, const TRect &outerRect)
 {
-    TInt widthShrink = 0;
-    TInt heightShrink = 0;
+    TInt widthShrink = QS60StylePrivate::pixelMetric(PM_Custom_FrameCornerWidth);
+    TInt heightShrink = QS60StylePrivate::pixelMetric(PM_Custom_FrameCornerHeight);
     switch(frameElement) {
         case QS60StylePrivate::SF_PanelBackground:
             // panel should have slightly slimmer border to enable thin line of background graphics between closest component
-            widthShrink = QS60StylePrivate::pixelMetric(PM_Custom_FrameCornerWidth)-2;
-            heightShrink = QS60StylePrivate::pixelMetric(PM_Custom_FrameCornerHeight)-2;
+            widthShrink = widthShrink-2;
+            heightShrink = heightShrink-2;
+            break;
+        case QS60StylePrivate::SF_ToolTip:
+            widthShrink = widthShrink>>1;
+            heightShrink = heightShrink>>1;
             break;
         default:
-            widthShrink = QS60StylePrivate::pixelMetric(PM_Custom_FrameCornerWidth);
-            heightShrink = QS60StylePrivate::pixelMetric(PM_Custom_FrameCornerHeight);
             break;
     }
     TRect innerRect(outerRect);
@@ -942,9 +962,8 @@ QFont QS60StylePrivate::s60Font_specific(
 #ifdef QT_S60STYLE_LAYOUTDATA_SIMULATED
 void QS60StylePrivate::setActiveLayout()
 {
-    //todo: how to find layouts that are of same size (QVGA1 vs. QVGA2)
     const QSize activeScreenSize(screenSize());
-    int activeLayoutIndex = 0;
+    int activeLayoutIndex = -1;
     const bool mirrored = !QApplication::isLeftToRight();
     const short screenHeight = (short)activeScreenSize.height();
     const short screenWidth = (short)activeScreenSize.width();
@@ -956,6 +975,28 @@ void QS60StylePrivate::setActiveLayout()
             break;
         }
     }
+    
+    //not found, lets try without mirroring info
+    if (activeLayoutIndex==-1){
+        for (int i=0; i<m_numberOfLayouts; i++) {
+            if (screenHeight==m_layoutHeaders[i].height &&
+                screenWidth==m_layoutHeaders[i].width) {
+                activeLayoutIndex = i;
+                break;
+            }
+        }
+    }
+
+    //not found, lets try with either of dimensions
+    if (activeLayoutIndex==-1){
+        const QSysInfo::S60Version currentRelease = QSysInfo::s60Version();
+        const bool landscape = screenHeight < screenWidth;
+
+        activeLayoutIndex = (currentRelease == QSysInfo::SV_S60_3_1 || currentRelease == QSysInfo::SV_S60_3_2) ? 0 : 4;
+        activeLayoutIndex += (!landscape) ? 2 : 0;
+        activeLayoutIndex += (!mirrored) ? 1 : 0;
+    }
+
     m_pmPointer = data[activeLayoutIndex];
 }
 #endif // QT_S60STYLE_LAYOUTDATA_SIMULATED
@@ -971,98 +1012,6 @@ QS60StylePrivate::QS60StylePrivate()
 QS60StylePrivate::~QS60StylePrivate()
 {
     m_backgroundValid = false;
-}
-
-short QS60StylePrivate::pixelMetric(int metric)
-{
-#ifdef QT_S60STYLE_LAYOUTDATA_SIMULATED
-    Q_ASSERT(metric < MAX_PIXELMETRICS);
-    const short returnValue = m_pmPointer[metric];
-    if (returnValue==-909)
-        return -1;
-    return returnValue;
-#else
-    //todo - call the pixelmetrics API directly
-    return 0;
-#endif // QT_S60STYLE_LAYOUTDATA_SIMULATED
-}
-
-QPixmap QS60StyleModeSpecifics::generateMissingThemeGraphic(QS60StyleEnums::SkinParts &part,
-        const QSize &size, QS60StylePrivate::SkinElementFlags flags)
-{
-    if (!QS60StylePrivate::isTouchSupported())
-        return QPixmap();
-
-    QS60StyleEnums::SkinParts updatedPart = part;
-    switch(part){
-    // AVKON UI has a abnormal handling for scrollbar graphics. It is possible that the root
-    // skin does not contain mandatory graphics for scrollbar pressed states. Therefore, AVKON UI
-    // creates dynamically these graphics by modifying the normal state scrollbar graphics slightly.
-    // S60Style needs to work similarly. Therefore if skingraphics call provides to be a miss 
-    // (i.e. result is not valid), style needs to draw normal graphics instead and apply some 
-    // modifications (similar to generatedIconPixmap()) to the result.
-    case QS60StyleEnums::SP_QsnCpScrollHandleBottomPressed:
-        updatedPart = QS60StyleEnums::SP_QsnCpScrollHandleBottom;
-        break;
-    case QS60StyleEnums::SP_QsnCpScrollHandleMiddlePressed:
-        updatedPart = QS60StyleEnums::SP_QsnCpScrollHandleMiddle;
-        break;
-    case QS60StyleEnums::SP_QsnCpScrollHandleTopPressed:
-        updatedPart = QS60StyleEnums::SP_QsnCpScrollHandleTop;
-        break;
-    default:
-        break;
-    }
-    if (part==updatedPart) {
-        return QPixmap();
-    } else {
-        QPixmap result = skinnedGraphics(updatedPart, size, flags);
-        // TODO: fix this
-        QStyleOption opt;
-        //        opt.palette = q->standardPalette();
-        
-        // For now, always generate new icon based on "selected". In the future possibly, expand
-        // this to consist other possibilities as well.
-        result = QApplication::style()->generatedIconPixmap(QIcon::Selected, result, &opt);
-        return result;
-    }
-}
-
-QPixmap QS60StylePrivate::part(QS60StyleEnums::SkinParts part,
-    const QSize &size, SkinElementFlags flags)
-{
-    QS60WindowSurface::unlockBitmapHeap();
-    QPixmap result = (flags & SF_ColorSkinned)?
-          QS60StyleModeSpecifics::colorSkinnedGraphics(part, size, flags)
-        : QS60StyleModeSpecifics::skinnedGraphics(part, size, flags);
-    QS60WindowSurface::lockBitmapHeap();
-
-    if (flags & SF_StateDisabled) {
-        // TODO: fix this
-        QStyleOption opt;
-//        opt.palette = q->standardPalette();
-        result = QApplication::style()->generatedIconPixmap(QIcon::Disabled, result, &opt);
-    }
-
-    if (!result)
-        result = QS60StyleModeSpecifics::generateMissingThemeGraphic(part, size, flags);
-    
-    return result;
-}
-
-QPixmap QS60StylePrivate::frame(SkinFrameElements frame, const QSize &size, SkinElementFlags flags)
-{
-    QS60WindowSurface::unlockBitmapHeap();
-    QPixmap result = QS60StyleModeSpecifics::skinnedGraphics(frame, size, flags);
-    QS60WindowSurface::lockBitmapHeap();
-
-    if (flags & SF_StateDisabled) {
-        // TODO: fix this
-        QStyleOption opt;
-//        opt.palette = q->standardPalette();
-        result = QApplication::style()->generatedIconPixmap(QIcon::Disabled, result, &opt);
-    }
-    return result;
 }
 
 void QS60StylePrivate::setStyleProperty_specific(const char *name, const QVariant &value)
@@ -1082,6 +1031,20 @@ QVariant QS60StylePrivate::styleProperty_specific(const char *name) const
         return styleProperty(name);
 }
 
+short QS60StylePrivate::pixelMetric(int metric)
+{
+#ifdef QT_S60STYLE_LAYOUTDATA_SIMULATED
+    Q_ASSERT(metric < MAX_PIXELMETRICS);
+    const short returnValue = m_pmPointer[metric];
+    if (returnValue==-909)
+        return -1;
+    return returnValue;
+#else
+    //todo - call the pixelmetrics API directly
+    return 0;
+#endif // QT_S60STYLE_LAYOUTDATA_SIMULATED
+}
+
 QColor QS60StylePrivate::s60Color(QS60StyleEnums::ColorLists list,
     int index, const QStyleOption *option)
 {
@@ -1096,6 +1059,128 @@ QColor QS60StylePrivate::s60Color(QS60StyleEnums::ColorLists list,
     Q_ASSERT((int)list <= (int)sizeof(idMap)/sizeof(idMap[0]));
     const QColor color = QS60StyleModeSpecifics::colorValue(*idMap[(int) list], index - 1);
     return option ? QS60StylePrivate::stateColor(color, option) : color;
+}
+
+// In some cases, the AVKON UI themegraphic is already in 'disabled state'.
+// If so, return true for these parts.
+bool QS60StyleModeSpecifics::disabledPartGraphic(QS60StyleEnums::SkinParts &part)
+{
+    bool disabledGraphic = false;
+    switch(part){
+        // inactive button graphics are available from 5.0 onwards
+        case QS60StyleEnums::SP_QsnFrButtonCornerTlInactive:
+        case QS60StyleEnums::SP_QsnFrButtonCornerTrInactive:
+        case QS60StyleEnums::SP_QsnFrButtonCornerBlInactive:
+        case QS60StyleEnums::SP_QsnFrButtonCornerBrInactive:
+        case QS60StyleEnums::SP_QsnFrButtonSideTInactive:
+        case QS60StyleEnums::SP_QsnFrButtonSideBInactive:
+        case QS60StyleEnums::SP_QsnFrButtonSideLInactive:
+        case QS60StyleEnums::SP_QsnFrButtonSideRInactive:
+        case QS60StyleEnums::SP_QsnFrButtonCenterInactive:
+            if (!(QSysInfo::s60Version()==QSysInfo::SV_S60_3_1 ||
+                  QSysInfo::s60Version()==QSysInfo::SV_S60_3_2))
+                disabledGraphic = true;
+            break;
+        default:
+            break;
+    }
+    return disabledGraphic;
+}
+
+// In some cases, the AVKON UI themegraphic is already in 'disabled state'.
+// If so, return true for these frames.
+bool QS60StyleModeSpecifics::disabledFrameGraphic(QS60StylePrivate::SkinFrameElements &frame)
+{
+    bool disabledGraphic = false;
+    switch(frame){
+        // inactive button graphics are available from 5.0 onwards
+        case QS60StylePrivate::SF_ButtonInactive:
+            if (!(QSysInfo::s60Version()==QSysInfo::SV_S60_3_1 ||
+                  QSysInfo::s60Version()==QSysInfo::SV_S60_3_2))
+                disabledGraphic = true;
+            break;
+        default:
+            break;
+    }
+    return disabledGraphic;
+}
+
+QPixmap QS60StyleModeSpecifics::generateMissingThemeGraphic(QS60StyleEnums::SkinParts &part,
+        const QSize &size, QS60StylePrivate::SkinElementFlags flags)
+{
+    if (!QS60StylePrivate::isTouchSupported())
+        return QPixmap();
+
+    QS60StyleEnums::SkinParts updatedPart = part;
+    switch(part){
+    // AVKON UI has a abnormal handling for scrollbar graphics. It is possible that the root
+    // skin does not contain mandatory graphics for scrollbar pressed states. Therefore, AVKON UI
+    // creates dynamically these graphics by modifying the normal state scrollbar graphics slightly.
+    // S60Style needs to work similarly. Therefore if skingraphics call provides to be a miss
+    // (i.e. result is not valid), style needs to draw normal graphics instead and apply some
+    // modifications (similar to generatedIconPixmap()) to the result.
+    case QS60StyleEnums::SP_QsnCpScrollHandleBottomPressed:
+        updatedPart = QS60StyleEnums::SP_QsnCpScrollHandleBottom;
+        break;
+    case QS60StyleEnums::SP_QsnCpScrollHandleMiddlePressed:
+        updatedPart = QS60StyleEnums::SP_QsnCpScrollHandleMiddle;
+        break;
+    case QS60StyleEnums::SP_QsnCpScrollHandleTopPressed:
+        updatedPart = QS60StyleEnums::SP_QsnCpScrollHandleTop;
+        break;
+    default:
+        break;
+    }
+    if (part==updatedPart) {
+        return QPixmap();
+    } else {
+        QPixmap result = skinnedGraphics(updatedPart, size, flags);
+        // TODO: fix this
+        QStyleOption opt;
+        //opt.palette = q->standardPalette();
+
+        // For now, always generate new icon based on "selected". In the future possibly, expand
+        // this to consist other possibilities as well.
+        result = QApplication::style()->generatedIconPixmap(QIcon::Selected, result, &opt);
+        return result;
+    }
+}
+
+QPixmap QS60StylePrivate::part(QS60StyleEnums::SkinParts part,
+    const QSize &size, SkinElementFlags flags)
+{
+    QS60WindowSurface::unlockBitmapHeap();
+    QPixmap result = (flags & SF_ColorSkinned)?
+          QS60StyleModeSpecifics::colorSkinnedGraphics(part, size, flags)
+        : QS60StyleModeSpecifics::skinnedGraphics(part, size, flags);
+    QS60WindowSurface::lockBitmapHeap();
+
+    if (flags & SF_StateDisabled && !QS60StyleModeSpecifics::disabledPartGraphic(part)) {
+        // TODO: fix this
+        QStyleOption opt;
+//        opt.palette = q->standardPalette();
+        result = QApplication::style()->generatedIconPixmap(QIcon::Disabled, result, &opt);
+    }
+
+    if (!result)
+        result = QS60StyleModeSpecifics::generateMissingThemeGraphic(part, size, flags);
+
+    return result;
+}
+
+QPixmap QS60StylePrivate::frame(SkinFrameElements frame, const QSize &size, SkinElementFlags flags)
+{
+    QS60WindowSurface::unlockBitmapHeap();
+    QPixmap result = QS60StyleModeSpecifics::skinnedGraphics(frame, size, flags);
+    QS60WindowSurface::lockBitmapHeap();
+
+    if (flags & SF_StateDisabled && !QS60StyleModeSpecifics::disabledFrameGraphic(frame)) {
+        // TODO: fix this
+        QStyleOption opt;
+//        opt.palette = q->standardPalette();
+        result = QApplication::style()->generatedIconPixmap(QIcon::Disabled, result, &opt);
+    }
+    return result;
 }
 
 // If the public SDK returns compressed images, please let us also uncompress those!
@@ -1249,17 +1334,15 @@ void QS60StyleModeSpecifics::colorGroupAndIndex(
 {
     switch(skinID) {
         case QS60StyleEnums::SP_QgnIndiSubMenu:
-        case QS60StyleEnums::SP_QgnIndiHlColSuper:
-        case QS60StyleEnums::SP_QgnIndiHlExpSuper:
-        case QS60StyleEnums::SP_QgnIndiHlLineBranch:
-        case QS60StyleEnums::SP_QgnIndiHlLineEnd:
-        case QS60StyleEnums::SP_QgnIndiHlLineStraight:
+            colorGroup = KAknsIIDQsnIconColors;
+            colorIndex = EAknsCIQsnIconColorsCG1;
+            break;
         case QS60StyleEnums::SP_QgnIndiRadiobuttOff:
         case QS60StyleEnums::SP_QgnIndiRadiobuttOn:
         case QS60StyleEnums::SP_QgnIndiCheckboxOff:
         case QS60StyleEnums::SP_QgnIndiCheckboxOn:
             colorGroup = KAknsIIDQsnIconColors;
-            colorIndex = EAknsCIQsnIconColorsCG1;
+            colorIndex = EAknsCIQsnIconColorsCG14;
             break;
         default:
             break;
@@ -1269,7 +1352,7 @@ void QS60StyleModeSpecifics::colorGroupAndIndex(
 void QS60Style::handleDynamicLayoutVariantSwitch()
 {
     Q_D(QS60Style);
-    d->clearCaches();
+    d->clearCaches(QS60StylePrivate::CC_LayoutChange);
 #ifdef QT_S60STYLE_LAYOUTDATA_SIMULATED
     d->setActiveLayout();
 #endif // QT_S60STYLE_LAYOUTDATA_SIMULATED
@@ -1282,11 +1365,12 @@ void QS60Style::handleDynamicLayoutVariantSwitch()
 void QS60Style::handleSkinChange()
 {
     Q_D(QS60Style);
-    d->clearCaches();
+    d->clearCaches(QS60StylePrivate::CC_ThemeChange);
     d->setThemePalette(qApp);
     foreach (QWidget *topLevelWidget, QApplication::allWidgets()){
         QEvent e(QEvent::StyleChange);
         QApplication::sendEvent(topLevelWidget, &e);
+        d->setThemePalette(topLevelWidget);
         topLevelWidget->ensurePolished();
     }
 }

@@ -293,9 +293,8 @@ qint64 QFSFileEnginePrivate::nativeRead(char *data, qint64 len)
         int oldFlags = fcntl(QT_FILENO(fh), F_GETFL);
         for (int i = 0; i < 2; ++i) {
             // Unix: Make the underlying file descriptor non-blocking
-            int v = 1;
             if ((oldFlags & O_NONBLOCK) == 0)
-                fcntl(QT_FILENO(fh), F_SETFL, oldFlags | O_NONBLOCK, &v, sizeof(v));
+                fcntl(QT_FILENO(fh), F_SETFL, oldFlags | O_NONBLOCK);
 
             // Cross platform stdlib read
             size_t read = 0;
@@ -313,8 +312,7 @@ qint64 QFSFileEnginePrivate::nativeRead(char *data, qint64 len)
 
             // Unix: Restore the blocking state of the underlying socket
             if ((oldFlags & O_NONBLOCK) == 0) {
-                int v = 1;
-                fcntl(QT_FILENO(fh), F_SETFL, oldFlags, &v, sizeof(v));
+                fcntl(QT_FILENO(fh), F_SETFL, oldFlags);
                 if (readBytes == 0) {
                     int readByte = 0;
                     do {
@@ -331,8 +329,7 @@ qint64 QFSFileEnginePrivate::nativeRead(char *data, qint64 len)
         }
         // Unix: Restore the blocking state of the underlying socket
         if ((oldFlags & O_NONBLOCK) == 0) {
-            int v = 1;
-            fcntl(QT_FILENO(fh), F_SETFL, oldFlags, &v, sizeof(v));
+            fcntl(QT_FILENO(fh), F_SETFL, oldFlags);
         }
         if (readBytes == 0 && !feof(fh)) {
             // if we didn't read anything and we're not at EOF, it must be an error
@@ -1045,7 +1042,7 @@ QString QFSFileEngine::fileName(FileName file) const
 #endif
             if (len > 0) {
                 QString ret;
-                if (S_ISDIR(d->st.st_mode) && s[0] != '/') {
+                if (d->doStat() && S_ISDIR(d->st.st_mode) && s[0] != '/') {
                     QDir parent(d->filePath);
                     parent.cdUp();
                     ret = parent.path();

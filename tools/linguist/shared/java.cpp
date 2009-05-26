@@ -58,7 +58,7 @@ enum { Tok_Eof, Tok_class, Tok_return, Tok_tr,
        Tok_Comment, Tok_String, Tok_Colon, Tok_Dot,
        Tok_LeftBrace, Tok_RightBrace, Tok_LeftParen,
        Tok_RightParen, Tok_Comma, Tok_Semicolon,
-       Tok_Integer, Tok_Plus, Tok_PlusPlus, Tok_PlusEq };
+       Tok_Integer, Tok_Plus, Tok_PlusPlus, Tok_PlusEq, Tok_null };
 
 class Scope
 {
@@ -142,7 +142,11 @@ static int getToken()
                      case 'c':
                         if ( yyIdent == QLatin1String("class") )
                             return Tok_class;
-                    break;
+                        break;
+                     case 'n':
+                         if ( yyIdent == QLatin1String("null") )
+                             return Tok_null;
+                        break;
                 }
             }
             switch ( yyIdent.at(0).toLatin1() ) {
@@ -382,9 +386,11 @@ static bool matchInteger( qlonglong *number)
 static bool matchStringOrNull(QString &s)
 {
     bool matches = matchString(s);
-    qlonglong num = 0;
-    if (!matches) matches = matchInteger(&num);
-    return matches && num == 0;
+    if (!matches) {
+        matches = (yyTok == Tok_null);
+        if (matches) yyTok = getToken();
+    }
+    return matches;
 }
 
 /*

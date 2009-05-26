@@ -715,7 +715,7 @@ int QUndoStack::index() const
 }
 
 /*!
-    Repeatedly calls undo() or redo() until the the current command index reaches
+    Repeatedly calls undo() or redo() until the current command index reaches
     \a idx. This function can be used to roll the state of the document forwards
     of backwards. indexChanged() is emitted only once.
 

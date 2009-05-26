@@ -4759,6 +4759,12 @@ void QUrl::setEncodedQueryItems(const QList<QPair<QByteArray, QByteArray> > &que
     Inserts the pair \a key = \a value into the query string of the
     URL.
 
+    The key/value pair is encoded before it is added to the query. The 
+    pair is converted into separate strings internally. The \a key and 
+    \a value is first encoded into UTF-8 and then delimited by the 
+    character returned by valueDelimiter(). Each key/value pair is 
+    delimited by the character returned by pairDelimiter().
+
     \sa addEncodedQueryItem()
 */
 void QUrl::addQueryItem(const QString &key, const QString &value)

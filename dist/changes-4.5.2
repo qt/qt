@@ -24,6 +24,8 @@ General Improvements
 --------------------
 
 - Documentation and Examples
+   * Added a new example (fancy browser) which shows how to use jQuery
+     in QtWebKit.
 
 Third party components
 ----------------------
@@ -33,6 +35,16 @@ Third party components
 *                          Library                                         *
 ****************************************************************************
 
+- QtWebKit
+   * Backported fixes for critical bugs, memory leaks, and crashes from
+     WebKit trunk (with revision numbers) related to:
+       Canvas (r40546, r41221 r41355, r42996, r43645)
+       Memory (r41527, r43764, r43828, r43830)
+       JavaScript (r39882, r40086, r40131, r40133)
+       Rendering (r41285, r41296, r41659, r42887)
+       Network (r41664, r42516, r42747)
+       Plugins (r41346, r43550, r43915, r43917, r43923)
+       Clipboard (r41360)
 
 ****************************************************************************
 *                          Database Drivers                                *
@@ -78,7 +90,17 @@ Qt for Windows CE
 
 
 - Designer
-
+   * [248769] Fixed a bug affecting the display of keyboard shortcuts in
+     the detailed view of the action editor.
+   * [251092] Fixed a bug preventing entering local file names for QUrl-type
+     properties on Windows.
+   * [251691] Fixed dynamic re-translation of table headers.
+   * [252251] Improved readability of the property editor when using the
+     KDE Obsidian Coast theme.
+   * [253236] Fixed a regression bug triggered by forms with a size policy
+     of 'Fixed' on the main cointainer.
+   * [253278] Made it possible to set QString-type properties using
+     QDesignerFormWindowCursor::setProperty().
 
 - Linguist
   - Linguist GUI
@@ -95,7 +117,8 @@ Qt for Windows CE
 
 
 - uic
-
+  * [252333] Fixed a regression crash triggered by using icons with
+    different pixmaps for QIcon states.
 
 - uic3
 

@@ -56,9 +56,9 @@
 #include <fcntl.h>
 #include <unistd.h>
 
-QT_BEGIN_NAMESPACE
-
 #ifndef QT_NO_SHAREDMEMORY
+
+QT_BEGIN_NAMESPACE
 
 QSharedMemoryPrivate::QSharedMemoryPrivate()
     : QObjectPrivate(), memory(0), size(0), error(QSharedMemory::NoError),

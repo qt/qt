@@ -153,9 +153,8 @@ void tst_QNativeSocketEngine::simpleConnectToIMAP()
     QVERIFY(socketDevice.initialize(QAbstractSocket::TcpSocket, QAbstractSocket::IPv4Protocol));
     QVERIFY(socketDevice.state() == QAbstractSocket::UnconnectedState);
 
-    // Connect to imap.trolltech.com's IP
-    bool connected = socketDevice.connectToHost(QHostAddress(QtNetworkSettings::serverIP()), 143);
-    if (!connected) {
+    const bool isConnected = socketDevice.connectToHost(QHostAddress(QtNetworkSettings::serverIP()), 143);
+    if (!isConnected) {
         QVERIFY(socketDevice.state() == QAbstractSocket::ConnectingState);
         QVERIFY(socketDevice.waitForWrite());
         QVERIFY(socketDevice.state() == QAbstractSocket::ConnectedState);
@@ -593,9 +592,8 @@ void tst_QNativeSocketEngine::networkError()
 
     QVERIFY(client.initialize(QAbstractSocket::TcpSocket, QAbstractSocket::IPv4Protocol));
 
-    // Connect to imap.trolltech.com's IP
-    bool connected = client.connectToHost(QHostAddress(QtNetworkSettings::serverIP()), 143);
-    if (!connected) {
+    const bool isConnected = client.connectToHost(QHostAddress(QtNetworkSettings::serverIP()), 143);
+    if (!isConnected) {
         QVERIFY(client.state() == QAbstractSocket::ConnectingState);
         QVERIFY(client.waitForWrite());
         QVERIFY(client.state() == QAbstractSocket::ConnectedState);

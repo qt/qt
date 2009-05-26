@@ -1369,7 +1369,7 @@ QColor QColor::toRgb() const
 */
 QColor QColor::toHsv() const
 {
-    if (!isValid())
+    if (!isValid() || cspec == Hsv)
         return *this;
 
     if (cspec != Rgb)
@@ -1421,7 +1421,7 @@ QColor QColor::toHsv() const
 */
 QColor QColor::toCmyk() const
 {
-    if (!isValid())
+    if (!isValid() || cspec == Cmyk)
         return *this;
     if (cspec != Rgb)
         return toRgb().toCmyk();
@@ -2239,6 +2239,14 @@ QDataStream &operator>>(QDataStream &stream, QColor &color)
     \l{QColor#Alpha-Blended Drawing}{Alpha-Blended Drawing} section.
 
     \sa QColor::rgb(), QColor::rgba()
+*/
+
+/*! \fn void QColormap::initialize()
+  \internal
+*/
+
+/*! \fn void QColormap::cleanup()
+  \internal
 */
 
 QT_END_NAMESPACE

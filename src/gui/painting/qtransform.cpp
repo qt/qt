@@ -1355,7 +1355,8 @@ static inline QHomogeneousCoordinate mapHomogeneous(const QTransform &transform,
     return c;
 }
 
-static inline bool lineTo_clipped(QPainterPath &path, const QTransform &transform, const QPointF &a, const QPointF &b, bool needsMoveTo)
+static inline bool lineTo_clipped(QPainterPath &path, const QTransform &transform, const QPointF &a, const QPointF &b,
+                                  bool needsMoveTo, bool needsLineTo = true)
 {
     QHomogeneousCoordinate ha = mapHomogeneous(transform, a);
     QHomogeneousCoordinate hb = mapHomogeneous(transform, b);
@@ -1388,7 +1389,8 @@ static inline bool lineTo_clipped(QPainterPath &path, const QTransform &transfor
     if (needsMoveTo)
         path.moveTo(ha.toPoint());
 
-    path.lineTo(hb.toPoint());
+    if (needsLineTo)
+        path.lineTo(hb.toPoint());
 
     return true;
 }
@@ -1455,7 +1457,7 @@ static QPainterPath mapProjective(const QTransform &transform, const QPainterPat
     }
 
     if (path.elementCount() > 0 && lastMoveTo != last)
-        lineTo_clipped(result, transform, last, lastMoveTo, needsMoveTo);
+        lineTo_clipped(result, transform, last, lastMoveTo, needsMoveTo, false);
 
     return result;
 }
