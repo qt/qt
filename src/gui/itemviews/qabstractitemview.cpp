@@ -61,6 +61,9 @@
 #ifndef QT_NO_ACCESSIBILITY
 #include <qaccessible.h>
 #endif
+#ifdef QT_KEYPAD_NAVIGATION
+#include <private/qsoftkeystack_p.h>
+#endif
 
 QT_BEGIN_NAMESPACE
 
@@ -2003,16 +2006,19 @@ void QAbstractItemView::keyPressEvent(QKeyEvent *event)
         if (QApplication::keypadNavigationEnabled()) {
             if (!hasEditFocus()) {
                 setEditFocus(true);
+                QKeyEventSoftKey::addSoftKey(QSoftKeyAction::Back, Qt::Key_Back, this);
                 return;
             }
         }
         break;
     case Qt::Key_Back:
-    case Qt::Key_Context2: // TODO: aportale, remove KEYPAD_NAVIGATION_HACK when softkey support is there
-        if (QApplication::keypadNavigationEnabled() && hasEditFocus())
+        if (QApplication::keypadNavigationEnabled() && hasEditFocus()) {
+            if (QSoftKeyStack *stack = QSoftKeyStack::softKeyStackOfWidget(this))
+                stack->pop();
             setEditFocus(false);
-        else
+        } else {
             event->ignore();
+        }
         return;
     default:
         if (QApplication::keypadNavigationEnabled() && !hasEditFocus()) {
