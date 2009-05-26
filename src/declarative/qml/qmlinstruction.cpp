@@ -127,9 +127,6 @@ void QmlCompiledComponent::dump(QmlInstruction *instr, int idx)
     case QmlInstruction::AssignSignalObject:
         qWarning() << idx << "\t" << line << "\t" << "ASSIGN_SIGNAL_OBJECT\t" << instr->assignSignalObject.signal << "\t\t\t" << datas.at(instr->assignSignalObject.signal);
         break;
-    case QmlInstruction::AssignValueSource:
-        qWarning() << idx << "\t" << line << "\t" << "ASSIGN_VALUE_SOURCE\t" << instr->assignValueSource.property << "\t\t\t" << datas.at(instr->assignValueSource.property);
-        break;
     case QmlInstruction::StoreBinding:
         qWarning() << idx << "\t" << line << "\t" << "STORE_BINDING\t\t" << instr->assignBinding.property << "\t" << instr->assignBinding.value << "\t\t" << instr->assignBinding.context << primitives.at(instr->assignBinding.value);
         break;

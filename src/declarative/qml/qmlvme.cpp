@@ -88,7 +88,6 @@ Q_DECLARE_PERFORMANCE_LOG(QFxCompiler) {
     Q_DECLARE_PERFORMANCE_METRIC(InstrStoreSignal);
     Q_DECLARE_PERFORMANCE_METRIC(InstrStoreObjectQmlList);
     Q_DECLARE_PERFORMANCE_METRIC(InstrAssignSignalObject);
-    Q_DECLARE_PERFORMANCE_METRIC(InstrAssignValueSource);
     Q_DECLARE_PERFORMANCE_METRIC(InstrStoreBinding);
     Q_DECLARE_PERFORMANCE_METRIC(InstrStoreCompiledBinding);
     Q_DECLARE_PERFORMANCE_METRIC(InstrStoreValueSource);
@@ -131,7 +130,6 @@ Q_DEFINE_PERFORMANCE_LOG(QFxCompiler, "QFxCompiler") {
     Q_DEFINE_PERFORMANCE_METRIC(InstrStoreSignal, "StoreSignal");
     Q_DEFINE_PERFORMANCE_METRIC(InstrStoreObjectQmlList, "StoreObjectQmlList");
     Q_DEFINE_PERFORMANCE_METRIC(InstrAssignSignalObject, "AssignSignalObject");
-    Q_DEFINE_PERFORMANCE_METRIC(InstrAssignValueSource, "AssignValueSource");
     Q_DEFINE_PERFORMANCE_METRIC(InstrStoreBinding, "StoreBinding");
     Q_DEFINE_PERFORMANCE_METRIC(InstrStoreCompiledBinding, "StoreCompiledBinding");
     Q_DEFINE_PERFORMANCE_METRIC(InstrStoreValueSource, "StoreValueSource");
@@ -665,30 +663,6 @@ QObject *QmlVME::run(QmlContext *ctxt, QmlCompiledComponent *comp, int start, in
                 QObject *target = stack.top();
                 QmlParserStatus *status = reinterpret_cast<QmlParserStatus *>(reinterpret_cast<char *>(target) + instr.complete.castValue);
                 status->classComplete();
-            }
-            break;
-
-        case QmlInstruction::AssignValueSource:
-            {
-                QObject *target = stack.at(stack.count() - 2);
-                int propIdx = instr.assignValueSource.property;
-                QByteArray pr;
-                if (propIdx == -1) {
-                    pr = QmlMetaType::defaultProperty(target).name();
-                    if (pr.isEmpty())
-                        VME_EXCEPTION("Unable to resolve default property");
-                } else {
-                    pr = datas.at(propIdx);
-                }
-
-                int coreIdx = qIndexOfProperty(target, pr);
-                if (coreIdx != -1) {
-                    instr.type = QmlInstruction::StoreValueSource;
-                    instr.assignValueSource.property = coreIdx;
-                    ii--;
-                } else {
-                    VME_EXCEPTION("Unknown property" << pr);
-                }
             }
             break;
 

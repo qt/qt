@@ -1188,19 +1188,11 @@ bool QmlCompiler::compilePropertyObjectAssignment(QmlParser::Property *prop,
         } else if (isPropertyValue) {
             COMPILE_CHECK(compileObject(v->object, ctxt));
 
-            if (prop->index != -1) {
-                QmlInstruction assign;
-                assign.type = QmlInstruction::StoreValueSource;
-                assign.line = v->object->location.start.line;
-                assign.assignValueSource.property = prop->index;
-                output->bytecode << assign;
-            } else {
-                QmlInstruction assign;
-                assign.type = QmlInstruction::AssignValueSource;
-                assign.line = v->object->location.start.line;
-                assign.assignValueSource.property = output->indexForByteArray(prop->name);;
-                output->bytecode << assign;
-            }
+            QmlInstruction assign;
+            assign.type = QmlInstruction::StoreValueSource;
+            assign.line = v->object->location.start.line;
+            assign.assignValueSource.property = prop->index;
+            output->bytecode << assign;
 
             v->type = Value::ValueSource;
         } else {
