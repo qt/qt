@@ -1106,7 +1106,7 @@ void qWinRequestConfig(WId id, int req, int x, int y, int w, int h)
     configRequests->append(r);                // store request in queue
 }
 
-Q_GUI_EXPORT void qWinProcessConfigRequests()                // perform requests in queue
+static void qWinProcessConfigRequests()                // perform requests in queue
 {
     if (!configRequests)
         return;

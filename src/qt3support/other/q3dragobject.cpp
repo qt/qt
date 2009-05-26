@@ -208,11 +208,6 @@ void Q3DragObject::setPixmap(QPixmap pm, const QPoint& hotspot)
     Q_D(Q3DragObject);
     d->pixmap = pm;
     d->hot = hotspot;
-#if 0
-    QDragManager *manager = QDragManager::self();
-    if (manager && manager->object == d->data)
-        manager->updatePixmap();
-#endif
 }
 
 /*!

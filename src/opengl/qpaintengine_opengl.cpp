@@ -39,7 +39,6 @@
 **
 ****************************************************************************/
 
-#include <private/qtextengine_p.h>
 #include <qdebug.h>
 #include <private/qfontengine_p.h>
 #include <qmath.h>

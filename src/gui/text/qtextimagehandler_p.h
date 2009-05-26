@@ -60,7 +60,7 @@ QT_BEGIN_NAMESPACE
 
 class QTextImageFormat;
 
-class Q_GUI_EXPORT QTextImageHandler : public QObject,
+class QTextImageHandler : public QObject,
                           public QTextObjectInterface
 {
     Q_OBJECT
@@ -72,7 +72,7 @@ public:
     virtual void drawObject(QPainter *p, const QRectF &rect, QTextDocument *doc, int posInDocument, const QTextFormat &format);
 
     typedef QImage (*ExternalImageLoaderFunction)(const QString &name, const QString &context);
-    static ExternalImageLoaderFunction externalLoader;
+    static Q_GUI_EXPORT ExternalImageLoaderFunction externalLoader; //this is needed by Qt3Support
 };
 
 QT_END_NAMESPACE
