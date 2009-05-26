@@ -542,7 +542,11 @@ QmlParser::Variant ProcessAST::getVariant(AST::ExpressionNode *expr)
     } else if (expr->kind == AST::Node::Kind_FalseLiteral) {
         return QmlParser::Variant(false);
     } else if (AST::NumericLiteral *lit = AST::cast<AST::NumericLiteral *>(expr)) {
-        return QmlParser::Variant(lit->value, asString(expr));
+        if (lit->suffix == AST::NumericLiteral::noSuffix)
+            return QmlParser::Variant(lit->value, asString(expr));
+        else
+            return QmlParser::Variant(asString(expr), QmlParser::Variant::Script);
+
     } else {
 
         if (AST::UnaryMinusExpression *unaryMinus = AST::cast<AST::UnaryMinusExpression *>(expr)) {
