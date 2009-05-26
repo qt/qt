@@ -45,6 +45,10 @@
 #include "qmainwindow.h"
 #include "qevent.h"
 
+#if !defined(Q_WS_S60)
+#include "qtoolbar.h"
+#endif
+
 static bool isSame(const QSoftkeySet& a, const QSoftkeySet& b)
 {
     bool isSame=true;
@@ -225,8 +229,38 @@ void QSoftKeyStackPrivate::handleSoftKeyPress(int command)
     Q_UNUSED(command)
 }
 
+QToolBar* softKeyToolBar(QMainWindow *mainWindow)
+{
+    Q_ASSERT(mainWindow);
+    const QString toolBarName = QString::fromLatin1("SoftKeyToolBarForDebugging");
+    QToolBar *result = 0;
+    foreach (QObject *child, mainWindow->children()) {
+        result = qobject_cast<QToolBar*>(child);
+        if (result && result->objectName() == toolBarName)
+            return result;
+    }
+    result = mainWindow->addToolBar(toolBarName);
+    result->setObjectName(toolBarName);
+    return result;
+}
+
 void QSoftKeyStackPrivate::setNativeSoftKeys()
 {
+    Q_Q(QSoftKeyStack);
+    QMainWindow *parent = qobject_cast<QMainWindow*>(q->parent());
+    if (!parent)
+        return;
+    QToolBar* toolbar = softKeyToolBar(parent);
+    toolbar->clear();
+    foreach (const QSoftkeySet &set, softKeyStack) {
+        foreach (QSoftKeyAction *skAction, set)
+            toolbar->addAction(skAction);
+        toolbar->addSeparator();
+    }
+    if (toolbar->actions().isEmpty()) {
+        parent->removeToolBar(toolbar);
+        delete toolbar;
+    }
 }
 #endif // !defined(Q_WS_S60)
 
