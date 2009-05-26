@@ -902,7 +902,8 @@ void QMapData::dump()
 
 /*! \typedef QMap::iterator::iterator_category
 
-    \internal
+  A synonym for \e {std::bidirectional_iterator_tag} indicating
+  this iterator is a bidirectional iterator.
 */
 
 /*! \typedef QMap::iterator::pointer
@@ -1123,7 +1124,8 @@ void QMapData::dump()
 
 /*! \typedef QMap::const_iterator::iterator_category
 
-    \internal
+  A synonym for \e {std::bidirectional_iterator_tag} indicating
+  this iterator is a bidirectional iterator.
 */
 
 /*! \typedef QMap::const_iterator::pointer
