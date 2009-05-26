@@ -1,4 +1,3 @@
-
 #include "qmlscriptparser_p.h"
 #include "qmlparser_p.h"
 
@@ -27,16 +26,18 @@ namespace {
 class RewriteNumericLiterals: protected AST::Visitor
 {
     unsigned _position;
-    TextWriter _writer;
+    TextWriter *_writer;
 
 public:
     QString operator()(QString code, unsigned position, AST::Node *node)
     {
+        TextWriter w;
+        _writer = &w;
         _position = position;
 
         AST::Node::acceptChild(node, this);
 
-        _writer.write(&code);
+        w.write(&code);
 
         return code;
     }
@@ -54,10 +55,10 @@ protected:
             pre += QChar(QLatin1Char(suffixSpell[0])).toUpper();
             pre += QLatin1String(&suffixSpell[1]);
             pre += QLatin1Char('(');
-            _writer.replace(node->literalToken.begin() - _position, 0, pre);
-            _writer.replace(node->literalToken.end() - _position - suffixLength,
-                            suffixLength,
-                            QLatin1String(")"));
+            _writer->replace(node->literalToken.begin() - _position, 0, pre);
+            _writer->replace(node->literalToken.end() - _position - suffixLength,
+                             suffixLength,
+                             QLatin1String(")"));
         }
 
         return false;
