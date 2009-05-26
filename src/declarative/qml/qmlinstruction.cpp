@@ -139,14 +139,8 @@ void QmlCompiledComponent::dump(QmlInstruction *instr, int idx)
     case QmlInstruction::StoreValueSource:
         qWarning() << idx << "\t" << line << "\t" << "STORE_VALUE_SOURCE\t" << instr->assignValueSource.property;
         break;
-    case QmlInstruction::TryBeginObject:
-        qWarning() << idx << "\t" << line << "\t" << "TRY_BEGIN";
-        break;
     case QmlInstruction::BeginObject:
         qWarning() << idx << "\t" << line << "\t" << "BEGIN\t\t\t" << instr->begin.castValue;
-        break;
-    case QmlInstruction::TryCompleteObject:
-        qWarning() << idx << "\t" << line << "\t" << "TRY_COMPLETE";
         break;
     case QmlInstruction::CompleteObject:
         qWarning() << idx << "\t" << line << "\t" << "COMPLETE\t\t" << instr->complete.castValue;

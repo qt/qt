@@ -561,23 +561,28 @@ bool QmlCompiler::compileObject(Object *obj, int ctxt)
 
     COMPILE_CHECK(compileDynamicMeta(obj));
 
+    int parserStatusCast = -1;
     if (obj->type != -1) {
-        if (output->types.at(obj->type).component) {
-            QmlInstruction begin;
-            begin.type = QmlInstruction::TryBeginObject;
-            begin.line = obj->location.start.line;
-            output->bytecode << begin;
-        } else {
-            int cast = QmlMetaType::qmlParserStatusCast(QmlMetaType::type(output->types.at(obj->type).className));
-            if (cast != -1) {
-                QmlInstruction begin;
-                begin.type = QmlInstruction::BeginObject;
-                begin.begin.castValue = cast;
-                begin.line = obj->location.start.line;
-                output->bytecode << begin;
-            }
+        // ### Optimize
+        const QMetaObject *mo = obj->metatype;
+        QmlType *type = 0;
+        while (!type && mo) {
+            type = QmlMetaType::qmlType(mo);
+            mo = mo->superClass();
         }
-    } 
+
+        Q_ASSERT(type);
+
+        parserStatusCast = type->parserStatusCast();
+    }
+
+    if (parserStatusCast != -1) {
+        QmlInstruction begin;
+        begin.type = QmlInstruction::BeginObject;
+        begin.begin.castValue = parserStatusCast;
+        begin.line = obj->location.start.line;
+        output->bytecode << begin;
+    }
 
     bool isCustomParser = output->types.at(obj->type).type &&  
                           output->types.at(obj->type).type->customParser() != 0;
@@ -620,22 +625,12 @@ bool QmlCompiler::compileObject(Object *obj, int ctxt)
                 output->indexForByteArray(customData);
     }
 
-    if (obj->type != -1) {
-        if (output->types.at(obj->type).component) {
-            QmlInstruction complete;
-            complete.type = QmlInstruction::TryCompleteObject;
-            complete.line = obj->location.start.line;
-            output->bytecode << complete;
-        } else {
-            int cast = QmlMetaType::qmlParserStatusCast(QmlMetaType::type(output->types.at(obj->type).className));
-            if (cast != -1) {
-                QmlInstruction complete;
-                complete.type = QmlInstruction::CompleteObject;
-                complete.complete.castValue = cast;
-                complete.line = obj->location.start.line;
-                output->bytecode << complete;
-            }
-        }
+    if (parserStatusCast != -1) {
+        QmlInstruction complete;
+        complete.type = QmlInstruction::CompleteObject;
+        complete.complete.castValue = parserStatusCast;
+        complete.line = obj->location.start.line;
+        output->bytecode << complete;
     } 
 
     return true;
@@ -1419,8 +1414,7 @@ int QmlCompiler::optimizeExpressions(int start, int end, int patch)
         if (instr.type == QmlInstruction::StoreBinding ||
             instr.type == QmlInstruction::StoreCompiledBinding) {
             ++bindingsCount;
-        } else if (instr.type == QmlInstruction::TryBeginObject ||
-                   instr.type == QmlInstruction::BeginObject) {
+        } else if (instr.type == QmlInstruction::BeginObject) {
             ++parserStatusCount;
         }
 

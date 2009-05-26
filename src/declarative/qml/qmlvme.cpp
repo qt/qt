@@ -92,9 +92,7 @@ Q_DECLARE_PERFORMANCE_LOG(QFxCompiler) {
     Q_DECLARE_PERFORMANCE_METRIC(InstrStoreBinding);
     Q_DECLARE_PERFORMANCE_METRIC(InstrStoreCompiledBinding);
     Q_DECLARE_PERFORMANCE_METRIC(InstrStoreValueSource);
-    Q_DECLARE_PERFORMANCE_METRIC(InstrTryBeginObject);
     Q_DECLARE_PERFORMANCE_METRIC(InstrBeginObject);
-    Q_DECLARE_PERFORMANCE_METRIC(InstrTryCompleteObject);
     Q_DECLARE_PERFORMANCE_METRIC(InstrCompleteObject);
     Q_DECLARE_PERFORMANCE_METRIC(InstrAssignObject);
     Q_DECLARE_PERFORMANCE_METRIC(InstrAssignObjectList);
@@ -138,9 +136,7 @@ Q_DEFINE_PERFORMANCE_LOG(QFxCompiler, "QFxCompiler") {
     Q_DEFINE_PERFORMANCE_METRIC(InstrStoreBinding, "StoreBinding");
     Q_DEFINE_PERFORMANCE_METRIC(InstrStoreCompiledBinding, "StoreCompiledBinding");
     Q_DEFINE_PERFORMANCE_METRIC(InstrStoreValueSource, "StoreValueSource");
-    Q_DEFINE_PERFORMANCE_METRIC(InstrTryBeginObject, "TryBeginObject");
     Q_DEFINE_PERFORMANCE_METRIC(InstrBeginObject, "BeginObject");
-    Q_DEFINE_PERFORMANCE_METRIC(InstrTryCompleteObject, "TryCompleteObject");
     Q_DEFINE_PERFORMANCE_METRIC(InstrCompleteObject, "CompleteObject");
     Q_DEFINE_PERFORMANCE_METRIC(InstrAssignObject, "AssignObject");
     Q_DEFINE_PERFORMANCE_METRIC(InstrAssignObjectList, "AssignObjectList");
@@ -403,25 +399,6 @@ QObject *QmlVME::run(QmlContext *ctxt, QmlCompiledComponent *comp, int start, in
             }
             break;
 
-        case QmlInstruction::TryBeginObject:
-            {
-#ifdef Q_ENABLE_PERFORMANCE_LOG
-                QFxCompilerTimer<QFxCompiler::InstrTryBeginObject> cc;
-#endif
-                QObject *target = stack.top();
-                QmlParserStatus *status = 
-                    qobject_cast<QmlParserStatus *>(target);
-
-                if (status) {
-                    instr.type = QmlInstruction::BeginObject;
-                    instr.begin.castValue = int(reinterpret_cast<char *>(status) - reinterpret_cast<char *>(target));
-                    --ii;
-                } else {
-                    instr.type = QmlInstruction::NoOp;
-                }
-            }
-            break;
-
         case QmlInstruction::BeginObject:
             {
 #ifdef Q_ENABLE_PERFORMANCE_LOG
@@ -433,25 +410,6 @@ QObject *QmlVME::run(QmlContext *ctxt, QmlCompiledComponent *comp, int start, in
                 status->d = &parserStatus.values[parserStatus.count - 1];
 
                 status->classBegin();
-            }
-            break;
-
-        case QmlInstruction::TryCompleteObject:
-            {
-#ifdef Q_ENABLE_PERFORMANCE_LOG
-                QFxCompilerTimer<QFxCompiler::InstrTryCompleteObject> cc;
-#endif
-                QObject *target = stack.top();
-                QmlParserStatus *status = 
-                    qobject_cast<QmlParserStatus *>(target);
-
-                if (status) {
-                    instr.type = QmlInstruction::CompleteObject;
-                    instr.complete.castValue = int(reinterpret_cast<char *>(status) - reinterpret_cast<char *>(target));
-                    --ii;
-                } else {
-                    instr.type = QmlInstruction::NoOp;
-                }
             }
             break;
 

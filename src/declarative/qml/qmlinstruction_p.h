@@ -118,9 +118,7 @@ public:
         StoreCompiledBinding,     /* assignBinding */
         StoreValueSource,         /* assignValueSource */
 
-        TryBeginObject, 
         BeginObject,              /* begin */
-        TryCompleteObject, 
         CompleteObject,           /* complete */
 
         AssignObject,             /* assignObject */
