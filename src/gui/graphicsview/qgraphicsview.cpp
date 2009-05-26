@@ -320,7 +320,7 @@ static void qt_convertTouchEventToGraphicsSceneTouchEvent(QGraphicsViewPrivate *
         // the scene will set the startPos before delivering to an item
         touchPoint->setStartScenePos(d->mapToScene(touchPoint->startPos()));
         // the scene will set the lastPos before delivering to an item
-        touchPoint->setLastScenePos(d->mapToScene(touchPoint->lastScreenPos()));
+        touchPoint->setLastScenePos(d->mapToScene(touchPoint->lastPos()));
         // lastScreenPos is already set in the originalTouchPoint
 
         touchPoints.append(touchPoint);
