@@ -70,8 +70,8 @@ private:
                                   error.description().toUtf8(); \
             actual << errorStr; \
         } \
-        if (qgetenv("DEBUG") != "") \
-            qWarning() << expected << actual;  \
+        if (qgetenv("DEBUG") != "" && expected != actual) \
+            qWarning() << "Expected:" << expected << "Actual:" << actual;  \
         QCOMPARE(expected, actual); \
     }
 
@@ -129,12 +129,12 @@ void tst_qmlparser::errors_data()
 
     QTest::newRow("unsupportedProperty") << "unsupportedProperty.txt" << "unsupportedProperty.errors.txt" << false;
     QTest::newRow("nullDotProperty") << "nullDotProperty.txt" << "nullDotProperty.errors.txt" << true;
-    QTest::newRow("fakeDotProperty") << "fakeDotProperty.txt" << "fakeDotProperty.errors.txt" << true;
+    QTest::newRow("fakeDotProperty") << "fakeDotProperty.txt" << "fakeDotProperty.errors.txt" << false;
     QTest::newRow("duplicateIDs") << "duplicateIDs.txt" << "duplicateIDs.errors.txt" << false;
     QTest::newRow("unregisteredObject") << "unregisteredObject.txt" << "unregisteredObject.errors.txt" << false;
     QTest::newRow("empty") << "empty.txt" << "empty.errors.txt" << false;
     QTest::newRow("missingObject") << "missingObject.txt" << "missingObject.errors.txt" << false;
-    QTest::newRow("failingComponent") << "failingComponent.txt" << "failingComponent.errors.txt" << true;
+    QTest::newRow("failingComponent") << "failingComponent.txt" << "failingComponent.errors.txt" << false;
     QTest::newRow("missingSignal") << "missingSignal.txt" << "missingSignal.errors.txt" << false;
 }
 

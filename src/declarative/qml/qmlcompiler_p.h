@@ -170,9 +170,8 @@ private:
     int optimizeExpressions(int start, int end, int patch = -1);
 
     QSet<QString> ids;
-    qint64 exceptionLine;
-    qint64 exceptionColumn;
-    QString exceptionDescription;
+
+    QList<QmlError> exceptions;
     QmlCompiledData *output;
 };
 

@@ -154,28 +154,18 @@ int QmlCompiledData::indexForLocation(const QmlParser::LocationSpan &l)
 }
 
 QmlCompiler::QmlCompiler()
-: exceptionLine(-1), exceptionColumn(-1), output(0)
+: output(0)
 {
 }
 
 bool QmlCompiler::isError() const
 {
-    return exceptionLine != -1;
+    return !exceptions.isEmpty(); 
 }
 
 QList<QmlError> QmlCompiler::errors() const
 {
-    QList<QmlError> rv;
-
-    if(isError()) {
-        QmlError error;
-        error.setDescription(exceptionDescription);
-        error.setLine(exceptionLine);
-        error.setColumn(exceptionColumn);
-        rv << error;
-    }
-
-    return rv;
+    return exceptions;
 }
 
 bool QmlCompiler::isValidId(const QString &val)
@@ -436,21 +426,29 @@ void QmlCompiler::reset(QmlCompiledComponent *cc, bool deleteMemory)
 
 #define COMPILE_EXCEPTION2(token, desc) \
     {  \
-        exceptionLine = token->location.start.line;  \
-        exceptionColumn = token->location.start.column;  \
+        QString exceptionDescription; \
+        QmlError error; \
+        error.setUrl(output->url); \
+        error.setLine(token->location.start.line); \
+        error.setColumn(token->location.start.column); \
         QDebug d(&exceptionDescription); \
         d << desc;  \
-        exceptionDescription = exceptionDescription.trimmed(); \
+        error.setDescription(exceptionDescription.trimmed()); \
+        exceptions << error; \
         return false; \
     } 
 
 #define COMPILE_EXCEPTION(desc) \
     {  \
-        exceptionLine = obj->location.start.line;  \
-        exceptionColumn = obj->location.start.column;  \
+        QString exceptionDescription; \
+        QmlError error; \
+        error.setUrl(output->url); \
+        error.setLine(obj->location.start.line); \
+        error.setColumn(obj->location.start.column); \
         QDebug d(&exceptionDescription); \
         d << desc;  \
-        exceptionDescription = exceptionDescription.trimmed(); \
+        error.setDescription(exceptionDescription.trimmed()); \
+        exceptions << error; \
         return false; \
     } 
 
@@ -466,7 +464,7 @@ bool QmlCompiler::compile(QmlEngine *engine,
 #ifdef Q_ENABLE_PERFORMANCE_LOG
     QFxPerfTimer<QFxPerf::Compile> pc;
 #endif
-    exceptionLine = -1;
+    exceptions.clear();
 
     Q_ASSERT(out);
     reset(out, true);
@@ -481,6 +479,17 @@ bool QmlCompiler::compile(QmlEngine *engine,
             ref.type = tref.type;
         else if (tref.unit) {
             ref.component = tref.unit->toComponent(engine);
+
+            if (ref.component->isError()) {
+                QmlError error;
+                error.setUrl(output->url); 
+                error.setDescription(QLatin1String("Unable to create type ") + 
+                                     unit->data.types().at(ii));
+                exceptions << error;
+                exceptions << ref.component->errors();
+                reset(out, true);
+                return false;
+            }
             ref.ref = tref.unit;
             ref.ref->addref();
         } 

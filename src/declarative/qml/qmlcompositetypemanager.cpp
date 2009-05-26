@@ -86,6 +86,8 @@ QmlComponent *QmlCompositeTypeData::toComponent(QmlEngine *engine)
             component = new QmlComponent(engine, cc, -1, -1, 0);
         } else {
             component = new QmlComponent(engine, 0);
+            component->d_func()->url = QUrl(url);
+            component->d_func()->errors = errors;
         }
 
     }

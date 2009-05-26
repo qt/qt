@@ -1,2 +1,2 @@
-2:-1:Unknown property "a"
-2:-1:Unable to create object of type "FailingComponent"
+-1:-1:Unable to create type FailingComponent
+2:5:Cannot assign value to non-existant property "a"
