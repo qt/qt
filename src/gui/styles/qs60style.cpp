@@ -354,12 +354,15 @@ void QS60StylePrivate::clearCaches(QS60StylePrivate::CacheClearReason reason)
 {
     switch(reason){    
     case CC_LayoutChange:
-        // when layout changes, the colors remain in cache
-        m_mappedFontsCache.clear(); //todo: can font change, when layout changes?
+        // when layout changes, the colors remain in cache, but graphics and fonts can change
+        m_mappedFontsCache.clear();
         m_backgroundValid = false;
         QPixmapCache::clear();
         break;
-    case CC_ThemeChange: //todo: can font change when theme changes?
+    case CC_ThemeChange:
+        m_colorCache.clear();
+        QPixmapCache::clear();
+        m_backgroundValid = false;
     case CC_UndefinedChange:
     default:
         m_colorCache.clear();
@@ -839,7 +842,6 @@ void QS60Style::drawComplexControl(ComplexControl control, const QStyleOptionCom
             const bool direction = cmb->direction == Qt::LeftToRight;
 
             // Button frame
-            //todo: why calc rect here for button? Is there no suitable SE_xxx for that?
             QStyleOptionFrame  buttonOption;
             buttonOption.QStyleOption::operator=(*cmb);
             const int maxHeight = cmbxFrame.height();
@@ -849,7 +851,6 @@ void QS60Style::drawComplexControl(ComplexControl control, const QStyleOptionCom
             buttonOption.rect = buttonRect;
             buttonOption.state = cmb->state & (State_Enabled | State_MouseOver);
             drawPrimitive(PE_PanelButtonCommand, &buttonOption, painter, widget);
-            // todo: we could draw qgn_prop_set_button skin item here
 
             // draw label background - label itself is drawn separately
             const QS60StylePrivate::SkinElements skinElement = QS60StylePrivate::SE_FrameLineEdit;
@@ -1108,14 +1109,6 @@ void QS60Style::drawComplexControl(ComplexControl control, const QStyleOptionCom
         break;
 #endif //QT_NO_DIAL
 
-        //todo: remove non-used complex widgets in final version
-    case CC_TitleBar:
-#ifdef QT3_SUPPORT
-    case CC_Q3ListView:
-#endif //QT3_SUPPORT
-#ifndef QT_NO_WORKSPACE
-    case CC_MdiControls:
-#endif //QT_NO_WORKSPACE
     default:
         QCommonStyle::drawComplexControl(control, option, painter, widget);
     }
@@ -1413,7 +1406,6 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
                 const int tabOverlap =
                     QS60StylePrivate::pixelMetric(QStyle::PM_TabBarTabOverlap) - borderThickness;
                 //todo: draw navi wipe behind tabbar - must be drawn with first draw
-                //QS60StylePrivate::drawSkinElement(QS60StylePrivate::SE_TableHeaderItem, painter, windowRect, flags);
 
                 if (skinElement==QS60StylePrivate::SE_TabBarTabEastInactive||
                         skinElement==QS60StylePrivate::SE_TabBarTabEastActive||
@@ -1690,7 +1682,6 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
         break;
 #endif //QT_NO_MENU
 
-        //todo: remove non-used widgets in final version
     case CE_MenuEmptyArea:
 #ifndef QT_NO_MENUBAR
     case CE_MenuBarEmptyArea:
@@ -1799,6 +1790,7 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
         break;
 #endif //QT_NO_TOOLBAR
 
+    //todo: remove non-used widgets in final version
     case CE_ShapedFrame:
     case CE_MenuVMargin:
     case CE_MenuHMargin:
@@ -2450,7 +2442,6 @@ QRect QS60Style::subElementRect(SubElement element, const QStyleOption *opt, con
         case SE_LineEditContents: {
             // in S60 the input text box doesn't start from line Edit's TL, but
             // a bit indented.
-            // todo: Should we NOT do this for combo boxes and spin boxes?
                 QRect lineEditRect = opt->rect;
                 int adjustment = opt->rect.height()>>2;
                 lineEditRect.adjust(adjustment,0,0,0);
