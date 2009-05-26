@@ -160,6 +160,7 @@ public:
         hasDecomposedTransform(0),
         dirtyTransform(0),
         dirtyTransformComponents(0),
+        dirtyChildrenBoundingRect(1),
         globalStackingOrder(-1),
         sceneTransformIndex(-1),
         q_ptr(0)
@@ -308,6 +309,7 @@ public:
     }
 
     QPainterPath cachedClipPath;
+    QRectF childrenBoundingRect;
     QPointF pos;
     qreal z;
     QGraphicsScene *scene;
@@ -350,7 +352,8 @@ public:
     quint32 hasDecomposedTransform : 1;
     quint32 dirtyTransform : 1;
     quint32 dirtyTransformComponents : 1;
-    quint32 padding : 18; // feel free to use
+    quint32 dirtyChildrenBoundingRect : 1;
+    quint32 padding : 17; // feel free to use
 
     // Optional stacking order
     int globalStackingOrder;

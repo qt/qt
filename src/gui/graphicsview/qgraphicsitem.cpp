@@ -925,6 +925,11 @@ void QGraphicsItemPrivate::setParentItemHelper(QGraphicsItem *newParent, bool de
 */
 void QGraphicsItemPrivate::childrenBoundingRectHelper(QTransform *x, QRectF *rect)
 {
+    if (!dirtyChildrenBoundingRect) {
+        *rect |= x->mapRect(childrenBoundingRect);
+        return;
+    }
+
     for (int i = 0; i < children.size(); ++i) {
         QGraphicsItem *child = children.at(i);
         QGraphicsItemPrivate *childd = child->d_ptr;
@@ -948,6 +953,9 @@ void QGraphicsItemPrivate::childrenBoundingRectHelper(QTransform *x, QRectF *rec
                 childd->childrenBoundingRectHelper(x, rect);
         }
     }
+
+    childrenBoundingRect = *rect;
+    dirtyChildrenBoundingRect = 0;
 }
 
 void QGraphicsItemPrivate::initStyleOption(QStyleOptionGraphicsItem *option, const QTransform &worldTransform,
@@ -3567,6 +3575,9 @@ void QGraphicsItem::setZValue(qreal z)
 */
 QRectF QGraphicsItem::childrenBoundingRect() const
 {
+    if (!d_ptr->dirtyChildrenBoundingRect)
+        return d_ptr->childrenBoundingRect;
+
     QRectF childRect;
     QTransform x;
     d_ptr->childrenBoundingRectHelper(&x, &childRect);
@@ -6399,6 +6410,10 @@ void QGraphicsItem::prepareGeometryChange()
         QGraphicsScenePrivate *scenePrivate = d_ptr->scene->d_func();
         scenePrivate->removeFromIndex(this);
     }
+
+    QGraphicsItem *parent = this;
+    while (parent = parent->d_ptr->parent)
+        parent->d_ptr->dirtyChildrenBoundingRect = 1;
 
     if (d_ptr->inSetPosHelper)
         return;
