@@ -179,10 +179,14 @@ void QVariantAnimationPrivate::convertValues(int t)
     //this ensures that all the keyValues are of type t
     for (int i = 0; i < keyValues.count(); ++i) {
         QVariantAnimation::KeyValue &pair = keyValues[i];
-        if (pair.second.userType() != t)
-            pair.second.convert(static_cast<QVariant::Type>(t));
+        pair.second.convert(static_cast<QVariant::Type>(t));
     }
-    interpolator = 0; // if the type changed we need to update the interpolator
+    //we also need update to the current interval if needed
+    currentInterval.start.second.convert(static_cast<QVariant::Type>(t));
+    currentInterval.end.second.convert(static_cast<QVariant::Type>(t));
+
+    //... and the interpolator
+    interpolator = 0;
 }
 
 /*!
