@@ -126,7 +126,6 @@ public:
         FetchQmlList,             /* fetchQmlList */ 
         FetchQList,               /* fetch */
         FetchObject,              /* fetch */
-        ResolveFetchObject,       /* fetch */
 
         //
         // Stack manipulation

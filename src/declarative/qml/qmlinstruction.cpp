@@ -157,9 +157,6 @@ void QmlCompiledComponent::dump(QmlInstruction *instr, int idx)
     case QmlInstruction::FetchObject:
         qWarning() << idx << "\t" << line << "\t" << "FETCH\t\t\t" << instr->fetch.property;
         break;
-    case QmlInstruction::ResolveFetchObject:
-        qWarning() << idx << "\t" << line << "\t" << "RESOLVE_FETCH\t\t" << instr->fetch.property << "\t\t\t" << datas.at(instr->fetch.property);
-        break;
     case QmlInstruction::PopFetchedObject:
         qWarning() << idx << "\t" << line << "\t" << "POP";
         break;

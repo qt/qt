@@ -98,7 +98,6 @@ Q_DECLARE_PERFORMANCE_LOG(QFxCompiler) {
     Q_DECLARE_PERFORMANCE_METRIC(InstrFetchQmlList);
     Q_DECLARE_PERFORMANCE_METRIC(InstrFetchQList);
     Q_DECLARE_PERFORMANCE_METRIC(InstrFetchObject);
-    Q_DECLARE_PERFORMANCE_METRIC(InstrResolveFetchObject);
     Q_DECLARE_PERFORMANCE_METRIC(InstrPopFetchedObject);
     Q_DECLARE_PERFORMANCE_METRIC(InstrPopQList);
     Q_DECLARE_PERFORMANCE_METRIC(InstrPushProperty);
@@ -140,7 +139,6 @@ Q_DEFINE_PERFORMANCE_LOG(QFxCompiler, "QFxCompiler") {
     Q_DEFINE_PERFORMANCE_METRIC(InstrFetchQmlList, "FetchQmlList");
     Q_DEFINE_PERFORMANCE_METRIC(InstrFetchQList, "FetchQList");
     Q_DEFINE_PERFORMANCE_METRIC(InstrFetchObject, "FetchObject");
-    Q_DEFINE_PERFORMANCE_METRIC(InstrResolveFetchObject, "ResolveFetchObject");
     Q_DEFINE_PERFORMANCE_METRIC(InstrPopFetchedObject, "PopFetchedObject");
     Q_DEFINE_PERFORMANCE_METRIC(InstrPopQList, "PopQList");
     Q_DEFINE_PERFORMANCE_METRIC(InstrPushProperty, "PushProperty");
@@ -894,30 +892,6 @@ QObject *QmlVME::run(QmlContext *ctxt, QmlCompiledComponent *comp, int start, in
                     target->metaObject()->property(instr.fetch.property);
                 QVariant v = prop.read(target);
                 qliststack.push(ListInstance(v, QmlMetaType::listType(prop.userType())));
-            }
-            break;
-
-        case QmlInstruction::ResolveFetchObject:
-            {
-#ifdef Q_ENABLE_PERFORMANCE_LOG
-                QFxCompilerTimer<QFxCompiler::InstrResolveFetchObject> cc;
-#endif
-                QObject *target = stack.top();
-                const QByteArray &pr = datas.at(instr.fetch.property);
-                int idx = qIndexOfProperty(target, pr);
-                if (idx == -1)
-                    VME_EXCEPTION("Cannot resolve property" << pr);
-                QMetaProperty prop = target->metaObject()->property(idx);
-                instr.type = QmlInstruction::FetchObject;
-                instr.fetch.property = idx;
-                if (QmlMetaType::isObject(prop.userType())) {
-                    instr.fetch.isObject = true;
-                } else if (prop.userType() == -1) {
-                    instr.fetch.isObject = false;
-                } else {
-                    VME_EXCEPTION("Cannot set properties on" << prop.name() << "as it is of unknown type");
-                }
-                ii--;
             }
             break;
 

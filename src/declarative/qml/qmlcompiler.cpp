@@ -976,16 +976,16 @@ bool QmlCompiler::compileNestedProperty(QmlParser::Property *prop,
     if (prop->type != 0) 
         prop->value->metatype = QmlMetaType::metaObjectForType(prop->type);
     
+    if (prop->index == -1)
+        COMPILE_EXCEPTION2(prop, "Cannot access non-existant property" << prop->name);
+
+    if (!QmlMetaType::isObject(prop->value->metatype)) 
+        COMPILE_EXCEPTION2(prop, "Cannot nest non-QObject property" << prop->name);
+
     QmlInstruction fetch;
-    if (prop->index != -1 && 
-       QmlMetaType::isObject(prop->value->metatype)) {
-        fetch.type = QmlInstruction::FetchObject;
-        fetch.fetch.property = prop->index;
-        fetch.fetch.isObject = true;
-    } else {
-        fetch.type = QmlInstruction::ResolveFetchObject;
-        fetch.fetch.property = output->indexForByteArray(prop->name);
-    }
+    fetch.type = QmlInstruction::FetchObject;
+    fetch.fetch.property = prop->index;
+    fetch.fetch.isObject = true;
     fetch.line = prop->location.start.line;
     output->bytecode << fetch;
 
