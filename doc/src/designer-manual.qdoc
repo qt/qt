@@ -436,41 +436,32 @@
     You start by choosing \gui Widget from the \gui{New Form} dialog.
     \endtable
 
-    Then you drag three labels, three spin boxes and three vertical sliders on
-    to your form. To change the label's default text, simply double-click on
-    it. The screenshot below shows the form after all three labels have been
-    renamed.
-
-    You can roughly arrange them according to how you would like them to be
-    laid out.
 
     \table
-    \row \o \inlineimage rgbController-widgetBox.png
-         \o \inlineimage rgbController-arrangement.png
-    \endtable
+    \row
+    \i  \inlineimage rgbController-arrangement.png
+    \i  \bold{Placing Widgets on a Form}
 
+    Drag three labels, three spin boxes and three vertical sliders on to your
+    form. To change the label's default text, simply double-click on it. You
+    can arrange them according to how you would like them to be laid out.
+    \endtable
+   
     To ensure that they are laid out exactly like this in your program, you
     need to place these widgets into a layout. We will do this in groups of
     three. Select the "RED" label. Then, hold down \key Ctrl while you select
     its corresponding spin box and slider. In the \gui{Form} menu, select
     \gui{Lay Out in a Grid}.
 
-    \omit
     \table
         \row
             \i \inlineimage rgbController-form-gridLayout.png
             \i \inlineimage rgbController-selectForLayout.png
     \endtable
-    \endomit
 
 
     Repeat the step for the other two labels along with their corresponding
-    spin boxes and sliders as well. Your form will now look similar to the
-    screenshot below.
-
-    \omit
-    \image rgbController-almostLaidOut.png
-    \endomit
+    spin boxes and sliders as well.
 
     The next step is to combine all three layouts into one \bold{main layout}.
     It is important that your form has a main layout; otherwise, the widgets
@@ -478,7 +469,9 @@
     layout, \gui{Right click} anywhere on your form, outside of the three
     separate layouts, and select \gui{Lay Out Horizontally}. Alternatively, you
     could also select \gui{Lay Out in a Grid} -- you will still see the same
-    arrangement.
+    arrangement (shown below).
+
+    \image rgbController-final-layout.png
 
     \note Main layouts cannot be seen on the form. To check if you have a main
     layout installed, try resizing your form; your widgets should resize
@@ -495,7 +488,6 @@
     pressing \key{F4} or something \gui{Edit Signals/Slots} from the \gui{Edit}
     menu.
 
-    \omit
     \table
         \row
             \i \inlineimage rgbController-signalsAndSlots.png
@@ -505,11 +497,8 @@
         \gui{Configure Connection} dialog, shown below, will pop up. Select the
         correct signal and slot and click \gui OK.
     \endtable
-    \endomit
 
-    \omit
     \image rgbController-configureConnection.png
-    \endomit
 
     Repeat the step (in reverse order), clicking on the spin box and dragging
     the cursor towards the slider, to connect the spin box's
