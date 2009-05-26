@@ -115,6 +115,11 @@ const QSoftkeySet& QSoftKeyStackPrivate::top()
     return softKeyStack.top();
 }
 
+bool QSoftKeyStackPrivate::isEmpty()
+{
+    return softKeyStack.isEmpty();
+}
+
 QSoftKeyStack::QSoftKeyStack(QWidget *parent)
     : QObject(*new QSoftKeyStackPrivate, parent)
 {
@@ -159,6 +164,12 @@ const QSoftkeySet& QSoftKeyStack::top()
 {
     Q_D(QSoftKeyStack);
     return d->top();
+}
+
+bool QSoftKeyStack::isEmpty()
+{
+    Q_D(QSoftKeyStack);
+    return d->isEmpty();
 }
 
 void QSoftKeyStack::handleFocusChanged(QWidget *old, QWidget *now)
