@@ -288,7 +288,7 @@ public:
     ~QGLFramebufferObjectPrivate() {}
 
     void init(const QSize& sz, QGLFramebufferObject::Attachment attachment,
-              GLenum internal_format, GLenum texture_target, int samples = 0);
+              GLenum internal_format, GLenum texture_target, GLint samples = 0);
     bool checkFramebufferStatus() const;
     GLuint texture;
     GLuint fbo;
@@ -350,7 +350,7 @@ bool QGLFramebufferObjectPrivate::checkFramebufferStatus() const
 }
 
 void QGLFramebufferObjectPrivate::init(const QSize &sz, QGLFramebufferObject::Attachment attachment,
-                                       GLenum texture_target, GLenum internal_format, int samples)
+                                       GLenum texture_target, GLenum internal_format, GLint samples)
 {
     ctx = const_cast<QGLContext *>(QGLContext::currentContext());
     bool ext_detected = (QGLExtensions::glExtensions & QGLExtensions::FramebufferObject);
@@ -490,7 +490,7 @@ void QGLFramebufferObjectPrivate::init(const QSize &sz, QGLFramebufferObject::At
     QT_CHECK_GLERROR();
 
     format.setTextureTarget(target);
-    format.setSamples(samples);
+    format.setSamples(int(samples));
     format.setAttachment(fbo_attachment);
     format.setInternalFormat(internal_format);
 }
