@@ -849,17 +849,19 @@ void QS60StyleModeSpecifics::frameIdAndCenterId(QS60StylePrivate::SkinFrameEleme
 
 TRect QS60StyleModeSpecifics::innerRectFromElement(QS60StylePrivate::SkinFrameElements frameElement, const TRect &outerRect)
 {
-    TInt widthShrink = 0;
-    TInt heightShrink = 0;
+    TInt widthShrink = QS60StylePrivate::pixelMetric(PM_Custom_FrameCornerWidth);
+    TInt heightShrink = QS60StylePrivate::pixelMetric(PM_Custom_FrameCornerHeight);
     switch(frameElement) {
         case QS60StylePrivate::SF_PanelBackground:
             // panel should have slightly slimmer border to enable thin line of background graphics between closest component
-            widthShrink = QS60StylePrivate::pixelMetric(PM_Custom_FrameCornerWidth)-2;
-            heightShrink = QS60StylePrivate::pixelMetric(PM_Custom_FrameCornerHeight)-2;
+            widthShrink = widthShrink-2;
+            heightShrink = heightShrink-2;
+            break;
+        case QS60StylePrivate::SF_ToolTip:
+            widthShrink = widthShrink>>1;
+            heightShrink = heightShrink>>1;
             break;
         default:
-            widthShrink = QS60StylePrivate::pixelMetric(PM_Custom_FrameCornerWidth);
-            heightShrink = QS60StylePrivate::pixelMetric(PM_Custom_FrameCornerHeight);
             break;
     }
     TRect innerRect(outerRect);
@@ -960,9 +962,8 @@ QFont QS60StylePrivate::s60Font_specific(
 #ifdef QT_S60STYLE_LAYOUTDATA_SIMULATED
 void QS60StylePrivate::setActiveLayout()
 {
-    //todo: how to find layouts that are of same size (QVGA1 vs. QVGA2)
     const QSize activeScreenSize(screenSize());
-    int activeLayoutIndex = 0;
+    int activeLayoutIndex = -1;
     const bool mirrored = !QApplication::isLeftToRight();
     const short screenHeight = (short)activeScreenSize.height();
     const short screenWidth = (short)activeScreenSize.width();
@@ -974,6 +975,28 @@ void QS60StylePrivate::setActiveLayout()
             break;
         }
     }
+    
+    //not found, lets try without mirroring info
+    if (activeLayoutIndex==-1){
+        for (int i=0; i<m_numberOfLayouts; i++) {
+            if (screenHeight==m_layoutHeaders[i].height &&
+                screenWidth==m_layoutHeaders[i].width) {
+                activeLayoutIndex = i;
+                break;
+            }
+        }
+    }
+
+    //not found, lets try with either of dimensions
+    if (activeLayoutIndex==-1){
+        const QSysInfo::S60Version currentRelease = QSysInfo::s60Version();
+        const bool landscape = screenHeight < screenWidth;
+
+        activeLayoutIndex = (currentRelease == QSysInfo::SV_S60_3_1 || currentRelease == QSysInfo::SV_S60_3_2) ? 0 : 4;
+        activeLayoutIndex += (!landscape) ? 2 : 0;
+        activeLayoutIndex += (!mirrored) ? 1 : 0;
+    }
+
     m_pmPointer = data[activeLayoutIndex];
 }
 #endif // QT_S60STYLE_LAYOUTDATA_SIMULATED
@@ -1329,7 +1352,7 @@ void QS60StyleModeSpecifics::colorGroupAndIndex(
 void QS60Style::handleDynamicLayoutVariantSwitch()
 {
     Q_D(QS60Style);
-    d->clearCaches();
+    d->clearCaches(QS60StylePrivate::CC_LayoutChange);
 #ifdef QT_S60STYLE_LAYOUTDATA_SIMULATED
     d->setActiveLayout();
 #endif // QT_S60STYLE_LAYOUTDATA_SIMULATED
@@ -1342,7 +1365,7 @@ void QS60Style::handleDynamicLayoutVariantSwitch()
 void QS60Style::handleSkinChange()
 {
     Q_D(QS60Style);
-    d->clearCaches();
+    d->clearCaches(QS60StylePrivate::CC_ThemeChange);
     d->setThemePalette(qApp);
     foreach (QWidget *topLevelWidget, QApplication::allWidgets()){
         QEvent e(QEvent::StyleChange);

@@ -350,14 +350,24 @@ QFont QS60StylePrivate::s60Font(
     return result;
 }
 
-//todo: you could pass a reason to clear cache here, so that we could
-// deduce whether or not the specific cache needs to be cleared
-void QS60StylePrivate::clearCaches()
+void QS60StylePrivate::clearCaches(QS60StylePrivate::CacheClearReason reason)
 {
-    m_colorCache.clear();
-    m_mappedFontsCache.clear();
-    QPixmapCache::clear();
-    m_backgroundValid = false;
+    switch(reason){    
+    case CC_LayoutChange:
+        // when layout changes, the colors remain in cache
+        m_mappedFontsCache.clear(); //todo: can font change, when layout changes?
+        m_backgroundValid = false;
+        QPixmapCache::clear();
+        break;
+    case CC_ThemeChange: //todo: can font change when theme changes?
+    case CC_UndefinedChange:
+    default:
+        m_colorCache.clear();
+        m_mappedFontsCache.clear();
+        QPixmapCache::clear();
+        m_backgroundValid = false;
+        break;
+    }    
 }
 
 // Since S60Style has 'button' and 'tooltip' as a graphic, we don't have any native color which to use
@@ -381,7 +391,6 @@ QColor QS60StylePrivate::colorFromFrameGraphics(QS60StylePrivate::SkinFrameEleme
         const int pixels = frameImage.numBytes()/sizeof(QRgb);
         const int bytesPerLine = frameImage.bytesPerLine();
         Q_ASSERT(bytesPerLine);
-        const int rows = frameImage.numBytes()/(sizeof(QRgb)*bytesPerLine);
 
         int estimatedRed = 0;
         int estimatedGreen = 0;
@@ -760,8 +769,6 @@ void QS60Style::drawComplexControl(ComplexControl control, const QStyleOptionCom
 {
     const QS60StylePrivate::SkinElementFlags flags = (option->state & State_Enabled) ?  QS60StylePrivate::SF_StateEnabled : QS60StylePrivate::SF_StateDisabled;
     SubControls sub = option->subControls;
-
-    Q_D(const QS60Style);
 
     switch (control) {
 #ifndef QT_NO_SCROLLBAR
@@ -1145,7 +1152,7 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
             QS60StyleEnums::SkinParts skinPart;
             QS60StylePrivate::SkinElements skinElement;
             if (!isDisabled) {
-                const bool isPressed = (option->state & QStyle::State_Sunken) || 
+                const bool isPressed = (option->state & QStyle::State_Sunken) ||
                                        (option->state & QStyle::State_On);
                 if (isFlat) {
                     skinPart =
@@ -1280,7 +1287,7 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
             QRect textRect = subElementRect(SE_ItemViewItemText, &voptAdj, widget);
 
             // draw themed background for table unless background brush has been defined.
-            if (vopt->backgroundBrush == Qt::NoBrush) {            
+            if (vopt->backgroundBrush == Qt::NoBrush) {
                 // draw the background
                 const QStyleOptionViewItemV4 *tableOption = qstyleoption_cast<const QStyleOptionViewItemV4 *>(option);
                 const QTableView *table = qobject_cast<const QTableView *>(widget);
@@ -2413,7 +2420,6 @@ QRect QS60Style::subControlRect(ComplexControl control, const QStyleOptionComple
                 //slightly indent text and boxes, so that dialog border does not mess with them.
                 const int horizontalSpacing =
                     QS60StylePrivate::pixelMetric(QStyle::PM_LayoutHorizontalSpacing);
-                const int bottomMargin = QS60StylePrivate::pixelMetric(QStyle::PM_LayoutBottomMargin);
                 ret.adjust(2,horizontalSpacing-3,0,0);
                 }
                 break;
@@ -2519,13 +2525,10 @@ QRect QS60Style::subElementRect(SubElement element, const QStyleOption *opt, con
                 }
             } else if (const QStyleOptionMenuItem *menuItem = qstyleoption_cast<const QStyleOptionMenuItem *>(opt)) {
                 const bool checkable = menuItem->checkType != QStyleOptionMenuItem::NotCheckable;
-                const bool subMenu = menuItem->menuItemType == QStyleOptionMenuItem::SubMenu;
                 int indicatorWidth = checkable ?
                     pixelMetric(PM_ListViewIconSize, opt, widget) :
                     pixelMetric(PM_SmallIconSize, opt, widget);
                 ret = menuItem->rect;
-                const int verticalSpacing =
-                    QS60StylePrivate::pixelMetric(QStyle::PM_LayoutVerticalSpacing);
 
                 if (element == SE_ItemViewItemDecoration) {
                     if (menuItem->direction == Qt::RightToLeft)
@@ -2617,6 +2620,14 @@ void QS60Style::polish(QWidget *widget)
     if (!widget)
         return;
 
+    if (false
+#ifndef QT_NO_SCROLLBAR
+        || qobject_cast<QScrollBar *>(widget)
+#endif
+        ) {
+        widget->setAttribute(Qt::WA_OpaquePaintEvent, false);
+    }
+
     if (QS60StylePrivate::drawsOwnThemeBackground(widget)) {
         widget->setAttribute(Qt::WA_StyledBackground);
     } else if (false
@@ -2637,6 +2648,14 @@ void QS60Style::polish(QWidget *widget)
 
 void QS60Style::unpolish(QWidget *widget)
 {
+    if (false
+    #ifndef QT_NO_SCROLLBAR
+        || qobject_cast<QScrollBar *>(widget)
+    #endif
+        ) {
+        widget->setAttribute(Qt::WA_OpaquePaintEvent);
+    }
+
     if (QS60StylePrivate::drawsOwnThemeBackground(widget)) {
         widget->setAttribute(Qt::WA_StyledBackground, false);
     } else if (false
@@ -2671,7 +2690,7 @@ void QS60Style::unpolish(QApplication *application)
 {
     QPalette newPalette = qApp->style()->standardPalette();
     application->setPalette(newPalette);
-    QApplicationPrivate::setSystemPalette(originalPalette);    
+    QApplicationPrivate::setSystemPalette(originalPalette);
 }
 
 void QS60Style::setStyleProperty(const char *name, const QVariant &value)

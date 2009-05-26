@@ -1099,6 +1099,16 @@ void QTextEngine::shapeTextWithCE(int item) const
 }
 #endif
 
+static inline void moveGlyphData(const QGlyphLayout &destination, const QGlyphLayout &source, int num)
+{
+    if (num > 0 && destination.glyphs != source.glyphs) {
+        memmove(destination.glyphs, source.glyphs, num * sizeof(HB_Glyph));
+        memmove(destination.attributes, source.attributes, num * sizeof(HB_GlyphAttributes));
+        memmove(destination.advances_x, source.advances_x, num * sizeof(HB_Fixed));
+        memmove(destination.offsets, source.offsets, num * sizeof(HB_FixedPoint));
+    }
+}
+
 /// take the item from layoutData->items and
 void QTextEngine::shapeTextWithHarfbuzz(int item) const
 {
@@ -1189,7 +1199,7 @@ void QTextEngine::shapeTextWithHarfbuzz(int item) const
 
 
 
-    int initial_glyph_pos = 0;
+    int remaining_glyphs = entire_shaper_item.num_glyphs;
     int glyph_pos = 0;
     // for each item shape using harfbuzz and store the results in our layoutData's glyphs array.
     for (int k = 0; k < itemBoundaries.size(); k += 2) { // for the +2, see the comment at the definition of itemBoundaries
@@ -1209,7 +1219,7 @@ void QTextEngine::shapeTextWithHarfbuzz(int item) const
         QFontEngine *actualFontEngine = font;
         uint engineIdx = 0;
         if (font->type() == QFontEngine::Multi) {
-            engineIdx = uint(initialGlyphs.glyphs[itemBoundaries[k + 1]] >> 24);
+            engineIdx = uint(availableGlyphs(&si).glyphs[glyph_pos] >> 24);
 
             actualFontEngine = static_cast<QFontEngineMulti *>(font)->engine(engineIdx);
         }
@@ -1219,16 +1229,18 @@ void QTextEngine::shapeTextWithHarfbuzz(int item) const
 
         shaper_item.glyphIndicesPresent = true;
 
-        do {
-            ensureSpace(glyph_pos + shaper_item.num_glyphs);
-            initialGlyphs = availableGlyphs(&si).mid(0, entire_shaper_item.num_glyphs);
-            shaper_item.num_glyphs = layoutData->glyphLayout.numGlyphs - layoutData->used - glyph_pos;
+        remaining_glyphs -= shaper_item.initialGlyphCount;
 
-            const QGlyphLayout g = availableGlyphs(&si);
-            shaper_item.glyphs = g.glyphs + glyph_pos;
-            shaper_item.attributes = g.attributes + glyph_pos;
-            shaper_item.advances = reinterpret_cast<HB_Fixed *>(g.advances_x + glyph_pos);
-            shaper_item.offsets = reinterpret_cast<HB_FixedPoint *>(g.offsets + glyph_pos);
+        do {
+            ensureSpace(glyph_pos + shaper_item.num_glyphs + remaining_glyphs);
+
+            const QGlyphLayout g = availableGlyphs(&si).mid(glyph_pos);
+            moveGlyphData(g.mid(shaper_item.num_glyphs), g.mid(shaper_item.initialGlyphCount), remaining_glyphs);
+
+            shaper_item.glyphs = g.glyphs;
+            shaper_item.attributes = g.attributes;
+            shaper_item.advances = reinterpret_cast<HB_Fixed *>(g.advances_x);
+            shaper_item.offsets = reinterpret_cast<HB_FixedPoint *>(g.offsets);
 
             if (shaper_item.glyphIndicesPresent) {
                 for (hb_uint32 i = 0; i < shaper_item.initialGlyphCount; ++i)
@@ -1241,18 +1253,18 @@ void QTextEngine::shapeTextWithHarfbuzz(int item) const
         } while (!qShapeItem(&shaper_item)); // this does the actual shaping via harfbuzz.
 
         QGlyphLayout g = availableGlyphs(&si).mid(glyph_pos, shaper_item.num_glyphs);
+        moveGlyphData(g.mid(shaper_item.num_glyphs), g.mid(shaper_item.initialGlyphCount), remaining_glyphs);
 
-        for (hb_uint32 i = 0; i < shaper_item.item.length; ++i) {
+        for (hb_uint32 i = 0; i < shaper_item.num_glyphs; ++i)
             g.glyphs[i] = g.glyphs[i] | (engineIdx << 24);
+
+        for (hb_uint32 i = 0; i < shaper_item.item.length; ++i)
             shaper_item.log_clusters[i] += glyph_pos;
-        }
 
         if (kerningEnabled && !shaper_item.kerning_applied)
             font->doKerning(&g, option.useDesignMetrics() ? QFlag(QTextEngine::DesignMetrics) : QFlag(0));
 
         glyph_pos += shaper_item.num_glyphs;
-
-        initial_glyph_pos += shaper_item.initialGlyphCount;
     }
 
 //     qDebug("    -> item: script=%d num_glyphs=%d", shaper_item.script, shaper_item.num_glyphs);
