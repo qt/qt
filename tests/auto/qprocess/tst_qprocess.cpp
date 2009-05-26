@@ -1623,12 +1623,10 @@ void tst_QProcess::spaceArgsTest()
 //-----------------------------------------------------------------------------
 void tst_QProcess::exitCodeTest()
 {
-#if defined(Q_OS_SYMBIAN) && defined(Q_CC_NOKIAX86)
-    // WINSCW builds in Symbian panic somewhere deep inside Symbian codes
-    // when eventdispather is deleted if too many test iterations are used.
-    // Reason for this is unclear.
-    // TODO: Remove special case when eventdispatcher is fixed.
-    for (int i = 0; i < 25; ++i) {
+#if defined(Q_OS_SYMBIAN)
+    // Kernel will run out of process handles on some hw, as there is some
+    // delay before they are recycled, so limit the amount of processes.
+    for (int i = 0; i < 50; ++i) {
 #else
     for (int i = 0; i < 255; ++i) {
 #endif
