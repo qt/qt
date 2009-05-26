@@ -3435,7 +3435,7 @@ void QGraphicsView::paintEvent(QPaintEvent *event)
     const char *directEnv = getenv("QGRAPHICSVIEW_DIRECT");
     bool overrideDirectPaint = directEnv && atoi(directEnv) != 0;
     if (overrideDirectPaint || (d->optimizationFlags & BypassDrawItems)) {
-        d->scene->d_func()->drawSubtreeRecursive(0, &painter, viewTransform, exposedRegion,
+        d->scene->d_func()->drawSubtreeRecursive(0, &painter, viewTransform, viewTransform, exposedRegion,
                                                  viewport(), d->optimizationFlags);
     } else {
         // Find all exposed items

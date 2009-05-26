@@ -254,7 +254,8 @@ public:
                         const QStyleOptionGraphicsItem *option, QWidget *widget,
                         bool painterStateProtection);
     
-    void drawSubtreeRecursive(QGraphicsItem *item, QPainter *painter, const QTransform &viewTransform,
+    void drawSubtreeRecursive(QGraphicsItem *item, QPainter *painter, const QTransform &parentTransform,
+                              const QTransform &viewTransform,
                               const QRegion &exposedRegion, QWidget *widget, QGraphicsView::OptimizationFlags optimizationFlags);
 
     QStyle *style;

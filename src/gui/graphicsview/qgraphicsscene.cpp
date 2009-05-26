@@ -5018,27 +5018,20 @@ void QGraphicsScenePrivate::drawItemHelper(QGraphicsItem *item, QPainter *painte
     }
 }
 
-void QGraphicsScenePrivate::drawSubtreeRecursive(QGraphicsItem *item, QPainter *painter, const QTransform &viewTransform,
+void QGraphicsScenePrivate::drawSubtreeRecursive(QGraphicsItem *item, QPainter *painter, const QTransform &parentTransform,
+                                                 const QTransform &viewTransform,
                                                  const QRegion &exposedRegion, QWidget *widget,
                                                  QGraphicsView::OptimizationFlags optimizationFlags)
 {
-    if (item && !item->d_ptr->visible)
+    if (item && item->d_ptr->isInvisible())
         return;
 
-    bool childClip = (item && (item->d_ptr->flags & QGraphicsItem::ItemClipsChildrenToShape));
-    bool savePainter = !(optimizationFlags & QGraphicsView::DontSavePainterState);
-
-    QTransform restoreTransform;
-    if (childClip) {
-        painter->save();
-    } else {
-        restoreTransform = painter->worldTransform();
-    }
-
-    // Set transform
+    // Calculate the full transform for this item.
+    QTransform transform;
+    QRect viewBoundingRect;
     if (item) {
         if (item->d_ptr->itemIsUntransformable()) {
-            painter->setWorldTransform(item->deviceTransform(viewTransform), false);
+            transform = item->deviceTransform(viewTransform);
         } else {
             const QPointF &pos = item->d_ptr->pos;
             bool posNull = pos.isNull();
@@ -5047,69 +5040,81 @@ void QGraphicsScenePrivate::drawSubtreeRecursive(QGraphicsItem *item, QPainter *
                     QTransform x = item->transform();
                     if (!posNull)
                         x *= QTransform::fromTranslate(pos.x(), pos.y());
-                    painter->setWorldTransform(x, true);
+                    transform = x * parentTransform;
                 } else {
-                    painter->setWorldTransform(QTransform::fromTranslate(pos.x(), pos.y()), true);
+                    transform = QTransform::fromTranslate(pos.x(), pos.y()) * parentTransform;
                 }
+            } else {
+                transform = parentTransform;
             }
         }
+        QRectF brect = item->boundingRect();
+        _q_adjustRect(&brect);
+        viewBoundingRect = transform.mapRect(brect).toRect().adjusted(-1, -1, 1, 1) & exposedRegion.boundingRect();
+    } else {
+        transform = parentTransform;
     }
 
-    // Setup recursive clipping.
-    if (childClip)
-        painter->setClipPath(item->shape(), Qt::IntersectClip);
-    if (item)
-        painter->setOpacity(item->effectiveOpacity());
-
-#if 0
-    const QList<QGraphicsItem *> &children = item ? item->d_ptr->children : topLevelItems;
-#else
-    // ### if we ensure all children are sorted by Z by default, we don't have
-    // to sort this list for each paint.
+    // Find and sort children.
     QList<QGraphicsItem *> children = item ? item->d_ptr->children : topLevelItems;
     qSort(children.begin(), children.end(), qt_notclosestLeaf);
-#endif
+
+    bool childClip = (item && (item->d_ptr->flags & QGraphicsItem::ItemClipsChildrenToShape));
+    bool dontDrawItem = !item || viewBoundingRect.isEmpty();
+    bool dontDrawChildren = item && dontDrawItem && childClip;
+    childClip &= !dontDrawChildren & !children.isEmpty();
+
+    // Clip children.
+    if (childClip) {
+        painter->save();
+        painter->setWorldTransform(transform);
+        painter->setClipPath(item->shape(), Qt::IntersectClip);
+    }
 
     // Draw children behind
     int i;
-    for (i = 0; i < children.size(); ++i) {
-        QGraphicsItem *child = children.at(i);
-        if (!(child->d_ptr->flags & QGraphicsItem::ItemStacksBehindParent))
-            break;
-        drawSubtreeRecursive(child, painter, viewTransform, exposedRegion, widget, optimizationFlags);
-    }
-
-    // Draw item
-    if (item && !item->d_ptr->isFullyTransparent()) {
-        QRectF brect = item->boundingRect();
-        _q_adjustRect(&brect);
-        QRect itemViewRect = painter->worldTransform().mapRect(brect).toRect().adjusted(-1, -1, 1, 1);
-        if (itemViewRect.intersects(exposedRegion.boundingRect())) {
-            QStyleOptionGraphicsItem option;
-            item->d_ptr->initStyleOption(&option, painter->worldTransform(), exposedRegion);
-
-            bool clipsToShape = (item->d_ptr->flags & QGraphicsItem::ItemClipsToShape);
-            if (savePainter || clipsToShape)
-                painter->save();
-            if (clipsToShape)
-                painter->setClipPath(item->shape(), Qt::IntersectClip);
-
-            drawItemHelper(item, painter, &option, widget, false);
-
-            if (savePainter || clipsToShape)
-                painter->restore();
+    if (!dontDrawChildren) {
+        for (i = 0; i < children.size(); ++i) {
+            QGraphicsItem *child = children.at(i);
+            if (!(child->d_ptr->flags & QGraphicsItem::ItemStacksBehindParent))
+                break;
+            drawSubtreeRecursive(child, painter, transform, viewTransform,
+                                 exposedRegion, widget, optimizationFlags);
         }
     }
 
-    // Draw children in front
-    for (; i < children.size(); ++i)
-        drawSubtreeRecursive(children.at(i), painter, viewTransform, exposedRegion, widget, optimizationFlags);
+    // Draw item
+    if (!dontDrawItem) {
+        QStyleOptionGraphicsItem option;
+        item->d_ptr->initStyleOption(&option, transform, exposedRegion);
 
-    if (childClip) {
-        painter->restore();
-    } else {
-        painter->setWorldTransform(restoreTransform, /* combine = */ false);
+        bool clipsToShape = (item->d_ptr->flags & QGraphicsItem::ItemClipsToShape);
+        bool savePainter = clipsToShape || !(optimizationFlags & QGraphicsView::DontSavePainterState);
+        if (savePainter)
+            painter->save();
+        if (!childClip)
+            painter->setWorldTransform(transform);
+        if (clipsToShape)
+            painter->setClipPath(item->shape(), Qt::IntersectClip);
+        painter->setOpacity(item->effectiveOpacity());
+
+        drawItemHelper(item, painter, &option, widget, false);
+
+        if (savePainter)
+            painter->restore();
     }
+
+    // Draw children in front
+    if (!dontDrawChildren) {
+        for (; i < children.size(); ++i) {
+            drawSubtreeRecursive(children.at(i), painter, transform, viewTransform,
+                                 exposedRegion, widget, optimizationFlags);
+        }
+    }
+
+    // Restore child clip
+    if (childClip)
+        painter->restore();
 }
 
 /*!
