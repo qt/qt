@@ -63,9 +63,8 @@ QT_BEGIN_NAMESPACE
     shared functionality.
 
     QVariantAnimation cannot be used directly as it is an abstract
-    class; it does not implement
-    \l{QAbstractAnimation::}{updateCurrentValue()} from
-    QAbstractAnimation. The class performs interpolation over
+    class; it has a pure virtual method called updateCurrentValue().
+    The class performs interpolation over
     \l{QVariant}s, but leaves using the interpolated values to its
     subclasses. Currently, Qt provides QPropertyAnimation, which
     animates Qt \l{Qt's Property System}{properties}. See the
@@ -129,6 +128,16 @@ QT_BEGIN_NAMESPACE
 
     \sa currentValue, startValue, endValue
 */
+
+/*!
+    \fn void QVariantAnimation::updateCurrentValue(const QVariant &value) = 0;
+
+    This pure virtual function is called every time the animation's current
+    value changes. The \a value argument is the new current value.
+
+    \sa currentValue
+*/
+
 
 static bool animationValueLessThan(const QVariantAnimation::KeyValue &p1, const QVariantAnimation::KeyValue &p2)
 {

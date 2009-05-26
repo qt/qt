@@ -72,11 +72,11 @@ public:
 
 protected:
     bool event(QEvent *event);
-
     void updateCurrentValue(const QVariant &value);
     void updateState(QAbstractAnimation::State oldState, QAbstractAnimation::State newState);
-    Q_PRIVATE_SLOT(d_func(), void _q_targetDestroyed());
+
 private:
+    Q_PRIVATE_SLOT(d_func(), void _q_targetDestroyed());
     Q_DISABLE_COPY(QPropertyAnimation)
     Q_DECLARE_PRIVATE(QPropertyAnimation)
 };

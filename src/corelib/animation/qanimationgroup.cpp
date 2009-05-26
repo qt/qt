@@ -236,7 +236,7 @@ void QAnimationGroup::removeAnimation(QAbstractAnimation *animation)
 
     \note The ownership of the animation is transferred to the caller.
 
-    \sa removeAnimation(), addAnimation(), insertAnimation(), indexOfAnimation()
+    \sa removeAnimation(), addAnimation(), insertAnimationAt(), indexOfAnimation()
 */
 QAbstractAnimation *QAnimationGroup::takeAnimationAt(int index)
 {
