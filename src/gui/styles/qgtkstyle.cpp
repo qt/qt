@@ -2344,7 +2344,7 @@ void QGtkStyle::drawControl(ControlElement element,
     case CE_SizeGrip: {
         GtkWidget *gtkStatusbar = QGtk::gtkWidget(QLS("GtkStatusbar.GtkFrame"));
         QRect gripRect = option->rect.adjusted(0, 0, -gtkStatusbar->style->xthickness, -gtkStatusbar->style->ythickness);
-        gtkPainter.paintResizeGrip( gtkStatusbar, "window", gripRect, GTK_STATE_NORMAL,
+        gtkPainter.paintResizeGrip( gtkStatusbar, "statusbar", gripRect, GTK_STATE_NORMAL,
                                     GTK_SHADOW_OUT, QApplication::isRightToLeft() ?
                                         GDK_WINDOW_EDGE_SOUTH_WEST : GDK_WINDOW_EDGE_SOUTH_EAST,
                                     gtkStatusbar->style);
