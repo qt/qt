@@ -185,20 +185,21 @@ static void rebuildMenu()
     QWidget *w = qApp->activeWindow();
     QMainWindow *mainWindow = qobject_cast<QMainWindow*>(w);
     QSoftKeyStack* softKeyStack = mainWindow->softKeyStack();
-    const QSoftkeySet& softKeyTop = softKeyStack->top();
-    
-    int index=0;
-    bool found=false;
-    while( index<softKeyTop.count() && !found) {
-        QSoftKeyAction* softAction = softKeyTop.at(index);
-        QSoftKeyAction::StandardRole role = softAction->role();
-        if(softAction->role() == QSoftKeyAction::ContextMenu) {
-            widgetWithContextMenu = softAction->parentWidget();
-            found=true;
-            }
-        index++;
+    if (!softKeyStack->isEmpty()) {
+        const QSoftkeySet& softKeyTop = softKeyStack->top();
+        int index=0;
+        bool found=false;
+        while( index<softKeyTop.count() && !found) {
+            QSoftKeyAction* softAction = softKeyTop.at(index);
+            QSoftKeyAction::StandardRole role = softAction->role();
+            if(softAction->role() == QSoftKeyAction::ContextMenu) {
+                widgetWithContextMenu = softAction->parentWidget();
+                found=true;
+                }
+            index++;
+        }
     }
-
+    
     if (w) {
         mb = menubars()->value(w);
         qt_symbian_menu_static_cmd_id = QT_FIRST_MENU_ITEM;
