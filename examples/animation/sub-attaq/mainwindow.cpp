@@ -44,9 +44,12 @@
 #include "graphicsscene.h"
 
 //Qt
-#include <QtGui/QtGui>
-#ifndef QT_NO_OPENGL
-#include <QtOpenGL/QtOpenGL>
+#ifdef QT_NO_OPENGL
+    #include <QtGui/QMenuBar>
+    #include <QtGui/QLayout>
+    #include <QtGui/QApplication>
+#else
+    #include <QtOpenGL/QtOpenGL>
 #endif
 
 MainWindow::MainWindow() : QMainWindow(0)
