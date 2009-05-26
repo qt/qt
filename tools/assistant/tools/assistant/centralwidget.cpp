@@ -87,6 +87,7 @@ namespace {
 
 FindWidget::FindWidget(QWidget *parent)
     : QWidget(parent)
+    , appPalette(qApp->palette())
 {
     QHBoxLayout *hboxLayout = new QHBoxLayout(this);
     QString resourcePath = QLatin1String(":/trolltech/assistant/images/");
@@ -146,6 +147,34 @@ FindWidget::FindWidget(QWidget *parent)
 
 FindWidget::~FindWidget()
 {
+}
+
+void FindWidget::hideEvent(QHideEvent* event)
+{
+#if !defined(QT_NO_WEBKIT)
+    // TODO: remove this once webkit supports setting the palette
+    if (!event->spontaneous())
+        qApp->setPalette(appPalette);
+#else
+    Q_UNUSED(event);
+#endif
+}
+
+void FindWidget::showEvent(QShowEvent* event)
+{
+#if !defined(QT_NO_WEBKIT)
+    // TODO: remove this once webkit supports setting the palette
+    if (!event->spontaneous()) {
+        QPalette p = appPalette;
+        p.setColor(QPalette::Inactive, QPalette::Highlight,
+            p.color(QPalette::Active, QPalette::Highlight));
+        p.setColor(QPalette::Inactive, QPalette::HighlightedText,
+            p.color(QPalette::Active, QPalette::HighlightedText));
+        qApp->setPalette(p);
+    }
+#else
+    Q_UNUSED(event);
+#endif
 }
 
 void FindWidget::updateButtons()
@@ -245,12 +274,14 @@ CentralWidget::CentralWidget(QHelpEngine *engine, MainWindow *parent)
             SLOT(showTabBarContextMenu(QPoint)));
     }
 
-    QPalette p = qApp->palette();
+#if defined(QT_NO_WEBKIT)
+    QPalette p = palette();
     p.setColor(QPalette::Inactive, QPalette::Highlight,
         p.color(QPalette::Active, QPalette::Highlight));
     p.setColor(QPalette::Inactive, QPalette::HighlightedText,
         p.color(QPalette::Active, QPalette::HighlightedText));
-    qApp->setPalette(p);
+    setPalette(p);
+#endif
 }
 
 CentralWidget::~CentralWidget()

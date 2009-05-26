@@ -80,6 +80,10 @@ signals:
     void findNext();
     void findPrevious();
 
+protected:
+    void hideEvent(QHideEvent* event);
+    void showEvent(QShowEvent * event);
+
 private slots:
     void updateButtons();
 
@@ -95,6 +99,7 @@ private:
     QToolButton *toolPrevious;
     QCheckBox *checkWholeWords;
 
+    QPalette appPalette;
     friend class CentralWidget;
 };
 
