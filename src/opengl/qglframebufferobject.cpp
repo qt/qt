@@ -395,7 +395,7 @@ void QGLFramebufferObjectPrivate::init(const QSize &sz, QGLFramebufferObject::At
         GLint maxSamples;
         glGetIntegerv(GL_MAX_SAMPLES_EXT, &maxSamples);
 
-        samples = qBound(1, samples, int(maxSamples));
+        samples = qBound(1, int(samples), int(maxSamples));
 
         glGenRenderbuffers(1, &color_buffer);
         glBindRenderbuffer(GL_RENDERBUFFER_EXT, color_buffer);
