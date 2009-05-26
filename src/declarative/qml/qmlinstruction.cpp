@@ -145,9 +145,6 @@ void QmlCompiledComponent::dump(QmlInstruction *instr, int idx)
     case QmlInstruction::CompleteObject:
         qWarning() << idx << "\t" << line << "\t" << "COMPLETE\t\t" << instr->complete.castValue;
         break;
-    case QmlInstruction::AssignObject:
-		qWarning() << idx << "\t" << line << "\t" << "ASSIGN_OBJECT\t\t" << instr->assignObject.property << "\t" << instr->assignObject.castValue << "\t\t" << ((instr->assignObject.property == -1)?QByteArray("default"):datas.at(instr->assignObject.property));
-        break;
     case QmlInstruction::AssignObjectList:
         qWarning() << idx << "\t" << line << "\t" << "ASSIGN_OBJECT_LIST\t" << instr->assignObject.property << "\t" << instr->assignObject.castValue << "\t\t" << ((instr->assignObject.property == -1)?QByteArray("default"):datas.at(instr->assignObject.property));
         break;

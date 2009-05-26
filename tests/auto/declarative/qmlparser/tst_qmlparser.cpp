@@ -26,6 +26,7 @@ private slots:
     void interfaceQmlList();
     void interfaceQList();
     void assignObjectToSignal();
+    void assignObjectToVariant();
     void assignLiteralSignalProperty();
     void assignQmlComponent();
     void assignBasicTypes();
@@ -206,6 +207,15 @@ void tst_qmlparser::assignObjectToSignal()
     QVERIFY(object != 0);
     QTest::ignoreMessage(QtWarningMsg, "MyQmlObject::basicSlot");
     emit object->basicSignal();
+}
+
+void tst_qmlparser::assignObjectToVariant()
+{
+    QmlComponent component(&engine, TEST_FILE("assignObjectToVariant.txt"));
+    QObject *object = component.create();
+    QVERIFY(object != 0);
+    QVariant v = object->property("a");
+    QVERIFY(v.userType() == qMetaTypeId<QObject *>());
 }
 
 void tst_qmlparser::assignLiteralSignalProperty()

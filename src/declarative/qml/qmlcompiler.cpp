@@ -1102,8 +1102,40 @@ bool QmlCompiler::compilePropertyObjectAssignment(QmlParser::Property *prop,
 {
     if (v->object->type != -1) 
         v->object->metatype = output->types.at(v->object->type).metaObject();
+    Q_ASSERT(v->object->metaObject());
 
-    if (v->object->metaObject()) {
+    if (prop->index == -1)
+        COMPILE_EXCEPTION2(prop, "Cannot assign object to non-existant property" << prop->name);
+
+
+    if (QmlMetaType::isInterface(prop->type)) {
+
+        COMPILE_CHECK(compileObject(v->object, ctxt));
+
+        QmlInstruction assign;
+        assign.type = QmlInstruction::StoreInterface;
+        assign.line = v->object->location.start.line;
+        assign.storeObject.propertyIndex = prop->index;
+        assign.storeObject.cast = 0;
+        output->bytecode << assign;
+
+        v->type = Value::CreatedObject;
+
+    } else if (prop->type == -1) {
+
+        // Variant
+        // ### Is it always?
+        COMPILE_CHECK(compileObject(v->object, ctxt));
+
+        QmlInstruction assign;
+        assign.type = QmlInstruction::StoreVariantObject;
+        assign.line = v->object->location.start.line;
+        assign.storeObject.propertyIndex = prop->index;
+        assign.storeObject.cast = 0;
+        output->bytecode << assign;
+
+        v->type = Value::CreatedObject;
+    } else {
 
         const QMetaObject *propmo = 
             QmlMetaType::rawMetaObjectForType(prop->type);
@@ -1128,22 +1160,7 @@ bool QmlCompiler::compilePropertyObjectAssignment(QmlParser::Property *prop,
             }
         }
 
-        if (!propmo && !isPropertyValue) {                            
-            COMPILE_CHECK(compileObject(v->object, ctxt));
-
-            QmlInstruction assign;
-            assign.type = QmlInstruction::AssignObject;
-            assign.line = v->object->location.start.line;
-            assign.assignObject.castValue = 0;
-            if (prop->isDefault)
-                assign.assignObject.property = -1;
-            else
-                assign.assignObject.property = 
-                    output->indexForByteArray(prop->name);
-            output->bytecode << assign;
-
-            v->type = Value::CreatedObject;
-        } else if (isAssignable) {
+        if (isAssignable) {
             COMPILE_CHECK(compileObject(v->object, ctxt));
 
             QmlInstruction assign;
@@ -1187,20 +1204,8 @@ bool QmlCompiler::compilePropertyObjectAssignment(QmlParser::Property *prop,
 
             v->type = Value::ValueSource;
         } else {
-            COMPILE_EXCEPTION("Unassignable object");
+            COMPILE_EXCEPTION2(v->object, "Unassignable object");
         }
-
-    } else {                        
-        COMPILE_CHECK(compileObject(v->object, ctxt));
-
-        QmlInstruction assign;
-        assign.type = QmlInstruction::AssignObject;
-        assign.line = v->object->location.start.line;
-        assign.assignObject.property = output->indexForByteArray(prop->name);
-        assign.assignObject.castValue = 0;
-        output->bytecode << assign;
-
-        v->type = Value::CreatedObject;
     }
 
     return true;

@@ -100,6 +100,8 @@ public:
         StoreVariant,             /* storeString */
         StoreObject,              /* storeObject */
         StoreInstructionsEnd = StoreObject,
+        StoreVariantObject,       /* storeObject */
+        StoreInterface,           /* storeObject */
 
         StoreSignal,              /* storeSignal */
 
@@ -121,7 +123,6 @@ public:
         BeginObject,              /* begin */
         CompleteObject,           /* complete */
 
-        AssignObject,             /* assignObject */
         AssignObjectList,         /* assignObject */
 
         FetchAttached,            /* fetchAttached */

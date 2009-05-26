@@ -94,7 +94,6 @@ Q_DECLARE_PERFORMANCE_LOG(QFxCompiler) {
     Q_DECLARE_PERFORMANCE_METRIC(InstrStoreValueSource);
     Q_DECLARE_PERFORMANCE_METRIC(InstrBeginObject);
     Q_DECLARE_PERFORMANCE_METRIC(InstrCompleteObject);
-    Q_DECLARE_PERFORMANCE_METRIC(InstrAssignObject);
     Q_DECLARE_PERFORMANCE_METRIC(InstrAssignObjectList);
     Q_DECLARE_PERFORMANCE_METRIC(InstrFetchAttached);
     Q_DECLARE_PERFORMANCE_METRIC(InstrFetchQmlList);
@@ -138,7 +137,6 @@ Q_DEFINE_PERFORMANCE_LOG(QFxCompiler, "QFxCompiler") {
     Q_DEFINE_PERFORMANCE_METRIC(InstrStoreValueSource, "StoreValueSource");
     Q_DEFINE_PERFORMANCE_METRIC(InstrBeginObject, "BeginObject");
     Q_DEFINE_PERFORMANCE_METRIC(InstrCompleteObject, "CompleteObject");
-    Q_DEFINE_PERFORMANCE_METRIC(InstrAssignObject, "AssignObject");
     Q_DEFINE_PERFORMANCE_METRIC(InstrAssignObjectList, "AssignObjectList");
     Q_DEFINE_PERFORMANCE_METRIC(InstrFetchAttached, "FetchAttached");
     Q_DEFINE_PERFORMANCE_METRIC(InstrFetchQmlList, "FetchQmlList");
@@ -369,10 +367,14 @@ QObject *QmlVME::run(QmlContext *ctxt, QmlCompiledComponent *comp, int start, in
                     QMetaObject::connect(target, prop.coreIndex(), assign, method.methodIndex());
 
                 } else if (prop.type() & QmlMetaProperty::Property) {
+                    // ### FIXME
+                    /*
                     instr.type = QmlInstruction::AssignObject;
                     instr.assignObject.castValue = 0;
                     instr.assignObject.property = sigIdx;
                     --ii;
+                    */
+                    VME_EXCEPTION("Cannot assign an object to signal property" << pr);
                 } else {
                     VME_EXCEPTION("Cannot assign an object to signal property" << pr);
                 }
@@ -589,122 +591,46 @@ QObject *QmlVME::run(QmlContext *ctxt, QmlCompiledComponent *comp, int start, in
             }
             break;
 
-        case QmlInstruction::AssignObject:
+        case QmlInstruction::StoreVariantObject:
             {
-#ifdef Q_ENABLE_PERFORMANCE_LOG
-                QFxCompilerTimer<QFxCompiler::InstrAssignObject> cc;
-#endif
                 QObject *assign = stack.pop();
                 QObject *target = stack.top();
 
-                QByteArray property;
-                if (instr.assignObject.property == -1) {
-                    // XXX - optimize!
-                    property = 
-                        QmlMetaType::defaultProperty(target).name();
-                } else {
-                    property = datas.at(instr.assignObject.property);
-                }
-
-                int coreIdx = qIndexOfProperty(target, property);
-
-                if (coreIdx != -1) {
-                    QMetaProperty prop = 
-                        target->metaObject()->property(coreIdx);
-                    int t = prop.userType();
-                    // XXX - optimize!
-                    if (QmlMetaType::isList(t)) {
-                        QVariant list = prop.read(target);
-                        int listtype = QmlMetaType::listType(t);
-                        QVariant v = QmlMetaType::fromObject(assign, listtype);
-                        QmlMetaType::append(list, v);
-                    } else if (QmlMetaType::isQmlList(t)) {
-
-                        // XXX - optimize!
-                        QVariant list = prop.read(target);
-                        QmlPrivate::ListInterface *li = 
-                            *(QmlPrivate::ListInterface **)list.constData();
-
-                        int type = li->type();
-
-                        const QMetaObject *mo = 
-                            QmlMetaType::rawMetaObjectForType(type);
-
-                        const QMetaObject *assignMo = assign->metaObject();
-                        bool found = false;
-                        while(!found && assignMo) {
-                            if (assignMo == mo)
-                                found = true;
-                            else
-                                assignMo = assignMo->superClass();
-                        }
-
-                        if (!found) 
-                            VME_EXCEPTION("Cannot assign object to list");
-
-                        // NOTE: This assumes a cast to QObject does not alter 
-                        // the object pointer
-                        void *d = (void *)&assign;
-                        li->append(d);
-
-                    } else if (QmlMetaType::isInterface(t)) {
-                        const char *iid = QmlMetaType::interfaceIId(t);
-                        bool ok = false;
-                        if (iid) {
-                            void *ptr = assign->qt_metacast(iid);
-                            if (ptr) {
-                                void *a[1];
-                                a[0] = &ptr;
-                                QMetaObject::metacall(target, QMetaObject::WriteProperty,
-                                                      coreIdx, a);
-                                ok = true;
-                            }
-                        } 
-
-                        if (!ok) 
-                            VME_EXCEPTION("Cannot assign object to interface property" << property);
-
-                    } else if (prop.userType() == -1 /* means qvariant */) {
-                        prop.write(target, qVariantFromValue(assign));
-                    } else {
-                        const QMetaObject *propmo = 
-                            QmlMetaType::rawMetaObjectForType(t);
-
-                        bool isPropertyValue = false;
-                        bool isAssignable = false;
-                        const QMetaObject *c = assign->metaObject();
-                        while(c) {
-                            isPropertyValue = isPropertyValue || (c == &QmlPropertyValueSource::staticMetaObject);
-                            isAssignable = isAssignable || (c == propmo);
-                            c = c->superClass();
-                        }
-
-                        if (isAssignable) {
-                            // XXX - optimize!
-                            QVariant v = QmlMetaType::fromObject(assign, t);
-                            prop.write(target, v);
-                        } else if (isPropertyValue) {
-                            QmlPropertyValueSource *vs = 
-                                static_cast<QmlPropertyValueSource *>(assign);
-                            vs->setParent(target);
-                            vs->setTarget(QmlMetaProperty(target, coreIdx));
-                        } else {
-                            VME_EXCEPTION("Cannot assign to" << property);
-                        }
-                    }
-
-
-                } else {
-                    if (instr.assignObject.property == -1) {
-                        VME_EXCEPTION("Cannot assign to default property");
-                    } else {
-                        VME_EXCEPTION("Cannot assign to non-existant property" << property);
-                    }
-                }
-
+                QVariant v = QVariant::fromValue(assign);
+                void *a[1];
+                a[0] = (void *)&v;
+                QMetaObject::metacall(target, QMetaObject::WriteProperty, 
+                                      instr.storeObject.propertyIndex, a);
             }
             break;
 
+        case QmlInstruction::StoreInterface:
+            {
+                QObject *assign = stack.pop();
+                QObject *target = stack.top();
+
+                int coreIdx = instr.storeObject.propertyIndex;
+                QMetaProperty prop = target->metaObject()->property(coreIdx);
+                int t = prop.userType();
+                const char *iid = QmlMetaType::interfaceIId(t);
+                bool ok = false;
+                if (iid) {
+                    void *ptr = assign->qt_metacast(iid);
+                    if (ptr) {
+                        void *a[1];
+                        a[0] = &ptr;
+                        QMetaObject::metacall(target, 
+                                              QMetaObject::WriteProperty,
+                                              coreIdx, a);
+                        ok = true;
+                    }
+                } 
+
+                if (!ok) 
+                    VME_EXCEPTION("Cannot assign object to interface property");
+            }
+            break;
+            
         case QmlInstruction::FetchAttached:
             {
 #ifdef Q_ENABLE_PERFORMANCE_LOG
