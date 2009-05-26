@@ -685,11 +685,12 @@
 */
 
 /*!
-    \typedef QSet::iterator::iterator_category
-    \typedef QSet::const_iterator::iterator_category
+  \typedef QSet::iterator::iterator_category
+  \typedef QSet::const_iterator::iterator_category
 
-    \internal
-*/
+  Synonyms for \e {std::bidirectional_iterator_tag} indicating
+  these iterators are bidirectional iterators.
+ */
 
 /*!
     \typedef QSet::iterator::difference_type
