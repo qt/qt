@@ -377,7 +377,7 @@ int Lexer::findReservedWord(const QChar *c, int size) const
         else if (c[0] == QLatin1Char('p') && c[1] == QLatin1Char('r')
                 && c[2] == QLatin1Char('o') && c[3] == QLatin1Char('p')
                 && c[4] == QLatin1Char('e') && c[5] == QLatin1Char('r')
-                && c[6] == QLatin1Char('t') && c[7] == QLatin1Char('y')) 
+                && c[6] == QLatin1Char('t') && c[7] == QLatin1Char('y'))
             return JavaScriptGrammar::T_PROPERTY;
         else if (check_reserved) {
             if (c[0] == QLatin1Char('a') && c[1] == QLatin1Char('b')
@@ -753,12 +753,65 @@ int Lexer::lex()
             bol = false;
     }
 
+    if (state == Number) {
+        // CSS-style suffix for numeric literals
+
+        flags = noSuffix;
+
+        if (current == 'e' && next1 == 'm') {
+            flags = emSuffix;
+            shift(2);
+        } else if (current == 'e' && next1 == 'x') {
+            flags = exSuffix;
+            shift(2);
+        } else if (current == 'p' && next1 == 'x') {
+            flags = pxSuffix;
+            shift(2);
+        } else if (current == 'c' && next1 == 'm') {
+            flags = cmSuffix;
+            shift(2);
+        } else if (current == 'm' && next1 == 'm') {
+            flags = mmSuffix;
+            shift(2);
+        } else if (current == 'i' && next1 == 'n') {
+            flags = inSuffix;
+            shift(2);
+        } else if (current == 'p' && next1 == 't') {
+            flags = ptSuffix;
+            shift(2);
+        } else if (current == 'p' && next1 == 'c') {
+            flags = pcSuffix;
+            shift(1);
+        } else if (current == 'd' && next1 == 'e' && next2 == 'g') {
+            flags = degSuffix;
+            shift(3);
+        } else if (current == 'r' && next1 == 'a' && next2 == 'd') {
+            flags = radSuffix;
+            shift(3);
+        } else if (current == 'g' && next1 == 'r' && next2 == 'a' && next3 == 'd') {
+            flags = gradSuffix;
+            shift(4);
+        } else if (current == 'm' && next1 == 's') {
+            flags = msSuffix;
+            shift(2);
+        } else if (current == 's') {
+            flags = sSuffix;
+            shift(1);
+        } else if (current == 'h' && next1 == 'z') {
+            flags = hzSuffix;
+            shift(2);
+        } else if (current == 'k' && next1 == 'h' && next2 == 'z') {
+            flags = khzSuffix;
+            shift(3);
+        }
+    }
+
     // no identifiers allowed directly after numeric literal, e.g. "3in" is bad
     if ((state == Number || state == Octal || state == Hex)
          && isIdentLetter(current)) {
         state = Bad;
         err = IllegalIdentifier;
-        errmsg = QLatin1String("Identifier cannot start with numeric literal");
+        errmsg = QLatin1String("Identifier cannot start with numeric literal `%1'");
     }
 
     // terminate string

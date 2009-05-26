@@ -22,7 +22,8 @@ SOURCES += qml/qmlparser.cpp \
     qml/qmlparserstatus.cpp \
     qml/qmlcompositetypemanager.cpp \
     qml/qmlinfo.cpp \
-    qml/qmlerror.cpp
+    qml/qmlerror.cpp \
+    qml/qmlscriptparser.cpp
 
 HEADERS += qml/qmlparser_p.h \
     qml/qmlinstruction_p.h \
@@ -59,15 +60,13 @@ HEADERS += qml/qmlparser_p.h \
     qml/qmlcompositetypemanager_p.h \
     qml/qmllist.h \
     qml/qmldeclarativedata_p.h \
-    qml/qmlerror.h
+    qml/qmlerror.h \
+    qml/qmlscriptparser_p.h
 
 # for qtscript debugger
 QT += scripttools
+
 include(script/script.pri)
-
-# new language front-end
 include(parser/parser.pri)
+include(rewriter/rewriter.pri)
 
-HEADERS += qml/qmlscriptparser_p.h
-
-SOURCES += qml/qmlscriptparser.cpp
