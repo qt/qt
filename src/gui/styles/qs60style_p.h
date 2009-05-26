@@ -331,6 +331,13 @@ public:
         SF_StateDisabled =    0x0020,
         SF_ColorSkinned =     0x0040,
     };
+    
+    enum CacheClearReason {
+        CC_UndefinedChange = 0,
+        CC_LayoutChange,
+        CC_ThemeChange
+    };
+    
     Q_DECLARE_FLAGS(SkinElementFlags, SkinElementFlag)
 
     // draws skin element
@@ -365,7 +372,7 @@ public:
     QFont s60Font(QS60StyleEnums::FontCategories fontCategory,
         int pointSize = -1) const;
     // clears all style caches (fonts, colors, pixmaps)
-    void clearCaches();
+    void clearCaches(CacheClearReason reason = CC_UndefinedChange);
     // returns themed background texture
     static QPixmap backgroundTexture();
 
