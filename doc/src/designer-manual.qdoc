@@ -235,6 +235,7 @@
     \page designer-to-know.html
     \contentspage {Qt Designer Manual}{Contents}
 
+
     \title Getting to Know Qt Designer
 
     \tableofcontents
@@ -408,6 +409,7 @@
     \page designer-quick-start.html
     \contentspage {Qt Designer Manual}{Contents}
 
+
     \title A Quick Start to Qt Designer
 
     Using \QD involves \bold four basic steps:
@@ -419,16 +421,14 @@
         \o  Preview the form
     \endlist
 
-    \omit
     \image rgbController-screenshot.png
-    \endomit
 
-    Suppose you would like to design a small widget (see screenshot above)
-    that contains the controls needed to manipulate Red, Green and Blue (RGB)
-    values -- a type of widget that can be seen everywhere in image
-    manipulation programs.
+    Suppose you would like to design a small widget (see screenshot above) that
+    contains the controls needed to manipulate Red, Green and Blue (RGB) values
+    -- a type of widget that can be seen everywhere in image manipulation
+    programs.
 
-   \table
+    \table
     \row
     \i \inlineimage designer-choosing-form.png
     \i \bold{Choosing a Form}
@@ -436,20 +436,22 @@
     You start by choosing \gui Widget from the \gui{New Form} dialog.
     \endtable
 
-    Then you drag three labels, three spin boxes and three vertical sliders
-    on to your form. You can roughly arrange them according to how you would
-    like them to be laid out.
+    Then you drag three labels, three spin boxes and three vertical sliders on
+    to your form. To change the label's default text, simply double-click on
+    it. The screenshot below shows the form after all three labels have been
+    renamed.
 
-    \omit
+    You can roughly arrange them according to how you would like them to be
+    laid out.
+
     \table
     \row \o \inlineimage rgbController-widgetBox.png
          \o \inlineimage rgbController-arrangement.png
     \endtable
-    \endomit
 
     To ensure that they are laid out exactly like this in your program, you
     need to place these widgets into a layout. We will do this in groups of
-    three. Select the "RED" label. Then, hold down \key Shift while you select
+    three. Select the "RED" label. Then, hold down \key Ctrl while you select
     its corresponding spin box and slider. In the \gui{Form} menu, select
     \gui{Lay Out in a Grid}.
 
