@@ -34,7 +34,7 @@ Rect {
                     y: 12
                     width: parent.width-30
                     text: model.label
-                    color: wrapper.ListView.isCurrentItem ? "black" : "white"
+                    color: "white"
                     font.bold: true
                     children: [
                         MouseRegion {
@@ -43,6 +43,25 @@ Rect {
                                 Details.qml = 'Contact.qml';
                                 wrapper.state ='opened';
                                 contacts.mode = 'edit';
+                            }
+                        }
+                    ]
+                    states: [
+                        State {
+                            name: "currentItem"
+                            when: wrapper.ListView.isCurrentItem
+                            SetProperty {
+                                target: label
+                                property: "color"
+                                value: "black"
+                            }
+                        }
+                    ]
+                    transitions: [
+                        Transition {
+                            ColorAnimation {
+                                duration: 250
+                                property: "color"
                             }
                         }
                     ]
