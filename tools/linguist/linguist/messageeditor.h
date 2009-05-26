@@ -127,11 +127,11 @@ private:
     bool focusNextUnfinished(int start);
     bool resetSelection(FormWidget *fw = 0);
     void activeModelAndNumerus(int *model, int *numerus) const;
-    FormWidget *activeTranslation() const;
-    FormWidget *activeOr1stTranslation() const;
-    FormWidget *activeTransComment() const;
-    FormWidget *activeEditor() const;
-    FormWidget *activeOr1stEditor() const;
+    QTextEdit *activeTranslation() const;
+    QTextEdit *activeOr1stTranslation() const;
+    QTextEdit *activeTransComment() const;
+    QTextEdit *activeEditor() const;
+    QTextEdit *activeOr1stEditor() const;
     MessageEditorData *modelForWidget(const QObject *o);
     int activeTranslationNumerus() const;
     QStringList translations(int model) const;

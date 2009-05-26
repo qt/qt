@@ -250,7 +250,7 @@ void MessageEditor::messageModelDeleted(int model)
         if (m_currentModel >= 0) {
             if (m_currentNumerus >= m_editors[m_currentModel].transTexts.size())
                 m_currentNumerus = m_editors[m_currentModel].transTexts.size() - 1;
-            activeEditor()->getEditor()->setFocus();
+            activeEditor()->setFocus();
         } else {
             m_currentNumerus = -1;
         }
@@ -372,43 +372,43 @@ void MessageEditor::activeModelAndNumerus(int *model, int *numerus) const
     *numerus = -1;
 }
 
-FormWidget *MessageEditor::activeTranslation() const
+QTextEdit *MessageEditor::activeTranslation() const
 {
     if (m_currentNumerus < 0)
         return 0;
-    return m_editors[m_currentModel].transTexts[m_currentNumerus];
+    return m_editors[m_currentModel].transTexts[m_currentNumerus]->getEditor();
 }
 
-FormWidget *MessageEditor::activeOr1stTranslation() const
+QTextEdit *MessageEditor::activeOr1stTranslation() const
 {
     if (m_currentNumerus < 0) {
         for (int i = 0; i < m_editors.size(); ++i)
             if (m_editors[i].container->isVisible()
                 && !m_editors[i].transTexts[0]->getEditor()->isReadOnly())
-                return m_editors[i].transTexts[0];
+                return m_editors[i].transTexts[0]->getEditor();
         return 0;
     }
-    return m_editors[m_currentModel].transTexts[m_currentNumerus];
+    return m_editors[m_currentModel].transTexts[m_currentNumerus]->getEditor();
 }
 
-FormWidget *MessageEditor::activeTransComment() const
+QTextEdit *MessageEditor::activeTransComment() const
 {
     if (m_currentModel < 0 || m_currentNumerus >= 0)
         return 0;
-    return m_editors[m_currentModel].transCommentText;
+    return m_editors[m_currentModel].transCommentText->getEditor();
 }
 
-FormWidget *MessageEditor::activeEditor() const
+QTextEdit *MessageEditor::activeEditor() const
 {
-    if (FormWidget *fw = activeTransComment())
-        return fw;
+    if (QTextEdit *te = activeTransComment())
+        return te;
     return activeTranslation();
 }
 
-FormWidget *MessageEditor::activeOr1stEditor() const
+QTextEdit *MessageEditor::activeOr1stEditor() const
 {
-    if (FormWidget *fw = activeTransComment())
-        return fw;
+    if (QTextEdit *te = activeTransComment())
+        return te;
     return activeOr1stTranslation();
 }
 
@@ -672,20 +672,20 @@ void MessageEditor::setEditingEnabled(int model, bool enabled)
 
 void MessageEditor::undo()
 {
-    activeEditor()->getEditor()->document()->undo();
+    activeEditor()->document()->undo();
 }
 
 void MessageEditor::redo()
 {
-    activeEditor()->getEditor()->document()->redo();
+    activeEditor()->document()->redo();
 }
 
 void MessageEditor::updateUndoRedo()
 {
     bool newUndoAvail = false;
     bool newRedoAvail = false;
-    if (FormWidget *fw = activeEditor()) {
-        QTextDocument *doc = fw->getEditor()->document();
+    if (QTextEdit *te = activeEditor()) {
+        QTextDocument *doc = te->document();
         newUndoAvail = doc->isUndoAvailable();
         newRedoAvail = doc->isRedoAvailable();
     }
@@ -703,7 +703,7 @@ void MessageEditor::updateUndoRedo()
 
 void MessageEditor::cut()
 {
-    QTextEdit *editor = activeEditor()->getEditor();
+    QTextEdit *editor = activeEditor();
     if (editor->textCursor().hasSelection())
         editor->cut();
 }
@@ -713,7 +713,7 @@ void MessageEditor::copy()
     QTextEdit *te;
     if ((te = m_source->getEditor())->textCursor().hasSelection()
         || (te = m_pluralSource->getEditor())->textCursor().hasSelection()
-        || (te = activeEditor()->getEditor())->textCursor().hasSelection())
+        || (te = activeEditor())->textCursor().hasSelection())
         te->copy();
 }
 
@@ -728,8 +728,7 @@ void MessageEditor::updateCanCutCopy()
 
     if (m_sourceSelected || m_pluralSourceSelected) {
         newCopyState = true;
-    } else if (FormWidget *fw = activeEditor()) {
-        QTextEdit *te = fw->getEditor();
+    } else if (QTextEdit *te = activeEditor()) {
         if (te->textCursor().hasSelection()) {
             m_currentSelected = true;
             newCopyState = true;
@@ -750,14 +749,14 @@ void MessageEditor::updateCanCutCopy()
 
 void MessageEditor::paste()
 {
-    activeEditor()->getEditor()->paste();
+    activeEditor()->paste();
 }
 
 void MessageEditor::updateCanPaste()
 {
-    FormWidget *fw;
+    QTextEdit *te;
     emit pasteAvailable(!m_clipboardEmpty
-                        && (fw = activeEditor()) && !fw->getEditor()->isReadOnly());
+                        && (te = activeEditor()) && !te->isReadOnly());
 }
 
 void MessageEditor::clipboardChanged()
@@ -772,10 +771,9 @@ void MessageEditor::selectAll()
     // make sure we don't select the selection of a translator textedit,
     // if we really want the source text editor to be selected.
     QTextEdit *te;
-    FormWidget *fw;
     if ((te = m_source->getEditor())->underMouse()
         || (te = m_pluralSource->getEditor())->underMouse()
-        || ((fw = activeEditor()) && (te = fw->getEditor())->hasFocus()))
+        || ((te = activeEditor()) && te->hasFocus()))
         te->selectAll();
 }
 
@@ -797,11 +795,9 @@ void MessageEditor::emitTranslatorCommentChanged()
 void MessageEditor::updateBeginFromSource()
 {
     bool overwrite = false;
-    if (FormWidget *transForm = activeTranslation()) {
-        QTextEdit *activeEditor = transForm->getEditor();
+    if (QTextEdit *activeEditor = activeTranslation())
         overwrite = !activeEditor->isReadOnly()
             && activeEditor->toPlainText().trimmed().isEmpty();
-    }
     emit beginFromSourceAvailable(overwrite);
 }
 
@@ -816,8 +812,8 @@ void MessageEditor::beginFromSource()
 void MessageEditor::setEditorFocus()
 {
     if (!widget()->hasFocus())
-        if (FormWidget *transForm = activeOr1stEditor())
-            transForm->getEditor()->setFocus();
+        if (QTextEdit *activeEditor = activeOr1stEditor())
+            activeEditor->setFocus();
 }
 
 void MessageEditor::setEditorFocus(int model)
