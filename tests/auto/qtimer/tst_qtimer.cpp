@@ -146,6 +146,13 @@ void tst_QTimer::singleShotTimeout()
     QCOMPARE(helper.count, 1);
 }
 
+#if defined(Q_OS_SYMBIAN) && defined(Q_CC_NOKIAX86)
+// Increase wait as emulator startup can cause unexpected delays
+#define TIMEOUT_TIMEOUT 2000
+#else
+#define TIMEOUT_TIMEOUT 200
+#endif
+
 void tst_QTimer::timeout()
 {
     TimerHelper helper;
@@ -156,11 +163,11 @@ void tst_QTimer::timeout()
 
     QCOMPARE(helper.count, 0);
 
-    QTest::qWait(200);
+    QTest::qWait(TIMEOUT_TIMEOUT);
     QVERIFY(helper.count > 0);
     int oldCount = helper.count;
 
-    QTest::qWait(200);
+    QTest::qWait(TIMEOUT_TIMEOUT);
     QVERIFY(helper.count > oldCount);
 }
 
@@ -391,29 +398,38 @@ void tst_QTimer::deleteLaterOnQTimer()
     QVERIFY(pointer.isNull());
 }
 
+#if defined(Q_OS_SYMBIAN) && defined(Q_CC_NOKIAX86)
+// Increase wait as emulator startup can cause unexpected delays
+#define MOVETOTHREAD_TIMEOUT 200
+#define MOVETOTHREAD_WAIT 5000
+#else
+#define MOVETOTHREAD_TIMEOUT 200
+#define MOVETOTHREAD_WAIT 300
+#endif
+
 void tst_QTimer::moveToThread()
 {
     QTimer ti1;
     QTimer ti2;
-    ti1.start(200);
-    ti2.start(200);
+    ti1.start(MOVETOTHREAD_TIMEOUT);
+    ti2.start(MOVETOTHREAD_TIMEOUT);
     QVERIFY((ti1.timerId() & 0xffffff) != (ti2.timerId() & 0xffffff));
     QThread tr;
     ti1.moveToThread(&tr);
     connect(&ti1,SIGNAL(timeout()), &tr, SLOT(quit()));
     tr.start();
     QTimer ti3;
-    ti3.start(200);
+    ti3.start(MOVETOTHREAD_TIMEOUT);
     QVERIFY((ti3.timerId() & 0xffffff) != (ti2.timerId() & 0xffffff));
     QVERIFY((ti3.timerId() & 0xffffff) != (ti1.timerId() & 0xffffff));
-    QTest::qWait(300);
+    QTest::qWait(MOVETOTHREAD_WAIT);
     QVERIFY(tr.wait());
     ti2.stop();
     QTimer ti4;
-    ti4.start(200);
+    ti4.start(MOVETOTHREAD_TIMEOUT);
     ti3.stop();
-    ti2.start(200);
-    ti3.start(200);
+    ti2.start(MOVETOTHREAD_TIMEOUT);
+    ti3.start(MOVETOTHREAD_TIMEOUT);
     QVERIFY((ti4.timerId() & 0xffffff) != (ti2.timerId() & 0xffffff));
     QVERIFY((ti3.timerId() & 0xffffff) != (ti2.timerId() & 0xffffff));
     QVERIFY((ti3.timerId() & 0xffffff) != (ti1.timerId() & 0xffffff));
@@ -533,4 +549,4 @@ void tst_QTimer::timerFiresOnlyOncePerProcessEvents()
 
 QTEST_MAIN(tst_QTimer)
 #include "tst_qtimer.moc"
-\
+
