@@ -1406,8 +1406,8 @@ QNativeImage *QFontEngineWin::drawGDIGlyph(HFONT font, glyph_t glyph, int margin
 #endif
 #endif
 
-    QNativeImage *ni = new QNativeImage(iw + 2 * margin + 2,
-                                        ih + 2 * margin + 2,
+    QNativeImage *ni = new QNativeImage(iw + 2 * margin + 4,
+                                        ih + 2 * margin + 4,
                                         QNativeImage::systemFormat(), true);
     ni->image.fill(0xffffffff);
 
@@ -1449,7 +1449,7 @@ QImage QFontEngineWin::alphaMapForGlyph(glyph_t glyph, const QTransform &xform)
         font = CreateFontIndirectW(&lf);
     }
 
-    QNativeImage *mask = drawGDIGlyph(font, glyph, 2, xform);
+    QNativeImage *mask = drawGDIGlyph(font, glyph, 0, xform);
     if (mask == 0)
         return QImage();
 
