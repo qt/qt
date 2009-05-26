@@ -53,7 +53,7 @@ void QSoftKeyStackPrivate::mapSoftKeys(const QSoftkeySet &top)
 {
     if (top.count() == 1) {
         top.at(0)->setNativePosition(2);
-        top.at(0)->setQtContextKey(Qt::Key_Context2);
+        top.at(0)->setQtContextKey(Qt::Key_Context1);
     }
     else {
     // FIX THIS
