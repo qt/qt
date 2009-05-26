@@ -63,8 +63,8 @@ class QmlPackage : public QObject
     Q_OBJECT
     Q_DECLARE_PRIVATE(QmlPackage)
 
-    Q_CLASSINFO("DefaultProperty", "data");
-    Q_PROPERTY(QmlList<QObject *> *data READ data SCRIPTABLE false);
+    Q_CLASSINFO("DefaultProperty", "data")
+    Q_PROPERTY(QmlList<QObject *> *data READ data SCRIPTABLE false)
 
 public:
     QmlPackage(QObject *parent=0);

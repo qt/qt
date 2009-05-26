@@ -74,7 +74,7 @@ class Q_DECLARATIVE_EXPORT QSimpleCanvasItem : public QObject
     Q_CAST_INTERFACES(QmlDebuggerStatus)
     Q_DECLARE_PRIVATE(QSimpleCanvasItem)
     Q_ENUMS(TransformOrigin)
-    Q_PROPERTY(TransformOrigin transformOrigin READ transformOrigin WRITE setTransformOrigin);
+    Q_PROPERTY(TransformOrigin transformOrigin READ transformOrigin WRITE setTransformOrigin)
 
 public:
     enum ClipType { NoClip = 0x00,

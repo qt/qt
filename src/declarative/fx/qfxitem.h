@@ -63,8 +63,8 @@ QT_MODULE(Declarative)
 class Q_DECLARATIVE_EXPORT QFxContents : public QObject
 {
     Q_OBJECT
-    Q_PROPERTY(int height READ height NOTIFY heightChanged);
-    Q_PROPERTY(int width READ width NOTIFY widthChanged);
+    Q_PROPERTY(int height READ height NOTIFY heightChanged)
+    Q_PROPERTY(int width READ width NOTIFY widthChanged)
 public:
     QFxContents();
 

@@ -63,13 +63,13 @@ class QmlAbstractAnimation : public QmlPropertyValueSource, public QmlParserStat
     Q_OBJECT
     Q_DECLARE_PRIVATE(QmlAbstractAnimation)
 
-    Q_INTERFACES(QmlParserStatus);
-    Q_PROPERTY(bool running READ isRunning WRITE setRunning NOTIFY runningChanged);
-    Q_PROPERTY(bool finishPlaying READ finishPlaying WRITE setFinishPlaying NOTIFY finishPlayingChanged());
-    Q_PROPERTY(bool repeat READ repeat WRITE setRepeat NOTIFY repeatChanged);
-    Q_PROPERTY(QObject *target READ target WRITE setTarget NOTIFY targetChanged);
-    Q_PROPERTY(QString property READ property WRITE setProperty NOTIFY targetChanged);
-    Q_CLASSINFO("DefaultMethod", "start()");
+    Q_INTERFACES(QmlParserStatus)
+    Q_PROPERTY(bool running READ isRunning WRITE setRunning NOTIFY runningChanged)
+    Q_PROPERTY(bool finishPlaying READ finishPlaying WRITE setFinishPlaying NOTIFY finishPlayingChanged())
+    Q_PROPERTY(bool repeat READ repeat WRITE setRepeat NOTIFY repeatChanged)
+    Q_PROPERTY(QObject *target READ target WRITE setTarget NOTIFY targetChanged)
+    Q_PROPERTY(QString property READ property WRITE setProperty NOTIFY targetChanged)
+    Q_CLASSINFO("DefaultMethod", "start()")
     Q_INTERFACES(QmlParserStatus)
 
 public:
@@ -130,9 +130,9 @@ class QmlPauseAnimationPrivate;
 class QmlPauseAnimation : public QmlAbstractAnimation
 {
     Q_OBJECT
-    Q_DECLARE_PRIVATE(QmlPauseAnimation);
+    Q_DECLARE_PRIVATE(QmlPauseAnimation)
 
-    Q_PROPERTY(int duration READ duration WRITE setDuration NOTIFY durationChanged);
+    Q_PROPERTY(int duration READ duration WRITE setDuration NOTIFY durationChanged)
 
 public:
     QmlPauseAnimation(QObject *parent=0);
@@ -154,13 +154,13 @@ class QmlColorAnimationPrivate;
 class QmlColorAnimation : public QmlAbstractAnimation
 {
     Q_OBJECT
-    Q_DECLARE_PRIVATE(QmlColorAnimation);
-    Q_PROPERTY(int duration READ duration WRITE setDuration NOTIFY durationChanged);
-    Q_PROPERTY(QColor from READ from WRITE setFrom NOTIFY fromChanged);
-    Q_PROPERTY(QColor to READ to WRITE setTo NOTIFY toChanged);
-    Q_PROPERTY(QString easing READ easing WRITE setEasing NOTIFY easingChanged);
-    Q_PROPERTY(QList<QObject *>* filter READ filter);
-    Q_PROPERTY(QList<QObject *>* exclude READ exclude);
+    Q_DECLARE_PRIVATE(QmlColorAnimation)
+    Q_PROPERTY(int duration READ duration WRITE setDuration NOTIFY durationChanged)
+    Q_PROPERTY(QColor from READ from WRITE setFrom NOTIFY fromChanged)
+    Q_PROPERTY(QColor to READ to WRITE setTo NOTIFY toChanged)
+    Q_PROPERTY(QString easing READ easing WRITE setEasing NOTIFY easingChanged)
+    Q_PROPERTY(QList<QObject *>* filter READ filter)
+    Q_PROPERTY(QList<QObject *>* exclude READ exclude)
 
 public:
     QmlColorAnimation(QObject *parent=0);
@@ -201,10 +201,10 @@ class QmlRunScriptActionPrivate;
 class QmlRunScriptAction : public QmlAbstractAnimation
 {
     Q_OBJECT
-    Q_DECLARE_PRIVATE(QmlRunScriptAction);
+    Q_DECLARE_PRIVATE(QmlRunScriptAction)
 
-    Q_PROPERTY(QString script READ script WRITE setScript NOTIFY scriptChanged);
-    Q_PROPERTY(QString file READ file WRITE setFile NOTIFY fileChanged);
+    Q_PROPERTY(QString script READ script WRITE setScript NOTIFY scriptChanged)
+    Q_PROPERTY(QString file READ file WRITE setFile NOTIFY fileChanged)
 
 public:
     QmlRunScriptAction(QObject *parent=0);
@@ -229,12 +229,12 @@ class QmlSetPropertyActionPrivate;
 class QmlSetPropertyAction : public QmlAbstractAnimation
 {
     Q_OBJECT
-    Q_DECLARE_PRIVATE(QmlSetPropertyAction);
+    Q_DECLARE_PRIVATE(QmlSetPropertyAction)
 
-    Q_PROPERTY(QString properties READ properties WRITE setProperties NOTIFY propertiesChanged);
-    Q_PROPERTY(QList<QObject *>* filter READ filter);
-    Q_PROPERTY(QList<QObject *>* exclude READ exclude);
-    Q_PROPERTY(QVariant value READ value WRITE setValue NOTIFY valueChanged);
+    Q_PROPERTY(QString properties READ properties WRITE setProperties NOTIFY propertiesChanged)
+    Q_PROPERTY(QList<QObject *>* filter READ filter)
+    Q_PROPERTY(QList<QObject *>* exclude READ exclude)
+    Q_PROPERTY(QVariant value READ value WRITE setValue NOTIFY valueChanged)
 
 public:
     QmlSetPropertyAction(QObject *parent=0);
@@ -287,15 +287,15 @@ class QmlNumericAnimationPrivate;
 class QmlNumericAnimation : public QmlAbstractAnimation
 {
     Q_OBJECT
-    Q_DECLARE_PRIVATE(QmlNumericAnimation);
+    Q_DECLARE_PRIVATE(QmlNumericAnimation)
 
-    Q_PROPERTY(int duration READ duration WRITE setDuration NOTIFY durationChanged);
-    Q_PROPERTY(qreal from READ from WRITE setFrom NOTIFY fromChanged);
-    Q_PROPERTY(qreal to READ to WRITE setTo NOTIFY toChanged);
-    Q_PROPERTY(QString easing READ easing WRITE setEasing NOTIFY easingChanged);
-    Q_PROPERTY(QString properties READ properties WRITE setProperties NOTIFY propertiesChanged);
-    Q_PROPERTY(QList<QObject *>* filter READ filter);
-    Q_PROPERTY(QList<QObject *>* exclude READ exclude);
+    Q_PROPERTY(int duration READ duration WRITE setDuration NOTIFY durationChanged)
+    Q_PROPERTY(qreal from READ from WRITE setFrom NOTIFY fromChanged)
+    Q_PROPERTY(qreal to READ to WRITE setTo NOTIFY toChanged)
+    Q_PROPERTY(QString easing READ easing WRITE setEasing NOTIFY easingChanged)
+    Q_PROPERTY(QString properties READ properties WRITE setProperties NOTIFY propertiesChanged)
+    Q_PROPERTY(QList<QObject *>* filter READ filter)
+    Q_PROPERTY(QList<QObject *>* exclude READ exclude)
 
 public:
     QmlNumericAnimation(QObject *parent=0);
@@ -346,10 +346,10 @@ class QmlAnimationGroupPrivate;
 class QmlAnimationGroup : public QmlAbstractAnimation
 {
     Q_OBJECT
-    Q_DECLARE_PRIVATE(QmlAnimationGroup);
+    Q_DECLARE_PRIVATE(QmlAnimationGroup)
 
-    Q_CLASSINFO("DefaultProperty", "animations");
-    Q_PROPERTY(QmlList<QmlAbstractAnimation *> *animations READ animations);
+    Q_CLASSINFO("DefaultProperty", "animations")
+    Q_PROPERTY(QmlList<QmlAbstractAnimation *> *animations READ animations)
 
 public:
     QmlAnimationGroup(QObject *parent);
@@ -398,15 +398,15 @@ class QmlVariantAnimationPrivate;
 class QmlVariantAnimation : public QmlAbstractAnimation
 {
     Q_OBJECT
-    Q_DECLARE_PRIVATE(QmlVariantAnimation);
+    Q_DECLARE_PRIVATE(QmlVariantAnimation)
 
-    Q_PROPERTY(int duration READ duration WRITE setDuration NOTIFY durationChanged);
-    Q_PROPERTY(QVariant from READ from WRITE setFrom NOTIFY fromChanged);
-    Q_PROPERTY(QVariant to READ to WRITE setTo NOTIFY toChanged);
-    Q_PROPERTY(QString easing READ easing WRITE setEasing NOTIFY easingChanged);
-    Q_PROPERTY(QString properties READ properties WRITE setProperties NOTIFY propertiesChanged);
-    Q_PROPERTY(QList<QObject *>* filter READ filter);
-    Q_PROPERTY(QList<QObject *>* exclude READ exclude);
+    Q_PROPERTY(int duration READ duration WRITE setDuration NOTIFY durationChanged)
+    Q_PROPERTY(QVariant from READ from WRITE setFrom NOTIFY fromChanged)
+    Q_PROPERTY(QVariant to READ to WRITE setTo NOTIFY toChanged)
+    Q_PROPERTY(QString easing READ easing WRITE setEasing NOTIFY easingChanged)
+    Q_PROPERTY(QString properties READ properties WRITE setProperties NOTIFY propertiesChanged)
+    Q_PROPERTY(QList<QObject *>* filter READ filter)
+    Q_PROPERTY(QList<QObject *>* exclude READ exclude)
 
 public:
     QmlVariantAnimation(QObject *parent=0);

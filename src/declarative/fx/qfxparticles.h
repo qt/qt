@@ -128,15 +128,15 @@ public:
         qreal y_var;
     };
 
-    Q_PROPERTY(int xvariance READ xVariance WRITE setXVariance);
+    Q_PROPERTY(int xvariance READ xVariance WRITE setXVariance)
     int xVariance() const { return int(_xvariance * 1000); }
     void setXVariance(int var) { _xvariance = var / 1000.0; }
 
-    Q_PROPERTY(int yvariance READ yVariance WRITE setYVariance);
+    Q_PROPERTY(int yvariance READ yVariance WRITE setYVariance)
     int yVariance() const { return int(_yvariance * 1000); }
     void setYVariance(int var) { _yvariance = var / 1000.0; }
 
-    Q_PROPERTY(int pace READ pace WRITE setPace);
+    Q_PROPERTY(int pace READ pace WRITE setPace)
     int pace() const { return int(_pace * 1000); }
     void setPace(int pace) { _pace = pace / 1000.0; }
 
@@ -153,20 +153,20 @@ class Q_DECLARATIVE_EXPORT QFxParticles : public QFxItem
 {
     Q_OBJECT
 
-    Q_PROPERTY(QString source READ source WRITE setSource);
-    Q_PROPERTY(int count READ count WRITE setCount);
-    Q_PROPERTY(int lifeSpan READ lifeSpan WRITE setLifeSpan);
-    Q_PROPERTY(int lifeSpanDeviation READ lifeSpanDeviation WRITE setLifeSpanDeviation);
-    Q_PROPERTY(int fadeInDuration READ fadeInDuration WRITE setFadeInDuration);
-    Q_PROPERTY(int fadeOutDuration READ fadeOutDuration WRITE setFadeOutDuration);
-    Q_PROPERTY(qreal angle READ angle WRITE setAngle);
-    Q_PROPERTY(qreal angleDeviation READ angleDeviation WRITE setAngleDeviation);
-    Q_PROPERTY(qreal velocity READ velocity WRITE setVelocity);
-    Q_PROPERTY(qreal velocityDeviation READ velocityDeviation WRITE setVelocityDeviation);
-    Q_PROPERTY(bool streamIn READ streamIn WRITE setStreamIn);
-    Q_PROPERTY(bool emitting READ emitting WRITE setEmitting);
-    Q_PROPERTY(QFxParticleMotion *motion READ motion WRITE setMotion);
-    Q_CLASSINFO("DefaultProperty", "motion");
+    Q_PROPERTY(QString source READ source WRITE setSource)
+    Q_PROPERTY(int count READ count WRITE setCount)
+    Q_PROPERTY(int lifeSpan READ lifeSpan WRITE setLifeSpan)
+    Q_PROPERTY(int lifeSpanDeviation READ lifeSpanDeviation WRITE setLifeSpanDeviation)
+    Q_PROPERTY(int fadeInDuration READ fadeInDuration WRITE setFadeInDuration)
+    Q_PROPERTY(int fadeOutDuration READ fadeOutDuration WRITE setFadeOutDuration)
+    Q_PROPERTY(qreal angle READ angle WRITE setAngle)
+    Q_PROPERTY(qreal angleDeviation READ angleDeviation WRITE setAngleDeviation)
+    Q_PROPERTY(qreal velocity READ velocity WRITE setVelocity)
+    Q_PROPERTY(qreal velocityDeviation READ velocityDeviation WRITE setVelocityDeviation)
+    Q_PROPERTY(bool streamIn READ streamIn WRITE setStreamIn)
+    Q_PROPERTY(bool emitting READ emitting WRITE setEmitting)
+    Q_PROPERTY(QFxParticleMotion *motion READ motion WRITE setMotion)
+    Q_CLASSINFO("DefaultProperty", "motion")
 
 public:
     QFxParticles(QFxItem *parent=0);

@@ -61,7 +61,7 @@ class Q_DECLARATIVE_EXPORT QFxFlipable : public QFxItem
 {
     Q_OBJECT
 
-    Q_ENUMS(Side);
+    Q_ENUMS(Side)
     Q_PROPERTY(QFxItem *front READ front WRITE setFront)
     Q_PROPERTY(QFxItem *back READ back WRITE setBack)
     Q_PROPERTY(QFxAxis *axis READ axis WRITE setAxis)

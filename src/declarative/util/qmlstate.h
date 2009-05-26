@@ -127,11 +127,11 @@ class Q_DECLARATIVE_EXPORT QmlState : public QObject
 {
     Q_OBJECT
 
-    Q_PROPERTY(QString name READ name WRITE setName);
-    Q_PROPERTY(QmlBindableValue *when READ when WRITE setWhen);
-    Q_PROPERTY(QString extends READ extends WRITE setExtends);
-    Q_PROPERTY(QmlList<QmlStateOperation *>* operations READ operations);
-    Q_CLASSINFO("DefaultProperty", "operations");
+    Q_PROPERTY(QString name READ name WRITE setName)
+    Q_PROPERTY(QmlBindableValue *when READ when WRITE setWhen)
+    Q_PROPERTY(QString extends READ extends WRITE setExtends)
+    Q_PROPERTY(QmlList<QmlStateOperation *>* operations READ operations)
+    Q_CLASSINFO("DefaultProperty", "operations")
 
 public:
     QmlState(QObject *parent=0);

@@ -55,11 +55,11 @@ class QmlStateGroup : public QObject, public QmlParserStatus
 {
     Q_OBJECT
     Q_INTERFACES(QmlParserStatus)
-    Q_DECLARE_PRIVATE(QmlStateGroup);
+    Q_DECLARE_PRIVATE(QmlStateGroup)
 
-    Q_PROPERTY(QString state READ state WRITE setState NOTIFY stateChanged);
-    Q_PROPERTY(QmlList<QmlState *>* states READ statesProperty DESIGNABLE false);
-    Q_PROPERTY(QmlList<QmlTransition *>* transitions READ transitionsProperty DESIGNABLE false);
+    Q_PROPERTY(QString state READ state WRITE setState NOTIFY stateChanged)
+    Q_PROPERTY(QmlList<QmlState *>* states READ statesProperty DESIGNABLE false)
+    Q_PROPERTY(QmlList<QmlTransition *>* transitions READ transitionsProperty DESIGNABLE false)
 
 public:
     QmlStateGroup(QObject * = 0);

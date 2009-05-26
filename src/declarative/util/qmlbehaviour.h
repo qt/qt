@@ -60,10 +60,10 @@ class Q_DECLARATIVE_EXPORT QmlBehaviour : public QmlPropertyValueSource,
     Q_DECLARE_PRIVATE(QmlBehaviour)
     Q_INTERFACES(QmlParserStatus)
 
-    Q_PROPERTY(QVariant from READ fromValue WRITE setFromValue);
-    Q_PROPERTY(QVariant to READ toValue WRITE setToValue);
-    Q_CLASSINFO("DefaultProperty", "operations");
-    Q_PROPERTY(QmlList<QmlAbstractAnimation *>* operations READ operations);
+    Q_PROPERTY(QVariant from READ fromValue WRITE setFromValue)
+    Q_PROPERTY(QVariant to READ toValue WRITE setToValue)
+    Q_CLASSINFO("DefaultProperty", "operations")
+    Q_PROPERTY(QmlList<QmlAbstractAnimation *>* operations READ operations)
 
 public:
     QmlBehaviour(QObject *parent=0);
