@@ -49,47 +49,45 @@
 QT_BEGIN_HEADER
 QT_BEGIN_NAMESPACE
 
-QT_MODULE(Declarative)
-
 namespace JavaScript {
 
 class TextWriter
 {
-    QString *string;
-    QTextCursor *cursor;
+	QString *string;
+	QTextCursor *cursor;
 
-    struct Replace {
-        int pos;
-        int length;
-        QString replacement;
-    };
+	struct Replace {
+		int pos;
+		int length;
+		QString replacement;
+	};
 
-    QList<Replace> replaceList;
+	QList<Replace> replaceList;
 
-    struct Move {
-        int pos;
-        int length;
-        int to;
-    };
+	struct Move {
+		int pos;
+		int length;
+		int to;
+	};
 
-    QList<Move> moveList;
+	QList<Move> moveList;
 
-    bool hasOverlap(int pos, int length);
-    bool hasMoveInto(int pos, int length);
+	bool hasOverlap(int pos, int length);
+	bool hasMoveInto(int pos, int length);
 
-    void doReplace(const Replace &replace);
-    void doMove(const Move &move);
+	void doReplace(const Replace &replace);
+	void doMove(const Move &move);
 
-    void write_helper();
+	void write_helper();
 
 public:
-    TextWriter();
+	TextWriter();
 
-    void replace(int pos, int length, const QString &replacement);
-    void move(int pos, int length, int to);
+	void replace(int pos, int length, const QString &replacement);
+	void move(int pos, int length, int to);
 
-    void write(QString *s);
-    void write(QTextCursor *textCursor);
+	void write(QString *s);
+	void write(QTextCursor *textCursor);
 
 };
 
