@@ -43,6 +43,7 @@
 #include "qsoftkeystack_p.h"
 #include "qapplication.h"
 #include "qmainwindow.h"
+#include "qevent.h"
 
 static bool isSame(const QSoftkeySet& a, const QSoftkeySet& b)
 {
@@ -228,3 +229,26 @@ void QSoftKeyStackPrivate::setNativeSoftKeys()
 {
 }
 #endif // !defined(Q_WS_S60)
+
+QKeyEventSoftKey::QKeyEventSoftKey(QSoftKeyAction *softKeyAction, Qt::Key key, QObject *parent)
+    : QObject(parent)
+    , m_softKeyAction(softKeyAction)
+    , m_key(key)
+{
+}
+
+void QKeyEventSoftKey::addSoftKey(QSoftKeyAction::StandardRole standardRole, Qt::Key key, QWidget *actionWidget)
+{
+    QSoftKeyStack *stack = QSoftKeyStack::softKeyStackOfWidget(actionWidget);
+    if (!stack)
+        return;
+    QSoftKeyAction *action = new QSoftKeyAction(standardRole, actionWidget);
+    QKeyEventSoftKey *softKey = new QKeyEventSoftKey(action, key, actionWidget);
+    connect(action, SIGNAL(triggered()), softKey, SLOT(sendKeyEvent()));
+    stack->push(action);
+}
+
+void QKeyEventSoftKey::sendKeyEvent()
+{
+    QApplication::postEvent(parent(), new QKeyEvent(QEvent::KeyPress, m_key, Qt::NoModifier));
+}

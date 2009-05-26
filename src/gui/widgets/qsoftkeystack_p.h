@@ -70,6 +70,7 @@ QT_BEGIN_NAMESPACE
 
 class QSoftKeyStackPrivate : public QObjectPrivate
 {
+    Q_DECLARE_PUBLIC(QSoftKeyStack);
 public:
     QSoftKeyStackPrivate();
     ~QSoftKeyStackPrivate();
@@ -89,6 +90,19 @@ private:
 
 private:
     QStack <QSoftkeySet> softKeyStack;
+};
+
+class QKeyEventSoftKey : QObject
+{
+    Q_OBJECT
+public:
+    QKeyEventSoftKey(QSoftKeyAction *softKeyAction, Qt::Key key, QObject *parent);
+    static void addSoftKey(QSoftKeyAction::StandardRole standardRole, Qt::Key key, QWidget *actionWidget);
+private:
+    QSoftKeyAction *m_softKeyAction;
+    Qt::Key m_key;
+private Q_SLOTS:
+    void sendKeyEvent();
 };
 
 QT_END_NAMESPACE
