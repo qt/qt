@@ -1985,7 +1985,7 @@ void qt_message_output(QtMsgType msgType, const char *buf)
         mac_default_handler(buf);
 #elif defined(Q_OS_WINCE)
         QString fstr = QString::fromLatin1(buf);
-        fstr += QLatin1String("\n");
+        fstr += QLatin1Char('\n');
         OutputDebugString(reinterpret_cast<const wchar_t *> (fstr.utf16()));
 #else
         fprintf(stderr, "%s\n", buf);
@@ -2243,7 +2243,7 @@ bool qputenv(const char *varName, const QByteArray& value)
     return _putenv_s(varName, value.constData()) == 0;
 #else
     QByteArray buffer(varName);
-    buffer += "=";
+    buffer += '=';
     buffer += value;
     return putenv(qstrdup(buffer.constData())) == 0;
 #endif

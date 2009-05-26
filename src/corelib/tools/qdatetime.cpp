@@ -3833,19 +3833,19 @@ void QDateTimePrivate::getUTC(QDate &outDate, QTime &outTime) const
 #if !defined(QT_NO_DEBUG_STREAM) && !defined(QT_NO_DATESTRING)
 QDebug operator<<(QDebug dbg, const QDate &date)
 {
-    dbg.nospace() << "QDate(" << date.toString() << ")";
+    dbg.nospace() << "QDate(" << date.toString() << ')';
     return dbg.space();
 }
 
 QDebug operator<<(QDebug dbg, const QTime &time)
 {
-    dbg.nospace() << "QTime(" << time.toString() << ")";
+    dbg.nospace() << "QTime(" << time.toString() << ')';
     return dbg.space();
 }
 
 QDebug operator<<(QDebug dbg, const QDateTime &date)
 {
-    dbg.nospace() << "QDateTime(" << date.toString() << ")";
+    dbg.nospace() << "QDateTime(" << date.toString() << ')';
     return dbg.space();
 }
 #endif

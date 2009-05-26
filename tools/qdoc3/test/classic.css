@@ -1,9 +1,6 @@
 BODY,H1,H2,H3,H4,H5,H6,P,CENTER,TD,TH,UL,DL,DIV {
   font-family: Arial, Geneva, Helvetica, sans-serif;
 }
-BODY,TD {
-  font-size: 90%;
-}
 H1 {
   text-align: center;
   font-size: 160%;
@@ -86,6 +83,7 @@ table td.memItemLeft {
   border-left-style: none;
   background-color: #FAFAFA;
   font-size: 80%;
+  white-space: nowrap
 }
 table td.memItemRight {
   padding: 1px 8px 0px 8px;

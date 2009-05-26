@@ -48,20 +48,6 @@
 
 QT_BEGIN_NAMESPACE
 
-static const qreal pi = qreal(3.14159265359);
-static const qreal halfPi = pi / qreal(2.0);
-
-
-static inline qreal qt_sinProgress(qreal value)
-{
-    return qSin((value * pi) - halfPi) / 2 + qreal(0.5);
-}
-
-static inline qreal qt_smoothBeginEndMixFactor(qreal value)
-{
-    return qMin(qMax(1 - value * 2 + qreal(0.3), qreal(0.0)), qreal(1.0));
-}
-
 class QTimeLinePrivate : public QObjectPrivate
 {
     Q_DECLARE_PUBLIC(QTimeLine)
@@ -70,7 +56,7 @@ public:
         : startTime(0), duration(1000), startFrame(0), endFrame(0),
           updateInterval(1000 / 25),
           totalLoopCount(1), currentLoopCount(0), currentTime(0), timerId(0),
-          direction(QTimeLine::Forward), curveShape(QTimeLine::EaseInOutCurve),
+          direction(QTimeLine::Forward), easingCurve(QEasingCurve::InOutSine),
           state(QTimeLine::NotRunning)
     { }
 
@@ -88,7 +74,7 @@ public:
     QTime timer;
 
     QTimeLine::Direction direction;
-    QTimeLine::CurveShape curveShape;
+    QEasingCurve easingCurve;
     QTimeLine::State state;
     inline void setState(QTimeLine::State newState)
     {
@@ -523,12 +509,68 @@ void QTimeLine::setUpdateInterval(int interval)
 QTimeLine::CurveShape QTimeLine::curveShape() const
 {
     Q_D(const QTimeLine);
-    return d->curveShape;
+    switch (d->easingCurve.type()) {
+    default:
+    case QEasingCurve::InOutSine:
+        return EaseInOutCurve;
+    case QEasingCurve::InCurve:
+        return EaseInCurve;
+    case QEasingCurve::OutCurve:
+        return EaseOutCurve;
+    case QEasingCurve::Linear:
+        return LinearCurve;
+    case QEasingCurve::SineCurve:
+        return SineCurve;
+    case QEasingCurve::CosineCurve:
+        return CosineCurve;
+    }
+    return EaseInOutCurve;
 }
+
 void QTimeLine::setCurveShape(CurveShape shape)
 {
+    switch (shape) {
+    default:
+    case EaseInOutCurve:
+        setEasingCurve(QEasingCurve(QEasingCurve::InOutSine));
+        break;
+    case EaseInCurve:
+        setEasingCurve(QEasingCurve(QEasingCurve::InCurve));
+        break;
+    case EaseOutCurve:
+        setEasingCurve(QEasingCurve(QEasingCurve::OutCurve));
+        break;
+    case LinearCurve:
+        setEasingCurve(QEasingCurve(QEasingCurve::Linear));
+        break;
+    case SineCurve:
+        setEasingCurve(QEasingCurve(QEasingCurve::SineCurve));
+        break;
+    case CosineCurve:
+        setEasingCurve(QEasingCurve(QEasingCurve::CosineCurve));
+        break;
+    } 
+}
+
+/*!
+    \property QTimeLine::easingCurve
+
+    Specifies the easing curve that the timeline will use.
+    If both easing curve and curveShape are set, the last set property will
+    override the previous one. (If valueForTime() is reimplemented it will 
+    override both)
+*/
+
+QEasingCurve QTimeLine::easingCurve() const
+{
+    Q_D(const QTimeLine);
+    return d->easingCurve;
+}
+
+void QTimeLine::setEasingCurve(const QEasingCurve& curve)
+{
     Q_D(QTimeLine);
-    d->curveShape = shape;
+    d->easingCurve = curve;
 }
 
 /*!
@@ -608,42 +650,8 @@ qreal QTimeLine::valueForTime(int msec) const
     Q_D(const QTimeLine);
     msec = qMin(qMax(msec, 0), d->duration);
 
-    // Simple linear interpolation
     qreal value = msec / qreal(d->duration);
-
-    switch (d->curveShape) {
-    case EaseInOutCurve:
-        value = qt_sinProgress(value);
-        break;
-        // SmoothBegin blends Smooth and Linear Interpolation.
-        // Progress 0 - 0.3      : Smooth only
-        // Progress 0.3 - ~ 0.5  : Mix of Smooth and Linear
-        // Progress ~ 0.5  - 1   : Linear only
-    case EaseInCurve: {
-        const qreal sinProgress = qt_sinProgress(value);
-        const qreal linearProgress = value;
-        const qreal mix = qt_smoothBeginEndMixFactor(value);
-        value = sinProgress * mix + linearProgress * (1 - mix);
-        break;
-    }
-    case EaseOutCurve: {
-        const qreal sinProgress = qt_sinProgress(value);
-        const qreal linearProgress = value;
-        const qreal mix = qt_smoothBeginEndMixFactor(1 - value);
-        value = sinProgress * mix + linearProgress * (1 - mix);
-        break;
-    }
-    case SineCurve:
-        value = (qSin(((msec * pi * 2) / d->duration) - pi/2) + 1) / 2;
-        break;
-    case CosineCurve:
-        value = (qCos(((msec * pi * 2) / d->duration) - pi/2) + 1) / 2;
-        break;
-    default:
-        break;
-    }
-
-    return value;
+    return d->easingCurve.valueForProgress(value);
 }
 
 /*!

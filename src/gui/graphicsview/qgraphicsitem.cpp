@@ -130,12 +130,18 @@
 
     \img graphicsview-parentchild.png
 
+    \section Transformation
+
     QGraphicsItem supports affine transformations in addition to its base
     position, pos(). To change the item's transformation, you can either pass
-    a transformation matrix to setTransform(), or call one of the convenience
-    functions rotate(), scale(), translate(), or shear(). Item transformations
-    accumulate from parent to child, so if both a parent and child item are
-    rotated 90 degrees, the child's total transformation will be 180 degrees.
+    a transformation matrix to setTransform(), or set the different transformation
+    properties (transformOrigin, x/y/zRotation, x/yScale, horizontal/verticalShear).
+    Note that setting the transformation matrix conflicts with using the properties.
+    Setting the properties will overwrite the transformation set with setTransform,
+    and using setTransform will reset the properties.
+
+    Item transformations accumulate from parent to child, so if both a parent and child
+    item are rotated 90 degrees, the child's total transformation will be 180 degrees.
     Similarly, if the item's parent is scaled to 2x its original size, its
     children will also be twice as large. An item's transformation does not
     affect its own local geometry; all geometry functions (e.g., contains(),
@@ -145,6 +151,22 @@
     (including its position and all parents' positions and transformations),
     and scenePos(), which returns its position in scene coordinates. To reset
     an item's matrix, call resetTransform().
+
+    The order you set the transformation properties does not affect the resulting transformation
+    The resulting transformation is always computed in the following order
+
+    \code
+    [Origin] [RotateX] [RotateY] [RotateZ] [Shear] [Scale] [-Origin]
+    \endcode
+
+    So the transformation is equivalent to the following code
+
+    \code
+    QTransform().translate(xOrigin, yOrigin).rotate(xRotation, Qt::XAxis).rotate(yRotation, Qt::YAxis).rotate(zRotation, Qt::ZAxis)
+                .shear(horizontalShear, verticalShear).scale(xScale, yScale).translate(-xOrigin, -yOrigin);
+    \endcode
+
+    \section Painting
 
     The paint() function is called by QGraphicsView to paint the item's
     contents. The item has no background or default fill of its own; whatever
@@ -160,6 +182,8 @@
     zValue(), where items with low z-values are painted before items with
     high z-values. Stacking order applies to sibling items; parents are always
     drawn before their children.
+
+    \section Events
 
     QGraphicsItem receives events from QGraphicsScene through the virtual
     function sceneEvent(). This function distributes the most common events
@@ -185,6 +209,8 @@
     installSceneEventFilter(), the filtered events will be received
     by the virtual function sceneEventFilter(). You can remove item
     event filters by calling removeSceneEventFilter().
+
+    \section Custom Data
 
     Sometimes it's useful to register custom data with an item, be it a custom
     item, or a standard item. You can call setData() on any item to store data
@@ -338,16 +364,17 @@
 
     \value ItemTransformChange The item's transformation matrix changes. This
     notification is only sent when the item's local transformation matrix
-    changes (i.e., as a result of calling setTransform(), or one of the
-    convenience transformation functions, such as rotate()). The value
+    changes (i.e., as a result of calling setTransform(). The value
     argument is the new matrix (i.e., a QTransform); to get the old matrix,
-    call transform(). Do not call setTransform() or any of the transformation
-    convenience functions in itemChange() as this notification is delivered;
+    call transform(). Do not call setTransform() or set any of the transformation
+    properties in itemChange() as this notification is delivered;
     instead, you can return the new matrix from itemChange().
+    This notification is not sent if you change the transformation properties.
 
     \value ItemTransformHasChanged The item's transformation matrix has
-    changed.  This notification is only sent after the item's local
-    trasformation matrix has changed. The value argument is the new matrix
+    changed either because setTransform is called, or one of the transformation
+    properties is changed. This notification is only sent after the item's local
+    transformation matrix has changed. The value argument is the new matrix
     (same as transform()), and QGraphicsItem ignores the return value for this
     notification (i.e., a read-only notification).
 
@@ -2588,8 +2615,13 @@ QMatrix QGraphicsItem::matrix() const
 /*!
     \since 4.3
 
-    Returns this item's transformation matrix. If no matrix has been set, the
-    identity matrix is returned.
+    Returns this item's transformation matrix.
+
+    Either the one set by setTransform, or the resulting transformation from
+    all the transfmation properties
+
+    If no matrix or transformation property has been set, the
+    identity matrix is returned. 
 
     \sa setTransform(), sceneTransform()
 */
@@ -2597,7 +2629,303 @@ QTransform QGraphicsItem::transform() const
 {
     if (!d_ptr->hasTransform)
         return QTransform();
+    if (d_ptr->hasDecomposedTransform && d_ptr->dirtyTransform) {
+        QGraphicsItemPrivate::DecomposedTransform *decomposed = d_ptr->decomposedTransform();
+        QTransform x;
+        decomposed->generateTransform(&x);
+        QVariant v(x);
+        d_ptr->setExtra(QGraphicsItemPrivate::ExtraTransform, v);
+        d_ptr->dirtyTransform = 0;
+        const_cast<QGraphicsItem *>(this)->itemChange(ItemTransformHasChanged, v);
+        return x;
+    }
     return qVariantValue<QTransform>(d_ptr->extra(QGraphicsItemPrivate::ExtraTransform));
+}
+
+/*!
+    \property QGraphicsItem::xRotation
+
+    \since 4.6
+
+    This property holds the rotation angle in degrees around the X axis
+
+    The default is 0
+
+    \warning setting this property is conflicting with calling setTransform.
+    If a transform has been set, this function return the default value.
+
+    \sa {Transformations}
+*/
+qreal QGraphicsItem::xRotation() const
+{
+    return d_ptr->decomposedTransform()->xRotation;
+}
+
+void QGraphicsItem::setXRotation(qreal angle)
+{
+    if (!d_ptr->dirtyTransform) {
+        d_ptr->fullUpdateHelper(true);
+        prepareGeometryChange();
+    }
+    QGraphicsItemPrivate::DecomposedTransform *decomposed = d_ptr->decomposedTransform();
+    decomposed->xRotation = angle;
+    if (!d_ptr->dirtyTransform)
+        d_ptr->invalidateSceneTransformCache();
+    d_ptr->dirtyTransform = 1;
+    d_ptr->hasTransform = 1;
+}
+
+/*!
+    \property QGraphicsItem::yRotation
+
+    \since 4.6
+
+    This property holds the rotation angle in degrees around the Y axis
+
+    The default is 0
+
+    \warning setting this property is conflicting with calling setTransform.
+    If a transform has been set, this function return the default value.
+
+    \sa {Transformations}
+*/
+qreal QGraphicsItem::yRotation() const
+{
+    return d_ptr->decomposedTransform()->yRotation;
+}
+
+void QGraphicsItem::setYRotation(qreal angle)
+{
+    if (!d_ptr->dirtyTransform) {
+        d_ptr->fullUpdateHelper(true);
+        prepareGeometryChange();
+    }
+    QGraphicsItemPrivate::DecomposedTransform *decomposed = d_ptr->decomposedTransform();
+    decomposed->yRotation = angle;
+    if (!d_ptr->dirtyTransform)
+        d_ptr->invalidateSceneTransformCache();
+    d_ptr->dirtyTransform = 1;
+    d_ptr->hasTransform = 1;
+}
+
+/*!
+    \property QGraphicsItem::zRotation
+
+    \since 4.6
+
+    This property holds the rotation angle in degrees around the Z axis
+
+    The default is 0
+
+    \warning setting this property is conflicting with calling setTransform.
+    If a transform has been set, this function return the default value.
+
+    \sa {Transformations}
+*/
+qreal QGraphicsItem::zRotation() const
+{
+    return d_ptr->decomposedTransform()->zRotation;
+}
+
+void QGraphicsItem::setZRotation(qreal angle)
+{
+    if (!d_ptr->dirtyTransform) {
+        d_ptr->fullUpdateHelper(true);
+        prepareGeometryChange();
+    }
+    QGraphicsItemPrivate::DecomposedTransform *decomposed = d_ptr->decomposedTransform();
+    decomposed->zRotation = angle;
+    if (!d_ptr->dirtyTransform)
+        d_ptr->invalidateSceneTransformCache();
+    d_ptr->dirtyTransform = 1;
+    d_ptr->hasTransform = 1;
+}
+
+void QGraphicsItem::setRotation(qreal x, qreal y, qreal z)
+{
+    setXRotation(x);
+    setYRotation(y);
+    setZRotation(z);
+}
+
+/*!
+    \property QGraphicsItem::xScale
+
+    \since 4.6
+
+    This property holds the scale factor on the X axis.
+
+    The default is 1
+
+    \warning setting this property is conflicting with calling setTransform.
+    If a transform has been set, this function return the default value.
+
+    \sa {Transformations}
+*/
+qreal QGraphicsItem::xScale() const
+{
+    return d_ptr->decomposedTransform()->xScale;
+}
+
+void QGraphicsItem::setXScale(qreal factor)
+{
+    if (!d_ptr->dirtyTransform) {
+        d_ptr->fullUpdateHelper(true);
+        prepareGeometryChange();
+    }
+    QGraphicsItemPrivate::DecomposedTransform *decomposed = d_ptr->decomposedTransform();
+    decomposed->xScale = factor;
+    if (!d_ptr->dirtyTransform)
+        d_ptr->invalidateSceneTransformCache();
+    d_ptr->dirtyTransform = 1;
+    d_ptr->hasTransform = 1;
+}
+
+/*!
+    \property QGraphicsItem::yScale
+
+    \since 4.6
+
+    This property holds the scale factor on the Y axis.
+
+    The default is 1
+
+    \warning setting this property is conflicting with calling setTransform.
+    If a transform has been set, this function return the default value.
+
+    \sa {Transformations}
+*/
+qreal QGraphicsItem::yScale() const
+{
+    return d_ptr->decomposedTransform()->yScale;
+}
+
+void QGraphicsItem::setYScale(qreal factor)
+{
+    if (!d_ptr->dirtyTransform) {
+        d_ptr->fullUpdateHelper(true);
+        prepareGeometryChange();
+    }
+    QGraphicsItemPrivate::DecomposedTransform *decomposed = d_ptr->decomposedTransform();
+    decomposed->yScale = factor;
+    if (!d_ptr->dirtyTransform)
+        d_ptr->invalidateSceneTransformCache();
+    d_ptr->dirtyTransform = 1;
+    d_ptr->hasTransform = 1;
+}
+
+void QGraphicsItem::setScale(qreal sx, qreal sy)
+{
+    setXScale(sx);
+    setYScale(sy);
+}
+
+/*!
+    \property QGraphicsItem::horizontalShear
+
+    \since 4.6
+
+    This property holds the horizontal shear.
+
+    The default is 0.
+
+    \warning setting this property is conflicting with calling setTransform.
+    If a transform has been set, this function return the default value.
+
+    \sa {Transformations}
+*/
+qreal QGraphicsItem::horizontalShear() const
+{
+    return d_ptr->decomposedTransform()->horizontalShear;
+}
+
+void QGraphicsItem::setHorizontalShear(qreal shear)
+{
+    if (!d_ptr->dirtyTransform) {
+        d_ptr->fullUpdateHelper(true);
+        prepareGeometryChange();
+    }
+    QGraphicsItemPrivate::DecomposedTransform *decomposed = d_ptr->decomposedTransform();
+    decomposed->horizontalShear = shear;
+    if (!d_ptr->dirtyTransform)
+        d_ptr->invalidateSceneTransformCache();
+    d_ptr->dirtyTransform = 1;
+    d_ptr->hasTransform = 1;
+}
+
+/*!
+    \property QGraphicsItem::verticalShear
+
+    \since 4.6
+
+    This property holds the vertical shear.
+
+    The default is 0.
+
+    \warning setting this property is conflicting with calling setTransform.
+    If a transform has been set, this function return the default value.
+
+    \sa {Transformations}
+*/
+qreal QGraphicsItem::verticalShear() const
+{
+    return d_ptr->decomposedTransform()->verticalShear;
+}
+
+void QGraphicsItem::setVerticalShear(qreal shear)
+{
+    if (!d_ptr->dirtyTransform) {
+        d_ptr->fullUpdateHelper(true);
+        prepareGeometryChange();
+    }
+    QGraphicsItemPrivate::DecomposedTransform *decomposed = d_ptr->decomposedTransform();
+    decomposed->verticalShear = shear;
+    if (!d_ptr->dirtyTransform)
+        d_ptr->invalidateSceneTransformCache();
+    d_ptr->dirtyTransform = 1;
+    d_ptr->hasTransform = 1;
+}
+
+void QGraphicsItem::setShear(qreal sh, qreal sv)
+{
+    setHorizontalShear(sh);
+    setVerticalShear(sv);
+}
+
+/*!
+    \property QGraphicsItem::transformOrigin
+
+    \since 4.6
+
+    This property holds the transformation origin for the transformation properties.
+    This does not apply to the transformation set by setTransform.
+
+    The default is QPointF(0,0).
+
+    \warning setting this property is conflicting with calling setTransform.
+    If a transform has been set, this function return the default value.
+
+    \sa {Transformations}
+*/
+QPointF QGraphicsItem::transformOrigin() const
+{
+    const QGraphicsItemPrivate::DecomposedTransform *decomposed = d_ptr->decomposedTransform();
+    return QPointF(decomposed->xOrigin, decomposed->yOrigin);
+}
+
+void QGraphicsItem::setTransformOrigin(const QPointF &origin)
+{
+    if (!d_ptr->dirtyTransform) {
+        d_ptr->fullUpdateHelper(true);
+        prepareGeometryChange();
+    }
+    QGraphicsItemPrivate::DecomposedTransform *decomposed = d_ptr->decomposedTransform();
+    decomposed->xOrigin = origin.x();
+    decomposed->yOrigin = origin.y();
+    if (!d_ptr->dirtyTransform)
+        d_ptr->invalidateSceneTransformCache();
+    d_ptr->dirtyTransform = 1;
+    d_ptr->hasTransform = 1;
 }
 
 /*!
@@ -2875,7 +3203,7 @@ QTransform QGraphicsItem::itemTransform(const QGraphicsItem *other, bool *ok) co
 
     Use setTransform() instead.
 
-    \sa transform(), rotate(), scale(), shear(), translate(), {The Graphics View Coordinate System}
+    \sa transform(), {The Graphics View Coordinate System}
 */
 void QGraphicsItem::setMatrix(const QMatrix &matrix, bool combine)
 {
@@ -2900,6 +3228,8 @@ void QGraphicsItem::setMatrix(const QMatrix &matrix, bool combine)
     prepareGeometryChange();
     d_ptr->hasTransform = !newTransform.isIdentity();
     d_ptr->setExtra(QGraphicsItemPrivate::ExtraTransform, newTransform);
+    d_ptr->dirtyTransformComponents = 1;
+    d_ptr->dirtyTransform = 0;
     d_ptr->invalidateSceneTransformCache();
 
     // Send post-notification.
@@ -2923,7 +3253,10 @@ void QGraphicsItem::setMatrix(const QMatrix &matrix, bool combine)
     to map an item coordiate to a scene coordinate, or mapFromScene() to map
     from scene coordinates to item coordinates.
 
-    \sa transform(), rotate(), scale(), shear(), translate(), {The Graphics View Coordinate System}
+    \warning using this function conflicts with using the transformation properties.
+    If you set a transformation, getting the properties will return default values.
+
+    \sa transform(), setRotation(), setScale(), setShear(), setTransformOrigin() {The Graphics View Coordinate System}
 */
 void QGraphicsItem::setTransform(const QTransform &matrix, bool combine)
 {
@@ -2948,6 +3281,8 @@ void QGraphicsItem::setTransform(const QTransform &matrix, bool combine)
     prepareGeometryChange();
     d_ptr->hasTransform = !newTransform.isIdentity();
     d_ptr->setExtra(QGraphicsItemPrivate::ExtraTransform, newTransform);
+    d_ptr->dirtyTransformComponents = 1;
+    d_ptr->dirtyTransform = 0;
     d_ptr->invalidateSceneTransformCache();
 
     // Send post-notification.
@@ -2967,8 +3302,9 @@ void QGraphicsItem::resetMatrix()
 /*!
     \since 4.3
 
-    Resets this item's transformation matrix to the identity matrix. This is
-    equivalent to calling \c setTransform(QTransform()).
+    Resets this item's transformation matrix to the identity matrix or
+    all the transformation properties to their default values.
+    This is equivalent to calling \c setTransform(QTransform()).
 
     \sa setTransform(), transform()
 */
@@ -2978,6 +3314,9 @@ void QGraphicsItem::resetTransform()
 }
 
 /*!
+    \obsolete
+    Use setZRotation() instead
+
     Rotates the current item transformation \a angle degrees clockwise around
     its origin. To translate around an arbitrary point (x, y), you need to
     combine translation and rotation with setTransform().
@@ -2985,6 +3324,9 @@ void QGraphicsItem::resetTransform()
     Example:
 
     \snippet doc/src/snippets/code/src_gui_graphicsview_qgraphicsitem.cpp 6
+
+    \warning using this function conflicts with using the transformation properties.
+    Getting those properties after using this function will return default values.
 
     \sa setTransform(), transform(), scale(), shear(), translate()
 */
@@ -2994,6 +3336,9 @@ void QGraphicsItem::rotate(qreal angle)
 }
 
 /*!
+    \obsolete
+    Use setScale() instead
+
     Scales the current item transformation by (\a sx, \a sy) around its
     origin. To scale from an arbitrary point (x, y), you need to combine
     translation and scaling with setTransform().
@@ -3002,7 +3347,10 @@ void QGraphicsItem::rotate(qreal angle)
 
     \snippet doc/src/snippets/code/src_gui_graphicsview_qgraphicsitem.cpp 7
 
-    \sa setTransform(), transform(), rotate(), shear(), translate()
+    \warning using this function conflicts with using the transformation properties.
+    Getting those properties after using this function will return default values.
+
+    \sa setTransform(), transform()
 */
 void QGraphicsItem::scale(qreal sx, qreal sy)
 {
@@ -3010,9 +3358,15 @@ void QGraphicsItem::scale(qreal sx, qreal sy)
 }
 
 /*!
+    \obsolete
+    Use setShear instead.
+
     Shears the current item transformation by (\a sh, \a sv).
 
-    \sa setTransform(), transform(), rotate(), scale(), translate()
+    \warning using this function conflicts with using the transformation properties.
+    Getting those properties after using this function will return default values.
+
+    \sa setTransform(), transform()
 */
 void QGraphicsItem::shear(qreal sh, qreal sv)
 {
@@ -3020,13 +3374,19 @@ void QGraphicsItem::shear(qreal sh, qreal sv)
 }
 
 /*!
+    \obsolete
+    Use setPos() or setTransformOrigin() instead.
+
     Translates the current item transformation by (\a dx, \a dy).
 
     If all you want is to move an item, you should call moveBy() or
     setPos() instead; this function changes the item's translation,
     which is conceptually separate from its position.
 
-    \sa setTransform(), transform(), rotate(), scale(), shear()
+    \warning using this function conflicts with using the transformation properties.
+    Getting those properties after using this function will return default values.
+
+    \sa setTransform(), transform()
 */
 void QGraphicsItem::translate(qreal dx, qreal dy)
 {
@@ -3150,7 +3510,7 @@ QRectF QGraphicsItem::childrenBoundingRect() const
 
     Although the item's shape can be arbitrary, the bounding rect is
     always rectangular, and it is unaffected by the items'
-    transformation (scale(), rotate(), etc.).
+    transformation.
 
     If you want to change the item's bounding rectangle, you must first call
     prepareGeometryChange(). This notifies the scene of the imminent change,
@@ -8285,19 +8645,19 @@ bool QGraphicsTextItem::sceneEvent(QEvent *event)
 void QGraphicsTextItem::mousePressEvent(QGraphicsSceneMouseEvent *event)
 {
     if ((QGraphicsItem::d_ptr->flags & (ItemIsSelectable | ItemIsMovable))
-	&& (event->buttons() & Qt::LeftButton) && dd->_q_mouseOnEdge(event)) {
-	// User left-pressed on edge of selectable/movable item, use
-	// base impl.
-	dd->useDefaultImpl = true;
+        && (event->buttons() & Qt::LeftButton) && dd->_q_mouseOnEdge(event)) {
+        // User left-pressed on edge of selectable/movable item, use
+        // base impl.
+        dd->useDefaultImpl = true;
     } else if (event->buttons() == event->button()
-	       && dd->control->textInteractionFlags() == Qt::NoTextInteraction) {
-	// User pressed first button on non-interactive item.
-	dd->useDefaultImpl = true;
+               && dd->control->textInteractionFlags() == Qt::NoTextInteraction) {
+        // User pressed first button on non-interactive item.
+        dd->useDefaultImpl = true;
     }
     if (dd->useDefaultImpl) {
         QGraphicsItem::mousePressEvent(event);
-	if (!event->isAccepted())
-	    dd->useDefaultImpl = false;
+        if (!event->isAccepted())
+            dd->useDefaultImpl = false;
         return;
     }
     dd->sendControlEvent(event);
@@ -8322,14 +8682,14 @@ void QGraphicsTextItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
 {
     if (dd->useDefaultImpl) {
         QGraphicsItem::mouseReleaseEvent(event);
-	if (dd->control->textInteractionFlags() == Qt::NoTextInteraction
-	    && !event->buttons()) {
-	    // User released last button on non-interactive item.
+        if (dd->control->textInteractionFlags() == Qt::NoTextInteraction
+            && !event->buttons()) {
+            // User released last button on non-interactive item.
             dd->useDefaultImpl = false;
-	} else  if ((event->buttons() & Qt::LeftButton) == 0) {
-	    // User released the left button on an interactive item.
+        } else  if ((event->buttons() & Qt::LeftButton) == 0) {
+            // User released the left button on an interactive item.
             dd->useDefaultImpl = false;
-	}
+        }
         return;
     }
     dd->sendControlEvent(event);
@@ -8619,9 +8979,9 @@ bool QGraphicsTextItemPrivate::_q_mouseOnEdge(QGraphicsSceneMouseEvent *event)
     Sets the flags \a flags to specify how the text item should react to user
     input.
 
-    The default for a QGraphicsTextItem is Qt::NoTextInteraction. Setting a
-    value different to Qt::NoTextInteraction will also set the ItemIsFocusable
-    QGraphicsItem flag.
+    The default for a QGraphicsTextItem is Qt::NoTextInteraction. This function
+    also affects the ItemIsFocusable QGraphicsItem flag by setting it if \a flags
+    is different from Qt::NoTextInteraction and clearing it otherwise.
 
     By default, the text is read-only. To transform the item into an editor,
     set the Qt::TextEditable flag.
@@ -9370,17 +9730,17 @@ QDebug operator<<(QDebug debug, QGraphicsItem::GraphicsItemFlag flag)
 
 QDebug operator<<(QDebug debug, QGraphicsItem::GraphicsItemFlags flags)
 {
-    debug << "(";
+    debug << '(';
     bool f = false;
     for (int i = 0; i < 9; ++i) {
         if (flags & (1 << i)) {
             if (f)
-                debug << "|";
+                debug << '|';
             f = true;
             debug << QGraphicsItem::GraphicsItemFlag(int(flags & (1 << i)));
         }
     }
-    debug << ")";
+    debug << ')';
     return debug;
 }
 

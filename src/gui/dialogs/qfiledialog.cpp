@@ -837,8 +837,8 @@ QStringList QFileDialogPrivate::addDefaultSuffixToFiles(const QStringList filesT
             // This check is needed since we might be at the root directory
             // and on Windows it already ends with slash.
             QString path = rootPath();
-            if (!path.endsWith(QLatin1String("/")))
-                path += QLatin1String("/");
+            if (!path.endsWith(QLatin1Char('/')))
+                path += QLatin1Char('/');
             path += name;
             files.append(path);
         }
@@ -2649,7 +2649,7 @@ void QFileDialogPrivate::_q_deleteCurrent()
 
 void QFileDialogPrivate::_q_autoCompleteFileName(const QString &text)
 {
-    if (text.startsWith(QLatin1String("//")) || text.startsWith(QLatin1String("\\"))) {
+    if (text.startsWith(QLatin1String("//")) || text.startsWith(QLatin1Char('\\'))) {
         qFileDialogUi->listView->selectionModel()->clearSelection();
         return;
     }
@@ -2691,7 +2691,7 @@ void QFileDialogPrivate::_q_updateOkButton()
     QStringList files = q->selectedFiles();
     QString lineEditText = lineEdit()->text();
 
-    if (lineEditText.startsWith(QLatin1String("//")) || lineEditText.startsWith(QLatin1String("\\"))) {
+    if (lineEditText.startsWith(QLatin1String("//")) || lineEditText.startsWith(QLatin1Char('\\'))) {
         button->setEnabled(true);
         if (acceptMode == QFileDialog::AcceptSave)
             button->setText(isOpenDirectory ? QFileDialog::tr("&Open") : acceptLabel);
@@ -3197,7 +3197,7 @@ QStringList QFSCompletor::splitPath(const QString &path) const
         doubleSlash.clear();
 #endif
 
-    QRegExp re(QLatin1String("[") + QRegExp::escape(sep) + QLatin1String("]"));
+    QRegExp re(QLatin1Char('[') + QRegExp::escape(sep) + QLatin1Char(']'));
 
 #ifdef Q_OS_WIN
     QStringList parts = pathCopy.split(re, QString::SkipEmptyParts);

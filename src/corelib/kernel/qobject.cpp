@@ -92,8 +92,8 @@ static int *queuedConnectionTypes(const QList<QByteArray> &typeNames)
     return types;
 }
 
-QBasicAtomicPointer<QMutexPool> signalSlotMutexes = Q_BASIC_ATOMIC_INITIALIZER(0);
-QBasicAtomicInt objectCount = Q_BASIC_ATOMIC_INITIALIZER(0);
+static QBasicAtomicPointer<QMutexPool> signalSlotMutexes = Q_BASIC_ATOMIC_INITIALIZER(0);
+static QBasicAtomicInt objectCount = Q_BASIC_ATOMIC_INITIALIZER(0);
 
 /** \internal
  * mutex to be locked when accessing the connectionlists or the senders list
@@ -117,8 +117,7 @@ extern "C" Q_CORE_EXPORT void qt_addObject(QObject *)
 extern "C" Q_CORE_EXPORT void qt_removeObject(QObject *)
 {
     if(!objectCount.deref()) {
-        QMutexPool *old = signalSlotMutexes;
-        signalSlotMutexes.testAndSetAcquire(old, 0);
+        QMutexPool *old = signalSlotMutexes.fetchAndStoreAcquire(0);
         delete old;
     }
 }
@@ -3462,7 +3461,7 @@ QDebug operator<<(QDebug dbg, const QObject *o) {
 #ifndef Q_BROKEN_DEBUG_STREAM
     if (!o)
         return dbg << "QObject(0x0) ";
-    dbg.nospace() << o->metaObject()->className() << "(" << (void *)o;
+    dbg.nospace() << o->metaObject()->className() << '(' << (void *)o;
     if (!o->objectName().isEmpty())
         dbg << ", name = " << o->objectName();
     dbg << ')';

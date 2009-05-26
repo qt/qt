@@ -3083,7 +3083,7 @@ QDebug operator<<(QDebug dbg, const QEvent *e) {
                       << ", " << me->button()
                       << ", " << hex << (int)me->buttons()
                       << ", " << hex << (int)me->modifiers()
-                      << ")";
+                      << ')';
     }
     return dbg.space();
 
@@ -3104,7 +3104,7 @@ QDebug operator<<(QDebug dbg, const QEvent *e) {
 #ifndef QT_NO_WHEELEVENT
     case QEvent::Wheel:
         dbg.nospace() << "QWheelEvent("  << static_cast<const QWheelEvent *>(e)->delta()
-                      << ")";
+                      << ')';
         return dbg.space();
 #endif
     case QEvent::KeyPress:
@@ -3130,7 +3130,7 @@ QDebug operator<<(QDebug dbg, const QEvent *e) {
                           << ", \"" << ke->text()
                           << "\", " << ke->isAutoRepeat()
                           << ", " << ke->count()
-                          << ")";
+                          << ')';
         }
         return dbg.space();
     case QEvent::FocusIn:

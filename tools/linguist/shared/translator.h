@@ -132,6 +132,7 @@ public:
     void stripNonPluralForms();
     void stripIdenticalSourceTranslations();
     void dropTranslations();
+    void dropUiLines();
     void makeFileNamesAbsolute(const QDir &originalPath);
     QSet<TranslatorMessagePtr> resolveDuplicates();
     static void reportDuplicates(const QSet<TranslatorMessagePtr> &dupes,
@@ -143,7 +144,7 @@ public:
     QString languageCode() const { return m_language; }
     QString sourceLanguageCode() const { return m_sourceLanguage; }
 
-    enum LocationsType { NoLocations, RelativeLocations, AbsoluteLocations };
+    enum LocationsType { DefaultLocations, NoLocations, RelativeLocations, AbsoluteLocations };
     void setLocationsType(LocationsType lt) { m_locationsType = lt; }
     LocationsType locationsType() const { return m_locationsType; }
 

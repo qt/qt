@@ -990,6 +990,7 @@ void QGraphicsProxyWidget::contextMenuEvent(QGraphicsSceneContextMenuEvent *even
 }
 #endif // QT_NO_CONTEXTMENU
 
+#ifndef QT_NO_DRAGANDDROP
 /*!
     \reimp
 */
@@ -1110,6 +1111,7 @@ void QGraphicsProxyWidget::dropEvent(QGraphicsSceneDragDropEvent *event)
     }
 #endif
 }
+#endif
 
 /*!
     \reimp

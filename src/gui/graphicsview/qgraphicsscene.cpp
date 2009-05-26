@@ -4875,10 +4875,7 @@ void QGraphicsScenePrivate::drawItemHelper(QGraphicsItem *item, QPainter *painte
     }
 
     // Find pixmap in cache.
-    if (!itemCache->allExposed)
-       pixmapFound = QPixmapCache::find(pixmapKey, &pix);
-    else
-       pixmapFound = false;
+    pixmapFound = QPixmapCache::find(pixmapKey, &pix);
 
     // Render using item coordinate cache mode.
     if (cacheMode == QGraphicsItem::ItemCoordinateCache) {

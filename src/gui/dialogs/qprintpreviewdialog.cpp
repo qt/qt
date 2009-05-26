@@ -558,7 +558,7 @@ void QPrintPreviewDialogPrivate::_q_print()
             suffix = QLatin1String(".ps");
         }
         QString fileName = QFileDialog::getSaveFileName(q, title, printer->outputFileName(),
-                                                        QLatin1String("*") + suffix);
+                                                        QLatin1Char('*') + suffix);
         if (!fileName.isEmpty()) {
             if (QFileInfo(fileName).suffix().isEmpty())
                 fileName.append(suffix);

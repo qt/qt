@@ -2202,7 +2202,7 @@ void HtmlGenerator::generateSectionList(const Section& section,
 
             if (name_alignment) {
                 out() << "<tr><td class=\"memItemLeft\" "
-                      << "nowrap align=\"right\" valign=\"top\">";
+                      << "align=\"right\" valign=\"top\">";
             }
             else {
                 if (twoColumn && i == (int) (section.members.count() + 1) / 2)

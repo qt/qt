@@ -272,6 +272,8 @@ QT_BEGIN_NAMESPACE
     \omitvalue NetworkReplyUpdated
     \omitvalue FutureCallOut
     \omitvalue CocoaRequestModal
+    \omitvalue Wrapped
+    \omitvalue Signal
 */
 
 /*!

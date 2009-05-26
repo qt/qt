@@ -450,9 +450,9 @@ QDebug operator<<(QDebug s, const QRegion &r)
 {
     QVector<QRect> rects = r.rects();
     s.nospace() << "QRegion(size=" << rects.size() << "), "
-                << "bounds = " << r.boundingRect() << "\n";
+                << "bounds = " << r.boundingRect() << '\n';
     for (int i=0; i<rects.size(); ++i)
-        s << "- " << i << rects.at(i) << "\n";
+        s << "- " << i << rects.at(i) << '\n';
     return s;
 }
 #endif
@@ -1601,7 +1601,7 @@ void QRegionPrivate::selfTest() const
     for (int i = 0; i < numRects; ++i) {
         const QRect r = rects.at(i);
         if ((r.width() * r.height()) > innerArea)
-            qDebug() << "selfTest(): innerRect" << innerRect << "<" << r;
+            qDebug() << "selfTest(): innerRect" << innerRect << '<' << r;
     }
 
     QRect r = rects.first();

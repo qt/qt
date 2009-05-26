@@ -58,16 +58,15 @@
 class QGL2PaintEngineExPrivate;
 
 
-class QOpenGLPaintEngineState : public QPainterState
+class QOpenGL2PaintEngineState : public QPainterState
 {
 public:
-    QOpenGLPaintEngineState(QOpenGLPaintEngineState &other);
-    QOpenGLPaintEngineState();
-    ~QOpenGLPaintEngineState();
+    QOpenGL2PaintEngineState(QOpenGL2PaintEngineState &other);
+    QOpenGL2PaintEngineState();
+    ~QOpenGL2PaintEngineState();
 
     QRegion clipRegion;
     bool hasClipping;
-    QRect fastClip;
 };
 
 
@@ -80,6 +79,8 @@ public:
 
     bool begin(QPaintDevice *device);
     bool end();
+
+    void ensureActive();
 
     virtual void fill(const QVectorPath &path, const QBrush &brush);
     virtual void stroke(const QVectorPath &path, const QPen &pen);
@@ -100,26 +101,22 @@ public:
     virtual void drawImage(const QRectF &r, const QImage &pm, const QRectF &sr,
                            Qt::ImageConversionFlags flags = Qt::AutoColor);
     virtual void drawTextItem(const QPointF &p, const QTextItem &textItem);
-    void drawCachedGlyphs(const QPointF &p, const QTextItemInt &ti);
 
     Type type() const { return OpenGL; }
-
 
     // State stuff is just for clipping and ripped off from QGLPaintEngine
     void setState(QPainterState *s);
     QPainterState *createState(QPainterState *orig) const;
-    inline QOpenGLPaintEngineState *state() {
-        return static_cast<QOpenGLPaintEngineState *>(QPaintEngineEx::state());
+    inline QOpenGL2PaintEngineState *state() {
+        return static_cast<QOpenGL2PaintEngineState *>(QPaintEngineEx::state());
     }
-    inline const QOpenGLPaintEngineState *state() const {
-        return static_cast<const QOpenGLPaintEngineState *>(QPaintEngineEx::state());
+    inline const QOpenGL2PaintEngineState *state() const {
+        return static_cast<const QOpenGL2PaintEngineState *>(QPaintEngineEx::state());
     }
     void updateClipRegion(const QRegion &clipRegion, Qt::ClipOperation op);
 
 private:
     Q_DISABLE_COPY(QGL2PaintEngineEx)
 };
-
-
 
 #endif

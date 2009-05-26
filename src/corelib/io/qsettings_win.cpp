@@ -148,7 +148,7 @@ static QString errorCodeToString(DWORD errorCode)
 		if (data != 0)
 			LocalFree(data);
 	})
-    if (result.endsWith(QLatin1String("\n")))
+    if (result.endsWith(QLatin1Char('\n')))
         result.truncate(result.length() - 1);
 
     return result;

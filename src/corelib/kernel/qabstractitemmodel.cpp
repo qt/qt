@@ -428,8 +428,8 @@ bool QPersistentModelIndex::isValid() const
 QDebug operator<<(QDebug dbg, const QModelIndex &idx)
 {
 #ifndef Q_BROKEN_DEBUG_STREAM
-    dbg.nospace() << "QModelIndex(" << idx.row() << "," << idx.column()
-                  << "," << idx.internalPointer() << "," << idx.model() << ")";
+    dbg.nospace() << "QModelIndex(" << idx.row() << ',' << idx.column()
+                  << ',' << idx.internalPointer() << ',' << idx.model() << ')';
     return dbg.space();
 #else
     qWarning("This compiler doesn't support streaming QModelIndex to QDebug");
@@ -525,7 +525,7 @@ void QAbstractItemModelPrivate::rowsInserted(const QModelIndex &parent,
         if (data->index.isValid()) {
             persistent.insertMultiAtEnd(data->index, data);
         } else {
-            qWarning() << "QAbstractItemModel::endInsertRows:  Invalid index (" << old.row() + count << "," << old.column() << ") in model" << q_func();
+            qWarning() << "QAbstractItemModel::endInsertRows:  Invalid index (" << old.row() + count << ',' << old.column() << ") in model" << q_func();
         }
     }
 }
@@ -574,7 +574,7 @@ void QAbstractItemModelPrivate::rowsRemoved(const QModelIndex &parent,
         if (data->index.isValid()) {
             persistent.insertMultiAtEnd(data->index, data);
         } else {
-            qWarning() << "QAbstractItemModel::endRemoveRows:  Invalid index (" << old.row() - count << "," << old.column() << ") in model" << q_func();
+            qWarning() << "QAbstractItemModel::endRemoveRows:  Invalid index (" << old.row() - count << ',' << old.column() << ") in model" << q_func();
         }
     }
     QVector<QPersistentModelIndexData *> persistent_invalidated = persistent.invalidated.pop();
@@ -619,7 +619,7 @@ void QAbstractItemModelPrivate::columnsInserted(const QModelIndex &parent,
         if (data->index.isValid()) {
             persistent.insertMultiAtEnd(data->index, data);
         } else {
-            qWarning() << "QAbstractItemModel::endInsertColumns:  Invalid index (" << old.row() << "," << old.column() + count << ") in model" << q_func();
+            qWarning() << "QAbstractItemModel::endInsertColumns:  Invalid index (" << old.row() << ',' << old.column() + count << ") in model" << q_func();
         }
      }
 }
@@ -669,7 +669,7 @@ void QAbstractItemModelPrivate::columnsRemoved(const QModelIndex &parent,
         if (data->index.isValid()) {
             persistent.insertMultiAtEnd(data->index, data);
         } else {
-            qWarning() << "QAbstractItemModel::endRemoveColumns:  Invalid index (" << old.row() << "," << old.column() - count << ") in model" << q_func();
+            qWarning() << "QAbstractItemModel::endRemoveColumns:  Invalid index (" << old.row() << ',' << old.column() - count << ") in model" << q_func();
         }
     }
     QVector<QPersistentModelIndexData *> persistent_invalidated = persistent.invalidated.pop();

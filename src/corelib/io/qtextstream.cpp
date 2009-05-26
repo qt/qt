@@ -2292,7 +2292,7 @@ bool QTextStreamPrivate::putNumber(qulonglong number, bool negative)
         // ShowBase flag set zero should be written as '00'
         if (number == 0 && base == 8 && numberFlags & QTextStream::ShowBase
             && result == QLatin1String("0")) {
-            result.prepend(QLatin1String("0"));
+            result.prepend(QLatin1Char('0'));
         }
     }
     return putString(result, true);

@@ -86,6 +86,12 @@
     \o \l{activeqt/webbrowser}{Web Browser}\raisedaster
     \o \l{activeqt/wrapper}{Wrapper}\raisedaster
     \endlist
+    
+    \section1 Animation
+
+    \list
+    \o \l{animation/stickman}{Stick man}\raisedaster
+    \endlist
 
     \section1 Concurrent Programming
 
@@ -306,6 +312,17 @@
     \o \l{sql/relationaltablemodel}{Relational Table Model}
     \o \l{sql/tablemodel}{Table Model}
     \o \l{sql/sqlwidgetmapper}{SQL Widget Mapper}\raisedaster
+    \endlist
+
+    \section1 State Machine
+
+    \list
+    \o \l{statemachine/eventtransitions}{Event Transitions}\raisedaster
+    \o \l{statemachine/factorial}{Factorial States}\raisedaster
+    \o \l{statemachine/pingpong}{Ping Pong States}\raisedaster
+    \o \l{statemachine/trafficlight}{Traffic Light}\raisedaster
+    \o \l{statemachine/twowaybutton}{Two-way Button}\raisedaster
+    \o \l{statemachine/tankgame}{Tank Game}\raisedaster
     \endlist
 
     \section1 Threads

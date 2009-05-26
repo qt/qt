@@ -57,6 +57,8 @@
 #include "qset.h"
 #include "qpixmapcache.h"
 
+#include <QtCore/qpoint.h>
+
 #if !defined(QT_NO_GRAPHICSVIEW) || (QT_EDITION & QT_MODULE_GRAPHICSVIEW) != QT_MODULE_GRAPHICSVIEW
 
 QT_BEGIN_NAMESPACE
@@ -100,6 +102,15 @@ class Q_AUTOTEST_EXPORT QGraphicsItemPrivate
 {
     Q_DECLARE_PUBLIC(QGraphicsItem)
 public:
+    struct TransformData
+    {
+        TransformData() : rotationX(0),rotationY(0),rotationZ(0),scaleX(1),scaleY(1), dirty(true)  {}
+        QTransform baseTransform;
+        QTransform transform;
+        QPointF transformCenter;
+        qreal rotationX,rotationY,rotationZ,scaleX,scaleY;
+        bool dirty;
+    };
     enum Extra {
         ExtraTransform,
         ExtraToolTip,
@@ -109,6 +120,7 @@ public:
         ExtraBoundingRegionGranularity,
         ExtraOpacity,
         ExtraEffectiveOpacity,
+        ExtraDecomposedTransform
         ExtraGestures
     };
 
@@ -153,6 +165,9 @@ public:
         inSetPosHelper(0),
         flags(0),
         allChildrenCombineOpacity(1),
+        hasDecomposedTransform(0),
+        dirtyTransform(0),
+        dirtyTransformComponents(0),
         acceptTouchEvents(0),
         acceptedTouchBeginEvent(0),
         globalStackingOrder(-1),
@@ -243,7 +258,7 @@ public:
             }
         }
     }
-
+    
     struct ExtraStruct {
         ExtraStruct(Extra type, QVariant value)
             : type(type), value(value)
@@ -255,6 +270,7 @@ public:
         bool operator<(Extra extra) const
         { return type < extra; }
     };
+    
     QList<ExtraStruct> extras;
 
     QGraphicsItemCache *maybeExtraItemCache() const;
@@ -365,16 +381,85 @@ public:
     // New 32 bits
     quint32 flags : 10;
     quint32 allChildrenCombineOpacity : 1;
+    quint32 hasDecomposedTransform : 1;
+    quint32 dirtyTransform : 1;
+    quint32 dirtyTransformComponents : 1;
     quint32 acceptTouchEvents : 1;
     quint32 acceptedTouchBeginEvent : 1;
-    quint32 padding : 19; // feel free to use
+    quint32 padding : 16; // feel free to use
 
     // Optional stacking order
     int globalStackingOrder;
     int sceneTransformIndex;
 
+    struct DecomposedTransform;
+    DecomposedTransform *decomposedTransform() const
+    {
+        QGraphicsItemPrivate *that = const_cast<QGraphicsItemPrivate *>(this);
+        DecomposedTransform *decomposed;
+        if (hasDecomposedTransform) {
+            decomposed = qVariantValue<DecomposedTransform *>(extra(ExtraDecomposedTransform));
+        } else {
+            decomposed = new DecomposedTransform;
+            that->setExtra(ExtraDecomposedTransform, qVariantFromValue<DecomposedTransform *>(decomposed));
+            that->hasDecomposedTransform = 1;
+            if (!dirtyTransformComponents)
+                decomposed->reset();
+        }
+        if (dirtyTransformComponents) {
+            decomposed->initFrom(q_ptr->transform());
+            that->dirtyTransformComponents = 0;
+        }
+        return decomposed;
+    }
+
+    struct DecomposedTransform {
+        qreal xScale;
+        qreal yScale;
+        qreal xRotation;
+        qreal yRotation;
+        qreal zRotation;
+        qreal horizontalShear;
+        qreal verticalShear;
+        qreal xOrigin;
+        qreal yOrigin;
+
+        inline void reset()
+        {
+            xScale = 1.0;
+            yScale = 1.0;
+            xRotation = 0.0;
+            yRotation = 0.0;
+            zRotation = 0.0;
+            horizontalShear = 0.0;
+            verticalShear = 0.0;
+            xOrigin = 0.0;
+            yOrigin = 0.0;
+        }
+
+        inline void initFrom(const QTransform &x)
+        {
+            reset();
+            // ### decompose transform
+            Q_UNUSED(x);
+        }
+
+        inline void generateTransform(QTransform *x) const
+        {
+            x->translate(xOrigin, yOrigin);
+            x->rotate(xRotation, Qt::XAxis);
+            x->rotate(yRotation, Qt::YAxis);
+            x->rotate(zRotation, Qt::ZAxis);
+            x->shear(horizontalShear, verticalShear);
+            x->scale(xScale, yScale);
+            x->translate(-xOrigin, -yOrigin);
+        }
+    };
+
     QGraphicsItem *q_ptr;
 };
+
+Q_DECLARE_METATYPE(QGraphicsItemPrivate::DecomposedTransform *)
 
 QT_END_NAMESPACE
 

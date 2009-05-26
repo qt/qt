@@ -44,6 +44,7 @@
 
 #include <QtCore/qnamespace.h>
 #include <QtCore/qbytearray.h>
+#include <QtCore/qobjectdefs.h>
 
 QT_BEGIN_HEADER
 
@@ -54,7 +55,9 @@ QT_MODULE(Core)
 class QEventPrivate;
 class Q_CORE_EXPORT QEvent           // event base class
 {
+    Q_GADGET
     QDOC_PROPERTY(bool accepted READ isAccepted WRITE setAccepted)
+    Q_ENUMS(Type)
 public:
     enum Type {
         /*
@@ -266,15 +269,18 @@ public:
         CocoaRequestModal = 190,                // Internal for requesting an application modal Cocoa Window
         MacGLClearDrawable = 191,               // Internal Cocoa, the window has changed, so we must clear
 
-        TouchBegin = 192,
-        TouchUpdate = 193,
-        TouchEnd = 194,
-        GraphicsSceneTouchBegin = 195,
-        GraphicsSceneTouchUpdate = 196,
-        GraphicsSceneTouchEnd = 197,
+        Signal = 192,
+        Wrapped = 193,
 
-        Gesture = 198,
-        GraphicsSceneGesture = 199,
+        TouchBegin = 194,
+        TouchUpdate = 195,
+        TouchEnd = 196,
+        GraphicsSceneTouchBegin = 197,
+        GraphicsSceneTouchUpdate = 198,
+        GraphicsSceneTouchEnd = 199,
+
+        Gesture = 200,
+        GraphicsSceneGesture = 201,
 
         // 512 reserved for Qt Jambi's MetaCall event
         // 513 reserved for Qt Jambi's DeleteOnMainThread event

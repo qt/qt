@@ -214,10 +214,10 @@ static OPENFILENAMEA *qt_win_make_OFNA(QWidget *parent,
         aInitSel = "";
     } else {
         aInitSel = QDir::toNativeSeparators(initialSelection).toLocal8Bit();
-	aInitSel.replace("<", "");
-	aInitSel.replace(">", "");
-	aInitSel.replace("\"", "");
-	aInitSel.replace("|", "");
+	    aInitSel.replace('<', "");
+	    aInitSel.replace('>', "");
+	    aInitSel.replace('\"', "");
+	    aInitSel.replace('|', "");
     }
     int maxLen = mode == QFileDialog::ExistingFiles ? maxMultiLen : maxNameLen;
     aInitSel.resize(maxLen + 1);                // make room for return value
@@ -286,10 +286,10 @@ static OPENFILENAME* qt_win_make_OFN(QWidget *parent,
     tTitle = title;
     QString initSel = QDir::toNativeSeparators(initialSelection);
     if (!initSel.isEmpty()) {
-	initSel.replace(QLatin1String("<"), QLatin1String(""));
-	initSel.replace(QLatin1String(">"), QLatin1String(""));
-	initSel.replace(QLatin1String("\""), QLatin1String(""));
-	initSel.replace(QLatin1String("|"), QLatin1String(""));
+	    initSel.remove(QLatin1Char('<'));
+	    initSel.remove(QLatin1Char('>'));
+	    initSel.remove(QLatin1Char('\"'));
+	    initSel.remove(QLatin1Char('|'));
     }
 
     int maxLen = mode == QFileDialog::ExistingFiles ? maxMultiLen : maxNameLen;
@@ -811,7 +811,7 @@ QString qt_win_get_existing_directory(const QFileDialogArgs &args)
         QDir::setCurrent(currentDir);
 
     if (!result.isEmpty())
-        result.replace(QLatin1String("\\"), QLatin1String("/"));
+        result.replace(QLatin1Char('\\'), QLatin1Char('/'));
     return result;
 }
 
