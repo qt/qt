@@ -163,9 +163,6 @@ void QmlCompiledComponent::dump(QmlInstruction *instr, int idx)
     case QmlInstruction::PopQList:
         qWarning() << idx << "\t" << line << "\t" << "POP_QLIST";
         break;
-    case QmlInstruction::NoOp:
-        qWarning() << idx << "\t" << line << "\t" << "NOOP";
-        break;
     case QmlInstruction::PushProperty:
         qWarning() << idx << "\t" << line << "\t" << "PUSH_PROPERTY" << "\t\t" << instr->pushProperty.property;
         break;

@@ -143,17 +143,10 @@ public:
         //    StoreStackObject - Assign the stack object (no checks)
         PushProperty,            /* pushProperty */
         AssignStackObject,       /* assignStackObject */
-        StoreStackObject,        /* assignStackObject */
-
-
-        // 
-        // Miscellaneous
-        //
-        //    NoOp - Do nothing
-        NoOp
+        StoreStackObject         /* assignStackObject */
     };
     QmlInstruction()
-        : type(NoOp), line(0) {}
+        : line(0) {}
 
     Type type;
     unsigned short line;

@@ -103,7 +103,6 @@ Q_DECLARE_PERFORMANCE_LOG(QFxCompiler) {
     Q_DECLARE_PERFORMANCE_METRIC(InstrPushProperty);
     Q_DECLARE_PERFORMANCE_METRIC(InstrAssignStackObject);
     Q_DECLARE_PERFORMANCE_METRIC(InstrStoreStackObject);
-    Q_DECLARE_PERFORMANCE_METRIC(InstrNoOp);
     Q_DECLARE_PERFORMANCE_METRIC(Dummy);
 }
 
@@ -144,7 +143,6 @@ Q_DEFINE_PERFORMANCE_LOG(QFxCompiler, "QFxCompiler") {
     Q_DEFINE_PERFORMANCE_METRIC(InstrPushProperty, "PushProperty");
     Q_DEFINE_PERFORMANCE_METRIC(InstrAssignStackObject, "AssignStackObject");
     Q_DEFINE_PERFORMANCE_METRIC(InstrStoreStackObject, "StoreStackObject");
-    Q_DEFINE_PERFORMANCE_METRIC(InstrNoOp, "NoOp");
     Q_DEFINE_PERFORMANCE_METRIC(Dummy, "Dummy");
 }
 
@@ -986,14 +984,6 @@ QObject *QmlVME::run(QmlContext *ctxt, QmlCompiledComponent *comp, int start, in
             }
             break;
 
-        case QmlInstruction::NoOp:
-            {
-#ifdef Q_ENABLE_PERFORMANCE_LOG
-                QFxCompilerTimer<QFxCompiler::InstrNoOp> cc;
-#endif
-            }
-            break;
-            
         default:
             qFatal("QmlCompiledComponent: Internal error - unknown instruction %d", instr.type);
             break;
