@@ -258,6 +258,21 @@ bool QmlDebugServerPlugin::isDebuggingEnabled()
     return QmlDebugServer::instance() != 0;
 }
 
+QString QmlDebugServerPlugin::objectToString(QObject *obj)
+{
+    if(!obj)
+        return QLatin1String("NULL");
+
+    QString objectName = obj->objectName();
+    if(objectName.isEmpty())
+        objectName = QLatin1String("<unnamed>");
+
+    QString rv = QLatin1String(obj->metaObject()->className()) + 
+                 QLatin1String(": ") + objectName;
+
+    return rv;
+}
+
 void QmlDebugServerPlugin::sendMessage(const QByteArray &message)
 {
     Q_D(QmlDebugServerPlugin);

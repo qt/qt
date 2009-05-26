@@ -62,6 +62,23 @@ private:
     int _breaks;
     QTime _time;
 };
+
+class QSimpleCanvas;
+class QSimpleCanvasItem;
+class QSimpleCanvasSceneDebugPlugin : public QmlDebugServerPlugin
+{
+public:
+    QSimpleCanvasSceneDebugPlugin(QSimpleCanvas *parent = 0);
+
+    virtual void messageReceived(const QByteArray &);
+
+private:
+    void refresh();
+    void refresh(QDataStream &, QSimpleCanvasItem *);
+    QSimpleCanvas *m_canvas;
+};
+
+
 QT_END_NAMESPACE
 
 #endif // QSIMPLECANVASDEBUGPLUGIN_P_H

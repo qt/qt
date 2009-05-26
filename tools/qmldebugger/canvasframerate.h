@@ -13,6 +13,7 @@ public:
 
 private slots:
     void newTab();
+    void stateChanged(int);
 
 private:
     QTabWidget *m_tabs;

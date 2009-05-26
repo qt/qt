@@ -573,8 +573,10 @@ void QSimpleCanvasPrivate::init(QSimpleCanvas::CanvasMode mode)
     if (continuousUpdate())
         qWarning("QSimpleCanvas: Continuous update enabled");
 
-    if (QmlDebugServerPlugin::isDebuggingEnabled())
+    if (QmlDebugServerPlugin::isDebuggingEnabled()) {
         debugPlugin = new QSimpleCanvasDebugPlugin(q);
+        new QSimpleCanvasSceneDebugPlugin(q);
+    }
 
     root = new QSimpleCanvasRootLayer(q);
     root->setActiveFocusPanel(true);

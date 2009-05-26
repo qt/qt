@@ -8,11 +8,13 @@
 #include <QtCore/qstringlist.h>
 #include <QtCore/qdatastream.h>
 #include "canvasframerate.h"
+#include "canvasscene.h"
 #include <QVBoxLayout>
 #include <QPushButton>
 #include <QLineEdit>
 #include <QTabWidget>
 #include <QSpinBox>
+#include <QLabel>
 
 class Shell : public QWidget
 {
@@ -23,10 +25,12 @@ public:
 private slots:
     void connectToHost();
     void disconnectFromHost();
+    void connectionStateChanged();
 
 private:
     QmlDebugClient client;
 
+    QLabel *m_connectionState;
     QLineEdit *m_host;
     QSpinBox *m_port;
     QPushButton *m_connectButton;
@@ -44,8 +48,10 @@ Shell::Shell(QWidget *parent)
     layout->addLayout(connectLayout);
     connectLayout->addStretch(2);
 
+    m_connectionState = new QLabel(this);
+    connectLayout->addWidget(m_connectionState);
     m_host = new QLineEdit(this);
-    m_host->setText("localhost");
+    m_host->setText("127.0.0.1");
     connectLayout->addWidget(m_host);
     m_port = new QSpinBox(this);
     m_port->setMinimum(1024);
@@ -67,33 +73,61 @@ Shell::Shell(QWidget *parent)
 
     CanvasFrameRate *cfr = new CanvasFrameRate(&client, this);
     tabs->addTab(cfr, tr("Frame Rate"));
+
+    CanvasScene *cs = new CanvasScene(&client, this);
+    tabs->addTab(cs, tr("Scene"));
+
+    QObject::connect(&client, SIGNAL(stateChanged(QAbstractSocket::SocketState)), this, SLOT(connectionStateChanged()));
+    connectionStateChanged();
+}
+
+void Shell::connectionStateChanged()
+{
+    switch (client.state()) {
+    default:
+    case QAbstractSocket::UnconnectedState:
+        m_connectionState->setText(tr("Disconnected"));
+        m_connectButton->setEnabled(true);
+        m_disconnectButton->setEnabled(false);
+        break;
+    case QAbstractSocket::HostLookupState:
+        m_connectionState->setText(tr("Resolving"));
+        m_connectButton->setEnabled(false);
+        m_disconnectButton->setEnabled(true);
+        break;
+    case QAbstractSocket::ConnectingState:
+        m_connectionState->setText(tr("Connecting"));
+        m_connectButton->setEnabled(false);
+        m_disconnectButton->setEnabled(true);
+        break;
+    case QAbstractSocket::ConnectedState:
+        m_connectionState->setText(tr("Connected"));
+        m_connectButton->setEnabled(false);
+        m_disconnectButton->setEnabled(true);
+        break;
+    case QAbstractSocket::ClosingState:
+        m_connectionState->setText(tr("Closing"));
+        m_connectButton->setEnabled(false);
+        m_disconnectButton->setEnabled(false);
+        break;
+    }
 }
 
 void Shell::connectToHost()
 {
-    m_connectButton->setEnabled(false);
-    m_disconnectButton->setEnabled(true);
     client.connectToHost(m_host->text(), m_port->value());
 }
 
 void Shell::disconnectFromHost()
 {
-    m_connectButton->setEnabled(true);
-    m_disconnectButton->setEnabled(false);
     client.disconnectFromHost();
 }
 
 int main(int argc, char ** argv)
 {
-    if(argc != 3) {
-        qWarning() << "Usage:" << argv[0] << "host port";
-        return -1;
-    }
-
     QApplication app(argc, argv);
 
     Shell shell;
-//    shell.setFixedSize(1024, 768);
     shell.show();
 
 

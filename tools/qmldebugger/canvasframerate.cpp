@@ -12,6 +12,7 @@
 #include <QTabWidget>
 #include <QPushButton>
 #include <QLineEdit>
+#include <QCheckBox>
 
 class QLineGraph : public QWidget
 {
@@ -26,9 +27,7 @@ public slots:
 
 protected:
     virtual void paintEvent(QPaintEvent *);
-    virtual void mousePressEvent(QMouseEvent *);
-    virtual void resizeEvent(QResizeEvent *);
-    virtual void showEvent(QShowEvent *);
+    virtual QSize sizeHint() const;
 
 private slots:
     void scrollbarChanged(int);
@@ -64,32 +63,20 @@ QLineGraph::QLineGraph(QWidget *parent)
     QObject::connect(&sb, SIGNAL(valueChanged(int)), this, SLOT(scrollbarChanged(int)));
 }
 
+QSize QLineGraph::sizeHint() const
+{
+    return QSize(800, 600);
+}
+
 void QLineGraph::scrollbarChanged(int v)
 {
     if(ignoreScroll)
         return;
 
-    position = v;
-    update();
-}
-
-void QLineGraph::resizeEvent(QResizeEvent *e)
-{
-    QWidget::resizeEvent(e);
-}
-
-void QLineGraph::showEvent(QShowEvent *e)
-{
-    QWidget::showEvent(e);
-}
-
-void QLineGraph::mousePressEvent(QMouseEvent *)
-{
-    if(position == -1) {
-        position = qMax(0, _samples.count() - samplesPerWidth - 1);
-    } else {
+    if (v == sb.maximum())
         position = -1;
-    }
+    else
+        position = v;
     update();
 }
 
@@ -276,6 +263,11 @@ CanvasFrameRate::CanvasFrameRate(QmlDebugClient *client, QWidget *parent)
     layout->addLayout(bottom);
     bottom->addStretch(2);
 
+    QCheckBox *check = new QCheckBox("Enable", this);
+    bottom->addWidget(check);
+    QObject::connect(check, SIGNAL(stateChanged(int)), 
+                     this, SLOT(stateChanged(int)));
+
     QPushButton *pb = new QPushButton(tr("New Tab"), this);
     QObject::connect(pb, SIGNAL(clicked()), this, SLOT(newTab()));
     bottom->addWidget(pb);
@@ -300,6 +292,13 @@ void CanvasFrameRate::newTab()
     QString name = QLatin1String("Graph ") + QString::number(id);
     m_tabs->addTab(graph, name);
     m_tabs->setCurrentIndex(id);
+}
+
+void CanvasFrameRate::stateChanged(int s)
+{
+    bool checked = s != 0;
+
+    static_cast<QmlDebugClientPlugin *>(m_plugin)->setEnabled(checked);
 }
 
 #include "canvasframerate.moc"

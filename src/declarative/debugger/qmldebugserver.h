@@ -64,6 +64,7 @@ public:
     void sendMessage(const QByteArray &);
 
     static bool isDebuggingEnabled();
+    static QString objectToString(QObject *obj);
 
 protected:
     virtual void enabledChanged(bool);

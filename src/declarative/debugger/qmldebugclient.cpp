@@ -73,7 +73,7 @@ QmlDebugClientPrivate::QmlDebugClientPrivate(QmlDebugClient *c)
 void QmlDebugClientPrivate::connected()
 {
     QPacket pack;
-    pack << QString(QLatin1String("QmlDebugServer")) << QStringList();
+    pack << QString(QLatin1String("QmlDebugServer")) << enabled;
     protocol->send(pack);
 }
 
@@ -178,7 +178,7 @@ void QmlDebugClientPlugin::sendMessage(const QByteArray &message)
 
     QPacket pack;
     pack << d->name << message;
-    d->client->d_func()->protocol->send(pack);
+    d->client->d->protocol->send(pack);
 }
 
 void QmlDebugClientPlugin::messageReceived(const QByteArray &)

@@ -42,6 +42,8 @@
 #include "qsimplecanvasdebugplugin_p.h"
 #include "qdebug.h"
 #include <QtCore/qabstractanimation.h>
+#include <qsimplecanvas.h>
+#include <qsimplecanvasitem.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -74,6 +76,9 @@ void QSimpleCanvasDebugPlugin::addTiming(quint32 paint,
                                          quint32 repaint, 
                                          quint32 timeBetweenFrames)
 {
+    if (!isEnabled())
+        return;
+
     bool isFrameBreak = _breaks > 1;
     _breaks = 0;
     int e = _time.elapsed();
@@ -87,6 +92,57 @@ void QSimpleCanvasDebugPlugin::addTiming(quint32 paint,
 void QSimpleCanvasDebugPlugin::frameBreak()
 {
     _breaks++;
+}
+
+QSimpleCanvasSceneDebugPlugin::QSimpleCanvasSceneDebugPlugin(QSimpleCanvas *parent)
+: QmlDebugServerPlugin("CanvasScene", parent), m_canvas(parent)
+{
+}
+
+void QSimpleCanvasSceneDebugPlugin::messageReceived(const QByteArray &)
+{
+    refresh();
+}
+
+void QSimpleCanvasSceneDebugPlugin::refresh()
+{
+    QByteArray data;
+    QDataStream ds(&data, QIODevice::WriteOnly);
+    const QList<QSimpleCanvasItem *> &children = m_canvas->root()->children();
+    ds << children.count();
+    for (int ii = 0; ii < children.count(); ++ii)
+        refresh(ds, children.at(ii));
+
+    sendMessage(data);
+}
+
+void QSimpleCanvasSceneDebugPlugin::refresh(QDataStream &ds, 
+                                            QSimpleCanvasItem *item)
+{
+    ds << QmlDebugServerPlugin::objectToString(item) << item->x() << item->y() 
+       << item->z() << item->width() << item->height() 
+       << (int)item->transformOrigin() << item->scale() << (int)item->flip() 
+       << item->transform() << item->hasActiveFocus() << (int)item->options();
+
+    QPixmap pix;
+
+    if(item->options() & QSimpleCanvasItem::HasContents && 
+       item->width() > 0 && item->height() > 0) {
+
+        pix = QPixmap(item->width(), item->height());
+        pix.fill(QColor(0,0,0,0));
+        QPainter p(&pix);
+        item->paintContents(p);
+
+    }
+
+    ds << pix;
+
+    const QList<QSimpleCanvasItem *> &children = item->children();
+    ds << children.count();
+
+    for(int ii = 0; ii < children.count(); ++ii) 
+        refresh(ds, children.at(ii));
 }
 
 QT_END_NAMESPACE

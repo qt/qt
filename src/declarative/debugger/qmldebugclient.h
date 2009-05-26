@@ -54,7 +54,6 @@ class QmlDebugClientPrivate;
 class Q_DECLARATIVE_EXPORT QmlDebugClient : public QTcpSocket
 {
     Q_OBJECT
-    Q_DECLARE_PRIVATE(QmlDebugClient)
     Q_DISABLE_COPY(QmlDebugClient)
 public:
     QmlDebugClient(QObject * = 0);
