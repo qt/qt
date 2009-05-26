@@ -55,11 +55,11 @@ class QmlBindPrivate;
 class Q_DECLARATIVE_EXPORT QmlBind : public QObject
 {
     Q_OBJECT
-    Q_DECLARE_PRIVATE(QmlBind);
+    Q_DECLARE_PRIVATE(QmlBind)
 
-    Q_PROPERTY(QObject *target READ object WRITE setObject);
-    Q_PROPERTY(QString property READ property WRITE setProperty);
-    Q_PROPERTY(QVariant value READ value WRITE setValue);
+    Q_PROPERTY(QObject *target READ object WRITE setObject)
+    Q_PROPERTY(QString property READ property WRITE setProperty)
+    Q_PROPERTY(QVariant value READ value WRITE setValue)
 
 public:
     QmlBind(QObject *parent=0);

@@ -58,8 +58,8 @@
 
 QT_BEGIN_NAMESPACE
 
-QML_DEFINE_TYPE(XmlListModelRole, Role);
-QML_DEFINE_TYPE(QmlXmlListModel, XmlListModel);
+QML_DEFINE_TYPE(XmlListModelRole, Role)
+QML_DEFINE_TYPE(QmlXmlListModel, XmlListModel)
 
 
 class QmlXmlListModelPrivate;

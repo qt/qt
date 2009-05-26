@@ -75,11 +75,11 @@
 
 QT_BEGIN_NAMESPACE
 
-DEFINE_BOOL_CONFIG_OPTION(qmlDebugger, QML_DEBUGGER);
+DEFINE_BOOL_CONFIG_OPTION(qmlDebugger, QML_DEBUGGER)
 
-Q_DECLARE_METATYPE(QmlMetaProperty);
+Q_DECLARE_METATYPE(QmlMetaProperty)
 
-QML_DEFINE_TYPE(QObject,Object);
+QML_DEFINE_TYPE(QObject,Object)
 
 static QScriptValue qmlMetaProperty_emit(QScriptContext *ctx, QScriptEngine *engine)
 {

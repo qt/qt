@@ -45,8 +45,8 @@
 
 QT_BEGIN_NAMESPACE
 
-QML_DEFINE_INTERFACE(QGraphicsLayoutItem);
-QML_DEFINE_INTERFACE(QGraphicsLayout);
+QML_DEFINE_INTERFACE(QGraphicsLayoutItem)
+QML_DEFINE_INTERFACE(QGraphicsLayout)
 
 class LinearLayoutAttached : public QObject
 {

@@ -237,7 +237,7 @@ namespace QmlPrivate
             return new T(other);
         }
     };
-};
+}
 
 template<typename T>
 int QmlPrivate::list_op(QmlPrivate::ListOp op, int val, 
