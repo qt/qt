@@ -1298,7 +1298,7 @@ QFileInfoList QFSFileEngine::drives()
     }
     return ret;
 #else
-    ret.append(QLatin1Char('/'));
+    ret.append(QFileInfo(QLatin1Char('/')));
     return ret;
 #endif
 }
