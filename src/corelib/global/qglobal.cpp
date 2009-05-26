@@ -2151,7 +2151,7 @@ void qt_message_output(QtMsgType msgType, const char *buf)
 #endif
 
 #if defined(Q_OS_SYMBIAN)
-        __DEBUGGER(); // on the emulator, get the debugger to kick in if there is JustInTime is true
+        __DEBUGGER(); // on the emulator, get the debugger to kick in if there's one around
         User::Invariant(); // Panic the current thread
 #elif (defined(Q_OS_UNIX) || defined(Q_CC_MINGW))
         abort(); // trap; generates core dump
