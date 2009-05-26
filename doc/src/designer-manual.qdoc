@@ -478,11 +478,12 @@
     accordingly.
 
     When you click on the slider and drag it to a certain value, you want the
-    spin box to display the slider's position. To do this, you need to connect
-    the slider's \l{QAbstractSlider::}{valueChanged()} signal to the spin box's
-    \l{QSpinBox::}{setValue()} slot. You also need to make the reverse
-    connections, e.g., connect the spin box's \l{QSpinBox::}{valueChanged()}
-    signal to the slider's \l{QAbstractSlider::value()}{setValue()} slot.
+    spin box to display the slider's position. To accomplish this behavior, you
+    need to connect the slider's \l{QAbstractSlider::}{valueChanged()} signal
+    to the spin box's \l{QSpinBox::}{setValue()} slot. You also need to make
+    the reverse connections, e.g., connect the spin box's \l{QSpinBox::}
+    {valueChanged()} signal to the slider's \l{QAbstractSlider::value()}
+    {setValue()} slot.
 
     To do this, you have to switch to \gui{Edit Signals/Slots} mode, either by
     pressing \key{F4} or something \gui{Edit Signals/Slots} from the \gui{Edit}
@@ -498,12 +499,17 @@
         correct signal and slot and click \gui OK.
     \endtable
 
-    \image rgbController-configureConnection.png
+    \image rgbController-configureConnection1.png
 
     Repeat the step (in reverse order), clicking on the spin box and dragging
     the cursor towards the slider, to connect the spin box's
     \l{QSpinBox::}{valueChanged()} signal to the slider's
     \l{QAbstractSlider::value()}{setValue()} slot.
+
+    You can use the screenshot below as a guide to selecting the correct signal
+    and slot.
+
+    \image rgbController-configure-connection2.png
 
     Now that you have successfully connected the objects for the "RED"
     component of the RGB Controller, do the same for the "GREEN" and "BLUE"
@@ -512,7 +518,6 @@
     Since RGB values range between 0 and 255, we need to limit the spin box
     and slider to that particular range.
 
-    \omit
     \table
         \row
             \i \inlineimage rgbController-property-editing.png
@@ -523,17 +528,14 @@
         \l{QSpinBox::}{maximum} property. Then, click on the first vertical
         slider, you will see \l{QAbstractSlider}'s properties. Enter "255" for
         the \l{QAbstractSlider::}{maximum} property as well. Repeat this
-        process for the remaining spin boxes and sliders.
+        process for the remaining  spin boxes and sliders.
     \endtable
-    \endomit
 
     Now, we preview your form to see how it would look in your application. To
     preview your form, press \key{Ctrl + R} or select \gui Preview from the
     \gui Form menu.
 
-    \omit
     \image rgbController-preview.png
-    \endomit
 
     Try dragging the slider - the spin box will mirror its value too (and vice
     versa). Also, you can resize it to see how the layouts used to manage the
