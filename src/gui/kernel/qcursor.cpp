@@ -375,7 +375,9 @@ void QCursorData::cleanup()
         return;
 
     for (int shape = 0; shape <= Qt::LastCursor; ++shape) {
-        delete qt_cursorTable[shape];
+        // In case someone has a static QCursor defined with this shape
+        if (!qt_cursorTable[shape]->ref.deref())
+            delete qt_cursorTable[shape];
         qt_cursorTable[shape] = 0;
     }
     QCursorData::initialized = false;
