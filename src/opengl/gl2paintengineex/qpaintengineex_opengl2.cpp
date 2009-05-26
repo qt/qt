@@ -1095,7 +1095,13 @@ bool QGL2PaintEngineEx::begin(QPaintDevice *pdev)
     glDisable(GL_SCISSOR_TEST);
 
     QGLPixmapData *source = d->drawable.copyOnBegin();
-    if (source) {
+    if (d->drawable.autoFillBackground()) {
+        QColor color = d->drawable.backgroundColor();
+
+        float alpha = color.alphaF();
+        glClearColor(color.redF() * alpha, color.greenF() * alpha, color.blueF() * alpha, alpha);
+        glClear(GL_COLOR_BUFFER_BIT);
+    } else if (source) {
         d->transferMode(ImageDrawingMode);
 
         source->bind(false);

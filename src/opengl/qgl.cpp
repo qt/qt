@@ -4525,6 +4525,8 @@ QColor QGLDrawable::backgroundColor() const
 {
     if (widget)
         return widget->palette().brush(widget->backgroundRole()).color();
+    else if (pixmapData)
+        return pixmapData->fillColor();
     return QApplication::palette().brush(QPalette::Background).color();
 }
 
@@ -4547,6 +4549,8 @@ bool QGLDrawable::autoFillBackground() const
 {
     if (widget)
         return widget->autoFillBackground();
+    else if (pixmapData)
+        return pixmapData->needsFill();
     else
         return false;
 }
