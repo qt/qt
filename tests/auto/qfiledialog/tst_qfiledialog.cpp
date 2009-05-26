@@ -159,6 +159,7 @@ private slots:
     void task218353_relativePaths();
     void task251321_sideBarHiddenEntries();
     void task251341_sideBarRemoveEntries();
+    void task254490_selectFileMultipleTimes();
 
 private:
     QByteArray userSettings;
@@ -1979,6 +1980,38 @@ void tst_QFiledialog::task251341_sideBarRemoveEntries()
     QCOMPARE(mySideBar.urls(), expected);
 
     current.rmdir("testDir");
+}
+
+void tst_QFiledialog::task254490_selectFileMultipleTimes()
+{
+    QString tempPath = QDir::tempPath();
+    QTemporaryFile *t;
+    t = new QTemporaryFile;
+    t->open();
+    QNonNativeFileDialog fd(0, "TestFileDialog");
+
+    fd.setDirectory(tempPath);
+    fd.setViewMode(QFileDialog::List);
+    fd.setAcceptMode(QFileDialog::AcceptSave);
+    fd.setFileMode(QFileDialog::AnyFile);
+
+    //This should select the file in the QFileDialog
+    fd.selectFile(t->fileName());
+
+    //This should clear the selection and write it into the filename line edit
+    fd.selectFile("new_file.txt");
+
+    fd.show();
+    QTest::qWait(250);
+
+    QLineEdit *lineEdit = qFindChild<QLineEdit*>(&fd, "fileNameEdit");
+    QVERIFY(lineEdit);
+    QCOMPARE(lineEdit->text(),QLatin1String("new_file.txt"));
+    QListView *list = qFindChild<QListView*>(&fd, "listView");
+    QVERIFY(list);
+    QCOMPARE(list->selectionModel()->selectedRows(0).count(), 0);
+
+    t->deleteLater();
 }
 
 QTEST_MAIN(tst_QFiledialog)
