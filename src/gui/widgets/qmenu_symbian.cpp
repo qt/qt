@@ -184,7 +184,7 @@ static void rebuildMenu()
     QMenuBarPrivate *mb = 0;
     QWidget *w = qApp->activeWindow();
     QMainWindow *mainWindow = qobject_cast<QMainWindow*>(w);
-    if (mainWindow) {
+    if ((mainWindow) && mainWindow->hasSoftKeyStack()) {
         QSoftKeyStack* softKeyStack = mainWindow->softKeyStack();
         if (!softKeyStack->isEmpty()) {
             const QSoftkeySet& softKeyTop = softKeyStack->top();
