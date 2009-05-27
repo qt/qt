@@ -800,16 +800,30 @@ public:
 
     QTouchEvent(QEvent::Type type,
                 Qt::KeyboardModifiers modifiers,
+                Qt::TouchPointStates touchPointStates,
                 const QList<QTouchEvent::TouchPoint *> &touchPoints);
     ~QTouchEvent();
 
-    inline const QList<QTouchEvent::TouchPoint *> &touchPoints() const { return _touchPoints; }
+    inline Qt::TouchPointStates touchPointStates() const
+    {
+        return _touchPointStates;
+    }
+    inline void setTouchPointStates(Qt::TouchPointStates touchPointStates)
+    {
+        _touchPointStates = touchPointStates;
+    }
+
+    inline const QList<QTouchEvent::TouchPoint *> &touchPoints() const
+    {
+        return _touchPoints;
+    }
     inline void setTouchPoints(const QList<QTouchEvent::TouchPoint *> &touchPoints)
     {
         _touchPoints = touchPoints;
     }
 
 protected:
+    Qt::TouchPointStates _touchPointStates;
     QList<QTouchEvent::TouchPoint *> _touchPoints;
 };
 

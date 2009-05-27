@@ -4027,7 +4027,7 @@ void QGraphicsScenePrivate::sendGestureEvent(const QSet<QGesture*> &gestures, co
                 gd->graphicsItem = 0;
 
                 //### THIS IS BS, DONT FORGET TO REWRITE THIS CODE
-                // need to make sure we try to deliver event just once to each widget 
+                // need to make sure we try to deliver event just once to each widget
                 const QString gestureType = g->type();
                 QList<QGraphicsItem*> itemsUnderGesture = q->items(g->hotSpot());
                 for (int i = 0; i < itemsUnderGesture.size(); ++i) {
@@ -5710,13 +5710,9 @@ QGraphicsSceneTouchEvent::TouchPoint *QGraphicsScenePrivate::findClosestTouchPoi
     return closestTouchPoint;
 }
 
-QEvent::Type QGraphicsScenePrivate::appendTouchPoint(QGraphicsSceneTouchEvent::TouchPoint *touchPoint,
-                                                     QList<QGraphicsSceneTouchEvent::TouchPoint *> *currentTouchPoints)
+void QGraphicsScenePrivate::appendTouchPoint(QGraphicsSceneTouchEvent::TouchPoint *touchPoint,
+                                             QList<QGraphicsSceneTouchEvent::TouchPoint *> *currentTouchPoints)
 {
-    QEvent::Type eventType = currentTouchPoints->isEmpty()
-                             ? QEvent::GraphicsSceneTouchBegin
-                             : QEvent::GraphicsSceneTouchUpdate;
-
     // insort touch point (for the app)
     int at = 0;
     for (; at < sceneCurrentTouchPoints.count(); ++at) {
@@ -5730,12 +5726,10 @@ QEvent::Type QGraphicsScenePrivate::appendTouchPoint(QGraphicsSceneTouchEvent::T
             break;
     }
     currentTouchPoints->insert(at, touchPoint);
-
-    return eventType;
 }
 
-QEvent::Type QGraphicsScenePrivate::removeTouchPoint(QGraphicsSceneTouchEvent::TouchPoint *touchPoint,
-                                                     QList<QGraphicsSceneTouchEvent::TouchPoint *> *currentTouchPoints)
+void QGraphicsScenePrivate::removeTouchPoint(QGraphicsSceneTouchEvent::TouchPoint *touchPoint,
+                                             QList<QGraphicsSceneTouchEvent::TouchPoint *> *currentTouchPoints)
 {
     // remove touch point from all known touch points
     for (int i = qMin(sceneCurrentTouchPoints.count() - 1, touchPoint->id()); i >= 0; --i) {
@@ -5751,21 +5745,19 @@ QEvent::Type QGraphicsScenePrivate::removeTouchPoint(QGraphicsSceneTouchEvent::T
             break;
         }
     }
-
-    return currentTouchPoints->isEmpty() ? QEvent::GraphicsSceneTouchEnd : QEvent::GraphicsSceneTouchUpdate;
 }
 
 void QGraphicsScenePrivate::touchEventHandler(QGraphicsSceneTouchEvent *sceneTouchEvent)
 {
     QList<QGraphicsSceneTouchEvent::TouchPoint *> sceneActiveTouchPoints = sceneCurrentTouchPoints;
 
-    QHash<QGraphicsItem *, QGraphicsSceneTouchEvent *> itemsNeedingEvents;
+    typedef QPair<Qt::TouchPointStates, QList<QGraphicsSceneTouchEvent::TouchPoint *> > StatesAndTouchPoints;
+    QHash<QGraphicsItem *, StatesAndTouchPoints> itemsNeedingEvents;
     for (int i = 0; i < sceneTouchEvent->touchPoints().count(); ++i) {
         QGraphicsSceneTouchEvent::TouchPoint *touchPoint = sceneTouchEvent->touchPoints().at(i);
 
         // update state
         QGraphicsItem *item = 0;
-        QEvent::Type eventType = QEvent::None;
         QList<QGraphicsSceneTouchEvent::TouchPoint *> activeTouchPoints;
         if (touchPoint->state() == Qt::TouchPointPressed) {
             // determine which item this event will go to
@@ -5789,7 +5781,7 @@ void QGraphicsScenePrivate::touchEventHandler(QGraphicsSceneTouchEvent *sceneTou
             itemForTouchPointId.insert(touchPoint->id(), item);
 
             QList<QGraphicsSceneTouchEvent::TouchPoint *> &currentTouchPoints = itemCurrentTouchPoints[item];
-            eventType = appendTouchPoint(touchPoint, &currentTouchPoints);
+            appendTouchPoint(touchPoint, &currentTouchPoints);
             // make sure new points are added to activeTouchPoints as well
             sceneActiveTouchPoints = sceneCurrentTouchPoints;
             activeTouchPoints = currentTouchPoints;
@@ -5801,7 +5793,7 @@ void QGraphicsScenePrivate::touchEventHandler(QGraphicsSceneTouchEvent *sceneTou
             QList<QGraphicsSceneTouchEvent::TouchPoint *> &currentTouchPoints = itemCurrentTouchPoints[item];
             sceneActiveTouchPoints = sceneCurrentTouchPoints;
             activeTouchPoints = currentTouchPoints;
-            eventType = removeTouchPoint(touchPoint, &currentTouchPoints);
+            removeTouchPoint(touchPoint, &currentTouchPoints);
         } else {
             item = itemForTouchPointId.value(touchPoint->id());
             if (!item)
@@ -5809,20 +5801,11 @@ void QGraphicsScenePrivate::touchEventHandler(QGraphicsSceneTouchEvent *sceneTou
 
             sceneActiveTouchPoints = sceneCurrentTouchPoints;
             activeTouchPoints = itemCurrentTouchPoints.value(item);
-            eventType = QEvent::GraphicsSceneTouchUpdate;
         }
-        Q_ASSERT(eventType != QEvent::None);
 
-        if (touchPoint->state() != Qt::TouchPointStationary) {
-            QGraphicsSceneTouchEvent *&touchEvent = itemsNeedingEvents[item];
-            if (!touchEvent) {
-                touchEvent = new QGraphicsSceneTouchEvent(eventType);
-                touchEvent->setWidget(sceneTouchEvent->widget());
-                touchEvent->setModifiers(sceneTouchEvent->modifiers());
-            }
-            Q_ASSERT(touchEvent->type() == eventType);
-            touchEvent->setTouchPoints(activeTouchPoints);
-        }
+        StatesAndTouchPoints &statesAndTouchPoints = itemsNeedingEvents[item];
+        statesAndTouchPoints.first |= touchPoint->state();
+        statesAndTouchPoints.second = activeTouchPoints;
     }
 
     if (itemsNeedingEvents.isEmpty()) {
@@ -5831,21 +5814,45 @@ void QGraphicsScenePrivate::touchEventHandler(QGraphicsSceneTouchEvent *sceneTou
     }
 
     bool acceptSceneTouchEvent = false;
-    QHash<QGraphicsItem *, QGraphicsSceneTouchEvent *>::ConstIterator it = itemsNeedingEvents.constBegin();
-    const QHash<QGraphicsItem *, QGraphicsSceneTouchEvent *>::ConstIterator end = itemsNeedingEvents.constEnd();
+    QHash<QGraphicsItem *, StatesAndTouchPoints>::ConstIterator it = itemsNeedingEvents.constBegin();
+    const QHash<QGraphicsItem *, StatesAndTouchPoints>::ConstIterator end = itemsNeedingEvents.constEnd();
     for (; it != end; ++it) {
         QGraphicsItem *item = it.key();
 
-        QGraphicsSceneTouchEvent *touchEvent = it.value();
+        // determine event type from the state mask
+        QEvent::Type eventType;
+        switch (it.value().first) {
+        case Qt::TouchPointPressed:
+            // all touch points have pressed state
+            eventType = QEvent::GraphicsSceneTouchBegin;
+            break;
+        case Qt::TouchPointReleased:
+            // all touch points have released state
+            eventType = QEvent::GraphicsSceneTouchEnd;
+            break;
+        case Qt::TouchPointStationary:
+            // don't send the event if nothing changed
+            continue;
+        default:
+            // all other combinations
+            eventType = QEvent::GraphicsSceneTouchUpdate;
+            break;
+        }
 
-        switch (touchEvent->type()) {
+        QGraphicsSceneTouchEvent touchEvent(eventType);
+        touchEvent.setWidget(sceneTouchEvent->widget());
+        touchEvent.setModifiers(sceneTouchEvent->modifiers());
+        touchEvent.setTouchPointStates(it.value().first);
+        touchEvent.setTouchPoints(it.value().second);
+
+        switch (touchEvent.type()) {
         case QEvent::GraphicsSceneTouchBegin:
         {
             // if the TouchBegin handler recurses, we assume that means the event
             // has been implicitly accepted and continue to send touch events
             item->d_ptr->acceptedTouchBeginEvent = true;
-            bool res = sendTouchBeginEvent(item, touchEvent)
-                       && touchEvent->isAccepted();
+            bool res = sendTouchBeginEvent(item, &touchEvent)
+                       && touchEvent.isAccepted();
             acceptSceneTouchEvent = acceptSceneTouchEvent || res;
             break;
         }
@@ -5859,14 +5866,12 @@ void QGraphicsScenePrivate::touchEventHandler(QGraphicsSceneTouchEvent *sceneTou
         }
         default:
             if (item->d_ptr->acceptedTouchBeginEvent) {
-                updateTouchPointsForItem(item, touchEvent);
-                (void) sendEvent(item, touchEvent);
+                updateTouchPointsForItem(item, &touchEvent);
+                (void) sendEvent(item, &touchEvent);
                 acceptSceneTouchEvent = true;
             }
             break;
         }
-
-        delete touchEvent;
     }
     sceneTouchEvent->setAccepted(acceptSceneTouchEvent);
 }

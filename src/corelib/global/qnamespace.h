@@ -1546,11 +1546,12 @@ public:
     };
 
     enum TouchPointState {
-        TouchPointPressed,
-        TouchPointMoved,
-        TouchPointStationary,
-        TouchPointReleased
+        TouchPointPressed    = 0x01,
+        TouchPointMoved      = 0x02,
+        TouchPointStationary = 0x04,
+        TouchPointReleased   = 0x08
     };
+    Q_DECLARE_FLAGS(TouchPointStates, TouchPointState)
 
     enum GestureType
     {
@@ -1608,6 +1609,7 @@ Q_DECLARE_OPERATORS_FOR_FLAGS(Qt::DropActions)
 Q_DECLARE_OPERATORS_FOR_FLAGS(Qt::ItemFlags)
 Q_DECLARE_OPERATORS_FOR_FLAGS(Qt::MatchFlags)
 Q_DECLARE_OPERATORS_FOR_FLAGS(Qt::TextInteractionFlags)
+Q_DECLARE_OPERATORS_FOR_FLAGS(Qt::TouchPointStates)
 
 typedef bool (*qInternalCallback)(void **);
 

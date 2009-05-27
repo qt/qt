@@ -3727,8 +3727,11 @@ void QGestureEvent::accept(const QString &type)
 */
 QTouchEvent::QTouchEvent(QEvent::Type type,
                          Qt::KeyboardModifiers modifiers,
+                         Qt::TouchPointStates touchPointStates,
                          const QList<QTouchEvent::TouchPoint *> &touchPoints)
-    : QInputEvent(type, modifiers), _touchPoints(touchPoints)
+    : QInputEvent(type, modifiers),
+      _touchPointStates(touchPointStates),
+      _touchPoints(touchPoints)
 { }
 
 /*!
@@ -3736,6 +3739,18 @@ QTouchEvent::QTouchEvent(QEvent::Type type,
 */
 QTouchEvent::~QTouchEvent()
 { }
+
+/*! \fn Qt::TouchPointStates QTouchEvent::touchPointStates() const
+
+    Returns a bitwise OR of all the touch point states for this event.
+*/
+
+/*! \fn void QTouchEvent::setTouchPointStates(Qt::TouchPointStates touchPointStates)
+
+    \internal
+
+    Sets a bitwise OR of all the touch point states for this event.
+*/
 
 /*! \fn const QList<QTouchEvent::TouchPoint *> &QTouchEvent::TouchPoints() const
 

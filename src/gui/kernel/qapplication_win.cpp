@@ -4011,13 +4011,9 @@ QTouchEvent::TouchPoint *QApplicationPrivate::findClosestTouchPoint(const QList<
     return closestTouchPoint;
 }
 
-QEvent::Type QApplicationPrivate::appendTouchPoint(QTouchEvent::TouchPoint *touchPoint,
-                                                   QList<QTouchEvent::TouchPoint *> *currentTouchPoints)
+void QApplicationPrivate::appendTouchPoint(QTouchEvent::TouchPoint *touchPoint,
+                                           QList<QTouchEvent::TouchPoint *> *currentTouchPoints)
 {
-    QEvent::Type eventType = currentTouchPoints->isEmpty()
-                             ? QEvent::TouchBegin
-                             : QEvent::TouchUpdate;
-
     // insort touch point (for the app)
     int at = 0;
     for (; at < appCurrentTouchPoints.count(); ++at) {
@@ -4037,12 +4033,10 @@ QEvent::Type QApplicationPrivate::appendTouchPoint(QTouchEvent::TouchPoint *touc
                appCurrentTouchPoints.count(),
                appAllTouchPoints.count());
     }
-
-    return eventType;
 }
 
-QEvent::Type QApplicationPrivate::removeTouchPoint(QTouchEvent::TouchPoint *touchPoint,
-                                                   QList<QTouchEvent::TouchPoint *> *currentTouchPoints)
+void QApplicationPrivate::removeTouchPoint(QTouchEvent::TouchPoint *touchPoint,
+                                           QList<QTouchEvent::TouchPoint *> *currentTouchPoints)
 {
     // remove touch point from all known touch points
     for (int i = qMin(appCurrentTouchPoints.count() - 1, touchPoint->id()); i >= 0; --i) {
@@ -4058,8 +4052,6 @@ QEvent::Type QApplicationPrivate::removeTouchPoint(QTouchEvent::TouchPoint *touc
             break;
         }
     }
-
-    return currentTouchPoints->isEmpty() ? QEvent::TouchEnd : QEvent::TouchUpdate;
 }
 
 bool QApplicationPrivate::translateTouchEvent(const MSG &msg)
@@ -4072,7 +4064,8 @@ bool QApplicationPrivate::translateTouchEvent(const MSG &msg)
 
     QList<QTouchEvent::TouchPoint *> appActiveTouchPoints = appCurrentTouchPoints;
 
-    QHash<QWidget *, QTouchEvent> widgetsNeedingEvents;
+    typedef QPair<Qt::TouchPointStates, QList<QTouchEvent::TouchPoint *> > StatesAndTouchPoints;
+    QHash<QWidget *, StatesAndTouchPoints> widgetsNeedingEvents;
     QVector<TOUCHINPUT> winTouchInputs(msg.wParam);
     memset(winTouchInputs.data(), 0, sizeof(TOUCHINPUT) * winTouchInputs.count());
     QApplicationPrivate::GetTouchInputInfo((HANDLE) msg.lParam, msg.wParam, winTouchInputs.data(), sizeof(TOUCHINPUT));
@@ -4096,7 +4089,6 @@ bool QApplicationPrivate::translateTouchEvent(const MSG &msg)
         QWidget *widget = 0;
         bool down = touchPoint->state() != Qt::TouchPointReleased;
         QPointF screenPos(qreal(touchInput.x) / qreal(100.), qreal(touchInput.y) / qreal(100.));
-        QEvent::Type eventType = QEvent::None;
 
         QList<QTouchEvent::TouchPoint *> activeTouchPoints;
         if (!down && (touchInput.dwFlags & TOUCHEVENTF_DOWN)) {
@@ -4116,7 +4108,7 @@ bool QApplicationPrivate::translateTouchEvent(const MSG &msg)
             widgetForTouchPointId[touchPoint->id()] = widget;
 
             QList<QTouchEvent::TouchPoint *> &currentTouchPoints = widgetCurrentTouchPoints[widget];
-            eventType = appendTouchPoint(touchPoint, &currentTouchPoints);
+            appendTouchPoint(touchPoint, &currentTouchPoints);
             // make sure new points are added to activeTouchPoints as well
             appActiveTouchPoints = appCurrentTouchPoints;
             activeTouchPoints = currentTouchPoints;
@@ -4131,7 +4123,7 @@ bool QApplicationPrivate::translateTouchEvent(const MSG &msg)
             QList<QTouchEvent::TouchPoint *> &currentTouchPoints = widgetCurrentTouchPoints[widget];
             appActiveTouchPoints = appCurrentTouchPoints;
             activeTouchPoints = currentTouchPoints;
-            eventType = removeTouchPoint(touchPoint, &currentTouchPoints);
+            removeTouchPoint(touchPoint, &currentTouchPoints);
 
             touchPoint->setState(Qt::TouchPointReleased);
             touchPoint->setLastScreenPos(touchPoint->screenPos());
@@ -4141,7 +4133,6 @@ bool QApplicationPrivate::translateTouchEvent(const MSG &msg)
             widget = widgetForTouchPointId.value(touchPoint->id());
             appActiveTouchPoints = appCurrentTouchPoints;
             activeTouchPoints = widgetCurrentTouchPoints.value(widget);
-            eventType = QEvent::TouchUpdate;
             touchPoint->setState(screenPos == touchPoint->screenPos()
                                  ? Qt::TouchPointStationary
                                  : Qt::TouchPointMoved);
@@ -4149,12 +4140,11 @@ bool QApplicationPrivate::translateTouchEvent(const MSG &msg)
             touchPoint->setScreenPos(screenPos);
             // pressure should still be 1.
         }
-        Q_ASSERT(widget != 0 && eventType != QEvent::None);
+        Q_ASSERT(widget != 0);
 
-        if (touchPoint->state() != Qt::TouchPointStationary) {
-            widgetsNeedingEvents.insert(widget,
-                                        QTouchEvent(eventType, q->keyboardModifiers(), activeTouchPoints));
-        }
+        StatesAndTouchPoints &maskAndPoints = widgetsNeedingEvents[widget];
+        maskAndPoints.first |= touchPoint->state();
+        maskAndPoints.second = activeTouchPoints;
     }
     QApplicationPrivate::CloseTouchInputHandle((HANDLE) msg.lParam);
 
@@ -4164,14 +4154,33 @@ bool QApplicationPrivate::translateTouchEvent(const MSG &msg)
     bool returnValue = false;
     qt_tabletChokeMouse = false;
 
-    QHash<QWidget *, QTouchEvent>::ConstIterator it = widgetsNeedingEvents.constBegin();
-    const QHash<QWidget *, QTouchEvent>::ConstIterator end = widgetsNeedingEvents.constEnd();
+    QHash<QWidget *, StatesAndTouchPoints>::ConstIterator it = widgetsNeedingEvents.constBegin();
+    const QHash<QWidget *, StatesAndTouchPoints>::ConstIterator end = widgetsNeedingEvents.constEnd();
     for (; it != end; ++it) {
         QWidget *widget = it.key();
         if (!QApplicationPrivate::tryModalHelper(widget, 0))
             continue;
 
-        QTouchEvent touchEvent = it.value();
+        QEvent::Type eventType;
+        switch(it.value().first) {
+        case Qt::TouchPointPressed:
+            eventType = QEvent::TouchBegin;
+            break;
+        case Qt::TouchPointReleased:
+            eventType = QEvent::TouchEnd;
+            break;
+        case Qt::TouchPointStationary:
+            // don't send the event if nothing changed
+            continue;
+        default:
+            eventType = QEvent::TouchUpdate;
+            break;
+        }
+
+        QTouchEvent touchEvent(eventType,
+                               q->keyboardModifiers(),
+                               it.value().first,
+                               it.value().second);
         updateTouchPointsForWidget(widget, &touchEvent);
 
         switch (touchEvent.type()) {

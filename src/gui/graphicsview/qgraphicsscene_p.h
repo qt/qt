@@ -164,7 +164,7 @@ public:
     void grabKeyboard(QGraphicsItem *item);
     void ungrabKeyboard(QGraphicsItem *item, bool itemIsDying = false);
     void clearKeyboardGrabber();
-    
+
     QGraphicsItem *dragDropItem;
     QGraphicsWidget *enterWidget;
     Qt::DropAction lastDropAction;
@@ -244,7 +244,7 @@ public:
     static bool closestItemLast_withoutCache(const QGraphicsItem *item1, const QGraphicsItem *item2);
 
     static inline bool closestItemFirst_withCache(const QGraphicsItem *item1, const QGraphicsItem *item2)
-    { 
+    {
         return item1->d_ptr->globalStackingOrder < item2->d_ptr->globalStackingOrder;
     }
     static inline bool closestItemLast_withCache(const QGraphicsItem *item1, const QGraphicsItem *item2)
@@ -257,7 +257,7 @@ public:
     void drawItemHelper(QGraphicsItem *item, QPainter *painter,
                         const QStyleOptionGraphicsItem *option, QWidget *widget,
                         bool painterStateProtection);
-    
+
     QStyle *style;
     QFont font;
     void setFont_helper(const QFont &font);
@@ -285,10 +285,10 @@ public:
     static void updateTouchPointsForItem(QGraphicsItem *item, QGraphicsSceneTouchEvent *touchEvent);
     static QGraphicsSceneTouchEvent::TouchPoint *findClosestTouchPoint(const QList<QGraphicsSceneTouchEvent::TouchPoint *> &activeTouchPoints,
                                                                        const QPointF &scenePos);
-    QEvent::Type appendTouchPoint(QGraphicsSceneTouchEvent::TouchPoint *touchPoint,
-                                  QList<QGraphicsSceneTouchEvent::TouchPoint *> *currentTouchPoints);
-    QEvent::Type removeTouchPoint(QGraphicsSceneTouchEvent::TouchPoint *touchPoint,
-                                  QList<QGraphicsSceneTouchEvent::TouchPoint *> *currentTouchPoints);
+    void appendTouchPoint(QGraphicsSceneTouchEvent::TouchPoint *touchPoint,
+                          QList<QGraphicsSceneTouchEvent::TouchPoint *> *currentTouchPoints);
+    void removeTouchPoint(QGraphicsSceneTouchEvent::TouchPoint *touchPoint,
+                          QList<QGraphicsSceneTouchEvent::TouchPoint *> *currentTouchPoints);
     void touchEventHandler(QGraphicsSceneTouchEvent *touchEvent);
     bool sendTouchBeginEvent(QGraphicsItem *item, QGraphicsSceneTouchEvent *touchEvent);
 };

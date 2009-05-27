@@ -450,10 +450,10 @@ public:
     void initializeMultitouch();
     static QTouchEvent::TouchPoint *findClosestTouchPoint(const QList<QTouchEvent::TouchPoint *> &activeTouchPoints,
                                                           const QPointF &screenPos);
-    QEvent::Type appendTouchPoint(QTouchEvent::TouchPoint *touchPoint,
-                                  QList<QTouchEvent::TouchPoint *> *currentTouchPoints);
-    QEvent::Type removeTouchPoint(QTouchEvent::TouchPoint *touchPoint,
-                                  QList<QTouchEvent::TouchPoint *> *currentTouchPoints);
+    void appendTouchPoint(QTouchEvent::TouchPoint *touchPoint,
+                          QList<QTouchEvent::TouchPoint *> *currentTouchPoints);
+    void removeTouchPoint(QTouchEvent::TouchPoint *touchPoint,
+                          QList<QTouchEvent::TouchPoint *> *currentTouchPoints);
     bool translateTouchEvent(const MSG &msg);
 #endif
 

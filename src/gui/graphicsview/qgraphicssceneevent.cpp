@@ -1957,11 +1957,12 @@ class QGraphicsSceneTouchEventPrivate : public QGraphicsSceneEventPrivate
     Q_DECLARE_PUBLIC(QGraphicsSceneTouchEvent)
 public:
     inline QGraphicsSceneTouchEventPrivate()
-        : modifiers(Qt::NoModifier)
+        : modifiers(Qt::NoModifier), touchPointStates()
     { }
 
-    QList<QGraphicsSceneTouchEvent::TouchPoint *> touchPoints;
     Qt::KeyboardModifiers modifiers;
+    Qt::TouchPointStates touchPointStates;
+    QList<QGraphicsSceneTouchEvent::TouchPoint *> touchPoints;
 };
 
 /*!
@@ -1980,6 +1981,40 @@ QGraphicsSceneTouchEvent::~QGraphicsSceneTouchEvent()
 { }
 
 /*!
+    Returns the keyboard modifiers in use at the time the event was
+    sent.
+*/
+Qt::KeyboardModifiers QGraphicsSceneTouchEvent::modifiers() const
+{
+    Q_D(const QGraphicsSceneTouchEvent);
+    return d->modifiers;
+}
+
+/*! \internal */
+void QGraphicsSceneTouchEvent::setModifiers(Qt::KeyboardModifiers modifiers)
+{
+    Q_D(QGraphicsSceneTouchEvent);
+    d->modifiers = modifiers;
+}
+
+/*!
+    Returns a bitwise OR of all of the touch point states at the time
+    the event was sent.
+*/
+Qt::TouchPointStates QGraphicsSceneTouchEvent::touchPointStates() const
+{
+    Q_D(const QGraphicsSceneTouchEvent);
+    return d->touchPointStates;
+}
+
+/*! \internal */
+void QGraphicsSceneTouchEvent::setTouchPointStates(Qt::TouchPointStates touchPointStates)
+{
+    Q_D(QGraphicsSceneTouchEvent);
+    d->touchPointStates = touchPointStates;
+}
+
+/*!
     Returns the list of touch points for this event.
 
     \sa QGraphicsSceneTouchEvent::TouchPoint
@@ -1995,23 +2030,6 @@ void QGraphicsSceneTouchEvent::setTouchPoints(const QList<QGraphicsSceneTouchEve
 {
     Q_D(QGraphicsSceneTouchEvent);
     d->touchPoints = touchPoints;
-}
-
-/*!
-    Returns the keyboard modifiers in use at the time the event was
-    sent.
-*/
-Qt::KeyboardModifiers QGraphicsSceneTouchEvent::modifiers() const
-{
-    Q_D(const QGraphicsSceneTouchEvent);
-    return d->modifiers;
-}
-
-/*! \internal */
-void QGraphicsSceneTouchEvent::setModifiers(Qt::KeyboardModifiers modifiers)
-{
-    Q_D(QGraphicsSceneTouchEvent);
-    d->modifiers = modifiers;
 }
 
 /*!

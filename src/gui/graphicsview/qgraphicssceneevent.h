@@ -372,11 +372,14 @@ public:
     QGraphicsSceneTouchEvent(Type type = None);
     ~QGraphicsSceneTouchEvent();
 
-    const QList<QGraphicsSceneTouchEvent::TouchPoint *> &touchPoints() const;
-    void setTouchPoints(const QList<QGraphicsSceneTouchEvent::TouchPoint *> &touchPoints);
-
     Qt::KeyboardModifiers modifiers() const;
     void setModifiers(Qt::KeyboardModifiers modifiers);
+
+    Qt::TouchPointStates touchPointStates() const;
+    void setTouchPointStates(Qt::TouchPointStates touchPointStates);
+
+    const QList<QGraphicsSceneTouchEvent::TouchPoint *> &touchPoints() const;
+    void setTouchPoints(const QList<QGraphicsSceneTouchEvent::TouchPoint *> &touchPoints);
 
 private:
     Q_DECLARE_PRIVATE(QGraphicsSceneTouchEvent);
