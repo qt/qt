@@ -95,7 +95,8 @@ const short QS60StylePrivate::data[][MAX_PIXELMETRICS] = {
 const short *QS60StylePrivate::m_pmPointer = QS60StylePrivate::data[0];
 #endif // defined(QT_S60STYLE_LAYOUTDATA_SIMULATED)
 
-bool QS60StylePrivate::m_backgroundValid = false;
+// theme background texture
+QPixmap *QS60StylePrivate::m_background = 0;
 
 const struct QS60StylePrivate::frameElementCenter QS60StylePrivate::m_frameElementsData[] = {
     {SE_ButtonNormal,           QS60StyleEnums::SP_QsnFrButtonTbCenter},
@@ -352,25 +353,25 @@ QFont QS60StylePrivate::s60Font(
 
 void QS60StylePrivate::clearCaches(QS60StylePrivate::CacheClearReason reason)
 {
-    switch(reason){    
+    switch(reason){
     case CC_LayoutChange:
         // when layout changes, the colors remain in cache, but graphics and fonts can change
         m_mappedFontsCache.clear();
-        m_backgroundValid = false;
+        deleteBackground();
         QPixmapCache::clear();
         break;
     case CC_ThemeChange:
         m_colorCache.clear();
         QPixmapCache::clear();
-        m_backgroundValid = false;
+        deleteBackground();
     case CC_UndefinedChange:
     default:
         m_colorCache.clear();
         m_mappedFontsCache.clear();
         QPixmapCache::clear();
-        m_backgroundValid = false;
+        deleteBackground();
         break;
-    }    
+    }
 }
 
 // Since S60Style has 'button' and 'tooltip' as a graphic, we don't have any native color which to use
@@ -559,6 +560,14 @@ void QS60StylePrivate::setBackgroundTexture(QApplication *app) const
     QPalette applicationPalette = app->palette();
     applicationPalette.setBrush(QPalette::Window, QS60StylePrivate::backgroundTexture());
     app->setPalette(applicationPalette);
+}
+
+void QS60StylePrivate::deleteBackground()
+{
+    if (QS60StylePrivate::m_background) {
+        delete QS60StylePrivate::m_background;
+        QS60StylePrivate::m_background = 0;
+    }
 }
 
 int QS60StylePrivate::focusRectPenWidth()
@@ -1314,16 +1323,14 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
                      (listView->selectionMode() == QAbstractItemView::SingleSelection ||
                      listView->selectionMode() == QAbstractItemView::NoSelection);
                  QRect selectionRect = subElementRect(SE_ItemViewItemCheckIndicator, &voptAdj, widget);
-                 if (voptAdj.state & QStyle::State_Selected &&
-                     !singleSelection) {
+                 if (voptAdj.state & QStyle::State_Selected && !singleSelection) {
                      QStyleOptionViewItemV4 option(voptAdj);
                      option.rect = selectionRect;
                      // Draw selection mark.
                      drawPrimitive(QStyle::PE_IndicatorViewItemCheck, &option, painter, widget);
                      if ( textRect.right() > selectionRect.left() )
                          textRect.setRight(selectionRect.left());
-                 }
-                 else if (singleSelection &&
+                 } else if (singleSelection &&
                      voptAdj.features & QStyleOptionViewItemV2::HasCheckIndicator) {
                      // draw the check mark
                      if (selectionRect.isValid()) {

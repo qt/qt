@@ -14,6 +14,7 @@
 #include "qevent.h"
 #include "qeventdispatcher_s60_p.h"
 #include "qwidget.h"
+#include "qdesktopwidget.h"
 #include "private/qbackingstore_p.h"
 #include "qt_s60_p.h"
 #include "private/qevent_p.h"
@@ -51,6 +52,8 @@ static bool        appNoGrab        = false;        // Grabbing enabled
 
 Q_GUI_EXPORT QS60Data *qt_s60Data = 0;
 extern bool qt_sendSpontaneousEvent(QObject*,QEvent*);
+
+extern QDesktopWidget *qt_desktopWidget; // qapplication.cpp
 
 QWidget *qt_button_down = 0;                     // widget got last button-down
 
@@ -991,6 +994,13 @@ int QApplication::s60ProcessEvent(TWsEvent *event)
     case EEventScreenDeviceChanged:
         if (S60)
             S60->updateScreenSize();
+        if (qt_desktopWidget) {
+            QSize oldSize = qt_desktopWidget->size();
+            qt_desktopWidget->data->crect.setWidth(S60->screenWidthInPixels);
+            qt_desktopWidget->data->crect.setHeight(S60->screenHeightInPixels);
+            QResizeEvent e(qt_desktopWidget->size(), oldSize);
+            QApplication::sendEvent(qt_desktopWidget, &e);
+        }
         return 0; // Propagate to CONE
     case EEventWindowVisibilityChanged:
         if (controlInMap) {

@@ -54,7 +54,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#if (_POSIX_MONOTONIC_CLOCK-0 <= 0) || defined(QT_BOOTSTRAPPED) && !defined(Q_OS_SYMBIAN)
+#if (_POSIX_MONOTONIC_CLOCK-0 <= 0) || defined(QT_BOOTSTRAPPED)
 #  include <sys/times.h>
 #endif
 
@@ -65,7 +65,7 @@ Q_CORE_EXPORT bool qt_disable_lowpriority_timers=false;
 /*****************************************************************************
  UNIX signal handling
  *****************************************************************************/
-#if !defined(Q_OS_SYMBIAN)
+
 static sig_atomic_t signal_received;
 static sig_atomic_t signals_fired[NSIG];
 
@@ -74,7 +74,7 @@ static void signalHandler(int sig)
     signals_fired[sig] = 1;
     signal_received = 1;
 }
-#endif
+
 
 static void initThreadPipeFD(int fd)
 {
@@ -134,7 +134,6 @@ int QEventDispatcherUNIXPrivate::doSelect(QEventLoop::ProcessEventsFlags flags, 
 
     int nsel;
     do {
-#if !defined(Q_OS_SYMBIAN)
         if (mainThread) {
             while (signal_received) {
                 signal_received = 0;
@@ -146,7 +145,7 @@ int QEventDispatcherUNIXPrivate::doSelect(QEventLoop::ProcessEventsFlags flags, 
                 }
             }
         }
-#endif
+
         // Process timers and socket notifiers - the common UNIX stuff
         int highest = 0;
         if (! (flags & QEventLoop::ExcludeSocketNotifiers) && (sn_highest >= 0)) {
@@ -258,7 +257,7 @@ int QEventDispatcherUNIXPrivate::doSelect(QEventLoop::ProcessEventsFlags flags, 
 
 QTimerInfoList::QTimerInfoList()
 {
-#if (_POSIX_MONOTONIC_CLOCK-0 <= 0) && !defined(Q_OS_SYMBIAN)
+#if (_POSIX_MONOTONIC_CLOCK-0 <= 0)
     useMonotonicTimers = false;
 
 #  if (_POSIX_MONOTONIC_CLOCK == 0)
@@ -299,7 +298,7 @@ timeval QTimerInfoList::updateCurrentTime()
     return currentTime;
 }
 
-#if ((_POSIX_MONOTONIC_CLOCK-0 <= 0) || defined(QT_BOOTSTRAPPED)) && !defined(Q_OS_SYMBIAN)
+#if (_POSIX_MONOTONIC_CLOCK-0 <= 0) || defined(QT_BOOTSTRAPPED)
 
 /*
   Returns true if the real time clock has changed by more than 10%
@@ -375,11 +374,7 @@ void QTimerInfoList::repairTimersIfNeeded()
 void QTimerInfoList::getTime(timeval &t)
 {
     timespec ts;
-#if !defined(Q_OS_SYMBIAN)
     clock_gettime(CLOCK_MONOTONIC, &ts);
-#else
-    clock_gettime(CLOCK_REALTIME, &ts);
-#endif
     t.tv_sec = ts.tv_sec;
     t.tv_usec = ts.tv_nsec / 1000;
 }
@@ -944,7 +939,7 @@ void QEventDispatcherUNIX::flush()
 
 
 
-#if !defined(Q_OS_SYMBIAN)
+
 void QCoreApplication::watchUnixSignal(int sig, bool watch)
 {
     if (sig < NSIG) {
@@ -958,10 +953,5 @@ void QCoreApplication::watchUnixSignal(int sig, bool watch)
         sigaction(sig, &sa, 0);
     }
 }
-#else
-void QCoreApplication::watchUnixSignal(int, bool)
-{
-}
-#endif
 
 QT_END_NAMESPACE
