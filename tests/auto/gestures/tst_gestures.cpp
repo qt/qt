@@ -136,6 +136,19 @@ struct GestureState
     }
 };
 
+struct TouchState
+{
+    int seenTouchBeginEvent;
+    int seenTouchUpdateEvent;
+    int seenTouchEndEvent;
+
+    TouchState() { reset(); }
+    void reset()
+    {
+        seenTouchBeginEvent = seenTouchUpdateEvent = seenTouchEndEvent = 0;
+    }
+};
+
 class GestureWidget : public QWidget
 {
     Q_OBJECT
@@ -378,6 +391,8 @@ public:
     bool shouldAcceptSecondFingerGesture;
     GestureState gesture;
 
+    TouchState touch;
+
     void reset()
     {
         shouldAcceptSingleshotGesture = true;
@@ -388,7 +403,15 @@ public:
 protected:
     bool sceneEvent(QEvent *event)
     {
-        if (event->type() == QEvent::GraphicsSceneGesture) {
+        if (event->type() == QEvent::GraphicsSceneTouchBegin) {
+            event->accept();
+            ++touch.seenTouchBeginEvent;
+            return true;
+        } else if (event->type() == QEvent::GraphicsSceneTouchUpdate) {
+            ++touch.seenTouchUpdateEvent;
+        } else if (event->type() == QEvent::GraphicsSceneTouchEnd) {
+            ++touch.seenTouchEndEvent;
+        } else if (event->type() == QEvent::GraphicsSceneGesture) {
             QGraphicsSceneGestureEvent *e = static_cast<QGraphicsSceneGestureEvent*>(event);
             ++gesture.seenGestureEvent;
             if (SingleshotGesture *g = (SingleshotGesture*)e->gesture(SingleshotGestureRecognizer::Name)) {
@@ -451,13 +474,14 @@ private slots:
     void simpleGraphicsItem();
     void overlappingGraphicsItems();
 
+    void touch();
+
 private:
     SingleshotGestureRecognizer *singleshotRecognizer;
     PinchGestureRecognizer *pinchRecognizer;
     SecondFingerGestureRecognizer *secondFingerRecognizer;
     GestureWidget *mainWidget;
 
-    bool sendSpontaneousEvent(QWidget *receiver, QEvent *event);
     void sendPinchEvents(QWidget *receiver, const QPoint &fromFinger1, const QPoint &fromFinger2);
 };
 
@@ -500,7 +524,7 @@ void tst_Gestures::cleanup()
 {
 }
 
-bool tst_Gestures::sendSpontaneousEvent(QWidget *receiver, QEvent *event)
+bool sendSpontaneousEvent(QWidget *receiver, QEvent *event)
 {
     QETWidget::setSpont(event, true);
     return qApp->notify(receiver, event);
@@ -753,6 +777,161 @@ void tst_Gestures::overlappingGraphicsItems()
     QVERIFY(!mainWidget->gesture.seenGestureEvent);
     QVERIFY(subitem1->gesture.last.singleshot.delivered);
     QVERIFY(item->gesture.last.singleshot.delivered);
+}
+
+namespace QTest
+{
+
+    class QTouchEventSequence
+    {
+    public:
+        QTouchEventSequence(QWidget *widget, QEvent::Type type)
+            : relativeWindow(widget), eventType(type)
+        {
+            ++refcount;
+        }
+        QTouchEventSequence(const QTouchEventSequence &v)
+            : relativeWindow(v.relativeWindow), eventType(v.eventType)
+        {
+            ++refcount;
+        }
+        ~QTouchEventSequence()
+        {
+            if (!--refcount)
+                commit();
+        }
+        QTouchEventSequence& press(int touchId, const QPoint &pt)
+        {
+            touchPointStates |= Qt::TouchPointPressed;
+            QTouchEvent::TouchPoint *p = point(touchId);
+            p->setStartPos(pt);
+            p->setStartScreenPos(relativeWindow->mapToGlobal(pt));
+            p->setLastPos(pt);
+            p->setLastScreenPos(relativeWindow->mapToGlobal(pt));
+            p->setPos(pt);
+            p->setScreenPos(relativeWindow->mapToGlobal(pt));
+            p->setState(Qt::TouchPointPressed);
+            return *this;
+        }
+        QTouchEventSequence& move(int touchId, const QPoint &pt)
+        {
+            touchPointStates |= Qt::TouchPointMoved;
+            QTouchEvent::TouchPoint *p = point(touchId);
+            p->setLastPos(p->pos());
+            p->setLastScreenPos(relativeWindow->mapToGlobal(p->pos().toPoint()));
+            p->setPos(pt);
+            p->setScreenPos(relativeWindow->mapToGlobal(pt));
+            p->setState(Qt::TouchPointMoved);
+            return *this;
+        }
+        QTouchEventSequence& release(int touchId, const QPoint &pt)
+        {
+            touchPointStates |= Qt::TouchPointReleased;
+            QTouchEvent::TouchPoint *p = point(touchId);
+            p->setLastPos(p->pos());
+            p->setLastScreenPos(relativeWindow->mapToGlobal(p->pos().toPoint()));
+            p->setPos(pt);
+            p->setScreenPos(relativeWindow->mapToGlobal(pt));
+            p->setState(Qt::TouchPointReleased);
+            return *this;
+        }
+        QTouchEventSequence& stationary(int touchId)
+        {
+            touchPointStates |= Qt::TouchPointStationary;
+            QTouchEvent::TouchPoint *p = point(touchId);
+            p->setState(Qt::TouchPointStationary);
+            return *this;
+        }
+
+    private:
+        QTouchEvent::TouchPoint* point(int touchId)
+        {
+            QTouchEvent::TouchPoint *pt = points.value(touchId, 0);
+            if (!pt) {
+                pt = new QTouchEvent::TouchPoint;
+                pt->setId(touchId);
+                points.insert(touchId, pt);
+            }
+            return pt;
+        }
+        void commit()
+        {
+            if (relativeWindow) {
+                QTouchEvent event(eventType, Qt::NoModifier,
+                                  touchPointStates, points.values());
+                ::sendSpontaneousEvent(relativeWindow, &event);
+                relativeWindow = 0;
+            }
+        }
+
+        static int refcount;
+        static QMap<int, QTouchEvent::TouchPoint*> points;
+        QWidget *relativeWindow;
+        QEvent::Type eventType;
+        Qt::TouchPointStates touchPointStates;
+        friend QTouchEventSequence touchBeginEvent(QWidget*);
+    };
+    QMap<int, QTouchEvent::TouchPoint*> QTouchEventSequence::points;
+    int QTouchEventSequence::refcount = 0;
+
+    QTouchEventSequence touchBeginEvent(QWidget *widget)
+    {
+        foreach(QTouchEvent::TouchPoint *point, QTouchEventSequence::points.values())
+            delete point;
+        QTouchEventSequence::points.clear();
+        return QTouchEventSequence(widget, QEvent::TouchBegin);
+    }
+    QTouchEventSequence touchUpdateEvent(QWidget *widget)
+    {
+        return QTouchEventSequence(widget, QEvent::TouchUpdate);
+    }
+    QTouchEventSequence touchEndEvent(QWidget *widget)
+    {
+        return QTouchEventSequence(widget, QEvent::TouchEnd);
+    }
+
+}
+
+void tst_Gestures::touch()
+{
+    mainWidget->setAttribute(Qt::WA_AcceptTouchEvents);
+    GraphicsScene scene;
+    QGraphicsView view(&scene);
+    view.viewport()->setAttribute(Qt::WA_AcceptTouchEvents);
+    mainWidget->layout()->addWidget(&view);
+
+    GraphicsItem *item = new GraphicsItem(300, 100);
+    item->setAcceptTouchEvents(true);
+    item->setPos(30, 50);
+    scene.addItem(item);
+    GraphicsItem *subitem1 = new GraphicsItem(50, 70);
+    subitem1->setAcceptTouchEvents(true);
+    subitem1->setPos(70, 70);
+    scene.addItem(subitem1);
+    GraphicsItem *subitem2 = new GraphicsItem(50, 70);
+    subitem2->setAcceptTouchEvents(true);
+    subitem2->setPos(250, 70);
+    scene.addItem(subitem2);
+    QApplication::processEvents();
+
+    QRect itemRect = view.mapFromScene(item->mapRectToScene(item->boundingRect())).boundingRect();
+    QPoint pt = itemRect.center();
+    QTest::touchBeginEvent(view.viewport())
+        .press(0, pt)
+        .press(1, pt);
+    QTest::touchUpdateEvent(view.viewport())
+        .move(0, pt + QPoint(20, 30))
+        .move(1, QPoint(300, 300));
+    QTest::touchUpdateEvent(view.viewport())
+        .stationary(0)
+        .move(1, QPoint(330, 330));
+    QTest::touchEndEvent(view.viewport())
+        .release(0, QPoint(120, 120))
+        .release(1, QPoint(300, 300));
+
+    QVERIFY(item->touch.seenTouchBeginEvent);
+    QVERIFY(item->touch.seenTouchUpdateEvent);
+    QVERIFY(item->touch.seenTouchEndEvent);
 }
 
 QTEST_MAIN(tst_Gestures)
