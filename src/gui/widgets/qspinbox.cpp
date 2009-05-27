@@ -1254,9 +1254,7 @@ QVariant QDoubleSpinBoxPrivate::valueFromText(const QString &f) const
 
 double QDoubleSpinBoxPrivate::round(double value) const
 {
-    Q_Q(const QDoubleSpinBox);
-    const QString strDbl = q->locale().toString(value, 'f', decimals);
-    return q->locale().toDouble(strDbl);
+    return QString::number(value, 'f', decimals).toDouble();
 }
 
 
