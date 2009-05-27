@@ -220,7 +220,7 @@ QMainWindow *QSoftKeyStack::mainWindowOfWidget(QWidget *widget)
 QSoftKeyStack *QSoftKeyStack::softKeyStackOfWidget(QWidget *widget)
 {
     QMainWindow *mainWindow = mainWindowOfWidget(widget);
-    return mainWindow ? mainWindow->softKeyStack() : 0;
+    return (mainWindow && mainWindow->hasSoftKeyStack()) ? mainWindow->softKeyStack() : 0;
 }
 
 #if !defined(Q_WS_S60)
