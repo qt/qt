@@ -184,19 +184,21 @@ static void rebuildMenu()
     QMenuBarPrivate *mb = 0;
     QWidget *w = qApp->activeWindow();
     QMainWindow *mainWindow = qobject_cast<QMainWindow*>(w);
-    QSoftKeyStack* softKeyStack = mainWindow->softKeyStack();
-    if (!softKeyStack->isEmpty()) {
-        const QSoftkeySet& softKeyTop = softKeyStack->top();
-        int index=0;
-        bool found=false;
-        while( index<softKeyTop.count() && !found) {
-            QSoftKeyAction* softAction = softKeyTop.at(index);
-            QSoftKeyAction::StandardRole role = softAction->role();
-            if(softAction->role() == QSoftKeyAction::ContextMenu) {
-                widgetWithContextMenu = softAction->parentWidget();
-                found=true;
-                }
-            index++;
+    if (mainWindow) {
+        QSoftKeyStack* softKeyStack = mainWindow->softKeyStack();
+        if (!softKeyStack->isEmpty()) {
+            const QSoftkeySet& softKeyTop = softKeyStack->top();
+            int index=0;
+            bool found=false;
+            while( index<softKeyTop.count() && !found) {
+                QSoftKeyAction* softAction = softKeyTop.at(index);
+                QSoftKeyAction::StandardRole role = softAction->role();
+                if(softAction->role() == QSoftKeyAction::ContextMenu) {
+                    widgetWithContextMenu = softAction->parentWidget();
+                    found=true;
+                    }
+                index++;
+            }
         }
     }
     
