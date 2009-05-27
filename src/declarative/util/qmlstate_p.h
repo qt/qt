@@ -50,7 +50,7 @@ QT_BEGIN_NAMESPACE
 
 class QmlStatePrivate : public QObjectPrivate
 {
-    Q_DECLARE_PUBLIC(QmlState);
+    Q_DECLARE_PUBLIC(QmlState)
 
 public:
     QmlStatePrivate()

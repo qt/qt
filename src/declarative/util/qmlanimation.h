@@ -266,7 +266,7 @@ class QmlParentChangeActionPrivate;
 class QmlParentChangeAction : public QmlAbstractAnimation
 {
     Q_OBJECT
-    Q_DECLARE_PRIVATE(QmlParentChangeAction);
+    Q_DECLARE_PRIVATE(QmlParentChangeAction)
 
     //XXX should have parent property as well for when it isn't part of a transition
 
@@ -361,7 +361,7 @@ public:
 class QmlSequentialAnimation : public QmlAnimationGroup
 {
     Q_OBJECT
-    Q_DECLARE_PRIVATE(QmlAnimationGroup);
+    Q_DECLARE_PRIVATE(QmlAnimationGroup)
 
 public:
     QmlSequentialAnimation(QObject *parent=0);
@@ -379,7 +379,7 @@ QML_DECLARE_TYPE(QmlSequentialAnimation)
 class QmlParallelAnimation : public QmlAnimationGroup
 {
     Q_OBJECT
-    Q_DECLARE_PRIVATE(QmlAnimationGroup);
+    Q_DECLARE_PRIVATE(QmlAnimationGroup)
 
 public:
     QmlParallelAnimation(QObject *parent=0);

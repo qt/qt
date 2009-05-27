@@ -60,7 +60,7 @@ class Q_DECLARATIVE_EXPORT QmlSqlBind : public QObject, public QmlParserStatus
     Q_PROPERTY(QString name READ name WRITE setName)
     Q_PROPERTY(QVariant value READ value WRITE setValue)
 
-    Q_CLASSINFO("DefaultValue", "value");
+    Q_CLASSINFO("DefaultValue", "value")
 
 public:
     QmlSqlBind(QObject *parent = 0);

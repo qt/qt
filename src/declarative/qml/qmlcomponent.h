@@ -60,7 +60,7 @@ class QmlEngine;
 class Q_DECLARATIVE_EXPORT QmlComponent : public QObject
 {
     Q_OBJECT
-    Q_DECLARE_PRIVATE(QmlComponent);
+    Q_DECLARE_PRIVATE(QmlComponent)
 
 public:
     QmlComponent(QObject *parent = 0);

@@ -194,7 +194,7 @@ class Q_DECLARATIVE_EXPORT QFxPath : public QObject, public QmlParserStatus
 {
     Q_OBJECT
 
-    Q_INTERFACES(QmlParserStatus);
+    Q_INTERFACES(QmlParserStatus)
     Q_PROPERTY(QList<QFxPathElement *>* pathElements READ pathElements)
     Q_PROPERTY(qreal startX READ startX WRITE setStartX)
     Q_PROPERTY(qreal startY READ startY WRITE setStartY)

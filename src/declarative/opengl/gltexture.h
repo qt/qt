@@ -105,7 +105,7 @@ public:
 
     GLuint texture() const;
 private:
-    Q_DISABLE_COPY(GLTexture);
+    Q_DISABLE_COPY(GLTexture)
     GLTexturePrivate *d;
 };
 

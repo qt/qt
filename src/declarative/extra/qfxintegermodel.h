@@ -60,11 +60,11 @@ public:
     QFxIntegerModel(QObject *parent=0);
     ~QFxIntegerModel();
 
-    Q_PROPERTY(int minimum READ minimum WRITE setMinimum);
+    Q_PROPERTY(int minimum READ minimum WRITE setMinimum)
     int minimum() const;
     void setMinimum(int);
 
-    Q_PROPERTY(int maximum READ maximum WRITE setMaximum);
+    Q_PROPERTY(int maximum READ maximum WRITE setMaximum)
     int maximum() const;
     void setMaximum(int);
 

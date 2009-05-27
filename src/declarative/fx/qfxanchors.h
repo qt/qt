@@ -116,7 +116,7 @@ public:
         Horizontal_Mask = HasLeftAnchor | HasRightAnchor | HasHCenterAnchor,
         Vertical_Mask = HasTopAnchor | HasBottomAnchor | HasVCenterAnchor | HasBaselineAnchor
     };
-    Q_DECLARE_FLAGS(UsedAnchors, UsedAnchor);
+    Q_DECLARE_FLAGS(UsedAnchors, UsedAnchor)
 
     QFxAnchorLine left() const;
     void setLeft(const QFxAnchorLine &edge);

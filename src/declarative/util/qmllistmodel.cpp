@@ -67,7 +67,7 @@ struct ListModelData
     ListInstruction *instructions() const { return (ListInstruction *)((char *)this + sizeof(ListModelData)); }
 };
 
-Q_DECLARE_METATYPE(QListModelInterface *);
+Q_DECLARE_METATYPE(QListModelInterface *)
 
 /*!
     \qmlclass ListModel 
@@ -178,7 +178,7 @@ public:
 
     virtual QList<int> roles() const;
     virtual QString toString(int role) const;
-    Q_PROPERTY(int count READ count);
+    Q_PROPERTY(int count READ count)
     virtual int count() const;
     virtual QHash<int,QVariant> data(int index, const QList<int> &roles = (QList<int>())) const;
 
@@ -243,7 +243,7 @@ struct ModelNode
     ListModel *modelCache;
     ModelObject *objectCache;
 };
-Q_DECLARE_METATYPE(ModelNode *);
+Q_DECLARE_METATYPE(ModelNode *)
 
 ModelObject::ModelObject(ModelNode *node)
 : _node(node), _haveProperties(false), _mo(new QmlOpenMetaObject(this))

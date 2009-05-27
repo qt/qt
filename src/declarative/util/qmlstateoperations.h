@@ -54,7 +54,7 @@ class QmlParentChangePrivate;
 class Q_DECLARATIVE_EXPORT QmlParentChange : public QmlStateOperation
 {
     Q_OBJECT
-    Q_DECLARE_PRIVATE(QmlParentChange);
+    Q_DECLARE_PRIVATE(QmlParentChange)
 
     Q_PROPERTY(QObject *target READ object WRITE setObject)
     Q_PROPERTY(QObject *parent READ parent WRITE setParent)
