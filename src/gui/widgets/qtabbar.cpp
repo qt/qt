@@ -1535,9 +1535,10 @@ void QTabBar::paintEvent(QPaintEvent *)
         }
         if (!d->dragInProgress)
             p.drawControl(QStyle::CE_TabBarTab, tab);
-        else
-            d->movingTab->setGeometry(tab.rect);
-
+        else {
+            int taboverlap = style()->pixelMetric(QStyle::PM_TabBarTabOverlap, 0, this);
+            d->movingTab->setGeometry(tab.rect.adjusted(-taboverlap, 0, taboverlap, 0));
+        }
     }
 
     // Only draw the tear indicator if necessary. Most of the time we don't need too.
@@ -1804,7 +1805,9 @@ void QTabBarPrivate::setupMovableTab()
     if (!movingTab)
         movingTab = new QWidget(q);
 
+    int taboverlap = q->style()->pixelMetric(QStyle::PM_TabBarTabOverlap, 0 ,q);
     QRect grabRect = q->tabRect(pressedIndex);
+    grabRect.adjust(-taboverlap, 0, taboverlap, 0);
 
     QPixmap grabImage(grabRect.size());
     grabImage.fill(Qt::transparent);
@@ -1812,7 +1815,7 @@ void QTabBarPrivate::setupMovableTab()
 
     QStyleOptionTabV3 tab;
     q->initStyleOption(&tab, pressedIndex);
-    tab.rect.moveTopLeft(QPoint(0, 0));
+    tab.rect.moveTopLeft(QPoint(taboverlap, 0));
     p.drawControl(QStyle::CE_TabBarTab, tab);
     p.end();
 

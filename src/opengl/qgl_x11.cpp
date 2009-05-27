@@ -443,19 +443,9 @@ bool QGLContext::chooseContext(const QGLContext* shareContext)
     return true;
 }
 
-
-/*!
-  \bold{X11 only:} This virtual function tries to find a
-  visual that matches the format, reducing the demands if the original
-  request cannot be met.
-
-  The algorithm for reducing the demands of the format is quite
-  simple-minded, so override this method in your subclass if your
-  application has spcific requirements on visual selection.
-
-  \sa chooseContext()
-*/
-
+/*
+  See qgl.cpp for qdoc comment.
+ */
 void *QGLContext::chooseVisual()
 {
     Q_D(QGLContext);
@@ -519,17 +509,9 @@ void *QGLContext::chooseVisual()
     return vis;
 }
 
-
-/*!
-  \internal
-
-  \bold{X11 only:} This virtual function chooses a visual
-  that matches the OpenGL \link format() format\endlink. Reimplement this
-  function in a subclass if you need a custom visual.
-
-  \sa chooseContext()
-*/
-
+/*
+  See qgl.cpp for qdoc comment.
+ */
 void *QGLContext::tryVisual(const QGLFormat& f, int bufDepth)
 {
     Q_D(QGLContext);

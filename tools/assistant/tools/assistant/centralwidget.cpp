@@ -87,6 +87,7 @@ namespace {
 
 FindWidget::FindWidget(QWidget *parent)
     : QWidget(parent)
+    , appPalette(qApp->palette())
 {
     QHBoxLayout *hboxLayout = new QHBoxLayout(this);
     QString resourcePath = QLatin1String(":/trolltech/assistant/images/");
@@ -146,6 +147,34 @@ FindWidget::FindWidget(QWidget *parent)
 
 FindWidget::~FindWidget()
 {
+}
+
+void FindWidget::hideEvent(QHideEvent* event)
+{
+#if !defined(QT_NO_WEBKIT)
+    // TODO: remove this once webkit supports setting the palette
+    if (!event->spontaneous())
+        qApp->setPalette(appPalette);
+#else
+    Q_UNUSED(event);
+#endif
+}
+
+void FindWidget::showEvent(QShowEvent* event)
+{
+#if !defined(QT_NO_WEBKIT)
+    // TODO: remove this once webkit supports setting the palette
+    if (!event->spontaneous()) {
+        QPalette p = appPalette;
+        p.setColor(QPalette::Inactive, QPalette::Highlight,
+            p.color(QPalette::Active, QPalette::Highlight));
+        p.setColor(QPalette::Inactive, QPalette::HighlightedText,
+            p.color(QPalette::Active, QPalette::HighlightedText));
+        qApp->setPalette(p);
+    }
+#else
+    Q_UNUSED(event);
+#endif
 }
 
 void FindWidget::updateButtons()
@@ -245,12 +274,14 @@ CentralWidget::CentralWidget(QHelpEngine *engine, MainWindow *parent)
             SLOT(showTabBarContextMenu(QPoint)));
     }
 
-    QPalette p = qApp->palette();
+#if defined(QT_NO_WEBKIT)
+    QPalette p = palette();
     p.setColor(QPalette::Inactive, QPalette::Highlight,
         p.color(QPalette::Active, QPalette::Highlight));
     p.setColor(QPalette::Inactive, QPalette::HighlightedText,
         p.color(QPalette::Active, QPalette::HighlightedText));
-    qApp->setPalette(p);
+    setPalette(p);
+#endif
 }
 
 CentralWidget::~CentralWidget()
@@ -848,60 +879,64 @@ void CentralWidget::keyPressEvent(QKeyEvent *e)
     QWidget::keyPressEvent(e);
 }
 
-void CentralWidget::find(QString ttf, bool forward, bool backward)
+void CentralWidget::find(const QString &ttf, bool forward, bool backward)
 {
-    QTextCursor cursor;
-    QTextDocument *doc = 0;
-    QTextBrowser *browser = 0;
-
-    HelpViewer *viewer = currentHelpViewer();
     QPalette p = findWidget->editFind->palette();
     p.setColor(QPalette::Active, QPalette::Base, Qt::white);
 
+    if (!ttf.isEmpty()) {
+        HelpViewer *viewer = currentHelpViewer();
+
+        bool found = false;
 #if !defined(QT_NO_WEBKIT)
-    Q_UNUSED(forward)
-    Q_UNUSED(doc)
-    Q_UNUSED(browser)
+        if (viewer) {
+            QWebPage::FindFlags options;
+            if (backward)
+                options |= QWebPage::FindBackward;
 
-    if (viewer) {
-        QWebPage::FindFlags options;
-        if (backward)
-            options |= QWebPage::FindBackward;
+            if (findWidget->checkCase->isChecked())
+                options |= QWebPage::FindCaseSensitively;
 
-        if (findWidget->checkCase->isChecked())
-            options |= QWebPage::FindCaseSensitively;
-
-        bool found = viewer->findText(ttf, options);
-        findWidget->labelWrapped->hide();
-
-        if (!found) {
-            options |= QWebPage::FindWrapsAroundDocument;
             found = viewer->findText(ttf, options);
+            findWidget->labelWrapped->hide();
 
             if (!found) {
-                p.setColor(QPalette::Active, QPalette::Base, QColor(255, 102, 102));
-            } else {
-                findWidget->labelWrapped->show();
+                options |= QWebPage::FindWrapsAroundDocument;
+                found = viewer->findText(ttf, options);
+                if (found)
+                    findWidget->labelWrapped->show();
             }
+        } else if (tabWidget->currentWidget() == m_searchWidget) {
+            QTextBrowser *browser = qFindChild<QTextBrowser*>(m_searchWidget);
+            found = findInTextBrowser(browser, ttf, forward, backward);
         }
-    }
 #else
-    if (viewer) {
-        doc = viewer->document();
-        cursor = viewer->textCursor();
-        browser = qobject_cast<QTextBrowser*>(viewer);
+        QTextBrowser *browser = qobject_cast<QTextBrowser*>(viewer);
+        if (tabWidget->currentWidget() == m_searchWidget)
+            browser = qFindChild<QTextBrowser*>(m_searchWidget);
+        found = findInTextBrowser(browser, ttf, forward, backward);
+#endif
+
+        if (!found)
+            p.setColor(QPalette::Active, QPalette::Base, QColor(255, 102, 102));
     }
 
-    if (tabWidget->currentWidget() == m_searchWidget) {
-        QTextBrowser *browser = qFindChild<QTextBrowser*>(m_searchWidget);
-        if (browser) {
-            doc = browser->document();
-            cursor = browser->textCursor();
-        }
-    }
+    if (!findWidget->isVisible())
+        findWidget->show();
+    findWidget->editFind->setPalette(p);
+}
 
-    if (!browser || !doc || cursor.isNull())
-        return;
+bool CentralWidget::findInTextBrowser(QTextBrowser* browser, const QString &ttf,
+    bool forward, bool backward)
+{
+    if (!browser)
+        return false;
+
+    QTextDocument *doc = browser->document();
+    QTextCursor cursor = browser->textCursor();
+
+    if (!doc || cursor.isNull())
+        return false;
 
     QTextDocument::FindFlags options;
 
@@ -910,44 +945,33 @@ void CentralWidget::find(QString ttf, bool forward, bool backward)
             QTextCursor::MoveAnchor);
     }
 
-    QTextCursor newCursor = cursor;
+    if (backward)
+        options |= QTextDocument::FindBackward;
 
-    if (!ttf.isEmpty()) {
-        if (backward)
-            options |= QTextDocument::FindBackward;
+    if (findWidget->checkCase->isChecked())
+        options |= QTextDocument::FindCaseSensitively;
 
-        if (findWidget->checkCase->isChecked())
-            options |= QTextDocument::FindCaseSensitively;
+    if (findWidget->checkWholeWords->isChecked())
+        options |= QTextDocument::FindWholeWords;
 
-        if (findWidget->checkWholeWords->isChecked())
-            options |= QTextDocument::FindWholeWords;
+    findWidget->labelWrapped->hide();
 
-        newCursor = doc->find(ttf, cursor, options);
-        findWidget->labelWrapped->hide();
-
+    bool found = true;
+    QTextCursor newCursor = doc->find(ttf, cursor, options);
+    if (newCursor.isNull()) {
+        QTextCursor ac(doc);
+        ac.movePosition(options & QTextDocument::FindBackward
+            ? QTextCursor::End : QTextCursor::Start);
+        newCursor = doc->find(ttf, ac, options);
         if (newCursor.isNull()) {
-            QTextCursor ac(doc);
-            ac.movePosition(options & QTextDocument::FindBackward
-                    ? QTextCursor::End : QTextCursor::Start);
-            newCursor = doc->find(ttf, ac, options);
-            if (newCursor.isNull()) {
-                p.setColor(QPalette::Active, QPalette::Base, QColor(255, 102, 102));
-                newCursor = cursor;
-            } else {
-                findWidget->labelWrapped->show();
-            }
+            found = false;
+            newCursor = cursor;
+        } else {
+            findWidget->labelWrapped->show();
         }
     }
-#endif
-
-    if (!findWidget->isVisible())
-        findWidget->show();
-
-#if defined(QT_NO_WEBKIT)
-    if (browser)
-        browser->setTextCursor(newCursor);
-#endif
-    findWidget->editFind->setPalette(p);
+    browser->setTextCursor(newCursor);
+    return found;
 }
 
 void CentralWidget::updateBrowserFont()

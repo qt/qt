@@ -5082,9 +5082,12 @@ int QStyleSheetStyle::styleHint(StyleHint sh, const QStyleOption *opt, const QWi
 #ifndef QT_NO_COMBOBOX
             if (qobject_cast<const QComboBox *>(w)) {
                 QAbstractItemView *view = qFindChild<QAbstractItemView *>(w);
-                QRenderRule subRule = renderRule(view, PseudoElement_None);
-                if (subRule.hasBox() || !subRule.hasNativeBorder())
-                    return QFrame::NoFrame;
+                if (view) {
+                    view->ensurePolished();
+                    QRenderRule subRule = renderRule(view, PseudoElement_None);
+                    if (subRule.hasBox() || !subRule.hasNativeBorder())
+                        return QFrame::NoFrame;
+                }
             }
 #endif // QT_NO_COMBOBOX
             break;
