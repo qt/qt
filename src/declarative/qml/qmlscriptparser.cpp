@@ -587,7 +587,7 @@ QmlParser::Variant ProcessAST::getVariant(AST::ExpressionNode *expr)
         if (lit->suffix == AST::NumericLiteral::noSuffix)
             return QmlParser::Variant(lit->value, asString(expr));
         else
-            return QmlParser::Variant(asString(expr), QmlParser::Variant::Script);
+            return QmlParser::Variant(asString(expr), expr);
 
     } else {
 
@@ -597,7 +597,7 @@ QmlParser::Variant ProcessAST::getVariant(AST::ExpressionNode *expr)
            }
         }
 
-        return QmlParser::Variant(asString(expr), QmlParser::Variant::Script);
+        return QmlParser::Variant(asString(expr), expr);
     }
 }
 
@@ -620,8 +620,8 @@ bool ProcessAST::visit(AST::UiScriptBinding *node)
     if (AST::ExpressionStatement *stmt = AST::cast<AST::ExpressionStatement *>(node->statement)) {
         primitive = getVariant(stmt->expression);
     } else { // do binding
-        primitive = QmlParser::Variant(asString(node->statement),
-                                       QmlParser::Variant::Script);
+        primitive = QmlParser::Variant(asString(node->statement), 
+                                       node->statement);
     }
 
     Value *v = new Value;
