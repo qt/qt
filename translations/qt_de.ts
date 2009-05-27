@@ -66,15 +66,15 @@
         <location filename="../src/3rdparty/phonon/gstreamer/backend.cpp" line="+171"/>
         <source>Warning: You do not seem to have the package gstreamer0.10-plugins-good installed.
           Some video features have been disabled.</source>
-        <translation>Warnung: Das Paket  gstreamer0.10-plugins-good ist nicht installiert.
-Einige Video-Funktionen stehen nicht zur  Verfügung.</translation>
+        <translation>Achtung: Das Paket gstreamer0.10-plugins-good ist nicht installiert.
+Einige Video-Funktionen stehen nicht zur Verfügung.</translation>
     </message>
     <message>
         <location line="+5"/>
         <source>Warning: You do not seem to have the base GStreamer plugins installed.
           All audio and video support has been disabled</source>
-        <translation>Warnung: Die grundlegenden GStreamer-plugins sind nicht installiert.￼
-Die Audio- und Video-Unterstützung wurde abgeschaltet</translation>
+        <translation>Achtung: Die grundlegenden GStreamer-Plugins sind nicht installiert.￼
+Die Audio- und Video-Unterstützung steht nicht zur Verfügung.</translation>
     </message>
 </context>
 <context>
@@ -85,7 +85,7 @@ Die Audio- und Video-Unterstützung wurde abgeschaltet</translation>
 
 Check your Gstreamer installation and make sure you 
 have libgstreamer-plugins-base installed.</source>
-        <translation>Das Abspielen konnte nicht gestartet werden.
+        <translation>Die Wiedergabe kann nicht gestartet werden.
 Bitte prüfen Sie die Gstreamer-Installation und stellen Sie sicher, dass das Paket libgstreamer-plugins-base installiert ist.</translation>
     </message>
     <message>
@@ -139,7 +139,7 @@ Bitte prüfen Sie die Gstreamer-Installation und stellen Sie sicher, dass das Pa
         <location line="+18"/>
         <location line="+54"/>
         <source>Use this slider to adjust the volume. The leftmost position is 0%, the rightmost is %1%</source>
-        <translation>Die Regler wird zur Einstellung der Lautstärke benutzt. Die Position links entspricht 0%; die Position rechts entspricht %1%</translation>
+        <translation>Mit diesem Regler stellen Sie die Lautstärke ein. Die Position links entspricht 0%; die Position rechts entspricht %1%</translation>
     </message>
 </context>
 <context>
@@ -291,12 +291,12 @@ Bitte prüfen Sie die Gstreamer-Installation und stellen Sie sicher, dass das Pa
     <message>
         <location line="+9"/>
         <source>Preview File Info</source>
-        <translation>Voransicht der Datei-Information</translation>
+        <translation>Vorschau der Datei-Informationen</translation>
     </message>
     <message>
         <location line="+23"/>
         <source>Preview File Contents</source>
-        <translation>Voransicht des Datei-Inhalts</translation>
+        <translation>Vorschau des Datei-Inhalts</translation>
     </message>
     <message>
         <location line="+88"/>
@@ -392,7 +392,7 @@ Bitte prüfen Sie die Gstreamer-Installation und stellen Sie sicher, dass das Pa
     <message>
         <location line="+4"/>
         <source>Sort by &amp;Name</source>
-        <translation>Nach &amp;Name sortieren</translation>
+        <translation>Nach &amp;Namen sortieren</translation>
     </message>
     <message>
         <location line="+2"/>
@@ -497,7 +497,7 @@ Bitte prüfen Sie die Gstreamer-Installation und stellen Sie sicher, dass das Pa
 File not found.
 Check path and filename.</source>
         <translation>%1
-Datei konnte nicht gefunden werden.
+Datei kann nicht gefunden werden.
 Überprüfen Sie Pfad und Dateinamen.</translation>
     </message>
     <message>
@@ -617,7 +617,7 @@ nach
     <message>
         <location line="+45"/>
         <source>Defaults</source>
-        <translation>Defaults</translation>
+        <translation>Voreinstellungen</translation>
     </message>
     <message>
         <location line="+50"/>
@@ -699,7 +699,7 @@ nach
     <message>
         <location line="+18"/>
         <source>Contains commands to manipulate the window</source>
-        <translation>Enthält Befehle zum Ändern der Fenstergröße </translation>
+        <translation>Enthält Befehle zum Ändern der Fenstergröße</translation>
     </message>
     <message>
         <location line="+3"/>
@@ -772,18 +772,18 @@ nach
     <message>
         <location line="+3"/>
         <source>The protocol `%1&apos; does not support getting files</source>
-        <translation>Das Protokoll `%1&apos; unterstützt nicht das Laden von Files</translation>
+        <translation>Das Protokoll `%1&apos; unterstützt nicht das Laden von Dateien</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>The protocol `%1&apos; does not support putting files</source>
-        <translation>Das Protokoll `%1&apos; unterstützt nicht das Speichern von Files</translation>
+        <translation>Das Protokoll `%1&apos; unterstützt nicht das Speichern von Dateien</translation>
     </message>
     <message>
         <location line="+243"/>
         <location line="+4"/>
         <source>The protocol `%1&apos; does not support copying or moving files or directories</source>
-        <translation> Das Protokoll `%1&apos; unterstützt nicht das Kopieren oder Verschieben von Dateien oder Verzeichnissen</translation>
+        <translation>Das Protokoll `%1&apos; unterstützt nicht das Kopieren oder Verschieben von Dateien oder Verzeichnissen</translation>
     </message>
     <message>
         <location line="+237"/>
@@ -847,7 +847,7 @@ nach
         <location line="+787"/>
         <location line="+208"/>
         <source>Operation on socket is not supported</source>
-        <translation>Diese Socketoperation wird nicht unterstützt</translation>
+        <translation>Diese Socket-Operation wird nicht unterstützt</translation>
     </message>
     <message>
         <location line="+137"/>
@@ -899,7 +899,7 @@ nach
     <message>
         <location line="+2"/>
         <source>Incompatible Qt Library Error</source>
-        <translation>Qt Bibliothek ist inkompatibel</translation>
+        <translation>Die Qt-Bibliothek ist inkompatibel</translation>
     </message>
     <message>
         <location filename="../src/gui/accessible/qaccessibleobject.cpp" line="+376"/>
@@ -909,7 +909,7 @@ nach
     <message>
         <location line="+2"/>
         <source>Activates the program&apos;s main window</source>
-        <translation>Aktiviert das Programmhauptfenster</translation>
+        <translation>Aktiviert das Hauptfenster der Anwendung</translation>
     </message>
 </context>
 <context>
@@ -1066,17 +1066,17 @@ nach
     <message>
         <location line="+303"/>
         <source>Unable to commit transaction</source>
-        <translation>Die Transaktion konnte nicht durchgeführt werden (Operation &apos;commit&apos; fehlgeschlagen)</translation>
+        <translation>Die Transaktion kann nicht durchgeführt werden (Operation &apos;commit&apos; fehlgeschlagen)</translation>
     </message>
     <message>
         <location line="+17"/>
         <source>Unable to rollback transaction</source>
-        <translation>Die Transaktion konnte nicht rückgängig gemacht werden (Operation &apos;rollback&apos; fehlgeschlagen)</translation>
+        <translation>Die Transaktion kann nicht rückgängig gemacht werden (Operation &apos;rollback&apos; fehlgeschlagen)</translation>
     </message>
     <message>
         <location line="+15"/>
         <source>Unable to set autocommit</source>
-        <translation>&apos;autocommit&apos; konnte nicht aktiviert werden</translation>
+        <translation>&apos;autocommit&apos; kann nicht aktiviert werden</translation>
     </message>
 </context>
 <context>
@@ -1085,32 +1085,32 @@ nach
         <location line="-1043"/>
         <location line="+243"/>
         <source>Unable to execute statement</source>
-        <translation>Der Befehl konnte nicht ausgeführt werden</translation>
+        <translation>Der Befehl kann nicht ausgeführt werden</translation>
     </message>
     <message>
         <location line="-206"/>
         <source>Unable to prepare statement</source>
-        <translation>Der Befehl konnte nicht initialisiert werden</translation>
+        <translation>Der Befehl kann nicht initialisiert werden</translation>
     </message>
     <message>
         <location line="+196"/>
         <source>Unable to bind variable</source>
-        <translation>Die Variable konnte nicht gebunden werden</translation>
+        <translation>Die Variable kann nicht gebunden werden</translation>
     </message>
     <message>
         <location line="+92"/>
         <source>Unable to fetch record %1</source>
-        <translation>Der Datensatz %1 konnte nicht abgeholt werden</translation>
+        <translation>Der Datensatz %1 kann nicht abgeholt werden</translation>
     </message>
     <message>
         <location line="+17"/>
         <source>Unable to fetch next</source>
-        <translation>Der nächste Datensatz konnte nicht abgeholt werden</translation>
+        <translation>Der nächste Datensatz kann nicht abgeholt werden</translation>
     </message>
     <message>
         <location line="+20"/>
         <source>Unable to fetch first</source>
-        <translation>Der erste Datensatz konnte nicht abgeholt werden</translation>
+        <translation>Der erste Datensatz kann nicht abgeholt werden</translation>
     </message>
 </context>
 <context>
@@ -1358,7 +1358,7 @@ nach
     <message>
         <location filename="../src/gui/dialogs/qerrormessage.cpp" line="+391"/>
         <source>&amp;Show this message again</source>
-        <translation>Diese Meldung noch einmal an&amp;zeigen</translation>
+        <translation>Diese Meldung wieder an&amp;zeigen</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -1373,7 +1373,7 @@ nach
     <message>
         <location line="+3"/>
         <source>Warning:</source>
-        <translation>Warnung:</translation>
+        <translation>Achtung:</translation>
     </message>
     <message>
         <location line="+3"/>
@@ -1397,12 +1397,12 @@ nach
     <message>
         <location line="+120"/>
         <source>Cannot open %1 for input</source>
-        <translation>%1 konnte nicht zum Lesen geöffnet werden</translation>
+        <translation>%1 kann nicht zum Lesen geöffnet werden</translation>
     </message>
     <message>
         <location line="+17"/>
         <source>Cannot open for output</source>
-        <translation>Das Öffnen zum Schreiben schlug fehl</translation>
+        <translation>Das Öffnen zum Schreiben ist fehlgeschlagen</translation>
     </message>
     <message>
         <location line="+10"/>
@@ -1565,12 +1565,12 @@ Stellen Sie sicher, dass der Verzeichnisname richtig ist.</translation>
         <source>&apos;%1&apos; is write protected.
 Do you want to delete it anyway?</source>
         <translation>&apos;%1&apos; ist schreibgeschützt.
-Möchten sie die Datei trotzdem löschen?</translation>
+Möchten Sie die Datei trotzdem löschen?</translation>
     </message>
     <message>
         <location line="+5"/>
         <source>Are sure you want to delete &apos;%1&apos;?</source>
-        <translation>Sind Sie sicher, dass Sie %1 löschen möchten?</translation>
+        <translation>Sind Sie sicher, dass Sie &apos;%1&apos; löschen möchten?</translation>
     </message>
     <message>
         <location line="+15"/>
@@ -1624,7 +1624,7 @@ Möchten sie die Datei trotzdem löschen?</translation>
         <location filename="../src/gui/dialogs/qfiledialog.ui"/>
         <location filename="../src/gui/dialogs/qfiledialog_wince.ui"/>
         <source>Look in:</source>
-        <translation>Suche in:</translation>
+        <translation>Suchen in:</translation>
     </message>
     <message>
         <location/>
@@ -1658,7 +1658,7 @@ Möchten sie die Datei trotzdem löschen?</translation>
     <message>
         <location line="+1"/>
         <source>%1 bytes</source>
-        <translation>%1 byte</translation>
+        <translation>%1 Byte</translation>
     </message>
     <message>
         <location line="+77"/>
@@ -1887,12 +1887,12 @@ Möchten sie die Datei trotzdem löschen?</translation>
     <message>
         <location line="+3"/>
         <source>Simplified Chinese</source>
-        <translation>Vereinfachtes Chinesisch</translation>
+        <translation>Chinesisch (Kurzzeichen)</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Traditional Chinese</source>
-        <translation>Traditionelles Chinesisch</translation>
+        <translation>Chinesisch (Langzeichen)</translation>
     </message>
     <message>
         <location line="+3"/>
@@ -2296,7 +2296,7 @@ Möchten sie die Datei trotzdem löschen?</translation>
     <message>
         <location line="+6"/>
         <source>SSL handshake failed</source>
-        <translation>Es trat ein Fehler im Ablauf des SSL-Protokolls auf.</translation>
+        <translation>Im Ablauf des SSL-Protokolls ist ein Fehler aufgetreten.</translation>
     </message>
     <message>
         <location line="-3"/>
@@ -2580,7 +2580,7 @@ Möchten sie die Datei trotzdem löschen?</translation>
     <message>
         <location line="+43"/>
         <source>The plugin &apos;%1&apos; uses incompatible Qt library. (Cannot mix debug and release libraries.)</source>
-        <translation>Das Plugin &apos;%1&apos; verwendet eine inkompatible Qt-Bibliothek. (Im Debug- und Release-Modus erstellte Bibliotheken können nicht zusammen verwendet werden.)</translation>
+        <translation>Das Plugin &apos;%1&apos; verwendet eine inkompatible Qt-Bibliothek. (Im Debug- bzw. Release-Modus erstellte Bibliotheken können nicht zusammen verwendet werden.)</translation>
     </message>
     <message>
         <location filename="../src/corelib/plugin/qlibrary_unix.cpp" line="+209"/>
@@ -2670,7 +2670,7 @@ Möchten sie die Datei trotzdem löschen?</translation>
         <location filename="../src/network/socket/qlocalsocket_tcp.cpp" line="+132"/>
         <location filename="../src/network/socket/qlocalsocket_unix.cpp" line="+134"/>
         <source>%1: Connection refused</source>
-        <translation>%1: Der Aufbau einer Verbindung wurde verweigert</translation>
+        <translation>%1: Der Verbindungsaufbau wurde verweigert</translation>
     </message>
     <message>
         <location line="+3"/>
@@ -2696,13 +2696,13 @@ Möchten sie die Datei trotzdem löschen?</translation>
         <location line="+3"/>
         <location filename="../src/network/socket/qlocalsocket_unix.cpp" line="+3"/>
         <source>%1: Socket resource error</source>
-        <translation>%1: Socketfehler (Ressourcenproblem)</translation>
+        <translation>%1: Socket-Fehler (Ressourcenproblem)</translation>
     </message>
     <message>
         <location line="+3"/>
         <location filename="../src/network/socket/qlocalsocket_unix.cpp" line="+3"/>
         <source>%1: Socket operation timed out</source>
-        <translation>%1: Zeitüberschreitung bei Socketoperation</translation>
+        <translation>%1: Zeitüberschreitung bei Socket-Operation</translation>
     </message>
     <message>
         <location line="+3"/>
@@ -2721,7 +2721,7 @@ Möchten sie die Datei trotzdem löschen?</translation>
         <location line="+3"/>
         <location filename="../src/network/socket/qlocalsocket_unix.cpp" line="+3"/>
         <source>%1: The socket operation is not supported</source>
-        <translation>%1: Diese Socketoperation wird nicht unterstützt</translation>
+        <translation>%1: Diese Socket-Operation wird nicht unterstützt</translation>
     </message>
     <message>
         <location line="+4"/>
@@ -2740,7 +2740,7 @@ Möchten sie die Datei trotzdem löschen?</translation>
     <message>
         <location filename="../src/sql/drivers/mysql/qsql_mysql.cpp" line="+1252"/>
         <source>Unable to open database &apos;</source>
-        <translation>Die Datenbankverbindung konnte nicht geöffnet werden &apos;</translation>
+        <translation>Die Datenbankverbindung kann nicht geöffnet werden &apos;</translation>
     </message>
     <message>
         <location line="+7"/>
@@ -2750,17 +2750,17 @@ Möchten sie die Datei trotzdem löschen?</translation>
     <message>
         <location line="+127"/>
         <source>Unable to begin transaction</source>
-        <translation>Es konnte keine Transaktion gestartet werden</translation>
+        <translation>Es kann keine Transaktion gestartet werden</translation>
     </message>
     <message>
         <location line="+17"/>
         <source>Unable to commit transaction</source>
-        <translation>Die Transaktion konnte nicht durchgeführt werden (Operation &apos;commit&apos; fehlgeschlagen)</translation>
+        <translation>Die Transaktion kann nicht durchgeführt werden (Operation &apos;commit&apos; fehlgeschlagen)</translation>
     </message>
     <message>
         <location line="+17"/>
         <source>Unable to rollback transaction</source>
-        <translation>Die Transaktion konnte nicht rückgängig gemacht werden (Operation &apos;rollback&apos; fehlgeschlagen)</translation>
+        <translation>Die Transaktion kann nicht rückgängig gemacht werden (Operation &apos;rollback&apos; fehlgeschlagen)</translation>
     </message>
 </context>
 <context>
@@ -3422,7 +3422,7 @@ Möchten sie die Datei trotzdem löschen?</translation>
     <message>
         <location line="+31"/>
         <source>Socket error on %1: %2</source>
-        <translation>Socketfehler bei %1: %2</translation>
+        <translation>Socket-Fehler bei %1: %2</translation>
     </message>
     <message>
         <location line="+15"/>
@@ -3815,7 +3815,7 @@ Möchten sie die Datei trotzdem löschen?</translation>
     <message>
         <location filename="../src/gui/dialogs/qprintdialog_unix.cpp" line="-357"/>
         <source>Print To File ...</source>
-        <translation>In Datei drucken</translation>
+        <translation>In Datei drucken ...</translation>
     </message>
     <message>
         <location line="+80"/>
@@ -4022,12 +4022,12 @@ Bitte wählen Sie einen anderen Dateinamen.</translation>
     <message>
         <location line="+253"/>
         <source>Print to File (PDF)</source>
-        <translation>Druck in PDF-Datei</translation>
+        <translation>In PDF-Datei drucken</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Print to File (Postscript)</source>
-        <translation>Druck in Postscript-Datei</translation>
+        <translation>In Postscript-Datei drucken</translation>
     </message>
     <message>
         <location line="+47"/>
@@ -4967,97 +4967,97 @@ Bitte wählen Sie einen anderen Dateinamen.</translation>
     <message>
         <location line="+1"/>
         <source>Open URL</source>
-        <translation>Öffne URL</translation>
+        <translation>URL öffnen</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Launch Mail</source>
-        <translation>Start Mail</translation>
+        <translation>Mail starten</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Launch Media</source>
-        <translation>Start Media Player</translation>
+        <translation>Medienspieler starten</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Launch (0)</source>
-        <translation>Start (0)</translation>
+        <translation>(0) starten</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Launch (1)</source>
-        <translation>Start (1)</translation>
+        <translation>(1) starten</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Launch (2)</source>
-        <translation>Start (2)</translation>
+        <translation>(2) starten</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Launch (3)</source>
-        <translation>Start (3)</translation>
+        <translation>(3) starten</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Launch (4)</source>
-        <translation>Start (4)</translation>
+        <translation>(4) starten</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Launch (5)</source>
-        <translation>Start (5)</translation>
+        <translation>(5) starten</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Launch (6)</source>
-        <translation>Start (6)</translation>
+        <translation>(6) starten</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Launch (7)</source>
-        <translation>Start (7)</translation>
+        <translation>(7) starten</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Launch (8)</source>
-        <translation>Start (8)</translation>
+        <translation>(8) starten</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Launch (9)</source>
-        <translation>Start (9)</translation>
+        <translation>(9) starten</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Launch (A)</source>
-        <translation>Start (A)</translation>
+        <translation>(A) starten</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Launch (B)</source>
-        <translation>Start (B)</translation>
+        <translation>(B) starten</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Launch (C)</source>
-        <translation>Start (C)</translation>
+        <translation>(C) starten</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Launch (D)</source>
-        <translation>Start (D)</translation>
+        <translation>(D) starten</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Launch (E)</source>
-        <translation>Start (E)</translation>
+        <translation>(E) starten</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Launch (F)</source>
-        <translation>Start (F)</translation>
+        <translation>(F) starten</translation>
     </message>
     <message>
         <location line="+4"/>
@@ -5385,12 +5385,12 @@ Bitte wählen Sie einen anderen Dateinamen.</translation>
     <message>
         <location line="+119"/>
         <source>Error while reading: %1</source>
-        <translation>Beim Lesen trat ein Fehler auf: %1</translation>
+        <translation>Beim Lesen ist ein Fehler aufgetreten: %1</translation>
     </message>
     <message>
         <location line="+96"/>
         <source>Error during SSL handshake: %1</source>
-        <translation>Es trat ein Fehler im Ablauf des SSL-Protokolls auf: %1</translation>
+        <translation>Im Ablauf des SSL-Protokolls ist ein Fehler aufgetreten: %1</translation>
     </message>
     <message>
         <location line="-524"/>
@@ -5455,7 +5455,7 @@ Bitte wählen Sie einen anderen Dateinamen.</translation>
     <message>
         <location line="+4"/>
         <source>%1: already exists</source>
-        <translation>%1: existiert bereits</translation>
+        <translation>%1: Existiert bereits</translation>
     </message>
     <message>
         <location line="+13"/>
@@ -5469,7 +5469,7 @@ Bitte wählen Sie einen anderen Dateinamen.</translation>
     <message>
         <location filename="../src/sql/drivers/tds/qsql_tds.cpp" line="+584"/>
         <source>Unable to open connection</source>
-        <translation>Die Datenbankverbindung konnte nicht geöffnet werden</translation>
+        <translation>Die Datenbankverbindung kann nicht geöffnet werden</translation>
     </message>
     <message>
         <location line="+5"/>
@@ -5495,7 +5495,7 @@ Bitte wählen Sie einen anderen Dateinamen.</translation>
     <message>
         <location filename="../src/network/socket/qtcpserver.cpp" line="+282"/>
         <source>Operation on socket is not supported</source>
-        <translation>Diese Socketoperation wird nicht unterstützt</translation>
+        <translation>Diese Socket-Operation wird nicht unterstützt</translation>
     </message>
 </context>
 <context>
@@ -7342,7 +7342,7 @@ Bitte wählen Sie einen anderen Dateinamen.</translation>
     <message>
         <location line="+9"/>
         <source>%1 is not an atomic type. Casting is only possible to atomic types.</source>
-        <translation>%1 ist kein atomarer Typ. Es können nur &quot;cast&quot;-Operation zu atomaren Typen durchgeführt werden.</translation>
+        <translation>%1 ist kein atomarer Typ. &quot;cast&quot;-Operation können nur zu atomaren Typen durchgeführt werden.</translation>
     </message>
     <message>
         <location line="+76"/>
@@ -7397,17 +7397,17 @@ Bitte wählen Sie einen anderen Dateinamen.</translation>
     <message>
         <location filename="../src/xmlpatterns/data/qatomicmathematicians.cpp" line="-180"/>
         <source>Integer division (%1) by zero (%2) is undefined.</source>
-        <translation>Die  Ganzzahldivision (%1)  durch Null (%2) ist nicht definiert.</translation>
+        <translation>Die Ganzzahldivision (%1) durch Null (%2) ist nicht definiert.</translation>
     </message>
     <message>
         <location line="+7"/>
         <source>Division (%1) by zero (%2) is undefined.</source>
-        <translation>Die  Division (%1)  durch Null (%2) ist nicht definiert.</translation>
+        <translation>Die Division (%1) durch Null (%2) ist nicht definiert.</translation>
     </message>
     <message>
         <location line="+7"/>
         <source>Modulus division (%1) by zero (%2) is undefined.</source>
-        <translation>Die  Modulo-Division (%1)  durch Null (%2) ist nicht definiert.</translation>
+        <translation>Die Modulo-Division (%1) durch Null (%2) ist nicht definiert.</translation>
     </message>
     <message>
         <location filename="../src/xmlpatterns/expr/qcastingplatform.cpp" line="-73"/>
@@ -7443,13 +7443,13 @@ Bitte wählen Sie einen anderen Dateinamen.</translation>
     <message>
         <location filename="../src/xmlpatterns/parser/qquerytransformparser.cpp" line="-3102"/>
         <source>The namespace for a user defined function cannot be empty (try the predefined prefix %1 which exists for cases like this)</source>
-        <translation>Der Namensraum einer nutzerdefinierten Funktion darf nicht leer sein (für diesen Zweck gibt es den vordefinierten Präfix %1)</translation>
+        <translation>Der Namensraum einer benutzerdefinierten Funktion darf nicht leer sein (für diesen Zweck gibt es den vordefinierten Präfix %1)</translation>
     </message>
     <message>
         <location line="-693"/>
         <location line="+10"/>
         <source>A default namespace declaration must occur before function, variable, and option declarations.</source>
-        <translation>Die Deklaration des Default-Namensraums muss vor Funktions- Variablen- oder Optionsdeklaration erfolgen.</translation>
+        <translation>Die Deklaration des Default-Namensraums muss vor Funktions-, Variablen- oder Optionsdeklaration erfolgen.</translation>
     </message>
     <message>
         <location line="-3576"/>
