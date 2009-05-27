@@ -256,6 +256,11 @@ tst_Suite::tst_Suite()
     addTestExclusion("mul-exhaustive", "Demands too much memory on WinCE");
 #endif
 
+#ifdef Q_OS_SYMBIAN
+    addTestExclusion("nested-repetition-count-overflow", "Demands too much memory on Symbian");
+    addTestExclusion("unicode-test", "Demands too much memory on Symbian");    
+#endif    
+
     QVector<uint> *data = qt_meta_data_tst_Suite();
     // content:
     *data << 1 // revision
