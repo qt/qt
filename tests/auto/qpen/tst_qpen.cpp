@@ -111,22 +111,22 @@ void tst_QPen::operator_eq_eq_data()
 
     QTest::newRow("differentColor") << QPen(Qt::red)
 				 << QPen(Qt::blue)
-				 << FALSE;
+				 << bool(FALSE);
     QTest::newRow("differentWidth") << QPen(Qt::red, 2)
 				 << QPen(Qt::red, 3)
-				 << FALSE;
+				 << bool(FALSE);
     QTest::newRow("differentPenStyle") << QPen(Qt::red, 2, Qt::DashLine)
 				    << QPen(Qt::red, 2, Qt::DotLine)
-				    << FALSE;
+				    << bool(FALSE);
     QTest::newRow("differentCapStyle") << QPen(Qt::red, 2, Qt::DashLine, Qt::RoundCap, Qt::BevelJoin)
 				    << QPen(Qt::red, 2, Qt::DashLine, Qt::SquareCap, Qt::BevelJoin)
-				    << FALSE;
+				    << bool(FALSE);
     QTest::newRow("differentJoinStyle") << QPen(Qt::red, 2, Qt::DashLine, Qt::RoundCap, Qt::BevelJoin)
 				     << QPen(Qt::red, 2, Qt::DashLine, Qt::RoundCap, Qt::MiterJoin)
-				     << FALSE;
+				     << bool(FALSE);
     QTest::newRow("same") << QPen(Qt::red, 2, Qt::DashLine, Qt::RoundCap, Qt::BevelJoin)
 		       << QPen(Qt::red, 2, Qt::DashLine, Qt::RoundCap, Qt::BevelJoin)
-		       << TRUE;
+		       << bool(TRUE);
 
 }
 
