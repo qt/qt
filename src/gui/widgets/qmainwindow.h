@@ -135,6 +135,7 @@ public:
 #ifndef QT_NO_SOFTKEYSTACK
     QSoftKeyStack *softKeyStack() const;
     void setSoftKeyStack(QSoftKeyStack *softKeyStack);
+    bool hasSoftKeyStack();
 #endif
     
 #ifndef QT_NO_STATUSBAR

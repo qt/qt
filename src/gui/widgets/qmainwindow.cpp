@@ -543,7 +543,7 @@ QSoftKeyStack *QMainWindow::softKeyStack() const
 }
 
 /*!
-    Sets the softkey stackfor the main window to \a softKeyStack.
+    Sets the softkey stack for the main window to \a softKeyStack.
 
     Note: QMainWindow takes ownership of the \a softKeyStack pointer and
     deletes it at the appropriate time.
@@ -558,6 +558,19 @@ void QMainWindow::setSoftKeyStack(QSoftKeyStack *softKeyStack)
         delete oldSoftKeyStack;
     }
     d->softKeyStack = softKeyStack;
+}
+
+/*!
+    Returns true if QMainWindow has a softkeystack and false otherwise
+
+    \sa softKeyStack()
+*/
+bool QMainWindow::hasSoftKeyStack()
+{
+    Q_D(QMainWindow);
+    if (d->softKeyStack )
+        return true;
+    return false;
 }
 #endif // QT_NO_SOFTKEYSTACK
 
