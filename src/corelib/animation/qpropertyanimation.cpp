@@ -110,17 +110,16 @@ void QPropertyAnimationPrivate::updateMetaProperty()
     if (!target || propertyName.isEmpty())
         return;
 
-    if (hasMetaProperty == 0 && !property.isValid()) {
+    if (!hasMetaProperty && !property.isValid()) {
         const QMetaObject *mo = target->metaObject();
         propertyIndex = mo->indexOfProperty(propertyName);
         if (propertyIndex != -1) {
-            hasMetaProperty = 1;
+            hasMetaProperty = true;
             property = mo->property(propertyIndex);
             propertyType = property.userType();
         } else {
             if (!target->dynamicPropertyNames().contains(propertyName))
                 qWarning("QPropertyAnimation: you're trying to animate a non-existing property %s of your QObject", propertyName.constData());
-            hasMetaProperty = 2;
         }
     }
 
@@ -133,7 +132,7 @@ void QPropertyAnimationPrivate::updateProperty(const QVariant &newValue)
     if (!target || state == QAbstractAnimation::Stopped)
         return;
 
-    if (hasMetaProperty == 1) {
+    if (hasMetaProperty) {
         if (newValue.userType() == propertyType) {
           //no conversion is needed, we directly call the QObject::qt_metacall
           void *data = const_cast<void*>(newValue.constData());
@@ -216,7 +215,7 @@ void QPropertyAnimation::setTargetObject(QObject *target)
         connect(target, SIGNAL(destroyed()), SLOT(_q_targetDestroyed()));
 
     d->target = target;
-    d->hasMetaProperty = 0;
+    d->hasMetaProperty = false;
     d->updateMetaProperty();
 }
 
@@ -242,7 +241,7 @@ void QPropertyAnimation::setPropertyName(const QByteArray &propertyName)
     }
 
     d->propertyName = propertyName;
-    d->hasMetaProperty = 0;
+    d->hasMetaProperty = false;
     d->updateMetaProperty();
 }
 

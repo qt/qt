@@ -78,7 +78,7 @@ public:
     int propertyType;
     int propertyIndex;
 
-    int hasMetaProperty;
+    bool hasMetaProperty;
     QByteArray propertyName;
     void updateProperty(const QVariant &);
     void updateMetaProperty();

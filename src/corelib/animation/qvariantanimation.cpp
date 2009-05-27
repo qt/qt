@@ -144,6 +144,11 @@ static bool animationValueLessThan(const QVariantAnimation::KeyValue &p1, const 
     return p1.first < p2.first;
 }
 
+static QVariant defaultInterpolator(const void *, const void *, qreal)
+{
+    return QVariant();
+}
+
 template<> Q_INLINE_TEMPLATE QRect _q_interpolate(const QRect &f, const QRect &t, qreal progress)
 {
     QRect ret;
@@ -174,6 +179,13 @@ template<> Q_INLINE_TEMPLATE QLineF _q_interpolate(const QLineF &f, const QLineF
     return QLineF( _q_interpolate(f.p1(), t.p1(), progress), _q_interpolate(f.p2(), t.p2(), progress));
 }
 
+QVariantAnimationPrivate::QVariantAnimationPrivate() : duration(250), hasStartValue(false),
+                          interpolator(&defaultInterpolator),
+                          changedSignalMask(1 << QVariantAnimation::staticMetaObject.indexOfSignal("valueChanged(QVariant)"))
+{
+    //we keep the mask so that we emit valueChanged only when needed (for performance reasons)
+}
+
 void QVariantAnimationPrivate::convertValues(int t)
 {
     //this ensures that all the keyValues are of type t
@@ -186,7 +198,20 @@ void QVariantAnimationPrivate::convertValues(int t)
     currentInterval.end.second.convert(static_cast<QVariant::Type>(t));
 
     //... and the interpolator
-    interpolator = 0;
+    updateInterpolator();
+}
+
+void QVariantAnimationPrivate::updateInterpolator()
+{
+    int type = currentInterval.start.second.userType();
+    if (type == currentInterval.end.second.userType())
+        interpolator = getInterpolator(type);
+    else
+        interpolator = 0;
+    
+    //we make sure that the interpolator is always set to something
+    if (!interpolator)
+        interpolator = &defaultInterpolator;
 }
 
 /*!
@@ -224,6 +249,7 @@ void QVariantAnimationPrivate::recalculateCurrentInterval(bool force/*=false*/)
             // update all the values of the currentInterval
             currentInterval.start = *itStart;
             currentInterval.end = *itEnd;
+            updateInterpolator();
         }
     }
     setCurrentValueForProgress(progress);
@@ -295,7 +321,6 @@ void QVariantAnimationPrivate::setDefaultStartValue(const QVariant &value)
 */
 QVariantAnimation::QVariantAnimation(QObject *parent) : QAbstractAnimation(*new QVariantAnimationPrivate, parent)
 {
-   d_func()->init();
 }
 
 /*!
@@ -303,7 +328,6 @@ QVariantAnimation::QVariantAnimation(QObject *parent) : QAbstractAnimation(*new 
 */
 QVariantAnimation::QVariantAnimation(QVariantAnimationPrivate &dd, QObject *parent) : QAbstractAnimation(dd, parent)
 {
-   d_func()->init();
 }
 
 /*!
@@ -629,15 +653,7 @@ void QVariantAnimation::updateState(QAbstractAnimation::State oldState,
  */
 QVariant QVariantAnimation::interpolated(const QVariant &from, const QVariant &to, qreal progress) const
 {
-    Q_D(const QVariantAnimation);
-    if (d->interpolator == 0) {
-        if (from.userType() == to.userType())
-            d->interpolator = QVariantAnimationPrivate::getInterpolator(from.userType());
-        if (d->interpolator == 0) //no interpolator found
-            return QVariant();
-    }
-
-    return d->interpolator(from.constData(), to.constData(), progress);
+    return d_func()->interpolator(from.constData(), to.constData(), progress);
 }
 
 /*!
@@ -645,9 +661,8 @@ QVariant QVariantAnimation::interpolated(const QVariant &from, const QVariant &t
  */
 void QVariantAnimation::updateCurrentTime(int msecs)
 {
-    Q_D(QVariantAnimation);
     Q_UNUSED(msecs);
-    d->recalculateCurrentInterval();
+    d_func()->recalculateCurrentInterval();
 }
 
 QT_END_NAMESPACE
