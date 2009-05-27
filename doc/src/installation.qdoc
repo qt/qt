@@ -505,7 +505,6 @@ in the \l{Qt for Windows CE Requirements} document.
 \ingroup installation
 \ingroup qts60
 \brief How to install Qt on S60.
-
 \list 1
     \o  Install needed IDE and SDKs
 
@@ -522,9 +521,84 @@ in the \l{Qt for Windows CE Requirements} document.
         \note Users of \bold{S60 Platform SDK 3rd Edition FP1} also need special updates. The update can be found
         \l{http://pepper.troll.no/s60prereleases/patches/}{here}.
 
-        \note The wsini.ini provided with the \bold{S60 Platform SDK 5th Edition v0.9}
-        needs to be updated for correct font rendering in the emulator. The update can be found
-        \l{http://pepper.troll.no/s60prereleases/patches/}{here}.
+    \o Depending on how you obtained the Qt for S60 release, follow the instructions in one of these pages:
+       \list
+           \o \l{Installing Qt for S60 with installer}
+           \o \l{Installing Qt for S60 from source package}
+       \endlist
+\endlist
+*/
+
+/*! \page install-S60-installer.html
+
+\title Installing Qt for S60 with installer
+\ingroup installation
+\ingroup qts60
+\brief How to install Qt on S60 using installer.
+\list 1
+
+    \o  Install Qt
+
+        Run the \c{qt-s60-%VERSION%.exe} to install Qt.
+
+        \note Qt must be installed on the same drive as the S60 SDK you are
+        using, and the install path must not contain any spaces.
+
+    \o  Environment variables
+
+        In order to build and use Qt, the \c PATH environment variable needs
+        to be extended:
+
+        \snippet doc/src/snippets/code/doc_src_installation.qdoc 18
+
+        This is done by adding \c{c:\Qt\%VERSION%\bin} to the \c PATH variable. 
+
+        On Windows the PATH can be extended by navigating to
+        "Control Panel->System->Advanced->Environment variables".
+
+        \note Instead of modifying system path, you can also use the "Qt S60 Command Prompt" 
+        to build your applications. It can be launched from start menu.
+
+        In addition, you must configure the environment for use with the S60
+        emulator. This is done by locating the Carbide.c++ submenu on the Start
+        menu, and choosing "Configure environment for WINSCW command line".
+
+    \o  Running Qt demos
+
+        We've included a subset of the Qt demos in this package for you
+        to try out. An excellent starting point is the "fluidlauncher"
+        demo. To run the demo on a real device, you first have to install
+        the Qt libraries and demos on the device.
+        Install \c{qt_libs_armv5_urel.sisx} and \c{fluidlauncher_armv5_urel.sisx} 
+        found at Qt installation folder to the device.
+
+        To run the demos on the emulator, navigate to
+        \c{%EPOCROOT%\Epoc32\release\winscw\udeb\} and start any of the
+        Qt demos located there, for example:
+
+        \snippet doc/src/snippets/code/doc_src_installation.qdoc 26
+
+        For more information about building and running Qt programs on S60,
+        see \l{S60 - Introduction to using Qt}.
+
+    We hope you will enjoy using Qt.
+
+\endlist
+
+*/
+/*! \page install-S60-sources.html
+
+\title Installing Qt for S60 from source package
+\ingroup installation
+\ingroup qts60
+\brief How to install Qt on S60 from source package.
+
+\list 1
+
+    \o  Install needed tools
+        
+        Building Qt libraries requires \l{http://www.arm.com/products/DevTools/RVCT.html}{RVCT} 2.2 [build 616] or later,
+        which is not available free of charge. 
 
     \o  Install Qt
 
@@ -561,11 +635,9 @@ in the \l{Qt for Windows CE Requirements} document.
 
     \o  Build Qt
 
-        The Qt libraries comes pre-built for real devices.
-        If you are using a 3.x S60 SDK, install \c{qts60binaries\3.x\qtlibs-%VERSION%.exe}
-        into the S60 SDK root directory. For example: \c{C:\Symbian\9.2\S60_3rd_FP1_2\}
-        If you are using a 5.0 S60 SDK, install \c{qts60binaries\5.0\qtlibs-%VERSION%.exe}
-        into the S60 SDK root directory. For example: \c{C:\S60\devices\S60_5th_Edition_SDK_v0.9\}
+        To build Qt for the device, type:
+
+        \snippet doc/src/snippets/code/doc_src_installation.qdoc 28
         
         To build Qt for the emulator, type:
 
@@ -576,33 +648,34 @@ in the \l{Qt for Windows CE Requirements} document.
     \o  Running Qt demos
 
         We've included a subset of the Qt demos in this package for you
-	to try out. An excellent starting point is the "fluidlauncher"
-	demo. To run the demo on a real device, you first have to install
-        the Qt libraries on the device.
-        For 3.x devices install \c{qts60binaries\3.x\qt_libs_armv5_udeb.sisx}
-        For 5.0 devices install \c{qts60binaries\5.0\qt_libs_armv5_udeb.sisx}
-	included in this package to the device. Then type:
+        to try out. An excellent starting point is the "fluidlauncher"
+        demo. To run the demo on a real device, you first have to install
+        the Qt libraries on the device:
+        
+        \snippet doc/src/snippets/code/doc_src_installation.qdoc 29
 
-        \snippet doc/src/snippets/code/doc_src_installation.qdoc 25
+        \note You will need to supply certificate that allows installation 
+        of binaries with "All -Tcb" capability to your device. 
 
-        This will create a self-signed \c fluidlauncher_gcce_udeb.sisx and
+        Similarly, install fluidlauncher to the device:
+
+        \snippet doc/src/snippets/code/doc_src_installation.qdoc 30
+
+        This will create a self-signed \c fluidlauncher_armv5_urel.sisx and
         install it to your device.
         
-        \note You can specify your own certificate and key files as additional parameters to
-        \c createpackage if default ones are not suitable.
- 
-         To run the demos on the emulator simply run:
+        To run the demos on the emulator simply run:
 
-         \snippet doc/src/snippets/code/doc_src_installation.qdoc 27
+        \snippet doc/src/snippets/code/doc_src_installation.qdoc 27
 
-         Or, if you need to supply arguments to the program, navigate to
-         \c{%EPOCROOT%\Epoc32\release\winscw\udeb\} and start any of the
-         Qt demos located there, for example:
+        Or, if you need to supply arguments to the program, navigate to
+        \c{%EPOCROOT%\Epoc32\release\winscw\udeb\} and start any of the
+        Qt demos located there, for example:
 
-         \snippet doc/src/snippets/code/doc_src_installation.qdoc 26
+        \snippet doc/src/snippets/code/doc_src_installation.qdoc 26
 
-         For more information about building and running Qt programs on S60,
-         see \l{S60 - Introduction to using Qt}.
+        For more information about building and running Qt programs on S60,
+        see \l{S60 - Introduction to using Qt}.
 
     We hope you will enjoy using Qt.
 

@@ -331,13 +331,13 @@ public:
         SF_StateDisabled =    0x0020,
         SF_ColorSkinned =     0x0040,
     };
-    
+
     enum CacheClearReason {
         CC_UndefinedChange = 0,
         CC_LayoutChange,
         CC_ThemeChange
     };
-    
+
     Q_DECLARE_FLAGS(SkinElementFlags, SkinElementFlag)
 
     // draws skin element
@@ -373,8 +373,10 @@ public:
         int pointSize = -1) const;
     // clears all style caches (fonts, colors, pixmaps)
     void clearCaches(CacheClearReason reason = CC_UndefinedChange);
-    // returns themed background texture
-    static QPixmap backgroundTexture();
+
+    // themed main background oprations
+    void setBackgroundTexture(QApplication *application) const;
+    static void deleteBackground();
 
     static bool isTouchSupported();
     static bool isToolBarBackground();
@@ -383,7 +385,6 @@ public:
     QColor colorFromFrameGraphics(QS60StylePrivate::SkinFrameElements frame) const;
     void setThemePalette(QApplication *application) const;
     void setThemePalette(QWidget *widget) const;
-    void setBackgroundTexture(QApplication *application) const;
 
     static int focusRectPenWidth();
 
@@ -411,6 +412,8 @@ public:
     static QPixmap frame(SkinFrameElements frame, const QSize &size,
         SkinElementFlags flags = KDefaultSkinElementFlags);
 
+    static QPixmap backgroundTexture();
+
 private:
     static void drawPart(QS60StyleEnums::SkinParts part, QPainter *painter,
         const QRect &rect, SkinElementFlags flags = KDefaultSkinElementFlags);
@@ -424,9 +427,9 @@ private:
         SkinElementFlags flags = KDefaultSkinElementFlags);
     static QPixmap cachedFrame(SkinFrameElements frame, const QSize &size,
         SkinElementFlags flags = KDefaultSkinElementFlags);
-    
+
     static void refreshUI();
-    
+
     static QSize partSize(QS60StyleEnums::SkinParts part,
         SkinElementFlags flags = KDefaultSkinElementFlags);
     static QPixmap part(QS60StyleEnums::SkinParts part, const QSize &size,
@@ -436,7 +439,8 @@ private:
 
     static QSize screenSize();
 
-    static bool m_backgroundValid;
+    // Contains background texture.
+    static QPixmap *m_background;
     const static SkinElementFlags KDefaultSkinElementFlags;
 };
 

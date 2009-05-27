@@ -583,26 +583,6 @@ QPixmap QS60StyleModeSpecifics::fromFbsBitmap(CFbsBitmap *icon, CFbsBitmap *mask
     return QPixmap::fromImage(iconImage);
 }
 
-QPixmap QS60StylePrivate::backgroundTexture()
-{
-    static QPixmap result;
-    // Poor mans caching. + Making sure that there is always only one background image in memory at a time
-
-/*
-    TODO: 1) Hold the background QPixmap as pointer in a static class member.
-             Also add a deleteBackground() function and call that in ~QS60StylePrivate()
-          2) Don't cache the background at all as soon as we have native pixmap support
-*/
-
-    if (!m_backgroundValid) {
-        result = QPixmap();
-        result = part(QS60StyleEnums::SP_QsnBgScreen,
-            QSize(S60->screenWidthInPixels, S60->screenHeightInPixels), SkinElementFlags());
-        m_backgroundValid = true;
-    }
-    return result;
-}
-
 bool QS60StylePrivate::isTouchSupported()
 {
     return bool(AknLayoutUtils::PenEnabled());
@@ -975,7 +955,7 @@ void QS60StylePrivate::setActiveLayout()
             break;
         }
     }
-    
+
     //not found, lets try without mirroring info
     if (activeLayoutIndex==-1){
         for (int i=0; i<m_numberOfLayouts; i++) {
@@ -1011,7 +991,7 @@ QS60StylePrivate::QS60StylePrivate()
 
 QS60StylePrivate::~QS60StylePrivate()
 {
-    m_backgroundValid = false;
+    deleteBackground();
 }
 
 void QS60StylePrivate::setStyleProperty_specific(const char *name, const QVariant &value)
@@ -1181,6 +1161,16 @@ QPixmap QS60StylePrivate::frame(SkinFrameElements frame, const QSize &size, Skin
         result = QApplication::style()->generatedIconPixmap(QIcon::Disabled, result, &opt);
     }
     return result;
+}
+
+QPixmap QS60StylePrivate::backgroundTexture()
+{
+    if (!m_background) {
+        QPixmap background = part(QS60StyleEnums::SP_QsnBgScreen,
+                QSize(S60->screenWidthInPixels, S60->screenHeightInPixels), SkinElementFlags());
+        m_background = new QPixmap(background);
+    }
+    return *m_background;
 }
 
 // If the public SDK returns compressed images, please let us also uncompress those!
