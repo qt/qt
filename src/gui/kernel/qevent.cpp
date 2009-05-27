@@ -3742,6 +3742,13 @@ QTouchEvent::~QTouchEvent()
     Returns the list of touch points contained in the touch event.
 */
 
+/*! \fn void QTouchEvent::setTouchPoints(QList<QTouchEvent::TouchPoint *> &touchPoints)
+
+    \internal
+
+    Sets the list of touch points for this event.
+*/
+
 /*! \internal
 
     Constructs a QTouchEvent::TouchPoint for use in a QTouchEvent.

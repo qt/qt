@@ -4002,7 +4002,7 @@ QTouchEvent::TouchPoint *QApplicationPrivate::findClosestTouchPoint(const QList<
     qreal closestDistance;
     for (int i = 0; i < appActiveTouchPoints.count(); ++i) {
         QTouchEvent::TouchPoint *touchPoint = appActiveTouchPoints.at(i);
-        qreal distance = QLineF(screenPos, touchPoint->d->screenPos).length();
+        qreal distance = QLineF(screenPos, touchPoint->screenPos()).length();
         if (!closestTouchPoint || distance < closestDistance) {
             closestTouchPoint = touchPoint;
             closestDistance = distance;
@@ -4094,7 +4094,7 @@ bool QApplicationPrivate::translateTouchEvent(const MSG &msg)
 
         // update state
         QWidget *widget = 0;
-        bool down = touchPoint->d->state != Qt::TouchPointReleased;
+        bool down = touchPoint->state() != Qt::TouchPointReleased;
         QPointF screenPos(qreal(touchInput.x) / qreal(100.), qreal(touchInput.y) / qreal(100.));
         QEvent::Type eventType = QEvent::None;
 
@@ -4107,13 +4107,13 @@ bool QApplicationPrivate::translateTouchEvent(const MSG &msg)
 
             QTouchEvent::TouchPoint *closestTouchPoint = findClosestTouchPoint(appActiveTouchPoints, screenPos);
             if (closestTouchPoint) {
-                QWidget *closestWidget = widgetForTouchPointId.value(closestTouchPoint->d->id);
+                QWidget *closestWidget = widgetForTouchPointId.value(closestTouchPoint->id());
                 if (closestWidget
                     && (widget->isAncestorOf(closestWidget)
                         || closestWidget->isAncestorOf(widget)))
                     widget = closestWidget;
             }
-            widgetForTouchPointId[touchPoint->d->id] = widget;
+            widgetForTouchPointId[touchPoint->id()] = widget;
 
             QList<QTouchEvent::TouchPoint *> &currentTouchPoints = widgetCurrentTouchPoints[widget];
             eventType = appendTouchPoint(touchPoint, &currentTouchPoints);
@@ -4121,38 +4121,37 @@ bool QApplicationPrivate::translateTouchEvent(const MSG &msg)
             appActiveTouchPoints = appCurrentTouchPoints;
             activeTouchPoints = currentTouchPoints;
 
-            touchPoint->d->state = Qt::TouchPointPressed;
-            touchPoint->d->screenPos
-                = touchPoint->d->startScreenPos
-                = touchPoint->d->lastScreenPos
-                = screenPos;
-            touchPoint->d->pressure = qreal(1.);
+            touchPoint->setState(Qt::TouchPointPressed);
+            touchPoint->setScreenPos(screenPos);
+            touchPoint->setStartScreenPos(screenPos);
+            touchPoint->setLastScreenPos(screenPos);
+            touchPoint->setPressure(qreal(1.));
         } else if (down && (touchInput.dwFlags & TOUCHEVENTF_UP)) {
-            widget = widgetForTouchPointId.take(touchPoint->d->id);
+            widget = widgetForTouchPointId.take(touchPoint->id());
             QList<QTouchEvent::TouchPoint *> &currentTouchPoints = widgetCurrentTouchPoints[widget];
             appActiveTouchPoints = appCurrentTouchPoints;
             activeTouchPoints = currentTouchPoints;
             eventType = removeTouchPoint(touchPoint, &currentTouchPoints);
 
-            touchPoint->d->state = Qt::TouchPointReleased;
-            touchPoint->d->lastScreenPos = touchPoint->d->screenPos;
-            touchPoint->d->screenPos = screenPos;
-            touchPoint->d->pressure = qreal(0.);
+            touchPoint->setState(Qt::TouchPointReleased);
+            touchPoint->setLastScreenPos(touchPoint->screenPos());
+            touchPoint->setScreenPos(screenPos);
+            touchPoint->setPressure(qreal(0.));
         } else if (down) {
-            widget = widgetForTouchPointId.value(touchPoint->d->id);
+            widget = widgetForTouchPointId.value(touchPoint->id());
             appActiveTouchPoints = appCurrentTouchPoints;
             activeTouchPoints = widgetCurrentTouchPoints.value(widget);
             eventType = QEvent::TouchUpdate;
-            touchPoint->d->state = screenPos == touchPoint->d->screenPos
-                                   ? Qt::TouchPointStationary
-                                   : Qt::TouchPointMoved;
-            touchPoint->d->lastScreenPos = touchPoint->d->screenPos;
-            touchPoint->d->screenPos = screenPos;
+            touchPoint->setState(screenPos == touchPoint->screenPos()
+                                 ? Qt::TouchPointStationary
+                                 : Qt::TouchPointMoved);
+            touchPoint->setLastScreenPos(touchPoint->screenPos());
+            touchPoint->setScreenPos(screenPos);
             // pressure should still be 1.
         }
         Q_ASSERT(widget != 0 && eventType != QEvent::None);
 
-        if (touchPoint->d->state != Qt::TouchPointStationary) {
+        if (touchPoint->state() != Qt::TouchPointStationary) {
             widgetsNeedingEvents.insert(widget,
                                         QTouchEvent(eventType, q->keyboardModifiers(), activeTouchPoints));
         }

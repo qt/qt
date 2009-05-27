@@ -4052,13 +4052,13 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
             touchEvent->spont = false;
             if (res && eventAccepted) {
                 // the first widget to accept the TouchBegin gets an implicit grab.
-                for (int i = 0; i < touchEvent->_touchPoints.count(); ++i) {
-                    QTouchEvent::TouchPoint *touchPoint = touchEvent->_touchPoints.at(i);
-                    d->widgetForTouchPointId[touchPoint->d->id] = widget;
+                for (int i = 0; i < touchEvent->touchPoints().count(); ++i) {
+                    QTouchEvent::TouchPoint *touchPoint = touchEvent->touchPoints().at(i);
+                    d->widgetForTouchPointId[touchPoint->id()] = widget;
                 }
                 if (origin != widget)
                     d->widgetCurrentTouchPoints.remove(origin);
-                d->widgetCurrentTouchPoints[widget] = touchEvent->_touchPoints;
+                d->widgetCurrentTouchPoints[widget] = touchEvent->touchPoints();
                 break;
             } else if (widget->isWindow() || widget->testAttribute(Qt::WA_NoMousePropagation)) {
                 break;
@@ -5250,14 +5250,14 @@ int QApplication::eventDeliveryDelayForGestures()
 
 void QApplicationPrivate::updateTouchPointsForWidget(QWidget *widget, QTouchEvent *touchEvent)
 {
-    for (int i = 0; i < touchEvent->_touchPoints.count(); ++i) {
-        QTouchEvent::TouchPoint *touchPoint = touchEvent->_touchPoints.at(i);
+    for (int i = 0; i < touchEvent->touchPoints().count(); ++i) {
+        QTouchEvent::TouchPoint *touchPoint = touchEvent->touchPoints().at(i);
 
         // preserve the sub-pixel resolution
-        const QPointF delta = touchPoint->d->screenPos - touchPoint->d->screenPos.toPoint();
-        touchPoint->d->pos = widget->mapFromGlobal(touchPoint->d->screenPos.toPoint()) + delta;
-        touchPoint->d->startPos = widget->mapFromGlobal(touchPoint->d->startScreenPos.toPoint()) + delta;
-        touchPoint->d->lastPos = widget->mapFromGlobal(touchPoint->d->lastScreenPos.toPoint()) + delta;
+        const QPointF delta = touchPoint->screenPos() - touchPoint->screenPos().toPoint();
+        touchPoint->setPos(widget->mapFromGlobal(touchPoint->screenPos().toPoint()) + delta);
+        touchPoint->setStartPos(widget->mapFromGlobal(touchPoint->startScreenPos().toPoint()) + delta);
+        touchPoint->setLastPos(widget->mapFromGlobal(touchPoint->lastScreenPos().toPoint()) + delta);
     }
 }
 

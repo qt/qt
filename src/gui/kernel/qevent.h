@@ -796,9 +796,6 @@ public:
 
     protected:
         QTouchEventTouchPointPrivate *d;
-
-        friend class QApplication;
-        friend class QApplicationPrivate;
     };
 
     QTouchEvent(QEvent::Type type,
@@ -807,12 +804,13 @@ public:
     ~QTouchEvent();
 
     inline const QList<QTouchEvent::TouchPoint *> &touchPoints() const { return _touchPoints; }
+    inline void setTouchPoints(const QList<QTouchEvent::TouchPoint *> &touchPoints)
+    {
+        _touchPoints = touchPoints;
+    }
 
 protected:
     QList<QTouchEvent::TouchPoint *> _touchPoints;
-
-    friend class QApplication;
-    friend class QApplicationPrivate;
 };
 
 QT_END_NAMESPACE
