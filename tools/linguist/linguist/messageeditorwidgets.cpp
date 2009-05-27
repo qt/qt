@@ -179,8 +179,13 @@ FormWidget::FormWidget(const QString &label, bool isEditable, QWidget *parent)
     setLayout(layout);
 
     connect(m_editor->document(), SIGNAL(contentsChanged()), SIGNAL(textChanged()));
-    connect(m_editor, SIGNAL(selectionChanged()), SIGNAL(selectionChanged()));
+    connect(m_editor, SIGNAL(selectionChanged()), SLOT(slotSelectionChanged()));
     connect(m_editor, SIGNAL(cursorPositionChanged()), SIGNAL(cursorPositionChanged()));
+}
+
+void FormWidget::slotSelectionChanged()
+{
+    emit selectionChanged(m_editor);
 }
 
 void FormWidget::setTranslation(const QString &text, bool userAction)

@@ -110,8 +110,8 @@ public slots:
     void setTranslation(int latestModel, const QString &translation);
 
 private slots:
-    void selectionChanged();
-    bool resetHoverSelection(FormWidget *fw = 0);
+    void selectionChanged(QTextEdit *);
+    void resetHoverSelection();
     void emitTranslationChanged();
     void emitTranslatorCommentChanged();
     void updateCanPaste();
@@ -125,7 +125,7 @@ private:
     void setupEditorPage();
     void setEditingEnabled(int model, bool enabled);
     bool focusNextUnfinished(int start);
-    bool resetSelection(FormWidget *fw = 0);
+    void resetSelection();
     void activeModelAndNumerus(int *model, int *numerus) const;
     QTextEdit *activeTranslation() const;
     QTextEdit *activeOr1stTranslation() const;
@@ -151,12 +151,10 @@ private:
     bool m_redoAvail;
     bool m_cutAvail;
     bool m_copyAvail;
-    bool m_sourceSelected;
-    bool m_pluralSourceSelected;
-    bool m_currentSelected;
 
     bool m_clipboardEmpty;
 
+    QTextEdit *m_selectionHolder;
     QBoxLayout *m_layout;
     FormWidget *m_source;
     FormWidget *m_pluralSource;

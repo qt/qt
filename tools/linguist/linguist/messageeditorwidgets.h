@@ -116,8 +116,11 @@ public:
 
 signals:
     void textChanged();
-    void selectionChanged();
+    void selectionChanged(QTextEdit *);
     void cursorPositionChanged();
+
+private slots:
+    void slotSelectionChanged();
 
 private:
     QLabel *m_label;

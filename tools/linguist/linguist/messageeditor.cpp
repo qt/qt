@@ -91,9 +91,7 @@ MessageEditor::MessageEditor(MultiDataModel *dataModel, QMainWindow *parent)
       m_redoAvail(false),
       m_cutAvail(false),
       m_copyAvail(false),
-      m_sourceSelected(false),
-      m_pluralSourceSelected(false),
-      m_currentSelected(false)
+      m_selectionHolder(0)
 {
     setObjectName(QLatin1String("scroll area"));
 
@@ -144,12 +142,14 @@ void MessageEditor::setupEditorPage()
     m_source = new FormWidget(tr("Source text"), false);
     m_source->setHideWhenEmpty(true);
     m_source->setWhatsThis(tr("This area shows the source text."));
-    connect(m_source, SIGNAL(selectionChanged()), SLOT(selectionChanged()));
+    connect(m_source, SIGNAL(selectionChanged(QTextEdit *)),
+            SLOT(selectionChanged(QTextEdit *)));
 
     m_pluralSource = new FormWidget(tr("Source text (Plural)"), false);
     m_pluralSource->setHideWhenEmpty(true);
     m_pluralSource->setWhatsThis(tr("This area shows the plural form of the source text."));
-    connect(m_pluralSource, SIGNAL(selectionChanged()), SLOT(selectionChanged()));
+    connect(m_pluralSource, SIGNAL(selectionChanged(QTextEdit *)),
+            SLOT(selectionChanged(QTextEdit *)));
 
     m_commentText = new FormWidget(tr("Developer comments"), false);
     m_commentText->setHideWhenEmpty(true);
@@ -216,7 +216,8 @@ void MessageEditor::messageModelAppended()
     ed.transCommentText->setWhatsThis(tr("Here you can enter comments for your own use."
                         " They have no effect on the translated applications.") );
     ed.transCommentText->getEditor()->installEventFilter(this);
-    connect(ed.transCommentText, SIGNAL(selectionChanged()), SLOT(selectionChanged()));
+    connect(ed.transCommentText, SIGNAL(selectionChanged(QTextEdit *)),
+            SLOT(selectionChanged(QTextEdit *)));
     connect(ed.transCommentText, SIGNAL(textChanged()), SLOT(emitTranslatorCommentChanged()));
     connect(ed.transCommentText, SIGNAL(textChanged()), SLOT(resetHoverSelection()));
     connect(ed.transCommentText, SIGNAL(cursorPositionChanged()), SLOT(resetHoverSelection()));
@@ -277,7 +278,8 @@ void MessageEditor::addPluralForm(int model, const QString &label, bool writable
         m_editors[model].transTexts.count(), transEditor);
 
     transEditor->getEditor()->installEventFilter(this);
-    connect(transEditor, SIGNAL(selectionChanged()), SLOT(selectionChanged()));
+    connect(transEditor, SIGNAL(selectionChanged(QTextEdit *)),
+            SLOT(selectionChanged(QTextEdit *)));
     connect(transEditor, SIGNAL(textChanged()), SLOT(emitTranslationChanged()));
     connect(transEditor, SIGNAL(textChanged()), SLOT(resetHoverSelection()));
     connect(transEditor, SIGNAL(cursorPositionChanged()), SLOT(resetHoverSelection()));
@@ -300,57 +302,40 @@ QStringList MessageEditor::translations(int model) const
     return translations;
 }
 
-static bool clearFormSelection(FormWidget *fw, FormWidget *te)
+static void clearSelection(QTextEdit *t)
 {
-    if (fw != te) {
-        QTextEdit *t = fw->getEditor();
-        bool oldBlockState = t->blockSignals(true);
-        QTextCursor c = t->textCursor();
-        c.clearSelection();
-        t->setTextCursor(c);
-        t->blockSignals(oldBlockState);
-        return true;
-    }
-    return false;
+    bool oldBlockState = t->blockSignals(true);
+    QTextCursor c = t->textCursor();
+    c.clearSelection();
+    t->setTextCursor(c);
+    t->blockSignals(oldBlockState);
 }
 
-// Clear the selection for all textedits except the sender
-void MessageEditor::selectionChanged()
+void MessageEditor::selectionChanged(QTextEdit *te)
 {
-    if (!resetSelection(qobject_cast<FormWidget *>(sender())))
+    if (te != m_selectionHolder) {
+        if (m_selectionHolder)
+            clearSelection(m_selectionHolder);
+        m_selectionHolder = (te->textCursor().hasSelection() ? te : 0);
         updateCanCutCopy();
+    }
 }
 
-bool MessageEditor::resetHoverSelection(FormWidget *fw)
+void MessageEditor::resetHoverSelection()
 {
-    if (m_sourceSelected) {
-        if (clearFormSelection(m_source, fw)) {
-            updateCanCutCopy();
-            return true;
-        }
-    } else if (m_pluralSourceSelected) {
-        if (clearFormSelection(m_pluralSource, fw)) {
-            updateCanCutCopy();
-            return true;
-        }
-    }
-    return false;
+    if (m_selectionHolder &&
+        (m_selectionHolder == m_source->getEditor()
+         || m_selectionHolder == m_pluralSource->getEditor()))
+        resetSelection();
 }
 
-bool MessageEditor::resetSelection(FormWidget *fw)
+void MessageEditor::resetSelection()
 {
-    if (resetHoverSelection(fw))
-        return true;
-    if (m_currentSelected) {
-        MessageEditorData &ed = m_editors[m_currentModel];
-        FormWidget *cfw = (m_currentNumerus < 0) ? ed.transCommentText
-                                                 : ed.transTexts[m_currentNumerus];
-        if (clearFormSelection(cfw, fw)) {
-            updateCanCutCopy();
-            return true;
-        }
+    if (m_selectionHolder) {
+        clearSelection(m_selectionHolder);
+        m_selectionHolder = 0;
+        updateCanCutCopy();
     }
-    return false;
 }
 
 void MessageEditor::activeModelAndNumerus(int *model, int *numerus) const
@@ -703,18 +688,12 @@ void MessageEditor::updateUndoRedo()
 
 void MessageEditor::cut()
 {
-    QTextEdit *editor = activeEditor();
-    if (editor->textCursor().hasSelection())
-        editor->cut();
+    m_selectionHolder->cut();
 }
 
 void MessageEditor::copy()
 {
-    QTextEdit *te;
-    if ((te = m_source->getEditor())->textCursor().hasSelection()
-        || (te = m_pluralSource->getEditor())->textCursor().hasSelection()
-        || (te = activeEditor())->textCursor().hasSelection())
-        te->copy();
+    m_selectionHolder->copy();
 }
 
 void MessageEditor::updateCanCutCopy()
@@ -722,18 +701,9 @@ void MessageEditor::updateCanCutCopy()
     bool newCopyState = false;
     bool newCutState = false;
 
-    m_sourceSelected = m_source->getEditor()->textCursor().hasSelection();
-    m_pluralSourceSelected = m_pluralSource->getEditor()->textCursor().hasSelection();
-    m_currentSelected = false;
-
-    if (m_sourceSelected || m_pluralSourceSelected) {
+    if (m_selectionHolder) {
         newCopyState = true;
-    } else if (QTextEdit *te = activeEditor()) {
-        if (te->textCursor().hasSelection()) {
-            m_currentSelected = true;
-            newCopyState = true;
-            newCutState = !te->isReadOnly();
-        }
+        newCutState = !m_selectionHolder->isReadOnly();
     }
 
     if (newCopyState != m_copyAvail) {
