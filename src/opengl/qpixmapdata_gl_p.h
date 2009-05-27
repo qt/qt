@@ -116,7 +116,7 @@ private:
     int m_height;
 
     mutable QGLFramebufferObject *m_renderFbo;
-    mutable uint m_textureId;
+    mutable GLuint m_textureId;
     mutable QPaintEngine *m_engine;
     mutable QGLContext *m_ctx;
     mutable bool m_dirty;
