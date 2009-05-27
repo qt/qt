@@ -1083,16 +1083,6 @@ bool QGL2PaintEngineEx::begin(QPaintDevice *pdev)
 //     qDebug("You should see green now");
 //     sleep(5);
 
-    const QColor &c = d->drawable.backgroundColor();
-    glClearColor(c.redF(), c.greenF(), c.blueF(), d->drawable.format().alpha() ? c.alphaF() : 1.0);
-    if (d->drawable.context()->d_func()->clear_on_painter_begin && d->drawable.autoFillBackground()) {
-        GLbitfield clearBits = GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT;
-#ifndef QT_OPENGL_ES
-        clearBits |= GL_ACCUM_BUFFER_BIT;
-#endif
-        glClear(clearBits);
-    }
-
     d->brushTextureDirty = true;
     d->brushUniformsDirty = true;
     d->matrixDirty = true;
@@ -1105,11 +1095,14 @@ bool QGL2PaintEngineEx::begin(QPaintDevice *pdev)
     glDisable(GL_SCISSOR_TEST);
 
     QGLPixmapData *source = d->drawable.copyOnBegin();
-    if (d->drawable.autoFillBackground()) {
-        QColor color = d->drawable.backgroundColor();
-
-        float alpha = color.alphaF();
-        glClearColor(color.redF() * alpha, color.greenF() * alpha, color.blueF() * alpha, alpha);
+    if (d->drawable.context()->d_func()->clear_on_painter_begin && d->drawable.autoFillBackground()) {
+        if (d->drawable.hasTransparentBackground())
+            glClearColor(0.0, 0.0, 0.0, 0.0);
+        else {
+            const QColor &c = d->drawable.backgroundColor();
+            float alpha = c.alphaF();
+            glClearColor(c.redF() * alpha, c.greenF() * alpha, c.blueF() * alpha, alpha);
+        }
         glClear(GL_COLOR_BUFFER_BIT);
     } else if (source) {
         d->transferMode(ImageDrawingMode);
