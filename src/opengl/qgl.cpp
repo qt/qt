@@ -4530,6 +4530,11 @@ QColor QGLDrawable::backgroundColor() const
     return QApplication::palette().brush(QPalette::Background).color();
 }
 
+bool QGLDrawable::hasTransparentBackground() const
+{
+    return widget && widget->testAttribute(Qt::WA_TranslucentBackground);
+}
+
 QGLContext *QGLDrawable::context() const
 {
     if (widget)
