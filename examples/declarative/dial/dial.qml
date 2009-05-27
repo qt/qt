@@ -9,12 +9,19 @@ Rect {
     Rect {
         anchors.top: Dial.bottom
         x: 20; width: 160; height: 16
-        color: "steelblue"; gradientColor: "lightsteelblue"
+        gradient: Gradient {
+            GradientStop { position: 0.0; color: "steelblue" }
+            GradientStop { position: 1.0; color: "lightsteelblue" }
+        }
         radius: 8; opacity: 0.7
         Rect {
             id: Slider
             x: 2; y: 2; width: 30; height: 12
-            color: "lightgray"; gradientColor: "gray"; radius: 6
+            radius: 6
+            gradient: Gradient {
+                GradientStop { position: 0.0; color: "lightgray" }
+                GradientStop { position: 1.0; color: "gray" }
+            }
             MouseRegion {
                 anchors.fill: parent
                 drag.target: parent; drag.axis: "x"; drag.xmin: 2; drag.xmax: 128
