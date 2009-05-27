@@ -1058,7 +1058,6 @@ void tst_QSqlDatabase::recordMySQL()
         specifically: Before MySQL 5.0.15, the pad value is space. Values are right-padded
         with space on insert, and trailing spaces are removed on select.
     */
-#ifdef QT3_SUPPORT
     if ( major >5 || ( major == 5 && minor > 0) || ( major == 5 && minor == 0 && revision >= 15) ) {
         bin10 = FieldDef("binary(10)", QVariant::ByteArray, QByteArray(Q3CString("123abc    ")));
         varbin10 = FieldDef("varbinary(10)", QVariant::ByteArray, QByteArray(Q3CString("123abcv   ")));
