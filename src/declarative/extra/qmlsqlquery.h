@@ -60,7 +60,7 @@ class Q_DECLARATIVE_EXPORT QmlSqlBind : public QObject, public QmlParserStatus
     Q_PROPERTY(QString name READ name WRITE setName)
     Q_PROPERTY(QVariant value READ value WRITE setValue)
 
-    Q_CLASSINFO("DefaultValue", "value");
+    Q_CLASSINFO("DefaultValue", "value")
 
 public:
     QmlSqlBind(QObject *parent = 0);
@@ -82,7 +82,7 @@ private:
     Q_DECLARE_PRIVATE(QmlSqlBind)
 };
 
-QML_DECLARE_TYPE(QmlSqlBind);
+QML_DECLARE_TYPE(QmlSqlBind)
 
 class QSqlQuery;
 class QmlSqlQueryPrivate;
@@ -134,7 +134,7 @@ private:
     Q_DECLARE_PRIVATE(QmlSqlQuery)
 };
 
-QML_DECLARE_TYPE(QmlSqlQuery);
+QML_DECLARE_TYPE(QmlSqlQuery)
 
 QT_END_NAMESPACE
 

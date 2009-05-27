@@ -135,7 +135,7 @@ void ParallelAnimationWrapper::updateState(QAbstractAnimation::State oldState, Q
 }
 
 
-QML_DEFINE_TYPE(QmlTransition,Transition);
+QML_DEFINE_TYPE(QmlTransition,Transition)
 QmlTransition::QmlTransition(QObject *parent)
     : QObject(*(new QmlTransitionPrivate), parent)
 {

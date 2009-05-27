@@ -82,7 +82,7 @@ private:
     bool m_isList;
     bool m_isCData;
 };
-QML_DECLARE_TYPE(XmlListModelRole);
+QML_DECLARE_TYPE(XmlListModelRole)
 
 class QmlXmlListModelPrivate;
 class Q_DECLARATIVE_EXPORT QmlXmlListModel : public QListModelInterface, public QmlParserStatus
@@ -141,7 +141,7 @@ private:
     Q_DISABLE_COPY(QmlXmlListModel)
 };
 
-QML_DECLARE_TYPE(QmlXmlListModel);
+QML_DECLARE_TYPE(QmlXmlListModel)
 
 QT_END_NAMESPACE
 

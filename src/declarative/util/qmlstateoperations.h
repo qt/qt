@@ -54,7 +54,7 @@ class QmlParentChangePrivate;
 class Q_DECLARATIVE_EXPORT QmlParentChange : public QmlStateOperation
 {
     Q_OBJECT
-    Q_DECLARE_PRIVATE(QmlParentChange);
+    Q_DECLARE_PRIVATE(QmlParentChange)
 
     Q_PROPERTY(QObject *target READ object WRITE setObject)
     Q_PROPERTY(QObject *parent READ parent WRITE setParent)
@@ -70,7 +70,7 @@ public:
 
     virtual ActionList actions();
 };
-QML_DECLARE_TYPE(QmlParentChange);
+QML_DECLARE_TYPE(QmlParentChange)
 
 class QmlRunScriptPrivate;
 class Q_DECLARATIVE_EXPORT QmlRunScript : public QmlStateOperation, public ActionEvent
@@ -78,8 +78,8 @@ class Q_DECLARATIVE_EXPORT QmlRunScript : public QmlStateOperation, public Actio
     Q_OBJECT
     Q_DECLARE_PRIVATE(QmlRunScript)
 
-    Q_PROPERTY(QString script READ script WRITE setScript);
-    Q_PROPERTY(QString name READ name WRITE setName);
+    Q_PROPERTY(QString script READ script WRITE setScript)
+    Q_PROPERTY(QString name READ name WRITE setName)
 
 public:
     QmlRunScript(QObject *parent=0);
@@ -95,18 +95,18 @@ public:
 
     virtual void execute();
 };
-QML_DECLARE_TYPE(QmlRunScript);
+QML_DECLARE_TYPE(QmlRunScript)
 
 class QmlSetPropertyPrivate;
 class Q_DECLARATIVE_EXPORT QmlSetProperty : public QmlStateOperation
 {
     Q_OBJECT
-    Q_DECLARE_PRIVATE(QmlSetProperty);
+    Q_DECLARE_PRIVATE(QmlSetProperty)
 
-    Q_PROPERTY(QObject *target READ object WRITE setObject);
-    Q_PROPERTY(QString property READ property WRITE setProperty);
-    Q_PROPERTY(QVariant value READ value WRITE setValue);
-    Q_PROPERTY(QString binding READ binding WRITE setBinding);
+    Q_PROPERTY(QObject *target READ object WRITE setObject)
+    Q_PROPERTY(QString property READ property WRITE setProperty)
+    Q_PROPERTY(QVariant value READ value WRITE setValue)
+    Q_PROPERTY(QString binding READ binding WRITE setBinding)
 
 public:
     QmlSetProperty(QObject *parent=0);
@@ -123,7 +123,7 @@ public:
 
     virtual ActionList actions();
 };
-QML_DECLARE_TYPE(QmlSetProperty);
+QML_DECLARE_TYPE(QmlSetProperty)
 
 QT_END_NAMESPACE
 

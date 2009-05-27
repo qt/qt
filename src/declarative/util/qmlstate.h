@@ -116,7 +116,7 @@ public:
 protected:
     QmlStateOperation(QObjectPrivate &dd, QObject *parent = 0);
 };
-QML_DECLARE_TYPE(QmlStateOperation);
+QML_DECLARE_TYPE(QmlStateOperation)
 
 typedef QmlStateOperation::ActionList QmlStateActions;
 
@@ -127,11 +127,11 @@ class Q_DECLARATIVE_EXPORT QmlState : public QObject
 {
     Q_OBJECT
 
-    Q_PROPERTY(QString name READ name WRITE setName);
-    Q_PROPERTY(QmlBindableValue *when READ when WRITE setWhen);
-    Q_PROPERTY(QString extends READ extends WRITE setExtends);
-    Q_PROPERTY(QmlList<QmlStateOperation *>* operations READ operations);
-    Q_CLASSINFO("DefaultProperty", "operations");
+    Q_PROPERTY(QString name READ name WRITE setName)
+    Q_PROPERTY(QmlBindableValue *when READ when WRITE setWhen)
+    Q_PROPERTY(QString extends READ extends WRITE setExtends)
+    Q_PROPERTY(QmlList<QmlStateOperation *>* operations READ operations)
+    Q_CLASSINFO("DefaultProperty", "operations")
 
 public:
     QmlState(QObject *parent=0);
@@ -166,7 +166,7 @@ private:
     Q_DISABLE_COPY(QmlState)
     friend class QmlTransitionPrivate;
 };
-QML_DECLARE_TYPE(QmlState);
+QML_DECLARE_TYPE(QmlState)
 
 QT_END_NAMESPACE
 

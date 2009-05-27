@@ -83,7 +83,7 @@ private:
     Q_DECLARE_PRIVATE(QmlNumberFormatter)
 };
 
-QML_DECLARE_TYPE(QmlNumberFormatter);
+QML_DECLARE_TYPE(QmlNumberFormatter)
 
 
 QT_END_NAMESPACE

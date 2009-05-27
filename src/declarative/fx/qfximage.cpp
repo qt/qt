@@ -53,7 +53,7 @@
 QT_BEGIN_NAMESPACE
 
 
-QML_DEFINE_TYPE(QFxImage,Image);
+QML_DEFINE_TYPE(QFxImage,Image)
 
 /*!
     \qmlclass Image QFxImage

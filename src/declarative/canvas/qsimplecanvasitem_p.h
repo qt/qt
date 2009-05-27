@@ -133,7 +133,7 @@ class QSimpleCanvasFilter;
 class QGraphicsQSimpleCanvasItem;
 class QSimpleCanvasItemPrivate : public QObjectPrivate
 {
-    Q_DECLARE_PUBLIC(QSimpleCanvasItem);
+    Q_DECLARE_PUBLIC(QSimpleCanvasItem)
 public:
     QSimpleCanvasItemPrivate()
     : parent(0), canvas(0), debuggerStatus(0), filter(0),
@@ -250,16 +250,16 @@ public:
                                InRealm = 0x02, 
                                InActiveFocusedRealm = 0x04
     };
-    Q_DECLARE_FLAGS(FocusStateCheckDatas, FocusStateCheckData);
+    Q_DECLARE_FLAGS(FocusStateCheckDatas, FocusStateCheckData)
     enum FocusStateCheckRData { NoCheckRData = 0x00, 
                                 SeenFocus = 0x01, 
                                 SeenActiveFocus = 0x02 };
-    Q_DECLARE_FLAGS(FocusStateCheckRDatas, FocusStateCheckRData);
+    Q_DECLARE_FLAGS(FocusStateCheckRDatas, FocusStateCheckRData)
     bool checkFocusState(FocusStateCheckDatas, FocusStateCheckRDatas *);
 };
 
-Q_DECLARE_OPERATORS_FOR_FLAGS(QSimpleCanvasItemPrivate::FocusStateCheckDatas);
-Q_DECLARE_OPERATORS_FOR_FLAGS(QSimpleCanvasItemPrivate::FocusStateCheckRDatas);
+Q_DECLARE_OPERATORS_FOR_FLAGS(QSimpleCanvasItemPrivate::FocusStateCheckDatas)
+Q_DECLARE_OPERATORS_FOR_FLAGS(QSimpleCanvasItemPrivate::FocusStateCheckRDatas)
 
 #endif // QSIMPLECANVASITEM_P_H
 

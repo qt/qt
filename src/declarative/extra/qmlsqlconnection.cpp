@@ -51,7 +51,7 @@
 
 QT_BEGIN_NAMESPACE
 
-QML_DEFINE_TYPE(QmlSqlConnection, SqlConnection);
+QML_DEFINE_TYPE(QmlSqlConnection, SqlConnection)
 
 class QmlSqlConnectionPrivate: public QObjectPrivate
 {

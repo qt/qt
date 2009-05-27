@@ -1643,7 +1643,7 @@ QObject *QFxListView::qmlAttachedProperties(QObject *obj)
     return QFxListViewAttached::properties(obj);
 }
 
-QML_DEFINE_TYPE(QFxListView,ListView);
+QML_DEFINE_TYPE(QFxListView,ListView)
 
 QT_END_NAMESPACE
 #include "qfxlistview.moc"

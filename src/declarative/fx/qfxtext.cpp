@@ -57,7 +57,7 @@
 
 
 QT_BEGIN_NAMESPACE
-QML_DEFINE_TYPE(QFxText,Text);
+QML_DEFINE_TYPE(QFxText,Text)
 
 /*!
     \qmlclass Text QFxText

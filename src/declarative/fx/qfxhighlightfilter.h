@@ -89,7 +89,7 @@ protected:
 private:
     QFxHighlightFilterPrivate *d;
 };
-QML_DECLARE_TYPE(QFxHighlightFilter);
+QML_DECLARE_TYPE(QFxHighlightFilter)
 
 QT_END_NAMESPACE
 

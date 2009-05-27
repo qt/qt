@@ -198,7 +198,7 @@ private:
     Q_DISABLE_COPY(QFxTextEdit)
     Q_DECLARE_PRIVATE(QFxTextEdit)
 };
-QML_DECLARE_TYPE(QFxTextEdit);
+QML_DECLARE_TYPE(QFxTextEdit)
 
 
 QT_END_NAMESPACE

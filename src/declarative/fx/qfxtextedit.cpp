@@ -58,7 +58,7 @@
 
 
 QT_BEGIN_NAMESPACE
-QML_DEFINE_TYPE(QFxTextEdit, TextEdit);
+QML_DEFINE_TYPE(QFxTextEdit, TextEdit)
 
 /*!
     \qmlclass TextEdit

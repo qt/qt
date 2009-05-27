@@ -58,8 +58,8 @@ class Q_DECLARATIVE_EXPORT QFxFlickable : public QFxItem
     Q_PROPERTY(bool overShoot READ overShoot WRITE setOverShoot)
     Q_PROPERTY(int viewportWidth READ viewportWidth WRITE setViewportWidth NOTIFY viewportWidthChanged)
     Q_PROPERTY(int viewportHeight READ viewportHeight WRITE setViewportHeight NOTIFY viewportHeightChanged)
-    Q_PROPERTY(qreal xPosition READ xPosition WRITE setXPosition NOTIFY positionChanged);
-    Q_PROPERTY(qreal yPosition READ yPosition WRITE setYPosition NOTIFY positionChanged);
+    Q_PROPERTY(qreal xPosition READ xPosition WRITE setXPosition NOTIFY positionChanged)
+    Q_PROPERTY(qreal yPosition READ yPosition WRITE setYPosition NOTIFY positionChanged)
     Q_PROPERTY(bool moving READ isMoving NOTIFY movingChanged)
     Q_PROPERTY(bool flicking READ isFlicking NOTIFY flickingChanged)
     Q_PROPERTY(int velocityDecay READ velocityDecay WRITE setVelocityDecay NOTIFY velocityDecayChanged)
@@ -68,17 +68,17 @@ class Q_DECLARATIVE_EXPORT QFxFlickable : public QFxItem
     Q_PROPERTY(DragMode dragMode READ dragMode WRITE setDragMode)
     Q_PROPERTY(qreal xVelocity READ xVelocity NOTIFY velocityChanged)
     Q_PROPERTY(qreal yVelocity READ yVelocity NOTIFY velocityChanged)
-    Q_PROPERTY(bool atXEnd READ isAtXEnd NOTIFY isAtBoundaryChanged);
-    Q_PROPERTY(bool atYEnd READ isAtYEnd NOTIFY isAtBoundaryChanged);
-    Q_PROPERTY(bool atXBeginning READ isAtXBeginning NOTIFY isAtBoundaryChanged);
-    Q_PROPERTY(bool atYBeginning READ isAtYBeginning NOTIFY isAtBoundaryChanged);
-    Q_PROPERTY(qreal pageXPosition READ pageXPosition NOTIFY pageChanged);
-    Q_PROPERTY(qreal pageYPosition READ pageYPosition NOTIFY pageChanged);
-    Q_PROPERTY(qreal pageWidth READ pageWidth NOTIFY pageChanged);
-    Q_PROPERTY(qreal pageHeight READ pageHeight NOTIFY pageChanged);
+    Q_PROPERTY(bool atXEnd READ isAtXEnd NOTIFY isAtBoundaryChanged)
+    Q_PROPERTY(bool atYEnd READ isAtYEnd NOTIFY isAtBoundaryChanged)
+    Q_PROPERTY(bool atXBeginning READ isAtXBeginning NOTIFY isAtBoundaryChanged)
+    Q_PROPERTY(bool atYBeginning READ isAtYBeginning NOTIFY isAtBoundaryChanged)
+    Q_PROPERTY(qreal pageXPosition READ pageXPosition NOTIFY pageChanged)
+    Q_PROPERTY(qreal pageYPosition READ pageYPosition NOTIFY pageChanged)
+    Q_PROPERTY(qreal pageWidth READ pageWidth NOTIFY pageChanged)
+    Q_PROPERTY(qreal pageHeight READ pageHeight NOTIFY pageChanged)
 
-    Q_PROPERTY(QmlList<QObject *>* flickableData READ flickableData);
-    Q_PROPERTY(QmlList<QFxItem *>* flickableChildren READ flickableChildren);
+    Q_PROPERTY(QmlList<QObject *>* flickableData READ flickableData)
+    Q_PROPERTY(QmlList<QFxItem *>* flickableChildren READ flickableChildren)
     Q_CLASSINFO("DefaultProperty", "flickableData")
 
 public:
@@ -186,7 +186,7 @@ private:
     Q_DISABLE_COPY(QFxFlickable)
     Q_DECLARE_PRIVATE(QFxFlickable)
 };
-QML_DECLARE_TYPE(QFxFlickable);
+QML_DECLARE_TYPE(QFxFlickable)
 
 
 QT_END_NAMESPACE

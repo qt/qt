@@ -105,7 +105,7 @@ public:
 
 //---------------------------------------------------------------------------
 
-QML_DEFINE_TYPE(QFxParticleMotion,ParticleMotion);
+QML_DEFINE_TYPE(QFxParticleMotion,ParticleMotion)
 
 /*!
     \class QFxParticleMotion
@@ -165,7 +165,7 @@ void QFxParticleMotion::destroy(QFxParticle &particle)
     \brief The QFxParticleMotionLinear class moves the particles linearly.
 */
 
-QML_DEFINE_TYPE(QFxParticleMotionLinear,ParticleMotionLinear);
+QML_DEFINE_TYPE(QFxParticleMotionLinear,ParticleMotionLinear)
 
 void QFxParticleMotionLinear::advance(QFxParticle &p, int interval)
 {
@@ -187,7 +187,7 @@ void QFxParticleMotionLinear::advance(QFxParticle &p, int interval)
     \brief The QFxParticleMotionGravity class moves the particles towards a point.
 */
 
-QML_DEFINE_TYPE(QFxParticleMotionGravity,ParticleMotionGravity);
+QML_DEFINE_TYPE(QFxParticleMotionGravity,ParticleMotionGravity)
 
 /*!
     \qmlproperty int ParticleMotionGravity::xattractor
@@ -289,7 +289,7 @@ Rect {
     This property holds how quickly the paricles will move from side to side.
 */
 
-QML_DEFINE_TYPE(QFxParticleMotionWander,ParticleMotionWander);
+QML_DEFINE_TYPE(QFxParticleMotionWander,ParticleMotionWander)
 
 void QFxParticleMotionWander::advance(QFxParticle &p, int interval)
 {
@@ -546,7 +546,7 @@ void QFxParticlesPrivate::updateOpacity(QFxParticle &p, int age)
     }
 }
 
-QML_DEFINE_TYPE(QFxParticles,Particles);
+QML_DEFINE_TYPE(QFxParticles,Particles)
 
 /*!
     \qmlclass Particles

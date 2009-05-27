@@ -78,7 +78,7 @@ private:
     QKeyEvent event;
 };
 
-QML_DECLARE_TYPE(QFxKeyEvent);
+QML_DECLARE_TYPE(QFxKeyEvent)
 
 class QFxMouseEvent : public QObject
 {
@@ -120,7 +120,7 @@ private:
     bool _accepted;
 };
 
-QML_DECLARE_TYPE(QFxMouseEvent);
+QML_DECLARE_TYPE(QFxMouseEvent)
 
 QT_END_NAMESPACE
 

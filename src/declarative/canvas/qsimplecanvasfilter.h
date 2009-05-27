@@ -70,7 +70,7 @@ public:
                  ChildrenAboveItem = 0x04,
                  All = 0x07 };
 
-    Q_PROPERTY(bool enabled READ enabled WRITE setEnabled NOTIFY enabledChanged);
+    Q_PROPERTY(bool enabled READ enabled WRITE setEnabled NOTIFY enabledChanged)
     bool enabled() const;
     void setEnabled(bool);
 

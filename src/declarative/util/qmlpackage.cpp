@@ -147,7 +147,7 @@ QmlPackageAttached *QmlPackage::qmlAttachedProperties(QObject *o)
     return new QmlPackageAttached(o);
 }
 
-QML_DEFINE_TYPE(QmlPackage, Package);
+QML_DEFINE_TYPE(QmlPackage, Package)
 
 QT_END_NAMESPACE
 #include "qmlpackage.moc"

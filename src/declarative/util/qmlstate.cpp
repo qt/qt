@@ -104,7 +104,7 @@ QmlStateOperation::QmlStateOperation(QObjectPrivate &dd, QObject *parent)
     \sa {states-transitions}{States and Transitions}
 */
 
-QML_DEFINE_TYPE(QmlState,State);
+QML_DEFINE_TYPE(QmlState,State)
 QmlState::QmlState(QObject *parent)
 : QObject(*(new QmlStatePrivate), parent)
 {
@@ -463,7 +463,7 @@ void QmlState::apply(QmlStateGroup *group, QmlTransition *trans, QmlState *rever
         d->applyBindings(); //### merge into above foreach?
 }
 
-QML_DEFINE_TYPE(QmlStateOperation,StateOperation);
+QML_DEFINE_TYPE(QmlStateOperation,StateOperation)
 QmlStateOperation::ActionList QmlStateOperation::actions()
 {
     return ActionList();

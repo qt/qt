@@ -72,7 +72,7 @@ private:
     Q_DISABLE_COPY(QFxFocusPanel)
 };
 
-QML_DECLARE_TYPE(QFxFocusPanel);
+QML_DECLARE_TYPE(QFxFocusPanel)
 
 QT_END_NAMESPACE
 

@@ -67,7 +67,7 @@ public:
     }
 
 private:
-    Q_DISABLE_COPY(GLSaveViewport);
+    Q_DISABLE_COPY(GLSaveViewport)
     GLint viewport[4];
 };
 
@@ -100,7 +100,7 @@ public:
     }
 
 private:
-    Q_DISABLE_COPY(GLSaveScissor);
+    Q_DISABLE_COPY(GLSaveScissor)
     GLint box[4];
     GLboolean enabled;
 };

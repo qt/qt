@@ -127,7 +127,7 @@ private:
     Q_DISABLE_COPY(QFxPathView)
     Q_DECLARE_PRIVATE(QFxPathView)
 };
-QML_DECLARE_TYPE(QFxPathView);
+QML_DECLARE_TYPE(QFxPathView)
 
 QT_END_NAMESPACE
 

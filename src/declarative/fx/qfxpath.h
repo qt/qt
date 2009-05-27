@@ -61,7 +61,7 @@ public:
 Q_SIGNALS:
     void changed();
 };
-QML_DECLARE_TYPE(QFxPathElement);
+QML_DECLARE_TYPE(QFxPathElement)
 
 class Q_DECLARATIVE_EXPORT QFxPathAttribute : public QFxPathElement
 {
@@ -83,7 +83,7 @@ private:
     QString _name;
     qreal _value;
 };
-QML_DECLARE_TYPE(QFxPathAttribute);
+QML_DECLARE_TYPE(QFxPathAttribute)
 
 class Q_DECLARATIVE_EXPORT QFxCurve : public QFxPathElement
 {
@@ -106,7 +106,7 @@ private:
     qreal _x;
     qreal _y;
 };
-QML_DECLARE_TYPE(QFxCurve);
+QML_DECLARE_TYPE(QFxCurve)
 
 class Q_DECLARATIVE_EXPORT QFxPathLine : public QFxCurve
 {
@@ -116,7 +116,7 @@ public:
 
     void addToPath(QPainterPath &path);
 };
-QML_DECLARE_TYPE(QFxPathLine);
+QML_DECLARE_TYPE(QFxPathLine)
 
 class Q_DECLARATIVE_EXPORT QFxPathQuad : public QFxCurve
 {
@@ -139,7 +139,7 @@ private:
     qreal _controlX;
     qreal _controlY;
 };
-QML_DECLARE_TYPE(QFxPathQuad);
+QML_DECLARE_TYPE(QFxPathQuad)
 
 class Q_DECLARATIVE_EXPORT QFxPathCubic : public QFxCurve
 {
@@ -172,7 +172,7 @@ private:
     int _control2X;
     int _control2Y;
 };
-QML_DECLARE_TYPE(QFxPathCubic);
+QML_DECLARE_TYPE(QFxPathCubic)
 
 class Q_DECLARATIVE_EXPORT QFxPathPercent : public QFxPathElement
 {
@@ -187,14 +187,14 @@ public:
 private:
     qreal _value;
 };
-QML_DECLARE_TYPE(QFxPathPercent);
+QML_DECLARE_TYPE(QFxPathPercent)
 
 class QFxPathPrivate;
 class Q_DECLARATIVE_EXPORT QFxPath : public QObject, public QmlParserStatus
 {
     Q_OBJECT
 
-    Q_INTERFACES(QmlParserStatus);
+    Q_INTERFACES(QmlParserStatus)
     Q_PROPERTY(QList<QFxPathElement *>* pathElements READ pathElements)
     Q_PROPERTY(qreal startX READ startX WRITE setStartX)
     Q_PROPERTY(qreal startY READ startY WRITE setStartY)
@@ -249,7 +249,7 @@ private:
     Q_DISABLE_COPY(QFxPath)
     Q_DECLARE_PRIVATE(QFxPath)
 };
-QML_DECLARE_TYPE(QFxPath);
+QML_DECLARE_TYPE(QFxPath)
 
 QT_END_NAMESPACE
 

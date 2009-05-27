@@ -78,28 +78,28 @@ public:
     AnchorLine anchorLine;
 };
 
-Q_DECLARE_METATYPE(QFxAnchorLine);
+Q_DECLARE_METATYPE(QFxAnchorLine)
 
 class QFxAnchorsPrivate;
 class Q_DECLARATIVE_EXPORT QFxAnchors : public QObject
 {
     Q_OBJECT
 
-    Q_PROPERTY(QFxAnchorLine left READ left WRITE setLeft RESET resetLeft);
-    Q_PROPERTY(QFxAnchorLine right READ right WRITE setRight RESET resetRight);
-    Q_PROPERTY(QFxAnchorLine horizontalCenter READ horizontalCenter WRITE setHorizontalCenter RESET resetHorizontalCenter);
-    Q_PROPERTY(QFxAnchorLine top READ top WRITE setTop RESET resetTop);
-    Q_PROPERTY(QFxAnchorLine bottom READ bottom WRITE setBottom RESET resetBottom);
-    Q_PROPERTY(QFxAnchorLine verticalCenter READ verticalCenter WRITE setVerticalCenter RESET resetVerticalCenter);
-    Q_PROPERTY(QFxAnchorLine baseline READ baseline WRITE setBaseline RESET resetBaseline);
-    Q_PROPERTY(int leftMargin READ leftMargin WRITE setLeftMargin NOTIFY leftMarginChanged);
-    Q_PROPERTY(int rightMargin READ rightMargin WRITE setRightMargin NOTIFY rightMarginChanged);
-    Q_PROPERTY(int horizontalCenterOffset READ horizontalCenterOffset WRITE setHorizontalCenterOffset NOTIFY horizontalCenterOffsetChanged());
-    Q_PROPERTY(int topMargin READ topMargin WRITE setTopMargin NOTIFY topMarginChanged);
-    Q_PROPERTY(int bottomMargin READ bottomMargin WRITE setBottomMargin NOTIFY bottomMarginChanged);
-    Q_PROPERTY(int verticalCenterOffset READ verticalCenterOffset WRITE setVerticalCenterOffset NOTIFY verticalCenterOffsetChanged());
-    Q_PROPERTY(QFxItem *fill READ fill WRITE setFill);
-    Q_PROPERTY(QFxItem *centeredIn READ centeredIn WRITE setCenteredIn);
+    Q_PROPERTY(QFxAnchorLine left READ left WRITE setLeft RESET resetLeft)
+    Q_PROPERTY(QFxAnchorLine right READ right WRITE setRight RESET resetRight)
+    Q_PROPERTY(QFxAnchorLine horizontalCenter READ horizontalCenter WRITE setHorizontalCenter RESET resetHorizontalCenter)
+    Q_PROPERTY(QFxAnchorLine top READ top WRITE setTop RESET resetTop)
+    Q_PROPERTY(QFxAnchorLine bottom READ bottom WRITE setBottom RESET resetBottom)
+    Q_PROPERTY(QFxAnchorLine verticalCenter READ verticalCenter WRITE setVerticalCenter RESET resetVerticalCenter)
+    Q_PROPERTY(QFxAnchorLine baseline READ baseline WRITE setBaseline RESET resetBaseline)
+    Q_PROPERTY(int leftMargin READ leftMargin WRITE setLeftMargin NOTIFY leftMarginChanged)
+    Q_PROPERTY(int rightMargin READ rightMargin WRITE setRightMargin NOTIFY rightMarginChanged)
+    Q_PROPERTY(int horizontalCenterOffset READ horizontalCenterOffset WRITE setHorizontalCenterOffset NOTIFY horizontalCenterOffsetChanged())
+    Q_PROPERTY(int topMargin READ topMargin WRITE setTopMargin NOTIFY topMarginChanged)
+    Q_PROPERTY(int bottomMargin READ bottomMargin WRITE setBottomMargin NOTIFY bottomMarginChanged)
+    Q_PROPERTY(int verticalCenterOffset READ verticalCenterOffset WRITE setVerticalCenterOffset NOTIFY verticalCenterOffsetChanged())
+    Q_PROPERTY(QFxItem *fill READ fill WRITE setFill)
+    Q_PROPERTY(QFxItem *centeredIn READ centeredIn WRITE setCenteredIn)
 
 public:
     QFxAnchors(QObject *parent=0);
@@ -116,7 +116,7 @@ public:
         Horizontal_Mask = HasLeftAnchor | HasRightAnchor | HasHCenterAnchor,
         Vertical_Mask = HasTopAnchor | HasBottomAnchor | HasVCenterAnchor | HasBaselineAnchor
     };
-    Q_DECLARE_FLAGS(UsedAnchors, UsedAnchor);
+    Q_DECLARE_FLAGS(UsedAnchors, UsedAnchor)
 
     QFxAnchorLine left() const;
     void setLeft(const QFxAnchorLine &edge);
@@ -188,7 +188,7 @@ private:
     Q_DECLARE_PRIVATE(QFxAnchors)
 };
 
-QML_DECLARE_TYPE(QFxAnchors);
+QML_DECLARE_TYPE(QFxAnchors)
 
 
 QT_END_NAMESPACE

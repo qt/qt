@@ -44,7 +44,7 @@
 
 
 QT_BEGIN_NAMESPACE
-QML_DEFINE_TYPE(QFxPen,Pen);
+QML_DEFINE_TYPE(QFxPen,Pen)
 
 /*!
     \internal
@@ -118,7 +118,7 @@ void QFxPen::setWidth(int w)
 
 
 
-QML_DEFINE_TYPE(QFxRect,Rect);
+QML_DEFINE_TYPE(QFxRect,Rect)
 
 /*!
     \qmlclass Rect QFxRect

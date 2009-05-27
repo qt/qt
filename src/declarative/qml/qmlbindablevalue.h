@@ -70,8 +70,8 @@ public:
     virtual void setTarget(const QmlMetaProperty &);
     QmlMetaProperty property() const;
 
-    Q_CLASSINFO("DefaultProperty", "expression");
-    Q_PROPERTY(QString expression READ expression WRITE setExpression);
+    Q_CLASSINFO("DefaultProperty", "expression")
+    Q_PROPERTY(QString expression READ expression WRITE setExpression)
     virtual void setExpression(const QString &);
 
     void init();
@@ -85,7 +85,7 @@ protected:
 private:
     Q_DECLARE_PRIVATE(QmlBindableValue)
 };
-QML_DECLARE_TYPE(QmlBindableValue);
+QML_DECLARE_TYPE(QmlBindableValue)
 
 
 QT_END_NAMESPACE

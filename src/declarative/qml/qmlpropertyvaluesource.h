@@ -69,7 +69,7 @@ protected:
 private:
     Q_DISABLE_COPY(QmlPropertyValueSource)
 };
-QML_DECLARE_TYPE(QmlPropertyValueSource);
+QML_DECLARE_TYPE(QmlPropertyValueSource)
 
 #endif // QMLPROPERTYVALUESOURCE_H
 

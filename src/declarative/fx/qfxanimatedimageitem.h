@@ -91,7 +91,7 @@ private:
     Q_DECLARE_PRIVATE(QFxAnimatedImageItem)
 };
 
-QML_DECLARE_TYPE(QFxAnimatedImageItem);
+QML_DECLARE_TYPE(QFxAnimatedImageItem)
 
 
 QT_END_NAMESPACE

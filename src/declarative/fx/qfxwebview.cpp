@@ -71,7 +71,7 @@
 #include <private/qfxpainteditem_p.h>
 
 QT_BEGIN_NAMESPACE
-QML_DEFINE_TYPE(QFxWebView,WebView);
+QML_DEFINE_TYPE(QFxWebView,WebView)
 
 static const int MAX_DOUBLECLICK_TIME=500; // XXX need better gesture system
 

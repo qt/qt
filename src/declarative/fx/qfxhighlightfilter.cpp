@@ -314,6 +314,6 @@ void QFxHighlightFilter::filterGL(QSimpleCanvasItem::GLPainter &p)
 #endif
 }
 
-QML_DEFINE_TYPE(QFxHighlightFilter,Highlight);
+QML_DEFINE_TYPE(QFxHighlightFilter,Highlight)
 
 QT_END_NAMESPACE

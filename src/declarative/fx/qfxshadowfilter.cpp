@@ -209,6 +209,6 @@ void QFxShadowFilter::filterGL(QSimpleCanvasItem::GLPainter &p)
 #endif
 }
 
-QML_DEFINE_TYPE(QFxShadowFilter,Shadow);
+QML_DEFINE_TYPE(QFxShadowFilter,Shadow)
 
 QT_END_NAMESPACE

@@ -74,7 +74,7 @@ class Q_DECLARATIVE_EXPORT QSimpleCanvasItem : public QObject
     Q_CAST_INTERFACES(QmlDebuggerStatus)
     Q_DECLARE_PRIVATE(QSimpleCanvasItem)
     Q_ENUMS(TransformOrigin)
-    Q_PROPERTY(TransformOrigin transformOrigin READ transformOrigin WRITE setTransformOrigin);
+    Q_PROPERTY(TransformOrigin transformOrigin READ transformOrigin WRITE setTransformOrigin)
 
 public:
     enum ClipType { NoClip = 0x00,
@@ -91,7 +91,7 @@ public:
                   IsFocusPanel = 0x00000040,
                   IsFocusRealm = 0x00000080,
                   AcceptsInputMethods = 0x00000100};
-    Q_DECLARE_FLAGS(Options, Option);
+    Q_DECLARE_FLAGS(Options, Option)
 
     QSimpleCanvasItem(QSimpleCanvasItem *parent=0);
     virtual ~QSimpleCanvasItem();
@@ -276,7 +276,7 @@ public:
     QSimpleCanvasItem(QSimpleCanvasItemPrivate &dd, QSimpleCanvasItem *parent);
 };
 
-Q_DECLARE_OPERATORS_FOR_FLAGS(QSimpleCanvasItem::Options);
+Q_DECLARE_OPERATORS_FOR_FLAGS(QSimpleCanvasItem::Options)
 
 class QSimpleCanvasLayer : public QSimpleCanvasItem
 {

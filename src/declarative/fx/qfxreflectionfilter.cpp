@@ -348,5 +348,5 @@ QRectF QFxReflectionFilter::itemBoundingRect(const QRectF &r) const
     return rv;
 }
 
-QML_DEFINE_TYPE(QFxReflectionFilter,Reflection);
+QML_DEFINE_TYPE(QFxReflectionFilter,Reflection)
 QT_END_NAMESPACE
