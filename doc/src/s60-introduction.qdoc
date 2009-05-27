@@ -19,19 +19,14 @@
 
     \tableofcontents
 
-    \section1 Required tools
-
-    In order to use Qt for S60 you need to have a typical S60 development
-    setup. See \l{Qt for S60 Requirements} for the details.
-
     \section1 Installing Qt
 
     Follow the instructions found in \l{Installing Qt on S60}.
 
     \section1 Building your own applications
 
-    If you are new to Qt development, have a look at \l{How to Learn Qt}
-    and \l{Qt Tutorial}. In general, the difference between developing a
+    If you are new to Qt development, have a look at \l{How to Learn Qt}. 
+    In general, the difference between developing a
     Qt application on S60 compared to any of the other platforms supported
     by Qt is not that big.
 
