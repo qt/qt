@@ -109,7 +109,7 @@ QDebug &operator<<(QDebug &dbg, const QShortcutEntry *se) {
     dbg.nospace()
         << "QShortcutEntry(" << se->keyseq
         << "), id(" << se->id << "), enabled(" << se->enabled << "), autorepeat(" << se->autorepeat
-        << "), owner(" << se->owner << ")";
+        << "), owner(" << se->owner << ')';
     return dbg.space();
 }
 #endif // QT_NO_DEBUGSTREAM
@@ -876,7 +876,7 @@ void QShortcutMap::dispatchEvent(QKeyEvent *e)
     qDebug().nospace()
         << "QShortcutMap::dispatchEvent(): Sending QShortcutEvent(\""
         << (QString)next->keyseq << "\", " << next->id << ", "
-        << (bool)(enabledShortcuts>1) << ") to object(" << next->owner << ")";
+        << (bool)(enabledShortcuts>1) << ") to object(" << next->owner << ')';
 #endif
     QShortcutEvent se(next->keyseq, next->id, enabledShortcuts>1);
     QApplication::sendEvent(const_cast<QObject *>(next->owner), &se);

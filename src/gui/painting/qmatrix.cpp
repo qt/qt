@@ -1178,7 +1178,7 @@ QDebug operator<<(QDebug dbg, const QMatrix &m)
                   << " 22=" << m.m22()
                   << " dx=" << m.dx()
                   << " dy=" << m.dy()
-                  << ")";
+                  << ')';
     return dbg.space();
 }
 #endif

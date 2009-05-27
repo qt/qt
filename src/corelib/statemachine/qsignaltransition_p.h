@@ -66,7 +66,8 @@ public:
 
     static QSignalTransitionPrivate *get(QSignalTransition *q);
 
-    void invalidate();
+    void unregister();
+    void maybeRegister();
 
     QObject *sender;
     QByteArray signal;

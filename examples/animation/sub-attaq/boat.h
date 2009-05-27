@@ -46,17 +46,15 @@
 #include <QtCore/QObject>
 #include <QtGui/QKeyEvent>
 
-#if defined(QT_EXPERIMENTAL_SOLUTION)
-# include "qtgraphicswidget.h"
-#else
-# include <QtGui/QGraphicsWidget>
-#endif
+#include <QtGui/QGraphicsWidget>
 
 class PixmapItem;
 class Bomb;
+QT_BEGIN_NAMESPACE
 class QVariantAnimation;
 class QAbstractAnimation;
 class QStateMachine;
+QT_END_NAMESPACE
 
 class Boat : public QGraphicsWidget
 {

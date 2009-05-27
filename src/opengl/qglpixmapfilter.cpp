@@ -116,10 +116,8 @@ QPixmapFilter *QGLContextPrivate::createPixmapFilter(int type) const
     return 0;
 }
 
-#if !defined(QT_OPENGL_ES_2)
 extern void qt_add_rect_to_array(const QRectF &r, q_vertexType *array);
 extern void qt_add_texcoords_to_array(qreal x1, qreal y1, qreal x2, qreal y2, q_vertexType *array);
-#endif
 
 static void qgl_drawTexture(const QRectF &rect, int tx_width, int tx_height, const QRectF & src)
 {

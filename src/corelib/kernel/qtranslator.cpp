@@ -819,6 +819,6 @@ bool QTranslator::isEmpty() const
     Use translate(\a context, \a sourceText, \a comment) instead.
 */
 
-#endif // QT_NO_TRANSLATION
-
 QT_END_NAMESPACE
+
+#endif // QT_NO_TRANSLATION

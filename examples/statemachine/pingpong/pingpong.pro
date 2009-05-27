@@ -1,10 +1,11 @@
 QT = core
-TEMPLATE = app
-TARGET = 
 win32: CONFIG += console
 mac:CONFIG -= app_bundle
-DEPENDPATH += .
-INCLUDEPATH += .
 
-# Input
-SOURCES += main.cpp
+SOURCES = main.cpp
+
+# install
+target.path = $$[QT_INSTALL_EXAMPLES]/statemachine/pingpong
+sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS pingpong.pro
+sources.path = $$[QT_INSTALL_EXAMPLES]/statemachine/pingpong
+INSTALLS += target sources

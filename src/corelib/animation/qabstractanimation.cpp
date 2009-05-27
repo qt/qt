@@ -43,8 +43,7 @@
     \class QAbstractAnimation
     \ingroup group_animation
     \brief The QAbstractAnimation class is the base of all animations.
-    \since 4.5
-    \preliminary
+    \since 4.6
 
     The class defines the functions for the functionality shared by
     all animations. By inheriting this class, you can create custom
@@ -189,32 +188,6 @@ void QUnifiedTimer::updateRecentlyStartedAnimations()
     animationsToStart.clear();
 }
 
-/*
-  defines the timing interval. Default is DEFAULT_TIMER_INTERVAL
-*/
-void QUnifiedTimer::setTimingInterval(int interval)
-{
-    timingInterval = interval;
-    if (animationTimer.isActive()) {
-        //we changed the timing interval
-        animationTimer.start(timingInterval, this);
-    }
-}
-
-/*
-   this allows to have a consistent timer interval at each tick from the timer
-   not taking the real time that passed into account.
-*/
-void QUnifiedTimer::setConsistentTiming(bool b)
-{
-    consistentTiming = b;
-}
-
-int QUnifiedTimer::elapsedTime() const
-{
-    return lastTick;
-}
-
 void QUnifiedTimer::timerEvent(QTimerEvent *event)
 {
     //this is simply the time we last received a tick
@@ -352,42 +325,22 @@ void QAbstractAnimationPrivate::setState(QAbstractAnimation::State newState)
 
     \sa QVariantAnimation, QAnimationGroup
 */
-#ifdef QT_EXPERIMENTAL_SOLUTION
-QAbstractAnimation::QAbstractAnimation(QObject *parent)
-    : d_ptr(new QAbstractAnimationPrivate)
-{
-    // Allow auto-add on reparent
-    setParent(parent);
-    d_ptr->q_ptr = this;
-}
-#else
 QAbstractAnimation::QAbstractAnimation(QObject *parent)
     : QObject(*new QAbstractAnimationPrivate, 0)
 {
     // Allow auto-add on reparent
     setParent(parent);
 }
-#endif
 
 /*!
     \internal
 */
-#ifdef QT_EXPERIMENTAL_SOLUTION
-QAbstractAnimation::QAbstractAnimation(QAbstractAnimationPrivate &dd, QObject *parent)
-    : d_ptr(&dd)
-{
-    // Allow auto-add on reparent
-   setParent(parent);
-   d_ptr->q_ptr = this;
-}
-#else
 QAbstractAnimation::QAbstractAnimation(QAbstractAnimationPrivate &dd, QObject *parent)
     : QObject(dd, 0)
 {
     // Allow auto-add on reparent
    setParent(parent);
 }
-#endif
 
 /*!
     Stops the animation if it's running, then destroys the

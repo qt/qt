@@ -1265,9 +1265,7 @@ void DocParser::parse(const QString& source,
                         }
                         else {
                             append(Atom::ParaLeft);
-                            append(Atom::String,
-                                   "This is an overloaded member function, "
-                                   "provided for convenience.");
+                            append(Atom::String,"This is an overloaded function.");
                             append(Atom::ParaRight);
                             x = getMetaCommandArgument(cmdStr);
                         }

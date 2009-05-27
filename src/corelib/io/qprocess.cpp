@@ -1586,7 +1586,7 @@ void QProcess::start(const QString &program, const QStringList &arguments, OpenM
     }
 
 #if defined QPROCESS_DEBUG
-    qDebug() << "QProcess::start(" << program << "," << arguments << "," << mode << ")";
+    qDebug() << "QProcess::start(" << program << ',' << arguments << ',' << mode << ')';
 #endif
 
     d->outputReadBuffer.clear();

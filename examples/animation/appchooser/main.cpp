@@ -41,9 +41,6 @@
 
 #include <QtCore>
 #include <QtGui>
-#ifdef QT_EXPERIMENTAL_SOLUTION
-#include "qtgraphicswidget.h"
-#endif
 
 
 class Pixmap : public QGraphicsWidget

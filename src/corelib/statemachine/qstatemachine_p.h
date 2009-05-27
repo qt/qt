@@ -81,8 +81,7 @@ class QAbstractAnimation;
 #endif
 
 class QStateMachine;
-class Q_CORE_EXPORT QStateMachinePrivate
-    : public QObjectPrivate
+class QStateMachinePrivate : public QObjectPrivate
 {
     Q_DECLARE_PUBLIC(QStateMachine)
 public:
@@ -209,7 +208,7 @@ public:
         f_cloneEvent cloneEvent;
     };
 
-    static const Handler *handler;
+    static Q_CORE_EXPORT const Handler *handler;
 };
 
 QT_END_NAMESPACE

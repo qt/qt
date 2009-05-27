@@ -51,17 +51,10 @@
 //Qt
 #include <QtGui/QMessageBox>
 #include <QtGui/QGraphicsView>
-#if defined(QT_EXPERIMENTAL_SOLUTION)
-#include "qstatemachine.h"
-#include "qkeyeventtransition.h"
-#include "qsignalevent.h"
-#include "qfinalstate.h"
-#else
 #include <QtCore/QStateMachine>
 #include <QtGui/QKeyEventTransition>
 #include <QtCore/QSignalEvent>
 #include <QtCore/QFinalState>
-#endif
 
 PlayState::PlayState(GraphicsScene *scene, QState *parent)
     : QState(parent),

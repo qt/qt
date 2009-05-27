@@ -43,13 +43,8 @@
 #define __BOMB__H__
 
 //Qt
-#if defined(QT_EXPERIMENTAL_SOLUTION)
-# include "qanimationgroup.h"
-# include "qgraphicswidget.h"
-#else
-# include <QtGui/QGraphicsWidget>
-# include <QtCore/QAnimationGroup>
-#endif
+#include <QtGui/QGraphicsWidget>
+#include <QtCore/QAnimationGroup>
 
 class PixmapItem;
 

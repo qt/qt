@@ -53,21 +53,12 @@
 #include "progressitem.h"
 
 //Qt
-#if defined(QT_EXPERIMENTAL_SOLUTION)
-#include "qpropertyanimation.h"
-#include "qsequentialanimationgroup.h"
-#include "qparallelanimationgroup.h"
-#include "qstatemachine.h"
-#include "qfinalstate.h"
-#include "qpauseanimation.h"
-#else
 #include <QtCore/QPropertyAnimation>
 #include <QtCore/QSequentialAnimationGroup>
 #include <QtCore/QParallelAnimationGroup>
 #include <QtCore/QStateMachine>
 #include <QtCore/QFinalState>
 #include <QtCore/QPauseAnimation>
-#endif
 #include <QtGui/QAction>
 #include <QtCore/QDir>
 #include <QtGui/QApplication>
@@ -129,7 +120,7 @@ GraphicsScene::GraphicsScene(int x, int y, int width, int height, Mode mode)
 
     //parse the xml that contain all data of the game
     QXmlStreamReader reader;
-    QFile file(QDir::currentPath() + "/data.xml");
+    QFile file(":data.xml");
     file.open(QIODevice::ReadOnly);
     reader.setDevice(&file);
     LevelDescription currentLevel;

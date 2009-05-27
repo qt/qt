@@ -1,6 +1,5 @@
-# Input
-SOURCES += main.cpp
-RESOURCES += appchooser.qrc
+SOURCES = main.cpp
+RESOURCES = appchooser.qrc
 
 # install
 target.path = $$[QT_INSTALL_EXAMPLES]/animation/appchooser

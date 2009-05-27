@@ -45,13 +45,8 @@
 //Qt
 #include <QtCore/QObject>
 
-#if defined(QT_EXPERIMENTAL_SOLUTION)
-# include "qvariantanimation.h"
-# include "qgraphicswidget.h"
-#else
-# include <QtCore/QVariantAnimation>
-# include <QtGui/QGraphicsWidget>
-#endif
+#include <QtCore/QVariantAnimation>
+#include <QtGui/QGraphicsWidget>
 
 class PixmapItem;
 

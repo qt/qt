@@ -2417,7 +2417,7 @@ QDebug operator<<(QDebug debug, QDir::Filters filters)
         if (filters & QDir::System) flags << QLatin1String("System");
         if (filters & QDir::CaseSensitive) flags << QLatin1String("CaseSensitive");
     }
-    debug << "QDir::Filters(" << qPrintable(flags.join(QLatin1String("|"))) << ")";
+    debug << "QDir::Filters(" << qPrintable(flags.join(QLatin1String("|"))) << ')';
     return debug;
 }
 
@@ -2439,8 +2439,8 @@ QDebug operator<<(QDebug debug, QDir::SortFlags sorting)
         if (sorting & QDir::LocaleAware) flags << QLatin1String("LocaleAware");
         if (sorting & QDir::Type) flags << QLatin1String("Type");
         debug << "QDir::SortFlags(" << qPrintable(type)
-              << "|"
-              << qPrintable(flags.join(QLatin1String("|"))) << ")";
+              << '|'
+              << qPrintable(flags.join(QLatin1String("|"))) << ')';
     }
     return debug;
 }
@@ -2452,9 +2452,9 @@ QDebug operator<<(QDebug debug, const QDir &dir)
                        << qPrintable(dir.nameFilters().join(QLatin1String(",")))
                        << "}, "
                        << dir.sorting()
-                       << ","
+                       << ','
                        << dir.filter()
-                       << ")";
+                       << ')';
     return debug.space();
 }
 

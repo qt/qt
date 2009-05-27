@@ -852,7 +852,7 @@ QVariant QWindowsMimeHtml::convertToMime(const QString &mime, IDataObject *pData
         if (end > start && start > 0) {
             html = "<!--StartFragment-->" + html.mid(start, end - start);
             html += "<!--EndFragment-->";
-            html.replace("\r", "");
+            html.replace('\r', "");
             result = QString::fromUtf8(html);
         }
     }

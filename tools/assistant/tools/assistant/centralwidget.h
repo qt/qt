@@ -55,6 +55,7 @@ class QLabel;
 class QAction;
 class QCheckBox;
 class QLineEdit;
+class QTextBrowser;
 class QToolButton;
 
 class HelpViewer;
@@ -79,6 +80,10 @@ signals:
     void findNext();
     void findPrevious();
 
+protected:
+    void hideEvent(QHideEvent* event);
+    void showEvent(QShowEvent * event);
+
 private slots:
     void updateButtons();
 
@@ -94,6 +99,7 @@ private:
     QToolButton *toolPrevious;
     QCheckBox *checkWholeWords;
 
+    QPalette appPalette;
     friend class CentralWidget;
 };
 
@@ -176,7 +182,9 @@ private slots:
 private:
     void connectSignals();
     bool eventFilter(QObject *object, QEvent *e);
-    void find(QString ttf, bool forward, bool backward);
+    void find(const QString &ttf, bool forward, bool backward);
+    bool findInTextBrowser(QTextBrowser* browser, const QString &ttf,
+        bool forward, bool backward);
     void initPrinter();
     QString quoteTabTitle(const QString &title) const;
     void highlightSearchTerms();

@@ -109,9 +109,6 @@ QPixmap QPixmap::grabWindow(WId window, int x, int y, int w, int h)
     return QPixmap::fromImage(img);
 }
 
-/*!
-    \internal
-*/
 QRgb* QPixmap::clut() const
 {
     if (data->classId() == QPixmapData::RasterClass) {
@@ -122,9 +119,6 @@ QRgb* QPixmap::clut() const
     return 0;
 }
 
-/*!
-    \internal
-*/
 int QPixmap::numCols() const
 {
     if (data->classId() == QPixmapData::RasterClass) {
@@ -135,10 +129,6 @@ int QPixmap::numCols() const
     return 0;
 }
 
-/*!
-    \internal
-    \since 4.1
-*/
 const uchar* QPixmap::qwsBits() const
 {
     if (data->classId() == QPixmapData::RasterClass) {
@@ -149,10 +139,6 @@ const uchar* QPixmap::qwsBits() const
     return 0;
 }
 
-/*!
-    \internal
-    \since 4.1
-*/
 int QPixmap::qwsBytesPerLine() const
 {
     if (data->classId() == QPixmapData::RasterClass) {

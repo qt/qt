@@ -114,36 +114,34 @@ static void qt_ignore_sigpipe()
     Extracts the port and address from a sockaddr, and stores them in
     \a port and \a addr if they are non-null.
 */
-static inline void qt_socket_getPortAndAddress(struct sockaddr *sa, quint16 *port, QHostAddress *addr)
+static inline void qt_socket_getPortAndAddress(const qt_sockaddr *s, quint16 *port, QHostAddress *addr)
 {
 #if !defined(QT_NO_IPV6)
-    if (sa->sa_family == AF_INET6) {
-        struct sockaddr_in6 *sa6 = (struct sockaddr_in6 *)sa;
+    if (s->a.sa_family == AF_INET6) {
         Q_IPV6ADDR tmp;
-        memcpy(&tmp, &sa6->sin6_addr.s6_addr, sizeof(tmp));
+        memcpy(&tmp, &s->a6.sin6_addr, sizeof(tmp));
         if (addr) {
             QHostAddress tmpAddress;
             tmpAddress.setAddress(tmp);
             *addr = tmpAddress;
 #ifndef QT_NO_IPV6IFNAME
             char scopeid[IFNAMSIZ];
-            if (::if_indextoname(sa6->sin6_scope_id, scopeid) > 0) {
+            if (::if_indextoname(s->a6.sin6_scope_id, scopeid) > 0) {
                 addr->setScopeId(QLatin1String(scopeid));
             } else
 #endif
-            addr->setScopeId(QString::number(sa6->sin6_scope_id));
+            addr->setScopeId(QString::number(s->a6.sin6_scope_id));
         }
         if (port)
-            *port = ntohs(sa6->sin6_port);
+            *port = ntohs(s->a6.sin6_port);
         return;
     }
 #endif
-    struct sockaddr_in *sa4 = (struct sockaddr_in *)sa;
     if (port)
-        *port = ntohs(sa4->sin_port);
+        *port = ntohs(s->a4.sin_port);
     if (addr) {
         QHostAddress tmpAddress;
-        tmpAddress.setAddress(ntohl(sa4->sin_addr.s_addr));
+        tmpAddress.setAddress(ntohl(s->a4.sin_addr.s_addr));
         *addr = tmpAddress;
     }
 }
@@ -521,26 +519,16 @@ qint64 QNativeSocketEnginePrivate::nativeBytesAvailable() const
 bool QNativeSocketEnginePrivate::nativeHasPendingDatagrams() const
 {
     // Create a sockaddr struct and reset its port number.
-#if !defined(QT_NO_IPV6)
-    struct sockaddr_storage storage;
-    sockaddr_in6 *storagePtrIPv6 = reinterpret_cast<sockaddr_in6 *>(&storage);
-    storagePtrIPv6->sin6_port = 0;
-#else
-    struct sockaddr storage;
-#endif
-    sockaddr *storagePtr = reinterpret_cast<sockaddr *>(&storage);
-    storagePtr->sa_family = 0;
-
-    sockaddr_in *storagePtrIPv4 = reinterpret_cast<sockaddr_in *>(&storage);
-    storagePtrIPv4->sin_port = 0;
+    qt_sockaddr storage;
     QT_SOCKLEN_T storageSize = sizeof(storage);
+    memset(&storage, 0, storageSize);
 
     // Peek 0 bytes into the next message. The size of the message may
     // well be 0, so we can't check recvfrom's return value.
     ssize_t readBytes;
     do {
         char c;
-        readBytes = ::recvfrom(socketDescriptor, &c, 1, MSG_PEEK, storagePtr, &storageSize);
+        readBytes = ::recvfrom(socketDescriptor, &c, 1, MSG_PEEK, &storage.a, &storageSize);
     } while (readBytes == -1 && errno == EINTR);
 
     // If there's no error, or if our buffer was too small, there must be a
@@ -583,11 +571,7 @@ qint64 QNativeSocketEnginePrivate::nativePendingDatagramSize() const
 qint64 QNativeSocketEnginePrivate::nativeReceiveDatagram(char *data, qint64 maxSize,
                                                     QHostAddress *address, quint16 *port)
 {
-#if !defined(QT_NO_IPV6)
-    struct sockaddr_storage aa;
-#else
-    struct sockaddr_in aa;
-#endif
+    qt_sockaddr aa;
     memset(&aa, 0, sizeof(aa));
     QT_SOCKLEN_T sz;
     sz = sizeof(aa);
@@ -596,13 +580,13 @@ qint64 QNativeSocketEnginePrivate::nativeReceiveDatagram(char *data, qint64 maxS
     do {
         char c;
         recvFromResult = ::recvfrom(socketDescriptor, maxSize ? data : &c, maxSize ? maxSize : 1,
-                                    0, (struct sockaddr *)&aa, &sz);
+                                    0, &aa.a, &sz);
     } while (recvFromResult == -1 && errno == EINTR);
 
     if (recvFromResult == -1) {
         setError(QAbstractSocket::NetworkError, ReceiveDatagramErrorString);
     } else if (port || address) {
-        qt_socket_getPortAndAddress((struct sockaddr *) &aa, port, address);
+        qt_socket_getPortAndAddress(&aa, port, address);
     }
 
 #if defined (QNATIVESOCKETENGINE_DEBUG)
@@ -682,21 +666,16 @@ bool QNativeSocketEnginePrivate::fetchConnectionParameters()
     if (socketDescriptor == -1)
         return false;
 
-#if !defined(QT_NO_IPV6)
-    struct sockaddr_storage sa;
-#else
-    struct sockaddr_in sa;
-#endif
-    struct sockaddr *sockAddrPtr = (struct sockaddr *) &sa;
+    qt_sockaddr sa;
     QT_SOCKLEN_T sockAddrSize = sizeof(sa);
 
     // Determine local address
     memset(&sa, 0, sizeof(sa));
-    if (::getsockname(socketDescriptor, sockAddrPtr, &sockAddrSize) == 0) {
-        qt_socket_getPortAndAddress(sockAddrPtr, &localPort, &localAddress);
+    if (::getsockname(socketDescriptor, &sa.a, &sockAddrSize) == 0) {
+        qt_socket_getPortAndAddress(&sa, &localPort, &localAddress);
 
         // Determine protocol family
-        switch (sockAddrPtr->sa_family) {
+        switch (sa.a.sa_family) {
         case AF_INET:
             socketProtocol = QAbstractSocket::IPv4Protocol;
             break;
@@ -716,8 +695,8 @@ bool QNativeSocketEnginePrivate::fetchConnectionParameters()
     }
 
     // Determine the remote address
-    if (!::getpeername(socketDescriptor, sockAddrPtr, &sockAddrSize))
-        qt_socket_getPortAndAddress(sockAddrPtr, &peerPort, &peerAddress);
+    if (!::getpeername(socketDescriptor, &sa.a, &sockAddrSize))
+        qt_socket_getPortAndAddress(&sa, &peerPort, &peerAddress);
 
     // Determine the socket type (UDP/TCP)
     int value = 0;

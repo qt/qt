@@ -553,7 +553,9 @@ QImage QCoreTextFontEngine::alphaMapForGlyph(glyph_t glyph)
                                              8, im.bytesPerLine(), colorspace,
                                              cgflags);
     CGContextSetFontSize(ctx, fontDef.pixelSize);
-    CGContextSetShouldAntialias(ctx, fontDef.pointSize > qt_antialiasing_threshold && !(fontDef.styleStrategy & QFont::NoAntialias));
+    CGContextSetShouldAntialias(ctx, fontDef.pointSize > qt_antialiasing_threshold
+				&& !(fontDef.styleStrategy & QFont::NoAntialias));
+    CGContextSetShouldSmoothFonts(ctx, false);
     CGAffineTransform oldTextMatrix = CGContextGetTextMatrix(ctx);
     CGAffineTransform cgMatrix = CGAffineTransformMake(1, 0, 0, 1, 0, 0);
 

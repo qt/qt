@@ -108,11 +108,6 @@ QAbstractTransitionPrivate *QAbstractTransitionPrivate::get(QAbstractTransition 
     return q->d_func();
 }
 
-const QAbstractTransitionPrivate *QAbstractTransitionPrivate::get(const QAbstractTransition *q)
-{
-    return q->d_func();
-}
-
 QStateMachine *QAbstractTransitionPrivate::machine() const
 {
     Q_Q(const QAbstractTransition);
@@ -321,7 +316,7 @@ QList<QAbstractAnimation*> QAbstractTransition::animations() const
 #endif
 
 /*!
-  \fn QAbstractTransition::eventTest(QEvent *event) const
+  \fn QAbstractTransition::eventTest(QEvent *event)
 
   This function is called to determine whether the given \a event should cause
   this transition to trigger. Reimplement this function and return true if the

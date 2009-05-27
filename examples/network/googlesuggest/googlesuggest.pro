@@ -3,7 +3,7 @@ SOURCES =   main.cpp searchbox.cpp googlesuggest.cpp
 HEADERS  =  searchbox.h googlesuggest.h
 
 # install
-target.path = $$[QT_INSTALL_EXAMPLES]/webkit/googlesuggest
+target.path = $$[QT_INSTALL_EXAMPLES]/network/googlesuggest
 sources.files = $$SOURCES $$HEADERS *.pro
-sources.path = $$[QT_INSTALL_EXAMPLES]/webkit/googlesuggest
+sources.path = $$[QT_INSTALL_EXAMPLES]/network/googlesuggest
 INSTALLS += target sources

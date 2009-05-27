@@ -49,7 +49,9 @@ QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
+#undef QT_QCONTIGUOUSCACHE_DEBUG
 QT_MODULE(Core)
+
 
 struct Q_CORE_EXPORT QContiguousCacheData
 {
@@ -60,7 +62,9 @@ struct Q_CORE_EXPORT QContiguousCacheData
     int offset;
     uint sharable : 1;
 
+#ifdef QT_QCONTIGUOUSCACHE_DEBUG
     void dump() const;
+#endif
 };
 
 template <typename T>
@@ -131,8 +135,10 @@ public:
     { return d->offset >= 0 && d->offset < INT_MAX - d->count && (d->offset % d->alloc) == d->start; }
 
     inline void normalizeIndexes() { d->offset = d->start; }
-    // debug
+
+#ifdef QT_QCONTIGUOUSCACHE_DEBUG
     void dump() const { p->dump(); }
+#endif
 private:
     void detach_helper();
 
