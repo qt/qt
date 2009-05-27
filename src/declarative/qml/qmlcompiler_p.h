@@ -137,7 +137,6 @@ private:
     bool compileIdProperty(QmlParser::Property *prop, 
                            QmlParser::Object *obj);
     bool compileAttachedProperty(QmlParser::Property *prop, 
-                                 QmlParser::Object *obj,
                                  int ctxt);
     bool compileNestedProperty(QmlParser::Property *prop,
                                int ctxt);
@@ -148,7 +147,6 @@ private:
                                    QmlParser::Object *obj,
                                    int ctxt);
     bool compilePropertyObjectAssignment(QmlParser::Property *prop,
-                                         QmlParser::Object *obj,
                                          QmlParser::Value *value,
                                          int ctxt);
     bool compilePropertyLiteralAssignment(QmlParser::Property *prop,
@@ -166,11 +164,11 @@ private:
     int optimizeExpressions(int start, int end, int patch = -1);
 
     QSet<QString> ids;
+    QHash<int, int> savedTypes;
 
     QList<QmlError> exceptions;
     QmlCompiledData *output;
 
-    QHash<int, int> savedTypes;
 };
 
 QT_END_NAMESPACE

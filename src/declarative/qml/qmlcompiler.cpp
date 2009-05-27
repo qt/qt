@@ -728,12 +728,12 @@ bool QmlCompiler::compileComponentFromRoot(Object *obj, int ctxt)
     ids.clear();
     if (obj) 
         COMPILE_CHECK(compileObject(obj, ctxt));
-    ids = oldIds;
 
     create.createComponent.count = output->bytecode.count() - count;
 
     int inc = optimizeExpressions(count, count - 1 + create.createComponent.count, count);
     create.createComponent.count += inc;
+    ids = oldIds;
     return true;
 }
 
@@ -914,7 +914,7 @@ bool QmlCompiler::compileProperty(Property *prop, Object *obj, int ctxt)
 
     } else if (isAttachedPropertyName(prop->name)) {
 
-        COMPILE_CHECK(compileAttachedProperty(prop, obj, ctxt));
+        COMPILE_CHECK(compileAttachedProperty(prop, ctxt));
 
     } else if (prop->index == -1) {
 
@@ -995,7 +995,6 @@ bool QmlCompiler::compileIdProperty(QmlParser::Property *prop,
 // }
 // GridView is an attached property object.
 bool QmlCompiler::compileAttachedProperty(QmlParser::Property *prop, 
-                                          QmlParser::Object *obj,
                                           int ctxt)
 {
     Q_ASSERT(prop->value);
@@ -1158,7 +1157,7 @@ bool QmlCompiler::compilePropertyAssignment(QmlParser::Property *prop,
         Value *v = prop->values.at(ii);
         if (v->object) {
 
-            COMPILE_CHECK(compilePropertyObjectAssignment(prop, obj, v, ctxt));
+            COMPILE_CHECK(compilePropertyObjectAssignment(prop, v, ctxt));
 
         } else {
 
@@ -1172,7 +1171,6 @@ bool QmlCompiler::compilePropertyAssignment(QmlParser::Property *prop,
 
 // Compile assigning a single object instance to a regular property 
 bool QmlCompiler::compilePropertyObjectAssignment(QmlParser::Property *prop,
-                                                  QmlParser::Object *obj,
                                                   QmlParser::Value *v,
                                                   int ctxt)
 {
@@ -1402,6 +1400,10 @@ bool QmlCompiler::compileBinding(const QString &bind, QmlParser::Property *prop,
     Q_ASSERT(mo);
     Q_ASSERT(prop->index);
 
+    QMetaProperty mp = mo->property(prop->index);
+    if (!mp.isWritable() && !QmlMetaType::isList(prop->type))
+        COMPILE_EXCEPTION2(prop, "Cannot assign binding to read-only property");
+
     QmlBasicScript bs;
     bs.compile(bind.toLatin1());
 
@@ -1423,11 +1425,7 @@ bool QmlCompiler::compileBinding(const QString &bind, QmlParser::Property *prop,
 
     assign.assignBinding.property = prop->index;
     assign.assignBinding.value = bref;
-    QMetaProperty mp = mo->property(assign.assignBinding.property);
-    if (!mp.isWritable() && !QmlMetaType::isList(prop->type))
-        COMPILE_EXCEPTION2(prop, "Cannot assign binding to read-only property");
     assign.assignBinding.category = QmlMetaProperty::propertyCategory(mp);
-
     savedTypes.insert(output->bytecode.count(), prop->type);
     output->bytecode << assign;
 
