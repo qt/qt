@@ -546,8 +546,7 @@ QObject *QmlVME::run(QmlContext *ctxt, QmlCompiledComponent *comp, int start, in
                 QObject *target = stack.top();
 
                 void *a[1];
-                void *obj = (void *)(((char *)assignObj) + instr.storeObject.cast);
-                a[0] = (void *)&obj;
+                a[0] = (void *)&assignObj;
 
                 QMetaObject::metacall(target, QMetaObject::WriteProperty, 
                                       instr.storeObject.propertyIndex, a);
@@ -674,8 +673,6 @@ QObject *QmlVME::run(QmlContext *ctxt, QmlCompiledComponent *comp, int start, in
 
                 QmlMetaProperty mp(target, instr.assignBinding.property,
                                    (QmlMetaProperty::PropertyCategory)instr.assignBinding.category);
-                if (!mp.isWritable())
-                    VME_EXCEPTION("Cannot assign a binding to read-only property" << mp.name());
 
                 QmlBindableValue *bind = new QmlBindableValue((void *)datas.at(instr.assignBinding.value).constData(), comp, context, 0);
                 bindValues.append(bind);
@@ -700,8 +697,6 @@ QObject *QmlVME::run(QmlContext *ctxt, QmlCompiledComponent *comp, int start, in
 
                 QmlMetaProperty mp(target, instr.assignBinding.property, 
                                    (QmlMetaProperty::PropertyCategory)instr.assignBinding.category);
-                if (!mp.isWritable())
-                    VME_EXCEPTION("Cannot assign a binding to read-only property" << mp.name());
 
                 QmlBindableValue *bind = new QmlBindableValue(primitives.at(instr.assignBinding.value), context, false);
                 bindValues.append(bind);

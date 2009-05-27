@@ -116,7 +116,7 @@ void QmlCompiledComponent::dump(QmlInstruction *instr, int idx)
         qWarning() << idx << "\t" << line << "\t" << "STORE_VARIANT\t\t" << instr->storeString.propertyIndex << "\t" << instr->storeString.value << "\t\t" << primitives.at(instr->storeString.value);
         break;
     case QmlInstruction::StoreObject:
-        qWarning() << idx << "\t" << line << "\t" << "STORE_OBJECT\t\t" << instr->storeObject.propertyIndex << "\t" << instr->storeObject.cast;
+        qWarning() << idx << "\t" << line << "\t" << "STORE_OBJECT\t\t" << instr->storeObject.propertyIndex;
         break;
     case QmlInstruction::AssignCustomType:
         qWarning() << idx << "\t" << line << "\t" << "ASSIGN_CUSTOMTYPE\t\t" << instr->assignCustomType.propertyIndex << "\t" << instr->assignCustomType.valueIndex;

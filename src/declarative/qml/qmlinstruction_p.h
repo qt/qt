@@ -235,7 +235,6 @@ public:
         } storeRect;
         struct {
             int propertyIndex;
-            int cast;
         } storeObject;
         struct {
             int propertyIndex;

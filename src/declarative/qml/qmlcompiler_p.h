@@ -119,7 +119,8 @@ public:
     QList<QmlError> errors() const;
 
     static bool isValidId(const QString &);
-    static bool isAttachedProperty(const QByteArray &);
+    static bool isAttachedPropertyName(const QByteArray &);
+    static bool isSignalPropertyName(const QByteArray &);
 
 private:
     void reset(QmlCompiledComponent *, bool);
@@ -154,11 +155,9 @@ private:
                                           QmlParser::Object *obj,
                                           QmlParser::Value *value,
                                           int ctxt);
-
-    bool generateStoreInstruction(QmlInstruction &instr, 
-                                  const QMetaProperty &prop, 
-                                  int index, 
-                                  QmlParser::Value *value);
+    bool compileStoreInstruction(QmlInstruction &instr, 
+                                 const QMetaProperty &prop, 
+                                 QmlParser::Value *value);
 
     bool compileDynamicMeta(QmlParser::Object *obj);
     bool compileBinding(const QString &, QmlParser::Property *prop,
