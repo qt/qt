@@ -82,7 +82,7 @@ public:
     void popandPush(const QList<QSoftKeyAction*> &softkeys);
     const QSoftkeySet& top();
     bool isEmpty();
-    void handleSoftKeyPress(int command);
+    static void handleSoftKeyPress(int command);
     
 private:
     void mapSoftKeys(const QSoftkeySet &top);

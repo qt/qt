@@ -201,12 +201,6 @@ void QSoftKeyStack::handleFocusChanged(QWidget *old, QWidget *now)
     }
 }
 
-void QSoftKeyStack::handleSoftKeyPress(int command)
-{
-    Q_D(QSoftKeyStack);
-    d->handleSoftKeyPress(command);
-}
-
 QMainWindow *QSoftKeyStack::mainWindowOfWidget(QWidget *widget)
 {
     QWidget *widgetParent = widget;

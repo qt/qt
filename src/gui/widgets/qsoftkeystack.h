@@ -71,8 +71,6 @@ public:
     const QSoftkeySet& top();
     bool isEmpty();
 
-    void handleSoftKeyPress(int command);
-
     static QMainWindow *mainWindowOfWidget(QWidget *widget);
     static QSoftKeyStack *softKeyStackOfWidget(QWidget *widget);
 

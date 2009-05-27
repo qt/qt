@@ -48,6 +48,8 @@
 #include "private/qcore_symbian_p.h"
 
 #include "qsoftkeystack_p.h"
+#include "qapplication.h"
+#include "qmainwindow.h"
 
 void QSoftKeyStackPrivate::mapSoftKeys(const QSoftkeySet &top)
 {
@@ -99,9 +101,15 @@ void QSoftKeyStackPrivate::setNativeSoftKeys()
 
 void QSoftKeyStackPrivate::handleSoftKeyPress(int command)
 {
-    const QSoftkeySet top = softKeyStack.top();
+    const QMainWindow *activeMainWindow =
+        qobject_cast<const QMainWindow*>(QApplication::activeWindow());
+    if (!activeMainWindow)
+        return;
+    QSoftKeyStackPrivate *d_ptr = activeMainWindow->softKeyStack()->d_func();
+
+    const QSoftkeySet top = d_ptr->softKeyStack.top();
     int index = command-SOFTKEYSTART;
-    if( index<0 || index>=top.count()){
+    if (index < 0 || index >= top.count()) {
         // ### FIX THIS, add proper error handling, now fail quietly
         return;
     }
