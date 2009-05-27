@@ -350,14 +350,27 @@ QFont QS60StylePrivate::s60Font(
     return result;
 }
 
-//todo: you could pass a reason to clear cache here, so that we could
-// deduce whether or not the specific cache needs to be cleared
-void QS60StylePrivate::clearCaches()
+void QS60StylePrivate::clearCaches(QS60StylePrivate::CacheClearReason reason)
 {
-    m_colorCache.clear();
-    m_mappedFontsCache.clear();
-    QPixmapCache::clear();
-    m_backgroundValid = false;
+    switch(reason){    
+    case CC_LayoutChange:
+        // when layout changes, the colors remain in cache, but graphics and fonts can change
+        m_mappedFontsCache.clear();
+        m_backgroundValid = false;
+        QPixmapCache::clear();
+        break;
+    case CC_ThemeChange:
+        m_colorCache.clear();
+        QPixmapCache::clear();
+        m_backgroundValid = false;
+    case CC_UndefinedChange:
+    default:
+        m_colorCache.clear();
+        m_mappedFontsCache.clear();
+        QPixmapCache::clear();
+        m_backgroundValid = false;
+        break;
+    }    
 }
 
 // Since S60Style has 'button' and 'tooltip' as a graphic, we don't have any native color which to use
@@ -381,7 +394,6 @@ QColor QS60StylePrivate::colorFromFrameGraphics(QS60StylePrivate::SkinFrameEleme
         const int pixels = frameImage.numBytes()/sizeof(QRgb);
         const int bytesPerLine = frameImage.bytesPerLine();
         Q_ASSERT(bytesPerLine);
-        const int rows = frameImage.numBytes()/(sizeof(QRgb)*bytesPerLine);
 
         int estimatedRed = 0;
         int estimatedGreen = 0;
@@ -761,8 +773,6 @@ void QS60Style::drawComplexControl(ComplexControl control, const QStyleOptionCom
     const QS60StylePrivate::SkinElementFlags flags = (option->state & State_Enabled) ?  QS60StylePrivate::SF_StateEnabled : QS60StylePrivate::SF_StateDisabled;
     SubControls sub = option->subControls;
 
-    Q_D(const QS60Style);
-
     switch (control) {
 #ifndef QT_NO_SCROLLBAR
     case CC_ScrollBar:
@@ -832,7 +842,6 @@ void QS60Style::drawComplexControl(ComplexControl control, const QStyleOptionCom
             const bool direction = cmb->direction == Qt::LeftToRight;
 
             // Button frame
-            //todo: why calc rect here for button? Is there no suitable SE_xxx for that?
             QStyleOptionFrame  buttonOption;
             buttonOption.QStyleOption::operator=(*cmb);
             const int maxHeight = cmbxFrame.height();
@@ -842,7 +851,6 @@ void QS60Style::drawComplexControl(ComplexControl control, const QStyleOptionCom
             buttonOption.rect = buttonRect;
             buttonOption.state = cmb->state & (State_Enabled | State_MouseOver);
             drawPrimitive(PE_PanelButtonCommand, &buttonOption, painter, widget);
-            // todo: we could draw qgn_prop_set_button skin item here
 
             // draw label background - label itself is drawn separately
             const QS60StylePrivate::SkinElements skinElement = QS60StylePrivate::SE_FrameLineEdit;
@@ -1101,14 +1109,6 @@ void QS60Style::drawComplexControl(ComplexControl control, const QStyleOptionCom
         break;
 #endif //QT_NO_DIAL
 
-        //todo: remove non-used complex widgets in final version
-    case CC_TitleBar:
-#ifdef QT3_SUPPORT
-    case CC_Q3ListView:
-#endif //QT3_SUPPORT
-#ifndef QT_NO_WORKSPACE
-    case CC_MdiControls:
-#endif //QT_NO_WORKSPACE
     default:
         QCommonStyle::drawComplexControl(control, option, painter, widget);
     }
@@ -1406,7 +1406,6 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
                 const int tabOverlap =
                     QS60StylePrivate::pixelMetric(QStyle::PM_TabBarTabOverlap) - borderThickness;
                 //todo: draw navi wipe behind tabbar - must be drawn with first draw
-                //QS60StylePrivate::drawSkinElement(QS60StylePrivate::SE_TableHeaderItem, painter, windowRect, flags);
 
                 if (skinElement==QS60StylePrivate::SE_TabBarTabEastInactive||
                         skinElement==QS60StylePrivate::SE_TabBarTabEastActive||
@@ -1683,7 +1682,6 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
         break;
 #endif //QT_NO_MENU
 
-        //todo: remove non-used widgets in final version
     case CE_MenuEmptyArea:
 #ifndef QT_NO_MENUBAR
     case CE_MenuBarEmptyArea:
@@ -1792,6 +1790,7 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
         break;
 #endif //QT_NO_TOOLBAR
 
+    //todo: remove non-used widgets in final version
     case CE_ShapedFrame:
     case CE_MenuVMargin:
     case CE_MenuHMargin:
@@ -2413,7 +2412,6 @@ QRect QS60Style::subControlRect(ComplexControl control, const QStyleOptionComple
                 //slightly indent text and boxes, so that dialog border does not mess with them.
                 const int horizontalSpacing =
                     QS60StylePrivate::pixelMetric(QStyle::PM_LayoutHorizontalSpacing);
-                const int bottomMargin = QS60StylePrivate::pixelMetric(QStyle::PM_LayoutBottomMargin);
                 ret.adjust(2,horizontalSpacing-3,0,0);
                 break;
             case SC_GroupBoxFrame: {
@@ -2444,7 +2442,6 @@ QRect QS60Style::subElementRect(SubElement element, const QStyleOption *opt, con
         case SE_LineEditContents: {
             // in S60 the input text box doesn't start from line Edit's TL, but
             // a bit indented.
-            // todo: Should we NOT do this for combo boxes and spin boxes?
                 QRect lineEditRect = opt->rect;
                 int adjustment = opt->rect.height()>>2;
                 lineEditRect.adjust(adjustment,0,0,0);
@@ -2518,13 +2515,10 @@ QRect QS60Style::subElementRect(SubElement element, const QStyleOption *opt, con
                 }
             } else if (const QStyleOptionMenuItem *menuItem = qstyleoption_cast<const QStyleOptionMenuItem *>(opt)) {
                 const bool checkable = menuItem->checkType != QStyleOptionMenuItem::NotCheckable;
-                const bool subMenu = menuItem->menuItemType == QStyleOptionMenuItem::SubMenu;
                 int indicatorWidth = checkable ?
                     pixelMetric(PM_ListViewIconSize, opt, widget) :
                     pixelMetric(PM_SmallIconSize, opt, widget);
                 ret = menuItem->rect;
-                const int verticalSpacing =
-                    QS60StylePrivate::pixelMetric(QStyle::PM_LayoutVerticalSpacing);
 
                 if (element == SE_ItemViewItemDecoration) {
                     if (menuItem->direction == Qt::RightToLeft)

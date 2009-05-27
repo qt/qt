@@ -53,7 +53,9 @@
 //TESTED_CLASS=QLocalServer, QLocalSocket
 //TESTED_FILES=network/socket/qlocalserver.cpp network/socket/qlocalsocket.cpp
 #ifdef Q_OS_SYMBIAN
-    #define SRCDIR ""
+    #define STRINGIFY(x) #x
+    #define TOSTRING(x) STRINGIFY(x)
+    #define SRCDIR "C:/Private/" TOSTRING(SYMBIAN_SRCDIR_UID) "/"   
 #endif
 Q_DECLARE_METATYPE(QLocalSocket::LocalSocketError)
 Q_DECLARE_METATYPE(QLocalSocket::LocalSocketState)

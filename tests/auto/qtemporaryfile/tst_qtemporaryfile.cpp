@@ -59,6 +59,10 @@
 # include <unistd.h>            // close(2)
 #endif
 
+#ifdef Q_OS_SYMBIAN
+#define SRCDIR ""
+#endif
+
 //TESTED_CLASS=
 //TESTED_FILES=
 
@@ -77,6 +81,7 @@ private slots:
     void fileTemplate_data();
     void getSetCheck();
     void fileName();
+    void fileNameIsEmpty();
     void autoRemove();
     void write();
     void openCloseOpenClose();
@@ -86,6 +91,8 @@ private slots:
     void stressTest();
     void rename();
     void renameFdLeak();
+    void reOpenThroughQFile();
+
 public:
 };
 
@@ -187,6 +194,27 @@ void tst_QTemporaryFile::fileName()
     absoluteTempPath = absoluteTempPath.toLower();
 #endif
     QCOMPARE(absoluteFilePath, absoluteTempPath);
+}
+
+void tst_QTemporaryFile::fileNameIsEmpty()
+{
+    QString filename;
+    {
+        QTemporaryFile file;
+        QVERIFY(file.fileName().isEmpty());
+
+        QVERIFY(file.open());
+        QVERIFY(!file.fileName().isEmpty());
+
+        filename = file.fileName();
+        QVERIFY(QFile::exists(filename));
+
+        file.close();
+        QVERIFY(!file.isOpen());
+        QVERIFY(QFile::exists(filename));
+        QVERIFY(!file.fileName().isEmpty());
+    }
+    QVERIFY(!QFile::exists(filename));
 }
 
 void tst_QTemporaryFile::autoRemove()
@@ -358,6 +386,7 @@ void tst_QTemporaryFile::rename()
         QVERIFY(file.rename("temporary-file.txt"));
         QVERIFY(!dir.exists(tempname));
         QVERIFY(dir.exists("temporary-file.txt"));
+        QCOMPARE(file.fileName(), QString("temporary-file.txt"));
     }
 
     QVERIFY(!dir.exists(tempname));
@@ -399,6 +428,19 @@ void tst_QTemporaryFile::renameFdLeak()
     // check if QTemporaryFile closed the file
     QVERIFY(::close(fd) == -1 && errno == EBADF);
 #endif
+}
+
+void tst_QTemporaryFile::reOpenThroughQFile()
+{
+    QByteArray data("abcdefghij");
+
+    QTemporaryFile file;
+    QVERIFY(((QFile &)file).open(QIODevice::WriteOnly));
+    QCOMPARE(file.write(data), (qint64)data.size());
+
+    file.close();
+    QVERIFY(file.open());
+    QCOMPARE(file.readAll(), data);
 }
 
 QTEST_MAIN(tst_QTemporaryFile)

@@ -23,7 +23,7 @@ wince*:{
     DEFINES += SRCDIR=\\\"$$PWD/../\\\"
 }
 
-RESOURCES      += ../qfile.qrc ../rename-fallback.qrc
+RESOURCES      += ../qfile.qrc ../rename-fallback.qrc ../copy-fallback.qrc
 
 TARGET = ../tst_qfile
 
