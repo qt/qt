@@ -120,7 +120,7 @@ GraphicsScene::GraphicsScene(int x, int y, int width, int height, Mode mode)
 
     //parse the xml that contain all data of the game
     QXmlStreamReader reader;
-    QFile file(QDir::currentPath() + "/data.xml");
+    QFile file(":data.xml");
     file.open(QIODevice::ReadOnly);
     reader.setDevice(&file);
     LevelDescription currentLevel;
