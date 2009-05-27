@@ -2171,7 +2171,7 @@ void tst_QComboBox::noScrollbar_data()
     QTest::newRow("everything and more") << QString::fromLatin1("QAbstractItemView {  border: 1px 3px 5px 1px solid blue; "
                                                        " padding: 2px 5px 3px 1px; margin: 2px 5px 3px 1px;  } "
                                                        " QAbstractItemView::item {  border: 2px solid green; "
-                                                       "                      padding: 1px 1px 2px 2px margin: 1px; } " );
+                                                       "                      padding: 1px 1px 2px 2px; margin: 1px; } " );
 }
 
 void tst_QComboBox::noScrollbar()
@@ -2179,10 +2179,11 @@ void tst_QComboBox::noScrollbar()
     QStringList initialContent;
     initialContent << "foo" << "bar" << "foobar" << "moo";
     QFETCH(QString, stylesheet);
+    QString oldCss = qApp->styleSheet();
+    qApp->setStyleSheet(stylesheet);
 
     {
         QComboBox comboBox;
-        comboBox.setStyleSheet(stylesheet);
         comboBox.addItems(initialContent);
         comboBox.show();
         comboBox.resize(200, comboBox.height());
@@ -2196,7 +2197,6 @@ void tst_QComboBox::noScrollbar()
     {
         QTableWidget *table = new QTableWidget(2,2);
         QComboBox comboBox;
-        comboBox.setStyleSheet(stylesheet);
         comboBox.setView(table);
         comboBox.setModel(table->model());
         comboBox.show();
@@ -2207,6 +2207,8 @@ void tst_QComboBox::noScrollbar()
         QVERIFY(!comboBox.view()->horizontalScrollBar()->isVisible());
         QVERIFY(!comboBox.view()->verticalScrollBar()->isVisible());
     }
+
+    qApp->setStyleSheet(oldCss);
 }
 
 void tst_QComboBox::setItemDelegate()
