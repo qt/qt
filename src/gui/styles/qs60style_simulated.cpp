@@ -193,23 +193,14 @@ QVariant QS60StylePrivate::styleProperty_specific(const char *name) const
 
 QPixmap QS60StylePrivate::backgroundTexture()
 {
-    static QPixmap result;
-    // Poor mans caching. + Making sure that there is always only one background image in memory at a time
-
-/*
-    TODO: 1) Hold the background QPixmap as pointer in a static class member.
-             Also add a deleteBackground() function and call that in ~QS60StylePrivate()
-          2) Don't cache the background at all as soon as we have native pixmap support
-*/
-
-    if (!m_backgroundValid) {
-        result = QPixmap();
+    if (!m_background) {
         const QSize size = QApplication::activeWindow()?QApplication::activeWindow()->size():QSize(100, 100);
-        result = part(QS60StyleEnums::SP_QsnBgScreen, size);
-        m_backgroundValid = true;
+        QPixmap background = part(QS60StyleEnums::SP_QsnBgScreen, size);
+        m_background = new QPixmap(background);
     }
-    return result;
+    return *m_background;
 }
+
 
 bool QS60StylePrivate::isTouchSupported()
 {
