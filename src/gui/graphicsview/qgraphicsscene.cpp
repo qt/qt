@@ -4784,6 +4784,12 @@ void QGraphicsScenePrivate::drawItemHelper(QGraphicsItem *item, QPainter *painte
 
         // Redraw any newly exposed areas.
         if (itemCache->allExposed || !itemCache->exposed.isEmpty()) {
+
+            //We know that we will modify the pixmap, removing it from the cache
+            //will detach the one we have and avoid a deep copy
+            if (pixmapFound)
+                QPixmapCache::remove(pixmapKey);
+
             // Fit the item's bounding rect into the pixmap's coordinates.
             QTransform itemToPixmap;
             if (fixedCacheSize) {
@@ -4812,12 +4818,8 @@ void QGraphicsScenePrivate::drawItemHelper(QGraphicsItem *item, QPainter *painte
             _q_paintIntoCache(&pix, item, pixmapExposed, itemToPixmap, painter->renderHints(),
                               &cacheOption, painterStateProtection);
 
-            if (!pixmapFound) {
-                // insert this pixmap into the cache.
-                itemCache->key = QPixmapCache::insert(pix);
-            } else {
-                QPixmapCache::replace(pixmapKey, pix);
-            }
+            // insert this pixmap into the cache.
+            itemCache->key = QPixmapCache::insert(pix);
 
             // Reset expose data.
             itemCache->allExposed = false;
@@ -4944,6 +4946,11 @@ void QGraphicsScenePrivate::drawItemHelper(QGraphicsItem *item, QPainter *painte
 
         // Check for newly invalidated areas.
         if (itemCache->allExposed || !itemCache->exposed.isEmpty() || !scrollExposure.isEmpty()) {
+            //We know that we will modify the pixmap, removing it from the cache
+            //will detach the one we have and avoid a deep copy
+            if (pixmapFound)
+                QPixmapCache::remove(pixmapKey);
+
             // Construct an item-to-pixmap transform.
             QPointF p = deviceRect.topLeft();
             QTransform itemToPixmap = painter->worldTransform();
@@ -4984,13 +4991,8 @@ void QGraphicsScenePrivate::drawItemHelper(QGraphicsItem *item, QPainter *painte
         }
 
         if (pixModified) {
-            if (!pixmapFound) {
-                // Insert this pixmap into the cache.
-                deviceData->key = QPixmapCache::insert(pix);
-            } else {
-                //otherwise we replace the pixmap in the cache
-                QPixmapCache::replace(pixmapKey, pix);
-            }
+            // Insert this pixmap into the cache.
+            deviceData->key = QPixmapCache::insert(pix);
         }
 
         // Redraw the exposed area using an untransformed painter. This
