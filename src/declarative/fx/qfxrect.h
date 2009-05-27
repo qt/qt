@@ -109,7 +109,8 @@ class Q_DECLARATIVE_EXPORT QFxGradient : public QObject
     Q_CLASSINFO("DefaultProperty", "stops")
 
 public:
-    QFxGradient(QObject *parent=0) : QObject(parent), m_gradient(0), m_created(false) {}
+    QFxGradient(QObject *parent=0) : QObject(parent), m_gradient(0) {}
+    ~QFxGradient() { delete m_gradient; }
 
     QList<QFxGradientStop *> *stops() { return &m_stops; }
 
@@ -118,7 +119,6 @@ public:
 private:
     QList<QFxGradientStop *> m_stops;
     mutable QGradient *m_gradient;
-    mutable bool m_created;
 };
 QML_DECLARE_TYPE(QFxGradient)
 
