@@ -45,6 +45,8 @@
 
 QT_BEGIN_NAMESPACE
 QML_DEFINE_TYPE(QFxPen,Pen)
+QML_DEFINE_TYPE(QFxGradientStop,GradientStop)
+QML_DEFINE_TYPE(QFxGradient,Gradient)
 
 /*!
     \internal
@@ -117,6 +119,57 @@ void QFxPen::setWidth(int w)
 }
 
 
+/*!
+    \qmlclass GradientStop QFxGradientStop
+    \brief The GradientStop item defines the color at a position in a Gradient
+
+    \sa Gradient
+*/
+
+/*!
+    \qmlproperty real GradientStop::position
+    \qmlproperty color GradientStop::color
+
+    Sets a \e color at a \e position in a gradient.
+*/
+
+/*!
+    \qmlclass Gradient QFxGradient
+    \brief The Gradient item defines a gradient fill.
+
+    A gradient is defined by two or more colors, which will be blended seemlessly.  The
+    colors are specified at their position in the range 0.0 - 1.0 via
+    the GradientStop item.  For example, the following code paints a
+    Rect with a gradient starting with red, blending to yellow at 1/3 of the
+    size of the Rect, and ending with Green:
+
+    \table
+    \row
+    \o \image gradient.png
+    \o \quotefile doc/src/snippets/declarative/gradient.qml
+    \endtable
+
+    \sa GradientStop
+*/
+
+/*!
+    \qmlproperty list<GradientStop> Gradient::stops
+    This property holds the gradient stops describing the gradient.
+*/
+
+const QGradient *QFxGradient::gradient() const
+{
+    if (!m_gradient && !m_stops.isEmpty()) {
+        m_gradient = new QLinearGradient(0,0,0,1.0);
+        for (int i = 0; i < m_stops.count(); ++i) {
+            const QFxGradientStop *stop = m_stops.at(i);
+            m_gradient->setCoordinateMode(QGradient::ObjectBoundingMode);
+            m_gradient->setColorAt(stop->position(), stop->color());
+        }
+    }
+
+    return m_gradient;
+}
 
 QML_DEFINE_TYPE(QFxRect,Rect)
 
@@ -213,6 +266,51 @@ QFxPen *QFxRect::pen()
     Q_D(QFxRect);
     return d->pen();
 }
+
+/*!
+    \qmlproperty Gradient Rect::gradient
+
+    The gradient to use to fill the rect.
+
+    This property allows for the construction of simple vertical gradients.
+    Other gradients may by formed by adding rotation to the rect.
+
+    \table
+    \row
+    \o \image declarative-rect_gradient.png
+    \o
+    \qml
+    Rect { y: 0; width: 80; height: 80; color: "lightsteelblue" }
+    Rect { y: 100; width: 80; height: 80
+        gradient: Gradient {
+            GradientStop { position: 0.0; color: "lightsteelblue" }
+            GradientStop { position: 1.0; color: "blue" }
+        }
+    }
+    Rect { rotation: 90; x: 80; y: 200; width: 80; height: 80
+        gradient: Gradient {
+            GradientStop { position: 0.0; color: "lightsteelblue" }
+            GradientStop { position: 1.0; color: "blue" }
+        }
+    }
+    // The x offset is needed because the rotation is from the top left corner
+    \endqml
+    \endtable
+
+    \sa Gradient, color
+*/
+QFxGradient *QFxRect::gradient() const
+{
+    Q_D(const QFxRect);
+    return d->gradient;
+}
+
+void QFxRect::setGradient(QFxGradient *gradient)
+{
+    Q_D(QFxRect);
+    d->gradient = gradient;
+}
+
 
 /*!
     \qmlproperty real Rect::radius
@@ -358,42 +456,6 @@ QColor QFxRectPrivate::getColor()
     }
 }
 
-/*!
-    \qmlproperty color Rect::gradientColor
-    This property holds the color to use at the base of the rectangle and blend upwards.
-
-    This property allows for the easy construction of simple horizontal gradients. Other gradients may by formed by adding rotation to the rect. The gradient will blend linearly from the rect's main color to the color specified for gradient color.
-
-    \qml
-    Rect { y: 0; width: 80; height: 80; color: "lightsteelblue" }
-    Rect { y: 100; width: 80; height: 80; color: "lightsteelblue"; gradientColor="blue" }
-    Rect { rotation: 90; x: 80; y: 200; width: 80; height: 80; color="lightsteelblue"
-            gradientColor: "blue" }
-    // The x offset is needed because the rotation is from the top left corner
-    \endqml
-    \image declarative-rect_gradient.png
-*/
-
-/*!
-    \property QFxRect::gradientColor
-    \brief The color to use at the base of the rectangle and blend upwards.
-*/
-
-QColor QFxRect::gradientColor() const
-{
-    Q_D(const QFxRect);
-    return d->_gradcolor;
-}
-
-void QFxRect::setGradientColor(const QColor &c)
-{
-    Q_D(QFxRect);
-    if (d->_gradcolor == c)
-        return;
-
-    d->_gradcolor = c;
-    update();
-}
 
 #if defined(QFX_RENDER_QPAINTER)
 void QFxRect::generateRoundedRect()
@@ -485,16 +547,8 @@ void QFxRect::paintContents(QPainter &p)
 {
     Q_D(QFxRect);
     if (d->_radius > 0 || (d->_pen && d->_pen->isValid())
-           || d->_gradcolor.isValid())
+           || (d->gradient && d->gradient->gradient()) )
         drawRect(p);
-    /*
-        QLinearGradient grad(0, 0, 0, height());
-        grad.setColorAt(0, d->_color);
-        grad.setColorAt(1, d->_gradcolor);
-        p.setBrush(grad);
-        p.drawRect(0, 0, width(), height());
-        p.setBrush(QBrush());
-        */
     else
         p.fillRect(QRect(0, 0, width(), height()), d->getColor());
 }
@@ -502,7 +556,7 @@ void QFxRect::paintContents(QPainter &p)
 void QFxRect::drawRect(QPainter &p)
 {
     Q_D(QFxRect);
-    if (d->_gradcolor.isValid() /*|| p.usingQt() */) {
+    if (d->gradient && d->gradient->gradient() /*|| p.usingQt() */) {
         // XXX This path is still slower than the image path
         // Image path won't work for gradients though
         QPainter::RenderHints oldHints = p.renderHints();
@@ -513,15 +567,8 @@ void QFxRect::drawRect(QPainter &p)
         } else {
             p.setPen(Qt::NoPen);
         }
-        if (d->_gradcolor.isValid()){
-            QLinearGradient grad(0, 0, 0, height());
-            grad.setColorAt(0, d->_color);
-            grad.setColorAt(1, d->_gradcolor);
-            p.setBrush(grad);
-        }else{
-            p.setBrush(d->_color);
-        }
-        if (d->_radius)
+        p.setBrush(*d->gradient->gradient());
+        if (d->_radius > 0.)
             p.drawRoundedRect(0, 0, width(), height(), d->_radius, d->_radius);
         else
             p.drawRect(0, 0, width(), height());

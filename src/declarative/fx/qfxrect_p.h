@@ -61,13 +61,15 @@
 
 QT_BEGIN_NAMESPACE
 
+class QFxGradient;
+
 class QFxRectPrivate : public QFxItemPrivate
 {
     Q_DECLARE_PUBLIC(QFxRect)
 
 public:
     QFxRectPrivate()
-      : _pen(0), _radius(0)
+      : gradient(0), _pen(0), _radius(0)
     {
     }
 
@@ -85,7 +87,7 @@ public:
 #endif
     QColor getColor();
     QColor _color;
-    QColor _gradcolor;
+    QFxGradient *gradient;
     QColor _tintColor;
     QFxPen *pen() {
         if (!_pen) {

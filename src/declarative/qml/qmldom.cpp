@@ -1170,7 +1170,7 @@ QmlDomValue::Type QmlDomValue::type() const
     case QmlParser::Value::SignalExpression:
         return Literal;
     case QmlParser::Value::Id:
-        return Invalid;
+        return Literal;
     }
     return Invalid;
 }

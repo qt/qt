@@ -1,6 +1,8 @@
 Rect {
-    color: "black"
-    gradientColor: "#AAAAAA"
+    gradient: Gradient {
+        GradientStop { position: 0; color: "black" }
+        GradientStop { position: 1.0; color: "#AAAAAA" }
+    }
     width: 600
     height: 600
     resources: [
