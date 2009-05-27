@@ -322,10 +322,9 @@ void QFxImage::paintContents(QPainter &p)
     if (d->_pix.isNull())
         return;
 
-    if (d->_smooth) {
-        p.save();
+    QPainter::RenderHints oldHints = p.renderHints();
+    if (d->_smooth)
         p.setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform, d->_smooth);
-    }
 
     QSimpleCanvasConfig::Image pix = d->_pix;
 
@@ -415,9 +414,8 @@ void QFxImage::paintContents(QPainter &p)
                         QRect(pix.width()-sgr, pix.height() - sgb, sgr, sgb));
     }
 
-    if (d->_smooth) {
-        p.restore();
-    }
+    if (d->_smooth)
+        p.setRenderHints(oldHints);
 }
 #elif defined(QFX_RENDER_OPENGL)
 uint QFxImage::glSimpleItemData(float *vertices, float *texVertices,
