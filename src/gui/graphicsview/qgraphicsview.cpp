@@ -329,8 +329,6 @@ QGraphicsViewPrivate::QGraphicsViewPrivate()
 #endif
       lastDragDropEvent(0),
       fullUpdatePending(true),
-      dirtyRectCount(0),
-      updatingLater(false),
       updateSceneSlotReimplementedChecked(false)
 {
     styleOptions.reserve(QGRAPHICSVIEW_PREALLOC_STYLE_OPTIONS);
@@ -804,125 +802,28 @@ static inline QRectF adjustedItemBoundingRect(const QGraphicsItem *item)
     return boundingRect;
 }
 
-/*!
-    \internal
-*/
-void QGraphicsViewPrivate::itemUpdated(QGraphicsItem *item, const QRectF &rect)
+void QGraphicsViewPrivate::processPendingUpdates()
 {
-    if (fullUpdatePending || viewportUpdateMode == QGraphicsView::NoViewportUpdate)
-        return;
-    if (item->d_ptr->dirty)
-        updateLater();
-
-    QRectF updateRect = rect;
-    if ((item->d_ptr->flags & QGraphicsItem::ItemClipsChildrenToShape) || item->d_ptr->children.isEmpty()) {
-        updateRect &= adjustedItemBoundingRect(item);
-        if (updateRect.isEmpty())
-            return;
-    }
-
-    QGraphicsItem *clipItem = item;
-    if (item->d_ptr->ancestorFlags & QGraphicsItemPrivate::AncestorClipsChildren) {
-        // Minimize unnecessary redraw.
-        QGraphicsItem *parent = item;
-        while ((parent = parent->d_ptr->parent)) {
-            if (parent->d_ptr->flags & QGraphicsItem::ItemClipsChildrenToShape) {
-                // Map update rect to the current parent and itersect with its bounding rect.
-                updateRect = clipItem->itemTransform(parent).mapRect(updateRect)
-                             & adjustedItemBoundingRect(parent);
-                if (updateRect.isEmpty())
-                    return;
-                clipItem = parent;
-            }
-
-            if (!(parent->d_ptr->ancestorFlags & QGraphicsItemPrivate::AncestorClipsChildren))
-                break;
-        }
-    }
-
-    // Map update rect from clipItem coordinates to view coordinates.
-    Q_ASSERT(clipItem);
-    if (!item->d_ptr->hasBoundingRegionGranularity)
-        this->updateRect(mapToViewRect(clipItem, updateRect) & viewport->rect());
-    else
-        updateRegion(mapToViewRegion(clipItem, updateRect) & viewport->rect());
-}
-
-void QGraphicsViewPrivate::updateLater()
-{
-    Q_Q(QGraphicsView);
-    if (updatingLater)
-        return;
-    updatingLater = true;
-    QMetaObject::invokeMethod(q, "_q_updateLaterSlot", Qt::QueuedConnection);
-}
-
-void QGraphicsViewPrivate::_q_updateLaterSlot()
-{
-    Q_Q(QGraphicsView);
     if (!scene)
         return;
 
-    QRect vr = viewport->rect();
-    QTransform viewTransform = q->viewportTransform();
-    const QList<QGraphicsItem *> &dirtyItems = scene->d_func()->dirtyItems;
-    for (int i = 0; i < dirtyItems.size(); ++i) {
-        const QGraphicsItem *item = dirtyItems.at(i);
-        if (item->d_ptr->discardUpdateRequest(/*ignoreClipping=*/false,
-                                              /*ignoreVisibleBit=*/false,
-                                              /*ignoreDirtyBit=*/true)) {
-            continue;
-        }
-        QTransform x = item->sceneTransform() * viewTransform;
-        updateRect(x.mapRect(item->boundingRect()).toAlignedRect() & vr);
+    if (fullUpdatePending) { // We have already called viewport->update()
+        dirtyBoundingRect = QRect();
+        dirtyRegion = QRegion();
+        return;
     }
 
-    dirtyRectCount += dirtyRects.size();
-
-    bool noUpdate = !fullUpdatePending && viewportUpdateMode == QGraphicsView::FullViewportUpdate;
-    if ((dirtyRectCount > 0 || !dirtyBoundingRect.isEmpty()) && !fullUpdatePending && !noUpdate) {
-        if (viewportUpdateMode == QGraphicsView::BoundingRectViewportUpdate
-            || (viewportUpdateMode == QGraphicsView::SmartViewportUpdate
-                && dirtyRectCount >= QGRAPHICSVIEW_REGION_RECT_THRESHOLD)) {
-            if (!(optimizationFlags & QGraphicsView::DontAdjustForAntialiasing)) {
-                viewport->update(dirtyBoundingRect.adjusted(-2, -2, 2, 2));
-            } else {
-                viewport->update(dirtyBoundingRect);
-            }
-        } else {
-            // ### Improve this block, which is very slow for complex regions. We
-            // need to strike the balance between having an accurate update
-            // region, and running fast. The below approach is the simplest way to
-            // create a region from a bunch of rects, but we might want to use
-            // other approaches; e.g., a grid of a fixed size representing
-            // quadrants of the viewport, which we mark as dirty depending on the
-            // rectangles in the list. Perhaps this should go into a
-            // QRegion::fromRects(rects, how) function.
-            QRegion region;
-            if (!(optimizationFlags & QGraphicsView::DontAdjustForAntialiasing)) {
-                for (int i = 0; i < dirtyRegions.size(); ++i) {
-                    QVector<QRect> rects = dirtyRegions.at(i).rects();
-                    for (int j = 0; j < rects.size(); ++j)
-                        region += rects.at(j).adjusted(-2, -2, 2, 2);
-                }
-                for (int i = 0; i < dirtyRects.size(); ++i)
-                    region += dirtyRects.at(i).adjusted(-2, -2, 2, 2);
-            } else {
-                for (int i = 0; i < dirtyRegions.size(); ++i)
-                    region += dirtyRegions.at(i);
-                for (int i = 0; i < dirtyRects.size(); ++i)
-                    region += dirtyRects.at(i);
-            }
-
-            viewport->update(region);
-        }
+    if (viewportUpdateMode == QGraphicsView::BoundingRectViewportUpdate) {
+        if (optimizationFlags & QGraphicsView::DontAdjustForAntialiasing)
+            viewport->update(dirtyBoundingRect);
+        else
+            viewport->update(dirtyBoundingRect.adjusted(-2, -2, 2, 2));
+    } else {
+        viewport->update(dirtyRegion); // Already adjusted in updateRect/Region.
     }
 
-    dirtyRegions.clear();
-    dirtyRects.clear();
-    dirtyRectCount = 0;
     dirtyBoundingRect = QRect();
-    updatingLater = false;
+    dirtyRegion = QRegion();
 }
 
 void QGraphicsViewPrivate::updateAll()
@@ -930,14 +831,13 @@ void QGraphicsViewPrivate::updateAll()
     Q_Q(QGraphicsView);
     q->viewport()->update();
     fullUpdatePending = true;
-    dirtyRectCount = 0;
     dirtyBoundingRect = QRect();
-    updatingLater = false;
+    dirtyRegion = QRegion();
 }
 
 void QGraphicsViewPrivate::updateRegion(const QRegion &r)
 {
-    if (r.isEmpty())
+    if (r.isEmpty() || fullUpdatePending)
         return;
 
     Q_Q(QGraphicsView);
@@ -950,45 +850,30 @@ void QGraphicsViewPrivate::updateRegion(const QRegion &r)
         break;
     case QGraphicsView::BoundingRectViewportUpdate:
         dirtyBoundingRect |= r.boundingRect();
-        if (dirtyBoundingRect == q->viewport()->rect()) {
+        if (dirtyBoundingRect.contains(q->viewport()->rect())) {
             fullUpdatePending = true;
             q->viewport()->update();
-        } else {
-            updateLater();
         }
         break;
-    case QGraphicsView::SmartViewportUpdate:
-        dirtyBoundingRect |= r.boundingRect();
-        if ((dirtyRectCount + r.numRects()) < QGRAPHICSVIEW_REGION_RECT_THRESHOLD)
-            dirtyRegions << r;
-        dirtyRectCount += r.numRects();
-        updateLater();
-        break;
+    case QGraphicsView::SmartViewportUpdate: // ### DEPRECATE
     case QGraphicsView::MinimalViewportUpdate:
-        dirtyRegions << r;
-        dirtyRectCount += r.numRects();
-        updateLater();
+        if (optimizationFlags & QGraphicsView::DontAdjustForAntialiasing) {
+            dirtyRegion += r;
+        } else {
+            const QVector<QRect> &rects = r.rects();
+            for (int i = 0; i < rects.size(); ++i)
+                dirtyRegion += rects.at(i).adjusted(-2, -2, 2, 2);
+        }
         break;
     case QGraphicsView::NoViewportUpdate:
         // Unreachable
         break;
     }
-
-    // Compress the regions...
-    if (dirtyRectCount > QGRAPHICSVIEW_REGION_RECT_THRESHOLD && dirtyRegions.size() > 1) {
-        QRegion masterRegion;
-        for (int i=0; i<dirtyRegions.size(); ++i) {
-            masterRegion |= dirtyRegions.at(i);
-        }
-        dirtyRectCount = masterRegion.numRects();
-        dirtyRegions.clear();
-        dirtyRegions << masterRegion;
-    }
 }
 
 void QGraphicsViewPrivate::updateRect(const QRect &r)
 {
-    if (r.isEmpty())
+    if (r.isEmpty() || fullUpdatePending)
         return;
 
     Q_Q(QGraphicsView);
@@ -1001,22 +886,17 @@ void QGraphicsViewPrivate::updateRect(const QRect &r)
         break;
     case QGraphicsView::BoundingRectViewportUpdate:
         dirtyBoundingRect |= r;
-        if (dirtyBoundingRect == q->viewport()->rect()) {
+        if (dirtyBoundingRect.contains(q->viewport()->rect())) {
             fullUpdatePending = true;
             q->viewport()->update();
-        } else {
-            updateLater();
         }
         break;
-    case QGraphicsView::SmartViewportUpdate:
-        dirtyBoundingRect |= r;
-        if ((dirtyRectCount + dirtyRects.size()) < QGRAPHICSVIEW_REGION_RECT_THRESHOLD)
-            dirtyRects << r;
-        updateLater();
-        break;
+    case QGraphicsView::SmartViewportUpdate: // ### DEPRECATE
     case QGraphicsView::MinimalViewportUpdate:
-        dirtyRects << r;
-        updateLater();
+        if (optimizationFlags & QGraphicsView::DontAdjustForAntialiasing)
+            dirtyRegion += r;
+        else
+            dirtyRegion += r.adjusted(-2, -2, 2, 2);
         break;
     case QGraphicsView::NoViewportUpdate:
         // Unreachable
@@ -2613,9 +2493,10 @@ void QGraphicsView::updateScene(const QList<QRectF> &rects)
 
     // Extract and reset dirty scene rect info.
     QVector<QRect> dirtyViewportRects;
-    for (int i = 0; i < d->dirtyRegions.size(); ++i)
-        dirtyViewportRects += d->dirtyRegions.at(i).rects();
-    d->dirtyRegions.clear();
+    const QVector<QRect> &dirtyRects = d->dirtyRegion.rects();
+    for (int i = 0; i < dirtyRects.size(); ++i)
+        dirtyViewportRects += dirtyRects.at(i);
+    d->dirtyRegion = QRegion();
 
     bool fullUpdate = !d->accelerateScrolling || d->viewportUpdateMode == QGraphicsView::FullViewportUpdate;
     bool boundingRectUpdate = (d->viewportUpdateMode == QGraphicsView::BoundingRectViewportUpdate)
@@ -3544,10 +3425,7 @@ void QGraphicsView::scrollContentsBy(int dx, int dy)
 
     if (d->viewportUpdateMode != QGraphicsView::NoViewportUpdate) {
         if (d->viewportUpdateMode != QGraphicsView::FullViewportUpdate) {
-            for (int i = 0; i < d->dirtyRects.size(); ++i)
-                d->dirtyRects[i].translate(dx, dy);
-            for (int i = 0; i < d->dirtyRegions.size(); ++i)
-                d->dirtyRegions[i].translate(dx, dy);
+            d->dirtyRegion.translate(dx, dy);
             if (d->accelerateScrolling) {
 #ifndef QT_NO_RUBBERBAND
                 // Update new and old rubberband regions

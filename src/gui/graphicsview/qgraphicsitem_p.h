@@ -161,6 +161,8 @@ public:
         dirtyTransform(0),
         dirtyTransformComponents(0),
         dirtyChildrenBoundingRect(1),
+        inDirtyList(0),
+        paintedViewBoundingRectsNeedRepaint(0),
         globalStackingOrder(-1),
         sceneTransformIndex(-1),
         q_ptr(0)
@@ -186,8 +188,6 @@ public:
     void setEnabledHelper(bool newEnabled, bool explicitly, bool update = true);
     bool discardUpdateRequest(bool ignoreClipping = false, bool ignoreVisibleBit = false,
                               bool ignoreDirtyBit = false, bool ignoreOpacity = false) const;
-    void updateHelper(const QRectF &rect = QRectF(), bool force = false, bool maybeDirtyClipPath = false);
-    void fullUpdateHelper(bool childrenOnly = false, bool maybeDirtyClipPath = false, bool ignoreOpacity = false);
     void updateEffectiveOpacity();
     void resolveEffectiveOpacity(qreal effectiveParentOpacity);
     void resolveDepth(int parentDepth);
@@ -308,8 +308,22 @@ public:
                || (childrenCombineOpacity() && isFullyTransparent());
     }
 
+    inline bool hasDirtyAncestor() const
+    {
+        QGraphicsItem *p = parent;
+        while (p) {
+            if (p->d_ptr->dirtyChildren || (p->d_ptr->dirty && p->d_ptr->childrenClippedToShape()))
+                return true;
+            p = p->d_ptr->parent;
+        }
+        return false;
+    }
+
+
     QPainterPath cachedClipPath;
     QRectF childrenBoundingRect;
+    QRectF needsRepaint;
+    QMap<QWidget *, QRect> paintedViewBoundingRects;
     QPointF pos;
     qreal z;
     QGraphicsScene *scene;
@@ -353,7 +367,9 @@ public:
     quint32 dirtyTransform : 1;
     quint32 dirtyTransformComponents : 1;
     quint32 dirtyChildrenBoundingRect : 1;
-    quint32 padding : 17; // feel free to use
+    quint32 inDirtyList : 1;
+    quint32 paintedViewBoundingRectsNeedRepaint : 1;
+    quint32 padding : 15; // feel free to use
 
     // Optional stacking order
     int globalStackingOrder;

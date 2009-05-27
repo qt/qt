@@ -111,7 +111,7 @@ public:
     QSet<QGraphicsItem *> selectedItems;
     QList<QGraphicsItem *> unindexedItems;
     QList<QGraphicsItem *> indexedItems;
-    QList<QGraphicsItem *> dirtyItems;
+    QVector<QGraphicsItem *> dirtyItems;
     QList<QGraphicsItem *> pendingUpdateItems;
     QList<QGraphicsItem *> unpolishedItems;
     QList<QGraphicsItem *> topLevelItems;
@@ -121,9 +121,7 @@ public:
     void _q_updateLater();
     void _q_polishItems();
 
-    void _q_resetDirtyItems();
-    void resetDirtyItemsLater();
-    bool dirtyItemResetPending;
+    void _q_processDirtyItems();
 
     QList<int> freeItemIndexes;
     bool regenerateIndex;
@@ -257,6 +255,30 @@ public:
     void drawSubtreeRecursive(QGraphicsItem *item, QPainter *painter, const QTransform &parentTransform,
                               const QTransform &viewTransform,
                               const QRegion &exposedRegion, QWidget *widget, QGraphicsView::OptimizationFlags optimizationFlags);
+    void markDirty(QGraphicsItem *item, const QRectF &rect = QRectF(), bool invalidateChildren = false,
+                   bool maybeDirtyClipPath = false, bool force = false, bool ignoreOpacity = false);
+
+    inline void resetDirtyItem(QGraphicsItem *item)
+    {
+        Q_ASSERT(item);
+        item->d_ptr->dirty = 0;
+        item->d_ptr->paintedViewBoundingRectsNeedRepaint = 0;
+        item->d_ptr->dirtyChildren = 0;
+        item->d_ptr->inDirtyList = 0;
+        item->d_ptr->needsRepaint = QRectF();
+    }
+
+    inline void removeFromDirtyItems(QGraphicsItem *item)
+    {
+        int i = 0;
+        while (i < dirtyItems.size()) {
+            if (dirtyItems.at(i) == item)
+                dirtyItems.remove(i);
+            else
+                ++i;
+        }
+        resetDirtyItem(item);
+    }
 
     QStyle *style;
     QFont font;

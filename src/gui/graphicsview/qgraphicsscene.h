@@ -271,8 +271,6 @@ Q_SIGNALS:
     void selectionChanged();
 
 private:
-    void itemUpdated(QGraphicsItem *item, const QRectF &rect);
-
     Q_DECLARE_PRIVATE(QGraphicsScene)
     Q_DISABLE_COPY(QGraphicsScene)
     Q_PRIVATE_SLOT(d_func(), void _q_updateIndex())
@@ -281,7 +279,7 @@ private:
     Q_PRIVATE_SLOT(d_func(), void _q_updateLater())
     Q_PRIVATE_SLOT(d_func(), void _q_polishItems())
     Q_PRIVATE_SLOT(d_func(), void _q_updateSortCache())
-    Q_PRIVATE_SLOT(d_func(), void _q_resetDirtyItems())
+    Q_PRIVATE_SLOT(d_func(), void _q_processDirtyItems())
     friend class QGraphicsItem;
     friend class QGraphicsItemPrivate;
     friend class QGraphicsView;

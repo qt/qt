@@ -1317,8 +1317,9 @@ void tst_QGraphicsScene::removeItem()
     scene.removeItem(hoverItem);
     hoverItem->setAcceptsHoverEvents(false);
     scene.addItem(hoverItem);
-    qApp->processEvents(); // update
-    qApp->processEvents(); // draw
+    qApp->processEvents(); // <- delayed update is called
+    qApp->processEvents(); // <- scene schedules pending update
+    qApp->processEvents(); // <- pending update is sent to view
     QVERIFY(!hoverItem->isHovered);
 }
 

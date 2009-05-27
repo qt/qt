@@ -274,7 +274,6 @@ private:
     Q_PRIVATE_SLOT(d_func(), void _q_setViewportCursor(const QCursor &))
     Q_PRIVATE_SLOT(d_func(), void _q_unsetViewportCursor())
 #endif
-    Q_PRIVATE_SLOT(d_func(), void _q_updateLaterSlot())
     friend class QGraphicsSceneWidget;
     friend class QGraphicsScene;
     friend class QGraphicsScenePrivate;

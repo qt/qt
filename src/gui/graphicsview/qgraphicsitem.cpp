@@ -863,8 +863,11 @@ void QGraphicsItemPrivate::setParentItemHelper(QGraphicsItem *newParent, bool de
 
         parent->d_ptr->addChild(q);
         parent->itemChange(QGraphicsItem::ItemChildAddedChange, thisPointerVariant);
-        if (!implicitUpdate)
-            updateHelper(QRectF(), false, true);
+        if (!implicitUpdate && scene) {
+            scene->d_func()->markDirty(q_ptr, QRect(),
+                                       /*invalidateChildren=*/false,
+                                       /*maybeDirtyClipPath=*/true);
+        }
 
         // Inherit ancestor flags from the new parent.
         updateAncestorFlag(QGraphicsItem::GraphicsItemFlag(-1));
@@ -895,7 +898,11 @@ void QGraphicsItemPrivate::setParentItemHelper(QGraphicsItem *newParent, bool de
                 setEnabledHelper(true, /* explicit = */ false);
 
             // If the item is being deleted, the whole scene will be updated.
-            updateHelper(QRectF(), false, true);
+            if (scene) {
+                scene->d_func()->markDirty(q_ptr, QRect(),
+                                           /*invalidateChildren=*/false,
+                                           /*maybeDirtyClipPath=*/true);
+            }
         }
     }
 
@@ -1358,7 +1365,7 @@ void QGraphicsItem::setFlags(GraphicsItemFlags flags)
     const quint32 geomChangeFlagsMask = (ItemClipsChildrenToShape | ItemClipsToShape | ItemIgnoresTransformations);
     bool fullUpdate = (quint32(flags) & geomChangeFlagsMask) != (d_ptr->flags & geomChangeFlagsMask);
     if (fullUpdate)
-        d_ptr->fullUpdateHelper(false, true);
+        d_ptr->paintedViewBoundingRectsNeedRepaint = 1;
 
     // Keep the old flags to compare the diff.
     GraphicsItemFlags oldFlags = this->flags();
@@ -1398,8 +1405,11 @@ void QGraphicsItem::setFlags(GraphicsItemFlags flags)
         d_ptr->updateAncestorFlag(ItemIgnoresTransformations);
     }
 
-    // ### Why updateHelper?
-    d_ptr->updateHelper(QRectF(), false, true);
+    if (d_ptr->scene) {
+        d_ptr->scene->d_func()->markDirty(this, QRectF(),
+                                          /*invalidateChildren=*/true,
+                                          /*maybeDirtyClipPath*/true);
+    }
 
     // Notify change.
     itemChange(ItemFlagsHaveChanged, quint32(flags));
@@ -1665,7 +1675,12 @@ void QGraphicsItemPrivate::setVisibleHelper(bool newVisible, bool explicitly, bo
         QGraphicsItemCache *c = (QGraphicsItemCache *)qVariantValue<void *>(extra(ExtraCacheData));
         if (c)
             c->purge();
-        updateHelper(QRectF(), /* force = */ true);
+        if (scene) {
+            scene->d_func()->markDirty(q_ptr, QRectF(),
+                                       /*invalidateChildren=*/false,
+                                       /*maybeDirtyClipPath=*/false,
+                                       /*force=*/true);
+        }
     }
 
     // Certain properties are dropped as an item becomes invisible.
@@ -1828,8 +1843,8 @@ void QGraphicsItemPrivate::setEnabledHelper(bool newEnabled, bool explicitly, bo
     enabled = newEnabledVariant.toBool();
 
     // Schedule redraw.
-    if (update)
-        updateHelper();
+    if (update && scene)
+        scene->d_func()->markDirty(q_ptr);
 
     foreach (QGraphicsItem *child, children) {
         if (!newEnabled || !child->d_ptr->explicitlyDisabled)
@@ -1930,9 +1945,8 @@ void QGraphicsItem::setSelected(bool selected)
         return;
     d_ptr->selected = newSelected;
 
-    d_ptr->updateHelper();
-
     if (d_ptr->scene) {
+        d_ptr->scene->d_func()->markDirty(this);
         QGraphicsScenePrivate *sceneD = d_ptr->scene->d_func();
         if (selected) {
             sceneD->selectedItems << this;
@@ -2051,7 +2065,12 @@ void QGraphicsItem::setOpacity(qreal opacity)
     itemChange(ItemOpacityHasChanged, newOpacity);
 
     // Update.
-    d_ptr->fullUpdateHelper(/*childrenOnly=*/false, /*maybeDirtyClipPath=*/false, /*ignoreOpacity=*/true);
+    if (d_ptr->scene)
+        d_ptr->scene->d_func()->markDirty(this, QRectF(),
+                                          /*invalidateChildren=*/true,
+                                          /*maybeDirtyClipPath=*/false,
+                                          /*force=*/false,
+                                          /*ignoreOpacity=*/true);
 }
 
 /*!
@@ -2501,10 +2520,8 @@ void QGraphicsItemPrivate::setPosHelper(const QPointF &pos)
     // Update and repositition.
     inSetPosHelper = 1;
     updateCachedClipPathFromSetPosHelper(newPos);
-    if (scene) {
-        fullUpdateHelper(true);
+    if (scene)
         q->prepareGeometryChange();
-    }
     this->pos = newPos;
     invalidateSceneTransformCache();
 
@@ -3305,7 +3322,6 @@ void QGraphicsItem::setMatrix(const QMatrix &matrix, bool combine)
         return;
 
     // Update and set the new transformation.
-    d_ptr->fullUpdateHelper(true, true);
     prepareGeometryChange();
     d_ptr->hasTransform = !newTransform.isIdentity();
     d_ptr->setExtra(QGraphicsItemPrivate::ExtraTransform, newTransform);
@@ -3358,7 +3374,6 @@ void QGraphicsItem::setTransform(const QTransform &matrix, bool combine)
         return;
 
     // Update and set the new transformation.
-    d_ptr->fullUpdateHelper(true, true);
     prepareGeometryChange();
     d_ptr->hasTransform = !newTransform.isIdentity();
     d_ptr->setExtra(QGraphicsItemPrivate::ExtraTransform, newTransform);
@@ -3545,9 +3560,9 @@ void QGraphicsItem::setZValue(qreal z)
     if (newZ == d_ptr->z)
         return;
     d_ptr->z = newZ;
-    d_ptr->fullUpdateHelper();
 
     if (d_ptr->scene) {
+        d_ptr->scene->d_func()->markDirty(this, QRectF(), /*invalidateChildren=*/true);
         // Invalidate any sort caching; arrival of a new item means we need to
         // resort.
         d_ptr->scene->d_func()->invalidateSortCache();
@@ -4208,82 +4223,11 @@ bool QGraphicsItemPrivate::discardUpdateRequest(bool ignoreClipping, bool ignore
     // No scene, or if the scene is updating everything, means we have nothing
     // to do. The only exception is if the scene tracks the growing scene rect.
     return (!visible && !ignoreVisibleBit)
-           || (dirty && !ignoreDirtyBit)
+           || (!ignoreDirtyBit && (dirty || hasDirtyAncestor()))
            || !scene
            || (scene->d_func()->updateAll && scene->d_func()->hasSceneRect)
            || (!ignoreClipping && (childrenClippedToShape() && isClippedAway()))
            || (!ignoreOpacity && childrenCombineOpacity() && isFullyTransparent());
-}
-
-/*!
-    \internal
-
-    Asks the scene to mark this item's scene rect as dirty, requesting a
-    redraw.  This does not invalidate any cache.
-
-    The \a force argument is for the update call in setVisible(), which is the
-    only case where the item's background should be marked as dirty even when
-    the item isn't visible.
-*/
-void QGraphicsItemPrivate::updateHelper(const QRectF &rect, bool force, bool maybeDirtyClipPath)
-{
-    // No scene, or if the scene is updating everything, means we have nothing
-    // to do. The only exception is if the scene tracks the growing scene rect.
-    if (discardUpdateRequest(/*ignoreClipping=*/maybeDirtyClipPath, /*ignoreVisibleBit=*/force))
-        return;
-
-    if (rect.isNull())
-        dirty = 1;
-    scene->itemUpdated(q_ptr, rect);
-}
-
-/*!
-    \internal
-
-    Propagates updates to \a item and all its children.
-*/
-void QGraphicsItemPrivate::fullUpdateHelper(bool childrenOnly, bool maybeDirtyClipPath, bool ignoreOpacity)
-{
-    if (discardUpdateRequest(/*ignoreClipping=*/maybeDirtyClipPath, /*ignoreVisibleBit=*/false,
-                             /*ignoreDirtyBit=*/true, ignoreOpacity)) {
-        return;
-    }
-
-    if (!childrenOnly && !dirty) {
-        // Effectively the same as updateHelper(QRectF(), false, maybeDirtyClipPath).
-        dirty = 1;
-        scene->itemUpdated(q_ptr, QRectF());
-    }
-
-    if (dirtyChildren || childrenClippedToShape()) {
-        // Unnecessary to update children as well.
-        return;
-    }
-
-    if (ancestorFlags & AncestorClipsChildren) {
-        Q_Q(QGraphicsItem);
-        // Check if we can avoid updating all children.
-        QGraphicsItem *p = parent;
-        QRectF br = q->boundingRect();
-        while (p) {
-            if (p->d_ptr->flags & QGraphicsItem::ItemClipsChildrenToShape) {
-                bool ok;
-                QTransform x = q->itemTransform(p, &ok);
-                if (!ok)
-                    break;
-                if (x.mapRect(br).contains(p->boundingRect()))
-                    return;
-            }
-            p = p->d_ptr->parent;
-            if (!p || !(p->d_ptr->ancestorFlags & AncestorClipsChildren))
-                break;
-            // ### check one level only
-            break;
-        }
-    }
-    foreach (QGraphicsItem *child, children)
-        child->d_ptr->fullUpdateHelper(false, maybeDirtyClipPath);
-    dirtyChildren = 1;
 }
 
 static inline bool allChildrenCombineOpacityHelper(QGraphicsItem *parent)
@@ -4590,14 +4534,10 @@ void QGraphicsItem::update(const QRectF &rect)
         // Only invalidate cache; item is already dirty.
         if (d_ptr->dirty)
             return;
-    } else if (d_ptr->discardUpdateRequest()) {
-        return;
     }
 
-    // Effectively the same as updateHelper(rect);
-    if (rect.isNull())
-        d_ptr->dirty = 1;
-    d_ptr->scene->itemUpdated(this, rect);
+    if (d_ptr->scene)
+        d_ptr->scene->d_func()->markDirty(this);
 }
 
 /*!
@@ -4695,7 +4635,7 @@ void QGraphicsItem::scroll(qreal dx, qreal dy, const QRectF &rect)
                 exposed -= r.translated(dx, dy);
                 foreach (QRect rect, exposed.rects())
                     update(rect);
-                d_ptr->updateHelper();
+                d->scene->d_func()->markDirty(this);
             } else {
                 update(rect);
             }
@@ -5911,7 +5851,8 @@ void QGraphicsItem::focusOutEvent(QFocusEvent *event)
 void QGraphicsItem::hoverEnterEvent(QGraphicsSceneHoverEvent *event)
 {
     Q_UNUSED(event);
-    d_ptr->updateHelper();
+    if (d_ptr->scene)
+        d_ptr->scene->d_func()->markDirty(this);
 }
 
 /*!
@@ -5939,7 +5880,8 @@ void QGraphicsItem::hoverMoveEvent(QGraphicsSceneHoverEvent *event)
 void QGraphicsItem::hoverLeaveEvent(QGraphicsSceneHoverEvent *event)
 {
     Q_UNUSED(event);
-    d_ptr->updateHelper();
+    if (d_ptr->scene)
+        d_ptr->scene->d_func()->markDirty(this);
 }
 
 /*!
@@ -6367,9 +6309,10 @@ void QGraphicsItem::addToIndex()
         // ### add to child index only if applicable
         return;
     }
-    if (d_ptr->scene)
+    if (d_ptr->scene) {
         d_ptr->scene->d_func()->addToIndex(this);
-    d_ptr->updateHelper();
+        d_ptr->scene->d_func()->markDirty(this);
+    }
 }
 
 /*!
@@ -6385,9 +6328,10 @@ void QGraphicsItem::removeFromIndex()
         // ### remove from child index only if applicable
         return;
     }
-    d_ptr->updateHelper();
-    if (d_ptr->scene)
+    if (d_ptr->scene) {
+        d_ptr->scene->d_func()->markDirty(this);
         d_ptr->scene->d_func()->removeFromIndex(this);
+    }
 }
 
 /*!
@@ -6406,7 +6350,10 @@ void QGraphicsItem::removeFromIndex()
 void QGraphicsItem::prepareGeometryChange()
 {
     if (d_ptr->scene) {
-        d_ptr->updateHelper(QRectF(), false, /*maybeDirtyClipPath=*/!d_ptr->inSetPosHelper);
+        d_ptr->paintedViewBoundingRectsNeedRepaint = 1;
+        d_ptr->scene->d_func()->markDirty(this, QRectF(),
+                                          /*invalidateChildren=*/true,
+                                          /*maybeDirtyClipPath=*/!d_ptr->inSetPosHelper);
         QGraphicsScenePrivate *scenePrivate = d_ptr->scene->d_func();
         scenePrivate->removeFromIndex(this);
     }
@@ -8075,7 +8022,6 @@ void QGraphicsPixmapItem::setTransformationMode(Qt::TransformationMode mode)
 {
     Q_D(QGraphicsPixmapItem);
     if (mode != d->transformationMode) {
-        d_ptr->updateHelper();
         d->transformationMode = mode;
         update();
     }
