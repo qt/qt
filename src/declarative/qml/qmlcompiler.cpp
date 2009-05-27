@@ -184,244 +184,25 @@ bool QmlCompiler::isValidId(const QString &val)
 }
 
 /*!
-    Returns true if property name \a name refers to an attached property, false
-    otherwise.
+    Returns true if \a name refers to an attached property, false otherwise.
 
     Attached property names are those that start with a capital letter.
 */
-bool QmlCompiler::isAttachedProperty(const QByteArray &name)
+bool QmlCompiler::isAttachedPropertyName(const QByteArray &name)
 {
     return !name.isEmpty() && name.at(0) >= 'A' && name.at(0) <= 'Z';
 }
 
-QmlCompiler::StoreInstructionResult 
-QmlCompiler::generateStoreInstruction(QmlCompiledData &cdata,
-                                      QmlInstruction &instr, 
-                                      const QMetaProperty &prop, 
-                                      int coreIdx, int primitive,
-                                      const QString *string)
-{
-    if (!prop.isWritable())
-        return ReadOnly;
-    if (prop.isEnumType()) {
-        int value;
-        if (prop.isFlagType()) {
-            value = prop.enumerator().keysToValue(string->toLatin1().constData());
-        } else
-            value = prop.enumerator().keyToValue(string->toLatin1().constData());
-        if (value == -1)
-            return InvalidData;
-        instr.type = QmlInstruction::StoreInteger;
-        instr.storeInteger.propertyIndex = coreIdx;
-        instr.storeInteger.value = value;
-        return Ok;
-    }
-    int type = prop.type();
-    switch(type) {
-        case -1:
-            instr.type = QmlInstruction::StoreVariant;
-            instr.storeString.propertyIndex = coreIdx;
-            if (primitive == -1)
-                primitive = cdata.indexForString(*string);
-            instr.storeString.value = primitive;
-            break;
-            break;
-        case QVariant::String:
-            {
-            instr.type = QmlInstruction::StoreString;
-            instr.storeString.propertyIndex = coreIdx;
-            if (primitive == -1)
-                primitive = cdata.indexForString(*string);
-            instr.storeString.value = primitive;
-            }
-            break;
-        case QVariant::UInt:
-            {
-            instr.type = QmlInstruction::StoreInteger;
-            instr.storeInteger.propertyIndex = coreIdx;
-            bool ok;
-            int value = string->toUInt(&ok);
-            if (!ok)
-                return InvalidData;
-            instr.storeInteger.value = value;
-            }
-            break;
-        case QVariant::Int:
-            {
-            instr.type = QmlInstruction::StoreInteger;
-            instr.storeInteger.propertyIndex = coreIdx;
-            bool ok;
-            int value = string->toInt(&ok);
-            if (!ok)
-                return InvalidData;
-            instr.storeInteger.value = value;
-            }
-            break;
-        case 135:
-        case QVariant::Double:
-            {
-            instr.type = QmlInstruction::StoreReal;
-            instr.storeReal.propertyIndex = coreIdx;
-            bool ok;
-            float value = string->toFloat(&ok);
-            if (!ok)
-                return InvalidData;
-            instr.storeReal.value = value;
-            }
-            break;
-        case QVariant::Color:
-            {
-            QColor c = QmlStringConverters::colorFromString(*string);
-            if (!c.isValid())
-                return InvalidData;
-            instr.type = QmlInstruction::StoreColor;
-            instr.storeColor.propertyIndex = coreIdx;
-            instr.storeColor.value = c.rgba();
-            }
-            break;
-        case QVariant::Date:
-            {
-            QDate d = QDate::fromString(*string, Qt::ISODate);
-            if (!d.isValid())
-                return InvalidData;
-            instr.type = QmlInstruction::StoreDate;
-            instr.storeDate.propertyIndex = coreIdx;
-            instr.storeDate.value = d.toJulianDay();
-            }
-            break;
-        case QVariant::Time:
-            {
-            QTime time = QTime::fromString(*string, Qt::ISODate);
-            if (!time.isValid())
-                return InvalidData;
-            int data[] = { time.hour(), time.minute(), time.second(), time.msec() };
-            int index = cdata.indexForInt(data, 4);
-            instr.type = QmlInstruction::StoreTime;
-            instr.storeTime.propertyIndex = coreIdx;
-            instr.storeTime.valueIndex = index;
-            }
-            break;
-        case QVariant::DateTime:
-            {
-            QDateTime dateTime = QDateTime::fromString(*string, Qt::ISODate);
-            if (!dateTime.isValid())
-                return InvalidData;
-            int data[] = { dateTime.date().toJulianDay(),
-                           dateTime.time().hour(),
-                           dateTime.time().minute(),
-                           dateTime.time().second(),
-                           dateTime.time().msec() };
-            int index = cdata.indexForInt(data, 5);
-            instr.type = QmlInstruction::StoreDateTime;
-            instr.storeDateTime.propertyIndex = coreIdx;
-            instr.storeDateTime.valueIndex = index;
-            }
-            break;
-        case QVariant::Point:
-        case QVariant::PointF:
-            {
-                bool ok;
-                QPointF point = QmlStringConverters::pointFFromString(*string, &ok);
-                if (!ok)
-                    return InvalidData;
-                float data[] = { point.x(), point.y() };
-                int index = cdata.indexForFloat(data, 2);
-                if (type == QVariant::PointF)
-                    instr.type = QmlInstruction::StorePointF;
-                else
-                    instr.type = QmlInstruction::StorePoint;
-                instr.storeRealPair.propertyIndex = coreIdx;
-                instr.storeRealPair.valueIndex = index;
-            }
-            break;
-        case QVariant::Size:
-        case QVariant::SizeF:
-            {
-                bool ok;
-                QSizeF size = QmlStringConverters::sizeFFromString(*string, &ok);
-                if (!ok)
-                    return InvalidData;
-                float data[] = { size.width(), size.height() };
-                int index = cdata.indexForFloat(data, 2);
-                if (type == QVariant::SizeF)
-                    instr.type = QmlInstruction::StoreSizeF;
-                else
-                    instr.type = QmlInstruction::StoreSize;
-                instr.storeRealPair.propertyIndex = coreIdx;
-                instr.storeRealPair.valueIndex = index;
-            }
-            break;
-        case QVariant::Rect:
-        case QVariant::RectF:
-            {
-                bool ok;
-                QRectF rect = QmlStringConverters::rectFFromString(*string, &ok);
-                if (!ok)
-                    return InvalidData;
-                float data[] = { rect.x(), rect.y(), 
-                                 rect.width(), rect.height() };
-                int index = cdata.indexForFloat(data, 4);
-                if (type == QVariant::RectF)
-                    instr.type = QmlInstruction::StoreRectF;
-                else
-                    instr.type = QmlInstruction::StoreRect;
-                instr.storeRect.propertyIndex = coreIdx;
-                instr.storeRect.valueIndex = index;
-            }
-            break;
-        case QVariant::Bool:
-            {
-                bool ok;
-                bool b = QmlStringConverters::boolFromString(*string, &ok);
-                if (!ok)
-                    return InvalidData;
-                instr.type = QmlInstruction::StoreBool;
-                instr.storeBool.propertyIndex = coreIdx;
-                instr.storeBool.value = b;
-            }
-            break;
-        default:
-            {
-                int t = prop.type();
-                if (t == QVariant::UserType)
-                    t = prop.userType();
-                QmlMetaType::StringConverter converter = 
-                    QmlMetaType::customStringConverter(t);
-                if (converter) {
-                    int index = cdata.customTypeData.count();
-                    instr.type = QmlInstruction::AssignCustomType;
-                    instr.assignCustomType.propertyIndex = coreIdx;
-                    instr.assignCustomType.valueIndex = index;
+/*!
+    Returns true if \a name refers to a signal property, false otherwise.
 
-                    QmlCompiledData::CustomTypeData data;
-                    if (primitive == -1)
-                        primitive = cdata.indexForString(*string);
-                    data.index = primitive;
-                    data.type = t;
-                    cdata.customTypeData << data;
-                    break;
-                }
-            }
-            return UnknownType;
-            break;
-    }
-    return Ok;
-}
-
-void QmlCompiler::reset(QmlCompiledComponent *cc, bool deleteMemory)
+    Signal property names are those that start with "on", followed by a capital
+    letter.
+*/
+bool QmlCompiler::isSignalPropertyName(const QByteArray &name)
 {
-    cc->types.clear();
-    cc->primitives.clear();
-    cc->floatData.clear();
-    cc->intData.clear();
-    cc->customTypeData.clear();
-    cc->datas.clear();
-    if (deleteMemory) {
-        for (int ii = 0; ii < cc->synthesizedMetaObjects.count(); ++ii)
-            qFree(cc->synthesizedMetaObjects.at(ii));
-    }
-    cc->synthesizedMetaObjects.clear();
-    cc->bytecode.clear();
+    return name.length() >= 3 && name.startsWith("on") && 
+           'A' <= name.at(2) && 'Z' >= name.at(2);
 }
 
 #define COMPILE_EXCEPTION2(token, desc) \
@@ -456,6 +237,232 @@ void QmlCompiler::reset(QmlCompiledComponent *cc, bool deleteMemory)
     { \
         if (!a) return false; \
     }
+
+// Compile a simple assignment of v to prop into instr
+bool QmlCompiler::compileStoreInstruction(QmlInstruction &instr, 
+                                          const QMetaProperty &prop, 
+                                          QmlParser::Value *v)
+{
+    QString string = v->value.asScript();
+
+    if (!prop.isWritable())
+        COMPILE_EXCEPTION2(v, "Cannot assign literal value to read-only property" << prop.name());
+
+    if (prop.isEnumType()) {
+        int value;
+        if (prop.isFlagType()) {
+            value = prop.enumerator().keysToValue(string.toLatin1().constData());
+        } else
+            value = prop.enumerator().keyToValue(string.toLatin1().constData());
+        if (value == -1)
+            COMPILE_EXCEPTION2(v, "Cannot assign unknown enumeration to property" << prop.name());
+        instr.type = QmlInstruction::StoreInteger;
+        instr.storeInteger.propertyIndex = prop.propertyIndex();
+        instr.storeInteger.value = value;
+        return true;
+    }
+    int type = prop.type();
+    switch(type) {
+        case -1:
+            {
+            instr.type = QmlInstruction::StoreVariant;
+            instr.storeString.propertyIndex = prop.propertyIndex();
+            instr.storeString.value = output->indexForString(string);
+            }
+            break;
+        case QVariant::String:
+            {
+            instr.type = QmlInstruction::StoreString;
+            instr.storeString.propertyIndex = prop.propertyIndex();
+            instr.storeString.value = output->indexForString(string);
+            }
+            break;
+        case QVariant::UInt:
+            {
+            instr.type = QmlInstruction::StoreInteger;
+            instr.storeInteger.propertyIndex = prop.propertyIndex();
+            bool ok;
+            int value = string.toUInt(&ok);
+            if (!ok)
+                COMPILE_EXCEPTION2(v, "Cannot convert value" << string << "to unsigned integer");
+            instr.storeInteger.value = value;
+            }
+            break;
+        case QVariant::Int:
+            {
+            instr.type = QmlInstruction::StoreInteger;
+            instr.storeInteger.propertyIndex = prop.propertyIndex();
+            bool ok;
+            int value = string.toInt(&ok);
+            if (!ok)
+                COMPILE_EXCEPTION2(v, "Cannot convert value" << string << "to integer");
+            instr.storeInteger.value = value;
+            }
+            break;
+        case 135:
+        case QVariant::Double:
+            {
+            instr.type = QmlInstruction::StoreReal;
+            instr.storeReal.propertyIndex = prop.propertyIndex();
+            bool ok;
+            float value = string.toFloat(&ok);
+            if (!ok)
+                COMPILE_EXCEPTION2(v, "Cannot convert value" << string << "to real number");
+            instr.storeReal.value = value;
+            }
+            break;
+        case QVariant::Color:
+            {
+            QColor c = QmlStringConverters::colorFromString(string);
+            if (!c.isValid())
+                COMPILE_EXCEPTION2(v, "Cannot convert value" << string << "to color");
+            instr.type = QmlInstruction::StoreColor;
+            instr.storeColor.propertyIndex = prop.propertyIndex();
+            instr.storeColor.value = c.rgba();
+            }
+            break;
+        case QVariant::Date:
+            {
+            QDate d = QDate::fromString(string, Qt::ISODate);
+            if (!d.isValid())
+                COMPILE_EXCEPTION2(v, "Cannot convert value" << string << "to date");
+            instr.type = QmlInstruction::StoreDate;
+            instr.storeDate.propertyIndex = prop.propertyIndex();
+            instr.storeDate.value = d.toJulianDay();
+            }
+            break;
+        case QVariant::Time:
+            {
+            QTime time = QTime::fromString(string, Qt::ISODate);
+            if (!time.isValid())
+                COMPILE_EXCEPTION2(v, "Cannot convert value" << string << "to time");
+            int data[] = { time.hour(), time.minute(), time.second(), time.msec() };
+            int index = output->indexForInt(data, 4);
+            instr.type = QmlInstruction::StoreTime;
+            instr.storeTime.propertyIndex = prop.propertyIndex();
+            instr.storeTime.valueIndex = index;
+            }
+            break;
+        case QVariant::DateTime:
+            {
+            QDateTime dateTime = QDateTime::fromString(string, Qt::ISODate);
+            if (!dateTime.isValid())
+                COMPILE_EXCEPTION2(v, "Cannot convert value" << string << "to date and time");
+            int data[] = { dateTime.date().toJulianDay(),
+                           dateTime.time().hour(),
+                           dateTime.time().minute(),
+                           dateTime.time().second(),
+                           dateTime.time().msec() };
+            int index = output->indexForInt(data, 5);
+            instr.type = QmlInstruction::StoreDateTime;
+            instr.storeDateTime.propertyIndex = prop.propertyIndex();
+            instr.storeDateTime.valueIndex = index;
+            }
+            break;
+        case QVariant::Point:
+        case QVariant::PointF:
+            {
+                bool ok;
+                QPointF point = QmlStringConverters::pointFFromString(string, &ok);
+                if (!ok)
+                    COMPILE_EXCEPTION2(v, "Cannot convert value" << string << "to point");
+                float data[] = { point.x(), point.y() };
+                int index = output->indexForFloat(data, 2);
+                if (type == QVariant::PointF)
+                    instr.type = QmlInstruction::StorePointF;
+                else
+                    instr.type = QmlInstruction::StorePoint;
+                instr.storeRealPair.propertyIndex = prop.propertyIndex();
+                instr.storeRealPair.valueIndex = index;
+            }
+            break;
+        case QVariant::Size:
+        case QVariant::SizeF:
+            {
+                bool ok;
+                QSizeF size = QmlStringConverters::sizeFFromString(string, &ok);
+                if (!ok)
+                    COMPILE_EXCEPTION2(v, "Cannot convert value" << string << "to size");
+                float data[] = { size.width(), size.height() };
+                int index = output->indexForFloat(data, 2);
+                if (type == QVariant::SizeF)
+                    instr.type = QmlInstruction::StoreSizeF;
+                else
+                    instr.type = QmlInstruction::StoreSize;
+                instr.storeRealPair.propertyIndex = prop.propertyIndex();
+                instr.storeRealPair.valueIndex = index;
+            }
+            break;
+        case QVariant::Rect:
+        case QVariant::RectF:
+            {
+                bool ok;
+                QRectF rect = QmlStringConverters::rectFFromString(string, &ok);
+                if (!ok)
+                    COMPILE_EXCEPTION2(v, "Cannot convert value" << string << "to rect");
+                float data[] = { rect.x(), rect.y(), 
+                                 rect.width(), rect.height() };
+                int index = output->indexForFloat(data, 4);
+                if (type == QVariant::RectF)
+                    instr.type = QmlInstruction::StoreRectF;
+                else
+                    instr.type = QmlInstruction::StoreRect;
+                instr.storeRect.propertyIndex = prop.propertyIndex();
+                instr.storeRect.valueIndex = index;
+            }
+            break;
+        case QVariant::Bool:
+            {
+                bool ok;
+                bool b = QmlStringConverters::boolFromString(string, &ok);
+                if (!ok)
+                    COMPILE_EXCEPTION2(v, "Cannot convert value" << string << "to boolean");
+                instr.type = QmlInstruction::StoreBool;
+                instr.storeBool.propertyIndex = prop.propertyIndex();
+                instr.storeBool.value = b;
+            }
+            break;
+        default:
+            {
+                int t = prop.type();
+                if (t == QVariant::UserType)
+                    t = prop.userType();
+                QmlMetaType::StringConverter converter = 
+                    QmlMetaType::customStringConverter(t);
+                if (converter) {
+                    int index = output->customTypeData.count();
+                    instr.type = QmlInstruction::AssignCustomType;
+                    instr.assignCustomType.propertyIndex = prop.propertyIndex();
+                    instr.assignCustomType.valueIndex = index;
+
+                    QmlCompiledData::CustomTypeData data;
+                    data.index = output->indexForString(string);
+                    data.type = t;
+                    output->customTypeData << data;
+                    break;
+                }
+            }
+            COMPILE_EXCEPTION2(v, "Cannot assign to property" << prop.name() << "of unknown type" << prop.type());
+            break;
+    }
+    return true;
+}
+
+void QmlCompiler::reset(QmlCompiledComponent *cc, bool deleteMemory)
+{
+    cc->types.clear();
+    cc->primitives.clear();
+    cc->floatData.clear();
+    cc->intData.clear();
+    cc->customTypeData.clear();
+    cc->datas.clear();
+    if (deleteMemory) {
+        for (int ii = 0; ii < cc->synthesizedMetaObjects.count(); ++ii)
+            qFree(cc->synthesizedMetaObjects.at(ii));
+    }
+    cc->synthesizedMetaObjects.clear();
+    cc->bytecode.clear();
+}
 
 bool QmlCompiler::compile(QmlEngine *engine, 
                           QmlCompositeTypeData *unit,
@@ -540,8 +547,8 @@ void QmlCompiler::compileTree(Object *tree)
 
 bool QmlCompiler::compileObject(Object *obj, int ctxt)
 {    
-    if (obj->type != -1) 
-        obj->metatype = output->types.at(obj->type).metaObject();
+    Q_ASSERT (obj->type != -1);
+    obj->metatype = output->types.at(obj->type).metaObject();
 
     if (output->types.at(obj->type).className == "Component") {
         COMPILE_CHECK(compileComponent(obj, ctxt));
@@ -559,23 +566,22 @@ bool QmlCompiler::compileObject(Object *obj, int ctxt)
     create.create.type = obj->type;
     output->bytecode << create;
 
+    // Create the synthesized meta object
     COMPILE_CHECK(compileDynamicMeta(obj));
 
-    int parserStatusCast = -1;
-    if (obj->type != -1) {
-        // ### Optimize
-        const QMetaObject *mo = obj->metatype;
-        QmlType *type = 0;
-        while (!type && mo) {
-            type = QmlMetaType::qmlType(mo);
-            mo = mo->superClass();
-        }
-
-        Q_ASSERT(type);
-
-        parserStatusCast = type->parserStatusCast();
+    // Find the native type and check for the QmlParserStatus interface
+    // ### Optimize
+    const QMetaObject *mo = obj->metatype; 
+    QmlType *type = 0;
+    while (!type && mo) {
+        type = QmlMetaType::qmlType(mo);
+        mo = mo->superClass();
     }
+    Q_ASSERT(type);
+    int parserStatusCast = type->parserStatusCast();
 
+    // If the type support the QmlParserStatusInterface we need to invoke
+    // classBegin()
     if (parserStatusCast != -1) {
         QmlInstruction begin;
         begin.type = QmlInstruction::BeginObject;
@@ -584,35 +590,50 @@ bool QmlCompiler::compileObject(Object *obj, int ctxt)
         output->bytecode << begin;
     }
 
+    // Check if this is a custom parser type.  Custom parser types allow 
+    // assignments to non-existant properties.  These assignments are then
+    // compiled by the type.
     bool isCustomParser = output->types.at(obj->type).type &&  
                           output->types.at(obj->type).type->customParser() != 0;
     QList<QmlCustomParserProperty> customProps;
 
+    // Compile all explicit properties specified
     foreach(Property *prop, obj->properties) {
-        if (prop->name.length() >= 3 && prop->name.startsWith("on") && 
-           ('A' <= prop->name.at(2) && 'Z' >= prop->name.at(2))) {
-            if (!isCustomParser) {
-                COMPILE_CHECK(compileSignal(prop, obj));
-            } else {
-                customProps << QmlCustomParserNodePrivate::fromProperty(prop);
-            }
-        } else {
-            if (!isCustomParser || (isCustomParser && testProperty(prop, obj))) {
+
+        if (isCustomParser) {
+            // Custom parser types don't support signal properties
+            if (testProperty(prop, obj)) {
                 COMPILE_CHECK(compileProperty(prop, obj, ctxt));
             } else {
                 customProps << QmlCustomParserNodePrivate::fromProperty(prop);
             }
-        }
-    }
-
-    if (obj->defaultProperty)  {
-        if(!isCustomParser || (isCustomParser && testProperty(obj->defaultProperty, obj))) {
-            COMPILE_CHECK(compileProperty(obj->defaultProperty, obj, ctxt));
         } else {
-            customProps << QmlCustomParserNodePrivate::fromProperty(obj->defaultProperty);
+            if (isSignalPropertyName(prop->name))  {
+                COMPILE_CHECK(compileSignal(prop,obj));
+            } else {
+                COMPILE_CHECK(compileProperty(prop, obj, ctxt));
+            }
         }
+
     }
 
+    // Compile the default property
+    if (obj->defaultProperty)  {
+        Property *prop = obj->defaultProperty;
+
+        if (isCustomParser) {
+            if (testProperty(prop, obj)) {
+                COMPILE_CHECK(compileProperty(prop, obj, ctxt));
+            } else {
+                customProps << QmlCustomParserNodePrivate::fromProperty(prop);
+            }
+        } else {
+            COMPILE_CHECK(compileProperty(prop, obj, ctxt));
+        }
+
+    }
+
+    // Compile custom parser parts
     if (isCustomParser && !customProps.isEmpty()) {
         // ### Check for failure
         bool ok = false;
@@ -625,6 +646,8 @@ bool QmlCompiler::compileObject(Object *obj, int ctxt)
                 output->indexForByteArray(customData);
     }
 
+    // If the type support the QmlParserStatusInterface we need to invoke
+    // classComplete()
     if (parserStatusCast != -1) {
         QmlInstruction complete;
         complete.type = QmlInstruction::CompleteObject;
@@ -717,12 +740,13 @@ bool QmlCompiler::compileComponentFromRoot(Object *obj, int ctxt)
 
 bool QmlCompiler::compileFetchedObject(Object *obj, int ctxt)
 {
+    Q_ASSERT(obj->metatype);
+
     if (obj->defaultProperty) 
         COMPILE_CHECK(compileProperty(obj->defaultProperty, obj, ctxt));
 
     foreach(Property *prop, obj->properties) {
-        if (prop->name.length() >= 3 && prop->name.startsWith("on") && 
-           ('A' <= prop->name.at(2) && 'Z' >= prop->name.at(2))) {
+        if (isSignalPropertyName(prop->name)) {
             COMPILE_CHECK(compileSignal(prop, obj));
         } else {
             COMPILE_CHECK(compileProperty(prop, obj, ctxt));
@@ -815,7 +839,7 @@ bool QmlCompiler::compileSignal(Property *prop, Object *obj)
 bool QmlCompiler::testProperty(QmlParser::Property *prop, 
                                QmlParser::Object *obj)
 {
-    if(isAttachedProperty(prop->name) || prop->name == "id")
+    if(isAttachedPropertyName(prop->name) || prop->name == "id")
         return true;
 
     const QMetaObject *mo = obj->metaObject();
@@ -835,53 +859,70 @@ bool QmlCompiler::testProperty(QmlParser::Property *prop,
 bool QmlCompiler::compileProperty(Property *prop, Object *obj, int ctxt)
 {
     if (prop->values.isEmpty() && !prop->value) 
-        return true;
+        COMPILE_EXCEPTION2(prop, "Empty property assignment");
 
-    // First we're going to need a reference to this property
-    const QMetaObject *mo = obj->metaObject();
-    if (mo && !isAttachedProperty(prop->name)) {
+    const QMetaObject *metaObject = obj->metaObject();
+    Q_ASSERT(metaObject);
+
+    if (isAttachedPropertyName(prop->name)) {
+        // Setup attached property data
+        QmlType *type = QmlMetaType::qmlType(prop->name);
+
+        if (!type || !type->attachedPropertiesType())
+            COMPILE_EXCEPTION2(prop, "Non-existant attached object");
+
+        if (!prop->value)
+            COMPILE_EXCEPTION2(prop, "Cannot assign directly to attached object");
+
+        prop->value->metatype = type->attachedPropertiesType();
+    } else {
+        // Setup regular property data
+        QMetaProperty p;
+
         if (prop->isDefault) {
-            QMetaProperty p = QmlMetaType::defaultProperty(mo);
-            // XXX
-            // Currently we don't handle enums in the static analysis
-            // so we let them drop through to generateStoreInstruction()
-            if (p.name() && !p.isEnumType()) {
-                prop->index = mo->indexOfProperty(p.name());
+            p = QmlMetaType::defaultProperty(metaObject);
+
+            if (p.name()) {
+                prop->index = p.propertyIndex();
                 prop->name = p.name();
-
-                int t = p.type();
-                if (t == QVariant::UserType)
-                    t = p.userType();
-
-                prop->type = t;
             }
-        } else {
-            prop->index = mo->indexOfProperty(prop->name.constData());
-            QMetaProperty p = mo->property(prop->index);
-            // XXX
-            // Currently we don't handle enums in the static analysis
-            // so we let them drop through to generateStoreInstruction()
-            if (p.name() && !p.isEnumType()) {
-                int t = p.type();
-                if (t == QVariant::UserType)
-                    t = p.userType();
 
-                prop->type = t;
+        } else {
+            prop->index = metaObject->indexOfProperty(prop->name.constData());
+
+            if (prop->index != -1) {
+                p = metaObject->property(prop->index);
+                Q_ASSERT(p.name());
             }
         }
-    } else if(isAttachedProperty(prop->name) && prop->value) {
-        QmlType *type = QmlMetaType::qmlType(prop->name);
-        if (type && type->attachedPropertiesType()) 
-            prop->value->metatype = type->attachedPropertiesType();
+
+        // We can't error here as the "id" property does not require a 
+        // successful index resolution
+        if (p.name()) {
+            int t = p.type();
+
+            if (t == QVariant::UserType)
+                t = p.userType();
+
+            prop->type = t;
+        }
     }
 
-    if (prop->name == "id") {
+    if (!prop->isDefault && prop->name == "id") {
 
         COMPILE_CHECK(compileIdProperty(prop, obj));
 
-    } else if (isAttachedProperty(prop->name)) {
+    } else if (isAttachedPropertyName(prop->name)) {
 
         COMPILE_CHECK(compileAttachedProperty(prop, obj, ctxt));
+
+    } else if (prop->index == -1) {
+
+        if (prop->isDefault) {
+            COMPILE_EXCEPTION2(prop, "Cannot assign to non-existant default property");
+        } else {
+            COMPILE_EXCEPTION2(prop, "Cannot assign to non-existant property" << prop->name);
+        }
 
     } else if (prop->value) {
 
@@ -948,19 +989,22 @@ bool QmlCompiler::compileIdProperty(QmlParser::Property *prop,
     return true;
 }
 
+// Compile attached property object.  In this example,
+// Text {
+//    GridView.row: 10
+// }
+// GridView is an attached property object.
 bool QmlCompiler::compileAttachedProperty(QmlParser::Property *prop, 
                                           QmlParser::Object *obj,
                                           int ctxt)
 {
-    if (!prop->value) 
-        COMPILE_EXCEPTION("Incorrect usage of an attached property");
+    Q_ASSERT(prop->value);
+    int id = QmlMetaType::attachedPropertiesFuncId(prop->name);
+    Q_ASSERT(id != -1); // This is checked in compileProperty()
 
     QmlInstruction fetch;
     fetch.type = QmlInstruction::FetchAttached;
     fetch.line = prop->location.start.line;
-    int id = QmlMetaType::attachedPropertiesFuncId(prop->name);
-    if (id == -1)
-        COMPILE_EXCEPTION("Non-existant attached property object" << prop->name);
     fetch.fetchAttached.id = id;
     output->bytecode << fetch;
 
@@ -974,16 +1018,20 @@ bool QmlCompiler::compileAttachedProperty(QmlParser::Property *prop,
     return true;
 }
 
+// Compile "nested" properties. In this example:
+// Text {
+//     font.size: 12
+// }
+// font is a nested property.  size is not.
 bool QmlCompiler::compileNestedProperty(QmlParser::Property *prop,
                                         int ctxt)
 {
-    if (prop->type != 0) 
-        prop->value->metatype = QmlMetaType::metaObjectForType(prop->type);
-    
-    if (prop->index == -1)
-        COMPILE_EXCEPTION2(prop, "Cannot access non-existant property" << prop->name);
+    Q_ASSERT(prop->type != 0);
+    Q_ASSERT(prop->index != -1);
 
-    if (!QmlMetaType::isObject(prop->value->metatype)) 
+    // Load the nested property's meta type
+    prop->value->metatype = QmlMetaType::metaObjectForType(prop->type);
+    if (!prop->value->metatype)
         COMPILE_EXCEPTION2(prop, "Cannot nest non-QObject property" << prop->name);
 
     QmlInstruction fetch;
@@ -1003,11 +1051,20 @@ bool QmlCompiler::compileNestedProperty(QmlParser::Property *prop,
     return true;
 }
 
+// Compile assignments to QML lists.  QML lists are properties of type
+// QList<T *> * and QmlList<T *> *.
+//
+// QList<T *> * types can accept a list of objects, or a single binding
+// QmlList<T *> * types can accept a list of objects
 bool QmlCompiler::compileListProperty(QmlParser::Property *prop,
                                       QmlParser::Object *obj,
                                       int ctxt)
 {
+    Q_ASSERT(QmlMetaType::isList(prop->type) || 
+             QmlMetaType::isQmlList(prop->type));
+
     int t = prop->type;
+
     if (QmlMetaType::isQmlList(t)) {
         QmlInstruction fetch;
         fetch.line = prop->location.start.line;
@@ -1037,8 +1094,6 @@ bool QmlCompiler::compileListProperty(QmlParser::Property *prop,
         pop.line = prop->location.start.line;
         output->bytecode << pop;
     } else {
-        Q_ASSERT(QmlMetaType::isList(t));
-
         QmlInstruction fetch;
         fetch.type = QmlInstruction::FetchQList;
         fetch.line = prop->location.start.line;
@@ -1076,9 +1131,25 @@ bool QmlCompiler::compileListProperty(QmlParser::Property *prop,
         pop.type = QmlInstruction::PopQList;
         output->bytecode << pop;
     }
+
     return true;
 }
 
+// Compile regular property assignments of the form property: <value>
+//
+// ### The following problems exist
+//
+// There is no distinction between how "lists" of values are specified.  This
+//    Item {
+//        children: Item {}
+//        children: Item {}
+//    }
+// is identical to
+//    Item {
+//        children: [ Item {}, Item {} ]
+//    }
+//
+// We allow assignming multiple values to single value properties
 bool QmlCompiler::compilePropertyAssignment(QmlParser::Property *prop,
                                             QmlParser::Object *obj,
                                             int ctxt)
@@ -1099,97 +1170,98 @@ bool QmlCompiler::compilePropertyAssignment(QmlParser::Property *prop,
     return true;
 }
 
+// Compile assigning a single object instance to a regular property 
 bool QmlCompiler::compilePropertyObjectAssignment(QmlParser::Property *prop,
                                                   QmlParser::Object *obj,
                                                   QmlParser::Value *v,
                                                   int ctxt)
 {
-    if (v->object->type != -1) 
-        v->object->metatype = output->types.at(v->object->type).metaObject();
-    Q_ASSERT(v->object->metaObject());
-
-    if (prop->index == -1)
-        COMPILE_EXCEPTION2(prop, "Cannot assign object to non-existant property" << prop->name);
-
+    Q_ASSERT(prop->index != -1);
+    Q_ASSERT(v->object->type != -1);
 
     if (QmlMetaType::isInterface(prop->type)) {
 
+        // Assigning an object to an interface ptr property
         COMPILE_CHECK(compileObject(v->object, ctxt));
 
         QmlInstruction assign;
         assign.type = QmlInstruction::StoreInterface;
         assign.line = v->object->location.start.line;
         assign.storeObject.propertyIndex = prop->index;
-        assign.storeObject.cast = 0;
         output->bytecode << assign;
 
         v->type = Value::CreatedObject;
 
     } else if (prop->type == -1) {
 
-        // Variant
-        // ### Is it always?
+        // Assigning an object to a QVariant
         COMPILE_CHECK(compileObject(v->object, ctxt));
 
         QmlInstruction assign;
         assign.type = QmlInstruction::StoreVariantObject;
         assign.line = v->object->location.start.line;
         assign.storeObject.propertyIndex = prop->index;
-        assign.storeObject.cast = 0;
         output->bytecode << assign;
 
         v->type = Value::CreatedObject;
     } else {
+        // Normally compileObject() will set this up, but we need the static 
+        // meta object earlier to test for assignability.  It doesn't matter
+        // that there may still be outstanding synthesized meta object changes
+        // on this type, as they are not relevant for assignability testing
+        v->object->metatype = output->types.at(v->object->type).metaObject();
+        Q_ASSERT(v->object->metaObject());
 
-        const QMetaObject *propmo = 
+        // We want to raw metaObject here as the raw metaobject is the 
+        // actual property type before we applied any extensions that might 
+        // effect the properties on the type, but don't effect assignability
+        const QMetaObject *propertyMetaObject = 
             QmlMetaType::rawMetaObjectForType(prop->type);
         
-        bool isPropertyValue = false;
+        // Will be true if the assigned type inherits QmlPropertyValueSource
+        bool isPropertyValue = false; 
+        // Will be true if the assgned type inherits propertyMetaObject
         bool isAssignable = false;
-
-        if (propmo) {
-            // We want to raw metaObject here as the raw metaobject is the 
-            // actual property type before we applied any extensions
+        // Determine isPropertyValue and isAssignable values
+        if (propertyMetaObject) {
             const QMetaObject *c = v->object->metatype;
-            while(propmo && c) {
-                isPropertyValue = isPropertyValue || (c == &QmlPropertyValueSource::staticMetaObject);
-                isAssignable = isAssignable || (c == propmo);
+            while(c) {
+                isPropertyValue |= (c == &QmlPropertyValueSource::staticMetaObject);
+                isAssignable |= (c == propertyMetaObject);
                 c = c->superClass();
             }
         } else {
             const QMetaObject *c = v->object->metatype;
             while(!isPropertyValue && c) {
-                isPropertyValue = c == &QmlPropertyValueSource::staticMetaObject;
+                isPropertyValue |= (c == &QmlPropertyValueSource::staticMetaObject);
                 c = c->superClass();
             }
         }
 
         if (isAssignable) {
+            // Simple assignment
             COMPILE_CHECK(compileObject(v->object, ctxt));
 
             QmlInstruction assign;
             assign.type = QmlInstruction::StoreObject;
             assign.line = v->object->location.start.line;
             assign.storeObject.propertyIndex = prop->index;
-            // XXX - this cast may not be 0
-            assign.storeObject.cast = 0;
             output->bytecode << assign;
 
             v->type = Value::CreatedObject;
-        } else if (propmo == &QmlComponent::staticMetaObject) {
-
+        } else if (propertyMetaObject == &QmlComponent::staticMetaObject) {
+            // Automatic "Component" insertion
             COMPILE_CHECK(compileComponentFromRoot(v->object, ctxt));
 
             QmlInstruction assign;
             assign.type = QmlInstruction::StoreObject;
             assign.line = v->object->location.start.line;
             assign.storeObject.propertyIndex = prop->index;
-            // XXX - this cast may not be 0
-            assign.storeObject.cast = 0;
             output->bytecode << assign;
 
             v->type = Value::Component;
         } else if (isPropertyValue) {
+            // Assign as a property value source
             COMPILE_CHECK(compileObject(v->object, ctxt));
 
             QmlInstruction assign;
@@ -1207,11 +1279,14 @@ bool QmlCompiler::compilePropertyObjectAssignment(QmlParser::Property *prop,
     return true;
 }
 
+// Compile assigning a literal or binding to a regular property 
 bool QmlCompiler::compilePropertyLiteralAssignment(QmlParser::Property *prop,
                                                    QmlParser::Object *obj,
                                                    QmlParser::Value *v,
                                                    int ctxt)
 {
+    Q_ASSERT(prop->index != -1);
+
     if (v->value.isScript()) {
 
         COMPILE_CHECK(compileBinding(v->value.asScript(), prop, ctxt, 
@@ -1224,31 +1299,12 @@ bool QmlCompiler::compilePropertyLiteralAssignment(QmlParser::Property *prop,
 
         QmlInstruction assign;
         assign.line = v->location.start.line;
-
-        if (prop->index != -1) {
-            QString value = v->primitive();
-            StoreInstructionResult r = 
-                generateStoreInstruction(*output, assign, obj->metaObject()->property(prop->index), prop->index, -1, &value);
-
-            if (r == Ok) {
-            } else if (r == InvalidData) {
-                //### we are restricted to a rather generic message here. If we can find a way to move
-                //    the exception into generateStoreInstruction we could potentially have better messages.
-                //    (the problem is that both compile and run exceptions can be generated, though)
-                COMPILE_EXCEPTION2(v, "Cannot assign value" << v->primitive() << "to property" << obj->metaObject()->property(prop->index).name());
-            } else if (r == ReadOnly) {
-                COMPILE_EXCEPTION2(v, "Cannot assign value" << v->primitive() << "to the read-only property" << obj->metaObject()->property(prop->index).name());
-            } else {
-                COMPILE_EXCEPTION2(prop, "Cannot assign value to property" << obj->metaObject()->property(prop->index).name() << "of unknown type");
-            }
-        } else {
-            COMPILE_EXCEPTION2(prop, "Cannot assign value to non-existant property" << prop->name);
-        }
-
+        COMPILE_CHECK(compileStoreInstruction(assign, obj->metaObject()->property(prop->index), v));
         output->bytecode << assign;
 
         v->type = Value::Literal;
     }
+
     return true;
 }
 
@@ -1343,6 +1399,9 @@ bool QmlCompiler::compileDynamicMeta(QmlParser::Object *obj)
 bool QmlCompiler::compileBinding(const QString &bind, QmlParser::Property *prop,
                                  int ctxt, const QMetaObject *mo, qint64 line)
 {
+    Q_ASSERT(mo);
+    Q_ASSERT(prop->index);
+
     QmlBasicScript bs;
     bs.compile(bind.toLatin1());
 
@@ -1353,32 +1412,24 @@ bool QmlCompiler::compileBinding(const QString &bind, QmlParser::Property *prop,
         bref = output->indexForString(bind);
     }
 
-    if (prop->index != -1) {
+    QmlInstruction assign;
+    assign.assignBinding.context = ctxt;
+    assign.line = line;
 
-        QmlInstruction assign;
-        assign.assignBinding.context = ctxt;
-        assign.line = line;
+    if (bs.isValid()) 
+        assign.type = QmlInstruction::StoreCompiledBinding;
+    else
+        assign.type = QmlInstruction::StoreBinding;
 
-        if (bs.isValid()) 
-            assign.type = QmlInstruction::StoreCompiledBinding;
-        else
-            assign.type = QmlInstruction::StoreBinding;
+    assign.assignBinding.property = prop->index;
+    assign.assignBinding.value = bref;
+    QMetaProperty mp = mo->property(assign.assignBinding.property);
+    if (!mp.isWritable() && !QmlMetaType::isList(prop->type))
+        COMPILE_EXCEPTION2(prop, "Cannot assign binding to read-only property");
+    assign.assignBinding.category = QmlMetaProperty::propertyCategory(mp);
 
-        assign.assignBinding.property = prop->index;
-        assign.assignBinding.value = bref;
-        assign.assignBinding.category = QmlMetaProperty::Unknown;
-        if (mo) {
-            // ### we should generate an exception if the property is read-only
-            QMetaProperty mp = mo->property(assign.assignBinding.property);
-            assign.assignBinding.category = QmlMetaProperty::propertyCategory(mp);
-        } 
-
-        savedTypes.insert(output->bytecode.count(), prop->type);
-        output->bytecode << assign;
-
-    } else {
-        COMPILE_EXCEPTION2(prop, "Cannot assign binding to non-existant property" << prop->name);
-    }
+    savedTypes.insert(output->bytecode.count(), prop->type);
+    output->bytecode << assign;
 
     return true;
 }

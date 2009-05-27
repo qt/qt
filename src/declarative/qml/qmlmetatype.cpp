@@ -771,6 +771,7 @@ const char *QmlMetaType::interfaceIId(int userType)
 
 bool QmlMetaType::isObject(const QMetaObject *mo)
 {
+    // ### Huh?
     while(mo) {
         if (mo == &QObject::staticMetaObject)
             return true;

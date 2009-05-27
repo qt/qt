@@ -163,18 +163,6 @@ QMenuBar *QmlViewer::menuBar() const
     return mb;
 }
 
-QSize QmlViewer::sizeHint() const
-{
-    if (skin)
-        return QWidget::sizeHint();
-    else {
-        // Kludge to force QMainWindow to be EXACTLY the right size for the canvas.
-        QSize sh = canvas->sizeHint();
-        sh.setHeight(sh.height()+menuBar()->sizeHint().height());
-        return sh;
-    }
-}
-
 void QmlViewer::createMenu(QMenuBar *menu, QMenu *flatmenu)
 {
     QObject *parent = flatmenu ? (QObject*)flatmenu : (QObject*)menu;
