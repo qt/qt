@@ -3306,7 +3306,7 @@ bool QGLWidget::event(QEvent *e)
         glFinish();
         doneCurrent();
     } else if (e->type() == QEvent::ParentChange) {
-        if (d->glcx->d_func()->screen != d->xinfo.screen()) {
+        if (d->glcx->d_func()->screen != d->xinfo.screen() || testAttribute(Qt::WA_TranslucentBackground)) {
             setContext(new QGLContext(d->glcx->requestedFormat(), this));
             // ### recreating the overlay isn't supported atm
         }

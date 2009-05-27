@@ -893,15 +893,28 @@ void QWidgetPrivate::x11UpdateIsOpaque()
     int screen = xinfo.screen();
     if (topLevel && X11->use_xrender
         && X11->argbVisuals[screen] && xinfo.depth() != 32) {
-        // recreate widget
-        QPoint pos = q->pos();
-        bool visible = q->isVisible();
-        if (visible)
-            q->hide();
-        q->setParent(q->parentWidget(), q->windowFlags());
-        q->move(pos);
-        if (visible)
-            q->show();
+
+        if (q->inherits("QGLWidget")) {
+            // We send QGLWidgets a ParentChange event which causes them to
+            // recreate their GL context, which in turn causes them to choose
+            // their visual again. Now that WA_TranslucentBackground is set,
+            // QGLContext::chooseVisual will select an ARGB visual.
+            QEvent e(QEvent::ParentChange);
+            QApplication::sendEvent(q, &e);
+        }
+        else {
+            // For regular widgets, reparent them with their parent which
+            // also triggers a recreation of the native window
+            QPoint pos = q->pos();
+            bool visible = q->isVisible();
+            if (visible)
+                q->hide();
+
+            q->setParent(q->parentWidget(), q->windowFlags());
+            q->move(pos);
+            if (visible)
+                q->show();
+        }
     }
 #endif
 }

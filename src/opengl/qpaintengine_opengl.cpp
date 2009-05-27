@@ -1331,7 +1331,7 @@ bool QOpenGLPaintEngine::begin(QPaintDevice *pdev)
     d->offscreen.begin();
 
     const QColor &c = d->drawable.backgroundColor();
-    glClearColor(c.redF(), c.greenF(), c.blueF(), 1.0);
+    glClearColor(c.redF(), c.greenF(), c.blueF(), d->drawable.format().alpha() ? c.alphaF() : 1.0);
     if (d->drawable.context()->d_func()->clear_on_painter_begin && d->drawable.autoFillBackground()) {
         GLbitfield clearBits = GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT;
 #ifndef QT_OPENGL_ES
