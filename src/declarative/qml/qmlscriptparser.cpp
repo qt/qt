@@ -597,7 +597,7 @@ QmlParser::Variant ProcessAST::getVariant(AST::ExpressionNode *expr)
            }
         }
 
-        return QmlParser::Variant(asString(expr), expr);
+        return  QmlParser::Variant(asString(expr), expr);
     }
 }
 
@@ -716,33 +716,44 @@ bool ProcessAST::visit(AST::UiSourceElement *node)
 
 
 QmlScriptParser::QmlScriptParser()
-: root(0)
+: root(0), data(0)
 {
 
 }
 
 QmlScriptParser::~QmlScriptParser()
 {
+    clear();
 }
 
-bool QmlScriptParser::parse(const QByteArray &data, const QUrl &url)
+class QmlScriptParserJsASTData
+{
+public:
+    QmlScriptParserJsASTData(const QString &filename)
+        : nodePool(filename, &engine) {}
+
+    Engine engine;
+    NodePool nodePool;
+};
+
+bool QmlScriptParser::parse(const QByteArray &qmldata, const QUrl &url)
 {
 #ifdef Q_ENABLE_PERFORMANCE_LOG
     QFxPerfTimer<QFxPerf::QmlParsing> pt;
 #endif
+    clear();
+
     const QString fileName = url.toString();
 
-    QTextStream stream(data, QIODevice::ReadOnly);
+    QTextStream stream(qmldata, QIODevice::ReadOnly);
     const QString code = stream.readAll();
 
-    Engine engine;
+    data = new QmlScriptParserJsASTData(fileName);
 
-    NodePool nodePool(fileName, &engine);
-
-    Lexer lexer(&engine);
+    Lexer lexer(&data->engine);
     lexer.setCode(code, /*line = */ 1);
 
-    Parser parser(&engine);
+    Parser parser(&data->engine);
 
     if (! parser.parse() || !_errors.isEmpty()) {
 
@@ -808,6 +819,11 @@ void QmlScriptParser::clear()
     _nameSpacePaths.clear();
     _typeNames.clear();
     _errors.clear();
+
+    if (data) {
+        delete data;
+        data = 0;
+    }
 }
 
 int QmlScriptParser::findOrCreateTypeId(const QString &name)
