@@ -1020,13 +1020,17 @@ void QGraphicsAnchorLayoutPrivate::solvePreferred(QList<QSimplexConstraint *> co
     //      A + A_shrinker - A_grower = A_pref
     //
     for (int i = 0; i < variables.size(); ++i) {
+        AnchorData *ad = static_cast<AnchorData *>(variables[i]);
+        if (ad->skipInPreferred)
+            continue;
+
         QSimplexVariable *grower = new QSimplexVariable;
         QSimplexVariable *shrinker = new QSimplexVariable;
         QSimplexConstraint *c = new QSimplexConstraint;
-        c->variables.insert(variables[i], 1.0);
+        c->variables.insert(ad, 1.0);
         c->variables.insert(shrinker, 1.0);
         c->variables.insert(grower, -1.0);
-        c->constant = variables[i]->prefSize;
+        c->constant = ad->prefSize;
 
         preferredConstraints += c;
         preferredVariables += grower;
@@ -1045,7 +1049,7 @@ void QGraphicsAnchorLayoutPrivate::solvePreferred(QList<QSimplexConstraint *> co
     // Calculate minimum values
     qreal min = simplex.solveMin();
 
-    // Save sizeAtMinimum results
+    // Save sizeAtPreferred results
     for (int i = 0; i < variables.size(); ++i) {
         AnchorData *ad = static_cast<AnchorData *>(variables[i]);
         ad->sizeAtPreferred = ad->result;
