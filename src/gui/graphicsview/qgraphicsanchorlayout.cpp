@@ -71,9 +71,6 @@ QGraphicsAnchorLayout::~QGraphicsAnchorLayout()
 
     Q_ASSERT(d->items.isEmpty());
     Q_ASSERT(d->m_vertexList.isEmpty());
-
-    // ### Remove when integrated into Qt
-    delete d_ptr;
 }
 
 void QGraphicsAnchorLayout::anchor(QGraphicsLayoutItem *firstItem,
