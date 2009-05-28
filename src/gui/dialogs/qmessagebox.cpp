@@ -1684,10 +1684,13 @@ void QMessageBox::aboutQt(QWidget *parent, const QString &title)
     }
 #endif
 
-    QString translatedTextAboutQt;
-    translatedTextAboutQt = QMessageBox::tr(
+    QString translatedTextAboutQtCaption;
+    translatedTextAboutQtCaption = QMessageBox::tr(
         "<h3>About Qt</h3>"
         "<p>This program uses Qt version %1.</p>"
+        ).arg(QLatin1String(QT_VERSION_STR));
+    QString translatedTextAboutQtText;
+    translatedTextAboutQtText = QMessageBox::tr(
         "<p>Qt is a C++ toolkit for cross-platform application "
         "development.</p>"
         "<p>Qt provides single-source portability across MS&nbsp;Windows, "
@@ -1715,12 +1718,12 @@ void QMessageBox::aboutQt(QWidget *parent, const QString &title)
         "<p>Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).</p>"
         "<p>Qt is a Nokia product. See <a href=\"http://www.qtsoftware.com/qt/\">www.qtsoftware.com/qt</a> "
         "for more information.</p>"
-       ).arg(QLatin1String(QT_VERSION_STR));
-
+        );
     QMessageBox *msgBox = new QMessageBox(parent);
     msgBox->setAttribute(Qt::WA_DeleteOnClose);
     msgBox->setWindowTitle(title.isEmpty() ? tr("About Qt") : title);
-    msgBox->setInformativeText(translatedTextAboutQt);
+    msgBox->setText(translatedTextAboutQtCaption);
+    msgBox->setInformativeText(translatedTextAboutQtText);
 
     QPixmap pm(QLatin1String(":/trolltech/qmessagebox/images/qtlogo-64.png"));
     if (!pm.isNull())
