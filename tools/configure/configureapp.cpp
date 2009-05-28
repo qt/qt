@@ -1405,7 +1405,7 @@ void Configure::applySpecSpecifics()
         dictionary[ "QT3SUPPORT" ]          = "no";
         dictionary[ "OPENGL" ]              = "no";
         dictionary[ "OPENSSL" ]             = "no";
-        dictionary[ "STL" ]                 = "no";
+        dictionary[ "STL" ]                 = "yes";
         dictionary[ "EXCEPTIONS" ]          = "no";
         dictionary[ "RTTI" ]                = "no";
         dictionary[ "ARCHITECTURE" ]        = "symbian";
