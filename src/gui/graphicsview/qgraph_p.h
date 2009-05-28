@@ -68,7 +68,8 @@ public:
         return iterator(this,false);
     }
 
-    EdgeData *edgeData(Vertex *first, Vertex *second) {
+    EdgeData *edgeData(Vertex* first, Vertex* second) {
+        Q_ASSERT(m_graph.value(first));
         return m_graph.value(first)->value(second);
     }
 
@@ -81,11 +82,20 @@ public:
 
     void removeEdge(Vertex *first, Vertex *second)
     {
-        // Creates a bidirectional edge
+        // Removes a bidirectional edge
         EdgeData *data = edgeData(first, second);
-        if (data) delete data;
         removeDirectedEdge(first, second);
         removeDirectedEdge(second, first);
+        if (data) delete data;
+    }
+
+    EdgeData *takeEdge(Vertex* first, Vertex* second)
+    {
+        // Removes a bidirectional edge
+        EdgeData *data = edgeData(first, second);
+        removeDirectedEdge(first, second);
+        removeDirectedEdge(second, first);
+        return data;
     }
 
     QList<Vertex *> adjacentVertices(Vertex *vertex) const
@@ -163,12 +173,13 @@ protected:
     void removeDirectedEdge(Vertex *from, Vertex *to)
     {
         QHash<Vertex *, EdgeData *> *adjacentToFirst = m_graph.value(from);
-        adjacentToFirst->remove(to);
-        if (adjacentToFirst->isEmpty()) {
-           //nobody point to 'from' so we can remove it from the graph
-           QHash<Vertex *, EdgeData *> *adjacentToFirst = m_graph.take(from);
-           delete adjacentToFirst;
-           delete from;
+        if (adjacentToFirst) {
+            adjacentToFirst->remove(to);
+            if (adjacentToFirst->isEmpty()) {
+                //nobody point to 'from' so we can remove it from the graph
+                m_graph.remove(from);
+                delete adjacentToFirst;
+            }
         }
     }
 

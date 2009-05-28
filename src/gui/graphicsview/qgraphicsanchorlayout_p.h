@@ -161,7 +161,7 @@ struct AnchorData : public QSimplexVariable {
 
 inline QString AnchorData::toString() const
 {
-    return QString("Anchor(%1)").arg(name);
+    return QString::fromAscii("Anchor(%1)").arg(name);
     //return QString().sprintf("Anchor %%1 <Min %.1f  Pref %.1f  Max %.1f>",
     //                         minSize, prefSize, maxSize).arg(name);
 }
@@ -218,7 +218,8 @@ public:
     // Orientation is used to reference the right structure in each context
     enum Orientation {
         Horizontal = 0,
-        Vertical
+        Vertical,
+        NOrientations
     };
 
     QGraphicsAnchorLayoutPrivate();
@@ -264,6 +265,19 @@ public:
     void constraintsFromPaths(Orientation orientation);
     QList<QList<QSimplexConstraint *> > getGraphParts(Orientation orientation);
 
+    inline AnchorVertex *internalVertex(const QPair<QGraphicsLayoutItem*, QGraphicsAnchorLayout::Edge> &itemEdge)
+    {
+        return m_vertexList.value(itemEdge).first;
+    }
+
+    inline AnchorVertex *internalVertex(QGraphicsLayoutItem *item, QGraphicsAnchorLayout::Edge edge)
+    {
+        return internalVertex(qMakePair(item, edge));
+    }
+
+    AnchorVertex *addInternalVertex(QGraphicsLayoutItem *item, QGraphicsAnchorLayout::Edge edge);
+    AnchorVertex *removeInternalVertex(QGraphicsLayoutItem *item, QGraphicsAnchorLayout::Edge edge);
+
     // Geometry interpolation methods
     void setItemsGeometries();
     void calculateVertexPositions(Orientation orientation);
@@ -275,6 +289,7 @@ public:
                                     GraphPath path);
     void solvePreferred(QList<QSimplexConstraint *> constraints);
 
+    qreal spacing[NOrientations];
     // Size hints from simplex engine
     qreal sizeHints[2][3];
 
@@ -283,7 +298,8 @@ public:
 
     // Mapping between high level anchorage points (Item, Edge) to low level
     // ones (Graph Vertices)
-    QHash<QPair<QGraphicsLayoutItem*, QGraphicsAnchorLayout::Edge>, AnchorVertex *> m_vertexList;
+
+    QHash<QPair<QGraphicsLayoutItem*, QGraphicsAnchorLayout::Edge>, QPair<AnchorVertex *, int> > m_vertexList;
 
     // Internal graph of anchorage points and anchors, for both orientations
     Graph<AnchorVertex, AnchorData> graph[2];

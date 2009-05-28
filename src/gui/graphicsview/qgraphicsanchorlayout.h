@@ -45,7 +45,7 @@
 #include <QtGui/qgraphicsitem.h>
 #include <QtGui/qgraphicslayout.h>
 
-/*
+
 QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
@@ -53,7 +53,6 @@ QT_BEGIN_NAMESPACE
 QT_MODULE(Gui)
 
 #if !defined(QT_NO_GRAPHICSVIEW) || (QT_EDITION & QT_MODULE_GRAPHICSVIEW) != QT_MODULE_GRAPHICSVIEW
-*/
 
 class QGraphicsAnchorLayoutPrivate;
 
@@ -79,6 +78,9 @@ public:
     void removeAnchor(QGraphicsLayoutItem *firstItem, Edge firstEdge,
                       QGraphicsLayoutItem *secondItem, Edge secondEdge);
 
+    void setSpacing(qreal spacing, Qt::Orientations orientations = Qt::Horizontal|Qt::Vertical);
+    qreal spacing(Qt::Orientation) const;
+
     void removeAt(int index);
     void setGeometry(const QRectF &rect);
     int count() const;
@@ -97,12 +99,11 @@ private:
     Q_DECLARE_PRIVATE(QGraphicsAnchorLayout)
 };
 
-/*
+
 #endif
 
 QT_END_NAMESPACE
 
 QT_END_HEADER
-*/
 
 #endif

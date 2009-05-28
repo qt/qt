@@ -73,12 +73,12 @@ QSimplexConstraint *GraphPath::constraint(const GraphPath &path) const
 
 QString GraphPath::toString() const
 {
-    QString string("Path: ");
+    QString string(QLatin1String("Path: "));
     foreach(AnchorData *edge, positives)
-    string += QString(" (+++) %1").arg(edge->toString());
+        string += QString::fromAscii(" (+++) %1").arg(edge->toString());
 
     foreach(AnchorData *edge, negatives)
-    string += QString(" (---) %1").arg(edge->toString());
+        string += QString::fromAscii(" (---) %1").arg(edge->toString());
 
     return string;
 }
@@ -148,8 +148,7 @@ void QGraphicsAnchorLayoutPrivate::createLayoutEdges()
     itemCenterConstraints[Horizontal].append(c);
 
     // Set the Layout Left edge as the root of the horizontal graph.
-    AnchorVertex *v;
-    v = m_vertexList.value(qMakePair(layout, QGraphicsAnchorLayout::Left));
+    AnchorVertex *v = internalVertex(layout, QGraphicsAnchorLayout::Left);
     graph[Horizontal].setRootVertex(v);
 
     // Vertical
@@ -169,7 +168,7 @@ void QGraphicsAnchorLayoutPrivate::createLayoutEdges()
     itemCenterConstraints[Vertical].append(c);
 
     // Set the Layout Top edge as the root of the vertical graph.
-    v = m_vertexList.value(qMakePair(layout, QGraphicsAnchorLayout::Top));
+    v = internalVertex(layout, QGraphicsAnchorLayout::Top);
     graph[Vertical].setRootVertex(v);
 }
 
@@ -232,31 +231,54 @@ void QGraphicsAnchorLayoutPrivate::addAnchor(QGraphicsLayoutItem *firstItem,
                                              QGraphicsAnchorLayout::Edge secondEdge,
                                              AnchorData *data)
 {
-    AnchorVertex *v1;
-    AnchorVertex *v2;
-
     // Is the Vertex (firstItem, firstEdge) already represented in our
     // internal structure?
-    v1 = m_vertexList.value(qMakePair(firstItem, firstEdge));
-    if (!v1) {
-        v1 = new AnchorVertex(firstItem, firstEdge);
-        m_vertexList.insert(qMakePair(firstItem, firstEdge), v1);
-    }
-
-    // The same for the second vertex
-    v2 = m_vertexList.value(qMakePair(secondItem, secondEdge));
-    if (!v2) {
-        v2 = new AnchorVertex(secondItem, secondEdge);
-        m_vertexList.insert(qMakePair(secondItem, secondEdge), v2);
-    }
+    AnchorVertex *v1 = addInternalVertex(firstItem, firstEdge);
+    AnchorVertex *v2 = addInternalVertex(secondItem, secondEdge);
 
     // Create a bi-directional edge in the sense it can be transversed both
     // from v1 or v2. "data" however is shared between the two references
     // so we still know that the anchor direction is from 1 to 2.
     data->origin = v1;
-    data->name = QString("%1 --to--> %2").arg(v1->toString()).arg(v2->toString());
+    data->name = QString::fromAscii("%1 --to--> %2").arg(v1->toString()).arg(v2->toString());
 
     graph[edgeOrientation(firstEdge)].createEdge(v1, v2, data);
+}
+
+AnchorVertex *QGraphicsAnchorLayoutPrivate::addInternalVertex(QGraphicsLayoutItem *item,
+                                                              QGraphicsAnchorLayout::Edge edge)
+{
+    QPair<QGraphicsLayoutItem *, QGraphicsAnchorLayout::Edge> pair(item, edge);
+    QPair<AnchorVertex *, int> v = m_vertexList.value(pair);
+    if (!v.first) {
+        Q_ASSERT(v.second == 0);
+        v.first = new AnchorVertex(item, edge);
+        m_vertexList.insert(pair, v);
+    }
+    v.second++;
+    return v.first;
+}
+
+/**
+ * \internal
+ *
+ * returns the AnchorVertex that was dereferenced, also when it was removed.
+ * returns 0 if it did not exist.
+ */
+AnchorVertex *QGraphicsAnchorLayoutPrivate::removeInternalVertex(QGraphicsLayoutItem *item,
+                                                                 QGraphicsAnchorLayout::Edge edge)
+{
+    QPair<QGraphicsLayoutItem *, QGraphicsAnchorLayout::Edge> pair(item, edge);
+    QPair<AnchorVertex *, int> v = m_vertexList.value(pair);
+    if (v.first) {
+        v.second--;
+        if (v.second == 0) {
+            m_vertexList.remove(pair);
+        }
+    } else {
+        qWarning("This item with this edge is not in the graph");
+    }
+    return v.first;
 }
 
 void QGraphicsAnchorLayoutPrivate::removeAnchor(QGraphicsLayoutItem *firstItem,
@@ -264,21 +286,10 @@ void QGraphicsAnchorLayoutPrivate::removeAnchor(QGraphicsLayoutItem *firstItem,
                                                 QGraphicsLayoutItem *secondItem,
                                                 QGraphicsAnchorLayout::Edge secondEdge)
 {
-    AnchorVertex *v1 = 0;
-    AnchorVertex *v2 = 0;
-
     // Is there a representation for the Vertex (firstItem, firstEdge)
     // in our internal structure?
-    if ((v1 = m_vertexList.value(qMakePair(firstItem,firstEdge))))
-        m_vertexList.remove(qMakePair(firstItem,firstEdge));
-    else
-        qWarning()<<"This item with this edge is not in the graph";
-
-    // The same for the second vertex
-    if ((v2 = m_vertexList.value(qMakePair(secondItem,secondEdge))))
-        m_vertexList.remove(qMakePair(secondItem,secondEdge));
-    else
-       qWarning()<<"This item with this edge is not in the graph";
+    AnchorVertex *v1 = removeInternalVertex(firstItem, firstEdge);
+    AnchorVertex *v2 = removeInternalVertex(secondItem, secondEdge);
 
     if (v1 && v2) {
         graph[edgeOrientation(firstEdge)].removeEdge(v1, v2);
@@ -292,18 +303,26 @@ void QGraphicsAnchorLayoutPrivate::removeAnchors(QGraphicsLayoutItem *item)
     QList<AnchorVertex *> allVertex;
     int edge;
 
-    for (edge = QGraphicsAnchorLayout::Left; edge != QGraphicsAnchorLayout::Bottom; ++edge) {
+    for (edge = QGraphicsAnchorLayout::Left; edge <= QGraphicsAnchorLayout::Bottom; ++edge) {
         // Remove all vertex for all edges
         QGraphicsAnchorLayout::Edge e = static_cast<QGraphicsAnchorLayout::Edge>(edge);
 
-        if ((v1 = m_vertexList.value(qMakePair(item, e)))) {
-            m_vertexList.remove(qMakePair(item, e));
-
+        if ((v1 = removeInternalVertex(item, e))) {
             // Remove all edges
             allVertex = graph[edgeOrientation(e)].adjacentVertices(v1);
 
-            foreach (v2, allVertex)
-                graph[edgeOrientation(e)].removeEdge(v1, v2);
+            QList<QSimplexConstraint *> constraints = itemCenterConstraints[edgeOrientation(e)];
+            foreach (v2, allVertex) {
+                AnchorData *data = graph[edgeOrientation(e)].takeEdge(v1, v2);
+                Q_ASSERT(data);
+                for (int i = 0; i < constraints.count(); ++i) {
+                    QSimplexConstraint *c = constraints.at(i);
+                    c->variables.remove(data);
+                }
+                delete data;
+            }
+            qDebug("removing anchor: %s", qPrintable(v1->toString()));
+            delete v1;
         }
     }
 }
@@ -467,8 +486,7 @@ void QGraphicsAnchorLayoutPrivate::calculateGraphs(
     } else {
         end = QGraphicsAnchorLayout::Bottom;
     }
-    AnchorVertex *v =
-        m_vertexList.value(qMakePair(static_cast<QGraphicsLayoutItem *>(q), end));
+    AnchorVertex *v = internalVertex(q, end);
     GraphPath trunkPath = graphPaths[orientation].value(v);
 
     // Solve min and max size hints for trunk
@@ -509,7 +527,8 @@ void QGraphicsAnchorLayoutPrivate::calculateGraphs(
         // Propagate size at preferred to other sizes. Semi-floats
         // always will be in their sizeAtPreferred.
         for (int j = 0; j < partVariables.count(); ++j) {
-            AnchorData *ad = static_cast<AnchorData *>(partVariables[j]);
+            AnchorData *ad = partVariables[j];
+            Q_ASSERT(ad);
             ad->sizeAtMinimum = ad->sizeAtPreferred;
             ad->sizeAtMaximum = ad->sizeAtPreferred;
         }
@@ -546,9 +565,9 @@ void QGraphicsAnchorLayoutPrivate::setAnchorSizeHintsFromItems(Orientation orien
         centerKey.first = item;
         endKey.first = item;
 
-        beginning = m_vertexList.value(beginningKey);
-        center = m_vertexList.value(centerKey);
-        end = m_vertexList.value(endKey);
+        beginning = internalVertex(beginningKey);
+        center = internalVertex(centerKey);
+        end = internalVertex(endKey);
 
         if (orientation == Horizontal) {
             min = item->minimumWidth();
@@ -690,19 +709,16 @@ QGraphicsAnchorLayoutPrivate::getGraphParts(Orientation orientation)
 
     // Find layout vertices and edges for the current orientation.
     AnchorVertex *layoutFirstVertex =
-        m_vertexList.value(qMakePair(static_cast<QGraphicsLayoutItem *>(q),
-                                     orientation == Horizontal ?
-                                     QGraphicsAnchorLayout::Left :QGraphicsAnchorLayout::Top));
+        internalVertex(q, orientation == Horizontal ?
+                       QGraphicsAnchorLayout::Left : QGraphicsAnchorLayout::Top);
 
     AnchorVertex *layoutCentralVertex =
-        m_vertexList.value(qMakePair(static_cast<QGraphicsLayoutItem *>(q),
-                                     orientation == Horizontal ?
-                                     QGraphicsAnchorLayout::HCenter : QGraphicsAnchorLayout::VCenter));
+        internalVertex(q, orientation == Horizontal ?
+                       QGraphicsAnchorLayout::HCenter : QGraphicsAnchorLayout::VCenter);
 
     AnchorVertex *layoutLastVertex =
-        m_vertexList.value(qMakePair(static_cast<QGraphicsLayoutItem *>(q),
-                                     orientation == Horizontal ?
-                                     QGraphicsAnchorLayout::Right : QGraphicsAnchorLayout::Bottom));
+        internalVertex(q, orientation == Horizontal ?
+                       QGraphicsAnchorLayout::Right : QGraphicsAnchorLayout::Bottom);
 
     AnchorData *edgeL1 = graph[orientation].edgeData(layoutFirstVertex, layoutCentralVertex);
     AnchorData *edgeL2 = graph[orientation].edgeData(layoutCentralVertex, layoutLastVertex);
@@ -779,14 +795,10 @@ void QGraphicsAnchorLayoutPrivate::setItemsGeometries()
     AnchorVertex *firstH, *secondH, *firstV, *secondV;
 
     foreach (QGraphicsLayoutItem *item, items) {
-        firstH =
-            m_vertexList.value(qMakePair(item, QGraphicsAnchorLayout::Left));
-        secondH =
-            m_vertexList.value(qMakePair(item, QGraphicsAnchorLayout::Right));
-        firstV =
-            m_vertexList.value(qMakePair(item, QGraphicsAnchorLayout::Top));
-        secondV =
-            m_vertexList.value(qMakePair(item, QGraphicsAnchorLayout::Bottom));
+        firstH = internalVertex(item, QGraphicsAnchorLayout::Left);
+        secondH = internalVertex(item, QGraphicsAnchorLayout::Right);
+        firstV = internalVertex(item, QGraphicsAnchorLayout::Top);
+        secondV = internalVertex(item, QGraphicsAnchorLayout::Bottom);
 
         QPointF topLeft(firstH->distance, firstV->distance);
         QPointF bottomRight(secondH->distance, secondV->distance);
@@ -1057,7 +1069,7 @@ void QGraphicsAnchorLayoutPrivate::solvePreferred(QList<QSimplexConstraint *> co
     simplex.setObjective(&objective);
 
     // Calculate minimum values
-    qreal min = simplex.solveMin();
+    simplex.solveMin();
 
     // Save sizeAtPreferred results
     for (int i = 0; i < variables.size(); ++i) {

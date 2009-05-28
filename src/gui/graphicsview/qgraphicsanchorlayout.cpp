@@ -160,6 +160,21 @@ void QGraphicsAnchorLayout::removeAnchor(QGraphicsLayoutItem *firstItem, Edge fi
     invalidate();
 }
 
+void QGraphicsAnchorLayout::setSpacing(qreal spacing, Qt::Orientations orientations /*= Qt::Horizontal|Qt::Vertical*/)
+{
+    Q_D(QGraphicsAnchorLayout);
+    if (orientations & Qt::Horizontal)
+        d->spacing[0] = spacing;
+    if (orientations & Qt::Vertical)
+        d->spacing[1] = spacing;
+}
+
+qreal QGraphicsAnchorLayout::spacing(Qt::Orientation orientation) const
+{
+    Q_D(const QGraphicsAnchorLayout);
+    return d->spacing[orientation & Qt::Vertical];
+}
+
 void QGraphicsAnchorLayout::setGeometry(const QRectF &geom)
 {
     Q_D(QGraphicsAnchorLayout);
@@ -179,6 +194,7 @@ void QGraphicsAnchorLayout::removeAt(int index)
         d->removeAnchors(item);
         item->setParentLayoutItem(0);
     }
+    invalidate();
 }
 
 int QGraphicsAnchorLayout::count() const
