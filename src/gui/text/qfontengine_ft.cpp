@@ -54,8 +54,6 @@
 #include <private/qpdf_p.h>
 #include <private/qharfbuzz_p.h>
 
-#include <private/qpdf_p.h>
-
 #include "qfontengine_ft_p.h"
 #include <ft2build.h>
 #include FT_FREETYPE_H
