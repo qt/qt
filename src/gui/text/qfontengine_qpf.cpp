@@ -320,7 +320,7 @@ QFontEngineQPF::QFontEngineQPF(const QFontDef &def, int fileDescriptor, QFontEng
                    + QString::number(fontDef.pixelSize)
                    + QLatin1Char('_') + QString::number(fontDef.weight)
                    + (fontDef.style != QFont::StyleNormal ?
-                      QLatin1String("_italic") : QLatin1String())
+                      QLatin1String("_italic") : QLatin1String(""))
                    + QLatin1String(".qsf");
         fileName.replace(QLatin1Char(' '), QLatin1Char('_'));
         fileName.prepend(qws_fontCacheDir());
