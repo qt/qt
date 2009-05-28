@@ -388,7 +388,6 @@ public:
 
     static int focusRectPenWidth();
 
-#if defined(QT_S60STYLE_LAYOUTDATA_SIMULATED)
     static const layoutHeader m_layoutHeaders[];
     static const short data[][MAX_PIXELMETRICS];
 
@@ -398,7 +397,6 @@ public:
     static short const *m_pmPointer;
     // number of layouts supported by the style
     static const int m_numberOfLayouts;
-#endif // defined(QT_S60STYLE_LAYOUTDATA_SIMULATED)
 
     mutable QHash<QPair<QS60StyleEnums::FontCategories , int>, QFont> m_mappedFontsCache;
     mutable QHash<QS60StylePrivate::SkinFrameElements, QColor> m_colorCache;
