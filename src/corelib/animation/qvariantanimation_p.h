@@ -102,7 +102,8 @@ public:
 
     void updateInterpolator();
 
-    static QVariantAnimation::Interpolator getInterpolator(int interpolationType);
+    //XXX this is needed by dui
+    static Q_CORE_EXPORT QVariantAnimation::Interpolator getInterpolator(int interpolationType);
 };
 
 //this should make the interpolation faster
