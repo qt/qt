@@ -425,7 +425,7 @@ static inline void setCoords(GLfloat *coords, const QGLRect &rect)
     coords[7] = rect.bottom;
 }
 
-void QGL2PaintEngineExPrivate::drawTexture(const QGLRect& dest, const QGLRect& src, const QSize &textureSize)
+void QGL2PaintEngineExPrivate::drawTexture(const QGLRect& dest, const QGLRect& src, const QSize &textureSize, bool opaque)
 {
     transferMode(ImageDrawingMode);
 
@@ -434,7 +434,7 @@ void QGL2PaintEngineExPrivate::drawTexture(const QGLRect& dest, const QGLRect& s
     // Setup for texture drawing
     shaderManager->setSrcPixelType(QGLEngineShaderManager::ImageSrc);
     shaderManager->setTextureCoordsEnabled(true);
-    prepareForDraw(false); // ###
+    prepareForDraw(opaque);
 
     shaderManager->currentProgram()->setUniformValue("imageTexture", QT_IMAGE_TEXTURE_UNIT);
 
@@ -634,11 +634,12 @@ void QGL2PaintEngineExPrivate::prepareForDraw(bool srcPixelsAreOpaque)
         updateMatrix();
 
     const bool stateHasOpacity = q->state()->opacity < 0.99f;
-    if ( (!srcPixelsAreOpaque || stateHasOpacity) &&
-          q->state()->compositionMode() != QPainter::CompositionMode_Source)
-        glEnable(GL_BLEND);
-    else
+    if (q->state()->compositionMode() == QPainter::CompositionMode_Source
+        || (q->state()->compositionMode() == QPainter::CompositionMode_SourceOver
+            && srcPixelsAreOpaque && !stateHasOpacity))
         glDisable(GL_BLEND);
+    else
+        glEnable(GL_BLEND);
 
     bool useGlobalOpacityUniform = stateHasOpacity;
     if (stateHasOpacity && (mode != ImageDrawingMode)) {
@@ -822,12 +823,7 @@ void QGL2PaintEngineEx::drawPixmap(const QRectF& dest, const QPixmap & pixmap, c
     ctx->d_func()->bindTexture(pixmap, GL_TEXTURE_2D, GL_RGBA, true);
 
     //FIXME: we should use hasAlpha() instead, but that's SLOW at the moment
-    if ((state()->opacity < 0.99f) || pixmap.hasAlphaChannel())
-        glEnable(GL_BLEND);
-    else
-        glDisable(GL_BLEND);
-
-    d->drawTexture(dest, src, pixmap.size());
+    d->drawTexture(dest, src, pixmap.size(), !pixmap.hasAlphaChannel());
 }
 
 void QGL2PaintEngineEx::drawImage(const QRectF& dest, const QImage& image, const QRectF& src,
@@ -841,12 +837,7 @@ void QGL2PaintEngineEx::drawImage(const QRectF& dest, const QImage& image, const
     glActiveTexture(GL_TEXTURE0 + QT_IMAGE_TEXTURE_UNIT);
     ctx->d_func()->bindTexture(image, GL_TEXTURE_2D, GL_RGBA, true);
 
-    if ((state()->opacity < 0.99f) || image.hasAlphaChannel())
-        glEnable(GL_BLEND);
-    else
-        glDisable(GL_BLEND);
-
-    d->drawTexture(dest, src, image.size());
+    d->drawTexture(dest, src, image.size(), !image.hasAlphaChannel());
 }
 
 void QGL2PaintEngineEx::drawTextItem(const QPointF &p, const QTextItem &textItem)
@@ -1022,10 +1013,8 @@ bool QGL2PaintEngineEx::begin(QPaintDevice *pdev)
 
         source->bind(false);
 
-        glDisable(GL_BLEND);
-
         QRect rect(0, 0, source->width(), source->height());
-        d->drawTexture(QRectF(rect), QRectF(rect), rect.size());
+        d->drawTexture(QRectF(rect), QRectF(rect), rect.size(), true);
     }
 
     updateClipRegion(QRegion(), Qt::NoClip);
