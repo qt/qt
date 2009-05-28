@@ -5405,7 +5405,7 @@ bool QApplicationPrivate::translateRawTouchEvent(QWidget *window, QTouchEvent *r
         }
 
         QTouchEvent touchEvent(eventType,
-                               q->keyboardModifiers(),
+                               rawTouchEvent->modifiers(),
                                it.value().first,
                                it.value().second);
         updateTouchPointsForWidget(widget, &touchEvent);
