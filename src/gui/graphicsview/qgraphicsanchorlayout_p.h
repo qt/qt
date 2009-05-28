@@ -230,6 +230,7 @@ public:
 
     // Init methods
     void createLayoutEdges();
+    void deleteLayoutEdges();
     void createItemEdges(QGraphicsLayoutItem *item);
 
     // Anchor Manipulation methods

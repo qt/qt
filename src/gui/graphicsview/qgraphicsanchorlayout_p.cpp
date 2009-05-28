@@ -173,6 +173,16 @@ void QGraphicsAnchorLayoutPrivate::createLayoutEdges()
     graph[Vertical].setRootVertex(v);
 }
 
+void QGraphicsAnchorLayoutPrivate::deleteLayoutEdges()
+{
+    Q_Q(QGraphicsAnchorLayout);
+
+    removeAnchor(q, QGraphicsAnchorLayout::Left, q, QGraphicsAnchorLayout::HCenter);
+    removeAnchor(q, QGraphicsAnchorLayout::HCenter, q, QGraphicsAnchorLayout::Right);
+    removeAnchor(q, QGraphicsAnchorLayout::Top, q, QGraphicsAnchorLayout::VCenter);
+    removeAnchor(q, QGraphicsAnchorLayout::VCenter, q, QGraphicsAnchorLayout::Bottom);
+}
+
 void QGraphicsAnchorLayoutPrivate::createItemEdges(QGraphicsLayoutItem *item)
 {
     items.append(item);

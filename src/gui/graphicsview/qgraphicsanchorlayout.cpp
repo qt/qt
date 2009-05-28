@@ -60,6 +60,8 @@ QGraphicsAnchorLayout::~QGraphicsAnchorLayout()
                 delete item;
         }
     }
+
+    d->deleteLayoutEdges();
 }
 
 void QGraphicsAnchorLayout::anchor(QGraphicsLayoutItem *firstItem,
