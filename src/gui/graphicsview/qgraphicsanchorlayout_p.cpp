@@ -250,12 +250,13 @@ AnchorVertex *QGraphicsAnchorLayoutPrivate::addInternalVertex(QGraphicsLayoutIte
 {
     QPair<QGraphicsLayoutItem *, QGraphicsAnchorLayout::Edge> pair(item, edge);
     QPair<AnchorVertex *, int> v = m_vertexList.value(pair);
+
     if (!v.first) {
         Q_ASSERT(v.second == 0);
         v.first = new AnchorVertex(item, edge);
-        m_vertexList.insert(pair, v);
     }
     v.second++;
+    m_vertexList.insert(pair, v);
     return v.first;
 }
 
@@ -265,20 +266,26 @@ AnchorVertex *QGraphicsAnchorLayoutPrivate::addInternalVertex(QGraphicsLayoutIte
  * returns the AnchorVertex that was dereferenced, also when it was removed.
  * returns 0 if it did not exist.
  */
-AnchorVertex *QGraphicsAnchorLayoutPrivate::removeInternalVertex(QGraphicsLayoutItem *item,
-                                                                 QGraphicsAnchorLayout::Edge edge)
+void QGraphicsAnchorLayoutPrivate::removeInternalVertex(QGraphicsLayoutItem *item,
+                                                        QGraphicsAnchorLayout::Edge edge)
 {
     QPair<QGraphicsLayoutItem *, QGraphicsAnchorLayout::Edge> pair(item, edge);
     QPair<AnchorVertex *, int> v = m_vertexList.value(pair);
-    if (v.first) {
-        v.second--;
-        if (v.second == 0) {
-            m_vertexList.remove(pair);
-        }
-    } else {
+
+    if (!v.first) {
         qWarning("This item with this edge is not in the graph");
+        return;
     }
-    return v.first;
+
+    v.second--;
+    if (v.second == 0) {
+        // Remove reference and delete vertex
+        m_vertexList.remove(pair);
+        delete v.first;
+    } else {
+        // Update reference count
+        m_vertexList.insert(pair, v);
+    }
 }
 
 void QGraphicsAnchorLayoutPrivate::removeAnchor(QGraphicsLayoutItem *firstItem,
@@ -286,14 +293,18 @@ void QGraphicsAnchorLayoutPrivate::removeAnchor(QGraphicsLayoutItem *firstItem,
                                                 QGraphicsLayoutItem *secondItem,
                                                 QGraphicsAnchorLayout::Edge secondEdge)
 {
-    // Is there a representation for the Vertex (firstItem, firstEdge)
-    // in our internal structure?
-    AnchorVertex *v1 = removeInternalVertex(firstItem, firstEdge);
-    AnchorVertex *v2 = removeInternalVertex(secondItem, secondEdge);
+    // Look for both vertices
+    AnchorVertex *v1 = internalVertex(firstItem, firstEdge);
+    AnchorVertex *v2 = internalVertex(secondItem, secondEdge);
 
+    // Remove edge from graph
     if (v1 && v2) {
         graph[edgeOrientation(firstEdge)].removeEdge(v1, v2);
     }
+
+    // Decrease vertices reference count (may trigger a deletion)
+    removeInternalVertex(firstItem, firstEdge);
+    removeInternalVertex(secondItem, secondEdge);
 }
 
 void QGraphicsAnchorLayoutPrivate::removeAnchors(QGraphicsLayoutItem *item)
@@ -307,22 +318,15 @@ void QGraphicsAnchorLayoutPrivate::removeAnchors(QGraphicsLayoutItem *item)
         // Remove all vertex for all edges
         QGraphicsAnchorLayout::Edge e = static_cast<QGraphicsAnchorLayout::Edge>(edge);
 
-        if ((v1 = removeInternalVertex(item, e))) {
+        if ((v1 = internalVertex(item, e))) {
             // Remove all edges
             allVertex = graph[edgeOrientation(e)].adjacentVertices(v1);
 
-            QList<QSimplexConstraint *> constraints = itemCenterConstraints[edgeOrientation(e)];
             foreach (v2, allVertex) {
-                AnchorData *data = graph[edgeOrientation(e)].takeEdge(v1, v2);
-                Q_ASSERT(data);
-                for (int i = 0; i < constraints.count(); ++i) {
-                    QSimplexConstraint *c = constraints.at(i);
-                    c->variables.remove(data);
-                }
-                delete data;
+                graph[edgeOrientation(e)].removeEdge(v1, v2);
+                removeInternalVertex(item, e);
+                removeInternalVertex(v2->m_item, v2->m_edge);
             }
-            qDebug("removing anchor: %s", qPrintable(v1->toString()));
-            delete v1;
         }
     }
 }

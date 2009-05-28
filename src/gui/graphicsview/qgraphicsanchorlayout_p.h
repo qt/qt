@@ -276,7 +276,7 @@ public:
     }
 
     AnchorVertex *addInternalVertex(QGraphicsLayoutItem *item, QGraphicsAnchorLayout::Edge edge);
-    AnchorVertex *removeInternalVertex(QGraphicsLayoutItem *item, QGraphicsAnchorLayout::Edge edge);
+    void removeInternalVertex(QGraphicsLayoutItem *item, QGraphicsAnchorLayout::Edge edge);
 
     // Geometry interpolation methods
     void setItemsGeometries();
