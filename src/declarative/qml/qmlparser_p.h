@@ -55,6 +55,8 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Declarative)
 
+namespace JavaScript { namespace AST { class Node; } }
+
 /*
     XXX
 
@@ -175,7 +177,8 @@ namespace QmlParser
         Variant(const Variant &);
         Variant(bool);
         Variant(double, const QString &asWritten=QString());
-        Variant(const QString &, Type = String);
+        Variant(const QString &);
+        Variant(const QString &, JavaScript::AST::Node *);
         Variant &operator=(const Variant &);
 
         Type type() const;
@@ -189,12 +192,14 @@ namespace QmlParser
         QString asString() const;
         double asNumber() const;
         QString asScript() const;
+        JavaScript::AST::Node *asAST() const;
 
     private:
         Type t;
         union {
             bool b;
             double d;
+            JavaScript::AST::Node *n;
         };
         QString s;
     };
@@ -246,6 +251,9 @@ namespace QmlParser
         Property();
         Property(const QByteArray &n);
         virtual ~Property();
+
+        // The Object to which this property is attached
+        Object *parent;
 
         Object *getValue();
         void addValue(Value *v);

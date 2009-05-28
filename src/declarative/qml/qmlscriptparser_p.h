@@ -54,6 +54,7 @@ QT_MODULE(Declarative)
 
 class QByteArray;
 
+class QmlScriptParserJsASTData;
 class QmlScriptParser
 {
 public:
@@ -98,6 +99,7 @@ public:
     QList<Import> _imports;
     QStringList _typeNames;
     QString _scriptFile;
+    QmlScriptParserJsASTData *data;
 };
 
 QT_END_NAMESPACE
