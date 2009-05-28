@@ -823,13 +823,6 @@ void QGraphicsScenePrivate::_q_removeItemLater(QGraphicsItem *item)
             ++iterator;
     }
 
-    // Remove from scene transform cache
-    int transformIndex = item->d_func()->sceneTransformIndex;
-    if (transformIndex != -1) {
-        validTransforms.setBit(transformIndex, 0);
-        freeSceneTransformSlots.append(transformIndex);
-    }
-
     // Reset the mouse grabber
     if (mouseGrabberItems.contains(item))
         ungrabMouse(item, /* item is dying */ true);
@@ -3340,14 +3333,6 @@ void QGraphicsScene::removeItem(QGraphicsItem *item)
         d->unindexedItems.removeAll(item);
     }
 
-    // Remove from scene transform cache
-    int transformIndex = item->d_func()->sceneTransformIndex;
-    if (transformIndex != -1) {
-        d->validTransforms.setBit(transformIndex, 0);
-        d->freeSceneTransformSlots.append(transformIndex);
-        item->d_func()->sceneTransformIndex = -1;
-    }
-
     if (item == d->focusItem)
         d->focusItem = 0;
     if (item == d->lastFocusItem)
@@ -3817,6 +3802,8 @@ bool QGraphicsScene::event(QEvent *event)
         // items from inside event handlers, this list can quickly end up
         // having stale pointers in it. We need to clear it before dispatching
         // events that use it.
+        // ### this should only be cleared if we received a new mouse move event,
+        // which relies on us fixing the replay mechanism in QGraphicsView.
         d->cachedItemsUnderMouse.clear();
     default:
         break;

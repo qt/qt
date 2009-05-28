@@ -155,7 +155,6 @@ public:
         inDirtyList(0),
         paintedViewBoundingRectsNeedRepaint(0),
         globalStackingOrder(-1),
-        sceneTransformIndex(-1),
         q_ptr(0)
     {
     }
@@ -182,7 +181,6 @@ public:
     void updateEffectiveOpacity();
     void resolveEffectiveOpacity(qreal effectiveParentOpacity);
     void resolveDepth(int parentDepth);
-    void invalidateSceneTransformCache();
     void addChild(QGraphicsItem *child);
     void removeChild(QGraphicsItem *child);
     void setParentItemHelper(QGraphicsItem *parent, bool deleting);
@@ -365,7 +363,6 @@ public:
 
     // Optional stacking order
     int globalStackingOrder;
-    int sceneTransformIndex;
 
     struct DecomposedTransform;
     DecomposedTransform *decomposedTransform() const

@@ -289,10 +289,6 @@ public:
     void setPalette_helper(const QPalette &palette);
     void resolvePalette();
     void updatePalette(const QPalette &palette);
-
-    mutable QVector<QTransform> sceneTransformCache;
-    mutable QBitArray validTransforms;
-    mutable QVector<int> freeSceneTransformSlots;
 };
 
 QT_END_NAMESPACE

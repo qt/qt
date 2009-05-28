@@ -918,9 +918,6 @@ void QGraphicsItemPrivate::setParentItemHelper(QGraphicsItem *newParent, bool de
     // Resolve depth.
     resolveDepth(parent ? parent->d_ptr->depth : -1);
 
-    // Invalidate transform cache.
-    invalidateSceneTransformCache();
-
     // Deliver post-change notification
     q->itemChange(QGraphicsItem::ItemParentHasChanged, newParentVariant);
 }
@@ -2526,7 +2523,6 @@ void QGraphicsItemPrivate::setPosHelper(const QPointF &pos)
     if (scene)
         q->prepareGeometryChange();
     this->pos = newPos;
-    invalidateSceneTransformCache();
 
     // Send post-notification.
     q->itemChange(QGraphicsItem::ItemPositionHasChanged, newPosVariant);
@@ -2667,44 +2663,15 @@ QMatrix QGraphicsItem::sceneMatrix() const
 */
 QTransform QGraphicsItem::sceneTransform() const
 {
-    // Check if there's any entry in the transform cache.
-    QGraphicsScenePrivate *sd = d_ptr->scene ? d_ptr->scene->d_func() : 0;
-    int index = d_ptr->sceneTransformIndex;
-    if (sd && index != -1 && sd->validTransforms.testBit(index))
-        return sd->sceneTransformCache[index];
-
-    // Calculate local transform.
     QTransform m;
-    if (d_ptr->hasTransform) {
-        m = transform();
-        if (!d_ptr->pos.isNull())
-            m *= QTransform::fromTranslate(d_ptr->pos.x(), d_ptr->pos.y());
-    } else if (!d_ptr->pos.isNull()) {
-        m = QTransform::fromTranslate(d_ptr->pos.x(), d_ptr->pos.y());
-    }
-
-    // Combine with parent and add to cache.
-    if (d_ptr->parent) {
-        m *= d_ptr->parent->sceneTransform();
-        // Don't cache toplevels
-        if (sd) {
-            if (index == -1) {
-                if (!sd->freeSceneTransformSlots.isEmpty()) {
-                    index = sd->freeSceneTransformSlots.last();
-                    sd->freeSceneTransformSlots.pop_back();
-                } else {
-                    index = sd->sceneTransformCache.size();
-                }
-                d_ptr->sceneTransformIndex = index;
-                if (index >= sd->validTransforms.size()) {
-                    sd->validTransforms.resize(index + 1);
-                    sd->sceneTransformCache.resize(index + 1);
-                }
-            }
-            sd->validTransforms.setBit(index, 1);
-            sd->sceneTransformCache[index] = m;
-        }
-    }
+    const QGraphicsItem *p = this;
+    do {
+        if (p->d_ptr->hasTransform)
+            m *= p->transform();
+        const QPointF &pos = p->d_ptr->pos;
+        if (!pos.isNull())
+            m *= QTransform::fromTranslate(pos.x(), pos.y());
+    } while ((p = p->d_ptr->parent));
     return m;
 }
 
@@ -2933,7 +2900,6 @@ void QGraphicsItem::setMatrix(const QMatrix &matrix, bool combine)
         d_ptr->transform = new QTransform(newTransform);
     else
         *d_ptr->transform = newTransform;
-    d_ptr->invalidateSceneTransformCache();
 
     // Send post-notification.
     // NB! We have to change the value from QMatrix to QTransform.
@@ -2982,7 +2948,6 @@ void QGraphicsItem::setTransform(const QTransform &matrix, bool combine)
         d_ptr->transform = new QTransform(newTransform);
     else
         *d_ptr->transform = newTransform;
-    d_ptr->invalidateSceneTransformCache();
 
     // Send post-notification.
     itemChange(ItemTransformHasChanged, newTransformVariant);
@@ -3907,19 +3872,6 @@ void QGraphicsItemPrivate::resolveDepth(int parentDepth)
     depth = parentDepth + 1;
     for (int i = 0; i < children.size(); ++i)
         children.at(i)->d_ptr->resolveDepth(depth);
-}
-
-/*!
-    \internal
-*/
-void QGraphicsItemPrivate::invalidateSceneTransformCache()
-{
-    if (!scene || (parent && sceneTransformIndex == -1))
-        return;
-    if (sceneTransformIndex != -1)
-        scene->d_func()->validTransforms.setBit(sceneTransformIndex, 0);
-    for (int i = 0; i < children.size(); ++i)
-        children.at(i)->d_ptr->invalidateSceneTransformCache();
 }
 
 /*!
