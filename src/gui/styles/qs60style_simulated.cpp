@@ -42,19 +42,6 @@ QS60StylePrivate::QS60StylePrivate()
     setCurrentLayout(0);
 }
 
-QS60StylePrivate::~QS60StylePrivate()
-{
-}
-
-short QS60StylePrivate::pixelMetric(int metric)
-{
-    Q_ASSERT(metric < MAX_PIXELMETRICS);
-    const short returnValue = m_pmPointer[metric];
-    if (returnValue==-909)
-        return -1;
-    return returnValue;
-}
-
 QColor QS60StylePrivate::s60Color(QS60StyleEnums::ColorLists list,
     int index, const QStyleOption *option)
 {
@@ -193,23 +180,14 @@ QVariant QS60StylePrivate::styleProperty_specific(const char *name) const
 
 QPixmap QS60StylePrivate::backgroundTexture()
 {
-    static QPixmap result;
-    // Poor mans caching. + Making sure that there is always only one background image in memory at a time
-
-/*
-    TODO: 1) Hold the background QPixmap as pointer in a static class member.
-             Also add a deleteBackground() function and call that in ~QS60StylePrivate()
-          2) Don't cache the background at all as soon as we have native pixmap support
-*/
-
-    if (!m_backgroundValid) {
-        result = QPixmap();
-        const QSize size = QApplication::activeWindow()?QApplication::activeWindow()->size():QSize(100, 100);
-        result = part(QS60StyleEnums::SP_QsnBgScreen, size);
-        m_backgroundValid = true;
+    if (!m_background) {
+        const QSize size = QApplication::desktop()->screen()->size();
+        QPixmap background = part(QS60StyleEnums::SP_QsnBgScreen, size);
+        m_background = new QPixmap(background);
     }
-    return result;
+    return *m_background;
 }
+
 
 bool QS60StylePrivate::isTouchSupported()
 {
@@ -224,7 +202,6 @@ bool QS60StylePrivate::isToolBarBackground()
 {
     return true;
 }
-
 
 QFont QS60StylePrivate::s60Font_specific(QS60StyleEnums::FontCategories fontCategory, int pointSize)
 {
@@ -290,6 +267,13 @@ void QS60Style::setS60Theme(const QHash<QString, QPicture> &parts,
     QS60StyleModeSpecifics::m_partPictures = parts;
     QS60StyleModeSpecifics::m_colors = colors;
     d->clearCaches(QS60StylePrivate::CC_ThemeChange);
+    d->setBackgroundTexture(qApp);
+}
+
+QPoint qt_s60_fill_background_offset(const QWidget *targetWidget)
+{
+	Q_UNUSED(targetWidget)
+    return QPoint();
 }
 
 QT_END_NAMESPACE
