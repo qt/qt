@@ -737,7 +737,7 @@ QString Q3FileDialog::winGetExistingDirectory(const QString& initialDirectory,
         QDir::setCurrent(currentDir);
 
     if (!result.isEmpty())
-        result.replace(QLatin1String("\\"), QLatin1String("/"));
+        result.replace(QLatin1Char('\\'), QLatin1Char('/'));
     return result;
 #else
     return QString();

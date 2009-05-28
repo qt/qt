@@ -460,7 +460,7 @@ void QPrintPreviewDialogPrivate::updatePageNumLabel()
 
     int numPages = preview->numPages();
     int maxChars = QString::number(numPages).length();
-    pageNumLabel->setText(QString(QLatin1String("/ %1")).arg(numPages));
+    pageNumLabel->setText(QString::fromLatin1("/ %1").arg(numPages));
     int cyphersWidth = q->fontMetrics().width(QString().fill(QLatin1Char('8'), maxChars));
     int maxWidth = pageNumEdit->minimumSizeHint().width() + cyphersWidth;
     pageNumEdit->setMinimumWidth(maxWidth);
@@ -611,7 +611,7 @@ void QPrintPreviewDialogPrivate::_q_zoomFactorChanged()
     factor = qMax(qreal(1.0), qMin(qreal(1000.0), factor));
     if (ok) {
         preview->setZoomFactor(factor/100.0);
-        zoomFactor->setEditText(QString(QLatin1String("%1%")).arg(factor));
+        zoomFactor->setEditText(QString::fromLatin1("%1%").arg(factor));
         setFitting(false);
     }
 }

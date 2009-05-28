@@ -840,7 +840,7 @@ QString decodeMSG(const MSG& msg)
                                              FLGSTR(ISC_SHOWUICANDIDATEWINDOW << 2),
                                              FLGSTR(ISC_SHOWUICANDIDATEWINDOW << 3),
                                              FLAG_STRING());
-                parameters.sprintf("Input context(%s) Show flags(%s)", (fSet?"Active":"Inactive"), showFlgs.toLatin1().data());
+                parameters.sprintf("Input context(%s) Show flags(%s)", (fSet? "Active" : "Inactive"), showFlgs.toLatin1().data());
             }
             break;
 #endif

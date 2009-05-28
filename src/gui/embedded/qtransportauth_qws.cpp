@@ -834,12 +834,12 @@ QString RequestAnalyzer::analyze( QByteArray *msgQueue )
     if ( command_type == QWSCommand::QCopSend )
     {
         QWSQCopSendCommand *sendCommand = static_cast<QWSQCopSendCommand*>(command);
-        request += QString( QLatin1String("/QCop/%1/%2") ).arg( sendCommand->channel ).arg( sendCommand->message );
+        request += QString::fromLatin1("/QCop/%1/%2").arg( sendCommand->channel ).arg( sendCommand->message );
     }
     if ( command_type == QWSCommand::QCopRegisterChannel )
     {
         QWSQCopRegisterChannelCommand *registerCommand = static_cast<QWSQCopRegisterChannelCommand*>(command);
-        request += QString( QLatin1String("/QCop/RegisterChannel/%1") ).arg( registerCommand->channel );
+        request += QString::fromLatin1("/QCop/RegisterChannel/%1").arg( registerCommand->channel );
     }
 #endif
     dataSize = QWS_PROTOCOL_ITEM_SIZE( *command );

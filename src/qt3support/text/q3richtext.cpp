@@ -1678,7 +1678,7 @@ void Q3TextDocument::setRichTextInternal(const QString &text, Q3TextCursor* curs
 
                         if (curtag.style->displayMode() == Q3StyleSheetItem::DisplayListItem) {
                             // we are in a li and a new block comes along
-                            if (nstyle->name() == QString(QLatin1String("ul")) || nstyle->name() == QLatin1String("ol"))
+                            if (nstyle->name() == QLatin1String("ul") || nstyle->name() == QLatin1String("ol"))
                                 hasNewPar = false; // we want an empty li (like most browsers)
                             if (!hasNewPar) {
                                 /* do not add new blocks inside
@@ -1857,7 +1857,7 @@ void Q3TextDocument::setRichTextInternal(const QString &text, Q3TextCursor* curs
                     curtag.format = curtag.format.makeTextFormat(nstyle, attr, scaleFontsFactor);
                     if (nstyle->isAnchor()) {
                         if (!anchorName.isEmpty())
-                            anchorName += QLatin1String("#") + attr[QLatin1String("name")];
+                            anchorName += QLatin1Char('#') + attr[QLatin1String("name")];
                         else
                             anchorName = attr[QLatin1String("name")];
                         curtag.anchorHref = attr[QLatin1String("href")];
@@ -2436,7 +2436,7 @@ QString Q3TextDocument::richText() const
                 list_type = QLatin1String(" type=") + list_style_to_string(p->listStyle());
             for (int i = pastListDepth; i < listDepth; i++) {
                 s += list_is_ordered(p->listStyle()) ? QLatin1String("<ol") : QLatin1String("<ul");
-                s += list_type + QLatin1String(">");
+                s += list_type + QLatin1Char('>');
             }
         } else {
             s += QLatin1Char('\n');
@@ -2463,7 +2463,7 @@ QString Q3TextDocument::richText() const
             s += margin_to_string(item_li, p->utm, p->ubm, p->ulm, p->urm, p->uflm);
             s += list_value_to_string(p->listValue());
             s += direction_to_string(p->direction());
-            s += QLatin1String(">");
+            s += QLatin1Char('>');
             s += ps;
             s += QLatin1String("</li>");
         } else if (p->listDepth()) {
@@ -2471,7 +2471,7 @@ QString Q3TextDocument::richText() const
             s += align_to_string(p->alignment());
             s += margin_to_string(item_div, p->utm, p->ubm, p->ulm, p->urm, p->uflm);
             s += direction_to_string(p->direction());
-            s += QLatin1String(">");
+            s += QLatin1Char('>');
             s += ps;
             s += QLatin1String("</div>");
         } else {
@@ -2480,7 +2480,7 @@ QString Q3TextDocument::richText() const
             s += align_to_string(p->alignment());
             s += margin_to_string(item_p, p->utm, p->ubm, p->ulm, p->urm, p->uflm);
             s += direction_to_string(p->direction());
-            s += QLatin1String(">");
+            s += QLatin1Char('>');
             s += ps;
             s += QLatin1String("</p>");
         }
@@ -6667,7 +6667,7 @@ Q3TextImage::Q3TextImage(Q3TextDocument *p, const QMap<QString, QString> &attr, 
         imageName = attr[QLatin1String("source")];
 
     if (!imageName.isEmpty()) {
-        imgId = QString(QLatin1String("%1,%2,%3,%4")).arg(imageName).arg(width).arg(height).arg((ulong)&factory);
+        imgId = QString::fromLatin1("%1,%2,%3,%4").arg(imageName).arg(width).arg(height).arg((ulong)&factory);
         if (!pixmap_map)
             pixmap_map = new QMap<QString, QPixmapInt>;
         if (pixmap_map->contains(imgId)) {
@@ -6761,13 +6761,13 @@ QString Q3TextImage::richText() const
     s += QLatin1String("<img ");
     QMap<QString, QString>::ConstIterator it = attributes.begin();
     for (; it != attributes.end(); ++it) {
-        s += it.key() + QLatin1String("=");
+        s += it.key() + QLatin1Char('=');
         if ((*it).contains(QLatin1Char(' ')))
-            s += QLatin1String("\"") + *it + QLatin1String("\" ");
+            s += QLatin1Char('\"') + *it + QLatin1String("\" ");
         else
-            s += *it + QLatin1String(" ");
+            s += *it + QLatin1Char(' ');
     }
-    s += QLatin1String(">");
+    s += QLatin1Char('>');
     return s;
 }
 
@@ -7722,7 +7722,7 @@ QString Q3TextTable::richText() const
     s = QLatin1String("<table ");
     QMap<QString, QString>::ConstIterator it = attributes.begin();
     for (; it != attributes.end(); ++it)
-        s += it.key() + QLatin1String("=") + *it + QLatin1String(" ");
+        s += it.key() + QLatin1Char('=') + *it + QLatin1Char(' ');
     s += QLatin1String(">\n");
 
     int lastRow = -1;
@@ -7739,8 +7739,8 @@ QString Q3TextTable::richText() const
         s += QLatin1String("<td");
         it = cell->attributes.constBegin();
         for (; it != cell->attributes.constEnd(); ++it)
-            s += QLatin1String(" ") + it.key() + QLatin1String("=") + *it;
-        s += QLatin1String(">");
+            s += QLatin1Char(' ') + it.key() + QLatin1Char('=') + *it;
+        s += QLatin1Char('>');
         s += cell->richText()->richText();
         s += QLatin1String("</td>");
     }

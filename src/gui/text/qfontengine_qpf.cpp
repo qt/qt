@@ -308,7 +308,7 @@ QFontEngineQPF::QFontEngineQPF(const QFontDef &def, int fileDescriptor, QFontEng
     readOnly = true;
 
 #if defined(DEBUG_FONTENGINE)
-    qDebug() << "QFontEngineQPF::QFontEngineQPF( fd =" << fd << ", renderingFontEngine =" << renderingFontEngine << ")";
+    qDebug() << "QFontEngineQPF::QFontEngineQPF( fd =" << fd << ", renderingFontEngine =" << renderingFontEngine << ')';
 #endif
 
 #ifndef QT_FONTS_ARE_RESOURCES
@@ -316,11 +316,11 @@ QFontEngineQPF::QFontEngineQPF(const QFontDef &def, int fileDescriptor, QFontEng
         if (!renderingFontEngine)
             return;
 
-        fileName = fontDef.family.toLower() + QLatin1String("_")
+        fileName = fontDef.family.toLower() + QLatin1Char('_')
                    + QString::number(fontDef.pixelSize)
-                   + QLatin1String("_") + QString::number(fontDef.weight)
+                   + QLatin1Char('_') + QString::number(fontDef.weight)
                    + (fontDef.style != QFont::StyleNormal ?
-                      QLatin1String("_italic") : QLatin1String(""))
+                      QLatin1String("_italic") : QLatin1String())
                    + QLatin1String(".qsf");
         fileName.replace(QLatin1Char(' '), QLatin1Char('_'));
         fileName.prepend(qws_fontCacheDir());
@@ -550,7 +550,7 @@ bool QFontEngineQPF::stringToCMap(const QChar *str, int len, QGlyphLayout *glyph
 #if 0 && defined(DEBUG_FONTENGINE)
             QChar c(uc);
             if (!findGlyph(glyphs[glyph_pos].glyph) && !seenGlyphs.contains(c))
-                qDebug() << "glyph for character" << c << "/" << hex << uc << "is" << dec << glyphs[glyph_pos].glyph;
+                qDebug() << "glyph for character" << c << '/' << hex << uc << "is" << dec << glyphs[glyph_pos].glyph;
 
             seenGlyphs.insert(c);
 #endif

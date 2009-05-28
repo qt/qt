@@ -573,7 +573,7 @@ QString QSqlRelationalTableModel::selectStatement() const
             }
 
             // this needs fixing!! the below if is borken.
-            tables.append(relation.tableName().append(QLatin1String(" ")).append(relTableAlias));
+            tables.append(relation.tableName().append(QLatin1Char(' ')).append(relTableAlias));
             if(!where.isEmpty())
                 where.append(QLatin1String(" AND "));
             where.append(d->relationField(tableName(), d->db.driver()->escapeIdentifier(rec.fieldName(i), QSqlDriver::FieldName)));

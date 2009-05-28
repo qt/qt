@@ -1468,7 +1468,7 @@ QString QMYSQLDriver::formatValue(const QSqlField &field, bool trimStrings) cons
 QString QMYSQLDriver::escapeIdentifier(const QString &identifier, IdentifierType) const
 {
     QString res = identifier;
-    if(!identifier.isEmpty() && identifier.left(1) != QString(QLatin1Char('`')) && identifier.right(1) != QString(QLatin1Char('`')) ) {
+    if(!identifier.isEmpty() && !identifier.startsWith(QLatin1Char('`')) && !identifier.endsWith(QLatin1Char('`')) ) {
         res.prepend(QLatin1Char('`')).append(QLatin1Char('`'));
         res.replace(QLatin1Char('.'), QLatin1String("`.`"));
     }
@@ -1478,12 +1478,9 @@ QString QMYSQLDriver::escapeIdentifier(const QString &identifier, IdentifierType
 bool QMYSQLDriver::isIdentifierEscapedImplementation(const QString &identifier, IdentifierType type) const
 {
     Q_UNUSED(type);
-    bool isLeftDelimited = (identifier.left(1) == QString(QLatin1Char('`')));
-    bool isRightDelimited = (identifier.right(1) == QString(QLatin1Char('`')));
-    if( identifier.size() > 2 && isLeftDelimited && isRightDelimited )
-        return true;
-    else
-        return false;
+    return identifier.size() > 2
+        && identifier.startsWith(QLatin1Char('`')) //left delimited
+        && identifier.endsWith(QLatin1Char('`')); //right delimited
 }
 
 QT_END_NAMESPACE

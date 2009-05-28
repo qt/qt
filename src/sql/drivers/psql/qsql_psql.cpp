@@ -541,7 +541,7 @@ bool QPSQLResult::prepare(const QString &query)
         qDeallocatePreparedStmt(d);
 
     const QString stmtId = qMakePreparedStmtId();
-    const QString stmt = QString(QLatin1String("PREPARE %1 AS ")).arg(stmtId).append(qReplacePlaceholderMarkers(query));
+    const QString stmt = QString::fromLatin1("PREPARE %1 AS ").arg(stmtId).append(qReplacePlaceholderMarkers(query));
 
     PGresult *result = PQexec(d->driver->connection,
                               d->driver->isUtf8 ? stmt.toUtf8().constData()
@@ -570,9 +570,9 @@ bool QPSQLResult::exec()
     QString stmt;
     const QString params = qCreateParamString(boundValues(), d->q->driver());
     if (params.isEmpty())
-        stmt = QString(QLatin1String("EXECUTE %1")).arg(d->preparedStmtId);
+        stmt = QString::fromLatin1("EXECUTE %1").arg(d->preparedStmtId);
     else
-        stmt = QString(QLatin1String("EXECUTE %1 (%2)")).arg(d->preparedStmtId).arg(params);
+        stmt = QString::fromLatin1("EXECUTE %1 (%2)").arg(d->preparedStmtId).arg(params);
 
     d->result = PQexec(d->driver->connection,
                        d->driver->isUtf8 ? stmt.toUtf8().constData()
@@ -1102,12 +1102,12 @@ QString QPSQLDriver::formatValue(const QSqlField &field, bool trimStrings) const
                 QTime tm = field.value().toDateTime().time();
                 // msecs need to be right aligned otherwise psql
                 // interpretes them wrong
-                r = QLatin1String("'") + QString::number(dt.year()) + QLatin1String("-")
-                          + QString::number(dt.month()) + QLatin1String("-")
-                          + QString::number(dt.day()) + QLatin1String(" ")
-                          + tm.toString() + QLatin1String(".")
+                r = QLatin1Char('\'') + QString::number(dt.year()) + QLatin1Char('-')
+                          + QString::number(dt.month()) + QLatin1Char('-')
+                          + QString::number(dt.day()) + QLatin1Char(' ')
+                          + tm.toString() + QLatin1Char('.')
                           + QString::number(tm.msec()).rightJustified(3, QLatin1Char('0'))
-                          + QLatin1String("'");
+                          + QLatin1Char('\'');
             } else {
                 r = QLatin1String("NULL");
             }
@@ -1162,7 +1162,7 @@ QString QPSQLDriver::formatValue(const QSqlField &field, bool trimStrings) const
 QString QPSQLDriver::escapeIdentifier(const QString &identifier, IdentifierType) const
 {
     QString res = identifier;
-    if(!identifier.isEmpty() && identifier.left(1) != QString(QLatin1Char('"')) && identifier.right(1) != QString(QLatin1Char('"')) ) {
+    if(!identifier.isEmpty() && !identifier.startsWith(QLatin1Char('"')) && !identifier.endsWith(QLatin1Char('"')) ) {
         res.replace(QLatin1Char('"'), QLatin1String("\"\""));
         res.prepend(QLatin1Char('"')).append(QLatin1Char('"'));
         res.replace(QLatin1Char('.'), QLatin1String("\".\""));
@@ -1195,7 +1195,7 @@ bool QPSQLDriver::subscribeToNotificationImplementation(const QString &name)
     
     int socket = PQsocket(d->connection);
     if (socket) {
-        QString query = QString(QLatin1String("LISTEN %1")).arg(escapeIdentifier(name, QSqlDriver::TableName));
+        QString query = QLatin1String("LISTEN ") + escapeIdentifier(name, QSqlDriver::TableName);
         if (PQresultStatus(PQexec(d->connection, 
                                   d->isUtf8 ? query.toUtf8().constData() 
                                             : query.toLocal8Bit().constData())
@@ -1227,7 +1227,7 @@ bool QPSQLDriver::unsubscribeFromNotificationImplementation(const QString &name)
         return false;
     }
 
-    QString query = QString(QLatin1String("UNLISTEN %1")).arg(escapeIdentifier(name, QSqlDriver::TableName));
+    QString query = QLatin1String("UNLISTEN ") + escapeIdentifier(name, QSqlDriver::TableName);
     if (PQresultStatus(PQexec(d->connection, 
                               d->isUtf8 ? query.toUtf8().constData() 
                                         : query.toLocal8Bit().constData())

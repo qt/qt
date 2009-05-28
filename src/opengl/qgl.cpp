@@ -4365,7 +4365,7 @@ Q_OPENGL_EXPORT const QString qt_gl_library_name()
 {
     if (qt_gl_lib_name()->isNull()) {
 #if defined(Q_WS_X11) || defined(Q_WS_QWS)
-        return QString(QLatin1String("GL"));
+        return QLatin1String("GL");
 #else // Q_WS_MAC
         return QLatin1String("/System/Library/Frameworks/OpenGL.framework/Versions/A/Libraries/libGL.dylib");
 #endif

@@ -2040,8 +2040,8 @@ bool QOCIDriver::open(const QString & db,
     QString connectionString = db;
     if (!hostname.isEmpty())
         connectionString = 
-            QString(QLatin1String("(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(Host=%1)(Port=%2))"
-                "(CONNECT_DATA=(SID=%3)))")).arg(hostname).arg((port > -1 ? port : 1521)).arg(db);
+        QString::fromLatin1("(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(Host=%1)(Port=%2))"
+                "(CONNECT_DATA=(SID=%3)))").arg(hostname).arg((port > -1 ? port : 1521)).arg(db);
 
     r = OCIHandleAlloc(d->env, reinterpret_cast<void **>(&d->srvhp), OCI_HTYPE_SERVER, 0, 0);
     if (r == OCI_SUCCESS)
@@ -2219,7 +2219,7 @@ QStringList QOCIDriver::tables(QSql::TableType type) const
 
         while (t.next()) {
             if (t.value(0).toString().toUpper() != user.toUpper())
-                tl.append(t.value(0).toString() + QLatin1String(".") + t.value(1).toString());
+                tl.append(t.value(0).toString() + QLatin1Char('.') + t.value(1).toString());
             else
                 tl.append(t.value(1).toString());
         }
@@ -2235,7 +2235,7 @@ QStringList QOCIDriver::tables(QSql::TableType type) const
                 "and owner != 'WMSYS'"));
         while (t.next()) {
             if (t.value(0).toString().toUpper() != d->user.toUpper())
-                tl.append(t.value(0).toString() + QLatin1String(".") + t.value(1).toString());
+                tl.append(t.value(0).toString() + QLatin1Char('.') + t.value(1).toString());
             else
                 tl.append(t.value(1).toString());
         }
@@ -2297,7 +2297,7 @@ QSqlRecord QOCIDriver::record(const QString& tablename) const
     else
         owner = owner.toUpper();
 
-    tmpStmt += QLatin1String(" and owner='") + owner + QLatin1String("'");
+    tmpStmt += QLatin1String(" and owner='") + owner + QLatin1Char('\'');
     t.setForwardOnly(true);
     t.exec(tmpStmt);
     if (!t.next()) { // try and see if the tablename is a synonym
@@ -2352,7 +2352,7 @@ QSqlIndex QOCIDriver::primaryIndex(const QString& tablename) const
     else
         table = table.toUpper();
 
-    tmpStmt = stmt + QLatin1String(" and a.table_name='") + table + QLatin1String("'");
+    tmpStmt = stmt + QLatin1String(" and a.table_name='") + table + QLatin1Char('\'');
     if (owner.isEmpty()) {
         owner = d->user;
     }
@@ -2362,7 +2362,7 @@ QSqlIndex QOCIDriver::primaryIndex(const QString& tablename) const
     else
         owner = owner.toUpper();
 
-    tmpStmt += QLatin1String(" and a.owner='") + owner + QLatin1String("'");
+    tmpStmt += QLatin1String(" and a.owner='") + owner + QLatin1Char('\'');
     t.setForwardOnly(true);
     t.exec(tmpStmt);
 
@@ -2386,7 +2386,7 @@ QSqlIndex QOCIDriver::primaryIndex(const QString& tablename) const
             tt.exec(QLatin1String("select data_type from all_tab_columns where table_name='") +
                      t.value(2).toString() + QLatin1String("' and column_name='") +
                      t.value(0).toString() + QLatin1String("' and owner='") +
-                     owner +QLatin1String("'"));
+                     owner + QLatin1Char('\''));
             if (!tt.next()) {
                 return QSqlIndex();
             }

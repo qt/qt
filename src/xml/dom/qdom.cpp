@@ -4589,7 +4589,7 @@ void QDomElementPrivate::save(QTextStream& s, int depth, int indent) const
             qName = prefix + QLatin1Char(':') + name;
             nsDecl = QLatin1String(" xmlns:") + prefix;
         }
-        nsDecl += QLatin1String("=\"") + encodeText(namespaceURI, s) + QLatin1String("\"");
+        nsDecl += QLatin1String("=\"") + encodeText(namespaceURI, s) + QLatin1Char('\"');
     }
     s << '<' << qName << nsDecl;
 

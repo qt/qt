@@ -1770,10 +1770,10 @@ QString QFSFileEngine::fileName(FileName file) const
         if(slash == -1) {
             if(d->filePath.length() >= 2 && d->filePath.at(1) == QLatin1Char(':'))
                 return d->filePath.left(2);
-            return QString::fromLatin1(".");
+            return QLatin1Char('.');
         } else {
             if(!slash)
-                return QString::fromLatin1("/");
+                return QLatin1Char('/');
             if(slash == 2 && d->filePath.length() >= 2 && d->filePath.at(1) == QLatin1Char(':'))
                 slash++;
             return d->filePath.left(slash);
@@ -1831,7 +1831,7 @@ QString QFSFileEngine::fileName(FileName file) const
             if (slash == -1)
                 ret = QDir::currentPath();
             else if (slash == 0)
-                ret = QLatin1String("/");
+                ret = QLatin1Char('/');
             ret = ret.left(slash);
         }
         return ret;
@@ -1893,7 +1893,7 @@ QString QFSFileEngine::owner(FileOwner own) const
 #else
     Q_UNUSED(own);
 #endif
-    return QString(QLatin1String(""));
+    return QString();
 }
 
 bool QFSFileEngine::setPermissions(uint perms)

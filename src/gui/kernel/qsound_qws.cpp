@@ -279,7 +279,7 @@ QAuBucketQWS::QAuBucketQWS( QAuServerQWS *server, QSound *sound, QObject* parent
 
     sound->setObjectName( m_id.toString() );
 
-    m_channel = new QCopChannel(QString( QLatin1String("QPE/QSound/") ).append( m_id ), this );
+    m_channel = new QCopChannel(QLatin1String("QPE/QSound/") + m_id ), this );
     connect( m_channel, SIGNAL(received(QString,QByteArray)),
         this, SLOT(processMessage(QString,QByteArray)) );
 
