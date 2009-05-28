@@ -128,6 +128,7 @@
         <Test name="qgraphicslayout" location="tests/auto/qgraphicslayout/tst_qgraphicslayout" />
         <Test name="qgraphicslayoutitem" location="tests/auto/qgraphicslayoutitem/tst_qgraphicslayoutitem" />
         <Test name="qgraphicslinearlayout" location="tests/auto/qgraphicslinearlayout/tst_qgraphicslinearlayout" />
+        <Test name="qgraphicsanchorlayout" location="tests/auto/qgraphicsanchorlayout/tst_qgraphicsanchorlayout" />
         <Test name="qgraphicspixmapitem" location="tests/auto/qgraphicspixmapitem/tst_qgraphicspixmapitem" />
         <Test name="qgraphicspolygonitem" location="tests/auto/qgraphicspolygonitem/tst_qgraphicspolygonitem" />
         <Test name="qgraphicsproxywidget" location="tests/auto/qgraphicsproxywidget/tst_qgraphicsproxywidget" />
@@ -534,6 +535,7 @@
             <Test id="qgraphicslayout" />
             <Test id="qgraphicslayoutitem" />
             <Test id="qgraphicslinearlayout" />
+            <Test id="qgraphicsanchorlayout" />
             <Test id="qgraphicspixmapitem" />
             <Test id="qgraphicspolygonitem" />
             <Test id="qgraphicsproxywidget" />
