@@ -46,7 +46,7 @@
 #include <qmlpropertyvaluesource.h>
 #include <qmlcomponent.h>
 #include "private/qmetaobjectbuilder_p.h"
-#include <qmlbasicscript.h>
+#include "qmlbasicscript_p.h"
 #include <QColor>
 #include <QDebug>
 #include <QPointF>
@@ -1415,7 +1415,7 @@ bool QmlCompiler::compileBinding(const QmlParser::Variant &bind,
         COMPILE_EXCEPTION2(prop, "Cannot assign binding to read-only property");
 
     QmlBasicScript bs;
-    bs.compile(bind.asScript().toLatin1());
+    bs.compile(bind);
 
     int bref;
     if (bs.isValid()) {
@@ -1446,6 +1446,47 @@ bool QmlCompiler::compileBinding(const QmlParser::Variant &bind,
 
     return true;
 }
+
+#if 0
+
+#include <iostream> 
+#ifdef Q_CC_GNU 
+#include <cxxabi.h> 
+#endif 
+ 
+//////////////////////////////////////////////////////////////////////////////// 
+// AST Dump 
+//////////////////////////////////////////////////////////////////////////////// 
+class Dump: protected JavaScript::AST::Visitor 
+{ 
+    std::ostream &out; 
+    int depth; 
+ 
+public: 
+    Dump(std::ostream &out) 
+        : out(out), depth(-1) 
+     { } 
+ 
+    void operator()(JavaScript::AST::Node *node) 
+    { JavaScript::AST::Node::acceptChild(node, this); } 
+ 
+protected: 
+    virtual bool preVisit(JavaScript::AST::Node *node) 
+    { 
+        const char *name = typeid(*node).name(); 
+#ifdef Q_CC_GNU 
+        name = abi::__cxa_demangle(name, 0, 0, 0) + 17; 
+#endif 
+        std::cout << std::string(++depth, ' ') << name << std::endl; 
+        return true; 
+    } 
+ 
+    virtual void postVisit(JavaScript::AST::Node *) 
+    { 
+        --depth; 
+    } 
+}; 
+#endif
 
 // Update the init instruction with final data, and optimize some simple 
 // bindings

@@ -61,8 +61,6 @@ QT_BEGIN_NAMESPACE
 #define JAVASCRIPT_DECLARE_AST_NODE(name) \
   enum { K = Kind_##name };
 
-class NameId;
-
 namespace QSOperator // ### rename
 {
 
@@ -106,7 +104,9 @@ enum Op {
 
 } // namespace QSOperator
 
-namespace JavaScript { namespace AST {
+namespace JavaScript { 
+class NameId;
+namespace AST {
 
 template <typename _T1, typename _T2>
 _T1 cast(_T2 *ast)

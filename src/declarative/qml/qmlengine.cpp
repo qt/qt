@@ -820,15 +820,9 @@ QmlExpressionPrivate::QmlExpressionPrivate(QmlExpression *b, void *expr, QmlRefC
 {
 }
 
-QmlExpressionPrivate::QmlExpressionPrivate(QmlExpression *b, const QString &expr, bool ssecompile)
+QmlExpressionPrivate::QmlExpressionPrivate(QmlExpression *b, const QString &expr)
 : q(b), ctxt(0), expression(expr), sseData(0), proxy(0), me(0), trackChange(true), line(-1), id(0), log(0)
 {
-    if (ssecompile) {
-#ifdef Q_ENABLE_PERFORMANCE_LOG
-        QFxPerfTimer<QFxPerf::BindCompile> pt;
-#endif
-        sse.compile(expr.toLatin1());
-    }
 }
 
 QmlExpressionPrivate::~QmlExpressionPrivate()
@@ -863,19 +857,6 @@ QmlExpression::QmlExpression(QmlContext *ctxt, void *expr,
     d->me = me;
 }
 
-/*! \internal */
-QmlExpression::QmlExpression(QmlContext *ctxt, const QString &expr, 
-                             QObject *me, bool ssecompile)
-: d(new QmlExpressionPrivate(this, expr, ssecompile))
-{
-    d->ctxt = ctxt;
-    if(ctxt && ctxt->engine())
-        d->id = ctxt->engine()->d_func()->getUniqueId();
-    if(ctxt)
-        ctxt->d_func()->childExpressions.insert(this);
-    d->me = me;
-}
-
 /*!
     Create a QmlExpression object.
 
@@ -885,7 +866,7 @@ QmlExpression::QmlExpression(QmlContext *ctxt, const QString &expr,
 */
 QmlExpression::QmlExpression(QmlContext *ctxt, const QString &expression, 
                              QObject *scope)
-: d(new QmlExpressionPrivate(this, expression, true))
+: d(new QmlExpressionPrivate(this, expression))
 {
     d->ctxt = ctxt;
     if(ctxt && ctxt->engine())
@@ -956,10 +937,7 @@ void QmlExpression::setExpression(const QString &expression)
 
     d->expression = expression;
 
-    if (d->expression.isEmpty())
-        d->sse.clear();
-    else
-        d->sse.compile(expression.toLatin1());
+    d->sse.clear();
 }
 
 /*!
@@ -1245,13 +1223,7 @@ QmlExpressionObject::QmlExpressionObject(QObject *parent)
     the expression's execution.
 */
 QmlExpressionObject::QmlExpressionObject(QmlContext *ctxt, const QString &expression, QObject *scope, QObject *parent)
-: QObject(parent), QmlExpression(ctxt, expression, scope, true)
-{
-}
-
-/*!  \internal */
-QmlExpressionObject::QmlExpressionObject(QmlContext *ctxt, const QString &expr, QObject *scope, bool sse)
-: QmlExpression(ctxt, expr, scope, sse)
+: QObject(parent), QmlExpression(ctxt, expression, scope)
 {
 }
 

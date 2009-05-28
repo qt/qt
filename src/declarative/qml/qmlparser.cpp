@@ -52,7 +52,6 @@
 #include <qml.h>
 #include "private/qmlcomponent_p.h"
 #include <qmlcomponent.h>
-#include <qmlbasicscript.h>
 #include "private/qmetaobjectbuilder_p.h"
 #include <private/qmlvmemetaobject_p.h>
 #include <private/qmlcompiler_p.h>
