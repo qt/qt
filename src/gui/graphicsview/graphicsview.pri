@@ -20,7 +20,8 @@ HEADERS += graphicsview/qgraphicsgridlayout.h \
     graphicsview/qgraphicsview_p.h \
     graphicsview/qgraphicswidget.h \
     graphicsview/qgraphicswidget_p.h \
-    graphicsview/qgridlayoutengine_p.h
+    graphicsview/qgridlayoutengine_p.h \
+    graphicsview/qgraph_p.h
 
 SOURCES += graphicsview/qgraphicsgridlayout.cpp \
     graphicsview/qgraphicsitem.cpp \
