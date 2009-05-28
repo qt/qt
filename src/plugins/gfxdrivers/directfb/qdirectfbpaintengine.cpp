@@ -81,7 +81,7 @@ template <> inline const bool* ptr<bool>(const bool &) { return 0; }
 template <typename device, typename T1, typename T2, typename T3>
 static void rasterFallbackWarn(const char *msg, const char *func, const device *dev,
                                int scale, bool matrixRotShear, bool simplePen,
-                               bool dfbHandledClip, bool forceRasterPrimitives,
+                               bool dfbHandledClip,
                                const char *nameOne, const T1 &one,
                                const char *nameTwo, const T2 &two,
                                const char *nameThree, const T3 &three)
@@ -98,8 +98,7 @@ static void rasterFallbackWarn(const char *msg, const char *func, const device *
     dbg << "scale" << scale
         << "matrixRotShear" << matrixRotShear
         << "simplePen" << simplePen
-        << "dfbHandledClip" << dfbHandledClip
-        << "forceRasterPrimitives" << forceRasterPrimitives;
+        << "dfbHandledClip" << dfbHandledClip;
 
     const T1 *t1 = ptr(one);
     const T2 *t2 = ptr(two);
@@ -125,7 +124,6 @@ static void rasterFallbackWarn(const char *msg, const char *func, const device *
                            __FUNCTION__, state()->painter->device(),    \
                            d_func()->scale, d_func()->matrixRotShear, \
                            d_func()->simplePen, d_func()->dfbCanHandleClip(), \
-                           d_func()->forceRasterPrimitives,             \
                            #one, one, #two, two, #three, three);        \
     if (op & (QT_DIRECTFB_DISABLE_RASTERFALLBACKS))                     \
         return;
@@ -140,7 +138,6 @@ static void rasterFallbackWarn(const char *msg, const char *func, const device *
                            __FUNCTION__, state()->painter->device(),    \
                            d_func()->scale, d_func()->matrixRotShear, \
                            d_func()->simplePen, d_func()->dfbCanHandleClip(), \
-                           d_func()->forceRasterPrimitives,             \
                            #one, one, #two, two, #three, three);
 #else
 #define RASTERFALLBACK(op, one, two, three)
@@ -263,7 +260,6 @@ private:
     QPen pen;
 
     bool antialiased;
-    bool forceRasterPrimitives;
 
     bool simplePen;
 
@@ -408,8 +404,7 @@ void QDirectFBPaintEngine::drawRects(const QRect *rects, int rectCount)
     d->updateClip();
     const QBrush &brush = state()->brush;
     if (!d->dfbCanHandleClip() || d->matrixRotShear
-        || !d->simplePen || d->forceRasterPrimitives
-        || !d->isSimpleBrush(brush)) {
+        || !d->simplePen || !d->isSimpleBrush(brush)) {
         RASTERFALLBACK(DRAW_RECTS, rectCount, VOID_ARG(), VOID_ARG());
         d->lock();
         QRasterPaintEngine::drawRects(rects, rectCount);
@@ -434,8 +429,7 @@ void QDirectFBPaintEngine::drawRects(const QRectF *rects, int rectCount)
     d->updateClip();
     const QBrush &brush = state()->brush;
     if (!d->dfbCanHandleClip() || d->matrixRotShear
-        || !d->simplePen || d->forceRasterPrimitives
-        || !d->isSimpleBrush(brush)) {
+        || !d->simplePen || !d->isSimpleBrush(brush)) {
         RASTERFALLBACK(DRAW_RECTS, rectCount, VOID_ARG(), VOID_ARG());
         d->lock();
         QRasterPaintEngine::drawRects(rects, rectCount);
@@ -458,7 +452,7 @@ void QDirectFBPaintEngine::drawLines(const QLine *lines, int lineCount)
 {
     Q_D(QDirectFBPaintEngine);
     d->updateClip();
-    if (!d->simplePen || !d->dfbCanHandleClip() || d->forceRasterPrimitives) {
+    if (!d->simplePen || !d->dfbCanHandleClip()) {
         RASTERFALLBACK(DRAW_LINES, lineCount, VOID_ARG(), VOID_ARG());
         d->lock();
         QRasterPaintEngine::drawLines(lines, lineCount);
@@ -476,7 +470,7 @@ void QDirectFBPaintEngine::drawLines(const QLineF *lines, int lineCount)
 {
     Q_D(QDirectFBPaintEngine);
     d->updateClip();
-    if (!d->simplePen || !d->dfbCanHandleClip() || d->forceRasterPrimitives) {
+    if (!d->simplePen || !d->dfbCanHandleClip()) {
         RASTERFALLBACK(DRAW_LINES, lineCount, VOID_ARG(), VOID_ARG());
         d->lock();
         QRasterPaintEngine::drawLines(lines, lineCount);
@@ -691,8 +685,6 @@ void QDirectFBPaintEngine::fillRect(const QRectF &rect, const QBrush &brush)
     if (d->dfbCanHandleClip(rect) && !d->matrixRotShear) {
         switch (brush.style()) {
         case Qt::SolidPattern: {
-            if (d->forceRasterPrimitives)
-                break;
             d->unlock();
             d->setDFBColor(brush.color());
             const QRect r = d->transform.mapRect(rect).toRect();
@@ -720,7 +712,7 @@ void QDirectFBPaintEngine::fillRect(const QRectF &rect, const QColor &color)
 {
     Q_D(QDirectFBPaintEngine);
     d->updateClip();
-    if (!d->dfbCanHandleClip() || d->matrixRotShear || d->forceRasterPrimitives) {
+    if (!d->dfbCanHandleClip() || d->matrixRotShear) {
         RASTERFALLBACK(FILL_RECT, rect, color, VOID_ARG());
         d->lock();
         QRasterPaintEngine::fillRect(rect, color);
@@ -737,37 +729,31 @@ void QDirectFBPaintEngine::drawColorSpans(const QSpan *spans, int count,
                                           uint color)
 {
     Q_D(QDirectFBPaintEngine);
-    if (d->forceRasterPrimitives) {
-        RASTERFALLBACK(DRAW_COLORSPANS, count, color, VOID_ARG());
-        d->lock();
-        QRasterPaintEngine::drawColorSpans(spans, count, color);
-    } else {
-        color = INV_PREMUL(color);
+    color = INV_PREMUL(color);
 
-        QVarLengthArray<DFBRegion> lines(count);
-        int j = 0;
-        for (int i = 0; i < count; ++i) {
-            if (spans[i].coverage == 255) {
-                lines[j].x1 = spans[i].x;
-                lines[j].y1 = spans[i].y;
-                lines[j].x2 = spans[i].x + spans[i].len - 1;
-                lines[j].y2 = spans[i].y;
-                ++j;
-            } else {
-                DFBSpan span = { spans[i].x, spans[i].len };
-                uint c = BYTE_MUL(color, spans[i].coverage);
-                // ### how does this play with setDFBColor
-                d->surface->SetColor(d->surface,
-                                     qRed(c), qGreen(c), qBlue(c), qAlpha(c));
-                d->surface->FillSpans(d->surface, spans[i].y, &span, 1);
-            }
-        }
-        if (j > 0) {
+    QVarLengthArray<DFBRegion> lines(count);
+    int j = 0;
+    for (int i = 0; i < count; ++i) {
+        if (spans[i].coverage == 255) {
+            lines[j].x1 = spans[i].x;
+            lines[j].y1 = spans[i].y;
+            lines[j].x2 = spans[i].x + spans[i].len - 1;
+            lines[j].y2 = spans[i].y;
+            ++j;
+        } else {
+            DFBSpan span = { spans[i].x, spans[i].len };
+            uint c = BYTE_MUL(color, spans[i].coverage);
+            // ### how does this play with setDFBColor
             d->surface->SetColor(d->surface,
-                                 qRed(color), qGreen(color), qBlue(color),
-                                 qAlpha(color));
-            d->surface->DrawLines(d->surface, lines.data(), j);
+                                 qRed(c), qGreen(c), qBlue(c), qAlpha(c));
+            d->surface->FillSpans(d->surface, spans[i].y, &span, 1);
         }
+    }
+    if (j > 0) {
+        d->surface->SetColor(d->surface,
+                             qRed(color), qGreen(color), qBlue(color),
+                             qAlpha(color));
+        d->surface->DrawLines(d->surface, lines.data(), j);
     }
 }
 
@@ -803,7 +789,7 @@ void QDirectFBPaintEngine::initImageCache(int size)
 
 
 QDirectFBPaintEnginePrivate::QDirectFBPaintEnginePrivate(QDirectFBPaintEngine *p)
-    : surface(0), antialiased(false), forceRasterPrimitives(false), simplePen(false),
+    : surface(0), antialiased(false), simplePen(false),
       matrixRotShear(false), scale(NoScale), lastLockedHeight(-1),
       fbWidth(-1), fbHeight(-1), opacity(255), drawFlagsFromCompositionMode(0),
       blitFlagsFromCompositionMode(0), porterDuffRule(DSPD_SRC_OVER), dirtyClip(true),
@@ -896,7 +882,6 @@ void QDirectFBPaintEnginePrivate::begin(QPaintDevice *device)
                device->devType());
     }
     lockedMemory = 0;
-    forceRasterPrimitives = dfbDevice->forceRasterPrimitives();
 
     surface->GetSize(surface, &fbWidth, &fbHeight);
 
