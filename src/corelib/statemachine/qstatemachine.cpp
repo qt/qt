@@ -803,8 +803,7 @@ void QStateMachinePrivate::applyProperties(const QList<QAbstractTransition*> &tr
                         stateForAnimation.insert(a, s);
                         animationsForState[s].append(a);
                         // ### connect to just the top-level animation?
-                        QObject::disconnect(a, SIGNAL(finished()), q, SLOT(_q_animationFinished()));
-                        QObject::connect(a, SIGNAL(finished()), q, SLOT(_q_animationFinished()));
+                        QObject::connect(a, SIGNAL(finished()), q, SLOT(_q_animationFinished()), Qt::UniqueConnection);
                     }
                     it2 = assignments.erase(it2);
                 } else {
