@@ -172,7 +172,8 @@ void QGraphicsAnchorLayout::setSpacing(qreal spacing, Qt::Orientations orientati
 qreal QGraphicsAnchorLayout::spacing(Qt::Orientation orientation) const
 {
     Q_D(const QGraphicsAnchorLayout);
-    return d->spacing[orientation & Qt::Vertical];
+    // Qt::Horizontal == 0x1, Qt::Vertical = 0x2
+    return d->spacing[orientation - 1];
 }
 
 void QGraphicsAnchorLayout::setGeometry(const QRectF &geom)
