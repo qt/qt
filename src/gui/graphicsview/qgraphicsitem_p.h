@@ -272,9 +272,7 @@ public:
 
     inline bool childrenCombineOpacity() const
     {
-        if (!children.size())
-            return true;
-        if (flags & QGraphicsItem::ItemDoesntPropagateOpacityToChildren)
+        if (!children.size() || flags & QGraphicsItem::ItemDoesntPropagateOpacityToChildren)
             return false;
 
         for (int i = 0; i < children.size(); ++i) {
@@ -347,7 +345,7 @@ public:
     quint32 dirtyClipPath : 1;
     quint32 emptyClipPath : 1;
     quint32 inSetPosHelper : 1;
-    quint32 unused : 1;
+    quint32 unused : 3;
 
     // New 32 bits
     quint32 flags : 11;
