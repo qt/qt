@@ -272,7 +272,9 @@ public:
 
     inline bool childrenCombineOpacity() const
     {
-        if (!children.size() || flags & QGraphicsItem::ItemDoesntPropagateOpacityToChildren)
+        if (!children.size())
+            return true;
+        if (flags & QGraphicsItem::ItemDoesntPropagateOpacityToChildren)
             return false;
 
         for (int i = 0; i < children.size(); ++i) {
