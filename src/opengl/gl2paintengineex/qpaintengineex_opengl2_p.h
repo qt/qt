@@ -65,6 +65,8 @@ enum EngineMode {
     BrushDrawingMode
 };
 
+QT_BEGIN_NAMESPACE
+
 class QGL2PaintEngineExPrivate;
 
 
@@ -208,5 +210,7 @@ public:
     void systemStateChanged();
     uint use_system_clip : 1;
 };
+
+QT_END_NAMESPACE
 
 #endif

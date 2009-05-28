@@ -44,6 +44,8 @@
 
 #include "qglgradientcache_p.h"
 
+QT_BEGIN_NAMESPACE
+
 void QGL2GradientCache::cleanCache() {
     QGLGradientColorTableHash::const_iterator it = cache.constBegin();
     for (; it != cache.constEnd(); ++it) {
@@ -180,3 +182,5 @@ void QGL2GradientCache::generateGradientColorTable(const QGradient& gradient, ui
     // Make sure the last color stop is represented at the end of the table
     colorTable[size-1] = last_color;
 }
+
+QT_END_NAMESPACE

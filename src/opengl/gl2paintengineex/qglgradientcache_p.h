@@ -54,6 +54,8 @@
 #include <QObject>
 #include <QtOpenGL>
 
+QT_BEGIN_NAMESPACE
+
 class QGL2GradientCache : public QObject
 {
     Q_OBJECT
@@ -104,5 +106,5 @@ public slots:
     }
 };
 
-
+QT_END_NAMESPACE
 

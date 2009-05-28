@@ -80,7 +80,11 @@
 #include "qgl2pexvertexarray_p.h"
 
 
-extern QImage qt_imageForBrush(int brushStyle, bool invert); //in qbrush.cpp
+#include <QDebug>
+
+QT_BEGIN_NAMESPACE
+
+extern QImage qt_imageForBrush(int brushStyle, bool invert);
 
 static const GLuint QT_BRUSH_TEXTURE_UNIT       = 0;
 static const GLuint QT_IMAGE_TEXTURE_UNIT       = 0; //Can be the same as brush texture unit
@@ -1328,3 +1332,4 @@ QOpenGL2PaintEngineState::~QOpenGL2PaintEngineState()
 {
 }
 
+QT_END_NAMESPACE

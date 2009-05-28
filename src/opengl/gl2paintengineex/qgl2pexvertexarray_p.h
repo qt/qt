@@ -59,6 +59,8 @@
 #include <private/qvectorpath_p.h>
 #include <private/qgl_p.h>
 
+QT_BEGIN_NAMESPACE
+
 class QGLPoint
 {
 public:
@@ -123,5 +125,7 @@ private:
 
     inline void curveToArray(const QGLPoint &cp1, const QGLPoint &cp2, const QGLPoint &ep, GLfloat inverseScale);
 };
+
+QT_END_NAMESPACE
 
 #endif
