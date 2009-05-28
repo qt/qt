@@ -568,8 +568,8 @@ in the \l{Qt for Windows CE Requirements} document.
         We've included a subset of the Qt demos in this package for you
         to try out. An excellent starting point is the "fluidlauncher"
         demo. To run the demo on a real device, you first have to install
-        the Qt libraries and demos on the device.
-        Install \c{qt_libs_armv5_urel.sisx} and \c{fluidlauncher_armv5_urel.sisx} 
+        the Qt libraries and the demo on the device.
+        Install \c{qt_libs.sis} and \c{fluidlauncher.sis} 
         found at Qt installation folder to the device.
 
         To run the demos on the emulator, navigate to
