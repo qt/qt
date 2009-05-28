@@ -105,10 +105,10 @@ struct Blend_RGB16_on_RGB16_ConstAlpha {
 };
 
 struct Blend_ARGB24_on_RGB16_SourceAlpha {
-    inline void write(quint16 *dst, qargb8565 src) {
+    inline void write(quint16 *dst, const qargb8565 &src) {
         const uint alpha = src.alpha();
         if (alpha) {
-            quint16 s = qrgb565(src).rawValue();
+            quint16 s = src.rawValue16();
             if (alpha < 255)
                 s += BYTE_MUL_RGB16(*dst, 255 - alpha);
             *dst = s;
@@ -125,7 +125,7 @@ struct Blend_ARGB24_on_RGB16_SourceAndConstAlpha {
         src = src.byte_mul(src.alpha(m_alpha));
         const uint alpha = src.alpha();
         if (alpha) {
-            quint16 s = qrgb565(src).rawValue();
+            quint16 s = src.rawValue16();
             if (alpha < 255)
                 s += BYTE_MUL_RGB16(*dst, 255 - alpha);
             *dst = s;
