@@ -142,10 +142,6 @@ public:
         emptyClipPath(0),
         inSetPosHelper(0),
         flags(0),
-        allChildrenCombineOpacity(1),
-        hasDecomposedTransform(0),
-        dirtyTransform(0),
-        dirtyTransformComponents(0),
         dirtyChildrenBoundingRect(1),
         inDirtyList(0),
         paintedViewBoundingRectsNeedRepaint(0),
@@ -353,14 +349,10 @@ public:
 
     // New 32 bits
     quint32 flags : 10;
-    quint32 allChildrenCombineOpacity : 1;
-    quint32 hasDecomposedTransform : 1;
-    quint32 dirtyTransform : 1;
-    quint32 dirtyTransformComponents : 1;
     quint32 dirtyChildrenBoundingRect : 1;
     quint32 inDirtyList : 1;
     quint32 paintedViewBoundingRectsNeedRepaint : 1;
-    quint32 padding : 15; // feel free to use
+    quint32 padding : 19; // feel free to use
 
     // Optional stacking order
     int globalStackingOrder;
