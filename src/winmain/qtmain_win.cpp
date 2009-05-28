@@ -110,7 +110,7 @@ int APIENTRY WinMain(HINSTANCE instance, HINSTANCE prevInstance, LPSTR /*cmdPara
 #if defined(Q_OS_WINCE)
     TCHAR uniqueAppID[256];
     GetModuleFileName(0, uniqueAppID, 255);
-    QString uid = QString::frosmUtf16((const unsigned short *)uniqueAppID).toLower().replace(QLatin1Char('\\'), QLatin1Char('_'));
+    QString uid = QString::fromUtf16((const unsigned short *)uniqueAppID).toLower().replace(QLatin1Char('\\'), QLatin1Char('_'));
 
     // If there exists an other instance of this application
     // it will be the owner of a mutex with the unique ID.
