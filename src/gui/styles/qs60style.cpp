@@ -368,6 +368,7 @@ void QS60StylePrivate::clearCaches(QS60StylePrivate::CacheClearReason reason)
         m_colorCache.clear();
         QPixmapCache::clear();
         deleteBackground();
+        break;
     case CC_UndefinedChange:
     default:
         m_colorCache.clear();
