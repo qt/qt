@@ -5901,4 +5901,9 @@ void QSessionManager::requestPhase2()
 
 #endif // QT_NO_SESSIONMANAGER
 
+void QApplicationPrivate::initializeMultitouch_sys()
+{ }
+void QApplicationPrivate::cleanupMultitouch_sys()
+{ }
+
 QT_END_NAMESPACE
