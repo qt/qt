@@ -100,10 +100,7 @@ public:
         ExtraCursor,
         ExtraCacheData,
         ExtraMaxDeviceCoordCacheSize,
-        ExtraBoundingRegionGranularity,
-        ExtraOpacity,
-        ExtraEffectiveOpacity,
-        ExtraDecomposedTransform
+        ExtraBoundingRegionGranularity
     };
 
     enum AncestorFlag {
@@ -115,6 +112,7 @@ public:
 
     inline QGraphicsItemPrivate()
         : z(0),
+        opacity(1.),
         scene(0),
         parent(0),
         transform(0),
@@ -136,8 +134,6 @@ public:
         ancestorFlags(0),
         cacheMode(0),
         hasBoundingRegionGranularity(0),
-        hasOpacity(0),
-        hasEffectiveOpacity(0),
         isWidget(0),
         dirty(0),
         dirtyChildren(0),
@@ -177,8 +173,6 @@ public:
     void setEnabledHelper(bool newEnabled, bool explicitly, bool update = true);
     bool discardUpdateRequest(bool ignoreClipping = false, bool ignoreVisibleBit = false,
                               bool ignoreDirtyBit = false, bool ignoreOpacity = false) const;
-    void updateEffectiveOpacity();
-    void resolveEffectiveOpacity(qreal effectiveParentOpacity);
     void resolveDepth(int parentDepth);
     void addChild(QGraphicsItem *child);
     void removeChild(QGraphicsItem *child);
@@ -278,10 +272,19 @@ public:
     void updateCachedClipPathFromSetPosHelper(const QPointF &newPos);
 
     inline bool isFullyTransparent() const
-    { return hasEffectiveOpacity && qFuzzyIsNull(q_func()->effectiveOpacity()); }
+    { return q_func()->effectiveOpacity() < .001; }
 
     inline bool childrenCombineOpacity() const
-    { return allChildrenCombineOpacity || children.isEmpty(); }
+    {
+        if (!children.size() || flags & QGraphicsItem::ItemDoesntPropagateOpacityToChildren)
+            return false;
+
+        for (int i = 0; i < children.size(); ++i) {
+            if (children.at(i)->d_ptr->flags & QGraphicsItem::ItemIgnoresParentOpacity)
+                return false;
+        }
+        return true;
+    }
 
     inline bool isClippedAway() const
     { return !dirtyClipPath && q_func()->isClipped() && (emptyClipPath || cachedClipPath.isEmpty()); }
@@ -314,6 +317,7 @@ public:
     QMap<QWidget *, QRect> paintedViewBoundingRects;
     QPointF pos;
     qreal z;
+    qreal opacity;
     QGraphicsScene *scene;
     QGraphicsItem *parent;
     QList<QGraphicsItem *> children;
@@ -338,8 +342,6 @@ public:
     quint32 ancestorFlags : 3;
     quint32 cacheMode : 2;
     quint32 hasBoundingRegionGranularity : 1;
-    quint32 hasOpacity : 1;
-    quint32 hasEffectiveOpacity : 1;
     quint32 isWidget : 1;
     quint32 dirty : 1;    
     quint32 dirtyChildren : 1;    
@@ -347,7 +349,7 @@ public:
     quint32 dirtyClipPath : 1;
     quint32 emptyClipPath : 1;
     quint32 inSetPosHelper : 1;
-    quint32 unused : 1;
+    quint32 unused : 3;
 
     // New 32 bits
     quint32 flags : 10;

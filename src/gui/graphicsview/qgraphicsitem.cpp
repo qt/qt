@@ -912,9 +912,6 @@ void QGraphicsItemPrivate::setParentItemHelper(QGraphicsItem *newParent, bool de
         scene->d_func()->invalidateSortCache();
     }
 
-    // Resolve opacity.
-    updateEffectiveOpacity();
-
     // Resolve depth.
     resolveDepth(parent ? parent->d_ptr->depth : -1);
 
@@ -1371,11 +1368,6 @@ void QGraphicsItem::setFlags(GraphicsItemFlags flags)
 
     // Update flags.
     d_ptr->flags = flags;
-
-    // Reresolve effective opacity if the opacity flags change.
-    static const quint32 opacityFlagsMask = ItemIgnoresParentOpacity | ItemDoesntPropagateOpacityToChildren;
-    if ((flags & opacityFlagsMask) != (oldFlags & opacityFlagsMask))
-        d_ptr->updateEffectiveOpacity();
 
     if (!(d_ptr->flags & ItemIsFocusable) && hasFocus()) {
         // Clear focus on the item if it has focus when the focusable flag
@@ -1981,12 +1973,7 @@ void QGraphicsItem::setSelected(bool selected)
 */
 qreal QGraphicsItem::opacity() const
 {
-    if (d_ptr->hasOpacity) {
-        QVariant o = d_ptr->extra(QGraphicsItemPrivate::ExtraOpacity);
-        if (!o.isNull())
-            return o.toDouble();
-    }
-    return qreal(1.0);
+    return d_ptr->opacity;
 }
 
 /*!
@@ -2002,11 +1989,20 @@ qreal QGraphicsItem::opacity() const
 */
 qreal QGraphicsItem::effectiveOpacity() const
 {
-    if (!d_ptr->hasEffectiveOpacity)
-        return qreal(1.0);
+    if (!d_ptr->parent)
+        return d_ptr->opacity;
 
-    QVariant effectiveOpacity = d_ptr->extra(QGraphicsItemPrivate::ExtraEffectiveOpacity);
-    return effectiveOpacity.isNull() ? qreal(1.0) : qreal(effectiveOpacity.toDouble());
+    QGraphicsItem::GraphicsItemFlags myFlags = flags();
+    QGraphicsItem::GraphicsItemFlags parentFlags = d_ptr->parent ? d_ptr->parent->flags() : QGraphicsItem::GraphicsItemFlags(0);
+
+    // If I have a parent, and I don't ignore my parent's opacity, and my
+    // parent propagates to me, then combine my local opacity with my parent's
+    // effective opacity into my effective opacity.
+    if (!(myFlags & QGraphicsItem::ItemIgnoresParentOpacity)
+        && !(parentFlags & QGraphicsItem::ItemDoesntPropagateOpacityToChildren))
+        return d_ptr->opacity * d_ptr->parent->effectiveOpacity();
+
+    return d_ptr->opacity;
 }
 
 /*!
@@ -2041,24 +2037,10 @@ void QGraphicsItem::setOpacity(qreal opacity)
     newOpacity = qBound<qreal>(0.0, newOpacity, 1.0);
 
     // No change? Done.
-    if (qFuzzyIsNull(newOpacity - this->opacity()))
+    if (newOpacity == d_ptr->opacity)
         return;
 
-    // Assign local opacity.
-    if (qFuzzyIsNull(newOpacity - 1)) {
-        // Opaque, unset opacity.
-        d_ptr->hasOpacity = 0;
-        d_ptr->unsetExtra(QGraphicsItemPrivate::ExtraOpacity);
-    } else {
-        d_ptr->hasOpacity = 1;
-        d_ptr->setExtra(QGraphicsItemPrivate::ExtraOpacity, double(newOpacity));
-    }
-
-    // Resolve effective opacity.
-    if (QGraphicsItem *p = d_ptr->parent)
-        d_ptr->resolveEffectiveOpacity(p->effectiveOpacity());
-    else
-        d_ptr->resolveEffectiveOpacity(1.0);
+    d_ptr->opacity = newOpacity;
 
     // Notify change.
     itemChange(ItemOpacityHasChanged, newOpacity);
@@ -3791,70 +3773,6 @@ bool QGraphicsItemPrivate::discardUpdateRequest(bool ignoreClipping, bool ignore
            || (scene->d_func()->updateAll && scene->d_func()->hasSceneRect)
            || (!ignoreClipping && (childrenClippedToShape() && isClippedAway()))
            || (!ignoreOpacity && childrenCombineOpacity() && isFullyTransparent());
-}
-
-static inline bool allChildrenCombineOpacityHelper(QGraphicsItem *parent)
-{
-    Q_ASSERT(parent);
-    if (parent->flags() & QGraphicsItem::ItemDoesntPropagateOpacityToChildren)
-        return false;
-
-    const QList<QGraphicsItem *> children(parent->childItems());
-    for (int i = 0; i < children.size(); ++i) {
-        if (children.at(i)->flags() & QGraphicsItem::ItemIgnoresParentOpacity)
-            return false;
-    }
-    return true;
-}
-
-void QGraphicsItemPrivate::updateEffectiveOpacity()
-{
-    Q_Q(QGraphicsItem);
-    if (parent) {
-        resolveEffectiveOpacity(parent->effectiveOpacity());
-        parent->d_ptr->allChildrenCombineOpacity = allChildrenCombineOpacityHelper(parent);
-    } else {
-        resolveEffectiveOpacity(1.0);
-    }
-    allChildrenCombineOpacity = allChildrenCombineOpacityHelper(q);
-}
-
-/*!
-    \internal
-
-    Resolves and propagates this item's effective opacity to its children.
-*/
-void QGraphicsItemPrivate::resolveEffectiveOpacity(qreal parentEffectiveOpacity)
-{
-    Q_Q(QGraphicsItem);
-    QGraphicsItem::GraphicsItemFlags myFlags = q->flags();
-    QGraphicsItem::GraphicsItemFlags parentFlags = parent ? parent->flags() : QGraphicsItem::GraphicsItemFlags(0);
-
-    // My local opacity is always part of my effective opacity.
-    qreal myEffectiveOpacity = q->opacity();
-
-    // If I have a parent, and I don't ignore my parent's opacity, and my
-    // parent propagates to me, then combine my local opacity with my parent's
-    // effective opacity into my effective opacity.
-    if (parent
-        && !(myFlags & QGraphicsItem::ItemIgnoresParentOpacity)
-        && !(parentFlags & QGraphicsItem::ItemDoesntPropagateOpacityToChildren)) {
-        myEffectiveOpacity *= parentEffectiveOpacity;
-    }
-
-    // Set this item's resolved opacity.
-    if (qFuzzyIsNull(myEffectiveOpacity - 1)) {
-        // Opaque, unset effective opacity.
-        hasEffectiveOpacity = 0;
-        unsetExtra(ExtraEffectiveOpacity);
-    } else {
-        hasEffectiveOpacity = 1;
-        setExtra(ExtraEffectiveOpacity, myEffectiveOpacity);
-    }
-
-    // Resolve children always.
-    for (int i = 0; i < children.size(); ++i)
-        children.at(i)->d_ptr->resolveEffectiveOpacity(myEffectiveOpacity);
 }
 
 /*!
