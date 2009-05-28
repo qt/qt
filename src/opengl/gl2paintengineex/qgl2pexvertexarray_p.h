@@ -50,6 +50,9 @@
 // We mean it.
 //
 
+#ifndef QGL2PEXVERTEXARRAY_P_H
+#define QGL2PEXVERTEXARRAY_P_H
+
 #include <QRectF>
 
 #include <private/qdatabuffer_p.h>
@@ -120,3 +123,5 @@ private:
 
     inline void curveToArray(const QGLPoint &cp1, const QGLPoint &cp2, const QGLPoint &ep, GLfloat inverseScale);
 };
+
+#endif

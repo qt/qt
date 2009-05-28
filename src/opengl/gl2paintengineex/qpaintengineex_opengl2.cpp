@@ -62,7 +62,6 @@
     and use the correct program when we really need it.
 */
 
-
 #include "qpaintengineex_opengl2_p.h"
 
 #include <string.h> //for memcpy
@@ -83,100 +82,10 @@
 
 extern QImage qt_imageForBrush(int brushStyle, bool invert); //in qbrush.cpp
 
-
-#include <QDebug>
-
-enum EngineMode {
-    ImageDrawingMode,
-    TextDrawingMode,
-    BrushDrawingMode
-};
-
 static const GLuint QT_BRUSH_TEXTURE_UNIT       = 0;
 static const GLuint QT_IMAGE_TEXTURE_UNIT       = 0; //Can be the same as brush texture unit
 static const GLuint QT_MASK_TEXTURE_UNIT        = 1;
 static const GLuint QT_BACKGROUND_TEXTURE_UNIT  = 2;
-
-class QGL2PaintEngineExPrivate : public QPaintEngineExPrivate
-{
-    Q_DECLARE_PUBLIC(QGL2PaintEngineEx)
-public:
-    QGL2PaintEngineExPrivate(QGL2PaintEngineEx *q_ptr) :
-            q(q_ptr),
-            width(0), height(0),
-            ctx(0),
-            currentBrush( &(q->state()->brush) ),
-            inverseScale(1),
-            shaderManager(0)
-    { }
-
-    ~QGL2PaintEngineExPrivate();
-
-    void updateBrushTexture();
-    void updateBrushUniforms();
-    void updateMatrix();
-    void updateCompositionMode();
-    void updateTextureFilter(GLenum target, GLenum wrapMode, bool smoothPixmapTransform);
-
-    void setBrush(const QBrush* brush);
-
-    void transferMode(EngineMode newMode);
-
-    // fill, drawOutline, drawTexture & drawCachedGlyphs are the rendering entry points:
-    void fill(const QVectorPath &path);
-    void drawOutline(const QVectorPath& path);
-    void drawTexture(const QGLRect& dest, const QGLRect& src, const QSize &textureSize);
-    void drawCachedGlyphs(const QPointF &p, const QTextItemInt &ti);
-
-    void drawVertexArrays(QGL2PEXVertexArray& vertexArray, GLenum primitive);
-        // ^ draws whatever is in the vertex array
-    void composite(const QGLRect& boundingRect);
-        // ^ Composites the bounding rect onto dest buffer
-    void fillStencilWithVertexArray(QGL2PEXVertexArray& vertexArray, bool useWindingFill);
-        // ^ Calls drawVertexArrays to render into stencil buffer
-    void cleanStencilBuffer(const QGLRect& area);
-
-    void prepareForDraw(bool srcPixelsAreOpaque);
-
-    inline void useSimpleShader();
-    inline QColor premultiplyColor(QColor c, GLfloat opacity);
-
-    QGL2PaintEngineEx* q;
-    QGLDrawable drawable;
-    int width, height;
-    QGLContext *ctx;
-
-    EngineMode mode;
-
-    // Dirty flags
-    bool matrixDirty; // Implies matrix uniforms are also dirty
-    bool compositionModeDirty;
-    bool brushTextureDirty;
-    bool brushUniformsDirty;
-    bool simpleShaderMatrixUniformDirty;
-    bool shaderMatrixUniformDirty;
-    bool stencilBuferDirty;
-
-    const QBrush*    currentBrush; // May not be the state's brush!
-
-    GLfloat     inverseScale;
-
-    QGL2PEXVertexArray vertexCoordinateArray;
-    QGL2PEXVertexArray textureCoordinateArray;
-
-    GLfloat staticVertexCoordinateArray[8];
-    GLfloat staticTextureCoordinateArray[8];
-
-    GLfloat pmvMatrix[4][4];
-
-    QGLEngineShaderManager* shaderManager;
-
-    // Clipping & state stuff stolen from QOpenGLPaintEngine:
-    void updateDepthClip();
-    void systemStateChanged();
-    uint use_system_clip : 1;
-};
-
 
 ////////////////////////////////// Private Methods //////////////////////////////////////////
 

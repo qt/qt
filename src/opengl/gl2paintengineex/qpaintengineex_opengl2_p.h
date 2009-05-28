@@ -53,7 +53,17 @@
 // We mean it.
 //
 
+#include <QDebug>
+
 #include <private/qpaintengineex_p.h>
+#include <private/qglengineshadermanager_p.h>
+#include <private/qgl2pexvertexarray_p.h>
+
+enum EngineMode {
+    ImageDrawingMode,
+    TextDrawingMode,
+    BrushDrawingMode
+};
 
 class QGL2PaintEngineExPrivate;
 
@@ -117,6 +127,86 @@ public:
 
 private:
     Q_DISABLE_COPY(QGL2PaintEngineEx)
+};
+
+class QGL2PaintEngineExPrivate : public QPaintEngineExPrivate
+{
+    Q_DECLARE_PUBLIC(QGL2PaintEngineEx)
+public:
+    QGL2PaintEngineExPrivate(QGL2PaintEngineEx *q_ptr) :
+            q(q_ptr),
+            width(0), height(0),
+            ctx(0),
+            currentBrush( &(q->state()->brush) ),
+            inverseScale(1),
+            shaderManager(0)
+    { }
+
+    ~QGL2PaintEngineExPrivate();
+
+    void updateBrushTexture();
+    void updateBrushUniforms();
+    void updateMatrix();
+    void updateCompositionMode();
+    void updateTextureFilter(GLenum target, GLenum wrapMode, bool smoothPixmapTransform);
+
+    void setBrush(const QBrush* brush);
+
+    void transferMode(EngineMode newMode);
+
+    // fill, drawOutline, drawTexture & drawCachedGlyphs are the rendering entry points:
+    void fill(const QVectorPath &path);
+    void drawOutline(const QVectorPath& path);
+    void drawTexture(const QGLRect& dest, const QGLRect& src, const QSize &textureSize);
+    void drawCachedGlyphs(const QPointF &p, const QTextItemInt &ti);
+
+    void drawVertexArrays(QGL2PEXVertexArray& vertexArray, GLenum primitive);
+        // ^ draws whatever is in the vertex array
+    void composite(const QGLRect& boundingRect);
+        // ^ Composites the bounding rect onto dest buffer
+    void fillStencilWithVertexArray(QGL2PEXVertexArray& vertexArray, bool useWindingFill);
+        // ^ Calls drawVertexArrays to render into stencil buffer
+    void cleanStencilBuffer(const QGLRect& area);
+
+    void prepareForDraw(bool srcPixelsAreOpaque);
+
+    inline void useSimpleShader();
+    inline QColor premultiplyColor(QColor c, GLfloat opacity);
+
+    QGL2PaintEngineEx* q;
+    QGLDrawable drawable;
+    int width, height;
+    QGLContext *ctx;
+
+    EngineMode mode;
+
+    // Dirty flags
+    bool matrixDirty; // Implies matrix uniforms are also dirty
+    bool compositionModeDirty;
+    bool brushTextureDirty;
+    bool brushUniformsDirty;
+    bool simpleShaderMatrixUniformDirty;
+    bool shaderMatrixUniformDirty;
+    bool stencilBuferDirty;
+
+    const QBrush*    currentBrush; // May not be the state's brush!
+
+    GLfloat     inverseScale;
+
+    QGL2PEXVertexArray vertexCoordinateArray;
+    QGL2PEXVertexArray textureCoordinateArray;
+
+    GLfloat staticVertexCoordinateArray[8];
+    GLfloat staticTextureCoordinateArray[8];
+
+    GLfloat pmvMatrix[4][4];
+
+    QGLEngineShaderManager* shaderManager;
+
+    // Clipping & state stuff stolen from QOpenGLPaintEngine:
+    void updateDepthClip();
+    void systemStateChanged();
+    uint use_system_clip : 1;
 };
 
 #endif
