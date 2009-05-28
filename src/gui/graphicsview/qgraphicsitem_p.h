@@ -95,17 +95,7 @@ class Q_AUTOTEST_EXPORT QGraphicsItemPrivate
 {
     Q_DECLARE_PUBLIC(QGraphicsItem)
 public:
-    struct TransformData
-    {
-        TransformData() : rotationX(0),rotationY(0),rotationZ(0),scaleX(1),scaleY(1), dirty(true)  {}
-        QTransform baseTransform;
-        QTransform transform;
-        QPointF transformCenter;
-        qreal rotationX,rotationY,rotationZ,scaleX,scaleY;
-        bool dirty;
-    };
     enum Extra {
-        ExtraTransform,
         ExtraToolTip,
         ExtraCursor,
         ExtraCacheData,
@@ -127,6 +117,7 @@ public:
         : z(0),
         scene(0),
         parent(0),
+        transform(0),
         siblingIndex(-1),
         index(-1),
         depth(0),
@@ -329,6 +320,7 @@ public:
     QGraphicsScene *scene;
     QGraphicsItem *parent;
     QList<QGraphicsItem *> children;
+    QTransform *transform;
     int siblingIndex;
     int index;
     int depth;

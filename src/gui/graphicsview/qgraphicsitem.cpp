@@ -1102,6 +1102,9 @@ QGraphicsItem::~QGraphicsItem()
     if (d_ptr->scene)
         d_ptr->scene->d_func()->_q_removeItemLater(this);
 
+    if (d_ptr->transform)
+        delete d_ptr->transform;
+
     delete d_ptr;
 
     qt_dataStore()->data.remove(this);
@@ -2627,403 +2630,9 @@ QMatrix QGraphicsItem::matrix() const
 */
 QTransform QGraphicsItem::transform() const
 {
-    if (!d_ptr->hasTransform)
+    if (!d_ptr->hasTransform || !d_ptr->transform)
         return QTransform();
-    if (d_ptr->hasDecomposedTransform && d_ptr->dirtyTransform) {
-        QGraphicsItemPrivate::DecomposedTransform *decomposed = d_ptr->decomposedTransform();
-        QTransform x;
-        decomposed->generateTransform(&x);
-        QVariant v(x);
-        d_ptr->setExtra(QGraphicsItemPrivate::ExtraTransform, v);
-        d_ptr->dirtyTransform = 0;
-        const_cast<QGraphicsItem *>(this)->itemChange(ItemTransformHasChanged, v);
-        return x;
-    }
-    return qVariantValue<QTransform>(d_ptr->extra(QGraphicsItemPrivate::ExtraTransform));
-}
-
-/*!
-    \since 4.6
-
-    Returns the rotation around the X axis.
-
-    The default is 0
-
-    \warning setting this property is conflicting with calling setTransform.
-    If a transform has been set, this function return the default value.
-
-    \sa setXRotation(), {Transformations}
-*/
-qreal QGraphicsItem::xRotation() const
-{
-    return d_ptr->decomposedTransform()->xRotation;
-}
-
-/*!
-    \since 4.6
-
-    Sets the rotation around the X axis to \a angle degrees.
-
-    \warning setting this property is conflicting with calling setTransform.
-    If a transform has been set, it will be overwritten.
-
-    \sa xRotation(), {Transformations}
-*/
-void QGraphicsItem::setXRotation(qreal angle)
-{
-    if (!d_ptr->dirtyTransform) {
-        d_ptr->fullUpdateHelper(true);
-        prepareGeometryChange();
-    }
-    QGraphicsItemPrivate::DecomposedTransform *decomposed = d_ptr->decomposedTransform();
-    decomposed->xRotation = angle;
-    if (!d_ptr->dirtyTransform)
-        d_ptr->invalidateSceneTransformCache();
-    d_ptr->dirtyTransform = 1;
-    d_ptr->hasTransform = 1;
-}
-
-/*!
-    \since 4.6
-
-    Returns the rotation around the Y axis.
-
-    The default is 0
-
-    \warning setting this property is conflicting with calling setTransform.
-    If a transform has been set, this function return the default value.
-
-    \sa setYRotation(), {Transformations}
-*/
-qreal QGraphicsItem::yRotation() const
-{
-    return d_ptr->decomposedTransform()->yRotation;
-}
-
-/*!
-    \since 4.6
-
-    Sets the rotation around the Y axis to \a angle degrees.
-
-    \warning setting this property is conflicting with calling setTransform.
-    If a transform has been set, it will be overwritten.
-
-    \sa yRotation(), {Transformations}
-*/
-void QGraphicsItem::setYRotation(qreal angle)
-{
-    if (!d_ptr->dirtyTransform) {
-        d_ptr->fullUpdateHelper(true);
-        prepareGeometryChange();
-    }
-    QGraphicsItemPrivate::DecomposedTransform *decomposed = d_ptr->decomposedTransform();
-    decomposed->yRotation = angle;
-    if (!d_ptr->dirtyTransform)
-        d_ptr->invalidateSceneTransformCache();
-    d_ptr->dirtyTransform = 1;
-    d_ptr->hasTransform = 1;
-}
-
-/*!
-    \since 4.6
-
-    Returns the rotation around the Z axis.
-
-    The default is 0
-
-    \warning setting this property is conflicting with calling setTransform.
-    If a transform has been set, this function return the default value.
-
-    \sa setZRotation(), {Transformations}
-*/
-qreal QGraphicsItem::zRotation() const
-{
-    return d_ptr->decomposedTransform()->zRotation;
-}
-
-/*!
-    \since 4.6
-
-    Sets the rotation around the Z axis to \a angle degrees.
-
-    \warning setting this property is conflicting with calling setTransform.
-    If a transform has been set, it will be overwritten.
-
-    \sa zRotation(), {Transformations}
-*/
-void QGraphicsItem::setZRotation(qreal angle)
-{
-    if (!d_ptr->dirtyTransform) {
-        d_ptr->fullUpdateHelper(true);
-        prepareGeometryChange();
-    }
-    QGraphicsItemPrivate::DecomposedTransform *decomposed = d_ptr->decomposedTransform();
-    decomposed->zRotation = angle;
-    if (!d_ptr->dirtyTransform)
-        d_ptr->invalidateSceneTransformCache();
-    d_ptr->dirtyTransform = 1;
-    d_ptr->hasTransform = 1;
-}
-
-/*!
-    \since 4.6
-
-    This convenience function set the rotation angles around the 3 axes
-    to \a x, \a y and \a z.
-
-    \sa setXRotation(), setYRotation(), setZRotation() 
-*/
-void QGraphicsItem::setRotation(qreal x, qreal y, qreal z)
-{
-    setXRotation(x);
-    setYRotation(y);
-    setZRotation(z);
-}
-
-/*!
-    \since 4.6
-
-    Returns the scale factor on the X axis.
-
-    The default is 1
-
-    \warning setting this property is conflicting with calling setTransform.
-    If a transform has been set, this function return the default value.
-
-    \sa setXScale(), {Transformations}
-*/
-qreal QGraphicsItem::xScale() const
-{
-    return d_ptr->decomposedTransform()->xScale;
-}
-
-/*!
-    \since 4.6
-
-    Sets the scale factor on the X axis to \a factor.
-
-    \warning setting this property is conflicting with calling setTransform.
-    If a transform has been set, it will be overwritten.
-
-    \sa xScale(), {Transformations}
-*/
-void QGraphicsItem::setXScale(qreal factor)
-{
-    if (!d_ptr->dirtyTransform) {
-        d_ptr->fullUpdateHelper(true);
-        prepareGeometryChange();
-    }
-    QGraphicsItemPrivate::DecomposedTransform *decomposed = d_ptr->decomposedTransform();
-    decomposed->xScale = factor;
-    if (!d_ptr->dirtyTransform)
-        d_ptr->invalidateSceneTransformCache();
-    d_ptr->dirtyTransform = 1;
-    d_ptr->hasTransform = 1;
-}
-
-/*!
-    \since 4.6
-
-    Returns the scale factor on the Y axis.
-
-    The default is 1
-
-    \warning setting this property is conflicting with calling setTransform.
-    If a transform has been set, this function return the default value.
-
-    \sa setYScale(), {Transformations}
-*/
-qreal QGraphicsItem::yScale() const
-{
-    return d_ptr->decomposedTransform()->yScale;
-}
-
-/*!
-    \since 4.6
-
-    Sets the scale factor on the Y axis to \a factor.
-
-    \warning setting this property is conflicting with calling setTransform.
-    If a transform has been set, it will be overwritten.
-
-    \sa yScale(), {Transformations}
-*/
-void QGraphicsItem::setYScale(qreal factor)
-{
-    if (!d_ptr->dirtyTransform) {
-        d_ptr->fullUpdateHelper(true);
-        prepareGeometryChange();
-    }
-    QGraphicsItemPrivate::DecomposedTransform *decomposed = d_ptr->decomposedTransform();
-    decomposed->yScale = factor;
-    if (!d_ptr->dirtyTransform)
-        d_ptr->invalidateSceneTransformCache();
-    d_ptr->dirtyTransform = 1;
-    d_ptr->hasTransform = 1;
-}
-
-/*!
-    \since 4.6
-
-    This convenience function set the scaling factors on X and Y axis to \a sx and \a sy.
-
-    \sa setXScale(), setYScale()
-*/
-void QGraphicsItem::setScale(qreal sx, qreal sy)
-{
-    setXScale(sx);
-    setYScale(sy);
-}
-
-/*!
-    \since 4.6
-
-    Returns the horizontal shear.
-
-    The default is 0
-
-    \warning setting this property is conflicting with calling setTransform.
-    If a transform has been set, this function return the default value.
-
-    \sa setHorizontalShear(), {Transformations}
-*/
-qreal QGraphicsItem::horizontalShear() const
-{
-    return d_ptr->decomposedTransform()->horizontalShear;
-}
-
-/*!
-    \since 4.6
-
-    Sets the horizontal shear to \a shear.
-
-    \warning setting this property is conflicting with calling setTransform.
-    If a transform has been set, it will be overwritten.
-
-    \sa horizontalShear(), {Transformations}
-*/
-void QGraphicsItem::setHorizontalShear(qreal shear)
-{
-    if (!d_ptr->dirtyTransform) {
-        d_ptr->fullUpdateHelper(true);
-        prepareGeometryChange();
-    }
-    QGraphicsItemPrivate::DecomposedTransform *decomposed = d_ptr->decomposedTransform();
-    decomposed->horizontalShear = shear;
-    if (!d_ptr->dirtyTransform)
-        d_ptr->invalidateSceneTransformCache();
-    d_ptr->dirtyTransform = 1;
-    d_ptr->hasTransform = 1;
-}
-
-/*!
-    \since 4.6
-
-    Returns the vertical shear.
-
-    The default is 0
-
-    \warning setting this property is conflicting with calling setTransform.
-    If a transform has been set, this function return the default value.
-
-    \sa setHorizontalShear(), {Transformations}
-*/
-qreal QGraphicsItem::verticalShear() const
-{
-    return d_ptr->decomposedTransform()->verticalShear;
-}
-
-/*!
-    \since 4.6
-
-    Sets the vertical shear to \a shear.
-
-    \warning setting this property is conflicting with calling setTransform.
-    If a transform has been set, it will be overwritten.
-
-    \sa verticalShear(), {Transformations}
-*/
-void QGraphicsItem::setVerticalShear(qreal shear)
-{
-    if (!d_ptr->dirtyTransform) {
-        d_ptr->fullUpdateHelper(true);
-        prepareGeometryChange();
-    }
-    QGraphicsItemPrivate::DecomposedTransform *decomposed = d_ptr->decomposedTransform();
-    decomposed->verticalShear = shear;
-    if (!d_ptr->dirtyTransform)
-        d_ptr->invalidateSceneTransformCache();
-    d_ptr->dirtyTransform = 1;
-    d_ptr->hasTransform = 1;
-}
-
-/*!
-    \since 4.6
-
-    This convenience function sets the horizontal shear to \a sh and the vertical shear to \a sv.
-
-    \sa setHorizontalShear(), setVerticalShear()
-*/
-void QGraphicsItem::setShear(qreal sh, qreal sv)
-{
-    setHorizontalShear(sh);
-    setVerticalShear(sv);
-}
-
-/*!
-    \since 4.6
-
-    Returns the transformation origin for the transformation properties.
-
-    The default is QPointF(0,0).
-
-    \warning setting this property is conflicting with calling setTransform.
-    If a transform has been set, this function return the default value.
-
-    \sa setTransformOrigin(), {Transformations}
-*/
-QPointF QGraphicsItem::transformOrigin() const
-{
-    const QGraphicsItemPrivate::DecomposedTransform *decomposed = d_ptr->decomposedTransform();
-    return QPointF(decomposed->xOrigin, decomposed->yOrigin);
-}
-
-/*!
-    \fn inline void setTransformOrigin(qreal x, qreal y)
-
-    \since 4.6
-
-    This is an overloaded member function, provided for convenience.
-    Sets the transformation origin for the transformation 
-    properties to the point(\a x, \a y).
-
-    \sa setTransformOrigin(), {Transformations}
-*/
-
-/*!
-    \since 4.6
-
-    Sets the transformation origin for the transformation properties to \a origin.
-    This does not apply to the transformation set by setTransform.
-
-    \warning setting this property is conflicting with calling setTransform.
-    If a transform has been set, it will be overwritten.
-
-    \sa transformOrigin(), {Transformations}
-*/
-void QGraphicsItem::setTransformOrigin(const QPointF &origin)
-{
-    if (!d_ptr->dirtyTransform) {
-        d_ptr->fullUpdateHelper(true);
-        prepareGeometryChange();
-    }
-    QGraphicsItemPrivate::DecomposedTransform *decomposed = d_ptr->decomposedTransform();
-    decomposed->xOrigin = origin.x();
-    decomposed->yOrigin = origin.y();
-    if (!d_ptr->dirtyTransform)
-        d_ptr->invalidateSceneTransformCache();
-    d_ptr->dirtyTransform = 1;
-    d_ptr->hasTransform = 1;
+    return *d_ptr->transform;
 }
 
 /*!
@@ -3306,11 +2915,7 @@ QTransform QGraphicsItem::itemTransform(const QGraphicsItem *other, bool *ok) co
 void QGraphicsItem::setMatrix(const QMatrix &matrix, bool combine)
 {
     QTransform oldTransform = this->transform();
-    QTransform newTransform;
-    if (!combine)
-        newTransform = QTransform(matrix);
-    else
-        newTransform = QTransform(matrix) * oldTransform;
+    QTransform newTransform(combine ? QTransform(matrix) * oldTransform : QTransform(matrix));
     if (oldTransform == newTransform)
         return;
 
@@ -3324,9 +2929,10 @@ void QGraphicsItem::setMatrix(const QMatrix &matrix, bool combine)
     // Update and set the new transformation.
     prepareGeometryChange();
     d_ptr->hasTransform = !newTransform.isIdentity();
-    d_ptr->setExtra(QGraphicsItemPrivate::ExtraTransform, newTransform);
-    d_ptr->dirtyTransformComponents = 1;
-    d_ptr->dirtyTransform = 0;
+    if(!d_ptr->transform)
+        d_ptr->transform = new QTransform(newTransform);
+    else
+        *d_ptr->transform = newTransform;
     d_ptr->invalidateSceneTransformCache();
 
     // Send post-notification.
@@ -3358,11 +2964,7 @@ void QGraphicsItem::setMatrix(const QMatrix &matrix, bool combine)
 void QGraphicsItem::setTransform(const QTransform &matrix, bool combine)
 {
     QTransform oldTransform = this->transform();
-    QTransform newTransform;
-    if (!combine)
-        newTransform = matrix;
-    else
-        newTransform = matrix * oldTransform;
+    QTransform newTransform(combine ? matrix * oldTransform : matrix);
     if (oldTransform == newTransform)
         return;
 
@@ -3376,9 +2978,10 @@ void QGraphicsItem::setTransform(const QTransform &matrix, bool combine)
     // Update and set the new transformation.
     prepareGeometryChange();
     d_ptr->hasTransform = !newTransform.isIdentity();
-    d_ptr->setExtra(QGraphicsItemPrivate::ExtraTransform, newTransform);
-    d_ptr->dirtyTransformComponents = 1;
-    d_ptr->dirtyTransform = 0;
+    if(!d_ptr->transform)
+        d_ptr->transform = new QTransform(newTransform);
+    else
+        *d_ptr->transform = newTransform;
     d_ptr->invalidateSceneTransformCache();
 
     // Send post-notification.
@@ -6359,7 +5962,7 @@ void QGraphicsItem::prepareGeometryChange()
     }
 
     QGraphicsItem *parent = this;
-    while (parent = parent->d_ptr->parent)
+    while ((parent = parent->d_ptr->parent))
         parent->d_ptr->dirtyChildrenBoundingRect = 1;
 
     if (d_ptr->inSetPosHelper)
