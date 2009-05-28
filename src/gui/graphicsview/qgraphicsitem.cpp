@@ -2881,10 +2881,7 @@ void QGraphicsItem::setMatrix(const QMatrix &matrix, bool combine)
 
     // Update and set the new transformation.
     prepareGeometryChange();
-    if(!d_ptr->transform)
-        d_ptr->transform = new QTransform(newTransform);
-    else
-        *d_ptr->transform = newTransform;
+    *d_ptr->transform = newTransform;
 
     // Send post-notification.
     itemChange(ItemTransformHasChanged, newTransformVariant);
@@ -2928,10 +2925,7 @@ void QGraphicsItem::setTransform(const QTransform &matrix, bool combine)
 
     // Update and set the new transformation.
     prepareGeometryChange();
-    if(!d_ptr->transform)
-        d_ptr->transform = new QTransform(newTransform);
-    else
-        *d_ptr->transform = newTransform;
+    *d_ptr->transform = newTransform;
 
     // Send post-notification.
     itemChange(ItemTransformHasChanged, newTransformVariant);
