@@ -79,7 +79,7 @@ class QAbstractTransition;
 class QHistoryState;
 
 class QState;
-class QStatePrivate : public QAbstractStatePrivate
+class Q_AUTOTEST_EXPORT QStatePrivate : public QAbstractStatePrivate
 {
     Q_DECLARE_PUBLIC(QState)
 public:
