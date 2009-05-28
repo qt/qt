@@ -716,6 +716,7 @@ QT_LFLAGS_MYSQL=
 QT_LFLAGS_MYSQL_R=
 QT_CFLAGS_SQLITE=
 QT_LFLAGS_SQLITE=
+QT_LFLAGS_ODBC="-lodbc"
 
 # flags for libdbus-1
 QT_CFLAGS_DBUS=
@@ -4431,14 +4432,21 @@ for _SQLDR in $CFG_SQL_AVAILABLE; do
                         CFG_SQL_odbc=plugin
                     fi
                 else
-                    if [ "$CFG_SQL_odbc" != "auto" ] && [ "$CFG_CONFIGURE_EXIT_ON_ERROR" = "yes" ]; then
-                        echo "ODBC support cannot be enabled due to functionality tests!"
-                        echo " Turn on verbose messaging (-v) to $0 to see the final report."
-                        echo " If you believe this message is in error you may use the continue"
-                        echo " switch (-continue) to $0 to continue."
-                        exit 101
+                    if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/iodbc "iODBC" $L_FLAGS $I_FLAGS $l_FLAGS $MAC_ARCHS_COMMANDLINE; then
+                        QT_LFLAGS_ODBC="-liodbc"
+                        if [ "$CFG_SQL_odbc" = "auto" ]; then
+                            CFG_SQL_odbc=plugin
+                        fi
                     else
-                        CFG_SQL_odbc=no
+                        if [ "$CFG_SQL_odbc" != "auto" ] && [ "$CFG_CONFIGURE_EXIT_ON_ERROR" = "yes" ]; then
+                            echo "ODBC support cannot be enabled due to functionality tests!"
+                            echo " Turn on verbose messaging (-v) to $0 to see the final report."
+                            echo " If you believe this message is in error you may use the continue"
+                            echo " switch (-continue) to $0 to continue."
+                            exit 101
+                        else
+                            CFG_SQL_odbc=no
+                        fi
                     fi
                 fi
             fi
@@ -6683,6 +6691,9 @@ if [ -n "$QT_CFLAGS_SQLITE" ]; then
 fi
 if [ -n "$QT_LFLAGS_SQLITE" ]; then
     echo "QT_LFLAGS_SQLITE   = $QT_LFLAGS_SQLITE" >> "$CACHEFILE.tmp"
+fi
+if [ -n "$QT_LFLAGS_ODBC" ]; then
+    echo "QT_LFLAGS_ODBC   = $QT_LFLAGS_ODBC" >> "$CACHEFILE.tmp"
 fi
 
 if [ "$QT_EDITION" != "QT_EDITION_OPENSOURCE" ]; then
