@@ -75,7 +75,7 @@ public:
 
     virtual int type() const;
 
-Q_SIGNALS:
+signals:
     void subMarineDestroyed();
     void subMarineExecutionFinished();
     void subMarineStateChanged();

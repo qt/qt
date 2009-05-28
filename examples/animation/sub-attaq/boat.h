@@ -59,7 +59,6 @@ QT_END_NAMESPACE
 class Boat : public QGraphicsWidget
 {
 Q_OBJECT
-Q_PROPERTY(QPointF pos READ pos WRITE setPos)
 public:
     enum Movement {
        None = 0,
@@ -85,7 +84,7 @@ public:
 
     virtual int type() const;
 
-Q_SIGNALS:
+signals:
     void boatDestroyed();
     void boatExecutionFinished();
 

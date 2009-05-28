@@ -70,7 +70,7 @@ public:
     void setAnimation(QAbstractAnimation *animation);
     QAbstractAnimation* animation() const;
 
-Q_SIGNALS:
+signals:
     void animationFinished();
 
 protected:
