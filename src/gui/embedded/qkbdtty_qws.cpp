@@ -209,6 +209,7 @@ QWSTtyKbPrivate::~QWSTtyKbPrivate()
         ::ioctl(m_tty_fd, KDSKBMODE, K_XLATE);
 #endif
         tcsetattr(m_tty_fd, TCSANOW, &m_tty_attr);
+        QT_CLOSE(m_tty_fd);
     }
 }
 
