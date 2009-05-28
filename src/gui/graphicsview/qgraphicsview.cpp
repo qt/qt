@@ -753,7 +753,7 @@ QRect QGraphicsViewPrivate::mapToViewRect(const QGraphicsItem *item, const QRect
     const QGraphicsItemPrivate *itemd;
     do {
         itemd = parentItem->d_ptr;
-        if (itemd->hasTransform)
+        if (itemd->transform)
             break;
         offset += itemd->pos;
     } while ((parentItem = itemd->parent));

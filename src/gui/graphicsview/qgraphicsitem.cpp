@@ -937,12 +937,11 @@ void QGraphicsItemPrivate::childrenBoundingRectHelper(QTransform *x, QRectF *rec
     for (int i = 0; i < children.size(); ++i) {
         QGraphicsItem *child = children.at(i);
         QGraphicsItemPrivate *childd = child->d_ptr;
-        bool hasX = childd->hasTransform;
         bool hasPos = !childd->pos.isNull();
-        if (hasPos || hasX) {
+        if (hasPos || childd->transform) {
             QTransform matrix;
-            if (hasX)
-                matrix = child->transform();
+            if (childd->transform)
+                matrix = *childd->transform;
             if (hasPos) {
                 const QPointF &p = childd->pos;
                 matrix *= QTransform::fromTranslate(p.x(), p.y());
@@ -2626,7 +2625,7 @@ QMatrix QGraphicsItem::matrix() const
 */
 QTransform QGraphicsItem::transform() const
 {
-    if (!d_ptr->hasTransform || !d_ptr->transform)
+    if (!d_ptr->transform)
         return QTransform();
     return *d_ptr->transform;
 }
@@ -2666,8 +2665,8 @@ QTransform QGraphicsItem::sceneTransform() const
     QTransform m;
     const QGraphicsItem *p = this;
     do {
-        if (p->d_ptr->hasTransform)
-            m *= p->transform();
+        if (p->d_ptr->transform)
+            m *= *p->d_ptr->transform;
         const QPointF &pos = p->d_ptr->pos;
         if (!pos.isNull())
             m *= QTransform::fromTranslate(pos.x(), pos.y());
@@ -2777,17 +2776,17 @@ QTransform QGraphicsItem::itemTransform(const QGraphicsItem *other, bool *ok) co
             *ok = true;
         const QPointF &itemPos = d_ptr->pos;
         if (itemPos.isNull())
-            return d_ptr->hasTransform ? transform() : QTransform();
-        if (d_ptr->hasTransform)
-            return transform() * QTransform::fromTranslate(itemPos.x(), itemPos.y());
+            return d_ptr->transform ? *d_ptr->transform : QTransform();
+        if (d_ptr->transform)
+            return *d_ptr->transform * QTransform::fromTranslate(itemPos.x(), itemPos.y());
         return QTransform::fromTranslate(itemPos.x(), itemPos.y());
     }
 
     // This is other's parent
     if (otherParent == this) {
         const QPointF &otherPos = other->d_ptr->pos;
-        if (other->d_ptr->hasTransform) {
-            QTransform otherToParent = other->transform();
+        if (other->d_ptr->transform) {
+            QTransform otherToParent = *other->d_ptr->transform;
             if (!otherPos.isNull())
                 otherToParent *= QTransform::fromTranslate(otherPos.x(), otherPos.y());
             return otherToParent.inverted(ok);
@@ -2800,12 +2799,10 @@ QTransform QGraphicsItem::itemTransform(const QGraphicsItem *other, bool *ok) co
 
     // Siblings
     if (parent == otherParent) {
-        bool hasTr = d_ptr->hasTransform;
-        bool otherHasTr = other->d_ptr->hasTransform;
         const QPointF &itemPos = d_ptr->pos;
         const QPointF &otherPos = other->d_ptr->pos;
 
-        if (!hasTr && !otherHasTr) {
+        if (!d_ptr->transform && !other->d_ptr->transform) {
             QPointF delta = itemPos - otherPos;
             if (ok)
                 *ok = true;
@@ -2813,12 +2810,12 @@ QTransform QGraphicsItem::itemTransform(const QGraphicsItem *other, bool *ok) co
         }
 
         QTransform itemToParent = QTransform::fromTranslate(itemPos.x(), itemPos.y());
-        if (hasTr)
-            itemToParent = itemPos.isNull() ? transform() : transform() * itemToParent;
+        if (d_ptr->transform)
+            itemToParent = itemPos.isNull() ? *d_ptr->transform : *d_ptr->transform * itemToParent;
 
         QTransform otherToParent = QTransform::fromTranslate(otherPos.x(), otherPos.y());
-        if (otherHasTr)
-            otherToParent = otherPos.isNull() ? other->transform() : other->transform() * otherToParent;
+        if (other->d_ptr->transform)
+            otherToParent = otherPos.isNull() ? *other->d_ptr->transform : *other->d_ptr->transform * otherToParent;
 
         return itemToParent * otherToParent.inverted(ok);
     }
@@ -2856,8 +2853,8 @@ QTransform QGraphicsItem::itemTransform(const QGraphicsItem *other, bool *ok) co
     const QGraphicsItem *p = child;
     do {
         const QGraphicsItemPrivate *pd = p->d_ptr;
-        if (pd->hasTransform)
-            x *= p->transform();
+        if (pd->transform)
+            x *= *pd->transform;
         if (!pd->pos.isNull())
             x *= QTransform::fromTranslate(pd->pos.x(), pd->pos.y());
     } while ((p = p->d_ptr->parent) && p != root);
@@ -2895,7 +2892,6 @@ void QGraphicsItem::setMatrix(const QMatrix &matrix, bool combine)
 
     // Update and set the new transformation.
     prepareGeometryChange();
-    d_ptr->hasTransform = !newTransform.isIdentity();
     if(!d_ptr->transform)
         d_ptr->transform = new QTransform(newTransform);
     else
@@ -2943,7 +2939,6 @@ void QGraphicsItem::setTransform(const QTransform &matrix, bool combine)
 
     // Update and set the new transformation.
     prepareGeometryChange();
-    d_ptr->hasTransform = !newTransform.isIdentity();
     if(!d_ptr->transform)
         d_ptr->transform = new QTransform(newTransform);
     else
@@ -3214,7 +3209,7 @@ QRectF QGraphicsItem::sceneBoundingRect() const
     const QGraphicsItemPrivate *itemd;
     do {
         itemd = parentItem->d_ptr;
-        if (itemd->hasTransform)
+        if (itemd->transform)
             break;
         offset += itemd->pos;
     } while ((parentItem = itemd->parent));
@@ -3984,13 +3979,13 @@ void QGraphicsItemPrivate::updateCachedClipPathFromSetPosHelper(const QPointF &n
 
     // Find closest clip ancestor and transform.
     Q_Q(QGraphicsItem);
-    QTransform thisToParentTransform = hasTransform
-                                       ? q->transform() * QTransform::fromTranslate(newPos.x(), newPos.y())
+    QTransform thisToParentTransform = transform
+                                       ? *transform * QTransform::fromTranslate(newPos.x(), newPos.y())
                                        : QTransform::fromTranslate(newPos.x(), newPos.y());
     QGraphicsItem *clipParent = parent;
     while (clipParent && !(clipParent->d_ptr->flags & QGraphicsItem::ItemClipsChildrenToShape)) {
-        if (clipParent->d_ptr->hasTransform)
-            thisToParentTransform *= clipParent->transform();
+        if (clipParent->d_ptr->transform)
+            thisToParentTransform *= *clipParent->d_ptr->transform;
         if (!clipParent->d_ptr->pos.isNull()) {
             thisToParentTransform *= QTransform::fromTranslate(clipParent->d_ptr->pos.x(),
                                                                clipParent->d_ptr->pos.y());
@@ -4357,9 +4352,9 @@ QPointF QGraphicsItem::mapToItem(const QGraphicsItem *item, const QPointF &point
 */
 QPointF QGraphicsItem::mapToParent(const QPointF &point) const
 {
-    if (!d_ptr->hasTransform)
+    if (!d_ptr->transform)
         return point + d_ptr->pos;
-    return transform().map(point) + d_ptr->pos;
+    return d_ptr->transform->map(point) + d_ptr->pos;
 }
 
 /*!
@@ -4424,9 +4419,9 @@ QPolygonF QGraphicsItem::mapToItem(const QGraphicsItem *item, const QRectF &rect
 */
 QPolygonF QGraphicsItem::mapToParent(const QRectF &rect) const
 {
-    if (!d_ptr->hasTransform)
+    if (!d_ptr->transform)
         return rect.translated(d_ptr->pos);
-    return transform().map(rect).translated(d_ptr->pos);
+    return d_ptr->transform->map(rect).translated(d_ptr->pos);
 }
 
 /*!
@@ -4493,7 +4488,7 @@ QRectF QGraphicsItem::mapRectToItem(const QGraphicsItem *item, const QRectF &rec
 */
 QRectF QGraphicsItem::mapRectToParent(const QRectF &rect) const
 {
-    QRectF r = !d_ptr->hasTransform ? rect : transform().mapRect(rect);
+    QRectF r = !d_ptr->transform ? rect : d_ptr->transform->mapRect(rect);
     return r.translated(d_ptr->pos);
 }
 
@@ -4566,7 +4561,7 @@ QRectF QGraphicsItem::mapRectFromItem(const QGraphicsItem *item, const QRectF &r
 QRectF QGraphicsItem::mapRectFromParent(const QRectF &rect) const
 {
     QRectF r = rect.translated(-d_ptr->pos);
-    return d_ptr->hasTransform ? transform().inverted().mapRect(r) : r;
+    return d_ptr->transform ? d_ptr->transform->inverted().mapRect(r) : r;
 }
 
 /*!
@@ -4625,9 +4620,9 @@ QPolygonF QGraphicsItem::mapToItem(const QGraphicsItem *item, const QPolygonF &p
 */
 QPolygonF QGraphicsItem::mapToParent(const QPolygonF &polygon) const
 {
-    if (!d_ptr->hasTransform)
+    if (!d_ptr->transform)
         return polygon.translated(d_ptr->pos);
-    return transform().map(polygon).translated(d_ptr->pos);
+    return d_ptr->transform->map(polygon).translated(d_ptr->pos);
 }
 
 /*!
@@ -4669,9 +4664,9 @@ QPainterPath QGraphicsItem::mapToItem(const QGraphicsItem *item, const QPainterP
 */
 QPainterPath QGraphicsItem::mapToParent(const QPainterPath &path) const
 {
-    if (!d_ptr->hasTransform)
+    if (!d_ptr->transform)
         return path.translated(d_ptr->pos);
-    return transform().map(path).translated(d_ptr->pos);
+    return d_ptr->transform->map(path).translated(d_ptr->pos);
 }
 
 /*!
@@ -4720,8 +4715,8 @@ QPointF QGraphicsItem::mapFromItem(const QGraphicsItem *item, const QPointF &poi
 */
 QPointF QGraphicsItem::mapFromParent(const QPointF &point) const
 {
-    if (d_ptr->hasTransform)
-        return transform().inverted().map(point - d_ptr->pos);
+    if (d_ptr->transform)
+        return d_ptr->transform->inverted().map(point - d_ptr->pos);
     return point - d_ptr->pos;
 }
 
@@ -4789,7 +4784,7 @@ QPolygonF QGraphicsItem::mapFromItem(const QGraphicsItem *item, const QRectF &re
 QPolygonF QGraphicsItem::mapFromParent(const QRectF &rect) const
 {
     QRectF r = rect.translated(-d_ptr->pos);
-    return d_ptr->hasTransform ? transform().inverted().map(r) : r;
+    return d_ptr->transform ? d_ptr->transform->inverted().map(r) : r;
 }
 
 /*!
@@ -4846,7 +4841,7 @@ QPolygonF QGraphicsItem::mapFromParent(const QPolygonF &polygon) const
 {
     QPolygonF p = polygon;
     p.translate(-d_ptr->pos);
-    return d_ptr->hasTransform ? transform().inverted().map(p) : p;
+    return d_ptr->transform ? d_ptr->transform->inverted().map(p) : p;
 }
 
 /*!
@@ -4888,7 +4883,7 @@ QPainterPath QGraphicsItem::mapFromParent(const QPainterPath &path) const
 {
     QPainterPath p(path);
     p.translate(-d_ptr->pos);
-    return d_ptr->hasTransform ? transform().inverted().map(p) : p;
+    return d_ptr->transform ? d_ptr->transform->inverted().map(p) : p;
 }
 
 /*!

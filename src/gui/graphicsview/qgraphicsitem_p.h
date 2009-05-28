@@ -132,7 +132,6 @@ public:
         isMemberOfGroup(0),
         handlesChildEvents(0),
         itemDiscovered(0),
-        hasTransform(0),
         hasCursor(0),
         ancestorFlags(0),
         cacheMode(0),
@@ -335,7 +334,6 @@ public:
     quint32 isMemberOfGroup : 1;
     quint32 handlesChildEvents : 1;
     quint32 itemDiscovered : 1;
-    quint32 hasTransform : 1;
     quint32 hasCursor : 1;
     quint32 ancestorFlags : 3;
     quint32 cacheMode : 2;
@@ -349,6 +347,7 @@ public:
     quint32 dirtyClipPath : 1;
     quint32 emptyClipPath : 1;
     quint32 inSetPosHelper : 1;
+    quint32 unused : 1;
 
     // New 32 bits
     quint32 flags : 10;
