@@ -233,6 +233,7 @@ public:
     void createLayoutEdges();
     void deleteLayoutEdges();
     void createItemEdges(QGraphicsLayoutItem *item);
+    void removeCenterConstraints(QGraphicsLayoutItem *item, Orientation orientation);
 
     // Anchor Manipulation methods
     void addAnchor(QGraphicsLayoutItem *firstItem,

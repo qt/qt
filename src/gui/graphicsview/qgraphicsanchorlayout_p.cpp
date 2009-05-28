@@ -225,6 +225,33 @@ void QGraphicsAnchorLayoutPrivate::createItemEdges(QGraphicsLayoutItem *item)
     itemCenterConstraints[Vertical].append(c);
 }
 
+void QGraphicsAnchorLayoutPrivate::removeCenterConstraints(QGraphicsLayoutItem *item,
+                                                           Orientation orientation)
+{
+    // Remove the item center constraints associated to this item
+    // ### This is a temporary solution. We should probably use a better
+    // data structure to hold items and/or their associated constraints
+    // so that we can remove those easily
+
+    AnchorVertex *first = internalVertex(item, orientation == Horizontal ?
+                                       QGraphicsAnchorLayout::Left :
+                                       QGraphicsAnchorLayout::Top);
+    AnchorVertex *second = internalVertex(item, orientation == Horizontal ?
+                                        QGraphicsAnchorLayout::HCenter :
+                                        QGraphicsAnchorLayout::VCenter);
+
+    Q_ASSERT(first && second);
+    AnchorData *internalAnchor = graph[orientation].edgeData(first, second);
+
+    // Look for our anchor in all item center constraints, then remove it
+    for (int i = 0; i < itemCenterConstraints[orientation].size(); ++i) {
+        if (itemCenterConstraints[orientation][i]->variables.contains(internalAnchor)) {
+            delete itemCenterConstraints[orientation].takeAt(i);
+            break;
+        }
+    }
+}
+
 void QGraphicsAnchorLayoutPrivate::addAnchor(QGraphicsLayoutItem *firstItem,
                                              QGraphicsAnchorLayout::Edge firstEdge,
                                              QGraphicsLayoutItem *secondItem,

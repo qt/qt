@@ -61,14 +61,12 @@ QGraphicsAnchorLayout::~QGraphicsAnchorLayout()
         }
     }
 
+    d->removeCenterConstraints(this, QGraphicsAnchorLayoutPrivate::Horizontal);
+    d->removeCenterConstraints(this, QGraphicsAnchorLayoutPrivate::Vertical);
     d->deleteLayoutEdges();
 
-    // ### make something better here
-    qDeleteAll(d->itemCenterConstraints[0]);
-    d->itemCenterConstraints[0].clear();
-    qDeleteAll(d->itemCenterConstraints[1]);
-    d->itemCenterConstraints[1].clear();
-
+    Q_ASSERT(d->itemCenterConstraints[0].isEmpty());
+    Q_ASSERT(d->itemCenterConstraints[1].isEmpty());
     Q_ASSERT(d->items.isEmpty());
     Q_ASSERT(d->m_vertexList.isEmpty());
 }
@@ -187,11 +185,15 @@ void QGraphicsAnchorLayout::removeAt(int index)
     Q_D(QGraphicsAnchorLayout);
     QGraphicsLayoutItem *item = d->items.value(index);
 
-    if (item) {
-        d->items.remove(index);
-        d->removeAnchors(item);
-        item->setParentLayoutItem(0);
-    }
+    if (!item)
+        return;
+
+    d->removeCenterConstraints(item, QGraphicsAnchorLayoutPrivate::Horizontal);
+    d->removeCenterConstraints(item, QGraphicsAnchorLayoutPrivate::Vertical);
+    d->removeAnchors(item);
+    d->items.remove(index);
+
+    item->setParentLayoutItem(0);
     invalidate();
 }
 
