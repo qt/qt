@@ -347,7 +347,7 @@ public:
     quint32 dirtyClipPath : 1;
     quint32 emptyClipPath : 1;
     quint32 inSetPosHelper : 1;
-    quint32 unused : 3;
+    quint32 unused : 1;
 
     // New 32 bits
     quint32 flags : 11;
