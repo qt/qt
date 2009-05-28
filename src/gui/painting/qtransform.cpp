@@ -1788,7 +1788,7 @@ QRect QTransform::mapRect(const QRect &rect) const
             y -= h;
         }
         return QRect(x, y, w, h);
-    } else if (t < TxProject) {
+    } else {
         // see mapToPolygon for explanations of the algorithm.
         qreal x = 0, y = 0;
         MAP(rect.left(), rect.top(), x, y);
@@ -1812,10 +1812,6 @@ QRect QTransform::mapRect(const QRect &rect) const
         xmax = qMax(xmax, x);
         ymax = qMax(ymax, y);
         return QRect(qRound(xmin), qRound(ymin), qRound(xmax)-qRound(xmin), qRound(ymax)-qRound(ymin));
-    } else {
-        QPainterPath path;
-        path.addRect(rect);
-        return map(path).boundingRect().toRect();
     }
 }
 
@@ -1858,7 +1854,7 @@ QRectF QTransform::mapRect(const QRectF &rect) const
             y -= h;
         }
         return QRectF(x, y, w, h);
-    } else if (t < TxProject) {
+    } else {
         qreal x = 0, y = 0;
         MAP(rect.x(), rect.y(), x, y);
         qreal xmin = x;
@@ -1881,10 +1877,6 @@ QRectF QTransform::mapRect(const QRectF &rect) const
         xmax = qMax(xmax, x);
         ymax = qMax(ymax, y);
         return QRectF(xmin, ymin, xmax-xmin, ymax - ymin);
-    } else {
-        QPainterPath path;
-        path.addRect(rect);
-        return map(path).boundingRect();
     }
 }
 
