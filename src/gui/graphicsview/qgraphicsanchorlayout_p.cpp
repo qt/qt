@@ -157,11 +157,13 @@ void QGraphicsAnchorLayoutPrivate::createLayoutEdges()
     data = new AnchorData(0, 0, QWIDGETSIZE_MAX);
     addAnchor(layout, QGraphicsAnchorLayout::Top, layout,
               QGraphicsAnchorLayout::VCenter, data);
+    data->skipInPreferred = 1;
     c->variables.insert(data, 1.0);
 
     data = new AnchorData(0, 0, QWIDGETSIZE_MAX);
     addAnchor(layout, QGraphicsAnchorLayout::VCenter,
               layout, QGraphicsAnchorLayout::Bottom, data);
+    data->skipInPreferred = 1;
     c->variables.insert(data, -1.0);
 
     itemCenterConstraints[Vertical].append(c);
