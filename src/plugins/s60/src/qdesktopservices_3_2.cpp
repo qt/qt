@@ -10,9 +10,11 @@
 ****************************************************************************/
 
 #include <private/qcore_symbian_p.h>
-#include <cdirectorylocalizer.h>     // CDirectoryLocalizer
 #include <qstring.h>
 #include <qdir.h>
+
+#include <e32base.h>                 // CBase -> Required by cdirectorylocalizer.h
+#include <cdirectorylocalizer.h>     // CDirectoryLocalizer
 
 EXPORT_C QString localizedDirectoryName(QString& rawPath)
 {
