@@ -138,7 +138,12 @@ int main(int argc, char **argv)
     test.connect(&timer, SIGNAL(timeout()), SLOT(onTimer()));
     timer.start(5000);
 
-    return app.exec();
+    int rc = app.exec();
+
+    delete scene;
+    delete view;
+
+    return rc;
 }
 
 #include "main.moc"
