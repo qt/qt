@@ -1723,7 +1723,7 @@ void QMessageBox::aboutQt(QWidget *parent, const QString &title)
     QMessageBox *msgBox = new QMessageBox(parent);
     msgBox->setAttribute(Qt::WA_DeleteOnClose);
     msgBox->setWindowTitle(title.isEmpty() ? tr("About Qt") : title);
-    msgBox->setText(translatedTextAboutQt);
+    msgBox->setInformativeText(translatedTextAboutQt);
 
     QPixmap pm(QLatin1String(":/trolltech/qmessagebox/images/qtlogo-64.png"));
     if (!pm.isNull())
