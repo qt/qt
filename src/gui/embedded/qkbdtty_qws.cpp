@@ -210,7 +210,7 @@ QWSTtyKbPrivate::~QWSTtyKbPrivate()
 {
     if (m_tty_fd >= 0) {
 #if defined(Q_OS_LINUX)
-        ::ioctl(kbdFD, KDSKBMODE, m_originalKbdMode);
+        ::ioctl(m_tty_fd, KDSKBMODE, m_originalKbdMode);
 #endif
         tcsetattr(m_tty_fd, TCSANOW, &m_tty_attr);
     }
