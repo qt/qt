@@ -1,17 +1,64 @@
 
-#include "qstringbuilder.h"
+// Select one of the scenarios below
+#define SCENARIO 3
 
-#include <QDebug>
-#include <QString>
+#if SCENARIO == 1
+// this is the "no harm done" version. Only operator% is active,
+// with NO_CAST * defined
+#define P %
+#undef QT_USE_FAST_OPERATOR_PLUS
+#undef QT_USE_FAST_CONCATENATION
+#define QT_NO_CAST_FROM_ASCII
+#define QT_NO_CAST_TO_ASCII
+#endif
+
+
+#if SCENARIO == 2
+// this is the "full" version. Operator+ is replaced by a QStringBuilder
+// based version
+// with NO_CAST * defined
+#define P %
+#define QT_USE_FAST_OPERATOR_PLUS
+#define QT_USE_FAST_CONCATENATION
+#define QT_NO_CAST_FROM_ASCII
+#define QT_NO_CAST_TO_ASCII
+#endif
+
+#if SCENARIO == 3
+// this is the "no harm done" version. Only operator% is active,
+// with NO_CAST * _not_ defined
+#define P %
+#undef QT_USE_FAST_OPERATOR_PLUS
+#undef QT_USE_FAST_CONCATENATION
+#undef QT_NO_CAST_FROM_ASCII
+#undef QT_NO_CAST_TO_ASCII
+#endif
+
+#if SCENARIO == 4
+// this is the "full" version. Operator+ is replaced by a QStringBuilder
+// based version
+// with NO_CAST * _not_ defined
+#define P %
+#define QT_USE_FAST_OPERATOR_PLUS
+#define QT_USE_FAST_CONCATENATION
+#undef QT_NO_CAST_FROM_ASCII
+#undef QT_NO_CAST_TO_ASCII
+#endif
+
+
+#include <qbytearray.h>
+#include <qdebug.h>
+#include <qstring.h>
+#include <qstringbuilder.h>
 
 #include <qtest.h>
-
 
 #define COMPARE(a, b) QCOMPARE(a, b)
 //#define COMPARE(a, b)
 
 #define SEP(s) qDebug() << "\n\n-------- " s "  ---------";
-#define L(s) QLatin1String(s)
+
+#define LITERAL "some string literal"
 
 class tst_qstringbuilder : public QObject
 {
@@ -19,12 +66,16 @@ class tst_qstringbuilder : public QObject
 
 public:
     tst_qstringbuilder()
-      : l1literal("some string literal"),
-        l1string("some string literal"),
-        ba("some string literal"),
+      : l1literal(LITERAL),
+        l1string(LITERAL),
+        ba(LITERAL),
         string(l1string),
         stringref(&string, 2, 10),
-        achar('c')
+        achar('c'),
+        r2(QLatin1String(LITERAL LITERAL)),
+        r3(QLatin1String(LITERAL LITERAL LITERAL)),
+        r4(QLatin1String(LITERAL LITERAL LITERAL LITERAL)),
+        r5(QLatin1String(LITERAL LITERAL LITERAL LITERAL LITERAL))
     {}
 
 
@@ -51,10 +102,10 @@ public:
         int s = 0;
         for (int i = 0; i < N; ++i) {
 #if 0
-            s += QString(l1literal % l1literal).size();
-            s += QString(l1literal % l1literal % l1literal).size();
-            s += QString(l1literal % l1literal % l1literal % l1literal).size();
-            s += QString(l1literal % l1literal % l1literal % l1literal % l1literal).size();
+            s += QString(l1literal P l1literal).size();
+            s += QString(l1literal P l1literal P l1literal).size();
+            s += QString(l1literal P l1literal P l1literal P l1literal).size();
+            s += QString(l1literal P l1literal P l1literal P l1literal P l1literal).size();
 #endif
             s += QString(achar % l1literal % achar).size();
         }
@@ -71,24 +122,30 @@ private slots:
     void separator_1() { SEP("literal + literal  (builder first)"); }
 
     void b_2_l1literal() {
-        QBENCHMARK { r = l1literal % l1literal; }
-        COMPARE(r, QString(l1string + l1string));
+        QBENCHMARK { r = l1literal P l1literal; }
+        COMPARE(r, r2);
     }
+    #ifndef QT_NO_CAST_FROM_ASCII
+    void b_l1literal_LITERAL() {
+        QBENCHMARK { r = l1literal P LITERAL; }
+        COMPARE(r, r2);
+    }
+    #endif
     void s_2_l1string() {
         QBENCHMARK { r = l1string + l1string; }
-        COMPARE(r, QString(l1literal % l1literal));
+        COMPARE(r, r2);
     }
 
 
     void separator_2() { SEP("2 strings"); }
 
     void b_2_string() {
-        QBENCHMARK { r = string % string; }
-        COMPARE(r, QString(string + string));
+        QBENCHMARK { r = string P string; }
+        COMPARE(r, r2);
     }
     void s_2_string() {
         QBENCHMARK { r = string + string; }
-        COMPARE(r, QString(string % string));
+        COMPARE(r, r2);
     }
 
 
@@ -107,12 +164,12 @@ private slots:
     void separator_2b() { SEP("3 strings"); }
 
     void b_3_string() {
-        QBENCHMARK { r = string % string % string; }
-        COMPARE(r, QString(string + string + string));
+        QBENCHMARK { r = string P string P string; }
+        COMPARE(r, r3);
     }
     void s_3_string() {
         QBENCHMARK { r = string + string + string; }
-        COMPARE(r, QString(string % string % string));
+        COMPARE(r, r3);
     }
 
 
@@ -120,56 +177,66 @@ private slots:
 
     void b_string_l1literal() {
         QBENCHMARK { r = string % l1literal; }
-        COMPARE(r, QString(string + l1string));
+        COMPARE(r, r2);
     }
+    #ifndef QT_NO_CAST_FROM_ASCII
+    void b_string_LITERAL() {
+        QBENCHMARK { r = string P LITERAL; }
+        COMPARE(r, r2);
+    }
+    void b_LITERAL_string() {
+        QBENCHMARK { r = LITERAL P string; }
+        COMPARE(r, r2);
+    }
+    #endif
     void b_string_l1string() {
-        QBENCHMARK { r = string % l1string; }
-        COMPARE(r, QString(string + l1string));
+        QBENCHMARK { r = string P l1string; }
+        COMPARE(r, r2);
     }
     void s_string_l1literal() {
         QBENCHMARK { r = string + l1string; }
-        COMPARE(r, QString(string % l1literal));
+        COMPARE(r, r2);
     }
     void s_string_l1string() {
         QBENCHMARK { r = string + l1string; }
-        COMPARE(r, QString(string % l1literal));
+        COMPARE(r, r2);
     }
 
 
     void separator_3() { SEP("3 literals"); }
 
     void b_3_l1literal() {
-        QBENCHMARK { r = l1literal % l1literal % l1literal; }
-        COMPARE(r, QString(l1string + l1string + l1string));
+        QBENCHMARK { r = l1literal P l1literal P l1literal; }
+        COMPARE(r, r3);
     }
     void s_3_l1string() {
         QBENCHMARK { r = l1string + l1string + l1string; }
-        COMPARE(r, QString(l1literal % l1literal % l1literal));
+        COMPARE(r, r3);
     }
 
 
     void separator_4() { SEP("4 literals"); }
 
     void b_4_l1literal() {
-        QBENCHMARK { r = l1literal % l1literal % l1literal % l1literal; }
-        COMPARE(r, QString(l1string + l1string + l1string + l1string));
+        QBENCHMARK { r = l1literal P l1literal P l1literal P l1literal; }
+        COMPARE(r, r4);
     }
     void s_4_l1string() {
         QBENCHMARK { r = l1string + l1string + l1string + l1string; }
-        COMPARE(r, QString(l1literal % l1literal % l1literal % l1literal));
+        COMPARE(r, r4);
     }
 
 
     void separator_5() { SEP("5 literals"); }
 
     void b_5_l1literal() {
-        QBENCHMARK { r = l1literal % l1literal % l1literal % l1literal %l1literal; }
-        COMPARE(r, QString(l1string + l1string + l1string + l1string + l1string));
+        QBENCHMARK { r = l1literal P l1literal P l1literal P l1literal P l1literal; }
+        COMPARE(r, r5);
     }
 
     void s_5_l1string() {
         QBENCHMARK { r = l1string + l1string + l1string + l1string + l1string; }
-        COMPARE(r, QString(l1literal % l1literal % l1literal % l1literal % l1literal));
+        COMPARE(r, r5);
     }
 
 
@@ -177,12 +244,12 @@ private slots:
 
     void b_string_4_char() {
         QBENCHMARK { r = string + achar + achar + achar + achar; }
-        COMPARE(r, QString(string % achar % achar % achar % achar));
+        COMPARE(r, QString(string P achar P achar P achar P achar));
     }
 
     void s_string_4_char() {
         QBENCHMARK { r = string + achar + achar + achar + achar; }
-        COMPARE(r, QString(string % achar % achar % achar % achar));
+        COMPARE(r, QString(string P achar P achar P achar P achar));
     }
 
 
@@ -190,26 +257,26 @@ private slots:
 
     void b_char_string_char() {
         QBENCHMARK { r = achar + string + achar; }
-        COMPARE(r, QString(achar % string % achar));
+        COMPARE(r, QString(achar P string P achar));
     }
 
     void s_char_string_char() {
         QBENCHMARK { r = achar + string + achar; }
-        COMPARE(r, QString(achar % string % achar));
+        COMPARE(r, QString(achar P string P achar));
     }
 
     void separator_8() { SEP("string.arg"); }
 
     void b_string_arg() {
-        const QString pattern = l1string + QLatin1String("%1") + l1string;
-        QBENCHMARK { r = l1literal % string % l1literal; }
-        COMPARE(r, QString(l1string + string + l1string));
+        const QString pattern = l1string + QString::fromLatin1("%1") + l1string;
+        QBENCHMARK { r = l1literal P string P l1literal; }
+        COMPARE(r, r3);
     }
 
     void s_string_arg() {
         const QString pattern = l1string + QLatin1String("%1") + l1string;
         QBENCHMARK { r = pattern.arg(string); }
-        COMPARE(r, QString(l1string + string + l1string));
+        COMPARE(r, r3);
     }
 
     void s_bytearray_arg() {
@@ -223,16 +290,16 @@ private slots:
     void b_reserve() {
         QBENCHMARK {
             r.clear();
-            r = string % string % string % string;
+            r = string P string P string P string;
         }
-        COMPARE(r, QString(string + string + string + string));
+        COMPARE(r, r4);
     }
     void b_reserve_lit() {
         QBENCHMARK {
             r.clear();
-            r = string % l1literal % string % string;
+            r = string P l1literal P string P string;
         }
-        COMPARE(r, QString(string + string + string + string));
+        COMPARE(r, r4);
     }
     void s_reserve() {
         QBENCHMARK {
@@ -243,7 +310,7 @@ private slots:
             r += string;
             r += string;
         }
-        COMPARE(r, QString(string + string + string + string));
+        COMPARE(r, r4);
     }
     void s_reserve_lit() {
         QBENCHMARK {
@@ -256,7 +323,7 @@ private slots:
             r += string;
             r += string;
         }
-        COMPARE(r, QString(string + string + string + string));
+        COMPARE(r, r4);
     }
 
 private:
@@ -266,6 +333,7 @@ private:
     const QString string;
     const QStringRef stringref;
     const QLatin1Char achar;
+    const QString r2, r3, r4, r5;
 
     QString r;
 };
@@ -280,12 +348,14 @@ int main(int argc, char *argv[])
     //QString("x") % 2; // Sanity test, should only compile when the 
     // operator%(QString, int) is visible.
 
-    if (argc == 2 && (argv[1] == L("--run-builder") || argv[1] == L("-b"))) {
+    if (argc == 2 && (QLatin1String(argv[1]) == QLatin1String("--run-builder")
+                   || QLatin1String(argv[1]) == QLatin1String("-b"))) {
         tst_qstringbuilder test;
         return test.run_builder();
     }
 
-    if (argc == 2 && (argv[1] == L("--run-traditional") || argv[1] == L("-t"))) {
+    if (argc == 2 && (QLatin1String(argv[1]) == QLatin1String("--run-traditional")
+                   || QLatin1String(argv[1]) == QLatin1String("-t"))) {
         tst_qstringbuilder test;
         return test.run_traditional();
     }
