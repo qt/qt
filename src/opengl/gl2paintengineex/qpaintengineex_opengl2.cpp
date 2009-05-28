@@ -1009,8 +1009,11 @@ bool QGL2PaintEngineEx::begin(QPaintDevice *pdev)
         }
         glClear(GL_COLOR_BUFFER_BIT);
     } else if (source) {
+        QGLContext *ctx = d->ctx;
+
         d->transferMode(ImageDrawingMode);
 
+        glActiveTexture(GL_TEXTURE0 + QT_IMAGE_TEXTURE_UNIT);
         source->bind(false);
 
         QRect rect(0, 0, source->width(), source->height());
