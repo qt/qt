@@ -2487,6 +2487,8 @@ void QWidgetPrivate::scroll_sys(int dx, int dy, const QRect &r)
     QRect sr = valid_rect ? r : clipRect();
     if (just_update)
         q->update();
+    else if (!valid_rect)
+        dirty.translate(dx, dy);
 
     int x1, y1, x2, y2, w = sr.width(), h = sr.height();
     if (dx > 0) {
