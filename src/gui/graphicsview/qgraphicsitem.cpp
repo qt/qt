@@ -2860,28 +2860,25 @@ QTransform QGraphicsItem::itemTransform(const QGraphicsItem *other, bool *ok) co
 */
 void QGraphicsItem::setMatrix(const QMatrix &matrix, bool combine)
 {
-    QTransform oldTransform = this->transform();
-    QTransform newTransform(combine ? QTransform(matrix) * oldTransform : QTransform(matrix));
-    if (oldTransform == newTransform)
+    if(!d_ptr->transform)
+        d_ptr->transform = new QTransform;
+
+    QTransform newTransform(combine ? QTransform(matrix) * *d_ptr->transform : QTransform(matrix));
+    if(*d_ptr->transform == newTransform)
         return;
 
-    // Notify the item that the matrix is changing.
-    QVariant newTransformVariant(itemChange(ItemMatrixChange,
-                                            qVariantFromValue<QMatrix>(newTransform.toAffine())));
-    newTransform = QTransform(qVariantValue<QMatrix>(newTransformVariant));
-    if (oldTransform == newTransform)
+    // Notify the item that the transformation matrix is changing.
+    const QVariant newTransformVariant(itemChange(ItemTransformChange,
+                                                  qVariantFromValue<QTransform>(newTransform)));
+    newTransform = qVariantValue<QTransform>(newTransformVariant);
+    if (*d_ptr->transform == newTransform)
         return;
 
     // Update and set the new transformation.
     prepareGeometryChange();
-    if(!d_ptr->transform)
-        d_ptr->transform = new QTransform(newTransform);
-    else
-        *d_ptr->transform = newTransform;
+    *d_ptr->transform = newTransform;
 
     // Send post-notification.
-    // NB! We have to change the value from QMatrix to QTransform.
-    qVariantSetValue<QTransform>(newTransformVariant, newTransform);
     itemChange(ItemTransformHasChanged, newTransformVariant);
 }
 
@@ -2907,24 +2904,23 @@ void QGraphicsItem::setMatrix(const QMatrix &matrix, bool combine)
 */
 void QGraphicsItem::setTransform(const QTransform &matrix, bool combine)
 {
-    QTransform oldTransform = this->transform();
-    QTransform newTransform(combine ? matrix * oldTransform : matrix);
-    if (oldTransform == newTransform)
+    if(!d_ptr->transform)
+        d_ptr->transform = new QTransform;
+
+    QTransform newTransform(combine ? matrix * *d_ptr->transform : matrix);
+    if(*d_ptr->transform == newTransform)
         return;
 
     // Notify the item that the transformation matrix is changing.
     const QVariant newTransformVariant(itemChange(ItemTransformChange,
                                                   qVariantFromValue<QTransform>(newTransform)));
     newTransform = qVariantValue<QTransform>(newTransformVariant);
-    if (oldTransform == newTransform)
+    if (*d_ptr->transform == newTransform)
         return;
 
     // Update and set the new transformation.
     prepareGeometryChange();
-    if(!d_ptr->transform)
-        d_ptr->transform = new QTransform(newTransform);
-    else
-        *d_ptr->transform = newTransform;
+    *d_ptr->transform = newTransform;
 
     // Send post-notification.
     itemChange(ItemTransformHasChanged, newTransformVariant);
