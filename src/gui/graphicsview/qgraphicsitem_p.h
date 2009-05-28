@@ -145,6 +145,9 @@ public:
         dirtyChildrenBoundingRect(1),
         inDirtyList(0),
         paintedViewBoundingRectsNeedRepaint(0),
+        allChildrenDirty(0),
+        fullUpdatePending(0),
+        hasValidDeviceTransform(0),
         globalStackingOrder(-1),
         q_ptr(0)
     {
@@ -297,18 +300,6 @@ public:
                || (childrenCombineOpacity() && isFullyTransparent());
     }
 
-    inline bool hasDirtyAncestor() const
-    {
-        QGraphicsItem *p = parent;
-        while (p) {
-            if (p->d_ptr->dirtyChildren || (p->d_ptr->dirty && p->d_ptr->childrenClippedToShape()))
-                return true;
-            p = p->d_ptr->parent;
-        }
-        return false;
-    }
-
-
     QPainterPath cachedClipPath;
     QRectF childrenBoundingRect;
     QRectF needsRepaint;
@@ -320,6 +311,7 @@ public:
     QGraphicsItem *parent;
     QList<QGraphicsItem *> children;
     QTransform *transform;
+    QTransform deviceTransform;
     int siblingIndex;
     int index;
     int depth;
@@ -354,7 +346,10 @@ public:
     quint32 dirtyChildrenBoundingRect : 1;
     quint32 inDirtyList : 1;
     quint32 paintedViewBoundingRectsNeedRepaint : 1;
-    quint32 padding : 18; // feel free to use
+    quint32 allChildrenDirty : 1;
+    quint32 fullUpdatePending : 1;
+    quint32 hasValidDeviceTransform : 1;
+    quint32 padding : 15; // feel free to use
 
     // Optional stacking order
     int globalStackingOrder;

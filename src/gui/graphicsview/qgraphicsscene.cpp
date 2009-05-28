@@ -337,6 +337,7 @@ QGraphicsScenePrivate::QGraphicsScenePrivate()
       hasSceneRect(false),
       updateAll(false),
       calledEmitUpdated(false),
+      processDirtyItemsEmitted(false),
       selectionChanging(0),
       regenerateIndex(true),
       purgePending(false),
@@ -683,73 +684,70 @@ void QGraphicsScenePrivate::_q_polishItems()
 
 void QGraphicsScenePrivate::_q_processDirtyItems()
 {
-    Q_Q(QGraphicsScene);
-    if (dirtyItems.isEmpty())
-        return;
+    static int useDirtyListEnv = qgetenv("QT_GV_USE_DIRTY_LIST").toInt();
+    processDirtyItemsEmitted = false;
 
     if (updateAll) {
-        for (int i = 0; i < dirtyItems.size(); ++i)
-            resetDirtyItem(dirtyItems.at(i));
-        dirtyItems.clear();
+        if (useDirtyListEnv) {
+            for (int i = 0; i < dirtyItems.size(); ++i)
+                resetDirtyItem(dirtyItems.at(i));
+            dirtyItems.clear();
+        }
         return;
     }
 
-    const bool useCompatUpdate = views.isEmpty() || (connectedSignals & changedSignalMask);
+    if (!useDirtyListEnv) {
+        processDirtyItemsRecursive(0, views.at(0)->viewportTransform());
+        for (int i = 0; i < views.size(); ++i)
+            views.at(i)->d_func()->processPendingUpdates();
+        return;
+    }
+
     for (int i = 0; i < dirtyItems.size(); ++i) {
         QGraphicsItem *item = dirtyItems.at(i);
-        if (useCompatUpdate && !item->d_ptr->itemIsUntransformable()
-            && qFuzzyIsNull(item->boundingRegionGranularity())) {
-            // This block of code is kept for compatibility. Since 4.5, by default
-            // QGraphicsView does not connect the signal and we use the below
-            // method of delivering updates.
-            q->update(item->sceneBoundingRect());
-            resetDirtyItem(item);
-            continue;
+        QGraphicsView *view = views.at(0);
+        QGraphicsViewPrivate *viewPrivate = view->d_func();
+        const QTransform deviceTransform = item->deviceTransform(view->viewportTransform());
+
+        QRectF dirtyRect = adjustedItemBoundingRect(item);
+        if (!item->d_ptr->fullUpdatePending) {
+            _q_adjustRect(&item->d_ptr->needsRepaint);
+            dirtyRect &= item->d_ptr->needsRepaint;
         }
 
-        QRectF dirtyRect;
-        bool uninitializedDirtyRect = true;
+        if (item->d_ptr->allChildrenDirty && !item->d_ptr->children.isEmpty()
+            && !item->d_ptr->childrenClippedToShape()) {
+            QRectF childrenBounds = item->childrenBoundingRect();
+            _q_adjustRect(&childrenBounds);
+            dirtyRect |= childrenBounds;
+        }
 
-        for (int j = 0; j < views.size(); ++j) {
-            QGraphicsView *view = views.at(j);
-            QGraphicsViewPrivate *viewPrivate = view->d_func();
-            if (viewPrivate->fullUpdatePending)
-                continue;
-            switch (viewPrivate->viewportUpdateMode) {
-            case QGraphicsView::NoViewportUpdate:
-                continue;
-            case QGraphicsView::FullViewportUpdate:
-                view->viewport()->update();
-                viewPrivate->fullUpdatePending = 1;
-                continue;
-            default:
-                break;
-            }
+        if (item->d_ptr->paintedViewBoundingRectsNeedRepaint)
+            viewPrivate->updateRect(item->d_ptr->paintedViewBoundingRects.value(viewPrivate->viewport));
 
-            if (uninitializedDirtyRect) {
-                dirtyRect = adjustedItemBoundingRect(item);
-                if (!item->d_ptr->dirty) {
-                    _q_adjustRect(&item->d_ptr->needsRepaint);
-                    dirtyRect &= item->d_ptr->needsRepaint;
-                }
-
-                if (item->d_ptr->dirtyChildren && !item->d_ptr->children.isEmpty()
-                    && !item->d_ptr->childrenClippedToShape()) {
-                    QRectF childrenBounds = item->childrenBoundingRect();
-                    _q_adjustRect(&childrenBounds);
-                    dirtyRect |= childrenBounds;
-                }
-                uninitializedDirtyRect = false;
-            }
-
-            if (item->d_ptr->paintedViewBoundingRectsNeedRepaint)
-                viewPrivate->updateRect(item->d_ptr->paintedViewBoundingRects.value(viewPrivate->viewport));
-
-            if (!item->d_ptr->hasBoundingRegionGranularity)
-                viewPrivate->updateRect(viewPrivate->mapToViewRect(item, dirtyRect));
+        bool dirtyRectOutsideViewport = false;
+        if (item->d_ptr->hasBoundingRegionGranularity) {
+            const QRegion dirtyViewRegion = deviceTransform.map(QRegion(dirtyRect.toRect()))
+                                            & viewPrivate->viewport->rect();
+            if (!dirtyViewRegion.isEmpty())
+                viewPrivate->updateRegion(dirtyViewRegion);
             else
-                viewPrivate->updateRegion(viewPrivate->mapToViewRegion(item, dirtyRect));
+                dirtyRectOutsideViewport = true;
+        } else {
+            const QRect dirtyViewRect = deviceTransform.mapRect(dirtyRect).toRect()
+                                        & viewPrivate->viewport->rect();
+            if (!dirtyViewRect.isEmpty())
+                viewPrivate->updateRect(dirtyViewRect);
+            else
+                dirtyRectOutsideViewport = true;
         }
+        if (!dirtyRectOutsideViewport) {
+            // We know for sure this item will be process in the paint event, hence
+            // store its device transform and re-use it when drawing.
+            item->d_ptr->hasValidDeviceTransform = 1;
+            item->d_ptr->deviceTransform = deviceTransform;
+        }
+
         resetDirtyItem(item);
     }
 
@@ -5064,6 +5062,7 @@ void QGraphicsScenePrivate::drawSubtreeRecursive(QGraphicsItem *item, QPainter *
     QTransform transform;
     QRect viewBoundingRect;
     if (item) {
+        if (!item->d_ptr->hasValidDeviceTransform) {
         if (item->d_ptr->itemIsUntransformable()) {
             transform = item->deviceTransform(viewTransform);
         } else {
@@ -5081,6 +5080,10 @@ void QGraphicsScenePrivate::drawSubtreeRecursive(QGraphicsItem *item, QPainter *
             } else {
                 transform = parentTransform;
             }
+        }
+        } else {
+            transform = item->d_ptr->deviceTransform;
+            item->d_ptr->hasValidDeviceTransform = 0;
         }
         QRectF brect = item->boundingRect();
         if (!brect.size().isNull()) {
@@ -5176,25 +5179,120 @@ void QGraphicsScenePrivate::markDirty(QGraphicsItem *item, const QRectF &rect, b
     if (!fullItemUpdate && rect.isEmpty())
         return;
 
-    if (dirtyItems.isEmpty())
+    if (!processDirtyItemsEmitted) {
         QMetaObject::invokeMethod(q_ptr, "_q_processDirtyItems", Qt::QueuedConnection);
-
-    if (item->d_ptr->inDirtyList) {
-        if (fullItemUpdate)
-            item->d_ptr->dirty = 1;
-        else if (!item->d_ptr->dirty)
-            item->d_ptr->needsRepaint |= rect;
-    } else {
-        dirtyItems.append(item);
-        item->d_ptr->inDirtyList = 1;
-        if (fullItemUpdate)
-            item->d_ptr->dirty = 1;
-        else if (!item->d_ptr->dirty)
-            item->d_ptr->needsRepaint = rect;
+        processDirtyItemsEmitted = true;
     }
 
-    if (invalidateChildren)
+    item->d_ptr->dirty = 1;
+    if (fullItemUpdate)
+        item->d_ptr->fullUpdatePending = 1;
+    else if (!item->d_ptr->fullUpdatePending)
+        item->d_ptr->needsRepaint |= rect;
+
+    if (invalidateChildren) {
+        item->d_ptr->allChildrenDirty = 1;
         item->d_ptr->dirtyChildren = 1;
+    }
+
+    static int useDirtyListEnv = qgetenv("QT_GV_USE_DIRTY_LIST").toInt();
+    if (useDirtyListEnv) {
+        if (!item->d_ptr->inDirtyList) {
+            dirtyItems.append(item);
+            item->d_ptr->inDirtyList = 1;
+        }
+    } else {
+        QGraphicsItem *p = item->d_ptr->parent;
+        while (p && !p->d_ptr->dirtyChildren) {
+            p->d_ptr->dirtyChildren = 1;
+            p = p->d_ptr->parent;
+        }
+    }
+}
+
+void QGraphicsScenePrivate::processDirtyItemsRecursive(QGraphicsItem *item, const QTransform &parentTransform)
+{
+    Q_ASSERT(!item || item->d_ptr->dirty || item->d_ptr->dirtyChildren);
+
+    // Calculate the full transform for this item.
+    QTransform transform;
+    if (item) {
+        if (item->d_ptr->itemIsUntransformable()) {
+            transform = item->deviceTransform(views.at(0)->viewportTransform());
+        } else {
+            const QPointF &pos = item->d_ptr->pos;
+            bool posNull = pos.isNull();
+            if (!posNull || item->d_ptr->transform) {
+                if (item->d_ptr->transform) {
+                    transform = *item->d_ptr->transform;
+                    if (!posNull)
+                        transform *= QTransform::fromTranslate(pos.x(), pos.y());
+                    transform *= parentTransform;
+                } else {
+                    transform = QTransform::fromTranslate(pos.x(), pos.y()) * parentTransform;
+                }
+            } else {
+                transform = parentTransform;
+            }
+        }
+    } else {
+        transform = parentTransform;
+    }
+
+    // Process item.
+    if (item && item->d_ptr->dirty) {
+        QRectF dirtyRect = adjustedItemBoundingRect(item);
+        if (!item->d_ptr->fullUpdatePending) {
+            _q_adjustRect(&item->d_ptr->needsRepaint);
+            dirtyRect &= item->d_ptr->needsRepaint;
+        }
+
+        QGraphicsViewPrivate *viewPrivate = views.at(0)->d_func();
+        if (item->d_ptr->paintedViewBoundingRectsNeedRepaint)
+            viewPrivate->updateRect(item->d_ptr->paintedViewBoundingRects.value(viewPrivate->viewport));
+
+        bool dirtyRectOutsideViewport = false;
+        if (item->d_ptr->hasBoundingRegionGranularity) {
+            const QRegion dirtyViewRegion = transform.map(QRegion(dirtyRect.toRect()))
+                                            & viewPrivate->viewport->rect();
+            if (!dirtyViewRegion.isEmpty())
+                viewPrivate->updateRegion(dirtyViewRegion);
+            else
+                dirtyRectOutsideViewport = true;
+        } else {
+            const QRect dirtyViewRect = transform.mapRect(dirtyRect).toRect()
+                                         & viewPrivate->viewport->rect();
+            if (!dirtyViewRect.isEmpty())
+                viewPrivate->updateRect(dirtyViewRect);
+            else
+                dirtyRectOutsideViewport = true;
+        }
+        if (!dirtyRectOutsideViewport) {
+            // We know for sure this item will be process in the paint event, hence
+            // store its device transform and re-use it when drawing.
+            item->d_ptr->hasValidDeviceTransform = 1;
+            item->d_ptr->deviceTransform = transform;
+        }
+    }
+
+    // Process root items / children.
+    if (!item || item->d_ptr->dirtyChildren) {
+        QList<QGraphicsItem *> *children = item ? &item->d_ptr->children : &topLevelItems;
+        const bool allChildrenDirty = item && item->d_ptr->allChildrenDirty;
+        for (int i = 0; i < children->size(); ++i) {
+            QGraphicsItem *child = children->at(i);
+            if (allChildrenDirty) {
+                child->d_ptr->dirty = 1;
+            } else if (!child->d_ptr->dirty && !child->d_ptr->dirtyChildren) {
+                resetDirtyItem(child);
+                continue;
+            }
+            processDirtyItemsRecursive(child, transform);
+        }
+    }
+
+    if (item)
+        resetDirtyItem(item);
 }
 
 /*!
@@ -5302,7 +5400,12 @@ void QGraphicsScene::drawItems(QPainter *painter,
         }
 
         // Set up the painter transform
-        painter->setWorldTransform(item->deviceTransform(viewTransform), false);
+        if (item->d_ptr->hasValidDeviceTransform) {
+            painter->setWorldTransform(item->d_ptr->deviceTransform);
+            item->d_ptr->hasValidDeviceTransform = 0;
+        } else {
+            painter->setWorldTransform(item->deviceTransform(viewTransform), false);
+        }
 
         // Save painter
         bool saveState = (d->painterStateProtection || (item->flags() & QGraphicsItem::ItemClipsToShape));

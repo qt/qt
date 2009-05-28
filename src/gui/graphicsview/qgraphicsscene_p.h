@@ -105,6 +105,7 @@ public:
     QList<QRectF> updatedRects;
     bool updateAll;
     bool calledEmitUpdated;
+    bool processDirtyItemsEmitted;
 
     QPainterPath selectionArea;
     int selectionChanging;
@@ -257,6 +258,7 @@ public:
                               const QRegion &exposedRegion, QWidget *widget, QGraphicsView::OptimizationFlags optimizationFlags);
     void markDirty(QGraphicsItem *item, const QRectF &rect = QRectF(), bool invalidateChildren = false,
                    bool maybeDirtyClipPath = false, bool force = false, bool ignoreOpacity = false);
+    void processDirtyItemsRecursive(QGraphicsItem *item, const QTransform &);
 
     inline void resetDirtyItem(QGraphicsItem *item)
     {
@@ -266,6 +268,8 @@ public:
         item->d_ptr->dirtyChildren = 0;
         item->d_ptr->inDirtyList = 0;
         item->d_ptr->needsRepaint = QRectF();
+        item->d_ptr->allChildrenDirty = 0;
+        item->d_ptr->fullUpdatePending = 0;
     }
 
     inline void removeFromDirtyItems(QGraphicsItem *item)
