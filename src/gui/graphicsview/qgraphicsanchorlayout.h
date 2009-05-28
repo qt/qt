@@ -89,7 +89,6 @@ public:
 
     ///////// DEBUG /////////
     void dumpGraph();
-    QGraphicsAnchorLayoutPrivate *d_ptr; //### TO REMOVE
 protected:
 
 private:

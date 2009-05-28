@@ -41,6 +41,7 @@
 
 #include <QGraphicsWidget>
 
+#include "qgraphicslayout_p.h"
 #include "qgraphicsanchorlayout.h"
 #include "qgraph_p.h"
 #include "qsimplex_p.h"
@@ -196,10 +197,9 @@ public:
 
   QGraphicsAnchorLayout private methods and attributes.
 */
-class QGraphicsAnchorLayoutPrivate
+class QGraphicsAnchorLayoutPrivate : public QGraphicsLayoutPrivate
 {
     Q_DECLARE_PUBLIC(QGraphicsAnchorLayout)
-    QGraphicsAnchorLayout *q_ptr;
 
 public:
     // When the layout geometry is different from its Minimum, Preferred

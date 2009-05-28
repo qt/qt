@@ -42,12 +42,10 @@
 #include "qgraphicsanchorlayout_p.h"
 
 QGraphicsAnchorLayout::QGraphicsAnchorLayout(QGraphicsLayoutItem *parent)
-    : QGraphicsLayout(parent), d_ptr(new QGraphicsAnchorLayoutPrivate())
+    : QGraphicsLayout(*new QGraphicsAnchorLayoutPrivate(), parent)
 {
-    // ### REMOVE THAT
-    d_ptr->q_ptr = this;
-
-    d_ptr->createLayoutEdges();
+    Q_D(QGraphicsAnchorLayout);
+    d->createLayoutEdges();
 }
 
 QGraphicsAnchorLayout::~QGraphicsAnchorLayout()
