@@ -58,7 +58,8 @@
     and custom plugins allow you to use your own components with \QD.
 
     If you are new to \QD, you can take a look at the
-    \l{Getting To Know Qt Designer} document.
+    \l{Getting To Know Qt Designer} document. For a quick tutorial on how to
+    use \QD, refer to \l{A Quick Start to Qt Designer}.
 
     Qt Designer 4.5 boasts a long list of improvements. For a detailed list of
     what is new, refer \l{What's New in Qt Designer 4.5}.
@@ -499,7 +500,7 @@
         correct signal and slot and click \gui OK.
     \endtable
 
-    \image rgbController-configureConnection1.png
+    \image rgbController-configure-connection1.png
 
     Repeat the step (in reverse order), clicking on the spin box and dragging
     the cursor towards the slider, to connect the spin box's
@@ -531,15 +532,11 @@
         process for the remaining  spin boxes and sliders.
     \endtable
 
-    Now, we preview your form to see how it would look in your application. To
-    preview your form, press \key{Ctrl + R} or select \gui Preview from the
-    \gui Form menu.
-
-    \image rgbController-preview.png
-
-    Try dragging the slider - the spin box will mirror its value too (and vice
-    versa). Also, you can resize it to see how the layouts used to manage the
-    child widgets respond to different window sizes.
+    Now, we preview your form to see how it would look in your application -
+    press \key{Ctrl + R} or select \gui Preview from the \gui Form menu. Try
+    dragging the slider - the spin box will mirror its value too (and vice
+    versa). Also, you can resize it to see how the layouts that are used to
+    manage the child widgets, respond to different window sizes.
 */
 
 
