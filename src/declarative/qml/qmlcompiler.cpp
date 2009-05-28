@@ -736,10 +736,8 @@ bool QmlCompiler::compileComponentFromRoot(Object *obj, int ctxt)
     if (obj) 
         COMPILE_CHECK(compileObject(obj, ctxt));
 
+    finalizeComponent(count);
     create.createComponent.count = output->bytecode.count() - count;
-
-    int inc = finalizeComponent(count);
-    create.createComponent.count += inc;
     compileState = oldComponentCompileState;
     return true;
 }
@@ -1125,9 +1123,7 @@ bool QmlCompiler::compileListProperty(QmlParser::Property *prop,
                     COMPILE_EXCEPTION("Can only assign one binding to lists");
 
                 assignedBinding = true;
-                COMPILE_CHECK(compileBinding(v->value, prop, ctxt, 
-                                             obj->metaObject(), 
-                                             v->location.start.line));
+                COMPILE_CHECK(compileBinding(v, prop, ctxt));
                 v->type = Value::PropertyBinding;
             } else {
                 COMPILE_EXCEPTION("Cannot assign primitives to lists");
@@ -1296,9 +1292,7 @@ bool QmlCompiler::compilePropertyLiteralAssignment(QmlParser::Property *prop,
 
     if (v->value.isScript()) {
 
-        COMPILE_CHECK(compileBinding(v->value, prop, ctxt, 
-                                     obj->metaObject(), 
-                                     v->location.start.line));
+        COMPILE_CHECK(compileBinding(v, prop, ctxt));
 
         v->type = Value::PropertyBinding;
 
@@ -1403,46 +1397,27 @@ bool QmlCompiler::compileDynamicMeta(QmlParser::Object *obj)
     return true;
 }
 
-bool QmlCompiler::compileBinding(const QmlParser::Variant &bind, 
+bool QmlCompiler::compileBinding(QmlParser::Value *value, 
                                  QmlParser::Property *prop,
-                                 int ctxt, const QMetaObject *mo, qint64 line)
+                                 int ctxt)
 {
-    Q_ASSERT(mo);
     Q_ASSERT(prop->index);
+    Q_ASSERT(prop->parent);
+    Q_ASSERT(prop->parent->metaObject());
 
-    QMetaProperty mp = mo->property(prop->index);
+    QMetaProperty mp = prop->parent->metaObject()->property(prop->index);
     if (!mp.isWritable() && !QmlMetaType::isList(prop->type))
         COMPILE_EXCEPTION2(prop, "Cannot assign binding to read-only property");
 
-    QmlBasicScript bs;
-    bs.compile(bind);
-
-    int bref;
-    if (bs.isValid()) {
-        bref = output->indexForByteArray(QByteArray(bs.compileData(), bs.compileDataSize()));
-    } else {
-        bref = output->indexForString(bind.asScript());
-    }
-
-    QmlInstruction assign;
-    assign.assignBinding.context = ctxt;
-    assign.line = line;
-
-    if (bs.isValid()) 
-        assign.type = QmlInstruction::StoreCompiledBinding;
-    else
-        assign.type = QmlInstruction::StoreBinding;
-
-    assign.assignBinding.property = prop->index;
-    assign.assignBinding.value = bref;
-    assign.assignBinding.category = QmlMetaProperty::propertyCategory(mp);
     BindingReference reference;
-    reference.expression = bind;
+    reference.expression = value->value;
     reference.property = prop;
+    reference.value = value;
     reference.instructionIdx = output->bytecode.count();
+    reference.bindingContext = ctxt;
     compileState.bindings << reference;
 
-    output->bytecode << assign;
+    output->bytecode << QmlInstruction();;
 
     return true;
 }
@@ -1490,81 +1465,95 @@ protected:
 
 // Update the init instruction with final data, and optimize some simple 
 // bindings
-int QmlCompiler::finalizeComponent(int patch)
+void QmlCompiler::finalizeComponent(int patch)
 {
-    int saveCount = 0;
-    int newInstrs = 0;
-
     for (int ii = 0; ii < compileState.bindings.count(); ++ii) {
         const BindingReference &binding = compileState.bindings.at(ii);
-
-        QmlInstruction &instr = output->bytecode[binding.instructionIdx];
-
-        if (instr.type == QmlInstruction::StoreCompiledBinding) {
-            QmlBasicScript s(output->datas.at(instr.assignBinding.value).constData());
-
-            if (s.isSingleLoad()) {
-                QString slt = QLatin1String(s.singleLoadTarget());
-                if (!slt.at(0).isUpper())
-                    continue;
-
-                if (compileState.ids.contains(slt) && 
-                   instr.assignBinding.category == QmlMetaProperty::Object) {
-
-                    IdReference reference = 
-                        compileState.ids[slt];
-
-                    const QMetaObject *idMo = reference.object->metaObject();
-                    const QMetaObject *storeMo = QmlMetaType::rawMetaObjectForType(binding.property->type);
-
-                    Q_ASSERT(idMo);
-                    Q_ASSERT(storeMo);
-
-                    bool canAssign = false;
-                    while (!canAssign && idMo) {
-                        if (idMo == storeMo)
-                            canAssign = true;
-                        else
-                            idMo = idMo->superClass();
-                    }
-
-                    if (!canAssign)
-                        continue;
-
-                    int saveId = -1;
-
-                    int instructionIdx = reference.instructionIdx;
-                    if (output->bytecode.at(instructionIdx).setId.save != -1) {
-                        saveId = output->bytecode.at(instructionIdx).setId.save;
-                    } else {
-                        output->bytecode[instructionIdx].setId.save = saveCount;
-                        saveId = saveCount;
-                        ++saveCount;
-                    }
-
-                    int prop = instr.assignBinding.property;
-
-                    instr.type = QmlInstruction::PushProperty;
-                    instr.pushProperty.property = prop;
-
-                    QmlInstruction instr;
-                    instr.type = QmlInstruction::StoreStackObject;
-                    instr.line = 0;
-                    instr.assignStackObject.property = newInstrs;
-                    instr.assignStackObject.object = saveId;
-                    output->bytecode << instr;
-                    ++newInstrs;
-                }
-            }
-        } 
+        finalizeBinding(binding);
     }
 
-    output->bytecode[patch].init.dataSize = saveCount;
+    output->bytecode[patch].init.dataSize = compileState.savedObjects;;
     output->bytecode[patch].init.bindingsSize = compileState.bindings.count();
     output->bytecode[patch].init.parserStatusSize = 
         compileState.parserStatusCount;
+}
 
-    return newInstrs;
+void QmlCompiler::finalizeBinding(const BindingReference &binding)
+{
+    QmlBasicScript bs;
+    bs.compile(binding.expression);
+
+    QmlInstruction &instr = output->bytecode[binding.instructionIdx];
+    instr.line = binding.value->location.start.line;
+
+    // Single load optimization 
+    if (bs.isValid() && bs.isSingleLoad()) {
+
+        QString singleLoadTarget = QLatin1String(bs.singleLoadTarget());
+
+        if (singleLoadTarget.at(0).isUpper() && 
+            compileState.ids.contains(singleLoadTarget) &&
+            QmlMetaType::isObject(binding.property->type)) {
+
+            IdReference reference = compileState.ids[singleLoadTarget];
+
+            const QMetaObject *idMo = reference.object->metaObject();
+            const QMetaObject *storeMo = 
+                QmlMetaType::rawMetaObjectForType(binding.property->type);
+
+            Q_ASSERT(idMo);
+            Q_ASSERT(storeMo);
+
+            bool canAssign = false;
+            while (!canAssign && idMo) {
+                if (idMo == storeMo)
+                    canAssign = true;
+                else
+                    idMo = idMo->superClass();
+            }
+
+            if (canAssign) {
+                int instructionIdx = reference.instructionIdx;
+                if (output->bytecode.at(instructionIdx).setId.save == -1) {
+                    output->bytecode[instructionIdx].setId.save = 
+                        compileState.savedObjects++;
+                }
+                int saveId = output->bytecode.at(instructionIdx).setId.save;
+
+                instr.type = QmlInstruction::PushProperty;
+                instr.pushProperty.property = binding.property->index;
+
+                QmlInstruction store;
+                store.type = QmlInstruction::StoreStackObject;
+                store.line = 0;
+                store.assignStackObject.property = 
+                    compileState.pushedProperties++;
+                store.assignStackObject.object = saveId;
+                output->bytecode << store;
+                return;
+            }
+        }
+    }
+
+    // General binding fallback
+    int bref;
+    if (bs.isValid()) {
+        bref = output->indexForByteArray(QByteArray(bs.compileData(), bs.compileDataSize()));
+    } else {
+        bref = output->indexForString(binding.expression.asScript());
+    }
+
+    instr.assignBinding.context = binding.bindingContext;
+
+    if (bs.isValid()) 
+        instr.type = QmlInstruction::StoreCompiledBinding;
+    else
+        instr.type = QmlInstruction::StoreBinding;
+
+    instr.assignBinding.property = binding.property->index;
+    instr.assignBinding.value = bref;
+    QMetaProperty mp = binding.property->parent->metaObject()->property(binding.property->index);
+    instr.assignBinding.category = QmlMetaProperty::propertyCategory(mp);
 }
 
 QmlCompiledData::QmlCompiledData()

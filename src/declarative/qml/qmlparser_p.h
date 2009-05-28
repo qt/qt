@@ -252,6 +252,9 @@ namespace QmlParser
         Property(const QByteArray &n);
         virtual ~Property();
 
+        // The Object to which this property is attached
+        Object *parent;
+
         Object *getValue();
         void addValue(Value *v);
 

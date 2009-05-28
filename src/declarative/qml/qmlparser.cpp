@@ -83,18 +83,23 @@ const QMetaObject *Object::metaObject() const
 
 QmlParser::Property *Object::getDefaultProperty()
 {
-    if (!defaultProperty)
+    if (!defaultProperty) {
         defaultProperty = new Property;
+        defaultProperty->parent = this;
+    }
     return defaultProperty;
 }
 
 Property *QmlParser::Object::getProperty(const QByteArray &name, bool create)
 {
     if (!properties.contains(name)) {
-        if (create)
-            properties.insert(name, new Property(name));
-        else
+        if (create) {
+            Property *property = new Property(name);
+            property->parent = this;
+            properties.insert(name, property);
+        } else {
             return 0;
+        }
     }
     return properties[name];
 }
@@ -153,12 +158,12 @@ void QmlParser::Object::dump(int indent) const
 }
 
 QmlParser::Property::Property()
-: type(0), index(-1), value(0), isDefault(true)
+: parent(0), type(0), index(-1), value(0), isDefault(true)
 {
 }
 
 QmlParser::Property::Property(const QByteArray &n)
-: type(0), index(-1), value(0), name(n), isDefault(false)
+: parent(0), type(0), index(-1), value(0), name(n), isDefault(false)
 {
 }
 

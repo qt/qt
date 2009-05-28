@@ -158,10 +158,12 @@ private:
                                  QmlParser::Value *value);
 
     bool compileDynamicMeta(QmlParser::Object *obj);
-    bool compileBinding(const QmlParser::Variant &, QmlParser::Property *prop,
-                        int ctxt, const QMetaObject *, qint64);
+    bool compileBinding(QmlParser::Value *, QmlParser::Property *prop,
+                        int ctxt);
 
-    int finalizeComponent(int patch);
+    void finalizeComponent(int patch);
+    class BindingReference;
+    void finalizeBinding(const BindingReference &); 
 
     struct IdReference {
         QString id;
@@ -172,14 +174,18 @@ private:
     struct BindingReference {
         QmlParser::Variant expression;
         QmlParser::Property *property;
+        QmlParser::Value *value;
         int instructionIdx;
+        int bindingContext;
     };
 
     struct ComponentCompileState
     {
-        ComponentCompileState() : parserStatusCount(0) {}
+        ComponentCompileState() : parserStatusCount(0), savedObjects(0), pushedProperties(0) {}
         QHash<QString, IdReference> ids;
         int parserStatusCount;
+        int savedObjects;
+        int pushedProperties;
         QList<BindingReference> bindings;
     };
     ComponentCompileState compileState;
