@@ -1083,6 +1083,7 @@ private:
 */
 void QFileSystemModelPrivate::sortChildren(int column, const QModelIndex &parent)
 {
+    Q_Q(QFileSystemModel);
     QFileSystemModelPrivate::QFileSystemNode *indexNode = node(parent);
     if (indexNode->children.count() == 0)
         return;
@@ -1105,6 +1106,16 @@ void QFileSystemModelPrivate::sortChildren(int column, const QModelIndex &parent
     for (int i = 0; i < values.count(); ++i) {
         indexNode->visibleChildren.append(values.at(i).first->fileName);
         values.at(i).first->isVisible = true;
+    }
+
+    if (!disableRecursiveSort) {
+        for (int i = 0; i < q->rowCount(parent); ++i) {
+            const QModelIndex childIndex = q->index(i, 0, parent);
+            QFileSystemModelPrivate::QFileSystemNode *indexNode = node(childIndex);
+            //Only do a recursive sort on visible nodes
+            if (indexNode->isVisible)
+                sortChildren(column, childIndex);
+        }
     }
 }
 
