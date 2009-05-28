@@ -12,7 +12,7 @@ Item {
         id: Container; anchors.fill: parent
         pen.color: "white"; pen.width: 0; radius: 8
         gradient: Gradient {
-            GradientStop { position: 0.0; color: "#66343434" },
+            GradientStop { position: 0.0; color: "#66343434" }
             GradientStop { position: 1.0; color: "#66000000" }
         }   
     }
@@ -21,7 +21,7 @@ Item {
         id: Handle
         x: Slider.width / 2 - Handle.width / 2; y: 2; width: 30; height: Slider.height-4; radius: 6
         gradient: Gradient {
-            GradientStop { position: 0.0; color: "lightgray" },
+            GradientStop { position: 0.0; color: "lightgray" }
             GradientStop { position: 1.0; color: "gray" }
         }   
 

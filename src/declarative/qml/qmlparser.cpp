@@ -52,7 +52,6 @@
 #include <qml.h>
 #include "private/qmlcomponent_p.h"
 #include <qmlcomponent.h>
-#include <qmlbasicscript.h>
 #include "private/qmetaobjectbuilder_p.h"
 #include <private/qmlvmemetaobject_p.h>
 #include <private/qmlcompiler_p.h>
@@ -281,10 +280,14 @@ QmlParser::Variant::Variant(double v, const QString &asWritten)
 {
 }
 
-QmlParser::Variant::Variant(const QString &v, Type type)
-: t(type), s(v)
+QmlParser::Variant::Variant(const QString &v)
+: t(String), s(v)
 {
-    Q_ASSERT(type == String || type == Script);
+}
+
+QmlParser::Variant::Variant(const QString &v, JavaScript::AST::Node *n)
+: t(Script), n(n), s(v)
+{
 }
 
 QmlParser::Variant &QmlParser::Variant::operator=(const Variant &o)
@@ -332,6 +335,14 @@ QString QmlParser::Variant::asScript() const
     case Script:
         return s;
     }
+}
+
+JavaScript::AST::Node *QmlParser::Variant::asAST() const
+{
+    if (type() == Script)
+        return n;
+    else
+        return 0;
 }
 
 QT_END_NAMESPACE

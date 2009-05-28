@@ -12,13 +12,60 @@
 #ifndef QMLBASICSCRIPT_P_H
 #define QMLBASICSCRIPT_P_H
 
+#include <QtCore/QList>
+#include <QtCore/QByteArray>
+#include <QtCore/QVariant>
+#include <private/qmlparser_p.h>
+
+QT_BEGIN_HEADER
+
 QT_BEGIN_NAMESPACE
 
-class QObject;
+class QmlRefCount;
+class QmlContext;
+class QmlBasicScriptPrivate;
+class QmlBasicScriptNodeCache;
+class QmlBasicScript
+{
+public:
+    QmlBasicScript();
+    QmlBasicScript(const char *, QmlRefCount * = 0);
+    ~QmlBasicScript();
+
+    // Always 4-byte aligned
+    const char *compileData() const;
+    unsigned int compileDataSize() const;
+
+    QByteArray expression() const;
+
+    bool compile(const QmlParser::Variant &);
+    bool isValid() const;
+
+    void clear();
+
+    void dump();
+    void *newScriptState();
+    void deleteScriptState(void *);
+
+    enum CacheState { NoChange, Incremental, Reset };
+    QVariant run(QmlContext *, void *, CacheState *);
+
+    // Optimization opportunities
+    bool isSingleLoad() const;
+    QByteArray singleLoadTarget() const;
+
+private:
+    int flags;
+    QmlBasicScriptPrivate *d;
+    QmlRefCount *rc;
+
+    void clearCache(void *);
+    void guard(QmlBasicScriptNodeCache &);
+    bool valid(QmlBasicScriptNodeCache &, QObject *);
+};
+
 class QmlContextPrivate;
 class QDebug;
-class QByteArray;
-
 class QmlBasicScriptNodeCache
 {
 public:
@@ -48,6 +95,10 @@ public:
 
 QDebug operator<<(QDebug, const QmlBasicScriptNodeCache &);
 
+QT_END_NAMESPACE
+
+QT_END_HEADER
+
 #endif // QMLBASICSCRIPT_P_H
 
-QT_END_NAMESPACE
+

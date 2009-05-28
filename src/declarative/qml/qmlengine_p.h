@@ -53,7 +53,7 @@
 #include <private/qmlclassfactory_p.h>
 #include <private/qmlcompositetypemanager_p.h>
 #include <QtDeclarative/qml.h>
-#include <QtDeclarative/qmlbasicscript.h>
+#include <private/qmlbasicscript_p.h>
 #include <QtDeclarative/qmlcontext.h>
 #include <QtDeclarative/qmlengine.h>
 #include <QtDeclarative/qmlexpression.h>
@@ -265,7 +265,7 @@ class QmlExpressionPrivate
 {
 public:
     QmlExpressionPrivate(QmlExpression *);
-    QmlExpressionPrivate(QmlExpression *, const QString &expr, bool);
+    QmlExpressionPrivate(QmlExpression *, const QString &expr);
     QmlExpressionPrivate(QmlExpression *, void *expr, QmlRefCount *rc);
     ~QmlExpressionPrivate();
 

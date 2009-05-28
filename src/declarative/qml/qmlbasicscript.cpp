@@ -9,9 +9,7 @@
 **
 ****************************************************************************/
 
-#include "qmlbasicscript.h"
 #include "qmlbasicscript_p.h"
-#include "lexer.h"
 #include <QColor>
 #include <QDebug>
 #include <private/qmlengine_p.h>
@@ -19,9 +17,39 @@
 #include <QStack>
 #include <qfxperf.h>
 #include <private/qmlrefcount_p.h>
-
+#include <private/javascriptast_p.h>
+#include <private/javascriptengine_p.h>
 
 QT_BEGIN_NAMESPACE
+
+struct ScriptInstruction {
+    enum {
+        Load,       // fetch
+        Fetch,       // fetch
+
+        Add,         // NA
+        Subtract,    // NA
+        Multiply,    // NA
+        Equals,      // NA
+        And,         // NA
+
+        Int,         // integer
+        Bool,        // boolean
+    } type;
+
+    union {
+        struct {
+            int idx;
+        } fetch;
+        struct {
+            int value;
+        } integer;
+        struct {
+            bool value;
+        } boolean;
+    };
+};
+
 DEFINE_BOOL_CONFIG_OPTION(scriptWarnings, QML_SCRIPT_WARNINGS);
 
 class QmlBasicScriptPrivate
@@ -193,7 +221,7 @@ static QVariant fetch_value(QObject *o, int idx, int type)
     };
 }
 
-QVariant QmlBasicScriptNodeCache::value(const char *name) const
+QVariant QmlBasicScriptNodeCache::value(const char *) const
 {
     //QFxPerfTimer<QFxPerf::BasicScriptValue> pt;
     switch(type) {
@@ -220,29 +248,23 @@ QVariant QmlBasicScriptNodeCache::value(const char *name) const
 struct QmlBasicScriptCompiler
 {
     QmlBasicScriptCompiler()
-    : script(0), stateSize(0), src(0), idx(0) {}
+    : script(0), stateSize(0) {}
     QmlBasicScript *script;
-    QList<LexerToken> tokens;
     int stateSize;
-    const char *src;
-    int idx;
 
-    bool compile();
-    bool compileExpr();
+    bool compile(JavaScript::AST::Node *);
 
-    bool parseFetch();
-    bool parseName();
-    bool parseConstant();
-    void skipWhitespace();
+    bool compileExpression(JavaScript::AST::Node *);
+
+    bool tryConstant(JavaScript::AST::Node *);
+    bool parseConstant(JavaScript::AST::Node *);
+    bool tryName(JavaScript::AST::Node *);
+    bool parseName(JavaScript::AST::Node *);
+    bool tryBinaryExpression(JavaScript::AST::Node *);
+    bool compileBinaryExpression(JavaScript::AST::Node *);
 
     QByteArray data;
     QList<ScriptInstruction> bytecode;
-
-    QByteArray string(int, int);
-    Token token() const;
-    bool atEnd() const;
-    void adv();
-    int index() const;
 };
 
 /*!
@@ -416,30 +438,18 @@ bool QmlBasicScript::isValid() const
 }
 
 /*!
-    Compile \a src and return true if the compilation is successful, otherwise
+    Compile \a v and return true if the compilation is successful, otherwise
     returns false.
  */
-bool QmlBasicScript::compile(const QByteArray &src)
+bool QmlBasicScript::compile(const QmlParser::Variant &v)
 {
-    bool rv = compile(src.constData());
-    return rv;
-}
+    if (!v.asAST()) return false;
 
-/*!
-    \overload
-
-    Compile \a src and return true if the compilation is successful, otherwise
-    returns false.
- */
-bool QmlBasicScript::compile(const char *src)
-{
-    if (!src) return false;
+    QByteArray expr = v.asScript().toLatin1();
+    const char *src = expr.constData();
 
     QmlBasicScriptCompiler bsc;
     bsc.script = this;
-    bsc.tokens = tokenize(src);
-    bsc.src = src;
-    // dumpTokens(src, bsc.tokens);
 
     if (d) {
         if (flags & QmlBasicScriptPrivate::OwnData)
@@ -448,7 +458,7 @@ bool QmlBasicScript::compile(const char *src)
         flags = 0;
     }
 
-    if (bsc.compile()) {
+    if (bsc.compile(v.asAST())) {
         int len = ::strlen(src);
         flags = QmlBasicScriptPrivate::OwnData;
         int size = sizeof(QmlBasicScriptPrivate) + 
@@ -468,226 +478,148 @@ bool QmlBasicScript::compile(const char *src)
     return d != 0;
 }
 
-void QmlBasicScriptCompiler::skipWhitespace()
+bool QmlBasicScriptCompiler::compile(JavaScript::AST::Node *node)
 {
-    while(idx < tokens.count() && tokens.at(idx).token == WHITESPACE)
-        ++idx;
+    return compileExpression(node);
 }
 
-bool QmlBasicScriptCompiler::compile()
+using namespace JavaScript;
+bool QmlBasicScriptCompiler::tryConstant(JavaScript::AST::Node *node)
 {
-    if (!compileExpr())
-        return false;
-
-    skipWhitespace();
-
-    if (atEnd())
+    if (node->kind == AST::Node::Kind_TrueLiteral || 
+        node->kind == AST::Node::Kind_FalseLiteral)
         return true;
 
-    int t = token();
-    if (t != AND) 
-        return false;
+    if (node->kind == AST::Node::Kind_NumericLiteral) {
+        AST::NumericLiteral *lit = static_cast<AST::NumericLiteral *>(node);
 
-    adv();
-    skipWhitespace();
-    if (!compileExpr())
-        return false;
+        return lit->suffix == AST::NumericLiteral::noSuffix &&
+               double(int(lit->value)) == lit->value;
+    }
 
-    ScriptInstruction instr;
-    instr.type = ScriptInstruction::And;
-    bytecode.append(instr);
-
-    skipWhitespace();
-
-    return atEnd();
+    return false;
 }
 
-bool QmlBasicScriptCompiler::compileExpr()
+bool QmlBasicScriptCompiler::parseConstant(JavaScript::AST::Node *node)
 {
-    /*
-        EXPRESSION := <NAME><OPERATOR>[<CONSTANT>|<NAME>]
-     */
-
-    if (!parseName())
-        return false;
-
-    skipWhitespace();
-
-    if (atEnd())
-        return true;
-
-    int t = token();
-    switch(t) {
-    case PLUS:
-    case MINUS:
-        /*
-    case LANGLE:
-    case RANGLE:
-    */
-    case STAR:
-    case EQUALS:
-        break;
-    default:
-        return true;
-    }
-    adv();
-
-    skipWhitespace();
-
-    if (!parseConstant() &&
-       !parseName())
-        return false;
-
     ScriptInstruction instr;
-    switch(t) {
-    case PLUS:
-        instr.type = ScriptInstruction::Add;
-        break;
-    case MINUS:
-        instr.type = ScriptInstruction::Subtract;
-        break;
-    case STAR:
-        instr.type = ScriptInstruction::Multiply;
-        break;
-    case EQUALS:
-        instr.type = ScriptInstruction::Equals;
-        break;
-    default:
-        break;
-    }
-    bytecode.append(instr);
 
-    skipWhitespace();
+    if (node->kind == AST::Node::Kind_NumericLiteral) {
+        AST::NumericLiteral *lit = static_cast<AST::NumericLiteral *>(node);
+        instr.type = ScriptInstruction::Int;
+        instr.integer.value = int(lit->value);
+    } else {
+        instr.type = ScriptInstruction::Bool;
+        instr.boolean.value = node->kind == AST::Node::Kind_TrueLiteral;
+    }
+
+    bytecode.append(instr);
 
     return true;
 }
 
-bool QmlBasicScriptCompiler::parseName()
+bool QmlBasicScriptCompiler::tryName(JavaScript::AST::Node *node)
 {
-    skipWhitespace();
-    
-    bool named = false;
-    bool seenchar = false;
-    bool seendot = false;
-    int namestart = -1;
-    bool pushed = false;
-    while(!atEnd()) {
-        int t = token();
-        if (t == CHARACTER) {
-            named = true;
-            seendot = false;
-            seenchar = true;
-            namestart = index();
-            adv();
-        } else if (t == DIGIT) {
-            if (!seenchar) break;
-            adv();
-        } else if (t == DOT) {
-            seendot = true;
-            if (namestart == -1)
-                break;
+    return node->kind == AST::Node::Kind_IdentifierExpression ||
+           node->kind == AST::Node::Kind_FieldMemberExpression;
+}
 
-            seenchar = false;
-            QByteArray name = string(namestart, index() - 1);
-            int nref = data.count();
-            data.append(name);
-            data.append('\0');
-            ScriptInstruction instr;
-            if (pushed)
-                instr.type = ScriptInstruction::Fetch;
-            else
-                instr.type = ScriptInstruction::Load;
-            pushed = true;
-            instr.fetch.idx = nref;
-            bytecode.append(instr);
-            ++stateSize;
-            namestart = -1;
-            adv();
-        } else {
-            break;
-        }
-    }
+bool QmlBasicScriptCompiler::parseName(AST::Node *node)
+{
+    bool load = false;
 
-    if (namestart != -1) {
-        QByteArray name = string(namestart, index() - 1);
-        int nref = data.count();
-        data.append(name);
-        data.append('\0');
-        ScriptInstruction instr;
-        if (pushed)
-            instr.type = ScriptInstruction::Fetch;
-        else
-            instr.type = ScriptInstruction::Load;
-        pushed = true;
-        instr.fetch.idx = nref;
-        bytecode.append(instr);
-        ++stateSize;
-    }
+    QString name;
+    if (node->kind == AST::Node::Kind_IdentifierExpression) {
+        name = static_cast<AST::IdentifierExpression *>(node)->name->asString();
+        load = true;
+    } else if (node->kind == AST::Node::Kind_FieldMemberExpression) {
+        AST::FieldMemberExpression *expr = static_cast<AST::FieldMemberExpression *>(node);
 
-    if (seendot)
+        if (!parseName(expr->base))
+            return false;
+
+        name = expr->name->asString();
+    } else {
         return false;
+    }
+
+    int nref = data.count();
+    data.append(name.toUtf8());
+    data.append('\0');
+    ScriptInstruction instr;
+    if (load)
+        instr.type = ScriptInstruction::Load;
     else
-        return named;
-}
-
-bool QmlBasicScriptCompiler::parseConstant()
-{
-    switch(token()) {
-    case DIGIT:
-        {
-            ScriptInstruction instr;
-            instr.type = ScriptInstruction::Int;
-            instr.integer.value = string(index(), index()).toUInt();
-            bytecode.append(instr);
-            adv();
-        }
-        break;
-    case TOKEN_TRUE:
-    case TOKEN_FALSE:
-        {
-            ScriptInstruction instr;
-            instr.type = ScriptInstruction::Bool;
-            instr.boolean.value = (token() == TOKEN_TRUE);
-            bytecode.append(instr);
-            adv();
-        }
-        break;
-
-    default:
-        return false;
-    }
+        instr.type = ScriptInstruction::Fetch;
+    instr.fetch.idx = nref;
+    bytecode.append(instr);
+    ++stateSize;
 
     return true;
 }
 
-bool QmlBasicScriptCompiler::atEnd() const
+bool QmlBasicScriptCompiler::compileExpression(JavaScript::AST::Node *node)
 {
-    return idx >= tokens.count();
+    if (tryBinaryExpression(node))
+        return compileBinaryExpression(node);
+    else if (tryConstant(node))
+        return parseConstant(node);
+    else if (tryName(node))
+        return parseName(node);
+    else
+        return false;
 }
 
-Token QmlBasicScriptCompiler::token() const
+bool QmlBasicScriptCompiler::tryBinaryExpression(AST::Node *node)
 {
-    return tokens.at(idx).token;
-}
+    if (node->kind == AST::Node::Kind_BinaryExpression) {
+        AST::BinaryExpression *expr = 
+            static_cast<AST::BinaryExpression *>(node);
 
-void QmlBasicScriptCompiler::adv()
-{
-    ++idx;
-}
-
-int QmlBasicScriptCompiler::index() const
-{
-    return idx;
-}
-
-QByteArray QmlBasicScriptCompiler::string(int from, int to)
-{
-    QByteArray rv;
-    for (int ii = from; ii <= to; ++ii) {
-        const LexerToken &token = tokens.at(ii);
-        rv.append(QByteArray(src + token.start, token.end - token.start + 1));
+        if (expr->op == QSOperator::Add ||
+            expr->op == QSOperator::Sub ||
+            expr->op == QSOperator::Equal ||
+            expr->op == QSOperator::And ||
+            expr->op == QSOperator::Mul)
+            return true;
     }
-    return rv;
+    return false;
+}
+
+bool QmlBasicScriptCompiler::compileBinaryExpression(AST::Node *node)
+{
+    if (node->kind == AST::Node::Kind_BinaryExpression) {
+        AST::BinaryExpression *expr = 
+            static_cast<AST::BinaryExpression *>(node);
+
+        if (!compileExpression(expr->left)) return false;
+        if (!compileExpression(expr->right)) return false;
+
+        ScriptInstruction instr;
+        switch (expr->op) {
+        case QSOperator::Add:
+            instr.type = ScriptInstruction::Add;
+            break;
+        case QSOperator::Sub:
+            instr.type = ScriptInstruction::Subtract;
+            break;
+        case QSOperator::Equal:
+            instr.type = ScriptInstruction::Equals;
+            break;
+        case QSOperator::And:
+            instr.type = ScriptInstruction::And;
+            break;
+        case QSOperator::Mul:
+            instr.type = ScriptInstruction::Multiply;
+            break;
+        default:
+            return false;
+        }
+
+        bytecode.append(instr);
+        return true;
+    } 
+    return false;
 }
 
 /*!

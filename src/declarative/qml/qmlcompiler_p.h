@@ -137,7 +137,6 @@ private:
     bool compileIdProperty(QmlParser::Property *prop, 
                            QmlParser::Object *obj);
     bool compileAttachedProperty(QmlParser::Property *prop, 
-                                 QmlParser::Object *obj,
                                  int ctxt);
     bool compileNestedProperty(QmlParser::Property *prop,
                                int ctxt);
@@ -148,7 +147,6 @@ private:
                                    QmlParser::Object *obj,
                                    int ctxt);
     bool compilePropertyObjectAssignment(QmlParser::Property *prop,
-                                         QmlParser::Object *obj,
                                          QmlParser::Value *value,
                                          int ctxt);
     bool compilePropertyLiteralAssignment(QmlParser::Property *prop,
@@ -160,17 +158,35 @@ private:
                                  QmlParser::Value *value);
 
     bool compileDynamicMeta(QmlParser::Object *obj);
-    bool compileBinding(const QString &, QmlParser::Property *prop,
+    bool compileBinding(const QmlParser::Variant &, QmlParser::Property *prop,
                         int ctxt, const QMetaObject *, qint64);
 
-    int optimizeExpressions(int start, int end, int patch = -1);
+    int finalizeComponent(int patch);
 
-    QSet<QString> ids;
+    struct IdReference {
+        QString id;
+        QmlParser::Object *object;
+        int instructionIdx;
+    };
+
+    struct BindingReference {
+        QmlParser::Variant expression;
+        QmlParser::Property *property;
+        int instructionIdx;
+    };
+
+    struct ComponentCompileState
+    {
+        ComponentCompileState() : parserStatusCount(0) {}
+        QHash<QString, IdReference> ids;
+        int parserStatusCount;
+        QList<BindingReference> bindings;
+    };
+    ComponentCompileState compileState;
 
     QList<QmlError> exceptions;
     QmlCompiledData *output;
 
-    QHash<int, int> savedTypes;
 };
 
 QT_END_NAMESPACE

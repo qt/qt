@@ -69,8 +69,8 @@ QmlBindableValue::QmlBindableValue(void *data, QmlRefCount *rc, QObject *obj, QO
 {
 }
 
-QmlBindableValue::QmlBindableValue(const QString &str, QObject *obj, bool sse, QObject *parent)
-: QmlPropertyValueSource(*new QmlBindableValuePrivate, parent), QmlExpression(QmlContext::activeContext(), str, obj, sse)
+QmlBindableValue::QmlBindableValue(const QString &str, QObject *obj, QObject *parent)
+: QmlPropertyValueSource(*new QmlBindableValuePrivate, parent), QmlExpression(QmlContext::activeContext(), str, obj)
 {
 }
 
