@@ -2412,6 +2412,8 @@
     \value ImhNoPredictiveText       Do not use predictive text (i.e. dictionary lookup) while typing.
     \value ImhDialableCharactersOnly Only characters suitable for phone dialling are allowed.
 
+    \value ImhExclusiveInputMask     A mask to test for the presence of any flags ending with \c Only.
+
     \note If several flags ending with \c Only are ORed together, the resulting character set will
           consist of the union of the specified sets. For instance specifying \c ImhNumbersOnly and
           \c ImhUppercaseOnly would yield a set consisting of numbers and uppercase letters.

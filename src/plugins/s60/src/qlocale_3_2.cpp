@@ -10,6 +10,7 @@
 ****************************************************************************/
 
 #include <e32std.h>
+#include <e32base.h>
 
 EXPORT_C TPtrC defaultGetLongDateFormatSpec(TExtendedLocale& locale)
 {
