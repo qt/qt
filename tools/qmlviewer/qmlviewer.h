@@ -44,7 +44,6 @@ public:
     void setCacheEnabled(bool);
     void addLibraryPath(const QString& lib);
 
-    QSize sizeHint() const;
     QMenuBar *menuBar() const;
 
 public slots:
