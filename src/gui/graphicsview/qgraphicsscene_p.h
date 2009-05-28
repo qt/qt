@@ -280,15 +280,11 @@ public:
     mutable QVector<int> freeSceneTransformSlots;
 
     QList<QGraphicsSceneTouchEvent::TouchPoint *> sceneCurrentTouchPoints;
-    QHash<QGraphicsItem *, QList<QGraphicsSceneTouchEvent::TouchPoint *> > itemCurrentTouchPoints;
     QHash<int, QGraphicsItem *> itemForTouchPointId;
     static void updateTouchPointsForItem(QGraphicsItem *item, QGraphicsSceneTouchEvent *touchEvent);
-    static QGraphicsSceneTouchEvent::TouchPoint *findClosestTouchPoint(const QList<QGraphicsSceneTouchEvent::TouchPoint *> &activeTouchPoints,
-                                                                       const QPointF &scenePos);
-    void appendTouchPoint(QGraphicsSceneTouchEvent::TouchPoint *touchPoint,
-                          QList<QGraphicsSceneTouchEvent::TouchPoint *> *currentTouchPoints);
-    void removeTouchPoint(QGraphicsSceneTouchEvent::TouchPoint *touchPoint,
-                          QList<QGraphicsSceneTouchEvent::TouchPoint *> *currentTouchPoints);
+    QGraphicsSceneTouchEvent::TouchPoint *findClosestTouchPoint(const QPointF &scenePos);
+    void appendTouchPoint(QGraphicsSceneTouchEvent::TouchPoint *touchPoint);
+    void removeTouchPoint(QGraphicsSceneTouchEvent::TouchPoint *touchPoint);
     void touchEventHandler(QGraphicsSceneTouchEvent *touchEvent);
     bool sendTouchBeginEvent(QGraphicsItem *item, QGraphicsSceneTouchEvent *touchEvent);
 };

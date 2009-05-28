@@ -435,7 +435,6 @@ public:
     QMap<QString, int> grabbedGestures;
 
     QHash<int, QWidget *> widgetForTouchPointId;
-    QMap<QWidget *, QList<QTouchEvent::TouchPoint *> > widgetCurrentTouchPoints;
     static void updateTouchPointsForWidget(QWidget *widget, QTouchEvent *touchEvent);
 
 #if defined(Q_WS_WIN)
@@ -448,12 +447,9 @@ public:
     QList<QTouchEvent::TouchPoint *> appCurrentTouchPoints;
 
     void initializeMultitouch();
-    static QTouchEvent::TouchPoint *findClosestTouchPoint(const QList<QTouchEvent::TouchPoint *> &activeTouchPoints,
-                                                          const QPointF &screenPos);
-    void appendTouchPoint(QTouchEvent::TouchPoint *touchPoint,
-                          QList<QTouchEvent::TouchPoint *> *currentTouchPoints);
-    void removeTouchPoint(QTouchEvent::TouchPoint *touchPoint,
-                          QList<QTouchEvent::TouchPoint *> *currentTouchPoints);
+    QTouchEvent::TouchPoint *findClosestTouchPoint(const QPointF &screenPos);
+    void appendTouchPoint(QTouchEvent::TouchPoint *touchPoint);
+    void removeTouchPoint(QTouchEvent::TouchPoint *touchPoint);
     bool translateTouchEvent(const MSG &msg);
 #endif
 

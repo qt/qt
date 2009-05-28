@@ -4031,7 +4031,6 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
     // Note: TouchUpdate and TouchEnd events are sent to d->currentMultitouchWidget and never propagated
     {
         QWidget *widget = static_cast<QWidget *>(receiver);
-        QWidget *origin = widget;
         QTouchEvent *touchEvent = static_cast<QTouchEvent *>(e);
         bool eventAccepted = touchEvent->isAccepted();
         if (widget->testAttribute(Qt::WA_AcceptTouchEvents) && e->spontaneous()) {
@@ -4055,9 +4054,6 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
                     QTouchEvent::TouchPoint *touchPoint = touchEvent->touchPoints().at(i);
                     d->widgetForTouchPointId[touchPoint->id()] = widget;
                 }
-                if (origin != widget)
-                    d->widgetCurrentTouchPoints.remove(origin);
-                d->widgetCurrentTouchPoints[widget] = touchEvent->touchPoints();
                 break;
             } else if (widget->isWindow() || widget->testAttribute(Qt::WA_NoMousePropagation)) {
                 break;
