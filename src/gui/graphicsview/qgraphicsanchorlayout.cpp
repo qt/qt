@@ -62,6 +62,18 @@ QGraphicsAnchorLayout::~QGraphicsAnchorLayout()
     }
 
     d->deleteLayoutEdges();
+
+    // ### make something better here
+    qDeleteAll(d->itemCenterConstraints[0]);
+    d->itemCenterConstraints[0].clear();
+    qDeleteAll(d->itemCenterConstraints[1]);
+    d->itemCenterConstraints[1].clear();
+
+    Q_ASSERT(d->items.isEmpty());
+    Q_ASSERT(d->m_vertexList.isEmpty());
+
+    // ### Remove when integrated into Qt
+    delete d_ptr;
 }
 
 void QGraphicsAnchorLayout::anchor(QGraphicsLayoutItem *firstItem,
