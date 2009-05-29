@@ -96,7 +96,7 @@ public:
 
         ShowBase            = 0x80,
         UppercaseBase       = 0x100,
-        ForcePoint          = Alternate,
+        ForcePoint          = Alternate
     };
 
     enum GroupSeparatorMode {
