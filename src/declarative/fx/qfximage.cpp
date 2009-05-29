@@ -459,7 +459,7 @@ uint QFxImage::glSimpleItemData(float *vertices, float *texVertices,
 void QFxImagePrivate::checkDirty()
 {
     if (_texDirty && !_pix.isNull()) {
-        _tex.setImage(_pix);
+        _tex.setImage(_pix.toImage());
         _tex.setHorizontalWrap(GLTexture::Repeat);
         _tex.setVerticalWrap(GLTexture::Repeat);
     }

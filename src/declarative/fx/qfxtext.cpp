@@ -696,7 +696,7 @@ void QFxTextPrivate::checkImgCache()
         }
 
 #if defined(QFX_RENDER_OPENGL)
-    tex.setImage(imgCache);
+    tex.setImage(imgCache.toImage());
 #endif
 
     imgDirty = false;

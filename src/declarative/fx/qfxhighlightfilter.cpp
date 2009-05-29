@@ -138,7 +138,7 @@ void QFxHighlightFilter::imageLoaded()
     QPixmap img = QFxPixmap(d->url);
 #if defined(QFX_RENDER_OPENGL2)
     if (!img.isNull()) 
-        d->tex.setImage(img);
+        d->tex.setImage(img.toImage());
 #endif
     emit sourceChanged(d->source);
     update();

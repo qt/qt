@@ -315,7 +315,7 @@ void QFxPaintedItem::paintGLContents(GLPainter &p)
 #if defined(QFX_RENDER_QPAINTER)
             newitem->image = img;
 #else
-            newitem->image.setImage(img);
+            newitem->image.setImage(img.toImage());
 #endif
             d->imagecache.append(newitem);
             QRectF target(r.x(), r.y(), r.width(), r.height());

@@ -652,7 +652,7 @@ void QFxRect::paintGLContents(GLPainter &p)
 {
     Q_D(QFxRect);
     if (d->_radius == 0 && (!d->_pen || !d->_pen->isValid())) {
-        if (d->_gradcolor.isValid()) {
+        if (d->gradient) {
             float widthV = width();
             float heightV = height();
 
@@ -661,20 +661,16 @@ void QFxRect::paintGLContents(GLPainter &p)
                                    0, 0,
                                    widthV, 0 };
 
-            float r = d->_color.redF();
-            float g = d->_color.greenF();
-            float b = d->_color.blueF();
-            float a = d->_color.alphaF() * p.activeOpacity;
-
-            float r2 = d->_gradcolor.redF();
-            float g2 = d->_gradcolor.greenF();
-            float b2 = d->_gradcolor.blueF();
-            float a2 = d->_gradcolor.alphaF() * p.activeOpacity;
-
-            GLfloat colors[] = { r2, g2, b2, a2,
-                                 r2, g2, b2, a2,
-                                 r, g, b, a,
-                                 r, g, b, a };
+            int count = d->gradient->stops()->size();
+            GLfloat colors[count*8];
+            for (int i = 0; i < count; i += 8) {
+                QFxGradientStop *g = d->gradient->stops()->at(i);
+                QColor c = g->color();
+                colors[i] = c.redF(); colors[i+4] = colors[i];
+                colors[i+1] = c.greenF(); colors[i+5] = colors[i+1];
+                colors[i+2] = c.blueF(); colors[i+6] = colors[i+2];
+                colors[i+3] = c.alphaF() * p.activeOpacity; colors[i+7] = colors[i+3];
+            }
 
             ColorShader *shader = basicShaders()->color();
             shader->enable();
@@ -682,7 +678,7 @@ void QFxRect::paintGLContents(GLPainter &p)
 
             shader->setAttributeArray(ColorShader::Vertices, vertices, 2);
             shader->setAttributeArray(ColorShader::Colors, colors, 4);
-            glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+            glDrawArrays(GL_TRIANGLE_STRIP, 0, count*2);
             shader->disableAttributeArray(ColorShader::Vertices);
             shader->disableAttributeArray(ColorShader::Colors);
         } else {

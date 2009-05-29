@@ -1143,7 +1143,7 @@ void QFxParticlesPainter::paintGLContents(GLPainter &p)
     updateSize();
 
     if (d->texDirty && !d->image.isNull()) {
-        d->tex.setImage(d->image);
+        d->tex.setImage(d->image.toImage());
         d->tex.setHorizontalWrap(GLTexture::Repeat);
         d->tex.setVerticalWrap(GLTexture::Repeat);
     }
