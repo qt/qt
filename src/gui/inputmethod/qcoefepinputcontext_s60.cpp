@@ -636,13 +636,13 @@ void QCoeFepInputContext::SetCursorSelectionForFepL(const TCursorSelection& aCur
     if (!w)
         return;
 
-    int pos = w->inputMethodQuery(Qt::ImCursorPosition).toInt() + aCursorSelection.iCursorPos + 1;
+    int pos = aCursorSelection.iAnchorPos;
+    int length = aCursorSelection.iCursorPos - pos;
 
     QList<QInputMethodEvent::Attribute> attributes;
-    attributes << QInputMethodEvent::Attribute(QInputMethodEvent::Cursor, pos, 1, QVariant());
+    attributes << QInputMethodEvent::Attribute(QInputMethodEvent::Selection, pos, length, QVariant());
     QInputMethodEvent event(m_preeditString, attributes);
-    // ### FIXME Sets preeditcursor and not cursor. Probably needs new API.
-    //sendEvent(event);
+    sendEvent(event);
 }
 
 void QCoeFepInputContext::GetCursorSelectionForFep(TCursorSelection& aCursorSelection) const
