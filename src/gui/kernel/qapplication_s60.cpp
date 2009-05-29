@@ -1012,6 +1012,7 @@ int QApplication::s60ProcessEvent(TWsEvent *event)
             } else if ((visChangedEvent->iFlags & TWsVisibilityChangedEvent::EPartiallyVisible)
                        && !w->d_func()->maybeBackingStore()) {
                 w->d_func()->topData()->backingStore = new QWidgetBackingStore(w);
+                w->update();
             }
             return 1;
         }
