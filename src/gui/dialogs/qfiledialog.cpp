@@ -565,8 +565,9 @@ bool QFileDialogPrivate::canBeNativeDialog()
 }
 
 /*!
-    Sets the given \a option to be enabled if \a on is true;
-    otherwise, clears the given \a option.
+    \since 4.5
+    Sets the given \a option to be enabled if \a on is true; otherwise,
+    clears the given \a option.
 
     \sa options, testOption()
 */
