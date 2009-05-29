@@ -177,6 +177,21 @@ bool QSoftKeyStack::isEmpty()
     return d->isEmpty();
 }
 
+QList<QSoftKeyAction*> menuActionList(QWidget *widget)
+{
+    QList<QSoftKeyAction*> result;
+
+    QSoftKeyAction* menu = new QSoftKeyAction(QSoftKeyAction::Menu, QString::fromLatin1("Menu"), widget);
+    result.append(menu);
+    const Qt::ContextMenuPolicy policy = widget->contextMenuPolicy();
+    if (policy != Qt::NoContextMenu && policy != Qt::PreventContextMenu ) {
+        QSoftKeyAction* contextMenu = new QSoftKeyAction(QSoftKeyAction::ContextMenu, QString::fromLatin1("ContextMenu"), widget);
+        result.append(contextMenu);
+    }
+
+    return result;
+}
+
 void QSoftKeyStack::handleFocusChanged(QWidget *old, QWidget *now)
 {
     if (!now)
@@ -188,17 +203,8 @@ void QSoftKeyStack::handleFocusChanged(QWidget *old, QWidget *now)
     if (!mainWindow->hasSoftKeyStack())
         return;
     QSoftKeyStack* softKeyStack = mainWindow->softKeyStack();
-    if( mainWindow->menuWidget() )
-    {
-        QList<QSoftKeyAction*> actionList;
-        QSoftKeyAction* menu = new QSoftKeyAction(QSoftKeyAction::Menu, QString::fromLatin1("Menu"), now);
-        actionList.append(menu);
-    
-        Qt::ContextMenuPolicy policy = now->contextMenuPolicy();
-        if (policy != Qt::NoContextMenu && policy != Qt::PreventContextMenu ) {
-            QSoftKeyAction* contextMenu = new QSoftKeyAction(QSoftKeyAction::ContextMenu, QString::fromLatin1("ContextMenu"), now);
-            actionList.append(contextMenu);
-        }
+    if (mainWindow->menuWidget()) {
+        QList<QSoftKeyAction*> actionList = menuActionList(now);
         if (old)
             softKeyStack->popandPush(actionList);
         else
