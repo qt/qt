@@ -829,7 +829,7 @@ void QGraphicsViewPrivate::processPendingUpdates()
 void QGraphicsViewPrivate::updateAll()
 {
     Q_Q(QGraphicsView);
-    q->viewport()->repaint();
+    q->viewport()->update();
     fullUpdatePending = true;
     dirtyBoundingRect = QRect();
     dirtyRegion = QRegion();
