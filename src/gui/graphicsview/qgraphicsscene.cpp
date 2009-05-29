@@ -5059,28 +5059,18 @@ void QGraphicsScenePrivate::drawSubtreeRecursive(QGraphicsItem *item, QPainter *
         return;
 
     // Calculate the full transform for this item.
-    QTransform transform;
+    QTransform transform = parentTransform;
     QRect viewBoundingRect;
     if (item) {
         if (!item->d_ptr->hasValidDeviceTransform) {
-        if (item->d_ptr->itemIsUntransformable()) {
-            transform = item->deviceTransform(viewTransform);
-        } else {
-            const QPointF &pos = item->d_ptr->pos;
-            bool posNull = pos.isNull();
-            if (!posNull || item->d_ptr->transform) {
-                if (item->d_ptr->transform) {
-                    QTransform x = *item->d_ptr->transform;
-                    if (!posNull)
-                        x *= QTransform::fromTranslate(pos.x(), pos.y());
-                    transform = x * parentTransform;
-                } else {
-                    transform = QTransform::fromTranslate(pos.x(), pos.y()) * parentTransform;
-                }
+            if (item->d_ptr->itemIsUntransformable()) {
+                transform = item->deviceTransform(viewTransform);
             } else {
-                transform = parentTransform;
+                const QPointF &pos = item->d_ptr->pos;
+                transform.translate(pos.x(), pos.y());
+                if (item->d_ptr->transform)
+                    transform = *item->d_ptr->transform * transform;
             }
-        }
         } else {
             transform = item->d_ptr->deviceTransform;
             item->d_ptr->hasValidDeviceTransform = 0;
@@ -5093,8 +5083,6 @@ void QGraphicsScenePrivate::drawSubtreeRecursive(QGraphicsItem *item, QPainter *
             item->d_ptr->paintedViewBoundingRects.insert(widget, paintedViewBoundingRect);
             viewBoundingRect = paintedViewBoundingRect & exposedRegion.boundingRect();
         }
-    } else {
-        transform = parentTransform;
     }
 
     bool childClip = (item && (item->d_ptr->flags & QGraphicsItem::ItemClipsChildrenToShape));
@@ -5215,28 +5203,16 @@ void QGraphicsScenePrivate::processDirtyItemsRecursive(QGraphicsItem *item, cons
     Q_ASSERT(!item || item->d_ptr->dirty || item->d_ptr->dirtyChildren);
 
     // Calculate the full transform for this item.
-    QTransform transform;
+    QTransform transform = parentTransform;
     if (item) {
         if (item->d_ptr->itemIsUntransformable()) {
             transform = item->deviceTransform(views.at(0)->viewportTransform());
         } else {
             const QPointF &pos = item->d_ptr->pos;
-            bool posNull = pos.isNull();
-            if (!posNull || item->d_ptr->transform) {
-                if (item->d_ptr->transform) {
-                    transform = *item->d_ptr->transform;
-                    if (!posNull)
-                        transform *= QTransform::fromTranslate(pos.x(), pos.y());
-                    transform *= parentTransform;
-                } else {
-                    transform = QTransform::fromTranslate(pos.x(), pos.y()) * parentTransform;
-                }
-            } else {
-                transform = parentTransform;
-            }
+            transform.translate(pos.x(), pos.y());
+            if (item->d_ptr->transform)
+                transform = *item->d_ptr->transform * transform;
         }
-    } else {
-        transform = parentTransform;
     }
 
     // Process item.
