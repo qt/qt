@@ -89,8 +89,8 @@ public:
 #if defined(QFX_RENDER_OPENGL)
     GLTexture texture;
 #endif
-    QSimpleCanvasConfig::Image imgCache;
-    QImage imgStyleCache;
+    QPixmap imgCache;
+    QPixmap imgStyleCache;
     QFxTextEdit::HAlignment hAlign;
     QFxTextEdit::VAlignment vAlign;
     bool dirty;
