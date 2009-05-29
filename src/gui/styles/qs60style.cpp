@@ -368,6 +368,7 @@ void QS60StylePrivate::clearCaches(QS60StylePrivate::CacheClearReason reason)
         m_colorCache.clear();
         QPixmapCache::clear();
         deleteBackground();
+        break;
     case CC_UndefinedChange:
     default:
         m_colorCache.clear();
@@ -1110,15 +1111,6 @@ void QS60Style::drawComplexControl(ComplexControl control, const QStyleOptionCom
         }
         break;
 #endif //QT_NO_GROUPBOX
-#ifndef QT_NO_DIAL
-    case CC_Dial:
-        if (const QStyleOptionSlider *slider = qstyleoption_cast<const QStyleOptionSlider *>(option)) {
-            QStyleOptionSlider optionSlider = *slider;
-            QCommonStyle::drawComplexControl(control, &optionSlider, painter, widget);
-        }
-        break;
-#endif //QT_NO_DIAL
-
     default:
         QCommonStyle::drawComplexControl(control, option, painter, widget);
     }
@@ -1176,24 +1168,6 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
                 QS60StylePrivate::drawSkinElement(skinElement, painter, option->rect, flags);
             }
         break;
-    case CE_PushButtonLabel:
-        if (const QStyleOptionButton *button = qstyleoption_cast<const QStyleOptionButton *>(option)) {
-            QStyleOptionButton optionButton = *button;
-            QCommonStyle::drawControl(element, &optionButton, painter, widget);
-        }
-        break;
-    case CE_CheckBoxLabel:
-        if (const QStyleOptionButton *checkBox = qstyleoption_cast<const QStyleOptionButton *>(option)) {
-            QStyleOptionButton optionCheckBox = *checkBox;
-            QCommonStyle::drawControl(element, &optionCheckBox, painter, widget);
-        }
-        break;
-    case CE_RadioButtonLabel:
-        if (const QStyleOptionButton *radioButton = qstyleoption_cast<const QStyleOptionButton *>(option)) {
-            QStyleOptionButton optionRadioButton = *radioButton;
-            QCommonStyle::drawControl(element, &optionRadioButton, painter, widget);
-        }
-        break;
 #ifndef QT_NO_TOOLBUTTON
     case CE_ToolButtonLabel:
         if (const QStyleOptionToolButton *toolBtn = qstyleoption_cast<const QStyleOptionToolButton *>(option)) {
@@ -1212,12 +1186,6 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
         }
         break;
 #endif //QT_NO_TOOLBUTTON
-    case CE_HeaderLabel:
-        if (const QStyleOptionHeader *headerLabel = qstyleoption_cast<const QStyleOptionHeader *>(option)) {
-            QStyleOptionHeader optionHeaderLabel = *headerLabel;
-            QCommonStyle::drawControl(element, &optionHeaderLabel, painter, widget);
-        }
-        break;
 #ifndef QT_NO_COMBOBOX
     case CE_ComboBoxLabel:
         if (const QStyleOptionComboBox *comboBox = qstyleoption_cast<const QStyleOptionComboBox *>(option)) {
@@ -1579,12 +1547,6 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
         break;
 #endif // QT_NO_PROGRESSBAR
 #ifndef QT_NO_MENUBAR
-    case CE_MenuBarItem:
-        if (const QStyleOptionMenuItem *menuBarItem = qstyleoption_cast<const QStyleOptionMenuItem *>(option)) {
-            QStyleOptionMenuItem optionMenuBarItem = *menuBarItem;
-            QCommonStyle::drawControl(element, &optionMenuBarItem, painter, widget);
-        }
-        break;
 #endif //QT_NO_MENUBAR
 #ifndef QT_NO_MENU
     case CE_MenuItem:
@@ -1797,49 +1759,6 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
         }
         break;
 #endif //QT_NO_TOOLBAR
-
-    //todo: remove non-used widgets in final version
-    case CE_ShapedFrame:
-    case CE_MenuVMargin:
-    case CE_MenuHMargin:
-#ifndef QT_NO_MENU
-    case CE_MenuScroller:
-    case CE_MenuTearoff:
-#endif //QT_NO_MENU
-
-    case CE_CheckBox:
-    case CE_RadioButton:
-#ifndef QT_NO_TABBAR
-    case CE_TabBarTab:
-#endif //QT_NO_TABBAR
-#ifndef QT_NO_PROGRESSBAR
-    case CE_ProgressBar:
-#endif // QT_NO_PROGRESSBAR
-    case CE_Q3DockWindowEmptyArea:
-#ifndef QT_NO_SIZEGRIP
-    case CE_SizeGrip:
-#endif //QT_NO_SIZEGRIP
-    case CE_Splitter:
-#ifndef QT_NO_RUBBERBAND
-    case CE_RubberBand:
-#endif //QT_NO_RUBBERBAND
-#ifndef QT_NO_DOCKWIDGET
-    case CE_DockWidgetTitle:
-#endif //QT_NO_DOCKWIDGET
-    case CE_ScrollBarAddLine:
-    case CE_ScrollBarSubLine:
-    case CE_ScrollBarAddPage:
-    case CE_ScrollBarSubPage:
-    case CE_ScrollBarSlider:
-    case CE_ScrollBarFirst:
-    case CE_ScrollBarLast:
-    case CE_FocusFrame:
-#ifndef QT_NO_TOOLBOX
-    case CE_ToolBoxTab:
-    case CE_ToolBoxTabShape:
-    case CE_ToolBoxTabLabel:
-#endif //QT_NO_TOOLBOX
-    case CE_ColumnViewGrip:
     default:
         QCommonStyle::drawControl(element, option, painter, widget);
     }
@@ -2165,15 +2084,6 @@ void QS60Style::drawPrimitive(PrimitiveElement element, const QStyleOption *opti
     default:
         QCommonStyle::drawPrimitive(element, option, painter, widget);
     }
-}
-
-/*!
-  \reimp - sets the default colors
-*/
-void QS60Style::drawItemText(QPainter *painter, const QRect &rectangle, int alignment, const QPalette & palette, bool enabled, const QString &text, QPalette::ColorRole textRole) const
-{
-    QPalette override = palette;
-    QCommonStyle::drawItemText(painter, rectangle, alignment, override, enabled, text, textRole);
 }
 
 /*!
