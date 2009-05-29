@@ -309,6 +309,11 @@
     and is always initialized to 1.
     Use QStyleOptionGraphicsItem::levelOfDetailFromTransform for a more
     fine-grained value.
+
+    \value ItemHasNoContents The item does not paint anything (i.e., calling
+    paint() on the item has no effect). You should set this flag on items that
+    do not need to be painted to ensure that Graphics View avoids unnecessary
+    painting preparations.
 */
 
 /*!
@@ -9107,6 +9112,9 @@ QDebug operator<<(QDebug debug, QGraphicsItem::GraphicsItemFlag flag)
         break;
     case QGraphicsItem::ItemUsesExtendedStyleOption:
         str = "ItemUsesExtendedStyleOption";
+        break;
+    case QGraphicsItem::ItemHasNoContents:
+        str = "ItemHasNoContents";
         break;
     }
     debug << str;

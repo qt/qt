@@ -295,9 +295,13 @@ static inline bool QRectF_intersects(const QRectF &s, const QRectF &r)
 static inline void _q_adjustRect(QRectF *rect)
 {
     Q_ASSERT(rect);
-    if (!rect->width())
+    bool nullWidth = !rect->width();
+    bool nullHeight = !rect->height();
+    if (nullWidth && nullHeight)
+        return;
+    if (nullWidth)
         rect->adjust(-0.00001, 0, 0.00001, 0);
-    if (!rect->height())
+    else if (nullHeight)
         rect->adjust(0, -0.00001, 0, 0.00001);
 }
 
@@ -5079,22 +5083,23 @@ void QGraphicsScenePrivate::drawSubtreeRecursive(QGraphicsItem *item, QPainter *
             }
         }
         QRectF brect = item->boundingRect();
-        _q_adjustRect(&brect);
-        const QRect paintedViewBoundingRect = transform.mapRect(brect).toRect().adjusted(-1, -1, 1, 1);
-        item->d_ptr->paintedViewBoundingRects.insert(widget, paintedViewBoundingRect);
-        viewBoundingRect = paintedViewBoundingRect & exposedRegion.boundingRect();
+        if (!brect.size().isNull()) {
+            // ### This does not take the clip into account.
+            _q_adjustRect(&brect);
+            const QRect paintedViewBoundingRect = transform.mapRect(brect).toRect().adjusted(-1, -1, 1, 1);
+            item->d_ptr->paintedViewBoundingRects.insert(widget, paintedViewBoundingRect);
+            viewBoundingRect = paintedViewBoundingRect & exposedRegion.boundingRect();
+        }
     } else {
         transform = parentTransform;
     }
-
-    // Find and sort children.
-    QList<QGraphicsItem *> children = item ? item->d_ptr->children : topLevelItems;
-    qSort(children.begin(), children.end(), qt_notclosestLeaf);
 
     bool childClip = (item && (item->d_ptr->flags & QGraphicsItem::ItemClipsChildrenToShape));
     bool dontDrawItem = !item || viewBoundingRect.isEmpty();
     bool dontDrawChildren = item && dontDrawItem && childClip;
     childClip &= !dontDrawChildren & !children.isEmpty();
+    if (item && item->d_ptr->flags & QGraphicsItem::ItemHasNoContents)
+        dontDrawItem = true;
 
     // Clip children.
     if (childClip) {
@@ -5102,6 +5107,11 @@ void QGraphicsScenePrivate::drawSubtreeRecursive(QGraphicsItem *item, QPainter *
         painter->setWorldTransform(transform);
         painter->setClipPath(item->shape(), Qt::IntersectClip);
     }
+
+    // Find and sort children.
+    QList<QGraphicsItem *> children = item ? item->d_ptr->children : topLevelItems;
+    if (!dontDrawChildren)
+        qSort(children.begin(), children.end(), qt_notclosestLeaf);
 
     // Draw children behind
     int i;

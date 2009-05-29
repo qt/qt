@@ -350,11 +350,11 @@ public:
     quint32 unused : 3;
 
     // New 32 bits
-    quint32 flags : 10;
+    quint32 flags : 11;
     quint32 dirtyChildrenBoundingRect : 1;
     quint32 inDirtyList : 1;
     quint32 paintedViewBoundingRectsNeedRepaint : 1;
-    quint32 padding : 19; // feel free to use
+    quint32 padding : 18; // feel free to use
 
     // Optional stacking order
     int globalStackingOrder;
