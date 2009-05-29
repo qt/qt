@@ -2337,7 +2337,7 @@ QVariant QLineEdit::inputMethodQuery(Qt::InputMethodQuery property) const
     case Qt::ImFont:
         return font();
     case Qt::ImCursorPosition:
-        return QVariant((d->selend - d->selstart == 0) ? d->cursor : d->selend);
+        return QVariant(d->cursor);
     case Qt::ImSurroundingText:
         return QVariant(d->text);
     case Qt::ImCurrentSelection:
