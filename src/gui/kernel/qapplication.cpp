@@ -5304,12 +5304,6 @@ void QApplicationPrivate::appendTouchPoint(QTouchEvent::TouchPoint *touchPoint)
             break;
     }
     appCurrentTouchPoints.insert(at, touchPoint);
-
-    if (appCurrentTouchPoints.count() > appAllTouchPoints.count()) {
-        qFatal("Qt: INTERNAL ERROR: appCurrentTouchPoints.count() (%d) > appAllTouchPoints.count() (%d)",
-               appCurrentTouchPoints.count(),
-               appAllTouchPoints.count());
-    }
 }
 
 void QApplicationPrivate::removeTouchPoint(QTouchEvent::TouchPoint *touchPoint)
