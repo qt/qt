@@ -133,6 +133,12 @@ void QFxPen::setWidth(int w)
     Sets a \e color at a \e position in a gradient.
 */
 
+void QFxGradientStop::updateGradient()
+{
+    if (QFxGradient *grad = qobject_cast<QFxGradient*>(parent()))
+        grad->doUpdate();
+}
+
 /*!
     \qmlclass Gradient QFxGradient
     \brief The Gradient item defines a gradient fill.
@@ -169,6 +175,13 @@ const QGradient *QFxGradient::gradient() const
     }
 
     return m_gradient;
+}
+
+void QFxGradient::doUpdate()
+{
+    delete m_gradient;
+    m_gradient = 0;
+    emit updated();
 }
 
 QML_DEFINE_TYPE(QFxRect,Rect)
@@ -310,7 +323,11 @@ void QFxRect::setGradient(QFxGradient *gradient)
     Q_D(QFxRect);
     if (d->gradient == gradient)
         return;
+    if (d->gradient)
+        disconnect(d->gradient, SIGNAL(updated()), this, SLOT(doUpdate()));
     d->gradient = gradient;
+    if (d->gradient)
+        connect(d->gradient, SIGNAL(updated()), this, SLOT(doUpdate()));
     update();
 }
 
