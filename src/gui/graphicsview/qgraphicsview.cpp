@@ -3313,7 +3313,7 @@ void QGraphicsView::paintEvent(QPaintEvent *event)
     int backgroundTime = stopWatch.elapsed() - exposedTime;
 #endif
 
-    static int directEnv = getenv("QGRAPHICSVIEW_DIRECT").toInt();
+    static int directEnv = qgetenv("QGRAPHICSVIEW_DIRECT").toInt();
     if (directEnv || (d->optimizationFlags & BypassDrawItems)) {
         d->scene->d_func()->drawSubtreeRecursive(0, &painter, viewTransform, viewTransform, exposedRegion,
                                                  viewport(), d->optimizationFlags);
