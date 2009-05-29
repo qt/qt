@@ -100,7 +100,7 @@ void QSoftKeyStackPrivate::popandPush(QSoftKeyAction *softKey)
 {
     QSoftkeySet oldSoftKeySet = softKeyStack.pop();
     QSoftkeySet newSoftKeySet;
-    newSoftKeySet.append(newSoftKeySet);
+    newSoftKeySet.append(softKey);
     softKeyStack.push(newSoftKeySet);
     if( !isSame(oldSoftKeySet, newSoftKeySet))
         setNativeSoftKeys();
