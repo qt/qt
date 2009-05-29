@@ -5,7 +5,7 @@
 
 #include <stdlib.h>
 
-QSimplex::QSimplex() : rows(0), columns(0), firstArtificial(0), matrix(0)
+QSimplex::QSimplex() : objective(0), rows(0), columns(0), firstArtificial(0), matrix(0)
 {
 
 }

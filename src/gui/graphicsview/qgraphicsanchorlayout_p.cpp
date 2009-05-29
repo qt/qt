@@ -506,6 +506,9 @@ void QGraphicsAnchorLayoutPrivate::calculateGraphs(
     // of the "trunk" set of constraints and variables.
     // ### does trunk always exist? empty = trunk is the layout left->center->right
     QList<QSimplexConstraint *> trunkConstraints = parts[0];
+    QList<QSimplexConstraint *> sizeHintConstraints;
+    sizeHintConstraints = constraintsFromSizeHints(getVariables(trunkConstraints));
+    trunkConstraints += sizeHintConstraints;
 
     // For minimum and maximum, use the path between the two layout sides as the
     // objective function.
@@ -540,6 +543,10 @@ void QGraphicsAnchorLayoutPrivate::calculateGraphs(
     }
     sizeHints[orientation][Qt::PreferredSize] = pref;
 
+    // Delete the constraints, we won't use them anymore.
+    qDeleteAll(sizeHintConstraints);
+    sizeHintConstraints.clear();
+
     // For the other parts that not the trunk, solve only for the preferred size
     // that is the size they will remain at, since they are not stretched by the
     // layout.
@@ -548,11 +555,10 @@ void QGraphicsAnchorLayoutPrivate::calculateGraphs(
     for (int i = 1; i < parts.count(); ++i) {
         QList<QSimplexConstraint *> partConstraints = parts[i];
         QList<AnchorData *> partVariables = getVariables(partConstraints);
+        Q_ASSERT(!partVariables.isEmpty());
 
-        // ###
-        if (partVariables.isEmpty())
-            continue;
-
+        sizeHintConstraints = constraintsFromSizeHints(partVariables);
+        partConstraints += sizeHintConstraints;
         solvePreferred(partConstraints);
 
         // Propagate size at preferred to other sizes. Semi-floats
@@ -563,6 +569,10 @@ void QGraphicsAnchorLayoutPrivate::calculateGraphs(
             ad->sizeAtMinimum = ad->sizeAtPreferred;
             ad->sizeAtMaximum = ad->sizeAtPreferred;
         }
+
+        // Delete the constraints, we won't use them anymore.
+        qDeleteAll(sizeHintConstraints);
+        sizeHintConstraints.clear();
     }
 
     // Clean up our data structures. They are not needed anymore since
@@ -728,6 +738,33 @@ void QGraphicsAnchorLayoutPrivate::constraintsFromPaths(Orientation orientation)
                 pathsToVertex[0].constraint(pathsToVertex[i]);
         }
     }
+}
+
+/*!
+  \internal
+
+  Create LP constraints for each anchor based on its minimum and maximum
+  sizes, as specified in its size hints
+*/
+QList<QSimplexConstraint *> QGraphicsAnchorLayoutPrivate::constraintsFromSizeHints(
+    const QList<AnchorData *> &anchors)
+{
+    QList<QSimplexConstraint *> anchorConstraints;
+    for (int i = 0; i < anchors.size(); ++i) {
+        QSimplexConstraint *c = new QSimplexConstraint;
+        c->variables.insert(anchors[i], 1.0);
+        c->constant = anchors[i]->minSize;
+        c->ratio = QSimplexConstraint::MoreOrEqual;
+        anchorConstraints += c;
+
+        c = new QSimplexConstraint;
+        c->variables.insert(anchors[i], 1.0);
+        c->constant = anchors[i]->maxSize;
+        c->ratio = QSimplexConstraint::LessOrEqual;
+        anchorConstraints += c;
+    }
+
+    return anchorConstraints;
 }
 
 /*!
@@ -976,25 +1013,8 @@ QPair<qreal, qreal>
 QGraphicsAnchorLayoutPrivate::solveMinMax(QList<QSimplexConstraint *> constraints,
                                           GraphPath path)
 {
-    QList<AnchorData *> variables = getVariables(constraints);
-    QList<QSimplexConstraint *> itemConstraints;
-
-    for (int i = 0; i < variables.size(); ++i) {
-        QSimplexConstraint *c = new QSimplexConstraint;
-        c->variables.insert(variables[i], 1.0);
-        c->constant = variables[i]->minSize;
-        c->ratio = QSimplexConstraint::MoreOrEqual;
-        itemConstraints += c;
-
-        c = new QSimplexConstraint;
-        c->variables.insert(variables[i], 1.0);
-        c->constant = variables[i]->maxSize;
-        c->ratio = QSimplexConstraint::LessOrEqual;
-        itemConstraints += c;
-    }
-
     QSimplex simplex;
-    simplex.setConstraints(constraints + itemConstraints);
+    simplex.setConstraints(constraints);
 
     // Obtain the objective constraint
     QSimplexConstraint objective;
@@ -1011,6 +1031,7 @@ QGraphicsAnchorLayoutPrivate::solveMinMax(QList<QSimplexConstraint *> constraint
     qreal min = simplex.solveMin();
 
     // Save sizeAtMinimum results
+    QList<QSimplexVariable *> variables = simplex.constraintsVariables();
     for (int i = 0; i < variables.size(); ++i) {
         AnchorData *ad = static_cast<AnchorData *>(variables[i]);
         ad->sizeAtMinimum = ad->result;
@@ -1025,32 +1046,12 @@ QGraphicsAnchorLayoutPrivate::solveMinMax(QList<QSimplexConstraint *> constraint
         ad->sizeAtMaximum = ad->result;
     }
 
-    qDeleteAll(itemConstraints);
-
     return qMakePair<qreal, qreal>(min, max);
 }
 
 void QGraphicsAnchorLayoutPrivate::solvePreferred(QList<QSimplexConstraint *> constraints)
 {
     QList<AnchorData *> variables = getVariables(constraints);
-
-    // ###
-    QList<QSimplexConstraint *> itemConstraints;
-
-    for (int i = 0; i < variables.size(); ++i) {
-        QSimplexConstraint *c = new QSimplexConstraint;
-        c->variables.insert(variables[i], 1.0);
-        c->constant = variables[i]->minSize;
-        c->ratio = QSimplexConstraint::MoreOrEqual;
-        itemConstraints += c;
-
-        c = new QSimplexConstraint;
-        c->variables.insert(variables[i], 1.0);
-        c->constant = variables[i]->maxSize;
-        c->ratio = QSimplexConstraint::LessOrEqual;
-        itemConstraints += c;
-    }
-
     QList<QSimplexConstraint *> preferredConstraints;
     QList<QSimplexVariable *> preferredVariables;
     QSimplexConstraint objective;
@@ -1094,13 +1095,12 @@ void QGraphicsAnchorLayoutPrivate::solvePreferred(QList<QSimplexConstraint *> co
     }
 
 
-    QSimplex simplex;
-    simplex.setConstraints(constraints + itemConstraints + preferredConstraints);
-
-    simplex.setObjective(&objective);
+    QSimplex *simplex = new QSimplex;
+    simplex->setConstraints(constraints + preferredConstraints);
+    simplex->setObjective(&objective);
 
     // Calculate minimum values
-    simplex.solveMin();
+    simplex->solveMin();
 
     // Save sizeAtPreferred results
     for (int i = 0; i < variables.size(); ++i) {
@@ -1108,8 +1108,11 @@ void QGraphicsAnchorLayoutPrivate::solvePreferred(QList<QSimplexConstraint *> co
         ad->sizeAtPreferred = ad->result;
     }
 
-    qDeleteAll(itemConstraints);
+    // Make sure we delete the simplex solver -before- we delete the
+    // constraints used by it.
+    delete simplex;
+
+    // Delete constraints and variables we created.
     qDeleteAll(preferredConstraints);
     qDeleteAll(preferredVariables);
-
 }
