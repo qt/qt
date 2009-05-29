@@ -366,8 +366,6 @@ public:
     static QColor lighterColor(const QColor &baseColor);
     //deduces if the given widget should have separately themeable background
     static bool drawsOwnThemeBackground(const QWidget *widget);
-    // gets layout
-    static const QHash<QStyle::PixelMetric, int> &s60StyleLayout();
 
     QFont s60Font(QS60StyleEnums::FontCategories fontCategory,
         int pointSize = -1) const;
