@@ -67,7 +67,7 @@ QT_END_NAMESPACE
 #endif
 
 #ifndef QT_NO_SOFTKEYSTACK
-#include <QSoftKeyStack.h>
+#include <qsoftkeystack.h>
 #endif
 
 QT_BEGIN_NAMESPACE
@@ -85,7 +85,7 @@ public:
             , hasOldCursor(false) , cursorAdjusted(false)
 #endif
 #ifndef QT_NO_SOFTKEYSTACK
-            , softKeyStack(0)            
+            , softKeyStack(0)
 #endif
     { }
     QMainWindowLayout *layout;
@@ -108,7 +108,7 @@ public:
 #endif
 
 #ifndef QT_NO_SOFTKEYSTACK
-   QSoftKeyStack* softKeyStack;
+   QSoftKeyStack *softKeyStack;
 #endif
 };
 
@@ -565,12 +565,10 @@ void QMainWindow::setSoftKeyStack(QSoftKeyStack *softKeyStack)
 
     \sa softKeyStack()
 */
-bool QMainWindow::hasSoftKeyStack()
+bool QMainWindow::hasSoftKeyStack() const
 {
-    Q_D(QMainWindow);
-    if (d->softKeyStack )
-        return true;
-    return false;
+    Q_D(const QMainWindow);
+    return d->softKeyStack != 0;
 }
 #endif // QT_NO_SOFTKEYSTACK
 
