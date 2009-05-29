@@ -71,6 +71,8 @@ public:
 
     QGraphicsScene *scene() const;
 
+    virtual QRectF indexedRect();
+
     virtual QList<QGraphicsItem *> items() const  = 0;
     virtual QList<QGraphicsItem *> items(const QPointF &pos, Qt::ItemSelectionMode mode, Qt::SortOrder order, const QTransform &deviceTransform = QTransform()) const;
     virtual QList<QGraphicsItem *> items(const QRectF &rect, Qt::ItemSelectionMode mode, Qt::SortOrder order, const QTransform &deviceTransform = QTransform()) const;

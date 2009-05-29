@@ -1422,7 +1422,7 @@ QGraphicsScene::~QGraphicsScene()
 QRectF QGraphicsScene::sceneRect() const
 {
     Q_D(const QGraphicsScene);
-    return d->hasSceneRect ? d->sceneRect : d->growingItemsBoundingRect;
+    return d->index->indexedRect();
 }
 void QGraphicsScene::setSceneRect(const QRectF &rect)
 {

@@ -61,6 +61,7 @@ class Q_AUTOTEST_EXPORT QGraphicsSceneBspTreeIndex : public QGraphicsSceneIndex
     Q_OBJECT
 public:
     QGraphicsSceneBspTreeIndex(QGraphicsScene *scene = 0);
+    QRectF indexedRect();
 
     void clear();
 

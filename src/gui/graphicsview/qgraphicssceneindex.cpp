@@ -297,6 +297,16 @@ QGraphicsScene* QGraphicsSceneIndex::scene() const
     Q_D(const QGraphicsSceneIndex);
     return d->scene;
 }
+
+/*!
+    Returns the indexed area for the index
+*/
+QRectF QGraphicsSceneIndex::indexedRect()
+{
+    Q_D(const QGraphicsSceneIndex);
+    return d->scene->d_func()->sceneRect;
+}
+
 /*!
     \fn QList<QGraphicsItem *> items() const  = 0
 

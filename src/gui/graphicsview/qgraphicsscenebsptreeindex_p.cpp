@@ -61,6 +61,13 @@ QGraphicsSceneBspTreeIndex::QGraphicsSceneBspTreeIndex(QGraphicsScene *scene)
 
 }
 
+
+QRectF QGraphicsSceneBspTreeIndex::indexedRect()
+{
+    _q_updateIndex();
+     return scene()->d_func()->hasSceneRect ? scene()->d_func()->sceneRect : scene()->d_func()->growingItemsBoundingRect;
+}
+
 void QGraphicsSceneBspTreeIndex::clear()
 {
     bsp.clear();
