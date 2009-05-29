@@ -583,26 +583,6 @@ QPixmap QS60StyleModeSpecifics::fromFbsBitmap(CFbsBitmap *icon, CFbsBitmap *mask
     return QPixmap::fromImage(iconImage);
 }
 
-QPixmap QS60StylePrivate::backgroundTexture()
-{
-    static QPixmap result;
-    // Poor mans caching. + Making sure that there is always only one background image in memory at a time
-
-/*
-    TODO: 1) Hold the background QPixmap as pointer in a static class member.
-             Also add a deleteBackground() function and call that in ~QS60StylePrivate()
-          2) Don't cache the background at all as soon as we have native pixmap support
-*/
-
-    if (!m_backgroundValid) {
-        result = QPixmap();
-        result = part(QS60StyleEnums::SP_QsnBgScreen,
-            QSize(S60->screenWidthInPixels, S60->screenHeightInPixels), SkinElementFlags());
-        m_backgroundValid = true;
-    }
-    return result;
-}
-
 bool QS60StylePrivate::isTouchSupported()
 {
     return bool(AknLayoutUtils::PenEnabled());
@@ -613,30 +593,11 @@ bool QS60StylePrivate::isToolBarBackground()
     return (QSysInfo::s60Version() == QSysInfo::SV_S60_3_1 || QSysInfo::s60Version() == QSysInfo::SV_S60_3_2);
 }
 
-void qt_s60_fill_background(QPainter *painter, const QRegion &rgn, const QPoint &offset,
-            const QBrush &brush)
+QPoint qt_s60_fill_background_offset(const QWidget *targetWidget)
 {
-    const QPixmap backgroundTexture(QS60StylePrivate::backgroundTexture());
-    if (backgroundTexture.cacheKey() == brush.texture().cacheKey()) {
-        const QPaintDevice *target = painter->device();
-        if (target->devType() == QInternal::Widget) {
-            const QWidget *widget = static_cast<const QWidget *>(target);
-            CCoeControl *control = widget->effectiveWinId();
-            TPoint globalPos = control ? control->PositionRelativeToScreen() : TPoint(0,0);
-            const QRegion translated = rgn.translated(offset);
-            const QVector<QRect> &rects = translated.rects();
-            for (int i = 0; i < rects.size(); ++i) {
-                const QRect rect(rects.at(i));
-                painter->drawPixmap(rect.topLeft(), backgroundTexture,
-                                    rect.translated(globalPos.iX, globalPos.iY));
-            }
-        }
-    } else {
-        const QRegion translated = rgn.translated(offset);
-        const QRect rect(translated.boundingRect());
-        painter->setClipRegion(translated);
-        painter->drawTiledPixmap(rect, brush.texture(), rect.topLeft());
-    }
+    CCoeControl *control = targetWidget->effectiveWinId();
+    TPoint globalPos = control ? control->PositionRelativeToScreen() : TPoint(0,0);
+    return QPoint(globalPos.iX, globalPos.iY);
 }
 
 QPixmap QS60StyleModeSpecifics::createSkinnedGraphicsL(
@@ -959,7 +920,6 @@ QFont QS60StylePrivate::s60Font_specific(
     return result;
 }
 
-#ifdef QT_S60STYLE_LAYOUTDATA_SIMULATED
 void QS60StylePrivate::setActiveLayout()
 {
     const QSize activeScreenSize(screenSize());
@@ -975,7 +935,7 @@ void QS60StylePrivate::setActiveLayout()
             break;
         }
     }
-    
+
     //not found, lets try without mirroring info
     if (activeLayoutIndex==-1){
         for (int i=0; i<m_numberOfLayouts; i++) {
@@ -999,19 +959,11 @@ void QS60StylePrivate::setActiveLayout()
 
     m_pmPointer = data[activeLayoutIndex];
 }
-#endif // QT_S60STYLE_LAYOUTDATA_SIMULATED
 
 QS60StylePrivate::QS60StylePrivate()
 {
-#ifdef QT_S60STYLE_LAYOUTDATA_SIMULATED
     // No need to set active layout, if dynamic metrics API is available
     setActiveLayout();
-#endif // QT_S60STYLE_LAYOUTDATA_SIMULATED
-}
-
-QS60StylePrivate::~QS60StylePrivate()
-{
-    m_backgroundValid = false;
 }
 
 void QS60StylePrivate::setStyleProperty_specific(const char *name, const QVariant &value)
@@ -1029,20 +981,6 @@ QVariant QS60StylePrivate::styleProperty_specific(const char *name) const
         return QLatin1String("Bar");
     else
         return styleProperty(name);
-}
-
-short QS60StylePrivate::pixelMetric(int metric)
-{
-#ifdef QT_S60STYLE_LAYOUTDATA_SIMULATED
-    Q_ASSERT(metric < MAX_PIXELMETRICS);
-    const short returnValue = m_pmPointer[metric];
-    if (returnValue==-909)
-        return -1;
-    return returnValue;
-#else
-    //todo - call the pixelmetrics API directly
-    return 0;
-#endif // QT_S60STYLE_LAYOUTDATA_SIMULATED
 }
 
 QColor QS60StylePrivate::s60Color(QS60StyleEnums::ColorLists list,
@@ -1181,6 +1119,16 @@ QPixmap QS60StylePrivate::frame(SkinFrameElements frame, const QSize &size, Skin
         result = QApplication::style()->generatedIconPixmap(QIcon::Disabled, result, &opt);
     }
     return result;
+}
+
+QPixmap QS60StylePrivate::backgroundTexture()
+{
+    if (!m_background) {
+        QPixmap background = part(QS60StyleEnums::SP_QsnBgScreen,
+                QSize(S60->screenWidthInPixels, S60->screenHeightInPixels), SkinElementFlags());
+        m_background = new QPixmap(background);
+    }
+    return *m_background;
 }
 
 // If the public SDK returns compressed images, please let us also uncompress those!
@@ -1352,10 +1300,8 @@ void QS60StyleModeSpecifics::colorGroupAndIndex(
 void QS60Style::handleDynamicLayoutVariantSwitch()
 {
     Q_D(QS60Style);
-    d->clearCaches();
-#ifdef QT_S60STYLE_LAYOUTDATA_SIMULATED
+    d->clearCaches(QS60StylePrivate::CC_LayoutChange);
     d->setActiveLayout();
-#endif // QT_S60STYLE_LAYOUTDATA_SIMULATED
     d->refreshUI();
     d->setBackgroundTexture(qApp);
     foreach (QWidget *widget, QApplication::allWidgets())
@@ -1365,7 +1311,7 @@ void QS60Style::handleDynamicLayoutVariantSwitch()
 void QS60Style::handleSkinChange()
 {
     Q_D(QS60Style);
-    d->clearCaches();
+    d->clearCaches(QS60StylePrivate::CC_ThemeChange);
     d->setThemePalette(qApp);
     foreach (QWidget *topLevelWidget, QApplication::allWidgets()){
         QEvent e(QEvent::StyleChange);

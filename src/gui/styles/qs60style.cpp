@@ -57,7 +57,6 @@ const QS60StylePrivate::SkinElementFlags QS60StylePrivate::KDefaultSkinElementFl
 static const QByteArray propertyKeyLayouts = "layouts";
 static const QByteArray propertyKeyCurrentlayout = "currentlayout";
 
-#if defined(QT_S60STYLE_LAYOUTDATA_SIMULATED)
 const layoutHeader QS60StylePrivate::m_layoutHeaders[] = {
 // *** generated layout data ***
 {240,320,1,14,true,QLatin1String("QVGA Landscape Mirrored")},
@@ -93,9 +92,9 @@ const short QS60StylePrivate::data[][MAX_PIXELMETRICS] = {
 };
 
 const short *QS60StylePrivate::m_pmPointer = QS60StylePrivate::data[0];
-#endif // defined(QT_S60STYLE_LAYOUTDATA_SIMULATED)
 
-bool QS60StylePrivate::m_backgroundValid = false;
+// theme background texture
+QPixmap *QS60StylePrivate::m_background = 0;
 
 const struct QS60StylePrivate::frameElementCenter QS60StylePrivate::m_frameElementsData[] = {
     {SE_ButtonNormal,           QS60StyleEnums::SP_QsnFrButtonTbCenter},
@@ -117,6 +116,11 @@ static const int frameElementsCount =
     int(sizeof(QS60StylePrivate::m_frameElementsData)/sizeof(QS60StylePrivate::m_frameElementsData[0]));
 
 const int KNotFound = -1;
+
+QS60StylePrivate::~QS60StylePrivate()
+{
+    deleteBackground();
+}
 
 void QS60StylePrivate::drawSkinElement(SkinElements element, QPainter *painter,
     const QRect &rect, SkinElementFlags flags)
@@ -251,10 +255,18 @@ void QS60StylePrivate::drawSkinPart(QS60StyleEnums::SkinParts part,
     drawPart(part, painter, rect, flags);
 }
 
+short QS60StylePrivate::pixelMetric(int metric)
+{
+    Q_ASSERT(metric < MAX_PIXELMETRICS);
+    const short returnValue = m_pmPointer[metric];
+    if (returnValue==-909)
+        return -1;
+    return returnValue;
+}
+
 void QS60StylePrivate::setStyleProperty(const char *name, const QVariant &value)
 {
     if (name == propertyKeyCurrentlayout) {
-#if !defined(QT_WS_S60) || defined(QT_S60STYLE_LAYOUTDATA_SIMULATED)
         static const QStringList layouts = styleProperty(propertyKeyLayouts).toStringList();
         const QString layout = value.toString();
         Q_ASSERT(layouts.contains(layout));
@@ -264,24 +276,17 @@ void QS60StylePrivate::setStyleProperty(const char *name, const QVariant &value)
         clearCaches();
         refreshUI();
         return;
-#else
-        qFatal("Cannot set static layout. Dynamic layouts are used!");
-#endif
     }
 }
 
 QVariant QS60StylePrivate::styleProperty(const char *name) const
 {
     if (name == propertyKeyLayouts) {
-#if !defined(QT_WS_S60) || defined(QT_S60STYLE_LAYOUTDATA_SIMULATED)
         static QStringList layouts;
         if (layouts.isEmpty())
             for (int i = 0; i < QS60StylePrivate::m_numberOfLayouts; i++)
                 layouts.append(QS60StylePrivate::m_layoutHeaders[i].layoutName);
         return layouts;
-#else
-        qFatal("Cannot return list of 'canned' static layouts. Dynamic layouts are used!");
-#endif
     }
     return QVariant();
 }
@@ -350,14 +355,28 @@ QFont QS60StylePrivate::s60Font(
     return result;
 }
 
-//todo: you could pass a reason to clear cache here, so that we could
-// deduce whether or not the specific cache needs to be cleared
-void QS60StylePrivate::clearCaches()
+void QS60StylePrivate::clearCaches(QS60StylePrivate::CacheClearReason reason)
 {
-    m_colorCache.clear();
-    m_mappedFontsCache.clear();
-    QPixmapCache::clear();
-    m_backgroundValid = false;
+    switch(reason){
+    case CC_LayoutChange:
+        // when layout changes, the colors remain in cache, but graphics and fonts can change
+        m_mappedFontsCache.clear();
+        deleteBackground();
+        QPixmapCache::clear();
+        break;
+    case CC_ThemeChange:
+        m_colorCache.clear();
+        QPixmapCache::clear();
+        deleteBackground();
+        break;
+    case CC_UndefinedChange:
+    default:
+        m_colorCache.clear();
+        m_mappedFontsCache.clear();
+        QPixmapCache::clear();
+        deleteBackground();
+        break;
+    }
 }
 
 // Since S60Style has 'button' and 'tooltip' as a graphic, we don't have any native color which to use
@@ -381,7 +400,6 @@ QColor QS60StylePrivate::colorFromFrameGraphics(QS60StylePrivate::SkinFrameEleme
         const int pixels = frameImage.numBytes()/sizeof(QRgb);
         const int bytesPerLine = frameImage.bytesPerLine();
         Q_ASSERT(bytesPerLine);
-        const int rows = frameImage.numBytes()/(sizeof(QRgb)*bytesPerLine);
 
         int estimatedRed = 0;
         int estimatedGreen = 0;
@@ -549,18 +567,23 @@ void QS60StylePrivate::setBackgroundTexture(QApplication *app) const
     app->setPalette(applicationPalette);
 }
 
+void QS60StylePrivate::deleteBackground()
+{
+    if (QS60StylePrivate::m_background) {
+        delete QS60StylePrivate::m_background;
+        QS60StylePrivate::m_background = 0;
+    }
+}
+
 int QS60StylePrivate::focusRectPenWidth()
 {
     return pixelMetric(QS60Style::PM_DefaultFrameWidth);
 }
 
-#if !defined(QT_WS_S60) || defined(QT_S60STYLE_LAYOUTDATA_SIMULATED)
 void QS60StylePrivate::setCurrentLayout(int index)
 {
     m_pmPointer = data[index];
 }
-#endif
-
 
 void QS60StylePrivate::drawPart(QS60StyleEnums::SkinParts skinPart,
     QPainter *painter, const QRect &rect, SkinElementFlags flags)
@@ -761,8 +784,6 @@ void QS60Style::drawComplexControl(ComplexControl control, const QStyleOptionCom
     const QS60StylePrivate::SkinElementFlags flags = (option->state & State_Enabled) ?  QS60StylePrivate::SF_StateEnabled : QS60StylePrivate::SF_StateDisabled;
     SubControls sub = option->subControls;
 
-    Q_D(const QS60Style);
-
     switch (control) {
 #ifndef QT_NO_SCROLLBAR
     case CC_ScrollBar:
@@ -832,7 +853,6 @@ void QS60Style::drawComplexControl(ComplexControl control, const QStyleOptionCom
             const bool direction = cmb->direction == Qt::LeftToRight;
 
             // Button frame
-            //todo: why calc rect here for button? Is there no suitable SE_xxx for that?
             QStyleOptionFrame  buttonOption;
             buttonOption.QStyleOption::operator=(*cmb);
             const int maxHeight = cmbxFrame.height();
@@ -842,7 +862,6 @@ void QS60Style::drawComplexControl(ComplexControl control, const QStyleOptionCom
             buttonOption.rect = buttonRect;
             buttonOption.state = cmb->state & (State_Enabled | State_MouseOver);
             drawPrimitive(PE_PanelButtonCommand, &buttonOption, painter, widget);
-            // todo: we could draw qgn_prop_set_button skin item here
 
             // draw label background - label itself is drawn separately
             const QS60StylePrivate::SkinElements skinElement = QS60StylePrivate::SE_FrameLineEdit;
@@ -1092,23 +1111,6 @@ void QS60Style::drawComplexControl(ComplexControl control, const QStyleOptionCom
         }
         break;
 #endif //QT_NO_GROUPBOX
-#ifndef QT_NO_DIAL
-    case CC_Dial:
-        if (const QStyleOptionSlider *slider = qstyleoption_cast<const QStyleOptionSlider *>(option)) {
-            QStyleOptionSlider optionSlider = *slider;
-            QCommonStyle::drawComplexControl(control, &optionSlider, painter, widget);
-        }
-        break;
-#endif //QT_NO_DIAL
-
-        //todo: remove non-used complex widgets in final version
-    case CC_TitleBar:
-#ifdef QT3_SUPPORT
-    case CC_Q3ListView:
-#endif //QT3_SUPPORT
-#ifndef QT_NO_WORKSPACE
-    case CC_MdiControls:
-#endif //QT_NO_WORKSPACE
     default:
         QCommonStyle::drawComplexControl(control, option, painter, widget);
     }
@@ -1166,24 +1168,6 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
                 QS60StylePrivate::drawSkinElement(skinElement, painter, option->rect, flags);
             }
         break;
-    case CE_PushButtonLabel:
-        if (const QStyleOptionButton *button = qstyleoption_cast<const QStyleOptionButton *>(option)) {
-            QStyleOptionButton optionButton = *button;
-            QCommonStyle::drawControl(element, &optionButton, painter, widget);
-        }
-        break;
-    case CE_CheckBoxLabel:
-        if (const QStyleOptionButton *checkBox = qstyleoption_cast<const QStyleOptionButton *>(option)) {
-            QStyleOptionButton optionCheckBox = *checkBox;
-            QCommonStyle::drawControl(element, &optionCheckBox, painter, widget);
-        }
-        break;
-    case CE_RadioButtonLabel:
-        if (const QStyleOptionButton *radioButton = qstyleoption_cast<const QStyleOptionButton *>(option)) {
-            QStyleOptionButton optionRadioButton = *radioButton;
-            QCommonStyle::drawControl(element, &optionRadioButton, painter, widget);
-        }
-        break;
 #ifndef QT_NO_TOOLBUTTON
     case CE_ToolButtonLabel:
         if (const QStyleOptionToolButton *toolBtn = qstyleoption_cast<const QStyleOptionToolButton *>(option)) {
@@ -1202,12 +1186,6 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
         }
         break;
 #endif //QT_NO_TOOLBUTTON
-    case CE_HeaderLabel:
-        if (const QStyleOptionHeader *headerLabel = qstyleoption_cast<const QStyleOptionHeader *>(option)) {
-            QStyleOptionHeader optionHeaderLabel = *headerLabel;
-            QCommonStyle::drawControl(element, &optionHeaderLabel, painter, widget);
-        }
-        break;
 #ifndef QT_NO_COMBOBOX
     case CE_ComboBoxLabel:
         if (const QStyleOptionComboBox *comboBox = qstyleoption_cast<const QStyleOptionComboBox *>(option)) {
@@ -1314,16 +1292,14 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
                      (listView->selectionMode() == QAbstractItemView::SingleSelection ||
                      listView->selectionMode() == QAbstractItemView::NoSelection);
                  QRect selectionRect = subElementRect(SE_ItemViewItemCheckIndicator, &voptAdj, widget);
-                 if (voptAdj.state & QStyle::State_Selected &&
-                     !singleSelection) {
+                 if (voptAdj.state & QStyle::State_Selected && !singleSelection) {
                      QStyleOptionViewItemV4 option(voptAdj);
                      option.rect = selectionRect;
                      // Draw selection mark.
                      drawPrimitive(QStyle::PE_IndicatorViewItemCheck, &option, painter, widget);
                      if ( textRect.right() > selectionRect.left() )
                          textRect.setRight(selectionRect.left());
-                 }
-                 else if (singleSelection &&
+                 } else if (singleSelection &&
                      voptAdj.features & QStyleOptionViewItemV2::HasCheckIndicator) {
                      // draw the check mark
                      if (selectionRect.isValid()) {
@@ -1406,7 +1382,6 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
                 const int tabOverlap =
                     QS60StylePrivate::pixelMetric(QStyle::PM_TabBarTabOverlap) - borderThickness;
                 //todo: draw navi wipe behind tabbar - must be drawn with first draw
-                //QS60StylePrivate::drawSkinElement(QS60StylePrivate::SE_TableHeaderItem, painter, windowRect, flags);
 
                 if (skinElement==QS60StylePrivate::SE_TabBarTabEastInactive||
                         skinElement==QS60StylePrivate::SE_TabBarTabEastActive||
@@ -1572,12 +1547,6 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
         break;
 #endif // QT_NO_PROGRESSBAR
 #ifndef QT_NO_MENUBAR
-    case CE_MenuBarItem:
-        if (const QStyleOptionMenuItem *menuBarItem = qstyleoption_cast<const QStyleOptionMenuItem *>(option)) {
-            QStyleOptionMenuItem optionMenuBarItem = *menuBarItem;
-            QCommonStyle::drawControl(element, &optionMenuBarItem, painter, widget);
-        }
-        break;
 #endif //QT_NO_MENUBAR
 #ifndef QT_NO_MENU
     case CE_MenuItem:
@@ -1683,7 +1652,6 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
         break;
 #endif //QT_NO_MENU
 
-        //todo: remove non-used widgets in final version
     case CE_MenuEmptyArea:
 #ifndef QT_NO_MENUBAR
     case CE_MenuBarEmptyArea:
@@ -1791,48 +1759,6 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
         }
         break;
 #endif //QT_NO_TOOLBAR
-
-    case CE_ShapedFrame:
-    case CE_MenuVMargin:
-    case CE_MenuHMargin:
-#ifndef QT_NO_MENU
-    case CE_MenuScroller:
-    case CE_MenuTearoff:
-#endif //QT_NO_MENU
-
-    case CE_CheckBox:
-    case CE_RadioButton:
-#ifndef QT_NO_TABBAR
-    case CE_TabBarTab:
-#endif //QT_NO_TABBAR
-#ifndef QT_NO_PROGRESSBAR
-    case CE_ProgressBar:
-#endif // QT_NO_PROGRESSBAR
-    case CE_Q3DockWindowEmptyArea:
-#ifndef QT_NO_SIZEGRIP
-    case CE_SizeGrip:
-#endif //QT_NO_SIZEGRIP
-    case CE_Splitter:
-#ifndef QT_NO_RUBBERBAND
-    case CE_RubberBand:
-#endif //QT_NO_RUBBERBAND
-#ifndef QT_NO_DOCKWIDGET
-    case CE_DockWidgetTitle:
-#endif //QT_NO_DOCKWIDGET
-    case CE_ScrollBarAddLine:
-    case CE_ScrollBarSubLine:
-    case CE_ScrollBarAddPage:
-    case CE_ScrollBarSubPage:
-    case CE_ScrollBarSlider:
-    case CE_ScrollBarFirst:
-    case CE_ScrollBarLast:
-    case CE_FocusFrame:
-#ifndef QT_NO_TOOLBOX
-    case CE_ToolBoxTab:
-    case CE_ToolBoxTabShape:
-    case CE_ToolBoxTabLabel:
-#endif //QT_NO_TOOLBOX
-    case CE_ColumnViewGrip:
     default:
         QCommonStyle::drawControl(element, option, painter, widget);
     }
@@ -2161,15 +2087,6 @@ void QS60Style::drawPrimitive(PrimitiveElement element, const QStyleOption *opti
 }
 
 /*!
-  \reimp - sets the default colors
-*/
-void QS60Style::drawItemText(QPainter *painter, const QRect &rectangle, int alignment, const QPalette & palette, bool enabled, const QString &text, QPalette::ColorRole textRole) const
-{
-    QPalette override = palette;
-    QCommonStyle::drawItemText(painter, rectangle, alignment, override, enabled, text, textRole);
-}
-
-/*!
   \reimp
 */
 int QS60Style::pixelMetric(PixelMetric metric, const QStyleOption *option, const QWidget *widget) const
@@ -2179,7 +2096,6 @@ int QS60Style::pixelMetric(PixelMetric metric, const QStyleOption *option, const
         metricValue = QCommonStyle::pixelMetric(metric, option, widget);
 
     if (metric == PM_SubMenuOverlap && widget){
-        const int widgetWidth = widget->width();
         const QMenu *menu = qobject_cast<const QMenu *>(widget);
         if (menu && menu->activeAction() && menu->activeAction()->menu()) {
             const int menuWidth = menu->activeAction()->menu()->sizeHint().width();
@@ -2409,12 +2325,12 @@ QRect QS60Style::subControlRect(ComplexControl control, const QStyleOptionComple
             ret = QCommonStyle::subControlRect(control, option, scontrol, widget);
             switch (scontrol) {
             case SC_GroupBoxCheckBox: //fallthrough
-            case SC_GroupBoxLabel:
+            case SC_GroupBoxLabel: {
                 //slightly indent text and boxes, so that dialog border does not mess with them.
                 const int horizontalSpacing =
                     QS60StylePrivate::pixelMetric(QStyle::PM_LayoutHorizontalSpacing);
-                const int bottomMargin = QS60StylePrivate::pixelMetric(QStyle::PM_LayoutBottomMargin);
                 ret.adjust(2,horizontalSpacing-3,0,0);
+                }
                 break;
             case SC_GroupBoxFrame: {
                 const QRect textBox = subControlRect(control, option, SC_GroupBoxLabel, widget);
@@ -2444,7 +2360,6 @@ QRect QS60Style::subElementRect(SubElement element, const QStyleOption *opt, con
         case SE_LineEditContents: {
             // in S60 the input text box doesn't start from line Edit's TL, but
             // a bit indented.
-            // todo: Should we NOT do this for combo boxes and spin boxes?
                 QRect lineEditRect = opt->rect;
                 int adjustment = opt->rect.height()>>2;
                 lineEditRect.adjust(adjustment,0,0,0);
@@ -2518,13 +2433,10 @@ QRect QS60Style::subElementRect(SubElement element, const QStyleOption *opt, con
                 }
             } else if (const QStyleOptionMenuItem *menuItem = qstyleoption_cast<const QStyleOptionMenuItem *>(opt)) {
                 const bool checkable = menuItem->checkType != QStyleOptionMenuItem::NotCheckable;
-                const bool subMenu = menuItem->menuItemType == QStyleOptionMenuItem::SubMenu;
                 int indicatorWidth = checkable ?
                     pixelMetric(PM_ListViewIconSize, opt, widget) :
                     pixelMetric(PM_SmallIconSize, opt, widget);
                 ret = menuItem->rect;
-                const int verticalSpacing =
-                    QS60StylePrivate::pixelMetric(QStyle::PM_LayoutVerticalSpacing);
 
                 if (element == SE_ItemViewItemDecoration) {
                     if (menuItem->direction == Qt::RightToLeft)
@@ -2684,6 +2596,7 @@ void QS60Style::polish(QApplication *application)
 
 void QS60Style::unpolish(QApplication *application)
 {
+    Q_UNUSED(application)
     QPalette newPalette = qApp->style()->standardPalette();
     application->setPalette(newPalette);
     QApplicationPrivate::setSystemPalette(originalPalette);
@@ -2784,6 +2697,29 @@ QIcon QS60Style::standardIconImplementation(StandardPixmap standardIcon,
     const QPixmap cachedPixMap(QS60StylePrivate::cachedPart(part, iconSize.size(), flags));
     return cachedPixMap.isNull() ?
         QCommonStyle::standardIconImplementation(standardIcon, option, widget) : QIcon(cachedPixMap);
+}
+
+extern QPoint qt_s60_fill_background_offset(const QWidget *targetWidget);
+
+bool qt_s60_fill_background(QPainter *painter, const QRegion &rgn, const QPoint &offset,
+            const QBrush &brush)
+{
+    const QPixmap backgroundTexture(QS60StylePrivate::backgroundTexture());
+    if (backgroundTexture.cacheKey() != brush.texture().cacheKey())
+        return false;
+
+    const QPaintDevice *target = painter->device();
+    if (target->devType() == QInternal::Widget) {
+		const QWidget *widget = static_cast<const QWidget *>(target);
+        const QRegion translated = rgn.translated(offset);
+        const QVector<QRect> &rects = translated.rects();
+        for (int i = 0; i < rects.size(); ++i) {
+            const QRect rect(rects.at(i));
+            painter->drawPixmap(rect.topLeft(), backgroundTexture,
+                                rect.translated(qt_s60_fill_background_offset(widget)));
+        }
+    }
+    return true;
 }
 
 QT_END_NAMESPACE
