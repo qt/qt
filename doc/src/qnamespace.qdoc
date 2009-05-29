@@ -2432,6 +2432,7 @@
     \value ImSurroundingText  The plain text around the input area, for example the current paragraph.
     \value ImCurrentSelection The currently selected text.
     \value ImMaximumTextLength The maximum number of characters that the widget can hold. If there is no limit, QVariant() is returned.
+    \value ImAnchorPosition   The position of the selection anchor. This may be less or greater than \c ImCursorPosition, depending on which side of selection the cursor is. If there is no selection, it returns the same as \c ImCursorPosition.
 */
 
 /*!
