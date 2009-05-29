@@ -62,7 +62,6 @@
     and use the correct program when we really need it.
 */
 
-
 #include "qpaintengineex_opengl2_p.h"
 
 #include <string.h> //for memcpy
@@ -81,104 +80,16 @@
 #include "qgl2pexvertexarray_p.h"
 
 
-extern QImage qt_imageForBrush(int brushStyle, bool invert); //in qbrush.cpp
-
-
 #include <QDebug>
 
-enum EngineMode {
-    ImageDrawingMode,
-    TextDrawingMode,
-    BrushDrawingMode
-};
+QT_BEGIN_NAMESPACE
+
+extern QImage qt_imageForBrush(int brushStyle, bool invert);
 
 static const GLuint QT_BRUSH_TEXTURE_UNIT       = 0;
 static const GLuint QT_IMAGE_TEXTURE_UNIT       = 0; //Can be the same as brush texture unit
 static const GLuint QT_MASK_TEXTURE_UNIT        = 1;
 static const GLuint QT_BACKGROUND_TEXTURE_UNIT  = 2;
-
-class QGL2PaintEngineExPrivate : public QPaintEngineExPrivate
-{
-    Q_DECLARE_PUBLIC(QGL2PaintEngineEx)
-public:
-    QGL2PaintEngineExPrivate(QGL2PaintEngineEx *q_ptr) :
-            q(q_ptr),
-            width(0), height(0),
-            ctx(0),
-            currentBrush( &(q->state()->brush) ),
-            inverseScale(1),
-            shaderManager(0)
-    { }
-
-    ~QGL2PaintEngineExPrivate();
-
-    void updateBrushTexture();
-    void updateBrushUniforms();
-    void updateMatrix();
-    void updateCompositionMode();
-    void updateTextureFilter(GLenum target, GLenum wrapMode, bool smoothPixmapTransform);
-
-    void setBrush(const QBrush* brush);
-
-    void transferMode(EngineMode newMode);
-
-    // fill, drawOutline, drawTexture & drawCachedGlyphs are the rendering entry points:
-    void fill(const QVectorPath &path);
-    void drawOutline(const QVectorPath& path);
-    void drawTexture(const QGLRect& dest, const QGLRect& src, const QSize &textureSize);
-    void drawCachedGlyphs(const QPointF &p, const QTextItemInt &ti);
-
-    void drawVertexArrays(QGL2PEXVertexArray& vertexArray, GLenum primitive);
-        // ^ draws whatever is in the vertex array
-    void composite(const QGLRect& boundingRect);
-        // ^ Composites the bounding rect onto dest buffer
-    void fillStencilWithVertexArray(QGL2PEXVertexArray& vertexArray, bool useWindingFill);
-        // ^ Calls drawVertexArrays to render into stencil buffer
-    void cleanStencilBuffer(const QGLRect& area);
-
-    void prepareForDraw(bool srcPixelsAreOpaque);
-
-    inline void useSimpleShader();
-    inline QColor premultiplyColor(QColor c, GLfloat opacity);
-
-    QGL2PaintEngineEx* q;
-    QGLDrawable drawable;
-    int width, height;
-    QGLContext *ctx;
-
-    EngineMode mode;
-
-    // Dirty flags
-    bool matrixDirty; // Implies matrix uniforms are also dirty
-    bool compositionModeDirty;
-    bool brushTextureDirty;
-    bool brushUniformsDirty;
-    bool simpleShaderMatrixUniformDirty;
-    bool shaderMatrixUniformDirty;
-    bool stencilBuferDirty;
-
-    const QBrush*    currentBrush; // May not be the state's brush!
-
-    GLfloat     inverseScale;
-
-    QGL2PEXVertexArray vertexCoordinateArray;
-    QGL2PEXVertexArray textureCoordinateArray;
-
-    GLfloat staticVertexCoordinateArray[8];
-    GLfloat staticTextureCoordinateArray[8];
-
-    GLfloat pmvMatrix[4][4];
-
-    QGLEngineShaderManager* shaderManager;
-
-    // Clipping & state stuff stolen from QOpenGLPaintEngine:
-    void updateDepthClip();
-    void systemStateChanged();
-    uint use_system_clip : 1;
-
-    QPaintEngine *last_engine;
-};
-
 
 ////////////////////////////////// Private Methods //////////////////////////////////////////
 
@@ -514,7 +425,7 @@ static inline void setCoords(GLfloat *coords, const QGLRect &rect)
     coords[7] = rect.bottom;
 }
 
-void QGL2PaintEngineExPrivate::drawTexture(const QGLRect& dest, const QGLRect& src, const QSize &textureSize)
+void QGL2PaintEngineExPrivate::drawTexture(const QGLRect& dest, const QGLRect& src, const QSize &textureSize, bool opaque)
 {
     transferMode(ImageDrawingMode);
 
@@ -523,7 +434,7 @@ void QGL2PaintEngineExPrivate::drawTexture(const QGLRect& dest, const QGLRect& s
     // Setup for texture drawing
     shaderManager->setSrcPixelType(QGLEngineShaderManager::ImageSrc);
     shaderManager->setTextureCoordsEnabled(true);
-    prepareForDraw(false); // ###
+    prepareForDraw(opaque);
 
     shaderManager->currentProgram()->setUniformValue("imageTexture", QT_IMAGE_TEXTURE_UNIT);
 
@@ -723,11 +634,12 @@ void QGL2PaintEngineExPrivate::prepareForDraw(bool srcPixelsAreOpaque)
         updateMatrix();
 
     const bool stateHasOpacity = q->state()->opacity < 0.99f;
-    if ( (!srcPixelsAreOpaque || stateHasOpacity) &&
-          q->state()->compositionMode() != QPainter::CompositionMode_Source)
-        glEnable(GL_BLEND);
-    else
+    if (q->state()->compositionMode() == QPainter::CompositionMode_Source
+        || (q->state()->compositionMode() == QPainter::CompositionMode_SourceOver
+            && srcPixelsAreOpaque && !stateHasOpacity))
         glDisable(GL_BLEND);
+    else
+        glEnable(GL_BLEND);
 
     bool useGlobalOpacityUniform = stateHasOpacity;
     if (stateHasOpacity && (mode != ImageDrawingMode)) {
@@ -830,9 +742,10 @@ void QGL2PaintEngineEx::stroke(const QVectorPath &path, const QPen &pen)
 {
     Q_D(QGL2PaintEngineEx);
 
-    ensureActive();
     if (pen.style() == Qt::NoPen)
         return;
+
+    ensureActive();
 
     if ( (pen.isCosmetic() && (pen.style() == Qt::SolidLine)) && (pen.widthF() < 2.5f) )
     {
@@ -910,12 +823,7 @@ void QGL2PaintEngineEx::drawPixmap(const QRectF& dest, const QPixmap & pixmap, c
     ctx->d_func()->bindTexture(pixmap, GL_TEXTURE_2D, GL_RGBA, true);
 
     //FIXME: we should use hasAlpha() instead, but that's SLOW at the moment
-    if ((state()->opacity < 0.99f) || pixmap.hasAlphaChannel())
-        glEnable(GL_BLEND);
-    else
-        glDisable(GL_BLEND);
-
-    d->drawTexture(dest, src, pixmap.size());
+    d->drawTexture(dest, src, pixmap.size(), !pixmap.hasAlphaChannel());
 }
 
 void QGL2PaintEngineEx::drawImage(const QRectF& dest, const QImage& image, const QRectF& src,
@@ -929,12 +837,7 @@ void QGL2PaintEngineEx::drawImage(const QRectF& dest, const QImage& image, const
     glActiveTexture(GL_TEXTURE0 + QT_IMAGE_TEXTURE_UNIT);
     ctx->d_func()->bindTexture(image, GL_TEXTURE_2D, GL_RGBA, true);
 
-    if ((state()->opacity < 0.99f) || image.hasAlphaChannel())
-        glEnable(GL_BLEND);
-    else
-        glDisable(GL_BLEND);
-
-    d->drawTexture(dest, src, image.size());
+    d->drawTexture(dest, src, image.size(), !image.hasAlphaChannel());
 }
 
 void QGL2PaintEngineEx::drawTextItem(const QPointF &p, const QTextItem &textItem)
@@ -1051,10 +954,19 @@ bool QGL2PaintEngineEx::begin(QPaintDevice *pdev)
     Q_D(QGL2PaintEngineEx);
 
 //     qDebug("QGL2PaintEngineEx::begin()");
-
     d->drawable.setDevice(pdev);
-    d->drawable.makeCurrent();
     d->ctx = d->drawable.context();
+
+    if (d->ctx->d_ptr->active_engine) {
+        QGL2PaintEngineEx *engine = static_cast<QGL2PaintEngineEx *>(d->ctx->d_ptr->active_engine);
+        QGL2PaintEngineExPrivate *p = static_cast<QGL2PaintEngineExPrivate *>(engine->d_ptr);
+        p->transferMode(BrushDrawingMode);
+        p->drawable.doneCurrent();
+    }
+
+    d->ctx->d_ptr->active_engine = this;
+
+    d->drawable.makeCurrent();
     QSize sz = d->drawable.size();
     d->width = sz.width();
     d->height = sz.height();
@@ -1063,14 +975,6 @@ bool QGL2PaintEngineEx::begin(QPaintDevice *pdev)
 #if !defined(QT_OPENGL_ES_2)
     qt_resolve_version_2_0_functions(d->ctx);
 #endif
-
-    d->last_engine = d->ctx->d_ptr->active_engine;
-    d->ctx->d_ptr->active_engine = this;
-
-    if (d->last_engine) {
-        QGL2PaintEngineEx *engine = static_cast<QGL2PaintEngineEx *>(d->last_engine);
-        static_cast<QGL2PaintEngineExPrivate *>(engine->d_ptr)->transferMode(BrushDrawingMode);
-    }
 
     if (!d->shaderManager)
         d->shaderManager = new QGLEngineShaderManager(d->ctx);
@@ -1095,15 +999,25 @@ bool QGL2PaintEngineEx::begin(QPaintDevice *pdev)
     glDisable(GL_SCISSOR_TEST);
 
     QGLPixmapData *source = d->drawable.copyOnBegin();
-    if (source) {
+    if (d->drawable.context()->d_func()->clear_on_painter_begin && d->drawable.autoFillBackground()) {
+        if (d->drawable.hasTransparentBackground())
+            glClearColor(0.0, 0.0, 0.0, 0.0);
+        else {
+            const QColor &c = d->drawable.backgroundColor();
+            float alpha = c.alphaF();
+            glClearColor(c.redF() * alpha, c.greenF() * alpha, c.blueF() * alpha, alpha);
+        }
+        glClear(GL_COLOR_BUFFER_BIT);
+    } else if (source) {
+        QGLContext *ctx = d->ctx;
+
         d->transferMode(ImageDrawingMode);
 
+        glActiveTexture(GL_TEXTURE0 + QT_IMAGE_TEXTURE_UNIT);
         source->bind(false);
 
-        glDisable(GL_BLEND);
-
         QRect rect(0, 0, source->width(), source->height());
-        d->drawTexture(QRectF(rect), QRectF(rect), rect.size());
+        d->drawTexture(QRectF(rect), QRectF(rect), rect.size(), true);
     }
 
     updateClipRegion(QRegion(), Qt::NoClip);
@@ -1115,8 +1029,8 @@ bool QGL2PaintEngineEx::end()
     Q_D(QGL2PaintEngineEx);
     QGLContext *ctx = d->ctx;
     if (ctx->d_ptr->active_engine != this) {
-        QGL2PaintEngineEx *engine = static_cast<QGL2PaintEngineEx *>(d->last_engine);
-        if (engine) {
+        QGL2PaintEngineEx *engine = static_cast<QGL2PaintEngineEx *>(ctx->d_ptr->active_engine);
+        if (engine && engine->isActive()) {
             QGL2PaintEngineExPrivate *p = static_cast<QGL2PaintEngineExPrivate *>(engine->d_ptr);
             p->transferMode(BrushDrawingMode);
             p->drawable.doneCurrent();
@@ -1128,19 +1042,7 @@ bool QGL2PaintEngineEx::end()
     d->transferMode(BrushDrawingMode);
     d->drawable.swapBuffers();
     d->drawable.doneCurrent();
-    d->ctx->d_ptr->active_engine = d->last_engine;
-
-    if (d->last_engine) {
-        QGL2PaintEngineEx *engine = static_cast<QGL2PaintEngineEx *>(d->last_engine);
-        QGL2PaintEngineExPrivate *p = static_cast<QGL2PaintEngineExPrivate *>(engine->d_ptr);
-
-        glDisable(GL_DEPTH_TEST);
-        glDisable(GL_SCISSOR_TEST);
-
-        glViewport(0, 0, p->width, p->height);
-        engine->setState(engine->state());
-        p->updateDepthClip();
-    }
+    d->ctx->d_ptr->active_engine = 0;
 
     return false;
 }
@@ -1152,7 +1054,7 @@ void QGL2PaintEngineEx::ensureActive()
 
     if (isActive() && ctx->d_ptr->active_engine != this) {
         QGL2PaintEngineEx *engine = static_cast<QGL2PaintEngineEx *>(ctx->d_ptr->active_engine);
-        if (engine) {
+        if (engine && engine->isActive()) {
             QGL2PaintEngineExPrivate *p = static_cast<QGL2PaintEngineExPrivate *>(engine->d_ptr);
             p->transferMode(BrushDrawingMode);
             p->drawable.doneCurrent();
@@ -1422,3 +1324,4 @@ QOpenGL2PaintEngineState::~QOpenGL2PaintEngineState()
 {
 }
 
+QT_END_NAMESPACE

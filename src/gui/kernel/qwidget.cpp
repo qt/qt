@@ -9213,11 +9213,12 @@ void QWidget::setParent(QWidget *parent, Qt::WindowFlags f)
     d->resolveLayoutDirection();
     d->resolveLocale();
 
-    // Note: GL widgets under Windows will always need a ParentChange
-    // event to handle recreation/rebinding of the GL context, hence
-    // the (f & Qt::MSWindowsOwnDC) clause
+    // Note: GL widgets under WGL or EGL will always need a ParentChange
+    // event to handle recreation/rebinding of the GL context, hence the
+    // (f & Qt::MSWindowsOwnDC) clause (which is set on QGLWidgets on all
+    // platforms).
     if (newParent
-#ifdef Q_WS_WIN
+#if defined(Q_WS_WIN) || defined(QT_OPENGL_ES)
         || (f & Qt::MSWindowsOwnDC)
 #endif
         ) {

@@ -39,7 +39,6 @@
 **
 ****************************************************************************/
 
-#include <private/qtextengine_p.h>
 #include <qdebug.h>
 #include <private/qfontengine_p.h>
 #include <qmath.h>
@@ -1331,9 +1330,15 @@ bool QOpenGLPaintEngine::begin(QPaintDevice *pdev)
 
     d->offscreen.begin();
 
-    const QColor &c = d->drawable.backgroundColor();
-    glClearColor(c.redF(), c.greenF(), c.blueF(), 1.0);
     if (d->drawable.context()->d_func()->clear_on_painter_begin && d->drawable.autoFillBackground()) {
+
+        if (d->drawable.hasTransparentBackground())
+            glClearColor(0.0, 0.0, 0.0, 0.0);
+        else {
+            const QColor &c = d->drawable.backgroundColor();
+            glClearColor(c.redF(), c.greenF(), c.blueF(), 1.0);
+        }
+
         GLbitfield clearBits = GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT;
 #ifndef QT_OPENGL_ES
         clearBits |= GL_ACCUM_BUFFER_BIT;

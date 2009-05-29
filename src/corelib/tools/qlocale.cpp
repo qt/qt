@@ -321,7 +321,7 @@ static QString readEscapedFormatString(const QString &format, int *idx)
 {
     int &i = *idx;
 
-    Q_ASSERT(format.at(i).unicode() == '\'');
+    Q_ASSERT(format.at(i) == QLatin1Char('\''));
     ++i;
     if (i == format.size())
         return QString();
@@ -635,7 +635,7 @@ static QLocale::MeasurementSystem winSystemMeasurementSystem()
         QString iMeasure = QT_WA_INLINE(
                 QString::fromUtf16(reinterpret_cast<ushort*>(output)),
                 QString::fromLocal8Bit(reinterpret_cast<char*>(output)));
-        if (iMeasure == QString::fromLatin1("1")) {
+        if (iMeasure == QLatin1String("1")) {
             return QLocale::ImperialSystem;
         }
     }

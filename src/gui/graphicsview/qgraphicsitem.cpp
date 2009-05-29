@@ -130,7 +130,7 @@
 
     \img graphicsview-parentchild.png
 
-    \section Transformation
+    \section1 Transformation
 
     QGraphicsItem supports affine transformations in addition to its base
     position, pos(). To change the item's transformation, you can either pass
@@ -166,7 +166,7 @@
                 .shear(horizontalShear, verticalShear).scale(xScale, yScale).translate(-xOrigin, -yOrigin);
     \endcode
 
-    \section Painting
+    \section1 Painting
 
     The paint() function is called by QGraphicsView to paint the item's
     contents. The item has no background or default fill of its own; whatever
@@ -183,7 +183,7 @@
     high z-values. Stacking order applies to sibling items; parents are always
     drawn before their children.
 
-    \section Events
+    \section1 Events
 
     QGraphicsItem receives events from QGraphicsScene through the virtual
     function sceneEvent(). This function distributes the most common events
@@ -210,7 +210,7 @@
     by the virtual function sceneEventFilter(). You can remove item
     event filters by calling removeSceneEventFilter().
 
-    \section Custom Data
+    \section1 Custom Data
 
     Sometimes it's useful to register custom data with an item, be it a custom
     item, or a standard item. You can call setData() on any item to store data
@@ -1644,6 +1644,10 @@ void QGraphicsItemPrivate::setVisibleHelper(bool newVisible, bool explicitly, bo
     if (visible == quint32(newVisible))
         return;
 
+    // Don't show child if parent is not visible
+    if (parent && newVisible && !parent->d_ptr->visible)
+        return;
+
     // Modify the property.
     const QVariant newVisibleVariant(q_ptr->itemChange(QGraphicsItem::ItemVisibleChange,
                                                        quint32(newVisible)));
@@ -2643,24 +2647,32 @@ QTransform QGraphicsItem::transform() const
 }
 
 /*!
-    \property QGraphicsItem::xRotation
-
     \since 4.6
 
-    This property holds the rotation angle in degrees around the X axis
+    Returns the rotation around the X axis.
 
     The default is 0
 
     \warning setting this property is conflicting with calling setTransform.
     If a transform has been set, this function return the default value.
 
-    \sa {Transformations}
+    \sa setXRotation(), {Transformations}
 */
 qreal QGraphicsItem::xRotation() const
 {
     return d_ptr->decomposedTransform()->xRotation;
 }
 
+/*!
+    \since 4.6
+
+    Sets the rotation around the X axis to \a angle degrees.
+
+    \warning setting this property is conflicting with calling setTransform.
+    If a transform has been set, it will be overwritten.
+
+    \sa xRotation(), {Transformations}
+*/
 void QGraphicsItem::setXRotation(qreal angle)
 {
     if (!d_ptr->dirtyTransform) {
@@ -2676,24 +2688,32 @@ void QGraphicsItem::setXRotation(qreal angle)
 }
 
 /*!
-    \property QGraphicsItem::yRotation
-
     \since 4.6
 
-    This property holds the rotation angle in degrees around the Y axis
+    Returns the rotation around the Y axis.
 
     The default is 0
 
     \warning setting this property is conflicting with calling setTransform.
     If a transform has been set, this function return the default value.
 
-    \sa {Transformations}
+    \sa setYRotation(), {Transformations}
 */
 qreal QGraphicsItem::yRotation() const
 {
     return d_ptr->decomposedTransform()->yRotation;
 }
 
+/*!
+    \since 4.6
+
+    Sets the rotation around the Y axis to \a angle degrees.
+
+    \warning setting this property is conflicting with calling setTransform.
+    If a transform has been set, it will be overwritten.
+
+    \sa yRotation(), {Transformations}
+*/
 void QGraphicsItem::setYRotation(qreal angle)
 {
     if (!d_ptr->dirtyTransform) {
@@ -2709,24 +2729,32 @@ void QGraphicsItem::setYRotation(qreal angle)
 }
 
 /*!
-    \property QGraphicsItem::zRotation
-
     \since 4.6
 
-    This property holds the rotation angle in degrees around the Z axis
+    Returns the rotation around the Z axis.
 
     The default is 0
 
     \warning setting this property is conflicting with calling setTransform.
     If a transform has been set, this function return the default value.
 
-    \sa {Transformations}
+    \sa setZRotation(), {Transformations}
 */
 qreal QGraphicsItem::zRotation() const
 {
     return d_ptr->decomposedTransform()->zRotation;
 }
 
+/*!
+    \since 4.6
+
+    Sets the rotation around the Z axis to \a angle degrees.
+
+    \warning setting this property is conflicting with calling setTransform.
+    If a transform has been set, it will be overwritten.
+
+    \sa zRotation(), {Transformations}
+*/
 void QGraphicsItem::setZRotation(qreal angle)
 {
     if (!d_ptr->dirtyTransform) {
@@ -2741,6 +2769,14 @@ void QGraphicsItem::setZRotation(qreal angle)
     d_ptr->hasTransform = 1;
 }
 
+/*!
+    \since 4.6
+
+    This convenience function set the rotation angles around the 3 axes
+    to \a x, \a y and \a z.
+
+    \sa setXRotation(), setYRotation(), setZRotation() 
+*/
 void QGraphicsItem::setRotation(qreal x, qreal y, qreal z)
 {
     setXRotation(x);
@@ -2749,24 +2785,32 @@ void QGraphicsItem::setRotation(qreal x, qreal y, qreal z)
 }
 
 /*!
-    \property QGraphicsItem::xScale
-
     \since 4.6
 
-    This property holds the scale factor on the X axis.
+    Returns the scale factor on the X axis.
 
     The default is 1
 
     \warning setting this property is conflicting with calling setTransform.
     If a transform has been set, this function return the default value.
 
-    \sa {Transformations}
+    \sa setXScale(), {Transformations}
 */
 qreal QGraphicsItem::xScale() const
 {
     return d_ptr->decomposedTransform()->xScale;
 }
 
+/*!
+    \since 4.6
+
+    Sets the scale factor on the X axis to \a factor.
+
+    \warning setting this property is conflicting with calling setTransform.
+    If a transform has been set, it will be overwritten.
+
+    \sa xScale(), {Transformations}
+*/
 void QGraphicsItem::setXScale(qreal factor)
 {
     if (!d_ptr->dirtyTransform) {
@@ -2782,24 +2826,32 @@ void QGraphicsItem::setXScale(qreal factor)
 }
 
 /*!
-    \property QGraphicsItem::yScale
-
     \since 4.6
 
-    This property holds the scale factor on the Y axis.
+    Returns the scale factor on the Y axis.
 
     The default is 1
 
     \warning setting this property is conflicting with calling setTransform.
     If a transform has been set, this function return the default value.
 
-    \sa {Transformations}
+    \sa setYScale(), {Transformations}
 */
 qreal QGraphicsItem::yScale() const
 {
     return d_ptr->decomposedTransform()->yScale;
 }
 
+/*!
+    \since 4.6
+
+    Sets the scale factor on the Y axis to \a factor.
+
+    \warning setting this property is conflicting with calling setTransform.
+    If a transform has been set, it will be overwritten.
+
+    \sa yScale(), {Transformations}
+*/
 void QGraphicsItem::setYScale(qreal factor)
 {
     if (!d_ptr->dirtyTransform) {
@@ -2814,6 +2866,13 @@ void QGraphicsItem::setYScale(qreal factor)
     d_ptr->hasTransform = 1;
 }
 
+/*!
+    \since 4.6
+
+    This convenience function set the scaling factors on X and Y axis to \a sx and \a sy.
+
+    \sa setXScale(), setYScale()
+*/
 void QGraphicsItem::setScale(qreal sx, qreal sy)
 {
     setXScale(sx);
@@ -2821,24 +2880,32 @@ void QGraphicsItem::setScale(qreal sx, qreal sy)
 }
 
 /*!
-    \property QGraphicsItem::horizontalShear
-
     \since 4.6
 
-    This property holds the horizontal shear.
+    Returns the horizontal shear.
 
-    The default is 0.
+    The default is 0
 
     \warning setting this property is conflicting with calling setTransform.
     If a transform has been set, this function return the default value.
 
-    \sa {Transformations}
+    \sa setHorizontalShear(), {Transformations}
 */
 qreal QGraphicsItem::horizontalShear() const
 {
     return d_ptr->decomposedTransform()->horizontalShear;
 }
 
+/*!
+    \since 4.6
+
+    Sets the horizontal shear to \a shear.
+
+    \warning setting this property is conflicting with calling setTransform.
+    If a transform has been set, it will be overwritten.
+
+    \sa horizontalShear(), {Transformations}
+*/
 void QGraphicsItem::setHorizontalShear(qreal shear)
 {
     if (!d_ptr->dirtyTransform) {
@@ -2854,24 +2921,32 @@ void QGraphicsItem::setHorizontalShear(qreal shear)
 }
 
 /*!
-    \property QGraphicsItem::verticalShear
-
     \since 4.6
 
-    This property holds the vertical shear.
+    Returns the vertical shear.
 
-    The default is 0.
+    The default is 0
 
     \warning setting this property is conflicting with calling setTransform.
     If a transform has been set, this function return the default value.
 
-    \sa {Transformations}
+    \sa setHorizontalShear(), {Transformations}
 */
 qreal QGraphicsItem::verticalShear() const
 {
     return d_ptr->decomposedTransform()->verticalShear;
 }
 
+/*!
+    \since 4.6
+
+    Sets the vertical shear to \a shear.
+
+    \warning setting this property is conflicting with calling setTransform.
+    If a transform has been set, it will be overwritten.
+
+    \sa verticalShear(), {Transformations}
+*/
 void QGraphicsItem::setVerticalShear(qreal shear)
 {
     if (!d_ptr->dirtyTransform) {
@@ -2886,6 +2961,13 @@ void QGraphicsItem::setVerticalShear(qreal shear)
     d_ptr->hasTransform = 1;
 }
 
+/*!
+    \since 4.6
+
+    This convenience function sets the horizontal shear to \a sh and the vertical shear to \a sv.
+
+    \sa setHorizontalShear(), setVerticalShear()
+*/
 void QGraphicsItem::setShear(qreal sh, qreal sv)
 {
     setHorizontalShear(sh);
@@ -2893,19 +2975,16 @@ void QGraphicsItem::setShear(qreal sh, qreal sv)
 }
 
 /*!
-    \property QGraphicsItem::transformOrigin
-
     \since 4.6
 
-    This property holds the transformation origin for the transformation properties.
-    This does not apply to the transformation set by setTransform.
+    Returns the transformation origin for the transformation properties.
 
     The default is QPointF(0,0).
 
     \warning setting this property is conflicting with calling setTransform.
     If a transform has been set, this function return the default value.
 
-    \sa {Transformations}
+    \sa setTransformOrigin(), {Transformations}
 */
 QPointF QGraphicsItem::transformOrigin() const
 {
@@ -2913,6 +2992,29 @@ QPointF QGraphicsItem::transformOrigin() const
     return QPointF(decomposed->xOrigin, decomposed->yOrigin);
 }
 
+/*!
+    \fn inline void setTransformOrigin(qreal x, qreal y)
+
+    \since 4.6
+
+    This is an overloaded member function, provided for convenience.
+    Sets the transformation origin for the transformation 
+    properties to the point(\a x, \a y).
+
+    \sa setTransformOrigin(), {Transformations}
+*/
+
+/*!
+    \since 4.6
+
+    Sets the transformation origin for the transformation properties to \a origin.
+    This does not apply to the transformation set by setTransform.
+
+    \warning setting this property is conflicting with calling setTransform.
+    If a transform has been set, it will be overwritten.
+
+    \sa transformOrigin(), {Transformations}
+*/
 void QGraphicsItem::setTransformOrigin(const QPointF &origin)
 {
     if (!d_ptr->dirtyTransform) {

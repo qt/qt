@@ -1646,12 +1646,6 @@ bool QFontEngineMulti::canRender(const QChar *string, int len)
     return allExist;
 }
 
-QFontEngine *QFontEngineMulti::engine(int at) const
-{
-    Q_ASSERT(at < engines.size());
-    return engines.at(at);
-}
-
 QImage QFontEngineMulti::alphaMapForGlyph(glyph_t)
 {
     Q_ASSERT(false);

@@ -103,6 +103,7 @@ QGLPixmapData::QGLPixmapData(PixelType type)
     , m_engine(0)
     , m_ctx(0)
     , m_dirty(false)
+    , m_hasFillColor(false)
 {
     setSerialNumber(++qt_gl_pixmap_serial);
 }
@@ -196,6 +197,13 @@ void QGLPixmapData::fromImage(const QImage &image,
     resize(image.width(), image.height());
     m_source = image;
     m_dirty = true;
+    m_hasFillColor = false;
+
+    if (m_textureId) {
+        QGLShareContextScope ctx(qt_gl_share_widget()->context());
+        glDeleteTextures(1, &m_textureId);
+        m_textureId = 0;
+    }
 }
 
 bool QGLPixmapData::scroll(int dx, int dy, const QRect &rect)
@@ -222,7 +230,11 @@ void QGLPixmapData::fill(const QColor &color)
     if (!isValid())
         return;
 
-    if (!m_source.isNull()) {
+    if (useFramebufferObjects()) {
+        m_source = QImage();
+        m_hasFillColor = true;
+        m_fillColor = color;
+    } else if (!m_source.isNull()) {
         m_source.fill(PREMUL(color.rgba()));
     } else {
         // ## TODO: improve performance here
@@ -243,14 +255,18 @@ QImage QGLPixmapData::toImage() const
     if (!isValid())
         return QImage();
 
-    if (m_renderFbo)
+    if (m_renderFbo) {
         copyBackFromRenderFbo(true);
-    else if (!m_source.isNull())
+    } else if (!m_source.isNull()) {
         return m_source;
-    else if (m_dirty)
-        return QImage(m_width, m_height, QImage::Format_ARGB32_Premultiplied);
-    else
+    } else if (m_dirty || m_hasFillColor) {
+        QImage img(m_width, m_height, QImage::Format_ARGB32_Premultiplied);
+        if (m_hasFillColor)
+            img.fill(PREMUL(m_fillColor.rgba()));
+        return img;
+    } else {
         ensureCreated();
+    }
 
     QGLShareContextScope ctx(qt_gl_share_widget()->context());
     extern QImage qt_gl_read_texture(const QSize &size, bool alpha_format, bool include_alpha);
@@ -271,6 +287,8 @@ void QGLPixmapData::copyBackFromRenderFbo(bool keepCurrentFboBound) const
 {
     if (!isValid())
         return;
+
+    m_hasFillColor = false;
 
     const QGLContext *share_ctx = qt_gl_share_widget()->context();
     QGLShareContextScope ctx(share_ctx);
@@ -356,9 +374,12 @@ QPaintEngine* QGLPixmapData::paintEngine() const
         return m_engine;
     else if (!useFramebufferObjects()) {
         m_dirty = true;
-
         if (m_source.size() != size())
             m_source = QImage(size(), QImage::Format_ARGB32_Premultiplied);
+        if (m_hasFillColor) {
+            m_source.fill(PREMUL(m_fillColor.rgba()));
+            m_hasFillColor = false;
+        }
         return m_source.paintEngine();
     }
 
@@ -394,10 +415,17 @@ QPaintEngine* QGLPixmapData::paintEngine() const
 
 GLuint QGLPixmapData::bind(bool copyBack) const
 {
-    if (m_renderFbo && copyBack)
+    if (m_renderFbo && copyBack) {
         copyBackFromRenderFbo(true);
-    else
+    } else {
+        if (m_hasFillColor) {
+            m_dirty = true;
+            m_source = QImage(m_width, m_height, QImage::Format_ARGB32_Premultiplied);
+            m_source.fill(PREMUL(m_fillColor.rgba()));
+            m_hasFillColor = false;
+        }
         ensureCreated();
+    }
 
     GLuint id = m_textureId;
     glBindTexture(GL_TEXTURE_2D, id);

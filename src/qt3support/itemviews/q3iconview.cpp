@@ -614,7 +614,7 @@ QByteArray Q3IconDrag::encodedData(const char* mime) const
                 (*it).item.textRect().x()).arg((*it).item.textRect().y()).
             arg((*it).item.textRect().width()).arg(
                 (*it).item.textRect().height());
-        k += QString(QLatin1String((*it).data.data())) + QLatin1String("$@@$");
+        k += QString::fromLatin1((*it).data.data()) + QLatin1String("$@@$");
         s += k;
     }
 
@@ -1820,8 +1820,8 @@ void Q3IconViewItem::calcRect(const QString &text_)
 
     tw = r.width();
     th = r.height();
-    if (tw < view->d->fm->width(QLatin1String("X")))
-        tw = view->d->fm->width(QLatin1String("X"));
+    if (tw < view->d->fm->width(QLatin1Char('X')))
+        tw = view->d->fm->width(QLatin1Char('X'));
 
     itemTextRect.setWidth(tw);
     itemTextRect.setHeight(th);

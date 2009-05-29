@@ -318,18 +318,18 @@ QStringList Error::backtrace(const QScriptValueImpl &error)
         } else {
             s += functionName;
         }
-        s += QLatin1String("(");
+        s += QLatin1Char('(');
         QScriptValueImpl arguments = frame.property(QLatin1String("arguments"));
         if (arguments.isObject()) {
             int argCount = arguments.property(QLatin1String("length")).toInt32();
             for (int j = 0; j < argCount; ++j) {
                 if (j > 0)
-                    s += QLatin1String(",");
+                    s += QLatin1Char(',');
                 s += arguments.property(j).toString();
             }
         }
         s += QLatin1String(")@") + o.property(QLatin1String("fileName")).toString()
-             + QLatin1String(":") + o.property(QLatin1String("lineNumber")).toString();
+             + QLatin1Char(':') + o.property(QLatin1String("lineNumber")).toString();
         result.append(s);
     }
     return result;

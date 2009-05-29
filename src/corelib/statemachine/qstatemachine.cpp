@@ -803,8 +803,7 @@ void QStateMachinePrivate::applyProperties(const QList<QAbstractTransition*> &tr
                         stateForAnimation.insert(a, s);
                         animationsForState[s].append(a);
                         // ### connect to just the top-level animation?
-                        QObject::disconnect(a, SIGNAL(finished()), q, SLOT(_q_animationFinished()));
-                        QObject::connect(a, SIGNAL(finished()), q, SLOT(_q_animationFinished()));
+                        QObject::connect(a, SIGNAL(finished()), q, SLOT(_q_animationFinished()), Qt::UniqueConnection);
                     }
                     it2 = assignments.erase(it2);
                 } else {
@@ -1300,22 +1299,6 @@ void QStateMachinePrivate::unregisterTransition(QAbstractTransition *transition)
         unregisterEventTransition(oet);
     }
 #endif
-}
-
-static int senderSignalIndex(const QObject *sender)
-{
-    QObjectPrivate *d = QObjectPrivate::get(const_cast<QObject*>(sender));
-    QMutexLocker(&d->threadData->mutex);
-    if (!d->currentSender)
-        return -1;
-
-    // Return -1 if d->currentSender isn't in d->senders
-    bool found = false;
-    for (int i = 0; !found && i < d->senders.count(); ++i)
-        found = (d->senders.at(i)->sender == d->currentSender->sender);
-    if (!found)
-        return -1;
-    return d->currentSender->signal;
 }
 
 void QStateMachinePrivate::registerSignalTransition(QSignalTransition *transition)
@@ -2088,10 +2071,15 @@ int QSignalEventGenerator::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
         switch (_id) {
         case 0: {
 // ### in Qt 4.6 we can use QObject::senderSignalIndex()
-            int signalIndex = senderSignalIndex(this);
+            QObjectPrivate *d = static_cast<QObjectPrivate *>(d_ptr);
+            int signalIndex = -1;
+            QObject *sender = this->sender();
+            if (sender && d->currentSender)
+                signalIndex = d->currentSender->signal;
+
             Q_ASSERT(signalIndex != -1);
             QStateMachine *machine = qobject_cast<QStateMachine*>(parent());
-            QStateMachinePrivate::get(machine)->handleTransitionSignal(sender(), signalIndex, _a);
+            QStateMachinePrivate::get(machine)->handleTransitionSignal(sender, signalIndex, _a);
             break;
         }
         default: ;

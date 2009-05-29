@@ -989,8 +989,8 @@ const QString qt_reg_winclass(QWidget *w)        // register window class
     wchar_t uniqueAppID[256];
     GetModuleFileNameW(0, uniqueAppID, 255);
     cname = QString::number(RegisterWindowMessageW(
-              (const wchar_t *) QString::fromUtf16((const ushort *)uniqueAppID).toLower().replace(QString(QString::fromLatin1("\\")),
-              QString(QString::fromLatin1("_"))).utf16()));
+              (const wchar_t *) QString::fromUtf16((const ushort *)uniqueAppID).toLower().replace(QLatin1Char('\\'),
+              QLatin1Char('_')).utf16()));
 #endif
 
     // since multiple Qt versions can be used in one process
@@ -1140,7 +1140,7 @@ void qWinRequestConfig(WId id, int req, int x, int y, int w, int h)
     configRequests->append(r);                // store request in queue
 }
 
-Q_GUI_EXPORT void qWinProcessConfigRequests()                // perform requests in queue
+static void qWinProcessConfigRequests()                // perform requests in queue
 {
     if (!configRequests)
         return;
@@ -1686,20 +1686,23 @@ LRESULT CALLBACK QtWndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam
                     // send the context menu event is a different one
                     if (!alienWidget->testAttribute(Qt::WA_NativeWindow) && !alienWidget->testAttribute(Qt::WA_PaintOnScreen)) {
                         alienWidget = QApplication::widgetAt(globalPos);
-                        pos = alienWidget->mapFromGlobal(globalPos);
+                        if (alienWidget)
+                            pos = alienWidget->mapFromGlobal(globalPos);
                     }
-                    SHRGINFO shrg;
-                    shrg.cbSize = sizeof(shrg);
-                    shrg.hwndClient = hwnd;
-                    shrg.ptDown.x = GET_X_LPARAM(lParam);
-                    shrg.ptDown.y = GET_Y_LPARAM(lParam);
-                    shrg.dwFlags = SHRG_RETURNCMD | SHRG_NOANIMATION;
-                    resolveAygLibs();
-                    if (ptrRecognizeGesture && (ptrRecognizeGesture(&shrg) == GN_CONTEXTMENU)) {
-                        if (qApp->activePopupWidget())
-                            qApp->activePopupWidget()->close();
-                        QContextMenuEvent e(QContextMenuEvent::Mouse, pos, globalPos);
-                        result = qt_sendSpontaneousEvent(alienWidget, &e);
+                    if (alienWidget) {
+                        SHRGINFO shrg;
+                        shrg.cbSize = sizeof(shrg);
+                        shrg.hwndClient = hwnd;
+                        shrg.ptDown.x = GET_X_LPARAM(lParam);
+                        shrg.ptDown.y = GET_Y_LPARAM(lParam);
+                        shrg.dwFlags = SHRG_RETURNCMD | SHRG_NOANIMATION;
+                        resolveAygLibs();
+                        if (ptrRecognizeGesture && (ptrRecognizeGesture(&shrg) == GN_CONTEXTMENU)) {
+                            if (qApp->activePopupWidget())
+                                qApp->activePopupWidget()->close();
+                            QContextMenuEvent e(QContextMenuEvent::Mouse, pos, globalPos);
+                            result = qt_sendSpontaneousEvent(alienWidget, &e);
+                        }
                     }
                 }
             }

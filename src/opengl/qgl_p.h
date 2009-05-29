@@ -314,6 +314,7 @@ public:
     QColor backgroundColor() const;
     QGLContext *context() const;
     bool autoFillBackground() const;
+    bool hasTransparentBackground() const;
 
 #if !defined(QT_OPENGL_ES_1) && !defined(QT_OPENGL_ES_1_CL)
     QGLPixmapData *copyOnBegin() const;
@@ -333,6 +334,7 @@ private:
 #if !defined(QT_OPENGL_ES_1) && !defined(QT_OPENGL_ES_1_CL)
     QGLPixmapData *pixmapData;
 #endif
+    int previous_fbo;
 };
 
 // GL extension definitions

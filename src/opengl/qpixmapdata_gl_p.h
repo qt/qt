@@ -91,6 +91,9 @@ public:
 
     bool isUninitialized() const { return m_dirty && m_source.isNull(); }
 
+    bool needsFill() const { return m_hasFillColor; }
+    QColor fillColor() const { return m_fillColor; }
+
     QSize size() const { return QSize(m_width, m_height); }
     int width() const { return m_width; }
     int height() const { return m_height; }
@@ -116,11 +119,18 @@ private:
     int m_height;
 
     mutable QGLFramebufferObject *m_renderFbo;
-    mutable uint m_textureId;
+    mutable GLuint m_textureId;
     mutable QPaintEngine *m_engine;
     mutable QGLContext *m_ctx;
-    mutable bool m_dirty;
     mutable QImage m_source;
+
+    // the texture is not in sync with the source image
+    mutable bool m_dirty;
+
+    // fill has been called and no painting has been done, so the pixmap is
+    // represented by a single fill color
+    mutable QColor m_fillColor;
+    mutable bool m_hasFillColor;
 };
 
 QT_END_NAMESPACE

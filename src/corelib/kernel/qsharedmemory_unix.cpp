@@ -51,8 +51,6 @@
 
 #ifndef QT_NO_SHAREDMEMORY
 
-QT_BEGIN_NAMESPACE
-
 #include <sys/types.h>
 #include <sys/ipc.h>
 #include <sys/shm.h>

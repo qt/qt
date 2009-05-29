@@ -194,7 +194,7 @@ QString qws_dataDir()
     static QString result;
     if (!result.isEmpty())
         return result;
-    QByteArray dataDir = QString(QLatin1String("/tmp/qtembedded-%1")).arg(qws_display_id).toLocal8Bit();
+    QByteArray dataDir = QString::fromLatin1("/tmp/qtembedded-%1").arg(qws_display_id).toLocal8Bit();
     if (QT_MKDIR(dataDir, 0700)) {
         if (errno != EEXIST) {
             qFatal("Cannot create Qt for Embedded Linux data directory: %s", dataDir.constData());
@@ -215,7 +215,7 @@ QString qws_dataDir()
     if ((buf.st_mode & 0677) != 0600)
         qFatal("Qt for Embedded Linux data directory has incorrect permissions: %s", dataDir.constData());
 #endif
-    dataDir += "/";
+    dataDir += '/';
 
     result = QString::fromLocal8Bit(dataDir);
     return result;
@@ -224,7 +224,7 @@ QString qws_dataDir()
 // Get the filename of the pipe Qt for Embedded Linux uses for server/client comms
 Q_GUI_EXPORT QString qws_qtePipeFilename()
 {
-    return (qws_dataDir() + QString(QLatin1String(QTE_PIPE)).arg(qws_display_id));
+    return (qws_dataDir() + QString::fromLatin1(QTE_PIPE).arg(qws_display_id));
 }
 
 static void setMaxWindowRect(const QRect &rect)

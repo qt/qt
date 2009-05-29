@@ -127,7 +127,7 @@ static Ending ending(QString str, QLocale::Language lang)
 
     switch (ch) {
     case 0x002e: // full stop
-        if (str.endsWith(QString(QLatin1String("..."))))
+        if (str.endsWith(QLatin1String("...")))
             return End_Ellipsis;
         else
             return End_FullStop;

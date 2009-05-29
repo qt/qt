@@ -2241,4 +2241,12 @@ QDataStream &operator>>(QDataStream &stream, QColor &color)
     \sa QColor::rgb(), QColor::rgba()
 */
 
+/*! \fn void QColormap::initialize()
+  \internal
+*/
+
+/*! \fn void QColormap::cleanup()
+  \internal
+*/
+
 QT_END_NAMESPACE

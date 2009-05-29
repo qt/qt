@@ -186,9 +186,9 @@ SyntaxChecker::Result SyntaxChecker::checkSyntax(const QString &code)
                     error_message += QLatin1String (", ");
 
                   first = false;
-                  error_message += QLatin1String("`");
+                  error_message += QLatin1Char('`');
                   error_message += QLatin1String (spell [expected_tokens [s]]);
-                  error_message += QLatin1String("'");
+                  error_message += QLatin1Char('\'');
                 }
             }
 

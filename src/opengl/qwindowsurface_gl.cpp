@@ -405,8 +405,8 @@ void QGLWindowSurface::flush(QWidget *widget, const QRegion &rgn, const QPoint &
                         drawTexture(rect, d_ptr->tex_id, window()->size(), rect);
                     }
                 }
-#endif
             }
+#endif
             d_ptr->paintedRegion = QRegion();
 
             context()->swapBuffers();

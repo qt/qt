@@ -342,8 +342,10 @@ bool QPMCache::remove(const QString &key)
 
 bool QPMCache::remove(const QPixmapCache::Key &key)
 {
+    bool result = QCache<QPixmapCache::Key, QDetachedPixmap>::remove(key);
+    //We release the key after we removed it from the cache
     releaseKey(key);
-    return QCache<QPixmapCache::Key, QDetachedPixmap>::remove(key);
+    return result;
 }
 
 void QPMCache::resizeKeyArray(int size)

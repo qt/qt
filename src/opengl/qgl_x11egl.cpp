@@ -243,12 +243,23 @@ void QGLWidget::setContext(QGLContext *context, const QGLContext* shareContext, 
         return;
     }
 
-
-    // Create the EGL Context (which will also choose the config for us)
     if (d->glcx)
         d->glcx->doneCurrent();
     QGLContext* oldcx = d->glcx;
     d->glcx = context;
+
+    if (parentWidget()) {
+        // force creation of delay-created widgets
+        parentWidget()->winId();
+        if (parentWidget()->x11Info().screen() != x11Info().screen())
+            d_func()->xinfo = parentWidget()->d_func()->xinfo;
+    }
+
+    // If the application has set WA_TranslucentBackground and not explicitly set
+    // the alpha buffer size to zero, modify the format so it have an alpha channel
+    QGLFormat& fmt = d->glcx->d_func()->glFormat;
+    if (testAttribute(Qt::WA_TranslucentBackground) && fmt.alphaBufferSize() == -1)
+        fmt.setAlphaBufferSize(1);
 
     bool createFailed = false;
     if (!d->glcx->isValid()) {
@@ -265,15 +276,6 @@ void QGLWidget::setContext(QGLContext *context, const QGLContext* shareContext, 
         if (deleteOldContext)
             delete oldcx;
         return;
-    }
-
-
-
-    // Make sure native winIds are avaliable
-    if (parentWidget()) {
-        parentWidget()->winId();
-        if (parentWidget()->x11Info().screen() != x11Info().screen())
-            d_func()->xinfo = parentWidget()->d_func()->xinfo;
     }
 
     bool visible = isVisible();
@@ -384,6 +386,7 @@ void QGLWidget::setContext(QGLContext *context, const QGLContext* shareContext, 
         a.colormap = XCreateColormap(x11Info().display(), p, vi.visual, AllocNone);
         valueMask |= CWColormap;
     }
+
     Window w = XCreateWindow(x11Info().display(), p, x(), y(), width(), height(),
                              0, vi.depth, InputOutput, vi.visual, valueMask, &a);
 
@@ -406,6 +409,7 @@ void QGLWidget::setContext(QGLContext *context, const QGLContext* shareContext, 
     if (visible)
         show();
 
+    XFlush(X11->display);
     d->glcx->setWindowCreated(true);
 }
 

@@ -109,7 +109,7 @@ void QNetworkAccessFileBackend::open()
     QString fileName = url.toLocalFile();
     if (fileName.isEmpty()) {
         if (url.scheme() == QLatin1String("qrc"))
-            fileName = QLatin1String(":") + url.path();
+            fileName = QLatin1Char(':') + url.path();
         else
             fileName = url.toString(QUrl::RemoveAuthority | QUrl::RemoveFragment | QUrl::RemoveQuery);
     }

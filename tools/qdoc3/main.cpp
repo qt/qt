@@ -43,6 +43,7 @@
   main.cpp
 */
 
+#include <qglobal.h>
 #include <QtCore>
 #include <stdlib.h>
 #include "apigenerator.h"
@@ -97,8 +98,6 @@ static bool slow = false;
 static QStringList defines;
 static QHash<QString, Tree *> trees;
 
-//static int doxygen = 0;
-
 /*!
   Find the Tree for language \a lang and return a pointer to it.
   If there is no Tree for language \a lang in the Tree table, add
@@ -136,7 +135,8 @@ static void printHelp()
  */
 static void printVersion()
 {
-    Location::information(tr("qdoc version 4.4.1"));
+    QString s = QString(tr("qdoc version ")) + QString(QT_VERSION_STR);
+    Location::information(s);
 }
 
 /*!
@@ -221,18 +221,6 @@ static void processQdocconfFile(const QString &fileName)
      */
     QString lang = config.getString(CONFIG_LANGUAGE);
     Location langLocation = config.lastLocation();
-
-#ifdef QDOC2DOX    
-    // qdoc -> doxygen
-    if (doxygen == 2) {
-        qDebug() << "READING anchors.txt";
-        DoxWriter::readAnchors();
-        qDebug() << "READING title maps";
-        DoxWriter::readTitles();
-        qDebug() << "READING member multimaps";
-        DoxWriter::readMembers();
-    }
-#endif    
 
     /*
       Initialize the tree where all the parsed sources will be stored.
@@ -320,17 +308,6 @@ static void processQdocconfFile(const QString &fileName)
     tree->resolveGroups();
     tree->resolveTargets();
 
-#ifdef QDOC2DOX    
-    // qdoc -> doxygen
-    if (doxygen == 1) {
-        DoxWriter::writeAnchors();
-        DoxWriter::writeTitles();
-        DoxWriter::writeMembers();
-    }
-
-    if (doxygen == 0) {
-#endif    
-
     /*
       Now the tree has been built, and all the stuff that needed
       resolving has been resolved. Now it is time to traverse
@@ -355,11 +332,6 @@ static void processQdocconfFile(const QString &fileName)
     
     tree->setVersion("");
     Generator::terminate();
-
-#ifdef QDOC2DOX    
-    }
-#endif    
-
     CodeParser::terminate();
     CodeMarker::terminate();
     CppToQsConverter::terminate();
@@ -454,26 +426,6 @@ int main(int argc, char **argv)
         else if (opt == "-slow") {
             slow = true;
 	}
-        
-#ifdef QDOC2DOX        
-        else if (opt == "-doxygen1") {
-            // qdoc -> doxygen
-            // Don't use this; it isn't ready yet.
-            // Now it's a fossil.
-            qDebug() << "doxygen pass 1";
-            doxygen = 1;
-            DoxWriter::setDoxPass(1);
-        }
-        else if (opt == "-doxygen2") {
-            // qdoc -> doxygen
-            // Don't use this; it isn't ready yet.
-            // Now it's a fossil.
-            qDebug() << "doxygen pass 2";
-            doxygen = 2;
-            DoxWriter::setDoxPass(2);
-        }
-#endif
-        
         else {
 	    qdocFiles.append(opt);
 	}

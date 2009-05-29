@@ -74,7 +74,6 @@ public:
     short       frameWidth;
     short       leftFrameWidth, rightFrameWidth;
     short       topFrameWidth, bottomFrameWidth;
-    short       oldFrameStyle;
 
     inline void init();
 

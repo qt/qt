@@ -582,7 +582,7 @@ QString QEglProperties::toString() const
     if (val != EGL_DONT_CARE) {
         str += QLatin1String("id=");
         str += QString::number(val);
-        str += QLatin1String(" ");
+        str += QLatin1Char(' ');
     }
 
 #ifdef EGL_RENDERABLE_TYPE
@@ -617,11 +617,11 @@ QString QEglProperties::toString() const
         bufferSize = EGL_DONT_CARE;
     str += QLatin1String(" rgba=");
     str += QString::number(red);
-    str += QLatin1String(",");
+    str += QLatin1Char(',');
     str += QString::number(green);
-    str += QLatin1String(",");
+    str += QLatin1Char(',');
     str += QString::number(blue);
-    str += QLatin1String(",");
+    str += QLatin1Char(',');
     str += QString::number(alpha);
     if (bufferSize != EGL_DONT_CARE) {
         // Only report buffer size if different than r+g+b+a.
@@ -708,7 +708,7 @@ QString QEglProperties::toString() const
     if (height != EGL_DONT_CARE || width != EGL_DONT_CARE) {
         addTag(str, QLatin1String(" max-pbuffer-size="));
         str += QString::number(width);
-        str += QLatin1String("x");
+        str += QLatin1Char('x');
         str += QString::number(height);
         if (pixels != (width * height)) {
             addTag(str, QLatin1String(" max-pbuffer-pixels="));
@@ -762,9 +762,9 @@ QString QEglProperties::toString() const
     if (val == EGL_TRANSPARENT_RGB) {
         addTag(str, QLatin1String(" transparent-rgb="));
         str += QString::number(value(EGL_TRANSPARENT_RED_VALUE));
-        str += QLatin1String(",");
+        str += QLatin1Char(',');
         str += QString::number(value(EGL_TRANSPARENT_GREEN_VALUE));
-        str += QLatin1String(",");
+        str += QLatin1Char(',');
         str += QString::number(value(EGL_TRANSPARENT_BLUE_VALUE));
     }
 

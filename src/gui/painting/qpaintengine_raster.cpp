@@ -6204,7 +6204,7 @@ void dumpClip(int width, int height, QClipData *clip)
     Q_ASSERT(x1 >= 0);
 
     fprintf(stderr,"clip %d: %d %d - %d %d\n", counter, x0, y0, x1, y1);
-    clipImg.save(QString(QLatin1String("clip-%0.png")).arg(counter++));
+    clipImg.save(QString::fromLatin1("clip-%0.png").arg(counter++));
 }
 #endif
 

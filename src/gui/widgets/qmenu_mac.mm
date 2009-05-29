@@ -1829,6 +1829,9 @@ OSMenuRef QMenuBar::macMenu() { return d_func()->macMenu(); }
 */
 static bool qt_mac_is_ancestor(QWidget* possibleAncestor, QWidget *child)
 {
+    if (!possibleAncestor)
+        return false;
+
     QWidget * current = child->parentWidget();
     while (current != 0) {
         if (current == possibleAncestor)
@@ -1847,22 +1850,19 @@ static bool qt_mac_should_disable_menu(QMenuBar *menuBar, QWidget *modalWidget)
 {
     if (modalWidget == 0 || menuBar == 0)
         return false;
-    const Qt::WindowModality modality = modalWidget->windowModality();
-    if (modality == Qt::ApplicationModal) {
-        return true;
-    } else if (modality == Qt::WindowModal) {
-        QWidget * parent = menuBar->parentWidget();
 
-        // Special case for the global menu bar: It's not associated
-        // with a window so don't disable it.
-        if (parent == 0)
-            return false;
-
-        // Disable menu entries in menu bars that belong to ancestors of
-        // the modal widget, leave entries in unrelated menu bars enabled.
-        return qt_mac_is_ancestor(parent, modalWidget);
+    // If there is an application modal window on
+    // screen, the entries of the menubar should be disabled:
+    QWidget *w = modalWidget;
+    while (w) {
+        if (w->isVisible() && w->windowModality() == Qt::ApplicationModal)
+            return true;
+        w = w->parentWidget();
     }
-    return false; // modality == NonModal
+
+    // INVARIANT: modalWidget is window modal. Disable menu entries
+    // if the menu bar belongs to an ancestor of modalWidget:
+    return qt_mac_is_ancestor(menuBar->parentWidget(), modalWidget);
 }
 
 static void cancelAllMenuTracking()

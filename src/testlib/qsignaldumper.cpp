@@ -87,7 +87,7 @@ static void qSignalDumperCallback(QObject *caller, int method_index, void **argv
     str.fill(' ', QTest::iLevel++ * QTest::IndentSpacesCount);
     str += "Signal: ";
     str += mo->className();
-    str += "(";
+    str += '(';
 
     QString objname = caller->objectName();
     str += objname.toLocal8Bit();
@@ -114,15 +114,15 @@ static void qSignalDumperCallback(QObject *caller, int method_index, void **argv
             str.append(QByteArray::number(addr, 16));
         } else if (typeId != QMetaType::Void) {
             str.append(arg)
-                .append("(")
+                .append('(')
                 .append(QVariant(typeId, argv[i + 1]).toString().toLocal8Bit())
-                .append(")");
+                .append(')');
         }
         str.append(", ");
     }
     if (str.endsWith(", "))
         str.chop(2);
-    str.append(")");
+    str.append(')');
     qPrintMessage(str);
 }
 
@@ -143,7 +143,7 @@ static void qSignalDumperCallbackSlot(QObject *caller, int method_index, void **
     str.fill(' ', QTest::iLevel * QTest::IndentSpacesCount);
     str += "Slot: ";
     str += mo->className();
-    str += "(";
+    str += '(';
 
     QString objname = caller->objectName();
     str += objname.toLocal8Bit();

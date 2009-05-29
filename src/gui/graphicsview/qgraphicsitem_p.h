@@ -459,9 +459,9 @@ public:
     QGraphicsItem *q_ptr;
 };
 
-Q_DECLARE_METATYPE(QGraphicsItemPrivate::DecomposedTransform *)
-
 QT_END_NAMESPACE
+
+Q_DECLARE_METATYPE(QGraphicsItemPrivate::DecomposedTransform *)
 
 #endif // QT_NO_GRAPHICSVIEW
 

@@ -200,7 +200,55 @@ QT_BEGIN_NAMESPACE
 /*!
     \property QGraphicsWidget::pos
     \brief the position of the widget
-*/    
+*/
+
+/*!
+    \property QGraphicsWidget::xRotation
+    \since 4.6
+    \brief the rotation angle in degrees around the X axis
+*/
+
+/*!
+    \property QGraphicsWidget::yRotation
+    \since 4.6
+    \brief the rotation angle in degrees around the Y axis
+*/
+
+/*!
+    \property QGraphicsWidget::zRotation
+    \since 4.6
+    \brief the rotation angle in degrees around the Z axis
+*/
+
+/*!
+    \property QGraphicsWidget::xScale
+    \since 4.6
+    \brief the scale factor on the X axis.
+*/
+
+/*!
+    \property QGraphicsWidget::yScale
+    \since 4.6
+    \brief the scale factor on the Y axis.
+*/
+
+/*!
+    \property QGraphicsWidget::horizontalShear
+    \since 4.6
+    \brief the horizontal shear.
+*/
+
+/*!
+    \property QGraphicsWidget::verticalShear
+    \since 4.6
+    \brief the vertical shear.
+*/
+
+/*!
+    \property QGraphicsWidget::transformOrigin
+    \since 4.6
+    \brief the transformation origin for the transformation properties.
+*/
 
 /*!
     Constructs a QGraphicsWidget instance. The optional \a parent argument is

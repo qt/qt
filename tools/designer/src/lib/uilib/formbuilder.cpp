@@ -120,7 +120,8 @@ QFormBuilder::~QFormBuilder()
 */
 QWidget *QFormBuilder::create(DomWidget *ui_widget, QWidget *parentWidget)
 {
-    QFormBuilderExtra::instance(this)->setProcessingLayoutWidget(false);
+    QFormBuilderExtra *fb = QFormBuilderExtra::instance(this);
+    fb->setProcessingLayoutWidget(false);
     if (ui_widget->attributeClass() == QFormBuilderStrings::instance().qWidgetClass && !ui_widget->hasAttributeNative()
             && parentWidget
 #ifndef QT_NO_MAINWINDOW
@@ -145,7 +146,7 @@ QWidget *QFormBuilder::create(DomWidget *ui_widget, QWidget *parentWidget)
             && !qobject_cast<QDockWidget *>(parentWidget)
 #endif
             )
-        QFormBuilderExtra::instance(this)->setProcessingLayoutWidget(true);
+        fb->setProcessingLayoutWidget(true);
     return QAbstractFormBuilder::create(ui_widget, parentWidget);
 }
 
@@ -369,9 +370,10 @@ QWidget *QFormBuilder::create(DomUI *ui, QWidget *parentWidget)
 */
 QLayout *QFormBuilder::create(DomLayout *ui_layout, QLayout *layout, QWidget *parentWidget)
 {
+    QFormBuilderExtra *fb = QFormBuilderExtra::instance(this);
     // Is this a temporary layout widget used to represent QLayout hierarchies in Designer?
     // Set its margins to 0.
-    bool layoutWidget = QFormBuilderExtra::instance(this)->processingLayoutWidget();
+    bool layoutWidget = fb->processingLayoutWidget();
     QLayout *l = QAbstractFormBuilder::create(ui_layout, layout, parentWidget);
     if (layoutWidget) {
         const QFormBuilderStrings &strings = QFormBuilderStrings::instance();
@@ -392,7 +394,7 @@ QLayout *QFormBuilder::create(DomLayout *ui_layout, QLayout *layout, QWidget *pa
             bottom = prop->elementNumber();
 
         l->setContentsMargins(left, top, right, bottom);
-        QFormBuilderExtra::instance(this)->setProcessingLayoutWidget(false);
+        fb->setProcessingLayoutWidget(false);
     }
     return l;
 }

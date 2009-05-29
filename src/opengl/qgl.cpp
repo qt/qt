@@ -2608,6 +2608,42 @@ const QGLContext* QGLContext::currentContext()
     visual. On other platforms it may work differently.
 */
 
+/*! \fn int QGLContext::choosePixelFormat(void* dummyPfd, HDC pdc)
+  
+    \bold{Win32 only:} This virtual function chooses a pixel format
+    that matches the OpenGL \link setFormat() format\endlink.
+    Reimplement this function in a subclass if you need a custom
+    context.
+
+    \warning The \a dummyPfd pointer and \a pdc are used as a \c
+    PIXELFORMATDESCRIPTOR*. We use \c void to avoid using
+    Windows-specific types in our header files.
+
+    \sa chooseContext()
+*/
+
+/*! \fn void *QGLContext::chooseVisual()
+  
+  \bold{X11 only:} This virtual function tries to find a visual that
+  matches the format, reducing the demands if the original request
+  cannot be met.
+
+  The algorithm for reducing the demands of the format is quite
+  simple-minded, so override this method in your subclass if your
+  application has spcific requirements on visual selection.
+
+  \sa chooseContext()
+*/
+
+/*! \fn void *QGLContext::tryVisual(const QGLFormat& f, int bufDepth)
+  \internal
+
+  \bold{X11 only:} This virtual function chooses a visual that matches
+  the OpenGL \link format() format\endlink. Reimplement this function
+  in a subclass if you need a custom visual.
+
+  \sa chooseContext()
+*/
 
 /*!
     \fn void QGLContext::reset()
@@ -3124,11 +3160,10 @@ void QGLWidget::setFormat(const QGLFormat &format)
 */
 
 /*
-  \obsolete
-
   \fn void QGLWidget::setContext(QGLContext *context,
-                                  const QGLContext* shareContext,
-                                  bool deleteOldContext)
+                                 const QGLContext* shareContext,
+                                 bool deleteOldContext)
+  \obsolete
 
   Sets a new context for this widget. The QGLContext \a context must
   be created using \e new. QGLWidget will delete \a context when
@@ -3278,9 +3313,10 @@ void QGLWidget::resizeOverlayGL(int, int)
 {
 }
 
-
+/*! \fn bool QGLWidget::event(QEvent *e)
+  \reimp
+*/
 #if !defined(Q_OS_WINCE) && !defined(Q_WS_QWS)
-/*! \reimp */
 bool QGLWidget::event(QEvent *e)
 {
     Q_D(QGLWidget);
@@ -3306,7 +3342,7 @@ bool QGLWidget::event(QEvent *e)
         glFinish();
         doneCurrent();
     } else if (e->type() == QEvent::ParentChange) {
-        if (d->glcx->d_func()->screen != d->xinfo.screen()) {
+        if (d->glcx->d_func()->screen != d->xinfo.screen() || testAttribute(Qt::WA_TranslucentBackground)) {
             setContext(new QGLContext(d->glcx->requestedFormat(), this));
             // ### recreating the overlay isn't supported atm
         }
@@ -4329,7 +4365,7 @@ Q_OPENGL_EXPORT const QString qt_gl_library_name()
 {
     if (qt_gl_lib_name()->isNull()) {
 #if defined(Q_WS_X11) || defined(Q_WS_QWS)
-        return QString(QLatin1String("GL"));
+        return QLatin1String("GL");
 #else // Q_WS_MAC
         return QLatin1String("/System/Library/Frameworks/OpenGL.framework/Versions/A/Libraries/libGL.dylib");
 #endif
@@ -4391,6 +4427,15 @@ void QGLDrawable::swapBuffers()
 
 void QGLDrawable::makeCurrent()
 {
+    previous_fbo = 0;
+    if (!pixmapData && !fbo) {
+        QGLContext *ctx = context();
+        previous_fbo = ctx->d_ptr->current_fbo;
+        ctx->d_ptr->current_fbo = 0;
+        if (previous_fbo)
+            glBindFramebuffer(GL_FRAMEBUFFER_EXT, 0);
+    }
+
     if (widget)
         widget->makeCurrent();
 #if !defined(QT_OPENGL_ES_1) && !defined(QT_OPENGL_ES_1_CL)
@@ -4427,6 +4472,12 @@ void QGLDrawable::doneCurrent()
         return;
     }
 #endif
+
+    if (previous_fbo) {
+        QGLContext *ctx = context();
+        ctx->d_ptr->current_fbo = previous_fbo;
+        glBindFramebuffer(GL_FRAMEBUFFER_EXT, previous_fbo);
+    }
 
     if (fbo && !wasBound)
         fbo->release();
@@ -4510,7 +4561,14 @@ QColor QGLDrawable::backgroundColor() const
 {
     if (widget)
         return widget->palette().brush(widget->backgroundRole()).color();
+    else if (pixmapData)
+        return pixmapData->fillColor();
     return QApplication::palette().brush(QPalette::Background).color();
+}
+
+bool QGLDrawable::hasTransparentBackground() const
+{
+    return widget && widget->testAttribute(Qt::WA_TranslucentBackground);
 }
 
 QGLContext *QGLDrawable::context() const
@@ -4532,6 +4590,8 @@ bool QGLDrawable::autoFillBackground() const
 {
     if (widget)
         return widget->autoFillBackground();
+    else if (pixmapData)
+        return pixmapData->needsFill();
     else
         return false;
 }

@@ -1330,7 +1330,8 @@ public:
         DirectConnection,
         QueuedConnection,
         AutoCompatConnection,
-        BlockingQueuedConnection
+        BlockingQueuedConnection,
+        UniqueConnection =  0x80
     };
 
     enum ShortcutContext {

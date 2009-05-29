@@ -398,9 +398,12 @@ QRect QMenuPrivate::actionRect(QAction *act) const
     return ret;
 }
 
+static const float MenuFadeTimeInSec = 0.150;
+
 void QMenuPrivate::hideUpToMenuBar()
 {
     Q_Q(QMenu);
+    bool fadeMenus = q->style()->styleHint(QStyle::SH_Menu_FadeOutOnHide);
     if (!tornoff) {
         QWidget *caused = causedPopup.widget;
         hideMenu(q); //hide after getting causedPopup
@@ -415,8 +418,9 @@ void QMenuPrivate::hideUpToMenuBar()
             if (QMenu *m = qobject_cast<QMenu*>(caused)) {
                 caused = m->d_func()->causedPopup.widget;
                 if (!m->d_func()->tornoff)
-                    hideMenu(m);
-                m->d_func()->setCurrentAction(0);
+                    hideMenu(m, fadeMenus);
+                if (!fadeMenus) // Mac doesn't clear the action until after hidden.
+                    m->d_func()->setCurrentAction(0);
             } else {
 #ifndef QT_NO_TOOLBUTTON
                 if (qobject_cast<QToolButton*>(caused) == 0)
@@ -425,26 +429,32 @@ void QMenuPrivate::hideUpToMenuBar()
                 caused = 0;
             }
         }
+#if defined(Q_WS_MAC)
+        if (fadeMenus) {
+            QEventLoop eventLoop;
+            QTimer::singleShot(int(MenuFadeTimeInSec * 1000), &eventLoop, SLOT(quit()));
+            QMacWindowFader::currentFader()->performFade();
+            eventLoop.exec();
+        }
+#endif
     }
     setCurrentAction(0);
 }
 
-void QMenuPrivate::hideMenu(QMenu *menu)
+void QMenuPrivate::hideMenu(QMenu *menu, bool justRegister)
 {
     if (!menu)
         return;
-
 #if !defined(QT_NO_EFFECTS)
     menu->blockSignals(true);
     aboutToHide = true;
     // Flash item which is about to trigger (if any).
     if (menu->style()->styleHint(QStyle::SH_Menu_FlashTriggeredItem)
-        && currentAction && currentAction == actionAboutToTrigger) {
-
+        && currentAction && currentAction == actionAboutToTrigger
+        && menu->actions().contains(currentAction)) {
         QEventLoop eventLoop;
         QAction *activeAction = currentAction;
 
-        // Deselect and wait 60 ms.
         menu->setActiveAction(0);
         QTimer::singleShot(60, &eventLoop, SLOT(quit()));
         eventLoop.exec();
@@ -458,22 +468,24 @@ void QMenuPrivate::hideMenu(QMenu *menu)
     // Fade out.
     if (menu->style()->styleHint(QStyle::SH_Menu_FadeOutOnHide)) {
         // ### Qt 4.4:
-        // Should be something like: q->transitionWindow(Qt::FadeOutTransition, 150);
+        // Should be something like: q->transitionWindow(Qt::FadeOutTransition, MenuFadeTimeInSec);
         // Hopefully we'll integrate qt/research/windowtransitions into main before 4.4.
         // Talk to Richard, Trenton or Bjoern.
 #if defined(Q_WS_MAC)
-		macWindowFade(qt_mac_window_for(menu));		// FIXME - what is the default duration for view animations
+        if (justRegister) {
+            QMacWindowFader::currentFader()->setFadeDuration(MenuFadeTimeInSec);
+            QMacWindowFader::currentFader()->registerWindowToFade(menu);
+        } else {
+            macWindowFade(qt_mac_window_for(menu), MenuFadeTimeInSec);
+        }
 
-        // Wait for the transition to complete.
-		QEventLoop eventLoop;
-        QTimer::singleShot(150, &eventLoop, SLOT(quit()));
-        eventLoop.exec();
 #endif // Q_WS_MAC
     }
     aboutToHide = false;
     menu->blockSignals(false);
 #endif // QT_NO_EFFECTS
-    menu->hide();
+    if (!justRegister)
+        menu->hide();
 }
 
 void QMenuPrivate::popupAction(QAction *action, int delay, bool activateFirst)

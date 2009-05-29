@@ -1273,7 +1273,7 @@ QRectF QTessellator::tessellate(const QPointF *points, int nPoints)
                      << "p0= (" << Q27Dot5ToDouble(d->scanline.edges[i]->v0->x)
                      << '/' << Q27Dot5ToDouble(d->scanline.edges[i]->v0->y)
                      << ") p1= (" << Q27Dot5ToDouble(d->scanline.edges[i]->v1->x)
-                     << '/' << Q27Dot5ToDouble(d->scanline.edges[i]->v1->y) << ")"
+                     << '/' << Q27Dot5ToDouble(d->scanline.edges[i]->v1->y) << ')'
                      << "x=" << Q27Dot5ToDouble(d->scanline.edges[i]->positionAt(d->y))
                      << "isLeftOfNext="
                      << ((i < d->scanline.size - 1)

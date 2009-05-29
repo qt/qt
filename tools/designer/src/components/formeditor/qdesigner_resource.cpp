@@ -159,6 +159,7 @@ private:
     QDesignerFormEditorInterface *m_core;
     DesignerPixmapCache  *m_pixmapCache;
     DesignerIconCache    *m_iconCache;
+    const QDesignerLanguageExtension *m_lang;
     bool                  m_saveRelative;
     mutable QMap<QString, bool>   m_usedQrcFiles;
     mutable QMap<QString, bool>   m_loadedQrcFiles;
@@ -168,13 +169,18 @@ QDesignerResourceBuilder::QDesignerResourceBuilder(QDesignerFormEditorInterface 
     m_core(core),
     m_pixmapCache(pixmapCache),
     m_iconCache(iconCache),
+    m_lang(qt_extension<QDesignerLanguageExtension *>(core->extensionManager(), core)),
     m_saveRelative(true)
 {
 }
 
-static inline void setIconPixmap(QIcon::Mode m, QIcon::State s, const QDir &workingDirectory, const QString &v, PropertySheetIconValue &icon)
+static inline void setIconPixmap(QIcon::Mode m, QIcon::State s, const QDir &workingDirectory, 
+                                 QString path, PropertySheetIconValue &icon,
+                                 const QDesignerLanguageExtension *lang = 0)
 {
-    icon.setPixmap(m, s, PropertySheetPixmapValue(QFileInfo(workingDirectory, v).absoluteFilePath()));
+    if (lang == 0 || !lang->isLanguageResource(path))
+        path = QFileInfo(workingDirectory, path).absoluteFilePath();
+    icon.setPixmap(m, s, PropertySheetPixmapValue(path));
 }
 
 QVariant QDesignerResourceBuilder::loadResource(const QDir &workingDirectory, const DomProperty *property) const
@@ -184,7 +190,11 @@ QVariant QDesignerResourceBuilder::loadResource(const QDir &workingDirectory, co
             PropertySheetPixmapValue pixmap;
             DomResourcePixmap *dp = property->elementPixmap();
             if (!dp->text().isEmpty()) {
-                pixmap.setPath(QFileInfo(workingDirectory, dp->text()).absoluteFilePath());
+                if (m_lang != 0 && m_lang->isLanguageResource(dp->text())) {
+                    pixmap.setPath(dp->text());
+                } else {
+                    pixmap.setPath(QFileInfo(workingDirectory, dp->text()).absoluteFilePath());
+                }
 #ifdef OLD_RESOURCE_FORMAT
                 if (dp->hasAttributeResource())
                     m_loadedQrcFiles.insert(QFileInfo(workingDirectory, dp->attributeResource()).absoluteFilePath(), false);
@@ -198,24 +208,24 @@ QVariant QDesignerResourceBuilder::loadResource(const QDir &workingDirectory, co
             DomResourceIcon *di = property->elementIconSet();
             if (const int flags = iconStateFlags(di)) { // new, post 4.4 format
                 if (flags & NormalOff)
-                    setIconPixmap(QIcon::Normal, QIcon::Off, workingDirectory, di->elementNormalOff()->text(), icon);
+                    setIconPixmap(QIcon::Normal, QIcon::Off, workingDirectory, di->elementNormalOff()->text(), icon, m_lang);
                 if (flags & NormalOn)
-                    setIconPixmap(QIcon::Normal, QIcon::On, workingDirectory, di->elementNormalOn()->text(), icon);
+                    setIconPixmap(QIcon::Normal, QIcon::On, workingDirectory, di->elementNormalOn()->text(), icon, m_lang);
                 if (flags & DisabledOff)
-                    setIconPixmap(QIcon::Disabled, QIcon::Off, workingDirectory, di->elementDisabledOff()->text(), icon);
+                    setIconPixmap(QIcon::Disabled, QIcon::Off, workingDirectory, di->elementDisabledOff()->text(), icon, m_lang);
                 if (flags & DisabledOn)
-                    setIconPixmap(QIcon::Disabled, QIcon::On, workingDirectory, di->elementDisabledOn()->text(), icon);
+                    setIconPixmap(QIcon::Disabled, QIcon::On, workingDirectory, di->elementDisabledOn()->text(), icon, m_lang);
                 if (flags & ActiveOff)
-                    setIconPixmap(QIcon::Active, QIcon::Off, workingDirectory, di->elementActiveOff()->text(), icon);
+                    setIconPixmap(QIcon::Active, QIcon::Off, workingDirectory, di->elementActiveOff()->text(), icon, m_lang);
                 if (flags & ActiveOn)
-                    setIconPixmap(QIcon::Active, QIcon::On, workingDirectory, di->elementActiveOn()->text(), icon);
+                    setIconPixmap(QIcon::Active, QIcon::On, workingDirectory, di->elementActiveOn()->text(), icon, m_lang);
                 if (flags & SelectedOff)
-                    setIconPixmap(QIcon::Selected, QIcon::Off, workingDirectory, di->elementSelectedOff()->text(), icon);
+                    setIconPixmap(QIcon::Selected, QIcon::Off, workingDirectory, di->elementSelectedOff()->text(), icon, m_lang);
                 if (flags & SelectedOn)
-                    setIconPixmap(QIcon::Selected, QIcon::On, workingDirectory, di->elementSelectedOn()->text(), icon);
+                    setIconPixmap(QIcon::Selected, QIcon::On, workingDirectory, di->elementSelectedOn()->text(), icon, m_lang);
             } else {
 #ifdef OLD_RESOURCE_FORMAT
-                setIconPixmap(QIcon::Normal, QIcon::Off, workingDirectory, di->text(), icon);
+                setIconPixmap(QIcon::Normal, QIcon::Off, workingDirectory, di->text(), icon, m_lang);
                 if (di->hasAttributeResource())
                     m_loadedQrcFiles.insert(QFileInfo(workingDirectory, di->attributeResource()).absoluteFilePath(), false);
 #endif

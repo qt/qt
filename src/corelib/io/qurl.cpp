@@ -5330,7 +5330,7 @@ QString QUrl::toString(FormattingOptions options) const
             url += QLatin1Char('/');
         url += ourPath;
         // check if we need to remove trailing slashes
-        while ((options & StripTrailingSlash) && url.right(1) == QLatin1String("/"))
+        while ((options & StripTrailingSlash) && url.endsWith(QLatin1Char('/')))
             url.chop(1);
     }
 
