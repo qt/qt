@@ -2373,6 +2373,13 @@ QVariant QLineEdit::inputMethodQuery(Qt::InputMethodQuery property) const
         return QVariant(selectedText());
     case Qt::ImMaximumTextLength:
         return QVariant(maxLength());
+    case Qt::ImAnchorPosition:
+        if (d->selstart == d->selend)
+            return QVariant(d->cursor);
+        else if (d->selstart == d->cursor)
+            return QVariant(d->selend);
+        else
+            return QVariant(d->selstart);
     default:
         return QVariant();
     }
