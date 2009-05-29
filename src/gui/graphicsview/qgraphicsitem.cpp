@@ -567,17 +567,6 @@
 
 QT_BEGIN_NAMESPACE
 
-// QRectF::intersects() returns false always if either the source or target
-// rectangle's width or height are 0. This works around that problem.
-static inline void _q_adjustRect(QRectF *rect)
-{
-    Q_ASSERT(rect);
-    if (!rect->width())
-        rect->adjust(-0.00001, 0, 0.00001, 0);
-    if (!rect->height())
-        rect->adjust(0, -0.00001, 0, 0.00001);
-}
-
 static inline void _q_adjustRect(QRect *rect)
 {
     Q_ASSERT(rect);
@@ -6357,7 +6346,7 @@ void QGraphicsItem::addToIndex()
         return;
     }
     if (d_ptr->scene)
-        d_ptr->scene->d_func()->index->insertItem(this);
+        d_ptr->scene->d_func()->index->addItem(this);
     d_ptr->updateHelper();
 }
 
@@ -6372,7 +6361,7 @@ void QGraphicsItem::removeFromIndex()
 {
     d_ptr->updateHelper();
     if (d_ptr->scene)
-        d_ptr->scene->d_func()->index->removeItem(this,false);
+        d_ptr->scene->d_func()->index->removeItem(this);
 }
 
 /*!
@@ -6393,7 +6382,7 @@ void QGraphicsItem::prepareGeometryChange()
     if (d_ptr->scene) {
         d_ptr->updateHelper(QRectF(), false, /*maybeDirtyClipPath=*/!d_ptr->inSetPosHelper);
         QGraphicsScenePrivate *scenePrivate = d_ptr->scene->d_func();
-        scenePrivate->index->updateItem(this);
+        scenePrivate->index->prepareBoundingRectChange(this);
     }
 
     if (d_ptr->inSetPosHelper)

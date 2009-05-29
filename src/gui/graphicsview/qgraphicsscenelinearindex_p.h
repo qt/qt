@@ -89,24 +89,15 @@ public:
         m_items.clear();
     }
 
-    virtual void insertItem(QGraphicsItem *item) {
+    virtual void addItem(QGraphicsItem *item) {
         m_items << item;
     }
 
-    virtual void removeItem(QGraphicsItem *item, bool itemIsAboutToDie) {
-        Q_UNUSED(itemIsAboutToDie);
+    virtual void removeItem(QGraphicsItem *item) {
         m_items.removeAll(item);
     }
 
-    virtual QList<QGraphicsItem *> items(const QPointF &point) {
-        QList<QGraphicsItem*> result;
-        foreach (QGraphicsItem *item, m_items)
-            if (item->sceneBoundingRect().contains(point))
-                result << item;
-        return result;
-    }
-
-    virtual QList<QGraphicsItem *> items(const QRectF &rect) {
+    virtual QList<QGraphicsItem *> estimateItems(const QRectF &rect, Qt::SortOrder order, const QTransform &deviceTransform) const {
         QList<QGraphicsItem*> result;
         foreach (QGraphicsItem *item, m_items)
             if (item->sceneBoundingRect().intersects(rect))
@@ -114,7 +105,7 @@ public:
         return result;
     }
 
-    QList<QGraphicsItem *> indexedItems() {
+    QList<QGraphicsItem *> items() const {
         return m_items;
     }
 };

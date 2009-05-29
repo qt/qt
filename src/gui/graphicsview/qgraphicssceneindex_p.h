@@ -39,76 +39,58 @@
 **
 ****************************************************************************/
 
-#include <QtCore/qglobal.h>
+#ifndef QGRAPHICSSCENEINDEX_P_H
+#define QGRAPHICSSCENEINDEX_P_H
 
-#ifndef QGRAPHICSBSPTREEINDEX_H
-#define QGRAPHICSBSPTREEINDEX_H
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists for the convenience
+// of qapplication_*.cpp, qwidget*.cpp and qfiledialog.cpp.  This header
+// file may change from version to version without notice, or even be removed.
+//
+// We mean it.
+//
+
+#include "qgraphicssceneindex.h"
 
 #if !defined(QT_NO_GRAPHICSVIEW) || (QT_EDITION & QT_MODULE_GRAPHICSVIEW) != QT_MODULE_GRAPHICSVIEW
 
+#include <private/qobject_p.h>
+
 QT_BEGIN_NAMESPACE
 
-#include <QtCore/qrect.h>
-#include <QtCore/qlist.h>
-#include <QtGui/qgraphicsitem.h>
-#include <QtGui/qgraphicsscene.h>
-#include <QtGui/qgraphicssceneindex.h>
+class QGraphicsScene;
 
-#include "qgraphicsscene_bsp_p.h"
-
-class Q_AUTOTEST_EXPORT QGraphicsSceneBspTreeIndex : public QGraphicsSceneIndex
+class QGraphicsSceneIndexPrivate : public QObjectPrivate
 {
-    Q_OBJECT
+    Q_DECLARE_PUBLIC(QGraphicsSceneIndex)
 public:
-    QGraphicsSceneBspTreeIndex(QGraphicsScene *scene = 0);
+    QGraphicsSceneIndexPrivate(QGraphicsScene *scene);
 
-    void clear();
 
-    void addItem(QGraphicsItem *item);
-    void removeItem(QGraphicsItem *item);
-    void deleteItem(QGraphicsItem *item);
-    void prepareBoundingRectChange(const QGraphicsItem *item);
+    void childItems_helper(QList<QGraphicsItem *> *items,
+                           const QGraphicsItem *parent,
+                           const QPointF &pos) const;
+    void childItems_helper(QList<QGraphicsItem *> *items,
+                           const QGraphicsItem *parent,
+                           const QRectF &rect,
+                           Qt::ItemSelectionMode mode) const;
+    void childItems_helper(QList<QGraphicsItem *> *items,
+                           const QGraphicsItem *parent,
+                           const QPolygonF &polygon,
+                           Qt::ItemSelectionMode mode) const;
+    void childItems_helper(QList<QGraphicsItem *> *items,
+                           const QGraphicsItem *parent,
+                           const QPainterPath &path,
+                           Qt::ItemSelectionMode mode) const;
 
-    QList<QGraphicsItem *> estimateItems(const QRectF &rect, Qt::SortOrder order, const QTransform &deviceTransform) const;
-
-    QList<QGraphicsItem *> items() const;
-
-    int bspDepth();
-    void setBspDepth(int depth);
-
-protected:
-    bool event(QEvent *event);
-    void sceneRectChanged(const QRectF &rect);
-
-public slots :
-    void _q_updateIndex();
-
-private :
-    QGraphicsSceneBspTree bsp;
-    QRectF m_sceneRect;
-    int bspTreeDepth;
-    int indexTimerId;
-    bool restartIndexTimer;
-    bool regenerateIndex;
-    int lastItemCount;
-
-    QList<QGraphicsItem *> m_indexedItems;
-    QList<QGraphicsItem *> unindexedItems;
-    QList<int> freeItemIndexes;
-
-    bool purgePending;
-    QList<QGraphicsItem *> removedItems;
-    void purgeRemovedItems();
-
-    void startIndexTimer();
-    void resetIndex();
-
-    void addToIndex(QGraphicsItem *item);
-    void removeFromIndex(QGraphicsItem *item);
+    QGraphicsScene *scene;
 };
 
 QT_END_NAMESPACE
 
-#endif // QT_NO_GRAPHICSVIEW
+#endif // QGRAPHICSSCENEINDEX_P_H
 
-#endif // QGRAPHICSBSPTREEINDEX_H
+#endif

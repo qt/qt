@@ -44,6 +44,8 @@
 
 #include <QtCore/qnamespace.h>
 #include <QtCore/qobject.h>
+#include <QtGui/qtransform.h>
+#include <QtGui/qgraphicsitem.h>
 
 QT_BEGIN_HEADER
 
@@ -53,7 +55,7 @@ QT_MODULE(Gui)
 
 #if !defined(QT_NO_GRAPHICSVIEW) || (QT_EDITION & QT_MODULE_GRAPHICSVIEW) != QT_MODULE_GRAPHICSVIEW
 
-class QGraphicsItem;
+class QGraphicsSceneIndexPrivate;
 class QGraphicsScene;
 class QRectF;
 class QPointF;
@@ -67,29 +69,31 @@ public:
     QGraphicsSceneIndex(QGraphicsScene *scene = 0);
     virtual ~QGraphicsSceneIndex();
 
-    QGraphicsScene* scene() const;
+    QGraphicsScene *scene() const;
 
-    virtual void setRect(const QRectF &rect) = 0;
-    virtual QRectF rect() const = 0;
-    virtual void clear() = 0;
+    virtual QList<QGraphicsItem *> items() const  = 0;
+    virtual QList<QGraphicsItem *> items(const QPointF &pos, Qt::ItemSelectionMode mode, Qt::SortOrder order, const QTransform &deviceTransform = QTransform()) const;
+    virtual QList<QGraphicsItem *> items(const QRectF &rect, Qt::ItemSelectionMode mode, Qt::SortOrder order, const QTransform &deviceTransform = QTransform()) const;
+    virtual QList<QGraphicsItem *> items(const QPolygonF &polygon, Qt::ItemSelectionMode mode, Qt::SortOrder order, const QTransform &deviceTransform = QTransform()) const;
+    virtual QList<QGraphicsItem *> items(const QPainterPath &path, Qt::ItemSelectionMode mode, Qt::SortOrder order, const QTransform &deviceTransform = QTransform()) const;
+    virtual QList<QGraphicsItem *> estimateItems(const QPointF &point, Qt::SortOrder order, const QTransform &deviceTransform) const;
+    virtual QList<QGraphicsItem *> estimateItems(const QRectF &rect, Qt::SortOrder order, const QTransform &deviceTransform) const = 0;
 
-    virtual void insertItem(QGraphicsItem *item) = 0;
-    virtual void removeItem(QGraphicsItem *items, bool itemIsAboutToDie) = 0;
-    virtual void updateItem(QGraphicsItem *item);
+protected:
+    virtual void clear();
+    virtual void addItem(QGraphicsItem *item) = 0;
+    virtual void removeItem(QGraphicsItem *item) = 0;
+    virtual void deleteItem(QGraphicsItem *item);
 
-    virtual void insertItems(const QList<QGraphicsItem *> &items);
-    virtual void removeItems(const QList<QGraphicsItem *> &items, bool itemsAreAboutToDie);
-    virtual void updateItems(const QList<QGraphicsItem *> &items);
+    virtual void itemChanged(const QGraphicsItem *item, QGraphicsItem::GraphicsItemChange, const QVariant &value);
+    virtual void prepareBoundingRectChange(const QGraphicsItem *item);
+    virtual void sceneRectChanged(const QRectF &rect);
 
-    virtual QList<QGraphicsItem *> items(const QPointF &point) = 0;
-    virtual QList<QGraphicsItem *> items(const QRectF &rect) = 0;
-
-    virtual QList<QGraphicsItem *> indexedItems()  = 0;
-
-    virtual void updateIndex();
-
+    friend class QGraphicsScene;
+    friend class QGraphicsScenePrivate;
+    friend class QGraphicsItem;
 private:
-    QGraphicsScene *m_scene;
+    Q_DECLARE_PRIVATE(QGraphicsSceneIndex)
 };
 
 #endif // QT_NO_GRAPHICSVIEW

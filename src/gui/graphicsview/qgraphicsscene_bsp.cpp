@@ -143,7 +143,7 @@ void QGraphicsSceneBspTree::removeItems(const QSet<QGraphicsItem *> &items)
     }
 }
 
-QList<QGraphicsItem *> QGraphicsSceneBspTree::items(const QRectF &rect)
+QList<QGraphicsItem *> QGraphicsSceneBspTree::items(const QRectF &rect) const
 {
     QList<QGraphicsItem *> tmp;
     findVisitor->foundItems = &tmp;
@@ -151,7 +151,7 @@ QList<QGraphicsItem *> QGraphicsSceneBspTree::items(const QRectF &rect)
     return tmp;
 }
 
-QList<QGraphicsItem *> QGraphicsSceneBspTree::items(const QPointF &pos)
+QList<QGraphicsItem *> QGraphicsSceneBspTree::items(const QPointF &pos) const
 {
     QList<QGraphicsItem *> tmp;
     findVisitor->foundItems = &tmp;
@@ -235,7 +235,7 @@ void QGraphicsSceneBspTree::initialize(const QRectF &rect, int depth, int index)
     }
 }
 
-void QGraphicsSceneBspTree::climbTree(QGraphicsSceneBspTreeVisitor *visitor, const QPointF &pos, int index)
+void QGraphicsSceneBspTree::climbTree(QGraphicsSceneBspTreeVisitor *visitor, const QPointF &pos, int index) const
 {
     if (nodes.isEmpty())
         return;
@@ -245,7 +245,7 @@ void QGraphicsSceneBspTree::climbTree(QGraphicsSceneBspTreeVisitor *visitor, con
 
     switch (node.type) {
     case Node::Leaf: {
-        visitor->visit(&leaves[node.leafIndex]);
+        visitor->visit(const_cast<QList<QGraphicsItem*>*>(&leaves[node.leafIndex]));
         break;
     }
     case Node::Vertical:
@@ -265,7 +265,7 @@ void QGraphicsSceneBspTree::climbTree(QGraphicsSceneBspTreeVisitor *visitor, con
     }
 }
 
-void QGraphicsSceneBspTree::climbTree(QGraphicsSceneBspTreeVisitor *visitor, const QRectF &rect, int index)
+void QGraphicsSceneBspTree::climbTree(QGraphicsSceneBspTreeVisitor *visitor, const QRectF &rect, int index) const
 {
     if (nodes.isEmpty())
         return;
@@ -275,7 +275,7 @@ void QGraphicsSceneBspTree::climbTree(QGraphicsSceneBspTreeVisitor *visitor, con
 
     switch (node.type) {
     case Node::Leaf: {
-        visitor->visit(&leaves[node.leafIndex]);
+        visitor->visit(const_cast<QList<QGraphicsItem*>*>(&leaves[node.leafIndex]));
         break;
     }
     case Node::Vertical:

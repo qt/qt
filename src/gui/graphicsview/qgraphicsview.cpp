@@ -791,19 +791,6 @@ QRegion QGraphicsViewPrivate::mapToViewRegion(const QGraphicsItem *item, const Q
     return item->boundingRegion(itv) & itv.mapRect(rect).toAlignedRect();
 }
 
-// QRectF::intersects() returns false always if either the source or target
-// rectangle's width or height are 0. This works around that problem.
-static inline QRectF adjustedItemBoundingRect(const QGraphicsItem *item)
-{
-    Q_ASSERT(item);
-    QRectF boundingRect(item->boundingRect());
-    if (!boundingRect.width())
-        boundingRect.adjust(-0.00001, 0, 0.00001, 0);
-    if (!boundingRect.height())
-        boundingRect.adjust(0, -0.00001, 0, 0.00001);
-    return boundingRect;
-}
-
 /*!
     \internal
 */
@@ -1094,7 +1081,7 @@ QList<QGraphicsItem *> QGraphicsViewPrivate::findItems(const QRegion &exposedReg
     bool simpleRectLookup =  (scene->d_func()->largestUntransformableItem.isNull()
                               && exposedRegion.numRects() == 1 && matrix.type() <= QTransform::TxScale);
     if (simpleRectLookup) {
-        return scene->d_func()->items_helper(exposedRegionSceneBounds,
+        return scene->d_func()->index->items(exposedRegionSceneBounds,
                                              Qt::IntersectsItemBoundingRect,
                                              Qt::DescendingOrder);
     }
@@ -1109,7 +1096,7 @@ QList<QGraphicsItem *> QGraphicsViewPrivate::findItems(const QRegion &exposedReg
     const QPainterPath exposedPath(qt_regionToPath(adjustedRegion));
     if (scene->d_func()->largestUntransformableItem.isNull()) {
         const QPainterPath exposedScenePath(q->mapToScene(exposedPath));
-        return scene->d_func()->items_helper(exposedScenePath,
+        return scene->d_func()->index->items(exposedScenePath,
                                              Qt::IntersectsItemBoundingRect,
                                              Qt::DescendingOrder);
     }
@@ -2143,7 +2130,7 @@ QList<QGraphicsItem *> QGraphicsViewPrivate::itemsInArea(const QPainterPath &pat
 
     // First build a (potentially large) list of all items in the vicinity
     // that might be untransformable.
-    QList<QGraphicsItem *> allCandidates = scene->d_func()->estimateItemsInRect(adjustedRect);
+    QList<QGraphicsItem *> allCandidates = scene->d_func()->index->estimateItems(adjustedRect, order, q->transform());
 
     // Then find the minimal list of items that are inside \a path, and
     // convert it to a set.
@@ -2153,6 +2140,8 @@ QList<QGraphicsItem *> QGraphicsViewPrivate::itemsInArea(const QPainterPath &pat
     QTransform viewMatrix = q->viewportTransform();
 
     QList<QGraphicsItem *> result;
+
+    //### this will disapear
 
     // Run through all candidates and keep all items that are in candSet, or
     // are untransformable and collide with \a path. ### We can improve this

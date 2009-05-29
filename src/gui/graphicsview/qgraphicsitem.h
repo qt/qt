@@ -409,6 +409,8 @@ protected:
     virtual void setExtension(Extension extension, const QVariant &variant);
     virtual QVariant extension(const QVariant &variant) const;
 
+    bool operator<(const QGraphicsItem *other) const;
+
 protected:
     QGraphicsItem(QGraphicsItemPrivate &dd,
                   QGraphicsItem *parent, QGraphicsScene *scene);
@@ -430,6 +432,8 @@ private:
     friend class QGraphicsWidget;
     friend class QGraphicsWidgetPrivate;
     friend class QGraphicsProxyWidgetPrivate;
+    friend class QGraphicsSceneIndex;
+    friend class QGraphicsSceneIndexPrivate;
     friend class QGraphicsSceneBspTreeIndex;
     friend class ::tst_QGraphicsItem;
     friend bool qt_closestLeaf(const QGraphicsItem *, const QGraphicsItem *);
