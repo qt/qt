@@ -123,7 +123,7 @@ extern "C" Q_CORE_EXPORT void qt_removeObject(QObject *)
 }
 
 QObjectPrivate::QObjectPrivate(int version)
-    : threadData(0), currentSender(0), currentChildBeingDeleted(0), connectionLists(0)
+    : threadData(0), currentSender(0), currentChildBeingDeleted(0), connectionLists(0), senders(0)
 {
     if (version != QObjectPrivateVersion)
         qFatal("Cannot mix incompatible Qt libraries");
@@ -287,8 +287,8 @@ QObjectList QObjectPrivate::senderList() const
 {
     QObjectList returnValue;
     QMutexLocker locker(signalSlotLock(q_func()));
-    for (int i = 0; i < senders.count(); ++i)
-        returnValue << senders.at(i)->sender;
+    for (Connection *c = senders; c; c = c->next)
+        returnValue << c->sender;
     return returnValue;
 }
 
@@ -756,8 +756,10 @@ QObject::~QObject()
                     QMutex *m = signalSlotLock(c->receiver);
                     bool needToUnlock = QOrderedMutexLocker::relock(locker.mutex(), m);
                     c = connectionList[i];
-                    if (c->receiver)
-                        c->receiver->d_func()->senders.removeOne(c);
+                    if (c->receiver) {
+                        *c->prev = c->next;
+                        if (c->next) c->next->prev = c->prev;
+                    }
                     if (needToUnlock)
                         m->unlock();
 
@@ -774,29 +776,25 @@ QObject::~QObject()
         }
 
         // disconnect all senders
-        for (int i = 0; i < d->senders.count(); ) {
-            QObjectPrivate::Connection *s = d->senders[i];
-
-            QMutex *m = signalSlotLock(s->sender);
+        QObjectPrivate::Connection *node = d->senders;
+        while (node) {
+            QMutex *m = signalSlotLock(node->sender);
+            node->prev = &node;
             bool needToUnlock = QOrderedMutexLocker::relock(locker.mutex(), m);
-            if (m < locker.mutex()) {
-                if (i >= d->senders.count() || s != d->senders[i]) {
-                    if (needToUnlock)
-                        m->unlock();
-                    continue;
-                }
+            //the node has maybe been removed while the mutex was unlocked in relock?
+            if (!node || signalSlotLock(node->sender) != m) {
+                m->unlock();
+                continue;
             }
-            s->receiver = 0;
-            QObjectConnectionListVector *senderLists = s->sender->d_func()->connectionLists;
+            node->receiver = 0;
+            QObjectConnectionListVector *senderLists = node->sender->d_func()->connectionLists;
             if (senderLists)
                 senderLists->dirty = true;
 
             if (needToUnlock)
                 m->unlock();
-            ++i;
+            node = node->next;
         }
-
-        d->senders.clear();
     }
 
     if (d->pendTimer) {
@@ -2281,8 +2279,8 @@ QObject *QObject::sender() const
 
     // Return 0 if d->currentSender isn't in d->senders
     bool found = false;
-    for (int i = 0; !found && i < d->senders.count(); ++i)
-        found = (d->senders.at(i)->sender == d->currentSender->sender);
+    for (QObjectPrivate::Connection *c = d->senders; c && !found; c = c->next)
+        found = (c->sender == d->currentSender->sender);
     if (!found)
         return 0;
     return d->currentSender->sender;
@@ -2799,9 +2797,13 @@ bool QMetaObject::connect(const QObject *sender, int signal_index,
     c->method = method_index;
     c->connectionType = type;
     c->argumentTypes = types;
+    c->prev = &r->d_func()->senders;
+    c->next = *c->prev;
+    *c->prev = c;
+    if (c->next)
+        c->next->prev = &c->next;
 
     s->d_func()->addConnection(signal_index, c);
-    r->d_func()->senders.append(c);
 
     if (signal_index < 0)
         sender->d_func()->connectedSignals = ~0u;
@@ -2851,8 +2853,10 @@ bool QMetaObject::disconnect(const QObject *sender, int signal_index,
                         needToUnlock = QOrderedMutexLocker::relock(senderMutex, m);
                         c = connectionList[i];
                     }
-                    if (c->receiver)
-                        c->receiver->d_func()->senders.removeOne(c);
+                    if (c->receiver) {
+                        *c->prev = c->next;
+                        if (c->next) c->next->prev = c->prev;
+                    }
 
                     if (needToUnlock)
                         m->unlock();
@@ -2878,8 +2882,10 @@ bool QMetaObject::disconnect(const QObject *sender, int signal_index,
                     needToUnlock = QOrderedMutexLocker::relock(senderMutex, m);
                     c = connectionList[i];
                 }
-                if (c->receiver)
-                    c->receiver->d_func()->senders.removeOne(c);
+                if (c->receiver) {
+                    *c->prev = c->next;
+                    if (c->next) c->next->prev = c->prev;
+                }
 
                 if (needToUnlock)
                     m->unlock();
@@ -3417,9 +3423,8 @@ void QObject::dumpObjectInfo()
     // now look for connections where this object is the receiver
     qDebug("  SIGNALS IN");
 
-    if (!d->senders.isEmpty()) {
-        for (int i = 0; i < d->senders.count(); ++i) {
-            const QObjectPrivate::Connection *s = d->senders.at(i);
+    if (d->senders) {
+        for (QObjectPrivate::Connection *s = d->senders; s; s = s->next)
             const QMetaMethod slot = metaObject()->method(s->method);
             qDebug("          <-- %s::%s  %s",
                    s->sender->metaObject()->className(),
@@ -3427,7 +3432,7 @@ void QObject::dumpObjectInfo()
                    slot.signature());
         }
     } else {
-	qDebug("        <None>");
+        qDebug("        <None>");
     }
 #endif
 }
