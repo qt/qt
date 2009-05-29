@@ -71,8 +71,8 @@
 
 /*! \fn int QLatin1Literal::size() const
  
-    Returns the number of characters in the literal \i{excluding} the trailing
-    NUL char.
+    Returns the number of characters in the literal \e{excluding} the trailing
+    NULL char.
 */
 
 /*! \fn char *QLatin1Literal::data() const
