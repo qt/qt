@@ -220,7 +220,13 @@ void QSimplex::combineRows(int toIndex, int fromIndex, qreal factor)
     qreal *to = matrix + toIndex * columns;
 
     for (int j = 1; j < columns; ++j) {
-        to[j] += factor * from[j];
+        qreal value = from[j];
+
+        // skip to[j] = to[j] + factor*0.0
+        if (value == 0.0)
+            continue;
+
+        to[j] += factor * value;
 
         // ### Avoid Numerical errors
         if (qAbs(to[j]) < 0.0000000001)
