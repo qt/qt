@@ -815,11 +815,11 @@ void QGraphicsViewPrivate::processPendingUpdates()
 
     if (viewportUpdateMode == QGraphicsView::BoundingRectViewportUpdate) {
         if (optimizationFlags & QGraphicsView::DontAdjustForAntialiasing)
-            viewport->update(dirtyBoundingRect);
+            viewport->repaint(dirtyBoundingRect);
         else
-            viewport->update(dirtyBoundingRect.adjusted(-2, -2, 2, 2));
+            viewport->repaint(dirtyBoundingRect.adjusted(-2, -2, 2, 2));
     } else {
-        viewport->update(dirtyRegion); // Already adjusted in updateRect/Region.
+        viewport->repaint(dirtyRegion); // Already adjusted in updateRect/Region.
     }
 
     dirtyBoundingRect = QRect();
@@ -829,7 +829,7 @@ void QGraphicsViewPrivate::processPendingUpdates()
 void QGraphicsViewPrivate::updateAll()
 {
     Q_Q(QGraphicsView);
-    q->viewport()->update();
+    q->viewport()->repaint();
     fullUpdatePending = true;
     dirtyBoundingRect = QRect();
     dirtyRegion = QRegion();
@@ -846,13 +846,13 @@ void QGraphicsViewPrivate::updateRegion(const QRegion &r)
     switch (viewportUpdateMode) {
     case QGraphicsView::FullViewportUpdate:
         fullUpdatePending = true;
-        q->viewport()->update();
+        q->viewport()->repaint();
         break;
     case QGraphicsView::BoundingRectViewportUpdate:
         dirtyBoundingRect |= r.boundingRect();
         if (dirtyBoundingRect.contains(q->viewport()->rect())) {
             fullUpdatePending = true;
-            q->viewport()->update();
+            q->viewport()->repaint();
         }
         break;
     case QGraphicsView::SmartViewportUpdate: // ### DEPRECATE
@@ -882,13 +882,13 @@ void QGraphicsViewPrivate::updateRect(const QRect &r)
     switch (viewportUpdateMode) {
     case QGraphicsView::FullViewportUpdate:
         fullUpdatePending = true;
-        q->viewport()->update();
+        q->viewport()->repaint();
         break;
     case QGraphicsView::BoundingRectViewportUpdate:
         dirtyBoundingRect |= r;
         if (dirtyBoundingRect.contains(q->viewport()->rect())) {
             fullUpdatePending = true;
-            q->viewport()->update();
+            q->viewport()->repaint();
         }
         break;
     case QGraphicsView::SmartViewportUpdate: // ### DEPRECATE
