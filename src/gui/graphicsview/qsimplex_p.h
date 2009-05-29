@@ -88,6 +88,8 @@ private:
     // Helpers
     void clearDataStructures();
     void solveMaxHelper();
+    enum solverFactor { Minimum = -1, Maximum = 1 };
+    qreal solver(solverFactor factor);
     void collectResults();
 
     QList<QSimplexConstraint *> constraints;

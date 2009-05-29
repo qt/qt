@@ -306,7 +306,14 @@ bool QSimplex::iterate()
     return true;
 }
 
-qreal QSimplex::solveMin()
+/*!
+  \internal
+
+  Both solveMin and solveMax are interfaces to this method.
+
+  The enum solverFactor admits 2 values: Minimum (-1) and Maximum (+1).
+ */
+qreal QSimplex::solver(solverFactor factor)
 {
     // Remove old objective
     clearRow(0);
@@ -316,32 +323,23 @@ qreal QSimplex::solveMin()
     for (iter = objective->variables.constBegin();
          iter != objective->variables.constEnd();
          ++iter) {
-        setValueAt(0, iter.key()->index, iter.value());
+        setValueAt(0, iter.key()->index, -1 * factor * iter.value());
     }
 
     solveMaxHelper();
     collectResults();
 
-    return -1 * valueAt(0, columns - 1);
+    return factor * valueAt(0, columns - 1);
+}
+
+qreal QSimplex::solveMin()
+{
+    return solver(Minimum);
 }
 
 qreal QSimplex::solveMax()
 {
-    // Remove old objective
-    clearRow(0);
-
-    // Set new objective
-    QHash<QSimplexVariable *, qreal>::const_iterator iter;
-    for (iter = objective->variables.constBegin();
-         iter != objective->variables.constEnd();
-         ++iter) {
-        setValueAt(0, iter.key()->index, -1 * iter.value());
-    }
-
-    solveMaxHelper();
-    collectResults();
-
-    return valueAt(0, columns - 1);
+    return solver(Maximum);
 }
 
 void QSimplex::collectResults()
