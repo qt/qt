@@ -5047,10 +5047,27 @@ void QGraphicsScenePrivate::drawItemHelper(QGraphicsItem *item, QPainter *painte
 void QGraphicsScenePrivate::drawSubtreeRecursive(QGraphicsItem *item, QPainter *painter, const QTransform &parentTransform,
                                                  const QTransform &viewTransform,
                                                  const QRegion &exposedRegion, QWidget *widget,
-                                                 QGraphicsView::OptimizationFlags optimizationFlags)
+                                                 QGraphicsView::OptimizationFlags optimizationFlags,
+                                                 qreal parentOpacity)
 {
-    if (item && item->d_ptr->isInvisible())
-        return;
+    // Calculate opacity.
+    qreal opacity;
+    if (item) {
+        if (!item->d_ptr->visible)
+            return;
+        QGraphicsItem *p = item->d_ptr->parent;
+        bool itemIgnoresParentOpacity = item->d_ptr->flags & QGraphicsItem::ItemIgnoresParentOpacity;
+        bool parentDoesntPropagateOpacity = (p && (p->d_ptr->flags & QGraphicsItem::ItemDoesntPropagateOpacityToChildren));
+        if (!itemIgnoresParentOpacity && !parentDoesntPropagateOpacity) {
+            opacity = parentOpacity * item->opacity();
+        } else {
+            opacity = item->d_ptr->opacity;
+        }
+        if (opacity == 0.0 && !(item->d_ptr->flags & QGraphicsItem::ItemDoesntPropagateOpacityToChildren))
+            return;
+    } else {
+        opacity = parentOpacity;
+    }
 
     // Calculate the full transform for this item.
     QTransform transform = parentTransform;
@@ -5113,7 +5130,8 @@ void QGraphicsScenePrivate::drawSubtreeRecursive(QGraphicsItem *item, QPainter *
             if (!(child->d_ptr->flags & QGraphicsItem::ItemStacksBehindParent))
                 break;
             drawSubtreeRecursive(child, painter, transform, viewTransform,
-                                 exposedRegion, widget, optimizationFlags);
+                                 exposedRegion, widget, optimizationFlags,
+                                 opacity);
         }
     }
 
@@ -5130,7 +5148,7 @@ void QGraphicsScenePrivate::drawSubtreeRecursive(QGraphicsItem *item, QPainter *
             painter->setWorldTransform(transform);
         if (clipsToShape)
             painter->setClipPath(item->shape(), Qt::IntersectClip);
-        painter->setOpacity(item->effectiveOpacity());
+        painter->setOpacity(opacity);
 
         drawItemHelper(item, painter, &option, widget, false);
 
@@ -5142,7 +5160,7 @@ void QGraphicsScenePrivate::drawSubtreeRecursive(QGraphicsItem *item, QPainter *
     if (!dontDrawChildren) {
         for (; i < children.size(); ++i) {
             drawSubtreeRecursive(children.at(i), painter, transform, viewTransform,
-                                 exposedRegion, widget, optimizationFlags);
+                                 exposedRegion, widget, optimizationFlags, opacity);
         }
     }
 
