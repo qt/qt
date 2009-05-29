@@ -2428,7 +2428,7 @@
 
     \value ImMicroFocus       The rectangle covering the area of the input cursor in widget coordinates.
     \value ImFont             The currently used font for text input.
-    \value ImCursorPosition   The logical position of the cursor within the text surrounding the input area (see ImSurroundingText).
+    \value ImCursorPosition   The logical position of the cursor within the text surrounding the input area (see \c ImSurroundingText).
     \value ImSurroundingText  The plain text around the input area, for example the current paragraph.
     \value ImCurrentSelection The currently selected text.
     \value ImMaximumTextLength The maximum number of characters that the widget can hold. If there is no limit, QVariant() is returned.
