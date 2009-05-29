@@ -308,7 +308,10 @@ QFxGradient *QFxRect::gradient() const
 void QFxRect::setGradient(QFxGradient *gradient)
 {
     Q_D(QFxRect);
+    if (d->gradient == gradient)
+        return;
     d->gradient = gradient;
+    update();
 }
 
 
