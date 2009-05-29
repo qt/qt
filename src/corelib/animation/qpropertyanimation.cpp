@@ -102,7 +102,7 @@ QT_BEGIN_NAMESPACE
 
 typedef QPair<QObject *, QByteArray> QPropertyAnimationPair;
 typedef QHash<QPropertyAnimationPair, QPropertyAnimation*> QPropertyAnimationHash;
-Q_GLOBAL_STATIC(QPropertyAnimationHash, _q_runningAnimations);
+Q_GLOBAL_STATIC(QPropertyAnimationHash, _q_runningAnimations)
 Q_GLOBAL_STATIC_WITH_ARGS(QMutex, guardHashLock, (QMutex::Recursive) )
 
 void QPropertyAnimationPrivate::updateMetaProperty()
