@@ -579,7 +579,7 @@ Q3PtrList<Q3NetworkOperation> Q3UrlOperator::copy( const QString &from, const QS
     if (frm == to + file)
          return ops;
     
-    file.prepend( QLatin1String("/") );
+    file.prepend( QLatin1Char('/') );
 
     // uFrom and uTo are deleted when the Q3NetworkProtocol deletes itself via
     // autodelete

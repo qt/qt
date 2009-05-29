@@ -527,8 +527,7 @@ void QPushButton::setMenu(QMenu* menu)
         return;
 
     if (menu && !d->menu) {
-        disconnect(this, SIGNAL(pressed()), this, SLOT(_q_popupPressed()));
-        connect(this, SIGNAL(pressed()), this, SLOT(_q_popupPressed()));
+        connect(this, SIGNAL(pressed()), this, SLOT(_q_popupPressed()), Qt::UniqueConnection);
     }
     if (d->menu)
         removeAction(d->menu->menuAction());

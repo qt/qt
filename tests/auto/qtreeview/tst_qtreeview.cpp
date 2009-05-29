@@ -227,6 +227,7 @@ private slots:
     void task246536_scrollbarsNotWorking();
     void task250683_wrongSectionSize();
     void task239271_addRowsWithFirstColumnHidden();
+    void task254234_proxySort();
 };
 
 class QtTestModel: public QAbstractItemModel
@@ -2498,7 +2499,6 @@ void tst_QTreeView::sortByColumn()
     QCOMPARE(view.header()->sortIndicatorSection(), 0);
     QCOMPARE(view.model()->data(view.model()->index(0,0)).toString(), QString::fromLatin1("a"));
     QCOMPARE(view.model()->data(view.model()->index(1,0)).toString(), QString::fromLatin1("b"));
-    
 }
 
 /*
@@ -3346,7 +3346,6 @@ void tst_QTreeView::task246536_scrollbarsNotWorking()
     QVERIFY(o.count > 0);
 }
 
-
 void tst_QTreeView::task250683_wrongSectionSize()
 {
     QDirModel model;
@@ -3398,6 +3397,33 @@ void tst_QTreeView::task239271_addRowsWithFirstColumnHidden()
     //items in the 2nd column should have been painted
     QVERIFY(delegate.paintedIndexes.contains(sub00.index()));
     QVERIFY(delegate.paintedIndexes.contains(sub11.index()));
+}
+
+void tst_QTreeView::task254234_proxySort()
+{
+    //based on tst_QTreeView::sortByColumn
+    // it used not to work when setting the source of a proxy after enabling sorting
+    QTreeView view;
+    QStandardItemModel model(4,2);
+    model.setItem(0,0,new QStandardItem("b"));
+    model.setItem(1,0,new QStandardItem("d"));
+    model.setItem(2,0,new QStandardItem("c"));
+    model.setItem(3,0,new QStandardItem("a"));
+    model.setItem(0,1,new QStandardItem("e"));
+    model.setItem(1,1,new QStandardItem("g"));
+    model.setItem(2,1,new QStandardItem("h"));
+    model.setItem(3,1,new QStandardItem("f"));
+
+    view.sortByColumn(1);
+    view.setSortingEnabled(true);
+
+    QSortFilterProxyModel proxy;
+    proxy.setDynamicSortFilter(true);
+    view.setModel(&proxy);
+    proxy.setSourceModel(&model);
+    QCOMPARE(view.header()->sortIndicatorSection(), 1);
+    QCOMPARE(view.model()->data(view.model()->index(0,1)).toString(), QString::fromLatin1("h"));
+    QCOMPARE(view.model()->data(view.model()->index(1,1)).toString(), QString::fromLatin1("g"));
 }
 
 QTEST_MAIN(tst_QTreeView)

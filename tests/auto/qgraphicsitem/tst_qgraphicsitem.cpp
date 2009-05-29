@@ -219,6 +219,8 @@ private slots:
     void updateCachedItemAfterMove();
     void deviceTransform_data();
     void deviceTransform();
+    void setTransformProperties_data();
+    void setTransformProperties();
 
     // task specific tests below me
     void task141694_textItemEnsureVisible();
@@ -228,6 +230,7 @@ private slots:
     void task240400_clickOnTextItem_data();
     void task240400_clickOnTextItem();
     void task243707_addChildBeforeParent();
+    void task197802_childrenVisibility();
 };
 
 void tst_QGraphicsItem::init()
@@ -5435,6 +5438,41 @@ void tst_QGraphicsItem::task243707_addChildBeforeParent()
     QVERIFY(!widget2->commonAncestorItem(widget));
 }
 
+void tst_QGraphicsItem::task197802_childrenVisibility()
+{
+    QGraphicsScene scene;
+    QGraphicsRectItem item(QRectF(0,0,20,20));
+
+    QGraphicsRectItem *item2 = new QGraphicsRectItem(QRectF(0,0,10,10), &item);
+    scene.addItem(&item);
+
+    //freshly created: both visible
+    QVERIFY(item.isVisible());
+    QVERIFY(item2->isVisible());
+
+    //hide child: parent visible, child not
+    item2->hide();
+    QVERIFY(item.isVisible());
+    QVERIFY(!item2->isVisible());
+
+    //hide parent: parent and child invisible
+    item.hide();
+    QVERIFY(!item.isVisible());
+    QVERIFY(!item2->isVisible());
+
+    //ask to show the child: parent and child invisible anyways
+    item2->show();
+    QVERIFY(!item.isVisible());
+    QVERIFY(!item2->isVisible());
+
+    //show the parent: both parent and child visible
+    item.show();
+    QVERIFY(item.isVisible());
+    QVERIFY(item2->isVisible());
+
+    delete item2;
+}
+
 void tst_QGraphicsItem::boundingRegion_data()
 {
     QTest::addColumn<QLineF>("line");
@@ -6389,6 +6427,130 @@ void tst_QGraphicsItem::deviceTransform()
     QCOMPARE(rect2->deviceTransform(deviceX).map(QPointF(50, 50)), mapResult2);
     QCOMPARE(rect3->deviceTransform(deviceX).map(QPointF(50, 50)), mapResult3);
 }
+
+void tst_QGraphicsItem::setTransformProperties_data()
+{
+    QTest::addColumn<QPointF>("origin");
+    QTest::addColumn<qreal>("rotationX");
+    QTest::addColumn<qreal>("rotationY");
+    QTest::addColumn<qreal>("rotationZ");
+    QTest::addColumn<qreal>("scaleX");
+    QTest::addColumn<qreal>("scaleY");
+    QTest::addColumn<qreal>("shearX");
+    QTest::addColumn<qreal>("shearY");
+
+    QTest::newRow("nothing") << QPointF() << qreal(0.0) << qreal(0.0) << qreal(0.0)
+                                          << qreal(1) << qreal(1) << qreal(0.0) << qreal(0.0);
+
+    QTest::newRow("rotationZ") << QPointF() << qreal(0.0) << qreal(0.0) << qreal(42.2)
+                                          << qreal(1) << qreal(1) << qreal(0.0) << qreal(0.0);
+
+    QTest::newRow("rotationXY") << QPointF() << qreal(12.5) << qreal(53.6) << qreal(0.0)
+                                          << qreal(1) << qreal(1) << qreal(0.0) << qreal(0.0);
+
+    QTest::newRow("rotationXYZ") << QPointF() << qreal(-25) << qreal(12) << qreal(556)
+                                          << qreal(1) << qreal(1) << qreal(0.0) << qreal(0.0);
+
+    QTest::newRow("rotationXYZ dicentred") << QPointF(-53, 25.2) 
+                                << qreal(-2578.2) << qreal(4565.2) << qreal(56)
+                                << qreal(1) << qreal(1) << qreal(0.0) << qreal(0.0);
+
+    QTest::newRow("Scale")    << QPointF() << qreal(0.0) << qreal(0.0) << qreal(0.0)
+                                          << qreal(6) << qreal(0.5) << qreal(0.0) << qreal(0.0);
+
+    QTest::newRow("Shear")    << QPointF() << qreal(0.0) << qreal(0.0) << qreal(0.0)
+                                          << qreal(1) << qreal(1) << qreal(2.2) << qreal(0.5);
+
+    QTest::newRow("Scale and Shear")    << QPointF() << qreal(0.0) << qreal(0.0) << qreal(0.0)
+                                          << qreal(5.2) << qreal(2.1) << qreal(5.2) << qreal(5.5);
+
+    QTest::newRow("Everything")  << QPointF() << qreal(41) << qreal(-23) << qreal(0.56)
+                                        << qreal(8.2) << qreal(-0.2) << qreal(-12) << qreal(-0.8);
+
+    QTest::newRow("Everything dicentred")  << QPointF(qreal(22.3), qreal(-56.2)) << qreal(-175) << qreal(196) << qreal(-1260)
+                                        << qreal(4) << qreal(2) << qreal(2.56) << qreal(0.8);
+}
+
+void tst_QGraphicsItem::setTransformProperties()
+{
+    QFETCH(QPointF,origin);
+    QFETCH(qreal,rotationX);
+    QFETCH(qreal,rotationY);
+    QFETCH(qreal,rotationZ);
+    QFETCH(qreal,scaleX);
+    QFETCH(qreal,scaleY);
+    QFETCH(qreal,shearX);
+    QFETCH(qreal,shearY);
+
+    QTransform result;
+    result.translate(origin.x(), origin.y());
+    result.rotate(rotationX, Qt::XAxis);
+    result.rotate(rotationY, Qt::YAxis);
+    result.rotate(rotationZ, Qt::ZAxis);
+    result.shear(shearX, shearY);
+    result.scale(scaleX, scaleY);
+    result.translate(-origin.x(), -origin.y());
+
+    QGraphicsScene scene;
+    QGraphicsRectItem *item = new QGraphicsRectItem(QRectF(0, 0, 100, 100));
+    scene.addItem(item);
+    item->setPos(100, 100);
+
+    item->setRotation(rotationX, rotationY, rotationZ);
+    item->setScale(scaleX, scaleY);
+    item->setShear(shearX, shearY);
+    item->setTransformOrigin(origin);
+
+    QCOMPARE(item->xRotation(), rotationX);
+    QCOMPARE(item->yRotation(), rotationY);
+    QCOMPARE(item->zRotation(), rotationZ);
+    QCOMPARE(item->xScale(), scaleX);
+    QCOMPARE(item->yScale(), scaleY);
+    QCOMPARE(item->horizontalShear(), shearX);
+    QCOMPARE(item->verticalShear(), shearY);
+    QCOMPARE(item->transformOrigin(), origin);
+
+    QCOMPARE(result, item->transform());
+
+    //-----------------------------------------------------------------
+    //Change the rotation Z
+    item->setZRotation(45);
+    QTransform result2;
+    result2.translate(origin.x(), origin.y());
+    result2.rotate(rotationX, Qt::XAxis);
+    result2.rotate(rotationY, Qt::YAxis);
+    result2.rotate(45, Qt::ZAxis);
+    result2.shear(shearX, shearY);
+    result2.scale(scaleX, scaleY);
+    result2.translate(-origin.x(), -origin.y());
+
+    QCOMPARE(item->xRotation(), rotationX);
+    QCOMPARE(item->yRotation(), rotationY);
+    QCOMPARE(item->zRotation(), 45.0);
+    QCOMPARE(item->xScale(), scaleX);
+    QCOMPARE(item->yScale(), scaleY);
+    QCOMPARE(item->horizontalShear(), shearX);
+    QCOMPARE(item->verticalShear(), shearY);
+    QCOMPARE(item->transformOrigin(), origin);
+
+    QCOMPARE(result2, item->transform());
+
+    //-----------------------------------------------------------------
+    // calling setTransform() should reset the properties to their default
+    item->setTransform(result);
+
+    QCOMPARE(item->xRotation(), 0.0);
+    QCOMPARE(item->yRotation(), 0.0);
+    QCOMPARE(item->zRotation(), 0.0);
+    QCOMPARE(item->xScale(), 1.0);
+    QCOMPARE(item->yScale(), 1.0);
+    QCOMPARE(item->horizontalShear(), 0.0);
+    QCOMPARE(item->verticalShear(), 0.0);
+    QCOMPARE(item->transformOrigin(), QPointF(0,0));
+
+    QCOMPARE(result, item->transform());
+}
+
 
 QTEST_MAIN(tst_QGraphicsItem)
 #include "tst_qgraphicsitem.moc"

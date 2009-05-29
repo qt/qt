@@ -43,6 +43,8 @@
 
 #include <private/qbezier_p.h>
 
+QT_BEGIN_NAMESPACE
+
 void QGL2PEXVertexArray::clear()
 {
     vertexArray.reset();
@@ -57,6 +59,12 @@ QGLRect QGL2PEXVertexArray::boundingRect() const
         return QGLRect(0.0, 0.0, 0.0, 0.0);
     else
         return QGLRect(minX, minY, maxX, maxY);
+}
+
+void QGL2PEXVertexArray::addRect(const QRectF &rect)
+{
+    vertexArray << rect.topLeft() << rect.topRight() << rect.bottomRight()
+                << rect.bottomRight() << rect.bottomLeft() << rect.topLeft();
 }
 
 void QGL2PEXVertexArray::addPath(const QVectorPath &path, GLfloat curveInverseScale)
@@ -154,3 +162,5 @@ void QGL2PEXVertexArray::curveToArray(const QGLPoint &cp1, const QGLPoint &cp2, 
         }
     }
 }
+
+QT_END_NAMESPACE

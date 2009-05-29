@@ -1265,6 +1265,12 @@ QSize QAbstractScrollArea::minimumSizeHint() const
     int hsbExt = d->hbar->sizeHint().height();
     int vsbExt = d->vbar->sizeHint().width();
     int extra = 2 * d->frameWidth;
+    QStyleOption opt;
+    opt.initFrom(this);
+    if ((d->frameStyle != QFrame::NoFrame)
+        && style()->styleHint(QStyle::SH_ScrollView_FrameOnlyAroundContents, &opt, this)) {
+        extra += style()->pixelMetric(QStyle::PM_ScrollView_ScrollBarSpacing, &opt, this);
+    }
     return QSize(d->scrollBarContainers[Qt::Horizontal]->sizeHint().width() + vsbExt + extra,
                  d->scrollBarContainers[Qt::Vertical]->sizeHint().height() + hsbExt + extra);
 }

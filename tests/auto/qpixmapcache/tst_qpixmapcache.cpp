@@ -369,6 +369,14 @@ void tst_QPixmapCache::remove()
     key = QPixmapCache::insert(p1);
     QCOMPARE(getPrivate(key)->key, 1);
 
+    //Test if pixmaps are correctly deleted
+    QPixmapCache::clear();
+    key = QPixmapCache::insert(p1);
+    QCOMPARE(getPrivate(key)->key, 1);
+    QVERIFY(QPixmapCache::find(key, &p1) != 0);
+    QPixmapCache::remove(key);
+    QCOMPARE(p1.isDetached(), true);
+
     //We mix both part of the API
     QPixmapCache::clear();
     p1.fill(Qt::red);

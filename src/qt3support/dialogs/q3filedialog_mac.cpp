@@ -554,7 +554,7 @@ QString Q3FileDialog::macGetSaveFileName(const QString &start, const QString &fi
         retstr = QString::fromUtf8((const char *)str_buffer);
         //now filename
         CFStringGetCString(ret.saveFileName, (char *)str_buffer, 1024, kCFStringEncodingUTF8);
-        retstr += QLatin1String("/") + QString::fromUtf8((const char *)str_buffer);
+        retstr += QLatin1Char('/') + QString::fromUtf8((const char *)str_buffer);
     }
     NavDisposeReply(&ret);
     if(selectedFilter)

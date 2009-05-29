@@ -1508,7 +1508,7 @@ QRect Declaration::rectValue() const
     QStringList func = v.variant.toStringList();
     if (func.count() != 2 || func.at(0).compare(QLatin1String("rect")) != 0)
         return QRect();
-    QStringList args = func[1].split(QLatin1String(" "), QString::SkipEmptyParts);
+    QStringList args = func[1].split(QLatin1Char(' '), QString::SkipEmptyParts);
     if (args.count() != 4)
         return QRect();
     QRect rect(args[0].toInt(), args[1].toInt(), args[2].toInt(), args[3].toInt());
@@ -2153,7 +2153,7 @@ void Parser::init(const QString &css, bool isFile)
     if (isFile) {
         QFile file(css);
         if (file.open(QFile::ReadOnly)) {
-            sourcePath = QFileInfo(styleSheet).absolutePath() + QLatin1String("/");
+            sourcePath = QFileInfo(styleSheet).absolutePath() + QLatin1Char('/');
             QTextStream stream(&file);
             styleSheet = stream.readAll();
         } else {

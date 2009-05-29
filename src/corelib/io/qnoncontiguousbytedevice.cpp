@@ -458,7 +458,9 @@ qint64 QByteDeviceWrappingIoDevice::readData( char * data, qint64 maxSize)
 
 qint64 QByteDeviceWrappingIoDevice::writeData( const char* data, qint64 maxSize)
 {
-     return -1;
+    Q_UNUSED(data);
+    Q_UNUSED(maxSize);
+    return -1;
 }
 
 /*!

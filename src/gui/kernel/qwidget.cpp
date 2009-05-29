@@ -5236,7 +5236,7 @@ static QString constructWindowTitleFromFilePath(const QString &filePath)
 #ifndef Q_WS_MAC
     QString appName = QApplication::applicationName();
     if (!appName.isEmpty())
-        windowTitle += QLatin1String(" ") + QChar(0x2014) + QLatin1String(" ") + appName;
+        windowTitle += QLatin1Char(' ') + QChar(0x2014) + QLatin1Char(' ') + appName;
 #endif
     return windowTitle;
 }
@@ -5300,7 +5300,7 @@ QString qt_setWindowTitle_helperHelper(const QString &title, const QWidget *widg
              && widget->style()->styleHint(QStyle::SH_TitleBar_ModifyNotification, 0, widget))
                 cap.replace(lastIndex, 3, QWidget::tr("*"));
             else
-                cap.replace(lastIndex, 3, QLatin1String(""));
+                cap.remove(lastIndex, 3);
         }
 
         index = cap.indexOf(placeHolder, index);
@@ -9203,11 +9203,12 @@ void QWidget::setParent(QWidget *parent, Qt::WindowFlags f)
     d->resolveLayoutDirection();
     d->resolveLocale();
 
-    // Note: GL widgets under Windows will always need a ParentChange
-    // event to handle recreation/rebinding of the GL context, hence
-    // the (f & Qt::MSWindowsOwnDC) clause
+    // Note: GL widgets under WGL or EGL will always need a ParentChange
+    // event to handle recreation/rebinding of the GL context, hence the
+    // (f & Qt::MSWindowsOwnDC) clause (which is set on QGLWidgets on all
+    // platforms).
     if (newParent
-#ifdef Q_WS_WIN
+#if defined(Q_WS_WIN) || defined(QT_OPENGL_ES)
         || (f & Qt::MSWindowsOwnDC)
 #endif
         ) {

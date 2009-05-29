@@ -77,7 +77,7 @@
 #include <qkeysequence.h>
 #define ACCEL_KEY(k) QLatin1Char('\t') + QString(QKeySequence(Qt::CTRL | Qt::Key_ ## k))
 #else
-#define ACCEL_KEY(k) QLatin1Char('\t' )+ QString(QLatin1String("Ctrl+" #k))
+#define ACCEL_KEY(k) QLatin1Char('\t' )+ QString::fromLatin1("Ctrl+" #k)
 #endif
 
 #ifdef QT_TEXTEDIT_OPTIMIZATION
@@ -6625,7 +6625,7 @@ void Q3TextEdit::optimSetTextFormat(Q3TextDocument * td, Q3TextCursor * cur,
         }
         if (tag) {
             QString col = tag->tag.simplified();
-            if (col.left(10) == QLatin1String("font color")) {
+            if (col.startsWith(QLatin1String("font color"))) {
                 int i = col.indexOf(QLatin1Char('='), 10);
                 col = col.mid(i + 1).simplified();
                 if (col[0] == QLatin1Char('\"'))

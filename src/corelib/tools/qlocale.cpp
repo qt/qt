@@ -120,7 +120,7 @@ static char *_qdtoa( NEEDS_VOLATILE double d, int mode, int ndigits, int *decpt,
 Q_CORE_EXPORT char *qdtoa(double d, int mode, int ndigits, int *decpt,
                         int *sign, char **rve, char **digits_str);
 Q_CORE_EXPORT double qstrtod(const char *s00, char const **se, bool *ok);
-Q_CORE_EXPORT qlonglong qstrtoll(const char *nptr, const char **endptr, register int base, bool *ok);
+static qlonglong qstrtoll(const char *nptr, const char **endptr, register int base, bool *ok);
 static qulonglong qstrtoull(const char *nptr, const char **endptr, register int base, bool *ok);
 
 /******************************************************************************
@@ -321,7 +321,7 @@ static QString readEscapedFormatString(const QString &format, int *idx)
 {
     int &i = *idx;
 
-    Q_ASSERT(format.at(i).unicode() == '\'');
+    Q_ASSERT(format.at(i) == QLatin1Char('\''));
     ++i;
     if (i == format.size())
         return QString();
@@ -635,7 +635,7 @@ static QLocale::MeasurementSystem winSystemMeasurementSystem()
         QString iMeasure = QT_WA_INLINE(
                 QString::fromUtf16(reinterpret_cast<ushort*>(output)),
                 QString::fromLocal8Bit(reinterpret_cast<char*>(output)));
-        if (iMeasure == QString::fromLatin1("1")) {
+        if (iMeasure == QLatin1String("1")) {
             return QLocale::ImperialSystem;
         }
     }
@@ -1136,7 +1136,7 @@ static QString macToQtFormat(const QString &sys_fmt)
                 break;
             case 'S': // fractional second
                 if (repeat < 3)
-                    result += QLatin1String("z");
+                    result += QLatin1Char('z');
                 else
                     result += QLatin1String("zzz");
                 break;
@@ -1150,7 +1150,7 @@ static QString macToQtFormat(const QString &sys_fmt)
                 if (repeat >= 2)
                     result += QLatin1String("dd");
                 else
-                    result += QLatin1String("d");
+                    result += QLatin1Char('d');
                 break;
             case 'a':
                 result += QLatin1String("AP");
@@ -4671,7 +4671,7 @@ static qulonglong qstrtoull(const char *nptr, const char **endptr, register int 
  * Ignores `locale' stuff.  Assumes that the upper and lower case
  * alphabets and digits are each contiguous.
  */
-Q_CORE_EXPORT qlonglong qstrtoll(const char *nptr, const char **endptr, register int base, bool *ok)
+static qlonglong qstrtoll(const char *nptr, const char **endptr, register int base, bool *ok)
 {
     register const char *s;
     register qulonglong acc;

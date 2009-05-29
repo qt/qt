@@ -401,6 +401,7 @@ static void convolute(
         }
         yk++;
     }
+    delete[] fixedKernel;
 }
 
 /*!

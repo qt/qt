@@ -92,8 +92,8 @@ static int *queuedConnectionTypes(const QList<QByteArray> &typeNames)
     return types;
 }
 
-QBasicAtomicPointer<QMutexPool> signalSlotMutexes = Q_BASIC_ATOMIC_INITIALIZER(0);
-QBasicAtomicInt objectCount = Q_BASIC_ATOMIC_INITIALIZER(0);
+static QBasicAtomicPointer<QMutexPool> signalSlotMutexes = Q_BASIC_ATOMIC_INITIALIZER(0);
+static QBasicAtomicInt objectCount = Q_BASIC_ATOMIC_INITIALIZER(0);
 
 /** \internal
  * mutex to be locked when accessing the connectionlists or the senders list
@@ -117,8 +117,7 @@ extern "C" Q_CORE_EXPORT void qt_addObject(QObject *)
 extern "C" Q_CORE_EXPORT void qt_removeObject(QObject *)
 {
     if(!objectCount.deref()) {
-        QMutexPool *old = signalSlotMutexes;
-        signalSlotMutexes.testAndSetAcquire(old, 0);
+        QMutexPool *old = signalSlotMutexes.fetchAndStoreAcquire(0);
         delete old;
     }
 }
@@ -302,7 +301,6 @@ void QObjectPrivate::addConnection(int signal, Connection *c)
 
     ConnectionList &connectionList = (*connectionLists)[signal];
     connectionList.append(c);
-
     cleanConnectionLists();
 }
 
@@ -2378,7 +2376,8 @@ int QObject::receivers(const char *signal) const
     can be connected to one slot.
 
     If a signal is connected to several slots, the slots are activated
-    in an arbitrary order when the signal is emitted.
+    in the same order as the order the connection was made, when the
+    signal is emitted.
 
     The function returns true if it successfully connects the signal
     to the slot. It will return false if it cannot create the
@@ -2386,9 +2385,13 @@ int QObject::receivers(const char *signal) const
     existence of either \a signal or \a method, or if their signatures
     aren't compatible.
 
-    For every connection you make, a signal is emitted; two signals are emitted
-    for duplicate connections. You can break all of these connections with a
-    single disconnect() call.
+    By default, a signal is emitted for every connection you make;
+    two signals are emitted for duplicate connections. You can break
+    all of these connections with a single disconnect() call.
+    If you pass the Qt::UniqueConnection \a type, the connection will only
+    be made if it is not a duplicate. If there is already a duplicate
+    (exact same signal to the exact same slot on the same objects),
+    the connection will fail and connect will return false
 
     The optional \a type parameter describes the type of connection
     to establish. In particular, it determines whether a particular
@@ -2521,7 +2524,8 @@ bool QObject::connect(const QObject *sender, const char *signal,
         }
     }
 #endif
-    QMetaObject::connect(sender, signal_index, receiver, method_index, type, types);
+    if (!QMetaObject::connect(sender, signal_index, receiver, method_index, type, types))
+        return false;
     const_cast<QObject*>(sender)->connectNotify(signal - 1);
     return true;
 }
@@ -2772,15 +2776,28 @@ bool QMetaObject::connect(const QObject *sender, int signal_index,
     QObject *s = const_cast<QObject *>(sender);
     QObject *r = const_cast<QObject *>(receiver);
 
+    QOrderedMutexLocker locker(signalSlotLock(sender),
+                               signalSlotLock(receiver));
+
+    if (type & Qt::UniqueConnection) {
+        QObjectConnectionListVector *connectionLists = s->d_func()->connectionLists;
+        if (connectionLists && connectionLists->count() > signal_index) {
+            QObjectPrivate::ConnectionList &connectionList = (*connectionLists)[signal_index];
+            for (int i = 0; i < connectionList.count(); ++i) {
+                QObjectPrivate::Connection *c2 = connectionList.at(i);
+                if (c2->receiver == receiver && c2->method == method_index)
+                    return false;
+            }
+        }
+        type &= Qt::UniqueConnection - 1;
+    }
+
     QObjectPrivate::Connection *c = new QObjectPrivate::Connection;
     c->sender = s;
     c->receiver = r;
     c->method = method_index;
     c->connectionType = type;
     c->argumentTypes = types;
-
-    QOrderedMutexLocker locker(signalSlotLock(sender),
-                               signalSlotLock(receiver));
 
     s->d_func()->addConnection(signal_index, c);
     r->d_func()->senders.append(c);
@@ -3462,7 +3479,7 @@ QDebug operator<<(QDebug dbg, const QObject *o) {
 #ifndef Q_BROKEN_DEBUG_STREAM
     if (!o)
         return dbg << "QObject(0x0) ";
-    dbg.nospace() << o->metaObject()->className() << "(" << (void *)o;
+    dbg.nospace() << o->metaObject()->className() << '(' << (void *)o;
     if (!o->objectName().isEmpty())
         dbg << ", name = " << o->objectName();
     dbg << ')';

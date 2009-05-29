@@ -1738,7 +1738,7 @@ void Q3Dns::setLabel( const QString & label )
 	    const char * dom;
 	    while( (dom=it.current()) != 0 ) {
 		++it;
-		n.append( l.lower() + QLatin1String(".") + QLatin1String(dom) );
+		n.append( l.lower() + QLatin1Char('.') + QLatin1String(dom) );
 	    }
 	}
 	n.append( l.lower() );
@@ -1902,8 +1902,8 @@ QString Q3Dns::toInAddrArpaDomain( const QHostAddress &address )
 	s = QLatin1String("ip6.arpa");
 	uint b = 0;
 	while( b < 16 ) {
-	    s = QString::number( i.c[b]%16, 16 ) + QLatin1String(".") +
-		QString::number( i.c[b]/16, 16 ) + QLatin1String(".") + s;
+	    s = QString::number( i.c[b]%16, 16 ) + QLatin1Char('.') +
+		QString::number( i.c[b]/16, 16 ) + QLatin1Char('.') + s;
 	    b++;
 	}
     }
@@ -2347,7 +2347,7 @@ void Q3Dns::doResInit()
 			nameServer += QLatin1String(dnsServer->IpAddress.String);
 			dnsServer = dnsServer->Next;
 			if ( dnsServer != 0 )
-			    nameServer += QLatin1String(" ");
+			    nameServer += QLatin1Char(' ');
 		    }
 		    searchList = QLatin1String("");
 		    separator = ' ';
@@ -2360,12 +2360,12 @@ void Q3Dns::doResInit()
     }
     if ( !gotNetworkParams ) {
 	if ( getDnsParamsFromRegistry(
-	    QString( QLatin1String("System\\CurrentControlSet\\Services\\Tcpip\\Parameters") ),
+	    QLatin1String("System\\CurrentControlSet\\Services\\Tcpip\\Parameters"),
 		    &domainName, &nameServer, &searchList )) {
 	    // for NT
 	    separator = ' ';
 	} else if ( getDnsParamsFromRegistry(
-	    QString( QLatin1String("System\\CurrentControlSet\\Services\\VxD\\MSTCP") ),
+	    QLatin1String("System\\CurrentControlSet\\Services\\VxD\\MSTCP"),
 		    &domainName, &nameServer, &searchList )) {
 	    // for Windows 98
 	    separator = ',';
@@ -2395,7 +2395,7 @@ void Q3Dns::doResInit()
 	} while( first < (int)nameServer.length() );
     }
 
-    searchList = searchList + QLatin1String(" ") + domainName;
+    searchList += QLatin1Char(' ') + domainName;
     searchList = searchList.simplifyWhiteSpace().lower();
     first = 0;
     do {
@@ -2488,7 +2488,7 @@ void Q3Dns::doResInit()
 	while ( !stream.atEnd() ) {
             line = stream.readLine();
 	    QStringList list = QStringList::split( QLatin1String(" "), line );
-	    if( line.startsWith( QLatin1String("#") ) || list.size() < 2 )
+	    if( line.startsWith( QLatin1Char('#') ) || list.size() < 2 )
 	       continue;
 	    const QString type = list[0].lower();
 

@@ -4,7 +4,8 @@ TEMPLATE = subdirs
 !wince*:SUBDIRS += \
            headers
 
-SUBDIRS += bic \
+SUBDIRS += _networkselftest \
+           bic \
            collections \
            compile \
            compilerwarnings \
@@ -75,6 +76,7 @@ SUBDIRS += bic \
            qaction \
            qactiongroup \
            qalgorithms \
+           qanimationgroup \
            qapplication \
            qatomicint \
            qatomicpointer \
@@ -214,6 +216,7 @@ SUBDIRS += bic \
            qpainter \
            qpainterpath \
            qpalette \
+           qparallelanimationgroup \
            qpathclipper \
            qpen \
            qpicture \
@@ -229,6 +232,7 @@ SUBDIRS += bic \
            qprocess \
            qprogressbar \
            qprogressdialog \
+           qpropertyanimation \
            qpushbutton \
            qqueue \
            qradiobutton \
@@ -256,6 +260,7 @@ SUBDIRS += bic \
            qscrollarea \
            qsemaphore \
 	   qsharedpointer \
+           qsequentialanimationgroup \
            qset \
            qsettings \
            qshortcut \
@@ -289,6 +294,8 @@ SUBDIRS += bic \
            qstackedwidget \
            qstandarditem \
            qstandarditemmodel \
+           qstate \
+           qstatemachine \
            qstatusbar \
            qstl \
            qstring \
@@ -342,6 +349,7 @@ SUBDIRS += bic \
            qtranslator \
            qtransform \
            qtransformedscreen \
+           qtransition \
            qtreeview \
            qtreewidget \
            qtreewidgetitemiterator \

@@ -50,14 +50,13 @@
 
 #include "roundedbox.h"
 #include "gltrianglemesh.h"
-#include "vector.h"
 #include "trackball.h"
 #include "glbuffers.h"
-#include "glshaders.h"
 #include "qtbox.h"
 
 #define PI 3.14159265358979
 
+class QMatrix4x4;
 class ParameterEdit : public QWidget
 {
 public:
@@ -195,7 +194,7 @@ public slots:
     void setFloatParameter(const QString &name, float value);
     void newItem(ItemDialog::ItemType type);
 protected:
-    void renderBoxes(const gfx::Matrix4x4f &view, int excludeBox = -2);
+    void renderBoxes(const QMatrix4x4 &view, int excludeBox = -2);
     void setStates();
     void setLights();
     void defaultStates();
@@ -231,13 +230,11 @@ private:
     GLTexture3D *m_noise;
     GLRenderTargetCube *m_mainCubemap;
     QVector<GLRenderTargetCube *> m_cubemaps;
-    QVector<GLProgram *> m_programs;
-    GLVertexShader *m_vertexShader;
-    QVector<GLFragmentShader *> m_fragmentShaders;
-    GLFragmentShader *m_environmentShader;
-    GLProgram *m_environmentProgram;
+    QVector<QGLShaderProgram *> m_programs;
+    QGLShader *m_vertexShader;
+    QVector<QGLShader *> m_fragmentShaders;
+    QGLShader *m_environmentShader;
+    QGLShaderProgram *m_environmentProgram;
 };
-
-
 
 #endif
