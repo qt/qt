@@ -114,11 +114,10 @@ static bool hasFormPreview(const QString &fileName)
 static Ending ending(QString str, QLocale::Language lang)
 {
     str = str.simplified();
-    int ch = 0;
-    if (!str.isEmpty())
-        ch = str.right(1)[0].unicode();
+    if (str.isEmpty())
+        return End_None;
 
-    switch (ch) {
+    switch (str.at(str.length() - 1).unicode()) {
     case 0x002e: // full stop
         if (str.endsWith(QLatin1String("...")))
             return End_Ellipsis;
