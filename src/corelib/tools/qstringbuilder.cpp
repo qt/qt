@@ -122,7 +122,7 @@
     \sa QLatin1Literal, QString
 */
 
-/* !fn template <class A, class B> QStringBuilder<A, B> operator%(const A &a, const B &b)
+/* \fn template <class A, class B> QStringBuilder<A, B> operator%(const A &a, const B &b)
 
     Returns a \c QStringBuilder object that is converted to a QString object
     when assigned to a variable of QString type or passed to a function that
