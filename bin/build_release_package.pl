@@ -7,10 +7,11 @@
 #
 #######################################################################
 
-use Cwd;
+my $buildContentDemoValue = "libs+demo";
 
 if (@ARGV)
 {
+    my $buildContent = shift(@ARGV);
     my $platform = shift(@ARGV);
     my $build = shift(@ARGV);
     my $cert = shift(@ARGV);
@@ -19,10 +20,22 @@ if (@ARGV)
     my $qtRootDir = shift(@ARGV);
     my $epocroot = shift(@ARGV);
 
+    if ($buildContent eq "")
+    {
+        print("Build content parameter required!\n");
+        exit 2;
+    }
+
+    if ($platform eq "")
+    {
+        print("HW platform parameter required!\n");
+        exit 2;
+    }
+
     if ($build eq "")
     {
         print("HW build parameter required!\n");
-        exit 1;
+        exit 2;
     }
 
     if ($cert eq "")
@@ -34,22 +47,28 @@ if (@ARGV)
     if ($certKey eq "")
     {
         print("Signing certificate key parameter required!\n");
-        exit 3;
+        exit 2;
     }
 
     if ($releaseDir eq "")
     {
         print("Release directory parameter required!\n");
-        exit 4;
+        exit 2;
     }
 
     if ($qtRootDir eq "")
     {
-        $qtRootDir = cwd();
-        $qtRootDir =~ s/\//\\/g;
+        print("Qt root directory parameter required!\n");
+        exit 2;
     }
 
-    # Lose the ending separator is any
+    if ($epocroot eq "")
+    {
+        print("Epocroot directory parameter required!\n");
+        exit 2;
+    }
+
+    # Lose the ending separator if any
     $qtRootDir =~ s/\\$//;
     $epocroot =~ s/\\$//;
 
@@ -66,12 +85,13 @@ if (@ARGV)
     $qtRootDirForMatch =~ s/\\/\\\\/g;
 
     my $pkgFileName = "src\\s60installs\\qt_libs_${platform}_${build}.pkg";
+    my $demoAppPkgFileName = "demos\\embedded\\fluidlauncher\\fluidlauncher_${platform}_${build}.pkg";
+    my $sisFileNameBase = "qt_libs";
+    my $demoAppSisFileNameBase = "fluidlauncher";
 
     my $hwBuildDir = "${epocroot}\\epoc32\\release\\$platform\\$build";
     my $armDbgDir = "epoc32\\release\\armv5\\udeb";
     my $armRelDir = "epoc32\\release\\armv5\\urel";
-    my $gcceDbgDir = "epoc32\\release\\gcce\\udeb";
-    my $gcceRelDir = "epoc32\\release\\gcce\\urel";
     my $armLibDir = "epoc32\\release\\armv5\\lib";
     my $winscwDbgDir = "epoc32\\release\\winscw\\udeb";
 
@@ -96,13 +116,8 @@ if (@ARGV)
     runSystemCmd("attrib -A ${epocroot}\\${winscwDbgDir}\\*");
 
     # Build Qt
-    runSystemCmd("configure -platform win32-mwc -xplatform symbian-abld -openssl-linked -qt-sql-sqlite -system-sqlite -nokia-developer");
-    chdir("src");
-    runSystemCmd("qmake");
-    runSystemCmd("bldmake bldfiles");
-    runSystemCmd("abld build ${platform} ${build}");
-    runSystemCmd("abld build winscw udeb");
-    chdir($qtRootDir);
+    runSystemCmd("configure -platform win32-mwc -xplatform symbian-abld -openssl-linked -qt-sql-sqlite -system-sqlite -confirm-license -opensource");
+    buildDir("src", $qtRootDir, $platform, $build);
 
     # Copy misc stuff
     runSystemCmd("xcopy ${qtRootDir}\\bin\\* ${releaseDirQt}\\bin /F /R /Y /I /D");
@@ -114,7 +129,60 @@ if (@ARGV)
     runSystemCmd("copy .qmake.cache ${releaseDirQt}\\.qmake.cache");
 
     # Copy stuff indicated by pkg file for emulator
-    open (PKG, "<".$pkgFileName);
+    parsePkgFile($pkgFileName, $epocroot, $build, $platform, $releaseDirEpocroot, $qtRootDirForMatch, $releaseDirQt);
+
+    # Copy any other binaries and related files built not included in pkg
+    runSystemCmd("xcopy ${hwBuildDir}\\* ${releaseDirEpocroot}\\${armDbgDir} /A /F /R /Y /I /D ");
+    runSystemCmd("xcopy ${releaseDirEpocroot}\\${armDbgDir}\\* ${releaseDirEpocroot}\\${armRelDir} /F /R /Y /I /D");
+    system("del /F /Q ${releaseDirEpocroot}\\${armRelDir}\\*.sym 2> NUL");
+    runSystemCmd("xcopy ${epocroot}\\${armLibDir}\\* ${releaseDirEpocroot}\\${armLibDir} /A /F /R /Y /I /D");
+    runSystemCmd("xcopy ${epocroot}\\${winscwDbgDir}\\* ${releaseDirEpocroot}\\${winscwDbgDir} /A /F /R /Y /I /D");
+
+    if ($buildContent eq $buildContentDemoValue)
+    {
+        # Also build demos & examples and add fluidlauncher sis
+        buildDir("examples", $qtRootDir, $platform, $build);
+        buildDir("demos", $qtRootDir, $platform, $build);
+        parsePkgFile($demoAppPkgFileName, $epocroot, $build, $platform, $releaseDirEpocroot, $qtRootDirForMatch, $releaseDirQt);
+        createSis($demoAppPkgFileName, $releaseDirSis, "selfsigned.cer", "selfsigned.key", $demoAppSisFileNameBase);
+    }
+
+    # Create unsigned sis and Rnd signed sisx
+    createSis($pkgFileName, $releaseDirSis, $cert, $certKey, $sisFileNameBase);
+
+}
+else
+{
+    print("Usage:\n");
+    print("build_release_package.pl <build content (${buildContentDemoValue}|libs)> <hw platform> <hw build> <signing cert> <signing cert key> <release directory> <QTROOT> <EPOCROOT>\n");
+    print("1) Clean up the env. (abld reallyclean & delete \\my\\epoc\\root\\build folder)\n");
+    print("2) Run \"build_release_package.pl armv5 udeb \\rd.cer \\rd-key.pem \\my_release_dir [\\my\\qt\\root\\] [\\my\\epoc\\root\\]>\"\n");
+    print("   to build Qt and create the release package structure and sis file.\n");
+    print("   Note: Run in the Qt root directory.\n");
+    print("3) Optional: Get the sis signed with commercial certificate (can be found in qt directory under release directory)\n");
+    print("4) Zip up the release directory contents\n");
+}
+
+sub runSystemCmd
+{
+    my $error_code = system($_[0]);
+    if ($error_code != 0)
+    {
+        print("'$_[0]' call failed: error code == $error_code\n");
+        exit 9;
+    }
+}
+
+sub parsePkgFile
+{
+    my $epocroot = $_[1];
+    my $build = $_[2];
+    my $platform = $_[3];
+    my $releaseDirEpocroot = $_[4];
+    my $qtRootDirForMatch = $_[5];
+    my $releaseDirQt = $_[6];
+
+    open (PKG, "<".$_[0]);
     while (<PKG>)
     {
         my $line = $_;
@@ -150,7 +218,15 @@ if (@ARGV)
             if ($sourcePath !~ m/\\epoc32\\release\\([^\\]+)\\(udeb|urel)\\(\w+(\.dll|\.exe))/i)
             {
                 # Copy non-binaries also over for emulator to use
-                $pkgDestinationPath =~ s/!:/${releaseDirEpocroot}\\epoc32\\winscw\\c/g;
+                if ($pkgDestinationPath =~ m/(private\\10003a3f\\import\\apps|resource\\apps)/i)
+                {
+                    $pkgDestinationPath =~ s/!:/${releaseDirEpocroot}\\epoc32\\release\\winscw\\udeb\\z/g;
+                }
+                else
+                {
+                    $pkgDestinationPath =~ s/!:/${releaseDirEpocroot}\\epoc32\\winscw\\c/g;
+                }
+
                 runSystemCmd("echo f|xcopy ${sourcePath} ${pkgDestinationPath} /F /R /Y /I /D");
             }
             else
@@ -164,46 +240,41 @@ if (@ARGV)
         }
     }
     close (PKG);
-
-    # Copy any other binaries and related files built not included in pkg
-    runSystemCmd("xcopy ${hwBuildDir}\\* ${releaseDirEpocroot}\\${armDbgDir} /A /F /R /Y /I /D ");
-    runSystemCmd("xcopy ${releaseDirEpocroot}\\${armDbgDir}\\* ${releaseDirEpocroot}\\${armRelDir} /F /R /Y /I /D");
-    system("del /F /Q ${releaseDirEpocroot}\\${armRelDir}\\*.sym 2> NUL");
-    runSystemCmd("xcopy ${releaseDirEpocroot}\\${armDbgDir}\\* ${releaseDirEpocroot}\\${gcceDbgDir} /F /R /Y /I /D");
-    runSystemCmd("xcopy ${releaseDirEpocroot}\\${armRelDir}\\* ${releaseDirEpocroot}\\${gcceRelDir} /F /R /Y /I /D");
-    runSystemCmd("xcopy ${epocroot}\\${armLibDir}\\* ${releaseDirEpocroot}\\${armLibDir} /A /F /R /Y /I /D");
-    runSystemCmd("xcopy ${epocroot}\\${winscwDbgDir}\\* ${releaseDirEpocroot}\\${winscwDbgDir} /A /F /R /Y /I /D");
-
-    # Create unsigned sis and Rnd signed sisx
-    my @pkgPathElements = split(/\\/, $pkgFileName);
-    my $pathlessPkgFile = pop(@pkgPathElements);
-    my @pkgSuffixElements = split(/\./, $pathlessPkgFile);
-    pop(@pkgSuffixElements);
-    my $sisFileName = join("", @pkgSuffixElements).".sis";
-    my $rndSisFileName = join("", @pkgSuffixElements)."_rnd.sisx";
-    system("mkdir ${releaseDirSis}");
-    runSystemCmd("makesis ${pkgFileName} ${releaseDirSis}\\${sisFileName}");
-    runSystemCmd("signsis ${releaseDirSis}\\${sisFileName} ${releaseDirSis}\\${rndSisFileName} ${cert} ${certKey}");
-}
-else
-{
-    print("Usage:\n");
-    print("build_release_package.pl <hw platform> <hw build> <signing cert> <signing cert key> <release directory> [QTROOT] [EPOCROOT]\n");
-    print("QTROOT and EPOCROOT are optional; QTROOT defaults to current dir and EPOCROOT defaults to '\\'\n");
-    print("1) Clean up the env. (abld reallyclean & delete \\my\\epoc\\root\\build folder)\n");
-    print("2) Run \"build_release_package.pl armv5 udeb \\rd.cer \\rd-key.pem \\my_release_dir [\\my\\qt\\root\\] [\\my\\epoc\\root\\]>\"\n");
-    print("   to build Qt and create the release package structure and sis file.\n");
-    print("   Note: Run in the Qt root directory.\n");
-    print("3) Optional: Get the sis signed with commercial certificate (can be found in qt directory under release directory)\n");
-    print("4) Zip up the release directory contents\n");
 }
 
-sub runSystemCmd
+sub createSis
 {
-    my $error_code = system($_[0]);
-    if ($error_code != 0)
+    my $pkgFileName = $_[0];
+    my $releaseDirSis = $_[1];
+    my $cert = $_[2];
+    my $certKey = $_[3];
+    my $sisFileNameBase = $_[4];
+    my $signedSuffix = ".sis";
+    my $unsignedSuffix = "_unsigned.sis";
+
+    if ($cert =~ m/rd\.cer/i)
     {
-        print("'$_[0]' call failed: error code == $error_code\n");
-        exit 5;
+        $signedSuffix = "_rnd.sis";
     }
+
+    my $sisFileName = $sisFileNameBase.$unsignedSuffix;
+    my $signedSisFileName = $sisFileNameBase.$signedSuffix;
+    system("mkdir ${releaseDirSis} 2> NUL");
+    runSystemCmd("makesis ${pkgFileName} ${releaseDirSis}\\${sisFileName}");
+    runSystemCmd("signsis ${releaseDirSis}\\${sisFileName} ${releaseDirSis}\\${signedSisFileName} ${cert} ${certKey}");
+}
+
+sub buildDir
+{
+    my $buildDir = $_[0];
+    my $qtRootDir = $_[1];
+    my $platform = $_[2];
+    my $build = $_[3];
+
+    chdir($buildDir);
+    runSystemCmd("qmake");
+    runSystemCmd("bldmake bldfiles");
+    runSystemCmd("abld build ${platform} ${build}");
+    runSystemCmd("abld build winscw udeb");
+    chdir($qtRootDir);
 }

@@ -366,8 +366,6 @@ public:
     static QColor lighterColor(const QColor &baseColor);
     //deduces if the given widget should have separately themeable background
     static bool drawsOwnThemeBackground(const QWidget *widget);
-    // gets layout
-    static const QHash<QStyle::PixelMetric, int> &s60StyleLayout();
 
     QFont s60Font(QS60StyleEnums::FontCategories fontCategory,
         int pointSize = -1) const;
@@ -388,7 +386,6 @@ public:
 
     static int focusRectPenWidth();
 
-#if defined(QT_S60STYLE_LAYOUTDATA_SIMULATED)
     static const layoutHeader m_layoutHeaders[];
     static const short data[][MAX_PIXELMETRICS];
 
@@ -398,7 +395,6 @@ public:
     static short const *m_pmPointer;
     // number of layouts supported by the style
     static const int m_numberOfLayouts;
-#endif // defined(QT_S60STYLE_LAYOUTDATA_SIMULATED)
 
     mutable QHash<QPair<QS60StyleEnums::FontCategories , int>, QFont> m_mappedFontsCache;
     mutable QHash<QS60StylePrivate::SkinFrameElements, QColor> m_colorCache;

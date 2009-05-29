@@ -160,9 +160,8 @@ contains( styles, s60 ) {
 		styles/qs60style.h \
 		styles/qs60style_p.h
 	SOURCES += styles/qs60style.cpp
-	DEFINES += QT_S60STYLE_LAYOUTDATA_SIMULATED
 	symbian {
-		SOURCES += styles/qs60style_symbian.cpp
+		SOURCES += styles/qs60style_s60.cpp
 		# TODO: fix the following LIBS hack. Line 1 is for armv5, 2 for winscw
 		LIBS += aknicon aknskins aknskinsrv fontutils
 		LIBS += -laknicon -laknskins -laknskinsrv -lfontutils
