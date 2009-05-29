@@ -346,7 +346,7 @@ QTranslator::QTranslator(QObject * parent, const char * name)
 QTranslator::~QTranslator()
 {
     if (QCoreApplication::instance())
-        QCoreApplication::instance()->removeTranslator(this);
+        QCoreApplication::removeTranslator(this);
     Q_D(QTranslator);
     d->clear();
 }
