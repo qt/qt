@@ -67,8 +67,10 @@ static const int QTEXTSTREAM_BUFFERSIZE = 16384;
     \snippet doc/src/snippets/code/src_corelib_io_qtextstream.cpp 1
 
     Note that you cannot use QTextStream::atEnd(), which returns true when you
-    have reached the end of the data stream, with stdin.
-
+    have reached the end of the data stream, with stdin. The reason for this is
+    that as long as stdin doesn't give any input to the QTextStream, \c atEnd()
+    will return true even if the stdin is open and waiting for more characters.
+    
     Besides using QTextStream's constructors, you can also set the
     device or string QTextStream operates on by calling setDevice() or
     setString(). You can seek to a position by calling seek(), and
@@ -331,7 +333,7 @@ public:
         this->stream = stream;
     }
 
-public slots:
+public Q_SLOTS:
     inline void flushStream() { stream->flush(); }
 
 private:
@@ -2290,7 +2292,7 @@ bool QTextStreamPrivate::putNumber(qulonglong number, bool negative)
         // ShowBase flag set zero should be written as '00'
         if (number == 0 && base == 8 && numberFlags & QTextStream::ShowBase
             && result == QLatin1String("0")) {
-            result.prepend(QLatin1String("0"));
+            result.prepend(QLatin1Char('0'));
         }
     }
     return putString(result, true);

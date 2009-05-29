@@ -528,6 +528,26 @@ void qt_memrotate270(const srctype *src, int w, int h, int sstride, \
     qt_memrotate270_template(src, w, h, sstride, dest, dstride);    \
 }
 
+#define QT_IMPL_SIMPLE_MEMROTATE(srctype, desttype)                 \
+void qt_memrotate90(const srctype *src, int w, int h, int sstride,  \
+                    desttype *dest, int dstride)                    \
+{                                                                   \
+    qt_memrotate90_tiled_unpacked<desttype,srctype>(src, w, h, sstride, dest, dstride); \
+}                                                                   \
+void qt_memrotate180(const srctype *src, int w, int h, int sstride, \
+                     desttype *dest, int dstride)                   \
+{                                                                   \
+    qt_memrotate180_template(src, w, h, sstride, dest, dstride);    \
+}                                                                   \
+void qt_memrotate270(const srctype *src, int w, int h, int sstride, \
+                     desttype *dest, int dstride)                   \
+{                                                                   \
+    qt_memrotate270_tiled_unpacked<desttype,srctype>(src, w, h, sstride, dest, dstride); \
+}
+
+
+
+
 QT_IMPL_MEMROTATE(quint32, quint32)
 QT_IMPL_MEMROTATE(quint32, quint16)
 QT_IMPL_MEMROTATE(quint16, quint32)
@@ -539,6 +559,14 @@ QT_IMPL_MEMROTATE(quint32, quint8)
 QT_IMPL_MEMROTATE(quint16, quint8)
 QT_IMPL_MEMROTATE(qrgb444, quint8)
 QT_IMPL_MEMROTATE(quint8, quint8)
+
+#if defined(QT_QWS_ROTATE_BGR)
+QT_IMPL_SIMPLE_MEMROTATE(quint16, qbgr565)
+QT_IMPL_SIMPLE_MEMROTATE(quint32, qbgr565)
+QT_IMPL_SIMPLE_MEMROTATE(qrgb555, qbgr555)
+QT_IMPL_SIMPLE_MEMROTATE(quint32, qbgr555)
+#endif
+
 #ifdef QT_QWS_DEPTH_GENERIC
 QT_IMPL_MEMROTATE(quint32, qrgb_generic16)
 QT_IMPL_MEMROTATE(quint16, qrgb_generic16)

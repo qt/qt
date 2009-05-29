@@ -1071,7 +1071,8 @@ void QGraphicsScenePrivate::mousePressEventHandler(QGraphicsSceneMouseEvent *mou
         // check if the item we are sending to are disabled (before we send the event)
         bool disabled = !item->isEnabled();
         bool isWindow = item->isWindow();
-        if (mouseEvent->type() == QEvent::GraphicsSceneMouseDoubleClick && item != lastMouseGrabberItem) {
+        if (mouseEvent->type() == QEvent::GraphicsSceneMouseDoubleClick
+            && item != lastMouseGrabberItem && lastMouseGrabberItem) {
             // If this item is different from the item that received the last
             // mouse event, and mouseEvent is a doubleclick event, then the
             // event is converted to a press. Known limitation:
@@ -1983,8 +1984,6 @@ void QGraphicsScene::setSceneRect(const QRectF &rect)
 void QGraphicsScene::render(QPainter *painter, const QRectF &target, const QRectF &source,
                             Qt::AspectRatioMode aspectRatioMode)
 {
-    Q_D(QGraphicsScene);
-
     // Default source rect = scene rect
     QRectF sourceRect = source;
     if (sourceRect.isNull())
@@ -2041,41 +2040,8 @@ void QGraphicsScene::render(QPainter *painter, const QRectF &target, const QRect
 
     // Generate the style options
     QStyleOptionGraphicsItem *styleOptionArray = new QStyleOptionGraphicsItem[numItems];
-    for (int i = 0; i < numItems; ++i) {
-        QGraphicsItem *item = itemArray[i];
-
-        QStyleOptionGraphicsItem option;
-        option.state = QStyle::State_None;
-        option.rect = item->boundingRect().toRect();
-        if (item->isSelected())
-            option.state |= QStyle::State_Selected;
-        if (item->isEnabled())
-            option.state |= QStyle::State_Enabled;
-        if (item->hasFocus())
-            option.state |= QStyle::State_HasFocus;
-        if (d->hoverItems.contains(item))
-            option.state |= QStyle::State_MouseOver;
-        if (item == mouseGrabberItem())
-            option.state |= QStyle::State_Sunken;
-
-        // Calculate a simple level-of-detail metric.
-        // ### almost identical code in QGraphicsView::paintEvent()
-        //     and QGraphicsView::render() - consider refactoring
-        QTransform itemToDeviceTransform;
-        if (item->d_ptr->itemIsUntransformable()) {
-            itemToDeviceTransform = item->deviceTransform(painterTransform);
-        } else {
-            itemToDeviceTransform = item->sceneTransform() * painterTransform;
-        }
-
-        option.levelOfDetail = qSqrt(itemToDeviceTransform.map(v1).length() * itemToDeviceTransform.map(v2).length());
-        option.matrix = itemToDeviceTransform.toAffine(); //### discards perspective
-
-        option.exposedRect = item->boundingRect();
-        option.exposedRect &= itemToDeviceTransform.inverted().mapRect(targetRect);
-
-        styleOptionArray[i] = option;
-    }
+    for (int i = 0; i < numItems; ++i)
+        itemArray[i]->d_ptr->initStyleOption(&styleOptionArray[i], painterTransform, targetRect.toRect());
 
     // Render the scene.
     drawBackground(painter, sourceRect);
@@ -4525,8 +4491,9 @@ void QGraphicsScenePrivate::drawItemHelper(QGraphicsItem *item, QPainter *painte
         return;
 
     // Fetch the off-screen transparent buffer and exposed area info.
-    QString pixmapKey;
+    QPixmapCache::Key pixmapKey;
     QPixmap pix;
+    bool pixmapFound;
     QGraphicsItemCache *itemCache = itemd->extraItemCache();
     if (cacheMode == QGraphicsItem::ItemCoordinateCache) {
         if (itemCache->boundingRect != brect.toRect()) {
@@ -4536,17 +4503,11 @@ void QGraphicsScenePrivate::drawItemHelper(QGraphicsItem *item, QPainter *painte
         }
         pixmapKey = itemCache->key;
     } else {
-        if ((pixmapKey = itemCache->deviceData.value(widget).key).isEmpty()) {
-            pixmapKey.sprintf("qgv-%p-%p", item, widget);
-            QGraphicsItemCache::DeviceData data;
-            data.key = pixmapKey;
-            itemCache->deviceData.insert(widget, data);
-        }
+        pixmapKey = itemCache->deviceData.value(widget).key;
     }
 
     // Find pixmap in cache.
-    if (!itemCache->allExposed)
-        QPixmapCache::find(pixmapKey, pix);
+    pixmapFound = QPixmapCache::find(pixmapKey, &pix);
 
     // Render using item coordinate cache mode.
     if (cacheMode == QGraphicsItem::ItemCoordinateCache) {
@@ -4571,6 +4532,12 @@ void QGraphicsScenePrivate::drawItemHelper(QGraphicsItem *item, QPainter *painte
 
         // Redraw any newly exposed areas.
         if (itemCache->allExposed || !itemCache->exposed.isEmpty()) {
+
+            //We know that we will modify the pixmap, removing it from the cache
+            //will detach the one we have and avoid a deep copy
+            if (pixmapFound)
+                QPixmapCache::remove(pixmapKey);
+
             // Fit the item's bounding rect into the pixmap's coordinates.
             QTransform itemToPixmap;
             if (fixedCacheSize) {
@@ -4599,8 +4566,8 @@ void QGraphicsScenePrivate::drawItemHelper(QGraphicsItem *item, QPainter *painte
             _q_paintIntoCache(&pix, item, pixmapExposed, itemToPixmap, painter->renderHints(),
                               &cacheOption, painterStateProtection);
 
-            // Reinsert this pixmap into the cache.
-            QPixmapCache::insert(pixmapKey, pix);
+            // insert this pixmap into the cache.
+            itemCache->key = QPixmapCache::insert(pix);
 
             // Reset expose data.
             itemCache->allExposed = false;
@@ -4727,6 +4694,11 @@ void QGraphicsScenePrivate::drawItemHelper(QGraphicsItem *item, QPainter *painte
 
         // Check for newly invalidated areas.
         if (itemCache->allExposed || !itemCache->exposed.isEmpty() || !scrollExposure.isEmpty()) {
+            //We know that we will modify the pixmap, removing it from the cache
+            //will detach the one we have and avoid a deep copy
+            if (pixmapFound)
+                QPixmapCache::remove(pixmapKey);
+
             // Construct an item-to-pixmap transform.
             QPointF p = deviceRect.topLeft();
             QTransform itemToPixmap = painter->worldTransform();
@@ -4767,8 +4739,8 @@ void QGraphicsScenePrivate::drawItemHelper(QGraphicsItem *item, QPainter *painte
         }
 
         if (pixModified) {
-            // Reinsert this pixmap into the cache
-            QPixmapCache::insert(pixmapKey, pix);
+            // Insert this pixmap into the cache.
+            deviceData->key = QPixmapCache::insert(pix);
         }
 
         // Redraw the exposed area using an untransformed painter. This
@@ -4881,11 +4853,7 @@ void QGraphicsScene::drawItems(QPainter *painter,
                 // optimization, but it's hit very rarely.
                 for (int i = clippers.size() - 1; i >= 0; --i) {
                     QGraphicsItem *clipper = clippers[i];
-                    if (clipper->d_ptr->itemIsUntransformable()) {
-                        painter->setWorldTransform(clipper->deviceTransform(viewTransform), false);
-                    } else {
-                        painter->setWorldTransform(clipper->sceneTransform() * viewTransform, false);
-                    }
+                    painter->setWorldTransform(clipper->deviceTransform(viewTransform), false);
 
                     childClippers.append(clipper);
                     painter->save();
@@ -4896,12 +4864,8 @@ void QGraphicsScene::drawItems(QPainter *painter,
         }
 
         // Set up the painter transform
-        if (item->d_ptr->itemIsUntransformable()) {
-            painter->setWorldTransform(item->deviceTransform(viewTransform), false);
-        } else {
-            painter->setWorldTransform(item->sceneTransform() * viewTransform, false);
-        }
-       
+        painter->setWorldTransform(item->deviceTransform(viewTransform), false);
+
         // Save painter
         bool saveState = (d->painterStateProtection || (item->flags() & QGraphicsItem::ItemClipsToShape));
         if (saveState)

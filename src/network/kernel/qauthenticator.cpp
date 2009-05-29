@@ -73,6 +73,15 @@ static QByteArray qNtlmPhase3(QAuthenticatorPrivate *ctx, const QByteArray& phas
   authentication information to the socket when accessing services that
   require authentication.
 
+  QAuthenticator supports the following authentication methods:
+  \list
+    \o Basic
+    \o NTLM version 1
+    \o Digest-MD5
+  \endlist
+
+  Note that, in particular, NTLM version 2 is not supported.
+
   \sa QSslSocket
 */
 
@@ -502,13 +511,13 @@ QByteArray QAuthenticatorPrivate::digestMd5Response(const QByteArray &challenge,
     credentials += "uri=\"" + path + "\", ";
     if (!opaque.isEmpty())
         credentials += "opaque=\"" + opaque + "\", ";
-    credentials += "response=\"" + response + "\"";
+    credentials += "response=\"" + response + '\"';
     if (!options.value("algorithm").isEmpty())
         credentials += ", algorithm=" + options.value("algorithm");
     if (!options.value("qop").isEmpty()) {
         credentials += ", qop=" + qop + ", ";
         credentials += "nc=" + nonceCountString + ", ";
-        credentials += "cnonce=\"" + cnonce + "\"";
+        credentials += "cnonce=\"" + cnonce + '\"';
     }
 
     return credentials;

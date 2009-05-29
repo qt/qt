@@ -105,7 +105,7 @@ Item XSLTSimpleContentConstructor::evaluateSingleton(const DynamicContext::Ptr &
     QString result;
 
     bool previousIsText = false;
-    bool discard;
+    bool discard = false;
 
     if(next)
     {

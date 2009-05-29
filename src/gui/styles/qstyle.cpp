@@ -1048,6 +1048,8 @@ void QStyle::drawItemPixmap(QPainter *painter, const QRect &rect, int alignment,
     \value SE_TabBarTabRightButton Area for a widget on the right side of a tab in a tab bar.
     \value SE_TabBarTabText Area for the text on a tab in a tab bar.
 
+    \value SE_ToolBarHandle Area for the handle of a tool bar.
+
     \sa subElementRect()
 */
 
@@ -1330,7 +1332,7 @@ void QStyle::drawItemPixmap(QPainter *painter, const QRect &rect, int alignment,
     \value PM_LayoutVerticalSpacing  Default \l{QLayout::spacing}{vertical spacing} for a QLayout.
 
     \value PM_MaximumDragDistance The maximum allowed distance between
-    the mouse and a slider when dragging. Exceeding the specified
+    the mouse and a scrollbar when dragging. Exceeding the specified
     distance will cause the slider to jump back to the original
     position; a value of -1 disables this behavior.
 
@@ -2437,7 +2439,7 @@ QDebug operator<<(QDebug debug, QStyle::State state)
 
     qSort(states);
     debug << states.join(QLatin1String(" | "));
-    debug << ")";
+    debug << ')';
     return debug;
 }
 #endif

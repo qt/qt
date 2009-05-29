@@ -55,6 +55,7 @@
 #include <qtreeview.h>
 #include <qlabel.h>
 #include <qdebug.h> // for file error messages
+#include "../../shared/util.h"
 
 //TESTED_CLASS=
 //TESTED_FILES=
@@ -1341,9 +1342,7 @@ void tst_QSplitter::task187373_addAbstractScrollAreas()
     if (addOutsideConstructor)
         splitter->addWidget(w);
 
-    qApp->processEvents();
-
-    QVERIFY(w->isVisible());
+    QTRY_VERIFY(w->isVisible());
     QVERIFY(!w->isHidden());
     QVERIFY(w->viewport()->isVisible());
     QVERIFY(!w->viewport()->isHidden());

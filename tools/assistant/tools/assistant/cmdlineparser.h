@@ -67,6 +67,7 @@ public:
     ShowState bookmarks() const;
     ShowState search() const;
     QString currentFilter() const;
+    bool removeSearchIndex() const;
     RegisterState registerRequest() const;
     QString helpFile() const;
 
@@ -90,6 +91,7 @@ private:
     ShowState m_search;
     RegisterState m_register;
     QString m_currentFilter;
+    bool m_removeSearchIndex;
     bool m_copy;
     bool m_quiet;
 };

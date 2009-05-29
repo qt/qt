@@ -127,7 +127,7 @@ static Ending ending(QString str, QLocale::Language lang)
 
     switch (ch) {
     case 0x002e: // full stop
-        if (str.endsWith(QString(QLatin1String("..."))))
+        if (str.endsWith(QLatin1String("...")))
             return End_Ellipsis;
         else
             return End_FullStop;
@@ -1342,17 +1342,13 @@ void MainWindow::about()
     QString version = tr("Version %1");
     version = version.arg(QLatin1String(QT_VERSION_STR));
 
-    // TODO: Remove this variable for 4.6.0.  Must keep this way for 4.5.x due to string freeze.
-    QString edition;
-
     box.setText(tr("<center><img src=\":/images/splash.png\"/></img><p>%1</p></center>"
                     "<p>Qt Linguist is a tool for adding translations to Qt "
                     "applications.</p>"
-                    "<p>%2</p>"
                     "<p>Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies)."
                     "</p><p>The program is provided AS IS with NO WARRANTY OF ANY KIND,"
                     " INCLUDING THE WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A"
-                    " PARTICULAR PURPOSE.</p>").arg(version).arg(edition));
+                    " PARTICULAR PURPOSE.</p>").arg(version));
 
     box.setWindowTitle(QApplication::translate("AboutDialog", "Qt Linguist"));
     box.setIcon(QMessageBox::NoIcon);

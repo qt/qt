@@ -504,7 +504,7 @@ QIcon QTabWidget::tabIcon(int index) const
 }
 
 /*!
-    Returns true if the the page at position \a index is enabled; otherwise returns false.
+    Returns true if the page at position \a index is enabled; otherwise returns false.
 
     \sa setTabEnabled(), QWidget::isEnabled()
 */

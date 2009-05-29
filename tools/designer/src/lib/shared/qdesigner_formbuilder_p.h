@@ -75,7 +75,7 @@ namespace qdesigner_internal {
 class DesignerPixmapCache;
 class DesignerIconCache;
 
-/* Form builder used for previewing forms, widget box and new form dialog.
+/* Form builder used for previewing forms and widget box.
  * It applies the system settings to its toplevel window. */
 
 class QDESIGNER_SHARED_EXPORT QDesignerFormBuilder: public QFormBuilder
@@ -158,6 +158,21 @@ private:
     QtResourceSet *m_tempResourceSet;
     bool m_mainWidget;
 };
+
+// Form builder for a new form widget (preview). To allow for promoted
+// widgets in the template, it implements the handling of custom widgets
+// (adding of them to the widget database).
+
+class QDESIGNER_SHARED_EXPORT NewFormWidgetFormBuilder: public QDesignerFormBuilder {
+public:
+    NewFormWidgetFormBuilder(QDesignerFormEditorInterface *core,
+                             Mode mode,
+                             const DeviceProfile &deviceProfile = DeviceProfile());
+
+protected:
+    virtual void createCustomWidgets(DomCustomWidgets *);
+};
+
 
 } // namespace qdesigner_internal
 

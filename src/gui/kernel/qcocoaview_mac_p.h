@@ -59,6 +59,7 @@ QT_FORWARD_DECLARE_CLASS(QWidgetPrivate);
 QT_FORWARD_DECLARE_CLASS(QWidget);
 QT_FORWARD_DECLARE_CLASS(QEvent);
 QT_FORWARD_DECLARE_CLASS(QCocoaDropData);
+QT_FORWARD_DECLARE_CLASS(QStringList);
 
 QT_BEGIN_NAMESPACE
 struct DnDParams
@@ -84,6 +85,7 @@ Q_GUI_EXPORT
     int composingLength;
     bool sendKeyEvents;
     QString *composingText;
+    QStringList *currentCustomTypes;
 }
 - (id)initWithQWidget:(QWidget *)widget widgetPrivate:(QWidgetPrivate *)widgetprivate;
 - (void) finishInitWithQWidget:(QWidget *)widget widgetPrivate:(QWidgetPrivate *)widgetprivate;
@@ -92,7 +94,7 @@ Q_GUI_EXPORT
 - (NSDragOperation)draggingUpdated:(id < NSDraggingInfo >)sender;
 - (void)draggingExited:(id < NSDraggingInfo >)sender;
 - (BOOL)performDragOperation:(id <NSDraggingInfo>)sender;
-- (void)registerDragTypes:(bool)accept;
+- (void)registerDragTypes;
 - (void)removeDropData;
 - (void)addDropData:(id <NSDraggingInfo>)sender;
 - (void)setSupportedActions:(NSDragOperation)actions;

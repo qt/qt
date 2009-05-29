@@ -170,8 +170,8 @@ void QSQLite2ResultPrivate::init(const char **cnames, int numCols)
         
         //remove quotations around the field name if any
         QString fieldStr = QString::fromAscii(fieldName);
-        QString quote = QString::fromLatin1("\"");
-        if ( fieldStr.length() > 2 && fieldStr.left(1) == quote && fieldStr.right(1) == quote) {
+        QLatin1Char quote('\"');
+        if ( fieldStr.length() > 2 && fieldStr.startsWith(quote) && fieldStr.endsWith(quote)) {
             fieldStr = fieldStr.mid(1);
             fieldStr.chop(1);
         }
@@ -561,7 +561,7 @@ QVariant QSQLite2Driver::handle() const
 QString QSQLite2Driver::escapeIdentifier(const QString &identifier, IdentifierType /*type*/) const
 {
     QString res = identifier;
-    if(!identifier.isEmpty() && identifier.left(1) != QString(QLatin1Char('"')) && identifier.right(1) != QString(QLatin1Char('"')) ) {
+    if(!identifier.isEmpty() && !identifier.startsWith(QLatin1Char('"')) && !identifier.endsWith(QLatin1Char('"')) ) {
         res.replace(QLatin1Char('"'), QLatin1String("\"\""));
         res.prepend(QLatin1Char('"')).append(QLatin1Char('"'));
         res.replace(QLatin1Char('.'), QLatin1String("\".\""));

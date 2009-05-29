@@ -51,6 +51,13 @@
 #if defined(Q_OS_WIN)
 # include <windows.h>
 #endif
+#if defined(Q_OS_UNIX)
+# include <sys/types.h>
+# include <sys/stat.h>
+# include <errno.h>
+# include <fcntl.h>             // open(2)
+# include <unistd.h>            // close(2)
+#endif
 
 //TESTED_CLASS=
 //TESTED_FILES=
@@ -70,6 +77,7 @@ private slots:
     void fileTemplate_data();
     void getSetCheck();
     void fileName();
+    void fileNameIsEmpty();
     void autoRemove();
     void write();
     void openCloseOpenClose();
@@ -78,6 +86,9 @@ private slots:
     void openOnRootDrives();
     void stressTest();
     void rename();
+    void renameFdLeak();
+    void reOpenThroughQFile();
+
 public:
 };
 
@@ -179,6 +190,27 @@ void tst_QTemporaryFile::fileName()
     absoluteTempPath = absoluteTempPath.toLower();
 #endif
     QCOMPARE(absoluteFilePath, absoluteTempPath);
+}
+
+void tst_QTemporaryFile::fileNameIsEmpty()
+{
+    QString filename;
+    {
+        QTemporaryFile file;
+        QVERIFY(file.fileName().isEmpty());
+
+        QVERIFY(file.open());
+        QVERIFY(!file.fileName().isEmpty());
+
+        filename = file.fileName();
+        QVERIFY(QFile::exists(filename));
+
+        file.close();
+        QVERIFY(!file.isOpen());
+        QVERIFY(QFile::exists(filename));
+        QVERIFY(!file.fileName().isEmpty());
+    }
+    QVERIFY(!QFile::exists(filename));
 }
 
 void tst_QTemporaryFile::autoRemove()
@@ -350,10 +382,61 @@ void tst_QTemporaryFile::rename()
         QVERIFY(file.rename("temporary-file.txt"));
         QVERIFY(!dir.exists(tempname));
         QVERIFY(dir.exists("temporary-file.txt"));
+        QCOMPARE(file.fileName(), QString("temporary-file.txt"));
     }
 
     QVERIFY(!dir.exists(tempname));
     QVERIFY(!dir.exists("temporary-file.txt"));
+}
+
+void tst_QTemporaryFile::renameFdLeak()
+{
+#ifdef Q_OS_UNIX
+    // Test this on Unix only
+
+    // Open a bunch of files to force the fd count to go up
+    static const int count = 10;
+    int bunch_of_files[count];
+    for (int i = 0; i < count; ++i) {
+        bunch_of_files[i] = ::open(SRCDIR "tst_qtemporaryfile.cpp", O_RDONLY);
+        QVERIFY(bunch_of_files[i] != -1);
+    }
+
+    int fd;
+    {
+        QTemporaryFile file;
+        file.setAutoRemove(false);
+        QVERIFY(file.open());
+
+        // close the bunch of files
+        for (int i = 0; i < count; ++i)
+            ::close(bunch_of_files[i]);
+
+        // save the file descriptor for later
+        fd = file.handle();
+
+        // rename the file to something
+        QString newPath = QDir::tempPath() + "/tst_qtemporaryfile-renameFdLeak-" + QString::number(getpid());
+        file.rename(newPath);
+        QFile::remove(newPath);
+    }
+
+    // check if QTemporaryFile closed the file
+    QVERIFY(::close(fd) == -1 && errno == EBADF);
+#endif
+}
+
+void tst_QTemporaryFile::reOpenThroughQFile()
+{
+    QByteArray data("abcdefghij");
+
+    QTemporaryFile file;
+    QVERIFY(((QFile &)file).open(QIODevice::WriteOnly));
+    QCOMPARE(file.write(data), (qint64)data.size());
+
+    file.close();
+    QVERIFY(file.open());
+    QCOMPARE(file.readAll(), data);
 }
 
 QTEST_MAIN(tst_QTemporaryFile)

@@ -64,9 +64,9 @@
 
 #ifndef QT_NO_DEBUG_STREAM
 #include <QtCore/qdebug.h>
+#endif
 
 QT_BEGIN_NAMESPACE
-#endif
 
 /*!
     Constructs an empty QSslCipher object.
@@ -231,7 +231,7 @@ QDebug operator<<(QDebug debug, const QSslCipher &cipher)
     debug << "QSslCipher(name=" << qPrintable(cipher.name())
           << ", bits=" << cipher.usedBits()
           << ", proto=" << qPrintable(cipher.protocolString())
-          << ")";
+          << ')';
     return debug;
 }
 #endif

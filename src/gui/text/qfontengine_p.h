@@ -178,7 +178,7 @@ public:
      * Create a qimage with the alpha values for the glyph.
      * Returns an image indexed_8 with index values ranging from 0=fully transparant to 255=opaque
      */
-    virtual QImage alphaMapForGlyph(glyph_t) = 0;
+    virtual QImage alphaMapForGlyph(glyph_t);
     virtual QImage alphaMapForGlyph(glyph_t, const QTransform &t);
     virtual QImage alphaRGBMapForGlyph(glyph_t, int margin, const QTransform &t);
 
@@ -353,7 +353,7 @@ private:
     int _size;
 };
 
-class Q_GUI_EXPORT QFontEngineMulti : public QFontEngine
+class QFontEngineMulti : public QFontEngine
 {
 public:
     explicit QFontEngineMulti(int engineCount);
@@ -389,7 +389,9 @@ public:
     inline virtual const char *name() const
     { return "Multi"; }
 
-    QFontEngine *engine(int at) const;
+    QFontEngine *engine(int at) const
+    {Q_ASSERT(at < engines.size()); return engines.at(at); }
+
 
 protected:
     friend class QPSPrintEnginePrivate;

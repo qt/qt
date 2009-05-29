@@ -703,15 +703,10 @@ void QMessageBoxPrivate::_q_buttonClicked(QAbstractButton *button)
     Constructs a message box with no text and no buttons. \a parent is
     passed to the QDialog constructor.
 
-    If \a parent is 0, the message box is an \l{Qt::ApplicationModal}
-    {application modal} dialog box. If \a parent is a widget, the
-    message box is \l{Qt::WindowModal} {window modal} relative to \a
-    parent.
-
-    On Mac OS X, if \a parent is not 0 and you want your message box
-    to appear as a Qt::Sheet of that parent, set the message box's
-    \l{setWindowModality()} {window modality} to Qt::WindowModal
-    (default). Otherwise, the message box will be a standard dialog.
+    On Mac OS X, if you want your message box to appear
+    as a Qt::Sheet of its \a parent, set the message box's
+    \l{setWindowModality()} {window modality} to Qt::WindowModal or use open().
+    Otherwise, the message box will be a standard dialog.
 
 */
 QMessageBox::QMessageBox(QWidget *parent)
@@ -1315,7 +1310,7 @@ void QMessageBox::keyPressEvent(QKeyEvent *e)
         if (e == QKeySequence::Copy) {
             QString separator = QString::fromLatin1("---------------------------\n");
             QString textToCopy = separator;
-            separator.prepend(QLatin1String("\n"));
+            separator.prepend(QLatin1Char('\n'));
             textToCopy += windowTitle() + separator; // title
             textToCopy += d->label->text() + separator; // text
 
@@ -1689,10 +1684,13 @@ void QMessageBox::aboutQt(QWidget *parent, const QString &title)
     }
 #endif
 
-    QString translatedTextAboutQt;
-    translatedTextAboutQt = QMessageBox::tr(
+    QString translatedTextAboutQtCaption;
+    translatedTextAboutQtCaption = QMessageBox::tr(
         "<h3>About Qt</h3>"
         "<p>This program uses Qt version %1.</p>"
+        ).arg(QLatin1String(QT_VERSION_STR));
+    QString translatedTextAboutQtText;
+    translatedTextAboutQtText = QMessageBox::tr(
         "<p>Qt is a C++ toolkit for cross-platform application "
         "development.</p>"
         "<p>Qt provides single-source portability across MS&nbsp;Windows, "
@@ -1720,12 +1718,12 @@ void QMessageBox::aboutQt(QWidget *parent, const QString &title)
         "<p>Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).</p>"
         "<p>Qt is a Nokia product. See <a href=\"http://www.qtsoftware.com/qt/\">www.qtsoftware.com/qt</a> "
         "for more information.</p>"
-       ).arg(QLatin1String(QT_VERSION_STR));
-
+        );
     QMessageBox *msgBox = new QMessageBox(parent);
     msgBox->setAttribute(Qt::WA_DeleteOnClose);
     msgBox->setWindowTitle(title.isEmpty() ? tr("About Qt") : title);
-    msgBox->setText(translatedTextAboutQt);
+    msgBox->setText(translatedTextAboutQtCaption);
+    msgBox->setInformativeText(translatedTextAboutQtText);
 
     QPixmap pm(QLatin1String(":/trolltech/qmessagebox/images/qtlogo-64.png"));
     if (!pm.isNull())

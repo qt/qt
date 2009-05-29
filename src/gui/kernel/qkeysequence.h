@@ -136,7 +136,9 @@ public:
         DeleteEndOfLine,
         InsertParagraphSeparator,
         InsertLineSeparator,
-        SaveAs
+        SaveAs,
+        Preferences,
+        Quit
      };
 
     QKeySequence();

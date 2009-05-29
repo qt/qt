@@ -137,8 +137,6 @@ public slots:
     }
 };
 
-static const char *IMAP_IP = "62.70.27.18";
-
 tst_QHttpSocketEngine::tst_QHttpSocketEngine()
 {
 }
@@ -307,12 +305,11 @@ void tst_QHttpSocketEngine::simpleConnectToIMAP()
 
     socketDevice.setProxy(QNetworkProxy(QNetworkProxy::HttpProxy, QtNetworkSettings::serverName(), 3128));
 
-    // Connect to imap.trolltech.com's IP
-    QVERIFY(!socketDevice.connectToHost(QHostAddress(IMAP_IP), 143));
+    QVERIFY(!socketDevice.connectToHost(QtNetworkSettings::serverIP(), 143));
     QVERIFY(socketDevice.state() == QAbstractSocket::ConnectingState);
     QVERIFY(socketDevice.waitForWrite());
     QVERIFY(socketDevice.state() == QAbstractSocket::ConnectedState);
-    QVERIFY(socketDevice.peerAddress() == QHostAddress(IMAP_IP));
+    QVERIFY(socketDevice.peerAddress() == QtNetworkSettings::serverIP());
     QVERIFY(!socketDevice.localAddress().isNull());
     QVERIFY(socketDevice.localPort() > 0);
 
@@ -328,7 +325,7 @@ void tst_QHttpSocketEngine::simpleConnectToIMAP()
 
     // Check that the greeting is what we expect it to be
     QCOMPARE(array.constData(),
-            "* OK esparsett Cyrus IMAP4 v2.2.8 server ready\r\n");
+            "* OK [CAPABILITY IMAP4 IMAP4rev1 LITERAL+ ID STARTTLS LOGINDISABLED] qt-test-server.qt-test-net Cyrus IMAP4 v2.3.11-Mandriva-RPM-2.3.11-6mdv2008.1 server ready\r\n");
 
     // Write a logout message
     QByteArray array2 = "XXXX LOGOUT\r\n";
@@ -369,7 +366,6 @@ void tst_QHttpSocketEngine::simpleErrorsAndStates()
         QVERIFY(!socketDevice.connectToHost(QHostAddress(QtNetworkSettings::serverName()), 8088));
         QVERIFY(socketDevice.state() == QAbstractSocket::ConnectingState);
         if (socketDevice.waitForWrite(15000)) {
-        	qDebug() << socketDevice.state();
             QVERIFY(socketDevice.state() == QAbstractSocket::ConnectedState ||
                     socketDevice.state() == QAbstractSocket::UnconnectedState);
         } else {
@@ -451,14 +447,14 @@ void tst_QHttpSocketEngine::tcpSocketBlockingTest()
     QTcpSocket socket;
 
     // Connect
-    socket.connectToHost("imap.troll.no", 143);
+    socket.connectToHost(QtNetworkSettings::serverName(), 143);
     QVERIFY(socket.waitForConnected());
     QCOMPARE(socket.state(), QTcpSocket::ConnectedState);
 
     // Read greeting
     QVERIFY(socket.waitForReadyRead(5000));
     QString s = socket.readLine();
-    QCOMPARE(s.toLatin1().constData(), "* OK esparsett Cyrus IMAP4 v2.2.8 server ready\r\n");
+    QCOMPARE(s.toLatin1().constData(), "* OK [CAPABILITY IMAP4 IMAP4rev1 LITERAL+ ID STARTTLS LOGINDISABLED] qt-test-server.qt-test-net Cyrus IMAP4 v2.3.11-Mandriva-RPM-2.3.11-6mdv2008.1 server ready\r\n");
 
     // Write NOOP
     QCOMPARE((int) socket.write("1 NOOP\r\n", 8), 8);
@@ -508,7 +504,7 @@ void tst_QHttpSocketEngine::tcpSocketNonBlockingTest()
     tcpSocketNonBlocking_socket = &socket;
 
     // Connect
-    socket.connectToHost("imap.troll.no", 143);
+    socket.connectToHost(QtNetworkSettings::serverName(), 143);
     QCOMPARE(socket.state(), QTcpSocket::HostLookupState);
 
     QTestEventLoop::instance().enterLoop(30);
@@ -533,7 +529,7 @@ void tst_QHttpSocketEngine::tcpSocketNonBlockingTest()
     // Read greeting
     QVERIFY(!tcpSocketNonBlocking_data.isEmpty());
     QCOMPARE(tcpSocketNonBlocking_data.at(0).toLatin1().constData(),
-            "* OK esparsett Cyrus IMAP4 v2.2.8 server ready\r\n");
+            "* OK [CAPABILITY IMAP4 IMAP4rev1 LITERAL+ ID STARTTLS LOGINDISABLED] qt-test-server.qt-test-net Cyrus IMAP4 v2.3.11-Mandriva-RPM-2.3.11-6mdv2008.1 server ready\r\n");
     tcpSocketNonBlocking_data.clear();
 
     tcpSocketNonBlocking_totalWritten = 0;
@@ -696,12 +692,11 @@ void tst_QHttpSocketEngine::passwordAuth()
 
     socketDevice.setProxy(QNetworkProxy(QNetworkProxy::HttpProxy, QtNetworkSettings::serverName(), 3128, "qsockstest", "password"));
 
-    // Connect to imap.trolltech.com's IP
-    QVERIFY(!socketDevice.connectToHost(QHostAddress(IMAP_IP), 143));
+    QVERIFY(!socketDevice.connectToHost(QtNetworkSettings::serverIP(), 143));
     QVERIFY(socketDevice.state() == QAbstractSocket::ConnectingState);
     QVERIFY(socketDevice.waitForWrite());
     QVERIFY(socketDevice.state() == QAbstractSocket::ConnectedState);
-    QVERIFY(socketDevice.peerAddress() == QHostAddress(IMAP_IP));
+    QVERIFY(socketDevice.peerAddress() == QtNetworkSettings::serverIP());
 
     // Wait for the greeting
     QVERIFY(socketDevice.waitForRead());
@@ -715,7 +710,7 @@ void tst_QHttpSocketEngine::passwordAuth()
 
     // Check that the greeting is what we expect it to be
     QCOMPARE(array.constData(),
-            "* OK esparsett Cyrus IMAP4 v2.2.8 server ready\r\n");
+            "* OK [CAPABILITY IMAP4 IMAP4rev1 LITERAL+ ID STARTTLS LOGINDISABLED] qt-test-server.qt-test-net Cyrus IMAP4 v2.3.11-Mandriva-RPM-2.3.11-6mdv2008.1 server ready\r\n");
 
     // Write a logout message
     QByteArray array2 = "XXXX LOGOUT\r\n";

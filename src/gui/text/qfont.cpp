@@ -913,7 +913,7 @@ void QFont::setPointSize(int pointSize)
 void QFont::setPointSizeF(qreal pointSize)
 {
     if (pointSize <= 0) {
-        qWarning("QFont::setPointSizeF: Point size <= 0 (%d), must be greater than 0", pointSize);
+        qWarning("QFont::setPointSizeF: Point size <= 0 (%f), must be greater than 0", pointSize);
         return;
     }
 
@@ -1896,6 +1896,20 @@ void QFont::insertSubstitutions(const QString &familyName,
         it++;
     }
 }
+
+/*! \fn void QFont::initialize()
+  \internal
+
+  Internal function that initializes the font system.  The font cache
+  and font dict do not alloc the keys. The key is a QString which is
+  shared between QFontPrivate and QXFontName.
+*/
+
+/*! \fn void QFont::cleanup()
+  \internal
+
+  Internal function that cleans up the font system.
+*/
 
 // ### mark: should be called removeSubstitutions()
 /*!

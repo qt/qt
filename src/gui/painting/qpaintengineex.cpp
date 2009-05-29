@@ -105,7 +105,7 @@ QDebug Q_GUI_EXPORT &operator<<(QDebug &s, const QVectorPath &path)
               vectorPathBounds.x2 - vectorPathBounds.x1, vectorPathBounds.y2 - vectorPathBounds.y1);
     s << "QVectorPath(size:" << path.elementCount()
       << " hints:" << hex << path.hints()
-      << rf << ")";
+      << rf << ')';
     return s;
 }
 #endif
@@ -778,7 +778,7 @@ void QPaintEngineEx::drawTiledPixmap(const QRectF &r, const QPixmap &pixmap, con
 {
     QBrush brush(state()->pen.color(), pixmap);
     QTransform xform;
-    xform.translate(-s.x(), -s.y());
+    xform.translate(r.x() - s.x(), r.y() - s.y());
     brush.setTransform(xform);
 
     qreal pts[] = { r.x(), r.y(),

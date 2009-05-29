@@ -1337,6 +1337,7 @@ QByteArray QImageReader::imageFormat(QIODevice *device)
     \row    \o TIFF   \o Tagged Image File Format
     \row    \o XBM    \o X11 Bitmap
     \row    \o XPM    \o X11 Pixmap
+    \row    \o SVG    \o Scalable Vector Graphics
     \endtable
 
     Reading and writing SVG files is supported through Qt's

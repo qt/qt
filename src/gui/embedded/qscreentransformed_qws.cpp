@@ -206,11 +206,11 @@ bool QTransformedScreen::connect(const QString &displaySpec)
 {
     QString dspec = displaySpec.trimmed();
     if (dspec.startsWith(QLatin1String("Transformed:"), Qt::CaseInsensitive))
-        dspec = dspec.mid(QString(QLatin1String("Transformed:")).size());
+        dspec = dspec.mid(QString::fromLatin1("Transformed:").size());
     else if (!dspec.compare(QLatin1String("Transformed"), Qt::CaseInsensitive))
         dspec = QString();
 
-    const QString displayIdSpec = QString(QLatin1String(" :%1")).arg(displayId);
+    const QString displayIdSpec = QString::fromLatin1(" :%1").arg(displayId);
     if (dspec.endsWith(displayIdSpec))
         dspec = dspec.left(dspec.size() - displayIdSpec.size());
 
@@ -223,7 +223,7 @@ bool QTransformedScreen::connect(const QString &displaySpec)
 
     if (!QScreenDriverFactory::keys().contains(driver, Qt::CaseInsensitive))
         if (!dspec.isEmpty())
-            dspec.prepend(QLatin1String(":"));
+            dspec.prepend(QLatin1Char(':'));
 
     const int id = getDisplayId(dspec);
     QScreen *s = qt_get_screen(id, dspec.toLatin1().constData());
@@ -400,7 +400,19 @@ void QTransformedScreen::blit(const QImage &image, const QPoint &topLeft,
 #endif
 #if defined(QT_QWS_DEPTH_16) || defined(QT_QWS_DEPTH_15) || defined(QT_QWS_DEPTH_12)
     case 16:
+#if defined QT_QWS_ROTATE_BGR
+        if (pixelType() == BGRPixel && image.depth() == 16) {
+            SET_BLIT_FUNC(qbgr565, quint16, trans, func);
+            break;
+        } //fall-through here!!!
+#endif
     case 15:
+#if defined QT_QWS_ROTATE_BGR
+        if (pixelType() == BGRPixel && image.format() == QImage::Format_RGB555) {
+            SET_BLIT_FUNC(qbgr555, qrgb555, trans, func);
+            break;
+        } //fall-through here!!!
+#endif
     case 12:
         if (image.depth() == 16)
             SET_BLIT_FUNC(quint16, quint16, trans, func);

@@ -193,7 +193,7 @@ static QString translationAttempt(const QString &oldTranslation,
     */
     for (k = 0; k < p; k++) {
         if (!met[k])
-            attempt += QString(QLatin1String(" {")) + newNumbers[k] + QString(QLatin1String("?}"));
+            attempt += QLatin1String(" {") + newNumbers[k] + QLatin1String("?}");
     }
 
     /*
@@ -205,8 +205,8 @@ static QString translationAttempt(const QString &oldTranslation,
         for (ell = 0; ell < p; ell++) {
             if (k != ell && oldNumbers[k] == oldNumbers[ell] &&
                     newNumbers[k] < newNumbers[ell])
-                attempt += QString(QLatin1String(" {")) + newNumbers[k] + QString(QLatin1String(" or ")) +
-                           newNumbers[ell] + QString(QLatin1String("?}"));
+                attempt += QLatin1String(" {") + newNumbers[k] + QLatin1String(" or ") +
+                           newNumbers[ell] + QLatin1String("?}");
         }
     }
     return attempt;

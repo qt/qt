@@ -126,6 +126,7 @@ MainWindow::MainWindow(CmdLineParser *cmdLine, QWidget *parent)
     connect(searchEngine, SIGNAL(indexingFinished()), this, SLOT(indexingFinished()));
 
     m_centralWidget->createSearchWidget(searchEngine);
+    m_centralWidget->activateSearchWidget();
 
     QString defWindowTitle = tr("Qt Assistant");
     setWindowTitle(defWindowTitle);
@@ -234,6 +235,7 @@ MainWindow::MainWindow(CmdLineParser *cmdLine, QWidget *parent)
         else
             checkInitState();
     }
+    setTabPosition(Qt::AllDockWidgetAreas, QTabWidget::North);
 }
 
 MainWindow::~MainWindow()
@@ -410,7 +412,7 @@ void MainWindow::setupActions()
     m_closeTabAction->setShortcuts(QKeySequence::Close);
 
     QAction *tmp = menu->addAction(tr("&Quit"), this, SLOT(close()));
-    tmp->setShortcut(tr("CTRL+Q"));
+    tmp->setShortcut(QKeySequence::Quit);
     tmp->setMenuRole(QAction::QuitRole);
 
     menu = menuBar()->addMenu(tr("&Edit"));
@@ -461,7 +463,7 @@ void MainWindow::setupActions()
         QKeySequence(tr("ALT+I")));
     m_viewMenu->addAction(tr("Bookmarks"), this, SLOT(showBookmarks()),
         QKeySequence(tr("ALT+O")));
-    m_viewMenu->addAction(tr("Search"), this, SLOT(showSearch()),
+    m_viewMenu->addAction(tr("Search"), this, SLOT(showSearchWidget()),
         QKeySequence(tr("ALT+S")));
 
     menu = menuBar()->addMenu(tr("&Go"));
@@ -795,23 +797,16 @@ void MainWindow::showAboutDialog()
             aboutDia.setPixmap(pix);
         aboutDia.setWindowTitle(aboutDia.documentTitle());
     } else {
-        // TODO: Remove these variables for 4.6.0.  Must keep this way for 4.5.x due to string freeze.
-        QString edition;
-        QString info;
-        QString moreInfo;
-
         QByteArray resources;
         aboutDia.setText(QString::fromLatin1("<center>"
             "<h3>%1</h3>"
-            "<p>Version %2 %3</p></center>"
-            "<p>%4</p>"
-            "<p>%5</p>"
+            "<p>Version %2</p></center>"
             "<p>Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies)"
             ".</p><p>The program is provided AS IS with NO WARRANTY OF ANY KIND,"
             " INCLUDING THE WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A"
             " PARTICULAR PURPOSE.<p/>")
-            .arg(tr("Qt Assistant")).arg(QLatin1String(QT_VERSION_STR))
-            .arg(edition).arg(info).arg(moreInfo), resources);
+            .arg(tr("Qt Assistant")).arg(QLatin1String(QT_VERSION_STR)),
+            resources);
         QLatin1String path(":/trolltech/assistant/images/assistant-128.png");
         aboutDia.setPixmap(QString(path));
     }
@@ -880,6 +875,11 @@ void MainWindow::showSearch()
     m_centralWidget->activateSearchWidget();
 }
 
+void MainWindow::showSearchWidget()
+{
+    m_centralWidget->activateSearchWidget(true);
+}
+
 void MainWindow::hideSearch()
 {
     m_centralWidget->removeSearchWidget();
@@ -919,25 +919,27 @@ void MainWindow::expandTOC(int depth)
 
 void MainWindow::indexingStarted()
 {
-    m_progressWidget = new QWidget();
-    QLayout* hlayout = new QHBoxLayout(m_progressWidget);
+    if (!m_progressWidget) {
+        m_progressWidget = new QWidget();
+        QLayout* hlayout = new QHBoxLayout(m_progressWidget);
 
-    QSizePolicy sizePolicy(QSizePolicy::Preferred, QSizePolicy::Maximum);
+        QSizePolicy sizePolicy(QSizePolicy::Preferred, QSizePolicy::Maximum);
 
-    QLabel *label = new QLabel(tr("Updating search index"));
-    label->setSizePolicy(sizePolicy);
-    hlayout->addWidget(label);
+        QLabel *label = new QLabel(tr("Updating search index"));
+        label->setSizePolicy(sizePolicy);
+        hlayout->addWidget(label);
 
-    QProgressBar *progressBar = new QProgressBar();
-    progressBar->setRange(0, 0);
-    progressBar->setTextVisible(false);
-    progressBar->setSizePolicy(sizePolicy);
+        QProgressBar *progressBar = new QProgressBar();
+        progressBar->setRange(0, 0);
+        progressBar->setTextVisible(false);
+        progressBar->setSizePolicy(sizePolicy);
 
-    hlayout->setSpacing(6);
-    hlayout->setMargin(0);
-    hlayout->addWidget(progressBar);
+        hlayout->setSpacing(6);
+        hlayout->setMargin(0);
+        hlayout->addWidget(progressBar);
 
-    statusBar()->addPermanentWidget(m_progressWidget);
+        statusBar()->addPermanentWidget(m_progressWidget);
+    }
 }
 
 void MainWindow::indexingFinished()

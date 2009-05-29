@@ -113,8 +113,8 @@
     readLine(), or getChar() to read decrypted data from QSslSocket's
     internal buffer, and you can call write() or putChar() to write
     data back to the peer. QSslSocket will automatically encrypt the
-    written data for you, and emit bytesWritten() once the data has
-    been written to the peer.
+    written data for you, and emit encryptedBytesWritten() once
+    the data has been written to the peer.
 
     As a convenience, QSslSocket supports QTcpSocket's blocking
     functions waitForConnected(), waitForReadyRead(),
@@ -442,8 +442,8 @@ bool QSslSocket::setSocketDescriptor(int socketDescriptor, SocketState state, Op
 {
     Q_D(QSslSocket);
 #ifdef QSSLSOCKET_DEBUG
-    qDebug() << "QSslSocket::setSocketDescriptor(" << socketDescriptor << ","
-             << state << "," << openMode << ")";
+    qDebug() << "QSslSocket::setSocketDescriptor(" << socketDescriptor << ','
+             << state << ',' << openMode << ')';
 #endif
     if (!d->plainSocket)
         d->createPlainSocket(openMode);
@@ -1608,7 +1608,7 @@ void QSslSocket::connectToHostImplementation(const QString &hostName, quint16 po
 
 #ifdef QSSLSOCKET_DEBUG
     qDebug() << "QSslSocket::connectToHostImplementation("
-             << hostName << "," << port << "," << openMode << ")";
+             << hostName << ',' << port << ',' << openMode << ')';
 #endif
     if (!d->plainSocket) {
 #ifdef QSSLSOCKET_DEBUG
@@ -1682,7 +1682,7 @@ qint64 QSslSocket::readData(char *data, qint64 maxlen)
         } while (!d->readBuffer.isEmpty() && readBytes < maxlen);
     }
 #ifdef QSSLSOCKET_DEBUG
-    qDebug() << "QSslSocket::readData(" << (void *)data << "," << maxlen << ") ==" << readBytes;
+    qDebug() << "QSslSocket::readData(" << (void *)data << ',' << maxlen << ") ==" << readBytes;
 #endif
     return readBytes;
 }
@@ -1694,7 +1694,7 @@ qint64 QSslSocket::writeData(const char *data, qint64 len)
 {
     Q_D(QSslSocket);
 #ifdef QSSLSOCKET_DEBUG
-    qDebug() << "QSslSocket::writeData(" << (void *)data << "," << len << ")";
+    qDebug() << "QSslSocket::writeData(" << (void *)data << ',' << len << ')';
 #endif
     if (d->mode == UnencryptedMode && !d->autoStartHandshake)
         return d->plainSocket->write(data, len);
@@ -1999,7 +1999,7 @@ void QSslSocketPrivate::_q_stateChangedSlot(QAbstractSocket::SocketState state)
 {
     Q_Q(QSslSocket);
 #ifdef QSSLSOCKET_DEBUG
-    qDebug() << "QSslSocket::_q_stateChangedSlot(" << state << ")";
+    qDebug() << "QSslSocket::_q_stateChangedSlot(" << state << ')';
 #endif
     q->setSocketState(state);
     emit q->stateChanged(state);
@@ -2012,7 +2012,7 @@ void QSslSocketPrivate::_q_errorSlot(QAbstractSocket::SocketError error)
 {
     Q_Q(QSslSocket);
 #ifdef QSSLSOCKET_DEBUG
-    qDebug() << "QSslSocket::_q_errorSlot(" << error << ")";
+    qDebug() << "QSslSocket::_q_errorSlot(" << error << ')';
     qDebug() << "\tstate =" << q->state();
     qDebug() << "\terrorString =" << q->errorString();
 #endif
@@ -2047,7 +2047,7 @@ void QSslSocketPrivate::_q_bytesWrittenSlot(qint64 written)
 {
     Q_Q(QSslSocket);
 #ifdef QSSLSOCKET_DEBUG
-    qDebug() << "QSslSocket::_q_bytesWrittenSlot(" << written << ")";
+    qDebug() << "QSslSocket::_q_bytesWrittenSlot(" << written << ')';
 #endif
 
     if (mode == QSslSocket::UnencryptedMode)

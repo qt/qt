@@ -200,7 +200,55 @@ QT_BEGIN_NAMESPACE
 /*!
     \property QGraphicsWidget::pos
     \brief the position of the widget
-*/    
+*/
+
+/*!
+    \property QGraphicsWidget::xRotation
+    \since 4.6
+    \brief the rotation angle in degrees around the X axis
+*/
+
+/*!
+    \property QGraphicsWidget::yRotation
+    \since 4.6
+    \brief the rotation angle in degrees around the Y axis
+*/
+
+/*!
+    \property QGraphicsWidget::zRotation
+    \since 4.6
+    \brief the rotation angle in degrees around the Z axis
+*/
+
+/*!
+    \property QGraphicsWidget::xScale
+    \since 4.6
+    \brief the scale factor on the X axis.
+*/
+
+/*!
+    \property QGraphicsWidget::yScale
+    \since 4.6
+    \brief the scale factor on the Y axis.
+*/
+
+/*!
+    \property QGraphicsWidget::horizontalShear
+    \since 4.6
+    \brief the horizontal shear.
+*/
+
+/*!
+    \property QGraphicsWidget::verticalShear
+    \since 4.6
+    \brief the vertical shear.
+*/
+
+/*!
+    \property QGraphicsWidget::transformOrigin
+    \since 4.6
+    \brief the transformation origin for the transformation properties.
+*/
 
 /*!
     Constructs a QGraphicsWidget instance. The optional \a parent argument is
@@ -459,17 +507,19 @@ void QGraphicsWidget::setContentsMargins(qreal left, qreal top, qreal right, qre
 {
     Q_D(QGraphicsWidget);
 
-    if (left == d->leftMargin
-        && top == d->topMargin
-        && right == d->rightMargin
-        && bottom == d->bottomMargin) {
+    if (!d->margins && left == 0 && top == 0 && right == 0 && bottom == 0)
         return;
-    }
+    d->ensureMargins();
+    if (left == d->margins[d->Left]
+        && top == d->margins[d->Top]
+        && right == d->margins[d->Right]
+        && bottom == d->margins[d->Bottom])
+        return;
 
-    d->leftMargin = left;
-    d->topMargin = top;
-    d->rightMargin = right;
-    d->bottomMargin = bottom;
+    d->margins[d->Left] = left;
+    d->margins[d->Top] = top;
+    d->margins[d->Right] = right;
+    d->margins[d->Bottom] = bottom;
 
     if (QGraphicsLayout *l = d->layout)
         l->invalidate();
@@ -490,14 +540,16 @@ void QGraphicsWidget::setContentsMargins(qreal left, qreal top, qreal right, qre
 void QGraphicsWidget::getContentsMargins(qreal *left, qreal *top, qreal *right, qreal *bottom) const
 {
     Q_D(const QGraphicsWidget);
+    if (left || top || right || bottom)
+        d->ensureMargins();
     if (left)
-        *left = d->leftMargin;
+        *left = d->margins[d->Left];
     if (top)
-        *top = d->topMargin;
+        *top = d->margins[d->Top];
     if (right)
-        *right = d->rightMargin;
+        *right = d->margins[d->Right];
     if (bottom)
-        *bottom = d->bottomMargin;
+        *bottom = d->margins[d->Bottom];
 }
 
 /*!
@@ -513,16 +565,23 @@ void QGraphicsWidget::getContentsMargins(qreal *left, qreal *top, qreal *right, 
 void QGraphicsWidget::setWindowFrameMargins(qreal left, qreal top, qreal right, qreal bottom)
 {
     Q_D(QGraphicsWidget);
-    bool unchanged = left == d->leftWindowFrameMargin && top == d->topWindowFrameMargin
-                     && right == d->rightWindowFrameMargin && bottom == d->bottomWindowFrameMargin;
+
+    if (!d->windowFrameMargins && left == 0 && top == 0 && right == 0 && bottom == 0)
+        return;
+    d->ensureWindowFrameMargins();
+    bool unchanged =
+        d->windowFrameMargins[d->Left] == left
+        && d->windowFrameMargins[d->Top] == top
+        && d->windowFrameMargins[d->Right] == right
+        && d->windowFrameMargins[d->Bottom] == bottom;
     if (d->setWindowFrameMargins && unchanged)
         return;
     if (!unchanged)
         prepareGeometryChange();
-    d->leftWindowFrameMargin = left;
-    d->topWindowFrameMargin = top;
-    d->rightWindowFrameMargin = right;
-    d->bottomWindowFrameMargin = bottom;
+    d->windowFrameMargins[d->Left] = left;
+    d->windowFrameMargins[d->Top] = top;
+    d->windowFrameMargins[d->Right] = right;
+    d->windowFrameMargins[d->Bottom] = bottom;
     d->setWindowFrameMargins = true;
 }
 
@@ -536,14 +595,16 @@ void QGraphicsWidget::setWindowFrameMargins(qreal left, qreal top, qreal right, 
 void QGraphicsWidget::getWindowFrameMargins(qreal *left, qreal *top, qreal *right, qreal *bottom) const
 {
     Q_D(const QGraphicsWidget);
+    if (left || top || right || bottom)
+        d->ensureWindowFrameMargins();
     if (left)
-        *left = d->leftWindowFrameMargin;
+        *left = d->windowFrameMargins[d->Left];
     if (top)
-        *top = d->topWindowFrameMargin;
+        *top = d->windowFrameMargins[d->Top];
     if (right)
-        *right = d->rightWindowFrameMargin;
+        *right = d->windowFrameMargins[d->Right];
     if (bottom)
-        *bottom = d->bottomWindowFrameMargin;
+        *bottom = d->windowFrameMargins[d->Bottom];
 }
 
 /*!
@@ -577,8 +638,10 @@ void QGraphicsWidget::unsetWindowFrameMargins()
 QRectF QGraphicsWidget::windowFrameGeometry() const
 {
     Q_D(const QGraphicsWidget);
-    return geometry().adjusted(-d->leftWindowFrameMargin, -d->topWindowFrameMargin,
-                               d->rightWindowFrameMargin, d->bottomWindowFrameMargin);
+    return d->windowFrameMargins
+        ? geometry().adjusted(-d->windowFrameMargins[d->Left], -d->windowFrameMargins[d->Top],
+                              d->windowFrameMargins[d->Right], d->windowFrameMargins[d->Bottom])
+        : geometry();
 }
 
 /*!
@@ -589,8 +652,10 @@ QRectF QGraphicsWidget::windowFrameGeometry() const
 QRectF QGraphicsWidget::windowFrameRect() const
 {
     Q_D(const QGraphicsWidget);
-    return rect().adjusted(-d->leftWindowFrameMargin, -d->topWindowFrameMargin,
-                           d->rightWindowFrameMargin, d->bottomWindowFrameMargin);
+    return d->windowFrameMargins
+        ? rect().adjusted(-d->windowFrameMargins[d->Left], -d->windowFrameMargins[d->Top],
+                          d->windowFrameMargins[d->Right], d->windowFrameMargins[d->Bottom])
+        : rect();
 }
 
 /*!
@@ -699,7 +764,10 @@ QSizeF QGraphicsWidget::sizeHint(Qt::SizeHint which, const QSizeF &constraint) c
     QSizeF sh;
     if (d->layout) {
         sh = d->layout->effectiveSizeHint(which, constraint);
-        sh += QSizeF(d->leftMargin + d->rightMargin, d->topMargin + d->bottomMargin);
+        if (d->margins) {
+            sh += QSizeF(d->margins[d->Left] + d->margins[d->Right],
+                         d->margins[d->Top] + d->margins[d->Bottom]);
+        }
     } else {
         switch (which) {
             case Qt::MinimumSize:
@@ -1127,7 +1195,8 @@ bool QGraphicsWidget::windowFrameEvent(QEvent *event)
         d->windowFrameMousePressEvent(static_cast<QGraphicsSceneMouseEvent *>(event));
         break;
     case QEvent::GraphicsSceneMouseMove:
-        if (d->grabbedSection != Qt::NoSection) {
+        d->ensureWindowData();
+        if (d->windowData->grabbedSection != Qt::NoSection) {
             d->windowFrameMouseMoveEvent(static_cast<QGraphicsSceneMouseEvent *>(event));
             event->accept();
         }
@@ -1182,7 +1251,8 @@ Qt::WindowFrameSection QGraphicsWidget::windowFrameSectionAt(const QPointF &pos)
 
     const qreal cornerMargin = 20;
     //### Not sure of this one, it should be the same value for all edges.
-    const qreal windowFrameWidth = d->leftWindowFrameMargin;
+    const qreal windowFrameWidth = d->windowFrameMargins
+        ? d->windowFrameMargins[d->Left] : 0;
 
     Qt::WindowFrameSection s = Qt::NoSection;
     if (x <= left + cornerMargin) {
@@ -1208,7 +1278,8 @@ Qt::WindowFrameSection QGraphicsWidget::windowFrameSectionAt(const QPointF &pos)
     }
     if (s == Qt::NoSection) {
         QRectF r1 = r;
-        r1.setHeight(d->topWindowFrameMargin);
+        r1.setHeight(d->windowFrameMargins
+                     ? d->windowFrameMargins[d->Top] : 0);
         if (r1.contains(pos))
             s = Qt::TitleBarArea;
     }
@@ -1316,7 +1387,8 @@ bool QGraphicsWidget::event(QEvent *event)
     case QEvent::GraphicsSceneMouseMove:
     case QEvent::GraphicsSceneMouseRelease:
     case QEvent::GraphicsSceneMouseDoubleClick:
-        if (d->hasDecoration() && d->grabbedSection != Qt::NoSection)
+        d->ensureWindowData();
+        if (d->hasDecoration() && d->windowData->grabbedSection != Qt::NoSection)
             return windowFrameEvent(event);
         break;
     case QEvent::GraphicsSceneHoverEnter:
@@ -1669,12 +1741,13 @@ bool QGraphicsWidget::isActiveWindow() const
 void QGraphicsWidget::setWindowTitle(const QString &title)
 {
     Q_D(QGraphicsWidget);
-    d->windowTitle = title;
+    d->ensureWindowData();
+    d->windowData->windowTitle = title;
 }
 QString QGraphicsWidget::windowTitle() const
 {
     Q_D(const QGraphicsWidget);
-    return d->windowTitle;
+    return d->windowData ? d->windowData->windowTitle : QString();
 }
 
 /*!
@@ -2110,11 +2183,12 @@ void QGraphicsWidget::paintWindowFrame(QPainter *painter, const QStyleOptionGrap
     QStyleOptionTitleBar bar;
     bar.QStyleOption::operator=(*option);
     d->initStyleOptionTitleBar(&bar);   // this clear flags in bar.state
-    if (d->buttonMouseOver)
+    d->ensureWindowData();
+    if (d->windowData->buttonMouseOver)
         bar.state |= QStyle::State_MouseOver;
     else
         bar.state &= ~QStyle::State_MouseOver;
-    if (d->buttonSunken)
+    if (d->windowData->buttonSunken)
         bar.state |= QStyle::State_Sunken;
     else
         bar.state &= ~QStyle::State_Sunken;
@@ -2269,7 +2343,7 @@ void QGraphicsWidget::dumpFocusChain()
             qWarning("Found a focus chain that is not circular, (next == 0)");
             break;
         }
-        qDebug() << i++ << QString::number(uint(next), 16) << next->className() << next->data(0) << QString::fromAscii("focusItem:%1").arg(next->hasFocus() ? "1" : "0") << QLatin1String("next:") << next->d_func()->focusNext->data(0) << QLatin1String("prev:") << next->d_func()->focusPrev->data(0);
+        qDebug() << i++ << QString::number(uint(next), 16) << next->className() << next->data(0) << QString::fromAscii("focusItem:%1").arg(next->hasFocus() ? '1' : '0') << QLatin1String("next:") << next->d_func()->focusNext->data(0) << QLatin1String("prev:") << next->d_func()->focusPrev->data(0);
         if (visited.contains(next)) {
             qWarning("Already visited this node. However, I expected to dump until I found myself.");
             break;

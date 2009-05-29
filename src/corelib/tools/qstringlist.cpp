@@ -397,7 +397,7 @@ void QtPrivate::QStringList_replaceInStrings(QStringList *that, const QRegExp &r
     \fn QString QStringList::join(const QString &separator) const
 
     Joins all the string list's strings into a single string with each
-    element separated by the the given \a separator (which can be an
+    element separated by the given \a separator (which can be an
     empty string).
 
     \sa QString::split()
@@ -620,8 +620,6 @@ int QtPrivate::QStringList_lastIndexOf(const QStringList *that, QRegExp &rx, int
     Returns the index position of the first occurrence of \a value in
     the list, searching forward from index position \a from. Returns
     -1 if no item matched.
-
-    By default, this function is case sensitive.
 
     \sa lastIndexOf(), contains(), QList::indexOf()
 */

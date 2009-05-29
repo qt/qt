@@ -824,7 +824,7 @@ void QCompleterPrivate::_q_complete(QModelIndex index, bool highlighted)
     Q_Q(QCompleter);
     QString completion;
 
-    if (!index.isValid() || (index.row() >= proxy->engine->matchCount())) {
+    if (!index.isValid() || (!proxy->showAll && (index.row() >= proxy->engine->matchCount()))) {
         completion = prefix;
     } else {
         QModelIndex si = proxy->mapToSource(index);
@@ -1664,7 +1664,7 @@ QStringList QCompleter::splitPath(const QString& path) const
         doubleSlash.clear();
 #endif
 
-    QRegExp re(QLatin1String("[") + QRegExp::escape(sep) + QLatin1String("]"));
+    QRegExp re(QLatin1Char('[') + QRegExp::escape(sep) + QLatin1Char(']'));
     QStringList parts = pathCopy.split(re);
 
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)

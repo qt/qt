@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2008 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
 ** Contact: Qt Software Information (qt-info@nokia.com)
 **
 ** This file is part of the examples of the Qt Toolkit.
@@ -55,7 +55,7 @@ MainWindow::MainWindow()
     : QWidget(0, Qt::FramelessWindowHint | Qt::WindowStaysOnTopHint)
 {
     QAction *quitAction = new QAction(tr("E&xit"), this);
-    quitAction->setShortcut(tr("Ctrl+Q"));
+    quitAction->setShortcuts(QKeySequence::Quit);
     connect(quitAction, SIGNAL(triggered()), qApp, SLOT(quit()));
 
     QAction *configAction = new QAction(tr("&Select station..."), this);

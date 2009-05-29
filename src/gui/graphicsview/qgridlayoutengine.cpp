@@ -275,7 +275,7 @@ void QGridLayoutRowData::calculateGeometries(int start, int end, qreal targetSiz
                         if (hasIgnoreFlag) {
                             factors[i] = (stretch < 0) ? 1.0 : 0.0;
                         } else {
-                            factors[i] = (stretch < 0) ? sizes[i] : 0.0;                        
+                            factors[i] = (stretch < 0) ? sizes[i] : 0.0;
                         }
                     } else if (stretch == sumStretches) {
                         factors[i] = 1.0;
@@ -615,7 +615,7 @@ QRectF QGridLayoutItem::geometryWithin(qreal x, qreal y, qreal width, qreal heig
         QSizeF size = effectiveMaxSize().boundedTo(QSizeF(cellWidth, cellHeight));
         width = size.width();
         height = size.height();
-        
+
         Qt::Alignment align = q_engine->effectiveAlignment(this);
         switch (align & Qt::AlignHorizontal_Mask) {
         case Qt::AlignHCenter:
@@ -717,7 +717,7 @@ void QGridLayoutItem::dump(int indent) const
 void QGridLayoutRowInfo::insertOrRemoveRows(int row, int delta)
 {
     count += delta;
-    
+
     insertOrRemoveItems(stretches, row, delta);
     insertOrRemoveItems(spacings, row, delta);
     insertOrRemoveItems(alignments, row, delta);
@@ -1076,7 +1076,7 @@ QSizeF QGridLayoutEngine::sizeHint(const QLayoutStyleInfo &styleInfo, Qt::SizeHi
         break;
     }
     return QSizeF();
-} 
+}
 
 QSizePolicy::ControlTypes QGridLayoutEngine::controlTypes(LayoutSide side) const
 {
@@ -1131,9 +1131,9 @@ void QGridLayoutEngine::dump(int indent) const
         QString message = QLatin1String("[ ");
         for (int column = 0; column < internalGridColumnCount(); ++column) {
             message += QString::number(q_items.indexOf(itemAt(row, column))).rightJustified(3);
-            message += QLatin1String(" ");
+            message += QLatin1Char(' ');
         }
-        message += QLatin1String("]");
+        message += QLatin1Char(']');
         qDebug("%*s  %s", indent, "", qPrintable(message));
     }
 
@@ -1150,16 +1150,16 @@ void QGridLayoutEngine::dump(int indent) const
     q_rowData.dump(indent + 2);
 
     qDebug("%*s Geometries output", indent, "");
+    QVector<qreal> *cellPos = &q_yy;
     for (int pass = 0; pass < 2; ++pass) {
-        QVector<qreal> &cellPos = q_yy;
         QString message;
-        for (i = 0; i < cellPos.count(); ++i) {
+        for (i = 0; i < cellPos->count(); ++i) {
             message += QLatin1String((message.isEmpty() ? "[" : ", "));
-            message += QString::number(cellPos.at(i));
+            message += QString::number(cellPos->at(i));
         }
-        message += QLatin1String("]");
+        message += QLatin1Char(']');
         qDebug("%*s %s %s", indent, "", (pass == 0 ? "rows:" : "columns:"), qPrintable(message));
-        cellPos = q_xx;
+        cellPos = &q_xx;
     }
 }
 #endif
@@ -1538,5 +1538,5 @@ void QGridLayoutEngine::ensureGeometries(const QLayoutStyleInfo &styleInfo,
 }
 
 QT_END_NAMESPACE
-        
+
 #endif //QT_NO_GRAPHICSVIEW

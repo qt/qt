@@ -728,6 +728,7 @@ static OSWindowRef qt_mac_create_window(QWidget *, WindowClass wclass, WindowAtt
 static EventTypeSpec window_events[] = {
     { kEventClassWindow, kEventWindowClose },
     { kEventClassWindow, kEventWindowExpanded },
+    { kEventClassWindow, kEventWindowHidden },
     { kEventClassWindow, kEventWindowZoomed },
     { kEventClassWindow, kEventWindowCollapsed },
     { kEventClassWindow, kEventWindowToolbarSwitchMode },
@@ -780,16 +781,6 @@ OSStatus QWidgetPrivate::qt_window_event(EventHandlerCallRef er, EventRef event,
             // By also setting the current modal window back into the event, we
             // help Carbon determining which window is supposed to be raised.
             handled_event = qApp->activePopupWidget() ? true : false;
-            QWidget *top = 0;
-            if (!QApplicationPrivate::tryModalHelper(widget, &top) && top && top != widget){
-                if(!qt_mac_is_macsheet(top) || top->parentWidget() != widget) {
-                    handled_event = true;
-                    WindowPtr topWindowRef = qt_mac_window_for(top);
-                    SetEventParameter(event, kEventParamModalWindow, typeWindowRef, sizeof(topWindowRef), &topWindowRef);
-                    HIModalClickResult clickResult = kHIModalClickIsModal;
-                    SetEventParameter(event, kEventParamModalClickResult, typeModalClickResult, sizeof(clickResult), &clickResult);
-                }
-            }
 #endif
         } else if(ekind == kEventWindowClose) {
             widget->d_func()->close_helper(QWidgetPrivate::CloseWithSpontaneousEvent);
@@ -995,6 +986,19 @@ OSStatus QWidgetPrivate::qt_window_event(EventHandlerCallRef er, EventRef event,
                             qt_event_request_window_change(widget);
                         }
                     }
+                }
+            }
+        } else if (ekind == kEventWindowHidden) {
+            // Make sure that we also hide any visible sheets on our window.
+            // Cocoa does the right thing for us.
+            const QObjectList children = widget->children();
+            const int childCount = children.count();
+            for (int i = 0; i < childCount; ++i) {
+                QObject *obj = children.at(i);
+                if (obj->isWidgetType()) {
+                    QWidget *widget = static_cast<QWidget *>(obj);
+                    if (qt_mac_is_macsheet(widget) && widget->isVisible())
+                        widget->hide();
                 }
             }
         } else {
@@ -1596,24 +1600,6 @@ bool QWidgetPrivate::qt_create_root_win()
     if(!qt_root_win)
         return false;
     qAddPostRoutine(qt_clean_root_win);
-    return true;
-}
-
-bool QWidgetPrivate::qt_recreate_root_win()
-{
-    if(!qt_root_win) //sanity check
-        return false;
-    //store old
-    OSWindowRef old_root_win = qt_root_win;
-    //recreate
-    qt_root_win = 0;
-    qt_create_root_win();
-    //cleanup old window
-#ifdef QT_MAC_USE_COCOA
-    [old_root_win release];
-#else
-    CFRelease(old_root_win);
-#endif
     return true;
 }
 
@@ -4039,8 +4025,8 @@ void QWidgetPrivate::applyMaxAndMinSizeOnWindow()
     NSSize max = NSMakeSize(SF(extra->maxw), SF(extra->maxh));
     NSSize min = NSMakeSize(SF(extra->minw), SF(extra->minh));
 #undef SF
-    [qt_mac_window_for(q) setMinSize:min];
-    [qt_mac_window_for(q) setMaxSize:max];
+    [qt_mac_window_for(q) setContentMinSize:min];
+    [qt_mac_window_for(q) setContentMaxSize:max];
 #endif
 }
 
@@ -4438,11 +4424,13 @@ void QWidgetPrivate::deleteSysExtra()
 
 void QWidgetPrivate::createTLSysExtra()
 {
+    extra->topextra->resizer = 0;
+    extra->topextra->isSetGeometry = 0;
+    extra->topextra->isMove = 0;
+    extra->topextra->wattr = 0;
     extra->topextra->wclass = 0;
     extra->topextra->group = 0;
     extra->topextra->windowIcon = 0;
-    extra->topextra->resizer = 0;
-    extra->topextra->isSetGeometry = 0;
     extra->topextra->savedWindowAttributesFromMaximized = 0;
 }
 
@@ -4491,8 +4479,8 @@ void QWidgetPrivate::registerDropSite(bool on)
     SetControlDragTrackingEnabled(qt_mac_nativeview_for(q), on);
 #else
     NSView *view = qt_mac_nativeview_for(q);
-    if ([view isKindOfClass:[QT_MANGLE_NAMESPACE(QCocoaView) class]]) {
-        [static_cast<QT_MANGLE_NAMESPACE(QCocoaView) *>(view) registerDragTypes:on];
+    if (on && [view isKindOfClass:[QT_MANGLE_NAMESPACE(QCocoaView) class]]) {
+        [static_cast<QT_MANGLE_NAMESPACE(QCocoaView) *>(view) registerDragTypes];
     }
 #endif
 }

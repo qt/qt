@@ -63,7 +63,7 @@
 
 QT_BEGIN_NAMESPACE
 
-class Q_GUI_EXPORT QGraphicsViewPrivate : public QAbstractScrollAreaPrivate
+class QGraphicsViewPrivate : public QAbstractScrollAreaPrivate
 {
     Q_DECLARE_PUBLIC(QGraphicsView)
 public:
@@ -174,13 +174,6 @@ public:
     bool updateSceneSlotReimplementedChecked;
 
     QList<QGraphicsItem *> findItems(const QRegion &exposedRegion, bool *allItems) const;
-
-    void generateStyleOptions(const QList<QGraphicsItem *> &itemList,
-			      QGraphicsItem **itemArray,
-			      QStyleOptionGraphicsItem *styleOptionArray,
-			      const QTransform &worldTransform,
-			      bool allItems,
-			      const QRegion &exposedRegion) const;
 };
 
 QT_END_NAMESPACE

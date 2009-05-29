@@ -208,8 +208,8 @@ private slots:
 
     void indexRowSizeHint();
     void addRowsWhileSectionsAreHidden();
-
     void filterProxyModelCrash();
+    void styleOptionViewItem();
 
     // task-specific tests:
     void task174627_moveLeftToRoot();
@@ -226,6 +226,8 @@ private slots:
     void task244304_clickOnDecoration();
     void task246536_scrollbarsNotWorking();
     void task250683_wrongSectionSize();
+    void task239271_addRowsWithFirstColumnHidden();
+    void task254234_proxySort();
 };
 
 class QtTestModel: public QAbstractItemModel
@@ -2027,6 +2029,8 @@ void tst_QTreeView::scrollTo()
     //
 
     view.show();
+    view.setVerticalScrollMode(QAbstractItemView::ScrollPerItem); //some styles change that in Polish
+   
     view.resize(300, 200);
     //view.verticalScrollBar()->setValue(0);
 
@@ -2039,6 +2043,7 @@ void tst_QTreeView::scrollTo()
     QCOMPARE(view.verticalScrollBar()->value(), 5);
 
     view.scrollTo(model.index(60, 60, QModelIndex()));
+    
     CHECK_VISIBLE(60,60);
     view.scrollTo(model.index(60, 30, QModelIndex()));
     CHECK_VISIBLE(60,30);
@@ -2494,7 +2499,6 @@ void tst_QTreeView::sortByColumn()
     QCOMPARE(view.header()->sortIndicatorSection(), 0);
     QCOMPARE(view.model()->data(view.model()->index(0,0)).toString(), QString::fromLatin1("a"));
     QCOMPARE(view.model()->data(view.model()->index(1,0)).toString(), QString::fromLatin1("b"));
-    
 }
 
 /*
@@ -2846,6 +2850,75 @@ void tst_QTreeView::filterProxyModelCrash()
 
     proxy.invalidate();
     view.repaint(); //used to crash
+}
+
+void tst_QTreeView::styleOptionViewItem()
+{
+    class MyDelegate : public QStyledItemDelegate
+    {
+        public:
+            void paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index ) const
+            {
+                QVERIFY(qstyleoption_cast<const QStyleOptionViewItemV4 *>(&option));
+                QStyleOptionViewItemV4 opt(option);
+                initStyleOption(&opt, index);
+
+                QVERIFY(!opt.text.isEmpty());
+                QCOMPARE(opt.index, index);
+                QCOMPARE(!(opt.features & QStyleOptionViewItemV2::Alternate), !(index.row() % 2));
+                QCOMPARE(!(opt.features & QStyleOptionViewItemV2::HasCheckIndicator), !opt.text.contains("Checkable"));
+
+                if (opt.text.contains("Beginning"))
+                    QCOMPARE(opt.viewItemPosition, QStyleOptionViewItemV4::Beginning);
+
+                if (opt.text.contains("Middle"))
+                    QCOMPARE(opt.viewItemPosition, QStyleOptionViewItemV4::Middle);
+
+                if (opt.text.contains("End"))
+                    QCOMPARE(opt.viewItemPosition, QStyleOptionViewItemV4::End);
+
+                if (opt.text.contains("OnlyOne"))
+                    QCOMPARE(opt.viewItemPosition, QStyleOptionViewItemV4::OnlyOne);
+
+                if (opt.text.contains("Checked"))
+                    QCOMPARE(opt.checkState, Qt::Checked);
+                else
+                    QCOMPARE(opt.checkState, Qt::Unchecked);
+
+                QVERIFY(!opt.text.contains("Assert"));
+
+                QStyledItemDelegate::paint(painter, option, index);
+                count++;
+            }
+            mutable int count;
+    };
+
+    QTreeView view;
+    QStandardItemModel model;
+    view.setModel(&model);
+    MyDelegate delegate;
+    view.setItemDelegate(&delegate);
+    model.appendRow(QList<QStandardItem*>()
+        << new QStandardItem("Beginning") <<  new QStandardItem("Middle") << new QStandardItem("Middle") << new QStandardItem("End") );
+    model.appendRow(QList<QStandardItem*>()
+        << new QStandardItem("Beginning") <<  new QStandardItem("Middle") << new QStandardItem("Middle") << new QStandardItem("End") );
+    model.appendRow(QList<QStandardItem*>()
+        << new QStandardItem("OnlyOne") <<  new QStandardItem("Assert") << new QStandardItem("Assert") << new QStandardItem("Assert") );
+    QStandardItem *checkable = new QStandardItem("Checkable");
+    checkable->setCheckable(true);
+    QStandardItem *checked = new QStandardItem("Checkable Checked");
+    checkable->setCheckable(true);
+    checked->setCheckState(Qt::Checked);
+    model.appendRow(QList<QStandardItem*>()
+        << new QStandardItem("Beginning") <<  checkable << checked << new QStandardItem("End") );
+
+    view.setFirstColumnSpanned(2, QModelIndex(), true);
+    view.setAlternatingRowColors(true);
+
+    delegate.count = 0;
+    view.showMaximized();
+    QTest::qWait(30);
+    QVERIFY(delegate.count >= 13);
 }
 
 class task174627_TreeView : public QTreeView
@@ -3273,7 +3346,6 @@ void tst_QTreeView::task246536_scrollbarsNotWorking()
     QVERIFY(o.count > 0);
 }
 
-
 void tst_QTreeView::task250683_wrongSectionSize()
 {
     QDirModel model;
@@ -3289,6 +3361,70 @@ void tst_QTreeView::task250683_wrongSectionSize()
     QCOMPARE(treeView.header()->sectionSize(0) + treeView.header()->sectionSize(1), treeView.viewport()->width());
 }
 
+void tst_QTreeView::task239271_addRowsWithFirstColumnHidden()
+{
+    class MyDelegate : public QStyledItemDelegate
+    {
+    public:
+        void paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index ) const
+        {
+            paintedIndexes << index;
+            QStyledItemDelegate::paint(painter, option, index);
+        }
+
+        mutable QSet<QModelIndex> paintedIndexes;
+    };
+
+    QTreeView view;
+    QStandardItemModel model;
+    view.setModel(&model);
+    MyDelegate delegate;
+    view.setItemDelegate(&delegate);
+    QStandardItem root0("root0"), root1("root1");
+    model.invisibleRootItem()->appendRow(QList<QStandardItem*>() << &root0 << &root1);
+    QStandardItem sub0("sub0"), sub00("sub00");
+    root0.appendRow(QList<QStandardItem*>() << &sub0 << &sub00);
+    view.expand(root0.index());
+
+    view.hideColumn(0);
+    view.show();
+    QTest::qWait(200);
+    delegate.paintedIndexes.clear();
+    QStandardItem sub1("sub1"), sub11("sub11");
+    root0.appendRow(QList<QStandardItem*>() << &sub1 << &sub11);
+
+    QTest::qWait(200);
+    //items in the 2nd column should have been painted
+    QVERIFY(delegate.paintedIndexes.contains(sub00.index()));
+    QVERIFY(delegate.paintedIndexes.contains(sub11.index()));
+}
+
+void tst_QTreeView::task254234_proxySort()
+{
+    //based on tst_QTreeView::sortByColumn
+    // it used not to work when setting the source of a proxy after enabling sorting
+    QTreeView view;
+    QStandardItemModel model(4,2);
+    model.setItem(0,0,new QStandardItem("b"));
+    model.setItem(1,0,new QStandardItem("d"));
+    model.setItem(2,0,new QStandardItem("c"));
+    model.setItem(3,0,new QStandardItem("a"));
+    model.setItem(0,1,new QStandardItem("e"));
+    model.setItem(1,1,new QStandardItem("g"));
+    model.setItem(2,1,new QStandardItem("h"));
+    model.setItem(3,1,new QStandardItem("f"));
+
+    view.sortByColumn(1);
+    view.setSortingEnabled(true);
+
+    QSortFilterProxyModel proxy;
+    proxy.setDynamicSortFilter(true);
+    view.setModel(&proxy);
+    proxy.setSourceModel(&model);
+    QCOMPARE(view.header()->sortIndicatorSection(), 1);
+    QCOMPARE(view.model()->data(view.model()->index(0,1)).toString(), QString::fromLatin1("h"));
+    QCOMPARE(view.model()->data(view.model()->index(1,1)).toString(), QString::fromLatin1("g"));
+}
 
 QTEST_MAIN(tst_QTreeView)
 #include "tst_qtreeview.moc"

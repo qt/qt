@@ -893,17 +893,68 @@ void QWidgetPrivate::x11UpdateIsOpaque()
     int screen = xinfo.screen();
     if (topLevel && X11->use_xrender
         && X11->argbVisuals[screen] && xinfo.depth() != 32) {
-        // recreate widget
-        QPoint pos = q->pos();
-        bool visible = q->isVisible();
-        if (visible)
-            q->hide();
-        q->setParent(q->parentWidget(), q->windowFlags());
-        q->move(pos);
-        if (visible)
-            q->show();
+
+        if (q->inherits("QGLWidget")) {
+            // We send QGLWidgets a ParentChange event which causes them to
+            // recreate their GL context, which in turn causes them to choose
+            // their visual again. Now that WA_TranslucentBackground is set,
+            // QGLContext::chooseVisual will select an ARGB visual.
+            QEvent e(QEvent::ParentChange);
+            QApplication::sendEvent(q, &e);
+        }
+        else {
+            // For regular widgets, reparent them with their parent which
+            // also triggers a recreation of the native window
+            QPoint pos = q->pos();
+            bool visible = q->isVisible();
+            if (visible)
+                q->hide();
+
+            q->setParent(q->parentWidget(), q->windowFlags());
+            q->move(pos);
+            if (visible)
+                q->show();
+        }
     }
 #endif
+}
+
+/*
+  Returns true if the background is inherited; otherwise returns
+  false.
+
+  Mainly used in the paintOnScreen case.
+*/
+bool QWidgetPrivate::isBackgroundInherited() const
+{
+    Q_Q(const QWidget);
+
+    // windows do not inherit their background
+    if (q->isWindow() || q->windowType() == Qt::SubWindow)
+        return false;
+
+    if (q->testAttribute(Qt::WA_NoSystemBackground) || q->testAttribute(Qt::WA_OpaquePaintEvent))
+        return false;
+
+    const QPalette &pal = q->palette();
+    QPalette::ColorRole bg = q->backgroundRole();
+    QBrush brush = pal.brush(bg);
+
+    // non opaque brushes leaves us no choice, we must inherit
+    if (!q->autoFillBackground() || !brush.isOpaque())
+        return true;
+
+    if (brush.style() == Qt::SolidPattern) {
+        // the background is just a solid color. If there is no
+        // propagated contents, then we claim as performance
+        // optimization that it was not inheritet. This is the normal
+        // case in standard Windows or Motif style.
+        const QWidget *w = q->parentWidget();
+        if (!w->d_func()->isBackgroundInherited())
+            return false;
+    }
+
+    return true;
 }
 
 void QWidget::destroy(bool destroyWindow, bool destroySubWindows)
@@ -2152,7 +2203,7 @@ static void do_size_hints(QWidget* widget, QWExtra *x)
   parentWRect is the geometry of the parent's X rect, measured in
   parent's coord sys
  */
-void QWidgetPrivate::setWSGeometry(bool dontShow)
+void QWidgetPrivate::setWSGeometry(bool dontShow, const QRect &)
 {
     Q_Q(QWidget);
     Q_ASSERT(q->testAttribute(Qt::WA_WState_Created));
@@ -2610,8 +2661,8 @@ int QWidget::metric(PaintDeviceMetric m) const
 
 void QWidgetPrivate::createSysExtra()
 {
-    extra->xDndProxy = 0;
     extra->compress_events = true;
+    extra->xDndProxy = 0;
 }
 
 void QWidgetPrivate::deleteSysExtra()
@@ -2620,8 +2671,11 @@ void QWidgetPrivate::deleteSysExtra()
 
 void QWidgetPrivate::createTLSysExtra()
 {
+    extra->topextra->spont_unmapped = 0;
+    extra->topextra->dnd = 0;
     extra->topextra->validWMState = 0;
     extra->topextra->waitingForMapNotify = 0;
+    extra->topextra->parentWinId = 0;
     extra->topextra->userTimeWindow = 0;
 }
 
@@ -2747,12 +2801,6 @@ void QWidgetPrivate::setWindowOpacity_sys(qreal opacity)
                     32, PropModeReplace, (uchar*)&value, 1);
 }
 
-/*!
-    Returns information about the configuration of the X display used to display
-    the widget.
-
-    \warning This function is only available on X11.
-*/
 const QX11Info &QWidget::x11Info() const
 {
     Q_D(const QWidget);
@@ -2789,13 +2837,6 @@ QWindowSurface *QWidgetPrivate::createDefaultWindowSurface_sys()
     return new QX11WindowSurface(q_func());
 }
 
-/*!
-    Returns the X11 Picture handle of the widget for XRender
-    support. Use of this function is not portable. This function will
-    return 0 if XRender support is not compiled into Qt, if the
-    XRender extension is not supported on the X11 display, or if the
-    handle could not be created.
-*/
 Qt::HANDLE QWidget::x11PictureHandle() const
 {
 #ifndef QT_NO_XRENDER

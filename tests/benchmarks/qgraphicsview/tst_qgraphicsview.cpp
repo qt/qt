@@ -122,6 +122,10 @@ private slots:
     void imageRiver();
     void textRiver_data();
     void textRiver();
+    void moveItemCache_data();
+    void moveItemCache();
+    void paintItemCache_data();
+    void paintItemCache();
 };
 
 tst_QGraphicsView::tst_QGraphicsView()
@@ -684,6 +688,212 @@ void tst_QGraphicsView::textRiver()
 	}
 #ifdef CALLGRIND_DEBUG
 	CALLGRIND_STOP_INSTRUMENTATION
+#endif
+    }
+}
+
+class AnimatedPixmapCacheItem : public QGraphicsPixmapItem
+{
+public:
+    AnimatedPixmapCacheItem(int x, int y, QGraphicsItem *parent = 0)
+        : QGraphicsPixmapItem(parent)
+    {
+        xspeed = x;
+        yspeed = y;
+    }
+
+    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget = 0)
+    {
+        QGraphicsPixmapItem::paint(painter,option,widget);
+        //We just want to wait, and we don't want to process the event loop with qWait
+        QTest::qSleep(3);
+    }
+protected:
+    void advance(int i)
+    {
+        if (!i)
+            return;
+        int x = int(pos().x()) + pixmap().width();
+        x += xspeed;
+        x = (x % (300 + pixmap().width() * 2)) - pixmap().width();
+        int y = int(pos().y()) + pixmap().width();
+        y += yspeed;
+        y = (y % (300 + pixmap().width() * 2)) - pixmap().width();
+        setPos(x, y);
+    }
+
+private:
+    int xspeed;
+    int yspeed;
+};
+
+void tst_QGraphicsView::moveItemCache_data()
+{
+    QTest::addColumn<int>("direction");
+    QTest::addColumn<bool>("rotation");
+    QTest::addColumn<int>("cacheMode");
+    QTest::newRow("Horizontal movement : ItemCoordinate Cache") << 0 << false << (int)QGraphicsItem::ItemCoordinateCache;
+    QTest::newRow("Horizontal movement : DeviceCoordinate Cache") << 0 << false << (int)QGraphicsItem::DeviceCoordinateCache;
+    QTest::newRow("Horizontal movement : No Cache") << 0 << false << (int)QGraphicsItem::NoCache;
+    QTest::newRow("Vertical +  Horizontal movement : ItemCoordinate Cache") << 2 << false <<  (int)QGraphicsItem::ItemCoordinateCache;
+    QTest::newRow("Vertical +  Horizontal movement : DeviceCoordinate Cache") << 2 << false <<  (int)QGraphicsItem::DeviceCoordinateCache;
+    QTest::newRow("Vertical +  Horizontal movement : No Cache") << 2 << false << (int)QGraphicsItem::NoCache;
+    QTest::newRow("Horizontal movement + Rotation : ItemCoordinate Cache") << 0 << true << (int)QGraphicsItem::ItemCoordinateCache;
+    QTest::newRow("Horizontal movement + Rotation : DeviceCoordinate Cache") << 0 << true << (int)QGraphicsItem::DeviceCoordinateCache;
+    QTest::newRow("Horizontal movement + Rotation : No Cache") << 0 << true << (int)QGraphicsItem::NoCache;
+}
+
+void tst_QGraphicsView::moveItemCache()
+{
+    QFETCH(int, direction);
+    QFETCH(bool, rotation);
+    QFETCH(int, cacheMode);
+
+    QGraphicsScene scene(0, 0, 300, 300);
+
+    CountPaintEventView view(&scene);
+    view.resize(600, 600);
+    view.setFrameStyle(0);
+    view.setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    view.setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    view.show();
+
+    QPixmap pix(":/images/wine.jpeg");
+    QVERIFY(!pix.isNull());
+
+    QList<QGraphicsItem *> items;
+    QFile file(":/random.data");
+    QVERIFY(file.open(QIODevice::ReadOnly));
+    QDataStream str(&file);
+    for (int i = 0; i < 50; ++i) {
+        AnimatedPixmapCacheItem *item;
+        if (direction == 0) item = new AnimatedPixmapCacheItem((i % 4) + 1, 0);
+        if (direction == 1) item = new AnimatedPixmapCacheItem(0, (i % 4) + 1);
+        if (direction == 2) item = new AnimatedPixmapCacheItem((i % 4) + 1, (i % 4) + 1);
+        item->setPixmap(pix);
+        item->setCacheMode((QGraphicsItem::CacheMode)cacheMode);
+        if (rotation)
+            item->setTransform(QTransform().rotate(45));
+        int rnd1, rnd2;
+        str >> rnd1 >> rnd2;
+        item->setPos(-pix.width() + rnd1 % (view.width() + pix.width()),
+                     -pix.height() + rnd2 % (view.height() + pix.height()));
+        scene.addItem(item);
+    }
+
+    view.count = 0;
+
+    QBENCHMARK {
+#ifdef CALLGRIND_DEBUG
+        CALLGRIND_START_INSTRUMENTATION
+#endif
+        for (int i = 0; i < 100; ++i) {
+            scene.advance();
+            while (view.count < (i+1))
+                qApp->processEvents();
+        }
+#ifdef CALLGRIND_DEBUG
+        CALLGRIND_STOP_INSTRUMENTATION
+#endif
+    }
+}
+
+class UpdatedPixmapCacheItem : public QGraphicsPixmapItem
+{
+public:
+    UpdatedPixmapCacheItem(bool partial, QGraphicsItem *parent = 0)
+        : QGraphicsPixmapItem(parent), partial(partial)
+    {
+    }
+
+    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget = 0)
+    {
+        QGraphicsPixmapItem::paint(painter,option,widget);
+    }
+protected:
+    void advance(int i)
+    {
+        if (partial)
+            update(QRectF(boundingRect().center().x(), boundingRect().center().x(), 30, 30));
+        else
+            update();
+    }
+
+private:
+    bool partial;
+};
+
+void tst_QGraphicsView::paintItemCache_data()
+{
+    QTest::addColumn<bool>("updatePartial");
+    QTest::addColumn<bool>("rotation");
+    QTest::addColumn<int>("cacheMode");
+    QTest::newRow("Partial Update : ItemCoordinate Cache") << true << false << (int)QGraphicsItem::ItemCoordinateCache;
+    QTest::newRow("Partial Update : DeviceCoordinate Cache") << true << false << (int)QGraphicsItem::DeviceCoordinateCache;
+    QTest::newRow("Partial Update : No Cache") << true << false << (int)QGraphicsItem::NoCache;
+    QTest::newRow("Full Update : ItemCoordinate Cache") << false << false << (int)QGraphicsItem::ItemCoordinateCache;
+    QTest::newRow("Full Update : DeviceCoordinate Cache") << false << false << (int)QGraphicsItem::DeviceCoordinateCache;
+    QTest::newRow("Full Update : No Cache") << false << false << (int)QGraphicsItem::NoCache;
+    QTest::newRow("Partial Update : ItemCoordinate Cache item rotated") << true << true << (int)QGraphicsItem::ItemCoordinateCache;
+    QTest::newRow("Partial Update : DeviceCoordinate Cache item rotated") << true << true << (int)QGraphicsItem::DeviceCoordinateCache;
+    QTest::newRow("Partial Update : No Cache item rotated") << true << true << (int)QGraphicsItem::NoCache;
+    QTest::newRow("Full Update : ItemCoordinate Cache item rotated") << false  << true << (int)QGraphicsItem::ItemCoordinateCache;
+    QTest::newRow("Full Update : DeviceCoordinate Cache item rotated") << false << true << (int)QGraphicsItem::DeviceCoordinateCache;
+    QTest::newRow("Full Update : No Cache item rotated") << false << true <<(int)QGraphicsItem::NoCache;
+}
+
+void tst_QGraphicsView::paintItemCache()
+{
+    QFETCH(bool, updatePartial);
+    QFETCH(bool, rotation);
+    QFETCH(int, cacheMode);
+
+    QGraphicsScene scene(0, 0, 300, 300);
+
+    CountPaintEventView view(&scene);
+    view.resize(600, 600);
+    view.setFrameStyle(0);
+    view.setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    view.setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    view.show();
+
+    QPixmap pix(":/images/wine.jpeg");
+    QVERIFY(!pix.isNull());
+
+    QList<QGraphicsItem *> items;
+    QFile file(":/random.data");
+    QVERIFY(file.open(QIODevice::ReadOnly));
+    QDataStream str(&file);
+    UpdatedPixmapCacheItem *item = new UpdatedPixmapCacheItem(updatePartial);
+    item->setPixmap(pix);
+    item->setCacheMode((QGraphicsItem::CacheMode)cacheMode);
+    if (rotation)
+        item->setTransform(QTransform().rotate(45));
+    item->setPos(-100, -100);
+    scene.addItem(item);
+
+    QPixmap pix2(":/images/wine-big.jpeg");
+    item = new UpdatedPixmapCacheItem(updatePartial);
+    item->setPixmap(pix2);
+    item->setCacheMode((QGraphicsItem::CacheMode)cacheMode);
+    if (rotation)
+        item->setTransform(QTransform().rotate(45));
+    item->setPos(0, 0);
+    scene.addItem(item);
+
+    view.count = 0;
+
+    QBENCHMARK {
+#ifdef CALLGRIND_DEBUG
+        CALLGRIND_START_INSTRUMENTATION
+#endif
+        for (int i = 0; i < 50; ++i) {
+            scene.advance();
+            while (view.count < (i+1))
+                qApp->processEvents();
+        }
+#ifdef CALLGRIND_DEBUG
+        CALLGRIND_STOP_INSTRUMENTATION
 #endif
     }
 }

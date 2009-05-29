@@ -346,7 +346,7 @@ QByteArray QPdf::generateDashes(const QPen &pen)
 {
     QByteArray result;
     ByteStream s(&result);
-    s << "[";
+    s << '[';
 
     QVector<qreal> dasharray = pen.dashPattern();
     qreal w = pen.widthF();
@@ -357,7 +357,7 @@ QByteArray QPdf::generateDashes(const QPen &pen)
         if (dw < 0.0001) dw = 0.0001;
         s << dw;
     }
-    s << "]";
+    s << ']';
     //qDebug() << "dasharray: pen has" << dasharray;
     //qDebug() << "  => " << result;
     return result;
@@ -915,17 +915,17 @@ const char *QPdf::paperSizeToString(QPrinter::PaperSize paperSize)
 QByteArray QPdf::stripSpecialCharacters(const QByteArray &string)
 {
     QByteArray s = string;
-    s.replace(" ", "");
-    s.replace("(", "");
-    s.replace(")", "");
-    s.replace("<", "");
-    s.replace(">", "");
-    s.replace("[", "");
-    s.replace("]", "");
-    s.replace("{", "");
-    s.replace("}", "");
-    s.replace("/", "");
-    s.replace("%", "");
+    s.replace(' ', "");
+    s.replace('(', "");
+    s.replace(')', "");
+    s.replace('<', "");
+    s.replace('>', "");
+    s.replace('[', "");
+    s.replace(']', "");
+    s.replace('{', "");
+    s.replace('}', "");
+    s.replace('/', "");
+    s.replace('%', "");
     return s;
 }
 

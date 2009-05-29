@@ -199,6 +199,7 @@ extern "C" {
     composingText = new QString();
     composing = false;
     sendKeyEvents = true;
+    currentCustomTypes = 0;
     [self setHidden:YES];
     return self;
 }
@@ -213,10 +214,16 @@ extern "C" {
                                                object:self];
 }
 
--(void)registerDragTypes:(bool)accept
+-(void)registerDragTypes
 {
     QMacCocoaAutoReleasePool pool;
-    if (accept) {
+    // Calling registerForDraggedTypes is slow, so only do it once for each widget
+    // or when the custom types change.
+    const QStringList& customTypes = qEnabledDraggedTypes();
+    if (currentCustomTypes == 0 || *currentCustomTypes != customTypes) {
+        if (currentCustomTypes == 0)
+            currentCustomTypes = new QStringList();
+        *currentCustomTypes = customTypes;
         const NSString* mimeTypeGeneric = @"com.trolltech.qt.MimeTypeName";
 	NSMutableArray *supportedTypes = [NSMutableArray arrayWithObjects:NSColorPboardType, 
                                    NSFilenamesPboardType, NSStringPboardType, 
@@ -228,13 +235,10 @@ extern "C" {
                                    NSFilesPromisePboardType, NSInkTextPboardType, 
                                    NSMultipleTextSelectionPboardType, mimeTypeGeneric, nil];
         // Add custom types supported by the application.
-        const QStringList& customTypes = qEnabledDraggedTypes();
         for (int i = 0; i < customTypes.size(); i++) {
            [supportedTypes addObject:reinterpret_cast<const NSString *>(QCFString::toCFStringRef(customTypes[i]))];
         }
         [self registerForDraggedTypes:supportedTypes];
-    } else {
-        [self unregisterDraggedTypes];
     }
 }
 
@@ -283,6 +287,8 @@ extern "C" {
 
 - (NSDragOperation)draggingEntered:(id <NSDraggingInfo>)sender 
 { 
+    if (qwidget->testAttribute(Qt::WA_DropSiteRegistered) == false)
+        return NSDragOperationNone;
     [self addDropData:sender];
     QMimeData *mimeData = dropData;
     if (QDragManager::self()->source())
@@ -416,6 +422,8 @@ extern "C" {
 {
     delete composingText;
     [[NSNotificationCenter defaultCenter] removeObserver:self];
+    delete currentCustomTypes;
+    [self unregisterDraggedTypes];
     [super dealloc];
 }
 
@@ -783,10 +791,22 @@ extern "C" {
     bool wheelOK = false;
     Qt::KeyboardModifiers keyMods = qt_cocoaModifiers2QtModifiers([theEvent modifierFlags]);
 
+    QWidget *widgetToGetMouse = qwidget;
+    if (widgetToGetMouse->testAttribute(Qt::WA_TransparentForMouseEvents)) {
+        // Simulate passing the event through since Cocoa doesn't do that for us.
+        // Start by building a tree up.
+        NSView *candidateView = [self viewUnderTransparentForMouseView:self
+                                                       widget:widgetToGetMouse
+                                                       withWindowPoint:windowPoint];
+        if (candidateView != nil) {
+            widgetToGetMouse = QWidget::find(WId(candidateView));
+        }
+    }
+
     // Mouse wheel deltas seem to tick in at increments of 0.1. Qt widgets
-    // expect the delta to be a multiple of 120. 
+    // expect the delta to be a multiple of 120.
     const int ScrollFactor = 10 * 120;
-    //                                              The qMax(...) factor reduces the 
+    //                                              The qMax(...) factor reduces the
     //                                              acceleration for large wheel deltas.
     int deltaX = [theEvent deltaX] * ScrollFactor * qMax(0.6, 1.1 - qAbs([theEvent deltaX]));
     int deltaY = [theEvent deltaY] * ScrollFactor * qMax(0.6, 1.1 - qAbs([theEvent deltaY]));
@@ -794,10 +814,10 @@ extern "C" {
 
     if (deltaX != 0) {
         QWheelEvent qwe(qlocal, qglobal, deltaX, buttons, keyMods, Qt::Horizontal);
-        qt_sendSpontaneousEvent(qwidget, &qwe);
+        qt_sendSpontaneousEvent(widgetToGetMouse, &qwe);
         wheelOK = qwe.isAccepted();
         if (!wheelOK && QApplicationPrivate::focus_widget
-            && QApplicationPrivate::focus_widget != qwidget) {
+            && QApplicationPrivate::focus_widget != widgetToGetMouse) {
             QWheelEvent qwe2(QApplicationPrivate::focus_widget->mapFromGlobal(qglobal), qglobal,
                              deltaX, buttons, keyMods, Qt::Horizontal);
             qt_sendSpontaneousEvent(QApplicationPrivate::focus_widget, &qwe2);
@@ -807,10 +827,10 @@ extern "C" {
 
     if (deltaY) {
         QWheelEvent qwe(qlocal, qglobal, deltaY, buttons, keyMods, Qt::Vertical);
-        qt_sendSpontaneousEvent(qwidget, &qwe);
+        qt_sendSpontaneousEvent(widgetToGetMouse, &qwe);
         wheelOK = qwe.isAccepted();
         if (!wheelOK && QApplicationPrivate::focus_widget
-            && QApplicationPrivate::focus_widget != qwidget) {
+            && QApplicationPrivate::focus_widget != widgetToGetMouse) {
             QWheelEvent qwe2(QApplicationPrivate::focus_widget->mapFromGlobal(qglobal), qglobal,
                              deltaY, buttons, keyMods, Qt::Vertical);
             qt_sendSpontaneousEvent(QApplicationPrivate::focus_widget, &qwe2);
@@ -822,10 +842,10 @@ extern "C" {
         // Qt doesn't explicitly support wheels with a Z component. In a misguided attempt to
         // try to be ahead of the pack, I'm adding this extra value.
         QWheelEvent qwe(qlocal, qglobal, deltaZ, buttons, keyMods, (Qt::Orientation)3);
-        qt_sendSpontaneousEvent(qwidget, &qwe);
+        qt_sendSpontaneousEvent(widgetToGetMouse, &qwe);
         wheelOK = qwe.isAccepted();
         if (!wheelOK && QApplicationPrivate::focus_widget
-            && QApplicationPrivate::focus_widget != qwidget) {
+            && QApplicationPrivate::focus_widget != widgetToGetMouse) {
             QWheelEvent qwe2(QApplicationPrivate::focus_widget->mapFromGlobal(qglobal), qglobal,
                              deltaZ, buttons, keyMods, (Qt::Orientation)3);
             qt_sendSpontaneousEvent(QApplicationPrivate::focus_widget, &qwe2);

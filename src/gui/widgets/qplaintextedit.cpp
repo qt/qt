@@ -560,7 +560,8 @@ QRectF QPlainTextEditControl::blockBoundingRect(const QTextBlock &block) const {
     if (!currentBlock.isValid())
         return QRectF();
     Q_ASSERT(currentBlock.blockNumber() == currentBlockNumber);
-    QPlainTextDocumentLayout *documentLayout = qobject_cast<QPlainTextDocumentLayout*>(document()->documentLayout());
+    QTextDocument *doc = document();
+    QPlainTextDocumentLayout *documentLayout = qobject_cast<QPlainTextDocumentLayout*>(doc->documentLayout());
     Q_ASSERT(documentLayout);
 
     QPointF offset;
@@ -571,13 +572,22 @@ QRectF QPlainTextEditControl::blockBoundingRect(const QTextBlock &block) const {
         offset.ry() += r.height();
         currentBlock = currentBlock.next();
         ++currentBlockNumber;
+        if (!currentBlock.isVisible()) {
+            currentBlock = doc->findBlockByLineNumber(currentBlock.firstLineNumber());
+            currentBlockNumber = currentBlock.blockNumber();
+        }
         r = documentLayout->blockBoundingRect(currentBlock);
     }
     while (currentBlockNumber > blockNumber && offset.y() >= -textEdit->viewport()->height()) {
         currentBlock = currentBlock.previous();
+        --currentBlockNumber;
+        while (!currentBlock.isVisible()) {
+            currentBlock = currentBlock.previous();
+            --currentBlockNumber;
+        }
         if (!currentBlock.isValid())
             break;
-        --currentBlockNumber;
+
         r = documentLayout->blockBoundingRect(currentBlock);
         offset.ry() -= r.height();
     }
@@ -629,7 +639,7 @@ void QPlainTextEditPrivate::setTopBlock(int blockNumber, int lineNumber, int dx)
 
     if (viewport->updatesEnabled() && viewport->isVisible()) {
         int dy = 0;
-        if (doc->findBlockByLineNumber(control->topBlock).isValid()) {
+        if (doc->findBlockByNumber(control->topBlock).isValid()) {
             dy = (int)(-q->blockBoundingGeometry(block).y())
                  + verticalOffset() - verticalOffset(blockNumber, lineNumber);
         }

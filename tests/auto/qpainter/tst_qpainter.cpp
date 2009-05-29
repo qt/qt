@@ -225,6 +225,8 @@ private slots:
 
     void extendedBlendModes();
 
+    void zeroOpacity();
+
 private:
     void fillData();
     QColor baseColor( int k, int intensity=255 );
@@ -4148,6 +4150,22 @@ void tst_QPainter::extendedBlendModes()
     QVERIFY(testCompositionMode( 63, 127, 127, QPainter::CompositionMode_Exclusion));
     QVERIFY(testCompositionMode( 63,  63,  95, QPainter::CompositionMode_Exclusion));
     QVERIFY(testCompositionMode(191, 191,  96, QPainter::CompositionMode_Exclusion));
+}
+
+void tst_QPainter::zeroOpacity()
+{
+    QImage source(1, 1, QImage::Format_ARGB32_Premultiplied);
+    source.fill(0xffffffff);
+
+    QImage target(1, 1, QImage::Format_RGB32);
+    target.fill(0xff000000);
+
+    QPainter p(&target);
+    p.setOpacity(0.0);
+    p.drawImage(0, 0, source);
+    p.end();
+
+    QCOMPARE(target.pixel(0, 0), 0xff000000);
 }
 
 QTEST_MAIN(tst_QPainter)

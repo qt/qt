@@ -68,19 +68,12 @@ class QStyleOptionTitleBar;
 
 #if !defined(QT_NO_GRAPHICSVIEW) || (QT_EDITION & QT_MODULE_GRAPHICSVIEW) != QT_MODULE_GRAPHICSVIEW
 
-class Q_GUI_EXPORT QGraphicsWidgetPrivate : public QGraphicsItemPrivate
+class QGraphicsWidgetPrivate : public QGraphicsItemPrivate
 {
     Q_DECLARE_PUBLIC(QGraphicsWidget)
 public:
     QGraphicsWidgetPrivate()
-        : leftMargin(0),
-          topMargin(0),
-          rightMargin(0),
-          bottomMargin(0),
-          leftLayoutItemMargin(0),
-          topLayoutItemMargin(0),
-          rightLayoutItemMargin(0),
-          bottomLayoutItemMargin(0),
+        : margins(0),
           layout(0),
           inheritedPaletteResolveMask(0),
           inheritedFontResolveMask(0),
@@ -92,39 +85,22 @@ public:
           focusPrev(0),
           focusChild(0),
           windowFlags(0),
-          hoveredSubControl(QStyle::SC_None),
-          grabbedSection(Qt::NoSection),
-          buttonMouseOver(false),
-          buttonSunken(false),
+          windowData(0),
           setWindowFrameMargins(false),
-          leftWindowFrameMargin(0),
-          topWindowFrameMargin(0),
-          rightWindowFrameMargin(0),
-          bottomWindowFrameMargin(0)
+          windowFrameMargins(0)
     { }
+    virtual ~QGraphicsWidgetPrivate();
 
     void init(QGraphicsItem *parentItem, Qt::WindowFlags wFlags);
     qreal titleBarHeight(const QStyleOptionTitleBar &options) const;
 
     // Margins
-    qreal leftMargin;
-    qreal topMargin;
-    qreal rightMargin;
-    qreal bottomMargin;
-    QRectF contentsRect;
-
-    // Layout item margins
-    void getLayoutItemMargins(qreal *left, qreal *top, qreal *right, qreal *bottom) const;
-    void setLayoutItemMargins(qreal left, qreal top, qreal right, qreal bottom);
-    void setLayoutItemMargins(QStyle::SubElement element, const QStyleOption *opt = 0);
+    enum {Left, Top, Right, Bottom};
+    mutable qreal *margins;
+    void ensureMargins() const;
 
     void fixFocusChainBeforeReparenting(QGraphicsWidget *newParent, QGraphicsScene *newScene = 0);
     void setLayout_helper(QGraphicsLayout *l);
-
-    qreal leftLayoutItemMargin;
-    qreal topLayoutItemMargin;
-    qreal rightLayoutItemMargin;
-    qreal bottomLayoutItemMargin;
 
     // Layouts
     QGraphicsLayout *layout;
@@ -208,20 +184,26 @@ public:
 
     // Windows
     Qt::WindowFlags windowFlags;
-    QString windowTitle;
-    QStyle::SubControl hoveredSubControl;
-    Qt::WindowFrameSection grabbedSection;
-    uint buttonMouseOver : 1;
-    uint buttonSunken : 1;
-    QPointF mouseDelta; // to compensate for small error when interactively resizing
-    QRectF startGeometry;
-    QRect buttonRect;
+    struct WindowData {
+        QString windowTitle;
+        QStyle::SubControl hoveredSubControl;
+        Qt::WindowFrameSection grabbedSection;
+        uint buttonMouseOver : 1;
+        uint buttonSunken : 1;
+        QRectF startGeometry;
+        QRect buttonRect;
+        WindowData()
+            : hoveredSubControl(QStyle::SC_None)
+            , grabbedSection(Qt::NoSection)
+            , buttonMouseOver(false)
+            , buttonSunken(false)
+        {}
+    } *windowData;
+    void ensureWindowData();
 
     bool setWindowFrameMargins;
-    qreal leftWindowFrameMargin;
-    qreal topWindowFrameMargin;
-    qreal rightWindowFrameMargin;
-    qreal bottomWindowFrameMargin;
+    mutable qreal *windowFrameMargins;
+    void ensureWindowFrameMargins() const;
 
 #ifndef QT_NO_ACTION
     QList<QAction *> actions;

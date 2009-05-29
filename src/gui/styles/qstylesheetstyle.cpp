@@ -1555,7 +1555,7 @@ QVector<QCss::StyleRule> QStyleSheetStyle::styleRules(const QWidget *w) const
         if (widCacheIt == styleSheetCache->constEnd()) {
             parser.init(wid->styleSheet());
             if (!parser.parse(&ss)) {
-                parser.init(QLatin1String("* {") + wid->styleSheet() + QLatin1String("}"));
+                parser.init(QLatin1String("* {") + wid->styleSheet() + QLatin1Char('}'));
                 if (!parser.parse(&ss))
                    qWarning("Could not parse stylesheet of widget %p", wid);
             }
@@ -2702,14 +2702,10 @@ void QStyleSheetStyle::polish(QWidget *w)
         QRenderRule rule = renderRule(sa, PseudoElement_None, PseudoClass_Enabled);
         if ((rule.hasBorder() && rule.border()->hasBorderImage())
             || (rule.hasBackground() && !rule.background()->pixmap.isNull())) {
-            QObject::disconnect(sa->horizontalScrollBar(), SIGNAL(valueChanged(int)),
-                             sa, SLOT(update()));
-            QObject::disconnect(sa->verticalScrollBar(), SIGNAL(valueChanged(int)),
-                             sa, SLOT(update()));
             QObject::connect(sa->horizontalScrollBar(), SIGNAL(valueChanged(int)),
-                             sa, SLOT(update()));
+                             sa, SLOT(update()), Qt::UniqueConnection);
             QObject::connect(sa->verticalScrollBar(), SIGNAL(valueChanged(int)),
-                             sa, SLOT(update()));
+                             sa, SLOT(update()), Qt::UniqueConnection);
         }
     }
 #endif
@@ -3030,6 +3026,7 @@ void QStyleSheetStyle::drawComplexControl(ComplexControl cc, const QStyleOptionC
         if (const QStyleOptionToolButton *tool = qstyleoption_cast<const QStyleOptionToolButton *>(opt)) {
             QStyleOptionToolButton toolOpt(*tool);
             rule.configurePalette(&toolOpt.palette, QPalette::ButtonText, QPalette::Button);
+            toolOpt.font = rule.font.resolve(toolOpt.font);
             toolOpt.rect = rule.borderRect(opt->rect);
             bool customArrow = (tool->features & (QStyleOptionToolButton::HasMenu | QStyleOptionToolButton::MenuButtonPopup));
             bool customDropDown = tool->features & QStyleOptionToolButton::MenuButtonPopup;
@@ -4758,7 +4755,7 @@ QSize QStyleSheetStyle::sizeFromContents(ContentsType ct, const QStyleOption *op
     case CT_LineEdit:
 #ifndef QT_NO_SPINBOX
         // ### hopelessly broken QAbstractSpinBox (part 2)
-        if (QAbstractSpinBox *spinBox = qobject_cast<QAbstractSpinBox *>(w->parentWidget())) {
+        if (QAbstractSpinBox *spinBox = qobject_cast<QAbstractSpinBox *>(w ? w->parentWidget() : 0)) {
             QRenderRule rule = renderRule(spinBox, opt);
             if (rule.hasBox() || !rule.hasNativeBorder())
                 return csz;
@@ -4805,13 +4802,10 @@ QSize QStyleSheetStyle::sizeFromContents(ContentsType ct, const QStyleOption *op
             if ((pe == PseudoElement_MenuSeparator) && subRule.hasContentsSize()) {
                 return QSize(sz.width(), subRule.size().height());
             } else if ((pe == PseudoElement_Item) && (subRule.hasBox() || subRule.hasBorder())) {
-                int width = csz.width(), height = qMax(csz.height(), mi->fontMetrics.height());
-                if (!mi->icon.isNull()) {
-                    int iconExtent = pixelMetric(PM_SmallIconSize);
-                    height = qMax(height, mi->icon.actualSize(QSize(iconExtent, iconExtent)).height());
-                }
-                width += mi->tabWidth;
-               return subRule.boxSize(csz.expandedTo(subRule.minimumContentsSize()));
+                int width = csz.width();
+                if (mi->text.contains(QLatin1Char('\t')))
+                    width += 12; //as in QCommonStyle
+                return subRule.boxSize(subRule.adjustSize(QSize(width, csz.height())));
             }
         }
         break;
@@ -5084,9 +5078,12 @@ int QStyleSheetStyle::styleHint(StyleHint sh, const QStyleOption *opt, const QWi
 #ifndef QT_NO_COMBOBOX
             if (qobject_cast<const QComboBox *>(w)) {
                 QAbstractItemView *view = qFindChild<QAbstractItemView *>(w);
-                QRenderRule subRule = renderRule(view, PseudoElement_None);
-                if (subRule.hasBox() || !subRule.hasNativeBorder())
-                    return QFrame::NoFrame;
+                if (view) {
+                    view->ensurePolished();
+                    QRenderRule subRule = renderRule(view, PseudoElement_None);
+                    if (subRule.hasBox() || !subRule.hasNativeBorder())
+                        return QFrame::NoFrame;
+                }
             }
 #endif // QT_NO_COMBOBOX
             break;

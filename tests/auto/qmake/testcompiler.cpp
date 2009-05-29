@@ -56,10 +56,8 @@ static QString targetName( BuildType buildMode, const QString& target, const QSt
         targetName.append(".exe");
         break;
     case Dll: // dll
-        if (version != "") {
-            QStringList ver = QStringList::split(".", version);
-            targetName.append(ver.first());
-        }
+        if (!version.empty())
+            targetName.append(version.section(".", 0, 0));
         targetName.append(".dll");
         break;
     case Lib: // lib

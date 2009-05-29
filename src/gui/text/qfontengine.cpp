@@ -624,6 +624,45 @@ QImage QFontEngine::alphaRGBMapForGlyph(glyph_t glyph, int /* margin */, const Q
     return rgbMask;
 }
 
+QImage QFontEngine::alphaMapForGlyph(glyph_t glyph)
+{
+    glyph_metrics_t gm = boundingBox(glyph);
+    int glyph_x = qFloor(gm.x.toReal());
+    int glyph_y = qFloor(gm.y.toReal());
+    int glyph_width = qCeil((gm.x + gm.width).toReal()) -  glyph_x;
+    int glyph_height = qCeil((gm.y + gm.height).toReal()) - glyph_y;
+
+    if (glyph_width <= 0 || glyph_height <= 0)
+        return QImage();
+    QFixedPoint pt;
+    pt.x = 0;
+    pt.y = -glyph_y; // the baseline
+    QPainterPath path;
+    QImage im(glyph_width + qAbs(glyph_x) + 4, glyph_height, QImage::Format_ARGB32_Premultiplied);
+    im.fill(Qt::transparent);
+    QPainter p(&im);
+    p.setRenderHint(QPainter::Antialiasing);
+    addGlyphsToPath(&glyph, &pt, 1, &path, 0);
+    p.setPen(Qt::NoPen);
+    p.setBrush(Qt::black);
+    p.drawPath(path);
+    p.end();
+
+    QImage indexed(im.width(), im.height(), QImage::Format_Indexed8);
+    QVector<QRgb> colors(256);
+    for (int i=0; i<256; ++i)
+        colors[i] = qRgba(0, 0, 0, i);
+    indexed.setColorTable(colors);
+
+    for (int y=0; y<im.height(); ++y) {
+        uchar *dst = (uchar *) indexed.scanLine(y);
+        uint *src = (uint *) im.scanLine(y);
+        for (int x=0; x<im.width(); ++x)
+            dst[x] = qAlpha(src[x]);
+    }
+
+    return indexed;
+}
 
 void QFontEngine::removeGlyphFromCache(glyph_t)
 {
@@ -876,7 +915,7 @@ void QFontEngine::loadKerningPairs(QFixed scalingFactor)
 end:
     qSort(kerning_pairs);
 //    for (int i = 0; i < kerning_pairs.count(); ++i)
-//        qDebug() << "i" << i << "left_right" << hex << kerning_pairs.at(i).left_right;
+//        qDebug() << 'i' << i << "left_right" << hex << kerning_pairs.at(i).left_right;
 }
 
 #else
@@ -1605,12 +1644,6 @@ bool QFontEngineMulti::canRender(const QChar *string, int len)
     }
 
     return allExist;
-}
-
-QFontEngine *QFontEngineMulti::engine(int at) const
-{
-    Q_ASSERT(at < engines.size());
-    return engines.at(at);
 }
 
 QImage QFontEngineMulti::alphaMapForGlyph(glyph_t)

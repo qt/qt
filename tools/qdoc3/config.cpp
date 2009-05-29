@@ -751,7 +751,7 @@ void Config::load(Location location, const QString& fileName)
                             word += QChar(c.digitValue());
                             SKIP_CHAR();
                         }
-                        else if ((metaCharPos = QString(QLatin1String("abfnrtv")).indexOf(c)) != -1) {
+                        else if ((metaCharPos = QString::fromLatin1("abfnrtv").indexOf(c)) != -1) {
                             word += "\a\b\f\n\r\t\v"[metaCharPos];
                             SKIP_CHAR();
                         }

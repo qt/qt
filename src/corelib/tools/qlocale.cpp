@@ -120,7 +120,7 @@ static char *_qdtoa( NEEDS_VOLATILE double d, int mode, int ndigits, int *decpt,
 Q_CORE_EXPORT char *qdtoa(double d, int mode, int ndigits, int *decpt,
                         int *sign, char **rve, char **digits_str);
 Q_CORE_EXPORT double qstrtod(const char *s00, char const **se, bool *ok);
-Q_CORE_EXPORT qlonglong qstrtoll(const char *nptr, const char **endptr, register int base, bool *ok);
+static qlonglong qstrtoll(const char *nptr, const char **endptr, register int base, bool *ok);
 static qulonglong qstrtoull(const char *nptr, const char **endptr, register int base, bool *ok);
 
 /******************************************************************************
@@ -321,7 +321,7 @@ static QString readEscapedFormatString(const QString &format, int *idx)
 {
     int &i = *idx;
 
-    Q_ASSERT(format.at(i).unicode() == '\'');
+    Q_ASSERT(format.at(i) == QLatin1Char('\''));
     ++i;
     if (i == format.size())
         return QString();
@@ -635,7 +635,7 @@ static QLocale::MeasurementSystem winSystemMeasurementSystem()
         QString iMeasure = QT_WA_INLINE(
                 QString::fromUtf16(reinterpret_cast<ushort*>(output)),
                 QString::fromLocal8Bit(reinterpret_cast<char*>(output)));
-        if (iMeasure == QString::fromLatin1("1")) {
+        if (iMeasure == QLatin1String("1")) {
             return QLocale::ImperialSystem;
         }
     }
@@ -1136,7 +1136,7 @@ static QString macToQtFormat(const QString &sys_fmt)
                 break;
             case 'S': // fractional second
                 if (repeat < 3)
-                    result += QLatin1String("z");
+                    result += QLatin1Char('z');
                 else
                     result += QLatin1String("zzz");
                 break;
@@ -1150,7 +1150,7 @@ static QString macToQtFormat(const QString &sys_fmt)
                 if (repeat >= 2)
                     result += QLatin1String("dd");
                 else
-                    result += QLatin1String("d");
+                    result += QLatin1Char('d');
                 break;
             case 'a':
                 result += QLatin1String("AP");
@@ -1589,7 +1589,7 @@ QDataStream &operator>>(QDataStream &ds, QLocale &l)
        defaults to the default locale (see setDefault()).
     \endlist
 
-    The "C" locale is identical to \l{English}/\l{UnitedStates}.
+    The "C" locale is identical in behavior to \l{English}/\l{UnitedStates}.
 
     Use language() and country() to determine the actual language and
     country values used.
@@ -1632,7 +1632,7 @@ QDataStream &operator>>(QDataStream &ds, QLocale &l)
 
     This enumerated type is used to specify a language.
 
-    \value C The "C" locale is English/UnitedStates.
+    \value C The "C" locale is identical in behavior to English/UnitedStates.
     \value Abkhazian
     \value Afan
     \value Afar
@@ -4671,7 +4671,7 @@ static qulonglong qstrtoull(const char *nptr, const char **endptr, register int 
  * Ignores `locale' stuff.  Assumes that the upper and lower case
  * alphabets and digits are each contiguous.
  */
-Q_CORE_EXPORT qlonglong qstrtoll(const char *nptr, const char **endptr, register int base, bool *ok)
+static qlonglong qstrtoll(const char *nptr, const char **endptr, register int base, bool *ok)
 {
     register const char *s;
     register qulonglong acc;
@@ -5367,6 +5367,14 @@ static Bigint *mult(Bigint *a, Bigint *b)
 
 static Bigint *p5s;
 
+struct p5s_deleter
+{
+    ~p5s_deleter()
+    {
+        Bfree(p5s);
+    }
+};
+
 static Bigint *pow5mult(Bigint *b, int k)
 {
     Bigint *b1, *p5, *p51;
@@ -5388,6 +5396,7 @@ static Bigint *pow5mult(Bigint *b, int k)
         return b;
     if (!(p5 = p5s)) {
         /* first time */
+        static p5s_deleter deleter;
         p5 = p5s = i2b(625);
         p5->next = 0;
     }

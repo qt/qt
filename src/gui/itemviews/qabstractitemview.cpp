@@ -1338,7 +1338,7 @@ QSize QAbstractItemView::iconSize() const
 /*!
     \property QAbstractItemView::textElideMode
 
-    \brief the the position of the "..." in elided text.
+    \brief the position of the "..." in elided text.
 
     The default value for all item views is Qt::ElideRight.
 */
@@ -2165,11 +2165,12 @@ void QAbstractItemView::keyPressEvent(QKeyEvent *event)
         }
 #endif
         bool modified = (event->modifiers() & (Qt::ControlModifier | Qt::AltModifier | Qt::MetaModifier));
-        if (!event->text().isEmpty() && !modified) {
-            if (!edit(currentIndex(), AnyKeyPressed, event))
-                keyboardSearch(event->text());
+        if (!event->text().isEmpty() && !modified && !edit(currentIndex(), AnyKeyPressed, event)) {
+            keyboardSearch(event->text());
+            event->accept();
+        } else {
+            event->ignore();
         }
-        event->ignore();
         break; }
     }
 }
@@ -2844,9 +2845,9 @@ void QAbstractItemView::setIndexWidget(const QModelIndex &index, QWidget *widget
         d->persistent.insert(widget);
         d->addEditor(index, widget, true);
         widget->show();
+        dataChanged(index, index); // update the geometry
         if (!d->delayedPendingLayout)
             widget->setGeometry(visualRect(index));
-        dataChanged(index, index); // update the geometry
     }
 }
 
@@ -3217,9 +3218,9 @@ QStyleOptionViewItem QAbstractItemView::viewOptions() const
     option.state &= ~QStyle::State_MouseOver;
     option.font = font();
 
-#ifdef Q_WS_WIN
-    // Note this is currently required on Windows
-    // do give non-focused item views inactive appearance
+#ifndef Q_WS_MAC
+    // On mac the focus appearance follows window activation
+    // not widget activation
     if (!hasFocus())
         option.state &= ~QStyle::State_Active;
 #endif

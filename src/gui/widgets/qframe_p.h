@@ -58,7 +58,7 @@
 
 QT_BEGIN_NAMESPACE
 
-class Q_GUI_EXPORT QFramePrivate : public QWidgetPrivate
+class QFramePrivate : public QWidgetPrivate
 {
     Q_DECLARE_PUBLIC(QFrame)
 public:
@@ -74,7 +74,6 @@ public:
     short       frameWidth;
     short       leftFrameWidth, rightFrameWidth;
     short       topFrameWidth, bottomFrameWidth;
-    short       oldFrameStyle;
 
     inline void init();
 

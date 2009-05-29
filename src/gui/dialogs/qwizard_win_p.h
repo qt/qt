@@ -94,6 +94,8 @@ public:
     void resizeEvent(QResizeEvent *event);
     void paintEvent(QPaintEvent *event);
     QVistaBackButton *backButton() const { return backButton_; }
+    void disconnectBackButton() { if (backButton_) backButton_->disconnect(); }
+    void hideBackButton() { if (backButton_) backButton_->hide(); }
     void setWindowPosHack();
     QColor basicWindowFrameColor();
     enum VistaState { VistaAero, VistaBasic, Classic, Dirty };

@@ -103,11 +103,11 @@ bool HybridScreen::connect(const QString &displaySpec)
 {
     QString dspec = displaySpec;
     if (dspec.startsWith(QLatin1String("hybrid:"), Qt::CaseInsensitive))
-        dspec = dspec.mid(QString(QLatin1String("hybrid:")).size());
+        dspec = dspec.mid(QString::fromLatin1("hybrid:").size());
     else if (dspec.compare(QLatin1String("hybrid"), Qt::CaseInsensitive) == 0)
         dspec = QString();
 
-    const QString displayIdSpec = QString(QLatin1String(" :%1")).arg(displayId);
+    const QString displayIdSpec = QString::fromLatin1(" :%1").arg(displayId);
     if (dspec.endsWith(displayIdSpec))
         dspec = dspec.left(dspec.size() - displayIdSpec.size());
 

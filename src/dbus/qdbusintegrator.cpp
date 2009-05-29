@@ -74,7 +74,7 @@ static inline QDebug operator<<(QDebug dbg, const QThread *th)
     dbg.nospace() << "QThread(ptr=" << (void*)th;
     if (th && !th->objectName().isEmpty())
         dbg.nospace() << ", name=" << th->objectName();
-    dbg.nospace() << ")";
+    dbg.nospace() << ')';
     return dbg.space();
 }
 
@@ -90,7 +90,7 @@ static inline QDebug operator<<(QDebug dbg, const QDBusConnectionPrivate *conn)
         dbg.nospace() << "same thread";
     else
         dbg.nospace() << conn->thread();
-    dbg.nospace() << ")";
+    dbg.nospace() << ')';
     return dbg.space();
 }
 
@@ -565,7 +565,7 @@ static void huntAndEmit(DBusConnection *connection, DBusMessage *msg,
     QDBusConnectionPrivate::ObjectTreeNode::DataList::ConstIterator it = haystack.children.constBegin();
     QDBusConnectionPrivate::ObjectTreeNode::DataList::ConstIterator end = haystack.children.constEnd();
     for ( ; it != end; ++it)
-        huntAndEmit(connection, msg, needle, *it, isScriptable, isAdaptor, path + QLatin1String("/") + it->name);
+        huntAndEmit(connection, msg, needle, *it, isScriptable, isAdaptor, path + QLatin1Char('/') + it->name);
 
     if (needle == haystack.obj) {
         // is this a signal we should relay?
@@ -1125,12 +1125,7 @@ void QDBusConnectionPrivate::objectDestroyed(QObject *obj)
 void QDBusConnectionPrivate::relaySignal(QObject *obj, const QMetaObject *mo, int signalId,
                                          const QVariantList &args)
 {
-    int mciid = mo->indexOfClassInfo(QCLASSINFO_DBUS_INTERFACE);
-    Q_ASSERT(mciid != -1);
-
-    QMetaClassInfo mci = mo->classInfo(mciid);
-    Q_ASSERT(mci.value());
-    const char *interface = mci.value();
+    QString interface = qDBusInterfaceFromMetaObject(mo);
 
     QMetaMethod mm = mo->method(signalId);
     QByteArray memberName = mm.signature();
@@ -1146,12 +1141,12 @@ void QDBusConnectionPrivate::relaySignal(QObject *obj, const QMetaObject *mo, in
         }
 
     QDBusReadLocker locker(RelaySignalAction, this);
-    QDBusMessage message = QDBusMessage::createSignal(QLatin1String("/"), QLatin1String(interface),
+    QDBusMessage message = QDBusMessage::createSignal(QLatin1String("/"), interface,
                                                       QLatin1String(memberName));
     message.setArguments(args);
     DBusMessage *msg = QDBusMessagePrivate::toDBusMessage(message);
     if (!msg) {
-        qWarning("QDBusConnection: Could not emit signal %s.%s", interface, memberName.constData());
+        qWarning("QDBusConnection: Could not emit signal %s.%s", qPrintable(interface), memberName.constData());
         return;
     }
 

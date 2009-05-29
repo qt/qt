@@ -44,6 +44,7 @@
 #include "installdialog.h"
 #include "fontpanel.h"
 #include "centralwidget.h"
+#include "aboutdialog.h"
 
 #include <QtAlgorithms>
 
@@ -52,6 +53,8 @@
 #include <QtGui/QMessageBox>
 #include <QtGui/QMenu>
 #include <QtGui/QFontDatabase>
+#include <QtGui/QApplication>
+#include <QtGui/QDesktopWidget>
 
 #include <QtHelp/QHelpEngineCore>
 
@@ -59,36 +62,38 @@ QT_BEGIN_NAMESPACE
 
 PreferencesDialog::PreferencesDialog(QHelpEngineCore *helpEngine, QWidget *parent)
     : QDialog(parent)
+    , m_helpEngine(helpEngine)
     , m_appFontChanged(false)
     , m_browserFontChanged(false)
 {
-    m_helpEngine = helpEngine;
     m_ui.setupUi(this);
 
-    connect(m_ui.buttonBox->button(QDialogButtonBox::Ok),
-        SIGNAL(clicked()), this, SLOT(applyChanges()));
-    connect(m_ui.buttonBox->button(QDialogButtonBox::Cancel),
-        SIGNAL(clicked()), this, SLOT(reject()));
+    connect(m_ui.buttonBox->button(QDialogButtonBox::Ok), SIGNAL(clicked()),
+        this, SLOT(applyChanges()));
+    connect(m_ui.buttonBox->button(QDialogButtonBox::Cancel), SIGNAL(clicked()),
+        this, SLOT(reject()));
 
-    m_hideFiltersTab = !m_helpEngine->customValue(QLatin1String("EnableFilterFunctionality"),
-        true).toBool();
-    m_hideDocsTab = !m_helpEngine->customValue(QLatin1String("EnableDocumentationManager"),
-        true).toBool();
+    QLatin1String key("EnableFilterFunctionality");
+    m_hideFiltersTab = !m_helpEngine->customValue(key, true).toBool();
+
+    key = QLatin1String("EnableDocumentationManager");
+    m_hideDocsTab = !m_helpEngine->customValue(key, true).toBool();
 
     if (!m_hideFiltersTab) {
         m_ui.attributeWidget->header()->hide();
         m_ui.attributeWidget->setRootIsDecorated(false);
+
         connect(m_ui.attributeWidget, SIGNAL(itemChanged(QTreeWidgetItem*, int)),
             this, SLOT(updateFilterMap()));
 
         connect(m_ui.filterWidget,
-            SIGNAL(currentItemChanged(QListWidgetItem*, QListWidgetItem*)),
-            this, SLOT(updateAttributes(QListWidgetItem*)));
+            SIGNAL(currentItemChanged(QListWidgetItem*, QListWidgetItem*)), this,
+            SLOT(updateAttributes(QListWidgetItem*)));
 
-        connect(m_ui.filterAddButton, SIGNAL(clicked()),
-            this, SLOT(addFilter()));
-        connect(m_ui.filterRemoveButton, SIGNAL(clicked()),
-            this, SLOT(removeFilter()));
+        connect(m_ui.filterAddButton, SIGNAL(clicked()), this,
+            SLOT(addFilter()));
+        connect(m_ui.filterRemoveButton, SIGNAL(clicked()), this,
+            SLOT(removeFilter()));
 
         updateFilterPage();
     } else {
@@ -106,22 +111,34 @@ PreferencesDialog::PreferencesDialog(QHelpEngineCore *helpEngine, QWidget *paren
     } else {
         m_ui.tabWidget->removeTab(m_ui.tabWidget->indexOf(m_ui.docsTab));
     }
+
     updateFontSettingsPage();
     updateOptionsPage();
 }
 
 PreferencesDialog::~PreferencesDialog()
 {
+    QLatin1String key("");
     if (m_appFontChanged) {
-        m_helpEngine->setCustomValue(QLatin1String("appFont"), m_appFontPanel->selectedFont());
-        m_helpEngine->setCustomValue(QLatin1String("useAppFont"), m_appFontPanel->isChecked());
-        m_helpEngine->setCustomValue(QLatin1String("appWritingSystem"), m_appFontPanel->writingSystem());
+        key = QLatin1String("appFont");
+        m_helpEngine->setCustomValue(key, m_appFontPanel->selectedFont());
+
+        key = QLatin1String("useAppFont");
+        m_helpEngine->setCustomValue(key, m_appFontPanel->isChecked());
+
+        key = QLatin1String("appWritingSystem");
+        m_helpEngine->setCustomValue(key, m_appFontPanel->writingSystem());
     }
 
     if (m_browserFontChanged) {
-        m_helpEngine->setCustomValue(QLatin1String("browserFont"), m_browserFontPanel->selectedFont());
-        m_helpEngine->setCustomValue(QLatin1String("useBrowserFont"), m_browserFontPanel->isChecked());
-        m_helpEngine->setCustomValue(QLatin1String("browserWritingSystem"), m_browserFontPanel->writingSystem());
+        key = QLatin1String("browserFont");
+        m_helpEngine->setCustomValue(key, m_browserFontPanel->selectedFont());
+
+        key = QLatin1String("useBrowserFont");
+        m_helpEngine->setCustomValue(key, m_browserFontPanel->isChecked());
+
+        key = QLatin1String("browserWritingSystem");
+        m_helpEngine->setCustomValue(key, m_browserFontPanel->writingSystem());
     }
 
     if (m_appFontChanged || m_browserFontChanged) {
@@ -129,8 +146,10 @@ PreferencesDialog::~PreferencesDialog()
         emit updateBrowserFont();
     }
 
-    if (!m_ui.homePageLineEdit->text().isEmpty())
-        m_helpEngine->setCustomValue(QLatin1String("homepage"), m_ui.homePageLineEdit->text());
+    if (!m_ui.homePageLineEdit->text().isEmpty()) {
+        key = QLatin1String("homepage");
+        m_helpEngine->setCustomValue(key, m_ui.homePageLineEdit->text());
+    }
 }
 
 void PreferencesDialog::showDialog()
@@ -173,7 +192,7 @@ void PreferencesDialog::updateAttributes(QListWidgetItem *item)
     if (item)
         checkedList = m_filterMap.value(item->text());
     QTreeWidgetItem *itm;
-    for (int i=0; i<m_ui.attributeWidget->topLevelItemCount(); ++i) {
+    for (int i = 0; i < m_ui.attributeWidget->topLevelItemCount(); ++i) {
         itm = m_ui.attributeWidget->topLevelItem(i);
         if (checkedList.contains(itm->text(0)))
             itm->setCheckState(0, Qt::Checked);
@@ -192,7 +211,7 @@ void PreferencesDialog::updateFilterMap()
 
     QStringList newAtts;
     QTreeWidgetItem *itm = 0;
-    for (int i=0; i<m_ui.attributeWidget->topLevelItemCount(); ++i) {
+    for (int i = 0; i < m_ui.attributeWidget->topLevelItemCount(); ++i) {
         itm = m_ui.attributeWidget->topLevelItem(i);
         if (itm->checkState(0) == Qt::Checked)
             newAtts.append(itm->text(0));
@@ -219,8 +238,8 @@ void PreferencesDialog::addFilter()
 
 void PreferencesDialog::removeFilter()
 {
-    QListWidgetItem *item = m_ui.filterWidget
-        ->takeItem(m_ui.filterWidget->currentRow());
+    QListWidgetItem *item =
+        m_ui.filterWidget ->takeItem(m_ui.filterWidget->currentRow());
     if (!item)
         return;
 
@@ -238,25 +257,48 @@ void PreferencesDialog::addDocumentationLocal()
     if (fileNames.isEmpty())
         return;
 
+    QStringList invalidFiles;
+    QStringList alreadyRegistered;
     foreach (const QString &fileName, fileNames) {
-        const QString ns = QHelpEngineCore::namespaceName(fileName);
-        if (ns.isEmpty()) {
-            QMessageBox::warning(this, tr("Add Documentation"),
-                tr("The specified file is not a valid Qt Help File!"));
+        const QString nameSpace = QHelpEngineCore::namespaceName(fileName);
+        if (nameSpace.isEmpty()) {
+            invalidFiles.append(fileName);
             continue;
         }
 
-        if (m_ui.registeredDocsListWidget->findItems(ns, Qt::MatchFixedString).count()) {
-            QMessageBox::warning(this, tr("Add Documentation"),
-                tr("The namespace %1 is already registered!").arg(ns));
-            continue;
+        if (m_ui.registeredDocsListWidget->findItems(nameSpace,
+            Qt::MatchFixedString).count()) {
+                alreadyRegistered.append(nameSpace);
+                continue;
         }
 
         m_helpEngine->registerDocumentation(fileName);
-        m_ui.registeredDocsListWidget->addItem(ns);
-        m_regDocs.append(ns);
-        m_unregDocs.removeAll(ns);
+        m_ui.registeredDocsListWidget->addItem(nameSpace);
+        m_regDocs.append(nameSpace);
+        m_unregDocs.removeAll(nameSpace);
     }
+
+    if (!invalidFiles.isEmpty() || !alreadyRegistered.isEmpty()) {
+        QString message;
+        if (!alreadyRegistered.isEmpty()) {
+            foreach (const QString &ns, alreadyRegistered) {
+                message += tr("The namespace %1 is already registered!")
+                    .arg(QString("<b>%1</b>").arg(ns)) + QLatin1String("<br>");
+            }
+            if (!invalidFiles.isEmpty())
+                message.append(QLatin1String("<br>"));
+        }
+
+        if (!invalidFiles.isEmpty()) {
+            message += tr("The specified file is not a valid Qt Help File!");
+            message.append(QLatin1String("<ul>"));
+            foreach (const QString &file, invalidFiles)
+                message += QLatin1String("<li>") + file + QLatin1String("</li>");
+            message.append(QLatin1String("</ul>"));
+        }
+        QMessageBox::warning(this, tr("Add Documentation"), message);
+    }
+
     updateFilterPage();
 }
 
@@ -362,35 +404,50 @@ void PreferencesDialog::updateFontSettingsPage()
     m_ui.stackedWidget_2->setCurrentIndex(0);
 
     const QString customSettings(tr("Use custom settings"));
-    QFont font = qVariantValue<QFont>(m_helpEngine->customValue(QLatin1String("appFont")));
-    QFontDatabase::WritingSystem writingSystem = static_cast<QFontDatabase::WritingSystem>
-        (m_helpEngine->customValue(QLatin1String("appWritingSystem")).toInt());
-
     m_appFontPanel->setTitle(customSettings);
-    m_appFontPanel->setSelectedFont(font);
-    m_appFontPanel->setWritingSystem(writingSystem);
-    m_appFontPanel->setChecked(m_helpEngine->customValue(QLatin1String("useAppFont")).toBool());
 
-    QFont font2 = qVariantValue<QFont>(m_helpEngine->customValue(QLatin1String("browserFont")));
-    writingSystem = static_cast<QFontDatabase::WritingSystem>
-        (m_helpEngine->customValue(QLatin1String("browserWritingSystem")).toInt());
+    QLatin1String key = QLatin1String("appFont");
+    QFont font = qVariantValue<QFont>(m_helpEngine->customValue(key));
+    m_appFontPanel->setSelectedFont(font);
+
+    key = QLatin1String("appWritingSystem");
+    QFontDatabase::WritingSystem system = static_cast<QFontDatabase::WritingSystem>
+        (m_helpEngine->customValue(key).toInt());
+    m_appFontPanel->setWritingSystem(system);
+
+    key = QLatin1String("useAppFont");
+    m_appFontPanel->setChecked(m_helpEngine->customValue(key).toBool());
 
     m_browserFontPanel->setTitle(customSettings);
-    m_browserFontPanel->setSelectedFont(font2);
-    m_browserFontPanel->setWritingSystem(writingSystem);
-    m_browserFontPanel->setChecked(m_helpEngine->customValue(QLatin1String("useBrowserFont")).toBool());
 
-    connect(m_appFontPanel, SIGNAL(toggled(bool)), this, SLOT(appFontSettingToggled(bool)));
-    connect(m_browserFontPanel, SIGNAL(toggled(bool)), this, SLOT(browserFontSettingToggled(bool)));
+    key = QLatin1String("browserFont");
+    font = qVariantValue<QFont>(m_helpEngine->customValue(key));
+    m_browserFontPanel->setSelectedFont(font);
+
+    key = QLatin1String("browserWritingSystem");
+    system = static_cast<QFontDatabase::WritingSystem>
+        (m_helpEngine->customValue(key).toInt());
+    m_browserFontPanel->setWritingSystem(system);
+
+    key = QLatin1String("useBrowserFont");
+    m_browserFontPanel->setChecked(m_helpEngine->customValue(key).toBool());
+
+    connect(m_appFontPanel, SIGNAL(toggled(bool)), this,
+        SLOT(appFontSettingToggled(bool)));
+    connect(m_browserFontPanel, SIGNAL(toggled(bool)), this,
+        SLOT(browserFontSettingToggled(bool)));
 
     QList<QComboBox*> allCombos = qFindChildren<QComboBox*>(m_appFontPanel);
-    foreach (QComboBox* box, allCombos)
-        connect(box, SIGNAL(currentIndexChanged(int)), this, SLOT(appFontSettingChanged(int)));
+    foreach (QComboBox* box, allCombos) {
+        connect(box, SIGNAL(currentIndexChanged(int)), this,
+            SLOT(appFontSettingChanged(int)));
+    }
 
-    allCombos.clear();
     allCombos = qFindChildren<QComboBox*>(m_browserFontPanel);
-    foreach (QComboBox* box, allCombos)
-        connect(box, SIGNAL(currentIndexChanged(int)), this, SLOT(browserFontSettingChanged(int)));
+    foreach (QComboBox* box, allCombos) {
+        connect(box, SIGNAL(currentIndexChanged(int)), this,
+            SLOT(browserFontSettingChanged(int)));
+    }
 }
 
 void PreferencesDialog::appFontSettingToggled(bool on)
@@ -436,8 +493,8 @@ void PreferencesDialog::updateOptionsPage()
 
 void PreferencesDialog::restoreDefaultHomepage()
 {
-    QString homepage = m_helpEngine->customValue(
-        QLatin1String("defaultHomepage"), QLatin1String("help")).toString();
+    QString homepage = m_helpEngine->customValue(QLatin1String("defaultHomepage"),
+        QLatin1String("help")).toString();
     m_ui.homePageLineEdit->setText(homepage);
 }
 

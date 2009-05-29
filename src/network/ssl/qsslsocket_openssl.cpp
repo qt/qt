@@ -276,7 +276,7 @@ init_context:
         if (first)
             first = false;
         else
-            cipherString.append(":");
+            cipherString.append(':');
         cipherString.append(cipher.name().toLatin1());
     }
 
@@ -482,30 +482,7 @@ void QSslSocketPrivate::resetDefaultCiphers()
 
 QList<QSslCertificate> QSslSocketPrivate::systemCaCertificates()
 {
-#ifdef QQ_OS_UNIX
-    // Check known locations for the system's default bundle.  ### On Windows,
-    // we should use CAPI to find the bundle, and not rely on default unix
-    // locations.
-    const char *standardLocations[] = {"/etc/ssl/certs/",
-#if 0
-                                       // KDE uses KConfig for its SSL store,
-                                       // but it also stores the bundle at
-                                       // this location
-                                       "$HOME/.kde/share/apps/kssl/ca-bundle.crt",
-#endif
-                                       0};
-    const char **it = standardLocations;
-    QStringList nameFilter;
-    nameFilter << QLatin1String("*.pem") << QLatin1String("*.crt");
-    while (*it) {
-        if (QDirIterator(QLatin1String(*it), nameFilter).hasNext())
-            return certificatesFromPath(QLatin1String(*it));
-        ++it;
-    }
-#endif
-
-    // Qt provides a default bundle when we cannot detect the system's default
-    // bundle.
+    // Qt provides a default bundle of certificates
     QFile caBundle(QLatin1String(":/trolltech/network/ssl/qt-ca-bundle.crt"));
     if (caBundle.open(QIODevice::ReadOnly | QIODevice::Text))
         return QSslCertificate::fromDevice(&caBundle);
@@ -523,7 +500,7 @@ void QSslSocketBackendPrivate::startClientEncryption()
 
     // Start connecting. This will place outgoing data in the BIO, so we
     // follow up with calling transmit().
-    testConnection();
+    startHandshake();
     transmit();
 }
 
@@ -536,7 +513,7 @@ void QSslSocketBackendPrivate::startServerEncryption()
 
     // Start connecting. This will place outgoing data in the BIO, so we
     // follow up with calling transmit().
-    testConnection();
+    startHandshake();
     transmit();
 }
 
@@ -624,7 +601,7 @@ void QSslSocketBackendPrivate::transmit()
 #ifdef QSSLSOCKET_DEBUG
             qDebug() << "QSslSocketBackendPrivate::transmit: testing encryption";
 #endif
-            if (testConnection()) {
+            if (startHandshake()) {
 #ifdef QSSLSOCKET_DEBUG
                 qDebug() << "QSslSocketBackendPrivate::transmit: encryption established";
 #endif
@@ -643,7 +620,7 @@ void QSslSocketBackendPrivate::transmit()
         }
 
         // If the request is small and the remote host closes the transmission
-        // after sending, there's a chance that testConnection() will already
+        // after sending, there's a chance that startHandshake() will already
         // have triggered a shutdown.
         if (!ssl)
             continue;
@@ -743,7 +720,7 @@ static QSslError _q_OpenSSL_to_QSslError(int errorCode, const QSslCertificate &c
     return error;
 }
 
-bool QSslSocketBackendPrivate::testConnection()
+bool QSslSocketBackendPrivate::startHandshake()
 {
     Q_Q(QSslSocket);
 
@@ -784,7 +761,7 @@ bool QSslSocketBackendPrivate::testConnection()
             q->setErrorString(QSslSocket::tr("Error during SSL handshake: %1").arg(SSL_ERRORSTR()));
             q->setSocketError(QAbstractSocket::SslHandshakeFailedError);
 #ifdef QSSLSOCKET_DEBUG
-            qDebug() << "QSslSocketBackendPrivate::testConnection: error!" << q->errorString();
+            qDebug() << "QSslSocketBackendPrivate::startHandshake: error!" << q->errorString();
 #endif
             emit q->error(QAbstractSocket::SslHandshakeFailedError);
             q->abort();

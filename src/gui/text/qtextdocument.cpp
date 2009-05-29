@@ -287,7 +287,7 @@ QTextCodec *Qt::codecForHtml(const QByteArray &ba)
     that inform connected editor widgets about the state of the undo/redo
     system.
 
-    \sa QTextCursor QTextEdit \link richtext.html Rich Text Processing\endlink
+    \sa QTextCursor, QTextEdit, \link richtext.html Rich Text Processing\endlink , {Text Object Example}
 */
 
 /*!
@@ -2201,7 +2201,7 @@ void QTextHtmlExporter::emitTextLength(const char *attribute, const QTextLength 
     if (length.type() == QTextLength::PercentageLength)
         html += QLatin1String("%\"");
     else
-        html += QLatin1String("\"");
+        html += QLatin1Char('\"');
 }
 
 void QTextHtmlExporter::emitAlignment(Qt::Alignment align)

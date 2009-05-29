@@ -157,6 +157,16 @@ static bool checkForAlphaPixels(const QImage &img)
     return false;
 }
 
+bool QDirectFBPixmapData::hasAlphaChannel(const QImage &img)
+{
+#ifndef QT_NO_DIRECTFB_OPAQUE_DETECTION
+    return ::checkForAlphaPixels(img);
+#else
+    return img.hasAlphaChannel();
+#endif
+}
+
+
 void QDirectFBPixmapData::fromImage(const QImage &i,
                                     Qt::ImageConversionFlags flags)
 {
@@ -166,7 +176,7 @@ void QDirectFBPixmapData::fromImage(const QImage &i,
     const QImage img = (i.depth() == 1 ? i.convertToFormat(screen->alphaPixmapFormat()) : i);
     if (img.hasAlphaChannel()
 #ifndef QT_NO_DIRECTFB_OPAQUE_DETECTION
-        && (flags & Qt::NoOpaqueDetection || ::checkForAlphaPixels(img))
+        && (flags & Qt::NoOpaqueDetection || QDirectFBPixmapData::hasAlphaChannel(img))
 #endif
         ) {
         alpha = true;
@@ -261,7 +271,7 @@ void QDirectFBPixmapData::fill(const QColor &color)
         forceRaster = false;
         setSerialNumber(++global_ser_no);
         if (!dfbSurface) {
-            qWarning("QDirecttFBPixmapData::fill()");
+            qWarning("QDirectFBPixmapData::fill()");
             invalidate();
             return;
         }
@@ -357,7 +367,7 @@ QImage QDirectFBPixmapData::toImage() const
     return img->copy();
 }
 
-QPaintEngine* QDirectFBPixmapData::paintEngine() const
+QPaintEngine *QDirectFBPixmapData::paintEngine() const
 {
     if (!engine) {
         // QDirectFBPixmapData is also a QCustomRasterPaintDevice, so pass
@@ -368,10 +378,15 @@ QPaintEngine* QDirectFBPixmapData::paintEngine() const
     return engine;
 }
 
-
-QImage* QDirectFBPixmapData::buffer()
+QImage *QDirectFBPixmapData::buffer()
 {
-    lockDirectFB();
+    lockDirectFB(DSLF_READ|DSLF_WRITE);
+    return lockedImage;
+}
+
+QImage * QDirectFBPixmapData::buffer(uint lockFlags)
+{
+    lockDirectFB(lockFlags);
     return lockedImage;
 }
 
@@ -381,3 +396,4 @@ void QDirectFBPixmapData::invalidate()
     alpha = false;
     format = QImage::Format_Invalid;
 }
+

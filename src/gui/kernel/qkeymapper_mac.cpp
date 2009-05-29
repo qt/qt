@@ -161,6 +161,14 @@ Qt::KeyboardModifiers qt_mac_get_modifiers(int keys)
             ret |= Qt::KeyboardModifier(qt_mac_modifier_symbols[i].qt_code);
         }
     }
+    if (qApp->testAttribute(Qt::AA_MacDontSwapCtrlAndMeta)) {
+        Qt::KeyboardModifiers oldModifiers = ret;
+        ret &= ~(Qt::MetaModifier | Qt::ControlModifier);
+        if (oldModifiers & Qt::ControlModifier)
+            ret |= Qt::MetaModifier;
+        if (oldModifiers & Qt::MetaModifier)
+            ret |= Qt::ControlModifier;
+    }
     return ret;
 }
 static int qt_mac_get_mac_modifiers(Qt::KeyboardModifiers keys)
@@ -176,6 +184,15 @@ static int qt_mac_get_mac_modifiers(Qt::KeyboardModifiers keys)
 #endif
             ret |= qt_mac_modifier_symbols[i].mac_code;
         }
+    }
+
+    if (qApp->testAttribute(Qt::AA_MacDontSwapCtrlAndMeta)) {
+        int oldModifiers = ret;
+        ret &= ~(controlKeyBit | cmdKeyBit);
+        if (oldModifiers & controlKeyBit)
+            ret |= cmdKeyBit;
+        if (oldModifiers & cmdKeyBit)
+            ret |= controlKeyBit;
     }
     return ret;
 }

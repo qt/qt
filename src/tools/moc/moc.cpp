@@ -752,14 +752,14 @@ void Moc::generate(FILE *out)
 
 
     if (!noInclude) {
-        if (includePath.size() && includePath.right(1) != "/")
-            includePath += "/";
+        if (includePath.size() && !includePath.endsWith('/'))
+            includePath += '/';
         for (int i = 0; i < includeFiles.size(); ++i) {
             QByteArray inc = includeFiles.at(i);
             if (inc[0] != '<' && inc[0] != '"') {
                 if (includePath.size() && includePath != "./")
                     inc.prepend(includePath);
-                inc = "\"" + inc + "\"";
+                inc = '\"' + inc + '\"';
             }
             fprintf(out, "#include %s\n", inc.constData());
         }

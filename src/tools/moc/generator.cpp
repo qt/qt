@@ -1161,8 +1161,8 @@ void Generator::_generateFunctions(QList<FunctionDef> &list, int type)
         for (int j = 0; j < f.arguments.count(); ++j) {
             const ArgumentDef &a = f.arguments.at(j);
             if (j) {
-                sig += ",";
-                arguments += ",";
+                sig += ',';
+                arguments += ',';
             }
             sig += a.normalizedType;
             arguments += a.name;
