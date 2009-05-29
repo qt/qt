@@ -39,6 +39,8 @@
 **
 ****************************************************************************/
 
+#define QGRAPHICSITEM_NO_ITEMCHANGE
+
 /*!
     \class QGraphicsItem
     \brief The QGraphicsItem class is the base class for all graphical
@@ -2036,8 +2038,12 @@ qreal QGraphicsItem::effectiveOpacity() const
 void QGraphicsItem::setOpacity(qreal opacity)
 {
     // Notify change.
+#ifndef QGRAPHICSITEM_NO_ITEMCHANGE
     const QVariant newOpacityVariant(itemChange(ItemOpacityChange, double(opacity)));
     qreal newOpacity = newOpacityVariant.toDouble();
+#else
+    qreal newOpacity = opacity;
+#endif
 
     // Normalize.
     newOpacity = qBound<qreal>(0.0, newOpacity, 1.0);
@@ -2049,7 +2055,9 @@ void QGraphicsItem::setOpacity(qreal opacity)
     d_ptr->opacity = newOpacity;
 
     // Notify change.
+#ifndef QGRAPHICSITEM_NO_ITEMCHANGE
     itemChange(ItemOpacityHasChanged, newOpacity);
+#endif
 
     // Update.
     if (d_ptr->scene)
@@ -2499,10 +2507,14 @@ void QGraphicsItemPrivate::setPosHelper(const QPointF &pos)
         return;
 
     // Notify the item that the position is changing.
+#ifndef QGRAPHICSITEM_NO_ITEMCHANGE
     const QVariant newPosVariant(q->itemChange(QGraphicsItem::ItemPositionChange, pos));
     QPointF newPos = newPosVariant.toPointF();
     if (newPos == this->pos)
         return;
+#else
+    QPointF newPos = pos;
+#endif
 
     // Update and repositition.
     inSetPosHelper = 1;
@@ -2512,7 +2524,9 @@ void QGraphicsItemPrivate::setPosHelper(const QPointF &pos)
     this->pos = newPos;
 
     // Send post-notification.
+#ifndef QGRAPHICSITEM_NO_ITEMCHANGE
     q->itemChange(QGraphicsItem::ItemPositionHasChanged, newPosVariant);
+#endif
     inSetPosHelper = 0;
 }
 
@@ -2874,18 +2888,22 @@ void QGraphicsItem::setMatrix(const QMatrix &matrix, bool combine)
         return;
 
     // Notify the item that the transformation matrix is changing.
+#ifndef QGRAPHICSITEM_NO_ITEMCHANGE
     const QVariant newTransformVariant(itemChange(ItemTransformChange,
                                                   qVariantFromValue<QTransform>(newTransform)));
     newTransform = qVariantValue<QTransform>(newTransformVariant);
     if (*d_ptr->transform == newTransform)
         return;
+#endif
 
     // Update and set the new transformation.
     prepareGeometryChange();
     *d_ptr->transform = newTransform;
 
     // Send post-notification.
+#ifndef QGRAPHICSITEM_NO_ITEMCHANGE
     itemChange(ItemTransformHasChanged, newTransformVariant);
+#endif
 }
 
 /*!
