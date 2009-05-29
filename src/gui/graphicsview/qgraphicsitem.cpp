@@ -1997,15 +1997,16 @@ qreal QGraphicsItem::effectiveOpacity() const
     if (!d_ptr->parent)
         return d_ptr->opacity;
 
-    QGraphicsItem::GraphicsItemFlags myFlags = flags();
-    QGraphicsItem::GraphicsItemFlags parentFlags = d_ptr->parent ? d_ptr->parent->flags() : QGraphicsItem::GraphicsItemFlags(0);
+    int myFlags = d_ptr->flags;
+    int parentFlags = d_ptr->parent ? d_ptr->parent->d_ptr->flags : 0;
 
     // If I have a parent, and I don't ignore my parent's opacity, and my
     // parent propagates to me, then combine my local opacity with my parent's
     // effective opacity into my effective opacity.
     if (!(myFlags & QGraphicsItem::ItemIgnoresParentOpacity)
-        && !(parentFlags & QGraphicsItem::ItemDoesntPropagateOpacityToChildren))
+        && !(parentFlags & QGraphicsItem::ItemDoesntPropagateOpacityToChildren)) {
         return d_ptr->opacity * d_ptr->parent->effectiveOpacity();
+    }
 
     return d_ptr->opacity;
 }
@@ -3793,7 +3794,7 @@ void QGraphicsItemPrivate::resolveDepth(int parentDepth)
 */
 void QGraphicsItemPrivate::addChild(QGraphicsItem *child)
 {
-    child->d_ptr->siblingIndex = children.size();
+    needSortChildren = 1;
     children.append(child);
 }
 
@@ -3802,14 +3803,7 @@ void QGraphicsItemPrivate::addChild(QGraphicsItem *child)
 */
 void QGraphicsItemPrivate::removeChild(QGraphicsItem *child)
 {
-    int idx = child->d_ptr->siblingIndex;
-    int size = children.size();
-    for (int i = idx; i < size - 1; ++i) {
-        QGraphicsItem *p = children[i + 1];
-        children[i] = p;
-        p->d_ptr->siblingIndex = i;
-    }
-    children.removeLast();
+    children.removeOne(child);
 }
 
 /*!

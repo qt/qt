@@ -116,7 +116,6 @@ public:
         scene(0),
         parent(0),
         transform(0),
-        siblingIndex(-1),
         index(-1),
         depth(0),
         acceptedMouseButtons(0x1f),
@@ -141,6 +140,7 @@ public:
         dirtyClipPath(1),
         emptyClipPath(0),
         inSetPosHelper(0),
+        needSortChildren(1),
         flags(0),
         dirtyChildrenBoundingRect(1),
         inDirtyList(0),
@@ -312,7 +312,6 @@ public:
     QList<QGraphicsItem *> children;
     QTransform *transform;
     QTransform deviceTransform;
-    int siblingIndex;
     int index;
     int depth;
 
@@ -339,7 +338,8 @@ public:
     quint32 dirtyClipPath : 1;
     quint32 emptyClipPath : 1;
     quint32 inSetPosHelper : 1;
-    quint32 unused : 3;
+    quint32 needSortChildren : 1;
+    quint32 unused : 2;
 
     // New 32 bits
     quint32 flags : 11;

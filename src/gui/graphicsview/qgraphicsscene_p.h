@@ -116,6 +116,7 @@ public:
     QList<QGraphicsItem *> pendingUpdateItems;
     QList<QGraphicsItem *> unpolishedItems;
     QList<QGraphicsItem *> topLevelItems;
+    bool needSortTopLevelItems;
     QMap<QGraphicsItem *, QPointF> movingItemsInitialPositions;
     void registerTopLevelItem(QGraphicsItem *item);
     void unregisterTopLevelItem(QGraphicsItem *item);

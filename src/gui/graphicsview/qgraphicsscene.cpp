@@ -339,6 +339,7 @@ QGraphicsScenePrivate::QGraphicsScenePrivate()
       calledEmitUpdated(false),
       processDirtyItemsEmitted(false),
       selectionChanging(0),
+      needSortTopLevelItems(true),
       regenerateIndex(true),
       purgePending(false),
       indexTimerId(0),
@@ -631,7 +632,7 @@ void QGraphicsScenePrivate::_q_emitUpdated()
 */
 void QGraphicsScenePrivate::registerTopLevelItem(QGraphicsItem *item)
 {
-    item->d_ptr->siblingIndex = topLevelItems.size();
+    needSortTopLevelItems = true;
     topLevelItems.append(item);
 }
 
@@ -640,14 +641,7 @@ void QGraphicsScenePrivate::registerTopLevelItem(QGraphicsItem *item)
 */
 void QGraphicsScenePrivate::unregisterTopLevelItem(QGraphicsItem *item)
 {
-    int idx = item->d_ptr->siblingIndex;
-    int size = topLevelItems.size();
-    for (int i = idx; i < size - 1; ++i) {
-        QGraphicsItem *p = topLevelItems[i + 1];
-        topLevelItems[i] = p;
-        p->d_ptr->siblingIndex = i;
-    }
-    topLevelItems.removeLast();
+    topLevelItems.removeOne(item);
 }
 
 /*!
@@ -1910,7 +1904,7 @@ inline bool qt_closestLeaf(const QGraphicsItem *item1, const QGraphicsItem *item
     if (f1 != f2) return f2;
     qreal z1 = d1->z;
     qreal z2 = d2->z;
-    return z1 != z2 ? z1 > z2 : d1->siblingIndex > d2->siblingIndex;
+    return z1 > z2;
 }
 
 static inline bool qt_notclosestLeaf(const QGraphicsItem *item1, const QGraphicsItem *item2)
@@ -5100,9 +5094,16 @@ void QGraphicsScenePrivate::drawSubtreeRecursive(QGraphicsItem *item, QPainter *
     }
 
     // Find and sort children.
-    QList<QGraphicsItem *> children = item ? item->d_ptr->children : topLevelItems;
-    if (!dontDrawChildren)
-        qSort(children.begin(), children.end(), qt_notclosestLeaf);
+    QList<QGraphicsItem *> &children = item ? item->d_ptr->children : topLevelItems;
+    if (!dontDrawChildren) {
+        if (item && item->d_ptr->needSortChildren) {
+            item->d_ptr->needSortChildren = 0;
+            qStableSort(children.begin(), children.end(), qt_notclosestLeaf);
+        } else if (!item && needSortTopLevelItems) {
+            needSortTopLevelItems = false;
+            qStableSort(children.begin(), children.end(), qt_notclosestLeaf);
+        }
+    }
 
     // Draw children behind
     int i;
