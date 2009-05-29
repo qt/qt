@@ -66,6 +66,7 @@ private slots:
     void filterMouseEvents();
     void requestSoftwareInputPanel();
     void closeSoftwareInputPanel();
+    void selections();
 };
 
 void tst_QInputContext::maximumTextLength()
@@ -189,6 +190,24 @@ void tst_QInputContext::closeSoftwareInputPanel()
     // Testing that panel closes when focusing non-aware widget.
     QTest::mouseClick(rb, Qt::LeftButton, Qt::NoModifier, QPoint(5, 5));
     QCOMPARE(ic2->lastType, QEvent::CloseSoftwareInputPanel);
+}
+
+void tst_QInputContext::selections()
+{
+    QLineEdit le;
+    le.setText("Test text");
+    le.setSelection(2, 2);
+    QCOMPARE(le.inputMethodQuery(Qt::ImCursorPosition).toInt(), 4);
+    QCOMPARE(le.inputMethodQuery(Qt::ImAnchorPosition).toInt(), 2);
+
+    QList<QInputMethodEvent::Attribute> attributes;
+    attributes.append(QInputMethodEvent::Attribute(QInputMethodEvent::Selection, 5, 3, QVariant()));
+    QInputMethodEvent event("", attributes);
+    QApplication::sendEvent(&le, &event);
+    QCOMPARE(le.cursorPosition(), 8);
+    QCOMPARE(le.selectionStart(), 5);
+    QCOMPARE(le.inputMethodQuery(Qt::ImCursorPosition).toInt(), 8);
+    QCOMPARE(le.inputMethodQuery(Qt::ImAnchorPosition).toInt(), 5);
 }
 
 QTEST_MAIN(tst_QInputContext)
