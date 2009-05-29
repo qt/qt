@@ -651,6 +651,11 @@ bool ProcessAST::visit(AST::UiArrayBinding *node)
 
     accept(node->members);
 
+    // For the DOM, store the position of the T_LBRACKET upto the T_RBRACKET as the range:
+    Property* prop = currentProperty();
+    prop->listValueRange.offset = node->lbracketToken.offset;
+    prop->listValueRange.length = node->rbracketToken.offset + node->rbracketToken.length - node->lbracketToken.offset;
+
     while (propertyCount--)
         _stateStack.pop();
 

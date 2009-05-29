@@ -262,6 +262,9 @@ public:
     QList<QmlDomValue> values() const;
     void setValues(const QList<QmlDomValue> &);
 
+    int position() const;
+    int length() const;
+
 private:
     friend class QmlDomValue;
     QSharedDataPointer<QmlDomValuePrivate> d;
