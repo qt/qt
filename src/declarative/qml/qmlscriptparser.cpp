@@ -532,6 +532,7 @@ bool ProcessAST::visit(AST::UiPublicMember *node)
 
         if (node->expression) { // default value
             property.defaultValue = new Property;
+            property.defaultValue->parent = _stateStack.top().object;
             Value *value = new Value;
             value->location = location(node->expression->firstSourceLocation(),
                                        node->expression->lastSourceLocation());
