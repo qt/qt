@@ -142,12 +142,12 @@ void tst_QInputContext::requestSoftwareInputPanel()
     QApplication::setActiveWindow(&w);
 
     // Testing single click panel activation.
-    QApplication::setTwoClicksToRequestSIP(false);
+    qApp->setAutoSipOnMouseFocus(true);
     QTest::mouseClick(le2, Qt::LeftButton, Qt::NoModifier, QPoint(5, 5));
     QCOMPARE(ic2->lastType, QEvent::RequestSoftwareInputPanel);
 
     // Testing double click panel activation.
-    QApplication::setTwoClicksToRequestSIP(true);
+    qApp->setAutoSipOnMouseFocus(false);
     QTest::mouseClick(le1, Qt::LeftButton, Qt::NoModifier, QPoint(5, 5));
     QVERIFY(ic1->lastType != QEvent::RequestSoftwareInputPanel);
     QTest::mouseClick(le1, Qt::LeftButton, Qt::NoModifier, QPoint(5, 5));
