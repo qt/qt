@@ -2013,8 +2013,7 @@ void QAbstractItemView::keyPressEvent(QKeyEvent *event)
         break;
     case Qt::Key_Back:
         if (QApplication::keypadNavigationEnabled() && hasEditFocus()) {
-            if (QSoftKeyStack *stack = QSoftKeyStack::softKeyStackOfWidget(this))
-                stack->pop();
+            QKeyEventSoftKey::removeSoftkey(this);
             setEditFocus(false);
         } else {
             event->ignore();

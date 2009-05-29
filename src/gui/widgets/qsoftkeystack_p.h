@@ -98,6 +98,7 @@ class QKeyEventSoftKey : QObject
 public:
     QKeyEventSoftKey(QSoftKeyAction *softKeyAction, Qt::Key key, QObject *parent);
     static void addSoftKey(QSoftKeyAction::StandardRole standardRole, Qt::Key key, QWidget *actionWidget);
+    static void removeSoftkey(QWidget *focussedWidget);
 private:
     QSoftKeyAction *m_softKeyAction;
     Qt::Key m_key;

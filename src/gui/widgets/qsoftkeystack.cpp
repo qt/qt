@@ -284,7 +284,16 @@ void QKeyEventSoftKey::addSoftKey(QSoftKeyAction::StandardRole standardRole, Qt:
     QSoftKeyAction *action = new QSoftKeyAction(standardRole, actionWidget);
     QKeyEventSoftKey *softKey = new QKeyEventSoftKey(action, key, actionWidget);
     connect(action, SIGNAL(triggered()), softKey, SLOT(sendKeyEvent()));
-    stack->push(action);
+    stack->popandPush(action);
+}
+
+void QKeyEventSoftKey::removeSoftkey(QWidget *focussedWidget)
+{
+    QSoftKeyStack *stack = QSoftKeyStack::softKeyStackOfWidget(focussedWidget);
+    if (!stack)
+        return;
+    QList<QSoftKeyAction*> actionList = menuActionList(focussedWidget);
+    stack->popandPush(actionList);
 }
 
 void QKeyEventSoftKey::sendKeyEvent()
