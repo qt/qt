@@ -651,9 +651,8 @@ void QCoeFepInputContext::GetCursorSelectionForFep(TCursorSelection& aCursorSele
     if (!w)
         return;
 
-    QVariant cursorVar = w->inputMethodQuery(Qt::ImCursorPosition);
-    int cursor = cursorVar.toInt() + m_preeditString.size();
-    int anchor = cursor - w->inputMethodQuery(Qt::ImCurrentSelection).toString().size();
+    int cursor = w->inputMethodQuery(Qt::ImCursorPosition).toInt() + m_preeditString.size();
+    int anchor = w->inputMethodQuery(Qt::ImAnchorPosition).toInt() + m_preeditString.size();
     aCursorSelection.iAnchorPos = anchor;
     aCursorSelection.iCursorPos = cursor;
 }
