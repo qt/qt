@@ -204,7 +204,7 @@ static void mapS60MouseEventTypeToQt(QEvent::Type *type, Qt::MouseButton *button
         *type = QEvent::MouseButtonDblClick;
     }
 
-    if (*type == QEvent::MouseButtonPress)
+    if (*type == QEvent::MouseButtonPress || *type == QEvent::MouseButtonDblClick)
         QApplicationPrivate::mouse_buttons = QApplicationPrivate::mouse_buttons | (*button);
     else if (*type == QEvent::MouseButtonRelease)
         QApplicationPrivate::mouse_buttons = QApplicationPrivate::mouse_buttons &(~(*button));
@@ -313,7 +313,7 @@ void QSymbianControl::HandleLongTapEventL( const TPoint& aPenEventLocation, cons
     QMouseEvent mEvent(QEvent::MouseButtonPress, alienWidget->mapFrom(qwidget, widgetPos), globalPos,
         Qt::RightButton, QApplicationPrivate::mouse_buttons, Qt::NoModifier);
     sendMouseEvent(alienWidget, &mEvent);
-    m_previousEventLongTap = true;
+    m_previousEventLongTap = false;
 }
 
 void QSymbianControl::HandlePointerEventL(const TPointerEvent& pEvent)
@@ -342,7 +342,7 @@ void QSymbianControl::HandlePointerEventL(const TPointerEvent& pEvent)
     TPoint controlScreenPos = PositionRelativeToScreen();
     QPoint globalPos = QPoint(controlScreenPos.iX, controlScreenPos.iY) + widgetPos;
     
-    if (type == QEvent::MouseButtonPress)
+    if (type == QEvent::MouseButtonPress || type == QEvent::MouseButtonDblClick)
     {
         // get the button press target
         alienWidget = qwidget->childAt(widgetPos);
@@ -362,7 +362,7 @@ void QSymbianControl::HandlePointerEventL(const TPointerEvent& pEvent)
     alienWidget = S60->mousePressTarget;
 
     if (alienWidget != S60->lastPointerEventTarget)
-        if (type == QEvent::MouseButtonPress || type == QEvent::MouseMove)
+        if (type == QEvent::MouseButtonPress || QEvent::MouseButtonDblClick || type == QEvent::MouseMove)
         {
             //moved to another widget, create enter and leave events
             if (S60->lastPointerEventTarget)
