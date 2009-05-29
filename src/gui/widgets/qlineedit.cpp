@@ -2274,8 +2274,15 @@ void QLineEdit::inputMethodEvent(QInputMethodEvent *e)
     }
 #endif
 
-    int priorState = d->undoState;
-    d->removeSelectedText();
+    int priorState = 0;
+    bool isGettingInput = !e->commitString().isEmpty() || !e->preeditString().isEmpty();
+    bool cursorPositionChanged = false;
+
+    if (isGettingInput) {
+        // If any text is being input, remove selected text.
+        priorState = d->undoState;
+        d->removeSelectedText();
+    }
 
     int c = d->cursor; // cursor position after insertion of commit string
     if (e->replacementStart() <= 0)
@@ -2289,10 +2296,29 @@ void QLineEdit::inputMethodEvent(QInputMethodEvent *e)
         d->selend = d->selstart + e->replacementLength();
         d->removeSelectedText();
     }
-    if (!e->commitString().isEmpty())
+    if (!e->commitString().isEmpty()) {
         d->insert(e->commitString());
+        cursorPositionChanged = true;
+    }
 
     d->cursor = qMin(c, d->text.length());
+
+    for (int i = 0; i < e->attributes().size(); ++i) {
+        const QInputMethodEvent::Attribute &a = e->attributes().at(i);
+        if (a.type == QInputMethodEvent::Selection) {
+            d->cursor = qBound(0, a.start + a.length, d->text.length());
+            if (a.length) {
+                d->selstart = qMax(0, qMin(a.start, d->text.length()));
+                d->selend = d->cursor;
+                if (d->selend < d->selstart) {
+                    qSwap(d->selstart, d->selend);
+                }
+            } else {
+                d->selstart = d->selend = 0;
+            }
+            cursorPositionChanged = true;
+        }
+    }
 
     d->textLayout.setPreeditArea(d->cursor, e->preeditString());
     d->preeditCursor = e->preeditString().length();
@@ -2317,9 +2343,12 @@ void QLineEdit::inputMethodEvent(QInputMethodEvent *e)
     d->textLayout.setAdditionalFormats(formats);
     d->updateTextLayout();
     update();
-    if (!e->commitString().isEmpty())
+    if (cursorPositionChanged)
         d->emitCursorPositionChanged();
-    d->finishChange(priorState);
+
+    if (isGettingInput)
+        d->finishChange(priorState);
+
 #ifndef QT_NO_COMPLETER
     if (!e->commitString().isEmpty())
         d->complete(Qt::Key_unknown);
