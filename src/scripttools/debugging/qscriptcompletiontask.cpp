@@ -158,7 +158,7 @@ void QScriptCompletionTaskPrivate::completeScriptExpression()
     if (path.size() > 1) {
         const QString &topLevelIdent = path.at(0);
         QScriptValue obj;
-        if (topLevelIdent == QString::fromLatin1("this")) {
+        if (topLevelIdent == QLatin1String("this")) {
             obj = ctx->thisObject();
         } else {
             QScriptValueList scopeChain;
@@ -256,9 +256,9 @@ void QScriptCompletionTask::start()
             }
             QString argType = cmd->argumentTypes().value(argNum);
             if (!argType.isEmpty()) {
-                if (argType == QString::fromLatin1("command-or-group-name")) {
+                if (argType == QLatin1String("command-or-group-name")) {
                     d->results = d->console->commandManager()->completions(arg);
-                } else if (argType == QString::fromLatin1("script-filename")) {
+                } else if (argType == QLatin1String("script-filename")) {
                     // ### super-cheating for now; have to use the async API
                     QScriptEngineDebuggerFrontend *edf = static_cast<QScriptEngineDebuggerFrontend*>(d->frontend);
                     QScriptDebuggerBackend *backend = edf->backend();
@@ -269,13 +269,13 @@ void QScriptCompletionTask::start()
                         if (isPrefixOf(arg, fileName))
                             d->results.append(fileName);
                     }
-                } else if (argType == QString::fromLatin1("subcommand-name")) {
+                } else if (argType == QLatin1String("subcommand-name")) {
                     for (int i = 0; i < cmd->subCommands().size(); ++i) {
                         QString name = cmd->subCommands().at(i);
                         if (isPrefixOf(arg, name))
                             d->results.append(name);
                     }
-                } else if (argType == QString::fromLatin1("script")) {
+                } else if (argType == QLatin1String("script")) {
                     d->completeScriptExpression();
                 }
                 if ((d->type == NoCompletion) && !d->results.isEmpty()) {

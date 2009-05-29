@@ -200,16 +200,7 @@ static const int QGRAPHICSVIEW_PREALLOC_STYLE_OPTIONS = 503; // largest prime < 
     Note that setting a flag usually imposes a side effect, and this effect
     can vary between paint devices and platforms.
 
-    \value DontClipPainter QGraphicsView sometimes clips the painter when
-    rendering the scene contents. This can generally improve performance
-    (e.g., rendering only small parts of a large pixmap), and protects against
-    rendering mistakes (e.g., drawing outside bounding rectangles, or outside
-    the exposed area). In some situations, however, the painter clip can slow
-    down rendering; especially when all painting is restricted to inside
-    exposed areas. By enabling this flag, QGraphicsView will completely
-    disable its implicit clipping. Note that rendering artifacts from using a
-    semi-transparent foreground or background brush can occur if clipping is
-    disabled.
+    \value DontClipPainter This value is obsolete and has no effect.
 
     \value DontSavePainterState When rendering, QGraphicsView protects the
     painter state (see QPainter::save()) when rendering the background or

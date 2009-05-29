@@ -1776,8 +1776,9 @@ void QGtkStyle::drawComplexControl(ComplexControl control, const QStyleOptionCom
 
 
                 QString key;
+
                 if (option->state & State_HasFocus) {
-                    key = QLS("f");
+                    key += QLatin1Char('f');
                     GTK_WIDGET_SET_FLAGS(gtkSpinButton, GTK_HAS_FOCUS);
                 }
 

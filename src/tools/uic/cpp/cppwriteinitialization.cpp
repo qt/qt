@@ -2813,7 +2813,7 @@ QString WriteInitialization::Item::writeSetupUi(const QString &parent, Item::Emp
     bool generateMultiDirective = false;
     if (emptyItemPolicy == Item::ConstructItemOnly && m_children.size() == 0) {
         if (m_setupUiData.policy == ItemData::DontGenerate) {
-            m_setupUiStream << m_indent << "new " << m_itemClassName << "(" << parent << ");\n";
+            m_setupUiStream << m_indent << "new " << m_itemClassName << '(' << parent << ");\n";
                 return QString();
         } else if (m_setupUiData.policy == ItemData::GenerateWithMultiDirective) {
             generateMultiDirective = true;
@@ -2824,11 +2824,11 @@ QString WriteInitialization::Item::writeSetupUi(const QString &parent, Item::Emp
         generateMultiDirectiveBegin(m_setupUiStream, m_setupUiData.directives);
 
     const QString uniqueName = m_driver->unique(QLatin1String("__") + m_itemClassName.toLower());
-    m_setupUiStream << m_indent << m_itemClassName << " *" << uniqueName << " = new " << m_itemClassName << "(" << parent << ");\n";
+    m_setupUiStream << m_indent << m_itemClassName << " *" << uniqueName << " = new " << m_itemClassName << '(' << parent << ");\n";
 
     if (generateMultiDirective) {
         m_setupUiStream << "#else\n";
-        m_setupUiStream << m_indent << "new " << m_itemClassName << "(" << parent << ");\n";
+        m_setupUiStream << m_indent << "new " << m_itemClassName << '(' << parent << ");\n";
         generateMultiDirectiveEnd(m_setupUiStream, m_setupUiData.directives);
     }
 

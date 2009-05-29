@@ -192,15 +192,15 @@ bool QGLPixmapColorizeFilter::processGL(QPainter *, const QPointF &pos, const QP
 // generates convolution filter code for arbitrary sized kernel
 QByteArray QGLPixmapConvolutionFilter::generateConvolutionShader() const {
     QByteArray code;
-    code.append("uniform sampler2D texture;\n");
-    code.append("uniform vec2 inv_texture_size;\n");
-    code.append("uniform float matrix[");
+    code.append("uniform sampler2D texture;\n"
+                "uniform vec2 inv_texture_size;\n"
+                "uniform float matrix[");
     code.append(QByteArray::number(m_kernelWidth * m_kernelHeight));
-    code.append("];\n");
-    code.append("vec2 offset[");
+    code.append("];\n"
+                "vec2 offset[");
     code.append(QByteArray::number(m_kernelWidth*m_kernelHeight));
-    code.append("];\n");
-    code.append("void main(void) {\n");
+    code.append("];\n"
+                "void main(void) {\n");
 
     for(int y = 0; y < m_kernelHeight; y++) {
         for(int x = 0; x < m_kernelWidth; x++) {
@@ -210,22 +210,21 @@ QByteArray QGLPixmapConvolutionFilter::generateConvolutionShader() const {
             code.append(QByteArray::number(x-(int)(m_kernelWidth/2)));
             code.append(".0, inv_texture_size.y * ");
             code.append(QByteArray::number((int)(m_kernelHeight/2)-y));
-            code.append(".0)");
-            code.append(";\n");
+            code.append(".0);\n");
         }
     }
 
-    code.append("  int i = 0;\n");
-    code.append("  vec2 coords = gl_TexCoord[0].st;\n");
-    code.append("  vec4 sum = vec4(0.0);\n");
-    code.append("  for (i = 0; i < ");
+    code.append("  int i = 0;\n"
+                "  vec2 coords = gl_TexCoord[0].st;\n"
+                "  vec4 sum = vec4(0.0);\n"
+                "  for (i = 0; i < ");
     code.append(QByteArray::number(m_kernelWidth * m_kernelHeight));
-    code.append("; i++) {\n");
-    code.append("    vec4 tmp = texture2D(texture,coords+offset[i]);\n");
-    code.append("    sum += matrix[i] * tmp;\n");
-    code.append("  }\n");
-    code.append("  gl_FragColor = sum;\n");
-    code.append("}");
+    code.append("; i++) {\n"
+                "    vec4 tmp = texture2D(texture,coords+offset[i]);\n"
+                "    sum += matrix[i] * tmp;\n"
+                "  }\n"
+                "  gl_FragColor = sum;\n"
+                "}");
     return code;
 }
 

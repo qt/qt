@@ -90,7 +90,7 @@ public:
     void clearScene();
     QGraphicsPixmapItem *addWelcomeItem(const QPixmap &pm);
 
-Q_SIGNALS:
+signals:
     void subMarineDestroyed(int);
     void allSubMarineDestroyed(int);
 

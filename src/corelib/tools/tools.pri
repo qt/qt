@@ -32,6 +32,7 @@ HEADERS +=  \
         tools/qsize.h \
 	tools/qstack.h \
 	tools/qstring.h \
+	tools/qstringbuilder.h \
 	tools/qstringlist.h \
 	tools/qstringmatcher.h \
 	tools/qtextboundaryfinder.h \
@@ -62,6 +63,7 @@ SOURCES += \
 	tools/qsharedpointer.cpp \
         tools/qsize.cpp \
 	tools/qstring.cpp \
+	tools/qstringbuilder.cpp \
 	tools/qstringlist.cpp \
 	tools/qtextboundaryfinder.cpp \
 	tools/qtimeline.cpp \

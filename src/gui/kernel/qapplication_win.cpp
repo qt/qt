@@ -955,8 +955,8 @@ const QString qt_reg_winclass(QWidget *w)        // register window class
     wchar_t uniqueAppID[256];
     GetModuleFileNameW(0, uniqueAppID, 255);
     cname = QString::number(RegisterWindowMessageW(
-              (const wchar_t *) QString::fromUtf16((const ushort *)uniqueAppID).toLower().replace(QString(QString::fromLatin1("\\")),
-              QString(QString::fromLatin1("_"))).utf16()));
+              (const wchar_t *) QString::fromUtf16((const ushort *)uniqueAppID).toLower().replace(QLatin1Char('\\'),
+              QLatin1Char('_')).utf16()));
 #endif
 
     // since multiple Qt versions can be used in one process

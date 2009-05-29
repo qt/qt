@@ -53,14 +53,13 @@ class PixmapItem;
 class Torpedo : public QGraphicsWidget
 {
 Q_OBJECT
-Q_PROPERTY(QPointF pos READ pos WRITE setPos)
 public:
     Torpedo(QGraphicsItem * parent = 0, Qt::WindowFlags wFlags = 0);
     void launch();
     void setCurrentSpeed(int speed);
     void destroy();
 
-Q_SIGNALS:
+signals:
     void torpedoExplosed();
     void torpedoExecutionFinished();
 

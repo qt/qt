@@ -374,8 +374,8 @@ static QString getThemeName()
                     while(!in.atEnd()) {
                         QString line = in.readLine();
                         if (line.contains(QLS("gtk-theme-name"))) {
-                            line = line.right(line.length() - line.indexOf(QLS("=")) - 1);
-                            line.remove(QLS("\""));
+                            line = line.right(line.length() - line.indexOf(QLatin1Char('=')) - 1);
+                            line.remove(QLatin1Char('\"'));
                             line = line.trimmed();
                             themeName = line;
                             break;
@@ -695,7 +695,7 @@ void QGtk::initGtkWidgets()
             QHashIterator<QString, GtkWidget*> it(oldMap);
             while (it.hasNext()) {
                 it.next();
-                if (!it.key().contains(QLS("."))) {
+                if (!it.key().contains(QLatin1Char('.'))) {
                     add_all_sub_widgets(it.value());
                 }
             }

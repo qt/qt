@@ -296,7 +296,7 @@ public:
         QString result;
         for (int i = 0; i < context->argumentCount(); ++i) {
             if (i != 0)
-                result.append(QLatin1String(" "));
+                result.append(QLatin1Char(' '));
 
             QString s = context->argument(i).toString();
             if (context->state() == QScriptContext::ExceptionState)

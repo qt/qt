@@ -499,7 +499,7 @@ void QTextHtmlParser::dumpHtml()
 {
     for (int i = 0; i < count(); ++i) {
         qDebug().nospace() << qPrintable(QString(depth(i)*4, QLatin1Char(' ')))
-                           << qPrintable(at(i).tag) << ":"
+                           << qPrintable(at(i).tag) << ':'
                            << quoteNewline(at(i).text);
             ;
     }

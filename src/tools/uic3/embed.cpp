@@ -238,7 +238,7 @@ void Ui3Reader::embed(const char *project, const QStringList &images)
                 out << "true, ";
             else
                 out << "false, ";
-            out << "\"" << e->name << "\" },\n";
+            out << '\"' << e->name << "\" },\n";
             delete e;
         }
 #ifndef QT_NO_IMAGE_COLLECTION_COMPRESSION

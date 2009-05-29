@@ -944,6 +944,23 @@ QString::QString(int size, QChar ch)
     }
 }
 
+/*!
+    Constructs a string of the given \a size without initializing the
+    characters. This is only used in \c QStringBuilder::toString().
+
+    \internal
+*/
+
+QString::QString(int size, Uninitialized)
+{
+    d = (Data*) qMalloc(sizeof(Data)+size*sizeof(QChar));
+    d->ref = 1;
+    d->alloc = d->size = size;
+    d->clean = d->asciiCache = d->simpletext = d->righttoleft = d->capacity = 0;
+    d->data = d->array;
+    d->array[size] = '\0';
+}
+
 /*! \fn QString::QString(const QLatin1String &str)
 
     Constructs a copy of the Latin-1 string \a str.

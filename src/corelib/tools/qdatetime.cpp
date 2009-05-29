@@ -4688,7 +4688,7 @@ QDateTimeParser::StateNode QDateTimeParser::parse(QString &input, int &cursorPos
             if (fixup && tmpstate == Intermediate && used < sn.count) {
                 const FieldInfo fi = fieldInfo(index);
                 if ((fi & (Numeric|FixedWidth)) == (Numeric|FixedWidth)) {
-                    const QString newText = QString(QLatin1String("%1")).arg(num, sn.count, 10, QLatin1Char('0'));
+                    const QString newText = QString::fromLatin1("%1").arg(num, sn.count, 10, QLatin1Char('0'));
                     input.replace(pos, used, newText);
                     used = sn.count;
                 }

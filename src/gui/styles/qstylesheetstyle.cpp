@@ -2702,14 +2702,10 @@ void QStyleSheetStyle::polish(QWidget *w)
         QRenderRule rule = renderRule(sa, PseudoElement_None, PseudoClass_Enabled);
         if ((rule.hasBorder() && rule.border()->hasBorderImage())
             || (rule.hasBackground() && !rule.background()->pixmap.isNull())) {
-            QObject::disconnect(sa->horizontalScrollBar(), SIGNAL(valueChanged(int)),
-                             sa, SLOT(update()));
-            QObject::disconnect(sa->verticalScrollBar(), SIGNAL(valueChanged(int)),
-                             sa, SLOT(update()));
             QObject::connect(sa->horizontalScrollBar(), SIGNAL(valueChanged(int)),
-                             sa, SLOT(update()));
+                             sa, SLOT(update()), Qt::UniqueConnection);
             QObject::connect(sa->verticalScrollBar(), SIGNAL(valueChanged(int)),
-                             sa, SLOT(update()));
+                             sa, SLOT(update()), Qt::UniqueConnection);
         }
     }
 #endif

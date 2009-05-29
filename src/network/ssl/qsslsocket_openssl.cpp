@@ -276,7 +276,7 @@ init_context:
         if (first)
             first = false;
         else
-            cipherString.append(":");
+            cipherString.append(':');
         cipherString.append(cipher.name().toLatin1());
     }
 

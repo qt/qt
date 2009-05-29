@@ -447,6 +447,7 @@ public:
     inline bool operator==(const qargb8565 &v) const;
 
     inline quint32 rawValue() const;
+    inline quint16 rawValue16() const;
 
 private:
     friend class qrgb565;
@@ -463,7 +464,7 @@ public:
 
     inline explicit qrgb565(quint32p v);
     inline explicit qrgb565(quint32 v);
-    inline explicit qrgb565(qargb8565 v);
+    inline explicit qrgb565(const qargb8565 &v);
 
     inline operator quint32() const;
     inline operator quint16() const;
@@ -569,6 +570,11 @@ quint32 qargb8565::rawValue() const
     return (data[2] << 16) | (data[1] << 8) | data[0];
 }
 
+quint16 qargb8565::rawValue16() const
+{
+    return (data[2] << 8) | data[1];
+}
+
 qrgb565::qrgb565(quint32p v)
 {
     *this = qrgb565(quint32(v));
@@ -583,7 +589,7 @@ qrgb565::qrgb565(quint32 v)
     data = (r & 0xf800) | (g & 0x07e0)| (b & 0x001f);
 }
 
-qrgb565::qrgb565(qargb8565 v)
+qrgb565::qrgb565(const qargb8565 &v)
 {
     data = (v.data[2] << 8) | v.data[1];
 }

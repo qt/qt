@@ -47,6 +47,8 @@
 #endif
 
 
+QT_BEGIN_NAMESPACE
+
 const char* QGLEngineShaderManager::qglEngineShaderSourceCode[] = {
     0,0,0,0,0,0,0,0,0,0,
     0,0,0,0,0,0,0,0,0,0,
@@ -462,4 +464,4 @@ void QGLEngineShaderManager::compileNamedShader(QGLEngineShaderManager::ShaderNa
     compiledShaders[name] = newShader;
 }
 
-
+QT_END_NAMESPACE

@@ -433,7 +433,7 @@ bool QGLContext::chooseContext(const QGLContext* shareContext)
         if (!d->gpm)
             return false;
     }
-    QString glxExt = QString(QLatin1String(glXGetClientString(QX11Info::display(), GLX_EXTENSIONS)));
+    QString glxExt = QLatin1String(glXGetClientString(QX11Info::display(), GLX_EXTENSIONS));
     if (glxExt.contains(QLatin1String("GLX_SGI_video_sync"))) {
         if (d->glFormat.swapInterval() == -1)
             d->glFormat.setSwapInterval(0);
@@ -787,7 +787,7 @@ void QGLContext::swapBuffers() const
             static qt_glXWaitVideoSyncSGI glXWaitVideoSyncSGI = 0;
             static bool resolved = false;
             if (!resolved) {
-                QString glxExt = QString(QLatin1String(glXGetClientString(QX11Info::display(), GLX_EXTENSIONS)));
+                QString glxExt = QLatin1String(glXGetClientString(QX11Info::display(), GLX_EXTENSIONS));
                 if (glxExt.contains(QLatin1String("GLX_SGI_video_sync"))) {
 #if defined(Q_OS_LINUX) || defined(Q_OS_BSD4)
                     void *handle = dlopen(NULL, RTLD_LAZY);
@@ -1032,7 +1032,7 @@ void *QGLContext::getProcAddress(const QString &proc) const
     if (resolved && !glXGetProcAddressARB)
         return 0;
     if (!glXGetProcAddressARB) {
-        QString glxExt = QString(QLatin1String(glXGetClientString(QX11Info::display(), GLX_EXTENSIONS)));
+        QString glxExt = QLatin1String(glXGetClientString(QX11Info::display(), GLX_EXTENSIONS));
         if (glxExt.contains(QLatin1String("GLX_ARB_get_proc_address"))) {
 #if defined(Q_OS_LINUX) || defined(Q_OS_BSD4)
             void *handle = dlopen(NULL, RTLD_LAZY);

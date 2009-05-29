@@ -83,12 +83,12 @@ static QByteArray openModeToFopenMode(QIODevice::OpenMode flags, const QString &
     } else if (flags & QIODevice::WriteOnly) {
         mode = "wb";
         if (flags & QIODevice::ReadOnly)
-            mode += "+";
+            mode += '+';
     }
     if (flags & QIODevice::Append) {
         mode = "ab";
         if (flags & QIODevice::ReadOnly)
-            mode += "+";
+            mode += '+';
     }
     return mode;
 }
@@ -723,7 +723,7 @@ QString QFSFileEngine::fileName(FileName file) const
         bool isDir = ret.endsWith(QLatin1Char('/'));
         ret = QDir::cleanPath(ret);
         if (isDir)
-            ret += QLatin1String("/");
+            ret += QLatin1Char('/');
         if (file == AbsolutePathName) {
             int slash = ret.lastIndexOf(QLatin1Char('/'));
             if (slash == -1)

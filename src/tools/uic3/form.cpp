@@ -185,14 +185,14 @@ void Ui3Reader::createFormDecl(const QDomElement &e, bool implicitIncludes)
     for (it = globalIncludes.constBegin(); it != globalIncludes.constEnd(); ++it) {
         if (!(*it).isEmpty()) {
             QString header = fixHeaderName(*it);
-            out << "#include <" << header << ">" << endl;
+            out << "#include <" << header << '>' << endl;
         }
     }
     localIncludes = unique(localIncludes);
     for (it = localIncludes.constBegin(); it != localIncludes.constEnd(); ++it) {
         if (!(*it).isEmpty()) {
             QString header = fixHeaderName(*it);
-            out << "#include \"" << header << "\"" << endl;
+            out << "#include \"" << header << '\"' << endl;
         }
     }
     out << endl;
@@ -216,7 +216,7 @@ void Ui3Reader::createFormDecl(const QDomElement &e, bool implicitIncludes)
     typeDefs = unique(typeDefs);
     for (it = typeDefs.constBegin(); it != typeDefs.constEnd(); ++it) {
         if (!(*it).isEmpty())
-            out << "typedef " << *it << ";" << endl;
+            out << "typedef " << *it << ';' << endl;
     }
 
     nl = e.parentNode().toElement().elementsByTagName(QLatin1String("forward"));
@@ -236,17 +236,17 @@ void Ui3Reader::createFormDecl(const QDomElement &e, bool implicitIncludes)
                 out << "namespace " << *ns << " {" << endl;
                 ++ns;
             }
-            out << "class " << forwardName << ";" << endl;
+            out << "class " << forwardName << ';' << endl;
             for (int i = 0; i < (int) forwardNamespaces.count(); i++)
-                out << "}" << endl;
+                out << '}' << endl;
         }
     }
 
     for (it = forwardDecl2.constBegin(); it != forwardDecl2.constEnd(); ++it) {
         QString fd = *it;
         fd = fd.trimmed();
-        if (!fd.endsWith(QLatin1String(";")))
-            fd += QLatin1String(";");
+        if (!fd.endsWith(QLatin1Char(';')))
+            fd += QLatin1Char(';');
         out << fd << endl;
     }
 
@@ -279,7 +279,7 @@ void Ui3Reader::createWrapperDecl(const QDomElement &e, const QString &converted
     out << "#ifndef " << protector << endl;
     out << "#define " << protector << endl;
     out << endl;
-    out << "#include \"" << convertedUiFile << "\"" << endl;
+    out << "#include \"" << convertedUiFile << '\"' << endl;
 
     createWrapperDeclContents(e);
     out << endl;
@@ -309,8 +309,8 @@ void Ui3Reader::createWrapperDeclContents(const QDomElement &e)
 
     out << "class ";
     if (!exportMacro.isEmpty())
-        out << exportMacro << " ";
-    out << bareNameOfClass << " : public " << objClass << ", public Ui::" << bareNameOfClass << endl << "{" << endl;
+        out << exportMacro << ' ';
+    out << bareNameOfClass << " : public " << objClass << ", public Ui::" << bareNameOfClass << endl << '{' << endl;
 
     /* qmake ignore Q_OBJECT */
     out << "    Q_OBJECT" << endl;
@@ -362,8 +362,8 @@ void Ui3Reader::createWrapperDeclContents(const QDomElement &e)
             continue;
         QString returnType = n.attribute(QLatin1String("returnType"), QLatin1String("void"));
         QString functionName = n.firstChild().toText().data().trimmed();
-        if (functionName.endsWith(QLatin1String(";")))
-            functionName = functionName.left(functionName.length() - 1);
+        if (functionName.endsWith(QLatin1Char(';')))
+            functionName.chop(1);
         QString specifier = n.attribute(QLatin1String("specifier"));
         QString access = n.attribute(QLatin1String("access"));
         if (access == QLatin1String(QLatin1String("protected"))) {
@@ -394,8 +394,8 @@ void Ui3Reader::createWrapperDeclContents(const QDomElement &e)
             continue;
         QString returnType = n.attribute(QLatin1String("returnType"), QLatin1String("void"));
         QString functionName = n.firstChild().toText().data().trimmed();
-        if (functionName.endsWith(QLatin1String(";")))
-            functionName = functionName.left(functionName.length() - 1);
+        if (functionName.endsWith(QLatin1Char(';')))
+            functionName.chop(1);
         QString specifier = n.attribute(QLatin1String("specifier"));
         QString access = n.attribute(QLatin1String("access"));
         if (access == QLatin1String("protected")) {
@@ -423,8 +423,8 @@ void Ui3Reader::createWrapperDeclContents(const QDomElement &e)
         //    continue;
         QString access = n.attribute(QLatin1String("access"), QLatin1String("protected"));
         QString var = fixDeclaration(n.firstChild().toText().data().trimmed());
-        if (!var.endsWith(QLatin1String(";")))
-            var += QLatin1String(";");
+        if (!var.endsWith(QLatin1Char(';')))
+            var += QLatin1Char(';');
         if (access == QLatin1String("public"))
             publicVars += var;
         else if (access == QLatin1String("private"))
@@ -458,7 +458,7 @@ void Ui3Reader::createWrapperDeclContents(const QDomElement &e)
         if (n.attribute(QLatin1String("language"), QLatin1String("C++")) != QLatin1String("C++"))
             continue;
         QString sigName = n.firstChild().toText().data().trimmed();
-        if (sigName.endsWith(QLatin1String(";")))
+        if (sigName.endsWith(QLatin1Char(';')))
             sigName = sigName.left(sigName.length() - 1);
         extraSignals += fixDeclaration(sigName);
     }
@@ -467,7 +467,7 @@ void Ui3Reader::createWrapperDeclContents(const QDomElement &e)
     if (!extraSignals.isEmpty()) {
         out << "signals:" << endl;
         for (it = extraSignals.constBegin(); it != extraSignals.constEnd(); ++it)
-            out << "    void " << (*it) << ";" << endl;
+            out << "    void " << (*it) << ';' << endl;
         out << endl;
     }
 
@@ -513,7 +513,7 @@ void Ui3Reader::createWrapperDeclContents(const QDomElement &e)
 
     out << "};" << endl;
     for (i = 0; i < (int) namespaces.count(); i++)
-        out << "}" << endl;
+        out << '}' << endl;
 
     out << endl;
 }
@@ -543,7 +543,7 @@ void Ui3Reader::writeFunctionsDecl(const QStringList &fuLst, const QStringList &
 
         signature = fixDeclaration(signature);
         type = fixType(type);
-        out << "    " << specifier << type << " " << signature << pure << ";" << endl;
+        out << "    " << specifier << type << ' ' << signature << pure << ';' << endl;
     }
     out << endl;
 }
@@ -583,8 +583,8 @@ void Ui3Reader::createFormImpl(const QDomElement &e)
         if (n.attribute(QLatin1String("language"), QLatin1String("C++")) != QLatin1String("C++"))
             continue;
         QString functionName = n.firstChild().toText().data().trimmed();
-        if (functionName.endsWith(QLatin1String(";")))
-            functionName = functionName.left(functionName.length() - 1);
+        if (functionName.endsWith(QLatin1Char(';')))
+            functionName.chop(1);
         extraFuncts += functionName;
         extraFunctTyp += n.attribute(QLatin1String("returnType"), QLatin1String("void"));
         extraFunctSpecifier += n.attribute(QLatin1String("specifier"), QLatin1String("virtual"));
@@ -598,8 +598,8 @@ void Ui3Reader::createFormImpl(const QDomElement &e)
         if (n.attribute(QLatin1String("language"), QLatin1String("C++")) != QLatin1String("C++"))
             continue;
         QString functionName = n.firstChild().toText().data().trimmed();
-        if (functionName.endsWith(QLatin1String(";")))
-            functionName = functionName.left(functionName.length() - 1);
+        if (functionName.endsWith(QLatin1Char(';')))
+            functionName.chop(1);
         extraFuncts += functionName;
         extraFunctTyp += n.attribute(QLatin1String("returnType"), QLatin1String("void"));
         extraFunctSpecifier += n.attribute(QLatin1String("specifier"), QLatin1String("virtual"));
@@ -663,7 +663,7 @@ void Ui3Reader::createFormImpl(const QDomElement &e)
     globalIncludes = unique(globalIncludes);
     for (it = globalIncludes.begin(); it != globalIncludes.end(); ++it) {
         if (!(*it).isEmpty())
-            out << "#include <" << fixHeaderName(*it) << ">" << endl;
+            out << "#include <" << fixHeaderName(*it) << '>' << endl;
     }
 
     if (externPixmaps) {
@@ -677,14 +677,14 @@ void Ui3Reader::createFormImpl(const QDomElement &e)
     localIncludes = unique(localIncludes);
     for (it = localIncludes.begin(); it != localIncludes.end(); ++it) {
         if (!(*it).isEmpty() && *it != QFileInfo(fileName + QLatin1String(".h")).fileName())
-            out << "#include \"" << fixHeaderName(*it) << "\"" << endl;
+            out << "#include \"" << fixHeaderName(*it) << '\"' << endl;
     }
 
     QString uiDotH = fileName + QLatin1String(".h");
     if (QFile::exists(uiDotH)) {
         if (!outputFileName.isEmpty())
             uiDotH = QString::fromUtf8(combinePath(uiDotH.ascii(), outputFileName.ascii()));
-        out << "#include \"" << uiDotH << "\"" << endl;
+        out << "#include \"" << uiDotH << '\"' << endl;
         writeFunctImpl = false;
     }
 
@@ -702,7 +702,7 @@ void Ui3Reader::createFormImpl(const QDomElement &e)
         out << " *  name 'name' and widget flags set to 'f'." << endl;
         out << " *" << endl;
         out << " *  The " << objClass.mid(1).toLower() << " will by default be modeless, unless you set 'modal' to" << endl;
-        out << " *  true to construct a modal " << objClass.mid(1).toLower() << "." << endl;
+        out << " *  true to construct a modal " << objClass.mid(1).toLower() << '.' << endl;
         out << " */" << endl;
         out << nameOfClass << "::" << bareNameOfClass << "(QWidget* parent, const char* name, bool modal, Qt::WindowFlags fl)" << endl;
         out << "    : " << objClass << "(parent, name, modal, fl)";
@@ -733,7 +733,7 @@ void Ui3Reader::createFormImpl(const QDomElement &e)
 
     out << endl;
 
-    out << "{" << endl;
+    out << '{' << endl;
 
 //
 // setup the gui
@@ -775,7 +775,7 @@ void Ui3Reader::createFormImpl(const QDomElement &e)
         out << indent << "init();" << endl;
 
     // end of constructor
-    out << "}" << endl;
+    out << '}' << endl;
     out << endl;
 
     // destructor
@@ -783,11 +783,11 @@ void Ui3Reader::createFormImpl(const QDomElement &e)
     out << " *  Destroys the object and frees any allocated resources" << endl;
     out << " */" << endl;
     out << nameOfClass << "::~" << bareNameOfClass << "()" << endl;
-    out << "{" << endl;
+    out << '{' << endl;
     if (extraFuncts.contains(QLatin1String("destroy()")))
         out << indent << "destroy();" << endl;
     out << indent << "// no need to delete child widgets, Qt does it all for us" << endl;
-    out << "}" << endl;
+    out << '}' << endl;
     out << endl;
 
     // handle application events if required
@@ -816,9 +816,9 @@ void Ui3Reader::createFormImpl(const QDomElement &e)
     out << " *  language." << endl;
     out << " */" << endl;
     out << "void " << nameOfClass << "::languageChange()" << endl;
-    out << "{" << endl;
+    out << '{' << endl;
     out << "    retranslateUi(this);" << endl;
-    out << "}" << endl;
+    out << '}' << endl;
     out << endl;
 
     // create stubs for additional slots if necessary
@@ -833,8 +833,8 @@ void Ui3Reader::createFormImpl(const QDomElement &e)
             type = type.simplified();
             QString fname = fixDeclaration(Parser::cleanArgs(*it));
             if (!(*it3).startsWith(QLatin1String("pure"))) { // "pure virtual" or "pureVirtual"
-                out << type << " " << nameOfClass << "::" << fname << endl;
-                out << "{" << endl;
+                out << type << ' ' << nameOfClass << "::" << fname << endl;
+                out << '{' << endl;
                 if (*it != QLatin1String("init()") && *it != QLatin1String("destroy()")) {
                     QRegExp numeric(QLatin1String("^(?:signed|unsigned|u?char|u?short|u?int"
                                      "|u?long|Q_U?INT(?:8|16|32)|Q_U?LONG|float"
@@ -868,14 +868,14 @@ void Ui3Reader::createFormImpl(const QDomElement &e)
 
                         if (type == QLatin1String("bool")) {
                             retVal = QLatin1String("false");
-                        } else if (isBasicNumericType || type.endsWith(QLatin1String("*"))) {
+                        } else if (isBasicNumericType || type.endsWith(QLatin1Char('*'))) {
                             retVal = QLatin1String("0");
-                        } else if (type.endsWith(QLatin1String("&"))) {
+                        } else if (type.endsWith(QLatin1Char('&'))) {
                             do {
                                 type.chop(1);
-                            } while (type.endsWith(QLatin1String(" ")));
+                            } while (type.endsWith(QLatin1Char(' ')));
                             retVal = QLatin1String("uic_temp_var");
-                            out << indent << "static " << type << " " << retVal << ";" << endl;
+                            out << indent << "static " << type << ' ' << retVal << ';' << endl;
                         } else {
                             retVal = type + QLatin1String("()");
                         }
@@ -883,9 +883,9 @@ void Ui3Reader::createFormImpl(const QDomElement &e)
 
                     out << indent << "qWarning(\"" << nameOfClass << "::" << fname << ": Not implemented yet\");" << endl;
                     if (!retVal.isEmpty())
-                        out << indent << "return " << retVal << ";" << endl;
+                        out << indent << "return " << retVal << ';' << endl;
                 }
-                out << "}" << endl;
+                out << '}' << endl;
                 out << endl;
             }
             ++it;

@@ -43,6 +43,8 @@
 
 #include <private/qbezier_p.h>
 
+QT_BEGIN_NAMESPACE
+
 void QGL2PEXVertexArray::clear()
 {
     vertexArray.reset();
@@ -160,3 +162,5 @@ void QGL2PEXVertexArray::curveToArray(const QGLPoint &cp1, const QGLPoint &cp2, 
         }
     }
 }
+
+QT_END_NAMESPACE

@@ -241,19 +241,6 @@ void CodeParser::processCommonMetaCommand(const Location &location,
 	if (node->type() == Node::Fake) {
 	    FakeNode *fake = static_cast<FakeNode *>(node);
             fake->setTitle(arg);
-#ifdef QDOC2DOX            
-            /* qdoc -> doxygen.
-               I think this must be done here, because there can be multiple
-               "\externalpage" and "\title" metacommands in a single qdoc
-               comment, which means, among other things, that the "\title"
-               commands are not inserted into the metacommand map used by
-               the Doc class. I'm sure there4 is a better way to do this in
-               the DoxWriter class using the information in the FakeNode,
-               but I don't have time to figure it out right now.
-             */
-            if (DoxWriter::isDoxPass(1))
-                DoxWriter::insertTitle(fake,arg);
-#endif            
         }
         else
 	    location.warning(tr("Ignored '\\%1'").arg(COMMAND_TITLE));
