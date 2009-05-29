@@ -873,8 +873,6 @@ void qt_init(QApplicationPrivate *priv, int)
     if (ptrUpdateLayeredWindow && !ptrUpdateLayeredWindowIndirect)
         ptrUpdateLayeredWindowIndirect = qt_updateLayeredWindowIndirect;
 #endif
-
-    priv->initializeMultitouch();
 }
 
 /*****************************************************************************

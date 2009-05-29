@@ -901,6 +901,8 @@ void QApplicationPrivate::initialize()
     QApplicationPrivate::wheel_scroll_lines = 3;
 #endif
 #endif
+
+    initializeMultitouch();
 }
 
 /*!
@@ -1050,6 +1052,8 @@ QApplication::~QApplication()
     if (qt_is_gui_used)
         delete QDragManager::self();
 #endif
+
+    d->cleanupMultitouch();
 
     qt_cleanup();
 
