@@ -185,15 +185,20 @@ void QSoftKeyStack::handleFocusChanged(QWidget *old, QWidget *now)
     QMainWindow *mainWindow = qobject_cast<QMainWindow*>(w);
     if( !mainWindow)
         return;
+    if (!mainWindow->hasSoftKeyStack())
+        return;
     QSoftKeyStack* softKeyStack = mainWindow->softKeyStack();
-    
-    Qt::ContextMenuPolicy policy = now->contextMenuPolicy();
-    if (policy != Qt::NoContextMenu && policy != Qt::PreventContextMenu ) {
+    if( mainWindow->menuWidget() )
+    {
         QList<QSoftKeyAction*> actionList;
         QSoftKeyAction* menu = new QSoftKeyAction(QSoftKeyAction::Menu, QString::fromLatin1("Menu"), now);
-        QSoftKeyAction* contextMenu = new QSoftKeyAction(QSoftKeyAction::ContextMenu, QString::fromLatin1("ContextMenu"), now);
         actionList.append(menu);
-        actionList.append(contextMenu);
+    
+        Qt::ContextMenuPolicy policy = now->contextMenuPolicy();
+        if (policy != Qt::NoContextMenu && policy != Qt::PreventContextMenu ) {
+            QSoftKeyAction* contextMenu = new QSoftKeyAction(QSoftKeyAction::ContextMenu, QString::fromLatin1("ContextMenu"), now);
+            actionList.append(contextMenu);
+        }
         if (old)
             softKeyStack->popandPush(actionList);
         else
