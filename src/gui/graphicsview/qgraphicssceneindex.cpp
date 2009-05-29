@@ -277,7 +277,7 @@ void QGraphicsSceneIndexPrivate::childItems_helper(QList<QGraphicsItem *> *items
     Constructs an abstract scene index.
 */
 QGraphicsSceneIndex::QGraphicsSceneIndex(QGraphicsScene *scene)
-: QObject(*new QGraphicsSceneIndexPrivate(scene))
+: QObject(*new QGraphicsSceneIndexPrivate(scene), scene)
 {
 }
 
