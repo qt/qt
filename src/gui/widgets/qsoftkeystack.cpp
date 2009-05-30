@@ -286,6 +286,7 @@ void QKeyEventSoftKey::addSoftKey(QSoftKeyAction::StandardRole standardRole, Qt:
     QSoftKeyAction *action = new QSoftKeyAction(standardRole, actionWidget);
     QKeyEventSoftKey *softKey = new QKeyEventSoftKey(action, key, actionWidget);
     connect(action, SIGNAL(triggered()), softKey, SLOT(sendKeyEvent()));
+    connect(action, SIGNAL(destroyed()), softKey, SLOT(deleteLater()));
     stack->popandPush(action);
 }
 
