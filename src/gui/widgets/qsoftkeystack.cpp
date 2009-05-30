@@ -79,10 +79,9 @@ void QSoftKeyStackPrivate::push(QSoftKeyAction *softKey)
 {
     QSoftkeySet softKeySet;
     softKeySet.append(softKey);
-    softKeyStack.push(softKeySet);
-    setNativeSoftKeys();
-
+    push(softKeySet);
 }
+
 void QSoftKeyStackPrivate::push(const QList<QSoftKeyAction*> &softkeys)
 {
     QSoftkeySet softKeySet(softkeys);
@@ -92,18 +91,15 @@ void QSoftKeyStackPrivate::push(const QList<QSoftKeyAction*> &softkeys)
 
 void QSoftKeyStackPrivate::pop()
 {
-    softKeyStack.pop();
+    qDeleteAll(softKeyStack.pop());
     setNativeSoftKeys();
 }
 
 void QSoftKeyStackPrivate::popandPush(QSoftKeyAction *softKey)
 {
-    QSoftkeySet oldSoftKeySet = softKeyStack.pop();
     QSoftkeySet newSoftKeySet;
     newSoftKeySet.append(softKey);
-    softKeyStack.push(newSoftKeySet);
-    if( !isSame(oldSoftKeySet, newSoftKeySet))
-        setNativeSoftKeys();
+    popandPush(newSoftKeySet);
 }
 
 void QSoftKeyStackPrivate::popandPush(const QList<QSoftKeyAction*> &softkeys)
@@ -111,8 +107,14 @@ void QSoftKeyStackPrivate::popandPush(const QList<QSoftKeyAction*> &softkeys)
     QSoftkeySet oldSoftKeySet = softKeyStack.pop();
     QSoftkeySet newSoftKeySet(softkeys);
     softKeyStack.push(newSoftKeySet);
-    if( !isSame(oldSoftKeySet, newSoftKeySet))
+#ifdef Q_WS_S60
+    // Don't flicker on Symbian.
+    // Platforms that use QActions as native SoftKeys must always call setNativeSoftKeys
+    // Otherwise the following deletion of oldSoftKeySet would remove the softkeys
+    if (!isSame(oldSoftKeySet, newSoftKeySet))
+#endif
         setNativeSoftKeys();
+    qDeleteAll(oldSoftKeySet);
 }
 
 const QSoftkeySet& QSoftKeyStackPrivate::top()
