@@ -69,7 +69,7 @@
 /*!
   Constructs a schema validator.
   The schema used for validation must be referenced in the XML instance document
-  via the xsi:schemaLocation attribute.
+  via the \c xsi:schemaLocation or \c xsi:noNamespaceSchemaLocation attribute.
  */
 QXmlSchemaValidator::QXmlSchemaValidator()
     : d(new QXmlSchemaValidatorPrivate(QXmlSchema()))
@@ -78,6 +78,9 @@ QXmlSchemaValidator::QXmlSchemaValidator()
 
 /*!
   Constructs a schema validator that will use \a schema for validation.
+  If an empty \l {QXmlSchema} schema is passed to the validator, the schema used
+  for validation must be referenced in the XML instance document
+  via the \c xsi:schemaLocation or \c xsi:noNamespaceSchemaLocation attribute.
  */
 QXmlSchemaValidator::QXmlSchemaValidator(const QXmlSchema &schema)
     : d(new QXmlSchemaValidatorPrivate(schema))
@@ -94,6 +97,9 @@ QXmlSchemaValidator::~QXmlSchemaValidator()
 
 /*!
   Sets the \a schema that shall be used for further validation.
+  If the schema is empty, the schema used for validation must be referenced
+  in the XML instance document via the \c xsi:schemaLocation or
+  \c xsi:noNamespaceSchemaLocation attribute.
  */
 void QXmlSchemaValidator::setSchema(const QXmlSchema &schema)
 {
