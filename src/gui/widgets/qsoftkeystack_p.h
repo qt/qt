@@ -70,7 +70,7 @@ QT_BEGIN_NAMESPACE
 
 class QSoftKeyStackPrivate : public QObjectPrivate
 {
-    Q_DECLARE_PUBLIC(QSoftKeyStack);
+    Q_DECLARE_PUBLIC(QSoftKeyStack)
 public:
     QSoftKeyStackPrivate();
     ~QSoftKeyStackPrivate();

@@ -216,8 +216,7 @@ void QSoftKeyStack::handleFocusChanged(QWidget *old, QWidget *now)
 
 QMainWindow *QSoftKeyStack::mainWindowOfWidget(QWidget *widget)
 {
-    QWidget *widgetParent = widget;
-    while (widgetParent = widgetParent->parentWidget())
+    for (QWidget *widgetParent = widget; widgetParent; widgetParent = widgetParent->parentWidget())
         if (QMainWindow *mainWindow = qobject_cast<QMainWindow*>(widgetParent))
             return mainWindow;
 
