@@ -75,6 +75,9 @@
 #ifndef QT_NO_EFFECTS
 # include <private/qeffects_p.h>
 #endif
+#ifdef QT_KEYPAD_NAVIGATION
+# include <private/qsoftkeystack_p.h>
+#endif
 QT_BEGIN_NAMESPACE
 
 extern QHash<QByteArray, QFont> *qt_app_fonts_hash();
@@ -628,6 +631,9 @@ bool QComboBoxPrivateContainer::eventFilter(QObject *o, QEvent *e)
         case Qt::Key_Select:
 #endif
             if (view->currentIndex().isValid() && (view->currentIndex().flags() & Qt::ItemIsEnabled) ) {
+#ifdef QT_KEYPAD_NAVIGATION
+                QKeyEventSoftKey::removeSoftkey(this);
+#endif
                 combo->hidePopup();
                 emit itemSelected(view->currentIndex());
             }
@@ -640,7 +646,7 @@ bool QComboBoxPrivateContainer::eventFilter(QObject *o, QEvent *e)
         case Qt::Key_Escape:
 #ifdef QT_KEYPAD_NAVIGATION
         case Qt::Key_Back:
-        case Qt::Key_Context2: // TODO: aportale, KEYPAD_NAVIGATION_HACK when softkey support is there
+            QKeyEventSoftKey::removeSoftkey(this);
 #endif
             combo->hidePopup();
             return true;
@@ -2435,6 +2441,7 @@ void QComboBox::showPopup()
 #ifdef QT_KEYPAD_NAVIGATION
     if (QApplication::keypadNavigationEnabled())
         view()->setEditFocus(true);
+    QKeyEventSoftKey::addSoftKey(QSoftKeyAction::Cancel, Qt::Key_Back, this);
 #endif
 }
 
