@@ -1973,10 +1973,16 @@ void QListViewPrivate::prepareItemsLayout()
     int frameAroundContents = 0;
     if (q->style()->styleHint(QStyle::SH_ScrollView_FrameOnlyAroundContents))
         frameAroundContents = q->style()->pixelMetric(QStyle::PM_DefaultFrameWidth) * 2;
-    int verticalMargin = vbarpolicy==Qt::ScrollBarAlwaysOff ? 0 :
-        q->style()->pixelMetric(QStyle::PM_ScrollBarExtent, 0, q->verticalScrollBar()) + frameAroundContents;
-    int horizontalMargin =  hbarpolicy==Qt::ScrollBarAlwaysOff ? 0 :
-        q->style()->pixelMetric(QStyle::PM_ScrollBarExtent, 0, q->horizontalScrollBar()) + frameAroundContents;
+
+    // maximumViewportSize() already takes scrollbar into account if policy is
+    // Qt::ScrollBarAlwaysOn but scrollbar extent must be deduced if policy
+    // is Qt::ScrollBarAsNeeded
+    int verticalMargin = vbarpolicy==Qt::ScrollBarAsNeeded
+        ? q->style()->pixelMetric(QStyle::PM_ScrollBarExtent, 0, q->verticalScrollBar()) + frameAroundContents
+        : 0;
+    int horizontalMargin =  hbarpolicy==Qt::ScrollBarAsNeeded
+        ? q->style()->pixelMetric(QStyle::PM_ScrollBarExtent, 0, q->horizontalScrollBar()) + frameAroundContents
+        : 0;
 
     layoutBounds.adjust(0, 0, -verticalMargin, -horizontalMargin);
 

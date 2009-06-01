@@ -841,7 +841,7 @@ Ltop:
             flags = iPtr->operand[1].m_int_value;
 #ifndef QT_NO_REGEXP
             if (flags != 0) {
-                literal += QLatin1String("/");
+                literal += QLatin1Char('/');
                 literal += QString::number(flags);
             }
 #endif
@@ -2396,10 +2396,10 @@ QStringList QScriptContextPrivate::backtrace() const
                 s += QLatin1String("<global>");
             }
         }
-        s += QLatin1String("(");
+        s += QLatin1Char('(');
         for (int i = 0; i < ctx->argc; ++i) {
             if (i > 0)
-                s += QLatin1String(",");
+                s += QLatin1Char(',');
             QScriptValueImpl arg = ctx->args[i];
             if (arg.isObject())
                 s += QLatin1String("[object Object]"); // don't do a function call

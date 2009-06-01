@@ -271,7 +271,7 @@ void QFxPaintedItem::paintGLContents(GLPainter &p)
         QRect area = d->imagecache[i]->area;
         if (topaint.contains(area)) {
             QRectF target(area.x(), area.y(), area.width(), area.height());
-            p.drawImage(target.toRect(), d->imagecache[i]->image);
+            p.drawPixmap(target.toRect(), d->imagecache[i]->image);
             topaint -= area;
             d->imagecache[i]->age=0;
         } else {
@@ -303,12 +303,8 @@ void QFxPaintedItem::paintGLContents(GLPainter &p)
         const QVector<QRect> rects = bigger.rects();
         for (int i = 0; i < rects.count(); ++i) {
             const QRect &r = rects.at(i);
-#if defined(QFX_RENDER_QPAINTER)
-            QImage img(r.size(),QImage::Format_ARGB32_Premultiplied);
-#else
-            QImage img(r.size(),QImage::Format_ARGB32);
-#endif
-            img.fill(0);
+            QPixmap img(r.size());
+            img.fill(Qt::transparent);
             {
                 QPainter qp(&img);
                 qp.translate(-r.x(),-r.y());
@@ -317,13 +313,13 @@ void QFxPaintedItem::paintGLContents(GLPainter &p)
             QFxPaintedItemPrivate::ImageCacheItem *newitem = new QFxPaintedItemPrivate::ImageCacheItem;
             newitem->area = r;
 #if defined(QFX_RENDER_QPAINTER)
-            newitem->image = QSimpleCanvasConfig::Image(QSimpleCanvasConfig::toImage(img));
+            newitem->image = img;
 #else
-            newitem->image.setImage(img);
+            newitem->image.setImage(img.toImage());
 #endif
             d->imagecache.append(newitem);
             QRectF target(r.x(), r.y(), r.width(), r.height());
-            p.drawImage(target.toRect(), newitem->image);
+            p.drawPixmap(target.toRect(), newitem->image);
         }
     }
 #if defined(QFX_RENDER_OPENGL2)

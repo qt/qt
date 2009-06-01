@@ -357,7 +357,7 @@ HashMap<String, String> parseAttributes(const String& string, bool& attrsOK)
     state.gotAttributes = false;
 
     QXmlStreamReader stream;
-    QString dummy = QString(QLatin1String("<?xml version=\"1.0\"?><attrs %1 />")).arg(string);
+    QString dummy = QString::fromLatin1("<?xml version=\"1.0\"?><attrs %1 />").arg(string);
     stream.addData(dummy);
     while (!stream.atEnd()) {
         stream.readNext();

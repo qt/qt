@@ -202,7 +202,6 @@ public:
     void clip(const QVectorPath &path, Qt::ClipOperation op);
     void clip(const QRect &rect, Qt::ClipOperation op);
     void clip(const QRegion &region, Qt::ClipOperation op);
-    void clip(const QPainterPath &path, Qt::ClipOperation op);
 
     enum ClipType {
         RectClip,

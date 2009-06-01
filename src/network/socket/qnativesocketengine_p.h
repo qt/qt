@@ -56,7 +56,9 @@
 #include "QtNetwork/qhostaddress.h"
 #include "private/qabstractsocketengine_p.h"
 #ifndef Q_OS_WIN
-#include "qplatformdefs.h"
+# include "qplatformdefs.h"
+#else
+# include <winsock2.h>
 #endif
 
 QT_BEGIN_NAMESPACE
@@ -89,6 +91,39 @@ static inline int qt_socket_socket(int domain, int type, int protocol)
 #endif
 
 #endif
+
+// Use our own defines and structs which we know are correct
+#  define QT_SS_MAXSIZE 128
+#  define QT_SS_ALIGNSIZE (sizeof(qint64))
+#  define QT_SS_PAD1SIZE (QT_SS_ALIGNSIZE - sizeof (short))
+#  define QT_SS_PAD2SIZE (QT_SS_MAXSIZE - (sizeof (short) + QT_SS_PAD1SIZE + QT_SS_ALIGNSIZE))
+struct qt_sockaddr_storage {
+      short ss_family;
+      char __ss_pad1[QT_SS_PAD1SIZE];
+      qint64 __ss_align;
+      char __ss_pad2[QT_SS_PAD2SIZE];
+};
+
+// sockaddr_in6 size changed between old and new SDK
+// Only the new version is the correct one, so always
+// use this structure.
+struct qt_in6_addr {
+    quint8 qt_s6_addr[16];
+};
+struct qt_sockaddr_in6 {
+    short   sin6_family;            /* AF_INET6 */
+    quint16 sin6_port;              /* Transport level port number */
+    quint32 sin6_flowinfo;          /* IPv6 flow information */
+    struct  qt_in6_addr sin6_addr;  /* IPv6 address */
+    quint32 sin6_scope_id;          /* set of interfaces for a scope */
+};
+
+union qt_sockaddr {
+    sockaddr a;
+    sockaddr_in a4;
+    qt_sockaddr_in6 a6;
+    qt_sockaddr_storage storage;
+};
 
 class QNativeSocketEnginePrivate;
 

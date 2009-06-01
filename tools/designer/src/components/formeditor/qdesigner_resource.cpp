@@ -159,6 +159,7 @@ private:
     QDesignerFormEditorInterface *m_core;
     DesignerPixmapCache  *m_pixmapCache;
     DesignerIconCache    *m_iconCache;
+    const QDesignerLanguageExtension *m_lang;
     bool                  m_saveRelative;
     mutable QMap<QString, bool>   m_usedQrcFiles;
     mutable QMap<QString, bool>   m_loadedQrcFiles;
@@ -168,13 +169,18 @@ QDesignerResourceBuilder::QDesignerResourceBuilder(QDesignerFormEditorInterface 
     m_core(core),
     m_pixmapCache(pixmapCache),
     m_iconCache(iconCache),
+    m_lang(qt_extension<QDesignerLanguageExtension *>(core->extensionManager(), core)),
     m_saveRelative(true)
 {
 }
 
-static inline void setIconPixmap(QIcon::Mode m, QIcon::State s, const QDir &workingDirectory, const QString &v, PropertySheetIconValue &icon)
+static inline void setIconPixmap(QIcon::Mode m, QIcon::State s, const QDir &workingDirectory, 
+                                 QString path, PropertySheetIconValue &icon,
+                                 const QDesignerLanguageExtension *lang = 0)
 {
-    icon.setPixmap(m, s, PropertySheetPixmapValue(QFileInfo(workingDirectory, v).absoluteFilePath()));
+    if (lang == 0 || !lang->isLanguageResource(path))
+        path = QFileInfo(workingDirectory, path).absoluteFilePath();
+    icon.setPixmap(m, s, PropertySheetPixmapValue(path));
 }
 
 QVariant QDesignerResourceBuilder::loadResource(const QDir &workingDirectory, const DomProperty *property) const
@@ -184,7 +190,11 @@ QVariant QDesignerResourceBuilder::loadResource(const QDir &workingDirectory, co
             PropertySheetPixmapValue pixmap;
             DomResourcePixmap *dp = property->elementPixmap();
             if (!dp->text().isEmpty()) {
-                pixmap.setPath(QFileInfo(workingDirectory, dp->text()).absoluteFilePath());
+                if (m_lang != 0 && m_lang->isLanguageResource(dp->text())) {
+                    pixmap.setPath(dp->text());
+                } else {
+                    pixmap.setPath(QFileInfo(workingDirectory, dp->text()).absoluteFilePath());
+                }
 #ifdef OLD_RESOURCE_FORMAT
                 if (dp->hasAttributeResource())
                     m_loadedQrcFiles.insert(QFileInfo(workingDirectory, dp->attributeResource()).absoluteFilePath(), false);
@@ -198,24 +208,24 @@ QVariant QDesignerResourceBuilder::loadResource(const QDir &workingDirectory, co
             DomResourceIcon *di = property->elementIconSet();
             if (const int flags = iconStateFlags(di)) { // new, post 4.4 format
                 if (flags & NormalOff)
-                    setIconPixmap(QIcon::Normal, QIcon::Off, workingDirectory, di->elementNormalOff()->text(), icon);
+                    setIconPixmap(QIcon::Normal, QIcon::Off, workingDirectory, di->elementNormalOff()->text(), icon, m_lang);
                 if (flags & NormalOn)
-                    setIconPixmap(QIcon::Normal, QIcon::On, workingDirectory, di->elementNormalOn()->text(), icon);
+                    setIconPixmap(QIcon::Normal, QIcon::On, workingDirectory, di->elementNormalOn()->text(), icon, m_lang);
                 if (flags & DisabledOff)
-                    setIconPixmap(QIcon::Disabled, QIcon::Off, workingDirectory, di->elementDisabledOff()->text(), icon);
+                    setIconPixmap(QIcon::Disabled, QIcon::Off, workingDirectory, di->elementDisabledOff()->text(), icon, m_lang);
                 if (flags & DisabledOn)
-                    setIconPixmap(QIcon::Disabled, QIcon::On, workingDirectory, di->elementDisabledOn()->text(), icon);
+                    setIconPixmap(QIcon::Disabled, QIcon::On, workingDirectory, di->elementDisabledOn()->text(), icon, m_lang);
                 if (flags & ActiveOff)
-                    setIconPixmap(QIcon::Active, QIcon::Off, workingDirectory, di->elementActiveOff()->text(), icon);
+                    setIconPixmap(QIcon::Active, QIcon::Off, workingDirectory, di->elementActiveOff()->text(), icon, m_lang);
                 if (flags & ActiveOn)
-                    setIconPixmap(QIcon::Active, QIcon::On, workingDirectory, di->elementActiveOn()->text(), icon);
+                    setIconPixmap(QIcon::Active, QIcon::On, workingDirectory, di->elementActiveOn()->text(), icon, m_lang);
                 if (flags & SelectedOff)
-                    setIconPixmap(QIcon::Selected, QIcon::Off, workingDirectory, di->elementSelectedOff()->text(), icon);
+                    setIconPixmap(QIcon::Selected, QIcon::Off, workingDirectory, di->elementSelectedOff()->text(), icon, m_lang);
                 if (flags & SelectedOn)
-                    setIconPixmap(QIcon::Selected, QIcon::On, workingDirectory, di->elementSelectedOn()->text(), icon);
+                    setIconPixmap(QIcon::Selected, QIcon::On, workingDirectory, di->elementSelectedOn()->text(), icon, m_lang);
             } else {
 #ifdef OLD_RESOURCE_FORMAT
-                setIconPixmap(QIcon::Normal, QIcon::Off, workingDirectory, di->text(), icon);
+                setIconPixmap(QIcon::Normal, QIcon::Off, workingDirectory, di->text(), icon, m_lang);
                 if (di->hasAttributeResource())
                     m_loadedQrcFiles.insert(QFileInfo(workingDirectory, di->attributeResource()).absoluteFilePath(), false);
 #endif
@@ -741,26 +751,6 @@ bool QDesignerResource::saveRelative() const
 void QDesignerResource::setSaveRelative(bool relative)
 {
     m_resourceBuilder->setSaveRelative(relative);
-}
-
-static bool addFakeMethods(const DomSlots *domSlots, QStringList &fakeSlots, QStringList &fakeSignals)
-{
-    if (!domSlots)
-        return false;
-
-    bool rc = false;
-    foreach (const QString &fakeSlot, domSlots->elementSlot())
-        if (fakeSlots.indexOf(fakeSlot) == -1) {
-            fakeSlots += fakeSlot;
-            rc = true;
-        }
-
-    foreach (const QString &fakeSignal, domSlots->elementSignal())
-        if (fakeSignals.indexOf(fakeSignal) == -1) {
-            fakeSignals += fakeSignal;
-            rc = true;
-        }
-    return rc;
 }
 
 QWidget *QDesignerResource::create(DomUI *ui, QWidget *parentWidget)
@@ -1425,108 +1415,9 @@ DomLayoutItem *QDesignerResource::createDom(QLayoutItem *item, DomLayout *ui_lay
     return ui_item;
 }
 
-static void addFakeMethodsToWidgetDataBase(const DomCustomWidget *domCustomWidget, WidgetDataBaseItem *item)
-{
-    const DomSlots *domSlots = domCustomWidget->elementSlots();
-    if (!domSlots)
-        return;
-
-    // Merge in new slots, signals
-    QStringList fakeSlots = item->fakeSlots();
-    QStringList fakeSignals = item->fakeSignals();
-    if (addFakeMethods(domSlots, fakeSlots, fakeSignals)) {
-        item->setFakeSlots(fakeSlots);
-        item->setFakeSignals(fakeSignals);
-    }
-}
-
-void QDesignerResource::addCustomWidgetsToWidgetDatabase(DomCustomWidgetList& custom_widget_list)
-{
-    // Perform one iteration of adding the custom widgets to the database,
-    // looking up the base class and inheriting its data.
-    // Remove the succeeded custom widgets from the list.
-    // Classes whose base class could not be found are left in the list.
-    QDesignerWidgetDataBaseInterface *db = m_formWindow->core()->widgetDataBase();
-    for (int i=0; i < custom_widget_list.size(); ) {
-        bool classInserted = false;
-        DomCustomWidget *custom_widget = custom_widget_list[i];
-        const QString customClassName = custom_widget->elementClass();
-        const QString base_class = custom_widget->elementExtends();
-        QString includeFile;
-        IncludeType includeType = IncludeLocal;
-        if (const DomHeader *header = custom_widget->elementHeader()) {
-            includeFile = header->text();
-            if (header->hasAttributeLocation() && header->attributeLocation() == QLatin1String("global"))
-                includeType = IncludeGlobal;
-        }
-        const bool domIsContainer = custom_widget->elementContainer();
-        // Append a new item
-        if (base_class.isEmpty()) {
-            WidgetDataBaseItem *item = new WidgetDataBaseItem(customClassName);
-            item->setPromoted(false);
-            item->setGroup(QApplication::translate("Designer", "Custom Widgets"));
-            item->setIncludeFile(buildIncludeFile(includeFile, includeType));
-            item->setContainer(domIsContainer);
-            item->setCustom(true);
-            addFakeMethodsToWidgetDataBase(custom_widget, item);
-            db->append(item);
-            custom_widget_list.removeAt(i);
-            classInserted = true;
-        } else {
-            // Create a new entry cloned from base class. Note that this will ignore existing
-            // classes, eg, plugin custom widgets.
-            QDesignerWidgetDataBaseItemInterface *item =
-                appendDerived(db, customClassName, QApplication::translate("Designer", "Promoted Widgets"),
-                              base_class,
-                              buildIncludeFile(includeFile, includeType),
-                              true,true);
-            // Ok, base class found.
-            if (item) {
-                // Hack to accommodate for old UI-files in which "contains" is not set properly:
-                // Apply "contains" from DOM only if true (else, eg classes from QFrame might not accept
-                // dropping child widgets on them as container=false). This also allows for
-                // QWidget-derived stacked pages.
-                if (domIsContainer)
-                    item->setContainer(domIsContainer);
-
-                addFakeMethodsToWidgetDataBase(custom_widget, static_cast<WidgetDataBaseItem*>(item));
-                custom_widget_list.removeAt(i);
-                classInserted = true;
-            }
-        }
-        // Skip failed item.
-        if (!classInserted)
-            i++;
-    }
-
-}
 void QDesignerResource::createCustomWidgets(DomCustomWidgets *dom_custom_widgets)
 {
-    if (dom_custom_widgets == 0)
-        return;
-    DomCustomWidgetList custom_widget_list = dom_custom_widgets->elementCustomWidget();
-    // Attempt to insert each item derived from its base class.
-    // This should at most require two iterations in the event that the classes are out of order
-    // (derived first, max depth: promoted custom plugin = 2)
-    for (int iteration = 0;  iteration < 2;  iteration++) {
-        addCustomWidgetsToWidgetDatabase(custom_widget_list);
-        if (custom_widget_list.empty())
-            return;
-    }
-    // Oops, there are classes left whose base class could not be found.
-    // Default them to QWidget with warnings.
-    const QString fallBackBaseClass = QLatin1String("QWidget");
-    for (int i=0; i < custom_widget_list.size(); i++ ) {
-        DomCustomWidget *custom_widget = custom_widget_list[i];
-        const QString customClassName = custom_widget->elementClass();
-        const QString base_class = custom_widget->elementExtends();
-        qDebug() << "** WARNING The base class " << base_class << " of the custom widget class " << customClassName
-            << " could not be found. Defaulting to " << fallBackBaseClass << '.';
-        custom_widget->setElementExtends(fallBackBaseClass);
-    }
-    // One more pass.
-    addCustomWidgetsToWidgetDatabase(custom_widget_list);
-    Q_ASSERT(custom_widget_list.empty());
+    QSimpleResource::handleDomCustomWidgets(core(), dom_custom_widgets);
 }
 
 DomTabStops *QDesignerResource::saveTabStops()

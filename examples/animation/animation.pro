@@ -4,9 +4,7 @@ SUBDIRS          += \
                  animatedtiles \
                  appchooser \
                  easing \
-                 example \
                  moveblocks \
-                 padnavigator-ng \
                  states \
                  stickman \
                  sub-attaq

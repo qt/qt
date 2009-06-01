@@ -416,13 +416,13 @@ QGLShaderProgram *QSimpleCanvasItem::GLPainter::useColorShader(const QColor &col
     return item->basicShaders()->constantColor();
 }
 
-void  QSimpleCanvasItem::GLPainter::drawImage(const QPointF &point, 
+void  QSimpleCanvasItem::GLPainter::drawPixmap(const QPointF &point, 
                                           const GLTexture &texture)
 {
-    drawImage(QRectF(point, QSizeF(texture.width(), texture.height())), texture);
+    drawPixmap(QRectF(point, QSizeF(texture.width(), texture.height())), texture);
 }
 
-void  QSimpleCanvasItem::GLPainter::drawImage(const QRectF &rect, 
+void  QSimpleCanvasItem::GLPainter::drawPixmap(const QRectF &rect, 
                                           const GLTexture &img)
 {
     QGLShaderProgram *shader = useTextureShader();

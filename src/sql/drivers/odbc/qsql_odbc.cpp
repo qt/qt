@@ -213,14 +213,14 @@ static QString qWarnODBCHandle(int handleType, SQLHANDLE handle, int *nativeCode
 
 static QString qODBCWarn(const QODBCPrivate* odbc, int *nativeCode = 0)
 {
-    return (qWarnODBCHandle(SQL_HANDLE_ENV, odbc->hEnv) + QLatin1String(" ")
-             + qWarnODBCHandle(SQL_HANDLE_DBC, odbc->hDbc) + QLatin1String(" ")
+    return (qWarnODBCHandle(SQL_HANDLE_ENV, odbc->hEnv) + QLatin1Char(' ')
+             + qWarnODBCHandle(SQL_HANDLE_DBC, odbc->hDbc) + QLatin1Char(' ')
              + qWarnODBCHandle(SQL_HANDLE_STMT, odbc->hStmt, nativeCode));
 }
 
 static QString qODBCWarn(const QODBCDriverPrivate* odbc, int *nativeCode = 0)
 {
-    return (qWarnODBCHandle(SQL_HANDLE_ENV, odbc->hEnv) + QLatin1String(" ")
+    return (qWarnODBCHandle(SQL_HANDLE_ENV, odbc->hEnv) + QLatin1Char(' ')
              + qWarnODBCHandle(SQL_HANDLE_DBC, odbc->hDbc, nativeCode));
 }
 
@@ -2414,12 +2414,12 @@ QString QODBCDriver::escapeIdentifier(const QString &identifier, IdentifierType)
 {
     QString res = identifier;
     if (d->isMySqlServer) {
-        if(!identifier.isEmpty() && identifier.left(1) != QString(QLatin1Char('`')) && identifier.right(1) != QString(QLatin1Char('`')) ) {
+        if(!identifier.isEmpty() && !identifier.startsWith(QLatin1Char('`')) && !identifier.endsWith(QLatin1Char('`')) ) {
             res.prepend(QLatin1Char('`')).append(QLatin1Char('`'));
             res.replace(QLatin1Char('.'), QLatin1String("`.`"));
         }
     } else {
-        if(!identifier.isEmpty() && identifier.left(1) != QString(QLatin1Char('"')) && identifier.right(1) != QString(QLatin1Char('"')) ) {
+        if(!identifier.isEmpty() && !identifier.startsWith(QLatin1Char('"')) && !identifier.endsWith(QLatin1Char('"')) ) {
             res.replace(QLatin1Char('"'), QLatin1String("\"\""));
             res.prepend(QLatin1Char('"')).append(QLatin1Char('"'));
             res.replace(QLatin1Char('.'), QLatin1String("\".\""));
@@ -2430,13 +2430,10 @@ QString QODBCDriver::escapeIdentifier(const QString &identifier, IdentifierType)
 
 bool QODBCDriver::isIdentifierEscapedImplementation(const QString &identifier, IdentifierType) const
 {
-    QString quote = d->quoteChar();
-    bool isLeftDelimited = identifier.left(1) == quote;
-    bool isRightDelimited = identifier.right(1) == quote;
-    if( identifier.size() > 2 && isLeftDelimited && isRightDelimited )
-        return true;
-    else
-        return false;
+    QChar quote = d->quoteChar();
+    return identifier.size() > 2
+        && identifier.startsWith(quote) //left delimited
+        && identifier.endsWith(quote); //right delimited
 }
 
 QT_END_NAMESPACE

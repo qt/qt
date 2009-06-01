@@ -77,7 +77,7 @@ protected:
     virtual ~QNonContiguousByteDevice();
 
     bool resetDisabled;
-signals:
+Q_SIGNALS:
     void readyRead();
     void readProgress(qint64 current, qint64 total);
 };

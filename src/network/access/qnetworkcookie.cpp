@@ -1026,7 +1026,7 @@ QList<QNetworkCookie> QNetworkCookiePrivate::parseSetCookieHeaderLine(const QByt
 #ifndef QT_NO_DEBUG_STREAM
 QDebug operator<<(QDebug s, const QNetworkCookie &cookie)
 {
-    s.nospace() << "QNetworkCookie(" << cookie.toRawForm(QNetworkCookie::Full) << ")";
+    s.nospace() << "QNetworkCookie(" << cookie.toRawForm(QNetworkCookie::Full) << ')';
     return s.space();
 }
 #endif

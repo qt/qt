@@ -47,18 +47,10 @@
 #include "qanimationstate.h"
 
 //Qt
-
-#if defined(QT_EXPERIMENTAL_SOLUTION)
-#include "qpropertyanimation.h"
-#include "qsequentialanimationgroup.h"
-#include "qstatemachine.h"
-#include "qfinalstate.h"
-#else
 #include <QtCore/QSequentialAnimationGroup>
 #include <QtCore/QPropertyAnimation>
 #include <QtCore/QStateMachine>
 #include <QtCore/QFinalState>
-#endif
 
 Bomb::Bomb(QGraphicsItem * parent, Qt::WindowFlags wFlags)
     : QGraphicsWidget(parent,wFlags), launchAnimation(0)

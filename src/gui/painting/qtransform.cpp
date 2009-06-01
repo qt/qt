@@ -1020,7 +1020,7 @@ QDebug operator<<(QDebug dbg, const QTransform &m)
                   << " 31=" << m.m31()
                   << " 32=" << m.m32()
                   << " 33=" << m.m33()
-                  << ")";
+                  << ')';
     return dbg.space();
 }
 #endif

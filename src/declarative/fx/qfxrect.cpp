@@ -253,7 +253,7 @@ void QFxRect::doUpdate()
 {
 #if defined(QFX_RENDER_QPAINTER)
     Q_D(QFxRect);
-    d->_rectImage = QSimpleCanvasConfig::Image();
+    d->_rectImage = QPixmap();
 #endif
 #if defined(QFX_RENDER_OPENGL)
     Q_D(QFxRect);
@@ -359,7 +359,7 @@ void QFxRect::setRadius(qreal radius)
 
     d->_radius = radius;
 #if defined(QFX_RENDER_QPAINTER)
-    d->_rectImage = QSimpleCanvasConfig::Image();
+    d->_rectImage = QPixmap();
 #elif defined(QFX_RENDER_OPENGL)
     d->_rectTexture.clear();
 #endif
@@ -405,7 +405,7 @@ void QFxRect::setColor(const QColor &c)
 
     d->_color = c;
 #if defined(QFX_RENDER_QPAINTER)
-    d->_rectImage = QSimpleCanvasConfig::Image();
+    d->_rectImage = QPixmap();
 #endif
 #if defined(QFX_RENDER_OPENGL)
     d->_rectTexture.clear();
@@ -483,8 +483,8 @@ void QFxRect::generateRoundedRect()
     Q_D(QFxRect);
     if (d->_rectImage.isNull()) {
         const int pw = d->_pen && d->_pen->isValid() ? d->_pen->width() : 0;
-        d->_rectImage = QImage(d->_radius*2 + 3 + pw*2, d->_radius*2 + 3 + pw*2, QImage::Format_ARGB32_Premultiplied);
-        d->_rectImage.fill(0);
+        d->_rectImage = QPixmap(d->_radius*2 + 3 + pw*2, d->_radius*2 + 3 + pw*2);
+        d->_rectImage.fill(Qt::transparent);
         QPainter p(&(d->_rectImage));
         p.setRenderHint(QPainter::Antialiasing);
         if (d->_pen && d->_pen->isValid()) {
@@ -503,8 +503,8 @@ void QFxRect::generateBorderedRect()
     Q_D(QFxRect);
     if (d->_rectImage.isNull()) {
         const int pw = d->_pen && d->_pen->isValid() ? d->_pen->width() : 0;
-        d->_rectImage = QImage(d->pen()->width()*2 + 3 + pw*2, d->pen()->width()*2 + 3 + pw*2, QImage::Format_ARGB32_Premultiplied);
-        d->_rectImage.fill(0);
+        d->_rectImage = QPixmap(d->pen()->width()*2 + 3 + pw*2, d->pen()->width()*2 + 3 + pw*2);
+        d->_rectImage.fill(Qt::transparent);
         QPainter p(&(d->_rectImage));
         p.setRenderHint(QPainter::Antialiasing);
         if (d->_pen && d->_pen->isValid()) {
@@ -627,39 +627,39 @@ void QFxRect::drawRect(QPainter &p)
         }
 
         // Upper left
-        p.drawImage(QRect(-pw/2, -pw/2, xOffset, yOffset), d->_rectImage, QRect(0, 0, xOffset, yOffset));
+        p.drawPixmap(QRect(-pw/2, -pw/2, xOffset, yOffset), d->_rectImage, QRect(0, 0, xOffset, yOffset));
 
         // Upper middle
         if (xMiddles)
-            p.drawImage(QRect(xOffset-pw/2, -pw/2, width() - xSide + pw, yOffset), d->_rectImage,
+            p.drawPixmap(QRect(xOffset-pw/2, -pw/2, width() - xSide + pw, yOffset), d->_rectImage,
                                   QRect(d->_rectImage.width()/2, 0, 1, yOffset));
         // Upper right
-        p.drawImage(QPoint(width()-xOffset+pw/2, -pw/2), d->_rectImage,
+        p.drawPixmap(QPoint(width()-xOffset+pw/2, -pw/2), d->_rectImage,
                               QRect(d->_rectImage.width()-xOffset, 0, xOffset, yOffset));
         // Middle left
         if (yMiddles)
-            p.drawImage(QRect(-pw/2, yOffset-pw/2, xOffset, height() - ySide + pw), d->_rectImage,
+            p.drawPixmap(QRect(-pw/2, yOffset-pw/2, xOffset, height() - ySide + pw), d->_rectImage,
                                   QRect(0, d->_rectImage.height()/2, xOffset, 1));
 
         // Middle
         if (xMiddles && yMiddles)
             // XXX paint errors in animation example
             //p.fillRect(xOffset-pw/2, yOffset-pw/2, width() - xSide + pw, height() - ySide + pw, d->getColor());
-            p.drawImage(QRect(xOffset-pw/2, yOffset-pw/2, width() - xSide + pw, height() - ySide + pw), d->_rectImage,
+            p.drawPixmap(QRect(xOffset-pw/2, yOffset-pw/2, width() - xSide + pw, height() - ySide + pw), d->_rectImage,
                                 QRect(d->_rectImage.width()/2, d->_rectImage.height()/2, 1, 1));
         // Middle right
         if (yMiddles)
-            p.drawImage(QRect(width()-xOffset+pw/2, yOffset-pw/2, xOffset, height() - ySide + pw), d->_rectImage,
+            p.drawPixmap(QRect(width()-xOffset+pw/2, yOffset-pw/2, xOffset, height() - ySide + pw), d->_rectImage,
                                 QRect(d->_rectImage.width()-xOffset, d->_rectImage.height()/2, xOffset, 1));
         // Lower left 
-        p.drawImage(QPoint(-pw/2, height() - yOffset + pw/2), d->_rectImage, QRect(0, d->_rectImage.height() - yOffset, xOffset, yOffset));
+        p.drawPixmap(QPoint(-pw/2, height() - yOffset + pw/2), d->_rectImage, QRect(0, d->_rectImage.height() - yOffset, xOffset, yOffset));
 
         // Lower Middle
         if (xMiddles)
-            p.drawImage(QRect(xOffset-pw/2, height() - yOffset +pw/2, width() - xSide + pw, yOffset), d->_rectImage,
+            p.drawPixmap(QRect(xOffset-pw/2, height() - yOffset +pw/2, width() - xSide + pw, yOffset), d->_rectImage,
                                 QRect(d->_rectImage.width()/2, d->_rectImage.height() - yOffset, 1, yOffset));
         // Lower Right
-        p.drawImage(QPoint(width()-xOffset+pw/2, height() - yOffset+pw/2), d->_rectImage,
+        p.drawPixmap(QPoint(width()-xOffset+pw/2, height() - yOffset+pw/2), d->_rectImage,
                         QRect(d->_rectImage.width()-xOffset, d->_rectImage.height() - yOffset, xOffset, yOffset));
     }
 }
@@ -672,7 +672,7 @@ void QFxRect::paintGLContents(GLPainter &p)
 {
     Q_D(QFxRect);
     if (d->_radius == 0 && (!d->_pen || !d->_pen->isValid())) {
-        if (d->_gradcolor.isValid()) {
+        if (d->gradient) {
             float widthV = width();
             float heightV = height();
 
@@ -681,20 +681,16 @@ void QFxRect::paintGLContents(GLPainter &p)
                                    0, 0,
                                    widthV, 0 };
 
-            float r = d->_color.redF();
-            float g = d->_color.greenF();
-            float b = d->_color.blueF();
-            float a = d->_color.alphaF() * p.activeOpacity;
-
-            float r2 = d->_gradcolor.redF();
-            float g2 = d->_gradcolor.greenF();
-            float b2 = d->_gradcolor.blueF();
-            float a2 = d->_gradcolor.alphaF() * p.activeOpacity;
-
-            GLfloat colors[] = { r2, g2, b2, a2,
-                                 r2, g2, b2, a2,
-                                 r, g, b, a,
-                                 r, g, b, a };
+            int count = d->gradient->stops()->size();
+            GLfloat colors[count*8];
+            for (int i = 0; i < count; i += 8) {
+                QFxGradientStop *g = d->gradient->stops()->at(i);
+                QColor c = g->color();
+                colors[i] = c.redF(); colors[i+4] = colors[i];
+                colors[i+1] = c.greenF(); colors[i+5] = colors[i+1];
+                colors[i+2] = c.blueF(); colors[i+6] = colors[i+2];
+                colors[i+3] = c.alphaF() * p.activeOpacity; colors[i+7] = colors[i+3];
+            }
 
             ColorShader *shader = basicShaders()->color();
             shader->enable();
@@ -702,7 +698,7 @@ void QFxRect::paintGLContents(GLPainter &p)
 
             shader->setAttributeArray(ColorShader::Vertices, vertices, 2);
             shader->setAttributeArray(ColorShader::Colors, colors, 4);
-            glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+            glDrawArrays(GL_TRIANGLE_STRIP, 0, count*2);
             shader->disableAttributeArray(ColorShader::Vertices);
             shader->disableAttributeArray(ColorShader::Colors);
         } else {

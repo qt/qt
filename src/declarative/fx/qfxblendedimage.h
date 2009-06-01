@@ -99,8 +99,8 @@ private:
     GLTexture prim;
     GLTexture sec;
 #endif
-    QFxPixmap primPix;
-    QFxPixmap secPix;
+    QPixmap primPix;
+    QPixmap secPix;
 };
 QML_DECLARE_TYPE(QFxBlendedImage)
 

@@ -44,7 +44,6 @@
 
 #include <QtCore/QString>
 #include <QtCore/QObject>
-#include <QtGui/QImage>
 #include <QtDeclarative/qfxglobal.h>
 #include <QtDeclarative/qsimplecanvas.h>
 #include <QtDeclarative/qfxpixmap.h>

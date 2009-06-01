@@ -276,6 +276,7 @@ namespace QmlParser
         bool isDefault;
 
         LocationSpan location;
+        LocationRange listValueRange;
 
         void dump(int = 0) const;
     };

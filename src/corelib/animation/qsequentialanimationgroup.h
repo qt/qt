@@ -42,11 +42,7 @@
 #ifndef QSEQUENTIALANIMATIONGROUP_H
 #define QSEQUENTIALANIMATIONGROUP_H
 
-#if defined(QT_EXPERIMENTAL_SOLUTION)
-# include "qanimationgroup.h"
-#else
-# include <QtCore/qanimationgroup.h>
-#endif
+#include <QtCore/qanimationgroup.h>
 
 QT_BEGIN_HEADER
 

@@ -50,22 +50,12 @@
 #include "qanimationstate.h"
 
 //Qt
-#if defined(QT_EXPERIMENTAL_SOLUTION)
-# include "qpropertyanimation.h"
-# include "qstatemachine.h"
-# include "qhistorystate.h"
-# include "qfinalstate.h"
-# include "qstate.h"
-# include "qpauseanimation.h"
-#include "qsequentialanimationgroup.h"
-#else
 #include <QtCore/QPropertyAnimation>
 #include <QtCore/QStateMachine>
 #include <QtCore/QHistoryState>
 #include <QtCore/QFinalState>
 #include <QtCore/QState>
 #include <QtCore/QSequentialAnimationGroup>
-#endif
 
 static QAbstractAnimation *setupDestroyAnimation(Boat *boat)
 {

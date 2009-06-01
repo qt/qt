@@ -66,7 +66,8 @@ public:
 
     static QEventTransitionPrivate *get(QEventTransition *q);
 
-    void invalidate();
+    void unregister();
+    void maybeRegister();
 
     bool registered;
     QObject *object;

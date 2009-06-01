@@ -2386,23 +2386,19 @@ void HtmlGenerator::generateSectionList(const Section& section,
 
             if (name_alignment) {
                 out() << "<tr><td class=\"memItemLeft\" "
-                      << "nowrap align=\"right\" valign=\"top\">";
+                      << "align=\"right\" valign=\"top\">";
             }
             else {
                 if (twoColumn && i == (int) (section.members.count() + 1) / 2)
                     out() << "</ul></td><td valign=\"top\"><ul>\n";
-                out() << "<li><div class=\"fn\"></div>";
+                out() << "<li><div class=\"fn\">";
             }
 
-            if (style == CodeMarker::Accessors)
-                out() << "<b>";
             generateSynopsis(*m, relative, marker, style, name_alignment);
-            if (style == CodeMarker::Accessors)
-                out() << "</b>";
             if (name_alignment)
                 out() << "</td></tr>\n";
             else
-                out() << "</li>\n";
+                out() << "</div></li>\n";
             i++;
             ++m;
         }
@@ -2467,8 +2463,10 @@ void HtmlGenerator::generateSynopsis(const Node *node,
     marked.replace("<@param>", "<i>");
     marked.replace("</@param>", "</i>");
 
-    if (style == CodeMarker::Summary)
-        marked.replace("@name>", "b>");
+    if (style == CodeMarker::Summary) {
+        marked.replace("<@name>", "");   // was "<b>"
+        marked.replace("</@name>", "");  // was "</b>"
+    }
 
     if (style == CodeMarker::SeparateList) {
         QRegExp extraRegExp("<@extra>.*</@extra>");
@@ -3290,7 +3288,7 @@ void HtmlGenerator::generateDetailedMember(const Node *node,
         section.members += property->resetters();
 
         if (!section.members.isEmpty()) {
-            out() << "<p>Access functions:</p>\n";
+            out() << "<p><b>Access functions:</b></p>\n";
             generateSectionList(section, node, marker, CodeMarker::Accessors);
         }
     }

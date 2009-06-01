@@ -192,9 +192,9 @@ void QFxBlendedImage::paintContents(QPainter &p)
     }
 
     if (_blend < 0.75)
-        p.drawImage(0, 0, primPix);
+        p.drawPixmap(0, 0, primPix);
     else
-        p.drawImage(0, 0, secPix);
+        p.drawPixmap(0, 0, secPix);
 
     if (_smooth) {
         p.restore();
@@ -212,8 +212,8 @@ void QFxBlendedImage::paintGLContents(GLPainter &p)
     if (dirty) {
         prim.clear();
         sec.clear();
-        prim.setImage(primPix);
-        sec.setImage(secPix);
+        prim.setImage(primPix.toImage());
+        sec.setImage(secPix.toImage());
 
         dirty = false;
     }

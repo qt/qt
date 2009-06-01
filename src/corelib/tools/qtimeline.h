@@ -45,8 +45,6 @@
 #include <QtCore/qeasingcurve.h>
 #include <QtCore/qobject.h>
 
-QT_EXPERIMENTAL_USE_NAMESPACE
-
 QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE

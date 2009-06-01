@@ -767,8 +767,8 @@ QFontEngine *loadSingleEngine(int script, const QFontPrivate *fp,
         QString fn = qwsFontPath();
         fn += QLatin1Char('/');
         fn += family->name.toLower()
-              + QLatin1String("_") + QString::number(pixelSize*10)
-              + QLatin1String("_") + QString::number(style->key.weight)
+              + QLatin1Char('_') + QString::number(pixelSize*10)
+              + QLatin1Char('_') + QString::number(style->key.weight)
               + (style->key.style == QFont::StyleItalic ?
                  QLatin1String("i.qpf") : QLatin1String(".qpf"));
         //###rotation ###

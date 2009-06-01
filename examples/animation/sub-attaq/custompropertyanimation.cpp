@@ -44,9 +44,6 @@
 // Qt
 #include <QtCore/qdebug.h>
 
-QT_BEGIN_NAMESPACE
-
-
 CustomPropertyAnimation::CustomPropertyAnimation(QObject *parent) :
     QVariantAnimation(parent), animProp(0)
 {
@@ -108,8 +105,4 @@ void CustomPropertyAnimation::updateState(QAbstractAnimation::State oldState, QA
     QVariantAnimation::updateState(oldState, newState);
 }
 
-
-
 #include "moc_custompropertyanimation.cpp"
-
-QT_END_NAMESPACE

@@ -42,13 +42,11 @@
 #ifndef CUSTOMPROPERTYANIMATION_H
 #define CUSTOMPROPERTYANIMATION_H
 
-#if defined(QT_EXPERIMENTAL_SOLUTION)
-# include "qvariantanimation.h"
-#else
-# include <QtCore/qvariantanimation.h>
-#endif
+#include <QtCore/qvariantanimation.h>
 
+QT_BEGIN_NAMESPACE
 class QGraphicsItem;
+QT_END_NAMESPACE
 
 struct AbstractProperty
 {

@@ -525,42 +525,44 @@ QString QFxText::propertyInfo() const
 
 void QFxTextPrivate::drawOutline()
 {
-    QImage img = QImage(imgCache.size(), QImage::Format_ARGB32_Premultiplied);
+    QPixmap img = QPixmap(imgCache.size());
+    img.fill(Qt::transparent);
+
     QPainter ppm(&img);
-    img.fill(qRgba(0, 0, 0, 0));
 
     QPoint pos(imgCache.rect().topLeft());
     pos += QPoint(-1, 0);
-    ppm.drawImage(pos, imgStyleCache);
+    ppm.drawPixmap(pos, imgStyleCache);
     pos += QPoint(2, 0);
-    ppm.drawImage(pos, imgStyleCache);
+    ppm.drawPixmap(pos, imgStyleCache);
     pos += QPoint(-1, -1);
-    ppm.drawImage(pos, imgStyleCache);
+    ppm.drawPixmap(pos, imgStyleCache);
     pos += QPoint(0, 2);
-    ppm.drawImage(pos, imgStyleCache);
+    ppm.drawPixmap(pos, imgStyleCache);
 
     pos += QPoint(0, -1);
-    QPainter &p = ppm;
-    p.drawImage(pos, imgCache);
+    ppm.drawPixmap(pos, imgCache);
+    ppm.end();
 
-    imgCache = QSimpleCanvasConfig::toImage(img);
+    imgCache = img;
 }
 
 void QFxTextPrivate::drawOutline(int yOffset)
 {
-    QImage img = QImage(imgCache.size(), QImage::Format_ARGB32_Premultiplied);
+    QPixmap img = QPixmap(imgCache.size());
+    img.fill(Qt::transparent);
+
     QPainter ppm(&img);
-    img.fill(qRgba(0, 0, 0, 0));
 
     QPoint pos(imgCache.rect().topLeft());
     pos += QPoint(0, yOffset);
-    ppm.drawImage(pos, imgStyleCache);
+    ppm.drawPixmap(pos, imgStyleCache);
 
     pos += QPoint(0, -yOffset);
-    QPainter &p = ppm;
-    p.drawImage(pos, imgCache);
+    ppm.drawPixmap(pos, imgCache);
+    ppm.end();
 
-    imgCache = QSimpleCanvasConfig::toImage(img);
+    imgCache = img;
 }
 
 QSize QFxTextPrivate::setupTextLayout(QTextLayout *layout)
@@ -600,7 +602,7 @@ QSize QFxTextPrivate::setupTextLayout(QTextLayout *layout)
     return QSize((int)widthUsed, height);
 }
 
-QImage QFxTextPrivate::wrappedTextImage(bool drawStyle)
+QPixmap QFxTextPrivate::wrappedTextImage(bool drawStyle)
 {
     //do layout
     QFont f; if (_font) f = _font->font();
@@ -620,8 +622,8 @@ QImage QFxTextPrivate::wrappedTextImage(bool drawStyle)
     }
 
     //paint text
-    QImage img(size, QImage::Format_ARGB32_Premultiplied);
-    img.fill(0);
+    QPixmap img(size);
+    img.fill(Qt::transparent);
     QPainter p(&img);
     if (drawStyle) {
         p.setPen(styleColor);
@@ -633,13 +635,13 @@ QImage QFxTextPrivate::wrappedTextImage(bool drawStyle)
     return img;
 }
 
-QImage QFxTextPrivate::richTextImage(bool drawStyle)
+QPixmap QFxTextPrivate::richTextImage(bool drawStyle)
 {
     QSize size = doc->size().toSize();
 
     //paint text
-    QImage img(size, QImage::Format_ARGB32_Premultiplied);
-    img.fill(0);
+    QPixmap img(size);
+    img.fill(Qt::transparent);
     QPainter p(&img);
 
     if (drawStyle) {
@@ -667,14 +669,14 @@ void QFxTextPrivate::checkImgCache()
 
     bool empty = text.isEmpty();
     if (empty) {
-        imgCache = QSimpleCanvasConfig::Image();
-        imgStyleCache = QImage();
+        imgCache = QPixmap();
+        imgStyleCache = QPixmap();
     } else if (richText) {
-        imgCache = QSimpleCanvasConfig::toImage(richTextImage(false));
+        imgCache = richTextImage(false);
         if (style != QFxText::Normal)
             imgStyleCache = richTextImage(true); //### should use styleColor
     } else {
-        imgCache = QSimpleCanvasConfig::toImage(wrappedTextImage(false));
+        imgCache = wrappedTextImage(false);
         if (style != QFxText::Normal)
             imgStyleCache = wrappedTextImage(true); //### should use styleColor
     }
@@ -694,7 +696,7 @@ void QFxTextPrivate::checkImgCache()
         }
 
 #if defined(QFX_RENDER_OPENGL)
-    tex.setImage(imgCache);
+    tex.setImage(imgCache.toImage());
 #endif
 
     imgDirty = false;
@@ -745,7 +747,7 @@ void QFxText::paintContents(QPainter &p)
         p.save();
         p.setClipRect(boundingRect());
     }
-    p.drawImage(x, y, d->imgCache);
+    p.drawPixmap(x, y, d->imgCache);
     if (needClip)
         p.restore();
 }

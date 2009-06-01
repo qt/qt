@@ -94,14 +94,14 @@ static QByteArray namedPrototype(const QList<QByteArray> &parameterTypes, const 
         prototype += type;
 
         if (p < parameterNames.count())
-            prototype += " " + parameterNames.at(p);
+            prototype += ' ' + parameterNames.at(p);
          
         if (numDefArgs >= parameterTypes.count() - p)
             prototype += " = 0";
         if (p < parameterTypes.count() - 1)
             prototype += ", ";
     }
-    prototype += ")";
+    prototype += ')';
 
     return prototype;
 }
@@ -196,8 +196,8 @@ QString qax_generateDocumentation(QAxBase *that)
             
             prototype = namedPrototype(slot.parameterTypes(), slot.parameterNames());
 	    QString detail = QString::fromLatin1("<h3><a name=") + QString::fromLatin1(name.constData()) + QLatin1String("></a>") +
-                             QString::fromLatin1(returntype.constData()) + QLatin1String(" ") +
-                             QString::fromLatin1(name.constData()) + QLatin1String(" ") +
+                             QLatin1String(returntype.constData()) + QLatin1Char(' ') +
+                             QLatin1String(name.constData()) + QLatin1Char(' ') +
                              QString::fromLatin1(prototype.constData()) + QLatin1String("<tt> [slot]</tt></h3>\n");
             prototype = namedPrototype(slot.parameterTypes(), QList<QByteArray>());
 	    detail += docuFromName(typeInfo, QString::fromLatin1(name.constData()));
@@ -220,14 +220,14 @@ QString qax_generateDocumentation(QAxBase *that)
                     returntype = "QAxObject *";
                 }
                 if (returntype != "void")
-                    detail += QString::fromLatin1(returntype.constData()) + QLatin1String(" result = ");
-                detail += QLatin1String("object->") + QString::fromLatin1(functionToCall.constData()) +
-                          QLatin1String("(\"" + name + prototype + "\"");
+                    detail += QLatin1String(returntype.constData()) + QLatin1String(" result = ");
+                detail += QLatin1String("object->") + QLatin1String(functionToCall.constData()) +
+                          QLatin1String("(\"" + name + prototype + '\"');
                 if (hasParams)
                     detail += QLatin1String(", params");
-                detail += QLatin1String(")");
+                detail += QLatin1Char(')');
                 if (returntype != "void" && returntype != "QAxObject *" && returntype != "QVariant")
-                    detail += QLatin1String(".") + QString::fromLatin1(toType(returntype));
+                    detail += QLatin1Char('.') + QLatin1String(toType(returntype));
 	        detail += QLatin1String(";</pre>\n");
 	    } else {
 		detail += QLatin1String("<p>This function has parameters of unsupported types and cannot be called directly.");
@@ -262,9 +262,9 @@ QString qax_generateDocumentation(QAxBase *that)
 	    QByteArray name = signature.left(signature.indexOf('('));
 	    stream << "<li>void <a href=\"#" << name << "\"><b>" << name << "</b></a>" << prototype << ";</li>" << endl;
 
-            QString detail = QLatin1String("<h3><a name=") + QString::fromLatin1(name.constData()) + QLatin1String("></a>void ") +
-                             QString::fromLatin1(name.constData()) + QLatin1String(" ") +
-                             QString::fromLatin1(prototype.constData()) + QLatin1String("<tt> [signal]</tt></h3>\n");
+            QString detail = QLatin1String("<h3><a name=") + QLatin1String(name.constData()) + QLatin1String("></a>void ") +
+                             QLatin1String(name.constData()) + QLatin1Char(' ') +
+                             QLatin1String(prototype.constData()) + QLatin1String("<tt> [signal]</tt></h3>\n");
             if (typeLib) {
                 interCount = 0;
                 do {
@@ -311,8 +311,8 @@ QString qax_generateDocumentation(QAxBase *that)
 
 	    stream << "<li>" << type << " <a href=\"#" << name << "\"><b>" << name << "</b></a>;</li>" << endl;
 	    QString detail = QLatin1String("<h3><a name=") + QString::fromLatin1(name.constData()) + QLatin1String("></a>") +
-                             QString::fromLatin1(type.constData()) +
-		             QLatin1String(" ") + QString::fromLatin1(name.constData()) + QLatin1String("</h3>\n");
+                             QLatin1String(type.constData()) +
+		             QLatin1Char(' ') + QLatin1String(name.constData()) + QLatin1String("</h3>\n");
 	    detail += docuFromName(typeInfo, QString::fromLatin1(name));
 	    QVariant::Type vartype = QVariant::nameToType(type);
 	    if (!prop.isReadable())
@@ -326,14 +326,14 @@ QString qax_generateDocumentation(QAxBase *that)
                 if (prop.isEnumType())
 		    detail += QLatin1String("\tint val = ");
                 else
-                    detail += QLatin1String("\t") + QString::fromLatin1(type.constData()) + QLatin1String(" val = ");
-		detail += QLatin1String("object->property(\"") + QString::fromLatin1(name.constData()) +
-                          QLatin1String("\").") + QString::fromLatin1(toType(type).constData()) + QLatin1String(";\n");
+                    detail += QLatin1Char('\t') + QLatin1String(type.constData()) + QLatin1String(" val = ");
+		detail += QLatin1String("object->property(\"") + QLatin1String(name.constData()) +
+                          QLatin1String("\").") + QLatin1String(toType(type).constData()) + QLatin1String(";\n");
 		detail += QLatin1String("</pre>\n");
 	    } else if (type == "IDispatch*" || type == "IUnknown*") {
 		detail += QLatin1String("<p>Get the subobject using querySubObject:<pre>\n");
-		detail += QLatin1String("\tQAxObject *") + QString::fromLatin1(name.constData()) +
-                          QLatin1String(" = object->querySubObject(\"") + QString::fromLatin1(name.constData()) + QLatin1String("\");\n");
+		detail += QLatin1String("\tQAxObject *") + QLatin1String(name.constData()) +
+                          QLatin1String(" = object->querySubObject(\"") + QLatin1String(name.constData()) + QLatin1String("\");\n");
 		detail += QLatin1String("</pre>\n");
 	    } else {
 		detail += QLatin1String("<p>This property is of an unsupported type.\n");

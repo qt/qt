@@ -79,15 +79,15 @@ class QAbstractTransition;
 class QHistoryState;
 
 class QState;
-class Q_CORE_EXPORT QStatePrivate : public QAbstractStatePrivate
+class Q_AUTOTEST_EXPORT QStatePrivate : public QAbstractStatePrivate
 {
     Q_DECLARE_PUBLIC(QState)
 public:
     QStatePrivate();
     ~QStatePrivate();
 
-    static QStatePrivate *get(QState *q);
-    static const QStatePrivate *get(const QState *q);
+    static QStatePrivate *get(QState *q) { return q ? q->d_func() : 0; }
+    static const QStatePrivate *get(const QState *q) { return q? q->d_func() : 0; }
 
     QList<QAbstractState*> childStates() const;
     QList<QHistoryState*> historyStates() const;

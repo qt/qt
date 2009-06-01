@@ -158,6 +158,8 @@ QString QFxTextEdit::text() const
 void QFxTextEdit::setText(const QString &text)
 {
     Q_D(QFxTextEdit);
+    if (QFxTextEdit::text() == text)
+        return;
     d->text = text;
     d->richText = d->format == RichText || (d->format == AutoText && Qt::mightBeRichText(text));
     if (d->richText) {

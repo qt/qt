@@ -4,7 +4,8 @@ TEMPLATE = subdirs
 !wince*:SUBDIRS += \
            headers
 
-SUBDIRS += bic \
+SUBDIRS += _networkselftest \
+           bic \
            dynamicobject \
            collections \
            compile \
@@ -296,6 +297,7 @@ SUBDIRS += bic \
            qstandarditem \
            qstandarditemmodel \
            qstate \
+           qstatemachine \
            qstatusbar \
            qstl \
            qstring \

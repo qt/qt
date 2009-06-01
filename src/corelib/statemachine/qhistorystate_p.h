@@ -68,7 +68,6 @@ public:
     QHistoryStatePrivate();
 
     static QHistoryStatePrivate *get(QHistoryState *q);
-    static const QHistoryStatePrivate *get(const QHistoryState *q);
 
     QAbstractState *defaultState;
     QHistoryState::HistoryType historyType;

@@ -47,15 +47,9 @@
 #include "animationmanager.h"
 #include "qanimationstate.h"
 
-#if defined(QT_EXPERIMENTAL_SOLUTION)
-#include "qpropertyanimation.h"
-#include "qstatemachine.h"
-#include "qfinalstate.h"
-#else
 #include <QtCore/QPropertyAnimation>
 #include <QtCore/QStateMachine>
 #include <QtCore/QFinalState>
-#endif
 
 Torpedo::Torpedo(QGraphicsItem * parent, Qt::WindowFlags wFlags)
     : QGraphicsWidget(parent,wFlags), currentSpeed(0), launchAnimation(0)

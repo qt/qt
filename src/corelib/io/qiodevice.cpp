@@ -1745,7 +1745,7 @@ QDebug operator<<(QDebug debug, QIODevice::OpenMode modes)
     }
     qSort(modeList);
     debug << modeList.join(QLatin1String("|"));
-    debug << ")";
+    debug << ')';
     return debug;
 }
 #endif
