@@ -520,7 +520,7 @@ QString QSqlDriver::sqlStatement(StatementType type, const QString &tableName,
                 continue;
             s.append(prepareIdentifier(rec.fieldName(i), QSqlDriver::FieldName, this)).append(QLatin1String(", "));
             if (preparedStatement)
-                vals.append(QLatin1String("?"));
+                vals.append(QLatin1Char('?'));
             else
                 vals.append(formatValue(rec.field(i)));
             vals.append(QLatin1String(", "));
@@ -530,7 +530,7 @@ QString QSqlDriver::sqlStatement(StatementType type, const QString &tableName,
         } else {
             vals.chop(2); // remove trailing comma
             s[s.length() - 2] = QLatin1Char(')');
-            s.append(QLatin1String("VALUES (")).append(vals).append(QLatin1String(")"));
+            s.append(QLatin1String("VALUES (")).append(vals).append(QLatin1Char(')'));
         }
         break; }
     }
@@ -625,10 +625,7 @@ QString QSqlDriver::formatValue(const QSqlField &field, bool trimStrings) const
             break;
         }
         case QVariant::Bool:
-            if (field.value().toBool())
-                r = QLatin1String("1");
-            else
-                r = QLatin1String("0");
+            r = QString::number(field.value().toBool());
             break;
         case QVariant::ByteArray : {
             if (hasFeature(BLOB)) {
@@ -884,12 +881,9 @@ QStringList QSqlDriver::subscribedToNotificationsImplementation() const
 bool QSqlDriver::isIdentifierEscapedImplementation(const QString &identifier, IdentifierType type) const
 {
     Q_UNUSED(type);
-    bool isLeftDelimited = identifier.left(1) == QString(QLatin1Char('"'));
-    bool isRightDelimited = identifier.right(1) == QString(QLatin1Char('"'));
-    if( identifier.size() > 2 && isLeftDelimited && isRightDelimited )
-        return true;
-    else
-        return false;
+    return identifier.size() > 2
+        && identifier.startsWith(QLatin1Char('"')) //left delimited
+        && identifier.endsWith(QLatin1Char('"')); //right delimited
 }
 
 /*!

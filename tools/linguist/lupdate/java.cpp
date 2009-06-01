@@ -375,22 +375,13 @@ static bool matchString( QString &s )
     return true;
 }
 
-static bool matchInteger( qlonglong *number)
-{
-    bool matches = (yyTok == Tok_Integer);
-    if (matches) {
-        yyTok = getToken();
-        *number = yyInteger;
-    }
-    return matches;
-}
-
 static bool matchStringOrNull(QString &s)
 {
     bool matches = matchString(s);
     if (!matches) {
         matches = (yyTok == Tok_null);
-        if (matches) yyTok = getToken();
+        if (matches)
+            yyTok = getToken();
     }
     return matches;
 }

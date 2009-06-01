@@ -90,10 +90,13 @@ public:
     QFxGradientStop(QObject *parent=0) : QObject(parent) {}
 
     qreal position() const { return m_position; }
-    void setPosition(qreal position) { m_position = position; }
+    void setPosition(qreal position) { m_position = position; updateGradient(); }
 
     QColor color() const { return m_color; }
-    void setColor(const QColor &color) { m_color = color; }
+    void setColor(const QColor &color) { m_color = color; updateGradient(); }
+
+private:
+    void updateGradient();
 
 private:
     qreal m_position;
@@ -109,16 +112,23 @@ class Q_DECLARATIVE_EXPORT QFxGradient : public QObject
     Q_CLASSINFO("DefaultProperty", "stops")
 
 public:
-    QFxGradient(QObject *parent=0) : QObject(parent), m_gradient(0), m_created(false) {}
+    QFxGradient(QObject *parent=0) : QObject(parent), m_gradient(0) {}
+    ~QFxGradient() { delete m_gradient; }
 
     QList<QFxGradientStop *> *stops() { return &m_stops; }
 
     const QGradient *gradient() const;
 
+Q_SIGNALS:
+    void updated();
+
+private:
+    void doUpdate();
+
 private:
     QList<QFxGradientStop *> m_stops;
     mutable QGradient *m_gradient;
-    mutable bool m_created;
+    friend class QFxGradientStop;
 };
 QML_DECLARE_TYPE(QFxGradient)
 

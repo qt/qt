@@ -792,7 +792,7 @@ static void initFontDef(const QtFontDesc &desc, const QFontDef &request, QFontDe
     if (! desc.foundry->name.isEmpty() && desc.family->count > 1) {
         fontDef->family += QString::fromLatin1(" [");
         fontDef->family += desc.foundry->name;
-        fontDef->family += QString::fromLatin1("]");
+        fontDef->family += QLatin1Char(']');
     }
 
     if (desc.style->smoothScalable)
@@ -1495,7 +1495,7 @@ QStringList QFontDatabase::families(WritingSystem writingSystem) const
                 if (!foundry.isEmpty()) {
                     str += QLatin1String(" [");
                     str += foundry;
-                    str += QLatin1String("]");
+                    str += QLatin1Char(']');
                 }
                 flist.append(str);
             }

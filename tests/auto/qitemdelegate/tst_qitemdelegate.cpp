@@ -59,6 +59,8 @@
 
 #include <QItemDelegate>
 #include <QAbstractItemDelegate>
+#include <QTextEdit>
+#include <QPlainTextEdit>
 
 Q_DECLARE_METATYPE(QAbstractItemDelegate::EndEditHint)
 
@@ -226,6 +228,8 @@ private slots:
     void decoration();
     void editorEvent_data();
     void editorEvent();
+    void enterKey_data();
+    void enterKey();
 };
 
 
@@ -1047,6 +1051,80 @@ void tst_QItemDelegate::editorEvent()
     QCOMPARE(wasEdited, edited);
     QCOMPARE(index.data(Qt::CheckStateRole).toInt(), expectedCheckState);
 }
+
+void tst_QItemDelegate::enterKey_data()
+{
+    QTest::addColumn<int>("widget");
+    QTest::addColumn<int>("key");
+    QTest::addColumn<bool>("expectedFocus");
+    
+    QTest::newRow("lineedit enter") << 1 << int(Qt::Key_Enter) << false;
+    QTest::newRow("textedit enter") << 2 << int(Qt::Key_Enter) << true;
+    QTest::newRow("plaintextedit enter") << 3 << int(Qt::Key_Enter) << true;
+    QTest::newRow("plaintextedit return") << 3 << int(Qt::Key_Return) << true;
+    QTest::newRow("plaintextedit tab") << 3 << int(Qt::Key_Tab) << false;
+    QTest::newRow("lineedit tab") << 1 << int(Qt::Key_Tab) << false;
+}
+
+void tst_QItemDelegate::enterKey()
+{
+    QFETCH(int, widget);
+    QFETCH(int, key);
+    QFETCH(bool, expectedFocus);
+    
+    QStandardItemModel model;
+    model.appendRow(new QStandardItem());
+    
+    QListView view;
+    view.setModel(&model);
+    view.show();
+    QApplication::setActiveWindow(&view);
+    view.setFocus();
+    QTest::qWait(30);
+    
+    struct TestDelegate : public QItemDelegate
+    {
+        int widgetType;
+        virtual QWidget* createEditor(QWidget* parent, const QStyleOptionViewItem& /*option*/, const QModelIndex& /*index*/) const
+        {
+            QWidget *editor = 0;
+            switch(widgetType) {
+                case 1: 
+                    editor = new QLineEdit(parent);
+                    break;
+                case 2:
+                    editor = new QTextEdit(parent);
+                    break;
+                case 3:
+                    editor = new QPlainTextEdit(parent);
+                    break;
+            }
+            editor->setObjectName(QString::fromLatin1("TheEditor"));
+            return editor;
+        }
+    } delegate;
+    
+    delegate.widgetType = widget;
+    
+    view.setItemDelegate(&delegate);
+    QModelIndex index = model.index(0, 0);
+    view.setCurrentIndex(index); // the editor will only selectAll on the current index
+    view.edit(index);
+    QTest::qWait(30);
+    
+    QList<QWidget*> lineEditors = qFindChildren<QWidget *>(view.viewport(), QString::fromLatin1("TheEditor"));
+    QCOMPARE(lineEditors.count(), 1);
+    
+    QWidget *editor = lineEditors.at(0);
+    QCOMPARE(editor->hasFocus(), true);
+    
+    QTest::keyClick(editor, Qt::Key(key));
+    QApplication::processEvents();
+    
+    QCOMPARE(editor->hasFocus(), expectedFocus);
+}
+
+
 
 // ### _not_ covered:
 

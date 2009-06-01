@@ -60,6 +60,8 @@
 
 QT_BEGIN_NAMESPACE
 
+uint qHash(const QPixmapCache::Key &k);
+
 class QPixmapCache::KeyData
 {
 public:

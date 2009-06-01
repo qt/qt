@@ -110,7 +110,7 @@ public:
     };
 
     enum OptimizationFlag {
-        DontClipPainter = 0x1,
+        DontClipPainter = 0x1, // obsolete
         DontSavePainterState = 0x2,
         DontAdjustForAntialiasing = 0x4
     };

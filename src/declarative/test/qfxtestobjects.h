@@ -60,7 +60,7 @@ Q_OBJECT
 public:
     TestObject(QObject * = 0);
 
-    Q_PROPERTY(int time READ time WRITE setTime NOTIFY dataChanged);
+    Q_PROPERTY(int time READ time WRITE setTime NOTIFY dataChanged)
     int time() const;
     void setTime(int);
 
@@ -78,7 +78,7 @@ Q_OBJECT
 public:
     TestFrame(QObject * = 0);
     
-    Q_PROPERTY(QString hash READ hash WRITE setHash NOTIFY frameChanged);
+    Q_PROPERTY(QString hash READ hash WRITE setHash NOTIFY frameChanged)
     QString hash() const;
     void setHash(const QString &);
 
@@ -96,7 +96,7 @@ Q_OBJECT
 public:
     TestFullFrame(QObject * = 0);
 
-    Q_PROPERTY(int frameId READ frameId WRITE setFrameId NOTIFY frameChanged);
+    Q_PROPERTY(int frameId READ frameId WRITE setFrameId NOTIFY frameChanged)
     int frameId() const;
     void setFrameId(int);
 
@@ -114,23 +114,23 @@ Q_OBJECT
 public:
     TestMouse(QObject * = 0);
 
-    Q_PROPERTY(int type READ type WRITE setType NOTIFY mouseChanged);
+    Q_PROPERTY(int type READ type WRITE setType NOTIFY mouseChanged)
     int type() const;
     void setType(int);
 
-    Q_PROPERTY(int button READ button WRITE setButton NOTIFY mouseChanged);
+    Q_PROPERTY(int button READ button WRITE setButton NOTIFY mouseChanged)
     int button() const;
     void setButton(int);
 
-    Q_PROPERTY(int buttons READ buttons WRITE setButtons NOTIFY mouseChanged);
+    Q_PROPERTY(int buttons READ buttons WRITE setButtons NOTIFY mouseChanged)
     int buttons() const;
     void setButtons(int);
 
-    Q_PROPERTY(QPoint globalPos READ globalPos WRITE setGlobalPos NOTIFY mouseChanged);
+    Q_PROPERTY(QPoint globalPos READ globalPos WRITE setGlobalPos NOTIFY mouseChanged)
     QPoint globalPos() const;
     void setGlobalPos(const QPoint &);
 
-    Q_PROPERTY(QPoint pos READ pos WRITE setPos NOTIFY mouseChanged);
+    Q_PROPERTY(QPoint pos READ pos WRITE setPos NOTIFY mouseChanged)
     QPoint pos() const;
     void setPos(const QPoint &);
 
@@ -153,19 +153,19 @@ Q_OBJECT
 public:
     TestKey(QObject * = 0);
 
-    Q_PROPERTY(int type READ type WRITE setType NOTIFY keyChanged);
+    Q_PROPERTY(int type READ type WRITE setType NOTIFY keyChanged)
     int type() const;
     void setType(int);
 
-    Q_PROPERTY(int modifiers READ modifiers WRITE setModifiers NOTIFY keyChanged);
+    Q_PROPERTY(int modifiers READ modifiers WRITE setModifiers NOTIFY keyChanged)
     int modifiers() const;
     void setModifiers(int);
 
-    Q_PROPERTY(QString text READ text WRITE setText NOTIFY keyChanged);
+    Q_PROPERTY(QString text READ text WRITE setText NOTIFY keyChanged)
     QString text() const;
     void setText(const QString &);
 
-    Q_PROPERTY(int key READ key WRITE setKey NOTIFY keyChanged);
+    Q_PROPERTY(int key READ key WRITE setKey NOTIFY keyChanged)
     int key() const;
     void setKey(int);
 
@@ -187,8 +187,8 @@ Q_OBJECT
 public:
     TestLog(QObject * = 0);
 
-    Q_CLASSINFO("DefaultProperty", "actions");
-    Q_PROPERTY(QList<TestObject *> *actions READ qmlActions);
+    Q_CLASSINFO("DefaultProperty", "actions")
+    Q_PROPERTY(QList<TestObject *> *actions READ qmlActions)
     QList<TestObject *> *qmlActions();
 
     QList<TestObject *> &actions();

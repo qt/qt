@@ -1030,7 +1030,7 @@ QVariant QSpinBoxPrivate::validateAndInterpret(QString &input, int &pos,
 {
     if (cachedText == input && !input.isEmpty()) {
         state = cachedState;
-        QSBDEBUG() << "cachedText was" << "'" << cachedText << "'" << "state was "
+        QSBDEBUG() << "cachedText was '" << cachedText << "' state was "
                    << state << " and value was " << cachedValue;
 
         return cachedValue;
@@ -1048,7 +1048,7 @@ QVariant QSpinBoxPrivate::validateAndInterpret(QString &input, int &pos,
                        || (min >= 0 && copy == QLatin1String("+")))) {
         state = QValidator::Intermediate;
         QSBDEBUG() << __FILE__ << __LINE__<< "num is set to" << num;
-    } else if (copy.startsWith(QLatin1String("-")) && min >= 0) {
+    } else if (copy.startsWith(QLatin1Char('-')) && min >= 0) {
         state = QValidator::Invalid; // special-case -0 will be interpreted as 0 and thus not be invalid with a range from 0-100
     } else {
         bool ok = false;
@@ -1254,9 +1254,7 @@ QVariant QDoubleSpinBoxPrivate::valueFromText(const QString &f) const
 
 double QDoubleSpinBoxPrivate::round(double value) const
 {
-    Q_Q(const QDoubleSpinBox);
-    const QString strDbl = q->locale().toString(value, 'f', decimals);
-    return q->locale().toDouble(strDbl);
+    return QString::number(value, 'f', decimals).toDouble();
 }
 
 
@@ -1271,7 +1269,7 @@ QVariant QDoubleSpinBoxPrivate::validateAndInterpret(QString &input, int &pos,
 {
     if (cachedText == input && !input.isEmpty()) {
         state = cachedState;
-        QSBDEBUG() << "cachedText was" << "'" << cachedText << "'" << "state was "
+        QSBDEBUG() << "cachedText was '" << cachedText << "' state was "
                    << state << " and value was " << cachedValue;
         return cachedValue;
     }

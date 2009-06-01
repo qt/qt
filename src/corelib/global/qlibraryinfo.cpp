@@ -434,14 +434,14 @@ QLibraryInfo::location(LibraryLocation loc)
 #else
             if (QCoreApplication::instance()) {
 #ifdef Q_OS_MAC
-	        CFBundleRef bundleRef = CFBundleGetMainBundle();
-		if (bundleRef) {
-		    QCFType<CFURLRef> urlRef = CFBundleCopyBundleURL(bundleRef);
-		    if (urlRef) {
-		        QCFString path = CFURLCopyFileSystemPath(urlRef, kCFURLPOSIXPathStyle);
-		        return QDir::cleanPath(path + QLatin1String("/Contents"));
-		    }
-		}
+                CFBundleRef bundleRef = CFBundleGetMainBundle();
+                if (bundleRef) {
+                    QCFType<CFURLRef> urlRef = CFBundleCopyBundleURL(bundleRef);
+                    if (urlRef) {
+                        QCFString path = CFURLCopyFileSystemPath(urlRef, kCFURLPOSIXPathStyle);
+                        return QDir::cleanPath(path + QLatin1String("/Contents/") + ret);
+                    }
+                }
 #endif
                 return QDir(QCoreApplication::applicationDirPath()).absoluteFilePath(ret);
             } else {

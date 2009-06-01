@@ -90,6 +90,7 @@
 
 QT_BEGIN_NAMESPACE
 extern void onApplicationChangedActivation(bool); // qapplication_mac.mm
+extern void qt_release_apple_event_handler(); //qapplication_mac.mm
 QT_END_NAMESPACE
 
 QT_FORWARD_DECLARE_CLASS(QDesktopWidgetImplementation)
@@ -207,7 +208,6 @@ static void cleanupCocoaApplicationDelegate()
 {
     Q_UNUSED(aNotification);
     inLaunch = false;
-    extern void qt_release_apple_event_handler(); //qapplication_mac.mm
     qt_release_apple_event_handler();
 }
 

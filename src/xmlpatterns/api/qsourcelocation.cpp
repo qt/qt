@@ -206,7 +206,7 @@ QDebug operator<<(QDebug debug, const QSourceLocation &sourceLocation)
           << sourceLocation.line()
           << ", column:"
           << sourceLocation.column()
-          << ")";
+          << ')';
     return debug;
 }
 #endif

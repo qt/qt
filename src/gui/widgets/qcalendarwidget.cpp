@@ -198,7 +198,7 @@ QString QCalendarDayValidator::text() const
 {
     QString str;
     if (m_day / 10 == 0)
-        str += QLatin1String("0");
+        str += QLatin1Char('0');
     str += QString::number(m_day);
     return highlightString(str, m_pos);
 }
@@ -210,7 +210,7 @@ QString QCalendarDayValidator::text(const QDate &date, int repeat) const
     } else if (repeat == 2) {
         QString str;
         if (date.day() / 10 == 0)
-            str += QLatin1String("0");
+            str += QLatin1Char('0');
         return str + QString::number(date.day());
     } else if (repeat == 3) {
         return m_locale.dayName(date.dayOfWeek(), QLocale::ShortFormat);
@@ -316,7 +316,7 @@ QString QCalendarMonthValidator::text() const
 {
     QString str;
     if (m_month / 10 == 0)
-        str += QLatin1String("0");
+        str += QLatin1Char('0');
     str += QString::number(m_month);
     return highlightString(str, m_pos);
 }
@@ -328,7 +328,7 @@ QString QCalendarMonthValidator::text(const QDate &date, int repeat) const
     } else if (repeat == 2) {
         QString str;
         if (date.month() / 10 == 0)
-            str += QLatin1String("0");
+            str += QLatin1Char('0');
         return str + QString::number(date.month());
     } else if (repeat == 3) {
         return m_locale.standaloneMonthName(date.month(), QLocale::ShortFormat);
@@ -432,7 +432,7 @@ QString QCalendarYearValidator::text() const
     int pow = 10;
     for (int i = 0; i < 3; i++) {
         if (m_year / pow == 0)
-            str += QLatin1String("0");
+            str += QLatin1Char('0');
         pow *= 10;
     }
     str += QString::number(m_year);
@@ -445,7 +445,7 @@ QString QCalendarYearValidator::text(const QDate &date, int repeat) const
         QString str;
         int year = date.year() % 100;
         if (year / 10 == 0)
-            str = QLatin1String("0");
+            str = QLatin1Char('0');
         return str + QString::number(year);
     }
     return QString::number(date.year());
@@ -577,7 +577,7 @@ void QCalendarDateValidator::setFormat(const QString &format)
     clear();
 
     int pos = 0;
-    const QLatin1String quote("'");
+    const QLatin1Char quote('\'');
     bool quoting = false;
     QString separator;
     while (pos < format.size()) {

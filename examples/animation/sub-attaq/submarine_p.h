@@ -3,7 +3,7 @@
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
 ** Contact: Qt Software Information (qt-info@nokia.com)
 **
-** This file is part of the QtCore module of the Qt Toolkit.
+** This file is part of the examples of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -42,17 +42,24 @@
 #ifndef SUBMARINE_P_H
 #define SUBMARINE_P_H
 
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists purely as an
+// implementation detail.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
+
 //Own
 #include "animationmanager.h"
 #include "submarine.h"
 #include "qanimationstate.h"
 
 //Qt
-#if defined(QT_EXPERIMENTAL_SOLUTION)
-#include "qpropertyanimation.h"
-#else
 #include <QtCore/QPropertyAnimation>
-#endif
 #include <QtGui/QGraphicsScene>
 
 //This state is describing when the boat is moving right

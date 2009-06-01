@@ -43,20 +43,14 @@
 #define __BOMB__H__
 
 //Qt
-#if defined(QT_EXPERIMENTAL_SOLUTION)
-# include "qanimationgroup.h"
-# include "qgraphicswidget.h"
-#else
-# include <QtGui/QGraphicsWidget>
-# include <QtCore/QAnimationGroup>
-#endif
+#include <QtGui/QGraphicsWidget>
+#include <QtCore/QAnimationGroup>
 
 class PixmapItem;
 
 class Bomb : public QGraphicsWidget
 {
 Q_OBJECT
-Q_PROPERTY(QPointF pos READ pos WRITE setPos)
 public:
     enum Direction {
         Left =  0,
@@ -66,7 +60,7 @@ public:
     void launch(Direction direction);
     void destroy();
 
-Q_SIGNALS:
+signals:
     void bombExplosed();
     void bombExecutionFinished();
 

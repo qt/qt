@@ -100,7 +100,7 @@ int APIENTRY WinMain(HINSTANCE instance, HINSTANCE prevInstance, LPSTR /*cmdPara
 #if defined(Q_OS_WINCE)
     TCHAR appName[256];
     GetModuleFileName(0, appName, 255);
-    cmdParam = QString(QLatin1String("\"%1\" ")).arg(QString::fromUtf16((const unsigned short *)appName)).toLocal8Bit() + cmdParam;
+    cmdParam.prepend(QString::fromLatin1("\"%1\" ").arg(QString::fromUtf16((const unsigned short *)appName)).toLocal8Bit());
 #endif
 
     int argc = 0;
@@ -110,7 +110,7 @@ int APIENTRY WinMain(HINSTANCE instance, HINSTANCE prevInstance, LPSTR /*cmdPara
 #if defined(Q_OS_WINCE)
     TCHAR uniqueAppID[256];
     GetModuleFileName(0, uniqueAppID, 255);
-    QString uid = QString::fromUtf16((const unsigned short *)uniqueAppID).toLower().replace(QString(QLatin1String("\\")), QString(QLatin1String("_")));
+    QString uid = QString::fromUtf16((const unsigned short *)uniqueAppID).toLower().replace(QLatin1Char('\\'), QLatin1Char('_'));
 
     // If there exists an other instance of this application
     // it will be the owner of a mutex with the unique ID.

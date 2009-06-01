@@ -125,10 +125,10 @@ QString Ui3Reader::fixString(const QString &str, bool encode)
     QString s;
     if (!encode) {
         s = str;
-        s.replace(QLatin1String("\\"), QLatin1String("\\\\"));
-        s.replace(QLatin1String("\""), QLatin1String("\\\""));
-        s.replace(QLatin1String("\r"), QLatin1String(""));
-        s.replace(QLatin1String("\n"), QLatin1String("\\n\"\n\""));
+        s.replace(QLatin1Char('\\'), QLatin1String("\\\\"));
+        s.replace(QLatin1Char('\"'), QLatin1String("\\\""));
+        s.remove(QLatin1Char('\r'));
+        s.replace(QLatin1Char('\n'), QLatin1String("\\n\"\n\""));
     } else {
         QByteArray utf8 = str.utf8();
         const int l = utf8.length();
@@ -136,7 +136,7 @@ QString Ui3Reader::fixString(const QString &str, bool encode)
             s += QLatin1String("\\x") + QString::number((uchar)utf8[i], 16);
     }
 
-    return QLatin1String("\"") + s + QLatin1String("\"");
+    return QLatin1Char('\"') + s + QLatin1Char('\"');
 }
 
 QString Ui3Reader::trcall(const QString& sourceText, const QString& comment)
@@ -158,12 +158,12 @@ QString Ui3Reader::trcall(const QString& sourceText, const QString& comment)
     }
 
     if (comment.isEmpty()) {
-        return t + QLatin1String("(") + fixString(sourceText, encode) + QLatin1String(")");
+        return t + QLatin1Char('(') + fixString(sourceText, encode) + QLatin1Char(')');
     } else {
-        return t + QLatin1String("(")
+        return t + QLatin1Char('(')
             + fixString(sourceText, encode)
             + QLatin1String(", ")
-            + fixString(comment, encode) + QLatin1String(")");
+            + fixString(comment, encode) + QLatin1Char(')');
     }
 }
 
@@ -480,10 +480,10 @@ void Ui3Reader::createColorGroupImpl(const QString& name, const QDomElement& e)
             QString pixmap = n.firstChild().toText().data();
             if (!pixmapLoaderFunction.isEmpty()) {
                 pixmap.prepend(pixmapLoaderFunction
-                    + QLatin1String("(")
+                    + QLatin1Char('(')
                     + QLatin1String(externPixmaps ? "\"" : ""));
 
-                pixmap.append(QLatin1String(externPixmaps ? "\"" : "") + QLatin1String(")"));
+                pixmap.append(QLatin1String(externPixmaps ? "\"" : "") + QLatin1Char(')'));
             }
             out << indent << name << ".setBrush(QColorGroup::"
                 << ColorRole[r] << ", QBrush(" << color << ", " << pixmap << "));" << endl;
@@ -578,9 +578,9 @@ QString Ui3Reader::registerObject(const QString& name)
 
     if (objectNames.contains(result)) {
         int i = 2;
-        while (objectNames.contains(result + QLatin1String("_") + QString::number(i)))
+        while (objectNames.contains(result + QLatin1Char('_') + QString::number(i)))
             i++;
-        result += QLatin1String("_");
+        result += QLatin1Char('_');
         result += QString::number(i);
     }
     objectNames += result;

@@ -221,9 +221,9 @@ bool QMultiScreen::connect(const QString &displaySpec)
 {
     QString dSpec = displaySpec;
     if (dSpec.startsWith(QLatin1String("Multi:"), Qt::CaseInsensitive))
-        dSpec = dSpec.mid(QString(QLatin1String("Multi:")).size());
+        dSpec = dSpec.mid(QString::fromLatin1("Multi:").size());
 
-    const QString displayIdSpec = QString(QLatin1String(" :%1")).arg(displayId);
+    const QString displayIdSpec = QString::fromLatin1(" :%1").arg(displayId);
     if (dSpec.endsWith(displayIdSpec))
         dSpec = dSpec.left(dSpec.size() - displayIdSpec.size());
 

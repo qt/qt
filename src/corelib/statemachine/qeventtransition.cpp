@@ -111,19 +111,20 @@ QEventTransitionPrivate *QEventTransitionPrivate::get(QEventTransition *q)
     return q->d_func();
 }
 
-void QEventTransitionPrivate::invalidate()
+void QEventTransitionPrivate::unregister()
 {
     Q_Q(QEventTransition);
-    if (registered) {
-        QState *source = sourceState();
-        QStatePrivate *source_d = QStatePrivate::get(source);
-        QStateMachinePrivate *mach = QStateMachinePrivate::get(source_d->machine());
-        if (mach) {
-            mach->unregisterEventTransition(q);
-            if (mach->configuration.contains(source))
-                mach->registerEventTransition(q);
-        }
-    }
+    if (!registered || !machine())
+        return;
+    QStateMachinePrivate::get(machine())->unregisterEventTransition(q);
+}
+
+void QEventTransitionPrivate::maybeRegister()
+{
+    Q_Q(QEventTransition);
+    if (!machine() || !machine()->configuration().contains(sourceState()))
+        return;
+    QStateMachinePrivate::get(machine())->registerEventTransition(q);
 }
 
 /*!
@@ -223,8 +224,9 @@ void QEventTransition::setEventType(QEvent::Type type)
     Q_D(QEventTransition);
     if (d->eventType == type)
         return;
+    d->unregister();
     d->eventType = type;
-    d->invalidate();
+    d->maybeRegister();
 }
 
 /*!
@@ -245,8 +247,9 @@ void QEventTransition::setEventObject(QObject *object)
     Q_D(QEventTransition);
     if (d->object == object)
         return;
+    d->unregister();
     d->object = object;
-    d->invalidate();
+    d->maybeRegister();
 }
 
 /*!

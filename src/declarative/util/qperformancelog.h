@@ -64,7 +64,7 @@ namespace QPerformanceLog
     void displayData(LogData *);
     void clear(LogData *);
 #endif
-};
+}
 
 #ifdef Q_ENABLE_PERFORMANCE_LOG
 

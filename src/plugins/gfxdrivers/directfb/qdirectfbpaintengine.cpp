@@ -383,7 +383,7 @@ void QDirectFBPaintEngine::clip(const QVectorPath &path, Qt::ClipOperation op)
 {
     Q_D(QDirectFBPaintEngine);
     d->dirtyClip = true;
-    const QPoint bottom = d->transform.map(QPoint(0, path.controlPointRect().y2));
+    const QPoint bottom = d->transform.map(QPoint(0, int(path.controlPointRect().y2)));
     if (bottom.y() >= d->lastLockedHeight)
         d->lock();
     QRasterPaintEngine::clip(path, op);

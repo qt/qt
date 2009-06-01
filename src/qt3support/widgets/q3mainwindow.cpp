@@ -2261,7 +2261,7 @@ static void saveDockArea(QTextStream &ts, Q3DockArea *a)
     for (int i = 0; i < l.size(); ++i) {
         Q3DockWindow *dw = l.at(i);
         ts << QString(dw->windowTitle());
-        ts << ",";
+        ts << ',';
     }
     ts << endl;
     ts << *a;
@@ -2287,7 +2287,7 @@ QTextStream &operator<<(QTextStream &ts, const Q3MainWindow &mainWindow)
     for (int i = 0; i < l.size(); ++i) {
         Q3DockWindow *dw = l.at(i);
         ts << dw->windowTitle();
-        ts << ",";
+        ts << ',';
     }
     ts << endl;
 
@@ -2295,17 +2295,17 @@ QTextStream &operator<<(QTextStream &ts, const Q3MainWindow &mainWindow)
     for (int i = 0; i < l.size(); ++i) {
         Q3DockWindow *dw = l.at(i);
         ts << dw->windowTitle();
-        ts << ",";
+        ts << ',';
     }
     ts << endl;
     for (int i = 0; i < l.size(); ++i) {
         Q3DockWindow *dw = l.at(i);
-        ts << "[" << dw->windowTitle() << ","
-           << (int)dw->geometry().x() << ","
-           << (int)dw->geometry().y() << ","
-           << (int)dw->geometry().width() << ","
-           << (int)dw->geometry().height() << ","
-           << (int)dw->isVisible() << "]";
+        ts << '[' << dw->windowTitle() << ','
+           << (int)dw->geometry().x() << ','
+           << (int)dw->geometry().y() << ','
+           << (int)dw->geometry().width() << ','
+           << (int)dw->geometry().height() << ','
+           << (int)dw->isVisible() << ']';
     }
     ts << endl;
 

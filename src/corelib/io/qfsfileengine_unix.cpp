@@ -83,12 +83,12 @@ static QByteArray openModeToFopenMode(QIODevice::OpenMode flags, const QString &
     } else if (flags & QIODevice::WriteOnly) {
         mode = "wb";
         if (flags & QIODevice::ReadOnly)
-            mode += "+";
+            mode += '+';
     }
     if (flags & QIODevice::Append) {
         mode = "ab";
         if (flags & QIODevice::ReadOnly)
-            mode += "+";
+            mode += '+';
     }
     return mode;
 }
@@ -273,9 +273,8 @@ qint64 QFSFileEnginePrivate::nativeRead(char *data, qint64 len)
         int oldFlags = fcntl(QT_FILENO(fh), F_GETFL);
         for (int i = 0; i < 2; ++i) {
             // Unix: Make the underlying file descriptor non-blocking
-            int v = 1;
             if ((oldFlags & O_NONBLOCK) == 0)
-                fcntl(QT_FILENO(fh), F_SETFL, oldFlags | O_NONBLOCK, &v, sizeof(v));
+                fcntl(QT_FILENO(fh), F_SETFL, oldFlags | O_NONBLOCK);
 
             // Cross platform stdlib read
             size_t read = 0;
@@ -293,8 +292,7 @@ qint64 QFSFileEnginePrivate::nativeRead(char *data, qint64 len)
 
             // Unix: Restore the blocking state of the underlying socket
             if ((oldFlags & O_NONBLOCK) == 0) {
-                int v = 1;
-                fcntl(QT_FILENO(fh), F_SETFL, oldFlags, &v, sizeof(v));
+                fcntl(QT_FILENO(fh), F_SETFL, oldFlags);
                 if (readBytes == 0) {
                     int readByte = 0;
                     do {
@@ -311,8 +309,7 @@ qint64 QFSFileEnginePrivate::nativeRead(char *data, qint64 len)
         }
         // Unix: Restore the blocking state of the underlying socket
         if ((oldFlags & O_NONBLOCK) == 0) {
-            int v = 1;
-            fcntl(QT_FILENO(fh), F_SETFL, oldFlags, &v, sizeof(v));
+            fcntl(QT_FILENO(fh), F_SETFL, oldFlags);
         }
         if (readBytes == 0 && !feof(fh)) {
             // if we didn't read anything and we're not at EOF, it must be an error
@@ -726,7 +723,7 @@ QString QFSFileEngine::fileName(FileName file) const
         bool isDir = ret.endsWith(QLatin1Char('/'));
         ret = QDir::cleanPath(ret);
         if (isDir)
-            ret += QLatin1String("/");
+            ret += QLatin1Char('/');
         if (file == AbsolutePathName) {
             int slash = ret.lastIndexOf(QLatin1Char('/'));
             if (slash == -1)

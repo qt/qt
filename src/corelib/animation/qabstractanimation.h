@@ -123,10 +123,6 @@ protected:
     virtual void updateState(QAbstractAnimation::State oldState, QAbstractAnimation::State newState);
     virtual void updateDirection(QAbstractAnimation::Direction direction);
 
-#ifdef QT_EXPERIMENTAL_SOLUTION
-     QAbstractAnimationPrivate *d_ptr;
-#endif
-
 private:
     Q_DISABLE_COPY(QAbstractAnimation)
     Q_DECLARE_PRIVATE(QAbstractAnimation)

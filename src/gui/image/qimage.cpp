@@ -4853,8 +4853,6 @@ bool QImage::operator==(const QImage & i) const
         return false;
 
     if (d->format != Format_RGB32) {
-        if (d->colortable != i.d->colortable)
-            return false;
         if (d->format >= Format_ARGB32) { // all bits defined
             const int n = d->width * d->depth / 8;
             if (n == d->bytes_per_line && n == i.d->bytes_per_line) {
@@ -4867,11 +4865,13 @@ bool QImage::operator==(const QImage & i) const
                 }
             }
         } else {
-            int w = width();
-            int h = height();
+            const int w = width();
+            const int h = height();
+            const QVector<QRgb> &colortable = d->colortable;
+            const QVector<QRgb> &icolortable = i.d->colortable;
             for (int y=0; y<h; ++y) {
                 for (int x=0; x<w; ++x) {
-                    if (pixelIndex(x, y) != i.pixelIndex(x, y))
+                    if (colortable[pixelIndex(x, y)] != icolortable[i.pixelIndex(x, y)])
                         return false;
                 }
             }

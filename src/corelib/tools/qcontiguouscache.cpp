@@ -40,10 +40,13 @@
 ****************************************************************************/
 
 #include "qcontiguouscache.h"
+#ifdef QT_QCONTIGUOUSCACHE_DEBUG
 #include <QDebug>
+#endif
 
 QT_BEGIN_NAMESPACE
 
+#ifdef QT_QCONTIGUOUSCACHE_DEBUG
 void QContiguousCacheData::dump() const
 {
     qDebug() << "capacity:" << alloc;
@@ -51,6 +54,7 @@ void QContiguousCacheData::dump() const
     qDebug() << "start:" << start;
     qDebug() << "offset:" << offset;
 }
+#endif
 
 /*! \class QContiguousCache
     \brief The QContiguousCache class is a template class that provides a contiguous cache.

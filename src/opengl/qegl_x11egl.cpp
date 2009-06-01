@@ -42,6 +42,7 @@
 #include <QtGui/qpaintdevice.h>
 #include <QtGui/qpixmap.h>
 #include <QtGui/qwidget.h>
+#include <QtCore/qdebug.h>
 #include "qegl_p.h"
 
 #if defined(QT_OPENGL_ES) || defined(QT_OPENVG)
@@ -80,8 +81,10 @@ bool QEglContext::createSurface(QPaintDevice *device)
         surf = eglCreateWindowSurface(dpy, cfg, windowDrawable, 0);
     else
         surf = eglCreatePixmapSurface(dpy, cfg, pixmapDrawable, 0);
+
     if (surf == EGL_NO_SURFACE) {
-        qWarning("QEglContext::createSurface(): Unable to create EGL surface, error = 0x%x", eglGetError());
+        qWarning() << "QEglContext::createSurface(): Unable to create EGL surface:"
+                   << errorString(eglGetError());
         return false;
     }
     return true;

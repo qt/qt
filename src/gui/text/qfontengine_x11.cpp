@@ -227,7 +227,7 @@ static QFontEngine::FaceId fontFile(const QByteArray &_xname, QFreetypeFace **fr
     QByteArray best_mapping;
 
     for (QStringList::ConstIterator it = fontpath.constBegin(); it != fontpath.constEnd(); ++it) {
-        if ((*it).left(1) != QLatin1String("/"))
+        if (!(*it).startsWith(QLatin1Char('/')))
             continue; // not a path name, a font server
         QString fontmapname;
         int num = 0;
@@ -693,9 +693,8 @@ QFontEngine::FaceId QFontEngineXLFD::faceId() const
         if (freetype) {
             const_cast<QFontEngineXLFD *>(this)->fsType = freetype->fsType();
         } else {
-            QFontEngine::Properties properties = QFontEngine::properties();
             face_id.index = 0;
-            face_id.filename = "-" + properties.postscriptName;
+            face_id.filename = '-' + QFontEngine::properties().postscriptName;
         }
     }
 #endif

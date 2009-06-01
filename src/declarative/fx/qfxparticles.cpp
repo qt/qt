@@ -397,7 +397,7 @@ public:
 
     QString source;
     QUrl url;
-    QSimpleCanvasConfig::Image image;
+    QPixmap image;
     int count;
     int lifeSpan;
     int lifeSpanDev;
@@ -671,7 +671,7 @@ void QFxParticles::setSource(const QString &name)
     if (name.isEmpty()) {
         d->source = name;
         d->url = QUrl();
-        d->image = QSimpleCanvasConfig::Image();
+        d->image = QPixmap();
 #if defined(QFX_RENDER_OPENGL)
         d->texDirty = true;
         d->tex.clear();
@@ -1124,7 +1124,7 @@ void QFxParticlesPainter::paintContents(QPainter &p)
     for (int i = 0; i < d->particles.count(); ++i) {
         const QFxParticle &particle = d->particles.at(i);
         p.setOpacity(particle.opacity);
-        p.drawImage(particle.x - myX, particle.y - myY, d->image);
+        p.drawPixmap(particle.x - myX, particle.y - myY, d->image);
     }
     update();//Should I need this? (GV does)
 }
@@ -1143,7 +1143,7 @@ void QFxParticlesPainter::paintGLContents(GLPainter &p)
     updateSize();
 
     if (d->texDirty && !d->image.isNull()) {
-        d->tex.setImage(d->image);
+        d->tex.setImage(d->image.toImage());
         d->tex.setHorizontalWrap(GLTexture::Repeat);
         d->tex.setVerticalWrap(GLTexture::Repeat);
     }

@@ -121,10 +121,10 @@ QTextStream &XmlGenerator::startTag(const QString &name, AST::Node *locationNode
 {
     pushIndentLevel();
     newlineAndIndent();
-    out << QLatin1String("<") << name;
+    out << QLatin1Char('<') << name;
     if (locationNode)
-        out << QLatin1String(" line=\"") << locationNode->startLine << QLatin1String("\"");
-    out << QLatin1String(">");
+        out << QLatin1String(" line=\"") << locationNode->startLine << QLatin1Char('\"');
+    out << QLatin1Char('>');
     return out;
 }
 
@@ -132,7 +132,7 @@ QTextStream &XmlGenerator::endTag(const QString &name)
 {
     newlineAndIndent();
     popIndentLevel();
-    out << QLatin1String("</") << escape(name) << QLatin1String(">");
+    out << QLatin1String("</") << escape(name) << QLatin1Char('>');
     return out;
 }
 
@@ -233,7 +233,7 @@ void XmlGenerator::endVisit(AST::NumericLiteral *)
 bool XmlGenerator::visit(AST::RegExpLiteral *node)
 {
     startTag(QLatin1String("regexp"));
-    out << QLatin1String("/") << escape(QScriptEnginePrivate::toString(node->pattern)) << QLatin1String("/");
+    out << QLatin1Char('/') << escape(QScriptEnginePrivate::toString(node->pattern)) << QLatin1Char('/');
     if (node->flags)
         out << QScript::Ecma::RegExp::flagsToString(node->flags);
     out << QLatin1String("</regexp>");

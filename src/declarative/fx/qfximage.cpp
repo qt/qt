@@ -141,16 +141,15 @@ QFxImage::~QFxImage()
 QPixmap QFxImage::pixmap() const
 {
     Q_D(const QFxImage);
-    return d->_pix.pixmap();
+    return d->_pix;
 }
 
 void QFxImage::setPixmap(const QPixmap &pix)
 {
     Q_D(QFxImage);
     d->url = QUrl();
-    d->_pix.setPixmap(pix);
+    d->_pix = pix;
     d->_opaque=false;
-    d->_pix.setOpaque(false);
 
     setImplicitWidth(d->_pix.width());
     setImplicitHeight(d->_pix.height());
@@ -255,7 +254,6 @@ void QFxImage::setOpaque(bool o)
     if (o == d->_opaque)
         return;
     d->_opaque = o;
-    d->_pix.setOpaque(o);
     update();
 }
 
@@ -326,21 +324,21 @@ void QFxImage::paintContents(QPainter &p)
     if (d->_smooth)
         p.setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform, d->_smooth);
 
-    QSimpleCanvasConfig::Image pix = d->_pix;
+    QPixmap pix = d->_pix;
 
     if (d->_tiled) {
         p.save();
         p.setClipRect(0, 0, width(), height(), Qt::IntersectClip);
         QRect me = QRect(0, 0, width(), height());
 
-        int pw = d->_pix.width();
-        int ph = d->_pix.height();
+        int pw = pix.width();
+        int ph = pix.height();
         int yy = 0;
 
         while(yy < height()) {
             int xx = 0;
             while(xx < width()) {
-                p.drawImage(xx, yy, d->_pix);
+                p.drawPixmap(xx, yy, pix);
                 xx += pw;
             }
             yy += ph;
@@ -354,10 +352,10 @@ void QFxImage::paintContents(QPainter &p)
                         height() / qreal(pix.height()));
             QTransform old = p.transform();
             p.setWorldTransform(scale * old);
-            p.drawImage(0, 0, pix);
+            p.drawPixmap(0, 0, pix);
             p.setWorldTransform(old);
         } else {
-            p.drawImage(0, 0, pix);
+            p.drawPixmap(0, 0, pix);
         }
     } else {
         int sgl = d->_scaleGrid->left();
@@ -377,40 +375,40 @@ void QFxImage::paintContents(QPainter &p)
 
         // Upper left
         if (sgt && sgl)
-            p.drawImage(QRect(0, 0, sgl, sgt), pix, QRect(0, 0, sgl, sgt));
+            p.drawPixmap(QRect(0, 0, sgl, sgt), pix, QRect(0, 0, sgl, sgt));
         // Upper middle
         if (pix.width() - xSide && sgt)
-            p.drawImage(QRect(sgl, 0, w - xSide, sgt), pix,
+            p.drawPixmap(QRect(sgl, 0, w - xSide, sgt), pix,
                         QRect(sgl, 0, pix.width() - xSide, sgt));
         // Upper right
         if (sgt && pix.width() - sgr) 
-            p.drawImage(QPoint(w-sgr, 0), pix,
+            p.drawPixmap(QPoint(w-sgr, 0), pix,
                         QRect(pix.width()-sgr, 0, sgr, sgt));
         // Middle left
         if (sgl && pix.height() - ySide)
-            p.drawImage(QRect(0, sgt, sgl, h - ySide), pix,
+            p.drawPixmap(QRect(0, sgt, sgl, h - ySide), pix,
                         QRect(0, sgt, sgl, pix.height() - ySide));
 
         // Middle
         if (pix.width() - xSide && pix.height() - ySide)
-            p.drawImage(QRect(sgl, sgt, w - xSide, h - ySide),
+            p.drawPixmap(QRect(sgl, sgt, w - xSide, h - ySide),
                         pix, 
                         QRect(sgl, sgt, pix.width() - xSide, pix.height() - ySide));
         // Middle right
         if (sgr && pix.height() - ySide)
-            p.drawImage(QRect(w-sgr, sgt, sgr, h - ySide), pix,
+            p.drawPixmap(QRect(w-sgr, sgt, sgr, h - ySide), pix,
                         QRect(pix.width()-sgr, sgt, sgr, pix.height() - ySide));
         // Lower left 
         if (sgl && sgr)
-            p.drawImage(QPoint(0, h - sgb), pix,
+            p.drawPixmap(QPoint(0, h - sgb), pix,
                         QRect(0, pix.height() - sgb, sgl, sgb));
         // Lower Middle
         if (pix.width() - xSide && sgb)
-            p.drawImage(QRect(sgl, h - sgb, w - xSide, sgb), pix,
+            p.drawPixmap(QRect(sgl, h - sgb, w - xSide, sgb), pix,
                         QRect(sgl, pix.height() - sgb, pix.width() - xSide, sgb));
         // Lower Right
         if (sgr && sgb)
-            p.drawImage(QPoint(w-sgr, h - sgb), pix,
+            p.drawPixmap(QPoint(w-sgr, h - sgb), pix,
                         QRect(pix.width()-sgr, pix.height() - sgb, sgr, sgb));
     }
 
@@ -461,7 +459,7 @@ uint QFxImage::glSimpleItemData(float *vertices, float *texVertices,
 void QFxImagePrivate::checkDirty()
 {
     if (_texDirty && !_pix.isNull()) {
-        _tex.setImage(_pix);
+        _tex.setImage(_pix.toImage());
         _tex.setHorizontalWrap(GLTexture::Repeat);
         _tex.setVerticalWrap(GLTexture::Repeat);
     }
@@ -945,7 +943,6 @@ void QFxImage::requestFinished()
                 d->status = Error;
         }
         d->_pix = QFxPixmap(d->url);
-        d->_pix.setOpaque(d->_opaque);
         setOptions(QFxImage::SimpleItem, true);
     }
     setImplicitWidth(d->_pix.width());

@@ -1,37 +1,30 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE TS>
-<TS version="2.0">
+<TS version="2.0" language="ru_RU">
 <context>
     <name>AudioOutput</name>
     <message>
         <location filename="../src/3rdparty/phonon/phonon/audiooutput.cpp" line="+375"/>
         <source>&lt;html&gt;The audio playback device &lt;b&gt;%1&lt;/b&gt; does not work.&lt;br/&gt;Falling back to &lt;b&gt;%2&lt;/b&gt;.&lt;/html&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;html&gt;Звуковое устройство &lt;b&gt;%1&lt;/b&gt; не работает.&lt;br/&gt;Будет использоваться &lt;b&gt;%2&lt;/b&gt;.&lt;/html&gt;</translation>
     </message>
     <message>
         <location line="+13"/>
         <source>&lt;html&gt;Switching to the audio playback device &lt;b&gt;%1&lt;/b&gt;&lt;br/&gt;which just became available and has higher preference.&lt;/html&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;html&gt;Переключение на звуковое устройство &lt;b&gt;%1&lt;/b&gt;&lt;br/&gt;, которое доступно и имеет высший приоритет.&lt;/html&gt;</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Revert back to device &apos;%1&apos;</source>
-        <translation type="unfinished"></translation>
+        <translation>Возвращение к устройству &apos;%1&apos;</translation>
     </message>
 </context>
 <context>
     <name>CloseButton</name>
     <message>
-        <location filename="../src/gui/widgets/qtabbar.cpp" line="+2251"/>
+        <location filename="../src/gui/widgets/qtabbar.cpp" line="+2253"/>
         <source>Close Tab</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>PPDOptionsModel</name>
-    <message>
-        <source>Name</source>
-        <translation type="obsolete">Имя</translation>
+        <translation>Закрыть вкладку</translation>
     </message>
 </context>
 <context>
@@ -39,32 +32,32 @@
     <message>
         <location filename="../src/3rdparty/phonon/phonon/phononnamespace.cpp" line="+55"/>
         <source>Notifications</source>
-        <translation type="unfinished"></translation>
+        <translation>Уведомления</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Music</source>
-        <translation type="unfinished"></translation>
+        <translation>Музыка</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Video</source>
-        <translation type="unfinished"></translation>
+        <translation>Видео</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Communication</source>
-        <translation type="unfinished"></translation>
+        <translation>Общение</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Games</source>
-        <translation type="unfinished"></translation>
+        <translation>Игры</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Accessibility</source>
-        <translation type="unfinished"></translation>
+        <translation>Средства для людей с ограниченными возможностями</translation>
     </message>
 </context>
 <context>
@@ -73,13 +66,15 @@
         <location filename="../src/3rdparty/phonon/gstreamer/backend.cpp" line="+171"/>
         <source>Warning: You do not seem to have the package gstreamer0.10-plugins-good installed.
           Some video features have been disabled.</source>
-        <translation type="unfinished"></translation>
+        <translation>Внимание: Похоже, пакет gstreamer0.10-plugins-good не установлен.
+          Некоторые возможности воспроизведения видео недоступны.</translation>
     </message>
     <message>
         <location line="+5"/>
         <source>Warning: You do not seem to have the base GStreamer plugins installed.
           All audio and video support has been disabled</source>
-        <translation type="unfinished"></translation>
+        <translation>Внимание: Похоже, основной модуль GStreamer не установлен.
+          Поддержка видео и аудио невозможна</translation>
     </message>
 </context>
 <context>
@@ -90,12 +85,15 @@
 
 Check your Gstreamer installation and make sure you 
 have libgstreamer-plugins-base installed.</source>
-        <translation type="unfinished"></translation>
+        <translation>Невозможно начать воспроизведение.
+
+Проверьте установку Gstreamer и убедитесь, 
+что пакет libgstreamer-plugins-base установлен.</translation>
     </message>
     <message>
         <location line="+113"/>
         <source>A required codec is missing. You need to install the following codec(s) to play this content: %0</source>
-        <translation type="unfinished"></translation>
+        <translation>Отсутствует необходимый кодек. Вам нужно установить следующие кодеки для воспроизведения данного содержимого: %0</translation>
     </message>
     <message>
         <location line="+676"/>
@@ -107,27 +105,27 @@ have libgstreamer-plugins-base installed.</source>
         <location line="+335"/>
         <location line="+24"/>
         <source>Could not open media source.</source>
-        <translation type="unfinished"></translation>
+        <translation>Не удалось открыть источник медиа-данных.</translation>
     </message>
     <message>
         <location line="-403"/>
         <source>Invalid source type.</source>
-        <translation type="unfinished"></translation>
+        <translation>Неверный тип источника медиа-данных.</translation>
     </message>
     <message>
         <location line="+377"/>
         <source>Could not locate media source.</source>
-        <translation type="unfinished"></translation>
+        <translation>Не удалось найти источник медиа-данных.</translation>
     </message>
     <message>
         <location line="+10"/>
         <source>Could not open audio device. The device is already in use.</source>
-        <translation type="unfinished"></translation>
+        <translation>Не удалось открыть звуковое устройство. Устройство уже используется.</translation>
     </message>
     <message>
         <location line="+13"/>
         <source>Could not decode media source.</source>
-        <translation type="unfinished"></translation>
+        <translation>Не удалось декодировать источник медиа-данных.</translation>
     </message>
 </context>
 <context>
@@ -136,14 +134,14 @@ have libgstreamer-plugins-base installed.</source>
         <location filename="../src/3rdparty/phonon/phonon/volumeslider.cpp" line="+42"/>
         <location line="+18"/>
         <source>Volume: %1%</source>
-        <translation type="unfinished"></translation>
+        <translation>Громкость: %1%</translation>
     </message>
     <message>
         <location line="-15"/>
         <location line="+18"/>
         <location line="+54"/>
         <source>Use this slider to adjust the volume. The leftmost position is 0%, the rightmost is %1%</source>
-        <translation type="unfinished"></translation>
+        <translation>Используйте ползунок для настройки громкости. Крайняя левая позиция соответствует 0%, самая правая - %1%</translation>
     </message>
 </context>
 <context>
@@ -151,7 +149,7 @@ have libgstreamer-plugins-base installed.</source>
     <message>
         <location filename="../src/qt3support/other/q3accel.cpp" line="+481"/>
         <source>%1, %2 not defined</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">%1, %2 не определен</translation>
     </message>
     <message>
         <location line="+36"/>
@@ -164,52 +162,52 @@ have libgstreamer-plugins-base installed.</source>
     <message>
         <location filename="../src/qt3support/sql/q3datatable.cpp" line="+285"/>
         <source>True</source>
-        <translation type="unfinished">True</translation>
+        <translation>Да</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>False</source>
-        <translation type="unfinished">False</translation>
+        <translation>Нет</translation>
     </message>
     <message>
         <location line="+505"/>
         <source>Insert</source>
-        <translation type="unfinished">Вставить</translation>
+        <translation>Вставить</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Update</source>
-        <translation type="unfinished">Обновить</translation>
+        <translation>Обновить</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Delete</source>
-        <translation type="unfinished">Удалить</translation>
+        <translation>Удалить</translation>
     </message>
 </context>
 <context>
     <name>Q3FileDialog</name>
     <message>
-        <location filename="../src/qt3support/dialogs/q3filedialog.cpp" line="+864"/>
+        <location filename="../src/qt3support/dialogs/q3filedialog.cpp" line="+865"/>
         <source>Copy or Move a File</source>
-        <translation type="unfinished">Копировать или переместить файл</translation>
+        <translation>Копировать или переместить файл</translation>
     </message>
     <message>
         <location line="+8"/>
         <source>Read: %1</source>
-        <translation type="unfinished">Открытие: %1</translation>
+        <translation>Чтение: %1</translation>
     </message>
     <message>
         <location line="+6"/>
         <location line="+30"/>
         <source>Write: %1</source>
-        <translation type="unfinished">Запись: %1</translation>
+        <translation>Запись: %1</translation>
     </message>
     <message>
         <location line="-22"/>
-        <location line="+1575"/>
+        <location line="+1579"/>
         <source>Cancel</source>
-        <translation type="unfinished">Отмена</translation>
+        <translation>Отмена</translation>
     </message>
     <message>
         <location line="-157"/>
@@ -217,307 +215,307 @@ have libgstreamer-plugins-base installed.</source>
         <location line="+2153"/>
         <location filename="../src/qt3support/dialogs/q3filedialog_mac.cpp" line="+110"/>
         <source>All Files (*)</source>
-        <translation type="unfinished">Все файлы (*)</translation>
+        <translation>Все файлы (*)</translation>
     </message>
     <message>
         <location line="-2089"/>
         <source>Name</source>
-        <translation type="unfinished">Имя</translation>
+        <translation>Имя</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Size</source>
-        <translation type="unfinished">Размер</translation>
+        <translation>Размер</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Type</source>
-        <translation type="unfinished">Тип</translation>
+        <translation>Тип</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Date</source>
-        <translation type="unfinished">Дата</translation>
+        <translation>Дата</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Attributes</source>
-        <translation type="unfinished">Атрибуты</translation>
+        <translation>Атрибуты</translation>
     </message>
     <message>
         <location line="+35"/>
         <location line="+2031"/>
         <source>&amp;OK</source>
-        <translation type="unfinished">&amp;OK</translation>
+        <translation>&amp;Готово</translation>
     </message>
     <message>
         <location line="-1991"/>
         <source>Look &amp;in:</source>
-        <translation type="unfinished">&amp;Смотреть в:</translation>
+        <translation>&amp;Папка:</translation>
     </message>
     <message>
         <location line="+1"/>
         <location line="+1981"/>
         <location line="+16"/>
         <source>File &amp;name:</source>
-        <translation type="unfinished">&amp;Имя файла:</translation>
+        <translation>&amp;Имя файла:</translation>
     </message>
     <message>
         <location line="-1996"/>
         <source>File &amp;type:</source>
-        <translation type="unfinished">&amp;Тип файла:</translation>
+        <translation>&amp;Тип файла:</translation>
     </message>
     <message>
         <location line="+7"/>
         <source>Back</source>
-        <translation type="unfinished">Назад</translation>
+        <translation>Назад</translation>
     </message>
     <message>
         <location line="+7"/>
         <source>One directory up</source>
-        <translation type="unfinished">Вверх на один уровень</translation>
+        <translation>На один уровень вверх</translation>
     </message>
     <message>
         <location line="+9"/>
         <source>Create New Folder</source>
-        <translation type="unfinished">Создать новый каталог</translation>
+        <translation>Создать каталог</translation>
     </message>
     <message>
         <location line="+18"/>
         <source>List View</source>
-        <translation type="unfinished">Список</translation>
+        <translation>Список</translation>
     </message>
     <message>
         <location line="+8"/>
         <source>Detail View</source>
-        <translation type="unfinished">Детальный вид</translation>
+        <translation>Подробный вид</translation>
     </message>
     <message>
         <location line="+9"/>
         <source>Preview File Info</source>
-        <translation type="unfinished">Предпросмотр информации о файле</translation>
+        <translation>Предпросмотр информации о файле</translation>
     </message>
     <message>
         <location line="+23"/>
         <source>Preview File Contents</source>
-        <translation type="unfinished">Предпросмотр содержимого файла</translation>
+        <translation>Предпросмотр содержимого файла</translation>
     </message>
     <message>
         <location line="+88"/>
         <source>Read-write</source>
-        <translation type="unfinished">Чтение-запись</translation>
+        <translation>Чтение и запись</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Read-only</source>
-        <translation type="unfinished">Только чтение</translation>
+        <translation>Только чтение</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Write-only</source>
-        <translation type="unfinished">Только запись</translation>
+        <translation>Только запись</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Inaccessible</source>
-        <translation type="unfinished">Нет доступа</translation>
+        <translation>Нет доступа</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Symlink to File</source>
-        <translation type="unfinished">Ссылка на файл</translation>
+        <translation>Ссылка на файл</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Symlink to Directory</source>
-        <translation type="unfinished">Ссылка на каталог</translation>
+        <translation>Ссылка на каталог</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Symlink to Special</source>
-        <translation type="unfinished">Ссылка на спецфайл</translation>
+        <translation>Ссылка на спецфайл</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>File</source>
-        <translation type="unfinished">Файл</translation>
+        <translation>Файл</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Dir</source>
-        <translation type="unfinished">Каталог</translation>
+        <translation>Каталог</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Special</source>
-        <translation type="unfinished">Спецфайл</translation>
+        <translation>Спецфайл</translation>
     </message>
     <message>
         <location line="+704"/>
         <location line="+2100"/>
         <location filename="../src/qt3support/dialogs/q3filedialog_win.cpp" line="+337"/>
         <source>Open</source>
-        <translation type="unfinished">Открыть</translation>
+        <translation>Открыть</translation>
     </message>
     <message>
         <location line="-1990"/>
         <location filename="../src/qt3support/dialogs/q3filedialog_win.cpp" line="+84"/>
         <source>Save As</source>
-        <translation type="unfinished">Сохранить как</translation>
+        <translation>Сохранить как</translation>
     </message>
     <message>
         <location line="+642"/>
         <location line="+5"/>
         <location line="+355"/>
         <source>&amp;Open</source>
-        <translation type="unfinished">&amp;Открыть</translation>
+        <translation>&amp;Открыть</translation>
     </message>
     <message>
         <location line="-357"/>
         <location line="+341"/>
         <source>&amp;Save</source>
-        <translation type="unfinished">&amp;Сохранить</translation>
+        <translation>&amp;Сохранить</translation>
     </message>
     <message>
         <location line="-334"/>
         <source>&amp;Rename</source>
-        <translation type="unfinished">&amp;Переименовать</translation>
+        <translation>&amp;Переименовать</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>&amp;Delete</source>
-        <translation type="unfinished">&amp;Удалить</translation>
+        <translation>&amp;Удалить</translation>
     </message>
     <message>
         <location line="+20"/>
         <source>R&amp;eload</source>
-        <translation type="unfinished">О&amp;бновить</translation>
+        <translation>О&amp;бновить</translation>
     </message>
     <message>
         <location line="+4"/>
         <source>Sort by &amp;Name</source>
-        <translation type="unfinished">По &amp;имени</translation>
+        <translation>По &amp;имени</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Sort by &amp;Size</source>
-        <translation type="unfinished">По &amp;размеру</translation>
+        <translation>По &amp;размеру</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Sort by &amp;Date</source>
-        <translation type="unfinished">По &amp;дате</translation>
+        <translation>По &amp;дате</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>&amp;Unsorted</source>
-        <translation type="unfinished">&amp;Не упорядочивать</translation>
+        <translation>&amp;Не упорядочивать</translation>
     </message>
     <message>
         <location line="+15"/>
         <source>Sort</source>
-        <translation type="unfinished">Упорядочить</translation>
+        <translation>Упорядочить</translation>
     </message>
     <message>
         <location line="+4"/>
         <source>Show &amp;hidden files</source>
-        <translation type="unfinished">Показать &amp;скрытые файлы</translation>
+        <translation>Показать скр&amp;ытые файлы</translation>
     </message>
     <message>
         <location line="+31"/>
         <source>the file</source>
-        <translation type="unfinished">файл</translation>
+        <translation>файл</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>the directory</source>
-        <translation type="unfinished">каталог</translation>
+        <translation>каталог</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>the symlink</source>
-        <translation type="unfinished">ссылку</translation>
+        <translation>ссылку</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Delete %1</source>
-        <translation type="unfinished">Удалить %1</translation>
+        <translation>Удалить %1</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>&lt;qt&gt;Are you sure you wish to delete %1 &quot;%2&quot;?&lt;/qt&gt;</source>
-        <translation type="unfinished">&lt;qt&gt;Вы действительно хотите удалить %1 &quot;%2&quot;?&lt;/qt&gt;</translation>
+        <translation>&lt;qt&gt;Вы действительно хотите удалить %1 &quot;%2&quot;?&lt;/qt&gt;</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>&amp;Yes</source>
-        <translation type="unfinished">&amp;Да</translation>
+        <translation>&amp;Да</translation>
     </message>
     <message>
         <location line="+0"/>
         <source>&amp;No</source>
-        <translation type="unfinished">&amp;Нет</translation>
+        <translation>&amp;Нет</translation>
     </message>
     <message>
         <location line="+36"/>
         <source>New Folder 1</source>
-        <translation type="unfinished">Новый каталог 1</translation>
+        <translation>Новый каталог 1</translation>
     </message>
     <message>
         <location line="+5"/>
         <source>New Folder</source>
-        <translation type="unfinished">Новый каталог</translation>
+        <translation>Новый каталог</translation>
     </message>
     <message>
         <location line="+5"/>
         <source>New Folder %1</source>
-        <translation type="unfinished">Новый каталог %1</translation>
+        <translation>Новый каталог %1</translation>
     </message>
     <message>
         <location line="+98"/>
         <source>Find Directory</source>
-        <translation type="unfinished">Найти каталог</translation>
+        <translation>Найти каталог</translation>
     </message>
     <message>
         <location line="+5"/>
         <location line="+108"/>
         <source>Directories</source>
-        <translation type="unfinished">Каталоги</translation>
+        <translation>Каталоги</translation>
     </message>
     <message>
         <location line="-2"/>
         <source>Directory:</source>
-        <translation type="unfinished">Каталог:</translation>
+        <translation>каталог:</translation>
     </message>
     <message>
         <location line="+40"/>
         <location line="+1110"/>
         <source>Error</source>
-        <translation type="unfinished">Ошибка</translation>
+        <translation>Ошибка</translation>
     </message>
     <message>
         <location line="-1109"/>
         <source>%1
 File not found.
 Check path and filename.</source>
-        <translation type="unfinished">%1
+        <translation>%1
 Файл не найден.
 Проверьте правильность пути и имени файла.</translation>
     </message>
     <message>
         <location filename="../src/qt3support/dialogs/q3filedialog_win.cpp" line="-289"/>
         <source>All Files (*.*)</source>
-        <translation type="unfinished">Все файлы (*.*)</translation>
+        <translation>Все файлы (*.*)</translation>
     </message>
     <message>
         <location line="+375"/>
         <source>Open </source>
-        <translation type="unfinished">Открыть</translation>
+        <translation>Открыть </translation>
     </message>
     <message>
         <location line="+155"/>
         <source>Select a Directory</source>
-        <translation type="unfinished">Выбрать каталог</translation>
+        <translation>Выбрать каталог</translation>
     </message>
 </context>
 <context>
@@ -527,21 +525,21 @@ Check path and filename.</source>
         <location line="+10"/>
         <source>Could not read directory
 %1</source>
-        <translation type="unfinished">Невозможно просмотреть каталог
+        <translation>Не удалось прочитать каталог
 %1</translation>
     </message>
     <message>
         <location line="+45"/>
         <source>Could not create directory
 %1</source>
-        <translation type="unfinished">Невозможно создать каталог
+        <translation>Не удалось создать каталог
 %1</translation>
     </message>
     <message>
         <location line="+34"/>
         <source>Could not remove file or directory
 %1</source>
-        <translation type="unfinished">Невозможно удалить файл или каталог
+        <translation>Не удалось удалить файл или каталог
 %1</translation>
     </message>
     <message>
@@ -550,7 +548,7 @@ Check path and filename.</source>
 %1
 to
 %2</source>
-        <translation type="unfinished">Невозможно переименовать
+        <translation>Не удалось переименовать
 %1
 в
 %2</translation>
@@ -559,14 +557,14 @@ to
         <location line="+25"/>
         <source>Could not open
 %1</source>
-        <translation type="unfinished">Невозможно открыть
+        <translation>Не удалось открыть
 %1</translation>
     </message>
     <message>
         <location line="+68"/>
         <source>Could not write
 %1</source>
-        <translation type="unfinished">Невозможно записать
+        <translation>Не удалось записать
 %1</translation>
     </message>
 </context>
@@ -575,12 +573,12 @@ to
     <message>
         <location filename="../src/qt3support/widgets/q3mainwindow.cpp" line="+2051"/>
         <source>Line up</source>
-        <translation type="unfinished">Выровнять</translation>
+        <translation>Выровнять</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Customize...</source>
-        <translation type="unfinished">Настроить...</translation>
+        <translation>Настроить...</translation>
     </message>
 </context>
 <context>
@@ -588,7 +586,7 @@ to
     <message>
         <location filename="../src/qt3support/network/q3networkprotocol.cpp" line="+854"/>
         <source>Operation stopped by the user</source>
-        <translation type="unfinished">Операция прервана пользователем</translation>
+        <translation>Операция прервана пользователем</translation>
     </message>
 </context>
 <context>
@@ -597,36 +595,36 @@ to
         <location filename="../src/qt3support/dialogs/q3progressdialog.cpp" line="+224"/>
         <location line="+61"/>
         <source>Cancel</source>
-        <translation type="unfinished">Отмена</translation>
+        <translation>Отмена</translation>
     </message>
 </context>
 <context>
     <name>Q3TabDialog</name>
     <message>
-        <location filename="../src/qt3support/dialogs/q3tabdialog.cpp" line="+189"/>
-        <location line="+814"/>
+        <location filename="../src/qt3support/dialogs/q3tabdialog.cpp" line="+190"/>
+        <location line="+824"/>
         <source>OK</source>
-        <translation type="unfinished">OK</translation>
+        <translation>Готово</translation>
     </message>
     <message>
-        <location line="-356"/>
+        <location line="-366"/>
         <source>Apply</source>
-        <translation type="unfinished">Применить</translation>
+        <translation>Применить</translation>
     </message>
     <message>
         <location line="+43"/>
         <source>Help</source>
-        <translation type="unfinished">Справка</translation>
+        <translation>Справка</translation>
     </message>
     <message>
         <location line="+45"/>
         <source>Defaults</source>
-        <translation type="unfinished">По умолчанию</translation>
+        <translation>По умолчанию</translation>
     </message>
     <message>
         <location line="+50"/>
         <source>Cancel</source>
-        <translation type="unfinished">Отмена</translation>
+        <translation>Отмена</translation>
     </message>
 </context>
 <context>
@@ -634,38 +632,38 @@ to
     <message>
         <location filename="../src/qt3support/text/q3textedit.cpp" line="+5429"/>
         <source>&amp;Undo</source>
-        <translation type="unfinished">&amp;Отменить</translation>
+        <translation>&amp;Отменить действие</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>&amp;Redo</source>
-        <translation type="unfinished">&amp;Повторить</translation>
+        <translation>&amp;Повторить действие</translation>
     </message>
     <message>
         <location line="+5"/>
         <source>Cu&amp;t</source>
-        <translation type="unfinished">&amp;Вырезать</translation>
+        <translation>&amp;Вырезать</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>&amp;Copy</source>
-        <translation type="unfinished">&amp;Копировать</translation>
+        <translation>&amp;Копировать</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>&amp;Paste</source>
-        <translation type="unfinished">&amp;Вставить</translation>
+        <translation>В&amp;ставить</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Clear</source>
-        <translation type="unfinished">Очистить</translation>
+        <translation>Очистить</translation>
     </message>
     <message>
         <location line="+4"/>
         <location line="+2"/>
         <source>Select All</source>
-        <translation type="unfinished">Выделить все</translation>
+        <translation>Выделить все</translation>
     </message>
 </context>
 <context>
@@ -673,67 +671,67 @@ to
     <message>
         <location filename="../src/plugins/accessible/compat/q3complexwidgets.cpp" line="+246"/>
         <source>System</source>
-        <translation type="unfinished"></translation>
+        <translation>Системное меню</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Restore up</source>
-        <translation type="unfinished"></translation>
+        <translation>Восстановить</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Minimize</source>
-        <translation type="unfinished">Свернуть</translation>
+        <translation>Минимизировать</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Restore down</source>
-        <translation type="unfinished"></translation>
+        <translation>Восстановить</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Maximize</source>
-        <translation type="unfinished">Развернуть</translation>
+        <translation>Распахнуть</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Close</source>
-        <translation type="unfinished">Закрыть</translation>
+        <translation>Закрыть</translation>
     </message>
     <message>
         <location line="+18"/>
         <source>Contains commands to manipulate the window</source>
-        <translation type="unfinished"></translation>
+        <translation>Содержит команды управления окном</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Puts a minimized back to normal</source>
-        <translation type="unfinished"></translation>
+        <translation>Возвращает минимизированное окно в нормальное состояние</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Moves the window out of the way</source>
-        <translation type="unfinished"></translation>
+        <translation>Сворачивает окно</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Puts a maximized window back to normal</source>
-        <translation type="unfinished"></translation>
+        <translation>Возвращает распахнутое окно в нормальное состояние</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Makes the window full screen</source>
-        <translation type="unfinished"></translation>
+        <translation>Разворачивает окно на весь экран</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Closes the window</source>
-        <translation type="unfinished"></translation>
+        <translation>Зыкрывает окно</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Displays the name of the window and contains controls to manipulate it</source>
-        <translation type="unfinished"></translation>
+        <translation>Отображает название окна и содержит команды управления им</translation>
     </message>
 </context>
 <context>
@@ -741,7 +739,7 @@ to
     <message>
         <location filename="../src/qt3support/widgets/q3toolbar.cpp" line="+692"/>
         <source>More...</source>
-        <translation type="unfinished">Больше...</translation>
+        <translation>Больше...</translation>
     </message>
 </context>
 <context>
@@ -751,49 +749,49 @@ to
         <location line="+260"/>
         <location line="+4"/>
         <source>The protocol `%1&apos; is not supported</source>
-        <translation type="unfinished">Протокол `%1&apos; не поддерживается</translation>
+        <translation>Протокол `%1&apos; не поддерживается</translation>
     </message>
     <message>
         <location line="-260"/>
         <source>The protocol `%1&apos; does not support listing directories</source>
-        <translation type="unfinished">Протокол `%1&apos; не поддерживает просмотр каталогов</translation>
+        <translation>Протокол `%1&apos; не поддерживает просмотр каталогов</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>The protocol `%1&apos; does not support creating new directories</source>
-        <translation type="unfinished">Протокол `%1&apos; не поддерживает создание новых каталогов</translation>
+        <translation>Протокол `%1&apos; не поддерживает создание каталогов</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>The protocol `%1&apos; does not support removing files or directories</source>
-        <translation type="unfinished">Протокол `%1&apos; не поддерживает удаление файлов или каталогов</translation>
+        <translation>Протокол `%1&apos; не поддерживает удаление файлов или каталогов</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>The protocol `%1&apos; does not support renaming files or directories</source>
-        <translation type="unfinished">Протокол `%1&apos; не поддерживает переименование файлов или каталогов</translation>
+        <translation>Протокол `%1&apos; не поддерживает переименование файлов или каталогов</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>The protocol `%1&apos; does not support getting files</source>
-        <translation type="unfinished">Протокол `%1&apos; не поддерживает доставку файлов</translation>
+        <translation>Протокол `%1&apos; не поддерживает доставку файлов</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>The protocol `%1&apos; does not support putting files</source>
-        <translation type="unfinished">Протокол `%1&apos; не поддерживает отправку файлов</translation>
+        <translation>Протокол `%1&apos; не поддерживает отправку файлов</translation>
     </message>
     <message>
         <location line="+243"/>
         <location line="+4"/>
         <source>The protocol `%1&apos; does not support copying or moving files or directories</source>
-        <translation type="unfinished">Протокол `%1&apos; не поддерживает копирование или перемещение файлов и каталогов</translation>
+        <translation>Протокол `%1&apos; не поддерживает копирование или перемещение файлов или каталогов</translation>
     </message>
     <message>
         <location line="+237"/>
         <location line="+1"/>
         <source>(unknown)</source>
-        <translation type="unfinished">(неизвестно)</translation>
+        <translation>(неизвестно)</translation>
     </message>
 </context>
 <context>
@@ -801,27 +799,27 @@ to
     <message>
         <location filename="../src/qt3support/dialogs/q3wizard.cpp" line="+177"/>
         <source>&amp;Cancel</source>
-        <translation type="unfinished">&amp;Отмена</translation>
+        <translation>&amp;Отмена</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>&lt; &amp;Back</source>
-        <translation type="unfinished">&lt; &amp;Назад</translation>
+        <translation>&lt; &amp;Назад</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>&amp;Next &gt;</source>
-        <translation type="unfinished">&amp;Вперед &gt;</translation>
+        <translation>&amp;Вперед &gt;</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>&amp;Finish</source>
-        <translation type="unfinished">&amp;Финиш</translation>
+        <translation>&amp;Закончить</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>&amp;Help</source>
-        <translation type="unfinished">&amp;Справка</translation>
+        <translation>&amp;Справка</translation>
     </message>
 </context>
 <context>
@@ -832,68 +830,67 @@ to
         <location filename="../src/network/socket/qsocks5socketengine.cpp" line="+657"/>
         <location line="+26"/>
         <source>Host not found</source>
-        <translation type="unfinished"></translation>
+        <translation>Узел не найден</translation>
     </message>
     <message>
         <location line="+50"/>
         <location filename="../src/network/socket/qhttpsocketengine.cpp" line="+3"/>
         <location filename="../src/network/socket/qsocks5socketengine.cpp" line="+4"/>
         <source>Connection refused</source>
-        <translation type="unfinished">Отказано в соединении</translation>
+        <translation>Отказано в соединении</translation>
     </message>
     <message>
         <location line="+141"/>
         <source>Connection timed out</source>
-        <translation type="unfinished"></translation>
+        <translation>Время на соединение истекло</translation>
     </message>
     <message>
         <location line="-547"/>
         <location line="+787"/>
         <location line="+208"/>
         <source>Operation on socket is not supported</source>
-        <translation type="unfinished"></translation>
+        <translation>Операция с сокетом не поддерживается</translation>
     </message>
     <message>
         <location line="+137"/>
         <source>Socket operation timed out</source>
-        <translation type="unfinished"></translation>
+        <translation>Время на операцию с сокетом истекло</translation>
     </message>
     <message>
         <location line="+380"/>
         <source>Socket is not connected</source>
-        <translation type="unfinished"></translation>
+        <translation>Сокет не подключён</translation>
     </message>
     <message>
         <location filename="../src/network/socket/qsocks5socketengine.cpp" line="-8"/>
         <source>Network unreachable</source>
-        <translation type="unfinished"></translation>
+        <translation>Сеть недоступна</translation>
     </message>
 </context>
 <context>
     <name>QAbstractSpinBox</name>
     <message>
-        <location filename="../src/gui/widgets/qabstractspinbox.cpp" line="+1199"/>
+        <location filename="../src/gui/widgets/qabstractspinbox.cpp" line="+1200"/>
         <source>&amp;Step up</source>
-        <translation type="unfinished"></translation>
+        <translation>Шаг вв&amp;ерх</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Step &amp;down</source>
-        <translation type="unfinished"></translation>
+        <translation>Шаг вн&amp;из</translation>
     </message>
     <message>
         <location line="-8"/>
         <source>&amp;Select All</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Выделить все</translation>
     </message>
 </context>
 <context>
     <name>QApplication</name>
     <message>
-        <location filename="../src/gui/kernel/qapplication.cpp" line="+2248"/>
-        <source>QT_LAYOUT_DIRECTION</source>
-        <comment>Translate this string to the string &apos;LTR&apos; in left-to-right languages or to &apos;RTL&apos; in right-to-left languages (such as Hebrew and Arabic) to get proper widget layout.</comment>
-        <translation>LTR</translation>
+        <location filename="../src/gui/accessible/qaccessibleobject.cpp" line="+376"/>
+        <source>Activate</source>
+        <translation>Активировать</translation>
     </message>
     <message>
         <location filename="../src/gui/dialogs/qmessagebox.h" line="+352"/>
@@ -906,37 +903,38 @@ to
         <translation>Ошибка совместимости библиотеки Qt</translation>
     </message>
     <message>
-        <location filename="../src/gui/accessible/qaccessibleobject.cpp" line="+376"/>
-        <source>Activate</source>
-        <translation type="unfinished"></translation>
+        <location filename="../src/gui/kernel/qapplication.cpp" line="+2244"/>
+        <source>QT_LAYOUT_DIRECTION</source>
+        <comment>Translate this string to the string &apos;LTR&apos; in left-to-right languages or to &apos;RTL&apos; in right-to-left languages (such as Hebrew and Arabic) to get proper widget layout.</comment>
+        <translation>LTR</translation>
     </message>
     <message>
-        <location line="+2"/>
+        <location filename="../src/gui/accessible/qaccessibleobject.cpp" line="+2"/>
         <source>Activates the program&apos;s main window</source>
-        <translation type="unfinished"></translation>
+        <translation>Активирует главное окно программы</translation>
     </message>
 </context>
 <context>
     <name>QAxSelect</name>
     <message>
-        <location filename="../src/activeqt/container/qaxselect.ui"/>
+        <location filename="../src/activeqt/container/qaxselect.ui" line="+54"/>
         <source>Select ActiveX Control</source>
-        <translation type="unfinished"></translation>
+        <translation>Выберите компоненту ActiveX</translation>
     </message>
     <message>
-        <location/>
+        <location line="+32"/>
         <source>OK</source>
-        <translation type="unfinished">OK</translation>
+        <translation>Готово</translation>
     </message>
     <message>
-        <location/>
+        <location line="+16"/>
         <source>&amp;Cancel</source>
-        <translation type="unfinished">&amp;Отмена</translation>
+        <translation>&amp;Отмена</translation>
     </message>
     <message>
-        <location/>
+        <location line="+49"/>
         <source>COM &amp;Object:</source>
-        <translation type="unfinished"></translation>
+        <translation>COM &amp;Объект:</translation>
     </message>
 </context>
 <context>
@@ -944,17 +942,17 @@ to
     <message>
         <location filename="../src/plugins/accessible/widgets/simplewidgets.cpp" line="+114"/>
         <source>Uncheck</source>
-        <translation type="unfinished"></translation>
+        <translation>Снять отметку</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Check</source>
-        <translation type="unfinished"></translation>
+        <translation>Отметить</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Toggle</source>
-        <translation type="unfinished"></translation>
+        <translation>Переключить</translation>
     </message>
 </context>
 <context>
@@ -977,17 +975,17 @@ to
     <message>
         <location line="+1"/>
         <source>&amp;Red:</source>
-        <translation>&amp;Крас:</translation>
+        <translation>&amp;Красный:</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>&amp;Green:</source>
-        <translation>&amp;Зел:</translation>
+        <translation>&amp;Зелёный:</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Bl&amp;ue:</source>
-        <translation>С&amp;ин:</translation>
+        <translation>С&amp;иний:</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -997,7 +995,7 @@ to
     <message>
         <location line="+101"/>
         <source>Select Color</source>
-        <translation type="unfinished"></translation>
+        <translation>Выберите цвет</translation>
     </message>
     <message>
         <location line="+137"/>
@@ -1007,28 +1005,12 @@ to
     <message>
         <location line="+1"/>
         <source>&amp;Custom colors</source>
-        <translation>&amp;Собственные цвета</translation>
-    </message>
-    <message>
-        <source>&amp;Define Custom Colors &gt;&gt;</source>
-        <translation type="obsolete">&amp;Выбрать собственные цвета &gt;&gt;</translation>
-    </message>
-    <message>
-        <source>OK</source>
-        <translation type="obsolete">OK</translation>
-    </message>
-    <message>
-        <source>Cancel</source>
-        <translation type="obsolete">Отмена</translation>
+        <translation>&amp;Произвольные цвета</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>&amp;Add to Custom Colors</source>
-        <translation>&amp;Добавить к собственным цветам</translation>
-    </message>
-    <message>
-        <source>Select color</source>
-        <translation type="obsolete">Выбрать цвет</translation>
+        <translation>&amp;Добавить к произвольным цветам</translation>
     </message>
 </context>
 <context>
@@ -1037,22 +1019,22 @@ to
         <location filename="../src/plugins/accessible/widgets/complexwidgets.cpp" line="+1771"/>
         <location line="+65"/>
         <source>Open</source>
-        <translation type="unfinished">Открыть</translation>
+        <translation>Открыть</translation>
     </message>
     <message>
         <location filename="../src/gui/itemviews/qitemeditorfactory.cpp" line="+544"/>
         <source>False</source>
-        <translation type="unfinished">False</translation>
+        <translation>Нет</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>True</source>
-        <translation type="unfinished">True</translation>
+        <translation>Да</translation>
     </message>
     <message>
         <location filename="../src/plugins/accessible/widgets/complexwidgets.cpp" line="+0"/>
         <source>Close</source>
-        <translation type="unfinished">Закрыть</translation>
+        <translation>Закрыть</translation>
     </message>
 </context>
 <context>
@@ -1061,19 +1043,19 @@ to
         <location filename="../src/corelib/kernel/qsystemsemaphore_unix.cpp" line="+119"/>
         <source>%1: key is empty</source>
         <comment>QSystemSemaphore</comment>
-        <translation type="unfinished"></translation>
+        <translation>%1: пустой ключ</translation>
     </message>
     <message>
         <location line="+12"/>
         <source>%1: unable to make key</source>
         <comment>QSystemSemaphore</comment>
-        <translation type="unfinished"></translation>
+        <translation>%1: невозможно создать ключ</translation>
     </message>
     <message>
         <location line="+9"/>
         <source>%1: ftok failed</source>
         <comment>QSystemSemaphore</comment>
-        <translation type="unfinished"></translation>
+        <translation>%1: ошибка ftok</translation>
     </message>
 </context>
 <context>
@@ -1081,22 +1063,22 @@ to
     <message>
         <location filename="../src/sql/drivers/db2/qsql_db2.cpp" line="+1276"/>
         <source>Unable to connect</source>
-        <translation type="unfinished"></translation>
+        <translation>Невозможно соединиться</translation>
     </message>
     <message>
         <location line="+303"/>
         <source>Unable to commit transaction</source>
-        <translation type="unfinished"></translation>
+        <translation>Невозможно выполнить транзакцию</translation>
     </message>
     <message>
         <location line="+17"/>
         <source>Unable to rollback transaction</source>
-        <translation type="unfinished"></translation>
+        <translation>Невозможно откатить транзакцию</translation>
     </message>
     <message>
         <location line="+15"/>
         <source>Unable to set autocommit</source>
-        <translation type="unfinished"></translation>
+        <translation>Невозможно установить автовыполнение транзакции</translation>
     </message>
 </context>
 <context>
@@ -1105,32 +1087,32 @@ to
         <location line="-1043"/>
         <location line="+243"/>
         <source>Unable to execute statement</source>
-        <translation type="unfinished"></translation>
+        <translation>Невозможно выполнить выражение</translation>
     </message>
     <message>
         <location line="-206"/>
         <source>Unable to prepare statement</source>
-        <translation type="unfinished"></translation>
+        <translation>Невозможно подготовить выражение</translation>
     </message>
     <message>
         <location line="+196"/>
         <source>Unable to bind variable</source>
-        <translation type="unfinished"></translation>
+        <translation>Невозможно привязать значение</translation>
     </message>
     <message>
         <location line="+92"/>
         <source>Unable to fetch record %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Невозможно получить запись %1</translation>
     </message>
     <message>
         <location line="+17"/>
         <source>Unable to fetch next</source>
-        <translation type="unfinished"></translation>
+        <translation>Невозможно получить следующую строку</translation>
     </message>
     <message>
         <location line="+20"/>
         <source>Unable to fetch first</source>
-        <translation type="unfinished"></translation>
+        <translation>Невозможно получить первую строку</translation>
     </message>
 </context>
 <context>
@@ -1184,162 +1166,162 @@ to
     <message>
         <location line="-115"/>
         <source>Done</source>
-        <translation type="unfinished"></translation>
+        <translation>Готово</translation>
     </message>
 </context>
 <context>
     <name>QDialogButtonBox</name>
     <message>
-        <location filename="../src/gui/dialogs/qmessagebox.cpp" line="+1866"/>
+        <location filename="../src/gui/dialogs/qmessagebox.cpp" line="+1861"/>
         <location line="+464"/>
         <location filename="../src/gui/widgets/qdialogbuttonbox.cpp" line="+561"/>
         <source>OK</source>
-        <translation type="unfinished">OK</translation>
+        <translation>Готово</translation>
     </message>
     <message>
-        <location filename="../src/gui/widgets/qdialogbuttonbox.cpp" line="+3"/>
-        <source>Save</source>
-        <translation type="unfinished">Сохранить</translation>
+        <location filename="../src/gui/widgets/qdialogbuttonbox.cpp" line="+0"/>
+        <source>&amp;OK</source>
+        <translation>&amp;Готово</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>&amp;Save</source>
+        <translation>&amp;Сохранить</translation>
     </message>
     <message>
         <location line="+0"/>
-        <source>&amp;Save</source>
-        <translation type="unfinished">&amp;Сохранить</translation>
+        <source>Save</source>
+        <translation>Сохранить</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Open</source>
-        <translation type="unfinished">Открыть</translation>
+        <translation>Открыть</translation>
     </message>
     <message>
         <location line="+3"/>
-        <source>Cancel</source>
-        <translation type="unfinished">Отмена</translation>
-    </message>
-    <message>
-        <location line="+0"/>
         <source>&amp;Cancel</source>
-        <translation type="unfinished">&amp;Отмена</translation>
-    </message>
-    <message>
-        <location line="+3"/>
-        <source>Close</source>
-        <translation type="unfinished">Закрыть</translation>
+        <translation>&amp;Отмена</translation>
     </message>
     <message>
         <location line="+0"/>
+        <source>Cancel</source>
+        <translation>Отмена</translation>
+    </message>
+    <message>
+        <location line="+3"/>
         <source>&amp;Close</source>
-        <translation type="unfinished">&amp;Закрыть</translation>
+        <translation>&amp;Закрыть</translation>
+    </message>
+    <message>
+        <location line="+0"/>
+        <source>Close</source>
+        <translation>Закрыть</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Apply</source>
-        <translation type="unfinished">Применить</translation>
+        <translation>Применить</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Reset</source>
-        <translation type="unfinished"></translation>
+        <translation>Сбросить</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Help</source>
-        <translation type="unfinished">Справка</translation>
+        <translation>Справка</translation>
     </message>
     <message>
         <location line="+4"/>
         <source>Don&apos;t Save</source>
-        <translation type="unfinished"></translation>
+        <translation>Не сохранять</translation>
     </message>
     <message>
         <location line="+4"/>
         <source>Discard</source>
-        <translation type="unfinished"></translation>
+        <translation>Не применять</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>&amp;Yes</source>
-        <translation type="unfinished">&amp;Да</translation>
+        <translation>Д&amp;а</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Yes to &amp;All</source>
-        <translation type="unfinished"></translation>
+        <translation>Да для &amp;всех</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>&amp;No</source>
-        <translation type="unfinished">&amp;Нет</translation>
+        <translation>&amp;Нет</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>N&amp;o to All</source>
-        <translation type="unfinished"></translation>
+        <translation>Н&amp;ет для всех</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Save All</source>
-        <translation type="unfinished"></translation>
+        <translation>Сохранить все</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Abort</source>
-        <translation type="unfinished"></translation>
+        <translation>Прервать</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Retry</source>
-        <translation type="unfinished"></translation>
+        <translation>Попробовать ещё</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Ignore</source>
-        <translation type="unfinished"></translation>
+        <translation>Игнорировать</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Restore Defaults</source>
-        <translation type="unfinished"></translation>
+        <translation>Восстановить значения по умолчанию</translation>
     </message>
     <message>
         <location line="-29"/>
         <source>Close without Saving</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="-27"/>
-        <source>&amp;OK</source>
-        <translation type="unfinished">&amp;OK</translation>
+        <translation>Закрыть без сохранения</translation>
     </message>
 </context>
 <context>
     <name>QDirModel</name>
     <message>
-        <location filename="../src/gui/itemviews/qdirmodel.cpp" line="+453"/>
+        <location filename="../src/gui/itemviews/qdirmodel.cpp" line="+454"/>
         <source>Name</source>
-        <translation type="unfinished">Имя</translation>
+        <translation>Имя</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Size</source>
-        <translation type="unfinished">Размер</translation>
+        <translation>Размер</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Kind</source>
         <comment>Match OS X Finder</comment>
-        <translation type="unfinished"></translation>
+        <translation>Вид</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Type</source>
         <comment>All other platforms</comment>
-        <translation type="unfinished">Тип</translation>
+        <translation>Тип</translation>
     </message>
     <message>
         <location line="+6"/>
         <source>Date Modified</source>
-        <translation type="unfinished"></translation>
+        <translation>Дата изменения</translation>
     </message>
 </context>
 <context>
@@ -1347,7 +1329,7 @@ to
     <message>
         <location filename="../src/plugins/accessible/widgets/qaccessiblewidgets.cpp" line="+1239"/>
         <source>Close</source>
-        <translation type="unfinished">Закрыть</translation>
+        <translation>Закрыть</translation>
     </message>
     <message>
         <location line="+2"/>
@@ -1365,28 +1347,18 @@ to
     <message>
         <location filename="../src/plugins/accessible/widgets/rangecontrols.cpp" line="-537"/>
         <source>More</source>
-        <translation type="unfinished"></translation>
+        <translation>Больше</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Less</source>
-        <translation type="unfinished"></translation>
+        <translation>Меньше</translation>
     </message>
 </context>
 <context>
     <name>QErrorMessage</name>
     <message>
-        <location filename="../src/gui/dialogs/qerrormessage.cpp" line="+391"/>
-        <source>&amp;Show this message again</source>
-        <translation>&amp;Показывать это сообщение в дальнейшем</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>&amp;OK</source>
-        <translation>&amp;OK</translation>
-    </message>
-    <message>
-        <location line="-200"/>
+        <location filename="../src/gui/dialogs/qerrormessage.cpp" line="+192"/>
         <source>Debug Message:</source>
         <translation>Отладочное сообщение:</translation>
     </message>
@@ -1400,326 +1372,376 @@ to
         <source>Fatal Error:</source>
         <translation>Критическая ошибка:</translation>
     </message>
+    <message>
+        <location line="+193"/>
+        <source>&amp;Show this message again</source>
+        <translation>&amp;Показывать это сообщение в дальнейшем</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>&amp;OK</source>
+        <translation>&amp;Готово</translation>
+    </message>
 </context>
 <context>
     <name>QFile</name>
     <message>
         <location filename="../src/corelib/io/qfile.cpp" line="+708"/>
-        <location line="+141"/>
+        <location line="+151"/>
         <source>Destination file exists</source>
-        <translation type="unfinished"></translation>
+        <translation>Файл существует</translation>
     </message>
     <message>
-        <location line="-108"/>
+        <location line="-136"/>
+        <source>Will not rename sequential file using block copy</source>
+        <translation>Не будет переименовывать последовательный файл, используя копирование блока</translation>
+    </message>
+    <message>
+        <location line="+23"/>
         <source>Cannot remove source file</source>
-        <translation type="unfinished"></translation>
+        <translation>Невозможно удалить исходный файл</translation>
     </message>
     <message>
-        <location line="+120"/>
+        <location line="+126"/>
         <source>Cannot open %1 for input</source>
-        <translation type="unfinished"></translation>
+        <translation>Невозможно открыть %1 для ввода</translation>
     </message>
     <message>
         <location line="+17"/>
         <source>Cannot open for output</source>
-        <translation type="unfinished"></translation>
+        <translation>Невозможно открыть для вывода</translation>
     </message>
     <message>
         <location line="+10"/>
         <source>Failure to write block</source>
-        <translation type="unfinished"></translation>
+        <translation>Сбой записи блока</translation>
     </message>
     <message>
         <location line="+13"/>
         <source>Cannot create %1 for output</source>
-        <translation type="unfinished"></translation>
+        <translation>Невозможно создать %1 для вывода</translation>
     </message>
 </context>
 <context>
     <name>QFileDialog</name>
     <message>
-        <location filename="../src/gui/dialogs/qfiledialog.cpp" line="+515"/>
-        <location line="+444"/>
+        <location filename="../src/gui/dialogs/qfiledialog.cpp" line="+514"/>
+        <location line="+447"/>
         <source>All Files (*)</source>
         <translation>Все файлы (*)</translation>
     </message>
     <message>
-        <location filename="../src/gui/dialogs/qfiledialog.ui"/>
-        <location filename="../src/gui/dialogs/qfiledialog_wince.ui"/>
-        <source>Back</source>
-        <translation type="unfinished">Назад</translation>
+        <location line="+222"/>
+        <source>Directories</source>
+        <translation>Каталоги</translation>
     </message>
     <message>
-        <location/>
-        <location filename="../src/gui/dialogs/qfiledialog_wince.ui"/>
-        <source>List View</source>
-        <translation type="unfinished">Список</translation>
-    </message>
-    <message>
-        <location/>
-        <location filename="../src/gui/dialogs/qfiledialog_wince.ui"/>
-        <source>Detail View</source>
-        <translation type="unfinished">Детальный вид</translation>
-    </message>
-    <message>
-        <location filename="../src/gui/itemviews/qfileiconprovider.cpp" line="+414"/>
-        <location line="+1"/>
-        <source>File</source>
-        <translation type="unfinished">Файл</translation>
-    </message>
-    <message>
-        <location filename="../src/gui/dialogs/qfiledialog.cpp" line="-461"/>
-        <source>Open</source>
-        <translation>Открыть</translation>
-    </message>
-    <message>
-        <location line="+2"/>
-        <source>Save As</source>
-        <translation type="unfinished">Сохранить как</translation>
-    </message>
-    <message>
-        <location line="+678"/>
+        <location line="-3"/>
         <location line="+50"/>
-        <location line="+1471"/>
+        <location line="+1467"/>
         <location line="+75"/>
         <source>&amp;Open</source>
         <translation>&amp;Открыть</translation>
     </message>
     <message>
-        <location line="-1596"/>
+        <location line="-1592"/>
         <location line="+50"/>
         <source>&amp;Save</source>
         <translation>&amp;Сохранить</translation>
     </message>
     <message>
-        <location line="+1822"/>
-        <source>Recent Places</source>
-        <translation type="unfinished"></translation>
+        <location line="-733"/>
+        <source>Open</source>
+        <translation>Открыть</translation>
     </message>
     <message>
-        <location line="-2521"/>
-        <source>&amp;Rename</source>
-        <translation type="unfinished">&amp;Переименовать</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>&amp;Delete</source>
-        <translation type="unfinished">&amp;Удалить</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Show &amp;hidden files</source>
-        <translation type="unfinished">Показать &amp;скрытые файлы</translation>
-    </message>
-    <message>
-        <location line="+1964"/>
-        <source>New Folder</source>
-        <translation type="unfinished">Новый каталог</translation>
-    </message>
-    <message>
-        <location line="-1999"/>
-        <source>Find Directory</source>
-        <translation type="unfinished">Найти каталог</translation>
-    </message>
-    <message>
-        <location line="+685"/>
-        <source>Directories</source>
-        <translation>Каталоги</translation>
-    </message>
-    <message>
-        <location filename="../src/gui/dialogs/qfiledialog_win.cpp" line="+160"/>
-        <source>All Files (*.*)</source>
-        <translation type="unfinished">Все файлы (*.*)</translation>
-    </message>
-    <message>
-        <location filename="../src/gui/dialogs/qfiledialog.cpp" line="-644"/>
-        <location line="+648"/>
-        <source>Directory:</source>
-        <translation type="unfinished">Каталог:</translation>
-    </message>
-    <message>
-        <location line="+828"/>
+        <location line="+1515"/>
         <source>%1 already exists.
 Do you want to replace it?</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 уже существует.
+Хотите заменить его?</translation>
     </message>
     <message>
         <location line="+20"/>
         <source>%1
 File not found.
 Please verify the correct file name was given.</source>
-        <translation type="unfinished"></translation>
+        <translation>%1
+Файл не найден.
+Проверьте правильность заданного имени файла.</translation>
     </message>
     <message>
         <location filename="../src/gui/itemviews/qdirmodel.cpp" line="+402"/>
         <source>My Computer</source>
-        <translation type="unfinished"></translation>
+        <translation>Мой компьютер</translation>
     </message>
     <message>
-        <location filename="../src/gui/dialogs/qfiledialog.ui"/>
-        <location filename="../src/gui/dialogs/qfiledialog_wince.ui"/>
+        <location filename="../src/gui/dialogs/qfiledialog.cpp" line="-1504"/>
+        <source>&amp;Rename</source>
+        <translation>&amp;Переименовать</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>&amp;Delete</source>
+        <translation>&amp;Удалить</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Show &amp;hidden files</source>
+        <translation>Показать скр&amp;ытые файлы</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/dialogs/qfiledialog.ui" line="+84"/>
+        <location filename="../src/gui/dialogs/qfiledialog_wince.ui" line="+73"/>
+        <source>Back</source>
+        <translation>Назад</translation>
+    </message>
+    <message>
+        <location line="+14"/>
+        <location filename="../src/gui/dialogs/qfiledialog_wince.ui" line="+14"/>
         <source>Parent Directory</source>
-        <translation type="unfinished"></translation>
+        <translation>Родительский каталог</translation>
     </message>
     <message>
-        <location/>
-        <location filename="../src/gui/dialogs/qfiledialog_wince.ui"/>
+        <location line="+14"/>
+        <location filename="../src/gui/dialogs/qfiledialog_wince.ui" line="+14"/>
+        <source>List View</source>
+        <translation>Список</translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <location filename="../src/gui/dialogs/qfiledialog_wince.ui" line="+7"/>
+        <source>Detail View</source>
+        <translation>Подробный вид</translation>
+    </message>
+    <message>
+        <location line="+141"/>
+        <location filename="../src/gui/dialogs/qfiledialog_wince.ui" line="+162"/>
         <source>Files of type:</source>
-        <translation type="unfinished"></translation>
+        <translation>Типы файлов:</translation>
     </message>
     <message>
-        <location filename="../src/gui/dialogs/qfiledialog.cpp" line="-54"/>
-        <location line="+862"/>
+        <location filename="../src/gui/dialogs/qfiledialog.cpp" line="+6"/>
+        <location line="+651"/>
+        <source>Directory:</source>
+        <translation>Каталог:</translation>
+    </message>
+    <message>
+        <location line="+791"/>
+        <location line="+861"/>
         <source>%1
 Directory not found.
 Please verify the correct directory name was given.</source>
-        <translation type="unfinished"></translation>
+        <translation>%1
+Каталог не найден.
+Проверьте правильность заданного имени каталога.</translation>
     </message>
     <message>
         <location line="-218"/>
         <source>&apos;%1&apos; is write protected.
 Do you want to delete it anyway?</source>
-        <translation type="unfinished"></translation>
+        <translation>&apos;%1&apos; защищён от записи.
+Всё-равно хотите удалить?</translation>
     </message>
     <message>
         <location line="+5"/>
         <source>Are sure you want to delete &apos;%1&apos;?</source>
-        <translation type="unfinished"></translation>
+        <translation>Вы уверены, что хотите удалить &apos;%1&apos;?</translation>
     </message>
     <message>
         <location line="+15"/>
         <source>Could not delete directory.</source>
-        <translation type="unfinished"></translation>
+        <translation>Не удалось удалить каталог.</translation>
     </message>
     <message>
-        <location filename="../src/gui/itemviews/qfileiconprovider.cpp" line="-4"/>
+        <location line="+407"/>
+        <source>Recent Places</source>
+        <translation>Недавние документы</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/dialogs/qfiledialog_win.cpp" line="+160"/>
+        <source>All Files (*.*)</source>
+        <translation>Все файлы (*.*)</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/dialogs/qfiledialog.cpp" line="-2549"/>
+        <source>Save As</source>
+        <translation>Сохранить как</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/itemviews/qfileiconprovider.cpp" line="+411"/>
         <source>Drive</source>
-        <translation type="unfinished"></translation>
+        <translation>Диск</translation>
     </message>
     <message>
-        <location line="+33"/>
+        <location line="+3"/>
+        <location line="+1"/>
+        <source>File</source>
+        <translation>Файл</translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>File Folder</source>
+        <comment>Match Windows Explorer</comment>
+        <translation>Каталог с файлами</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Folder</source>
+        <comment>All other platforms</comment>
+        <translation>Каталог</translation>
+    </message>
+    <message>
+        <location line="+9"/>
+        <source>Alias</source>
+        <comment>Mac OS X Finder</comment>
+        <translation>Псевдоним</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Shortcut</source>
+        <comment>All other platforms</comment>
+        <translation>Ярлык</translation>
+    </message>
+    <message>
+        <location line="+7"/>
         <source>Unknown</source>
-        <translation type="unfinished"></translation>
+        <translation>Неизвестно</translation>
     </message>
     <message>
-        <location filename="../src/gui/dialogs/qfiledialog.cpp" line="-2118"/>
+        <location filename="../src/gui/dialogs/qfiledialog.cpp" line="-4"/>
+        <source>Find Directory</source>
+        <translation>Найти каталог</translation>
+    </message>
+    <message>
+        <location line="+29"/>
         <source>Show </source>
-        <translation type="unfinished"></translation>
+        <translation>Показать </translation>
     </message>
     <message>
-        <location filename="../src/gui/dialogs/qfiledialog.ui"/>
-        <location filename="../src/gui/dialogs/qfiledialog_wince.ui"/>
+        <location filename="../src/gui/dialogs/qfiledialog.ui" line="-169"/>
+        <location filename="../src/gui/dialogs/qfiledialog_wince.ui" line="-190"/>
         <source>Forward</source>
-        <translation type="unfinished">Вперед</translation>
+        <translation>Вперед</translation>
     </message>
     <message>
-        <location filename="../src/gui/dialogs/qfiledialog.cpp" line="+7"/>
+        <location filename="../src/gui/dialogs/qfiledialog.cpp" line="+1969"/>
+        <source>New Folder</source>
+        <translation>Новый каталог</translation>
+    </message>
+    <message>
+        <location line="-1962"/>
         <source>&amp;New Folder</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Новый каталог</translation>
     </message>
     <message>
-        <location line="+656"/>
+        <location line="+659"/>
         <location line="+38"/>
         <source>&amp;Choose</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Выбрать</translation>
     </message>
     <message>
-        <location filename="../src/gui/dialogs/qsidebar.cpp" line="+418"/>
+        <location filename="../src/gui/dialogs/qsidebar.cpp" line="+437"/>
         <source>Remove</source>
-        <translation type="unfinished"></translation>
+        <translation>Удалить</translation>
     </message>
     <message>
-        <location filename="../src/gui/dialogs/qfiledialog.cpp" line="-687"/>
-        <location line="+652"/>
+        <location filename="../src/gui/dialogs/qfiledialog.cpp" line="-690"/>
+        <location line="+655"/>
         <source>File &amp;name:</source>
-        <translation type="unfinished">&amp;Имя файла:</translation>
+        <translation>&amp;Имя файла:</translation>
     </message>
     <message>
-        <location filename="../src/gui/dialogs/qfiledialog.ui"/>
-        <location filename="../src/gui/dialogs/qfiledialog_wince.ui"/>
+        <location filename="../src/gui/dialogs/qfiledialog.ui" line="-32"/>
+        <location filename="../src/gui/dialogs/qfiledialog_wince.ui" line="+212"/>
         <source>Look in:</source>
-        <translation type="unfinished"></translation>
+        <translation>Перейти к:</translation>
     </message>
     <message>
-        <location/>
-        <location filename="../src/gui/dialogs/qfiledialog_wince.ui"/>
+        <location line="+46"/>
+        <location filename="../src/gui/dialogs/qfiledialog_wince.ui" line="-198"/>
         <source>Create New Folder</source>
-        <translation type="unfinished">Создать новый каталог</translation>
+        <translation>Создать каталог</translation>
     </message>
 </context>
 <context>
     <name>QFileSystemModel</name>
     <message>
-        <location filename="../src/gui/dialogs/qfilesystemmodel.cpp" line="+744"/>
-        <source>%1 TB</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+2"/>
-        <source>%1 GB</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+2"/>
-        <source>%1 MB</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+2"/>
-        <source>%1 KB</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>%1 bytes</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+77"/>
+        <location filename="../src/gui/dialogs/qfilesystemmodel.cpp" line="+828"/>
         <source>Invalid filename</source>
-        <translation type="unfinished"></translation>
+        <translation>Некорректное имя файла</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>&lt;b&gt;The name &quot;%1&quot; can not be used.&lt;/b&gt;&lt;p&gt;Try using another name, with fewer characters or no punctuations marks.</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;b&gt;Имя &quot;%1&quot; не может быть использовано.&lt;/b&gt;&lt;p&gt;Попробуйте использовать имя меньшей длины и/или без символов пунктуации.</translation>
     </message>
     <message>
         <location line="+63"/>
         <source>Name</source>
-        <translation type="unfinished">Имя</translation>
+        <translation>Имя</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Size</source>
-        <translation type="unfinished">Размер</translation>
+        <translation>Размер</translation>
     </message>
     <message>
         <location line="+4"/>
         <source>Kind</source>
         <comment>Match OS X Finder</comment>
-        <translation type="unfinished"></translation>
+        <translation>Вид</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Type</source>
         <comment>All other platforms</comment>
-        <translation type="unfinished">Тип</translation>
+        <translation>Тип</translation>
     </message>
     <message>
         <location line="+7"/>
         <source>Date Modified</source>
-        <translation type="unfinished"></translation>
+        <translation>Дата изменения</translation>
     </message>
     <message>
-        <location filename="../src/gui/dialogs/qfilesystemmodel_p.h" line="+234"/>
+        <location filename="../src/gui/dialogs/qfilesystemmodel_p.h" line="+248"/>
         <source>My Computer</source>
-        <translation type="unfinished"></translation>
+        <translation>Мой компьютер</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Computer</source>
-        <translation type="unfinished"></translation>
+        <translation>Компьютер</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/dialogs/qfilesystemmodel.cpp" line="-163"/>
+        <location filename="../src/gui/itemviews/qdirmodel.cpp" line="+471"/>
+        <source>%1 TB</source>
+        <translation>%1 Тб</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <location filename="../src/gui/itemviews/qdirmodel.cpp" line="+2"/>
+        <source>%1 GB</source>
+        <translation>%1 Гб</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <location filename="../src/gui/itemviews/qdirmodel.cpp" line="+2"/>
+        <source>%1 MB</source>
+        <translation>%1 Мб</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <location filename="../src/gui/itemviews/qdirmodel.cpp" line="+2"/>
+        <source>%1 KB</source>
+        <translation>%1 Кб</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <location filename="../src/gui/itemviews/qdirmodel.cpp" line="+1"/>
+        <source>%1 bytes</source>
+        <translation>%1 байт</translation>
     </message>
 </context>
 <context>
@@ -1728,70 +1750,70 @@ Do you want to delete it anyway?</source>
         <location filename="../src/gui/text/qfontdatabase.cpp" line="+90"/>
         <location line="+1176"/>
         <source>Normal</source>
-        <translation type="unfinished"></translation>
+        <translation>Обычный</translation>
     </message>
     <message>
         <location line="-1173"/>
         <location line="+12"/>
         <location line="+1149"/>
         <source>Bold</source>
-        <translation type="unfinished"></translation>
+        <translation>Жирный</translation>
     </message>
     <message>
         <location line="-1158"/>
         <location line="+1160"/>
         <source>Demi Bold</source>
-        <translation type="unfinished"></translation>
+        <translation>Срендней жирности</translation>
     </message>
     <message>
         <location line="-1157"/>
         <location line="+18"/>
         <location line="+1135"/>
         <source>Black</source>
-        <translation type="unfinished"></translation>
+        <translation>Чёрный</translation>
     </message>
     <message>
         <location line="-1145"/>
         <source>Demi</source>
-        <translation type="unfinished"></translation>
+        <translation>Средний</translation>
     </message>
     <message>
         <location line="+6"/>
         <location line="+1145"/>
         <source>Light</source>
-        <translation type="unfinished"></translation>
+        <translation>Лёгкий</translation>
     </message>
     <message>
         <location line="-1004"/>
         <location line="+1007"/>
         <source>Italic</source>
-        <translation type="unfinished"></translation>
+        <translation>Курсив</translation>
     </message>
     <message>
         <location line="-1004"/>
         <location line="+1006"/>
         <source>Oblique</source>
-        <translation type="unfinished"></translation>
+        <translation>Наклонный</translation>
     </message>
     <message>
         <location line="+705"/>
         <source>Any</source>
-        <translation type="unfinished"></translation>
+        <translation>Любая</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Latin</source>
-        <translation type="unfinished"></translation>
+        <translation>Латиница</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Greek</source>
-        <translation type="unfinished"></translation>
+        <translation>Греческий</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Cyrillic</source>
-        <translation type="unfinished"></translation>
+        <translation>Кириллица</translation>
     </message>
     <message>
         <location line="+3"/>
@@ -1949,7 +1971,7 @@ Do you want to delete it anyway?</source>
     <message>
         <location line="+1"/>
         <source>Font st&amp;yle</source>
-        <translation>&amp;Стиль шрифта</translation>
+        <translation>Ст&amp;иль шрифта</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -1964,12 +1986,12 @@ Do you want to delete it anyway?</source>
     <message>
         <location line="+1"/>
         <source>Stri&amp;keout</source>
-        <translation>&amp;Перечеркивать</translation>
+        <translation>Зачёр&amp;кнутый</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>&amp;Underline</source>
-        <translation>П&amp;одчеркивать</translation>
+        <translation>П&amp;одчёркнутый</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -1977,74 +1999,59 @@ Do you want to delete it anyway?</source>
         <translation>Пример</translation>
     </message>
     <message>
-        <location line="-603"/>
-        <location line="+247"/>
-        <source>Select Font</source>
-        <translation>Выбрать шрифт</translation>
+        <location line="+1"/>
+        <source>Wr&amp;iting System</source>
+        <translation>&amp;Система письма</translation>
     </message>
     <message>
-        <location line="+357"/>
-        <source>Wr&amp;iting System</source>
-        <translation type="unfinished"></translation>
+        <location line="-604"/>
+        <location line="+247"/>
+        <source>Select Font</source>
+        <translation>Выберите шрифт</translation>
     </message>
 </context>
 <context>
     <name>QFtp</name>
     <message>
-        <location filename="../src/qt3support/network/q3ftp.cpp" line="+2303"/>
-        <source>Host %1 found</source>
-        <translation type="unfinished">Обнаружен узел %1</translation>
+        <location filename="../src/network/access/qftp.cpp" line="+826"/>
+        <location filename="../src/qt3support/network/q3ftp.cpp" line="+683"/>
+        <source>Not connected</source>
+        <translation>Соединение не установлено</translation>
     </message>
     <message>
-        <location line="+7"/>
-        <source>Host found</source>
-        <translation type="unfinished">Узел обнаружен</translation>
-    </message>
-    <message>
-        <location filename="../src/network/access/qftp.cpp" line="+1003"/>
-        <location filename="../src/qt3support/network/q3ftp.cpp" line="-1456"/>
-        <location line="+1451"/>
-        <source>Connected to host %1</source>
-        <translation>Установлено соединение с узлом %1</translation>
-    </message>
-    <message>
-        <location filename="../src/qt3support/network/q3ftp.cpp" line="+7"/>
-        <source>Connected to host</source>
-        <translation type="unfinished">Соединение с узлом установлено</translation>
-    </message>
-    <message>
-        <location line="-5"/>
-        <source>Connection to %1 closed</source>
-        <translation type="unfinished">Соединение с узлом %1 разорвано</translation>
-    </message>
-    <message>
-        <location filename="../src/network/access/qftp.cpp" line="+1375"/>
-        <location filename="../src/qt3support/network/q3ftp.cpp" line="-243"/>
-        <location line="+250"/>
-        <source>Connection closed</source>
-        <translation>Соединение разорвано</translation>
-    </message>
-    <message>
-        <location line="-1487"/>
-        <location filename="../src/qt3support/network/q3ftp.cpp" line="-1566"/>
+        <location line="+65"/>
+        <location filename="../src/qt3support/network/q3ftp.cpp" line="+65"/>
         <source>Host %1 not found</source>
-        <translation>Узел %1 не обнаружен</translation>
+        <translation>Узел %1 не найден</translation>
     </message>
     <message>
         <location line="+4"/>
         <location filename="../src/qt3support/network/q3ftp.cpp" line="+4"/>
         <source>Connection refused to host %1</source>
-        <translation>Отказано в соединении с узлом %1</translation>
+        <translation>В соединении с узлом %1 отказано</translation>
     </message>
     <message>
         <location line="+4"/>
         <source>Connection timed out to host %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Время на соединение с узлом %1 истекло</translation>
     </message>
     <message>
-        <location line="+501"/>
+        <location line="+104"/>
+        <location filename="../src/qt3support/network/q3ftp.cpp" line="+102"/>
+        <location line="+1451"/>
+        <source>Connected to host %1</source>
+        <translation>Установлено соединение с узлом %1</translation>
+    </message>
+    <message>
+        <location line="+219"/>
+        <location filename="../src/qt3support/network/q3ftp.cpp" line="-1290"/>
+        <source>Connection refused for data connection</source>
+        <translation>Отказ в соединении для передачи данных</translation>
+    </message>
+    <message>
+        <location line="+178"/>
         <location line="+29"/>
-        <location filename="../src/qt3support/network/q3ftp.cpp" line="+458"/>
+        <location filename="../src/qt3support/network/q3ftp.cpp" line="+195"/>
         <location line="+728"/>
         <source>Unknown error</source>
         <translation>Неизвестная ошибка</translation>
@@ -2054,7 +2061,7 @@ Do you want to delete it anyway?</source>
         <location filename="../src/qt3support/network/q3ftp.cpp" line="+77"/>
         <source>Connecting to host failed:
 %1</source>
-        <translation>Ошибка соединения с узлом:
+        <translation>Не удалось соединиться с узлом:
 %1</translation>
     </message>
     <message>
@@ -2062,7 +2069,7 @@ Do you want to delete it anyway?</source>
         <location filename="../src/qt3support/network/q3ftp.cpp" line="+3"/>
         <source>Login failed:
 %1</source>
-        <translation>Ошибка входа в систему:
+        <translation>Не удалось авторизоваться:
 %1</translation>
     </message>
     <message>
@@ -2070,7 +2077,7 @@ Do you want to delete it anyway?</source>
         <location filename="../src/qt3support/network/q3ftp.cpp" line="+3"/>
         <source>Listing directory failed:
 %1</source>
-        <translation>Ошибка просмотра каталога:
+        <translation>Не удалось прочитать каталог:
 %1</translation>
     </message>
     <message>
@@ -2078,7 +2085,7 @@ Do you want to delete it anyway?</source>
         <location filename="../src/qt3support/network/q3ftp.cpp" line="+3"/>
         <source>Changing directory failed:
 %1</source>
-        <translation>Ошибка смены каталога:
+        <translation>Не удалось сменить каталог:
 %1</translation>
     </message>
     <message>
@@ -2086,7 +2093,7 @@ Do you want to delete it anyway?</source>
         <location filename="../src/qt3support/network/q3ftp.cpp" line="+3"/>
         <source>Downloading file failed:
 %1</source>
-        <translation>Ошибка загрузки файла:
+        <translation>Не удалось загрузить файл:
 %1</translation>
     </message>
     <message>
@@ -2094,7 +2101,7 @@ Do you want to delete it anyway?</source>
         <location filename="../src/qt3support/network/q3ftp.cpp" line="+3"/>
         <source>Uploading file failed:
 %1</source>
-        <translation>Ошибка отправки файла:
+        <translation>Не удалось отгрузить файл:
 %1</translation>
     </message>
     <message>
@@ -2102,7 +2109,7 @@ Do you want to delete it anyway?</source>
         <location filename="../src/qt3support/network/q3ftp.cpp" line="+3"/>
         <source>Removing file failed:
 %1</source>
-        <translation>Ошибка удаления файла:
+        <translation>Не удалось удалить файл:
 %1</translation>
     </message>
     <message>
@@ -2110,7 +2117,7 @@ Do you want to delete it anyway?</source>
         <location filename="../src/qt3support/network/q3ftp.cpp" line="+3"/>
         <source>Creating directory failed:
 %1</source>
-        <translation>Ошибка создания каталога:
+        <translation>Не удалось создать каталог:
 %1</translation>
     </message>
     <message>
@@ -2118,20 +2125,35 @@ Do you want to delete it anyway?</source>
         <location filename="../src/qt3support/network/q3ftp.cpp" line="+3"/>
         <source>Removing directory failed:
 %1</source>
-        <translation>Ошибка удаления каталога:
+        <translation>Не удалось удалить каталог:
 %1</translation>
     </message>
     <message>
-        <location line="-1524"/>
-        <location filename="../src/qt3support/network/q3ftp.cpp" line="-1356"/>
-        <source>Not connected</source>
-        <translation>Нет соединения</translation>
+        <location line="+28"/>
+        <location filename="../src/qt3support/network/q3ftp.cpp" line="+25"/>
+        <location line="+250"/>
+        <source>Connection closed</source>
+        <translation>Соединение закрыто</translation>
     </message>
     <message>
-        <location line="+396"/>
-        <location filename="../src/qt3support/network/q3ftp.cpp" line="+332"/>
-        <source>Connection refused for data connection</source>
-        <translation>Отказано в соединении передачи данных</translation>
+        <location filename="../src/qt3support/network/q3ftp.cpp" line="-11"/>
+        <source>Host %1 found</source>
+        <translation>Узел %1 найден</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Connection to %1 closed</source>
+        <translation>Соединение с %1 закрыто</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Host found</source>
+        <translation>Узел найден</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Connected to host</source>
+        <translation>Соединение с узлом</translation>
     </message>
 </context>
 <context>
@@ -2139,7 +2161,7 @@ Do you want to delete it anyway?</source>
     <message>
         <location filename="../src/network/kernel/qhostinfo_p.h" line="+183"/>
         <source>Unknown error</source>
-        <translation type="unfinished">Неизвестная ошибка</translation>
+        <translation>Неизвестная ошибка</translation>
     </message>
 </context>
 <context>
@@ -2149,12 +2171,12 @@ Do you want to delete it anyway?</source>
         <location line="+9"/>
         <location line="+64"/>
         <location line="+31"/>
-        <location filename="../src/network/kernel/qhostinfo_win.cpp" line="+180"/>
+        <location filename="../src/network/kernel/qhostinfo_win.cpp" line="+165"/>
         <location line="+9"/>
         <location line="+40"/>
         <location line="+27"/>
         <source>Host not found</source>
-        <translation type="unfinished"></translation>
+        <translation>Узел не найден</translation>
     </message>
     <message>
         <location line="-44"/>
@@ -2162,85 +2184,22 @@ Do you want to delete it anyway?</source>
         <location filename="../src/network/kernel/qhostinfo_win.cpp" line="-34"/>
         <location line="+29"/>
         <source>Unknown address type</source>
-        <translation type="unfinished"></translation>
+        <translation>Неизвестный тип адреса</translation>
     </message>
     <message>
         <location line="+8"/>
         <location filename="../src/network/kernel/qhostinfo_win.cpp" line="-19"/>
         <location line="+27"/>
         <source>Unknown error</source>
-        <translation type="unfinished">Неизвестная ошибка</translation>
+        <translation>Неизвестная ошибка</translation>
     </message>
 </context>
 <context>
     <name>QHttp</name>
     <message>
-        <location filename="../src/network/access/qhttpnetworkconnection.cpp" line="+876"/>
-        <location filename="../src/qt3support/network/q3http.cpp" line="+1836"/>
-        <source>Connection refused</source>
-        <translation>Отказано в соединении</translation>
-    </message>
-    <message>
-        <location filename="../src/network/access/qhttp.cpp" line="+2631"/>
-        <location filename="../src/network/access/qhttpnetworkconnection.cpp" line="-4"/>
-        <location filename="../src/qt3support/network/q3http.cpp" line="+3"/>
-        <source>Host %1 not found</source>
-        <translation>Узел %1 не обнаружен</translation>
-    </message>
-    <message>
-        <location line="-62"/>
-        <location filename="../src/qt3support/network/q3http.cpp" line="-45"/>
-        <source>Wrong content length</source>
-        <translation>Неверная длина данных</translation>
-    </message>
-    <message>
-        <location line="-2204"/>
-        <source>HTTPS connection requested but SSL support not compiled in</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+2286"/>
-        <location filename="../src/network/access/qhttpnetworkconnection.cpp" line="+10"/>
-        <location line="+19"/>
-        <location filename="../src/qt3support/network/q3http.cpp" line="+48"/>
-        <source>HTTP request failed</source>
-        <translation>Ошибка HTTP-запроса</translation>
-    </message>
-    <message>
-        <location filename="../src/qt3support/network/q3http.cpp" line="+450"/>
-        <source>Host %1 found</source>
-        <translation type="unfinished">Обнаружен узел %1</translation>
-    </message>
-    <message>
-        <location line="+14"/>
-        <source>Host found</source>
-        <translation type="unfinished">Узел обнаружен</translation>
-    </message>
-    <message>
-        <location line="-11"/>
-        <source>Connected to host %1</source>
-        <translation type="unfinished">Установлено соединение с узлом %1</translation>
-    </message>
-    <message>
-        <location line="+14"/>
-        <source>Connected to host</source>
-        <translation type="unfinished">Соединение с узлом установлено</translation>
-    </message>
-    <message>
-        <location line="-11"/>
-        <source>Connection to %1 closed</source>
-        <translation type="unfinished">Соединение с узлом %1 разорвано</translation>
-    </message>
-    <message>
-        <location filename="../src/network/access/qhttpnetworkconnection.cpp" line="-22"/>
-        <location filename="../src/qt3support/network/q3http.cpp" line="+14"/>
-        <source>Connection closed</source>
-        <translation type="unfinished">Соединение разорвано</translation>
-    </message>
-    <message>
-        <location filename="../src/network/access/qhttp.cpp" line="-1077"/>
+        <location filename="../src/network/access/qhttp.cpp" line="+1574"/>
         <location line="+820"/>
-        <location filename="../src/qt3support/network/q3http.cpp" line="-1152"/>
+        <location filename="../src/qt3support/network/q3http.cpp" line="+1160"/>
         <location line="+567"/>
         <source>Unknown error</source>
         <translation>Неизвестная ошибка</translation>
@@ -2249,83 +2208,146 @@ Do you want to delete it anyway?</source>
         <location line="-568"/>
         <location filename="../src/qt3support/network/q3http.cpp" line="-370"/>
         <source>Request aborted</source>
-        <translation>Запрос отменен</translation>
+        <translation>Запрос прерван</translation>
     </message>
     <message>
         <location line="+579"/>
         <location filename="../src/qt3support/network/q3http.cpp" line="+381"/>
         <source>No server set to connect to</source>
-        <translation>Не выбран сервер для подключения</translation>
+        <translation>Не указан сервер для подключения</translation>
     </message>
     <message>
-        <location line="+168"/>
-        <location filename="../src/qt3support/network/q3http.cpp" line="+60"/>
+        <location line="+164"/>
+        <location filename="../src/qt3support/network/q3http.cpp" line="+56"/>
+        <source>Wrong content length</source>
+        <translation>Неверная длина содержимого</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <location filename="../src/qt3support/network/q3http.cpp" line="+4"/>
         <source>Server closed connection unexpectedly</source>
-        <translation>Неожиданный разрыв соединения сервером</translation>
+        <translation>Сервер неожиданно разорвал соединение</translation>
     </message>
     <message>
-        <location line="+151"/>
-        <location filename="../src/qt3support/network/q3http.cpp" line="+113"/>
-        <source>Invalid HTTP response header</source>
-        <translation>Получен некорректный HTTP-заголовок</translation>
-    </message>
-    <message>
-        <location line="+28"/>
+        <location line="+179"/>
         <source>Unknown authentication method</source>
-        <translation type="unfinished"></translation>
+        <translation>Неизвестный метод авторизации</translation>
     </message>
     <message>
-        <location line="+97"/>
+        <location line="+183"/>
+        <source>Error writing response to device</source>
+        <translation>Ошибка записи ответа на устройство</translation>
+    </message>
+    <message>
+        <location filename="../src/network/access/qhttpnetworkconnection.cpp" line="+977"/>
+        <location filename="../src/qt3support/network/q3http.cpp" line="+38"/>
+        <source>Connection refused</source>
+        <translation>Отказано в соединении</translation>
+    </message>
+    <message>
+        <location filename="../src/network/access/qhttp.cpp" line="-304"/>
+        <location filename="../src/network/access/qhttpnetworkconnection.cpp" line="-4"/>
+        <location filename="../src/qt3support/network/q3http.cpp" line="+3"/>
+        <source>Host %1 not found</source>
+        <translation>Узел %1 не найден</translation>
+    </message>
+    <message>
+        <location line="+20"/>
+        <location filename="../src/network/access/qhttpnetworkconnection.cpp" line="+10"/>
+        <location line="+19"/>
+        <location filename="../src/qt3support/network/q3http.cpp" line="+3"/>
+        <source>HTTP request failed</source>
+        <translation>HTTP-запрос не удался</translation>
+    </message>
+    <message>
+        <location line="+73"/>
+        <location filename="../src/qt3support/network/q3http.cpp" line="+69"/>
+        <source>Invalid HTTP response header</source>
+        <translation>Некорректный HTTP-заголовок ответа</translation>
+    </message>
+    <message>
+        <location line="+125"/>
         <location line="+48"/>
         <location filename="../src/qt3support/network/q3http.cpp" line="+40"/>
         <location line="+47"/>
         <source>Invalid HTTP chunked body</source>
-        <translation>Некорректный HTTP-ответ</translation>
+        <translation>Некорректное HTTP-фрагментирование данных</translation>
     </message>
     <message>
-        <location line="+38"/>
-        <source>Error writing response to device</source>
-        <translation type="unfinished"></translation>
+        <location filename="../src/qt3support/network/q3http.cpp" line="+294"/>
+        <source>Host %1 found</source>
+        <translation>Узел %1 найден</translation>
     </message>
     <message>
-        <location line="-173"/>
+        <location line="+3"/>
+        <source>Connected to host %1</source>
+        <translation>Установлено соединение с узлом %1</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Connection to %1 closed</source>
+        <translation>Соединение с узлом %1 закрыто</translation>
+    </message>
+    <message>
+        <location line="+8"/>
+        <source>Host found</source>
+        <translation>Узел найден</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Connected to host</source>
+        <translation>Соединение с узлом установлено</translation>
+    </message>
+    <message>
+        <location filename="../src/network/access/qhttpnetworkconnection.cpp" line="-22"/>
+        <location filename="../src/qt3support/network/q3http.cpp" line="+3"/>
+        <source>Connection closed</source>
+        <translation>Соединение закрыто</translation>
+    </message>
+    <message>
+        <location filename="../src/network/access/qhttp.cpp" line="-135"/>
         <source>Proxy authentication required</source>
-        <translation type="unfinished"></translation>
+        <translation>Требуется авторизация на прокси-сервере</translation>
     </message>
     <message>
         <location line="+4"/>
         <source>Authentication required</source>
-        <translation type="unfinished"></translation>
+        <translation>Требуется авторизация</translation>
     </message>
     <message>
         <location line="-138"/>
         <source>Connection refused (or timed out)</source>
-        <translation type="unfinished"></translation>
+        <translation>В соединении отказано (или время ожидания истекло)</translation>
     </message>
     <message>
         <location filename="../src/network/access/qhttpnetworkconnection.cpp" line="+6"/>
         <source>Proxy requires authentication</source>
-        <translation type="unfinished"></translation>
+        <translation>Прокси-сервер требует авторизацию</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Host requires authentication</source>
-        <translation type="unfinished"></translation>
+        <translation>Узел требует авторизацию</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Data corrupted</source>
-        <translation type="unfinished"></translation>
+        <translation>Данные повреждены</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Unknown protocol specified</source>
-        <translation type="unfinished"></translation>
+        <translation>Указан неизвестный протокол</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>SSL handshake failed</source>
         <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/network/access/qhttp.cpp" line="-2263"/>
+        <source>HTTPS connection requested but SSL support not compiled in</source>
+        <translation>Запрошено соединение по протоколу HTTPS, но поддержка SSL не скомпилирована</translation>
     </message>
 </context>
 <context>
@@ -2333,160 +2355,160 @@ Do you want to delete it anyway?</source>
     <message>
         <location filename="../src/network/socket/qhttpsocketengine.cpp" line="-89"/>
         <source>Did not receive HTTP response from proxy</source>
-        <translation type="unfinished"></translation>
+        <translation>Не получен HTTP-ответ от прокси-сервера</translation>
     </message>
     <message>
         <location line="+25"/>
         <source>Error parsing authentication request from proxy</source>
-        <translation type="unfinished"></translation>
+        <translation>Ошибка разбора запроса авторизации от прокси-сервера</translation>
     </message>
     <message>
         <location line="+31"/>
         <source>Authentication required</source>
-        <translation type="unfinished"></translation>
+        <translation>Требуется авторизация</translation>
     </message>
     <message>
         <location line="+27"/>
         <source>Proxy denied connection</source>
-        <translation type="unfinished"></translation>
+        <translation>Прокси-сервер запретил соединение</translation>
     </message>
     <message>
         <location line="+10"/>
         <source>Error communicating with HTTP proxy</source>
-        <translation type="unfinished"></translation>
+        <translation>Ошибка обмена данными с прокси-сервером HTTP</translation>
     </message>
     <message>
         <location line="+23"/>
         <source>Proxy server not found</source>
-        <translation type="unfinished"></translation>
+        <translation>Прокси-сервер не найден</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Proxy connection refused</source>
-        <translation type="unfinished"></translation>
+        <translation>В соединении прокси-сервером отказано</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Proxy server connection timed out</source>
-        <translation type="unfinished"></translation>
+        <translation>Время на соединение с прокси-сервером истекло</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Proxy connection closed prematurely</source>
-        <translation type="unfinished"></translation>
+        <translation>Соединение с прокси-сервером неожиданно закрыто</translation>
     </message>
 </context>
 <context>
     <name>QIBaseDriver</name>
     <message>
-        <location filename="../src/sql/drivers/ibase/qsql_ibase.cpp" line="+1428"/>
+        <location filename="../src/sql/drivers/ibase/qsql_ibase.cpp" line="+1434"/>
         <source>Error opening database</source>
-        <translation type="unfinished"></translation>
+        <translation>Невозможно открыть базу данных</translation>
     </message>
     <message>
         <location line="+54"/>
         <source>Could not start transaction</source>
-        <translation type="unfinished"></translation>
+        <translation>Не удалось начать транзакцию</translation>
     </message>
     <message>
         <location line="+13"/>
         <source>Unable to commit transaction</source>
-        <translation type="unfinished"></translation>
+        <translation>Невозможно выполнить транзакцию</translation>
     </message>
     <message>
         <location line="+13"/>
         <source>Unable to rollback transaction</source>
-        <translation type="unfinished"></translation>
+        <translation>Невозможно откатить транзакцию</translation>
     </message>
 </context>
 <context>
     <name>QIBaseResult</name>
     <message>
-        <location line="-1097"/>
+        <location line="-1095"/>
         <source>Unable to create BLOB</source>
-        <translation type="unfinished"></translation>
+        <translation>Невозможно создать BLOB</translation>
     </message>
     <message>
         <location line="+6"/>
         <source>Unable to write BLOB</source>
-        <translation type="unfinished"></translation>
+        <translation>Невозможно записать BLOB</translation>
     </message>
     <message>
         <location line="+14"/>
         <source>Unable to open BLOB</source>
-        <translation type="unfinished"></translation>
+        <translation>Невозможно открыть BLOB</translation>
     </message>
     <message>
         <location line="+16"/>
         <source>Unable to read BLOB</source>
-        <translation type="unfinished"></translation>
+        <translation>Невозможно прочитать BLOB</translation>
     </message>
     <message>
         <location line="+125"/>
-        <location line="+189"/>
+        <location line="+187"/>
         <source>Could not find array</source>
-        <translation type="unfinished"></translation>
+        <translation>Не удалось найти массив</translation>
     </message>
     <message>
-        <location line="-157"/>
+        <location line="-155"/>
         <source>Could not get array data</source>
-        <translation type="unfinished"></translation>
+        <translation>Не удалось найти данные массива</translation>
     </message>
     <message>
-        <location line="+212"/>
+        <location line="+210"/>
         <source>Could not get query info</source>
-        <translation type="unfinished"></translation>
+        <translation>Не удалось найти информацию о запросе</translation>
     </message>
     <message>
         <location line="+20"/>
         <source>Could not start transaction</source>
-        <translation type="unfinished"></translation>
+        <translation>Не удалось начать транзакцию</translation>
     </message>
     <message>
         <location line="+19"/>
         <source>Unable to commit transaction</source>
-        <translation type="unfinished"></translation>
+        <translation>Невозможно выполнить транзакцию</translation>
     </message>
     <message>
         <location line="+33"/>
         <source>Could not allocate statement</source>
-        <translation type="unfinished"></translation>
+        <translation>Не удалось получить ресурсы для создания выражения</translation>
     </message>
     <message>
         <location line="+5"/>
         <source>Could not prepare statement</source>
-        <translation type="unfinished"></translation>
+        <translation>Не удалось подготовить выражение</translation>
     </message>
     <message>
         <location line="+5"/>
         <location line="+7"/>
         <source>Could not describe input statement</source>
-        <translation type="unfinished"></translation>
+        <translation>Не удалось описать входящее выражение</translation>
     </message>
     <message>
         <location line="+10"/>
         <source>Could not describe statement</source>
-        <translation type="unfinished"></translation>
+        <translation>Не удалось описать выражение</translation>
     </message>
     <message>
         <location line="+115"/>
         <source>Unable to close statement</source>
-        <translation type="unfinished"></translation>
+        <translation>Невозможно закрыть выражение</translation>
     </message>
     <message>
         <location line="+8"/>
         <source>Unable to execute query</source>
-        <translation type="unfinished"></translation>
+        <translation>Невозможно выполнить запрос</translation>
     </message>
     <message>
         <location line="+46"/>
         <source>Could not fetch next item</source>
-        <translation type="unfinished"></translation>
+        <translation>Не удалось получить следующий элемент</translation>
     </message>
     <message>
         <location line="+160"/>
         <source>Could not get statement info</source>
-        <translation type="unfinished"></translation>
+        <translation>Не удалось найти информацию о выражении</translation>
     </message>
 </context>
 <context>
@@ -2494,27 +2516,27 @@ Do you want to delete it anyway?</source>
     <message>
         <location filename="../src/corelib/global/qglobal.cpp" line="+1869"/>
         <source>Permission denied</source>
-        <translation type="unfinished"></translation>
+        <translation>Доступ запрещён</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Too many open files</source>
-        <translation type="unfinished"></translation>
+        <translation>Слишком много открытых файлов</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>No such file or directory</source>
-        <translation type="unfinished"></translation>
+        <translation>Файл или каталог не существует</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>No space left on device</source>
-        <translation type="unfinished"></translation>
+        <translation>Нет свободного места на устройстве</translation>
     </message>
     <message>
-        <location filename="../src/corelib/io/qiodevice.cpp" line="+1536"/>
+        <location filename="../src/corelib/io/qiodevice.cpp" line="+1541"/>
         <source>Unknown error</source>
-        <translation type="unfinished">Неизвестная ошибка</translation>
+        <translation>Неизвестная ошибка</translation>
     </message>
 </context>
 <context>
@@ -2545,7 +2567,7 @@ Do you want to delete it anyway?</source>
     <message>
         <location filename="../src/gui/dialogs/qinputdialog.cpp" line="+223"/>
         <source>Enter a value:</source>
-        <translation type="unfinished"></translation>
+        <translation>Укажите значение:</translation>
     </message>
 </context>
 <context>
@@ -2553,66 +2575,66 @@ Do you want to delete it anyway?</source>
     <message>
         <location filename="../src/corelib/plugin/qlibrary.cpp" line="+378"/>
         <source>Could not mmap &apos;%1&apos;: %2</source>
-        <translation type="unfinished"></translation>
+        <translation>Не удалось выполнить mmap &apos;%1&apos;: %2</translation>
     </message>
     <message>
         <location line="+22"/>
         <source>Plugin verification data mismatch in &apos;%1&apos;</source>
-        <translation type="unfinished"></translation>
+        <translation>Проверочная информация для модуля &apos;%1&apos; не совпадает</translation>
     </message>
     <message>
         <location line="+6"/>
         <source>Could not unmap &apos;%1&apos;: %2</source>
-        <translation type="unfinished"></translation>
+        <translation>Не удалось выполнить unmap &apos;%1&apos;: %2</translation>
     </message>
     <message>
         <location line="+302"/>
         <source>The plugin &apos;%1&apos; uses incompatible Qt library. (%2.%3.%4) [%5]</source>
-        <translation type="unfinished"></translation>
+        <translation>Модуль &apos;%1&apos; использует несоместимую библиотеку Qt. (%2.%3.%4) [%5]</translation>
     </message>
     <message>
         <location line="+20"/>
         <source>The plugin &apos;%1&apos; uses incompatible Qt library. Expected build key &quot;%2&quot;, got &quot;%3&quot;</source>
-        <translation type="unfinished"></translation>
+        <translation>Плагин &apos;%1&apos; использует несоместимую библиотеку Qt. Ожидается ключ &quot;%2&quot;, но получен ключ &quot;%3&quot;</translation>
     </message>
     <message>
         <location line="+340"/>
         <source>Unknown error</source>
-        <translation type="unfinished">Неизвестная ошибка</translation>
+        <translation>Неизвестная ошибка</translation>
     </message>
     <message>
         <location line="-377"/>
         <location filename="../src/corelib/plugin/qpluginloader.cpp" line="+280"/>
         <source>The shared library was not found.</source>
-        <translation type="unfinished"></translation>
+        <translation>Динамическая библиотека не найдена.</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>The file &apos;%1&apos; is not a valid Qt plugin.</source>
-        <translation type="unfinished"></translation>
+        <translation>Файл &apos;%1&apos; - не может быть корректным модулем Qt.</translation>
     </message>
     <message>
         <location line="+43"/>
         <source>The plugin &apos;%1&apos; uses incompatible Qt library. (Cannot mix debug and release libraries.)</source>
-        <translation type="unfinished"></translation>
+        <translation>Плагин &apos;%1&apos; использует несоместимую библиотеку Qt. (Нельзя совмещать релизные и отладочные библиотеки.)</translation>
     </message>
     <message>
         <location filename="../src/corelib/plugin/qlibrary_unix.cpp" line="+209"/>
         <location filename="../src/corelib/plugin/qlibrary_win.cpp" line="+99"/>
         <source>Cannot load library %1: %2</source>
-        <translation type="unfinished"></translation>
+        <translation>Невозможно загрузить библиотеку %1: %2</translation>
     </message>
     <message>
         <location line="+16"/>
         <location filename="../src/corelib/plugin/qlibrary_win.cpp" line="+26"/>
         <source>Cannot unload library %1: %2</source>
-        <translation type="unfinished"></translation>
+        <translation>Невозможно выгрузить библиотеку %1: %2</translation>
     </message>
     <message>
         <location line="+31"/>
         <location filename="../src/corelib/plugin/qlibrary_win.cpp" line="+15"/>
         <source>Cannot resolve symbol &quot;%1&quot; in %2: %3</source>
-        <translation type="unfinished"></translation>
+        <translation>Невозможно разрешить символ &quot;%1&quot; в %2: %3</translation>
     </message>
 </context>
 <context>
@@ -2620,62 +2642,61 @@ Do you want to delete it anyway?</source>
     <message>
         <location filename="../src/gui/widgets/qlineedit.cpp" line="+2680"/>
         <source>&amp;Undo</source>
-        <translation type="unfinished">&amp;Отменить</translation>
+        <translation>&amp;Отменить действие</translation>
     </message>
     <message>
         <location line="+4"/>
         <source>&amp;Redo</source>
-        <translation type="unfinished">&amp;Повторить</translation>
+        <translation>&amp;Повторить действие</translation>
     </message>
     <message>
         <location line="+7"/>
         <source>Cu&amp;t</source>
-        <translation type="unfinished">&amp;Вырезать</translation>
+        <translation>&amp;Вырезать</translation>
     </message>
     <message>
         <location line="+4"/>
         <source>&amp;Copy</source>
-        <translation type="unfinished">&amp;Копировать</translation>
+        <translation>&amp;Копировать</translation>
     </message>
     <message>
         <location line="+4"/>
         <source>&amp;Paste</source>
-        <translation type="unfinished">В&amp;ставить</translation>
+        <translation>В&amp;ставить</translation>
     </message>
     <message>
-        <location line="+11"/>
-        <source>Select All</source>
-        <translation type="unfinished">Выделить все</translation>
-    </message>
-    <message>
-        <location line="-6"/>
+        <location line="+5"/>
         <source>Delete</source>
-        <translation type="unfinished">Удалить</translation>
+        <translation>Удалить</translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Select All</source>
+        <translation>Выделить все</translation>
     </message>
 </context>
 <context>
     <name>QLocalServer</name>
     <message>
         <location filename="../src/network/socket/qlocalserver.cpp" line="+226"/>
-        <location filename="../src/network/socket/qlocalserver_unix.cpp" line="+231"/>
+        <location filename="../src/network/socket/qlocalserver_unix.cpp" line="+233"/>
         <source>%1: Name error</source>
-        <translation type="unfinished"></translation>
+        <translation>%1: Некорректное имя</translation>
     </message>
     <message>
         <location filename="../src/network/socket/qlocalserver_unix.cpp" line="-8"/>
         <source>%1: Permission denied</source>
-        <translation type="unfinished"></translation>
+        <translation>%1: Доступ запрещён</translation>
     </message>
     <message>
         <location line="+12"/>
         <source>%1: Address in use</source>
-        <translation type="unfinished"></translation>
+        <translation>%1: Адрес используется</translation>
     </message>
     <message>
         <location line="+5"/>
-        <location filename="../src/network/socket/qlocalserver_win.cpp" line="+158"/>
         <source>%1: Unknown error %2</source>
-        <translation type="unfinished"></translation>
+        <translation>%1: Неизвестная ошибка %2</translation>
     </message>
 </context>
 <context>
@@ -2684,13 +2705,13 @@ Do you want to delete it anyway?</source>
         <location filename="../src/network/socket/qlocalsocket_tcp.cpp" line="+132"/>
         <location filename="../src/network/socket/qlocalsocket_unix.cpp" line="+134"/>
         <source>%1: Connection refused</source>
-        <translation type="unfinished"></translation>
+        <translation>%1: Отказано в соединении</translation>
     </message>
     <message>
         <location line="+3"/>
         <location filename="../src/network/socket/qlocalsocket_unix.cpp" line="+3"/>
         <source>%1: Remote closed</source>
-        <translation type="unfinished"></translation>
+        <translation>%1: Удалённое закрытие</translation>
     </message>
     <message>
         <location line="+3"/>
@@ -2698,143 +2719,143 @@ Do you want to delete it anyway?</source>
         <location filename="../src/network/socket/qlocalsocket_win.cpp" line="+80"/>
         <location line="+43"/>
         <source>%1: Invalid name</source>
-        <translation type="unfinished"></translation>
+        <translation>%1: Некорректное имя</translation>
     </message>
     <message>
         <location line="+3"/>
         <location filename="../src/network/socket/qlocalsocket_unix.cpp" line="+3"/>
         <source>%1: Socket access error</source>
-        <translation type="unfinished"></translation>
+        <translation>%1: Ошибка обращения к сокету</translation>
     </message>
     <message>
         <location line="+3"/>
         <location filename="../src/network/socket/qlocalsocket_unix.cpp" line="+3"/>
         <source>%1: Socket resource error</source>
-        <translation type="unfinished"></translation>
+        <translation>%1: Ошибка выделения ресурсов сокета</translation>
     </message>
     <message>
         <location line="+3"/>
         <location filename="../src/network/socket/qlocalsocket_unix.cpp" line="+3"/>
         <source>%1: Socket operation timed out</source>
-        <translation type="unfinished"></translation>
+        <translation>%1: Время на операцию с сокетом истекло</translation>
     </message>
     <message>
         <location line="+3"/>
         <location filename="../src/network/socket/qlocalsocket_unix.cpp" line="+3"/>
         <source>%1: Datagram too large</source>
-        <translation type="unfinished"></translation>
+        <translation>%1: Датаграмма слишком большая</translation>
     </message>
     <message>
         <location line="+3"/>
         <location filename="../src/network/socket/qlocalsocket_unix.cpp" line="+3"/>
         <location filename="../src/network/socket/qlocalsocket_win.cpp" line="-48"/>
         <source>%1: Connection error</source>
-        <translation type="unfinished"></translation>
+        <translation>%1: Ошибка соединения</translation>
     </message>
     <message>
         <location line="+3"/>
         <location filename="../src/network/socket/qlocalsocket_unix.cpp" line="+3"/>
         <source>%1: The socket operation is not supported</source>
-        <translation type="unfinished"></translation>
+        <translation>%1: Операция с сокетом не поддерживается</translation>
     </message>
     <message>
         <location line="+4"/>
         <source>%1: Unknown error</source>
-        <translation type="unfinished"></translation>
+        <translation>%1: Неизвестная ошибка</translation>
     </message>
     <message>
         <location filename="../src/network/socket/qlocalsocket_unix.cpp" line="+4"/>
         <location filename="../src/network/socket/qlocalsocket_win.cpp" line="+10"/>
         <source>%1: Unknown error %2</source>
-        <translation type="unfinished"></translation>
+        <translation>%1: Неизвестная ошибка %2</translation>
     </message>
 </context>
 <context>
     <name>QMYSQLDriver</name>
     <message>
-        <location filename="../src/sql/drivers/mysql/qsql_mysql.cpp" line="+1231"/>
+        <location filename="../src/sql/drivers/mysql/qsql_mysql.cpp" line="+1251"/>
         <source>Unable to open database &apos;</source>
-        <translation type="unfinished"></translation>
+        <translation>Невозможно открыть базу данных &apos;</translation>
     </message>
     <message>
         <location line="+7"/>
         <source>Unable to connect</source>
-        <translation type="unfinished"></translation>
+        <translation>Невозможно соединиться</translation>
     </message>
     <message>
-        <location line="+127"/>
+        <location line="+135"/>
         <source>Unable to begin transaction</source>
-        <translation type="unfinished"></translation>
+        <translation>Невозможно начать транзакцию</translation>
     </message>
     <message>
         <location line="+17"/>
         <source>Unable to commit transaction</source>
-        <translation type="unfinished"></translation>
+        <translation>Невозможно выполнить транзакцию</translation>
     </message>
     <message>
         <location line="+17"/>
         <source>Unable to rollback transaction</source>
-        <translation type="unfinished"></translation>
+        <translation>Невозможно откатить транзакцию</translation>
     </message>
 </context>
 <context>
     <name>QMYSQLResult</name>
     <message>
-        <location line="-922"/>
+        <location line="-942"/>
         <source>Unable to fetch data</source>
-        <translation type="unfinished"></translation>
+        <translation>Невозможно получить данные</translation>
     </message>
     <message>
-        <location line="+176"/>
+        <location line="+183"/>
         <source>Unable to execute query</source>
-        <translation type="unfinished"></translation>
+        <translation>Невозможно выполнить запрос</translation>
     </message>
     <message>
         <location line="+6"/>
         <source>Unable to store result</source>
-        <translation type="unfinished"></translation>
+        <translation>Невозможно сохранить результат</translation>
     </message>
     <message>
-        <location line="+190"/>
+        <location line="+194"/>
         <location line="+8"/>
         <source>Unable to prepare statement</source>
-        <translation type="unfinished"></translation>
+        <translation>Невозможно подготовить выражение</translation>
     </message>
     <message>
-        <location line="+34"/>
+        <location line="+36"/>
         <source>Unable to reset statement</source>
-        <translation type="unfinished"></translation>
+        <translation>Невозможно сбросить выражение</translation>
     </message>
     <message>
-        <location line="+87"/>
+        <location line="+86"/>
         <source>Unable to bind value</source>
-        <translation type="unfinished"></translation>
+        <translation>Невозможно привязать значение</translation>
     </message>
     <message>
         <location line="+11"/>
         <source>Unable to execute statement</source>
-        <translation type="unfinished"></translation>
+        <translation>Невозможно выполнить выражение</translation>
     </message>
     <message>
         <location line="+14"/>
         <location line="+21"/>
         <source>Unable to bind outvalues</source>
-        <translation type="unfinished"></translation>
+        <translation>Невозможно привязать результирующие значения</translation>
     </message>
     <message>
         <location line="-12"/>
         <source>Unable to store statement results</source>
-        <translation type="unfinished"></translation>
+        <translation>Невозможно сохранить результат выполнения выражения</translation>
     </message>
     <message>
-        <location line="-253"/>
+        <location line="-256"/>
         <source>Unable to execute next query</source>
-        <translation type="unfinished"></translation>
+        <translation>Невозможно выполнить следующий запрос</translation>
     </message>
     <message>
         <location line="+10"/>
         <source>Unable to store next result</source>
-        <translation type="unfinished"></translation>
+        <translation>Невозможно сохранить следующий результат</translation>
     </message>
 </context>
 <context>
@@ -2842,7 +2863,7 @@ Do you want to delete it anyway?</source>
     <message>
         <location filename="../src/gui/widgets/qmdiarea.cpp" line="+290"/>
         <source>(Untitled)</source>
-        <translation type="unfinished"></translation>
+        <translation>(Неозаглавлено)</translation>
     </message>
 </context>
 <context>
@@ -2850,92 +2871,92 @@ Do you want to delete it anyway?</source>
     <message>
         <location filename="../src/gui/widgets/qmdisubwindow.cpp" line="+280"/>
         <source>%1 - [%2]</source>
-        <translation type="unfinished">%1 - [%2]</translation>
+        <translation>%1 - [%2]</translation>
     </message>
     <message>
         <location line="+72"/>
         <source>Close</source>
-        <translation type="unfinished">Закрыть</translation>
+        <translation>Закрыть</translation>
     </message>
     <message>
         <location line="-18"/>
         <source>Minimize</source>
-        <translation type="unfinished">Свернуть</translation>
+        <translation>Минимизировать</translation>
     </message>
     <message>
         <location line="+13"/>
         <source>Restore Down</source>
-        <translation type="unfinished">Восстановить</translation>
+        <translation>Восстановить</translation>
     </message>
     <message>
         <location line="+707"/>
         <source>&amp;Restore</source>
-        <translation type="unfinished">&amp;Восстановить</translation>
+        <translation>&amp;Восстановить</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>&amp;Move</source>
-        <translation type="unfinished">&amp;Переместить</translation>
+        <translation>&amp;Переместить</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>&amp;Size</source>
-        <translation type="unfinished">&amp;Размер</translation>
+        <translation>&amp;Размер</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Mi&amp;nimize</source>
-        <translation type="unfinished">&amp;Свернуть</translation>
+        <translation>&amp;Минимизировать</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Ma&amp;ximize</source>
-        <translation type="unfinished">Р&amp;азвернуть</translation>
+        <translation>Р&amp;аспахнуть</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Stay on &amp;Top</source>
-        <translation type="unfinished">Всегда &amp;наверху</translation>
+        <translation>Оставаться &amp;сверху</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>&amp;Close</source>
-        <translation type="unfinished">&amp;Закрыть</translation>
+        <translation>&amp;Закрыть</translation>
     </message>
     <message>
         <location line="-787"/>
         <source>- [%1]</source>
-        <translation type="unfinished"></translation>
+        <translation>- [%1]</translation>
     </message>
     <message>
         <location line="+58"/>
         <source>Maximize</source>
-        <translation type="unfinished">Развернуть</translation>
+        <translation>Распахнуть</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Unshade</source>
-        <translation type="unfinished"></translation>
+        <translation>Восстановить из заголовка</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Shade</source>
-        <translation type="unfinished"></translation>
+        <translation>Свернуть в заголовок</translation>
     </message>
     <message>
         <location line="+6"/>
         <source>Restore</source>
-        <translation type="unfinished"></translation>
+        <translation>Восстановить</translation>
     </message>
     <message>
         <location line="+6"/>
         <source>Help</source>
-        <translation type="unfinished">Справка</translation>
+        <translation>Справка</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Menu</source>
-        <translation type="unfinished">Меню</translation>
+        <translation>Меню</translation>
     </message>
 </context>
 <context>
@@ -2944,91 +2965,68 @@ Do you want to delete it anyway?</source>
         <location filename="../src/plugins/accessible/widgets/qaccessiblemenu.cpp" line="+157"/>
         <location line="+225"/>
         <source>Close</source>
-        <translation type="unfinished">Закрыть</translation>
+        <translation>Закрыть</translation>
     </message>
     <message>
         <location line="-224"/>
         <location line="+225"/>
         <source>Open</source>
-        <translation type="unfinished">Открыть</translation>
+        <translation>Открыть</translation>
     </message>
     <message>
         <location line="-223"/>
         <location line="+225"/>
         <location line="+51"/>
         <source>Execute</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>QMenuBar</name>
-    <message>
-        <source>About</source>
-        <translation type="obsolete">О программе</translation>
-    </message>
-    <message>
-        <source>Config</source>
-        <translation type="obsolete">Конфигурация</translation>
-    </message>
-    <message>
-        <source>Preference</source>
-        <translation type="obsolete">Настройки</translation>
-    </message>
-    <message>
-        <source>Options</source>
-        <translation type="obsolete">Параметры</translation>
-    </message>
-    <message>
-        <source>Setting</source>
-        <translation type="obsolete">Настройки</translation>
-    </message>
-    <message>
-        <source>Setup</source>
-        <translation type="obsolete">Настройки</translation>
-    </message>
-    <message>
-        <source>Quit</source>
-        <translation type="obsolete">Выход</translation>
-    </message>
-    <message>
-        <source>Exit</source>
-        <translation type="obsolete">Выход</translation>
+        <translation>Выполнить</translation>
     </message>
 </context>
 <context>
     <name>QMessageBox</name>
     <message>
-        <location filename="../src/gui/dialogs/qmessagebox.cpp" line="-1964"/>
-        <location line="+852"/>
+        <location filename="../src/gui/dialogs/qmessagebox.cpp" line="-1111"/>
+        <source>Help</source>
+        <translation>Справка</translation>
+    </message>
+    <message>
+        <location line="-848"/>
+        <location line="+847"/>
         <location filename="../src/gui/dialogs/qmessagebox.h" line="-52"/>
         <location line="+8"/>
         <source>OK</source>
-        <translation>OK</translation>
+        <translation>Готово</translation>
     </message>
     <message>
-        <location line="+509"/>
+        <location line="+475"/>
+        <source>&lt;h3&gt;About Qt&lt;/h3&gt;&lt;p&gt;This program uses Qt version %1.&lt;/p&gt;&lt;p&gt;Qt is a C++ toolkit for cross-platform application development.&lt;/p&gt;&lt;p&gt;Qt provides single-source portability across MS&amp;nbsp;Windows, Mac&amp;nbsp;OS&amp;nbsp;X, Linux, and all major commercial Unix variants. Qt is also available for embedded devices as Qt for Embedded Linux and Qt for Windows CE.&lt;/p&gt;&lt;p&gt;Qt is available under three different licensing options designed to accommodate the needs of our various users.&lt;/p&gt;Qt licensed under our commercial license agreement is appropriate for development of proprietary/commercial software where you do not want to share any source code with third parties or otherwise cannot comply with the terms of the GNU LGPL version 2.1 or GNU GPL version 3.0.&lt;/p&gt;&lt;p&gt;Qt licensed under the GNU LGPL version 2.1 is appropriate for the development of Qt applications (proprietary or open source) provided you can comply with the terms and conditions of the GNU LGPL version 2.1.&lt;/p&gt;&lt;p&gt;Qt licensed under the GNU General Public License version 3.0 is appropriate for the development of Qt applications where you wish to use such applications in combination with software subject to the terms of the GNU GPL version 3.0 or where you are otherwise willing to comply with the terms of the GNU GPL version 3.0.&lt;/p&gt;&lt;p&gt;Please see &lt;a href=&quot;http://www.qtsoftware.com/products/licensing&quot;&gt;www.qtsoftware.com/products/licensing&lt;/a&gt; for an overview of Qt licensing.&lt;/p&gt;&lt;p&gt;Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).&lt;/p&gt;&lt;p&gt;Qt is a Nokia product. See &lt;a href=&quot;http://www.qtsoftware.com/qt/&quot;&gt;www.qtsoftware.com/qt&lt;/a&gt; for more information.&lt;/p&gt;</source>
+        <translation type="unfinished">&lt;h3&gt;О Qt&lt;/h3&gt;&lt;p&gt;Данная программа использует Qt версии %1.&lt;/p&gt;&lt;p&gt;Qt - это инструмент для разработки крссплатформенных приложений на C++.&lt;/p&gt;&lt;p&gt;Qt предоставляет переносимость между MS&amp;nbsp;Windows, Mac&amp;nbsp;OS&amp;nbsp;X, Linux и всеми популярными вариантами коммерческой Unix. Также Qt доступна для встраиваемых устройств в виде Qt для Embedded Linux и Qt для Windows CE.&lt;/p&gt;&lt;p&gt;Qt доступна под тремя различными лицензиями, разработанными для удовлетворения требований различных пользователей.&lt;/p&gt;Qt, лицензированая нашей коммерческой лицензией, предназначена для развития проприетарного/коммерческого программного обеспечения, когда Вы не желаете предоставлять исходные коды третьим сторонам; коммерческая лицензия не соответствует условиям лицензий GNU LGPL версии 2.1 или GNU GPL версии 3.0.&lt;/p&gt;&lt;p&gt;Qt под лицензией GNU LGPL версии 2.1 предназначена для разработки программного обеспечения с открытым исходным кодом или коммерческого программного обеспечения при соблюдении сроков и условий лицензии GNU LGPL версии 2.1.&lt;/p&gt;&lt;p&gt;Qt под лицензией GNU General Public License версии 3.0 предназначена для разработки программных приложений в тех случаях, когда Вы хотели бы использовать такие приложения в сочетании с программным обеспечением на условиях лицензии GNU GPL с версии 3.0 или если Вы готовы соблюдать условия лицензии GNU GPL версии 3.0.&lt;/p&gt;&lt;p&gt;Обратитесь к &lt;a href=&quot;http://www.qtsoftware.com/products/licensing&quot;&gt;www.qtsoftware.com/products/licensing&lt;/a&gt; для обзора лицензий Qt.&lt;/p&gt;&lt;p&gt;Copyright (C) 2009 Корпорация Nokia и/или её дочерние подразделения.&lt;/p&gt;&lt;p&gt;Qt - продукт Nokia. Обратитесь к &lt;a href=&quot;http://www.qtsoftware.com/qt/&quot;&gt;www.qtsoftware.com/qt&lt;/a&gt; для получения дополнительной информации.&lt;/p&gt;</translation>
+    </message>
+    <message>
+        <location line="+34"/>
         <source>About Qt</source>
-        <translation type="unfinished"></translation>
+        <translation>О Qt</translation>
     </message>
     <message>
-        <location line="-508"/>
-        <source>Help</source>
-        <translation type="unfinished">Справка</translation>
+        <source>&lt;p&gt;This program uses Qt version %1.&lt;/p&gt;</source>
+        <translation type="obsolete">&lt;p&gt;Данная программа использует Qt версии %1.&lt;/p&gt;</translation>
     </message>
     <message>
-        <location line="-1097"/>
+        <location line="-1600"/>
         <source>Show Details...</source>
-        <translation type="unfinished"></translation>
+        <translation>Показать подробности...</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Hide Details...</source>
-        <translation type="unfinished"></translation>
+        <translation>Скрыть подробности...</translation>
     </message>
     <message>
-        <location line="+1570"/>
-        <source>&lt;h3&gt;About Qt&lt;/h3&gt;&lt;p&gt;This program uses Qt version %1.&lt;/p&gt;&lt;p&gt;Qt is a C++ toolkit for cross-platform application development.&lt;/p&gt;&lt;p&gt;Qt provides single-source portability across MS&amp;nbsp;Windows, Mac&amp;nbsp;OS&amp;nbsp;X, Linux, and all major commercial Unix variants. Qt is also available for embedded devices as Qt for Embedded Linux and Qt for Windows CE.&lt;/p&gt;&lt;p&gt;Qt is available under three different licensing options designed to accommodate the needs of our various users.&lt;/p&gt;Qt licensed under our commercial license agreement is appropriate for development of proprietary/commercial software where you do not want to share any source code with third parties or otherwise cannot comply with the terms of the GNU LGPL version 2.1 or GNU GPL version 3.0.&lt;/p&gt;&lt;p&gt;Qt licensed under the GNU LGPL version 2.1 is appropriate for the development of Qt applications (proprietary or open source) provided you can comply with the terms and conditions of the GNU LGPL version 2.1.&lt;/p&gt;&lt;p&gt;Qt licensed under the GNU General Public License version 3.0 is appropriate for the development of Qt applications where you wish to use such applications in combination with software subject to the terms of the GNU GPL version 3.0 or where you are otherwise willing to comply with the terms of the GNU GPL version 3.0.&lt;/p&gt;&lt;p&gt;Please see &lt;a href=&quot;http://www.qtsoftware.com/products/licensing&quot;&gt;www.qtsoftware.com/products/licensing&lt;/a&gt; for an overview of Qt licensing.&lt;/p&gt;&lt;p&gt;Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).&lt;/p&gt;&lt;p&gt;Qt is a Nokia product. See &lt;a href=&quot;http://www.qtsoftware.com/qt/&quot;&gt;www.qtsoftware.com/qt&lt;/a&gt; for more information.&lt;/p&gt;</source>
-        <translation type="unfinished"></translation>
+        <source>&lt;h3&gt;About Qt&lt;/h3&gt;%1&lt;p&gt;Qt is a C++ toolkit for cross-platform application development.&lt;/p&gt;&lt;p&gt;Qt provides single-source portability across MS&amp;nbsp;Windows, Mac&amp;nbsp;OS&amp;nbsp;X, Linux, and all major commercial Unix variants. Qt is also available for embedded devices as Qt for Embedded Linux and Qt for Windows CE.&lt;/p&gt;&lt;p&gt;Qt is a Nokia product. See &lt;a href=&quot;http://qtsoftware.com/qt/&quot;&gt;qtsoftware.com/qt/&lt;/a&gt; for more information.&lt;/p&gt;</source>
+        <translation type="obsolete">&lt;h3&gt;О Qt&lt;/h3&gt;%1&lt;p&gt;Qt - это инструмент для разработчки крссплатформенных приложений на C++.&lt;/p&gt;&lt;p&gt;Qt предоставляет переносимость между MS&amp;nbsp;Windows, Mac&amp;nbsp;OS&amp;nbsp;X, Linux и всеми популярными вариантами коммерческой Unix. Также Qt доступна для встраиваемых устройств в виде Qt for Embedded Linux и Qt for Windows CE.&lt;/p&gt;&lt;p&gt;Qt - продукт Nokia. Обратитесь к &lt;a href=&quot;http://qtsoftware.com/qt/&quot;&gt;qtsoftware.com/qt/&lt;/a&gt; для получения дополнительной информации.&lt;/p&gt;</translation>
+    </message>
+    <message>
+        <source>&lt;p&gt;This program uses Qt Open Source Edition version %1.&lt;/p&gt;&lt;p&gt;Qt Open Source Edition is intended for the development of Open Source applications. You need a commercial Qt license for development of proprietary (closed source) applications.&lt;/p&gt;&lt;p&gt;Please see &lt;a href=&quot;http://qtsoftware.com/company/model/&quot;&gt;qtsoftware.com/company/model/&lt;/a&gt; for an overview of Qt licensing.&lt;/p&gt;</source>
+        <translation type="obsolete">&lt;p&gt;Данная программа использует Qt Open Source Edition версии %1.&lt;/p&gt;&lt;p&gt;Qt Open Source Edition предназначена для разработки Open Source приложений. Для разработки проприетарных (с закрытым исходным кодом) приложений необходима коммерческая лицензия Qt.&lt;/p&gt;&lt;p&gt;Обратитесь к официальносй странице &lt;a href=&quot;http://qtsoftware.com/company/model/&quot;&gt;qtsoftware.com/company/model/&lt;/a&gt; для ознакомления с моделями лицензирования Qt.&lt;/p&gt;</translation>
     </message>
 </context>
 <context>
@@ -3057,132 +3055,132 @@ Do you want to delete it anyway?</source>
     <message>
         <location filename="../src/network/socket/qnativesocketengine.cpp" line="+206"/>
         <source>The remote host closed the connection</source>
-        <translation type="unfinished"></translation>
+        <translation>Удалённый узел закрыл соединение</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Network operation timed out</source>
-        <translation type="unfinished"></translation>
+        <translation>Время на сетевую операцию истекло</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Out of resources</source>
-        <translation type="unfinished"></translation>
+        <translation>Недостаточно ресурсов</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Unsupported socket operation</source>
-        <translation type="unfinished"></translation>
+        <translation>Операция с сокетом не поддерживается</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Protocol type not supported</source>
-        <translation type="unfinished"></translation>
+        <translation>Протокол не поддерживается</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Invalid socket descriptor</source>
-        <translation type="unfinished"></translation>
+        <translation>Некорректный дескриптор сокета</translation>
     </message>
     <message>
         <location line="+6"/>
         <source>Network unreachable</source>
-        <translation type="unfinished"></translation>
+        <translation>Сеть недоступна</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Permission denied</source>
-        <translation type="unfinished"></translation>
+        <translation>Доступ запрещён</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Connection timed out</source>
-        <translation type="unfinished"></translation>
+        <translation>Время на соединение истекло</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Connection refused</source>
-        <translation type="unfinished">Отказано в соединении</translation>
+        <translation>Отказано в соединении</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>The bound address is already in use</source>
-        <translation type="unfinished"></translation>
+        <translation>Адрес уже используется</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>The address is not available</source>
-        <translation type="unfinished"></translation>
+        <translation>Адрес недоступен</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>The address is protected</source>
-        <translation type="unfinished"></translation>
+        <translation>Адрес защищён</translation>
     </message>
     <message>
         <location line="+6"/>
         <source>Unable to send a message</source>
-        <translation type="unfinished"></translation>
+        <translation>Невозможно отправить сообщение</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Unable to receive a message</source>
-        <translation type="unfinished"></translation>
+        <translation>Невозможно получить сообщение</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Unable to write</source>
-        <translation type="unfinished"></translation>
+        <translation>Невозможно записать</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Network error</source>
-        <translation type="unfinished"></translation>
+        <translation>Ошибка сети</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Another socket is already listening on the same port</source>
-        <translation type="unfinished"></translation>
+        <translation>Другой сокет уже прослушивает этот порт</translation>
     </message>
     <message>
         <location line="-66"/>
         <source>Unable to initialize non-blocking socket</source>
-        <translation type="unfinished"></translation>
+        <translation>Невозможно инициализировать не-блочный сокет</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Unable to initialize broadcast socket</source>
-        <translation type="unfinished"></translation>
+        <translation>Невозможно инициализировать широковещательный сокет</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Attempt to use IPv6 socket on a platform with no IPv6 support</source>
-        <translation type="unfinished"></translation>
+        <translation>Попытка использовать IPv6 на платформе, не поддерживающей IPv6</translation>
     </message>
     <message>
         <location line="+21"/>
         <source>Host unreachable</source>
-        <translation type="unfinished"></translation>
+        <translation>Узел недоступен</translation>
     </message>
     <message>
         <location line="+24"/>
         <source>Datagram was too large to send</source>
-        <translation type="unfinished"></translation>
+        <translation>Датаграмма слишком большая для отправки</translation>
     </message>
     <message>
         <location line="+18"/>
         <source>Operation on non-socket</source>
-        <translation type="unfinished"></translation>
+        <translation>Операция с не-сокетом</translation>
     </message>
     <message>
         <location line="+6"/>
         <source>Unknown error</source>
-        <translation type="unfinished">Неизвестная ошибка</translation>
+        <translation>Неизвестная ошибка</translation>
     </message>
     <message>
         <location line="-3"/>
         <source>The proxy type is invalid for this operation</source>
-        <translation type="unfinished"></translation>
+        <translation>Некорректный тип прокси-сервера для данной операции</translation>
     </message>
 </context>
 <context>
@@ -3190,195 +3188,212 @@ Do you want to delete it anyway?</source>
     <message>
         <location filename="../src/network/access/qnetworkaccesscachebackend.cpp" line="+65"/>
         <source>Error opening %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Ошибка открытия %1</translation>
+    </message>
+</context>
+<context>
+    <name>QNetworkAccessDebugPipeBackend</name>
+    <message>
+        <location filename="../src/network/access/qnetworkaccessdebugpipebackend.cpp" line="+191"/>
+        <source>Write error writing to %1: %2</source>
+        <translation type="unfinished">Ошибка записи в %1: %2</translation>
     </message>
 </context>
 <context>
     <name>QNetworkAccessFileBackend</name>
     <message>
-        <location filename="../src/network/access/qnetworkaccessfilebackend.cpp" line="+99"/>
+        <location filename="../src/network/access/qnetworkaccessfilebackend.cpp" line="+100"/>
         <source>Request for opening non-local file %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Запрос на открытие файла вне файловой системы %1</translation>
     </message>
     <message>
-        <location line="+42"/>
+        <location line="+45"/>
         <source>Error opening %1: %2</source>
-        <translation type="unfinished"></translation>
+        <translation>Ошибка открытия %1: %2</translation>
     </message>
     <message>
-        <location line="+56"/>
+        <location line="+38"/>
         <source>Write error writing to %1: %2</source>
-        <translation type="unfinished"></translation>
+        <translation>Ошибка записи в %1: %2</translation>
     </message>
     <message>
-        <location line="+33"/>
+        <location line="+48"/>
         <source>Cannot open %1: Path is a directory</source>
-        <translation type="unfinished"></translation>
+        <translation>Невозможно открыть %1: Указан путь к каталогу</translation>
     </message>
     <message>
         <location line="+21"/>
         <source>Read error reading from %1: %2</source>
-        <translation type="unfinished"></translation>
+        <translation>Ошибка чтения из %1: %2</translation>
     </message>
 </context>
 <context>
     <name>QNetworkAccessFtpBackend</name>
     <message>
-        <location filename="../src/network/access/qnetworkaccessftpbackend.cpp" line="+165"/>
+        <location filename="../src/network/access/qnetworkaccessftpbackend.cpp" line="+131"/>
         <source>No suitable proxy found</source>
-        <translation type="unfinished"></translation>
+        <translation>Подходящий прокси-сервер не найден</translation>
     </message>
     <message>
         <location line="+14"/>
         <source>Cannot open %1: is a directory</source>
-        <translation type="unfinished"></translation>
+        <translation>Невозможно открыть %1: Указан путь к каталогу</translation>
     </message>
     <message>
-        <location line="+130"/>
+        <location line="+112"/>
         <source>Logging in to %1 failed: authentication required</source>
-        <translation type="unfinished"></translation>
+        <translation>Соединение с %1 не удалось: требуется авторизация</translation>
     </message>
     <message>
         <location line="+39"/>
         <source>Error while downloading %1: %2</source>
-        <translation type="unfinished"></translation>
+        <translation>Ошибка в процессе загрузки %1: %2</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Error while uploading %1: %2</source>
-        <translation type="unfinished"></translation>
+        <translation>Ошибка в процессе отгрузки %1: %2</translation>
     </message>
 </context>
 <context>
     <name>QNetworkAccessHttpBackend</name>
     <message>
-        <location filename="../src/network/access/qnetworkaccesshttpbackend.cpp" line="+597"/>
+        <location filename="../src/network/access/qnetworkaccesshttpbackend.cpp" line="+567"/>
         <source>No suitable proxy found</source>
-        <translation type="unfinished"></translation>
+        <translation>Подходящий прокси-сервер не найден</translation>
     </message>
 </context>
 <context>
     <name>QNetworkReply</name>
     <message>
-        <location line="+128"/>
+        <location line="+88"/>
         <source>Error downloading %1 - server replied: %2</source>
-        <translation type="unfinished"></translation>
+        <translation>Ошибка загрузки %1 - ответ сервера: %2</translation>
     </message>
     <message>
-        <location filename="../src/network/access/qnetworkreplyimpl.cpp" line="+68"/>
+        <location filename="../src/network/access/qnetworkreplyimpl.cpp" line="+75"/>
         <source>Protocol &quot;%1&quot; is unknown</source>
-        <translation type="unfinished"></translation>
+        <translation>Неизвестный протокол &quot;%1&quot;</translation>
     </message>
 </context>
 <context>
     <name>QNetworkReplyImpl</name>
     <message>
-        <location line="+432"/>
+        <location line="+459"/>
         <location line="+22"/>
         <source>Operation canceled</source>
-        <translation type="unfinished"></translation>
+        <translation>Операция отменена</translation>
     </message>
 </context>
 <context>
     <name>QOCIDriver</name>
     <message>
-        <location filename="../src/sql/drivers/oci/qsql_oci.cpp" line="+2069"/>
+        <location filename="../src/sql/drivers/oci/qsql_oci.cpp" line="+2079"/>
         <source>Unable to logon</source>
-        <translation type="unfinished"></translation>
+        <translation>Невозможно авторизоваться</translation>
     </message>
     <message>
         <location line="-144"/>
         <source>Unable to initialize</source>
         <comment>QOCIDriver</comment>
-        <translation type="unfinished"></translation>
+        <translation>Невозможно инициализировать</translation>
     </message>
     <message>
         <location line="+215"/>
         <source>Unable to begin transaction</source>
-        <translation type="unfinished"></translation>
+        <translation>Невозможно начать транзакцию</translation>
     </message>
     <message>
         <location line="+19"/>
         <source>Unable to commit transaction</source>
-        <translation type="unfinished"></translation>
+        <translation>Невозможно выполнить транзакцию</translation>
     </message>
     <message>
         <location line="+19"/>
         <source>Unable to rollback transaction</source>
-        <translation type="unfinished"></translation>
+        <translation>Невозможно откатить транзакцию</translation>
     </message>
 </context>
 <context>
     <name>QOCIResult</name>
     <message>
-        <location line="-963"/>
+        <location line="-973"/>
         <location line="+161"/>
         <location line="+15"/>
         <source>Unable to bind column for batch execute</source>
-        <translation type="unfinished"></translation>
+        <translation>Невозможно привязать столбец для пакетного выполнения</translation>
     </message>
     <message>
         <location line="+15"/>
         <source>Unable to execute batch statement</source>
-        <translation type="unfinished"></translation>
+        <translation>Невозможно выполнить пакетное выражение</translation>
     </message>
     <message>
         <location line="+302"/>
         <source>Unable to goto next</source>
-        <translation type="unfinished"></translation>
+        <translation>Невозможно перейти к следующей строке</translation>
     </message>
     <message>
         <location line="+59"/>
         <source>Unable to alloc statement</source>
-        <translation type="unfinished"></translation>
+        <translation>Невозможно создать выражение</translation>
     </message>
     <message>
         <location line="+15"/>
         <source>Unable to prepare statement</source>
-        <translation type="unfinished"></translation>
+        <translation>Невозможно подготовить выражение</translation>
     </message>
     <message>
-        <location line="+36"/>
+        <location line="+26"/>
+        <source>Unable to get statement type</source>
+        <translation>Невозможно определить тип выражения</translation>
+    </message>
+    <message>
+        <location line="+20"/>
         <source>Unable to bind value</source>
-        <translation type="unfinished"></translation>
+        <translation>Невозможно привязать результирующие значения</translation>
+    </message>
+    <message>
+        <source>Unable to execute select statement</source>
+        <translation type="obsolete">Невозможно выполнить утверждение SELECT</translation>
     </message>
     <message>
         <location line="+19"/>
         <source>Unable to execute statement</source>
-        <translation type="unfinished"></translation>
+        <translation>Невозможно выполнить выражение</translation>
     </message>
 </context>
 <context>
     <name>QODBCDriver</name>
     <message>
-        <location filename="../src/sql/drivers/odbc/qsql_odbc.cpp" line="+1785"/>
+        <location filename="../src/sql/drivers/odbc/qsql_odbc.cpp" line="+1781"/>
         <source>Unable to connect</source>
-        <translation type="unfinished"></translation>
+        <translation>Невозможно соединиться</translation>
     </message>
     <message>
         <location line="+6"/>
         <source>Unable to connect - Driver doesn&apos;t support all needed functionality</source>
-        <translation type="unfinished"></translation>
+        <translation>Невозможно соединиться - Драйвер не поддерживает требуемый функционал</translation>
     </message>
     <message>
         <location line="+242"/>
         <source>Unable to disable autocommit</source>
-        <translation type="unfinished"></translation>
+        <translation>Невозможно отключить автовыполнение транзакции</translation>
     </message>
     <message>
         <location line="+17"/>
         <source>Unable to commit transaction</source>
-        <translation type="unfinished"></translation>
+        <translation>Невозможно выполнить транзакцию</translation>
     </message>
     <message>
         <location line="+17"/>
         <source>Unable to rollback transaction</source>
-        <translation type="unfinished"></translation>
+        <translation>Невозможно откатить транзакцию</translation>
     </message>
     <message>
         <location line="+15"/>
         <source>Unable to enable autocommit</source>
-        <translation type="unfinished"></translation>
+        <translation>Невозможно установить автовыполнение транзакции</translation>
     </message>
 </context>
 <context>
@@ -3387,50 +3402,50 @@ Do you want to delete it anyway?</source>
         <location line="-1218"/>
         <location line="+349"/>
         <source>QODBCResult::reset: Unable to set &apos;SQL_CURSOR_STATIC&apos; as statement attribute. Please check your ODBC driver configuration</source>
-        <translation type="unfinished"></translation>
+        <translation>QODBCResult::reset: Невозможно установить &apos;SQL_CURSOR_STATIC&apos; атрибутом выражение. Проверьте настройки драйвера ODBC</translation>
     </message>
     <message>
         <location line="-332"/>
         <location line="+626"/>
         <source>Unable to execute statement</source>
-        <translation type="unfinished"></translation>
+        <translation>Невозможно выполнить выражение</translation>
     </message>
     <message>
         <location line="-555"/>
         <source>Unable to fetch next</source>
-        <translation type="unfinished"></translation>
+        <translation>Невозможно получить следующую строку</translation>
     </message>
     <message>
         <location line="+279"/>
         <source>Unable to prepare statement</source>
-        <translation type="unfinished"></translation>
+        <translation>Невозможно подготовить выражение</translation>
     </message>
     <message>
         <location line="+268"/>
         <source>Unable to bind variable</source>
-        <translation type="unfinished"></translation>
+        <translation>Невозможно привязать значение</translation>
     </message>
     <message>
         <location filename="../src/sql/drivers/db2/qsql_db2.cpp" line="+194"/>
         <location filename="../src/sql/drivers/odbc/qsql_odbc.cpp" line="-475"/>
         <location line="+578"/>
         <source>Unable to fetch last</source>
-        <translation type="unfinished"></translation>
+        <translation>Невозможно получить последнюю строку</translation>
     </message>
     <message>
         <location filename="../src/sql/drivers/odbc/qsql_odbc.cpp" line="-672"/>
         <source>Unable to fetch</source>
-        <translation type="unfinished"></translation>
+        <translation>Невозможно получить данные</translation>
     </message>
     <message>
         <location line="+44"/>
         <source>Unable to fetch first</source>
-        <translation type="unfinished"></translation>
+        <translation>Невозможно получить первую строку</translation>
     </message>
     <message>
         <location line="+19"/>
         <source>Unable to fetch previous</source>
-        <translation type="unfinished"></translation>
+        <translation>Невозможно получить предыдущую строку</translation>
     </message>
 </context>
 <context>
@@ -3438,61 +3453,58 @@ Do you want to delete it anyway?</source>
     <message>
         <location filename="../src/gui/util/qdesktopservices_mac.cpp" line="+165"/>
         <source>Home</source>
-        <translation type="unfinished">Home</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../src/network/access/qnetworkaccessdatabackend.cpp" line="+74"/>
         <source>Operation not supported on %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Операция не поддерживается для %1</translation>
     </message>
     <message>
         <location line="+53"/>
         <source>Invalid URI: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Некорректный URI: %1</translation>
     </message>
     <message>
-        <location filename="../src/network/access/qnetworkaccessdebugpipebackend.cpp" line="+175"/>
         <source>Write error writing to %1: %2</source>
-        <translation type="unfinished"></translation>
+        <translation type="obsolete">Ошибка записи в %1: %2</translation>
     </message>
     <message>
-        <location line="+57"/>
         <source>Read error reading from %1: %2</source>
-        <translation type="unfinished"></translation>
+        <translation type="obsolete">Ошибка чтения из %1: %2</translation>
     </message>
     <message>
-        <location line="+31"/>
+        <location filename="../src/network/access/qnetworkaccessdebugpipebackend.cpp" line="+60"/>
         <source>Socket error on %1: %2</source>
-        <translation type="unfinished"></translation>
+        <translation>Ошика сокета для %1: %2</translation>
     </message>
     <message>
         <location line="+15"/>
         <source>Remote host closed the connection prematurely on %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Удалённый узел неожиданно прервал соединение для %1</translation>
     </message>
     <message>
-        <location line="+53"/>
         <source>Protocol error: packet of size 0 received</source>
-        <translation type="unfinished"></translation>
+        <translation type="obsolete">Ошибка протокола: получен пакет нулевого размера</translation>
     </message>
     <message>
         <location filename="../src/network/kernel/qhostinfo.cpp" line="+177"/>
         <location line="+57"/>
         <source>No host name given</source>
-        <translation type="unfinished"></translation>
+        <translation>Имя узла не задано</translation>
     </message>
 </context>
 <context>
     <name>QPPDOptionsModel</name>
     <message>
-        <location filename="../src/gui/dialogs/qprintdialog_unix.cpp" line="+1195"/>
+        <location filename="../src/gui/dialogs/qprintdialog_unix.cpp" line="+1197"/>
         <source>Name</source>
-        <translation type="unfinished">Имя</translation>
+        <translation>Имя</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Value</source>
-        <translation type="unfinished"></translation>
+        <translation>Значение</translation>
     </message>
 </context>
 <context>
@@ -3500,32 +3512,32 @@ Do you want to delete it anyway?</source>
     <message>
         <location filename="../src/sql/drivers/psql/qsql_psql.cpp" line="+763"/>
         <source>Unable to connect</source>
-        <translation type="unfinished"></translation>
+        <translation>Невозможно соединиться</translation>
     </message>
     <message>
         <location line="+49"/>
         <source>Could not begin transaction</source>
-        <translation type="unfinished"></translation>
+        <translation>Не удалось начать транзакцию</translation>
     </message>
     <message>
         <location line="+17"/>
         <source>Could not commit transaction</source>
-        <translation type="unfinished"></translation>
+        <translation>Не удалось выполнить транзакцию</translation>
     </message>
     <message>
         <location line="+16"/>
         <source>Could not rollback transaction</source>
-        <translation type="unfinished"></translation>
+        <translation>Не удалось откатить транзакцию</translation>
     </message>
     <message>
         <location line="+358"/>
         <source>Unable to subscribe</source>
-        <translation type="unfinished"></translation>
+        <translation>Невозможно подписаться</translation>
     </message>
     <message>
         <location line="+32"/>
         <source>Unable to unsubscribe</source>
-        <translation type="unfinished"></translation>
+        <translation>Невозможно отписаться</translation>
     </message>
 </context>
 <context>
@@ -3533,12 +3545,12 @@ Do you want to delete it anyway?</source>
     <message>
         <location line="-1058"/>
         <source>Unable to create query</source>
-        <translation type="unfinished"></translation>
+        <translation>Невозможно создать запрос</translation>
     </message>
     <message>
         <location line="+374"/>
         <source>Unable to prepare statement</source>
-        <translation type="unfinished"></translation>
+        <translation>Невозможно подготовить выражение</translation>
     </message>
 </context>
 <context>
@@ -3546,102 +3558,106 @@ Do you want to delete it anyway?</source>
     <message>
         <location filename="../src/gui/dialogs/qpagesetupdialog_unix.cpp" line="+304"/>
         <source>Centimeters (cm)</source>
-        <translation type="unfinished"></translation>
+        <translation>Сантиметры (cm)</translation>
     </message>
     <message>
         <location line="+0"/>
         <source>Millimeters (mm)</source>
-        <translation type="unfinished"></translation>
+        <translation>Миллиметры (mm)</translation>
     </message>
     <message>
         <location line="+0"/>
         <source>Inches (in)</source>
-        <translation type="unfinished"></translation>
+        <translation>Дюймы (in)</translation>
     </message>
     <message>
         <location line="+0"/>
         <source>Points (pt)</source>
-        <translation type="unfinished"></translation>
+        <translation>Точки (pt)</translation>
     </message>
     <message>
-        <location filename="../src/gui/dialogs/qpagesetupwidget.ui"/>
+        <location filename="../src/gui/dialogs/qpagesetupwidget.ui" line="+13"/>
         <source>Form</source>
-        <translation type="unfinished"></translation>
+        <translation>Форма</translation>
     </message>
     <message>
-        <location/>
+        <location line="+29"/>
         <source>Paper</source>
-        <translation type="unfinished"></translation>
+        <translation>Бумага</translation>
     </message>
     <message>
-        <location/>
+        <location line="+6"/>
         <source>Page size:</source>
-        <translation type="unfinished"></translation>
+        <translation>Размер страницы:</translation>
     </message>
     <message>
-        <location/>
+        <location line="+13"/>
         <source>Width:</source>
-        <translation type="unfinished"></translation>
+        <translation>Ширина:</translation>
     </message>
     <message>
-        <location/>
+        <location line="+19"/>
         <source>Height:</source>
-        <translation type="unfinished"></translation>
+        <translation>Высота:</translation>
     </message>
     <message>
-        <location/>
+        <location line="+19"/>
         <source>Paper source:</source>
-        <translation type="unfinished"></translation>
+        <translation>Источник бумаги:</translation>
     </message>
     <message>
-        <location/>
+        <location line="+29"/>
         <source>Orientation</source>
-        <translation type="unfinished"></translation>
+        <translation>Ориентация страницы</translation>
     </message>
     <message>
-        <location/>
+        <location line="+6"/>
         <source>Portrait</source>
-        <translation type="unfinished">Портрет</translation>
+        <translation>Книжная</translation>
     </message>
     <message>
-        <location/>
+        <location line="+10"/>
         <source>Landscape</source>
-        <translation type="unfinished">Альбом</translation>
+        <translation>Альбомная</translation>
     </message>
     <message>
-        <location/>
+        <location line="+7"/>
         <source>Reverse landscape</source>
-        <translation type="unfinished"></translation>
+        <translation>Перевёрнутая альбомная</translation>
     </message>
     <message>
-        <location/>
+        <location line="+7"/>
         <source>Reverse portrait</source>
-        <translation type="unfinished"></translation>
+        <translation>Перевёрнутая книжная</translation>
     </message>
     <message>
-        <location/>
+        <location line="+26"/>
         <source>Margins</source>
-        <translation type="unfinished"></translation>
+        <translation>Поля</translation>
     </message>
     <message>
-        <location/>
+        <location line="+8"/>
+        <location line="+3"/>
         <source>top margin</source>
-        <translation type="unfinished"></translation>
+        <translation>верхнее поле</translation>
     </message>
     <message>
-        <location/>
+        <location line="+28"/>
+        <location line="+3"/>
         <source>left margin</source>
-        <translation type="unfinished"></translation>
+        <translation>Левое поле</translation>
     </message>
     <message>
-        <location/>
+        <location line="+29"/>
+        <location line="+3"/>
         <source>right margin</source>
-        <translation type="unfinished"></translation>
+        <translation>правое поле</translation>
     </message>
     <message>
-        <location/>
+        <location line="+28"/>
+        <location line="+3"/>
         <source>bottom margin</source>
-        <translation type="unfinished"></translation>
+        <translation>Нижнее поле</translation>
     </message>
 </context>
 <context>
@@ -3649,12 +3665,12 @@ Do you want to delete it anyway?</source>
     <message>
         <location filename="../src/corelib/plugin/qpluginloader.cpp" line="+24"/>
         <source>Unknown error</source>
-        <translation type="unfinished">Неизвестная ошибка</translation>
+        <translation>Неизвестная ошибка</translation>
     </message>
     <message>
         <location line="-68"/>
         <source>The plugin was not loaded.</source>
-        <translation type="unfinished"></translation>
+        <translation>Модуль не был загружен.</translation>
     </message>
 </context>
 <context>
@@ -3662,13 +3678,13 @@ Do you want to delete it anyway?</source>
     <message>
         <location filename="../src/gui/painting/qprinterinfo_unix.cpp" line="+98"/>
         <source>locally connected</source>
-        <translation>локальный</translation>
+        <translation>соединено локально</translation>
     </message>
     <message>
         <location line="+23"/>
         <location line="+225"/>
         <source>Aliases: %1</source>
-        <translation>Алиасы: %1</translation>
+        <translation>Псевдонимы: %1</translation>
     </message>
     <message>
         <location line="+223"/>
@@ -3677,54 +3693,7 @@ Do you want to delete it anyway?</source>
         <translation>неизвестно</translation>
     </message>
     <message>
-        <location filename="../src/gui/dialogs/qprintdialog_win.cpp" line="+268"/>
-        <source>OK</source>
-        <translation type="unfinished">OK</translation>
-    </message>
-    <message>
-        <source>Cancel</source>
-        <translation type="obsolete">Отмена</translation>
-    </message>
-    <message>
-        <source>Print in color if available</source>
-        <translation type="obsolete">Цветная печать</translation>
-    </message>
-    <message>
-        <source>Printer</source>
-        <translation type="obsolete">Принтер</translation>
-    </message>
-    <message>
-        <location filename="../src/gui/dialogs/qprintdialog_qws.cpp" line="+375"/>
-        <source>Print all</source>
-        <translation type="unfinished">Печатать все</translation>
-    </message>
-    <message>
-        <location line="+2"/>
-        <source>Print range</source>
-        <translation type="unfinished">Печатать диапазон</translation>
-    </message>
-    <message>
-        <source>Print last page first</source>
-        <translation type="obsolete">Начать с последней страницы</translation>
-    </message>
-    <message>
-        <source>Number of copies:</source>
-        <translation type="obsolete">Число копий:</translation>
-    </message>
-    <message>
-        <source>Paper format</source>
-        <translation type="obsolete">Формат бумаги</translation>
-    </message>
-    <message>
-        <source>Portrait</source>
-        <translation type="obsolete">Портрет</translation>
-    </message>
-    <message>
-        <source>Landscape</source>
-        <translation type="obsolete">Альбом</translation>
-    </message>
-    <message>
-        <location line="-48"/>
+        <location filename="../src/gui/dialogs/qprintdialog_qws.cpp" line="+329"/>
         <source>A0 (841 x 1189 mm)</source>
         <translation>A0 (841 x 1189 мм)</translation>
     </message>
@@ -3744,7 +3713,12 @@ Do you want to delete it anyway?</source>
         <translation>A3 (297 x 420 мм)</translation>
     </message>
     <message>
-        <location line="+2"/>
+        <location line="+1"/>
+        <source>A4 (210 x 297 mm, 8.26 x 11.7 inches)</source>
+        <translation>A4 (210 x 297 мм, 8.26 x 11.7 дюймов)</translation>
+    </message>
+    <message>
+        <location line="+1"/>
         <source>A5 (148 x 210 mm)</source>
         <translation>A5 (148 x 210 мм)</translation>
     </message>
@@ -3794,7 +3768,12 @@ Do you want to delete it anyway?</source>
         <translation>B4 (250 x 353 мм)</translation>
     </message>
     <message>
-        <location line="+2"/>
+        <location line="+1"/>
+        <source>B5 (176 x 250 mm, 6.93 x 9.84 inches)</source>
+        <translation>B5 (176 x 250 мм, 6.93 x 9.84 дюймов)</translation>
+    </message>
+    <message>
+        <location line="+1"/>
         <source>B6 (125 x 176 mm)</source>
         <translation>B6 (125 x 176 мм)</translation>
     </message>
@@ -3829,7 +3808,12 @@ Do you want to delete it anyway?</source>
         <translation>DLE (110 x 220 мм)</translation>
     </message>
     <message>
-        <location line="+2"/>
+        <location line="+1"/>
+        <source>Executive (7.5 x 10 inches, 191 x 254 mm)</source>
+        <translation>Executive (191 x 254 мм, 7.5 x 10 дюймов)</translation>
+    </message>
+    <message>
+        <location line="+1"/>
         <source>Folio (210 x 330 mm)</source>
         <translation>Folio (210 x 330 мм)</translation>
     </message>
@@ -3839,7 +3823,17 @@ Do you want to delete it anyway?</source>
         <translation>Ledger (432 x 279 мм)</translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location line="+1"/>
+        <source>Legal (8.5 x 14 inches, 216 x 356 mm)</source>
+        <translation>Legal (216 x 356 мм, 8.5 x 14 дюймов)</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Letter (8.5 x 11 inches, 216 x 279 mm)</source>
+        <translation>Letter (216 x 279 мм, 8.5 x 11 дюймов)</translation>
+    </message>
+    <message>
+        <location line="+1"/>
         <source>Tabloid (279 x 432 mm)</source>
         <translation>Tabloid (279 x 432 мм)</translation>
     </message>
@@ -3849,78 +3843,67 @@ Do you want to delete it anyway?</source>
         <translation>Конверт US #10 (105x241 мм)</translation>
     </message>
     <message>
-        <location line="-25"/>
-        <source>A4 (210 x 297 mm, 8.26 x 11.7 inches)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+11"/>
-        <source>B5 (176 x 250 mm, 6.93 x 9.84 inches)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+8"/>
-        <source>Executive (7.5 x 10 inches, 191 x 254 mm)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+3"/>
-        <source>Legal (8.5 x 14 inches, 216 x 356 mm)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Letter (8.5 x 11 inches, 216 x 279 mm)</source>
-        <translation type="unfinished"></translation>
+        <location filename="../src/gui/dialogs/qprintdialog_win.cpp" line="+268"/>
+        <source>OK</source>
+        <translation>Готово</translation>
     </message>
     <message>
         <location filename="../src/gui/dialogs/qabstractprintdialog.cpp" line="+110"/>
         <location line="+13"/>
         <location filename="../src/gui/dialogs/qprintdialog_win.cpp" line="-2"/>
         <source>Print</source>
-        <translation type="unfinished">Print</translation>
-    </message>
-    <message>
-        <source>File</source>
-        <translation type="obsolete">Файл</translation>
+        <translation>Печатать</translation>
     </message>
     <message>
         <location filename="../src/gui/dialogs/qprintdialog_unix.cpp" line="-357"/>
         <source>Print To File ...</source>
-        <translation type="unfinished"></translation>
+        <translation>Печатать в файл ...</translation>
     </message>
     <message>
-        <location line="+80"/>
+        <location filename="../src/gui/dialogs/qprintdialog_qws.cpp" line="+19"/>
+        <source>Print range</source>
+        <translation>Печатать диапазон</translation>
+    </message>
+    <message>
+        <location line="-2"/>
+        <source>Print all</source>
+        <translation>Печатать все</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/dialogs/qprintdialog_unix.cpp" line="+80"/>
         <source>File %1 is not writable.
 Please choose a different file name.</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 недоступен для записи.
+Выберите другое имя файла.</translation>
     </message>
     <message>
         <location line="+4"/>
         <source>%1 already exists.
 Do you want to overwrite it?</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 уже существует.
+Хотите заменить его?</translation>
     </message>
     <message>
-        <location filename="../src/gui/dialogs/qprintdialog_qws.cpp" line="-208"/>
+        <location filename="../src/gui/dialogs/qprintdialog_qws.cpp" line="-227"/>
         <source>File exists</source>
-        <translation type="unfinished"></translation>
+        <translation>Файл существует</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>&lt;qt&gt;Do you want to overwrite it?&lt;/qt&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;qt&gt;Хотите заменить?&lt;/qt&gt;</translation>
     </message>
     <message>
         <location line="+227"/>
         <source>Print selection</source>
-        <translation type="unfinished"></translation>
+        <translation>Печатать выделенное</translation>
     </message>
     <message>
         <location filename="../src/gui/dialogs/qprintdialog_unix.cpp" line="-8"/>
         <source>%1 is a directory.
 Please choose a different file name.</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 - это каталог.
+Выберите другое имя файла.</translation>
     </message>
     <message>
         <location filename="../src/gui/dialogs/qpagesetupdialog_unix.cpp" line="-232"/>
@@ -4075,48 +4058,48 @@ Please choose a different file name.</source>
     <message>
         <location line="+1"/>
         <source>Custom</source>
-        <translation type="unfinished"></translation>
+        <translation>Произвольный</translation>
     </message>
     <message>
-        <location filename="../src/gui/dialogs/qprintdialog_unix.cpp" line="-522"/>
+        <location filename="../src/gui/dialogs/qprintdialog_unix.cpp" line="-524"/>
         <location line="+68"/>
         <source>&amp;Options &gt;&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Параметры &gt;&gt;</translation>
     </message>
     <message>
         <location line="-63"/>
         <source>&amp;Print</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Печатать</translation>
     </message>
     <message>
         <location line="+67"/>
         <source>&amp;Options &lt;&lt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Параметры &lt;&lt;</translation>
     </message>
     <message>
         <location line="+253"/>
         <source>Print to File (PDF)</source>
-        <translation type="unfinished"></translation>
+        <translation>Печатать в файл (PDF)</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Print to File (Postscript)</source>
-        <translation type="unfinished"></translation>
+        <translation>Печатать в файл (Postscript)</translation>
     </message>
     <message>
-        <location line="+45"/>
+        <location line="+47"/>
         <source>Local file</source>
-        <translation type="unfinished"></translation>
+        <translation>Локальный файл</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Write %1 file</source>
-        <translation type="unfinished"></translation>
+        <translation>Запись %1 файл</translation>
     </message>
     <message>
         <location filename="../src/gui/dialogs/qprintdialog_win.cpp" line="+1"/>
         <source>The &apos;From&apos; value cannot be greater than the &apos;To&apos; value.</source>
-        <translation type="unfinished"></translation>
+        <translation>Значение &apos;от&apos; не может быть больше значения &apos;до&apos;.</translation>
     </message>
 </context>
 <context>
@@ -4125,345 +4108,333 @@ Please choose a different file name.</source>
         <location filename="../src/gui/dialogs/qabstractpagesetupdialog.cpp" line="+68"/>
         <location line="+12"/>
         <source>Page Setup</source>
-        <translation type="unfinished"></translation>
+        <translation>Свойства страницы</translation>
     </message>
     <message>
-        <location filename="../src/gui/dialogs/qprintpreviewdialog.cpp" line="+252"/>
+        <location filename="../src/gui/dialogs/qprintpreviewdialog.cpp" line="+246"/>
         <source>%1%</source>
-        <translation type="unfinished"></translation>
+        <translation>%1%</translation>
     </message>
     <message>
-        <location line="+79"/>
+        <location line="+68"/>
         <source>Print Preview</source>
-        <translation type="unfinished"></translation>
+        <translation>Просмотр печати</translation>
     </message>
     <message>
-        <location line="+29"/>
+        <location line="+30"/>
         <source>Next page</source>
-        <translation type="unfinished"></translation>
+        <translation>Следующая страница</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Previous page</source>
-        <translation type="unfinished"></translation>
+        <translation>Предыдущая страница</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>First page</source>
-        <translation type="unfinished"></translation>
+        <translation>Первая страница</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Last page</source>
-        <translation type="unfinished"></translation>
+        <translation>Последняя страница</translation>
     </message>
     <message>
         <location line="+9"/>
         <source>Fit width</source>
-        <translation type="unfinished"></translation>
+        <translation>По ширине</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Fit page</source>
-        <translation type="unfinished"></translation>
+        <translation>На всю страницу</translation>
     </message>
     <message>
         <location line="+11"/>
         <source>Zoom in</source>
-        <translation type="unfinished"></translation>
+        <translation>Увеличить</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Zoom out</source>
-        <translation type="unfinished"></translation>
+        <translation>Уменьшить</translation>
     </message>
     <message>
         <location line="+6"/>
         <source>Portrait</source>
-        <translation type="unfinished">Портрет</translation>
+        <translation>Книжная</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Landscape</source>
-        <translation type="unfinished">Альбом</translation>
+        <translation>Альбомная</translation>
     </message>
     <message>
         <location line="+10"/>
         <source>Show single page</source>
-        <translation type="unfinished"></translation>
+        <translation>Показать одну страницу</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Show facing pages</source>
-        <translation type="unfinished"></translation>
+        <translation>Показать титульные страницы</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Show overview of all pages</source>
-        <translation type="unfinished"></translation>
+        <translation>Показать обзор всех страниц</translation>
     </message>
     <message>
         <location line="+15"/>
         <source>Print</source>
-        <translation type="unfinished">Print</translation>
+        <translation>Печатать</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Page setup</source>
-        <translation type="unfinished"></translation>
+        <translation>Свойства страницы</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Close</source>
-        <translation type="unfinished">Закрыть</translation>
+        <translation type="obsolete">Закрыть</translation>
     </message>
     <message>
-        <location line="+151"/>
+        <location line="+150"/>
         <source>Export to PDF</source>
-        <translation type="unfinished"></translation>
+        <translation>Экспорт в PDF</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Export to PostScript</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>QPrintPropertiesDialog</name>
-    <message>
-        <source>Save</source>
-        <translation type="obsolete">Сохранить</translation>
-    </message>
-    <message>
-        <source>OK</source>
-        <translation type="obsolete">OK</translation>
+        <translation>Экспорт в Postscript</translation>
     </message>
 </context>
 <context>
     <name>QPrintPropertiesWidget</name>
     <message>
-        <location filename="../src/gui/dialogs/qprintpropertieswidget.ui"/>
+        <location filename="../src/gui/dialogs/qprintpropertieswidget.ui" line="+13"/>
         <source>Form</source>
-        <translation type="unfinished"></translation>
+        <translation>Форма</translation>
     </message>
     <message>
-        <location/>
+        <location line="+21"/>
         <source>Page</source>
-        <translation type="unfinished"></translation>
+        <translation>Страница</translation>
     </message>
     <message>
-        <location/>
+        <location line="+10"/>
         <source>Advanced</source>
-        <translation type="unfinished"></translation>
+        <translation>Дополнительно</translation>
     </message>
 </context>
 <context>
     <name>QPrintSettingsOutput</name>
     <message>
-        <location filename="../src/gui/dialogs/qprintsettingsoutput.ui"/>
+        <location filename="../src/gui/dialogs/qprintsettingsoutput.ui" line="+13"/>
         <source>Form</source>
-        <translation type="unfinished"></translation>
+        <translation>Форма</translation>
     </message>
     <message>
-        <location/>
+        <location line="+21"/>
         <source>Copies</source>
-        <translation type="unfinished"></translation>
+        <translation>Копии</translation>
     </message>
     <message>
-        <location/>
+        <location line="+12"/>
         <source>Print range</source>
-        <translation type="unfinished">Печатать диапазон</translation>
+        <translation>Печатать диапазон</translation>
     </message>
     <message>
-        <location/>
+        <location line="+12"/>
         <source>Print all</source>
-        <translation type="unfinished">Печатать все</translation>
+        <translation>Печатать все</translation>
     </message>
     <message>
-        <location/>
+        <location line="+18"/>
         <source>Pages from</source>
-        <translation type="unfinished"></translation>
+        <translation>Страницы от</translation>
     </message>
     <message>
-        <location/>
+        <location line="+20"/>
         <source>to</source>
-        <translation type="unfinished"></translation>
+        <translation>до</translation>
     </message>
     <message>
-        <location/>
+        <location line="+35"/>
         <source>Selection</source>
-        <translation type="unfinished"></translation>
+        <translation>Выделенные</translation>
     </message>
     <message>
-        <location/>
+        <location line="+23"/>
         <source>Output Settings</source>
-        <translation type="unfinished"></translation>
+        <translation>Настройки вывода</translation>
     </message>
     <message>
-        <location/>
+        <location line="+6"/>
         <source>Copies:</source>
-        <translation type="unfinished"></translation>
+        <translation>Количество копий:</translation>
     </message>
     <message>
-        <location/>
+        <location line="+33"/>
         <source>Collate</source>
-        <translation type="unfinished"></translation>
+        <translation>Разобрать про копиям</translation>
     </message>
     <message>
-        <location/>
+        <location line="+17"/>
         <source>Reverse</source>
-        <translation type="unfinished"></translation>
+        <translation>Обратный порядок</translation>
     </message>
     <message>
-        <location/>
+        <location line="+32"/>
         <source>Options</source>
-        <translation type="unfinished">Параметры</translation>
+        <translation>Параметры</translation>
     </message>
     <message>
-        <location/>
+        <location line="+6"/>
         <source>Color Mode</source>
-        <translation type="unfinished"></translation>
+        <translation>Режим цвета</translation>
     </message>
     <message>
-        <location/>
+        <location line="+19"/>
         <source>Color</source>
-        <translation type="unfinished"></translation>
+        <translation>Цвет</translation>
     </message>
     <message>
-        <location/>
+        <location line="+10"/>
         <source>Grayscale</source>
-        <translation type="unfinished"></translation>
+        <translation>Оттенки серого</translation>
     </message>
     <message>
-        <location/>
+        <location line="+10"/>
         <source>Duplex Printing</source>
-        <translation type="unfinished"></translation>
+        <translation>Двусторонняя печать</translation>
     </message>
     <message>
-        <location/>
+        <location line="+6"/>
         <source>None</source>
-        <translation type="unfinished"></translation>
+        <translation>Нет</translation>
     </message>
     <message>
-        <location/>
+        <location line="+10"/>
         <source>Long side</source>
-        <translation type="unfinished"></translation>
+        <translation>По длинной стороне</translation>
     </message>
     <message>
-        <location/>
+        <location line="+7"/>
         <source>Short side</source>
-        <translation type="unfinished"></translation>
+        <translation>По короткой стороне</translation>
     </message>
 </context>
 <context>
     <name>QPrintWidget</name>
     <message>
-        <location filename="../src/gui/dialogs/qprintwidget.ui"/>
+        <location filename="../src/gui/dialogs/qprintwidget.ui" line="+13"/>
         <source>Form</source>
-        <translation type="unfinished"></translation>
+        <translation>Форма</translation>
     </message>
     <message>
-        <location/>
+        <location line="+9"/>
         <source>Printer</source>
-        <translation type="unfinished">Принтер</translation>
+        <translation>Принтер</translation>
     </message>
     <message>
-        <location/>
+        <location line="+6"/>
         <source>&amp;Name:</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Имя:</translation>
     </message>
     <message>
-        <location/>
+        <location line="+26"/>
         <source>P&amp;roperties</source>
-        <translation type="unfinished"></translation>
+        <translation>С&amp;войства</translation>
     </message>
     <message>
-        <location/>
+        <location line="+7"/>
         <source>Location:</source>
-        <translation type="unfinished"></translation>
+        <translation>Положение:</translation>
     </message>
     <message>
-        <location/>
+        <location line="+10"/>
         <source>Preview</source>
-        <translation type="unfinished"></translation>
+        <translation>Предпросмотр</translation>
     </message>
     <message>
-        <location/>
+        <location line="+7"/>
         <source>Type:</source>
-        <translation type="unfinished"></translation>
+        <translation>Тип:</translation>
     </message>
     <message>
-        <location/>
+        <location line="+10"/>
         <source>Output &amp;file:</source>
-        <translation type="unfinished"></translation>
+        <translation>Выходной &amp;файл:</translation>
     </message>
     <message>
-        <location/>
+        <location line="+15"/>
         <source>...</source>
-        <translation type="unfinished"></translation>
+        <translation>...</translation>
     </message>
 </context>
 <context>
     <name>QProcess</name>
     <message>
-        <location filename="../src/corelib/io/qprocess_unix.cpp" line="+475"/>
+        <location filename="../src/corelib/io/qprocess_unix.cpp" line="+459"/>
         <location filename="../src/corelib/io/qprocess_win.cpp" line="+147"/>
         <source>Could not open input redirection for reading</source>
-        <translation type="unfinished"></translation>
+        <translation>Не удалось открыть перенаправление ввода для чтения</translation>
     </message>
     <message>
         <location line="+12"/>
         <location filename="../src/corelib/io/qprocess_win.cpp" line="+36"/>
         <source>Could not open output redirection for writing</source>
-        <translation type="unfinished"></translation>
+        <translation>Не удалось открыть перенаправление вывода для записи</translation>
     </message>
     <message>
-        <location line="+235"/>
+        <location line="+239"/>
         <source>Resource error (fork failure): %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Ошибка выделения ресурсов (fork не удался): %1</translation>
     </message>
     <message>
         <location line="+259"/>
         <location line="+53"/>
         <location line="+74"/>
         <location line="+67"/>
-        <location filename="../src/corelib/io/qprocess_win.cpp" line="+422"/>
+        <location filename="../src/corelib/io/qprocess_win.cpp" line="+447"/>
         <location line="+50"/>
         <location line="+75"/>
         <location line="+42"/>
         <location line="+54"/>
         <source>Process operation timed out</source>
-        <translation type="unfinished"></translation>
+        <translation>Время на операцию с процессом истекло</translation>
     </message>
     <message>
-        <location filename="../src/corelib/io/qprocess.cpp" line="+533"/>
+        <location filename="../src/corelib/io/qprocess.cpp" line="+558"/>
         <location line="+52"/>
         <location filename="../src/corelib/io/qprocess_win.cpp" line="-211"/>
         <location line="+50"/>
         <source>Error reading from process</source>
-        <translation type="unfinished"></translation>
+        <translation>Ошибка получения данных от процесса</translation>
     </message>
     <message>
         <location line="+47"/>
-        <location line="+779"/>
+        <location line="+833"/>
         <location filename="../src/corelib/io/qprocess_win.cpp" line="+140"/>
         <source>Error writing to process</source>
-        <translation type="unfinished"></translation>
+        <translation>Ошибка отправки данных процессу</translation>
     </message>
     <message>
-        <location line="-709"/>
+        <location line="-763"/>
         <source>Process crashed</source>
-        <translation type="unfinished"></translation>
+        <translation>Процесс завершился с ошибкой</translation>
     </message>
     <message>
-        <location line="+912"/>
+        <location line="+966"/>
         <source>No program defined</source>
-        <translation type="unfinished"></translation>
+        <translation>Программа  не указана</translation>
     </message>
     <message>
         <location filename="../src/corelib/io/qprocess_win.cpp" line="-341"/>
         <source>Process failed to start</source>
-        <translation type="unfinished"></translation>
+        <translation>Не удалось запустить процесс</translation>
     </message>
 </context>
 <context>
@@ -4479,7 +4450,7 @@ Please choose a different file name.</source>
     <message>
         <location filename="../src/plugins/accessible/widgets/simplewidgets.cpp" line="-8"/>
         <source>Open</source>
-        <translation type="unfinished">Открыть</translation>
+        <translation>Открыть</translation>
     </message>
 </context>
 <context>
@@ -4487,7 +4458,7 @@ Please choose a different file name.</source>
     <message>
         <location line="+12"/>
         <source>Check</source>
-        <translation type="unfinished"></translation>
+        <translation>Отметить</translation>
     </message>
 </context>
 <context>
@@ -4500,22 +4471,22 @@ Please choose a different file name.</source>
     <message>
         <location line="+1"/>
         <source>disabled feature used</source>
-        <translation>использовались отключенные возможности</translation>
+        <translation>использование отключённых возможностей</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>bad char class syntax</source>
-        <translation>bad char class syntax</translation>
+        <translation>неправильный синтаксис класса символов</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>bad lookahead syntax</source>
-        <translation>bad lookahead syntax</translation>
+        <translation>неправильный предварительный синтаксис</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>bad repetition syntax</source>
-        <translation>bad repetition syntax</translation>
+        <translation>неправильный синтаксис повторения</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -4543,22 +4514,22 @@ Please choose a different file name.</source>
     <message>
         <location filename="../src/sql/drivers/sqlite2/qsql_sqlite2.cpp" line="+396"/>
         <source>Error to open database</source>
-        <translation type="unfinished"></translation>
+        <translation>Невозможно открыть базу данных</translation>
     </message>
     <message>
         <location line="+41"/>
         <source>Unable to begin transaction</source>
-        <translation type="unfinished"></translation>
+        <translation>Невозможно начать транзакцию</translation>
     </message>
     <message>
         <location line="+17"/>
         <source>Unable to commit transaction</source>
-        <translation type="unfinished"></translation>
+        <translation>Невозможно выполнить транзакцию</translation>
     </message>
     <message>
         <location line="+17"/>
         <source>Unable to rollback Transaction</source>
-        <translation type="unfinished"></translation>
+        <translation>Невозможно откатить транзакцию</translation>
     </message>
 </context>
 <context>
@@ -4566,12 +4537,12 @@ Please choose a different file name.</source>
     <message>
         <location line="-323"/>
         <source>Unable to fetch results</source>
-        <translation type="unfinished"></translation>
+        <translation>Невозможно получить результат</translation>
     </message>
     <message>
         <location line="+147"/>
         <source>Unable to execute statement</source>
-        <translation type="unfinished"></translation>
+        <translation>Невозможно выполнить выражение</translation>
     </message>
 </context>
 <context>
@@ -4579,27 +4550,27 @@ Please choose a different file name.</source>
     <message>
         <location filename="../src/sql/drivers/sqlite/qsql_sqlite.cpp" line="+528"/>
         <source>Error opening database</source>
-        <translation type="unfinished"></translation>
+        <translation>Невозможно открыть базу данных</translation>
     </message>
     <message>
         <location line="+11"/>
         <source>Error closing database</source>
-        <translation type="unfinished"></translation>
+        <translation>Невозможно закрыть базу данных</translation>
     </message>
     <message>
         <location line="+20"/>
         <source>Unable to begin transaction</source>
-        <translation type="unfinished"></translation>
+        <translation>Невозможно начать транзакцию</translation>
     </message>
     <message>
         <location line="+15"/>
         <source>Unable to commit transaction</source>
-        <translation type="unfinished"></translation>
+        <translation>Невозможно выполнить транзакцию</translation>
     </message>
     <message>
         <location line="+15"/>
         <source>Unable to rollback transaction</source>
-        <translation type="unfinished"></translation>
+        <translation>Невозможно откатить транзакцию</translation>
     </message>
 </context>
 <context>
@@ -4609,32 +4580,32 @@ Please choose a different file name.</source>
         <location line="+66"/>
         <location line="+8"/>
         <source>Unable to fetch row</source>
-        <translation type="unfinished"></translation>
+        <translation>Невозможно получить строку</translation>
     </message>
     <message>
         <location line="+63"/>
         <source>Unable to execute statement</source>
-        <translation type="unfinished"></translation>
+        <translation>Невозможно выполнить выражение</translation>
     </message>
     <message>
         <location line="+20"/>
         <source>Unable to reset statement</source>
-        <translation type="unfinished"></translation>
+        <translation>Невозможно сбросить выражение</translation>
     </message>
     <message>
         <location line="+45"/>
         <source>Unable to bind parameters</source>
-        <translation type="unfinished"></translation>
+        <translation>Невозможно привязать параметр</translation>
     </message>
     <message>
         <location line="+7"/>
         <source>Parameter count mismatch</source>
-        <translation type="unfinished"></translation>
+        <translation>Количество параметров не совпадает</translation>
     </message>
     <message>
         <location line="-208"/>
         <source>No query</source>
-        <translation type="unfinished"></translation>
+        <translation>Отсутствует запрос</translation>
     </message>
 </context>
 <context>
@@ -4642,302 +4613,302 @@ Please choose a different file name.</source>
     <message>
         <location filename="../src/gui/widgets/qscrollbar.cpp" line="+448"/>
         <source>Scroll here</source>
-        <translation type="unfinished"></translation>
+        <translation>Прокрутить сюда</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Left edge</source>
-        <translation type="unfinished"></translation>
+        <translation>К левой границе</translation>
     </message>
     <message>
         <location line="+0"/>
         <source>Top</source>
-        <translation type="unfinished"></translation>
+        <translation>Вверх</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Right edge</source>
-        <translation type="unfinished"></translation>
+        <translation>К правой границе</translation>
     </message>
     <message>
         <location line="+0"/>
         <source>Bottom</source>
-        <translation type="unfinished"></translation>
+        <translation>Вниз</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Page left</source>
-        <translation type="unfinished"></translation>
+        <translation>На страницу влево</translation>
     </message>
     <message>
         <location line="+0"/>
         <location filename="../src/plugins/accessible/widgets/rangecontrols.cpp" line="+143"/>
         <source>Page up</source>
-        <translation type="unfinished"></translation>
+        <translation>На страницу вверх</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Page right</source>
-        <translation type="unfinished"></translation>
+        <translation>На страницу вправо</translation>
     </message>
     <message>
         <location line="+0"/>
         <location filename="../src/plugins/accessible/widgets/rangecontrols.cpp" line="+4"/>
         <source>Page down</source>
-        <translation type="unfinished"></translation>
+        <translation>На страницу вниз</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Scroll left</source>
-        <translation type="unfinished"></translation>
+        <translation>Прокрутить влево</translation>
     </message>
     <message>
         <location line="+0"/>
         <source>Scroll up</source>
-        <translation type="unfinished"></translation>
+        <translation>Прокрутить вверх</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Scroll right</source>
-        <translation type="unfinished"></translation>
+        <translation>Прокрутить вправо</translation>
     </message>
     <message>
         <location line="+0"/>
         <source>Scroll down</source>
-        <translation type="unfinished"></translation>
+        <translation>Прокрутить вниз</translation>
     </message>
     <message>
         <location filename="../src/plugins/accessible/widgets/rangecontrols.cpp" line="-6"/>
         <source>Line up</source>
-        <translation type="unfinished">Выровнять</translation>
+        <translation>На строку вверх</translation>
     </message>
     <message>
         <location line="+4"/>
         <source>Position</source>
-        <translation type="unfinished"></translation>
+        <translation>Позиция</translation>
     </message>
     <message>
         <location line="+4"/>
         <source>Line down</source>
-        <translation type="unfinished"></translation>
+        <translation>На строку вниз</translation>
     </message>
 </context>
 <context>
     <name>QSharedMemory</name>
     <message>
-        <location filename="../src/corelib/kernel/qsharedmemory.cpp" line="+207"/>
+        <location filename="../src/corelib/kernel/qsharedmemory.cpp" line="+211"/>
         <source>%1: unable to set key on lock</source>
-        <translation type="unfinished"></translation>
+        <translation>%1: невозможно установить ключ на блокировку</translation>
     </message>
     <message>
         <location line="+81"/>
         <source>%1: create size is less then 0</source>
-        <translation type="unfinished"></translation>
+        <translation>%1: размер меньше нуля</translation>
     </message>
     <message>
         <location line="+168"/>
         <location filename="../src/corelib/kernel/qsharedmemory_p.h" line="+148"/>
         <source>%1: unable to lock</source>
-        <translation type="unfinished"></translation>
+        <translation>%1: невозможно заблокировать</translation>
     </message>
     <message>
         <location line="+22"/>
         <source>%1: unable to unlock</source>
-        <translation type="unfinished"></translation>
+        <translation>%1: невозможно разблокировать</translation>
     </message>
     <message>
-        <location filename="../src/corelib/kernel/qsharedmemory_unix.cpp" line="+78"/>
+        <location filename="../src/corelib/kernel/qsharedmemory_unix.cpp" line="+80"/>
         <location filename="../src/corelib/kernel/qsharedmemory_win.cpp" line="+87"/>
         <source>%1: permission denied</source>
-        <translation type="unfinished"></translation>
+        <translation>%1: доступ запрещён</translation>
     </message>
     <message>
         <location line="+4"/>
         <location filename="../src/corelib/kernel/qsharedmemory_win.cpp" line="-22"/>
         <source>%1: already exists</source>
-        <translation type="unfinished"></translation>
+        <translation>%1: уже существует</translation>
     </message>
     <message>
         <location line="+4"/>
         <location filename="../src/corelib/kernel/qsharedmemory_win.cpp" line="+9"/>
         <source>%1: doesn&apos;t exists</source>
-        <translation type="unfinished"></translation>
+        <translation>%1: не существует</translation>
     </message>
     <message>
         <location line="+6"/>
         <location filename="../src/corelib/kernel/qsharedmemory_win.cpp" line="+9"/>
         <source>%1: out of resources</source>
-        <translation type="unfinished"></translation>
+        <translation>%1: недостаточно ресурсов</translation>
     </message>
     <message>
         <location line="+4"/>
         <location filename="../src/corelib/kernel/qsharedmemory_win.cpp" line="+7"/>
         <source>%1: unknown error %2</source>
-        <translation type="unfinished"></translation>
+        <translation>%1: неизвестная ошибка %2</translation>
     </message>
     <message>
         <location line="+21"/>
         <source>%1: key is empty</source>
-        <translation type="unfinished"></translation>
+        <translation>%1: пустой ключ</translation>
     </message>
     <message>
         <location line="+8"/>
         <source>%1: unix key file doesn&apos;t exists</source>
-        <translation type="unfinished"></translation>
+        <translation>%1: специфический ключ unix не существует</translation>
     </message>
     <message>
         <location line="+7"/>
         <source>%1: ftok failed</source>
-        <translation type="unfinished"></translation>
+        <translation>%1: ошибка ftok</translation>
     </message>
     <message>
         <location line="+51"/>
         <location filename="../src/corelib/kernel/qsharedmemory_win.cpp" line="+15"/>
         <source>%1: unable to make key</source>
-        <translation type="unfinished"></translation>
+        <translation>%1: невозможно создать ключ</translation>
     </message>
     <message>
         <location line="+20"/>
         <source>%1: system-imposed size restrictions</source>
-        <translation type="unfinished"></translation>
+        <translation>%1: системой наложены ограничения на размер</translation>
     </message>
     <message>
         <location line="+53"/>
         <source>%1: not attached</source>
-        <translation type="unfinished"></translation>
+        <translation>%1: не приложенный</translation>
     </message>
     <message>
         <location filename="../src/corelib/kernel/qsharedmemory_win.cpp" line="-27"/>
         <source>%1: invalid size</source>
-        <translation type="unfinished"></translation>
+        <translation>%1: некорректный размер</translation>
     </message>
     <message>
         <location line="+68"/>
         <source>%1: key error</source>
-        <translation type="unfinished"></translation>
+        <translation>%1: некорректный ключ</translation>
     </message>
     <message>
         <location line="+38"/>
         <source>%1: size query failed</source>
-        <translation type="unfinished"></translation>
+        <translation>%1: не удалось запросить размер</translation>
     </message>
 </context>
 <context>
     <name>QShortcut</name>
     <message>
-        <location filename="../src/gui/kernel/qkeysequence.cpp" line="+373"/>
+        <location filename="../src/gui/kernel/qkeysequence.cpp" line="+394"/>
         <source>Space</source>
-        <translation type="unfinished">Space</translation>
+        <translation type="unfinished">Пробел</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Esc</source>
-        <translation type="unfinished">Esc</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Tab</source>
-        <translation type="unfinished">Tab</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Backtab</source>
-        <translation type="unfinished">Backtab</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Backspace</source>
-        <translation type="unfinished">Backspace</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Return</source>
-        <translation type="unfinished">Return</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Enter</source>
-        <translation type="unfinished">Enter</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Ins</source>
-        <translation type="unfinished">Ins</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Del</source>
-        <translation type="unfinished">Del</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Pause</source>
-        <translation type="unfinished">Pause</translation>
+        <translation type="unfinished">Пауза</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Print</source>
-        <translation type="unfinished">Print</translation>
+        <translation type="unfinished">Печатать</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>SysReq</source>
-        <translation type="unfinished">SysReq</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Home</source>
-        <translation type="unfinished">Home</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+1"/>
         <source>End</source>
-        <translation type="unfinished">End</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Left</source>
-        <translation type="unfinished">Left</translation>
+        <translation type="unfinished">Влево</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Up</source>
-        <translation type="unfinished">Up</translation>
+        <translation type="unfinished">Вверх</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Right</source>
-        <translation type="unfinished">Right</translation>
+        <translation type="unfinished">Вправо</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Down</source>
-        <translation type="unfinished">Down</translation>
+        <translation type="unfinished">Вниз</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>PgUp</source>
-        <translation type="unfinished">PgUp</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+1"/>
         <source>PgDown</source>
-        <translation type="unfinished">PgDown</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+1"/>
         <source>CapsLock</source>
-        <translation type="unfinished">CapsLock</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+1"/>
         <source>NumLock</source>
-        <translation type="unfinished">NumLock</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+1"/>
         <source>ScrollLock</source>
-        <translation type="unfinished">ScrollLock</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+1"/>
@@ -4962,7 +4933,7 @@ Please choose a different file name.</source>
     <message>
         <location line="+1"/>
         <source>Stop</source>
-        <translation type="unfinished">Стоп</translation>
+        <translation type="unfinished">Остановить</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -4972,72 +4943,72 @@ Please choose a different file name.</source>
     <message>
         <location line="+1"/>
         <source>Volume Down</source>
-        <translation type="unfinished">Тише</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Volume Mute</source>
-        <translation type="unfinished">Выключить звук</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Volume Up</source>
-        <translation type="unfinished">Громче</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Bass Boost</source>
-        <translation type="unfinished">Bass Boost</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Bass Up</source>
-        <translation type="unfinished">Bass Up</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Bass Down</source>
-        <translation type="unfinished">Bass Down</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Treble Up</source>
-        <translation type="unfinished">Treble Up</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Treble Down</source>
-        <translation type="unfinished">Treble Down</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Media Play</source>
-        <translation type="unfinished">Воспроизведение</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Media Stop</source>
-        <translation type="unfinished">Остановить воспроизведение</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Media Previous</source>
-        <translation type="unfinished">Воспроизвести предыдущее</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Media Next</source>
-        <translation type="unfinished">Воспроизвести следующее</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Media Record</source>
-        <translation type="unfinished">Запись</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Favorites</source>
-        <translation type="unfinished">Избранное</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+1"/>
@@ -5047,102 +5018,102 @@ Please choose a different file name.</source>
     <message>
         <location line="+1"/>
         <source>Standby</source>
-        <translation type="unfinished">Дежурный режим</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Open URL</source>
-        <translation type="unfinished">Открыть URL</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Launch Mail</source>
-        <translation type="unfinished">Почта</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Launch Media</source>
-        <translation type="unfinished">Проигрыватель</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Launch (0)</source>
-        <translation type="unfinished">Запустить (0)</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Launch (1)</source>
-        <translation type="unfinished">Запустить (1)</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Launch (2)</source>
-        <translation type="unfinished">Запустить (2)</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Launch (3)</source>
-        <translation type="unfinished">Запустить (3)</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Launch (4)</source>
-        <translation type="unfinished">Запустить (4)</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Launch (5)</source>
-        <translation type="unfinished">Запустить (5)</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Launch (6)</source>
-        <translation type="unfinished">Запустить (6)</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Launch (7)</source>
-        <translation type="unfinished">Запустить (7)</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Launch (8)</source>
-        <translation type="unfinished">Запустить (8)</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Launch (9)</source>
-        <translation type="unfinished">Запустить (9)</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Launch (A)</source>
-        <translation type="unfinished">Запустить (A)</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Launch (B)</source>
-        <translation type="unfinished">Запустить (B)</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Launch (C)</source>
-        <translation type="unfinished">Запустить (C)</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Launch (D)</source>
-        <translation type="unfinished">Запустить (D)</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Launch (E)</source>
-        <translation type="unfinished">Запустить (E)</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Launch (F)</source>
-        <translation type="unfinished">Запустить (F)</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+4"/>
@@ -5182,12 +5153,12 @@ Please choose a different file name.</source>
     <message>
         <location line="+1"/>
         <source>Insert</source>
-        <translation type="unfinished">Вставить</translation>
+        <translation type="unfinished">Вставка</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Delete</source>
-        <translation type="unfinished">Удалить</translation>
+        <translation type="unfinished">Удаление</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -5250,41 +5221,41 @@ Please choose a different file name.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+527"/>
-        <location line="+122"/>
+        <location line="+559"/>
+        <location line="+135"/>
         <source>Ctrl</source>
-        <translation type="unfinished">Ctrl</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-121"/>
-        <location line="+125"/>
+        <location line="-134"/>
+        <location line="+138"/>
         <source>Shift</source>
-        <translation type="unfinished">Shift</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-124"/>
-        <location line="+122"/>
+        <location line="-137"/>
+        <location line="+135"/>
         <source>Alt</source>
-        <translation type="unfinished">Alt</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-121"/>
-        <location line="+117"/>
+        <location line="-134"/>
+        <location line="+130"/>
         <source>Meta</source>
-        <translation type="unfinished">Meta</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-25"/>
+        <location line="-40"/>
         <source>+</source>
-        <translation type="unfinished">+</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+46"/>
+        <location line="+61"/>
         <source>F%1</source>
-        <translation type="unfinished">F%1</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-720"/>
+        <location line="-765"/>
         <source>Home Page</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5294,27 +5265,27 @@ Please choose a different file name.</source>
     <message>
         <location filename="../src/plugins/accessible/widgets/rangecontrols.cpp" line="+151"/>
         <source>Page left</source>
-        <translation type="unfinished"></translation>
+        <translation>Страница влево</translation>
     </message>
     <message>
         <location line="+0"/>
         <source>Page up</source>
-        <translation type="unfinished"></translation>
+        <translation>Страница вверх</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Position</source>
-        <translation type="unfinished"></translation>
+        <translation>Позиция</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Page right</source>
-        <translation type="unfinished"></translation>
+        <translation>Страница вправо</translation>
     </message>
     <message>
         <location line="+0"/>
         <source>Page down</source>
-        <translation type="unfinished"></translation>
+        <translation>Страница вниз</translation>
     </message>
 </context>
 <context>
@@ -5322,72 +5293,72 @@ Please choose a different file name.</source>
     <message>
         <location filename="../src/network/socket/qsocks5socketengine.cpp" line="-67"/>
         <source>Connection to proxy refused</source>
-        <translation type="unfinished"></translation>
+        <translation>В соединении прокси-сервером отказано</translation>
     </message>
     <message>
         <location line="+4"/>
         <source>Connection to proxy closed prematurely</source>
-        <translation type="unfinished"></translation>
+        <translation>Соединение с прокси-сервером неожиданно закрыто</translation>
     </message>
     <message>
         <location line="+4"/>
         <source>Proxy host not found</source>
-        <translation type="unfinished"></translation>
+        <translation>Прокси-сервер не найден</translation>
     </message>
     <message>
         <location line="+5"/>
         <source>Connection to proxy timed out</source>
-        <translation type="unfinished"></translation>
+        <translation>Время на соединение с прокси-сервером истекло</translation>
     </message>
     <message>
         <location line="+17"/>
         <source>Proxy authentication failed</source>
-        <translation type="unfinished"></translation>
+        <translation>Не удалось авторизоваться на прокси-сервере</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Proxy authentication failed: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Не удалось авторизоваться на прокси-сервере: %1</translation>
     </message>
     <message>
         <location line="+9"/>
         <source>SOCKS version 5 protocol error</source>
-        <translation type="unfinished"></translation>
+        <translation>Ошибка протокола SOCKSv5</translation>
     </message>
     <message>
         <location line="+19"/>
         <source>General SOCKSv5 server failure</source>
-        <translation type="unfinished"></translation>
+        <translation>Ошибка сервере SOCKSv5</translation>
     </message>
     <message>
         <location line="+4"/>
         <source>Connection not allowed by SOCKSv5 server</source>
-        <translation type="unfinished"></translation>
+        <translation>Соединение не разрешено сервером  SOCKSv5</translation>
     </message>
     <message>
         <location line="+16"/>
         <source>TTL expired</source>
-        <translation type="unfinished"></translation>
+        <translation>TTL истекло</translation>
     </message>
     <message>
         <location line="+4"/>
         <source>SOCKSv5 command not supported</source>
-        <translation type="unfinished"></translation>
+        <translation>Команда SOCKSv5 не поддерживается</translation>
     </message>
     <message>
         <location line="+4"/>
         <source>Address type not supported</source>
-        <translation type="unfinished"></translation>
+        <translation>Тип адреса не поддерживается</translation>
     </message>
     <message>
         <location line="+5"/>
         <source>Unknown SOCKSv5 proxy error code 0x%1</source>
-        <translation type="unfinished"></translation>
+        <translation>Неизвестная ошибка SOCKSv5 прокси (код 0x%1)</translation>
     </message>
     <message>
         <location line="+685"/>
         <source>Network operation timed out</source>
-        <translation type="unfinished"></translation>
+        <translation>Время на сетевую операцию истекло</translation>
     </message>
 </context>
 <context>
@@ -5395,12 +5366,12 @@ Please choose a different file name.</source>
     <message>
         <location filename="../src/plugins/accessible/widgets/rangecontrols.cpp" line="-574"/>
         <source>More</source>
-        <translation type="unfinished"></translation>
+        <translation>Больше</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Less</source>
-        <translation type="unfinished"></translation>
+        <translation>Меньше</translation>
     </message>
 </context>
 <context>
@@ -5413,7 +5384,7 @@ Please choose a different file name.</source>
     <message>
         <location line="+1"/>
         <source>Delete this record?</source>
-        <translation>Удалить эту запись?</translation>
+        <translation>Удалить данную запись?</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -5452,7 +5423,7 @@ Please choose a different file name.</source>
     <message>
         <location line="+32"/>
         <source>Confirm</source>
-        <translation>Подтвердить</translation>
+        <translation>Подтверждение</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -5465,12 +5436,12 @@ Please choose a different file name.</source>
     <message>
         <location filename="../src/network/ssl/qsslsocket_openssl.cpp" line="+569"/>
         <source>Unable to write data: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Невозможно записать данные: %1</translation>
     </message>
     <message>
         <location line="+119"/>
         <source>Error while reading: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Ошибка чтения: %1</translation>
     </message>
     <message>
         <location line="+96"/>
@@ -5490,12 +5461,12 @@ Please choose a different file name.</source>
     <message>
         <location line="+62"/>
         <source>Error creating SSL session, %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Ошибка создания SSL-сессии, %1</translation>
     </message>
     <message>
         <location line="+15"/>
         <source>Error creating SSL session: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Ошибка создания SSL-сессии: %1</translation>
     </message>
     <message>
         <location line="-61"/>
@@ -5505,12 +5476,12 @@ Please choose a different file name.</source>
     <message>
         <location line="+7"/>
         <source>Error loading local certificate, %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Ошибка загрузки локального сертификата, %1</translation>
     </message>
     <message>
         <location line="+12"/>
         <source>Error loading private key, %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Ошибка загрузки приватного ключа, %1</translation>
     </message>
     <message>
         <location line="+7"/>
@@ -5519,34 +5490,57 @@ Please choose a different file name.</source>
     </message>
 </context>
 <context>
+    <name>QStateMachine</name>
+    <message>
+        <location filename="../src/corelib/statemachine/qstatemachine.cpp" line="+1003"/>
+        <source>Missing initial state in compound state &apos;%1&apos;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>Missing default state in history state &apos;%1&apos;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>No common ancestor for targets and source of transition from state &apos;%1&apos;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Unknown error</source>
+        <translation type="unfinished">Неизвестная ошибка</translation>
+    </message>
+</context>
+<context>
     <name>QSystemSemaphore</name>
     <message>
         <location filename="../src/corelib/kernel/qsystemsemaphore_unix.cpp" line="-41"/>
         <location filename="../src/corelib/kernel/qsystemsemaphore_win.cpp" line="+66"/>
         <source>%1: out of resources</source>
-        <translation type="unfinished"></translation>
+        <translation>%1: недостаточно ресурсов</translation>
     </message>
     <message>
         <location line="-13"/>
         <location filename="../src/corelib/kernel/qsystemsemaphore_win.cpp" line="+4"/>
         <source>%1: permission denied</source>
-        <translation type="unfinished"></translation>
+        <translation>%1: доступ запрещён</translation>
     </message>
     <message>
         <location line="+4"/>
         <source>%1: already exists</source>
-        <translation type="unfinished"></translation>
+        <translation>%1: уже существует</translation>
     </message>
     <message>
         <location line="+4"/>
         <source>%1: does not exist</source>
-        <translation type="unfinished"></translation>
+        <translation>%1: не существует</translation>
     </message>
     <message>
         <location line="+9"/>
         <location filename="../src/corelib/kernel/qsystemsemaphore_win.cpp" line="+3"/>
         <source>%1: unknown error %2</source>
-        <translation type="unfinished"></translation>
+        <translation>%1: неизвестная ошибка %2</translation>
     </message>
 </context>
 <context>
@@ -5554,12 +5548,12 @@ Please choose a different file name.</source>
     <message>
         <location filename="../src/sql/drivers/tds/qsql_tds.cpp" line="+584"/>
         <source>Unable to open connection</source>
-        <translation type="unfinished"></translation>
+        <translation>Невозможно открыть соединение</translation>
     </message>
     <message>
         <location line="+5"/>
         <source>Unable to use database</source>
-        <translation type="unfinished"></translation>
+        <translation>Невозможно использовать базу данных</translation>
     </message>
 </context>
 <context>
@@ -5567,12 +5561,12 @@ Please choose a different file name.</source>
     <message>
         <location filename="../src/plugins/accessible/widgets/complexwidgets.cpp" line="-326"/>
         <source>Scroll Left</source>
-        <translation type="unfinished"></translation>
+        <translation>Прокрутить влево</translation>
     </message>
     <message>
         <location line="+0"/>
         <source>Scroll Right</source>
-        <translation type="unfinished"></translation>
+        <translation>Прокрутить вправо</translation>
     </message>
 </context>
 <context>
@@ -5580,7 +5574,7 @@ Please choose a different file name.</source>
     <message>
         <location filename="../src/network/socket/qtcpserver.cpp" line="+282"/>
         <source>Operation on socket is not supported</source>
-        <translation type="unfinished"></translation>
+        <translation>Операция с сокетом не поддерживается</translation>
     </message>
 </context>
 <context>
@@ -5588,42 +5582,42 @@ Please choose a different file name.</source>
     <message>
         <location filename="../src/gui/text/qtextcontrol.cpp" line="+1973"/>
         <source>&amp;Undo</source>
-        <translation type="unfinished">&amp;Отменить</translation>
+        <translation>&amp;Отменить действие</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>&amp;Redo</source>
-        <translation type="unfinished">&amp;Повторить</translation>
+        <translation>&amp;Повторить действие</translation>
     </message>
     <message>
         <location line="+4"/>
         <source>Cu&amp;t</source>
-        <translation type="unfinished">&amp;Вырезать</translation>
+        <translation>&amp;Вырезать</translation>
     </message>
     <message>
         <location line="+5"/>
         <source>&amp;Copy</source>
-        <translation type="unfinished">&amp;Копировать</translation>
+        <translation>&amp;Копировать</translation>
     </message>
     <message>
         <location line="+7"/>
         <source>Copy &amp;Link Location</source>
-        <translation type="unfinished"></translation>
+        <translation>Скопировать &amp;адрес ссылки</translation>
     </message>
     <message>
         <location line="+6"/>
         <source>&amp;Paste</source>
-        <translation type="unfinished">&amp;Вставить</translation>
+        <translation>В&amp;ставить</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Delete</source>
-        <translation type="unfinished">Удалить</translation>
+        <translation>Удалить</translation>
     </message>
     <message>
         <location line="+7"/>
         <source>Select All</source>
-        <translation type="unfinished">Выделить все</translation>
+        <translation>Выделить все</translation>
     </message>
 </context>
 <context>
@@ -5632,13 +5626,13 @@ Please choose a different file name.</source>
         <location filename="../src/plugins/accessible/widgets/simplewidgets.cpp" line="+254"/>
         <location line="+6"/>
         <source>Press</source>
-        <translation type="unfinished"></translation>
+        <translation>Нажать</translation>
     </message>
     <message>
         <location line="-4"/>
         <location line="+8"/>
         <source>Open</source>
-        <translation type="unfinished">Открыть</translation>
+        <translation>Открыть</translation>
     </message>
 </context>
 <context>
@@ -5646,7 +5640,7 @@ Please choose a different file name.</source>
     <message>
         <location filename="../src/network/socket/qudpsocket.cpp" line="+169"/>
         <source>This platform does not support IPv6</source>
-        <translation type="unfinished"></translation>
+        <translation>Данная платформа не поддерживает IPv6</translation>
     </message>
 </context>
 <context>
@@ -5654,12 +5648,12 @@ Please choose a different file name.</source>
     <message>
         <location filename="../src/gui/util/qundogroup.cpp" line="+386"/>
         <source>Undo</source>
-        <translation type="unfinished">Отменить</translation>
+        <translation>Отменить действие</translation>
     </message>
     <message>
         <location line="+28"/>
         <source>Redo</source>
-        <translation type="unfinished">Повторить</translation>
+        <translation>Повторить действие</translation>
     </message>
 </context>
 <context>
@@ -5667,7 +5661,7 @@ Please choose a different file name.</source>
     <message>
         <location filename="../src/gui/util/qundoview.cpp" line="+101"/>
         <source>&lt;empty&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;пусто&gt;</translation>
     </message>
 </context>
 <context>
@@ -5675,12 +5669,12 @@ Please choose a different file name.</source>
     <message>
         <location filename="../src/gui/util/qundostack.cpp" line="+834"/>
         <source>Undo</source>
-        <translation type="unfinished">Отменить</translation>
+        <translation>Отменить действие</translation>
     </message>
     <message>
         <location line="+27"/>
         <source>Redo</source>
-        <translation type="unfinished">Повторить</translation>
+        <translation>Повторить действие</translation>
     </message>
 </context>
 <context>
@@ -5746,160 +5740,160 @@ Please choose a different file name.</source>
     <message>
         <location filename="../src/3rdparty/webkit/WebKit/qt/WebCoreSupport/FrameLoaderClientQt.cpp" line="+692"/>
         <source>Request cancelled</source>
-        <translation type="unfinished"></translation>
+        <translation>Запрос отменён</translation>
     </message>
     <message>
         <location line="+17"/>
         <source>Request blocked</source>
-        <translation type="unfinished"></translation>
+        <translation>Запрос блокирован</translation>
     </message>
     <message>
         <location line="+7"/>
         <source>Cannot show URL</source>
-        <translation type="unfinished"></translation>
+        <translation>Невозможно отобразить URL</translation>
     </message>
     <message>
         <location line="+6"/>
         <source>Frame load interruped by policy change</source>
-        <translation type="unfinished"></translation>
+        <translation>Загрузка фрэйма прервана изменением политики</translation>
     </message>
     <message>
         <location line="+6"/>
         <source>Cannot show mimetype</source>
-        <translation type="unfinished"></translation>
+        <translation>Невозможно отобразить тип MIME</translation>
     </message>
     <message>
         <location line="+6"/>
         <source>File does not exist</source>
-        <translation type="unfinished"></translation>
+        <translation>Файл не существует</translation>
     </message>
 </context>
 <context>
     <name>QWebPage</name>
     <message>
-        <location filename="../src/3rdparty/webkit/WebCore/platform/network/qt/QNetworkReplyHandler.cpp" line="+382"/>
+        <location filename="../src/3rdparty/webkit/WebCore/platform/network/qt/QNetworkReplyHandler.cpp" line="+385"/>
         <source>Bad HTTP request</source>
-        <translation type="unfinished"></translation>
+        <translation>Некорректный HTTP-запрос</translation>
     </message>
     <message>
         <location filename="../src/3rdparty/webkit/WebCore/platform/qt/Localizations.cpp" line="+42"/>
         <source>Submit</source>
         <comment>default label for Submit buttons in forms on web pages</comment>
-        <translation type="unfinished"></translation>
+        <translation>Отправить</translation>
     </message>
     <message>
         <location line="+5"/>
         <source>Submit</source>
         <comment>Submit (input element) alt text for &lt;input&gt; elements with no alt, title, or value</comment>
-        <translation type="unfinished"></translation>
+        <translation>Отправить</translation>
     </message>
     <message>
         <location line="+5"/>
         <source>Reset</source>
         <comment>default label for Reset buttons in forms on web pages</comment>
-        <translation type="unfinished"></translation>
+        <translation>Сбросить</translation>
     </message>
     <message>
         <location line="+10"/>
         <source>This is a searchable index. Enter search keywords: </source>
         <comment>text that appears at the start of nearly-obsolete web pages in the form of a &apos;searchable index&apos;</comment>
-        <translation type="unfinished"></translation>
+        <translation>Индекс поиска. Введите ключевые слова для поиска: </translation>
     </message>
     <message>
         <location line="+5"/>
         <source>Choose File</source>
         <comment>title for file button used in HTML forms</comment>
-        <translation type="unfinished"></translation>
+        <translation>Обзор...</translation>
     </message>
     <message>
         <location line="+5"/>
         <source>No file selected</source>
         <comment>text to display in file button used in HTML forms when no file is selected</comment>
-        <translation type="unfinished"></translation>
+        <translation>Файл не указан</translation>
     </message>
     <message>
         <location line="+5"/>
         <source>Open in New Window</source>
         <comment>Open in New Window context menu item</comment>
-        <translation type="unfinished"></translation>
+        <translation>Открыть в новом окне</translation>
     </message>
     <message>
         <location line="+5"/>
         <source>Save Link...</source>
         <comment>Download Linked File context menu item</comment>
-        <translation type="unfinished"></translation>
+        <translation>Сохранить по ссылке как...</translation>
     </message>
     <message>
         <location line="+5"/>
         <source>Copy Link</source>
         <comment>Copy Link context menu item</comment>
-        <translation type="unfinished"></translation>
+        <translation>Копировать адрес ссылки</translation>
     </message>
     <message>
         <location line="+5"/>
         <source>Open Image</source>
         <comment>Open Image in New Window context menu item</comment>
-        <translation type="unfinished"></translation>
+        <translation>Открыть изображение</translation>
     </message>
     <message>
         <location line="+5"/>
         <source>Save Image</source>
         <comment>Download Image context menu item</comment>
-        <translation type="unfinished"></translation>
+        <translation>Сохранить изображение</translation>
     </message>
     <message>
         <location line="+5"/>
         <source>Copy Image</source>
         <comment>Copy Link context menu item</comment>
-        <translation type="unfinished"></translation>
+        <translation>Копировать изображение в буффер обмена</translation>
     </message>
     <message>
         <location line="+5"/>
         <source>Open Frame</source>
         <comment>Open Frame in New Window context menu item</comment>
-        <translation type="unfinished"></translation>
+        <translation>Открыть фрэйм</translation>
     </message>
     <message>
         <location line="+5"/>
         <source>Copy</source>
         <comment>Copy context menu item</comment>
-        <translation type="unfinished"></translation>
+        <translation>Копировать</translation>
     </message>
     <message>
         <location line="+5"/>
         <source>Go Back</source>
         <comment>Back context menu item</comment>
-        <translation type="unfinished"></translation>
+        <translation>Назад</translation>
     </message>
     <message>
         <location line="+5"/>
         <source>Go Forward</source>
         <comment>Forward context menu item</comment>
-        <translation type="unfinished"></translation>
+        <translation>Вперед</translation>
     </message>
     <message>
         <location line="+5"/>
         <source>Stop</source>
         <comment>Stop context menu item</comment>
-        <translation type="unfinished">Стоп</translation>
+        <translation>Остановить</translation>
     </message>
     <message>
         <location line="+5"/>
         <source>Reload</source>
         <comment>Reload context menu item</comment>
-        <translation type="unfinished"></translation>
+        <translation>Обновить</translation>
     </message>
     <message>
         <location line="+5"/>
         <source>Cut</source>
         <comment>Cut context menu item</comment>
-        <translation type="unfinished"></translation>
+        <translation>Вырезать</translation>
     </message>
     <message>
         <location line="+5"/>
         <source>Paste</source>
         <comment>Paste context menu item</comment>
-        <translation type="unfinished"></translation>
+        <translation>Вставить</translation>
     </message>
     <message>
         <location line="+5"/>
@@ -5911,7 +5905,7 @@ Please choose a different file name.</source>
         <location line="+5"/>
         <source>Ignore</source>
         <comment>Ignore Spelling context menu item</comment>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Игнорировать</translation>
     </message>
     <message>
         <location line="+5"/>
@@ -5935,13 +5929,13 @@ Please choose a different file name.</source>
         <location line="+5"/>
         <source>Open Link</source>
         <comment>Open Link context menu item</comment>
-        <translation type="unfinished"></translation>
+        <translation>Открыть ссылку</translation>
     </message>
     <message>
         <location line="+5"/>
         <source>Ignore</source>
         <comment>Ignore Grammar context menu item</comment>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Игнорировать</translation>
     </message>
     <message>
         <location line="+5"/>
@@ -5983,97 +5977,97 @@ Please choose a different file name.</source>
         <location line="+5"/>
         <source>Fonts</source>
         <comment>Font context sub-menu item</comment>
-        <translation type="unfinished"></translation>
+        <translation>Шрифты</translation>
     </message>
     <message>
         <location line="+5"/>
         <source>Bold</source>
         <comment>Bold context menu item</comment>
-        <translation type="unfinished"></translation>
+        <translation>Жирный</translation>
     </message>
     <message>
         <location line="+5"/>
         <source>Italic</source>
         <comment>Italic context menu item</comment>
-        <translation type="unfinished"></translation>
+        <translation>Курсив</translation>
     </message>
     <message>
         <location line="+5"/>
         <source>Underline</source>
         <comment>Underline context menu item</comment>
-        <translation type="unfinished"></translation>
+        <translation>Подчёркнутый</translation>
     </message>
     <message>
         <location line="+5"/>
         <source>Outline</source>
         <comment>Outline context menu item</comment>
-        <translation type="unfinished"></translation>
+        <translation>Перечёркнутый</translation>
     </message>
     <message>
         <location line="+5"/>
         <source>Direction</source>
         <comment>Writing direction context sub-menu item</comment>
-        <translation type="unfinished"></translation>
+        <translation>Направление</translation>
     </message>
     <message>
         <location line="+5"/>
         <source>Text Direction</source>
         <comment>Text direction context sub-menu item</comment>
-        <translation type="unfinished"></translation>
+        <translation>Направление текста</translation>
     </message>
     <message>
         <location line="+5"/>
         <source>Default</source>
         <comment>Default writing direction context menu item</comment>
-        <translation type="unfinished"></translation>
+        <translation>По умолчанию</translation>
     </message>
     <message>
         <location line="+5"/>
         <source>LTR</source>
         <comment>Left to Right context menu item</comment>
-        <translation type="unfinished"></translation>
+        <translation>Слева направо</translation>
     </message>
     <message>
         <location line="+5"/>
         <source>RTL</source>
         <comment>Right to Left context menu item</comment>
-        <translation type="unfinished"></translation>
+        <translation>Справа налево</translation>
     </message>
     <message>
         <location line="+5"/>
         <source>Inspect</source>
         <comment>Inspect Element context menu item</comment>
-        <translation type="unfinished"></translation>
+        <translation>Проверить</translation>
     </message>
     <message>
         <location line="+5"/>
         <source>No recent searches</source>
         <comment>Label for only item in menu that appears when clicking on the search field image, when no searches have been performed</comment>
-        <translation type="unfinished"></translation>
+        <translation>История поиска пуста</translation>
     </message>
     <message>
         <location line="+5"/>
         <source>Recent searches</source>
         <comment>label for first item in the menu that appears when clicking on the search field image, used as embedded menu title</comment>
-        <translation type="unfinished"></translation>
+        <translation>История поиска</translation>
     </message>
     <message>
         <location line="+5"/>
         <source>Clear recent searches</source>
         <comment>menu item in Recent Searches menu that empties menu&apos;s contents</comment>
-        <translation type="unfinished"></translation>
+        <translation>Очистить историю поиска</translation>
     </message>
     <message>
         <location line="+75"/>
         <source>Unknown</source>
         <comment>Unknown filesize FTP directory listing item</comment>
-        <translation type="unfinished"></translation>
+        <translation>Неизвестно</translation>
     </message>
     <message>
         <location line="+5"/>
         <source>%1 (%2x%3 pixels)</source>
         <comment>Title string for images</comment>
-        <translation type="unfinished"></translation>
+        <translation>%1 (%2x%3 px)</translation>
     </message>
     <message>
         <location filename="../src/3rdparty/webkit/WebKit/qt/WebCoreSupport/InspectorClientQt.cpp" line="+185"/>
@@ -6083,74 +6077,76 @@ Please choose a different file name.</source>
     <message>
         <location filename="../src/3rdparty/webkit/WebCore/platform/qt/ScrollbarQt.cpp" line="+58"/>
         <source>Scroll here</source>
-        <translation type="unfinished"></translation>
+        <translation>Прокрутить сюда</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Left edge</source>
-        <translation type="unfinished"></translation>
+        <translation>К левой границе</translation>
     </message>
     <message>
         <location line="+0"/>
         <source>Top</source>
-        <translation type="unfinished"></translation>
+        <translation>Вверх</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Right edge</source>
-        <translation type="unfinished"></translation>
+        <translation>К правой границе</translation>
     </message>
     <message>
         <location line="+0"/>
         <source>Bottom</source>
-        <translation type="unfinished"></translation>
+        <translation>Вниз</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Page left</source>
-        <translation type="unfinished"></translation>
+        <translation>На страницу влево</translation>
     </message>
     <message>
         <location line="+0"/>
         <source>Page up</source>
-        <translation type="unfinished"></translation>
+        <translation>На страницу вверх</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Page right</source>
-        <translation type="unfinished"></translation>
+        <translation>На страницу вправо</translation>
     </message>
     <message>
         <location line="+0"/>
         <source>Page down</source>
-        <translation type="unfinished"></translation>
+        <translation>На страницу вниз</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Scroll left</source>
-        <translation type="unfinished"></translation>
+        <translation>Прокрутить влево</translation>
     </message>
     <message>
         <location line="+0"/>
         <source>Scroll up</source>
-        <translation type="unfinished"></translation>
+        <translation>Прокрутить вверх</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Scroll right</source>
-        <translation type="unfinished"></translation>
+        <translation>Прокрутить вправо</translation>
     </message>
     <message>
         <location line="+0"/>
         <source>Scroll down</source>
-        <translation type="unfinished"></translation>
+        <translation>Прокрутить вниз</translation>
     </message>
     <message numerus="yes">
         <location filename="../src/3rdparty/webkit/WebCore/platform/qt/FileChooserQt.cpp" line="+45"/>
         <source>%n file(s)</source>
         <comment>number of chosen file</comment>
-        <translation type="unfinished">
-            <numerusform></numerusform>
+        <translation>
+            <numerusform>%n файл(а)</numerusform>
+            <numerusform>%n файла</numerusform>
+            <numerusform>%n файлов</numerusform>
         </translation>
     </message>
     <message>
@@ -6169,149 +6165,149 @@ Please choose a different file name.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+333"/>
+        <location line="+340"/>
         <source>Move the cursor to the next character</source>
-        <translation type="unfinished"></translation>
+        <translation>Переместить указатель к следующему символу</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Move the cursor to the previous character</source>
-        <translation type="unfinished"></translation>
+        <translation>Переместить указатель к предыдущему символу</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Move the cursor to the next word</source>
-        <translation type="unfinished"></translation>
+        <translation>Переместить указатель к следующему слову</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Move the cursor to the previous word</source>
-        <translation type="unfinished"></translation>
+        <translation>Переместить указатель к предыдущему слову</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Move the cursor to the next line</source>
-        <translation type="unfinished"></translation>
+        <translation>Переместить указатель на следующую строку</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Move the cursor to the previous line</source>
-        <translation type="unfinished"></translation>
+        <translation>Переместить указатель на предыдущую строку</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Move the cursor to the start of the line</source>
-        <translation type="unfinished"></translation>
+        <translation>Переместить указатель в начало строки</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Move the cursor to the end of the line</source>
-        <translation type="unfinished"></translation>
+        <translation>Переместить указатель в конец строки</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Move the cursor to the start of the block</source>
-        <translation type="unfinished"></translation>
+        <translation>Переместить указатель в начало блока</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Move the cursor to the end of the block</source>
-        <translation type="unfinished"></translation>
+        <translation>Переместить указатель в конец блока</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Move the cursor to the start of the document</source>
-        <translation type="unfinished"></translation>
+        <translation>Переместить указатель в начало документа</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Move the cursor to the end of the document</source>
-        <translation type="unfinished"></translation>
+        <translation>Переместить указатель в конец документа</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Select all</source>
-        <translation type="unfinished"></translation>
+        <translation>Выделить всё</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Select to the next character</source>
-        <translation type="unfinished"></translation>
+        <translation>Выделить до следующего символа</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Select to the previous character</source>
-        <translation type="unfinished"></translation>
+        <translation>Выделить до предыдущего символа</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Select to the next word</source>
-        <translation type="unfinished"></translation>
+        <translation>Выделить до следующего слова</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Select to the previous word</source>
-        <translation type="unfinished"></translation>
+        <translation>Выделить до предыдущего слова</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Select to the next line</source>
-        <translation type="unfinished"></translation>
+        <translation>Выделить до следующей строки</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Select to the previous line</source>
-        <translation type="unfinished"></translation>
+        <translation>Выделить до предыдущей строки</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Select to the start of the line</source>
-        <translation type="unfinished"></translation>
+        <translation>Выделить до начала строки</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Select to the end of the line</source>
-        <translation type="unfinished"></translation>
+        <translation>Выделить до конца строки</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Select to the start of the block</source>
-        <translation type="unfinished"></translation>
+        <translation>Выделить до начала блока</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Select to the end of the block</source>
-        <translation type="unfinished"></translation>
+        <translation>Выделить до конца блока</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Select to the start of the document</source>
-        <translation type="unfinished"></translation>
+        <translation>Выделить до начала документа</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Select to the end of the document</source>
-        <translation type="unfinished"></translation>
+        <translation>Выделить до конца документа</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Delete to the start of the word</source>
-        <translation type="unfinished"></translation>
+        <translation>Удалить до начала слова</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Delete to the end of the word</source>
-        <translation type="unfinished"></translation>
+        <translation>Удалить до конца слова</translation>
     </message>
     <message>
         <location line="+33"/>
         <source>Insert a new paragraph</source>
-        <translation type="unfinished"></translation>
+        <translation>Вставить новый параграф</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Insert a new line</source>
-        <translation type="unfinished"></translation>
+        <translation>Вставить новую строку</translation>
     </message>
 </context>
 <context>
@@ -6319,77 +6315,73 @@ Please choose a different file name.</source>
     <message>
         <location filename="../src/gui/kernel/qwhatsthis.cpp" line="+522"/>
         <source>What&apos;s This?</source>
-        <translation type="unfinished">Что это?</translation>
+        <translation>Что это?</translation>
     </message>
 </context>
 <context>
     <name>QWidget</name>
     <message>
-        <location filename="../src/gui/kernel/qwidget.cpp" line="+5326"/>
+        <location filename="../src/gui/kernel/qwidget.cpp" line="+5301"/>
         <source>*</source>
-        <translation type="unfinished"></translation>
+        <translation>*</translation>
     </message>
 </context>
 <context>
     <name>QWizard</name>
     <message>
         <location filename="../src/gui/dialogs/qwizard.cpp" line="+637"/>
-        <source>&lt; &amp;Back</source>
-        <translation type="unfinished">&lt; &amp;Назад</translation>
-    </message>
-    <message>
-        <location line="+10"/>
-        <source>&amp;Finish</source>
-        <translation type="unfinished">&amp;Финиш</translation>
-    </message>
-    <message>
-        <location line="+4"/>
-        <source>&amp;Help</source>
-        <translation type="unfinished">&amp;Справка</translation>
-    </message>
-    <message>
-        <location line="-14"/>
         <source>Go Back</source>
-        <translation type="unfinished"></translation>
+        <translation>Назад</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Continue</source>
-        <translation type="unfinished"></translation>
+        <translation>Продолжить</translation>
     </message>
     <message>
         <location line="+5"/>
         <source>Commit</source>
-        <translation type="unfinished"></translation>
+        <translation>Отправить</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Done</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Quit</source>
-        <translation type="obsolete">Выход</translation>
+        <translation>Готово</translation>
     </message>
     <message>
         <location line="+4"/>
         <source>Help</source>
-        <translation type="unfinished">Справка</translation>
+        <translation>Справка</translation>
     </message>
     <message>
-        <location line="-2"/>
+        <location line="-14"/>
+        <source>&lt; &amp;Back</source>
+        <translation>&lt; &amp;Назад</translation>
+    </message>
+    <message>
+        <location line="+10"/>
+        <source>&amp;Finish</source>
+        <translation>&amp;Закончить</translation>
+    </message>
+    <message>
+        <location line="+2"/>
         <source>Cancel</source>
-        <translation type="unfinished">Отмена</translation>
+        <translation>Отмена</translation>
     </message>
     <message>
-        <location line="-6"/>
+        <location line="+2"/>
+        <source>&amp;Help</source>
+        <translation>&amp;Справка</translation>
+    </message>
+    <message>
+        <location line="-8"/>
         <source>&amp;Next</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Вперед</translation>
     </message>
     <message>
         <location line="+0"/>
         <source>&amp;Next &gt;</source>
-        <translation type="unfinished">&amp;Вперед &gt;</translation>
+        <translation>&amp;Вперед &gt;</translation>
     </message>
 </context>
 <context>
@@ -6397,43 +6389,43 @@ Please choose a different file name.</source>
     <message>
         <location filename="../src/gui/widgets/qworkspace.cpp" line="+1094"/>
         <source>&amp;Restore</source>
-        <translation type="unfinished">&amp;Восстановить</translation>
+        <translation>&amp;Восстановить</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>&amp;Move</source>
-        <translation type="unfinished">&amp;Переместить</translation>
+        <translation>&amp;Переместить</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>&amp;Size</source>
-        <translation type="unfinished">&amp;Размер</translation>
+        <translation>&amp;Размер</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Mi&amp;nimize</source>
-        <translation type="unfinished">&amp;Свернуть</translation>
+        <translation>&amp;Минимизировать</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Ma&amp;ximize</source>
-        <translation type="unfinished">Р&amp;азвернуть</translation>
+        <translation>Р&amp;аспахнуть</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>&amp;Close</source>
-        <translation type="unfinished">&amp;Закрыть</translation>
+        <translation>&amp;Закрыть</translation>
     </message>
     <message>
         <location line="+6"/>
         <source>Stay on &amp;Top</source>
-        <translation type="unfinished">Всегда &amp;наверху</translation>
+        <translation>Оставаться &amp;сверху</translation>
     </message>
     <message>
         <location line="+3"/>
         <location line="+1059"/>
         <source>Sh&amp;ade</source>
-        <translation type="unfinished">Свернуть в за&amp;головок</translation>
+        <translation>Св&amp;ернуть в заголовок</translation>
     </message>
     <message>
         <location line="-278"/>
@@ -6444,22 +6436,22 @@ Please choose a different file name.</source>
     <message>
         <location line="-1837"/>
         <source>Minimize</source>
-        <translation type="unfinished">Свернуть</translation>
+        <translation>Минимизировать</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Restore Down</source>
-        <translation type="unfinished">Восстановить</translation>
+        <translation>Восстановить</translation>
     </message>
     <message>
         <location line="-4"/>
         <source>Close</source>
-        <translation type="unfinished">Закрыть</translation>
+        <translation>Закрыть</translation>
     </message>
     <message>
         <location line="+2053"/>
         <source>&amp;Unshade</source>
-        <translation type="unfinished">Восстановить из за&amp;головка</translation>
+        <translation>В&amp;осстановить из заголовка</translation>
     </message>
 </context>
 <context>
@@ -6472,7 +6464,7 @@ Please choose a different file name.</source>
     <message>
         <location line="+1"/>
         <source>error triggered by consumer</source>
-        <translation>ошибка инициирована пользователем</translation>
+        <translation>ошибка вызвана пользователем</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -6482,22 +6474,22 @@ Please choose a different file name.</source>
     <message>
         <location line="+1"/>
         <source>more than one document type definition</source>
-        <translation>определен более, чем один тип документов</translation>
+        <translation>указано более одного типа документа</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>error occurred while parsing element</source>
-        <translation>в процессе грамматического разбора элемента произошла ошибка</translation>
+        <translation>ошибка разбора элемента</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>tag mismatch</source>
-        <translation>отсутствует тег</translation>
+        <translation>тэг не совпадает</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>error occurred while parsing content</source>
-        <translation>в процессе грамматического разбора произошла ошибка</translation>
+        <translation>ошибка разбора документа</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -6507,101 +6499,101 @@ Please choose a different file name.</source>
     <message>
         <location line="+1"/>
         <source>invalid name for processing instruction</source>
-        <translation>некорректное имя директивы</translation>
+        <translation>некорректное имя директивы разбора</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>version expected while reading the XML declaration</source>
-        <translation>при чтении XML-тега ожидался параметр version</translation>
+        <translation>в объявлении XML ожидается объявление параметра version</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>wrong value for standalone declaration</source>
-        <translation>некорректное значение параметра standalone</translation>
+        <translation>некорректное значение объявления standalone</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>encoding declaration or standalone declaration expected while reading the XML declaration</source>
-        <translation>при чтении XML-тега ожидался параметр encoding или параметр standalone</translation>
+        <translation>в объявлении XML ожидается объявление параметра encoding или standalone</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>standalone declaration expected while reading the XML declaration</source>
-        <translation>при чтении XML-тега ожидался параметр standalone</translation>
+        <translation>в объявлении XML ожидается объявление параметра standalone</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>error occurred while parsing document type definition</source>
-        <translation>в процессе грамматического разбора типа документа произошла ошибка</translation>
+        <translation>ошибка разбора объявления типа документа</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>letter is expected</source>
-        <translation>ожидался символ</translation>
+        <translation>ожидалась буква</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>error occurred while parsing comment</source>
-        <translation>в процессе грамматического разбора комментария произошла ошибка</translation>
+        <translation>ошибка разбора комментария</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>error occurred while parsing reference</source>
-        <translation>в процессе грамматического разбора ссылки произошла ошибка</translation>
+        <translation>ошибка разбора ссылки</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>internal general entity reference not allowed in DTD</source>
-        <translation>internal general entity reference not allowed in DTD</translation>
+        <translation>внутренняя ссылка на общий объкт недопустима в DTD</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>external parsed general entity reference not allowed in attribute value</source>
-        <translation>external parsed general entity reference not allowed in attribute value</translation>
+        <translation>внешняя ссылка на общий объект недопустима в значении атрибута</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>external parsed general entity reference not allowed in DTD</source>
-        <translation>external parsed general entity reference not allowed in DTD</translation>
+        <translation>внешняя ссылка на общий объект недопустима в DTD</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>unparsed entity reference in wrong context</source>
-        <translation>unparsed entity reference in wrong context</translation>
+        <translation>неразобранная ссылка на объект в неправильном контексте</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>recursive entities</source>
-        <translation>рекурсивные объекты</translation>
+        <translation>рекурсия объектов</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>error in the text declaration of an external entity</source>
-        <translation>error in the text declaration of an external entity</translation>
+        <translation>ошибка в объявлении внешнего объекта</translation>
     </message>
 </context>
 <context>
     <name>QXmlStream</name>
     <message>
         <location filename="../src/corelib/xml/qxmlstream.cpp" line="+592"/>
-        <location filename="../src/corelib/xml/qxmlstream_p.h" line="+1769"/>
+        <location filename="../src/corelib/xml/qxmlstream_p.h" line="+1770"/>
         <source>Extra content at end of document.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+222"/>
         <source>Invalid entity value.</source>
-        <translation type="unfinished"></translation>
+        <translation>Некорректное значение объекта.</translation>
     </message>
     <message>
         <location line="+107"/>
         <source>Invalid XML character.</source>
-        <translation type="unfinished"></translation>
+        <translation>Некорректный символ XML.</translation>
     </message>
     <message>
         <location line="+259"/>
         <source>Sequence &apos;]]&gt;&apos; not allowed in content.</source>
-        <translation type="unfinished"></translation>
+        <translation>Последовательность &apos;]]&gt;&apos; не допускается в содержимом.</translation>
     </message>
     <message>
         <location line="+309"/>
@@ -6626,7 +6618,7 @@ Please choose a different file name.</source>
     <message>
         <location line="+2"/>
         <source>Unsupported XML version.</source>
-        <translation type="unfinished"></translation>
+        <translation>Неподдерживаемая версия XML.</translation>
     </message>
     <message>
         <location line="+23"/>
@@ -6641,37 +6633,37 @@ Please choose a different file name.</source>
     <message>
         <location line="+16"/>
         <source>Standalone accepts only yes or no.</source>
-        <translation type="unfinished"></translation>
+        <translation>Псевдоатрибут &apos;standalone&apos; может принимать только значение yes или no.</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Invalid attribute in XML declaration.</source>
-        <translation type="unfinished"></translation>
+        <translation>Некорректный атрибут в объявлении XML.</translation>
     </message>
     <message>
         <location line="+16"/>
         <source>Premature end of document.</source>
-        <translation type="unfinished"></translation>
+        <translation>Неожиданный конец документа.</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Invalid document.</source>
-        <translation type="unfinished"></translation>
+        <translation>Некорректный документ.</translation>
     </message>
     <message>
         <location line="+40"/>
         <source>Expected </source>
-        <translation type="unfinished"></translation>
+        <translation>Ожидалось </translation>
     </message>
     <message>
         <location line="+11"/>
         <source>, but got &apos;</source>
-        <translation type="unfinished"></translation>
+        <translation>, получили &apos;</translation>
     </message>
     <message>
         <location line="+4"/>
         <source>Unexpected &apos;</source>
-        <translation type="unfinished"></translation>
+        <translation>Неожиданное &apos;</translation>
     </message>
     <message>
         <location line="+210"/>
@@ -6686,7 +6678,7 @@ Please choose a different file name.</source>
     <message>
         <location line="+516"/>
         <source>Start tag expected.</source>
-        <translation type="unfinished"></translation>
+        <translation>Ожидается начало тэга.</translation>
     </message>
     <message>
         <location line="+222"/>
@@ -6719,12 +6711,12 @@ Please choose a different file name.</source>
     <message>
         <location filename="../src/corelib/xml/qxmlstream_p.h" line="+15"/>
         <source>Invalid XML name.</source>
-        <translation type="unfinished"></translation>
+        <translation>Некорректное имя XML.</translation>
     </message>
     <message>
         <location line="+23"/>
         <source>Opening and ending tag mismatch.</source>
-        <translation type="unfinished"></translation>
+        <translation>Открывающий тэг не совпадает с закрывающим.</translation>
     </message>
     <message>
         <location line="+18"/>
@@ -6757,7 +6749,7 @@ Please choose a different file name.</source>
     <message>
         <location line="+274"/>
         <source>The standalone pseudo attribute must appear after the encoding.</source>
-        <translation type="unfinished"></translation>
+        <translation>Псевдоатрибут &apos;standalone&apos; должен находиться после указания кодировки.</translation>
     </message>
     <message>
         <location filename="../src/corelib/xml/qxmlstream_p.h" line="+562"/>
@@ -6785,11 +6777,6 @@ Please choose a different file name.</source>
     <message>
         <location filename="../src/xmlpatterns/api/qxmlserializer.cpp" line="+320"/>
         <source>Element %1 can&apos;t be serialized because it appears outside the document element.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+60"/>
-        <source>Attribute %1 can&apos;t be serialized because it appears at the top level.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -7070,12 +7057,16 @@ Please choose a different file name.</source>
         <source>%1 takes at most %n argument(s). %2 is therefore invalid.</source>
         <translation type="unfinished">
             <numerusform></numerusform>
+            <numerusform></numerusform>
+            <numerusform></numerusform>
         </translation>
     </message>
     <message numerus="yes">
         <location line="+11"/>
         <source>%1 requires at least %n argument(s). %2 is therefore invalid.</source>
         <translation type="unfinished">
+            <numerusform></numerusform>
+            <numerusform></numerusform>
             <numerusform></numerusform>
         </translation>
     </message>
@@ -7165,7 +7156,7 @@ Please choose a different file name.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/xmlpatterns/functions/qsequencefns.cpp" line="+347"/>
+        <location filename="../src/xmlpatterns/functions/qsequencefns.cpp" line="+346"/>
         <source>It will not be possible to retrieve %1.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -7568,6 +7559,11 @@ Please choose a different file name.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location filename="../src/xmlpatterns/api/qxmlserializer.cpp" line="+60"/>
+        <source>Attribute %1 can&apos;t be serialized because it appears at the top level.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location filename="../src/xmlpatterns/acceltree/qacceltreeresourceloader.cpp" line="+314"/>
         <source>%1 is an unsupported encoding.</source>
         <translation type="unfinished"></translation>
@@ -7809,13 +7805,13 @@ Please choose a different file name.</source>
     <message>
         <location filename="../src/3rdparty/phonon/phonon/volumeslider.cpp" line="+67"/>
         <source>Muted</source>
-        <translation type="unfinished"></translation>
+        <translation>Без звука</translation>
     </message>
     <message>
         <location line="+5"/>
         <location line="+15"/>
         <source>Volume: %1%</source>
-        <translation type="unfinished"></translation>
+        <translation>Громкость: %1%</translation>
     </message>
 </context>
 </TS>

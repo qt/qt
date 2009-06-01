@@ -473,6 +473,20 @@ QPixmap QDesignerFormBuilder::createPreviewPixmap(const QDesignerFormWindowInter
     return rc;
 }
 
+// ---------- NewFormWidgetFormBuilder
+
+NewFormWidgetFormBuilder::NewFormWidgetFormBuilder(QDesignerFormEditorInterface *core,
+                             Mode mode,
+                             const DeviceProfile &deviceProfile) :
+    QDesignerFormBuilder(core, mode, deviceProfile)
+{
+}
+
+void NewFormWidgetFormBuilder::createCustomWidgets(DomCustomWidgets *dc)
+{
+    QSimpleResource::handleDomCustomWidgets(core(), dc);
+}
+
 } // namespace qdesigner_internal
 
 QT_END_NAMESPACE

@@ -2845,8 +2845,8 @@ void QPlastiqueStyle::drawControl(ControlElement element, const QStyleOption *op
         if (const QStyleOptionHeader *header = qstyleoption_cast<const QStyleOptionHeader *>(option)) {
             QPixmap cache;
             QString pixmapName = uniqueName(QLatin1String("headersection"), option, option->rect.size());
-            pixmapName += QLatin1String("-") + QString::number(int(header->position));
-            pixmapName += QLatin1String("-") + QString::number(int(header->orientation));
+            pixmapName += QString::number(- int(header->position));
+            pixmapName += QString::number(- int(header->orientation));
 
             if (!UsePixmapCache || !QPixmapCache::find(pixmapName, cache)) {
                 cache = QPixmap(option->rect.size());
@@ -5460,6 +5460,11 @@ int QPlastiqueStyle::styleHint(StyleHint hint, const QStyleOption *option, const
     case SH_Menu_SubMenuPopupDelay:
         ret = 96; // from Plastik
         break;
+#ifndef Q_OS_WIN
+    case SH_Menu_AllowActiveAndDisabled:
+        ret = false;
+        break;
+#endif
     default:
         ret = QWindowsStyle::styleHint(hint, option, widget, returnData);
         break;

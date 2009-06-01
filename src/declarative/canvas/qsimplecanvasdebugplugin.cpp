@@ -122,7 +122,12 @@ void QSimpleCanvasSceneDebugPlugin::refresh(QDataStream &ds,
     ds << QmlDebugServerPlugin::objectToString(item) << item->x() << item->y() 
        << item->z() << item->width() << item->height() 
        << (int)item->transformOrigin() << item->scale() << (int)item->flip() 
-       << item->transform() << item->hasActiveFocus() << (int)item->options();
+#ifdef QFX_RENDER_OPENGL
+       << item->transform().toTransform()
+#elif defined(QFX_RENDER_QPAINTER)
+       << item->transform()
+#endif
+       << item->hasActiveFocus() << (int)item->options();
 
     QPixmap pix;
 

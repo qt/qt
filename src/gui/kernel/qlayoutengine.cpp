@@ -329,7 +329,7 @@ void qGeomCalc(QVector<QLayoutStruct> &chain, int start, int count,
     qDebug() << "qGeomCalc" << "start" << start <<  "count" << count <<  "pos" << pos
              <<  "space" << space <<  "spacer" << spacer;
     for (i = start; i < start + count; ++i) {
-        qDebug() << i << ":" << chain[i].minimumSize << chain[i].smartSizeHint()
+        qDebug() << i << ':' << chain[i].minimumSize << chain[i].smartSizeHint()
                  << chain[i].maximumSize << "stretch" << chain[i].stretch
                  << "empty" << chain[i].empty << "expansive" << chain[i].expansive
                  << "spacing" << chain[i].spacing;

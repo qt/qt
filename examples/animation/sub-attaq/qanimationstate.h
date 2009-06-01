@@ -58,7 +58,7 @@ QT_MODULE(Gui)
 
 #ifndef QT_NO_ANIMATION
 
-class QAnimationStatePrivate;
+class QAbstractAnimation;
 
 class QAnimationState : public QState
 {
@@ -70,7 +70,7 @@ public:
     void setAnimation(QAbstractAnimation *animation);
     QAbstractAnimation* animation() const;
 
-Q_SIGNALS:
+signals:
     void animationFinished();
 
 protected:
@@ -80,7 +80,7 @@ protected:
 
 private:
     Q_DISABLE_COPY(QAnimationState)
-    Q_DECLARE_PRIVATE(QAnimationState)
+    QAbstractAnimation *m_animation;
 };
 
 #endif
