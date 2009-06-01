@@ -458,9 +458,6 @@ QObject *QmlComponent::beginCreate(QmlContext *context)
         return 0;
     }
 
-#ifdef Q_ENABLE_PERFORMANCE_LOG
-    QFxPerfTimer<QFxPerf::CreateComponent> perf;
-#endif
     if (!d->engine->d_func()->rootComponent)
         d->engine->d_func()->rootComponent = this;
 

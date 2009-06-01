@@ -357,7 +357,7 @@ void QFxPath::createPointCache() const
 {
     Q_D(const QFxPath);
 #ifdef Q_ENABLE_PERFORMANCE_LOG
-    QFxPerfTimer<QFxPerf::PathCache> pc;
+    QFxPerfTimer<QFxPerf::QFxPathViewPathCache> pc;
 #endif
     qreal pathLength = d->_path.length();
     const int points = int(pathLength*2);

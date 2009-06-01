@@ -201,7 +201,7 @@ QObject *QmlVME::run(QmlContext *ctxt, QmlCompiledComponent *comp, int start, in
 
 
 #ifdef Q_ENABLE_PERFORMANCE_LOG
-    QFxPerfTimer<QFxPerf::CompileRun> cr;
+    QFxPerfTimer<QFxPerf::VMEExecution> cr;
 #endif
     QmlEnginePrivate::SimpleList<QmlBindableValue> bindValues;
     QmlEnginePrivate::SimpleList<QmlParserStatus> parserStatus;
