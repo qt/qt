@@ -70,7 +70,6 @@ protected slots:
 private:
     Q_DISABLE_COPY(QS60Style)
     friend class QStyleFactory;
-    QPalette originalPalette;
 };
 
 #endif // QT_NO_STYLE_S60

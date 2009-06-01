@@ -2589,17 +2589,18 @@ void QS60Style::unpolish(QWidget *widget)
 
 void QS60Style::polish(QApplication *application)
 {
-    Q_D(const QS60Style);
-    originalPalette = application->palette();
+    Q_D(QS60Style);
+    d->m_originalPalette = application->palette();
     d->setThemePalette(application);
 }
 
 void QS60Style::unpolish(QApplication *application)
 {
     Q_UNUSED(application)
-    QPalette newPalette = qApp->style()->standardPalette();
+    Q_D(QS60Style);
+    const QPalette newPalette = QApplication::style()->standardPalette();
     application->setPalette(newPalette);
-    QApplicationPrivate::setSystemPalette(originalPalette);
+    QApplicationPrivate::setSystemPalette(d->m_originalPalette);
 }
 
 void QS60Style::setStyleProperty(const char *name, const QVariant &value)
