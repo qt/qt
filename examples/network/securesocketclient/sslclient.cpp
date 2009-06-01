@@ -145,7 +145,9 @@ void SslClient::socketEncrypted()
     if (!padLock) {
         padLock = new QToolButton;
         padLock->setIcon(QIcon(":/encrypted.png"));
+#ifndef QT_NO_CURSOR
         padLock->setCursor(Qt::ArrowCursor);
+#endif
         padLock->setToolTip(tr("Display encryption details."));
 
         int extent = form->hostNameEdit->height() - 2;

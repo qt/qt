@@ -268,11 +268,14 @@ void QS60Style::setS60Theme(const QHash<QString, QPicture> &parts,
     QS60StyleModeSpecifics::m_colors = colors;
     d->clearCaches(QS60StylePrivate::CC_ThemeChange);
     d->setBackgroundTexture(qApp);
+
+    foreach (QWidget *widget, QApplication::allWidgets())
+        d->setThemePalette(widget);
 }
 
 QPoint qt_s60_fill_background_offset(const QWidget *targetWidget)
 {
-	Q_UNUSED(targetWidget)
+    Q_UNUSED(targetWidget)
     return QPoint();
 }
 

@@ -438,6 +438,7 @@ private:
     // Contains background texture.
     static QPixmap *m_background;
     const static SkinElementFlags KDefaultSkinElementFlags;
+    QPalette m_originalPalette;
 };
 
 QT_END_NAMESPACE
