@@ -239,31 +239,28 @@ void QDirectFBWindowSurface::setPermanentState(const QByteArray &state)
 #endif
 }
 
+static inline void scrollSurface(IDirectFBSurface *surface, const QRect &r, int dx, int dy)
+{
+    surface->SetBlittingFlags(surface, DSBLIT_NOFX);
+    const DFBRectangle rect = { r.x(), r.y(), r.width(), r.height() };
+    surface->Blit(surface, surface, &rect, r.x() + dx, r.y() + dy);
+}
+
+
 bool QDirectFBWindowSurface::scroll(const QRegion &region, int dx, int dy)
 {
-    if (!dfbSurface || !(flipFlags & DSFLIP_BLIT))
+    if (!dfbSurface || !(flipFlags & DSFLIP_BLIT) || region.isEmpty())
         return false;
-
-    const QVector<QRect> rects = region.rects();
-    const int n = rects.size();
-
-    QVarLengthArray<DFBRectangle, 8> dfbRects(n);
-    QVarLengthArray<DFBPoint, 8> dfbPoints(n);
-
-    for (int i = 0; i < n; ++i) {
-        const QRect r = rects.at(i);
-        dfbRects[i].x = r.x();
-        dfbRects[i].y = r.y();
-        dfbRects[i].w = r.width();
-        dfbRects[i].h = r.height();
-        dfbPoints[i].x = r.x() + dx;
-        dfbPoints[i].y = r.y() + dy;
-    }
-
     dfbSurface->SetBlittingFlags(dfbSurface, DSBLIT_NOFX);
-    dfbSurface->BatchBlit(dfbSurface, dfbSurface,
-                          dfbRects.data(), dfbPoints.data(), n);
-    dfbSurface->ReleaseSource(dfbSurface);
+    if (region.numRects() == 1) {
+        ::scrollSurface(dfbSurface, region.boundingRect(), dx, dy);
+    } else {
+        const QVector<QRect> rects = region.rects();
+        const int n = rects.size();
+        for (int i=0; i<n; ++i) {
+            ::scrollSurface(dfbSurface, rects.at(i), dx, dy);
+        }
+    }
     return true;
 }
 
