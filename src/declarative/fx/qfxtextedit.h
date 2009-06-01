@@ -79,7 +79,7 @@ class Q_DECLARATIVE_EXPORT QFxTextEdit : public QFxPaintedItem
     Q_PROPERTY(bool cursorVisible READ isCursorVisible WRITE setCursorVisible)
     Q_PROPERTY(bool focusOnPress READ focusOnPress WRITE setFocusOnPress)
     Q_PROPERTY(bool preserveSelection READ preserveSelection WRITE setPreserveSelection)
-    Q_CLASSINFO("DefaultProperty", "text")
+    Q_PROPERTY(qreal textMargin READ textMargin WRITE setTextMargin)
 
 public:
     QFxTextEdit(QFxItem *parent=0);
@@ -134,6 +134,9 @@ public:
 
     bool preserveSelection() const;
     void setPreserveSelection(bool on);
+
+    qreal textMargin() const;
+    void setTextMargin(qreal margin);
 
     virtual void dump(int depth);
     virtual QString propertyInfo() const;
