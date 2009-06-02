@@ -60,6 +60,8 @@ static const uchar frenchStyleRules[] =
 static const uchar latvianRules[] =
     { Q_MOD_10 | Q_EQ, 1, Q_AND, Q_MOD_100 | Q_NEQ, 11, Q_NEWRULE,
       Q_NEQ, 0 };
+static const uchar icelandicRules[] =
+    { Q_MOD_10 | Q_EQ, 1, Q_AND, Q_MOD_100 | Q_NEQ, 11 };
 static const uchar irishStyleRules[] =
     { Q_EQ, 1, Q_NEWRULE,
       Q_EQ, 2 };
@@ -107,6 +109,7 @@ static const uchar arabicRules[] =
 static const char * const japaneseStyleForms[] = { "Universal Form", 0 };
 static const char * const englishStyleForms[] = { "Singular", "Plural", 0 };
 static const char * const frenchStyleForms[] = { "Singular", "Plural", 0 };
+static const char * const icelandicForms[] = { "Singular", "Plural", 0 };
 static const char * const latvianForms[] = { "Singular", "Plural", "Nullar", 0 };
 static const char * const irishStyleForms[] = { "Singular", "Dual", "Plural", 0 };
 static const char * const czechForms[] = { "Singular", "Dual", "Plural", 0 };
@@ -190,7 +193,6 @@ static const QLocale::Language englishStyleLanguages[] = {
     QLocale::Hausa,
     QLocale::Hebrew,
     QLocale::Hindi,
-    QLocale::Icelandic,
     QLocale::Interlingua,
     QLocale::Interlingue,
     QLocale::Italian,
@@ -261,6 +263,7 @@ static const QLocale::Language frenchStyleLanguages[] = {
     EOL
 };
 static const QLocale::Language latvianLanguage[] = { QLocale::Latvian, EOL };
+static const QLocale::Language icelandicLanguage[] = { QLocale::Icelandic, EOL };
 static const QLocale::Language irishStyleLanguages[] = {
     QLocale::Divehi,
     QLocale::Gaelic,
@@ -320,6 +323,7 @@ static const NumerusTableEntry numerusTable[] = {
     { frenchStyleRules, sizeof(frenchStyleRules), frenchStyleForms, frenchStyleLanguages,
       frenchStyleCountries },
     { latvianRules, sizeof(latvianRules), latvianForms, latvianLanguage, 0 },
+    { icelandicRules, sizeof(icelandicRules), icelandicForms, icelandicLanguage, 0 },
     { irishStyleRules, sizeof(irishStyleRules), irishStyleForms, irishStyleLanguages, 0 },
     { czechRules, sizeof(czechRules), czechForms, czechLanguage, 0 },
     { slovakRules, sizeof(slovakRules), slovakForms, slovakLanguage, 0 },
