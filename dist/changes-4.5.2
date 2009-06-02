@@ -58,6 +58,26 @@ Third party components
     * [253448] Prevent a crash when using the Qt::WA_MacBrushedMetal attribute
       in conjunction with style sheets.
 
+- QPainter
+    * [253783] Fixed text shaping bugs when using ligatures and different
+      scripts in a single text item.
+    * Fixed various inconsistencies for image drawing on non-integer
+      coordinates.
+    * Fixed bug with 0-opacity causing images to be drawn fully opaque.
+    * Fixed crash when drawing on a null pixmap.
+    * [251534] Fixed issue where text with non-opaque color from widget
+      palette would be blitted instead of blended.
+
+- QTransform
+    * Fixed issue in QTransform::type() causing a projective transform to be
+    treated as a scaling transform.
+
+- QtOpenGL
+    * [247083] Re-enabled antialiasing for large font sizes in OpenGL paint
+      engine.
+    * [251485] Fixed crash that could occur with projective transforms and
+      high quality antialiasing.
+
 ****************************************************************************
 *                          Database Drivers                                *
 ****************************************************************************
@@ -69,7 +89,11 @@ Third party components
 
 Qt for Linux/X11
 ----------------
-
+[253186] Fixed compile error in qfontengine_ft.cpp on 64-bit platforms with
+legacy freetype headers.
+[241361] Prevented asynchronous access to non-thread safe libfontconfig API.
+[244362] Worked around X server crash when calling XFillPolygon with more than
+200000 points by falling back to raster paint engine.
 
 Qt for Windows
 --------------
