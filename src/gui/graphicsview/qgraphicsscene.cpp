@@ -680,7 +680,7 @@ void QGraphicsScenePrivate::_q_processDirtyItems()
     if (updateAll)
         return;
 
-    processDirtyItemsRecursive(0, views.at(0)->viewportTransform());
+    processDirtyItemsRecursive(0, QTransform());
     for (int i = 0; i < views.size(); ++i)
         views.at(i)->d_func()->processPendingUpdates();
 }
@@ -5113,12 +5113,7 @@ void QGraphicsScenePrivate::drawSubtreeRecursive(QGraphicsItem *item, QPainter *
     QTransform transform = parentTransform;
     QRect viewBoundingRect;
     if (item) {
-        if (!item->d_ptr->hasValidDeviceTransform) {
-            item->d_ptr->combineTransformFromParent(&transform, &viewTransform);
-        } else {
-            transform = item->d_ptr->deviceTransform;
-            item->d_ptr->hasValidDeviceTransform = 0;
-        }
+        item->d_ptr->combineTransformFromParent(&transform, &viewTransform);
         QRectF brect = item->boundingRect();
         if (!brect.size().isNull()) {
             // ### This does not take the clip into account.
@@ -5244,51 +5239,67 @@ void QGraphicsScenePrivate::markDirty(QGraphicsItem *item, const QRectF &rect, b
 void QGraphicsScenePrivate::processDirtyItemsRecursive(QGraphicsItem *item, const QTransform &parentTransform)
 {
     Q_ASSERT(!item || item->d_ptr->dirty || item->d_ptr->dirtyChildren);
+    Q_Q(QGraphicsScene);
 
-    // Calculate the full transform for this item.
+    // Calculate the full scene transform for this item.
     QTransform transform = parentTransform;
-    if (item) {
-        if (item->d_ptr->itemIsUntransformable()) {
-            QTransform x = views.at(0)->viewportTransform();
-            item->d_ptr->combineTransformFromParent(&transform, &x);
-        } else {
-            item->d_ptr->combineTransformFromParent(&transform);
-        }
+    if (item && !item->d_ptr->itemIsUntransformable()) {
+        item->d_ptr->combineTransformFromParent(&transform);
+        item->d_ptr->sceneTransform = transform;
+        item->d_ptr->hasValidSceneTransform = 1;
     }
 
     // Process item.
     if (item && item->d_ptr->dirty) {
-        QRectF dirtyRect = adjustedItemBoundingRect(item);
-        if (!item->d_ptr->fullUpdatePending) {
-            _q_adjustRect(&item->d_ptr->needsRepaint);
-            dirtyRect &= item->d_ptr->needsRepaint;
-        }
-
-        QGraphicsViewPrivate *viewPrivate = views.at(0)->d_func();
-        if (item->d_ptr->paintedViewBoundingRectsNeedRepaint)
-            viewPrivate->updateRect(item->d_ptr->paintedViewBoundingRects.value(viewPrivate->viewport));
-
-        bool dirtyRectOutsideViewport = false;
-        if (item->d_ptr->hasBoundingRegionGranularity) {
-            const QRegion dirtyViewRegion = transform.map(QRegion(dirtyRect.toRect()))
-                                            & viewPrivate->viewport->rect();
-            if (!dirtyViewRegion.isEmpty())
-                viewPrivate->updateRegion(dirtyViewRegion);
-            else
-                dirtyRectOutsideViewport = true;
+        const bool useCompatUpdate = views.isEmpty() || (connectedSignals & changedSignalMask);
+        if (useCompatUpdate && !item->d_ptr->itemIsUntransformable()
+            && qFuzzyIsNull(item->boundingRegionGranularity())) {
+            // This block of code is kept for compatibility. Since 4.5, by default
+            // QGraphicsView does not connect the signal and we use the below
+            // method of delivering updates.
+            q->update(item->sceneBoundingRect());
         } else {
-            const QRect dirtyViewRect = transform.mapRect(dirtyRect).toRect()
-                                         & viewPrivate->viewport->rect();
-            if (!dirtyViewRect.isEmpty())
-                viewPrivate->updateRect(dirtyViewRect);
-            else
-                dirtyRectOutsideViewport = true;
-        }
-        if (!dirtyRectOutsideViewport) {
-            // We know for sure this item will be process in the paint event, hence
-            // store its device transform and re-use it when drawing.
-            item->d_ptr->hasValidDeviceTransform = 1;
-            item->d_ptr->deviceTransform = transform;
+            QRectF dirtyRect;
+            bool uninitializedDirtyRect = true;
+
+            for (int j = 0; j < views.size(); ++j) {
+                QGraphicsView *view = views.at(j);
+                QGraphicsViewPrivate *viewPrivate = view->d_func();
+                if (viewPrivate->fullUpdatePending)
+                    continue;
+                switch (viewPrivate->viewportUpdateMode) {
+                case QGraphicsView::NoViewportUpdate:
+                    continue;
+                case QGraphicsView::FullViewportUpdate:
+                    view->viewport()->update();
+                    viewPrivate->fullUpdatePending = 1;
+                    continue;
+                default:
+                    break;
+                }
+
+                if (uninitializedDirtyRect) {
+                    dirtyRect = adjustedItemBoundingRect(item);
+                    if (!item->d_ptr->fullUpdatePending) {
+                        _q_adjustRect(&item->d_ptr->needsRepaint);
+                        dirtyRect &= item->d_ptr->needsRepaint;
+                        uninitializedDirtyRect = false;
+                    }
+                }
+
+                if (item->d_ptr->paintedViewBoundingRectsNeedRepaint)
+                    viewPrivate->updateRect(item->d_ptr->paintedViewBoundingRects.value(viewPrivate->viewport));
+
+                if (item->d_ptr->hasBoundingRegionGranularity) {
+                    const QRegion dirtyViewRegion = item->deviceTransform(view->viewportTransform())
+                                                    .map(QRegion(dirtyRect.toRect()));
+                    viewPrivate->updateRegion(dirtyViewRegion);
+                } else {
+                    const QRect dirtyViewRect = item->deviceTransform(view->viewportTransform())
+                                                .mapRect(dirtyRect).toRect();
+                    viewPrivate->updateRect(dirtyViewRect);
+                }
+            }
         }
     }
 

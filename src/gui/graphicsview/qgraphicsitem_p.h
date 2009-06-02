@@ -146,7 +146,7 @@ public:
         flags(0),
         dirtyChildrenBoundingRect(1),
         paintedViewBoundingRectsNeedRepaint(0),
-        hasValidDeviceTransform(0),
+        hasValidSceneTransform(0),
         globalStackingOrder(-1),
         q_ptr(0)
     {
@@ -353,7 +353,7 @@ public:
     QGraphicsItem *parent;
     QList<QGraphicsItem *> children;
     QTransform *transform;
-    QTransform deviceTransform;
+    QTransform sceneTransform;
     int index;
     int depth;
 
@@ -388,7 +388,7 @@ public:
     quint32 flags : 11;
     quint32 dirtyChildrenBoundingRect : 1;
     quint32 paintedViewBoundingRectsNeedRepaint : 1;
-    quint32 hasValidDeviceTransform : 1;
+    quint32 hasValidSceneTransform  : 1;
     quint32 padding : 18; // feel free to use
 
     // Optional stacking order
