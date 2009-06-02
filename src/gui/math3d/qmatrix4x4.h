@@ -901,32 +901,6 @@ inline QVector4D QMatrix4x4::map(const QVector4D& point) const
 
 #endif
 
-inline QRect QMatrix4x4::mapRect(const QRect& rect) const
-{
-    QPoint tl = map(rect.topLeft()); QPoint tr = map(rect.topRight());
-    QPoint bl = map(rect.bottomLeft()); QPoint br = map(rect.bottomRight());
-
-    int xmin = qMin(qMin(tl.x(), tr.x()), qMin(bl.x(), br.x()));
-    int xmax = qMax(qMax(tl.x(), tr.x()), qMax(bl.x(), br.x()));
-    int ymin = qMin(qMin(tl.y(), tr.y()), qMin(bl.y(), br.y()));
-    int ymax = qMax(qMax(tl.y(), tr.y()), qMax(bl.y(), br.y()));
-
-    return QRect(QPoint(xmin, ymin), QPoint(xmax, ymax));
-}
-
-inline QRectF QMatrix4x4::mapRect(const QRectF& rect) const
-{
-    QPointF tl = map(rect.topLeft()); QPointF tr = map(rect.topRight());
-    QPointF bl = map(rect.bottomLeft()); QPointF br = map(rect.bottomRight());
-
-    qreal xmin = qMin(qMin(tl.x(), tr.x()), qMin(bl.x(), br.x()));
-    qreal xmax = qMax(qMax(tl.x(), tr.x()), qMax(bl.x(), br.x()));
-    qreal ymin = qMin(qMin(tl.y(), tr.y()), qMin(bl.y(), br.y()));
-    qreal ymax = qMax(qMax(tl.y(), tr.y()), qMax(bl.y(), br.y()));
-
-    return QRectF(QPointF(xmin, ymin), QPointF(xmax, ymax));
-}
-
 inline float *QMatrix4x4::data()
 {
     // We have to assume that the caller will modify the matrix elements,

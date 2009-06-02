@@ -1411,8 +1411,6 @@ QTransform QMatrix4x4::toTransform() const
 #endif
 
 /*!
-    \fn QRect QMatrix4x4::mapRect(const QRect& rect) const
-
     Maps \a rect by multiplying this matrix by the corners
     of \a rect and then forming a new rectangle from the results.
     The returned rectangle will be an ordinary 2D rectangle
@@ -1420,10 +1418,43 @@ QTransform QMatrix4x4::toTransform() const
 
     \sa map()
 */
+QRect QMatrix4x4::mapRect(const QRect& rect) const
+{
+    if (flagBits == (Translation | Scale) || flagBits == Scale) {
+        qreal x = rect.x() * m[0][0] + m[3][0];
+        qreal y = rect.y() * m[1][1] + m[3][1];
+        qreal w = rect.width() * m[0][0];
+        qreal h = rect.height() * m[1][1];
+        if (w < 0) {
+            w = -w;
+            x -= w;
+        }
+        if (h < 0) {
+            h = -h;
+            y -= h;
+        }
+        return QRect(qRound(x), qRound(y), qRound(w), qRound(h));
+    } else if (flagBits == Translation) {
+        return QRect(qRound(rect.x() + m[3][0]),
+                     qRound(rect.y() + m[3][1]),
+                     rect.width(), rect.height());
+    }
+
+    QPoint tl = map(rect.topLeft());
+    QPoint tr = map(QPoint(rect.x() + rect.width(), rect.y()));
+    QPoint bl = map(QPoint(rect.x(), rect.y() + rect.height()));
+    QPoint br = map(QPoint(rect.x() + rect.width(),
+                           rect.y() + rect.height()));
+
+    int xmin = qMin(qMin(tl.x(), tr.x()), qMin(bl.x(), br.x()));
+    int xmax = qMax(qMax(tl.x(), tr.x()), qMax(bl.x(), br.x()));
+    int ymin = qMin(qMin(tl.y(), tr.y()), qMin(bl.y(), br.y()));
+    int ymax = qMax(qMax(tl.y(), tr.y()), qMax(bl.y(), br.y()));
+
+    return QRect(xmin, ymin, xmax - xmin, ymax - ymin);
+}
 
 /*!
-    \fn QRectF QMatrix4x4::mapRect(const QRectF& rect) const
-
     Maps \a rect by multiplying this matrix by the corners
     of \a rect and then forming a new rectangle from the results.
     The returned rectangle will be an ordinary 2D rectangle
@@ -1431,6 +1462,36 @@ QTransform QMatrix4x4::toTransform() const
 
     \sa map()
 */
+QRectF QMatrix4x4::mapRect(const QRectF& rect) const
+{
+    if (flagBits == (Translation | Scale) || flagBits == Scale) {
+        qreal x = rect.x() * m[0][0] + m[3][0];
+        qreal y = rect.y() * m[1][1] + m[3][1];
+        qreal w = rect.width() * m[0][0];
+        qreal h = rect.height() * m[1][1];
+        if (w < 0) {
+            w = -w;
+            x -= w;
+        }
+        if (h < 0) {
+            h = -h;
+            y -= h;
+        }
+        return QRectF(x, y, w, h);
+    } else if (flagBits == Translation) {
+        return rect.translated(m[3][0], m[3][1]);
+    }
+
+    QPointF tl = map(rect.topLeft()); QPointF tr = map(rect.topRight());
+    QPointF bl = map(rect.bottomLeft()); QPointF br = map(rect.bottomRight());
+
+    qreal xmin = qMin(qMin(tl.x(), tr.x()), qMin(bl.x(), br.x()));
+    qreal xmax = qMax(qMax(tl.x(), tr.x()), qMax(bl.x(), br.x()));
+    qreal ymin = qMin(qMin(tl.y(), tr.y()), qMin(bl.y(), br.y()));
+    qreal ymax = qMax(qMax(tl.y(), tr.y()), qMax(bl.y(), br.y()));
+
+    return QRectF(QPointF(xmin, ymin), QPointF(xmax, ymax));
+}
 
 /*!
     \fn float *QMatrix4x4::data()
