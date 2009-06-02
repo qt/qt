@@ -1275,9 +1275,6 @@ QmlContextScriptClass::queryProperty(const QScriptValue &object,
                                          QueryFlags flags, uint *id)
 {
     Q_UNUSED(flags);
-#ifdef Q_ENABLE_PERFORMANCE_LOG
-    QFxPerfTimer<QFxPerf::ContextQuery> perf;
-#endif
     QmlContext *bindContext = 
         static_cast<QmlContext*>(object.data().toQObject());
     QueryFlags rv = 0;
@@ -1308,9 +1305,6 @@ QScriptValue QmlContextScriptClass::property(const QScriptValue &object,
                                                  const QScriptString &name, 
                                                  uint id)
 {
-#ifdef Q_ENABLE_PERFORMANCE_LOG
-    QFxPerfTimer<QFxPerf::ContextProperty> perf;
-#endif
     QmlContext *bindContext = 
         static_cast<QmlContext*>(object.data().toQObject());
 
@@ -1369,9 +1363,6 @@ void QmlContextScriptClass::setProperty(QScriptValue &object,
 {
     Q_UNUSED(name);
 
-#ifdef Q_ENABLE_PERFORMANCE_LOG
-    QFxPerfTimer<QFxPerf::ObjectSetProperty> perf;
-#endif
     QmlContext *bindContext = 
         static_cast<QmlContext*>(object.data().toQObject());
 
@@ -1422,9 +1413,6 @@ QScriptClass::QueryFlags QmlObjectScriptClass::queryProperty(const QScriptValue 
                                     QueryFlags flags, uint *id)
 {
     Q_UNUSED(flags);
-#ifdef Q_ENABLE_PERFORMANCE_LOG
-    QFxPerfTimer<QFxPerf::ObjectQuery> perf;
-#endif
     QObject *obj = object.data().toQObject();
     QueryFlags rv = 0;
     QString propName = name.toString();
@@ -1443,9 +1431,6 @@ QScriptValue QmlObjectScriptClass::property(const QScriptValue &object,
                                 const QScriptString &name, 
                                 uint id)
 {
-#ifdef Q_ENABLE_PERFORMANCE_LOG
-    QFxPerfTimer<QFxPerf::ObjectProperty> perf;
-#endif
     QObject *obj = object.data().toQObject();
 
 #ifdef PROPERTY_DEBUG
@@ -1472,9 +1457,6 @@ void QmlObjectScriptClass::setProperty(QScriptValue &object,
 {
     Q_UNUSED(name);
 
-#ifdef Q_ENABLE_PERFORMANCE_LOG
-    QFxPerfTimer<QFxPerf::ObjectSetProperty> perf;
-#endif
     QObject *obj = object.data().toQObject();
 
 #ifdef PROPERTY_DEBUG

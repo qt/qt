@@ -196,10 +196,6 @@ QmlMetaProperty::QmlMetaProperty(QObject *obj, const QString &name)
 QmlMetaProperty::QmlMetaProperty(QObject *obj, const QString &name, QmlContext *ctxt)
 : d(new QmlMetaPropertyPrivate)
 {
-#ifdef Q_ENABLE_PERFORMANCE_LOG
-    QFxPerfTimer<QFxPerf::MetaProperty> perf;
-#endif
-
     d->context = ctxt;
     initProperty(obj, name);
 }

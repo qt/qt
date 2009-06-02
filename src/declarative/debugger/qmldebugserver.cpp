@@ -283,6 +283,7 @@ void QmlDebugServerPlugin::sendMessage(const QByteArray &message)
     QPacket pack;
     pack << d->name << message;
     d->server->d_func()->protocol->send(pack);
+    d->server->d_func()->connection->flush();
 }
 
 void QmlDebugServerPlugin::enabledChanged(bool)
