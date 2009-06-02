@@ -428,10 +428,13 @@ bool QPixmapIconEngine::read(QDataStream &in)
         in >> sz;
         in >> mode;
         in >> state;
-        if (pm.isNull())
+        if (pm.isNull()) {
             addFile(fileName, sz, QIcon::Mode(mode), QIcon::State(state));
-        else
-            addPixmap(pm, QIcon::Mode(mode), QIcon::State(state));
+        } else {
+            QPixmapIconEngineEntry pe(fileName, sz, QIcon::Mode(mode), QIcon::State(state));
+            pe.pixmap = pm;
+            pixmaps += pe;
+        }
     }
     return true;
 }

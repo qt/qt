@@ -164,9 +164,12 @@ public:
             QHash<QString, QFileSystemNode *>::const_iterator iterator;
             for(iterator = children.constBegin() ; iterator != children.constEnd() ; ++iterator) {
                 //On windows the root (My computer) has no path so we don't want to add a / for nothing (e.g. /C:/)
-                if (!path.isEmpty())
-                    iterator.value()->updateIcon(iconProvider, path + QLatin1Char('/') + iterator.value()->fileName);
-                else
+                if (!path.isEmpty()) {
+                    if (path.endsWith(QLatin1Char('/')))
+                        iterator.value()->updateIcon(iconProvider, path + iterator.value()->fileName);
+                    else
+                        iterator.value()->updateIcon(iconProvider, path + QLatin1Char('/') + iterator.value()->fileName);
+                } else
                     iterator.value()->updateIcon(iconProvider, iterator.value()->fileName);
             }
         }
@@ -177,9 +180,12 @@ public:
             QHash<QString, QFileSystemNode *>::const_iterator iterator;
             for(iterator = children.constBegin() ; iterator != children.constEnd() ; ++iterator) {
                 //On windows the root (My computer) has no path so we don't want to add a / for nothing (e.g. /C:/)
-                if (!path.isEmpty())
-                    iterator.value()->retranslateStrings(iconProvider, path + QLatin1Char('/') + iterator.value()->fileName);
-                else
+                if (!path.isEmpty()) {
+                    if (path.endsWith(QLatin1Char('/')))
+                        iterator.value()->retranslateStrings(iconProvider, path + iterator.value()->fileName);
+                    else
+                        iterator.value()->retranslateStrings(iconProvider, path + QLatin1Char('/') + iterator.value()->fileName);
+                } else
                     iterator.value()->retranslateStrings(iconProvider, iterator.value()->fileName);
             }
         }
@@ -202,7 +208,8 @@ public:
             readOnly(true),
             setRootPath(false),
             filters(QDir::AllEntries | QDir::NoDotAndDotDot | QDir::AllDirs),
-            nameFilterDisables(true) // false on windows, true on mac and unix
+            nameFilterDisables(true), // false on windows, true on mac and unix
+            disableRecursiveSort(false)
     {
         delayedSortTimer.setSingleShot(true);
     }
@@ -288,6 +295,10 @@ public:
     QDir::Filters filters;
     QHash<const QFileSystemNode*, bool> bypassFilters;
     bool nameFilterDisables;
+    //This flag is an optimization for the QFileDialog
+    //It enable a sort which is not recursive, it means
+    //we sort only what we see.
+    bool disableRecursiveSort;
 #ifndef QT_NO_REGEXP
     QList<QRegExp> nameFilters;
 #endif

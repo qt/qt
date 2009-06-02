@@ -382,7 +382,8 @@ void QNetworkReplyImplPrivate::feed(const QByteArray &data)
 void QNetworkReplyImplPrivate::feed(QIODevice *data)
 {
     Q_Q(QNetworkReplyImpl);
-    Q_ASSERT(q->isOpen());
+    if (!q->isOpen())
+        return;
 
     // read until EOF from data
     if (copyDevice) {

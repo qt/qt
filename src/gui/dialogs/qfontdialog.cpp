@@ -337,6 +337,14 @@ void QFontDialogPrivate::init()
 
 QFontDialog::~QFontDialog()
 {
+#ifdef Q_WS_MAC
+    Q_D(QFontDialog);
+    if (d->delegate) {
+        QFontDialogPrivate::closeCocoaFontPanel(d->delegate);
+        QFontDialogPrivate::sharedFontPanelAvailable = true;
+        return;
+    }
+#endif
 }
 
 /*!
