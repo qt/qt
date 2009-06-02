@@ -381,8 +381,13 @@ public:
 
     // calculates average color based on button skin graphics (minus borders).
     QColor colorFromFrameGraphics(QS60StylePrivate::SkinFrameElements frame) const;
+
+    //set theme palette for application
     void setThemePalette(QApplication *application) const;
-    void setThemePalette(QWidget *widget) const;
+    //set theme palette for style option
+    void setThemePalette(QStyleOption *option) const;
+    //access to theme palette
+    static QPalette* themePalette();
 
     static int focusRectPenWidth();
 
@@ -407,7 +412,6 @@ public:
 
     static QPixmap frame(SkinFrameElements frame, const QSize &size,
         SkinElementFlags flags = KDefaultSkinElementFlags);
-
     static QPixmap backgroundTexture();
 
 private:
@@ -426,6 +430,13 @@ private:
 
     static void refreshUI();
 
+    // set S60 font for widget
+    void setFont(QWidget *widget) const;
+    void setThemePalette(QWidget *widget) const;
+    void setThemePalette(QPalette *palette) const;
+    void setThemePaletteHash(QPalette *palette) const;
+    static void QS60StylePrivate::storeThemePalette(QPalette *palette);
+
     static QSize partSize(QS60StyleEnums::SkinParts part,
         SkinElementFlags flags = KDefaultSkinElementFlags);
     static QPixmap part(QS60StyleEnums::SkinParts part, const QSize &size,
@@ -438,6 +449,8 @@ private:
     // Contains background texture.
     static QPixmap *m_background;
     const static SkinElementFlags KDefaultSkinElementFlags;
+    // defined theme palette
+    static QPalette *m_themePalette;
     QPalette m_originalPalette;
 };
 

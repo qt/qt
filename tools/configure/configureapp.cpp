@@ -1381,6 +1381,7 @@ void Configure::applySpecSpecifics()
         dictionary[ "WEBKIT" ]              = "no";
         dictionary[ "PHONON" ]              = "yes";
         dictionary[ "DIRECTSHOW" ]          = "no";
+        dictionary[ "LTCG" ]                = "yes";
         // We only apply MMX/IWMMXT for mkspecs we know they work
         if (dictionary[ "XQMAKESPEC" ].startsWith("wincewm")) {
             dictionary[ "MMX" ]    = "yes";
@@ -3646,12 +3647,15 @@ void Configure::readLicense()
         dictionary["PLATFORM NAME"] = "Qt for S60";
     else
         dictionary["PLATFORM NAME"] = "Qt for Windows";
+    dictionary["LICENSE FILE"] = sourcePath;
+
     bool openSource = false;
+    bool hasOpenSource = QFile::exists(dictionary["LICENSE FILE"] + "/LICENSE.GPL3") || QFile::exists(dictionary["LICENSE FILE"] + "/LICENSE.LGPL");
     if (dictionary["BUILDNOKIA"] == "yes" || dictionary["BUILDTYPE"] == "commercial") {
         openSource = false;
     } else if (dictionary["BUILDTYPE"] == "opensource") {
         openSource = true;
-    } else {
+    } else if (hasOpenSource) { // No Open Source? Just display the commercial license right away
         forever {
             char accept = '?';
             cout << "Which edition of Qt do you want to use ?" << endl;
@@ -3669,28 +3673,23 @@ void Configure::readLicense()
             }
         }
     }
-    if (openSource) {
-        dictionary["LICENSE FILE"] = sourcePath;
-        if (QFile::exists(dictionary["LICENSE FILE"] + "/LICENSE.GPL3") || QFile::exists(dictionary["LICENSE FILE"] + "/LICENSE.LGPL")) {
-            cout << endl << "This is the " << dictionary["PLATFORM NAME"] << " Open Source Edition." << endl;
-            licenseInfo["LICENSEE"] = "Open Source";
-            dictionary["EDITION"] = "OpenSource";
-            dictionary["QT_EDITION"] = "QT_EDITION_OPENSOURCE";
-            cout << endl;
-            if (!showLicense(dictionary["LICENSE FILE"])) {
-                cout << "Configuration aborted since license was not accepted";
-                dictionary["DONE"] = "error";
-                return;
-            }
+    if (hasOpenSource && openSource) {
+        cout << endl << "This is the " << dictionary["PLATFORM NAME"] << " Open Source Edition." << endl;
+        licenseInfo["LICENSEE"] = "Open Source";
+        dictionary["EDITION"] = "OpenSource";
+        dictionary["QT_EDITION"] = "QT_EDITION_OPENSOURCE";
+        cout << endl;
+        if (!showLicense(dictionary["LICENSE FILE"])) {
+            cout << "Configuration aborted since license was not accepted";
+            dictionary["DONE"] = "error";
             return;
         }
-#ifndef COMMERCIAL_VERSION
-    else {
-        cout << endl << "Cannot find the GPL license files!" << endl;
+    } else if (openSource) {
+        cout << endl << "Cannot find the GPL license files! Please download the Open Source version of the library." << endl;
         dictionary["DONE"] = "error";
     }
-#else
-    } else {
+#ifdef COMMERCIAL_VERSION
+    else {
         Tools::checkLicense(dictionary, licenseInfo, firstLicensePath());
         if (dictionary["DONE"] != "error" && dictionary["BUILDNOKIA"] != "yes") {
             // give the user some feedback, and prompt for license acceptance
@@ -3702,7 +3701,12 @@ void Configure::readLicense()
             }
         }
     }
-#endif // COMMERCIAL_VERSION
+#else // !COMMERCIAL_VERSION
+    else {
+        cout << endl << "Cannot build commercial edition from the open source version of the library." << endl;
+        dictionary["DONE"] = "error";
+    }
+#endif
 }
 
 void Configure::reloadCmdLine()

@@ -568,8 +568,9 @@ bool QFileDialogPrivate::canBeNativeDialog()
 }
 
 /*!
-    Sets the given \a option to be enabled if \a on is true;
-    otherwise, clears the given \a option.
+    \since 4.5
+    Sets the given \a option to be enabled if \a on is true; otherwise,
+    clears the given \a option.
 
     \sa options, testOption()
 */
@@ -779,6 +780,7 @@ void QFileDialog::selectFile(const QString &filename)
     }
 
     QModelIndex index = d->model->index(filename);
+    QString file;
     if (!index.isValid()) {
         // save as dialog where we want to input a default value
         QString text = filename;
@@ -793,13 +795,13 @@ void QFileDialog::selectFile(const QString &filename)
                 )
                 text = text.remove(0,1);
         }
-        if (!isVisible() || !d->lineEdit()->hasFocus())
-            d->lineEdit()->setText(text);
+        file = text;
     } else {
-        d->qFileDialogUi->listView->selectionModel()->clear();
-        if (!isVisible() || !d->lineEdit()->hasFocus())
-            d->lineEdit()->setText(index.data().toString());
+        file = index.data().toString();
     }
+    d->qFileDialogUi->listView->selectionModel()->clear();
+    if (!isVisible() || !d->lineEdit()->hasFocus())
+        d->lineEdit()->setText(file);
 }
 
 /**
@@ -2110,6 +2112,7 @@ void QFileDialogPrivate::createWidgets()
 #else
     model->setNameFilterDisables(false);
 #endif
+    model->d_func()->disableRecursiveSort = true;
     QFileDialog::connect(model, SIGNAL(fileRenamed(const QString &, const QString &, const QString &)), q, SLOT(_q_fileRenamed(const QString &, const QString &, const QString &)));
     QFileDialog::connect(model, SIGNAL(rootPathChanged(const QString &)),
             q, SLOT(_q_pathChanged(const QString &)));

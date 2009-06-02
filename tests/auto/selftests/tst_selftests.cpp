@@ -295,6 +295,11 @@ void tst_Selftests::initTestCase()
     m_checkXMLBlacklist.append("differentexec");
     m_checkXMLBlacklist.append("qexecstringlist");
     m_checkXMLBlacklist.append("benchliboptions");
+
+    /* These tests use printf and therefore corrupt the testlog */
+    m_checkXMLBlacklist.append("subtest");
+    m_checkXMLBlacklist.append("globaldata");
+    m_checkXMLBlacklist.append("warnings");
 }
 
 void tst_Selftests::checkXML() const

@@ -926,6 +926,9 @@ void QGL2PaintEngineEx::drawCachedGlyphs(const QPointF &p, const QTextItemInt &t
     const QImage &image = cache->image();
     int margin = cache->glyphMargin();
 
+    if (image.isNull())
+        return;
+
     glActiveTexture(QT_BRUSH_TEXTURE_UNIT);
     d->ctx->d_func()->bindTexture(image, GL_TEXTURE_2D, GL_RGBA, true);
 

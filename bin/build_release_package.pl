@@ -116,8 +116,8 @@ if (@ARGV)
     runSystemCmd("attrib -A ${epocroot}\\${winscwDbgDir}\\*");
 
     # Build Qt
-    runSystemCmd("configure -platform win32-mwc -xplatform symbian-abld -openssl-linked -qt-sql-sqlite -system-sqlite -confirm-license -opensource");
-    buildDir("src", $qtRootDir, $platform, $build);
+    runSystemCmd("configure -platform win32-mwc -xplatform symbian-abld -qt-sql-sqlite -system-sqlite -confirm-license -opensource");
+    buildDir("src", $qtRootDir, $platform, $build, "winscw");
 
     # Copy misc stuff
     runSystemCmd("xcopy ${qtRootDir}\\bin\\* ${releaseDirQt}\\bin /F /R /Y /I /D");
@@ -143,7 +143,8 @@ if (@ARGV)
         # Also build demos & examples and add fluidlauncher sis
         buildDir("examples", $qtRootDir, $platform, $build);
         buildDir("demos", $qtRootDir, $platform, $build);
-        parsePkgFile($demoAppPkgFileName, $epocroot, $build, $platform, $releaseDirEpocroot, $qtRootDirForMatch, $releaseDirQt);
+        # Do not include binaries for demo apps as winscw versions are not BC accross all S60 platform versions
+        #parsePkgFile($demoAppPkgFileName, $epocroot, $build, $platform, $releaseDirEpocroot, $qtRootDirForMatch, $releaseDirQt);
         createSis($demoAppPkgFileName, $releaseDirSis, "selfsigned.cer", "selfsigned.key", $demoAppSisFileNameBase);
     }
 
@@ -270,11 +271,15 @@ sub buildDir
     my $qtRootDir = $_[1];
     my $platform = $_[2];
     my $build = $_[3];
+    my $extra = $_[4];
 
     chdir($buildDir);
     runSystemCmd("qmake");
     runSystemCmd("bldmake bldfiles");
     runSystemCmd("abld build ${platform} ${build}");
-    runSystemCmd("abld build winscw udeb");
+    if ($extra =~ m/winscw/i)
+    {
+        runSystemCmd("abld build winscw udeb");
+    }
     chdir($qtRootDir);
 }

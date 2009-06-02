@@ -482,30 +482,7 @@ void QSslSocketPrivate::resetDefaultCiphers()
 
 QList<QSslCertificate> QSslSocketPrivate::systemCaCertificates()
 {
-#ifdef QQ_OS_UNIX
-    // Check known locations for the system's default bundle.  ### On Windows,
-    // we should use CAPI to find the bundle, and not rely on default unix
-    // locations.
-    const char *standardLocations[] = {"/etc/ssl/certs/",
-#if 0
-                                       // KDE uses KConfig for its SSL store,
-                                       // but it also stores the bundle at
-                                       // this location
-                                       "$HOME/.kde/share/apps/kssl/ca-bundle.crt",
-#endif
-                                       0};
-    const char **it = standardLocations;
-    QStringList nameFilter;
-    nameFilter << QLatin1String("*.pem") << QLatin1String("*.crt");
-    while (*it) {
-        if (QDirIterator(QLatin1String(*it), nameFilter).hasNext())
-            return certificatesFromPath(QLatin1String(*it));
-        ++it;
-    }
-#endif
-
-    // Qt provides a default bundle when we cannot detect the system's default
-    // bundle.
+    // Qt provides a default bundle of certificates
     QFile caBundle(QLatin1String(":/trolltech/network/ssl/qt-ca-bundle.crt"));
     if (caBundle.open(QIODevice::ReadOnly | QIODevice::Text))
         return QSslCertificate::fromDevice(&caBundle);
