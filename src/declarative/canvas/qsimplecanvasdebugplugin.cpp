@@ -58,6 +58,7 @@ public:
 
     virtual int duration() const { return -1; }
     virtual void updateCurrentTime(int msecs) {
+        Q_UNUSED(msecs);
         server->frameBreak();
     }
 
@@ -66,7 +67,7 @@ private:
 };
 
 QSimpleCanvasDebugPlugin::QSimpleCanvasDebugPlugin(QObject *parent)
-: QmlDebugServerPlugin("CanvasFrameRate", parent), _breaks(0)
+: QmlDebugServerPlugin(QLatin1String("CanvasFrameRate"), parent), _breaks(0)
 {
     _time.start();
     new FrameBreakAnimation(this);
@@ -95,7 +96,7 @@ void QSimpleCanvasDebugPlugin::frameBreak()
 }
 
 QSimpleCanvasSceneDebugPlugin::QSimpleCanvasSceneDebugPlugin(QSimpleCanvas *parent)
-: QmlDebugServerPlugin("CanvasScene", parent), m_canvas(parent)
+: QmlDebugServerPlugin(QLatin1String("CanvasScene"), parent), m_canvas(parent)
 {
 }
 
