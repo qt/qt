@@ -52,7 +52,6 @@ protected:
     QString fixPathForMmp(const QString& origPath, const QDir& parentDir);
     QString canonizePath(const QString& origPath);
 
-    virtual bool writeStubMakefile(QTextStream &t);
     virtual bool writeMakefile(QTextStream &t);
     bool generatePkgFile(const QString &compiler, const QString &config, const QString &iconFile);
 
