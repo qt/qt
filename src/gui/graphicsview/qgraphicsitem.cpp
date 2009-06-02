@@ -787,6 +787,49 @@ bool QGraphicsItemPrivate::itemIsUntransformable() const
         || (ancestorFlags & AncestorIgnoresTransformations);
 }
 
+
+/*!
+    \internal
+
+    Combines this item's position and transform onto \a transform.
+
+    If you need to change this function (e.g., adding more transformation
+    modes / options), make sure to change all places marked with COMBINE.
+*/
+void QGraphicsItemPrivate::combineTransformToParent(QTransform *x, const QTransform *viewTransform) const
+{
+    // COMBINE
+    if (viewTransform && itemIsUntransformable()) {
+        *x = q_ptr->deviceTransform(*viewTransform);
+    } else {
+        if (transform)
+            *x *= *transform;
+        if (!pos.isNull())
+            *x *= QTransform::fromTranslate(pos.x(), pos.y());
+    }
+}
+
+/*!
+    \internal
+
+    Combines this item's position and transform onto \a transform.
+
+    If you need to change this function (e.g., adding more transformation
+    modes / options), make sure to change QGraphicsItem::deviceTransform() as
+    well.
+*/
+void QGraphicsItemPrivate::combineTransformFromParent(QTransform *x, const QTransform *viewTransform) const
+{
+    // COMBINE
+    if (viewTransform && itemIsUntransformable()) {
+        *x = q_ptr->deviceTransform(*viewTransform);
+    } else {
+        x->translate(pos.x(), pos.y());
+        if (transform)
+            *x = *transform * *x;
+    }
+}
+
 /*!
     \internal
 
@@ -943,6 +986,7 @@ void QGraphicsItemPrivate::childrenBoundingRectHelper(QTransform *x, QRectF *rec
         QGraphicsItemPrivate *childd = child->d_ptr;
         bool hasPos = !childd->pos.isNull();
         if (hasPos || childd->transform) {
+            // COMBINE
             QTransform matrix;
             if (childd->transform)
                 matrix = *childd->transform;
@@ -2667,11 +2711,7 @@ QTransform QGraphicsItem::sceneTransform() const
     QTransform m;
     const QGraphicsItem *p = this;
     do {
-        if (p->d_ptr->transform)
-            m *= *p->d_ptr->transform;
-        const QPointF &pos = p->d_ptr->pos;
-        if (!pos.isNull())
-            m *= QTransform::fromTranslate(pos.x(), pos.y());
+        p->d_ptr->combineTransformToParent(&m);
     } while ((p = p->d_ptr->parent));
     return m;
 }
@@ -2723,6 +2763,8 @@ QTransform QGraphicsItem::deviceTransform(const QTransform &viewportTransform) c
 
     // First translate the base untransformable item.
     QPointF mappedPoint = (untransformedAncestor->sceneTransform() * viewportTransform).map(QPointF(0, 0));
+
+    // COMBINE
     QTransform matrix;
     matrix.translate(mappedPoint.x(), mappedPoint.y());
     matrix = untransformedAncestor->transform() * matrix;
@@ -2730,10 +2772,7 @@ QTransform QGraphicsItem::deviceTransform(const QTransform &viewportTransform) c
     // Then transform and translate all children.
     for (int i = 0; i < parents.size(); ++i) {
         const QGraphicsItem *parent = parents.at(i);
-        QPointF pos = parent->pos();
-        QTransform moveMatrix;
-        moveMatrix.translate(pos.x(), pos.y());
-        matrix = (parent->transform() * moveMatrix) * matrix;
+        parent->d_ptr->combineTransformFromParent(&matrix);
     }
 
     return matrix;
@@ -2776,34 +2815,29 @@ QTransform QGraphicsItem::itemTransform(const QGraphicsItem *other, bool *ok) co
     if (parent == other) {
         if (ok)
             *ok = true;
-        const QPointF &itemPos = d_ptr->pos;
-        if (itemPos.isNull())
-            return d_ptr->transform ? *d_ptr->transform : QTransform();
-        if (d_ptr->transform)
-            return *d_ptr->transform * QTransform::fromTranslate(itemPos.x(), itemPos.y());
-        return QTransform::fromTranslate(itemPos.x(), itemPos.y());
+        QTransform x;
+        d_ptr->combineTransformFromParent(&x);
+        return x;
     }
 
     // This is other's parent
     if (otherParent == this) {
         const QPointF &otherPos = other->d_ptr->pos;
         if (other->d_ptr->transform) {
-            QTransform otherToParent = *other->d_ptr->transform;
-            if (!otherPos.isNull())
-                otherToParent *= QTransform::fromTranslate(otherPos.x(), otherPos.y());
+            QTransform otherToParent;
+            other->d_ptr->combineTransformFromParent(&otherToParent);
             return otherToParent.inverted(ok);
-        } else {
-            if (ok)
-                *ok = true;
-            return QTransform::fromTranslate(-otherPos.x(), -otherPos.y());
         }
+        if (ok)
+            *ok = true;
+        return QTransform::fromTranslate(-otherPos.x(), -otherPos.y());
     }
 
     // Siblings
     if (parent == otherParent) {
+        // COMBINE
         const QPointF &itemPos = d_ptr->pos;
         const QPointF &otherPos = other->d_ptr->pos;
-
         if (!d_ptr->transform && !other->d_ptr->transform) {
             QPointF delta = itemPos - otherPos;
             if (ok)
@@ -2811,14 +2845,10 @@ QTransform QGraphicsItem::itemTransform(const QGraphicsItem *other, bool *ok) co
             return QTransform::fromTranslate(delta.x(), delta.y());
         }
 
-        QTransform itemToParent = QTransform::fromTranslate(itemPos.x(), itemPos.y());
-        if (d_ptr->transform)
-            itemToParent = itemPos.isNull() ? *d_ptr->transform : *d_ptr->transform * itemToParent;
-
-        QTransform otherToParent = QTransform::fromTranslate(otherPos.x(), otherPos.y());
-        if (other->d_ptr->transform)
-            otherToParent = otherPos.isNull() ? *other->d_ptr->transform : *other->d_ptr->transform * otherToParent;
-
+        QTransform itemToParent;
+        d_ptr->combineTransformFromParent(&itemToParent);
+        QTransform otherToParent;
+        other->d_ptr->combineTransformFromParent(&otherToParent);
         return itemToParent * otherToParent.inverted(ok);
     }
 
@@ -2854,11 +2884,7 @@ QTransform QGraphicsItem::itemTransform(const QGraphicsItem *other, bool *ok) co
     QTransform x;
     const QGraphicsItem *p = child;
     do {
-        const QGraphicsItemPrivate *pd = p->d_ptr;
-        if (pd->transform)
-            x *= *pd->transform;
-        if (!pd->pos.isNull())
-            x *= QTransform::fromTranslate(pd->pos.x(), pd->pos.y());
+        p->d_ptr->combineTransformToParent(&x);
     } while ((p = p->d_ptr->parent) && p != root);
     if (parentOfOther)
         return x.inverted(ok);
@@ -3206,6 +3232,7 @@ QRectF QGraphicsItem::childrenBoundingRect() const
 QRectF QGraphicsItem::sceneBoundingRect() const
 {
     // Find translate-only offset
+    // COMBINE
     QPointF offset;
     const QGraphicsItem *parentItem = this;
     const QGraphicsItemPrivate *itemd;
@@ -3910,11 +3937,13 @@ void QGraphicsItemPrivate::updateCachedClipPathFromSetPosHelper(const QPointF &n
 
     // Find closest clip ancestor and transform.
     Q_Q(QGraphicsItem);
+    // COMBINE
     QTransform thisToParentTransform = transform
                                        ? *transform * QTransform::fromTranslate(newPos.x(), newPos.y())
                                        : QTransform::fromTranslate(newPos.x(), newPos.y());
     QGraphicsItem *clipParent = parent;
     while (clipParent && !(clipParent->d_ptr->flags & QGraphicsItem::ItemClipsChildrenToShape)) {
+        // COMBINE
         if (clipParent->d_ptr->transform)
             thisToParentTransform *= *clipParent->d_ptr->transform;
         if (!clipParent->d_ptr->pos.isNull()) {
@@ -4145,13 +4174,7 @@ void QGraphicsItem::scroll(qreal dx, qreal dy, const QRectF &rect)
         static const QLineF left(0, 0, -1, 0);
         static const QLineF right(0, 0, 1, 0);
 
-        QTransform deviceTr;
-        if (d->itemIsUntransformable()) {
-            deviceTr = deviceTransform(view->viewportTransform());
-        } else {
-            deviceTr = sceneTransform() * view->viewportTransform();
-        }
-
+        QTransform deviceTr = deviceTransform(view->viewportTransform());
         QRect deviceScrollRect = deviceTr.mapRect(scrollRect).toRect();
         QLineF v1 = deviceTr.map(right);
         QLineF v2 = deviceTr.map(down);
@@ -4283,6 +4306,7 @@ QPointF QGraphicsItem::mapToItem(const QGraphicsItem *item, const QPointF &point
 */
 QPointF QGraphicsItem::mapToParent(const QPointF &point) const
 {
+    // COMBINE
     if (!d_ptr->transform)
         return point + d_ptr->pos;
     return d_ptr->transform->map(point) + d_ptr->pos;
@@ -4350,6 +4374,7 @@ QPolygonF QGraphicsItem::mapToItem(const QGraphicsItem *item, const QRectF &rect
 */
 QPolygonF QGraphicsItem::mapToParent(const QRectF &rect) const
 {
+    // COMBINE
     if (!d_ptr->transform)
         return rect.translated(d_ptr->pos);
     return d_ptr->transform->map(rect).translated(d_ptr->pos);
@@ -4419,6 +4444,7 @@ QRectF QGraphicsItem::mapRectToItem(const QGraphicsItem *item, const QRectF &rec
 */
 QRectF QGraphicsItem::mapRectToParent(const QRectF &rect) const
 {
+    // COMBINE
     QRectF r = !d_ptr->transform ? rect : d_ptr->transform->mapRect(rect);
     return r.translated(d_ptr->pos);
 }
@@ -4491,6 +4517,7 @@ QRectF QGraphicsItem::mapRectFromItem(const QGraphicsItem *item, const QRectF &r
 */
 QRectF QGraphicsItem::mapRectFromParent(const QRectF &rect) const
 {
+    // COMBINE
     QRectF r = rect.translated(-d_ptr->pos);
     return d_ptr->transform ? d_ptr->transform->inverted().mapRect(r) : r;
 }
@@ -4551,6 +4578,7 @@ QPolygonF QGraphicsItem::mapToItem(const QGraphicsItem *item, const QPolygonF &p
 */
 QPolygonF QGraphicsItem::mapToParent(const QPolygonF &polygon) const
 {
+    // COMBINE
     if (!d_ptr->transform)
         return polygon.translated(d_ptr->pos);
     return d_ptr->transform->map(polygon).translated(d_ptr->pos);
@@ -4595,6 +4623,7 @@ QPainterPath QGraphicsItem::mapToItem(const QGraphicsItem *item, const QPainterP
 */
 QPainterPath QGraphicsItem::mapToParent(const QPainterPath &path) const
 {
+    // COMBINE
     if (!d_ptr->transform)
         return path.translated(d_ptr->pos);
     return d_ptr->transform->map(path).translated(d_ptr->pos);
@@ -4646,6 +4675,7 @@ QPointF QGraphicsItem::mapFromItem(const QGraphicsItem *item, const QPointF &poi
 */
 QPointF QGraphicsItem::mapFromParent(const QPointF &point) const
 {
+    // COMBINE
     if (d_ptr->transform)
         return d_ptr->transform->inverted().map(point - d_ptr->pos);
     return point - d_ptr->pos;
@@ -4714,6 +4744,7 @@ QPolygonF QGraphicsItem::mapFromItem(const QGraphicsItem *item, const QRectF &re
 */
 QPolygonF QGraphicsItem::mapFromParent(const QRectF &rect) const
 {
+    // COMBINE
     QRectF r = rect.translated(-d_ptr->pos);
     return d_ptr->transform ? d_ptr->transform->inverted().map(r) : r;
 }
@@ -4770,6 +4801,7 @@ QPolygonF QGraphicsItem::mapFromItem(const QGraphicsItem *item, const QPolygonF 
 */
 QPolygonF QGraphicsItem::mapFromParent(const QPolygonF &polygon) const
 {
+    // COMBINE
     QPolygonF p = polygon;
     p.translate(-d_ptr->pos);
     return d_ptr->transform ? d_ptr->transform->inverted().map(p) : p;
@@ -4812,6 +4844,7 @@ QPainterPath QGraphicsItem::mapFromItem(const QGraphicsItem *item, const QPainte
 */
 QPainterPath QGraphicsItem::mapFromParent(const QPainterPath &path) const
 {
+    // COMBINE
     QPainterPath p(path);
     p.translate(-d_ptr->pos);
     return d_ptr->transform ? d_ptr->transform->inverted().map(p) : p;
@@ -5540,21 +5573,13 @@ void QGraphicsItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
             if ((item->flags() & ItemIsMovable) && !QGraphicsItemPrivate::movableAncestorIsSelected(item)) {
                 QPointF currentParentPos;
                 QPointF buttonDownParentPos;
-                if (item->d_ptr->ancestorFlags & QGraphicsItemPrivate::AncestorIgnoresTransformations) {
+                if (item->d_ptr->itemIsUntransformable()) {
                     // Items whose ancestors ignore transformations need to
                     // map screen coordinates to local coordinates, then map
                     // those to the parent.
                     QTransform viewToItemTransform = (item->deviceTransform(view->viewportTransform())).inverted();
                     currentParentPos = mapToParent(viewToItemTransform.map(QPointF(view->mapFromGlobal(event->screenPos()))));
                     buttonDownParentPos = mapToParent(viewToItemTransform.map(QPointF(view->mapFromGlobal(event->buttonDownScreenPos(Qt::LeftButton)))));
-                } else if (item->flags() & ItemIgnoresTransformations) {
-                    // Root items that ignore transformations need to
-                    // calculate their diff by mapping viewport coordinates
-                    // directly to parent coordinates.
-                    QTransform viewToParentTransform = (item->transform().translate(item->d_ptr->pos.x(), item->d_ptr->pos.y()))
-                                                       * (item->sceneTransform() * view->viewportTransform()).inverted();
-                    currentParentPos = viewToParentTransform.map(QPointF(view->mapFromGlobal(event->screenPos())));
-                    buttonDownParentPos = viewToParentTransform.map(QPointF(view->mapFromGlobal(event->buttonDownScreenPos(Qt::LeftButton))));
                 } else {
                     // All other items simply map from the scene.
                     currentParentPos = item->mapToParent(item->mapFromScene(event->scenePos()));
@@ -8884,6 +8909,8 @@ void QGraphicsItemGroup::addToGroup(QGraphicsItem *item)
         return;
     }
 
+    // COMBINE
+    // ### Use itemTransform() instead.
     QTransform oldSceneMatrix = item->sceneTransform();
     item->setPos(mapFromItem(item, 0, 0));
     item->setParentItem(this);

@@ -163,6 +163,9 @@ public:
     QPointF genericMapFromScene(const QPointF &pos, const QWidget *viewport) const;
     bool itemIsUntransformable() const;
 
+    void combineTransformToParent(QTransform *x, const QTransform *viewTransform = 0) const;
+    void combineTransformFromParent(QTransform *x, const QTransform *viewTransform = 0) const;
+    
     // ### Qt 5: Remove. Workaround for reimplementation added after Qt 4.4.
     virtual QVariant inputMethodQueryHelper(Qt::InputMethodQuery query) const;
     static bool movableAncestorIsSelected(const QGraphicsItem *item);

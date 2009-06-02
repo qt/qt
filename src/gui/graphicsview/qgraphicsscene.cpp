@@ -5075,14 +5075,7 @@ void QGraphicsScenePrivate::drawSubtreeRecursive(QGraphicsItem *item, QPainter *
     QRect viewBoundingRect;
     if (item) {
         if (!item->d_ptr->hasValidDeviceTransform) {
-            if (item->d_ptr->itemIsUntransformable()) {
-                transform = item->deviceTransform(viewTransform);
-            } else {
-                const QPointF &pos = item->d_ptr->pos;
-                transform.translate(pos.x(), pos.y());
-                if (item->d_ptr->transform)
-                    transform = *item->d_ptr->transform * transform;
-            }
+            item->d_ptr->combineTransformFromParent(&transform, &viewTransform);
         } else {
             transform = item->d_ptr->deviceTransform;
             item->d_ptr->hasValidDeviceTransform = 0;
@@ -5226,12 +5219,10 @@ void QGraphicsScenePrivate::processDirtyItemsRecursive(QGraphicsItem *item, cons
     QTransform transform = parentTransform;
     if (item) {
         if (item->d_ptr->itemIsUntransformable()) {
-            transform = item->deviceTransform(views.at(0)->viewportTransform());
+            QTransform x = views.at(0)->viewportTransform();
+            item->d_ptr->combineTransformFromParent(&transform, &x);
         } else {
-            const QPointF &pos = item->d_ptr->pos;
-            transform.translate(pos.x(), pos.y());
-            if (item->d_ptr->transform)
-                transform = *item->d_ptr->transform * transform;
+            item->d_ptr->combineTransformFromParent(&transform);
         }
     }
 
@@ -5325,8 +5316,16 @@ void QGraphicsScene::drawItems(QPainter *painter,
     QTransform viewTransform = painter->worldTransform();
     Q_UNUSED(options);
 
-    // Draw each toplevel recursively.
+    // Determine view, expose and flags.
     QGraphicsView *view = widget ? qobject_cast<QGraphicsView *>(widget->parentWidget()) : 0;
+    QRegion expose;
+    QGraphicsView::OptimizationFlags flags;
+    if (view) {
+        expose = view->d_func()->exposedRegion;
+        flags = view->optimizationFlags();
+    }
+
+    // Draw each toplevel recursively.
     QList<QGraphicsItem *> topLevelItems;
     for (int i = 0; i < numItems; ++i) {
         QGraphicsItem *item = items[i]->topLevelItem();
@@ -5335,8 +5334,7 @@ void QGraphicsScene::drawItems(QPainter *painter,
         if (!item->d_ptr->itemDiscovered) {
             item->d_ptr->itemDiscovered = 1;
             d->drawSubtreeRecursive(item, painter, viewTransform, viewTransform,
-                                    view->d_func()->exposedRegion, widget,
-                                    view->optimizationFlags());
+                                    expose, widget, flags);
         }
     }
 

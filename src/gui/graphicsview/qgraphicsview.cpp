@@ -746,6 +746,7 @@ QRect QGraphicsViewPrivate::mapToViewRect(const QGraphicsItem *item, const QRect
     }
 
     // Translate-only
+    // COMBINE
     QPointF offset;
     const QGraphicsItem *parentItem = item;
     const QGraphicsItemPrivate *itemd;
@@ -783,7 +784,7 @@ QRegion QGraphicsViewPrivate::mapToViewRegion(const QGraphicsItem *item, const Q
         const_cast<QGraphicsViewPrivate *>(this)->updateScroll();
 
     // Accurate bounding region
-    QTransform itv = item->sceneTransform() * q->viewportTransform();
+    QTransform itv = item->deviceTransform(q->viewportTransform());
     return item->boundingRegion(itv) & itv.mapRect(rect).toAlignedRect();
 }
 
