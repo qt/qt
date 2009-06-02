@@ -42,7 +42,6 @@
 #include "qglobal.h"
 
 #ifndef QT_NO_SYSTEMLOCALE
-#define QLOCALE_CPP
 QT_BEGIN_NAMESPACE
 class QSystemLocale;
 static QSystemLocale *QSystemLocale_globalSystemLocale();
