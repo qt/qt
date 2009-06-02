@@ -6,6 +6,7 @@ SUBDIRS       = \
               diagramscene \
               dragdroprobot \
               padnavigator \
+              lighting \
               basicgraphicslayouts
 
 contains(QT_CONFIG, qt3support):SUBDIRS += portedcanvas portedasteroids
