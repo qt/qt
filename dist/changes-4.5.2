@@ -46,12 +46,22 @@ Third party components
        Plugins (r41346, r43550, r43915, r43917, r43923)
        Clipboard (r41360)
 
+- QAbstractNetworkCache
+   * Only cache responses to HTTP GET by default, not HTTP PUT or POST
+
 - QMacStyle
     * [253339] Don't draw arrows on toolbuttons that have a menu and text only.
     * [252301] Ensure that small and mini spin boxes are drawn correctly.
 
 - QFontDialog
     * [252000] Ensure that QFontDialog::getFont() works on Mac OS X.
+
+- QNetworkCookie
+   * [251959] fix parsing of multiple cookies separated by a newline
+
+- QNetworkCookieJar
+   * [251467] do not allow cookies for domains like ".com"
+   * [228974] allow cookies whose domain attribute is missing a leading dot
 
 - QWidget
     * [250668] Don't send extra wheel events when using the scroll wheel in Cocoa.
