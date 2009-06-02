@@ -219,42 +219,18 @@ Q_GUI_EXPORT void qt_symbian_show_submenu( CEikMenuPane* menuPane, int id)
     }
 }
 
-void QMenu::symbianCommands(int command)
-{
-    Q_D(QMenu);
-    d->symbianCommands(command);
-}
-
-void QMenuBar::symbianCommands(int command)
+void QMenuBarPrivate::symbianCommands(int command)
 {
     int size = nativeMenuBars.size();
     for (int i = 0; i < nativeMenuBars.size(); ++i) {
-        bool result = nativeMenuBars.at(i)->d_func()->symbianCommands(command);
-        if (result)
-            return;
+    SymbianMenuItem* menu = qt_symbian_find_menu_item(command, symbianMenus);
+    if (!menu)
+            continue;
+
+        emit nativeMenuBars.at(i)->triggered(menu->action);
+    menu->action->activate(QAction::Trigger);
+        break;
     }
-}
-
-bool QMenuBarPrivate::symbianCommands(int command)
-{
-    SymbianMenuItem* menu = qt_symbian_find_menu_item(command, symbianMenus);
-    if (!menu)
-        return false;
-
-    emit q_func()->triggered(menu->action);
-    menu->action->activate(QAction::Trigger);
-    return true;
-}
-
-bool QMenuPrivate::symbianCommands(int command)
-{
-    SymbianMenuItem* menu = qt_symbian_find_menu_item(command, symbianMenus);
-    if (!menu)
-        return false;
-
-    emit q_func()->triggered(menu->action);
-    menu->action->activate(QAction::Trigger);
-    return true;
 }
 
 void QMenuBarPrivate::symbianCreateMenuBar(QWidget *parent)

@@ -358,7 +358,6 @@ public:
             return 0;
         }
     } *symbian_menu;
-    bool symbianCommands(int command);
 #endif
     QPointer<QWidget> noReplayFor;
 };

@@ -73,7 +73,7 @@ CQtS60MainAppUi::~CQtS60MainAppUi()
 void CQtS60MainAppUi::HandleCommandL( TInt aCommand )
 {
     if (qApp)
-        qApp->s60HandleCommandL(aCommand);
+        qApp->symbianHandleCommand(aCommand);
 }
 
 void CQtS60MainAppUi::HandleWsEventL(const TWsEvent& aEvent, CCoeControl *control)
