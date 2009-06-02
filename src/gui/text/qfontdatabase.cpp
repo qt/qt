@@ -827,6 +827,7 @@ static void getEngineData(const QFontPrivate *d, const QFontCache::Key &key)
         d->engineData->ref.ref();
     }
 }
+#endif
 
 static QStringList familyList(const QFontDef &req)
 {
@@ -855,7 +856,6 @@ static QStringList familyList(const QFontDef &req)
 
     return family_list;
 }
-#endif
 
 Q_GLOBAL_STATIC(QFontDatabasePrivate, privateDb)
 Q_GLOBAL_STATIC_WITH_ARGS(QMutex, fontDatabaseMutex, (QMutex::Recursive))
