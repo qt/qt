@@ -276,13 +276,8 @@ public:
     void invalidateCachedClipPathRecursively(bool childrenOnly = false, const QRectF &emptyIfOutsideThisRect = QRectF());
     void updateCachedClipPathFromSetPosHelper(const QPointF &newPos);
 
-    inline bool isFullyTransparent() const
-    { return effectiveOpacity() < .001; }
-
-    inline qreal effectiveOpacity() const {
-        if (!parent)
-            return opacity;
-
+    inline qreal calcEffectiveOpacity() const
+    {
         qreal o = opacity;
         QGraphicsItem *p = parent;
         int myFlags = flags;
@@ -301,6 +296,23 @@ public:
             myFlags = parentFlags;
         }
         return o;
+    }
+
+    inline bool isFullyTransparent() const
+    {
+        if (opacity < 0.001)
+            return true;
+        if (!parent)
+            return false;
+
+        return calcEffectiveOpacity() < 0.001;
+    }
+
+    inline qreal effectiveOpacity() const {
+        if (!parent || !opacity)
+            return opacity;
+
+        return calcEffectiveOpacity();
     }
 
     inline bool childrenCombineOpacity() const
