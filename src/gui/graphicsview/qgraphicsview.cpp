@@ -846,13 +846,13 @@ void QGraphicsViewPrivate::updateRegion(const QRegion &r)
     switch (viewportUpdateMode) {
     case QGraphicsView::FullViewportUpdate:
         fullUpdatePending = true;
-        q->viewport()->repaint();
+        q->viewport()->update();
         break;
     case QGraphicsView::BoundingRectViewportUpdate:
         dirtyBoundingRect |= r.boundingRect();
         if (dirtyBoundingRect.contains(q->viewport()->rect())) {
             fullUpdatePending = true;
-            q->viewport()->repaint();
+            q->viewport()->update();
         }
         break;
     case QGraphicsView::SmartViewportUpdate: // ### DEPRECATE
@@ -882,13 +882,13 @@ void QGraphicsViewPrivate::updateRect(const QRect &r)
     switch (viewportUpdateMode) {
     case QGraphicsView::FullViewportUpdate:
         fullUpdatePending = true;
-        q->viewport()->repaint();
+        q->viewport()->update();
         break;
     case QGraphicsView::BoundingRectViewportUpdate:
         dirtyBoundingRect |= r;
         if (dirtyBoundingRect.contains(q->viewport()->rect())) {
             fullUpdatePending = true;
-            q->viewport()->repaint();
+            q->viewport()->update();
         }
         break;
     case QGraphicsView::SmartViewportUpdate: // ### DEPRECATE
