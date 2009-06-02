@@ -2028,21 +2028,7 @@ qreal QGraphicsItem::opacity() const
 */
 qreal QGraphicsItem::effectiveOpacity() const
 {
-    if (!d_ptr->parent)
-        return d_ptr->opacity;
-
-    int myFlags = d_ptr->flags;
-    int parentFlags = d_ptr->parent ? d_ptr->parent->d_ptr->flags : 0;
-
-    // If I have a parent, and I don't ignore my parent's opacity, and my
-    // parent propagates to me, then combine my local opacity with my parent's
-    // effective opacity into my effective opacity.
-    if (!(myFlags & QGraphicsItem::ItemIgnoresParentOpacity)
-        && !(parentFlags & QGraphicsItem::ItemDoesntPropagateOpacityToChildren)) {
-        return d_ptr->opacity * d_ptr->parent->effectiveOpacity();
-    }
-
-    return d_ptr->opacity;
+    return d_ptr->effectiveOpacity();
 }
 
 /*!

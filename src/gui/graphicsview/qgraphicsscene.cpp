@@ -419,7 +419,7 @@ QList<QGraphicsItem *> QGraphicsScenePrivate::estimateItemsInRect(const QRectF &
         if (QGraphicsItem *item = unindexedItems.at(i)) {
             if (item->d_ptr->ancestorFlags & QGraphicsItemPrivate::AncestorClipsChildren)
                 continue;
-            if (item->d_ptr->visible && item->effectiveOpacity() > qreal(0.0))
+            if (item->d_ptr->visible && !item->d_ptr->isFullyTransparent())
                 itemsInRect << item;
         }
     }
@@ -427,7 +427,7 @@ QList<QGraphicsItem *> QGraphicsScenePrivate::estimateItemsInRect(const QRectF &
         if (QGraphicsItem *item = indexedItems.at(i)) {
             if (item->d_ptr->ancestorFlags & QGraphicsItemPrivate::AncestorClipsChildren)
                 continue;
-            if (item->d_ptr->visible && item->effectiveOpacity() > qreal(0.0))
+            if (item->d_ptr->visible && item->d_ptr->isFullyTransparent())
                 itemsInRect << item;
         }
     }

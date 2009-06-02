@@ -277,7 +277,31 @@ public:
     void updateCachedClipPathFromSetPosHelper(const QPointF &newPos);
 
     inline bool isFullyTransparent() const
-    { return q_func()->effectiveOpacity() < .001; }
+    { return effectiveOpacity() < .001; }
+
+    inline qreal effectiveOpacity() const {
+        if (!parent)
+            return opacity;
+
+        qreal o = opacity;
+        QGraphicsItem *p = parent;
+        int myFlags = flags;
+        while (p) {
+            int parentFlags = p->d_ptr->flags;
+
+            // If I have a parent, and I don't ignore my parent's opacity, and my
+            // parent propagates to me, then combine my local opacity with my parent's
+            // effective opacity into my effective opacity.
+            if ((myFlags & QGraphicsItem::ItemIgnoresParentOpacity)
+                || (parentFlags & QGraphicsItem::ItemDoesntPropagateOpacityToChildren))
+                break;
+
+            o *= parent->d_ptr->opacity;
+            p = p->d_ptr->parent;
+            myFlags = parentFlags;
+        }
+        return o;
+    }
 
     inline bool childrenCombineOpacity() const
     {
