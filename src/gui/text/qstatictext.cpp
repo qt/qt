@@ -112,14 +112,21 @@ QStaticText::QStaticText()
 */
 QStaticText::QStaticText(const QString &text, const QFont &font, const QSizeF &sz)
     : d_ptr(new QStaticTextPrivate) 
-{
-    Q_D(QStaticText);
-    
-    d->textLayout->setText(text);
-    d->textLayout->setFont(font);
-    d->size = sz;
+{    
+    d_ptr->textLayout->setText(text);
+    d_ptr->textLayout->setFont(font);
+    d_ptr->size = sz;
 
-    d->init();
+    d_ptr->init();
+}
+
+/*!
+    Constructs a QStaticText object which is a copy of \a other.
+*/
+QStaticText::QStaticText(const QStaticText &other)    
+{
+    d_ptr = other.d_ptr;
+    d_ptr->ref.ref();
 }
 
 /*!
@@ -127,8 +134,47 @@ QStaticText::QStaticText(const QString &text, const QFont &font, const QSizeF &s
 */
 QStaticText::~QStaticText()
 {
-    Q_D(QStaticText);
-    delete d;
+    if (!d_ptr->ref.deref())
+        delete d_ptr;        
+}
+
+/*!
+    \internal
+*/
+void QStaticText::detach()
+{
+    if (d_ptr->ref != 1)
+        qAtomicDetach(d_ptr);    
+}
+
+/*!
+    Assigns \a other to this QStaticText.
+*/
+QStaticText &QStaticText::operator=(const QStaticText &other)
+{
+    qAtomicAssign(d_ptr, other.d_ptr);
+    return *this;
+}
+
+/*!
+    Compares \a other to this QStaticText. Returns true if the texts, fonts and maximum sizes
+    are equal.
+*/
+bool QStaticText::operator==(const QStaticText &other) const
+{
+    return (d_ptr == other.d_ptr
+        || (d_ptr->textLayout->text() == other.d_ptr->textLayout->text()
+            && d_ptr->textLayout->font() == other.d_ptr->textLayout->font()
+            && d_ptr->size == other.d_ptr->size));
+}
+
+/*!
+    Compares \a other to this QStaticText. Returns true if the texts, fonts or maximum sizes
+    are different.
+*/
+bool QStaticText::operator!=(const QStaticText &other) const
+{
+    return !(*this == other);
 }
 
 /*!
@@ -140,9 +186,10 @@ QStaticText::~QStaticText()
 */
 void QStaticText::setText(const QString &text) 
 {
-    Q_D(QStaticText);
-    d->textLayout->setText(text);
-    d->init();
+    detach();
+
+    d_ptr->textLayout->setText(text);
+    d_ptr->init();
 }
 
 /*!
@@ -152,8 +199,7 @@ void QStaticText::setText(const QString &text)
 */
 QString QStaticText::text() const 
 {
-    Q_D(const QStaticText);
-    return d->textLayout->text();
+    return d_ptr->textLayout->text();
 }
 
 /*!
@@ -165,9 +211,10 @@ QString QStaticText::text() const
 */
 void QStaticText::setFont(const QFont &font)
 {
-    Q_D(QStaticText);
-    d->textLayout->setFont(font);
-    d->init();
+    detach();
+
+    d_ptr->textLayout->setFont(font);
+    d_ptr->init();
 }
 
 /*!
@@ -177,8 +224,7 @@ void QStaticText::setFont(const QFont &font)
 */
 QFont QStaticText::font() const
 {
-    Q_D(const QStaticText);
-    return d->textLayout->font();
+    return d_ptr->textLayout->font();
 }
 
 /*!
@@ -191,9 +237,10 @@ QFont QStaticText::font() const
 */
 void QStaticText::setMaximumSize(const QSizeF &maximumSize)
 {
-    Q_D(QStaticText);
-    d->size = maximumSize;
-    d->init();
+    detach();
+
+    d_ptr->size = maximumSize;
+    d_ptr->init();
 }
 
 /*!
@@ -203,13 +250,23 @@ void QStaticText::setMaximumSize(const QSizeF &maximumSize)
 */
 QSizeF QStaticText::maximumSize() const
 {
-    Q_D(const QStaticText);
-    return d->size;
+    return d_ptr->size;
+}
+
+QString QStaticText::toString() const
+{
+    return text();
 }
 
 QStaticTextPrivate::QStaticTextPrivate()
     : textLayout(new QTextLayout())
 {
+}
+
+QStaticTextPrivate::QStaticTextPrivate(const QStaticTextPrivate &other)    
+{
+    textLayout = new QTextLayout(other.textLayout->text(), other.textLayout->font());
+    size = other.size;    
 }
 
 QStaticTextPrivate::~QStaticTextPrivate()

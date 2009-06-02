@@ -62,12 +62,14 @@ class QStaticTextPrivate
 {
 public:
     QStaticTextPrivate();
+    QStaticTextPrivate(const QStaticTextPrivate &other);
     ~QStaticTextPrivate();
 
     void init();
 
     QTextLayout *textLayout;
     QSizeF size;
+    QAtomicInt ref;
     
     static QStaticTextPrivate *get(const QStaticText *q);
 };
