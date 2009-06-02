@@ -126,7 +126,7 @@ public:
 #else
     QRect oldDirty;
 #endif
-    QRegion resetDirty();
+    QRect resetDirty();
     void paint(QPainter &p);
 
 
