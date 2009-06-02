@@ -654,7 +654,7 @@ void tst_QTransform::transform()
     d.rotate(30);
     e.shear(0.5, 0.5);
 
-    QCOMPARE(t, e * d * c * b * a);
+    QVERIFY(qFuzzyCompare(t, e * d * c * b * a));
 }
 
 void tst_QTransform::mapEmptyPath()

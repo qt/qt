@@ -165,6 +165,17 @@ inline bool QMatrix::isIdentity() const
            && qFuzzyIsNull(_m21) && qFuzzyIsNull(_dx) && qFuzzyIsNull(_dy);
 }
 
+inline bool qFuzzyCompare(const QMatrix& m1, const QMatrix& m2)
+{
+    return qFuzzyCompare(m1.m11(), m2.m11())
+        && qFuzzyCompare(m1.m12(), m2.m12())
+        && qFuzzyCompare(m1.m21(), m2.m21())
+        && qFuzzyCompare(m1.m22(), m2.m22())
+        && qFuzzyCompare(m1.dx(), m2.dx())
+        && qFuzzyCompare(m1.dy(), m2.dy());
+}
+
+
 /*****************************************************************************
  QMatrix stream functions
  *****************************************************************************/

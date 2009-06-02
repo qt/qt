@@ -1194,4 +1194,15 @@ QDebug operator<<(QDebug dbg, const QMatrix &m)
     Use the mapRect() function instead.
 */
 
+
+/*!
+    \fn bool qFuzzyCompare(const QMatrix& m1, const QMatrix& m2)
+
+    \relates QMatrix
+    \since 4.6
+
+    Returns true if \a m1 and \a m2 are equal, allowing for a small
+    fuzziness factor for floating-point comparisons; false otherwise.
+*/
+
 QT_END_NAMESPACE
