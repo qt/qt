@@ -69,6 +69,7 @@
 #include <QtGui/qfont.h>
 #include <QtGui/qpalette.h>
 #include <QtGui/qstyle.h>
+#include <QtGui/qstyleoption.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -281,6 +282,8 @@ public:
     void setPalette_helper(const QPalette &palette);
     void resolvePalette();
     void updatePalette(const QPalette &palette);
+
+    QStyleOptionGraphicsItem styleOptionTmp;
 };
 
 QT_END_NAMESPACE

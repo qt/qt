@@ -4763,7 +4763,7 @@ void QGraphicsScenePrivate::drawItemHelper(QGraphicsItem *item, QPainter *painte
 
             // Generate the item's exposedRect and map its list of expose
             // rects to device coordinates.
-            QStyleOptionGraphicsItem cacheOption = *option;
+            styleOptionTmp = *option;
             QRegion pixmapExposed;
             QRectF exposedRect;
             if (!itemCache->allExposed) {
@@ -4775,11 +4775,11 @@ void QGraphicsScenePrivate::drawItemHelper(QGraphicsItem *item, QPainter *painte
             } else {
                 exposedRect = brect;
             }
-            cacheOption.exposedRect = exposedRect;
+            styleOptionTmp.exposedRect = exposedRect;
 
             // Render.
             _q_paintIntoCache(&pix, item, pixmapExposed, itemToPixmap, painter->renderHints(),
-                              &cacheOption, painterStateProtection);
+                              &styleOptionTmp, painterStateProtection);
 
             // insert this pixmap into the cache.
             itemCache->key = QPixmapCache::insert(pix);
@@ -4940,12 +4940,12 @@ void QGraphicsScenePrivate::drawItemHelper(QGraphicsItem *item, QPainter *painte
                 foreach (QRect r, scrollExposure.rects())
                     br |= pixmapToItem.mapRect(r);
             }
-            QStyleOptionGraphicsItem cacheOption = *option;
-            cacheOption.exposedRect = br.adjusted(-1, -1, 1, 1);
+            styleOptionTmp = *option;
+            styleOptionTmp.exposedRect = br.adjusted(-1, -1, 1, 1);
 
             // Render the exposed areas.
             _q_paintIntoCache(&pix, item, pixmapExposed, itemToPixmap, painter->renderHints(),
-                              &cacheOption, painterStateProtection);
+                              &styleOptionTmp, painterStateProtection);
 
             // Reset expose data.
             pixModified = true;
@@ -5062,8 +5062,7 @@ void QGraphicsScenePrivate::drawSubtreeRecursive(QGraphicsItem *item, QPainter *
 
     // Draw item
     if (!dontDrawItem) {
-        QStyleOptionGraphicsItem option;
-        item->d_ptr->initStyleOption(&option, transform, exposedRegion ? *exposedRegion : QRegion(), exposedRegion == 0);
+        item->d_ptr->initStyleOption(&styleOptionTmp, transform, exposedRegion ? *exposedRegion : QRegion(), exposedRegion == 0);
 
         bool clipsToShape = (item->d_ptr->flags & QGraphicsItem::ItemClipsToShape);
         bool savePainter = clipsToShape || !(optimizationFlags & QGraphicsView::DontSavePainterState);
@@ -5074,7 +5073,7 @@ void QGraphicsScenePrivate::drawSubtreeRecursive(QGraphicsItem *item, QPainter *
         if (clipsToShape)
             painter->setClipPath(item->shape(), Qt::IntersectClip);
         painter->setOpacity(opacity);
-        drawItemHelper(item, painter, &option, widget, false);
+        drawItemHelper(item, painter, &styleOptionTmp, widget, false);
 
         if (savePainter)
             painter->restore();
