@@ -74,7 +74,7 @@ static const uchar macedonianRules[] =
       Q_MOD_10 | Q_EQ, 2 };
 static const uchar lithuanianRules[] =
     { Q_MOD_10 | Q_EQ, 1, Q_AND, Q_MOD_100 | Q_NEQ, 11, Q_NEWRULE,
-      Q_MOD_10 | Q_EQ, 2, Q_AND, Q_MOD_100 | Q_NOT_BETWEEN, 10, 19 };
+      Q_MOD_10 | Q_NEQ, 0, Q_AND, Q_MOD_100 | Q_NOT_BETWEEN, 10, 19 };
 static const uchar russianStyleRules[] =
     { Q_MOD_10 | Q_EQ, 1, Q_AND, Q_MOD_100 | Q_NEQ, 11, Q_NEWRULE,
       Q_MOD_10 | Q_BETWEEN, 2, 4, Q_AND, Q_MOD_100 | Q_NOT_BETWEEN, 10, 19 };
@@ -112,7 +112,7 @@ static const char * const irishStyleForms[] = { "Singular", "Dual", "Plural", 0 
 static const char * const czechForms[] = { "Singular", "Dual", "Plural", 0 };
 static const char * const slovakForms[] = { "Singular", "Dual", "Plural", 0 };
 static const char * const macedonianForms[] = { "Singular", "Dual", "Plural", 0 };
-static const char * const lithuanianForms[] = { "Singular", "Dual", "Plural", 0 };
+static const char * const lithuanianForms[] = { "Singular", "Paucal", "Plural", 0 };
 static const char * const russianStyleForms[] = { "Singular", "Dual", "Plural", 0 };
 static const char * const polishForms[] = { "Singular", "Paucal", "Plural", 0 };
 static const char * const romanianForms[] =
