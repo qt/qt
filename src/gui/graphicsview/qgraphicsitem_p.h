@@ -141,12 +141,11 @@ public:
         emptyClipPath(0),
         inSetPosHelper(0),
         needSortChildren(1),
-        flags(0),
-        dirtyChildrenBoundingRect(1),
-        inDirtyList(0),
-        paintedViewBoundingRectsNeedRepaint(0),
         allChildrenDirty(0),
         fullUpdatePending(0),
+        flags(0),
+        dirtyChildrenBoundingRect(1),
+        paintedViewBoundingRectsNeedRepaint(0),
         hasValidDeviceTransform(0),
         globalStackingOrder(-1),
         q_ptr(0)
@@ -342,17 +341,15 @@ public:
     quint32 emptyClipPath : 1;
     quint32 inSetPosHelper : 1;
     quint32 needSortChildren : 1;
-    quint32 unused : 2;
+    quint32 allChildrenDirty : 1;
+    quint32 fullUpdatePending : 1;
 
     // New 32 bits
     quint32 flags : 11;
     quint32 dirtyChildrenBoundingRect : 1;
-    quint32 inDirtyList : 1;
     quint32 paintedViewBoundingRectsNeedRepaint : 1;
-    quint32 allChildrenDirty : 1;
-    quint32 fullUpdatePending : 1;
     quint32 hasValidDeviceTransform : 1;
-    quint32 padding : 15; // feel free to use
+    quint32 padding : 18; // feel free to use
 
     // Optional stacking order
     int globalStackingOrder;

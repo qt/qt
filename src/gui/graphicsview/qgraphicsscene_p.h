@@ -112,7 +112,6 @@ public:
     QSet<QGraphicsItem *> selectedItems;
     QList<QGraphicsItem *> unindexedItems;
     QList<QGraphicsItem *> indexedItems;
-    QVector<QGraphicsItem *> dirtyItems;
     QList<QGraphicsItem *> pendingUpdateItems;
     QList<QGraphicsItem *> unpolishedItems;
     QList<QGraphicsItem *> topLevelItems;
@@ -268,22 +267,9 @@ public:
         item->d_ptr->dirty = 0;
         item->d_ptr->paintedViewBoundingRectsNeedRepaint = 0;
         item->d_ptr->dirtyChildren = 0;
-        item->d_ptr->inDirtyList = 0;
         item->d_ptr->needsRepaint = QRectF();
         item->d_ptr->allChildrenDirty = 0;
         item->d_ptr->fullUpdatePending = 0;
-    }
-
-    inline void removeFromDirtyItems(QGraphicsItem *item)
-    {
-        int i = 0;
-        while (i < dirtyItems.size()) {
-            if (dirtyItems.at(i) == item)
-                dirtyItems.remove(i);
-            else
-                ++i;
-        }
-        resetDirtyItem(item);
     }
 
     QStyle *style;

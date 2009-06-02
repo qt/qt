@@ -614,11 +614,6 @@ void QGraphicsScenePrivate::_q_emitUpdated()
         }
     }
 
-    // Ensure all dirty items's current positions are recorded in the list of
-    // updated rects.
-    for (int i = 0; i < dirtyItems.size(); ++i)
-        updatedRects += dirtyItems.at(i)->sceneBoundingRect();
-
     // Notify the changes to anybody interested.
     QList<QRectF> oldUpdatedRects;
     oldUpdatedRects = updateAll ? (QList<QRectF>() << q->sceneRect()) : updatedRects;
@@ -678,74 +673,12 @@ void QGraphicsScenePrivate::_q_polishItems()
 
 void QGraphicsScenePrivate::_q_processDirtyItems()
 {
-    static int useDirtyListEnv = qgetenv("QT_GV_USE_DIRTY_LIST").toInt();
     processDirtyItemsEmitted = false;
 
-    if (updateAll) {
-        if (useDirtyListEnv) {
-            for (int i = 0; i < dirtyItems.size(); ++i)
-                resetDirtyItem(dirtyItems.at(i));
-            dirtyItems.clear();
-        }
+    if (updateAll)
         return;
-    }
 
-    if (!useDirtyListEnv) {
-        processDirtyItemsRecursive(0, views.at(0)->viewportTransform());
-        for (int i = 0; i < views.size(); ++i)
-            views.at(i)->d_func()->processPendingUpdates();
-        return;
-    }
-
-    for (int i = 0; i < dirtyItems.size(); ++i) {
-        QGraphicsItem *item = dirtyItems.at(i);
-        QGraphicsView *view = views.at(0);
-        QGraphicsViewPrivate *viewPrivate = view->d_func();
-        const QTransform deviceTransform = item->deviceTransform(view->viewportTransform());
-
-        QRectF dirtyRect = adjustedItemBoundingRect(item);
-        if (!item->d_ptr->fullUpdatePending) {
-            _q_adjustRect(&item->d_ptr->needsRepaint);
-            dirtyRect &= item->d_ptr->needsRepaint;
-        }
-
-        if (item->d_ptr->allChildrenDirty && !item->d_ptr->children.isEmpty()
-            && !item->d_ptr->childrenClippedToShape()) {
-            QRectF childrenBounds = item->childrenBoundingRect();
-            _q_adjustRect(&childrenBounds);
-            dirtyRect |= childrenBounds;
-        }
-
-        if (item->d_ptr->paintedViewBoundingRectsNeedRepaint)
-            viewPrivate->updateRect(item->d_ptr->paintedViewBoundingRects.value(viewPrivate->viewport));
-
-        bool dirtyRectOutsideViewport = false;
-        if (item->d_ptr->hasBoundingRegionGranularity) {
-            const QRegion dirtyViewRegion = deviceTransform.map(QRegion(dirtyRect.toRect()))
-                                            & viewPrivate->viewport->rect();
-            if (!dirtyViewRegion.isEmpty())
-                viewPrivate->updateRegion(dirtyViewRegion);
-            else
-                dirtyRectOutsideViewport = true;
-        } else {
-            const QRect dirtyViewRect = deviceTransform.mapRect(dirtyRect).toRect()
-                                        & viewPrivate->viewport->rect();
-            if (!dirtyViewRect.isEmpty())
-                viewPrivate->updateRect(dirtyViewRect);
-            else
-                dirtyRectOutsideViewport = true;
-        }
-        if (!dirtyRectOutsideViewport) {
-            // We know for sure this item will be process in the paint event, hence
-            // store its device transform and re-use it when drawing.
-            item->d_ptr->hasValidDeviceTransform = 1;
-            item->d_ptr->deviceTransform = deviceTransform;
-        }
-
-        resetDirtyItem(item);
-    }
-
-    dirtyItems.clear();
+    processDirtyItemsRecursive(0, views.at(0)->viewportTransform());
     for (int i = 0; i < views.size(); ++i)
         views.at(i)->d_func()->processPendingUpdates();
 }
@@ -808,7 +741,6 @@ void QGraphicsScenePrivate::_q_removeItemLater(QGraphicsItem *item)
     hoverItems.removeAll(item);
     cachedItemsUnderMouse.removeAll(item);
     unpolishedItems.removeAll(item);
-    removeFromDirtyItems(item);
 
     //We remove all references of item from the sceneEventFilter arrays
     QMultiMap<QGraphicsItem*, QGraphicsItem*>::iterator iterator = sceneEventFilters.begin();
@@ -3347,7 +3279,6 @@ void QGraphicsScene::removeItem(QGraphicsItem *item)
     d->pendingUpdateItems.removeAll(item);
     d->cachedItemsUnderMouse.removeAll(item);
     d->unpolishedItems.removeAll(item);
-    d->removeFromDirtyItems(item);
 
     //We remove all references of item from the sceneEventFilter arrays
     QMultiMap<QGraphicsItem*, QGraphicsItem*>::iterator iterator = d->sceneEventFilters.begin();
@@ -5195,18 +5126,10 @@ void QGraphicsScenePrivate::markDirty(QGraphicsItem *item, const QRectF &rect, b
         item->d_ptr->dirtyChildren = 1;
     }
 
-    static int useDirtyListEnv = qgetenv("QT_GV_USE_DIRTY_LIST").toInt();
-    if (useDirtyListEnv) {
-        if (!item->d_ptr->inDirtyList) {
-            dirtyItems.append(item);
-            item->d_ptr->inDirtyList = 1;
-        }
-    } else {
-        QGraphicsItem *p = item->d_ptr->parent;
-        while (p && !p->d_ptr->dirtyChildren) {
-            p->d_ptr->dirtyChildren = 1;
-            p = p->d_ptr->parent;
-        }
+    QGraphicsItem *p = item->d_ptr->parent;
+    while (p && !p->d_ptr->dirtyChildren) {
+        p->d_ptr->dirtyChildren = 1;
+        p = p->d_ptr->parent;
     }
 }
 
