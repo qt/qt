@@ -1431,6 +1431,39 @@ QTransform QMatrix4x4::toTransform() const
 
     \sa map()
 */
+QRectF QMatrix4x4::mapRect(const QRectF& rect) const
+{
+    if (flagBits & Translation) {
+        if (flagBits & Scale) {
+            qreal x = rect.x() * m[0][0] + m[3][0];
+            qreal y = rect.y() * m[1][1] + m[3][1];
+            qreal w = rect.width() * m[0][0];
+            qreal h = rect.height() * m[1][1];
+            if (w < 0) {
+                w = -w;
+                x -= w;
+            }
+            if (h < 0) {
+                h = -h;
+                y -= h;
+            }
+            return QRectF(x, y, w, h);
+        } else {
+            return rect.translated(m[3][0], m[3][1]);
+        }
+    }
+
+    QPointF tl = map(rect.topLeft()); QPointF tr = map(rect.topRight());
+    QPointF bl = map(rect.bottomLeft()); QPointF br = map(rect.bottomRight());
+
+    qreal xmin = qMin(qMin(tl.x(), tr.x()), qMin(bl.x(), br.x()));
+    qreal xmax = qMax(qMax(tl.x(), tr.x()), qMax(bl.x(), br.x()));
+    qreal ymin = qMin(qMin(tl.y(), tr.y()), qMin(bl.y(), br.y()));
+    qreal ymax = qMax(qMax(tl.y(), tr.y()), qMax(bl.y(), br.y()));
+
+    return QRectF(QPointF(xmin, ymin), QPointF(xmax, ymax));
+}
+
 
 /*!
     \fn float *QMatrix4x4::data()
