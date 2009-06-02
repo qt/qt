@@ -531,6 +531,7 @@
 
 #ifndef QT_NO_GRAPHICSVIEW
 
+#include "qgraphicseffect.h"
 #include "qgraphicsscene.h"
 #include "qgraphicsscene_p.h"
 #include "qgraphicssceneevent.h"
@@ -2044,6 +2045,124 @@ void QGraphicsItem::setOpacity(qreal opacity)
 
     // Update.
     d_ptr->fullUpdateHelper(/*childrenOnly=*/false, /*maybeDirtyClipPath=*/false, /*ignoreOpacity=*/true);
+}
+
+/*!
+    \since 4.6
+    Returns this item's \e effect if it has one; otherwise,
+    returns 0.
+*/
+QGraphicsEffect *QGraphicsItem::effect() const
+{
+    QGraphicsEffect *fx = 0;
+    if (d_ptr->hasEffect)
+        fx = d_ptr->extra(QGraphicsItemPrivate::ExtraEffect).value<QGraphicsEffect*>();
+
+    return fx;
+}
+
+/*!
+    \since 4.6
+    Sets \e effect as the item's effect. It will replace the previous effect
+    the item might have.
+*/
+void QGraphicsItem::setEffect(QGraphicsEffect *effect)
+{
+    if (effect) {
+       d_ptr->hasEffect = true;
+       d_ptr->setExtra(QGraphicsItemPrivate::ExtraEffect, QVariant::fromValue(effect));
+    } else {
+       d_ptr->hasEffect = false;
+       d_ptr->unsetExtra(QGraphicsItemPrivate::ExtraEffect);
+       void *ptr = d_ptr->extra(QGraphicsItemPrivate::ExtraEffectPixmap).value<void*>();
+       QPixmap *pixmap = reinterpret_cast<QPixmap*>(ptr);
+       delete pixmap;
+       d_ptr->unsetExtra(QGraphicsItemPrivate::ExtraEffectPixmap);
+    }
+
+    update();
+}
+
+/*!
+    \since 4.6
+    Returns the effective bounding rect of the item.
+    If the item has no effect, this is the same as the item's bounding rect.
+    If the item has an effect, the effective rect can be larger than the item's
+    bouding rect, depending on the effect.
+
+    \sa boundingRect()
+*/
+QRectF QGraphicsItem::effectiveBoundingRect() const
+{
+    QGraphicsEffect *fx = effect();
+    if (fx)
+        return fx->boundingRectFor(this);
+
+    return boundingRect();
+}
+
+/*!
+    \since 4.6
+    Returns the effective bounding rect of this item in scene coordinates,
+    by combining sceneTransform() with boundingRect(), taking into account
+    the effect that the item might have.
+
+    If the item has no effect, this is the same as sceneBoundingRect().
+
+    \sa effectiveBoundingRect(), sceneBoundingRect()
+*/
+QRectF QGraphicsItem::sceneEffectiveBoundingRect() const
+{
+    // Find translate-only offset
+    QPointF offset;
+    const QGraphicsItem *parentItem = this;
+    const QGraphicsItemPrivate *itemd;
+    do {
+        itemd = parentItem->d_ptr;
+        if (itemd->hasTransform)
+            break;
+        offset += itemd->pos;
+    } while ((parentItem = itemd->parent));
+
+    QRectF br = effectiveBoundingRect();
+    br.translate(offset);
+    return !parentItem ? br : parentItem->sceneTransform().mapRect(br);
+}
+
+/*!
+    \internal
+
+    Used by QGraphicsScene.
+*/
+QPixmap *QGraphicsItem::effectPixmap()
+{
+    if (!d_ptr->hasEffect)
+        return 0;
+
+    // the exact size of the pixmap is not a big deal
+    // as long as it contains the effective bounding rect
+    // TODO: use smart resizing etc
+    // TODO: store per device and do everything in device coordinate?
+    // TODO: use layer
+    QRect rect = effectiveBoundingRect().toAlignedRect();
+
+    void *ptr = d_ptr->extra(QGraphicsItemPrivate::ExtraEffectPixmap).value<void*>();
+    QPixmap *pixmap = reinterpret_cast<QPixmap*>(ptr);
+    bool avail = true;
+    if (!pixmap)
+        avail = false;
+    if (avail && pixmap->size() != rect.size())
+        avail = false;
+
+    if (!avail) {
+        delete pixmap;
+        pixmap = new QPixmap(rect.size());
+        pixmap->fill(Qt::transparent);
+        ptr = reinterpret_cast<void*>(pixmap);
+        d_ptr->setExtra(QGraphicsItemPrivate::ExtraEffectPixmap, QVariant::fromValue(ptr));
+    }
+
+    return pixmap;
 }
 
 /*!

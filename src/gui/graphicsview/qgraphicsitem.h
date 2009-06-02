@@ -62,6 +62,7 @@ QT_MODULE(Gui)
 class QBrush;
 class QCursor;
 class QFocusEvent;
+class QGraphicsEffect;
 class QGraphicsItemGroup;
 class QGraphicsSceneContextMenuEvent;
 class QGraphicsSceneDragDropEvent;
@@ -197,6 +198,12 @@ public:
     qreal opacity() const;
     qreal effectiveOpacity() const;
     void setOpacity(qreal opacity);
+
+    // Effect
+    QGraphicsEffect *effect() const;
+    void setEffect(QGraphicsEffect *effect);
+    QRectF effectiveBoundingRect() const;
+    QRectF sceneEffectiveBoundingRect() const;
 
     Qt::MouseButtons acceptedMouseButtons() const;
     void setAcceptedMouseButtons(Qt::MouseButtons buttons);
@@ -417,6 +424,8 @@ protected:
     void addToIndex();
     void removeFromIndex();
     void prepareGeometryChange();
+
+    QPixmap *effectPixmap();
 
 private:
     Q_DISABLE_COPY(QGraphicsItem)

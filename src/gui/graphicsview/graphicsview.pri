@@ -2,6 +2,7 @@
 
 HEADERS += \
         graphicsview/qgraphicsitem.h \
+        graphicsview/qgraphicseffect.h \
         graphicsview/qgraphicsitem_p.h \
         graphicsview/qgraphicsitemanimation.h \
         graphicsview/qgraphicsscene.h \
@@ -13,6 +14,7 @@ HEADERS += \
 
 SOURCES += \
         graphicsview/qgraphicsitem.cpp \
+        graphicsview/qgraphicseffect.cpp \
         graphicsview/qgraphicsitemanimation.cpp \
         graphicsview/qgraphicsscene.cpp \
         graphicsview/qgraphicsscene_bsp.cpp \

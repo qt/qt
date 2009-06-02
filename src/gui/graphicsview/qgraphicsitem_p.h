@@ -113,7 +113,9 @@ public:
         ExtraBoundingRegionGranularity,
         ExtraOpacity,
         ExtraEffectiveOpacity,
-        ExtraDecomposedTransform
+        ExtraDecomposedTransform,
+        ExtraEffect,
+        ExtraEffectPixmap,
     };
 
     enum AncestorFlag {
@@ -155,6 +157,7 @@ public:
         dirtyClipPath(1),
         emptyClipPath(0),
         inSetPosHelper(0),
+        hasEffect(0),
         flags(0),
         allChildrenCombineOpacity(1),
         hasDecomposedTransform(0),
@@ -345,12 +348,13 @@ public:
     quint32 inSetPosHelper : 1;
 
     // New 32 bits
+    quint32 hasEffect : 1;
     quint32 flags : 10;
     quint32 allChildrenCombineOpacity : 1;
     quint32 hasDecomposedTransform : 1;
     quint32 dirtyTransform : 1;
     quint32 dirtyTransformComponents : 1;
-    quint32 padding : 18; // feel free to use
+    quint32 padding : 17; // feel free to use
 
     // Optional stacking order
     int globalStackingOrder;

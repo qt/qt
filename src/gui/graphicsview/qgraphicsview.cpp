@@ -803,6 +803,16 @@ static inline QRectF adjustedItemBoundingRect(const QGraphicsItem *item)
         boundingRect.adjust(0, -0.00001, 0, 0.00001);
     return boundingRect;
 }
+static inline QRectF adjustedItemEffectiveBoundingRect(const QGraphicsItem *item)
+{
+    Q_ASSERT(item);
+    QRectF boundingRect(item->effectiveBoundingRect());
+    if (!boundingRect.width())
+        boundingRect.adjust(-0.00001, 0, 0.00001, 0);
+    if (!boundingRect.height())
+        boundingRect.adjust(0, -0.00001, 0, 0.00001);
+    return boundingRect;
+}
 
 /*!
     \internal
@@ -811,12 +821,19 @@ void QGraphicsViewPrivate::itemUpdated(QGraphicsItem *item, const QRectF &rect)
 {
     if (fullUpdatePending || viewportUpdateMode == QGraphicsView::NoViewportUpdate)
         return;
+
+    // Delayed update can work only if the item has no effect.
+    // Reason: imagine the effect extends the effective (painting) bounding
+    // rect outside the item's bounding rect. If the item is moved around,
+    // delayed update only take into account the effective bounding rect
+    // of the new position, not the old one, thereby leaving painting trails.
+    if (!item->d_ptr->hasEffect)
     if (item->d_ptr->dirty)
         updateLater();
 
     QRectF updateRect = rect;
     if ((item->d_ptr->flags & QGraphicsItem::ItemClipsChildrenToShape) || item->d_ptr->children.isEmpty()) {
-        updateRect &= adjustedItemBoundingRect(item);
+        updateRect &= adjustedItemEffectiveBoundingRect(item);
         if (updateRect.isEmpty())
             return;
     }
@@ -874,7 +891,7 @@ void QGraphicsViewPrivate::_q_updateLaterSlot()
             continue;
         }
         QTransform x = item->sceneTransform() * viewTransform;
-        updateRect(x.mapRect(item->boundingRect()).toAlignedRect() & vr);
+        updateRect(x.mapRect(item->effectiveBoundingRect()).toAlignedRect() & vr);
     }
 
     dirtyRectCount += dirtyRects.size();

@@ -210,6 +210,7 @@ static const int QGRAPHICSSCENE_INDEXTIMER_TIMEOUT = 2000;
 
 #ifndef QT_NO_GRAPHICSVIEW
 
+#include "qgraphicseffect.h"
 #include "qgraphicsitem.h"
 #include "qgraphicsitem_p.h"
 #include "qgraphicslayout.h"
@@ -309,6 +310,14 @@ static inline QRectF adjustedItemBoundingRect(const QGraphicsItem *item)
     return boundingRect;
 }
 
+static inline QRectF adjustedItemEffectiveBoundingRect(const QGraphicsItem *item)
+{
+    Q_ASSERT(item);
+    QRectF boundingRect(item->effectiveBoundingRect());
+    _q_adjustRect(&boundingRect);
+    return boundingRect;
+}
+
 static void _q_hoverFromMouseEvent(QGraphicsSceneHoverEvent *hover, const QGraphicsSceneMouseEvent *mouseEvent)
 {
     hover->setWidget(mouseEvent->widget());
@@ -392,7 +401,7 @@ QList<QGraphicsItem *> QGraphicsScenePrivate::estimateItemsInRect(const QRectF &
         for (int i = 0; i < unindexedItems.size(); ++i) {
             if (QGraphicsItem *item = unindexedItems.at(i)) {
                 if (!item->d_ptr->itemDiscovered && item->d_ptr->visible && !(item->d_ptr->ancestorFlags & QGraphicsItemPrivate::AncestorClipsChildren)) {
-                    QRectF boundingRect = item->sceneBoundingRect();
+                    QRectF boundingRect = item->sceneEffectiveBoundingRect();
                     if (QRectF_intersects(boundingRect, rect)) {
                         item->d_ptr->itemDiscovered = 1;
                         items << item;
@@ -435,7 +444,7 @@ void QGraphicsScenePrivate::addToIndex(QGraphicsItem *item)
 {
     if (indexMethod == QGraphicsScene::BspTreeIndex) {
         if (item->d_func()->index != -1) {
-            bspTree.insertItem(item, item->sceneBoundingRect());
+            bspTree.insertItem(item, item->sceneEffectiveBoundingRect());
             foreach (QGraphicsItem *child, item->children())
                 child->addToIndex();
         } else {
@@ -455,7 +464,7 @@ void QGraphicsScenePrivate::removeFromIndex(QGraphicsItem *item)
     if (indexMethod == QGraphicsScene::BspTreeIndex) {
         int index = item->d_func()->index;
         if (index != -1) {
-            bspTree.removeItem(item, item->sceneBoundingRect());
+            bspTree.removeItem(item, item->sceneEffectiveBoundingRect());
             freeItemIndexes << index;
             indexedItems[index] = 0;
             item->d_func()->index = -1;
@@ -512,7 +521,7 @@ void QGraphicsScenePrivate::_q_updateIndex()
     QRectF unindexedItemsBoundingRect;
     for (int i = 0; i < unindexedItems.size(); ++i) {
         if (QGraphicsItem *item = unindexedItems.at(i)) {
-            unindexedItemsBoundingRect |= item->sceneBoundingRect();
+            unindexedItemsBoundingRect |= item->sceneEffectiveBoundingRect();
             if (!freeItemIndexes.isEmpty()) {
                 int freeIndex = freeItemIndexes.takeFirst();
                 item->d_func()->index = freeIndex;
@@ -559,7 +568,7 @@ void QGraphicsScenePrivate::_q_updateIndex()
     // Insert all unindexed items into the tree.
     for (int i = 0; i < unindexedItems.size(); ++i) {
         if (QGraphicsItem *item = unindexedItems.at(i)) {
-            QRectF rect = item->sceneBoundingRect();
+            QRectF rect = item->sceneEffectiveBoundingRect();
             if (item->d_ptr->ancestorFlags & QGraphicsItemPrivate::AncestorClipsChildren)
                 continue;
             if (indexMethod == QGraphicsScene::BspTreeIndex)
@@ -612,7 +621,7 @@ void QGraphicsScenePrivate::_q_emitUpdated()
     // Ensure all dirty items's current positions are recorded in the list of
     // updated rects.
     for (int i = 0; i < dirtyItems.size(); ++i)
-        updatedRects += dirtyItems.at(i)->sceneBoundingRect();
+        updatedRects += dirtyItems.at(i)->sceneEffectiveBoundingRect();
 
     // Notify the changes to anybody interested.
     QList<QRectF> oldUpdatedRects;
@@ -1465,7 +1474,7 @@ QList<QGraphicsItem *> QGraphicsScenePrivate::items_helper(const QRectF &rect,
         // ### _q_adjustedRect is only needed because QRectF::intersects,
         // QRectF::contains and QTransform::map() and friends don't work with
         // flat rectangles.
-        const QRectF br(adjustedItemBoundingRect(item));
+        const QRectF br(adjustedItemEffectiveBoundingRect(item));
         if (mode >= Qt::ContainsItemBoundingRect) {
             // Rect intersects/contains item's bounding rect
             QRectF mbr = x.mapRect(br);
@@ -4716,6 +4725,19 @@ void QGraphicsScenePrivate::drawItemHelper(QGraphicsItem *item, QPainter *painte
     QGraphicsItemPrivate *itemd = item->d_ptr;
     QGraphicsItem::CacheMode cacheMode = QGraphicsItem::CacheMode(itemd->cacheMode);
 
+    bool noCache = cacheMode == QGraphicsItem::NoCache ||
+#ifdef Q_WS_X11
+        !X11->use_xrender;
+#else
+        false;
+#endif
+
+    // Render using effect, works now only for no cache mode
+    if (noCache && itemd->hasEffect && item->effect()) {
+        item->effect()->drawItem(item, painter, option, widget);
+        return;
+    }
+
     // Render directly, using no cache.
     if (cacheMode == QGraphicsItem::NoCache
 #ifdef Q_WS_X11
@@ -5011,6 +5033,63 @@ void QGraphicsScenePrivate::drawItemHelper(QGraphicsItem *item, QPainter *painte
     }
 }
 
+// FIXME: merge this with drawItems (needs refactoring)
+QPixmap* QGraphicsScene::drawItemOnPixmap(QPainter *painter,
+                                          QGraphicsItem *item,
+                                          const QStyleOptionGraphicsItem *option,
+                                          QWidget *widget,
+                                          int flags)
+{
+    // TODO: use for choosing item or device coordinate
+    // FIXME: how about source, dest, and exposed rects?
+    Q_UNUSED(flags);
+
+    // Item's (local) bounding rect, including the effect
+    QRectF brect = item->effectiveBoundingRect();
+    QRectF adjustedBrect(brect);
+    _q_adjustRect(&adjustedBrect);
+    if (adjustedBrect.isEmpty())
+        return 0;
+
+    // Find the item's bounds in device coordinates.
+    QRectF deviceBounds = painter->worldTransform().mapRect(brect);
+    QRect deviceRect = deviceBounds.toRect().adjusted(-1, -1, 1, 1);
+    if (deviceRect.isEmpty())
+        return 0;
+
+    // If widget, check if it intersects or not
+    QRect viewRect = widget ? widget->rect() : QRect();
+    if (widget && !viewRect.intersects(deviceRect))
+        return 0;
+
+    // Create offscreen pixmap
+    // TODO: use the pixmap from the layer
+    QPixmap *targetPixmap = item->effectPixmap();
+    if (!targetPixmap)
+        targetPixmap = new QPixmap(deviceRect.size());
+
+    // FIXME: this is brute force
+    QRegion pixmapExposed;
+    pixmapExposed += targetPixmap->rect();
+
+    // Construct an item-to-pixmap transform.
+    QPointF p = deviceRect.topLeft();
+    QTransform itemToPixmap = painter->worldTransform();
+    if (!p.isNull())
+        itemToPixmap *= QTransform::fromTranslate(-p.x(), -p.y());
+
+    // Calculate the style option's exposedRect.
+    QStyleOptionGraphicsItem fxOption = *option;
+    fxOption.exposedRect = brect.adjusted(-1, -1, 1, 1);
+
+    // Render
+    _q_paintIntoCache(targetPixmap, item, pixmapExposed, itemToPixmap, painter->renderHints(),
+                      &fxOption, false);
+
+    return targetPixmap;
+}
+
+
 /*!
     Paints the given \a items using the provided \a painter, after the
     background has been drawn, and before the foreground has been
@@ -5278,10 +5357,10 @@ void QGraphicsScene::itemUpdated(QGraphicsItem *item, const QRectF &rect)
             // This block of code is kept for compatibility. Since 4.5, by default
             // QGraphicsView does not connect the signal and we use the below
             // method of delivering updates.
-            update(item->sceneBoundingRect());
+            update(item->sceneEffectiveBoundingRect());
         } else {
             // ### Remove _q_adjustedRects().
-            QRectF boundingRect(adjustedItemBoundingRect(item));
+            QRectF boundingRect(adjustedItemEffectiveBoundingRect(item));
             if (!rect.isNull()) {
                 QRectF adjustedRect(rect);
                 _q_adjustRect(&adjustedRect);
