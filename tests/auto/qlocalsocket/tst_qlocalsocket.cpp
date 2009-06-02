@@ -113,8 +113,6 @@ tst_QLocalSocket::tst_QLocalSocket()
 #endif
                 ))
         qWarning() << "lackey executable doesn't exists!";
-
-    QLocalServer::removeServer("tst_localsocket");
 }
 
 tst_QLocalSocket::~tst_QLocalSocket()
@@ -139,7 +137,13 @@ public:
     LocalServer() : QLocalServer()
     {
         connect(this, SIGNAL(newConnection()), this, SLOT(slotNewConnection()));
-    };
+    }
+
+    bool listen(const QString &name)
+    {
+        removeServer(name);
+        return QLocalServer::listen(name);
+    }
 
     QList<int> hits;
 
@@ -528,7 +532,7 @@ void tst_QLocalSocket::sendData()
 // QLocalSocket/Server can take a name or path, check that it works as expected
 void tst_QLocalSocket::fullPath()
 {
-    QLocalServer server;
+    LocalServer server;
     QString name = "qlocalsocket_pathtest";
 #if defined(QT_LOCALSOCKET_TCP)
     QString path = "QLocalServer";
@@ -822,7 +826,7 @@ void tst_QLocalSocket::removeServer()
 
 void tst_QLocalSocket::recycleServer()
 {
-    QLocalServer server;
+    LocalServer server;
     QLocalSocket client;
 
     QVERIFY(server.listen("recycletest1"));
