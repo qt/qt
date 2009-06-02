@@ -26,6 +26,7 @@ SOURCES += \
     errorsview.cpp \
     finddialog.cpp \
     formpreviewview.cpp \
+    globals.cpp \
     main.cpp \
     mainwindow.cpp \
     messageeditor.cpp \
@@ -49,6 +50,7 @@ HEADERS += \
     errorsview.h \
     finddialog.h \
     formpreviewview.h \
+    globals.h \
     mainwindow.h \
     messageeditor.h \
     messageeditorwidgets.h \
