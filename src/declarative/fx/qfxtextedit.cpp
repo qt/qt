@@ -772,6 +772,18 @@ void QFxTextEdit::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
 \overload
 Handles the given mouse \a event.
 */
+void QFxTextEdit::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event)
+{
+    Q_D(QFxTextEdit);
+    d->control->processEvent(event, QPointF(0, 0));
+    if (!event->isAccepted())
+        QFxPaintedItem::mouseDoubleClickEvent(event);
+}
+
+/*!
+\overload
+Handles the given mouse \a event.
+*/
 void QFxTextEdit::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
 {
     Q_D(QFxTextEdit);
