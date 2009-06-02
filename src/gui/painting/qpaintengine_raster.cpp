@@ -4475,14 +4475,12 @@ void QClipData::fixup()
         if (sl != left || sr != right)
             isRect = false;
     }
-    ++xmax;
 //     qDebug("xmin=%d,xmax=%d,ymin=%d,ymax=%d %s", xmin, xmax, ymin, ymax, isRect ? "rectangular" : "");
 
     if (isRect) {
         hasRectClip = true;
         clipRect.setRect(xmin, ymin, xmax - xmin, ymax - ymin);
     }
-
 }
 
 /*

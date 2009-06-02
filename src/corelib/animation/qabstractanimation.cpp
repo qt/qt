@@ -159,7 +159,7 @@
 
 QT_BEGIN_NAMESPACE
 
-Q_GLOBAL_STATIC(QThreadStorage<QUnifiedTimer *>, unifiedTimer);
+Q_GLOBAL_STATIC(QThreadStorage<QUnifiedTimer *>, unifiedTimer)
 
 QUnifiedTimer::QUnifiedTimer() : QObject(), lastTick(0), timingInterval(DEFAULT_TIMER_INTERVAL), consistentTiming(false)
 {

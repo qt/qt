@@ -54,7 +54,7 @@
 //
 
 #include "qsequentialanimationgroup.h"
-#include "qanimationgroup_p.h"
+#include "private/qanimationgroup_p.h"
 
 
 QT_BEGIN_NAMESPACE

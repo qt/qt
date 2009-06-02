@@ -147,6 +147,7 @@ class Config
 #define CONFIG_QHP                      "qhp"
 #define CONFIG_QUOTINGINFORMATION       "quotinginformation"
 #define CONFIG_SLOW                     "slow"
+#define CONFIG_SHOWINTERNAL             "showinternal"
 #define CONFIG_SOURCEDIRS               "sourcedirs"
 #define CONFIG_SOURCES                  "sources"
 #define CONFIG_SPURIOUS                 "spurious"
