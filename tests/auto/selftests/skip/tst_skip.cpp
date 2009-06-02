@@ -70,7 +70,7 @@ void tst_Skip::test_data()
 
 void tst_Skip::test()
 {
-    printf("this line should never be reached, since we skip in the _data function\n");
+    qDebug("this line should never be reached, since we skip in the _data function");
 }
 
 void tst_Skip::emptytest_data()
@@ -80,7 +80,7 @@ void tst_Skip::emptytest_data()
 
 void tst_Skip::emptytest()
 {
-    printf("this line should never be reached, since we skip in the _data function\n");
+    qDebug("this line should never be reached, since we skip in the _data function");
 }
 
 void tst_Skip::singleSkip_data()
@@ -95,7 +95,7 @@ void tst_Skip::singleSkip()
     QFETCH(bool, booll);
     if (!booll)
         QSKIP("skipping one", SkipSingle);
-    printf("this line should only be reached once (%s)\n", booll ? "true" : "false");
+    qDebug("this line should only be reached once (%s)", booll ? "true" : "false");
 }
 
 QTEST_MAIN(tst_Skip)

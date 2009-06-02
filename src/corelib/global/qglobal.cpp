@@ -132,7 +132,8 @@ QT_BEGIN_NAMESPACE
 
     If you want to use QFlags for your own enum types, use
     the Q_DECLARE_FLAGS() and Q_DECLARE_OPERATORS_FOR_FLAGS().
-    For example:
+
+    Example:
 
     \snippet doc/src/snippets/code/src_corelib_global_qglobal.cpp 1
 
@@ -449,14 +450,18 @@ QT_BEGIN_NAMESPACE
     function. You can retrieve the minimum and maximum of two given
     objects using qMin() and qMax() respectively. All these functions
     return a corresponding template type; the template types can be
-    replaced by any other type. For example:
+    replaced by any other type.
+
+    Example:
 
     \snippet doc/src/snippets/code/src_corelib_global_qglobal.cpp 3
 
     <QtGlobal> also contains functions that generate messages from the
     given string argument: qCritical(), qDebug(), qFatal() and
     qWarning(). These functions call the message handler with the
-    given message. For example:
+    given message.
+
+    Example:
 
     \snippet doc/src/snippets/code/src_corelib_global_qglobal.cpp 4
 
@@ -701,7 +706,9 @@ QT_BEGIN_NAMESPACE
     \relates <QtGlobal>
 
     Wraps the signed 64-bit integer \a literal in a
-    platform-independent way. For example:
+    platform-independent way.
+
+    Example:
 
     \snippet doc/src/snippets/code/src_corelib_global_qglobal.cpp 8
 
@@ -712,7 +719,9 @@ QT_BEGIN_NAMESPACE
     \relates <QtGlobal>
 
     Wraps the unsigned 64-bit integer \a literal in a
-    platform-independent way. For example:
+    platform-independent way.
+
+    Example:
 
     \snippet doc/src/snippets/code/src_corelib_global_qglobal.cpp 9
 
@@ -741,7 +750,11 @@ QT_BEGIN_NAMESPACE
 /*! \fn const T &qAbs(const T &value)
     \relates <QtGlobal>
 
-    Returns the absolute value of \a value. For example:
+    Compares \a value to the 0 of type T and returns the absolute
+    value. Thus if T is \e {double}, then \a value is compared to
+    \e{(double) 0}.
+
+    Example:
 
     \snippet doc/src/snippets/code/src_corelib_global_qglobal.cpp 10
 */
@@ -749,7 +762,9 @@ QT_BEGIN_NAMESPACE
 /*! \fn int qRound(qreal value)
     \relates <QtGlobal>
 
-    Rounds \a value to the nearest integer. For example:
+    Rounds \a value to the nearest integer.
+
+    Example:
 
     \snippet doc/src/snippets/code/src_corelib_global_qglobal.cpp 11
 */
@@ -757,7 +772,9 @@ QT_BEGIN_NAMESPACE
 /*! \fn qint64 qRound64(qreal value)
     \relates <QtGlobal>
 
-    Rounds \a value to the nearest 64-bit integer. For example:
+    Rounds \a value to the nearest 64-bit integer.
+
+    Example:
 
     \snippet doc/src/snippets/code/src_corelib_global_qglobal.cpp 12
 */
@@ -765,7 +782,9 @@ QT_BEGIN_NAMESPACE
 /*! \fn const T &qMin(const T &value1, const T &value2)
     \relates <QtGlobal>
 
-    Returns the minimum of \a value1 and \a value2. For example:
+    Returns the minimum of \a value1 and \a value2.
+
+    Example:
 
     \snippet doc/src/snippets/code/src_corelib_global_qglobal.cpp 13
 
@@ -775,7 +794,9 @@ QT_BEGIN_NAMESPACE
 /*! \fn const T &qMax(const T &value1, const T &value2)
     \relates <QtGlobal>
 
-    Returns the maximum of \a value1 and \a value2. For example:
+    Returns the maximum of \a value1 and \a value2.
+
+    Example:
 
     \snippet doc/src/snippets/code/src_corelib_global_qglobal.cpp 14
 
@@ -786,7 +807,9 @@ QT_BEGIN_NAMESPACE
     \relates <QtGlobal>
 
     Returns \a value bounded by \a min and \a max. This is equivalent
-    to qMax(\a min, qMin(\a value, \a max)). For example:
+    to qMax(\a min, qMin(\a value, \a max)).
+
+    Example:
 
     \snippet doc/src/snippets/code/src_corelib_global_qglobal.cpp 15
 
@@ -932,7 +955,9 @@ QT_BEGIN_NAMESPACE
     4.1.2, the QT_VERSION macro will expand to 0x040102.
 
     You can use QT_VERSION to use the latest Qt features where
-    available. For example:
+    available.
+
+    Example:
 
     \snippet doc/src/snippets/code/src_corelib_global_qglobal.cpp 16
 

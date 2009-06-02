@@ -139,6 +139,26 @@ Qt for Windows CE
 *                          Plugins                                         *
 ****************************************************************************
 
+- directfb
+  * Make sure we pick an approriate format for pixmaps. E.g. use the same as
+    the primary surface for opaque pixmaps and pick an appropriate one for
+    transparent pixmaps if the primary surface format is not transparent.
+  * Properly fall back to the raster engine for pens that aren't solidcolor
+  * Properly fall back to raster engine with "mirrored" scales
+  * Make sure window surfaces are the approriate pixel format and created in
+    video memory if supported
+  * Fix clipping bug that would cause painting errors
+  * Fix various crash bugs
+  * Fix bugs when transforming/copying pixmaps with alpha channel
+  * Fix various bugs with regards to painting with alpha channel/porter duff
+  * Optimize a coupld of internal functions to slightly speed up drawing
+  * Optimize raster fall backs
+  * Allow more customization for Flipping options
+  * Fix drawing with opacity != 1.0
+  * Support for better logging when trying to debug performance problems.
+  * Fix bug in keyboard handling that caused modifiers not to work
+  * Get rid of some compiler warnings
+
 
 ****************************************************************************
 *                   Important Behavior Changes                             *
