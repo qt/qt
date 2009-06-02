@@ -257,7 +257,7 @@ public:
     void drawSubtreeRecursive(QGraphicsItem *item, QPainter *painter, const QTransform &parentTransform,
                               const QTransform &viewTransform,
                               const QRegion &exposedRegion, QWidget *widget, QGraphicsView::OptimizationFlags optimizationFlags,
-                              qreal parentOpacity = qreal(1.0));
+                              QList<QGraphicsItem *> *topLevelItems = 0, qreal parentOpacity = qreal(1.0));
     void markDirty(QGraphicsItem *item, const QRectF &rect = QRectF(), bool invalidateChildren = false,
                    bool maybeDirtyClipPath = false, bool force = false, bool ignoreOpacity = false);
     void processDirtyItemsRecursive(QGraphicsItem *item, const QTransform &);

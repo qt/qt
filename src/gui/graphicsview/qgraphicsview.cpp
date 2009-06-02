@@ -39,8 +39,6 @@
 **
 ****************************************************************************/
 
-//#define QGRAPHICSVIEW_DEBUG
-
 static const int QGRAPHICSVIEW_REGION_RECT_THRESHOLD = 50;
 
 static const int QGRAPHICSVIEW_PREALLOC_STYLE_OPTIONS = 503; // largest prime < 2^9
@@ -3236,12 +3234,12 @@ void QGraphicsView::paintEvent(QPaintEvent *event)
     d->scene->d_func()->painterStateProtection = !(d->optimizationFlags & DontSavePainterState);
 
     // Determine the exposed region
-    QRegion exposedRegion = event->region();
+    d->exposedRegion = event->region();
     if (!d->accelerateScrolling)
-        exposedRegion = viewport()->rect();
+        d->exposedRegion = viewport()->rect();
     else if (d->viewportUpdateMode == BoundingRectViewportUpdate)
-        exposedRegion = event->rect();
-    QRectF exposedSceneRect = mapToScene(exposedRegion.boundingRect()).boundingRect();
+        d->exposedRegion = event->rect();
+    QRectF exposedSceneRect = mapToScene(d->exposedRegion.boundingRect()).boundingRect();
 
     // Set up the painter
     QPainter painter(viewport());
@@ -3258,16 +3256,7 @@ void QGraphicsView::paintEvent(QPaintEvent *event)
     const QTransform viewTransform = viewportTransform();
     painter.setTransform(viewTransform, true);
 
-#ifdef QGRAPHICSVIEW_DEBUG
-    QTime stopWatch;
-    stopWatch.start();
-    qDebug() << "QGraphicsView::paintEvent(" << exposedRegion << ')';
-#endif
-
-    // Find all exposed items
-    bool allItems = false;
-    QList<QGraphicsItem *> itemList = d->findItems(exposedRegion, &allItems);
-
+    // Draw background
     if ((d->cacheMode & CacheBackground)
 #ifdef Q_WS_X11
         && X11->use_xrender
@@ -3309,18 +3298,14 @@ void QGraphicsView::paintEvent(QPaintEvent *event)
             painter.restore();
     }
 
-#ifdef QGRAPHICSVIEW_DEBUG
-    int backgroundTime = stopWatch.elapsed() - exposedTime;
-#endif
-
-    static int directEnv = qgetenv("QGRAPHICSVIEW_DIRECT").toInt();
-    if (directEnv || (d->optimizationFlags & BypassDrawItems)) {
-        d->scene->d_func()->drawSubtreeRecursive(0, &painter, viewTransform, viewTransform, exposedRegion,
-                                                 viewport(), d->optimizationFlags);
+    // Items
+    if ((d->optimizationFlags & IndirectPainting)) {
+        d->scene->d_func()->drawSubtreeRecursive(0, &painter, viewTransform, viewTransform, d->exposedRegion,
+                                                 viewport(), d->optimizationFlags, 0);
     } else {
         // Find all exposed items
         bool allItems = false;
-        QList<QGraphicsItem *> itemList = d->findItems(exposedRegion, &allItems);
+        QList<QGraphicsItem *> itemList = d->findItems(d->exposedRegion, &allItems);
         
         if (!itemList.isEmpty()) {
             // Generate the style options.
@@ -3328,23 +3313,15 @@ void QGraphicsView::paintEvent(QPaintEvent *event)
             QGraphicsItem **itemArray = &itemList[0]; // Relies on QList internals, but is perfectly valid.
             QStyleOptionGraphicsItem *styleOptionArray = d->allocStyleOptionsArray(numItems);
             for (int i = 0; i < numItems; ++i)
-                itemArray[i]->d_ptr->initStyleOption(&styleOptionArray[i], viewTransform, exposedRegion, allItems);
+                itemArray[i]->d_ptr->initStyleOption(&styleOptionArray[i], viewTransform, d->exposedRegion, allItems);
             // Draw the items.
             drawItems(&painter, numItems, itemArray, styleOptionArray);
             d->freeStyleOptionsArray(styleOptionArray);
         }
     }
 
-#ifdef QGRAPHICSVIEW_DEBUG
-    int itemsTime = stopWatch.elapsed() - exposedTime - backgroundTime;
-#endif
-
     // Foreground
     drawForeground(&painter, exposedSceneRect);
-
-#ifdef QGRAPHICSVIEW_DEBUG
-    int foregroundTime = stopWatch.elapsed() - exposedTime - backgroundTime - itemsTime;
-#endif
 
 #ifndef QT_NO_RUBBERBAND
     // Rubberband
@@ -3366,17 +3343,6 @@ void QGraphicsView::paintEvent(QPaintEvent *event)
 #endif
 
     painter.end();
-
-#ifdef QGRAPHICSVIEW_DEBUG
-    qDebug() << "\tItem discovery....... " << exposedTime << "msecs (" << itemList.size() << "items,"
-             << (exposedTime > 0 ? (itemList.size() * 1000.0 / exposedTime) : -1) << "/ sec )";
-    qDebug() << "\tDrawing background... " << backgroundTime << "msecs (" << exposedRegion.numRects() << "segments )";
-    qDebug() << "\tDrawing items........ " << itemsTime << "msecs ("
-             << (itemsTime > 0 ? (itemList.size() * 1000.0 / itemsTime) : -1) << "/ sec )";
-    qDebug() << "\tDrawing foreground... " << foregroundTime << "msecs (" << exposedRegion.numRects() << "segments )";
-    qDebug() << "\tTotal rendering time: " << stopWatch.elapsed() << "msecs ("
-             << (stopWatch.elapsed() > 0 ? (1000.0 / stopWatch.elapsed()) : -1.0) << "fps )";
-#endif
 
     // Restore painter state protection.
     d->scene->d_func()->painterStateProtection = true;

@@ -5048,6 +5048,7 @@ void QGraphicsScenePrivate::drawSubtreeRecursive(QGraphicsItem *item, QPainter *
                                                  const QTransform &viewTransform,
                                                  const QRegion &exposedRegion, QWidget *widget,
                                                  QGraphicsView::OptimizationFlags optimizationFlags,
+                                                 QList<QGraphicsItem *> *topLevelItems,
                                                  qreal parentOpacity)
 {
     // Calculate opacity.
@@ -5111,7 +5112,7 @@ void QGraphicsScenePrivate::drawSubtreeRecursive(QGraphicsItem *item, QPainter *
     }
 
     // Find and sort children.
-    QList<QGraphicsItem *> &children = item ? item->d_ptr->children : topLevelItems;
+    QList<QGraphicsItem *> &children = item ? item->d_ptr->children : (topLevelItems ? *topLevelItems : this->topLevelItems);
     if (!dontDrawChildren) {
         if (item && item->d_ptr->needSortChildren) {
             item->d_ptr->needSortChildren = 0;
@@ -5123,7 +5124,7 @@ void QGraphicsScenePrivate::drawSubtreeRecursive(QGraphicsItem *item, QPainter *
     }
 
     // Draw children behind
-    int i;
+    int i = 0;
     if (!dontDrawChildren) {
         for (i = 0; i < children.size(); ++i) {
             QGraphicsItem *child = children.at(i);
@@ -5131,7 +5132,7 @@ void QGraphicsScenePrivate::drawSubtreeRecursive(QGraphicsItem *item, QPainter *
                 break;
             drawSubtreeRecursive(child, painter, transform, viewTransform,
                                  exposedRegion, widget, optimizationFlags,
-                                 opacity);
+                                 0, opacity);
         }
     }
 
@@ -5160,7 +5161,7 @@ void QGraphicsScenePrivate::drawSubtreeRecursive(QGraphicsItem *item, QPainter *
     if (!dontDrawChildren) {
         for (; i < children.size(); ++i) {
             drawSubtreeRecursive(children.at(i), painter, transform, viewTransform,
-                                 exposedRegion, widget, optimizationFlags, opacity);
+                                 exposedRegion, widget, optimizationFlags, 0, opacity);
         }
     }
 
@@ -5321,118 +5322,27 @@ void QGraphicsScene::drawItems(QPainter *painter,
                                const QStyleOptionGraphicsItem options[], QWidget *widget)
 {
     Q_D(QGraphicsScene);
-
-    // Detect if painter state protection is disabled.
     QTransform viewTransform = painter->worldTransform();
-    QVarLengthArray<QGraphicsItem *, 16> childClippers;
+    Q_UNUSED(options);
 
+    // Draw each toplevel recursively.
+    QGraphicsView *view = widget ? qobject_cast<QGraphicsView *>(widget->parentWidget()) : 0;
+    QList<QGraphicsItem *> topLevelItems;
     for (int i = 0; i < numItems; ++i) {
-        QGraphicsItem *item = items[i];
-        if (!(item->d_ptr->ancestorFlags & QGraphicsItemPrivate::AncestorClipsChildren)) {
-            if (!childClippers.isEmpty()) {
-                // Item is not clipped to any ancestor: pop all current clippers.
-                for (int i = 0; i < childClippers.size(); ++i)
-                    painter->restore();
-                childClippers.clear();
-            }
-        } else {
-            // Item is clipped to an ancestor, which may or may not be in our
-            // child clipper list. Let's start by finding the item's closest
-            // clipping ancestor.
-            QGraphicsItem *clipParent = item->parentItem();
-            while (clipParent && !(clipParent->d_ptr->flags & QGraphicsItem::ItemClipsChildrenToShape))
-                clipParent = clipParent->parentItem();
+        QGraphicsItem *item = items[i]->topLevelItem();
+        topLevelItems << item;
 
-            // Pop any in-between clippers. If the clipper is unknown, pop
-            // them all.  ### QVarLengthArray::lastIndexOf().
-            int index = -1;
-            for (int n = childClippers.size() - 1; n >= 0; --n) {
-                if (childClippers[n] == clipParent) {
-                    index = n;
-                    break;
-                }
-            }
-            if (index != -1) {
-                int toPop = childClippers.size() - index - 1;
-                if (toPop > 0) {
-                    for (int i = 0; i < toPop; ++i)
-                        painter->restore();
-                    childClippers.resize(index + 1);
-                }
-            }
-
-            // Sanity check
-            if (!childClippers.isEmpty())
-                Q_ASSERT(childClippers[childClippers.size() - 1] == clipParent);
-
-            // If the clipper list is empty at this point, but we're still
-            // clipped to an ancestor, then we need to build the clip chain
-            // ourselves. There is only one case that can produce this issue:
-            // This item is stacked behind an ancestor:
-            // ItemStacksBehindParent.
-            if (childClippers.isEmpty()) {
-                Q_ASSERT(clipParent != 0);
-                // Build a stack of clippers.
-                QVarLengthArray<QGraphicsItem *, 16> clippers;
-                QGraphicsItem *p = clipParent;
-                do {
-                    if (p->d_ptr->flags & QGraphicsItem::ItemClipsChildrenToShape)
-                        clippers.append(p);
-                } while ((p = p->parentItem()) && (p->d_ptr->ancestorFlags & QGraphicsItemPrivate::AncestorClipsChildren));
-
-                // ### This code path can also use the itemTransform
-                // optimization, but it's hit very rarely.
-                for (int i = clippers.size() - 1; i >= 0; --i) {
-                    QGraphicsItem *clipper = clippers[i];
-                    painter->setWorldTransform(clipper->deviceTransform(viewTransform), false);
-
-                    childClippers.append(clipper);
-                    painter->save();
-                    painter->setClipPath(clipper->shape(), Qt::IntersectClip);
-                }
-                Q_ASSERT(childClippers[childClippers.size() - 1] == clipParent);
-            }
-        }
-
-        // Set up the painter transform
-        if (item->d_ptr->hasValidDeviceTransform) {
-            painter->setWorldTransform(item->d_ptr->deviceTransform);
-            item->d_ptr->hasValidDeviceTransform = 0;
-        } else {
-            painter->setWorldTransform(item->deviceTransform(viewTransform), false);
-        }
-
-        // Save painter
-        bool saveState = (d->painterStateProtection || (item->flags() & QGraphicsItem::ItemClipsToShape));
-        if (saveState)
-            painter->save();
-
-        // Set local clip
-        if (item->flags() & QGraphicsItem::ItemClipsToShape)
-            painter->setClipPath(item->shape(), Qt::IntersectClip);
-
-        // Setup opacity
-        painter->setOpacity(item->effectiveOpacity());
-
-        // Draw the item
-        d->drawItemHelper(item, painter, &options[i], widget, d->painterStateProtection);
-        const QRect paintedViewBoundingRect = painter->worldTransform().mapRect(options[i].rect).adjusted(-1, -1, 1, 1);
-        item->d_ptr->paintedViewBoundingRects.insert(widget, paintedViewBoundingRect);
-
-        if (saveState)
-            painter->restore();
-
-        if (item->flags() & QGraphicsItem::ItemClipsChildrenToShape) {
-            // Clip descendents to this item's shape, and keep the painter
-            // saved.
-            childClippers.append(item);
-            painter->save();
-            painter->setClipPath(item->shape(), Qt::IntersectClip);
+        if (!item->d_ptr->itemDiscovered) {
+            item->d_ptr->itemDiscovered = 1;
+            d->drawSubtreeRecursive(item, painter, viewTransform, viewTransform,
+                                    view->d_func()->exposedRegion, widget,
+                                    view->optimizationFlags());
         }
     }
 
-    for (int i = 0; i < childClippers.size(); ++i)
-        painter->restore();
+    // Reset discovery bits.
+    for (int i = 0; i < topLevelItems.size(); ++i)
+        topLevelItems.at(i)->d_ptr->itemDiscovered = 0;
 
     painter->setWorldTransform(viewTransform);
 }

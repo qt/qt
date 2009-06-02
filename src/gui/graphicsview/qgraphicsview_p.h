@@ -167,6 +167,7 @@ public:
     void updateRect(const QRect &rect);
     void updateRegion(const QRegion &region);
     bool updateSceneSlotReimplementedChecked;
+    QRegion exposedRegion;
 
     QList<QGraphicsItem *> findItems(const QRegion &exposedRegion, bool *allItems) const;
 };
