@@ -146,7 +146,7 @@ public:
         flags(0),
         dirtyChildrenBoundingRect(1),
         paintedViewBoundingRectsNeedRepaint(0),
-        hasValidSceneTransform(0),
+        dirtySceneTransform(1),
         globalStackingOrder(-1),
         q_ptr(0)
     {
@@ -275,6 +275,13 @@ public:
 
     void invalidateCachedClipPathRecursively(bool childrenOnly = false, const QRectF &emptyIfOutsideThisRect = QRectF());
     void updateCachedClipPathFromSetPosHelper(const QPointF &newPos);
+    void ensureSceneTransformRecursive(QGraphicsItem **topMostDirtyItem);
+
+    inline void invalidateChildrenSceneTransform()
+    {
+        for (int i = 0; i < children.size(); ++i)
+            children.at(i)->d_ptr->dirtySceneTransform = 1;
+    }
 
     inline qreal calcEffectiveOpacity() const
     {
@@ -388,7 +395,7 @@ public:
     quint32 flags : 11;
     quint32 dirtyChildrenBoundingRect : 1;
     quint32 paintedViewBoundingRectsNeedRepaint : 1;
-    quint32 hasValidSceneTransform  : 1;
+    quint32 dirtySceneTransform  : 1;
     quint32 padding : 18; // feel free to use
 
     // Optional stacking order

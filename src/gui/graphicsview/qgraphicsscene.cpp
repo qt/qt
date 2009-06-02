@@ -680,7 +680,7 @@ void QGraphicsScenePrivate::_q_processDirtyItems()
     if (updateAll)
         return;
 
-    processDirtyItemsRecursive(0, QTransform());
+    processDirtyItemsRecursive(0);
     for (int i = 0; i < views.size(); ++i)
         views.at(i)->d_func()->processPendingUpdates();
 }
@@ -5083,7 +5083,7 @@ void QGraphicsScenePrivate::drawItemHelper(QGraphicsItem *item, QPainter *painte
     }
 }
 
-void QGraphicsScenePrivate::drawSubtreeRecursive(QGraphicsItem *item, QPainter *painter, const QTransform &parentTransform,
+void QGraphicsScenePrivate::drawSubtreeRecursive(QGraphicsItem *item, QPainter *painter,
                                                  const QTransform &viewTransform,
                                                  QRegion *exposedRegion, QWidget *widget,
                                                  QGraphicsView::OptimizationFlags optimizationFlags,
@@ -5110,10 +5110,24 @@ void QGraphicsScenePrivate::drawSubtreeRecursive(QGraphicsItem *item, QPainter *
     }
 
     // Calculate the full transform for this item.
-    QTransform transform = parentTransform;
+    QTransform transform;
     QRect viewBoundingRect;
+    bool wasDirtyParentSceneTransform = false;
     if (item) {
-        item->d_ptr->combineTransformFromParent(&transform, &viewTransform);
+        if (item->d_ptr->itemIsUntransformable()) {
+            transform = item->deviceTransform(viewTransform);
+        } else {
+            if (item->d_ptr->dirtySceneTransform) {
+                item->d_ptr->sceneTransform = item->d_ptr->parent ? item->d_ptr->parent->d_ptr->sceneTransform
+                                                                  : transform;
+                item->d_ptr->combineTransformFromParent(&item->d_ptr->sceneTransform);
+                item->d_ptr->dirtySceneTransform = 0;
+                wasDirtyParentSceneTransform = true;
+            }
+            transform = item->d_ptr->sceneTransform;
+            transform *= viewTransform;
+        }
+
         QRectF brect = item->boundingRect();
         if (!brect.size().isNull()) {
             // ### This does not take the clip into account.
@@ -5156,11 +5170,12 @@ void QGraphicsScenePrivate::drawSubtreeRecursive(QGraphicsItem *item, QPainter *
     if (!dontDrawChildren) {
         for (i = 0; i < children.size(); ++i) {
             QGraphicsItem *child = children.at(i);
+            if (wasDirtyParentSceneTransform)
+                child->d_ptr->dirtySceneTransform = 1;
             if (!(child->d_ptr->flags & QGraphicsItem::ItemStacksBehindParent))
                 break;
-            drawSubtreeRecursive(child, painter, transform, viewTransform,
-                                 exposedRegion, widget, optimizationFlags,
-                                 0, opacity);
+            drawSubtreeRecursive(child, painter, viewTransform, exposedRegion, widget,
+                                 optimizationFlags, 0, opacity);
         }
     }
 
@@ -5186,9 +5201,14 @@ void QGraphicsScenePrivate::drawSubtreeRecursive(QGraphicsItem *item, QPainter *
     // Draw children in front
     if (!dontDrawChildren) {
         for (; i < children.size(); ++i) {
-            drawSubtreeRecursive(children.at(i), painter, transform, viewTransform,
-                                 exposedRegion, widget, optimizationFlags, 0, opacity);
+            QGraphicsItem *child = children.at(i);
+            if (wasDirtyParentSceneTransform)
+                child->d_ptr->dirtySceneTransform = 1;
+            drawSubtreeRecursive(child, painter, viewTransform, exposedRegion,
+                                 widget, optimizationFlags, 0, opacity);
         }
+    } else if (wasDirtyParentSceneTransform) {
+        item->d_ptr->invalidateChildrenSceneTransform();
     }
 
     // Restore child clip
@@ -5236,17 +5256,19 @@ void QGraphicsScenePrivate::markDirty(QGraphicsItem *item, const QRectF &rect, b
     }
 }
 
-void QGraphicsScenePrivate::processDirtyItemsRecursive(QGraphicsItem *item, const QTransform &parentTransform)
+void QGraphicsScenePrivate::processDirtyItemsRecursive(QGraphicsItem *item)
 {
     Q_ASSERT(!item || item->d_ptr->dirty || item->d_ptr->dirtyChildren);
     Q_Q(QGraphicsScene);
 
     // Calculate the full scene transform for this item.
-    QTransform transform = parentTransform;
-    if (item && !item->d_ptr->itemIsUntransformable()) {
-        item->d_ptr->combineTransformFromParent(&transform);
-        item->d_ptr->sceneTransform = transform;
-        item->d_ptr->hasValidSceneTransform = 1;
+    bool wasDirtyParentSceneTransform = false;
+    if (item && item->d_ptr->dirtySceneTransform && !item->d_ptr->itemIsUntransformable()) {
+        item->d_ptr->sceneTransform = item->d_ptr->parent ? item->d_ptr->parent->d_ptr->sceneTransform
+                                                          : QTransform();
+        item->d_ptr->combineTransformFromParent(&item->d_ptr->sceneTransform);
+        item->d_ptr->dirtySceneTransform = 0;
+        wasDirtyParentSceneTransform = true;
     }
 
     // Process item.
@@ -5261,6 +5283,7 @@ void QGraphicsScenePrivate::processDirtyItemsRecursive(QGraphicsItem *item, cons
         } else {
             QRectF dirtyRect;
             bool uninitializedDirtyRect = true;
+            const bool untransformableItem = item->d_ptr->itemIsUntransformable();
 
             for (int j = 0; j < views.size(); ++j) {
                 QGraphicsView *view = views.at(j);
@@ -5290,15 +5313,15 @@ void QGraphicsScenePrivate::processDirtyItemsRecursive(QGraphicsItem *item, cons
                 if (item->d_ptr->paintedViewBoundingRectsNeedRepaint)
                     viewPrivate->updateRect(item->d_ptr->paintedViewBoundingRects.value(viewPrivate->viewport));
 
-                if (item->d_ptr->hasBoundingRegionGranularity) {
-                    const QRegion dirtyViewRegion = item->deviceTransform(view->viewportTransform())
-                                                    .map(QRegion(dirtyRect.toRect()));
-                    viewPrivate->updateRegion(dirtyViewRegion);
-                } else {
-                    const QRect dirtyViewRect = item->deviceTransform(view->viewportTransform())
-                                                .mapRect(dirtyRect).toRect();
-                    viewPrivate->updateRect(dirtyViewRect);
-                }
+                QTransform deviceTransform = item->d_ptr->sceneTransform;
+                if (!untransformableItem)
+                    deviceTransform *= view->viewportTransform();
+                else
+                    deviceTransform = item->deviceTransform(view->viewportTransform());
+                if (item->d_ptr->hasBoundingRegionGranularity)
+                    viewPrivate->updateRegion(deviceTransform.map(QRegion(dirtyRect.toRect())));
+                else
+                    viewPrivate->updateRect(deviceTransform.mapRect(dirtyRect).toRect());
             }
         }
     }
@@ -5309,14 +5332,18 @@ void QGraphicsScenePrivate::processDirtyItemsRecursive(QGraphicsItem *item, cons
         const bool allChildrenDirty = item && item->d_ptr->allChildrenDirty;
         for (int i = 0; i < children->size(); ++i) {
             QGraphicsItem *child = children->at(i);
+            if (wasDirtyParentSceneTransform)
+                child->d_ptr->dirtySceneTransform = 1;
             if (allChildrenDirty) {
                 child->d_ptr->dirty = 1;
             } else if (!child->d_ptr->dirty && !child->d_ptr->dirtyChildren) {
                 resetDirtyItem(child);
                 continue;
             }
-            processDirtyItemsRecursive(child, transform);
+            processDirtyItemsRecursive(child);
         }
+    } else if (wasDirtyParentSceneTransform) {
+        item->d_ptr->invalidateChildrenSceneTransform();
     }
 
     if (item)
@@ -5373,8 +5400,7 @@ void QGraphicsScene::drawItems(QPainter *painter,
         if (!item->d_ptr->itemDiscovered) {
             topLevelItems << item;
             item->d_ptr->itemDiscovered = 1;
-            d->drawSubtreeRecursive(item, painter, viewTransform, viewTransform,
-                                    expose, widget, flags);
+            d->drawSubtreeRecursive(item, painter, viewTransform, expose, widget, flags);
         }
     }
 

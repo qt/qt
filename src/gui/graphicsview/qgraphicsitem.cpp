@@ -952,6 +952,7 @@ void QGraphicsItemPrivate::setParentItemHelper(QGraphicsItem *newParent, bool de
 
     // Resolve depth.
     resolveDepth(parent ? parent->d_ptr->depth : -1);
+    dirtySceneTransform = 1;
 
     // Deliver post-change notification
     q->itemChange(QGraphicsItem::ItemParentHasChanged, newParentVariant);
@@ -2540,6 +2541,7 @@ void QGraphicsItemPrivate::setPosHelper(const QPointF &pos)
     if (scene)
         q->prepareGeometryChange();
     this->pos = newPos;
+    dirtySceneTransform = 1;
 
     // Send post-notification.
 #ifndef QGRAPHICSITEM_NO_ITEMCHANGE
@@ -2682,12 +2684,17 @@ QMatrix QGraphicsItem::sceneMatrix() const
 */
 QTransform QGraphicsItem::sceneTransform() const
 {
-    QTransform m;
-    const QGraphicsItem *p = this;
-    do {
-        p->d_ptr->combineTransformToParent(&m);
-    } while ((p = p->d_ptr->parent));
-    return m;
+    if (d_ptr->dirtySceneTransform) {
+        // This item and all its descendants have dirty scene transforms.
+        // We're about to validate this item's scene transform, so we have to
+        // invalidate all the children; otherwise there's no way for the descendants
+        // to detect that the ancestor has changed.
+        d_ptr->invalidateChildrenSceneTransform();
+    }
+
+    QGraphicsItem *that = const_cast<QGraphicsItem *>(this);
+    d_ptr->ensureSceneTransformRecursive(&that);
+    return d_ptr->sceneTransform;
 }
 
 /*!
@@ -2899,6 +2906,7 @@ void QGraphicsItem::setMatrix(const QMatrix &matrix, bool combine)
     // Update and set the new transformation.
     prepareGeometryChange();
     *d_ptr->transform = newTransform;
+    d_ptr->dirtySceneTransform = 1;
 
     // Send post-notification.
 #ifndef QGRAPHICSITEM_NO_ITEMCHANGE
@@ -2945,6 +2953,7 @@ void QGraphicsItem::setTransform(const QTransform &matrix, bool combine)
     // Update and set the new transformation.
     prepareGeometryChange();
     *d_ptr->transform = newTransform;
+    d_ptr->dirtySceneTransform = 1;
 
     // Send post-notification.
     itemChange(ItemTransformHasChanged, newTransformVariant);
@@ -3964,6 +3973,35 @@ void QGraphicsItemPrivate::updateCachedClipPathFromSetPosHelper(const QPointF &n
         // i.e. the cached clip path must be invalidated.
         invalidateCachedClipPathRecursively(false, thisToParentTransform.inverted().mapRect(parentClipRect));
     }
+}
+
+// Traverses all the ancestors up to the top-level and updates the pointer to
+// always point to the top-most item that has a dirty scene transform.
+// It then backtracks to the top-most dirty item and start calculating the
+// scene transform by combining the item's transform (+pos) with the parent's
+// cached scene transform (which we at this point know for sure is valid).
+void QGraphicsItemPrivate::ensureSceneTransformRecursive(QGraphicsItem **topMostDirtyItem)
+{
+    Q_ASSERT(topMostDirtyItem);
+
+    if (dirtySceneTransform)
+        *topMostDirtyItem = q_ptr;
+
+    if (parent)
+        parent->d_ptr->ensureSceneTransformRecursive(topMostDirtyItem);
+
+    if (*topMostDirtyItem == q_ptr) {
+        if (!dirtySceneTransform)
+            return; // OK, neither my ancestors nor I have dirty scene transforms.
+        *topMostDirtyItem = 0;
+    } else if (*topMostDirtyItem) {
+        return; // Continue backtrack.
+    }
+
+    // COMBINE my transform with the parent's scene transform.
+    sceneTransform = parent ? parent->d_ptr->sceneTransform : QTransform();
+    combineTransformFromParent(&sceneTransform);
+    dirtySceneTransform = 0;
 }
 
 /*!
