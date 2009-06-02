@@ -46,6 +46,9 @@ Third party components
        Plugins (r41346, r43550, r43915, r43917, r43923)
        Clipboard (r41360)
 
+- QAbstractNetworkCache
+   * Only cache responses to HTTP GET by default, not HTTP PUT or POST
+
 - QMacStyle
     * [253339] Don't draw arrows on toolbuttons that have a menu and text only.
     * [252301] Ensure that small and mini spin boxes are drawn correctly.
@@ -53,10 +56,37 @@ Third party components
 - QFontDialog
     * [252000] Ensure that QFontDialog::getFont() works on Mac OS X.
 
+- QNetworkCookie
+   * [251959] fix parsing of multiple cookies separated by a newline
+
+- QNetworkCookieJar
+   * [251467] do not allow cookies for domains like ".com"
+   * [228974] allow cookies whose domain attribute is missing a leading dot
+
 - QWidget
     * [250668] Don't send extra wheel events when using the scroll wheel in Cocoa.
     * [253448] Prevent a crash when using the Qt::WA_MacBrushedMetal attribute
       in conjunction with style sheets.
+
+- QPainter
+    * [253783] Fixed text shaping bugs when using ligatures and different
+      scripts in a single text item.
+    * Fixed various inconsistencies for image drawing on non-integer
+      coordinates.
+    * Fixed bug with 0-opacity causing images to be drawn fully opaque.
+    * Fixed crash when drawing on a null pixmap.
+    * [251534] Fixed issue where text with non-opaque color from widget
+      palette would be blitted instead of blended.
+
+- QTransform
+    * Fixed issue in QTransform::type() causing a projective transform to be
+    treated as a scaling transform.
+
+- QtOpenGL
+    * [247083] Re-enabled antialiasing for large font sizes in OpenGL paint
+      engine.
+    * [251485] Fixed crash that could occur with projective transforms and
+      high quality antialiasing.
 
 ****************************************************************************
 *                          Database Drivers                                *
@@ -69,11 +99,20 @@ Third party components
 
 Qt for Linux/X11
 ----------------
-
+[253186] Fixed compile error in qfontengine_ft.cpp on 64-bit platforms with
+legacy freetype headers.
+[241361] Prevented asynchronous access to non-thread safe libfontconfig API.
+[244362] Worked around X server crash when calling XFillPolygon with more than
+200000 points by falling back to raster paint engine.
+[250326] Titlebar wasn't shown on X11 with Qt::CustomizeWindowHint for
+	 fixed-size windows.
+[251925] Improved showing QMessageBox on small screens.
 
 Qt for Windows
 --------------
 
+[251259] Switching to another app left text cursor in line edits with
+	 QtMfc framework.
 
 Qt for Mac OS X
 ---------------
