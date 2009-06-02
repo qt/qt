@@ -1978,6 +1978,14 @@ void tst_QMatrix::scale4x4_data()
          0.0f, 0.0f, 0.0f, 1.0f};
     QTest::newRow("complex")
         << (qreal)2.0f << (qreal)11.0f << (qreal)-6.5f << (void *)complexScale;
+
+    static const qreal complexScale2D[] =
+        {2.0f, 0.0f, 0.0f, 0.0f,
+         0.0f, -11.0f, 0.0f, 0.0f,
+         0.0f, 0.0f, 1.0f, 0.0f,
+         0.0f, 0.0f, 0.0f, 1.0f};
+    QTest::newRow("complex2D")
+        << (qreal)2.0f << (qreal)-11.0f << (qreal)1.0f << (void *)complexScale2D;
 }
 void tst_QMatrix::scale4x4()
 {
@@ -1995,6 +2003,12 @@ void tst_QMatrix::scale4x4()
     QMatrix4x4 m2;
     m2.scale(x, y, z);
     QVERIFY(isSame(m2, (const qreal *)resultValues));
+
+    if (z == 1.0f) {
+        QMatrix4x4 m2b;
+        m2b.scale(x, y);
+        QVERIFY(m2b == m2);
+    }
 
     QVector3D v1(2.0f, 3.0f, -4.0f);
     QVector3D v2 = m1 * v1;
@@ -2047,6 +2061,12 @@ void tst_QMatrix::scale4x4()
         QMatrix4x4 m5;
         m5.scale(x);
         QVERIFY(isSame(m5, (const qreal *)resultValues));
+    }
+
+    if (z == 1.0f) {
+        QMatrix4x4 m4b(m3);
+        m4b.scale(x, y);
+        QVERIFY(m4b == m4);
     }
 
     // Test coverage when the special matrix type is unknown.
@@ -2104,6 +2124,14 @@ void tst_QMatrix::translate4x4_data()
          0.0f, 0.0f, 0.0f, 1.0f};
     QTest::newRow("complex")
         << (qreal)2.0f << (qreal)11.0f << (qreal)-6.5f << (void *)complexTranslate;
+
+    static const qreal complexTranslate2D[] =
+        {1.0f, 0.0f, 0.0f, 2.0f,
+         0.0f, 1.0f, 0.0f, -11.0f,
+         0.0f, 0.0f, 1.0f, 0.0f,
+         0.0f, 0.0f, 0.0f, 1.0f};
+    QTest::newRow("complex2D")
+        << (qreal)2.0f << (qreal)-11.0f << (qreal)0.0f << (void *)complexTranslate2D;
 }
 void tst_QMatrix::translate4x4()
 {
@@ -2121,6 +2149,12 @@ void tst_QMatrix::translate4x4()
     QMatrix4x4 m2;
     m2.translate(x, y, z);
     QVERIFY(isSame(m2, (const qreal *)resultValues));
+
+    if (z == 0.0f) {
+        QMatrix4x4 m2b;
+        m2b.translate(x, y);
+        QVERIFY(m2b == m2);
+    }
 
     QVector3D v1(2.0f, 3.0f, -4.0f);
     QVector3D v2 = m1 * v1;
@@ -2156,6 +2190,12 @@ void tst_QMatrix::translate4x4()
     QMatrix4x4 m4(m3);
     m4.translate(x, y, z);
     QVERIFY(m4 == m3 * m1);
+
+    if (z == 0.0f) {
+        QMatrix4x4 m4b(m3);
+        m4b.translate(x, y);
+        QVERIFY(m4b == m4);
+    }
 }
 
 // Test the generation and use of 4x4 rotation matrices.
