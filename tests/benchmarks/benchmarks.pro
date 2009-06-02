@@ -9,6 +9,7 @@ SUBDIRS = containers-associative \
 	qpixmap \
 	blendbench \
 	qstringlist \
+        qmatrix4x4 \
 	qobject \
         qrect \
 	qregexp	\
