@@ -1429,7 +1429,9 @@ void Configure::applySpecSpecifics()
         dictionary[ "QT_HOST_PREFIX" ]      = dictionary[ "QT_INSTALL_PREFIX" ];
         dictionary[ "QT_INSTALL_PREFIX" ]   = "";
         dictionary[ "QT_INSTALL_PLUGINS" ]  = "\\resource\\qt\\plugins";
-        dictionary[ "ARM_FPU_TYPE" ]           = "softvfp";
+        dictionary[ "ARM_FPU_TYPE" ]        = "softvfp";
+        dictionary[ "SQL_SQLITE" ]          = "yes";
+        dictionary[ "SQL_SQLITE_LIB" ]      = "system";
 
     } else if(dictionary[ "XQMAKESPEC" ].startsWith("linux")) { //TODO actually wrong.
       //TODO
