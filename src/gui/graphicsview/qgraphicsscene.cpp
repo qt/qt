@@ -453,7 +453,9 @@ void QGraphicsScenePrivate::_q_removeItemLater(QGraphicsItem *item)
     // chain.
     item->clearFocus();
 
-    //We ask for a removing in the index
+    // Note: This will access item's sceneBoundingRect(), which (as this is
+    // C++) is why we cannot call removeItem() from QGraphicsItem's
+    // destructor.
     this->index->deleteItem(item);
 
     // Reset the mouse grabber and focus item data.
@@ -1198,7 +1200,10 @@ void QGraphicsScenePrivate::climbTree(QGraphicsItem *item, int *stackingOrder)
 void QGraphicsScenePrivate::_q_updateSortCache()
 {
     //### FIXME
-    //index->updateIndex();
+    QGraphicsSceneBspTreeIndex *tree = qobject_cast<QGraphicsSceneBspTreeIndex*>(index);
+    if (tree) {
+        tree->_q_updateIndex();
+    }
 
     if (!sortCacheEnabled || !updatingSortCache)
         return;
@@ -2578,10 +2583,8 @@ void QGraphicsScene::removeItem(QGraphicsItem *item)
     // Clear its background
     item->update();
 
-    // Note: This will access item's sceneBoundingRect(), which (as this is
-    // C++) is why we cannot call removeItem() from QGraphicsItem's
-    // destructor.
-    d->index->deleteItem(item);
+    // Remove it from the index properly
+    d->index->removeItem(item);
 
     if (item == d->tabFocusFirst) {
         QGraphicsWidget *widget = static_cast<QGraphicsWidget *>(item);

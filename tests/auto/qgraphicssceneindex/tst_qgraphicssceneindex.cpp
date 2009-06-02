@@ -107,8 +107,8 @@ void tst_QGraphicsSceneIndex::sceneRect()
 { 
     QGraphicsScene *scene = new QGraphicsScene();
     QGraphicsSceneIndex *index = new QGraphicsSceneBspTreeIndex(scene);
-    index->setRect(QRectF(0, 0, 2000, 2000));
-    QCOMPARE(index->rect(), QRectF(0, 0, 2000, 2000));
+    scene->setSceneRect(QRectF(0, 0, 2000, 2000));
+    QCOMPARE(index->indexedRect(), QRectF(0, 0, 2000, 2000));
 }
 
 void tst_QGraphicsSceneIndex::customIndex_data()

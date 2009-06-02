@@ -352,7 +352,7 @@ QList<QGraphicsItem *> QGraphicsSceneIndex::items(const QPointF &pos, Qt::ItemSe
         }
     }
 
-    d->scene->d_func()->sortItems(&items, Qt::AscendingOrder, d->scene->d_func()->sortCacheEnabled);
+    d->scene->d_func()->sortItems(&items, order, d->scene->d_func()->sortCacheEnabled);
     return items;
 }
 

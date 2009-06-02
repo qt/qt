@@ -61,11 +61,10 @@ QGraphicsSceneBspTreeIndex::QGraphicsSceneBspTreeIndex(QGraphicsScene *scene)
 
 }
 
-
 QRectF QGraphicsSceneBspTreeIndex::indexedRect()
 {
     _q_updateIndex();
-     return scene()->d_func()->hasSceneRect ? scene()->d_func()->sceneRect : scene()->d_func()->growingItemsBoundingRect;
+    return scene()->d_func()->hasSceneRect ? scene()->d_func()->sceneRect : scene()->d_func()->growingItemsBoundingRect;
 }
 
 void QGraphicsSceneBspTreeIndex::clear()
@@ -162,7 +161,7 @@ void QGraphicsSceneBspTreeIndex::removeFromIndex(QGraphicsItem *item)
         item->d_func()->index = -1;
         unindexedItems << item;
 
-        //prepareGeometryChange will call updateItem
+        //prepareGeometryChange will call prepareBoundingRectChange
         foreach (QGraphicsItem *child, item->children())
             child->prepareGeometryChange();
     }
@@ -180,13 +179,15 @@ void QGraphicsSceneBspTreeIndex::prepareBoundingRectChange(const QGraphicsItem *
 QList<QGraphicsItem *> QGraphicsSceneBspTreeIndex::estimateItems(const QRectF &rect, Qt::SortOrder order, const QTransform &deviceTransform) const
 {
     const_cast<QGraphicsSceneBspTreeIndex*>(this)->purgeRemovedItems();
+    scene()->d_func()->_q_updateSortCache();
+
     QList<QGraphicsItem *> rectItems = bsp.items(rect);
     // Fill in with any unindexed items
     for (int i = 0; i < unindexedItems.size(); ++i) {
         if (QGraphicsItem *item = unindexedItems.at(i)) {
             if (!item->d_ptr->itemDiscovered && item->d_ptr->visible && !(item->d_ptr->ancestorFlags & QGraphicsItemPrivate::AncestorClipsChildren)) {
                 QRectF boundingRect = item->sceneBoundingRect();
-                if (boundingRect.intersects(rect)) {
+                if (QRectF_intersects(boundingRect, rect)) {
                     item->d_ptr->itemDiscovered = 1;
                     rectItems << item;
                 }
@@ -328,7 +329,7 @@ void QGraphicsSceneBspTreeIndex::_q_updateIndex()
             if (item->d_ptr->ancestorFlags & QGraphicsItemPrivate::AncestorClipsChildren)
                 continue;
 
-            bsp.insertItem(item,rect);
+            bsp.insertItem(item, rect);
 
             // If the item ignores view transformations, update our
             // largest-item-counter to ensure that the view can accurately

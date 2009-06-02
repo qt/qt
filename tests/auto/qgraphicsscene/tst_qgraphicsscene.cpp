@@ -395,6 +395,9 @@ void tst_QGraphicsScene::items()
         QGraphicsLineItem *l2 = scene.addLine(0, -5, 0, 5);
         QVERIFY(!l1->sceneBoundingRect().intersects(l2->sceneBoundingRect()));
         QVERIFY(!l2->sceneBoundingRect().intersects(l1->sceneBoundingRect()));
+        QList<QGraphicsItem *> items;
+        items<<l1<<l2;
+        QCOMPARE(scene.items(), items);
         QVERIFY(scene.items(-1, -1, 2, 2).contains(l1));
         QVERIFY(scene.items(-1, -1, 2, 2).contains(l2));
     }
