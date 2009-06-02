@@ -144,7 +144,7 @@ QRect QStatusBarPrivate::messageRect() const
                     if (rtl)
                         left = qMax(left, item->w->x() + item->w->width() + 2);
                     else
-                        right = qMin(right, item->w->x()-1);
+                        right = qMin(right, item->w->x() - 2);
                 }
                 break;
         }

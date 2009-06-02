@@ -449,6 +449,43 @@ void QGL2PaintEngineExPrivate::drawTexture(const QGLRect& dest, const QGLRect& s
     glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 }
 
+void QGL2PaintEngineEx::sync()
+{
+    Q_D(QGL2PaintEngineEx);
+    ensureActive();
+    d->transferMode(BrushDrawingMode);
+
+    QGLContext *ctx = d->ctx;
+    glUseProgram(0);
+
+#ifndef QT_OPENGL_ES_2
+    // be nice to people who mix OpenGL 1.x code with QPainter commands
+    // by setting modelview and projection matrices to mirror the GL 1
+    // paint engine
+    const QTransform& mtx = state()->matrix;
+
+    float mv_matrix[4][4] =
+    {
+        { mtx.m11(), mtx.m12(),     0, mtx.m13() },
+        { mtx.m21(), mtx.m22(),     0, mtx.m23() },
+        {         0,         0,     1,         0 },
+        {  mtx.dx(),  mtx.dy(),     0, mtx.m33() }
+    };
+
+    const QSize sz = d->drawable.size();
+
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    glOrtho(0, sz.width(), sz.height(), 0, -999999, 999999);
+
+    glMatrixMode(GL_MODELVIEW);
+    glLoadMatrixf(&mv_matrix[0][0]);
+#endif
+
+    glDisable(GL_BLEND);
+    glActiveTexture(GL_TEXTURE0);
+}
+
 void QGL2PaintEngineExPrivate::transferMode(EngineMode newMode)
 {
     if (newMode == mode)

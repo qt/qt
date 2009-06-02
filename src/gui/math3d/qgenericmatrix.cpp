@@ -116,7 +116,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn void QGenericMatrix::fill(qreal value)
+    \fn void QGenericMatrix::fill(T value)
 
     Fills all elements of this matrix with \a value.
 */

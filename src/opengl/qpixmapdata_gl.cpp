@@ -372,45 +372,50 @@ QPaintEngine* QGLPixmapData::paintEngine() const
 
     if (m_engine)
         return m_engine;
-    else if (!useFramebufferObjects()) {
-        m_dirty = true;
-        if (m_source.size() != size())
-            m_source = QImage(size(), QImage::Format_ARGB32_Premultiplied);
-        if (m_hasFillColor) {
-            m_source.fill(PREMUL(m_fillColor.rgba()));
-            m_hasFillColor = false;
+
+    if (useFramebufferObjects()) {
+        extern QGLWidget* qt_gl_share_widget();
+
+        if (!QGLContext::currentContext())
+            qt_gl_share_widget()->makeCurrent();
+        QGLShareContextScope ctx(qt_gl_share_widget()->context());
+
+        if (textureBufferStack.size() <= currentTextureBuffer) {
+            textureBufferStack << createTextureBuffer(size());
+        } else {
+            QSize sz = textureBufferStack.at(currentTextureBuffer).fbo->size();
+            if (sz.width() < m_width || sz.height() < m_height) {
+                if (sz.width() < m_width)
+                    sz.setWidth(qMax(m_width, qRound(sz.width() * 1.5)));
+                if (sz.height() < m_height)
+                    sz.setHeight(qMax(m_height, qRound(sz.height() * 1.5)));
+                delete textureBufferStack.at(currentTextureBuffer).fbo;
+                textureBufferStack[currentTextureBuffer] =
+                    createTextureBuffer(sz, textureBufferStack.at(currentTextureBuffer).engine);
+                qDebug() << "Creating new pixmap texture buffer:" << sz;
+            }
         }
-        return m_source.paintEngine();
+
+        if (textureBufferStack.at(currentTextureBuffer).fbo->isValid()) {
+            m_renderFbo = textureBufferStack.at(currentTextureBuffer).fbo;
+            m_engine = textureBufferStack.at(currentTextureBuffer).engine;
+
+            ++currentTextureBuffer;
+
+            return m_engine;
+        }
+
+        qWarning() << "Failed to create pixmap texture buffer of size " << size() << ", falling back to raster paint engine";
     }
 
-    extern QGLWidget* qt_gl_share_widget();
-
-    if (!QGLContext::currentContext())
-        qt_gl_share_widget()->makeCurrent();
-    QGLShareContextScope ctx(qt_gl_share_widget()->context());
-
-    if (textureBufferStack.size() <= currentTextureBuffer) {
-        textureBufferStack << createTextureBuffer(size());
-    } else {
-        QSize sz = textureBufferStack.at(currentTextureBuffer).fbo->size();
-        if (sz.width() < m_width || sz.height() < m_height) {
-            if (sz.width() < m_width)
-                sz.setWidth(qMax(m_width, qRound(sz.width() * 1.5)));
-            if (sz.height() < m_height)
-                sz.setHeight(qMax(m_height, qRound(sz.height() * 1.5)));
-            delete textureBufferStack.at(currentTextureBuffer).fbo;
-            textureBufferStack[currentTextureBuffer] =
-                createTextureBuffer(sz, textureBufferStack.at(currentTextureBuffer).engine);
-            qDebug() << "Creating new pixmap texture buffer:" << sz;
-        }
+    m_dirty = true;
+    if (m_source.size() != size())
+        m_source = QImage(size(), QImage::Format_ARGB32_Premultiplied);
+    if (m_hasFillColor) {
+        m_source.fill(PREMUL(m_fillColor.rgba()));
+        m_hasFillColor = false;
     }
-
-    m_renderFbo = textureBufferStack.at(currentTextureBuffer).fbo;
-    m_engine = textureBufferStack.at(currentTextureBuffer).engine;
-
-    ++currentTextureBuffer;
-
-    return m_engine;
+    return m_source.paintEngine();
 }
 
 GLuint QGLPixmapData::bind(bool copyBack) const

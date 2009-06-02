@@ -71,8 +71,8 @@
 
 /*! \fn int QLatin1Literal::size() const
  
-    Returns the number of characters in the literal \i{excluding} the trailing
-    NUL char.
+    Returns the number of characters in the literal \e{excluding} the trailing
+    NULL char.
 */
 
 /*! \fn char *QLatin1Literal::data() const
@@ -122,7 +122,7 @@
     \sa QLatin1Literal, QString
 */
 
-/* !fn template <class A, class B> QStringBuilder<A, B> operator%(const A &a, const B &b)
+/* \fn template <class A, class B> QStringBuilder<A, B> operator%(const A &a, const B &b)
 
     Returns a \c QStringBuilder object that is converted to a QString object
     when assigned to a variable of QString type or passed to a function that

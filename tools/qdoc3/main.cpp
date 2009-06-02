@@ -95,6 +95,7 @@ static const struct {
 };
 
 static bool slow = false;
+static bool showInternal = false;
 static QStringList defines;
 static QHash<QString, Tree *> trees;
 
@@ -120,14 +121,16 @@ static void printHelp()
 {
     Location::information(tr("Usage: qdoc [options] file1.qdocconf ...\n"
                               "Options:\n"
-                              "    -help     "
+                              "    -help         "
                               "Display this information and exit\n"
-                              "    -version  "
+                              "    -version      "
                               "Display version of qdoc and exit\n"
-                              "    -D<name>  "
+                              "    -D<name>      "
                               "Define <name> as a macro while parsing sources\n"
-                              "    -slow     "
-                              "Turn on features that slow down qdoc") );
+                              "    -slow         "
+                              "Turn on features that slow down qdoc"
+                              "    -showinternal "
+                              "Include stuff marked internal") );
 }
 
 /*!
@@ -160,6 +163,8 @@ static void processQdocconfFile(const QString &fileName)
 	++i;
     }
     config.setStringList(CONFIG_SLOW, QStringList(slow ? "true" : "false"));
+    config.setStringList(CONFIG_SHOWINTERNAL,
+                         QStringList(showInternal ? "true" : "false"));
 
     /*
       With the default configuration values in place, load
@@ -326,10 +331,11 @@ static void processQdocconfFile(const QString &fileName)
     /*
       Generate the XML tag file, if it was requested.
      */
+
     QString tagFile = config.getString(CONFIG_TAGFILE);
     if (!tagFile.isEmpty())
         tree->generateTagFile(tagFile);
-    
+
     tree->setVersion("");
     Generator::terminate();
     CodeParser::terminate();
@@ -342,7 +348,6 @@ static void processQdocconfFile(const QString &fileName)
 
     foreach (QTranslator *translator, translators)
         delete translator;
-
     delete tree;
 }
 
@@ -426,6 +431,9 @@ int main(int argc, char **argv)
         else if (opt == "-slow") {
             slow = true;
 	}
+        else if (opt == "-showinternal") {
+            showInternal = true;
+        }
         else {
 	    qdocFiles.append(opt);
 	}
