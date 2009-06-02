@@ -130,9 +130,11 @@ public:
     QMatrix4x4& translate(const QVector3D& vector);
     QMatrix4x4& rotate(qreal angle, const QVector3D& vector);
 #endif
-    QMatrix4x4& scale(qreal x, qreal y, qreal z = 1.0f);
+    QMatrix4x4& scale(qreal x, qreal y);
+    QMatrix4x4& scale(qreal x, qreal y, qreal z);
     QMatrix4x4& scale(qreal factor);
-    QMatrix4x4& translate(qreal x, qreal y, qreal z = 0.0f);
+    QMatrix4x4& translate(qreal x, qreal y);
+    QMatrix4x4& translate(qreal x, qreal y, qreal z);
     QMatrix4x4& rotate(qreal angle, qreal x, qreal y, qreal z = 0.0f);
 #ifndef QT_NO_QUATERNION
     QMatrix4x4& rotate(const QQuaternion& quaternion);
