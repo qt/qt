@@ -5804,8 +5804,9 @@ void QWidget::setFocus(Qt::FocusReason reason)
 void QWidget::clearFocus()
 {
     QWidget *w = this;
-    while (w && w->d_func()->focus_child == this) {
-        w->d_func()->focus_child = 0;
+    while (w) {
+        if (w->d_func()->focus_child == this)
+            w->d_func()->focus_child = 0;
         w = w->parentWidget();
     }
 #ifndef QT_NO_GRAPHICSVIEW
