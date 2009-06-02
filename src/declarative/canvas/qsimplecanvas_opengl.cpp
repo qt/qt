@@ -240,6 +240,7 @@ void QSimpleCanvasItemPrivate::setupChildState(QSimpleCanvasItem *child)
         am = data()->transformActive;
         if (x != 0 || y != 0)
             am.translate(x, y);
+
         if (scale != 1) {
             QPointF to = child->d_func()->transformOrigin();
             if (to.x() != 0. || to.y() != 0.)
@@ -256,6 +257,7 @@ void QSimpleCanvasItemPrivate::setupChildState(QSimpleCanvasItem *child)
             am.rotate(180, (flip & QSimpleCanvasItem::VerticalFlip)?1:0, (flip & QSimpleCanvasItem::HorizontalFlip)?1:0, 0);
             am.translate(-br.width() / 2., -br.height() / 2);
         }
+
         child->d_func()->data()->transformValid = true;
     } 
 }
@@ -264,10 +266,18 @@ QRectF QSimpleCanvasItemPrivate::setupPainting(int version, const QRect &boundin
 {
     Q_Q(QSimpleCanvasItem);
 
-    QRectF filteredBoundRect = q->boundingRect();
-    if (filter)
-        filteredBoundRect = filter->itemBoundingRect(filteredBoundRect);
-    QRectF rv = data()->transformActive.mapRect(filteredBoundRect);
+    bool hasContents = options & QSimpleCanvasItem::HasContents;
+
+    QRectF rv;
+
+    if (hasContents) {
+        QRectF filteredBoundRect = q->boundingRect();
+        if (filter)
+            filteredBoundRect = filter->itemBoundingRect(filteredBoundRect);
+        const QMatrix4x4 &active = data()->transformActive;
+
+        rv = active.mapRect(filteredBoundRect);
+    } 
 
     for (int ii = 0; ii < children.count(); ++ii) {
         QSimpleCanvasItem *child = children.at(ii);
