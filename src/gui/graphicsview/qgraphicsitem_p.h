@@ -160,7 +160,11 @@ public:
     void setIsMemberOfGroup(bool enabled);
     void remapItemPos(QEvent *event, QGraphicsItem *item);
     QPointF genericMapFromScene(const QPointF &pos, const QWidget *viewport) const;
-    bool itemIsUntransformable() const;
+    inline bool itemIsUntransformable() const
+    {
+        return (flags & QGraphicsItem::ItemIgnoresTransformations)
+            || (ancestorFlags & AncestorIgnoresTransformations);
+    }
 
     void combineTransformToParent(QTransform *x, const QTransform *viewTransform = 0) const;
     void combineTransformFromParent(QTransform *x, const QTransform *viewTransform = 0) const;

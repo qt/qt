@@ -779,18 +779,6 @@ QPointF QGraphicsItemPrivate::genericMapFromScene(const QPointF &pos,
 /*!
     \internal
 
-    Returns true if this item or any of its ancestors are untransformable.
-*/
-bool QGraphicsItemPrivate::itemIsUntransformable() const
-{
-    return (flags & QGraphicsItem::ItemIgnoresTransformations)
-        || (ancestorFlags & AncestorIgnoresTransformations);
-}
-
-
-/*!
-    \internal
-
     Combines this item's position and transform onto \a transform.
 
     If you need to change this function (e.g., adding more transformation
@@ -799,7 +787,7 @@ bool QGraphicsItemPrivate::itemIsUntransformable() const
 void QGraphicsItemPrivate::combineTransformToParent(QTransform *x, const QTransform *viewTransform) const
 {
     // COMBINE
-    if (viewTransform && itemIsUntransformable()) {
+    if (itemIsUntransformable() && viewTransform) {
         *x = q_ptr->deviceTransform(*viewTransform);
     } else {
         if (transform)
@@ -821,7 +809,7 @@ void QGraphicsItemPrivate::combineTransformToParent(QTransform *x, const QTransf
 void QGraphicsItemPrivate::combineTransformFromParent(QTransform *x, const QTransform *viewTransform) const
 {
     // COMBINE
-    if (viewTransform && itemIsUntransformable()) {
+    if (itemIsUntransformable() && viewTransform) {
         *x = q_ptr->deviceTransform(*viewTransform);
     } else {
         x->translate(pos.x(), pos.y());
