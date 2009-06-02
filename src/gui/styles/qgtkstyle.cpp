@@ -940,10 +940,6 @@ void QGtkStyle::drawPrimitive(PrimitiveElement element,
     case PE_FrameLineEdit: {
         GtkWidget *gtkEntry = QGtk::gtkWidget(QLS("GtkEntry"));
 
-        if (option->state & State_HasFocus)
-            GTK_WIDGET_SET_FLAGS(gtkEntry, GTK_HAS_FOCUS);
-        else
-            GTK_WIDGET_UNSET_FLAGS(gtkEntry, GTK_HAS_FOCUS);
 
         gboolean interior_focus;
         gint focus_line_width;
@@ -957,6 +953,9 @@ void QGtkStyle::drawPrimitive(PrimitiveElement element,
 
         if (!interior_focus && option->state & State_HasFocus)
             rect.adjust(focus_line_width, focus_line_width, -focus_line_width, -focus_line_width);
+
+        if (option->state & State_HasFocus)
+            GTK_WIDGET_SET_FLAGS(gtkEntry, GTK_HAS_FOCUS);
         gtkPainter.paintShadow(gtkEntry, "entry", rect, option->state & State_Enabled ? 
                                GTK_STATE_NORMAL : GTK_STATE_INSENSITIVE, 
                                GTK_SHADOW_IN, gtkEntry->style,
@@ -965,6 +964,9 @@ void QGtkStyle::drawPrimitive(PrimitiveElement element,
             gtkPainter.paintShadow(gtkEntry, "entry", option->rect, option->state & State_Enabled ? 
                                    GTK_STATE_ACTIVE : GTK_STATE_INSENSITIVE,
                                    GTK_SHADOW_IN, gtkEntry->style, QLS("GtkEntryShadowIn"));
+
+        if (option->state & State_HasFocus)
+            GTK_WIDGET_UNSET_FLAGS(gtkEntry, GTK_HAS_FOCUS);
     }
     break;
 
@@ -1050,17 +1052,13 @@ void QGtkStyle::drawPrimitive(PrimitiveElement element,
             GTK_WIDGET_SET_FLAGS(gtkButton, GTK_HAS_DEFAULT);
             gtkPainter.paintBox(gtkButton, "buttondefault", buttonRect, state, GTK_SHADOW_IN,
                                 style, isDefault ? QLS("d") : QString());
-        } else
-            GTK_WIDGET_UNSET_FLAGS(gtkButton, GTK_HAS_DEFAULT);
+        }
 
         bool hasFocus = option->state & State_HasFocus;
 
         if (hasFocus) {
             key += QLS("def");
             GTK_WIDGET_SET_FLAGS(gtkButton, GTK_HAS_FOCUS);
-
-        } else {
-            GTK_WIDGET_UNSET_FLAGS(gtkButton, GTK_HAS_FOCUS);
         }
 
         if (!interiorFocus)
@@ -1071,6 +1069,10 @@ void QGtkStyle::drawPrimitive(PrimitiveElement element,
 
         gtkPainter.paintBox(gtkButton, "button", buttonRect, state, shadow,
                             style, key);
+        if (isDefault)
+            GTK_WIDGET_UNSET_FLAGS(gtkButton, GTK_HAS_DEFAULT);
+        if (hasFocus)
+            GTK_WIDGET_UNSET_FLAGS(gtkButton, GTK_HAS_FOCUS);
     }
     break;
 
@@ -1334,6 +1336,8 @@ void QGtkStyle::drawComplexControl(ComplexControl control, const QStyleOptionCom
             GtkWidget *gtkToggleButton = QGtk::gtkWidget(buttonPath);
             QGtk::gtk_widget_set_direction(gtkToggleButton, reverse ? GTK_TEXT_DIR_RTL : GTK_TEXT_DIR_LTR);
             if (gtkToggleButton && (appears_as_list || comboBox->editable)) {
+                if (focus)
+                    GTK_WIDGET_SET_FLAGS(gtkToggleButton, GTK_HAS_FOCUS);
                 // Draw the combo box as a line edit with a button next to it
                 if (comboBox->editable || appears_as_list) {
                     GtkStateType frameState = (state == GTK_STATE_PRELIGHT) ? GTK_STATE_NORMAL : state;
@@ -1347,22 +1351,16 @@ void QGtkStyle::drawComplexControl(ComplexControl control, const QStyleOptionCom
                     else
                         frameRect.setRight(arrowButtonRect.left());
 
-                    // Required for inner blue highlight with clearlooks
-                    if (focus) {
-                        GTK_WIDGET_SET_FLAGS(gtkEntry, GTK_HAS_FOCUS);
-                        GTK_WIDGET_SET_FLAGS(gtkToggleButton, GTK_HAS_FOCUS);
-
-                    } else {
-                        GTK_WIDGET_UNSET_FLAGS(gtkEntry, GTK_HAS_FOCUS);
-                        GTK_WIDGET_UNSET_FLAGS(gtkToggleButton, GTK_HAS_FOCUS);
-                    }
-
                     // Fill the line edit background
                     // We could have used flat_box with "entry_bg" but that is probably not worth the overhead
                     uint resolve_mask = option->palette.resolve();
                     int xt = gtkEntry->style->xthickness;
                     int yt = gtkEntry->style->ythickness;
                     QRect contentRect = frameRect.adjusted(xt, yt, -xt, -yt);
+                    // Required for inner blue highlight with clearlooks
+                    if (focus)
+                        GTK_WIDGET_SET_FLAGS(gtkEntry, GTK_HAS_FOCUS);
+
                     if (widget && widget->testAttribute(Qt::WA_SetPalette) &&
                         resolve_mask & (1 << QPalette::Base)) // Palette overridden by user
                         p->fillRect(contentRect, option->palette.base().color());
@@ -1376,6 +1374,8 @@ void QGtkStyle::drawComplexControl(ComplexControl control, const QStyleOptionCom
                                            GTK_SHADOW_IN, gtkEntry->style, entryPath +
                                            QString::number(focus) + QString::number(comboBox->editable) +
                                            QString::number(option->direction));
+                    if (focus)
+                        GTK_WIDGET_UNSET_FLAGS(gtkEntry, GTK_HAS_FOCUS);
                 }
 
                 GtkStateType buttonState = GTK_STATE_NORMAL;
@@ -1394,22 +1394,21 @@ void QGtkStyle::drawComplexControl(ComplexControl control, const QStyleOptionCom
                 gtkCachedPainter.paintBox( gtkToggleButton, "button", arrowButtonRect, buttonState,
                                      shadow, gtkToggleButton->style, buttonPath +
                                      QString::number(focus) + QString::number(option->direction));
-
+                if (focus)
+                    GTK_WIDGET_UNSET_FLAGS(gtkToggleButton, GTK_HAS_FOCUS);
             } else {
                 // Draw combo box as a button
                 QRect buttonRect = option->rect;
 
-                if (focus) { // Clearlooks actually check the widget for the default state
+                if (focus) // Clearlooks actually check the widget for the default state
                     GTK_WIDGET_SET_FLAGS(gtkToggleButton, GTK_HAS_FOCUS);
-
-                } else {
-                    GTK_WIDGET_UNSET_FLAGS(gtkToggleButton, GTK_HAS_FOCUS);
-                }
-
                 gtkCachedPainter.paintBox(gtkToggleButton, "button",
                                     buttonRect, state,
                                     shadow, gtkToggleButton->style,
                                     buttonPath + QString::number(focus));
+                if (focus)
+                    GTK_WIDGET_UNSET_FLAGS(gtkToggleButton, GTK_HAS_FOCUS);
+
                 // Draw the separator between label and arrows
                 QString vSeparatorPath = buttonPath + QLS(".GtkHBox.GtkVSeparator");
 
@@ -1775,15 +1774,12 @@ void QGtkStyle::drawComplexControl(ComplexControl control, const QStyleOptionCom
                 shadow = GTK_SHADOW_IN;
                 style = gtkPainter.getStyle(gtkSpinButton);
 
-                if (option->state & State_HasFocus)
-                    GTK_WIDGET_SET_FLAGS(gtkSpinButton, GTK_HAS_FOCUS);
-                else
-                    GTK_WIDGET_UNSET_FLAGS(gtkSpinButton, GTK_HAS_FOCUS);
 
                 QString key;
-
-                if (option->state & State_HasFocus)
+                if (option->state & State_HasFocus) {
                     key = QLS("f");
+                    GTK_WIDGET_SET_FLAGS(gtkSpinButton, GTK_HAS_FOCUS);
+                }
 
                 uint resolve_mask = option->palette.resolve();
 
@@ -1816,6 +1812,9 @@ void QGtkStyle::drawComplexControl(ComplexControl control, const QStyleOptionCom
                     gtkPainter.paintBox( gtkSpinButton, "spinbutton_down", downRect, GTK_STATE_PRELIGHT, GTK_SHADOW_OUT, style, key);
                 else
                     gtkPainter.paintBox( gtkSpinButton, "spinbutton_down", downRect, GTK_STATE_NORMAL, GTK_SHADOW_OUT, style, key);
+
+                if (option->state & State_HasFocus)
+                    GTK_WIDGET_UNSET_FLAGS(gtkSpinButton, GTK_HAS_FOCUS);
             }
 
             if (spinBox->buttonSymbols == QAbstractSpinBox::PlusMinus) {
@@ -2344,7 +2343,7 @@ void QGtkStyle::drawControl(ControlElement element,
     case CE_SizeGrip: {
         GtkWidget *gtkStatusbar = QGtk::gtkWidget(QLS("GtkStatusbar.GtkFrame"));
         QRect gripRect = option->rect.adjusted(0, 0, -gtkStatusbar->style->xthickness, -gtkStatusbar->style->ythickness);
-        gtkPainter.paintResizeGrip( gtkStatusbar, "window", gripRect, GTK_STATE_NORMAL,
+        gtkPainter.paintResizeGrip( gtkStatusbar, "statusbar", gripRect, GTK_STATE_NORMAL,
                                     GTK_SHADOW_OUT, QApplication::isRightToLeft() ?
                                         GDK_WINDOW_EDGE_SOUTH_WEST : GDK_WINDOW_EDGE_SOUTH_EAST,
                                     gtkStatusbar->style);

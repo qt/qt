@@ -1887,8 +1887,10 @@ void QGraphicsWidget::insertAction(QAction *before, QAction *action)
     }
     d->actions.insert(pos, action);
 
-    QActionPrivate *apriv = action->d_func();
-    apriv->graphicsWidgets.append(this);
+    if (index == -1) {
+        QActionPrivate *apriv = action->d_func();
+        apriv->graphicsWidgets.append(this);
+    }
 
     QActionEvent e(QEvent::ActionAdded, action, before);
     QApplication::sendEvent(this, &e);
