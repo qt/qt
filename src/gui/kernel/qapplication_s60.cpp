@@ -524,7 +524,14 @@ TKeyResponse QSymbianControl::sendKeyEvent(QWidget *widget, QKeyEvent *keyEvent)
 #ifndef QT_NO_IM
 TCoeInputCapabilities QSymbianControl::InputCapabilities() const
 {
-    QWidget *w = qwidget->focusWidget();
+    QWidget *w = 0;
+
+    if(qwidget->hasFocus()) {
+        w = qwidget;
+    } else {
+        w = qwidget->focusWidget();
+    }
+
     QCoeFepInputContext *ic;
     if (w && w->isEnabled() && w->testAttribute(Qt::WA_InputMethodEnabled)
             && (ic = qobject_cast<QCoeFepInputContext *>(w->inputContext()))) {
