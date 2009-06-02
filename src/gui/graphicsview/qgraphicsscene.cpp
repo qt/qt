@@ -2522,7 +2522,6 @@ QList<QGraphicsItem *> QGraphicsScene::items(const QPointF &pos) const
     return d->items_helper(pos);
 }
 
-
 /*!
     \fn QList<QGraphicsItem *> QGraphicsScene::items(const QRectF &rectangle, Qt::ItemSelectionMode mode) const
 
@@ -5046,7 +5045,7 @@ void QGraphicsScenePrivate::drawItemHelper(QGraphicsItem *item, QPainter *painte
 
 void QGraphicsScenePrivate::drawSubtreeRecursive(QGraphicsItem *item, QPainter *painter, const QTransform &parentTransform,
                                                  const QTransform &viewTransform,
-                                                 const QRegion &exposedRegion, QWidget *widget,
+                                                 QRegion *exposedRegion, QWidget *widget,
                                                  QGraphicsView::OptimizationFlags optimizationFlags,
                                                  QList<QGraphicsItem *> *topLevelItems,
                                                  qreal parentOpacity)
@@ -5084,10 +5083,11 @@ void QGraphicsScenePrivate::drawSubtreeRecursive(QGraphicsItem *item, QPainter *
         if (!brect.size().isNull()) {
             // ### This does not take the clip into account.
             _q_adjustRect(&brect);
-            const QRect paintedViewBoundingRect = transform.mapRect(brect).toRect().adjusted(-1, -1, 1, 1);
-            item->d_ptr->paintedViewBoundingRects.insert(widget, paintedViewBoundingRect);
-            viewBoundingRect = paintedViewBoundingRect & exposedRegion.boundingRect();
-        }
+            viewBoundingRect = transform.mapRect(brect).toRect().adjusted(-1, -1, 1, 1);
+            item->d_ptr->paintedViewBoundingRects.insert(widget, viewBoundingRect);
+            if (exposedRegion)
+                viewBoundingRect &= exposedRegion->boundingRect();
+         }
     }
 
     bool childClip = (item && (item->d_ptr->flags & QGraphicsItem::ItemClipsChildrenToShape));
@@ -5132,7 +5132,7 @@ void QGraphicsScenePrivate::drawSubtreeRecursive(QGraphicsItem *item, QPainter *
     // Draw item
     if (!dontDrawItem) {
         QStyleOptionGraphicsItem option;
-        item->d_ptr->initStyleOption(&option, transform, exposedRegion);
+        item->d_ptr->initStyleOption(&option, transform, exposedRegion ? *exposedRegion : QRegion(), exposedRegion == 0);
 
         bool clipsToShape = (item->d_ptr->flags & QGraphicsItem::ItemClipsToShape);
         bool savePainter = clipsToShape || !(optimizationFlags & QGraphicsView::DontSavePainterState);
@@ -5143,7 +5143,6 @@ void QGraphicsScenePrivate::drawSubtreeRecursive(QGraphicsItem *item, QPainter *
         if (clipsToShape)
             painter->setClipPath(item->shape(), Qt::IntersectClip);
         painter->setOpacity(opacity);
-
         drawItemHelper(item, painter, &option, widget, false);
 
         if (savePainter)
@@ -5318,20 +5317,19 @@ void QGraphicsScene::drawItems(QPainter *painter,
 
     // Determine view, expose and flags.
     QGraphicsView *view = widget ? qobject_cast<QGraphicsView *>(widget->parentWidget()) : 0;
-    QRegion expose;
+    QRegion *expose = 0;
     QGraphicsView::OptimizationFlags flags;
     if (view) {
-        expose = view->d_func()->exposedRegion;
+        expose = &view->d_func()->exposedRegion;
         flags = view->optimizationFlags();
     }
 
-    // Draw each toplevel recursively.
+    // Find all toplevels, they are already sorted.
     QList<QGraphicsItem *> topLevelItems;
     for (int i = 0; i < numItems; ++i) {
         QGraphicsItem *item = items[i]->topLevelItem();
-        topLevelItems << item;
-
         if (!item->d_ptr->itemDiscovered) {
+            topLevelItems << item;
             item->d_ptr->itemDiscovered = 1;
             d->drawSubtreeRecursive(item, painter, viewTransform, viewTransform,
                                     expose, widget, flags);

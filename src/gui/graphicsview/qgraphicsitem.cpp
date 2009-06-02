@@ -3151,6 +3151,7 @@ void QGraphicsItem::setZValue(qreal z)
     if (newZ == d_ptr->z)
         return;
     d_ptr->z = newZ;
+    d_ptr->needSortChildren = 1;
 
     if (d_ptr->scene) {
         d_ptr->scene->d_func()->markDirty(this, QRectF(), /*invalidateChildren=*/true);
