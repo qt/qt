@@ -139,6 +139,7 @@ QPixmap QS60StylePrivate::frame(SkinFrameElements frame, const QSize &size,
     const QRect centerRect = drawOnlyCenter ? rect : rect.adjusted(cornerWidth, cornerWidth, -cornerWidth, -cornerWidth);
 
     QImage result(size, QImage::Format_ARGB32);
+    result.fill(Qt::transparent);
     QPainter painter(&result);
 
 #if 0
