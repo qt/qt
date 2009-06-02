@@ -204,6 +204,10 @@ public:
     void mousePressEventHandler(QGraphicsSceneMouseEvent *mouseEvent);
     QGraphicsWidget *windowForItem(const QGraphicsItem *item) const;
 
+    void recursive_items_helper(QGraphicsItem *item, QRectF rect, QList<QGraphicsItem *> *items,
+                                const QTransform &parentTransform, const QTransform &viewTransform,
+                                Qt::ItemSelectionMode mode, Qt::SortOrder order, qreal parentOpacity = 1.0) const;
+
     QList<QGraphicsItem *> items_helper(const QPointF &pos) const;
     QList<QGraphicsItem *> items_helper(const QRectF &rect,
                                         Qt::ItemSelectionMode mode,

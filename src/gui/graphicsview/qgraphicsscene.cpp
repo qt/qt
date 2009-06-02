@@ -250,6 +250,8 @@ static const int QGRAPHICSSCENE_INDEXTIMER_TIMEOUT = 2000;
 
 QT_BEGIN_NAMESPACE
 
+static inline bool qt_notclosestLeaf(const QGraphicsItem *item1, const QGraphicsItem *item2);
+
 static inline bool QRectF_intersects(const QRectF &s, const QRectF &r)
 {
     qreal xp = s.left();
@@ -1372,6 +1374,110 @@ QGraphicsWidget *QGraphicsScenePrivate::windowForItem(const QGraphicsItem *item)
     return 0;
 }
 
+void QGraphicsScenePrivate::recursive_items_helper(QGraphicsItem *item, QRectF rect,
+                                                   QList<QGraphicsItem *> *items,
+                                                   const QTransform &parentTransform,
+                                                   const QTransform &viewTransform,
+                                                   Qt::ItemSelectionMode mode, Qt::SortOrder order,
+                                                   qreal parentOpacity) const
+{
+    // Calculate opacity.
+    qreal opacity;
+    if (item) {
+        if (!item->d_ptr->visible)
+            return;
+        QGraphicsItem *p = item->d_ptr->parent;
+        bool itemIgnoresParentOpacity = item->d_ptr->flags & QGraphicsItem::ItemIgnoresParentOpacity;
+        bool parentDoesntPropagateOpacity = (p && (p->d_ptr->flags & QGraphicsItem::ItemDoesntPropagateOpacityToChildren));
+        if (!itemIgnoresParentOpacity && !parentDoesntPropagateOpacity) {
+            opacity = parentOpacity * item->opacity();
+        } else {
+            opacity = item->d_ptr->opacity;
+        }
+        if (opacity == 0.0 && !(item->d_ptr->flags & QGraphicsItem::ItemDoesntPropagateOpacityToChildren))
+            return;
+    } else {
+        opacity = parentOpacity;
+    }
+
+    // Calculate the full transform for this item.
+    QTransform transform = parentTransform;
+    bool keep = false;
+    if (item) {
+        item->d_ptr->combineTransformFromParent(&transform, &viewTransform);
+
+        QRectF brect = item->boundingRect();
+        if (!brect.size().isNull()) {
+            // ### This does not take the clip into account.
+            _q_adjustRect(&brect);
+
+            keep = true;
+            if (mode == Qt::ContainsItemShape || mode == Qt::ContainsItemBoundingRect)
+                keep = rect.contains(transform.mapRect(brect));
+            else
+                keep = rect.intersects(transform.mapRect(brect));
+
+            if (keep && (mode == Qt::ContainsItemShape || mode == Qt::IntersectsItemShape)) {
+                QPainterPath rectPath;
+                rectPath.addRect(rect);
+                keep = item->collidesWithPath(transform.inverted().map(rectPath));
+            }
+        }
+    }
+
+    bool childClip = (item && (item->d_ptr->flags & QGraphicsItem::ItemClipsChildrenToShape));
+    bool dontProcessItem = !item || !keep;
+    bool dontProcessChildren = item && dontProcessItem && childClip;
+    childClip &= !dontProcessChildren & !children.isEmpty();
+
+    // Clip.
+    if (childClip)
+        rect &= transform.map(item->shape()).controlPointRect();
+
+    // Find and sort children.
+    QList<QGraphicsItem *> &children = item ? item->d_ptr->children : const_cast<QGraphicsScenePrivate *>(this)->topLevelItems;
+    if (!dontProcessChildren) {
+        if (item && item->d_ptr->needSortChildren) {
+            item->d_ptr->needSortChildren = 0;
+            qStableSort(children.begin(), children.end(), qt_notclosestLeaf);
+        } else if (!item && needSortTopLevelItems) {
+            const_cast<QGraphicsScenePrivate *>(this)->needSortTopLevelItems = false;
+            qStableSort(children.begin(), children.end(), qt_notclosestLeaf);
+        }
+    }
+
+    // Process children behind
+    int i = 0;
+    if (!dontProcessChildren) {
+        for (i = 0; i < children.size(); ++i) {
+            QGraphicsItem *child = children.at(i);
+            if (!(child->d_ptr->flags & QGraphicsItem::ItemStacksBehindParent))
+                break;
+            recursive_items_helper(child, rect, items, transform, viewTransform,
+                                   mode, order, opacity);
+        }
+    }
+
+    // Process item
+    if (!dontProcessItem)
+        items->append(item);
+
+    // Process children in front
+    if (!dontProcessChildren) {
+        for (; i < children.size(); ++i)
+            recursive_items_helper(children.at(i), rect, items, transform, viewTransform,
+                                   mode, order, opacity);
+    }
+
+    if (!item && order == Qt::AscendingOrder) {
+        int n = items->size();
+        for (int i = 0; i < n / 2; ++i) {
+            QGraphicsItem *tmp = (*items)[n - i - 1];
+            (*items)[n - i - 1] = (*items)[i];
+            (*items)[i] = tmp;
+        }
+    }
+}
 
 QList<QGraphicsItem *> QGraphicsScenePrivate::items_helper(const QPointF &pos) const
 {
@@ -2470,7 +2576,9 @@ QList<QGraphicsItem *> QGraphicsScene::items(const QPointF &pos) const
 QList<QGraphicsItem *> QGraphicsScene::items(const QRectF &rect, Qt::ItemSelectionMode mode) const
 {
     Q_D(const QGraphicsScene);
-    return d->items_helper(rect, mode, Qt::AscendingOrder);
+    QList<QGraphicsItem *> itemList;
+    d->recursive_items_helper(0, rect, &itemList, QTransform(), QTransform(), mode, Qt::AscendingOrder);
+    return itemList;
 }
 
 /*!
