@@ -1296,8 +1296,11 @@ OSStatus QWidgetPrivate::qt_widget_event(EventHandlerCallRef er, EventRef event,
                 if(part == kControlFocusNoPart){
                     if (widget->hasFocus())
                         QApplicationPrivate::setFocusWidget(0, Qt::OtherFocusReason);
-                } else
+                } else if (widget->focusPolicy() != Qt::NoFocus) {
                     widget->setFocus();
+                } else {
+                    handled_event = false;
+                }
             }
             if(!HIObjectIsOfClass((HIObjectRef)hiview, kObjectQWidget))
                 CallNextEventHandler(er, event);
