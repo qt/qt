@@ -49,6 +49,7 @@
 #endif
 
 #include <qfxperf.h>
+#include "qfxevents_p.h"
 #include <QTextLayout>
 #include <QTextLine>
 #include <QTextDocument>
@@ -474,6 +475,21 @@ void QFxTextEdit::setPreserveSelection(bool on)
     d->preserveSelection = on;
 }
 
+qreal QFxTextEdit::textMargin() const
+{
+    Q_D(const QFxTextEdit);
+    return d->textMargin;
+}
+
+void QFxTextEdit::setTextMargin(qreal margin)
+{
+    Q_D(QFxTextEdit);
+    if (d->textMargin == margin)
+        return;
+    d->textMargin = margin;
+    d->document->setDocumentMargin(d->textMargin);
+}
+
 void QFxTextEdit::geometryChanged(const QRectF &newGeometry, 
                                   const QRectF &oldGeometry)
 {
@@ -659,6 +675,13 @@ Handles the given key \a event.
 void QFxTextEdit::keyPressEvent(QKeyEvent *event)
 {
     Q_D(QFxTextEdit);
+    //### experiment with allowing 'overrides' to key events
+    QFxKeyEvent ke(*event);
+    emit keyPress(&ke);
+    event->setAccepted(ke.isAccepted());
+    if (event->isAccepted())
+        return;
+
     QTextCursor c = textCursor();
     QTextCursor::MoveOperation op = QTextCursor::NoMove;
     if (event == QKeySequence::MoveToNextChar) {
@@ -688,6 +711,13 @@ Handles the given key \a event.
 void QFxTextEdit::keyReleaseEvent(QKeyEvent *event)
 {
     Q_D(QFxTextEdit);
+    //### experiment with allowing 'overrides' to key events
+    QFxKeyEvent ke(*event);
+    emit keyRelease(&ke);
+    event->setAccepted(ke.isAccepted());
+    if (event->isAccepted())
+        return;
+
     d->control->processEvent(event, QPointF(0, 0));
 }
 
@@ -821,7 +851,7 @@ void QFxTextEditPrivate::init()
 
     document = control->document();
     document->setDefaultFont(font.font());
-    document->setDocumentMargin(0);
+    document->setDocumentMargin(textMargin);
     document->setUndoRedoEnabled(false); // flush undo buffer.
     document->setUndoRedoEnabled(true);
     updateDefaultTextOption();
@@ -851,7 +881,7 @@ void QFxTextEdit::updateSize()
             else if (d->vAlign == AlignVCenter)
                 yoff = dy/2;
         }
-        setBaselineOffset(fm.ascent() + yoff);
+        setBaselineOffset(fm.ascent() + yoff + d->textMargin);
         if (!widthValid()) {
             int newWidth = (int)d->document->idealWidth();
             d->document->setTextWidth(newWidth); // ### QTextDoc> Alignment will not work unless textWidth is set
