@@ -29,6 +29,14 @@
 #include <QtCore/QChar>
 #include <QtCore/QString>
 
+#if !defined(_MSC_VER) && defined(_CL_HAVE_WCHAR_H) && defined(_CL_HAVE_WCHAR_T)
+#   if !defined(TCHAR)
+#       define TCHAR wchar_t
+#   endif
+#else
+#   include <windows.h>
+#endif
+
 QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
@@ -85,14 +93,6 @@ QT_BEGIN_NAMESPACE
 #   define CL_NS_USE2(sub,sub2)
 #   define CL_NS(sub)
 #   define CL_NS2(sub,sub2)
-#endif
-
-#if !defined(_MSC_VER) && defined(_CL_HAVE_WCHAR_H) && defined(_CL_HAVE_WCHAR_T)
-#   if !defined(TCHAR)
-#       define TCHAR wchar_t
-#   endif
-#else
-#   include <windows.h>
 #endif
 
 namespace {
