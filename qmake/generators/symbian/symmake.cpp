@@ -116,9 +116,6 @@ QString SymbianMakefileGenerator::canonizePath(const QString& origPath)
 SymbianMakefileGenerator::SymbianMakefileGenerator() : MakefileGenerator() { }
 SymbianMakefileGenerator::~SymbianMakefileGenerator() { }
 
-// check this out
-bool SymbianMakefileGenerator::writeStubMakefile(QTextStream &t) { t; return false; }
-
 void SymbianMakefileGenerator::writeHeader(QTextStream &t) {
     t << "// ============================================================================" << endl;
     t << "// * Makefile for building: " << escapeFilePath(var("TARGET")) << endl;
