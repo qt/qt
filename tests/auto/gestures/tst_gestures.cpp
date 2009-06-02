@@ -785,20 +785,24 @@ namespace QTest
     class QTouchEventSequence
     {
     public:
-        QTouchEventSequence(QWidget *widget, QEvent::Type type)
-            : relativeWindow(widget), eventType(type)
+        QTouchEventSequence(QWidget *widget)
+            : relativeWindow(widget)
         {
             ++refcount;
         }
         QTouchEventSequence(const QTouchEventSequence &v)
-            : relativeWindow(v.relativeWindow), eventType(v.eventType)
+            : relativeWindow(v.relativeWindow)
         {
             ++refcount;
         }
         ~QTouchEventSequence()
         {
-            if (!--refcount)
+            if (!--refcount) {
                 commit();
+                foreach(QTouchEvent::TouchPoint *pt, points)
+                    delete pt;
+                points.clear();
+            }
         }
         QTouchEventSequence& press(int touchId, const QPoint &pt)
         {
@@ -857,7 +861,7 @@ namespace QTest
         void commit()
         {
             if (relativeWindow) {
-                QTouchEvent event(eventType, Qt::NoModifier,
+                QTouchEvent event(QEvent::RawTouch, Qt::NoModifier,
                                   touchPointStates, points.values());
                 ::sendSpontaneousEvent(relativeWindow, &event);
                 relativeWindow = 0;
@@ -865,29 +869,16 @@ namespace QTest
         }
 
         static int refcount;
-        static QMap<int, QTouchEvent::TouchPoint*> points;
+        QMap<int, QTouchEvent::TouchPoint*> points;
         QWidget *relativeWindow;
-        QEvent::Type eventType;
         Qt::TouchPointStates touchPointStates;
         friend QTouchEventSequence touchBeginEvent(QWidget*);
     };
-    QMap<int, QTouchEvent::TouchPoint*> QTouchEventSequence::points;
     int QTouchEventSequence::refcount = 0;
 
-    QTouchEventSequence touchBeginEvent(QWidget *widget)
+    QTouchEventSequence touchEvent(QWidget *widget)
     {
-        foreach(QTouchEvent::TouchPoint *point, QTouchEventSequence::points.values())
-            delete point;
-        QTouchEventSequence::points.clear();
-        return QTouchEventSequence(widget, QEvent::TouchBegin);
-    }
-    QTouchEventSequence touchUpdateEvent(QWidget *widget)
-    {
-        return QTouchEventSequence(widget, QEvent::TouchUpdate);
-    }
-    QTouchEventSequence touchEndEvent(QWidget *widget)
-    {
-        return QTouchEventSequence(widget, QEvent::TouchEnd);
+        return QTouchEventSequence(widget);
     }
 
 }
@@ -916,16 +907,16 @@ void tst_Gestures::touch()
 
     QRect itemRect = view.mapFromScene(item->mapRectToScene(item->boundingRect())).boundingRect();
     QPoint pt = itemRect.center();
-    QTest::touchBeginEvent(view.viewport())
+    QTest::touchEvent(view.viewport())
         .press(0, pt)
         .press(1, pt);
-    QTest::touchUpdateEvent(view.viewport())
+    QTest::touchEvent(view.viewport())
         .move(0, pt + QPoint(20, 30))
         .move(1, QPoint(300, 300));
-    QTest::touchUpdateEvent(view.viewport())
+    QTest::touchEvent(view.viewport())
         .stationary(0)
         .move(1, QPoint(330, 330));
-    QTest::touchEndEvent(view.viewport())
+    QTest::touchEvent(view.viewport())
         .release(0, QPoint(120, 120))
         .release(1, QPoint(300, 300));
 
