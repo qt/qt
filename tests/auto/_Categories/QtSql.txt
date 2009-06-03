@@ -1,6 +1,7 @@
 qsql
 qsqlbatch
 qsqldatabase
+qsqldriver
 qsqlerror
 qsqlfield
 qsqlquery

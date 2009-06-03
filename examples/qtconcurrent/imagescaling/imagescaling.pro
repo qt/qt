@@ -13,3 +13,5 @@ sources.path = $$[QT_INSTALL_EXAMPLES]/qtconcurrent/imagescaling
 INSTALLS += target sources
 
 include($$QT_SOURCE_TREE/examples/examplebase.pri)
+
+wince*: DEPLOYMENT_PLUGIN += qgif qjpeg qtiff

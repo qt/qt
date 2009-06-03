@@ -1865,7 +1865,7 @@ QVariant QTextControl::inputMethodQuery(Qt::InputMethodQuery property) const
     case Qt::ImFont:
         return QVariant(d->cursor.charFormat().font());
     case Qt::ImCursorPosition:
-        return QVariant(d->cursor.selectionEnd() - block.position());
+        return QVariant(d->cursor.position() - block.position());
     case Qt::ImSurroundingText:
         return QVariant(block.text());
     case Qt::ImCurrentSelection:
