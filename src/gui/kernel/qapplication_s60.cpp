@@ -5,7 +5,37 @@
 **
 ** This file is part of the $MODULE$ of the Qt Toolkit.
 **
-** $TROLLTECH_DUAL_EMBEDDED_LICENSE$
+** $QT_BEGIN_LICENSE:LGPL$
+** No Commercial Usage
+** This file contains pre-release code and may not be distributed.
+** You may use this file in accordance with the terms and conditions
+** contained in the either Technology Preview License Agreement or the
+** Beta Release License Agreement.
+**
+** GNU Lesser General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU Lesser
+** General Public License version 2.1 as published by the Free Software
+** Foundation and appearing in the file LICENSE.LGPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU Lesser General Public License version 2.1 requirements
+** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+**
+** In addition, as a special exception, Nokia gives you certain
+** additional rights. These rights are described in the Nokia Qt LGPL
+** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
+** package.
+**
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU
+** General Public License version 3.0 as published by the Free Software
+** Foundation and appearing in the file LICENSE.GPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU General Public License version 3.0 requirements will be
+** met: http://www.gnu.org/copyleft/gpl.html.
+**
+** If you are unsure which license is appropriate for your use, please
+** contact the sales department at qt-sales@nokia.com.
+** $QT_END_LICENSE$
 **
 ****************************************************************************/
 
@@ -28,7 +58,7 @@
 #endif
 #include "private/qwindowsurface_s60_p.h"
 #include "qpaintengine.h"
-#include "qmenubar.h"
+#include "private/qmenubar_p.h"
 #include "private/qsoftkeystack_p.h"
 
 #include "apgwgnam.h" // For CApaWindowGroupName
@@ -205,7 +235,7 @@ static void mapS60MouseEventTypeToQt(QEvent::Type *type, Qt::MouseButton *button
         *type = QEvent::MouseButtonDblClick;
     }
 
-    if (*type == QEvent::MouseButtonPress)
+    if (*type == QEvent::MouseButtonPress || *type == QEvent::MouseButtonDblClick)
         QApplicationPrivate::mouse_buttons = QApplicationPrivate::mouse_buttons | (*button);
     else if (*type == QEvent::MouseButtonRelease)
         QApplicationPrivate::mouse_buttons = QApplicationPrivate::mouse_buttons &(~(*button));
@@ -314,7 +344,7 @@ void QSymbianControl::HandleLongTapEventL( const TPoint& aPenEventLocation, cons
     QMouseEvent mEvent(QEvent::MouseButtonPress, alienWidget->mapFrom(qwidget, widgetPos), globalPos,
         Qt::RightButton, QApplicationPrivate::mouse_buttons, Qt::NoModifier);
     sendMouseEvent(alienWidget, &mEvent);
-    m_previousEventLongTap = true;
+    m_previousEventLongTap = false;
 }
 
 void QSymbianControl::HandlePointerEventL(const TPointerEvent& pEvent)
@@ -343,7 +373,7 @@ void QSymbianControl::HandlePointerEventL(const TPointerEvent& pEvent)
     TPoint controlScreenPos = PositionRelativeToScreen();
     QPoint globalPos = QPoint(controlScreenPos.iX, controlScreenPos.iY) + widgetPos;
     
-    if (type == QEvent::MouseButtonPress)
+    if (type == QEvent::MouseButtonPress || type == QEvent::MouseButtonDblClick)
     {
         // get the button press target
         alienWidget = qwidget->childAt(widgetPos);
@@ -363,7 +393,7 @@ void QSymbianControl::HandlePointerEventL(const TPointerEvent& pEvent)
     alienWidget = S60->mousePressTarget;
 
     if (alienWidget != S60->lastPointerEventTarget)
-        if (type == QEvent::MouseButtonPress || type == QEvent::MouseMove)
+        if (type == QEvent::MouseButtonPress || QEvent::MouseButtonDblClick || type == QEvent::MouseMove)
         {
             //moved to another widget, create enter and leave events
             if (S60->lastPointerEventTarget)
@@ -525,7 +555,14 @@ TKeyResponse QSymbianControl::sendKeyEvent(QWidget *widget, QKeyEvent *keyEvent)
 #ifndef QT_NO_IM
 TCoeInputCapabilities QSymbianControl::InputCapabilities() const
 {
-    QWidget *w = qwidget->focusWidget();
+    QWidget *w = 0;
+
+    if(qwidget->hasFocus()) {
+        w = qwidget;
+    } else {
+        w = qwidget->focusWidget();
+    }
+
     QCoeFepInputContext *ic;
     if (w && w->isEnabled() && w->testAttribute(Qt::WA_InputMethodEnabled)
             && (ic = qobject_cast<QCoeFepInputContext *>(w->inputContext()))) {
@@ -643,21 +680,7 @@ void QSymbianControl::HandleResourceChange(int resourceType)
         // font change event
         break;
     case KEikDynamicLayoutVariantSwitch:
-    {
-#ifndef QT_NO_STYLE_S60
-        QS60Style *s60Style = 0;
-
-#ifndef QT_NO_STYLE_STYLESHEET
-        QStyleSheetStyle *proxy = qobject_cast<QStyleSheetStyle*>(QApplication::style());
-        if (proxy)
-            s60Style = qobject_cast<QS60Style*>(proxy->baseStyle());
-        else
-#endif
-            s60Style = qobject_cast<QS60Style*>(QApplication::style());
-
-        if (s60Style)
-            s60Style->handleDynamicLayoutVariantSwitch();
-#endif
+    {        
         if (qwidget->isFullScreen()) {
             SetExtentToWholeScreen();
         } else if (qwidget->isMaximized()) {
@@ -666,12 +689,6 @@ void QSymbianControl::HandleResourceChange(int resourceType)
         }
         break;
     }
-#ifndef QT_NO_STYLE_S60
-    case KAknsMessageSkinChange:
-        if (QS60Style *s60Style = qobject_cast<QS60Style*>(QApplication::style()))
-            s60Style->handleSkinChange();
-        break;
-#endif
     default:
         break;
     }
@@ -1032,7 +1049,14 @@ bool QApplication::s60EventFilter(TWsEvent *aEvent)
     return false;
 }
 
-void QApplication::s60HandleCommandL(int command)
+/*!
+    Handles commands which are typically handled by CAknAppUi::HandleCommandL()
+    Qts Ui integration into Symbian is partially achieved by deriving from CAknAppUi.
+    Currently, exit, menu and softkey commands are handled
+
+    \sa s60EventFilter(), s60ProcessEvent()
+*/
+void QApplication::symbianHandleCommand(int command)
 {
     switch (command) {
     case EEikCmdExit:
@@ -1043,7 +1067,42 @@ void QApplication::s60HandleCommandL(int command)
         if (command >= SOFTKEYSTART && command <= SOFTKEYEND)
             QSoftKeyStackPrivate::handleSoftKeyPress(command);
         else
-            QMenuBar::symbianCommands(command);
+            QMenuBarPrivate::symbianCommands(command);
+        break;
+    }
+}
+
+void QApplication::symbianResourceChange(int type)
+{
+    switch (type) {
+    case KEikDynamicLayoutVariantSwitch:
+        {
+#ifndef QT_NO_STYLE_S60
+        QS60Style *s60Style = 0;
+
+#ifndef QT_NO_STYLE_STYLESHEET
+        QStyleSheetStyle *proxy = qobject_cast<QStyleSheetStyle*>(QApplication::style());
+        if (proxy)
+            s60Style = qobject_cast<QS60Style*>(proxy->baseStyle());
+        else
+#endif
+            s60Style = qobject_cast<QS60Style*>(QApplication::style());
+
+        if (s60Style)
+            s60Style->handleDynamicLayoutVariantSwitch();
+#endif    
+        }
+        break;
+
+#ifndef QT_NO_STYLE_S60
+    case KAknsMessageSkinChange:
+        if (QS60Style *s60Style = qobject_cast<QS60Style*>(QApplication::style()))
+            s60Style->handleSkinChange();
+        break; 
+#endif
+        
+    default:
+>>>>>>> master:src/gui/kernel/qapplication_s60.cpp
         break;
     }
 }

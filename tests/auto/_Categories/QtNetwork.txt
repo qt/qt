@@ -1,3 +1,5 @@
+_networkselftest
+#qsocketnotifier
 qabstractnetworkcache
 qabstractsocket
 qftp

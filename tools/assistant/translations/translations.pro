@@ -45,4 +45,5 @@ TRANSLATIONS=$$[QT_INSTALL_TRANSLATIONS]/assistant_de.ts \
              $$[QT_INSTALL_TRANSLATIONS]/assistant_pl.ts \
              $$[QT_INSTALL_TRANSLATIONS]/assistant_untranslated.ts \
              $$[QT_INSTALL_TRANSLATIONS]/assistant_zh_CN.ts \
-             $$[QT_INSTALL_TRANSLATIONS]/assistant_zh_TW.ts
+             $$[QT_INSTALL_TRANSLATIONS]/assistant_zh_TW.ts \
+             $$[QT_INSTALL_TRANSLATIONS]/assistant_da.ts

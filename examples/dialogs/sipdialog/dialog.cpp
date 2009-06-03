@@ -90,7 +90,7 @@ Dialog::Dialog()
 //! [Dialog constructor part4]
 
 //! [Dialog constructor part5]
-    connect(button, SIGNAL(pressed()), 
+    connect(button, SIGNAL(clicked()),
         qApp, SLOT(closeAllWindows()));
     connect(QApplication::desktop(), SIGNAL(workAreaResized(int)), 
         this, SLOT(desktopResized(int)));
@@ -111,14 +111,13 @@ void Dialog::reactToSIP()
 {
     QRect availableGeometry = QApplication::desktop()->availableGeometry(0);
 
-    if (desktopGeometry.width() == availableGeometry.width()) {
-        if (desktopGeometry.height() > availableGeometry.height()) {
+    if (desktopGeometry != availableGeometry) {
+        if (windowState() | Qt::WindowMaximized)
             setWindowState(windowState() & ~Qt::WindowMaximized);
-            setGeometry(availableGeometry);
-        } else {
-            setWindowState(windowState() | Qt::WindowMaximized);
-        }
+
+        setGeometry(availableGeometry);
     }
+
     desktopGeometry = availableGeometry;
 }
 //! [reactToSIP() function]

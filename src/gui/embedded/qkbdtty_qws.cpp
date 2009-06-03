@@ -97,6 +97,7 @@ private slots:
 private:
     QWSPC101KeyboardHandler *handler;
     struct termios origTermData;
+    int originalKbdMode;
 };
 
 QWSTtyKeyboardHandler::QWSTtyKeyboardHandler(const QString &device)
@@ -156,6 +157,7 @@ QWSTtyKbPrivate::QWSTtyKbPrivate(QWSPC101KeyboardHandler *h, const QString &devi
         tcgetattr(kbdFD, &termdata);
 
 #if defined(Q_OS_LINUX)
+        ioctl(kbdFD, KDGKBMODE, &originalKbdMode);
 # ifdef QT_QWS_USE_KEYCODES
         ioctl(kbdFD, KDSKBMODE, K_MEDIUMRAW);
 # else
@@ -202,7 +204,7 @@ QWSTtyKbPrivate::~QWSTtyKbPrivate()
 {
     if (kbdFD >= 0) {
 #if defined(Q_OS_LINUX)
-        ioctl(kbdFD, KDSKBMODE, K_XLATE);
+        ioctl(kbdFD, KDSKBMODE, originalKbdMode);
 #endif
         tcsetattr(kbdFD, TCSANOW, &origTermData);
         ::close(kbdFD);

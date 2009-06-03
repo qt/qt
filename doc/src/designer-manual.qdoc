@@ -58,7 +58,8 @@
     and custom plugins allow you to use your own components with \QD.
 
     If you are new to \QD, you can take a look at the
-    \l{Getting To Know Qt Designer} document.
+    \l{Getting To Know Qt Designer} document. For a quick tutorial on how to
+    use \QD, refer to \l{A Quick Start to Qt Designer}.
 
     Qt Designer 4.5 boasts a long list of improvements. For a detailed list of
     what is new, refer \l{What's New in Qt Designer 4.5}.
@@ -235,6 +236,7 @@
     \page designer-to-know.html
     \contentspage {Qt Designer Manual}{Contents}
 
+
     \title Getting to Know Qt Designer
 
     \tableofcontents
@@ -298,12 +300,12 @@
         \row
             \i \inlineimage designer-widget-box.png
             \i \bold{Qt Designer's Widget Box}
-        
+
         The widget box provides a selection of standard Qt widgets, layouts,
         and other objects that can be used to create user interfaces on forms.
         Each of the categories in the widget box contain widgets with similar
         uses or related features.
-        
+
         \note Since Qt 4.4, new widgets have been included, e.g.,
         QPlainTextEdit, QCommandLinkButton, QScrollArea, QMdiArea, and
         QWebView.
@@ -357,7 +359,7 @@
     using a grid. The coordinates on the screenshot show the position of each
     widget within the grid.
 
-    \image addressbook-tutorial-part3-labeled-layout.png    
+    \image addressbook-tutorial-part3-labeled-layout.png
 
     \note Inside the grid, the QPushButton objects are actually nested. The
     buttons on the right are first placed in a QVBoxLayout; the buttons at the
@@ -366,7 +368,7 @@
 
     To visualize, imagine the layout as a box that shrinks as much as possible,
     attempting to \e squeeze your widgets in a neat arrangement, and, at the
-    same time, maximize the use of available space. 
+    same time, maximize the use of available space.
 
     Qt's layouts help when you:
 
@@ -408,6 +410,7 @@
     \page designer-quick-start.html
     \contentspage {Qt Designer Manual}{Contents}
 
+
     \title A Quick Start to Qt Designer
 
     Using \QD involves \bold four basic steps:
@@ -419,16 +422,14 @@
         \o  Preview the form
     \endlist
 
-    \omit
     \image rgbController-screenshot.png
-    \endomit
 
-    Suppose you would like to design a small widget (see screenshot above)
-    that contains the controls needed to manipulate Red, Green and Blue (RGB)
-    values -- a type of widget that can be seen everywhere in image
-    manipulation programs.
+    Suppose you would like to design a small widget (see screenshot above) that
+    contains the controls needed to manipulate Red, Green and Blue (RGB) values
+    -- a type of widget that can be seen everywhere in image manipulation
+    programs.
 
-   \table
+    \table
     \row
     \i \inlineimage designer-choosing-form.png
     \i \bold{Choosing a Form}
@@ -436,39 +437,32 @@
     You start by choosing \gui Widget from the \gui{New Form} dialog.
     \endtable
 
-    Then you drag three labels, three spin boxes and three vertical sliders
-    on to your form. You can roughly arrange them according to how you would
-    like them to be laid out.
 
-    \omit
     \table
-    \row \o \inlineimage rgbController-widgetBox.png
-         \o \inlineimage rgbController-arrangement.png
+    \row
+    \i  \inlineimage rgbController-arrangement.png
+    \i  \bold{Placing Widgets on a Form}
+
+    Drag three labels, three spin boxes and three vertical sliders on to your
+    form. To change the label's default text, simply double-click on it. You
+    can arrange them according to how you would like them to be laid out.
     \endtable
-    \endomit
 
     To ensure that they are laid out exactly like this in your program, you
     need to place these widgets into a layout. We will do this in groups of
-    three. Select the "RED" label. Then, hold down \key Shift while you select
+    three. Select the "RED" label. Then, hold down \key Ctrl while you select
     its corresponding spin box and slider. In the \gui{Form} menu, select
     \gui{Lay Out in a Grid}.
 
-    \omit
     \table
         \row
             \i \inlineimage rgbController-form-gridLayout.png
             \i \inlineimage rgbController-selectForLayout.png
     \endtable
-    \endomit
 
 
     Repeat the step for the other two labels along with their corresponding
-    spin boxes and sliders as well. Your form will now look similar to the
-    screenshot below.
-
-    \omit
-    \image rgbController-almostLaidOut.png
-    \endomit
+    spin boxes and sliders as well.
 
     The next step is to combine all three layouts into one \bold{main layout}.
     It is important that your form has a main layout; otherwise, the widgets
@@ -476,24 +470,26 @@
     layout, \gui{Right click} anywhere on your form, outside of the three
     separate layouts, and select \gui{Lay Out Horizontally}. Alternatively, you
     could also select \gui{Lay Out in a Grid} -- you will still see the same
-    arrangement.
+    arrangement (shown below).
+
+    \image rgbController-final-layout.png
 
     \note Main layouts cannot be seen on the form. To check if you have a main
     layout installed, try resizing your form; your widgets should resize
     accordingly.
 
     When you click on the slider and drag it to a certain value, you want the
-    spin box to display the slider's position. To do this, you need to connect
-    the slider's \l{QAbstractSlider::}{valueChanged()} signal to the spin box's
-    \l{QSpinBox::}{setValue()} slot. You also need to make the reverse
-    connections, e.g., connect the spin box's \l{QSpinBox::}{valueChanged()}
-    signal to the slider's \l{QAbstractSlider::value()}{setValue()} slot.
+    spin box to display the slider's position. To accomplish this behavior, you
+    need to connect the slider's \l{QAbstractSlider::}{valueChanged()} signal
+    to the spin box's \l{QSpinBox::}{setValue()} slot. You also need to make
+    the reverse connections, e.g., connect the spin box's \l{QSpinBox::}
+    {valueChanged()} signal to the slider's \l{QAbstractSlider::value()}
+    {setValue()} slot.
 
     To do this, you have to switch to \gui{Edit Signals/Slots} mode, either by
     pressing \key{F4} or something \gui{Edit Signals/Slots} from the \gui{Edit}
     menu.
 
-    \omit
     \table
         \row
             \i \inlineimage rgbController-signalsAndSlots.png
@@ -503,16 +499,18 @@
         \gui{Configure Connection} dialog, shown below, will pop up. Select the
         correct signal and slot and click \gui OK.
     \endtable
-    \endomit
 
-    \omit
-    \image rgbController-configureConnection.png
-    \endomit
+    \image rgbController-configure-connection1.png
 
     Repeat the step (in reverse order), clicking on the spin box and dragging
     the cursor towards the slider, to connect the spin box's
     \l{QSpinBox::}{valueChanged()} signal to the slider's
     \l{QAbstractSlider::value()}{setValue()} slot.
+
+    You can use the screenshot below as a guide to selecting the correct signal
+    and slot.
+
+    \image rgbController-configure-connection2.png
 
     Now that you have successfully connected the objects for the "RED"
     component of the RGB Controller, do the same for the "GREEN" and "BLUE"
@@ -521,7 +519,6 @@
     Since RGB values range between 0 and 255, we need to limit the spin box
     and slider to that particular range.
 
-    \omit
     \table
         \row
             \i \inlineimage rgbController-property-editing.png
@@ -532,21 +529,14 @@
         \l{QSpinBox::}{maximum} property. Then, click on the first vertical
         slider, you will see \l{QAbstractSlider}'s properties. Enter "255" for
         the \l{QAbstractSlider::}{maximum} property as well. Repeat this
-        process for the remaining spin boxes and sliders.
+        process for the remaining  spin boxes and sliders.
     \endtable
-    \endomit
 
-    Now, we preview your form to see how it would look in your application. To
-    preview your form, press \key{Ctrl + R} or select \gui Preview from the
-    \gui Form menu.
-
-    \omit
-    \image rgbController-preview.png
-    \endomit
-
-    Try dragging the slider - the spin box will mirror its value too (and vice
-    versa). Also, you can resize it to see how the layouts used to manage the
-    child widgets respond to different window sizes.
+    Now, we preview your form to see how it would look in your application -
+    press \key{Ctrl + R} or select \gui Preview from the \gui Form menu. Try
+    dragging the slider - the spin box will mirror its value too (and vice
+    versa). Also, you can resize it to see how the layouts that are used to
+    manage the child widgets, respond to different window sizes.
 */
 
 
@@ -788,11 +778,11 @@
            have a \c text property that can also be edited by double-clicking
            on the widget or by pressing \gui F2. \QD interprets the backslash
            (\\) character specially, enabling newline (\\n) characters to be
-           inserted into the text; the \\\\ character sequence is used to 
+           inserted into the text; the \\\\ character sequence is used to
            insert a single backslash into the text. A context menu can also be
            opened while editing, providing another way to insert special
            characters and newlines into the text.
-    \endlist    
+    \endlist
 
 
     \section2 Dynamic Properties
@@ -804,12 +794,12 @@
 
     \image designer-property-editor-toolbar.png
 
-    To add a dynamic property, clcik on the \gui Add button 
+    To add a dynamic property, clcik on the \gui Add button
     \inlineimage designer-property-editor-add-dynamic.png
-    . To remove it, click on the \gui Remove button 
+    . To remove it, click on the \gui Remove button
     \inlineimage designer-property-editor-remove-dynamic.png
      instead. You can also sort the properties alphabetically and change the
-    color groups by clickinig on the \gui Configure button 
+    color groups by clickinig on the \gui Configure button
     \inlineimage designer-property-editor-configure.png
     .
 
@@ -911,7 +901,7 @@
 
 
     \section2 Horizontal and Vertical Layouts
-    
+
     The simplest way to arrange objects on a form is to place them in a
     horizontal or vertical layout. Horizontal layouts ensure that the widgets
     within are aligned horizontally; vertical layouts ensure that they are
@@ -1138,7 +1128,7 @@
     spacers just provide spacing hints to layouts, so they cannot be connected
     to other objects.
 
-    
+
     \target HighlightedObjects
     \table
         \row
@@ -1177,7 +1167,7 @@
 
     \image designer-connection-dialog.png
 
-    To complete the connection, select a signal from the source object and a 
+    To complete the connection, select a signal from the source object and a
     slot from the destination object, then click \key OK. Click \key Cancel if
     you wish to abandon the connection.
 
@@ -1720,22 +1710,22 @@
             \i  \bold{Resource Files}
 
         Within the resource browser, you can open existing resource files or
-        create new ones. Click the \gui{Edit Resources} button 
+        create new ones. Click the \gui{Edit Resources} button
         \inlineimage designer-edit-resources-button.png
          to edit your resources. To reload resources, click on the \gui Reload
-        button 
+        button
         \inlineimage designer-reload-resources-button.png
         .
     \endtable
 
 
     Once a resource file is loaded, you can create or remove entries in it
-    using the given \gui{Add Files} 
-    \inlineimage designer-add-resource-entry-button.png 
-    and \gui{Remove Files} 
+    using the given \gui{Add Files}
+    \inlineimage designer-add-resource-entry-button.png
+    and \gui{Remove Files}
     \inlineimage designer-remove-resource-entry-button.png
      buttons, and specify resources (e.g., images) using the \gui{Add Files}
-    button 
+    button
     \inlineimage designer-add-files-button.png
     . Note that these resources must reside within the current resource file's
     directory or one of its subdirectories.
@@ -1747,15 +1737,15 @@
             \i  \inlineimage designer-edit-resource.png
             \i  \bold{Editing Resource Files}
 
-        Press the 
+        Press the
         \inlineimage designer-add-resource-entry-button.png
          button to add a new resource entry to the file. Then use the
-        \gui{Add Files} button 
+        \gui{Add Files} button
         \inlineimage designer-add-files-button.png
          to specify the resource.
 
         You can remove resources by selecting the corresponding entry in the
-        resource editor, and pressing the 
+        resource editor, and pressing the
         \inlineimage designer-remove-resource-entry-button.png
          button.
     \endtable
@@ -2563,7 +2553,7 @@ pixmap property in the property editor.
         QDesignerTaskMenuExtension is useful for custom widgets. It provides an
         extension that allows you to add custom menu entries to \QD's task
         menu.
-    
+
         The \l{designer/taskmenuextension}{Task Menu Extension} example
         illustrates how to use this class.
 
@@ -2664,7 +2654,7 @@ pixmap property in the property editor.
     function, making it able to create your extension, such as a
      \l{designer/containerextension}{MultiPageWidget} container extension.
 
-    You can either create a new QExtensionFactory and reimplement the 
+    You can either create a new QExtensionFactory and reimplement the
     QExtensionFactory::createExtension() function:
 
     \snippet doc/src/snippets/code/doc_src_designer-manual.qdoc 8
