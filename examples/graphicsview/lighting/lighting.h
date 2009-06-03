@@ -53,7 +53,6 @@ class Lighting: public QGraphicsView
 
 public:
     Lighting(QWidget *parent = 0);
-    ~Lighting();
 
 private slots:
     void animate();

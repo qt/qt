@@ -64,11 +64,6 @@ Lighting::Lighting(QWidget *parent): QGraphicsView(parent), angle(0.0)
     setFrameStyle(QFrame::NoFrame);
 }
 
-Lighting::~Lighting()
-{
-    delete m_shadowEffect;
-}
-
 void Lighting::setupScene()
 {
     m_scene.setSceneRect(-300, -200, 600, 460);
@@ -93,7 +88,7 @@ void Lighting::setupScene()
     m_lightSource = m_scene.addPixmap(pixmap);
     m_lightSource->setZValue(2);
 
-    m_shadowEffect = new ShadowEffect(m_lightSource);
+    m_shadowEffect = new ShadowEffect(m_lightSource, this);
 
     for (int i = -2; i < 3; ++i)
         for (int j = -2; j < 3; ++j) {

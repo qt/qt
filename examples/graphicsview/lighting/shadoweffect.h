@@ -48,7 +48,7 @@
 class ShadowEffect: public QGraphicsShadowEffect
 {
 public:
-    ShadowEffect(QGraphicsItem *source);
+    ShadowEffect(QGraphicsItem *source, QObject *parent = 0);
 
     QRectF boundingRectFor(const QGraphicsItem *item);
 
