@@ -5110,29 +5110,28 @@ void QGraphicsScenePrivate::drawSubtreeRecursive(QGraphicsItem *item, QPainter *
     }
 
     // Calculate the full transform for this item.
-    QTransform transform;
     QRect viewBoundingRect;
     bool wasDirtyParentSceneTransform = false;
     if (item) {
         if (item->d_ptr->itemIsUntransformable()) {
-            transform = item->deviceTransform(viewTransform);
+            transformTmp = item->deviceTransform(viewTransform);
         } else {
             if (item->d_ptr->dirtySceneTransform) {
                 item->d_ptr->sceneTransform = item->d_ptr->parent ? item->d_ptr->parent->d_ptr->sceneTransform
-                                                                  : transform;
+                                              : QTransform();
                 item->d_ptr->combineTransformFromParent(&item->d_ptr->sceneTransform);
                 item->d_ptr->dirtySceneTransform = 0;
                 wasDirtyParentSceneTransform = true;
             }
-            transform = item->d_ptr->sceneTransform;
-            transform *= viewTransform;
+            transformTmp = item->d_ptr->sceneTransform;
+            transformTmp *= viewTransform;
         }
-
+        
         QRectF brect = item->boundingRect();
         if (!brect.size().isNull()) {
             // ### This does not take the clip into account.
             _q_adjustRect(&brect);
-            viewBoundingRect = transform.mapRect(brect).toRect().adjusted(-1, -1, 1, 1);
+            viewBoundingRect = transformTmp.mapRect(brect).toRect().adjusted(-1, -1, 1, 1);
             item->d_ptr->paintedViewBoundingRects.insert(widget, viewBoundingRect);
             if (exposedRegion)
                 viewBoundingRect &= exposedRegion->boundingRect();
@@ -5149,7 +5148,7 @@ void QGraphicsScenePrivate::drawSubtreeRecursive(QGraphicsItem *item, QPainter *
     // Clip children.
     if (childClip) {
         painter->save();
-        painter->setWorldTransform(transform);
+        painter->setWorldTransform(transformTmp);
         painter->setClipPath(item->shape(), Qt::IntersectClip);
     }
 
@@ -5181,14 +5180,14 @@ void QGraphicsScenePrivate::drawSubtreeRecursive(QGraphicsItem *item, QPainter *
 
     // Draw item
     if (!dontDrawItem) {
-        item->d_ptr->initStyleOption(&styleOptionTmp, transform, exposedRegion ? *exposedRegion : QRegion(), exposedRegion == 0);
+        item->d_ptr->initStyleOption(&styleOptionTmp, transformTmp, exposedRegion ? *exposedRegion : QRegion(), exposedRegion == 0);
 
         bool clipsToShape = (item->d_ptr->flags & QGraphicsItem::ItemClipsToShape);
         bool savePainter = clipsToShape || !(optimizationFlags & QGraphicsView::DontSavePainterState);
         if (savePainter)
             painter->save();
         if (!childClip)
-            painter->setWorldTransform(transform);
+            painter->setWorldTransform(transformTmp);
         if (clipsToShape)
             painter->setClipPath(item->shape(), Qt::IntersectClip);
         painter->setOpacity(opacity);

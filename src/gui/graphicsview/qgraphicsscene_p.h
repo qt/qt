@@ -287,6 +287,7 @@ public:
     void updatePalette(const QPalette &palette);
 
     QStyleOptionGraphicsItem styleOptionTmp;
+    QTransform transformTmp;
 };
 
 QT_END_NAMESPACE
