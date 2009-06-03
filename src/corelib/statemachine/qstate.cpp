@@ -329,9 +329,10 @@ QSignalTransition *QState::addTransition(QObject *sender, const char *signal,
         qWarning("QState::addTransition: cannot add transition to null state");
         return 0;
     }
-    if (*signal && sender->metaObject()->indexOfSignal(signal+1) == -1) {
+    int offset = (*signal == '0'+QSIGNAL_CODE) ? 1 : 0;
+    if (sender->metaObject()->indexOfSignal(signal+offset) == -1) {
         qWarning("QState::addTransition: no such signal %s::%s",
-                 sender->metaObject()->className(), signal+1);
+                 sender->metaObject()->className(), signal+offset);
         return 0;
     }
     QSignalTransition *trans = new QSignalTransition(sender, signal, QList<QAbstractState*>() << target);

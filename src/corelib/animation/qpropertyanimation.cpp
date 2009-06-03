@@ -91,19 +91,17 @@
 
 #include "qpropertyanimation.h"
 #include "qanimationgroup.h"
-#include <QtCore/qdebug.h>
-
 #include "qpropertyanimation_p.h"
 
 #include <QtCore/qmath.h>
 #include <QtCore/qmutex.h>
+#include <private/qmutexpool_p.h>
 
 QT_BEGIN_NAMESPACE
 
 typedef QPair<QObject *, QByteArray> QPropertyAnimationPair;
 typedef QHash<QPropertyAnimationPair, QPropertyAnimation*> QPropertyAnimationHash;
 Q_GLOBAL_STATIC(QPropertyAnimationHash, _q_runningAnimations)
-Q_GLOBAL_STATIC_WITH_ARGS(QMutex, guardHashLock, (QMutex::Recursive) )
 
 void QPropertyAnimationPrivate::updateMetaProperty()
 {
@@ -284,27 +282,32 @@ void QPropertyAnimation::updateState(QAbstractAnimation::State oldState,
     }
 
     QVariantAnimation::updateState(oldState, newState);
-    QMutexLocker locker(guardHashLock());
-    QPropertyAnimationHash * hash = _q_runningAnimations();
-    QPropertyAnimationPair key(d->target, d->propertyName);
-    if (newState == Running) {
-        d->updateMetaProperty();
-        QPropertyAnimation *oldAnim = hash->value(key, 0);
-        if (oldAnim) {
-            // try to stop the top level group
-            QAbstractAnimation *current = oldAnim;
-            while (current->group() && current->state() != Stopped)
-                current = current->group();
-            current->stop();
-        }
-        hash->insert(key, this);
 
-        // update the default start value
-        if (oldState == Stopped) {
-            d->setDefaultStartValue(d->target->property(d->propertyName.constData()));
+    QPropertyAnimation *animToStop = 0;
+    {
+        QPropertyAnimationHash * hash = _q_runningAnimations();
+        QMutexLocker locker(QMutexPool::globalInstanceGet(hash));
+        QPropertyAnimationPair key(d->target, d->propertyName);
+        if (newState == Running) {
+            d->updateMetaProperty();
+            animToStop = hash->value(key, 0);
+            hash->insert(key, this);
+            // update the default start value
+            if (oldState == Stopped) {
+                d->setDefaultStartValue(d->target->property(d->propertyName.constData()));
+            }
+        } else if (hash->value(key) == this) {
+            hash->remove(key);
         }
-    } else if (hash->value(key) == this) {
-        hash->remove(key);
+    }
+
+    //we need to do that after the mutex was unlocked
+    if (animToStop) {
+        // try to stop the top level group
+        QAbstractAnimation *current = animToStop;
+        while (current->group() && current->state() != Stopped)
+            current = current->group();
+        current->stop();
     }
 }
 
