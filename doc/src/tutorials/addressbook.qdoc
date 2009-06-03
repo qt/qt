@@ -374,8 +374,8 @@
     \snippet tutorials/addressbook/part2/addressbook.cpp submitContact part2
 
     If the contact already exists, again, we display a QMessageBox to inform
-    the user about this, to prevent the user from adding duplicate contacts.
-    Our \c contacts object is based on key-value pairs of name and addresses,
+    the user about this, preventing the user from adding duplicate contacts.
+    Our \c contacts object is based on key-value pairs of name and address,
     hence, we want to ensure that \e key is unique.
 
     \o Once we have handled both cases mentioned above, we restore the push
