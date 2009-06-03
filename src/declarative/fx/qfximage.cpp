@@ -254,6 +254,9 @@ void QFxImage::setOpaque(bool o)
     if (o == d->_opaque)
         return;
     d->_opaque = o;
+
+    setOptions(IsOpaque, o);
+
     update();
 }
 
@@ -476,7 +479,7 @@ void QFxImage::paintGLContents(GLPainter &p)
     QGLShaderProgram *shader = p.useTextureShader();
 
     bool restoreBlend = false;
-    if (isOpaque() && p.activeOpacity == 1) {
+    if (p.blendEnabled && isOpaque() && p.activeOpacity == 1) {
         glDisable(GL_BLEND);
         restoreBlend = true;
     }

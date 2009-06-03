@@ -161,7 +161,7 @@ public:
 
     QSimpleCanvasItem::ClipType clip:3;
     QSimpleCanvasItem::TransformOrigin origin:4;
-    int options:9;
+    int options:10;
     bool focusable:1;
     bool wantsActiveFocusPanelPendingCanvas:1;
     bool hasBeenActiveFocusPanel:1;
@@ -222,7 +222,7 @@ public:
         QSimpleCanvasItem::GLPainter *painter;
     };
 #if defined(QFX_RENDER_OPENGL2)
-    QRectF setupPainting(int version);
+    QRectF setupPainting(int version, int &z, QSimpleCanvasItem **);
 #elif defined(QFX_RENDER_OPENGL1)
     QRectF setupPainting(int version, const QRect &bounding, unsigned int *zero);
 #endif
@@ -240,6 +240,8 @@ public:
     QSimpleCanvas::Matrix localTransform() const;
 
 #endif
+
+    QSimpleCanvasItem *nextOpaque;
 
     void zOrderChildren();
     bool freshenNeeded() const;

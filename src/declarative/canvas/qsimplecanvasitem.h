@@ -90,7 +90,8 @@ public:
                   SimpleItem = 0x00000020,
                   IsFocusPanel = 0x00000040,
                   IsFocusRealm = 0x00000080,
-                  AcceptsInputMethods = 0x00000100};
+                  AcceptsInputMethods = 0x00000100,
+                  IsOpaque = 0x00000200 };
     Q_DECLARE_FLAGS(Options, Option)
 
     QSimpleCanvasItem(QSimpleCanvasItem *parent=0);
@@ -181,6 +182,9 @@ public:
         void fillRect(const QRectF &, const QColor &);
 
         void invalidate();
+        
+        bool blendEnabled;
+
     private:
         int flags;
         GLPainter(const GLPainter &);

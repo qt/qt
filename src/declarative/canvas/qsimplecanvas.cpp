@@ -923,7 +923,9 @@ bool QSimpleCanvas::event(QEvent *e)
         d->root->d_func()->setupPainting(0, rect(), &zero);
 #elif defined(QFX_RENDER_OPENGL2)
         ++d->paintVersion;
-        d->root->d_func()->setupPainting(0);
+        d->opaqueList = 0;
+        int z = 0;
+        d->root->d_func()->setupPainting(0, z, &d->opaqueList);
 #else
         ++d->paintVersion;
         d->root->d_func()->setupPainting(0, rect());

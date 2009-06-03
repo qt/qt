@@ -129,6 +129,7 @@ public:
     QRect resetDirty();
     void paint(QPainter &p);
 
+    QSimpleCanvasItem *opaqueList;
 
     int timer;
 

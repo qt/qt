@@ -53,7 +53,7 @@ QT_BEGIN_NAMESPACE
 void CanvasEGLWidget::paintGL()
 {
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-    glClear(GL_COLOR_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+    glClear(GL_COLOR_BUFFER_BIT | GL_STENCIL_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     _canvas->paintGL();
 }
@@ -120,8 +120,29 @@ void QSimpleCanvasPrivate::paintGL()
     p.opacity = 1;
     p.forceParamRefresh = false;
     p.painter = &painter;
-    if (!isSetup) 
-        root->d_func()->setupPainting(0);
+    if (!isSetup)  {
+        opaqueList = 0;
+        int z = 0;
+        root->d_func()->setupPainting(0, z, &opaqueList);
+    }
+
+    glEnable(GL_DEPTH_TEST);
+
+    glDisable(GL_BLEND);
+    painter.blendEnabled = false;
+    painter.activeOpacity = 1;
+    while (opaqueList) {
+        painter.item = opaqueList;
+        painter.activeTransform = opaqueList->d_func()->data()->transformActive;
+        // ### - I don't think this is right
+        painter.sceneClipRect = p.clipRect;
+
+        opaqueList->paintGLContents(painter);
+        opaqueList = opaqueList->d_func()->nextOpaque;
+    }
+    glEnable(GL_BLEND);
+    painter.blendEnabled = true;
+
     root->d_func()->paint(p);
 
     lrpTime = lrpTimer.elapsed();
@@ -274,7 +295,7 @@ void QSimpleCanvasItemPrivate::setupChildState(QSimpleCanvasItem *child)
 }
 
 //#define QSIMPLECANVAS_DISABLE_TREE_CLIPPING
-QRectF QSimpleCanvasItemPrivate::setupPainting(int version)
+QRectF QSimpleCanvasItemPrivate::setupPainting(int version, int &z, QSimpleCanvasItem **opaqueList)
 {
     static QRectF scene(-1., -1., 2., 2.);
     Q_Q(QSimpleCanvasItem);
@@ -301,16 +322,31 @@ QRectF QSimpleCanvasItemPrivate::setupPainting(int version)
                                  (clip != QSimpleCanvasItem::NoClip);
 #endif
 
+    if (!myData->doNotPaint &&
+        (options & QSimpleCanvasItem::IsOpaque) && 
+        (myData->activeOpacity == 1.) && 
+        (clip == 0)) {
+
+        nextOpaque = *opaqueList;
+        *opaqueList = q;
+        myData->doNotPaint = true;
+
+    }
+
+    int myZ = z++;
+
     if (myData->doNotPaintChildren) {
         rv = QRectF();
     } else {
+        zOrderChildren();
+
         for (int ii = 0; ii < children.count(); ++ii) {
             QSimpleCanvasItem *child = children.at(ii);
             setupChildState(child);
 
             QSimpleCanvasItemData *childData = child->d_func()->data();
             if (childData->activeOpacity != 0) 
-                rv |= child->d_func()->setupPainting(version);
+                rv |= child->d_func()->setupPainting(version, z, opaqueList);
         } 
 
 #ifndef QSIMPLECANVAS_DISABLE_TREE_CLIPPING
@@ -318,10 +354,13 @@ QRectF QSimpleCanvasItemPrivate::setupPainting(int version)
 #endif
     }
 
+    myData->transformActive.translate(0, 0, myZ);
+
     myData->lastPaintRect = rv;
 
     return rv;
 }
+
 
 void QSimpleCanvasItemPrivate::paint(GLPaintParameters &oldParams, QSimpleCanvasFilter::Layer layer)
 {
@@ -384,8 +423,6 @@ void QSimpleCanvasItemPrivate::paint(GLPaintParameters &oldParams, QSimpleCanvas
         params.clipRect = sr;
     }
 
-    zOrderChildren();
-
     int upto = 0;
     for (upto = 0; upto < children.count(); ++upto) {
         QSimpleCanvasItem *c = children.at(upto);
@@ -438,12 +475,12 @@ void QSimpleCanvasItemPrivate::paint(GLPaintParameters &oldParams, QSimpleCanvas
 enum ShaderType { ST_None, ST_SingleTexture, ST_SingleTextureOpacity, ST_Color };
 
 QSimpleCanvasItem::GLPainter::GLPainter() 
-: item(0), activeOpacity(1), flags(0)
+: item(0), activeOpacity(1), blendEnabled(true), flags(0)
 {
 }
 
 QSimpleCanvasItem::GLPainter::GLPainter(QSimpleCanvasItem *i) 
-: item(i), activeOpacity(1), flags(0) 
+: item(i), activeOpacity(1), blendEnabled(true), flags(0) 
 {
 }
 
