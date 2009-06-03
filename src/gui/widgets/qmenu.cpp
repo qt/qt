@@ -547,10 +547,12 @@ void QMenuPrivate::setCurrentAction(QAction *action, int popup, SelectionReason 
 {
     Q_Q(QMenu);
     tearoffHighlighted = 0;
-    if (action == currentAction && !(action && action->menu() && action->menu() != activeMenu)) {
-        if(QMenu *menu = qobject_cast<QMenu*>(causedPopup.widget)) {
-            if(causedPopup.action && menu->d_func()->activeMenu == q)
-                menu->d_func()->setCurrentAction(causedPopup.action, 0, reason, false);
+    if (action == currentAction) {
+        if (!action || !action->menu() || action->menu() == activeMenu) {
+            if(QMenu *menu = qobject_cast<QMenu*>(causedPopup.widget)) {
+                if(causedPopup.action && menu->d_func()->activeMenu == q)
+                    menu->d_func()->setCurrentAction(causedPopup.action, 0, reason, false);
+            }
         }
         return;
     }
@@ -565,7 +567,7 @@ void QMenuPrivate::setCurrentAction(QAction *action, int popup, SelectionReason 
     QAction *previousAction = currentAction;
 #endif
 #ifdef QT3_SUPPORT
-    emitHighlighted = (action && action != currentAction);
+    emitHighlighted = action;
 #endif
     currentAction = action;
     if (action) {
