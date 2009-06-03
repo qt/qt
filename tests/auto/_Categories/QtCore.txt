@@ -103,3 +103,4 @@ qwaitcondition
 qwineventnotifier
 qwritelocker
 q_func_info
+utf8
