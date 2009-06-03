@@ -119,22 +119,6 @@ static const int frameElementsCount =
 
 const int KNotFound = -1;
 
-static void updateWidgets(const QList<QWidget *>& widgets)
-{
-    // This is based on updateWidgets in qstylesheetstyle.cpp.
-
-    for (int i = 0; i < widgets.size(); ++i) {
-        QWidget *widget = const_cast<QWidget *>(widgets.at(i));
-        if (widget == 0)
-            continue;
-        widget->style()->polish(widget);
-        QEvent event(QEvent::StyleChange);
-        qApp->sendEvent(widget, &event);
-        widget->update();
-        widget->updateGeometry();
-    }
-}
-
 QS60StylePrivate::~QS60StylePrivate()
 {
     clearCaches(); //deletes also background image
@@ -600,8 +584,24 @@ QPixmap QS60StylePrivate::cachedFrame(SkinFrameElements frame, const QSize &size
 }
 
 void QS60StylePrivate::refreshUI()
-{   
-    updateWidgets(QApplication::allWidgets());
+{
+    QList<QWidget *> widgets = QApplication::allWidgets(); 
+
+    // The following is similar to updateWidgets in qstylesheetstyle.cpp.
+
+    for (int i = 0; i < widgets.size(); ++i) {
+        QWidget *widget = widgets.at(i);
+        if (widget == 0)
+            continue;
+
+        if (widget->style()) {
+            widget->style()->polish(widget);
+            QEvent event(QEvent::StyleChange);
+            qApp->sendEvent(widget, &event);
+        }
+        widget->update();
+        widget->updateGeometry();
+    }
 }
 
 void QS60StylePrivate::setFont(QWidget *widget) const
