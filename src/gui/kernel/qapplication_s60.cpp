@@ -28,7 +28,7 @@
 #endif
 #include "private/qwindowsurface_s60_p.h"
 #include "qpaintengine.h"
-#include "qmenubar.h"
+#include "private/qmenubar_p.h"
 
 #include "apgwgnam.h" // For CApaWindowGroupName
 #include <MdaAudioTonePlayer.h>     // For CMdaAudioToneUtility
@@ -204,7 +204,7 @@ static void mapS60MouseEventTypeToQt(QEvent::Type *type, Qt::MouseButton *button
         *type = QEvent::MouseButtonDblClick;
     }
 
-    if (*type == QEvent::MouseButtonPress)
+    if (*type == QEvent::MouseButtonPress || *type == QEvent::MouseButtonDblClick)
         QApplicationPrivate::mouse_buttons = QApplicationPrivate::mouse_buttons | (*button);
     else if (*type == QEvent::MouseButtonRelease)
         QApplicationPrivate::mouse_buttons = QApplicationPrivate::mouse_buttons &(~(*button));
@@ -313,7 +313,7 @@ void QSymbianControl::HandleLongTapEventL( const TPoint& aPenEventLocation, cons
     QMouseEvent mEvent(QEvent::MouseButtonPress, alienWidget->mapFrom(qwidget, widgetPos), globalPos,
         Qt::RightButton, QApplicationPrivate::mouse_buttons, Qt::NoModifier);
     sendMouseEvent(alienWidget, &mEvent);
-    m_previousEventLongTap = true;
+    m_previousEventLongTap = false;
 }
 
 void QSymbianControl::HandlePointerEventL(const TPointerEvent& pEvent)
@@ -342,7 +342,7 @@ void QSymbianControl::HandlePointerEventL(const TPointerEvent& pEvent)
     TPoint controlScreenPos = PositionRelativeToScreen();
     QPoint globalPos = QPoint(controlScreenPos.iX, controlScreenPos.iY) + widgetPos;
     
-    if (type == QEvent::MouseButtonPress)
+    if (type == QEvent::MouseButtonPress || type == QEvent::MouseButtonDblClick)
     {
         // get the button press target
         alienWidget = qwidget->childAt(widgetPos);
@@ -362,7 +362,7 @@ void QSymbianControl::HandlePointerEventL(const TPointerEvent& pEvent)
     alienWidget = S60->mousePressTarget;
 
     if (alienWidget != S60->lastPointerEventTarget)
-        if (type == QEvent::MouseButtonPress || type == QEvent::MouseMove)
+        if (type == QEvent::MouseButtonPress || QEvent::MouseButtonDblClick || type == QEvent::MouseMove)
         {
             //moved to another widget, create enter and leave events
             if (S60->lastPointerEventTarget)
@@ -524,7 +524,14 @@ TKeyResponse QSymbianControl::sendKeyEvent(QWidget *widget, QKeyEvent *keyEvent)
 #ifndef QT_NO_IM
 TCoeInputCapabilities QSymbianControl::InputCapabilities() const
 {
-    QWidget *w = qwidget->focusWidget();
+    QWidget *w = 0;
+
+    if(qwidget->hasFocus()) {
+        w = qwidget;
+    } else {
+        w = qwidget->focusWidget();
+    }
+
     QCoeFepInputContext *ic;
     if (w && w->isEnabled() && w->testAttribute(Qt::WA_InputMethodEnabled)
             && (ic = qobject_cast<QCoeFepInputContext *>(w->inputContext()))) {
@@ -1031,7 +1038,14 @@ bool QApplication::s60EventFilter(TWsEvent *aEvent)
     return false;
 }
 
-void QApplication::s60HandleCommandL(int command)
+/*!
+    Handles commands which are typically handled by CAknAppUi::HandleCommandL()
+    Qts Ui integration into Symbian is partially achieved by deriving from CAknAppUi.
+    Currently, exit, menu and softkey commands are handled
+
+    \sa s60EventFilter(), s60ProcessEvent()
+*/
+void QApplication::symbianHandleCommand(int command)
 {
     switch (command) {
     case EEikCmdExit:
@@ -1041,7 +1055,7 @@ void QApplication::s60HandleCommandL(int command)
         break;
     default:
         // For now assume all unknown menu items are Qt menu items
-        QMenuBar::symbianCommands(command);
+        QMenuBarPrivate::symbianCommands(command);
         break;
     }
 }

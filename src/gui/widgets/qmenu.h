@@ -184,9 +184,6 @@ protected:
 #ifdef Q_OS_WINCE
     QAction* wceCommands(uint command);
 #endif
-#ifdef Q_OS_SYMBIAN
-    void symbianCommands(int command);
-#endif
 
 private Q_SLOTS:
     void internalSetSloppyAction();
