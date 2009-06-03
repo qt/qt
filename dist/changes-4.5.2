@@ -128,6 +128,7 @@ Third party components
       separated list.
 
 - QFile and QTemporaryFile
+    * Fixed a leak of file descriptors in QTemporaryFile::rename, introduced in 4.5.1
     * [165920] QFile::copy leaves the source file open after the file has been copied
     * [191467] & [252293] QFile::copy of resource files to the filesystem fails on Windows
     * [197857] QFile::copy of resource files leaves temporary files on filesystem
