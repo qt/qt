@@ -3631,7 +3631,10 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
     }
 
     bool res = false;
-    if (!receiver->isWidgetType()) {
+    if (e->type() == QEvent::RawTouch) {
+        res = d->translateRawTouchEvent(qobject_cast<QWidget *>(receiver),
+                                        static_cast<QTouchEvent *>(e));
+    } else if (!receiver->isWidgetType()) {
         res = d->notify_helper(receiver, e);
     } else switch (e->type()) {
 #if defined QT3_SUPPORT && !defined(QT_NO_SHORTCUT)
@@ -4031,10 +4034,6 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
         }
         break;
 #endif
-    case QEvent::RawTouch:
-        res = d->translateRawTouchEvent(qobject_cast<QWidget *>(receiver),
-                                        static_cast<QTouchEvent *>(e));
-        break;
     case QEvent::TouchBegin:
     // Note: TouchUpdate and TouchEnd events are sent to d->currentMultitouchWidget and never propagated
     {
