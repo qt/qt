@@ -681,8 +681,7 @@ void QGraphicsAnchorLayoutPrivate::findPaths(Orientation orientation)
 
     QSet<AnchorData *> visited;
 
-    bool ok;
-    AnchorVertex *root = graph[orientation].firstVertex(&ok);
+    AnchorVertex *root = graph[orientation].rootVertex();
 
     graphPaths[orientation].insert(root, GraphPath());
 
@@ -889,8 +888,7 @@ void QGraphicsAnchorLayoutPrivate::calculateVertexPositions(
     QSet<AnchorVertex *> visited;
 
     // Get root vertex
-    bool ok;
-    AnchorVertex *root = graph[orientation].firstVertex(&ok);
+    AnchorVertex *root = graph[orientation].rootVertex();
 
     qreal widgetMargin;
     qreal layoutMargin;
