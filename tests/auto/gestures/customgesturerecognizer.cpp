@@ -115,8 +115,8 @@ PanGestureRecognizer::PanGestureRecognizer(QObject *parent)
 
 QGestureRecognizer::Result PanGestureRecognizer::filterEvent(const QEvent *event)
 {
-    if (event->type() != QEvent::TouchBegin ||
-        event->type() != QEvent::TouchUpdate ||
+    if (event->type() != QEvent::TouchBegin &&
+        event->type() != QEvent::TouchUpdate &&
         event->type() != QEvent::TouchEnd)
         return QGestureRecognizer::Ignore;
 
