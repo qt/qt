@@ -363,6 +363,7 @@ private:
     friend class QGLWindowSurface;
     friend class QGLPixmapData;
     friend class QGLPixmapFilterBase;
+    friend class QGLTextureGlyphCache;
     friend QGLFormat::OpenGLVersionFlags QGLFormat::openGLVersionFlags();
 #ifdef Q_WS_MAC
 public:
