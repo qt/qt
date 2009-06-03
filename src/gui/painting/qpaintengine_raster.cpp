@@ -1053,7 +1053,7 @@ void QRasterPaintEnginePrivate::drawImage(const QPointF &pt,
         int d = x + iw - cx2;
         iw -= d;
     }
-    if (iw < 0)
+    if (iw <= 0)
         return;
 
     // adapt the y paremeters...
@@ -1070,7 +1070,7 @@ void QRasterPaintEnginePrivate::drawImage(const QPointF &pt,
         int d = y + ih - cy2;
         ih -= d;
     }
-    if (ih < 0)
+    if (ih <= 0)
         return;
 
     // call the blend function...
