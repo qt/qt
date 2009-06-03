@@ -8500,6 +8500,9 @@ QVariant QWidget::inputMethodQuery(Qt::InputMethodQuery query) const
         return QRect(width()/2, 0, 1, height());
     case Qt::ImFont:
         return font();
+    case Qt::ImAnchorPosition:
+        // Fallback.
+        return inputMethodQuery(Qt::ImCursorPosition);
     default:
         return QVariant();
     }
