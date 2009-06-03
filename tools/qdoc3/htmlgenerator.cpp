@@ -2181,7 +2181,7 @@ void HtmlGenerator::generateSectionList(const Section& section,
         }
         if (name_alignment) {
             out() << "<table border=\"0\" cellpadding=\"0\" "
-                  << "cellspacing=\"0\">\n";
+                  << "cellspacing=\"0\" width=\"100%\">\n";
         }
         else {
             if (twoColumn)

@@ -851,7 +851,7 @@ static QSize qt_aqua_get_known_size(QStyle::ContentsType ct, const QWidget *widg
         }
         break;
     case QStyle::CT_HeaderSection:
-        if (sz == QAquaSizeLarge && isTreeView(widg))
+        if (isTreeView(widg))
            ret = QSize(-1, qt_mac_aqua_get_metric(kThemeMetricListHeaderHeight));
         break;
     case QStyle::CT_MenuBar:
