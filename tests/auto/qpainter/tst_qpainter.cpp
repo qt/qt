@@ -215,6 +215,7 @@ private slots:
     void imageCoordinateLimit();
     void imageBlending_data();
     void imageBlending();
+    void imageBlending_clipped();
 
     void paintOnNullPixmap();
     void checkCompositionMode();
@@ -3790,6 +3791,31 @@ void tst_QPainter::imageBlending()
         QVERIFY(diffColor(dest.pixel(0, 0), 0xff000000) <= 0);
         QVERIFY(diffColor(dest.pixel(1, 1), 0xff007f00) <= error);
     }
+}
+
+void tst_QPainter::imageBlending_clipped()
+{
+    QImage src(20, 20, QImage::Format_RGB16);
+    QPainter p(&src);
+    p.fillRect(src.rect(), Qt::red);
+    p.end();
+
+    QImage dst(40, 20, QImage::Format_RGB16);
+    p.begin(&dst);
+    p.fillRect(dst.rect(), Qt::white);
+    p.end();
+
+    QImage expected = dst;
+
+    p.begin(&dst);
+    p.setClipRect(QRect(23, 0, 20, 20));
+
+    // should be completely clipped
+    p.drawImage(QRectF(3, 0, 20, 20), src);
+    p.end();
+
+    // dst should be left unchanged
+    QCOMPARE(dst, expected);
 }
 
 void tst_QPainter::paintOnNullPixmap()
