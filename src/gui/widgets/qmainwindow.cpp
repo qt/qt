@@ -121,6 +121,9 @@ void QMainWindowPrivate::init()
     explicitIconSize = false;
 
     q->setAttribute(Qt::WA_Hover);
+#if defined(Q_OS_SYMBIAN) && !defined(QT_NO_SOFTKEYSTACK)
+    softKeyStack = new QSoftKeyStack(q);
+#endif
 }
 
 /*
