@@ -65,9 +65,6 @@ static const uchar icelandicRules[] =
 static const uchar irishStyleRules[] =
     { Q_EQ, 1, Q_NEWRULE,
       Q_EQ, 2 };
-static const uchar czechRules[] =
-    { Q_MOD_100 | Q_EQ, 1, Q_NEWRULE,
-      Q_MOD_100 | Q_BETWEEN, 2, 4 };
 static const uchar slovakRules[] =
     { Q_EQ, 1, Q_NEWRULE,
       Q_BETWEEN, 2, 4 };
@@ -115,7 +112,6 @@ static const char * const frenchStyleForms[] = { "Singular", "Plural", 0 };
 static const char * const icelandicForms[] = { "Singular", "Plural", 0 };
 static const char * const latvianForms[] = { "Singular", "Plural", "Nullar", 0 };
 static const char * const irishStyleForms[] = { "Singular", "Dual", "Plural", 0 };
-static const char * const czechForms[] = { "Singular", "Dual", "Plural", 0 };
 static const char * const slovakForms[] = { "Singular", "Dual", "Plural", 0 };
 static const char * const macedonianForms[] = { "Singular", "Dual", "Plural", 0 };
 static const char * const lithuanianForms[] = { "Singular", "Paucal", "Plural", 0 };
@@ -281,8 +277,7 @@ static const QLocale::Language irishStyleLanguages[] = {
     QLocale::Sanskrit,
     EOL
 };
-static const QLocale::Language czechLanguage[] = { QLocale::Czech, EOL };
-static const QLocale::Language slovakLanguage[] = { QLocale::Slovak, EOL };
+static const QLocale::Language slovakLanguages[] = { QLocale::Slovak, QLocale::Czech, EOL };
 static const QLocale::Language macedonianLanguage[] = { QLocale::Macedonian, EOL };
 static const QLocale::Language lithuanianLanguage[] = { QLocale::Lithuanian, EOL };
 static const QLocale::Language russianStyleLanguages[] = {
@@ -330,8 +325,7 @@ static const NumerusTableEntry numerusTable[] = {
     { latvianRules, sizeof(latvianRules), latvianForms, latvianLanguage, 0 },
     { icelandicRules, sizeof(icelandicRules), icelandicForms, icelandicLanguage, 0 },
     { irishStyleRules, sizeof(irishStyleRules), irishStyleForms, irishStyleLanguages, 0 },
-    { czechRules, sizeof(czechRules), czechForms, czechLanguage, 0 },
-    { slovakRules, sizeof(slovakRules), slovakForms, slovakLanguage, 0 },
+    { slovakRules, sizeof(slovakRules), slovakForms, slovakLanguages, 0 },
     { macedonianRules, sizeof(macedonianRules), macedonianForms, macedonianLanguage, 0 },
     { lithuanianRules, sizeof(lithuanianRules), lithuanianForms, lithuanianLanguage, 0 },
     { russianStyleRules, sizeof(russianStyleRules), russianStyleForms, russianStyleLanguages, 0 },
