@@ -5314,10 +5314,12 @@ void QGraphicsScenePrivate::processDirtyItemsRecursive(QGraphicsItem *item)
                     viewPrivate->updateRect(item->d_ptr->paintedViewBoundingRects.value(viewPrivate->viewport));
 
                 QTransform deviceTransform = item->d_ptr->sceneTransform;
-                if (!untransformableItem)
-                    deviceTransform *= view->viewportTransform();
-                else
-                    deviceTransform = item->deviceTransform(view->viewportTransform());
+                if (view->isTransformed()) {
+                    if (!untransformableItem)
+                        deviceTransform *= view->viewportTransform();
+                    else
+                        deviceTransform = item->deviceTransform(view->viewportTransform());
+                }
                 if (item->d_ptr->hasBoundingRegionGranularity)
                     viewPrivate->updateRegion(deviceTransform.map(QRegion(dirtyRect.toRect())));
                 else
