@@ -585,12 +585,22 @@ QPixmap QS60StylePrivate::cachedFrame(SkinFrameElements frame, const QSize &size
 
 void QS60StylePrivate::refreshUI()
 {
-    foreach (QWidget *topLevelWidget, QApplication::allWidgets()) {
-        topLevelWidget->updateGeometry();
-        //todo: study how we can get rid of this. Apparently scrollbars cache pixelmetrics values, and we need them to update themselves
-        // maybe styleChanged event is enough?
-        //QCoreApplication::postEvent(topLevelWidget, new QEvent(QEvent::StyleChange));
-        QCoreApplication::postEvent(topLevelWidget, new QResizeEvent(topLevelWidget->size(), topLevelWidget->size()));
+    QList<QWidget *> widgets = QApplication::allWidgets(); 
+
+    // The following is similar to updateWidgets in qstylesheetstyle.cpp.
+
+    for (int i = 0; i < widgets.size(); ++i) {
+        QWidget *widget = widgets.at(i);
+        if (widget == 0)
+            continue;
+
+        if (widget->style()) {
+            widget->style()->polish(widget);
+            QEvent event(QEvent::StyleChange);
+            qApp->sendEvent(widget, &event);
+        }
+        widget->update();
+        widget->updateGeometry();
     }
 }
 

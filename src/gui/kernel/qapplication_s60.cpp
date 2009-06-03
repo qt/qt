@@ -649,21 +649,7 @@ void QSymbianControl::HandleResourceChange(int resourceType)
         // font change event
         break;
     case KEikDynamicLayoutVariantSwitch:
-    {
-#ifndef QT_NO_STYLE_S60
-        QS60Style *s60Style = 0;
-
-#ifndef QT_NO_STYLE_STYLESHEET
-        QStyleSheetStyle *proxy = qobject_cast<QStyleSheetStyle*>(QApplication::style());
-        if (proxy)
-            s60Style = qobject_cast<QS60Style*>(proxy->baseStyle());
-        else
-#endif
-            s60Style = qobject_cast<QS60Style*>(QApplication::style());
-
-        if (s60Style)
-            s60Style->handleDynamicLayoutVariantSwitch();
-#endif
+    {        
         if (qwidget->isFullScreen()) {
             SetExtentToWholeScreen();
         } else if (qwidget->isMaximized()) {
@@ -672,12 +658,6 @@ void QSymbianControl::HandleResourceChange(int resourceType)
         }
         break;
     }
-#ifndef QT_NO_STYLE_S60
-    case KAknsMessageSkinChange:
-        if (QS60Style *s60Style = qobject_cast<QS60Style*>(QApplication::style()))
-            s60Style->handleSkinChange();
-        break;
-#endif
     default:
         break;
     }
@@ -1056,6 +1036,40 @@ void QApplication::symbianHandleCommand(int command)
     default:
         // For now assume all unknown menu items are Qt menu items
         QMenuBarPrivate::symbianCommands(command);
+        break;
+    }
+}
+
+void QApplication::symbianResourceChange(int type)
+{
+    switch (type) {
+    case KEikDynamicLayoutVariantSwitch:
+        {
+#ifndef QT_NO_STYLE_S60
+        QS60Style *s60Style = 0;
+
+#ifndef QT_NO_STYLE_STYLESHEET
+        QStyleSheetStyle *proxy = qobject_cast<QStyleSheetStyle*>(QApplication::style());
+        if (proxy)
+            s60Style = qobject_cast<QS60Style*>(proxy->baseStyle());
+        else
+#endif
+            s60Style = qobject_cast<QS60Style*>(QApplication::style());
+
+        if (s60Style)
+            s60Style->handleDynamicLayoutVariantSwitch();
+#endif    
+        }
+        break;
+
+#ifndef QT_NO_STYLE_S60
+    case KAknsMessageSkinChange:
+        if (QS60Style *s60Style = qobject_cast<QS60Style*>(QApplication::style()))
+            s60Style->handleSkinChange();
+        break; 
+#endif
+        
+    default:
         break;
     }
 }
