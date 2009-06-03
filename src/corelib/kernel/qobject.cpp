@@ -912,7 +912,8 @@ QObject::~QObject()
     \relates QObject
 
     Returns the given \a object cast to type T if the object is of type
-    T (or of a subclass); otherwise returns 0.
+    T (or of a subclass); otherwise returns 0.  If \a object is 0 then 
+    it will also return 0.
 
     The class T must inherit (directly or indirectly) QObject and be
     declared with the \l Q_OBJECT macro.
