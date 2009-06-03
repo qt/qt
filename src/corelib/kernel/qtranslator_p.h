@@ -62,6 +62,7 @@ enum {
     Q_NOT         = 0x08,
     Q_MOD_10      = 0x10,
     Q_MOD_100     = 0x20,
+    Q_LEAD_1000   = 0x40,
 
     Q_AND         = 0xFD,
     Q_OR          = 0xFE,
