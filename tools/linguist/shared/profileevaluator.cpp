@@ -60,7 +60,7 @@
 #ifdef Q_OS_UNIX
 #include <unistd.h>
 #include <sys/utsname.h>
-#elif defined(Q_OS_WIN32)
+#else
 #include <Windows.h>
 #endif
 #include <stdio.h>
