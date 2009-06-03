@@ -3900,6 +3900,20 @@ void QTouchEvent::TouchPoint::setLastScreenPos(const QPointF &lastScreenPos)
 }
 
 /*!
+    Returns the area of this touch point.
+*/
+QSizeF QTouchEvent::TouchPoint::area() const
+{
+    return d->area;
+}
+
+/*! \internal */
+void QTouchEvent::TouchPoint::setArea(const QSizeF &area)
+{
+    d->area = area;
+}
+
+/*!
     Returns the pressure of this touch point. The return value is in
     the range 0.0 to 1.0.
 */

@@ -184,8 +184,12 @@ bool ScribbleArea::event(QEvent *event)
                 continue;
             default:
                 {
-                    int diameter = int(50 * touchPoint->pressure());
-                    QRectF rectF(0, 0, diameter, diameter);
+                    QSizeF area = touchPoint->area();
+                    if (area.isEmpty()) {
+                        qreal diameter = qreal(50) * touchPoint->pressure();
+                        area = QSizeF(diameter, diameter);
+                    }
+                    QRectF rectF(QPointF(), area);
                     rectF.moveCenter(touchPoint->pos());
                     QRect rect = rectF.toRect();
 

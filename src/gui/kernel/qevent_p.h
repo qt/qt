@@ -103,6 +103,7 @@ public:
     QPointF pos, startPos, lastPos;
     QPointF scenePos, startScenePos, lastScenePos;
     QPointF screenPos, startScreenPos, lastScreenPos;
+    QSizeF area;
     qreal pressure;
 };
 

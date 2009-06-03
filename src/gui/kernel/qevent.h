@@ -791,6 +791,9 @@ public:
         QPointF lastScreenPos() const;
         void setLastScreenPos(const QPointF &lastScreenPos);
 
+        QSizeF area() const;
+        void setArea(const QSizeF &area);
+
         qreal pressure() const; // 0.0 -> 1.0
         void setPressure(qreal pressure);
 

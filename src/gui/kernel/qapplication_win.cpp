@@ -4029,17 +4029,23 @@ bool QApplicationPrivate::translateTouchEvent(const MSG &msg)
         // update state
         bool down = touchPoint->state() != Qt::TouchPointReleased;
         QPointF screenPos(qreal(touchInput.x) / qreal(100.), qreal(touchInput.y) / qreal(100.));
+        QSizeF contactArea = (touchInput.dwMask & TOUCHINPUTMASKF_CONTACTAREA)
+                             ? QSizeF(qreal(touchInput.cxContact) / qreal(100.),
+                                      qreal(touchInput.cyContact) / qreal(100.))
+                             : QSizeF();
 
         if (!down && (touchInput.dwFlags & TOUCHEVENTF_DOWN)) {
             touchPoint->setState(Qt::TouchPointPressed);
             touchPoint->setScreenPos(screenPos);
             touchPoint->setStartScreenPos(screenPos);
             touchPoint->setLastScreenPos(screenPos);
+            touchPoint->setArea(contactArea);
             touchPoint->setPressure(qreal(1.));
         } else if (down && (touchInput.dwFlags & TOUCHEVENTF_UP)) {
             touchPoint->setState(Qt::TouchPointReleased);
             touchPoint->setLastScreenPos(touchPoint->screenPos());
             touchPoint->setScreenPos(screenPos);
+            touchPoint->setArea(QSizeF());
             touchPoint->setPressure(qreal(0.));
         } else if (down) {
             touchPoint->setState(screenPos == touchPoint->screenPos()
@@ -4047,6 +4053,7 @@ bool QApplicationPrivate::translateTouchEvent(const MSG &msg)
                                  : Qt::TouchPointMoved);
             touchPoint->setLastScreenPos(touchPoint->screenPos());
             touchPoint->setScreenPos(screenPos);
+            touchPoint->setArea(contactArea);
             // pressure should still be 1.
         }
 
