@@ -805,8 +805,9 @@ bool SymbianMakefileGenerator::writeMmpFileResourcePart(QTextStream& t, QStringL
 
         t << "SOURCEPATH\t\t\t. " << endl;
         t << "START RESOURCE\t\t" << regTarget << endl;
-        t << "DEPENDS " << target << ".rsg" << endl;
-        t << "\tTARGETPATH\t\t" REGISTRATION_RESOURCE_DIRECTORY_HW << endl;
+        if (isForSymbianSbsv2())
+            t << "DEPENDS " << target << ".rsg" << endl;
+        t << "TARGETPATH\t\t" REGISTRATION_RESOURCE_DIRECTORY_HW << endl;
         t << "END" << endl << endl;
      }
      return true;
