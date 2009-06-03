@@ -1,5 +1,5 @@
 /****************************************************************************
-**
+1**
 ** Copyright (C) 2008 Nokia Corporation and/or its subsidiary(-ies).
 ** Contact: Qt Software Information (qt-info@nokia.com)
 **
@@ -1102,7 +1102,6 @@ void QApplication::symbianResourceChange(int type)
 #endif
         
     default:
->>>>>>> master:src/gui/kernel/qapplication_s60.cpp
         break;
     }
 }
