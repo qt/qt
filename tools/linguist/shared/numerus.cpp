@@ -112,16 +112,15 @@ static const char * const frenchStyleForms[] = { "Singular", "Plural", 0 };
 static const char * const icelandicForms[] = { "Singular", "Plural", 0 };
 static const char * const latvianForms[] = { "Singular", "Plural", "Nullar", 0 };
 static const char * const irishStyleForms[] = { "Singular", "Dual", "Plural", 0 };
-static const char * const slovakForms[] = { "Singular", "Dual", "Plural", 0 };
+static const char * const slovakForms[] = { "Singular", "Paucal", "Plural", 0 };
 static const char * const macedonianForms[] = { "Singular", "Dual", "Plural", 0 };
 static const char * const lithuanianForms[] = { "Singular", "Paucal", "Plural", 0 };
 static const char * const russianStyleForms[] = { "Singular", "Dual", "Plural", 0 };
 static const char * const polishForms[] = { "Singular", "Paucal", "Plural", 0 };
-static const char * const romanianForms[] =
-    { "Singular", "Plural Form for 2 to 19", "Plural", 0 };
+static const char * const romanianForms[] = { "Singular", "Paucal", "Plural", 0 };
 static const char * const slovenianForms[] = { "Singular", "Dual", "Trial", "Plural", 0 };
 static const char * const malteseForms[] =
-    { "Singular", "Plural Form for 2 to 10", "Plural Form for 11 to 19", "Plural", 0 };
+    { "Singular", "Paucal", "Greater Paucal", "Plural", 0 };
 static const char * const welshForms[] =
     { "Nullar", "Singular", "Dual", "Sexal", "Plural", 0 };
 static const char * const arabicForms[] =
