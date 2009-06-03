@@ -1040,7 +1040,7 @@ void QApplication::symbianHandleCommand(int command)
     }
 }
 
-void QApplication::s60ResourceChangeL(int type)
+void QApplication::symbianResourceChange(int type)
 {
     switch (type) {
     case KEikDynamicLayoutVariantSwitch:

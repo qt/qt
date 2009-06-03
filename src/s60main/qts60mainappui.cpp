@@ -86,7 +86,7 @@ void CQtS60MainAppUi::HandleResourceChangeL(TInt aType)
     CAknAppUi::HandleResourceChangeL(aType);
     
     if (qApp)
-        qApp->s60ResourceChangeL(aType);
+        qApp->symbianResourceChange(aType);
 }
 
 void CQtS60MainAppUi::HandleWsEventL(const TWsEvent& aEvent, CCoeControl *control)

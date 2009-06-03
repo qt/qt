@@ -234,7 +234,7 @@ public:
     int s60ProcessEvent(TWsEvent *event);
     virtual bool s60EventFilter(TWsEvent *aEvent);
     void symbianHandleCommand(int command);
-    void s60ResourceChangeL(int type);
+    void symbianResourceChange(int type);
 #endif
 #if defined(Q_WS_QWS)
     virtual bool qwsEventFilter(QWSEvent *);
