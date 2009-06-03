@@ -614,6 +614,10 @@ void QGraphicsScenePrivate::_q_emitUpdated()
                            views.at(i), SLOT(updateScene(QList<QRectF>)));
             }
         }
+    } else {
+        for (int i = 0; i < views.size(); ++i)
+            views.at(i)->d_func()->processPendingUpdates();
+        return;
     }
 
     // Notify the changes to anybody interested.
@@ -3721,7 +3725,7 @@ void QGraphicsScene::update(const QRectF &rect)
         }
     }
 
-    if (!directUpdates && !d->calledEmitUpdated) {
+    if (!d->calledEmitUpdated) {
         d->calledEmitUpdated = true;
         QMetaObject::invokeMethod(this, "_q_emitUpdated", Qt::QueuedConnection);
     }
