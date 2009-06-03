@@ -401,76 +401,10 @@ public:
     // Optional stacking order
     int globalStackingOrder;
 
-    struct DecomposedTransform;
-    DecomposedTransform *decomposedTransform() const
-    {
-        QGraphicsItemPrivate *that = const_cast<QGraphicsItemPrivate *>(this);
-        DecomposedTransform *decomposed;
-        if (hasDecomposedTransform) {
-            decomposed = qVariantValue<DecomposedTransform *>(extra(ExtraDecomposedTransform));
-        } else {
-            decomposed = new DecomposedTransform;
-            that->setExtra(ExtraDecomposedTransform, qVariantFromValue<DecomposedTransform *>(decomposed));
-            that->hasDecomposedTransform = 1;
-            if (!dirtyTransformComponents)
-                decomposed->reset();
-        }
-        if (dirtyTransformComponents) {
-            decomposed->initFrom(q_ptr->transform());
-            that->dirtyTransformComponents = 0;
-        }
-        return decomposed;
-    }
-
-    struct DecomposedTransform {
-        qreal xScale;
-        qreal yScale;
-        qreal xRotation;
-        qreal yRotation;
-        qreal zRotation;
-        qreal horizontalShear;
-        qreal verticalShear;
-        qreal xOrigin;
-        qreal yOrigin;
-
-        inline void reset()
-        {
-            xScale = 1.0;
-            yScale = 1.0;
-            xRotation = 0.0;
-            yRotation = 0.0;
-            zRotation = 0.0;
-            horizontalShear = 0.0;
-            verticalShear = 0.0;
-            xOrigin = 0.0;
-            yOrigin = 0.0;
-        }
-
-        inline void initFrom(const QTransform &x)
-        {
-            reset();
-            // ### decompose transform
-            Q_UNUSED(x);
-        }
-
-        inline void generateTransform(QTransform *x) const
-        {
-            x->translate(xOrigin, yOrigin);
-            x->rotate(xRotation, Qt::XAxis);
-            x->rotate(yRotation, Qt::YAxis);
-            x->rotate(zRotation, Qt::ZAxis);
-            x->shear(horizontalShear, verticalShear);
-            x->scale(xScale, yScale);
-            x->translate(-xOrigin, -yOrigin);
-        }
-    };
-
     QGraphicsItem *q_ptr;
 };
 
 QT_END_NAMESPACE
-
-Q_DECLARE_METATYPE(QGraphicsItemPrivate::DecomposedTransform *)
 
 #endif // QT_NO_GRAPHICSVIEW
 
