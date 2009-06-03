@@ -9,7 +9,6 @@ DEFINES += QT_NO_TEXTCODEC QT_NO_LIBRARY QT_NO_STL QT_NO_COMPRESS QT_NO_UNICODET
 SOURCES += project.cpp property.cpp main.cpp generators/makefile.cpp \
            generators/unix/unixmake2.cpp generators/unix/unixmake.cpp meta.cpp \
            option.cpp generators/win32/winmakefile.cpp generators/win32/mingw_make.cpp \
-           qpopen.cpp \
            generators/makefiledeps.cpp generators/metamakefile.cpp generators/mac/pbuilder_pbx.cpp \
            generators/xmloutput.cpp generators/win32/borland_bmake.cpp \
            generators/win32/msvc_nmake.cpp generators/projectgenerator.cpp \
@@ -19,6 +18,12 @@ SOURCES += project.cpp property.cpp main.cpp generators/makefile.cpp \
            generators/symbian/symmake_abld.cpp \
            generators/symbian/symmake_sbsv2.cpp \
            generators/symbian/initprojectdeploy_symbian.cpp 
+
+# MWC does not provide an implementation of popen() so fake it.
+win32-mwc {
+    SOURCES += qpopen.cpp \
+}
+
            
 HEADERS += project.h property.h generators/makefile.h \
            generators/unix/unixmake.h meta.h option.h cachekeys.h \
