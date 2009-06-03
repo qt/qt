@@ -167,7 +167,8 @@ public:
     class GLPainter 
     {
     public:
-        GLPainter(QSimpleCanvasItem *i) : item(i), activeOpacity(1) {}
+        GLPainter();
+        GLPainter(QSimpleCanvasItem *i);
         QSimpleCanvasItem *item;
         QSimpleCanvas::Matrix activeTransform;
         qreal activeOpacity;
@@ -175,9 +176,13 @@ public:
 
         QGLShaderProgram *useTextureShader();
         QGLShaderProgram *useColorShader(const QColor &);
-        void  drawPixmap(const QPointF &, const GLTexture &);
-        void  drawPixmap(const QRectF &, const GLTexture &);
+        void drawPixmap(const QPointF &, const GLTexture &);
+        void drawPixmap(const QRectF &, const GLTexture &);
+        void fillRect(const QRectF &, const QColor &);
+
+        void invalidate();
     private:
+        int flags;
         GLPainter(const GLPainter &);
         GLPainter &operator=(const GLPainter &);
     };

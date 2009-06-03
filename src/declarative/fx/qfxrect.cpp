@@ -692,6 +692,7 @@ void QFxRect::paintGLContents(GLPainter &p)
                 colors[i+3] = c.alphaF() * p.activeOpacity; colors[i+7] = colors[i+3];
             }
 
+            p.invalidate();
             ColorShader *shader = basicShaders()->color();
             shader->enable();
             shader->setTransform(p.activeTransform);
@@ -702,19 +703,9 @@ void QFxRect::paintGLContents(GLPainter &p)
             shader->disableAttributeArray(ColorShader::Vertices);
             shader->disableAttributeArray(ColorShader::Colors);
         } else {
-            QGLShaderProgram *shader = p.useColorShader(d->getColor());
 
-            float widthV = width();
-            float heightV = height();
+            p.fillRect(QRectF(0, 0, width(), height()), d->getColor());
 
-            GLfloat vertices[] = { 0, heightV,
-                                   widthV, heightV,
-                                   0, 0,
-                                   widthV, 0 };
-
-            shader->setAttributeArray(ConstantColorShader::Vertices, vertices, 2);
-            glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-            shader->disableAttributeArray(ConstantColorShader::Vertices);
         }
     } else {
         qreal offset = 0;
@@ -768,236 +759,155 @@ void QFxRect::paintGLContents(GLPainter &p)
         float vert1[] = { -pw/2, -pw/2, 
                           -pw/2, imgtop,
                           imgleft, -pw/2, 
+
+                          -pw/2, imgtop,
+                          imgleft, -pw/2, 
+                          imgleft, imgtop,
+
+                          imgleft, -pw/2, 
+                          imgleft, imgtop,
+                          imgright, -pw/2,
+
                           imgleft, imgtop,
                           imgright, -pw/2,
                           imgright, imgtop,
-                          widthV, -pw/2,
-                          widthV, imgtop };
-        float tex1[] = { 0, 0, 
-                         0, textop,
-                         texleft, 0,
-                         texleft, textop,
-                         texright, 0,
-                         texright, textop,
-                         1, 0,
-                         1, textop };
-        float vert2[] = { -pw/2, imgtop,
-                          -pw/2, imgbottom,
-                          imgleft, imgtop,
-                          imgleft, imgbottom,
+
+                          imgright, -pw/2,
                           imgright, imgtop,
-                          imgright, imgbottom,
+                          widthV, -pw/2,
+
+                          imgright, imgtop,
+                          widthV, -pw/2,
                           widthV, imgtop,
-                          widthV, imgbottom };
-        float tex2[] = { 0, textop,
-                         0, texbottom,
-                         texleft, textop,
-                         texleft, texbottom,
-                         texright, textop,
-                         texright, texbottom,
-                         1, textop,
-                         1, texbottom };
-        float vert3[] = { -pw/2, heightV,
+
+                          -pw/2, heightV,
+                          -pw/2, imgbottom,
+                          imgleft, heightV,
+
                           -pw/2, imgbottom,
                           imgleft, heightV,
                           imgleft, imgbottom,
+
+                          imgleft, heightV,
+                          imgleft, imgbottom,
+                          imgright, heightV,
+
+                          imgleft, imgbottom,
+                          imgright, heightV,
+                          imgright, imgbottom,
+
                           imgright, heightV,
                           imgright, imgbottom,
                           widthV, heightV,
+
+                          imgright, imgbottom,
+                          widthV, heightV,
+                          widthV, imgbottom,
+
+                          -pw/2, imgtop,
+                          -pw/2, imgbottom,
+                          imgleft, imgtop,
+
+                          -pw/2, imgbottom,
+                          imgleft, imgtop,
+                          imgleft, imgbottom,
+
+                          imgleft, imgtop,
+                          imgleft, imgbottom,
+                          imgright, imgtop,
+
+                          imgleft, imgbottom,
+                          imgright, imgtop,
+                          imgright, imgbottom,
+
+                          imgright, imgtop,
+                          imgright, imgbottom,
+                          widthV, imgtop,
+
+                          imgright, imgbottom,
+                          widthV, imgtop,
                           widthV, imgbottom };
-        float tex3[] = { 0, 1,
+
+
+        float tex1[] = { 0, 0, 
+                         0, textop,
+                         texleft, 0,
+
+                         0, textop,
+                         texleft, 0,
+                         texleft, textop,
+
+                         texleft, 0,
+                         texleft, textop,
+                         texright, 0,
+
+                         texleft, textop,
+                         texright, 0,
+                         texright, textop,
+
+                         texright, 0,
+                         texright, textop,
+                         1, 0,
+
+                         texright, textop,
+                         1, 0,
+                         1, textop,
+
+                         0, 1,
+                         0, texbottom,
+                         texleft, 1,
+
                          0, texbottom,
                          texleft, 1,
                          texleft, texbottom,
+
+                         texleft, 1,
+                         texleft, texbottom,
+                         texright, 1,
+
+                         texleft, texbottom,
+                         texright, 1,
+                         texright, texbottom,
+
                          texright, 1,
                          texright, texbottom,
                          1, 1,
+
+                         texright, texbottom,
+                         1, 1,
+                         1, texbottom,
+
+                         0, textop,
+                         0, texbottom,
+                         texleft, textop,
+
+                         0, texbottom,
+                         texleft, textop,
+                         texleft, texbottom,
+
+                         texleft, textop,
+                         texleft, texbottom,
+                         texright, textop,
+
+                         texleft, texbottom,
+                         texright, textop,
+                         texright, texbottom,
+
+                         texright, textop,
+                         texright, texbottom,
+                         1, textop,
+
+                         texright, texbottom,
+                         1, textop,
                          1, texbottom };
+
+
 
         glBindTexture(GL_TEXTURE_2D, d->_rectTexture.texture());
 
         shader->setAttributeArray(SingleTextureShader::Vertices, vert1, 2);
         shader->setAttributeArray(SingleTextureShader::TextureCoords, tex1, 2);
-        glDrawArrays(GL_TRIANGLE_STRIP, 0, 8);
-        if (yMiddles) {
-            shader->setAttributeArray(SingleTextureShader::Vertices, vert2, 2);
-            shader->setAttributeArray(SingleTextureShader::TextureCoords, tex2, 2);
-            glDrawArrays(GL_TRIANGLE_STRIP, 0, 8);
-        }
-        shader->setAttributeArray(SingleTextureShader::Vertices, vert3, 2);
-        shader->setAttributeArray(SingleTextureShader::TextureCoords, tex3, 2);
-        glDrawArrays(GL_TRIANGLE_STRIP, 0, 8);
-
-        shader->disableAttributeArray(SingleTextureShader::Vertices);
-        shader->disableAttributeArray(SingleTextureShader::TextureCoords);
-    }
-}
-#elif defined(QFX_RENDER_OPENGL1)
-void QFxRect::paintGLContents(GLPainter &p)
-{
-    Q_D(QFxRect);
-
-    float widthV = width();
-    float heightV = height();
-        
-    glMatrixMode(GL_MODELVIEW);
-    glLoadMatrixf(p.activeTransform.data());
-    
-    if (d->_radius == 0 && (!d->_pen || !d->_pen->isValid())) {
-        GLfloat vertices[] = { 0, heightV,
-                               widthV, heightV,
-                               0, 0,
-                               widthV, 0 };
-
-        glEnableClientState(GL_VERTEX_ARRAY);
-        glVertexPointer(2,GL_FLOAT,0,vertices);
-
-        QColor c;
-        if (d->_gradcolor.isValid())
-            c = d->_color;
-        else
-            c = d->getColor();
-        float r = c.redF();
-        float g = c.greenF();
-        float b = c.blueF();
-        float a = c.alphaF() * p.activeOpacity;
-
-        float r2 = r; float g2 = g; float b2 = b; float a2 = a;
-
-        if (d->_gradcolor.isValid()) {
-            r2 = d->_gradcolor.redF();
-            g2 = d->_gradcolor.greenF();
-            b2 = d->_gradcolor.blueF();
-            a2 = d->_gradcolor.alphaF() * p.activeOpacity;
-        }
-
-        GLfloat colors[] = { r2, g2, b2, a2,
-                             r2, g2, b2, a2,
-                             r, g, b, a,
-                             r, g, b, a };
-
-        glEnableClientState(GL_COLOR_ARRAY);
-        glColorPointer(4,GL_FLOAT,0,colors);
-
-        glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-
-        glDisableClientState(GL_VERTEX_ARRAY);
-        glDisableClientState(GL_COLOR_ARRAY);
-    } else {
-        qreal offset = 0;
-        if (d->_radius > 0) {
-            generateRoundedRect();
-            offset = d->_radius;
-        } else {
-            generateBorderedRect();
-            offset = d->pen()->width();
-        }
-
-        if (p.activeOpacity == 1.) {
-            GLint i = GL_REPLACE;
-            glTexEnviv(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, &i);
-        } else {
-            GLint i = GL_MODULATE;
-            glTexEnviv(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, &i);
-            glColor4f(1, 1, 1, p.activeOpacity);
-        }
-
-        float texWidth = d->_rectTexture.width();
-        float texHeight = d->_rectTexture.height();
-        if (!texWidth || !texHeight)
-            return;
-
-        float widthV = width();
-        float heightV = height();
-
-        float texleft = 0;
-        float texright = 1;
-        float textop = 1;
-        float texbottom = 0;
-        float imgleft = 0;
-        float imgright = widthV;
-        float imgtop = 0;
-        float imgbottom = heightV;
-
-        texleft = float(offset) / texWidth;
-        imgleft = offset;
-        texright = 1. - float(offset) / texWidth;
-        imgright = widthV - offset;
-        textop = 1. - float(offset) / texHeight;
-        imgtop = offset;
-        texbottom = float(offset) / texHeight;
-        imgbottom = heightV - offset;
-
-        float vert1[] = { 0, 0, 
-                          0, imgtop,
-                          imgleft, 0, 
-                          imgleft, imgtop,
-                          imgright, 0,
-                          imgright, imgtop,
-                          widthV, 0,
-                          widthV, imgtop };
-        float tex1[] = { 0, 1, 
-                         0, textop,
-                         texleft, 1,
-                         texleft, textop,
-                         texright, 1,
-                         texright, textop,
-                         1, 1,
-                         1, textop };
-        float vert2[] = { 0, imgtop,
-                          0, imgbottom,
-                          imgleft, imgtop,
-                          imgleft, imgbottom,
-                          imgright, imgtop,
-                          imgright, imgbottom,
-                          widthV, imgtop,
-                          widthV, imgbottom };
-        float tex2[] = { 0, textop,
-                         0, texbottom,
-                         texleft, textop,
-                         texleft, texbottom,
-                         texright, textop,
-                         texright, texbottom,
-                         1, textop,
-                         1, texbottom };
-        float vert3[] = { 0, imgbottom,
-                          0, heightV,
-                          imgleft, imgbottom,
-                          imgleft, heightV,
-                          imgright, imgbottom,
-                          imgright, heightV,
-                          widthV, imgbottom,
-                          widthV, heightV };
-        float tex3[] = { 0, texbottom,
-                         0, 0,
-                         texleft, texbottom,
-                         texleft, 0,
-                         texright, texbottom,
-                         texright, 0,
-                         1, texbottom,
-                         1, 0 };
-
-        glEnable(GL_TEXTURE_2D);
-        glBindTexture(GL_TEXTURE_2D, d->_rectTexture.texture());
-
-        glEnableClientState(GL_VERTEX_ARRAY);
-        glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-
-        glVertexPointer(2, GL_FLOAT, 0, vert1);
-        glTexCoordPointer(2, GL_FLOAT, 0, tex1);
-        glDrawArrays(GL_TRIANGLE_STRIP, 0, 8);
-
-        glVertexPointer(2, GL_FLOAT, 0, vert2);
-        glTexCoordPointer(2, GL_FLOAT, 0, tex2);
-        glDrawArrays(GL_TRIANGLE_STRIP, 0, 8);
-
-        glVertexPointer(2, GL_FLOAT, 0, vert3);
-        glTexCoordPointer(2, GL_FLOAT, 0, tex3);
-        glDrawArrays(GL_TRIANGLE_STRIP, 0, 8);
-
-        glDisableClientState(GL_VERTEX_ARRAY);
-        glDisableClientState(GL_TEXTURE_COORD_ARRAY);
-        glDisable(GL_TEXTURE_2D);
+        glDrawArrays(GL_TRIANGLES, 0, 36 + (yMiddles?18:0));
     }
 }
 #endif

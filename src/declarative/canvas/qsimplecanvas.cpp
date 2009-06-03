@@ -921,6 +921,9 @@ bool QSimpleCanvas::event(QEvent *e)
 #if defined(QFX_RENDER_OPENGL1)
         unsigned int zero = 0;
         d->root->d_func()->setupPainting(0, rect(), &zero);
+#elif defined(QFX_RENDER_OPENGL2)
+        ++d->paintVersion;
+        d->root->d_func()->setupPainting(0);
 #else
         ++d->paintVersion;
         d->root->d_func()->setupPainting(0, rect());

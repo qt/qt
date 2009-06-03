@@ -448,9 +448,9 @@ uint QFxImage::glSimpleItemData(float *vertices, float *texVertices,
         texVertices[6] = tileWidth; texVertices[7] = tileHeight;
     } else {
         texVertices[0] = 0; texVertices[1] = 0;
-        texVertices[2] = 1; texVertices[3] = 0;
-        texVertices[4] = 0; texVertices[5] = 1;
-        texVertices[6] = 1; texVertices[7] = 1;
+        texVertices[2] = d->_tex.glWidth(); texVertices[3] = 0;
+        texVertices[4] = 0; texVertices[5] = d->_tex.glHeight();
+        texVertices[6] = d->_tex.glWidth(); texVertices[7] = d->_tex.glHeight();
     }
 
     return 8;
@@ -481,25 +481,57 @@ void QFxImage::paintGLContents(GLPainter &p)
         restoreBlend = true;
     }
 
+    d->checkDirty();
+
     if (d->_tiled || (!d->_scaleGrid || d->_scaleGrid->isNull())) {
 
-        GLfloat vertices[8];
-        GLfloat texVertices[8];
-        GLTexture *tex = 0;
+        if (!d->_tiled) {
 
-        QFxImage::glSimpleItemData(vertices, texVertices, &tex, 8);
+            float widthV = width();
+            float heightV = height();
+            float glWidth = d->_tex.glWidth();
+            float glHeight = d->_tex.glHeight();
 
-        shader->setAttributeArray(SingleTextureShader::Vertices, vertices, 2);
-        shader->setAttributeArray(SingleTextureShader::TextureCoords, texVertices, 2);
+            float vert[] = {
+                0, heightV,
+                widthV, heightV,
+                0, 0,
 
-        glBindTexture(GL_TEXTURE_2D, tex->texture());
-        glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+                widthV, heightV,
+                0, 0,
+                widthV, 0 };
 
-        shader->disableAttributeArray(SingleTextureShader::Vertices);
-        shader->disableAttributeArray(SingleTextureShader::TextureCoords);
+            float tex[] = {
+                0, 0,
+                glWidth, 0,
+                0, glHeight,
+
+                glWidth, 0,
+                0, glHeight,
+                glWidth, glHeight
+            };
+
+            shader->setAttributeArray(SingleTextureShader::Vertices, vert, 2);
+            shader->setAttributeArray(SingleTextureShader::TextureCoords, tex, 2);
+            glBindTexture(GL_TEXTURE_2D, d->_tex.texture());
+            glDrawArrays(GL_TRIANGLES, 0, 6);
+
+        } else {
+
+            GLfloat vertices[8];
+            GLfloat texVertices[8];
+            GLTexture *tex = 0;
+
+            QFxImage::glSimpleItemData(vertices, texVertices, &tex, 8);
+
+            shader->setAttributeArray(SingleTextureShader::Vertices, vertices, 2);
+            shader->setAttributeArray(SingleTextureShader::TextureCoords, texVertices, 2);
+
+            glBindTexture(GL_TEXTURE_2D, tex->texture());
+            glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+        }
 
     } else {
-        d->checkDirty();
 
         float imgWidth = d->_pix.width();
         float imgHeight = d->_pix.height();
@@ -546,48 +578,143 @@ void QFxImage::paintGLContents(GLPainter &p)
         float vert1[] = { 0, 0, 
                           0, imgtop,
                           imgleft, 0, 
+
+                          0, imgtop,
+                          imgleft, 0, 
+                          imgleft, imgtop,
+
+                          imgleft, 0, 
+                          imgleft, imgtop,
+                          imgright, 0,
+
                           imgleft, imgtop,
                           imgright, 0,
                           imgright, imgtop,
+
+                          imgright, 0,
+                          imgright, imgtop,
                           widthV, 0,
-                          widthV, imgtop };
-        float tex1[] = { 0, 1, 
-                         0, textop,
-                         texleft, 1,
-                         texleft, textop,
-                         texright, 1,
-                         texright, textop,
-                         1, 1,
-                         1, textop };
-        float vert2[] = { 0, imgtop,
+
+                          imgright, imgtop,
+                          widthV, 0,
+                          widthV, imgtop,
+
+                          0, imgtop,
+                          0, imgbottom,
+                          imgleft, imgtop,
+
                           0, imgbottom,
                           imgleft, imgtop,
                           imgleft, imgbottom,
+
+                          imgleft, imgtop,
+                          imgleft, imgbottom,
+                          imgright, imgtop,
+
+                          imgleft, imgbottom,
+                          imgright, imgtop,
+                          imgright, imgbottom,
+
                           imgright, imgtop,
                           imgright, imgbottom,
                           widthV, imgtop,
-                          widthV, imgbottom };
-        float tex2[] = { 0, textop,
-                         0, texbottom,
-                         texleft, textop,
-                         texleft, texbottom,
-                         texright, textop,
-                         texright, texbottom,
-                         1, textop,
-                         1, texbottom };
-        float vert3[] = { 0, imgbottom,
+
+                          imgright, imgbottom,
+                          widthV, imgtop,
+                          widthV, imgbottom, 
+
+                          0, imgbottom,
+                          0, heightV,
+                          imgleft, imgbottom,
+
                           0, heightV,
                           imgleft, imgbottom,
                           imgleft, heightV,
+
+                          imgleft, imgbottom,
+                          imgleft, heightV,
+                          imgright, imgbottom,
+
+                          imgleft, heightV,
+                          imgright, imgbottom,
+                          imgright, heightV,
+
                           imgright, imgbottom,
                           imgright, heightV,
                           widthV, imgbottom,
+
+                          imgright, heightV,
+                          widthV, imgbottom,
                           widthV, heightV };
-        float tex3[] = { 0, texbottom,
+
+        float tex1[] = { 0, 1, 
+                         0, textop,
+                         texleft, 1,
+
+                         0, textop,
+                         texleft, 1,
+                         texleft, textop,
+
+                         texleft, 1,
+                         texleft, textop,
+                         texright, 1,
+
+                         texleft, textop,
+                         texright, 1,
+                         texright, textop,
+
+                         texright, 1,
+                         texright, textop,
+                         1, 1,
+
+                         texright, textop,
+                         1, 1,
+                         1, textop,
+
+                         0, textop,
+                         0, texbottom,
+                         texleft, textop,
+
+                         0, texbottom,
+                         texleft, textop,
+                         texleft, texbottom,
+
+                         texleft, textop,
+                         texleft, texbottom,
+                         texright, textop,
+
+                         texleft, texbottom,
+                         texright, textop,
+                         texright, texbottom,
+
+                         texright, textop,
+                         texright, texbottom,
+                         1, textop,
+
+                         texright, texbottom,
+                         1, textop,
+                         1, texbottom,
+
+                         0, texbottom,
+                         0, 0,
+                         texleft, texbottom,
+
                          0, 0,
                          texleft, texbottom,
                          texleft, 0,
+
+                         texleft, texbottom,
+                         texleft, 0,
                          texright, texbottom,
+
+                         texleft, 0,
+                         texright, texbottom,
+                         texright, 0,
+
+                         texright, texbottom,
+                         texright, 0,
+                         1, texbottom,
+
                          texright, 0,
                          1, texbottom,
                          1, 0 };
@@ -596,185 +723,10 @@ void QFxImage::paintGLContents(GLPainter &p)
 
         shader->setAttributeArray(SingleTextureShader::Vertices, vert1, 2);
         shader->setAttributeArray(SingleTextureShader::TextureCoords, tex1, 2);
-        glDrawArrays(GL_TRIANGLE_STRIP, 0, 8);
-        shader->setAttributeArray(SingleTextureShader::Vertices, vert2, 2);
-        shader->setAttributeArray(SingleTextureShader::TextureCoords, tex2, 2);
-        glDrawArrays(GL_TRIANGLE_STRIP, 0, 8);
-        shader->setAttributeArray(SingleTextureShader::Vertices, vert3, 2);
-        shader->setAttributeArray(SingleTextureShader::TextureCoords, tex3, 2);
-        glDrawArrays(GL_TRIANGLE_STRIP, 0, 8);
-
-        shader->disableAttributeArray(SingleTextureShader::Vertices);
-        shader->disableAttributeArray(SingleTextureShader::TextureCoords);
+        glDrawArrays(GL_TRIANGLES, 0, 54);
     }
 
-    if (restoreBlend)
-        glEnable(GL_BLEND);
-}
-#elif defined(QFX_RENDER_OPENGL1)
-void QFxImage::paintGLContents(GLPainter &p)
-{
-    Q_D(QFxImage);
-    if (d->_pix.isNull())
-        return;
-
-    glMatrixMode(GL_MODELVIEW);
-    glLoadMatrixf(p.activeTransform.data());
-
-    bool restoreBlend = false;
-    if (isOpaque() && p.activeOpacity == 1) {
-        glDisable(GL_BLEND);
-        restoreBlend = true;
-    }
-
-    glEnable(GL_TEXTURE_2D);
-    if (p.activeOpacity == 1.) {
-        GLint i = GL_REPLACE;
-        glTexEnviv(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, &i);
-    } else {
-        GLint i = GL_MODULATE;
-        glTexEnviv(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, &i);
-        glColor4f(1, 1, 1, p.activeOpacity);
-    }
-
-    if (d->_tiled || !d->_scaleGrid || d->_scaleGrid->isNull()) {
-
-        GLfloat vertices[8];
-        GLfloat texVertices[8];
-        GLTexture *tex = 0;
-
-        QFxImage::glSimpleItemData(vertices, texVertices, &tex, 8);
-
-        glBindTexture(GL_TEXTURE_2D, tex->texture());
-
-        glEnableClientState(GL_VERTEX_ARRAY);
-        glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-
-        glVertexPointer(2, GL_FLOAT, 0, vertices);
-        glTexCoordPointer(2, GL_FLOAT, 0, texVertices);
-
-
-        glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-
-        glDisableClientState(GL_VERTEX_ARRAY);
-        glDisableClientState(GL_TEXTURE_COORD_ARRAY);
-        glDisable(GL_TEXTURE_2D);
-
-    } else {
-        d->checkDirty();
-
-        float imgWidth = d->_pix.width();
-        float imgHeight = d->_pix.height();
-        if (!imgWidth || !imgHeight) {
-            if (restoreBlend)
-                glEnable(GL_BLEND);
-            return;
-        }
-
-        float widthV = width();
-        float heightV = height();
-
-        float texleft = 0;
-        float texright = 1;
-        float textop = 1;
-        float texbottom = 0;
-        float imgleft = 0;
-        float imgright = widthV;
-        float imgtop = 0;
-        float imgbottom = heightV;
-
-        const int sgl = d->_scaleGrid->left();
-        const int sgr = d->_scaleGrid->right();
-        const int sgt = d->_scaleGrid->top();
-        const int sgb = d->_scaleGrid->bottom();
-
-        if (sgl) {
-            texleft = float(sgl) / imgWidth;
-            imgleft = sgl;
-        }
-        if (sgr) {
-            texright = 1. - float(sgr) / imgWidth;
-            imgright = widthV - sgr;
-        }
-        if (sgt) {
-            textop = 1. - float(sgb) / imgHeight;
-            imgtop = sgt;
-        }
-        if (sgb) {
-            texbottom = float(sgt) / imgHeight;
-            imgbottom = heightV - sgb;
-        }
-
-        float vert1[] = { 0, 0, 
-                          0, imgtop,
-                          imgleft, 0, 
-                          imgleft, imgtop,
-                          imgright, 0,
-                          imgright, imgtop,
-                          widthV, 0,
-                          widthV, imgtop };
-        float tex1[] = { 0, 1, 
-                         0, textop,
-                         texleft, 1,
-                         texleft, textop,
-                         texright, 1,
-                         texright, textop,
-                         1, 1,
-                         1, textop };
-        float vert2[] = { 0, imgtop,
-                          0, imgbottom,
-                          imgleft, imgtop,
-                          imgleft, imgbottom,
-                          imgright, imgtop,
-                          imgright, imgbottom,
-                          widthV, imgtop,
-                          widthV, imgbottom };
-        float tex2[] = { 0, textop,
-                         0, texbottom,
-                         texleft, textop,
-                         texleft, texbottom,
-                         texright, textop,
-                         texright, texbottom,
-                         1, textop,
-                         1, texbottom };
-        float vert3[] = { 0, imgbottom,
-                          0, heightV,
-                          imgleft, imgbottom,
-                          imgleft, heightV,
-                          imgright, imgbottom,
-                          imgright, heightV,
-                          widthV, imgbottom,
-                          widthV, heightV };
-        float tex3[] = { 0, texbottom,
-                         0, 0,
-                         texleft, texbottom,
-                         texleft, 0,
-                         texright, texbottom,
-                         texright, 0,
-                         1, texbottom,
-                         1, 0 };
-
-        glBindTexture(GL_TEXTURE_2D, d->_tex.texture());
-
-        glEnableClientState(GL_VERTEX_ARRAY);
-        glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-
-        glVertexPointer(2, GL_FLOAT, 0, vert1);
-        glTexCoordPointer(2, GL_FLOAT, 0, tex1);
-        glDrawArrays(GL_TRIANGLE_STRIP, 0, 8);
-        glVertexPointer(2, GL_FLOAT, 0, vert2);
-        glTexCoordPointer(2, GL_FLOAT, 0, tex2);
-        glDrawArrays(GL_TRIANGLE_STRIP, 0, 8);
-        glVertexPointer(2, GL_FLOAT, 0, vert3);
-        glTexCoordPointer(2, GL_FLOAT, 0, tex3);
-        glDrawArrays(GL_TRIANGLE_STRIP, 0, 8);
-
-        glDisableClientState(GL_VERTEX_ARRAY);
-        glDisableClientState(GL_TEXTURE_COORD_ARRAY);
-        glDisable(GL_TEXTURE_2D);
-    }
-
-    if (restoreBlend)
+    if (restoreBlend) 
         glEnable(GL_BLEND);
 }
 #endif

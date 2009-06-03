@@ -218,9 +218,11 @@ public:
 #endif
         float opacity;
         bool forceParamRefresh;
+
+        QSimpleCanvasItem::GLPainter *painter;
     };
 #if defined(QFX_RENDER_OPENGL2)
-    QRectF setupPainting(int version, const QRect &bounding);
+    QRectF setupPainting(int version);
 #elif defined(QFX_RENDER_OPENGL1)
     QRectF setupPainting(int version, const QRect &bounding, unsigned int *zero);
 #endif
