@@ -147,6 +147,7 @@ public:
         dirtyChildrenBoundingRect(1),
         paintedViewBoundingRectsNeedRepaint(0),
         dirtySceneTransform(1),
+        itemChangesEnabled(0xffff),
         globalStackingOrder(-1),
         q_ptr(0)
     {
@@ -396,7 +397,8 @@ public:
     quint32 dirtyChildrenBoundingRect : 1;
     quint32 paintedViewBoundingRectsNeedRepaint : 1;
     quint32 dirtySceneTransform  : 1;
-    quint32 padding : 18; // feel free to use
+    quint32 itemChangesEnabled : 16;
+    quint32 padding : 3; // feel free to use
 
     // Optional stacking order
     int globalStackingOrder;

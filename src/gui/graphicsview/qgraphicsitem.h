@@ -129,6 +129,7 @@ public:
         ItemZValueHasChanged,
         ItemOpacityChange,
         ItemOpacityHasChanged
+        // NB! Don't forget to increase d_ptr->itemChangesEnabled when adding a new entry.
     };
 
     enum CacheMode {
@@ -164,6 +165,10 @@ public:
     GraphicsItemFlags flags() const;
     void setFlag(GraphicsItemFlag flag, bool enabled = true);
     void setFlags(GraphicsItemFlags flags);
+
+    bool itemChangeEnabled(GraphicsItemChange change) const;
+    void setItemChangeEnabled(GraphicsItemChange change, bool enabled);
+    void setItemChangesEnabled(bool enabled);
 
     CacheMode cacheMode() const;
     void setCacheMode(CacheMode mode, const QSize &cacheSize = QSize());
