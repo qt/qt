@@ -1118,29 +1118,34 @@ void HtmlGenerator::generateClassLikeNode(const InnerNode *inner,
                 names << (*m)->name();
                 if ((*m)->type() == Node::Function) {
                     const FunctionNode *func = reinterpret_cast<const FunctionNode *>(*m);
-                    if (func->metaness() == FunctionNode::Ctor || func->metaness() == FunctionNode::Dtor
-                            || func->overloadNumber() != 1)
+                    if (func->metaness() == FunctionNode::Ctor ||
+                        func->metaness() == FunctionNode::Dtor ||
+                        func->overloadNumber() != 1)
                         names.clear();
-                } else if ((*m)->type() == Node::Property) {
+                }
+                else if ((*m)->type() == Node::Property) {
                     const PropertyNode *prop = reinterpret_cast<const PropertyNode *>(*m);
-                    if (!prop->getters().isEmpty() && !names.contains(prop->getters().first()->name()))
+                    if (!prop->getters().isEmpty() &&
+                        !names.contains(prop->getters().first()->name()))
                         names << prop->getters().first()->name();
                     if (!prop->setters().isEmpty())
                         names << prop->setters().first()->name();
                     if (!prop->resetters().isEmpty())
                         names << prop->resetters().first()->name();
-                } else if ((*m)->type() == Node::Enum) {
-                    const EnumNode *enume = reinterpret_cast<const EnumNode *>(*m);
+                }
+                else if ((*m)->type() == Node::Enum) {
+                    const EnumNode *enume = reinterpret_cast<const EnumNode*>(*m);
                     if (enume->flagsType())
                         names << enume->flagsType()->name();
 
                     foreach (const QString &enumName,
-                             enume->doc().enumItemNames().toSet()
-                             - enume->doc().omitEnumItemNames().toSet())
-                        names << plainCode(marker->markedUpEnumValue(enumName, enume));
+                             enume->doc().enumItemNames().toSet() -
+                             enume->doc().omitEnumItemNames().toSet())
+                        names << plainCode(marker->markedUpEnumValue(enumName,
+                                                                     enume));
                 }
                 foreach (const QString &name, names)
-                    classSection.keywords += qMakePair(name, linkForNode(*m, 0));
+                    classSection.keywords += qMakePair(name,linkForNode(*m,0));
             }
             ++m;
         }
@@ -2181,7 +2186,7 @@ void HtmlGenerator::generateSectionList(const Section& section,
         }
         if (name_alignment) {
             out() << "<table border=\"0\" cellpadding=\"0\" "
-                  << "cellspacing=\"0\">\n";
+                  << "cellspacing=\"0\" width=\"100%\">\n";
         }
         else {
             if (twoColumn)
@@ -2317,7 +2322,7 @@ QString HtmlGenerator::highlightedCode(const QString& markedCode,
     static const QString linkTag("link");
     for (int i = 0, n = src.size(); i < n;) {
         if (src.at(i) == charLangle && src.at(i + 1).unicode() == '@') {
-            if (nameAlignment && (i != 0))
+            if (nameAlignment) // && (i != 0)) Why was this here?
                 html += "&nbsp;</td><td class=\"memItemRight\" valign=\"bottom\">";
             i += 2;
             if (parseArg(src, linkTag, &i, n, &arg, &par1)) {
@@ -3099,7 +3104,8 @@ void HtmlGenerator::generateDetailedMember(const Node *node,
                   << " type is a typedef for "
                   << "<a href=\"qflags.html\">QFlags</a>&lt;"
                   << protect(enume->name())
-                  << "&gt;. It stores an OR combination of " << protect(enume->name())
+                  << "&gt;. It stores an OR combination of "
+                  << protect(enume->name())
                   << " values.</p>\n";
         }
     }
@@ -3113,7 +3119,8 @@ void HtmlGenerator::findAllClasses(const InnerNode *node)
         if ((*c)->access() != Node::Private && (*c)->url().isEmpty()) {
             if ((*c)->type() == Node::Class && !(*c)->doc().isEmpty()) {
                 QString className = (*c)->name();
-                if ((*c)->parent() && (*c)->parent()->type() == Node::Namespace &&
+                if ((*c)->parent() &&
+                    (*c)->parent()->type() == Node::Namespace &&
                     !(*c)->parent()->name().isEmpty())
                     className = (*c)->parent()->name()+"::"+className;
 

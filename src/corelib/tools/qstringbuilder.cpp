@@ -64,7 +64,7 @@
     \sa QStringBuilder, QLatin1String, QString, QStringRef
 */
 
-/*! \fn QLatin1Literal::QLatin1Literal(const char(&string)[])
+/*! \fn QLatin1Literal::QLatin1Literal(const char(&string)[N])
  
     Constructs a new literal from the given \a string.
 */
@@ -93,7 +93,7 @@
     \reentrant
     \since 4.6
 
-    \brief QStringBuilder is a template class that provides a facility to build
+    \brief The QStringBuilder class is a template class that provides a facility to build
     up QStrings from smaller chunks.
 
     \ingroup tools
@@ -102,7 +102,7 @@
     \mainclass
 
     When creating strings from smaller chunks, typically \c QString::operator+()
-    is used, resulting in \i{n - 1} reallocations when operating on \i{n} chunks.
+    is used, resulting in \e{n - 1} reallocations when operating on \e{n} chunks.
 
     QStringBuilder uses expression templates to collect the individual parts,
     compute the total size, allocate memory for the resulting QString object,

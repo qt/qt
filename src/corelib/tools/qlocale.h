@@ -99,11 +99,9 @@ public:
     virtual QVariant query(QueryType type, QVariant in) const;
     virtual QLocale fallbackLocale() const;
 
-#ifdef QLOCALE_CPP
 private:
     QSystemLocale(bool);
     friend QSystemLocale *QSystemLocale_globalSystemLocale();
-#endif
 };
 #endif
 
