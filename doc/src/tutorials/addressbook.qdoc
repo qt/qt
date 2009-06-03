@@ -303,7 +303,7 @@
 
     Within the constructor of \c AddressBook, we set the \c nameLine and
     \c addressText to read-only, so that we can only display but not edit
-    existing cotact details.
+    existing contact details.
 
     \dots
     \snippet tutorials/addressbook/part2/addressbook.cpp setting readonly 1
