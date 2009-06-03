@@ -156,7 +156,8 @@ class GestureWidget : public QWidget
     static int numberOfWidgets;
 
 public:
-    enum Type { DoNotGrabGestures, GrabAllGestures, GrabSingleshot, GrabPinch, GrabSecondFinger };
+    enum Type { DoNotGrabGestures, GrabAllGestures, GrabSingleshot,
+                GrabPinch, GrabSecondFinger, GrabPan };
 
     static const int LeftMargin = 10;
     static const int TopMargin  = 20;
@@ -179,6 +180,7 @@ public:
         singleshotGestureId = -1;
         pinchGestureId = -1;
         secondFingerGestureId = -1;
+        panGestureId = -1;
         if (type == GrabAllGestures || type == GrabSingleshot) {
             singleshotGestureId = grabGesture(SingleshotGestureRecognizer::Name);
         }
@@ -187,6 +189,9 @@ public:
         }
         if (type == GrabAllGestures || type == GrabSecondFinger) {
             secondFingerGestureId = grabGesture(SecondFingerGestureRecognizer::Name);
+        }
+        if (type == GrabAllGestures || type == GrabPan) {
+            panGestureId = grabGesture(PanGestureRecognizer::Name);
         }
         reset();
     }
@@ -208,6 +213,10 @@ public:
     {
         secondFingerGestureId = grabGesture(SecondFingerGestureRecognizer::Name);
     }
+    void grabPanGesture()
+    {
+        panGestureId = grabGesture(PanGestureRecognizer::Name);
+    }
     void ungrabGestures()
     {
         releaseGesture(singleshotGestureId);
@@ -216,15 +225,19 @@ public:
         pinchGestureId = -1;
         releaseGesture(secondFingerGestureId);
         secondFingerGestureId = -1;
+        releaseGesture(panGestureId);
+        panGestureId = -1;
     }
 
     int singleshotGestureId;
     int pinchGestureId;
     int secondFingerGestureId;
+    int panGestureId;
 
     bool shouldAcceptSingleshotGesture;
     bool shouldAcceptPinchGesture;
     bool shouldAcceptSecondFingerGesture;
+    bool shouldAcceptPanGesture;
 
     GestureState gesture;
 
@@ -233,6 +246,7 @@ public:
         shouldAcceptSingleshotGesture = true;
         shouldAcceptPinchGesture = true;
         shouldAcceptSecondFingerGesture = true;
+        shouldAcceptPanGesture = true;
         gesture.reset();
     }
 protected:

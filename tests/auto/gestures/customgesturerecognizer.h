@@ -51,10 +51,10 @@ private:
 struct TouchPoint {
     enum State
     {
-        None,
-        Begin,
-        Update,
-        End
+        None = 0,
+        Begin = Qt::TouchPointPressed,
+        Update = Qt::TouchPointMoved,
+        End = Qt::TouchPointReleased
     };
     int id;
     QPoint pt;
@@ -146,6 +146,42 @@ public:
 
 private:
     SecondFingerGesture *gesture;
+};
+
+class PanGesture : public QGesture
+{
+    Q_OBJECT
+public:
+    PanGesture(QObject *parent, const QString &type)
+        : QGesture(parent, type) { }
+
+    TouchPoint startPoints[2];
+    TouchPoint lastPoints[2];
+    TouchPoint points[2];
+
+    QPoint offset;
+
+protected:
+    void translate(const QPoint &pt)
+    {
+        offset += pt;
+    }
+};
+
+class PanGestureRecognizer : public QGestureRecognizer
+{
+    Q_OBJECT
+public:
+    static const char *Name;
+
+    PanGestureRecognizer(QObject *parent = 0);
+
+    QGestureRecognizer::Result filterEvent(const QEvent *event);
+    QGesture* getGesture() { return gesture; }
+    void reset();
+
+private:
+    PanGesture *gesture;
 };
 
 #endif
