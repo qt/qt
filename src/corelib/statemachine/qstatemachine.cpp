@@ -1329,7 +1329,7 @@ void QStateMachinePrivate::registerSignalTransition(QSignalTransition *transitio
         if (!ok) {
 #ifdef QSTATEMACHINE_DEBUG
             qDebug() << q << ": FAILED to add signal transition from" << transition->sourceState()
-                     << ": ( sender =" << sender << ", signal =" << (signal.mid(1))
+                     << ": ( sender =" << sender << ", signal =" << signal
                      << ", targets =" << transition->targetStates() << ')';
 #endif
             return;
@@ -1339,7 +1339,7 @@ void QStateMachinePrivate::registerSignalTransition(QSignalTransition *transitio
     QSignalTransitionPrivate::get(transition)->signalIndex = signalIndex;
 #ifdef QSTATEMACHINE_DEBUG
     qDebug() << q << ": added signal transition from" << transition->sourceState()
-             << ": ( sender =" << sender << ", signal =" << (signal.mid(1))
+             << ": ( sender =" << sender << ", signal =" << signal
              << ", targets =" << transition->targetStates() << ')';
 #endif
 }
