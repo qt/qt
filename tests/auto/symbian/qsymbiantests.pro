@@ -1,2 +1,2 @@
 TEMPLATE = subdirs
-SUBDIRS = qmainexceptions
+SUBDIRS = qmainexceptions orientationchange

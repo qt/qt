@@ -73,7 +73,20 @@ CQtS60MainAppUi::~CQtS60MainAppUi()
 void CQtS60MainAppUi::HandleCommandL( TInt aCommand )
 {
     if (qApp)
-        qApp->s60HandleCommandL(aCommand);
+        qApp->symbianHandleCommand(aCommand);
+}
+
+// -----------------------------------------------------------------------------
+// CQtS60MainAppUi::HandleResourceChangeL()
+// Takes care of event handling.
+// -----------------------------------------------------------------------------
+//
+void CQtS60MainAppUi::HandleResourceChangeL(TInt aType)
+{
+    CAknAppUi::HandleResourceChangeL(aType);
+    
+    if (qApp)
+        qApp->symbianResourceChange(aType);
 }
 
 void CQtS60MainAppUi::HandleWsEventL(const TWsEvent& aEvent, CCoeControl *control)

@@ -93,9 +93,10 @@ QPixmap QS60StylePrivate::part(QS60StyleEnums::SkinParts part, const QSize &size
 
     QPixmap result = QPixmap::fromImage(partImage);
     if (flags & SF_StateDisabled) {
-        // TODO: fix this
         QStyleOption opt;
-//        opt.palette = q->standardPalette();
+        QPalette *themePalette = QS60StylePrivate::themePalette();
+        if (themePalette)
+            opt.palette = *themePalette;
         result = QApplication::style()->generatedIconPixmap(QIcon::Disabled, result, &opt);
     }
 
@@ -138,6 +139,7 @@ QPixmap QS60StylePrivate::frame(SkinFrameElements frame, const QSize &size,
     const QRect centerRect = drawOnlyCenter ? rect : rect.adjusted(cornerWidth, cornerWidth, -cornerWidth, -cornerWidth);
 
     QImage result(size, QImage::Format_ARGB32);
+    result.fill(Qt::transparent);
     QPainter painter(&result);
 
 #if 0
@@ -268,9 +270,7 @@ void QS60Style::setS60Theme(const QHash<QString, QPicture> &parts,
     QS60StyleModeSpecifics::m_colors = colors;
     d->clearCaches(QS60StylePrivate::CC_ThemeChange);
     d->setBackgroundTexture(qApp);
-
-    foreach (QWidget *widget, QApplication::allWidgets())
-        d->setThemePalette(widget);
+    d->setThemePalette(qApp);
 }
 
 QPoint qt_s60_fill_background_offset(const QWidget *targetWidget)
