@@ -113,11 +113,8 @@ extern void qt_wince_hide_taskbar(HWND hwnd); //defined in qguifunctions_wince.c
 #  include <winable.h>
 #endif
 
-#ifndef WM_TOUCHMOVE
-
-#  define WM_TOUCHMOVE 0x0240
-#  define WM_TOUCHDOWN 0x0241
-#  define WM_TOUCHUP   0x0242
+#ifndef WM_TOUCH
+#  define WM_TOUCH 0x0240
 
 #  define TOUCHEVENTF_MOVE       0x0001
 #  define TOUCHEVENTF_DOWN       0x0002
@@ -126,6 +123,7 @@ extern void qt_wince_hide_taskbar(HWND hwnd); //defined in qguifunctions_wince.c
 #  define TOUCHEVENTF_PRIMARY    0x0010
 #  define TOUCHEVENTF_NOCOALESCE 0x0020
 #  define TOUCHEVENTF_PEN        0x0040
+#  define TOUCHEVENTF_PALM       0x0080
 
 #  define TOUCHINPUTMASKF_TIMEFROMSYSTEM 0x0001
 #  define TOUCHINPUTMASKF_EXTRAINFO      0x0002
@@ -1733,9 +1731,7 @@ LRESULT CALLBACK QtWndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam
         result = widget->translateWheelEvent(msg);
     } else {
         switch (message) {
-        case WM_TOUCHMOVE:
-        case WM_TOUCHDOWN:
-        case WM_TOUCHUP:
+        case WM_TOUCH:
             result = getQApplicationPrivateInternal()->translateTouchEvent(msg);
             break;
         case WM_KEYDOWN:                        // keyboard event
