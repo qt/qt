@@ -92,7 +92,7 @@ QT_BEGIN_NAMESPACE
     QAbstractState) and transitions (descendants of
     QAbstractTransition) between those states; these states and
     transitions define a state graph. Once a state graph has been
-    built, the state machine can execute it. \l{QStateMachine}'s
+    built, the state machine can execute it. QStateMachine's
     execution algorithm is based on the \l{State Chart XML: State
     Machine Notation for Control Abstraction}{State Chart XML (SCXML)}
     algorithm. The framework's \l{The State Machine
