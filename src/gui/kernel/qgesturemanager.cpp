@@ -176,8 +176,6 @@ bool QGestureManager::filterEvent(QWidget *receiver, QEvent *event)
                     gesture->d_func()->singleshot = false;
                 }
             }
-            Q_ASSERT(!started.isEmpty());
-            ret = sendGestureEvent(receiver, started, QSet<QGesture*>());
 
             if (!activeGestures.isEmpty()) {
                 DEBUG() << "QGestureManager: new state = Gesture";
@@ -189,6 +187,9 @@ bool QGestureManager::filterEvent(QWidget *receiver, QEvent *event)
                 DEBUG() << "QGestureManager: new state = NotGesture";
                 state = NotGesture;
             }
+
+            Q_ASSERT(!started.isEmpty());
+            ret = sendGestureEvent(receiver, started, QSet<QGesture*>());
         } else if (!maybeGestures.isEmpty()) {
             if (state != MaybeGesture) {
                 // We got a new set of events that look like a start
