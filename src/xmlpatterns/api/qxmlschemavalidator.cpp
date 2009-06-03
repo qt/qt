@@ -63,6 +63,12 @@
   The QXmlSchemaValidator class loads, parses an XML instance document and validates it
   against a W3C XML Schema that has been compiled with \l{QXmlSchema}.
 
+  The following example shows how to load a XML Schema from a local
+  file, check whether it is a valid schema document and use it for validation
+  of an XML instance document:
+
+  \snippet doc/src/snippets/qxmlschemavalidator/main.cpp 3
+
   \sa QXmlSchema, {xmlpatterns/schema}{XML Schema Validation Example}
 */
 
@@ -110,7 +116,7 @@ void QXmlSchemaValidator::setSchema(const QXmlSchema &schema)
   Validates the XML instance document read from \a data with the
   given \a documentUri against the schema.
 
-  Returns \c true if the XML instance document is valid according the
+  Returns \c true if the XML instance document is valid according to the
   schema, \c false otherwise.
 
   Example:
@@ -130,7 +136,7 @@ bool QXmlSchemaValidator::validate(const QByteArray &data, const QUrl &documentU
 /*!
   Validates the XML instance document read from \a source against the schema.
 
-  Returns \c true if the XML instance document is valid according the
+  Returns \c true if the XML instance document is valid according to the
   schema, \c false otherwise.
 
   Example:
@@ -155,7 +161,7 @@ bool QXmlSchemaValidator::validate(const QUrl &source) const
   Validates the XML instance document read from \a source with the
   given \a documentUri against the schema.
 
-  Returns \c true if the XML instance document is valid according the
+  Returns \c true if the XML instance document is valid according to the
   schema, \c false otherwise.
 
   Example:

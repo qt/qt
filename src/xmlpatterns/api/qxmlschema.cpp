@@ -58,6 +58,11 @@
   that can be used further for validation of XML instance documents via
   \l{QXmlSchemaValidator}.
 
+  The following example shows how to load a XML Schema file from the network
+  and test whether it is a valid schema document:
+
+  \snippet doc/src/snippets/qxmlschema/main.cpp 0
+
   \sa QXmlSchemaValidator, {xmlpatterns/schema}{XML Schema Validation Example}
 */
 

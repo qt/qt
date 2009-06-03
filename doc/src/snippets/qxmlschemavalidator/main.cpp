@@ -48,6 +48,7 @@ class SchemaValidator
         void validateFromUrl() const;
         void validateFromFile() const;
         void validateFromData() const;
+        void validateComplete() const;
 
     private:
         QXmlSchema getSchema() const;
@@ -123,6 +124,27 @@ QXmlSchema SchemaValidator::getSchema() const
     return schema;
 }
 
+void SchemaValidator::validateComplete() const
+{
+//! [3]
+    QUrl schemaUrl("file:///home/user/schema.xsd");
+
+    QXmlSchema schema;
+    schema.load(schemaUrl);
+
+    if (schema.isValid()) {
+        QFile file("test.xml");
+        file.open(QIODevice::ReadOnly);
+
+        QXmlSchemaValidator validator(schema);
+        if (validator.validate(&file, QUrl::fromLocalFile(file.fileName())))
+            qDebug() << "instance document is valid";
+        else
+            qDebug() << "instance document is invalid";
+    }
+//! [3]
+}
+
 int main(int argc, char **argv)
 {
     QCoreApplication app(argc, argv);
@@ -132,6 +154,7 @@ int main(int argc, char **argv)
     validator.validateFromUrl();
     validator.validateFromFile();
     validator.validateFromData();
+    validator.validateComplete();
 
     return 0;
 }
