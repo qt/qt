@@ -1537,7 +1537,7 @@ void tst_QTextCodec::utfHeaders_data()
         << QByteArray("\xef\xbb\xbfhello")
         << (QString(QChar(0xfeff)) + QString::fromLatin1("hello"))
         << true;
-    QTest::newRow("utf8 nobom")
+    QTest::newRow("utf8 nobom ignore header")
         << QByteArray("UTF-8")
         << (int)QTextCodec::IgnoreHeader
         << QByteArray("hello")
@@ -1718,14 +1718,23 @@ void tst_QTextCodec::utfHeaders()
 
     QFETCH(bool, toUnicode);
 
+    QLatin1String ignoreReverseTestOn = (QSysInfo::ByteOrder == QSysInfo::BigEndian) ? QLatin1String(" le") : QLatin1String(" be");
+    QString rowName(QTest::currentDataTag());
+
     for (int i = 0; i < encoded.length(); ++i)
         qDebug() << hex << "    " << (uint)(uchar)encoded.at(i);
     if (toUnicode) {
         QString result = codec->toUnicode(encoded.constData(), encoded.length(), &state);
-    for (int i = 0; i < result.length(); ++i)
-        qDebug() << hex << "    " << (uint)result.at(i).unicode();
+        for (int i = 0; i < result.length(); ++i)
+            qDebug() << hex << "    " << (uint)result.at(i).unicode();
         QCOMPARE(result.length(), unicode.length());
         QCOMPARE(result, unicode);
+
+        if (!rowName.endsWith("nobom") && !rowName.contains(ignoreReverseTestOn)) {
+            QTextCodec::ConverterState state2(cFlags);
+            QByteArray reencoded = codec->fromUnicode(unicode.unicode(), unicode.length(), &state2);
+            QCOMPARE(reencoded, encoded);
+        }
     } else {
         QByteArray result = codec->fromUnicode(unicode.unicode(), unicode.length(), &state);
         QCOMPARE(result, encoded);
