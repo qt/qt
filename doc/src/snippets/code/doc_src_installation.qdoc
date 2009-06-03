@@ -137,6 +137,15 @@ configure -platform win32-mwc -xplatform symbian-abld
 make debug-winscw
 //! [24]
 
+//! [25]
+cd examples
+qmake
+make
+cd ..\demos
+qmake
+make 
+//! [25]
+
 
 //! [26]
 wiggly.exe -small-screen
