@@ -2317,7 +2317,7 @@ QString HtmlGenerator::highlightedCode(const QString& markedCode,
     static const QString linkTag("link");
     for (int i = 0, n = src.size(); i < n;) {
         if (src.at(i) == charLangle && src.at(i + 1).unicode() == '@') {
-            if (nameAlignment && (i != 0))
+            if (nameAlignment) // && (i != 0)) Why was this here?
                 html += "&nbsp;</td><td class=\"memItemRight\" valign=\"bottom\">";
             i += 2;
             if (parseArg(src, linkTag, &i, n, &arg, &par1)) {
