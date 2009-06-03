@@ -61,6 +61,13 @@ class CQtS60MainAppUi : public CAknAppUi
         void HandleCommandL( TInt aCommand );
 
         /**
+        * From CAknAppUi, HandleResourceChangeL
+        * Handles resource change events such as layout switches in global level.
+        * @param aType event type.
+        */
+        void HandleResourceChangeL(TInt aType);
+        
+        /**
         *  HandleStatusPaneSizeChange.
         *  Called by the framework when the application status pane
 		*  size is changed.
