@@ -180,30 +180,59 @@ void GLTexture::setImage(const QImage &img, ImageMode mode)
 
     glBindTexture(GL_TEXTURE_2D, d->texture);
 
-    // ### Need to respect mode
-    if (img.format() == QImage::Format_RGB16) {
-        QImage dataImage = img.mirrored();
+    if (mode == NonPowerOfTwo) {
+
+        if (img.format() == QImage::Format_RGB16) {
+            QImage dataImage = img.mirrored();
+
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, dataImage.width(),
+                         dataImage.height(), 0, 
+                         GL_RGB,
+                         GL_UNSIGNED_SHORT_5_6_5, dataImage.bits());
+        } else {
+            QImage dataImage = QGLWidget_convertToGLFormat(img);
+
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, dataImage.width(), 
+                         dataImage.height(), 0, 
+                         (dataImage.format() == QImage::Format_ARGB32)?GL_RGBA:GL_RGB, 
+                         GL_UNSIGNED_BYTE, dataImage.bits());
+        }
+        d->glWidth = 1.;
+        d->glHeight = 1.;
+
+    } else {
+        // mode == PowerOfTwo
         int max = (img.width() > img.height())?img.width():img.height();
         max = npot(max);
 
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, max,
-                     max, 0, 
-                     GL_RGB,
-                     GL_UNSIGNED_SHORT_5_6_5, 0);
+        if (img.format() == QImage::Format_RGB16) {
+            QImage dataImage = img.mirrored();
 
-        glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, dataImage.width(),
-                        dataImage.height(), GL_RGB, GL_UNSIGNED_SHORT_5_6_5, 
-                        dataImage.bits()); 
-        
-        d->glWidth = qreal(dataImage.width()) / qreal(max);
-        d->glHeight = qreal(dataImage.height()) / qreal(max);
-    } else {
-        QImage dataImage = QGLWidget_convertToGLFormat(img);
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, max,
+                         max, 0, 
+                         GL_RGB,
+                         GL_UNSIGNED_SHORT_5_6_5, 0);
 
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, dataImage.width(), 
-                     dataImage.height(), 0, 
-                     (dataImage.format() == QImage::Format_ARGB32)?GL_RGBA:GL_RGB, 
-                     GL_UNSIGNED_BYTE, dataImage.bits());
+            glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, dataImage.width(),
+                            dataImage.height(), GL_RGB, GL_UNSIGNED_SHORT_5_6_5, 
+                            dataImage.bits()); 
+            
+        } else {
+            QImage dataImage = QGLWidget_convertToGLFormat(img);
+
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, max,
+                         max, 0, 
+                         (dataImage.format() == QImage::Format_ARGB32)?GL_RGBA:GL_RGB, 
+                         GL_UNSIGNED_BYTE, 0);
+
+            glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, dataImage.width(), 
+                         dataImage.height(), 
+                         (dataImage.format() == QImage::Format_ARGB32)?GL_RGBA:GL_RGB, 
+                         GL_UNSIGNED_BYTE, dataImage.bits());
+        }
+
+        d->glWidth = qreal(img.width()) / qreal(max);
+        d->glHeight = qreal(img.height()) / qreal(max);
     }
 
     d->width = img.width();

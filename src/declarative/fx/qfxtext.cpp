@@ -696,7 +696,7 @@ void QFxTextPrivate::checkImgCache()
         }
 
 #if defined(QFX_RENDER_OPENGL)
-    tex.setImage(imgCache.toImage());
+    tex.setImage(imgCache.toImage(), GLTexture::PowerOfTwo);
 #endif
 
     imgDirty = false;
@@ -755,6 +755,7 @@ void QFxText::paintContents(QPainter &p)
 #elif defined(QFX_RENDER_OPENGL2)
 void QFxText::paintGLContents(GLPainter &p)
 {
+    //return;
     Q_D(QFxText);
     d->checkImgCache();
     if (d->imgCache.isNull())
@@ -804,12 +805,12 @@ void QFxText::paintGLContents(GLPainter &p)
                            x + widthV, y };
 
     GLfloat texVertices[] = { 0, 0, 
-                              1, 0, 
-                              0, 1,
+                              d->tex.glWidth(), 0, 
+                              0, d->tex.glHeight(),
 
-                              1, 0, 
-                              0, 1,
-                              1, 1 };
+                              d->tex.glWidth(), 0, 
+                              0, d->tex.glHeight(),
+                              d->tex.glWidth(), d->tex.glHeight() };
 
     shader->setAttributeArray(SingleTextureShader::Vertices, vertices, 2);
     shader->setAttributeArray(SingleTextureShader::TextureCoords, texVertices, 2);

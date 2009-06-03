@@ -535,7 +535,7 @@ void QFxRect::generateRoundedRect()
         }
         p.setBrush(d->_color);
         p.drawRoundedRect((pw+1)/2, (pw+1)/2, roundRect.width()-(pw+1)/2*2, roundRect.height()-(pw+1)/2*2, d->_radius, d->_radius);
-        d->_rectTexture.setImage(roundRect);
+        d->_rectTexture.setImage(roundRect, GLTexture::PowerOfTwo);
     }
 }
 
@@ -556,7 +556,7 @@ void QFxRect::generateBorderedRect()
         }
         p.setBrush(d->_color);
         p.drawRect(qreal(pw+1)/2, qreal(pw+1)/2, borderedRect.width()-(pw+1)/2*2, borderedRect.height()-(pw+1)/2*2);
-        d->_rectTexture.setImage(borderedRect);
+        d->_rectTexture.setImage(borderedRect, GLTexture::PowerOfTwo);
     }
 }
 #endif
@@ -756,6 +756,11 @@ void QFxRect::paintGLContents(GLPainter &p)
         if (offset==1)
             texleft=texright=textop=texbottom=0.5;
 
+        texleft *= d->_rectTexture.glWidth();
+        texright *= d->_rectTexture.glWidth();
+        textop *= d->_rectTexture.glHeight();
+        texbottom *= d->_rectTexture.glHeight();
+
         float vert1[] = { -pw/2, -pw/2, 
                           -pw/2, imgtop,
                           imgleft, -pw/2, 
@@ -847,35 +852,35 @@ void QFxRect::paintGLContents(GLPainter &p)
 
                          texright, 0,
                          texright, textop,
-                         1, 0,
+                         d->_rectTexture.glWidth(), 0,
 
                          texright, textop,
-                         1, 0,
-                         1, textop,
+                         d->_rectTexture.glWidth(), 0,
+                         d->_rectTexture.glWidth(), textop,
 
-                         0, 1,
+                         0, d->_rectTexture.glHeight(),
                          0, texbottom,
-                         texleft, 1,
+                         texleft, d->_rectTexture.glHeight(),
 
                          0, texbottom,
-                         texleft, 1,
+                         texleft, d->_rectTexture.glHeight(),
                          texleft, texbottom,
 
-                         texleft, 1,
+                         texleft, d->_rectTexture.glHeight(),
                          texleft, texbottom,
-                         texright, 1,
+                         texright, d->_rectTexture.glHeight(),
 
                          texleft, texbottom,
-                         texright, 1,
+                         texright, d->_rectTexture.glHeight(),
                          texright, texbottom,
 
-                         texright, 1,
+                         texright, d->_rectTexture.glHeight(),
                          texright, texbottom,
-                         1, 1,
+                         d->_rectTexture.glWidth(), d->_rectTexture.glHeight(),
 
                          texright, texbottom,
-                         1, 1,
-                         1, texbottom,
+                         d->_rectTexture.glWidth(), d->_rectTexture.glHeight(),
+                         d->_rectTexture.glWidth(), texbottom,
 
                          0, textop,
                          0, texbottom,
@@ -895,11 +900,11 @@ void QFxRect::paintGLContents(GLPainter &p)
 
                          texright, textop,
                          texright, texbottom,
-                         1, textop,
+                         d->_rectTexture.glWidth(), textop,
 
                          texright, texbottom,
-                         1, textop,
-                         1, texbottom };
+                         d->_rectTexture.glWidth(), textop,
+                         d->_rectTexture.glWidth(), texbottom };
 
 
 

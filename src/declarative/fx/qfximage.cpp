@@ -462,7 +462,7 @@ uint QFxImage::glSimpleItemData(float *vertices, float *texVertices,
 void QFxImagePrivate::checkDirty()
 {
     if (_texDirty && !_pix.isNull()) {
-        _tex.setImage(_pix.toImage());
+        _tex.setImage(_pix.toImage(), GLTexture::PowerOfTwo);
         _tex.setHorizontalWrap(GLTexture::Repeat);
         _tex.setVerticalWrap(GLTexture::Repeat);
     }
@@ -548,8 +548,8 @@ void QFxImage::paintGLContents(GLPainter &p)
         float heightV = height();
 
         float texleft = 0;
-        float texright = 1;
-        float textop = 1;
+        float texright = d->_tex.glWidth();
+        float textop = d->_tex.glHeight();
         float texbottom = 0;
         float imgleft = 0;
         float imgright = widthV;
@@ -562,19 +562,19 @@ void QFxImage::paintGLContents(GLPainter &p)
         const int sgb = d->_scaleGrid->bottom();
 
         if (sgl) {
-            texleft = float(sgl) / imgWidth;
+            texleft = d->_tex.glWidth() * float(sgl) / imgWidth;
             imgleft = sgl;
         }
         if (sgr) {
-            texright = 1. - float(sgr) / imgWidth;
+            texright = d->_tex.glWidth() - float(sgr) / imgWidth;
             imgright = widthV - sgr;
         }
         if (sgt) {
-            textop = 1. - float(sgb) / imgHeight;
+            textop = d->_tex.glHeight() - float(sgb) / imgHeight;
             imgtop = sgt;
         }
         if (sgb) {
-            texbottom = float(sgt) / imgHeight;
+            texbottom = d->_tex.glHeight() * float(sgt) / imgHeight;
             imgbottom = heightV - sgb;
         }
 
