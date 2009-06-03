@@ -5305,8 +5305,8 @@ void QGraphicsScenePrivate::processDirtyItemsRecursive(QGraphicsItem *item)
                     if (!item->d_ptr->fullUpdatePending) {
                         _q_adjustRect(&item->d_ptr->needsRepaint);
                         dirtyRect &= item->d_ptr->needsRepaint;
-                        uninitializedDirtyRect = false;
                     }
+                    uninitializedDirtyRect = false;
                 }
 
                 if (item->d_ptr->paintedViewBoundingRectsNeedRepaint)
