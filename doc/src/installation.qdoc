@@ -508,13 +508,22 @@ in the \l{Qt for Windows CE Requirements} document.
 \list 1
     \o  Install needed IDE and SDKs
 
-        Make sure you have the following installed:
+        Make sure you have the following installed on your development PC:
         \list
             \o \l{http://www.forum.nokia.com/main/resources/tools_and_sdks/carbide_cpp/}{Carbide.c++ v2.0.0 or higher}
             \o \l{http://www.forum.nokia.com/main/resources/tools_and_sdks/S60SDK/}{S60 Platform SDK 3rd Edition FP1 or higher}
-            \o \l{http://www.forum.nokia.com/main/resources/technologies/openc_cpp/}{Open C/C++ for S60 3rd Edition} (automatically included in 3.2 and higher)
+            \o \l{http://www.forum.nokia.com/main/resources/technologies/openc_cpp/}{Open C/C++ v1.6.0 or higher}. 
+               Install this to all S60 SDKs you plan to use Qt with.
         \endlist
 
+        Make sure you have the following packages installed on any device you want to use to run Qt applications. 
+        These packages can be found under \c nokia_plugin directory in any S60 SDK where you have installed Open C/C++:
+        \list
+            \o pips_s60_<version>.sis 
+            \o openc_ssl_s60_<version>.sis
+            \o stdcpp_s60_<version>.sis
+        \endlist
+        
         These instructions assume the above tools are installed and
         that the enviroment variables for your compiler are set correctly.
 
@@ -568,13 +577,16 @@ in the \l{Qt for Windows CE Requirements} document.
         We've included a subset of the Qt demos in this package for you
         to try out. An excellent starting point is the "fluidlauncher"
         demo. To run the demo on a real device, you first have to install
-        the Qt libraries and the demo on the device.
-        Install \c{qt_libs.sis} and \c{fluidlauncher.sis} 
-        found at Qt installation folder to the device.
+        \c{qt_libs.sis} and \c{fluidlauncher.sis} 
+        found at Qt installation directory to the device.
 
-        To run the demos on the emulator, navigate to
-        \c{%EPOCROOT%\Epoc32\release\winscw\udeb\} and start any of the
-        Qt demos located there, for example:
+        To run the demos and examples on the emulator, you need to build them first:
+        
+        \snippet doc/src/snippets/code/doc_src_installation.qdoc 25
+        
+        After building, you can run demos and examples by navigating to
+        \c{%EPOCROOT%\Epoc32\release\winscw\udeb\} and starting any of the
+        Qt demos and examples located there. For example:
 
         \snippet doc/src/snippets/code/doc_src_installation.qdoc 26
 
