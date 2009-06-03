@@ -143,6 +143,7 @@ QObjectPrivate::QObjectPrivate(int version)
     inEventHandler = false;
     inThreadChangeEvent = false;
     deleteWatch = 0;
+    hasGuards = false;
 }
 
 QObjectPrivate::~QObjectPrivate()
@@ -359,6 +360,7 @@ void QMetaObject::addGuard(QObject **ptr)
         return;
     }
     QMutexLocker locker(guardHashLock());
+    QObjectPrivate::get(*ptr)->hasGuards = true;
     hash->insert(*ptr, ptr);
 }
 
@@ -374,12 +376,17 @@ void QMetaObject::removeGuard(QObject **ptr)
     QMutexLocker locker(guardHashLock());
     GuardHash::iterator it = hash->find(*ptr);
     const GuardHash::iterator end = hash->end();
+    bool more = false; //if the QObject has more pointer attached to it.
     for (; it.key() == *ptr && it != end; ++it) {
         if (it.value() == ptr) {
-            (void) hash->erase(it);
+            it = hash->erase(it);
+            if (!more) more = (it != end && it.key() == *ptr);
             break;
         }
+        more = true;
     }
+    if (!more)
+        QObjectPrivate::get(*ptr)->hasGuards = false;
 }
 
 /*!\internal
@@ -393,24 +400,33 @@ void QMetaObject::changeGuard(QObject **ptr, QObject *o)
     }
     QMutexLocker locker(guardHashLock());
     if (*ptr) {
+        bool more = false; //if the QObject has more pointer attached to it.
         GuardHash::iterator it = hash->find(*ptr);
         const GuardHash::iterator end = hash->end();
         for (; it.key() == *ptr && it != end; ++it) {
             if (it.value() == ptr) {
-                (void) hash->erase(it);
+                it = hash->erase(it);
+                if (!more) more = (it != end && it.key() == *ptr);
                 break;
             }
+            more = true;
         }
+        if (!more)
+            QObjectPrivate::get(*ptr)->hasGuards = false;
     }
     *ptr = o;
-    if (*ptr)
+    if (*ptr) {
         hash->insert(*ptr, ptr);
+        QObjectPrivate::get(*ptr)->hasGuards = true;
+    }
 }
 
 /*! \internal
  */
 void QObjectPrivate::clearGuards(QObject *object)
 {
+    if (!QObjectPrivate::get(object)->hasGuards)
+        return;
     GuardHash *hash = guardHash();
     if (hash) {
         QMutexLocker locker(guardHashLock());
