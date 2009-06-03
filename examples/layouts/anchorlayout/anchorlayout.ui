@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>794</width>
-    <height>590</height>
+    <width>795</width>
+    <height>765</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -47,7 +47,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>794</width>
+     <width>795</width>
      <height>21</height>
     </rect>
    </property>
@@ -55,6 +55,8 @@
     <property name="title">
      <string>&amp;File</string>
     </property>
+    <addaction name="actionSave_layout"/>
+    <addaction name="actionE_xit"/>
    </widget>
    <widget class="QMenu" name="menu_View">
     <property name="title">
@@ -328,6 +330,22 @@
    </property>
    <property name="text">
     <string>&amp;Item properties</string>
+   </property>
+  </action>
+  <action name="actionSave_layout">
+   <property name="text">
+    <string>Save layout</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+S</string>
+   </property>
+  </action>
+  <action name="actionE_xit">
+   <property name="text">
+    <string>&amp;Quit</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Q</string>
    </property>
   </action>
  </widget>

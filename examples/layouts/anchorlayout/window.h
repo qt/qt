@@ -17,6 +17,7 @@ private slots:
     void on_anchors_cellChanged(int row, int column);
     void on_pbAddAnchor_clicked(bool);
     void on_actionAdd_item_triggered(bool checked);
+    void on_actionSave_layout_triggered(bool checked);
     void on_layouts_currentRowChanged(int row);
     void on_itemName_textEdited(const QString &text);
     void on_itemMinW_valueChanged(double d);

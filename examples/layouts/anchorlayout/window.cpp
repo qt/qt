@@ -87,11 +87,18 @@ void Window::on_pbAddAnchor_clicked(bool)
     addAnchorRow();
 }
 
-void Window::on_actionAdd_item_triggered(bool checked)
+void Window::on_actionAdd_item_triggered(bool )
 {
     addItem();
 }
 
+void Window::on_actionSave_layout_triggered(bool )
+{
+    QString fileName = QFileDialog::getSaveFileName(this, tr("Save layout"), QLatin1String(QUOTEMACRO(PRO_FILE_PWD)"/xml"), QLatin1String("*.xml"));
+    if (!fileName.isEmpty())
+        saveLayout(fileName);
+}
+ 
 void Window::on_itemName_textEdited(const QString & )
 {
     updateItem();
@@ -187,8 +194,6 @@ void Window::rebuildLayout()
         if (!ok)
             continue;
         
-        QString strStart = nodeName(startItem);
-        QString strEnd = nodeName(endItem);
         m_layout->anchor(startItem, startEdge, endItem, endEdge);
     }
 }
@@ -296,51 +301,78 @@ QGraphicsLayoutItem *Window::layoutItemAt(QAbstractItemModel *model, int row, in
 bool Window::saveLayout(const QString& fileName)
 {
     bool ok;
-#if 0
     QFile out(fileName);
     ok = out.open(QIODevice::WriteOnly);
-
     if (ok) {
+        QXmlStreamWriter xml(&out);
+        xml.writeStartDocument();
+        xml.writeStartElement(QLatin1String("anchorlayout"));
         int i;
-        out.write("graph anchorlayout {\nnode [shape=\"rect\"]\n\n");
-        for (i = 0; i < m_ui.items->rowCount(); ++i) {
-            // name, min, pref, max
-            QTableWidgetItem *item = m_ui.items->item(i, 0);
-            QGraphicsLayoutItem *li = layoutItem(item->data(Qt::UserRole));
-            if (li == m_layout)
-                continue;
-            out.write(qPrintable(QString::fromAscii("%1 [label=\"%1\"]\n").arg(nodeName(li))));
+        for (i = 0; i < m_layoutItems.count(); ++i) {
+            QGraphicsLayoutItem *item = m_layoutItems.at(i);
+            xml.writeStartElement(QLatin1String("item"));
+            QString name = nodeName(item);
+            if (name == QLatin1String("layout"))
+                name = QLatin1String("this");
+            xml.writeAttribute(QLatin1String("id"), name);
+            for (int p = 0; p < 3; ++p) {
+                const char *propertyNames[] = {"minimumSize", "preferredSize", "maximumSize"};
+                int b;
+                typedef  QSizeF (QGraphicsLayoutItem::*QGLISizeGetter)(void) const;
+                QGLISizeGetter sizeGetters[] = { &QGraphicsLayoutItem::minimumSize, 
+                                                                        &QGraphicsLayoutItem::preferredSize, 
+                                                                        &QGraphicsLayoutItem::maximumSize};
+                QSizeF size = ((*item).*(sizeGetters[p])) ();
+                xml.writeStartElement(QLatin1String("property"));
+                xml.writeAttribute(QLatin1String("name"), QLatin1String(propertyNames[p]));
+                xml.writeStartElement(QLatin1String("size"));
+                xml.writeAttribute(QLatin1String("width"), QString::number(size.width()));
+                xml.writeAttribute(QLatin1String("height"), QString::number(size.height()));
+                xml.writeEndElement();
+                xml.writeEndElement();
+            }
+            xml.writeEndElement();
         }
-        out.write("\n\n");
-        static const char *compass = "wnes";
-        for (i = 0; i < m_ui.anchors->rowCount(); ++i) {
-            // name, min, pref, max
-            bool ok;
-            QGraphicsLayoutItem *startItem = layoutItem(m_ui.anchors->item(i, 0)->data(Qt::UserRole));
 
+        QHash<int, QString> edgeString;
+        for (i = 0; i < sizeof(strEdges)/sizeof(char*); ++i) {
+            edgeString.insert(i, QLatin1String(strEdges[i]));
+        }
+        int rc = m_ui.anchors->rowCount();
+        for (i = 0; i < rc; ++i) {
+            xml.writeStartElement(QLatin1String("anchor"));
+            bool ok;
+
+            QGraphicsLayoutItem *startItem = layoutItemAt(m_ui.anchors->model(), i, 0);
+            if (!startItem)
+                continue;
             QGraphicsAnchorLayout::Edge startEdge = (QGraphicsAnchorLayout::Edge)(m_ui.anchors->item(i, 1)->data(Qt::UserRole).toInt(&ok));
             if (!ok)
                 continue;
-
-            QGraphicsLayoutItem *endItem = layoutItem(m_ui.anchors->item(i, 2)->data(Qt::UserRole));
-
+            QGraphicsLayoutItem *endItem = layoutItemAt(m_ui.anchors->model(), i, 2);
+            if (!endItem)
+                continue;
             QGraphicsAnchorLayout::Edge endEdge = (QGraphicsAnchorLayout::Edge)(m_ui.anchors->item(i, 3)->data(Qt::UserRole).toInt(&ok));
             if (!ok)
                 continue;
+            
+            QString strStart = nodeName(startItem);
+            if (strStart == QLatin1String("layout"))
+                strStart = QLatin1String("this");
+            xml.writeAttribute(QLatin1String("first"), QString::fromAscii("%1.%2").arg(strStart, edgeString.value(startEdge)));
 
-            out.write(qPrintable(QString::fromAscii("%1:%2--%3:%4 [label=\"[%5,%6]\"]\n")
-                                .arg(nodeName(startItem))
-                                .arg(QLatin1Char(compass[int(startEdge)]))
-                                .arg(nodeName(endItem))
-                                .arg(QLatin1Char(compass[int(endEdge)]))
-                                .arg(1)
-                                .arg(1)
-                                .arg(2)));
+            QString strEnd = nodeName(endItem);
+            if (strEnd == QLatin1String("layout"))
+                strEnd = QLatin1String("this");
+            xml.writeAttribute(QLatin1String("second"), QString::fromAscii("%1.%2").arg(strEnd, edgeString.value(endEdge)));
+
+            xml.writeEndElement();
         }
-        out.write("}");
+
+        xml.writeEndElement();
+        xml.writeEndDocument();
         out.close();
     }
-#endif
     return ok;
 }
 
