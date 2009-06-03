@@ -290,7 +290,6 @@ private:
     Q_PRIVATE_SLOT(d_func(), void _q_removeItemLater(QGraphicsItem *item))
     Q_PRIVATE_SLOT(d_func(), void _q_updateLater())
     Q_PRIVATE_SLOT(d_func(), void _q_polishItems())
-    Q_PRIVATE_SLOT(d_func(), void _q_updateSortCache())
     Q_PRIVATE_SLOT(d_func(), void _q_resetDirtyItems())
     friend class QGraphicsItem;
     friend class QGraphicsItemPrivate;
@@ -301,6 +300,7 @@ private:
     friend class QGraphicsSceneIndex;
     friend class QGraphicsSceneIndexPrivate;
     friend class QGraphicsSceneBspTreeIndex;
+    friend class QGraphicsSceneBspTreeIndexPrivate;
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QGraphicsScene::SceneLayers)

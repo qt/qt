@@ -218,6 +218,7 @@
 #include "qgraphicswidget.h"
 #include "qgraphicswidget_p.h"
 #include "qgraphicssceneindex.h"
+#include "qgraphicsscenebsptreeindex_p_p.h"
 
 #include <QtCore/qdebug.h>
 #include <QtCore/qlist.h>
@@ -291,8 +292,6 @@ QGraphicsScenePrivate::QGraphicsScenePrivate()
       allItemsIgnoreHoverEvents(true),
       allItemsUseDefaultCursor(true),
       painterStateProtection(true),
-      sortCacheEnabled(false),
-      updatingSortCache(false),
       style(0)
 {
 }
@@ -1073,175 +1072,6 @@ QGraphicsWidget *QGraphicsScenePrivate::windowForItem(const QGraphicsItem *item)
     return 0;
 }
 
-void QGraphicsScenePrivate::invalidateSortCache()
-{
-    Q_Q(QGraphicsScene);
-    if (!sortCacheEnabled || updatingSortCache)
-        return;
-
-    updatingSortCache = true;
-    QMetaObject::invokeMethod(q, "_q_updateSortCache", Qt::QueuedConnection);
-}
-
-/*!
-    \internal
-
-    Should not be exported, but we can't change that now.
-    ### Qt 5: Remove symbol / make static
-*/
-inline bool qt_closestLeaf(const QGraphicsItem *item1, const QGraphicsItem *item2)
-{
-    // Return true if sibling item1 is on top of item2.
-    const QGraphicsItemPrivate *d1 = item1->d_ptr;
-    const QGraphicsItemPrivate *d2 = item2->d_ptr;
-    bool f1 = d1->flags & QGraphicsItem::ItemStacksBehindParent;
-    bool f2 = d2->flags & QGraphicsItem::ItemStacksBehindParent;
-    if (f1 != f2) return f2;
-    qreal z1 = d1->z;
-    qreal z2 = d2->z;
-    return z1 != z2 ? z1 > z2 : d1->siblingIndex > d2->siblingIndex;
-}
-
-/*!
-    \internal
-
-    Should not be exported, but we can't change that now.
-*/
-inline bool qt_closestItemFirst(const QGraphicsItem *item1, const QGraphicsItem *item2)
-{
-    return QGraphicsScenePrivate::closestItemFirst_withoutCache(item1, item2);
-}
-
-/*!
-    Returns true if \a item1 is on top of \a item2.
-
-    \internal
-*/
-bool QGraphicsScenePrivate::closestItemFirst_withoutCache(const QGraphicsItem *item1, const QGraphicsItem *item2)
-{
-    // Siblings? Just check their z-values.
-    const QGraphicsItemPrivate *d1 = item1->d_ptr;
-    const QGraphicsItemPrivate *d2 = item2->d_ptr;
-    if (d1->parent == d2->parent)
-        return qt_closestLeaf(item1, item2);
-
-    // Find common ancestor, and each item's ancestor closest to the common
-    // ancestor.
-    int item1Depth = d1->depth;
-    int item2Depth = d2->depth;
-    const QGraphicsItem *p = item1;
-    const QGraphicsItem *t1 = item1;
-    while (item1Depth > item2Depth && (p = p->d_ptr->parent)) {
-        if (p == item2) {
-            // item2 is one of item1's ancestors; item1 is on top
-            return !(t1->d_ptr->flags & QGraphicsItem::ItemStacksBehindParent);
-        }
-        t1 = p;
-        --item1Depth;
-    }
-    p = item2;
-    const QGraphicsItem *t2 = item2;
-    while (item2Depth > item1Depth && (p = p->d_ptr->parent)) {
-        if (p == item1) {
-            // item1 is one of item2's ancestors; item1 is not on top
-            return (t2->d_ptr->flags & QGraphicsItem::ItemStacksBehindParent);
-        }
-        t2 = p;
-        --item2Depth;
-    }
-
-    // item1Ancestor is now at the same level as item2Ancestor, but not the same.
-    const QGraphicsItem *a1 = t1;
-    const QGraphicsItem *a2 = t2;
-    while (a1) {
-        const QGraphicsItem *p1 = a1;
-        const QGraphicsItem *p2 = a2;
-        a1 = a1->parentItem();
-        a2 = a2->parentItem();
-        if (a1 && a1 == a2)
-            return qt_closestLeaf(p1, p2);
-    }
-
-    // No common ancestor? Then just compare the items' toplevels directly.
-    return qt_closestLeaf(t1->topLevelItem(), t2->topLevelItem());
-}
-
-/*!
-    Returns true if \a item2 is on top of \a item1.
-
-    \internal
-*/
-bool QGraphicsScenePrivate::closestItemLast_withoutCache(const QGraphicsItem *item1, const QGraphicsItem *item2)
-{
-    return closestItemFirst_withoutCache(item2, item1);
-}
-
-void QGraphicsScenePrivate::climbTree(QGraphicsItem *item, int *stackingOrder)
-{
-    if (!item->d_ptr->children.isEmpty()) {
-        QList<QGraphicsItem *> childList = item->d_ptr->children;
-        qSort(childList.begin(), childList.end(), qt_closestLeaf);
-        for (int i = 0; i < childList.size(); ++i) {
-            QGraphicsItem *item = childList.at(i);
-            if (!(item->flags() & QGraphicsItem::ItemStacksBehindParent))
-                climbTree(childList.at(i), stackingOrder);
-        }
-        item->d_ptr->globalStackingOrder = (*stackingOrder)++;
-        for (int i = 0; i < childList.size(); ++i) {
-            QGraphicsItem *item = childList.at(i);
-            if (item->flags() & QGraphicsItem::ItemStacksBehindParent)
-                climbTree(childList.at(i), stackingOrder);
-        }
-    } else {
-        item->d_ptr->globalStackingOrder = (*stackingOrder)++;
-    }
-}
-
-void QGraphicsScenePrivate::_q_updateSortCache()
-{
-    //### FIXME
-    QGraphicsSceneBspTreeIndex *tree = qobject_cast<QGraphicsSceneBspTreeIndex*>(index);
-    if (tree) {
-        tree->_q_updateIndex();
-    }
-
-    if (!sortCacheEnabled || !updatingSortCache)
-        return;
-
-    updatingSortCache = false;
-    int stackingOrder = 0;
-
-    QList<QGraphicsItem *> topLevels;
-
-    for (int i = 0; i < index->items().count(); ++i) {
-        QGraphicsItem *item = index->items().at(i);
-        if (item && item->parentItem() == 0)
-            topLevels << item;
-    }
-
-    qSort(topLevels.begin(), topLevels.end(), qt_closestLeaf);
-    for (int i = 0; i < topLevels.size(); ++i)
-        climbTree(topLevels.at(i), &stackingOrder);
-}
-
-void QGraphicsScenePrivate::sortItems(QList<QGraphicsItem *> *itemList, Qt::SortOrder order,
-                                      bool sortCacheEnabled)
-{
-    if (sortCacheEnabled) {
-        if (order == Qt::AscendingOrder) {
-            qSort(itemList->begin(), itemList->end(), closestItemFirst_withCache);
-        } else if (order == Qt::DescendingOrder) {
-            qSort(itemList->begin(), itemList->end(), closestItemLast_withCache);
-        }
-    } else {
-        if (order == Qt::AscendingOrder) {
-            qSort(itemList->begin(), itemList->end(), closestItemFirst_withoutCache);
-        } else if (order == Qt::DescendingOrder) {
-            qSort(itemList->begin(), itemList->end(), closestItemLast_withoutCache);
-        }
-    }
-}
-
 /*!
     \internal
 
@@ -1707,15 +1537,25 @@ void QGraphicsScene::setBspTreeDepth(int depth)
 bool QGraphicsScene::isSortCacheEnabled() const
 {
     Q_D(const QGraphicsScene);
-    return d->sortCacheEnabled;
+    QGraphicsSceneBspTreeIndex *bspTree = qobject_cast<QGraphicsSceneBspTreeIndex*>(d->index);
+    if (!bspTree) {
+        qWarning("QGraphicsScene::isSortCacheEnabled: can not apply if indexing method is not BSP");
+        return false;
+    }
+    return bspTree->d_func()->sortCacheEnabled;
 }
 void QGraphicsScene::setSortCacheEnabled(bool enabled)
 {
     Q_D(QGraphicsScene);
-    if (enabled == d->sortCacheEnabled)
+    QGraphicsSceneBspTreeIndex *bspTree = qobject_cast<QGraphicsSceneBspTreeIndex*>(d->index);
+    if (!bspTree) {
+        qWarning("QGraphicsScene::isSortCacheEnabled: can not apply if indexing method is not BSP");
         return;
-    if ((d->sortCacheEnabled = enabled))
-        d->invalidateSortCache();
+    }
+    if (enabled == bspTree->d_func()->sortCacheEnabled)
+        return;
+    if ((bspTree->d_func()->sortCacheEnabled = enabled))
+        bspTree->d_func()->invalidateSortCache();
 }
 
 /*!
@@ -1910,8 +1750,6 @@ QList<QGraphicsItem *> QGraphicsScene::collidingItems(const QGraphicsItem *item,
         if (item != itemInVicinity && item->collidesWithItem(itemInVicinity, mode))
             tmp << itemInVicinity;
     }
-    //### remove me
-    d->sortItems(&tmp, Qt::AscendingOrder, d->sortCacheEnabled);
     return tmp;
 }
 
@@ -2211,10 +2049,6 @@ void QGraphicsScene::addItem(QGraphicsItem *item)
         return;
     }
 
-    // Invalidate any sort caching; arrival of a new item means we need to
-    // resort.
-    d->invalidateSortCache();
-
     // Detach this item from its parent if the parent's scene is different
     // from this scene.
     if (QGraphicsItem *itemParent = item->parentItem()) {
@@ -2231,10 +2065,6 @@ void QGraphicsScene::addItem(QGraphicsItem *item)
     // Add to list of toplevels if this item is a toplevel.
     if (!item->d_ptr->parent)
         d->registerTopLevelItem(item);
-
-    // Update the scene's sort cache settings.
-    item->d_ptr->globalStackingOrder = -1;
-    d->invalidateSortCache();
 
     // Add to list of items that require an update. We cannot assume that the
     // item is fully constructed, so calling item->update() can lead to a pure

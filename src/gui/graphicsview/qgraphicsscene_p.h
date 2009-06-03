@@ -187,25 +187,6 @@ public:
     void sendMouseEvent(QGraphicsSceneMouseEvent *mouseEvent);
     void mousePressEventHandler(QGraphicsSceneMouseEvent *mouseEvent);
     QGraphicsWidget *windowForItem(const QGraphicsItem *item) const;
-    bool sortCacheEnabled;
-    bool updatingSortCache;
-    void invalidateSortCache();
-    static void climbTree(QGraphicsItem *item, int *stackingOrder);
-    void _q_updateSortCache();
-
-    static bool closestItemFirst_withoutCache(const QGraphicsItem *item1, const QGraphicsItem *item2);
-    static bool closestItemLast_withoutCache(const QGraphicsItem *item1, const QGraphicsItem *item2);
-
-    static inline bool closestItemFirst_withCache(const QGraphicsItem *item1, const QGraphicsItem *item2)
-    { 
-        return item1->d_ptr->globalStackingOrder < item2->d_ptr->globalStackingOrder;
-    }
-    static inline bool closestItemLast_withCache(const QGraphicsItem *item1, const QGraphicsItem *item2)
-    {
-        return item1->d_ptr->globalStackingOrder >= item2->d_ptr->globalStackingOrder;
-    }
-
-    static void sortItems(QList<QGraphicsItem *> *itemList, Qt::SortOrder order, bool cached);
 
     void drawItemHelper(QGraphicsItem *item, QPainter *painter,
                         const QStyleOptionGraphicsItem *option, QWidget *widget,

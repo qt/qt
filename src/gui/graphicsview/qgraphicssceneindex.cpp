@@ -41,6 +41,7 @@
 
 #include "qgraphicssceneindex.h"
 #include "qgraphicssceneindex_p.h"
+#include "qgraphicsscenebsptreeindex_p_p.h"
 #include "qgraphicsscene.h"
 #include "qgraphicsitem_p.h"
 #include "qgraphicsscene_p.h"
@@ -282,6 +283,14 @@ QGraphicsSceneIndex::QGraphicsSceneIndex(QGraphicsScene *scene)
 }
 
 /*!
+    \internal
+*/
+QGraphicsSceneIndex::QGraphicsSceneIndex(QObjectPrivate &dd, QGraphicsScene *scene)
+    : QObject(dd, scene)
+{
+}
+
+/*!
     Destroys the scene index.
 */
 QGraphicsSceneIndex::~QGraphicsSceneIndex()
@@ -301,7 +310,7 @@ QGraphicsScene* QGraphicsSceneIndex::scene() const
 /*!
     Returns the indexed area for the index
 */
-QRectF QGraphicsSceneIndex::indexedRect()
+QRectF QGraphicsSceneIndex::indexedRect() const
 {
     Q_D(const QGraphicsSceneIndex);
     return d->scene->d_func()->sceneRect;
@@ -351,8 +360,9 @@ QList<QGraphicsItem *> QGraphicsSceneIndex::items(const QPointF &pos, Qt::ItemSe
                 d->childItems_helper(&items, item, xinv.map(pos));
         }
     }
-
-    d->scene->d_func()->sortItems(&items, order, d->scene->d_func()->sortCacheEnabled);
+    //### Needed but it should be handle differently
+    if (order != Qt::SortOrder(-1))
+        QGraphicsSceneBspTreeIndexPrivate::sortItems(&items, order, false);
     return items;
 }
 
@@ -415,9 +425,9 @@ QList<QGraphicsItem *> QGraphicsSceneIndex::items(const QRectF &rect, Qt::ItemSe
             }
         }
     }
-
+    //### Needed but it should be handle differently
     if (order != Qt::SortOrder(-1))
-        d->scene->d_func()->sortItems(&items, order, d->scene->d_func()->sortCacheEnabled);
+        QGraphicsSceneBspTreeIndexPrivate::sortItems(&items, order, false);
     return items;
 }
 
@@ -474,9 +484,9 @@ QList<QGraphicsItem *> QGraphicsSceneIndex::items(const QPolygonF &polygon, Qt::
                 d->childItems_helper(&items, item, xinv.map(polygon), mode);
         }
     }
-
+    //### Needed but it should be handle differently
     if (order != Qt::SortOrder(-1))
-        d->scene->d_func()->sortItems(&items, order, d->scene->d_func()->sortCacheEnabled);
+        QGraphicsSceneBspTreeIndexPrivate::sortItems(&items, order, false);
     return items;
 }
 QList<QGraphicsItem *> QGraphicsSceneIndex::items(const QPainterPath &path, Qt::ItemSelectionMode mode, Qt::SortOrder order, const QTransform &deviceTransform) const
@@ -525,9 +535,9 @@ QList<QGraphicsItem *> QGraphicsSceneIndex::items(const QPainterPath &path, Qt::
                 d->childItems_helper(&items, item, xinv.map(path), mode);
         }
     }
-
+    //### Needed but it should be handle differently
     if (order != Qt::SortOrder(-1))
-        d->scene->d_func()->sortItems(&items, order, d->scene->d_func()->sortCacheEnabled);
+        QGraphicsSceneBspTreeIndexPrivate::sortItems(&items, order, false);
     return items;
 }
 

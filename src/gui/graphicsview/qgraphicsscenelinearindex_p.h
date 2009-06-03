@@ -105,7 +105,7 @@ public:
         return result;
     }
 
-    QList<QGraphicsItem *> items() const {
+    QList<QGraphicsItem *> items(Qt::SortOrder order = Qt::AscendingOrder) const {
         return m_items;
     }
 };

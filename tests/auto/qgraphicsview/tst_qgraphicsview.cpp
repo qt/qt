@@ -2102,12 +2102,12 @@ void tst_QGraphicsView::resizeAnchor()
             view.setResizeAnchor(QGraphicsView::AnchorViewCenter);
         }
         view.centerOn(0, 0);
-        QTest::qWait(100);
+        QTest::qWait(250);
 
         QPointF f = view.mapToScene(50, 50);
         QPointF center = view.mapToScene(view.viewport()->rect().center());
 
-        QTest::qWait(100);
+        QTest::qWait(250);
 
         for (int size = 200; size <= 400; size += 25) {
             view.resize(size, size);
@@ -2122,7 +2122,7 @@ void tst_QGraphicsView::resizeAnchor()
                 QVERIFY(qAbs(newCenter.x() - center.x()) < slack);
                 QVERIFY(qAbs(newCenter.y() - center.y()) < slack);
             }
-            QTest::qWait(100);
+            QTest::qWait(250);
         }
     }
 }
@@ -2925,7 +2925,7 @@ void tst_QGraphicsView::task245469_itemsAtPointWithClip()
     QTest::qWait(100);
 
     QList<QGraphicsItem *> itemsAtCenter = view.items(view.viewport()->rect().center());
-    QCOMPARE(itemsAtCenter, (QList<QGraphicsItem *>() << child << parent));
+    QCOMPARE(itemsAtCenter, (QList<QGraphicsItem *>() << parent << child));
 
     QPolygonF p = view.mapToScene(QRect(view.viewport()->rect().center(), QSize(1, 1)));
     QList<QGraphicsItem *> itemsAtCenter2 = scene.items(p);

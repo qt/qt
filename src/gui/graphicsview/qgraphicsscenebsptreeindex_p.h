@@ -56,13 +56,23 @@ QT_BEGIN_NAMESPACE
 
 #include "qgraphicsscene_bsp_p.h"
 
+class QGraphicsSceneBspTreeIndexPrivate;
 class Q_AUTOTEST_EXPORT QGraphicsSceneBspTreeIndex : public QGraphicsSceneIndex
 {
     Q_OBJECT
 public:
     QGraphicsSceneBspTreeIndex(QGraphicsScene *scene = 0);
-    QRectF indexedRect();
+    QRectF indexedRect() const;
 
+    QList<QGraphicsItem *> estimateItems(const QRectF &rect, Qt::SortOrder order, const QTransform &deviceTransform) const;
+
+    QList<QGraphicsItem *> items(Qt::SortOrder order = Qt::AscendingOrder) const;
+
+    int bspDepth();
+    void setBspDepth(int depth);
+
+protected:
+    bool event(QEvent *event);
     void clear();
 
     void addItem(QGraphicsItem *item);
@@ -70,42 +80,17 @@ public:
     void deleteItem(QGraphicsItem *item);
     void prepareBoundingRectChange(const QGraphicsItem *item);
 
-    QList<QGraphicsItem *> estimateItems(const QRectF &rect, Qt::SortOrder order, const QTransform &deviceTransform) const;
-
-    QList<QGraphicsItem *> items() const;
-
-    int bspDepth();
-    void setBspDepth(int depth);
-
-protected:
-    bool event(QEvent *event);
     void sceneRectChanged(const QRectF &rect);
-
-public slots :
-    void _q_updateIndex();
+    void itemChanged(const QGraphicsItem *item, QGraphicsItem::GraphicsItemChange change, const QVariant &value);
 
 private :
-    QGraphicsSceneBspTree bsp;
-    QRectF m_sceneRect;
-    int bspTreeDepth;
-    int indexTimerId;
-    bool restartIndexTimer;
-    bool regenerateIndex;
-    int lastItemCount;
+    Q_DECLARE_PRIVATE(QGraphicsSceneBspTreeIndex)
+    Q_DISABLE_COPY(QGraphicsSceneBspTreeIndex)
+    Q_PRIVATE_SLOT(d_func(), void _q_updateSortCache())
+    Q_PRIVATE_SLOT(d_func(), void _q_updateIndex())
 
-    QList<QGraphicsItem *> m_indexedItems;
-    QList<QGraphicsItem *> unindexedItems;
-    QList<int> freeItemIndexes;
-
-    bool purgePending;
-    QList<QGraphicsItem *> removedItems;
-    void purgeRemovedItems();
-
-    void startIndexTimer();
-    void resetIndex();
-
-    void addToIndex(QGraphicsItem *item);
-    void removeFromIndex(QGraphicsItem *item);
+    friend class QGraphicsScene;
+    friend class QGraphicsScenePrivate;
 };
 
 QT_END_NAMESPACE

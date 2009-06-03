@@ -537,6 +537,7 @@
 #include "qgraphicsview.h"
 #include "qgraphicswidget.h"
 #include "qgraphicsproxywidget.h"
+#include "qgraphicsscenebsptreeindex_p_p.h"
 #include <QtCore/qbitarray.h>
 #include <QtCore/qdebug.h>
 #include <QtCore/qpoint.h>
@@ -888,12 +889,6 @@ void QGraphicsItemPrivate::setParentItemHelper(QGraphicsItem *newParent, bool de
         }
     }
 
-    if (scene) {
-        // Invalidate any sort caching; arrival of a new item means we need to
-        // resort.
-        scene->d_func()->invalidateSortCache();
-    }
-
     // Resolve opacity.
     updateEffectiveOpacity();
 
@@ -905,6 +900,11 @@ void QGraphicsItemPrivate::setParentItemHelper(QGraphicsItem *newParent, bool de
 
     // Deliver post-change notification
     q->itemChange(QGraphicsItem::ItemParentHasChanged, newParentVariant);
+
+    if (scene) {
+        // Deliver the change to the index
+        scene->d_func()->index->itemChanged(q, QGraphicsItem::ItemParentHasChanged, newParentVariant);
+    }
 }
 
 /*!
@@ -3528,11 +3528,9 @@ void QGraphicsItem::setZValue(qreal z)
     d_ptr->z = newZ;
     d_ptr->fullUpdateHelper();
 
-    if (d_ptr->scene) {
-        // Invalidate any sort caching; arrival of a new item means we need to
-        // resort.
-        d_ptr->scene->d_func()->invalidateSortCache();
-    }
+    //Z Value has changed, we have to notify the index.
+    if (d_ptr->scene)
+        d_ptr->scene->d_func()->index->itemChanged(this, ItemZValueChange, z);
 
     itemChange(ItemZValueHasChanged, newZVariant);
 }
@@ -3991,7 +3989,7 @@ bool QGraphicsItem::isObscuredBy(const QGraphicsItem *item) const
 {
     if (!item)
         return false;
-    return QGraphicsScenePrivate::closestItemFirst_withoutCache(item, this)
+    return QGraphicsSceneBspTreeIndexPrivate::closestItemFirst_withoutCache(item, this)
         && qt_QGraphicsItem_isObscured(this, item, boundingRect());
 }
 

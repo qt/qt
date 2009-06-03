@@ -71,9 +71,9 @@ public:
 
     QGraphicsScene *scene() const;
 
-    virtual QRectF indexedRect();
+    virtual QRectF indexedRect() const;
 
-    virtual QList<QGraphicsItem *> items() const  = 0;
+    virtual QList<QGraphicsItem *> items(Qt::SortOrder order = Qt::AscendingOrder) const  = 0;
     virtual QList<QGraphicsItem *> items(const QPointF &pos, Qt::ItemSelectionMode mode, Qt::SortOrder order, const QTransform &deviceTransform = QTransform()) const;
     virtual QList<QGraphicsItem *> items(const QRectF &rect, Qt::ItemSelectionMode mode, Qt::SortOrder order, const QTransform &deviceTransform = QTransform()) const;
     virtual QList<QGraphicsItem *> items(const QPolygonF &polygon, Qt::ItemSelectionMode mode, Qt::SortOrder order, const QTransform &deviceTransform = QTransform()) const;
@@ -91,10 +91,15 @@ protected:
     virtual void prepareBoundingRectChange(const QGraphicsItem *item);
     virtual void sceneRectChanged(const QRectF &rect);
 
+    QGraphicsSceneIndex(QObjectPrivate &dd, QGraphicsScene *scene);
+
     friend class QGraphicsScene;
     friend class QGraphicsScenePrivate;
     friend class QGraphicsItem;
+    friend class QGraphicsItemPrivate;
+    friend class QGraphicsSceneBspTreeIndex;
 private:
+    Q_DISABLE_COPY(QGraphicsSceneIndex)
     Q_DECLARE_PRIVATE(QGraphicsSceneIndex)
 };
 

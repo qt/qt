@@ -1056,7 +1056,7 @@ QList<QGraphicsItem *> QGraphicsViewPrivate::findItems(const QRegion &exposedReg
         *allItems = true;
 
         // All items are guaranteed within the exposed region, don't bother using the index.
-        QList<QGraphicsItem *> itemList(scene->items());
+        QList<QGraphicsItem *> itemList(scene->d_func()->index->items(Qt::DescendingOrder));
         int i = 0;
         while (i < itemList.size()) {
             const QGraphicsItem *item = itemList.at(i);
@@ -1069,9 +1069,6 @@ QList<QGraphicsItem *> QGraphicsViewPrivate::findItems(const QRegion &exposedReg
             else
                 ++i;
         }
-
-        // Sort the items.
-        QGraphicsScenePrivate::sortItems(&itemList, Qt::DescendingOrder, scene->d_func()->sortCacheEnabled);
         return itemList;
     }
 
@@ -2134,7 +2131,7 @@ QList<QGraphicsItem *> QGraphicsViewPrivate::itemsInArea(const QPainterPath &pat
 
     // Then find the minimal list of items that are inside \a path, and
     // convert it to a set.
-    QList<QGraphicsItem *> regularCandidates = scene->items(q->mapToScene(path), mode);
+    QList<QGraphicsItem *> regularCandidates = scene->items(q->mapToScene(path), mode, order, q->transform());
     QSet<QGraphicsItem *> candSet = QSet<QGraphicsItem *>::fromList(regularCandidates);
 
     QTransform viewMatrix = q->viewportTransform();
@@ -2161,10 +2158,6 @@ QList<QGraphicsItem *> QGraphicsViewPrivate::itemsInArea(const QPainterPath &pat
         }
         ++it;
     }
-
-    // ### Insertion sort would be faster.
-    if (order != Qt::SortOrder(-1))
-        QGraphicsScenePrivate::sortItems(&result, order, scene->d_func()->sortCacheEnabled);
     return result;
 }
 

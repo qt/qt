@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef QGRAPHICSSCENEINDEX_P_H
-#define QGRAPHICSSCENEINDEX_P_H
+#ifndef QGRAPHICSSCENEBSPTREEINDEX_P_P_H
+#define QGRAPHICSSCENEBSPTREEINDEX_P_P_H
 
 //
 //  W A R N I N G
@@ -53,7 +53,7 @@
 // We mean it.
 //
 
-#include "qgraphicssceneindex.h"
+#include "qgraphicsscenebsptreeindex_p.h"
 
 #if !defined(QT_NO_GRAPHICSVIEW) || (QT_EDITION & QT_MODULE_GRAPHICSVIEW) != QT_MODULE_GRAPHICSVIEW
 
@@ -64,34 +64,77 @@ QT_BEGIN_NAMESPACE
 
 class QGraphicsScene;
 
-class QGraphicsSceneIndexPrivate : public QObjectPrivate
+class QGraphicsSceneBspTreeIndexPrivate : public QObjectPrivate
 {
-    Q_DECLARE_PUBLIC(QGraphicsSceneIndex)
+    Q_DECLARE_PUBLIC(QGraphicsSceneBspTreeIndex)
 public:
-    QGraphicsSceneIndexPrivate(QGraphicsScene *scene);
+    QGraphicsSceneBspTreeIndexPrivate(QGraphicsScene *scene);
 
+    QGraphicsScene *scene;
+    QGraphicsSceneBspTree bsp;
+    QRectF sceneRect;
+    int bspTreeDepth;
+    int indexTimerId;
+    bool restartIndexTimer;
+    bool regenerateIndex;
+    int lastItemCount;
 
-    void childItems_helper(QList<QGraphicsItem *> *items,
-                           const QGraphicsItem *parent,
-                           const QPointF &pos) const;
-    void childItems_helper(QList<QGraphicsItem *> *items,
-                           const QGraphicsItem *parent,
-                           const QRectF &rect,
-                           Qt::ItemSelectionMode mode) const;
-    void childItems_helper(QList<QGraphicsItem *> *items,
-                           const QGraphicsItem *parent,
-                           const QPolygonF &polygon,
-                           Qt::ItemSelectionMode mode) const;
-    void childItems_helper(QList<QGraphicsItem *> *items,
-                           const QGraphicsItem *parent,
-                           const QPainterPath &path,
-                           Qt::ItemSelectionMode mode) const;
+    QList<QGraphicsItem *> indexedItems;
+    QList<QGraphicsItem *> unindexedItems;
+    QList<int> freeItemIndexes;
 
-   QGraphicsScene *scene;
+    bool purgePending;
+    QList<QGraphicsItem *> removedItems;
+    void purgeRemovedItems();
+
+    void _q_updateIndex();
+    void startIndexTimer();
+    void resetIndex();
+
+    void addToIndex(QGraphicsItem *item);
+    void removeFromIndex(QGraphicsItem *item);
+
+    void _q_updateSortCache();
+    bool sortCacheEnabled;
+    bool updatingSortCache;
+    void invalidateSortCache();
+
+    static void climbTree(QGraphicsItem *item, int *stackingOrder);
+    static bool closestItemFirst_withoutCache(const QGraphicsItem *item1, const QGraphicsItem *item2);
+    static bool closestItemLast_withoutCache(const QGraphicsItem *item1, const QGraphicsItem *item2);
+
+    static inline bool closestItemFirst_withCache(const QGraphicsItem *item1, const QGraphicsItem *item2)
+    {
+        return item1->d_ptr->globalStackingOrder < item2->d_ptr->globalStackingOrder;
+    }
+    static inline bool closestItemLast_withCache(const QGraphicsItem *item1, const QGraphicsItem *item2)
+    {
+        return item1->d_ptr->globalStackingOrder >= item2->d_ptr->globalStackingOrder;
+    }
+
+    static void sortItems(QList<QGraphicsItem *> *itemList, Qt::SortOrder order, bool cached);
 };
+
+
+/*!
+    \internal
+*/
+inline bool qt_closestLeaf(const QGraphicsItem *item1, const QGraphicsItem *item2)
+{
+    // Return true if sibling item1 is on top of item2.
+    const QGraphicsItemPrivate *d1 = item1->d_ptr;
+    const QGraphicsItemPrivate *d2 = item2->d_ptr;
+    bool f1 = d1->flags & QGraphicsItem::ItemStacksBehindParent;
+    bool f2 = d2->flags & QGraphicsItem::ItemStacksBehindParent;
+    if (f1 != f2) return f2;
+    qreal z1 = d1->z;
+    qreal z2 = d2->z;
+    return z1 != z2 ? z1 > z2 : d1->siblingIndex > d2->siblingIndex;
+}
 
 QT_END_NAMESPACE
 
-#endif // QGRAPHICSSCENEINDEX_P_H
+#endif // QGRAPHICSSCENEBSPTREEINDEX_P_P_H
 
 #endif
+
