@@ -296,8 +296,8 @@
 
     We also declare two private QString objects, \c oldName and \c oldAddress.
     These objects are needed to hold the name and address of the contact that
-    was last displayed, before the user clicked "Add". So, when the user clicks
-    "Cancel", we can revert to displaying the details of the last contact.
+    was last displayed, before the user clicked \gui Add. So, when the user clicks
+    \gui Cancel, we can revert to displaying the details of the last contact.
 
     \section1 Implementing the AddressBook Class
 
@@ -318,7 +318,7 @@
     The \c addButton is displayed by invoking the \l{QPushButton::show()}
     {show()} function, while the \c submitButton and \c cancelButton are
     hidden by invoking \l{QPushButton::hide()}{hide()}. These two push
-    buttons will only be displayed when the user clicks "Add" and this is
+    buttons will only be displayed when the user clicks \gui Add and this is
     handled by the \c addContact() function discussed below.
 
     \snippet tutorials/addressbook/part2/addressbook.cpp connecting signals and slots
@@ -362,7 +362,7 @@
     \list 1
     \o We extract the contact's details from \c nameLine and \c addressText
     and store them in QString objects. We also validate to make sure that the
-    user did not click "Submit" with empty input fields; otherwise, a
+    user did not click \gui Submit with empty input fields; otherwise, a
     QMessageBox is displayed to remind the user for a name and address.
 
     \snippet tutorials/addressbook/part2/addressbook.cpp submitContact part1
@@ -396,9 +396,9 @@
 
     \snippet tutorials/addressbook/part2/addressbook.cpp cancel
 
-    The general idea to add a contact is to give the user the flexibility to
-    click "Submit" or "Cancel" at any time. The flowchart below further
-    explains this concept:
+    The general idea behind adding a contact is to give the user the
+    flexibility to click \gui Submit or \gui Cancel at any time. The flowchart below
+    further explains this concept:
 
     \image addressbook-tutorial-part2-add-flowchart.png
 */
