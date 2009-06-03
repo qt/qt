@@ -3583,9 +3583,7 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
                     QApplicationPrivate::mouse_buttons |= me->button();
                 else
                     QApplicationPrivate::mouse_buttons &= ~me->button();
-        } else if (e->type() == QEvent::TouchBegin
-                   || e->type() == QEvent::TouchUpdate
-                   || e->type() == QEvent::TouchEnd
+        } else if (e->type() == QEvent::RawTouch
 #  ifndef QT_NO_WHEELEVENT
                  || e->type() == QEvent::Wheel
 #  endif
