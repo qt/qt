@@ -5255,7 +5255,7 @@ void QGraphicsScenePrivate::markDirty(QGraphicsItem *item, const QRectF &rect, b
     }
 }
 
-void QGraphicsScenePrivate::processDirtyItemsRecursive(QGraphicsItem *item)
+void QGraphicsScenePrivate::processDirtyItemsRecursive(QGraphicsItem *item, bool dirtyAncestorContainsChildren)
 {
     Q_ASSERT(!item || item->d_ptr->dirty || item->d_ptr->dirtyChildren);
     Q_Q(QGraphicsScene);
@@ -5271,7 +5271,7 @@ void QGraphicsScenePrivate::processDirtyItemsRecursive(QGraphicsItem *item)
     }
 
     // Process item.
-    if (item && item->d_ptr->dirty) {
+    if (item && (item->d_ptr->dirty || item->d_ptr->paintedViewBoundingRectsNeedRepaint)) {
         const bool useCompatUpdate = views.isEmpty() || (connectedSignals & changedSignalMask);
         if (useCompatUpdate && !item->d_ptr->itemIsUntransformable()
             && qFuzzyIsNull(item->boundingRegionGranularity())) {
@@ -5300,6 +5300,12 @@ void QGraphicsScenePrivate::processDirtyItemsRecursive(QGraphicsItem *item)
                     break;
                 }
 
+                if (item->d_ptr->paintedViewBoundingRectsNeedRepaint)
+                    viewPrivate->updateRect(item->d_ptr->paintedViewBoundingRects.value(viewPrivate->viewport));
+
+                if (!item->d_ptr->dirty)
+                    continue;
+
                 if (uninitializedDirtyRect) {
                     dirtyRect = adjustedItemBoundingRect(item);
                     if (!item->d_ptr->fullUpdatePending) {
@@ -5308,9 +5314,6 @@ void QGraphicsScenePrivate::processDirtyItemsRecursive(QGraphicsItem *item)
                     }
                     uninitializedDirtyRect = false;
                 }
-
-                if (item->d_ptr->paintedViewBoundingRectsNeedRepaint)
-                    viewPrivate->updateRect(item->d_ptr->paintedViewBoundingRects.value(viewPrivate->viewport));
 
                 QTransform deviceTransform = item->d_ptr->sceneTransform;
                 if (view->isTransformed()) {
@@ -5331,17 +5334,35 @@ void QGraphicsScenePrivate::processDirtyItemsRecursive(QGraphicsItem *item)
     if (!item || item->d_ptr->dirtyChildren) {
         QList<QGraphicsItem *> *children = item ? &item->d_ptr->children : &topLevelItems;
         const bool allChildrenDirty = item && item->d_ptr->allChildrenDirty;
+        if (!dirtyAncestorContainsChildren) {
+            dirtyAncestorContainsChildren = item && item->d_ptr->fullUpdatePending
+                                            && (item->d_ptr->flags & QGraphicsItem::ItemClipsChildrenToShape);
+        }
         for (int i = 0; i < children->size(); ++i) {
             QGraphicsItem *child = children->at(i);
             if (wasDirtyParentSceneTransform)
                 child->d_ptr->dirtySceneTransform = 1;
+
             if (allChildrenDirty) {
                 child->d_ptr->dirty = 1;
+                child->d_ptr->fullUpdatePending = 1;
+                child->d_ptr->dirtyChildren = 1;
+                child->d_ptr->allChildrenDirty = 1;
             } else if (!child->d_ptr->dirty && !child->d_ptr->dirtyChildren) {
                 resetDirtyItem(child);
                 continue;
             }
-            processDirtyItemsRecursive(child);
+
+            if (dirtyAncestorContainsChildren) {
+                // No need to process this child's dirty rect, hence reset the dirty state.
+                // However, we have to continue the recursion because it might have a dirty
+                // view bounding rect that needs repaint. We also have to reset the dirty
+                // state of its descendants.
+                child->d_ptr->dirty = 0;
+                child->d_ptr->fullUpdatePending = 0;
+            }
+
+            processDirtyItemsRecursive(child, dirtyAncestorContainsChildren);
         }
     } else if (wasDirtyParentSceneTransform) {
         item->d_ptr->invalidateChildrenSceneTransform();
