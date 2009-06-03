@@ -240,6 +240,7 @@ public:
     bool shouldAcceptPanGesture;
 
     GestureState gesture;
+    TouchState touch;
 
     void reset()
     {
@@ -248,11 +249,20 @@ public:
         shouldAcceptSecondFingerGesture = true;
         shouldAcceptPanGesture = true;
         gesture.reset();
+        touch.reset();
     }
 protected:
     bool event(QEvent *event)
     {
-        if (event->type() == QEvent::Gesture) {
+        if (event->type() == QEvent::TouchBegin) {
+            event->accept();
+            ++touch.seenTouchBeginEvent;
+            return true;
+        } else if (event->type() == QEvent::TouchUpdate) {
+            ++touch.seenTouchUpdateEvent;
+        } else if (event->type() == QEvent::TouchEnd) {
+            ++touch.seenTouchEndEvent;
+        } else if (event->type() == QEvent::Gesture) {
             QGestureEvent *e = static_cast<QGestureEvent*>(event);
             ++gesture.seenGestureEvent;
             if (SingleshotGesture *g = (SingleshotGesture*)e->gesture(SingleshotGestureRecognizer::Name)) {
@@ -489,6 +499,8 @@ private slots:
     void overlappingGraphicsItems();
 
     void touch();
+
+    void panOnWidgets();
 
 private:
     SingleshotGestureRecognizer *singleshotRecognizer;
@@ -833,6 +845,45 @@ void tst_Gestures::touch()
     QVERIFY(item->touch.seenTouchBeginEvent);
     QVERIFY(item->touch.seenTouchUpdateEvent);
     QVERIFY(item->touch.seenTouchEndEvent);
+}
+
+void tst_Gestures::panOnWidgets()
+{
+    GestureWidget leftWidget(GestureWidget::GrabPan);
+    leftWidget.setObjectName("leftWidget");
+    leftWidget.setAttribute(Qt::WA_AcceptTouchEvents);
+    GestureWidget rightWidget(GestureWidget::GrabPan);
+    rightWidget.setObjectName("rightWidget");
+    rightWidget.setAttribute(Qt::WA_AcceptTouchEvents);
+    delete mainWidget->layout();
+    (void)new QHBoxLayout(mainWidget);
+    mainWidget->layout()->addWidget(&leftWidget);
+    mainWidget->layout()->addWidget(&rightWidget);
+    QApplication::processEvents();
+
+    QTest::touchEvent()
+        .press(0, QPoint(10, 10), &leftWidget);
+    QTest::touchEvent()
+        .move(0, QPoint(12, 30), &leftWidget);
+    QTest::touchEvent()
+        .stationary(0)
+        .press(1, QPoint(15, 15), &rightWidget);
+    QTest::touchEvent()
+        .move(0, QPoint(10, 35), &leftWidget)
+        .press(1, QPoint(15, 15), &rightWidget);
+    QTest::touchEvent()
+        .move(0, QPoint(10, 40), &leftWidget)
+        .move(1, QPoint(20, 50), &rightWidget);
+    QTest::touchEvent()
+        .release(0, QPoint(10, 40), &leftWidget)
+        .release(1, QPoint(20, 50), &rightWidget);
+    QVERIFY(!mainWidget->touch.seenTouchBeginEvent);
+    QVERIFY(leftWidget.touch.seenTouchBeginEvent);
+    QVERIFY(leftWidget.touch.seenTouchUpdateEvent);
+    QVERIFY(leftWidget.touch.seenTouchEndEvent);
+    QVERIFY(rightWidget.touch.seenTouchBeginEvent);
+    QVERIFY(rightWidget.touch.seenTouchUpdateEvent);
+    QVERIFY(rightWidget.touch.seenTouchEndEvent);
 }
 
 QTEST_MAIN(tst_Gestures)

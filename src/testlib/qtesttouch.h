@@ -75,38 +75,27 @@ namespace QTest
                 delete pt;
             points.clear();
         }
-        QTouchEventSequence& press(int touchId, const QPoint &pt)
+        QTouchEventSequence& press(int touchId, const QPoint &pt, QWidget *widget = 0)
         {
             touchPointStates |= Qt::TouchPointPressed;
             QTouchEvent::TouchPoint *p = point(touchId);
-            p->setStartPos(pt);
-            p->setStartScreenPos(widget->mapToGlobal(pt));
-            p->setLastPos(pt);
-            p->setLastScreenPos(widget->mapToGlobal(pt));
-            p->setPos(pt);
-            p->setScreenPos(widget->mapToGlobal(pt));
+            p->setScreenPos(mapToScreen(widget, pt));
             p->setState(Qt::TouchPointPressed);
             return *this;
         }
-        QTouchEventSequence& move(int touchId, const QPoint &pt)
+        QTouchEventSequence& move(int touchId, const QPoint &pt, QWidget *widget = 0)
         {
             touchPointStates |= Qt::TouchPointMoved;
             QTouchEvent::TouchPoint *p = point(touchId);
-            p->setLastPos(p->pos());
-            p->setLastScreenPos(widget->mapToGlobal(p->pos().toPoint()));
-            p->setPos(pt);
-            p->setScreenPos(widget->mapToGlobal(pt));
+            p->setScreenPos(mapToScreen(widget, pt));
             p->setState(Qt::TouchPointMoved);
             return *this;
         }
-        QTouchEventSequence& release(int touchId, const QPoint &pt)
+        QTouchEventSequence& release(int touchId, const QPoint &pt, QWidget *widget = 0)
         {
             touchPointStates |= Qt::TouchPointReleased;
             QTouchEvent::TouchPoint *p = point(touchId);
-            p->setLastPos(p->pos());
-            p->setLastScreenPos(widget->mapToGlobal(p->pos().toPoint()));
-            p->setPos(pt);
-            p->setScreenPos(widget->mapToGlobal(pt));
+            p->setScreenPos(mapToScreen(widget, pt));
             p->setState(Qt::TouchPointReleased);
             return *this;
         }
@@ -120,7 +109,7 @@ namespace QTest
 
     private:
         QTouchEventSequence(QWidget *widget)
-            : widget(widget)
+            : targetWidget(widget)
         {
         }
         QTouchEventSequence(const QTouchEventSequence &v);
@@ -136,25 +125,34 @@ namespace QTest
             }
             return pt;
         }
+        QPoint mapToScreen(QWidget *widget, const QPoint &pt)
+        {
+            if (widget)
+                return widget->mapToGlobal(pt);
+            return targetWidget ? targetWidget->mapToGlobal(pt) : pt;
+        }
         void commit()
         {
-            if (widget) {
-                QTouchEvent event(QEvent::RawTouch, Qt::NoModifier,
-                                  touchPointStates, points.values());
-                QSpontaneKeyEvent::setSpontaneous(&event);
-                if (!qApp->notify(widget, &event))
+            QTouchEvent event(QEvent::RawTouch, Qt::NoModifier,
+                              touchPointStates, points.values());
+            QSpontaneKeyEvent::setSpontaneous(&event);
+            if (targetWidget) {
+                if (!qApp->notify(targetWidget->window(), &event))
                     QTest::qWarn("Touch event not accepted by receiving widget");
-                widget = 0;
+                targetWidget = 0;
+            } else {
+                if (!qApp->notify(qApp, &event))
+                    QTest::qWarn("Touch event not accepted by receiving widget");
             }
         }
 
         QMap<int, QTouchEvent::TouchPoint*> points;
-        QWidget *widget;
+        QWidget *targetWidget;
         Qt::TouchPointStates touchPointStates;
         friend QTouchEventSequence touchEvent(QWidget*);
     };
 
-    QTouchEventSequence touchEvent(QWidget *widget)
+    QTouchEventSequence touchEvent(QWidget *widget = 0)
     {
         return QTouchEventSequence(widget);
     }
