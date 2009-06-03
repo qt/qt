@@ -42,6 +42,7 @@
 #ifndef QGRAPHICSEFFECT_H
 #define QGRAPHICSEFFECT_H
 
+#include <QtCore/qobject.h>
 #include <QtCore/qglobal.h>
 #include <QtCore/qpoint.h>
 #include <QtCore/qvariant.h>
@@ -62,10 +63,12 @@ QT_MODULE(Gui)
 
 #if !defined(QT_NO_GRAPHICSVIEW) || (QT_EDITION & QT_MODULE_GRAPHICSVIEW) != QT_MODULE_GRAPHICSVIEW
 
-class Q_GUI_EXPORT QGraphicsEffect {
+class QGraphicsEffectPrivate;
+class Q_GUI_EXPORT QGraphicsEffect : public QObject
+{
 public:
 
-    QGraphicsEffect();
+    QGraphicsEffect(QObject *parent = 0);
     virtual ~QGraphicsEffect();
 
     virtual QRectF boundingRectFor(const QGraphicsItem *item);
@@ -75,17 +78,21 @@ public:
                           QWidget *widget = 0) = 0;
 
 protected:
+    QGraphicsEffect(QGraphicsEffectPrivate &d, QObject* parent);
     QPixmap* drawItemOnPixmap(QPainter *painter, QGraphicsItem *item,
                               const QStyleOptionGraphicsItem *option, QWidget *widget, int flags);
 
 private:
-    Q_DISABLE_COPY(QGraphicsEffect);
+    Q_DECLARE_PRIVATE(QGraphicsEffect)
+    Q_DISABLE_COPY(QGraphicsEffect)
 };
 
-class Q_GUI_EXPORT QGraphicsGrayscaleEffect: public QGraphicsEffect {
+class QGraphicsGrayscaleEffectPrivate;
+class Q_GUI_EXPORT QGraphicsGrayscaleEffect: public QGraphicsEffect
+{
 public:
 
-    QGraphicsGrayscaleEffect();
+    QGraphicsGrayscaleEffect(QObject *parent = 0);
     ~QGraphicsGrayscaleEffect();
 
     void drawItem(QGraphicsItem *item, QPainter *painter,
@@ -93,14 +100,15 @@ public:
                   QWidget *widget = 0);
 
 private:
-    QPixmapColorizeFilter *filter;
-    Q_DISABLE_COPY(QGraphicsGrayscaleEffect);
+    Q_DECLARE_PRIVATE(QGraphicsGrayscaleEffect)
+    Q_DISABLE_COPY(QGraphicsGrayscaleEffect)
 };
 
+class QGraphicsColorizeEffectPrivate;
 class Q_GUI_EXPORT QGraphicsColorizeEffect: public QGraphicsEffect {
 public:
 
-    QGraphicsColorizeEffect();
+    QGraphicsColorizeEffect(QObject *parent = 0);
     ~QGraphicsColorizeEffect();
 
     QColor color() const;
@@ -111,36 +119,38 @@ public:
                   QWidget *widget = 0);
 
 private:
-    QPixmapColorizeFilter *filter;
-    Q_DISABLE_COPY(QGraphicsColorizeEffect);
+    Q_DECLARE_PRIVATE(QGraphicsColorizeEffect)
+    Q_DISABLE_COPY(QGraphicsColorizeEffect)
 };
 
+class QGraphicsPixelizeEffectPrivate;
 class Q_GUI_EXPORT QGraphicsPixelizeEffect: public QGraphicsEffect {
 public:
 
-    QGraphicsPixelizeEffect();
+    QGraphicsPixelizeEffect(QObject *parent = 0);
     ~QGraphicsPixelizeEffect();
 
-    int pixelSize() const { return size; }
-    void setPixelSize(int pixelSize) { size = pixelSize; }
+    int pixelSize() const;
+    void setPixelSize(int pixelSize);
 
     void drawItem(QGraphicsItem *item, QPainter *painter,
                   const QStyleOptionGraphicsItem *option = 0,
                   QWidget *widget = 0);
 
 private:
-    int size;
-    Q_DISABLE_COPY(QGraphicsPixelizeEffect);
+    Q_DECLARE_PRIVATE(QGraphicsPixelizeEffect)
+    Q_DISABLE_COPY(QGraphicsPixelizeEffect)
 };
 
+class QGraphicsBlurEffectPrivate;
 class Q_GUI_EXPORT QGraphicsBlurEffect: public QGraphicsEffect {
 public:
 
-    QGraphicsBlurEffect();
+    QGraphicsBlurEffect(QObject *parent = 0);
     ~QGraphicsBlurEffect();
 
-    int blurRadius() const { return radius; }
-    void setBlurRadius(int blurRadius) { radius = blurRadius; }
+    int blurRadius() const;
+    void setBlurRadius(int blurRadius);
 
     QRectF boundingRectFor(const QGraphicsItem *item);
 
@@ -149,49 +159,49 @@ public:
                   QWidget *widget = 0);
 
 private:
-    int radius;
-    Q_DISABLE_COPY(QGraphicsBlurEffect);
+    Q_DECLARE_PRIVATE(QGraphicsBlurEffect)
+    Q_DISABLE_COPY(QGraphicsBlurEffect)
 };
 
+class QGraphicsBloomEffectPrivate;
 class Q_GUI_EXPORT QGraphicsBloomEffect: public QGraphicsEffect {
 public:
 
-    QGraphicsBloomEffect();
+    QGraphicsBloomEffect(QObject *parent = 0);
     ~QGraphicsBloomEffect();
 
-    int blurRadius() const { return radius; }
-    void setBlurRadius(int blurRadius) { radius = blurRadius; }
+    int blurRadius() const;
+    void setBlurRadius(int blurRadius);
+
+    qreal opacity() const;
+    void setOpacity(qreal opacity);
 
     QRectF boundingRectFor(const QGraphicsItem *item);
-
-    qreal opacity() const { return alpha; }
-    void setOpacity(qreal opacity) { alpha = opacity; }
 
     void drawItem(QGraphicsItem *item, QPainter *painter,
                   const QStyleOptionGraphicsItem *option = 0,
                   QWidget *widget = 0);
 
 private:
-    int radius;
-    qreal alpha;
-    Q_DISABLE_COPY(QGraphicsBloomEffect);
+    Q_DECLARE_PRIVATE(QGraphicsBloomEffect)
+    Q_DISABLE_COPY(QGraphicsBloomEffect)
 };
 
+class QGraphicsFrameEffectPrivate;
 class Q_GUI_EXPORT QGraphicsFrameEffect: public QGraphicsEffect {
 public:
 
-    QGraphicsFrameEffect();
+    QGraphicsFrameEffect(QObject *parent = 0);
     ~QGraphicsFrameEffect();
 
-    QColor frameColor() const { return color; }
-    void setFrameColor(const QColor &c) { color = c; }
+    QColor frameColor() const;
+    void setFrameColor(const QColor &c);
 
-    qreal frameWidth() const { return width; }
-    void setFrameWidth(qreal frameWidth) { width = frameWidth; }
+    qreal frameWidth() const;
+    void setFrameWidth(qreal frameWidth);
 
-    qreal frameOpacity() const { return alpha; }
-    void setFrameOpacity(qreal opacity) { alpha = opacity; }
-
+    qreal frameOpacity() const;
+    void setFrameOpacity(qreal opacity);
 
     QRectF boundingRectFor(const QGraphicsItem *item);
 
@@ -199,28 +209,27 @@ public:
                   const QStyleOptionGraphicsItem *option = 0,
                   QWidget *widget = 0);
 private:
-    QColor color;
-    qreal width;
-    qreal alpha;
-    Q_DISABLE_COPY(QGraphicsFrameEffect);
+    Q_DECLARE_PRIVATE(QGraphicsFrameEffect)
+    Q_DISABLE_COPY(QGraphicsFrameEffect)
 };
 
+class QGraphicsShadowEffectPrivate;
 class Q_GUI_EXPORT QGraphicsShadowEffect: public QGraphicsEffect {
 public:
 
-    QGraphicsShadowEffect();
+    QGraphicsShadowEffect(QObject *parent = 0);
     ~QGraphicsShadowEffect();
 
     QPointF shadowOffset() const;
-    void setShadowOffset(const QPointF &ofs) { offset = ofs; }
+    void setShadowOffset(const QPointF &ofs);
     inline void setShadowOffset(qreal dx, qreal dy) { setShadowOffset(QPointF(dx, dy)); }
     inline void setShadowOffset(qreal d) { setShadowOffset(QPointF(d, d)); }
 
-    int blurRadius() const { return radius; }
-    void setBlurRadius(int blurRadius) { radius = blurRadius; }
+    int blurRadius() const;
+    void setBlurRadius(int blurRadius);
 
-    qreal opacity() const { return alpha; }
-    void setOpacity(qreal opacity) { alpha = opacity; }
+    qreal opacity() const;
+    void setOpacity(qreal opacity);
 
     QRectF boundingRectFor(const QGraphicsItem *item);
 
@@ -229,15 +238,11 @@ public:
                   QWidget *widget = 0);
 
 protected:
-    QPointF offset;
-    int radius;
-    qreal alpha;
 
 private:
-    Q_DISABLE_COPY(QGraphicsShadowEffect);
+    Q_DECLARE_PRIVATE(QGraphicsShadowEffect)
+    Q_DISABLE_COPY(QGraphicsShadowEffect)
 };
-
-
 
 Q_DECLARE_METATYPE(QGraphicsEffect *)
 Q_DECLARE_METATYPE(QGraphicsGrayscaleEffect *)

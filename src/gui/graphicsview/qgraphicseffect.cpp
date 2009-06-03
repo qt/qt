@@ -48,7 +48,8 @@
 #include <QtGui/qgraphicsscene.h>
 #include <QtGui/qpainter.h>
 
-#include <image/qpixmapfilter_p.h>
+#include <private/qobject_p.h>
+#include <private/qpixmapfilter_p.h>
 
 /*
 
@@ -104,7 +105,18 @@
 
 */
 
-QGraphicsEffect::QGraphicsEffect()
+/*!
+    \internal
+*/
+class QGraphicsEffectPrivate : public QObjectPrivate
+{
+    Q_DECLARE_PUBLIC(QGraphicsEffect)
+public:
+    QGraphicsEffectPrivate() {}
+};
+
+QGraphicsEffect::QGraphicsEffect(QObject *parent)
+    : QObject(*new QGraphicsEffectPrivate, parent)
 {
 }
 
@@ -120,6 +132,13 @@ QRectF QGraphicsEffect::boundingRectFor(const QGraphicsItem *item)
     return item->boundingRect();
 }
 
+/*! \internal
+*/
+QGraphicsEffect::QGraphicsEffect(QGraphicsEffectPrivate &dd, QObject *parent)
+    : QObject(dd, parent)
+{
+}
+
 // this helper function is only for subclasses of QGraphicsEffect
 // the implementation is trivial, but this allows us to keep
 // QGraphicsScene::drawItem() as a protected function
@@ -132,20 +151,39 @@ QPixmap* QGraphicsEffect::drawItemOnPixmap(QPainter *painter, QGraphicsItem *ite
     return item->scene()->drawItemOnPixmap(painter, item, option, widget, flags);
 }
 
-QGraphicsGrayscaleEffect::QGraphicsGrayscaleEffect(): QGraphicsEffect()
+/*!
+    \internal
+*/
+class QGraphicsGrayscaleEffectPrivate : public QGraphicsEffectPrivate
 {
-    filter = new QPixmapColorizeFilter;
-    filter->setColor(Qt::black);
+    Q_DECLARE_PUBLIC(QGraphicsGrayscaleEffect)
+public:
+    QGraphicsGrayscaleEffectPrivate() {
+        filter = new QPixmapColorizeFilter;
+        filter->setColor(Qt::black);
+    }
+
+    ~QGraphicsGrayscaleEffectPrivate() {
+        delete filter;
+    }
+
+    QPixmapColorizeFilter *filter;
+};
+
+QGraphicsGrayscaleEffect::QGraphicsGrayscaleEffect(QObject *parent)
+    : QGraphicsEffect(*new QGraphicsGrayscaleEffectPrivate, parent)
+{
 }
 
 QGraphicsGrayscaleEffect::~QGraphicsGrayscaleEffect()
 {
-    delete filter;
 }
 
 void QGraphicsGrayscaleEffect::drawItem(QGraphicsItem *item, QPainter *painter,
                                        const QStyleOptionGraphicsItem *option, QWidget *widget)
 {
+    Q_D(QGraphicsGrayscaleEffect);
+
     // Find the item's bounds in device coordinates.
     QRectF deviceBounds = painter->worldTransform().mapRect(item->boundingRect());
     QRect deviceRect = deviceBounds.toRect().adjusted(-1, -1, 1, 1);
@@ -159,33 +197,54 @@ void QGraphicsGrayscaleEffect::drawItem(QGraphicsItem *item, QPainter *painter,
     // Draw the pixmap with the filter using an untransformed painter.
     QTransform restoreTransform = painter->worldTransform();
     painter->setWorldTransform(QTransform());
-    filter->draw(painter, deviceRect.topLeft(), *pixmap, pixmap->rect());
+    d->filter->draw(painter, deviceRect.topLeft(), *pixmap, pixmap->rect());
     painter->setWorldTransform(restoreTransform);
 }
 
-QGraphicsColorizeEffect::QGraphicsColorizeEffect(): QGraphicsEffect()
+/*!
+    \internal
+*/
+class QGraphicsColorizeEffectPrivate : public QGraphicsEffectPrivate
 {
-    filter = new QPixmapColorizeFilter;
+    Q_DECLARE_PUBLIC(QGraphicsColorizeEffect)
+public:
+    QGraphicsColorizeEffectPrivate() {
+        filter = new QPixmapColorizeFilter;
+    }
+
+    ~QGraphicsColorizeEffectPrivate() {
+        delete filter;
+    }
+
+    QPixmapColorizeFilter *filter;
+};
+
+QGraphicsColorizeEffect::QGraphicsColorizeEffect(QObject *parent)
+    : QGraphicsEffect(*new QGraphicsColorizeEffectPrivate, parent)
+{
 }
 
 QGraphicsColorizeEffect::~QGraphicsColorizeEffect()
 {
-    delete filter;
 }
 
 QColor QGraphicsColorizeEffect::color() const
 {
-    return filter->color();
+    Q_D(const QGraphicsColorizeEffect);
+    return d->filter->color();
 }
 
 void QGraphicsColorizeEffect::setColor(const QColor &c)
 {
-    filter->setColor(c);
+    Q_D(QGraphicsColorizeEffect);
+    d->filter->setColor(c);
 }
 
 void QGraphicsColorizeEffect::drawItem(QGraphicsItem *item, QPainter *painter,
                                        const QStyleOptionGraphicsItem *option, QWidget *widget)
 {
+    Q_D(QGraphicsColorizeEffect);
+
     // Find the item's bounds in device coordinates.
     QRectF deviceBounds = painter->worldTransform().mapRect(item->boundingRect());
     QRect deviceRect = deviceBounds.toRect().adjusted(-1, -1, 1, 1);
@@ -199,11 +258,25 @@ void QGraphicsColorizeEffect::drawItem(QGraphicsItem *item, QPainter *painter,
     // Draw the pixmap with the filter using an untransformed painter.
     QTransform restoreTransform = painter->worldTransform();
     painter->setWorldTransform(QTransform());
-    filter->draw(painter, deviceRect.topLeft(), *pixmap, pixmap->rect());
+    d->filter->draw(painter, deviceRect.topLeft(), *pixmap, pixmap->rect());
     painter->setWorldTransform(restoreTransform);
 }
 
-QGraphicsPixelizeEffect::QGraphicsPixelizeEffect(): QGraphicsEffect(), size(2)
+/*!
+    \internal
+*/
+class QGraphicsPixelizeEffectPrivate : public QGraphicsEffectPrivate
+{
+    Q_DECLARE_PUBLIC(QGraphicsPixelizeEffect)
+public:
+    QGraphicsPixelizeEffectPrivate()
+        : pixelSize(3) { }
+
+    int pixelSize;
+};
+
+QGraphicsPixelizeEffect::QGraphicsPixelizeEffect(QObject *parent)
+    : QGraphicsEffect(*new QGraphicsPixelizeEffectPrivate, parent)
 {
 }
 
@@ -211,9 +284,23 @@ QGraphicsPixelizeEffect::~QGraphicsPixelizeEffect()
 {
 }
 
+int QGraphicsPixelizeEffect::pixelSize() const
+{
+    Q_D(const QGraphicsPixelizeEffect);
+    return d->pixelSize;
+}
+
+void QGraphicsPixelizeEffect::setPixelSize(int size)
+{
+    Q_D(QGraphicsPixelizeEffect);
+    d->pixelSize = size;
+}
+
 void QGraphicsPixelizeEffect::drawItem(QGraphicsItem *item, QPainter *painter,
                                        const QStyleOptionGraphicsItem *option, QWidget *widget)
 {
+    Q_D(QGraphicsPixelizeEffect);
+
     // Find the item's bounds in device coordinates.
     QRectF deviceBounds = painter->worldTransform().mapRect(item->boundingRect());
     QRect deviceRect = deviceBounds.toRect().adjusted(-1, -1, 1, 1);
@@ -226,18 +313,18 @@ void QGraphicsPixelizeEffect::drawItem(QGraphicsItem *item, QPainter *painter,
 
     // pixelize routine
     QImage img = pixmap->toImage().convertToFormat(QImage::Format_ARGB32);
-    if (size > 0) {
+    if (d->pixelSize > 0) {
         int width = img.width();
         int height = img.height();
-        for (int y = 0; y < height; y += size) {
-            int ys = qMin(height - 1, y + size / 2);
+        for (int y = 0; y < height; y += d->pixelSize) {
+            int ys = qMin(height - 1, y + d->pixelSize / 2);
             QRgb *sbuf = reinterpret_cast<QRgb*>(img.scanLine(ys));
-            for (int x = 0; x < width; x += size) {
-                int xs = qMin(width - 1, x + size / 2);
+            for (int x = 0; x < width; x += d->pixelSize) {
+                int xs = qMin(width - 1, x + d->pixelSize / 2);
                 QRgb color = sbuf[xs];
-                for (int yi = 0; yi < qMin(size, height - y); ++yi) {
+                for (int yi = 0; yi < qMin(d->pixelSize, height - y); ++yi) {
                     QRgb *buf = reinterpret_cast<QRgb*>(img.scanLine(y + yi));
-                    for (int xi = 0; xi < qMin(size, width - x); ++xi)
+                    for (int xi = 0; xi < qMin(d->pixelSize, width - x); ++xi)
                         buf[x + xi] = color;
                 }
             }
@@ -251,8 +338,21 @@ void QGraphicsPixelizeEffect::drawItem(QGraphicsItem *item, QPainter *painter,
     painter->setWorldTransform(restoreTransform);
 }
 
+/*!
+    \internal
+*/
+class QGraphicsBlurEffectPrivate : public QGraphicsEffectPrivate
+{
+    Q_DECLARE_PUBLIC(QGraphicsBlurEffect)
+public:
+    QGraphicsBlurEffectPrivate()
+        : blurRadius(4) { }
 
-QGraphicsBlurEffect::QGraphicsBlurEffect(): QGraphicsEffect(), radius(6)
+    int blurRadius;
+};
+
+QGraphicsBlurEffect::QGraphicsBlurEffect(QObject *parent)
+    : QGraphicsEffect(*new QGraphicsBlurEffectPrivate, parent)
 {
 }
 
@@ -325,9 +425,22 @@ static QImage blurred(const QImage& image, const QRect& rect, int radius)
     return result;
 }
 
+int QGraphicsBlurEffect::blurRadius() const
+{
+    Q_D(const QGraphicsBlurEffect);
+    return d->blurRadius;
+}
+
+void QGraphicsBlurEffect::setBlurRadius(int radius)
+{
+    Q_D(QGraphicsBlurEffect);
+    d->blurRadius = radius;
+}
+
 QRectF QGraphicsBlurEffect::boundingRectFor(const QGraphicsItem *item)
 {
-    qreal delta = radius * 3;
+    Q_D(const QGraphicsBlurEffect);
+    qreal delta = d->blurRadius * 3;
     QRectF blurRect = item->boundingRect();
     blurRect.adjust(-delta, -delta, delta, delta);
     return blurRect;
@@ -336,6 +449,8 @@ QRectF QGraphicsBlurEffect::boundingRectFor(const QGraphicsItem *item)
 void QGraphicsBlurEffect::drawItem(QGraphicsItem *item, QPainter *painter,
                                        const QStyleOptionGraphicsItem *option, QWidget *widget)
 {
+    Q_D(QGraphicsBlurEffect);
+
     // Find the item's bounds in device coordinates.
     QRectF deviceBounds = painter->worldTransform().mapRect(item->boundingRect());
     QRect deviceRect = deviceBounds.toRect().adjusted(-1, -1, 1, 1);
@@ -347,6 +462,7 @@ void QGraphicsBlurEffect::drawItem(QGraphicsItem *item, QPainter *painter,
         return;
 
     // blur routine
+    int radius = d->blurRadius;
     QImage img = pixmap->toImage().convertToFormat(QImage::Format_ARGB32_Premultiplied);
     img = blurred(img, img.rect(), radius);
 
@@ -357,8 +473,23 @@ void QGraphicsBlurEffect::drawItem(QGraphicsItem *item, QPainter *painter,
     painter->setWorldTransform(restoreTransform);
 }
 
+/*!
+    \internal
+*/
+class QGraphicsBloomEffectPrivate : public QGraphicsEffectPrivate
+{
+    Q_DECLARE_PUBLIC(QGraphicsBlurEffect)
+public:
+    QGraphicsBloomEffectPrivate()
+        : blurRadius(6)
+        , opacity(0.7) { }
 
-QGraphicsBloomEffect::QGraphicsBloomEffect(): QGraphicsEffect(), radius(6), alpha(0.7)
+    int blurRadius;
+    qreal opacity;
+};
+
+QGraphicsBloomEffect::QGraphicsBloomEffect(QObject *parent)
+    : QGraphicsEffect(*new QGraphicsBloomEffectPrivate, parent)
 {
 }
 
@@ -366,9 +497,34 @@ QGraphicsBloomEffect::~QGraphicsBloomEffect()
 {
 }
 
+int QGraphicsBloomEffect::blurRadius() const
+{
+    Q_D(const QGraphicsBloomEffect);
+    return d->blurRadius;
+}
+
+void QGraphicsBloomEffect::setBlurRadius(int radius)
+{
+    Q_D(QGraphicsBloomEffect);
+    d->blurRadius = radius;
+}
+
+qreal QGraphicsBloomEffect::opacity() const
+{
+    Q_D(const QGraphicsBloomEffect);
+    return d->opacity;
+}
+
+void QGraphicsBloomEffect::setOpacity(qreal alpha)
+{
+    Q_D(QGraphicsBloomEffect);
+    d->opacity = alpha;
+}
+
 QRectF QGraphicsBloomEffect::boundingRectFor(const QGraphicsItem *item)
 {
-    qreal delta = radius * 3;
+    Q_D(QGraphicsBloomEffect);
+    qreal delta = d->blurRadius * 3;
     QRectF blurRect = item->boundingRect();
     blurRect.adjust(-delta, -delta, delta, delta);
     return blurRect;
@@ -408,6 +564,8 @@ static QImage composited(const QImage& img1, const QImage& img2, qreal opacity, 
 void QGraphicsBloomEffect::drawItem(QGraphicsItem *item, QPainter *painter,
                                        const QStyleOptionGraphicsItem *option, QWidget *widget)
 {
+    Q_D(QGraphicsBloomEffect);
+
     // Find the item's bounds in device coordinates.
     QRectF deviceBounds = painter->worldTransform().mapRect(item->boundingRect());
     QRect deviceRect = deviceBounds.toRect().adjusted(-1, -1, 1, 1);
@@ -419,10 +577,11 @@ void QGraphicsBloomEffect::drawItem(QGraphicsItem *item, QPainter *painter,
         return;
 
     // bloom routine
+    int radius = d->blurRadius;
     QImage img = pixmap->toImage().convertToFormat(QImage::Format_ARGB32_Premultiplied);
     QImage overlay = blurred(img, img.rect(), radius);
     overlay = brightened(overlay, 70);
-    img = composited(img, overlay, alpha, QPainter::CompositionMode_Overlay);
+    img = composited(img, overlay, d->opacity, QPainter::CompositionMode_Overlay);
 
     // Draw using an untransformed painter.
     QTransform restoreTransform = painter->worldTransform();
@@ -431,11 +590,27 @@ void QGraphicsBloomEffect::drawItem(QGraphicsItem *item, QPainter *painter,
     painter->setWorldTransform(restoreTransform);
 }
 
-QGraphicsFrameEffect::QGraphicsFrameEffect()
-    : QGraphicsEffect()
-    , color(Qt::blue)
-    , width(5)
-    , alpha(0.6)
+/*!
+    \internal
+*/
+class QGraphicsFrameEffectPrivate : public QGraphicsEffectPrivate
+{
+    Q_DECLARE_PUBLIC(QGraphicsFrameEffect)
+public:
+    QGraphicsFrameEffectPrivate()
+        : color(Qt::blue)
+        , width(5)
+        , alpha(0.6)
+    {
+    }
+
+    QColor color;
+    qreal width;
+    qreal alpha;
+};
+
+QGraphicsFrameEffect::QGraphicsFrameEffect(QObject *parent)
+    : QGraphicsEffect(*new QGraphicsFrameEffectPrivate, parent)
 {
 }
 
@@ -443,16 +618,55 @@ QGraphicsFrameEffect::~QGraphicsFrameEffect()
 {
 }
 
+QColor QGraphicsFrameEffect::frameColor() const
+{
+    Q_D(const QGraphicsFrameEffect);
+    return d->color;
+}
+
+void QGraphicsFrameEffect::setFrameColor(const QColor &c)
+{
+    Q_D(QGraphicsFrameEffect);
+    d->color = c;
+}
+
+qreal QGraphicsFrameEffect::frameWidth() const
+{
+    Q_D(const QGraphicsFrameEffect);
+    return d->width;
+}
+
+void QGraphicsFrameEffect::setFrameWidth(qreal frameWidth)
+{
+    Q_D(QGraphicsFrameEffect);
+    d->width = frameWidth;
+}
+
+qreal QGraphicsFrameEffect::frameOpacity() const
+{
+    Q_D(const QGraphicsFrameEffect);
+    return d->alpha;
+}
+
+void QGraphicsFrameEffect::setFrameOpacity(qreal opacity)
+{
+    Q_D(QGraphicsFrameEffect);
+    d->alpha = opacity;
+}
+
 QRectF QGraphicsFrameEffect::boundingRectFor(const QGraphicsItem *item)
 {
+    Q_D(QGraphicsFrameEffect);
     QRectF frameRect = item->boundingRect();
-    frameRect.adjust(-width, -width, width, width);
+    frameRect.adjust(-d->width, -d->width, d->width, d->width);
     return frameRect;
 }
 
 void QGraphicsFrameEffect::drawItem(QGraphicsItem *item, QPainter *painter,
                                        const QStyleOptionGraphicsItem *option, QWidget *widget)
 {
+    Q_D(QGraphicsFrameEffect);
+
     // Find the item's bounds in device coordinates.
     QRectF deviceBounds = painter->worldTransform().mapRect(item->boundingRect());
     QRect deviceRect = deviceBounds.toRect().adjusted(-1, -1, 1, 1);
@@ -464,15 +678,15 @@ void QGraphicsFrameEffect::drawItem(QGraphicsItem *item, QPainter *painter,
         return;
 
     QRectF frameRect = deviceBounds;
-    frameRect.adjust(-width, -width, width, width);
+    frameRect.adjust(-d->width, -d->width, d->width, d->width);
 
     painter->save();
     painter->setWorldTransform(QTransform());
 
     painter->save();
-    painter->setOpacity(painter->opacity() * alpha);
+    painter->setOpacity(painter->opacity() * d->alpha);
     painter->setPen(Qt::NoPen);
-    painter->setBrush(color);
+    painter->setBrush(d->color);
     painter->drawRoundedRect(frameRect, 20, 20, Qt::RelativeSize);
     painter->restore();
 
@@ -482,11 +696,27 @@ void QGraphicsFrameEffect::drawItem(QGraphicsItem *item, QPainter *painter,
 }
 
 
-QGraphicsShadowEffect::QGraphicsShadowEffect()
-    : QGraphicsEffect()
-    , offset(4,4)
-    , radius(8)
-    , alpha(0.7)
+/*!
+    \internal
+*/
+class QGraphicsShadowEffectPrivate : public QGraphicsEffectPrivate
+{
+    Q_DECLARE_PUBLIC(QGraphicsShadowEffect)
+public:
+    QGraphicsShadowEffectPrivate()
+        : offset(4,4)
+        , radius(8)
+        , alpha(0.7)
+    {
+    }
+
+    QPointF offset;
+    int radius;
+    qreal alpha;
+};
+
+QGraphicsShadowEffect::QGraphicsShadowEffect(QObject *parent)
+    : QGraphicsEffect(*new QGraphicsShadowEffectPrivate, parent)
 {
 }
 
@@ -494,12 +724,49 @@ QGraphicsShadowEffect::~QGraphicsShadowEffect()
 {
 }
 
+QPointF  QGraphicsShadowEffect::shadowOffset() const
+{
+    Q_D(const QGraphicsShadowEffect);
+    return d->offset;
+}
+
+void  QGraphicsShadowEffect::setShadowOffset(const QPointF &ofs)
+{
+    Q_D(QGraphicsShadowEffect);
+    d->offset = ofs;
+}
+
+int  QGraphicsShadowEffect::blurRadius() const
+{
+    Q_D(const QGraphicsShadowEffect);
+    return d->radius;
+}
+
+void  QGraphicsShadowEffect::setBlurRadius(int blurRadius)
+{
+    Q_D(QGraphicsShadowEffect);
+    d->radius = blurRadius;
+}
+
+qreal  QGraphicsShadowEffect::opacity() const
+{
+    Q_D(const QGraphicsShadowEffect);
+    return d->alpha;
+}
+
+void  QGraphicsShadowEffect::setOpacity(qreal opacity)
+{
+    Q_D(QGraphicsShadowEffect);
+    d->alpha = opacity;
+}
+
 QRectF QGraphicsShadowEffect::boundingRectFor(const QGraphicsItem *item)
 {
+    Q_D(QGraphicsShadowEffect);
     QRectF shadowRect = item->boundingRect();
-    shadowRect.adjust(offset.x(), offset.y(), offset.x(), offset.y());
+    shadowRect.adjust(d->offset.x(), d->offset.y(), d->offset.x(), d->offset.y());
     QRectF blurRect = shadowRect;
-    qreal delta = radius * 3;
+    qreal delta = d->radius * 3;
     blurRect.adjust(-delta, -delta, delta, delta);
     QRectF totalRect = blurRect.united(item->boundingRect());
     return totalRect;
@@ -508,6 +775,8 @@ QRectF QGraphicsShadowEffect::boundingRectFor(const QGraphicsItem *item)
 void QGraphicsShadowEffect::drawItem(QGraphicsItem *item, QPainter *painter,
                                        const QStyleOptionGraphicsItem *option, QWidget *widget)
 {
+    Q_D(QGraphicsShadowEffect);
+
     // Find the item's bounds in device coordinates.
     QRectF deviceBounds = painter->worldTransform().mapRect(item->boundingRect());
     QRect deviceRect = deviceBounds.toRect().adjusted(-1, -1, 1, 1);
@@ -515,9 +784,9 @@ void QGraphicsShadowEffect::drawItem(QGraphicsItem *item, QPainter *painter,
         return;
 
     QRectF shadowRect = deviceBounds;
-    shadowRect.adjust(offset.x(), offset.y(), offset.x(), offset.y());
+    shadowRect.adjust(d->offset.x(), d->offset.y(), d->offset.x(), d->offset.y());
     QRectF blurRect = shadowRect;
-    qreal delta = radius * 3;
+    qreal delta = d->radius * 3;
     blurRect.adjust(-delta, -delta, delta, delta);
     QRectF totalRect = blurRect.united(deviceRect);
 
@@ -527,9 +796,9 @@ void QGraphicsShadowEffect::drawItem(QGraphicsItem *item, QPainter *painter,
 
     QImage img = pixmap->toImage();
     QImage shadowImage(img.size(), QImage::Format_ARGB32);
-    shadowImage.fill(qRgba(0, 0, 0, alpha * 255));
+    shadowImage.fill(qRgba(0, 0, 0, d->alpha * 255));
     shadowImage.setAlphaChannel(img.alphaChannel());
-    shadowImage = blurred(shadowImage, shadowImage.rect(), radius);
+    shadowImage = blurred(shadowImage, shadowImage.rect(), d->radius);
 
     // Draw using an untransformed painter.
     QTransform restoreTransform = painter->worldTransform();
@@ -540,9 +809,9 @@ void QGraphicsShadowEffect::drawItem(QGraphicsItem *item, QPainter *painter,
     qreal shadowx = blurRect.x() + delta;
     qreal shadowy = blurRect.y() + delta;
     if (blurRect.x() < deviceRect.x())
-        shadowx = blurRect.x() + offset.x();
+        shadowx = blurRect.x() + d->offset.x();
     if (blurRect.y() < deviceRect.y())
-        shadowy = blurRect.y() + offset.y();
+        shadowy = blurRect.y() + d->offset.y();
     painter->drawImage(shadowx, shadowy, shadowImage);
 
     qreal itemx = qMin(blurRect.x(), deviceBounds.x());
