@@ -1,0 +1,79 @@
+<?xml version="1.0"?>
+<anchorlayout>
+    <item id="item1">
+        <property name="minimumSize">
+            <size width="10" height="10"/>
+        </property>
+        <property name="preferredSize">
+            <size width="50" height="50"/>
+        </property>
+        <property name="maximumSize">
+            <size width="100" height="100"/>
+        </property>
+    </item>
+    <item id="item2">
+        <property name="minimumSize">
+            <size width="10" height="10"/>
+        </property>
+        <property name="preferredSize">
+            <size width="50" height="50"/>
+        </property>
+        <property name="maximumSize">
+            <size width="100" height="100"/>
+        </property>
+    </item>
+    <item id="item3">
+        <property name="minimumSize">
+            <size width="10" height="10"/>
+        </property>
+        <property name="preferredSize">
+            <size width="50" height="50"/>
+        </property>
+        <property name="maximumSize">
+            <size width="100" height="100"/>
+        </property>
+    </item>
+    <item id="item4">
+        <property name="minimumSize">
+            <size width="10" height="10"/>
+        </property>
+        <property name="preferredSize">
+            <size width="50" height="50"/>
+        </property>
+        <property name="maximumSize">
+            <size width="100" height="100"/>
+        </property>
+    </item>
+    <item id="item5">
+        <property name="minimumSize">
+            <size width="10" height="10"/>
+        </property>
+        <property name="preferredSize">
+            <size width="50" height="50"/>
+        </property>
+        <property name="maximumSize">
+            <size width="100" height="100"/>
+        </property>
+    </item>
+    <!--
+            -->
+
+    <!-- Horizontal anchors -->
+    <anchor first="this.Left" second="item1.Left"/>
+    <anchor first="item1.Right" second="item2.Right"/>
+    <anchor first="item1.Right" second="item4.Right"/>
+    <anchor first="item3.Right" second="item4.Left"/>
+    <anchor first="item2.Left" second="item5.Left"/>
+    <anchor first="item3.Left" second="item5.Left"/>
+    <anchor first="item5.Right" second="this.Right"/>
+
+    <!-- Vertical anchors -->
+    <anchor first="this.Top" second="item1.Top"/>
+    <anchor first="item1.Bottom" second="item2.Top"/>
+    <anchor first="item2.Bottom" second="item3.Top"/>
+    <anchor first="item2.Bottom" second="item4.Top"/>
+    <anchor first="item4.Bottom" second="item5.Top"/>
+    <anchor first="item3.Bottom" second="item5.Top"/>
+    <anchor first="item5.Bottom" second="this.Bottom"/>
+
+</anchorlayout>
