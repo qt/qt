@@ -1,4 +1,5 @@
 languagechange
+modeltest
 qabstractbutton
 qabstractitemview
 #qabstractprintdialog NO PRINTING SUPPORT
