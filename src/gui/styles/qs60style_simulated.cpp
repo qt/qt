@@ -51,10 +51,108 @@
 #include "qlayout.h"
 #include "qpixmapcache.h"
 #include "qmetaobject.h"
+#include "qdebug.h"
+#include "qbuffer.h"
 
 #if !defined(QT_NO_STYLE_S60) || defined(QT_PLUGIN)
 
 QT_BEGIN_NAMESPACE
+
+static const quint32 blobVersion = 1;
+static const int pictureSize = 256;
+
+bool saveThemeToBlob(const QString &themeBlob,
+    const QHash<QString, QPicture> &partPictures,
+    const QHash<QPair<QString, int>, QColor> &colors)
+{
+    QFile blob(themeBlob);
+    if (!blob.open(QIODevice::WriteOnly)) {
+        qWarning() << __FUNCTION__": Could not create blob: " << themeBlob;
+        return false;
+    }
+
+    QByteArray data;
+    QBuffer dataBuffer(&data);
+    dataBuffer.open(QIODevice::WriteOnly);
+    QDataStream dataOut(&dataBuffer);
+
+    const int colorsCount = colors.count();
+    dataOut << colorsCount;
+    const QList<QPair<QString, int> > colorKeys = colors.keys();
+    for (int i = 0; i < colorsCount; ++i) {
+        const QPair<QString, int> &key = colorKeys.at(i);
+        dataOut << key;
+        const QColor color = colors.value(key);
+        dataOut << color;
+    }
+
+    const int picturesCount = partPictures.count();
+    dataOut << picturesCount;
+    foreach (const QString &key, partPictures.keys()) {
+        const QPicture picture = partPictures.value(key);
+        dataOut << key;
+        dataOut << picture;
+    }
+
+    QDataStream blobOut(&blob);
+    blobOut << blobVersion;
+    blobOut << qCompress(data);
+    return blobOut.status() == QDataStream::Ok;
+}
+
+bool loadThemeFromBlob(const QString &themeBlob,
+    QHash<QString, QPicture> &partPictures,
+    QHash<QPair<QString, int>, QColor> &colors)
+{
+    QFile blob(themeBlob);
+    if (!blob.open(QIODevice::ReadOnly)) {
+        qWarning() << __FUNCTION__": Could not read blob: " << themeBlob;
+        return false;
+    }
+    QDataStream blobIn(&blob);
+
+    quint32 version;
+    blobIn >> version;
+
+    if (version != blobVersion) {
+        qWarning() << __FUNCTION__": Invalid blob version: " << version << " ...expected: " << blobVersion;
+        return false;
+    }
+
+    QByteArray data;
+    blobIn >> data;
+    data = qUncompress(data);
+    QBuffer dataBuffer(&data);
+    dataBuffer.open(QIODevice::ReadOnly);
+    QDataStream dataIn(&dataBuffer);
+
+    int colorsCount;
+    dataIn >> colorsCount;
+    for (int i = 0; i < colorsCount; ++i) {
+        QPair<QString, int> key;
+        dataIn >> key;
+        QColor value;
+        dataIn >> value;
+        colors.insert(key, value);
+    }
+
+    int picturesCount;
+    dataIn >> picturesCount;
+    for (int i = 0; i < picturesCount; ++i) {
+        QString key;
+        dataIn >> key;
+        QPicture value;
+        dataIn >> value;
+        value.setBoundingRect(QRect(0, 0, pictureSize, pictureSize)); // Bug? The forced bounding rect was not deserialized.
+        partPictures.insert(key, value);
+    }
+
+    if (dataIn.status() != QDataStream::Ok) {
+        qWarning() << __FUNCTION__": Invalid data blob: " << themeBlob;
+        return false;
+    }
+    return true;
+}
 
 class QS60StyleModeSpecifics
 {
@@ -254,6 +352,16 @@ QFont QS60StylePrivate::s60Font_specific(QS60StyleEnums::FontCategories fontCate
     return result;
 }
 
+/*!
+  Constructs a QS60Style object.
+*/
+QS60Style::QS60Style()
+    : QCommonStyle(*new QS60StylePrivate)
+{
+    // Assume, that the resource system has a ':/s60Stylethemes/Default.blob'
+    loadS60ThemeFromBlob(QString::fromLatin1(":/s60Stylethemes/Default.blob"));
+}
+
 Q_GLOBAL_STATIC_WITH_INITIALIZER(QStringList, enumPartKeys, {
     const int enumIndex = QS60StyleEnums::staticMetaObject.indexOfEnumerator("SkinParts");
     Q_ASSERT(enumIndex >= 0);
@@ -301,6 +409,23 @@ void QS60Style::setS60Theme(const QHash<QString, QPicture> &parts,
     d->clearCaches(QS60StylePrivate::CC_ThemeChange);
     d->setBackgroundTexture(qApp);
     d->setThemePalette(qApp);
+}
+
+bool QS60Style::loadS60ThemeFromBlob(const QString &blobFile)
+{
+    QHash<QString, QPicture> partPictures;
+    QHash<QPair<QString, int>, QColor> colors;
+
+    if (!loadThemeFromBlob(blobFile, partPictures, colors))
+        return false;
+    setS60Theme(partPictures, colors);
+    return true;
+}
+
+bool QS60Style::saveS60ThemeToBlob(const QString &blobFile) const
+{
+    return saveThemeToBlob(blobFile,
+        QS60StyleModeSpecifics::m_partPictures, QS60StyleModeSpecifics::m_colors);
 }
 
 QPoint qt_s60_fill_background_offset(const QWidget *targetWidget)
