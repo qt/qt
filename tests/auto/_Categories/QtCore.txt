@@ -10,6 +10,7 @@ qatomicpointer
 qbitarray
 qbuffer
 qbytearray
+qbytearraymatcher
 qcache
 qchar
 qcoreapplication
