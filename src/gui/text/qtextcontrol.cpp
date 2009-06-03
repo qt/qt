@@ -1813,13 +1813,18 @@ bool QTextControlPrivate::dropEvent(const QMimeData *mimeData, const QPointF &po
 
 void QTextControlPrivate::inputMethodEvent(QInputMethodEvent *e)
 {
+    Q_Q(QTextControl);
     if (!(interactionFlags & Qt::TextEditable) || cursor.isNull()) {
         e->ignore();
         return;
     }
-    cursor.beginEditBlock();
+    bool isGettingInput = !e->commitString().isEmpty() || !e->preeditString().isEmpty()
+            || e->replacementLength() > 0;
 
-    cursor.removeSelectedText();
+    if (isGettingInput) {
+        cursor.beginEditBlock();
+        cursor.removeSelectedText();
+    }
 
     // insert commit string
     if (!e->commitString().isEmpty() || e->replacementLength()) {
@@ -1827,6 +1832,17 @@ void QTextControlPrivate::inputMethodEvent(QInputMethodEvent *e)
         c.setPosition(c.position() + e->replacementStart());
         c.setPosition(c.position() + e->replacementLength(), QTextCursor::KeepAnchor);
         c.insertText(e->commitString());
+    }
+
+    for (int i = 0; i < e->attributes().size(); ++i) {
+        const QInputMethodEvent::Attribute &a = e->attributes().at(i);
+        if (a.type == QInputMethodEvent::Selection) {
+            QTextCursor oldCursor = cursor;
+            cursor.setPosition(a.start, QTextCursor::MoveAnchor);
+            cursor.setPosition(a.start + a.length, QTextCursor::KeepAnchor);
+            q->ensureCursorVisible();
+            repaintOldAndNewSelection(oldCursor);
+        }
     }
 
     QTextBlock block = cursor.block();
@@ -1852,7 +1868,9 @@ void QTextControlPrivate::inputMethodEvent(QInputMethodEvent *e)
         }
     }
     layout->setAdditionalFormats(overrides);
-    cursor.endEditBlock();
+
+    if (isGettingInput)
+        cursor.endEditBlock();
 }
 
 QVariant QTextControl::inputMethodQuery(Qt::InputMethodQuery property) const
@@ -1872,6 +1890,8 @@ QVariant QTextControl::inputMethodQuery(Qt::InputMethodQuery property) const
         return QVariant(d->cursor.selectedText());
     case Qt::ImMaximumTextLength:
         return QVariant(); // No limit.
+    case Qt::ImAnchorPosition:
+        return QVariant(qBound(0, d->cursor.anchor() - block.position(), block.length()));
     default:
         return QVariant();
     }
