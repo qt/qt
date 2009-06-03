@@ -5167,22 +5167,49 @@ void QGraphicsScenePrivate::drawSubtreeRecursive(QGraphicsItem *item, QPainter *
     }
 
     // Find and sort children.
-    QList<QGraphicsItem *> &children = item ? item->d_ptr->children : (topLevelItems ? *topLevelItems : this->topLevelItems);
+    QList<QGraphicsItem *> tmp;
+    QList<QGraphicsItem *> *children = 0;
+    if (item) {
+        children = &item->d_ptr->children;
+    } else if (topLevelItems) {
+        children = topLevelItems;
+    } else if (indexMethod == QGraphicsScene::NoIndex || !exposedRegion) {
+        children = &this->topLevelItems;
+    } else {
+        tmp = estimateItemsInRect(viewTransform.inverted().mapRect(exposedRegion->boundingRect()));
+
+        QList<QGraphicsItem *> tli;
+        for (int i = 0; i < tmp.size(); ++i) {
+            QGraphicsItem *it = tmp.at(i)->topLevelItem();
+            if (!it->d_ptr->itemDiscovered) {
+                tli << it;
+                it->d_ptr->itemDiscovered = 1;
+            }
+        }
+        for (int i = 0; i < tli.size(); ++i)
+            tli.at(i)->d_ptr->itemDiscovered = 0;
+
+        tmp = tli;
+        children = &tmp;
+    }
+    
     if (!dontDrawChildren) {
         if (item && item->d_ptr->needSortChildren) {
             item->d_ptr->needSortChildren = 0;
-            qStableSort(children.begin(), children.end(), qt_notclosestLeaf);
+            qStableSort(children->begin(), children->end(), qt_notclosestLeaf);
         } else if (!item && needSortTopLevelItems) {
             needSortTopLevelItems = false;
-            qStableSort(children.begin(), children.end(), qt_notclosestLeaf);
+            qStableSort(children->begin(), children->end(), qt_notclosestLeaf);
+        } else if (!item && children == &tmp) {
+            qStableSort(children->begin(), children->end(), qt_notclosestLeaf);
         }
     }
 
     // Draw children behind
     int i = 0;
     if (!dontDrawChildren) {
-        for (i = 0; i < children.size(); ++i) {
-            QGraphicsItem *child = children.at(i);
+        for (i = 0; i < children->size(); ++i) {
+            QGraphicsItem *child = children->at(i);
             if (wasDirtyParentSceneTransform)
                 child->d_ptr->dirtySceneTransform = 1;
             if (!(child->d_ptr->flags & QGraphicsItem::ItemStacksBehindParent))
@@ -5213,8 +5240,8 @@ void QGraphicsScenePrivate::drawSubtreeRecursive(QGraphicsItem *item, QPainter *
 
     // Draw children in front
     if (!dontDrawChildren) {
-        for (; i < children.size(); ++i) {
-            QGraphicsItem *child = children.at(i);
+        for (; i < children->size(); ++i) {
+            QGraphicsItem *child = children->at(i);
             if (wasDirtyParentSceneTransform)
                 child->d_ptr->dirtySceneTransform = 1;
             drawSubtreeRecursive(child, painter, viewTransform, exposedRegion,
