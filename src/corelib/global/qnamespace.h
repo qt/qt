@@ -1395,7 +1395,8 @@ public:
         ImCursorPosition,
         ImSurroundingText,
         ImCurrentSelection,
-        ImMaximumTextLength
+        ImMaximumTextLength,
+        ImAnchorPosition
     };
 
     enum InputMethodHint {
