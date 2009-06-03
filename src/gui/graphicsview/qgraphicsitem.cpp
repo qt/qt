@@ -8147,6 +8147,18 @@ public:
     QGraphicsTextItem *qq;
 };
 
+
+QGraphicsObject::QGraphicsObject(QGraphicsItem *parent)
+        : QGraphicsItem(parent)
+{
+}
+
+QGraphicsObject::QGraphicsObject(QGraphicsItemPrivate &dd, QGraphicsItem *parent, QGraphicsScene *scene)
+    : QGraphicsItem(dd, parent, scene)
+{
+}
+
+
 /*!
     Constructs a QGraphicsTextItem, using \a text as the default plain
     text. \a parent is passed to QGraphicsItem's constructor.
@@ -8159,7 +8171,7 @@ QGraphicsTextItem::QGraphicsTextItem(const QString &text, QGraphicsItem *parent
                                      , QGraphicsScene *scene
 #endif
     )
-    : QGraphicsItem(parent, scene), dd(new QGraphicsTextItemPrivate)
+    : QGraphicsObject(*new QGraphicsItemPrivate, parent, scene), dd(new QGraphicsTextItemPrivate)
 {
     dd->qq = this;
     if (!text.isEmpty())
@@ -8181,7 +8193,7 @@ QGraphicsTextItem::QGraphicsTextItem(QGraphicsItem *parent
                                      , QGraphicsScene *scene
 #endif
     )
-    : QGraphicsItem(parent, scene), dd(new QGraphicsTextItemPrivate)
+    : QGraphicsObject(*new QGraphicsItemPrivate, parent, scene), dd(new QGraphicsTextItemPrivate)
 {
     dd->qq = this;
     setAcceptDrops(true);

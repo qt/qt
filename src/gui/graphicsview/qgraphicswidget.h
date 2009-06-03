@@ -66,9 +66,10 @@ class QStyleOption;
 
 class QGraphicsWidgetPrivate;
 
-class Q_GUI_EXPORT QGraphicsWidget : public QObject, public QGraphicsItem, public QGraphicsLayoutItem
+class Q_GUI_EXPORT QGraphicsWidget : public QGraphicsObject, public QGraphicsLayoutItem
 {
     Q_OBJECT
+    Q_INTERFACES(QGraphicsLayoutItem)
     Q_PROPERTY(QPalette palette READ palette WRITE setPalette)
     Q_PROPERTY(QFont font READ font WRITE setFont)
     Q_PROPERTY(Qt::LayoutDirection layoutDirection READ layoutDirection WRITE setLayoutDirection RESET unsetLayoutDirection)

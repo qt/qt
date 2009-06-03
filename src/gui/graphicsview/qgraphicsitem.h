@@ -832,10 +832,20 @@ private:
 inline void QGraphicsPixmapItem::setOffset(qreal ax, qreal ay)
 { setOffset(QPointF(ax, ay)); }
 
+class Q_GUI_EXPORT QGraphicsObject : public QObject, public QGraphicsItem
+{
+    Q_OBJECT
+    Q_INTERFACES(QGraphicsItem)
+public:
+    QGraphicsObject(QGraphicsItem *parent = 0);
+protected:
+    QGraphicsObject(QGraphicsItemPrivate &dd, QGraphicsItem *parent, QGraphicsScene *scene);
+};
+
 class QGraphicsTextItemPrivate;
 class QTextDocument;
 class QTextCursor;
-class Q_GUI_EXPORT QGraphicsTextItem : public QObject, public QGraphicsItem
+class Q_GUI_EXPORT QGraphicsTextItem : public QGraphicsObject
 {
     Q_OBJECT
     QDOC_PROPERTY(bool openExternalLinks READ openExternalLinks WRITE setOpenExternalLinks)
