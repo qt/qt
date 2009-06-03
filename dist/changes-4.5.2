@@ -127,6 +127,22 @@ Third party components
     * [252311] "font-family:" now handle fallback font specified with a comas
       separated list.
 
+- QFile and QTemporaryFile
+    * [165920] QFile::copy leaves the source file open after the file has been copied
+    * [191467] & [252293] QFile::copy of resource files to the filesystem fails on Windows
+    * [197857] QFile::copy of resource files leaves temporary files on filesystem
+    * [248223] QTemporaryFile: Access denied error when (re-)opening through QFile interface
+    * [252659] QTemporaryFile::rename may leave source file behind
+
+- QByteArrayMatcher
+    * [251958] Assignment operator and copy constructor miss data
+
+- QCompleter
+    * [253125] QCompleter doesn't expand entries with UnfilteredPopupCompletion
+
+- QPrintDialog
+    * [253135] Crash in QPrintDialog when editing output filename
+
 ****************************************************************************
 *                          Database Drivers                                *
 ****************************************************************************
@@ -180,6 +196,7 @@ Qt for Windows CE
 ****************************************************************************
 
 - Build System
+    * [253053] Linker in macx-g++42 spec is gcc instead of gcc-4.2
 
 - Assistant
 
