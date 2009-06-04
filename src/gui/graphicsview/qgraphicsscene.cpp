@@ -697,6 +697,15 @@ void QGraphicsScenePrivate::_q_processDirtyItems()
         // changed signal is emitted, so we emit it now.
         _q_emitUpdated();
     }
+
+    // Immediately dispatch all pending update requests on the views.
+    for (int i = 0; i < views.size(); ++i) {
+        QWidget *viewport = views.at(i)->d_func()->viewport;
+        if (qt_widget_private(viewport)->paintOnScreen())
+            QCoreApplication::sendPostedEvents(viewport, QEvent::UpdateRequest);
+        else
+            QCoreApplication::sendPostedEvents(viewport->window(), QEvent::UpdateRequest);
+    }
 }
 
 /*!

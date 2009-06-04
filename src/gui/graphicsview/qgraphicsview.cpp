@@ -814,11 +814,11 @@ void QGraphicsViewPrivate::processPendingUpdates()
 
     if (viewportUpdateMode == QGraphicsView::BoundingRectViewportUpdate) {
         if (optimizationFlags & QGraphicsView::DontAdjustForAntialiasing)
-            viewport->repaint(dirtyBoundingRect);
+            viewport->update(dirtyBoundingRect);
         else
-            viewport->repaint(dirtyBoundingRect.adjusted(-2, -2, 2, 2));
+            viewport->update(dirtyBoundingRect.adjusted(-2, -2, 2, 2));
     } else {
-        viewport->repaint(dirtyRegion); // Already adjusted in updateRect/Region.
+        viewport->update(dirtyRegion); // Already adjusted in updateRect/Region.
     }
 
     dirtyBoundingRect = QRect();
