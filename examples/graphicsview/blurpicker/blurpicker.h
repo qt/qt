@@ -54,7 +54,6 @@ class BlurPicker: public QGraphicsView
 
 public:
     BlurPicker(QWidget *parent = 0);
-    ~BlurPicker();
 
 protected:
     void keyPressEvent(QKeyEvent *event);

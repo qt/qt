@@ -64,10 +64,6 @@ BlurPicker::BlurPicker(QWidget *parent): QGraphicsView(parent), m_index(0.0)
     setFrameStyle(QFrame::NoFrame);
 }
 
-BlurPicker::~BlurPicker()
-{
-}
-
 void BlurPicker::updateIconPositions()
 {
     m_index = m_timeLine.currentFrame() / 1000.0;
@@ -84,16 +80,6 @@ void BlurPicker::updateIconPositions()
         icon->setPos(pos);
         baseline = qMax(baseline, ys);
     }
-
-#if 0
-    // seems broken
-    for (int i = 0; i < m_icons.count(); ++i) {
-        QGraphicsItem *icon = m_icons[i];
-        qreal y = baseline - icon->pos().y();
-        qreal factor = qBound(0.0, 1 - y / 600, 1.0);
-        icon->setTransform(QTransform().scale(factor, factor), false);
-    }
-#endif
 
     m_blurEffect->setBaseLine(baseline);
     m_scene.update();
