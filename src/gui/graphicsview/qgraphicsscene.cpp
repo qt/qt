@@ -5152,20 +5152,6 @@ void QGraphicsScenePrivate::drawSubtreeRecursive(QGraphicsItem *item, QPainter *
          }
     }
 
-    bool childClip = (item && (item->d_ptr->flags & QGraphicsItem::ItemClipsChildrenToShape));
-    bool dontDrawItem = !item || viewBoundingRect.isEmpty();
-    bool dontDrawChildren = item && dontDrawItem && childClip;
-    childClip &= !dontDrawChildren & !children.isEmpty();
-    if (item && item->d_ptr->flags & QGraphicsItem::ItemHasNoContents)
-        dontDrawItem = true;
-
-    // Clip children.
-    if (childClip) {
-        painter->save();
-        painter->setWorldTransform(transformTmp);
-        painter->setClipPath(item->shape(), Qt::IntersectClip);
-    }
-
     // Find and sort children.
     QList<QGraphicsItem *> tmp;
     QList<QGraphicsItem *> *children = 0;
@@ -5191,6 +5177,20 @@ void QGraphicsScenePrivate::drawSubtreeRecursive(QGraphicsItem *item, QPainter *
 
         tmp = tli;
         children = &tmp;
+    }
+
+    bool childClip = (item && (item->d_ptr->flags & QGraphicsItem::ItemClipsChildrenToShape));
+    bool dontDrawItem = !item || viewBoundingRect.isEmpty();
+    bool dontDrawChildren = item && dontDrawItem && childClip;
+    childClip &= !dontDrawChildren & !children->isEmpty();
+    if (item && item->d_ptr->flags & QGraphicsItem::ItemHasNoContents)
+        dontDrawItem = true;
+
+    // Clip children.
+    if (childClip) {
+        painter->save();
+        painter->setWorldTransform(transformTmp);
+        painter->setClipPath(item->shape(), Qt::IntersectClip);
     }
     
     if (!dontDrawChildren) {
