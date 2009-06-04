@@ -1442,6 +1442,14 @@ void QGraphicsItem::setFlags(GraphicsItemFlags flags)
         d_ptr->updateAncestorFlag(ItemIgnoresTransformations);
     }
 
+    if ((flags & ItemStacksBehindParent) != (oldFlags & ItemStacksBehindParent)) {
+        // Ensure child item sorting is up to date when toggling this flag.
+        if (d_ptr->parent)
+            d_ptr->parent->d_ptr->needSortChildren = 1;
+        else if (d_ptr->scene)
+            d_ptr->scene->d_func()->needSortTopLevelItems = 1;
+    }
+
     if (d_ptr->scene) {
         d_ptr->scene->d_func()->markDirty(this, QRectF(),
                                           /*invalidateChildren=*/true,
@@ -3230,7 +3238,10 @@ void QGraphicsItem::setZValue(qreal z)
             return;
     }
     d_ptr->z = newZ;
-    d_ptr->needSortChildren = 1;
+    if (d_ptr->parent)
+        d_ptr->parent->d_ptr->needSortChildren = 1;
+    else if (d_ptr->scene)
+        d_ptr->scene->d_func()->needSortTopLevelItems = 1;
 
     if (d_ptr->scene) {
         d_ptr->scene->d_func()->markDirty(this, QRectF(), /*invalidateChildren=*/true);
