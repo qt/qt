@@ -297,13 +297,9 @@ static inline bool QRectF_intersects(const QRectF &s, const QRectF &r)
 static inline void _q_adjustRect(QRectF *rect)
 {
     Q_ASSERT(rect);
-    bool nullWidth = !rect->width();
-    bool nullHeight = !rect->height();
-    if (nullWidth && nullHeight)
-        return;
-    if (nullWidth)
+    if (!rect->width())
         rect->adjust(-0.00001, 0, 0.00001, 0);
-    else if (nullHeight)
+    if (!rect->height())
         rect->adjust(0, -0.00001, 0, 0.00001);
 }
 
@@ -1413,33 +1409,26 @@ void QGraphicsScenePrivate::recursive_items_helper(QGraphicsItem *item, QRectF r
     if (item) {
         item->d_ptr->combineTransformFromParent(&transform, &viewTransform);
 
+        // ### This does not take the clip into account.
         QRectF brect = item->boundingRect();
-        if (!brect.size().isNull()) {
-            // ### This does not take the clip into account.
-            _q_adjustRect(&brect);
+        _q_adjustRect(&brect);
 
-            keep = true;
-            if (mode == Qt::ContainsItemShape || mode == Qt::ContainsItemBoundingRect)
-                keep = rect.contains(transform.mapRect(brect));
-            else
-                keep = rect.intersects(transform.mapRect(brect));
+        keep = true;
+        if (mode == Qt::ContainsItemShape || mode == Qt::ContainsItemBoundingRect)
+            keep = rect.contains(transform.mapRect(brect));
+        else
+            keep = rect.intersects(transform.mapRect(brect));
 
-            if (keep && (mode == Qt::ContainsItemShape || mode == Qt::IntersectsItemShape)) {
-                QPainterPath rectPath;
-                rectPath.addRect(rect);
-                keep = item->collidesWithPath(transform.inverted().map(rectPath));
-            }
+        if (keep && (mode == Qt::ContainsItemShape || mode == Qt::IntersectsItemShape)) {
+            QPainterPath rectPath;
+            rectPath.addRect(rect);
+            keep = item->collidesWithPath(transform.inverted().map(rectPath));
         }
     }
 
     bool childClip = (item && (item->d_ptr->flags & QGraphicsItem::ItemClipsChildrenToShape));
     bool dontProcessItem = !item || !keep;
     bool dontProcessChildren = item && dontProcessItem && childClip;
-    childClip &= !dontProcessChildren & !children.isEmpty();
-
-    // Clip.
-    if (childClip)
-        rect &= transform.map(item->shape()).controlPointRect();
 
     // Find and sort children.
     QList<QGraphicsItem *> &children = item ? item->d_ptr->children : const_cast<QGraphicsScenePrivate *>(this)->topLevelItems;
@@ -1452,6 +1441,12 @@ void QGraphicsScenePrivate::recursive_items_helper(QGraphicsItem *item, QRectF r
             qStableSort(children.begin(), children.end(), qt_notclosestLeaf);
         }
     }
+
+    childClip &= !dontProcessChildren & !children.isEmpty();
+
+    // Clip.
+    if (childClip)
+        rect &= transform.map(item->shape()).controlPointRect();
 
     // Process children behind
     int i = 0;
@@ -5142,14 +5137,12 @@ void QGraphicsScenePrivate::drawSubtreeRecursive(QGraphicsItem *item, QPainter *
         }
         
         QRectF brect = item->boundingRect();
-        if (!brect.size().isNull()) {
-            // ### This does not take the clip into account.
-            _q_adjustRect(&brect);
-            viewBoundingRect = transformTmp.mapRect(brect).toRect().adjusted(-1, -1, 1, 1);
-            item->d_ptr->paintedViewBoundingRects.insert(widget, viewBoundingRect);
-            if (exposedRegion)
-                viewBoundingRect &= exposedRegion->boundingRect();
-         }
+        // ### This does not take the clip into account.
+        _q_adjustRect(&brect);
+        viewBoundingRect = transformTmp.mapRect(brect).toRect().adjusted(-1, -1, 1, 1);
+        item->d_ptr->paintedViewBoundingRects.insert(widget, viewBoundingRect);
+        if (exposedRegion)
+            viewBoundingRect &= exposedRegion->boundingRect();
     }
 
     // Find and sort children.
