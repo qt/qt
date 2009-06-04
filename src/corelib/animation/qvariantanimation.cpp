@@ -39,8 +39,6 @@
 **
 ****************************************************************************/
 
-#ifndef QT_NO_ANIMATION
-
 #include "qvariantanimation.h"
 #include "qvariantanimation_p.h"
 
@@ -48,6 +46,8 @@
 #include <QtCore/qline.h>
 #include <QtCore/qmutex.h>
 #include <private/qmutexpool_p.h>
+
+#ifndef QT_NO_ANIMATION
 
 QT_BEGIN_NAMESPACE
 
