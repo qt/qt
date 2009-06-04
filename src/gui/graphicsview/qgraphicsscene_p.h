@@ -71,6 +71,8 @@
 #include <QtGui/qstyle.h>
 #include <QtGui/qstyleoption.h>
 
+static const int QGRAPHICSSCENE_INDEXTIMER_TIMEOUT = 2000;
+
 QT_BEGIN_NAMESPACE
 
 class QGraphicsView;
@@ -138,7 +140,7 @@ public:
 
     int indexTimerId;
     bool restartIndexTimer;
-    void startIndexTimer();
+    void startIndexTimer(int interval = QGRAPHICSSCENE_INDEXTIMER_TIMEOUT);
 
     bool stickyFocus;
     bool hasFocus;
@@ -270,6 +272,7 @@ public:
         Q_ASSERT(item);
         item->d_ptr->dirty = 0;
         item->d_ptr->paintedViewBoundingRectsNeedRepaint = 0;
+        item->d_ptr->geometryChanged = 0;
         item->d_ptr->dirtyChildren = 0;
         item->d_ptr->needsRepaint = QRectF();
         item->d_ptr->allChildrenDirty = 0;

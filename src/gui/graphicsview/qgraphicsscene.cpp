@@ -39,7 +39,6 @@
 **
 ****************************************************************************/
 
-static const int QGRAPHICSSCENE_INDEXTIMER_TIMEOUT = 2000;
 
 /*!
     \class QGraphicsScene
@@ -682,7 +681,11 @@ void QGraphicsScenePrivate::_q_processDirtyItems()
     if (updateAll)
         return;
 
+    const QRectF oldGrowingItemsBoundingRect = growingItemsBoundingRect;
     processDirtyItemsRecursive(0);
+    if (!hasSceneRect && oldGrowingItemsBoundingRect != growingItemsBoundingRect)
+        emit q_func()->sceneRectChanged(growingItemsBoundingRect);
+
     for (int i = 0; i < views.size(); ++i)
         views.at(i)->d_func()->processPendingUpdates();
 }
@@ -808,13 +811,13 @@ void QGraphicsScenePrivate::purgeRemovedItems()
 
     Starts or restarts the timer used for reindexing unindexed items.
 */
-void QGraphicsScenePrivate::startIndexTimer()
+void QGraphicsScenePrivate::startIndexTimer(int interval)
 {
     Q_Q(QGraphicsScene);
     if (indexTimerId) {
         restartIndexTimer = true;
     } else {
-        indexTimerId = q->startTimer(QGRAPHICSSCENE_INDEXTIMER_TIMEOUT);
+        indexTimerId = q->startTimer(interval);
     }
 }
 
@@ -2982,7 +2985,7 @@ void QGraphicsScene::addItem(QGraphicsItem *item)
     // a temporary list and schedule an indexing for later.
     d->unindexedItems << item;
     item->d_func()->index = -1;
-    d->startIndexTimer();
+    d->startIndexTimer(0);
 
     // Add to list of toplevels if this item is a toplevel.
     if (!item->d_ptr->parent)
@@ -5315,16 +5318,27 @@ void QGraphicsScenePrivate::processDirtyItemsRecursive(QGraphicsItem *item, bool
     // Process item.
     if (item && (item->d_ptr->dirty || item->d_ptr->paintedViewBoundingRectsNeedRepaint)) {
         const bool useCompatUpdate = views.isEmpty() || (connectedSignals & changedSignalMask);
-        if (useCompatUpdate && !item->d_ptr->itemIsUntransformable()
-            && qFuzzyIsNull(item->boundingRegionGranularity())) {
+        const bool untransformableItem = item->d_ptr->itemIsUntransformable();
+        const QRectF itemBoundingRect = item->boundingRect();
+
+        if (item->d_ptr->geometryChanged) {
+            // Update growingItemsBoundingRect.
+            if (!hasSceneRect) {
+                QRectF itemSceneBoundingRect = item->d_ptr->sceneTransform.mapRect(itemBoundingRect);
+                _q_adjustRect(&itemSceneBoundingRect);
+                growingItemsBoundingRect |= itemSceneBoundingRect;
+            }
+            item->d_ptr->geometryChanged = 0;
+        }
+
+        if (useCompatUpdate && !untransformableItem && qFuzzyIsNull(item->boundingRegionGranularity())) {
             // This block of code is kept for compatibility. Since 4.5, by default
             // QGraphicsView does not connect the signal and we use the below
             // method of delivering updates.
-            q->update(item->sceneBoundingRect());
+            q->update(item->d_ptr->sceneTransform.mapRect(itemBoundingRect));
         } else {
             QRectF dirtyRect;
             bool uninitializedDirtyRect = true;
-            const bool untransformableItem = item->d_ptr->itemIsUntransformable();
 
             for (int j = 0; j < views.size(); ++j) {
                 QGraphicsView *view = views.at(j);
@@ -5349,7 +5363,8 @@ void QGraphicsScenePrivate::processDirtyItemsRecursive(QGraphicsItem *item, bool
                     continue;
 
                 if (uninitializedDirtyRect) {
-                    dirtyRect = adjustedItemBoundingRect(item);
+                    dirtyRect = itemBoundingRect;
+                    _q_adjustRect(&dirtyRect);
                     if (!item->d_ptr->fullUpdatePending) {
                         _q_adjustRect(&item->d_ptr->needsRepaint);
                         dirtyRect &= item->d_ptr->needsRepaint;

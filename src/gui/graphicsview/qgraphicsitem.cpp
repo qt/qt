@@ -5977,6 +5977,7 @@ void QGraphicsItem::removeFromIndex()
 void QGraphicsItem::prepareGeometryChange()
 {
     if (d_ptr->scene) {
+        d_ptr->geometryChanged = 1;
         d_ptr->paintedViewBoundingRectsNeedRepaint = 1;
         d_ptr->scene->d_func()->markDirty(this, QRectF(),
                                           /*invalidateChildren=*/true,

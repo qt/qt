@@ -274,7 +274,9 @@ void tst_QGraphicsScene::sceneRect()
     QCOMPARE(scene.sceneRect(), QRectF());
 
     QGraphicsItem *item = scene.addRect(QRectF(0, 0, 10, 10));
+    qApp->processEvents();
     item->setPos(-5, -5);
+    qApp->processEvents();
 
     QCOMPARE(scene.itemAt(0, 0), item);
     QCOMPARE(scene.itemAt(10, 10), (QGraphicsItem *)0);

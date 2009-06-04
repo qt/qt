@@ -148,6 +148,7 @@ public:
         paintedViewBoundingRectsNeedRepaint(0),
         dirtySceneTransform(1),
         itemChangesEnabled(0xffff),
+        geometryChanged(0),
         globalStackingOrder(-1),
         q_ptr(0)
     {
@@ -399,7 +400,8 @@ public:
     quint32 paintedViewBoundingRectsNeedRepaint : 1;
     quint32 dirtySceneTransform  : 1;
     quint32 itemChangesEnabled : 16;
-    quint32 padding : 3; // feel free to use
+    quint32 geometryChanged : 1;
+    quint32 padding : 2; // feel free to use
 
     // Optional stacking order
     int globalStackingOrder;
