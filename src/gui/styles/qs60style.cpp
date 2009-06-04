@@ -2012,7 +2012,6 @@ void QS60Style::drawPrimitive(PrimitiveElement element, const QStyleOption *opti
 #endif //QT_NO_SPINBOX
     case PE_FrameFocusRect:
 // Calendar widget and combox both do not use styled itemDelegate
-#if not defined (QT_NO_CALENDARWIDGET) && not defined (QT_NO_COMBOBOX)
         if (!(widget && qobject_cast<const QCalendarWidget *>(widget->parent())) ||
                         qobject_cast<const QComboBoxListView *>(widget)) {
             // no focus selection for touch
@@ -2041,7 +2040,6 @@ void QS60Style::drawPrimitive(PrimitiveElement element, const QStyleOption *opti
                 painter->restore();
             }
         }
-#endif //!QT_NO_CALENDARWIDGET && !QT_NO_COMBOBOX
         break;
     case PE_Widget:
         if (QS60StylePrivate::drawsOwnThemeBackground(widget)
