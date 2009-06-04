@@ -69,7 +69,7 @@ class QFxRectPrivate : public QFxItemPrivate
 
 public:
     QFxRectPrivate()
-      : gradient(0), pen(0), radius(0)
+      : rectTexture(0), gradient(0), pen(0), radius(0)
     {
     }
 
@@ -83,7 +83,7 @@ public:
     }
 
 #if defined(QFX_RENDER_OPENGL)
-    GLTexture rectTexture;
+    QSimpleCanvasItem::CachedTexture *rectTexture;
 #endif
     QColor getColor();
     QColor color;

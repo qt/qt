@@ -257,7 +257,10 @@ void QFxRect::doUpdate()
 #endif
 #if defined(QFX_RENDER_OPENGL)
     Q_D(QFxRect);
-    d->rectTexture.clear();
+    if (d->rectTexture) {
+        d->rectTexture->release();
+        d->rectTexture = 0;
+    }
 #endif
     const int pw = d->pen && d->pen->isValid() ? d->pen->width() : 0;
     setPaintMargin((pw+1)/2);
@@ -361,7 +364,10 @@ void QFxRect::setRadius(qreal radius)
 #if defined(QFX_RENDER_QPAINTER)
     d->rectImage = QPixmap();
 #elif defined(QFX_RENDER_OPENGL)
-    d->rectTexture.clear();
+    if (d->rectTexture) {
+        d->rectTexture->release();
+        d->rectTexture = 0;
+    }
 #endif
     update();
 }
@@ -408,7 +414,10 @@ void QFxRect::setColor(const QColor &c)
     d->rectImage = QPixmap();
 #endif
 #if defined(QFX_RENDER_OPENGL)
-    d->rectTexture.clear();
+    if (d->rectTexture) {
+        d->rectTexture->release();
+        d->rectTexture = 0;
+    }
 #endif
     update();
 }
@@ -521,42 +530,55 @@ void QFxRect::generateBorderedRect()
 void QFxRect::generateRoundedRect()
 {
     Q_D(QFxRect);
-    if (d->rectTexture.isNull()) {
+    if (!d->rectTexture) {
         const int pw = d->pen && d->pen->isValid() ? d->pen->width() : 0;
-        QImage roundRect(d->radius*2 + 4 + pw*2, d->radius*2 + 4 + pw*2, QImage::Format_ARGB32_Premultiplied);
-        roundRect.fill(0);
-        QPainter p(&roundRect);
-        p.setRenderHint(QPainter::Antialiasing);
-        if (d->pen && d->pen->isValid()) {
-            QPen pn(QColor(pen()->color()), pen()->width());
-            p.setPen(pn);
-        } else {
-            p.setPen(Qt::NoPen);
+        QString key = QString("QFxRect://r_%1_%2_%3_%4").arg(pw).arg(d->radius).arg((d->pen && d->pen->isValid())?d->pen->color().name():QString()).arg(d->color.name());
+
+        d->rectTexture = cachedTexture(key);
+
+        if (!d->rectTexture) {
+            QPixmap roundRect(d->radius*2 + 4 + pw*2, d->radius*2 + 4 + pw*2);
+            roundRect.fill(Qt::transparent);
+            QPainter p(&roundRect);
+            p.setRenderHint(QPainter::Antialiasing);
+            if (d->pen && d->pen->isValid()) {
+                QPen pn(QColor(pen()->color()), pen()->width());
+                p.setPen(pn);
+            } else {
+                p.setPen(Qt::NoPen);
+            }
+            p.setBrush(d->color);
+            p.drawRoundedRect((pw+1)/2, (pw+1)/2, roundRect.width()-(pw+1)/2*2, roundRect.height()-(pw+1)/2*2, d->radius, d->radius);
+
+            d->rectTexture = cachedTexture(key, roundRect);
         }
-        p.setBrush(d->color);
-        p.drawRoundedRect((pw+1)/2, (pw+1)/2, roundRect.width()-(pw+1)/2*2, roundRect.height()-(pw+1)/2*2, d->radius, d->radius);
-        d->rectTexture.setImage(roundRect, GLTexture::PowerOfTwo);
     }
 }
 
 void QFxRect::generateBorderedRect()
 {
     Q_D(QFxRect);
-    if (d->rectTexture.isNull()) {
+    if (!d->rectTexture) {
         const int pw = d->pen && d->pen->isValid() ? d->pen->width() : 0;
-        QImage borderedRect(pw*2 + 4, pw*2 + 4, QImage::Format_ARGB32_Premultiplied);
-        borderedRect.fill(0);
-        QPainter p(&(borderedRect));
-        p.setRenderHint(QPainter::Antialiasing);
-        if (d->pen && d->pen->isValid()) {
-            QPen pn(QColor(pen()->color()), pen()->width());
-            p.setPen(pn);
-        } else {
-            p.setPen(Qt::NoPen);
+        QString key = QString("QFxRect://b_%1_%2_%3_%4").arg(pw).arg(d->radius).arg((d->pen && d->pen->isValid())?d->pen->color().name():QString()).arg(d->color.name());
+
+        d->rectTexture = cachedTexture(key);
+
+        if (!d->rectTexture) {
+            QPixmap borderedRect(pw*2 + 4, pw*2 + 4);
+            borderedRect.fill(Qt::transparent);
+            QPainter p(&(borderedRect));
+            p.setRenderHint(QPainter::Antialiasing);
+            if (d->pen && d->pen->isValid()) {
+                QPen pn(QColor(pen()->color()), pen()->width());
+                p.setPen(pn);
+            } else {
+                p.setPen(Qt::NoPen);
+            }
+            p.setBrush(d->color);
+            p.drawRect(qreal(pw+1)/2, qreal(pw+1)/2, borderedRect.width()-(pw+1)/2*2, borderedRect.height()-(pw+1)/2*2);
+            d->rectTexture = cachedTexture(key, borderedRect);
         }
-        p.setBrush(d->color);
-        p.drawRect(qreal(pw+1)/2, qreal(pw+1)/2, borderedRect.width()-(pw+1)/2*2, borderedRect.height()-(pw+1)/2*2);
-        d->rectTexture.setImage(borderedRect, GLTexture::PowerOfTwo);
     }
 }
 #endif
@@ -721,8 +743,8 @@ void QFxRect::paintGLContents(GLPainter &p)
 
         QGLShaderProgram *shader = p.useTextureShader();
 
-        float texWidth = d->rectTexture.width();
-        float texHeight = d->rectTexture.height();
+        float texWidth = d->rectTexture->width();
+        float texHeight = d->rectTexture->height();
         if (!texWidth || !texHeight)
             return;
 
@@ -756,10 +778,10 @@ void QFxRect::paintGLContents(GLPainter &p)
         if (offset==1)
             texleft=texright=textop=texbottom=0.5;
 
-        texleft *= d->rectTexture.glWidth();
-        texright *= d->rectTexture.glWidth();
-        textop *= d->rectTexture.glHeight();
-        texbottom *= d->rectTexture.glHeight();
+        texleft *= d->rectTexture->glWidth();
+        texright *= d->rectTexture->glWidth();
+        textop *= d->rectTexture->glHeight();
+        texbottom *= d->rectTexture->glHeight();
 
         float vert1[] = { -pw/2, -pw/2, 
                           -pw/2, imgtop,
@@ -852,35 +874,35 @@ void QFxRect::paintGLContents(GLPainter &p)
 
                          texright, 0,
                          texright, textop,
-                         d->rectTexture.glWidth(), 0,
+                         d->rectTexture->glWidth(), 0,
 
                          texright, textop,
-                         d->rectTexture.glWidth(), 0,
-                         d->rectTexture.glWidth(), textop,
+                         d->rectTexture->glWidth(), 0,
+                         d->rectTexture->glWidth(), textop,
 
-                         0, d->rectTexture.glHeight(),
+                         0, d->rectTexture->glHeight(),
                          0, texbottom,
-                         texleft, d->rectTexture.glHeight(),
+                         texleft, d->rectTexture->glHeight(),
 
                          0, texbottom,
-                         texleft, d->rectTexture.glHeight(),
+                         texleft, d->rectTexture->glHeight(),
                          texleft, texbottom,
 
-                         texleft, d->rectTexture.glHeight(),
+                         texleft, d->rectTexture->glHeight(),
                          texleft, texbottom,
-                         texright, d->rectTexture.glHeight(),
+                         texright, d->rectTexture->glHeight(),
 
                          texleft, texbottom,
-                         texright, d->rectTexture.glHeight(),
+                         texright, d->rectTexture->glHeight(),
                          texright, texbottom,
 
-                         texright, d->rectTexture.glHeight(),
+                         texright, d->rectTexture->glHeight(),
                          texright, texbottom,
-                         d->rectTexture.glWidth(), d->rectTexture.glHeight(),
+                         d->rectTexture->glWidth(), d->rectTexture->glHeight(),
 
                          texright, texbottom,
-                         d->rectTexture.glWidth(), d->rectTexture.glHeight(),
-                         d->rectTexture.glWidth(), texbottom,
+                         d->rectTexture->glWidth(), d->rectTexture->glHeight(),
+                         d->rectTexture->glWidth(), texbottom,
 
                          0, textop,
                          0, texbottom,
@@ -900,15 +922,15 @@ void QFxRect::paintGLContents(GLPainter &p)
 
                          texright, textop,
                          texright, texbottom,
-                         d->rectTexture.glWidth(), textop,
+                         d->rectTexture->glWidth(), textop,
 
                          texright, texbottom,
-                         d->rectTexture.glWidth(), textop,
-                         d->rectTexture.glWidth(), texbottom };
+                         d->rectTexture->glWidth(), textop,
+                         d->rectTexture->glWidth(), texbottom };
 
 
 
-        glBindTexture(GL_TEXTURE_2D, d->rectTexture.texture());
+        glBindTexture(GL_TEXTURE_2D, d->rectTexture->texture());
 
         shader->setAttributeArray(SingleTextureShader::Vertices, vert1, 2);
         shader->setAttributeArray(SingleTextureShader::TextureCoords, tex1, 2);

@@ -294,7 +294,7 @@ void QSimpleCanvasItemPrivate::setupChildState(QSimpleCanvasItem *child)
     } 
 }
 
-//#define QSIMPLECANVAS_DISABLE_TREE_CLIPPING
+#define QSIMPLECANVAS_DISABLE_TREE_CLIPPING
 QRectF QSimpleCanvasItemPrivate::setupPainting(int version, int &z, QSimpleCanvasItem **opaqueList)
 {
     static QRectF scene(-1., -1., 2., 2.);
@@ -593,6 +593,88 @@ void QSimpleCanvasItem::GLPainter::fillRect(const QRectF &rect,
 
     if (color.alpha() == 0xFF)
         glEnable(GL_BLEND);
+}
+
+void QSimpleCanvasItem::CachedTexture::addRef()
+{
+    ++r;
+}
+
+void QSimpleCanvasItem::CachedTexture::release()
+{
+    Q_ASSERT(r > 0);
+    --r;
+
+    if (r == 0) {
+        if (!s.isEmpty())
+            d->cachedTextures.remove(s);
+        delete this;
+    }
+}
+
+int QSimpleCanvasItem::CachedTexture::pixmapWidth() const
+{
+    return w;
+}
+
+int QSimpleCanvasItem::CachedTexture::pixmapHeight() const
+{
+    return h;
+}
+
+QSimpleCanvasItem::CachedTexture::CachedTexture()
+: r(0), w(0), h(0)
+{
+}
+
+QSimpleCanvasItem::CachedTexture *
+QSimpleCanvasItem::cachedTexture(const QString &key)
+{
+    Q_D(QSimpleCanvasItem); 
+    if (!d->canvas || key.isEmpty())
+        return 0;
+
+    QSimpleCanvasPrivate *canvas = d->canvas->d;
+    QHash<QString, QSimpleCanvasItem::CachedTexture *>::ConstIterator iter = 
+        canvas->cachedTextures.find(key);
+    if (iter != canvas->cachedTextures.end()) {
+        (*iter)->addRef();
+        return (*iter);
+    } else {
+        return 0;
+    }
+}
+
+QSimpleCanvasItem::CachedTexture *
+QSimpleCanvasItem::cachedTexture(const QString &key, const QPixmap &pix)
+{
+    Q_D(QSimpleCanvasItem); 
+    if (!d->canvas)
+        return 0;
+
+    QSimpleCanvasPrivate *canvas = d->canvas->d;
+    QHash<QString, QSimpleCanvasItem::CachedTexture *>::ConstIterator iter = 
+        canvas->cachedTextures.end();
+    if (!key.isEmpty())
+        iter = canvas->cachedTextures.find(key);
+
+    if (iter != canvas->cachedTextures.end()) {
+        (*iter)->addRef();
+        return (*iter);
+    } else {
+        CachedTexture *rv = new CachedTexture;
+        rv->s = key;
+        rv->d = canvas;
+        rv->w = pix.width();
+        rv->h = pix.height();
+        rv->setImage(pix.toImage(), GLTexture::PowerOfTwo);
+        rv->setHorizontalWrap(GLTexture::Repeat);
+        rv->setVerticalWrap(GLTexture::Repeat);
+        rv->addRef();
+        if (!key.isEmpty())
+            canvas->cachedTextures.insert(key, rv);
+        return rv;
+    }
 }
 
 QT_END_NAMESPACE

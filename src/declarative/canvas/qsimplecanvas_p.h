@@ -43,6 +43,7 @@
 #define QSIMPLECANVAS_P_H
 
 #include "qsimplecanvas.h"
+#include "qsimplecanvasitem.h"
 #include <qstack.h>
 #include <qdatetime.h>
 
@@ -186,6 +187,8 @@ public:
 #endif
     }
     mutable GLBasicShaders *basicShadersInstance;
+
+    QHash<QString, QSimpleCanvasItem::CachedTexture *> cachedTextures;
 
     QList<QGLFramebufferObject *> frameBuffers;
     QGLFramebufferObject *acquire(int, int);

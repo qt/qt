@@ -74,7 +74,7 @@ public:
     QFxImagePrivate()
       : scaleGrid(0), tiled(false), smooth(false), opaque(false),
 #if defined(QFX_RENDER_OPENGL)
-        texDirty(true),
+        texDirty(true), tex(0),
 #endif
         status(QFxImage::Idle), sciReply(0), progress(0.0)
     {
@@ -102,7 +102,7 @@ public:
 #if defined(QFX_RENDER_OPENGL)
     bool texDirty : 1;
     void checkDirty();
-    GLTexture tex;
+    QSimpleCanvasItem::CachedTexture *tex;
 #endif
 
     QFxImage::Status status;

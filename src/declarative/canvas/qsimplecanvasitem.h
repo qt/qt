@@ -45,6 +45,7 @@
 #include <QtDeclarative/qfxglobal.h>
 #include <QtDeclarative/qmldebuggerstatus.h>
 #include <QtDeclarative/qsimplecanvas.h>
+#include <QtDeclarative/gltexture.h>
 #include <QtCore/qobject.h>
 #include <QtGui/qgraphicsitem.h>
 
@@ -236,6 +237,28 @@ public:
     static QSimpleCanvasItem *findNextFocus(QSimpleCanvasItem *item);
 
     GLBasicShaders *basicShaders() const;
+
+#if defined(QFX_RENDER_OPENGL)
+    class CachedTexture : public GLTexture 
+    {
+    public:
+        void addRef();
+        void release();
+
+        int pixmapWidth() const;
+        int pixmapHeight() const;
+
+    private:
+        CachedTexture();
+        friend class QSimpleCanvasItem;
+        QSimpleCanvasPrivate *d;
+        QString s;
+        int r, w, h;
+    };
+
+    CachedTexture *cachedTexture(const QString &);
+    CachedTexture *cachedTexture(const QString &, const QPixmap &);
+#endif
   
     static QPixmap string(const QString &, const QColor & = Qt::black, const QFont & = QFont());
 
