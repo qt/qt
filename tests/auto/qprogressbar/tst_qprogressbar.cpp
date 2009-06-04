@@ -63,6 +63,7 @@ private slots:
     void setValueRepaint();
     void sizeHint();
 
+    void task245201_testChangeStyleAndDelete_data();
     void task245201_testChangeStyleAndDelete();
 };
 
@@ -224,15 +225,30 @@ void tst_QProgressBar::sizeHint()
     QCOMPARE(barSize.height(), size.height());
 }
 
+void tst_QProgressBar::task245201_testChangeStyleAndDelete_data()
+{
+    QTest::addColumn<QString>("style1_str");
+    QTest::addColumn<QString>("style2_str");
+
+    QTest::newRow("plastique-windows") << QString::fromLatin1("plastique") << QString::fromLatin1("windows");
+    QTest::newRow("mlotif-windows") << QString::fromLatin1("motif") << QString::fromLatin1("windows");
+    QTest::newRow("cleanlooks-cde") << QString::fromLatin1("cleanlooks") << QString::fromLatin1("cde");
+    QTest::newRow("gtk-plastique") << QString::fromLatin1("gtk") << QString::fromLatin1("plastique");
+}
+
 void tst_QProgressBar::task245201_testChangeStyleAndDelete()
 {
+    QFETCH(QString, style1_str);
+    QFETCH(QString, style2_str);
+
     QProgressBar *bar = new QProgressBar;
 
-    QStyle *style = QStyleFactory::create("plastique");
+    QStyle *style = QStyleFactory::create(style1_str);
     bar->setStyle(style);
     bar->show();
-    QStyle *style2 = QStyleFactory::create("windows");
+    QStyle *style2 = QStyleFactory::create(style2_str);
     bar->setStyle(style2);
+    QTest::qWait(10);
 
     delete bar;
     QTest::qWait(100); //should not crash
