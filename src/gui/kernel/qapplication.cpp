@@ -838,9 +838,11 @@ void QApplicationPrivate::initialize()
     // trigger registering of QVariant's GUI types
     extern int qRegisterGuiVariant();
     qRegisterGuiVariant();
+#ifndef QT_NO_STATEMACHINE
     // trigger registering of QStateMachine's GUI types
     extern int qRegisterGuiStateMachine();
     qRegisterGuiStateMachine();
+#endif
 
     is_app_running = true; // no longer starting up
 
@@ -1062,9 +1064,11 @@ QApplication::~QApplication()
     QApplicationPrivate::fade_tooltip = false;
     QApplicationPrivate::widgetCount = false;
 
+#ifndef QT_NO_STATEMACHINE
     // trigger unregistering of QStateMachine's GUI types
     extern int qUnregisterGuiStateMachine();
     qUnregisterGuiStateMachine();
+#endif
     // trigger unregistering of QVariant's GUI types
     extern int qUnregisterGuiVariant();
     qUnregisterGuiVariant();

@@ -176,7 +176,6 @@ public:
 static const int groupBoxBottomMargin    =  2;  // space below the groupbox
 static const int groupBoxTitleMargin     =  6;  // space between contents and title
 static const int groupBoxTopMargin       =  2;
-static bool UsePixmapCache = true;
 
 // Get size of the arrow controls in a GtkSpinButton
 static int spinboxArrowSize()

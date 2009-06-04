@@ -481,8 +481,7 @@ void QGLEngineShaderManager::compileNamedShader(QGLEngineShaderManager::ShaderNa
         return;
 
     QGLShader *newShader = new QGLShader(type, ctx, this);
-    newShader->setSourceCode(qglEngineShaderSourceCode[name]);
-    // newShader->compile(); ### does not exist?
+    newShader->compile(qglEngineShaderSourceCode[name]);
 
 #if defined(QT_DEBUG)
     // Name the shader for easier debugging

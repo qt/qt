@@ -58,7 +58,9 @@ if (m_failed || !(assertion)) {                                                 
     returnStatement;                                                                        \
 }
 
+QT_BEGIN_NAMESPACE
 class QMatrix4x4;
+QT_END_NAMESPACE
 
 class GLTexture
 {

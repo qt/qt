@@ -77,8 +77,6 @@
     \sa QAnimationGroup, QAbstractAnimation, {The Animation Framework}
 */
 
-#ifndef QT_NO_ANIMATION
-
 #include "qsequentialanimationgroup.h"
 #include "qsequentialanimationgroup_p.h"
 
@@ -86,9 +84,9 @@
 
 #include <QtCore/qdebug.h>
 
+#ifndef QT_NO_ANIMATION
+
 QT_BEGIN_NAMESPACE
-
-
 
 bool QSequentialAnimationGroupPrivate::atEnd() const
 {

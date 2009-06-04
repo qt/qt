@@ -42,9 +42,13 @@
 #ifndef QTESTELEMENT_H
 #define QTESTELEMENT_H
 
-#include "qtestcoreelement.h"
+#include <QtTest/qtestcoreelement.h>
+
+QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
+
+QT_MODULE(Test)
 
 class QTestElement: public QTestCoreElement<QTestElement>
 {
@@ -65,5 +69,7 @@ class QTestElement: public QTestCoreElement<QTestElement>
 };
 
 QT_END_NAMESPACE
+
+QT_END_HEADER
 
 #endif
