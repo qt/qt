@@ -89,6 +89,12 @@ static const char* const qglslPositionOnlyVertexShader = "\
             gl_Position = pmvMatrix * vertexCoordsArray;\
     }";
 
+static const char* const qglslUntransformedPositionVertexShader = "\
+    attribute highp vec4    vertexCoordsArray;\
+    void setPosition(void)\
+    {\
+            gl_Position = vertexCoordsArray;\
+    }";
 
 // Pattern Brush - This assumes the texture size is 8x8 and thus, the inverted size is 0.125
 static const char* const qglslPositionWithPatternBrushVertexShader = "\
@@ -354,7 +360,7 @@ static const char* const qglslMaskFragmentShader = "\
     lowp vec4 applyMask(lowp vec4 src) \
     {\
         lowp vec4 mask = texture2D(maskTexture, textureCoords); \
-        return src * mask.r; \
+        return src * mask.a; \
     }";
 
 /*
@@ -374,7 +380,6 @@ static const char* const qglslMaskFragmentShader = "\
         DifferenceCompositionModeFragmentShader,
         ExclusionCompositionModeFragmentShader,
 */
-
 
 QT_END_NAMESPACE
 

@@ -101,8 +101,9 @@ public:
     void applyInternalProperties() const;
     static bool applyBuddy(const QString &buddyName, BuddyMode applyMode, QLabel *label);
 
-    const QPointer<QWidget> &rootWidget() const;
-    void setRootWidget(const QPointer<QWidget> &w);
+    const QPointer<QWidget> &parentWidget() const;
+    bool parentWidgetIsSet() const;
+    void setParentWidget(const QPointer<QWidget> &w);
 
 #ifndef QT_FORMBUILDER_NO_SCRIPT
     QFormScriptRunner &formScriptRunner();
@@ -182,7 +183,8 @@ private:
     QResourceBuilder *m_resourceBuilder;
     QTextBuilder *m_textBuilder;
 
-    QPointer<QWidget> m_rootWidget;
+    QPointer<QWidget> m_parentWidget;
+    bool m_parentWidgetIsSet;
 };
 
 void uiLibWarning(const QString &message);

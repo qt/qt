@@ -179,7 +179,7 @@ print " Tests started: $totalStarted \n";
 print " Tests executed: $totalExecuted \n";
 print " Tests timed out: $totalTimedOut \n";
 
-# This procedure takes care of handling death children on due time
+# This procedure takes care of handling dead children on due time
 sub handleDeath {
     $buryChildren = 1;
 }

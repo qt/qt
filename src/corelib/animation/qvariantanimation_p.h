@@ -58,7 +58,7 @@
 #include <QtCore/qmetaobject.h>
 #include <QtCore/qvector.h>
 
-#include "qabstractanimation_p.h"
+#include "private/qabstractanimation_p.h"
 
 QT_BEGIN_NAMESPACE
 

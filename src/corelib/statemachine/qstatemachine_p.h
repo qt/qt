@@ -62,7 +62,7 @@
 #include <QtCore/qvector.h>
 
 #include "qstate.h"
-#include "qstate_p.h"
+#include "private/qstate_p.h"
 
 QT_BEGIN_NAMESPACE
 

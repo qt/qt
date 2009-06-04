@@ -216,6 +216,8 @@ public:
     inline QPainterState *state() { return static_cast<QPainterState *>(QPaintEngine::state); }
     inline const QPainterState *state() const { return static_cast<const QPainterState *>(QPaintEngine::state); }
 
+    virtual void sync() {}
+
     virtual QPixmapFilter *createPixmapFilter(int /*type*/) const { return 0; }
 
 protected:

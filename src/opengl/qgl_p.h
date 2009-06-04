@@ -440,7 +440,7 @@ inline bool qt_gl_preferGL2Engine()
     return true;
 #else
     return (QGLFormat::openGLVersionFlags() & QGLFormat::OpenGL_Version_2_0)
-           && !qgetenv("QT_GL_USE_OPENGL2ENGINE").isEmpty();
+           && qgetenv("QT_GL_USE_OPENGL1ENGINE").isEmpty();
 #endif
 }
 

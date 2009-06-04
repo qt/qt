@@ -44,6 +44,8 @@
 #include "graphicsscene.h"
 
 //Qt
+#include <QGraphicsView>
+
 #ifdef QT_NO_OPENGL
     #include <QtGui/QMenuBar>
     #include <QtGui/QLayout>

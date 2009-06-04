@@ -56,7 +56,7 @@
 #include "qpropertyanimation.h"
 #include <QtCore/qmetaobject.h>
 
-#include "qvariantanimation_p.h"
+#include "private/qvariantanimation_p.h"
 
 QT_BEGIN_NAMESPACE
 

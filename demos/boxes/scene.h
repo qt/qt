@@ -56,7 +56,10 @@
 
 #define PI 3.14159265358979
 
+QT_BEGIN_NAMESPACE
 class QMatrix4x4;
+QT_END_NAMESPACE
+
 class ParameterEdit : public QWidget
 {
 public:

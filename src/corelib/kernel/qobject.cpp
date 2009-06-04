@@ -2061,7 +2061,7 @@ void QObject::deleteLater()
 
     or
 
-    \tt{/*: ... \starslash}
+    \tt{\begincomment: ... \endcomment}
 
     Examples:
 

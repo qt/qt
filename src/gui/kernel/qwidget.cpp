@@ -5674,10 +5674,15 @@ void QWidget::setFocus(Qt::FocusReason reason)
             w = w->isWindow() ? 0 : w->parentWidget();
         }
     } else {
-        while (w) {
+        while (w && w->isVisible()) {
             w->d_func()->focus_child = f;
             w = w->isWindow() ? 0 : w->parentWidget();
         }
+        // a special case, if there is an invisible parent, notify him
+        // about the focus_child widget, so that if it becomes
+        // visible, the focus widget will be respected.
+        if (w)
+            w->d_func()->focus_child = f;
     }
 
 #ifndef QT_NO_GRAPHICSVIEW
@@ -6729,6 +6734,10 @@ void QWidgetPrivate::show_helper()
     if (QApplicationPrivate::hidden_focus_widget == q) {
         QApplicationPrivate::hidden_focus_widget = 0;
         q->setFocus(Qt::OtherFocusReason);
+    } else if (focus_child) {
+        // if we are shown and there is an explicit focus child widget
+        // set, respect it by giving him focus.
+        focus_child->setFocus(Qt::OtherFocusReason);
     }
 
     // Process events when showing a Qt::SplashScreen widget before the event loop
