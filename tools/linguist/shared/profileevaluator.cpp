@@ -58,8 +58,10 @@
 
 #ifdef Q_OS_WIN32
 #define QT_POPEN _popen
+#define QT_PCLOSE _pclose
 #else
 #define QT_POPEN popen
+#define QT_PCLOSE pclose
 #endif
 
 QT_BEGIN_NAMESPACE
@@ -1204,6 +1206,8 @@ QStringList ProFileEvaluator::Private::evaluateExpandFunction(const QString &fun
                         output += QLatin1String(buff);
                     }
                     ret += split_value_list(output);
+                    if (proc)
+                        QT_PCLOSE(proc);
                 }
             }
             break; }
