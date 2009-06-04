@@ -1789,6 +1789,9 @@ void QGraphicsItemPrivate::setVisibleHelper(bool newVisible, bool explicitly, bo
 
     // Deliver post-change notification.
     q_ptr->itemChange(QGraphicsItem::ItemVisibleHasChanged, newVisibleVariant);
+
+    if (isObject)
+        emit static_cast<QGraphicsObject *>(q_ptr)->visibleChanged();
 }
 
 /*!
@@ -1821,9 +1824,6 @@ void QGraphicsItemPrivate::setVisibleHelper(bool newVisible, bool explicitly, bo
 void QGraphicsItem::setVisible(bool visible)
 {
     d_ptr->setVisibleHelper(visible, /* explicit = */ true);
-
-    if (d_ptr->isObject)
-        emit static_cast<QGraphicsObject *>(this)->visibleChanged();
 }
 
 /*!
@@ -1912,6 +1912,9 @@ void QGraphicsItemPrivate::setEnabledHelper(bool newEnabled, bool explicitly, bo
 
     // Deliver post-change notification.
     q_ptr->itemChange(QGraphicsItem::ItemEnabledHasChanged, newEnabledVariant);
+
+    if (isObject)
+        emit static_cast<QGraphicsObject *>(q_ptr)->enabledChanged();
 }
 
 /*!
@@ -1945,9 +1948,6 @@ void QGraphicsItemPrivate::setEnabledHelper(bool newEnabled, bool explicitly, bo
 void QGraphicsItem::setEnabled(bool enabled)
 {
     d_ptr->setEnabledHelper(enabled, /* explicitly = */ true);
-
-    if (d_ptr->isObject)
-        emit static_cast<QGraphicsObject *>(this)->enabledChanged();
 }
 
 /*!
@@ -2110,6 +2110,7 @@ void QGraphicsItem::setOpacity(qreal opacity)
                                           /*maybeDirtyClipPath=*/false,
                                           /*force=*/false,
                                           /*ignoreOpacity=*/true);
+
     if (d_ptr->isObject)
         emit static_cast<QGraphicsObject *>(this)->opacityChanged();
 }
@@ -2520,6 +2521,17 @@ QPointF QGraphicsItem::pos() const
     \sa y()
 */
 
+/*
+  Set's the x coordinate of the item's position. Equivalent to
+  calling setPos(x, y()).
+
+  \sa x(), setPos()
+*/
+void QGraphicsItem::setX(qreal x)
+{
+    d_ptr->setPosHelper(QPointF(x, d_ptr->pos.y()));
+}
+
 /*!
     \fn QGraphicsItem::y() const
 
@@ -2527,6 +2539,17 @@ QPointF QGraphicsItem::pos() const
 
     \sa x()
 */
+
+/*
+  Set's the y coordinate of the item's position. Equivalent to
+  calling setPos(x(), y).
+
+  \sa x(), setPos()
+*/
+void QGraphicsItem::setY(qreal y)
+{
+    d_ptr->setPosHelper(QPointF(d_ptr->pos.x(), y));
+}
 
 /*!
     Returns the item's position in scene coordinates. This is
@@ -2551,11 +2574,16 @@ void QGraphicsItemPrivate::setPosHelper(const QPointF &pos)
     updateCachedClipPathFromSetPosHelper(pos);
     if (scene)
         q->prepareGeometryChange();
+    QPointF oldPos = this->pos;
     this->pos = pos;
     dirtySceneTransform = 1;
     inSetPosHelper = 0;
-    if (isObject)
-        emit static_cast<QGraphicsObject *>(q)->positionChanged();
+    if (isObject) {
+        if (pos.x() != oldPos.x())
+            emit static_cast<QGraphicsObject *>(q_ptr)->xChanged();
+        if (pos.y() != oldPos.y())
+            emit static_cast<QGraphicsObject *>(q_ptr)->yChanged();
+    }
 }
 
 /*!
@@ -3535,6 +3563,9 @@ void QGraphicsItem::setZValue(qreal z)
     }
 
     itemChange(ItemZValueHasChanged, newZVariant);
+
+    if (d_ptr->isObject)
+        emit static_cast<QGraphicsObject *>(this)->zChanged();
 }
 
 /*!

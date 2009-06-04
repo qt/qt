@@ -227,7 +227,9 @@ public:
     // Positioning in scene coordinates
     QPointF pos() const;
     inline qreal x() const { return pos().x(); }
+    void setX(qreal x);
     inline qreal y() const { return pos().y(); }
+    void setY(qreal y);
     QPointF scenePos() const;
     void setPos(const QPointF &pos);
     inline void setPos(qreal x, qreal y);
@@ -492,11 +494,13 @@ inline QRectF QGraphicsItem::mapRectFromScene(qreal ax, qreal ay, qreal w, qreal
 class Q_GUI_EXPORT QGraphicsObject : public QObject, public QGraphicsItem
 {
     Q_OBJECT
-    Q_INTERFACES(QGraphicsItem)
     Q_PROPERTY(qreal opacity READ opacity WRITE setOpacity NOTIFY opacityChanged)
-    Q_PROPERTY(QPointF pos READ pos WRITE setPos NOTIFY positionChanged)
+    Q_PROPERTY(QPointF pos READ pos WRITE setPos)
     Q_PROPERTY(bool enabled READ isEnabled WRITE setEnabled NOTIFY enabledChanged)
     Q_PROPERTY(bool visible READ isVisible WRITE setVisible NOTIFY visibleChanged)
+    Q_PROPERTY(qreal x READ x WRITE setX NOTIFY xChanged)
+    Q_PROPERTY(qreal y READ y WRITE setY NOTIFY yChanged)
+    Q_PROPERTY(qreal z READ zValue WRITE setZValue NOTIFY zChanged)
 public:
     QGraphicsObject(QGraphicsItem *parent = 0);
 
@@ -504,12 +508,15 @@ Q_SIGNALS:
     void opacityChanged();
     void visibleChanged();
     void enabledChanged();
-    void positionChanged();
+    void xChanged();
+    void yChanged();
+    void zChanged();
 
 protected:
     QGraphicsObject(QGraphicsItemPrivate &dd, QGraphicsItem *parent, QGraphicsScene *scene);
 private:
     friend class QGraphicsItem;
+    friend class QGraphicsItemPrivate;
 };
 
 
