@@ -1260,6 +1260,28 @@ QGraphicsWidget *QGraphicsItem::window() const
 }
 
 /*!
+  \since 4.6
+
+  Return the graphics item cast to a QGraphicsObject, if the class is actually a
+  graphics object, 0 otherwise.
+*/
+QGraphicsObject *QGraphicsItem::toGraphicsObject()
+{
+    return d_ptr->isObject ? static_cast<QGraphicsObject *>(this) : 0;
+}
+
+/*!
+  \since 4.6
+
+  Return the graphics item cast to a QGraphicsObject, if the class is actually a
+  graphics object, 0 otherwise.
+*/
+const QGraphicsObject *QGraphicsItem::toGraphicsObject() const
+{
+    return d_ptr->isObject ? static_cast<const QGraphicsObject *>(this) : 0;
+}
+
+/*!
     Sets this item's parent item to \a parent. If this item already has a
     parent, it is first removed from the previous parent. If \a parent is 0,
     this item will become a top-level item.
@@ -1799,6 +1821,9 @@ void QGraphicsItemPrivate::setVisibleHelper(bool newVisible, bool explicitly, bo
 void QGraphicsItem::setVisible(bool visible)
 {
     d_ptr->setVisibleHelper(visible, /* explicit = */ true);
+
+    if (d_ptr->isObject)
+        emit static_cast<QGraphicsObject *>(this)->visibleChanged();
 }
 
 /*!
@@ -1920,6 +1945,9 @@ void QGraphicsItemPrivate::setEnabledHelper(bool newEnabled, bool explicitly, bo
 void QGraphicsItem::setEnabled(bool enabled)
 {
     d_ptr->setEnabledHelper(enabled, /* explicitly = */ true);
+
+    if (d_ptr->isObject)
+        emit static_cast<QGraphicsObject *>(this)->enabledChanged();
 }
 
 /*!
@@ -2082,6 +2110,8 @@ void QGraphicsItem::setOpacity(qreal opacity)
                                           /*maybeDirtyClipPath=*/false,
                                           /*force=*/false,
                                           /*ignoreOpacity=*/true);
+    if (d_ptr->isObject)
+        emit static_cast<QGraphicsObject *>(this)->opacityChanged();
 }
 
 /*!
@@ -2524,6 +2554,8 @@ void QGraphicsItemPrivate::setPosHelper(const QPointF &pos)
     this->pos = pos;
     dirtySceneTransform = 1;
     inSetPosHelper = 0;
+    if (isObject)
+        emit static_cast<QGraphicsObject *>(q)->positionChanged();
 }
 
 /*!
@@ -6324,6 +6356,108 @@ static void qt_graphicsItem_highlightSelected(
 }
 
 /*!
+    \class QGraphicsObject
+    \brief The QGraphicsObject class provides a base class for all graphics items that
+    require signals, slots and properties.
+    \since 4.6
+    \ingroup graphicsview-api
+
+    The class extends a QGraphicsItem with QObject's signal/slot and property mechanisms.
+    It maps many of QGraphicsItem's basic setters and getters to properties and adds notification
+    signals for many of them.
+*/
+
+/*!
+    Constructs a QGraphicsObject with \a parent.
+*/
+QGraphicsObject::QGraphicsObject(QGraphicsItem *parent)
+        : QGraphicsItem(parent)
+{
+    QGraphicsItem::d_ptr->isObject = true;
+}
+
+/*!
+  \internal
+*/
+QGraphicsObject::QGraphicsObject(QGraphicsItemPrivate &dd, QGraphicsItem *parent, QGraphicsScene *scene)
+    : QGraphicsItem(dd, parent, scene)
+{
+    QGraphicsItem::d_ptr->isObject = true;
+}
+
+/*!
+  \property QGraphicsObject::opacity
+  \brief the opacity of the item
+
+  \sa QGraphicsItem::setOpacity, QGraphicsItem::opacity
+*/
+
+/*!
+  \fn QGraphicsObject::opacityChanged()
+
+  This signal gets emitted whenever the opacity of the item changes
+
+  \sa opacity
+*/
+
+/*!
+  \property QGraphicsObject::pos
+  \brief the position of the item
+
+  Describes the items position.
+
+  \sa QGraphicsItem::setPos, QGraphicsItem::pos, positionChanged
+*/
+
+/*!
+  \fn QGraphicsObject::positionChanged()
+
+  This signal gets emitted whenever the position of the item changes
+
+  \sa pos
+*/
+
+/*!
+  \property QGraphicsObject::enabled
+  \brief whether the item is enabled or not
+
+  This property is declared in QGraphicsItem.
+
+  By default, this property is true.
+
+  \sa QGraphicsItem::isEnabled(), QGraphicsItem::setEnabled(), enabledChanged()
+*/
+
+/*!
+  \fn QGraphicsObject::enabledChanged()
+
+  This signal gets emitted whenever the item get's enabled or disabled.
+
+  \sa enabled
+*/
+
+/*!
+  \property QGraphicsObject::visible
+  \brief whether the item is visible or not
+
+  This property is declared in QGraphicsItem.
+
+  By default, this property is true.
+
+  \sa QGraphicsItem::isVisible(), QGraphicsItem::setVisible(), visibleChanged()
+*/
+
+/*!
+  \fn QGraphicsObject::visibleChanged()
+
+  This signal gets emitted whenever the visibility of the item changes
+
+  \sa visible
+*/
+
+
+
+/*!
     \class QAbstractGraphicsShapeItem
     \brief The QAbstractGraphicsShapeItem class provides a common base for
     all path items.
@@ -8146,17 +8280,6 @@ public:
 
     QGraphicsTextItem *qq;
 };
-
-
-QGraphicsObject::QGraphicsObject(QGraphicsItem *parent)
-        : QGraphicsItem(parent)
-{
-}
-
-QGraphicsObject::QGraphicsObject(QGraphicsItemPrivate &dd, QGraphicsItem *parent, QGraphicsScene *scene)
-    : QGraphicsItem(dd, parent, scene)
-{
-}
 
 
 /*!

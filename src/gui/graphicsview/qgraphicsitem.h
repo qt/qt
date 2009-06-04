@@ -63,6 +63,7 @@ class QBrush;
 class QCursor;
 class QFocusEvent;
 class QGraphicsItemGroup;
+class QGraphicsObject;
 class QGraphicsSceneContextMenuEvent;
 class QGraphicsSceneDragDropEvent;
 class QGraphicsSceneEvent;
@@ -158,6 +159,9 @@ public:
     QList<QGraphicsItem *> childItems() const;
     bool isWidget() const;
     bool isWindow() const;
+
+    QGraphicsObject *toGraphicsObject();
+    const QGraphicsObject *toGraphicsObject() const;
 
     QGraphicsItemGroup *group() const;
     void setGroup(QGraphicsItemGroup *group);
@@ -483,6 +487,31 @@ inline QRectF QGraphicsItem::mapRectFromParent(qreal ax, qreal ay, qreal w, qrea
 { return mapRectFromParent(QRectF(ax, ay, w, h)); }
 inline QRectF QGraphicsItem::mapRectFromScene(qreal ax, qreal ay, qreal w, qreal h) const
 { return mapRectFromScene(QRectF(ax, ay, w, h)); }
+
+
+class Q_GUI_EXPORT QGraphicsObject : public QObject, public QGraphicsItem
+{
+    Q_OBJECT
+    Q_INTERFACES(QGraphicsItem)
+    Q_PROPERTY(qreal opacity READ opacity WRITE setOpacity NOTIFY opacityChanged)
+    Q_PROPERTY(QPointF pos READ pos WRITE setPos NOTIFY positionChanged)
+    Q_PROPERTY(bool enabled READ isEnabled WRITE setEnabled NOTIFY enabledChanged)
+    Q_PROPERTY(bool visible READ isVisible WRITE setVisible NOTIFY visibleChanged)
+public:
+    QGraphicsObject(QGraphicsItem *parent = 0);
+
+Q_SIGNALS:
+    void opacityChanged();
+    void visibleChanged();
+    void enabledChanged();
+    void positionChanged();
+
+protected:
+    QGraphicsObject(QGraphicsItemPrivate &dd, QGraphicsItem *parent, QGraphicsScene *scene);
+private:
+    friend class QGraphicsItem;
+};
+
 
 class QAbstractGraphicsShapeItemPrivate;
 class Q_GUI_EXPORT QAbstractGraphicsShapeItem : public QGraphicsItem
@@ -831,20 +860,6 @@ private:
 
 inline void QGraphicsPixmapItem::setOffset(qreal ax, qreal ay)
 { setOffset(QPointF(ax, ay)); }
-
-class Q_GUI_EXPORT QGraphicsObject : public QObject, public QGraphicsItem
-{
-    Q_OBJECT
-    Q_INTERFACES(QGraphicsItem)
-    Q_PROPERTY(qreal opacity READ opacity WRITE setOpacity)
-    Q_PROPERTY(QPointF pos READ pos WRITE setPos)
-    Q_PROPERTY(bool enabled READ isEnabled WRITE setEnabled)
-    Q_PROPERTY(bool visible READ isVisible WRITE setVisible)
-public:
-    QGraphicsObject(QGraphicsItem *parent = 0);
-protected:
-    QGraphicsObject(QGraphicsItemPrivate &dd, QGraphicsItem *parent, QGraphicsScene *scene);
-};
 
 class QGraphicsTextItemPrivate;
 class QTextDocument;
