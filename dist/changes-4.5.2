@@ -46,6 +46,10 @@ Third party components
        Plugins (r41346, r43550, r43915, r43917, r43923)
        Clipboard (r41360)
 
+- QtDBus
+   * [236955] Fixed an issue that would cause QtDBus to crash when
+     relaying a signal emitted from a class under certain conditions
+
 - QAbstractItemView
     * [250754] Changing the font of the view would not update the size of the
       items if there is an application stylesheet.
@@ -79,6 +83,10 @@ Third party components
 - QNetworkCookieJar
    * [251467] do not allow cookies for domains like ".com"
    * [228974] allow cookies whose domain attribute is missing a leading dot
+
+- QNetworkAccessManager
+   * [248838] Make QNetworkAccessManager reject invalid HTTP input
+     earlier
 
 - QWidget
     * [250668] Don't send extra wheel events when using the scroll wheel in Cocoa.
@@ -166,6 +174,7 @@ legacy freetype headers.
 [250326] Titlebar wasn't shown on X11 with Qt::CustomizeWindowHint for
 	 fixed-size windows.
 [251925] Improved showing QMessageBox on small screens.
+[252042] Fixed the loading of the OpenSSL libraries on OpenBSD.
 
 Qt for Windows
 --------------
