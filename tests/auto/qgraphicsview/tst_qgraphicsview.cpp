@@ -2925,7 +2925,7 @@ void tst_QGraphicsView::task245469_itemsAtPointWithClip()
     QTest::qWait(100);
 
     QList<QGraphicsItem *> itemsAtCenter = view.items(view.viewport()->rect().center());
-    QCOMPARE(itemsAtCenter, (QList<QGraphicsItem *>() << parent << child));
+    QCOMPARE(itemsAtCenter, (QList<QGraphicsItem *>() << child << parent));
 
     QPolygonF p = view.mapToScene(QRect(view.viewport()->rect().center(), QSize(1, 1)));
     QList<QGraphicsItem *> itemsAtCenter2 = scene.items(p);

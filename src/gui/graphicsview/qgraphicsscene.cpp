@@ -1586,7 +1586,7 @@ QList<QGraphicsItem *> QGraphicsScene::items() const
 
 /*!
     Returns all visible items at position \a pos in the scene. The items are
-    listed in descending Z order (i.e., the first item in the list is the
+    listed in descending stacking order (i.e., the first item in the list is the
     top-most item, and the last item is the bottom-most item).
 
     \sa itemAt()
