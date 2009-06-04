@@ -296,10 +296,11 @@ public:
             // parent propagates to me, then combine my local opacity with my parent's
             // effective opacity into my effective opacity.
             if ((myFlags & QGraphicsItem::ItemIgnoresParentOpacity)
-                || (parentFlags & QGraphicsItem::ItemDoesntPropagateOpacityToChildren))
+                || (parentFlags & QGraphicsItem::ItemDoesntPropagateOpacityToChildren)) {
                 break;
+            }
 
-            o *= parent->d_ptr->opacity;
+            o *= p->d_ptr->opacity;
             p = p->d_ptr->parent;
             myFlags = parentFlags;
         }
