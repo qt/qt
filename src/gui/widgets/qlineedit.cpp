@@ -2275,7 +2275,8 @@ void QLineEdit::inputMethodEvent(QInputMethodEvent *e)
 #endif
 
     int priorState = 0;
-    bool isGettingInput = !e->commitString().isEmpty() || !e->preeditString().isEmpty();
+    bool isGettingInput = !e->commitString().isEmpty() || !e->preeditString().isEmpty()
+            || e->replacementLength() > 0;
     bool cursorPositionChanged = false;
 
     if (isGettingInput) {

@@ -865,14 +865,6 @@ QSize QS60StylePrivate::partSize(QS60StyleEnums::SkinParts part, SkinElementFlag
   \sa QMacStyle, QWindowsStyle, QWindowsXPStyle, QWindowsVistaStyle, QPlastiqueStyle, QCleanlooksStyle, QMotifStyle
 */
 
-/*!
-  Constructs a QS60Style object.
-*/
-QS60Style::QS60Style()
-    : QCommonStyle(*new QS60StylePrivate)
-{
-}
-
 QS60Style::~QS60Style()
 {
 }

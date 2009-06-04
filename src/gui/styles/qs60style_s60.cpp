@@ -1326,6 +1326,14 @@ void QS60StyleModeSpecifics::colorGroupAndIndex(
     }
 }
 
+/*!
+  Constructs a QS60Style object.
+*/
+QS60Style::QS60Style()
+    : QCommonStyle(*new QS60StylePrivate)
+{
+}
+
 void QS60Style::handleDynamicLayoutVariantSwitch()
 {
     Q_D(QS60Style);
