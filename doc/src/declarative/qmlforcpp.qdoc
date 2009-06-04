@@ -186,7 +186,8 @@
     name \a QmlName.  Of course there's nothing stopping you using the same
     name for both the C++ and the QML name!
     Any type can be added to the QML engine using these macros.  The only 
-    requirements are that \a T inherits QObject and that it has a default constructor.
+    requirements are that \a T inherits QObject, is not abstract,
+    and that it has a default constructor.
 
     \section1 Property Binding 
 
