@@ -5381,6 +5381,9 @@ void QGraphicsScenePrivate::processDirtyItemsRecursive(QGraphicsItem *item, bool
                     uninitializedDirtyRect = false;
                 }
 
+                if (dirtyRect.isEmpty())
+                    continue; // Discard updates outside the bounding rect.
+
                 QTransform deviceTransform = item->d_ptr->sceneTransform;
                 if (view->isTransformed()) {
                     if (!untransformableItem)

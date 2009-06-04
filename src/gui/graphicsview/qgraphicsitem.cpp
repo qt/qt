@@ -4168,7 +4168,7 @@ void QGraphicsItem::update(const QRectF &rect)
     }
 
     if (d_ptr->scene)
-        d_ptr->scene->d_func()->markDirty(this);
+        d_ptr->scene->d_func()->markDirty(this, rect);
 }
 
 /*!
