@@ -758,6 +758,7 @@ void QGraphicsScenePrivate::_q_removeItemLater(QGraphicsItem *item)
     cachedItemsUnderMouse.removeAll(item);
     unpolishedItems.removeAll(item);
     pendingUpdateItems.removeAll(item);
+    resetDirtyItem(item);
 
     //We remove all references of item from the sceneEventFilter arrays
     QMultiMap<QGraphicsItem*, QGraphicsItem*>::iterator iterator = sceneEventFilters.begin();
@@ -3408,6 +3409,7 @@ void QGraphicsScene::removeItem(QGraphicsItem *item)
     d->pendingUpdateItems.removeAll(item);
     d->cachedItemsUnderMouse.removeAll(item);
     d->unpolishedItems.removeAll(item);
+    d->resetDirtyItem(item);
 
     //We remove all references of item from the sceneEventFilter arrays
     QMultiMap<QGraphicsItem*, QGraphicsItem*>::iterator iterator = d->sceneEventFilters.begin();
