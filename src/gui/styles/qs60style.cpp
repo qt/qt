@@ -50,7 +50,6 @@
 #include "qcalendarwidget.h"
 #include "qdial.h"
 #include "qdialog.h"
-#include "qerrormessage.h"
 #include "qgroupbox.h"
 #include "qheaderview.h"
 #include "qlist.h"
@@ -58,7 +57,6 @@
 #include "qlistview.h"
 #include "qmenu.h"
 #include "qmenubar.h"
-#include "qmessagebox.h"
 #include "qpushbutton.h"
 #include "qscrollarea.h"
 #include "qscrollbar.h"
@@ -116,8 +114,6 @@ const short QS60StylePrivate::data[][MAX_PIXELMETRICS] = {
 {7,0,-909,0,0,2,0,0,-1,20,52,28,19,19,9,258,-909,-909,-909,29,19,6,0,0,32,-909,60,-909,5,5,2,-909,-909,0,7,32,0,17,29,22,22,27,27,7,173,29,0,-909,-909,-909,-909,0,0,26,2,-909,0,0,-909,26,-909,-909,-909,-909,87,27,98,35,98,5,5,6,8,19,-909,7,74,22,7,0,5,5,8,12,5,5,-909,2,-909,-909,-909,-909,7,7,3,1},
 {7,0,-909,0,0,2,0,0,-1,10,20,27,18,18,9,301,-909,-909,-909,29,18,5,0,0,35,-909,32,-909,5,5,2,-909,-909,0,2,8,0,16,28,21,21,26,26,2,170,26,0,-909,-909,-909,-909,0,0,21,5,-909,0,0,-909,-909,-909,-909,-909,-909,54,26,265,34,265,5,5,6,3,18,-909,7,72,19,7,0,8,6,5,11,6,5,-909,2,-909,-909,-909,-909,5,5,3,1},
 {7,0,-909,0,0,2,0,0,-1,10,20,27,18,18,9,301,-909,-909,-909,29,18,5,0,0,35,-909,32,-909,5,5,2,-909,-909,0,2,8,0,16,28,21,21,26,26,2,170,26,0,-909,-909,-909,-909,0,0,21,6,-909,0,0,-909,-909,-909,-909,-909,-909,54,26,265,34,265,5,5,6,3,18,-909,7,72,19,7,0,5,6,8,11,6,5,-909,2,-909,-909,-909,-909,5,5,3,1}
-
-
 // *** End of generated data ***
 };
 
@@ -126,6 +122,7 @@ const short *QS60StylePrivate::m_pmPointer = QS60StylePrivate::data[0];
 // theme background texture
 QPixmap *QS60StylePrivate::m_background = 0;
 
+// theme palette
 QPalette *QS60StylePrivate::m_themePalette = 0;
 
 const struct QS60StylePrivate::frameElementCenter QS60StylePrivate::m_frameElementsData[] = {
@@ -144,6 +141,7 @@ const struct QS60StylePrivate::frameElementCenter QS60StylePrivate::m_frameEleme
     {SE_PanelBackground,        QS60StyleEnums::SP_QsnFrSetOptCenter},
     {SE_ButtonInactive,         QS60StyleEnums::SP_QsnFrButtonCenterInactive},
 };
+
 static const int frameElementsCount =
     int(sizeof(QS60StylePrivate::m_frameElementsData)/sizeof(QS60StylePrivate::m_frameElementsData[0]));
 
@@ -360,8 +358,7 @@ QColor QS60StylePrivate::lighterColor(const QColor &baseColor)
 
 bool QS60StylePrivate::drawsOwnThemeBackground(const QWidget *widget)
 {
-    return (qobject_cast<const QMessageBox *> (widget) ||
-            qobject_cast<const QErrorMessage *> (widget));
+    return qobject_cast<const QDialog *> (widget);
 }
 
 QFont QS60StylePrivate::s60Font(
@@ -413,8 +410,8 @@ void QS60StylePrivate::clearCaches(QS60StylePrivate::CacheClearReason reason)
 }
 
 // Since S60Style has 'button' and 'tooltip' as a graphic, we don't have any native color which to use
-// for QPalette::Button and QPalette::ToolTipBase. Therefore we need to guesstimate
-// this by calculating average rgb values for button pixels.
+// for QPalette::Button and QPalette::ToolTipBase. Therefore S60Style needs to guesstimate
+// palette colors by calculating average rgb values for button pixels.
 // Returns Qt::black if there is an issue with the graphics (image is NULL, or no bits() found).
 QColor QS60StylePrivate::colorFromFrameGraphics(QS60StylePrivate::SkinFrameElements frame) const
 {
@@ -615,9 +612,7 @@ QPixmap QS60StylePrivate::cachedFrame(SkinFrameElements frame, const QSize &size
 
 void QS60StylePrivate::refreshUI()
 {
-    QList<QWidget *> widgets = QApplication::allWidgets(); 
-
-    // The following is similar to updateWidgets in qstylesheetstyle.cpp.
+    QList<QWidget *> widgets = QApplication::allWidgets();
 
     for (int i = 0; i < widgets.size(); ++i) {
         QWidget *widget = widgets.at(i);
@@ -662,7 +657,7 @@ void QS60StylePrivate::setThemePalette(QWidget *widget) const
     QPalette widgetPalette = widget->palette();
 
     //header view and its viewport need to be set 100% transparent button color, since drawing code will
-    //draw transparent theme graphics there.
+    //draw transparent theme graphics to table column and row headers.
     if (qobject_cast<QHeaderView *>(widget)){
         widgetPalette.setColor(QPalette::Active, QPalette::ButtonText,
             QS60StylePrivate::s60Color(QS60StyleEnums::CL_QsnTextColors, 23, 0));
