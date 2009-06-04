@@ -5874,6 +5874,7 @@ void tst_QGraphicsItem::nestedClipping()
     l3->setData(0, "l3");
 
     QGraphicsView view(&scene);
+    view.setOptimizationFlag(QGraphicsView::IndirectPainting);
     view.show();
 #ifdef Q_WS_X11
     qt_x11_wait_for_window_manager(&view);
