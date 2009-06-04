@@ -392,7 +392,7 @@ int qt_mib_for_xlfd_encoding(const char *encoding)
     int id = qt_xlfd_encoding_id(encoding);
     if (id != -1) return xlfd_encoding[id].mib;
     return 0;
-};
+}
 
 int qt_encoding_id_for_mib(int mib)
 {

@@ -405,7 +405,7 @@ QPalette *QApplicationPrivate::set_pal = 0;        // default palette set by pro
 QGraphicsSystem *QApplicationPrivate::graphics_system = 0; // default graphics system
 QString QApplicationPrivate::graphics_system_name;         // graphics system id - for delayed initialization
 
-Q_GLOBAL_STATIC(QMutex, applicationFontMutex);
+Q_GLOBAL_STATIC(QMutex, applicationFontMutex)
 QFont *QApplicationPrivate::app_font = 0;        // default application font
 QFont *QApplicationPrivate::sys_font = 0;        // default system font
 QFont *QApplicationPrivate::set_font = 0;        // default font set by programmer

@@ -94,7 +94,7 @@ public:
         // Shape rendering specifiers...
         OddEvenFill             = 0x1000,
         WindingFill             = 0x2000,
-        ImplicitClose           = 0x4000,
+        ImplicitClose           = 0x4000
     };
 
     // ### Falcon: introduca a struct XY for points so lars is not so confused...
