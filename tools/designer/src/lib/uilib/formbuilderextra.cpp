@@ -81,7 +81,8 @@ QFormBuilderExtra::~QFormBuilderExtra()
 void QFormBuilderExtra::clear()
 {
     m_buddies.clear();
-    m_rootWidget = 0;
+    m_parentWidget = 0;
+    m_parentWidgetIsSet = false;
 #ifndef QT_FORMBUILDER_NO_SCRIPT
     m_FormScriptRunner.clearErrors();
     m_customWidgetScriptHash.clear();
@@ -136,14 +137,21 @@ bool QFormBuilderExtra::applyBuddy(const QString &buddyName, BuddyMode applyMode
     return false;
 }
 
-const QPointer<QWidget> &QFormBuilderExtra::rootWidget() const
+const QPointer<QWidget> &QFormBuilderExtra::parentWidget() const
 {
-    return m_rootWidget;
+    return m_parentWidget;
 }
 
-void QFormBuilderExtra::setRootWidget(const QPointer<QWidget> &w)
+bool QFormBuilderExtra::parentWidgetIsSet() const
 {
-    m_rootWidget = w;
+    return m_parentWidgetIsSet;
+}
+
+void QFormBuilderExtra::setParentWidget(const QPointer<QWidget> &w)
+{
+    // Parent widget requires special handling of the geometry property.
+    m_parentWidget = w;
+    m_parentWidgetIsSet = true;
 }
 
 #ifndef QT_FORMBUILDER_NO_SCRIPT

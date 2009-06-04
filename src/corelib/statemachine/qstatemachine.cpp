@@ -92,7 +92,7 @@ QT_BEGIN_NAMESPACE
     QAbstractState) and transitions (descendants of
     QAbstractTransition) between those states; these states and
     transitions define a state graph. Once a state graph has been
-    built, the state machine can execute it. \l{QStateMachine}'s
+    built, the state machine can execute it. QStateMachine's
     execution algorithm is based on the \l{State Chart XML: State
     Machine Notation for Control Abstraction}{State Chart XML (SCXML)}
     algorithm. The framework's \l{The State Machine
@@ -1329,7 +1329,7 @@ void QStateMachinePrivate::registerSignalTransition(QSignalTransition *transitio
         if (!ok) {
 #ifdef QSTATEMACHINE_DEBUG
             qDebug() << q << ": FAILED to add signal transition from" << transition->sourceState()
-                     << ": ( sender =" << sender << ", signal =" << (signal.mid(1))
+                     << ": ( sender =" << sender << ", signal =" << signal
                      << ", targets =" << transition->targetStates() << ')';
 #endif
             return;
@@ -1339,7 +1339,7 @@ void QStateMachinePrivate::registerSignalTransition(QSignalTransition *transitio
     QSignalTransitionPrivate::get(transition)->signalIndex = signalIndex;
 #ifdef QSTATEMACHINE_DEBUG
     qDebug() << q << ": added signal transition from" << transition->sourceState()
-             << ": ( sender =" << sender << ", signal =" << (signal.mid(1))
+             << ": ( sender =" << sender << ", signal =" << signal
              << ", targets =" << transition->targetStates() << ')';
 #endif
 }

@@ -71,7 +71,7 @@ QT_BEGIN_NAMESPACE
 
     \code
     QGLShader shader(QGLShader::VertexShader);
-    shader.setSourceCode(code);
+    shader.compile(code);
 
     QGLShaderProgram program(context);
     program.addShader(shader);
@@ -245,14 +245,14 @@ class QGLShaderPrivate
 {
 public:
     QGLShaderPrivate(QGLShader::ShaderType type, const QGLContext *ctx)
+        : context(ctx)
+        , shader(0)
+        , shaderType(type)
+        , compiled(false)
+        , isPartial(type == QGLShader::PartialVertexShader ||
+                    type == QGLShader::PartialFragmentShader)
+        , hasPartialSource(false)
     {
-        context = ctx;
-        shader = 0;
-        shaderType = type;
-        compiled = false;
-        isPartial = (type == QGLShader::PartialVertexShader ||
-                     type == QGLShader::PartialFragmentShader);
-        hasPartialSource = false;
     }
 
     const QGLContext *context;
@@ -265,7 +265,7 @@ public:
     QByteArray partialSource;
 
     bool create();
-    bool compile();
+    bool compile(QGLShader *q);
 };
 
 #define ctx     context
@@ -293,7 +293,7 @@ bool QGLShaderPrivate::create()
     }
 }
 
-bool QGLShaderPrivate::compile()
+bool QGLShaderPrivate::compile(QGLShader *q)
 {
     // Partial shaders are compiled during QGLShaderProgram::link().
     if (isPartial && hasPartialSource) {
@@ -313,7 +313,11 @@ bool QGLShaderPrivate::compile()
         GLint len;
         glGetShaderInfoLog(shader, value, &len, logbuf);
         log = QString::fromLatin1(logbuf);
-        qWarning() << "QGLShader::compile:" << log;
+        QString name = q->objectName();
+        if (name.isEmpty())
+            qWarning() << "QGLShader::compile:" << log;
+        else
+            qWarning() << "QGLShader::compile[" << name << "]:" << log;
         delete [] logbuf;
     }
     return compiled;
@@ -325,14 +329,14 @@ bool QGLShaderPrivate::compile()
 /*!
     Constructs a new QGLShader object of the specified \a type
     and attaches it to \a parent.  If shader programs are not supported,
-    then isValid() will return false.
+    QGLShaderProgram::hasShaderPrograms() will return false.
 
-    This constructor is normally followed by a call to setSourceCode()
-    or setSourceCodeFile().
+    This constructor is normally followed by a call to compile()
+    or compileFile().
 
     The shader will be associated with the current QGLContext.
 
-    \sa setSourceCode(), setSourceCodeFile(), isValid()
+    \sa compile(), compileFile()
 */
 QGLShader::QGLShader(QGLShader::ShaderType type, QObject *parent)
     : QObject(parent)
@@ -346,11 +350,11 @@ QGLShader::QGLShader(QGLShader::ShaderType type, QObject *parent)
     and attaches it to \a parent.  If the filename ends in \c{.fsh},
     it is assumed to be a fragment shader, otherwise it is assumed to
     be a vertex shader (normally the extension is \c{.vsh} for vertex shaders).
-    If the shader could not be loaded, then isValid() will return false.
+    If the shader could not be loaded, then isCompiled() will return false.
 
     The shader will be associated with the current QGLContext.
 
-    \sa isValid()
+    \sa isCompiled()
 */
 QGLShader::QGLShader(const QString& fileName, QObject *parent)
     : QObject(parent)
@@ -359,7 +363,7 @@ QGLShader::QGLShader(const QString& fileName, QObject *parent)
         d = new QGLShaderPrivate(QGLShader::FragmentShader, QGLContext::currentContext());
     else
         d = new QGLShaderPrivate(QGLShader::VertexShader, QGLContext::currentContext());
-    if (d->create() && !setSourceCodeFile(fileName)) {
+    if (d->create() && !compileFile(fileName)) {
         if (d->shader)
             glDeleteShader(d->shader);
         d->shader = 0;
@@ -369,18 +373,18 @@ QGLShader::QGLShader(const QString& fileName, QObject *parent)
 /*!
     Constructs a new QGLShader object of the specified \a type from the
     source code in \a fileName and attaches it to \a parent.
-    If the shader could not be loaded, then isValid() will return false.
+    If the shader could not be loaded, then isCompiled() will return false.
 
     The shader will be associated with the current QGLContext.
 
-    \sa isValid()
+    \sa isCompiled()
 */
 QGLShader::QGLShader
         (const QString& fileName, QGLShader::ShaderType type, QObject *parent)
     : QObject(parent)
 {
     d = new QGLShaderPrivate(type, QGLContext::currentContext());
-    if (d->create() && !setSourceCodeFile(fileName)) {
+    if (d->create() && !compileFile(fileName)) {
         if (d->shader)
             glDeleteShader(d->shader);
         d->shader = 0;
@@ -390,14 +394,14 @@ QGLShader::QGLShader
 /*!
     Constructs a new QGLShader object of the specified \a type
     and attaches it to \a parent.  If shader programs are not supported,
-    then isValid() will return false.
+    then QGLShaderProgram::hasShaderPrograms() will return false.
 
-    This constructor is normally followed by a call to setSourceCode()
-    or setSourceCodeFile().
+    This constructor is normally followed by a call to compile()
+    or compileFile().
 
     The shader will be associated with \a context.
 
-    \sa setSourceCode(), setSourceCodeFile(), isValid()
+    \sa compile(), compileFile()
 */
 QGLShader::QGLShader(QGLShader::ShaderType type, const QGLContext *context, QObject *parent)
     : QObject(parent)
@@ -411,11 +415,11 @@ QGLShader::QGLShader(QGLShader::ShaderType type, const QGLContext *context, QObj
     and attaches it to \a parent.  If the filename ends in \c{.fsh},
     it is assumed to be a fragment shader, otherwise it is assumed to
     be a vertex shader (normally the extension is \c{.vsh} for vertex shaders).
-    If the shader could not be loaded, then isValid() will return false.
+    If the shader could not be loaded, then isCompiled() will return false.
 
     The shader will be associated with \a context.
 
-    \sa isValid()
+    \sa isCompiled()
 */
 QGLShader::QGLShader(const QString& fileName, const QGLContext *context, QObject *parent)
     : QObject(parent)
@@ -424,7 +428,7 @@ QGLShader::QGLShader(const QString& fileName, const QGLContext *context, QObject
         d = new QGLShaderPrivate(QGLShader::FragmentShader, context);
     else
         d = new QGLShaderPrivate(QGLShader::VertexShader, context);
-    if (d->create() && !setSourceCodeFile(fileName)) {
+    if (d->create() && !compileFile(fileName)) {
         if (d->shader)
             glDeleteShader(d->shader);
         d->shader = 0;
@@ -434,18 +438,18 @@ QGLShader::QGLShader(const QString& fileName, const QGLContext *context, QObject
 /*!
     Constructs a new QGLShader object of the specified \a type from the
     source code in \a fileName and attaches it to \a parent.
-    If the shader could not be loaded, then isValid() will return false.
+    If the shader could not be loaded, then isCompiled() will return false.
 
     The shader will be associated with \a context.
 
-    \sa isValid()
+    \sa isCompiled()
 */
 QGLShader::QGLShader
         (const QString& fileName, QGLShader::ShaderType type, const QGLContext *context, QObject *parent)
     : QObject(parent)
 {
     d = new QGLShaderPrivate(type, context);
-    if (d->create() && !setSourceCodeFile(fileName)) {
+    if (d->create() && !compileFile(fileName)) {
         if (d->shader)
             glDeleteShader(d->shader);
         d->shader = 0;
@@ -462,24 +466,6 @@ QGLShader::~QGLShader()
     if (d->shader)
         glDeleteShader(d->shader);
     delete d;
-}
-
-/*!
-    Returns true if this shader is valid.  Shaders become invalid
-    when they are destroyed and no longer attached to a QGLShaderProgram.
-*/
-bool QGLShader::isValid() const
-{
-    if (d->isPartial && d->hasPartialSource)
-        return true;
-    if (!d->shader)
-        return false;
-#if defined(QT_OPENGL_ES_2)
-    return glIsShader(d->shader);
-#else
-    // glIsShader() may not exist on some systems.
-    return (!glIsShader || glIsShader(d->shader));
-#endif
 }
 
 /*!
@@ -509,13 +495,15 @@ static const char qualifierDefines[] =
     then this function will always return true, even if the source code
     is invalid.  Partial shaders are compiled when QGLShaderProgram::link()
     is called.
+
+    \sa compileFile()
 */
-bool QGLShader::setSourceCode(const char *source)
+bool QGLShader::compile(const char *source)
 {
     if (d->isPartial) {
         d->partialSource = QByteArray(source);
         d->hasPartialSource = true;
-        return d->compile();
+        return d->compile(this);
     } else if (d->shader) {
         QVarLengthArray<const char *> src;
 #ifdef QGL_DEFINE_QUALIFIERS
@@ -523,7 +511,7 @@ bool QGLShader::setSourceCode(const char *source)
 #endif
         src.append(source);
         glShaderSource(d->shader, src.size(), src.data(), 0);
-        return d->compile();
+        return d->compile(this);
     } else {
         return false;
     }
@@ -539,10 +527,12 @@ bool QGLShader::setSourceCode(const char *source)
     then this function will always return true, even if the source code
     is invalid.  Partial shaders are compiled when QGLShaderProgram::link()
     is called.
+
+    \sa compileFile()
 */
-bool QGLShader::setSourceCode(const QByteArray& source)
+bool QGLShader::compile(const QByteArray& source)
 {
-    return setSourceCode(source.constData());
+    return compile(source.constData());
 }
 
 /*!
@@ -555,10 +545,12 @@ bool QGLShader::setSourceCode(const QByteArray& source)
     then this function will always return true, even if the source code
     is invalid.  Partial shaders are compiled when QGLShaderProgram::link()
     is called.
+
+    \sa compileFile()
 */
-bool QGLShader::setSourceCode(const QString& source)
+bool QGLShader::compile(const QString& source)
 {
-    return setSourceCode(source.toLatin1().constData());
+    return compile(source.toLatin1().constData());
 }
 
 /*!
@@ -570,8 +562,10 @@ bool QGLShader::setSourceCode(const QString& source)
     then this function will always return true, even if the source code
     is invalid.  Partial shaders are compiled when QGLShaderProgram::link()
     is called.
+
+    \sa compile()
 */
-bool QGLShader::setSourceCodeFile(const QString& fileName)
+bool QGLShader::compileFile(const QString& fileName)
 {
     QFile file(fileName);
     if (!file.open(QFile::ReadOnly)) {
@@ -580,7 +574,7 @@ bool QGLShader::setSourceCodeFile(const QString& fileName)
     }
 
     QByteArray contents = file.readAll();
-    return setSourceCode(contents.constData());
+    return compile(contents.constData());
 }
 
 /*!
@@ -592,9 +586,11 @@ bool QGLShader::setSourceCodeFile(const QString& fileName)
     This function cannot be used with PartialVertexShader or
     PartialFragmentShader.
 
+    If this function succeeds, then the shader will be considered compiled.
+
     \sa shaderBinaryFormats()
 */
-bool QGLShader::setBinaryCode(GLenum format, const void *binary, int length)
+bool QGLShader::setShaderBinary(GLenum format, const void *binary, int length)
 {
 #if !defined(QT_OPENGL_ES_2)
     if (!glShaderBinary)
@@ -604,7 +600,8 @@ bool QGLShader::setBinaryCode(GLenum format, const void *binary, int length)
         return false;
     glGetError();   // Clear error state.
     glShaderBinary(1, &(d->shader), format, binary, length);
-    return (glGetError() == GL_NO_ERROR);
+    d->compiled = (glGetError() == GL_NO_ERROR);
+    return d->compiled;
 }
 
 /*!
@@ -620,9 +617,11 @@ bool QGLShader::setBinaryCode(GLenum format, const void *binary, int length)
     This function cannot be used with PartialVertexShader or
     PartialFragmentShader.
 
+    If this function succeeds, then the shader will be considered compiled.
+
     \sa shaderBinaryFormats()
 */
-bool QGLShader::setBinaryCode
+bool QGLShader::setShaderBinary
     (QGLShader& otherShader, GLenum format, const void *binary, int length)
 {
 #if !defined(QT_OPENGL_ES_2)
@@ -638,14 +637,16 @@ bool QGLShader::setBinaryCode
     shaders[0] = d->shader;
     shaders[1] = otherShader.d->shader;
     glShaderBinary(2, shaders, format, binary, length);
-    return (glGetError() == GL_NO_ERROR);
+    d->compiled = (glGetError() == GL_NO_ERROR);
+    otherShader.d->compiled = d->compiled;
+    return d->compiled;
 }
 
 /*!
     Returns a list of all binary formats that are supported by
-    setBinaryCode() on this system.
+    setShaderBinary() on this system.
 
-    \sa setBinaryCode()
+    \sa setShaderBinary()
 */
 QList<GLenum> QGLShader::shaderBinaryFormats()
 {
@@ -665,7 +666,7 @@ QList<GLenum> QGLShader::shaderBinaryFormats()
 /*!
     Returns the source code for this shader.
 
-    \sa setSourceCode()
+    \sa compile()
 */
 QByteArray QGLShader::sourceCode() const
 {
@@ -688,7 +689,7 @@ QByteArray QGLShader::sourceCode() const
 /*!
     Returns true if this shader has been compiled; false otherwise.
 
-    \sa setSourceCode()
+    \sa compile()
 */
 bool QGLShader::isCompiled() const
 {
@@ -698,7 +699,7 @@ bool QGLShader::isCompiled() const
 /*!
     Returns the errors and warnings that occurred during the last compile.
 
-    \sa setSourceCode()
+    \sa compile()
 */
 QString QGLShader::log() const
 {
@@ -726,14 +727,14 @@ class QGLShaderProgramPrivate
 {
 public:
     QGLShaderProgramPrivate(const QGLContext *ctx)
+        : context(ctx)
+        , program(0)
+        , linked(false)
+        , inited(false)
+        , hasPartialShaders(false)
+        , vertexShader(0)
+        , fragmentShader(0)
     {
-        context = ctx;
-        program = 0;
-        linked = false;
-        inited = false;
-        hasPartialShaders = false;
-        vertexShader = 0;
-        fragmentShader = 0;
     }
     ~QGLShaderProgramPrivate()
     {
@@ -762,7 +763,7 @@ public:
 
     The shader program will be associated with the current QGLContext.
 
-    \sa isValid(), addShader()
+    \sa addShader()
 */
 QGLShaderProgram::QGLShaderProgram(QObject *parent)
     : QObject(parent)
@@ -776,7 +777,7 @@ QGLShaderProgram::QGLShaderProgram(QObject *parent)
 
     The shader program will be associated with \a context.
 
-    \sa isValid(), addShader()
+    \sa addShader()
 */
 QGLShaderProgram::QGLShaderProgram(const QGLContext *context, QObject *parent)
     : QObject(parent)
@@ -812,21 +813,6 @@ bool QGLShaderProgram::init()
         qWarning() << "QGLShaderProgram: shader programs are not supported";
         return false;
     }
-}
-
-/*!
-    Returns true if this shader program object is valid, false otherwise.
-*/
-bool QGLShaderProgram::isValid() const
-{
-    if (!d->program)
-        return false;
-#if defined(QT_OPENGL_ES_2)
-    return glIsProgram(d->program);
-#else
-    // glIsProgram() may not exist on some systems.
-    return (!glIsProgram || glIsProgram(d->program));
-#endif
 }
 
 /*!
@@ -881,7 +867,7 @@ bool QGLShaderProgram::addShader(QGLShader::ShaderType type, const char *source)
     if (!init())
         return false;
     QGLShader *shader = new QGLShader(type, this);
-    if (!shader->setSourceCode(source)) {
+    if (!shader->compile(source)) {
         d->log = shader->log();
         delete shader;
         return false;
@@ -1058,7 +1044,11 @@ bool QGLShaderProgram::setProgramBinary(int format, const QByteArray& binary)
         GLint len;
         glGetProgramInfoLog(d->program, value, &len, logbuf);
         d->log = QString::fromLatin1(logbuf);
-        qWarning() << "QGLShaderProgram::setProgramBinary:" << d->log;
+        QString name = objectName();
+        if (name.isEmpty())
+            qWarning() << "QGLShader::setProgramBinary:" << d->log;
+        else
+            qWarning() << "QGLShader::setProgramBinary[" << name << "]:" << d->log;
         delete [] logbuf;
     }
     return d->linked;
@@ -1130,7 +1120,7 @@ bool QGLShaderProgram::link()
                 d->vertexShader =
                     new QGLShader(QGLShader::VertexShader, this);
             }
-            if (!d->vertexShader->setSourceCode(vertexSource)) {
+            if (!d->vertexShader->compile(vertexSource)) {
                 d->log = d->vertexShader->log();
                 return false;
             }
@@ -1147,7 +1137,7 @@ bool QGLShaderProgram::link()
                 d->fragmentShader =
                     new QGLShader(QGLShader::FragmentShader, this);
             }
-            if (!d->fragmentShader->setSourceCode(fragmentSource)) {
+            if (!d->fragmentShader->compile(fragmentSource)) {
                 d->log = d->fragmentShader->log();
                 return false;
             }
@@ -1166,7 +1156,11 @@ bool QGLShaderProgram::link()
         GLint len;
         glGetProgramInfoLog(d->program, value, &len, logbuf);
         d->log = QString::fromLatin1(logbuf);
-        qWarning() << "QGLShaderProgram::link:" << d->log;
+        QString name = objectName();
+        if (name.isEmpty())
+            qWarning() << "QGLShader::link:" << d->log;
+        else
+            qWarning() << "QGLShader::link[" << name << "]:" << d->log;
         delete [] logbuf;
     }
     return d->linked;

@@ -53,7 +53,7 @@
 // We mean it.
 //
 
-#include "qabstractstate_p.h"
+#include "private/qabstractstate_p.h"
 
 #include <QtCore/qlist.h>
 
