@@ -165,30 +165,30 @@ void tst_Bic::sizesAndVTables_data()
 
 #if defined Q_OS_LINUX && defined Q_WS_X11
 # if defined(__powerpc__) && !defined(__powerpc64__)
-    archFileName400 = "data/%1.4.0.0.linux-gcc-ppc32.txt";
-    archFileName410 = "data/%1.4.1.0.linux-gcc-ppc32.txt";
-    archFileName420 = "data/%1.4.2.0.linux-gcc-ppc32.txt";
+    archFileName400 = SRCDIR "data/%1.4.0.0.linux-gcc-ppc32.txt";
+    archFileName410 = SRCDIR "data/%1.4.1.0.linux-gcc-ppc32.txt";
+    archFileName420 = SRCDIR "data/%1.4.2.0.linux-gcc-ppc32.txt";
 # elif defined(__amd64__)
-    archFileName400 = "data/%1.4.0.0.linux-gcc-amd64.txt";
+    archFileName400 = SRCDIR "data/%1.4.0.0.linux-gcc-amd64.txt";
 # elif defined(__i386__)
-    archFileName400 = "data/%1.4.0.0.linux-gcc-ia32.txt";
-    archFileName410 = "data/%1.4.1.0.linux-gcc-ia32.txt";
-    archFileName420 = "data/%1.4.2.0.linux-gcc-ia32.txt";
-    archFileName430 = "data/%1.4.3.0.linux-gcc-ia32.txt";
+    archFileName400 = SRCDIR "data/%1.4.0.0.linux-gcc-ia32.txt";
+    archFileName410 = SRCDIR "data/%1.4.1.0.linux-gcc-ia32.txt";
+    archFileName420 = SRCDIR "data/%1.4.2.0.linux-gcc-ia32.txt";
+    archFileName430 = SRCDIR "data/%1.4.3.0.linux-gcc-ia32.txt";
 # endif
 #elif defined Q_OS_AIX
     if (sizeof(void*) == 4)
-        archFileName400 = "data/%1.4.0.0.aix-gcc-power32.txt";
+        archFileName400 = SRCDIR "data/%1.4.0.0.aix-gcc-power32.txt";
 #elif defined Q_OS_MAC && defined(__powerpc__)
-    archFileName400 = "data/%1.4.0.0.macx-gcc-ppc32.txt";
-    archFileName410 = "data/%1.4.1.0.macx-gcc-ppc32.txt";
-    archFileName420 = "data/%1.4.2.0.macx-gcc-ppc32.txt";
+    archFileName400 = SRCDIR "data/%1.4.0.0.macx-gcc-ppc32.txt";
+    archFileName410 = SRCDIR "data/%1.4.1.0.macx-gcc-ppc32.txt";
+    archFileName420 = SRCDIR "data/%1.4.2.0.macx-gcc-ppc32.txt";
 #elif defined Q_OS_MAC && defined(__i386__)
-    archFileName410 = "data/%1.4.1.0.macx-gcc-ia32.txt";
-    archFileName420 = "data/%1.4.2.0.macx-gcc-ia32.txt";
+    archFileName410 = SRCDIR "data/%1.4.1.0.macx-gcc-ia32.txt";
+    archFileName420 = SRCDIR "data/%1.4.2.0.macx-gcc-ia32.txt";
 #elif defined Q_OS_WIN && defined Q_CC_GNU
-    archFileName410 = "data/%1.4.1.0.win32-gcc-ia32.txt";
-    archFileName420 = "data/%1.4.2.0.win32-gcc-ia32.txt";
+    archFileName410 = SRCDIR "data/%1.4.1.0.win32-gcc-ia32.txt";
+    archFileName420 = SRCDIR "data/%1.4.2.0.win32-gcc-ia32.txt";
 #endif
 
     if (archFileName400.isEmpty() && archFileName410.isEmpty()
@@ -293,6 +293,7 @@ void tst_Bic::sizesAndVTables()
 
     bool isFailed = false;
 
+    qDebug() << oldLib.arg(libName);
     if (oldLib.isEmpty() || !QFile::exists(oldLib.arg(libName)))
         QSKIP("No platform spec found for this platform/version.", SkipSingle);
 
