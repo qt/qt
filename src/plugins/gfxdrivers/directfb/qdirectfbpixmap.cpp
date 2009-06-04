@@ -202,10 +202,11 @@ void QDirectFBPixmapData::copy(const QPixmapData *data, const QRect &rect)
     }
 
     IDirectFBSurface *src = static_cast<const QDirectFBPixmapData*>(data)->directFBSurface();
-    const bool hasAlpha = data->hasAlphaChannel();
-    format = (hasAlpha
+    alpha = data->hasAlphaChannel();
+    format = (alpha
               ? QDirectFBScreen::instance()->alphaPixmapFormat()
               : QDirectFBScreen::instance()->pixelFormat());
+
 
     dfbSurface = screen->createDFBSurface(rect.size(), format,
                                           QDirectFBScreen::TrackSurface);
@@ -215,7 +216,7 @@ void QDirectFBPixmapData::copy(const QPixmapData *data, const QRect &rect)
         return;
     }
 
-    if (hasAlpha) {
+    if (alpha) {
         dfbSurface->Clear(dfbSurface, 0, 0, 0, 0);
         dfbSurface->SetBlittingFlags(dfbSurface, DSBLIT_BLEND_ALPHACHANNEL);
     } else {
