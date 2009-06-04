@@ -349,6 +349,8 @@ void QProgressBar::setRange(int minimum, int maximum)
     \property QProgressBar::textVisible
     \brief whether the current completed percentage should be displayed
 
+    This property may be ignored by the style (e.g., QMacStyle never draws the text).
+
     \sa textDirection
 */
 void QProgressBar::setTextVisible(bool visible)
