@@ -245,14 +245,14 @@ class QGLShaderPrivate
 {
 public:
     QGLShaderPrivate(QGLShader::ShaderType type, const QGLContext *ctx)
+        : context(ctx)
+        , shader(0)
+        , shaderType(type)
+        , compiled(false)
+        , isPartial(type == QGLShader::PartialVertexShader ||
+                    type == QGLShader::PartialFragmentShader)
+        , hasPartialSource(false)
     {
-        context = ctx;
-        shader = 0;
-        shaderType = type;
-        compiled = false;
-        isPartial = (type == QGLShader::PartialVertexShader ||
-                     type == QGLShader::PartialFragmentShader);
-        hasPartialSource = false;
     }
 
     const QGLContext *context;
@@ -727,14 +727,14 @@ class QGLShaderProgramPrivate
 {
 public:
     QGLShaderProgramPrivate(const QGLContext *ctx)
+        : context(ctx)
+        , program(0)
+        , linked(false)
+        , inited(false)
+        , hasPartialShaders(false)
+        , vertexShader(0)
+        , fragmentShader(0)
     {
-        context = ctx;
-        program = 0;
-        linked = false;
-        inited = false;
-        hasPartialShaders = false;
-        vertexShader = 0;
-        fragmentShader = 0;
     }
     ~QGLShaderProgramPrivate()
     {
