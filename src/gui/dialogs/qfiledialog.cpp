@@ -638,8 +638,9 @@ QFileDialog::Options QFileDialog::options() const
 
     \since 4.5
 
-    Opens the dialog and connects its accepted() signal to the slot specified
-    by \a receiver and \a member.
+    This function connects one of its signals to the slot specified by \a receiver
+    and \a member. The specific signal depends is filesSelected() if fileMode is
+    ExistingFiles and fileSelected() if fileMode is anything else.
 
     The signal will be disconnected from the slot when the dialog is closed.
 */

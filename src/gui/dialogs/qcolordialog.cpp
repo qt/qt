@@ -1749,7 +1749,7 @@ void QColorDialog::setVisible(bool visible)
     \overload
     \since 4.5
 
-    Opens the dialog and connects its accepted() signal to the slot specified
+    Opens the dialog and connects its colorSelected() signal to the slot specified
     by \a receiver and \a member.
 
     The signal will be disconnected from the slot when the dialog is closed.
