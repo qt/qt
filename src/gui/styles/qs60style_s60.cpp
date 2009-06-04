@@ -77,8 +77,10 @@ enum TSupportRelease {
     ES60_3_1      = 0x0001,
     ES60_3_2      = 0x0002,
     ES60_5_0      = 0x0004,
+    ES60_5_1      = 0x0008,
+    ES60_5_2      = 0x0010,
     // Add all new releases here
-    ES60_AllReleases = ES60_3_1 | ES60_3_2 | ES60_5_0
+    ES60_AllReleases = ES60_3_1 | ES60_3_2 | ES60_5_0 | ES60_5_1 | ES60_5_2 
 };
 
 typedef struct {
@@ -88,17 +90,6 @@ typedef struct {
     int newMajorSkinId;
     int newMinorSkinId;
 } partMapEntry;
-
-enum TFallbackMbmFile {
-    EAvkonMbm = 0,
-    ELastMbm
-};
-
-typedef struct {
-    const QS60StyleEnums::SkinParts partID;
-    TFallbackMbmFile fallbackFileID; //to avoid putting large char strings to table, lets only have a mapping value
-    int fallbackGraphicID;
-} fallbackMapEntry;
 
 class QS60StyleModeSpecifics
 {
@@ -644,7 +635,7 @@ QPixmap QS60StyleModeSpecifics::createSkinnedGraphicsL(
     Q_ASSERT(drawType != ENoDraw);
     const bool rotatedBy90or270 =
         (flags & (QS60StylePrivate::SF_PointEast | QS60StylePrivate::SF_PointWest));
-    TSize targetSize =
+    const TSize targetSize =
         rotatedBy90or270 ? TSize(size.height(), size.width()) : qt_QSize2TSize(size);
 
     MAknsSkinInstance* skinInstance = AknsUtils::SkinInstance();
@@ -719,7 +710,7 @@ QPixmap QS60StyleModeSpecifics::createSkinnedGraphicsL(QS60StylePrivate::SkinFra
 
     const bool rotatedBy90or270 =
         (flags & (QS60StylePrivate::SF_PointEast | QS60StylePrivate::SF_PointWest));
-    TSize targetSize =
+    const TSize targetSize =
         rotatedBy90or270 ? TSize(size.height(), size.width()) : qt_QSize2TSize(size);
 
     MAknsSkinInstance* skinInstance = AknsUtils::SkinInstance();
@@ -901,7 +892,7 @@ void QS60StyleModeSpecifics::checkAndUnCompressBitmapL(CFbsBitmap*& aOriginalBit
 QFont QS60StylePrivate::s60Font_specific(
     QS60StyleEnums::FontCategories fontCategory, int pointSize)
 {
-    enum TAknFontCategory aknFontCategory = EAknFontCategoryUndefined;
+    TAknFontCategory aknFontCategory = EAknFontCategoryUndefined;
     switch (fontCategory) {
         case QS60StyleEnums::FC_Primary:
             aknFontCategory = EAknFontCategoryPrimary;
@@ -1176,8 +1167,8 @@ void QS60StyleModeSpecifics::unCompressBitmapL(const TRect& aTrgRect, CFbsBitmap
     if (displayMode != aTrgBitmap->DisplayMode())
         User::Leave(KErrArgument);
 
-    TSize trgSize = aTrgBitmap->SizeInPixels();
-    TSize srcSize = aSrcBitmap->SizeInPixels();
+    const TSize trgSize = aTrgBitmap->SizeInPixels();
+    const TSize srcSize = aSrcBitmap->SizeInPixels();
 
     // calculate the valid drawing area
     TRect drawRect = aTrgRect;
@@ -1213,14 +1204,14 @@ void QS60StyleModeSpecifics::unCompressBitmapL(const TRect& aTrgRect, CFbsBitmap
     const TInt drawWidth = drawRect.Width();
     const TInt drawHeight = drawRect.Height();
 
-    TRect offsetRect(aTrgRect.iTl, drawRect.iTl);
+    const TRect offsetRect(aTrgRect.iTl, drawRect.iTl);
     const TInt yPosOffset = ySkip * offsetRect.Height();
     const TInt xPosOffset = xSkip * offsetRect.Width();
 
     if ((displayMode == EGray256) || (displayMode == EColor256)) {
-        TInt srcScanLen8 = CFbsBitmap::ScanLineLength(srcSize.iWidth,
+        const TInt srcScanLen8 = CFbsBitmap::ScanLineLength(srcSize.iWidth,
             displayMode);
-        TInt trgScanLen8 = CFbsBitmap::ScanLineLength(trgSize.iWidth,
+        const TInt trgScanLen8 = CFbsBitmap::ScanLineLength(trgSize.iWidth,
             displayMode);
 
         TUint8* trgAddress8 = reinterpret_cast<TUint8*> (trgAddress);
@@ -1230,7 +1221,7 @@ void QS60StyleModeSpecifics::unCompressBitmapL(const TRect& aTrgRect, CFbsBitmap
         trgAddress8 += trgScanLen8 * drawRect.iTl.iY + drawRect.iTl.iX;
 
         for (TInt y = 0; y < drawHeight; y++) {
-            TUint8* srcAddress8 = reinterpret_cast<TUint8*> (srcAddress)
+            const TUint8* srcAddress8 = reinterpret_cast<const TUint8*> (srcAddress)
                 + (srcScanLen8 * (yPos >> 8));
 
             TInt xPos = xPosOffset;
@@ -1244,9 +1235,9 @@ void QS60StyleModeSpecifics::unCompressBitmapL(const TRect& aTrgRect, CFbsBitmap
             trgAddress8 += trgScanLen8 - drawWidth;
         }
     } else if (displayMode == EColor4K || displayMode == EColor64K) {
-        TInt srcScanLen16 = CFbsBitmap::ScanLineLength(srcSize.iWidth,
+        const TInt srcScanLen16 = CFbsBitmap::ScanLineLength(srcSize.iWidth,
             displayMode) >>1;
-        TInt trgScanLen16 = CFbsBitmap::ScanLineLength(trgSize.iWidth,
+        const TInt trgScanLen16 = CFbsBitmap::ScanLineLength(trgSize.iWidth,
             displayMode) >>1;
 
         TUint16* trgAddress16 = reinterpret_cast<TUint16*> (trgAddress);
@@ -1256,7 +1247,7 @@ void QS60StyleModeSpecifics::unCompressBitmapL(const TRect& aTrgRect, CFbsBitmap
         trgAddress16 += trgScanLen16 * drawRect.iTl.iY + drawRect.iTl.iX;
 
         for (TInt y = 0; y < drawHeight; y++) {
-            TUint16* srcAddress16 = reinterpret_cast<TUint16*> (srcAddress)
+            const TUint16* srcAddress16 = reinterpret_cast<const TUint16*> (srcAddress)
                 + (srcScanLen16 * (yPos >> 8));
 
             TInt xPos = xPosOffset;
@@ -1270,9 +1261,9 @@ void QS60StyleModeSpecifics::unCompressBitmapL(const TRect& aTrgRect, CFbsBitmap
             trgAddress16 += trgScanLen16 - drawWidth;
         }
     } else if (displayMode == EColor16MU || displayMode == EColor16MA) {
-        TInt srcScanLen32 = CFbsBitmap::ScanLineLength(srcSize.iWidth,
+        const TInt srcScanLen32 = CFbsBitmap::ScanLineLength(srcSize.iWidth,
             displayMode) >>2;
-        TInt trgScanLen32 = CFbsBitmap::ScanLineLength(trgSize.iWidth,
+        const TInt trgScanLen32 = CFbsBitmap::ScanLineLength(trgSize.iWidth,
             displayMode) >>2;
 
         TUint32* trgAddress32 = reinterpret_cast<TUint32*> (trgAddress);
@@ -1282,7 +1273,7 @@ void QS60StyleModeSpecifics::unCompressBitmapL(const TRect& aTrgRect, CFbsBitmap
         trgAddress32 += trgScanLen32 * drawRect.iTl.iY + drawRect.iTl.iX;
 
         for (TInt y = 0; y < drawHeight; y++) {
-            TUint32* srcAddress32 = reinterpret_cast<TUint32*> (srcAddress)
+            const TUint32* srcAddress32 = reinterpret_cast<const TUint32*> (srcAddress)
                 + (srcScanLen32 * (yPos >> 8));
 
             TInt xPos = xPosOffset;
@@ -1302,8 +1293,8 @@ void QS60StyleModeSpecifics::unCompressBitmapL(const TRect& aTrgRect, CFbsBitmap
 
 QSize QS60StylePrivate::screenSize()
 {
-    TSize mySize = QS60Data::screenDevice()->SizeInPixels();
-    return QSize(mySize.iWidth, mySize.iHeight);
+    const TSize screenSize = QS60Data::screenDevice()->SizeInPixels();
+    return QSize(screenSize.iWidth, screenSize.iHeight);
 }
 
 void QS60StyleModeSpecifics::colorGroupAndIndex(
