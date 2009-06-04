@@ -76,7 +76,7 @@ private slots:
 
     void oldCacheVersionFile_data();
     void oldCacheVersionFile();
-
+    
     void sync();
 };
 
@@ -486,7 +486,7 @@ public:
     void run()
     {
         QByteArray longString = "Hello World, this is some long string, well not really that long";
-        for (int i = 0; i < 10; ++i)
+        for (int j = 0; j < 10; ++j)
             longString += longString;
         QByteArray longString2 = "Help, I am stuck in an autotest!";
         QUrl url(EXAMPLE_URL);
