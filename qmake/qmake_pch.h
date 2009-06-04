@@ -53,7 +53,7 @@
 //#include "meta.h"
 #include <qfile.h>
 //#include "winmakefile.h"
-#include <qtextstream.h>
+//#include <qtextstream.h>
 //#include "project.h"
 #include <qstring.h>
 #include <qstringlist.h>
