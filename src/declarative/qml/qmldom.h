@@ -78,6 +78,9 @@ public:
     QByteArray save() const;
 
     QmlDomObject rootObject() const;
+
+    QList<int> automaticSemicolonOffsets() const;
+
 private:
     QSharedDataPointer<QmlDomDocumentPrivate> d;
 };
