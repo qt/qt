@@ -893,15 +893,28 @@ void QWidgetPrivate::x11UpdateIsOpaque()
     int screen = xinfo.screen();
     if (topLevel && X11->use_xrender
         && X11->argbVisuals[screen] && xinfo.depth() != 32) {
-        // recreate widget
-        QPoint pos = q->pos();
-        bool visible = q->isVisible();
-        if (visible)
-            q->hide();
-        q->setParent(q->parentWidget(), q->windowFlags());
-        q->move(pos);
-        if (visible)
-            q->show();
+
+        if (q->inherits("QGLWidget")) {
+            // We send QGLWidgets a ParentChange event which causes them to
+            // recreate their GL context, which in turn causes them to choose
+            // their visual again. Now that WA_TranslucentBackground is set,
+            // QGLContext::chooseVisual will select an ARGB visual.
+            QEvent e(QEvent::ParentChange);
+            QApplication::sendEvent(q, &e);
+        }
+        else {
+            // For regular widgets, reparent them with their parent which
+            // also triggers a recreation of the native window
+            QPoint pos = q->pos();
+            bool visible = q->isVisible();
+            if (visible)
+                q->hide();
+
+            q->setParent(q->parentWidget(), q->windowFlags());
+            q->move(pos);
+            if (visible)
+                q->show();
+        }
     }
 #endif
 }
@@ -1346,17 +1359,10 @@ void QWidgetPrivate::setWindowIcon_sys(bool forceReset)
         // already been set
         return;
 
-    XWMHints *h = 0;
-    if (q->internalWinId())
-        h = XGetWMHints(X11->display, q->internalWinId());
-    XWMHints wm_hints;
-    if (!h) {
-        memset(&wm_hints, 0, sizeof(wm_hints)); // make valgrind happy
-        h = &wm_hints;
-    }
-
     // preparing images to set the _NET_WM_ICON property
     QIcon icon = q->windowIcon();
+    QVector<long> icon_data;
+    Qt::HANDLE pixmap_handle = 0;
     if (!icon.isNull()) {
         QList<QSize> availableSizes = icon.availableSizes();
         if(availableSizes.isEmpty()) {
@@ -1366,7 +1372,6 @@ void QWidgetPrivate::setWindowIcon_sys(bool forceReset)
             availableSizes.push_back(QSize(64,64));
             availableSizes.push_back(QSize(128,128));
         }
-        QVector<long> icon_data;
         for(int i = 0; i < availableSizes.size(); ++i) {
             QSize size = availableSizes.at(i);
             QPixmap pixmap = icon.pixmap(size);
@@ -1388,11 +1393,6 @@ void QWidgetPrivate::setWindowIcon_sys(bool forceReset)
             }
         }
         if (!icon_data.isEmpty()) {
-            if (q->internalWinId()) {
-                XChangeProperty(X11->display, q->internalWinId(), ATOM(_NET_WM_ICON), XA_CARDINAL, 32,
-                                PropModeReplace, (unsigned char *) icon_data.data(),
-                                icon_data.size());
-            }
             extern QPixmap qt_toX11Pixmap(const QPixmap &pixmap);
             /*
               if the app is running on an unknown desktop, or it is not
@@ -1406,22 +1406,44 @@ void QWidgetPrivate::setWindowIcon_sys(bool forceReset)
                 // unknown DE or non-default visual/colormap, use 1bpp bitmap
                 if (!forceReset || !topData->iconPixmap)
                     topData->iconPixmap = new QBitmap(qt_toX11Pixmap(icon.pixmap(QSize(64,64))));
-                h->icon_pixmap = topData->iconPixmap->handle();
+                pixmap_handle = topData->iconPixmap->handle();
             } else {
                 // default depth, use a normal pixmap (even though this
                 // violates the ICCCM), since this works on all DEs known to Qt
                 if (!forceReset || !topData->iconPixmap)
                     topData->iconPixmap = new QPixmap(qt_toX11Pixmap(icon.pixmap(QSize(64,64))));
-                h->icon_pixmap = static_cast<QX11PixmapData*>(topData->iconPixmap->data)->x11ConvertToDefaultDepth();
+                pixmap_handle = static_cast<QX11PixmapData*>(topData->iconPixmap->data)->x11ConvertToDefaultDepth();
             }
-            h->flags |= IconPixmapHint;
-        } else {
-            h->flags &= ~(IconPixmapHint | IconMaskHint);
         }
     }
 
-    if (q->internalWinId())
-        XSetWMHints(X11->display, q->internalWinId(), h);
+    if (!q->internalWinId())
+        return;
+
+    if (!icon_data.isEmpty()) {
+        XChangeProperty(X11->display, q->internalWinId(), ATOM(_NET_WM_ICON), XA_CARDINAL, 32,
+                        PropModeReplace, (unsigned char *) icon_data.data(),
+                        icon_data.size());
+    } else {
+        XDeleteProperty(X11->display, q->internalWinId(), ATOM(_NET_WM_ICON));
+    }
+
+    XWMHints *h = XGetWMHints(X11->display, q->internalWinId());
+    XWMHints wm_hints;
+    if (!h) {
+        memset(&wm_hints, 0, sizeof(wm_hints)); // make valgrind happy
+        h = &wm_hints;
+    }
+
+    if (pixmap_handle) {
+        h->icon_pixmap = pixmap_handle;
+        h->flags |= IconPixmapHint;
+    } else {
+        h->icon_pixmap = 0;
+        h->flags &= ~(IconPixmapHint | IconMaskHint);
+    }
+
+    XSetWMHints(X11->display, q->internalWinId(), h);
     if (h != &wm_hints)
         XFree((char *)h);
 }
@@ -1547,7 +1569,6 @@ QWidget *QWidget::keyboardGrabber()
 
 void QWidget::activateWindow()
 {
-    Q_D(QWidget);
     QWidget *tlw = window();
     if (tlw->isVisible() && !tlw->d_func()->topData()->embedded && !X11->deferred_map.contains(tlw)) {
         if (X11->userTime == 0)
@@ -2525,6 +2546,8 @@ void QWidgetPrivate::scroll_sys(int dx, int dy, const QRect &r)
     QRect sr = valid_rect ? r : clipRect();
     if (just_update)
         q->update();
+    else if (!valid_rect)
+        dirty.translate(dx, dy);
 
     int x1, y1, x2, y2, w = sr.width(), h = sr.height();
     if (dx > 0) {

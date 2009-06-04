@@ -218,8 +218,8 @@ void tst_QTessellator::testArc()
     const int stop = 1000;
 #endif
     for (int i = 0; i < stop; ++i) {
-        mat.rotate(.01);
-        mat.scale(.99, .99);
+        mat.rotate(qreal(.01));
+        mat.scale(qreal(.99), qreal(.99));
         QPolygonF poly = arc.at(0);
         QPolygonF vec = poly * mat;
         QVERIFY(test_arc(vec, true));
@@ -361,11 +361,11 @@ void tst_QTessellator::testRects()
         QVector<QPointF> v(5);
         for (int i = 0; i < 5; ++i)
             v[i] = vec[5 * rect + i];
-        if (!test(v.data(), v.size(), false, test_tessellate_polygon_rect, 0.05)) {
+        if (!test(v.data(), v.size(), false, test_tessellate_polygon_rect, qreal(0.05))) {
             simplifyTestFailure(v, false);
             ++failures;
         }
-        if (!test(v.data(), v.size(), true, test_tessellate_polygon_rect, 0.05)) {
+        if (!test(v.data(), v.size(), true, test_tessellate_polygon_rect, qreal(0.05))) {
             simplifyTestFailure(v, true);
             ++failures;
         }

@@ -59,7 +59,7 @@
 
     If STL is available on all your target platforms, you can use the
     STL algorithms instead of their Qt counterparts. One reason why
-    you might want to use the the STL algorithms is that STL provides
+    you might want to use the STL algorithms is that STL provides
     dozens and dozens of algorithms, whereas Qt only provides the most
     important ones, making no attempt to duplicate functionality that
     is already provided by the C++ standard.

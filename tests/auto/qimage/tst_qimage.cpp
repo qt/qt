@@ -131,6 +131,8 @@ private slots:
     void nullSize();
 
     void premultipliedAlphaConsistency();
+
+    void compareIndexed();
 };
 
 tst_QImage::tst_QImage()
@@ -274,6 +276,9 @@ void tst_QImage::formatHandlersInput_data()
     QTest::newRow("PPM") << "PPM" << prefix + "image.ppm";
     QTest::newRow("XBM") << "XBM" << prefix + "image.xbm";
     QTest::newRow("XPM") << "XPM" << prefix + "image.xpm";
+#if defined QTEST_HAVE_TIFF
+    QTest::newRow("TIFF") << "TIFF" << prefix + "image.tif";
+#endif
 }
 
 void tst_QImage::formatHandlersInput()
@@ -1454,9 +1459,9 @@ void tst_QImage::smoothScale3()
                 QRgb cb = b.pixel(x, y);
 
                 // tolerate a little bit of rounding errors
-                QVERIFY(compare(qRed(ca), qRed(cb), 2));
-                QVERIFY(compare(qGreen(ca), qGreen(cb), 2));
-                QVERIFY(compare(qBlue(ca), qBlue(cb), 2));
+                QVERIFY(compare(qRed(ca), qRed(cb), 3));
+                QVERIFY(compare(qGreen(ca), qGreen(cb), 3));
+                QVERIFY(compare(qBlue(ca), qBlue(cb), 3));
             }
         }
     }
@@ -1757,6 +1762,32 @@ void tst_QImage::premultipliedAlphaConsistency()
         QVERIFY(qGreen(pixel) <= qAlpha(pixel));
         QVERIFY(qBlue(pixel) <= qAlpha(pixel));
     }
+}
+
+void tst_QImage::compareIndexed()
+{
+    QImage img(256, 1, QImage::Format_Indexed8);
+
+    QVector<QRgb> colorTable(256);
+    for (int i = 0; i < 256; ++i)
+        colorTable[i] = qRgb(i, i, i);
+    img.setColorTable(colorTable);
+
+    for (int i = 0; i < 256; ++i) {
+        img.setPixel(i, 0, i);
+    }
+
+    QImage imgInverted(256, 1, QImage::Format_Indexed8);
+    QVector<QRgb> invertedColorTable(256);
+    for (int i = 0; i < 256; ++i)
+        invertedColorTable[255-i] = qRgb(i, i, i);
+    imgInverted.setColorTable(invertedColorTable);
+
+    for (int i = 0; i < 256; ++i) {
+        imgInverted.setPixel(i, 0, (255-i));
+    }
+
+    QCOMPARE(img, imgInverted);
 }
 
 QTEST_MAIN(tst_QImage)

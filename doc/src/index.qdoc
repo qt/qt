@@ -153,6 +153,7 @@
         <li><a href="overviews.html">All Overviews and HOWTOs</a></li>
         <li><a href="gallery.html">Qt Widget Gallery</a></li>
         <li><a href="http://doc.trolltech.com/extras/qt43-class-chart.pdf">Class Chart</a></li>
+        <li><a href="qtglobal.html">Qt Global Declarations</a></li>
         </ul>
         </td>
         <td valign="top">
@@ -207,10 +208,10 @@
         <td valign="top">
         <ul>
         <li><a href="http://www.qtsoftware.com/products/add-on-products">Qt Solutions</a></li>
-        <li><a href="http://www.qtsoftware.com/products/qt/3rdparty/">Partner Add-ons</a></li>
+        <li><a href="http://www.qtsoftware.com/products/appdev">Partner Add-ons</a></li>
         <li><a href="http://qt-apps.org">Third-Party Qt Components (qt-apps.org)</a></li>
-        <li><a href="http://www.qtsoftware.com/support/">Support</a></li>
-        <li><a href="http://www.qtsoftware.com/support/training/">Training</a></li>
+        <li><a href="http://www.qtsoftware.com/support-services/support-services/">Support</a></li>
+        <li><a href="http://www.qtsoftware.com/support-services/training/">Training</a></li>
         </ul>
         </td>
         <td valign="top">

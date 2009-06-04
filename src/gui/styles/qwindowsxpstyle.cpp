@@ -1792,7 +1792,12 @@ case PE_Frame:
         return;
 
     case PE_IndicatorToolBarSeparator:
-
+        if (option->rect.height() < 3) {
+            // XP style requires a few pixels for the separator
+            // to be visible.
+            QWindowsStyle::drawPrimitive(pe, option, p, widget);
+            return;
+        }
         name = QLatin1String("TOOLBAR");
         partId = TP_SEPARATOR;
 

@@ -168,7 +168,7 @@ bool QTiffHandler::read(QImage *image)
                         break;
                     default:
                         // do nothing as defaults have already
-						// been set within the QImage class
+                        // been set within the QImage class
                         break;
                 }
                 for (uint32 y=0; y<height; ++y)
@@ -218,6 +218,24 @@ bool QTiffHandler::write(const QImage &image)
             return false;
         }
 
+        // set the resolution
+        bool  resolutionSet = false;
+        const int dotPerMeterX = image.dotsPerMeterX();
+        const int dotPerMeterY = image.dotsPerMeterY();
+        if ((dotPerMeterX % 100) == 0
+                && (dotPerMeterY % 100) == 0) {
+            resolutionSet = TIFFSetField(tiff, TIFFTAG_RESOLUTIONUNIT, RESUNIT_CENTIMETER)
+                && TIFFSetField(tiff, TIFFTAG_XRESOLUTION, dotPerMeterX/100.0)
+                && TIFFSetField(tiff, TIFFTAG_YRESOLUTION, dotPerMeterY/100.0);
+        } else {
+            resolutionSet = TIFFSetField(tiff, TIFFTAG_RESOLUTIONUNIT, RESUNIT_INCH)
+                && TIFFSetField(tiff, TIFFTAG_XRESOLUTION, static_cast<float>(image.logicalDpiX()))
+                && TIFFSetField(tiff, TIFFTAG_YRESOLUTION, static_cast<float>(image.logicalDpiY()));
+        }
+        if (!resolutionSet) {
+            TIFFClose(tiff);
+            return false;
+        }
         // try to do the ARGB32 conversion in chunks no greater than 16 MB
         int chunks = (width * height * 4 / (1024 * 1024 * 16)) + 1;
         int chunkHeight = qMax(height / chunks, 1);

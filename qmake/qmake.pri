@@ -79,7 +79,6 @@ bootstrap { #Qt code
         qfile.h \
         qabstractfileengine.h \
         qfileinfo.h \
-        qfileinfo_p.h \
         qglobal.h \
         qnumeric.h \
         qhash.h \

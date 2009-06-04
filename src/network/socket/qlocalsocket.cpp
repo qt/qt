@@ -468,7 +468,7 @@ QDebug operator<<(QDebug debug, QLocalSocket::LocalSocketError error)
         debug << "QLocalSocket::UnknownSocketError";
         break;
     default:
-        debug << "QLocalSocket::SocketError(" << int(error) << ")";
+        debug << "QLocalSocket::SocketError(" << int(error) << ')';
         break;
     }
     return debug;
@@ -490,7 +490,7 @@ QDebug operator<<(QDebug debug, QLocalSocket::LocalSocketState state)
         debug << "QLocalSocket::ClosingState";
         break;
     default:
-        debug << "QLocalSocket::SocketState(" << int(state) << ")";
+        debug << "QLocalSocket::SocketState(" << int(state) << ')';
         break;
     }
     return debug;

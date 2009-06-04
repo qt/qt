@@ -94,7 +94,9 @@ public:
         ItemIgnoresTransformations = 0x20,
         ItemIgnoresParentOpacity = 0x40,
         ItemDoesntPropagateOpacityToChildren = 0x80,
-        ItemStacksBehindParent = 0x100
+        ItemStacksBehindParent = 0x100,
+        ItemUsesExtendedStyleOption = 0x200
+        // NB! Don't forget to increase the d_ptr->flags bit field by 1 when adding a new flag.
     };
     Q_DECLARE_FLAGS(GraphicsItemFlags, GraphicsItemFlag)
 
@@ -239,11 +241,41 @@ public:
     QTransform itemTransform(const QGraphicsItem *other, bool *ok = 0) const;
     void setTransform(const QTransform &matrix, bool combine = false);
     void resetTransform();
-    
-    void rotate(qreal angle);
-    void scale(qreal sx, qreal sy);
-    void shear(qreal sh, qreal sv);
-    void translate(qreal dx, qreal dy);
+
+    void rotate(qreal angle);           // ### obsolete
+    void scale(qreal sx, qreal sy);     // ### obsolete
+    void shear(qreal sh, qreal sv);     // ### obsolete
+    void translate(qreal dx, qreal dy); // ### obsolete
+
+    qreal xRotation() const;
+    void setXRotation(qreal angle);
+
+    qreal yRotation() const;
+    void setYRotation(qreal angle);
+
+    qreal zRotation() const;
+    void setZRotation(qreal angle);
+    void setRotation(qreal x, qreal y, qreal z);
+
+    qreal xScale() const;
+    void setXScale(qreal factor);
+
+    qreal yScale() const;
+    void setYScale(qreal factor);
+    void setScale(qreal sx, qreal sy);
+
+    qreal horizontalShear() const;
+    void setHorizontalShear(qreal shear);
+
+    qreal verticalShear() const;
+    void setVerticalShear(qreal shear);
+    void setShear(qreal sh, qreal sv);
+
+    QPointF transformOrigin() const;
+    void setTransformOrigin(const QPointF &origin);
+    inline void setTransformOrigin(qreal x, qreal y)
+    { setTransformOrigin(QPointF(x,y)); }
+
     virtual void advance(int phase);
 
     // Stacking order
@@ -1013,4 +1045,3 @@ QT_END_NAMESPACE
 QT_END_HEADER
 
 #endif // QGRAPHICSITEM_H
-

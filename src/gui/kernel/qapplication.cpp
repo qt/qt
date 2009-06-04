@@ -838,6 +838,9 @@ void QApplicationPrivate::initialize()
     // trigger registering of QVariant's GUI types
     extern int qRegisterGuiVariant();
     qRegisterGuiVariant();
+    // trigger registering of QStateMachine's GUI types
+    extern int qRegisterGuiStateMachine();
+    qRegisterGuiStateMachine();
 
     is_app_running = true; // no longer starting up
 
@@ -1059,6 +1062,9 @@ QApplication::~QApplication()
     QApplicationPrivate::fade_tooltip = false;
     QApplicationPrivate::widgetCount = false;
 
+    // trigger unregistering of QStateMachine's GUI types
+    extern int qUnregisterGuiStateMachine();
+    qUnregisterGuiStateMachine();
     // trigger unregistering of QVariant's GUI types
     extern int qUnregisterGuiVariant();
     qUnregisterGuiVariant();
@@ -2022,12 +2028,10 @@ QWidget *QApplication::focusWidget()
 
 void QApplicationPrivate::setFocusWidget(QWidget *focus, Qt::FocusReason reason)
 {
-    if (focus && focus->window()
 #ifndef QT_NO_GRAPHICSVIEW
-        && focus->window()->graphicsProxyWidget()
-#endif
-       )
+    if (focus && focus->window()->graphicsProxyWidget())
         return;
+#endif
 
     hidden_focus_widget = 0;
 

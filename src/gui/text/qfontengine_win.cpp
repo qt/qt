@@ -1406,8 +1406,8 @@ QNativeImage *QFontEngineWin::drawGDIGlyph(HFONT font, glyph_t glyph, int margin
 #endif
 #endif
 
-    QNativeImage *ni = new QNativeImage(iw + 2 * margin,
-                                        ih + 2 * margin,
+    QNativeImage *ni = new QNativeImage(iw + 2 * margin + 4,
+                                        ih + 2 * margin + 4,
                                         QNativeImage::systemFormat(), true);
     ni->image.fill(0xffffffff);
 

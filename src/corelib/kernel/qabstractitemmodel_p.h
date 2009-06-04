@@ -61,7 +61,7 @@
 
 QT_BEGIN_NAMESPACE
 
-class Q_CORE_EXPORT QPersistentModelIndexData
+class QPersistentModelIndexData
 {
 public:
     QPersistentModelIndexData() : model(0) {}

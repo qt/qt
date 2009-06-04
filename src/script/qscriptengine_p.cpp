@@ -1662,6 +1662,11 @@ bool QScriptEnginePrivate::convert(const QScriptValueImpl &value,
     return false;
 }
 
+QScriptEngine::DemarshalFunction QScriptEnginePrivate::demarshalFunction(int type) const
+{
+    return m_customTypes.value(type).demarshal;
+}
+
 QScriptValuePrivate *QScriptEnginePrivate::registerValue(const QScriptValueImpl &value)
 {
     if (value.isString()) {

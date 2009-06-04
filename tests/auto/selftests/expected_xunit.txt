@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<testsuite errors="3" failures="2" tests="6" name="tst_Xunit">
+<testsuite errors="5" failures="3" tests="9" name="tst_Xunit">
   <properties>
     <property value="4.6.0" name="QTestVersion"/>
     <property value="4.6.0" name="QtVersion"/>
@@ -20,10 +20,21 @@
   <testcase result="fail" name="testFunc4">
     <failure message="a forced failure!" result="fail"/>
   </testcase>
+  <testcase result="xfail" name="testFunc5">
+    <!-- message="this failure is expected" type="info" -->
+  </testcase>
+  <testcase result="xfail" name="testFunc6">
+    <!-- message="this failure is also expected" type="info" -->
+  </testcase>
+  <testcase result="xpass" name="testFunc7">
+    <failure message="&apos;true&apos; returned FALSE. ()" result="xpass"/>
+  </testcase>
   <testcase result="pass" name="cleanupTestCase"/>
   <system-err>
 <![CDATA[just a QWARN() !]]>
 <![CDATA[a qDebug() call with comment-ending stuff -->]]>
 <![CDATA[skipping this function!]]>
+<![CDATA[this failure is expected]]>
+<![CDATA[this failure is also expected]]>
   </system-err>
 </testsuite>

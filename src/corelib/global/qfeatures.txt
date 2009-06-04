@@ -1157,6 +1157,14 @@ Requires: PROPERTIES
 Name: Accessibility
 SeeAlso: ???
 
+Feature: ANIMATION
+Description: Provides a framework for animations.
+Section: Utilities
+Requires: PROPERTIES
+Name: Animation
+SeeAlso: ???
+
+
 # SVG
 
 Feature: SVG

@@ -47,6 +47,7 @@
 #include <qbrush.h>
 #include <qlineedit.h>
 #include <qtextedit.h>
+#include <qplaintextedit.h>
 #include <qpainter.h>
 #include <qpalette.h>
 #include <qpoint.h>
@@ -218,7 +219,7 @@ QSizeF QItemDelegatePrivate::doTextLayout(int lineWidth) const
     editor widget, which is a widget that is placed on top of the view
     while editing takes place. Editors are created with a
     QItemEditorFactory; a default static instance provided by
-    QItemEditorFactory is installed on all item delagates. You can set
+    QItemEditorFactory is installed on all item delegates. You can set
     a custom factory using setItemEditorFactory() or set a new default
     factory with QItemEditorFactory::setDefaultFactory(). It is the
     data stored in the item model with the Qt::EditRole that is edited.
@@ -1194,7 +1195,7 @@ bool QItemDelegate::eventFilter(QObject *object, QEvent *event)
         case Qt::Key_Enter:
         case Qt::Key_Return:
 #ifndef QT_NO_TEXTEDIT
-            if (qobject_cast<QTextEdit*>(editor))
+            if (qobject_cast<QTextEdit *>(editor) || qobject_cast<QPlainTextEdit *>(editor))
                 return false; // don't filter enter key events for QTextEdit
             // We want the editor to be able to process the key press
             // before committing the data (e.g. so it can do

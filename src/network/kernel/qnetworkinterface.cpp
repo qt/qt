@@ -397,7 +397,7 @@ QNetworkInterface::~QNetworkInterface()
 }
 
 /*!
-    Creates a copy of the the QNetworkInterface object contained in \a
+    Creates a copy of the QNetworkInterface object contained in \a
     other.
 */
 QNetworkInterface::QNetworkInterface(const QNetworkInterface &other)
@@ -594,7 +594,7 @@ static inline QDebug operator<<(QDebug debug, const QNetworkAddressEntry &entry)
         debug.nospace() << ", netmask = " << entry.netmask();
     if (!entry.broadcast().isNull())
         debug.nospace() << ", broadcast = " << entry.broadcast();
-    debug.nospace() << ")";
+    debug.nospace() << ')';
     return debug.space();
 }
 

@@ -781,7 +781,7 @@ void QSizeF::scale(const QSizeF &s, Qt::AspectRatioMode mode)
     \fn QDataStream &operator<<(QDataStream &stream, const QSizeF &size)
     \relates QSizeF
 
-    Writes the the given \a size to the given \a stream and returns a
+    Writes the given \a size to the given \a stream and returns a
     reference to the stream.
 
     \sa {Format of the QDataStream Operators}

@@ -1361,12 +1361,15 @@ void QTextCursor::deleteChar()
     if (!d || !d->priv)
         return;
 
-    if (d->position == d->anchor) {
-        if (!d->canDelete(d->position))
-            return;
-        d->adjusted_anchor = d->anchor =
-                             d->priv->nextCursorPosition(d->anchor, QTextLayout::SkipCharacters);
+    if (d->position != d->anchor) {
+        removeSelectedText();
+        return;
     }
+
+    if (!d->canDelete(d->position))
+        return;
+    d->adjusted_anchor = d->anchor =
+                         d->priv->nextCursorPosition(d->anchor, QTextLayout::SkipCharacters);
     d->remove();
     d->setX();
 }
@@ -1381,27 +1384,29 @@ void QTextCursor::deletePreviousChar()
 {
     if (!d || !d->priv)
         return;
-
-    if (d->position == d->anchor) {
-        if (d->anchor < 1 || !d->canDelete(d->anchor-1))
-            return;
-        d->anchor--;
-
-        QTextDocumentPrivate::FragmentIterator fragIt = d->priv->find(d->anchor);
-        const QTextFragmentData * const frag = fragIt.value();
-        int fpos = fragIt.position();
-        QChar uc = d->priv->buffer().at(d->anchor - fpos + frag->stringPosition);
-        if (d->anchor > fpos && uc.unicode() >= 0xdc00 && uc.unicode() < 0xe000) {
-            // second half of a surrogate, check if we have the first half as well,
-            // if yes delete both at once
-            uc = d->priv->buffer().at(d->anchor - 1 - fpos + frag->stringPosition);
-            if (uc.unicode() >= 0xd800 && uc.unicode() < 0xdc00)
-                --d->anchor;
-        }
-
-        d->adjusted_anchor = d->anchor;
+    
+    if (d->position != d->anchor) {
+        removeSelectedText();
+        return;
     }
-
+    
+    if (d->anchor < 1 || !d->canDelete(d->anchor-1))
+        return;
+    d->anchor--;
+    
+    QTextDocumentPrivate::FragmentIterator fragIt = d->priv->find(d->anchor);
+    const QTextFragmentData * const frag = fragIt.value();
+    int fpos = fragIt.position();
+    QChar uc = d->priv->buffer().at(d->anchor - fpos + frag->stringPosition);
+    if (d->anchor > fpos && uc.unicode() >= 0xdc00 && uc.unicode() < 0xe000) {
+        // second half of a surrogate, check if we have the first half as well,
+        // if yes delete both at once
+        uc = d->priv->buffer().at(d->anchor - 1 - fpos + frag->stringPosition);
+        if (uc.unicode() >= 0xd800 && uc.unicode() < 0xdc00)
+            --d->anchor;
+    }
+    
+    d->adjusted_anchor = d->anchor;
     d->remove();
     d->setX();
 }
@@ -1517,7 +1522,9 @@ void QTextCursor::removeSelectedText()
     if (!d || !d->priv || d->position == d->anchor)
         return;
 
+    d->priv->beginEditBlock();
     d->remove();
+    d->priv->endEditBlock();
     d->setX();
 }
 

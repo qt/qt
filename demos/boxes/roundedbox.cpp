@@ -46,9 +46,10 @@
 //============================================================================//
 
 VertexDescription P3T2N3Vertex::description[] = {
-    {VertexDescription::Position, GL_FLOAT, SIZE_OF_MEMBER(P3T2N3Vertex, position) / sizeof(float), offsetof(P3T2N3Vertex, position), 0},
-    {VertexDescription::TexCoord, GL_FLOAT, SIZE_OF_MEMBER(P3T2N3Vertex, texCoord) / sizeof(float), offsetof(P3T2N3Vertex, texCoord), 0},
-    {VertexDescription::Normal, GL_FLOAT, SIZE_OF_MEMBER(P3T2N3Vertex, normal) / sizeof(float), offsetof(P3T2N3Vertex, normal), 0},
+    {VertexDescription::Position, GL_FLOAT, SIZE_OF_MEMBER(P3T2N3Vertex, position) / sizeof(float), 0, 0},
+    {VertexDescription::TexCoord, GL_FLOAT, SIZE_OF_MEMBER(P3T2N3Vertex, texCoord) / sizeof(float), sizeof(QVector3D), 0},
+    {VertexDescription::Normal, GL_FLOAT, SIZE_OF_MEMBER(P3T2N3Vertex, normal) / sizeof(float), sizeof(QVector3D) + sizeof(QVector2D), 0},
+
     {VertexDescription::Null, 0, 0, 0, 0},
 };
 
@@ -78,10 +79,9 @@ GLRoundedBox::GLRoundedBox(float r, float scale, int n)
     }
 
     for (int corner = 0; corner < 8; ++corner) {
-        gfx::Vector3f centre;
-        centre[0] = (corner & 1 ? 1.0f : -1.0f);
-        centre[1] = (corner & 2 ? 1.0f : -1.0f);
-        centre[2] = (corner & 4 ? 1.0f : -1.0f);
+        QVector3D centre(corner & 1 ? 1.0f : -1.0f,
+                corner & 2 ? 1.0f : -1.0f,
+                corner & 4 ? 1.0f : -1.0f);
         int winding = (corner & 1) ^ ((corner >> 1) & 1) ^ (corner >> 2);
         int offsX = ((corner ^ 1) - corner) * vertexCountPerCorner;
         int offsY = ((corner ^ 2) - corner) * vertexCountPerCorner;
@@ -129,12 +129,13 @@ GLRoundedBox::GLRoundedBox(float r, float scale, int n)
             }
 
             for (int j = 0; j <= i; ++j) {
-                gfx::Vector3f normal = gfx::Vector3f::vector(i - j, j, n + 1 - i).normalized();
-                gfx::Vector3f pos = centre * (0.5f - r + r * normal);
+                QVector3D normal = QVector3D(i - j, j, n + 1 - i).normalized();
+                QVector3D offset(0.5f - r, 0.5f - r, 0.5f - r);
+                QVector3D pos = centre * (offset + r * normal);
 
                 vp[vidx].position = scale * pos;
                 vp[vidx].normal = centre * normal;
-                vp[vidx].texCoord = gfx::Vector2f::vector(pos[0], pos[1]) + 0.5f;
+                vp[vidx].texCoord = QVector2D(pos.x() + 0.5f, pos.y() + 0.5f);
 
                 // Corner polygons
                 if (i < n + 1) {

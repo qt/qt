@@ -2286,13 +2286,26 @@ void QWidgetPrivate::setStyle_helper(QStyle *newStyle, bool propagate, bool
         )
 {
     Q_Q(QWidget);
-    createExtra();
-
     QStyle *oldStyle  = q->style();
 #ifndef QT_NO_STYLE_STYLESHEET
-    QStyle *origStyle = extra->style;
+    QStyle *origStyle = 0;
 #endif
-    extra->style = newStyle;
+
+#ifdef Q_WS_MAC
+    // the metalhack boolean allows Qt/Mac to do a proper re-polish depending
+    // on how the Qt::WA_MacBrushedMetal attribute is set. It is only ever
+    // set when changing that attribute and passes the widget's CURRENT style.
+    // therefore no need to do a reassignment.
+    if (!metalHack)
+#endif
+    {
+        createExtra();
+
+#ifndef QT_NO_STYLE_STYLESHEET
+        origStyle = extra->style;
+#endif
+        extra->style = newStyle;
+    }
 
     // repolish
     if (q->windowType() != Qt::Desktop) {
@@ -5223,7 +5236,7 @@ static QString constructWindowTitleFromFilePath(const QString &filePath)
 #ifndef Q_WS_MAC
     QString appName = QApplication::applicationName();
     if (!appName.isEmpty())
-        windowTitle += QLatin1String(" ") + QChar(0x2014) + QLatin1String(" ") + appName;
+        windowTitle += QLatin1Char(' ') + QChar(0x2014) + QLatin1Char(' ') + appName;
 #endif
     return windowTitle;
 }
@@ -5287,7 +5300,7 @@ QString qt_setWindowTitle_helperHelper(const QString &title, const QWidget *widg
              && widget->style()->styleHint(QStyle::SH_TitleBar_ModifyNotification, 0, widget))
                 cap.replace(lastIndex, 3, QWidget::tr("*"));
             else
-                cap.replace(lastIndex, 3, QLatin1String(""));
+                cap.remove(lastIndex, 3);
         }
 
         index = cap.indexOf(placeHolder, index);
@@ -5661,10 +5674,15 @@ void QWidget::setFocus(Qt::FocusReason reason)
             w = w->isWindow() ? 0 : w->parentWidget();
         }
     } else {
-        while (w) {
+        while (w && w->isVisible()) {
             w->d_func()->focus_child = f;
             w = w->isWindow() ? 0 : w->parentWidget();
         }
+        // a special case, if there is an invisible parent, notify him
+        // about the focus_child widget, so that if it becomes
+        // visible, the focus widget will be respected.
+        if (w)
+            w->d_func()->focus_child = f;
     }
 
 #ifndef QT_NO_GRAPHICSVIEW
@@ -6223,7 +6241,7 @@ QByteArray QWidget::saveGeometry() const
     returns false.
 
     If the restored geometry is off-screen, it will be modified to be
-    inside the the available screen geometry.
+    inside the available screen geometry.
 
     To restore geometry saved using QSettings, you can use code like
     this:
@@ -6716,6 +6734,10 @@ void QWidgetPrivate::show_helper()
     if (QApplicationPrivate::hidden_focus_widget == q) {
         QApplicationPrivate::hidden_focus_widget = 0;
         q->setFocus(Qt::OtherFocusReason);
+    } else if (focus_child) {
+        // if we are shown and there is an explicit focus child widget
+        // set, respect it by giving him focus.
+        focus_child->setFocus(Qt::OtherFocusReason);
     }
 
     // Process events when showing a Qt::SplashScreen widget before the event loop
@@ -9190,11 +9212,12 @@ void QWidget::setParent(QWidget *parent, Qt::WindowFlags f)
     d->resolveLayoutDirection();
     d->resolveLocale();
 
-    // Note: GL widgets under Windows will always need a ParentChange
-    // event to handle recreation/rebinding of the GL context, hence
-    // the (f & Qt::MSWindowsOwnDC) clause
+    // Note: GL widgets under WGL or EGL will always need a ParentChange
+    // event to handle recreation/rebinding of the GL context, hence the
+    // (f & Qt::MSWindowsOwnDC) clause (which is set on QGLWidgets on all
+    // platforms).
     if (newParent
-#ifdef Q_WS_WIN
+#if defined(Q_WS_WIN) || defined(QT_OPENGL_ES)
         || (f & Qt::MSWindowsOwnDC)
 #endif
         ) {

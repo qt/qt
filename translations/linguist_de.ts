@@ -6,7 +6,7 @@
     <message>
         <location filename="../tools/linguist/linguist/phrasebookbox.cpp" line="+59"/>
         <source>(New Entry)</source>
-        <translation type="unfinished"></translation>
+        <translation>(Neuer Eintrag)</translation>
     </message>
 </context>
 <context>
@@ -29,7 +29,7 @@
     <message>
         <location filename="../tools/linguist/linguist/batchtranslationdialog.cpp" line="+79"/>
         <source>Batch Translation of &apos;%1&apos; - Qt Linguist</source>
-        <translation type="unfinished"></translation>
+        <translation>Automatische Übersetzung von &apos;%1&apos; - Qt Linguist</translation>
     </message>
     <message>
         <location line="+37"/>
@@ -57,62 +57,62 @@
     <message>
         <location filename="../tools/linguist/linguist/batchtranslation.ui"/>
         <source>Qt Linguist - Batch Translation</source>
-        <translation type="unfinished">Qt Linguist - Automatische Übersetzung</translation>
+        <translation>Qt Linguist - Automatische Übersetzung</translation>
     </message>
     <message>
         <location/>
         <source>Options</source>
-        <translation type="unfinished">Optionen</translation>
+        <translation>Optionen</translation>
     </message>
     <message>
         <location/>
         <source>Set translated entries to finished</source>
-        <translation type="unfinished">Markiere Übersetzung als erledigt</translation>
+        <translation>Markiere Übersetzung als erledigt</translation>
     </message>
     <message>
         <location/>
         <source>Retranslate entries with existing translation</source>
-        <translation type="unfinished"></translation>
+        <translation>Einträge mit bereits existierender Übersetzung neu übersetzen</translation>
     </message>
     <message>
         <location/>
         <source>Note that the modified entries will be reset to unfinished if &apos;Set translated entries to finished&apos; above is unchecked.</source>
-        <translation type="unfinished"></translation>
+        <translation>Beachten Sie, dass die geänderten Einträge in den Status &apos;unerledigt&apos; zurückgesetzt werden, wenn &apos;Markiere Übersetzung als erledigt&apos; deaktiviert ist.</translation>
     </message>
     <message>
         <location/>
         <source>Translate also finished entries</source>
-        <translation type="unfinished"></translation>
+        <translation>Erledigte Einträge übersetzen</translation>
     </message>
     <message>
         <location/>
         <source>Phrase book preference</source>
-        <translation type="unfinished">Wörterbücher</translation>
+        <translation>Wörterbücher</translation>
     </message>
     <message>
         <location/>
         <source>Move up</source>
-        <translation type="unfinished">Nach oben</translation>
+        <translation>Nach oben</translation>
     </message>
     <message>
         <location/>
         <source>Move down</source>
-        <translation type="unfinished">Nach unten</translation>
+        <translation>Nach unten</translation>
     </message>
     <message>
         <location/>
         <source>The batch translator will search through the selected phrase books in the order given above.</source>
-        <translation type="unfinished"></translation>
+        <translation>Der automatische Übersetzer wird in der angegebenen Reihenfolge durch die ausgewählten Wörterbücher gehen.</translation>
     </message>
     <message>
         <location/>
         <source>&amp;Run</source>
-        <translation type="unfinished">&amp;Ausführen</translation>
+        <translation>&amp;Ausführen</translation>
     </message>
     <message>
         <location/>
         <source>Cancel</source>
-        <translation type="unfinished">Abbrechen</translation>
+        <translation>Abbrechen</translation>
     </message>
 </context>
 <context>
@@ -120,38 +120,39 @@
     <message>
         <location filename="../tools/linguist/linguist/messagemodel.cpp" line="+214"/>
         <source>&lt;qt&gt;Duplicate messages found in &apos;%1&apos;:</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;qt&gt;Mehrfach vorhandene Meldungen in &apos;%1&apos;:</translation>
     </message>
     <message>
         <location line="+4"/>
         <source>&lt;p&gt;[more duplicates omitted]</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;p&gt;[weitere mehrfach vorhandene Nachrichten weggelassen]</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>&lt;p&gt;* Context: %1&lt;br&gt;* Source: %2</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;p&gt;* Kontext: %1&lt;br&gt;* Quelle: %2</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>&lt;br&gt;* Comment: %3</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;br&gt;* Kommentar: %3</translation>
     </message>
     <message>
         <location line="+70"/>
         <source>Linguist does not know the plural rules for &apos;%1&apos;.
 Will assume a single universal form.</source>
-        <translation type="unfinished"></translation>
+        <translation>Die Regeln zur Pluralbildung der Sprache &apos;%1&apos; sind in Linguist nicht definiert.
+Es wird mit einer einfachen Universalform gearbeitet.</translation>
     </message>
     <message>
         <location line="+56"/>
         <source>Cannot create &apos;%2&apos;: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>&apos;%2&apos; kann nicht erzeugt werden: %1</translation>
     </message>
     <message>
         <location line="+56"/>
         <source>Universal Form</source>
-        <translation type="unfinished"></translation>
+        <translation>Universalform</translation>
     </message>
 </context>
 <context>
@@ -239,7 +240,7 @@ Will assume a single universal form.</source>
     <message>
         <location line="+3"/>
         <source>Translation does not contain the necessary %n place marker.</source>
-        <translation type="unfinished"></translation>
+        <translation>Der erforderliche Platzhalter (%n) fehlt in der Übersetzung.</translation>
     </message>
     <message>
         <location line="+3"/>
@@ -311,37 +312,37 @@ Will assume a single universal form.</source>
     <message>
         <location/>
         <source>Find</source>
-        <translation type="unfinished"></translation>
+        <translation>Suchen</translation>
     </message>
     <message>
         <location/>
         <source>&amp;Find what:</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Suchmuster:</translation>
     </message>
     <message>
         <location/>
         <source>&amp;Source texts</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Quelltexte</translation>
     </message>
     <message>
         <location/>
         <source>&amp;Translations</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Übersetzungen</translation>
     </message>
     <message>
         <location/>
         <source>&amp;Match case</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Groß-/Kleinschreibung beachten</translation>
     </message>
     <message>
         <location/>
         <source>&amp;Comments</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Kommentare</translation>
     </message>
     <message>
         <location/>
         <source>Ignore &amp;accelerators</source>
-        <translation type="unfinished"></translation>
+        <translation>Tastenkürzel &amp;ignorieren</translation>
     </message>
     <message>
         <location/>
@@ -612,102 +613,102 @@ p, li { white-space: pre-wrap; }
     <message>
         <location/>
         <source>Previous unfinished item.</source>
-        <translation type="unfinished"></translation>
+        <translation>Vorherige Unerledigte</translation>
     </message>
     <message>
         <location/>
         <source>Move to the previous unfinished item.</source>
-        <translation type="unfinished"></translation>
+        <translation>Gehe zum vorangehenden unerledigten Eintrag.</translation>
     </message>
     <message>
         <location/>
         <source>Next unfinished item.</source>
-        <translation type="unfinished"></translation>
+        <translation>Nächste Unerledigte</translation>
     </message>
     <message>
         <location/>
         <source>Move to the next unfinished item.</source>
-        <translation type="unfinished"></translation>
+        <translation>Gehe zum nächsten unerledigten Eintrag.</translation>
     </message>
     <message>
         <location/>
         <source>Move to previous item.</source>
-        <translation type="unfinished"></translation>
+        <translation>Gehe zum vorigen Eintrag.</translation>
     </message>
     <message>
         <location/>
         <source>Move to the previous item.</source>
-        <translation type="unfinished"></translation>
+        <translation>Gehe zum vorigen Eintrag.</translation>
     </message>
     <message>
         <location/>
         <source>Next item.</source>
-        <translation type="unfinished"></translation>
+        <translation>Nächster EIntrag.</translation>
     </message>
     <message>
         <location/>
         <source>Move to the next item.</source>
-        <translation type="unfinished"></translation>
+        <translation>Gehe zum nächsten Eintrag.</translation>
     </message>
     <message>
         <location/>
         <source>Mark item as done and move to the next unfinished item.</source>
-        <translation type="unfinished"></translation>
+        <translation>Markiere Eintrag als erledigt und gehe zum nächsten unerledigten Eintrag.</translation>
     </message>
     <message>
         <location/>
         <source>Mark this item as done and move to the next unfinished item.</source>
-        <translation type="unfinished"></translation>
+        <translation>Markiert diesen Eintrag als erledigt und geht zum nächsten unerledigten Eintrag.</translation>
     </message>
     <message>
         <location/>
         <source>Copy from source text</source>
-        <translation type="unfinished"></translation>
+        <translation>Übernehme &amp;Ursprungstext</translation>
     </message>
     <message>
         <location/>
         <source>Toggle the validity check of accelerators.</source>
-        <translation type="unfinished"></translation>
+        <translation>Schalte Prüfung der Tastenkürzel um.</translation>
     </message>
     <message>
         <location/>
         <source>Toggle the validity check of accelerators, i.e. whether the number of ampersands in the source and translation text is the same. If the check fails, a message is shown in the warnings window.</source>
-        <translation type="unfinished"></translation>
+        <translation>Schalte Prüfung der Tastenkürzel um; das heisst, die Übereinstimmung der kaufmännischen Und-Zeichen in Quelle und Übersetzung. Bei Fehlschlag wird eine Warnung im Hinweis-Fenster angezeigt.</translation>
     </message>
     <message>
         <location/>
         <source>Toggle the validity check of ending punctuation.</source>
-        <translation type="unfinished"></translation>
+        <translation>Schalte Prüfung der Satzendezeichen am Ende des Textes um.</translation>
     </message>
     <message>
         <location/>
         <source>Toggle the validity check of ending punctuation. If the check fails, a message is shown in the warnings window.</source>
-        <translation type="unfinished"></translation>
+        <translation>Schaltet die Prüfung der Satzendezeichen am Ende des Textes um. Bei Fehlschlag wird eine Warnung im Hinweis-Fenster angezeigt.</translation>
     </message>
     <message>
         <location/>
         <source>Toggle checking that phrase suggestions are used. If the check fails, a message is shown in the warnings window.</source>
-        <translation type="unfinished"></translation>
+        <translation>Schaltet die Prüfung der Verwendung der Wörterbuchvorschläge um. Bei Fehlschlag wird eine Warnung im Hinweis-Fenster angezeigt.</translation>
     </message>
     <message>
         <location/>
         <source>Toggle the validity check of place markers.</source>
-        <translation type="unfinished"></translation>
+        <translation>Schaltet die Prüfung der Platzhalter um.</translation>
     </message>
     <message>
         <location/>
         <source>Toggle the validity check of place markers, i.e. whether %1, %2, ... are used consistently in the source text and translation text. If the check fails, a message is shown in the warnings window.</source>
-        <translation type="unfinished"></translation>
+        <translation>Schaltet die Prüfung der Platzhalter um; das heisst, ob %1, %2,... in Quelltext und Übersetzung übereinstimmend verwendet werden. Bei Fehlschlag wird eine Warnung im Hinweis-Fenster angezeigt.</translation>
     </message>
     <message>
         <location/>
         <source>Open Read-O&amp;nly...</source>
-        <translation type="unfinished"></translation>
+        <translation>Schr&amp;eibgeschützt öffnen...</translation>
     </message>
     <message>
         <location/>
         <source>&amp;Save All</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Alles Speichern</translation>
     </message>
     <message>
         <location/>
@@ -767,22 +768,22 @@ p, li { white-space: pre-wrap; }
     <message>
         <location/>
         <source>Recently Opened &amp;Files</source>
-        <translation type="unfinished"></translation>
+        <translation>Zu&amp;letzt bearbeitete Dateien</translation>
     </message>
     <message>
         <location/>
         <source>Save</source>
-        <translation type="unfinished"></translation>
+        <translation>Speichern</translation>
     </message>
     <message>
         <location/>
         <source>Print a list of all the translation units in the current translation source file.</source>
-        <translation type="unfinished"></translation>
+        <translation>Liste aller Übersetzungseinheiten in der aktuellen Übersetzungsdatei drucken.</translation>
     </message>
     <message>
         <location/>
         <source>Undo the last editing operation performed on the current translation.</source>
-        <translation type="unfinished"></translation>
+        <translation>Mache die letzte Änderung an der Übersetzung rückgängig.</translation>
     </message>
     <message>
         <location/>
@@ -902,12 +903,12 @@ p, li { white-space: pre-wrap; }
     <message>
         <location/>
         <source>Close</source>
-        <translation type="unfinished">Schließen</translation>
+        <translation>Schließen</translation>
     </message>
     <message>
         <location/>
         <source>&amp;Close All</source>
-        <translation type="unfinished"></translation>
+        <translation>A&amp;lle schließen</translation>
     </message>
     <message>
         <location/>
@@ -1170,49 +1171,49 @@ p, li { white-space: pre-wrap; }
     <message>
         <location line="+195"/>
         <source>Source text</source>
-        <translation type="unfinished">Ursprungstext</translation>
+        <translation>Ursprungstext</translation>
     </message>
     <message>
         <location line="+1"/>
         <location line="+25"/>
         <source>Index</source>
-        <translation type="unfinished">Index</translation>
+        <translation>Index</translation>
     </message>
     <message>
         <location line="-2"/>
         <location line="+61"/>
         <source>Context</source>
-        <translation type="unfinished">Kontext</translation>
+        <translation>Kontext</translation>
     </message>
     <message>
         <location line="-60"/>
         <source>Items</source>
-        <translation type="unfinished">Einträge</translation>
+        <translation>Einträge</translation>
     </message>
     <message>
         <location line="+77"/>
         <source>This panel lists the source contexts.</source>
-        <translation type="unfinished">Dieser Bereich zeigt die Kontexte an.</translation>
+        <translation>Dieser Bereich zeigt die Kontexte an.</translation>
     </message>
     <message>
         <location line="+15"/>
         <source>Strings</source>
-        <translation type="unfinished">Zeichenketten</translation>
+        <translation>Zeichenketten</translation>
     </message>
     <message>
         <location line="+39"/>
         <source>Phrases and guesses</source>
-        <translation type="unfinished">Wörterbuch und Vorschläge</translation>
+        <translation>Wörterbuch und Vorschläge</translation>
     </message>
     <message>
         <location line="+10"/>
         <source>Sources and Forms</source>
-        <translation type="unfinished"></translation>
+        <translation>Quelldateien und Formulare</translation>
     </message>
     <message>
         <location line="+15"/>
         <source>Warnings</source>
-        <translation type="unfinished">Warnungen</translation>
+        <translation>Hinweise</translation>
     </message>
     <message>
         <location line="+59"/>
@@ -1223,120 +1224,124 @@ p, li { white-space: pre-wrap; }
     <message>
         <location line="+125"/>
         <source>Loading...</source>
-        <translation type="unfinished">Lade...</translation>
+        <translation>Lade...</translation>
     </message>
     <message>
         <location line="+32"/>
         <location line="+22"/>
         <source>Loading File - Qt Linguist</source>
-        <translation type="unfinished"></translation>
+        <translation>Laden - Qt Linguist</translation>
     </message>
     <message>
         <location line="-21"/>
         <source>The file &apos;%1&apos; does not seem to be related to the currently open file(s) &apos;%2&apos;.
 
 Close the open file(s) first?</source>
-        <translation type="unfinished"></translation>
+        <translation>Die Datei &apos;%1&apos; scheint nicht zu den bereits geöffneten Dateien &apos;%2&apos; zu passen.
+
+Sollen die bereits geöffneten Dateien vorher geschlossen werden?</translation>
     </message>
     <message>
         <location line="+22"/>
         <source>The file &apos;%1&apos; does not seem to be related to the file &apos;%2&apos; which is being loaded as well.
 
 Skip loading the first named file?</source>
-        <translation type="unfinished"></translation>
+        <translation>Die Datei &apos;%1&apos; scheint nicht zu der Datei &apos;%2&apos; zu passen, die ebenfalls geladen wird.
+
+Soll die erstgenannte Datei übersprungen werden?</translation>
     </message>
     <message numerus="yes">
         <location line="+61"/>
         <source>%n translation unit(s) loaded.</source>
-        <translation type="unfinished">
-            <numerusform></numerusform>
-            <numerusform></numerusform>
+        <translation>
+            <numerusform>Eine Übersetzungseinheit geladen.</numerusform>
+            <numerusform>%n Übersetzungseinheiten geladen.</numerusform>
         </translation>
     </message>
     <message>
         <location line="+93"/>
         <source>Related files (%1);;</source>
-        <translation type="unfinished"></translation>
+        <translation>Verwandte Dateien (%1);;</translation>
     </message>
     <message>
         <location line="+4"/>
         <source>Open Translation Files</source>
-        <translation type="unfinished"></translation>
+        <translation>Übersetzungsdateien öffnen</translation>
     </message>
     <message>
         <location line="+10"/>
         <location line="+31"/>
         <source>File saved.</source>
-        <translation type="unfinished">Datei gespeichert.</translation>
+        <translation>Datei gespeichert.</translation>
     </message>
     <message>
         <location line="+15"/>
         <location line="+1164"/>
         <location filename="../tools/linguist/linguist/mainwindow.ui"/>
         <source>Release</source>
-        <translation type="unfinished">Freigeben</translation>
+        <translation>Freigeben</translation>
     </message>
     <message>
         <location line="-1163"/>
         <source>Qt message files for released applications (*.qm)
 All files (*)</source>
-        <translation type="unfinished">Qt Nachrichtendateien (*.qm)
+        <translation>Qt Nachrichtendateien (*.qm)
 Alle Dateien (*)</translation>
     </message>
     <message>
         <location line="+3"/>
         <location line="+12"/>
         <source>File created.</source>
-        <translation type="unfinished">Datei erzeugt.</translation>
+        <translation>Datei erzeugt.</translation>
     </message>
     <message>
         <location line="+27"/>
         <location line="+355"/>
         <source>Printing...</source>
-        <translation type="unfinished">Drucke...</translation>
+        <translation>Drucke...</translation>
     </message>
     <message>
         <location line="-347"/>
         <source>Context: %1</source>
-        <translation type="unfinished">Kontext: %1</translation>
+        <translation>Kontext: %1</translation>
     </message>
     <message>
         <location line="+32"/>
         <source>finished</source>
-        <translation type="unfinished">erledigt</translation>
+        <translation>erledigt</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>unresolved</source>
-        <translation type="unfinished">ungelöst</translation>
+        <translation>ungelöst</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>obsolete</source>
-        <translation type="unfinished">veraltet</translation>
+        <translation>veraltet</translation>
     </message>
     <message>
         <location line="+15"/>
         <location line="+307"/>
         <source>Printing... (page %1)</source>
-        <translation type="unfinished">Drucke... (Seite %1)</translation>
+        <translation>Drucke... (Seite %1)</translation>
     </message>
     <message>
         <location line="-300"/>
         <location line="+307"/>
         <source>Printing completed</source>
-        <translation type="unfinished">Drucken beendet</translation>
+        <translation>Drucken beendet</translation>
     </message>
     <message>
         <location line="-305"/>
         <location line="+307"/>
         <source>Printing aborted</source>
-        <translation type="unfinished">Drucken abgebrochen</translation>
+        <translation>Drucken abgebrochen</translation>
     </message>
     <message>
         <location line="-232"/>
         <source>Search wrapped.</source>
-        <translation type="unfinished">Suche beginnt von oben.</translation>
+        <translation>Suche beginnt von oben.</translation>
     </message>
     <message>
         <location line="+17"/>
@@ -1356,7 +1361,7 @@ Alle Dateien (*)</translation>
         <location line="-1204"/>
         <location line="+102"/>
         <source>Cannot find the string &apos;%1&apos;.</source>
-        <translation type="unfinished">Kann Zeichenkette &apos;%1&apos; nicht finden.</translation>
+        <translation>Kann Zeichenkette &apos;%1&apos; nicht finden.</translation>
     </message>
     <message numerus="yes">
         <source>Translated %n entries to &apos;%1&apos;</source>
@@ -1368,59 +1373,59 @@ Alle Dateien (*)</translation>
     <message>
         <location line="-82"/>
         <source>Search And Translate in &apos;%1&apos; - Qt Linguist</source>
-        <translation type="unfinished"></translation>
+        <translation>Suchen und übersetzen &apos;%1&apos; - Qt Linguist</translation>
     </message>
     <message>
         <location line="+34"/>
         <location line="+23"/>
         <location line="+24"/>
         <source>Translate - Qt Linguist</source>
-        <translation type="unfinished"></translation>
+        <translation>Übersetzung - Qt Linguist</translation>
     </message>
     <message numerus="yes">
         <location line="-46"/>
         <source>Translated %n entry(s)</source>
-        <translation type="unfinished">
-            <numerusform></numerusform>
-            <numerusform></numerusform>
+        <translation>
+            <numerusform>Ein Eintrag übersetzt</numerusform>
+            <numerusform>%n Einträge übersetzt</numerusform>
         </translation>
     </message>
     <message>
         <location line="+23"/>
         <source>No more occurrences of &apos;%1&apos;. Start over?</source>
-        <translation type="unfinished"></translation>
+        <translation>Keine weiteren Fundstellen von &apos;%1&apos;. Von vorn beginnen?</translation>
     </message>
     <message>
         <location line="+30"/>
         <source>Create New Phrase Book</source>
-        <translation type="unfinished">Erzeugen eines neuen Wörterbuchs</translation>
+        <translation>Erzeugen eines neuen Wörterbuchs</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Qt phrase books (*.qph)
 All files (*)</source>
-        <translation type="unfinished">Qt Wörterbücher (*.qph)
+        <translation>Qt Wörterbücher (*.qph)
 Alle Dateien (*)</translation>
     </message>
     <message>
         <location line="+11"/>
         <source>Phrase book created.</source>
-        <translation type="unfinished">Wörterbuch erzeugt.</translation>
+        <translation>Wörterbuch erzeugt.</translation>
     </message>
     <message>
         <location line="+17"/>
         <source>Open Phrase Book</source>
-        <translation type="unfinished">Öffne Wörterbuch</translation>
+        <translation>Öffne Wörterbuch</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Qt phrase books (*.qph);;All files (*)</source>
-        <translation type="unfinished">Qt Wörterbücher (*.qph);;Alle Dateien (*)</translation>
+        <translation>Qt Wörterbücher (*.qph);;Alle Dateien (*)</translation>
     </message>
     <message numerus="yes">
         <location line="+7"/>
         <source>%n phrase(s) loaded.</source>
-        <translation type="unfinished">
+        <translation>
             <numerusform>Ein Wörterbucheintrag geladen.</numerusform>
             <numerusform>%n Wörterbucheinträge geladen.</numerusform>
         </translation>
@@ -1430,32 +1435,32 @@ Alle Dateien (*)</translation>
         <location line="+3"/>
         <location line="+7"/>
         <source>Add to phrase book</source>
-        <translation type="unfinished">Hinzufügen zum Wörterbuch</translation>
+        <translation>Hinzufügen zum Wörterbuch</translation>
     </message>
     <message>
         <location line="-9"/>
         <source>No appropriate phrasebook found.</source>
-        <translation type="unfinished"></translation>
+        <translation>Es wurde kein geeignetes Wörterbuch gefunden.</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Adding entry to phrasebook %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Eintrag zu Wörterbuch %1 hinzufügen</translation>
     </message>
     <message>
         <location line="+7"/>
         <source>Select phrase book to add to</source>
-        <translation type="unfinished">Zu welchem Wörterbuch soll der Eintrag hinzugefügt werden?</translation>
+        <translation>Zu welchem Wörterbuch soll der Eintrag hinzugefügt werden?</translation>
     </message>
     <message>
         <location line="+29"/>
         <source>Unable to launch Qt Assistant (%1)</source>
-        <translation type="unfinished">Kann Qt Assistant nicht starten (%1)</translation>
+        <translation>Kann Qt Assistant nicht starten (%1)</translation>
     </message>
     <message>
         <location line="+17"/>
         <source>Version %1</source>
-        <translation type="unfinished">Version %1</translation>
+        <translation>Version %1</translation>
     </message>
     <message>
         <source> Open Source Edition</source>
@@ -1464,17 +1469,17 @@ Alle Dateien (*)</translation>
     <message>
         <location line="+6"/>
         <source>&lt;center&gt;&lt;img src=&quot;:/images/splash.png&quot;/&gt;&lt;/img&gt;&lt;p&gt;%1&lt;/p&gt;&lt;/center&gt;&lt;p&gt;Qt Linguist is a tool for adding translations to Qt applications.&lt;/p&gt;&lt;p&gt;%2&lt;/p&gt;&lt;p&gt;Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).&lt;/p&gt;&lt;p&gt;The program is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.&lt;/p&gt;</source>
-        <translation type="unfinished">&lt;center&gt;&lt;img src=&quot;:/images/splash.png&quot;/&gt;&lt;/img&gt;&lt;p&gt;%1&lt;/p&gt;&lt;/center&gt;&lt;p&gt;Qt Linguist ist ein Werkzeug zum Übersetzen von Qt Anwendungen.&lt;/p&gt;&lt;p&gt;%2&lt;/p&gt;&lt;p&gt;Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).&lt;/p&gt;&lt;p&gt;The program is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.&lt;/p&gt;</translation>
+        <translation>&lt;center&gt;&lt;img src=&quot;:/images/splash.png&quot;/&gt;&lt;/img&gt;&lt;p&gt;%1&lt;/p&gt;&lt;/center&gt;&lt;p&gt;Qt Linguist ist ein Werkzeug zum Übersetzen von Qt Anwendungen.&lt;/p&gt;&lt;p&gt;%2&lt;/p&gt;&lt;p&gt;Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).&lt;/p&gt;&lt;p&gt;The program is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.&lt;/p&gt;</translation>
     </message>
     <message>
         <location line="+41"/>
         <source>Do you want to save the modified files?</source>
-        <translation type="unfinished"></translation>
+        <translation>Möchten Sie die geänderten Dateien speichern?</translation>
     </message>
     <message>
         <location line="+22"/>
         <source>Do you want to save &apos;%1&apos;?</source>
-        <translation type="unfinished">Wollen Sie &apos;%1&apos; speichern?</translation>
+        <translation>Möchten Sie &apos;%1&apos; speichern?</translation>
     </message>
     <message>
         <location line="+43"/>
@@ -1490,99 +1495,99 @@ Alle Dateien (*)</translation>
         <location line="+267"/>
         <location line="+12"/>
         <source>No untranslated translation units left.</source>
-        <translation type="unfinished"></translation>
+        <translation>Es wurden alle Übersetzungseinheiten abgearbeitet.</translation>
     </message>
     <message>
         <location line="+176"/>
         <source>&amp;Window</source>
-        <translation type="unfinished">&amp;Fenster</translation>
+        <translation>&amp;Fenster</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Minimize</source>
-        <translation type="unfinished">Minimieren</translation>
+        <translation>Minimieren</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Ctrl+M</source>
-        <translation type="unfinished">Ctrl+M</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+12"/>
         <source>Display the manual for %1.</source>
-        <translation type="unfinished">Zeige Handbuch für %1 an.</translation>
+        <translation>Zeige Handbuch für %1 an.</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Display information about %1.</source>
-        <translation type="unfinished">Zeige Informationen über %1 an.</translation>
+        <translation>Zeige Informationen über %1 an.</translation>
     </message>
     <message>
         <location line="+70"/>
         <source>&amp;Save &apos;%1&apos;</source>
-        <translation type="unfinished"></translation>
+        <translation>&apos;%1&apos; &amp;Speichern</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Save &apos;%1&apos; &amp;As...</source>
-        <translation type="unfinished"></translation>
+        <translation>Speichere &apos;%1&apos; &amp;unter...</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Release &apos;%1&apos;</source>
-        <translation type="unfinished"></translation>
+        <translation>&apos;%1&apos; freigeben</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Release &apos;%1&apos; As...</source>
-        <translation type="unfinished"></translation>
+        <translation>Gebe &apos;%1&apos;frei unter ...</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>&amp;Close &apos;%1&apos;</source>
-        <translation type="unfinished"></translation>
+        <translation>&apos;%1&apos; &amp;Schließen</translation>
     </message>
     <message>
         <location line="+6"/>
         <location line="+13"/>
         <source>&amp;Close</source>
-        <translation type="unfinished">&amp;Schließen</translation>
+        <translation>&amp;Schließen</translation>
     </message>
     <message>
         <location line="-10"/>
         <source>Save All</source>
-        <translation type="unfinished"></translation>
+        <translation>Alles speichern</translation>
     </message>
     <message>
         <location line="+1"/>
         <location filename="../tools/linguist/linguist/mainwindow.ui"/>
         <source>&amp;Release All</source>
-        <translation type="unfinished"></translation>
+        <translation>Alles f&amp;reigeben</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Close All</source>
-        <translation type="unfinished">Alle schließen</translation>
+        <translation>Alle schließen</translation>
     </message>
     <message>
         <location line="+23"/>
         <source>Translation File &amp;Settings for &apos;%1&apos;...</source>
-        <translation type="unfinished"></translation>
+        <translation>Einstellungen der Übersetzungs&amp;datei für &apos;%1&apos;...</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>&amp;Batch Translation of &apos;%1&apos;...</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Automatische Übersetzung von &apos;%1&apos;...</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Search And &amp;Translate in &apos;%1&apos;...</source>
-        <translation type="unfinished"></translation>
+        <translation>Suchen und &amp;Übersetzen in &apos;%1&apos;...</translation>
     </message>
     <message>
         <location line="+4"/>
         <source>Search And &amp;Translate...</source>
-        <translation type="unfinished"></translation>
+        <translation>Suchen und &amp;Übersetzen...</translation>
     </message>
     <message>
         <location line="+51"/>
@@ -1617,37 +1622,37 @@ Alle Dateien (*)</translation>
     <message>
         <location line="+84"/>
         <source>Cannot read from phrase book &apos;%1&apos;.</source>
-        <translation type="unfinished">Kann Wörterbuch &apos;%1&apos; nicht lesen.</translation>
+        <translation>Kann Wörterbuch &apos;%1&apos; nicht lesen.</translation>
     </message>
     <message>
         <location line="+15"/>
         <source>Close this phrase book.</source>
-        <translation type="unfinished">Schließe dieses Wörterbuch.</translation>
+        <translation>Schließe dieses Wörterbuch.</translation>
     </message>
     <message>
         <location line="+4"/>
         <source>Enables you to add, modify, or delete entries in this phrase book.</source>
-        <translation type="unfinished"></translation>
+        <translation>Erlaubt das Hinzufügen, Ändern und Entfernen von Einträgen aus dem Wörterbuch.</translation>
     </message>
     <message>
         <location line="+5"/>
         <source>Print the entries in this phrase book.</source>
-        <translation type="unfinished"></translation>
+        <translation>Drucke die Einträge des Wörterbuchs.</translation>
     </message>
     <message>
         <location line="+16"/>
         <source>Cannot create phrase book &apos;%1&apos;.</source>
-        <translation type="unfinished">Kann Wörterbuch &apos;%1&apos; nicht erzeugen.</translation>
+        <translation>Kann Wörterbuch &apos;%1&apos; nicht erzeugen.</translation>
     </message>
     <message>
         <location line="+10"/>
         <source>Do you want to save phrase book &apos;%1&apos;?</source>
-        <translation type="unfinished"></translation>
+        <translation>Möchten Sie das Wörterbuch &apos;%1&apos; speichern?</translation>
     </message>
     <message>
         <location line="+314"/>
         <source>All</source>
-        <translation type="unfinished"></translation>
+        <translation>Alle</translation>
     </message>
     <message>
         <location filename="../tools/linguist/linguist/mainwindow.ui"/>
@@ -1704,27 +1709,27 @@ Alle Dateien (*)</translation>
     <message>
         <location filename="../tools/linguist/linguist/messageeditor.cpp" line="+72"/>
         <source>German</source>
-        <translation type="unfinished">Deutsch</translation>
+        <translation>Deutsch</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Japanese</source>
-        <translation type="unfinished">Japanisch</translation>
+        <translation>Japanisch</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>French</source>
-        <translation type="unfinished">Französisch</translation>
+        <translation>Französisch</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Polish</source>
-        <translation type="unfinished">Polnisch</translation>
+        <translation>Polnisch</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Chinese</source>
-        <translation type="unfinished">Chinesisch</translation>
+        <translation>Chinesisch</translation>
     </message>
     <message>
         <location line="+50"/>
@@ -1732,59 +1737,59 @@ Alle Dateien (*)</translation>
         <translation>Dieser Bereich erlaubt die Darstellung und Änderung der Übersetzung eines Textes.</translation>
     </message>
     <message>
-        <location line="+25"/>
+        <location line="+18"/>
         <source>Source text</source>
-        <translation type="unfinished">Ursprungstext</translation>
+        <translation>Ursprungstext</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>This area shows the source text.</source>
-        <translation type="unfinished">Dieser Bereich zeigt den Ursprungstext.</translation>
+        <translation>Dieser Bereich zeigt den Ursprungstext.</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Source text (Plural)</source>
-        <translation type="unfinished"></translation>
+        <translation>Ursprungstext (Plural)</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>This area shows the plural form of the source text.</source>
-        <translation type="unfinished"></translation>
+        <translation>Dieser Bereich zeigt die Pluralform des Ursprungstexts.</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Developer comments</source>
-        <translation type="unfinished"></translation>
+        <translation>Hinweise des Entwicklers</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>This area shows a comment that may guide you, and the context in which the text occurs.</source>
-        <translation type="unfinished">Dieser Bereich zeigt eventuelle Kommentare und den Kontext, in dem der Text auftritt.</translation>
+        <translation>Dieser Bereich zeigt eventuelle Kommentare und den Kontext, in dem der Text auftritt.</translation>
     </message>
     <message>
         <location line="+59"/>
         <source>Here you can enter comments for your own use. They have no effect on the translated applications.</source>
-        <translation type="unfinished"></translation>
+        <translation>Hier können Sie Hinweise für den eigenen Gebrauch eintragen. Diese haben keinen Einflusse auf die Übersetzung.</translation>
     </message>
     <message>
         <location line="+205"/>
         <source>%1 translation (%2)</source>
-        <translation type="unfinished">Übersetzung %1 (%2)</translation>
+        <translation>Übersetzung %1 (%2)</translation>
     </message>
     <message>
         <location line="+19"/>
         <source>This is where you can enter or modify the translation of the above source text.</source>
-        <translation type="unfinished"></translation>
+        <translation>Hier können Sie die Übersetzung des Ursprungstextes eingeben bzw. ändern.</translation>
     </message>
     <message>
         <location line="+5"/>
         <source>%1 translation</source>
-        <translation type="unfinished">Übersetzung %1</translation>
+        <translation>Übersetzung %1</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>%1 translator comments</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 Hinweise des Übersetzers</translation>
     </message>
     <message>
         <location line="+138"/>
@@ -1839,22 +1844,22 @@ Zeile: %2</translation>
     <message>
         <location filename="../tools/linguist/linguist/messagemodel.cpp" line="+832"/>
         <source>Completion status for %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Bearbeitungsstand von %1</translation>
     </message>
     <message>
         <location line="+15"/>
         <source>&lt;file header&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;Dateikopf&gt;</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>&lt;context comment&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;Kontexthinweis&gt;</translation>
     </message>
     <message>
         <location line="+71"/>
         <source>&lt;unnamed context&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;unbenannter Kontext&gt;</translation>
     </message>
 </context>
 <context>
@@ -1867,7 +1872,7 @@ Zeile: %2</translation>
 <context>
     <name>MsgEdit</name>
     <message>
-        <location filename="../tools/linguist/linguist/messageeditor.cpp" line="-579"/>
+        <location filename="../tools/linguist/linguist/messageeditor.cpp" line="-572"/>
         <source></source>
         <comment>This is the right panel of the main window.</comment>
         <translation></translation>
@@ -1912,7 +1917,7 @@ Zeile: %2</translation>
     <message>
         <location/>
         <source>This window allows you to add, modify, or delete entries in a phrase book.</source>
-        <translation type="unfinished"></translation>
+        <translation>Dieses Fenster erlaubt das Hinzufügen, Ändern und Entfernen von Einträgen aus dem Wörterbuch.</translation>
     </message>
     <message>
         <location/>
@@ -1952,22 +1957,22 @@ Zeile: %2</translation>
     <message>
         <location/>
         <source>&amp;New Entry</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Neuer Eintrag</translation>
     </message>
     <message>
         <location/>
         <source>Click here to remove the entry from the phrase book.</source>
-        <translation type="unfinished"></translation>
+        <translation>Entferne den Eintrag aus dem Wörterbuch.</translation>
     </message>
     <message>
         <location/>
         <source>&amp;Remove Entry</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Entferne Eintrag</translation>
     </message>
     <message>
         <location/>
         <source>Settin&amp;gs...</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Einstellungen...</translation>
     </message>
     <message>
         <source>&amp;New Phrase</source>
@@ -2053,12 +2058,12 @@ Zeile: %2</translation>
     <message>
         <location filename="../tools/linguist/linguist/mainwindow.cpp" line="-1279"/>
         <source>Translation files (%1);;</source>
-        <translation type="unfinished"></translation>
+        <translation>Übersetzungsdateien (%1);;</translation>
     </message>
     <message>
         <location line="+5"/>
         <source>All files (*)</source>
-        <translation type="unfinished"></translation>
+        <translation>Alle Dateien (*)</translation>
     </message>
     <message>
         <location filename="../tools/linguist/linguist/messagemodel.cpp" line="-1118"/>
@@ -2074,57 +2079,57 @@ Zeile: %2</translation>
     <message>
         <location filename="../tools/linguist/shared/cpp.cpp" line="+1072"/>
         <source>C++ source files</source>
-        <translation type="unfinished"></translation>
+        <translation>C++-Quelltextdateien&apos;</translation>
     </message>
     <message>
         <location filename="../tools/linguist/shared/java.cpp" line="+646"/>
         <source>Java source files</source>
-        <translation type="unfinished"></translation>
+        <translation>Java-Quelltextdateien</translation>
     </message>
     <message>
         <location filename="../tools/linguist/shared/po.cpp" line="+651"/>
         <source>GNU Gettext localization files</source>
-        <translation type="unfinished"></translation>
+        <translation>GNU-Gettext Übersetzungsdateien</translation>
     </message>
     <message>
         <location filename="../tools/linguist/shared/qscript.cpp" line="+2399"/>
         <source>Qt Script source files</source>
-        <translation type="unfinished"></translation>
+        <translation>Qt-Skript-Quelltextdateien</translation>
     </message>
     <message>
         <location filename="../tools/linguist/shared/ts.cpp" line="+752"/>
         <source>Qt translation sources (format 1.1)</source>
-        <translation type="unfinished"></translation>
+        <translation>Qt-Übersetzungsdateien (Formatversion 1.1)</translation>
     </message>
     <message>
         <location line="+8"/>
         <source>Qt translation sources (format 2.0)</source>
-        <translation type="unfinished"></translation>
+        <translation>Qt-Übersetzungsdateien (Formatversion 2.0)</translation>
     </message>
     <message>
         <location line="+9"/>
         <source>Qt translation sources (latest format)</source>
-        <translation type="unfinished"></translation>
+        <translation>Qt Übersetzungsdateien (aktuelles Format)</translation>
     </message>
     <message>
         <location filename="../tools/linguist/shared/ui.cpp" line="+213"/>
         <source>Qt Designer form files</source>
-        <translation type="unfinished"></translation>
+        <translation>Qt Designer Formulardateien</translation>
     </message>
     <message>
         <location line="+9"/>
         <source>Qt Jambi form files</source>
-        <translation type="unfinished"></translation>
+        <translation>Qt Jambi Formulardateien</translation>
     </message>
     <message>
         <location filename="../tools/linguist/shared/xliff.cpp" line="+817"/>
         <source>XLIFF localization files</source>
-        <translation type="unfinished"></translation>
+        <translation>XLIFF Übersetzungsdateien</translation>
     </message>
     <message>
         <location filename="../tools/linguist/shared/qph.cpp" line="+192"/>
         <source>Qt Linguist &apos;Phrase Book&apos;</source>
-        <translation type="unfinished"></translation>
+        <translation>Qt Linguist-Wörterbuch</translation>
     </message>
 </context>
 <context>
@@ -2223,7 +2228,7 @@ Zeile: %2</translation>
     <message>
         <location/>
         <source>Close</source>
-        <translation type="unfinished">Schließen</translation>
+        <translation>Schließen</translation>
     </message>
 </context>
 <context>
@@ -2727,27 +2732,27 @@ Alle Dateien (*)</translation>
         <location line="+11"/>
         <location line="+8"/>
         <source>Settings for &apos;%1&apos; - Qt Linguist</source>
-        <translation type="unfinished"></translation>
+        <translation>Einstellungen für &apos;%1&apos; - Qt Linguist</translation>
     </message>
     <message>
         <location filename="../tools/linguist/linguist/translationsettings.ui"/>
         <source>Source language</source>
-        <translation type="unfinished"></translation>
+        <translation>Ursprungssprache</translation>
     </message>
     <message>
         <location/>
         <source>Language</source>
-        <translation type="unfinished">Sprache</translation>
+        <translation>Sprache</translation>
     </message>
     <message>
         <location/>
         <source>Country/Region</source>
-        <translation type="unfinished">Land/Region</translation>
+        <translation>Land/Region</translation>
     </message>
     <message>
         <location/>
         <source>Target language</source>
-        <translation type="unfinished">Zielsprache</translation>
+        <translation>Zielsprache</translation>
     </message>
 </context>
 <context>

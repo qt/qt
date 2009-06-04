@@ -579,7 +579,7 @@ static inline char qToLower(char c)
         return c;
 }
 
-Q_CORE_EXPORT QByteArray::Data QByteArray::shared_null = {Q_BASIC_ATOMIC_INITIALIZER(1),
+QByteArray::Data QByteArray::shared_null = {Q_BASIC_ATOMIC_INITIALIZER(1),
                                                           0, 0, shared_null.array, {0} };
 QByteArray::Data QByteArray::shared_empty = { Q_BASIC_ATOMIC_INITIALIZER(1),
                                               0, 0, shared_empty.array, {0} };

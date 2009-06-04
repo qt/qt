@@ -50,6 +50,8 @@
 #include <qcleanlooksstyle.h>
 #include <qlineedit.h>
 #include <qboxlayout.h>
+#include <qaction.h>
+#include <qwidgetaction.h>
 #include "../../shared/util.h"
 
 
@@ -148,13 +150,16 @@ private slots:
     void defaultSize();
     void explicitMouseGrabber();
     void implicitMouseGrabber();
+    void doubleClickAfterExplicitMouseGrab();
     void popupMouseGrabber();
     void windowFlags_data();
     void windowFlags();
+    void shortcutsDeletion();
 
     // Task fixes
     void task236127_bspTreeIndexFails();
     void task243004_setStyleCrash();
+    void task250119_shortcutContext();
 };
 
 
@@ -1996,6 +2001,104 @@ void tst_QGraphicsWidget::implicitMouseGrabber()
     QCOMPARE(scene.mouseGrabberItem(), (QGraphicsItem *)0);
 }
 
+class GrabOnPressItem : public QGraphicsRectItem
+{
+public:
+    GrabOnPressItem(const QRectF &rect)
+        : QGraphicsRectItem(rect),
+          npress(0), nrelease(0), ndoubleClick(0),
+          ngrab(0), nungrab(0)
+    {
+    }
+    int npress;
+    int nrelease;
+    int ndoubleClick;
+    int ngrab;
+    int nungrab;
+protected:
+    bool sceneEvent(QEvent *event)
+    {
+        switch (event->type()) {
+        case QEvent::GrabMouse:
+            ++ngrab;
+            break;
+        case QEvent::UngrabMouse:
+            ++nungrab;
+            break;
+        default:
+            break;
+        }
+        return QGraphicsRectItem::sceneEvent(event);
+    }
+
+    void mousePressEvent(QGraphicsSceneMouseEvent *)
+    {
+        grabMouse();
+        ++npress;
+    }
+    void mouseReleaseEvent(QGraphicsSceneMouseEvent *)
+    {
+        ungrabMouse();
+        ++nrelease;
+    }
+    void mouseDoubleClickEvent(QGraphicsSceneMouseEvent *)
+    {
+        ++ndoubleClick;
+    }
+};
+
+void tst_QGraphicsWidget::doubleClickAfterExplicitMouseGrab()
+{
+    QGraphicsScene scene;
+    GrabOnPressItem *item = new GrabOnPressItem(QRectF(0, 0, 100, 100));
+    scene.addItem(item);
+
+    {
+        QGraphicsSceneMouseEvent event(QEvent::GraphicsSceneMousePress);
+        event.setButton(Qt::LeftButton);
+        event.setButtons(Qt::LeftButton);
+        event.ignore();
+        event.setScenePos(QPointF(50, 50));
+        qApp->sendEvent(&scene, &event);
+    }
+    QCOMPARE(scene.mouseGrabberItem(), (QGraphicsItem *)item);
+    QCOMPARE(item->npress, 1);
+    QCOMPARE(item->ngrab, 1);
+    {
+        QGraphicsSceneMouseEvent event(QEvent::GraphicsSceneMouseRelease);
+        event.setButton(Qt::LeftButton);
+        event.setButtons(0);
+        event.ignore();
+        event.setScenePos(QPointF(50, 50));
+        qApp->sendEvent(&scene, &event);
+    }
+    QCOMPARE(scene.mouseGrabberItem(), (QGraphicsItem *)0);
+    QCOMPARE(item->nrelease, 1);
+    QCOMPARE(item->nungrab, 1);
+    {
+        QGraphicsSceneMouseEvent event(QEvent::GraphicsSceneMouseDoubleClick);
+        event.setButton(Qt::LeftButton);
+        event.setButtons(Qt::LeftButton);
+        event.ignore();
+        event.setScenePos(QPointF(50, 50));
+        qApp->sendEvent(&scene, &event);
+    }
+    QCOMPARE(scene.mouseGrabberItem(), (QGraphicsItem *)item);
+    QCOMPARE(item->ndoubleClick, 1);
+    QCOMPARE(item->ngrab, 2);
+    {
+        QGraphicsSceneMouseEvent event(QEvent::GraphicsSceneMouseRelease);
+        event.setButton(Qt::LeftButton);
+        event.setButtons(0);
+        event.ignore();
+        event.setScenePos(QPointF(50, 50));
+        qApp->sendEvent(&scene, &event);
+    }
+    QCOMPARE(scene.mouseGrabberItem(), (QGraphicsItem *)0);
+    QCOMPARE(item->nrelease, 2);
+    QCOMPARE(item->nungrab, 2);
+}
+
 void tst_QGraphicsWidget::popupMouseGrabber()
 {
     QGraphicsScene scene;
@@ -2165,6 +2268,20 @@ void tst_QGraphicsWidget::windowFlags()
     QCOMPARE(widget5->windowFlags(), Qt::WindowFlags(outputFlags));
 }
 
+void tst_QGraphicsWidget::shortcutsDeletion()
+{
+    QGraphicsWidget *widget = new QGraphicsWidget;
+    QGraphicsWidget *widget2 = new QGraphicsWidget;
+    widget->setMinimumSize(40, 40);
+    QWidgetAction *del = new QWidgetAction(widget);
+    del->setIcon(QIcon("edit-delete"));
+    del->setShortcut(Qt::Key_Delete);
+    del->setShortcutContext(Qt::WidgetShortcut);
+    widget2->addAction(del);
+    widget2->addAction(del);
+    delete widget;
+}
+
 class ProxyStyle : public QCommonStyle
 {
 public:
@@ -2210,6 +2327,89 @@ void tst_QGraphicsWidget::task243004_setStyleCrash()
 
     QGraphicsItem *item2 = new StyledGraphicsWidget(false);
     delete item2;
+}
+
+class GraphicsWidget_task250119 : public QGraphicsWidget
+{
+public:
+    GraphicsWidget_task250119()
+        : shortcutEvents(0)
+    {
+        setFocusPolicy(Qt::StrongFocus);
+        resize(100, 100);
+    }
+
+    int shortcutEvents;
+
+private:
+    bool event(QEvent *event)
+    {
+        if (event->type() == QEvent::Shortcut)
+            shortcutEvents++;
+        return QGraphicsWidget::event(event);
+    }
+
+    void paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *)
+    {
+        if (hasFocus()) {
+            painter->setPen(QPen(Qt::black, 0, Qt::DashLine));
+            painter->drawRect(rect());
+        }
+        painter->setPen(QPen(Qt::black, 0, Qt::SolidLine));
+        painter->fillRect(rect().adjusted(2, 2, -2, -2), Qt::yellow);
+        painter->drawRect(rect().adjusted(2, 2, -2, -2));
+    }
+};
+
+void tst_QGraphicsWidget::task250119_shortcutContext()
+{
+    QGraphicsScene scene;
+    QGraphicsView view;
+    view.setScene(&scene);
+    view.show();
+    QTest::qWait(100);
+
+
+    // *** Event: ***
+
+    GraphicsWidget_task250119 w_event;
+    scene.addItem(&w_event);
+
+    const int id = w_event.grabShortcut(Qt::Key_A, Qt::WidgetWithChildrenShortcut);
+    w_event.setShortcutEnabled(id, true);
+
+    w_event.setFocus();
+    QTest::keyPress(&view, Qt::Key_A);
+    QCOMPARE(w_event.shortcutEvents, 1);
+
+    w_event.clearFocus();
+    QTest::keyPress(&view, Qt::Key_A);
+    QCOMPARE(w_event.shortcutEvents, 1);
+
+    scene.removeItem(&w_event);
+
+
+    // *** Signal: ***
+
+    GraphicsWidget_task250119 w_signal;
+    scene.addItem(&w_signal);
+
+    QAction action(0);
+    action.setShortcut(Qt::Key_B);
+    action.setShortcutContext(Qt::WidgetWithChildrenShortcut);
+    QSignalSpy spy(&action, SIGNAL(triggered()));
+
+    w_signal.addAction(&action);
+
+    w_signal.setFocus();
+    QTest::keyPress(&view, Qt::Key_B);
+    QCOMPARE(spy.count(), 1);
+
+    w_signal.clearFocus();
+    QTest::keyPress(&view, Qt::Key_B);
+    QCOMPARE(spy.count(), 1);
+
+    scene.removeItem(&w_signal);
 }
 
 QTEST_MAIN(tst_QGraphicsWidget)

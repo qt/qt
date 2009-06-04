@@ -1449,7 +1449,7 @@ void QTextCharFormat::setUnderlineStyle(UnderlineStyle style)
 /*!
     \since 4.5
     \fn  bool QTextCharFormat::fontKerning() const
-    Returns true if the the font kerning is enabled.
+    Returns true if the font kerning is enabled.
 
     \sa setFontKerning()
     \sa font()

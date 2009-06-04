@@ -47,23 +47,6 @@ bool GLExtensionFunctions::resolve(const QGLContext *context)
 {
 	bool ok = true;
 
-	RESOLVE_GL_FUNC(CreateShaderObjectARB)
-	RESOLVE_GL_FUNC(ShaderSourceARB)
-	RESOLVE_GL_FUNC(CompileShaderARB)
-	RESOLVE_GL_FUNC(GetObjectParameterivARB)
-	RESOLVE_GL_FUNC(DeleteObjectARB)
-	RESOLVE_GL_FUNC(GetInfoLogARB)
-	RESOLVE_GL_FUNC(CreateProgramObjectARB)
-	RESOLVE_GL_FUNC(AttachObjectARB)
-	RESOLVE_GL_FUNC(DetachObjectARB)
-	RESOLVE_GL_FUNC(LinkProgramARB)
-	RESOLVE_GL_FUNC(UseProgramObjectARB)
-	RESOLVE_GL_FUNC(GetUniformLocationARB)
-	RESOLVE_GL_FUNC(Uniform1iARB)
-	RESOLVE_GL_FUNC(Uniform1fARB)
-	RESOLVE_GL_FUNC(Uniform4fARB)
-	RESOLVE_GL_FUNC(UniformMatrix4fvARB)
-
 	RESOLVE_GL_FUNC(GenFramebuffersEXT)
 	RESOLVE_GL_FUNC(GenRenderbuffersEXT)
 	RESOLVE_GL_FUNC(BindRenderbufferEXT)
@@ -86,26 +69,6 @@ bool GLExtensionFunctions::resolve(const QGLContext *context)
 	RESOLVE_GL_FUNC(UnmapBuffer)
 
 	return ok;
-}
-
-bool GLExtensionFunctions::glslSupported() {
-    return CreateShaderObjectARB
-	    && CreateShaderObjectARB
-	    && ShaderSourceARB
-	    && CompileShaderARB
-	    && GetObjectParameterivARB
-	    && DeleteObjectARB
-	    && GetInfoLogARB
-	    && CreateProgramObjectARB
-	    && AttachObjectARB
-	    && DetachObjectARB
-	    && LinkProgramARB
-	    && UseProgramObjectARB
-	    && GetUniformLocationARB
-	    && Uniform1iARB
-	    && Uniform1fARB
-	    && Uniform4fARB
-            && UniformMatrix4fvARB;
 }
 
 bool GLExtensionFunctions::fboSupported() {

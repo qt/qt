@@ -70,7 +70,7 @@ public:
     inline QByteArray pattern() const
     {
         if (q_pattern.isNull())
-            return QByteArray((const char*)p.p, p.l);
+            return QByteArray(reinterpret_cast<const char*>(p.p), p.l);
         return q_pattern;
     }
 

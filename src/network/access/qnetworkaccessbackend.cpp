@@ -50,6 +50,8 @@
 #include "qnetworkaccesscachebackend_p.h"
 #include "qabstractnetworkcache.h"
 
+#include "private/qnoncontiguousbytedevice_p.h"
+
 QT_BEGIN_NAMESPACE
 
 static bool factoryDataShutdown = false;
@@ -109,17 +111,43 @@ QNetworkAccessBackend *QNetworkAccessManagerPrivate::findBackend(QNetworkAccessM
     return 0;
 }
 
+
+QNonContiguousByteDevice* QNetworkAccessBackend::createUploadByteDevice()
+{
+    QNonContiguousByteDevice* device = 0;
+
+    if (reply->outgoingDataBuffer)
+        device = QNonContiguousByteDeviceFactory::create(reply->outgoingDataBuffer);
+    else
+        device = QNonContiguousByteDeviceFactory::create(reply->outgoingData);
+
+    bool bufferDisallowed =
+            reply->request.attribute(QNetworkRequest::DoNotBufferUploadDataAttribute,
+                          QVariant(false)) == QVariant(true);
+    if (bufferDisallowed)
+        device->disableReset();
+
+    // make sure we delete this later
+    device->setParent(this);
+
+    connect(device, SIGNAL(readProgress(qint64,qint64)), this, SLOT(emitReplyUploadProgress(qint64,qint64)));
+
+    return device;
+}
+
+// need to have this function since the reply is a private member variable
+// and the special backends need to access this.
+void QNetworkAccessBackend::emitReplyUploadProgress(qint64 bytesSent, qint64 bytesTotal)
+{
+    reply->emitUploadProgress(bytesSent, bytesTotal);
+}
+
 QNetworkAccessBackend::QNetworkAccessBackend()
 {
 }
 
 QNetworkAccessBackend::~QNetworkAccessBackend()
 {
-}
-
-void QNetworkAccessBackend::upstreamReadyRead()
-{
-    // do nothing
 }
 
 void QNetworkAccessBackend::downstreamReadyWrite()
@@ -184,23 +212,6 @@ bool QNetworkAccessBackend::isCachingEnabled() const
     return reply->isCachingEnabled();
 }
 
-qint64 QNetworkAccessBackend::upstreamBytesAvailable() const
-{
-    return reply->writeBuffer.size();
-}
-
-void QNetworkAccessBackend::upstreamBytesConsumed(qint64 count)
-{
-    // remove count bytes from the write buffer
-    reply->consume(count);
-}
-
-QByteArray QNetworkAccessBackend::readUpstream()
-{
-    // ### this is expensive. Consider making QRingBuffer::peekAll keep the buffer it returns
-    return reply->writeBuffer.peek(upstreamBytesAvailable());
-}
-
 qint64 QNetworkAccessBackend::nextDownstreamBlockSize() const
 {
     return reply->nextDownstreamBlockSize();
@@ -213,12 +224,12 @@ qint64 QNetworkAccessBackend::downstreamBytesToConsume() const
 
 void QNetworkAccessBackend::writeDownstreamData(const QByteArray &data)
 {
-    reply->feed(data);
+    reply->appendDownstreamData(data);
 }
 
 void QNetworkAccessBackend::writeDownstreamData(QIODevice *data)
 {
-    reply->feed(data);
+    reply->appendDownstreamData(data);
 }
 
 QVariant QNetworkAccessBackend::header(QNetworkRequest::KnownHeaders header) const

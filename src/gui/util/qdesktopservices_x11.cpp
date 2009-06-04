@@ -164,8 +164,8 @@ QString QDesktopServices::storageLocation(StandardLocation type)
                 QString key = lst.at(1);
                 QString value = lst.at(2);
                 if (value.length() > 2
-                    && value.startsWith(QLatin1String("\""))
-                    && value.endsWith(QLatin1String("\"")))
+                    && value.startsWith(QLatin1Char('\"'))
+                    && value.endsWith(QLatin1Char('\"')))
                     value = value.mid(1, value.length() - 2);
                 // Store the key and value: "DESKTOP", "$HOME/Desktop"
                 lines[key] = value;

@@ -161,9 +161,9 @@ void WriteIconData::writeImage(QTextStream &output, const QString &indent, DomIm
         for (a = 0; a < (int) (data.length()/2)-1; a++) {
             output << "0x" << QString(data[2*a]) << QString(data[2*a+1]) << ',';
             if (a % 12 == 11)
-                output << "\n" << indent;
+                output << '\n' << indent;
             else
-                output << " ";
+                output << ' ';
         }
         output << "0x" << QString(data[2*a]) << QString(data[2*a+1]) << '\n';
         output << "};\n\n";

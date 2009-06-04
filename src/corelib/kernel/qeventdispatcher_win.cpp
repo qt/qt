@@ -396,13 +396,6 @@ Q_CORE_EXPORT bool winPostMessage(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lPa
           { return PostMessageA(hWnd, msg, wParam, lParam); });
 }
 
-Q_CORE_EXPORT bool winGetMessage(MSG* msg, HWND hWnd, UINT wMsgFilterMin,
-                     UINT wMsgFilterMax)
-{
-    QT_WA({ return GetMessage(msg, hWnd, wMsgFilterMin, wMsgFilterMax); } ,
-          { return GetMessageA(msg, hWnd, wMsgFilterMin, wMsgFilterMax); });
-}
-
 // This function is called by a workerthread
 void WINAPI CALLBACK qt_fast_timer_proc(uint timerId, uint /*reserved*/, DWORD_PTR user, DWORD_PTR /*reserved*/, DWORD_PTR /*reserved*/)
 {

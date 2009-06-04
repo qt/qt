@@ -49,6 +49,7 @@
 #include <private/qtextengine_p.h>
 #include <qvarlengtharray.h>
 #include <private/qfontengine_p.h>
+#include <private/qpaintengineex_p.h>
 
 
 QT_BEGIN_NAMESPACE
@@ -302,6 +303,9 @@ void QPaintEngine::syncState()
 {
     Q_ASSERT(state);
     updateState(*state);
+
+    if (isExtended())
+        static_cast<QPaintEngineEx *>(this)->sync();
 }
 
 static QPaintEngine *qt_polygon_recursion = 0;

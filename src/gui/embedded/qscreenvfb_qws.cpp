@@ -330,7 +330,7 @@ void QVFbScreen::disconnect()
 bool QVFbScreen::initDevice()
 {
 #ifndef QT_NO_QWS_MOUSE_QVFB
-    const QString mouseDev = QString(QLatin1String(QT_VFB_MOUSE_PIPE))
+    const QString mouseDev = QString::fromLatin1(QT_VFB_MOUSE_PIPE)
                              .arg(displayId);
     d_ptr->mouse = new QVFbMouseHandler(QLatin1String("QVFbMouse"), mouseDev);
     qwsServer->setDefaultMouse("None");
@@ -339,7 +339,7 @@ bool QVFbScreen::initDevice()
 #endif
 
 #if !defined(QT_NO_QWS_KBD_QVFB) && !defined(QT_NO_QWS_KEYBOARD)
-    const QString keyboardDev = QString(QLatin1String(QT_VFB_KEYBOARD_PIPE))
+    const QString keyboardDev = QString::fromLatin1(QT_VFB_KEYBOARD_PIPE)
                                 .arg(displayId);
     d_ptr->keyboard = new QVFbKeyboardHandler(keyboardDev);
     qwsServer->setDefaultKeyboard("None");

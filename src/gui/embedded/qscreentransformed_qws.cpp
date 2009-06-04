@@ -206,11 +206,11 @@ bool QTransformedScreen::connect(const QString &displaySpec)
 {
     QString dspec = displaySpec.trimmed();
     if (dspec.startsWith(QLatin1String("Transformed:"), Qt::CaseInsensitive))
-        dspec = dspec.mid(QString(QLatin1String("Transformed:")).size());
+        dspec = dspec.mid(QString::fromLatin1("Transformed:").size());
     else if (!dspec.compare(QLatin1String("Transformed"), Qt::CaseInsensitive))
         dspec = QString();
 
-    const QString displayIdSpec = QString(QLatin1String(" :%1")).arg(displayId);
+    const QString displayIdSpec = QString::fromLatin1(" :%1").arg(displayId);
     if (dspec.endsWith(displayIdSpec))
         dspec = dspec.left(dspec.size() - displayIdSpec.size());
 
@@ -223,7 +223,7 @@ bool QTransformedScreen::connect(const QString &displaySpec)
 
     if (!QScreenDriverFactory::keys().contains(driver, Qt::CaseInsensitive))
         if (!dspec.isEmpty())
-            dspec.prepend(QLatin1String(":"));
+            dspec.prepend(QLatin1Char(':'));
 
     const int id = getDisplayId(dspec);
     QScreen *s = qt_get_screen(id, dspec.toLatin1().constData());

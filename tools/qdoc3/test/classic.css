@@ -1,12 +1,31 @@
+BODY,H1,H2,H3,H4,H5,H6,P,CENTER,TD,TH,UL,DL,DIV {
+  font-family: Arial, Geneva, Helvetica, sans-serif;
+}
+H1 {
+  text-align: center;
+  font-size: 160%;
+}
+H2 {
+  font-size: 120%;
+}
+H3 {
+  font-size: 100%;
+}
+
 h3.fn,span.fn
 {
-  margin-left: 1cm;
-  text-indent: -1cm;
+  background-color: #d5e1d5;
+  border-width: 1px;
+  border-style: solid;
+  border-color: #66bc29;
+  font-weight: bold;
+  -moz-border-radius: 8px 8px 8px 8px;
+  padding: 6px 0px 6px 10px;
 }
 
 a:link
 {
-  color: #004faf;
+  color: #0046ad;
   text-decoration: none
 }
 
@@ -40,20 +59,49 @@ a.compat:visited
   text-decoration: none
 }
 
-td.postheader
-{
-  font-family: sans-serif
-}
-
-tr.address
-{
-  font-family: sans-serif
-}
-
 body
 {
   background: #ffffff;
   color: black
+}
+
+table td.memItemLeft {
+  width: 100px;
+  padding: 1px 0px 0px 8px;
+  margin: 4px;
+  border-top-width: 1px;
+  border-right-width: 1px;
+  border-bottom-width: 1px;
+  border-left-width: 1px;
+  border-top-color: #E0E0E0;
+  border-right-color: #E0E0E0;
+  border-bottom-color: #E0E0E0;
+  border-left-color: #E0E0E0;
+  border-top-style: solid;
+  border-right-style: none;
+  border-bottom-style: none;
+  border-left-style: none;
+  background-color: #FAFAFA;
+  font-size: 100%;
+  white-space: nowrap
+}
+table td.memItemRight {
+  padding: 1px 8px 0px 8px;
+  margin: 4px;
+  border-top-width: 1px;
+  border-right-width: 1px;
+  border-bottom-width: 1px;
+  border-left-width: 1px;
+  border-top-color: #E0E0E0;
+  border-right-color: #E0E0E0;
+  border-bottom-color: #E0E0E0;
+  border-left-color: #E0E0E0;
+  border-top-style: solid;
+  border-right-style: none;
+  border-bottom-style: none;
+  border-left-style: none;
+  background-color: #FAFAFA;
+  font-size: 100%;
 }
 
 table tr.odd {
@@ -77,10 +125,10 @@ table.annotated td {
 
 table tr pre
 {
-  padding-top: none;
-  padding-bottom: none;
-  padding-left: none;
-  padding-right: none;
+  padding-top: 0px;
+  padding-bottom: 0px;
+  padding-left: 0px;
+  padding-right: 0px;
   border: none;
   background: none
 }

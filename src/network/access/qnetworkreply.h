@@ -92,6 +92,7 @@ public:
         ContentOperationNotPermittedError,
         ContentNotFoundError,
         AuthenticationRequiredError,
+        ContentReSendError,
         UnknownContentError = 299,
 
         // protocol errors

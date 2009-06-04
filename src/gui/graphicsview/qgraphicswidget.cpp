@@ -200,7 +200,55 @@ QT_BEGIN_NAMESPACE
 /*!
     \property QGraphicsWidget::pos
     \brief the position of the widget
-*/    
+*/
+
+/*!
+    \property QGraphicsWidget::xRotation
+    \since 4.6
+    \brief the rotation angle in degrees around the X axis
+*/
+
+/*!
+    \property QGraphicsWidget::yRotation
+    \since 4.6
+    \brief the rotation angle in degrees around the Y axis
+*/
+
+/*!
+    \property QGraphicsWidget::zRotation
+    \since 4.6
+    \brief the rotation angle in degrees around the Z axis
+*/
+
+/*!
+    \property QGraphicsWidget::xScale
+    \since 4.6
+    \brief the scale factor on the X axis.
+*/
+
+/*!
+    \property QGraphicsWidget::yScale
+    \since 4.6
+    \brief the scale factor on the Y axis.
+*/
+
+/*!
+    \property QGraphicsWidget::horizontalShear
+    \since 4.6
+    \brief the horizontal shear.
+*/
+
+/*!
+    \property QGraphicsWidget::verticalShear
+    \since 4.6
+    \brief the vertical shear.
+*/
+
+/*!
+    \property QGraphicsWidget::transformOrigin
+    \since 4.6
+    \brief the transformation origin for the transformation properties.
+*/
 
 /*!
     Constructs a QGraphicsWidget instance. The optional \a parent argument is
@@ -1914,8 +1962,10 @@ void QGraphicsWidget::insertAction(QAction *before, QAction *action)
     }
     d->actions.insert(pos, action);
 
-    QActionPrivate *apriv = action->d_func();
-    apriv->graphicsWidgets.append(this);
+    if (index == -1) {
+        QActionPrivate *apriv = action->d_func();
+        apriv->graphicsWidgets.append(this);
+    }
 
     QActionEvent e(QEvent::ActionAdded, action, before);
     QApplication::sendEvent(this, &e);
@@ -2295,7 +2345,7 @@ void QGraphicsWidget::dumpFocusChain()
             qWarning("Found a focus chain that is not circular, (next == 0)");
             break;
         }
-        qDebug() << i++ << QString::number(uint(next), 16) << next->className() << next->data(0) << QString::fromAscii("focusItem:%1").arg(next->hasFocus() ? "1" : "0") << QLatin1String("next:") << next->d_func()->focusNext->data(0) << QLatin1String("prev:") << next->d_func()->focusPrev->data(0);
+        qDebug() << i++ << QString::number(uint(next), 16) << next->className() << next->data(0) << QString::fromAscii("focusItem:%1").arg(next->hasFocus() ? '1' : '0') << QLatin1String("next:") << next->d_func()->focusNext->data(0) << QLatin1String("prev:") << next->d_func()->focusPrev->data(0);
         if (visited.contains(next)) {
             qWarning("Already visited this node. However, I expected to dump until I found myself.");
             break;
