@@ -601,7 +601,7 @@ void QGraphicsScenePrivate::_q_emitUpdated()
     // the optimization that items send updates directly to the views, but it
     // needs to happen in order to keep compatibility with the behavior from
     // Qt 4.4 and backward.
-    if (!views.isEmpty() && (connectedSignals & changedSignalMask)) {
+    if (connectedSignals & changedSignalMask) {
         for (int i = 0; i < views.size(); ++i) {
             QGraphicsView *view = views.at(i);
             if (!view->d_func()->connectedToScene) {
