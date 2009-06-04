@@ -146,6 +146,7 @@ static const int frameElementsCount =
     int(sizeof(QS60StylePrivate::m_frameElementsData)/sizeof(QS60StylePrivate::m_frameElementsData[0]));
 
 const int KNotFound = -909;
+const double KTabFontMul = 0.72;
 
 QS60StylePrivate::~QS60StylePrivate()
 {
