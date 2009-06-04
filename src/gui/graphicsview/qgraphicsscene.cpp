@@ -682,6 +682,7 @@ void QGraphicsScenePrivate::_q_processDirtyItems()
     if (updateAll)
         return;
 
+    const bool wasPendingSceneUpdate = calledEmitUpdated;
     const QRectF oldGrowingItemsBoundingRect = growingItemsBoundingRect;
     processDirtyItemsRecursive(0);
     if (!hasSceneRect && oldGrowingItemsBoundingRect != growingItemsBoundingRect)
@@ -689,6 +690,13 @@ void QGraphicsScenePrivate::_q_processDirtyItems()
 
     for (int i = 0; i < views.size(); ++i)
         views.at(i)->d_func()->processPendingUpdates();
+
+    if (!wasPendingSceneUpdate && calledEmitUpdated) {
+        // We did a compatibility QGraphicsScene::update in processDirtyItemsRecursive
+        // and we cannot wait for the control to reach the eventloop before the
+        // changed signal is emitted, so we emit it now.
+        _q_emitUpdated();
+    }
 }
 
 /*!

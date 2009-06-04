@@ -5979,10 +5979,21 @@ void QGraphicsItem::prepareGeometryChange()
     if (d_ptr->scene) {
         d_ptr->geometryChanged = 1;
         d_ptr->paintedViewBoundingRectsNeedRepaint = 1;
-        d_ptr->scene->d_func()->markDirty(this, QRectF(),
-                                          /*invalidateChildren=*/true,
-                                          /*maybeDirtyClipPath=*/!d_ptr->inSetPosHelper);
+
         QGraphicsScenePrivate *scenePrivate = d_ptr->scene->d_func();
+        scenePrivate->markDirty(this, QRectF(),
+                                /*invalidateChildren=*/true,
+                                /*maybeDirtyClipPath=*/!d_ptr->inSetPosHelper);
+
+        // For compatibility reasons, we have to update the item's old geometry
+        // if someone is connected to the changed signal or the scene has no views.
+        // Note that this has to be done *after* markDirty to ensure that
+        // _q_processDirtyItems is called before _q_emitUpdated.
+        if ((scenePrivate->connectedSignals & scenePrivate->changedSignalMask)
+            || scenePrivate->views.isEmpty()) {
+            d_ptr->scene->update(sceneTransform().mapRect(boundingRect()));
+        }
+
         scenePrivate->removeFromIndex(this);
     }
 
