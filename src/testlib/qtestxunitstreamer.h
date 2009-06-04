@@ -42,9 +42,13 @@
 #ifndef QTESTXUNITSTREAMER_H
 #define QTESTXUNITSTREAMER_H
 
-#include "qtestbasicstreamer.h"
+#include <QtTest/qtestbasicstreamer.h>
+
+QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
+
+QT_MODULE(Test)
 
 class QTestLogger;
 
@@ -67,5 +71,7 @@ class QTestXunitStreamer: public QTestBasicStreamer
 };
 
 QT_END_NAMESPACE
+
+QT_END_HEADER
 
 #endif
