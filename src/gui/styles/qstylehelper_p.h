@@ -66,7 +66,6 @@ class QStyleOption;
 
 namespace QStyleHelper
 {
-    extern const bool UsePixmapCache;
     QString uniqueName(const QString &key, const QStyleOption *option, const QSize &size);
 #ifndef QT_NO_DIAL
     qreal angle(const QPointF &p1, const QPointF &p2);

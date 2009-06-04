@@ -51,7 +51,6 @@
 QT_BEGIN_NAMESPACE
 
 namespace QStyleHelper {
-const bool UsePixmapCache = true;
 
 QString uniqueName(const QString &key, const QStyleOption *option, const QSize &size)
 {
