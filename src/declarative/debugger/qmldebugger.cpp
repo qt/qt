@@ -282,7 +282,7 @@ bool QmlDebugger::makeItem(QObject *obj, QmlDebuggerItem *item)
                 if(!toolTipString.isEmpty()) 
                     toolTipString.prepend(QLatin1Char('\n'));
                 toolTipString.prepend(tr("Root type: ") + text);
-                text = p->typeName;
+                text = QString::fromAscii(p->typeName);
             }
 
             if(!toolTipString.isEmpty())
@@ -333,6 +333,7 @@ bool operator<(const QPair<quint32, QPair<int, QString> > &lhs,
 
 void QmlDebugger::setCanvas(QSimpleCanvas *c)
 {
+    Q_UNUSED(c);
 }
 
 void QmlDebugger::setDebugObject(QObject *obj)

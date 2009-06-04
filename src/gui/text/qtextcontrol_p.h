@@ -83,7 +83,7 @@ class QAbstractScrollArea;
 class QEvent;
 class QTimerEvent;
 
-class Q_AUTOTEST_EXPORT QTextControl : public QObject
+class Q_GUI_EXPORT QTextControl : public QObject
 {
     Q_OBJECT
     Q_DECLARE_PRIVATE(QTextControl)

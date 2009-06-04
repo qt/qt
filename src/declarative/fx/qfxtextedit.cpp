@@ -772,6 +772,18 @@ void QFxTextEdit::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
 \overload
 Handles the given mouse \a event.
 */
+void QFxTextEdit::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event)
+{
+    Q_D(QFxTextEdit);
+    d->control->processEvent(event, QPointF(0, 0));
+    if (!event->isAccepted())
+        QFxPaintedItem::mouseDoubleClickEvent(event);
+}
+
+/*!
+\overload
+Handles the given mouse \a event.
+*/
 void QFxTextEdit::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
 {
     Q_D(QFxTextEdit);
@@ -859,9 +871,13 @@ void QFxTextEditPrivate::init()
 
 void QFxTextEdit::q_textChanged()
 {
+    if (!widthValid())
+        updateSize();   //### optimize: we get 3 calls to updateSize every time a letter is typed
     emit textChanged(text());
 }
 
+//### we should perhaps be a bit smarter here -- depending on what has changed, we shouldn't
+//    need to do all the calculations each time
 void QFxTextEdit::updateSize()
 {
     Q_D(QFxTextEdit);
