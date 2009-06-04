@@ -190,12 +190,6 @@ static void netChat(int port, const QList<Chat> &chat)
     // now start the chat
     QList<Chat>::ConstIterator it = chat.constBegin();
     for (int i = 1; it != chat.constEnd(); ++it, ++i) {
-        if (it->type != Chat::Reconnect
-            && socket.state() != QAbstractSocket::ConnectedState
-            && socket.state() != QAbstractSocket::ClosingState)
-            QFAIL(QString("Internal error: socket is in invalid state %1 in step %2")
-                  .arg(socket.state()).arg(i).toLocal8Bit());
-
         switch (it->type) {
             case Chat::Expect: {
                     qDebug() << i << "Expecting" << prettyByteArray(it->data);
