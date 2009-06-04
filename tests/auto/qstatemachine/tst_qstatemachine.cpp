@@ -1768,6 +1768,34 @@ void tst_QStateMachine::signalTransitions()
         QState *s0 = new QState(machine.rootState());
         QFinalState *s1 = new QFinalState(machine.rootState());
         SignalEmitter emitter;
+        QSignalTransition *trans = s0->addTransition(&emitter, "signalWithNoArg()", s1);
+        QVERIFY(trans != 0);
+        QCOMPARE(trans->sourceState(), s0);
+        QCOMPARE(trans->targetState(), (QAbstractState*)s1);
+        QCOMPARE(trans->senderObject(), (QObject*)&emitter);
+        QCOMPARE(trans->signal(), QByteArray("signalWithNoArg()"));
+
+        QSignalSpy finishedSpy(&machine, SIGNAL(finished()));
+        machine.setInitialState(s0);
+        machine.start();
+        QCoreApplication::processEvents();
+
+        emitter.emitSignalWithNoArg();
+
+        QTRY_COMPARE(finishedSpy.count(), 1);
+
+        trans->setSignal("signalWithIntArg(int)");
+        QCOMPARE(trans->signal(), QByteArray("signalWithIntArg(int)"));
+        machine.start();
+        QCoreApplication::processEvents();
+        emitter.emitSignalWithIntArg(123);
+        QTRY_COMPARE(finishedSpy.count(), 2);
+    }
+    {
+        QStateMachine machine;
+        QState *s0 = new QState(machine.rootState());
+        QFinalState *s1 = new QFinalState(machine.rootState());
+        SignalEmitter emitter;
         TestSignalTransition *trans = new TestSignalTransition(&emitter, SIGNAL(signalWithIntArg(int)), s1);
         s0->addTransition(trans);
 

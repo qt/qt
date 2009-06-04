@@ -48,7 +48,7 @@ QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-QT_MODULE(Core)
+QT_MODULE(Gui)
 
 class QMouseEventTransitionPrivate;
 class QPainterPath;

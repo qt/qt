@@ -279,15 +279,18 @@ public:
     void setMaskType(MaskType);
     void setCompositionMode(QPainter::CompositionMode);
 
+    void setDirty(); // someone has manually changed the current shader program
     bool useCorrectShaderProg(); // returns true if the shader program needed to be changed
 
     QGLShaderProgram* currentProgram(); // Returns pointer to the shader the manager has chosen
     QGLShaderProgram* simpleProgram(); // Used to draw into e.g. stencil buffers
+    QGLShaderProgram* blitProgram(); // Used to blit a texture into the framebuffer
 
     enum ShaderName {
         MainVertexShader,
         MainWithTexCoordsVertexShader,
 
+        UntransformedPositionVertexShader,
         PositionOnlyVertexShader,
         PositionWithPatternBrushVertexShader,
         PositionWithLinearGradientBrushVertexShader,
@@ -365,6 +368,7 @@ private:
     bool                        useTextureCoords;
     QPainter::CompositionMode   compositionMode;
 
+    QGLShaderProgram*   blitShaderProg;
     QGLShaderProgram*   simpleShaderProg;
     QGLShaderProgram*   currentShaderProg;
 

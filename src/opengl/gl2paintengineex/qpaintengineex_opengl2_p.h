@@ -126,6 +126,7 @@ public:
         return static_cast<const QOpenGL2PaintEngineState *>(QPaintEngineEx::state());
     }
     void updateClipRegion(const QRegion &clipRegion, Qt::ClipOperation op);
+    virtual void sync();
 
 private:
     Q_DISABLE_COPY(QGL2PaintEngineEx)

@@ -47,6 +47,7 @@
 #include "codeparser.h"
 #include "node.h"
 #include "tree.h"
+#include "config.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -67,6 +68,7 @@ QT_BEGIN_NAMESPACE
 #define COMMAND_TITLE                   Doc::alias(QLatin1String("title"))
 
 QList<CodeParser *> CodeParser::parsers;
+bool CodeParser::showInternal = false;
 
 /*!
   The constructor adds this code parser to the static
@@ -87,11 +89,11 @@ CodeParser::~CodeParser()
 }
 
 /*!
-  Initializing a code parser is trivial.
+  Initialize the code parser base class.
  */
-void CodeParser::initializeParser(const Config & /* config */)
+void CodeParser::initializeParser(const Config& config)
 {
-    // nothing.
+    showInternal = config.getBool(QLatin1String(CONFIG_SHOWINTERNAL));
 }
 
 /*!
@@ -217,8 +219,10 @@ void CodeParser::processCommonMetaCommand(const Location &location,
 	node->setStatus(Node::Preliminary);
     }
     else if (command == COMMAND_INTERNAL) {
-	node->setAccess(Node::Private);
-        node->setStatus(Node::Internal);
+        if (!showInternal) {
+            node->setAccess(Node::Private);
+            node->setStatus(Node::Internal);
+        }
     }
     else if (command == COMMAND_REENTRANT) {
 	node->setThreadSafeness(Node::Reentrant);

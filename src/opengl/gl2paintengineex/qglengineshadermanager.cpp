@@ -64,6 +64,7 @@ QGLEngineShaderManager::QGLEngineShaderManager(QGLContext* context)
       maskType(NoMask),
       useTextureCoords(false),
       compositionMode(QPainter::CompositionMode_SourceOver),
+      blitShaderProg(0),
       simpleShaderProg(0),
       currentShaderProg(0)
 {
@@ -83,6 +84,7 @@ QGLEngineShaderManager::QGLEngineShaderManager(QGLContext* context)
         code[MainVertexShader] = qglslMainVertexShader;
         code[MainWithTexCoordsVertexShader] = qglslMainWithTexCoordsVertexShader;
 
+        code[UntransformedPositionVertexShader] = qglslUntransformedPositionVertexShader;
         code[PositionOnlyVertexShader] = qglslPositionOnlyVertexShader;
         code[PositionWithPatternBrushVertexShader] = qglslPositionWithPatternBrushVertexShader;
         code[PositionWithLinearGradientBrushVertexShader] = qglslPositionWithLinearGradientBrushVertexShader;
@@ -160,6 +162,24 @@ QGLEngineShaderManager::QGLEngineShaderManager(QGLContext* context)
         qCritical() << "Errors linking simple shader:"
                     << simpleShaderProg->log();
     }
+
+    // Compile the blit shader:
+    blitShaderProg = new QGLShaderProgram(ctx, this);
+    compileNamedShader(MainWithTexCoordsVertexShader,     QGLShader::PartialVertexShader);
+    compileNamedShader(UntransformedPositionVertexShader, QGLShader::PartialVertexShader);
+    compileNamedShader(MainFragmentShader,                QGLShader::PartialFragmentShader);
+    compileNamedShader(ImageSrcFragmentShader,            QGLShader::PartialFragmentShader);
+    blitShaderProg->addShader(compiledShaders[MainWithTexCoordsVertexShader]);
+    blitShaderProg->addShader(compiledShaders[UntransformedPositionVertexShader]);
+    blitShaderProg->addShader(compiledShaders[MainFragmentShader]);
+    blitShaderProg->addShader(compiledShaders[ImageSrcFragmentShader]);
+    blitShaderProg->bindAttributeLocation("textureCoordArray", QT_TEXTURE_COORDS_ATTR);
+    blitShaderProg->bindAttributeLocation("vertexCoordsArray", QT_VERTEX_COORDS_ATTR);
+    blitShaderProg->link();
+    if (!blitShaderProg->isLinked()) {
+        qCritical() << "Errors linking blit shader:"
+                    << blitShaderProg->log();
+    }
 }
 
 QGLEngineShaderManager::~QGLEngineShaderManager()
@@ -174,6 +194,11 @@ QGLEngineShaderManager::~QGLEngineShaderManager()
 void QGLEngineShaderManager::optimiseForBrushTransform(const QTransform &transform)
 {
     Q_UNUSED(transform); // Currently ignored
+}
+
+void QGLEngineShaderManager::setDirty()
+{
+    shaderProgNeedsChanging = true;
 }
 
 void QGLEngineShaderManager::setSrcPixelType(Qt::BrushStyle style)
@@ -222,6 +247,10 @@ QGLShaderProgram* QGLEngineShaderManager::simpleProgram()
     return simpleShaderProg;
 }
 
+QGLShaderProgram* QGLEngineShaderManager::blitProgram()
+{
+    return blitShaderProg;
+}
 
 
 
@@ -452,8 +481,7 @@ void QGLEngineShaderManager::compileNamedShader(QGLEngineShaderManager::ShaderNa
         return;
 
     QGLShader *newShader = new QGLShader(type, ctx, this);
-    newShader->setSourceCode(qglEngineShaderSourceCode[name]);
-    // newShader->compile(); ### does not exist?
+    newShader->compile(qglEngineShaderSourceCode[name]);
 
 #if defined(QT_DEBUG)
     // Name the shader for easier debugging

@@ -62,6 +62,7 @@ public:
     QList<QmlError> errors;
     QList<QUrl> imports;
     QmlParser::Object *root;
+    QList<int> automaticSemicolonOffsets;
 };
 
 class QmlDomObjectPrivate : public QSharedData
