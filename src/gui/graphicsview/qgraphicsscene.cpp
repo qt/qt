@@ -610,6 +610,7 @@ void QGraphicsScenePrivate::_q_emitUpdated()
             }
         }
     } else {
+        updateAll = false;
         for (int i = 0; i < views.size(); ++i)
             views.at(i)->d_func()->processPendingUpdates();
         return;

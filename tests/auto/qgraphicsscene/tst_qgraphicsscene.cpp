@@ -2715,6 +2715,7 @@ void tst_QGraphicsScene::update()
 
     QGraphicsRectItem *rect = new QGraphicsRectItem(0, 0, 100, 100);
     scene.addItem(rect);
+    qApp->processEvents();
     rect->setPos(-100, -100);
 
     // This function forces indexing
