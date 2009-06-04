@@ -728,7 +728,7 @@ void QStatusBar::paintEvent(QPaintEvent *event)
         QStatusBarPrivate::SBItem* item = d->items.at(i);
         if (item && item->w->isVisible() && (!haveMessage || item->p)) {
             QRect ir = item->w->geometry().adjusted(-2, -1, 2, 1);
-            if (event->rect().contains(ir)) {
+            if (event->rect().intersects(ir)) {
                 QStyleOption opt(0);
                 opt.rect = ir;
                 opt.palette = palette();
