@@ -5101,6 +5101,7 @@ void QGraphicsScenePrivate::drawSubtreeRecursive(QGraphicsItem *item, QPainter *
 {
     // Calculate opacity.
     qreal opacity;
+    bool invisibleButChildIgnoresParentOpacity = false;
     if (item) {
         if (!item->d_ptr->visible)
             return;
@@ -5112,8 +5113,11 @@ void QGraphicsScenePrivate::drawSubtreeRecursive(QGraphicsItem *item, QPainter *
         } else {
             opacity = item->d_ptr->opacity;
         }
-        if (opacity == 0.0 && !(item->d_ptr->flags & QGraphicsItem::ItemDoesntPropagateOpacityToChildren))
-            return;
+        if (opacity == 0.0 && !(item->d_ptr->flags & QGraphicsItem::ItemDoesntPropagateOpacityToChildren)) {
+            invisibleButChildIgnoresParentOpacity = !item->d_ptr->childrenCombineOpacity();
+            if (!invisibleButChildIgnoresParentOpacity)
+                return;
+        }
     } else {
         opacity = parentOpacity;
     }
@@ -5176,7 +5180,7 @@ void QGraphicsScenePrivate::drawSubtreeRecursive(QGraphicsItem *item, QPainter *
     bool dontDrawItem = !item || viewBoundingRect.isEmpty();
     bool dontDrawChildren = item && dontDrawItem && childClip;
     childClip &= !dontDrawChildren & !children->isEmpty();
-    if (item && item->d_ptr->flags & QGraphicsItem::ItemHasNoContents)
+    if (item && (item->d_ptr->flags & QGraphicsItem::ItemHasNoContents) || invisibleButChildIgnoresParentOpacity)
         dontDrawItem = true;
 
     // Clip children.
@@ -5201,6 +5205,8 @@ void QGraphicsScenePrivate::drawSubtreeRecursive(QGraphicsItem *item, QPainter *
     // Draw children behind
     int i = 0;
     if (!dontDrawChildren) {
+        // ### Don't visit children that don't ignore parent opacity if this
+        // item is invisible.
         for (i = 0; i < children->size(); ++i) {
             QGraphicsItem *child = children->at(i);
             if (wasDirtyParentSceneTransform)
@@ -5233,6 +5239,8 @@ void QGraphicsScenePrivate::drawSubtreeRecursive(QGraphicsItem *item, QPainter *
 
     // Draw children in front
     if (!dontDrawChildren) {
+        // ### Don't visit children that don't ignore parent opacity if this
+        // item is invisible.
         for (; i < children->size(); ++i) {
             QGraphicsItem *child = children->at(i);
             if (wasDirtyParentSceneTransform)
