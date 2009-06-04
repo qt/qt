@@ -836,6 +836,10 @@ class Q_GUI_EXPORT QGraphicsObject : public QObject, public QGraphicsItem
 {
     Q_OBJECT
     Q_INTERFACES(QGraphicsItem)
+    Q_PROPERTY(qreal opacity READ opacity WRITE setOpacity)
+    Q_PROPERTY(QPointF pos READ pos WRITE setPos)
+    Q_PROPERTY(bool enabled READ isEnabled WRITE setEnabled)
+    Q_PROPERTY(bool visible READ isVisible WRITE setVisible)
 public:
     QGraphicsObject(QGraphicsItem *parent = 0);
 protected:
