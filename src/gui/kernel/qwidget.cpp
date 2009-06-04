@@ -2046,17 +2046,20 @@ static inline void fillRegion(QPainter *painter, const QRegion &rgn, const QPoin
         // Defined in qmacstyle_mac.cpp
         extern void qt_mac_fill_background(QPainter *painter, const QRegion &rgn, const QPoint &offset, const QBrush &brush);
         qt_mac_fill_background(painter, rgn, offset, brush);
-#elif defined(Q_WS_S60)
-        // Defined in qs60style_symbian.cpp
-        extern void qt_s60_fill_background(QPainter *painter, const QRegion &rgn,
-                        const QPoint &offset, const QBrush &brush);
-        qt_s60_fill_background(painter, rgn, offset, brush);
 #else
-        const QRegion translated = rgn.translated(offset);
-        const QRect rect(translated.boundingRect());
-        painter->setClipRegion(translated);
-        painter->drawTiledPixmap(rect, brush.texture(), rect.topLeft());
-#endif
+#if !defined(QT_NO_STYLE_S60)
+        // Defined in qs60style.cpp
+        extern bool qt_s60_fill_background(QPainter *painter, const QRegion &rgn,
+                        const QPoint &offset, const QBrush &brush);
+        if (!qt_s60_fill_background(painter, rgn, offset, brush))
+#endif // !defined(QT_NO_STYLE_S60)
+        {
+            const QRegion translated = rgn.translated(offset);
+            const QRect rect(translated.boundingRect());
+            painter->setClipRegion(translated);
+            painter->drawTiledPixmap(rect, brush.texture(), rect.topLeft());
+        }
+#endif // Q_WS_MAC
     } else {
         const QVector<QRect> &rects = rgn.rects();
         for (int i = 0; i < rects.size(); ++i)
@@ -8497,6 +8500,9 @@ QVariant QWidget::inputMethodQuery(Qt::InputMethodQuery query) const
         return QRect(width()/2, 0, 1, height());
     case Qt::ImFont:
         return font();
+    case Qt::ImAnchorPosition:
+        // Fallback.
+        return inputMethodQuery(Qt::ImCursorPosition);
     default:
         return QVariant();
     }

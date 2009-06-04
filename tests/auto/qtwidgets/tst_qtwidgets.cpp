@@ -47,15 +47,28 @@
 
 
 #include "mainwindow.h"
+#include "../network-settings.h"
 
 class tst_QtWidgets: public QObject
 {
     Q_OBJECT
 
+public:
+    tst_QtWidgets();
+    virtual ~tst_QtWidgets();
+
 private slots:
     void snapshot();
 };
 
+tst_QtWidgets::tst_QtWidgets()
+{
+    Q_SET_DEFAULT_IAP
+}
+
+tst_QtWidgets::~tst_QtWidgets()
+{
+}
 
 void tst_QtWidgets::snapshot()
 {

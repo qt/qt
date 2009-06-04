@@ -51,6 +51,7 @@
 #include <qlineedit.h>
 #include <qboxlayout.h>
 #include <qaction.h>
+#include <qwidgetaction.h>
 #include "../../shared/util.h"
 
 
@@ -147,6 +148,7 @@ private slots:
     void setSizes();
     void closePopupOnOutsideClick();
     void defaultSize();
+    void shortcutsDeletion();
 
     // Task fixes
     void task236127_bspTreeIndexFails();
@@ -1780,6 +1782,20 @@ void tst_QGraphicsWidget::defaultSize()
     // should still have its size set to initialsize
     QCOMPARE(widget->geometry().size(), initialSize);
 
+}
+
+void tst_QGraphicsWidget::shortcutsDeletion()
+{
+    QGraphicsWidget *widget = new QGraphicsWidget;
+    QGraphicsWidget *widget2 = new QGraphicsWidget;
+    widget->setMinimumSize(40, 40);
+    QWidgetAction *del = new QWidgetAction(widget);
+    del->setIcon(QIcon("edit-delete"));
+    del->setShortcut(Qt::Key_Delete);
+    del->setShortcutContext(Qt::WidgetShortcut);
+    widget2->addAction(del);
+    widget2->addAction(del);
+    delete widget;
 }
 
 class ProxyStyle : public QCommonStyle

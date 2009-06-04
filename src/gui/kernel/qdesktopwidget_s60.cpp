@@ -5,7 +5,37 @@
 **
 ** This file is part of the $MODULE$ of the Qt Toolkit.
 **
-** $TROLLTECH_DUAL_EMBEDDED_LICENSE$
+** $QT_BEGIN_LICENSE:LGPL$
+** No Commercial Usage
+** This file contains pre-release code and may not be distributed.
+** You may use this file in accordance with the terms and conditions
+** contained in the either Technology Preview License Agreement or the
+** Beta Release License Agreement.
+**
+** GNU Lesser General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU Lesser
+** General Public License version 2.1 as published by the Free Software
+** Foundation and appearing in the file LICENSE.LGPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU Lesser General Public License version 2.1 requirements
+** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+**
+** In addition, as a special exception, Nokia gives you certain
+** additional rights. These rights are described in the Nokia Qt LGPL
+** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
+** package.
+**
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU
+** General Public License version 3.0 as published by the Free Software
+** Foundation and appearing in the file LICENSE.GPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU General Public License version 3.0 requirements will be
+** met: http://www.gnu.org/copyleft/gpl.html.
+**
+** If you are unsure which license is appropriate for your use, please
+** contact the sales department at qt-sales@nokia.com.
+** $QT_END_LICENSE$
 **
 ****************************************************************************/
 
@@ -32,34 +62,58 @@ public:
 
     static int screenCount;
     static int primaryScreen;
+
+    static QVector<QRect> *rects;
+    static QVector<QRect> *workrects;
+
+    static int refcount;
 };
 
 int QDesktopWidgetPrivate::screenCount = 1;
 int QDesktopWidgetPrivate::primaryScreen = 0;
+QVector<QRect> *QDesktopWidgetPrivate::rects = 0;
+QVector<QRect> *QDesktopWidgetPrivate::workrects = 0;
+int QDesktopWidgetPrivate::refcount = 0;
 
 QDesktopWidgetPrivate::QDesktopWidgetPrivate()
 {
+    ++refcount;
 }
 
 QDesktopWidgetPrivate::~QDesktopWidgetPrivate()
 {
+    if (!--refcount)
+        cleanup();
 }
 
 void QDesktopWidgetPrivate::init(QDesktopWidget *that)
 {
-    TInt screenCount=0;
-    TInt result=0;
+    int screenCount=0;
 
-    result = HAL::Get(0, HALData::EDisplayNumberOfScreens, screenCount);
-    QDesktopWidgetPrivate::screenCount = screenCount;
-    if( result != KErrNone)
-        {
-        // ### What to do if no screens found?
-        }
+    if (HAL::Get(0, HALData::EDisplayNumberOfScreens, screenCount) == KErrNone)
+        QDesktopWidgetPrivate::screenCount = screenCount;
+    else
+        QDesktopWidgetPrivate::screenCount = 0;
+
+    rects = new QVector<QRect>();
+    workrects = new QVector<QRect>();
+
+    rects->resize(QDesktopWidgetPrivate::screenCount);
+    workrects->resize(QDesktopWidgetPrivate::screenCount);
+
+    // ### TODO: Implement proper multi-display support
+    rects->resize(1);
+    rects->replace(0, that->rect());
+    workrects->resize(1);
+    workrects->replace(0, that->rect());
 }
 
 void QDesktopWidgetPrivate::cleanup()
 {
+    delete rects;
+    rects = 0;
+    delete workrects;
+    workrects = 0;
 }
 
 
@@ -120,6 +174,29 @@ int QDesktopWidget::screenNumber(const QPoint &point) const
 
 void QDesktopWidget::resizeEvent(QResizeEvent *)
 {
+    Q_D(QDesktopWidget);
+    QVector<QRect> oldrects;
+    oldrects = *d->rects;
+    QVector<QRect> oldworkrects;
+    oldworkrects = *d->workrects;
+    int oldscreencount = d->screenCount;
+
+    QDesktopWidgetPrivate::cleanup();
+    QDesktopWidgetPrivate::init(this);
+
+    for (int i = 0; i < qMin(oldscreencount, d->screenCount); ++i) {
+        QRect oldrect = oldrects[i];
+        QRect newrect = d->rects->at(i);
+        if (oldrect != newrect)
+            emit resized(i);
+    }
+
+    for (int j = 0; j < qMin(oldscreencount, d->screenCount); ++j) {
+        QRect oldrect = oldworkrects[j];
+        QRect newrect = d->workrects->at(j);
+        if (oldrect != newrect)
+            emit workAreaResized(j);
+    }
 }
 
 QT_END_NAMESPACE

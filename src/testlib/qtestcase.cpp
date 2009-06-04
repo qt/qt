@@ -300,10 +300,15 @@ QT_BEGIN_NAMESPACE
     the \a TestClass, and executes all tests in the order they were defined.
     Use this macro to build stand-alone executables.
 
+    \bold {Note:} On platforms that have keypad navigation enabled by default (eg: Symbian),
+    this macro will forcfully disable it to simplify the usage of key events when writing
+    autotests. If you wish to write a test case that uses keypad navigation, you should
+    enable it either in the \c {initTestCase()} or \c {init()} functions of your test case.
+
     Example:
     \snippet doc/src/snippets/code/src_qtestlib_qtestcase.cpp 11
 
-    \sa QTEST_APPLESS_MAIN(), QTest::qExec()
+    \sa QTEST_APPLESS_MAIN(), QTest::qExec(), QApplication::setKeypadNavigationEnabled()
 */
 
 /*! \macro QTEST_APPLESS_MAIN(TestClass)

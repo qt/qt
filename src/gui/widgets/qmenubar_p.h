@@ -259,7 +259,7 @@ public:
         }
 
     } *symbian_menubar;
-    bool symbianCommands(int command);
+    static void symbianCommands(int command);
 
 #endif
 };

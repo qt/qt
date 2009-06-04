@@ -5,7 +5,37 @@
 **
 ** This file is part of the $MODULE$ of the Qt Toolkit.
 **
-** $TROLLTECH_DUAL_LICENSE$
+** $QT_BEGIN_LICENSE:LGPL$
+** No Commercial Usage
+** This file contains pre-release code and may not be distributed.
+** You may use this file in accordance with the terms and conditions
+** contained in the either Technology Preview License Agreement or the
+** Beta Release License Agreement.
+**
+** GNU Lesser General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU Lesser
+** General Public License version 2.1 as published by the Free Software
+** Foundation and appearing in the file LICENSE.LGPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU Lesser General Public License version 2.1 requirements
+** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+**
+** In addition, as a special exception, Nokia gives you certain
+** additional rights. These rights are described in the Nokia Qt LGPL
+** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
+** package.
+**
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU
+** General Public License version 3.0 as published by the Free Software
+** Foundation and appearing in the file LICENSE.GPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU General Public License version 3.0 requirements will be
+** met: http://www.gnu.org/copyleft/gpl.html.
+**
+** If you are unsure which license is appropriate for your use, please
+** contact the sales department at qt-sales@nokia.com.
+** $QT_END_LICENSE$
 **
 ****************************************************************************/
 
@@ -331,13 +361,13 @@ public:
         SF_StateDisabled =    0x0020,
         SF_ColorSkinned =     0x0040,
     };
-    
+
     enum CacheClearReason {
         CC_UndefinedChange = 0,
         CC_LayoutChange,
         CC_ThemeChange
     };
-    
+
     Q_DECLARE_FLAGS(SkinElementFlags, SkinElementFlag)
 
     // draws skin element
@@ -366,28 +396,31 @@ public:
     static QColor lighterColor(const QColor &baseColor);
     //deduces if the given widget should have separately themeable background
     static bool drawsOwnThemeBackground(const QWidget *widget);
-    // gets layout
-    static const QHash<QStyle::PixelMetric, int> &s60StyleLayout();
 
     QFont s60Font(QS60StyleEnums::FontCategories fontCategory,
         int pointSize = -1) const;
     // clears all style caches (fonts, colors, pixmaps)
     void clearCaches(CacheClearReason reason = CC_UndefinedChange);
-    // returns themed background texture
-    static QPixmap backgroundTexture();
+
+    // themed main background oprations
+    void setBackgroundTexture(QApplication *application) const;
+    static void deleteBackground();
 
     static bool isTouchSupported();
     static bool isToolBarBackground();
 
     // calculates average color based on button skin graphics (minus borders).
     QColor colorFromFrameGraphics(QS60StylePrivate::SkinFrameElements frame) const;
+
+    //set theme palette for application
     void setThemePalette(QApplication *application) const;
-    void setThemePalette(QWidget *widget) const;
-    void setBackgroundTexture(QApplication *application) const;
+    //set theme palette for style option
+    void setThemePalette(QStyleOption *option) const;
+    //access to theme palette
+    static QPalette* themePalette();
 
     static int focusRectPenWidth();
 
-#if defined(QT_S60STYLE_LAYOUTDATA_SIMULATED)
     static const layoutHeader m_layoutHeaders[];
     static const short data[][MAX_PIXELMETRICS];
 
@@ -397,7 +430,6 @@ public:
     static short const *m_pmPointer;
     // number of layouts supported by the style
     static const int m_numberOfLayouts;
-#endif // defined(QT_S60STYLE_LAYOUTDATA_SIMULATED)
 
     mutable QHash<QPair<QS60StyleEnums::FontCategories , int>, QFont> m_mappedFontsCache;
     mutable QHash<QS60StylePrivate::SkinFrameElements, QColor> m_colorCache;
@@ -410,6 +442,7 @@ public:
 
     static QPixmap frame(SkinFrameElements frame, const QSize &size,
         SkinElementFlags flags = KDefaultSkinElementFlags);
+    static QPixmap backgroundTexture();
 
 private:
     static void drawPart(QS60StyleEnums::SkinParts part, QPainter *painter,
@@ -424,9 +457,16 @@ private:
         SkinElementFlags flags = KDefaultSkinElementFlags);
     static QPixmap cachedFrame(SkinFrameElements frame, const QSize &size,
         SkinElementFlags flags = KDefaultSkinElementFlags);
-    
+
     static void refreshUI();
-    
+
+    // set S60 font for widget
+    void setFont(QWidget *widget) const;
+    void setThemePalette(QWidget *widget) const;
+    void setThemePalette(QPalette *palette) const;
+    void setThemePaletteHash(QPalette *palette) const;
+    static void QS60StylePrivate::storeThemePalette(QPalette *palette);
+
     static QSize partSize(QS60StyleEnums::SkinParts part,
         SkinElementFlags flags = KDefaultSkinElementFlags);
     static QPixmap part(QS60StyleEnums::SkinParts part, const QSize &size,
@@ -436,8 +476,12 @@ private:
 
     static QSize screenSize();
 
-    static bool m_backgroundValid;
+    // Contains background texture.
+    static QPixmap *m_background;
     const static SkinElementFlags KDefaultSkinElementFlags;
+    // defined theme palette
+    static QPalette *m_themePalette;
+    QPalette m_originalPalette;
 };
 
 QT_END_NAMESPACE

@@ -226,6 +226,7 @@ private slots:
     void task240400_clickOnTextItem_data();
     void task240400_clickOnTextItem();
     void task243707_addChildBeforeParent();
+    void task197802_childrenVisibility();
 };
 
 void tst_QGraphicsItem::init()
@@ -5346,13 +5347,48 @@ void tst_QGraphicsItem::task243707_addChildBeforeParent()
     // inconsistent internal state that can cause a crash.  This test shows
     // one such crash.
     QGraphicsScene scene;
-    QGraphicsWidget *widget = new QGraphicsWidget; 
+    QGraphicsWidget *widget = new QGraphicsWidget;
     QGraphicsWidget *widget2 = new QGraphicsWidget(widget);
     scene.addItem(widget2);
     QVERIFY(!widget2->parentItem());
     scene.addItem(widget);
     QVERIFY(!widget->commonAncestorItem(widget2));
     QVERIFY(!widget2->commonAncestorItem(widget));
+}
+
+void tst_QGraphicsItem::task197802_childrenVisibility()
+{
+    QGraphicsScene scene;
+    QGraphicsRectItem item(QRectF(0,0,20,20));
+
+    QGraphicsRectItem *item2 = new QGraphicsRectItem(QRectF(0,0,10,10), &item);
+    scene.addItem(&item);
+
+    //freshly created: both visible
+    QVERIFY(item.isVisible());
+    QVERIFY(item2->isVisible());
+
+    //hide child: parent visible, child not
+    item2->hide();
+    QVERIFY(item.isVisible());
+    QVERIFY(!item2->isVisible());
+
+    //hide parent: parent and child invisible
+    item.hide();
+    QVERIFY(!item.isVisible());
+    QVERIFY(!item2->isVisible());
+
+    //ask to show the child: parent and child invisible anyways
+    item2->show();
+    QVERIFY(!item.isVisible());
+    QVERIFY(!item2->isVisible());
+
+    //show the parent: both parent and child visible
+    item.show();
+    QVERIFY(item.isVisible());
+    QVERIFY(item2->isVisible());
+
+    delete item2;
 }
 
 void tst_QGraphicsItem::boundingRegion_data()
