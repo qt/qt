@@ -65,7 +65,6 @@ Q_CONSTRUCTOR_FUNCTION(qRegisterGuiGetInterpolator)
 
 static int qUnregisterGuiGetInterpolator()
 {
-    qRegisterAnimationInterpolator<QColor>(0);
     qRegisterAnimationInterpolator<QColor>(
         (QVariant (*)(const QColor &, const QColor &, qreal))0); // cast required by Sun CC 5.5
 
