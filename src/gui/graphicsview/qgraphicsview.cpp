@@ -284,6 +284,8 @@ static const int QGRAPHICSVIEW_PREALLOC_STYLE_OPTIONS = 503; // largest prime < 
 #include <private/qt_x11_p.h>
 #endif
 
+#include <private/qevent_p.h>
+
 QT_BEGIN_NAMESPACE
 
 bool qt_sendSpontaneousEvent(QObject *receiver, QEvent *event);
@@ -297,22 +299,26 @@ inline int q_round_bound(qreal d) //### (int)(qreal) INT_MAX != INT_MAX for sing
     return d >= 0.0 ? int(d + 0.5) : int(d - int(d-1) + 0.5) + int(d-1);
 }
 
-static void qt_convertTouchEventToGraphicsSceneTouchEvent(QGraphicsViewPrivate *d,
-                                                          QTouchEvent *originalEvent,
-                                                          QGraphicsSceneTouchEvent *touchEvent)
+void QGraphicsViewPrivate::convertTouchEventToGraphicsSceneTouchEvent(QGraphicsViewPrivate *d,
+                                                                      QTouchEvent *originalEvent,
+                                                                      QGraphicsSceneTouchEvent *touchEvent)
 {
-    QList<QTouchEvent::TouchPoint *> originalTouchPoints = originalEvent->touchPoints();
-    QList<QGraphicsSceneTouchEvent::TouchPoint *> touchPoints;
+    QList<QTouchEvent::TouchPoint> originalTouchPoints = originalEvent->touchPoints();
+    QList<QGraphicsSceneTouchEvent::TouchPoint> touchPoints;
     for (int i = 0; i < originalTouchPoints.count(); ++i) {
-        QGraphicsSceneTouchEvent::TouchPoint *touchPoint =
-            static_cast<QGraphicsSceneTouchEvent::TouchPoint *>(originalTouchPoints.at(i));
-        // the scene will set the pos before delivering to an item
-        touchPoint->setScenePos(d->mapToScene(touchPoint->pos()));
-        // the scene will set the startPos before delivering to an item
-        touchPoint->setStartScenePos(d->mapToScene(touchPoint->startPos()));
-        // the scene will set the lastPos before delivering to an item
-        touchPoint->setLastScenePos(d->mapToScene(touchPoint->lastPos()));
-        // lastScreenPos is already set in the originalTouchPoint
+        QGraphicsSceneTouchEvent::TouchPoint touchPoint =
+                QTouchEventTouchPointPrivate::get(originalTouchPoints.at(i));
+        // the scene will set the item local pos, startPos, lastPos, and size before delivering to
+        // an item, but for now those functions are returning the view's local coordinates (since
+        // we're reusing the d-pointer from the orignalTouchPoint)
+        touchPoint.setScenePos(d->mapToScene(touchPoint.pos()));
+        touchPoint.setStartScenePos(d->mapToScene(touchPoint.startPos()));
+        touchPoint.setLastScenePos(d->mapToScene(touchPoint.lastPos()));
+#warning FIXME
+        // ### touchPoint.setSceneSize(d->mapToScene(touchPoint.screenSize()));
+
+        // screenPos, startScreenPos, lastScreenPos, and screenSize are already set from the
+        // originalTouchPoint
 
         touchPoints.append(touchPoint);
     }
@@ -2892,9 +2898,7 @@ bool QGraphicsView::viewportEvent(QEvent *event)
             }
             QGraphicsSceneTouchEvent touchEvent(eventType);
             touchEvent.setWidget(viewport());
-            qt_convertTouchEventToGraphicsSceneTouchEvent(d,
-                                                          static_cast<QTouchEvent *>(event),
-                                                          &touchEvent);
+            QGraphicsViewPrivate::convertTouchEventToGraphicsSceneTouchEvent(d, static_cast<QTouchEvent *>(event), &touchEvent);
             touchEvent.setAccepted(false);
             QApplication::sendEvent(d->scene, &touchEvent);
             event->setAccepted(touchEvent.isAccepted());

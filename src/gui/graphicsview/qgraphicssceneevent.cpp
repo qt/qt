@@ -1962,7 +1962,7 @@ public:
 
     Qt::KeyboardModifiers modifiers;
     Qt::TouchPointStates touchPointStates;
-    QList<QGraphicsSceneTouchEvent::TouchPoint *> touchPoints;
+    QList<QGraphicsSceneTouchEvent::TouchPoint> touchPoints;
 };
 
 /*!
@@ -2019,17 +2019,130 @@ void QGraphicsSceneTouchEvent::setTouchPointStates(Qt::TouchPointStates touchPoi
 
     \sa QGraphicsSceneTouchEvent::TouchPoint
 */
-const QList<QGraphicsSceneTouchEvent::TouchPoint *> &QGraphicsSceneTouchEvent::touchPoints() const
+const QList<QGraphicsSceneTouchEvent::TouchPoint> &QGraphicsSceneTouchEvent::touchPoints() const
 {
     Q_D(const QGraphicsSceneTouchEvent);
     return d->touchPoints;
 }
 
 /*! \internal */
-void QGraphicsSceneTouchEvent::setTouchPoints(const QList<QGraphicsSceneTouchEvent::TouchPoint *> &touchPoints)
+void QGraphicsSceneTouchEvent::setTouchPoints(const QList<QGraphicsSceneTouchEvent::TouchPoint> &touchPoints)
 {
     Q_D(QGraphicsSceneTouchEvent);
     d->touchPoints = touchPoints;
+}
+
+/*! \internal */
+QGraphicsSceneTouchEvent::TouchPoint::TouchPoint(int id)
+    : d(new QTouchEventTouchPointPrivate(id))
+{ }
+
+/*! \internal */
+QGraphicsSceneTouchEvent::TouchPoint::TouchPoint(const QGraphicsSceneTouchEvent::TouchPoint &other)
+    : d(other.d)
+{
+    d->ref.ref();
+}
+
+/*! \internal */
+QGraphicsSceneTouchEvent::TouchPoint::TouchPoint(QTouchEventTouchPointPrivate *dd)
+    : d(dd)
+{
+    d->ref.ref();
+}
+
+/*! \internal */
+QGraphicsSceneTouchEvent::TouchPoint::~TouchPoint()
+{
+    if (!d->ref.deref())
+        delete d;
+}
+
+/*!
+    Returns the id number of this touch point.
+
+    Id numbers are globally sequential, starting at zero, meaning the
+    first touch point in the application has id 0, the second has id 1,
+    and so on.
+*/
+int QGraphicsSceneTouchEvent::TouchPoint::id() const
+{
+    return d->id;
+}
+
+/*! \internal */
+void QGraphicsSceneTouchEvent::TouchPoint::setId(int id)
+{
+    if (!d->ref == 1)
+        d = d->detach();
+    d->id = id;
+}
+
+/*!
+    Returns the current state of this touch point.
+*/
+Qt::TouchPointState QGraphicsSceneTouchEvent::TouchPoint::state() const
+{
+    return d->state;
+}
+
+/*! \internal */
+void QGraphicsSceneTouchEvent::TouchPoint::setState(Qt::TouchPointState state)
+{
+    if (d->ref != 1)
+        d = d->detach();
+    d->state = state;
+}
+
+/*!
+    Returns the position of this touch point, relative to the widget
+    or item that received the event.
+*/
+QPointF QGraphicsSceneTouchEvent::TouchPoint::pos() const
+{
+    return d->pos;
+}
+
+/*! \internal */
+void QGraphicsSceneTouchEvent::TouchPoint::setPos(const QPointF &pos)
+{
+    if (d->ref != 1)
+        d = d->detach();
+    d->pos = pos;
+}
+
+/*!
+    Returns the starting position of this touch point, relative to the
+    widget that received the event.
+*/
+QPointF QGraphicsSceneTouchEvent::TouchPoint::startPos() const
+{
+    return d->startPos;
+}
+
+/*! \internal */
+void QGraphicsSceneTouchEvent::TouchPoint::setStartPos(const QPointF &startPos)
+{
+    if (d->ref != 1)
+        d = d->detach();
+    d->startPos = startPos;
+}
+
+/*!
+    Returns the position of this touch point from the previous touch
+    event, relative to the widget that received the event.
+*/
+QPointF QGraphicsSceneTouchEvent::TouchPoint::lastPos() const
+{
+    return d->lastPos;
+}
+
+/*! \internal */
+void QGraphicsSceneTouchEvent::TouchPoint::setLastPos(const QPointF &lastPos)
+{
+    if (d->ref != 1)
+        d = d->detach();
+    d->lastPos = lastPos;
 }
 
 /*!
@@ -2045,6 +2158,8 @@ QPointF QGraphicsSceneTouchEvent::TouchPoint::scenePos() const
 /*! \internal */
 void QGraphicsSceneTouchEvent::TouchPoint::setScenePos(const QPointF &scenePos)
 {
+    if (d->ref != 1)
+        d = d->detach();
     d->scenePos = scenePos;
 }
 
@@ -2061,6 +2176,8 @@ QPointF QGraphicsSceneTouchEvent::TouchPoint::startScenePos() const
 /*! \internal */
 void QGraphicsSceneTouchEvent::TouchPoint::setStartScenePos(const QPointF &startScenePos)
 {
+    if (d->ref != 1)
+        d = d->detach();
     d->startScenePos = startScenePos;
 }
 
@@ -2077,7 +2194,133 @@ QPointF QGraphicsSceneTouchEvent::TouchPoint::lastScenePos() const
 /*! \internal */
 void QGraphicsSceneTouchEvent::TouchPoint::setLastScenePos(const QPointF &lastScenePos)
 {
+    if (d->ref != 1)
+        d = d->detach();
     d->lastScenePos = lastScenePos;
+}
+
+/*!
+    Returns the screen position of this touch point.
+*/
+QPointF QGraphicsSceneTouchEvent::TouchPoint::screenPos() const
+{
+    return d->screenPos;
+}
+
+/*! \internal */
+void QGraphicsSceneTouchEvent::TouchPoint::setScreenPos(const QPointF &screenPos)
+{
+    if (d->ref != 1)
+        d = d->detach();
+    d->screenPos = screenPos;
+}
+
+/*!
+    Returns the starting screen position of this touch point.
+*/
+QPointF QGraphicsSceneTouchEvent::TouchPoint::startScreenPos() const
+{
+    return d->startScreenPos;
+}
+
+/*! \internal */
+void QGraphicsSceneTouchEvent::TouchPoint::setStartScreenPos(const QPointF &startScreenPos)
+{
+    if (d->ref != 1)
+        d = d->detach();
+    d->startScreenPos = startScreenPos;
+}
+
+/*!
+    Returns the screen position of this touch point from the previous
+    touch event.
+*/
+QPointF QGraphicsSceneTouchEvent::TouchPoint::lastScreenPos() const
+{
+    return d->lastScreenPos;
+}
+
+/*! \internal */
+void QGraphicsSceneTouchEvent::TouchPoint::setLastScreenPos(const QPointF &lastScreenPos)
+{
+    if (d->ref != 1)
+        d = d->detach();
+    d->lastScreenPos = lastScreenPos;
+}
+
+/*!
+    Returns the size of this touch point.
+*/
+QSizeF QGraphicsSceneTouchEvent::TouchPoint::size() const
+{
+    return d->size;
+}
+
+/*! \internal */
+void QGraphicsSceneTouchEvent::TouchPoint::setSize(const QSizeF &size)
+{
+    if (d->ref != 1)
+        d = d->detach();
+    d->size = size;
+}
+
+/*!
+    Returns the size of this touch point in scene coordinates.
+*/
+QSizeF QGraphicsSceneTouchEvent::TouchPoint::sceneSize() const
+{
+    return d->sceneSize;
+}
+
+/*! \internal */
+void QGraphicsSceneTouchEvent::TouchPoint::setSceneSize(const QSizeF &sceneSize)
+{
+    if (d->ref != 1)
+        d = d->detach();
+    d->sceneSize = sceneSize;
+}
+
+/*!
+    Returns the size of this touch point in screen coordinates.
+*/
+QSizeF QGraphicsSceneTouchEvent::TouchPoint::screenSize() const
+{
+    return d->screenSize;
+}
+
+/*! \internal */
+void QGraphicsSceneTouchEvent::TouchPoint::setScreenSize(const QSizeF &screenSize)
+{
+    if (d->ref != 1)
+        d = d->detach();
+    d->screenSize = screenSize;
+}
+
+/*!
+    Returns the pressure of this touch point. The return value is in
+    the range 0.0 to 1.0.
+*/
+qreal QGraphicsSceneTouchEvent::TouchPoint::pressure() const
+{
+    return d->pressure;
+}
+
+/*! \internal */
+void QGraphicsSceneTouchEvent::TouchPoint::setPressure(qreal pressure)
+{
+    if (d->ref != 1)
+        d = d->detach();
+    d->pressure = pressure;
+}
+
+/*! \internal */
+QGraphicsSceneTouchEvent::TouchPoint &QGraphicsSceneTouchEvent::TouchPoint::operator=(const QGraphicsSceneTouchEvent::TouchPoint &other)
+{
+    other.d->ref.ref();
+    if (!d->ref.deref())
+        delete d;
+    d = other.d;
+    return *this;
 }
 
 QT_END_NAMESPACE

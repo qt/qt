@@ -93,18 +93,29 @@ class QTouchEventTouchPointPrivate
 {
 public:
     inline QTouchEventTouchPointPrivate(int id)
-        : id(id),
+        : ref(1),
+          id(id),
           state(Qt::TouchPointReleased),
           pressure(qreal(-1.))
     { }
 
+    inline QTouchEventTouchPointPrivate *detach()
+    {
+        QTouchEventTouchPointPrivate *d = new QTouchEventTouchPointPrivate(*this);
+        d->ref = 1;
+        return d;
+    }
+
+    QAtomicInt ref;
     int id;
     Qt::TouchPointState state;
     QPointF pos, startPos, lastPos;
     QPointF scenePos, startScenePos, lastScenePos;
     QPointF screenPos, startScreenPos, lastScreenPos;
-    QSizeF area;
+    QSizeF size, sceneSize, screenSize;
     qreal pressure;
+
+    static QTouchEventTouchPointPrivate *get(const QTouchEvent::TouchPoint &tp);
 };
 
 QT_END_NAMESPACE

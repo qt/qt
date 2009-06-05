@@ -272,17 +272,15 @@ public:
         Signal = 192,
         Wrapped = 193,
 
-        RawTouch = 194,
+        TouchBegin = 194,
+        TouchUpdate = 195,
+        TouchEnd = 196,
+        GraphicsSceneTouchBegin = 197,
+        GraphicsSceneTouchUpdate = 198,
+        GraphicsSceneTouchEnd = 199,
 
-        TouchBegin = 195,
-        TouchUpdate = 196,
-        TouchEnd = 197,
-        GraphicsSceneTouchBegin = 198,
-        GraphicsSceneTouchUpdate = 199,
-        GraphicsSceneTouchEnd = 200,
-
-        Gesture = 201,
-        GraphicsSceneGesture = 202,
+        Gesture = 200,
+        GraphicsSceneGesture = 201,
 
         // 512 reserved for Qt Jambi's MetaCall event
         // 513 reserved for Qt Jambi's DeleteOnMainThread event

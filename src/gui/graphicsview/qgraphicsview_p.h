@@ -183,6 +183,9 @@ public:
 			      const QRegion &exposedRegion) const;
 
     QPointF mapToScene(const QPointF &point) const;
+    static void convertTouchEventToGraphicsSceneTouchEvent(QGraphicsViewPrivate *d,
+                                                           QTouchEvent *originalEvent,
+                                                           QGraphicsSceneTouchEvent *touchEvent);
 };
 
 QT_END_NAMESPACE

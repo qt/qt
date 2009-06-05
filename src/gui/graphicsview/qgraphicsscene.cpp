@@ -5687,98 +5687,77 @@ void QGraphicsScenePrivate::releaseGesture(QGraphicsItem *item, int gestureId)
 void QGraphicsScenePrivate::updateTouchPointsForItem(QGraphicsItem *item,
                                                      QGraphicsSceneTouchEvent *touchEvent)
 {
-    QList<QGraphicsSceneTouchEvent::TouchPoint *> touchPoints = touchEvent->touchPoints();
+    QList<QGraphicsSceneTouchEvent::TouchPoint> touchPoints = touchEvent->touchPoints();
     for (int i = 0; i < touchPoints.count(); ++i) {
-        QGraphicsSceneTouchEvent::TouchPoint *touchPoint = touchPoints.at(i);
-        touchPoint->setPos(item->d_ptr->genericMapFromScene(touchPoint->scenePos(), touchEvent->widget()));
-        touchPoint->setStartPos(item->d_ptr->genericMapFromScene(touchPoint->startScenePos(), touchEvent->widget()));
-        touchPoint->setLastPos(item->d_ptr->genericMapFromScene(touchPoint->lastScenePos(), touchEvent->widget()));
+        QGraphicsSceneTouchEvent::TouchPoint &touchPoint = touchPoints[i];
+        touchPoint.setPos(item->d_ptr->genericMapFromScene(touchPoint.scenePos(), touchEvent->widget()));
+        touchPoint.setStartPos(item->d_ptr->genericMapFromScene(touchPoint.startScenePos(), touchEvent->widget()));
+        touchPoint.setLastPos(item->d_ptr->genericMapFromScene(touchPoint.lastScenePos(), touchEvent->widget()));
+#warning FIXME
+        // ### touchPoint.setSize(item->d_ptr->genericMapFromScene(touchPoint.sceneSize(), touchEvent->widget()));
     }
+    touchEvent->setTouchPoints(touchPoints);
 }
 
-QGraphicsSceneTouchEvent::TouchPoint *QGraphicsScenePrivate::findClosestTouchPoint(const QPointF &scenePos)
+int QGraphicsScenePrivate::findClosestTouchPointId(const QPointF &scenePos)
 {
-    QGraphicsSceneTouchEvent::TouchPoint *closestTouchPoint = 0;
-    qreal closestDistance;
-    for (int i = 0; i < sceneCurrentTouchPoints.count(); ++i) {
-        QGraphicsSceneTouchEvent::TouchPoint *touchPoint = sceneCurrentTouchPoints.at(i);
-        qreal distance = QLineF(scenePos, touchPoint->scenePos()).length();
-        if (!closestTouchPoint || distance < closestDistance) {
-            closestTouchPoint = touchPoint;
+    int closestTouchPointId = -1;
+    qreal closestDistance = qreal(0.);
+    foreach (const QGraphicsSceneTouchEvent::TouchPoint &touchPoint, sceneCurrentTouchPoints) {
+        qreal distance = QLineF(scenePos, touchPoint.scenePos()).length();
+        if (closestTouchPointId == -1|| distance < closestDistance) {
+            closestTouchPointId = touchPoint.id();
             closestDistance = distance;
         }
     }
-    return closestTouchPoint;
-}
-
-void QGraphicsScenePrivate::appendTouchPoint(QGraphicsSceneTouchEvent::TouchPoint *touchPoint)
-{
-    // insort touch point (for the app)
-    int at = 0;
-    for (; at < sceneCurrentTouchPoints.count(); ++at) {
-        if (sceneCurrentTouchPoints.at(at)->id() > touchPoint->id())
-            break;
-    }
-    sceneCurrentTouchPoints.insert(at, touchPoint);
-}
-
-void QGraphicsScenePrivate::removeTouchPoint(QGraphicsSceneTouchEvent::TouchPoint *touchPoint)
-{
-    // remove touch point from all known touch points
-    for (int i = qMin(sceneCurrentTouchPoints.count() - 1, touchPoint->id()); i >= 0; --i) {
-        if (sceneCurrentTouchPoints.at(i) == touchPoint) {
-            sceneCurrentTouchPoints.removeAt(i);
-            break;
-        }
-    }
+    return closestTouchPointId;
 }
 
 void QGraphicsScenePrivate::touchEventHandler(QGraphicsSceneTouchEvent *sceneTouchEvent)
 {
-    typedef QPair<Qt::TouchPointStates, QList<QGraphicsSceneTouchEvent::TouchPoint *> > StatesAndTouchPoints;
+    typedef QPair<Qt::TouchPointStates, QList<QGraphicsSceneTouchEvent::TouchPoint> > StatesAndTouchPoints;
     QHash<QGraphicsItem *, StatesAndTouchPoints> itemsNeedingEvents;
 
     for (int i = 0; i < sceneTouchEvent->touchPoints().count(); ++i) {
-        QGraphicsSceneTouchEvent::TouchPoint *touchPoint = sceneTouchEvent->touchPoints().at(i);
+        const QGraphicsSceneTouchEvent::TouchPoint &touchPoint = sceneTouchEvent->touchPoints().at(i);
 
         // update state
         QGraphicsItem *item = 0;
-        QList<QGraphicsSceneTouchEvent::TouchPoint *> activeTouchPoints;
-        if (touchPoint->state() == Qt::TouchPointPressed) {
+        if (touchPoint.state() == Qt::TouchPointPressed) {
             // determine which item this event will go to
-            cachedItemsUnderMouse = itemsAtPosition(touchPoint->screenPos().toPoint(),
-                                                    touchPoint->scenePos(),
+            cachedItemsUnderMouse = itemsAtPosition(touchPoint.screenPos().toPoint(),
+                                                    touchPoint.scenePos(),
                                                     sceneTouchEvent->widget());
             item = cachedItemsUnderMouse.isEmpty() ? 0 : cachedItemsUnderMouse.first();
-            QGraphicsSceneTouchEvent::TouchPoint *closestTouchPoint = findClosestTouchPoint(touchPoint->scenePos());
-            if (closestTouchPoint) {
-                QGraphicsItem *closestItem = itemForTouchPointId.value(closestTouchPoint->id());
-                if (!item
-                    || (closestItem
-                        && (item->isAncestorOf(closestItem)
-                            || closestItem->isAncestorOf(item)))) {
-                    item = closestItem;
-                }
+            int closestTouchPointId = findClosestTouchPointId(touchPoint.scenePos());
+            QGraphicsItem *closestItem = itemForTouchPointId.value(closestTouchPointId);
+            if (!item
+                || (closestItem
+                    && (item->isAncestorOf(closestItem)
+                        || closestItem->isAncestorOf(item)))) {
+                item = closestItem;
             }
             if (!item)
                 continue;
 
-            itemForTouchPointId.insert(touchPoint->id(), item);
-            appendTouchPoint(touchPoint);
-        } else if (touchPoint->state() == Qt::TouchPointReleased) {
-            item = itemForTouchPointId.take(touchPoint->id());
+            itemForTouchPointId.insert(touchPoint.id(), item);
+            sceneCurrentTouchPoints.insert(touchPoint.id(), touchPoint);
+        } else if (touchPoint.state() == Qt::TouchPointReleased) {
+            item = itemForTouchPointId.take(touchPoint.id());
             if (!item)
                 continue;
 
-            removeTouchPoint(touchPoint);
+            sceneCurrentTouchPoints.remove(touchPoint.id());
         } else {
-            item = itemForTouchPointId.value(touchPoint->id());
+            item = itemForTouchPointId.value(touchPoint.id());
             if (!item)
                 continue;
+            Q_ASSERT(sceneCurrentTouchPoints.contains(touchPoint.id()));
+            sceneCurrentTouchPoints[touchPoint.id()] = touchPoint;
         }
 
         StatesAndTouchPoints &statesAndTouchPoints = itemsNeedingEvents[item];
-        statesAndTouchPoints.first |= touchPoint->state();
+        statesAndTouchPoints.first |= touchPoint.state();
         statesAndTouchPoints.second.append(touchPoint);
     }
 
@@ -5847,9 +5826,9 @@ bool QGraphicsScenePrivate::sendTouchBeginEvent(QGraphicsItem *origin, QGraphics
     Q_Q(QGraphicsScene);
 
     if (cachedItemsUnderMouse.isEmpty() || cachedItemsUnderMouse.first() != origin) {
-        QGraphicsSceneTouchEvent::TouchPoint *firstTouchPoint = touchEvent->touchPoints().first();
-        cachedItemsUnderMouse = itemsAtPosition(firstTouchPoint->screenPos().toPoint(),
-                                                firstTouchPoint->scenePos(),
+        const QGraphicsSceneTouchEvent::TouchPoint &firstTouchPoint = touchEvent->touchPoints().first();
+        cachedItemsUnderMouse = itemsAtPosition(firstTouchPoint.screenPos().toPoint(),
+                                                firstTouchPoint.scenePos(),
                                                 touchEvent->widget());
     }
     Q_ASSERT(cachedItemsUnderMouse.first() == origin);
@@ -5885,8 +5864,8 @@ bool QGraphicsScenePrivate::sendTouchBeginEvent(QGraphicsItem *origin, QGraphics
         if (res && eventAccepted) {
             // the first item to accept the TouchBegin gets an implicit grab.
             for (int i = 0; i < touchEvent->touchPoints().count(); ++i) {
-                QGraphicsSceneTouchEvent::TouchPoint *touchPoint = touchEvent->touchPoints().at(i);
-                itemForTouchPointId[touchPoint->id()] = item;
+                const QGraphicsSceneTouchEvent::TouchPoint &touchPoint = touchEvent->touchPoints().at(i);
+                itemForTouchPointId[touchPoint.id()] = item;
             }
             break;
         }

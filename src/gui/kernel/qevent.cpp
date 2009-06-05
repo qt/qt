@@ -3679,23 +3679,27 @@ void QGestureEvent::accept(const QString &type)
     track-pad), and if the widget has the Qt::WA_AcceptTouchEvents
     attribute.
 
-    Like QMouseEvent, Qt automatically grabs the touch device on the
-    first press inside a widget; the widget will receive all touch
-    events until the last touch point is released.
+    All touch events are of type QEvent::TouchBegin,
+    QEvent::TouchUpdate, or QEvent::TouchEnd. The touchPoints()
+    function returns a list of all touch points contained in the event.
+    Information about each touch point can be retreived using the
+    QTouchEvent::TouchPoint class.
+
+    Similar to QMouseEvent, Qt automatically grabs each touch point on
+    the first press inside a widget; the widget will receive all
+    updates for the touch point until it is released. Note that it is
+    possible for a widget to receive events for multiple touch points,
+    and that multiple widgets may be receiving touch events at the same
+    time.
 
     A touch event contains a special accept flag that indicates
     whether the receiver wants the event. By default, the event is
-    ignored. You should call accept() if the touch event is handled by
-    your widget. A touch event is propagated up the parent widget
+    accepted. You should call ignore() if the touch event is not handled by
+    your widget. A QEvent::TouchBegin event is propagated up the parent widget
     chain until a widget accepts it with accept(), or an event filter
-    consumes it. If the touch event is neither accepted nor consumed,
+    consumes it. If the QEvent::TouchBegin event is neither accepted nor consumed,
     then mouse events are simulated from the state of the first touch
     point.
-
-    All touch events are of type QEvent::Touch. The touchPoints()
-    function returns a list of all touch points contained in the
-    event. Information about each touch point can be retreived using
-    the QTouchEvent::TouchPoint class.
 
     The Qt::TouchPointState enum describes the different states that a
     touch point may have.
@@ -3728,7 +3732,7 @@ void QGestureEvent::accept(const QString &type)
 QTouchEvent::QTouchEvent(QEvent::Type type,
                          Qt::KeyboardModifiers modifiers,
                          Qt::TouchPointStates touchPointStates,
-                         const QList<QTouchEvent::TouchPoint *> &touchPoints)
+                         const QList<QTouchEvent::TouchPoint> &touchPoints)
     : QInputEvent(type, modifiers),
       _touchPointStates(touchPointStates),
       _touchPoints(touchPoints)
@@ -3752,12 +3756,12 @@ QTouchEvent::~QTouchEvent()
     Sets a bitwise OR of all the touch point states for this event.
 */
 
-/*! \fn const QList<QTouchEvent::TouchPoint *> &QTouchEvent::TouchPoints() const
+/*! \fn const QList<QTouchEvent::TouchPoint> &QTouchEvent::TouchPoints() const
 
     Returns the list of touch points contained in the touch event.
 */
 
-/*! \fn void QTouchEvent::setTouchPoints(QList<QTouchEvent::TouchPoint *> &touchPoints)
+/*! \fn void QTouchEvent::setTouchPoints(QList<QTouchEvent::TouchPoint> &touchPoints)
 
     \internal
 
@@ -3774,17 +3778,30 @@ QTouchEvent::TouchPoint::TouchPoint(int id)
 
 /*! \internal
 
+    Constructs a copy of \a other.
+*/
+QTouchEvent::TouchPoint::TouchPoint(const QTouchEvent::TouchPoint &other)
+    : d(other.d)
+{
+    d->ref.ref();
+}
+
+/*! \internal
+
     Destroys the QTouchEvent::TouchPoint.
 */
 QTouchEvent::TouchPoint::~TouchPoint()
 {
-    delete d;
+    if (!d->ref.deref())
+        delete d;
 }
 
 /*!
-    Returns the id number of this touch point. Id numbers are
-    sequential, starting at zero, meaning the first touch point has id
-    0, the second has id 1, and so on...
+    Returns the id number of this touch point.
+
+    Id numbers are globally sequential, starting at zero, meaning the
+    first touch point in the application has id 0, the second has id 1,
+    and so on.
 */
 int QTouchEvent::TouchPoint::id() const
 {
@@ -3794,6 +3811,8 @@ int QTouchEvent::TouchPoint::id() const
 /*! \internal */
 void QTouchEvent::TouchPoint::setId(int id)
 {
+    if (d->ref != 1)
+        d = d->detach();
     d->id = id;
 }
 
@@ -3808,6 +3827,8 @@ Qt::TouchPointState QTouchEvent::TouchPoint::state() const
 /*! \internal */
 void QTouchEvent::TouchPoint::setState(Qt::TouchPointState state)
 {
+    if (d->ref != 1)
+        d = d->detach();
     d->state = state;
 }
 
@@ -3823,6 +3844,8 @@ QPointF QTouchEvent::TouchPoint::pos() const
 /*! \internal */
 void QTouchEvent::TouchPoint::setPos(const QPointF &pos)
 {
+    if (d->ref != 1)
+        d = d->detach();
     d->pos = pos;
 }
 
@@ -3838,6 +3861,8 @@ QPointF QTouchEvent::TouchPoint::startPos() const
 /*! \internal */
 void QTouchEvent::TouchPoint::setStartPos(const QPointF &startPos)
 {
+    if (d->ref != 1)
+        d = d->detach();
     d->startPos = startPos;
 }
 
@@ -3853,64 +3878,74 @@ QPointF QTouchEvent::TouchPoint::lastPos() const
 /*! \internal */
 void QTouchEvent::TouchPoint::setLastPos(const QPointF &lastPos)
 {
+    if (d->ref != 1)
+        d = d->detach();
     d->lastPos = lastPos;
 }
 
 /*!
     Returns the screen position of this touch point.
 */
-QPointF QTouchEvent::TouchPoint::screenPos() const
+QPointF QTouchEvent::TouchPoint::globalPos() const
 {
     return d->screenPos;
 }
 
 /*! \internal */
-void QTouchEvent::TouchPoint::setScreenPos(const QPointF &screenPos)
+void QTouchEvent::TouchPoint::setGlobalPos(const QPointF &globalPos)
 {
-    d->screenPos = screenPos;
+    if (d->ref != 1)
+        d = d->detach();
+    d->screenPos = globalPos;
 }
 
 /*!
     Returns the starting screen position of this touch point.
 */
-QPointF QTouchEvent::TouchPoint::startScreenPos() const
+QPointF QTouchEvent::TouchPoint::startGlobalPos() const
 {
     return d->startScreenPos;
 }
 
 /*! \internal */
-void QTouchEvent::TouchPoint::setStartScreenPos(const QPointF &startScreenPos)
+void QTouchEvent::TouchPoint::setStartGlobalPos(const QPointF &startGlobalPos)
 {
-    d->startScreenPos = startScreenPos;
+    if (d->ref != 1)
+        d = d->detach();
+    d->startScreenPos = startGlobalPos;
 }
 
 /*!
     Returns the screen position of this touch point from the previous
     touch event.
 */
-QPointF QTouchEvent::TouchPoint::lastScreenPos() const
+QPointF QTouchEvent::TouchPoint::lastGlobalPos() const
 {
     return d->lastScreenPos;
 }
 
 /*! \internal */
-void QTouchEvent::TouchPoint::setLastScreenPos(const QPointF &lastScreenPos)
+void QTouchEvent::TouchPoint::setLastGlobalPos(const QPointF &lastGlobalPos)
 {
-    d->lastScreenPos = lastScreenPos;
+    if (d->ref != 1)
+        d = d->detach();
+    d->lastScreenPos = lastGlobalPos;
 }
 
 /*!
-    Returns the area of this touch point.
+    Returns the size of this touch point.
 */
-QSizeF QTouchEvent::TouchPoint::area() const
+QSizeF QTouchEvent::TouchPoint::size() const
 {
-    return d->area;
+    return d->screenSize;
 }
 
 /*! \internal */
-void QTouchEvent::TouchPoint::setArea(const QSizeF &area)
+void QTouchEvent::TouchPoint::setSize(const QSizeF &size)
 {
-    d->area = area;
+    if (d->ref != 1)
+        d = d->detach();
+    d->screenSize = size;
 }
 
 /*!
@@ -3925,7 +3960,24 @@ qreal QTouchEvent::TouchPoint::pressure() const
 /*! \internal */
 void QTouchEvent::TouchPoint::setPressure(qreal pressure)
 {
+    if (d->ref != 1)
+        d = d->detach();
     d->pressure = pressure;
+}
+
+/*! \internal */
+QTouchEvent::TouchPoint &QTouchEvent::TouchPoint::operator=(const QTouchEvent::TouchPoint &other)
+{
+    other.d->ref.ref();
+    if (!d->ref.deref())
+        delete d;
+    d = other.d;
+    return *this;
+}
+
+QTouchEventTouchPointPrivate *QTouchEventTouchPointPrivate::get(const QTouchEvent::TouchPoint &tp)
+{
+    return tp.d;
 }
 
 QT_END_NAMESPACE

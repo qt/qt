@@ -279,12 +279,10 @@ public:
     mutable QBitArray validTransforms;
     mutable QVector<int> freeSceneTransformSlots;
 
-    QList<QGraphicsSceneTouchEvent::TouchPoint *> sceneCurrentTouchPoints;
+    QMap<int, QGraphicsSceneTouchEvent::TouchPoint> sceneCurrentTouchPoints;
     QHash<int, QGraphicsItem *> itemForTouchPointId;
     static void updateTouchPointsForItem(QGraphicsItem *item, QGraphicsSceneTouchEvent *touchEvent);
-    QGraphicsSceneTouchEvent::TouchPoint *findClosestTouchPoint(const QPointF &scenePos);
-    void appendTouchPoint(QGraphicsSceneTouchEvent::TouchPoint *touchPoint);
-    void removeTouchPoint(QGraphicsSceneTouchEvent::TouchPoint *touchPoint);
+    int findClosestTouchPointId(const QPointF &scenePos);
     void touchEventHandler(QGraphicsSceneTouchEvent *touchEvent);
     bool sendTouchBeginEvent(QGraphicsItem *item, QGraphicsSceneTouchEvent *touchEvent);
 };

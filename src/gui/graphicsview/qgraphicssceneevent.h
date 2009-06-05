@@ -353,9 +353,28 @@ class QGraphicsSceneTouchEventPrivate;
 class Q_GUI_EXPORT QGraphicsSceneTouchEvent : public QGraphicsSceneEvent
 {
 public:
-    class Q_GUI_EXPORT TouchPoint : public QTouchEvent::TouchPoint
+    class Q_GUI_EXPORT TouchPoint
     {
     public:
+        TouchPoint(int id = -1);
+        TouchPoint(const TouchPoint &other);
+        ~TouchPoint();
+
+        int id() const;
+        void setId(int id);
+
+        Qt::TouchPointState state() const;
+        void setState(Qt::TouchPointState state);
+
+        QPointF pos() const;
+        void setPos(const QPointF &pos);
+
+        QPointF startPos() const;
+        void setStartPos(const QPointF &startPos);
+
+        QPointF lastPos() const;
+        void setLastPos(const QPointF &lastPos);        
+
         QPointF scenePos() const;
         void setScenePos(const QPointF &scenePos);
 
@@ -365,8 +384,33 @@ public:
         QPointF lastScenePos() const;
         void setLastScenePos(const QPointF &lastScenePos);
 
-        qreal pressure() const; // 0.0 -> 1.0
+        QPointF screenPos() const;
+        void setScreenPos(const QPointF &screenPos);
+
+        QPointF startScreenPos() const;
+        void setStartScreenPos(const QPointF &startScreenPos);
+
+        QPointF lastScreenPos() const;
+        void setLastScreenPos(const QPointF &lastScreenPos);
+
+        QSizeF size() const;
+        void setSize(const QSizeF &size);
+
+        QSizeF sceneSize() const;
+        void setSceneSize(const QSizeF &sceneSize);
+
+        QSizeF screenSize() const;
+        void setScreenSize(const QSizeF &screenSize);
+
+        qreal pressure() const;
         void setPressure(qreal pressure);
+
+        TouchPoint &operator=(const TouchPoint &other);
+
+    private:
+        TouchPoint(QTouchEventTouchPointPrivate *dd);
+        QTouchEventTouchPointPrivate *d;
+        friend class QGraphicsViewPrivate;
     };
 
     QGraphicsSceneTouchEvent(Type type = None);
@@ -378,8 +422,8 @@ public:
     Qt::TouchPointStates touchPointStates() const;
     void setTouchPointStates(Qt::TouchPointStates touchPointStates);
 
-    const QList<QGraphicsSceneTouchEvent::TouchPoint *> &touchPoints() const;
-    void setTouchPoints(const QList<QGraphicsSceneTouchEvent::TouchPoint *> &touchPoints);
+    const QList<QGraphicsSceneTouchEvent::TouchPoint> &touchPoints() const;
+    void setTouchPoints(const QList<QGraphicsSceneTouchEvent::TouchPoint> &touchPoints);
 
 private:
     Q_DECLARE_PRIVATE(QGraphicsSceneTouchEvent);
