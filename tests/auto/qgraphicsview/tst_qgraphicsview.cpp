@@ -2525,6 +2525,8 @@ void tst_QGraphicsView::acceptMousePressEvent()
 
     scene.addRect(0, 0, 2000, 2000)->setFlag(QGraphicsItem::ItemIsMovable);
 
+    qApp->processEvents(); // ensure scene rect is updated
+
     QApplication::sendEvent(view.viewport(), &event);
     QVERIFY(view.accepted);
 }
