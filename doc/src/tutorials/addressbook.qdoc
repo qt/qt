@@ -510,7 +510,7 @@
     \list
         \o If the iterator is at the end of \c contacts, we clear the
         display and return.
-        \o If the iterator is the beginning of \c contacts, we move it to
+        \o If the iterator is at the beginning of \c contacts, we move it to
         the end.
         \o We then decrement the iterator by one.
     \endlist
