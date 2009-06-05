@@ -539,7 +539,7 @@
     edit and remove functions so that a contact's details can be changed
     when needed. However, this requires a little improvement, in the form of
     enums. In our previous chapters, we had two modes: \c{AddingMode} and
-    \c{NavigationMode} - but they weren't defined as enums. Instead, we
+    \c{NavigationMode} - but they were not defined as enums. Instead, we
     enabled and disabled the corresponding buttons manually, resulting in
     multiple lines of repeated code.
 
