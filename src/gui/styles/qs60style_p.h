@@ -410,7 +410,7 @@ public:
     static bool isToolBarBackground();
 
     // calculates average color based on button skin graphics (minus borders).
-    QColor colorFromFrameGraphics(QS60StylePrivate::SkinFrameElements frame) const;
+    QColor colorFromFrameGraphics(SkinFrameElements frame) const;
 
     //set theme palette for application
     void setThemePalette(QApplication *application) const;
@@ -432,7 +432,7 @@ public:
     static const int m_numberOfLayouts;
 
     mutable QHash<QPair<QS60StyleEnums::FontCategories , int>, QFont> m_mappedFontsCache;
-    mutable QHash<QS60StylePrivate::SkinFrameElements, QColor> m_colorCache;
+    mutable QHash<SkinFrameElements, QColor> m_colorCache;
 
     // Has one entry per SkinFrameElements
     static const struct frameElementCenter {
@@ -465,7 +465,8 @@ private:
     void setThemePalette(QWidget *widget) const;
     void setThemePalette(QPalette *palette) const;
     void setThemePaletteHash(QPalette *palette) const;
-    static void QS60StylePrivate::storeThemePalette(QPalette *palette);
+    static void storeThemePalette(QPalette *palette);
+    static void deleteThemePalette();
 
     static QSize partSize(QS60StyleEnums::SkinParts part,
         SkinElementFlags flags = KDefaultSkinElementFlags);

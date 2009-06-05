@@ -151,7 +151,7 @@ const double KTabFontMul = 0.72;
 QS60StylePrivate::~QS60StylePrivate()
 {
     clearCaches(); //deletes also background image
-    delete m_themePalette;
+    deleteThemePalette();
 }
 
 void QS60StylePrivate::drawSkinElement(SkinElements element, QPainter *painter,
@@ -470,12 +470,10 @@ QColor QS60StylePrivate::colorFromFrameGraphics(QS60StylePrivate::SkinFrameEleme
 
 void QS60StylePrivate::setThemePalette(QApplication *app) const
 {
-    if (!app)
-        return;
-
+    Q_UNUSED(app)
     QPalette widgetPalette = QPalette(Qt::white);
     setThemePalette(&widgetPalette);
-    app->setPalette(widgetPalette);
+    QApplication::setPalette(widgetPalette);
 }
 
 void QS60StylePrivate::setThemePalette(QStyleOption *option) const
@@ -490,11 +488,10 @@ QPalette* QS60StylePrivate::themePalette()
 
 void QS60StylePrivate::setBackgroundTexture(QApplication *app) const
 {
-    if (!app)
-        return;
-    QPalette applicationPalette = app->palette();
+    Q_UNUSED(app)
+    QPalette applicationPalette = QApplication::palette();
     applicationPalette.setBrush(QPalette::Window, QS60StylePrivate::backgroundTexture());
-    app->setPalette(applicationPalette);
+    QApplication::setPalette(applicationPalette);
 }
 
 void QS60StylePrivate::deleteBackground()
@@ -560,10 +557,20 @@ void QS60StylePrivate::drawRow(QS60StyleEnums::SkinParts start,
         startRect.setWidth(qMin(rect.width() >>1 - 1, startRect.width()));
         endRect = startRect.translated(rect.width() - startRect.width(), 0);
         middleRect.adjust(startRect.width(), 0, -startRect.width(), 0);
+        if (startRect.bottomRight().x() > endRect.topLeft().x()) {
+            const int overlap = (startRect.bottomRight().x() -  endRect.topLeft().x())>>1;
+            startRect.setWidth(startRect.width()-overlap);
+            endRect.adjust(overlap,0,0,0);
+        }
     } else {
         startRect.setHeight(qMin(rect.height() >>1 - 1, startRect.height()));
         endRect = startRect.translated(0, rect.height() - startRect.height());
         middleRect.adjust(0, startRect.height(), 0, -startRect.height());
+        if (startRect.topRight().y() > endRect.bottomLeft().y()) {
+            const int overlap = (startRect.topRight().y() - endRect.bottomLeft().y())>>1;
+            startRect.setHeight(startRect.height()-overlap);
+            endRect.adjust(0,overlap,0,0);        
+        }
     }
 
 #if 0
@@ -709,13 +716,18 @@ void QS60StylePrivate::setThemePalette(QPalette *palette) const
     QS60StylePrivate::storeThemePalette(palette);
 }
 
-void QS60StylePrivate::storeThemePalette(QPalette *palette)
+void QS60StylePrivate::deleteThemePalette()
 {
-    //store specified palette for latter use.
     if (m_themePalette) {
         delete m_themePalette;
         m_themePalette = 0;
     }
+}
+
+void QS60StylePrivate::storeThemePalette(QPalette *palette)
+{
+    deleteThemePalette();
+    //store specified palette for latter use.
     m_themePalette = new QPalette(*palette);
 }
 
@@ -1772,14 +1784,15 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
         {
             QS60StylePrivate::SkinElementFlags adjFlags = flags;
             QRect emptyAreaRect = option->rect;
+            const int frameWidth = QS60StylePrivate::pixelMetric(PM_DefaultFrameWidth);
             if (option->state & QStyle::State_Horizontal) {
-            emptyAreaRect.adjust(-2,-2,2,-2);
+                emptyAreaRect.adjust(-frameWidth,-frameWidth,frameWidth,-frameWidth);
             } else {
                 if ( option->direction == Qt::LeftToRight ) {
-                emptyAreaRect.adjust(-2,-2,0,2);
+                emptyAreaRect.adjust(-frameWidth,-frameWidth,0,frameWidth);
                     adjFlags |= QS60StylePrivate::SF_PointWest;
                 } else {
-                emptyAreaRect.adjust(2,2,0,-2);
+                emptyAreaRect.adjust(frameWidth,frameWidth,0,-frameWidth);
                     adjFlags |= QS60StylePrivate::SF_PointEast;
                 }
             }
@@ -1791,14 +1804,15 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
             QS60StylePrivate::SkinElementFlags adjFlags = flags;
             QRect mtyRect = header->rect;
             QRect parentRect = widget->parentWidget()->rect();
+            const int frameWidth = QS60StylePrivate::pixelMetric(PM_DefaultFrameWidth);
             if (header->orientation == Qt::Horizontal) {
-                mtyRect.adjust(-2,-2,2,-2);
+                mtyRect.adjust(-frameWidth,-frameWidth,frameWidth,-frameWidth);
             } else {
                 if ( header->direction == Qt::LeftToRight ) {
-                    mtyRect.adjust(-2,-2,0,2);
+                    mtyRect.adjust(-frameWidth,-frameWidth,0,frameWidth);
                     adjFlags |= QS60StylePrivate::SF_PointWest;
                 } else {
-                    mtyRect.adjust(2,2,0,-2);
+                    mtyRect.adjust(frameWidth,frameWidth,0,-frameWidth);
                     adjFlags |= QS60StylePrivate::SF_PointEast;
                 }
             }
@@ -2004,7 +2018,8 @@ void QS60Style::drawPrimitive(PrimitiveElement element, const QStyleOption *opti
         else if (const QStyleOptionFrame *cmb = qstyleoption_cast<const QStyleOptionFrame *>(option)) {
             // We want to draw down arrow here for comboboxes as well.
             QStyleOptionFrame comboBox = *cmb;
-            comboBox.rect.adjust(0,2,0,-2);
+            const int frameWidth = QS60StylePrivate::pixelMetric(PM_DefaultFrameWidth);
+            comboBox.rect.adjust(0,frameWidth,0,-frameWidth);
             QCommonStyle::drawPrimitive(element, &comboBox, painter, widget);
         }
 #endif //QT_NO_COMBOBOX
@@ -2257,10 +2272,37 @@ int QS60Style::styleHint(StyleHint sh, const QStyleOption *opt, const QWidget *w
             retValue = '*';
             break;
         case SH_ComboBox_PopupFrameStyle:
-            retValue = QFrame::NoFrame;
+            retValue = QFrame::NoFrame | QFrame::Plain;
             break;
         case SH_Dial_BackgroundRole:
             retValue = QPalette::Base;
+            break;
+        case SH_ItemView_ActivateItemOnSingleClick:
+            retValue = true;
+            break;
+        case SH_ProgressDialog_TextLabelAlignment:
+            retValue = (QApplication::layoutDirection() == Qt::LeftToRight) ? 
+                Qt::AlignLeft :
+                Qt::AlignRight;  
+            break;
+        case SH_Menu_SubMenuPopupDelay:
+            retValue = 300;
+            break;
+        case SH_Menu_Scrollable:
+            retValue = true;
+            break;
+        case SH_Menu_SelectionWrap:
+            retValue = true;
+            break;
+        case SH_ItemView_ShowDecorationSelected:
+            retValue = true;
+            break;
+        case SH_ToolBar_Movable:
+            retValue = false;
+            break;
+        case SH_BlinkCursorWhenTextSelected:
+            retValue = true;
+            break;
         default:
             break;
     }
@@ -2589,6 +2631,8 @@ QRect QS60Style::subElementRect(SubElement element, const QStyleOption *opt, con
                     ret.setRect(opt->rect.right() - indicatorWidth - spacing, opt->rect.top() + heightOffset,
                         indicatorWidth, indicatorHeight);
                 }
+            } else  {
+                ret = QCommonStyle::subElementRect(element, opt, widget);
             }
             break;
         case SE_HeaderLabel:
@@ -2693,9 +2737,10 @@ void QS60Style::polish(QApplication *application)
 
 void QS60Style::unpolish(QApplication *application)
 {
+    Q_UNUSED(application)
     Q_D(QS60Style);
     const QPalette newPalette = QApplication::style()->standardPalette();
-    application->setPalette(newPalette);
+    QApplication::setPalette(newPalette);
     QApplicationPrivate::setSystemPalette(d->m_originalPalette);
 }
 
@@ -2809,7 +2854,7 @@ bool qt_s60_fill_background(QPainter *painter, const QRegion &rgn, const QPoint 
 
     const QPaintDevice *target = painter->device();
     if (target->devType() == QInternal::Widget) {
-		const QWidget *widget = static_cast<const QWidget *>(target);
+        const QWidget *widget = static_cast<const QWidget *>(target);
         const QRegion translated = rgn.translated(offset);
         const QVector<QRect> &rects = translated.rects();
         for (int i = 0; i < rects.size(); ++i) {
