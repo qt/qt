@@ -131,6 +131,8 @@ Third party components
     * Fixed crash when drawing on a null pixmap.
     * [251534] Fixed issue where text with non-opaque color from widget
       palette would be blitted instead of blended.
+    * [253663] Fixed an issue with implicitly closed poly lines when using
+      perspective transforms.
 
 - QProgressBar
     * [252283] Fixed busy indicator for a QProgressBar with a style sheet applied to it.
@@ -165,6 +167,8 @@ Third party components
       engine.
     * [251485] Fixed crash that could occur with projective transforms and
       high quality antialiasing.
+    * [253468] Fixed a crash in the GL 2 paint engine that could occur
+      when drawing text.
 
 - QCssParser
     * [252311] "font-family:" now handle fallback font specified with a comas
@@ -186,6 +190,28 @@ Third party components
 
 - QPrintDialog
     * [253135] Crash in QPrintDialog when editing output filename
+    * [252873] Fixed an issue that could cause QPrintDialog to invalidate
+      a valid QPrinter object.
+    * [224728] Fixed an issue under X11 where QPrintDialog didn't update
+      the print-to-file state, if it was passed a QPrinter set up to
+      print PDF or PostScript.
+
+- QPrinter
+    * [252873] Fixed an issue with QPrinter::NativeFormat printers not
+      being valid.
+    * [248881] Fixed an issue under Windows where QPrinter::pageRect() returned
+      the wrong rect when QPrinter::fullPage() was set.
+    * [199271] Fixed an issue with QPrinter::setPrinterName()/printerName()
+      on Mac.
+
+- QSvg
+    * [253614] Fixed an issue with parsing the 'stroke-dasharray' SVG attribute.
+
+- QSvgIconEngine
+    * [251106] Fixed an issue that would cause QIcon::actualSize() to reparse
+      the SVG file for each acutalSize() call, until QIcon::pixmap() was called.
+    * [248848] Fixed an issue that would cause QIcon::pixmap() to reparse the
+      SVG file, even though there was a cached pixmap for that size available.
 
 ****************************************************************************
 *                          Database Drivers                                *
@@ -202,17 +228,30 @@ Qt for Linux/X11
 legacy freetype headers.
 [241361] Prevented asynchronous access to non-thread safe libfontconfig API.
 [244362] Worked around X server crash when calling XFillPolygon with more than
-200000 points by falling back to raster paint engine.
+	 200000 points by falling back to raster paint engine.
 [250326] Titlebar wasn't shown on X11 with Qt::CustomizeWindowHint for
 	 fixed-size windows.
 [251925] Improved showing QMessageBox on small screens.
 [252042] Fixed the loading of the OpenSSL libraries on OpenBSD.
+[255311] Fixed an issue with '-graphicssystem raster' on 8 and 16 bit X servers.
+[252328] Fixed an issue when rendering old XLFD fonts on X11 with Xrender and
+	 fontconfig enabled.
+[248720] Fixed and issue with using '-graphicssystem raster' on X servers with
+         BGR color layout.
+[196152] Fixed a problem with QPixmap::toImage() on big endian systems that
+         would cause the R and B channels to be swapped for 32 bit pixmaps.
 
 Qt for Windows
 --------------
 
+Fixed and issue with text rendering in 16 bit mode.
+
+[246196] Fixed an issue with clipped glyphs when rendering text with
+         certain fonts.
 [251259] Switching to another app left text cursor in line edits with
 	 QtMfc framework.
+[253367] Fixed a memory leak when loading system icons on Windows.
+
 
 Qt for Mac OS X
 ---------------
@@ -220,6 +259,9 @@ Qt for Mac OS X
 [252176] Fix regression in drawing parts of pixmaps on Panther.
 [253402] Fix a crash when a Cocoa window that used to be a QWidget would get events
          after the QWidget was destroyed.
+[249178] Fixed an issue with drawing text to QImages on Mac/Cocoa.
+[250066] Fixed an issue that caused reparenting of QGLWidgets to output warnings
+         on Mac/Cocoa.
 
 
 Qt for Embedded Linux
