@@ -645,6 +645,8 @@ QNetworkReply *QNetworkAccessManager::put(const QNetworkRequest &request, const 
 }
 
 /*!
+    \since 4.6
+
     This function is used to send a request to delete the resource
     identified by the URL of \a request.
     This feature is currently available for HTTP only, performing an HTTP DELETE request.
