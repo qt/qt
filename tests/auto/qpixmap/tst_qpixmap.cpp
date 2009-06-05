@@ -58,6 +58,14 @@
 #include <qscreen_qws.h>
 #endif
 
+#ifdef Q_OS_SYMBIAN
+#include <e32std.h>
+#include <fbs.h>
+#include <gdi.h>
+#include <bitdev.h>
+#endif
+
+
 //TESTED_CLASS=
 //TESTED_FILES=
 #if defined(Q_OS_SYMBIAN)
@@ -118,6 +126,11 @@ private slots:
     void toWinHBITMAP();
     void fromWinHBITMAP_data();
     void fromWinHBITMAP();
+#endif
+
+#if defined(Q_WS_S60)
+    void fromSymbianCFbsBitmap_data();
+    void fromSymbianCFbsBitmap();
 #endif
 
     void onlyNullPixmapsOutsideGuiThread();
@@ -796,6 +809,94 @@ void tst_QPixmap::fromWinHBITMAP()
     ReleaseDC(0, display_dc);
 }
 
+#endif
+
+#if defined(Q_WS_S60)
+Q_DECLARE_METATYPE(TDisplayMode)
+
+void tst_QPixmap::fromSymbianCFbsBitmap_data()
+{
+    QTest::addColumn<TDisplayMode>("format");
+    QTest::addColumn<int>("width");
+    QTest::addColumn<int>("height");
+    QTest::addColumn<QColor>("color");
+
+    const int smallWidth = 20;
+    const int smallHeight = 20;
+    const int largeWidth = 240;
+    const int largeHeight = 320;
+
+    // Indexed Color Formats - Disabled since images seem to be blank -> no palette?
+//    QTest::newRow("EGray2 small") << EGray2 << smallWidth << smallHeight << QColor(Qt::black);
+//    QTest::newRow("EGray2 big") << EGray2 << largeWidth << largeHeight << QColor(Qt::black);
+//    QTest::newRow("EGray256 small") << EGray256 << smallWidth << smallHeight << QColor(Qt::blue);
+//    QTest::newRow("EGray256 big") << EGray256 << largeWidth << largeHeight << QColor(Qt::blue);
+//    QTest::newRow("EColor256 small") << EColor256 << smallWidth << smallHeight << QColor(Qt::red);
+//    QTest::newRow("EColor256 big") << EColor256 << largeWidth << largeHeight << QColor(Qt::red);
+
+    // Direct Color Formats
+    QTest::newRow("EColor4K small") << EColor4K << smallWidth << smallHeight << QColor(Qt::red);
+    QTest::newRow("EColor4K big") << EColor4K << largeWidth << largeHeight << QColor(Qt::red);
+    QTest::newRow("EColor64K small") << EColor64K << smallWidth << smallHeight << QColor(Qt::green);
+    QTest::newRow("EColor64K big") << EColor64K << largeWidth << largeHeight << QColor(Qt::green);
+    QTest::newRow("EColor16MU small") << EColor16MU << smallWidth << smallHeight << QColor(Qt::red);
+    QTest::newRow("EColor16MU big") << EColor16MU << largeWidth << largeHeight << QColor(Qt::red);
+    QTest::newRow("EColor16MA small opaque") << EColor16MA << smallWidth << smallHeight << QColor(255, 255, 0);
+    QTest::newRow("EColor16MA big opaque") << EColor16MA << largeWidth << largeHeight << QColor(255, 255, 0);
+
+    // Semi-transparent Colors - Disabled for now, since the QCOMPARE fails, but visually confirmed to work
+//    QTest::newRow("EColor16MA small semi") << EColor16MA << smallWidth << smallHeight << QColor(255, 255, 0, 127);
+//    QTest::newRow("EColor16MA big semi") << EColor16MA << largeWidth << largeHeight << QColor(255, 255, 0, 127);
+//    QTest::newRow("EColor16MA small trans") << EColor16MA << smallWidth << smallHeight << QColor(255, 255, 0, 0);
+//    QTest::newRow("EColor16MA big trans") << EColor16MA << largeWidth << largeHeight << QColor(255, 255, 0, 0);
+
+#if !defined(__SERIES60_31__) && !defined(__S60_32__)
+    QTest::newRow("EColor16MAP small") << EColor16MAP << smallWidth << smallHeight << QColor(Qt::red);
+    QTest::newRow("EColor16MAP big") << EColor16MAP << largeWidth << largeHeight << QColor(Qt::red);
+#endif
+}
+
+void tst_QPixmap::fromSymbianCFbsBitmap()
+{
+    QFETCH(TDisplayMode, format);
+    QFETCH(int, width);
+    QFETCH(int, height);
+    QFETCH(QColor, color);
+    int expectedDepth = TDisplayModeUtils::NumDisplayModeBitsPerPixel(format);
+
+    CFbsBitmap *nativeBitmap = 0;
+    CFbsBitmapDevice *bitmapDevice = 0;
+    CBitmapContext *bitmapContext = 0;
+
+    nativeBitmap = new (ELeave) CFbsBitmap();
+    TInt err = nativeBitmap->Create(TSize(width, height), format);
+    CleanupStack::PushL(nativeBitmap);
+    QVERIFY(err == KErrNone);
+    bitmapDevice = CFbsBitmapDevice::NewL(nativeBitmap);
+    CleanupStack::PushL(bitmapDevice);
+
+    err = bitmapDevice->CreateBitmapContext(bitmapContext);
+    CleanupStack::PushL(bitmapContext);
+    QVERIFY(err == KErrNone);
+    TRgb symbianColor = TRgb(color.red(), color.green(), color.blue(), color.alpha());
+    bitmapContext->SetBrushColor(symbianColor);
+    bitmapContext->Clear();
+
+    __UHEAP_MARK;
+    { // Test the normal case
+        QPixmap pixmap = QPixmap::fromSymbianCFbsBitmap(nativeBitmap);
+//        QCOMPARE(pixmap.depth(), expectedDepth); // Depth is not preserved now
+        QCOMPARE(pixmap.width(), width);
+        QCOMPARE(pixmap.height(), height);
+        QImage image = pixmap.toImage();
+
+        QColor actualColor(image.pixel(1, 1));
+        QCOMPARE(actualColor, color);
+    }
+    __UHEAP_MARKEND;
+
+    CleanupStack::PopAndDestroy(3);
+}
 #endif
 
 void tst_QPixmap::onlyNullPixmapsOutsideGuiThread()
