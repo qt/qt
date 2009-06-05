@@ -59,6 +59,33 @@
 
 QT_BEGIN_NAMESPACE
 
+static inline int pick(Qt::Orientation o, const QPoint &pos)
+{ return o == Qt::Horizontal ? pos.x() : pos.y(); }
+
+static inline int pick(Qt::Orientation o, const QSize &size)
+{ return o == Qt::Horizontal ? size.width() : size.height(); }
+
+static inline int &rpick(Qt::Orientation o, QPoint &pos)
+{ return o == Qt::Horizontal ? pos.rx() : pos.ry(); }
+
+static inline int &rpick(Qt::Orientation o, QSize &size)
+{ return o == Qt::Horizontal ? size.rwidth() : size.rheight(); }
+
+static inline QSizePolicy::Policy pick(Qt::Orientation o, const QSizePolicy &policy)
+{ return o == Qt::Horizontal ? policy.horizontalPolicy() : policy.verticalPolicy(); }
+
+static inline int perp(Qt::Orientation o, const QPoint &pos)
+{ return o == Qt::Vertical ? pos.x() : pos.y(); }
+
+static inline int perp(Qt::Orientation o, const QSize &size)
+{ return o == Qt::Vertical ? size.width() : size.height(); }
+
+static inline int &rperp(Qt::Orientation o, QPoint &pos)
+{ return o == Qt::Vertical ? pos.rx() : pos.ry(); }
+
+static inline int &rperp(Qt::Orientation o, QSize &size)
+{ return o == Qt::Vertical ? size.rwidth() : size.rheight(); }
+
 #ifndef QT_NO_TOOLBAR
 
 class QToolBar;
@@ -70,17 +97,41 @@ class QToolBarAreaLayoutItem
 {
 public:
     QToolBarAreaLayoutItem(QLayoutItem *item = 0)
-        : widgetItem(item), pos(0), size(-1), extraSpace(0), gap(false) {}
+        : widgetItem(item), pos(0), size(-1), preferredSize(-1), gap(false) {}
 
     bool skip() const;
     QSize minimumSize() const;
     QSize sizeHint() const;
-    QSize realSizeHint() const; 
+    QSize realSizeHint() const;
+
+    void resize(Qt::Orientation o, int newSize)
+    {
+        newSize = qMax(pick(o, minimumSize()), newSize);
+        int sizeh = pick(o, sizeHint());
+        if (newSize == sizeh) {
+            preferredSize = -1;
+            size = sizeh;
+        } else {
+            preferredSize = newSize;
+        }
+    }
+
+    void extendSize(Qt::Orientation o, int extent)
+    {
+        int newSize = qMax(pick(o, minimumSize()), (preferredSize > 0 ? preferredSize : size) + extent);
+        int sizeh = pick(o, sizeHint());
+        if (newSize == sizeh) {
+            preferredSize = -1;
+            size = sizeh;
+        } else {
+            preferredSize = newSize;
+        }
+    }
 
     QLayoutItem *widgetItem;
     int pos;
     int size;
-    int extraSpace;
+    int preferredSize;
     bool gap;
 };
 
