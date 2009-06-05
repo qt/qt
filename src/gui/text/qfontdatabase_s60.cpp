@@ -55,6 +55,39 @@
 
 QT_BEGIN_NAMESPACE
 
+QFileInfoList alternativeFilePaths(const QString &path, const QStringList &nameFilters,
+    QDir::Filters filters = QDir::NoFilter, QDir::SortFlags sort = QDir::NoSort,
+    bool uniqueFileNames = true)
+{
+    QFileInfoList result;
+
+    // Prepare a 'soft to hard' drive list: W:, X: ... A:, Z:
+    QStringList driveStrings;
+    foreach (const QFileInfo &drive, QDir::drives())
+        driveStrings.append(drive.absolutePath());
+    driveStrings.sort();
+    const QString zDriveString("Z:/");
+    driveStrings.removeAll(zDriveString);
+    driveStrings.prepend(zDriveString);
+    
+    QStringList uniqueFileNameList;
+    for (int i = driveStrings.count() - 1; i >= 0; --i) {
+        const QDir dirOnDrive(driveStrings.at(i) + path);
+        const QFileInfoList entriesOnDrive = dirOnDrive.entryInfoList(nameFilters, filters, sort);
+        if (uniqueFileNames) {
+            foreach(const QFileInfo &entry, entriesOnDrive) {
+                if (!uniqueFileNameList.contains(entry.fileName())) {
+                    uniqueFileNameList.append(entry.fileName());
+                    result.append(entry);
+                }
+            }
+        } else {
+            result.append(entriesOnDrive);
+        }
+    }
+    return result;
+}
+
 #if defined(QT_NO_FREETYPE)
 class QFontDatabaseS60StoreImplementation : public QFontDatabaseS60Store
 {
@@ -77,10 +110,13 @@ QFontDatabaseS60StoreImplementation::QFontDatabaseS60StoreImplementation()
     m_store = CFontStore::NewL(m_heap);
     m_rasterizer = COpenFontRasterizer::NewL(TUid::Uid(0x101F7F5E));
     m_store->InstallRasterizerL(m_rasterizer);
-    QDir dir(QDesktopServices::storageLocation(QDesktopServices::FontsLocation));
-    dir.setNameFilters(QStringList() << QLatin1String("*.ttf") << QLatin1String("*.ccc"));
-    for (int i = 0; i < int(dir.count()); ++i) {
-        const QString fontFile = QDir::toNativeSeparators(dir.absoluteFilePath(dir[i]));
+
+    QStringList filters;
+    filters.append(QString::fromLatin1("*.ttf"));
+    filters.append(QString::fromLatin1("*.ccc"));
+    const QFileInfoList fontFiles = alternativeFilePaths(QString::fromLatin1("resource\\Fonts"), filters);
+    foreach (const QFileInfo &fontFileInfo, fontFiles) {
+        const QString fontFile = QDir::toNativeSeparators(fontFileInfo.absoluteFilePath());
         m_store->AddFileL(qt_QString2TPtrC(fontFile));
     }
 }

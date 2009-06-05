@@ -272,11 +272,14 @@ static QString s60ToQtFormat(const QString &sys_fmt)
 
             switch (c.unicode()) {
                 case 'F':
+                {
                     // locale indep mode on
                     locale_indep_ordering = true;
                     break;
+                }
 
                 case '/':
+                {
                     // date sep 0-3
                     ++i;
                     if (i >= sys_fmt.size())
@@ -291,8 +294,10 @@ static QString s60ToQtFormat(const QString &sys_fmt)
                             result += QChar(val);
                     }
                     break;
+                }
 
                 case 'D':
+                {
                     if (!locale_indep_ordering)
                         break;
 
@@ -302,8 +307,10 @@ static QString s60ToQtFormat(const QString &sys_fmt)
                         result += QLatin1Char('d');
 
                     break;
+                }
 
                 case 'M':
+                {
                     if (!locale_indep_ordering)
                         break;
 
@@ -320,8 +327,10 @@ static QString s60ToQtFormat(const QString &sys_fmt)
                     }
 
                     break;
+                }
 
                 case 'N':
+                {
                     n_mode = true;
 
                     if (!locale_indep_ordering)
@@ -333,8 +342,10 @@ static QString s60ToQtFormat(const QString &sys_fmt)
                         result += QLatin1String("MMM");
 
                     break;
+                }
 
                 case 'Y':
+                {
                     if (!locale_indep_ordering)
                         break;
 
@@ -344,16 +355,20 @@ static QString s60ToQtFormat(const QString &sys_fmt)
                         result += QLatin1String("yy");
 
                     break;
+                }
 
                 case 'E':
+                {
                     if (!abbrev_next)
                         result += QLatin1String("dddd");
                     else
                         result += QLatin1String("ddd");
 
                     break;
+                }
 
                 case ':':
+                {
                     // timesep 0-3
                     ++i;
                     if (i >= sys_fmt.size())
@@ -369,47 +384,60 @@ static QString s60ToQtFormat(const QString &sys_fmt)
                     }
 
                     break;
+                }
 
                 case 'J':
+                {
                     if (tf == ETime24 && !abbrev_next)
                         result += QLatin1String("hh");
                     else
                         result += QLatin1Char('h');
 
                     break;
+                }
 
                 case 'H':
+                {
                     if (!abbrev_next)
                         result += QLatin1String("hh");
                     else
                         result += QLatin1Char('h');
 
                     break;
+                }
 
                 case 'I':
+                {
                     result += QLatin1Char('h');
                     break;
+                }
 
                 case 'T':
+                {
                     if (!abbrev_next)
                         result += QLatin1String("mm");
                     else
                         result += QLatin1Char('m');
 
                     break;
+                }
 
                 case 'S':
+                {
                     if (!abbrev_next)
                         result += QLatin1String("ss");
                     else
                         result += QLatin1Char('s');
 
                     break;
+                }
 
                 case 'B':
+                {
                     // only done for 12h clock
                     if (tf == ETime24)
                         break;
+                }
 
                     // fallthru to A
                 case 'A': {
@@ -445,6 +473,7 @@ static QString s60ToQtFormat(const QString &sys_fmt)
                     break;
 
                 case 'C':
+                {
                     // six digits in s60, three digits in qt
                     if (!abbrev_next) {
                         result += QLatin1String("zzz");
@@ -468,6 +497,7 @@ static QString s60ToQtFormat(const QString &sys_fmt)
                         }
                     }
                     break;
+                }
 
                 // these cases fallthru
                 case '1':
@@ -475,6 +505,7 @@ static QString s60ToQtFormat(const QString &sys_fmt)
                 case '3':
                 case '4':
                 case '5':
+                {
 
                     // shouldn't parse these with %F
                     if (locale_indep_ordering)
@@ -503,17 +534,24 @@ static QString s60ToQtFormat(const QString &sys_fmt)
 
                     result += QLatin1String(locale_dep[offset + (c.digitValue()-1)]);
                     break;
+                }
 
                 case '%': // fallthru percent
+                {
                 // any junk gets copied as is
+                }
                 default:
+                {
                     result += c;
                     break;
+                }
 
                 case 'Z': // Qt doesn't support these :(
                 case 'X':
                 case 'W':
+                {
                     break;
+                }
             }
         } else {
             // double any single quotes, don't begin escape
