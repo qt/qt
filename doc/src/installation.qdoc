@@ -516,12 +516,12 @@ in the \l{Qt for Windows CE Requirements} document.
                Install this to all S60 SDKs you plan to use Qt with.
         \endlist
 
-        Make sure you have the following packages installed on any device you want to use to run Qt applications. 
-        These packages can be found under \c nokia_plugin directory in any S60 SDK where you have installed Open C/C++:
+        Make sure you have the following plugins installed on your device. The packages can be found
+        in the S60 SDK where you installed Open C/C++:
         \list
-            \o pips_s60_<version>.sis 
-            \o openc_ssl_s60_<version>.sis
-            \o stdcpp_s60_<version>.sis
+            \o nokia_plugin\openc\s60opencsis\pips_s60_<version>.sis
+            \o nokia_plugin\openc\s60opencsis\openc_ssl_s60_<version>.sis
+            \o nokia_plugin\opencpp\s60opencppsis\stdcpp_s60_<version>.sis
         \endlist
         
         These instructions assume the above tools are installed and
