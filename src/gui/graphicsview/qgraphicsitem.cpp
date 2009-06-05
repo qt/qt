@@ -3721,7 +3721,7 @@ void QGraphicsItemPrivate::fullUpdateHelper(bool childrenOnly, bool maybeDirtyCl
         }
     }
     foreach (QGraphicsItem *child, children)
-        child->d_ptr->fullUpdateHelper(false, maybeDirtyClipPath);
+        child->d_ptr->fullUpdateHelper(false, maybeDirtyClipPath, ignoreOpacity);
     dirtyChildren = 1;
 }
 
