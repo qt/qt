@@ -42,10 +42,10 @@
 /*!
     \page qt-embedded-install.html
 
-    \title Installing Qt for Embedded Linux
+    \title Installing Qt on Embedded Linux
     \ingroup qt-embedded-linux
     \ingroup installation
-    \brief How to install Qt for Embedded Linux.
+    \brief How to install Qt on Embedded Linux.
 
     This document describes how to install \l{Qt for Embedded Linux} in your
     development environment:
