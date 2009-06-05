@@ -2589,6 +2589,8 @@ QRect QS60Style::subElementRect(SubElement element, const QStyleOption *opt, con
                     ret.setRect(opt->rect.right() - indicatorWidth - spacing, opt->rect.top() + heightOffset,
                         indicatorWidth, indicatorHeight);
                 }
+            } else  {
+                ret = QCommonStyle::subElementRect(element, opt, widget);
             }
             break;
         case SE_HeaderLabel:
