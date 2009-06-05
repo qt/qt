@@ -2269,10 +2269,36 @@ int QS60Style::styleHint(StyleHint sh, const QStyleOption *opt, const QWidget *w
             retValue = '*';
             break;
         case SH_ComboBox_PopupFrameStyle:
-            retValue = QFrame::NoFrame;
+            retValue = QFrame::NoFrame | QFrame::Plain;
             break;
         case SH_Dial_BackgroundRole:
             retValue = QPalette::Base;
+        case SH_ItemView_ActivateItemOnSingleClick:
+            retValue = true;
+            break;
+        case SH_ProgressDialog_TextLabelAlignment:
+            retValue = (QApplication::layoutDirection() == Qt::LeftToRight) ? 
+                Qt::AlignLeft :
+                Qt::AlignRight;  
+            break;
+        case SH_Menu_SubMenuPopupDelay:
+            retValue = 300;
+            break;
+        case SH_Menu_Scrollable:
+            retValue = true;
+            break;
+        case SH_Menu_SelectionWrap:
+            retValue = true;
+            break;
+        case SH_ItemView_ShowDecorationSelected:
+            retValue = true;
+            break;
+        case SH_ToolBar_Movable:
+            retValue = false;
+            break;
+        case SH_BlinkCursorWhenTextSelected:
+            retValue = true;
+            break;
         default:
             break;
     }
