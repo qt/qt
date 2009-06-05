@@ -62,6 +62,10 @@ class QX11Info;
 
 class QPixmapData;
 
+#if defined(Q_OS_SYMBIAN)
+class CFbsBitmap;
+#endif
+
 class Q_GUI_EXPORT QPixmap : public QPaintDevice
 {
 public:
@@ -150,6 +154,11 @@ public:
 #if defined(Q_WS_MAC)
     CGImageRef toMacCGImageRef() const;
     static QPixmap fromMacCGImageRef(CGImageRef image);
+#endif
+
+#if defined(Q_OS_SYMBIAN)
+    CFbsBitmap *toSymbianCFbsBitmap() const;
+    static QPixmap fromSymbianCFbsBitmap(CFbsBitmap *bitmap);
 #endif
 
     inline QPixmap copy(int x, int y, int width, int height) const;
