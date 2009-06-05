@@ -145,7 +145,6 @@ public:
     const ParseResults *getResults() const { return results; }
     void deleteResults() { delete results; }
 
-private:
     struct SavedState {
         QStringList namespaces;
         QStack<int> namespaceDepths;
@@ -154,6 +153,7 @@ private:
         QString pendingContext;
     };
 
+private:
     struct IfdefState {
         IfdefState() {}
         IfdefState(int _braceDepth, int _parenDepth) :
