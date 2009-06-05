@@ -66,6 +66,8 @@ QT_MODULE(Gui)
 class QGraphicsEffectPrivate;
 class Q_GUI_EXPORT QGraphicsEffect : public QObject
 {
+    Q_OBJECT
+
 public:
 
     QGraphicsEffect(QObject *parent = 0);
@@ -90,6 +92,8 @@ private:
 class QGraphicsGrayscaleEffectPrivate;
 class Q_GUI_EXPORT QGraphicsGrayscaleEffect: public QGraphicsEffect
 {
+    Q_OBJECT
+
 public:
 
     QGraphicsGrayscaleEffect(QObject *parent = 0);
@@ -106,6 +110,8 @@ private:
 
 class QGraphicsColorizeEffectPrivate;
 class Q_GUI_EXPORT QGraphicsColorizeEffect: public QGraphicsEffect {
+    Q_OBJECT
+
 public:
 
     QGraphicsColorizeEffect(QObject *parent = 0);
@@ -125,6 +131,8 @@ private:
 
 class QGraphicsPixelizeEffectPrivate;
 class Q_GUI_EXPORT QGraphicsPixelizeEffect: public QGraphicsEffect {
+    Q_OBJECT
+
 public:
 
     QGraphicsPixelizeEffect(QObject *parent = 0);
@@ -144,6 +152,8 @@ private:
 
 class QGraphicsBlurEffectPrivate;
 class Q_GUI_EXPORT QGraphicsBlurEffect: public QGraphicsEffect {
+    Q_OBJECT
+
 public:
 
     QGraphicsBlurEffect(QObject *parent = 0);
@@ -165,6 +175,8 @@ private:
 
 class QGraphicsBloomEffectPrivate;
 class Q_GUI_EXPORT QGraphicsBloomEffect: public QGraphicsEffect {
+    Q_OBJECT
+
 public:
 
     QGraphicsBloomEffect(QObject *parent = 0);
@@ -189,6 +201,8 @@ private:
 
 class QGraphicsFrameEffectPrivate;
 class Q_GUI_EXPORT QGraphicsFrameEffect: public QGraphicsEffect {
+    Q_OBJECT
+
 public:
 
     QGraphicsFrameEffect(QObject *parent = 0);
@@ -215,6 +229,8 @@ private:
 
 class QGraphicsShadowEffectPrivate;
 class Q_GUI_EXPORT QGraphicsShadowEffect: public QGraphicsEffect {
+    Q_OBJECT
+
 public:
 
     QGraphicsShadowEffect(QObject *parent = 0);
