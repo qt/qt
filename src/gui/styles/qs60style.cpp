@@ -2273,6 +2273,7 @@ int QS60Style::styleHint(StyleHint sh, const QStyleOption *opt, const QWidget *w
             break;
         case SH_Dial_BackgroundRole:
             retValue = QPalette::Base;
+            break;
         case SH_ItemView_ActivateItemOnSingleClick:
             retValue = true;
             break;
