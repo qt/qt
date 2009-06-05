@@ -71,39 +71,33 @@ namespace QTest
         ~QTouchEventSequence()
         {
             commit();
-            foreach(QTouchEvent::TouchPoint *pt, points)
-                delete pt;
             points.clear();
         }
         QTouchEventSequence& press(int touchId, const QPoint &pt, QWidget *widget = 0)
         {
-            touchPointStates |= Qt::TouchPointPressed;
-            QTouchEvent::TouchPoint *p = point(touchId);
-            p->setScreenPos(mapToScreen(widget, pt));
-            p->setState(Qt::TouchPointPressed);
+            QTouchEvent::TouchPoint &p = point(touchId);
+            p.setGlobalPos(mapToScreen(widget, pt));
+            p.setState(Qt::TouchPointPressed);
             return *this;
         }
         QTouchEventSequence& move(int touchId, const QPoint &pt, QWidget *widget = 0)
         {
-            touchPointStates |= Qt::TouchPointMoved;
-            QTouchEvent::TouchPoint *p = point(touchId);
-            p->setScreenPos(mapToScreen(widget, pt));
-            p->setState(Qt::TouchPointMoved);
+            QTouchEvent::TouchPoint &p = point(touchId);
+            p.setGlobalPos(mapToScreen(widget, pt));
+            p.setState(Qt::TouchPointMoved);
             return *this;
         }
         QTouchEventSequence& release(int touchId, const QPoint &pt, QWidget *widget = 0)
         {
-            touchPointStates |= Qt::TouchPointReleased;
-            QTouchEvent::TouchPoint *p = point(touchId);
-            p->setScreenPos(mapToScreen(widget, pt));
-            p->setState(Qt::TouchPointReleased);
+            QTouchEvent::TouchPoint &p = point(touchId);
+            p.setGlobalPos(mapToScreen(widget, pt));
+            p.setState(Qt::TouchPointReleased);
             return *this;
         }
         QTouchEventSequence& stationary(int touchId)
         {
-            touchPointStates |= Qt::TouchPointStationary;
-            QTouchEvent::TouchPoint *p = point(touchId);
-            p->setState(Qt::TouchPointStationary);
+            QTouchEvent::TouchPoint &p = point(touchId);
+            p.setState(Qt::TouchPointStationary);
             return *this;
         }
 
@@ -115,15 +109,11 @@ namespace QTest
         QTouchEventSequence(const QTouchEventSequence &v);
         void operator=(const QTouchEventSequence&);
 
-        QTouchEvent::TouchPoint* point(int touchId)
+        QTouchEvent::TouchPoint &point(int touchId)
         {
-            QTouchEvent::TouchPoint *pt = points.value(touchId, 0);
-            if (!pt) {
-                pt = new QTouchEvent::TouchPoint;
-                pt->setId(touchId);
-                points.insert(touchId, pt);
-            }
-            return pt;
+            if (!points.contains(touchId))
+                points[touchId] = QTouchEvent::TouchPoint(touchId);
+            return points[touchId];
         }
         QPoint mapToScreen(QWidget *widget, const QPoint &pt)
         {
@@ -133,22 +123,14 @@ namespace QTest
         }
         void commit()
         {
-            QTouchEvent event(QEvent::RawTouch, Qt::NoModifier,
-                              touchPointStates, points.values());
-            QSpontaneKeyEvent::setSpontaneous(&event);
-            if (targetWidget) {
-                if (!qApp->notify(targetWidget->window(), &event))
-                    QTest::qWarn("Touch event not accepted by receiving widget");
-                targetWidget = 0;
-            } else {
-                if (!qApp->notify(qApp, &event))
-                    QTest::qWarn("Touch event not accepted by receiving widget");
-            }
+            extern Q_GUI_EXPORT bool qt_translateRawKeyEvent(const QList<QTouchEvent::TouchPoint> &touchPoints, QWidget *window);
+            if (!qt_translateRawKeyEvent(points.values(), targetWidget))
+                QTest::qWarn("Touch event not accepted by receiving widget");
+            targetWidget = 0;
         }
 
-        QMap<int, QTouchEvent::TouchPoint*> points;
+        QMap<int, QTouchEvent::TouchPoint> points;
         QWidget *targetWidget;
-        Qt::TouchPointStates touchPointStates;
         friend QTouchEventSequence touchEvent(QWidget*);
     };
 

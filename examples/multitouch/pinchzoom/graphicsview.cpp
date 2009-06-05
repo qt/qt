@@ -57,18 +57,18 @@ bool GraphicsView::event(QEvent *event)
     case QEvent::TouchUpdate:
     case QEvent::TouchEnd:
     {
-        QList<QTouchEvent::TouchPoint *> touchPoints = static_cast<QTouchEvent *>(event)->touchPoints();
+        QList<QTouchEvent::TouchPoint> touchPoints = static_cast<QTouchEvent *>(event)->touchPoints();
         if (touchPoints.count() == 1) {
-            const QTouchEvent::TouchPoint *touchPoint = touchPoints.first();
-            QPointF delta = touchPoint->pos() - touchPoint->lastPos();
+            const QTouchEvent::TouchPoint &touchPoint = touchPoints.first();
+            QPointF delta = touchPoint.pos() - touchPoint.lastPos();
             horizontalScrollBar()->setValue(horizontalScrollBar()->value() - delta.x());
             verticalScrollBar()->setValue(verticalScrollBar()->value() - delta.y());
         } else if (touchPoints.count() == 2) {
             // determine scale factor
-            const QTouchEvent::TouchPoint *touchPoint0 = touchPoints.first();
-            const QTouchEvent::TouchPoint *touchPoint1 = touchPoints.last();
-            const qreal scaleFactor = QLineF(touchPoint0->pos(), touchPoint1->pos()).length()
-                                      / QLineF(touchPoint0->startPos(), touchPoint1->startPos()).length();
+            const QTouchEvent::TouchPoint &touchPoint0 = touchPoints.first();
+            const QTouchEvent::TouchPoint &touchPoint1 = touchPoints.last();
+            const qreal scaleFactor = QLineF(touchPoint0.pos(), touchPoint1.pos()).length()
+                                      / QLineF(touchPoint0.startPos(), touchPoint1.startPos()).length();
             setTransform(QTransform().scale(scaleFactor, scaleFactor));
         }
         return true;

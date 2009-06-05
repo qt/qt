@@ -176,26 +176,26 @@ bool ScribbleArea::event(QEvent *event)
     case QEvent::TouchUpdate:
     case QEvent::TouchEnd:
     {
-        QList<QTouchEvent::TouchPoint *> touchPoints = static_cast<QTouchEvent *>(event)->touchPoints();
-        foreach (QTouchEvent::TouchPoint *touchPoint, touchPoints) {
-            switch (touchPoint->state()) {
+        QList<QTouchEvent::TouchPoint> touchPoints = static_cast<QTouchEvent *>(event)->touchPoints();
+        foreach (const QTouchEvent::TouchPoint &touchPoint, touchPoints) {
+            switch (touchPoint.state()) {
             case Qt::TouchPointStationary:
                 // don't do anything if this touch point hasn't moved
                 continue;
             default:
                 {
-                    QSizeF area = touchPoint->area();
-                    if (area.isEmpty()) {
-                        qreal diameter = qreal(50) * touchPoint->pressure();
-                        area = QSizeF(diameter, diameter);
+                    QSizeF size= touchPoint.size();
+                    if (size.isEmpty()) {
+                        qreal diameter = qreal(50) * touchPoint.pressure();
+                        size = QSizeF(diameter, diameter);
                     }
-                    QRectF rectF(QPointF(), area);
-                    rectF.moveCenter(touchPoint->pos());
+                    QRectF rectF(QPointF(), size);
+                    rectF.moveCenter(touchPoint.pos());
                     QRect rect = rectF.toRect();
 
                     QPainter painter(&image);
                     painter.setPen(Qt::NoPen);
-                    painter.setBrush(myPenColors.at(touchPoint->id()));
+                    painter.setBrush(myPenColors.at(touchPoint.id()));
                     painter.drawEllipse(rectF);
                     painter.end();
 
