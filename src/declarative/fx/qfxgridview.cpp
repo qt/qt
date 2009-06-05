@@ -283,7 +283,7 @@ public:
                 qDebug() << "index" << visibleIndex << i << listItem->index;
                 for (int j = 0; j < visibleItems.count(); j++)
                     qDebug() << " index" << j << "item index" << visibleItems.at(j)->index;
-                abort();
+                qFatal();
             }
         }
     }

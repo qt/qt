@@ -325,7 +325,7 @@ public:
                 ++skip;
             } else if (listItem->index != visibleIndex + i - skip) {
                 qDebug() << "index" << visibleIndex << i << listItem->index;
-                abort();
+                qFatal();
             }
         }
     }
