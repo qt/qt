@@ -67,6 +67,17 @@ Third party components
 - QDir
    * Fix reentrency (listing directories in different threads)
 
+- QFileSystemModel
+   * [254701] QFileSystemModel doesn't sort subfolders when using it in a QTreeView
+   * [251295] Windows path names incorrectly constructed in calls to updateIcon()
+
+- QFileDialog
+   * [251341] It is not possible to remove a directory of the sidebar if the directory does not exist
+   * [251321] Hidden path in QFileDialog's sidebar cannot be opened
+   * [226483] setSidebarUrls() handles the urls case sensitive so that adding the same directory twice is possible - Windows
+   * [252068] QFileDialog with QSortFilterProxyModel crashes
+   * [254490] QFileDialog selectFile doesn't clear the selection if we call it several times.
+
 - QMacStyle
     * [253339] Don't draw arrows on toolbuttons that have a menu and text only.
     * [252301] Ensure that small and mini spin boxes are drawn correctly.
