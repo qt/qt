@@ -46,6 +46,7 @@
 #include <qbytearray.h>
 #include <qcryptographichash.h>
 #include <qhttp.h>
+#include <qiodevice.h>
 #include <qdatastream.h>
 #include <qendian.h>
 #include <qstring.h>
