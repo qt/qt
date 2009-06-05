@@ -454,8 +454,8 @@ void QSelectThread::requestSocketEvents ( QSocketNotifier *notifier, TRequestSta
     }
 
     QSelectMutexGrabber lock(m_pipeEnds[1], &m_mutex);
-    
-    Q_ASSERT(!m_AOStatuses.contains(notifier));    
+
+    Q_ASSERT(!m_AOStatuses.contains(notifier));
 
     m_AOStatuses.insert(notifier, status);
 
@@ -711,7 +711,7 @@ bool QEventDispatcherSymbian::processEvents ( QEventLoop::ProcessEventsFlags fla
             break;
         }
         block = false;
-        if (timeState == TimeStarted && time.elapsed() > 500) {
+        if (timeState == TimeStarted && time.elapsed() > 100) {
             priority = m_processHandle.Priority();
             m_processHandle.SetPriority(EPriorityLow);
             time.start();
