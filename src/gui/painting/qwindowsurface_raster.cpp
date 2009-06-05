@@ -229,7 +229,7 @@ void QRasterWindowSurface::flush(QWidget *widget, const QRegion &rgn, const QPoi
     {
         const QImage &src = d->image->image;
         br = br.intersected(src.rect());
-        if (src.format() != QImage::Format_RGB32) {
+        if (src.format() != QImage::Format_RGB32 || widget->x11Info().depth() < 24) {
             QX11PixmapData *data = new QX11PixmapData(QPixmapData::PixmapType);
             data->xinfo = widget->x11Info();
             data->fromImage(src, Qt::AutoColor);
