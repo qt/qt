@@ -573,8 +573,7 @@
     \dots
     \snippet tutorials/addressbook/part4/addressbook.h mode declaration
 
-    Lastly, we declare \c currentMode to keep track of the current mode of the
-    enum.
+    Lastly, we declare \c currentMode to keep track of the enum's current mode.
 
     \section1 Implementing the AddressBook Class
 
