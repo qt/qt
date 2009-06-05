@@ -625,6 +625,13 @@ static void qt_set_windows_font_resources()
 
 static void qt_win_read_cleartype_settings()
 {
+#ifdef Q_OS_WINCE
+     UINT result;
+     BOOL ok;
+     ok = SystemParametersInfo(SPI_GETFONTSMOOTHING, 0, &result, 0);
+     if (ok)
+         qt_cleartype_enabled = result;
+#else
     QT_WA({
         UINT result;
         BOOL ok;
@@ -638,6 +645,7 @@ static void qt_win_read_cleartype_settings()
         if (ok)
             qt_cleartype_enabled = (result == FE_FONTSMOOTHINGCLEARTYPE);
     });
+#endif
 }
 
 

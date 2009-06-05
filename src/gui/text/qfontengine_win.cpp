@@ -1333,6 +1333,7 @@ bool QFontEngineWin::getSfntTableData(uint tag, uchar *buffer, uint *length) con
 #    define CLEARTYPE_QUALITY       5
 #endif
 
+extern bool qt_cleartype_enabled;
 
 QNativeImage *QFontEngineWin::drawGDIGlyph(HFONT font, glyph_t glyph, int margin,
                                            const QTransform &t)
@@ -1408,7 +1409,11 @@ QNativeImage *QFontEngineWin::drawGDIGlyph(HFONT font, glyph_t glyph, int margin
 
     QNativeImage *ni = new QNativeImage(iw + 2 * margin + 4,
                                         ih + 2 * margin + 4,
-                                        QNativeImage::systemFormat(), true);
+                                        QNativeImage::systemFormat(), !qt_cleartype_enabled);
+
+    /*If cleartype is enabled we use the standard system format even on Windows CE 
+      and not the special textbuffer format we have to use if cleartype is disabled*/
+
     ni->image.fill(0xffffffff);
 
     HDC hdc = ni->hdc;
@@ -1437,7 +1442,6 @@ QNativeImage *QFontEngineWin::drawGDIGlyph(HFONT font, glyph_t glyph, int margin
 }
 
 
-extern bool qt_cleartype_enabled;
 extern uint qt_pow_gamma[256];
 
 QImage QFontEngineWin::alphaMapForGlyph(glyph_t glyph, const QTransform &xform)
