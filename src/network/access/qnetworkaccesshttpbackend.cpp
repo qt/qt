@@ -212,6 +212,7 @@ QNetworkAccessHttpBackendFactory::create(QNetworkAccessManager::Operation op,
     case QNetworkAccessManager::PostOperation:
     case QNetworkAccessManager::HeadOperation:
     case QNetworkAccessManager::PutOperation:
+    case QNetworkAccessManager::DeleteOperation:
         break;
 
     default:
@@ -242,6 +243,10 @@ static QNetworkReply::NetworkError statusCodeFromHttp(int httpStatusCode, const 
 
     case 404:               // Not Found
         code = QNetworkReply::ContentNotFoundError;
+        break;
+
+    case 405:               // Method Not Allowed
+        code = QNetworkReply::ContentOperationNotPermittedError;
         break;
 
     case 407:
@@ -483,6 +488,11 @@ void QNetworkAccessHttpBackend::postRequest()
         invalidateCache();
         httpRequest.setOperation(QHttpNetworkRequest::Put);
         httpRequest.setUploadByteDevice(createUploadByteDevice());
+        break;
+
+    case QNetworkAccessManager::DeleteOperation:
+        invalidateCache();
+        httpRequest.setOperation(QHttpNetworkRequest::Delete);
         break;
 
     default:

@@ -463,7 +463,7 @@ void tst_NetworkSelfTest::httpsServer()
             << Chat::expect("200 ")
             << Chat::DiscardUntilDisconnect);
 #else
-    QSKIP("SSL not enabled, cannot test");
+    QSKIP("SSL not enabled, cannot test", SkipAll);
 #endif
 }
 

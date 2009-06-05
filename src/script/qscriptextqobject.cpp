@@ -1883,8 +1883,6 @@ void QScript::QtFunction::execute(QScriptContextPrivate *context)
         return;
     }
 
-    QScriptValueImpl result = eng_p->undefinedValue();
-
     const QMetaObject *meta = qobj->metaObject();
 
     QObject *thisQObject = context->thisObject().toQObject();

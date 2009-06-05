@@ -179,6 +179,7 @@ QT_BEGIN_NAMESPACE
     \omitvalue LastCoreExtType
     \omitvalue LastCoreType
     \omitvalue LastGuiType
+    \omitvalue QReal
 
     Additional types can be registered using Q_DECLARE_METATYPE().
 

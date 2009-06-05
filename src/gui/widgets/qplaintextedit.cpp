@@ -444,7 +444,7 @@ QPlainTextEditControl::QPlainTextEditControl(QPlainTextEdit *parent)
 void QPlainTextEditPrivate::_q_cursorPositionChanged()
 {
     pageUpDownLastCursorYIsValid = false;
-};
+}
 
 void QPlainTextEditPrivate::_q_verticalScrollbarActionTriggered(int action) {
     if (action == QAbstractSlider::SliderPageStepAdd) {
@@ -1756,7 +1756,7 @@ void QPlainTextEdit::paintEvent(QPaintEvent *e)
 
     QTextBlock block = firstVisibleBlock();
     qreal maximumWidth = document()->documentLayout()->documentSize().width();
-    
+
     // keep right margin clean from full-width selection
     int maxX = offset.x() + qMax((qreal)viewportRect.width(), maximumWidth)
                - document()->documentMargin();

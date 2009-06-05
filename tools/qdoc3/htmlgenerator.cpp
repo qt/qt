@@ -1048,12 +1048,16 @@ void HtmlGenerator::generateClassLikeNode(const InnerNode *inner,
         out() << "<li><a href=\"" << membersLink << "\">"
               << "List of all members, including inherited members</a></li>\n";
 
-    QString obsoleteLink = generateLowStatusMemberFile(inner, marker, CodeMarker::Obsolete);
+    QString obsoleteLink = generateLowStatusMemberFile(inner,
+                                                       marker,
+                                                       CodeMarker::Obsolete);
     if (!obsoleteLink.isEmpty())
         out() << "<li><a href=\"" << obsoleteLink << "\">"
               << "Obsolete members</a></li>\n";
 
-    QString compatLink = generateLowStatusMemberFile(inner, marker, CodeMarker::Compat);
+    QString compatLink = generateLowStatusMemberFile(inner,
+                                                     marker,
+                                                     CodeMarker::Compat);
     if (!compatLink.isEmpty())
         out() << "<li><a href=\"" << compatLink << "\">"
               << "Qt 3 support members</a></li>\n";
@@ -1069,9 +1073,10 @@ void HtmlGenerator::generateClassLikeNode(const InnerNode *inner,
             if (!s->inherited.isEmpty())
                 needOtherSection = true;
         } else {
-            out() << "<a name=\"" << registerRef((*s).name.toLower()) << "\"></a>\n";
-            out() << "<h3>" << protect((*s).name) << "</h3>\n";
-
+            out() << "<a name=\""
+                  << registerRef((*s).name.toLower())
+                  << "\"></a>\n";
+            out() << "<h2>" << protect((*s).name) << "</h2>\n";
             generateSectionList(*s, inner, marker, CodeMarker::Summary);
         }
         ++s;
@@ -1224,12 +1229,16 @@ void HtmlGenerator::generateFakeNode(const FakeNode *fake, CodeMarker *marker)
             out() << "<li><a href=\"" << membersLink << "\">"
                   << "List of all members, including inherited members</a></li>\n";
 
-        QString obsoleteLink = generateLowStatusMemberFile(fake, marker, CodeMarker::Obsolete);
+        QString obsoleteLink = generateLowStatusMemberFile(fake,
+                                                           marker,
+                                                           CodeMarker::Obsolete);
         if (!obsoleteLink.isEmpty())
             out() << "<li><a href=\"" << obsoleteLink << "\">"
                   << "Obsolete members</a></li>\n";
 
-        QString compatLink = generateLowStatusMemberFile(fake, marker, CodeMarker::Compat);
+        QString compatLink = generateLowStatusMemberFile(fake,
+                                                         marker,
+                                                         CodeMarker::Compat);
         if (!compatLink.isEmpty())
             out() << "<li><a href=\"" << compatLink << "\">"
                   << "Qt 3 support members</a></li>\n";
@@ -1260,7 +1269,7 @@ void HtmlGenerator::generateFakeNode(const FakeNode *fake, CodeMarker *marker)
     s = sections.begin();
     while (s != sections.end()) {
         out() << "<a name=\"" << registerRef((*s).name) << "\"></a>\n";
-        out() << "<h3>" << protect((*s).name) << "</h3>\n";
+        out() << "<h2>" << protect((*s).name) << "</h2>\n";
         generateSectionList(*s, fake, marker, CodeMarker::Summary);
         ++s;
     }
@@ -1656,7 +1665,9 @@ QString HtmlGenerator::generateListOfAllMemberFile(const InnerNode *inner, CodeM
     QList<Section> sections;
     QList<Section>::ConstIterator s;
 
-    sections = marker->sections(inner, CodeMarker::SeparateList, CodeMarker::Okay);
+    sections = marker->sections(inner,
+                                CodeMarker::SeparateList,
+                                CodeMarker::Okay);
     if (sections.isEmpty())
         return QString();
 
@@ -1677,10 +1688,13 @@ QString HtmlGenerator::generateListOfAllMemberFile(const InnerNode *inner, CodeM
     return fileName;
 }
 
-QString HtmlGenerator::generateLowStatusMemberFile(const InnerNode *inner, CodeMarker *marker,
+QString HtmlGenerator::generateLowStatusMemberFile(const InnerNode *inner,
+                                                   CodeMarker *marker,
                                                    CodeMarker::Status status)
 {
-    QList<Section> sections = marker->sections(inner, CodeMarker::Summary, status);
+    QList<Section> sections = marker->sections(inner,
+                                               CodeMarker::Summary,
+                                               status);
     QMutableListIterator<Section> j(sections);
     while (j.hasNext()) {
         if (j.next().members.size() == 0)
@@ -1717,12 +1731,13 @@ QString HtmlGenerator::generateLowStatusMemberFile(const InnerNode *inner, CodeM
                  "code.</p>\n";
     }
 
-    out() << "<p><ul><li><a href=\"" << linkForNode(inner, 0) << "\">" << protect(inner->name())
+    out() << "<p><ul><li><a href=\""
+          << linkForNode(inner, 0) << "\">"
+          << protect(inner->name())
           << " class reference</a></li></ul></p>\n";
 
     for (i = 0; i < sections.size(); ++i) {
-        out() << "<h3>" << protect(sections.at(i).name) << "</h3>\n";
-
+        out() << "<h2>" << protect(sections.at(i).name) << "</h2>\n";
         generateSectionList(sections.at(i), inner, marker, CodeMarker::Summary);
     }
 
@@ -1744,8 +1759,9 @@ QString HtmlGenerator::generateLowStatusMemberFile(const InnerNode *inner, CodeM
     return fileName;
 }
 
-void HtmlGenerator::generateClassHierarchy(const Node *relative, CodeMarker *marker,
-                                           const QMap<QString, const Node *> &classMap)
+void HtmlGenerator::generateClassHierarchy(const Node *relative,
+                                           CodeMarker *marker,
+                                           const QMap<QString,const Node*> &classMap)
 {
     if (classMap.isEmpty())
         return;
@@ -1950,7 +1966,8 @@ void HtmlGenerator::generateCompactList(const Node *relative, CodeMarker *marker
             if (currentOffset[i] >= firstOffset[i + 1]) {
                 // this column is finished
                 out() << "<td>\n</td>\n";
-            } else {
+            }
+            else {
                 while (currentOffsetInParagraph[i] == paragraph[currentParagraphNo[i]].count()) {
                     ++currentParagraphNo[i];
                     currentOffsetInParagraph[i] = 0;
@@ -1959,7 +1976,9 @@ void HtmlGenerator::generateCompactList(const Node *relative, CodeMarker *marker
                 out() << "<td align=\"right\">";
                 if (currentOffsetInParagraph[i] == 0) {
                     // start a new paragraph
-                    out() << "<b>" << paragraphName[currentParagraphNo[i]] << "&nbsp;</b>";
+                    out() << "<b>"
+                          << paragraphName[currentParagraphNo[i]]
+                          << "&nbsp;</b>";
                 }
                 out() << "</td>\n";
 
@@ -1972,7 +1991,9 @@ void HtmlGenerator::generateCompactList(const Node *relative, CodeMarker *marker
                 out() << "<td>";
                 // Previously, we used generateFullName() for this, but we
                 // require some special formatting.
-                out() << "<a href=\"" << linkForNode(it.value(), relative) << "\">";
+                out() << "<a href=\""
+                      << linkForNode(it.value(), relative)
+                      << "\">";
                 QStringList pieces = fullName(it.value(), relative, marker).split("::");
                 out() << protect(pieces.last());
                 out() << "</a>";
@@ -1992,7 +2013,8 @@ void HtmlGenerator::generateCompactList(const Node *relative, CodeMarker *marker
     out() << "</table></p>\n";
 }
 
-void HtmlGenerator::generateFunctionIndex(const Node *relative, CodeMarker *marker)
+void HtmlGenerator::generateFunctionIndex(const Node *relative,
+                                          CodeMarker *marker)
 {
     out() << "<p align=\"center\"><font size=\"+1\"><b>";
     for (int i = 0; i < 26; i++) {
@@ -2337,13 +2359,11 @@ QString HtmlGenerator::highlightedCode(const QString& markedCode,
             }
             i += 2;
             if (parseArg(src, linkTag, &i, n, &arg, &par1)) {
-                if (style == CodeMarker::Accessors)
-                    html += "<b>";
+                html += "<b>";
                 QString link = linkForNode(
                     CodeMarker::nodeForString(par1.toString()), relative);
                 addLink(link, arg, &html);
-                if (style == CodeMarker::Accessors)
-                    html += "</b>";
+                html += "</b>";
             }
             else {
                 html += charLangle;

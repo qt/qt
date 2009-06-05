@@ -2933,11 +2933,13 @@ void QGraphicsScene::addItem(QGraphicsItem *item)
         d->allItemsIgnoreHoverEvents = false;
         d->enableMouseTrackingOnViews();
     }
+#ifndef QT_NO_CURSOR
     if (d->allItemsUseDefaultCursor && item->hasCursor()) {
         d->allItemsUseDefaultCursor = false;
         if (d->allItemsIgnoreHoverEvents) // already enabled otherwise
             d->enableMouseTrackingOnViews();
     }
+#endif //QT_NO_CURSOR
 
     // Update selection lists
     if (item->isSelected())

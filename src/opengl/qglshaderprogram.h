@@ -103,7 +103,7 @@ private:
 
     friend class QGLShaderProgram;
 
-    Q_DISABLE_COPY(QGLShader);
+    Q_DISABLE_COPY(QGLShader)
 };
 
 class QGLShaderProgramPrivate;
@@ -279,7 +279,7 @@ public:
 private:
     QGLShaderProgramPrivate *d;
 
-    Q_DISABLE_COPY(QGLShaderProgram);
+    Q_DISABLE_COPY(QGLShaderProgram)
 
     bool init();
 };

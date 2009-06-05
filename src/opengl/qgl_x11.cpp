@@ -129,7 +129,7 @@ struct QGLCMapCleanupHandler {
     CMapEntryHash *cmap_hash;
     GLCMapHash *qglcmap_hash;
 };
-Q_GLOBAL_STATIC(QGLCMapCleanupHandler, cmap_handler);
+Q_GLOBAL_STATIC(QGLCMapCleanupHandler, cmap_handler)
 
 static void cleanup_cmaps()
 {
