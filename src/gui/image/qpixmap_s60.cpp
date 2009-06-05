@@ -140,7 +140,7 @@ CFbsBitmap *QPixmap::toSymbianCFbsBitmap() const
     case QImage::Format_ARGB32_Premultiplied:
 #if !defined(__SERIES60_31__) && !defined(__S60_32__)
         // ### TODO: Add runtime detection as well?
-        mode = EColor16MAP:
+        mode = EColor16MAP;
             break;
 #endif
         destFormat = QImage::Format_ARGB32;
