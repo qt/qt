@@ -63,9 +63,6 @@ bool Knob::sceneEvent(QEvent *event)
 {
     switch (event->type()) {
     case QEvent::GraphicsSceneTouchBegin:
-        event->accept();
-        break;
-
     case QEvent::GraphicsSceneTouchUpdate:
     case QEvent::GraphicsSceneTouchEnd:
     {
@@ -81,7 +78,6 @@ bool Knob::sceneEvent(QEvent *event)
             rotate(line2.angleTo(line1));
         }
 
-        touchEvent->accept();
         break;
     }
 

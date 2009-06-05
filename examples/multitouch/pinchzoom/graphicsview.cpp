@@ -71,7 +71,6 @@ bool GraphicsView::event(QEvent *event)
                                       / QLineF(touchPoint0->startPos(), touchPoint1->startPos()).length();
             setTransform(QTransform().scale(scaleFactor, scaleFactor));
         }
-        event->accept();
         return true;
     }
     default:

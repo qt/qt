@@ -5876,9 +5876,9 @@ bool QGraphicsScenePrivate::sendTouchBeginEvent(QGraphicsItem *origin, QGraphics
     foreach (QGraphicsItem *item, cachedItemsUnderMouse) {
         // first, try to deliver the touch event
         updateTouchPointsForItem(item, touchEvent);
-        touchEvent->ignore();
-        res = item->acceptTouchEvents()
-              && sendEvent(item, touchEvent);
+        bool acceptTouchEvents = item->acceptTouchEvents();
+        touchEvent->setAccepted(acceptTouchEvents);
+        res = acceptTouchEvents && sendEvent(item, touchEvent);
         eventAccepted = touchEvent->isAccepted();
         item->d_ptr->acceptedTouchBeginEvent = (res && eventAccepted);
         touchEvent->spont = false;

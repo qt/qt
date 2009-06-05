@@ -206,12 +206,10 @@ bool ScribbleArea::event(QEvent *event)
                 break;
             }
         }
-
-        event->accept();
-        return true;
-    }
-    default:
         break;
     }
-    return QWidget::event(event);
+    default:
+        return QWidget::event(event);
+    }
+    return true;
 }

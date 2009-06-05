@@ -4037,7 +4037,7 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
         break;
 #endif
     case QEvent::TouchBegin:
-    // Note: TouchUpdate and TouchEnd events are sent to d->currentMultitouchWidget and never propagated
+    // Note: TouchUpdate and TouchEnd events are never propagated
     {
         QWidget *widget = static_cast<QWidget *>(receiver);
         QTouchEvent *touchEvent = static_cast<QTouchEvent *>(e);
@@ -4051,9 +4051,9 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
 
         while (widget) {
             // first, try to deliver the touch event
-            touchEvent->ignore();
-            res = widget->testAttribute(Qt::WA_AcceptTouchEvents)
-                  && d->notify_helper(widget, touchEvent);
+            bool acceptTouchEvents = widget->testAttribute(Qt::WA_AcceptTouchEvents);
+            touchEvent->setAccepted(acceptTouchEvents);
+            res = acceptTouchEvents && d->notify_helper(widget, touchEvent);
             eventAccepted = touchEvent->isAccepted();
             widget->setAttribute(Qt::WA_AcceptedTouchBeginEvent, res && eventAccepted);
             touchEvent->spont = false;
