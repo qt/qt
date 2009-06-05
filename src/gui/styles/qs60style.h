@@ -85,6 +85,8 @@ public:
     static QStringList colorListKeys();
     void setS60Theme(const QHash<QString, QPicture> &parts,
         const QHash<QPair<QString , int>, QColor> &colors);
+    bool loadS60ThemeFromBlob(const QString &blobFile);
+    bool saveS60ThemeToBlob(const QString &blobFile) const;
 #endif // !Q_WS_S60
 
 #ifdef Q_WS_S60
