@@ -46,6 +46,118 @@ Third party components
        Plugins (r41346, r43550, r43915, r43917, r43923)
        Clipboard (r41360)
 
+- QtDBus
+   * [236955] Fixed an issue that would cause QtDBus to crash when
+     relaying a signal emitted from a class under certain conditions
+
+- QAbstractItemView
+    * [250754] Changing the font of the view would not update the size of the
+      items if there is an application stylesheet.
+    * [252532] Pressing enter in a QPlainTextEdit embedded on a itemview now
+      insert a newline
+
+- QAbstractNetworkCache
+   * Only cache responses to HTTP GET by default, not HTTP PUT or POST
+
+- QComboBox
+   * [253944] Changing the style doesn't reset custom item delegate anymore.
+   * [254589] Fixed the frame appearing if setting a stylesheet with a border
+     on the embedded itemview while there is a stylesheet on the application
+
+- QDir
+   * Fix reentrency (listing directories in different threads)
+
+- QMacStyle
+    * [253339] Don't draw arrows on toolbuttons that have a menu and text only.
+    * [252301] Ensure that small and mini spin boxes are drawn correctly.
+
+- QMotifStyle
+    * Fix crash when changing style and destroying progressbar.
+
+- QFontDialog
+    * [252000] Ensure that QFontDialog::getFont() works on Mac OS X.
+
+- QLocalSocket
+   * [247144] correctly handle remote disconnects
+
+- QNetworkCookie
+   * [251959] fix parsing of multiple cookies separated by a newline
+
+- QNetworkCookieJar
+   * [251467] do not allow cookies for domains like ".com"
+   * [228974] allow cookies whose domain attribute is missing a leading dot
+
+- QNetworkAccessManager
+   * [248838] Make QNetworkAccessManager reject invalid HTTP input
+     earlier
+
+- QWidget
+    * [250668] Don't send extra wheel events when using the scroll wheel in Cocoa.
+    * [253448] Prevent a crash when using the Qt::WA_MacBrushedMetal attribute
+      in conjunction with style sheets.
+
+- QObject
+    * Fixed possible race condition if two QObject connected together with
+      signals and slot are destroyed in different threads
+
+- QPainter
+    * [253783] Fixed text shaping bugs when using ligatures and different
+      scripts in a single text item.
+    * Fixed various inconsistencies for image drawing on non-integer
+      coordinates.
+    * Fixed bug with 0-opacity causing images to be drawn fully opaque.
+    * Fixed crash when drawing on a null pixmap.
+    * [251534] Fixed issue where text with non-opaque color from widget
+      palette would be blitted instead of blended.
+
+- QSelectionModel
+   * [252069] fix QSelectionModel::rowIntersectsSelection or QSelectionModel::columnsIntersectsSelection not reporting right result if some items are disabled.
+
+- QSortFilterProxyModel
+    * [250023]  Fixes QSortFilterProxyModel not reporting child if the model
+      need to fetchMore
+    * [251296] In dynamic filter model, childs of temporarly filtered items
+      where not correctly updated.
+    * [252507] Show a warning instead of crashing if invalid indexes are passed.
+    * [254234] Fixed setDynamicSortFilter not working when setting the model initially
+
+- QString
+    * Fixed reentrency of QString::squeeze()
+
+- QTransform
+    * Fixed issue in QTransform::type() causing a projective transform to be
+    treated as a scaling transform.
+
+- QVector
+    * Fixed reentrency of QVector::reserve()
+
+- QtOpenGL
+    * [247083] Re-enabled antialiasing for large font sizes in OpenGL paint
+      engine.
+    * [251485] Fixed crash that could occur with projective transforms and
+      high quality antialiasing.
+
+- QCssParser
+    * [252311] "font-family:" now handle fallback font specified with a comas
+      separated list.
+
+- QFile and QTemporaryFile
+    * Fixed a leak of file descriptors in QTemporaryFile::rename, introduced in 4.5.1
+    * [165920] QFile::copy leaves the source file open after the file has been copied
+    * [191467] & [252293] QFile::copy of resource files to the filesystem fails on Windows
+    * [197857] QFile::copy of resource files leaves temporary files on filesystem
+    * [248223] QTemporaryFile: Access denied error when (re-)opening through QFile interface
+    * [252659] QTemporaryFile::rename may leave source file behind
+
+- QByteArrayMatcher
+    * [251958] Assignment operator and copy constructor miss data
+
+- QCompleter
+    * [253125] QCompleter doesn't expand entries with UnfilteredPopupCompletion
+
+- QPrintDialog
+    * [253135] Crash in QPrintDialog when editing output filename
+
 ****************************************************************************
 *                          Database Drivers                                *
 ****************************************************************************
@@ -57,14 +169,28 @@ Third party components
 
 Qt for Linux/X11
 ----------------
-
+[253186] Fixed compile error in qfontengine_ft.cpp on 64-bit platforms with
+legacy freetype headers.
+[241361] Prevented asynchronous access to non-thread safe libfontconfig API.
+[244362] Worked around X server crash when calling XFillPolygon with more than
+200000 points by falling back to raster paint engine.
+[250326] Titlebar wasn't shown on X11 with Qt::CustomizeWindowHint for
+	 fixed-size windows.
+[251925] Improved showing QMessageBox on small screens.
+[252042] Fixed the loading of the OpenSSL libraries on OpenBSD.
 
 Qt for Windows
 --------------
 
+[251259] Switching to another app left text cursor in line edits with
+	 QtMfc framework.
 
 Qt for Mac OS X
 ---------------
+[252795] Ensure that we send Apple Events in the Cocoa port even when Cocoa isn't ready.
+[252176] Fix regression in drawing parts of pixmaps on Panther.
+[253402] Fix a crash when a Cocoa window that used to be a QWidget would get events
+         after the QWidget was destroyed.
 
 
 Qt for Embedded Linux
@@ -73,6 +199,7 @@ Qt for Embedded Linux
 
 Qt for Windows CE
 -----------------
+[248846] handle the back soft key on Windows mobile.
 
 
 ****************************************************************************
@@ -85,6 +212,7 @@ Qt for Windows CE
 ****************************************************************************
 
 - Build System
+    * [253053] Linker in macx-g++42 spec is gcc instead of gcc-4.2
 
 - Assistant
 
@@ -101,6 +229,8 @@ Qt for Windows CE
      of 'Fixed' on the main cointainer.
    * [253278] Made it possible to set QString-type properties using
      QDesignerFormWindowCursor::setProperty().
+   * [253539] Prevent crash in Designer with the Cocoa port when when using a scroll
+     wheel to change a property.
 
 - Linguist
   - Linguist GUI
@@ -138,6 +268,26 @@ Qt for Windows CE
 ****************************************************************************
 *                          Plugins                                         *
 ****************************************************************************
+
+- directfb
+  * Make sure we pick an approriate format for pixmaps. E.g. use the same as
+    the primary surface for opaque pixmaps and pick an appropriate one for
+    transparent pixmaps if the primary surface format is not transparent.
+  * Properly fall back to the raster engine for pens that aren't solidcolor
+  * Properly fall back to raster engine with "mirrored" scales
+  * Make sure window surfaces are the approriate pixel format and created in
+    video memory if supported
+  * Fix clipping bug that would cause painting errors
+  * Fix various crash bugs
+  * Fix bugs when transforming/copying pixmaps with alpha channel
+  * Fix various bugs with regards to painting with alpha channel/porter duff
+  * Optimize a coupld of internal functions to slightly speed up drawing
+  * Optimize raster fall backs
+  * Allow more customization for Flipping options
+  * Fix drawing with opacity != 1.0
+  * Support for better logging when trying to debug performance problems.
+  * Fix bug in keyboard handling that caused modifiers not to work
+  * Get rid of some compiler warnings
 
 
 ****************************************************************************

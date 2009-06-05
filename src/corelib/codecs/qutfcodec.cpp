@@ -478,7 +478,7 @@ QByteArray QUtf32Codec::convertFromUnicode(const QChar *uc, int len, ConverterSt
             data[2] = 0;
             data[3] = 0;
         }
-        data += 2;
+        data += 4;
     }
     if (endian == BE) {
         for (int i = 0; i < len; ++i) {

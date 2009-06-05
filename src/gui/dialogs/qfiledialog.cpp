@@ -565,8 +565,9 @@ bool QFileDialogPrivate::canBeNativeDialog()
 }
 
 /*!
-    Sets the given \a option to be enabled if \a on is true;
-    otherwise, clears the given \a option.
+    \since 4.5
+    Sets the given \a option to be enabled if \a on is true; otherwise,
+    clears the given \a option.
 
     \sa options, testOption()
 */
@@ -637,8 +638,9 @@ QFileDialog::Options QFileDialog::options() const
 
     \since 4.5
 
-    Opens the dialog and connects its accepted() signal to the slot specified
-    by \a receiver and \a member.
+    This function connects one of its signals to the slot specified by \a receiver
+    and \a member. The specific signal depends is filesSelected() if fileMode is
+    ExistingFiles and fileSelected() if fileMode is anything else.
 
     The signal will be disconnected from the slot when the dialog is closed.
 */
@@ -2108,6 +2110,7 @@ void QFileDialogPrivate::createWidgets()
 #else
     model->setNameFilterDisables(false);
 #endif
+    model->d_func()->disableRecursiveSort = true;
     QFileDialog::connect(model, SIGNAL(fileRenamed(const QString &, const QString &, const QString &)), q, SLOT(_q_fileRenamed(const QString &, const QString &, const QString &)));
     QFileDialog::connect(model, SIGNAL(rootPathChanged(const QString &)),
             q, SLOT(_q_pathChanged(const QString &)));

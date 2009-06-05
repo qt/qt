@@ -349,7 +349,6 @@ SUBDIRS += _networkselftest \
            qtranslator \
            qtransform \
            qtransformedscreen \
-           qtransition \
            qtreeview \
            qtreewidget \
            qtreewidgetitemiterator \

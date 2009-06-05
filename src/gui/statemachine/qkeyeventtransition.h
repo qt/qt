@@ -48,7 +48,9 @@ QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-QT_MODULE(Core)
+QT_MODULE(Gui)
+
+#ifndef QT_NO_STATEMACHINE
 
 class QKeyEventTransitionPrivate;
 class Q_GUI_EXPORT QKeyEventTransition : public QEventTransition
@@ -79,6 +81,8 @@ private:
     Q_DISABLE_COPY(QKeyEventTransition)
     Q_DECLARE_PRIVATE(QKeyEventTransition)
 };
+
+#endif //QT_NO_STATEMACHINE
 
 QT_END_NAMESPACE
 

@@ -40,6 +40,9 @@
 ****************************************************************************/
 
 #include "qfinalstate.h"
+
+#ifndef QT_NO_STATEMACHINE
+
 #include "qabstractstate_p.h"
 
 QT_BEGIN_NAMESPACE
@@ -132,3 +135,5 @@ bool QFinalState::event(QEvent *e)
 }
 
 QT_END_NAMESPACE
+
+#endif //QT_NO_STATEMACHINE

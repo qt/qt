@@ -54,6 +54,9 @@
 //
 
 #include <QtCore/qabstracttransition.h>
+
+#ifndef QT_NO_STATEMACHINE
+
 #include <QtGui/qevent.h>
 
 QT_BEGIN_NAMESPACE
@@ -89,5 +92,7 @@ private:
 };
 
 QT_END_NAMESPACE
+
+#endif //QT_NO_STATEMACHINE
 
 #endif

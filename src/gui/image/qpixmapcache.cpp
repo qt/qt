@@ -65,7 +65,10 @@ QT_BEGIN_NAMESPACE
     object for caching the pixmaps.
 
     The cache associates a pixmap with a string as a key or with a QPixmapCache::Key.
-    The QPixmapCache::Key is faster than using strings as key.
+    The QPixmapCache::Key is faster than using strings as key. The string API is
+    very convenient for complex keys but the QPixmapCache::Key API will be very efficient
+    and convenient for a 1 object <-> 1 pixmap mapping (then you can store the key as
+    a member).
     If two pixmaps are inserted into the cache using equal keys, then the
     last pixmap will hide the first pixmap. The QHash and QCache classes do
     exactly the same.

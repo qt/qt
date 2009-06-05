@@ -1699,7 +1699,7 @@ void QMessageBox::aboutQt(QWidget *parent, const QString &title)
         "and Qt for Windows CE.</p>"
         "<p>Qt is available under three different licensing options designed "
         "to accommodate the needs of our various users.</p>"
-        "Qt licensed under our commercial license agreement is appropriate "
+        "<p>Qt licensed under our commercial license agreement is appropriate "
         "for development of proprietary/commercial software where you do not "
         "want to share any source code with third parties or otherwise cannot "
         "comply with the terms of the GNU LGPL version 2.1 or GNU GPL version "

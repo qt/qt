@@ -1456,7 +1456,7 @@ struct DDSFormat {
 #define GL_GENERATE_MIPMAP_HINT_SGIS  0x8192
 #endif
 
-Q_GLOBAL_STATIC(QGLShareRegister, _qgl_share_reg);
+Q_GLOBAL_STATIC(QGLShareRegister, _qgl_share_reg)
 Q_OPENGL_EXPORT QGLShareRegister* qgl_share_reg()
 {
     return _qgl_share_reg();
@@ -2609,7 +2609,7 @@ const QGLContext* QGLContext::currentContext()
 */
 
 /*! \fn int QGLContext::choosePixelFormat(void* dummyPfd, HDC pdc)
-  
+
     \bold{Win32 only:} This virtual function chooses a pixel format
     that matches the OpenGL \link setFormat() format\endlink.
     Reimplement this function in a subclass if you need a custom
@@ -2623,7 +2623,7 @@ const QGLContext* QGLContext::currentContext()
 */
 
 /*! \fn void *QGLContext::chooseVisual()
-  
+
   \bold{X11 only:} This virtual function tries to find a visual that
   matches the format, reducing the demands if the original request
   cannot be met.
@@ -4354,7 +4354,7 @@ void QGLWidgetPrivate::initContext(QGLContext *context, const QGLWidget* shareWi
 }
 
 #if defined(Q_WS_X11) || defined(Q_WS_MAC) || defined(Q_WS_QWS)
-Q_GLOBAL_STATIC(QString, qt_gl_lib_name);
+Q_GLOBAL_STATIC(QString, qt_gl_lib_name)
 
 Q_OPENGL_EXPORT void qt_set_gl_library_name(const QString& name)
 {

@@ -465,18 +465,23 @@
     spin boxes and sliders as well.
 
     The next step is to combine all three layouts into one \bold{main layout}.
-    It is important that your form has a main layout; otherwise, the widgets
-    on your form will not resize when your form is resized. To set the main
-    layout, \gui{Right click} anywhere on your form, outside of the three
-    separate layouts, and select \gui{Lay Out Horizontally}. Alternatively, you
-    could also select \gui{Lay Out in a Grid} -- you will still see the same
-    arrangement (shown below).
+    The main layout is the top level widget's (in this case, the QWidget)
+    layout. It is important that your top level widget has a layout; otherwise,
+    the widgets on your window will not resize when your window is resized. To
+    set the layout, \gui{Right click} anywhere on your form, outside of the
+    three separate layouts, and select \gui{Lay Out Horizontally}.
+    Alternatively, you could also select \gui{Lay Out in a Grid} -- you will
+    still see the same arrangement (shown below).
 
     \image rgbController-final-layout.png
 
     \note Main layouts cannot be seen on the form. To check if you have a main
     layout installed, try resizing your form; your widgets should resize
-    accordingly.
+    accordingly. Alternatively, you can take a look at \QD's
+    \gui{Object Inspector}. If your top level widget does not have a layout,
+    you will see the broken layout icon next to it,
+    \inlineimage rgbController-no-toplevel-layout.png
+    .
 
     When you click on the slider and drag it to a certain value, you want the
     spin box to display the slider's position. To accomplish this behavior, you
