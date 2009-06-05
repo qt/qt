@@ -53,22 +53,18 @@ public:
 
     QAtomicInt ref;
 };
-static QColormap *qt_symbian_color_map = 0;
 
 void QColormap::initialize()
 {
-    qt_symbian_color_map = new QColormap;
 }
 
 void QColormap::cleanup()
 {
-    delete qt_symbian_color_map;
-    qt_symbian_color_map = 0;
 }
 
 QColormap QColormap::instance(int)
 {
-    return *qt_symbian_color_map;
+    return QColormap();
 }
 
 QColormap::QColormap() : d(new QColormapPrivate)
