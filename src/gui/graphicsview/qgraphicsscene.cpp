@@ -1437,7 +1437,7 @@ void QGraphicsScenePrivate::recursive_items_helper(QGraphicsItem *item, QRectF r
 
         keep = true;
         if (mode == Qt::ContainsItemShape || mode == Qt::ContainsItemBoundingRect)
-            keep = rect.contains(transform.mapRect(brect));
+            keep = rect.contains(transform.mapRect(brect)) && rect != brect;
         else
             keep = rect.intersects(transform.mapRect(brect));
 
