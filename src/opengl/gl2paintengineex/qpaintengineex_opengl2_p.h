@@ -77,8 +77,15 @@ public:
     QOpenGL2PaintEngineState();
     ~QOpenGL2PaintEngineState();
 
-    QRegion clipRegion;
-    bool hasClipping;
+    bool needsDepthBufferClear;
+    qreal depthBufferClearValue;
+
+    bool depthTestEnabled;
+    bool scissorTestEnabled;
+    qreal currentDepth;
+    qreal maxDepth;
+
+    bool canRestoreClip;
 };
 
 
@@ -116,7 +123,6 @@ public:
 
     Type type() const { return OpenGL; }
 
-    // State stuff is just for clipping and ripped off from QGLPaintEngine
     void setState(QPainterState *s);
     QPainterState *createState(QPainterState *orig) const;
     inline QOpenGL2PaintEngineState *state() {
@@ -125,7 +131,6 @@ public:
     inline const QOpenGL2PaintEngineState *state() const {
         return static_cast<const QOpenGL2PaintEngineState *>(QPaintEngineEx::state());
     }
-    void updateClipRegion(const QRegion &clipRegion, Qt::ClipOperation op);
     virtual void sync();
 
 private:
@@ -180,8 +185,9 @@ public:
     QGLDrawable drawable;
     int width, height;
     QGLContext *ctx;
-
     EngineMode mode;
+
+    mutable QOpenGL2PaintEngineState *last_created_state;
 
     // Dirty flags
     bool matrixDirty; // Implies matrix uniforms are also dirty
@@ -190,7 +196,9 @@ public:
     bool brushUniformsDirty;
     bool simpleShaderMatrixUniformDirty;
     bool shaderMatrixUniformDirty;
-    bool stencilBuferDirty;
+    bool stencilBufferDirty;
+    bool depthUniformDirty;
+    bool simpleShaderDepthUniformDirty;
 
     const QBrush*    currentBrush; // May not be the state's brush!
 
@@ -206,8 +214,9 @@ public:
 
     QGLEngineShaderManager* shaderManager;
 
-    // Clipping & state stuff stolen from QOpenGLPaintEngine:
-    void updateDepthClip();
+    void writeClip(const QVectorPath &path, float depth);
+    void updateDepthScissorTest();
+    void regenerateDepthClip();
     void systemStateChanged();
     uint use_system_clip : 1;
 };
