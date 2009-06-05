@@ -169,6 +169,30 @@ template <> struct QConcatenable<QStringRef>
     }
 };
 
+#ifndef QT_NO_CAST_FROM_ASCII
+template <int N> struct QConcatenable<char[N]>
+{
+    typedef char type[N];
+    static int size(const char *) { return N - 1; }
+    static inline void appendTo(const char *a, QChar *&out)
+    {
+        for (int i = 0; i < N - 1; ++i)
+            *out++ = QLatin1Char(a[i]);
+    }
+};
+
+template <> struct QConcatenable<const char *>
+{
+    typedef char const *type;
+    static int size(const char *a) { return qstrlen(a); }
+    static inline void appendTo(const char *a, QChar *&out)
+    {
+        while (*a)
+            *out++ = QLatin1Char(*a++);
+    }
+};
+#endif
+
 template <typename A, typename B>
 struct QConcatenable< QStringBuilder<A, B> >
 {
