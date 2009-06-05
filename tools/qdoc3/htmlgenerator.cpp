@@ -1744,8 +1744,9 @@ QString HtmlGenerator::generateLowStatusMemberFile(const InnerNode *inner, CodeM
     return fileName;
 }
 
-void HtmlGenerator::generateClassHierarchy(const Node *relative, CodeMarker *marker,
-                                           const QMap<QString, const Node *> &classMap)
+void HtmlGenerator::generateClassHierarchy(const Node *relative,
+                                           CodeMarker *marker,
+                                           const QMap<QString,const Node*> &classMap)
 {
     if (classMap.isEmpty())
         return;
@@ -1950,7 +1951,8 @@ void HtmlGenerator::generateCompactList(const Node *relative, CodeMarker *marker
             if (currentOffset[i] >= firstOffset[i + 1]) {
                 // this column is finished
                 out() << "<td>\n</td>\n";
-            } else {
+            }
+            else {
                 while (currentOffsetInParagraph[i] == paragraph[currentParagraphNo[i]].count()) {
                     ++currentParagraphNo[i];
                     currentOffsetInParagraph[i] = 0;
@@ -1959,7 +1961,9 @@ void HtmlGenerator::generateCompactList(const Node *relative, CodeMarker *marker
                 out() << "<td align=\"right\">";
                 if (currentOffsetInParagraph[i] == 0) {
                     // start a new paragraph
-                    out() << "<b>" << paragraphName[currentParagraphNo[i]] << "&nbsp;</b>";
+                    out() << "<b>"
+                          << paragraphName[currentParagraphNo[i]]
+                          << "&nbsp;</b>";
                 }
                 out() << "</td>\n";
 
@@ -1972,7 +1976,9 @@ void HtmlGenerator::generateCompactList(const Node *relative, CodeMarker *marker
                 out() << "<td>";
                 // Previously, we used generateFullName() for this, but we
                 // require some special formatting.
-                out() << "<a href=\"" << linkForNode(it.value(), relative) << "\">";
+                out() << "<a href=\""
+                      << linkForNode(it.value(), relative)
+                      << "\">";
                 QStringList pieces = fullName(it.value(), relative, marker).split("::");
                 out() << protect(pieces.last());
                 out() << "</a>";
@@ -1992,7 +1998,8 @@ void HtmlGenerator::generateCompactList(const Node *relative, CodeMarker *marker
     out() << "</table></p>\n";
 }
 
-void HtmlGenerator::generateFunctionIndex(const Node *relative, CodeMarker *marker)
+void HtmlGenerator::generateFunctionIndex(const Node *relative,
+                                          CodeMarker *marker)
 {
     out() << "<p align=\"center\"><font size=\"+1\"><b>";
     for (int i = 0; i < 26; i++) {
@@ -2337,13 +2344,11 @@ QString HtmlGenerator::highlightedCode(const QString& markedCode,
             }
             i += 2;
             if (parseArg(src, linkTag, &i, n, &arg, &par1)) {
-                if (style == CodeMarker::Accessors)
-                    html += "<b>";
+                html += "<b>";
                 QString link = linkForNode(
                     CodeMarker::nodeForString(par1.toString()), relative);
                 addLink(link, arg, &html);
-                if (style == CodeMarker::Accessors)
-                    html += "</b>";
+                html += "</b>";
             }
             else {
                 html += charLangle;
