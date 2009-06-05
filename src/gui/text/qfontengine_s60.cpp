@@ -227,27 +227,14 @@ QImage QFontEngineS60::alphaMapForGlyph(glyph_t glyph)
 
 glyph_metrics_t QFontEngineS60::boundingBox(const QGlyphLayout &glyphs)
 {
-    glyph_metrics_t overall;
-    // initialize with line height, we get the same behaviour on all platforms
-    overall.y = -ascent();
-    overall.height = ascent() + descent() + 1;
+   if (glyphs.numGlyphs == 0)
+        return glyph_metrics_t();
 
-    QFixed ymax = 0;
-    QFixed xmax = 0;
-    for (int i = 0; i < glyphs.numGlyphs; i++) {
-        const glyph_metrics_t glyphBounds = boundingBox_const(glyphs.glyphs[i]);
-        QFixed x = overall.xoff + glyphs.offsets[i].x + glyphBounds.x;
-        QFixed y = overall.yoff + glyphs.offsets[i].y - glyphBounds.y;
-        overall.x = qMin(overall.x, x);
-        overall.y = qMin(overall.y, y);
-        xmax = qMax(xmax, x + glyphBounds.width);
-        ymax = qMax(ymax, y + glyphBounds.height);
-        overall.xoff += glyphBounds.xoff;
-    }
-    overall.height = qMax(overall.height, ymax - overall.y);
-    overall.width = xmax - overall.x;
+    QFixed w = 0;
+    for (int i = 0; i < glyphs.numGlyphs; ++i)
+        w += glyphs.effectiveAdvance(i);
 
-    return overall;
+    return glyph_metrics_t(0, -ascent(), w, ascent()+descent()+1, w, 0);
 }
 
 glyph_metrics_t QFontEngineS60::boundingBox_const(glyph_t glyph) const

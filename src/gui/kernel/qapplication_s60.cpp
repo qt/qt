@@ -1,5 +1,5 @@
 /****************************************************************************
-**
+1**
 ** Copyright (C) 2008 Nokia Corporation and/or its subsidiary(-ies).
 ** Contact: Qt Software Information (qt-info@nokia.com)
 **
