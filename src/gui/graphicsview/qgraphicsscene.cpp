@@ -1444,7 +1444,7 @@ void QGraphicsScenePrivate::recursive_items_helper(QGraphicsItem *item, QRectF r
         if (keep && (mode == Qt::ContainsItemShape || mode == Qt::IntersectsItemShape)) {
             QPainterPath rectPath;
             rectPath.addRect(rect);
-            keep = item->collidesWithPath(transform.inverted().map(rectPath), mode);
+            keep = itemCollidesWithPath(item, transform.inverted().map(rectPath), mode);
         }
     }
 
