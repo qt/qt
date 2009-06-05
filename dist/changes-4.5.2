@@ -59,6 +59,10 @@ Third party components
 - QAbstractNetworkCache
    * Only cache responses to HTTP GET by default, not HTTP PUT or POST
 
+- QApplication
+   * [249589] Fixed bug that prevented any part of the application to receive
+     focus when Graphics View was disabled using QT_NO_GRAPHICSVIEW.
+
 - QComboBox
    * [253944] Changing the style doesn't reset custom item delegate anymore.
    * [254589] Fixed the frame appearing if setting a stylesheet with a border
@@ -88,6 +92,9 @@ Third party components
 - QFontDialog
     * [252000] Ensure that QFontDialog::getFont() works on Mac OS X.
 
+- QGraphicsWidget
+    * Fixed a bug with Qt::WidgetWithChildren shortcut context.
+
 - QLocalSocket
    * [247144] correctly handle remote disconnects
 
@@ -107,6 +114,10 @@ Third party components
     * [253448] Prevent a crash when using the Qt::WA_MacBrushedMetal attribute
       in conjunction with style sheets.
 
+- QWizard
+    * [252662] Fixed crash that could happen when compiling on Windows XP and
+      running on older Windows versions like 98 and 2000.
+
 - QObject
     * Fixed possible race condition if two QObject connected together with
       signals and slot are destroyed in different threads
@@ -121,6 +132,9 @@ Third party components
     * [251534] Fixed issue where text with non-opaque color from widget
       palette would be blitted instead of blended.
 
+- QProgressBar
+    * [252283] Fixed busy indicator for a QProgressBar with a style sheet applied to it.
+
 - QSelectionModel
    * [252069] fix QSelectionModel::rowIntersectsSelection or QSelectionModel::columnsIntersectsSelection not reporting right result if some items are disabled.
 
@@ -134,6 +148,10 @@ Third party components
 
 - QString
     * Fixed reentrency of QString::squeeze()
+
+- QTabBar
+    * [252472] Fixed problem with the current tab not being visible after calling
+      setTabButton() on a scrolled tab bar.
 
 - QTransform
     * Fixed issue in QTransform::type() causing a projective transform to be
