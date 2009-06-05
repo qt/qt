@@ -242,37 +242,40 @@ static inline QFont qt_TFontSpec2QFontL(const TFontSpec &fontSpec)
 
 static inline QImage::Format qt_TDisplayMode2Format(TDisplayMode mode)
 {
-	QImage::Format format;
-	switch(mode) {
-	case EColor256:
-	    // TODO: is the correct?
-	    format = QImage::Format_Indexed8;
-	    break;
-	case EColor4K:
-	    format = QImage::Format_RGB444;
-	    break;
-	case EColor64K:
-	    format = QImage::Format_RGB16;
-	    break;
-	case EColor16M:
-	    format = QImage::Format_RGB666;
-	    break;
-	case EColor16MU:
-	    format = QImage::Format_RGB32;
-	    break;
-	case EColor16MA:
-	    format = QImage::Format_ARGB32;
-	    break;
-#ifdef __S60_50__ 	    
-	case EColor16MAP:
-	    format = QImage::Format_ARGB32_Premultiplied;
-	    break;
-#endif	    
-	default:
-	    qFatal("Screen format not supported");
-	    break;
-	}
-	return format;
+    QImage::Format format;
+    switch(mode) {
+    case EGray2:
+        format = QImage::Format_MonoLSB;
+        break;
+    case EColor256:
+    case EGray256:
+        format = QImage::Format_Indexed8;
+        break;
+    case EColor4K:
+        format = QImage::Format_RGB444;
+        break;
+    case EColor64K:
+        format = QImage::Format_RGB16;
+        break;
+    case EColor16M:
+        format = QImage::Format_RGB666;
+        break;
+    case EColor16MU:
+        format = QImage::Format_RGB32;
+        break;
+    case EColor16MA:
+        format = QImage::Format_ARGB32;
+        break;
+#if !defined(__SERIES60_31__) && !defined(__S60_32__)
+    case EColor16MAP:
+        format = QImage::Format_ARGB32_Premultiplied;
+        break;
+#endif
+    default:
+        format = QImage::Format_Invalid;
+        break;
+    }
+    return format;
 }
 
 

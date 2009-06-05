@@ -1841,8 +1841,9 @@ void QTextControlPrivate::inputMethodEvent(QInputMethodEvent *e)
         const QInputMethodEvent::Attribute &a = e->attributes().at(i);
         if (a.type == QInputMethodEvent::Selection) {
             QTextCursor oldCursor = cursor;
-            cursor.setPosition(a.start, QTextCursor::MoveAnchor);
-            cursor.setPosition(a.start + a.length, QTextCursor::KeepAnchor);
+            int blockStart = a.start + cursor.block().position();
+            cursor.setPosition(blockStart, QTextCursor::MoveAnchor);
+            cursor.setPosition(blockStart + a.length, QTextCursor::KeepAnchor);
             q->ensureCursorVisible();
             repaintOldAndNewSelection(oldCursor);
         }

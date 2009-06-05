@@ -91,14 +91,142 @@ QPixmap QPixmap::grabWindow(WId winId, int x, int y, int w, int h )
         return QPixmap();
     }
 
-    QImage::Format format = qt_TDisplayMode2Format( displayMode );
-    int bytesPerLine = CFbsBitmap::ScanLineLength(temporary->SizeInPixels().iWidth,displayMode);
-    temporary->LockHeap();
-    QImage image = QImage((uchar*)temporary->DataAddress(), srcRect.Width(), srcRect.Height(), bytesPerLine, format);
-    QPixmap pixmap = QPixmap::fromImage(image.copy());
-    temporary->UnlockHeap();
+    QPixmap pixmap = QPixmap::fromSymbianCFbsBitmap(temporary);
     CBase::Delete(temporary);
     return pixmap;
-
 }
+
+/*!
+\since 4.6
+
+Returns a \c CFbsBitmap that is equivalent to the QPixmap by copying the data.
+
+It is the caller's responsibility to delete the \c CFbsBitmap after use.
+
+\warning This function is only available on Symbian OS.
+
+\sa fromSymbianCFbsBitmap()
+*/
+
+CFbsBitmap *QPixmap::toSymbianCFbsBitmap() const
+{
+    if (isNull())
+        return 0;
+
+    TDisplayMode mode;
+    const QImage img = toImage();
+    QImage::Format destFormat = img.format();
+    switch (img.format()) {
+    case QImage::Format_Mono:
+        destFormat = QImage::Format_MonoLSB;
+        // Fall through intended
+    case QImage::Format_MonoLSB:
+        mode = EGray2;
+        break;
+    case QImage::Format_Indexed8:
+        if (img.isGrayscale())
+            mode = EGray256;
+        else
+            mode = EColor256;
+        break;
+    case QImage::Format_RGB32:
+        mode = EColor16MU;
+        break;
+    case QImage::Format_ARGB6666_Premultiplied:
+    case QImage::Format_ARGB8565_Premultiplied:
+    case QImage::Format_ARGB8555_Premultiplied:
+        destFormat = QImage::Format_ARGB32_Premultiplied;
+        // Fall through intended
+    case QImage::Format_ARGB32_Premultiplied:
+#if !defined(__SERIES60_31__) && !defined(__S60_32__)
+        // ### TODO: Add runtime detection as well?
+        mode = EColor16MAP;
+            break;
+#endif
+        destFormat = QImage::Format_ARGB32;
+        // Fall through intended
+    case QImage::Format_ARGB32:
+        mode = EColor16MA;
+        break;
+    case QImage::Format_RGB555:
+        destFormat = QImage::Format_RGB16;
+        // Fall through intended
+    case QImage::Format_RGB16:
+        mode = EColor64K;
+        break;
+    case QImage::Format_RGB666:
+        destFormat = QImage::Format_RGB888;
+        // Fall through intended
+    case QImage::Format_RGB888:
+        mode = EColor16M;
+        break;
+    case QImage::Format_RGB444:
+        mode = EColor4K;
+        break;
+    case QImage::Format_Invalid:
+        return 0;
+    default:
+        qWarning("Image format not supported: %d", img.format());
+        return 0;
+    }
+
+    CFbsBitmap* bitmap = new (ELeave) CFbsBitmap();
+    TSize size(width(), height());
+    if (bitmap->Create(size, mode) != KErrNone) {
+        CBase::Delete(bitmap);
+        return 0;
+    }
+
+    const QImage converted = img.convertToFormat(destFormat);
+
+    bitmap->LockHeap();
+    const uchar *sptr = converted.bits();
+    uchar *dptr = (uchar*)bitmap->DataAddress();
+    Mem::Copy(dptr, sptr, converted.numBytes());
+    bitmap->UnlockHeap();
+    return bitmap;
+}
+
+/*!
+\since 4.6
+
+Returns a QPixmap that is equivalent to the \c CFbsBitmap by copying the data.
+If the CFbsBitmap is not valid or is compressed in memory, this function will
+return a null QPixmap.
+
+\warning This function is only available on Symbian OS.
+
+\sa toSymbianCFbsBitmap(), {QPixmap#Pixmap Conversion}{Pixmap Conversion}
+*/
+
+QPixmap QPixmap::fromSymbianCFbsBitmap(CFbsBitmap *bitmap)
+{
+    int width = bitmap->SizeInPixels().iWidth;
+    int height = bitmap->SizeInPixels().iHeight;
+
+    if (!bitmap || width <= 0 || height <= 0 || bitmap->IsCompressedInRAM())
+        return QPixmap();
+
+    TDisplayMode displayMode = bitmap->DisplayMode();
+    QImage::Format format = qt_TDisplayMode2Format(displayMode);
+    int bytesPerLine = CFbsBitmap::ScanLineLength(width, displayMode);
+    bitmap->LockHeap();
+    QImage image = QImage((const uchar*)bitmap->DataAddress(), width, height, bytesPerLine, format);
+    if (displayMode == EGray2) {
+        image.setNumColors(2);
+        image.setColor(0, QColor(Qt::color0).rgba());
+        image.setColor(1, QColor(Qt::color1).rgba());
+    } else if (displayMode == EGray256) {
+        for (int i=0; i < 256; ++i)
+            image.setColor(i, qRgb(i, i, i));
+    }else if (displayMode == EColor256) {
+        const TColor256Util *palette = TColor256Util::Default();
+        for (int i=0; i < 256; ++i)
+            image.setColor(i, (QRgb)(palette->Color256(i).Value()));
+    }
+    QPixmap pixmap = QPixmap::fromImage(image.copy());
+    bitmap->UnlockHeap();
+    return pixmap;
+}
+
 QT_END_NAMESPACE
