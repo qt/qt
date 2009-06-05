@@ -454,7 +454,7 @@
     \snippet tutorials/addressbook/part3/addressbook.cpp connecting navigation signals
 
     The image below is our expected graphical user interface. Notice that it
-    is getting closer to our expected final output.
+    is getting closer to our final application.
 
     \image addressbook-tutorial-part3-screenshot.png
 
