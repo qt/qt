@@ -1784,14 +1784,15 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
         {
             QS60StylePrivate::SkinElementFlags adjFlags = flags;
             QRect emptyAreaRect = option->rect;
+            const int frameWidth = QS60StylePrivate::pixelMetric(PM_DefaultFrameWidth);
             if (option->state & QStyle::State_Horizontal) {
-            emptyAreaRect.adjust(-2,-2,2,-2);
+                emptyAreaRect.adjust(-frameWidth,-frameWidth,frameWidth,-frameWidth);
             } else {
                 if ( option->direction == Qt::LeftToRight ) {
-                emptyAreaRect.adjust(-2,-2,0,2);
+                emptyAreaRect.adjust(-frameWidth,-frameWidth,0,frameWidth);
                     adjFlags |= QS60StylePrivate::SF_PointWest;
                 } else {
-                emptyAreaRect.adjust(2,2,0,-2);
+                emptyAreaRect.adjust(frameWidth,frameWidth,0,-frameWidth);
                     adjFlags |= QS60StylePrivate::SF_PointEast;
                 }
             }
@@ -1803,14 +1804,15 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
             QS60StylePrivate::SkinElementFlags adjFlags = flags;
             QRect mtyRect = header->rect;
             QRect parentRect = widget->parentWidget()->rect();
+            const int frameWidth = QS60StylePrivate::pixelMetric(PM_DefaultFrameWidth);
             if (header->orientation == Qt::Horizontal) {
-                mtyRect.adjust(-2,-2,2,-2);
+                mtyRect.adjust(-frameWidth,-frameWidth,frameWidth,-frameWidth);
             } else {
                 if ( header->direction == Qt::LeftToRight ) {
-                    mtyRect.adjust(-2,-2,0,2);
+                    mtyRect.adjust(-frameWidth,-frameWidth,0,frameWidth);
                     adjFlags |= QS60StylePrivate::SF_PointWest;
                 } else {
-                    mtyRect.adjust(2,2,0,-2);
+                    mtyRect.adjust(frameWidth,frameWidth,0,-frameWidth);
                     adjFlags |= QS60StylePrivate::SF_PointEast;
                 }
             }
@@ -2016,7 +2018,8 @@ void QS60Style::drawPrimitive(PrimitiveElement element, const QStyleOption *opti
         else if (const QStyleOptionFrame *cmb = qstyleoption_cast<const QStyleOptionFrame *>(option)) {
             // We want to draw down arrow here for comboboxes as well.
             QStyleOptionFrame comboBox = *cmb;
-            comboBox.rect.adjust(0,2,0,-2);
+            const int frameWidth = QS60StylePrivate::pixelMetric(PM_DefaultFrameWidth);
+            comboBox.rect.adjust(0,frameWidth,0,-frameWidth);
             QCommonStyle::drawPrimitive(element, &comboBox, painter, widget);
         }
 #endif //QT_NO_COMBOBOX
