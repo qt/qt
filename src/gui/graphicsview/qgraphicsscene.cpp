@@ -5202,8 +5202,8 @@ void QGraphicsScenePrivate::drawSubtreeRecursive(QGraphicsItem *item, QPainter *
     bool childClip = (item && (item->d_ptr->flags & QGraphicsItem::ItemClipsChildrenToShape));
     bool dontDrawItem = !item || viewBoundingRect.isEmpty();
     bool dontDrawChildren = item && dontDrawItem && childClip;
-    childClip &= !dontDrawChildren & !children->isEmpty();
-    if (item && (item->d_ptr->flags & QGraphicsItem::ItemHasNoContents) || invisibleButChildIgnoresParentOpacity)
+    childClip &= !dontDrawChildren && !children->isEmpty();
+    if (item && ((item->d_ptr->flags & QGraphicsItem::ItemHasNoContents) || invisibleButChildIgnoresParentOpacity))
         dontDrawItem = true;
 
     // Clip children.
