@@ -151,7 +151,7 @@ const double KTabFontMul = 0.72;
 QS60StylePrivate::~QS60StylePrivate()
 {
     clearCaches(); //deletes also background image
-    delete m_themePalette;
+    deleteThemePalette();
 }
 
 void QS60StylePrivate::drawSkinElement(SkinElements element, QPainter *painter,
@@ -470,12 +470,10 @@ QColor QS60StylePrivate::colorFromFrameGraphics(QS60StylePrivate::SkinFrameEleme
 
 void QS60StylePrivate::setThemePalette(QApplication *app) const
 {
-    if (!app)
-        return;
-
+    Q_UNUSED(app)
     QPalette widgetPalette = QPalette(Qt::white);
     setThemePalette(&widgetPalette);
-    app->setPalette(widgetPalette);
+    QApplication::setPalette(widgetPalette);
 }
 
 void QS60StylePrivate::setThemePalette(QStyleOption *option) const
@@ -490,11 +488,10 @@ QPalette* QS60StylePrivate::themePalette()
 
 void QS60StylePrivate::setBackgroundTexture(QApplication *app) const
 {
-    if (!app)
-        return;
-    QPalette applicationPalette = app->palette();
+    Q_UNUSED(app)
+    QPalette applicationPalette = QApplication::palette();
     applicationPalette.setBrush(QPalette::Window, QS60StylePrivate::backgroundTexture());
-    app->setPalette(applicationPalette);
+    QApplication::setPalette(applicationPalette);
 }
 
 void QS60StylePrivate::deleteBackground()
@@ -719,13 +716,18 @@ void QS60StylePrivate::setThemePalette(QPalette *palette) const
     QS60StylePrivate::storeThemePalette(palette);
 }
 
-void QS60StylePrivate::storeThemePalette(QPalette *palette)
+void QS60StylePrivate::deleteThemePalette()
 {
-    //store specified palette for latter use.
     if (m_themePalette) {
         delete m_themePalette;
         m_themePalette = 0;
     }
+}
+
+void QS60StylePrivate::storeThemePalette(QPalette *palette)
+{
+    deleteThemePalette();
+    //store specified palette for latter use.
     m_themePalette = new QPalette(*palette);
 }
 
@@ -2705,9 +2707,10 @@ void QS60Style::polish(QApplication *application)
 
 void QS60Style::unpolish(QApplication *application)
 {
+    Q_UNUSED(application)
     Q_D(QS60Style);
     const QPalette newPalette = QApplication::style()->standardPalette();
-    application->setPalette(newPalette);
+    QApplication::setPalette(newPalette);
     QApplicationPrivate::setSystemPalette(d->m_originalPalette);
 }
 
@@ -2821,7 +2824,7 @@ bool qt_s60_fill_background(QPainter *painter, const QRegion &rgn, const QPoint 
 
     const QPaintDevice *target = painter->device();
     if (target->devType() == QInternal::Widget) {
-		const QWidget *widget = static_cast<const QWidget *>(target);
+        const QWidget *widget = static_cast<const QWidget *>(target);
         const QRegion translated = rgn.translated(offset);
         const QVector<QRect> &rects = translated.rects();
         for (int i = 0; i < rects.size(); ++i) {
