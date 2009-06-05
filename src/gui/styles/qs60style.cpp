@@ -560,10 +560,20 @@ void QS60StylePrivate::drawRow(QS60StyleEnums::SkinParts start,
         startRect.setWidth(qMin(rect.width() >>1 - 1, startRect.width()));
         endRect = startRect.translated(rect.width() - startRect.width(), 0);
         middleRect.adjust(startRect.width(), 0, -startRect.width(), 0);
+        if (startRect.bottomRight().x() > endRect.topLeft().x()) {
+            const int overlap = (startRect.bottomRight().x() -  endRect.topLeft().x())>>1;
+            startRect.setWidth(startRect.width()-overlap);
+            endRect.adjust(overlap,0,0,0);
+        }
     } else {
         startRect.setHeight(qMin(rect.height() >>1 - 1, startRect.height()));
         endRect = startRect.translated(0, rect.height() - startRect.height());
         middleRect.adjust(0, startRect.height(), 0, -startRect.height());
+        if (startRect.topRight().y() > endRect.bottomLeft().y()) {
+            const int overlap = (startRect.topRight().y() - endRect.bottomLeft().y())>>1;
+            startRect.setHeight(startRect.height()-overlap);
+            endRect.adjust(0,overlap,0,0);        
+        }
     }
 
 #if 0
