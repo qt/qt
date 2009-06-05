@@ -5715,9 +5715,12 @@ bool QWidget::hasFocus() const
 
 void QWidget::setFocus(Qt::FocusReason reason)
 {
+    Q_D(QWidget);
+    d->setNativeSoftKeys(softKeys());
+
     if (!isEnabled())
         return;
-
+    
     QWidget *f = this;
     while (f->d_func()->extra && f->d_func()->extra->focus_proxy)
         f = f->d_func()->extra->focus_proxy;
@@ -11507,6 +11510,36 @@ void QWidget::setMask(const QBitmap &bitmap)
 void QWidget::clearMask()
 {
     setMask(QRegion());
+}
+
+const QList<QSoftKeyAction*>& QWidget::softKeys() const
+{
+    Q_D(const QWidget);
+    if( d->softKeys.count() > 0)
+        return d->softKeys;
+    
+    if (isWindow() || !parentWidget())
+        return d->softKeys;
+      
+    return parentWidget()->softKeys();
+}
+
+void QWidget::setSoftKeys(QSoftKeyAction *softKey)
+{
+    Q_D(QWidget);
+    qDeleteAll(d->softKeys);
+    d->softKeys.append(softKey);
+//    d->setNativeSoftKeys(softkeys);
+}
+
+void QWidget::setSoftKeys(const QList<QSoftKeyAction*> &softKeys)
+{
+    Q_D(QWidget);
+    qDeleteAll(d->softKeys);
+    for(int i = 0; i < softKeys.count(); i++)
+        d->softKeys.append(softKeys.at(i));
+    
+    //    d->setNativeSoftKeys(softkeys);
 }
 
 /*! \fn const QX11Info &QWidget::x11Info() const

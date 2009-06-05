@@ -196,6 +196,7 @@ QList<QSoftKeyAction*> menuActionList(QWidget *widget)
 
 void QSoftKeyStack::handleFocusChanged(QWidget *old, QWidget *now)
 {
+    return;
     if (!now)
         return;
     QWidget *w = qApp->activeWindow();
@@ -252,6 +253,7 @@ QToolBar* softKeyToolBar(QMainWindow *mainWindow)
 
 void QSoftKeyStackPrivate::setNativeSoftKeys()
 {
+    return;
     Q_Q(QSoftKeyStack);
     QMainWindow *parent = qobject_cast<QMainWindow*>(q->parent());
     if (!parent)

@@ -73,6 +73,7 @@ void QSoftKeyStackPrivate::mapSoftKeys(const QSoftkeySet &top)
 
 void QSoftKeyStackPrivate::setNativeSoftKeys()
 {
+    return;
     CCoeAppUi* appui = CEikonEnv::Static()->AppUi();
     CAknAppUi* aknAppUi = static_cast <CAknAppUi*>(appui);
     CEikButtonGroupContainer* nativeContainer = aknAppUi->Cba();

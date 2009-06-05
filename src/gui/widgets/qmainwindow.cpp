@@ -69,6 +69,7 @@ QT_END_NAMESPACE
 #ifndef QT_NO_SOFTKEYSTACK
 #include <qsoftkeystack.h>
 #endif
+#include <qsoftkeyaction.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -121,9 +122,9 @@ void QMainWindowPrivate::init()
     explicitIconSize = false;
 
     q->setAttribute(Qt::WA_Hover);
-#if defined(Q_OS_SYMBIAN) && !defined(QT_NO_SOFTKEYSTACK)
-    softKeyStack = new QSoftKeyStack(q);
-#endif
+//#if defined(Q_OS_SYMBIAN) && !defined(QT_NO_SOFTKEYSTACK)
+//    softKeyStack = new QSoftKeyStack(q);
+//#endif
 }
 
 /*
@@ -495,6 +496,10 @@ void QMainWindow::setMenuBar(QMenuBar *menuBar)
         oldMenuBar->deleteLater();
     }
     d->layout->setMenuBar(menuBar);
+    if (menuBar) {
+        QSoftKeyAction* menu = new QSoftKeyAction(QSoftKeyAction::Menu, QString::fromLatin1("Menu"), this);
+        setSoftKeys(menu);
+    }
 }
 
 /*!

@@ -52,12 +52,92 @@
 
 #include <qinputcontext.h>
 
+#include <aknappui.h>
+#include "qsoftkeyaction.h"
+
 QT_BEGIN_NAMESPACE
 
 extern bool qt_nograb();
 
 QWidget *QWidgetPrivate::mouseGrabber = 0;
 QWidget *QWidgetPrivate::keyboardGrabber = 0;
+
+#define QSoftkeySet QList <QSoftKeyAction*>
+// The following 2 defines may only be needed for s60. To be seen.
+#define SOFTKEYSTART 5000
+#define SOFTKEYEND (5000 + Qt::Key_Context4-Qt::Key_Context1)
+
+static void mapSoftKeys(const QSoftkeySet &softkeys)
+{
+    if (softkeys.count() == 1 && softkeys.at(0)->role()==QSoftKeyAction::Menu) {
+        softkeys.at(0)->setNativePosition(0);
+        softkeys.at(0)->setQtContextKey(Qt::Key_Context1);
+    }
+    else if(softkeys.count() == 1 && softkeys.at(0)->role()!=QSoftKeyAction::Menu) {
+        softkeys.at(0)->setNativePosition(2);
+        softkeys.at(0)->setQtContextKey(Qt::Key_Context1);
+    }
+    else {
+    // FIX THIS
+    // veryWeirdMagic is needes as s60 5th edition sdk always panics if cba is set with index 1, this hops over it
+    // This needs further investigation why so that the hack can be removed
+        int veryWeirdMagic = 0;
+        for (int index = 0; index < softkeys.count(); index++) {
+            softkeys.at(index)->setNativePosition(index + veryWeirdMagic);
+            softkeys.at(index)->setQtContextKey(Qt::Key_Context1 + index);
+            if (veryWeirdMagic == 0)
+                veryWeirdMagic = 1;
+        }
+    }
+}
+
+static bool isSame(const QList<QSoftKeyAction*>& a, const QList<QSoftKeyAction*>& b)
+{
+    bool isSame=true;
+    if ( a.count() != b.count())
+        return false;
+    int index=0;
+    while (index<a.count()) {
+        if (a.at(index)->role() != b.at(index)->role())
+            return false;
+        if (a.at(index)->text().compare(b.at(index)->text())!=0)
+            return false;
+        index++;
+    }
+    return true;
+}
+
+
+void QWidgetPrivate::setNativeSoftKeys(const QList<QSoftKeyAction*> &softkeys)
+{
+    if (QApplication::focusWidget()) {
+        QList<QSoftKeyAction*> old = QApplication::focusWidget()->softKeys();
+        if (isSame(old, softkeys ))
+            return;
+    }
+    
+    CCoeAppUi* appui = CEikonEnv::Static()->AppUi();
+    CAknAppUi* aknAppUi = static_cast <CAknAppUi*>(appui);
+    CEikButtonGroupContainer* nativeContainer = aknAppUi->Cba();
+    nativeContainer->SetCommandSetL(R_AVKON_SOFTKEYS_EMPTY_WITH_IDS);
+
+    mapSoftKeys(softkeys);
+
+    for (int index = 0; index < softkeys.count(); index++) {
+        const QSoftKeyAction* softKeyAction = softkeys.at(index);
+        if (softKeyAction->role() != QSoftKeyAction::ContextMenu) {
+
+            HBufC* text = qt_QString2HBufCNewL(softKeyAction->text());
+            CleanupStack::PushL(text);
+            if (softKeyAction->role() == QSoftKeyAction::Menu) {
+                nativeContainer->SetCommandL(softKeyAction->nativePosition(), EAknSoftkeyOptions, *text);
+            } else {
+                nativeContainer->SetCommandL(softKeyAction->nativePosition(), SOFTKEYSTART + softKeyAction->qtContextKey()-Qt::Key_Context1, *text);
+            }
+            CleanupStack::PopAndDestroy();
+        }
+    }
+}
 
 void QWidgetPrivate::setWSGeometry(bool dontShow)
 {
@@ -1003,5 +1083,16 @@ void QWidget::activateWindow()
         rw->SetOrdinalPosition(0);
     }
 }
+/*
+void QWidget::setSoftKeys(QSoftKeyAction *softKey)
+{
+    Q_D(QWidget);
+    d->
+}
 
+void QWidget::setSoftKeys(const QList<QSoftKeyAction*> &softkeys)
+{
+    Q_D(QWidget);
+}
+*/
 QT_END_NAMESPACE
