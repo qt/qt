@@ -5217,10 +5217,10 @@ void QGraphicsScenePrivate::drawSubtreeRecursive(QGraphicsItem *item, QPainter *
         if (item && item->d_ptr->needSortChildren) {
             item->d_ptr->needSortChildren = 0;
             qStableSort(children->begin(), children->end(), qt_notclosestLeaf);
+        } else if (!item && children == &tmp) {
+            qStableSort(children->begin(), children->end(), qt_notclosestLeaf);
         } else if (!item && needSortTopLevelItems) {
             needSortTopLevelItems = false;
-            qStableSort(children->begin(), children->end(), qt_notclosestLeaf);
-        } else if (!item && children == &tmp) {
             qStableSort(children->begin(), children->end(), qt_notclosestLeaf);
         }
     }
