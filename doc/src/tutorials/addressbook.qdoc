@@ -529,7 +529,7 @@
     \example tutorials/addressbook/part4
     \title Address Book 4 - Editing and Removing Addresses
 
-    In this chapter, we look at ways to modify the contents of contact stored
+    In this chapter, we look at ways to modify the contents of contacts stored
     in the address book application.
 
     \image addressbook-tutorial-screenshot.png
