@@ -1301,6 +1301,27 @@ void tst_QScriptValue::toVariant()
         QCOMPARE(str.toVariant(), QVariant(QString("ciao")));
         QCOMPARE(qscriptvalue_cast<QVariant>(str), QVariant(QString("ciao")));
     }
+
+    // array
+    {
+        QVariantList listIn;
+        listIn << 123 << "hello";
+        QScriptValue array = qScriptValueFromValue(&eng, listIn);
+        QVERIFY(array.isArray());
+        QCOMPARE(array.property("length").toInt32(), 2);
+        QVariant ret = array.toVariant();
+        QCOMPARE(ret.type(), QVariant::List);
+        QVariantList listOut = ret.toList();
+        QCOMPARE(listOut.size(), listIn.size());
+        for (int i = 0; i < listIn.size(); ++i)
+            QVERIFY(listOut.at(i) == listIn.at(i));
+        // round-trip conversion
+        QScriptValue array2 = qScriptValueFromValue(&eng, ret);
+        QVERIFY(array2.isArray());
+        QCOMPARE(array2.property("length").toInt32(), array.property("length").toInt32());
+        for (int i = 0; i < array.property("length").toInt32(); ++i)
+            QVERIFY(array2.property(i).strictlyEquals(array.property(i)));
+    }
 }
 
 // unfortunately, this is necessary in order to do qscriptvalue_cast<QPushButton*>(...)
