@@ -92,6 +92,9 @@ bool QHelpDBReader::init()
     QSqlDatabase db = QSqlDatabase::addDatabase(QLatin1String("QSQLITE"), m_uniqueId);
     db.setDatabaseName(m_dbName);
     if (!db.open()) {
+        /*: The placeholders are: %1 - The name of the database which cannot be opened
+                                  %2 - The unique id for the connection
+                                  %3 - The actual error string */
         m_error = tr("Cannot open database '%1' '%2': %3").arg(m_dbName, m_uniqueId, db.lastError().text());
         QSqlDatabase::removeDatabase(m_uniqueId);
         return false;
