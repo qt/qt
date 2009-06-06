@@ -70,7 +70,6 @@ class QWSRegionManager;
 class QStyle;
 class QAction;
 class QVariant;
-class QSoftKeyAction;
 
 class QActionEvent;
 class QMouseEvent;
@@ -555,9 +554,9 @@ public:
     void removeAction(QAction *action);
     QList<QAction*> actions() const;
 #endif
-    const QList<QSoftKeyAction*>& softKeys() const;
-    void setSoftKeys(QSoftKeyAction *softKey);
-    void setSoftKeys(const QList<QSoftKeyAction*> &softKeys);
+    const QList<QAction*>& softKeys() const;
+    void setSoftKeys(QAction *softKey);
+    void setSoftKeys(const QList<QAction*> &softKeys);
 
     QWidget *parentWidget() const;
 

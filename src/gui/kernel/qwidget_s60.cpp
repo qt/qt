@@ -53,7 +53,6 @@
 #include <qinputcontext.h>
 
 #include <aknappui.h>
-#include "qsoftkeyaction.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -62,18 +61,18 @@ extern bool qt_nograb();
 QWidget *QWidgetPrivate::mouseGrabber = 0;
 QWidget *QWidgetPrivate::keyboardGrabber = 0;
 
-#define QSoftkeySet QList <QSoftKeyAction*>
+#define QSoftkeySet QList <QAction*>
 // The following 2 defines may only be needed for s60. To be seen.
 #define SOFTKEYSTART 5000
 #define SOFTKEYEND (5000 + Qt::Key_Context4-Qt::Key_Context1)
 
 static void mapSoftKeys(const QSoftkeySet &softkeys)
 {
-    if (softkeys.count() == 1 && softkeys.at(0)->role()==QSoftKeyAction::Menu) {
+/*    if (softkeys.count() == 1 && softkeys.at(0)->menuRole()==QAction::MenuSoftKey) {
         softkeys.at(0)->setNativePosition(0);
         softkeys.at(0)->setQtContextKey(Qt::Key_Context1);
     }
-    else if(softkeys.count() == 1 && softkeys.at(0)->role()!=QSoftKeyAction::Menu) {
+    else if(softkeys.count() == 1 && softkeys.at(0)->menuRole()!=QAction::MenuSoftKey) {
         softkeys.at(0)->setNativePosition(2);
         softkeys.at(0)->setQtContextKey(Qt::Key_Context1);
     }
@@ -89,16 +88,17 @@ static void mapSoftKeys(const QSoftkeySet &softkeys)
                 veryWeirdMagic = 1;
         }
     }
+*/
 }
 
-static bool isSame(const QList<QSoftKeyAction*>& a, const QList<QSoftKeyAction*>& b)
+static bool isSame(const QList<QAction*>& a, const QList<QAction*>& b)
 {
     bool isSame=true;
     if ( a.count() != b.count())
         return false;
     int index=0;
     while (index<a.count()) {
-        if (a.at(index)->role() != b.at(index)->role())
+        if (a.at(index)->softKeyRole() != b.at(index)->softKeyRole())
             return false;
         if (a.at(index)->text().compare(b.at(index)->text())!=0)
             return false;
@@ -108,10 +108,10 @@ static bool isSame(const QList<QSoftKeyAction*>& a, const QList<QSoftKeyAction*>
 }
 
 
-void QWidgetPrivate::setNativeSoftKeys(const QList<QSoftKeyAction*> &softkeys)
+void QWidgetPrivate::setNativeSoftKeys(const QList<QAction*> &softkeys)
 {
     if (QApplication::focusWidget()) {
-        QList<QSoftKeyAction*> old = QApplication::focusWidget()->softKeys();
+        QList<QAction *> old = QApplication::focusWidget()->softKeys();
         if (isSame(old, softkeys ))
             return;
     }
@@ -122,20 +122,25 @@ void QWidgetPrivate::setNativeSoftKeys(const QList<QSoftKeyAction*> &softkeys)
     nativeContainer->SetCommandSetL(R_AVKON_SOFTKEYS_EMPTY_WITH_IDS);
 
     mapSoftKeys(softkeys);
-
+    int placeInScreen=0;
+    
     for (int index = 0; index < softkeys.count(); index++) {
-        const QSoftKeyAction* softKeyAction = softkeys.at(index);
-        if (softKeyAction->role() != QSoftKeyAction::ContextMenu) {
+        const QAction* softKeyAction = softkeys.at(index);
+        if (softKeyAction->softKeyRole() != QAction::ContextMenuSoftKey) {
 
             HBufC* text = qt_QString2HBufCNewL(softKeyAction->text());
             CleanupStack::PushL(text);
-            if (softKeyAction->role() == QSoftKeyAction::Menu) {
-                nativeContainer->SetCommandL(softKeyAction->nativePosition(), EAknSoftkeyOptions, *text);
+            if (softKeyAction->softKeyRole() == QAction::MenuSoftKey) {
+                nativeContainer->SetCommandL(placeInScreen, EAknSoftkeyOptions, *text);
             } else {
-                nativeContainer->SetCommandL(softKeyAction->nativePosition(), SOFTKEYSTART + softKeyAction->qtContextKey()-Qt::Key_Context1, *text);
+                nativeContainer->SetCommandL(placeInScreen, SOFTKEYSTART + index, *text);
             }
             CleanupStack::PopAndDestroy();
+            placeInScreen++;
         }
+    if (placeInScreen==1)
+        placeInScreen=2;
+        
     }
 }
 

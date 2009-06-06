@@ -11512,7 +11512,7 @@ void QWidget::clearMask()
     setMask(QRegion());
 }
 
-const QList<QSoftKeyAction*>& QWidget::softKeys() const
+const QList<QAction*>& QWidget::softKeys() const
 {
     Q_D(const QWidget);
     if( d->softKeys.count() > 0)
@@ -11524,7 +11524,7 @@ const QList<QSoftKeyAction*>& QWidget::softKeys() const
     return parentWidget()->softKeys();
 }
 
-void QWidget::setSoftKeys(QSoftKeyAction *softKey)
+void QWidget::setSoftKeys(QAction *softKey)
 {
     Q_D(QWidget);
     qDeleteAll(d->softKeys);
@@ -11532,7 +11532,7 @@ void QWidget::setSoftKeys(QSoftKeyAction *softKey)
 //    d->setNativeSoftKeys(softkeys);
 }
 
-void QWidget::setSoftKeys(const QList<QSoftKeyAction*> &softKeys)
+void QWidget::setSoftKeys(const QList<QAction*> &softKeys)
 {
     Q_D(QWidget);
     qDeleteAll(d->softKeys);

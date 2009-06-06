@@ -85,7 +85,6 @@ class CCoeControl;
 class CAknTitlePane;
 class CAknContextPane;
 #endif
-class QSoftKeyAction;
 
 QT_BEGIN_NAMESPACE
 
@@ -226,7 +225,7 @@ public:
     explicit QWidgetPrivate(int version = QObjectPrivateVersion);
     ~QWidgetPrivate();
 
-    void setNativeSoftKeys(const QList<QSoftKeyAction*> &softkeys);
+    void setNativeSoftKeys(const QList<QAction*> &softkeys);
     QWExtra *extraData() const;
     QTLWExtra *topData() const;
     QTLWExtra *maybeTopData() const;
@@ -514,7 +513,7 @@ public:
 #ifndef QT_NO_ACTION
     QList<QAction*> actions;
 #endif
-    QList<QSoftKeyAction*> softKeys;
+    QList<QAction*> softKeys;
     QLayout *layout;
     QWidgetItemV2 *widgetItem;
 #if !defined(QT_NO_IM)

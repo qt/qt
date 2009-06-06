@@ -497,7 +497,8 @@ void QMainWindow::setMenuBar(QMenuBar *menuBar)
     }
     d->layout->setMenuBar(menuBar);
     if (menuBar) {
-        QSoftKeyAction* menu = new QSoftKeyAction(QSoftKeyAction::Menu, QString::fromLatin1("Menu"), this);
+        QAction* menu = new QAction(QString::fromLatin1("Menu"), this);
+        menu->setSoftKeyRole(QAction::MenuSoftKey);
         setSoftKeys(menu);
     }
 }
