@@ -1064,8 +1064,15 @@ void QApplication::symbianHandleCommand(int command)
         exit();
         break;
     default:
-        if (command >= SOFTKEYSTART && command <= SOFTKEYEND)
-            QSoftKeyStackPrivate::handleSoftKeyPress(command);
+        if (command >= SOFTKEYSTART && command <= SOFTKEYEND) {
+            int index= command-SOFTKEYSTART;
+            QWidget* focused = QApplication::focusWidget();
+            const QList<QAction*>& softKeys = focused->softKeys();
+            if (index>=softKeys.count()) {
+            // Assert horrible state error
+            }
+            softKeys.at(index)->activate(QAction::Trigger);
+        }
         else
             QMenuBarPrivate::symbianCommands(command);
         break;
