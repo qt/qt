@@ -58,7 +58,6 @@
 #endif
 #include "private/qwindowsurface_s60_p.h"
 #include "qpaintengine.h"
-#include "private/qsoftkeystack_p.h"
 #include "private/qmenubar_p.h"
 
 #include "apgwgnam.h" // For CApaWindowGroupName

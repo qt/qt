@@ -56,8 +56,6 @@
 #include <eikbtgpc.h>
 #include <QtCore/qlibrary.h>
 #include <avkon.rsg>
-#include <qsoftkeystack.h>
-#include <qsoftkeyaction.h>
 #ifndef QT_NO_MENUBAR
 
 QT_BEGIN_NAMESPACE

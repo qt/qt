@@ -63,7 +63,7 @@
 #include <private/qabstractitemmodel_p.h>
 #include <private/qabstractscrollarea_p.h>
 #include <qdebug.h>
-
+#include <qkeyeventsoftkey.h>
 #ifdef Q_WS_X11
 #include <private/qt_x11_p.h>
 #endif
@@ -74,9 +74,6 @@
 #endif
 #ifndef QT_NO_EFFECTS
 # include <private/qeffects_p.h>
-#endif
-#ifdef QT_KEYPAD_NAVIGATION
-# include <private/qsoftkeystack_p.h>
 #endif
 QT_BEGIN_NAMESPACE
 
@@ -2441,7 +2438,7 @@ void QComboBox::showPopup()
 #ifdef QT_KEYPAD_NAVIGATION
     if (QApplication::keypadNavigationEnabled())
         view()->setEditFocus(true);
-    QKeyEventSoftKey::addSoftKey(QSoftKeyAction::Cancel, Qt::Key_Back, this);
+    QKeyEventSoftKey::addSoftKey(QAction::CancelSoftKey, Qt::Key_Back, this);
 #endif
 }
 

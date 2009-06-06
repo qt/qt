@@ -11528,7 +11528,8 @@ void QWidget::setSoftKeys(QAction *softKey)
 {
     Q_D(QWidget);
     qDeleteAll(d->softKeys);
-    d->softKeys.append(softKey);
+    if (softKey)
+        d->softKeys.append(softKey);
 //    d->setNativeSoftKeys(softkeys);
 }
 

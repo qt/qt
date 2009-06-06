@@ -102,7 +102,6 @@ class QPixmap;
 class QWidgetBackingStore;
 class QGraphicsProxyWidget;
 class QWidgetItemV2;
-class QSoftKeyAction;
 
 class QStyle;
 
