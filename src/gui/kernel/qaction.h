@@ -67,6 +67,7 @@ class Q_GUI_EXPORT QAction : public QObject
     Q_DECLARE_PRIVATE(QAction)
 
     Q_ENUMS(MenuRole)
+    Q_ENUMS(SoftKeyRole)
     Q_PROPERTY(bool checkable READ isCheckable WRITE setCheckable)
     Q_PROPERTY(bool checked READ isChecked WRITE setChecked DESIGNABLE isCheckable NOTIFY toggled)
     Q_PROPERTY(bool enabled READ isEnabled WRITE setEnabled)
@@ -84,11 +85,16 @@ class Q_GUI_EXPORT QAction : public QObject
 #endif
     Q_PROPERTY(bool visible READ isVisible WRITE setVisible)
     Q_PROPERTY(MenuRole menuRole READ menuRole WRITE setMenuRole)
+    Q_PROPERTY(SoftKeyRole softKeyRole READ softKeyRole WRITE setSoftKeyRole)
     Q_PROPERTY(bool iconVisibleInMenu READ isIconVisibleInMenu WRITE setIconVisibleInMenu)
 
 public:
     enum MenuRole { NoRole, TextHeuristicRole, ApplicationSpecificRole, AboutQtRole,
                     AboutRole, PreferencesRole, QuitRole };
+    enum SoftKeyRole { Options, Select, Back, Next, Previous, Ok, Cancel, Edit,
+                    View, BackSpace, EndEdit, RevertEdit, Deselect, Finish, Menu,
+                    ContextMenu, Custom, SoftKey1, SoftKey2, SoftKey3, SoftKey4 };
+    
     explicit QAction(QObject* parent);
     QAction(const QString &text, QObject* parent);
     QAction(const QIcon &icon, const QString &text, QObject* parent);
@@ -167,6 +173,9 @@ public:
 
     void setMenuRole(MenuRole menuRole);
     MenuRole menuRole() const;
+
+    void setSoftKeyRole(SoftKeyRole softKeyRole);
+    SoftKeyRole softKeyRole() const;
 
     void setIconVisibleInMenu(bool visible);
     bool isIconVisibleInMenu() const;

@@ -1348,6 +1348,31 @@ QAction::MenuRole QAction::menuRole() const
 }
 
 /*!
+    \property QAction::softKeyRole
+    \brief the action's softkey role
+    \since 4.6
+
+    This indicates what softkey action this action is. Usually used on mobile
+    platforms to map QActions no hardware keys.
+    
+    The softkey role can be changed any time.
+*/
+void QAction::setSoftKeyRole(SoftKeyRole softKeyRole)
+{
+    Q_D(QAction);
+    if (d->softKeyRole == softKeyRole)
+        return;
+
+    d->softKeyRole = softKeyRole;
+    d->sendDataChanged();
+}
+
+QAction::SoftKeyRole QAction::softKeyRole() const
+{
+    Q_D(const QAction);
+    return d->softKeyRole;
+}
+/*!
     \property QAction::iconVisibleInMenu
     \brief Whether or not an action should show an icon in a menu
     \since 4.4
