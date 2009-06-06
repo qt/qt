@@ -91,9 +91,11 @@ class Q_GUI_EXPORT QAction : public QObject
 public:
     enum MenuRole { NoRole, TextHeuristicRole, ApplicationSpecificRole, AboutQtRole,
                     AboutRole, PreferencesRole, QuitRole };
-    enum SoftKeyRole { Options, Select, Back, Next, Previous, Ok, Cancel, Edit,
-                    View, BackSpace, EndEdit, RevertEdit, Deselect, Finish, Menu,
-                    ContextMenu, Custom, SoftKey1, SoftKey2, SoftKey3, SoftKey4 };
+    enum SoftKeyRole { OptionsSoftKey, SelectSoftKey, BackSoftKey, NextSoftKey, PreviousSoftKey, 
+                    OkSoftKey, CancelSoftKey, EditSoftKey, ViewSoftKey, BackSpaceSoftKey, 
+                    EndEditSoftKey, RevertEditSoftKey, DeselectSoftKey, FinishSoftKey, 
+                    MenuSoftKey, ContextMenuSoftKey, Key1SoftKey, Key2SoftKey, 
+                    Key3SoftKey, Key4SoftKey, CustomSoftKey };
     
     explicit QAction(QObject* parent);
     QAction(const QString &text, QObject* parent);
