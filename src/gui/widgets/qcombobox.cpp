@@ -2438,7 +2438,7 @@ void QComboBox::showPopup()
 #ifdef QT_KEYPAD_NAVIGATION
     if (QApplication::keypadNavigationEnabled())
         view()->setEditFocus(true);
-    QKeyEventSoftKey::addSoftKey(QAction::CancelSoftKey, Qt::Key_Back, this);
+    QKeyEventSoftKey::addSoftKey(QAction::CancelSoftKey, Qt::Key_Back, view());
 #endif
 }
 
