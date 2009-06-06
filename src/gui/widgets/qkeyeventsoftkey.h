@@ -57,6 +57,7 @@ class Q_GUI_EXPORT QKeyEventSoftKey : QObject
     Q_OBJECT
 public:
     QKeyEventSoftKey(QAction *softKeyAction, Qt::Key key, QObject *parent);
+    static QString roleText(QAction::SoftKeyRole role);
     static void addSoftKey(QAction::SoftKeyRole standardRole, Qt::Key key, QWidget *actionWidget);
     static void removeSoftkey(QWidget *focussedWidget);
 private:
