@@ -59,7 +59,6 @@ class QMenuBar;
 class QStatusBar;
 class QToolBar;
 class QMenu;
-class QSoftKeyStack;
 
 class Q_GUI_EXPORT QMainWindow : public QWidget
 {
@@ -130,13 +129,7 @@ public:
     QWidget  *menuWidget() const;
     void setMenuWidget(QWidget *menubar);
 #endif
-    
-#ifndef QT_NO_SOFTKEYSTACK
-    QSoftKeyStack *softKeyStack() const;
-    void setSoftKeyStack(QSoftKeyStack *softKeyStack);
-    bool hasSoftKeyStack() const;
-#endif
-    
+
 #ifndef QT_NO_STATUSBAR
     QStatusBar *statusBar() const;
     void setStatusBar(QStatusBar *statusbar);
