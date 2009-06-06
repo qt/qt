@@ -11528,6 +11528,7 @@ void QWidget::setSoftKeys(QAction *softKey)
 {
     Q_D(QWidget);
     qDeleteAll(d->softKeys);
+    d->softKeys.clear();
     if (softKey)
         d->softKeys.append(softKey);
 //    d->setNativeSoftKeys(softkeys);
@@ -11537,6 +11538,7 @@ void QWidget::setSoftKeys(const QList<QAction*> &softKeys)
 {
     Q_D(QWidget);
     qDeleteAll(d->softKeys);
+    d->softKeys.clear();
     for(int i = 0; i < softKeys.count(); i++)
         d->softKeys.append(softKeys.at(i));
     
