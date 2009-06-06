@@ -11531,7 +11531,8 @@ void QWidget::setSoftKeys(QAction *softKey)
     d->softKeys.clear();
     if (softKey)
         d->softKeys.append(softKey);
-//    d->setNativeSoftKeys(softkeys);
+    if (QApplication::focusWidget() == this)
+        d->setNativeSoftKeys(this->softKeys());
 }
 
 void QWidget::setSoftKeys(const QList<QAction*> &softKeys)
@@ -11542,7 +11543,8 @@ void QWidget::setSoftKeys(const QList<QAction*> &softKeys)
     for(int i = 0; i < softKeys.count(); i++)
         d->softKeys.append(softKeys.at(i));
     
-    //    d->setNativeSoftKeys(softkeys);
+    if (QApplication::focusWidget() == this)
+        d->setNativeSoftKeys(this->softKeys());
 }
 
 /*! \fn const QX11Info &QWidget::x11Info() const

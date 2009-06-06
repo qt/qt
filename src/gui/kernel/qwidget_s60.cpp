@@ -107,7 +107,8 @@ static bool isSame(const QList<QAction*>& a, const QList<QAction*>& b)
 
 void QWidgetPrivate::setNativeSoftKeys(const QList<QAction*> &softkeys)
 {
-    if (QApplication::focusWidget()) {
+    Q_Q(QWidget);
+    if (QApplication::focusWidget() && q!=QApplication::focusWidget()) {
         QList<QAction *> old = QApplication::focusWidget()->softKeys();
         if (isSame(old, softkeys ))
             return;
