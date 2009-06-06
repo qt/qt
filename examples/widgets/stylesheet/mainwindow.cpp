@@ -46,9 +46,6 @@
 
 MainWindow::MainWindow()
 {
-    QSoftKeyStack* stack = new QSoftKeyStack(this);
-    setSoftKeyStack(stack);
-    
     ui.setupUi(this);
 
     ui.nameLabel->setProperty("class", "mandatory QLabel");

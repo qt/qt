@@ -39,6 +39,8 @@
 **
 ****************************************************************************/
 
+#include "qapplication.h"
+#include "qevent.h"
 #include "qkeyeventsoftkey.h"
 
 QT_BEGIN_NAMESPACE
@@ -75,4 +77,3 @@ QT_END_NAMESPACE
 
 #include "moc_qkeyeventsoftkey.cpp"
 
-#endif // QT_NO_ACTION

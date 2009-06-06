@@ -25,6 +25,7 @@ HEADERS += \
         widgets/qframe.h \
         widgets/qframe_p.h \
         widgets/qgroupbox.h \
+        widgets/qkeyeventsoftkey.h \
         widgets/qlabel.h \
         widgets/qlabel_p.h \
         widgets/qlcdnumber.h \
@@ -78,8 +79,8 @@ HEADERS += \
         widgets/qtoolbararealayout_p.h \
         widgets/qplaintextedit.h \
         widgets/qplaintextedit_p.h \
-        widgets/qprintpreviewwidget.h \
-        widgets/qkeyeventsoftkey.h \
+        widgets/qprintpreviewwidget.h
+        
 SOURCES += \
         widgets/qabstractbutton.cpp \
         widgets/qabstractslider.cpp \
@@ -97,6 +98,7 @@ SOURCES += \
         widgets/qfontcombobox.cpp \
         widgets/qframe.cpp \
         widgets/qgroupbox.cpp \
+        widgets/qkeyeventsoftkey.cpp \
         widgets/qlabel.cpp \
         widgets/qlcdnumber.cpp \
         widgets/qlineedit.cpp \
@@ -138,8 +140,7 @@ SOURCES += \
         widgets/qwidgetanimator.cpp \
         widgets/qtoolbararealayout.cpp \
         widgets/qplaintextedit.cpp \
-        widgets/qprintpreviewwidget.cpp \
-        widgets/qkeyeventsoftkey.cpp \
+        widgets/qprintpreviewwidget.cpp
 
 !embedded:mac {
     HEADERS += widgets/qmacnativewidget_mac.h \
@@ -162,6 +163,5 @@ wince*: {
 }
 
 symbian*: {
-    SOURCES += \
-        widgets/qmenu_symbian.cpp \
+    SOURCES += widgets/qmenu_symbian.cpp
 }

@@ -84,6 +84,9 @@ class RDrawableWindow;
 class CCoeControl;
 class CAknTitlePane;
 class CAknContextPane;
+// The following 2 defines may only be needed for s60. To be seen.
+#define SOFTKEYSTART 5000
+#define SOFTKEYEND (5000 + Qt::Key_Context4-Qt::Key_Context1)
 #endif
 
 QT_BEGIN_NAMESPACE

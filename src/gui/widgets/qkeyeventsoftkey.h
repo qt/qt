@@ -42,20 +42,22 @@
 #ifndef QKEYEVENSOFTKEY_H
 #define QKEYEVENSOFTKEY_H
 
+#include <QtCore/qobject.h>
+#include "QtGui/qaction.h"
 QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
 QT_MODULE(Gui)
 
-#include "qaction.h"
 
-class QKeyEventSoftKey : QObject
+
+class Q_GUI_EXPORT QKeyEventSoftKey : QObject
 {
     Q_OBJECT
 public:
     QKeyEventSoftKey(QAction *softKeyAction, Qt::Key key, QObject *parent);
-    static void addSoftKey(QAction::StandardRole standardRole, Qt::Key key, QWidget *actionWidget);
+    static void addSoftKey(QAction::SoftKeyRole standardRole, Qt::Key key, QWidget *actionWidget);
     static void removeSoftkey(QWidget *focussedWidget);
 private:
     QAction *m_softKeyAction;

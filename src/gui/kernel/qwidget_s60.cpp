@@ -62,9 +62,6 @@ QWidget *QWidgetPrivate::mouseGrabber = 0;
 QWidget *QWidgetPrivate::keyboardGrabber = 0;
 
 #define QSoftkeySet QList <QAction*>
-// The following 2 defines may only be needed for s60. To be seen.
-#define SOFTKEYSTART 5000
-#define SOFTKEYEND (5000 + Qt::Key_Context4-Qt::Key_Context1)
 
 static void mapSoftKeys(const QSoftkeySet &softkeys)
 {

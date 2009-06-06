@@ -61,6 +61,7 @@
 #ifndef QT_NO_ACCESSIBILITY
 #include <qaccessible.h>
 #endif
+#include <qkeyeventsoftkey.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -2003,7 +2004,7 @@ void QAbstractItemView::keyPressEvent(QKeyEvent *event)
         if (QApplication::keypadNavigationEnabled()) {
             if (!hasEditFocus()) {
                 setEditFocus(true);
-                QKeyEventSoftKey::addSoftKey(QAction::Back, Qt::Key_Back, this);
+                QKeyEventSoftKey::addSoftKey(QAction::BackSoftKey, Qt::Key_Back, this);
                 return;
             }
         }
