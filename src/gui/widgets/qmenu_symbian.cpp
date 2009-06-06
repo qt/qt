@@ -214,7 +214,7 @@ static void rebuildMenu()
     QMenuBarPrivate *mb = 0;
     QWidget *w = qApp->activeWindow();
     QMainWindow *mainWindow = qobject_cast<QMainWindow*>(w);
-    if ((mainWindow) && mainWindow->hasSoftKeyStack()) {
+    /*    if ((mainWindow) && mainWindow->hasSoftKeyStack()) {
         QSoftKeyStack* softKeyStack = mainWindow->softKeyStack();
         if (!softKeyStack->isEmpty()) {
             const QSoftkeySet& softKeyTop = softKeyStack->top();
@@ -231,7 +231,7 @@ static void rebuildMenu()
             }
         }
     }
-    
+*/    
     if (w) {
         mb = menubars()->value(w);
         qt_symbian_menu_static_cmd_id = QT_FIRST_MENU_ITEM;
