@@ -1795,7 +1795,7 @@ MakefileGenerator::writeExtraCompilerTargets(QTextStream &t)
                 tmp_clean = tmp_out;
             if(tmp_clean.indexOf("${QMAKE_") == -1) {
                 t << "\n\t" << "-$(DEL_FILE) " << tmp_clean;
-                if (isForSymbian())
+                if (Option::shellPath.isEmpty())
                     t << " 2> NUL"; // Eliminate unnecessary warnings
                 wrote_clean = true;
             }
@@ -1825,7 +1825,7 @@ MakefileGenerator::writeExtraCompilerTargets(QTextStream &t)
                     }
                 }
                 if(!cleans.isEmpty())
-                    if (isForSymbian())
+                    if (Option::shellPath.isEmpty())
                         t << valGlue(cleans, "\n\t" + del_statement, " 2> NUL\n\t" + del_statement, " 2> NUL");
                     else
                         t << valGlue(cleans, "\n\t" + del_statement, "\n\t" + del_statement, "");
