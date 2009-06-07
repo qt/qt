@@ -3851,7 +3851,7 @@ if [ "$PLATFORM_QWS" = "yes" ]; then
     Platform="Qt for Embedded Linux"
 elif [ "$PLATFORM_MAC" = "yes" ]; then
     Platform="Qt/Mac"
-else
+elif [ '!' -z "`getQMakeConf \"$XQMAKESPEC\" | grep QMAKE_LIBS_X11 | awk '{print $3;}'`" ]; then
     PLATFORM_X11=yes
     Platform="Qt/X11"
 fi
