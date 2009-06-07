@@ -3,8 +3,8 @@ an intermediate binary format that can be read by the simulated
 QS60Style. So, for example Designer (standalone or in Carbide) will
 be able to display a realistic S60 Ui.
 
-The intermediate binary format hashes of QPictures and QColors,
-streamed to a QByteArray and compressed. The QS60Style could not load
+The intermediate binary format consists of hashes of QPictures and
+QColors, streamed to a QByteArray and compressed. QS60Style could not load
 the Carbide.ui theme directly because SVG handling is unfortunately
 not part of QtGui, and would require a dependency on the QtSvg module.
 
