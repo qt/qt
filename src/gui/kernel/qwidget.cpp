@@ -4880,6 +4880,13 @@ void QWidget::render(QPainter *painter, const QPoint &targetOffset,
     d->extra->inRenderWithPainter = false;
 }
 
+#if !defined(Q_WS_S60)
+void QWidgetPrivate::setNativeSoftKeys(const QList<QAction*> &softkeys)
+{
+    Q_UNUSED(softkeys)
+}
+#endif // !defined(Q_WS_S60)
+
 bool QWidgetPrivate::isAboutToShow() const
 {
     if (data.in_show)
