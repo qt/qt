@@ -871,8 +871,6 @@ static NSMenuItem *qt_mac_menu_merge_action(OSMenuRef merge, QMacMenuAction *act
         }
     }
 
-    if ([ret tag] != 0)
-        ret = 0; // already taken
 #endif
     return ret;
 }
@@ -1131,15 +1129,15 @@ QMenuPrivate::QMacMenuPrivate::addAction(QMacMenuAction *action, QMacMenuAction 
             GetMenuItemAttributes(action->menu, itemCount , &testattr);
             if (mergedItems.contains(action->command)
                  && (testattr & kMenuItemAttrSeparator)) {
-                    InsertMenuItemTextWithCFString(action->menu, 0, qMax(itemCount - 1, 0), attr, action->command);
-                    index = itemCount;
-                 } else {
-                    MenuItemIndex tmpIndex;
-                    AppendMenuItemTextWithCFString(action->menu, 0, attr, action->command, &tmpIndex);
-                    index = tmpIndex;
-                    if (mergedItems.contains(action->command))
-                        AppendMenuItemTextWithCFString(action->menu, 0, kMenuItemAttrSeparator, 0, &tmpIndex);
-                 }
+                InsertMenuItemTextWithCFString(action->menu, 0, qMax(itemCount - 1, 0), attr, action->command);
+                index = itemCount;
+            } else {
+                MenuItemIndex tmpIndex;
+                AppendMenuItemTextWithCFString(action->menu, 0, attr, action->command, &tmpIndex);
+                index = tmpIndex;
+                if (mergedItems.contains(action->command))
+                    AppendMenuItemTextWithCFString(action->menu, 0, kMenuItemAttrSeparator, 0, &tmpIndex);
+            }
 #else
             [menu addItem:newItem];
 #endif
@@ -1477,11 +1475,18 @@ QMenuPrivate::QMacMenuPrivate::removeAction(QMacMenuAction *action)
         DeleteMenuItem(action->menu, qt_mac_menu_find_action(action->menu, action));
 #else
     QMacCocoaAutoReleasePool pool;
-    QT_MANGLE_NAMESPACE(QCocoaMenuLoader) *loader = getMenuLoader();
-    if (action->menuItem == [loader quitMenuItem] || action->menuItem == [loader preferencesMenuItem])
-        [action->menuItem setEnabled:false];
-    else
+    if (action->merged) {
+        if (reinterpret_cast<QAction *>([action->menuItem tag]) == action->action) {
+            QT_MANGLE_NAMESPACE(QCocoaMenuLoader) *loader = getMenuLoader();
+            [action->menuItem setEnabled:false];
+            if (action->menuItem != [loader quitMenuItem]
+                && action->menuItem != [loader preferencesMenuItem]) {
+                [[action->menuItem menu] removeItem:action->menuItem];
+            }
+        }
+    } else {
         [[action->menuItem menu] removeItem:action->menuItem];
+    }
 #endif
     actionItems.removeAll(action);
 }
@@ -1934,6 +1939,23 @@ bool QMenuBar::macUpdateMenuBar()
             [loader ensureAppMenuInMenu:menu];
             [NSApp setMainMenu:menu];
             syncMenuBarItemsVisiblity(mb->d_func()->mac_menubar);
+
+            if (OSMenuRef tmpMerge = QMenuPrivate::mergeMenuHash.value(menu)) {
+                if (QMenuMergeList *mergeList
+                        = QMenuPrivate::mergeMenuItemsHash.value(tmpMerge)) {
+                    const int mergeListSize = mergeList->size();
+
+                    for (int i = 0; i < mergeListSize; ++i) {
+                        const QMenuMergeItem &mergeItem = mergeList->at(i);
+                        // Ideally we would call QMenuPrivate::syncAction, but that requires finding
+                        // the original QMen and likely doing more work than we need.
+                        // For example, enabled is handled below.
+                        [mergeItem.menuItem setTag:reinterpret_cast<long>(
+                                                    static_cast<QAction *>(mergeItem.action->action))];
+                        [mergeItem.menuItem setHidden:!(mergeItem.action->action->isVisible())];
+                    }
+                }
+            }
 #endif
             QWidget *modalWidget = qApp->activeModalWidget();
             if (mb != menubars()->value(modalWidget)) {

@@ -1020,8 +1020,16 @@ QString QInputDialog::cancelButtonText() const
     \since 4.5
     \overload
 
-    Opens the dialog and connects its accepted() signal to the slot specified
-    by \a receiver and \a member.
+    This function connects one of its signals to the slot specified by \a receiver
+    and \a member. The specific signal depends on the arguments that are specified
+    in \a member. These are:
+
+    \list
+      \o textValueSelected() if \a member has a QString for its first argument.
+      \o intValueSelected() if \a member has an int for its first argument.
+      \o doubleValueSelected() if \a member has a double for its first argument.
+      \o accepted() if \a member has NO arguments.
+    \endlist
 
     The signal will be disconnected from the slot when the dialog is closed.
 */
