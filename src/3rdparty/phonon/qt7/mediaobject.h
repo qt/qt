@@ -42,7 +42,10 @@ namespace QT7
     class MediaObjectAudioNode;
 
     class MediaObject : public MediaNode,
-        public Phonon::MediaObjectInterface, public Phonon::AddonInterface
+        public Phonon::MediaObjectInterface
+#ifndef QT_NO_PHONON_MEDIACONTROLLER
+        , public Phonon::AddonInterface
+#endif
     {
         Q_OBJECT
         Q_INTERFACES(Phonon::MediaObjectInterface Phonon::AddonInterface)
@@ -113,6 +116,16 @@ namespace QT7
         void metaDataChanged(QMultiMap<QString,QString>);
         void currentSourceChanged(const MediaSource &newSource);
 
+        // Add-on interface:
+        void availableSubtitlesChanged();
+        void availableAudioChannelsChanged();
+        void titleChanged(int);
+        void availableTitlesChanged(int);
+        void chapterChanged(int);
+        void availableChaptersChanged(int);
+        void angleChanged(int);
+        void availableAnglesChanged(int);
+
     protected:
         void mediaNodeEvent(const MediaNodeEvent *event);
         bool event(QEvent *event);
@@ -126,7 +139,6 @@ namespace QT7
         QuickTimeVideoPlayer *m_nextVideoPlayer;
         QuickTimeAudioPlayer *m_nextAudioPlayer;
         MediaObjectAudioNode *m_mediaObjectAudioNode;
-        QuickTimeMetaData *m_metaData;
 
 #if QT_ALLOW_QUICKTIME
         CVDisplayLinkRef m_displayLink;
@@ -150,6 +162,7 @@ namespace QT7
         bool m_waitNextSwap;
         int m_swapTimeLeft;
         QTime m_swapTime;
+        bool m_autoplayTitles;
 
         void synchAudioVideo();
         void updateCurrentTime();
@@ -170,6 +183,7 @@ namespace QT7
 		void inspectVideoGraphRecursive(MediaNode *node, int &effectCount, int &outputCount);
         void inspectGraph();
         bool isCrossFading();
+        void setCurrentTrack(int track);
 
         QString m_errorString;
         Phonon::ErrorType m_errorType;
