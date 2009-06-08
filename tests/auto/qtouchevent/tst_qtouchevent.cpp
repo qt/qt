@@ -100,6 +100,7 @@ private slots:
     void touchDisabledByDefault();
     void touchEventAcceptedByDefault();
     void touchBeginPropagatesWhenIgnored();
+    void touchUpdateAndEndNeverPropagate();
 };
 
 void tst_QTouchEvent::touchDisabledByDefault()
@@ -153,7 +154,7 @@ void tst_QTouchEvent::touchBeginPropagatesWhenIgnored()
     child.setParent(&window);
     grandchild.setParent(&child);
 
-    // all widgets accept touch events, but
+    // all widgets accept touch events, grandchild ignores, so child sees the event, but not window
     window.setAttribute(Qt::WA_AcceptTouchEvents);
     child.setAttribute(Qt::WA_AcceptTouchEvents);
     grandchild.setAttribute(Qt::WA_AcceptTouchEvents);
@@ -173,6 +174,52 @@ void tst_QTouchEvent::touchBeginPropagatesWhenIgnored()
     QVERIFY(!window.seenTouchBegin);
 }
 
+void tst_QTouchEvent::touchUpdateAndEndNeverPropagate()
+{
+    tst_QTouchEventWidget window, child;
+    child.setParent(&window);
+
+    window.setAttribute(Qt::WA_AcceptTouchEvents);
+    child.setAttribute(Qt::WA_AcceptTouchEvents);
+    child.acceptTouchUpdate = false;
+    child.acceptTouchEnd = false;
+
+    QList<QTouchEvent::TouchPoint> touchPoints;
+    touchPoints.append(QTouchEvent::TouchPoint(0));
+    QTouchEvent touchBeginEvent(QEvent::TouchBegin,
+                                Qt::NoModifier,
+                                Qt::TouchPointPressed,
+                                touchPoints);
+    bool res = QApplication::sendEvent(&child, &touchBeginEvent);
+    QVERIFY(res);
+    QVERIFY(touchBeginEvent.isAccepted());
+    QVERIFY(child.seenTouchBegin);
+    QVERIFY(!window.seenTouchBegin);
+
+    // send the touch update to the child, but ignore it, it doesn't propagate
+    QTouchEvent touchUpdateEvent(QEvent::TouchUpdate,
+                                 Qt::NoModifier,
+                                 Qt::TouchPointMoved,
+                                 touchPoints);
+    res = QApplication::sendEvent(&child, &touchUpdateEvent);
+    QVERIFY(res);
+    QVERIFY(!touchUpdateEvent.isAccepted());
+    QVERIFY(child.seenTouchUpdate);
+    QVERIFY(!window.seenTouchUpdate);
+
+    // send the touch end, same thing should happen as with touch update
+    QTouchEvent touchEndEvent(QEvent::TouchEnd,
+                                 Qt::NoModifier,
+                                 Qt::TouchPointMoved,
+                                 touchPoints);
+    res = QApplication::sendEvent(&child, &touchEndEvent);
+    QVERIFY(res);
+    QVERIFY(!touchEndEvent.isAccepted());
+    QVERIFY(child.seenTouchEnd);
+    QVERIFY(!window.seenTouchEnd);
+
+}
+
 QTEST_MAIN(tst_QTouchEvent)
 
-#include "tst_qtouchevent.moc"
+#include "tst_qtouchevent.moc"      
