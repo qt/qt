@@ -796,7 +796,6 @@ QFont::QFont(const QString &family, int pointSize, int weight, bool italic)
 
     if (pointSize <= 0) {
 #ifdef Q_WS_S60
-        // TODO: What should the default QFont pointSize for Q_WS_S60 be?
         pointSize = 7;
 #else
         pointSize = 12;
