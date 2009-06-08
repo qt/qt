@@ -61,9 +61,7 @@ extern bool qt_nograb();
 QWidget *QWidgetPrivate::mouseGrabber = 0;
 QWidget *QWidgetPrivate::keyboardGrabber = 0;
 
-#define QSoftkeySet QList <QAction*>
-
-static void mapSoftKeys(const QSoftkeySet &softkeys)
+static void mapSoftKeys(const QList <QAction*> &softkeys)
 {
 /*    if (softkeys.count() == 1 && softkeys.at(0)->menuRole()==QAction::MenuSoftKey) {
         softkeys.at(0)->setNativePosition(0);
