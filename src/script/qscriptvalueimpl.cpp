@@ -339,6 +339,8 @@ QVariant QScriptValueImpl::toVariant() const
         if (isQObject())        
             return qVariantFromValue(toQObject());
 #endif
+        if (isArray())
+            return QScriptEnginePrivate::variantListFromArray(*this);
 
         QScriptValueImpl v = engine()->toPrimitive(*this);
         if (!v.isObject())

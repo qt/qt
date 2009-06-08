@@ -657,6 +657,13 @@ static void qt_set_windows_font_resources()
 
 static void qt_win_read_cleartype_settings()
 {
+#ifdef Q_OS_WINCE
+     UINT result;
+     BOOL ok;
+     ok = SystemParametersInfo(SPI_GETFONTSMOOTHING, 0, &result, 0);
+     if (ok)
+         qt_cleartype_enabled = result;
+#else
     QT_WA({
         UINT result;
         BOOL ok;
@@ -670,6 +677,7 @@ static void qt_win_read_cleartype_settings()
         if (ok)
             qt_cleartype_enabled = (result == FE_FONTSMOOTHINGCLEARTYPE);
     });
+#endif
 }
 
 
@@ -1440,6 +1448,7 @@ static bool qt_is_translatable_mouse_event(UINT message)
     return (message >= WM_MOUSEFIRST && message <= WM_MOUSELAST ||
                 message >= WM_XBUTTONDOWN && message <= WM_XBUTTONDBLCLK)
             && message != WM_MOUSEWHEEL
+            && message != WM_MOUSEHWHEEL
 
 #ifndef Q_WS_WINCE
             || message >= WM_NCMOUSEMOVE && message <= WM_NCMBUTTONDBLCLK
@@ -1793,6 +1802,7 @@ LRESULT CALLBACK QtWndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam
             break;
 
         case WM_MOUSEWHEEL:
+        case WM_MOUSEHWHEEL:
             result = widget->translateWheelEvent(msg);
             break;
 
@@ -2692,6 +2702,7 @@ bool qt_try_modal(QWidget *widget, MSG *msg, int& ret)
 #endif
         if ((type >= WM_MOUSEFIRST && type <= WM_MOUSELAST) ||
              type == WM_MOUSEWHEEL || type == (int)WM95_MOUSEWHEEL ||
+             type == WM_MOUSEHWHEEL ||
              type == WM_MOUSELEAVE ||
              (type >= WM_KEYFIRST && type <= WM_KEYLAST)
 #ifndef Q_WS_WINCE
@@ -3303,12 +3314,12 @@ bool QETWidget::translateWheelEvent(const MSG &msg)
     state = translateButtonState(GET_KEYSTATE_WPARAM(msg.wParam), 0, 0);
 
     int delta;
-    if (msg.message == WM_MOUSEWHEEL)
+    if (msg.message == WM_MOUSEWHEEL || msg.message == WM_MOUSEHWHEEL)
         delta = (short) HIWORD (msg.wParam);
     else
         delta = (int) msg.wParam;
 
-    Qt::Orientation orient = (state&Qt::AltModifier
+    Qt::Orientation orient = (msg.message == WM_MOUSEHWHEEL || state&Qt::AltModifier
 #if 0
     // disabled for now - Trenton's one-wheel mouse makes trouble...
     // "delta" for usual wheels is +-120. +-240 seems to indicate
@@ -3321,6 +3332,13 @@ bool QETWidget::translateWheelEvent(const MSG &msg)
         delta /= 2;
 #endif
        ) ? Qt::Horizontal : Qt::Vertical;
+
+    // according to the MSDN documentation on WM_MOUSEHWHEEL:
+    // a positive value indicates that the wheel was rotated to the right;
+    // a negative value indicates that the wheel was rotated to the left.
+    // Qt defines this value as the exact opposite, so we have to flip the value!
+    if (msg.message == WM_MOUSEHWHEEL)
+        delta = -delta;
 
     QPoint globalPos;
 

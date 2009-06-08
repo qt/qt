@@ -52,7 +52,7 @@
 
 #include <QMultiHash>
 #include <QObject>
-#include <QtOpenGL>
+#include <QtOpenGL/QtOpenGL>
 
 QT_BEGIN_NAMESPACE
 

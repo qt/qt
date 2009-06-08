@@ -351,7 +351,6 @@ private slots:
     void toplevelLineEditFocus();
 
     void focusWidget_task254563();
-    void focusWidget_mixed_widget_hierarchy();
 
 private:
     bool ensureScreenSize(int width, int height);
@@ -8994,23 +8993,6 @@ void tst_QWidget::focusWidget_task254563()
     delete widget; // will call clearFocus but that doesn't help
     QVERIFY(top.focusWidget() != widget); //dangling pointer
 }
-
-void tst_QWidget::focusWidget_mixed_widget_hierarchy()
-{
-    QWidget top;
-    top.show();
-    QWidget notvisible(&top);
-    QWidget *visible = new QWidget(&notvisible);
-    visible->show();
-
-    visible->setFocus();
-    notvisible.setFocus();
-    notvisible.show();
-    QCOMPARE(top.focusWidget(), visible);
-    QCOMPARE(notvisible.focusWidget(), visible);
-    QCOMPARE(visible->focusWidget(), visible);
-}
-
 
 QTEST_MAIN(tst_QWidget)
 #include "tst_qwidget.moc"
