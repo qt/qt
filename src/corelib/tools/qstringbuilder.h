@@ -122,6 +122,16 @@ template <> struct QConcatenable<QChar>
     }
 };
 
+template <> struct QConcatenable<QCharRef>
+{
+    typedef QCharRef type;
+    static int size(const QCharRef &) { return 1; }
+    static inline void appendTo(const QCharRef &c, QChar *&out)
+    {
+        *out++ = QChar(c);
+    }
+};
+
 template <> struct QConcatenable<QLatin1String>
 {
     typedef QLatin1String type;
@@ -173,8 +183,8 @@ template <> struct QConcatenable<QStringRef>
 template <int N> struct QConcatenable<char[N]>
 {
     typedef char type[N];
-    static int size(const char *) { return N - 1; }
-    static inline void appendTo(const char *a, QChar *&out)
+    static int size(const char[N]) { return N - 1; }
+    static inline void appendTo(const char a[N], QChar *&out)
     {
         for (int i = 0; i < N - 1; ++i)
             *out++ = QLatin1Char(a[i]);
