@@ -3,7 +3,7 @@
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
 ** Contact: Qt Software Information (qt-info@nokia.com)
 **
-** This file is part of the qmake application of the Qt Toolkit.
+** This file is part of the tools applications of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,33 +39,16 @@
 **
 ****************************************************************************/
 
-#ifndef QMAKE_PCH_H
-#define QMAKE_PCH_H
-#include <qglobal.h>
-#ifdef Q_WS_WIN
-# define _POSIX_
-# include <limits.h>
-# undef _POSIX_
-#endif
+#ifndef S60THEMECONVERT_H
+#define S60THEMECONVERT_H
 
-#include <stdio.h>
-//#include "makefile.h"
-//#include "meta.h"
-#include <qfile.h>
-//#include "winmakefile.h"
-//#include <qtextstream.h>
-//#include "project.h"
-#include <qstring.h>
-#include <qstringlist.h>
-#include <qhash.h>
-#include <time.h>
-#include <stdlib.h>
-#include <qregexp.h>
+#include <QString>
 
-QT_BEGIN_NAMESPACE
-//#include <qdir.h>
-//#include "option.h"
+class S60ThemeConvert
+{
+public:
+    static bool convertTdfToBlob(const QString &themeTdf, const QString &themeBlob);
+    static bool convertDefaultThemeToBlob(const QString &themePath, const QString &themeBlob);
+};
 
-QT_END_NAMESPACE
-
-#endif
+#endif // S60THEMECONVERT_H

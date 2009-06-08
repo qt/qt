@@ -84,6 +84,8 @@ private slots:
     void sendArgument_data();
     void sendArgument();
 
+    void sendErrors();
+
 private:
     QProcess proc;
 };
@@ -780,6 +782,29 @@ void tst_QDBusMarshall::sendArgument()
 
     if (value.type() != QVariant::UserType)
         QCOMPARE(extracted, value);
+}
+
+void tst_QDBusMarshall::sendErrors()
+{
+    QDBusConnection con = QDBusConnection::sessionBus();
+
+    QVERIFY(con.isConnected());
+    QDBusMessage msg = QDBusMessage::createSignal("/foo", "local.interfaceName",
+                                                  "signalName");
+    msg << qVariantFromValue(QDBusObjectPath());
+
+    QTest::ignoreMessage(QtWarningMsg, "QDBusConnection: error: could not send signal path \"/foo\" interface \"local.interfaceName\" member \"signalName\"");
+    QVERIFY(!con.send(msg));
+
+    msg.setArguments(QVariantList());
+    QDBusObjectPath path;
+
+    QTest::ignoreMessage(QtWarningMsg, "QDBusObjectPath: invalid path \"abc\"");
+    path.setPath("abc");
+    msg << qVariantFromValue(path);
+
+    QTest::ignoreMessage(QtWarningMsg, "QDBusConnection: error: could not send signal path \"/foo\" interface \"local.interfaceName\" member \"signalName\"");
+    QVERIFY(!con.send(msg));
 }
 
 QTEST_MAIN(tst_QDBusMarshall)

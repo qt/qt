@@ -2955,10 +2955,10 @@ QWidget *QApplication::topLevelAt(const QPoint &p)
                     Window wid = widget->internalWinId();
                     while (ctarget && !w) {
                         X11->ignoreBadwindow();
-                        XTranslateCoordinates(X11->display,
-                                              QX11Info::appRootWindow(screen),
-                                              ctarget, x, y, &unused, &unused, &ctarget);
-                        if (X11->badwindow())
+                        if (!XTranslateCoordinates(X11->display,
+                                                   QX11Info::appRootWindow(screen),
+                                                   ctarget, x, y, &unused, &unused, &ctarget)
+                                || X11->badwindow())
                             break;
                         if (ctarget == wid) {
                             // Found!

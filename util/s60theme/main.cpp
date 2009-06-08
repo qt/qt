@@ -3,7 +3,7 @@
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
 ** Contact: Qt Software Information (qt-info@nokia.com)
 **
-** This file is part of the qmake application of the Qt Toolkit.
+** This file is part of the tools applications of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,33 +39,40 @@
 **
 ****************************************************************************/
 
-#ifndef QMAKE_PCH_H
-#define QMAKE_PCH_H
-#include <qglobal.h>
-#ifdef Q_WS_WIN
-# define _POSIX_
-# include <limits.h>
-# undef _POSIX_
-#endif
+#include <QtGui>
+#include "s60themeconvert.h"
 
-#include <stdio.h>
-//#include "makefile.h"
-//#include "meta.h"
-#include <qfile.h>
-//#include "winmakefile.h"
-//#include <qtextstream.h>
-//#include "project.h"
-#include <qstring.h>
-#include <qstringlist.h>
-#include <qhash.h>
-#include <time.h>
-#include <stdlib.h>
-#include <qregexp.h>
+int help()
+{
+    qDebug() << "Usage: s60theme [modeldir|theme.tdf] output.blob";
+    qDebug() << "";
+    qDebug() << "Options:";
+    qDebug() << "   modeldir:    Theme 'model' directory in Carbide.ui tree";
+    qDebug() << "   theme.tdf:   Theme .tdf file";
+    qDebug() << "   output.blob: Theme blob output filename";
+    qDebug() << "";
+    qDebug() << "s60theme takes an S60 theme from Carbide.ui and converts";
+    qDebug() << "it into a compact, binary format, that can be directly loaded by";
+    qDebug() << "the QtS60Style.";
+    qDebug() << "";
+    qDebug() << "Visit http://www.forum.nokia.com for details about Carbide.ui";
+    return 1;
+}
 
-QT_BEGIN_NAMESPACE
-//#include <qdir.h>
-//#include "option.h"
+int main(int argc, char *argv[])
+{
+    if (argc != 3)
+        return help();
 
-QT_END_NAMESPACE
+    QApplication app(argc, argv);
 
-#endif
+    const QString input = QString::fromLatin1(argv[1]);
+    const QFileInfo inputInfo(input);
+    const QString output = QString::fromLatin1(argv[2]);
+    if (inputInfo.isDir())
+        return S60ThemeConvert::convertDefaultThemeToBlob(input, output);
+    else if (inputInfo.suffix().compare(QString::fromLatin1("tdf"), Qt::CaseInsensitive) == 0)
+        return S60ThemeConvert::convertTdfToBlob(input, output);
+
+    return help();
+}

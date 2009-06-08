@@ -46,6 +46,7 @@
 #include <qfileinfo.h>
 #include "qlibrary_p.h"
 #include "qdebug.h"
+#include "qdir.h"
 
 #ifndef QT_NO_LIBRARY
 
@@ -301,6 +302,24 @@ void QPluginLoader::setFileName(const QString &fileName)
     }
 
     QString fn = fi.canonicalFilePath();
+    // If not found directly, check also all the available drives
+    if (!fn.length()) {
+        QString stubPath(fi.fileName().length() ? fi.absoluteFilePath() : QString());
+        if (stubPath.length() > 1) {
+            if (stubPath.at(1).toAscii() == ':')
+                stubPath.remove(0,2);
+            QFileInfoList driveList(QDir::drives());
+            foreach(const QFileInfo& drive, driveList) {
+                QString testFilePath(drive.absolutePath() + stubPath);
+                testFilePath = QDir::cleanPath(testFilePath);            
+                if (QFile::exists(testFilePath)) {
+                    fn = testFilePath;
+                    break;
+                }
+            }
+        }
+    }
+    
 #else
     QString fn = QFileInfo(fileName).canonicalFilePath();
 #endif
