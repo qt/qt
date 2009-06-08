@@ -44,7 +44,7 @@
 #include "qcoreapplication.h"
 #include <qdebug.h>
 
-#include <qcore_symbian_p.h>
+#include "qcore_symbian_p.h"
 #include <e32cmn.h>
 QT_BEGIN_NAMESPACE
 
