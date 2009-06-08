@@ -111,7 +111,7 @@ void Window::createCurveIcons()
 
         QPainterPath curvePath;
         curvePath.moveTo(start);
-        for (qreal t = 0; t < 1.0; t+=1.0/curveScale) {
+        for (qreal t = 0; t <= 1.0; t+=1.0/curveScale) {
             QPoint to;
             to.setX(yAxis + curveScale * t);
             to.setY(xAxis - curveScale * curve.valueForProgress(t));
