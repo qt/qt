@@ -19,12 +19,12 @@ Usage examples:
 > s60theme "Eclipse\Examples\Haze\Haze.tdf" Haze.blob
   (Reads the Haze theme and saves it as 'Haze.blob')
 
-To use te blob in a Qt application, get an instance of a QS60Style and call
+To use the blob in a Qt application, get an instance of a QS60Style and call
   style->loadS60ThemeFromBlob("Theme.blob");
 
-The simulated QS60Style will in its constructor by default try to load a
-":/s60Stylethemes/Default.blob". If your application has that resouce width
-exaclty that filename, it will be used by default.
+The simulated QS60Style will, in its constructor by default, try to load a
+":/s60Stylethemes/Default.blob". If your application has that a resource with
+exactly that filename, it will be used by default.
 'Default.blob' is not included in the current Qt source package. But it can
 easily be created with 's60theme' and a fresh install of Carbide.ui
 
