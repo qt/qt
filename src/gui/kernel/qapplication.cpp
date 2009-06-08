@@ -5305,7 +5305,7 @@ bool QApplicationPrivate::translateRawTouchEvent(QWidget *window,
     QHash<QWidget *, StatesAndTouchPoints> widgetsNeedingEvents;
 
     for (int i = 0; i < touchPoints.count(); ++i) {
-        const QTouchEvent::TouchPoint &touchPoint = touchPoints.at(i);
+        QTouchEvent::TouchPoint touchPoint = touchPoints.at(i);
 
         // update state
         QWidget *widget = 0;
@@ -5328,21 +5328,30 @@ bool QApplicationPrivate::translateRawTouchEvent(QWidget *window,
                 widget = closestWidget;
             }
             d->widgetForTouchPointId[touchPoint.id()] = widget;
+            touchPoint.setStartGlobalPos(touchPoint.globalPos());
+            touchPoint.setLastGlobalPos(touchPoint.globalPos());
             d->appCurrentTouchPoints.insert(touchPoint.id(), touchPoint);
             break;
         }
         case Qt::TouchPointReleased:
+        {
             widget = d->widgetForTouchPointId.take(touchPoint.id());
             if (!widget)
                 continue;
 
-            d->appCurrentTouchPoints.remove(touchPoint.id());
+            QTouchEvent::TouchPoint previousTouchPoint = d->appCurrentTouchPoints.take(touchPoint.id());
+            touchPoint.setStartGlobalPos(previousTouchPoint.startGlobalPos());
+            touchPoint.setLastGlobalPos(previousTouchPoint.globalPos());
             break;
+        }
         default:
             widget = d->widgetForTouchPointId.value(touchPoint.id());
             if (!widget)
                 continue;
             Q_ASSERT(d->appCurrentTouchPoints.contains(touchPoint.id()));
+            QTouchEvent::TouchPoint previousTouchPoint = d->appCurrentTouchPoints.value(touchPoint.id());
+            touchPoint.setStartGlobalPos(previousTouchPoint.startGlobalPos());
+            touchPoint.setLastGlobalPos(previousTouchPoint.globalPos());
             d->appCurrentTouchPoints[touchPoint.id()] = touchPoint;
             break;
         }
