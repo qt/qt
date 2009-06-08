@@ -484,7 +484,7 @@ void QMainWindow::setMenuBar(QMenuBar *menuBar)
     if (menuBar) {
         QAction* menu = new QAction(QString::fromLatin1("Menu"), this);
         menu->setSoftKeyRole(QAction::MenuSoftKey);
-        setSoftKeys(menu);
+        setSoftKey(menu);
     }
 }
 

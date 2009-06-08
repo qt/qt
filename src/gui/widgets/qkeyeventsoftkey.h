@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef QKEYEVENSOFTKEY_H
-#define QKEYEVENSOFTKEY_H
+#ifndef QKEYEVENTSOFTKEY_H
+#define QKEYEVENTSOFTKEY_H
 
 #include <QtCore/qobject.h>
 #include "QtGui/qaction.h"

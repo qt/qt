@@ -85,8 +85,8 @@ class CCoeControl;
 class CAknTitlePane;
 class CAknContextPane;
 // The following 2 defines may only be needed for s60. To be seen.
-#define SOFTKEYSTART 5000
-#define SOFTKEYEND (5000 + Qt::Key_Context4-Qt::Key_Context1)
+const int SOFTKEYSTART=5000;
+const int SOFTKEYEND=5004;
 #endif
 
 QT_BEGIN_NAMESPACE
@@ -227,7 +227,7 @@ public:
     explicit QWidgetPrivate(int version = QObjectPrivateVersion);
     ~QWidgetPrivate();
 
-    void setNativeSoftKeys(const QList<QAction*> &softkeys);
+    void setSoftKeys_sys(const QList<QAction*> &softkeys);
     QWExtra *extraData() const;
     QTLWExtra *topData() const;
     QTLWExtra *maybeTopData() const;

@@ -257,7 +257,7 @@ public:
             }
             return 0;
         }
-        void InsertNativeMenuItems(const QList<QAction*> &actions);
+        void insertNativeMenuItems(const QList<QAction*> &actions);
 
     } *symbian_menubar;
     static void symbianCommands(int command);

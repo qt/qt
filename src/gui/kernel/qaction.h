@@ -96,7 +96,6 @@ public:
                     EndEditSoftKey, RevertEditSoftKey, DeselectSoftKey, FinishSoftKey, 
                     MenuSoftKey, ContextMenuSoftKey, Key1SoftKey, Key2SoftKey, 
                     Key3SoftKey, Key4SoftKey, CustomSoftKey };
-    
     explicit QAction(QObject* parent);
     QAction(const QString &text, QObject* parent);
     QAction(const QIcon &icon, const QString &text, QObject* parent);

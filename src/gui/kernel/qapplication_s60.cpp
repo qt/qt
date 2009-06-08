@@ -1,5 +1,5 @@
 /****************************************************************************
-1**
+**
 ** Copyright (C) 2008 Nokia Corporation and/or its subsidiary(-ies).
 ** Contact: Qt Software Information (qt-info@nokia.com)
 **
@@ -1067,9 +1067,7 @@ void QApplication::symbianHandleCommand(int command)
             int index= command-SOFTKEYSTART;
             QWidget* focused = QApplication::focusWidget();
             const QList<QAction*>& softKeys = focused->softKeys();
-            if (index>=softKeys.count()) {
-            // Assert horrible state error
-            }
+            Q_ASSERT(index<softKeys.count());
             softKeys.at(index)->activate(QAction::Trigger);
         }
         else

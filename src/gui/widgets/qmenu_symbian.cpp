@@ -40,8 +40,6 @@
 
 #include "qmenu.h"
 #include "qapplication.h"
-#include "qmainwindow.h"
-#include "qtoolbar.h"
 #include "qevent.h"
 #include "qstyle.h"
 #include "qdebug.h"
@@ -221,13 +219,12 @@ static void rebuildMenu()
     widgetWithContextMenu = 0;
     QMenuBarPrivate *mb = 0;
     QWidget *w = qApp->activeWindow();
-    QMainWindow *mainWindow = qobject_cast<QMainWindow*>(w);
     QWidget* focusWidget = QApplication::focusWidget();
     if (focusWidget) {
         if (hasContextMenu(focusWidget))
             widgetWithContextMenu = focusWidget;
     }
-    
+
     if (w) {
         mb = menubars()->value(w);
         qt_symbian_menu_static_cmd_id = QT_FIRST_MENU_ITEM;
@@ -389,7 +386,7 @@ void QMenuBarPrivate::QSymbianMenuBarPrivate::removeAction(QSymbianMenuAction *a
     rebuild();
 }
 
-void QMenuBarPrivate::QSymbianMenuBarPrivate::InsertNativeMenuItems(const QList<QAction*> &actions)
+void QMenuBarPrivate::QSymbianMenuBarPrivate::insertNativeMenuItems(const QList<QAction*> &actions)
 {
     for (int i = 0; i <actions.size(); ++i) {
         QSymbianMenuAction *symbianActionTopLevel = new QSymbianMenuAction;
@@ -408,14 +405,14 @@ void QMenuBarPrivate::QSymbianMenuBarPrivate::rebuild()
     qt_symbian_menu_static_cmd_id = QT_FIRST_MENU_ITEM;
     deleteAll( &symbianMenus );
     if (d)
-        InsertNativeMenuItems(d->actions);
+        insertNativeMenuItems(d->actions);
 
     contextMenuActionList.clear();
     if (widgetWithContextMenu) {
         contexMenuCommand = qt_symbian_menu_static_cmd_id;
         contextAction.setText(QString("Actions"));
         contextMenuActionList.append(&contextAction);
-        InsertNativeMenuItems(contextMenuActionList);
+        insertNativeMenuItems(contextMenuActionList);
     }
         
 }

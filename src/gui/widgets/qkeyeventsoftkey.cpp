@@ -56,26 +56,26 @@ QKeyEventSoftKey::QKeyEventSoftKey(QAction *softKeyAction, Qt::Key key, QObject 
 QString QKeyEventSoftKey::roleText(QAction::SoftKeyRole role)
 {
     switch (role) {
-        case QAction::OptionsSoftKey:
-            return QAction::tr("Options");
-        case QAction::SelectSoftKey:
-            return QAction::tr("Select");
-        case QAction::BackSoftKey:
-            return QAction::tr("Back");
-        case QAction::NextSoftKey:
-            return QAction::tr("Next");
-        case QAction::PreviousSoftKey:
-            return QAction::tr("Previous");
-        case QAction::OkSoftKey:
-            return QAction::tr("Ok");
-        case QAction::CancelSoftKey:
-            return QAction::tr("Cancel");
-        case QAction::EditSoftKey:
-            return QAction::tr("Edit");
-        case QAction::ViewSoftKey:
-            return QAction::tr("View");
-        default:
-            return QString();
+    case QAction::OptionsSoftKey:
+        return QAction::tr("Options");
+    case QAction::SelectSoftKey:
+        return QAction::tr("Select");
+    case QAction::BackSoftKey:
+        return QAction::tr("Back");
+    case QAction::NextSoftKey:
+        return QAction::tr("Next");
+    case QAction::PreviousSoftKey:
+        return QAction::tr("Previous");
+    case QAction::OkSoftKey:
+        return QAction::tr("Ok");
+    case QAction::CancelSoftKey:
+        return QAction::tr("Cancel");
+    case QAction::EditSoftKey:
+        return QAction::tr("Edit");
+    case QAction::ViewSoftKey:
+        return QAction::tr("View");
+    default:
+        return QString();
     };
 }
 void QKeyEventSoftKey::addSoftKey(QAction::SoftKeyRole standardRole, Qt::Key key, QWidget *actionWidget)
@@ -86,12 +86,12 @@ void QKeyEventSoftKey::addSoftKey(QAction::SoftKeyRole standardRole, Qt::Key key
     QKeyEventSoftKey *softKey = new QKeyEventSoftKey(action, key, actionWidget);
     connect(action, SIGNAL(triggered()), softKey, SLOT(sendKeyEvent()));
     connect(action, SIGNAL(destroyed()), softKey, SLOT(deleteLater()));
-    actionWidget->setSoftKeys(action);
+    actionWidget->setSoftKey(action);
 }
 
 void QKeyEventSoftKey::removeSoftkey(QWidget *focussedWidget)
 {
-    focussedWidget->setSoftKeys(0);
+    focussedWidget->setSoftKey(0);
 }
 
 void QKeyEventSoftKey::sendKeyEvent()
