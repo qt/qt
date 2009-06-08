@@ -1475,7 +1475,7 @@ void tst_CssParser::extractFontFamily_data()
     QTest::newRow("unquoted-family-name2") << "font-family: Times        New     Roman" << QString("Times New Roman");
     QTest::newRow("multiple") << "font-family: Times New Roman  , foobar, 'baz'" << QString("Times New Roman");
     QTest::newRow("multiple2") << "font-family: invalid,  Times New   Roman " << QString("Times New Roman");
-    QTest::newRow("invalid") << "font-family: invalid" << QFont().family();
+    QTest::newRow("invalid") << "font-family: invalid" << QFontInfo(QFont("invalid font")).family();
     QTest::newRow("shorthand") << "font: 12pt Times New Roman" << QString("Times New Roman");
     QTest::newRow("shorthand multiple quote") << "font: 12pt invalid, \"Times New Roman\" " << QString("Times New Roman");
     QTest::newRow("shorthand multiple") << "font: 12pt invalid, Times New Roman " << QString("Times New Roman");

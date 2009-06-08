@@ -116,8 +116,8 @@ void HttpWindow::downloadFile()
         if (QMessageBox::question(this, tr("HTTP"), 
                                   tr("There already exists a file called %1 in "
                                      "the current directory. Overwrite?").arg(fileName),
-                                  QMessageBox::Ok|QMessageBox::Cancel, QMessageBox::Cancel)
-            == QMessageBox::Cancel)
+                                  QMessageBox::Yes|QMessageBox::No, QMessageBox::No)
+            == QMessageBox::No)
             return;
         QFile::remove(fileName);
     }
