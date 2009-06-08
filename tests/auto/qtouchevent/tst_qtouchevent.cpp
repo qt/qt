@@ -42,6 +42,25 @@
 #include <QtGui>
 #include <QtTest>
 
+class tst_QTouchEventWidget : public QWidget
+{
+public:
+    bool event(QEvent *event)
+    {
+        switch (event->type()) {
+        case QEvent::TouchBegin:
+            break;
+        case QEvent::TouchUpdate:
+            break;
+        case QEvent::TouchEnd:
+            break;
+        default:
+            return QWidget::event(event);
+        }
+        return true;
+    }
+};
+
 class tst_QTouchEvent : public QObject
 {
     Q_OBJECT
@@ -78,6 +97,8 @@ void tst_QTouchEvent::touchEventAcceptedByDefault()
     QWidget widget;
     widget.setAttribute(Qt::WA_AcceptTouchEvents);
 
+    // QWidget doesn't handle touch event by default, so sending it fails
+    // (but the event is accepted)
     QList<QTouchEvent::TouchPoint> touchPoints;
     touchPoints.append(QTouchEvent::TouchPoint(0));
     QTouchEvent touchEvent(QEvent::TouchBegin,
@@ -85,9 +106,19 @@ void tst_QTouchEvent::touchEventAcceptedByDefault()
                            Qt::TouchPointPressed,
                            touchPoints);
     bool res = QApplication::sendEvent(&widget, &touchEvent);
-    QVERIFY(!res); // not handled...
-    QVERIFY(touchEvent.isAccepted()); // but accepted
+    QVERIFY(!res);
+    QVERIFY(touchEvent.isAccepted());
+
+    // tst_QTouchEventWidget does handle, sending succeeds
+    tst_QTouchEventWidget touchWidget;
+    touchWidget.setAttribute(Qt::WA_AcceptTouchEvents);
+    touchEvent.ignore();
+    res = QApplication::sendEvent(&touchWidget, &touchEvent);
+    QVERIFY(res);
+    QVERIFY(touchEvent.isAccepted());
 }
+
+
 
 QTEST_MAIN(tst_QTouchEvent)
 
