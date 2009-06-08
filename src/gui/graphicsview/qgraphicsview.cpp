@@ -314,7 +314,9 @@ void QGraphicsViewPrivate::convertTouchEventToGraphicsSceneTouchEvent(QGraphicsV
         touchPoint.setScenePos(d->mapToScene(touchPoint.pos()));
         touchPoint.setStartScenePos(d->mapToScene(touchPoint.startPos()));
         touchPoint.setLastScenePos(d->mapToScene(touchPoint.lastPos()));
-#warning FIXME
+#ifdef Q_CC_GNU
+#  warning FIXME
+#endif
         // ### touchPoint.setSceneSize(d->mapToScene(touchPoint.screenSize()));
 
         // screenPos, startScreenPos, lastScreenPos, and screenSize are already set from the

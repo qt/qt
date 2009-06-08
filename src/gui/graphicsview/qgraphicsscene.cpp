@@ -5693,7 +5693,9 @@ void QGraphicsScenePrivate::updateTouchPointsForItem(QGraphicsItem *item,
         touchPoint.setPos(item->d_ptr->genericMapFromScene(touchPoint.scenePos(), touchEvent->widget()));
         touchPoint.setStartPos(item->d_ptr->genericMapFromScene(touchPoint.startScenePos(), touchEvent->widget()));
         touchPoint.setLastPos(item->d_ptr->genericMapFromScene(touchPoint.lastScenePos(), touchEvent->widget()));
-#warning FIXME
+#ifdef Q_CC_GNU
+#  warning FIXME
+#endif
         // ### touchPoint.setSize(item->d_ptr->genericMapFromScene(touchPoint.sceneSize(), touchEvent->widget()));
     }
     touchEvent->setTouchPoints(touchPoints);

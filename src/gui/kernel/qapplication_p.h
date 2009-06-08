@@ -453,7 +453,7 @@ public:
     static qt_CloseTouchInputHandlePtr CloseTouchInputHandle;
 
     QHash<DWORD, int> touchInputIDToTouchPointID;
-    QVector<QTouchEvent::TouchPoint *> appAllTouchPoints;
+    QList<QTouchEvent::TouchPoint> appAllTouchPoints;
     bool translateTouchEvent(const MSG &msg);
 #endif
 
