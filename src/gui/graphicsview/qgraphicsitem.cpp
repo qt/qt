@@ -39,8 +39,6 @@
 **
 ****************************************************************************/
 
-#define QGRAPHICSITEM_NO_ITEMCHANGE
-
 /*!
     \class QGraphicsItem
     \brief The QGraphicsItem class is the base class for all graphical
@@ -310,7 +308,14 @@
     \value ItemHasNoContents The item does not paint anything (i.e., calling
     paint() on the item has no effect). You should set this flag on items that
     do not need to be painted to ensure that Graphics View avoids unnecessary
-    painting preparations.
+    painting preparations. This flag was introduced in Qt 4.6.
+
+    \value ItemSendsGeometryChanges The item enables itemChange()
+    notifications for ItemPositionChange, ItemPositionHasChanged,
+    ItemMatrixChange, ItemTransformChange, and ItemTransformHasChanged. For
+    performance reasons, these notifications are disabled by default. You must
+    enable this flag to receive notifications for position and transform
+    changes. This flag was introduced in Qt 4.6.
 */
 
 /*!
@@ -349,33 +354,36 @@
     changing. This value is obsolete; you can use ItemTransformChange instead.
 
     \value ItemPositionChange The item's position changes. This notification
-    is only sent when the item's local position changes, relative to its
-    parent, has changed (i.e., as a result of calling setPos() or
-    moveBy()). The value argument is the new position (i.e., a QPointF).  You
-    can call pos() to get the original position. Do not call setPos() or
-    moveBy() in itemChange() as this notification is delivered; instead, you
-    can return the new, adjusted position from itemChange(). After this
-    notification, QGraphicsItem immediately sends the ItemPositionHasChanged
-    notification if the position changed.
+    is sent if the ItemSendsGeometryChanges flag is enabled, and when the
+    item's local position changes, relative to its parent (i.e., as a result
+    of calling setPos() or moveBy()). The value argument is the new position
+    (i.e., a QPointF).  You can call pos() to get the original position. Do
+    not call setPos() or moveBy() in itemChange() as this notification is
+    delivered; instead, you can return the new, adjusted position from
+    itemChange(). After this notification, QGraphicsItem immediately sends the
+    ItemPositionHasChanged notification if the position changed.
 
     \value ItemPositionHasChanged The item's position has changed. This
-    notification is only sent after the item's local position, relative to its
-    parent, has changed. The value argument is the new position (the same as
-    pos()), and QGraphicsItem ignores the return value for this notification
-    (i.e., a read-only notification).
+    notification is sent if the ItemSendsGeometryChanges flag is enabled, and
+    after the item's local position, relative to its parent, has changed. The
+    value argument is the new position (the same as pos()), and QGraphicsItem
+    ignores the return value for this notification (i.e., a read-only
+    notification).
 
     \value ItemTransformChange The item's transformation matrix changes. This
-    notification is only sent when the item's local transformation matrix
-    changes (i.e., as a result of calling setTransform(). The value
-    argument is the new matrix (i.e., a QTransform); to get the old matrix,
-    call transform(). Do not call setTransform() or set any of the transformation
-    properties in itemChange() as this notification is delivered;
-    instead, you can return the new matrix from itemChange().
-    This notification is not sent if you change the transformation properties.
+    notification is send if the ItemSendsGeometryChanges flag is enabled, and
+    when the item's local transformation matrix changes (i.e., as a result of
+    calling setTransform(). The value argument is the new matrix (i.e., a
+    QTransform); to get the old matrix, call transform(). Do not call
+    setTransform() or set any of the transformation properties in itemChange()
+    as this notification is delivered; instead, you can return the new matrix
+    from itemChange().  This notification is not sent if you change the
+    transformation properties.
 
     \value ItemTransformHasChanged The item's transformation matrix has
-    changed either because setTransform is called, or one of the transformation
-    properties is changed. This notification is only sent after the item's local
+    changed either because setTransform is called, or one of the
+    transformation properties is changed. This notification is sent if the
+    ItemSendsGeometryChanges flag is enabled, and after the item's local
     transformation matrix has changed. The value argument is the new matrix
     (same as transform()), and QGraphicsItem ignores the return value for this
     notification (i.e., a read-only notification).
@@ -1369,7 +1377,9 @@ static void _q_qgraphicsItemSetFlag(QGraphicsItem *item, QGraphicsItem::Graphics
     item was selected, and \a flags does not enabled ItemIsSelectable, the
     item is automatically unselected.
 
-    By default, no flags are enabled.
+    By default, no flags are enabled. (QGraphicsWidget enables the
+    ItemSendsGeometryChanges flag by default in order to track position
+    changes.)
 
     \sa flags(), setFlag()
 */
@@ -2050,12 +2060,8 @@ qreal QGraphicsItem::effectiveOpacity() const
 void QGraphicsItem::setOpacity(qreal opacity)
 {
     // Notify change.
-#ifndef QGRAPHICSITEM_NO_ITEMCHANGE
     const QVariant newOpacityVariant(itemChange(ItemOpacityChange, double(opacity)));
     qreal newOpacity = newOpacityVariant.toDouble();
-#else
-    qreal newOpacity = opacity;
-#endif
 
     // Normalize.
     newOpacity = qBound<qreal>(0.0, newOpacity, 1.0);
@@ -2067,9 +2073,7 @@ void QGraphicsItem::setOpacity(qreal opacity)
     d_ptr->opacity = newOpacity;
 
     // Notify change.
-#ifndef QGRAPHICSITEM_NO_ITEMCHANGE
-    itemChange(ItemOpacityHasChanged, newOpacity);
-#endif
+    itemChange(ItemOpacityHasChanged, newOpacityVariant);
 
     // Update.
     if (d_ptr->scene)
@@ -2508,39 +2512,30 @@ QPointF QGraphicsItem::scenePos() const
 /*!
     \internal
 
-    Sets the position \a pos and notifies the change. If \a update is true,
-    the item is also updated; otherwise it is not updated before and after the
-    change.
+    Sets the position \a pos.
 */
 void QGraphicsItemPrivate::setPosHelper(const QPointF &pos)
 {
     Q_Q(QGraphicsItem);
-    if (this->pos == pos)
-        return;
-
-    // Notify the item that the position is changing.
-#ifndef QGRAPHICSITEM_NO_ITEMCHANGE
-    const QVariant newPosVariant(q->itemChange(QGraphicsItem::ItemPositionChange, pos));
-    QPointF newPos = newPosVariant.toPointF();
-    if (newPos == this->pos)
-        return;
-#else
-    QPointF newPos = pos;
-#endif
-
-    // Update and repositition.
     inSetPosHelper = 1;
-    updateCachedClipPathFromSetPosHelper(newPos);
+    updateCachedClipPathFromSetPosHelper(pos);
     if (scene)
         q->prepareGeometryChange();
-    this->pos = newPos;
+    this->pos = pos;
     dirtySceneTransform = 1;
-
-    // Send post-notification.
-#ifndef QGRAPHICSITEM_NO_ITEMCHANGE
-    q->itemChange(QGraphicsItem::ItemPositionHasChanged, newPosVariant);
-#endif
     inSetPosHelper = 0;
+}
+
+/*!
+    \internal
+
+    Sets the transform \a transform.
+*/
+void QGraphicsItemPrivate::setTransformHelper(const QTransform &transform)
+{
+    q_ptr->prepareGeometryChange();
+    transformData->transform = transform;
+    dirtySceneTransform = 1;
 }
 
 /*!
@@ -2555,7 +2550,26 @@ void QGraphicsItemPrivate::setPosHelper(const QPointF &pos)
 */
 void QGraphicsItem::setPos(const QPointF &pos)
 {
-    d_ptr->setPosHelper(pos);
+    if (d_ptr->pos == pos)
+        return;
+
+    // Update and repositition.
+    if (!(d_ptr->flags & ItemSendsGeometryChanges)) {
+        d_ptr->setPosHelper(pos);
+        return;
+    }
+
+    // Notify the item that the position is changing.
+    const QVariant newPosVariant(itemChange(ItemPositionChange, qVariantFromValue<QPointF>(pos)));
+    QPointF newPos = newPosVariant.toPointF();
+    if (newPos == d_ptr->pos)
+        return;
+
+    // Update and repositition.
+    d_ptr->setPosHelper(newPos);
+
+    // Send post-notification.
+    itemChange(QGraphicsItem::ItemPositionHasChanged, newPosVariant);
 }
 
 /*!
@@ -3240,20 +3254,23 @@ void QGraphicsItem::setMatrix(const QMatrix &matrix, bool combine)
     if (d_ptr->transformData->transform == newTransform)
         return;
 
+    // Update and set the new transformation.
+    if (!(d_ptr->flags & ItemSendsGeometryChanges)) {
+        d_ptr->setTransformHelper(newTransform);
+        return;
+    }
+
     // Notify the item that the transformation matrix is changing.
-    const QVariant newTransformVariant(itemChange(ItemTransformChange,
-                                                  qVariantFromValue<QTransform>(newTransform)));
-    newTransform = qVariantValue<QTransform>(newTransformVariant);
+    const QVariant newMatrixVariant = qVariantFromValue<QMatrix>(newTransform.toAffine());
+    newTransform = QTransform(qVariantValue<QMatrix>(itemChange(ItemMatrixChange, newMatrixVariant)));
     if (d_ptr->transformData->transform == newTransform)
         return;
 
     // Update and set the new transformation.
-    prepareGeometryChange();
-    d_ptr->transformData->transform = newTransform;
-    d_ptr->dirtySceneTransform = 1;
-
+    d_ptr->setTransformHelper(newTransform);
+        
     // Send post-notification.
-    itemChange(ItemTransformHasChanged, newTransformVariant);
+    itemChange(ItemTransformHasChanged, qVariantFromValue<QTransform>(newTransform));
 }
 
 /*!
@@ -3284,7 +3301,12 @@ void QGraphicsItem::setTransform(const QTransform &matrix, bool combine)
     if (d_ptr->transformData->transform == newTransform)
         return;
 
-    // Notify the item that the transformation matrix is changing.
+    // Update and set the new transformation.
+    if (!(d_ptr->flags & ItemSendsGeometryChanges)) {
+        d_ptr->setTransformHelper(newTransform);
+        return;
+    }
+
     // Notify the item that the transformation matrix is changing.
     const QVariant newTransformVariant(itemChange(ItemTransformChange,
                                                   qVariantFromValue<QTransform>(newTransform)));
@@ -3293,9 +3315,7 @@ void QGraphicsItem::setTransform(const QTransform &matrix, bool combine)
         return;
 
     // Update and set the new transformation.
-    prepareGeometryChange();
-    d_ptr->transformData->transform = newTransform;
-    d_ptr->dirtySceneTransform = 1;
+    d_ptr->setTransformHelper(newTransform);
 
     // Send post-notification.
     itemChange(ItemTransformHasChanged, newTransformVariant);
@@ -9513,6 +9533,9 @@ QDebug operator<<(QDebug debug, QGraphicsItem::GraphicsItemFlag flag)
         break;
     case QGraphicsItem::ItemHasNoContents:
         str = "ItemHasNoContents";
+        break;
+    case QGraphicsItem::ItemSendsGeometryChanges:
+        str = "ItemSendsGeometryChanges";
         break;
     }
     debug << str;

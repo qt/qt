@@ -96,7 +96,8 @@ public:
         ItemDoesntPropagateOpacityToChildren = 0x80,
         ItemStacksBehindParent = 0x100,
         ItemUsesExtendedStyleOption = 0x200,
-        ItemHasNoContents = 0x400
+        ItemHasNoContents = 0x400,
+        ItemSendsGeometryChanges = 0x800
         // NB! Don't forget to increase the d_ptr->flags bit field by 1 when adding a new flag.
     };
     Q_DECLARE_FLAGS(GraphicsItemFlags, GraphicsItemFlag)

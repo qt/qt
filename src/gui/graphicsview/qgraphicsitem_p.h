@@ -175,6 +175,7 @@ public:
     static bool movableAncestorIsSelected(const QGraphicsItem *item);
 
     void setPosHelper(const QPointF &pos);
+    void setTransformHelper(const QTransform &transform);
     void setVisibleHelper(bool newVisible, bool explicitly, bool update = true);
     void setEnabledHelper(bool newEnabled, bool explicitly, bool update = true);
     bool discardUpdateRequest(bool ignoreClipping = false, bool ignoreVisibleBit = false,
@@ -397,12 +398,12 @@ public:
     quint32 fullUpdatePending : 1;
 
     // New 32 bits
-    quint32 flags : 11;
+    quint32 flags : 12;
     quint32 dirtyChildrenBoundingRect : 1;
     quint32 paintedViewBoundingRectsNeedRepaint : 1;
     quint32 dirtySceneTransform  : 1;
     quint32 geometryChanged : 1;
-    quint32 unused : 17; // feel free to use
+    quint32 unused : 16; // feel free to use
 
     // Optional stacking order
     int globalStackingOrder;

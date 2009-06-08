@@ -224,6 +224,7 @@ private slots:
     void setTransformProperties_data();
     void setTransformProperties();
     void itemUsesExtendedStyleOption();
+    void itemSendsGeometryChanges();
     void moveItem();
 
     // task specific tests below me
@@ -3730,8 +3731,20 @@ void tst_QGraphicsItem::defaultItemTest_QGraphicsEllipseItem()
 class ItemChangeTester : public QGraphicsRectItem
 {
 public:
-    ItemChangeTester(){}
-    ItemChangeTester(QGraphicsItem *parent) : QGraphicsRectItem(parent) {}
+    ItemChangeTester()
+    { setFlag(ItemSendsGeometryChanges); clear(); }
+    ItemChangeTester(QGraphicsItem *parent) : QGraphicsRectItem(parent)
+    { setFlag(ItemSendsGeometryChanges); clear(); }
+
+    void clear()
+    {
+        itemChangeReturnValue = QVariant();
+        itemSceneChangeTargetScene = 0;
+        changes.clear();
+        values.clear();
+        oldValues.clear();
+    }
+
     QVariant itemChangeReturnValue;
     QGraphicsScene *itemSceneChangeTargetScene;
 
@@ -3932,7 +3945,8 @@ void tst_QGraphicsItem::itemChange()
         QCOMPARE(tester.changes.size(), changeCount);
         QCOMPARE(tester.changes.at(tester.changes.size() - 2), QGraphicsItem::ItemFlagsChange);
         QCOMPARE(tester.changes.at(tester.changes.size() - 1), QGraphicsItem::ItemFlagsHaveChanged);
-        QCOMPARE(tester.values.at(tester.values.size() - 2), qVariantFromValue<quint32>(QGraphicsItem::ItemIsSelectable));
+        QVariant expectedFlags = qVariantFromValue<quint32>(QGraphicsItem::ItemIsSelectable | QGraphicsItem::ItemSendsGeometryChanges);
+        QCOMPARE(tester.values.at(tester.values.size() - 2), expectedFlags);
         QCOMPARE(tester.values.at(tester.values.size() - 1), qVariantFromValue<quint32>(QGraphicsItem::ItemIsSelectable));
     }
     {
@@ -6743,6 +6757,44 @@ void tst_QGraphicsItem::itemUsesExtendedStyleOption()
     rect->startTrack = true;
     rect->update(10, 10, 10, 10);
     QTest::qWait(125);
+}
+
+void tst_QGraphicsItem::itemSendsGeometryChanges()
+{
+    ItemChangeTester item;
+    item.setFlags(0);
+    item.clear();
+
+    QTransform x = QTransform().rotate(45);
+    QPointF pos(10, 10);
+    qreal o(0.5);
+    item.setTransform(x);
+    item.setPos(pos);
+    QCOMPARE(item.transform(), x);
+    QCOMPARE(item.pos(), pos);
+    QCOMPARE(item.changes.size(), 0);
+
+    item.setOpacity(o);
+    QCOMPARE(item.changes.size(), 2); // opacity
+
+    item.setFlag(QGraphicsItem::ItemSendsGeometryChanges);
+    QCOMPARE(item.changes.size(), 4); // flags
+    item.setTransform(QTransform());
+    item.setPos(QPointF());
+    QCOMPARE(item.changes.size(), 8); // transform + pos
+    QCOMPARE(item.transform(), QTransform());
+    QCOMPARE(item.pos(), QPointF());
+    QCOMPARE(item.opacity(), o);
+
+    QCOMPARE(item.changes, QList<QGraphicsItem::GraphicsItemChange>()
+             << QGraphicsItem::ItemOpacityChange
+             << QGraphicsItem::ItemOpacityHasChanged
+             << QGraphicsItem::ItemFlagsChange
+             << QGraphicsItem::ItemFlagsHaveChanged
+             << QGraphicsItem::ItemTransformChange
+             << QGraphicsItem::ItemTransformHasChanged
+             << QGraphicsItem::ItemPositionChange
+             << QGraphicsItem::ItemPositionHasChanged);
 }
 
 // Make sure we update moved items correctly.
