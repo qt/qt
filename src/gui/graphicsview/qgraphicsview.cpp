@@ -3526,8 +3526,10 @@ void QGraphicsView::drawItems(QPainter *painter, int numItems,
                               const QStyleOptionGraphicsItem options[])
 {
     Q_D(QGraphicsView);
-    if (d->scene)
-        d->scene->drawItems(painter, numItems, items, options, viewport());
+    if (d->scene) {
+        QWidget *widget = painter->device() == viewport() ? viewport() : 0;
+        d->scene->drawItems(painter, numItems, items, options, widget);
+    }
 }
 
 /*!
