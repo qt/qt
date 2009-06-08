@@ -359,7 +359,9 @@ QS60Style::QS60Style()
     : QCommonStyle(*new QS60StylePrivate)
 {
     // Assume, that the resource system has a ':/s60Stylethemes/Default.blob'
-    loadS60ThemeFromBlob(QString::fromLatin1(":/s60Stylethemes/Default.blob"));
+    const QString defaultBlob = QString::fromLatin1(":/s60Stylethemes/Default.blob");
+    if (QFile::exists(defaultBlob))
+        loadS60ThemeFromBlob(defaultBlob);
 }
 
 Q_GLOBAL_STATIC_WITH_INITIALIZER(QStringList, enumPartKeys, {
