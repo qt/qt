@@ -1533,7 +1533,7 @@ QDataStream &operator>>(QDataStream &ds, QLocale &l)
     l = QLocale(s);
     return ds;
 }
-#endif
+#endif // QT_NO_DATASTREAM
 
 
 /*!

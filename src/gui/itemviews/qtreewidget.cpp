@@ -1827,6 +1827,7 @@ void QTreeWidgetItem::write(QDataStream &out) const
 {
     out << values << d->display;
 }
+#endif // QT_NO_DATASTREAM
 
 /*!
     \since 4.1
@@ -1862,8 +1863,6 @@ QTreeWidgetItem &QTreeWidgetItem::operator=(const QTreeWidgetItem &other)
     itemFlags = other.itemFlags;
     return *this;
 }
-
-#endif // QT_NO_DATASTREAM
 
 /*!
   Appends the \a child item to the list of children.

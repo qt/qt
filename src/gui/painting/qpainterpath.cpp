@@ -2366,7 +2366,7 @@ QDataStream &operator>>(QDataStream &s, QPainterPath &p)
     p.d_func()->dirtyControlBounds = true;
     return s;
 }
-#endif
+#endif // QT_NO_DATASTREAM
 
 
 /*******************************************************************************
