@@ -1826,9 +1826,10 @@ Q_GUI_EXPORT void qt_x11_drawImage(const QRect &rect, const QPoint &pos, const Q
     const int h = rect.height();
 
     QImage im;
-    if ((QSysInfo::ByteOrder == QSysInfo::BigEndian
-         && ((ImageByteOrder(X11->display) == LSBFirst) || bgr_layout))
-        || (ImageByteOrder(X11->display) == MSBFirst && QSysInfo::ByteOrder == QSysInfo::LittleEndian))
+    int image_byte_order = ImageByteOrder(X11->display);
+    if ((QSysInfo::ByteOrder == QSysInfo::BigEndian && ((image_byte_order == LSBFirst) || bgr_layout))
+        || (image_byte_order == MSBFirst && QSysInfo::ByteOrder == QSysInfo::LittleEndian)
+        || (image_byte_order == LSBFirst && bgr_layout))
     {
         im = image.copy(rect);
         const int iw = im.bytesPerLine() / 4;
@@ -1836,19 +1837,21 @@ Q_GUI_EXPORT void qt_x11_drawImage(const QRect &rect, const QPoint &pos, const Q
         for (int i=0; i < h; i++) {
             uint *p = data;
             uint *end = p + w;
-            if (bgr_layout && ImageByteOrder(X11->display) == MSBFirst && QSysInfo::ByteOrder == QSysInfo::LittleEndian) {
+            if (bgr_layout && image_byte_order == MSBFirst && QSysInfo::ByteOrder == QSysInfo::LittleEndian) {
                 while (p < end) {
                     *p = ((*p << 8) & 0xffffff00) | ((*p >> 24) & 0x000000ff);
                     p++;
                 }
-            } else if ((ImageByteOrder(X11->display) == LSBFirst && QSysInfo::ByteOrder == QSysInfo::BigEndian)
-                    || (ImageByteOrder(X11->display) == MSBFirst && QSysInfo::ByteOrder == QSysInfo::LittleEndian)) {
+            } else if ((image_byte_order == LSBFirst && QSysInfo::ByteOrder == QSysInfo::BigEndian)
+                    || (image_byte_order == MSBFirst && QSysInfo::ByteOrder == QSysInfo::LittleEndian)) {
                 while (p < end) {
                     *p = ((*p << 24) & 0xff000000) | ((*p << 8) & 0x00ff0000)
                         | ((*p >> 8) & 0x0000ff00) | ((*p >> 24) & 0x000000ff);
                     p++;
                 }
-            } else if (ImageByteOrder(X11->display) == MSBFirst && QSysInfo::ByteOrder == QSysInfo::BigEndian) {
+            } else if ((image_byte_order == MSBFirst && QSysInfo::ByteOrder == QSysInfo::BigEndian)
+                       || (image_byte_order == LSBFirst && bgr_layout))
+            {
                 while (p < end) {
                     *p = ((*p << 16) & 0x00ff0000) | ((*p >> 16) & 0x000000ff)
                         | ((*p ) & 0xff00ff00);
