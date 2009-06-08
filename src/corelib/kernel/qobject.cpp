@@ -2228,11 +2228,11 @@ static void err_method_notfound(const QObject *object,
     if (strchr(method,')') == 0)                // common typing mistake
         qWarning("Object::%s: Parentheses expected, %s %s::%s%s%s",
                  func, type, object->metaObject()->className(), method+1,
-                 loc ? " in ":"\0", loc ? loc : "\0");
+                 loc ? " in ": "", loc ? loc : "");
     else
         qWarning("Object::%s: No such %s %s::%s%s%s",
                  func, type, object->metaObject()->className(), method+1,
-                 loc ? " in ":"\0", loc ? loc : "\0");
+                 loc ? " in ": "", loc ? loc : "");
 
 }
 
