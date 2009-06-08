@@ -45,6 +45,7 @@
 class tst_QTouchEventWidget : public QWidget
 {
 public:
+    QList<QTouchEvent::TouchPoint> touchBeginPoints, touchUpdatePoints, touchEndPoints;
     bool seenTouchBegin, seenTouchUpdate, seenTouchEnd;
     bool acceptTouchBegin, acceptTouchUpdate, acceptTouchEnd;
 
@@ -56,6 +57,9 @@ public:
 
     void reset()
     {
+        touchBeginPoints.clear();
+        touchUpdatePoints.clear();
+        touchEndPoints.clear();
         seenTouchBegin = seenTouchUpdate = seenTouchEnd = false;
         acceptTouchBegin = acceptTouchUpdate = acceptTouchEnd = true;
     }
@@ -68,18 +72,21 @@ public:
             if (seenTouchUpdate) qWarning("TouchBegin: TouchUpdate cannot happen before TouchBegin");
             if (seenTouchEnd) qWarning("TouchBegin: TouchEnd cannot happen before TouchBegin");
             seenTouchBegin = !seenTouchBegin && !seenTouchUpdate && !seenTouchEnd;
+            touchBeginPoints = static_cast<QTouchEvent *>(event)->touchPoints();
             event->setAccepted(acceptTouchBegin);
             break;
         case QEvent::TouchUpdate:
             if (!seenTouchBegin) qWarning("TouchUpdate: have not seen TouchBegin");
             if (seenTouchEnd) qWarning("TouchUpdate: TouchEnd cannot happen before TouchUpdate");
             seenTouchUpdate = seenTouchBegin && !seenTouchEnd;
+            touchUpdatePoints = static_cast<QTouchEvent *>(event)->touchPoints();
             event->setAccepted(acceptTouchUpdate);
             break;
         case QEvent::TouchEnd:
             if (!seenTouchBegin) qWarning("TouchEnd: have not seen TouchBegin");
             if (seenTouchEnd) qWarning("TouchEnd: already seen a TouchEnd");
             seenTouchEnd = seenTouchBegin && !seenTouchEnd;
+            touchEndPoints = static_cast<QTouchEvent *>(event)->touchPoints();
             event->setAccepted(acceptTouchEnd);
             break;
         default:
@@ -101,6 +108,7 @@ private slots:
     void touchEventAcceptedByDefault();
     void touchBeginPropagatesWhenIgnored();
     void touchUpdateAndEndNeverPropagate();
+    void basicRawEventTranslation();
 };
 
 void tst_QTouchEvent::touchDisabledByDefault()
@@ -232,7 +240,86 @@ void tst_QTouchEvent::touchUpdateAndEndNeverPropagate()
     QVERIFY(!touchEndEvent.isAccepted());
     QVERIFY(child.seenTouchEnd);
     QVERIFY(!window.seenTouchEnd);
+}
 
+void tst_QTouchEvent::basicRawEventTranslation()
+{
+    extern Q_GUI_EXPORT bool qt_translateRawTouchEvent(const QList<QTouchEvent::TouchPoint> &, QWidget *);
+
+    tst_QTouchEventWidget touchWidget;
+    touchWidget.setAttribute(Qt::WA_AcceptTouchEvents);
+
+    QPointF pos = touchWidget.rect().center();
+    QPointF globalPos = touchWidget.mapToGlobal(pos.toPoint());
+    QPointF delta(10, 10);
+
+    QTouchEvent::TouchPoint rawTouchPoint;
+    rawTouchPoint.setId(0);
+
+    // this should be translated to a TouchBegin
+    rawTouchPoint.setState(Qt::TouchPointPressed);
+    rawTouchPoint.setGlobalPos(globalPos);
+    bool res = qt_translateRawTouchEvent(QList<QTouchEvent::TouchPoint>() << rawTouchPoint, &touchWidget);
+    QVERIFY(res);
+    QVERIFY(touchWidget.seenTouchBegin);
+    QVERIFY(!touchWidget.seenTouchUpdate);
+    QVERIFY(!touchWidget.seenTouchEnd);
+    QCOMPARE(touchWidget.touchBeginPoints.count(), 1);
+    QTouchEvent::TouchPoint touchBeginPoint = touchWidget.touchBeginPoints.first();
+    QCOMPARE(touchBeginPoint.id(), rawTouchPoint.id());
+    QCOMPARE(touchBeginPoint.state(), rawTouchPoint.state());
+    QCOMPARE(touchBeginPoint.pos(), pos);
+    QCOMPARE(touchBeginPoint.startPos(), pos);
+    QCOMPARE(touchBeginPoint.lastPos(), pos);
+    QCOMPARE(touchBeginPoint.globalPos(), rawTouchPoint.globalPos());
+    QCOMPARE(touchBeginPoint.startGlobalPos(), rawTouchPoint.globalPos());
+    QCOMPARE(touchBeginPoint.lastGlobalPos(), rawTouchPoint.globalPos());
+    QCOMPARE(touchBeginPoint.size(), QSizeF());
+    QCOMPARE(touchBeginPoint.pressure(), qreal(-1.));
+
+    // moving the point should translate to TouchUpdate
+    touchWidget.reset();
+    rawTouchPoint.setState(Qt::TouchPointMoved);
+    rawTouchPoint.setGlobalPos(globalPos + delta);
+    res = qt_translateRawTouchEvent(QList<QTouchEvent::TouchPoint>() << rawTouchPoint, &touchWidget);
+    QVERIFY(res);
+    QVERIFY(!touchWidget.seenTouchBegin);
+    QVERIFY(touchWidget.seenTouchUpdate);
+    QVERIFY(!touchWidget.seenTouchEnd);
+    QCOMPARE(touchWidget.touchUpdatePoints.count(), 1);
+    QTouchEvent::TouchPoint touchUpdatePoint = touchWidget.touchUpdatePoints.first();
+    QCOMPARE(touchUpdatePoint.id(), rawTouchPoint.id());
+    QCOMPARE(touchUpdatePoint.state(), rawTouchPoint.state());
+    QCOMPARE(touchUpdatePoint.pos(), pos + delta);
+    QCOMPARE(touchUpdatePoint.startPos(), pos);
+    QCOMPARE(touchUpdatePoint.lastPos(), pos);
+    QCOMPARE(touchUpdatePoint.globalPos(), rawTouchPoint.globalPos());
+    QCOMPARE(touchUpdatePoint.startGlobalPos(), globalPos);
+    QCOMPARE(touchUpdatePoint.lastGlobalPos(), globalPos);
+    QCOMPARE(touchUpdatePoint.size(), QSizeF());
+    QCOMPARE(touchUpdatePoint.pressure(), qreal(-1.));
+
+    // releasing the point translates to TouchEnd
+    touchWidget.reset();
+    rawTouchPoint.setState(Qt::TouchPointReleased);
+    rawTouchPoint.setGlobalPos(globalPos + delta + delta);
+    res = qt_translateRawTouchEvent(QList<QTouchEvent::TouchPoint>() << rawTouchPoint, &touchWidget);
+    QVERIFY(res);
+    QVERIFY(!touchWidget.seenTouchBegin);
+    QVERIFY(!touchWidget.seenTouchUpdate);
+    QVERIFY(touchWidget.seenTouchEnd);
+    QCOMPARE(touchWidget.touchEndPoints.count(), 1);
+    QTouchEvent::TouchPoint touchEndPoint = touchWidget.touchEndPoints.first();
+    QCOMPARE(touchEndPoint.id(), rawTouchPoint.id());
+    QCOMPARE(touchEndPoint.state(), rawTouchPoint.state());
+    QCOMPARE(touchEndPoint.pos(), pos + delta + delta);
+    QCOMPARE(touchEndPoint.startPos(), pos);
+    QCOMPARE(touchEndPoint.lastPos(), pos + delta);
+    QCOMPARE(touchEndPoint.globalPos(), rawTouchPoint.globalPos());
+    QCOMPARE(touchEndPoint.startGlobalPos(), globalPos);
+    QCOMPARE(touchEndPoint.lastGlobalPos(), globalPos + delta);
+    QCOMPARE(touchEndPoint.size(), QSizeF());
+    QCOMPARE(touchEndPoint.pressure(), qreal(-1.));
 }
 
 QTEST_MAIN(tst_QTouchEvent)
