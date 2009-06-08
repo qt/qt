@@ -447,13 +447,13 @@ public:
 protected:
     bool sceneEvent(QEvent *event)
     {
-        if (event->type() == QEvent::GraphicsSceneTouchBegin) {
+        if (event->type() == QEvent::TouchBegin) {
             event->accept();
             ++touch.seenTouchBeginEvent;
             return true;
-        } else if (event->type() == QEvent::GraphicsSceneTouchUpdate) {
+        } else if (event->type() == QEvent::TouchUpdate) {
             ++touch.seenTouchUpdateEvent;
-        } else if (event->type() == QEvent::GraphicsSceneTouchEnd) {
+        } else if (event->type() == QEvent::TouchEnd) {
             ++touch.seenTouchEndEvent;
         } else if (event->type() == QEvent::GraphicsSceneGesture) {
             QGraphicsSceneGestureEvent *e = static_cast<QGraphicsSceneGestureEvent*>(event);
