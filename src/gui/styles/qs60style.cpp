@@ -63,6 +63,7 @@
 #include "qtabbar.h"
 #include "qtablewidget.h"
 #include "qtableview.h"
+#include "qtextedit.h"
 #include "qtoolbar.h"
 #include "qtoolbutton.h"
 #include "qtreeview.h"
@@ -140,6 +141,7 @@ const struct QS60StylePrivate::frameElementCenter QS60StylePrivate::m_frameEleme
     {SE_ToolBarButtonPressed,   QS60StyleEnums::SP_QsnFrSctrlButtonCenterPressed},
     {SE_PanelBackground,        QS60StyleEnums::SP_QsnFrSetOptCenter},
     {SE_ButtonInactive,         QS60StyleEnums::SP_QsnFrButtonCenterInactive},
+    {SE_Editor,                 QS60StyleEnums::SP_QsnFrNotepadCenter},
 };
 
 static const int frameElementsCount =
@@ -276,6 +278,9 @@ void QS60StylePrivate::drawSkinElement(SkinElements element, QPainter *painter,
     case SE_ButtonInactive:
         drawFrame(SF_ButtonInactive, painter, rect, flags | SF_PointNorth);
         break;
+    case SE_Editor:
+        drawFrame(SF_Editor, painter, rect, flags | SF_PointNorth);
+        break;        
     default:
         break;
     }
@@ -1875,6 +1880,12 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
         }
         break;
 #endif //QT_NO_TOOLBAR
+    case CE_ShapedFrame: {
+        const QTextEdit *txt = qobject_cast<const QTextEdit *>(widget);                
+        if (txt)
+            QS60StylePrivate::drawSkinElement(QS60StylePrivate::SE_Editor, painter, option->rect, flags);
+    }
+        break;
     default:
         QCommonStyle::drawControl(element, option, painter, widget);
     }

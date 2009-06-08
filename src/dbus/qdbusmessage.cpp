@@ -161,7 +161,6 @@ DBusMessage *QDBusMessagePrivate::toDBusMessage(const QDBusMessage &message)
 
     // not ok;
     q_dbus_message_unref(msg);
-    Q_ASSERT(false);
     return 0;
 }
 

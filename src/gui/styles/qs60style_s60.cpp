@@ -317,7 +317,17 @@ const partMapEntry QS60StyleModeSpecifics::m_partMap[] = {
     /* SP_QsnFrButtonSideBInactive */    {KAknsIIDQsnFrButtonTbSideB,           ENoDraw,     ES60_3_1 | ES60_3_2, EAknsMajorSkin, 0x21b6},
     /* SP_QsnFrButtonSideLInactive */    {KAknsIIDQsnFrButtonTbSideL,           ENoDraw,     ES60_3_1 | ES60_3_2, EAknsMajorSkin, 0x21b7},
     /* SP_QsnFrButtonSideRInactive */    {KAknsIIDQsnFrButtonTbSideR,           ENoDraw,     ES60_3_1 | ES60_3_2, EAknsMajorSkin, 0x21b8},
-    /* SP_QsnFrButtonCenterInactive */   {KAknsIIDQsnFrButtonTbCenter,          EDrawIcon,   ES60_3_1 | ES60_3_2, EAknsMajorSkin, 0x21b9}
+    /* SP_QsnFrButtonCenterInactive */   {KAknsIIDQsnFrButtonTbCenter,          EDrawIcon,   ES60_3_1 | ES60_3_2, EAknsMajorSkin, 0x21b9},  
+    
+    /*SP_QsnFrNotepadCornerTl */         {KAknsIIDQsnFrNotepadCornerTl,         ENoDraw,     ES60_AllReleases,    -1,-1},
+    /* SP_QsnFrNotepadCornerTr */        {KAknsIIDQsnFrNotepadCornerTr,         ENoDraw,     ES60_AllReleases,    -1,-1},
+    /* SP_QsnFrNotepadCornerBl */        {KAknsIIDQsnFrNotepadCornerBl,         ENoDraw,     ES60_AllReleases,    -1,-1},
+    /* SP_QsnFrNotepadCornerBr */        {KAknsIIDQsnFrNotepadCornerBr,         ENoDraw,     ES60_AllReleases,    -1,-1},
+    /* SP_QsnFrNotepadSideT */           {KAknsIIDQsnFrNotepadSideT,            ENoDraw,     ES60_AllReleases,    -1,-1},
+    /* SP_QsnFrNotepadSideB */           {KAknsIIDQsnFrNotepadSideB,            ENoDraw,     ES60_AllReleases,    -1,-1},
+    /* SP_QsnFrNotepadSideL */           {KAknsIIDQsnFrNotepadSideL,            ENoDraw,     ES60_AllReleases,    -1,-1},
+    /* SP_QsnFrNotepadSideR */           {KAknsIIDQsnFrNotepadSideR,            ENoDraw,     ES60_AllReleases,    -1,-1},
+    /* SP_QsnFrNotepadCenter */          {KAknsIIDQsnFrNotepadCenter,           EDrawIcon,   ES60_AllReleases,    -1,-1}
 
 };
 
