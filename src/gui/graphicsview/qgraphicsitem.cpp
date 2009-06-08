@@ -5940,13 +5940,21 @@ void QGraphicsItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
             if ((item->flags() & ItemIsMovable) && !QGraphicsItemPrivate::movableAncestorIsSelected(item)) {
                 QPointF currentParentPos;
                 QPointF buttonDownParentPos;
-                if (item->d_ptr->itemIsUntransformable()) {
+                if (item->d_ptr->ancestorFlags & QGraphicsItemPrivate::AncestorIgnoresTransformations) {
                     // Items whose ancestors ignore transformations need to
                     // map screen coordinates to local coordinates, then map
                     // those to the parent.
                     QTransform viewToItemTransform = (item->deviceTransform(view->viewportTransform())).inverted();
                     currentParentPos = mapToParent(viewToItemTransform.map(QPointF(view->mapFromGlobal(event->screenPos()))));
                     buttonDownParentPos = mapToParent(viewToItemTransform.map(QPointF(view->mapFromGlobal(event->buttonDownScreenPos(Qt::LeftButton)))));
+                } else if (item->flags() & ItemIgnoresTransformations) {
+                    // Root items that ignore transformations need to
+                    // calculate their diff by mapping viewport coordinates
+                    // directly to parent coordinates.
+                    QTransform viewToParentTransform = (item->transform().translate(item->d_ptr->pos.x(), item->d_ptr->pos.y()))
+                                                       * (item->sceneTransform() * view->viewportTransform()).inverted();
+                    currentParentPos = viewToParentTransform.map(QPointF(view->mapFromGlobal(event->screenPos())));
+                    buttonDownParentPos = viewToParentTransform.map(QPointF(view->mapFromGlobal(event->buttonDownScreenPos(Qt::LeftButton))));
                 } else {
                     // All other items simply map from the scene.
                     currentParentPos = item->mapToParent(item->mapFromScene(event->scenePos()));
