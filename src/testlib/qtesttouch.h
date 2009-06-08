@@ -62,6 +62,8 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Test)
 
+extern Q_GUI_EXPORT bool qt_translateRawKeyEvent(const QList<QTouchEvent::TouchPoint> &touchPoints, QWidget *window);
+
 namespace QTest
 {
 
@@ -123,7 +125,6 @@ namespace QTest
         }
         void commit()
         {
-            extern Q_GUI_EXPORT bool qt_translateRawKeyEvent(const QList<QTouchEvent::TouchPoint> &touchPoints, QWidget *window);
             if (!qt_translateRawKeyEvent(points.values(), targetWidget))
                 QTest::qWarn("Touch event not accepted by receiving widget");
             targetWidget = 0;
