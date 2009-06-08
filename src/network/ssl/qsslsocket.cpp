@@ -450,7 +450,7 @@ QSslSocket::SslMode QSslSocket::mode() const
     Returns true if the socket is encrypted; otherwise, false is returned.
 
     An encrypted socket encrypts all data that is written by calling write()
-    or putChar() before the data is written to the network, and descrypts all
+    or putChar() before the data is written to the network, and decrypts all
     incoming data as the data is received from the network, before you call
     read(), readLine() or getChar().
 
