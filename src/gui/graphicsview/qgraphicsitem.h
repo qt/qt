@@ -151,6 +151,7 @@ public:
 
     QGraphicsItem *parentItem() const;
     QGraphicsItem *topLevelItem() const;
+    QGraphicsObject *parentObject() const;
     QGraphicsWidget *parentWidget() const;
     QGraphicsWidget *topLevelWidget() const;
     QGraphicsWidget *window() const;
@@ -494,10 +495,12 @@ inline QRectF QGraphicsItem::mapRectFromScene(qreal ax, qreal ay, qreal w, qreal
 class Q_GUI_EXPORT QGraphicsObject : public QObject, public QGraphicsItem
 {
     Q_OBJECT
+    Q_PROPERTY(QGraphicsObject * parent READ parentObject WRITE setParentItem NOTIFY parentChanged DESIGNABLE false)
+    Q_PROPERTY(QString id READ objectName WRITE setObjectName)
     Q_PROPERTY(qreal opacity READ opacity WRITE setOpacity NOTIFY opacityChanged)
-    Q_PROPERTY(QPointF pos READ pos WRITE setPos)
     Q_PROPERTY(bool enabled READ isEnabled WRITE setEnabled NOTIFY enabledChanged)
     Q_PROPERTY(bool visible READ isVisible WRITE setVisible NOTIFY visibleChanged)
+    Q_PROPERTY(QPointF pos READ pos WRITE setPos)
     Q_PROPERTY(qreal x READ x WRITE setX NOTIFY xChanged)
     Q_PROPERTY(qreal y READ y WRITE setY NOTIFY yChanged)
     Q_PROPERTY(qreal z READ zValue WRITE setZValue NOTIFY zChanged)
@@ -505,6 +508,7 @@ public:
     QGraphicsObject(QGraphicsItem *parent = 0);
 
 Q_SIGNALS:
+    void parentChanged();
     void opacityChanged();
     void visibleChanged();
     void enabledChanged();

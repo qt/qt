@@ -959,6 +959,9 @@ void QGraphicsItemPrivate::setParentItemHelper(QGraphicsItem *newParent)
 
     // Deliver post-change notification
     q->itemChange(QGraphicsItem::ItemParentHasChanged, newParentVariant);
+
+    if (isObject)
+        emit static_cast<QGraphicsObject *>(q)->parentChanged();
 }
 
 /*!
@@ -1208,6 +1211,20 @@ QGraphicsItem *QGraphicsItem::topLevelItem() const
     while (QGraphicsItem *grandPa = parent->parentItem())
         parent = grandPa;
     return parent;
+}
+
+/*!
+    \since 4.4
+
+    Returns a pointer to the item's parent, cast to a QGraphicsObject. returns 0 if the parent item
+    is not a QGraphicsObject.
+
+    \sa parentItem(), childItems()
+*/
+QGraphicsObject *QGraphicsItem::parentObject() const
+{
+    QGraphicsItem *p = d_ptr->parent;
+    return (p && p->d_ptr->isObject) ? static_cast<QGraphicsObject *>(p) : 0;
 }
 
 /*!
@@ -6417,6 +6434,14 @@ QGraphicsObject::QGraphicsObject(QGraphicsItemPrivate &dd, QGraphicsItem *parent
 }
 
 /*!
+  \property QGraphicsObject::parent
+  \brief the parent of the item
+
+  \sa QGraphicsItem::setParentItem, QGraphicsItem::parentObject
+*/
+
+
+/*!
   \property QGraphicsObject::opacity
   \brief the opacity of the item
 
@@ -6441,12 +6466,56 @@ QGraphicsObject::QGraphicsObject(QGraphicsItemPrivate &dd, QGraphicsItem *parent
 */
 
 /*!
-  \fn QGraphicsObject::positionChanged()
+  \property QGraphicsObject::x
+  \brief the x position of the item
 
-  This signal gets emitted whenever the position of the item changes
+  Describes the items x position.
+
+  \sa QGraphicsItem::setX, setPos, xChanged
+*/
+
+/*!
+  \fn QGraphicsObject::xChanged()
+
+  This signal gets emitted whenever the x position of the item changes
 
   \sa pos
 */
+
+/*!
+  \property QGraphicsObject:y
+  \brief the y position of the item
+
+  Describes the items y position.
+
+  \sa QGraphicsItem::setY, setPos, yChanged
+*/
+
+/*!
+  \fn QGraphicsObject::yChanged()
+
+  This signal gets emitted whenever the y position of the item changes
+
+  \sa pos
+*/
+
+/*!
+  \property QGraphicsObject::z
+  \brief the z value of the item
+
+  Describes the items z value.
+
+  \sa QGraphicsItem::setZValue, zValue, zChanged
+*/
+
+/*!
+  \fn QGraphicsObject::zChanged()
+
+  This signal gets emitted whenever the z value of the item changes
+
+  \sa pos
+*/
+
 
 /*!
   \property QGraphicsObject::enabled
