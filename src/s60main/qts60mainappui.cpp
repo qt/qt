@@ -68,6 +68,9 @@ void CQtS60MainAppUi::ConstructL()
     // even these flags are defined
     BaseConstructL(CAknAppUi::EAknEnableSkin);
 
+    CEikButtonGroupContainer* nativeContainer = Cba();
+    nativeContainer->SetCommandSetL(R_AVKON_SOFTKEYS_EMPTY_WITH_IDS);
+    
     // Create async callback to call Qt main,
     // this is required to give S60 app FW to finish starting correctly
     TCallBack callBack( OpenCMainStaticCallBack, this );
