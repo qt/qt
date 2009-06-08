@@ -196,7 +196,9 @@ IDirectFBSurface *QDirectFBScreen::copyDFBSurface(IDirectFBSurface *src,
 
     surface->SetBlittingFlags(surface, flags);
     surface->Blit(surface, src, 0, 0, 0);
+#if (Q_DIRECTFB_VERSION >= 0x010000)
     surface->ReleaseSource(surface);
+#endif
     return surface;
 }
 
@@ -317,7 +319,9 @@ IDirectFBSurface *QDirectFBScreen::copyToDFBSurface(const QImage &img,
     DFBResult result = dfbSurface->Blit(dfbSurface, imgSurface, 0, 0, 0);
     if (result != DFB_OK)
         DirectFBError("QDirectFBScreen::copyToDFBSurface()", result);
+#if (Q_DIRECTFB_VERSION >= 0x010000)
     dfbSurface->ReleaseSource(dfbSurface);
+#endif
     imgSurface->Release(imgSurface);
 #else // QT_NO_DIRECTFB_PREALLOCATED
     Q_ASSERT(image.format() == pixmapFormat);
@@ -388,10 +392,12 @@ DFBSurfacePixelFormat QDirectFBScreen::getSurfacePixelFormat(QImage::Format form
 #endif
     case QImage::Format_RGB16:
         return DSPF_RGB16;
+#if (Q_DIRECTFB_VERSION >= 0x010000)
     case QImage::Format_ARGB6666_Premultiplied:
         return DSPF_ARGB6666;
     case QImage::Format_RGB666:
         return DSPF_RGB18;
+#endif
     case QImage::Format_RGB32:
         return DSPF_RGB32;
     case QImage::Format_ARGB32_Premultiplied:
@@ -423,10 +429,12 @@ QImage::Format QDirectFBScreen::getImageFormat(IDirectFBSurface *surface)
         return QImage::Format_RGB555;
     case DSPF_RGB16:
         return QImage::Format_RGB16;
+#if (Q_DIRECTFB_VERSION >= 0x010000)
     case DSPF_ARGB6666:
         return QImage::Format_ARGB6666_Premultiplied;
     case DSPF_RGB18:
         return QImage::Format_RGB666;
+#endif
     case DSPF_RGB32:
         return QImage::Format_RGB32;
     case DSPF_ARGB: {
@@ -780,7 +788,9 @@ static const FlagDescription blitDescriptions[] = {
     { " DSBLIT_DEINTERLACE", DSBLIT_DEINTERLACE },
     { " DSBLIT_SRC_PREMULTCOLOR", DSBLIT_SRC_PREMULTCOLOR },
     { " DSBLIT_XOR", DSBLIT_XOR },
+#if (Q_DIRECTFB_VERSION >= 0x010000)
     { " DSBLIT_INDEX_TRANSLATION", DSBLIT_INDEX_TRANSLATION },
+#endif
     { 0, 0 }
 };
 
@@ -1223,7 +1233,9 @@ void QDirectFBScreen::compose(const QRegion &region)
             blit(surface->image(), offset, r);
         }
     }
+#if (Q_DIRECTFB_VERSION >= 0x010000)
     d_ptr->dfbSurface->ReleaseSource(d_ptr->dfbSurface);
+#endif
 }
 
 // Normally, when using DirectFB to compose the windows (I.e. when
@@ -1271,7 +1283,9 @@ void QDirectFBScreen::blit(const QImage &img, const QPoint &topLeft,
         return;
     }
     blit(src, topLeft, reg);
+#if (Q_DIRECTFB_VERSION >= 0x010000)
     d_ptr->dfbSurface->ReleaseSource(d_ptr->dfbSurface);
+#endif
     src->Release(src);
 }
 
