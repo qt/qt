@@ -219,6 +219,7 @@ private slots:
     void updateCachedItemAfterMove();
     void deviceTransform_data();
     void deviceTransform();
+    void update();
 
     // task specific tests below me
     void task141694_textItemEnsureVisible();
@@ -6425,6 +6426,33 @@ void tst_QGraphicsItem::deviceTransform()
     QCOMPARE(rect1->deviceTransform(deviceX).map(QPointF(50, 50)), mapResult1);
     QCOMPARE(rect2->deviceTransform(deviceX).map(QPointF(50, 50)), mapResult2);
     QCOMPARE(rect3->deviceTransform(deviceX).map(QPointF(50, 50)), mapResult3);
+}
+
+void tst_QGraphicsItem::update()
+{
+    QGraphicsScene scene;
+    QGraphicsView view(&scene);
+    view.show();
+#ifdef Q_WS_X11
+    qt_x11_wait_for_window_manager(&view);
+#endif
+    QTest::qWait(100);
+
+    EventTester *item = new EventTester;
+    scene.addItem(item);
+    QTest::qWait(100); // Make sure all pending updates are processed.
+    item->repaints = 0;
+
+    item->update(); // Item marked as dirty
+    scene.update(); // Entire scene marked as dirty
+    qApp->processEvents();
+    QCOMPARE(item->repaints, 1);
+
+    // Make sure the dirty state from the previous update is reset so that
+    // the item don't think it is already dirty and discards this update.
+    item->update();
+    qApp->processEvents();
+    QCOMPARE(item->repaints, 2);
 }
 
 QTEST_MAIN(tst_QGraphicsItem)

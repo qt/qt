@@ -2496,6 +2496,7 @@ void QGraphicsView::updateScene(const QList<QRectF> &rects)
     for (int i = 0; i < dirtyRects.size(); ++i)
         dirtyViewportRects += dirtyRects.at(i);
     d->dirtyRegion = QRegion();
+    d->dirtyBoundingRect = QRect();
 
     bool fullUpdate = !d->accelerateScrolling || d->viewportUpdateMode == QGraphicsView::FullViewportUpdate;
     bool boundingRectUpdate = (d->viewportUpdateMode == QGraphicsView::BoundingRectViewportUpdate)

@@ -679,19 +679,19 @@ void QGraphicsScenePrivate::_q_processDirtyItems()
 {
     processDirtyItemsEmitted = false;
 
-    if (updateAll)
-        return;
-
     const bool wasPendingSceneUpdate = calledEmitUpdated;
     const QRectF oldGrowingItemsBoundingRect = growingItemsBoundingRect;
     processDirtyItemsRecursive(0);
     if (!hasSceneRect && oldGrowingItemsBoundingRect != growingItemsBoundingRect)
         emit q_func()->sceneRectChanged(growingItemsBoundingRect);
 
+    if (wasPendingSceneUpdate)
+        return;
+
     for (int i = 0; i < views.size(); ++i)
         views.at(i)->d_func()->processPendingUpdates();
 
-    if (!wasPendingSceneUpdate && calledEmitUpdated) {
+    if (calledEmitUpdated) {
         // We did a compatibility QGraphicsScene::update in processDirtyItemsRecursive
         // and we cannot wait for the control to reach the eventloop before the
         // changed signal is emitted, so we emit it now.
@@ -5322,7 +5322,6 @@ void QGraphicsScenePrivate::markDirty(QGraphicsItem *item, const QRectF &rect, b
 
 void QGraphicsScenePrivate::processDirtyItemsRecursive(QGraphicsItem *item, bool dirtyAncestorContainsChildren)
 {
-    Q_ASSERT(!item || item->d_ptr->dirty || item->d_ptr->dirtyChildren);
     Q_Q(QGraphicsScene);
 
     // Calculate the full scene transform for this item.
@@ -5438,13 +5437,15 @@ void QGraphicsScenePrivate::processDirtyItemsRecursive(QGraphicsItem *item, bool
                 continue;
             }
 
-            if (dirtyAncestorContainsChildren) {
+            if (dirtyAncestorContainsChildren || updateAll) {
                 // No need to process this child's dirty rect, hence reset the dirty state.
                 // However, we have to continue the recursion because it might have a dirty
                 // view bounding rect that needs repaint. We also have to reset the dirty
                 // state of its descendants.
                 child->d_ptr->dirty = 0;
                 child->d_ptr->fullUpdatePending = 0;
+                if (updateAll)
+                    child->d_ptr->paintedViewBoundingRectsNeedRepaint = 0;
             }
 
             processDirtyItemsRecursive(child, dirtyAncestorContainsChildren);
