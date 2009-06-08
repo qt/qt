@@ -577,7 +577,7 @@ void QTreeModel::sort(int column, Qt::SortOrder order)
     if (column < 0 || column >= columnCount())
         return;
 
-    //layoutAboutToBeChanged and layoutChanged will be called by sortChildren 
+    //layoutAboutToBeChanged and layoutChanged will be called by sortChildren
     rootItem->sortChildren(column, order, true);
 }
 
@@ -692,6 +692,29 @@ bool QTreeModel::itemGreaterThan(const QPair<QTreeWidgetItem*,int> &left,
                                  const QPair<QTreeWidgetItem*,int> &right)
 {
     return *(right.first) < *(left.first);
+}
+
+/*!
+    \internal
+
+    Returns true if the type of the variant \a value
+    can be casted as double.
+*/
+bool QTreeModel::canConvertToDouble(const QVariant &value)
+{
+    switch (value.type()) {
+        case QVariant::Bool:
+        case QVariant::Int:
+        case QVariant::UInt:
+        case QVariant::LongLong:
+        case QVariant::ULongLong:
+        case QVariant::Double:
+        case QVariant::Char:
+            return true;
+        default:
+            return false;
+    }
+    return false;
 }
 
 /*!
@@ -1787,7 +1810,11 @@ QVariant QTreeWidgetItem::data(int column, int role) const
 bool QTreeWidgetItem::operator<(const QTreeWidgetItem &other) const
 {
     int column = view ? view->sortColumn() : 0;
-    return text(column) < other.text(column);
+    const QVariant v1 = data(column, Qt::DisplayRole);
+    const QVariant v2 = other.data(column, Qt::DisplayRole);
+    if (QTreeModel::canConvertToDouble(v1) && QTreeModel::canConvertToDouble(v2))
+        return v1.toDouble() < v2.toDouble();
+    return v1.toString() < v2.toString();
 }
 
 #ifndef QT_NO_DATASTREAM
@@ -1827,6 +1854,7 @@ void QTreeWidgetItem::write(QDataStream &out) const
 {
     out << values << d->display;
 }
+#endif // QT_NO_DATASTREAM
 
 /*!
     \since 4.1
@@ -1862,8 +1890,6 @@ QTreeWidgetItem &QTreeWidgetItem::operator=(const QTreeWidgetItem &other)
     itemFlags = other.itemFlags;
     return *this;
 }
-
-#endif // QT_NO_DATASTREAM
 
 /*!
   Appends the \a child item to the list of children.
@@ -2075,7 +2101,7 @@ void QTreeWidgetItemPrivate::sortChildren(int column, Qt::SortOrder order, bool 
     if (climb) {
         QList<QTreeWidgetItem*>::iterator it = q->children.begin();
         for (; it != q->children.end(); ++it) {
-            //here we call the private object's method to avoid emitting 
+            //here we call the private object's method to avoid emitting
             //the layoutAboutToBeChanged and layoutChanged signals
             (*it)->d->sortChildren(column, order, climb);
         }

@@ -183,7 +183,7 @@ void qRegisterMetaTypeStreamOperators(const char *typeName
     QMetaType::registerStreamOperators(typeName, reinterpret_cast<QMetaType::SaveOperator>(sptr),
                                        reinterpret_cast<QMetaType::LoadOperator>(lptr));
 }
-#endif
+#endif // QT_NO_DATASTREAM
 
 template <typename T>
 struct QMetaTypeId

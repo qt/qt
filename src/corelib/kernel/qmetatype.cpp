@@ -360,7 +360,7 @@ void QMetaType::registerStreamOperators(const char *typeName, SaveOperator saveO
     inf.saveOp = saveOp;
     inf.loadOp = loadOp;
 }
-#endif
+#endif // QT_NO_DATASTREAM
 
 /*!
     Returns the type name associated with the given \a type, or 0 if no
@@ -885,7 +885,7 @@ bool QMetaType::load(QDataStream &stream, int type, void *data)
     }
     return true;
 }
-#endif
+#endif // QT_NO_DATASTREAM
 
 /*!
     Returns a copy of \a copy, assuming it is of type \a type. If \a

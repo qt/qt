@@ -62,9 +62,11 @@
 
 #ifndef QT_NO_DATASTREAM
 #include <qdatastream.h>
+#endif
 
 QT_BEGIN_NAMESPACE
 
+#ifndef QT_NO_DATASTREAM
 QDataStream &operator<<(QDataStream &out, const QHeaderViewPrivate::SectionSpan &span)
 {
     span.write(out);
@@ -76,7 +78,7 @@ QDataStream &operator>>(QDataStream &in, QHeaderViewPrivate::SectionSpan &span)
     span.read(in);
     return in;
 }
-#endif
+#endif // QT_NO_DATASTREAM
 
 
 /*!
@@ -1535,7 +1537,7 @@ bool QHeaderView::restoreState(const QByteArray &state)
     }
     return false;
 }
-#endif
+#endif // QT_NO_DATASTREAM
 
 /*!
   \reimp
@@ -3571,9 +3573,9 @@ bool QHeaderViewPrivate::read(QDataStream &in)
     return true;
 }
 
-QT_END_NAMESPACE
+#endif // QT_NO_DATASTREAM
 
-#endif // QT_NO_DATASTREAEM
+QT_END_NAMESPACE
 
 #endif // QT_NO_ITEMVIEWS
 
