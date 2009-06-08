@@ -278,12 +278,11 @@ void tst_QTouchEvent::basicRawEventTranslation()
     QCOMPARE(touchBeginPoint.pressure(), qreal(-1.));
 
     // moving the point should translate to TouchUpdate
-    touchWidget.reset();
     rawTouchPoint.setState(Qt::TouchPointMoved);
     rawTouchPoint.setGlobalPos(globalPos + delta);
     res = qt_translateRawTouchEvent(QList<QTouchEvent::TouchPoint>() << rawTouchPoint, &touchWidget);
     QVERIFY(res);
-    QVERIFY(!touchWidget.seenTouchBegin);
+    QVERIFY(touchWidget.seenTouchBegin);
     QVERIFY(touchWidget.seenTouchUpdate);
     QVERIFY(!touchWidget.seenTouchEnd);
     QCOMPARE(touchWidget.touchUpdatePoints.count(), 1);
@@ -300,13 +299,12 @@ void tst_QTouchEvent::basicRawEventTranslation()
     QCOMPARE(touchUpdatePoint.pressure(), qreal(-1.));
 
     // releasing the point translates to TouchEnd
-    touchWidget.reset();
     rawTouchPoint.setState(Qt::TouchPointReleased);
     rawTouchPoint.setGlobalPos(globalPos + delta + delta);
     res = qt_translateRawTouchEvent(QList<QTouchEvent::TouchPoint>() << rawTouchPoint, &touchWidget);
     QVERIFY(res);
-    QVERIFY(!touchWidget.seenTouchBegin);
-    QVERIFY(!touchWidget.seenTouchUpdate);
+    QVERIFY(touchWidget.seenTouchBegin);
+    QVERIFY(touchWidget.seenTouchUpdate);
     QVERIFY(touchWidget.seenTouchEnd);
     QCOMPARE(touchWidget.touchEndPoints.count(), 1);
     QTouchEvent::TouchPoint touchEndPoint = touchWidget.touchEndPoints.first();
