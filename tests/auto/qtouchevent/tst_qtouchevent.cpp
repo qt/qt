@@ -67,9 +67,9 @@ void tst_QTouchEvent::touchDisabledByDefault()
                            Qt::NoModifier,
                            Qt::TouchPointPressed,
                            touchPoints);
-    bool res = QApplication::sendEvent(&widget, &touchEvent)
-               && touchEvent.isAccepted();
+    bool res = QApplication::sendEvent(&widget, &touchEvent);
     QVERIFY(!res);
+    QVERIFY(!touchEvent.isAccepted());
 }
 
 void tst_QTouchEvent::touchEventAcceptedByDefault()
@@ -84,9 +84,9 @@ void tst_QTouchEvent::touchEventAcceptedByDefault()
                            Qt::NoModifier,
                            Qt::TouchPointPressed,
                            touchPoints);
-    bool res = QApplication::sendEvent(&widget, &touchEvent)
-               && touchEvent.isAccepted();
-    QVERIFY(res);
+    bool res = QApplication::sendEvent(&widget, &touchEvent);
+    QVERIFY(!res); // not handled...
+    QVERIFY(touchEvent.isAccepted()); // but accepted
 }
 
 QTEST_MAIN(tst_QTouchEvent)
