@@ -662,10 +662,8 @@ void QGraphicsScenePrivate::_q_polishItems()
     const QVariant booleanTrueVariant(true);
     foreach (QGraphicsItem *item, unpolishedItems) {
         if (!item->d_ptr->explicitlyHidden) {
-            if (item->itemChangeEnabled(QGraphicsItem::ItemVisibleChange)) {
-                item->itemChange(QGraphicsItem::ItemVisibleChange, booleanTrueVariant);
-                item->itemChange(QGraphicsItem::ItemVisibleHasChanged, booleanTrueVariant);
-            }
+            item->itemChange(QGraphicsItem::ItemVisibleChange, booleanTrueVariant);
+            item->itemChange(QGraphicsItem::ItemVisibleHasChanged, booleanTrueVariant);
         }
         if (item->isWidget()) {
             QEvent event(QEvent::Polish);
@@ -2969,12 +2967,9 @@ void QGraphicsScene::addItem(QGraphicsItem *item)
 
     // Notify the item that its scene is changing, and allow the item to
     // react.
-    QGraphicsScene *targetScene = this;
-    bool notify = item->itemChangeEnabled(QGraphicsItem::ItemSceneChange);
-    if (notify) {
-        targetScene = qVariantValue<QGraphicsScene *>(item->itemChange(QGraphicsItem::ItemSceneChange,
-                                                                       qVariantFromValue<QGraphicsScene *>(this)));
-    }
+    const QVariant newSceneVariant(item->itemChange(QGraphicsItem::ItemSceneChange,
+                                                    qVariantFromValue<QGraphicsScene *>(this)));
+    QGraphicsScene *targetScene = qVariantValue<QGraphicsScene *>(newSceneVariant);
     if (targetScene != this) {
         if (targetScene && item->scene() != targetScene)
             targetScene->addItem(item);
@@ -3085,8 +3080,7 @@ void QGraphicsScene::addItem(QGraphicsItem *item)
         emit selectionChanged();
 
     // Deliver post-change notification
-    if (notify)
-        item->itemChange(QGraphicsItem::ItemSceneHasChanged, qVariantFromValue<QGraphicsScene *>(targetScene));
+    item->itemChange(QGraphicsItem::ItemSceneHasChanged, newSceneVariant);
 }
 
 /*!
@@ -3350,12 +3344,9 @@ void QGraphicsScene::removeItem(QGraphicsItem *item)
 
     // Notify the item that it's scene is changing to 0, allowing the item to
     // react.
-    QGraphicsScene *targetScene = 0;
-    bool notify = item->itemChangeEnabled(QGraphicsItem::ItemSceneChange);
-    if (notify) {
-        targetScene = qVariantValue<QGraphicsScene *>(item->itemChange(QGraphicsItem::ItemSceneChange,
-                                                                       qVariantFromValue<QGraphicsScene *>(0)));
-    }
+    const QVariant newSceneVariant(item->itemChange(QGraphicsItem::ItemSceneChange,
+                                                    qVariantFromValue<QGraphicsScene *>(0)));
+    QGraphicsScene *targetScene = qVariantValue<QGraphicsScene *>(newSceneVariant);
     if (targetScene != 0 && targetScene != this) {
         targetScene->addItem(item);
         return;
@@ -3452,8 +3443,7 @@ void QGraphicsScene::removeItem(QGraphicsItem *item)
         emit selectionChanged();
 
     // Deliver post-change notification
-    if (notify)
-        item->itemChange(QGraphicsItem::ItemSceneHasChanged, qVariantFromValue<QGraphicsScene *>(targetScene));
+    item->itemChange(QGraphicsItem::ItemSceneHasChanged, newSceneVariant);
 }
 
 /*!

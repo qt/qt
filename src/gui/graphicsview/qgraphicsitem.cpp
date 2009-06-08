@@ -39,6 +39,8 @@
 **
 ****************************************************************************/
 
+#define QGRAPHICSITEM_NO_ITEMCHANGE
+
 /*!
     \class QGraphicsItem
     \brief The QGraphicsItem class is the base class for all graphical
@@ -844,13 +846,11 @@ void QGraphicsItemPrivate::setParentItemHelper(QGraphicsItem *newParent, bool de
     if (newParent == parent)
         return;
 
-    bool notify = q->itemChangeEnabled(QGraphicsItem::ItemParentChange);
-    if (notify) {
-        newParent = qVariantValue<QGraphicsItem *>(q->itemChange(QGraphicsItem::ItemParentChange,
-                                                                 qVariantFromValue<QGraphicsItem *>(newParent)));
-        if (newParent == parent)
-            return;
-    }
+    const QVariant newParentVariant(q->itemChange(QGraphicsItem::ItemParentChange,
+                                                  qVariantFromValue<QGraphicsItem *>(newParent)));
+    newParent = qVariantValue<QGraphicsItem *>(newParentVariant);
+    if (newParent == parent)
+        return;
 
     if (QGraphicsWidget *w = isWidget ? static_cast<QGraphicsWidget *>(q) : q->parentWidget()) {
         // Update the child focus chain; when reparenting a widget that has a
@@ -950,8 +950,7 @@ void QGraphicsItemPrivate::setParentItemHelper(QGraphicsItem *newParent, bool de
     dirtySceneTransform = 1;
 
     // Deliver post-change notification
-    if (notify)
-        q->itemChange(QGraphicsItem::ItemParentHasChanged, qVariantFromValue<QGraphicsItem *>(newParent));
+    q->itemChange(QGraphicsItem::ItemParentHasChanged, newParentVariant);
 }
 
 /*!
@@ -1379,14 +1378,9 @@ void QGraphicsItem::setFlags(GraphicsItemFlags flags)
     // Notify change and check for adjustment.
     if (quint32(d_ptr->flags) == quint32(flags))
         return;
-
-    // Notify
-    bool notify = itemChangeEnabled(ItemFlagsChange);
-    if (notify) {
-        flags = GraphicsItemFlags(itemChange(ItemFlagsChange, quint32(flags)).toUInt());
-        if (quint32(d_ptr->flags) == quint32(flags))
-            return;
-    }
+    flags = GraphicsItemFlags(itemChange(ItemFlagsChange, quint32(flags)).toUInt());
+    if (quint32(d_ptr->flags) == quint32(flags))
+        return;
 
     // Flags that alter the geometry of the item (or its children).
     const quint32 geomChangeFlagsMask = (ItemClipsChildrenToShape | ItemClipsToShape | ItemIgnoresTransformations);
@@ -1442,78 +1436,7 @@ void QGraphicsItem::setFlags(GraphicsItemFlags flags)
     }
 
     // Notify change.
-    if (notify)
-        itemChange(ItemFlagsHaveChanged, quint32(flags));
-}
-
-static const int itemChangeBits[] = {
-    /* ItemPositionChange */ 1 << 1, 
-    /* ItemMatrixChange */ 1 << 2,
-    /* ItemVisibleChange */ 1 << 3,
-    /* ItemEnabledChange */ 1 << 4,
-    /* ItemSelectedChange */ 1 << 5,
-    /* ItemParentChange */ 1 << 6,
-    /* ItemChildAddedChange */ 1 << 7,
-    /* ItemChildRemovedChange */ 1 << 8,
-    /* ItemTransformChange */ 1 << 9,
-    /* ItemPositionHasChanged */ 1 << 1,
-    /* ItemTransformHasChanged */ 1 << 9,
-    /* ItemSceneChange */ 1 << 10,
-    /* ItemVisibleHasChanged */ 1 << 3,
-    /* ItemEnabledHasChanged */ 1 << 4,
-    /* ItemSelectedHasChanged */ 1 << 5,
-    /* ItemParentHasChanged */ 1 << 6,
-    /* ItemSceneHasChanged */ 1 << 10,
-    /* ItemCursorChange */ 1 << 11,
-    /* ItemCursorHasChanged */ 1 << 11,
-    /* ItemToolTipChange */ 1 << 12,
-    /* ItemToolTipHasChanged */ 1 << 12,
-    /* ItemFlagsChange */ 1 << 13,
-    /* ItemFlagsHaveChanged */ 1 << 13,
-    /* ItemZValueChange */ 1 << 14,
-    /* ItemZValueHasChanged */ 1 << 14,
-    /* ItemOpacityChange */ 1 << 15,
-    /* ItemOpacityHasChanged */ 1 << 15
-};
-
-/*!
-    Returns true if \a change is enabled (i.e., QGraphicsItem will call
-    itemChange() whenever the respective change occurs); otherwise returns
-    false.
-
-    \sa setItemChangeEnabled(), setItemChangesEnabled(), itemChange()
-*/
-bool QGraphicsItem::itemChangeEnabled(GraphicsItemChange change) const
-{
-    return d_ptr->itemChangesEnabled & itemChangeBits[change];
-}
-
-/*!
-    If \a enabled is true, notifications for \a change are enabled; otherwise
-    they are disabled. By default, QGraphicsItem sends notifications for all
-    changes by calling itemChange().
-
-    \sa itemChangeEnabled(), setItemChangesEnabled(), itemChange()
-*/
-void QGraphicsItem::setItemChangeEnabled(GraphicsItemChange change, bool enabled)
-{
-    if (enabled) {
-        d_ptr->itemChangesEnabled |= itemChangeBits[change];
-    } else {
-        d_ptr->itemChangesEnabled &= itemChangeBits[change];
-    }
-}
-
-/*!
-    If \a enabled is true, all item change notifications are enabled;
-    otherwise, they are disabled. You can toggle individual notifications by
-    calling setItemChangeEnabled().
-
-    \sa itemChangeEnabled(), itemChange()
-*/
-void QGraphicsItem::setItemChangesEnabled(bool enabled)
-{
-    d_ptr->itemChangesEnabled = enabled ? 0xffff : 0;
+    itemChange(ItemFlagsHaveChanged, quint32(flags));
 }
 
 /*!
@@ -1602,13 +1525,9 @@ QString QGraphicsItem::toolTip() const
 */
 void QGraphicsItem::setToolTip(const QString &toolTip)
 {
-    bool notify = itemChangeEnabled(ItemToolTipChange);
-    QVariant toolTipVariant = toolTip;
-    if (notify)
-        toolTipVariant = itemChange(ItemToolTipChange, toolTipVariant);
-    d_ptr->setExtra(QGraphicsItemPrivate::ExtraToolTip, toolTipVariant);
-    if (notify)
-        itemChange(ItemToolTipHasChanged, toolTipVariant);
+    const QVariant toolTipVariant(itemChange(ItemToolTipChange, toolTip));
+    d_ptr->setExtra(QGraphicsItemPrivate::ExtraToolTip, toolTipVariant.toString());
+    itemChange(ItemToolTipHasChanged, toolTipVariant);
 }
 #endif // QT_NO_TOOLTIP
 
@@ -1650,11 +1569,8 @@ QCursor QGraphicsItem::cursor() const
 */
 void QGraphicsItem::setCursor(const QCursor &cursor)
 {
-    bool notify = itemChangeEnabled(ItemCursorChange);
-    QVariant cursorVariant = qVariantFromValue<QCursor>(cursor);
-    if (notify)
-        cursorVariant = itemChange(ItemCursorChange, cursorVariant);
-    d_ptr->setExtra(QGraphicsItemPrivate::ExtraCursor, cursorVariant);
+    const QVariant cursorVariant(itemChange(ItemCursorChange, qVariantFromValue<QCursor>(cursor)));
+    d_ptr->setExtra(QGraphicsItemPrivate::ExtraCursor, qVariantValue<QCursor>(cursorVariant));
     d_ptr->hasCursor = 1;
     if (d_ptr->scene) {
         d_ptr->scene->d_func()->allItemsUseDefaultCursor = false;
@@ -1673,8 +1589,7 @@ void QGraphicsItem::setCursor(const QCursor &cursor)
             }
         }
     }
-    if (notify)
-        itemChange(ItemCursorHasChanged, cursorVariant);
+    itemChange(ItemCursorHasChanged, cursorVariant);
 }
 
 /*!
@@ -1771,12 +1686,10 @@ void QGraphicsItemPrivate::setVisibleHelper(bool newVisible, bool explicitly, bo
     if (parent && newVisible && !parent->d_ptr->visible)
         return;
 
-    // Notify
-    bool notify = q->itemChangeEnabled(QGraphicsItem::ItemVisibleChange);
-    if (notify)
-        newVisible = q_ptr->itemChange(QGraphicsItem::ItemVisibleChange, quint32(newVisible)).toBool();
-
     // Modify the property.
+    const QVariant newVisibleVariant(q_ptr->itemChange(QGraphicsItem::ItemVisibleChange,
+                                                       quint32(newVisible)));
+    newVisible = newVisibleVariant.toBool();
     if (visible == quint32(newVisible))
         return;
     visible = newVisible;
@@ -1843,8 +1756,7 @@ void QGraphicsItemPrivate::setVisibleHelper(bool newVisible, bool explicitly, bo
     }
 
     // Deliver post-change notification.
-    if (notify)
-        q_ptr->itemChange(QGraphicsItem::ItemVisibleHasChanged, newVisible);
+    q_ptr->itemChange(QGraphicsItem::ItemVisibleHasChanged, newVisibleVariant);
 }
 
 /*!
@@ -1950,10 +1862,9 @@ void QGraphicsItemPrivate::setEnabledHelper(bool newEnabled, bool explicitly, bo
     }
 
     // Modify the property.
-    bool notify = q_ptr->itemChangeEnabled(QGraphicsItem::ItemEnabledChange);
-    if (notify)
-        newEnabled = q_ptr->itemChange(QGraphicsItem::ItemEnabledChange, quint32(newEnabled)).toBool();
-    enabled = newEnabled;
+    const QVariant newEnabledVariant(q_ptr->itemChange(QGraphicsItem::ItemEnabledChange,
+                                                       quint32(newEnabled)));
+    enabled = newEnabledVariant.toBool();
 
     // Schedule redraw.
     if (update && scene)
@@ -1965,8 +1876,7 @@ void QGraphicsItemPrivate::setEnabledHelper(bool newEnabled, bool explicitly, bo
     }
 
     // Deliver post-change notification.
-    if (notify)
-        q_ptr->itemChange(QGraphicsItem::ItemEnabledHasChanged, newEnabled);
+    q_ptr->itemChange(QGraphicsItem::ItemEnabledHasChanged, newEnabledVariant);
 }
 
 /*!
@@ -2053,13 +1963,10 @@ void QGraphicsItem::setSelected(bool selected)
         selected = false;
     if (d_ptr->selected == selected)
         return;
-    bool notify = itemChangeEnabled(ItemSelectedChange);
-    bool newSelected = selected;
-    if (notify) {
-        newSelected = itemChange(ItemSelectedChange, quint32(selected)).toBool();
-        if (d_ptr->selected == newSelected)
-            return;
-    }
+    const QVariant newSelectedVariant(itemChange(ItemSelectedChange, quint32(selected)));
+    bool newSelected = newSelectedVariant.toBool();
+    if (d_ptr->selected == newSelected)
+        return;
     d_ptr->selected = newSelected;
 
     if (d_ptr->scene) {
@@ -2076,8 +1983,7 @@ void QGraphicsItem::setSelected(bool selected)
     }
 
     // Deliver post-change notification.
-    if (notify)
-        itemChange(QGraphicsItem::ItemSelectedHasChanged, newSelected);
+    itemChange(QGraphicsItem::ItemSelectedHasChanged, newSelectedVariant);
 }
 
 /*!
@@ -2143,12 +2049,13 @@ qreal QGraphicsItem::effectiveOpacity() const
 */
 void QGraphicsItem::setOpacity(qreal opacity)
 {
+    // Notify change.
+#ifndef QGRAPHICSITEM_NO_ITEMCHANGE
+    const QVariant newOpacityVariant(itemChange(ItemOpacityChange, double(opacity)));
+    qreal newOpacity = newOpacityVariant.toDouble();
+#else
     qreal newOpacity = opacity;
-
-    // Notify
-    bool notify = itemChangeEnabled(ItemOpacityChange);
-    if (notify)
-        newOpacity = itemChange(ItemOpacityChange, double(newOpacity)).toDouble();
+#endif
 
     // Normalize.
     newOpacity = qBound<qreal>(0.0, newOpacity, 1.0);
@@ -2159,9 +2066,10 @@ void QGraphicsItem::setOpacity(qreal opacity)
 
     d_ptr->opacity = newOpacity;
 
-    // Notify
-    if (notify)
-        itemChange(ItemOpacityHasChanged, newOpacity);
+    // Notify change.
+#ifndef QGRAPHICSITEM_NO_ITEMCHANGE
+    itemChange(ItemOpacityHasChanged, newOpacity);
+#endif
 
     // Update.
     if (d_ptr->scene)
@@ -2610,15 +2518,15 @@ void QGraphicsItemPrivate::setPosHelper(const QPointF &pos)
     if (this->pos == pos)
         return;
 
+    // Notify the item that the position is changing.
+#ifndef QGRAPHICSITEM_NO_ITEMCHANGE
+    const QVariant newPosVariant(q->itemChange(QGraphicsItem::ItemPositionChange, pos));
+    QPointF newPos = newPosVariant.toPointF();
+    if (newPos == this->pos)
+        return;
+#else
     QPointF newPos = pos;
-
-    // Notify
-    bool notify = q->itemChangeEnabled(QGraphicsItem::ItemPositionChange);
-    if (notify) {
-        newPos = q->itemChange(QGraphicsItem::ItemPositionChange, pos).toPointF();
-        if (newPos == this->pos)
-            return;
-    }
+#endif
 
     // Update and repositition.
     inSetPosHelper = 1;
@@ -2629,9 +2537,9 @@ void QGraphicsItemPrivate::setPosHelper(const QPointF &pos)
     dirtySceneTransform = 1;
 
     // Send post-notification.
-    if (notify)
-        q->itemChange(QGraphicsItem::ItemPositionHasChanged, newPos);
-
+#ifndef QGRAPHICSITEM_NO_ITEMCHANGE
+    q->itemChange(QGraphicsItem::ItemPositionHasChanged, newPosVariant);
+#endif
     inSetPosHelper = 0;
 }
 
@@ -3333,13 +3241,11 @@ void QGraphicsItem::setMatrix(const QMatrix &matrix, bool combine)
         return;
 
     // Notify the item that the transformation matrix is changing.
-    bool notify = itemChangeEnabled(ItemMatrixChange);
-    if (notify) {
-        newTransform = QTransform(qVariantValue<QMatrix>(itemChange(ItemMatrixChange,
-                                  qVariantFromValue<QMatrix>(newTransform.toAffine()))));
-        if (d_ptr->transformData->transform == newTransform)
-            return;
-    }
+    const QVariant newTransformVariant(itemChange(ItemTransformChange,
+                                                  qVariantFromValue<QTransform>(newTransform)));
+    newTransform = qVariantValue<QTransform>(newTransformVariant);
+    if (d_ptr->transformData->transform == newTransform)
+        return;
 
     // Update and set the new transformation.
     prepareGeometryChange();
@@ -3347,8 +3253,7 @@ void QGraphicsItem::setMatrix(const QMatrix &matrix, bool combine)
     d_ptr->dirtySceneTransform = 1;
 
     // Send post-notification.
-    if (notify)
-        itemChange(ItemTransformHasChanged, qVariantFromValue<QTransform>(newTransform));
+    itemChange(ItemTransformHasChanged, newTransformVariant);
 }
 
 /*!
@@ -3380,12 +3285,12 @@ void QGraphicsItem::setTransform(const QTransform &matrix, bool combine)
         return;
 
     // Notify the item that the transformation matrix is changing.
-    bool notify = itemChangeEnabled(ItemTransformChange);
-    if (notify) {
-        newTransform = qVariantValue<QTransform>(itemChange(ItemTransformChange, qVariantFromValue<QTransform>(newTransform)));
-        if (d_ptr->transformData->transform == newTransform)
-            return;
-    }
+    // Notify the item that the transformation matrix is changing.
+    const QVariant newTransformVariant(itemChange(ItemTransformChange,
+                                                  qVariantFromValue<QTransform>(newTransform)));
+    newTransform = qVariantValue<QTransform>(newTransformVariant);
+    if (d_ptr->transformData->transform == newTransform)
+        return;
 
     // Update and set the new transformation.
     prepareGeometryChange();
@@ -3393,8 +3298,7 @@ void QGraphicsItem::setTransform(const QTransform &matrix, bool combine)
     d_ptr->dirtySceneTransform = 1;
 
     // Send post-notification.
-    if (notify)
-        itemChange(ItemTransformHasChanged, qVariantFromValue(newTransform));
+    itemChange(ItemTransformHasChanged, newTransformVariant);
 }
 
 /*!
@@ -3561,13 +3465,10 @@ qreal QGraphicsItem::zValue() const
 */
 void QGraphicsItem::setZValue(qreal z)
 {
-    bool notify = itemChangeEnabled(ItemZValueChange);
-    qreal newZ = z;
-    if (notify) {
-        newZ = itemChange(ItemZValueChange, double(z)).toDouble();
-        if (newZ == d_ptr->z)
-            return;
-    }
+    const QVariant newZVariant(itemChange(ItemZValueChange, double(z)));
+    qreal newZ = qreal(newZVariant.toDouble());
+    if (newZ == d_ptr->z)
+        return;
     d_ptr->z = newZ;
     if (d_ptr->parent)
         d_ptr->parent->d_ptr->needSortChildren = 1;
@@ -3581,8 +3482,7 @@ void QGraphicsItem::setZValue(qreal z)
         d_ptr->scene->d_func()->invalidateSortCache();
     }
 
-    if (notify)
-        itemChange(ItemZValueHasChanged, newZ);
+    itemChange(ItemZValueHasChanged, newZVariant);
 }
 
 /*!
