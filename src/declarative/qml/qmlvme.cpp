@@ -343,8 +343,7 @@ QObject *QmlVME::run(QmlContext *ctxt, QmlCompiledComponent *comp, int start, in
                 QFxCompilerTimer<QFxCompiler::InstrStoreReal> cc;
 #endif
                 QObject *target = stack.top();
-                //### moc treats qreal properties as having type double
-                double r = static_cast<double>(instr.storeReal.value);
+                qreal r = instr.storeReal.value;
                 void *a[1];
                 a[0] = &r;
                 QMetaObject::metacall(target, QMetaObject::WriteProperty, 
