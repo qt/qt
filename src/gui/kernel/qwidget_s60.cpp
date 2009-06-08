@@ -319,7 +319,8 @@ void QWidgetPrivate::hide_sys()
     deactivateWidgetCleanup();
     WId id = q->internalWinId();
     if (q->isWindow() && id) {
-        id->SetFocus(false);
+        if(id->IsFocused()) // Avoid unnecessry calls to FocusChanged()
+            id->SetFocus(false);
         id->MakeVisible(false);
         id->ControlEnv()->AppUi()->RemoveFromStack(id);
         if (QWidgetBackingStore *bs = maybeBackingStore())
@@ -335,7 +336,8 @@ void QWidgetPrivate::setFocus_sys()
 {
     Q_Q(QWidget);
     if (q->testAttribute(Qt::WA_WState_Created) && q->window()->windowType() != Qt::Popup)
-        q->effectiveWinId()->SetFocus(true);
+        if(!q->effectiveWinId()->IsFocused()) // Avoid unnecessry calls to FocusChanged()
+            q->effectiveWinId()->SetFocus(true);
 }
 
 void QWidgetPrivate::raise_sys()
@@ -922,7 +924,8 @@ void QWidget::destroy(bool destroyWindow, bool destroySubWindows)
             releaseKeyboard();
         if (destroyWindow && !(windowType() == Qt::Desktop) && internalWinId()) {
             WId id = internalWinId();
-            id->SetFocus(false);
+            if(id->IsFocused()) // Avoid unnecessry calls to FocusChanged()
+                id->SetFocus(false);
             id->ControlEnv()->AppUi()->RemoveFromStack(id);
             CBase::Delete(id);
 
