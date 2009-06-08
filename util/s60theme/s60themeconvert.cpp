@@ -206,7 +206,7 @@ bool loadThemeFromTdf(const QString &tdfFile,
         const QString tdfFullName =
             tdfBasePath + QDir::separator() + parsedPartSvgs.value(partKey);
         if (!QFile(tdfFullName).exists())
-            qWarning() << "Could not load part " << tdfFullName;
+            qWarning() << "Could not find part:" << parsedPartSvgs.value(partKey);
         const QPicture partPicture = renderer.svgToQPicture(tdfFullName);
         parsedPartPictures.insert(partKey, partPicture);
     }
@@ -273,9 +273,10 @@ bool loadDefaultTheme(const QString &themePath,
 
     WebKitSVGRenderer renderer;
     foreach (const QString &partKey, QS60Style::partKeys()) {
-        const QString partFile(dir.absolutePath() + QDir::separator() + partKey + QLatin1String(".svg"));
+        const QString partFileName = partKey + QLatin1String(".svg");		
+        const QString partFile(dir.absolutePath() + QDir::separator() + partFileName);
         if (!QFile::exists(partFile)) {
-            qWarning() << "Could not load part " << partFile;
+            qWarning() << "Could not find part:" << partFileName;
             continue;
         }
         const QPicture partPicture = renderer.svgToQPicture(partFile);
