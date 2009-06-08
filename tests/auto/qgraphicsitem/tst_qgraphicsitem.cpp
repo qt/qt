@@ -6487,6 +6487,14 @@ void tst_QGraphicsItem::update()
     const QRegion expectedRegion = itemDeviceBoundingRect.adjusted(-2, -2, 2, 2);
     // The entire item's bounding rect (adjusted for antialiasing) should have been painted.
     QCOMPARE(view.paintedRegion, expectedRegion);
+
+    // Make sure update requests outside the bounding rect are discarded.
+    view.reset();
+    item->repaints = 0;
+    item->update(-15, -15, 5, 5); // Item's brect: (-10, -10, 20, 20)
+    qApp->processEvents();
+    QCOMPARE(item->repaints, 0);
+    QCOMPARE(view.repaints, 0);
 }
 
 void tst_QGraphicsItem::setTransformProperties_data()
