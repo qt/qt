@@ -94,11 +94,24 @@ void Window::createCurveIcons()
         qreal yAxis = m_iconSize.width()/3;
         painter.drawLine(0, xAxis, m_iconSize.width(),  xAxis);
         painter.drawLine(yAxis, 0, yAxis, m_iconSize.height());
-        painter.setPen(Qt::black);
         
         qreal curveScale = m_iconSize.height()/2;
-        QPoint currentPos(yAxis, xAxis);
-        
+
+        painter.setPen(Qt::NoPen);
+
+        // start point
+        painter.setBrush(Qt::red);
+        QPoint start(yAxis, xAxis - curveScale * curve.valueForProgress(0));
+        painter.drawRect(start.x() - 1, start.y() - 1, 3, 3);
+
+        // end point
+        painter.setBrush(Qt::blue);
+        QPoint end(yAxis + curveScale, xAxis - curveScale * curve.valueForProgress(1));
+        painter.drawRect(end.x() - 1, end.y() - 1, 3, 3);
+
+        painter.setPen(QColor(32, 32, 32));
+        painter.setRenderHint(QPainter::Antialiasing, true);
+        QPoint currentPos(start);
         for (qreal t = 0; t < 1.0; t+=1.0/curveScale) {
             QPoint to;
             to.setX(yAxis + curveScale * t);
@@ -106,6 +119,7 @@ void Window::createCurveIcons()
             painter.drawLine(currentPos, to);
             currentPos = to;
         }
+        painter.setRenderHint(QPainter::Antialiasing, false);
         QListWidgetItem *item = new QListWidgetItem;
         item->setIcon(QIcon(pix));
         item->setText(metaEnum.key(i));
