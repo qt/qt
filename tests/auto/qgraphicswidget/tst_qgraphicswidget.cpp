@@ -155,6 +155,7 @@ private slots:
     void windowFlags_data();
     void windowFlags();
     void shortcutsDeletion();
+    void painterStateProtectionOnWindowFrame();
 
     // Task fixes
     void task236127_bspTreeIndexFails();
@@ -2280,6 +2281,41 @@ void tst_QGraphicsWidget::shortcutsDeletion()
     widget2->addAction(del);
     widget2->addAction(del);
     delete widget;
+}
+
+class MessUpPainterWidget : public QGraphicsWidget
+{
+public:
+    MessUpPainterWidget(QGraphicsItem * parent = 0, Qt::WindowFlags wFlags = 0)
+    : QGraphicsWidget(parent, wFlags)
+    {}
+
+    void paintWindowFrame(QPainter * painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
+    {
+        QCOMPARE(painter->opacity(), 1.0);
+        painter->setOpacity(0.0);
+        QGraphicsWidget::paintWindowFrame(painter, option, widget);
+    }
+    void paint(QPainter * painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
+    {
+        QCOMPARE(painter->opacity(), 1.0);
+        painter->drawRect(0, 0, 100, 100);
+        QGraphicsWidget::paint(painter, option, widget);
+    }
+
+};
+
+void tst_QGraphicsWidget::painterStateProtectionOnWindowFrame()
+{
+    MessUpPainterWidget *widget = new MessUpPainterWidget(0, Qt::Window);
+    QGraphicsScene scene(0, 0, 300, 300);
+    QGraphicsView view(&scene);
+    scene.addItem(widget);
+    view.show();
+#ifdef Q_WS_X11
+    qt_x11_wait_for_window_manager(&view);
+#endif
+    QTest::qWait(500);
 }
 
 class ProxyStyle : public QCommonStyle

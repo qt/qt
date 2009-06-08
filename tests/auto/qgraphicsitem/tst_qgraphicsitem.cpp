@@ -44,6 +44,7 @@
 
 #include <private/qtextcontrol_p.h>
 #include <private/qgraphicsitem_p.h>
+#include <QStyleOptionGraphicsItem>
 #include <QAbstractTextDocumentLayout>
 #include <QBitmap>
 #include <QCursor>
@@ -222,6 +223,7 @@ private slots:
     void update();
     void setTransformProperties_data();
     void setTransformProperties();
+    void itemUsesExtendedStyleOption();
 
     // task specific tests below me
     void task141694_textItemEnsureVisible();
@@ -6449,6 +6451,7 @@ void tst_QGraphicsItem::update()
 {
     QGraphicsScene scene;
     MyGraphicsView view(&scene);
+
     view.show();
 #ifdef Q_WS_X11
     qt_x11_wait_for_window_manager(&view);
@@ -6681,6 +6684,56 @@ void tst_QGraphicsItem::setTransformProperties()
         QCOMPARE_TRANSFORM(item1->itemTransform(item2), QTransform()); 
         QCOMPARE_TRANSFORM(item2->itemTransform(item1), QTransform());
     }
+}
+
+class MyStyleOptionTester : public QGraphicsRectItem
+{
+public:
+    MyStyleOptionTester(const QRectF &rect)
+        : QGraphicsRectItem(rect), startTrack(false)
+    {}
+
+    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget = 0)
+    {
+        if (startTrack) {
+            //Doesn't use the extended style option so the exposed rect is the boundingRect
+            if (!(flags() & QGraphicsItem::ItemUsesExtendedStyleOption)) {
+                QCOMPARE(option->exposedRect, boundingRect());
+            } else {
+                QVERIFY(option->exposedRect != QRect());
+                QVERIFY(option->exposedRect != boundingRect());
+            }
+        }
+        QGraphicsRectItem::paint(painter, option, widget);
+    }
+    bool startTrack;
+};
+
+void tst_QGraphicsItem::itemUsesExtendedStyleOption()
+{
+    QGraphicsScene scene(0, 0, 300, 300);
+    QGraphicsPixmapItem item;
+    item.setFlag(QGraphicsItem::ItemUsesExtendedStyleOption, true);
+    QCOMPARE(item.flags(), QGraphicsItem::GraphicsItemFlags(QGraphicsItem::ItemUsesExtendedStyleOption));
+    item.setFlag(QGraphicsItem::ItemUsesExtendedStyleOption, false);
+    QCOMPARE(item.flags(), 0);
+
+    //We now test the content of the style option
+    MyStyleOptionTester *rect = new MyStyleOptionTester(QRect(0, 0, 100, 100));
+    scene.addItem(rect);
+    rect->setPos(200, 200);
+    QGraphicsView view(&scene);
+    QTest::qWait(500);
+    rect->startTrack = true;
+    rect->update(10, 10, 10, 10);
+    QTest::qWait(125);
+    rect->startTrack = false;
+    rect->setFlag(QGraphicsItem::ItemUsesExtendedStyleOption, true);
+    QVERIFY((rect->flags() & QGraphicsItem::ItemUsesExtendedStyleOption));
+    QTest::qWait(125);
+    rect->startTrack = true;
+    rect->update(10, 10, 10, 10);
+    QTest::qWait(125);
 }
 
 QTEST_MAIN(tst_QGraphicsItem)

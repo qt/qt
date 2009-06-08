@@ -1016,14 +1016,12 @@ void QGraphicsItemPrivate::initStyleOption(QStyleOptionGraphicsItem *option, con
         return;
 
     // Initialize QStyleOptionGraphicsItem specific values (matrix, exposedRect).
-
-    const QTransform itemToViewportTransform = q->deviceTransform(worldTransform);
-    option->matrix = itemToViewportTransform.toAffine(); //### discards perspective
+    option->matrix = worldTransform.toAffine(); //### discards perspective
 
     if (!allItems) {
         // Determine the item's exposed area
         option->exposedRect = QRectF();
-        const QTransform reverseMap = itemToViewportTransform.inverted();
+        const QTransform reverseMap = worldTransform.inverted();
         const QVector<QRect> exposedRects(exposedRegion.rects());
         for (int i = 0; i < exposedRects.size(); ++i) {
             option->exposedRect |= reverseMap.mapRect(exposedRects.at(i));
