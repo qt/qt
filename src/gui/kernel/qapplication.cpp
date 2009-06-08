@@ -3606,11 +3606,7 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
 
     if (!d->grabbedGestures.isEmpty() && e->spontaneous() && receiver->isWidgetType()) {
         const QEvent::Type t = e->type();
-        if (t == QEvent::MouseButtonPress || t == QEvent::MouseButtonRelease || t == QEvent::MouseMove
-            || t == QEvent::MouseButtonDblClick || t == QEvent::Wheel
-            || t == QEvent::KeyPress || t == QEvent::KeyRelease
-            || t == QEvent::TabletPress || t == QEvent::TabletRelease || t == QEvent::TabletMove
-            || t >= QEvent::User) {
+        if (t != QEvent::Gesture && t != QEvent::GraphicsSceneGesture) {
             if (QGestureManager::instance()->filterEvent(static_cast<QWidget*>(receiver), e))
                 return true;
         }
