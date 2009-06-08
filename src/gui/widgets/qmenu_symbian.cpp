@@ -90,6 +90,16 @@ bool menuExists()
     return true;
 }
 
+static bool hasContextMenu(QWidget* widget)
+{
+    if (!widget)
+        return false;
+    const Qt::ContextMenuPolicy policy = widget->contextMenuPolicy();
+    if (policy != Qt::NoContextMenu && policy != Qt::PreventContextMenu ) {
+        return true;
+    }
+    return false;
+}
 // ### FIX THIS, copy/paste of original (faulty) stripped text implementation.
 // Implementation should be removed from QAction implementation to some generic place
 static QString qt_strippedText_copy_from_qaction(QString s)
@@ -212,24 +222,12 @@ static void rebuildMenu()
     QMenuBarPrivate *mb = 0;
     QWidget *w = qApp->activeWindow();
     QMainWindow *mainWindow = qobject_cast<QMainWindow*>(w);
-    /*    if ((mainWindow) && mainWindow->hasSoftKeyStack()) {
-        QSoftKeyStack* softKeyStack = mainWindow->softKeyStack();
-        if (!softKeyStack->isEmpty()) {
-            const QSoftkeySet& softKeyTop = softKeyStack->top();
-            int index=0;
-            bool found=false;
-            while( index<softKeyTop.count() && !found) {
-                QSoftKeyAction* softAction = softKeyTop.at(index);
-                QSoftKeyAction::StandardRole role = softAction->role();
-                if(softAction->role() == QSoftKeyAction::ContextMenu) {
-                    widgetWithContextMenu = softAction->parentWidget();
-                    found=true;
-                    }
-                index++;
-            }
-        }
+    QWidget* focusWidget = QApplication::focusWidget();
+    if (focusWidget) {
+        if (hasContextMenu(focusWidget))
+            widgetWithContextMenu = focusWidget;
     }
-*/    
+    
     if (w) {
         mb = menubars()->value(w);
         qt_symbian_menu_static_cmd_id = QT_FIRST_MENU_ITEM;
