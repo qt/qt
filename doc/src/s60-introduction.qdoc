@@ -49,9 +49,17 @@
 
     \tableofcontents
 
-    \section1 Installing Qt
+    \section1 Required tools
+    
+    See \l{Qt for S60 Requirements} to see what tools are required to use Qt for S60.
 
-    Follow the instructions found in \l{Installing Qt on S60}.
+    \section1 Installing Qt and running demos
+    
+    Follow the instructions found in \l{Installing Qt on S60 using binary package} to learn how
+    to install Qt using binary package and how to build and run Qt demos.
+
+    Follow the instructions found in \l{Installing Qt on S60} to learn how to install Qt using
+    using source package and how to build and run the Qt demos.
 
     \section1 Building your own applications
 
@@ -96,7 +104,7 @@
 
     To install your own applications on hardware, Qt comes with a tool called
     \c createpackage. When used on the \c .pkg files created by qmake, it
-    will produce a \c .sisx file that can be installed to the device. For
+    will produce a signed \c .sis file that can be installed to the device. For
     example:
 
     \snippet doc/src/snippets/code/doc_src_s60-introduction.qdoc 2

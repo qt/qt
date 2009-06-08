@@ -146,11 +146,6 @@ qmake
 make 
 //! [25]
 
-
-//! [26]
-wiggly.exe -small-screen
-//! [26]
-
 //! [27]
 make run
 //! [27]
