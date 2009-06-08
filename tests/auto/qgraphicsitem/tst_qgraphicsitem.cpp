@@ -224,6 +224,7 @@ private slots:
     void setTransformProperties_data();
     void setTransformProperties();
     void itemUsesExtendedStyleOption();
+    void moveItem();
 
     // task specific tests below me
     void task141694_textItemEnsureVisible();
@@ -6742,6 +6743,83 @@ void tst_QGraphicsItem::itemUsesExtendedStyleOption()
     rect->startTrack = true;
     rect->update(10, 10, 10, 10);
     QTest::qWait(125);
+}
+
+// Make sure we update moved items correctly.
+void tst_QGraphicsItem::moveItem()
+{
+    QGraphicsScene scene;
+    scene.setSceneRect(-50, -50, 200, 200);
+
+    MyGraphicsView view(&scene);
+    view.show();
+#ifdef Q_WS_X11
+    qt_x11_wait_for_window_manager(&view);
+#endif
+    QTest::qWait(100);
+
+    EventTester *parent = new EventTester;
+    EventTester *child = new EventTester(parent);
+    EventTester *grandChild = new EventTester(child);
+
+#define RESET_COUNTERS \
+    parent->repaints = 0; \
+    child->repaints = 0; \
+    grandChild->repaints = 0; \
+    view.reset();
+
+    scene.addItem(parent);
+    QTest::qWait(100);
+
+    RESET_COUNTERS
+
+    // Item's boundingRect:  (-10, -10, 20, 20).
+    QRect parentDeviceBoundingRect = parent->deviceTransform(view.viewportTransform())
+                                     .mapRect(parent->boundingRect()).toRect()
+                                     .adjusted(-2, -2, 2, 2); // Adjusted for antialiasing.
+
+    parent->setPos(20, 20);
+    qApp->processEvents();
+    QCOMPARE(parent->repaints, 1);
+    QCOMPARE(view.repaints, 1);
+    QRegion expectedParentRegion = parentDeviceBoundingRect; // old position
+    parentDeviceBoundingRect.translate(20, 20);
+    expectedParentRegion += parentDeviceBoundingRect; // new position
+    QCOMPARE(view.paintedRegion, expectedParentRegion);
+
+    RESET_COUNTERS
+
+    child->setPos(20, 20);
+    qApp->processEvents();
+    QCOMPARE(parent->repaints, 1);
+    QCOMPARE(child->repaints, 1);
+    QCOMPARE(view.repaints, 1);
+    const QRegion expectedChildRegion = expectedParentRegion.translated(20, 20);
+    QCOMPARE(view.paintedRegion, expectedChildRegion);
+
+    RESET_COUNTERS
+
+    grandChild->setPos(20, 20);
+    qApp->processEvents();
+    QCOMPARE(parent->repaints, 1);
+    QCOMPARE(child->repaints, 1);
+    QCOMPARE(grandChild->repaints, 1);
+    QCOMPARE(view.repaints, 1);
+    const QRegion expectedGrandChildRegion = expectedParentRegion.translated(40, 40);
+    QCOMPARE(view.paintedRegion, expectedGrandChildRegion);
+
+    RESET_COUNTERS
+
+    parent->translate(20, 20);
+    qApp->processEvents();
+    QCOMPARE(parent->repaints, 1);
+    QCOMPARE(child->repaints, 1);
+    QCOMPARE(grandChild->repaints, 1);
+    QCOMPARE(view.repaints, 1);
+    expectedParentRegion.translate(20, 20);
+    expectedParentRegion += expectedChildRegion.translated(20, 20);
+    expectedParentRegion += expectedGrandChildRegion.translated(20, 20);
+    QCOMPARE(view.paintedRegion, expectedParentRegion);
 }
 
 QTEST_MAIN(tst_QGraphicsItem)

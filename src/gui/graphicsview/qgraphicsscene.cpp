@@ -5156,8 +5156,9 @@ void QGraphicsScenePrivate::drawSubtreeRecursive(QGraphicsItem *item, QPainter *
         QRectF brect = item->boundingRect();
         // ### This does not take the clip into account.
         _q_adjustRect(&brect);
-        viewBoundingRect = transformTmp.mapRect(brect).toRect().adjusted(-1, -1, 1, 1);
+        viewBoundingRect = transformTmp.mapRect(brect).toRect();
         item->d_ptr->paintedViewBoundingRects.insert(widget, viewBoundingRect);
+        viewBoundingRect.adjust(-1, -1, 1, 1);
         if (exposedRegion)
             viewBoundingRect &= exposedRegion->boundingRect();
     }
