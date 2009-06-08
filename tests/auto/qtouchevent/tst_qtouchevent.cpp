@@ -172,6 +172,21 @@ void tst_QTouchEvent::touchBeginPropagatesWhenIgnored()
     QVERIFY(grandchild.seenTouchBegin);
     QVERIFY(child.seenTouchBegin);
     QVERIFY(!window.seenTouchBegin);
+
+    // disable touch on grandchild. even though it doesn't accept it, child should still get the
+    // TouchBegin
+    grandchild.reset();
+    child.reset();
+    window.reset();
+    grandchild.setAttribute(Qt::WA_AcceptTouchEvents, false);
+
+    touchEvent.ignore();
+    res = QApplication::sendEvent(&grandchild, &touchEvent);
+    QVERIFY(res);
+    QVERIFY(touchEvent.isAccepted());
+    QVERIFY(!grandchild.seenTouchBegin);
+    QVERIFY(child.seenTouchBegin);
+    QVERIFY(!window.seenTouchBegin);
 }
 
 void tst_QTouchEvent::touchUpdateAndEndNeverPropagate()
