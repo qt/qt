@@ -45,14 +45,42 @@
 class tst_QTouchEventWidget : public QWidget
 {
 public:
+    bool seenTouchBegin, seenTouchUpdate, seenTouchEnd;
+    bool acceptTouchBegin, acceptTouchUpdate, acceptTouchEnd;
+
+    tst_QTouchEventWidget()
+        : QWidget()
+    {
+        reset();
+    }
+
+    void reset()
+    {
+        seenTouchBegin = seenTouchUpdate = seenTouchEnd = false;
+        acceptTouchBegin = acceptTouchUpdate = acceptTouchEnd = true;
+    }
+
     bool event(QEvent *event)
     {
         switch (event->type()) {
         case QEvent::TouchBegin:
+            if (seenTouchBegin) qWarning("TouchBegin: already seen a TouchBegin");
+            if (seenTouchUpdate) qWarning("TouchBegin: TouchUpdate cannot happen before TouchBegin");
+            if (seenTouchEnd) qWarning("TouchBegin: TouchEnd cannot happen before TouchBegin");
+            seenTouchBegin = !seenTouchBegin && !seenTouchUpdate && !seenTouchEnd;
+            event->setAccepted(acceptTouchBegin);
             break;
         case QEvent::TouchUpdate:
+            if (!seenTouchBegin) qWarning("TouchUpdate: have not seen TouchBegin");
+            if (seenTouchEnd) qWarning("TouchUpdate: TouchEnd cannot happen before TouchUpdate");
+            seenTouchUpdate = seenTouchBegin && !seenTouchEnd;
+            event->setAccepted(acceptTouchUpdate);
             break;
         case QEvent::TouchEnd:
+            if (!seenTouchBegin) qWarning("TouchEnd: have not seen TouchBegin");
+            if (seenTouchEnd) qWarning("TouchEnd: already seen a TouchEnd");
+            seenTouchEnd = seenTouchBegin && !seenTouchEnd;
+            event->setAccepted(acceptTouchEnd);
             break;
         default:
             return QWidget::event(event);
@@ -71,6 +99,7 @@ public:
 private slots:
     void touchDisabledByDefault();
     void touchEventAcceptedByDefault();
+    void touchBeginPropagatesWhenIgnored();
 };
 
 void tst_QTouchEvent::touchDisabledByDefault()
@@ -118,7 +147,31 @@ void tst_QTouchEvent::touchEventAcceptedByDefault()
     QVERIFY(touchEvent.isAccepted());
 }
 
+void tst_QTouchEvent::touchBeginPropagatesWhenIgnored()
+{
+    tst_QTouchEventWidget window, child, grandchild;
+    child.setParent(&window);
+    grandchild.setParent(&child);
 
+    // all widgets accept touch events, but
+    window.setAttribute(Qt::WA_AcceptTouchEvents);
+    child.setAttribute(Qt::WA_AcceptTouchEvents);
+    grandchild.setAttribute(Qt::WA_AcceptTouchEvents);
+    grandchild.acceptTouchBegin = false;
+
+    QList<QTouchEvent::TouchPoint> touchPoints;
+    touchPoints.append(QTouchEvent::TouchPoint(0));
+    QTouchEvent touchEvent(QEvent::TouchBegin,
+                           Qt::NoModifier,
+                           Qt::TouchPointPressed,
+                           touchPoints);
+    bool res = QApplication::sendEvent(&grandchild, &touchEvent);
+    QVERIFY(res);
+    QVERIFY(touchEvent.isAccepted());
+    QVERIFY(grandchild.seenTouchBegin);
+    QVERIFY(child.seenTouchBegin);
+    QVERIFY(!window.seenTouchBegin);
+}
 
 QTEST_MAIN(tst_QTouchEvent)
 
