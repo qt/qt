@@ -3907,7 +3907,7 @@ bool QGraphicsItemPrivate::discardUpdateRequest(bool ignoreClipping, bool ignore
     // No scene, or if the scene is updating everything, means we have nothing
     // to do. The only exception is if the scene tracks the growing scene rect.
     return (!visible && !ignoreVisibleBit)
-           || (!ignoreDirtyBit && dirty)
+           || (!ignoreDirtyBit && fullUpdatePending)
            || !scene
            || (scene->d_func()->updateAll && scene->d_func()->hasSceneRect)
            || (!ignoreClipping && (childrenClippedToShape() && isClippedAway()))
@@ -4163,7 +4163,7 @@ void QGraphicsItem::update(const QRectF &rect)
             }
         }
         // Only invalidate cache; item is already dirty.
-        if (d_ptr->dirty)
+        if (d_ptr->fullUpdatePending)
             return;
     }
 

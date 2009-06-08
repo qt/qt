@@ -6428,10 +6428,25 @@ void tst_QGraphicsItem::deviceTransform()
     QCOMPARE(rect3->deviceTransform(deviceX).map(QPointF(50, 50)), mapResult3);
 }
 
+class MyGraphicsView : public QGraphicsView
+{
+public:
+    int repaints;
+    QRegion paintedRegion;
+    MyGraphicsView(QGraphicsScene *scene) : QGraphicsView(scene), repaints(0) {}
+    void paintEvent(QPaintEvent *e)
+    {
+        paintedRegion += e->region();
+        ++repaints;
+        QGraphicsView::paintEvent(e);
+    }
+    void reset() { repaints = 0; paintedRegion = QRegion(); }
+};
+
 void tst_QGraphicsItem::update()
 {
     QGraphicsScene scene;
-    QGraphicsView view(&scene);
+    MyGraphicsView view(&scene);
     view.show();
 #ifdef Q_WS_X11
     qt_x11_wait_for_window_manager(&view);
@@ -6453,6 +6468,20 @@ void tst_QGraphicsItem::update()
     item->update();
     qApp->processEvents();
     QCOMPARE(item->repaints, 2);
+
+    // Make sure a partial update doesn't cause a full update to be discarded.
+    view.reset();
+    item->repaints = 0;
+    item->update(QRectF(0, 0, 5, 5));
+    item->update();
+    qApp->processEvents();
+    QCOMPARE(item->repaints, 1);
+    QCOMPARE(view.repaints, 1);
+    const QRect itemDeviceBoundingRect = item->deviceTransform(view.viewportTransform())
+                                         .mapRect(item->boundingRect()).toRect();
+    const QRegion expectedRegion = itemDeviceBoundingRect.adjusted(-2, -2, 2, 2);
+    // The entire item's bounding rect (adjusted for antialiasing) should have been painted.
+    QCOMPARE(view.paintedRegion, expectedRegion);
 }
 
 QTEST_MAIN(tst_QGraphicsItem)
