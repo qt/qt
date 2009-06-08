@@ -236,6 +236,9 @@ private slots:
     void task240400_clickOnTextItem();
     void task243707_addChildBeforeParent();
     void task197802_childrenVisibility();
+
+private:
+    QList<QGraphicsItem *> paintedItems;
 };
 
 void tst_QGraphicsItem::init()
@@ -5793,19 +5796,36 @@ void tst_QGraphicsItem::opacity2()
     QCOMPARE(grandChild->repaints, 0);
 }
 
+class StacksBehindParentHelper : public QGraphicsRectItem
+{
+public:
+    StacksBehindParentHelper(QList<QGraphicsItem *> *paintedItems, const QRectF &rect, QGraphicsItem *parent = 0)
+        : QGraphicsRectItem(rect, parent), paintedItems(paintedItems)
+    { }
+
+    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
+    {
+        QGraphicsRectItem::paint(painter, option, widget);
+        paintedItems->append(this);
+    }
+
+private:
+    QList<QGraphicsItem *> *paintedItems;
+};
+
 void tst_QGraphicsItem::itemStacksBehindParent()
 {
-    QGraphicsRectItem *parent1 = new QGraphicsRectItem(QRectF(0, 0, 100, 50));
-    QGraphicsRectItem *child11 = new QGraphicsRectItem(QRectF(-10, 10, 50, 50), parent1);
-    QGraphicsRectItem *grandChild111 = new QGraphicsRectItem(QRectF(-20, 20, 50, 50), child11);
-    QGraphicsRectItem *child12 = new QGraphicsRectItem(QRectF(60, 10, 50, 50), parent1);
-    QGraphicsRectItem *grandChild121 = new QGraphicsRectItem(QRectF(70, 20, 50, 50), child12);
+    StacksBehindParentHelper *parent1 = new StacksBehindParentHelper(&paintedItems, QRectF(0, 0, 100, 50));
+    StacksBehindParentHelper *child11 = new StacksBehindParentHelper(&paintedItems, QRectF(-10, 10, 50, 50), parent1);
+    StacksBehindParentHelper *grandChild111 = new StacksBehindParentHelper(&paintedItems, QRectF(-20, 20, 50, 50), child11);
+    StacksBehindParentHelper *child12 = new StacksBehindParentHelper(&paintedItems, QRectF(60, 10, 50, 50), parent1);
+    StacksBehindParentHelper *grandChild121 = new StacksBehindParentHelper(&paintedItems, QRectF(70, 20, 50, 50), child12);
 
-    QGraphicsRectItem *parent2 = new QGraphicsRectItem(QRectF(0, 0, 100, 50));
-    QGraphicsRectItem *child21 = new QGraphicsRectItem(QRectF(-10, 10, 50, 50), parent2);
-    QGraphicsRectItem *grandChild211 = new QGraphicsRectItem(QRectF(-20, 20, 50, 50), child21);
-    QGraphicsRectItem *child22 = new QGraphicsRectItem(QRectF(60, 10, 50, 50), parent2);
-    QGraphicsRectItem *grandChild221 = new QGraphicsRectItem(QRectF(70, 20, 50, 50), child22);
+    StacksBehindParentHelper *parent2 = new StacksBehindParentHelper(&paintedItems, QRectF(0, 0, 100, 50));
+    StacksBehindParentHelper *child21 = new StacksBehindParentHelper(&paintedItems, QRectF(-10, 10, 50, 50), parent2);
+    StacksBehindParentHelper *grandChild211 = new StacksBehindParentHelper(&paintedItems, QRectF(-20, 20, 50, 50), child21);
+    StacksBehindParentHelper *child22 = new StacksBehindParentHelper(&paintedItems, QRectF(60, 10, 50, 50), parent2);
+    StacksBehindParentHelper *grandChild221 = new StacksBehindParentHelper(&paintedItems, QRectF(70, 20, 50, 50), child22);
 
     parent1->setData(0, "parent1");
     child11->setData(0, "child11");
@@ -5827,25 +5847,57 @@ void tst_QGraphicsItem::itemStacksBehindParent()
     scene.addItem(parent1);
     scene.addItem(parent2);
 
+    paintedItems.clear();
+
+    QGraphicsView view(&scene);
+    view.show();
+#ifdef Q_WS_X11
+    qt_x11_wait_for_window_manager(&view);
+#endif
+    QTest::qWait(250);
+
     QCOMPARE(scene.items(0, 0, 100, 100), (QList<QGraphicsItem *>()
                                            << grandChild111 << child11
                                            << grandChild121 << child12 << parent1
                                            << grandChild211 << child21
                                            << grandChild221 << child22 << parent2));
+    QCOMPARE(paintedItems, QList<QGraphicsItem *>()
+             << parent2 << child22 << grandChild221
+             << child21 << grandChild211
+             << parent1 << child12 << grandChild121
+             << child11 << grandChild111);
 
     child11->setFlag(QGraphicsItem::ItemStacksBehindParent);
+    scene.update();
+    paintedItems.clear();
+    QTest::qWait(250);
+
     QCOMPARE(scene.items(0, 0, 100, 100), (QList<QGraphicsItem *>()
                                            << grandChild121 << child12 << parent1
                                            << grandChild111 << child11
                                            << grandChild211 << child21
                                            << grandChild221 << child22 << parent2));
+    QCOMPARE(paintedItems, QList<QGraphicsItem *>()
+             << parent2 << child22 << grandChild221
+             << child21 << grandChild211
+             << child11 << grandChild111
+             << parent1 << child12 << grandChild121);
 
     child12->setFlag(QGraphicsItem::ItemStacksBehindParent);
+    paintedItems.clear();
+    scene.update();
+    QTest::qWait(250);
+
     QCOMPARE(scene.items(0, 0, 100, 100), (QList<QGraphicsItem *>()
                                            << parent1 << grandChild111 << child11
                                            << grandChild121 << child12
                                            << grandChild211 << child21
                                            << grandChild221 << child22 << parent2));
+    QCOMPARE(paintedItems, QList<QGraphicsItem *>()
+             << parent2 << child22 << grandChild221
+             << child21 << grandChild211
+             << child12 << grandChild121
+             << child11 << grandChild111 << parent1);
 }
 
 class ClippingAndTransformsScene : public QGraphicsScene

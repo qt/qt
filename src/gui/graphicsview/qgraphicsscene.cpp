@@ -5138,9 +5138,10 @@ void QGraphicsScenePrivate::drawSubtreeRecursive(QGraphicsItem *item, QPainter *
     // Calculate the full transform for this item.
     QRect viewBoundingRect;
     bool wasDirtyParentSceneTransform = false;
+    QTransform transform;
     if (item) {
         if (item->d_ptr->itemIsUntransformable()) {
-            transformTmp = item->deviceTransform(viewTransform);
+            transform = item->deviceTransform(viewTransform);
         } else {
             if (item->d_ptr->dirtySceneTransform) {
                 item->d_ptr->sceneTransform = item->d_ptr->parent ? item->d_ptr->parent->d_ptr->sceneTransform
@@ -5149,14 +5150,14 @@ void QGraphicsScenePrivate::drawSubtreeRecursive(QGraphicsItem *item, QPainter *
                 item->d_ptr->dirtySceneTransform = 0;
                 wasDirtyParentSceneTransform = true;
             }
-            transformTmp = item->d_ptr->sceneTransform;
-            transformTmp *= viewTransform;
+            transform = item->d_ptr->sceneTransform;
+            transform *= viewTransform;
         }
         
         QRectF brect = item->boundingRect();
         // ### This does not take the clip into account.
         _q_adjustRect(&brect);
-        viewBoundingRect = transformTmp.mapRect(brect).toRect();
+        viewBoundingRect = transform.mapRect(brect).toRect();
         item->d_ptr->paintedViewBoundingRects.insert(widget, viewBoundingRect);
         viewBoundingRect.adjust(-1, -1, 1, 1);
         if (exposedRegion)
@@ -5200,7 +5201,7 @@ void QGraphicsScenePrivate::drawSubtreeRecursive(QGraphicsItem *item, QPainter *
     // Clip children.
     if (childClip) {
         painter->save();
-        painter->setWorldTransform(transformTmp);
+        painter->setWorldTransform(transform);
         painter->setClipPath(item->shape(), Qt::IntersectClip);
     }
     
@@ -5234,14 +5235,14 @@ void QGraphicsScenePrivate::drawSubtreeRecursive(QGraphicsItem *item, QPainter *
 
     // Draw item
     if (!dontDrawItem) {
-        item->d_ptr->initStyleOption(&styleOptionTmp, transformTmp, exposedRegion ? *exposedRegion : QRegion(), exposedRegion == 0);
+        item->d_ptr->initStyleOption(&styleOptionTmp, transform, exposedRegion ? *exposedRegion : QRegion(), exposedRegion == 0);
 
         bool clipsToShape = (item->d_ptr->flags & QGraphicsItem::ItemClipsToShape);
         bool savePainter = clipsToShape || !(optimizationFlags & QGraphicsView::DontSavePainterState);
         if (savePainter)
             painter->save();
         if (!childClip)
-            painter->setWorldTransform(transformTmp);
+            painter->setWorldTransform(transform);
         if (clipsToShape)
             painter->setClipPath(item->shape(), Qt::IntersectClip);
         painter->setOpacity(opacity);
