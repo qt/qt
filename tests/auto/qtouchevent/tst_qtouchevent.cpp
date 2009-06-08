@@ -210,7 +210,7 @@ void tst_QTouchEvent::touchUpdateAndEndNeverPropagate()
     // send the touch end, same thing should happen as with touch update
     QTouchEvent touchEndEvent(QEvent::TouchEnd,
                                  Qt::NoModifier,
-                                 Qt::TouchPointMoved,
+                                 Qt::TouchPointReleased,
                                  touchPoints);
     res = QApplication::sendEvent(&child, &touchEndEvent);
     QVERIFY(res);
