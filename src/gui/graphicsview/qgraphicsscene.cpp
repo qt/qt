@@ -5336,6 +5336,7 @@ void QGraphicsScenePrivate::processDirtyItemsRecursive(QGraphicsItem *item, bool
     }
 
     // Process item.
+    bool wasDirtyParentViewBoundingRects = false;
     if (item && (item->d_ptr->dirty || item->d_ptr->paintedViewBoundingRectsNeedRepaint)) {
         const bool useCompatUpdate = views.isEmpty() || (connectedSignals & changedSignalMask);
         const bool untransformableItem = item->d_ptr->itemIsUntransformable();
@@ -5376,8 +5377,10 @@ void QGraphicsScenePrivate::processDirtyItemsRecursive(QGraphicsItem *item, bool
                     break;
                 }
 
-                if (item->d_ptr->paintedViewBoundingRectsNeedRepaint)
+                if (item->d_ptr->paintedViewBoundingRectsNeedRepaint) {
+                    wasDirtyParentViewBoundingRects = true;
                     viewPrivate->updateRect(item->d_ptr->paintedViewBoundingRects.value(viewPrivate->viewport));
+                }
 
                 if (!item->d_ptr->dirty)
                     continue;
@@ -5422,6 +5425,8 @@ void QGraphicsScenePrivate::processDirtyItemsRecursive(QGraphicsItem *item, bool
             QGraphicsItem *child = children->at(i);
             if (wasDirtyParentSceneTransform)
                 child->d_ptr->dirtySceneTransform = 1;
+            if (wasDirtyParentViewBoundingRects)
+                child->d_ptr->paintedViewBoundingRectsNeedRepaint = 1;
 
             if (allChildrenDirty) {
                 child->d_ptr->dirty = 1;
