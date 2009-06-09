@@ -337,6 +337,9 @@ bool qt_resolve_version_2_0_functions(QGLContext *ctx)
     if (!qt_resolve_version_1_3_functions(ctx))
         gl2supported = false;
 
+    if (!qt_resolve_framebufferobject_extensions(ctx))
+        gl2supported = false;
+
     if (glStencilOpSeparate)
         return gl2supported;
 
