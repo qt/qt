@@ -201,13 +201,13 @@ MakefileGenerator::initOutPaths()
         if(Option::mkfile::do_cache && !Option::mkfile::cachefile.isEmpty() &&
            v.contains("QMAKE_ABSOLUTE_SOURCE_ROOT")) {
             QString root = v["QMAKE_ABSOLUTE_SOURCE_ROOT"].first();
-            root = Option::fixPathToTargetOS(root);
+            root = QDir::fromNativeSeparators(root);
             if(!root.isEmpty()) {
                 QFileInfo fi = fileInfo(Option::mkfile::cachefile);
                 if(!fi.makeAbsolute()) {
                     QString cache_r = fi.path(), pwd = Option::output_dir;
                     if(pwd.startsWith(cache_r) && !pwd.startsWith(root)) {
-                        pwd = Option::fixPathToTargetOS(root + pwd.mid(cache_r.length()));
+                        pwd = root + pwd.mid(cache_r.length());
                         if(exists(pwd))
                             v.insert("QMAKE_ABSOLUTE_SOURCE_PATH", QStringList(pwd));
                     }
@@ -217,7 +217,7 @@ MakefileGenerator::initOutPaths()
     }
     if(!v["QMAKE_ABSOLUTE_SOURCE_PATH"].isEmpty()) {
         QString &asp = v["QMAKE_ABSOLUTE_SOURCE_PATH"].first();
-        asp = Option::fixPathToTargetOS(asp);
+        asp = QDir::fromNativeSeparators(asp);
         if(asp.isEmpty() || asp == Option::output_dir) //if they're the same, why bother?
             v["QMAKE_ABSOLUTE_SOURCE_PATH"].clear();
     }
@@ -723,14 +723,14 @@ MakefileGenerator::init()
         if(project->isActiveConfig("qmake_cache")) {
             QString cache_file;
             if(!project->isEmpty("QMAKE_INTERNAL_CACHE_FILE")) {
-                cache_file = Option::fixPathToLocalOS(project->first("QMAKE_INTERNAL_CACHE_FILE"));
+                cache_file = QDir::fromNativeSeparators(project->first("QMAKE_INTERNAL_CACHE_FILE"));
             } else {
                 cache_file = ".qmake.internal.cache";
                 if(project->isActiveConfig("build_pass"))
                     cache_file += ".BUILD." + project->first("BUILD_PASS");
             }
-            if(cache_file.indexOf(QDir::separator()) == -1)
-                cache_file.prepend(Option::output_dir + QDir::separator());
+            if(cache_file.indexOf('/') == -1)
+                cache_file.prepend(Option::output_dir + '/');
             QMakeSourceFileInfo::setCacheFile(cache_file);
         }
 
@@ -2727,11 +2727,13 @@ MakefileGenerator::fileFixify(const QString& file, const QString &out_d, const Q
         return cacheVal;
 
     //do the fixin'
-    const QString pwd = qmake_getpwd() + "/";
+    QString pwd = qmake_getpwd();
+    if (!pwd.endsWith('/'))
+        pwd += '/';
     QString orig_file = ret;
     if(ret.startsWith(QLatin1Char('~'))) {
         if(ret.startsWith(QLatin1String("~/")))
-            ret = QDir::homePath() + Option::dir_sep + ret.mid(1);
+            ret = QDir::homePath() + ret.mid(1);
         else
             warn_msg(WarnLogic, "Unable to expand ~ in %s", ret.toLatin1().constData());
     }
@@ -2980,7 +2982,7 @@ MakefileGenerator::openOutput(QFile &file, const QString &build) const
                 file.setFileName(Option::output_dir + "/" + file.fileName()); //pwd when qmake was run
             QFileInfo fi(fileInfo(file.fileName()));
             if(fi.isDir())
-                outdir = file.fileName() + QDir::separator();
+                outdir = file.fileName() + '/';
         }
         if(!outdir.isEmpty() || file.fileName().isEmpty()) {
             QString fname = "Makefile";
@@ -3000,7 +3002,7 @@ MakefileGenerator::openOutput(QFile &file, const QString &build) const
         file.setFileName(file.fileName() + "." + build);
     if(project->isEmpty("QMAKE_MAKEFILE"))
         project->values("QMAKE_MAKEFILE").append(file.fileName());
-    int slsh = file.fileName().lastIndexOf(Option::dir_sep);
+    int slsh = file.fileName().lastIndexOf('/');
     if(slsh != -1)
         mkdir(file.fileName().left(slsh));
     if(file.open(QIODevice::WriteOnly | QIODevice::Text | QIODevice::Truncate)) {
@@ -3010,9 +3012,13 @@ MakefileGenerator::openOutput(QFile &file, const QString &build) const
             od = fileInfo(fi.readLink()).absolutePath();
         else
             od = fi.path();
-        od = Option::fixPathToTargetOS(od);
-        if(QDir::isRelativePath(od))
-            od.prepend(Option::output_dir);
+        od = QDir::fromNativeSeparators(od);
+        if(QDir::isRelativePath(od)) {
+            QString dir = Option::output_dir;
+            if (!dir.endsWith('/') && !od.isEmpty())
+                dir += '/';
+            od.prepend(dir);
+        }
         Option::output_dir = od;
         return true;
     }
