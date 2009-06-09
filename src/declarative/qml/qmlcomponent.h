@@ -104,6 +104,7 @@ private:
     friend class QmlVME;
     friend struct QmlCompositeTypeData;
 };
+Q_DECLARE_METATYPE(QmlComponent::Status);
 QML_DECLARE_TYPE(QmlComponent)
 
 QT_END_NAMESPACE

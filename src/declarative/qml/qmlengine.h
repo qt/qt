@@ -90,7 +90,6 @@ public:
 
     static QScriptValue qmlScriptObject(QObject*, QmlEngine*);
 
-    // Below two functions provide a way to dynamically create objects from JS
     static QScriptValue createComponent(QScriptContext*, QScriptEngine*);
     static QScriptValue createQMLObject(QScriptContext*, QScriptEngine*);
 

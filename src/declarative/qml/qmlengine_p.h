@@ -221,6 +221,9 @@ public:
     QmlObjectScriptClass(QmlEngine *);
     ~QmlObjectScriptClass();
 
+    virtual QScriptValue prototype () const;
+    QScriptValue prototypeObject;
+
     virtual QueryFlags queryProperty(const QScriptValue &object,
                                      const QScriptString &name,
                                      QueryFlags flags, uint *id);
