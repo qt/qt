@@ -467,6 +467,23 @@ QAbstractItemModel *QAbstractItemModelPrivate::staticEmptyModel()
     return qEmptyModel();
 }
 
+bool QAbstractItemModelPrivate::canConvertToDouble(const QVariant &value)
+{
+    switch (value.type()) {
+        case QVariant::Bool:
+        case QVariant::Int:
+        case QVariant::UInt:
+        case QVariant::LongLong:
+        case QVariant::ULongLong:
+        case QVariant::Double:
+        case QVariant::Char:
+            return true;
+        default:
+            return false;
+    }
+    return false;
+}
+
 void QAbstractItemModelPrivate::removePersistentIndexData(QPersistentModelIndexData *data)
 {
     if (data->index.isValid()) {
