@@ -4438,8 +4438,8 @@ void QGLDrawable::makeCurrent()
 #if !defined(QT_OPENGL_ES_1) && !defined(QT_OPENGL_ES_1_CL)
     if (!pixmapData && !fbo) {
 #else
-#endif
     if (!fbo) {
+#endif
         QGLContext *ctx = context();
         previous_fbo = ctx->d_ptr->current_fbo;
         ctx->d_ptr->current_fbo = 0;
