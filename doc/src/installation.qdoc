@@ -738,8 +738,6 @@ in the \l{Qt for Windows CE Requirements} document.
     \header                                        \o Minimal \o Normal \o Minimal \o Normal \o Minimal \o Normal \o Minimal \o Normal 
     \row    \o linux-x86-g++ \o GCC 4.2.4          \o 1.7M    \o 2.7M   \o 3.3M    \o 9.9M   \o 653K    \o 1.1M   \o N/A     \o 17M
     \row    \o linux-arm-g++ \o GCC 4.1.1          \o 1.9M    \o 3.2M   \o 4.1M    \o 11M    \o 507K    \o 1.0M   \o N/A     \o 17M
-    \row    \o linux-arm-g++ (thumb)
-                             \o GCC 4.1.1          \o 1.7M    \o 2.8M   \o 4.0M    \o 9.8M   \o 409K    \o 796K   \o N/A     \o 17M
     \row    \o linux-mips-g++ (MIPS32)
                              \o GCC 4.2.4          \o 2.0M    \o 3.2M   \o 4.5M    \o 12M    \o 505K    \o 1003K  \o N/A     \o 21M
     \endtable
