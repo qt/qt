@@ -174,7 +174,6 @@ public:
         // ^ Composites the bounding rect onto dest buffer
     void fillStencilWithVertexArray(QGL2PEXVertexArray& vertexArray, bool useWindingFill);
         // ^ Calls drawVertexArrays to render into stencil buffer
-    void cleanStencilBuffer(const QGLRect& area);
 
     void prepareForDraw(bool srcPixelsAreOpaque);
 

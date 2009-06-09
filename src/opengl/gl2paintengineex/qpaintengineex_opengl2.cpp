@@ -732,12 +732,14 @@ void QGL2PaintEngineExPrivate::fill(const QVectorPath& path)
 
         // Stencil the brush onto the dest buffer
         glStencilFunc(GL_NOTEQUAL, 0, 0xFFFF); // Pass if stencil buff value != 0
+        glStencilOp(GL_REPLACE, GL_REPLACE, GL_REPLACE);
+
         glEnable(GL_STENCIL_TEST);
         prepareForDraw(currentBrush->isOpaque());
         composite(vertexCoordinateArray.boundingRect());
         glDisable(GL_STENCIL_TEST);
 
-        cleanStencilBuffer(vertexCoordinateArray.boundingRect());
+        glStencilMask(0);
     }
 }
 
@@ -745,17 +747,17 @@ void QGL2PaintEngineExPrivate::fill(const QVectorPath& path)
 void QGL2PaintEngineExPrivate::fillStencilWithVertexArray(QGL2PEXVertexArray& vertexArray, bool useWindingFill)
 {
 //     qDebug("QGL2PaintEngineExPrivate::fillStencilWithVertexArray()");
+    glStencilMask(0xFFFF); // Enable stencil writes
+
     if (stencilBufferDirty) {
         // Clear the stencil buffer to zeros
         glDisable(GL_STENCIL_TEST);
-        glStencilMask(0xFFFF); // Enable writing to stencil buffer, otherwise glClear wont do anything.
         glClearStencil(0); // Clear to zero
         glClear(GL_STENCIL_BUFFER_BIT);
         stencilBufferDirty = false;
     }
 
     glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE); // Disable color writes
-    glStencilMask(0xFFFF); // Enable stencil writes
     glStencilFunc(GL_ALWAYS, 0, 0xFFFF); // Always pass the stencil test
 
     // Setup the stencil op:
@@ -765,7 +767,7 @@ void QGL2PaintEngineExPrivate::fillStencilWithVertexArray(QGL2PEXVertexArray& ve
     } else
         glStencilOp(GL_KEEP, GL_KEEP, GL_INVERT); // Simply invert the stencil bit
 
-    // No point in using a fancy gradiant shader for writing into the stencil buffer!
+    // No point in using a fancy gradient shader for writing into the stencil buffer!
     useSimpleShader();
 
     glEnable(GL_STENCIL_TEST); // For some reason, this has to happen _after_ the simple shader is use()'d
@@ -776,41 +778,6 @@ void QGL2PaintEngineExPrivate::fillStencilWithVertexArray(QGL2PEXVertexArray& ve
 
     // Enable color writes & disable stencil writes
     glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
-    glStencilMask(0);
-}
-
-void QGL2PaintEngineExPrivate::cleanStencilBuffer(const QGLRect& area)
-{
-//     qDebug("QGL2PaintEngineExPrivate::cleanStencilBuffer()");
-    useSimpleShader();
-
-    GLfloat rectVerts[] = {
-        area.left,  area.top,
-        area.left,  area.bottom,
-        area.right, area.bottom,
-        area.right, area.top
-    };
-
-    glEnableVertexAttribArray(QT_VERTEX_COORDS_ATTR);
-    glVertexAttribPointer(QT_VERTEX_COORDS_ATTR, 2, GL_FLOAT, GL_FALSE, 0, rectVerts);
-
-    glEnable(GL_STENCIL_TEST);
-    glStencilFunc(GL_ALWAYS, 0, 0xFFFF); // Always pass the stencil test
-
-    glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE); // Disable color writes
-    glStencilMask(0xFFFF); // Enable writing to stencil buffer
-    glStencilOp(GL_ZERO, GL_ZERO, GL_ZERO); // Write 0's to stencil buffer
-
-    glDisable(GL_BLEND);
-
-    glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
-
-    glDisableVertexAttribArray(QT_VERTEX_COORDS_ATTR);
-
-    // Enable color writes & disable stencil writes
-    glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
-    glStencilMask(0);
-    glDisable(GL_STENCIL_TEST);
 }
 
 void QGL2PaintEngineExPrivate::prepareForDraw(bool srcPixelsAreOpaque)
@@ -1339,15 +1306,16 @@ void QGL2PaintEngineExPrivate::writeClip(const QVectorPath &path, float depth)
     glDepthFunc(GL_ALWAYS);
 
     glStencilFunc(GL_NOTEQUAL, 0, 0xFFFF); // Pass if stencil buff value != 0
+    glStencilOp(GL_REPLACE, GL_REPLACE, GL_REPLACE);
 
     glEnable(GL_STENCIL_TEST);
     composite(vertexCoordinateArray.boundingRect());
     glDisable(GL_STENCIL_TEST);
 
+    glStencilMask(0);
+
     glColorMask(true, true, true, true);
     glDepthMask(false);
-
-    cleanStencilBuffer(vertexCoordinateArray.boundingRect());
 }
 
 void QGL2PaintEngineEx::clip(const QVectorPath &path, Qt::ClipOperation op)
