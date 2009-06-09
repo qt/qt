@@ -95,6 +95,7 @@ public:
 
     qreal glWidth;
     qreal glHeight;
+    QSize glSize;
 
     void genTexture();
 };
@@ -199,6 +200,7 @@ void GLTexture::setImage(const QImage &img, ImageMode mode)
         }
         d->glWidth = 1.;
         d->glHeight = 1.;
+        d->glSize = img.size();
 
     } else {
         // mode == PowerOfTwo
@@ -233,6 +235,7 @@ void GLTexture::setImage(const QImage &img, ImageMode mode)
 
         d->glWidth = qreal(img.width()) / qreal(max);
         d->glHeight = qreal(img.height()) / qreal(max);
+        d->glSize = QSize(max, max);
     }
 
     d->width = img.width();
@@ -271,6 +274,11 @@ qreal GLTexture::glWidth() const
 qreal GLTexture::glHeight() const
 {
     return d->glHeight;
+}
+
+QSize GLTexture::glSize() const
+{
+    return d->glSize;
 }
 
 /*!

@@ -500,6 +500,12 @@ void QFxImage::paintGLContents(GLPainter &p)
             float glWidth = d->tex->glWidth();
             float glHeight = d->tex->glHeight();
 
+            float deltaX = 0.5 / qreal(d->tex->glSize().width());
+            float deltaY = 0.5 / qreal(d->tex->glSize().height());
+            glWidth -= deltaX;
+            glHeight -= deltaY;
+            
+
             float vert[] = {
                 0, heightV,
                 widthV, heightV,
@@ -510,12 +516,12 @@ void QFxImage::paintGLContents(GLPainter &p)
                 widthV, 0 };
 
             float tex[] = {
-                0, 0,
-                glWidth, 0,
-                0, glHeight,
+                deltaX, deltaY,
+                glWidth, deltaY,
+                deltaX, glHeight,
 
-                glWidth, 0,
-                0, glHeight,
+                glWidth, deltaY,
+                deltaX, glHeight,
                 glWidth, glHeight
             };
 
@@ -551,11 +557,17 @@ void QFxImage::paintGLContents(GLPainter &p)
 
         float widthV = width();
         float heightV = height();
+        float glWidth = d->tex->glWidth();
+        float glHeight = d->tex->glHeight();
+        float deltaX = 0.5 / qreal(d->tex->glSize().width());
+        float deltaY = 0.5 / qreal(d->tex->glSize().height());
+        glHeight -= deltaY;
+        glWidth -= deltaX;
 
-        float texleft = 0;
-        float texright = d->tex->glWidth();
-        float textop = d->tex->glHeight();
-        float texbottom = 0;
+        float texleft = deltaX;
+        float texright = glWidth;
+        float textop = glHeight;
+        float texbottom = deltaY;
         float imgleft = 0;
         float imgright = widthV;
         float imgtop = 0;
@@ -567,19 +579,19 @@ void QFxImage::paintGLContents(GLPainter &p)
         const int sgb = d->scaleGrid->bottom();
 
         if (sgl) {
-            texleft = d->tex->glWidth() * float(sgl) / imgWidth;
+            texleft = deltaX + d->tex->glWidth() * float(sgl) / imgWidth;
             imgleft = sgl;
         }
         if (sgr) {
-            texright = d->tex->glWidth() - float(sgr) / imgWidth;
+            texright = d->tex->glWidth() - float(sgr) / imgWidth - deltaX;
             imgright = widthV - sgr;
         }
         if (sgt) {
-            textop = d->tex->glHeight() - float(sgb) / imgHeight;
+            textop = d->tex->glHeight() - float(sgb) / imgHeight - deltaY;
             imgtop = sgt;
         }
         if (sgb) {
-            texbottom = d->tex->glHeight() * float(sgt) / imgHeight;
+            texbottom = deltaY + d->tex->glHeight() * float(sgt) / imgHeight;
             imgbottom = heightV - sgb;
         }
 
@@ -655,39 +667,39 @@ void QFxImage::paintGLContents(GLPainter &p)
                           widthV, imgbottom,
                           widthV, heightV };
 
-        float tex1[] = { 0, 1, 
-                         0, textop,
-                         texleft, 1,
+        float tex1[] = { deltaX, glHeight, 
+                         deltaX, textop,
+                         texleft, glHeight,
 
-                         0, textop,
-                         texleft, 1,
+                         deltaX, textop,
+                         texleft, glHeight,
                          texleft, textop,
 
-                         texleft, 1,
+                         texleft, glHeight,
                          texleft, textop,
-                         texright, 1,
-
-                         texleft, textop,
-                         texright, 1,
-                         texright, textop,
-
-                         texright, 1,
-                         texright, textop,
-                         1, 1,
-
-                         texright, textop,
-                         1, 1,
-                         1, textop,
-
-                         0, textop,
-                         0, texbottom,
-                         texleft, textop,
-
-                         0, texbottom,
-                         texleft, textop,
-                         texleft, texbottom,
+                         texright, glHeight,
 
                          texleft, textop,
+                         texright, glHeight,
+                         texright, textop,
+
+                         texright, glHeight,
+                         texright, textop,
+                         glWidth, glHeight,
+
+                         texright, textop,
+                         glWidth, glHeight,
+                         glWidth, textop,
+
+                         deltaX, textop,
+                         deltaX, texbottom,
+                         texleft, textop,
+
+                         deltaX, texbottom,
+                         texleft, textop,
+                         texleft, texbottom,
+
+                         texleft, textop,
                          texleft, texbottom,
                          texright, textop,
 
@@ -697,35 +709,35 @@ void QFxImage::paintGLContents(GLPainter &p)
 
                          texright, textop,
                          texright, texbottom,
-                         1, textop,
+                         glWidth, textop,
 
                          texright, texbottom,
-                         1, textop,
-                         1, texbottom,
+                         glWidth, textop,
+                         glWidth, texbottom,
 
-                         0, texbottom,
-                         0, 0,
+                         deltaX, texbottom,
+                         deltaX, deltaY,
                          texleft, texbottom,
 
-                         0, 0,
+                         deltaX, deltaY,
                          texleft, texbottom,
-                         texleft, 0,
+                         texleft, deltaY,
 
                          texleft, texbottom,
-                         texleft, 0,
+                         texleft, deltaY,
                          texright, texbottom,
 
-                         texleft, 0,
+                         texleft, deltaY,
                          texright, texbottom,
-                         texright, 0,
+                         texright, deltaY,
 
                          texright, texbottom,
-                         texright, 0,
-                         1, texbottom,
+                         texright, deltaY,
+                         glWidth, texbottom,
 
-                         texright, 0,
-                         1, texbottom,
-                         1, 0 };
+                         texright, deltaY,
+                         glWidth, texbottom,
+                         glWidth, deltaY };
 
         glBindTexture(GL_TEXTURE_2D, d->tex->texture());
 

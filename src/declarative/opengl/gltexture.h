@@ -77,6 +77,7 @@ public:
     int height() const;
     qreal glWidth() const;
     qreal glHeight() const;
+    QSize glSize() const;
     QSize size() const;
     void setSize(const QSize &);
 

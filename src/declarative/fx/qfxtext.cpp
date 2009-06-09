@@ -793,8 +793,15 @@ void QFxText::paintGLContents(GLPainter &p)
 
     float widthV = d->imgCache.width();
     float heightV = d->imgCache.height();
+    float glWidth = d->tex.glWidth();
+    float glHeight = d->tex.glHeight();
 
     QGLShaderProgram *shader = p.useTextureShader();
+
+    float deltaX = 0.5 / qreal(d->tex.glSize().width());
+    float deltaY = 0.5 / qreal(d->tex.glSize().height());
+    glWidth -= deltaX;
+    glHeight -= deltaY;
 
     GLfloat vertices[] = { x, y + heightV,
                            x + widthV, y + heightV,
@@ -804,13 +811,13 @@ void QFxText::paintGLContents(GLPainter &p)
                            x, y, 
                            x + widthV, y };
 
-    GLfloat texVertices[] = { 0, 0, 
-                              d->tex.glWidth(), 0, 
-                              0, d->tex.glHeight(),
+    GLfloat texVertices[] = { deltaX, deltaY, 
+                              glWidth, deltaY, 
+                              deltaX, glHeight,
 
-                              d->tex.glWidth(), 0, 
-                              0, d->tex.glHeight(),
-                              d->tex.glWidth(), d->tex.glHeight() };
+                              glWidth, deltaY, 
+                              deltaX, glHeight,
+                              glWidth, glHeight };
 
     shader->setAttributeArray(SingleTextureShader::Vertices, vertices, 2);
     shader->setAttributeArray(SingleTextureShader::TextureCoords, texVertices, 2);
