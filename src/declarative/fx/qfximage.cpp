@@ -127,10 +127,12 @@ QFxImage::~QFxImage()
     Q_D(QFxImage);
     if (d->sciReply)
         d->sciReply->deleteLater();
+#if defined(QFX_RENDER_OPENGL)
     if (d->tex) {
         d->tex->release();
         d->tex = 0;
     }
+#endif
 }
 
 /*!

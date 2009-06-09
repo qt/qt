@@ -68,8 +68,11 @@ class QFxRectPrivate : public QFxItemPrivate
     Q_DECLARE_PUBLIC(QFxRect)
 
 public:
-    QFxRectPrivate()
-      : rectTexture(0), gradient(0), pen(0), radius(0)
+    QFxRectPrivate() :
+#if defined(QFX_RENDER_OPENGL)
+    rectTexture(0),
+#endif //QFX_RENDER_OPENGL
+    gradient(0), pen(0), radius(0)
     {
     }
 
