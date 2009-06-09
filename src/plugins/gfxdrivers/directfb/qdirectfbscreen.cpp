@@ -786,8 +786,10 @@ static const FlagDescription blitDescriptions[] = {
     { " DSBLIT_DST_PREMULTIPLY", DSBLIT_DST_PREMULTIPLY },
     { " DSBLIT_DEMULTIPLY", DSBLIT_DEMULTIPLY },
     { " DSBLIT_DEINTERLACE", DSBLIT_DEINTERLACE },
+#if (Q_DIRECTFB_VERSION >= 0x000923)
     { " DSBLIT_SRC_PREMULTCOLOR", DSBLIT_SRC_PREMULTCOLOR },
     { " DSBLIT_XOR", DSBLIT_XOR },
+#endif
 #if (Q_DIRECTFB_VERSION >= 0x010000)
     { " DSBLIT_INDEX_TRANSLATION", DSBLIT_INDEX_TRANSLATION },
 #endif
@@ -808,6 +810,7 @@ static const FlagDescription drawDescriptions[] = {
 
 
 
+#if (Q_DIRECTFB_VERSION >= 0x000923)
 static const QByteArray flagDescriptions(uint mask, const FlagDescription *flags)
 {
 #ifdef QT_NO_DEBUG
@@ -828,9 +831,6 @@ static const QByteArray flagDescriptions(uint mask, const FlagDescription *flags
     return (QLatin1Char(' ') + list.join(QLatin1String("|"))).toLatin1();
 #endif
 }
-
-
-
 static void printDirectFBInfo(IDirectFB *fb, IDirectFBSurface *primarySurface)
 {
     DFBResult result;
@@ -855,6 +855,7 @@ static void printDirectFBInfo(IDirectFB *fb, IDirectFBSurface *primarySurface)
            dev.drawing_flags, ::flagDescriptions(dev.drawing_flags, drawDescriptions).constData(),
            (dev.video_memory >> 10));
 }
+#endif
 
 static inline bool setIntOption(const QStringList &arguments, const QString &variable, int *value)
 {
@@ -1049,8 +1050,10 @@ bool QDirectFBScreen::connect(const QString &displaySpec)
 
     setGraphicsSystem(d_ptr);
 
+#if (Q_DIRECTFB_VERSION >= 0x000923)
     if (displayArgs.contains(QLatin1String("debug"), Qt::CaseInsensitive))
         printDirectFBInfo(d_ptr->dfb, d_ptr->dfbSurface);
+#endif
 
     return true;
 }
