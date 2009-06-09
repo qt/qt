@@ -71,7 +71,8 @@ public:
         //
         // Precomputed single assignment
         //
-        //    StoreReal - Store a qreal in a core property
+        //    StoreFloat - Store a float in a core property
+        //    StoreDouble - Store a double in a core property
         //    StoreInteger - Store a int or uint in a core property
         //    StoreBool - Store a bool in a core property
         //    StoreString - Store a QString in a core property
@@ -82,14 +83,15 @@ public:
         //    StoreVariant - Store a QVariant in a core property
         //    StoreObject - Pop the object on the top of the object stack and
         //                  store it in a core property
-        StoreReal,                /* storeReal */
+        StoreFloat,               /* storeFloat */
+        StoreDouble,              /* storeDouble */
         StoreInteger,             /* storeInteger */
         StoreBool,                /* storeBool */
         StoreString,              /* storeString */
         StoreColor,               /* storeColor */
         StoreDate,                /* storeDate */
         StoreTime,                /* storeTime */
-        StoreDateTime,             /* storeDateTime */
+        StoreDateTime,            /* storeDateTime */
         StorePoint,               /* storeRealPair */
         StorePointF,              /* storeRealPair */
         StoreSize,                /* storeRealPair */
@@ -196,7 +198,11 @@ public:
         struct {
             int propertyIndex;
             float value;
-        } storeReal;
+        } storeFloat;
+        struct {
+            int propertyIndex;
+            double value;
+        } storeDouble;
         struct {
             int propertyIndex;
             int value;

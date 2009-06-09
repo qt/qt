@@ -337,17 +337,31 @@ QObject *QmlVME::run(QmlContext *ctxt, QmlCompiledComponent *comp, int start, in
             }
             break;
 
-        case QmlInstruction::StoreReal:
+        case QmlInstruction::StoreFloat:
             {
 #ifdef Q_ENABLE_PERFORMANCE_LOG
                 QFxCompilerTimer<QFxCompiler::InstrStoreReal> cc;
 #endif
                 QObject *target = stack.top();
-                qreal r = instr.storeReal.value;
+                float f = instr.storeFloat.value;
                 void *a[1];
-                a[0] = &r;
-                QMetaObject::metacall(target, QMetaObject::WriteProperty, 
-                                      instr.storeReal.propertyIndex, a);
+                a[0] = &f;
+                QMetaObject::metacall(target, QMetaObject::WriteProperty,
+                                      instr.storeFloat.propertyIndex, a);
+            }
+            break;
+
+case QmlInstruction::StoreDouble:
+            {
+#ifdef Q_ENABLE_PERFORMANCE_LOG
+                QFxCompilerTimer<QFxCompiler::InstrStoreReal> cc;
+#endif
+                QObject *target = stack.top();
+                double d = instr.storeDouble.value;
+                void *a[1];
+                a[0] = &d;
+                QMetaObject::metacall(target, QMetaObject::WriteProperty,
+                                      instr.storeDouble.propertyIndex, a);
             }
             break;
 
@@ -373,7 +387,7 @@ QObject *QmlVME::run(QmlContext *ctxt, QmlCompiledComponent *comp, int start, in
                 void *a[1];
                 a[0] = (void *)&instr.storeInteger.value;
                 QMetaObject::metacall(target, QMetaObject::WriteProperty, 
-                                      instr.storeReal.propertyIndex, a);
+                                      instr.storeInteger.propertyIndex, a);
             }
             break;
 
