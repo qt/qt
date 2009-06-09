@@ -65,7 +65,7 @@ public:
     bool isIdentity() const;
     void setIdentity();
 
-    void fill(qreal value);
+    void fill(T value);
 
     QGenericMatrix<M, N, T, InnerT> transposed() const;
 
@@ -175,7 +175,7 @@ Q_OUTOFLINE_TEMPLATE void QGenericMatrix<N, M, T, InnerT>::setIdentity()
 }
 
 template <int N, int M, typename T, typename InnerT>
-Q_OUTOFLINE_TEMPLATE void QGenericMatrix<N, M, T, InnerT>::fill(qreal value)
+Q_OUTOFLINE_TEMPLATE void QGenericMatrix<N, M, T, InnerT>::fill(T value)
 {
     for (int col = 0; col < N; ++col)
         for (int row = 0; row < M; ++row)

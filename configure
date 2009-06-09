@@ -4255,7 +4255,8 @@ fi
 
 # check iWMMXt support
 if [ "$CFG_IWMMXT" = "yes" ]; then
-    if ! "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/iwmmxt "iwmmxt" $L_FLAGS $I_FLAGS $l_FLAGS "-mcpu=iwmmxt"; then
+    "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/iwmmxt "iwmmxt" $L_FLAGS $I_FLAGS $l_FLAGS "-mcpu=iwmmxt"
+    if [ $? != "0" ]; then
         echo "The iWMMXt functionality test failed!"
 	echo " Please make sure your compiler supports iWMMXt intrinsics!"
 	exit 1
@@ -4774,7 +4775,8 @@ if [ "$PLATFORM_X11" = "yes" ]; then
     fi
 
     # Check we actually have X11 :-)
-    if ! "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/x11/xlib "XLib" $L_FLAGS $I_FLAGS $l_FLAGS $X11TESTS_FLAGS; then
+    "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/x11/xlib "XLib" $L_FLAGS $I_FLAGS $l_FLAGS $X11TESTS_FLAGS
+    if [ $? != "0" ]; then
         echo "Basic XLib functionality test failed!"
         echo " You might need to modify the include and library search paths by editing"
         echo " QMAKE_INCDIR_X11 and QMAKE_LIBDIR_X11 in ${XQMAKESPEC}."
@@ -4805,7 +4807,8 @@ if [ "$PLATFORM_X11" = "yes" ]; then
        hpux*)
            # HP-UX have buggy glx headers; check if we really need to define the GLXFBConfig struct.
            if [ "$CFG_OPENGL" = "desktop" ]; then
-               if ! "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/x11/glxfbconfig "OpenGL" $L_FLAGS $I_FLAGS $l_FLAGS $X11TESTS_FLAGS; then
+               "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/x11/glxfbconfig "OpenGL" $L_FLAGS $I_FLAGS $l_FLAGS $X11TESTS_FLAGS
+               if [ $? != "0" ]; then
                    QMakeVar add DEFINES QT_DEFINE_GLXFBCONFIG_STRUCT
                fi
            fi
@@ -4815,7 +4818,8 @@ if [ "$PLATFORM_X11" = "yes" ]; then
        esac
     elif [ "$CFG_OPENGL" = "es1cl" ]; then
         # OpenGL ES 1.x common lite
-	if ! "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/opengles1cl "OpenGL ES 1.x Lite" $L_FLAGS $I_FLAGS $l_FLAGS; then
+	"$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/opengles1cl "OpenGL ES 1.x Lite" $L_FLAGS $I_FLAGS $l_FLAGS
+        if [ $? != "0" ]; then
 	    echo "The OpenGL ES 1.x Common Lite Profile functionality test failed!"
             echo " You might need to modify the include and library search paths by editing"
 	    echo " QMAKE_INCDIR_OPENGL, QMAKE_LIBDIR_OPENGL and QMAKE_LIBS_OPENGL in"
@@ -4824,7 +4828,8 @@ if [ "$PLATFORM_X11" = "yes" ]; then
         fi
     elif [ "$CFG_OPENGL" = "es1" ]; then
         # OpenGL ES 1.x
-	if ! "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/opengles1 "OpenGL ES 1.x" $L_FLAGS $I_FLAGS $l_FLAGS; then
+	"$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/opengles1 "OpenGL ES 1.x" $L_FLAGS $I_FLAGS $l_FLAGS
+        if [ $? != "0" ]; then
 	    echo "The OpenGL ES 1.x functionality test failed!"
             echo " You might need to modify the include and library search paths by editing"
 	    echo " QMAKE_INCDIR_OPENGL, QMAKE_LIBDIR_OPENGL and QMAKE_LIBS_OPENGL in"
@@ -4833,7 +4838,8 @@ if [ "$PLATFORM_X11" = "yes" ]; then
         fi
     elif [ "$CFG_OPENGL" = "es2" ]; then
         #OpenGL ES 2.x
-	if ! "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/opengles2 "OpenGL ES 2.x" $L_FLAGS $I_FLAGS $l_FLAGS; then
+	"$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/opengles2 "OpenGL ES 2.x" $L_FLAGS $I_FLAGS $l_FLAGS
+        if [ $? != "0" ]; then
 	    echo "The OpenGL ES 2.0 functionality test failed!"
             echo " You might need to modify the include and library search paths by editing"
 	    echo " QMAKE_INCDIR_OPENGL, QMAKE_LIBDIR_OPENGL and QMAKE_LIBS_OPENGL in"
@@ -4842,7 +4848,8 @@ if [ "$PLATFORM_X11" = "yes" ]; then
         fi
     elif [ "$CFG_OPENGL" = "desktop" ]; then
         # Desktop OpenGL support
-        if ! "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/x11/opengl "OpenGL" $L_FLAGS $I_FLAGS $l_FLAGS $X11TESTS_FLAGS; then
+        "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/x11/opengl "OpenGL" $L_FLAGS $I_FLAGS $l_FLAGS $X11TESTS_FLAGS
+        if [ $? != "0" ]; then
 	    echo "The OpenGL functionality test failed!"
             echo " You might need to modify the include and library search paths by editing"
 	    echo " QMAKE_INCDIR_OPENGL, QMAKE_LIBDIR_OPENGL and QMAKE_LIBS_OPENGL in"
@@ -4852,7 +4859,8 @@ if [ "$PLATFORM_X11" = "yes" ]; then
         case "$PLATFORM" in
         hpux*)
             # HP-UX have buggy glx headers; check if we really need to define the GLXFBConfig struct.
-            if ! "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/x11/glxfbconfig "OpenGL" $L_FLAGS $I_FLAGS $l_FLAGS $X11TESTS_FLAGS; then
+            "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/x11/glxfbconfig "OpenGL" $L_FLAGS $I_FLAGS $l_FLAGS $X11TESTS_FLAGS
+            if [ $? != "0" ]; then
                 QMakeVar add DEFINES QT_DEFINE_GLXFBCONFIG_STRUCT
             fi
 	    ;;
@@ -5127,7 +5135,8 @@ if [ "$PLATFORM_QWS" = "yes" ]; then
         fi
     elif [ "$CFG_OPENGL" = "es1" ]; then
         # OpenGL ES 1.x
-	if ! "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/opengles1 "OpenGL ES 1.x" $L_FLAGS $I_FLAGS $l_FLAGS; then
+	"$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/opengles1 "OpenGL ES 1.x" $L_FLAGS $I_FLAGS $l_FLAGS
+        if [ $? != "0" ]; then
 	    echo "The OpenGL ES 1.x functionality test failed!"
             echo " You might need to modify the include and library search paths by editing"
 	    echo " QMAKE_INCDIR_OPENGL, QMAKE_LIBDIR_OPENGL and QMAKE_LIBS_OPENGL in"
@@ -5136,7 +5145,8 @@ if [ "$PLATFORM_QWS" = "yes" ]; then
         fi
     elif [ "$CFG_OPENGL" = "es2" ]; then
         #OpenGL ES 2.x
-	if ! "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/opengles2 "OpenGL ES 2.x" $L_FLAGS $I_FLAGS $l_FLAGS; then
+	"$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/opengles2 "OpenGL ES 2.x" $L_FLAGS $I_FLAGS $l_FLAGS
+        if [ $? != "0" ]; then
 	    echo "The OpenGL ES 2.0 functionality test failed!"
             echo " You might need to modify the include and library search paths by editing"
 	    echo " QMAKE_INCDIR_OPENGL, QMAKE_LIBDIR_OPENGL and QMAKE_LIBS_OPENGL in"
@@ -5152,7 +5162,8 @@ if [ "$PLATFORM_QWS" = "yes" ]; then
     # screen drivers
     for screen in ${CFG_GFX_ON} ${CFG_GFX_PLUGIN}; do
        if [ "${screen}" = "ahi" ] && [ "${CFG_CONFIGURE_EXIT_ON_ERROR}" = "yes" ]; then
-           if ! "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/qws/ahi "Ahi" $L_FLAGS $I_FLAGS $l_FLAGS; then
+           "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/qws/ahi "Ahi" $L_FLAGS $I_FLAGS $l_FLAGS
+           if [ $? != "0" ]; then
                echo "The Ahi screen driver functionality test failed!"
                echo " You might need to modify the include and library search paths by editing"
                echo " QMAKE_INCDIR and QMAKE_LIBDIR in"
@@ -5162,7 +5173,8 @@ if [ "$PLATFORM_QWS" = "yes" ]; then
        fi
 
        if [ "${screen}" = "svgalib" ] && [ "${CFG_CONFIGURE_EXIT_ON_ERROR}" = "yes" ]; then
-           if ! "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/qws/svgalib "SVGAlib" $L_FLAGS $I_FLAGS $l_FLAGS; then
+           "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/qws/svgalib "SVGAlib" $L_FLAGS $I_FLAGS $l_FLAGS
+           if [ $? != "0" ]; then
                echo "The SVGAlib screen driver functionality test failed!"
                echo " You might need to modify the include and library search paths by editing"
                echo " QMAKE_INCDIR and QMAKE_LIBDIR in"
@@ -5191,7 +5203,8 @@ if [ "$PLATFORM_QWS" = "yes" ]; then
                QMakeVar set QT_DEFINES_DIRECTFB "QT3_SUPPORT"
            fi
 
-           if ! "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/qws/directfb "DirectFB" $L_FLAGS $I_FLAGS $l_FLAGS $QT_CFLAGS_DIRECTFB $QT_LIBS_DIRECTFB; then
+           "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/qws/directfb "DirectFB" $L_FLAGS $I_FLAGS $l_FLAGS $QT_CFLAGS_DIRECTFB $QT_LIBS_DIRECTFB
+           if [ $? != "0" ]; then
                echo "The DirectFB screen driver functionality test failed!"
                echo " You might need to modify the include and library search paths by editing"
                echo " QT_CFLAGS_DIRECTFB and QT_LIBS_DIRECTFB in"
@@ -5205,7 +5218,8 @@ if [ "$PLATFORM_QWS" = "yes" ]; then
     # mouse drivers
     for mouse in ${CFG_MOUSE_ON} ${CFG_MOUSE_PLUGIN}; do
 	if [ "${mouse}" = "tslib" ] && [ "${CFG_CONFIGURE_EXIT_ON_ERROR}" = "yes" ]; then
-	    if ! "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/tslib "tslib" $L_FLAGS $I_FLAGS $l_FLAGS; then
+	    "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/tslib "tslib" $L_FLAGS $I_FLAGS $l_FLAGS
+            if [ $? != "0" ]; then
                echo "The tslib functionality test failed!"
                echo " You might need to modify the include and library search paths by editing"
                echo " QMAKE_INCDIR and QMAKE_LIBDIR in"
@@ -5218,7 +5232,8 @@ if [ "$PLATFORM_QWS" = "yes" ]; then
     CFG_QGTKSTYLE=no
 
     # sound
-    if ! "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/qws/sound "sound" $L_FLAGS $I_FLAGS $l_FLAGS; then
+    "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/qws/sound "sound" $L_FLAGS $I_FLAGS $l_FLAGS
+    if [ $? != "0" ]; then
         QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_SOUND"
     fi
 

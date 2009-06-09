@@ -76,7 +76,7 @@ static QString qt_strippedText(QString s)
         s.remove(i-1,1);
     }
     return s.trimmed();
-};
+}
 
 
 QActionPrivate::QActionPrivate() : group(0), enabled(1), forceDisabled(0),

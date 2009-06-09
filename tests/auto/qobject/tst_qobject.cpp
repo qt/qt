@@ -106,6 +106,7 @@ private slots:
     void childDeletesItsSibling();
     void dynamicProperties();
     void floatProperty();
+    void qrealProperty();
     void property();
     void recursiveSignalEmission();
     void blockingQueuedConnection();
@@ -1113,6 +1114,7 @@ class PropertyObject : public QObject
     Q_PROPERTY(QVariant variant READ variant WRITE setVariant)
     Q_PROPERTY(CustomType* custom READ custom WRITE setCustom)
     Q_PROPERTY(float myFloat READ myFloat WRITE setMyFloat)
+    Q_PROPERTY(qreal myQReal READ myQReal WRITE setMyQReal)
 
 public:
     enum Alpha {
@@ -1148,6 +1150,9 @@ public:
     void setMyFloat(float value) { m_float = value; }
     inline float myFloat() const { return m_float; }
 
+    void setMyQReal(qreal value) { m_qreal = value; }
+    qreal myQReal() const { return m_qreal; }
+
 private:
     Alpha m_alpha;
     Priority m_priority;
@@ -1156,6 +1161,7 @@ private:
     QVariant m_variant;
     CustomType *m_custom;
     float m_float;
+    qreal m_qreal;
 };
 
 Q_DECLARE_METATYPE(PropertyObject::Priority)
@@ -2346,6 +2352,27 @@ void tst_QObject::floatProperty()
     QVariant v = prop.read(&obj);
     QVERIFY(int(v.userType()) == QMetaType::Float);
     QVERIFY(qVariantValue<float>(v) == 128.0f);
+}
+
+void tst_QObject::qrealProperty()
+{
+    PropertyObject obj;
+    const int idx = obj.metaObject()->indexOfProperty("myQReal");
+    QVERIFY(idx > 0);
+    QMetaProperty prop = obj.metaObject()->property(idx);
+    QVERIFY(prop.isValid());
+    QVERIFY(prop.type() == uint(QMetaType::type("qreal")));
+    QVERIFY(!prop.write(&obj, QVariant("Hello")));
+
+    QVERIFY(prop.write(&obj, qVariantFromValue(128.0f)));
+    QVariant v = prop.read(&obj);
+    QCOMPARE(v.userType(), qMetaTypeId<qreal>());
+    QVERIFY(qVariantValue<qreal>(v) == 128.0);
+
+    QVERIFY(prop.write(&obj, qVariantFromValue(double(127))));
+    v = prop.read(&obj);
+    QCOMPARE(v.userType(), qMetaTypeId<qreal>());
+    QVERIFY(qVariantValue<qreal>(v) == 127.0);
 }
 
 class DynamicPropertyObject : public PropertyObject

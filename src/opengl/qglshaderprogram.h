@@ -79,17 +79,15 @@ public:
     QGLShader(const QString& fileName, QGLShader::ShaderType type, const QGLContext *context, QObject *parent = 0);
     virtual ~QGLShader();
 
-    bool isValid() const;
-
     QGLShader::ShaderType shaderType() const;
 
-    bool setSourceCode(const char *source);
-    bool setSourceCode(const QByteArray& source);
-    bool setSourceCode(const QString& source);
-    bool setSourceCodeFile(const QString& fileName);
+    bool compile(const char *source);
+    bool compile(const QByteArray& source);
+    bool compile(const QString& source);
+    bool compileFile(const QString& fileName);
 
-    bool setBinaryCode(GLenum format, const void *binary, int length);
-    bool setBinaryCode(QGLShader& otherShader, GLenum format, const void *binary, int length);
+    bool setShaderBinary(GLenum format, const void *binary, int length);
+    bool setShaderBinary(QGLShader& otherShader, GLenum format, const void *binary, int length);
 
     static QList<GLenum> shaderBinaryFormats();
 
@@ -105,7 +103,7 @@ private:
 
     friend class QGLShaderProgram;
 
-    Q_DISABLE_COPY(QGLShader);
+    Q_DISABLE_COPY(QGLShader)
 };
 
 class QGLShaderProgramPrivate;
@@ -117,8 +115,6 @@ public:
     explicit QGLShaderProgram(QObject *parent = 0);
     explicit QGLShaderProgram(const QGLContext *context, QObject *parent = 0);
     virtual ~QGLShaderProgram();
-
-    bool isValid() const;
 
     bool addShader(QGLShader *shader);
     void removeShader(QGLShader *shader);
@@ -283,7 +279,7 @@ public:
 private:
     QGLShaderProgramPrivate *d;
 
-    Q_DISABLE_COPY(QGLShaderProgram);
+    Q_DISABLE_COPY(QGLShaderProgram)
 
     bool init();
 };

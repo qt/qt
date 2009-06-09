@@ -40,6 +40,9 @@
 ****************************************************************************/
 
 #include "qbasickeyeventtransition_p.h"
+
+#ifndef QT_NO_STATEMACHINE
+
 #include <QtGui/qevent.h>
 #include <qdebug.h>
 #include <private/qabstracttransition_p.h>
@@ -201,3 +204,5 @@ void QBasicKeyEventTransition::onTransition(QEvent *)
 }
 
 QT_END_NAMESPACE
+
+#endif //QT_NO_STATEMACHINE

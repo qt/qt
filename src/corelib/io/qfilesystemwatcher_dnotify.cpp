@@ -114,7 +114,7 @@ private:
     bool isExecing;
 };
 
-Q_GLOBAL_STATIC(QDnotifySignalThread, dnotifySignal);
+Q_GLOBAL_STATIC(QDnotifySignalThread, dnotifySignal)
 
 QDnotifySignalThread::QDnotifySignalThread()
 : isExecing(false)

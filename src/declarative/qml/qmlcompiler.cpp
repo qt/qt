@@ -262,7 +262,7 @@ bool QmlCompiler::compileStoreInstruction(QmlInstruction &instr,
         instr.storeInteger.value = value;
         return true;
     }
-    int type = prop.type();
+    int type = prop.userType();
     switch(type) {
         case -1:
             {
@@ -300,16 +300,26 @@ bool QmlCompiler::compileStoreInstruction(QmlInstruction &instr,
             instr.storeInteger.value = value;
             }
             break;
-        case 135:
-        case QVariant::Double:
+        case QMetaType::Float:
             {
-            instr.type = QmlInstruction::StoreReal;
-            instr.storeReal.propertyIndex = prop.propertyIndex();
+            instr.type = QmlInstruction::StoreFloat;
+            instr.storeFloat.propertyIndex = prop.propertyIndex();
             bool ok;
             float value = string.toFloat(&ok);
             if (!ok)
-                COMPILE_EXCEPTION2(v, "Cannot convert value" << string << "to real number");
-            instr.storeReal.value = value;
+                COMPILE_EXCEPTION2(v, "Cannot convert value" << string << "to float number");
+            instr.storeFloat.value = value;
+            }
+            break;
+        case QVariant::Double:
+            {
+            instr.type = QmlInstruction::StoreDouble;
+            instr.storeDouble.propertyIndex = prop.propertyIndex();
+            bool ok;
+            double value = string.toDouble(&ok);
+            if (!ok)
+                COMPILE_EXCEPTION2(v, "Cannot convert value" << string << "to double number");
+            instr.storeDouble.value = value;
             }
             break;
         case QVariant::Color:

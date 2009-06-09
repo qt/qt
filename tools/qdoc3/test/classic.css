@@ -14,12 +14,11 @@ H3 {
 
 h3.fn,span.fn
 {
-  background-color: #d5e1d5;
+  background-color: #e0eff6;
   border-width: 1px;
   border-style: solid;
-  border-color: #66bc29;
+  border-color: #3388be #e0eff6 #e9f8ff #e0eff6;
   font-weight: bold;
-  -moz-border-radius: 8px 8px 8px 8px;
   padding: 6px 0px 6px 10px;
 }
 
@@ -73,16 +72,16 @@ table td.memItemLeft {
   border-right-width: 1px;
   border-bottom-width: 1px;
   border-left-width: 1px;
-  border-top-color: #66bc29;
-  border-right-color: #66bc29;
-  border-bottom-color: #66bc29;
-  border-left-color: #66bc29;
+  border-top-color: #E0E0E0;
+  border-right-color: #E0E0E0;
+  border-bottom-color: #E0E0E0;
+  border-left-color: #E0E0E0;
   border-top-style: solid;
   border-right-style: none;
   border-bottom-style: none;
   border-left-style: none;
   background-color: #FAFAFA;
-  font-size: 80%;
+  font-size: 100%;
   white-space: nowrap
 }
 table td.memItemRight {
@@ -92,16 +91,16 @@ table td.memItemRight {
   border-right-width: 1px;
   border-bottom-width: 1px;
   border-left-width: 1px;
-  border-top-color: #66bc29;
-  border-right-color: #66bc29;
-  border-bottom-color: #66bc29;
-  border-left-color: #66bc29;
+  border-top-color: #E0E0E0;
+  border-right-color: #E0E0E0;
+  border-bottom-color: #E0E0E0;
+  border-left-color: #E0E0E0;
   border-top-style: solid;
   border-right-style: none;
   border-bottom-style: none;
   border-left-style: none;
   background-color: #FAFAFA;
-  font-size: 80%;
+  font-size: 100%;
 }
 
 table tr.odd {

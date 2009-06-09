@@ -70,8 +70,11 @@ void QmlCompiledComponent::dump(QmlInstruction *instr, int idx)
     case QmlInstruction::StoreMetaObject:
         qWarning() << idx << "\t" << line << "\t" << "STORE_META\t\t" << instr->storeMeta.data << "\t" << instr->storeMeta.slotData;
         break;
-    case QmlInstruction::StoreReal:
-        qWarning() << idx << "\t" << line << "\t" << "STORE_REAL\t\t" << instr->storeReal.propertyIndex << "\t" << instr->storeReal.value;
+    case QmlInstruction::StoreFloat:
+        qWarning() << idx << "\t" << line << "\t" << "STORE_FLOAT\t\t" << instr->storeFloat.propertyIndex << "\t" << instr->storeFloat.value;
+        break;
+    case QmlInstruction::StoreDouble:
+        qWarning() << idx << "\t" << line << "\t" << "STORE_DOUBLE\t\t" << instr->storeDouble.propertyIndex << "\t" << instr->storeDouble.value;
         break;
     case QmlInstruction::StoreInteger:
         qWarning() << idx << "\t" << line << "\t" << "STORE_INTEGER\t\t" << instr->storeInteger.propertyIndex << "\t" << instr->storeInteger.value;

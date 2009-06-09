@@ -7225,13 +7225,13 @@ inline void qt_rectfill_template(QRasterBuffer *rasterBuffer,
 QT_RECTFILL(quint32)
 QT_RECTFILL(quint16)
 QT_RECTFILL(qargb8565)
-QT_RECTFILL(qrgb666);
-QT_RECTFILL(qargb6666);
+QT_RECTFILL(qrgb666)
+QT_RECTFILL(qargb6666)
 QT_RECTFILL(qrgb555)
 QT_RECTFILL(qargb8555)
 QT_RECTFILL(qrgb888)
-QT_RECTFILL(qrgb444);
-QT_RECTFILL(qargb4444);
+QT_RECTFILL(qrgb444)
+QT_RECTFILL(qargb4444)
 #undef QT_RECTFILL
 
 

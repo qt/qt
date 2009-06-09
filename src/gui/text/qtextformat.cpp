@@ -142,6 +142,7 @@ QTextLength::operator QVariant() const
     return QVariant(QVariant::TextLength, this);
 }
 
+#ifndef QT_NO_DATASTREAM
 QDataStream &operator<<(QDataStream &stream, const QTextLength &length)
 {
     return stream << qint32(length.lengthType) << double(length.fixedValueOrPercentage);
@@ -156,6 +157,7 @@ QDataStream &operator>>(QDataStream &stream, QTextLength &length)
     length.lengthType = QTextLength::Type(type);
     return stream;
 }
+#endif // QT_NO_DATASTREAM
 
 class QTextFormatPrivate : public QSharedData
 {
@@ -374,6 +376,7 @@ void QTextFormatPrivate::recalcFont() const
     fontDirty = false;
 }
 
+#ifndef QT_NO_DATASTREAM
 Q_GUI_EXPORT QDataStream &operator<<(QDataStream &stream, const QTextFormat &fmt)
 {
     stream << fmt.format_type << fmt.properties();
@@ -396,6 +399,7 @@ Q_GUI_EXPORT QDataStream &operator>>(QDataStream &stream, QTextFormat &fmt)
 
     return stream;
 }
+#endif // QT_NO_DATASTREAM
 
 /*!
     \class QTextFormat

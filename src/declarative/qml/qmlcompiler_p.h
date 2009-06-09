@@ -162,7 +162,7 @@ private:
                         int ctxt);
 
     void finalizeComponent(int patch);
-    class BindingReference;
+    struct BindingReference;
     void finalizeBinding(const BindingReference &); 
 
     struct IdReference {

@@ -907,7 +907,8 @@ QObjectPrivate::Connection::~Connection()
     \relates QObject
 
     Returns the given \a object cast to type T if the object is of type
-    T (or of a subclass); otherwise returns 0.
+    T (or of a subclass); otherwise returns 0.  If \a object is 0 then 
+    it will also return 0.
 
     The class T must inherit (directly or indirectly) QObject and be
     declared with the \l Q_OBJECT macro.
@@ -2061,7 +2062,7 @@ void QObject::deleteLater()
 
     or
 
-    \tt{/*: ... \starslash}
+    \tt{\begincomment: ... \endcomment}
 
     Examples:
 
@@ -2237,11 +2238,11 @@ static void err_method_notfound(const QObject *object,
     if (strchr(method,')') == 0)                // common typing mistake
         qWarning("Object::%s: Parentheses expected, %s %s::%s%s%s",
                  func, type, object->metaObject()->className(), method+1,
-                 loc ? " in ":"\0", loc ? loc : "\0");
+                 loc ? " in ": "", loc ? loc : "");
     else
         qWarning("Object::%s: No such %s %s::%s%s%s",
                  func, type, object->metaObject()->className(), method+1,
-                 loc ? " in ":"\0", loc ? loc : "\0");
+                 loc ? " in ": "", loc ? loc : "");
 
 }
 

@@ -49,3 +49,8 @@ information about a particular change.
  - QStyleOptionGraphicsItem::levelOfDetails is obsoleted and its value
    is always initialized to 1. For a more fine-grained value use
    QStyleOptionGraphicsItem::levelOfDetailFromTransform(const QTransform &).
+
+ - When mixing OpenGL and QPainter calls you need to first call syncState()
+   on the paint engine, for example "painter->paintEngine()->syncState()".
+   This is to ensure that the engine flushes any pending drawing and sets up
+   the GL modelview/projection matrices properly.

@@ -148,6 +148,9 @@ static void ensureInitialized()
     \value PostOperation        send the contents of an HTML form for
     processing via HTTP POST (created with post())
 
+    \value DeleteOperation      delete contents operation (created with
+    deleteResource())
+
     \omitvalue UnknownOperation
 
     \sa QNetworkReply::operation()
@@ -555,7 +558,7 @@ QNetworkReply *QNetworkAccessManager::head(const QNetworkRequest &request)
     a new QNetworkReply object opened for reading which emits its
     QIODevice::readyRead() signal whenever new data arrives.
 
-    \sa post(), put()
+    \sa post(), put(), deleteResource()
 */
 QNetworkReply *QNetworkAccessManager::get(const QNetworkRequest &request)
 {
@@ -577,7 +580,7 @@ QNetworkReply *QNetworkAccessManager::get(const QNetworkRequest &request)
     Note: sending a POST request on protocols other than HTTP and
     HTTPS is undefined and will probably fail.
 
-    \sa get(), put()
+    \sa get(), put(), deleteResource()
 */
 QNetworkReply *QNetworkAccessManager::post(const QNetworkRequest &request, QIODevice *data)
 {
@@ -639,6 +642,20 @@ QNetworkReply *QNetworkAccessManager::put(const QNetworkRequest &request, const 
     QNetworkReply *reply = put(request, buffer);
     buffer->setParent(reply);
     return reply;
+}
+
+/*!
+    \since 4.6
+
+    This function is used to send a request to delete the resource
+    identified by the URL of \a request.
+    This feature is currently available for HTTP only, performing an HTTP DELETE request.
+
+    \sa get(), post(), put()
+*/
+QNetworkReply *QNetworkAccessManager::deleteResource(const QNetworkRequest &request)
+{
+    return d_func()->postProcess(createRequest(QNetworkAccessManager::DeleteOperation, request));
 }
 
 /*!

@@ -142,8 +142,6 @@
     \sa direction
 */
 
-#ifndef QT_NO_ANIMATION
-
 #include "qabstractanimation.h"
 #include "qanimationgroup.h"
 #include <QtCore/qdebug.h>
@@ -155,11 +153,13 @@
 #include <QtCore/qcoreevent.h>
 #include <QtCore/qpointer.h>
 
+#ifndef QT_NO_ANIMATION
+
 #define DEFAULT_TIMER_INTERVAL 16
 
 QT_BEGIN_NAMESPACE
 
-Q_GLOBAL_STATIC(QThreadStorage<QUnifiedTimer *>, unifiedTimer);
+Q_GLOBAL_STATIC(QThreadStorage<QUnifiedTimer *>, unifiedTimer)
 
 QUnifiedTimer::QUnifiedTimer() : QObject(), lastTick(0), timingInterval(DEFAULT_TIMER_INTERVAL), consistentTiming(false)
 {

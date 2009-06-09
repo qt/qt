@@ -1317,7 +1317,7 @@ QDataStream &operator>>(QDataStream &stream, QPixmap &pixmap)
     return stream;
 }
 
-#endif //QT_NO_DATASTREAM
+#endif // QT_NO_DATASTREAM
 
 #ifdef QT3_SUPPORT
 Q_GUI_EXPORT void copyBlt(QPixmap *dst, int dx, int dy,

@@ -173,6 +173,7 @@ class HtmlGenerator : public PageGenerator
     QString highlightedCode(const QString& markedCode, 
                             CodeMarker *marker, 
                             const Node *relative,
+                            CodeMarker::SynopsisStyle style = CodeMarker::Accessors,
                             bool nameAlignment = false);
 #else
     void generateSynopsis(const Node *node, 

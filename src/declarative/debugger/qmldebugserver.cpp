@@ -69,7 +69,7 @@ private:
 
 class QmlDebugServerPrivate : public QObjectPrivate
 {
-    Q_DECLARE_PUBLIC(QmlDebugServer);
+    Q_DECLARE_PUBLIC(QmlDebugServer)
 public:
     QmlDebugServerPrivate();
     void init(int port);
@@ -82,7 +82,7 @@ public:
 
 class QmlDebugServerPluginPrivate : public QObjectPrivate
 {
-    Q_DECLARE_PUBLIC(QmlDebugServerPlugin);
+    Q_DECLARE_PUBLIC(QmlDebugServerPlugin)
 public:
     QmlDebugServerPluginPrivate();
 

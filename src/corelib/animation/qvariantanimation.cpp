@@ -39,16 +39,15 @@
 **
 ****************************************************************************/
 
-#ifndef QT_NO_ANIMATION
-
 #include "qvariantanimation.h"
 #include "qvariantanimation_p.h"
 
-#include <QtCore/QRect>
-#include <QtCore/QLineF>
-#include <QtCore/QLine>
-#include <QtCore/QReadWriteLock>
-#include <QtCore/qdebug.h>
+#include <QtCore/qrect.h>
+#include <QtCore/qline.h>
+#include <QtCore/qmutex.h>
+#include <private/qmutexpool_p.h>
+
+#ifndef QT_NO_ANIMATION
 
 QT_BEGIN_NAMESPACE
 
@@ -365,8 +364,8 @@ void QVariantAnimation::setEasingCurve(const QEasingCurve &easing)
     d->recalculateCurrentInterval();
 }
 
-Q_GLOBAL_STATIC(QVector<QVariantAnimation::Interpolator>, registeredInterpolators)
-Q_GLOBAL_STATIC(QReadWriteLock, registeredInterpolatorsLock)
+typedef QVector<QVariantAnimation::Interpolator> QInterpolatorVector;
+Q_GLOBAL_STATIC(QInterpolatorVector, registeredInterpolators)
 
 /*!
     \fn void qRegisterAnimationInterpolator(QVariant (*func)(const T &from, const T &to, qreal progress))
@@ -398,10 +397,11 @@ Q_GLOBAL_STATIC(QReadWriteLock, registeredInterpolatorsLock)
 void QVariantAnimation::registerInterpolator(QVariantAnimation::Interpolator func, int interpolationType)
 {
     // will override any existing interpolators
-    QWriteLocker locker(registeredInterpolatorsLock());
-    if (int(interpolationType) >= registeredInterpolators()->count())
-        registeredInterpolators()->resize(int(interpolationType) + 1);
-    registeredInterpolators()->replace(interpolationType, func);
+    QInterpolatorVector *interpolators = registeredInterpolators();
+    QMutexLocker locker(QMutexPool::globalInstanceGet(interpolators));
+    if (int(interpolationType) >= interpolators->count())
+        interpolators->resize(int(interpolationType) + 1);
+    interpolators->replace(interpolationType, func);
 }
 
 
@@ -412,10 +412,11 @@ template<typename T> static inline QVariantAnimation::Interpolator castToInterpo
 
 QVariantAnimation::Interpolator QVariantAnimationPrivate::getInterpolator(int interpolationType)
 {
-    QReadLocker locker(registeredInterpolatorsLock());
+    QInterpolatorVector *interpolators = registeredInterpolators();
+    QMutexLocker locker(QMutexPool::globalInstanceGet(interpolators));
     QVariantAnimation::Interpolator ret = 0;
-    if (interpolationType < registeredInterpolators()->count()) {
-        ret = registeredInterpolators()->at(interpolationType);
+    if (interpolationType < interpolators->count()) {
+        ret = interpolators->at(interpolationType);
         if (ret) return ret;
     }
 

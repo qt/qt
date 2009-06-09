@@ -1845,7 +1845,8 @@ void QWidgetPrivate::setMask_sys(const QRegion &region)
     OffsetRgn(wr, offset.x(), offset.y());
 
     Q_ASSERT(q->testAttribute(Qt::WA_WState_Created));
-    SetWindowRgn(data.winid, wr, true);
+    if (!SetWindowRgn(data.winid, wr, true))
+        DeleteObject(wr);
 }
 
 void QWidgetPrivate::updateFrameStrut()

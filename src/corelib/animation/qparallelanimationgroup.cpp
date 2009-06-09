@@ -68,11 +68,13 @@
     \sa QAnimationGroup, QPropertyAnimation, {The Animation Framework}
 */
 
-#ifndef QT_NO_ANIMATION
 
 #include "qparallelanimationgroup.h"
 #include "qparallelanimationgroup_p.h"
 //#define QANIMATION_DEBUG
+
+#ifndef QT_NO_ANIMATION
+
 QT_BEGIN_NAMESPACE
 
 /*!

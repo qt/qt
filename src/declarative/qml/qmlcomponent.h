@@ -44,6 +44,7 @@
 
 #include <QtCore/qobject.h>
 #include <QtCore/qstring.h>
+#include <QtScript/qscriptvalue.h>
 #include <QtDeclarative/qfxglobal.h>
 #include <QtDeclarative/qml.h>
 #include <QtDeclarative/qmlerror.h>
@@ -70,18 +71,20 @@ public:
                  const QUrl &baseUrl=QUrl(), QObject *parent=0);
     virtual ~QmlComponent();
 
+    Q_ENUMS( Status );
     enum Status { Null, Ready, Loading, Error };
     Status status() const;
 
-    bool isNull() const;
-    bool isReady() const;
-    bool isError() const;
-    bool isLoading() const;
+    Q_INVOKABLE bool isNull() const;
+    Q_INVOKABLE bool isReady() const;
+    Q_INVOKABLE bool isError() const;
+    Q_INVOKABLE bool isLoading() const;
 
     QList<QmlError> errors() const;
 
     QUrl url() const;
 
+    Q_INVOKABLE QScriptValue createObject();
     virtual QObject *create(QmlContext *context = 0);
     virtual QObject *beginCreate(QmlContext *);
     virtual void completeCreate();

@@ -210,7 +210,7 @@ void QmlPropertyView::setObject(QObject *object)
             ++iter) {
 
         QTreeWidgetItem *item = new QTreeWidgetItem(m_tree);
-        item->setText(0, iter.key());
+        item->setText(0, QString::fromAscii(iter.key()));
         item->setForeground(0, Qt::blue);
         item->setText(1, iter.value());
     }

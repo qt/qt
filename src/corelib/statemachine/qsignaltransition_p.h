@@ -53,7 +53,7 @@
 // We mean it.
 //
 
-#include "qabstracttransition_p.h"
+#include "private/qabstracttransition_p.h"
 
 QT_BEGIN_NAMESPACE
 

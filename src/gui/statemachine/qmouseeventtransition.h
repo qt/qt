@@ -48,7 +48,9 @@ QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-QT_MODULE(Core)
+QT_MODULE(Gui)
+
+#ifndef QT_NO_STATEMACHINE
 
 class QMouseEventTransitionPrivate;
 class QPainterPath;
@@ -84,6 +86,8 @@ private:
     Q_DISABLE_COPY(QMouseEventTransition)
     Q_DECLARE_PRIVATE(QMouseEventTransition)
 };
+
+#endif //QT_NO_STATEMACHINE
 
 QT_END_NAMESPACE
 

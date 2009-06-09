@@ -42,7 +42,6 @@
 #include "qglobal.h"
 
 #ifndef QT_NO_SYSTEMLOCALE
-#define QLOCALE_CPP
 QT_BEGIN_NAMESPACE
 class QSystemLocale;
 static QSystemLocale *QSystemLocale_globalSystemLocale();
@@ -1534,7 +1533,7 @@ QDataStream &operator>>(QDataStream &ds, QLocale &l)
     l = QLocale(s);
     return ds;
 }
-#endif
+#endif // QT_NO_DATASTREAM
 
 
 /*!
@@ -1602,6 +1601,8 @@ QDataStream &operator>>(QDataStream &ds, QLocale &l)
     This constructor converts the locale name to a language/country
     pair; it does not use the system locale database.
 
+    QLocale's data is based on Common Locale Data Repository v1.6.1.
+
     The double-to-string and string-to-double conversion functions are
     covered by the following licenses:
 
@@ -1621,8 +1622,6 @@ QDataStream &operator>>(QDataStream &ds, QLocale &l)
 
     This product includes software developed by the University of
     California, Berkeley and its contributors.
-
-    QLocale's data is based on Common Locale Data Repository v1.6.1.
 
     \sa QString::arg(), QString::toInt(), QString::toDouble()
 */

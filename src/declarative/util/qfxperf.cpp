@@ -44,24 +44,24 @@
 
 QT_BEGIN_NAMESPACE
 Q_DEFINE_PERFORMANCE_LOG(QFxPerf, "QFx") {
-    Q_DEFINE_PERFORMANCE_METRIC(QmlParsing, "Compilation: QML Parsing");
-    Q_DEFINE_PERFORMANCE_METRIC(Compilation, "             QML Compilation");
-    Q_DEFINE_PERFORMANCE_METRIC(VMEExecution, "Execution:   QML VME Execution");
-    Q_DEFINE_PERFORMANCE_METRIC(BindInit, "BindValue Initialization");
-    Q_DEFINE_PERFORMANCE_METRIC(BindValue, "BindValue execution");
-    Q_DEFINE_PERFORMANCE_METRIC(BindValueSSE, "BindValue execution SSE");
-    Q_DEFINE_PERFORMANCE_METRIC(BindValueQt, "BindValue execution QtScript");
-    Q_DEFINE_PERFORMANCE_METRIC(BindableValueUpdate, "QmlBindableValue::update");
-    Q_DEFINE_PERFORMANCE_METRIC(PixmapLoad, "Pixmap loading");
-    Q_DEFINE_PERFORMANCE_METRIC(FontDatabase, "Font database creation");
-    Q_DEFINE_PERFORMANCE_METRIC(QFxPathViewPathCache, "FX Items:    QFxPathView: Path cache");
-    Q_DEFINE_PERFORMANCE_METRIC(CreateParticle, "             QFxParticles: Particle creation");
-    Q_DEFINE_PERFORMANCE_METRIC(ItemComponentComplete, "             QFxItem::componentComplete");
-    Q_DEFINE_PERFORMANCE_METRIC(ImageComponentComplete, "             QFxImage::componentComplete");
-    Q_DEFINE_PERFORMANCE_METRIC(ComponentInstanceComponentComplete, "             QFxComponentInstance::componentComplete");
-    Q_DEFINE_PERFORMANCE_METRIC(BaseLayoutComponentComplete, "             QFxBaseLayout::componentComplete");
-    Q_DEFINE_PERFORMANCE_METRIC(TextComponentComplete, "             QFxText::componentComplete");
-    Q_DEFINE_PERFORMANCE_METRIC(QFxText_setText, "             QFxText::setText");
-    Q_DEFINE_PERFORMANCE_METRIC(AddScript, "QmlScript::addScriptToEngine");
+    Q_DEFINE_PERFORMANCE_METRIC(QmlParsing, "Compilation: QML Parsing")
+    Q_DEFINE_PERFORMANCE_METRIC(Compilation, "             QML Compilation")
+    Q_DEFINE_PERFORMANCE_METRIC(VMEExecution, "Execution:   QML VME Execution")
+    Q_DEFINE_PERFORMANCE_METRIC(BindInit, "BindValue Initialization")
+    Q_DEFINE_PERFORMANCE_METRIC(BindValue, "BindValue execution")
+    Q_DEFINE_PERFORMANCE_METRIC(BindValueSSE, "BindValue execution SSE")
+    Q_DEFINE_PERFORMANCE_METRIC(BindValueQt, "BindValue execution QtScript")
+    Q_DEFINE_PERFORMANCE_METRIC(BindableValueUpdate, "QmlBindableValue::update")
+    Q_DEFINE_PERFORMANCE_METRIC(PixmapLoad, "Pixmap loading")
+    Q_DEFINE_PERFORMANCE_METRIC(FontDatabase, "Font database creation")
+    Q_DEFINE_PERFORMANCE_METRIC(QFxPathViewPathCache, "FX Items:    QFxPathView: Path cache")
+    Q_DEFINE_PERFORMANCE_METRIC(CreateParticle, "             QFxParticles: Particle creation")
+    Q_DEFINE_PERFORMANCE_METRIC(ItemComponentComplete, "             QFxItem::componentComplete")
+    Q_DEFINE_PERFORMANCE_METRIC(ImageComponentComplete, "             QFxImage::componentComplete")
+    Q_DEFINE_PERFORMANCE_METRIC(ComponentInstanceComponentComplete, "             QFxComponentInstance::componentComplete")
+    Q_DEFINE_PERFORMANCE_METRIC(BaseLayoutComponentComplete, "             QFxBaseLayout::componentComplete")
+    Q_DEFINE_PERFORMANCE_METRIC(TextComponentComplete, "             QFxText::componentComplete")
+    Q_DEFINE_PERFORMANCE_METRIC(QFxText_setText, "             QFxText::setText")
+    Q_DEFINE_PERFORMANCE_METRIC(AddScript, "QmlScript::addScriptToEngine")
 }
 QT_END_NAMESPACE

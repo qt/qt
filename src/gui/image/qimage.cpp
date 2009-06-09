@@ -4763,7 +4763,7 @@ QDataStream &operator>>(QDataStream &s, QImage &image)
     image = QImageReader(s.device(), 0).read();
     return s;
 }
-#endif
+#endif // QT_NO_DATASTREAM
 
 
 #ifdef QT3_SUPPORT

@@ -64,15 +64,15 @@
     \sa QStringBuilder, QLatin1String, QString, QStringRef
 */
 
-/*! \fn QLatin1Literal::QLatin1Literal(const char(&string)[])
+/*! \fn QLatin1Literal::QLatin1Literal(const char(&string)[N])
  
     Constructs a new literal from the given \a string.
 */
 
 /*! \fn int QLatin1Literal::size() const
  
-    Returns the number of characters in the literal \i{excluding} the trailing
-    NUL char.
+    Returns the number of characters in the literal \e{excluding} the trailing
+    NULL char.
 */
 
 /*! \fn char *QLatin1Literal::data() const
@@ -93,7 +93,7 @@
     \reentrant
     \since 4.6
 
-    \brief QStringBuilder is a template class that provides a facility to build
+    \brief The QStringBuilder class is a template class that provides a facility to build
     up QStrings from smaller chunks.
 
     \ingroup tools
@@ -102,7 +102,7 @@
     \mainclass
 
     When creating strings from smaller chunks, typically \c QString::operator+()
-    is used, resulting in \i{n - 1} reallocations when operating on \i{n} chunks.
+    is used, resulting in \e{n - 1} reallocations when operating on \e{n} chunks.
 
     QStringBuilder uses expression templates to collect the individual parts,
     compute the total size, allocate memory for the resulting QString object,
@@ -111,7 +111,7 @@
     The QStringBuilder class is not to be used explicitly in user code.
     Instances of the class are created as return values of the operator%()
     function, acting on objects of type \c QString, \c QLatin1String,
-    \c QLatin1Literal, \c \QStringRef, \c QChar,
+    \c QLatin1Literal, \c \QStringRef, \c QChar, \c QCharRef,
     \c QLatin1Char, and \c char.
 
     Concatenating strings with operator%() generally yields better
@@ -122,7 +122,7 @@
     \sa QLatin1Literal, QString
 */
 
-/* !fn template <class A, class B> QStringBuilder<A, B> operator%(const A &a, const B &b)
+/* \fn template <class A, class B> QStringBuilder<A, B> operator%(const A &a, const B &b)
 
     Returns a \c QStringBuilder object that is converted to a QString object
     when assigned to a variable of QString type or passed to a function that
@@ -130,6 +130,6 @@
 
     This function is usable with arguments of type \c QString,
     \c QLatin1String, \c QLatin1Literal, \c QStringRef, 
-    \c QChar, \c QLatin1Char, and \c char.
+    \c QChar, \c QCharRef, \c QLatin1Char, and \c char.
 */
 

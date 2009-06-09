@@ -851,7 +851,7 @@ static QSize qt_aqua_get_known_size(QStyle::ContentsType ct, const QWidget *widg
         }
         break;
     case QStyle::CT_HeaderSection:
-        if (sz == QAquaSizeLarge && isTreeView(widg))
+        if (isTreeView(widg))
            ret = QSize(-1, qt_mac_aqua_get_metric(kThemeMetricListHeaderHeight));
         break;
     case QStyle::CT_MenuBar:
@@ -4339,7 +4339,19 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
                 tdi.enableState = kThemeTrackDisabled;
             else
                 tdi.enableState = kThemeTrackActive;
-            HIThemeDrawTrack(&tdi, 0, cg, kHIThemeOrientationNormal);
+            HIThemeOrientation drawOrientation = kHIThemeOrientationNormal;
+            if (reverse) {
+                if (vertical) {
+                    drawOrientation = kHIThemeOrientationInverted;
+                } else {
+                    CGContextSaveGState(cg);
+                    CGContextTranslateCTM(cg, pb->rect.width(), 0);
+                    CGContextScaleCTM(cg, -1, 1);
+                }
+            }
+            HIThemeDrawTrack(&tdi, 0, cg, drawOrientation);
+            if (reverse && !vertical)
+                CGContextRestoreGState(cg);
         }
         break;
     case CE_ProgressBarLabel:

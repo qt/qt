@@ -211,7 +211,7 @@ void QTimer::start()
 */
 void QTimer::start(int msec)
 {
-    setInterval(msec);
+    inter = msec;
     start();
 }
 

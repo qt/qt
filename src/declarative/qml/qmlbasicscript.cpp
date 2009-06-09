@@ -117,25 +117,25 @@ void QmlBasicScriptNodeCache::clear()
 
 static QVariant toObjectOrVariant(const QVariant &v)
 {
-    switch(v.type()) {
+    switch(v.userType()) {
         case QVariant::String:
         case QVariant::UInt:
         case QVariant::Int:
-        case 135:
+        case QMetaType::Float:
         case QVariant::Double:
         case QVariant::Color:
         case QVariant::Bool:
         default:
-            return v;
-        case QVariant::UserType:
-            {
+        {
+            if (v.type() == QVariant::UserType) {
                 QObject *o = QmlMetaType::toQObject(v);
                 if (o)
                     return qVariantFromValue(o);
                 else
                     return v;
             }
-            break;
+            return v;
+        }
     }
 }
 
@@ -166,7 +166,7 @@ static QVariant fetch_value(QObject *o, int idx, int type)
                 return QVariant(val);
             }
             break;
-        case 135:
+        case QMetaType::Float:
             {
                 float val;
                 void *args[] = { &val, 0 };
