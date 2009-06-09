@@ -113,12 +113,6 @@ QThreadData::~QThreadData()
     // fprintf(stderr, "QThreadData %p destroyed\n", this);
 }
 
-QThreadData *QThreadData::get2(QThread *thread)
-{
-    Q_ASSERT_X(thread != 0, "QThread", "internal error");
-    return thread->d_func()->data;
-}
-
 void QThreadData::ref()
 {
 #ifndef QT_NO_THREAD

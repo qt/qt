@@ -87,8 +87,6 @@
     \sa QVariantAnimation, QAnimationGroup, {The Animation Framework}
 */
 
-#ifndef QT_NO_ANIMATION
-
 #include "qpropertyanimation.h"
 #include "qanimationgroup.h"
 #include "qpropertyanimation_p.h"
@@ -96,6 +94,8 @@
 #include <QtCore/qmath.h>
 #include <QtCore/qmutex.h>
 #include <private/qmutexpool_p.h>
+
+#ifndef QT_NO_ANIMATION
 
 QT_BEGIN_NAMESPACE
 

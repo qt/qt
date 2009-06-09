@@ -40,6 +40,9 @@
 ****************************************************************************/
 
 #include "qsignaltransition.h"
+
+#ifndef QT_NO_STATEMACHINE
+
 #include "qsignaltransition_p.h"
 #include "qsignalevent.h"
 #include "qstate.h"
@@ -258,3 +261,5 @@ bool QSignalTransition::event(QEvent *e)
 }
 
 QT_END_NAMESPACE
+
+#endif //QT_NO_STATEMACHINE

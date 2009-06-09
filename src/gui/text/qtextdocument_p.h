@@ -202,6 +202,7 @@ public:
     inline void beginEditBlock() { editBlock++; }
     void joinPreviousEditBlock();
     void endEditBlock();
+    inline void beginEdit() { inEdit = true; }
     void finishEdit();
     inline bool isInEditBlock() const { return editBlock; }
     void enableUndoRedo(bool enable);
@@ -335,8 +336,9 @@ public:
     QCss::StyleSheet parsedDefaultStyleSheet;
 #endif
     int maximumBlockCount;
-    bool needsEnsureMaximumBlockCount;
-    bool inContentsChange;
+    uint needsEnsureMaximumBlockCount : 1;
+    uint inContentsChange : 1;
+    uint inEdit : 1; // between beginEdit() and finishEdit()
     QSizeF pageSize;
     QString title;
     QString url;

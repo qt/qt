@@ -116,6 +116,7 @@ public:
                              const QPair<QTreeWidgetItem*,int> &right);
     static bool itemGreaterThan(const QPair<QTreeWidgetItem*,int> &left,
                                 const QPair<QTreeWidgetItem*,int> &right);
+    static bool canConvertToDouble(const QVariant &value);
     static QList<QTreeWidgetItem*>::iterator sortedInsertionIterator(
         const QList<QTreeWidgetItem*>::iterator &begin,
         const QList<QTreeWidgetItem*>::iterator &end,

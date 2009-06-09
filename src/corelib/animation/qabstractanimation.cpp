@@ -142,8 +142,6 @@
     \sa direction
 */
 
-#ifndef QT_NO_ANIMATION
-
 #include "qabstractanimation.h"
 #include "qanimationgroup.h"
 #include <QtCore/qdebug.h>
@@ -154,6 +152,8 @@
 #include <QtCore/qthreadstorage.h>
 #include <QtCore/qcoreevent.h>
 #include <QtCore/qpointer.h>
+
+#ifndef QT_NO_ANIMATION
 
 #define DEFAULT_TIMER_INTERVAL 16
 

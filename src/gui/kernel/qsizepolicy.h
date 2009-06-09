@@ -203,9 +203,11 @@ private:
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QSizePolicy::ControlTypes)
 
+#ifndef QT_NO_DATASTREAM
 // implemented in qlayout.cpp
 Q_GUI_EXPORT QDataStream &operator<<(QDataStream &, const QSizePolicy &);
 Q_GUI_EXPORT QDataStream &operator>>(QDataStream &, QSizePolicy &);
+#endif
 
 inline void QSizePolicy::transpose() {
     Policy hData = horizontalPolicy();

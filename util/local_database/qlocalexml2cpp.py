@@ -237,7 +237,17 @@ class StringData:
             return self.hash[s]
 
         lst = map(lambda x: hex(ord(x)), s)
-        token = StringDataToken(len(self.data), len(lst))
+        index = len(self.data)
+        if index >= 65535:
+            print "\n\n\n#error Data index is too big!"
+            sys.stderr.write ("\n\n\nERROR: index exceeds the uint16 range! index = %d\n" % index)
+            sys.exit(1)
+        size = len(lst)
+        if size >= 65535:
+            print "\n\n\n#error Data is too big!"
+            sys.stderr.write ("\n\n\nERROR: data size exceeds the uint16 range! size = %d\n" % size)
+            sys.exit(1)
+        token = StringDataToken(index, size)
         self.hash[s] = token
         self.data += lst
         return token

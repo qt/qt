@@ -50,6 +50,8 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Core)
 
+#ifndef QT_NO_STATEMACHINE
+
 class QSignalTransitionPrivate;
 class Q_CORE_EXPORT QSignalTransition : public QAbstractTransition
 {
@@ -81,6 +83,8 @@ private:
     Q_DISABLE_COPY(QSignalTransition)
     Q_DECLARE_PRIVATE(QSignalTransition)
 };
+
+#endif //QT_NO_STATEMACHINE
 
 QT_END_NAMESPACE
 

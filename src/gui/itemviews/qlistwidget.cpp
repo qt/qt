@@ -711,6 +711,7 @@ void QListWidgetItem::write(QDataStream &out) const
 {
     out << d->values;
 }
+#endif // QT_NO_DATASTREAM
 
 /*!
     \since 4.1
@@ -744,6 +745,8 @@ QListWidgetItem &QListWidgetItem::operator=(const QListWidgetItem &other)
     itemFlags = other.itemFlags;
     return *this;
 }
+
+#ifndef QT_NO_DATASTREAM
 
 /*!
     \relates QListWidgetItem

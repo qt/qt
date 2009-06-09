@@ -1164,6 +1164,13 @@ Requires: PROPERTIES
 Name: Animation
 SeeAlso: ???
 
+Feature: STATEMACHINE
+Description: Provides hierarchical finite state machines.
+Section: Utilities
+Requires: PROPERTIES
+Name: State machine
+SeeAlso: ???
+
 
 # SVG
 

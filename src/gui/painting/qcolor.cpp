@@ -2116,9 +2116,7 @@ QDataStream &operator>>(QDataStream &stream, QColor &color)
 
     return stream;
 }
-#endif
-
-
+#endif // QT_NO_DATASTREAM
 
 
 /*****************************************************************************

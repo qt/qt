@@ -145,7 +145,6 @@ public:
     const ParseResults *getResults() const { return results; }
     void deleteResults() { delete results; }
 
-private:
     struct SavedState {
         QStringList namespaces;
         QStack<int> namespaceDepths;
@@ -154,6 +153,7 @@ private:
         QString pendingContext;
     };
 
+private:
     struct IfdefState {
         IfdefState() {}
         IfdefState(int _braceDepth, int _parenDepth) :
@@ -319,12 +319,27 @@ uint CppParser::getChar()
         if (yyInPos >= yyInStr.size())
             return EOF;
         uint c = yyInStr[yyInPos++].unicode();
-        if (c == '\\' && yyInPos < yyInStr.size() && yyInStr[yyInPos].unicode() == '\n') {
-            ++yyCurLineNo;
-            ++yyInPos;
-            continue;
+        if (c == '\\' && yyInPos < yyInStr.size()) {
+            if (yyInStr[yyInPos].unicode() == '\n') {
+                ++yyCurLineNo;
+                ++yyInPos;
+                continue;
+            }
+            if (yyInStr[yyInPos].unicode() == '\r') {
+                ++yyCurLineNo;
+                ++yyInPos;
+                if (yyInPos < yyInStr.size() && yyInStr[yyInPos].unicode() == '\n')
+                    ++yyInPos;
+                continue;
+            }
         }
-        if (c == '\n') {
+        if (c == '\r') {
+            if (yyInPos < yyInStr.size() && yyInStr[yyInPos].unicode() == '\n')
+                ++yyInPos;
+            c = '\n';
+            ++yyCurLineNo;
+            yyAtNewline = true;
+        } else if (c == '\n') {
             ++yyCurLineNo;
             yyAtNewline = true;
         } else if (c != ' ' && c != '\t' && c != '#') {

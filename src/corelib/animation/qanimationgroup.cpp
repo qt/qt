@@ -89,12 +89,12 @@
     \sa QAbstractAnimation, QVariantAnimation, {The Animation Framework}
 */
 
-#ifndef QT_NO_ANIMATION
-
 #include "qanimationgroup.h"
 #include <QtCore/qdebug.h>
 #include <QtCore/qcoreevent.h>
 #include "qanimationgroup_p.h"
+
+#ifndef QT_NO_ANIMATION
 
 QT_BEGIN_NAMESPACE
 
