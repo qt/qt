@@ -79,7 +79,7 @@ HEADERS += \
         widgets/qplaintextedit.h \
         widgets/qplaintextedit_p.h \
         widgets/qprintpreviewwidget.h \
-        widgets/qkeyeventsoftkey.h
+        widgets/qactiontokeyeventmapper_p.h
 SOURCES += \
         widgets/qabstractbutton.cpp \
         widgets/qabstractslider.cpp \
@@ -139,7 +139,7 @@ SOURCES += \
         widgets/qtoolbararealayout.cpp \
         widgets/qplaintextedit.cpp \
         widgets/qprintpreviewwidget.cpp \
-        widgets/qkeyeventsoftkey.cpp
+        widgets/qactiontokeyeventmapper.cpp
 
 !embedded:mac {
     HEADERS += widgets/qmacnativewidget_mac.h \

@@ -60,7 +60,7 @@
 #ifndef QT_NO_WHATSTHIS
 # include <qwhatsthis.h>
 #endif
-#include <qkeyeventsoftkey.h>
+#include <qactiontokeyeventmapper_p.h>
 
 #include "qmenu_p.h"
 #include "qmenubar_p.h"
@@ -584,7 +584,7 @@ void QMenuPrivate::setCurrentAction(QAction *action, int popup, SelectionReason 
 #ifdef QT_KEYPAD_NAVIGATION
                         // TODO: aportale, remove KEYPAD_NAVIGATION_HACK when softkey stack
                         //       handles focus related and user related actions separately...
-                        QKeyEventSoftKey::addSoftKey(QAction::CancelSoftKey, Qt::Key_Back, q);
+                        QActionToKeyEventMapper::addSoftKey(QAction::CancelSoftKey, Qt::Key_Back, q);
 #endif
                     }
                 }
@@ -1945,7 +1945,7 @@ void QMenu::popup(const QPoint &p, QAction *atAction)
     QAccessible::updateAccessibility(this, 0, QAccessible::PopupMenuStart);
 #endif
 #ifdef QT_KEYPAD_NAVIGATION
-    QKeyEventSoftKey::addSoftKey(QAction::CancelSoftKey, Qt::Key_Back, this);
+    QActionToKeyEventMapper::addSoftKey(QAction::CancelSoftKey, Qt::Key_Back, this);
 #endif
 }
 
@@ -2597,7 +2597,7 @@ void QMenu::keyPressEvent(QKeyEvent *e)
     case Qt::Key_Escape:
 #ifdef QT_KEYPAD_NAVIGATION
     case Qt::Key_Back:
-    	QKeyEventSoftKey::removeSoftkey(this);
+        QActionToKeyEventMapper::removeSoftkey(this);
 #endif
         key_consumed = true;
         if (d->tornoff) {

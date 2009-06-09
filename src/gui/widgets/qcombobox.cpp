@@ -63,7 +63,7 @@
 #include <private/qabstractitemmodel_p.h>
 #include <private/qabstractscrollarea_p.h>
 #include <qdebug.h>
-#include <qkeyeventsoftkey.h>
+#include <qactiontokeyeventmapper_p.h>
 #ifdef Q_WS_X11
 #include <private/qt_x11_p.h>
 #endif
@@ -629,7 +629,7 @@ bool QComboBoxPrivateContainer::eventFilter(QObject *o, QEvent *e)
 #endif
             if (view->currentIndex().isValid() && (view->currentIndex().flags() & Qt::ItemIsEnabled) ) {
 #ifdef QT_KEYPAD_NAVIGATION
-                QKeyEventSoftKey::removeSoftkey(this);
+                QActionToKeyEventMapper::removeSoftkey(this);
 #endif
                 combo->hidePopup();
                 emit itemSelected(view->currentIndex());
@@ -643,7 +643,7 @@ bool QComboBoxPrivateContainer::eventFilter(QObject *o, QEvent *e)
         case Qt::Key_Escape:
 #ifdef QT_KEYPAD_NAVIGATION
         case Qt::Key_Back:
-            QKeyEventSoftKey::removeSoftkey(this);
+            QActionToKeyEventMapper::removeSoftkey(this);
 #endif
             combo->hidePopup();
             return true;
@@ -2438,7 +2438,7 @@ void QComboBox::showPopup()
 #ifdef QT_KEYPAD_NAVIGATION
     if (QApplication::keypadNavigationEnabled())
         view()->setEditFocus(true);
-    QKeyEventSoftKey::addSoftKey(QAction::CancelSoftKey, Qt::Key_Back, view());
+    QActionToKeyEventMapper::addSoftKey(QAction::CancelSoftKey, Qt::Key_Back, view());
 #endif
 }
 

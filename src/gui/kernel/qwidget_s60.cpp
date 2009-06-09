@@ -61,31 +61,6 @@ extern bool qt_nograb();
 QWidget *QWidgetPrivate::mouseGrabber = 0;
 QWidget *QWidgetPrivate::keyboardGrabber = 0;
 
-static void mapSoftKeys(const QList <QAction*> &softkeys)
-{
-/*    if (softkeys.count() == 1 && softkeys.at(0)->menuRole()==QAction::MenuSoftKey) {
-        softkeys.at(0)->setNativePosition(0);
-        softkeys.at(0)->setQtContextKey(Qt::Key_Context1);
-    }
-    else if(softkeys.count() == 1 && softkeys.at(0)->menuRole()!=QAction::MenuSoftKey) {
-        softkeys.at(0)->setNativePosition(2);
-        softkeys.at(0)->setQtContextKey(Qt::Key_Context1);
-    }
-    else {
-    // FIX THIS
-    // veryWeirdMagic is needes as s60 5th edition sdk always panics if cba is set with index 1, this hops over it
-    // This needs further investigation why so that the hack can be removed
-        int veryWeirdMagic = 0;
-        for (int index = 0; index < softkeys.count(); index++) {
-            softkeys.at(index)->setNativePosition(index + veryWeirdMagic);
-            softkeys.at(index)->setQtContextKey(Qt::Key_Context1 + index);
-            if (veryWeirdMagic == 0)
-                veryWeirdMagic = 1;
-        }
-    }
-*/
-}
-
 static bool isEqual(const QList<QAction*>& a, const QList<QAction*>& b)
 {
     if ( a.count() != b.count())
@@ -110,15 +85,12 @@ void QWidgetPrivate::setSoftKeys_sys(const QList<QAction*> &softkeys)
         if (isEqual(old, softkeys ))
             return;
     }
-    
     CCoeAppUi* appui = CEikonEnv::Static()->AppUi();
     CAknAppUi* aknAppUi = static_cast <CAknAppUi*>(appui);
     CEikButtonGroupContainer* nativeContainer = aknAppUi->Cba();
     nativeContainer->SetCommandSetL(R_AVKON_SOFTKEYS_EMPTY_WITH_IDS);
 
-    mapSoftKeys(softkeys);
     int placeInScreen=0;
-    
     for (int index = 0; index < softkeys.count(); index++) {
         const QAction* softKeyAction = softkeys.at(index);
         if (softKeyAction->softKeyRole() != QAction::ContextMenuSoftKey) {
@@ -135,7 +107,6 @@ void QWidgetPrivate::setSoftKeys_sys(const QList<QAction*> &softkeys)
         }
     if (placeInScreen==1)
         placeInScreen=2;
-        
     }
 }
 
@@ -1083,16 +1054,4 @@ void QWidget::activateWindow()
         rw->SetOrdinalPosition(0);
     }
 }
-/*
-void QWidget::setSoftKeys(QSoftKeyAction *softKey)
-{
-    Q_D(QWidget);
-    d->
-}
-
-void QWidget::setSoftKeys(const QList<QSoftKeyAction*> &softkeys)
-{
-    Q_D(QWidget);
-}
-*/
 QT_END_NAMESPACE

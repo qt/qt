@@ -39,67 +39,32 @@
 **
 ****************************************************************************/
 
-#include "qapplication.h"
-#include "qevent.h"
-#include "qkeyeventsoftkey.h"
+#ifndef QACTIONTOKEYEVENTMAPPER_P_H
+#define QACTIONTOKEYEVENTMAPPER_P_H
+
+#include <QtCore/qobject.h>
+#include "QtGui/qaction.h"
+QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-QKeyEventSoftKey::QKeyEventSoftKey(QAction *softKeyAction, Qt::Key key, QObject *parent)
-    : QObject(parent)
-    , m_softKeyAction(softKeyAction)
-    , m_key(key)
+class QActionToKeyEventMapper : public QObject
 {
-
-}
-
-QString QKeyEventSoftKey::roleText(QAction::SoftKeyRole role)
-{
-    switch (role) {
-    case QAction::OptionsSoftKey:
-        return QAction::tr("Options");
-    case QAction::SelectSoftKey:
-        return QAction::tr("Select");
-    case QAction::BackSoftKey:
-        return QAction::tr("Back");
-    case QAction::NextSoftKey:
-        return QAction::tr("Next");
-    case QAction::PreviousSoftKey:
-        return QAction::tr("Previous");
-    case QAction::OkSoftKey:
-        return QAction::tr("Ok");
-    case QAction::CancelSoftKey:
-        return QAction::tr("Cancel");
-    case QAction::EditSoftKey:
-        return QAction::tr("Edit");
-    case QAction::ViewSoftKey:
-        return QAction::tr("View");
-    default:
-        return QString();
-    };
-}
-void QKeyEventSoftKey::addSoftKey(QAction::SoftKeyRole standardRole, Qt::Key key, QWidget *actionWidget)
-{
-    QAction *action = new QAction(actionWidget);
-    action->setSoftKeyRole(standardRole);
-    action->setText(roleText(standardRole));
-    QKeyEventSoftKey *softKey = new QKeyEventSoftKey(action, key, actionWidget);
-    connect(action, SIGNAL(triggered()), softKey, SLOT(sendKeyEvent()));
-    connect(action, SIGNAL(destroyed()), softKey, SLOT(deleteLater()));
-    actionWidget->setSoftKey(action);
-}
-
-void QKeyEventSoftKey::removeSoftkey(QWidget *focussedWidget)
-{
-    focussedWidget->setSoftKey(0);
-}
-
-void QKeyEventSoftKey::sendKeyEvent()
-{
-    QApplication::postEvent(parent(), new QKeyEvent(QEvent::KeyPress, m_key, Qt::NoModifier));
-}
+    Q_OBJECT
+public:
+    QActionToKeyEventMapper(QAction *softKeyAction, Qt::Key key, QObject *parent);
+    static QString roleText(QAction::SoftKeyRole role);
+    static void addSoftKey(QAction::SoftKeyRole standardRole, Qt::Key key, QWidget *actionWidget);
+    static void removeSoftkey(QWidget *focussedWidget);
+private:
+    QAction *m_softKeyAction;
+    Qt::Key m_key;
+private Q_SLOTS:
+    void sendKeyEvent();
+};
 
 QT_END_NAMESPACE
 
-#include "moc_qkeyeventsoftkey.cpp"
+QT_END_HEADER
 
+#endif //QACTIONTOKEYEVENTMAPPER_H
