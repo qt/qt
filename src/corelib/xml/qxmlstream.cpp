@@ -3410,11 +3410,12 @@ void QXmlStreamWriter::writeComment(const QString &text)
 {
     Q_D(QXmlStreamWriter);
     Q_ASSERT(!text.contains(QLatin1String("--")) && !text.endsWith(QLatin1Char('-')));
-    if (!d->finishStartElement() && d->autoFormatting)
+    if (!d->finishStartElement(false) && d->autoFormatting)
         d->indent(d->tagStack.size());
     d->write("<!--");
     d->write(text);
     d->write("-->");
+    d->inStartElement = d->lastWasStartElement = false;
 }
 
 
