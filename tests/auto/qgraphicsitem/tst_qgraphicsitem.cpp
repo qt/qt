@@ -1798,15 +1798,15 @@ void tst_QGraphicsItem::setMatrix()
     QCOMPARE(rlist.at(2), unrotatedRect); // From post-update      (update current state)
 }
 
-static QList<QGraphicsItem *> paintedItems;
+static QList<QGraphicsItem *> _paintedItems;
 class PainterItem : public QGraphicsItem
 {
 protected:
     QRectF boundingRect() const
     { return QRectF(-10, -10, 20, 20); }
 
-    void paint(QPainter *, const QStyleOptionGraphicsItem *, QWidget *)
-    { paintedItems << this; }
+    void paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *)
+    { _paintedItems << this; painter->fillRect(boundingRect(), Qt::red); }
 };
 
 void tst_QGraphicsItem::zValue()
@@ -1838,10 +1838,10 @@ void tst_QGraphicsItem::zValue()
     QApplication::sendPostedEvents(); //glib workaround
 #endif
 
-    QVERIFY(!paintedItems.isEmpty());
-    QVERIFY((paintedItems.size() % 4) == 0);
+    QVERIFY(!_paintedItems.isEmpty());
+    QVERIFY((_paintedItems.size() % 4) == 0);
     for (int i = 0; i < 3; ++i)
-        QVERIFY(paintedItems.at(i)->zValue() < paintedItems.at(i + 1)->zValue());
+        QVERIFY(_paintedItems.at(i)->zValue() < _paintedItems.at(i + 1)->zValue());
 }
 
 void tst_QGraphicsItem::shape()
