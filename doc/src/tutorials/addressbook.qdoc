@@ -457,7 +457,7 @@
     \snippet tutorials/addressbook/part3/addressbook.cpp connecting navigation signals
 
     The image below is our expected graphical user interface. Notice that it
-    is getting closer to our expected final output.
+    is getting closer to our final application.
 
     \image addressbook-tutorial-part3-screenshot.png
 
@@ -513,7 +513,7 @@
     \list
         \o If the iterator is at the end of \c contacts, we clear the
         display and return.
-        \o If the iterator is the beginning of \c contacts, we move it to
+        \o If the iterator is at the beginning of \c contacts, we move it to
         the end.
         \o We then decrement the iterator by one.
     \endlist
@@ -532,7 +532,7 @@
     \example tutorials/addressbook/part4
     \title Address Book 4 - Editing and Removing Addresses
 
-    In this chapter, we look at ways to modify the contents of contact stored
+    In this chapter, we look at ways to modify the contents of contacts stored
     in the address book application.
 
     \image addressbook-tutorial-screenshot.png
@@ -542,7 +542,7 @@
     edit and remove functions so that a contact's details can be changed
     when needed. However, this requires a little improvement, in the form of
     enums. In our previous chapters, we had two modes: \c{AddingMode} and
-    \c{NavigationMode} - but they weren't defined as enums. Instead, we
+    \c{NavigationMode} - but they were not defined as enums. Instead, we
     enabled and disabled the corresponding buttons manually, resulting in
     multiple lines of repeated code.
 
@@ -576,8 +576,7 @@
     \dots
     \snippet tutorials/addressbook/part4/addressbook.h mode declaration
 
-    Lastly, we declare \c currentMode to keep track of the current mode of the
-    enum.
+    Lastly, we declare \c currentMode to keep track of the enum's current mode.
 
     \section1 Implementing the AddressBook Class
 

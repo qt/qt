@@ -154,6 +154,10 @@
 #define kThemeBrushAlternatePrimaryHighlightColor -5
 #endif
 
+#define kCMDeviceUnregisteredNotification CFSTR("CMDeviceUnregisteredNotification")
+#define kCMDefaultDeviceNotification CFSTR("CMDefaultDeviceNotification")
+#define kCMDeviceProfilesNotification CFSTR("CMDeviceProfilesNotification")
+#define kCMDefaultDeviceProfileNotification CFSTR("CMDefaultDeviceProfileNotification")
 
 QT_BEGIN_NAMESPACE
 
@@ -1040,11 +1044,29 @@ void qt_release_app_proc_handler()
 #endif
 }
 
+void qt_color_profile_changed(CFNotificationCenterRef, void *, CFStringRef, const void *,
+                              CFDictionaryRef)
+{
+    QCoreGraphicsPaintEngine::cleanUpMacColorSpaces();
+}
 /* platform specific implementations */
 void qt_init(QApplicationPrivate *priv, int)
 {
     if (qt_is_gui_used) {
         CGDisplayRegisterReconfigurationCallback(qt_mac_display_change_callbk, 0);
+        CFNotificationCenterRef center = CFNotificationCenterGetDistributedCenter();
+        CFNotificationCenterAddObserver(center, qApp, qt_color_profile_changed,
+                                        kCMDeviceUnregisteredNotification, 0,
+                                        CFNotificationSuspensionBehaviorDeliverImmediately);
+        CFNotificationCenterAddObserver(center, qApp, qt_color_profile_changed,
+                                        kCMDefaultDeviceNotification, 0,
+                                        CFNotificationSuspensionBehaviorDeliverImmediately);
+        CFNotificationCenterAddObserver(center, qApp, qt_color_profile_changed,
+                                        kCMDeviceProfilesNotification, 0,
+                                        CFNotificationSuspensionBehaviorDeliverImmediately);
+        CFNotificationCenterAddObserver(center, qApp, qt_color_profile_changed,
+                                        kCMDefaultDeviceProfileNotification, 0,
+                                        CFNotificationSuspensionBehaviorDeliverImmediately);
         ProcessSerialNumber psn;
         if (GetCurrentProcess(&psn) == noErr) {
             // Jambi needs to transform itself since most people aren't "used"
@@ -1224,6 +1246,12 @@ void qt_release_apple_event_handler()
 void qt_cleanup()
 {
     CGDisplayRemoveReconfigurationCallback(qt_mac_display_change_callbk, 0);
+    CFNotificationCenterRef center = CFNotificationCenterGetDistributedCenter();
+    CFNotificationCenterRemoveObserver(center, qApp, kCMDeviceUnregisteredNotification, 0);
+    CFNotificationCenterRemoveObserver(center, qApp, kCMDefaultDeviceNotification, 0);
+    CFNotificationCenterRemoveObserver(center, qApp, kCMDeviceProfilesNotification, 0);
+    CFNotificationCenterRemoveObserver(center, qApp, kCMDefaultDeviceProfileNotification, 0);
+
 #ifndef QT_MAC_USE_COCOA
     qt_release_app_proc_handler();
     if (app_proc_handlerUPP) {

@@ -95,41 +95,6 @@
 
 #define LITERAL "some literal"
 
-#ifndef QT_NO_CAST_FROM_ASCII
-
-// Plan is to move the QConcatenable specialications below
-// to qstringbuilder.h as soon as the QByteArray builder is
-// implemented. 
-
-QT_BEGIN_NAMESPACE
-
-template <int N> struct QConcatenable<char[N]>
-{
-    typedef char type[N];
-    static int size(const char *) { return N - 1; }
-    static inline void appendTo(const type &a, QChar *&out)
-    {
-        memcpy(out, a, N - 1);
-        out += N - 1; 
-    }
-};
-
-template <int N> struct QConcatenable<const char[N]>
-{
-    typedef char type[N];
-    static int size(const char *) { return N - 1; }
-    static inline void appendTo(const type &a, QChar *&out)
-    {
-        memcpy(out, a, N - 1);
-        out += N - 1; 
-    }
-};
-
-QT_END_NAMESPACE
-
-#endif
-
-
 class tst_QStringBuilder : public QObject
 {
     Q_OBJECT

@@ -2463,7 +2463,12 @@ MakefileGenerator::writeSubTargets(QTextStream &t, QList<MakefileGenerator::SubT
 
         t << suffix << ":";
         for(int target = 0; target < targets.size(); ++target) {
-            QString targetRule = targets.at(target)->target + "-" + suffix;
+            SubTarget *subTarget = targets.at(target);
+            if((suffix == "make_first" || suffix == "make_default")
+                && project->values(subTarget->name + ".CONFIG").indexOf("no_default_target") != -1) {
+                continue;
+            }
+            QString targetRule = subTarget->target + "-" + suffix;
             if(flags & SubTargetOrdered)
                 targetRule += "-ordered";
             t << " " << targetRule;

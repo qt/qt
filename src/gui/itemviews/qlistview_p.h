@@ -84,7 +84,7 @@ public:
     inline bool operator!=(const QListViewItem &other) const
         { return !(*this == other); }
     inline bool isValid() const
-        { return (x > -1) && (y > -1) && (w > 0) && (h > 0) && (indexHint > -1); }
+        { return rect().isValid() && (indexHint > -1); }
     inline void invalidate()
         { x = -1; y = -1; w = 0; h = 0; }
     inline void resize(const QSize &size)

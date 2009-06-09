@@ -1938,7 +1938,7 @@ QDataStream &operator<<(QDataStream &out, const QStandardItem &item)
     return out;
 }
 
-#endif // !QT_NO_DATASTREAM
+#endif // QT_NO_DATASTREAM
 
 /*!
     \class QStandardItemModel

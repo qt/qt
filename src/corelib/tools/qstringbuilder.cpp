@@ -111,7 +111,7 @@
     The QStringBuilder class is not to be used explicitly in user code.
     Instances of the class are created as return values of the operator%()
     function, acting on objects of type \c QString, \c QLatin1String,
-    \c QLatin1Literal, \c \QStringRef, \c QChar,
+    \c QLatin1Literal, \c \QStringRef, \c QChar, \c QCharRef,
     \c QLatin1Char, and \c char.
 
     Concatenating strings with operator%() generally yields better
@@ -130,6 +130,6 @@
 
     This function is usable with arguments of type \c QString,
     \c QLatin1String, \c QLatin1Literal, \c QStringRef, 
-    \c QChar, \c QLatin1Char, and \c char.
+    \c QChar, \c QCharRef, \c QLatin1Char, and \c char.
 */
 

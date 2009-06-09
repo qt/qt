@@ -1073,6 +1073,7 @@ void HtmlGenerator::generateClassLikeNode(const InnerNode *inner,
             if (!s->inherited.isEmpty())
                 needOtherSection = true;
         } else {
+            out() << "<hr />\n";
             out() << "<a name=\""
                   << registerRef((*s).name.toLower())
                   << "\"></a>\n";
@@ -2335,7 +2336,7 @@ void HtmlGenerator::generateSynopsis(const Node *node,
 QString HtmlGenerator::highlightedCode(const QString& markedCode,
                                        CodeMarker *marker,
                                        const Node *relative,
-                                       CodeMarker::SynopsisStyle style,
+                                       CodeMarker::SynopsisStyle ,
                                        bool nameAlignment)
 {
     QString src = markedCode;

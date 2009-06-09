@@ -233,6 +233,8 @@ protected:
     friend class QMacPrintEngine;
     friend class QMacPrintEnginePrivate;
     friend void qt_mac_display_change_callbk(CGDirectDisplayID, CGDisplayChangeSummaryFlags, void *);
+    friend void qt_color_profile_changed(CFNotificationCenterRef center, void *,
+                                         CFStringRef , const void *, CFDictionaryRef);
     QCoreGraphicsPaintEngine(QPaintEnginePrivate &dptr);
 
 private:
