@@ -86,6 +86,6 @@ wince*: {
 
 # install
 target.path = $$[QT_INSTALL_DEMOS]/browser
-sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS *.plist *.icns *.ico *.rc *.pro *.html *.doc images htmls
+sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS *.plist *.icns *.ico *.rc *.pro *.html *.doc images htmls data
 sources.path = $$[QT_INSTALL_DEMOS]/browser
 INSTALLS += target sources
