@@ -629,7 +629,7 @@ while (<STDIN>) {
     $sizes[$i++] = $counter;
     $counter += length 1 + $_;
 }
-print "    \"\\0\";\n\nstatic const int QXmlStreamReader_tokenTypeString_indices[] = {\n    ";
+print "    \"\\0\";\n\nstatic const short QXmlStreamReader_tokenTypeString_indices[] = {\n    ";
 for ($j = 0; $j < $i; ++$j) {
     printf "$sizes[$j], ";
 }
@@ -660,10 +660,9 @@ static const char QXmlStreamReader_tokenTypeString_string[] =
     "Comment\0"
     "DTD\0"
     "EntityReference\0"
-    "ProcessingInstruction\0"
-    "\0";
+    "ProcessingInstruction\0";
 
-static const int QXmlStreamReader_tokenTypeString_indices[] = {
+static const short QXmlStreamReader_tokenTypeString_indices[] = {
     0, 8, 16, 30, 42, 55, 66, 77, 85, 89, 105, 0
 };
 

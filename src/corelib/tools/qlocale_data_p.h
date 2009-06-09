@@ -60,8 +60,8 @@ QT_BEGIN_NAMESPACE
  */
 struct CountryLanguage
 {
-    quint32 languageId;
-    quint32 countryId;
+    quint16 languageId;
+    quint16 countryId;
 };
 static const CountryLanguage ImperialMeasurementSystems[] = {
     { 31, 225 },
@@ -83,7 +83,7 @@ static const int ImperialMeasurementSystemsCount =
 */
 
 
-static const uint locale_index[] = {
+static const quint16 locale_index[] = {
      0, // unused
      0, // C
      0, // Abkhazian
@@ -2313,7 +2313,7 @@ static const char language_name_list[] =
 "Chewa\0"
 ;
 
-static const uint language_name_index[] = {
+static const quint16 language_name_index[] = {
      0, // Unused
      8, // C
     10, // Abkhazian
@@ -2727,7 +2727,7 @@ static const char country_name_list[] =
 "SerbiaAndMontenegro\0"
 ;
 
-static const uint country_name_index[] = {
+static const quint16 country_name_index[] = {
      0, // AnyCountry
      8, // Afghanistan
     20, // Albania
