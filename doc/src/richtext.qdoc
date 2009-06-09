@@ -1058,8 +1058,11 @@ Ideas for other sections:
             \o Specifies where an image or a text will be placed in another element. Note that the \c float property is
                only supported for tables and images.
     \row    \o \c text-transform
-            \o [ uppercase | lowercase | smallcaps ]
+            \o [ uppercase | lowercase ]
             \o Select the transformation that will be performed on the text prior to displaying it.
+    \row    \o \c font-variant
+            \o small-caps
+            \o Perform the smallcaps transformation on the text prior to displaying it.
     \row    \o \c word-spacing
             \o <width>px
             \o Specifies an alternate spacing between each word.
