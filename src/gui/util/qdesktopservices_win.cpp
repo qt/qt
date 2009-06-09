@@ -115,11 +115,11 @@ static bool launchWebBrowser(const QUrl &url)
         if (res == ERROR_SUCCESS) {
             returnValue = RegQueryValueEx(handle, L"Progid", 0, 0, reinterpret_cast<unsigned char*>(keyValue), &bufferSize);
             if (!returnValue)
-                keyName = QString::fromUtf16(keyValue);
+                keyName = QString::fromUtf16((const ushort*)keyValue);
             RegCloseKey(handle);
         }
         keyName += QLatin1String("\\Shell\\Open\\Command");
-        res = RegOpenKeyExW(HKEY_CLASSES_ROOT, keyName.utf16(), 0, KEY_READ, &handle);
+        res = RegOpenKeyExW(HKEY_CLASSES_ROOT, (const wchar_t*)keyName.utf16(), 0, KEY_READ, &handle);
         if (res != ERROR_SUCCESS)
             return false;
 
