@@ -14,12 +14,49 @@ H3 {
 
 h3.fn,span.fn
 {
-  background-color: #e0eff6;
+  background-color: #eee;
   border-width: 1px;
   border-style: solid;
-  border-color: #3388be #3388be #e9f8ff #3388be;
+  border-color: #ddd #ddd #ddd #ddd ;
   font-weight: bold;
   padding: 6px 0px 6px 10px;
+  margin: 42px 0px 0px 0px;
+}
+
+hr {
+  border: 0;
+  color: #9E9E9E;
+  background-color: #ccc;
+  height: 1px;
+  width: 100%;
+  text-align: left;
+  margin: 34px 0px 34px 0px;
+}
+
+table {
+	border-width: 1px 1px 1px 1px;
+	border-style: solid;
+	border-color: #dddddd;
+	border-collapse: collapse;
+	background-color: #f0f0f0;
+    margin-left: 1.5%;
+    width: 97%
+}
+
+table th {
+	border-width: 1px 1px 1px 2px;
+	padding: 4px;
+	border-style: solid;
+	border-color: #444;
+    color:white;
+    background-color:#444;
+}
+
+p {
+  margin-left: 1.5%;
+  margin-top: 8px;
+  width: 97%
+  margin-bottom: 8px;
 }
 
 a:link
@@ -66,7 +103,7 @@ body
 
 table td.memItemLeft {
   width: 200px;
-  padding: 1px 0px 0px 8px;
+  padding: 2px 0px 0px 8px;
   margin: 4px;
   border-top-width: 1px;
   border-right-width: 1px;
@@ -76,7 +113,7 @@ table td.memItemLeft {
   border-right-color: #E0E0E0;
   border-bottom-color: #E0E0E0;
   border-left-color: #E0E0E0;
-  border-top-style: solid;
+  border-top-style: none;
   border-right-style: none;
   border-bottom-style: none;
   border-left-style: none;
@@ -85,7 +122,7 @@ table td.memItemLeft {
   white-space: nowrap
 }
 table td.memItemRight {
-  padding: 1px 8px 0px 8px;
+  padding: 2px 8px 0px 8px;
   margin: 4px;
   border-top-width: 1px;
   border-right-width: 1px;
@@ -95,7 +132,7 @@ table td.memItemRight {
   border-right-color: #E0E0E0;
   border-bottom-color: #E0E0E0;
   border-left-color: #E0E0E0;
-  border-top-style: solid;
+  border-top-style: none;
   border-right-style: none;
   border-bottom-style: none;
   border-left-style: none;
