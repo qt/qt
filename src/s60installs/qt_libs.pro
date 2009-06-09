@@ -41,7 +41,7 @@ symbian: {
     contains(QT_CONFIG, openssl) | contains(QT_CONFIG, openssl-linked) {
         qtlibraries.depends += "(0x200110CB), 1, 5, 1, {\"Open C LIBSSL Common\"}"
     }
-    contains(QT_CONFIG, stl) {
+    contains(CONFIG, stl) {
         qtlibraries.depends += "(0x2000F866), 1, 0, 0, {\"Standard C++ Library Common\"}"
     }
     
