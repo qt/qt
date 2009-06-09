@@ -6190,10 +6190,8 @@ void QGraphicsItem::addToIndex()
         // ### add to child index only if applicable
         return;
     }
-    if (d_ptr->scene) {
+    if (d_ptr->scene)
         d_ptr->scene->d_func()->addToIndex(this);
-        d_ptr->scene->d_func()->markDirty(this);
-    }
 }
 
 /*!
@@ -6209,10 +6207,8 @@ void QGraphicsItem::removeFromIndex()
         // ### remove from child index only if applicable
         return;
     }
-    if (d_ptr->scene) {
-        d_ptr->scene->d_func()->markDirty(this);
+    if (d_ptr->scene)
         d_ptr->scene->d_func()->removeFromIndex(this);
-    }
 }
 
 /*!

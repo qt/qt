@@ -5112,18 +5112,42 @@ void QGraphicsScenePrivate::drawSubtreeRecursive(QGraphicsItem *item, QPainter *
     } else if (indexMethod == QGraphicsScene::NoIndex || !exposedRegion) {
         children = &this->topLevelItems;
     } else {
-        tmp = estimateItemsInRect(viewTransform.inverted().mapRect(exposedRegion->boundingRect()));
+        QRectF sceneRect = viewTransform.inverted().mapRect(QRectF(exposedRegion->boundingRect().adjusted(-1, -1, 1, 1)));
+        if (!largestUntransformableItem.isEmpty()) {
+            // ### Nuke this when we move the indexing code into a separate
+            // class.  All the largestUntransformableItem code should then go
+            // away, and the estimate function should return untransformable
+            // items as well.
+            QRectF untr = largestUntransformableItem;
+            QRectF ltri = viewTransform.inverted().mapRect(untr);
+            ltri.adjust(-untr.width(), -untr.height(), untr.width(), untr.height());
+            sceneRect.adjust(-ltri.width(), -ltri.height(), ltri.width(), ltri.height());
+        }
+        tmp = estimateItemsInRect(sceneRect);
 
         QList<QGraphicsItem *> tli;
-        for (int i = 0; i < tmp.size(); ++i) {
-            QGraphicsItem *it = tmp.at(i)->topLevelItem();
-            if (!it->d_ptr->itemDiscovered) {
-                tli << it;
-                it->d_ptr->itemDiscovered = 1;
+        for (int i = 0; i < tmp.size(); ++i)
+            tmp.at(i)->topLevelItem()->d_ptr->itemDiscovered = 1;
+
+        // Sort if the toplevel list is unsorted.
+        if (needSortTopLevelItems) {
+            needSortTopLevelItems = false;
+            qStableSort(this->topLevelItems.begin(),
+                        this->topLevelItems.end(), qt_notclosestLeaf);
+        }
+
+        for (int i = 0; i < this->topLevelItems.size(); ++i) {
+            // ### Investigate smarter ways. Looping through all top level
+            // items is not optimal. If the BSP tree is to have maximum
+            // effect, it should be possible to sort the subset of items
+            // quickly. We must use this approach for now, as it's the only
+            // current way to keep the stable sorting order (insertion order).
+            QGraphicsItem *item = this->topLevelItems.at(i);
+            if (item->d_ptr->itemDiscovered) {
+                item->d_ptr->itemDiscovered = 0;
+                tli << item;
             }
         }
-        for (int i = 0; i < tli.size(); ++i)
-            tli.at(i)->d_ptr->itemDiscovered = 0;
 
         tmp = tli;
         children = &tmp;
@@ -5147,9 +5171,7 @@ void QGraphicsScenePrivate::drawSubtreeRecursive(QGraphicsItem *item, QPainter *
         if (item && item->d_ptr->needSortChildren) {
             item->d_ptr->needSortChildren = 0;
             qStableSort(children->begin(), children->end(), qt_notclosestLeaf);
-        } else if (!item && children == &tmp) {
-            qStableSort(children->begin(), children->end(), qt_notclosestLeaf);
-        } else if (!item && needSortTopLevelItems) {
+        } else if (!item && needSortTopLevelItems && children != &tmp) {
             needSortTopLevelItems = false;
             qStableSort(children->begin(), children->end(), qt_notclosestLeaf);
         }
@@ -5220,7 +5242,7 @@ void QGraphicsScenePrivate::markDirty(QGraphicsItem *item, const QRectF &rect, b
 
     if (item->d_ptr->discardUpdateRequest(/*ignoreClipping=*/maybeDirtyClipPath,
                                           /*ignoreVisibleBit=*/force,
-                                          /*ignoreDirtyBit=*/removingItemFromScene,
+                                          /*ignoreDirtyBit=*/removingItemFromScene || invalidateChildren,
                                           /*ignoreOpacity=*/ignoreOpacity)) {
         return;
     }

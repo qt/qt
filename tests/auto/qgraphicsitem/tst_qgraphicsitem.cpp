@@ -226,6 +226,8 @@ private slots:
     void itemUsesExtendedStyleOption();
     void itemSendsGeometryChanges();
     void moveItem();
+    void sorting_data();
+    void sorting();
 
     // task specific tests below me
     void task141694_textItemEnsureVisible();
@@ -6924,6 +6926,60 @@ void tst_QGraphicsItem::moveItem()
     expectedParentRegion += expectedChildRegion.translated(20, 20);
     expectedParentRegion += expectedGrandChildRegion.translated(20, 20);
     QCOMPARE(view.paintedRegion, expectedParentRegion);
+}
+
+void tst_QGraphicsItem::sorting_data()
+{
+    QTest::addColumn<int>("index");
+
+    QTest::newRow("NoIndex") << int(QGraphicsScene::NoIndex);
+    QTest::newRow("BspTreeIndex") << int(QGraphicsScene::BspTreeIndex);
+}
+
+void tst_QGraphicsItem::sorting()
+{
+    _paintedItems.clear();
+
+    QGraphicsScene scene;
+    QGraphicsItem *grid[100][100];
+    for (int x = 0; x < 100; ++x) {
+        for (int y = 0; y < 100; ++y) {
+            PainterItem *item = new PainterItem;
+            item->setPos(x * 25, y * 25);
+            item->setData(0, QString("%1x%2").arg(x).arg(y));
+            grid[x][y] = item;
+            scene.addItem(item);
+        }
+    }
+
+    PainterItem *item1 = new PainterItem;
+    PainterItem *item2 = new PainterItem;
+    item1->setData(0, "item1");
+    item2->setData(0, "item2");
+    scene.addItem(item1);
+    scene.addItem(item2);
+
+    QGraphicsView view(&scene);
+    view.setResizeAnchor(QGraphicsView::NoAnchor);
+    view.setTransformationAnchor(QGraphicsView::NoAnchor);
+    view.resize(100, 100);
+    view.setFrameStyle(0);
+    view.show();
+#ifdef Q_WS_X11
+    qt_x11_wait_for_window_manager(&view);
+#endif
+    QTest::qWait(100);
+
+    _paintedItems.clear();
+
+    view.viewport()->repaint();
+
+    QCOMPARE(_paintedItems, QList<QGraphicsItem *>()
+                 << grid[0][0] << grid[0][1] << grid[0][2] << grid[0][3]
+                 << grid[1][0] << grid[1][1] << grid[1][2] << grid[1][3]
+                 << grid[2][0] << grid[2][1] << grid[2][2] << grid[2][3]
+                 << grid[3][0] << grid[3][1] << grid[3][2] << grid[3][3]
+                 << item1 << item2);
 }
 
 QTEST_MAIN(tst_QGraphicsItem)
