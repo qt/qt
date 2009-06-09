@@ -430,7 +430,9 @@ void MainWindow::focusInEvent(QFocusEvent *)
     if (MenuManager::instance()->ticker)
         MenuManager::instance()->ticker->pause(false);
 
-    this->switchTimerOnOff(true);
+    int code = MenuManager::instance()->currentMenuCode;
+    if (code == MenuManager::ROOT || code == MenuManager::MENU1)
+        this->switchTimerOnOff(true);
 
     this->pausedLabel->setRecursiveVisible(false);
 }
@@ -443,7 +445,9 @@ void MainWindow::focusOutEvent(QFocusEvent *)
     if (MenuManager::instance()->ticker)
         MenuManager::instance()->ticker->pause(true);
 
-    this->switchTimerOnOff(false);
+    int code = MenuManager::instance()->currentMenuCode;
+    if (code == MenuManager::ROOT || code == MenuManager::MENU1)
+        this->switchTimerOnOff(false);
 
     this->pausedLabel->setRecursiveVisible(true);
 }
