@@ -332,8 +332,6 @@ SubdirsMetaMakefileGenerator::init()
             }
             qmake_setpwd(sub->input_dir);
             Option::output_dir = sub->output_dir;
-            if(Option::output_dir.at(Option::output_dir.length()-1) != QLatin1Char('/'))
-                Option::output_dir += QLatin1Char('/');
             sub_proj->read(subdir.fileName());
             if(!sub_proj->variables()["QMAKE_FAILED_REQUIREMENTS"].isEmpty()) {
                 fprintf(stderr, "Project file(%s) not recursed because all requirements not met:\n\t%s\n",
