@@ -532,7 +532,9 @@ void QDirectFBPaintEngine::drawImage(const QRectF &r, const QImage &image,
     d->prepareForBlit(QDirectFBScreen::hasAlpha(imgSurface));
     d->blit(r, imgSurface, sr);
     if (release) {
+#if (Q_DIRECTFB_VERSION >= 0x010000)
         imgSurface->ReleaseSource(imgSurface);
+#endif
         imgSurface->Release(imgSurface);
     }
 #endif
@@ -897,7 +899,9 @@ void QDirectFBPaintEnginePrivate::end()
 {
     lockedMemory = 0;
     dfbDevice = 0;
+#if (Q_DIRECTFB_VERSION >= 0x010000)
     surface->ReleaseSource(surface);
+#endif
     surface->SetClip(surface, NULL);
     surface = 0;
 }

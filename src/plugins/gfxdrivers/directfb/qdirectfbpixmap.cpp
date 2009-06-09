@@ -225,7 +225,9 @@ void QDirectFBPixmapData::copy(const QPixmapData *data, const QRect &rect)
     const DFBRectangle blitRect = { rect.x(), rect.y(),
                                     rect.width(), rect.height() };
     DFBResult result = dfbSurface->Blit(dfbSurface, src, &blitRect, 0, 0);
+#if (Q_DIRECTFB_VERSION >= 0x010000)
     dfbSurface->ReleaseSource(dfbSurface);
+#endif
     if (result != DFB_OK) {
         DirectFBError("QDirectFBPixmapData::copy()", result);
         invalidate();
@@ -316,8 +318,9 @@ QPixmap QDirectFBPixmapData::transformed(const QTransform &transform,
 
     const DFBRectangle destRect = { 0, 0, size.width(), size.height() };
     data->dfbSurface->StretchBlit(data->dfbSurface, dfbSurface, 0, &destRect);
+#if (Q_DIRECTFB_VERSION >= 0x010000)
     data->dfbSurface->ReleaseSource(data->dfbSurface);
-
+#endif
     return QPixmap(data);
 }
 
@@ -336,7 +339,9 @@ QImage QDirectFBPixmapData::toImage() const
             imgSurface->SetBlittingFlags(imgSurface, DSBLIT_NOFX);
         }
         imgSurface->Blit(imgSurface, dfbSurface, 0, 0, 0);
+#if (Q_DIRECTFB_VERSION >= 0x010000)
         imgSurface->ReleaseSource(imgSurface);
+#endif
         imgSurface->Release(imgSurface);
         return ret;
     }
