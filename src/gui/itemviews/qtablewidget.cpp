@@ -1662,10 +1662,9 @@ void QTableWidgetPrivate::_q_emitCurrentItemChanged(const QModelIndex &current,
 
 void QTableWidgetPrivate::_q_sort()
 {
-    Q_Q(QTableWidget);
     if (sortingEnabled) {
-        int column = q->horizontalHeader()->sortIndicatorSection();
-        Qt::SortOrder order = q->horizontalHeader()->sortIndicatorOrder();
+        int column = horizontalHeader->sortIndicatorSection();
+        Qt::SortOrder order = horizontalHeader->sortIndicatorOrder();
         model()->sort(column, order);
     }
 }
@@ -1673,11 +1672,10 @@ void QTableWidgetPrivate::_q_sort()
 void QTableWidgetPrivate::_q_dataChanged(const QModelIndex &topLeft,
                                          const QModelIndex &bottomRight)
 {
-    Q_Q(QTableWidget);
     if (sortingEnabled && topLeft.isValid() && bottomRight.isValid()) {
-        int column = q->horizontalHeader()->sortIndicatorSection();
+        int column = horizontalHeader->sortIndicatorSection();
         if (column >= topLeft.column() && column <= bottomRight.column()) {
-            Qt::SortOrder order = q->horizontalHeader()->sortIndicatorOrder();
+            Qt::SortOrder order = horizontalHeader->sortIndicatorOrder();
             model()->ensureSorted(column, order, topLeft.row(), bottomRight.row());
         }
     }
