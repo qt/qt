@@ -131,7 +131,7 @@ public:
     bool regenerateIndex;
 
     bool purgePending;
-    void _q_removeItemLater(QGraphicsItem *item);
+    void removeItemHelper(QGraphicsItem *item);
     QSet<QGraphicsItem *> removedItems;
     void purgeRemovedItems();
 
@@ -264,7 +264,8 @@ public:
                               QRegion *exposedRegion, QWidget *widget,
                               QList<QGraphicsItem *> *topLevelItems = 0, qreal parentOpacity = qreal(1.0));
     void markDirty(QGraphicsItem *item, const QRectF &rect = QRectF(), bool invalidateChildren = false,
-                   bool maybeDirtyClipPath = false, bool force = false, bool ignoreOpacity = false);
+                   bool maybeDirtyClipPath = false, bool force = false, bool ignoreOpacity = false,
+                   bool removingItemFromScene = false);
     void processDirtyItemsRecursive(QGraphicsItem *item, bool dirtyAncestorContainsChildren = false);
 
     inline void resetDirtyItem(QGraphicsItem *item)

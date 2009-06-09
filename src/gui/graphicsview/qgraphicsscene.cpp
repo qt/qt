@@ -710,39 +710,65 @@ void QGraphicsScenePrivate::_q_processDirtyItems()
     \internal
 
     Schedules an item for removal. This function leaves some stale indexes
-    around in the BSP tree; these will be cleaned up the next time someone
-    triggers purgeRemovedItems().
+    around in the BSP tree if called from the item's destructor; these will
+    be cleaned up the next time someone triggers purgeRemovedItems().
 
-    Note: This function is called from QGraphicsItem's destructor. \a item is
+    Note: This function might get called from QGraphicsItem's destructor. \a item is
     being destroyed, so we cannot call any pure virtual functions on it (such
     as boundingRect()). Also, it is unnecessary to update the item's own state
     in any way.
-
-    ### Refactoring: This function shares much functionality with removeItem()
 */
-void QGraphicsScenePrivate::_q_removeItemLater(QGraphicsItem *item)
+void QGraphicsScenePrivate::removeItemHelper(QGraphicsItem *item)
 {
     Q_Q(QGraphicsScene);
 
-    // Clear focus on the item to remove any reference in the focusWidget
-    // chain.
+    // Clear focus on the item to remove any reference in the focusWidget chain.
     item->clearFocus();
+    markDirty(item, QRectF(), false, false, false, false, /*removingItemFromScene=*/true);
 
-    int index = item->d_func()->index;
-    if (index != -1) {
-        // Important: The index is useless until purgeRemovedItems() is
-        // called.
-        indexedItems[index] = (QGraphicsItem *)0;
-        if (!purgePending) {
+    if (!item->d_ptr->inDestructor) {
+        // Can potentially call item->boundingRect() (virtual function), that's why
+        // we only can call this function if the item is not in its destructor.
+        removeFromIndex(item);
+    } else if (item->d_ptr->index != -1) {
+        // Important: The index is useless until purgeRemovedItems() is called.
+        indexedItems[item->d_ptr->index] = (QGraphicsItem *)0;
+        if (!purgePending)
             purgePending = true;
-            q->update();
-        }
         removedItems << item;
     } else {
         // Recently added items are purged immediately. unindexedItems() never
         // contains stale items.
         unindexedItems.removeAll(item);
-        q->update();
+    }
+
+    if (!item->d_ptr->inDestructor && item == tabFocusFirst) {
+        QGraphicsWidget *widget = static_cast<QGraphicsWidget *>(item);
+        widget->d_func()->fixFocusChainBeforeReparenting(0, 0);
+    }
+
+    item->d_func()->scene = 0;
+
+    // Remove from parent, or unregister from toplevels.
+    if (QGraphicsItem *parentItem = item->parentItem()) {
+        if (parentItem->scene()) {
+            Q_ASSERT_X(parentItem->scene() == q, "QGraphicsScene::removeItem",
+                       "Parent item's scene is different from this item's scene");
+            item->d_ptr->setParentItemHelper(0);
+        }
+    } else {
+        unregisterTopLevelItem(item);
+    }
+
+    if (!item->d_ptr->inDestructor) {
+        // Remove from our item lists.
+        int index = item->d_func()->index;
+        if (index != -1) {
+            freeItemIndexes << index;
+            indexedItems[index] = 0;
+        } else {
+            unindexedItems.removeAll(item);
+        }
     }
 
     // Reset the mouse grabber and focus item data.
@@ -776,13 +802,19 @@ void QGraphicsScenePrivate::_q_removeItemLater(QGraphicsItem *item)
             ++iterator;
     }
 
-    // Reset the mouse grabber
+    if (!item->d_ptr->inDestructor) {
+        // Remove all children recursively
+        for (int i = 0; i < item->d_ptr->children.size(); ++i)
+            q->removeItem(item->d_ptr->children.at(i));
+    }
+
+    // Reset the mouse grabber and focus item data.
     if (mouseGrabberItems.contains(item))
-        ungrabMouse(item, /* item is dying */ true);
+        ungrabMouse(item, /* item is dying */ item->d_ptr->inDestructor);
 
     // Reset the keyboard grabber
     if (keyboardGrabberItems.contains(item))
-        ungrabKeyboard(item, /* item is dying */ true);
+        ungrabKeyboard(item, /* item is dying */ item->d_ptr->inDestructor);
 
     // Reset the last mouse grabber item
     if (item == lastMouseGrabberItem)
@@ -801,8 +833,6 @@ void QGraphicsScenePrivate::_q_removeItemLater(QGraphicsItem *item)
 */
 void QGraphicsScenePrivate::purgeRemovedItems()
 {
-    Q_Q(QGraphicsScene);
-
     if (!purgePending && removedItems.isEmpty())
         return;
 
@@ -818,9 +848,6 @@ void QGraphicsScenePrivate::purgeRemovedItems()
             freeItemIndexes << i;
     }
     purgePending = false;
-
-    // No locality info for the items; update the whole scene.
-    q->update();
 }
 
 /*!
@@ -3352,95 +3379,7 @@ void QGraphicsScene::removeItem(QGraphicsItem *item)
         return;
     }
 
-    // If the item has focus, remove it (and any focusWidget reference).
-    item->clearFocus();
-
-    // Clear its background
-    item->update();
-
-    // Note: This will access item's sceneBoundingRect(), which (as this is
-    // C++) is why we cannot call removeItem() from QGraphicsItem's
-    // destructor.
-    d->removeFromIndex(item);
-
-    if (item == d->tabFocusFirst) {
-        QGraphicsWidget *widget = static_cast<QGraphicsWidget *>(item);
-        widget->d_func()->fixFocusChainBeforeReparenting(0, 0);
-    }
-    // Set the item's scene ptr to 0.
-    item->d_func()->scene = 0;
-
-    // Remove from parent, or unregister from toplevels.
-    if (QGraphicsItem *parentItem = item->parentItem()) {
-        if (parentItem->scene()) {
-            Q_ASSERT_X(parentItem->scene() == this, "QGraphicsScene::removeItem",
-                       "Parent item's scene is different from this item's scene");
-            item->setParentItem(0);
-        }
-    } else {
-        d->unregisterTopLevelItem(item);
-    }
-
-    // Remove from our item lists.
-    int index = item->d_func()->index;
-    if (index != -1) {
-        d->freeItemIndexes << index;
-        d->indexedItems[index] = 0;
-    } else {
-        d->unindexedItems.removeAll(item);
-    }
-
-    if (item == d->focusItem)
-        d->focusItem = 0;
-    if (item == d->lastFocusItem)
-        d->lastFocusItem = 0;
-    if (item == d->activeWindow) {
-        // ### deactivate...
-        d->activeWindow = 0;
-    }
-
-    // Disable selectionChanged() for individual items
-    ++d->selectionChanging;
-    int oldSelectedItemsSize = d->selectedItems.size();
-
-    // Update selected & hovered item bookkeeping
-    d->selectedItems.remove(item);
-    d->hoverItems.removeAll(item);
-    d->pendingUpdateItems.removeAll(item);
-    d->cachedItemsUnderMouse.removeAll(item);
-    d->unpolishedItems.removeAll(item);
-    d->resetDirtyItem(item);
-
-    //We remove all references of item from the sceneEventFilter arrays
-    QMultiMap<QGraphicsItem*, QGraphicsItem*>::iterator iterator = d->sceneEventFilters.begin();
-    while (iterator != d->sceneEventFilters.end()) {
-        if (iterator.value() == item || iterator.key() == item)
-            iterator = d->sceneEventFilters.erase(iterator);
-        else
-            ++iterator;
-    }
-
-    // Remove all children recursively
-    foreach (QGraphicsItem *child, item->children())
-        removeItem(child);
-
-    // Reset the mouse grabber and focus item data.
-    if (d->mouseGrabberItems.contains(item))
-        d->ungrabMouse(item);
-
-    // Reset the keyboard grabber
-    if (d->keyboardGrabberItems.contains(item))
-        item->ungrabKeyboard();
-
-    // Reset the last mouse grabber item
-    if (item == d->lastMouseGrabberItem)
-        d->lastMouseGrabberItem = 0;
-
-    // Reenable selectionChanged() for individual items
-    --d->selectionChanging;
-
-    if (!d->selectionChanging && d->selectedItems.size() != oldSelectedItemsSize)
-        emit selectionChanged();
+    d->removeItemHelper(item);
 
     // Deliver post-change notification
     item->itemChange(QGraphicsItem::ItemSceneHasChanged, newSceneVariant);
@@ -5272,7 +5211,8 @@ void QGraphicsScenePrivate::drawSubtreeRecursive(QGraphicsItem *item, QPainter *
 }
 
 void QGraphicsScenePrivate::markDirty(QGraphicsItem *item, const QRectF &rect, bool invalidateChildren,
-                                      bool maybeDirtyClipPath, bool force, bool ignoreOpacity)
+                                      bool maybeDirtyClipPath, bool force, bool ignoreOpacity,
+                                      bool removingItemFromScene)
 {
     Q_ASSERT(item);
     if (updateAll)
@@ -5280,7 +5220,8 @@ void QGraphicsScenePrivate::markDirty(QGraphicsItem *item, const QRectF &rect, b
 
     if (item->d_ptr->discardUpdateRequest(/*ignoreClipping=*/maybeDirtyClipPath,
                                           /*ignoreVisibleBit=*/force,
-                                          /*ignoreDirtyBit=*/false, ignoreOpacity)) {
+                                          /*ignoreDirtyBit=*/removingItemFromScene,
+                                          /*ignoreOpacity=*/ignoreOpacity)) {
         return;
     }
 
@@ -5291,6 +5232,24 @@ void QGraphicsScenePrivate::markDirty(QGraphicsItem *item, const QRectF &rect, b
     if (!processDirtyItemsEmitted) {
         QMetaObject::invokeMethod(q_ptr, "_q_processDirtyItems", Qt::QueuedConnection);
         processDirtyItemsEmitted = true;
+    }
+
+    if (removingItemFromScene) {
+        // Note that this function can be called from the item's destructor, so
+        // do NOT call any virtual functions on it within this block.
+        if ((connectedSignals & changedSignalMask) || views.isEmpty()) {
+            // This block of code is kept for compatibility. Since 4.5, by default
+            // QGraphicsView does not connect the signal and we use the below
+            // method of delivering updates.
+            q_func()->update();
+            return;
+        }
+
+        for (int i = 0; i < views.size(); ++i) {
+            QGraphicsViewPrivate *viewPrivate = views.at(i)->d_func();
+            viewPrivate->updateRect(item->d_ptr->paintedViewBoundingRects.value(viewPrivate->viewport));
+        }
+        return;
     }
 
     item->d_ptr->dirty = 1;

@@ -840,11 +840,11 @@ QVariant QGraphicsItemPrivate::inputMethodQueryHelper(Qt::InputMethodQuery query
 /*!
     \internal
 
-    If \a deleting is true, then this item is being deleted, and \a parent is
-    null. Make sure not to trigger any pure virtual function calls (e.g.,
-    prepareGeometryChange).
+    Make sure not to trigger any pure virtual function calls (e.g.,
+    prepareGeometryChange) if the item is in its destructor, i.e.
+    inDestructor is 1.
 */
-void QGraphicsItemPrivate::setParentItemHelper(QGraphicsItem *newParent, bool deleting)
+void QGraphicsItemPrivate::setParentItemHelper(QGraphicsItem *newParent)
 {
     Q_Q(QGraphicsItem);
     if (newParent == q) {
@@ -871,7 +871,7 @@ void QGraphicsItemPrivate::setParentItemHelper(QGraphicsItem *newParent, bool de
     // We anticipate geometry changes. If the item is deleted, it will be
     // removed from the index at a later stage, and the whole scene will be
     // updated.
-    if (!deleting)
+    if (!inDestructor)
         q_ptr->prepareGeometryChange();
 
     const QVariant thisPointerVariant(qVariantFromValue<QGraphicsItem *>(q));
@@ -883,7 +883,7 @@ void QGraphicsItemPrivate::setParentItemHelper(QGraphicsItem *newParent, bool de
 
     // Update toplevelitem list. If this item is being deleted, its parent
     // will be 0 but we don't want to register/unregister it in the TLI list.
-    if (scene && !deleting) {
+    if (scene && !inDestructor) {
         if (parent && !newParent) {
             scene->d_func()->registerTopLevelItem(q);
         } else if (!parent && newParent) {
@@ -931,7 +931,7 @@ void QGraphicsItemPrivate::setParentItemHelper(QGraphicsItem *newParent, bool de
         updateAncestorFlag(QGraphicsItem::ItemClipsChildrenToShape);
         updateAncestorFlag(QGraphicsItem::ItemIgnoresTransformations);
 
-        if (!deleting) {
+        if (!inDestructor) {
             // Update item visible / enabled.
             if (!visible && !explicitlyHidden)
                 setVisibleHelper(true, /* explicit = */ false);
@@ -1115,22 +1115,22 @@ QGraphicsItem::QGraphicsItem(QGraphicsItemPrivate &dd, QGraphicsItem *parent,
 */
 QGraphicsItem::~QGraphicsItem()
 {
-    if (d_ptr->scene && !d_ptr->parent)
-        d_ptr->scene->d_func()->unregisterTopLevelItem(this);
+    d_ptr->inDestructor = 1;
+    d_ptr->removeExtraItemCache();
 
     clearFocus();
+    if (!d_ptr->children.isEmpty()) {
+        QList<QGraphicsItem *> oldChildren = d_ptr->children;
+        qDeleteAll(oldChildren);
+        Q_ASSERT(d_ptr->children.isEmpty());
+    }
 
-    d_ptr->removeExtraItemCache();
-    QList<QGraphicsItem *> oldChildren = d_ptr->children;
-    qDeleteAll(oldChildren);
-    Q_ASSERT(d_ptr->children.isEmpty());
-
-    d_ptr->setParentItemHelper(0, /* deleting = */ true);
     if (d_ptr->scene)
-        d_ptr->scene->d_func()->_q_removeItemLater(this);
+        d_ptr->scene->d_func()->removeItemHelper(this);
+    else
+        d_ptr->setParentItemHelper(0);
 
     delete d_ptr->transformData;
-
     delete d_ptr;
 
     qt_dataStore()->data.remove(this);
@@ -1272,7 +1272,7 @@ QGraphicsWidget *QGraphicsItem::window() const
 */
 void QGraphicsItem::setParentItem(QGraphicsItem *parent)
 {
-    d_ptr->setParentItemHelper(parent, /* deleting = */ false);
+    d_ptr->setParentItemHelper(parent);
 }
 
 /*!

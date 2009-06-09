@@ -148,6 +148,7 @@ public:
         paintedViewBoundingRectsNeedRepaint(0),
         dirtySceneTransform(1),
         geometryChanged(0),
+        inDestructor(0),
         globalStackingOrder(-1),
         q_ptr(0)
     {
@@ -183,7 +184,7 @@ public:
     void resolveDepth(int parentDepth);
     void addChild(QGraphicsItem *child);
     void removeChild(QGraphicsItem *child);
-    void setParentItemHelper(QGraphicsItem *parent, bool deleting);
+    void setParentItemHelper(QGraphicsItem *parent);
     void childrenBoundingRectHelper(QTransform *x, QRectF *rect);
     void initStyleOption(QStyleOptionGraphicsItem *option, const QTransform &worldTransform,
                          const QRegion &exposedRegion, bool allItems = false) const;
@@ -403,7 +404,8 @@ public:
     quint32 paintedViewBoundingRectsNeedRepaint : 1;
     quint32 dirtySceneTransform  : 1;
     quint32 geometryChanged : 1;
-    quint32 unused : 16; // feel free to use
+    quint32 inDestructor : 1;
+    quint32 unused : 15; // feel free to use
 
     // Optional stacking order
     int globalStackingOrder;
