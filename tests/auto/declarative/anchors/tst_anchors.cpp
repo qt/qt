@@ -95,9 +95,7 @@ void tst_anchors::loops()
 
         view->setUrl(QUrl("file://" SRCDIR "/data/loop1.qml"));
 
-        //### ignoreMessage doesn't seem to work
-        //QTest::ignoreMessage(QtWarningMsg, "QML QFxText (unknown location): Anchor loop detected on horizontal anchor.");
-        //QTest::ignoreMessage(QtWarningMsg, "QML QFxText (unknown location): Anchor loop detected on horizontal anchor.");
+        QTest::ignoreMessage(QtWarningMsg, "QML QFxText (unknown location): Possible anchor loop detected on horizontal anchor. "); //x5
         view->execute();
         qApp->processEvents();
 
@@ -109,9 +107,7 @@ void tst_anchors::loops()
 
         view->setUrl(QUrl("file://" SRCDIR "/data/loop2.qml"));
 
-        //### ignoreMessage doesn't seem to work here
-        //QTest::ignoreMessage(QtWarningMsg, "QML QFxImage (unknown location): Anchor loop detected on horizontal anchor.");
-        //QTest::ignoreMessage(QtWarningMsg, "QML QFxImage (unknown location): Anchor loop detected on horizontal anchor.");
+        QTest::ignoreMessage(QtWarningMsg, "QML QFxImage (unknown location): Possible anchor loop detected on horizontal anchor. ");    //x3
         view->execute();
         qApp->processEvents();
 
@@ -126,8 +122,7 @@ void tst_anchors::illegalSets()
 
         view->setUrl(QUrl("file://" SRCDIR "/data/illegal1.qml"));
 
-        //### ignoreMessage doesn't seem to work
-        //QTest::ignoreMessage(QtWarningMsg, "QML QFxRect (unknown location): Can't specify left, right, and hcenter anchors.");
+        QTest::ignoreMessage(QtWarningMsg, "QML QFxRect (unknown location): Can't specify left, right, and hcenter anchors. ");
         view->execute();
         qApp->processEvents();
 
@@ -139,8 +134,7 @@ void tst_anchors::illegalSets()
 
         view->setUrl(QUrl("file://" SRCDIR "/data/illegal2.qml"));
 
-        //### ignoreMessage doesn't seem to work here
-        //QTest::ignoreMessage(QtWarningMsg, "QML QFxText (unknown location): Baseline anchor can't be used in conjunction with top, bottom, or vcenter anchors.");
+        QTest::ignoreMessage(QtWarningMsg, "QML QFxText (unknown location): Baseline anchor can't be used in conjunction with top, bottom, or vcenter anchors. ");
         view->execute();
         //qApp->processEvents();
 
@@ -152,10 +146,9 @@ void tst_anchors::illegalSets()
 
         view->setUrl(QUrl("file://" SRCDIR "/data/illegal3.qml"));
 
-        //### ignoreMessage doesn't seem to work here
-        //QTest::ignoreMessage(QtWarningMsg, "Can't anchor to an item that isn't a parent or sibling.");
+        QTest::ignoreMessage(QtWarningMsg, "QML QFxRect (unknown location): Can't anchor to an item that isn't a parent or sibling. ");
         view->execute();
-        qApp->processEvents();
+        //qApp->processEvents();
 
         delete view;
     }
