@@ -92,7 +92,7 @@ public:
     TCoeInputCapabilities inputCapabilities();
 
 private:
-    void commitCurrentString();
+    void commitCurrentString(bool triggeredBySymbian);
     void updateHints();
     void applyHints(Qt::InputMethodHints hints);
     void applyFormat(QList<QInputMethodEvent::Attribute> *attributes);
