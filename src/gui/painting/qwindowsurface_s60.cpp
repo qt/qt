@@ -45,7 +45,7 @@
 #include <private/qwidget_p.h>
 #include "qwindowsurface_s60_p.h"
 #include "qpixmap_s60_p.h"
-#include "qt_s60_p.h"
+#include <private/qt_s60_p.h>
 #include "private/qdrawhelper_p.h"
 
 QT_BEGIN_NAMESPACE
