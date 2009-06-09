@@ -124,16 +124,21 @@ inline QString AnchorVertex::toString() const
   Represents an edge (anchor) in the internal graph.
 */
 struct AnchorData : public QSimplexVariable {
+    enum Type {
+        Normal = 0,
+        Sequential,
+        Parallel
+    };
     AnchorData(qreal minimumSize, qreal preferredSize, qreal maximumSize)
         : QSimplexVariable(), minSize(minimumSize), prefSize(preferredSize),
           maxSize(maximumSize), sizeAtMinimum(preferredSize),
           sizeAtPreferred(preferredSize), sizeAtMaximum(preferredSize),
-          skipInPreferred(0) {}
+          skipInPreferred(0), type(Normal) {}
 
     AnchorData(qreal size = 0)
         : QSimplexVariable(), minSize(size), prefSize(size), maxSize(size),
           sizeAtMinimum(size), sizeAtPreferred(size), sizeAtMaximum(size),
-          skipInPreferred(0) {}
+          skipInPreferred(0), type(Normal) {}
 
     inline QString toString() const;
     QString name;
@@ -157,6 +162,13 @@ struct AnchorData : public QSimplexVariable {
     qreal sizeAtMaximum;
 
     uint skipInPreferred : 1;
+    uint type : 2;          // either Normal, Sequential or Parallel
+protected:
+    AnchorData(Type type, qreal size = 0)
+        : QSimplexVariable(), minSize(size), prefSize(size),
+          maxSize(size), sizeAtMinimum(size),
+          sizeAtPreferred(size), sizeAtMaximum(size),
+          skipInPreferred(0), type(type) {}
 };
 
 inline QString AnchorData::toString() const
@@ -166,6 +178,18 @@ inline QString AnchorData::toString() const
     //                         minSize, prefSize, maxSize).arg(name);
 }
 
+
+struct SequentialAnchorData : public AnchorData
+{
+    SequentialAnchorData() : AnchorData(AnchorData::Sequential) {}
+    QVector<AnchorVertex*> m_children;          // list of vertices in the sequence
+};
+
+struct ParallelAnchorData : public AnchorData
+{
+    ParallelAnchorData() : AnchorData(AnchorData::Parallel) {}
+    QVector<AnchorData*> children;      // list of parallel edges
+};
 
 /*!
   \internal
@@ -229,6 +253,16 @@ public:
 
     static Orientation edgeOrientation(QGraphicsAnchorLayout::Edge edge);
 
+    static QGraphicsAnchorLayout::Edge pickEdge(QGraphicsAnchorLayout::Edge edge, Orientation orientation)
+    {
+        if (orientation == Vertical && int(edge) <= 2)
+            return (QGraphicsAnchorLayout::Edge)(edge + 3);
+        else if (orientation == Horizontal && int(edge) >= 3) {
+            return (QGraphicsAnchorLayout::Edge)(edge - 3);            
+        }
+        return edge;
+    }
+
     // Init methods
     void createLayoutEdges();
     void deleteLayoutEdges();
@@ -259,6 +293,7 @@ public:
     void addChildItem(QGraphicsLayoutItem *child);
 
     // Activation methods
+    void simplifyGraph(Orientation orientation);
     void calculateGraphs();
     void calculateGraphs(Orientation orientation);
     void setAnchorSizeHintsFromItems(Orientation orientation);

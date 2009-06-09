@@ -41,6 +41,7 @@
 
 #include <QWidget>
 #include <QLinkedList>
+#include <QtCore/qstack.h>
 
 #include "qgraphicsanchorlayout_p.h"
 
@@ -109,6 +110,135 @@ QGraphicsAnchorLayout::Edge QGraphicsAnchorLayoutPrivate::oppositeEdge(
         break;
     }
     return edge;
+}
+
+
+/*!
+ * \internal
+ *
+ * helper function in order to avoid overflowing anchor sizes
+ * the returned size will never be larger than FLT_MAX
+ *
+ */
+inline static qreal checkAdd(qreal a, qreal b)
+{
+    if (FLT_MAX - b  < a)
+        return FLT_MAX;
+    return a + b;
+}
+/*!
+ * \internal
+ *
+ * The purpose of this function is to simplify the graph. The process of simplification can be
+ * broken down to two methods:
+ * Algorithm can be described as:
+ *
+ * 1. Simplify all sequence of anchors into one anchor.
+ *    If not first iteration and no further simplification was done, go to (3)
+ * 2. Simplify two parallel anchors into one anchor.
+ *    If any simplification was done, go to (1)
+ * 3. Done
+ *
+ * Notes:
+ *  * The algorithm should not make a sequence of the layout edge anchors. 
+ *      => Make sure those edges are not traversed
+ *  * A generic algorithm will make a sequential simplification node of a Left-HCenter-Right
+ *    sequence. This is ok, but that sequence should not be affected by stretch factors.
+ *
+ */
+void QGraphicsAnchorLayoutPrivate::simplifyGraph(QGraphicsAnchorLayoutPrivate::Orientation orientation)
+{
+    Q_Q(QGraphicsAnchorLayout);
+    Graph<AnchorVertex, AnchorData> &g = graph[orientation];
+    AnchorVertex *v = g.rootVertex();
+    QGraphicsAnchorLayout::Edge layoutEdge = oppositeEdge(v->m_edge);
+
+    if (!v)
+        return;
+    QSet<AnchorVertex*> visited;
+    QStack<AnchorVertex *> stack;
+    stack.push(v);
+    QVector<AnchorVertex*> candidates;
+
+    // walk depth-first.
+    while (!stack.isEmpty()) {
+        v = stack.pop();
+        QList<AnchorVertex *> vertices = g.adjacentVertices(v);
+        const int count = vertices.count();
+        if (count == 2 && v->m_item != q) {
+            candidates.append(v);
+        }
+        if ((v->m_item == q && v->m_edge == layoutEdge) || (count != 2 && candidates.count() >= 1)) {
+            SequentialAnchorData *sequence = new SequentialAnchorData;
+            AnchorVertex * &sequenceLast = v;   //alias
+            AnchorVertex *sequenceFirst = 0;
+            QList<AnchorVertex *> adjacentOfSecondVertex = g.adjacentVertices(candidates.first());
+            Q_ASSERT(adjacentOfSecondVertex.count() == 2);
+            if (adjacentOfSecondVertex.first() == candidates.at(1))
+                sequenceFirst = adjacentOfSecondVertex.last();
+            else
+                sequenceFirst = adjacentOfSecondVertex.first();
+
+            // The complete path of the sequence to simplify is: sequenceFirst, <candidates>, sequenceLast
+            qreal min = 0;
+            qreal pref = 0;
+            qreal max = 0;
+
+/*          // ### DEBUG
+            QString strCandidates;
+            for (int i = 0; i < candidates.count(); ++i)
+                strCandidates += QString::fromAscii("%1--").arg(candidates.at(i)->toString());
+            QString strPath = QString::fromAscii("%1--%2%3").arg(sequenceFirst->toString(), strCandidates, sequenceLast->toString());
+            qDebug("simplifying [%s] to [%s--%s]", qPrintable(strPath), qPrintable(sequenceFirst->toString()), qPrintable(sequenceLast->toString()));
+*/
+
+            AnchorData *data = g.edgeData(sequenceFirst, candidates.first());
+            min += data->minSize;
+            pref += data->prefSize;
+            max = checkAdd(max, data->maxSize);
+            g.removeEdge(sequenceFirst, candidates.first());
+
+            for (int i = 0; i < candidates.count() - 1; ++i) {
+                AnchorVertex *v1 = candidates.at(i);
+                AnchorVertex *v2 = candidates.at(i + 1);
+                data = g.edgeData(v1, v2);
+                min += data->minSize;
+                pref += data->prefSize;
+                max = checkAdd(max, data->maxSize);
+                g.removeEdge(v1, v2);
+            }
+
+            data = g.edgeData(candidates.last(), sequenceLast);
+            min += data->minSize;
+            pref += data->prefSize;
+            max = checkAdd(max, data->maxSize);
+            g.removeEdge(candidates.last(), sequenceLast);
+
+            // insert new
+            sequence->minSize = min;
+            sequence->prefSize = pref;
+            sequence->maxSize = max;
+            sequence->m_children = candidates;
+            sequence->origin = sequenceFirst;
+            g.createEdge(sequenceFirst, sequenceLast, sequence);
+            
+            // start all over again
+            candidates.clear();
+        }
+        if (count != 2)
+            candidates.clear();
+
+        QGraphicsAnchorLayout::Edge centerEdge = pickEdge(QGraphicsAnchorLayout::HCenter, orientation);
+        for (int i = 0; i < count; ++i) {
+            AnchorVertex *next = vertices.at(i);
+            if (next->m_item == q && next->m_edge == centerEdge)
+                continue;
+            if (visited.contains(next))
+                continue;
+            stack.push(next);
+        }
+        visited.insert(v);
+    }
 }
 
 QGraphicsAnchorLayoutPrivate::Orientation
@@ -481,6 +611,11 @@ void QGraphicsAnchorLayoutPrivate::calculateGraphs(
 
     // Reset the nominal sizes of each anchor based on the current item sizes
     setAnchorSizeHintsFromItems(orientation);
+
+//    ### currently crashes
+//    q->dumpGraph();
+//    simplifyGraph(orientation);
+//    q->dumpGraph();
 
     // Traverse all graph edges and store the possible paths to each vertex
     findPaths(orientation);
