@@ -842,27 +842,48 @@ QScriptValue QmlEngine::qmlScriptObject(QObject* object, QmlEngine* engine)
     This function takes the URL of a QML file as its only argument. It returns
     a component object which can be used to create and load that QML file.
 
-    Example JavaScript:
+    Example JavaScript is below, remember that QML files that might be loaded
+    over the network cannot be expected to be ready immediately.
     \code
+        var component;
+        var sprite;
+        function finishCreation(){
+            if(component.isReady()){
+                sprite = component.createObject();
+                if(sprite == 0){
+                    // Error Handling
+                }else{
+                    sprite.parent = page;
+                    sprite.x = 200;
+                    //...
+                }
+            }else if(component.isError()){
+                // Error Handling
+            }
+        }
+
         component = createComponent("Sprite.qml");
         if(component.isReady()){
-            sprite = component.create();
-            if(sprite == 0){
-                // Error Handling
-            }else{
-                sprite.parent = page;
-                sprite.x = 200;
-                //...
-            }
+            finishCreation();
         }else{
-            // The finishCreation function does the same thing as the above
-            // if(component.isReady()) branch
             component.statusChanged.connect(finishCreation);
         }
     \endcode
 
-    Remember that QML files that might be loaded over the network cannot be
-    expected to be ready immediately.
+    If you are certain the files will be local, you could simplify to
+
+    \code
+        component = createComponent("Sprite.qml");
+        sprite = component.createObject();
+        if(sprite == 0){
+            // Error Handling
+        }else{
+            sprite.parent = page;
+            sprite.x = 200;
+            //...
+        }
+    \endcode
+
 */
 QScriptValue QmlEngine::createComponent(QScriptContext *ctxt, QScriptEngine *engine)
 {
@@ -872,8 +893,8 @@ QScriptValue QmlEngine::createComponent(QScriptContext *ctxt, QScriptEngine *eng
     if(ctxt->argumentCount() != 1 || !activeEngine){
         c = new QmlComponent(activeEngine);
     }else{
-        c = new QmlComponent(activeEngine, QUrl(ctxt->argument(0).toString()),
-                activeEngine);
+        QUrl url = QUrl(ctxt->argument(0).toString());
+        c = new QmlComponent(activeEngine, url, activeEngine);
     }
     return engine->newQObject(c);
 }
@@ -897,7 +918,7 @@ QScriptValue QmlEngine::createQMLObject(QScriptContext *ctxt, QScriptEngine *eng
         if(ctxt->argumentCount() < 1){
             qWarning() << "createQMLObject requires a string argument.";
         }else{
-            qWarning() << "createQMLObject failed inexplicably.";
+            qWarning() << "createQMLObject cannot find engine.";
         }
         return engine->nullValue();
     }
@@ -1518,16 +1539,35 @@ void QmlContextScriptClass::setProperty(QScriptValue &object,
 /////////////////////////////////////////////////////////////
 /*
     The QmlObjectScriptClass handles property access for QObjects
-    via QtScript.
+    via QtScript. It is also used to provide a more useful API in
+    QtScript for QML.
  */
+
+QScriptValue QmlObjectDestroy(QScriptContext *context, QScriptEngine *engine)
+{
+    QObject* obj = context->thisObject().data().toQObject();
+    if(obj)
+        delete obj;
+    context->thisObject().setData(QScriptValue(engine, 0));
+    return engine->nullValue();
+}
+
 QmlObjectScriptClass::QmlObjectScriptClass(QmlEngine *bindEngine)
     : QmlScriptClass(bindEngine)
 {
     engine = bindEngine;
+    prototypeObject = engine->scriptEngine()->newObject();
+    prototypeObject.setProperty("destroy",
+            engine->scriptEngine()->newFunction(QmlObjectDestroy));
 }
 
 QmlObjectScriptClass::~QmlObjectScriptClass()
 {
+}
+
+QScriptValue QmlObjectScriptClass::prototype() const
+{
+    return prototypeObject;
 }
 
 QScriptClass::QueryFlags QmlObjectScriptClass::queryProperty(const QScriptValue &object,
