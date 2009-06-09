@@ -2057,14 +2057,6 @@ void qt_init(QApplicationPrivate *priv, int,
                 X11->xfixes_major = major;
             }
         }
-        if (X11->use_xfixes && X11->ptrXFixesSelectSelectionInput) {
-            const unsigned long eventMask =
-                XFixesSetSelectionOwnerNotifyMask | XFixesSelectionWindowDestroyNotifyMask | XFixesSelectionClientCloseNotifyMask;
-            X11->ptrXFixesSelectSelectionInput(X11->display, QX11Info::appRootWindow(0),
-                                               XA_PRIMARY, eventMask);
-            X11->ptrXFixesSelectSelectionInput(X11->display, QX11Info::appRootWindow(0),
-                                               ATOM(CLIPBOARD), eventMask);
-        }
 #endif // QT_NO_XFIXES
 
 #ifndef QT_NO_XCURSOR
