@@ -5108,7 +5108,6 @@ void QGraphicsScenePrivate::drawItemHelper(QGraphicsItem *item, QPainter *painte
 void QGraphicsScenePrivate::drawSubtreeRecursive(QGraphicsItem *item, QPainter *painter,
                                                  const QTransform &viewTransform,
                                                  QRegion *exposedRegion, QWidget *widget,
-                                                 QGraphicsView::OptimizationFlags optimizationFlags,
                                                  QList<QGraphicsItem *> *topLevelItems,
                                                  qreal parentOpacity)
 {
@@ -5229,7 +5228,7 @@ void QGraphicsScenePrivate::drawSubtreeRecursive(QGraphicsItem *item, QPainter *
             if (!(child->d_ptr->flags & QGraphicsItem::ItemStacksBehindParent))
                 break;
             drawSubtreeRecursive(child, painter, viewTransform, exposedRegion, widget,
-                                 optimizationFlags, 0, opacity);
+                                 0, opacity);
         }
     }
 
@@ -5238,7 +5237,7 @@ void QGraphicsScenePrivate::drawSubtreeRecursive(QGraphicsItem *item, QPainter *
         item->d_ptr->initStyleOption(&styleOptionTmp, transform, exposedRegion ? *exposedRegion : QRegion(), exposedRegion == 0);
 
         bool clipsToShape = (item->d_ptr->flags & QGraphicsItem::ItemClipsToShape);
-        bool savePainter = clipsToShape || !(optimizationFlags & QGraphicsView::DontSavePainterState);
+        bool savePainter = clipsToShape || painterStateProtection;
         if (savePainter)
             painter->save();
         if (!childClip)
@@ -5261,7 +5260,7 @@ void QGraphicsScenePrivate::drawSubtreeRecursive(QGraphicsItem *item, QPainter *
             if (wasDirtyParentSceneTransform)
                 child->d_ptr->dirtySceneTransform = 1;
             drawSubtreeRecursive(child, painter, viewTransform, exposedRegion,
-                                 widget, optimizationFlags, 0, opacity);
+                                 widget, 0, opacity);
         }
     } else if (wasDirtyParentSceneTransform) {
         item->d_ptr->invalidateChildrenSceneTransform();
@@ -5487,11 +5486,8 @@ void QGraphicsScene::drawItems(QPainter *painter,
     // Determine view, expose and flags.
     QGraphicsView *view = widget ? qobject_cast<QGraphicsView *>(widget->parentWidget()) : 0;
     QRegion *expose = 0;
-    QGraphicsView::OptimizationFlags flags;
-    if (view) {
+    if (view)
         expose = &view->d_func()->exposedRegion;
-        flags = view->optimizationFlags();
-    }
 
     // Find all toplevels, they are already sorted.
     QList<QGraphicsItem *> topLevelItems;
@@ -5500,7 +5496,7 @@ void QGraphicsScene::drawItems(QPainter *painter,
         if (!item->d_ptr->itemDiscovered) {
             topLevelItems << item;
             item->d_ptr->itemDiscovered = 1;
-            d->drawSubtreeRecursive(item, painter, viewTransform, expose, widget, flags);
+            d->drawSubtreeRecursive(item, painter, viewTransform, expose, widget);
         }
     }
 
