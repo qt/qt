@@ -1852,8 +1852,7 @@ void QRasterPaintEngine::fill(const QVectorPath &path, const QBrush &brush)
     }
 
     // ### Optimize for non transformed ellipses and rectangles...
-    QRealRect r = path.controlPointRect();
-    QRectF cpRect(r.x1, r.y1, r.x2 - r.x1, r.y2 - r.y1);
+    QRectF cpRect = path.controlPointRect();
     const QRect deviceRect = s->matrix.mapRect(cpRect).toRect();
     ProcessSpans blend = d->getBrushFunc(deviceRect, &s->brushData);
 

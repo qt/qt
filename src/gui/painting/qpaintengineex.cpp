@@ -56,15 +56,15 @@ QT_BEGIN_NAMESPACE
  *
  */
 
-const QRealRect &QVectorPath::controlPointRect() const
+QRectF QVectorPath::controlPointRect() const
 {
     if (m_hints & ControlPointRect)
-        return m_cp_rect;
+        return QRectF(QPointF(m_cp_rect.x1, m_cp_rect.y1), QPointF(m_cp_rect.x2, m_cp_rect.y2));
 
     if (m_count == 0) {
         m_cp_rect.x1 = m_cp_rect.x2 = m_cp_rect.y1 = m_cp_rect.y2 = 0;
         m_hints |= ControlPointRect;
-        return m_cp_rect;
+        return QRectF(QPointF(m_cp_rect.x1, m_cp_rect.y1), QPointF(m_cp_rect.x2, m_cp_rect.y2));
     }
     Q_ASSERT(m_points && m_count > 0);
 
@@ -88,7 +88,7 @@ const QRealRect &QVectorPath::controlPointRect() const
     }
 
     m_hints |= ControlPointRect;
-    return m_cp_rect;
+    return QRectF(QPointF(m_cp_rect.x1, m_cp_rect.y1), QPointF(m_cp_rect.x2, m_cp_rect.y2));
 }
 
 const QVectorPath &qtVectorPathForPath(const QPainterPath &path)
@@ -100,9 +100,7 @@ const QVectorPath &qtVectorPathForPath(const QPainterPath &path)
 #ifndef QT_NO_DEBUG_STREAM
 QDebug Q_GUI_EXPORT &operator<<(QDebug &s, const QVectorPath &path)
 {
-    QRealRect vectorPathBounds = path.controlPointRect();
-    QRectF rf(vectorPathBounds.x1, vectorPathBounds.y1,
-              vectorPathBounds.x2 - vectorPathBounds.x1, vectorPathBounds.y2 - vectorPathBounds.y1);
+    QRectF rf = path.controlPointRect();
     s << "QVectorPath(size:" << path.elementCount()
       << " hints:" << hex << path.hints()
       << rf << ')';
