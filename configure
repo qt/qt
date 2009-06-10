@@ -4154,11 +4154,7 @@ if true; then ###[ '!' -f "$outpath/bin/qmake" ];
             done
         fi
         if [ "$PLATFORM_MAC" = "yes" ]; then
-            if [ "$PLATFORM" = "macx-icc" ]; then
-                echo "export MACOSX_DEPLOYMENT_TARGET = 10.4" >> "$mkfile"
-	    else
-                echo "export MACOSX_DEPLOYMENT_TARGET = 10.3" >> "$mkfile"
-	    fi
+            echo "export MACOSX_DEPLOYMENT_TARGET = 10.4" >> "$mkfile"
             echo "CARBON_LFLAGS =-framework ApplicationServices" >>"$mkfile"
             echo "CARBON_CFLAGS =-fconstant-cfstrings" >>"$mkfile"
             EXTRA_LFLAGS="$EXTRA_LFLAGS \$(CARBON_LFLAGS)"
@@ -5672,13 +5668,9 @@ case "$PLATFORM,$CFG_MAC_COCOA" in
 	QMakeVar set QMAKE_MACOSX_DEPLOYMENT_TARGET 10.5
 	CFG_QT3SUPPORT="no"
 	;;
-    macx-icc,*)
-	# Intel CC, Carbon
-	QMakeVar set QMAKE_MACOSX_DEPLOYMENT_TARGET 10.4
-	;;
     macx*,no)
 	# gcc, Carbon
-	QMakeVar set QMAKE_MACOSX_DEPLOYMENT_TARGET 10.3
+	QMakeVar set QMAKE_MACOSX_DEPLOYMENT_TARGET 10.4
 	;;
 esac
 
@@ -6152,7 +6144,7 @@ fi
 
 # On Mac, set the minimum deployment target for the different architechtures 
 # using the Xarch compiler option when supported (10.5 and up).  On 10.4 the
-# deployment version is set to 10.3 globally using the QMAKE_MACOSX_DEPLOYMENT_TARGET
+# deployment version is set to 10.4 globally using the QMAKE_MACOSX_DEPLOYMENT_TARGET
 # env. variable. "-cocoa" on the command line means Cocoa is used in 32-bit mode also,
 # in this case fall back on QMAKE_MACOSX_DEPLOYMENT_TARGET which will be set to 10.5.
 if [ "$PLATFORM_MAC" = "yes" ] && [ "$CFG_MAC_XARCH" != "no" ] && [ "$COMMANDLINE_MAC_COCOA" != "yes" ]; then
@@ -6163,10 +6155,10 @@ if [ "$PLATFORM_MAC" = "yes" ] && [ "$CFG_MAC_XARCH" != "no" ] && [ "$COMMANDLIN
         QMakeVar add QMAKE_OBJECTIVE_CFLAGS_X86 "-arch i386 -Xarch_i386 -mmacosx-version-min=10.4"
     fi
     if echo "$CFG_MAC_ARCHS" | grep '\<ppc\>' > /dev/null 2>&1; then
-        QMakeVar add QMAKE_CFLAGS "-Xarch_ppc -mmacosx-version-min=10.3"
-        QMakeVar add QMAKE_CXXFLAGS "-Xarch_ppc -mmacosx-version-min=10.3"
-        QMakeVar add QMAKE_LFLAGS "-Xarch_ppc -mmacosx-version-min=10.3"
-        QMakeVar add QMAKE_OBJECTIVE_CFLAGS_PPC "-arch ppc -Xarch_ppc -mmacosx-version-min=10.3"
+        QMakeVar add QMAKE_CFLAGS "-Xarch_ppc -mmacosx-version-min=10.4"
+        QMakeVar add QMAKE_CXXFLAGS "-Xarch_ppc -mmacosx-version-min=10.4"
+        QMakeVar add QMAKE_LFLAGS "-Xarch_ppc -mmacosx-version-min=10.4"
+        QMakeVar add QMAKE_OBJECTIVE_CFLAGS_PPC "-arch ppc -Xarch_ppc -mmacosx-version-min=10.4"
     fi
     if echo "$CFG_MAC_ARCHS" | grep '\<x86_64\>' > /dev/null 2>&1; then
         QMakeVar add QMAKE_CFLAGS "-Xarch_x86_64 -mmacosx-version-min=10.5"
