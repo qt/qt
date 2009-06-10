@@ -1,2 +1,4 @@
+HEADERS =   softkeys.h
 SOURCES += \
-    main.cpp
+            main.cpp \
+            softkeys.cpp
