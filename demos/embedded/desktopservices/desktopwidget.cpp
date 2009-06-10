@@ -59,18 +59,22 @@ DesktopWidget::DesktopWidget(QWidget *parent) : QWidget(parent)
 
     // Images
     ContentTab* imageTab = new ContentTab(tabWidget);
-    imageTab->init(QDesktopServices::PicturesLocation, ":/resources/photo.png");
+    imageTab->init(QDesktopServices::PicturesLocation, 
+                   "*.png;*.jpg;*.jpeg;*.bmp;*.gif",
+                   ":/resources/photo.png");
     tabWidget->addTab(imageTab, tr("Images")); 
     
     // Music
     ContentTab* musicTab = new ContentTab(tabWidget);     
-    musicTab->init(QDesktopServices::MusicLocation, ":/resources/music.png");        
+    musicTab->init(QDesktopServices::MusicLocation, 
+                   "*.wav;*.mp3;*.mp4",        
+                   ":/resources/music.png");        
     tabWidget->addTab(musicTab, tr("Music"));       
     
     // Links
     LinkTab* othersTab = new LinkTab(tabWidget);;   
     // Given icon file will be overriden by LinkTab
-    othersTab->init(QDesktopServices::PicturesLocation, "");    
+    othersTab->init(QDesktopServices::PicturesLocation, "", "");    
     tabWidget->addTab(othersTab, tr("Links"));       
     
     // Layout

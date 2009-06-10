@@ -74,6 +74,7 @@ public:         // Constructors & Destructors
     
 public:         // New Methods
     virtual void init(const QDesktopServices::StandardLocation &location, 
+                      const QString &filter, 
                       const QString &icon);    
     
 protected:      // New Methods

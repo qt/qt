@@ -66,9 +66,13 @@ ContentTab::~ContentTab()
 
 // NEW PUBLIC METHODS
 void ContentTab::init(const QDesktopServices::StandardLocation &location, 
+                      const QString &filter, 
                       const QString &icon)
 {
     setContentDir(location);
+    QStringList filterList;
+    filterList = filter.split(";");
+    m_ContentDir.setNameFilters(filterList); 
     setIcon(icon);    
     
     connect(this, SIGNAL(itemClicked(QListWidgetItem *)),
@@ -90,7 +94,7 @@ void ContentTab::setIcon(const QString &icon)
 
 void ContentTab::populateListWidget()
 {
-    QFileInfoList fileList = m_ContentDir.entryInfoList(QStringList(), QDir::Files, QDir::Time);
+    QFileInfoList fileList = m_ContentDir.entryInfoList(QDir::Files, QDir::Time);
     foreach(QFileInfo item, fileList) {
         new QListWidgetItem(m_Icon, itemName(item), this);
     }   
