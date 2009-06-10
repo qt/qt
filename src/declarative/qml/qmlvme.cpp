@@ -66,91 +66,6 @@
 #include <private/qmlbindablevalue_p.h>
 
 QT_BEGIN_NAMESPACE
-Q_DECLARE_PERFORMANCE_LOG(QFxCompiler) {
-    Q_DECLARE_PERFORMANCE_METRIC(InstrCreateObject);
-    Q_DECLARE_PERFORMANCE_METRIC(InstrCreateCustomObject);
-    Q_DECLARE_PERFORMANCE_METRIC(InstrSetId);
-    Q_DECLARE_PERFORMANCE_METRIC(InstrSetDefault);
-    Q_DECLARE_PERFORMANCE_METRIC(InstrCreateComponent);
-    Q_DECLARE_PERFORMANCE_METRIC(InstrStoreMetaObject);
-    Q_DECLARE_PERFORMANCE_METRIC(InstrStoreReal);
-    Q_DECLARE_PERFORMANCE_METRIC(InstrStoreInteger);
-    Q_DECLARE_PERFORMANCE_METRIC(InstrStoreBool);
-    Q_DECLARE_PERFORMANCE_METRIC(InstrStoreString);
-    Q_DECLARE_PERFORMANCE_METRIC(InstrStoreUrl);
-    Q_DECLARE_PERFORMANCE_METRIC(InstrStoreColor);
-    Q_DECLARE_PERFORMANCE_METRIC(InstrStoreDate);
-    Q_DECLARE_PERFORMANCE_METRIC(InstrStoreDateTime);
-    Q_DECLARE_PERFORMANCE_METRIC(InstrStoreTime);
-    Q_DECLARE_PERFORMANCE_METRIC(InstrStorePoint);
-    Q_DECLARE_PERFORMANCE_METRIC(InstrStoreSize);
-    Q_DECLARE_PERFORMANCE_METRIC(InstrStoreVariant);
-    Q_DECLARE_PERFORMANCE_METRIC(InstrStoreObject);
-    Q_DECLARE_PERFORMANCE_METRIC(InstrStoreSignal);
-    Q_DECLARE_PERFORMANCE_METRIC(InstrStoreObjectQmlList);
-    Q_DECLARE_PERFORMANCE_METRIC(InstrAssignSignalObject);
-    Q_DECLARE_PERFORMANCE_METRIC(InstrStoreBinding);
-    Q_DECLARE_PERFORMANCE_METRIC(InstrStoreCompiledBinding);
-    Q_DECLARE_PERFORMANCE_METRIC(InstrStoreValueSource);
-    Q_DECLARE_PERFORMANCE_METRIC(InstrBeginObject);
-    Q_DECLARE_PERFORMANCE_METRIC(InstrCompleteObject);
-    Q_DECLARE_PERFORMANCE_METRIC(InstrAssignObjectList);
-    Q_DECLARE_PERFORMANCE_METRIC(InstrFetchAttached);
-    Q_DECLARE_PERFORMANCE_METRIC(InstrFetchQmlList);
-    Q_DECLARE_PERFORMANCE_METRIC(InstrFetchQList);
-    Q_DECLARE_PERFORMANCE_METRIC(InstrFetchObject);
-    Q_DECLARE_PERFORMANCE_METRIC(InstrPopFetchedObject);
-    Q_DECLARE_PERFORMANCE_METRIC(InstrPopQList);
-    Q_DECLARE_PERFORMANCE_METRIC(InstrPushProperty);
-    Q_DECLARE_PERFORMANCE_METRIC(InstrStoreStackObject);
-    Q_DECLARE_PERFORMANCE_METRIC(Dummy);
-}
-
-Q_DEFINE_PERFORMANCE_LOG(QFxCompiler, "QFxCompiler") {
-    Q_DEFINE_PERFORMANCE_METRIC(InstrCreateObject, "CreateObject");
-    Q_DEFINE_PERFORMANCE_METRIC(InstrCreateCustomObject, "CreateCustomObject");
-    Q_DEFINE_PERFORMANCE_METRIC(InstrSetId, "SetId");
-    Q_DEFINE_PERFORMANCE_METRIC(InstrSetDefault, "SetDefault");
-    Q_DEFINE_PERFORMANCE_METRIC(InstrCreateComponent, "CreateComponent");
-    Q_DEFINE_PERFORMANCE_METRIC(InstrStoreMetaObject, "StoreMetaObject");
-    Q_DEFINE_PERFORMANCE_METRIC(InstrStoreReal, "StoreReal");
-    Q_DEFINE_PERFORMANCE_METRIC(InstrStoreInteger, "StoreInteger");
-    Q_DEFINE_PERFORMANCE_METRIC(InstrStoreBool, "StoreBool");
-    Q_DEFINE_PERFORMANCE_METRIC(InstrStoreString, "StoreString");
-    Q_DEFINE_PERFORMANCE_METRIC(InstrStoreUrl, "StoreUrl");
-    Q_DEFINE_PERFORMANCE_METRIC(InstrStoreColor, "StoreColor");
-    Q_DEFINE_PERFORMANCE_METRIC(InstrStoreDate, "StoreDate");
-    Q_DEFINE_PERFORMANCE_METRIC(InstrStoreDateTime, "StoreDateTime");
-    Q_DEFINE_PERFORMANCE_METRIC(InstrStoreTime, "StoreTime");
-    Q_DEFINE_PERFORMANCE_METRIC(InstrStorePoint, "StorePoint(F)");
-    Q_DEFINE_PERFORMANCE_METRIC(InstrStoreSize, "StoreSize(F)");
-    Q_DEFINE_PERFORMANCE_METRIC(InstrStoreVariant, "StoreVariant");
-    Q_DEFINE_PERFORMANCE_METRIC(InstrStoreObject, "StoreObject");
-    Q_DEFINE_PERFORMANCE_METRIC(InstrStoreSignal, "StoreSignal");
-    Q_DEFINE_PERFORMANCE_METRIC(InstrStoreObjectQmlList, "StoreObjectQmlList");
-    Q_DEFINE_PERFORMANCE_METRIC(InstrAssignSignalObject, "AssignSignalObject");
-    Q_DEFINE_PERFORMANCE_METRIC(InstrStoreBinding, "StoreBinding");
-    Q_DEFINE_PERFORMANCE_METRIC(InstrStoreCompiledBinding, "StoreCompiledBinding");
-    Q_DEFINE_PERFORMANCE_METRIC(InstrStoreValueSource, "StoreValueSource");
-    Q_DEFINE_PERFORMANCE_METRIC(InstrBeginObject, "BeginObject");
-    Q_DEFINE_PERFORMANCE_METRIC(InstrCompleteObject, "CompleteObject");
-    Q_DEFINE_PERFORMANCE_METRIC(InstrAssignObjectList, "AssignObjectList");
-    Q_DEFINE_PERFORMANCE_METRIC(InstrFetchAttached, "FetchAttached");
-    Q_DEFINE_PERFORMANCE_METRIC(InstrFetchQmlList, "FetchQmlList");
-    Q_DEFINE_PERFORMANCE_METRIC(InstrFetchQList, "FetchQList");
-    Q_DEFINE_PERFORMANCE_METRIC(InstrFetchObject, "FetchObject");
-    Q_DEFINE_PERFORMANCE_METRIC(InstrPopFetchedObject, "PopFetchedObject");
-    Q_DEFINE_PERFORMANCE_METRIC(InstrPopQList, "PopQList");
-    Q_DEFINE_PERFORMANCE_METRIC(InstrPushProperty, "PushProperty");
-    Q_DEFINE_PERFORMANCE_METRIC(InstrStoreStackObject, "StoreStackObject");
-    Q_DEFINE_PERFORMANCE_METRIC(Dummy, "Dummy");
-}
-
-static inline int qIndexOfProperty(QObject *o, const char *name)
-{
-    int idx = o->metaObject()->indexOfProperty(name);
-    return idx;
-}
 
 QmlVME::QmlVME()
 {
@@ -173,13 +88,18 @@ QmlVME::QmlVME()
 struct ListInstance
 {
     ListInstance() {}
+    /*
     ListInstance(const QVariant &l, int t)
         : list(l), type(t), qmlListInterface(0) {}
+        */
+    ListInstance(QList<void *> *q, int t)
+        : type(t), qListInterface(q) {}
     ListInstance(QmlPrivate::ListInterface *q, int t)
         : type(t), qmlListInterface(q) {}
 
-    QVariant list;
+    //QVariant list;
     int type;
+    QList<void *> *qListInterface;
     QmlPrivate::ListInterface *qmlListInterface;
 };
 
@@ -202,9 +122,6 @@ QObject *QmlVME::run(QmlContext *ctxt, QmlCompiledComponent *comp, int start, in
     const QList<float> &floatData = comp->floatData;
 
 
-#ifdef Q_ENABLE_PERFORMANCE_LOG
-    QFxPerfTimer<QFxPerf::VMEExecution> cr;
-#endif
     QmlEnginePrivate::SimpleList<QmlBindableValue> bindValues;
     QmlEnginePrivate::SimpleList<QmlParserStatus> parserStatus;
 
@@ -240,9 +157,6 @@ QObject *QmlVME::run(QmlContext *ctxt, QmlCompiledComponent *comp, int start, in
 
         case QmlInstruction::CreateObject:
             {
-#ifdef Q_ENABLE_PERFORMANCE_LOG
-                QFxCompilerTimer<QFxCompiler::InstrCreateObject> cc;
-#endif
                 QObject *o = types.at(instr.create.type).createInstance(QmlContext::activeContext());
                 if (!o) {
                     if(types.at(instr.create.type).component)
@@ -266,9 +180,6 @@ QObject *QmlVME::run(QmlContext *ctxt, QmlCompiledComponent *comp, int start, in
 
         case QmlInstruction::SetId:
             {
-#ifdef Q_ENABLE_PERFORMANCE_LOG
-                QFxCompilerTimer<QFxCompiler::InstrSetId> cc;
-#endif
                 QObject *target = stack.top();
                 QmlContext *ctxt = 
                     QmlContext::activeContext();
@@ -282,9 +193,6 @@ QObject *QmlVME::run(QmlContext *ctxt, QmlCompiledComponent *comp, int start, in
 
         case QmlInstruction::SetDefault:
             {
-#ifdef Q_ENABLE_PERFORMANCE_LOG
-                QFxCompilerTimer<QFxCompiler::InstrSetDefault> cc;
-#endif
                 QObject *target = stack.top();
                 QmlContext::activeContext()->addDefaultObject(target);
             }
@@ -292,9 +200,6 @@ QObject *QmlVME::run(QmlContext *ctxt, QmlCompiledComponent *comp, int start, in
 
         case QmlInstruction::CreateComponent:
             {
-#ifdef Q_ENABLE_PERFORMANCE_LOG
-                QFxCompilerTimer<QFxCompiler::InstrCreateComponent> cc;
-#endif
                 QObject *qcomp = new QmlComponent(ctxt->engine(), comp, ii + 1, instr.createComponent.count, stack.isEmpty() ? 0 : stack.top());
                 stack.push(qcomp);
                 ii += instr.createComponent.count;
@@ -303,9 +208,6 @@ QObject *QmlVME::run(QmlContext *ctxt, QmlCompiledComponent *comp, int start, in
 
         case QmlInstruction::StoreMetaObject:
             {
-#ifdef Q_ENABLE_PERFORMANCE_LOG
-                QFxCompilerTimer<QFxCompiler::InstrStoreMetaObject> cc;
-#endif
                 QObject *target = stack.top();
                 new QmlVMEMetaObject(target, synthesizedMetaObjects.at(instr.storeMeta.data), &comp->primitives, instr.storeMeta.slotData, comp);
             }
@@ -313,9 +215,6 @@ QObject *QmlVME::run(QmlContext *ctxt, QmlCompiledComponent *comp, int start, in
 
         case QmlInstruction::StoreVariant:
             {
-#ifdef Q_ENABLE_PERFORMANCE_LOG
-                QFxCompilerTimer<QFxCompiler::InstrStoreVariant> cc;
-#endif
                 QObject *target = stack.top();
                 void *a[1];
                 // XXX - can be more efficient
@@ -328,9 +227,6 @@ QObject *QmlVME::run(QmlContext *ctxt, QmlCompiledComponent *comp, int start, in
 
         case QmlInstruction::StoreString:
             {
-#ifdef Q_ENABLE_PERFORMANCE_LOG
-                QFxCompilerTimer<QFxCompiler::InstrStoreString> cc;
-#endif
                 QObject *target = stack.top();
                 void *a[1];
                 a[0] = (void *)&primitives.at(instr.storeString.value);
@@ -341,9 +237,6 @@ QObject *QmlVME::run(QmlContext *ctxt, QmlCompiledComponent *comp, int start, in
 
         case QmlInstruction::StoreUrl:
             {
-#ifdef Q_ENABLE_PERFORMANCE_LOG
-                QFxCompilerTimer<QFxCompiler::InstrStoreUrl> cc;
-#endif
                 QObject *target = stack.top();
                 void *a[1];
                 QUrl u(primitives.at(instr.storeUrl.value));
@@ -355,9 +248,6 @@ QObject *QmlVME::run(QmlContext *ctxt, QmlCompiledComponent *comp, int start, in
 
         case QmlInstruction::StoreFloat:
             {
-#ifdef Q_ENABLE_PERFORMANCE_LOG
-                QFxCompilerTimer<QFxCompiler::InstrStoreReal> cc;
-#endif
                 QObject *target = stack.top();
                 float f = instr.storeFloat.value;
                 void *a[1];
@@ -367,11 +257,8 @@ QObject *QmlVME::run(QmlContext *ctxt, QmlCompiledComponent *comp, int start, in
             }
             break;
 
-case QmlInstruction::StoreDouble:
+        case QmlInstruction::StoreDouble:
             {
-#ifdef Q_ENABLE_PERFORMANCE_LOG
-                QFxCompilerTimer<QFxCompiler::InstrStoreReal> cc;
-#endif
                 QObject *target = stack.top();
                 double d = instr.storeDouble.value;
                 void *a[1];
@@ -383,9 +270,6 @@ case QmlInstruction::StoreDouble:
 
         case QmlInstruction::StoreBool:
             {
-#ifdef Q_ENABLE_PERFORMANCE_LOG
-                QFxCompilerTimer<QFxCompiler::InstrStoreBool> cc;
-#endif
                 QObject *target = stack.top();
                 void *a[1];
                 a[0] = (void *)&instr.storeBool.value;
@@ -396,9 +280,6 @@ case QmlInstruction::StoreDouble:
 
         case QmlInstruction::StoreInteger:
             {
-#ifdef Q_ENABLE_PERFORMANCE_LOG
-                QFxCompilerTimer<QFxCompiler::InstrStoreInteger> cc;
-#endif
                 QObject *target = stack.top();
                 void *a[1];
                 a[0] = (void *)&instr.storeInteger.value;
@@ -409,9 +290,6 @@ case QmlInstruction::StoreDouble:
 
         case QmlInstruction::StoreColor:
             {
-#ifdef Q_ENABLE_PERFORMANCE_LOG
-                QFxCompilerTimer<QFxCompiler::InstrStoreColor> cc;
-#endif
                 QObject *target = stack.top();
                 void *a[1];
                 QColor c = QColor::fromRgba(instr.storeColor.value);
@@ -423,9 +301,6 @@ case QmlInstruction::StoreDouble:
 
         case QmlInstruction::StoreDate:
             {
-#ifdef Q_ENABLE_PERFORMANCE_LOG
-                QFxCompilerTimer<QFxCompiler::InstrStoreDate> cc;
-#endif
                 QObject *target = stack.top();
                 void *a[1];
                 QDate d = QDate::fromJulianDay(instr.storeDate.value);
@@ -437,9 +312,6 @@ case QmlInstruction::StoreDouble:
 
         case QmlInstruction::StoreTime:
             {
-#ifdef Q_ENABLE_PERFORMANCE_LOG
-                //QFxCompilerTimer<QFxCompiler::InstrStoreTime> cc;
-#endif
                 QObject *target = stack.top();
                 void *a[1];
                 QTime t;
@@ -455,9 +327,6 @@ case QmlInstruction::StoreDouble:
 
         case QmlInstruction::StoreDateTime:
             {
-#ifdef Q_ENABLE_PERFORMANCE_LOG
-                //QFxCompilerTimer<QFxCompiler::InstrStoreDateTime> cc;
-#endif
                 QObject *target = stack.top();
                 void *a[1];
                 QTime t;
@@ -474,9 +343,6 @@ case QmlInstruction::StoreDouble:
 
         case QmlInstruction::StorePoint:
             {
-#ifdef Q_ENABLE_PERFORMANCE_LOG
-                QFxCompilerTimer<QFxCompiler::InstrStorePoint> cc;
-#endif
                 QObject *target = stack.top();
                 void *a[1];
                 QPoint p = QPointF(floatData.at(instr.storeRealPair.valueIndex),
@@ -489,9 +355,6 @@ case QmlInstruction::StoreDouble:
 
         case QmlInstruction::StorePointF:
             {
-#ifdef Q_ENABLE_PERFORMANCE_LOG
-                QFxCompilerTimer<QFxCompiler::InstrStorePoint> cc;
-#endif
                 QObject *target = stack.top();
                 void *a[1];
                 QPointF p(floatData.at(instr.storeRealPair.valueIndex),
@@ -504,9 +367,6 @@ case QmlInstruction::StoreDouble:
 
         case QmlInstruction::StoreSize:
             {
-#ifdef Q_ENABLE_PERFORMANCE_LOG
-                QFxCompilerTimer<QFxCompiler::InstrStoreSize> cc;
-#endif
                 QObject *target = stack.top();
                 void *a[1];
                 QSize p = QSizeF(floatData.at(instr.storeRealPair.valueIndex),
@@ -519,9 +379,6 @@ case QmlInstruction::StoreDouble:
 
         case QmlInstruction::StoreSizeF:
             {
-#ifdef Q_ENABLE_PERFORMANCE_LOG
-                QFxCompilerTimer<QFxCompiler::InstrStoreSize> cc;
-#endif
                 QObject *target = stack.top();
                 void *a[1];
                 QSizeF s(floatData.at(instr.storeRealPair.valueIndex),
@@ -534,9 +391,6 @@ case QmlInstruction::StoreDouble:
 
         case QmlInstruction::StoreRect:
             {
-#ifdef Q_ENABLE_PERFORMANCE_LOG
-                //QFxCompilerTimer<QFxCompiler::InstrStoreRect> cc;
-#endif
                 QObject *target = stack.top();
                 void *a[1];
                 QRect r = QRectF(floatData.at(instr.storeRect.valueIndex),
@@ -551,9 +405,6 @@ case QmlInstruction::StoreDouble:
 
         case QmlInstruction::StoreRectF:
             {
-#ifdef Q_ENABLE_PERFORMANCE_LOG
-                //QFxCompilerTimer<QFxCompiler::InstrStoreRect> cc;
-#endif
                 QObject *target = stack.top();
                 void *a[1];
                 QRectF r(floatData.at(instr.storeRect.valueIndex),
@@ -568,9 +419,6 @@ case QmlInstruction::StoreDouble:
 
         case QmlInstruction::StoreObject:
             {
-#ifdef Q_ENABLE_PERFORMANCE_LOG
-                QFxCompilerTimer<QFxCompiler::InstrStoreObject> cc;
-#endif
                 QObject *assignObj = stack.pop();
                 QObject *target = stack.top();
 
@@ -606,9 +454,6 @@ case QmlInstruction::StoreDouble:
 
         case QmlInstruction::AssignSignalObject:
             {
-#ifdef Q_ENABLE_PERFORMANCE_LOG
-                QFxCompilerTimer<QFxCompiler::InstrAssignSignalObject> cc;
-#endif
                 // XXX optimize
 
                 QObject *assign = stack.pop();
@@ -638,9 +483,6 @@ case QmlInstruction::StoreDouble:
 
         case QmlInstruction::StoreSignal:
             {
-#ifdef Q_ENABLE_PERFORMANCE_LOG
-                QFxCompilerTimer<QFxCompiler::InstrStoreSignal> cc;
-#endif
                 QObject *target = stack.top();
                 // XXX scope
                 QMetaMethod signal = 
@@ -656,9 +498,6 @@ case QmlInstruction::StoreDouble:
 
         case QmlInstruction::BeginObject:
             {
-#ifdef Q_ENABLE_PERFORMANCE_LOG
-                QFxCompilerTimer<QFxCompiler::InstrBeginObject> cc;
-#endif
                 QObject *target = stack.top();
                 QmlParserStatus *status = reinterpret_cast<QmlParserStatus *>(reinterpret_cast<char *>(target) + instr.begin.castValue);
                 parserStatus.append(status);
@@ -670,9 +509,6 @@ case QmlInstruction::StoreDouble:
 
         case QmlInstruction::CompleteObject:
             {
-#ifdef Q_ENABLE_PERFORMANCE_LOG
-                QFxCompilerTimer<QFxCompiler::InstrCompleteObject> cc;
-#endif
                 QObject *target = stack.top();
                 QmlParserStatus *status = reinterpret_cast<QmlParserStatus *>(reinterpret_cast<char *>(target) + instr.complete.castValue);
                 status->classComplete();
@@ -681,9 +517,6 @@ case QmlInstruction::StoreDouble:
 
         case QmlInstruction::PushProperty:
             {
-#ifdef Q_ENABLE_PERFORMANCE_LOG
-                QFxCompilerTimer<QFxCompiler::InstrPushProperty> cc;
-#endif
                 QObject *target = stack.top();
                 QmlMetaProperty mp(target, instr.pushProperty.property,
                                    QmlMetaProperty::Object);
@@ -693,9 +526,6 @@ case QmlInstruction::StoreDouble:
 
         case QmlInstruction::StoreCompiledBinding:
             {
-#ifdef Q_ENABLE_PERFORMANCE_LOG
-                QFxCompilerTimer<QFxCompiler::InstrStoreCompiledBinding> cc;
-#endif
                 QObject *target = stack.top();
                 QObject *context = 
                     stack.at(stack.count() - 1 - instr.assignBinding.context);
@@ -711,15 +541,12 @@ case QmlInstruction::StoreDouble:
                 QFx_setParent_noEvent(bind, target);
 
                 bind->setTarget(mp);
-                bind->setSourceLocation(comp->url.toString(), instr.line);
+                bind->setSourceLocation(comp->url, instr.line);
             }
             break;
 
         case QmlInstruction::StoreBinding:
             {
-#ifdef Q_ENABLE_PERFORMANCE_LOG
-                QFxCompilerTimer<QFxCompiler::InstrStoreBinding> cc;
-#endif
                 QObject *target = stack.top();
                 QObject *context = 
                     stack.at(stack.count() - 1 - instr.assignBinding.context);
@@ -735,15 +562,12 @@ case QmlInstruction::StoreDouble:
                 QFx_setParent_noEvent(bind, target);
 
                 bind->setTarget(mp);
-                bind->setSourceLocation(comp->url.toString(), instr.line);
+                bind->setSourceLocation(comp->url, instr.line);
             }
             break;
 
         case QmlInstruction::StoreValueSource:
             {
-#ifdef Q_ENABLE_PERFORMANCE_LOG
-                QFxCompilerTimer<QFxCompiler::InstrStoreValueSource> cc;
-#endif
                 QObject *assign = stack.pop();
                 QmlPropertyValueSource *vs = 
                     static_cast<QmlPropertyValueSource *>(assign);
@@ -753,65 +577,47 @@ case QmlInstruction::StoreDouble:
             }
             break;
 
-        case QmlInstruction::AssignObjectList:
+        case QmlInstruction::StoreObjectQmlList:
             {
-#ifdef Q_ENABLE_PERFORMANCE_LOG
-                QFxCompilerTimer<QFxCompiler::InstrAssignObjectList> cc;
-#endif
                 QObject *assign = stack.pop();
                 const ListInstance &list = qliststack.top();
+
+                void *d = (void *)&assign;
+                list.qmlListInterface->append(d);
+            }
+            break;
+
+        case QmlInstruction::StoreObjectQList:
+            {
+                QObject *assign = stack.pop();
+
+                const ListInstance &list = qliststack.top();
+                list.qListInterface->append((void *)assign);
+            }
+            break;
+
+        case QmlInstruction::AssignObjectList:
+            {
+                // This is only used for assigning interfaces
+                QObject *assign = stack.pop();
+                const ListInstance &list = qliststack.top();
+
+                int type = list.type;
+
+                void *ptr = 0;
+
+                const char *iid = QmlMetaType::interfaceIId(type);
+                if (iid) 
+                    ptr = assign->qt_metacast(iid);
+                if (!ptr) 
+                    VME_EXCEPTION("Cannot assign object to list");
+
+
                 if (list.qmlListInterface) {
-                    int type = list.type;
-
-                    void *d = 0;
-                    void *ptr = 0;
-                    bool found = false;
-
-                    if (QmlMetaType::isInterface(type)) {
-                        const char *iid = QmlMetaType::interfaceIId(type);
-                        if (iid) 
-                            ptr = assign->qt_metacast(iid);
-                        if (ptr) {
-                            d = &ptr;
-                            found = true;
-                        }
-                    } else {
-                        const QMetaObject *mo = 
-                            QmlMetaType::rawMetaObjectForType(type);
-
-                        const QMetaObject *assignMo = assign->metaObject();
-                        while(!found && assignMo) {
-                            if (assignMo == mo)
-                                found = true;
-                            else
-                                assignMo = assignMo->superClass();
-                        }
-
-                        // NOTE: This assumes a cast to QObject does not alter 
-                        // the object pointer
-                        d = (void *)&assign;
-                    }
-
-
-                    if (!found) 
-                        VME_EXCEPTION("Cannot assign object to list");
-
+                    void *d = (void *)&ptr;
                     list.qmlListInterface->append(d);
-
                 } else {
-                    int type = list.type;
-
-                    if (QmlMetaType::isInterface(type)) {
-                        void *ptr = 0;
-                        const char *iid = QmlMetaType::interfaceIId(type);
-                        if (iid) 
-                            ptr = assign->qt_metacast(iid);
-                        QVariant v(list.type, &ptr);
-                        QmlMetaType::append(list.list, v);
-                    } else {
-                        QVariant v = QmlMetaType::fromObject(assign, list.type);
-                        QmlMetaType::append(list.list, v);
-                    }
+                    list.qListInterface->append(ptr);
                 }
             }
             break;
@@ -858,9 +664,6 @@ case QmlInstruction::StoreDouble:
             
         case QmlInstruction::FetchAttached:
             {
-#ifdef Q_ENABLE_PERFORMANCE_LOG
-                QFxCompilerTimer<QFxCompiler::InstrFetchAttached> cc;
-#endif
                 QObject *target = stack.top();
 
                 QObject *qmlObject = qmlAttachedPropertiesObjectById(instr.fetchAttached.id, target);
@@ -874,9 +677,6 @@ case QmlInstruction::StoreDouble:
 
         case QmlInstruction::FetchQmlList:
             {
-#ifdef Q_ENABLE_PERFORMANCE_LOG
-                QFxCompilerTimer<QFxCompiler::InstrFetchQmlList> cc;
-#endif
                 QObject *target = stack.top();
 
                 void *a[1];
@@ -895,22 +695,24 @@ case QmlInstruction::StoreDouble:
 
         case QmlInstruction::FetchQList:
             {
-#ifdef Q_ENABLE_PERFORMANCE_LOG
-                QFxCompilerTimer<QFxCompiler::InstrFetchQList> cc;
-#endif
                 QObject *target = stack.top();
-                QMetaProperty prop = 
-                    target->metaObject()->property(instr.fetch.property);
-                QVariant v = prop.read(target);
-                qliststack.push(ListInstance(v, QmlMetaType::listType(prop.userType())));
+
+                void *a[1];
+                // We know that QList<T *>* can be converted to 
+                // QList<void *>*
+                QList<void *> *list = 0;
+                a[0] = &list;
+                QMetaObject::metacall(target, QMetaObject::ReadProperty, 
+                                      instr.fetchQmlList.property, a);
+                if (!list) 
+                    VME_EXCEPTION("Cannot assign to null list");
+
+                qliststack.push(ListInstance(list, instr.fetchQmlList.type));
             }
             break;
 
         case QmlInstruction::FetchObject:
             {
-#ifdef Q_ENABLE_PERFORMANCE_LOG
-                QFxCompilerTimer<QFxCompiler::InstrFetchObject> cc;
-#endif
                 QObject *target = stack.top();
 
                 QObject *obj = 0;
@@ -940,28 +742,18 @@ case QmlInstruction::StoreDouble:
 
         case QmlInstruction::PopQList:
             {
-#ifdef Q_ENABLE_PERFORMANCE_LOG
-                QFxCompilerTimer<QFxCompiler::InstrPopQList> cc;
-#endif
                 qliststack.pop();
             }
             break;
 
         case QmlInstruction::PopFetchedObject:
             {
-#ifdef Q_ENABLE_PERFORMANCE_LOG
-                QFxCompilerTimer<QFxCompiler::InstrPopFetchedObject> cc;
-#endif
                 stack.pop();
             }
             break;
 
         case QmlInstruction::StoreStackObject:
             {
-#ifdef Q_ENABLE_PERFORMANCE_LOG
-                QFxCompilerTimer<QFxCompiler::InstrStoreStackObject> cc;
-#endif
-
                 const QmlMetaProperty &prop = 
                     pushedProperties.at(instr.assignStackObject.property);
                 QObject *obj = savedObjects[instr.assignStackObject.object];

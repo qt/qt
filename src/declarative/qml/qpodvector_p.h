@@ -39,80 +39,86 @@
 **
 ****************************************************************************/
 
-#ifndef QMLEXPRESSION_H
-#define QMLEXPRESSION_H
+#ifndef QPODVECTOR_P_H
+#define QPODVECTOR_P_H
 
-#include <QtCore/qobject.h>
-#include <QtCore/qvariant.h>
-
-QT_BEGIN_HEADER
+#include <QtCore/qglobal.h>
 
 QT_BEGIN_NAMESPACE
 
-QT_MODULE(Declarative)
-
-class QString;
-class QmlRefCount;
-class QmlEngine;
-class QmlContext;
-class QmlExpressionPrivate;
-class QmlBasicScript;
-class Q_DECLARATIVE_EXPORT QmlExpression 
+template<class T>
+class QPODVector 
 {
 public:
-    QmlExpression();
-    QmlExpression(QmlContext *, const QString &, QObject *);
-    QmlExpression(QmlContext *, void *, QmlRefCount *rc, QObject *me);
-    virtual ~QmlExpression();
+    QPODVector()
+    : m_count(0), m_capacity(0), m_data(0) {}
 
-    QmlEngine *engine() const;
-    QmlContext *context() const;
+    const T &at(int idx) {
+        return m_data[idx];
+    }
 
-    QString expression() const;
-    void clearExpression();
-    virtual void setExpression(const QString &);
-    QVariant value();
-    bool isConstant() const;
+    T &operator[](int idx) {
+        return m_data[idx];
+    }
 
-    bool trackChange() const;
-    void setTrackChange(bool);
+    void clear() {
+        m_count = 0;
+    }
 
-    void setSourceLocation(const QUrl &fileName, int line);
+    void prepend(const T &v) {
+        insert(0, v);
+    }
 
-    QObject *scopeObject() const;
+    void append(const T &v) {
+        insert(m_count, v);
+    }
 
-    quint32 id() const;
-protected:
-    virtual void valueChanged();
+    void insert(int idx, const T &v) {
+        if (m_count == m_capacity) {
+            m_capacity += 1024;
+            m_data = (T *)realloc(m_data, m_capacity * sizeof(T));
+        }
+        int moveCount = m_count - idx;
+        if (moveCount)
+            ::memmove(m_data + idx + 1, m_data + idx, moveCount * sizeof(T));
+        m_count++;
+        m_data[idx] = v;
+    }
 
+    void insertBlank(int idx, int count) {
+        int newSize = m_count + count;
+        if (newSize >= m_capacity) {
+            m_capacity = (newSize + 1023) & 0xFFFFFC00;
+            m_data = (T *)realloc(m_data, m_capacity * sizeof(T));
+        }
+
+        int moveCount = m_count - idx;
+        if (moveCount) 
+            ::memmove(m_data + idx + count,  m_data + idx, 
+                      moveCount * sizeof(T));
+        m_count = newSize;
+    }
+
+    void remove(int idx, int count = 1) {
+        int moveCount = m_count - (idx + count);
+        if (moveCount)
+            ::memmove(m_data + idx, m_data + idx + count, 
+                      moveCount * sizeof(T));
+        m_count -= count;
+    }
+    
+    int count() const {
+        return m_count;
+    }
+
+    QPODVector<T> &operator<<(const T &v) { append(v); return *this; }
 private:
-    friend class BindExpressionProxy;
-    friend class QmlDebugger;
-    friend class QmlContext;
-    QmlExpressionPrivate *d;
+    QPODVector(const QPODVector &);
+    QPODVector &operator=(const QPODVector &);
+    int m_count;
+    int m_capacity;
+    T *m_data;
 };
-
-// LK: can't we merge with QmlExpression????
-class Q_DECLARATIVE_EXPORT QmlExpressionObject : public QObject, 
-                                                 public QmlExpression
-{
-    Q_OBJECT
-public:
-    QmlExpressionObject(QObject *parent = 0);
-    QmlExpressionObject(QmlContext *, const QString &, QObject *scope, QObject *parent = 0);
-    QmlExpressionObject(QmlContext *, void *, QmlRefCount *, QObject *);
-
-public Q_SLOTS:
-    QVariant value();
-
-Q_SIGNALS:
-    void valueChanged();
-};
-
-
 QT_END_NAMESPACE
 
-QT_END_HEADER
-
-#endif // QMLEXPRESSION_H
-
+#endif

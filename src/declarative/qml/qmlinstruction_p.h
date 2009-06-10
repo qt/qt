@@ -107,8 +107,6 @@ public:
 
         StoreSignal,              /* storeSignal */
 
-        StoreObjectQmlList,
-
         // XXX need to handle storing objects in variants
 
         //
@@ -124,7 +122,9 @@ public:
         BeginObject,              /* begin */
         CompleteObject,           /* complete */
 
-        AssignObjectList,         /* assignObject */
+        StoreObjectQmlList,       /* NA */
+        StoreObjectQList,         /* NA */
+        AssignObjectList,         /* NA */
 
         FetchAttached,            /* fetchAttached */
         FetchQmlList,             /* fetchQmlList */ 
@@ -170,10 +170,6 @@ public:
             int value;
             int save;
         } setId;
-        struct {
-            int property;
-            int castValue;
-        } assignObject;
         struct {
             int property;
         } assignValueSource;

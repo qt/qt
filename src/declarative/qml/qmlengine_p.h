@@ -52,6 +52,7 @@
 #include <private/qobject_p.h>
 #include <private/qmlclassfactory_p.h>
 #include <private/qmlcompositetypemanager_p.h>
+#include <private/qpodvector_p.h>
 #include <QtDeclarative/qml.h>
 #include <private/qmlbasicscript_p.h>
 #include <QtDeclarative/qmlcontext.h>
@@ -90,16 +91,14 @@ public:
     QScriptValue propertyObject(const QScriptString &propName, QObject *, uint id = 0);
 
     struct CapturedProperty {
-        CapturedProperty(QObject *, int);
+        CapturedProperty(QObject *o, int n)
+            : object(o), notifyIndex(n) {}
         CapturedProperty(const QmlMetaProperty &);
-        CapturedProperty(const CapturedProperty &);
-        CapturedProperty &operator=(const CapturedProperty &);
 
         QObject *object;
-        QString name;
         int notifyIndex;
     };
-    QList<CapturedProperty> capturedProperties;
+    QPODVector<CapturedProperty> capturedProperties;
 
     QmlContext *rootContext;
     QmlContext *currentBindContext;
@@ -280,7 +279,8 @@ public:
     BindExpressionProxy *proxy;
     QObject *me;
     bool trackChange;
-    QString fileName;
+
+    QUrl fileName;
     int line;
 
     quint32 id;

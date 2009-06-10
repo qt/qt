@@ -22,10 +22,18 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace JavaScript;
+
 struct ScriptInstruction {
     enum {
         Load,       // fetch
         Fetch,       // fetch
+
+        LoadIdObject,    // fetch
+        FetchConstant,   // constant
+        FetchD0Constant, // constant
+        FetchD1Constant, // constant
+
 
         Add,         // NA
         Subtract,    // NA
@@ -47,6 +55,11 @@ struct ScriptInstruction {
         struct {
             bool value;
         } boolean;
+        struct {
+            short idx;
+            short notify;
+            int type;
+        } constant;
     };
 };
 
@@ -249,8 +262,13 @@ struct QmlBasicScriptCompiler
 {
     QmlBasicScriptCompiler()
     : script(0), stateSize(0) {}
+
     QmlBasicScript *script;
     int stateSize;
+
+    QmlParser::Object *context;
+    QmlParser::Object *component;
+    QHash<QString, QPair<QmlParser::Object *, int> > ids;
 
     bool compile(JavaScript::AST::Node *);
 
@@ -259,7 +277,7 @@ struct QmlBasicScriptCompiler
     bool tryConstant(JavaScript::AST::Node *);
     bool parseConstant(JavaScript::AST::Node *);
     bool tryName(JavaScript::AST::Node *);
-    bool parseName(JavaScript::AST::Node *);
+    bool parseName(JavaScript::AST::Node *, QmlParser::Object ** = 0);
     bool tryBinaryExpression(JavaScript::AST::Node *);
     bool compileBinaryExpression(JavaScript::AST::Node *);
 
@@ -437,19 +455,18 @@ bool QmlBasicScript::isValid() const
     return d != 0;
 }
 
-/*!
-    Compile \a v and return true if the compilation is successful, otherwise
-    returns false.
- */
-bool QmlBasicScript::compile(const QmlParser::Variant &v)
+bool QmlBasicScript::compile(const Expression &expression)
 {
-    if (!v.asAST()) return false;
+    if (!expression.expression.asAST()) return false;
 
-    QByteArray expr = v.asScript().toLatin1();
+    QByteArray expr = expression.expression.asScript().toLatin1();
     const char *src = expr.constData();
 
     QmlBasicScriptCompiler bsc;
     bsc.script = this;
+    bsc.context = expression.context;
+    bsc.component = expression.component;
+    bsc.ids = expression.ids;
 
     if (d) {
         if (flags & QmlBasicScriptPrivate::OwnData)
@@ -458,7 +475,7 @@ bool QmlBasicScript::compile(const QmlParser::Variant &v)
         flags = 0;
     }
 
-    if (bsc.compile(v.asAST())) {
+    if (bsc.compile(expression.expression.asAST())) {
         int len = ::strlen(src);
         flags = QmlBasicScriptPrivate::OwnData;
         int size = sizeof(QmlBasicScriptPrivate) + 
@@ -483,7 +500,6 @@ bool QmlBasicScriptCompiler::compile(JavaScript::AST::Node *node)
     return compileExpression(node);
 }
 
-using namespace JavaScript;
 bool QmlBasicScriptCompiler::tryConstant(JavaScript::AST::Node *node)
 {
     if (node->kind == AST::Node::Kind_TrueLiteral || 
@@ -524,10 +540,11 @@ bool QmlBasicScriptCompiler::tryName(JavaScript::AST::Node *node)
            node->kind == AST::Node::Kind_FieldMemberExpression;
 }
 
-bool QmlBasicScriptCompiler::parseName(AST::Node *node)
+bool QmlBasicScriptCompiler::parseName(AST::Node *node, 
+                                       QmlParser::Object **type)
 {
     bool load = false;
-
+    QmlParser::Object *loadedType = 0;
     QString name;
     if (node->kind == AST::Node::Kind_IdentifierExpression) {
         name = static_cast<AST::IdentifierExpression *>(node)->name->asString();
@@ -535,7 +552,7 @@ bool QmlBasicScriptCompiler::parseName(AST::Node *node)
     } else if (node->kind == AST::Node::Kind_FieldMemberExpression) {
         AST::FieldMemberExpression *expr = static_cast<AST::FieldMemberExpression *>(node);
 
-        if (!parseName(expr->base))
+        if (!parseName(expr->base, &loadedType))
             return false;
 
         name = expr->name->asString();
@@ -543,18 +560,72 @@ bool QmlBasicScriptCompiler::parseName(AST::Node *node)
         return false;
     }
 
-    int nref = data.count();
-    data.append(name.toUtf8());
-    data.append('\0');
     ScriptInstruction instr;
-    if (load)
-        instr.type = ScriptInstruction::Load;
-    else
-        instr.type = ScriptInstruction::Fetch;
-    instr.fetch.idx = nref;
-    bytecode.append(instr);
-    ++stateSize;
+    if (load) {
 
+        if (ids.contains(name)) {
+            instr.type = ScriptInstruction::LoadIdObject;
+            instr.fetch.idx = ids.value(name).second;
+
+            if (type)
+                *type = ids.value(name).first;
+
+        } else {
+            int d0Idx = context->metaObject()->indexOfProperty(name.toUtf8().constData());
+            int d1Idx = -1;
+            if (d0Idx == -1)
+                d1Idx = component->metaObject()->indexOfProperty(name.toUtf8().constData());
+            if (d0Idx != -1) {
+
+                instr.type = ScriptInstruction::FetchD0Constant;
+                instr.constant.idx = d0Idx;
+                QMetaProperty prop = context->metaObject()->property(d0Idx);
+                instr.constant.notify = prop.notifySignalIndex(); 
+                instr.constant.type = prop.userType();
+
+            } else if (d1Idx != -1) {
+
+                instr.type = ScriptInstruction::FetchD1Constant;
+                instr.constant.idx = d1Idx;
+                QMetaProperty prop = component->metaObject()->property(d1Idx);
+                instr.constant.notify = prop.notifySignalIndex(); 
+                instr.constant.type = prop.userType();
+
+            }  else {
+
+                int nref = data.count();
+                data.append(name.toUtf8());
+                data.append('\0');
+                instr.type = ScriptInstruction::Load;
+                instr.fetch.idx = nref;
+                ++stateSize;
+
+            }
+        }
+
+    } else {
+
+        int idx = -1;
+        if (loadedType)
+            idx = loadedType->metaObject()->indexOfProperty(name.toUtf8().constData());
+        if (idx != -1) {
+            instr.type = ScriptInstruction::FetchConstant;
+            instr.constant.idx = idx;
+            QMetaProperty prop = loadedType->metaObject()->property(idx);
+            instr.constant.notify = prop.notifySignalIndex(); 
+            instr.constant.type = prop.userType();
+        } else {
+            int nref = data.count();
+            data.append(name.toUtf8());
+            data.append('\0');
+            instr.type = ScriptInstruction::Fetch;
+            instr.fetch.idx = nref;
+            ++stateSize;
+        }
+
+    }
+
+    bytecode.append(instr);
     return true;
 }
 
@@ -679,12 +750,16 @@ QVariant QmlBasicScript::run(QmlContext *context, void *voidCache, CacheState *c
 {
     if (!isValid())
         return QVariant();
+    
+    QmlContextPrivate *contextPrivate = context->d_func();
+    QmlEnginePrivate *enginePrivate = context->engine()->d_func();
 
     QmlBasicScriptNodeCache *dataCache =
         reinterpret_cast<QmlBasicScriptNodeCache *>(voidCache);
     int dataCacheItem; 
-    QStack<QVariant> stack;
 
+    QStack<QVariant> stack;
+    
     bool resetting = false;
     bool hasReset = false;
 
@@ -702,6 +777,49 @@ QVariant QmlBasicScript::run(QmlContext *context, void *voidCache, CacheState *c
         const ScriptInstruction &instr = d->instructions()[idx];
 
         switch(instr.type) {
+            case ScriptInstruction::LoadIdObject: 
+            {
+                stack.push(contextPrivate->propertyValues.at(instr.fetch.idx));
+                enginePrivate->capturedProperties <<
+                    QmlEnginePrivate::CapturedProperty(context, contextPrivate->notifyIndex + instr.fetch.idx); 
+                state = Reset;
+            }
+                break;
+
+            case ScriptInstruction::FetchD0Constant: 
+            {
+                QObject *obj = contextPrivate->defaultObjects.at(0);
+
+                stack.push(fetch_value(obj, instr.constant.idx, instr.constant.type));
+                enginePrivate->capturedProperties <<
+                    QmlEnginePrivate::CapturedProperty(obj, instr.constant.notify); 
+                state = Reset;
+            }
+                break;
+
+            case ScriptInstruction::FetchD1Constant: 
+            {
+                QObject *obj = contextPrivate->defaultObjects.at(1);
+
+                stack.push(fetch_value(obj, instr.constant.idx, instr.constant.type));
+                enginePrivate->capturedProperties <<
+                    QmlEnginePrivate::CapturedProperty(obj, instr.constant.notify); 
+                state = Reset;
+            }
+                break;
+
+            case ScriptInstruction::FetchConstant: 
+            {
+                QVariant o = stack.pop();
+                QObject *obj = qvariant_cast<QObject *>(o);
+
+                stack.push(fetch_value(obj, instr.constant.idx, instr.constant.type));
+                enginePrivate->capturedProperties <<
+                    QmlEnginePrivate::CapturedProperty(obj, instr.constant.notify); 
+                state = Reset;
+            }
+                break;
+
             case ScriptInstruction::Load: // either an object or a property
             case ScriptInstruction::Fetch: // can only be a property
             {
