@@ -270,7 +270,7 @@ public:
         , queryId(-1), roleObjects(this) {}
 
     bool isClassComplete;
-    QString src;
+    QUrl src;
     QString query;
     QString namespaces;
     int size;
@@ -388,13 +388,13 @@ QString QmlXmlListModel::toString(int role) const
     return d->roleNames.at(index);
 }
 
-QString QmlXmlListModel::source() const
+QUrl QmlXmlListModel::source() const
 {
     Q_D(const QmlXmlListModel);
     return d->src;
 }
 
-void QmlXmlListModel::setSource(const QString &src)
+void QmlXmlListModel::setSource(const QUrl &src)
 {
     Q_D(QmlXmlListModel);
     if (d->src != src) {
@@ -483,7 +483,7 @@ void QmlXmlListModel::reload()
     emit progressChanged(d->progress);
     emit statusChanged(d->status);
 
-    QNetworkRequest req((QUrl(d->src)));
+    QNetworkRequest req(d->src);
     req.setAttribute(QNetworkRequest::CacheLoadControlAttribute, QNetworkRequest::PreferCache);
     d->reply = qmlContext(this)->engine()->networkAccessManager()->get(req);
     QObject::connect(d->reply, SIGNAL(finished()), this, SLOT(requestFinished()));

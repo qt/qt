@@ -56,7 +56,7 @@ class Q_DECLARATIVE_EXPORT QFxHighlightFilter : public QSimpleCanvasFilter
 {
     Q_OBJECT
 
-    Q_PROPERTY(QString source READ source WRITE setSource NOTIFY sourceChanged)
+    Q_PROPERTY(QUrl source READ source WRITE setSource NOTIFY sourceChanged)
     Q_PROPERTY(bool tiled READ tiled WRITE setTiled NOTIFY tiledChanged)
     Q_PROPERTY(int xOffset READ xOffset WRITE setXOffset NOTIFY offsetChanged)
     Q_PROPERTY(int yOffset READ yOffset WRITE setYOffset NOTIFY offsetChanged)
@@ -64,8 +64,8 @@ public:
     QFxHighlightFilter(QObject *parent=0);
     virtual ~QFxHighlightFilter();
 
-    QString source() const;
-    void setSource(const QString &);
+    QUrl source() const;
+    void setSource(const QUrl &);
 
     bool tiled() const;
     void setTiled(bool);
@@ -76,7 +76,7 @@ public:
     void setYOffset(int);
 
 Q_SIGNALS:
-    void sourceChanged(const QString &);
+    void sourceChanged(const QUrl &);
     void offsetChanged(int x, int y);
     void tiledChanged(bool);
 

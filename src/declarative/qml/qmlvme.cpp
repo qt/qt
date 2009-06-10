@@ -235,6 +235,17 @@ QObject *QmlVME::run(QmlContext *ctxt, QmlCompiledComponent *comp, int start, in
             }
             break;
 
+        case QmlInstruction::StoreUrl:
+            {
+                QObject *target = stack.top();
+                void *a[1];
+                QUrl u(primitives.at(instr.storeUrl.value));
+                a[0] = (void *)&u;
+                QMetaObject::metacall(target, QMetaObject::WriteProperty, 
+                                      instr.storeUrl.propertyIndex, a);
+            }
+            break;
+
         case QmlInstruction::StoreFloat:
             {
                 QObject *target = stack.top();
@@ -246,7 +257,7 @@ QObject *QmlVME::run(QmlContext *ctxt, QmlCompiledComponent *comp, int start, in
             }
             break;
 
-case QmlInstruction::StoreDouble:
+        case QmlInstruction::StoreDouble:
             {
                 QObject *target = stack.top();
                 double d = instr.storeDouble.value;

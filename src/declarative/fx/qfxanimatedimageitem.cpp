@@ -155,7 +155,7 @@ int QFxAnimatedImageItem::frameCount() const
 void QFxAnimatedImageItem::setSource(const QString &url)
 {
     Q_D(QFxAnimatedImageItem);
-    if (url == d->source)
+    if (url == d->url)
         return;
 
     delete d->_movie;
@@ -166,8 +166,7 @@ void QFxAnimatedImageItem::setSource(const QString &url)
         d->reply = 0;
     }
 
-    d->source = url;
-    d->url = qmlContext(this)->resolvedUrl(url);
+    d->url = url;
 
     if (url.isEmpty()) {
         delete d->_movie;

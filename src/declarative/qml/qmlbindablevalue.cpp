@@ -220,6 +220,10 @@ void QmlBindableValue::update()
 
         } else if (d->property.propertyCategory() == QmlMetaProperty::Normal) {
             QVariant value = this->value();
+            if (d->property.propertyType() == QVariant::Url && value.canConvert(QVariant::String) && !value.isNull()) {
+                // Must resolve first
+                value.setValue(context()->resolvedUrl(value.toString()));
+            }
             d->property.write(value);
         }
 

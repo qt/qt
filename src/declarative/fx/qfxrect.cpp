@@ -497,7 +497,7 @@ void QFxRect::generateRoundedRect()
         QPainter p(&(d->rectImage));
         p.setRenderHint(QPainter::Antialiasing);
         if (d->pen && d->pen->isValid()) {
-            QPen pn(QColor(getPen()->color()), getPen()->width());
+            QPen pn(QColor(d->pen->color()), d->pen->width());
             p.setPen(pn);
         } else {
             p.setPen(Qt::NoPen);
@@ -517,7 +517,7 @@ void QFxRect::generateBorderedRect()
         QPainter p(&(d->rectImage));
         p.setRenderHint(QPainter::Antialiasing);
         if (d->pen && d->pen->isValid()) {
-            QPen pn(QColor(getPen()->color()), getPen()->width());
+            QPen pn(QColor(d->pen->color()), d->pen->width());
             p.setPen(pn);
         } else {
             p.setPen(Qt::NoPen);
@@ -604,7 +604,7 @@ void QFxRect::drawRect(QPainter &p)
         QPainter::RenderHints oldHints = p.renderHints();
         p.setRenderHint(QPainter::Antialiasing);
         if (d->pen && d->pen->isValid()) {
-            QPen pn(QColor(getPen()->color()), getPen()->width());
+            QPen pn(QColor(d->pen->color()), d->pen->width());
             p.setPen(pn);
         } else {
             p.setPen(Qt::NoPen);

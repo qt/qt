@@ -85,6 +85,9 @@ void QmlCompiledComponent::dump(QmlInstruction *instr, int idx)
     case QmlInstruction::StoreString:
         qWarning() << idx << "\t" << line << "\t" << "STORE_STRING\t\t" << instr->storeString.propertyIndex << "\t" << instr->storeString.value << "\t\t" << primitives.at(instr->storeString.value);
         break;
+    case QmlInstruction::StoreUrl:
+        qWarning() << idx << "\t" << line << "\t" << "STORE_URL\t\t" << instr->storeUrl.propertyIndex << "\t" << instr->storeUrl.value << "\t\t" << primitives.at(instr->storeUrl.value);
+        break;
     case QmlInstruction::StoreColor:
         qWarning() << idx << "\t" << line << "\t" << "STORE_COLOR\t\t" << instr->storeColor.propertyIndex << "\t" << QString::number(instr->storeColor.value, 16);
         break;

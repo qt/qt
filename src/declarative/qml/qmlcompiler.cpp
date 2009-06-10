@@ -278,6 +278,14 @@ bool QmlCompiler::compileStoreInstruction(QmlInstruction &instr,
             instr.storeString.value = output->indexForString(string);
             }
             break;
+        case QVariant::Url:
+            {
+            instr.type = QmlInstruction::StoreUrl;
+            QUrl u = output->url.resolved(string);
+            instr.storeUrl.propertyIndex = prop.propertyIndex();
+            instr.storeUrl.value = output->indexForString(u.toString());
+            }
+            break;
         case QVariant::UInt:
             {
             instr.type = QmlInstruction::StoreInteger;
@@ -1385,6 +1393,9 @@ bool QmlCompiler::compileDynamicMeta(QmlParser::Object *obj)
             break;
         case Object::DynamicProperty::String:
             type = "QString";
+            break;
+        case Object::DynamicProperty::Url:
+            type = "QUrl";
             break;
         case Object::DynamicProperty::Color:
             type = "QColor";
