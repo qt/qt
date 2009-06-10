@@ -117,6 +117,7 @@ public:
       AST::UiArrayBinding *UiArrayBinding;
       AST::UiObjectMember *UiObjectMember;
       AST::UiObjectMemberList *UiObjectMemberList;
+      AST::UiArrayMemberList *UiArrayMemberList;
       AST::UiQualifiedId *UiQualifiedId;
     };
 

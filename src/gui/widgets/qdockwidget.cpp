@@ -221,7 +221,8 @@ void QDockWidgetLayout::addItem(QLayoutItem*)
 QLayoutItem *QDockWidgetLayout::itemAt(int index) const
 {
     int cnt = 0;
-    foreach (QLayoutItem *item, item_list) {
+    for (int i = 0; i < item_list.count(); ++i) {
+        QLayoutItem *item = item_list.at(i);
         if (item == 0)
             continue;
         if (index == cnt++)
@@ -250,8 +251,8 @@ QLayoutItem *QDockWidgetLayout::takeAt(int index)
 int QDockWidgetLayout::count() const
 {
     int result = 0;
-    foreach (QLayoutItem *item, item_list) {
-        if (item != 0)
+    for (int i = 0; i < item_list.count(); ++i) {
+        if (item_list.at(i))
             ++result;
     }
     return result;

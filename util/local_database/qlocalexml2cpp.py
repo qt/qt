@@ -318,7 +318,7 @@ def main():
     print
 
     # Locale index
-    print "static const uint locale_index[] = {"
+    print "static const quint16 locale_index[] = {"
     print "     0, // unused"
     index = 0
     for key in language_map.keys():
@@ -454,7 +454,7 @@ def main():
     print
 
     # Language name index
-    print "static const uint language_name_index[] = {"
+    print "static const quint16 language_name_index[] = {"
     print "     0, // Unused"
     index = 8
     for key in language_map.keys():
@@ -477,7 +477,7 @@ def main():
     print
 
     # Country name index
-    print "static const uint country_name_index[] = {"
+    print "static const quint16 country_name_index[] = {"
     print "     0, // AnyCountry"
     index = 8
     for key in country_map.keys():

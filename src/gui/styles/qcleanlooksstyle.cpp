@@ -3305,7 +3305,8 @@ void QCleanlooksStyle::drawComplexControl(ComplexControl control, const QStyleOp
                     }
                 }
                 // Draw the focus rect
-                if ((focus && (option->state & State_KeyboardFocusChange)) && !comboBox->editable) {
+                if (focus && !comboBox->editable
+                    && ((option->state & State_KeyboardFocusChange) || styleHint(SH_UnderlineShortcut, option, widget))) {
                     QStyleOptionFocusRect focus;
                     focus.rect = subControlRect(CC_ComboBox, &comboBoxCopy, SC_ComboBoxEditField, widget)
                                  .adjusted(0, 2, option->direction == Qt::RightToLeft ? 1 : -1, -2);

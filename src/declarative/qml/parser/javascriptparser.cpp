@@ -239,12 +239,13 @@ case 10: {
 } break;
 
 case 11: {
-    sym(1).Node = makeAstNode<AST::UiObjectMemberList> (driver->nodePool(), sym(1).UiObjectMember);
+    sym(1).Node = makeAstNode<AST::UiArrayMemberList> (driver->nodePool(), sym(1).UiObjectMember);
 } break;
 
 case 12: {
-    AST::UiObjectMemberList *node = makeAstNode<AST:: UiObjectMemberList> (driver->nodePool(),
-        sym(1).UiObjectMemberList, sym(3).UiObjectMember);
+    AST::UiArrayMemberList *node = makeAstNode<AST::UiArrayMemberList> (driver->nodePool(),
+        sym(1).UiArrayMemberList, sym(3).UiObjectMember);
+    node->commaToken = loc(2);
     sym(1).Node = node;
 } break;
 
@@ -270,7 +271,7 @@ case 15: {
 
 case 17: {
     AST::UiArrayBinding *node = makeAstNode<AST::UiArrayBinding> (driver->nodePool(), sym(1).UiQualifiedId->finish(),
-        sym(4).UiObjectMemberList->finish());
+        sym(4).UiArrayMemberList->finish());
     node->colonToken = loc(2);
     node->lbracketToken = loc(3);
     node->rbracketToken = loc(5);

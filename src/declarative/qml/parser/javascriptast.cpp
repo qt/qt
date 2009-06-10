@@ -893,7 +893,7 @@ void UiArrayBinding::accept0(Visitor *visitor)
 {
     if (visitor->visit(this)) {
         acceptChild(qualifiedId, visitor);
-        for (UiObjectMemberList *it = members; it; it = it->next)
+        for (UiArrayMemberList *it = members; it; it = it->next)
             acceptChild(it->member, visitor);
     }
 
@@ -904,6 +904,16 @@ void UiObjectMemberList::accept0(Visitor *visitor)
 {
     if (visitor->visit(this)) {
         for (UiObjectMemberList *it = this; it; it = it->next)
+            acceptChild(it->member, visitor);
+    }
+
+    visitor->endVisit(this);
+}
+
+void UiArrayMemberList::accept0(Visitor *visitor)
+{
+    if (visitor->visit(this)) {
+        for (UiArrayMemberList *it = this; it; it = it->next)
             acceptChild(it->member, visitor);
     }
 

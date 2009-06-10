@@ -1449,6 +1449,16 @@ int QmlDomList::length() const
         return 0;
 }
 
+/*!
+  Returns a list of positions of the commas in the QML file.
+*/
+QList<int> QmlDomList:: commaPositions() const
+{
+    if (d && d->property)
+        return d->property->listCommaPositions;
+    else
+        return QList<int>();
+}
 
 /*!
     \class QmlDomComponent

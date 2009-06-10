@@ -277,6 +277,7 @@ namespace QmlParser
 
         LocationSpan location;
         LocationRange listValueRange;
+        QList<int> listCommaPositions;
 
         void dump(int = 0) const;
     };

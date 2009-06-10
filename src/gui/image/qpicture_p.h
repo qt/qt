@@ -69,7 +69,7 @@ class QPaintEngine;
 
 extern const char  *qt_mfhdr_tag;
 
-class Q_GUI_EXPORT QPicturePrivate
+class QPicturePrivate
 {
     Q_DECLARE_PUBLIC(QPicture)
     friend class QPicturePaintEngine;

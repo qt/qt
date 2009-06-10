@@ -2907,8 +2907,8 @@ QMimeData *QStandardItemModel::mimeData(const QModelIndexList &indexes) const
     QStack<QStandardItem*> stack;
     itemsSet.reserve(indexes.count());
     stack.reserve(indexes.count());
-    foreach (const QModelIndex &index, indexes) {
-        QStandardItem *item = itemFromIndex(index);
+    for (int i = 0; i < indexes.count(); ++i) {
+        QStandardItem *item = itemFromIndex(indexes.at(i));
         itemsSet << item;
         stack.push(item);
     }
