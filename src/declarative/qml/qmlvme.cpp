@@ -541,7 +541,6 @@ QObject *QmlVME::run(QmlContext *ctxt, QmlCompiledComponent *comp, int start, in
                 QFx_setParent_noEvent(bind, target);
 
                 bind->setTarget(mp);
-                bind->setSourceLocation(comp->url, instr.line);
             }
             break;
 
