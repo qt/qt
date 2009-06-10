@@ -2498,8 +2498,8 @@ QString HtmlGenerator::highlightedCode(const QString& markedCode,
 
     // replace all <@link> tags: "(<@link node=\"([^\"]+)\">).*(</@link>)"
     static const QString linkTag("link");
-    if (src.contains("setAcceptDrops"))
-        qDebug() << "SRC:" << src;
+    //if (src.contains("setAcceptDrops"))
+    //    qDebug() << "SRC:" << src;
     bool done = false;
     for (int i = 0, n = src.size(); i < n;) {
         if (src.at(i) == charLangle && src.at(i + 1).unicode() == '@') {
@@ -3843,10 +3843,10 @@ void HtmlGenerator::generateQmlInherits(const QmlClassNode* cn,
                 generateText(text, cn, marker);
                 out() << "</p>";
             }
-            else
-                qDebug() << "generateQmlInherits(): "
-                         << "Inherited element not documented -->"
-                         << linkPair.first;
+//            else
+//                qDebug() << "generateQmlInherits(): "
+//                         << "Inherited element not documented -->"
+//                         << linkPair.first;
         }
     }
 }
