@@ -42,13 +42,12 @@
 #include "random_ai_plugin.h"
 
 #include <QState>
+#include <QTime>
 #include <QtPlugin>
-
-#include <time.h>
 
 QState *RandomAiPlugin::create(QState *parentState, QObject *tank)
 {
-    qsrand(uint(time(NULL)));
+    qsrand(QTime(0,0,0).secsTo(QTime::currentTime()));
 
     QState *topLevel = new QState(parentState);
 

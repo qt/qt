@@ -781,7 +781,8 @@ static bool read_jpeg_image(QIODevice *device, QImage *outImage,
 
 #ifndef QT_NO_IMAGE_SMOOTHSCALE
         // If high quality not required, shrink image during decompression
-        if (scaledSize.isValid() && quality < HIGH_QUALITY_THRESHOLD && !params.contains(QLatin1String("GetHeaderInformation")) ) {
+        if (scaledSize.isValid() && !scaledSize.isEmpty() && quality < HIGH_QUALITY_THRESHOLD
+            && !params.contains(QLatin1String("GetHeaderInformation")) ) {
             cinfo.scale_denom = qMin(cinfo.image_width / scaledSize.width(),
                                      cinfo.image_width / scaledSize.height());
             if (cinfo.scale_denom < 2) {

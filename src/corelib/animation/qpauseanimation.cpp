@@ -62,11 +62,11 @@
     \sa QSequentialAnimationGroup
 */
 
-#ifndef QT_NO_ANIMATION
-
 #include "qpauseanimation.h"
 #include "qabstractanimation_p.h"
 
+
+#ifndef QT_NO_ANIMATION
 
 QT_BEGIN_NAMESPACE
 

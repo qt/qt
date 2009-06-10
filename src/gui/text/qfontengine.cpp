@@ -70,12 +70,6 @@ static inline bool qtransform_equals_no_translate(const QTransform &a, const QTr
     }
 }
 
-
-
-QFontEngineGlyphCache::~QFontEngineGlyphCache()
-{
-}
-
 // Harfbuzz helper functions
 
 static HB_Bool hb_stringToGlyphs(HB_Font font, const HB_UChar16 *string, hb_uint32 length, HB_Glyph *glyphs, hb_uint32 *numGlyphs, HB_Bool rightToLeft)

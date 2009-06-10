@@ -1100,14 +1100,8 @@ void QListView::paintEvent(QPaintEvent *e)
     QPainter painter(d->viewport);
     QRect area = e->rect();
 
-    QVector<QModelIndex> toBeRendered;
-//     QVector<QRect> rects = e->region().rects();
-//     for (int i = 0; i < rects.size(); ++i) {
-//         d->intersectingSet(rects.at(i).translated(horizontalOffset(), verticalOffset()));
-//         toBeRendered += d->intersectVector;
-//     }
     d->intersectingSet(e->rect().translated(horizontalOffset(), verticalOffset()), false);
-    toBeRendered = d->intersectVector;
+    const QVector<QModelIndex> toBeRendered = d->intersectVector;
 
     const QModelIndex current = currentIndex();
     const QModelIndex hover = d->hover;

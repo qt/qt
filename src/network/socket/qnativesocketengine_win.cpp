@@ -570,6 +570,11 @@ bool QNativeSocketEnginePrivate::nativeConnect(const QHostAddress &address, quin
                         socketState = QAbstractSocket::UnconnectedState;
                         break;
                     }
+                    if (value == WSAEHOSTUNREACH) {
+                        setError(QAbstractSocket::NetworkError, HostUnreachableErrorString);
+                        socketState = QAbstractSocket::UnconnectedState;
+                        break;
+                    }
                 }
                 // fall through
             }

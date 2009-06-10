@@ -41,12 +41,6 @@
 
 #include <QtCore>
 #include <stdio.h>
-#ifdef QT_STATEMACHINE_SOLUTION
-#include <qstatemachine.h>
-#include <qstate.h>
-#include <qsignaltransition.h>
-#include <qfinalstate.h>
-#endif
 
 //! [0]
 class Factorial : public QObject

@@ -257,7 +257,7 @@ static const GLuint QT_TEXTURE_COORDS_ATTR = 1;
 
 class QGLEngineShaderManager : public QObject
 {
-    Q_OBJECT;
+    Q_OBJECT
 public:
     QGLEngineShaderManager(QGLContext* context);
     ~QGLEngineShaderManager();
@@ -352,7 +352,7 @@ public:
 */
 
 #if defined (QT_DEBUG)
-    Q_ENUMS(ShaderName);
+    Q_ENUMS(ShaderName)
 #endif
 
 

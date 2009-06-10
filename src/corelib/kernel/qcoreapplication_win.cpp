@@ -409,6 +409,7 @@ struct {
  { 0x020B, "WM_XBUTTONDOWN" },
  { 0x020C, "WM_XBUTTONUP" },
  { 0x020D, "WM_XBUTTONDBLCLK" },
+ { 0x020E, "WM_MOUSEHWHEEL" },
  { 0x0210, "WM_PARENTNOTIFY" },
  { 0x0211, "WM_ENTERMENULOOP" },
  { 0x0212, "WM_EXITMENULOOP" },
@@ -897,6 +898,9 @@ QString decodeMSG(const MSG& msg)
 #endif
 #ifdef WM_MOUSEWHEEL
         case WM_MOUSEWHEEL:
+#endif
+#ifdef WM_MOUSEHWHEEL
+        case WM_MOUSEHWHEEL:
 #endif
 #ifdef WM_LBUTTONDBLCLK
         case WM_LBUTTONDBLCLK:

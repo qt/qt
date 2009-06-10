@@ -65,10 +65,17 @@
 #include "qimage.h"
 #include "qgl_p.h"
 
+#if !defined(QT_OPENGL_ES_1) && !defined(QT_OPENGL_ES_1_CL)
 #include "gl2paintengineex/qpaintengineex_opengl2_p.h"
+#endif
 
 #ifndef QT_OPENGL_ES_2
 #include <private/qpaintengine_opengl_p.h>
+#endif
+
+#ifdef Q_WS_QWS
+#include <private/qglpaintdevice_qws_p.h>
+#include <private/qglwindowsurface_qws_p.h>
 #endif
 
 #include <qglpixelbuffer.h>
@@ -1456,7 +1463,7 @@ struct DDSFormat {
 #define GL_GENERATE_MIPMAP_HINT_SGIS  0x8192
 #endif
 
-Q_GLOBAL_STATIC(QGLShareRegister, _qgl_share_reg);
+Q_GLOBAL_STATIC(QGLShareRegister, _qgl_share_reg)
 Q_OPENGL_EXPORT QGLShareRegister* qgl_share_reg()
 {
     return _qgl_share_reg();
@@ -2609,7 +2616,7 @@ const QGLContext* QGLContext::currentContext()
 */
 
 /*! \fn int QGLContext::choosePixelFormat(void* dummyPfd, HDC pdc)
-  
+
     \bold{Win32 only:} This virtual function chooses a pixel format
     that matches the OpenGL \link setFormat() format\endlink.
     Reimplement this function in a subclass if you need a custom
@@ -2623,7 +2630,7 @@ const QGLContext* QGLContext::currentContext()
 */
 
 /*! \fn void *QGLContext::chooseVisual()
-  
+
   \bold{X11 only:} This virtual function tries to find a visual that
   matches the format, reducing the demands if the original request
   cannot be met.
@@ -4354,7 +4361,7 @@ void QGLWidgetPrivate::initContext(QGLContext *context, const QGLWidget* shareWi
 }
 
 #if defined(Q_WS_X11) || defined(Q_WS_MAC) || defined(Q_WS_QWS)
-Q_GLOBAL_STATIC(QString, qt_gl_lib_name);
+Q_GLOBAL_STATIC(QString, qt_gl_lib_name)
 
 Q_OPENGL_EXPORT void qt_set_gl_library_name(const QString& name)
 {
@@ -4428,7 +4435,11 @@ void QGLDrawable::swapBuffers()
 void QGLDrawable::makeCurrent()
 {
     previous_fbo = 0;
+#if !defined(QT_OPENGL_ES_1) && !defined(QT_OPENGL_ES_1_CL)
     if (!pixmapData && !fbo) {
+#else
+    if (!fbo) {
+#endif
         QGLContext *ctx = context();
         previous_fbo = ctx->d_ptr->current_fbo;
         ctx->d_ptr->current_fbo = 0;
@@ -4561,8 +4572,10 @@ QColor QGLDrawable::backgroundColor() const
 {
     if (widget)
         return widget->palette().brush(widget->backgroundRole()).color();
+#if !defined(QT_OPENGL_ES_1) && !defined(QT_OPENGL_ES_1_CL)
     else if (pixmapData)
         return pixmapData->fillColor();
+#endif
     return QApplication::palette().brush(QPalette::Background).color();
 }
 
@@ -4590,8 +4603,10 @@ bool QGLDrawable::autoFillBackground() const
 {
     if (widget)
         return widget->autoFillBackground();
+#if !defined(QT_OPENGL_ES_1) && !defined(QT_OPENGL_ES_1_CL)
     else if (pixmapData)
         return pixmapData->needsFill();
+#endif
     else
         return false;
 }

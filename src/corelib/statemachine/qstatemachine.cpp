@@ -40,6 +40,9 @@
 ****************************************************************************/
 
 #include "qstatemachine.h"
+
+#ifndef QT_NO_STATEMACHINE
+
 #include "qstate.h"
 #include "qstate_p.h"
 #include "qstatemachine_p.h"
@@ -2207,3 +2210,5 @@ QWrappedEvent::~QWrappedEvent()
 QT_END_NAMESPACE
 
 #include "moc_qstatemachine.cpp"
+
+#endif //QT_NO_STATEMACHINE

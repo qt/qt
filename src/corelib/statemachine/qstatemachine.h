@@ -54,6 +54,8 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Core)
 
+#ifndef QT_NO_STATEMACHINE
+
 class QEvent;
 class QAbstractState;
 class QState;
@@ -158,6 +160,8 @@ private:
     Q_PRIVATE_SLOT(d_func(), void _q_animationFinished())
 #endif
 };
+
+#endif //QT_NO_STATEMACHINE
 
 QT_END_NAMESPACE
 

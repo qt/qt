@@ -176,7 +176,6 @@ public:
 static const int groupBoxBottomMargin    =  2;  // space below the groupbox
 static const int groupBoxTitleMargin     =  6;  // space between contents and title
 static const int groupBoxTopMargin       =  2;
-static bool UsePixmapCache = true;
 
 // Get size of the arrow controls in a GtkSpinButton
 static int spinboxArrowSize()
@@ -1427,7 +1426,7 @@ void QGtkStyle::drawComplexControl(ComplexControl control, const QStyleOptionCom
                     QGtk::gtk_widget_style_get(gtkToggleButton, "interior-focus", &interiorFocus, NULL);
                     int xt = interiorFocus ? gtkToggleButton->style->xthickness : 0;
                     int yt = interiorFocus ? gtkToggleButton->style->ythickness : 0;
-                    if ((focus && (option->state & State_KeyboardFocusChange)))
+                    if (focus && ((option->state & State_KeyboardFocusChange) || styleHint(SH_UnderlineShortcut, option, widget)))
                         gtkCachedPainter.paintFocus(gtkToggleButton, "button",
                                               option->rect.adjusted(xt, yt, -xt, -yt),
                                               option->state & State_Sunken ? GTK_STATE_ACTIVE : GTK_STATE_NORMAL,

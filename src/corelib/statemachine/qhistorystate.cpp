@@ -40,6 +40,9 @@
 ****************************************************************************/
 
 #include "qhistorystate.h"
+
+#ifndef QT_NO_STATEMACHINE
+
 #include "qhistorystate_p.h"
 
 QT_BEGIN_NAMESPACE
@@ -221,3 +224,5 @@ bool QHistoryState::event(QEvent *e)
 }
 
 QT_END_NAMESPACE
+
+#endif //QT_NO_STATEMACHINE

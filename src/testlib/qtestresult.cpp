@@ -68,7 +68,7 @@ namespace QTest
 
     static const char *expectFailComment = 0;
     static int expectFailMode = 0;
-};
+}
 
 void QTestResult::reset()
 {

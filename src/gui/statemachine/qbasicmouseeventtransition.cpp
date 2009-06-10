@@ -40,6 +40,9 @@
 ****************************************************************************/
 
 #include "qbasicmouseeventtransition_p.h"
+
+#ifndef QT_NO_STATEMACHINE
+
 #include <QtGui/qevent.h>
 #include <QtGui/qpainterpath.h>
 #include <qdebug.h>
@@ -206,3 +209,5 @@ void QBasicMouseEventTransition::onTransition(QEvent *)
 }
 
 QT_END_NAMESPACE
+
+#endif //QT_NO_STATEMACHINE

@@ -772,7 +772,7 @@ QVariant QSystemLocale::query(QueryType type, QVariant in = QVariant()) const
    Instead it can return a "Windows code". This maps windows codes to ISO country names. */
 
 struct WindowsToISOListElt {
-    int windows_code;
+    ushort windows_code;
     char iso_name[6];
 };
 
@@ -1533,7 +1533,7 @@ QDataStream &operator>>(QDataStream &ds, QLocale &l)
     l = QLocale(s);
     return ds;
 }
-#endif
+#endif // QT_NO_DATASTREAM
 
 
 /*!
