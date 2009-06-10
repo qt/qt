@@ -39,8 +39,6 @@ table.valuelist {
 	border-color: #dddddd;
 	border-collapse: collapse;
 	background-color: #f0f0f0;
-    margin-left: 1.5%;
-    width: 97%
 }
 
 table.indextable {
@@ -48,8 +46,6 @@ table.indextable {
 	border-collapse: collapse;
 	background-color: #f0f0f0;
     border-color:#555;    
-    margin-left: 1.5%;
-    width: 97%
 }
 
 
@@ -72,9 +68,9 @@ th.titleheader  {
 }
 
 p {
-  margin-left: 1.5%;
+
+  margin-left: 4px;
   margin-top: 8px;
-  width: 97%
   margin-bottom: 8px;
 }
 
@@ -138,6 +134,7 @@ table td.memItemLeft {
   font-size: 100%;
   white-space: nowrap
 }
+
 table td.memItemRight {
   padding: 2px 8px 0px 8px;
   margin: 4px;
