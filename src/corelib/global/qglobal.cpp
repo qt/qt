@@ -3225,6 +3225,18 @@ bool QInternal::callFunction(InternalFunction func, void **args)
 
     \warning This macro is only available on Symbian.
 
+    Example:
+
+    \code
+    // A Symbian leaving function is being called within a Qt function.
+    // Any leave must be converted to an exception
+    CAknTitlePane* titlePane = S60->titlePane();
+    if (titlePane) {
+        TPtrC captionPtr(qt_QString2TPtrC(caption));
+        QT_TRANSLATE_SYMBIAN_LEAVE_TO_EXCEPTION(titlePane->SetTextL(captionPtr));
+    }
+    \endcode
+
     \sa QT_TRANSLATE_EXCEPTION_TO_SYMBIAN_ERROR(), QT_TRANSLATE_EXCEPTION_TO_SYMBIAN_LEAVE()
 */
 
@@ -3239,6 +3251,23 @@ bool QInternal::callFunction(InternalFunction func, void **args)
 
     \warning This macro is only available on Symbian.
 
+    Example:
+
+    \code
+    // An exception might be thrown in this Symbian TInt error returning function.
+    // It is caught and translated to an error code
+    TInt QServerApp::Connect(const QString &serverName)
+    {
+        TPtrC name;
+        TInt err;
+        QT_TRANSLATE_EXCEPTION_TO_SYMBIAN_ERROR(err, name.Set(qt_QString2TPtrC(serverName)));
+        if (err != KErrNone)
+            return err;
+        return iServer.Connect(name);
+    }
+    \endcode
+}
+
     \sa QT_TRANSLATE_EXCEPTION_TO_SYMBIAN_LEAVE(), QT_TRANSLATE_SYMBIAN_LEAVE_TO_EXCEPTION()
 */
 
@@ -3252,6 +3281,19 @@ bool QInternal::callFunction(InternalFunction func, void **args)
     For example inside a Symbian active object's \c RunL function implemented with Qt code.
 
     \warning This macro is only available on Symbian.
+
+    Example:
+
+    \code
+    // This active object signals Qt code
+    // Exceptions from the Qt code must be converted to Symbian OS leaves for the active scheduler
+    void QWakeUpActiveObject::RunL()
+    {
+        iStatus = KRequestPending;
+        SetActive();
+        QT_TRANSLATE_EXCEPTION_TO_SYMBIAN_LEAVE(m_dispatcher->wakeUpWasCalled());
+    }
+    \endcode
 
     \sa QT_TRANSLATE_SYMBIAN_LEAVE_TO_EXCEPTION(), QT_TRANSLATE_EXCEPTION_TO_SYMBIAN_ERROR()
 */
