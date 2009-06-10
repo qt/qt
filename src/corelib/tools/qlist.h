@@ -117,7 +117,14 @@ public:
     inline int size() const { return p.size(); }
 
     inline void detach() { if (d->ref != 1) detach_helper(); }
-    inline void detachShared() { if (d->ref != 1 && d != &QListData::shared_null) detach_helper(); }
+
+    inline void detachShared()
+    {
+        // The "this->" qualification is needed for GCCE.
+        if (d->ref != 1 && this->d != &QListData::shared_null)
+            detach_helper();
+    }
+
     inline bool isDetached() const { return d->ref == 1; }
     inline void setSharable(bool sharable) { if (!sharable) detach(); d->sharable = sharable; }
 
