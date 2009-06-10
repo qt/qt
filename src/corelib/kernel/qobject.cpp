@@ -3440,7 +3440,7 @@ void QObject::dumpObjectInfo()
     qDebug("  SIGNALS IN");
 
     if (d->senders) {
-        for (QObjectPrivate::Connection *s = d->senders; s; s = s->next)
+        for (QObjectPrivate::Connection *s = d->senders; s; s = s->next) {
             const QMetaMethod slot = metaObject()->method(s->method);
             qDebug("          <-- %s::%s  %s",
                    s->sender->metaObject()->className(),
