@@ -80,7 +80,7 @@ void CNotifyChangeEvent::RunL()
     if (iStatus.Int() == KErrNone){
         fsSession.NotifyChange(ENotifyAll, iStatus, watchedPath);
         SetActive();
-        engine->emitPathChanged(this);
+        QT_TRANSLATE_EXCEPTION_TO_SYMBIAN_LEAVE(engine->emitPathChanged(this));
     } else {
         qWarning("CNotifyChangeEvent::RunL() - Failed to order change notifications: %d", iStatus.Int());
     }
@@ -262,9 +262,9 @@ void QSymbianFileSystemWatcherEngine::run()
 void QSymbianFileSystemWatcherEngine::addNativeListener(const QString &directoryPath)
 {
     QMutexLocker locker(&mutex);
-    HBufC* buffer = qt_QString2HBufCNewL(QDir::toNativeSeparators(directoryPath));
-    currentEvent = CNotifyChangeEvent::New(fsSession, *buffer, this);
-    delete buffer;
+    QString nativeDir(QDir::toNativeSeparators(directoryPath));
+    TPtrC ptr(qt_QString2TPtrC(nativeDir));
+    currentEvent = CNotifyChangeEvent::New(fsSession, ptr, this);
     syncCondition.wakeOne();
 }
 

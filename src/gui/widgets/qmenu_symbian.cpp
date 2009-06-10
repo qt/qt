@@ -159,14 +159,14 @@ static void qt_symbian_insert_action(QSymbianMenuAction* action, QList<SymbianMe
 // ### FIX THIS, the qt_strippedText2 doesn't work perfectly for stripping & marks. Same bug is in QAction
 //     New really working method is needed in a place where the implementation isn't copy/pasted
         QString text = qt_strippedText_copy_from_qaction(action->action->text());
-        HBufC* menuItemText = qt_QString2HBufCNewL(text);
+        TPtrC menuItemText(qt_QString2TPtrC(text));
 
         if (action->action->menu()) {
             SymbianMenuItem* menuItem = new SymbianMenuItem();
             menuItem->menuItemData.iCascadeId = action->command;
             menuItem->menuItemData.iCommandId = action->command;
             menuItem->menuItemData.iFlags = 0;
-            menuItem->menuItemData.iText = *menuItemText;
+            menuItem->menuItemData.iText = menuItemText;
             menuItem->action = action->action;
             if (action->action->menu()->actions().size() == 0 || !action->action->isEnabled() )
                 menuItem->menuItemData.iFlags |= EEikMenuItemDimmed;
@@ -187,7 +187,7 @@ static void qt_symbian_insert_action(QSymbianMenuAction* action, QList<SymbianMe
             menuItem->menuItemData.iCascadeId = 0;
             menuItem->menuItemData.iCommandId = action->command;
             menuItem->menuItemData.iFlags = 0;
-            menuItem->menuItemData.iText = *menuItemText;
+            menuItem->menuItemData.iText = menuItemText;
             menuItem->action = action->action;
             if (!action->action->isEnabled()){
                 menuItem->menuItemData.iFlags += EEikMenuItemDimmed;
@@ -201,7 +201,6 @@ static void qt_symbian_insert_action(QSymbianMenuAction* action, QList<SymbianMe
             }
             parent->append(menuItem);
         }
-        delete menuItemText;
     }
 }
 

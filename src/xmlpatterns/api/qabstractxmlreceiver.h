@@ -43,6 +43,7 @@
 #define QABSTRACTXMLRECEIVER_H
 
 #include <QtCore/QVariant>
+#include <QtCore/QScopedPointer>
 #include <QtXmlPatterns/QXmlNodeModelIndex>
 
 QT_BEGIN_HEADER
@@ -90,7 +91,7 @@ public:
 
 protected:
     QAbstractXmlReceiver(QAbstractXmlReceiverPrivate *d);
-    QAbstractXmlReceiverPrivate *d_ptr;
+    QScopedPointer<QAbstractXmlReceiverPrivate> d_ptr;
 
     void sendAsNode(const QPatternist::Item &outputItem);
 private:

@@ -40,6 +40,7 @@
 ****************************************************************************/
 
 // INCLUDE FILES
+#include <exception>
 #include "qts60mainappui.h"
 #include "qts60maindocument.h"
 

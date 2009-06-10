@@ -76,7 +76,7 @@ public:
     static QGradient getGradient(bool *ok, QWidget *parent = 0, const QString &caption = QString());
 
 private:
-    class QtGradientDialogPrivate *d_ptr;
+    QScopedPointer<class QtGradientDialogPrivate> d_ptr;
     Q_DECLARE_PRIVATE(QtGradientDialog)
     Q_DISABLE_COPY(QtGradientDialog)
     Q_PRIVATE_SLOT(d_func(), void slotAboutToShowDetails(bool details, int extensionWidthHint))

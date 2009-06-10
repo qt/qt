@@ -85,7 +85,7 @@ protected:
     void propertyChanged();
 private:
     friend class QtAbstractPropertyManager;
-    QtPropertyPrivate *d_ptr;
+    QScopedPointer<QtPropertyPrivate> d_ptr;
 };
 
 class QtAbstractPropertyManagerPrivate;
@@ -118,7 +118,7 @@ protected:
     virtual QtProperty *createProperty();
 private:
     friend class QtProperty;
-    QtAbstractPropertyManagerPrivate *d_ptr;
+    QScopedPointer<QtAbstractPropertyManagerPrivate> d_ptr;
     Q_DECLARE_PRIVATE(QtAbstractPropertyManager)
     Q_DISABLE_COPY(QtAbstractPropertyManager)
 };
@@ -235,7 +235,7 @@ public:
 private:
     explicit QtBrowserItem(QtAbstractPropertyBrowser *browser, QtProperty *property, QtBrowserItem *parent);
     ~QtBrowserItem();
-    QtBrowserItemPrivate *d_ptr;
+    QScopedPointer<QtBrowserItemPrivate> d_ptr;
     friend class QtAbstractPropertyBrowserPrivate;
 };
 
@@ -292,7 +292,7 @@ private:
     bool addFactory(QtAbstractPropertyManager *abstractManager,
                 QtAbstractEditorFactoryBase *abstractFactory);
 
-    QtAbstractPropertyBrowserPrivate *d_ptr;
+    QScopedPointer<QtAbstractPropertyBrowserPrivate> d_ptr;
     Q_DECLARE_PRIVATE(QtAbstractPropertyBrowser)
     Q_DISABLE_COPY(QtAbstractPropertyBrowser)
     Q_PRIVATE_SLOT(d_func(), void slotPropertyInserted(QtProperty *,

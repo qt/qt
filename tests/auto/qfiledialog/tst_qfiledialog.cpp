@@ -465,10 +465,11 @@ void tst_QFiledialog::completer()
     if (!tmp.exists(tempPath))
         QVERIFY(tmp.mkdir("QFileDialogTestDir"));
     QList<QTemporaryFile*> files;
+    QT_TRY {
     for (int i = 0; i < 10; ++i) {
-        QTemporaryFile *file = new QTemporaryFile(tempPath + "/rXXXXXX");
+        QScopedPointer<QTemporaryFile> file(new QTemporaryFile(tempPath + "/rXXXXXX"));
         file->open();
-        files.append(file);
+        files.append(file.take());
     }
 
     // ### flesh this out more
@@ -559,6 +560,10 @@ void tst_QFiledialog::completer()
     // ### FIXME: This will fail on Symbian on some tests and some environments until the file engine and QFileSystemModel
     // are fixed to properly capitalize paths, so that some folders are not duplicated in QFileSystemModel.
     QTRY_COMPARE(cModel->rowCount(), expected);
+    } QT_CATCH(...) {
+        qDeleteAll(files);
+        QT_RETHROW;
+    }
     qDeleteAll(files);
 }
 

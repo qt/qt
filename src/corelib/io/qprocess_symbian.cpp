@@ -56,6 +56,7 @@
         User::Panic(KQProcessPanic, panicReason); \
     }
 
+#include <exception>
 #include <e32base.h>
 #include <e32std.h>
 #include <stdio.h>

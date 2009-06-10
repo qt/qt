@@ -1437,7 +1437,7 @@ int QTest::qExec(QObject *testObject, int argc, char **argv)
     }
 #endif
 
- #ifndef QT_NO_EXCEPTIONS
+#ifndef QT_NO_EXCEPTIONS
      } catch (...) {
          QTestResult::addFailure("Caught unhandled exception", __FILE__, __LINE__);
          if (QTestResult::currentTestFunction()) {
@@ -1451,13 +1451,13 @@ int QTest::qExec(QObject *testObject, int argc, char **argv)
              IOPMAssertionRelease(powerID);
          }
 #endif
- #ifdef Q_OS_WIN
+//#  ifdef Q_OS_WIN
          // rethrow exception to make debugging easier
          throw;
- #endif
-         return -1;
+//#  endif
+         return 1;
      }
- #endif
+#  endif
 
     currentTestObject = 0;
 #ifdef QT_MAC_USE_COCOA

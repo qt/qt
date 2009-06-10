@@ -105,7 +105,6 @@ QScriptDebuggerConsoleCommandManager::QScriptDebuggerConsoleCommandManager()
 
 QScriptDebuggerConsoleCommandManager::~QScriptDebuggerConsoleCommandManager()
 {
-    delete d_ptr;
 }
 
 /*!

@@ -40,6 +40,7 @@
 ****************************************************************************/
 
 // INCLUDE FILES
+#include <exception>
 #include <avkon.hrh>
 #include <eikmenub.h>
 #include <eikmenup.h>
@@ -126,7 +127,9 @@ void CQtS60MainAppUi::HandleWsEventL(const TWsEvent& aEvent, CCoeControl *contro
 {
     int result = 0;
     if (qApp)
-        result = qApp->s60ProcessEvent(const_cast<TWsEvent*>(&aEvent));
+        QT_TRANSLATE_EXCEPTION_TO_SYMBIAN_LEAVE(
+            result = qApp->s60ProcessEvent(const_cast<TWsEvent*>(&aEvent))
+        );
 
     if (result <= 0)
         CAknAppUi::HandleWsEventL(aEvent, control);
@@ -165,7 +168,8 @@ TInt CQtS60MainAppUi::OpenCMainStaticCallBack(  TAny* aObject )
 //
 void CQtS60MainAppUi::OpenCMainCallBack()
 {
-    TInt ret = QtMainWrapper();
+    TInt ret;
+    TRAPD(err, ret = QtMainWrapper());
     Exit();
 }
 

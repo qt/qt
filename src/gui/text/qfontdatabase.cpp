@@ -167,10 +167,13 @@ QtFontEncoding *QtFontSize::encodingID(int id, uint xpoint, uint xres,
 
     if (!add) return 0;
 
-    if (!(count % 4))
-        encodings = (QtFontEncoding *)
+    if (!(count % 4)) {
+        QtFontEncoding *newEncodings = (QtFontEncoding *)
                     realloc(encodings,
                              (((count+4) >> 2) << 2) * sizeof(QtFontEncoding));
+        Q_CHECK_PTR(newEncodings);
+        encodings = newEncodings;
+    }
     encodings[count].encoding = id;
     encodings[count].xpoint = xpoint;
     encodings[count].xres = xres;
@@ -274,10 +277,13 @@ QtFontSize *QtFontStyle::pixelSize(unsigned short size, bool add)
     if (!add)
         return 0;
 
-    if (!(count % 8))
-        pixelSizes = (QtFontSize *)
+    if (!(count % 8)) {
+        QtFontSize *newPixelSizes = (QtFontSize *)
                      realloc(pixelSizes,
                               (((count+8) >> 3) << 3) * sizeof(QtFontSize));
+        Q_CHECK_PTR(newPixelSizes);
+        pixelSizes = newPixelSizes;
+    }
     pixelSizes[count].pixelSize = size;
 #ifdef Q_WS_X11
     pixelSizes[count].count = 0;
@@ -328,12 +334,16 @@ QtFontStyle *QtFontFoundry::style(const QtFontStyle::Key &key, bool create)
         return 0;
 
 //     qDebug("adding key (weight=%d, style=%d, oblique=%d stretch=%d) at %d", key.weight, key.style, key.oblique, key.stretch, pos);
-    if (!(count % 8))
-        styles = (QtFontStyle **)
+    if (!(count % 8)) {
+        QtFontStyle **newStyles = (QtFontStyle **)
                  realloc(styles, (((count+8) >> 3) << 3) * sizeof(QtFontStyle *));
+        Q_CHECK_PTR(newStyles);
+        styles = newStyles;
+    }
 
+    QtFontStyle *style = new QtFontStyle(key);
     memmove(styles + pos + 1, styles + pos, (count-pos)*sizeof(QtFontStyle *));
-    styles[pos] = new QtFontStyle(key);
+    styles[pos] = style;
     count++;
     return styles[pos];
 }
@@ -438,10 +448,13 @@ QtFontFoundry *QtFontFamily::foundry(const QString &f, bool create)
     if (!create)
         return 0;
 
-    if (!(count % 8))
-        foundries = (QtFontFoundry **)
+    if (!(count % 8)) {
+        QtFontFoundry **newFoundries = (QtFontFoundry **)
                     realloc(foundries,
                              (((count+8) >> 3) << 3) * sizeof(QtFontFoundry *));
+        Q_CHECK_PTR(newFoundries);
+        foundries = newFoundries;
+    }
 
     foundries[count] = new QtFontFoundry(f);
     return foundries[count++];
@@ -684,13 +697,17 @@ QtFontFamily *QFontDatabasePrivate::family(const QString &f, bool create)
         pos++;
 
     // qDebug("adding family %s at %d total=%d", f.latin1(), pos, count);
-    if (!(count % 8))
-        families = (QtFontFamily **)
+    if (!(count % 8)) {
+        QtFontFamily **newFamilies = (QtFontFamily **)
                    realloc(families,
                             (((count+8) >> 3) << 3) * sizeof(QtFontFamily *));
+        Q_CHECK_PTR(newFamilies);
+        families = newFamilies;
+    }
 
+    QtFontFamily *family = new QtFontFamily(f);
     memmove(families + pos + 1, families + pos, (count-pos)*sizeof(QtFontFamily *));
-    families[pos] = new QtFontFamily(f);
+    families[pos] = family;
     count++;
     return families[pos];
 }

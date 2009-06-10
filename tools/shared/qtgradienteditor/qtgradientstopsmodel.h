@@ -64,7 +64,7 @@ private:
     friend class QtGradientStopsModel;
     QtGradientStop(QtGradientStopsModel *model = 0);
     ~QtGradientStop();
-    class QtGradientStopPrivate *d_ptr;
+    QScopedPointer<class QtGradientStopPrivate> d_ptr;
 };
 
 class QtGradientStopsModel : public QObject
@@ -111,7 +111,7 @@ signals:
     void currentStopChanged(QtGradientStop *stop);
 
 private:
-    class QtGradientStopsModelPrivate *d_ptr;
+    QScopedPointer<class QtGradientStopsModelPrivate> d_ptr;
     Q_DECLARE_PRIVATE(QtGradientStopsModel)
     Q_DISABLE_COPY(QtGradientStopsModel)
 };

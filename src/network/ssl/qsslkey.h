@@ -45,6 +45,7 @@
 
 #include <QtCore/qnamespace.h>
 #include <QtCore/qbytearray.h>
+#include <QtCore/qscopedpointer.h>
 #include <QtNetwork/qssl.h>
 
 QT_BEGIN_HEADER
@@ -92,7 +93,7 @@ public:
     inline bool operator!=(const QSslKey &key) const { return !operator==(key); }
 
 private:
-    QSslKeyPrivate *d;
+    QScopedSharedPointer<QSslKeyPrivate> d;
     friend class QSslCertificate;
 };
 

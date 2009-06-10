@@ -41,8 +41,8 @@
 #ifndef QGRAPHICSSVGITEM_H
 #define QGRAPHICSSVGITEM_H
 
-#include <QtGui/qgraphicsitem.h>
 #include <QtCore/qobject.h>
+#include <QtGui/qgraphicsitem.h>
 
 #ifndef QT_NO_GRAPHICSSVGITEM
 
@@ -89,9 +89,9 @@ private:
 
     // Q_DECLARE_PRIVATE_WITH_BASE(QGraphicsSvgItem, QObject)
     inline QGraphicsSvgItemPrivate *d_func()
-    { return reinterpret_cast<QGraphicsSvgItemPrivate *>(QObject::d_ptr); }
+    { return reinterpret_cast<QGraphicsSvgItemPrivate *>(QObject::d_ptr.data()); }
     inline const QGraphicsSvgItemPrivate *d_func() const
-    { return reinterpret_cast<const QGraphicsSvgItemPrivate *>(QObject::d_ptr); }
+    { return reinterpret_cast<const QGraphicsSvgItemPrivate *>(QObject::d_ptr.data()); }
     friend class QGraphicsSvgItemPrivate;
 
     Q_PRIVATE_SLOT(d_func(), void _q_repaintItem())

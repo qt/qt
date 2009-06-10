@@ -1304,7 +1304,13 @@ QWSServer::QWSServer(int flags, QObject *parent) :
     QObject(*new QWSServerPrivate, parent)
 {
     Q_D(QWSServer);
-    d->initServer(flags);
+    QT_TRY {
+        d->initServer(flags);
+    } QT_CATCH(...) {
+        qwsServer = 0;
+        qwsServerPrivate = 0;
+        QT_RETHROW;
+    }
 }
 
 #ifdef QT3_SUPPORT
@@ -1750,21 +1756,23 @@ void QWSServerPrivate::cleanupFonts(bool force)
 #if defined(QWS_DEBUG_FONTCLEANUP)
     qDebug() << "cleanupFonts()";
 #endif
-    QMap<QByteArray, int>::Iterator it = fontReferenceCount.begin();
-    while (it != fontReferenceCount.end()) {
-        if (it.value() && !force) {
-            ++it;
-            continue;
-        }
+    if (!fontReferenceCount.isEmpty()) {
+        QMap<QByteArray, int>::Iterator it = fontReferenceCount.begin();
+        while (it != fontReferenceCount.end()) {
+            if (it.value() && !force) {
+                ++it;
+                continue;
+            }
 
-        const QByteArray &fontName = it.key();
+            const QByteArray &fontName = it.key();
 #if defined(QWS_DEBUG_FONTCLEANUP)
-        qDebug() << "removing unused font file" << fontName;
+            qDebug() << "removing unused font file" << fontName;
 #endif
-        QFile::remove(QFile::decodeName(fontName));
-        sendFontRemovedEvent(fontName);
+            QFile::remove(QFile::decodeName(fontName));
+            sendFontRemovedEvent(fontName);
 
-        it = fontReferenceCount.erase(it);
+            it = fontReferenceCount.erase(it);
+        }
     }
 
     if (crashedClientIds.isEmpty())
@@ -3966,7 +3974,8 @@ void QWSServerPrivate::openDisplay()
 
 void QWSServerPrivate::closeDisplay()
 {
-    qt_screen->shutdownDevice();
+    if (qt_screen)
+        qt_screen->shutdownDevice();
 }
 
 /*!
@@ -4065,9 +4074,14 @@ void QWSServer::startup(int flags)
 
 void QWSServer::closedown()
 {
-    unlink(qws_qtePipeFilename().toLatin1().constData());
-    delete qwsServer;
+    QScopedPointer<QWSServer> server(qwsServer);
     qwsServer = 0;
+    QT_TRY {
+        unlink(qws_qtePipeFilename().toLatin1().constData());
+    } QT_CATCH(const std::bad_alloc &) {
+        // ### TODO - what to do when we run out of memory
+        // when calling toLatin1?
+    }
 }
 
 void QWSServerPrivate::emergency_cleanup()

@@ -54,7 +54,7 @@
 //
 
 #include <QtCore/qobjectdefs.h>
-
+#include <QtCore/qscopedpointer.h>
 #include <QtCore/qdatetime.h>
 #include <QtCore/qmap.h>
 
@@ -91,7 +91,7 @@ public:
     bool operator!=(const QScriptScriptData &other) const;
 
 private:
-    QScriptScriptDataPrivate *d_ptr;
+    QScopedSharedPointer<QScriptScriptDataPrivate> d_ptr;
 
     Q_DECLARE_PRIVATE(QScriptScriptData)
 };

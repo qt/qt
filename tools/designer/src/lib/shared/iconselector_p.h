@@ -87,7 +87,7 @@ public:
     QString currentPath() const;
 
 private:
-    class LanguageResourceDialogPrivate *d_ptr;
+    QScopedPointer<class LanguageResourceDialogPrivate> d_ptr;
     Q_DECLARE_PRIVATE(LanguageResourceDialog)
     Q_DISABLE_COPY(LanguageResourceDialog)
     Q_PRIVATE_SLOT(d_func(), void slotAccepted())
@@ -120,7 +120,7 @@ public:
 signals:
     void iconChanged(const PropertySheetIconValue &icon);
 private:
-    class IconSelectorPrivate *d_ptr;
+    QScopedPointer<class IconSelectorPrivate> d_ptr;
     Q_DECLARE_PRIVATE(IconSelector)
     Q_DISABLE_COPY(IconSelector)
 

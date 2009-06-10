@@ -94,7 +94,7 @@ QScriptDebuggerValue::QScriptDebuggerValue(const QScriptValue &value)
     : d_ptr(0)
 {
     if (value.isValid()) {
-        d_ptr = new QScriptDebuggerValuePrivate;
+        d_ptr.reset(new QScriptDebuggerValuePrivate);
         if (value.isUndefined())
             d_ptr->type = UndefinedValue;
         else if (value.isNull())
@@ -157,7 +157,7 @@ QScriptDebuggerValue::QScriptDebuggerValue(ValueType type)
 }
 
 QScriptDebuggerValue::QScriptDebuggerValue(const QScriptDebuggerValue &other)
-    : d_ptr(other.d_ptr)
+    : d_ptr(other.d_ptr.data())
 {
     if (d_ptr)
         d_ptr->ref.ref();
@@ -165,21 +165,11 @@ QScriptDebuggerValue::QScriptDebuggerValue(const QScriptDebuggerValue &other)
 
 QScriptDebuggerValue::~QScriptDebuggerValue()
 {
-    if (d_ptr && !d_ptr->ref.deref()) {
-        delete d_ptr;
-        d_ptr = 0;
-    }
 }
 
 QScriptDebuggerValue &QScriptDebuggerValue::operator=(const QScriptDebuggerValue &other)
 {
-    if (d_ptr == other.d_ptr)
-        return *this;
-    if (d_ptr && !d_ptr->ref.deref())
-        delete d_ptr;
-    d_ptr = other.d_ptr;
-    if (d_ptr)
-        d_ptr->ref.ref();
+    d_ptr.assign(other.d_ptr.data());
     return *this;
 }
 

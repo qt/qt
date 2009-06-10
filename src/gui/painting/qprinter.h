@@ -42,8 +42,9 @@
 #ifndef QPRINTER_H
 #define QPRINTER_H
 
-#include <QtGui/qpaintdevice.h>
 #include <QtCore/qstring.h>
+#include <QtCore/qscopedpointer.h>
+#include <QtGui/qpaintdevice.h>
 
 QT_BEGIN_HEADER
 
@@ -288,7 +289,7 @@ private:
 
     Q_DISABLE_COPY(QPrinter)
 
-    QPrinterPrivate *d_ptr;
+    QScopedPointer<QPrinterPrivate> d_ptr;
 
     friend class QPrintDialogPrivate;
     friend class QAbstractPrintDialog;

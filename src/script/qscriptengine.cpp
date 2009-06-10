@@ -330,10 +330,6 @@ QScriptEngine::~QScriptEngine()
     Q_D(QScriptEngine);
     d->m_frameRepository.release(currentContext());
     d->objectAllocator.destruct();
-#ifdef QT_NO_QOBJECT
-    delete d_ptr;
-    d_ptr = 0;
-#endif
 }
 
 /*!
@@ -1777,7 +1773,7 @@ QScriptValue QScriptEngine::objectById(qint64 id) const
   Constructs a new QScriptSyntaxCheckResult from the \a other result.
 */
 QScriptSyntaxCheckResult::QScriptSyntaxCheckResult(const QScriptSyntaxCheckResult &other)
-    : d_ptr(other.d_ptr)
+    : d_ptr(other.d_ptr.data())
 {
     if (d_ptr)
         d_ptr->ref.ref();
@@ -1806,10 +1802,6 @@ QScriptSyntaxCheckResult::QScriptSyntaxCheckResult()
 */
 QScriptSyntaxCheckResult::~QScriptSyntaxCheckResult()
 {
-    if (d_ptr && !d_ptr->ref.deref()) {
-        delete d_ptr;
-        d_ptr = 0;
-    }
 }
 
 /*!
@@ -1863,15 +1855,7 @@ QString QScriptSyntaxCheckResult::errorMessage() const
 */
 QScriptSyntaxCheckResult &QScriptSyntaxCheckResult::operator=(const QScriptSyntaxCheckResult &other)
 {
-    if (d_ptr == other.d_ptr)
-        return *this;
-    if (d_ptr && !d_ptr->ref.deref()) {
-        delete d_ptr;
-        d_ptr = 0;
-    }
-    d_ptr = other.d_ptr;
-    if (d_ptr)
-        d_ptr->ref.ref();
+    d_ptr.assign(other.d_ptr.data());
     return *this;
 }
 

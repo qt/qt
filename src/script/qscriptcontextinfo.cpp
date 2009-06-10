@@ -204,13 +204,12 @@ QScriptContextInfoPrivate::~QScriptContextInfoPrivate()
   previously created QScriptContextInfo.
 */
 QScriptContextInfo::QScriptContextInfo(const QScriptContext *context)
+    : d_ptr(0)
 {
     if (context) {
-        d_ptr = new QScriptContextInfoPrivate(context);
+        d_ptr.data_ptr() = new QScriptContextInfoPrivate(context);
         d_ptr->q_ptr = this;
         d_ptr->ref.ref();
-    } else {
-        d_ptr = 0;
     }
 }
 
@@ -218,7 +217,7 @@ QScriptContextInfo::QScriptContextInfo(const QScriptContext *context)
   Constructs a new QScriptContextInfo from the \a other info.
 */
 QScriptContextInfo::QScriptContextInfo(const QScriptContextInfo &other)
-    : d_ptr(other.d_ptr)
+    : d_ptr(other.d_ptr.data())
 {
     if (d_ptr)
         d_ptr->ref.ref();
@@ -239,10 +238,6 @@ QScriptContextInfo::QScriptContextInfo()
 */
 QScriptContextInfo::~QScriptContextInfo()
 {
-    if (d_ptr && !d_ptr->ref.deref()) {
-        delete d_ptr;
-        d_ptr = 0;
-    }
 }
 
 /*!
@@ -251,15 +246,7 @@ QScriptContextInfo::~QScriptContextInfo()
 */
 QScriptContextInfo &QScriptContextInfo::operator=(const QScriptContextInfo &other)
 {
-    if (d_ptr == other.d_ptr)
-        return *this;
-    if (d_ptr && !d_ptr->ref.deref()) {
-        delete d_ptr;
-        d_ptr = 0;
-    }
-    d_ptr = other.d_ptr;
-    if (d_ptr)
-        d_ptr->ref.ref();
+    d_ptr.assign(other.d_ptr.data());
     return *this;
 }
 
@@ -510,7 +497,7 @@ QDataStream &operator<<(QDataStream &out, const QScriptContextInfo &info)
 Q_SCRIPT_EXPORT QDataStream &operator>>(QDataStream &in, QScriptContextInfo &info)
 {
     if (!info.d_ptr) {
-        info.d_ptr = new QScriptContextInfoPrivate();
+        info.d_ptr.data_ptr() = new QScriptContextInfoPrivate();
         info.d_ptr->ref.ref();
     }
 

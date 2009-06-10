@@ -42,8 +42,9 @@
 #ifndef QFILEICONPROVIDER_H
 #define QFILEICONPROVIDER_H
 
-#include <QtGui/qicon.h>
 #include <QtCore/qfileinfo.h>
+#include <QtCore/qscopedpointer.h>
+#include <QtGui/qicon.h>
 
 QT_BEGIN_HEADER
 
@@ -67,7 +68,7 @@ public:
 
 private:
     Q_DECLARE_PRIVATE(QFileIconProvider)
-    QFileIconProviderPrivate *d_ptr;
+    QScopedPointer<QFileIconProviderPrivate> d_ptr;
     Q_DISABLE_COPY(QFileIconProvider)
 };
 

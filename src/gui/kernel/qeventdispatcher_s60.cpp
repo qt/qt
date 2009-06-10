@@ -62,17 +62,21 @@ bool QEventDispatcherS60::processEvents ( QEventLoop::ProcessEventsFlags flags )
 {
     bool ret = false;
 
-    bool oldNoInputEventsValue = m_noInputEvents;
-    if (flags & QEventLoop::ExcludeUserInputEvents) {
-        m_noInputEvents = true;
-    } else {
-        m_noInputEvents = false;
-        ret = sendDeferredInputEvents() || ret;
+    QT_TRY {
+        bool oldNoInputEventsValue = m_noInputEvents;
+        if (flags & QEventLoop::ExcludeUserInputEvents) {
+            m_noInputEvents = true;
+        } else {
+            m_noInputEvents = false;
+            ret = sendDeferredInputEvents() || ret;
+        }
+    
+        ret = QEventDispatcherSymbian::processEvents(flags) || ret;
+    
+        m_noInputEvents = oldNoInputEventsValue;
+    } QT_CATCH (const std::exception& ex) {
+        CActiveScheduler::Current()->Error(qt_translateExceptionToSymbianError(ex));        
     }
-
-    ret = QEventDispatcherSymbian::processEvents(flags) || ret;
-
-    m_noInputEvents = oldNoInputEventsValue;
 
     return ret;
 }

@@ -100,6 +100,7 @@ extern QSysInfo::MacVersion qt_macver;
 #if defined(Q_WS_QWS)
 class QWSManager;
 class QDirectPainter;
+struct QWSServerCleaner { ~QWSServerCleaner(); };
 #endif
 
 #ifndef QT_NO_TABLET
@@ -382,6 +383,7 @@ public:
 
 #ifdef Q_WS_QWS
     QPointer<QWSManager> last_manager;
+    QWSServerCleaner qwsServerCleaner;
 # ifndef QT_NO_DIRECTPAINTER
     QMap<WId, QDirectPainter *> *directPainters;
 # endif

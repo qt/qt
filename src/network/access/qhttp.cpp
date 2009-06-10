@@ -624,7 +624,6 @@ QHttpHeader::QHttpHeader(QHttpHeaderPrivate &dd, const QHttpHeader &header)
 */
 QHttpHeader::~QHttpHeader()
 {
-    delete d_ptr;
 }
 
 /*!

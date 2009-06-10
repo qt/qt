@@ -853,7 +853,7 @@ void QTreeModel::sortItems(QList<QTreeWidgetItem*> *items, int column, Qt::SortO
         items->replace(r, item);
         for (int c = 0; c < colCount; ++c) {
             QModelIndex from = createIndex(oldRow, c, item);
-            if (static_cast<QAbstractItemModelPrivate *>(d_ptr)->persistent.indexes.contains(from)) {
+            if (static_cast<QAbstractItemModelPrivate *>(d_ptr.data())->persistent.indexes.contains(from)) {
                 QModelIndex to = createIndex(r, c, item);
                 fromList << from;
                 toList << to;

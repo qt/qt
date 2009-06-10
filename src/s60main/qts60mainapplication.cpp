@@ -40,6 +40,7 @@
 ****************************************************************************/
 
 // INCLUDE FILES
+#include <exception>
 #include "qts60maindocument.h"
 #include "qts60mainapplication.h"
 #include <bautils.h>

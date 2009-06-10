@@ -132,7 +132,6 @@ QPicture::QPicture(int formatVersion)
 {
     Q_D(QPicture);
     d_ptr->q_ptr = this;
-    d->paintEngine = 0;
 
     if (formatVersion == 0)
         qWarning("QPicture: invalid format version 0");
@@ -155,7 +154,7 @@ QPicture::QPicture(int formatVersion)
 */
 
 QPicture::QPicture(const QPicture &pic)
-    : QPaintDevice(), d_ptr(pic.d_ptr)
+    : QPaintDevice(), d_ptr(pic.d_ptr.data())
 {
     d_func()->ref.ref();
 }
@@ -173,10 +172,6 @@ QPicture::QPicture(QPicturePrivate &dptr)
 */
 QPicture::~QPicture()
 {
-    if (!d_func()->ref.deref()) {
-        delete d_func()->paintEngine;
-        delete d_func();
-    }
 }
 
 /*!
@@ -1030,9 +1025,7 @@ void QPicture::detach_helper()
     x->formatMinor = d->formatMinor;
     x->brect = d->brect;
     x->override_rect = d->override_rect;
-    if (!d->ref.deref())
-        delete d;
-    d_ptr = x;
+    d_ptr.reset(x);
 }
 
 /*!
@@ -1041,7 +1034,7 @@ void QPicture::detach_helper()
 */
 QPicture& QPicture::operator=(const QPicture &p)
 {
-    qAtomicAssign<QPicturePrivate>(d_ptr, p.d_ptr);
+    d_ptr.assign(p.d_ptr.data());
     return *this;
 }
 
@@ -1135,8 +1128,8 @@ bool QPicturePrivate::checkFormat()
 QPaintEngine *QPicture::paintEngine() const
 {
     if (!d_func()->paintEngine)
-        const_cast<QPicture*>(this)->d_func()->paintEngine = new QPicturePaintEngine;
-    return d_func()->paintEngine;
+        const_cast<QPicture*>(this)->d_func()->paintEngine.reset(new QPicturePaintEngine);
+    return d_func()->paintEngine.data();
 }
 
 /*****************************************************************************

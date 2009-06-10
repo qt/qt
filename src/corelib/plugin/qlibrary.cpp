@@ -611,10 +611,10 @@ bool QLibraryPrivate::isPlugin(QSettings *settings)
                      .arg(fileName);
     QStringList reg;
 #ifndef QT_NO_SETTINGS
-    bool madeSettings = false;
+    QScopedPointer<QSettings> madeSettings;
     if (!settings) {
         settings = new QSettings(QSettings::UserScope, QLatin1String("Trolltech"));
-        madeSettings = true;
+        madeSettings.reset(settings);
     }
     reg = settings->value(regkey).toStringList();
 #endif
@@ -708,8 +708,7 @@ bool QLibraryPrivate::isPlugin(QSettings *settings)
 #endif
     }
 #ifndef QT_NO_SETTINGS
-    if (madeSettings)
-        delete settings;
+    madeSettings.reset();
 #endif
 
     if (!success) {

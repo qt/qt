@@ -531,7 +531,7 @@ void QWSCursor::set(const uchar *data, const uchar *mask,
 
     cursor = QImage(width,height, QImage::Format_Indexed8);
 
-    if (!width || !height || !data || !mask)
+    if (!width || !height || !data || !mask || cursor.isNull())
         return;
 
     cursor.setNumColors(3);

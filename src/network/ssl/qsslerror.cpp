@@ -140,7 +140,7 @@ QSslError::QSslError(SslError error, const QSslCertificate &certificate)
 QSslError::QSslError(const QSslError &other)
     : d(new QSslErrorPrivate)
 {
-    *d = *other.d;
+    *d.data() = *other.d.data();
 }
 
 /*!
@@ -148,7 +148,6 @@ QSslError::QSslError(const QSslError &other)
 */
 QSslError::~QSslError()
 {
-    delete d;
 }
 
 /*!
@@ -158,7 +157,7 @@ QSslError::~QSslError()
 */
 QSslError &QSslError::operator=(const QSslError &other)
 {
-    *d = *other.d;
+    *d.data() = *other.d.data();
     return *this;
 }
 

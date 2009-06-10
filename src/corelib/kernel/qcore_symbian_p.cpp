@@ -39,9 +39,11 @@
 **
 ****************************************************************************/
 
+#include <exception>
 #include <e32base.h>
 #include <e32uid.h>
 #include "qcore_symbian_p.h"
+#include <string>
 
 QT_BEGIN_NAMESPACE
 
@@ -51,18 +53,17 @@ QT_BEGIN_NAMESPACE
     must be deleted by the caller.
 */
 
-Q_CORE_EXPORT HBufC* qt_QString2HBufCNewL(const QString& aString)
+Q_CORE_EXPORT HBufC* qt_QString2HBufC(const QString& aString)
 {
     HBufC *buffer;
 #ifdef QT_NO_UNICODE
     TPtrC8 ptr(reinterpret_cast<const TUint8*>(aString.toLocal8Bit().constData()));
-    buffer = HBufC8::NewL(ptr.Length());
-    buffer->Des().Copy(ptr);
 #else
-    TPtrC16 ptr(reinterpret_cast<const TUint16*>(aString.utf16()));
-    buffer = HBufC16::NewL(ptr.Length());
-    buffer->Des().Copy(ptr);
+    TPtrC16 ptr(qt_QString2TPtrC(aString));
 #endif
+    buffer = HBufC::New(ptr.Length());
+    Q_CHECK_PTR(buffer);
+    buffer->Des().Copy(ptr);
     return buffer;
 }
 
@@ -82,7 +83,8 @@ QHBufC::QHBufC()
 
 QHBufC::QHBufC(const QHBufC &src)
 {
-    m_hBufC = src.m_hBufC->AllocL();
+    m_hBufC = src.m_hBufC->Alloc();
+    Q_CHECK_PTR(m_hBufC);
 }
 
 /*!
@@ -97,7 +99,7 @@ QHBufC::QHBufC(HBufC *src)
 
 QHBufC::QHBufC(const QString &src)
 {
-    m_hBufC = qt_QString2HBufCNewL(src);
+    m_hBufC = qt_QString2HBufC(src);
 }
 
 QHBufC::~QHBufC()
@@ -171,5 +173,6 @@ Q_CORE_EXPORT TLibraryFunction qt_resolveS60PluginFunc(int ordinal)
 {
     return qt_s60_plugin_resolver()->resolve(ordinal);
 }
+
 
 QT_END_NAMESPACE

@@ -7426,8 +7426,8 @@ void qt_build_pow_tables() {
     }
 #else
     for (int i=0; i<256; ++i) {
-        qt_pow_rgb_gamma[i] = uchar(qRound(pow(i / 255.0, smoothing) * 255));
-        qt_pow_rgb_invgamma[i] = uchar(qRound(pow(i / 255.0, 1 / smoothing) * 255));
+        qt_pow_rgb_gamma[i] = uchar(qRound(pow(i / qreal(255), smoothing) * 255));
+        qt_pow_rgb_invgamma[i] = uchar(qRound(pow(i / qreal(255), 1 / smoothing) * 255));
     }
 #endif
 

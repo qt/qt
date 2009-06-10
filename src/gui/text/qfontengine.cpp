@@ -191,18 +191,20 @@ QFontEngine::QFontEngine()
 
 QFontEngine::~QFontEngine()
 {
-    for (GlyphPointerHash::iterator it = m_glyphPointerHash.begin(), end = m_glyphPointerHash.end();
-         it != end; ++it) {
-        for (QList<QFontEngineGlyphCache*>::iterator it2 = it.value().begin(), end2 = it.value().end();
-            it2 != end2; ++it2)
-                delete *it2;
+    for (GlyphPointerHash::const_iterator it = m_glyphPointerHash.constBegin(),
+            end = m_glyphPointerHash.constEnd(); it != end; ++it) {
+        for (QList<QFontEngineGlyphCache*>::const_iterator it2 = it.value().constBegin(),
+                end2 = it.value().constEnd(); it2 != end2; ++it2) {
+            delete *it2;
+        }
     }
     m_glyphPointerHash.clear();
-    for (GlyphIntHash::iterator it = m_glyphIntHash.begin(), end = m_glyphIntHash.end();
-         it != end; ++it) {
-        for (QList<QFontEngineGlyphCache*>::iterator it2 = it.value().begin(), end2 = it.value().end();
-            it2 != end2; ++it2)
-                delete *it2;
+    for (GlyphIntHash::const_iterator it = m_glyphIntHash.constBegin(),
+            end = m_glyphIntHash.constEnd(); it != end; ++it) {
+        for (QList<QFontEngineGlyphCache*>::const_iterator it2 = it.value().constBegin(),
+                end2 = it.value().constEnd(); it2 != end2; ++it2) {
+            delete *it2;
+        }
     }
     m_glyphIntHash.clear();
     qHBFreeFace(hbFace);

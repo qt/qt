@@ -53,6 +53,8 @@
 // We mean it.
 //
 
+#include <QtCore/qscopedpointer.h>
+
 #include "qscriptmessagehandlerinterface_p.h"
 
 QT_BEGIN_NAMESPACE
@@ -71,7 +73,7 @@ public:
                  const QVariant &data = QVariant());
 
 private:
-    QScriptStdMessageHandlerPrivate *d_ptr;
+    QScopedPointer<QScriptStdMessageHandlerPrivate> d_ptr;
 
 private:
     Q_DECLARE_PRIVATE(QScriptStdMessageHandler)

@@ -116,7 +116,7 @@ protected:
 
 private:
     Q_DISABLE_COPY(QGLFramebufferObject)
-    QGLFramebufferObjectPrivate *d_ptr;
+    QScopedPointer<QGLFramebufferObjectPrivate> d_ptr;
     friend class QGLDrawable;
 };
 

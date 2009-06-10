@@ -44,6 +44,7 @@
 
 #include <QtCore/qfile.h>
 #include <QtCore/qlist.h>
+#include <QtCore/qscopedpointer.h>
 
 QT_BEGIN_HEADER
 
@@ -165,7 +166,7 @@ public:
 #endif
 
 protected:
-    QFileInfoPrivate *d_ptr;
+    QScopedPointer<QFileInfoPrivate> d_ptr;
 private:
     Q_DECLARE_PRIVATE(QFileInfo)
 };

@@ -778,8 +778,6 @@ QStandardItem &QStandardItem::operator=(const QStandardItem &other)
 */
 QStandardItem::~QStandardItem()
 {
-    Q_D(QStandardItem);
-    delete d;
 }
 
 /*!

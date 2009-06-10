@@ -36,7 +36,8 @@ HEADERS +=  \
 	tools/qtimeline.h \
 	tools/qunicodetables_p.h \
 	tools/qvarlengtharray.h \
-	tools/qvector.h
+	tools/qvector.h \
+        tools/qscopedpointer.h
 
 
 SOURCES += \

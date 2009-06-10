@@ -173,8 +173,6 @@ QScriptEngineAgent::QScriptEngineAgent(QScriptEngineAgentPrivate &dd, QScriptEng
 */
 QScriptEngineAgent::~QScriptEngineAgent()
 {
-    delete d_ptr;
-    d_ptr = 0;
 }
 
 /*!

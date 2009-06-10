@@ -45,6 +45,7 @@
 #include <QtGui/qwidget.h>
 #include <QtOpenGL/qglcolormap.h>
 #include <QtCore/qmap.h>
+#include <QtCore/qscopedpointer.h>
 
 QT_BEGIN_HEADER
 
@@ -348,7 +349,7 @@ protected:
     static QGLContext* currentCtx;
 
 private:
-    QGLContextPrivate* d_ptr;
+    QScopedPointer<QGLContextPrivate> d_ptr;
 
     friend class QGLPixelBuffer;
     friend class QGLPixelBufferPrivate;

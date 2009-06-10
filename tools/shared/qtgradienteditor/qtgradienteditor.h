@@ -78,7 +78,7 @@ signals:
     void aboutToShowDetails(bool details, int extenstionWidthHint);
 
 private:
-    class QtGradientEditorPrivate *d_ptr;
+    QScopedPointer<class QtGradientEditorPrivate> d_ptr;
     Q_DECLARE_PRIVATE(QtGradientEditor)
     Q_DISABLE_COPY(QtGradientEditor)
     Q_PRIVATE_SLOT(d_func(), void slotGradientStopsChanged(const QGradientStops &stops))

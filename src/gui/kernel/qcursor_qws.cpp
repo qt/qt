@@ -66,7 +66,11 @@ QCursorData::~QCursorData()
 {
     delete bm;
     delete bmm;
-    QPaintDevice::qwsDisplay()->destroyCursor(id);
+    QT_TRY {
+        QPaintDevice::qwsDisplay()->destroyCursor(id);
+    } QT_CATCH(const std::bad_alloc &) {
+        // do nothing.
+    }
 }
 
 

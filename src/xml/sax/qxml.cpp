@@ -262,10 +262,11 @@ class QXmlDefaultHandlerPrivate
 
 class QXmlSimpleReaderPrivate
 {
+public:
+    ~QXmlSimpleReaderPrivate();
 private:
     // functions
-    QXmlSimpleReaderPrivate();
-    ~QXmlSimpleReaderPrivate();
+    QXmlSimpleReaderPrivate(QXmlSimpleReader *reader);
     void initIncrementalParsing();
 
     // used to determine if elements are correctly nested
@@ -350,7 +351,7 @@ private:
     bool contentCharDataRead;
 
     // helper classes
-    QXmlLocator *locator;
+    QScopedPointer<QXmlLocator> locator;
     QXmlNamespaceSupport namespaceSupport;
 
     // error string
@@ -545,8 +546,8 @@ private:
 
 QXmlParseException::QXmlParseException(const QString& name, int c, int l,
                                        const QString& p, const QString& s)
+    : d(new QXmlParseExceptionPrivate)
 {
-    d = new QXmlParseExceptionPrivate;
     d->msg = name;
     d->column = c;
     d->line = l;
@@ -559,7 +560,6 @@ QXmlParseException::QXmlParseException(const QString& name, int c, int l,
 */
 QXmlParseException::~QXmlParseException()
 {
-    delete d;
 }
 
 /*!
@@ -928,8 +928,9 @@ void QXmlNamespaceSupport::popContext()
 */
 void QXmlNamespaceSupport::reset()
 {
+    QXmlNamespaceSupportPrivate *newD = new QXmlNamespaceSupportPrivate;
     delete d;
-    d = new QXmlNamespaceSupportPrivate;
+    d = newD;
 }
 
 
@@ -1260,18 +1261,23 @@ void QXmlInputSource::init()
 {
     d = new QXmlInputSourcePrivate;
 
-    d->inputDevice = 0;
-    d->inputStream = 0;
+    QT_TRY {
+        d->inputDevice = 0;
+        d->inputStream = 0;
 
-    setData(QString());
+        setData(QString());
 #ifndef QT_NO_TEXTCODEC
-    d->encMapper = 0;
+        d->encMapper = 0;
 #endif
-    d->nextReturnedEndOfData = true; // first call to next() will call fetchData()
+        d->nextReturnedEndOfData = true; // first call to next() will call fetchData()
 
-    d->encodingDeclBytes.clear();
-    d->encodingDeclChars.clear();
-    d->lookingForEncodingDecl = true;
+        d->encodingDeclBytes.clear();
+        d->encodingDeclChars.clear();
+        d->lookingForEncodingDecl = true;
+    } QT_CATCH(...) {
+        delete(d);
+        QT_RETHROW;
+    }
 }
 
 /*!
@@ -2715,9 +2721,24 @@ inline void QXmlSimpleReaderPrivate::refClear()
     refValueLen = 0; refArrayPos = 0;
 }
 
-QXmlSimpleReaderPrivate::QXmlSimpleReaderPrivate()
+QXmlSimpleReaderPrivate::QXmlSimpleReaderPrivate(QXmlSimpleReader *reader)
 {
+    q_ptr = reader;
     parseStack = 0;
+
+    locator.reset(new QXmlSimpleReaderLocator(reader));
+    entityRes  = 0;
+    dtdHnd     = 0;
+    contentHnd = 0;
+    errorHnd   = 0;
+    lexicalHnd = 0;
+    declHnd    = 0;
+
+    // default feature settings
+    useNamespaces = true;
+    useNamespacePrefixes = false;
+    reportWhitespaceCharData = true;
+    reportEntities = false;
 }
 
 QXmlSimpleReaderPrivate::~QXmlSimpleReaderPrivate()
@@ -2727,8 +2748,10 @@ QXmlSimpleReaderPrivate::~QXmlSimpleReaderPrivate()
 
 void QXmlSimpleReaderPrivate::initIncrementalParsing()
 {
-    delete parseStack;
-    parseStack = new QStack<ParseState>;
+    if( parseStack )
+        parseStack->clear();
+    else
+        parseStack = new QStack<ParseState>;
 }
 
 /*********************************************
@@ -3101,25 +3124,8 @@ static NameChar determineNameChar(QChar ch)
 
 */
 QXmlSimpleReader::QXmlSimpleReader()
+    : d_ptr(new QXmlSimpleReaderPrivate(this))
 {
-    d_ptr = new QXmlSimpleReaderPrivate();
-    Q_D(QXmlSimpleReader);
-    d->q_ptr = this;
-
-    d->locator = new QXmlSimpleReaderLocator(this);
-
-    d->entityRes  = 0;
-    d->dtdHnd     = 0;
-    d->contentHnd = 0;
-    d->errorHnd   = 0;
-    d->lexicalHnd = 0;
-    d->declHnd    = 0;
-
-    // default feature settings
-    d->useNamespaces = true;
-    d->useNamespacePrefixes = false;
-    d->reportWhitespaceCharData = true;
-    d->reportEntities = false;
 }
 
 /*!
@@ -3127,9 +3133,6 @@ QXmlSimpleReader::QXmlSimpleReader()
 */
 QXmlSimpleReader::~QXmlSimpleReader()
 {
-    Q_D(QXmlSimpleReader);
-    delete d->locator;
-    delete d;
 }
 
 /*!
@@ -3412,7 +3415,7 @@ bool QXmlSimpleReader::parse(const QXmlInputSource *input, bool incremental)
 
     // call the handler
     if (d->contentHnd) {
-        d->contentHnd->setDocumentLocator(d->locator);
+        d->contentHnd->setDocumentLocator(d->locator.data());
         if (!d->contentHnd->startDocument()) {
             d->reportParseError(d->contentHnd->errorString());
             d->tags.clear();

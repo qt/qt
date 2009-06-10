@@ -117,7 +117,13 @@ QTextOption &QTextOption::operator=(const QTextOption &o)
 {
     if (this == &o)
         return *this;
-    delete d; d = 0;
+
+    QTextOptionPrivate* dNew = 0;
+    if (o.d)
+        dNew = new QTextOptionPrivate(*o.d);
+    delete d;
+    d = dNew;
+
     align = o.align;
     wordWrap = o.wordWrap;
     design = o.design;
@@ -125,8 +131,6 @@ QTextOption &QTextOption::operator=(const QTextOption &o)
     unused = o.unused;
     f = o.f;
     tab = o.tab;
-    if (o.d)
-        d = new QTextOptionPrivate(*o.d);
     return *this;
 }
 

@@ -325,21 +325,21 @@ QFontEngineQPF::QFontEngineQPF(const QFontDef &def, int fileDescriptor, QFontEng
         fileName.replace(QLatin1Char(' '), QLatin1Char('_'));
         fileName.prepend(qws_fontCacheDir());
 
-        const QByteArray encodedName = QFile::encodeName(fileName);
-        if (::access(encodedName, F_OK) == 0) {
+        encodedFileName = QFile::encodeName(fileName);
+        if (::access(encodedFileName, F_OK) == 0) {
 #if defined(DEBUG_FONTENGINE)
             qDebug() << "found existing qpf:" << fileName;
 #endif
-            if (::access(encodedName, W_OK | R_OK) == 0)
-                fd = ::open(encodedName, O_RDWR);
-            else if (::access(encodedName, R_OK) == 0)
-                fd = ::open(encodedName, O_RDONLY);
+            if (::access(encodedFileName, W_OK | R_OK) == 0)
+                fd = ::open(encodedFileName, O_RDWR);
+            else if (::access(encodedFileName, R_OK) == 0)
+                fd = ::open(encodedFileName, O_RDONLY);
         } else {
 #if defined(DEBUG_FONTENGINE)
             qDebug() << "creating qpf on the fly:" << fileName;
 #endif
             if (::access(QFile::encodeName(qws_fontCacheDir()), W_OK) == 0) {
-                fd = ::open(encodedName, O_RDWR | O_EXCL | O_CREAT, 0644);
+                fd = ::open(encodedFileName, O_RDWR | O_EXCL | O_CREAT, 0644);
 
                 QBuffer buffer;
                 buffer.open(QIODevice::ReadWrite);
@@ -474,15 +474,21 @@ QFontEngineQPF::QFontEngineQPF(const QFontDef &def, int fileDescriptor, QFontEng
 #endif
 #if defined(Q_WS_QWS)
     if (isValid() && renderingFontEngine)
-        qt_fbdpy->sendFontCommand(QWSFontCommand::StartedUsingFont, QFile::encodeName(fileName));
+        qt_fbdpy->sendFontCommand(QWSFontCommand::StartedUsingFont, encodedFileName);
 #endif
 }
 
 QFontEngineQPF::~QFontEngineQPF()
 {
 #if defined(Q_WS_QWS)
-    if (isValid() && renderingFontEngine)
-        qt_fbdpy->sendFontCommand(QWSFontCommand::StoppedUsingFont, QFile::encodeName(fileName));
+    if (isValid() && renderingFontEngine) {
+        QT_TRY {
+            qt_fbdpy->sendFontCommand(QWSFontCommand::StoppedUsingFont, encodedFileName);
+        } QT_CATCH(...) {
+            qDebug("QFontEngineQPF::~QFontEngineQPF: Out of memory");
+            // ignore.
+        }
+    }
 #endif
     delete renderingFontEngine;
     if (fontData)
@@ -1128,6 +1134,11 @@ void QPFGenerator::writeTaggedQFixed(QFontEngineQPF::HeaderTag tag, QFixed value
 
 #endif // QT_NO_QWS_QPF2
 
+/*
+    Creates a new multi qws engine.
+
+    This function takes ownership of the QFontEngine, increasing it's refcount.
+*/
 QFontEngineMultiQWS::QFontEngineMultiQWS(QFontEngine *fe, int _script, const QStringList &fallbacks)
     : QFontEngineMulti(fallbacks.size() + 1),
       fallbackFamilies(fallbacks), script(_script)
