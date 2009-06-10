@@ -19,6 +19,7 @@ symbian:{
    addFile.sources = example.jpg
    addFile.path = .
    DEPLOYMENT += addFile
+   TARGET.UID3 = 0xA000CF65
 }
 wince*: {
    addFile.sources = example.jpg
