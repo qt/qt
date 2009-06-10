@@ -387,7 +387,7 @@ void QGraphicsViewPrivate::recalculateContentSize()
     int left =  q_round_bound(viewRect.left());
     int right = q_round_bound(viewRect.right() - width);
     if (left >= right) {
-        q->horizontalScrollBar()->setRange(0, 0);
+        hbar->setRange(0, 0);
 
         switch (alignment & Qt::AlignHorizontal_Mask) {
         case Qt::AlignLeft:
@@ -402,9 +402,9 @@ void QGraphicsViewPrivate::recalculateContentSize()
             break;
         }
     } else {
-        q->horizontalScrollBar()->setRange(left, right);
-        q->horizontalScrollBar()->setPageStep(width);
-        q->horizontalScrollBar()->setSingleStep(width / 20);
+        hbar->setRange(left, right);
+        hbar->setPageStep(width);
+        hbar->setSingleStep(width / 20);
         leftIndent = 0;
     }
 
@@ -413,7 +413,7 @@ void QGraphicsViewPrivate::recalculateContentSize()
     int top = q_round_bound(viewRect.top());
     int bottom = q_round_bound(viewRect.bottom()  - height);
     if (top >= bottom) {
-        q->verticalScrollBar()->setRange(0, 0);
+        vbar->setRange(0, 0);
 
         switch (alignment & Qt::AlignVertical_Mask) {
         case Qt::AlignTop:
@@ -428,9 +428,9 @@ void QGraphicsViewPrivate::recalculateContentSize()
             break;
         }
     } else {
-        q->verticalScrollBar()->setRange(top, bottom);
-        q->verticalScrollBar()->setPageStep(height);
-        q->verticalScrollBar()->setSingleStep(height / 20);
+        vbar->setRange(top, bottom);
+        vbar->setPageStep(height);
+        vbar->setSingleStep(height / 20);
         topIndent = 0;
     }
 
@@ -442,7 +442,7 @@ void QGraphicsViewPrivate::recalculateContentSize()
     // scroll instead.
     if (oldLeftIndent != leftIndent || oldTopIndent != topIndent) {
         dirtyScroll = true;
-        q->viewport()->update();
+        viewport->update();
     } else if (q->isRightToLeft() && !leftIndent) {
         // In reverse mode, the horizontal scroll always changes after the content
         // size has changed, as the scroll is calculated by summing the min and
@@ -468,7 +468,7 @@ void QGraphicsViewPrivate::centerView(QGraphicsView::ViewportAnchor anchor)
         if (q->underMouse()) {
             // Last scene pos: lastMouseMoveScenePoint
             // Current mouse pos:
-            QPointF transformationDiff = q->mapToScene(q->viewport()->rect().center())
+            QPointF transformationDiff = q->mapToScene(viewport->rect().center())
                                          - q->mapToScene(q->mapFromGlobal(QCursor::pos()));
             q->centerOn(lastMouseMoveScenePoint + transformationDiff);;
         } else {
@@ -490,7 +490,7 @@ void QGraphicsViewPrivate::centerView(QGraphicsView::ViewportAnchor anchor)
 void QGraphicsViewPrivate::updateLastCenterPoint()
 {
     Q_Q(QGraphicsView);
-    lastCenterPoint = q->mapToScene(q->viewport()->rect().center());
+    lastCenterPoint = q->mapToScene(viewport->rect().center());
 }
 
 /*!
@@ -528,15 +528,15 @@ void QGraphicsViewPrivate::updateScroll()
     scrollX = qint64(-leftIndent);
     if (q->isRightToLeft()) {
         if (!leftIndent) {
-            scrollX += q->horizontalScrollBar()->minimum();
-            scrollX += q->horizontalScrollBar()->maximum();
-            scrollX -= q->horizontalScrollBar()->value();
+            scrollX += hbar->minimum();
+            scrollX += hbar->maximum();
+            scrollX -= hbar->value();
         }
     } else {
-        scrollX += q->horizontalScrollBar()->value();
+        scrollX += hbar->value();
     }
 
-    scrollY = qint64(q->verticalScrollBar()->value() - topIndent);
+    scrollY = qint64(vbar->value() - topIndent);
 
     dirtyScroll = false;
 }
@@ -576,7 +576,7 @@ void QGraphicsViewPrivate::mouseMoveEventHandler(QMouseEvent *event)
         return;
 
     QGraphicsSceneMouseEvent mouseEvent(QEvent::GraphicsSceneMouseMove);
-    mouseEvent.setWidget(q->viewport());
+    mouseEvent.setWidget(viewport);
     mouseEvent.setButtonDownScenePos(mousePressButton, mousePressScenePoint);
     mouseEvent.setButtonDownScreenPos(mousePressButton, mousePressScreenPoint);
     mouseEvent.setScenePos(q->mapToScene(event->pos()));
@@ -623,7 +623,7 @@ void QGraphicsViewPrivate::mouseMoveEventHandler(QMouseEvent *event)
     if (hasStoredOriginalCursor) {
         // Restore the original viewport cursor.
         hasStoredOriginalCursor = false;
-        q->viewport()->setCursor(originalCursor);
+        viewport->setCursor(originalCursor);
     }
 #endif
 }
@@ -655,8 +655,6 @@ QRegion QGraphicsViewPrivate::rubberBandRegion(const QWidget *widget, const QRec
 #ifndef QT_NO_CURSOR
 void QGraphicsViewPrivate::_q_setViewportCursor(const QCursor &cursor)
 {
-    Q_Q(QGraphicsView);
-    QWidget *viewport = q->viewport();
     if (!hasStoredOriginalCursor) {
         hasStoredOriginalCursor = true;
         originalCursor = viewport->cursor();
@@ -682,9 +680,9 @@ void QGraphicsViewPrivate::_q_unsetViewportCursor()
     // Restore the original viewport cursor.
     hasStoredOriginalCursor = false;
     if (dragMode == QGraphicsView::ScrollHandDrag)
-        q->viewport()->setCursor(Qt::OpenHandCursor);
+        viewport->setCursor(Qt::OpenHandCursor);
     else
-        q->viewport()->setCursor(originalCursor);
+        viewport->setCursor(originalCursor);
 }
 #endif
 
@@ -723,7 +721,7 @@ void QGraphicsViewPrivate::populateSceneDragDropEvent(QGraphicsSceneDragDropEven
     dest->setProposedAction(source->proposedAction());
     dest->setDropAction(source->dropAction());
     dest->setMimeData(source->mimeData());
-    dest->setWidget(q->viewport());
+    dest->setWidget(viewport);
     dest->setSource(source->source());
 #else
     Q_UNUSED(dest)
@@ -827,8 +825,7 @@ void QGraphicsViewPrivate::processPendingUpdates()
 
 void QGraphicsViewPrivate::updateAll()
 {
-    Q_Q(QGraphicsView);
-    q->viewport()->update();
+    viewport->update();
     fullUpdatePending = true;
     dirtyBoundingRect = QRect();
     dirtyRegion = QRegion();
@@ -839,19 +836,17 @@ void QGraphicsViewPrivate::updateRegion(const QRegion &r)
     if (r.isEmpty() || fullUpdatePending)
         return;
 
-    Q_Q(QGraphicsView);
-
     // Rect intersects viewport - update everything?
     switch (viewportUpdateMode) {
     case QGraphicsView::FullViewportUpdate:
         fullUpdatePending = true;
-        q->viewport()->update();
+        viewport->update();
         break;
     case QGraphicsView::BoundingRectViewportUpdate:
         dirtyBoundingRect |= r.boundingRect();
-        if (dirtyBoundingRect.contains(q->viewport()->rect())) {
+        if (dirtyBoundingRect.contains(viewport->rect())) {
             fullUpdatePending = true;
-            q->viewport()->update();
+            viewport->update();
         }
         break;
     case QGraphicsView::SmartViewportUpdate: // ### DEPRECATE
@@ -875,19 +870,17 @@ void QGraphicsViewPrivate::updateRect(const QRect &r)
     if (r.isEmpty() || fullUpdatePending)
         return;
 
-    Q_Q(QGraphicsView);
-
     // Rect intersects viewport - update everything?
     switch (viewportUpdateMode) {
     case QGraphicsView::FullViewportUpdate:
         fullUpdatePending = true;
-        q->viewport()->update();
+        viewport->update();
         break;
     case QGraphicsView::BoundingRectViewportUpdate:
         dirtyBoundingRect |= r;
-        if (dirtyBoundingRect.contains(q->viewport()->rect())) {
+        if (dirtyBoundingRect.contains(viewport->rect())) {
             fullUpdatePending = true;
-            q->viewport()->update();
+            viewport->update();
         }
         break;
     case QGraphicsView::SmartViewportUpdate: // ### DEPRECATE

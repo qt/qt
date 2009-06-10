@@ -1115,7 +1115,7 @@ void QMdiSubWindowPrivate::updateDirtyRegions()
 void QMdiSubWindowPrivate::updateGeometryConstraints()
 {
     Q_Q(QMdiSubWindow);
-    if (!q->parent())
+    if (!parent)
         return;
 
     internalMinimumSize = (!q->isMinimized() && !q->minimumSize().isNull())
@@ -1145,7 +1145,7 @@ void QMdiSubWindowPrivate::updateMask()
     if (!q->mask().isEmpty())
         q->clearMask();
 
-    if (!q->parent())
+    if (!parent)
         return;
 
     if ((q->isMaximized() && !drawTitleBarWhenMaximized())
@@ -1168,7 +1168,7 @@ void QMdiSubWindowPrivate::setNewGeometry(const QPoint &pos)
 {
     Q_Q(QMdiSubWindow);
     Q_ASSERT(currentOperation != None);
-    Q_ASSERT(q->parent());
+    Q_ASSERT(parent);
 
     uint cflags = operationMap.find(currentOperation).value().changeFlags;
     int posX = pos.x();
@@ -1235,7 +1235,7 @@ void QMdiSubWindowPrivate::setNewGeometry(const QPoint &pos)
 void QMdiSubWindowPrivate::setMinimizeMode()
 {
     Q_Q(QMdiSubWindow);
-    Q_ASSERT(q->parent());
+    Q_ASSERT(parent);
 
     ensureWindowState(Qt::WindowMinimized);
     isShadeRequestFromMinimizeMode = true;
@@ -1263,7 +1263,7 @@ void QMdiSubWindowPrivate::setMinimizeMode()
 void QMdiSubWindowPrivate::setNormalMode()
 {
     Q_Q(QMdiSubWindow);
-    Q_ASSERT(q->parent());
+    Q_ASSERT(parent);
 
     isShadeMode = false;
     isMaximizeMode = false;
@@ -1334,7 +1334,7 @@ void QMdiSubWindowPrivate::setNormalMode()
 void QMdiSubWindowPrivate::setMaximizeMode()
 {
     Q_Q(QMdiSubWindow);
-    Q_ASSERT(q->parent());
+    Q_ASSERT(parent);
 
     ensureWindowState(Qt::WindowMaximized);
     isShadeMode = false;
@@ -1423,7 +1423,7 @@ void QMdiSubWindowPrivate::setMaximizeMode()
 void QMdiSubWindowPrivate::setActive(bool activate, bool changeFocus)
 {
     Q_Q(QMdiSubWindow);
-    if (!q->parent() || !activationEnabled)
+    if (!parent || !activationEnabled)
         return;
 
     if (activate && !isActive && q->isEnabled()) {
@@ -1711,7 +1711,7 @@ void QMdiSubWindowPrivate::ensureWindowState(Qt::WindowState state)
 int QMdiSubWindowPrivate::titleBarHeight(const QStyleOptionTitleBar &options) const
 {
     Q_Q(const QMdiSubWindow);
-    if (!q->parent() || q->windowFlags() & Qt::FramelessWindowHint
+    if (!parent || q->windowFlags() & Qt::FramelessWindowHint
         || (q->isMaximized() && !drawTitleBarWhenMaximized())) {
         return 0;
     }
@@ -1734,7 +1734,7 @@ void QMdiSubWindowPrivate::sizeParameters(int *margin, int *minWidth) const
 {
     Q_Q(const QMdiSubWindow);
     Qt::WindowFlags flags = q->windowFlags();
-    if (!q->parent() || flags & Qt::FramelessWindowHint) {
+    if (!parent || flags & Qt::FramelessWindowHint) {
         *margin = 0;
         *minWidth = 0;
         return;
@@ -1893,7 +1893,7 @@ void QMdiSubWindowPrivate::enterRubberBandMode()
     if (q->isMaximized())
         return;
     Q_ASSERT(oldGeometry.isValid());
-    Q_ASSERT(q->parent());
+    Q_ASSERT(parent);
     if (!rubberBand) {
         rubberBand = new QRubberBand(QRubberBand::Rectangle, q->parentWidget());
         // For accessibility to identify this special widget.
@@ -2079,7 +2079,7 @@ void QMdiSubWindowPrivate::restoreFocus()
 void QMdiSubWindowPrivate::setWindowFlags(Qt::WindowFlags windowFlags)
 {
     Q_Q(QMdiSubWindow);
-    if (!q->parent()) {
+    if (!parent) {
         q->setWindowFlags(windowFlags);
         return;
     }
@@ -2164,7 +2164,7 @@ void QMdiSubWindowPrivate::addToSystemMenu(WindowStateAction action, const QStri
 QSize QMdiSubWindowPrivate::iconSize() const
 {
     Q_Q(const QMdiSubWindow);
-    if (!q->parent() || q->windowFlags() & Qt::FramelessWindowHint)
+    if (!parent || q->windowFlags() & Qt::FramelessWindowHint)
         return QSize(-1, -1);
     return QSize(q->style()->pixelMetric(QStyle::PM_MdiSubWindowMinimizedWidth, 0, q), titleBarHeight());
 }

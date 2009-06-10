@@ -394,7 +394,7 @@ void QTextControlPrivate::init(Qt::TextFormat format, const QString &text, QText
     Q_Q(QTextControl);
     setContent(format, text, document);
 
-    QWidget *parentWidget = qobject_cast<QWidget*>(q->parent());
+    QWidget *parentWidget = qobject_cast<QWidget*>(parent);
     if (parentWidget) {
         QTextOption opt = doc->defaultTextOption();
         opt.setTextDirection(parentWidget->layoutDirection());

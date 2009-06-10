@@ -365,7 +365,7 @@ public:
     QGraphicsScene *scene;
     QGraphicsItem *parent;
     QList<QGraphicsItem *> children;
-    class TransformData;
+    struct TransformData;
     TransformData *transformData;
     QTransform sceneTransform;
     int index;
