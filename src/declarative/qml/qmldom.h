@@ -268,6 +268,8 @@ public:
     int position() const;
     int length() const;
 
+    QList<int> commaPositions() const;
+
 private:
     friend class QmlDomValue;
     QSharedDataPointer<QmlDomValuePrivate> d;

@@ -174,6 +174,7 @@ class UiSourceElement;
 class UiArrayBinding;
 class UiObjectMember;
 class UiObjectMemberList;
+class UiArrayMemberList;
 class UiQualifiedId;
 
 } } // namespace AST
