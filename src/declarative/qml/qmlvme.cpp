@@ -695,7 +695,7 @@ case QmlInstruction::StoreDouble:
                 QFx_setParent_noEvent(bind, target);
 
                 bind->setTarget(mp);
-                bind->setSourceLocation(comp->url.toString(), instr.line);
+                bind->setSourceLocation(comp->url, instr.line);
             }
             break;
 
@@ -719,7 +719,7 @@ case QmlInstruction::StoreDouble:
                 QFx_setParent_noEvent(bind, target);
 
                 bind->setTarget(mp);
-                bind->setSourceLocation(comp->url.toString(), instr.line);
+                bind->setSourceLocation(comp->url, instr.line);
             }
             break;
 

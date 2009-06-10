@@ -219,28 +219,9 @@ QmlContext *QmlEnginePrivate::setCurrentBindContext(QmlContext *c)
     return old;
 }
 
-QmlEnginePrivate::CapturedProperty::CapturedProperty(QObject *obj, int n)
-: object(obj), notifyIndex(n)
-{
-}
-
 QmlEnginePrivate::CapturedProperty::CapturedProperty(const QmlMetaProperty &p)
-: object(p.object()), name(p.name()), notifyIndex(p.property().notifySignalIndex())
+: object(p.object()), notifyIndex(p.property().notifySignalIndex())
 {
-}
-
-QmlEnginePrivate::CapturedProperty::CapturedProperty(const CapturedProperty &o)
-: object(o.object), name(o.name), notifyIndex(o.notifyIndex)
-{
-}
-
-QmlEnginePrivate::CapturedProperty &
-QmlEnginePrivate::CapturedProperty::operator=(const CapturedProperty &o)
-{
-    object = o.object;
-    name = o.name;
-    notifyIndex = o.notifyIndex;
-    return *this;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1224,8 +1205,9 @@ QVariant QmlExpression::value()
                         QMetaObject::connect(prop.object, prop.notifyIndex,
                                              d->proxy, changedIndex);
                     } else {
-                        QString warn = QLatin1String("Expression depends on property without a NOTIFY signal: [") + QLatin1String(prop.object->metaObject()->className()) + QLatin1String("].") + prop.name;
-                        log.addWarning(warn);
+                        // ### FIXME
+                        //QString warn = QLatin1String("Expression depends on property without a NOTIFY signal: [") + QLatin1String(prop.object->metaObject()->className()) + QLatin1String("].") + prop.name;
+                        //log.addWarning(warn);
                     }
                 }
                 d->addLog(log);
@@ -1305,7 +1287,7 @@ void QmlExpression::setTrackChange(bool trackChange)
     Set the location of this expression to \a line of \a fileName. This information
     is used by the script engine.
 */
-void QmlExpression::setSourceLocation(const QString &fileName, int line)
+void QmlExpression::setSourceLocation(const QUrl &fileName, int line)
 {
     d->fileName = fileName;
     d->line = line;

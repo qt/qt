@@ -125,41 +125,55 @@ public:
 private:
     void reset(QmlCompiledComponent *, bool);
 
+    struct BindingContext {
+        BindingContext()
+            : stack(0), object(0) {}
+        BindingContext(QmlParser::Object *o)
+            : stack(0), object(o) {}
+        BindingContext incr() const {
+            BindingContext rv(object);
+            rv.stack = stack + 1;
+            return rv;
+        }
+        int stack;
+        QmlParser::Object *object;
+    };
+
     void compileTree(QmlParser::Object *tree);
-    bool compileObject(QmlParser::Object *obj, int);
-    bool compileComponent(QmlParser::Object *obj, int);
-    bool compileComponentFromRoot(QmlParser::Object *obj, int);
-    bool compileFetchedObject(QmlParser::Object *obj, int);
+    bool compileObject(QmlParser::Object *obj, const BindingContext &);
+    bool compileComponent(QmlParser::Object *obj, const BindingContext &);
+    bool compileComponentFromRoot(QmlParser::Object *obj, const BindingContext &);
+    bool compileFetchedObject(QmlParser::Object *obj, const BindingContext &);
     bool compileSignal(QmlParser::Property *prop, QmlParser::Object *obj);
     bool testProperty(QmlParser::Property *prop, QmlParser::Object *obj);
     int signalByName(const QMetaObject *, const QByteArray &name);
-    bool compileProperty(QmlParser::Property *prop, QmlParser::Object *obj, int);
+    bool compileProperty(QmlParser::Property *prop, QmlParser::Object *obj, const BindingContext &);
     bool compileIdProperty(QmlParser::Property *prop, 
                            QmlParser::Object *obj);
     bool compileAttachedProperty(QmlParser::Property *prop, 
-                                 int ctxt);
+                                 const BindingContext &ctxt);
     bool compileNestedProperty(QmlParser::Property *prop,
-                               int ctxt);
+                               const BindingContext &ctxt);
     bool compileListProperty(QmlParser::Property *prop,
                              QmlParser::Object *obj,
-                             int ctxt);
+                             const BindingContext &ctxt);
     bool compilePropertyAssignment(QmlParser::Property *prop,
                                    QmlParser::Object *obj,
-                                   int ctxt);
+                                   const BindingContext &ctxt);
     bool compilePropertyObjectAssignment(QmlParser::Property *prop,
                                          QmlParser::Value *value,
-                                         int ctxt);
+                                         const BindingContext &ctxt);
     bool compilePropertyLiteralAssignment(QmlParser::Property *prop,
                                           QmlParser::Object *obj,
                                           QmlParser::Value *value,
-                                          int ctxt);
+                                          const BindingContext &ctxt);
     bool compileStoreInstruction(QmlInstruction &instr, 
                                  const QMetaProperty &prop, 
                                  QmlParser::Value *value);
 
     bool compileDynamicMeta(QmlParser::Object *obj);
     bool compileBinding(QmlParser::Value *, QmlParser::Property *prop,
-                        int ctxt);
+                        const BindingContext &ctxt);
 
     void finalizeComponent(int patch);
     struct BindingReference;
@@ -169,6 +183,7 @@ private:
         QString id;
         QmlParser::Object *object;
         int instructionIdx;
+        int idx;
     };
 
     struct BindingReference {
@@ -176,17 +191,18 @@ private:
         QmlParser::Property *property;
         QmlParser::Value *value;
         int instructionIdx;
-        int bindingContext;
+        BindingContext bindingContext;
     };
 
     struct ComponentCompileState
     {
-        ComponentCompileState() : parserStatusCount(0), savedObjects(0), pushedProperties(0) {}
+        ComponentCompileState() : parserStatusCount(0), savedObjects(0), pushedProperties(0), root(0) {}
         QHash<QString, IdReference> ids;
         int parserStatusCount;
         int savedObjects;
         int pushedProperties;
         QList<BindingReference> bindings;
+        QmlParser::Object *root;
     };
     ComponentCompileState compileState;
 

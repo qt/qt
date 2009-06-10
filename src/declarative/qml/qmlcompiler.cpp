@@ -533,6 +533,8 @@ bool QmlCompiler::compile(QmlEngine *engine,
 
 void QmlCompiler::compileTree(Object *tree)
 {
+    compileState.root = tree;
+
     QmlInstruction init;
     init.type = QmlInstruction::Init;
     init.line = 0;
@@ -557,7 +559,7 @@ void QmlCompiler::compileTree(Object *tree)
     finalizeComponent(0);
 }
 
-bool QmlCompiler::compileObject(Object *obj, int ctxt)
+bool QmlCompiler::compileObject(Object *obj, const BindingContext &ctxt)
 {    
     Q_ASSERT (obj->type != -1);
     obj->metatype = output->types.at(obj->type).metaObject();
@@ -567,7 +569,7 @@ bool QmlCompiler::compileObject(Object *obj, int ctxt)
         return true;
     }
 
-    ctxt = 0;
+    BindingContext objCtxt(obj);
 
     int createInstrIdx = output->bytecode.count();
     // Create the object
@@ -617,7 +619,7 @@ bool QmlCompiler::compileObject(Object *obj, int ctxt)
         if (isCustomParser) {
             // Custom parser types don't support signal properties
             if (testProperty(prop, obj)) {
-                COMPILE_CHECK(compileProperty(prop, obj, ctxt));
+                COMPILE_CHECK(compileProperty(prop, obj, objCtxt));
             } else {
                 customProps << QmlCustomParserNodePrivate::fromProperty(prop);
             }
@@ -625,7 +627,7 @@ bool QmlCompiler::compileObject(Object *obj, int ctxt)
             if (isSignalPropertyName(prop->name))  {
                 COMPILE_CHECK(compileSignal(prop,obj));
             } else {
-                COMPILE_CHECK(compileProperty(prop, obj, ctxt));
+                COMPILE_CHECK(compileProperty(prop, obj, objCtxt));
             }
         }
 
@@ -637,12 +639,12 @@ bool QmlCompiler::compileObject(Object *obj, int ctxt)
 
         if (isCustomParser) {
             if (testProperty(prop, obj)) {
-                COMPILE_CHECK(compileProperty(prop, obj, ctxt));
+                COMPILE_CHECK(compileProperty(prop, obj, objCtxt));
             } else {
                 customProps << QmlCustomParserNodePrivate::fromProperty(prop);
             }
         } else {
-            COMPILE_CHECK(compileProperty(prop, obj, ctxt));
+            COMPILE_CHECK(compileProperty(prop, obj, objCtxt));
         }
 
     }
@@ -673,7 +675,7 @@ bool QmlCompiler::compileObject(Object *obj, int ctxt)
     return true;
 }
 
-bool QmlCompiler::compileComponent(Object *obj, int ctxt)
+bool QmlCompiler::compileComponent(Object *obj, const BindingContext &ctxt)
 {
     Property *idProp = 0;
     if (obj->properties.count() > 1 ||
@@ -709,6 +711,7 @@ bool QmlCompiler::compileComponent(Object *obj, int ctxt)
         reference.id = val;
         reference.object = obj;
         reference.instructionIdx = output->bytecode.count();
+        reference.idx = compileState.ids.count();
         compileState.ids.insert(val, reference);
 
         int pref = output->indexForString(val);
@@ -724,7 +727,7 @@ bool QmlCompiler::compileComponent(Object *obj, int ctxt)
     return true;
 }
 
-bool QmlCompiler::compileComponentFromRoot(Object *obj, int ctxt)
+bool QmlCompiler::compileComponentFromRoot(Object *obj, const BindingContext &ctxt)
 {
     output->bytecode.push_back(QmlInstruction());
     QmlInstruction &create = output->bytecode.last();
@@ -743,6 +746,7 @@ bool QmlCompiler::compileComponentFromRoot(Object *obj, int ctxt)
 
     ComponentCompileState oldComponentCompileState = compileState;
     compileState = ComponentCompileState();
+    compileState.root = obj;
     if (obj) 
         COMPILE_CHECK(compileObject(obj, ctxt));
 
@@ -753,7 +757,7 @@ bool QmlCompiler::compileComponentFromRoot(Object *obj, int ctxt)
 }
 
 
-bool QmlCompiler::compileFetchedObject(Object *obj, int ctxt)
+bool QmlCompiler::compileFetchedObject(Object *obj, const BindingContext &ctxt)
 {
     Q_ASSERT(obj->metatype);
 
@@ -871,7 +875,7 @@ bool QmlCompiler::testProperty(QmlParser::Property *prop,
     return false;
 }
 
-bool QmlCompiler::compileProperty(Property *prop, Object *obj, int ctxt)
+bool QmlCompiler::compileProperty(Property *prop, Object *obj, const BindingContext &ctxt)
 {
     if (prop->values.isEmpty() && !prop->value) 
         COMPILE_EXCEPTION2(prop, "Empty property assignment");
@@ -992,6 +996,7 @@ bool QmlCompiler::compileIdProperty(QmlParser::Property *prop,
     reference.id = val;
     reference.object = obj;
     reference.instructionIdx = output->bytecode.count();
+    reference.idx = compileState.ids.count();
     compileState.ids.insert(val, reference);
 
     QmlInstruction id;
@@ -1012,7 +1017,7 @@ bool QmlCompiler::compileIdProperty(QmlParser::Property *prop,
 // }
 // GridView is an attached property object.
 bool QmlCompiler::compileAttachedProperty(QmlParser::Property *prop, 
-                                          int ctxt)
+                                          const BindingContext &ctxt)
 {
     Q_ASSERT(prop->value);
     int id = QmlMetaType::attachedPropertiesFuncId(prop->name);
@@ -1024,7 +1029,7 @@ bool QmlCompiler::compileAttachedProperty(QmlParser::Property *prop,
     fetch.fetchAttached.id = id;
     output->bytecode << fetch;
 
-    COMPILE_CHECK(compileFetchedObject(prop->value, ctxt + 1));
+    COMPILE_CHECK(compileFetchedObject(prop->value, ctxt.incr()));
 
     QmlInstruction pop;
     pop.type = QmlInstruction::PopFetchedObject;
@@ -1040,7 +1045,7 @@ bool QmlCompiler::compileAttachedProperty(QmlParser::Property *prop,
 // }
 // font is a nested property.  size is not.
 bool QmlCompiler::compileNestedProperty(QmlParser::Property *prop,
-                                        int ctxt)
+                                        const BindingContext &ctxt)
 {
     Q_ASSERT(prop->type != 0);
     Q_ASSERT(prop->index != -1);
@@ -1057,7 +1062,7 @@ bool QmlCompiler::compileNestedProperty(QmlParser::Property *prop,
     fetch.line = prop->location.start.line;
     output->bytecode << fetch;
 
-    COMPILE_CHECK(compileFetchedObject(prop->value, ctxt + 1));
+    COMPILE_CHECK(compileFetchedObject(prop->value, ctxt.incr()));
 
     QmlInstruction pop;
     pop.type = QmlInstruction::PopFetchedObject;
@@ -1074,7 +1079,7 @@ bool QmlCompiler::compileNestedProperty(QmlParser::Property *prop,
 // QmlList<T *> * types can accept a list of objects
 bool QmlCompiler::compileListProperty(QmlParser::Property *prop,
                                       QmlParser::Object *obj,
-                                      int ctxt)
+                                      const BindingContext &ctxt)
 {
     Q_ASSERT(QmlMetaType::isList(prop->type) || 
              QmlMetaType::isQmlList(prop->type));
@@ -1166,7 +1171,7 @@ bool QmlCompiler::compileListProperty(QmlParser::Property *prop,
 // We allow assignming multiple values to single value properties
 bool QmlCompiler::compilePropertyAssignment(QmlParser::Property *prop,
                                             QmlParser::Object *obj,
-                                            int ctxt)
+                                            const BindingContext &ctxt)
 {
     for (int ii = 0; ii < prop->values.count(); ++ii) {
         Value *v = prop->values.at(ii);
@@ -1187,7 +1192,7 @@ bool QmlCompiler::compilePropertyAssignment(QmlParser::Property *prop,
 // Compile assigning a single object instance to a regular property 
 bool QmlCompiler::compilePropertyObjectAssignment(QmlParser::Property *prop,
                                                   QmlParser::Value *v,
-                                                  int ctxt)
+                                                  const BindingContext &ctxt)
 {
     Q_ASSERT(prop->index != -1);
     Q_ASSERT(v->object->type != -1);
@@ -1296,7 +1301,7 @@ bool QmlCompiler::compilePropertyObjectAssignment(QmlParser::Property *prop,
 bool QmlCompiler::compilePropertyLiteralAssignment(QmlParser::Property *prop,
                                                    QmlParser::Object *obj,
                                                    QmlParser::Value *v,
-                                                   int ctxt)
+                                                   const BindingContext &ctxt)
 {
     Q_ASSERT(prop->index != -1);
 
@@ -1409,7 +1414,7 @@ bool QmlCompiler::compileDynamicMeta(QmlParser::Object *obj)
 
 bool QmlCompiler::compileBinding(QmlParser::Value *value, 
                                  QmlParser::Property *prop,
-                                 int ctxt)
+                                 const BindingContext &ctxt)
 {
     Q_ASSERT(prop->index);
     Q_ASSERT(prop->parent);
@@ -1491,7 +1496,15 @@ void QmlCompiler::finalizeComponent(int patch)
 void QmlCompiler::finalizeBinding(const BindingReference &binding)
 {
     QmlBasicScript bs;
-    bs.compile(binding.expression);
+    QmlBasicScript::Expression expr;
+    expr.component = compileState.root;
+    expr.context = binding.bindingContext.object;
+    expr.property = binding.property;
+    expr.expression = binding.expression;
+    foreach (const IdReference &id, compileState.ids)
+        expr.ids.insert(id.id, qMakePair(id.object, id.idx));
+
+    bs.compile(expr);
 
     QmlInstruction &instr = output->bytecode[binding.instructionIdx];
     instr.line = binding.value->location.start.line;
@@ -1553,7 +1566,7 @@ void QmlCompiler::finalizeBinding(const BindingReference &binding)
         bref = output->indexForString(binding.expression.asScript());
     }
 
-    instr.assignBinding.context = binding.bindingContext;
+    instr.assignBinding.context = binding.bindingContext.stack;
 
     if (bs.isValid()) 
         instr.type = QmlInstruction::StoreCompiledBinding;
