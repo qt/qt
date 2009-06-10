@@ -151,8 +151,7 @@ void QPaintEngineExPrivate::replayClipOperations()
 
     QTransform transform = q->state()->matrix;
 
-    QTransform redirection;
-    redirection.translate(-q->state()->redirection_offset.x(), -q->state()->redirection_offset.y());
+    const QTransform &redirection = q->state()->redirectionMatrix;
 
     for (int i = 0; i <  clipInfo.size(); ++i) {
         const QPainterClipInfo &info = clipInfo.at(i);
