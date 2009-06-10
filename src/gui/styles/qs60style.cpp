@@ -1880,11 +1880,11 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
         }
         break;
 #endif //QT_NO_TOOLBAR
-    case CE_ShapedFrame: {
-        const QTextEdit *txt = qobject_cast<const QTextEdit *>(widget);                
-        if (txt)
+    case CE_ShapedFrame:
+        if (qobject_cast<const QTextEdit *>(widget))
             QS60StylePrivate::drawSkinElement(QS60StylePrivate::SE_Editor, painter, option->rect, flags);
-    }
+        if (option->state & State_HasFocus)
+            drawPrimitive(PE_FrameFocusRect, option, painter, widget);
         break;
     default:
         QCommonStyle::drawControl(element, option, painter, widget);

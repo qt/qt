@@ -108,6 +108,7 @@ void QWidgetPrivate::setSoftKeys_sys(const QList<QAction*> &softkeys)
     if (placeInScreen==1)
         placeInScreen=2;
     }
+    nativeContainer->DrawDeferred(); // 3.1 needs an extra invitation
 }
 
 void QWidgetPrivate::setWSGeometry(bool dontShow)
