@@ -39,8 +39,6 @@
 **
 ****************************************************************************/
 
-//#define QGRAPHICSVIEW_DEBUG
-
 static const int QGRAPHICSVIEW_REGION_RECT_THRESHOLD = 50;
 
 static const int QGRAPHICSVIEW_PREALLOC_STYLE_OPTIONS = 503; // largest prime < 2^9
@@ -363,8 +361,6 @@ QGraphicsViewPrivate::QGraphicsViewPrivate()
 #endif
       lastDragDropEvent(0),
       fullUpdatePending(true),
-      dirtyRectCount(0),
-      updatingLater(false),
       updateSceneSlotReimplementedChecked(false)
 {
     styleOptions.reserve(QGRAPHICSVIEW_PREALLOC_STYLE_OPTIONS);
@@ -784,12 +780,13 @@ QRect QGraphicsViewPrivate::mapToViewRect(const QGraphicsItem *item, const QRect
     }
 
     // Translate-only
+    // COMBINE
     QPointF offset;
     const QGraphicsItem *parentItem = item;
     const QGraphicsItemPrivate *itemd;
     do {
         itemd = parentItem->d_ptr;
-        if (itemd->hasTransform)
+        if (itemd->transformData)
             break;
         offset += itemd->pos;
     } while ((parentItem = itemd->parent));
@@ -821,7 +818,7 @@ QRegion QGraphicsViewPrivate::mapToViewRegion(const QGraphicsItem *item, const Q
         const_cast<QGraphicsViewPrivate *>(this)->updateScroll();
 
     // Accurate bounding region
-    QTransform itv = item->sceneTransform() * q->viewportTransform();
+    QTransform itv = item->deviceTransform(q->viewportTransform());
     return item->boundingRegion(itv) & itv.mapRect(rect).toAlignedRect();
 }
 
@@ -838,125 +835,28 @@ static inline QRectF adjustedItemBoundingRect(const QGraphicsItem *item)
     return boundingRect;
 }
 
-/*!
-    \internal
-*/
-void QGraphicsViewPrivate::itemUpdated(QGraphicsItem *item, const QRectF &rect)
+void QGraphicsViewPrivate::processPendingUpdates()
 {
-    if (fullUpdatePending || viewportUpdateMode == QGraphicsView::NoViewportUpdate)
-        return;
-    if (item->d_ptr->dirty)
-        updateLater();
-
-    QRectF updateRect = rect;
-    if ((item->d_ptr->flags & QGraphicsItem::ItemClipsChildrenToShape) || item->d_ptr->children.isEmpty()) {
-        updateRect &= adjustedItemBoundingRect(item);
-        if (updateRect.isEmpty())
-            return;
-    }
-
-    QGraphicsItem *clipItem = item;
-    if (item->d_ptr->ancestorFlags & QGraphicsItemPrivate::AncestorClipsChildren) {
-        // Minimize unnecessary redraw.
-        QGraphicsItem *parent = item;
-        while ((parent = parent->d_ptr->parent)) {
-            if (parent->d_ptr->flags & QGraphicsItem::ItemClipsChildrenToShape) {
-                // Map update rect to the current parent and itersect with its bounding rect.
-                updateRect = clipItem->itemTransform(parent).mapRect(updateRect)
-                             & adjustedItemBoundingRect(parent);
-                if (updateRect.isEmpty())
-                    return;
-                clipItem = parent;
-            }
-
-            if (!(parent->d_ptr->ancestorFlags & QGraphicsItemPrivate::AncestorClipsChildren))
-                break;
-        }
-    }
-
-    // Map update rect from clipItem coordinates to view coordinates.
-    Q_ASSERT(clipItem);
-    if (!item->d_ptr->hasBoundingRegionGranularity)
-        this->updateRect(mapToViewRect(clipItem, updateRect) & viewport->rect());
-    else
-        updateRegion(mapToViewRegion(clipItem, updateRect) & viewport->rect());
-}
-
-void QGraphicsViewPrivate::updateLater()
-{
-    Q_Q(QGraphicsView);
-    if (updatingLater)
-        return;
-    updatingLater = true;
-    QMetaObject::invokeMethod(q, "_q_updateLaterSlot", Qt::QueuedConnection);
-}
-
-void QGraphicsViewPrivate::_q_updateLaterSlot()
-{
-    Q_Q(QGraphicsView);
     if (!scene)
         return;
 
-    QRect vr = viewport->rect();
-    QTransform viewTransform = q->viewportTransform();
-    const QList<QGraphicsItem *> &dirtyItems = scene->d_func()->dirtyItems;
-    for (int i = 0; i < dirtyItems.size(); ++i) {
-        const QGraphicsItem *item = dirtyItems.at(i);
-        if (item->d_ptr->discardUpdateRequest(/*ignoreClipping=*/false,
-                                              /*ignoreVisibleBit=*/false,
-                                              /*ignoreDirtyBit=*/true)) {
-            continue;
-        }
-        QTransform x = item->sceneTransform() * viewTransform;
-        updateRect(x.mapRect(item->boundingRect()).toAlignedRect() & vr);
+    if (fullUpdatePending) { // We have already called viewport->update()
+        dirtyBoundingRect = QRect();
+        dirtyRegion = QRegion();
+        return;
     }
 
-    dirtyRectCount += dirtyRects.size();
-
-    bool noUpdate = !fullUpdatePending && viewportUpdateMode == QGraphicsView::FullViewportUpdate;
-    if ((dirtyRectCount > 0 || !dirtyBoundingRect.isEmpty()) && !fullUpdatePending && !noUpdate) {
-        if (viewportUpdateMode == QGraphicsView::BoundingRectViewportUpdate
-            || (viewportUpdateMode == QGraphicsView::SmartViewportUpdate
-                && dirtyRectCount >= QGRAPHICSVIEW_REGION_RECT_THRESHOLD)) {
-            if (!(optimizationFlags & QGraphicsView::DontAdjustForAntialiasing)) {
-                viewport->update(dirtyBoundingRect.adjusted(-2, -2, 2, 2));
-            } else {
-                viewport->update(dirtyBoundingRect);
-            }
-        } else {
-            // ### Improve this block, which is very slow for complex regions. We
-            // need to strike the balance between having an accurate update
-            // region, and running fast. The below approach is the simplest way to
-            // create a region from a bunch of rects, but we might want to use
-            // other approaches; e.g., a grid of a fixed size representing
-            // quadrants of the viewport, which we mark as dirty depending on the
-            // rectangles in the list. Perhaps this should go into a
-            // QRegion::fromRects(rects, how) function.
-            QRegion region;
-            if (!(optimizationFlags & QGraphicsView::DontAdjustForAntialiasing)) {
-                for (int i = 0; i < dirtyRegions.size(); ++i) {
-                    QVector<QRect> rects = dirtyRegions.at(i).rects();
-                    for (int j = 0; j < rects.size(); ++j)
-                        region += rects.at(j).adjusted(-2, -2, 2, 2);
-                }
-                for (int i = 0; i < dirtyRects.size(); ++i)
-                    region += dirtyRects.at(i).adjusted(-2, -2, 2, 2);
-            } else {
-                for (int i = 0; i < dirtyRegions.size(); ++i)
-                    region += dirtyRegions.at(i);
-                for (int i = 0; i < dirtyRects.size(); ++i)
-                    region += dirtyRects.at(i);
-            }
-
-            viewport->update(region);
-        }
+    if (viewportUpdateMode == QGraphicsView::BoundingRectViewportUpdate) {
+        if (optimizationFlags & QGraphicsView::DontAdjustForAntialiasing)
+            viewport->update(dirtyBoundingRect);
+        else
+            viewport->update(dirtyBoundingRect.adjusted(-2, -2, 2, 2));
+    } else {
+        viewport->update(dirtyRegion); // Already adjusted in updateRect/Region.
     }
 
-    dirtyRegions.clear();
-    dirtyRects.clear();
-    dirtyRectCount = 0;
     dirtyBoundingRect = QRect();
-    updatingLater = false;
+    dirtyRegion = QRegion();
 }
 
 void QGraphicsViewPrivate::updateAll()
@@ -964,14 +864,13 @@ void QGraphicsViewPrivate::updateAll()
     Q_Q(QGraphicsView);
     q->viewport()->update();
     fullUpdatePending = true;
-    dirtyRectCount = 0;
     dirtyBoundingRect = QRect();
-    updatingLater = false;
+    dirtyRegion = QRegion();
 }
 
 void QGraphicsViewPrivate::updateRegion(const QRegion &r)
 {
-    if (r.isEmpty())
+    if (r.isEmpty() || fullUpdatePending)
         return;
 
     Q_Q(QGraphicsView);
@@ -984,45 +883,30 @@ void QGraphicsViewPrivate::updateRegion(const QRegion &r)
         break;
     case QGraphicsView::BoundingRectViewportUpdate:
         dirtyBoundingRect |= r.boundingRect();
-        if (dirtyBoundingRect == q->viewport()->rect()) {
+        if (dirtyBoundingRect.contains(q->viewport()->rect())) {
             fullUpdatePending = true;
             q->viewport()->update();
-        } else {
-            updateLater();
         }
         break;
-    case QGraphicsView::SmartViewportUpdate:
-        dirtyBoundingRect |= r.boundingRect();
-        if ((dirtyRectCount + r.numRects()) < QGRAPHICSVIEW_REGION_RECT_THRESHOLD)
-            dirtyRegions << r;
-        dirtyRectCount += r.numRects();
-        updateLater();
-        break;
+    case QGraphicsView::SmartViewportUpdate: // ### DEPRECATE
     case QGraphicsView::MinimalViewportUpdate:
-        dirtyRegions << r;
-        dirtyRectCount += r.numRects();
-        updateLater();
+        if (optimizationFlags & QGraphicsView::DontAdjustForAntialiasing) {
+            dirtyRegion += r;
+        } else {
+            const QVector<QRect> &rects = r.rects();
+            for (int i = 0; i < rects.size(); ++i)
+                dirtyRegion += rects.at(i).adjusted(-2, -2, 2, 2);
+        }
         break;
     case QGraphicsView::NoViewportUpdate:
         // Unreachable
         break;
     }
-
-    // Compress the regions...
-    if (dirtyRectCount > QGRAPHICSVIEW_REGION_RECT_THRESHOLD && dirtyRegions.size() > 1) {
-        QRegion masterRegion;
-        for (int i=0; i<dirtyRegions.size(); ++i) {
-            masterRegion |= dirtyRegions.at(i);
-        }
-        dirtyRectCount = masterRegion.numRects();
-        dirtyRegions.clear();
-        dirtyRegions << masterRegion;
-    }
 }
 
 void QGraphicsViewPrivate::updateRect(const QRect &r)
 {
-    if (r.isEmpty())
+    if (r.isEmpty() || fullUpdatePending)
         return;
 
     Q_Q(QGraphicsView);
@@ -1035,22 +919,17 @@ void QGraphicsViewPrivate::updateRect(const QRect &r)
         break;
     case QGraphicsView::BoundingRectViewportUpdate:
         dirtyBoundingRect |= r;
-        if (dirtyBoundingRect == q->viewport()->rect()) {
+        if (dirtyBoundingRect.contains(q->viewport()->rect())) {
             fullUpdatePending = true;
             q->viewport()->update();
-        } else {
-            updateLater();
         }
         break;
-    case QGraphicsView::SmartViewportUpdate:
-        dirtyBoundingRect |= r;
-        if ((dirtyRectCount + dirtyRects.size()) < QGRAPHICSVIEW_REGION_RECT_THRESHOLD)
-            dirtyRects << r;
-        updateLater();
-        break;
+    case QGraphicsView::SmartViewportUpdate: // ### DEPRECATE
     case QGraphicsView::MinimalViewportUpdate:
-        dirtyRects << r;
-        updateLater();
+        if (optimizationFlags & QGraphicsView::DontAdjustForAntialiasing)
+            dirtyRegion += r;
+        else
+            dirtyRegion += r.adjusted(-2, -2, 2, 2);
         break;
     case QGraphicsView::NoViewportUpdate:
         // Unreachable
@@ -2647,9 +2526,11 @@ void QGraphicsView::updateScene(const QList<QRectF> &rects)
 
     // Extract and reset dirty scene rect info.
     QVector<QRect> dirtyViewportRects;
-    for (int i = 0; i < d->dirtyRegions.size(); ++i)
-        dirtyViewportRects += d->dirtyRegions.at(i).rects();
-    d->dirtyRegions.clear();
+    const QVector<QRect> &dirtyRects = d->dirtyRegion.rects();
+    for (int i = 0; i < dirtyRects.size(); ++i)
+        dirtyViewportRects += dirtyRects.at(i);
+    d->dirtyRegion = QRegion();
+    d->dirtyBoundingRect = QRect();
 
     bool fullUpdate = !d->accelerateScrolling || d->viewportUpdateMode == QGraphicsView::FullViewportUpdate;
     bool boundingRectUpdate = (d->viewportUpdateMode == QGraphicsView::BoundingRectViewportUpdate)
@@ -3433,12 +3314,12 @@ void QGraphicsView::paintEvent(QPaintEvent *event)
     d->scene->d_func()->painterStateProtection = !(d->optimizationFlags & DontSavePainterState);
 
     // Determine the exposed region
-    QRegion exposedRegion = event->region();
+    d->exposedRegion = event->region();
     if (!d->accelerateScrolling)
-        exposedRegion = viewport()->rect();
+        d->exposedRegion = viewport()->rect();
     else if (d->viewportUpdateMode == BoundingRectViewportUpdate)
-        exposedRegion = event->rect();
-    QRectF exposedSceneRect = mapToScene(exposedRegion.boundingRect()).boundingRect();
+        d->exposedRegion = event->rect();
+    QRectF exposedSceneRect = mapToScene(d->exposedRegion.boundingRect()).boundingRect();
 
     // Set up the painter
     QPainter painter(viewport());
@@ -3455,20 +3336,7 @@ void QGraphicsView::paintEvent(QPaintEvent *event)
     const QTransform viewTransform = viewportTransform();
     painter.setTransform(viewTransform, true);
 
-#ifdef QGRAPHICSVIEW_DEBUG
-    QTime stopWatch;
-    stopWatch.start();
-    qDebug() << "QGraphicsView::paintEvent(" << exposedRegion << ')';
-#endif
-
-    // Find all exposed items
-    bool allItems = false;
-    QList<QGraphicsItem *> itemList = d->findItems(exposedRegion, &allItems);
-
-#ifdef QGRAPHICSVIEW_DEBUG
-    int exposedTime = stopWatch.elapsed();
-#endif
-
+    // Draw background
     if ((d->cacheMode & CacheBackground)
 #ifdef Q_WS_X11
         && X11->use_xrender
@@ -3510,32 +3378,30 @@ void QGraphicsView::paintEvent(QPaintEvent *event)
             painter.restore();
     }
 
-#ifdef QGRAPHICSVIEW_DEBUG
-    int backgroundTime = stopWatch.elapsed() - exposedTime;
-#endif
-
-    if (!itemList.isEmpty()) {
-        // Generate the style options.
-        const int numItems = itemList.size();
-        QGraphicsItem **itemArray = &itemList[0]; // Relies on QList internals, but is perfectly valid.
-        QStyleOptionGraphicsItem *styleOptionArray = d->allocStyleOptionsArray(numItems);
-        for (int i = 0; i < numItems; ++i)
-            itemArray[i]->d_ptr->initStyleOption(&styleOptionArray[i], viewTransform, exposedRegion, allItems);
-        // Draw the items.
-        drawItems(&painter, numItems, itemArray, styleOptionArray);
-        d->freeStyleOptionsArray(styleOptionArray);
+    // Items
+    if (!(d->optimizationFlags & IndirectPainting)) {
+        d->scene->d_func()->drawSubtreeRecursive(0, &painter, viewTransform, &d->exposedRegion,
+                                                 viewport(), 0);
+    } else {
+        // Find all exposed items
+        bool allItems = false;
+        QList<QGraphicsItem *> itemList = d->findItems(d->exposedRegion, &allItems);
+        
+        if (!itemList.isEmpty()) {
+            // Generate the style options.
+            const int numItems = itemList.size();
+            QGraphicsItem **itemArray = &itemList[0]; // Relies on QList internals, but is perfectly valid.
+            QStyleOptionGraphicsItem *styleOptionArray = d->allocStyleOptionsArray(numItems);
+            for (int i = 0; i < numItems; ++i)
+                itemArray[i]->d_ptr->initStyleOption(&styleOptionArray[i], viewTransform, d->exposedRegion, allItems);
+            // Draw the items.
+            drawItems(&painter, numItems, itemArray, styleOptionArray);
+            d->freeStyleOptionsArray(styleOptionArray);
+        }
     }
-
-#ifdef QGRAPHICSVIEW_DEBUG
-    int itemsTime = stopWatch.elapsed() - exposedTime - backgroundTime;
-#endif
 
     // Foreground
     drawForeground(&painter, exposedSceneRect);
-
-#ifdef QGRAPHICSVIEW_DEBUG
-    int foregroundTime = stopWatch.elapsed() - exposedTime - backgroundTime - itemsTime;
-#endif
 
 #ifndef QT_NO_RUBBERBAND
     // Rubberband
@@ -3557,17 +3423,6 @@ void QGraphicsView::paintEvent(QPaintEvent *event)
 #endif
 
     painter.end();
-
-#ifdef QGRAPHICSVIEW_DEBUG
-    qDebug() << "\tItem discovery....... " << exposedTime << "msecs (" << itemList.size() << "items,"
-             << (exposedTime > 0 ? (itemList.size() * 1000.0 / exposedTime) : -1) << "/ sec )";
-    qDebug() << "\tDrawing background... " << backgroundTime << "msecs (" << exposedRegion.numRects() << "segments )";
-    qDebug() << "\tDrawing items........ " << itemsTime << "msecs ("
-             << (itemsTime > 0 ? (itemList.size() * 1000.0 / itemsTime) : -1) << "/ sec )";
-    qDebug() << "\tDrawing foreground... " << foregroundTime << "msecs (" << exposedRegion.numRects() << "segments )";
-    qDebug() << "\tTotal rendering time: " << stopWatch.elapsed() << "msecs ("
-             << (stopWatch.elapsed() > 0 ? (1000.0 / stopWatch.elapsed()) : -1.0) << "fps )";
-#endif
 
     // Restore painter state protection.
     d->scene->d_func()->painterStateProtection = true;
@@ -3615,10 +3470,7 @@ void QGraphicsView::scrollContentsBy(int dx, int dy)
 
     if (d->viewportUpdateMode != QGraphicsView::NoViewportUpdate) {
         if (d->viewportUpdateMode != QGraphicsView::FullViewportUpdate) {
-            for (int i = 0; i < d->dirtyRects.size(); ++i)
-                d->dirtyRects[i].translate(dx, dy);
-            for (int i = 0; i < d->dirtyRegions.size(); ++i)
-                d->dirtyRegions[i].translate(dx, dy);
+            d->dirtyRegion.translate(dx, dy);
             if (d->accelerateScrolling) {
 #ifndef QT_NO_RUBBERBAND
                 // Update new and old rubberband regions
@@ -3752,8 +3604,10 @@ void QGraphicsView::drawItems(QPainter *painter, int numItems,
                               const QStyleOptionGraphicsItem options[])
 {
     Q_D(QGraphicsView);
-    if (d->scene)
-        d->scene->drawItems(painter, numItems, items, options, viewport());
+    if (d->scene) {
+        QWidget *widget = painter->device() == viewport() ? viewport() : 0;
+        d->scene->drawItems(painter, numItems, items, options, widget);
+    }
 }
 
 /*!
@@ -3779,6 +3633,18 @@ QTransform QGraphicsView::viewportTransform() const
     QTransform moveMatrix;
     moveMatrix.translate(-d->horizontalScroll(), -d->verticalScroll());
     return d->identityMatrix ? moveMatrix : d->matrix * moveMatrix;
+}
+
+/*!
+    Returns true if the view is transformed (i.e., a non-identity transform
+    has been assigned, or the scrollbars are adjusted).
+
+    \sa setTransform(), horizontalScrollBar(), verticalScrollBar()
+*/
+bool QGraphicsView::isTransformed() const
+{
+    Q_D(const QGraphicsView);
+    return !d->identityMatrix || d->horizontalScroll() || d->verticalScroll();
 }
 
 /*!

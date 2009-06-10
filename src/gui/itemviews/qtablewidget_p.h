@@ -144,7 +144,6 @@ public:
                              const QPair<QTableWidgetItem*,int> &right);
     static bool itemGreaterThan(const QPair<QTableWidgetItem*,int> &left,
                                 const QPair<QTableWidgetItem*,int> &right);
-    static bool canConvertToDouble(const QVariant &value);
 
     void ensureSorted(int column, Qt::SortOrder order, int start, int end);
     QVector<QTableWidgetItem*> columnItems(int column) const;
