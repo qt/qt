@@ -11570,7 +11570,7 @@ void QWidget::setSoftKeys(const QList<QAction*> &softKeys)
     d->softKeys.clear();
         d->softKeys = softKeys;
 
-    if (QApplication::focusWidget() == this)
+    if ((QApplication::focusWidget() == this) || (QApplication::focusWidget()==0))
         d->setSoftKeys_sys(this->softKeys());
 }
 
