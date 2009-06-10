@@ -4311,7 +4311,7 @@ QClipData::QClipData(int height)
     clipSpanHeight = height;
     m_clipLines = 0;
 
-    allocated = height;
+    allocated = 0;
     m_spans = 0;
     xmin = xmax = ymin = ymax = 0;
     count = 0;
@@ -4479,7 +4479,7 @@ void QClipData::fixup()
  */
 void QClipData::setClipRect(const QRect &rect)
 {
-    if (rect == clipRect)
+    if (hasRectClip && rect == clipRect)
         return;
 
 //    qDebug() << "setClipRect" << clipSpanHeight << count << allocated << rect;
