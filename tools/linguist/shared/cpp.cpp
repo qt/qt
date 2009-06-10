@@ -465,7 +465,9 @@ static bool matchString(QString *s)
     s->clear();
     while (yyTok == Tok_String) {
         *s += yyString;
-        yyTok = getToken();
+        do {
+            yyTok = getToken();
+        } while (yyTok == Tok_Comment);
     }
     return matches;
 }
