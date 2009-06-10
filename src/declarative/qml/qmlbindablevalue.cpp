@@ -125,59 +125,7 @@ void QmlBindableValue::update()
     if (!d->updating) {
         d->updating = true;
 
-        if (d->property.propertyCategory() == QmlMetaProperty::List) {
-            QVariant value = this->value();
-            int listType = QmlMetaType::listType(d->property.propertyType());
-
-            if (value.userType() == qMetaTypeId<QList<QObject *> >()) {
-                const QList<QObject *> &list =
-                    qvariant_cast<QList<QObject *> >(value);
-                QVariant listVar = d->property.read();
-                QmlMetaType::clear(listVar);
-                for (int ii = 0; ii < list.count(); ++ii) {
-                    QVariant v = QmlMetaType::fromObject(list.at(ii), listType);
-                    QmlMetaType::append(listVar, v);
-                }
-
-            } else if (value.type() == uint(listType) ||
-                      value.userType() == listType) {
-                QVariant listVar = d->property.read();
-                QmlMetaType::clear(listVar);
-                QmlMetaType::append(listVar, value);
-            }
-        } else if (d->property.propertyCategory() == QmlMetaProperty::QmlList) {
-            // XXX - optimize!
-            QVariant value = this->value();
-            QVariant list = d->property.read();
-            QmlPrivate::ListInterface *li =
-                *(QmlPrivate::ListInterface **)list.constData();
-
-            int type = li->type();
-
-            if (QObject *obj = QmlMetaType::toQObject(value)) {
-                const QMetaObject *mo =
-                    QmlMetaType::rawMetaObjectForType(type);
-
-                const QMetaObject *objMo = obj->metaObject();
-                bool found = false;
-                while(!found && objMo) {
-                    if (objMo == mo)
-                        found = true;
-                    else
-                        objMo = objMo->superClass();
-                }
-
-                if (!found) {
-                    qWarning() << "Unable to assign object to list";
-                    return;
-                }
-
-                // NOTE: This assumes a cast to QObject does not alter
-                // the object pointer
-                void *d = (void *)&obj;
-                li->append(d);
-            }
-        } else if (d->property.propertyCategory() == QmlMetaProperty::Bindable) {
+        if (d->property.propertyCategory() == QmlMetaProperty::Bindable) {
 
             int idx = d->property.coreIndex();
             Q_ASSERT(idx != -1);
@@ -189,37 +137,13 @@ void QmlBindableValue::update()
                                   QMetaObject::WriteProperty,
                                   idx, a);
 
-        } else if (d->property.propertyCategory() == QmlMetaProperty::Object) {
+        } else {
 
-            QVariant value = this->value();
-
-            QObject *obj = QmlMetaType::toQObject(value);
-
-            if (!obj) {
-                if (scriptWarnings())
-                    qWarning() << "QmlBindableValue: Unable to assign non-object to object property";
-                return;
-            }
-
-            // XXX This isn't type safe
-
-            // NOTE: We assume that only core properties can have
-            // propertyType == Object
-            int idx = d->property.coreIndex();
-            Q_ASSERT(idx != -1);
-
-            void *a[1];
-            a[0] = (void *)&obj;
-            d->property.object()->qt_metacall(QMetaObject::WriteProperty,
-                                            idx, a);
-
-        } else if (d->property.propertyCategory() == QmlMetaProperty::Normal) {
             QVariant value = this->value();
             if (d->property.propertyType() == QVariant::Url && 
-                value.canConvert(QVariant::String) && !value.isNull()) {
-                // Must resolve first
+                value.canConvert(QVariant::String) && !value.isNull()) 
                 value.setValue(context()->resolvedUrl(value.toString()));
-            }
+
             d->property.write(value);
         }
 
