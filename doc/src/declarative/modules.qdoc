@@ -32,10 +32,15 @@ This is the currently-supported mechanism.
 
 By using the "import" statement, a subdirectory of types can be added to the
 empty namespace. Alternatively, a type in a subdirectory can be referenced
-explicitly:
+explicitly.
+
+So, given these files:
 
     ./SubModule1/Type1.qml
     ./SubModule2/Type1.qml
+
+This is valid QML:
+
     import "SubModule1"
     Type1 { ... }
     SubModule2.Type1 { ... }
@@ -50,6 +55,7 @@ explicitly qualified. Dependencies cannot be added to the empty namespace.
     QMLPATH=/opt/Nokia/qml:/usr/share/lib/qml
     /opt/Nokia/qml/Module1/Type1.qml
     /usr/share/lib/qml/Module1/Type1.qml
+
     require "Module1"
     Module1.Type1 { ... }
 
