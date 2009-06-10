@@ -93,7 +93,6 @@ struct QGlyphLayout;
 
 class Q_GUI_EXPORT QFontEngine : public QObject
 {
-    Q_OBJECT
 public:
     enum Type {
         Box,

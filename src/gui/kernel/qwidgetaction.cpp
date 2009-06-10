@@ -228,8 +228,8 @@ bool QWidgetAction::event(QEvent *event)
     if (event->type() == QEvent::ActionChanged) {
         if (d->defaultWidget)
             d->defaultWidget->setEnabled(isEnabled());
-        foreach (QWidget *w, d->createdWidgets) 
-            w->setEnabled(isEnabled());
+        for (int i = 0; i < d->createdWidgets.count(); ++i)
+            d->createdWidgets.at(i)->setEnabled(isEnabled());
     }
     return QAction::event(event);
 }

@@ -4568,7 +4568,8 @@ void QPlastiqueStyle::drawComplexControl(ComplexControl control, const QStyleOpt
             }
 
             // Draw the focus rect
-            if (((option->state & State_HasFocus) && (option->state & State_KeyboardFocusChange)) && !comboBox->editable) {
+            if ((option->state & State_HasFocus) && !comboBox->editable
+                && ((option->state & State_KeyboardFocusChange) || styleHint(SH_UnderlineShortcut, option, widget))) {
                 QStyleOptionFocusRect focus;
                 focus.rect = subControlRect(CC_ComboBox, option, SC_ComboBoxEditField, widget)
                              .adjusted(-2, 0, 2, 0);

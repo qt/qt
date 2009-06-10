@@ -2398,8 +2398,8 @@ void QAbstractItemView::updateEditorGeometries()
 
     //we release the editor outside of the loop because it might change the focus and try
     //to change the d->editors list.
-    foreach(QWidget *editor, editorsToRelease) {
-        d->releaseEditor(editor);
+    for (int i = 0; i < editorsToRelease.count(); ++i) {
+        d->releaseEditor(editorsToRelease.at(i));
     }
 }
 
