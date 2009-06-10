@@ -2342,6 +2342,11 @@ QRect QS60Style::subControlRect(ComplexControl control, const QStyleOptionComple
                 sliderlen = (qint64(scrollbarOption->pageStep) * maxlen) / (range + scrollbarOption->pageStep);
 
                 int slidermin = pixelMetric(PM_ScrollBarSliderMin, scrollbarOption, widget);
+                if (isHorizontal && slidermin < scrollBarRect.height())
+                    slidermin = scrollBarRect.height();
+                else if (!isHorizontal && slidermin < scrollBarRect.width())
+                    slidermin = scrollBarRect.width();
+
                 if (sliderlen < slidermin || range > (INT_MAX>>1))
                     sliderlen = slidermin;
                 if (sliderlen > maxlen)
