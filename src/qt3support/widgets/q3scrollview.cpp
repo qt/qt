@@ -2038,7 +2038,7 @@ void Q3ScrollView::center(int x, int y)
     \list
     \i Margin 0.0 allows (x, y) to be on the edge of the visible area.
     \i Margin 0.5 ensures that (x, y) is in middle 50% of the visible area.
-    \i Margin 1.0 ensures that (x, y) is in the center of the the visible area.
+    \i Margin 1.0 ensures that (x, y) is in the center of the visible area.
     \endlist
 */
 void Q3ScrollView::center(int x, int y, float xmargin, float ymargin)

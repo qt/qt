@@ -1,1 +1,1 @@
-2:-1:Cannot set properties on value as it is of unknown type
+2:11:Cannot assign value to non-existant property "something"

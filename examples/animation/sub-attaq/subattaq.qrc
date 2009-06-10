@@ -34,5 +34,6 @@
         <file alias="big/explosion/submarine/step2" >pics/big/explosion/submarine/step2.png</file>
         <file alias="big/explosion/submarine/step3" >pics/big/explosion/submarine/step3.png</file>
         <file alias="big/explosion/submarine/step4" >pics/big/explosion/submarine/step4.png</file>
+        <file>data.xml</file>
     </qresource>
 </RCC>

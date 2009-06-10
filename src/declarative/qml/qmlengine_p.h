@@ -42,9 +42,9 @@
 #ifndef QMLENGINE_P_H
 #define QMLENGINE_P_H
 
-#include <QScriptClass>
-#include <QScriptValue>
-#include <QScriptString>
+#include <QtScript/QScriptClass>
+#include <QtScript/QScriptValue>
+#include <QtScript/QScriptString>
 #include <QtCore/qstring.h>
 #include <QtCore/qlist.h>
 #include <QtCore/qpair.h>
@@ -52,11 +52,12 @@
 #include <private/qobject_p.h>
 #include <private/qmlclassfactory_p.h>
 #include <private/qmlcompositetypemanager_p.h>
-#include <qml.h>
-#include <qmlbasicscript.h>
-#include <qmlcontext.h>
-#include <qmlengine.h>
-#include <qmlexpression.h>
+#include <private/qpodvector_p.h>
+#include <QtDeclarative/qml.h>
+#include <private/qmlbasicscript_p.h>
+#include <QtDeclarative/qmlcontext.h>
+#include <QtDeclarative/qmlengine.h>
+#include <QtDeclarative/qmlexpression.h>
 #include <QtScript/qscriptengine.h>
 
 QT_BEGIN_NAMESPACE
@@ -90,16 +91,14 @@ public:
     QScriptValue propertyObject(const QScriptString &propName, QObject *, uint id = 0);
 
     struct CapturedProperty {
-        CapturedProperty(QObject *, int);
+        CapturedProperty(QObject *o, int n)
+            : object(o), notifyIndex(n) {}
         CapturedProperty(const QmlMetaProperty &);
-        CapturedProperty(const CapturedProperty &);
-        CapturedProperty &operator=(const CapturedProperty &);
 
         QObject *object;
-        QString name;
         int notifyIndex;
     };
-    QList<CapturedProperty> capturedProperties;
+    QPODVector<CapturedProperty> capturedProperties;
 
     QmlContext *rootContext;
     QmlContext *currentBindContext;
@@ -221,6 +220,9 @@ public:
     QmlObjectScriptClass(QmlEngine *);
     ~QmlObjectScriptClass();
 
+    virtual QScriptValue prototype () const;
+    QScriptValue prototypeObject;
+
     virtual QueryFlags queryProperty(const QScriptValue &object,
                                      const QScriptString &name,
                                      QueryFlags flags, uint *id);
@@ -265,7 +267,7 @@ class QmlExpressionPrivate
 {
 public:
     QmlExpressionPrivate(QmlExpression *);
-    QmlExpressionPrivate(QmlExpression *, const QString &expr, bool);
+    QmlExpressionPrivate(QmlExpression *, const QString &expr);
     QmlExpressionPrivate(QmlExpression *, void *expr, QmlRefCount *rc);
     ~QmlExpressionPrivate();
 
@@ -277,6 +279,9 @@ public:
     BindExpressionProxy *proxy;
     QObject *me;
     bool trackChange;
+
+    QUrl fileName;
+    int line;
 
     quint32 id;
 

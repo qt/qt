@@ -1025,13 +1025,13 @@ void QWidget::setWindowState(Qt::WindowStates newstate)
             if (newstate & Qt::WindowFullScreen) {
                 if (d->topData()->normalGeometry.width() < 0 && !(oldstate & Qt::WindowMaximized))
                     d->topData()->normalGeometry = geometry();
-                d->topData()->savedFlags = GetWindowLongA(internalWinId(), GWL_STYLE);
+                d->topData()->savedFlags = Qt::WindowFlags(GetWindowLongA(internalWinId(), GWL_STYLE));
 #ifndef Q_FLATTEN_EXPOSE
                 UINT style = WS_CLIPCHILDREN | WS_CLIPSIBLINGS | WS_POPUP;
 #else
                 UINT style = WS_POPUP;
 #endif
-		if (d->topData()->savedFlags & WS_SYSMENU)
+		if (ulong(d->topData()->savedFlags) & WS_SYSMENU)
 		    style |= WS_SYSMENU;
                 if (isVisible())
                     style |= WS_VISIBLE;
@@ -1234,7 +1234,7 @@ void QWidgetPrivate::stackUnder_sys(QWidget* w)
   (In all comments below: s/X/Windows/g)
  */
 
-void QWidgetPrivate::setWSGeometry(bool dontShow)
+void QWidgetPrivate::setWSGeometry(bool dontShow, const QRect &)
 {
     Q_Q(QWidget);
     Q_ASSERT(q->testAttribute(Qt::WA_WState_Created));
@@ -1704,7 +1704,6 @@ int QWidget::metric(PaintDeviceMetric m) const
     return val;
 }
 
-#ifndef Q_WS_WINCE
 void QWidgetPrivate::createSysExtra()
 {
 #ifndef QT_NO_DRAGANDDROP
@@ -1712,6 +1711,7 @@ void QWidgetPrivate::createSysExtra()
 #endif
 }
 
+#ifndef Q_WS_WINCE
 void QWidgetPrivate::deleteSysExtra()
 {
 }
@@ -1719,8 +1719,9 @@ void QWidgetPrivate::deleteSysExtra()
 
 void QWidgetPrivate::createTLSysExtra()
 {
-    extra->topextra->winIconSmall = 0;
+    extra->topextra->savedFlags = 0;
     extra->topextra->winIconBig = 0;
+    extra->topextra->winIconSmall = 0;
 }
 
 void QWidgetPrivate::deleteTLSysExtra()
@@ -1844,7 +1845,8 @@ void QWidgetPrivate::setMask_sys(const QRegion &region)
     OffsetRgn(wr, offset.x(), offset.y());
 
     Q_ASSERT(q->testAttribute(Qt::WA_WState_Created));
-    SetWindowRgn(data.winid, wr, true);
+    if (!SetWindowRgn(data.winid, wr, true))
+        DeleteObject(wr);
 }
 
 void QWidgetPrivate::updateFrameStrut()

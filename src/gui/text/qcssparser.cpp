@@ -1161,13 +1161,20 @@ static bool setFontWeightFromValue(const Value &value, QFont *font)
     return true;
 }
 
-static bool setFontFamilyFromValues(const QVector<Value> &values, QFont *font)
+/** \internal
+ * parse the font family from the values (starting from index \a start)
+ * and set it the \a font
+ * \returns true if a family was extracted.
+ */
+static bool setFontFamilyFromValues(const QVector<Value> &values, QFont *font, int start = 0)
 {
     QString family;
-    for (int i = 0; i < values.count(); ++i) {
+    for (int i = start; i < values.count(); ++i) {
         const Value &v = values.at(i);
-        if (v.type == Value::TermOperatorComma)
-            break;
+        if (v.type == Value::TermOperatorComma) {
+            family += QLatin1Char(',');
+            continue;
+        }
         const QString str = v.variant.toString();
         if (str.isEmpty())
             break;
@@ -1221,9 +1228,7 @@ static void parseShorthandFontProperty(const QVector<Value> &values, QFont *font
     }
 
     if (i < values.count()) {
-        QString fam = values.at(i).variant.toString();
-        if (!fam.isEmpty())
-            font->setFamily(fam);
+        setFontFamilyFromValues(values, font, i);
     }
 }
 
@@ -1503,7 +1508,7 @@ QRect Declaration::rectValue() const
     QStringList func = v.variant.toStringList();
     if (func.count() != 2 || func.at(0).compare(QLatin1String("rect")) != 0)
         return QRect();
-    QStringList args = func[1].split(QLatin1String(" "), QString::SkipEmptyParts);
+    QStringList args = func[1].split(QLatin1Char(' '), QString::SkipEmptyParts);
     if (args.count() != 4)
         return QRect();
     QRect rect(args[0].toInt(), args[1].toInt(), args[2].toInt(), args[3].toInt());
@@ -2148,7 +2153,7 @@ void Parser::init(const QString &css, bool isFile)
     if (isFile) {
         QFile file(css);
         if (file.open(QFile::ReadOnly)) {
-            sourcePath = QFileInfo(styleSheet).absolutePath() + QLatin1String("/");
+            sourcePath = QFileInfo(styleSheet).absolutePath() + QLatin1Char('/');
             QTextStream stream(&file);
             styleSheet = stream.readAll();
         } else {

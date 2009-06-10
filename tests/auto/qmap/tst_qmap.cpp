@@ -39,6 +39,7 @@
 **
 ****************************************************************************/
 
+#define QT_STRICT_ITERATORS
 
 #include <QtTest/QtTest>
 #include <QDebug>
@@ -400,7 +401,7 @@ void tst_QMap::operator_eq()
 
         QVERIFY(a == b);
         QVERIFY(!(a != b));
-        
+
         a.insert(1,1);
         b.insert(1,1);
         QVERIFY(a == b);
@@ -422,7 +423,7 @@ void tst_QMap::operator_eq()
 
         b.insert(-1, -1);
         QVERIFY(a != b);
-        QVERIFY(!(a == b));                
+        QVERIFY(!(a == b));
     }
 
     {
@@ -468,7 +469,7 @@ void tst_QMap::operator_eq()
         b.insert("willy", 1);
         QVERIFY(a != b);
         QVERIFY(!(a == b));
-    }   
+    }
 }
 
 void tst_QMap::empty()
@@ -523,9 +524,9 @@ void tst_QMap::find()
         map1.insertMulti(4, compareString);
     }
 
-    QMap<int, QString>::const_iterator it=map1.find(4);
+    QMap<int, QString>::const_iterator it=map1.constFind(4);
 
-    for(i = 9; i > 2 && it != map1.end() && it.key() == 4; --i) {
+    for(i = 9; i > 2 && it != map1.constEnd() && it.key() == 4; --i) {
         compareString = testString.arg(i);
         QVERIFY(it.value() == compareString);
         ++it;
@@ -546,9 +547,9 @@ void tst_QMap::constFind()
     map1.insert(1,"Mensch");
     map1.insert(1,"Mayer");
     map1.insert(2,"Hej");
-    
+
     QVERIFY(map1.constFind(4) == map1.constEnd());
-    
+
     QVERIFY(map1.constFind(1).value() == "Mayer");
     QVERIFY(map1.constFind(2).value() == "Hej");
 
@@ -677,7 +678,7 @@ void tst_QMap::iterators()
     cstlIt--;
     QVERIFY(cstlIt.value() == "Teststring 3");
 
-    for(cstlIt = map.begin(), i = 1; cstlIt != map.constEnd(), i < 100; ++cstlIt, ++i)
+    for(cstlIt = map.constBegin(), i = 1; cstlIt != map.constEnd(), i < 100; ++cstlIt, ++i)
             QVERIFY(cstlIt.value() == testString.arg(i));
 
     //Java-Style iterators

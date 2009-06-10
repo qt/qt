@@ -42,6 +42,7 @@
 #include <QtTest/QtTest>
 
 #include <QtCore/qpropertyanimation.h>
+#include <QtCore/qvariantanimation.h>
 #include <QtGui/qwidget.h>
 
 //TESTED_CLASS=QPropertyAnimation
@@ -60,6 +61,18 @@ protected:
         if (msecs >= QPropertyAnimation::duration())
             stop();
     }
+};
+
+class MyObject : public QObject
+{
+    Q_OBJECT
+    Q_PROPERTY(qreal x READ x WRITE setX) 
+public:
+    MyObject() : m_x(0) { }
+    qreal x() const { return m_x; }
+    void setX(qreal x) { m_x = x; }
+private:
+    qreal m_x;
 };
 
 class tst_QPropertyAnimation : public QObject
@@ -91,10 +104,13 @@ private slots:
     void startWithoutStartValue();
     void playForwardBackward();
     void interpolated();
+    void setStartEndValues_data();
     void setStartEndValues();
     void zeroDurationStart();
     void operationsInStates_data();
     void operationsInStates();
+    void oneKeyValue();
+    void updateOnSetKeyValues();
 };
 
 tst_QPropertyAnimation::tst_QPropertyAnimation()
@@ -280,7 +296,7 @@ void tst_QPropertyAnimation::statesAndSignals()
 void tst_QPropertyAnimation::deletion1()
 {
     QObject *object = new QWidget;
-    QPointer<QPropertyAnimation> anim = new QPropertyAnimation(object,"minimumWidth");
+    QPointer<QPropertyAnimation> anim = new QPropertyAnimation(object, "minimumWidth");
 
     //test that the animation is deleted correctly depending of the deletion flag passed in start()
     QSignalSpy runningSpy(anim, SIGNAL(stateChanged(QAbstractAnimation::State, QAbstractAnimation::State)));
@@ -683,52 +699,78 @@ void tst_QPropertyAnimation::interpolated()
     }
 }
 
+Q_DECLARE_METATYPE(QVariant)
+
+void tst_QPropertyAnimation::setStartEndValues_data()
+{
+    QTest::addColumn<QByteArray>("propertyName");
+    QTest::addColumn<QVariant>("initialValue");
+    QTest::addColumn<QVariant>("startValue");
+    QTest::addColumn<QVariant>("endValue");
+
+    QTest::newRow("dynamic property")  << QByteArray("ole") << QVariant(42) << QVariant(0) << QVariant(10);
+    QTest::newRow("real property, with unmatching types") << QByteArray("x") << QVariant(42.) << QVariant(0) << QVariant(10.);
+}
+
 void tst_QPropertyAnimation::setStartEndValues()
 {
+    MyObject object;
+    QFETCH(QByteArray, propertyName);
+    QFETCH(QVariant, initialValue);
+    QFETCH(QVariant, startValue);
+    QFETCH(QVariant, endValue);
+
     //this tests the start value, end value and default start value
-    QObject o;
-    o.setProperty("ole", 42);
-    QPropertyAnimation anim(&o, "ole");
+    object.setProperty(propertyName, initialValue);
+    QPropertyAnimation anim(&object, propertyName);
     QVariantAnimation::KeyValues values;
     QCOMPARE(anim.keyValues(), values);
 
     //let's add a start value
-    anim.setStartValue(0);
-    values << QVariantAnimation::KeyValue(0, 0);
+    anim.setStartValue(startValue);
+    values << QVariantAnimation::KeyValue(0, startValue);
     QCOMPARE(anim.keyValues(), values);
 
-    anim.setEndValue(10);
-    values << QVariantAnimation::KeyValue(1, 10);
+    anim.setEndValue(endValue);
+    values << QVariantAnimation::KeyValue(1, endValue);
     QCOMPARE(anim.keyValues(), values);
 
     //now we can play with objects
-    QCOMPARE(o.property("ole").toInt(), 42);
-    QCOMPARE(o.property("ole").toInt(), 42);
+    QCOMPARE(object.property(propertyName).toDouble(), initialValue.toDouble());
     anim.start();
     QVERIFY(anim.startValue().isValid());
-    QCOMPARE(o.property("ole"), anim.startValue());
+    QCOMPARE(object.property(propertyName), anim.startValue());
+    anim.setCurrentTime(anim.duration()/2);
+    QCOMPARE(object.property(propertyName).toDouble(), (startValue.toDouble() + endValue.toDouble())/2 ); //just in the middle of the animation
+    anim.setCurrentTime(anim.duration()); //we go to the end of the animation
+    QCOMPARE(anim.state(), QAnimationGroup::Stopped); //it should have stopped
+    QVERIFY(anim.endValue().isValid());
+    QCOMPARE(object.property(propertyName), anim.endValue()); //end of the animations
 
     //now we remove the explicit start value and test the implicit one
     anim.stop();
-    o.setProperty("ole", 42);
+    object.setProperty(propertyName, initialValue);
+
+    //let's reset the start value
     values.remove(0);
-    anim.setStartValue(QVariant()); //reset the start value
+    anim.setStartValue(QVariant());
     QCOMPARE(anim.keyValues(), values);
     QVERIFY(!anim.startValue().isValid());
+
     anim.start();
-    QCOMPARE(o.property("ole").toInt(), 42);
+    QCOMPARE(object.property(propertyName), initialValue);
     anim.setCurrentTime(anim.duration()/2);
-    QCOMPARE(o.property("ole").toInt(), 26); //just in the middle of the animation
-    anim.setCurrentTime(anim.duration());
+    QCOMPARE(object.property(propertyName).toDouble(), (initialValue.toDouble() + endValue.toDouble())/2 ); //just in the middle of the animation
+    anim.setCurrentTime(anim.duration()); //we go to the end of the animation
     QCOMPARE(anim.state(), QAnimationGroup::Stopped); //it should have stopped
     QVERIFY(anim.endValue().isValid());
-    QCOMPARE(o.property("ole"), anim.endValue()); //end of the animations
+    QCOMPARE(object.property(propertyName), anim.endValue()); //end of the animations
 
     //now we set back the startValue
-    anim.setStartValue(5);
+    anim.setStartValue(startValue);
     QVERIFY(anim.startValue().isValid());
     anim.start();
-    QCOMPARE(o.property("ole").toInt(), 5);
+    QCOMPARE(object.property(propertyName), startValue);
 }
 
 void tst_QPropertyAnimation::zeroDurationStart()
@@ -794,9 +836,9 @@ void tst_QPropertyAnimation::operationsInStates()
  *           | pause()    |start()    |resume()   |stop()
  * ----------+------------+-----------+-----------+-------------------+
  * Stopped   | Stopped    |Running    |Stopped    |Stopped            |
- *          _| qWarning   |           |qWarning   |-                  |
+ *          _| qWarning   |restart    |qWarning   |                   |
  * Paused    | Paused     |Running    |Running    |Stopped            |
- *          _| -          |           |           |                   |
+ *          _|            |           |           |                   |
  * Running   | Paused     |Running    |Running    |Stopped            |
  *           |            |restart    |qWarning   |                   |
  * ----------+------------+-----------+-----------+-------------------+
@@ -849,6 +891,68 @@ void tst_QPropertyAnimation::operationsInStates()
 #undef Start
 #undef Resume
 #undef Stop
+
+void tst_QPropertyAnimation::oneKeyValue()
+{
+    QObject o;
+    o.setProperty("ole", 42);
+    QCOMPARE(o.property("ole").toInt(), 42);
+
+    QPropertyAnimation animation(&o, "ole");
+    animation.setStartValue(43);
+    animation.setEndValue(44);
+    animation.setDuration(100);
+
+    animation.setCurrentTime(0);
+
+    QVERIFY(animation.currentValue().isValid());
+    QCOMPARE(animation.currentValue().toInt(), 43);
+    QCOMPARE(o.property("ole").toInt(), 42);
+
+    // remove the last key value
+    animation.setKeyValueAt(1.0, QVariant());
+
+    // we will neither interpolate, nor update the current value
+    // since there is only one 1 key value defined
+    animation.setCurrentTime(100);
+
+    // the animation should not have been modified
+    QVERIFY(animation.currentValue().isValid());
+    QCOMPARE(animation.currentValue().toInt(), 43);
+    QCOMPARE(o.property("ole").toInt(), 42);
+}
+
+void tst_QPropertyAnimation::updateOnSetKeyValues()
+{
+    QObject o;
+    o.setProperty("ole", 100);
+    QCOMPARE(o.property("ole").toInt(), 100);
+
+    QPropertyAnimation animation(&o, "ole");
+    animation.setStartValue(100);
+    animation.setEndValue(200);
+    animation.setDuration(100);
+
+    animation.setCurrentTime(50);
+    QCOMPARE(animation.currentValue().toInt(), 150);
+    animation.setKeyValueAt(0.0, 300);
+    QCOMPARE(animation.currentValue().toInt(), 250);
+
+    o.setProperty("ole", 100);
+    QPropertyAnimation animation2(&o, "ole");
+    QVariantAnimation::KeyValues kValues;
+    kValues << QVariantAnimation::KeyValue(0.0, 100) << QVariantAnimation::KeyValue(1.0, 200);
+    animation2.setKeyValues(kValues);
+    animation2.setDuration(100);
+    animation2.setCurrentTime(50);
+    QCOMPARE(animation2.currentValue().toInt(), 150);
+
+    kValues.clear();
+    kValues << QVariantAnimation::KeyValue(0.0, 300) << QVariantAnimation::KeyValue(1.0, 200);
+    animation2.setKeyValues(kValues);
+
+    QCOMPARE(animation2.currentValue().toInt(), animation.currentValue().toInt());
+}
 
 QTEST_MAIN(tst_QPropertyAnimation)
 #include "tst_qpropertyanimation.moc"

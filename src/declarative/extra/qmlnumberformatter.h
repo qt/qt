@@ -42,8 +42,8 @@
 #ifndef QMLNUMBERFORMATTER_H
 #define QMLNUMBERFORMATTER_H
 
-#include <qml.h>
-#include "qnumberformat.h"
+#include <QtDeclarative/qml.h>
+#include <QtDeclarative/qnumberformat.h>
 
 
 QT_BEGIN_HEADER
@@ -83,7 +83,7 @@ private:
     Q_DECLARE_PRIVATE(QmlNumberFormatter)
 };
 
-QML_DECLARE_TYPE(QmlNumberFormatter);
+QML_DECLARE_TYPE(QmlNumberFormatter)
 
 
 QT_END_NAMESPACE

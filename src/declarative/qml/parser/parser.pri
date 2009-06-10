@@ -1,4 +1,6 @@
 
+INCLUDEPATH += $$PWD
+
 HEADERS += $$PWD/javascriptast_p.h \
            $$PWD/javascriptastfwd_p.h \
            $$PWD/javascriptastvisitor_p.h \

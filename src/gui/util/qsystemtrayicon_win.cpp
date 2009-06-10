@@ -662,7 +662,7 @@ void QSystemTrayIconPrivate::showMessage_sys(const QString &title, const QString
     //message is limited to 255 chars + NULL
     QString messageString;
     if (message.isEmpty() && !title.isEmpty())
-        messageString = QLatin1String(" "); //ensures that the message shows when only title is set
+        messageString = QLatin1Char(' '); //ensures that the message shows when only title is set
     else
         messageString = message.left(255) + QChar();
 

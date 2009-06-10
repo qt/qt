@@ -42,8 +42,8 @@
 #ifndef QFXTEXTEDIT_H
 #define QFXTEXTEDIT_H
 
-#include <qfxtext.h>
-#include <qfxpainteditem.h>
+#include <QtDeclarative/qfxtext.h>
+#include <QtDeclarative/qfxpainteditem.h>
 
 #include <QtGui/qtextdocument.h>
 #include <QtGui/qtextoption.h>
@@ -78,7 +78,8 @@ class Q_DECLARATIVE_EXPORT QFxTextEdit : public QFxPaintedItem
     Q_PROPERTY(bool readOnly READ isReadOnly WRITE setReadOnly)
     Q_PROPERTY(bool cursorVisible READ isCursorVisible WRITE setCursorVisible)
     Q_PROPERTY(bool focusOnPress READ focusOnPress WRITE setFocusOnPress)
-    Q_CLASSINFO("DefaultProperty", "text")
+    Q_PROPERTY(bool preserveSelection READ preserveSelection WRITE setPreserveSelection)
+    Q_PROPERTY(qreal textMargin READ textMargin WRITE setTextMargin)
 
 public:
     QFxTextEdit(QFxItem *parent=0);
@@ -131,6 +132,12 @@ public:
     bool focusOnPress() const;
     void setFocusOnPress(bool on);
 
+    bool preserveSelection() const;
+    void setPreserveSelection(bool on);
+
+    qreal textMargin() const;
+    void setTextMargin(qreal margin);
+
     virtual void dump(int depth);
     virtual QString propertyInfo() const;
 
@@ -174,6 +181,7 @@ protected:
     virtual void geometryChanged(const QRectF &newGeometry, 
                                  const QRectF &oldGeometry);
 
+    bool event(QEvent *);
     void keyPressEvent(QKeyEvent *);
     void keyReleaseEvent(QKeyEvent *);
 
@@ -182,6 +190,7 @@ protected:
     // mouse filter?
     void mousePressEvent(QGraphicsSceneMouseEvent *event);
     void mouseReleaseEvent(QGraphicsSceneMouseEvent *event);
+    void mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event);
     void mouseMoveEvent(QGraphicsSceneMouseEvent *event);
 
     void inputMethodEvent(QInputMethodEvent *e);
@@ -193,7 +202,7 @@ private:
     Q_DISABLE_COPY(QFxTextEdit)
     Q_DECLARE_PRIVATE(QFxTextEdit)
 };
-QML_DECLARE_TYPE(QFxTextEdit);
+QML_DECLARE_TYPE(QFxTextEdit)
 
 
 QT_END_NAMESPACE

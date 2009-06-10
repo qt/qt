@@ -42,7 +42,7 @@
 #ifndef QFXFOCUSREALM_H
 #define QFXFOCUSREALM_H
 
-#include <qfxitem.h>
+#include <QtDeclarative/qfxitem.h>
 
 
 QT_BEGIN_HEADER
@@ -58,7 +58,7 @@ public:
     virtual ~QFxFocusRealm();
 };
 
-QML_DECLARE_TYPE(QFxFocusRealm);
+QML_DECLARE_TYPE(QFxFocusRealm)
 
 QT_END_NAMESPACE
 

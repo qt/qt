@@ -43,9 +43,9 @@
 #define QMLTRANSITION_H
 
 #include <QtCore/qobject.h>
-#include <qfxglobal.h>
-#include <qmlstate.h>
-#include <qml.h>
+#include <QtDeclarative/qfxglobal.h>
+#include <QtDeclarative/qmlstate.h>
+#include <QtDeclarative/qml.h>
 
 QT_BEGIN_HEADER
 
@@ -88,7 +88,7 @@ public:
     void setReversed(bool r);
     void stop();
 };
-QML_DECLARE_TYPE(QmlTransition);
+QML_DECLARE_TYPE(QmlTransition)
 
 QT_END_NAMESPACE
 

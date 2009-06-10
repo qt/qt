@@ -1,3 +1,28 @@
+2009-05-19  Kenneth Rohde Christiansen  <kenneth.christiansen@openbossa.org>
+
+        Reviewed by Simon Hausmann.
+
+        Fix a plugin bug in the WebKit code, similar to the one in WebCore.
+
+        The problem is when a non visible QtPluginWidget would show it self
+        in a sibling frame. The problem was due to our clipping. In Qt,
+        if setMask is set with an empty QRegion, no clipping will
+        be performed, so in that case we hide the PluginContainer
+
+        * WebCoreSupport/FrameLoaderClientQt.cpp:
+        (WebCore::):
+
+2009-03-27  Erik L. Bunce  <elbunce@xendom.com>
+
+        Reviewed by Simon Hausmann.
+
+        https://bugs.webkit.org/show_bug.cgi?id=24746
+
+        Improved selection tests.
+
+        * tests/qwebpage/tst_qwebpage.cpp:
+        (tst_QWebPage::textSelection):
+
 2009-04-24  Simon Hausmann  <simon.hausmann@nokia.com>
 
         Rubber-stamped by Ariya Hidayat.

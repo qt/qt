@@ -128,30 +128,30 @@ QFxHighlightFilter::~QFxHighlightFilter()
     \property QFxHighlightFilter::source
     \brief the URL of the image to be used as the highlight.
 */
-QString QFxHighlightFilter::source() const
+QUrl QFxHighlightFilter::source() const
 {
     return d->source;
 }
 
 void QFxHighlightFilter::imageLoaded()
 {
-    QImage img = QFxPixmap(d->url);
+    QPixmap img = QFxPixmap(d->url);
 #if defined(QFX_RENDER_OPENGL2)
     if (!img.isNull()) 
-        d->tex.setImage(img);
+        d->tex.setImage(img.toImage());
 #endif
     emit sourceChanged(d->source);
     update();
 }
 
-void QFxHighlightFilter::setSource(const QString &f)
+void QFxHighlightFilter::setSource(const QUrl &f)
 {
-    if (d->source == f)
+    if (d->url == f)
         return;
-    if (!d->source.isEmpty())
+    if (!d->url.isEmpty())
         QFxPixmap::cancelGet(d->url, this);
-    d->source = f;
-    d->url = qmlContext(this)->resolvedUrl(f);
+    Q_ASSERT(!f.isRelative());
+    d->url = f;
 #if defined(QFX_RENDER_OPENGL2)
     d->tex.clear();
 #endif
@@ -314,6 +314,6 @@ void QFxHighlightFilter::filterGL(QSimpleCanvasItem::GLPainter &p)
 #endif
 }
 
-QML_DEFINE_TYPE(QFxHighlightFilter,Highlight);
+QML_DEFINE_TYPE(QFxHighlightFilter,Highlight)
 
 QT_END_NAMESPACE

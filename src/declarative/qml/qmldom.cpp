@@ -44,12 +44,14 @@
 #include "private/qmlcompiler_p.h"
 #include "private/qmlengine_p.h"
 #include "qmlcompiledcomponent_p.h"
-#include <QtCore/qbytearray.h>
-#include <QtCore/qstring.h>
-
+#include <QtCore/QByteArray>
+#include <QtCore/QDebug>
+#include <QtCore/QString>
 #include "qmlscriptparser_p.h"
 
 QT_BEGIN_NAMESPACE
+
+DEFINE_BOOL_CONFIG_OPTION(compilerDump, QML_COMPILER_DUMP)
 
 QmlDomDocumentPrivate::QmlDomDocumentPrivate()
 : root(0)
@@ -192,8 +194,14 @@ bool QmlDomDocument::load(QmlEngine *engine, const QByteArray &data, const QUrl 
         d->imports += QUrl(td->data.imports().at(i).uri);
     }
 
+    d->automaticSemicolonOffsets = td->data.automaticSemicolonOffsets();
+
     if (td->data.tree()) {
-        td->data.tree()->dump();
+        if (compilerDump()) {
+            qWarning() << "-AST------------------------------------------------------------------------------";
+            td->data.tree()->dump();
+            qWarning() << "----------------------------------------------------------------------------------";
+        }
         d->root = td->data.tree();
         d->root->addref();
     }
@@ -243,6 +251,14 @@ QmlDomObject QmlDomDocument::rootObject() const
     rv.d->object = d->root;
     if (rv.d->object) rv.d->object->addref();
     return rv;
+}
+
+QList<int> QmlDomDocument::automaticSemicolonOffsets() const
+{
+    if (d)
+        return d->automaticSemicolonOffsets;
+    else
+        return QList<int>();
 }
 
 QmlDomPropertyPrivate::QmlDomPropertyPrivate()
@@ -477,12 +493,7 @@ QmlDomObjectPrivate::properties(QmlParser::Property *property) const
             iter->second.prepend(name);
 
     } else {
-
-        // We don't display "id" sets as a property in the dom
-        if (property->values.count() != 1 || 
-           property->values.at(0)->type != QmlParser::Value::Id)
-            rv << qMakePair(property, property->name);
-
+        rv << qMakePair(property, property->name);
     }
 
     return rv;
@@ -1169,7 +1180,7 @@ QmlDomValue::Type QmlDomValue::type() const
     case QmlParser::Value::SignalExpression:
         return Literal;
     case QmlParser::Value::Id:
-        return Invalid;
+        return Literal;
     }
     return Invalid;
 }
@@ -1414,6 +1425,40 @@ void QmlDomList::setValues(const QList<QmlDomValue> &values)
     qWarning("QmlDomList::setValues(const QList<QmlDomValue> &): Not implemented");
 }
 
+/*!
+    Returns the position in the input data where the list started, or 0 if
+ the property is invalid.
+*/
+int QmlDomList::position() const
+{
+    if (d && d->property) {
+        return d->property->listValueRange.offset;
+    } else
+        return 0;
+}
+
+/*!
+    Returns the length in the input data from where the list started upto
+ the end of it, or 0 if the property is invalid.
+*/
+int QmlDomList::length() const
+{
+    if (d && d->property)
+        return d->property->listValueRange.length;
+    else
+        return 0;
+}
+
+/*!
+  Returns a list of positions of the commas in the QML file.
+*/
+QList<int> QmlDomList:: commaPositions() const
+{
+    if (d && d->property)
+        return d->property->listCommaPositions;
+    else
+        return QList<int>();
+}
 
 /*!
     \class QmlDomComponent

@@ -208,7 +208,7 @@ public:
     QString searchBuffer;
     QBasicTimer searchBufferTimer;
 
-    //passing of mouse events up the parent heirarchy
+    //passing of mouse events up the parent hierarchy
     QPointer<QMenu> activeMenu;
     bool mouseEventTaken(QMouseEvent *);
 
@@ -220,7 +220,7 @@ public:
     virtual QList<QPointer<QWidget> > calcCausedStack() const;
     QMenuCaused causedPopup;
     void hideUpToMenuBar();
-    void hideMenu(QMenu *menu);
+    void hideMenu(QMenu *menu, bool justRegister = false);
 
     //index mappings
     inline QAction *actionAt(int i) const { return q_func()->actions().at(i); }

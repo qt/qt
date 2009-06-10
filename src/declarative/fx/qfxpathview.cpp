@@ -55,7 +55,7 @@ static const int FlickThreshold = 5;
 
 QT_BEGIN_NAMESPACE
 
-QML_DEFINE_TYPE(QFxPathView,PathView);
+QML_DEFINE_TYPE(QFxPathView,PathView)
 
 class QFxPathViewAttached : public QObject
 {
@@ -159,7 +159,7 @@ void QFxPathView::setModel(const QVariant &model)
     if (d->model) {
         disconnect(d->model, SIGNAL(itemsInserted(int,int)), this, SLOT(itemsInserted(int,int)));
         disconnect(d->model, SIGNAL(itemsRemoved(int,int)), this, SLOT(itemsRemoved(int,int)));
-        disconnect(d->model, SIGNAL(itemCreated(int, QFxItem*)), this, SLOT(itemCreated(int,QFxItem*)));
+        disconnect(d->model, SIGNAL(createdItem(int, QFxItem*)), this, SLOT(createdItem(int,QFxItem*)));
         for (int i=0; i<d->items.count(); i++){
             QFxItem *p = d->items[i];
             d->model->release(p);
@@ -186,7 +186,7 @@ void QFxPathView::setModel(const QVariant &model)
     if (d->model) {
         connect(d->model, SIGNAL(itemsInserted(int,int)), this, SLOT(itemsInserted(int,int)));
         connect(d->model, SIGNAL(itemsRemoved(int,int)), this, SLOT(itemsRemoved(int,int)));
-        connect(d->model, SIGNAL(itemCreated(int, QFxItem*)), this, SLOT(itemCreated(int,QFxItem*)));
+        connect(d->model, SIGNAL(createdItem(int, QFxItem*)), this, SLOT(createdItem(int,QFxItem*)));
     }
     d->firstIndex = 0;
     d->pathOffset = 0;
@@ -561,7 +561,7 @@ void QFxPathViewPrivate::regenerate()
     Q_Q(QFxPathView);
     for (int i=0; i<items.count(); i++){
         QFxItem *p = items[i];
-        model->release(p);
+        releaseItem(p);
     }
     items.clear();
 
@@ -634,7 +634,7 @@ void QFxPathView::refill()
             while(wrapIndex-- >= 0){
                 QFxItem* p = d->items.takeFirst();
                 d->updateItem(p, 0.0);
-                d->model->release(p);
+                d->releaseItem(p);
                 d->firstIndex++;
                 d->firstIndex %= d->model->count();
                 int index = (d->firstIndex + d->items.count())%d->model->count();
@@ -647,7 +647,7 @@ void QFxPathView::refill()
             while(wrapIndex++ < d->items.count()-1){
                 QFxItem* p = d->items.takeLast();
                 d->updateItem(p, 1.0);
-                d->model->release(p);
+                d->releaseItem(p);
                 d->firstIndex--;
                 if (d->firstIndex < 0)
                     d->firstIndex = d->model->count() - 1;
@@ -733,7 +733,7 @@ void QFxPathView::itemsRemoved(int modelIndex, int count)
         d->moveOffset.setValue(targetOffset);
 }
 
-void QFxPathView::itemCreated(int index, QFxItem *item)
+void QFxPathView::createdItem(int index, QFxItem *item)
 {
     Q_D(QFxPathView);
     if (d->requestedIndex != index) {
@@ -744,6 +744,7 @@ void QFxPathView::itemCreated(int index, QFxItem *item)
 
 void QFxPathView::destroyingItem(QFxItem *item)
 {
+    Q_UNUSED(item);
 }
 
 void QFxPathView::ticked()

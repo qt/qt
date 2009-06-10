@@ -1032,6 +1032,7 @@
     \value Stream The MediaSource object describes a data stream.
                   This is the type used for \l{QIODevice}s. Note
                   that a stream opened with a QUrl, will still be of the Url type.
+    \value Empty The media source doesn't have a source.
 
     \sa MediaSource::type()
 */
@@ -2026,6 +2027,15 @@
 */
 
 /*!
+    \fn void Phonon::MediaObject::clear()
+
+    Stops and removes all playing and enqueued media sources.
+
+    \sa setCurrentSource()
+*/
+
+
+/*!
     \fn void Phonon::MediaObject::stateChanged(Phonon::State newstate, Phonon::State oldstate)
 
     This signal is emitted when the state of the MediaObject has changed.
@@ -2973,7 +2983,7 @@
 
     \value ToggledHint
     If this hint is set it means that
-    the the control has only two states: zero and non-zero
+    the control has only two states: zero and non-zero
     (see isToggleControl()).
 
     \value LogarithmicHint
@@ -3024,6 +3034,12 @@
     \internal
 
     Returns the parameter's identifier.
+*/
+
+/*!
+   \typedef Phonon::AudioOutputInterface
+   \inmodule Phonon
+   \internal
 */
 
 /*!
@@ -3251,7 +3267,19 @@
 /*!
     \fn bool Phonon::Path::operator!=(const Path &p) const;
 
-    Returns true if this Path is not equal to \a p; otherwise returns false;
+    Returns true if this Path is not equal to \a p; otherwise returns false.
+*/
+
+/*!
+    \fn MediaNode *Phonon::Path::source() const;
+
+    Returns the source MediaNode used by the path.
+*/
+
+/*!
+    \fn MediaNode *Phonon::Path::sink() const;
+
+    Returns the sink MediaNode used by the path.
 */
 
 /*!
@@ -4878,7 +4906,7 @@
 */
 
 /*!
-    \typedef typedef void (*CleanUpFunction)()
+    \typedef Phonon::CleanUpFunction
     \inmodule Phonon
     \internal
 */

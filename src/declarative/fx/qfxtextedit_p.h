@@ -69,8 +69,8 @@ class QFxTextEditPrivate : public QFxPaintedItemPrivate
 public:
     QFxTextEditPrivate()
       : font(0), color("black"), imgDirty(true), hAlign(QFxTextEdit::AlignLeft), vAlign(QFxTextEdit::AlignTop),
-      dirty(false), wrap(false), richText(false), cursorVisible(false), focusOnPress(false),
-      format(QFxTextEdit::AutoText), document(0)
+      dirty(false), wrap(false), richText(false), cursorVisible(false), focusOnPress(false), preserveSelection(true),
+      textMargin(0.0), format(QFxTextEdit::AutoText), document(0)
     {
     }
 
@@ -89,8 +89,8 @@ public:
 #if defined(QFX_RENDER_OPENGL)
     GLTexture texture;
 #endif
-    QSimpleCanvasConfig::Image imgCache;
-    QImage imgStyleCache;
+    QPixmap imgCache;
+    QPixmap imgStyleCache;
     QFxTextEdit::HAlignment hAlign;
     QFxTextEdit::VAlignment vAlign;
     bool dirty;
@@ -98,6 +98,8 @@ public:
     bool richText;
     bool cursorVisible;
     bool focusOnPress;
+    bool preserveSelection;
+    qreal textMargin;
     QFxTextEdit::TextFormat format;
     QTextDocument *document;
     QTextControl *control;

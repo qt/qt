@@ -58,6 +58,7 @@
 #include <qsemaphore.h>
 
 #include <private/qorderedmutexlocker_p.h>
+#include <private/qmutexpool_p.h>
 
 #include <new>
 
@@ -91,12 +92,34 @@ static int *queuedConnectionTypes(const QList<QByteArray> &typeNames)
     return types;
 }
 
+static QBasicAtomicPointer<QMutexPool> signalSlotMutexes = Q_BASIC_ATOMIC_INITIALIZER(0);
+static QBasicAtomicInt objectCount = Q_BASIC_ATOMIC_INITIALIZER(0);
+
+/** \internal
+ * mutex to be locked when accessing the connectionlists or the senders list
+ */
+static QMutex *signalSlotLock(const QObject *o)
+{
+    if (!signalSlotMutexes) {
+        QMutexPool *mp = new QMutexPool;
+        if (!signalSlotMutexes.testAndSetOrdered(0, mp)) {
+            delete mp;
+        }
+    }
+    return signalSlotMutexes->get(o);
+}
+
 extern "C" Q_CORE_EXPORT void qt_addObject(QObject *)
 {
+    objectCount.ref();
 }
 
 extern "C" Q_CORE_EXPORT void qt_removeObject(QObject *)
 {
+    if(!objectCount.deref()) {
+        QMutexPool *old = signalSlotMutexes.fetchAndStoreAcquire(0);
+        delete old;
+    }
 }
 
 QObjectPrivate::QObjectPrivate(int version)
@@ -225,7 +248,7 @@ bool QObjectPrivate::isSender(const QObject *receiver, const char *signal) const
     int signal_index = q->metaObject()->indexOfSignal(signal);
     if (signal_index < 0)
         return false;
-    QMutexLocker locker(&threadData->mutex);
+    QMutexLocker locker(signalSlotLock(q));
     if (connectionLists) {
         if (signal_index < connectionLists->count()) {
             const ConnectionList &connectionList = connectionLists->at(signal_index);
@@ -247,7 +270,7 @@ QObjectList QObjectPrivate::receiverList(const char *signal) const
     int signal_index = q->metaObject()->indexOfSignal(signal);
     if (signal_index < 0)
         return returnValue;
-    QMutexLocker locker(&threadData->mutex);
+    QMutexLocker locker(signalSlotLock(q));
     if (connectionLists) {
         if (signal_index < connectionLists->count()) {
             const ConnectionList &connectionList = connectionLists->at(signal_index);
@@ -265,7 +288,7 @@ QObjectList QObjectPrivate::receiverList(const char *signal) const
 QObjectList QObjectPrivate::senderList() const
 {
     QObjectList returnValue;
-    QMutexLocker locker(&threadData->mutex);
+    QMutexLocker locker(signalSlotLock(q_func()));
     for (int i = 0; i < senders.count(); ++i)
         returnValue << senders.at(i)->sender;
     return returnValue;
@@ -280,7 +303,6 @@ void QObjectPrivate::addConnection(int signal, Connection *c)
 
     ConnectionList &connectionList = (*connectionLists)[signal];
     connectionList.append(c);
-
     cleanConnectionLists();
 }
 
@@ -714,7 +736,7 @@ QObject::~QObject()
     emit destroyed(this);
 
     {
-        QMutexLocker locker(&d->threadData->mutex);
+        QMutexLocker locker(signalSlotLock(this));
 
         // set ref to zero to indicate that this object has been deleted
         if (d->currentSender != 0)
@@ -733,7 +755,7 @@ QObject::~QObject()
                         continue;
                     }
 
-                    QMutex *m = &c->receiver->d_func()->threadData->mutex;
+                    QMutex *m = signalSlotLock(c->receiver);
                     bool needToUnlock = QOrderedMutexLocker::relock(locker.mutex(), m);
                     c = connectionList[i];
                     if (c->receiver)
@@ -754,23 +776,26 @@ QObject::~QObject()
         }
 
         // disconnect all senders
-        for (int i = 0; i < d->senders.count(); ++i) {
+        for (int i = 0; i < d->senders.count(); ) {
             QObjectPrivate::Connection *s = d->senders[i];
-            if (!s->sender)
-                continue;
 
-            QMutex *m = &s->sender->d_func()->threadData->mutex;
+            QMutex *m = signalSlotLock(s->sender);
             bool needToUnlock = QOrderedMutexLocker::relock(locker.mutex(), m);
-            s = d->senders[i];
-            s->receiver = 0;
-            if (s->sender) {
-                QObjectConnectionListVector *senderLists = s->sender->d_func()->connectionLists;
-                if (senderLists)
-                    senderLists->dirty = true;
+            if (m < locker.mutex()) {
+                if (i >= d->senders.count() || s != d->senders[i]) {
+                    if (needToUnlock)
+                        m->unlock();
+                    continue;
+                }
             }
+            s->receiver = 0;
+            QObjectConnectionListVector *senderLists = s->sender->d_func()->connectionLists;
+            if (senderLists)
+                senderLists->dirty = true;
 
             if (needToUnlock)
                 m->unlock();
+            ++i;
         }
 
         d->senders.clear();
@@ -882,7 +907,8 @@ QObjectPrivate::Connection::~Connection()
     \relates QObject
 
     Returns the given \a object cast to type T if the object is of type
-    T (or of a subclass); otherwise returns 0.
+    T (or of a subclass); otherwise returns 0.  If \a object is 0 then 
+    it will also return 0.
 
     The class T must inherit (directly or indirectly) QObject and be
     declared with the \l Q_OBJECT macro.
@@ -2036,7 +2062,7 @@ void QObject::deleteLater()
 
     or
 
-    \tt{/*: ... \starslash}
+    \tt{\begincomment: ... \endcomment}
 
     Examples:
 
@@ -2212,11 +2238,11 @@ static void err_method_notfound(const QObject *object,
     if (strchr(method,')') == 0)                // common typing mistake
         qWarning("Object::%s: Parentheses expected, %s %s::%s%s%s",
                  func, type, object->metaObject()->className(), method+1,
-                 loc ? " in ":"\0", loc ? loc : "\0");
+                 loc ? " in ": "", loc ? loc : "");
     else
         qWarning("Object::%s: No such %s %s::%s%s%s",
                  func, type, object->metaObject()->className(), method+1,
-                 loc ? " in ":"\0", loc ? loc : "\0");
+                 loc ? " in ": "", loc ? loc : "");
 
 }
 
@@ -2259,7 +2285,7 @@ QObject *QObject::sender() const
 {
     Q_D(const QObject);
 
-    QMutexLocker(&d->threadData->mutex);
+    QMutexLocker(signalSlotLock(this));
     if (!d->currentSender)
         return 0;
 
@@ -2315,7 +2341,7 @@ int QObject::receivers(const char *signal) const
         }
 
         Q_D(const QObject);
-        QMutexLocker locker(&d->threadData->mutex);
+        QMutexLocker locker(signalSlotLock(this));
         if (d->connectionLists) {
             if (signal_index < d->connectionLists->count()) {
                 const QObjectPrivate::ConnectionList &connectionList =
@@ -2361,7 +2387,8 @@ int QObject::receivers(const char *signal) const
     can be connected to one slot.
 
     If a signal is connected to several slots, the slots are activated
-    in an arbitrary order when the signal is emitted.
+    in the same order as the order the connection was made, when the
+    signal is emitted.
 
     The function returns true if it successfully connects the signal
     to the slot. It will return false if it cannot create the
@@ -2369,9 +2396,13 @@ int QObject::receivers(const char *signal) const
     existence of either \a signal or \a method, or if their signatures
     aren't compatible.
 
-    For every connection you make, a signal is emitted; two signals are emitted
-    for duplicate connections. You can break all of these connections with a
-    single disconnect() call.
+    By default, a signal is emitted for every connection you make;
+    two signals are emitted for duplicate connections. You can break
+    all of these connections with a single disconnect() call.
+    If you pass the Qt::UniqueConnection \a type, the connection will only
+    be made if it is not a duplicate. If there is already a duplicate
+    (exact same signal to the exact same slot on the same objects),
+    the connection will fail and connect will return false
 
     The optional \a type parameter describes the type of connection
     to establish. In particular, it determines whether a particular
@@ -2504,7 +2535,8 @@ bool QObject::connect(const QObject *sender, const char *signal,
         }
     }
 #endif
-    QMetaObject::connect(sender, signal_index, receiver, method_index, type, types);
+    if (!QMetaObject::connect(sender, signal_index, receiver, method_index, type, types))
+        return false;
     const_cast<QObject*>(sender)->connectNotify(signal - 1);
     return true;
 }
@@ -2755,15 +2787,28 @@ bool QMetaObject::connect(const QObject *sender, int signal_index,
     QObject *s = const_cast<QObject *>(sender);
     QObject *r = const_cast<QObject *>(receiver);
 
+    QOrderedMutexLocker locker(signalSlotLock(sender),
+                               signalSlotLock(receiver));
+
+    if (type & Qt::UniqueConnection) {
+        QObjectConnectionListVector *connectionLists = s->d_func()->connectionLists;
+        if (connectionLists && connectionLists->count() > signal_index) {
+            QObjectPrivate::ConnectionList &connectionList = (*connectionLists)[signal_index];
+            for (int i = 0; i < connectionList.count(); ++i) {
+                QObjectPrivate::Connection *c2 = connectionList.at(i);
+                if (c2->receiver == receiver && c2->method == method_index)
+                    return false;
+            }
+        }
+        type &= Qt::UniqueConnection - 1;
+    }
+
     QObjectPrivate::Connection *c = new QObjectPrivate::Connection;
     c->sender = s;
     c->receiver = r;
     c->method = method_index;
     c->connectionType = type;
     c->argumentTypes = types;
-
-    QOrderedMutexLocker locker(&s->d_func()->threadData->mutex,
-                               &r->d_func()->threadData->mutex);
 
     s->d_func()->addConnection(signal_index, c);
     r->d_func()->senders.append(c);
@@ -2788,8 +2833,8 @@ bool QMetaObject::disconnect(const QObject *sender, int signal_index,
     QObject *s = const_cast<QObject *>(sender);
     QObject *r = const_cast<QObject *>(receiver);
 
-    QMutex *senderMutex = &s->d_func()->threadData->mutex;
-    QMutex *receiverMutex = r ? &r->d_func()->threadData->mutex : 0;
+    QMutex *senderMutex = signalSlotLock(sender);
+    QMutex *receiverMutex = receiver ? signalSlotLock(receiver) : 0;
     QOrderedMutexLocker locker(senderMutex, receiverMutex);
 
     QObjectConnectionListVector *connectionLists = s->d_func()->connectionLists;
@@ -2809,7 +2854,7 @@ bool QMetaObject::disconnect(const QObject *sender, int signal_index,
                 if (c->receiver
                     && (r == 0 || (c->receiver == r
                                    && (method_index < 0 || c->method == method_index)))) {
-                    QMutex *m = &c->receiver->d_func()->threadData->mutex;
+                    QMutex *m = signalSlotLock(c->receiver);
                     bool needToUnlock = false;
                     if (!receiverMutex && senderMutex != m) {
                         // need to relock this receiver and sender in the correct order
@@ -2836,7 +2881,7 @@ bool QMetaObject::disconnect(const QObject *sender, int signal_index,
             if (c->receiver
                 && (r == 0 || (c->receiver == r
                                && (method_index < 0 || c->method == method_index)))) {
-                QMutex *m = &c->receiver->d_func()->threadData->mutex;
+                QMutex *m = signalSlotLock(c->receiver);
                 bool needToUnlock = false;
                 if (!receiverMutex && senderMutex != m) {
                     // need to relock this receiver and sender in the correct order
@@ -2977,7 +3022,7 @@ static void blocking_activate(QObject *sender, int signal, QObjectPrivate::Conne
 #else
     QSemaphore semaphore;
     queued_activate(sender, signal, c, argv, &semaphore);
-    QMutex *mutex = &QThreadData::get2(sender->thread())->mutex;
+    QMutex *mutex = signalSlotLock(sender);
     mutex->unlock();
     semaphore.acquire();
     mutex->lock();
@@ -2997,7 +3042,7 @@ void QMetaObject::activate(QObject *sender, int from_signal_index, int to_signal
                                                          argv ? argv : empty_argv);
     }
 
-    QMutexLocker locker(&sender->d_func()->threadData->mutex);
+    QMutexLocker locker(signalSlotLock(sender));
     QThreadData *currentThreadData = QThreadData::current();
 
     QObjectConnectionListVector *connectionLists = sender->d_func()->connectionLists;
@@ -3349,7 +3394,7 @@ void QObject::dumpObjectInfo()
            objectName().isEmpty() ? "unnamed" : objectName().toLocal8Bit().data());
 
     Q_D(QObject);
-    QMutexLocker locker(&d->threadData->mutex);
+    QMutexLocker locker(signalSlotLock(this));
 
     // first, look for connections where this object is the sender
     qDebug("  SIGNALS OUT");
@@ -3445,7 +3490,7 @@ QDebug operator<<(QDebug dbg, const QObject *o) {
 #ifndef Q_BROKEN_DEBUG_STREAM
     if (!o)
         return dbg << "QObject(0x0) ";
-    dbg.nospace() << o->metaObject()->className() << "(" << (void *)o;
+    dbg.nospace() << o->metaObject()->className() << '(' << (void *)o;
     if (!o->objectName().isEmpty())
         dbg << ", name = " << o->objectName();
     dbg << ')';

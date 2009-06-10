@@ -255,7 +255,7 @@ public:
     }
 
 protected:
-    bool eventTest(QEvent *e) const
+    bool eventTest(QEvent *e)
     {
         return e->type() == m_type;
     }

@@ -324,7 +324,7 @@ QList<QNetworkProxy> QGlobalNetworkProxy::proxyForQuery(const QNetworkProxyQuery
     return result;
 }
 
-Q_GLOBAL_STATIC(QGlobalNetworkProxy, globalNetworkProxy);
+Q_GLOBAL_STATIC(QGlobalNetworkProxy, globalNetworkProxy)
 
 namespace {
     template<bool> struct StaticAssertTest;
@@ -1258,6 +1258,6 @@ QList<QNetworkProxy> QNetworkProxyFactory::proxyForQuery(const QNetworkProxyQuer
     return globalNetworkProxy()->proxyForQuery(query);
 }
 
-#endif // QT_NO_NETWORKPROXY
-
 QT_END_NAMESPACE
+
+#endif // QT_NO_NETWORKPROXY

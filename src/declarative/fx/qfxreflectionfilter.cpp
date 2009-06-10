@@ -239,7 +239,7 @@ void QFxReflectionFilter::setScale(qreal s)
     update();
 }
 
-static inline float min(float a, float b)
+static inline float floatmin(float a, float b)
 {
     return (a < b)?a:b;
 }
@@ -257,7 +257,7 @@ void QFxReflectionFilter::filterGL(QSimpleCanvasItem::GLPainter &p)
 
     float refHeight = height;
     if (d->height > 0)
-        refHeight = min(height, d->height);
+        refHeight = floatmin(height, d->height);
 
     QSimpleCanvas::Matrix simpMat;
     QSimpleCanvasItem *simpItem = 0;
@@ -348,5 +348,5 @@ QRectF QFxReflectionFilter::itemBoundingRect(const QRectF &r) const
     return rv;
 }
 
-QML_DEFINE_TYPE(QFxReflectionFilter,Reflection);
+QML_DEFINE_TYPE(QFxReflectionFilter,Reflection)
 QT_END_NAMESPACE

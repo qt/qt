@@ -41,13 +41,8 @@
 
 #ifndef QT_NO_ANIMATION
 
-#ifdef QT_EXPERIMENTAL_SOLUTION
-# include "qvariantanimation.h"
-# include "qvariantanimation_p.h"
-#else
 #include <QtCore/qvariantanimation.h>
 #include <private/qvariantanimation_p.h>
-#endif
 
 #include <QtGui/qcolor.h>
 
@@ -70,7 +65,9 @@ Q_CONSTRUCTOR_FUNCTION(qRegisterGuiGetInterpolator)
 
 static int qUnregisterGuiGetInterpolator()
 {
-    qRegisterAnimationInterpolator<QColor>(0);
+    qRegisterAnimationInterpolator<QColor>(
+        (QVariant (*)(const QColor &, const QColor &, qreal))0); // cast required by Sun CC 5.5
+
     return 1;
 }
 Q_DESTRUCTOR_FUNCTION(qUnregisterGuiGetInterpolator)

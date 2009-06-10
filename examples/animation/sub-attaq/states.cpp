@@ -51,17 +51,10 @@
 //Qt
 #include <QtGui/QMessageBox>
 #include <QtGui/QGraphicsView>
-#if defined(QT_EXPERIMENTAL_SOLUTION)
-#include "qstatemachine.h"
-#include "qkeyeventtransition.h"
-#include "qsignalevent.h"
-#include "qfinalstate.h"
-#else
 #include <QtCore/QStateMachine>
 #include <QtGui/QKeyEventTransition>
 #include <QtCore/QSignalEvent>
 #include <QtCore/QFinalState>
-#endif
 
 PlayState::PlayState(GraphicsScene *scene, QState *parent)
     : QState(parent),
@@ -281,7 +274,7 @@ UpdateScoreTransition::UpdateScoreTransition(GraphicsScene *scene, PlayState *ga
 {
 }
 
-bool UpdateScoreTransition::eventTest(QEvent *event) const
+bool UpdateScoreTransition::eventTest(QEvent *event)
 {
     if (!QSignalTransition::eventTest(event))
         return false;
@@ -300,7 +293,7 @@ WinTransition::WinTransition(GraphicsScene *scene, PlayState *game, QAbstractSta
 {
 }
 
-bool WinTransition::eventTest(QEvent *event) const
+bool WinTransition::eventTest(QEvent *event)
 {
     if (!QSignalTransition::eventTest(event))
         return false;
@@ -319,7 +312,7 @@ CustomSpaceTransition::CustomSpaceTransition(QWidget *widget, PlayState *game, Q
 {
 }
 
-bool CustomSpaceTransition::eventTest(QEvent *event) const
+bool CustomSpaceTransition::eventTest(QEvent *event)
 {
     Q_UNUSED(event);
     if (!QKeyEventTransition::eventTest(event))

@@ -42,8 +42,8 @@
 #ifndef QFXEVENTS_P_H
 #define QFXEVENTS_P_H
 
-#include <qfxglobal.h>
-#include <qml.h>
+#include <QtDeclarative/qfxglobal.h>
+#include <QtDeclarative/qml.h>
 #include <QtCore/qobject.h>
 #include <QtGui/qevent.h>
 
@@ -78,7 +78,7 @@ private:
     QKeyEvent event;
 };
 
-QML_DECLARE_TYPE(QFxKeyEvent);
+QML_DECLARE_TYPE(QFxKeyEvent)
 
 class QFxMouseEvent : public QObject
 {
@@ -120,7 +120,7 @@ private:
     bool _accepted;
 };
 
-QML_DECLARE_TYPE(QFxMouseEvent);
+QML_DECLARE_TYPE(QFxMouseEvent)
 
 QT_END_NAMESPACE
 

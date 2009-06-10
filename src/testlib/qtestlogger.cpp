@@ -180,7 +180,7 @@ void QTestLogger::addIncident(IncidentTypes type, const char *description,
 
     switch (type) {
     case QAbstractTestLogger::XPass:
-        ++passCounter;
+        ++failureCounter;
         typeBuf = "xpass";
         break;
     case QAbstractTestLogger::Pass:
@@ -188,7 +188,7 @@ void QTestLogger::addIncident(IncidentTypes type, const char *description,
         typeBuf = "pass";
         break;
     case QAbstractTestLogger::XFail:
-        ++failureCounter;
+        ++passCounter;
         typeBuf = "xfail";
         break;
     case QAbstractTestLogger::Fail:
@@ -200,7 +200,8 @@ void QTestLogger::addIncident(IncidentTypes type, const char *description,
         break;
     }
 
-    if (type == QAbstractTestLogger::Fail || type == QAbstractTestLogger::XFail) {
+    if (type == QAbstractTestLogger::Fail || type == QAbstractTestLogger::XPass
+            || ((format != TLF_XunitXml) && (type == QAbstractTestLogger::XFail))) {
         QTestElement *failureElement = new QTestElement(QTest::LET_Failure);
         failureElement->addAttribute(QTest::AI_Result, typeBuf);
         if(file)
@@ -230,10 +231,10 @@ void QTestLogger::addIncident(IncidentTypes type, const char *description,
         if (!strcmp(oldResult, "pass")) {
             overwrite = true;
         }
-        else if (!strcmp(oldResult, "xpass")) {
-            overwrite = (type == QAbstractTestLogger::XFail || type == QAbstractTestLogger::Fail);
-        }
         else if (!strcmp(oldResult, "xfail")) {
+            overwrite = (type == QAbstractTestLogger::XPass || type == QAbstractTestLogger::Fail);
+        }
+        else if (!strcmp(oldResult, "xpass")) {
             overwrite = (type == QAbstractTestLogger::Fail);
         }
         if (overwrite) {
@@ -251,6 +252,14 @@ void QTestLogger::addIncident(IncidentTypes type, const char *description,
 
     QTest::qt_snprintf(buf, sizeof(buf), "%i", line);
     currentLogElement->addAttribute(QTest::AI_Line, buf);
+
+    /*
+        Since XFAIL does not add a failure to the testlog in xunitxml, add a message, so we still
+        have some information about the expected failure.
+    */
+    if (format == TLF_XunitXml && type == QAbstractTestLogger::XFail) {
+        QTestLogger::addMessage(QAbstractTestLogger::Info, description, file, line);
+    }
 }
 
 void QTestLogger::addBenchmarkResult(const QBenchmarkResult &result)

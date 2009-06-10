@@ -535,7 +535,7 @@ void QWidget::setWindowState(Qt::WindowStates newstate)
             if (newstate & Qt::WindowFullScreen) {
                 if (d->topData()->normalGeometry.width() < 0 && !(oldstate & Qt::WindowMaximized))
                     d->topData()->normalGeometry = geometry();
-                d->topData()->savedFlags = GetWindowLongA(internalWinId(), GWL_STYLE);
+                d->topData()->savedFlags = (Qt::WindowFlags) GetWindowLongA(internalWinId(), GWL_STYLE);
                 UINT style = WS_CLIPCHILDREN | WS_CLIPSIBLINGS | WS_POPUP;
                 if (isVisible())
                     style |= WS_VISIBLE;
@@ -596,13 +596,6 @@ void QWidget::setWindowState(Qt::WindowStates newstate)
     data->window_state_internal = newstate;
     QWindowStateChangeEvent e(oldstate);
     QApplication::sendEvent(this, &e);
-}
-
-
-void QWidgetPrivate::createSysExtra() {
-#ifndef QT_NO_DRAGANDDROP
-    extra->dropTarget = 0;
-#endif
 }
 
 void QWidgetPrivate::deleteSysExtra()

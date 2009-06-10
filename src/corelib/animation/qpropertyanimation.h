@@ -42,11 +42,7 @@
 #ifndef QPROPERTYANIMATION_H
 #define QPROPERTYANIMATION_H
 
-#if defined(QT_EXPERIMENTAL_SOLUTION)
-# include "qvariantanimation.h"
-#else
-# include <QtCore/qvariantanimation.h>
-#endif
+#include <QtCore/qvariantanimation.h>
 
 QT_BEGIN_HEADER
 
@@ -76,10 +72,11 @@ public:
 
 protected:
     bool event(QEvent *event);
-
     void updateCurrentValue(const QVariant &value);
     void updateState(QAbstractAnimation::State oldState, QAbstractAnimation::State newState);
+
 private:
+    Q_PRIVATE_SLOT(d_func(), void _q_targetDestroyed())
     Q_DISABLE_COPY(QPropertyAnimation)
     Q_DECLARE_PRIVATE(QPropertyAnimation)
 };

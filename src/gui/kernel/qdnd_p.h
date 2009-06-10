@@ -202,7 +202,7 @@ public:
 #endif
 };
 
-class Q_GUI_EXPORT QDragManager: public QObject {
+class QDragManager: public QObject {
     Q_OBJECT
 
     QDragManager();

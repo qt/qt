@@ -50,7 +50,7 @@ SingleTextureVertexOpacityShader::SingleTextureVertexOpacityShader()
     QGLShader vert(QGLShader::VertexShader);
     QGLShader frag(QGLShader::FragmentShader);
 
-    vert.setSourceCode("\
+    vert.compile("\
             attribute highp vec4 myVertex;\
             attribute lowp float myOpacity;\
             attribute mediump vec4 myUV;\
@@ -65,7 +65,7 @@ SingleTextureVertexOpacityShader::SingleTextureVertexOpacityShader()
             }"
             );
 
-    frag.setSourceCode("\
+    frag.compile("\
             uniform sampler2D sampler2d;\
             varying mediump vec2 myTexCoord;\
             varying lowp float myFragOpacity;\
@@ -105,7 +105,7 @@ BlurTextureShader::BlurTextureShader()
     QGLShader vert(QGLShader::VertexShader);
     QGLShader frag(QGLShader::FragmentShader);
 
-    vert.setSourceCode("\
+    vert.compile("\
             attribute highp vec4 myVertex;\
             attribute mediump vec4 myUV;\
             uniform mediump mat4 myPMVMatrix;\
@@ -118,7 +118,7 @@ BlurTextureShader::BlurTextureShader()
             );
 
 #if 0
-    frag.setSourceCode("\
+    frag.compile("\
             uniform sampler2D sampler2d;\
             uniform bool horizontal; \
             uniform mediump float blurStep; \
@@ -140,7 +140,7 @@ BlurTextureShader::BlurTextureShader()
             }"
             );
 #else
-    frag.setSourceCode("\
+    frag.compile("\
             uniform sampler2D sampler2d;\
             uniform bool horizontal; \
             uniform mediump float blurStep; \
@@ -223,7 +223,7 @@ DualTextureBlendShader::DualTextureBlendShader()
     QGLShader vert(QGLShader::VertexShader);
     QGLShader frag(QGLShader::FragmentShader);
 
-    vert.setSourceCode("\
+    vert.compile("\
             attribute highp vec4 myVertex;\
             attribute mediump vec4 myUV;\
             attribute mediump vec4 myBlendUV;\
@@ -238,7 +238,7 @@ DualTextureBlendShader::DualTextureBlendShader()
             }"
             );
 
-    frag.setSourceCode("\
+    frag.compile("\
             uniform sampler2D sampler2d;\
             uniform sampler2D sampler2dBlend;\
             uniform lowp float myOpacity;\
@@ -295,7 +295,7 @@ DualTextureAddShader::DualTextureAddShader()
     QGLShader vert(QGLShader::VertexShader);
     QGLShader frag(QGLShader::FragmentShader);
 
-    vert.setSourceCode("\
+    vert.compile("\
             attribute highp vec4 myVertex;\
             attribute mediump vec4 myUV;\
             attribute mediump vec4 myAddUV;\
@@ -310,7 +310,7 @@ DualTextureAddShader::DualTextureAddShader()
             }"
             );
 
-    frag.setSourceCode("\
+    frag.compile("\
             uniform sampler2D sampler2d;\
             uniform sampler2D sampler2dAdd;\
             uniform lowp float myOpacity;\
@@ -362,7 +362,7 @@ SingleTextureShader::SingleTextureShader()
     QGLShader vert(QGLShader::VertexShader);
     QGLShader frag(QGLShader::FragmentShader);
 
-    vert.setSourceCode("\
+    vert.compile("\
             attribute highp vec4 myVertex;\
             attribute mediump vec4 myUV;\
             uniform mediump mat4 myPMVMatrix;\
@@ -374,7 +374,7 @@ SingleTextureShader::SingleTextureShader()
             }"
             );
 
-    frag.setSourceCode("\
+    frag.compile("\
             uniform sampler2D sampler2d;\
             varying mediump vec2 myTexCoord;\
             void main(void)\
@@ -411,7 +411,7 @@ ConstantColorShader::ConstantColorShader()
     QGLShader vert(QGLShader::VertexShader);
     QGLShader frag(QGLShader::FragmentShader);
 
-    vert.setSourceCode("\
+    vert.compile("\
             uniform mediump mat4 myPMVMatrix;\
             attribute highp vec4 myVertex;\
             void main(void)\
@@ -420,7 +420,7 @@ ConstantColorShader::ConstantColorShader()
             }"
             );
 
-    frag.setSourceCode("\
+    frag.compile("\
             uniform lowp vec4 myColor;\
             void main(void)\
             {\
@@ -458,7 +458,7 @@ ColorShader::ColorShader()
     QGLShader vert(QGLShader::VertexShader);
     QGLShader frag(QGLShader::FragmentShader);
 
-    vert.setSourceCode("\
+    vert.compile("\
             uniform mediump mat4 myPMVMatrix;\
             attribute highp vec4 myVertex;\
             attribute lowp vec4 myColors;\
@@ -470,7 +470,7 @@ ColorShader::ColorShader()
             }"
             );
 
-    frag.setSourceCode("\
+    frag.compile("\
             varying lowp vec4 myColor;\
             void main(void)\
             {\
@@ -596,7 +596,7 @@ SingleTextureOpacityShader::SingleTextureOpacityShader()
     QGLShader vert(QGLShader::VertexShader);
     QGLShader frag(QGLShader::FragmentShader);
 
-    vert.setSourceCode("\
+    vert.compile("\
             attribute highp vec4 myVertex;\
             attribute mediump vec4 myUV;\
             uniform mediump mat4 myPMVMatrix;\
@@ -608,7 +608,7 @@ SingleTextureOpacityShader::SingleTextureOpacityShader()
             }"
             );
 
-    frag.setSourceCode("\
+    frag.compile("\
             uniform sampler2D sampler2d;\
             uniform lowp float myOpacity;\
             varying mediump vec2 myTexCoord;\
@@ -653,7 +653,7 @@ SingleTextureShadowShader::SingleTextureShadowShader()
     QGLShader vert(QGLShader::VertexShader);
     QGLShader frag(QGLShader::FragmentShader);
 
-    vert.setSourceCode("\
+    vert.compile("\
             attribute highp vec4 myVertex;\
             attribute mediump vec4 myUV;\
             uniform mediump mat4 myPMVMatrix;\
@@ -665,7 +665,7 @@ SingleTextureShadowShader::SingleTextureShadowShader()
             }"
             );
 
-    frag.setSourceCode("\
+    frag.compile("\
             uniform sampler2D sampler2d;\
             uniform lowp float myOpacity;\
             varying mediump vec2 myTexCoord;\

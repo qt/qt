@@ -42,9 +42,8 @@
 /*!
     \class QParallelAnimationGroup
     \brief The QParallelAnimationGroup class provides a parallel group of animations.
-    \since 4.5
-    \ingroup group_animation
-    \preliminary
+    \since 4.6
+    \ingroup animation
 
     QParallelAnimationGroup--a \l{QAnimationGroup}{container for
     animations}--starts all its animations when it is
@@ -62,18 +61,20 @@
 
         group->start();
     \endcode
-    
+
     In this example, \c anim1 and \c anim2 are two
     \l{QPropertyAnimation}s that have already been set up.
 
     \sa QAnimationGroup, QPropertyAnimation, {The Animation Framework}
 */
 
-#ifndef QT_NO_ANIMATION
 
 #include "qparallelanimationgroup.h"
 #include "qparallelanimationgroup_p.h"
 //#define QANIMATION_DEBUG
+
+#ifndef QT_NO_ANIMATION
+
 QT_BEGIN_NAMESPACE
 
 /*!

@@ -99,7 +99,7 @@ void QFxTransform::update()
     \endqml
 */
 
-QML_DEFINE_TYPE(QFxAxis, Axis);
+QML_DEFINE_TYPE(QFxAxis, Axis)
 
 QFxAxis::QFxAxis(QObject *parent)
 : QObject(parent), _startX(0), _startY(0), _endX(0), _endY(0), _endZ(0)
@@ -179,6 +179,20 @@ void QFxAxis::setEndZ(qreal z)
     emit updated();
 }
 
+/*!
+    \qmlclass Rotation
+    \brief A Rotation object provides a way to rotate an Item around a point.
+
+    The following example rotates a Rect around its interior point 25, 25:
+    \qml
+    Rect {
+        width: 100; height: 100
+        color: "blue"
+        transform: Rotation { originX: 25; originY: 25; angle: 45}
+    }
+    \endqml
+*/
+
 QFxRotation::QFxRotation(QObject *parent)
 : QFxTransform(parent), _originX(0), _originY(0), _angle(0), _dirty(true)
 {
@@ -188,6 +202,12 @@ QFxRotation::~QFxRotation()
 {
 }
 
+/*!
+    \qmlproperty real Rotation::originX
+    \qmlproperty real Rotation::originY
+
+    The point to rotate around.
+*/
 qreal QFxRotation::originX() const
 {
     return _originX;
@@ -210,6 +230,11 @@ void QFxRotation::setOriginY(qreal oy)
     update();
 }
 
+/*!
+    \qmlproperty real Rotation::angle
+
+    The angle, in degrees, to rotate.
+*/
 qreal QFxRotation::angle() const
 {
     return _angle;
@@ -217,8 +242,11 @@ qreal QFxRotation::angle() const
 
 void QFxRotation::setAngle(qreal angle)
 {
+    if (_angle == angle)
+        return;
     _angle = angle;
     update();
+    emit angleChanged();
 }
 
 bool QFxRotation::isIdentity() const
@@ -244,7 +272,9 @@ QMatrix4x4 QFxRotation::transform() const
     if (_dirty) {
         _transform = QMatrix4x4();
         _dirty = false;
-        _transform.rotate(_angle, _originX, _originY);
+        _transform.translate(_originX, _originY);
+        _transform.rotate(_angle, 0, 0, 1);
+        _transform.translate(-_originX, -_originY);
     }
     return _transform;
 }
@@ -256,7 +286,7 @@ void QFxRotation::update()
     QFxTransform::update();
 }
 
-QML_DEFINE_TYPE(QFxRotation, Rotation);
+QML_DEFINE_TYPE(QFxRotation, Rotation)
 
 /*!
     \qmlclass Rotation3D
@@ -268,7 +298,7 @@ QML_DEFINE_TYPE(QFxRotation, Rotation);
     \image axisrotation.png
 */
 
-QML_DEFINE_TYPE(QFxRotation3D,Rotation3D);
+QML_DEFINE_TYPE(QFxRotation3D,Rotation3D)
 
 QFxRotation3D::QFxRotation3D(QObject *parent)
 : QFxTransform(parent), _angle(0), _dirty(true)
@@ -418,7 +448,7 @@ Image {
   \endqml
 */
 
-QML_DEFINE_TYPE(QFxTranslation3D,Translation3D);
+QML_DEFINE_TYPE(QFxTranslation3D,Translation3D)
 
 QFxTranslation3D::QFxTranslation3D(QObject *parent)
 : QFxTransform(parent), _distance(0), _dirty(true)
@@ -538,7 +568,7 @@ void QFxTranslation3D::update()
   OpenGL. When running under software rasterization it has no effect.
 */
 
-QML_DEFINE_TYPE(QFxPerspective,Perspective);
+QML_DEFINE_TYPE(QFxPerspective,Perspective)
 
 QFxPerspective::QFxPerspective(QObject *parent)
     : QFxTransform(parent)
@@ -653,7 +683,7 @@ QMatrix4x4 QFxPerspective::transform() const
 
     \image squish.png
 */
-QML_DEFINE_TYPE(QFxSquish,Squish);
+QML_DEFINE_TYPE(QFxSquish,Squish)
 
 QFxSquish::QFxSquish(QObject *parent)
     : QFxTransform(parent)

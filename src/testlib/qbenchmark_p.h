@@ -55,7 +55,7 @@
 
 #include <QtCore/qglobal.h>
 
-#if defined(Q_OS_LINUX) && !defined(QT_NO_PROCESS)
+#if (defined(Q_OS_LINUX) || defined Q_OS_MAC) && !defined(QT_NO_PROCESS)
 #define QTESTLIB_USE_VALGRIND 
 #else
 #undef QTESTLIB_USE_VALGRIND
@@ -81,7 +81,7 @@ struct QBenchmarkContext
 
     QString toString() const
     {
-        QString s = QString(QLatin1String("%1,%2,%3")).arg(slotName).arg(tag).arg(checkpointIndex);
+        QString s = QString::fromLatin1("%1,%2,%3").arg(slotName).arg(tag).arg(checkpointIndex);
         return s;
     }
 

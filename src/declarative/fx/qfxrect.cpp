@@ -44,13 +44,20 @@
 
 
 QT_BEGIN_NAMESPACE
-QML_DEFINE_TYPE(QFxPen,Pen);
+QML_DEFINE_TYPE(QFxPen,Pen)
+QML_DEFINE_TYPE(QFxGradientStop,GradientStop)
+QML_DEFINE_TYPE(QFxGradient,Gradient)
 
 /*!
     \internal
     \class QFxPen
     \ingroup group_utility
     \brief The QFxPen class provides a pen used for drawing rect borders on a QFxView.
+
+    By default, the pen is invalid and nothing is drawn. You must either set a color (then the default
+    width is 0) or a width (then the default color is black).
+
+    A width of 0 indicates a cosmetic pen, a single-pixel line on the border of the item being painted.
 
     Example:
     \qml
@@ -61,8 +68,9 @@ QML_DEFINE_TYPE(QFxPen,Pen);
 /*! \property QFxPen::width
     \brief the width of the pen.
 
-    The default width is 1. If the width is less than 1 the pen is considered invalid
-    and won't be used.
+    A width of 0 is a single-pixel line on the border of the item being painted.
+
+    If the width is less than 0 the pen is considered invalid and won't be used.
 */
 
 /*!
@@ -86,13 +94,97 @@ QML_DEFINE_TYPE(QFxPen,Pen);
 void QFxPen::setColor(const QColor &c)
 {
     _color = c;
-    emit updated();
     _valid = _color.alpha() ? true : false;
+    emit updated();
+}
+
+/*!
+    \property QFxPen::width
+    \brief the width of the pen.
+
+    \qml
+    // rect with green border using hexidecimal notation
+    Rect { pen.width: 4 }
+    \endqml
+
+    A width of 0 creates a thin line. For no line, use a negative width or a transparent color.
+
+    Odd pen widths generally lead to half-pixel painting.
+*/
+void QFxPen::setWidth(int w)
+{
+    _width = w;
+    _valid = (_width < 0) ? false : true;
+    emit updated();
 }
 
 
+/*!
+    \qmlclass GradientStop QFxGradientStop
+    \brief The GradientStop item defines the color at a position in a Gradient
 
-QML_DEFINE_TYPE(QFxRect,Rect);
+    \sa Gradient
+*/
+
+/*!
+    \qmlproperty real GradientStop::position
+    \qmlproperty color GradientStop::color
+
+    Sets a \e color at a \e position in a gradient.
+*/
+
+void QFxGradientStop::updateGradient()
+{
+    if (QFxGradient *grad = qobject_cast<QFxGradient*>(parent()))
+        grad->doUpdate();
+}
+
+/*!
+    \qmlclass Gradient QFxGradient
+    \brief The Gradient item defines a gradient fill.
+
+    A gradient is defined by two or more colors, which will be blended seemlessly.  The
+    colors are specified at their position in the range 0.0 - 1.0 via
+    the GradientStop item.  For example, the following code paints a
+    Rect with a gradient starting with red, blending to yellow at 1/3 of the
+    size of the Rect, and ending with Green:
+
+    \table
+    \row
+    \o \image gradient.png
+    \o \quotefile doc/src/snippets/declarative/gradient.qml
+    \endtable
+
+    \sa GradientStop
+*/
+
+/*!
+    \qmlproperty list<GradientStop> Gradient::stops
+    This property holds the gradient stops describing the gradient.
+*/
+
+const QGradient *QFxGradient::gradient() const
+{
+    if (!m_gradient && !m_stops.isEmpty()) {
+        m_gradient = new QLinearGradient(0,0,0,1.0);
+        for (int i = 0; i < m_stops.count(); ++i) {
+            const QFxGradientStop *stop = m_stops.at(i);
+            m_gradient->setCoordinateMode(QGradient::ObjectBoundingMode);
+            m_gradient->setColorAt(stop->position(), stop->color());
+        }
+    }
+
+    return m_gradient;
+}
+
+void QFxGradient::doUpdate()
+{
+    delete m_gradient;
+    m_gradient = 0;
+    emit updated();
+}
+
+QML_DEFINE_TYPE(QFxRect,Rect)
 
 /*!
     \qmlclass Rect QFxRect
@@ -161,12 +253,17 @@ void QFxRect::doUpdate()
 {
 #if defined(QFX_RENDER_QPAINTER)
     Q_D(QFxRect);
-    d->_rectImage = QSimpleCanvasConfig::Image();
+    d->rectImage = QPixmap();
 #endif
 #if defined(QFX_RENDER_OPENGL)
     Q_D(QFxRect);
-    d->_rectTexture.clear();
+    if (d->rectTexture) {
+        d->rectTexture->release();
+        d->rectTexture = 0;
+    }
 #endif
+    const int pw = d->pen && d->pen->isValid() ? d->pen->width() : 0;
+    setPaintMargin((pw+1)/2);
     update();
 }
 
@@ -183,8 +280,60 @@ void QFxRect::doUpdate()
 QFxPen *QFxRect::pen()
 {
     Q_D(QFxRect);
-    return d->pen();
+    return d->getPen();
 }
+
+/*!
+    \qmlproperty Gradient Rect::gradient
+
+    The gradient to use to fill the rect.
+
+    This property allows for the construction of simple vertical gradients.
+    Other gradients may by formed by adding rotation to the rect.
+
+    \table
+    \row
+    \o \image declarative-rect_gradient.png
+    \o
+    \qml
+    Rect { y: 0; width: 80; height: 80; color: "lightsteelblue" }
+    Rect { y: 100; width: 80; height: 80
+        gradient: Gradient {
+            GradientStop { position: 0.0; color: "lightsteelblue" }
+            GradientStop { position: 1.0; color: "blue" }
+        }
+    }
+    Rect { rotation: 90; x: 80; y: 200; width: 80; height: 80
+        gradient: Gradient {
+            GradientStop { position: 0.0; color: "lightsteelblue" }
+            GradientStop { position: 1.0; color: "blue" }
+        }
+    }
+    // The x offset is needed because the rotation is from the top left corner
+    \endqml
+    \endtable
+
+    \sa Gradient, color
+*/
+QFxGradient *QFxRect::gradient() const
+{
+    Q_D(const QFxRect);
+    return d->gradient;
+}
+
+void QFxRect::setGradient(QFxGradient *gradient)
+{
+    Q_D(QFxRect);
+    if (d->gradient == gradient)
+        return;
+    if (d->gradient)
+        disconnect(d->gradient, SIGNAL(updated()), this, SLOT(doUpdate()));
+    d->gradient = gradient;
+    if (d->gradient)
+        connect(d->gradient, SIGNAL(updated()), this, SLOT(doUpdate()));
+    update();
+}
+
 
 /*!
     \qmlproperty real Rect::radius
@@ -202,20 +351,23 @@ QFxPen *QFxRect::pen()
 qreal QFxRect::radius() const
 {
     Q_D(const QFxRect);
-    return d->_radius;
+    return d->radius;
 }
 
 void QFxRect::setRadius(qreal radius)
 {
     Q_D(QFxRect);
-    if (d->_radius == radius)
+    if (d->radius == radius)
         return;
 
-    d->_radius = radius;
+    d->radius = radius;
 #if defined(QFX_RENDER_QPAINTER)
-    d->_rectImage = QSimpleCanvasConfig::Image();
+    d->rectImage = QPixmap();
 #elif defined(QFX_RENDER_OPENGL)
-    d->_rectTexture.clear();
+    if (d->rectTexture) {
+        d->rectTexture->release();
+        d->rectTexture = 0;
+    }
 #endif
     update();
 }
@@ -224,7 +376,7 @@ void QFxRect::dump(int depth)
 {
     Q_D(QFxRect);
     QByteArray ba(depth * 4, ' ');
-    qWarning() << ba.constData() << "QFxRect:" << d->_color;
+    qWarning() << ba.constData() << "QFxRect:" << d->color;
     QFxItem::dump(depth);
 }
 
@@ -248,21 +400,24 @@ void QFxRect::dump(int depth)
 QColor QFxRect::color() const
 {
     Q_D(const QFxRect);
-    return d->_color;
+    return d->color;
 }
 
 void QFxRect::setColor(const QColor &c)
 {
     Q_D(QFxRect);
-    if (d->_color == c)
+    if (d->color == c)
         return;
 
-    d->_color = c;
+    d->color = c;
 #if defined(QFX_RENDER_QPAINTER)
-    d->_rectImage = QSimpleCanvasConfig::Image();
+    d->rectImage = QPixmap();
 #endif
 #if defined(QFX_RENDER_OPENGL)
-    d->_rectTexture.clear();
+    if (d->rectTexture) {
+        d->rectTexture->release();
+        d->rectTexture = 0;
+    }
 #endif
     update();
 }
@@ -291,30 +446,30 @@ void QFxRect::setColor(const QColor &c)
 QColor QFxRect::tintColor() const
 {
     Q_D(const QFxRect);
-    return d->_tintColor;
+    return d->tintColor;
 }
 
 void QFxRect::setTintColor(const QColor &c)
 {
     Q_D(QFxRect);
-    if (d->_tintColor == c)
+    if (d->tintColor == c)
         return;
 
-    d->_tintColor = c;
+    d->tintColor = c;
     update();
 }
 
 QColor QFxRectPrivate::getColor()
 {
-    if (_tintColor.isValid()) {
-        int a = _tintColor.alpha();
+    if (tintColor.isValid()) {
+        int a = tintColor.alpha();
         if (a == 0xFF)
-            return _tintColor;
+            return tintColor;
         else if (a == 0x00)
-            return _color;
+            return color;
         else {
-            uint src = _tintColor.rgba();
-            uint dest = _color.rgba();
+            uint src = tintColor.rgba();
+            uint dest = color.rgba();
 
             uint res = (((a * (src & 0xFF00FF)) +
                         ((0xFF - a) * (dest & 0xFF00FF))) >> 8) & 0xFF00FF;
@@ -326,107 +481,104 @@ QColor QFxRectPrivate::getColor()
             return QColor::fromRgba(res);
         }
     } else {
-        return _color;
+        return color;
     }
 }
 
-/*!
-    \qmlproperty color Rect::gradientColor
-    This property holds the color to use at the base of the rectangle and blend upwards.
-
-    This property allows for the easy construction of simple horizontal gradients. Other gradients may by formed by adding rotation to the rect. The gradient will blend linearly from the rect's main color to the color specified for gradient color.
-
-    \qml
-    Rect { y: 0; width: 80; height: 80; color: "lightsteelblue" }
-    Rect { y: 100; width: 80; height: 80; color: "lightsteelblue"; gradientColor="blue" }
-    Rect { rotation: 90; x: 80; y: 200; width: 80; height: 80; color="lightsteelblue"
-            gradientColor: "blue" }
-    // The x offset is needed because the rotation is from the top left corner
-    \endqml
-    \image declarative-rect_gradient.png
-*/
-
-/*!
-    \property QFxRect::gradientColor
-    \brief The color to use at the base of the rectangle and blend upwards.
-*/
-
-QColor QFxRect::gradientColor() const
-{
-    Q_D(const QFxRect);
-    return d->_gradcolor;
-}
-
-void QFxRect::setGradientColor(const QColor &c)
-{
-    Q_D(QFxRect);
-    if (d->_gradcolor == c)
-        return;
-
-    d->_gradcolor = c;
-    update();
-}
 
 #if defined(QFX_RENDER_QPAINTER)
 void QFxRect::generateRoundedRect()
 {
     Q_D(QFxRect);
-    if (d->_rectImage.isNull()) {
-        d->_rectImage = QImage(d->_radius*2 + 1, d->_radius*2 + 1, QImage::Format_ARGB32_Premultiplied);
-        d->_rectImage.fill(0);
-        QPainter p(&(d->_rectImage));
-        QPen pn(QColor(pen()->color()), pen()->width());
+    if (d->rectImage.isNull()) {
+        const int pw = d->pen && d->pen->isValid() ? d->pen->width() : 0;
+        d->rectImage = QPixmap(d->radius*2 + 3 + pw*2, d->radius*2 + 3 + pw*2);
+        d->rectImage.fill(Qt::transparent);
+        QPainter p(&(d->rectImage));
         p.setRenderHint(QPainter::Antialiasing);
-        p.setPen(pn);
-        p.setBrush(d->_color);
-        p.drawRoundedRect(0, 0, d->_rectImage.width(), d->_rectImage.height(), d->_radius, d->_radius);
+        if (d->pen && d->pen->isValid()) {
+            QPen pn(QColor(d->pen->color()), d->pen->width());
+            p.setPen(pn);
+        } else {
+            p.setPen(Qt::NoPen);
+        }
+        p.setBrush(d->color);
+        p.drawRoundedRect((pw+1)/2, (pw+1)/2, d->rectImage.width()-(pw+1)/2*2, d->rectImage.height()-(pw+1)/2*2, d->radius, d->radius);
     }
 }
 
 void QFxRect::generateBorderedRect()
 {
     Q_D(QFxRect);
-    if (d->_rectImage.isNull()) {
-        d->_rectImage = QImage(d->pen()->width()*2 + 1, d->pen()->width()*2 + 1, QImage::Format_ARGB32_Premultiplied);
-        d->_rectImage.fill(0);
-        QPainter p(&(d->_rectImage));
-        QPen pn(QColor(pen()->color()), pen()->width());
+    if (d->rectImage.isNull()) {
+        const int pw = d->pen && d->pen->isValid() ? d->pen->width() : 0;
+        d->rectImage = QPixmap(d->getPen()->width()*2 + 3 + pw*2, d->getPen()->width()*2 + 3 + pw*2);
+        d->rectImage.fill(Qt::transparent);
+        QPainter p(&(d->rectImage));
         p.setRenderHint(QPainter::Antialiasing);
-        p.setPen(pn);
-        p.setBrush(d->_color);
-        p.drawRect(0, 0, d->_rectImage.width(), d->_rectImage.height());
+        if (d->pen && d->pen->isValid()) {
+            QPen pn(QColor(d->pen->color()), d->pen->width());
+            p.setPen(pn);
+        } else {
+            p.setPen(Qt::NoPen);
+        }
+        p.setBrush(d->color);
+        p.drawRect(qreal(pw+1)/2, qreal(pw+1)/2, d->rectImage.width()-(pw+1)/2*2, d->rectImage.height()-(pw+1)/2*2);
     }
 }
 #elif defined(QFX_RENDER_OPENGL)
 void QFxRect::generateRoundedRect()
 {
     Q_D(QFxRect);
-    if (d->_rectTexture.isNull()) {
-        QImage roundRect(int(d->_radius*2 + 1), int(d->_radius*2 + 1), QImage::Format_ARGB32);
-        roundRect.fill(0);
-        QPainter p(&roundRect);
-        QPen pn(QColor(pen()->color()), pen()->width());
-        p.setRenderHint(QPainter::Antialiasing);
-        p.setPen(pn);
-        p.setBrush(d->_color);
-        p.drawRoundedRect(0, 0, roundRect.width(), roundRect.height(), d->_radius, d->_radius);
-        d->_rectTexture.setImage(roundRect);
+    if (!d->rectTexture) {
+        const int pw = d->pen && d->pen->isValid() ? d->pen->width() : 0;
+        QString key = QString("QFxRect://r_%1_%2_%3_%4").arg(pw).arg(d->radius).arg((d->pen && d->pen->isValid())?d->pen->color().name():QString()).arg(d->color.name());
+
+        d->rectTexture = cachedTexture(key);
+
+        if (!d->rectTexture) {
+            QPixmap roundRect(d->radius*2 + 4 + pw*2, d->radius*2 + 4 + pw*2);
+            roundRect.fill(Qt::transparent);
+            QPainter p(&roundRect);
+            p.setRenderHint(QPainter::Antialiasing);
+            if (d->pen && d->pen->isValid()) {
+                QPen pn(QColor(pen()->color()), pen()->width());
+                p.setPen(pn);
+            } else {
+                p.setPen(Qt::NoPen);
+            }
+            p.setBrush(d->color);
+            p.drawRoundedRect((pw+1)/2, (pw+1)/2, roundRect.width()-(pw+1)/2*2, roundRect.height()-(pw+1)/2*2, d->radius, d->radius);
+
+            d->rectTexture = cachedTexture(key, roundRect);
+        }
     }
 }
 
 void QFxRect::generateBorderedRect()
 {
     Q_D(QFxRect);
-    if (d->_rectTexture.isNull()) {
-        QImage borderedRect(d->pen()->width()*2 + 1, d->pen()->width()*2 + 1, QImage::Format_ARGB32_Premultiplied);
-        borderedRect.fill(0);
-        QPainter p(&(borderedRect));
-        QPen pn(QColor(pen()->color()), pen()->width());
-        p.setRenderHint(QPainter::Antialiasing);
-        p.setPen(pn);
-        p.setBrush(d->_color);
-        p.drawRect(0, 0, borderedRect.width(), borderedRect.height());
-        d->_rectTexture.setImage(borderedRect);
+    if (!d->rectTexture) {
+        const int pw = d->pen && d->pen->isValid() ? d->pen->width() : 0;
+        QString key = QString("QFxRect://b_%1_%2_%3_%4").arg(pw).arg(d->radius).arg((d->pen && d->pen->isValid())?d->pen->color().name():QString()).arg(d->color.name());
+
+        d->rectTexture = cachedTexture(key);
+
+        if (!d->rectTexture) {
+            QPixmap borderedRect(pw*2 + 4, pw*2 + 4);
+            borderedRect.fill(Qt::transparent);
+            QPainter p(&(borderedRect));
+            p.setRenderHint(QPainter::Antialiasing);
+            if (d->pen && d->pen->isValid()) {
+                QPen pn(QColor(pen()->color()), pen()->width());
+                p.setPen(pn);
+            } else {
+                p.setPen(Qt::NoPen);
+            }
+            p.setBrush(d->color);
+            p.drawRect(qreal(pw+1)/2, qreal(pw+1)/2, borderedRect.width()-(pw+1)/2*2, borderedRect.height()-(pw+1)/2*2);
+            d->rectTexture = cachedTexture(key, borderedRect);
+        }
     }
 }
 #endif
@@ -436,17 +588,9 @@ void QFxRect::generateBorderedRect()
 void QFxRect::paintContents(QPainter &p)
 {
     Q_D(QFxRect);
-    if (d->_radius > 0 || (d->_pen && d->_pen->isValid())
-           || d->_gradcolor.isValid())
+    if (d->radius > 0 || (d->pen && d->pen->isValid())
+           || (d->gradient && d->gradient->gradient()) )
         drawRect(p);
-    /*
-        QLinearGradient grad(0, 0, 0, height());
-        grad.setColorAt(0, d->_color);
-        grad.setColorAt(1, d->_gradcolor);
-        p.setBrush(grad);
-        p.drawRect(0, 0, width(), height());
-        p.setBrush(QBrush());
-        */
     else
         p.fillRect(QRect(0, 0, width(), height()), d->getColor());
 }
@@ -454,77 +598,91 @@ void QFxRect::paintContents(QPainter &p)
 void QFxRect::drawRect(QPainter &p)
 {
     Q_D(QFxRect);
-    if (d->_gradcolor.isValid() /*|| p.usingQt() */) {
+    if (d->gradient && d->gradient->gradient() /*|| p.usingQt() */) {
         // XXX This path is still slower than the image path
         // Image path won't work for gradients though
-        p.save();
-        QPen pn(QColor(pen()->color()), pen()->width());
+        QPainter::RenderHints oldHints = p.renderHints();
         p.setRenderHint(QPainter::Antialiasing);
-        p.setPen(pn);
-        if (d->_gradcolor.isValid()){
-            QLinearGradient grad(0, 0, 0, height());
-            grad.setColorAt(0, d->_color);
-            grad.setColorAt(1, d->_gradcolor);
-            p.setBrush(grad);
-        }else{
-            p.setBrush(d->_color);
+        if (d->pen && d->pen->isValid()) {
+            QPen pn(QColor(d->pen->color()), d->pen->width());
+            p.setPen(pn);
+        } else {
+            p.setPen(Qt::NoPen);
         }
-        if (d->_radius)
-            p.drawRoundedRect(0, 0, width(), height(), d->_radius, d->_radius);
+        p.setBrush(*d->gradient->gradient());
+        if (d->radius > 0.)
+            p.drawRoundedRect(0, 0, width(), height(), d->radius, d->radius);
         else
             p.drawRect(0, 0, width(), height());
-        p.restore();
+        p.setRenderHints(oldHints);
     } else {
         int offset = 0;
-        if (d->_radius > 0) {
+        const int pw = d->pen && d->pen->isValid() ? (d->pen->width()+1)/2*2 : 0;
+
+        if (d->radius > 0) {
             generateRoundedRect();
             //### implicit conversion to int
-            offset = d->_radius;
+            offset = int(d->radius+1.5+pw);
         } else {
             generateBorderedRect();
-            offset = d->pen()->width();
+            offset = pw+1;
         }
 
         //basically same code as QFxImage uses to paint sci images
-        int xSide = qMin(offset * 2, int(width()));
-        int ySide = qMin(offset * 2, int(height()));;
+        int w = width()+pw;
+        int h = height()+pw;
+        int xOffset = offset;
+        int xSide = xOffset * 2;
+        bool xMiddles=true;
+        if (xSide > w) {
+            xMiddles=false;
+            xOffset = w/2 + 1;
+            xSide = xOffset * 2;
+        }
+        int yOffset = offset;
+        int ySide = yOffset * 2;
+        bool yMiddles=true;
+        if (ySide > h) {
+            yMiddles = false;
+            yOffset = h/2 + 1;
+            ySide = yOffset * 2;
+        }
 
         // Upper left
-        p.drawImage(QRect(0, 0, offset, offset), d->_rectImage, QRect(0, 0, offset, offset));
+        p.drawPixmap(QRect(-pw/2, -pw/2, xOffset, yOffset), d->rectImage, QRect(0, 0, xOffset, yOffset));
 
         // Upper middle
-        if (d->_rectImage.width() - xSide)
-            p.drawImage(QRect(offset, 0, width() - xSide, offset), d->_rectImage,
-                                  QRect(offset, 0, d->_rectImage.width() - xSide, offset));
+        if (xMiddles)
+            p.drawPixmap(QRect(xOffset-pw/2, -pw/2, width() - xSide + pw, yOffset), d->rectImage,
+                                  QRect(d->rectImage.width()/2, 0, 1, yOffset));
         // Upper right
-        if (d->_rectImage.width() - offset) {
-            p.drawImage(QPoint(width()-offset, 0), d->_rectImage,
-                                  QRect(d->_rectImage.width()-offset, 0, offset, offset));
-        }
+        p.drawPixmap(QPoint(width()-xOffset+pw/2, -pw/2), d->rectImage,
+                              QRect(d->rectImage.width()-xOffset, 0, xOffset, yOffset));
         // Middle left
-        if (d->_rectImage.height() - ySide)
-            p.drawImage(QRect(0, offset, offset, height() - ySide), d->_rectImage,
-                                  QRect(0, offset, offset, d->_rectImage.height() - ySide));
+        if (yMiddles)
+            p.drawPixmap(QRect(-pw/2, yOffset-pw/2, xOffset, height() - ySide + pw), d->rectImage,
+                                  QRect(0, d->rectImage.height()/2, xOffset, 1));
 
         // Middle
-        if (d->_rectImage.width() - xSide && d->_rectImage.height() - ySide)
-            p.drawImage(QRect(offset, offset, width() - xSide, height() - ySide), d->_rectImage,
-                                QRect(offset, offset, d->_rectImage.width() - xSide, d->_rectImage.height() - ySide));
-        // Midlle right
-        if (d->_rectImage.height() - ySide)
-            p.drawImage(QRect(width()-offset, offset, offset, height() - ySide), d->_rectImage,
-                                QRect(d->_rectImage.width()-offset, offset, offset, d->_rectImage.height() - ySide));
+        if (xMiddles && yMiddles)
+            // XXX paint errors in animation example
+            //p.fillRect(xOffset-pw/2, yOffset-pw/2, width() - xSide + pw, height() - ySide + pw, d->getColor());
+            p.drawPixmap(QRect(xOffset-pw/2, yOffset-pw/2, width() - xSide + pw, height() - ySide + pw), d->rectImage,
+                                QRect(d->rectImage.width()/2, d->rectImage.height()/2, 1, 1));
+        // Middle right
+        if (yMiddles)
+            p.drawPixmap(QRect(width()-xOffset+pw/2, yOffset-pw/2, xOffset, height() - ySide + pw), d->rectImage,
+                                QRect(d->rectImage.width()-xOffset, d->rectImage.height()/2, xOffset, 1));
         // Lower left 
-        p.drawImage(QPoint(0, height() - offset), d->_rectImage, QRect(0, d->_rectImage.height() - offset, offset, offset));
+        p.drawPixmap(QPoint(-pw/2, height() - yOffset + pw/2), d->rectImage, QRect(0, d->rectImage.height() - yOffset, xOffset, yOffset));
 
         // Lower Middle
-        if (d->_rectImage.width() - xSide)
-            p.drawImage(QRect(offset, height() - offset, width() - xSide, offset), d->_rectImage,
-                                QRect(offset, d->_rectImage.height() - offset, d->_rectImage.width() - xSide, offset));
+        if (xMiddles)
+            p.drawPixmap(QRect(xOffset-pw/2, height() - yOffset +pw/2, width() - xSide + pw, yOffset), d->rectImage,
+                                QRect(d->rectImage.width()/2, d->rectImage.height() - yOffset, 1, yOffset));
         // Lower Right
-        if (d->_rectImage.width() - offset)
-            p.drawImage(QPoint(width()-offset, height() - offset), d->_rectImage,
-                            QRect(d->_rectImage.width()-offset, d->_rectImage.height() - offset, offset, offset));
+        p.drawPixmap(QPoint(width()-xOffset+pw/2, height() - yOffset+pw/2), d->rectImage,
+                        QRect(d->rectImage.width()-xOffset, d->rectImage.height() - yOffset, xOffset, yOffset));
     }
 }
 #endif
@@ -535,8 +693,8 @@ void QFxRect::drawRect(QPainter &p)
 void QFxRect::paintGLContents(GLPainter &p)
 {
     Q_D(QFxRect);
-    if (d->_radius == 0 && (!d->_pen || !d->_pen->isValid())) {
-        if (d->_gradcolor.isValid()) {
+    if (d->radius == 0 && (!d->pen || !d->pen->isValid())) {
+        if (d->gradient) {
             float widthV = width();
             float heightV = height();
 
@@ -545,318 +703,238 @@ void QFxRect::paintGLContents(GLPainter &p)
                                    0, 0,
                                    widthV, 0 };
 
-            float r = d->_color.redF();
-            float g = d->_color.greenF();
-            float b = d->_color.blueF();
-            float a = d->_color.alphaF() * p.activeOpacity;
+            int count = d->gradient->stops()->size();
+            GLfloat colors[count*8];
+            for (int i = 0; i < count; i += 8) {
+                QFxGradientStop *g = d->gradient->stops()->at(i);
+                QColor c = g->color();
+                colors[i] = c.redF(); colors[i+4] = colors[i];
+                colors[i+1] = c.greenF(); colors[i+5] = colors[i+1];
+                colors[i+2] = c.blueF(); colors[i+6] = colors[i+2];
+                colors[i+3] = c.alphaF() * p.activeOpacity; colors[i+7] = colors[i+3];
+            }
 
-            float r2 = d->_gradcolor.redF();
-            float g2 = d->_gradcolor.greenF();
-            float b2 = d->_gradcolor.blueF();
-            float a2 = d->_gradcolor.alphaF() * p.activeOpacity;
-
-            GLfloat colors[] = { r2, g2, b2, a2,
-                                 r2, g2, b2, a2,
-                                 r, g, b, a,
-                                 r, g, b, a };
-
+            p.invalidate();
             ColorShader *shader = basicShaders()->color();
             shader->enable();
             shader->setTransform(p.activeTransform);
 
             shader->setAttributeArray(ColorShader::Vertices, vertices, 2);
             shader->setAttributeArray(ColorShader::Colors, colors, 4);
-            glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+            glDrawArrays(GL_TRIANGLE_STRIP, 0, count*2);
             shader->disableAttributeArray(ColorShader::Vertices);
             shader->disableAttributeArray(ColorShader::Colors);
         } else {
-            QGLShaderProgram *shader = p.useColorShader(d->getColor());
 
-            float widthV = width();
-            float heightV = height();
+            p.fillRect(QRectF(0, 0, width(), height()), d->getColor());
 
-            GLfloat vertices[] = { 0, heightV,
-                                   widthV, heightV,
-                                   0, 0,
-                                   widthV, 0 };
-
-            shader->setAttributeArray(ConstantColorShader::Vertices, vertices, 2);
-            glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-            shader->disableAttributeArray(ConstantColorShader::Vertices);
         }
     } else {
         qreal offset = 0;
-        if (d->_radius > 0) {
+        qreal pw = d->pen && d->pen->isValid() ? d->pen->width() : 0.0;
+
+        if (d->radius > 0) {
             generateRoundedRect();
-            offset = d->_radius;
+            offset = d->radius + pw+1.5;
         } else {
             generateBorderedRect();
-            offset = d->pen()->width();
+            offset = pw+1.5;
         }
 
         QGLShaderProgram *shader = p.useTextureShader();
 
-        float imgWidth = d->_rectTexture.width();
-        float imgHeight = d->_rectTexture.height();
-        if (!imgWidth || !imgHeight)
+        float texWidth = d->rectTexture->width();
+        float texHeight = d->rectTexture->height();
+        if (!texWidth || !texHeight)
             return;
 
-        float widthV = width();
-        float heightV = height();
+        float widthV = qreal(width())+pw/2;
+        float heightV = qreal(height())+pw/2;
 
-        float texleft = 0;
-        float texright = 1;
-        float textop = 1;
-        float texbottom = 0;
-        float imgleft = 0;
-        float imgright = widthV;
-        float imgtop = 0;
-        float imgbottom = heightV;
+        float xOffset = offset;
+        bool xMiddles = true;
+        if (xOffset*2 > width()+pw) {
+            xMiddles = false;
+            xOffset = (width()+pw)/2;
+        }
+        float yOffset = offset;
+        bool yMiddles = true;
+        if (yOffset*2 > height()+pw) {
+            yMiddles = false;
+            yOffset = (height()+pw)/2;
+        }
 
-        texleft = float(offset) / imgWidth;
-        imgleft = offset;
-        texright = 1. - float(offset) / imgWidth;
-        imgright = widthV - offset;
-        textop = 1. - float(offset) / imgHeight;
-        imgtop = offset;
-        texbottom = float(offset) / imgHeight;
-        imgbottom = heightV - offset;
+        float texleft = xOffset / texWidth;
+        float imgleft = xOffset-pw/2;
+        float texright = (texWidth-xOffset) / texWidth;
+        float imgright = widthV - xOffset;
+
+        float textop = yOffset / texHeight;
+        float imgtop = yOffset-pw/2;
+        float texbottom = (texHeight-yOffset) / texHeight;
+        float imgbottom = heightV - yOffset;
 
         //Bug 231768: Inappropriate interpolation was occuring on 3x3 textures
         if (offset==1)
             texleft=texright=textop=texbottom=0.5;
 
-        float vert1[] = { 0, 0, 
-                          0, imgtop,
-                          imgleft, 0, 
+        texleft *= d->rectTexture->glWidth();
+        texright *= d->rectTexture->glWidth();
+        textop *= d->rectTexture->glHeight();
+        texbottom *= d->rectTexture->glHeight();
+
+        float vert1[] = { -pw/2, -pw/2, 
+                          -pw/2, imgtop,
+                          imgleft, -pw/2, 
+
+                          -pw/2, imgtop,
+                          imgleft, -pw/2, 
                           imgleft, imgtop,
-                          imgright, 0,
+
+                          imgleft, -pw/2, 
+                          imgleft, imgtop,
+                          imgright, -pw/2,
+
+                          imgleft, imgtop,
+                          imgright, -pw/2,
                           imgright, imgtop,
-                          widthV, 0,
-                          widthV, imgtop };
+
+                          imgright, -pw/2,
+                          imgright, imgtop,
+                          widthV, -pw/2,
+
+                          imgright, imgtop,
+                          widthV, -pw/2,
+                          widthV, imgtop,
+
+                          -pw/2, heightV,
+                          -pw/2, imgbottom,
+                          imgleft, heightV,
+
+                          -pw/2, imgbottom,
+                          imgleft, heightV,
+                          imgleft, imgbottom,
+
+                          imgleft, heightV,
+                          imgleft, imgbottom,
+                          imgright, heightV,
+
+                          imgleft, imgbottom,
+                          imgright, heightV,
+                          imgright, imgbottom,
+
+                          imgright, heightV,
+                          imgright, imgbottom,
+                          widthV, heightV,
+
+                          imgright, imgbottom,
+                          widthV, heightV,
+                          widthV, imgbottom,
+
+                          -pw/2, imgtop,
+                          -pw/2, imgbottom,
+                          imgleft, imgtop,
+
+                          -pw/2, imgbottom,
+                          imgleft, imgtop,
+                          imgleft, imgbottom,
+
+                          imgleft, imgtop,
+                          imgleft, imgbottom,
+                          imgright, imgtop,
+
+                          imgleft, imgbottom,
+                          imgright, imgtop,
+                          imgright, imgbottom,
+
+                          imgright, imgtop,
+                          imgright, imgbottom,
+                          widthV, imgtop,
+
+                          imgright, imgbottom,
+                          widthV, imgtop,
+                          widthV, imgbottom };
+
+
         float tex1[] = { 0, 0, 
                          0, textop,
                          texleft, 0,
+
+                         0, textop,
+                         texleft, 0,
+                         texleft, textop,
+
+                         texleft, 0,
+                         texleft, textop,
+                         texright, 0,
+
                          texleft, textop,
                          texright, 0,
                          texright, textop,
-                         1, 0,
-                         1, textop };
-        float vert2[] = { 0, imgtop,
-                          0, imgbottom,
-                          imgleft, imgtop,
-                          imgleft, imgbottom,
-                          imgright, imgtop,
-                          imgright, imgbottom,
-                          widthV, imgtop,
-                          widthV, imgbottom };
-        float tex2[] = { 0, textop,
+
+                         texright, 0,
+                         texright, textop,
+                         d->rectTexture->glWidth(), 0,
+
+                         texright, textop,
+                         d->rectTexture->glWidth(), 0,
+                         d->rectTexture->glWidth(), textop,
+
+                         0, d->rectTexture->glHeight(),
+                         0, texbottom,
+                         texleft, d->rectTexture->glHeight(),
+
+                         0, texbottom,
+                         texleft, d->rectTexture->glHeight(),
+                         texleft, texbottom,
+
+                         texleft, d->rectTexture->glHeight(),
+                         texleft, texbottom,
+                         texright, d->rectTexture->glHeight(),
+
+                         texleft, texbottom,
+                         texright, d->rectTexture->glHeight(),
+                         texright, texbottom,
+
+                         texright, d->rectTexture->glHeight(),
+                         texright, texbottom,
+                         d->rectTexture->glWidth(), d->rectTexture->glHeight(),
+
+                         texright, texbottom,
+                         d->rectTexture->glWidth(), d->rectTexture->glHeight(),
+                         d->rectTexture->glWidth(), texbottom,
+
+                         0, textop,
+                         0, texbottom,
+                         texleft, textop,
+
                          0, texbottom,
                          texleft, textop,
                          texleft, texbottom,
+
+                         texleft, textop,
+                         texleft, texbottom,
+                         texright, textop,
+
+                         texleft, texbottom,
                          texright, textop,
                          texright, texbottom,
-                         1, textop,
-                         1, texbottom };
-        float vert3[] = { 0, imgbottom,
-                          0, heightV,
-                          imgleft, imgbottom,
-                          imgleft, heightV,
-                          imgright, imgbottom,
-                          imgright, heightV,
-                          widthV, imgbottom,
-                          widthV, heightV };
-        float tex3[] = { 0, texbottom,
-                         0, 0,
-                         texleft, texbottom,
-                         texleft, 0,
-                         texright, texbottom,
-                         texright, 0,
-                         1, texbottom,
-                         1, 0 };
 
-        glBindTexture(GL_TEXTURE_2D, d->_rectTexture.texture());
+                         texright, textop,
+                         texright, texbottom,
+                         d->rectTexture->glWidth(), textop,
+
+                         texright, texbottom,
+                         d->rectTexture->glWidth(), textop,
+                         d->rectTexture->glWidth(), texbottom };
+
+
+
+        glBindTexture(GL_TEXTURE_2D, d->rectTexture->texture());
 
         shader->setAttributeArray(SingleTextureShader::Vertices, vert1, 2);
         shader->setAttributeArray(SingleTextureShader::TextureCoords, tex1, 2);
-        glDrawArrays(GL_TRIANGLE_STRIP, 0, 8);
-        shader->setAttributeArray(SingleTextureShader::Vertices, vert2, 2);
-        shader->setAttributeArray(SingleTextureShader::TextureCoords, tex2, 2);
-        glDrawArrays(GL_TRIANGLE_STRIP, 0, 8);
-        shader->setAttributeArray(SingleTextureShader::Vertices, vert3, 2);
-        shader->setAttributeArray(SingleTextureShader::TextureCoords, tex3, 2);
-        glDrawArrays(GL_TRIANGLE_STRIP, 0, 8);
-
-        shader->disableAttributeArray(SingleTextureShader::Vertices);
-        shader->disableAttributeArray(SingleTextureShader::TextureCoords);
-    }
-}
-#elif defined(QFX_RENDER_OPENGL1)
-void QFxRect::paintGLContents(GLPainter &p)
-{
-    Q_D(QFxRect);
-
-    float widthV = width();
-    float heightV = height();
-        
-    glMatrixMode(GL_MODELVIEW);
-    glLoadMatrixf(p.activeTransform.data());
-    
-    if (d->_radius == 0 && (!d->_pen || !d->_pen->isValid())) {
-        GLfloat vertices[] = { 0, heightV,
-                               widthV, heightV,
-                               0, 0,
-                               widthV, 0 };
-
-        glEnableClientState(GL_VERTEX_ARRAY);
-        glVertexPointer(2,GL_FLOAT,0,vertices);
-
-        QColor c;
-        if (d->_gradcolor.isValid())
-            c = d->_color;
-        else
-            c = d->getColor();
-        float r = c.redF();
-        float g = c.greenF();
-        float b = c.blueF();
-        float a = c.alphaF() * p.activeOpacity;
-
-        float r2 = r; float g2 = g; float b2 = b; float a2 = a;
-
-        if (d->_gradcolor.isValid()) {
-            r2 = d->_gradcolor.redF();
-            g2 = d->_gradcolor.greenF();
-            b2 = d->_gradcolor.blueF();
-            a2 = d->_gradcolor.alphaF() * p.activeOpacity;
-        }
-
-        GLfloat colors[] = { r2, g2, b2, a2,
-                             r2, g2, b2, a2,
-                             r, g, b, a,
-                             r, g, b, a };
-
-        glEnableClientState(GL_COLOR_ARRAY);
-        glColorPointer(4,GL_FLOAT,0,colors);
-
-        glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-
-        glDisableClientState(GL_VERTEX_ARRAY);
-        glDisableClientState(GL_COLOR_ARRAY);
-    } else {
-        qreal offset = 0;
-        if (d->_radius > 0) {
-            generateRoundedRect();
-            offset = d->_radius;
-        } else {
-            generateBorderedRect();
-            offset = d->pen()->width();
-        }
-
-        if (p.activeOpacity == 1.) {
-            GLint i = GL_REPLACE;
-            glTexEnviv(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, &i);
-        } else {
-            GLint i = GL_MODULATE;
-            glTexEnviv(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, &i);
-            glColor4f(1, 1, 1, p.activeOpacity);
-        }
-
-        float imgWidth = d->_rectTexture.width();
-        float imgHeight = d->_rectTexture.height();
-        if (!imgWidth || !imgHeight)
-            return;
-
-        float widthV = width();
-        float heightV = height();
-
-        float texleft = 0;
-        float texright = 1;
-        float textop = 1;
-        float texbottom = 0;
-        float imgleft = 0;
-        float imgright = widthV;
-        float imgtop = 0;
-        float imgbottom = heightV;
-
-        texleft = float(offset) / imgWidth;
-        imgleft = offset;
-        texright = 1. - float(offset) / imgWidth;
-        imgright = widthV - offset;
-        textop = 1. - float(offset) / imgHeight;
-        imgtop = offset;
-        texbottom = float(offset) / imgHeight;
-        imgbottom = heightV - offset;
-
-        float vert1[] = { 0, 0, 
-                          0, imgtop,
-                          imgleft, 0, 
-                          imgleft, imgtop,
-                          imgright, 0,
-                          imgright, imgtop,
-                          widthV, 0,
-                          widthV, imgtop };
-        float tex1[] = { 0, 1, 
-                         0, textop,
-                         texleft, 1,
-                         texleft, textop,
-                         texright, 1,
-                         texright, textop,
-                         1, 1,
-                         1, textop };
-        float vert2[] = { 0, imgtop,
-                          0, imgbottom,
-                          imgleft, imgtop,
-                          imgleft, imgbottom,
-                          imgright, imgtop,
-                          imgright, imgbottom,
-                          widthV, imgtop,
-                          widthV, imgbottom };
-        float tex2[] = { 0, textop,
-                         0, texbottom,
-                         texleft, textop,
-                         texleft, texbottom,
-                         texright, textop,
-                         texright, texbottom,
-                         1, textop,
-                         1, texbottom };
-        float vert3[] = { 0, imgbottom,
-                          0, heightV,
-                          imgleft, imgbottom,
-                          imgleft, heightV,
-                          imgright, imgbottom,
-                          imgright, heightV,
-                          widthV, imgbottom,
-                          widthV, heightV };
-        float tex3[] = { 0, texbottom,
-                         0, 0,
-                         texleft, texbottom,
-                         texleft, 0,
-                         texright, texbottom,
-                         texright, 0,
-                         1, texbottom,
-                         1, 0 };
-
-        glEnable(GL_TEXTURE_2D);
-        glBindTexture(GL_TEXTURE_2D, d->_rectTexture.texture());
-
-        glEnableClientState(GL_VERTEX_ARRAY);
-        glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-
-        glVertexPointer(2, GL_FLOAT, 0, vert1);
-        glTexCoordPointer(2, GL_FLOAT, 0, tex1);
-        glDrawArrays(GL_TRIANGLE_STRIP, 0, 8);
-
-        glVertexPointer(2, GL_FLOAT, 0, vert2);
-        glTexCoordPointer(2, GL_FLOAT, 0, tex2);
-        glDrawArrays(GL_TRIANGLE_STRIP, 0, 8);
-
-        glVertexPointer(2, GL_FLOAT, 0, vert3);
-        glTexCoordPointer(2, GL_FLOAT, 0, tex3);
-        glDrawArrays(GL_TRIANGLE_STRIP, 0, 8);
-
-        glDisableClientState(GL_VERTEX_ARRAY);
-        glDisableClientState(GL_TEXTURE_COORD_ARRAY);
-        glDisable(GL_TEXTURE_2D);
+        glDrawArrays(GL_TRIANGLES, 0, 36 + (yMiddles?18:0));
     }
 }
 #endif

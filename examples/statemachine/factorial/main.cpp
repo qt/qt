@@ -41,12 +41,6 @@
 
 #include <QtCore>
 #include <stdio.h>
-#ifdef QT_STATEMACHINE_SOLUTION
-#include <qstatemachine.h>
-#include <qstate.h>
-#include <qsignaltransition.h>
-#include <qfinalstate.h>
-#endif
 
 //! [0]
 class Factorial : public QObject
@@ -100,7 +94,7 @@ public:
         : QSignalTransition(fact, SIGNAL(xChanged(int))), m_fact(fact)
     {}
 
-    virtual bool eventTest(QEvent *e) const
+    virtual bool eventTest(QEvent *e)
     {
         if (!QSignalTransition::eventTest(e))
             return false;
@@ -130,7 +124,7 @@ public:
         : QSignalTransition(fact, SIGNAL(xChanged(int))), m_fact(fact)
     {}
 
-    virtual bool eventTest(QEvent *e) const
+    virtual bool eventTest(QEvent *e)
     {
         if (!QSignalTransition::eventTest(e))
             return false;

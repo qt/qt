@@ -42,7 +42,7 @@
 #ifndef QFXANIMATEDIMAGEITEM_H
 #define QFXANIMATEDIMAGEITEM_H
 
-#include <qfximage.h>
+#include <QtDeclarative/qfximage.h>
 
 
 QT_BEGIN_HEADER
@@ -91,7 +91,7 @@ private:
     Q_DECLARE_PRIVATE(QFxAnimatedImageItem)
 };
 
-QML_DECLARE_TYPE(QFxAnimatedImageItem);
+QML_DECLARE_TYPE(QFxAnimatedImageItem)
 
 
 QT_END_NAMESPACE

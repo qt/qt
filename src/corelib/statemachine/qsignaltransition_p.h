@@ -53,7 +53,7 @@
 // We mean it.
 //
 
-#include "qabstracttransition_p.h"
+#include "private/qabstracttransition_p.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -66,7 +66,8 @@ public:
 
     static QSignalTransitionPrivate *get(QSignalTransition *q);
 
-    void invalidate();
+    void unregister();
+    void maybeRegister();
 
     QObject *sender;
     QByteArray signal;

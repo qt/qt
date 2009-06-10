@@ -42,12 +42,12 @@
 #ifndef QFXTRANSFORM_H
 #define QFXTRANSFORM_H
 
-#include <QObject>
-#include <QTransform>
+#include <QtCore/QObject>
+#include <QtGui/QTransform>
 #if defined(QFX_RENDER_OPENGL)
 #include <QtGui/qmatrix4x4.h>
 #endif
-#include <qfxitem.h>
+#include <QtDeclarative/qfxitem.h>
 
 QT_BEGIN_HEADER
 
@@ -67,7 +67,7 @@ public:
     virtual bool isIdentity() const;
     virtual QSimpleCanvas::Matrix transform() const;
 };
-QML_DECLARE_TYPE(QFxTransform);
+QML_DECLARE_TYPE(QFxTransform)
 
 class Q_DECLARATIVE_EXPORT QFxAxis : public QObject
 {
@@ -107,7 +107,7 @@ private:
     qreal _endY;
     qreal _endZ;
 };
-QML_DECLARE_TYPE(QFxAxis);
+QML_DECLARE_TYPE(QFxAxis)
 
 class Q_DECLARATIVE_EXPORT QFxRotation : public QFxTransform
 {
@@ -115,7 +115,7 @@ class Q_DECLARATIVE_EXPORT QFxRotation : public QFxTransform
 
     Q_PROPERTY(qreal originX READ originX WRITE setOriginX)
     Q_PROPERTY(qreal originY READ originY WRITE setOriginY)
-    Q_PROPERTY(qreal angle READ angle WRITE setAngle)
+    Q_PROPERTY(qreal angle READ angle WRITE setAngle NOTIFY angleChanged())
 public:
     QFxRotation(QObject *parent=0);
     ~QFxRotation();
@@ -132,6 +132,9 @@ public:
     virtual bool isIdentity() const;
     virtual QSimpleCanvas::Matrix transform() const;
 
+Q_SIGNALS:
+    void angleChanged();
+
 private Q_SLOTS:
     void update();
 private:
@@ -142,7 +145,7 @@ private:
     mutable bool _dirty;
     mutable QSimpleCanvas::Matrix _transform;
 };
-QML_DECLARE_TYPE(QFxRotation);
+QML_DECLARE_TYPE(QFxRotation)
 
 class Q_DECLARATIVE_EXPORT QFxRotation3D : public QFxTransform
 {
@@ -171,7 +174,7 @@ private:
     mutable bool _dirty;
     mutable QSimpleCanvas::Matrix _transform;
 };
-QML_DECLARE_TYPE(QFxRotation3D);
+QML_DECLARE_TYPE(QFxRotation3D)
 
 class Q_DECLARATIVE_EXPORT QFxTranslation3D : public QFxTransform
 {
@@ -200,7 +203,7 @@ private:
     mutable bool _dirty;
     mutable QSimpleCanvas::Matrix _transform;
 };
-QML_DECLARE_TYPE(QFxTranslation3D);
+QML_DECLARE_TYPE(QFxTranslation3D)
 
 class Q_DECLARATIVE_EXPORT QFxPerspective : public QFxTransform
 {
@@ -241,7 +244,7 @@ private:
     qreal _angle;
     qreal _aspect;
 };
-QML_DECLARE_TYPE(QFxPerspective);
+QML_DECLARE_TYPE(QFxPerspective)
 
 class Q_DECLARATIVE_EXPORT QFxSquish : public QFxTransform
 {
@@ -307,7 +310,7 @@ private:
     QSizeF s;
     QPointF p1, p2, p3, p4;
 };
-QML_DECLARE_TYPE(QFxSquish);
+QML_DECLARE_TYPE(QFxSquish)
 
 QT_END_NAMESPACE
 

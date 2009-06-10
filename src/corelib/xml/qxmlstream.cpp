@@ -3058,7 +3058,7 @@ QXmlStreamPrivateTagStack::NamespaceDeclaration &QXmlStreamWriterPrivate::findNa
         QString s;
         int n = ++namespacePrefixCount;
         forever {
-            s = QLatin1String("n") + QString::number(n++);
+            s = QLatin1Char('n') + QString::number(n++);
             int j = namespaceDeclarations.size() - 2;
             while (j >= 0 && namespaceDeclarations.at(j).prefix != s)
                 --j;

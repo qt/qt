@@ -56,7 +56,7 @@ QT_BEGIN_NAMESPACE
     \brief The QFxWidgetContainer class allows you to add QGraphicsWidgets into Fluid UI applications.
 */
 
-QML_DEFINE_TYPE(QFxWidgetContainer, WidgetContainer);
+QML_DEFINE_TYPE(QFxWidgetContainer, WidgetContainer)
 
 QFxWidgetContainer::QFxWidgetContainer(QFxItem *parent)
 : QFxItem(parent), _graphicsWidget(0)

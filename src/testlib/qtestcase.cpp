@@ -1465,8 +1465,12 @@ int QTest::qExec(QObject *testObject, int argc, char **argv)
 
 #if !defined(QT_NO_PROCESS) || !defined(QT_NO_SETTINGS)
     if (QBenchmarkGlobalData::current->createChart) {
-        QString chartLocation = QLibraryInfo::location(QLibraryInfo::BinariesPath) 
-                                 + QLatin1String("/../tools/qtestlib/chart/chart");
+        QString chartLocation = QLibraryInfo::location(QLibraryInfo::BinariesPath);
+#ifdef Q_OS_WIN
+        chartLocation += QLatin1String("/../tools/qtestlib/chart/release/chart.exe");
+#else
+        chartLocation += QLatin1String("/../tools/qtestlib/chart/chart");
+#endif
         if (QFile::exists(chartLocation)) {
             QProcess p;
             p.setProcessChannelMode(QProcess::ForwardedChannels);
@@ -1797,8 +1801,8 @@ COMPARE_IMPL2(quint64, %llu)
 #endif
 COMPARE_IMPL2(bool, %d)
 COMPARE_IMPL2(char, %c)
-COMPARE_IMPL2(float, %g);
-COMPARE_IMPL2(double, %lg);
+COMPARE_IMPL2(float, %g)
+COMPARE_IMPL2(double, %lg)
 
 /*! \internal
  */

@@ -44,6 +44,7 @@
 
 int main(int argc, char **argv)
 {
+    Q_INIT_RESOURCE(easing);
     QApplication app(argc, argv);
     Window w;
     w.resize(400, 400);

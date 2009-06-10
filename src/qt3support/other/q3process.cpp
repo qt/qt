@@ -483,7 +483,7 @@ QString Q3Process::readLineStdout()
 	return QString();
 
       if ( !buf->scanNewline( &a ) )
-	return QString( QLatin1String(buf->readAll()) );
+	return QLatin1String(buf->readAll());
     }
 
     uint size = a.size();

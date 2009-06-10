@@ -42,8 +42,8 @@
 #ifndef QFXREFLECTIONFILTER_H
 #define QFXREFLECTIONFILTER_H
 
-#include <qsimplecanvasfilter.h>
-#include <qml.h>
+#include <QtDeclarative/qsimplecanvasfilter.h>
+#include <QtDeclarative/qml.h>
 
 
 QT_BEGIN_HEADER
@@ -87,7 +87,7 @@ private:
     Q_DISABLE_COPY(QFxReflectionFilter)
     QFxReflectionFilterPrivate *d;
 };
-QML_DECLARE_TYPE(QFxReflectionFilter);
+QML_DECLARE_TYPE(QFxReflectionFilter)
 
 QT_END_NAMESPACE
 

@@ -23,7 +23,6 @@ my $basedir = $ENV{"QTDIR"};
 $basedir =~ s=\\=/=g;
 my %modules = ( # path to module name map
         "QtGui" => "$basedir/src/gui",
-        "QtAnimation" => "$basedir/src/animation",
         "QtOpenGL" => "$basedir/src/opengl",
         "QtCore" => "$basedir/src/corelib",
         "QtXml" => "$basedir/src/xml",
@@ -682,7 +681,6 @@ foreach (@modules_to_sync) {
 		    foreach(split(/ /, "$1")) {
 			$master_contents .= "#include <QtCore/QtCore>\n" if("$_" eq "core");
 			$master_contents .= "#include <QtGui/QtGui>\n" if("$_" eq "gui");
-			$master_contents .= "#include <QtAnimation/QtAnimation>\n" if("$_" eq "experimental-animation");
 			$master_contents .= "#include <QtNetwork/QtNetwork>\n" if("$_" eq "network");
 			$master_contents .= "#include <QtSvg/QtSvg>\n" if("$_" eq "svg");
 			$master_contents .= "#include <QtDeclarative/QtDeclarative>\n" if("$_" eq "declarative");

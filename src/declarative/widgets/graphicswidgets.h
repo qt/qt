@@ -42,18 +42,18 @@
 #ifndef GRAPHICSWIDGETS_H
 #define GRAPHICSWIDGETS_H
 
-#include <qml.h>
-#include <QGraphicsScene>
-#include <QGraphicsView>
-#include <QGraphicsWidget>
-#include <QGraphicsItem>
+#include <QtDeclarative/qml.h>
+#include <QtGui/QGraphicsScene>
+#include <QtGui/QGraphicsView>
+#include <QtGui/QGraphicsWidget>
+#include <QtGui/QGraphicsItem>
 
 QT_BEGIN_NAMESPACE
 
-QML_DECLARE_TYPE(QGraphicsView);
-QML_DECLARE_TYPE_HASMETATYPE(QGraphicsScene);
-QML_DECLARE_TYPE(QGraphicsWidget);
-QML_DECLARE_INTERFACE_HASMETATYPE(QGraphicsItem);
+QML_DECLARE_TYPE(QGraphicsView)
+QML_DECLARE_TYPE_HASMETATYPE(QGraphicsScene)
+QML_DECLARE_TYPE(QGraphicsWidget)
+QML_DECLARE_INTERFACE_HASMETATYPE(QGraphicsItem)
 
 QT_END_NAMESPACE
 

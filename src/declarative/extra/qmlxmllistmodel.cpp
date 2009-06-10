@@ -45,6 +45,10 @@
 #include <QtDeclarative/qmlcontext.h>
 #include <QtDeclarative/qmlengine.h>
 #include <QDebug>
+#include <QApplication>
+#include <QThread>
+#include <QMutex>
+#include <QWaitCondition>
 #include <QXmlQuery>
 #include <QXmlResultItems>
 #include <QXmlNodeModelIndex>
@@ -54,8 +58,199 @@
 
 QT_BEGIN_NAMESPACE
 
-QML_DEFINE_TYPE(XmlListModelRole, Role);
-QML_DEFINE_TYPE(QmlXmlListModel, XmlListModel);
+QML_DEFINE_TYPE(XmlListModelRole, Role)
+QML_DEFINE_TYPE(QmlXmlListModel, XmlListModel)
+
+
+class QmlXmlListModelPrivate;
+struct QmlXmlRoleList : public QmlConcreteList<XmlListModelRole *>
+{
+    QmlXmlRoleList(QmlXmlListModelPrivate *p)
+        : model(p) {}
+    virtual void append(XmlListModelRole *role);
+    //XXX clear, removeAt, and insert need to invalidate any cached data (in data table) as well
+    //    (and the model should emit the appropriate signals)
+    virtual void clear();
+    virtual void removeAt(int i);
+    virtual void insert(int i, XmlListModelRole *role);
+
+    QmlXmlListModelPrivate *model;
+};
+
+
+
+class QmlXmlQuery : public QThread
+{
+    Q_OBJECT
+public:
+    QmlXmlQuery(QObject *parent=0)
+        : QThread(parent), m_quit(false), m_restart(false), m_abort(false), m_queryId(0) {
+    }
+    ~QmlXmlQuery() {
+        m_mutex.lock();
+        m_quit = true;
+        m_condition.wakeOne();
+        m_mutex.unlock();
+
+        wait();
+    }
+
+    void abort() {
+        QMutexLocker locker(&m_mutex);
+        m_abort = true;
+    }
+
+    int doQuery(QString query, QString namespaces, QByteArray data, QmlXmlRoleList *roleObjects) {
+        QMutexLocker locker(&m_mutex);
+        m_modelData.clear();
+        m_size = 0;
+        m_data = data;
+        m_query = query;
+        m_namespaces = namespaces;
+        m_roleObjects = roleObjects;
+        if (!isRunning()) {
+            m_abort = false;
+            start();
+        } else {
+            m_restart = true;
+            m_condition.wakeOne();
+        }
+        m_queryId++;
+        return m_queryId;
+    }
+
+    QList<QList<QVariant> > modelData() {
+        QMutexLocker locker(&m_mutex);
+        return m_modelData;
+    }
+
+signals:
+    void queryCompleted(int queryId, int size);
+
+protected:
+    void run() {
+        while (!m_quit) {
+            m_mutex.lock();
+            int queryId = m_queryId;
+            doQueryJob();
+            if (m_size > 0)
+                doSubQueryJob();
+            m_data.clear(); // no longer needed
+            m_mutex.unlock();
+
+            m_mutex.lock();
+            if (!m_abort && m_size > 0)
+                emit queryCompleted(queryId, m_size);
+            if (!m_restart)
+                m_condition.wait(&m_mutex);
+            m_abort = false;
+            m_restart = false;
+            m_mutex.unlock();
+        }
+    }
+
+private:
+    void doQueryJob();
+    void doSubQueryJob();
+
+private:
+    QMutex m_mutex;
+    QWaitCondition m_condition;
+    bool m_quit;
+    bool m_restart;
+    bool m_abort;
+    QByteArray m_data;
+    QString m_query;
+    QString m_namespaces;
+    QString m_prefix;
+    int m_size;
+    int m_queryId;
+    const QmlXmlRoleList *m_roleObjects;
+    QList<QList<QVariant> > m_modelData;
+};
+
+void QmlXmlQuery::doQueryJob()
+{
+    QString r;
+    QXmlQuery query;
+    QBuffer buffer(&m_data);
+    buffer.open(QIODevice::ReadOnly);
+    query.bindVariable(QLatin1String("src"), &buffer);
+    query.setQuery(m_namespaces + m_query);
+    query.evaluateTo(&r);
+
+    //qDebug() << r;
+
+    //always need a single root element
+    QByteArray xml = "<dummy:items xmlns:dummy=\"http://qtsotware.com/dummy\">\n" + r.toUtf8() + "</dummy:items>";
+    QBuffer b(&xml);
+    b.open(QIODevice::ReadOnly);
+    //qDebug() << xml;
+
+    QString namespaces = QLatin1String("declare namespace dummy=\"http://qtsotware.com/dummy\";\n") + m_namespaces;
+    QString prefix = QLatin1String("doc($inputDocument)/dummy:items") +
+                     m_query.mid(m_query.lastIndexOf(QLatin1Char('/')));
+
+    //figure out how many items we are dealing with
+    int count = -1;
+    {
+        QXmlResultItems result;
+        QXmlQuery countquery;
+        countquery.bindVariable(QLatin1String("inputDocument"), &b);
+        countquery.setQuery(namespaces + QLatin1String("count(") + prefix + QLatin1String(")"));
+        countquery.evaluateTo(&result);
+        QXmlItem item(result.next());
+        if (item.isAtomicValue())
+            count = item.toAtomicValue().toInt();
+        prefix += QLatin1String("[%1]/");
+    }
+    //qDebug() << count;
+
+    m_prefix = namespaces + prefix;
+    m_data = xml;
+    if (count > 0)
+        m_size = count;
+}
+
+void QmlXmlQuery::doSubQueryJob()
+{
+    m_modelData.clear();
+
+    QBuffer b(&m_data);
+    b.open(QIODevice::ReadOnly);
+
+    QXmlQuery subquery;
+    subquery.bindVariable(QLatin1String("inputDocument"), &b);
+
+    //XXX should we use an array of objects or something else rather than a table?
+    for (int j = 0; j < m_size; ++j) {
+        QList<QVariant> resultList;
+        for (int i = 0; i < m_roleObjects->size(); ++i) {
+            XmlListModelRole *role = m_roleObjects->at(i);
+            subquery.setQuery(m_prefix.arg(j+1) + role->query());
+            if (role->isStringList()) {
+                QStringList data;
+                subquery.evaluateTo(&data);
+                resultList << QVariant(data);
+                //qDebug() << data;
+            } else {
+                QString s;
+                subquery.evaluateTo(&s);
+                if (role->isCData()) {
+                    //un-escape
+                    s.replace(QLatin1String("&lt;"), QLatin1String("<"));
+                    s.replace(QLatin1String("&gt;"), QLatin1String(">"));
+                    s.replace(QLatin1String("&amp;"), QLatin1String("&"));
+                }
+                resultList << s.trimmed();
+                //qDebug() << s;
+            }
+            b.seek(0);
+        }
+        m_modelData << resultList;
+    }
+}
+
 
 //TODO: do something smart while waiting for data to load
 //      error handling (currently quite fragile)
@@ -63,6 +258,62 @@ QML_DEFINE_TYPE(QmlXmlListModel, XmlListModel);
 //      some sort of loading indication while we wait for initial data load (status property similar to QWebImage?)
 //      support complex/nested objects?
 //      how do we handle data updates (like rss feed -- usually items inserted at beginning)
+
+
+class QmlXmlListModelPrivate : public QObjectPrivate
+{
+    Q_DECLARE_PUBLIC(QmlXmlListModel)
+public:
+    QmlXmlListModelPrivate()
+        : isClassComplete(false), size(-1), highestRole(Qt::UserRole)
+        , reply(0), status(QmlXmlListModel::Idle), progress(0.0)
+        , queryId(-1), roleObjects(this) {}
+
+    bool isClassComplete;
+    QUrl src;
+    QString query;
+    QString namespaces;
+    int size;
+    QList<int> roles;
+    QStringList roleNames;
+    int highestRole;
+    QNetworkReply *reply;
+    QmlXmlListModel::Status status;
+    qreal progress;
+    QmlXmlQuery qmlXmlQuery;
+    int queryId;
+    QmlXmlRoleList roleObjects;
+    QList<QList<QVariant> > data;
+};
+
+
+void QmlXmlRoleList::append(XmlListModelRole *role) {
+    QmlConcreteList<XmlListModelRole *>::append(role);
+    model->roles << model->highestRole;
+    model->roleNames << role->name();
+    ++model->highestRole;
+}
+//XXX clear, removeAt, and insert need to invalidate any cached data (in data table) as well
+//    (and the model should emit the appropriate signals)
+void QmlXmlRoleList::clear()
+{
+    model->roles.clear();
+    model->roleNames.clear();
+    QmlConcreteList<XmlListModelRole *>::clear();
+}
+void QmlXmlRoleList::removeAt(int i)
+{
+    model->roles.removeAt(i);
+    model->roleNames.removeAt(i);
+    QmlConcreteList<XmlListModelRole *>::removeAt(i);
+}
+void QmlXmlRoleList::insert(int i, XmlListModelRole *role)
+{
+    QmlConcreteList<XmlListModelRole *>::insert(i, role);
+    model->roles.insert(i, model->highestRole);
+    model->roleNames.insert(i, role->name());
+    ++model->highestRole;
+}
 
 /*!
     \qmlclass XmlListModel
@@ -86,67 +337,12 @@ QML_DEFINE_TYPE(QmlXmlListModel, XmlListModel);
     \note The model is currently static, so the above is really just a snapshot of an RSS feed.
 */
 
-class QmlXmlListModelPrivate : public QObjectPrivate
-{
-    Q_DECLARE_PUBLIC(QmlXmlListModel)
-public:
-    QmlXmlListModelPrivate() : isClassComplete(false), size(-1), highestRole(Qt::UserRole), reply(0), roleObjects(this) {}
-
-    bool isClassComplete;
-    QString src;
-    QString query;
-    QString namespaces;
-    QList<int> roles;
-    QStringList roleNames;
-    mutable QList<QList<QVariant> > data;
-    int size;
-    int highestRole;
-    QNetworkReply *reply;
-    mutable QByteArray xml;
-    QString prefix;
-
-    struct RoleList : public QmlConcreteList<XmlListModelRole *>
-    {
-        RoleList(QmlXmlListModelPrivate *p)
-        : model(p) {}
-        virtual void append(XmlListModelRole *role) {
-            QmlConcreteList<XmlListModelRole *>::append(role);
-            model->roles << model->highestRole;
-            model->roleNames << role->name();
-            ++model->highestRole;
-        }
-        //XXX clear, removeAt, and insert need to invalidate any cached data (in data table) as well
-        //    (and the model should emit the appropriate signals)
-        virtual void clear()
-        {
-            model->roles.clear();
-            model->roleNames.clear();
-            QmlConcreteList<XmlListModelRole *>::clear();
-        }
-        virtual void removeAt(int i)
-        {
-            model->roles.removeAt(i);
-            model->roleNames.removeAt(i);
-            QmlConcreteList<XmlListModelRole *>::removeAt(i);
-        }
-        virtual void insert(int i, XmlListModelRole *role)
-        {
-            QmlConcreteList<XmlListModelRole *>::insert(i, role);
-            model->roles.insert(i, model->highestRole);
-            model->roleNames.insert(i, role->name());
-            ++model->highestRole;
-        }
-
-        QmlXmlListModelPrivate *model;
-    };
-
-    RoleList roleObjects;
-};
-
 QmlXmlListModel::QmlXmlListModel(QObject *parent)
     : QListModelInterface(*(new QmlXmlListModelPrivate), parent)
 {
     Q_D(QmlXmlListModel);
+    connect(&d->qmlXmlQuery, SIGNAL(queryCompleted(int,int)),
+            this, SLOT(queryCompleted(int,int)));
 }
 
 QmlXmlListModel::~QmlXmlListModel()
@@ -163,10 +359,6 @@ QHash<int,QVariant> QmlXmlListModel::data(int index, const QList<int> &roles) co
 {
     Q_D(const QmlXmlListModel);
     QHash<int, QVariant> rv;
-
-    if (index > d->data.count() - 1)
-        doSubquery(index);
-
     for (int i = 0; i < roles.size(); ++i) {
         int role = roles.at(i);
         int roleIndex = d->roles.indexOf(role);
@@ -196,13 +388,13 @@ QString QmlXmlListModel::toString(int role) const
     return d->roleNames.at(index);
 }
 
-QString QmlXmlListModel::source() const
+QUrl QmlXmlListModel::source() const
 {
     Q_D(const QmlXmlListModel);
     return d->src;
 }
 
-void QmlXmlListModel::setSource(const QString &src)
+void QmlXmlListModel::setSource(const QUrl &src)
 {
     Q_D(QmlXmlListModel);
     if (d->src != src) {
@@ -240,6 +432,17 @@ void QmlXmlListModel::setNamespaceDeclarations(const QString &declarations)
         reload();
     }
 }
+QmlXmlListModel::Status QmlXmlListModel::status() const
+{
+    Q_D(const QmlXmlListModel);
+    return d->status;
+}
+
+qreal QmlXmlListModel::progress() const
+{
+    Q_D(const QmlXmlListModel);
+    return d->progress;
+}
 
 void QmlXmlListModel::classComplete()
 {
@@ -254,6 +457,9 @@ void QmlXmlListModel::reload()
 
     if (!d->isClassComplete)
         return;
+
+    d->qmlXmlQuery.abort();
+    d->queryId = -1;
 
     //clear existing data
     d->size = 0;
@@ -272,12 +478,17 @@ void QmlXmlListModel::reload()
         d->reply->deleteLater();
         d->reply = 0;
     }
+    d->progress = 0.0;
+    d->status = Loading;
+    emit progressChanged(d->progress);
+    emit statusChanged(d->status);
 
-    QNetworkRequest req((QUrl(d->src)));
+    QNetworkRequest req(d->src);
     req.setAttribute(QNetworkRequest::CacheLoadControlAttribute, QNetworkRequest::PreferCache);
     d->reply = qmlContext(this)->engine()->networkAccessManager()->get(req);
-    QObject::connect(d->reply, SIGNAL(finished()),
-                    this, SLOT(requestFinished()));
+    QObject::connect(d->reply, SIGNAL(finished()), this, SLOT(requestFinished()));
+    QObject::connect(d->reply, SIGNAL(downloadProgress(qint64,qint64)),
+                     this, SLOT(requestProgress(qint64,qint64)));
 }
 
 void QmlXmlListModel::requestFinished()
@@ -286,100 +497,40 @@ void QmlXmlListModel::requestFinished()
     if (d->reply->error() != QNetworkReply::NoError) {
         d->reply->deleteLater();
         d->reply = 0;
+        d->status = Error;
     } else {
+        d->status = Idle;
         QByteArray data = d->reply->readAll();
-        doQuery(data);
+        d->queryId = d->qmlXmlQuery.doQuery(d->query, d->namespaces, data, &d->roleObjects);
         d->reply->deleteLater();
         d->reply = 0;
     }
+    d->progress = 1.0;
+    emit progressChanged(d->progress);
+    emit statusChanged(d->status);
 }
 
-void QmlXmlListModel::doQuery(QByteArray &rawData)
+void QmlXmlListModel::requestProgress(qint64 received, qint64 total)
 {
     Q_D(QmlXmlListModel);
-    QString r;
-    QXmlQuery query;
-    QBuffer rawBuffer(&rawData);
-    rawBuffer.open(QIODevice::ReadOnly);
-    query.bindVariable(QLatin1String("src"), &rawBuffer);
-    query.setQuery(d->namespaces + d->query);
-    query.evaluateTo(&r);
-    //qDebug() << r;
-
-    //always need a single root element
-    QByteArray xml = "<dummy:items xmlns:dummy=\"http://qtsotware.com/dummy\">\n" + r.toUtf8() + "</dummy:items>";
-    QBuffer b(&xml);
-    b.open(QIODevice::ReadOnly);
-    //qDebug() << xml;
-
-    QString namespaces = QLatin1String("declare namespace dummy=\"http://qtsotware.com/dummy\";\n") + d->namespaces;
-    QString prefix = QLatin1String("doc($inputDocument)/dummy:items") +
-                     d->query.mid(d->query.lastIndexOf(QLatin1Char('/')));
-
-    //figure out how many items we are dealing with
-    int count = -1;
-    {
-        QXmlResultItems result;
-        QXmlQuery countquery;
-        countquery.bindVariable(QLatin1String("inputDocument"), &b);
-        countquery.setQuery(namespaces + QLatin1String("count(") + prefix + QLatin1String(")"));
-        countquery.evaluateTo(&result);
-        QXmlItem item(result.next());
-        if (item.isAtomicValue())
-            count = item.toAtomicValue().toInt();
-        b.seek(0);
-        prefix += QLatin1String("[%1]/");
+    if (d->status == Loading && total > 0) {
+        d->progress = qreal(received)/total;
+        emit progressChanged(d->progress);
     }
-    //qDebug() << count;
-
-    QXmlQuery subquery;
-    subquery.bindVariable(QLatin1String("inputDocument"), &b);
-    d->prefix = namespaces + prefix;
-    d->xml = xml;
-
-    d->size = count;
-
-    if (count > 0)
-        emit itemsInserted(0, count);
 }
 
-void QmlXmlListModel::doSubquery(int index) const
+void QmlXmlListModel::queryCompleted(int id, int size)
 {
-    Q_D(const QmlXmlListModel);
-    //qDebug() << "doSubQuery" << index;
-    QBuffer b(&d->xml);
-    b.open(QIODevice::ReadOnly);
-
-    QXmlQuery subquery;
-    subquery.bindVariable(QLatin1String("inputDocument"), &b);
-
-    //XXX should we use an array of objects or something else rather than a table?
-    for (int j = d->data.count(); j <= index; ++j) {
-        QList<QVariant> resultList;
-        for (int i = 0; i < d->roleObjects.size(); ++i) {
-            XmlListModelRole *role = d->roleObjects.at(i);
-            subquery.setQuery(d->prefix.arg(j+1) + role->query());
-            if (role->isStringList()) {
-                QStringList data;
-                subquery.evaluateTo(&data);
-                resultList << QVariant(data);
-                //qDebug() << data;
-            } else {
-                QString s;
-                subquery.evaluateTo(&s);
-                if (role->isCData()) {
-                    //un-escape
-                    s.replace(QLatin1String("&lt;"), QLatin1String("<"));
-                    s.replace(QLatin1String("&gt;"), QLatin1String(">"));
-                    s.replace(QLatin1String("&amp;"), QLatin1String("&"));
-                }
-                resultList << s.trimmed();
-                //qDebug() << s;
-            }
-            b.seek(0);
-        }
-        d->data << resultList;
+    Q_D(QmlXmlListModel);
+    if (id != d->queryId)
+        return;
+    d->size = size;
+    if (size > 0) {
+        d->data = d->qmlXmlQuery.modelData();
+        emit itemsInserted(0, d->size);
     }
 }
+
+#include "qmlxmllistmodel.moc"
 
 QT_END_NAMESPACE

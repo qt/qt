@@ -42,10 +42,10 @@
 #ifndef QFXLAYOUTS_H
 #define QFXLAYOUTS_H
 
-#include <qfxitem.h>
-#include <QObject>
-#include <QString>
-#include <qmlstate.h>
+#include <QtCore/QObject>
+#include <QtCore/QString>
+#include <QtDeclarative/qfxitem.h>
+#include <QtDeclarative/qmlstate.h>
 
 
 QT_BEGIN_HEADER
@@ -128,7 +128,7 @@ protected Q_SLOTS:
 private:
     Q_DISABLE_COPY(QFxVerticalLayout)
 };
-QML_DECLARE_TYPE(QFxVerticalLayout);
+QML_DECLARE_TYPE(QFxVerticalLayout)
 
 class Q_DECLARATIVE_EXPORT QFxHorizontalLayout: public QFxBaseLayout
 {
@@ -140,7 +140,7 @@ protected Q_SLOTS:
 private:
     Q_DISABLE_COPY(QFxHorizontalLayout)
 };
-QML_DECLARE_TYPE(QFxHorizontalLayout);
+QML_DECLARE_TYPE(QFxHorizontalLayout)
 
 class Q_DECLARATIVE_EXPORT QFxGridLayout : public QFxBaseLayout
 {
@@ -163,7 +163,7 @@ private:
     int _columns;
     Q_DISABLE_COPY(QFxGridLayout)
 };
-QML_DECLARE_TYPE(QFxGridLayout);
+QML_DECLARE_TYPE(QFxGridLayout)
 
 QT_END_NAMESPACE
 

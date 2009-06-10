@@ -14,7 +14,7 @@
 #ifndef QMLVIEWER_H
 #define QMLVIEWER_H
 
-#include <QMainWindow>
+#include <QMenuBar>
 #include <QBasicTimer>
 #include <QTime>
 #include <qfxtestengine.h>
@@ -26,7 +26,7 @@ class PreviewDeviceSkin;
 class QFxTestEngine;
 class QProcess;
 
-class QmlViewer : public QMainWindow
+class QmlViewer : public QWidget
 {
 Q_OBJECT
 public:
@@ -40,11 +40,11 @@ public:
     void setRecording(bool on);
     bool isRecording() const { return recordTimer.isActive(); }
     void setAutoRecord(int from, int to);
-    void setSkin(const QString& skinDirectory);
     void setDeviceKeys(bool);
     void setCacheEnabled(bool);
+    void addLibraryPath(const QString& lib);
 
-    QSize sizeHint() const;
+    QMenuBar *menuBar() const;
 
 public slots:
     void sceneResized(QSize size);
@@ -55,12 +55,17 @@ public slots:
     void toggleRecording();
     void toggleRecordingWithSelection();
     void ffmpegFinished(int code);
+    void setSkin(const QString& skinDirectory);
 
 protected:
     virtual void keyPressEvent(QKeyEvent *);
     virtual void timerEvent(QTimerEvent *);
 
     void createMenu(QMenuBar *menu, QMenu *flatmenu);
+
+private slots:
+    void setScaleSkin();
+    void setScaleView();
 
 private:
     QString currentFileName;
@@ -80,6 +85,9 @@ private:
     int record_autotime;
     bool devicemode;
     QAction *recordAction;
+    QString currentSkin;
+    bool scaleSkin;
+    mutable QMenuBar *mb;
 
     QFxTestEngine *testEngine;
 };

@@ -43,7 +43,7 @@
 #define QMLPRIVATE_H
 
 #include <QtCore/qglobal.h>
-#ifndef Q_OS_WIN32
+#ifndef Q_OS_WIN
 #include <stdint.h>
 #endif
 #include <QtCore/qvariant.h>
@@ -123,57 +123,51 @@ namespace QmlPrivate
         }
     };
 
-    template<typename T, int N>
-    struct AttachedPropertySelector
+    template<typename T, typename Sign = T *(*)(QObject *)>
+    struct has_qmlAttachedProperties
     {
-        static inline QmlAttachedPropertiesFunc func()
-        {
-            return 0;
-        }
+        template <typename U, U> struct type_check;
+        template <typename _1> static char check(type_check<Sign, &_1::qmlAttachedProperties> *);
+        template <typename   > static int check(...);
+        static bool const value = sizeof(check<T>(0)) == sizeof(char);
+    };
+
+    template<typename T, int N>
+    class AttachedPropertySelector
+    {
+    public:
+        static inline QmlAttachedPropertiesFunc func() { return 0; }
+        static inline const QMetaObject *metaObject() { return 0; }
     };
     template<typename T>
-    struct AttachedPropertySelector<T, 1>
+    class AttachedPropertySelector<T, 1>
     {
-        static inline QmlAttachedPropertiesFunc func()
-        {
-            return &T::qmlAttachedProperties;
+        static inline QObject *attachedProperties(QObject *obj) {
+            return T::qmlAttachedProperties(obj);
+        }
+        template<typename ReturnType>
+        static inline const QMetaObject *attachedPropertiesMetaObject(ReturnType *(*)(QObject *)) {
+            return &ReturnType::staticMetaObject;
+        }
+    public:
+        static inline QmlAttachedPropertiesFunc func() {
+            return &attachedProperties;
+        }
+        static inline const QMetaObject *metaObject() {
+            return attachedPropertiesMetaObject(&T::qmlAttachedProperties);
         }
     };
-
-    template < typename T >
-    class has_attachedProperties {
-        typedef int yes_type;
-        typedef char no_type;
-
-        template<typename S, QObject *(S::*)(QObject *)>
-        struct dummy {};
-
-        template<typename S, QObject *(S::*)(QObject *) const>
-        struct dummy_const {};
-
-        template<typename S, QObject *(*) (QObject *)>
-        struct dummy_static {};
-
-        template<typename S>
-        static no_type check(dummy<S, &S::qmlAttachedProperties> *);
-
-        template<typename S>
-        static no_type check(dummy_const<S, &S::qmlAttachedProperties> *);
-
-        template<typename S>
-        static yes_type check(dummy_static<S, &S::qmlAttachedProperties> *);
-
-        template<typename S>
-        static no_type check(...);
-
-    public:
-        static bool const value = sizeof(check<T>(0)) == sizeof(yes_type);
-    }; 
 
     template<typename T>
     inline QmlAttachedPropertiesFunc attachedPropertiesFunc()
     {
-        return AttachedPropertySelector<T, has_attachedProperties<T>::value>::func();
+        return AttachedPropertySelector<T, has_qmlAttachedProperties<T>::value >::func();
+    }
+
+    template<typename T>
+    inline const QMetaObject *attachedPropertiesMetaObject()
+    {
+        return AttachedPropertySelector<T, has_qmlAttachedProperties<T>::value >::metaObject();
     }
 
     struct MetaTypeIds {
@@ -213,7 +207,7 @@ namespace QmlPrivate
             return new T(other);
         }
     };
-};
+}
 
 template<typename T>
 int QmlPrivate::list_op(QmlPrivate::ListOp op, int val, 

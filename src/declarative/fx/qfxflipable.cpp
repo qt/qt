@@ -44,7 +44,7 @@
 #include "qfxtransform.h"
 #include <QtDeclarative/qmlinfo.h>
 
-QML_DEFINE_TYPE(QFxFlipable,Flipable);
+QML_DEFINE_TYPE(QFxFlipable,Flipable)
 
 class QFxFlipablePrivate : public QFxItemPrivate
 {
@@ -169,7 +169,6 @@ void QFxFlipable::setBack(QFxItem *back)
     children()->append(d->back);
     if (Front == d->current)
         d->back->setOpacity(0.);
-    d->setBackTransform();
 }
 
 /*!
@@ -203,8 +202,6 @@ void QFxFlipablePrivate::_q_updateAxis()
     axisRotation.axis()->setEndX(axis->endX());
     axisRotation.axis()->setEndY(axis->endY());
     axisRotation.axis()->setEndZ(axis->endZ());
-
-    setBackTransform();
 }
 
 void QFxFlipablePrivate::setBackTransform()
@@ -273,8 +270,10 @@ void QFxFlipable::setRotation(qreal angle)
         d->current = newSide;
         if (d->front)
             d->front->setOpacity((d->current==Front)?1.:0.);
-        if (d->back)
+        if (d->back) {
+            d->setBackTransform();
             d->back->setOpacity((d->current==Back)?1.:0.);
+        }
         emit sideChanged();
     }
 }

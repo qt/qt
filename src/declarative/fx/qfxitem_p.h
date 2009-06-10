@@ -53,11 +53,11 @@
 // We mean it.
 //
 
-#include "qfxitem.h"
+#include <QtDeclarative/qfxitem.h>
 #include <private/qsimplecanvasitem_p.h>
 #include <private/qmlnullablevalue_p.h>
-#include <qml.h>
-#include <qmlcontext.h>
+#include <QtDeclarative/qml.h>
+#include <QtDeclarative/qmlcontext.h>
 #include <QtCore/qlist.h>
 
 QT_BEGIN_NAMESPACE
@@ -100,7 +100,7 @@ public:
     void data_insert(int, QObject *);
     QObject *data_at(int) const;
     void data_clear();
-    QML_DECLARE_LIST_PROXY(QFxItemPrivate, QObject *, data);
+    QML_DECLARE_LIST_PROXY(QFxItemPrivate, QObject *, data)
 
     // resources property
     void resources_removeAt(int);
@@ -109,7 +109,7 @@ public:
     void resources_insert(int, QObject *);
     QObject *resources_at(int) const;
     void resources_clear();
-    QML_DECLARE_LIST_PROXY(QFxItemPrivate, QObject *, resources);
+    QML_DECLARE_LIST_PROXY(QFxItemPrivate, QObject *, resources)
 
     // children property
     void children_removeAt(int);
@@ -118,7 +118,7 @@ public:
     void children_insert(int, QFxItem *);
     QFxItem *children_at(int) const;
     void children_clear();
-    QML_DECLARE_LIST_PROXY(QFxItemPrivate, QFxItem *, children);
+    QML_DECLARE_LIST_PROXY(QFxItemPrivate, QFxItem *, children)
 
     QList<QFxTransform *> _transform;
     QFxAnchors *anchors() {
@@ -129,12 +129,12 @@ public:
         }
         return _anchors;
     }
+    QList<QFxAnchors *> dependantAnchors;
     QFxAnchors *_anchors;
     QFxContents *_contents;
     QFxItem *qmlItem;
-    QUrl _qmlurl;
     QmlComponent *_qmlcomp;
-    QString _qml;
+    QUrl _qml;
     QList<QUrl> _qmlnewloading;
     QList<QmlComponent*> _qmlnewcomp;
 
@@ -156,6 +156,7 @@ public:
         QFxAnchorLine top;
         QFxAnchorLine bottom;
         QFxAnchorLine vCenter;
+        QFxAnchorLine baseline;
     };
     mutable AnchorLines *_anchorLines;
     AnchorLines *anchorLines() const {
@@ -171,9 +172,6 @@ public:
 
     QmlStateGroup *states();
     QmlStateGroup *_stateGroup;
-
-    void handleWidthChange(int xoffset);
-    void handleHeightChange(int xoffset);
 };
 
 QT_END_NAMESPACE

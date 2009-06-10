@@ -42,11 +42,11 @@
 #ifndef QFXVIEW_H
 #define QFXVIEW_H
 
-#include <qfxglobal.h>
 #include <QtCore/qdatetime.h>
 #include <QtGui/qgraphicssceneevent.h>
 #include <QtGui/qwidget.h>
-#include <qsimplecanvas.h>
+#include <QtDeclarative/qfxglobal.h>
+#include <QtDeclarative/qsimplecanvas.h>
 
 QT_BEGIN_HEADER
 
@@ -82,6 +82,8 @@ public:
 
     virtual QFxItem *root() const;
 
+    void setContentResizable(bool);
+    bool contentResizable() const;
     QSize sizeHint() const;
 
     void dumpRoot();

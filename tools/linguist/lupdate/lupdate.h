@@ -79,6 +79,7 @@ void loadCPP(Translator &translator, const QStringList &filenames, ConversionDat
 bool loadJava(Translator &translator, const QString &filename, ConversionData &cd);
 bool loadQScript(Translator &translator, const QString &filename, ConversionData &cd);
 bool loadUI(Translator &translator, const QString &filename, ConversionData &cd);
+bool loadQml(Translator &translator, const QString &filename, ConversionData &cd);
 
 QT_END_NAMESPACE
 

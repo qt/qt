@@ -377,7 +377,7 @@ int Lexer::findReservedWord(const QChar *c, int size) const
         else if (c[0] == QLatin1Char('p') && c[1] == QLatin1Char('r')
                 && c[2] == QLatin1Char('o') && c[3] == QLatin1Char('p')
                 && c[4] == QLatin1Char('e') && c[5] == QLatin1Char('r')
-                && c[6] == QLatin1Char('t') && c[7] == QLatin1Char('y')) 
+                && c[6] == QLatin1Char('t') && c[7] == QLatin1Char('y'))
             return JavaScriptGrammar::T_PROPERTY;
         else if (check_reserved) {
             if (c[0] == QLatin1Char('a') && c[1] == QLatin1Char('b')
@@ -751,6 +751,64 @@ int Lexer::lex()
             shift(1);
         if (state != Start && state != InSingleLineComment)
             bol = false;
+    }
+
+    if (state == Number) {
+        // CSS-style suffix for numeric literals
+
+        flags = noSuffix;
+
+        const ushort c = QChar::toLower(current);
+        const ushort n1 = QChar::toLower(next1);
+        const ushort n2 = QChar::toLower(next2);
+        const ushort n3 = QChar::toLower(next3);
+
+        if (c == 'e' && n1 == 'm') {
+            flags = emSuffix;
+            shift(2);
+        } else if (c == 'e' && n1 == 'x') {
+            flags = exSuffix;
+            shift(2);
+        } else if (c == 'p' && n1 == 'x') {
+            flags = pxSuffix;
+            shift(2);
+        } else if (c == 'c' && n1 == 'm') {
+            flags = cmSuffix;
+            shift(2);
+        } else if (c == 'm' && n1 == 'm') {
+            flags = mmSuffix;
+            shift(2);
+        } else if (c == 'i' && n1 == 'n') {
+            flags = inSuffix;
+            shift(2);
+        } else if (c == 'p' && n1 == 't') {
+            flags = ptSuffix;
+            shift(2);
+        } else if (c == 'p' && n1 == 'c') {
+            flags = pcSuffix;
+            shift(1);
+        } else if (c == 'd' && n1 == 'e' && n2 == 'g') {
+            flags = degSuffix;
+            shift(3);
+        } else if (c == 'r' && n1 == 'a' && n2 == 'd') {
+            flags = radSuffix;
+            shift(3);
+        } else if (c == 'g' && n1 == 'r' && n2 == 'a' && n3 == 'd') {
+            flags = gradSuffix;
+            shift(4);
+        } else if (c == 'm' && n1 == 's') {
+            flags = msSuffix;
+            shift(2);
+        } else if (c == 's') {
+            flags = sSuffix;
+            shift(1);
+        } else if (c == 'h' && n1 == 'z') {
+            flags = hzSuffix;
+            shift(2);
+        } else if (c == 'k' && n1 == 'h' && n2 == 'z') {
+            flags = khzSuffix;
+            shift(3);
+        }
     }
 
     // no identifiers allowed directly after numeric literal, e.g. "3in" is bad

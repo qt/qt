@@ -57,7 +57,7 @@ public:
 
     virtual void setSelectedState(bool);
 };
-Q_DECLARE_INTERFACE(QmlDebuggerStatus, "com.trolltech.qml.QmlDebuggerStatus");
+Q_DECLARE_INTERFACE(QmlDebuggerStatus, "com.trolltech.qml.QmlDebuggerStatus")
 
 QT_END_NAMESPACE
 

@@ -51,7 +51,7 @@ QWidget *SpreadSheetDelegate::createEditor(QWidget *parent,
 {
     if (index.column() == 1) {
         QDateTimeEdit *editor = new QDateTimeEdit(parent);
-        editor->setDisplayFormat("dd/M/yyy");
+        editor->setDisplayFormat("dd/M/yyyy");
         editor->setCalendarPopup(true);
         return editor;
     }
@@ -93,7 +93,7 @@ void SpreadSheetDelegate::setEditorData(QWidget *editor,
         if (dateEditor) {
             dateEditor->setDate(QDate::fromString(
             index.model()->data(index, Qt::EditRole).toString(),
-            "d/M/yy"));
+            "d/M/yyyy"));
         }
     }
 }
@@ -107,7 +107,7 @@ void SpreadSheetDelegate::setModelData(QWidget *editor,
     } else {
         QDateTimeEdit *dateEditor = qobject_cast<QDateTimeEdit *>(editor);
         if (dateEditor) {
-            model->setData(index, dateEditor->date().toString("dd/M/yyy"));
+            model->setData(index, dateEditor->date().toString("dd/M/yyyy"));
         }
     }
 }

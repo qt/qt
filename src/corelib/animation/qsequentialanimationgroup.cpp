@@ -42,9 +42,8 @@
 /*!
     \class QSequentialAnimationGroup
     \brief The QSequentialAnimationGroup class provides a sequential group of animations.
-    \since 4.5
-    \ingroup group_animation
-    \preliminary
+    \since 4.6
+    \ingroup animation
 
     QSequentialAnimationGroup is a QAnimationGroup that runs its
     animations in sequence, i.e., it starts one animation after
@@ -78,8 +77,6 @@
     \sa QAnimationGroup, QAbstractAnimation, {The Animation Framework}
 */
 
-#ifndef QT_NO_ANIMATION
-
 #include "qsequentialanimationgroup.h"
 #include "qsequentialanimationgroup_p.h"
 
@@ -87,9 +84,9 @@
 
 #include <QtCore/qdebug.h>
 
+#ifndef QT_NO_ANIMATION
+
 QT_BEGIN_NAMESPACE
-
-
 
 bool QSequentialAnimationGroupPrivate::atEnd() const
 {

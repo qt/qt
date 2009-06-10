@@ -42,7 +42,7 @@
 #ifndef QFXMOUSEREGION_H
 #define QFXMOUSEREGION_H
 
-#include <qfxitem.h>
+#include <QtDeclarative/qfxitem.h>
 
 QT_BEGIN_HEADER
 
@@ -86,7 +86,7 @@ private:
     int _ymax;
     Q_DISABLE_COPY(QFxDrag)
 };
-QML_DECLARE_TYPE(QFxDrag);
+QML_DECLARE_TYPE(QFxDrag)
 
 class QFxMouseEvent;
 class QFxMouseRegionPrivate;
@@ -154,7 +154,7 @@ private:
     Q_DISABLE_COPY(QFxMouseRegion)
     Q_DECLARE_PRIVATE(QFxMouseRegion)
 };
-QML_DECLARE_TYPE(QFxMouseRegion);
+QML_DECLARE_TYPE(QFxMouseRegion)
 
 QT_END_NAMESPACE
 

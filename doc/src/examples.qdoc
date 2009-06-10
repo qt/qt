@@ -86,6 +86,12 @@
     \o \l{activeqt/webbrowser}{Web Browser}\raisedaster
     \o \l{activeqt/wrapper}{Wrapper}\raisedaster
     \endlist
+    
+    \section1 Animation
+
+    \list
+    \o \l{animation/stickman}{Stick man}\raisedaster
+    \endlist
 
     \section1 Concurrent Programming
 

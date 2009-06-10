@@ -48,6 +48,8 @@ QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
+QT_MODULE(Declarative)
+
 class QGraphicsWidget;
 
 class Q_DECLARATIVE_EXPORT QFxWidgetContainer : public QFxItem
@@ -70,7 +72,7 @@ protected:
 private:
     QGraphicsWidget         *_graphicsWidget;
 };
-QML_DECLARE_TYPE(QFxWidgetContainer);
+QML_DECLARE_TYPE(QFxWidgetContainer)
 
 QT_END_NAMESPACE
 

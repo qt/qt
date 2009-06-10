@@ -350,6 +350,8 @@ private slots:
     void updateOnDestroyedSignal();
     void toplevelLineEditFocus();
 
+    void focusWidget_task254563();
+
 private:
     bool ensureScreenSize(int width, int height);
     QWidget *testWidget;
@@ -8412,6 +8414,7 @@ void tst_QWidget::translucentWidget()
     ColorRedWidget label;
     label.setFixedSize(16,16);
     label.setAttribute(Qt::WA_TranslucentBackground);
+    label.move(qApp->desktop()->availableGeometry().topLeft());
     label.show();
 #ifdef Q_WS_X11
     qt_x11_wait_for_window_manager(&label);
@@ -8974,6 +8977,21 @@ void tst_QWidget::toplevelLineEditFocus()
 
     QCOMPARE(QApplication::activeWindow(), &w);
     QCOMPARE(QApplication::focusWidget(), &w);
+}
+
+void tst_QWidget::focusWidget_task254563()
+{
+    //having different visibility for widget is important
+    QWidget top;
+    top.show();
+    QWidget container(&top);
+    QWidget *widget = new QWidget(&container);
+    widget->show();
+
+    widget->setFocus(); //set focus (will set the focus widget up to the toplevel to be 'widget')
+    container.setFocus();
+    delete widget; // will call clearFocus but that doesn't help
+    QVERIFY(top.focusWidget() != widget); //dangling pointer
 }
 
 QTEST_MAIN(tst_QWidget)

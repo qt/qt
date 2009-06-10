@@ -91,7 +91,7 @@
     \snippet examples/dialogs/tabdialog/tabdialog.cpp 1
     \snippet examples/dialogs/tabdialog/tabdialog.cpp 3
 
-    We arrange the the tab widget above the buttons in the dialog:
+    We arrange the tab widget above the buttons in the dialog:
 
     \snippet examples/dialogs/tabdialog/tabdialog.cpp 4
 

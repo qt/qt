@@ -405,7 +405,7 @@ QPalette *QApplicationPrivate::set_pal = 0;        // default palette set by pro
 QGraphicsSystem *QApplicationPrivate::graphics_system = 0; // default graphics system
 QString QApplicationPrivate::graphics_system_name;         // graphics system id - for delayed initialization
 
-Q_GLOBAL_STATIC(QMutex, applicationFontMutex);
+Q_GLOBAL_STATIC(QMutex, applicationFontMutex)
 QFont *QApplicationPrivate::app_font = 0;        // default application font
 QFont *QApplicationPrivate::sys_font = 0;        // default system font
 QFont *QApplicationPrivate::set_font = 0;        // default font set by programmer
@@ -838,9 +838,11 @@ void QApplicationPrivate::initialize()
     // trigger registering of QVariant's GUI types
     extern int qRegisterGuiVariant();
     qRegisterGuiVariant();
+#ifndef QT_NO_STATEMACHINE
     // trigger registering of QStateMachine's GUI types
     extern int qRegisterGuiStateMachine();
     qRegisterGuiStateMachine();
+#endif
 
     is_app_running = true; // no longer starting up
 
@@ -1062,9 +1064,11 @@ QApplication::~QApplication()
     QApplicationPrivate::fade_tooltip = false;
     QApplicationPrivate::widgetCount = false;
 
+#ifndef QT_NO_STATEMACHINE
     // trigger unregistering of QStateMachine's GUI types
     extern int qUnregisterGuiStateMachine();
     qUnregisterGuiStateMachine();
+#endif
     // trigger unregistering of QVariant's GUI types
     extern int qUnregisterGuiVariant();
     qUnregisterGuiVariant();
@@ -2028,12 +2032,10 @@ QWidget *QApplication::focusWidget()
 
 void QApplicationPrivate::setFocusWidget(QWidget *focus, Qt::FocusReason reason)
 {
-    if (focus && focus->window()
 #ifndef QT_NO_GRAPHICSVIEW
-        && focus->window()->graphicsProxyWidget()
-#endif
-       )
+    if (focus && focus->window()->graphicsProxyWidget())
         return;
+#endif
 
     hidden_focus_widget = 0;
 

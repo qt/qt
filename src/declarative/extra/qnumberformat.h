@@ -42,9 +42,9 @@
 #ifndef NUMBERFORMAT_H
 #define NUMBERFORMAT_H 
 
-#include "qml.h"
-#include <QtGui>
-
+#include <QtDeclarative/qml.h>
+#include <QtCore/QLocale>
+#include <QtCore/QTime>
 
 QT_BEGIN_HEADER
 
@@ -74,18 +74,18 @@ public:
         };
 
         //external property, only visible
-        Q_PROPERTY(QString text READ text NOTIFY textChanged);
+        Q_PROPERTY(QString text READ text NOTIFY textChanged)
 
         //mutatable properties to modify the output (text)
-        Q_PROPERTY(qreal number READ number WRITE setNumber); 
-        Q_PROPERTY(QString format READ format WRITE setFormat);
-        Q_PROPERTY(QLocale locale READ locale WRITE setLocale);
+        Q_PROPERTY(qreal number READ number WRITE setNumber) 
+        Q_PROPERTY(QString format READ format WRITE setFormat)
+        Q_PROPERTY(QLocale locale READ locale WRITE setLocale)
 
         //Format specific settings
-        Q_PROPERTY(unsigned short groupingSeparator READ groupingSeparator WRITE setGroupingSeparator);
-        Q_PROPERTY(unsigned short decimalSeperator READ decimalSeparator WRITE setDecimalSeparator);
-        Q_PROPERTY(unsigned int groupingSize READ groupingSize WRITE setGroupingSize);
-        Q_PROPERTY(unsigned short currencySymbol READ currencySymbol WRITE setCurrencySymbol);
+        Q_PROPERTY(unsigned short groupingSeparator READ groupingSeparator WRITE setGroupingSeparator)
+        Q_PROPERTY(unsigned short decimalSeperator READ decimalSeparator WRITE setDecimalSeparator)
+        Q_PROPERTY(unsigned int groupingSize READ groupingSize WRITE setGroupingSize)
+        Q_PROPERTY(unsigned short currencySymbol READ currencySymbol WRITE setCurrencySymbol)
 
 
         QString text() const { return _text; }
@@ -163,7 +163,7 @@ private:
         QString _text;
 
 };
-QML_DECLARE_TYPE(QNumberFormat);
+QML_DECLARE_TYPE(QNumberFormat)
 
 
 QT_END_NAMESPACE

@@ -42,10 +42,10 @@
 #ifndef QFXKEYACTIONS_H
 #define QFXKEYACTIONS_H
 
-#include <qfxglobal.h>
-#include <QObject>
-#include <qml.h>
-#include <qfxitem.h>
+#include <QtCore/QObject>
+#include <QtDeclarative/qfxglobal.h>
+#include <QtDeclarative/qml.h>
+#include <QtDeclarative/qfxitem.h>
 
 
 QT_BEGIN_HEADER
@@ -310,7 +310,7 @@ private:
     QFxKeyActionsPrivate *d;
 };
 
-QML_DECLARE_TYPE(QFxKeyActions);
+QML_DECLARE_TYPE(QFxKeyActions)
 
 QT_END_NAMESPACE
 

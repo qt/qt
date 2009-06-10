@@ -711,6 +711,7 @@ void QListWidgetItem::write(QDataStream &out) const
 {
     out << d->values;
 }
+#endif // QT_NO_DATASTREAM
 
 /*!
     \since 4.1
@@ -744,6 +745,8 @@ QListWidgetItem &QListWidgetItem::operator=(const QListWidgetItem &other)
     itemFlags = other.itemFlags;
     return *this;
 }
+
+#ifndef QT_NO_DATASTREAM
 
 /*!
     \relates QListWidgetItem
@@ -1158,7 +1161,7 @@ void QListWidgetPrivate::_q_dataChanged(const QModelIndex &topLeft,
 /*!
     \fn void QListWidget::addItem(QListWidgetItem *item)
 
-    Inserts the \a item at the the end of the list widget.
+    Inserts the \a item at the end of the list widget.
 
     \warning A QListWidgetItem can only be added to a
     QListWidget once. Adding the same QListWidgetItem multiple

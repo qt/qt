@@ -158,7 +158,7 @@ namespace QPdf {
 
 
     QByteArray stripSpecialCharacters(const QByteArray &string);
-};
+}
 
 
 class QPdfPage : public QPdf::ByteStream

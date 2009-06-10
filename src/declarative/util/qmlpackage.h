@@ -42,7 +42,7 @@
 #ifndef QMLPACKAGE_H
 #define QMLPACKAGE_H
 
-#include <qml.h>
+#include <QtDeclarative/qml.h>
 
 
 QT_BEGIN_HEADER
@@ -57,13 +57,14 @@ QT_MODULE(Declarative)
 *****************************************************************************/
 
 class QmlPackagePrivate;
+class QmlPackageAttached;
 class QmlPackage : public QObject
 {
     Q_OBJECT
     Q_DECLARE_PRIVATE(QmlPackage)
 
-    Q_CLASSINFO("DefaultProperty", "data");
-    Q_PROPERTY(QmlList<QObject *> *data READ data SCRIPTABLE false);
+    Q_CLASSINFO("DefaultProperty", "data")
+    Q_PROPERTY(QmlList<QObject *> *data READ data SCRIPTABLE false)
 
 public:
     QmlPackage(QObject *parent=0);
@@ -74,9 +75,9 @@ public:
     QObject *part(const QString & = QString());
     bool hasPart(const QString &);
 
-    static QObject *qmlAttachedProperties(QObject *);
+    static QmlPackageAttached *qmlAttachedProperties(QObject *);
 };
-QML_DECLARE_TYPE(QmlPackage);
+QML_DECLARE_TYPE(QmlPackage)
 
 #endif // QMLPACKAGE_H
 

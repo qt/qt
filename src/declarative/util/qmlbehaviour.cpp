@@ -47,7 +47,7 @@
 
 
 QT_BEGIN_NAMESPACE
-QML_DEFINE_TYPE(QmlBehaviour,Behaviour);
+QML_DEFINE_TYPE(QmlBehaviour,Behaviour)
 
 
 class QmlBehaviourData : public QObject

@@ -69,8 +69,8 @@ QmlBindableValue::QmlBindableValue(void *data, QmlRefCount *rc, QObject *obj, QO
 {
 }
 
-QmlBindableValue::QmlBindableValue(const QString &str, QObject *obj, bool sse, QObject *parent)
-: QmlPropertyValueSource(*new QmlBindableValuePrivate, parent), QmlExpression(QmlContext::activeContext(), str, obj, sse)
+QmlBindableValue::QmlBindableValue(const QString &str, QObject *obj, QObject *parent)
+: QmlPropertyValueSource(*new QmlBindableValuePrivate, parent), QmlExpression(QmlContext::activeContext(), str, obj)
 {
 }
 
@@ -220,6 +220,10 @@ void QmlBindableValue::update()
 
         } else if (d->property.propertyCategory() == QmlMetaProperty::Normal) {
             QVariant value = this->value();
+            if (d->property.propertyType() == QVariant::Url && value.canConvert(QVariant::String) && !value.isNull()) {
+                // Must resolve first
+                value.setValue(context()->resolvedUrl(value.toString()));
+            }
             d->property.write(value);
         }
 

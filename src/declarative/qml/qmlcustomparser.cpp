@@ -120,6 +120,7 @@ QmlCustomParserNodePrivate::fromObject(QmlParser::Object *root)
     return rootNode;
 }
 
+#include <QtCore/qdebug.h>
 QmlCustomParserProperty 
 QmlCustomParserNodePrivate::fromProperty(QmlParser::Property *p)
 {
@@ -127,20 +128,23 @@ QmlCustomParserNodePrivate::fromProperty(QmlParser::Property *p)
     prop.d->name = p->name;
     prop.d->isList = (p->values.count() > 1);
 
-    for(int ii = 0; ii < p->values.count(); ++ii) {
-        Value *v = p->values.at(ii);
+    if (p->value) {
+        QmlCustomParserNode node = fromObject(p->value);
+        QList<QmlCustomParserProperty> props = node.properties();
+        for (int ii = 0; ii < props.count(); ++ii)
+            prop.d->values << QVariant::fromValue(props.at(ii));
+    } else {
+        for(int ii = 0; ii < p->values.count(); ++ii) {
+            Value *v = p->values.at(ii);
 
-        // We skip fetched properties for now
-        if(v->object && v->object->type == -1)
-            continue;
+            if(v->object) {
+                QmlCustomParserNode node = fromObject(v->object);
+                prop.d->values << QVariant::fromValue(node);
+            } else {
+                prop.d->values << QVariant::fromValue(v->value);
+            }
 
-        if(v->object) {
-            QmlCustomParserNode node = fromObject(v->object);
-            prop.d->values << QVariant::fromValue(node);
-        } else {
-            prop.d->values << QVariant::fromValue(v->primitive());
         }
-
     }
 
     return prop;
@@ -220,6 +224,7 @@ QList<QVariant> QmlCustomParserProperty::assignedValues() const
 
 QByteArray QmlCustomParser::compile(const QList<QmlCustomParserProperty> &, bool *ok)
 {
+    Q_UNUSED(ok);
     return QByteArray();
 }
 

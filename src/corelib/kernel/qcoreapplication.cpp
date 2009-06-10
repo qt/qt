@@ -1710,7 +1710,7 @@ QString QCoreApplication::applicationDirPath()
     }
 
     QCoreApplicationPrivate *d = self->d_func();
-    if (d->cachedApplicationDirPath == QString())
+    if (d->cachedApplicationDirPath.isNull())
         d->cachedApplicationDirPath = QFileInfo(applicationFilePath()).path();
     return d->cachedApplicationDirPath;
 }
@@ -1738,7 +1738,7 @@ QString QCoreApplication::applicationFilePath()
     }
 
     QCoreApplicationPrivate *d = self->d_func();
-    if (d->cachedApplicationFilePath != QString())
+    if (!d->cachedApplicationFilePath.isNull())
         return d->cachedApplicationFilePath;
 
 #if defined( Q_WS_WIN )
@@ -1798,7 +1798,7 @@ QString QCoreApplication::applicationFilePath()
         */
         QByteArray pEnv = qgetenv("PATH");
         QDir currentDir = QDir::current();
-        QStringList paths = QString::fromLocal8Bit(pEnv.constData()).split(QLatin1String(":"));
+        QStringList paths = QString::fromLocal8Bit(pEnv.constData()).split(QLatin1Char(':'));
         for (QStringList::const_iterator p = paths.constBegin(); p != paths.constEnd(); ++p) {
             if ((*p).isEmpty())
                 continue;
@@ -1908,7 +1908,7 @@ QStringList QCoreApplication::arguments()
     wchar_t tempFilename[MAX_PATH+1];
     if (GetModuleFileNameW(0, tempFilename, MAX_PATH)) {
         tempFilename[MAX_PATH] = 0;
-        cmdline.prepend(QString(QLatin1String("\"")) + QString::fromUtf16((unsigned short *)tempFilename) + QString(QLatin1String("\" ")));
+        cmdline.prepend(QLatin1Char('\"') + QString::fromUtf16((unsigned short *)tempFilename) + QLatin1String("\" "));
     }
 #endif // Q_OS_WINCE
 

@@ -579,6 +579,9 @@ public:
     bool isSimpleText() const { if (!d->clean) updateProperties(); return d->simpletext; }
     bool isRightToLeft() const { if (!d->clean) updateProperties(); return d->righttoleft; }
 
+    struct Uninitialized {};
+    QString(int size, Uninitialized);
+
 private:
 #if defined(QT_NO_CAST_FROM_ASCII) && !defined(Q_NO_DECLARED_NOT_DEFINED)
     QString &operator+=(const char *s);
@@ -1001,13 +1004,15 @@ inline int QByteArray::findRev(const QString &s, int from) const
 #  endif // QT3_SUPPORT
 #endif // QT_NO_CAST_TO_ASCII
 
+#ifndef QT_USE_FAST_OPERATOR_PLUS
+# ifndef QT_USE_FAST_CONCATENATION
 inline const QString operator+(const QString &s1, const QString &s2)
 { QString t(s1); t += s2; return t; }
 inline const QString operator+(const QString &s1, QChar s2)
 { QString t(s1); t += s2; return t; }
 inline const QString operator+(QChar s1, const QString &s2)
 { QString t(s1); t += s2; return t; }
-#ifndef QT_NO_CAST_FROM_ASCII
+#  ifndef QT_NO_CAST_FROM_ASCII
 inline QT_ASCII_CAST_WARN const QString operator+(const QString &s1, const char *s2)
 { QString t(s1); t += QString::fromAscii(s2); return t; }
 inline QT_ASCII_CAST_WARN const QString operator+(const char *s1, const QString &s2)
@@ -1020,7 +1025,9 @@ inline QT_ASCII_CAST_WARN const QString operator+(const QByteArray &ba, const QS
 { QString t = QString::fromAscii(ba.constData(), qstrnlen(ba.constData(), ba.size())); t += s; return t; }
 inline QT_ASCII_CAST_WARN const QString operator+(const QString &s, const QByteArray &ba)
 { QString t(s); t += QString::fromAscii(ba.constData(), qstrnlen(ba.constData(), ba.size())); return t; }
-#endif
+#  endif // QT_NO_CAST_FROM_ASCII
+# endif // QT_USE_FAST_CONCATENATION
+#endif // QT_USE_FAST_OPERATOR_PLUS
 
 #ifndef QT_NO_STL
 inline std::string QString::toStdString() const
@@ -1229,6 +1236,8 @@ inline int QStringRef::localeAwareCompare(const QStringRef &s1, const QStringRef
 
 QT_END_NAMESPACE
 
-QT_END_HEADER
+#ifdef QT_USE_FAST_CONCATENATION
+#include <QtCore/qstringbuilder.h>
+#endif
 
 #endif // QSTRING_H

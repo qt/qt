@@ -38,10 +38,37 @@
 QT_BEGIN_NAMESPACE
 
 namespace JavaScript {
-class NameId;
-}
+class NameId
+{
+    QString _text;
+
+public:
+    NameId(const QChar *u, int s)
+        : _text(u, s)
+    { }
+
+    const QString asString() const
+    { return _text; }
+
+    bool operator == (const NameId &other) const
+    { return _text == other._text; }
+
+    bool operator != (const NameId &other) const
+    { return _text != other._text; }
+
+    bool operator < (const NameId &other) const
+    { return _text < other._text; }
+};
 
 uint qHash(const JavaScript::NameId &id);
+
+} // end of namespace JavaScript
+
+#if defined(Q_CC_MSVC) && _MSC_VER <= 1300
+//this ensures that code outside JavaScript can use the hash function
+//it also a workaround for some compilers
+inline uint qHash(const JavaScript::NameId &nameId) { return JavaScript::qHash(nameId); }
+#endif
 
 namespace JavaScript {
 
@@ -65,29 +92,6 @@ public:
 };
 
 } // end of namespace Ecma
-
-
-class NameId
-{
-    QString _text;
-
-public:
-    NameId(const QChar *u, int s)
-        : _text(u, s)
-    { }
-
-    const QString asString() const
-    { return _text; }
-
-    bool operator == (const NameId &other) const
-    { return _text == other._text; }
-
-    bool operator != (const NameId &other) const
-    { return _text != other._text; }
-
-    bool operator < (const NameId &other) const
-    { return _text < other._text; }
-};
 
 class DiagnosticMessage
 {
@@ -115,44 +119,23 @@ class Engine
 {
     Lexer *_lexer;
     NodePool *_nodePool;
-    AST::Node *_ast;
     QSet<NameId> _literals;
 
 public:
-    Engine()
-        : _lexer(0), _nodePool(0), _ast(0)
-    { }
+    Engine();
+    ~Engine();
 
-    QSet<NameId> literals() const
-    { return _literals; }
+    QSet<NameId> literals() const;
 
-    NameId *intern(const QChar *u, int s)
-    { return const_cast<NameId *>(&*_literals.insert(NameId(u, s))); }
+    NameId *intern(const QChar *u, int s);
 
-    static QString toString(NameId *id)
-    { return id->asString(); }
+    static QString toString(NameId *id);
 
-    Lexer *lexer() const
-    { return _lexer; }
+    Lexer *lexer() const;
+    void setLexer(Lexer *lexer);
 
-    void setLexer(Lexer *lexer)
-    { _lexer = lexer; }
-
-    NodePool *nodePool() const
-    { return _nodePool; }
-
-    void setNodePool(NodePool *nodePool)
-    { _nodePool = nodePool; }
-
-    AST::Node *ast() const
-    { return _ast; }
-
-    AST::Node *changeAbstractSyntaxTree(AST::Node *node)
-    {
-        AST::Node *previousAST = _ast;
-        _ast = node;
-        return previousAST;
-    }
+    NodePool *nodePool() const;
+    void setNodePool(NodePool *nodePool);
 };
 
 } // end of namespace JavaScript

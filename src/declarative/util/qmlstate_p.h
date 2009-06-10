@@ -42,15 +42,15 @@
 #ifndef QMLSTATE_P_H
 #define QMLSTATE_P_H
 
-#include <qmlstate.h>
-#include "private/qobject_p.h"
-#include "private/qmlanimation_p.h"
+#include <QtDeclarative/qmlstate.h>
+#include <private/qobject_p.h>
+#include <private/qmlanimation_p.h>
 
 QT_BEGIN_NAMESPACE
 
 class QmlStatePrivate : public QObjectPrivate
 {
-    Q_DECLARE_PUBLIC(QmlState);
+    Q_DECLARE_PUBLIC(QmlState)
 
 public:
     QmlStatePrivate()

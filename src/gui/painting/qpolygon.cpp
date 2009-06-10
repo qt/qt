@@ -742,7 +742,7 @@ QDataStream &operator>>(QDataStream &s, QPolygon &a)
     QVector<QPoint> &v = a;
     return s >> v;
 }
-#endif
+#endif // QT_NO_DATASTREAM
 
 /*****************************************************************************
   QPolygonF stream functions

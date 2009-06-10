@@ -339,6 +339,8 @@ QVariant QScriptValueImpl::toVariant() const
         if (isQObject())        
             return qVariantFromValue(toQObject());
 #endif
+        if (isArray())
+            return QScriptEnginePrivate::variantListFromArray(*this);
 
         QScriptValueImpl v = engine()->toPrimitive(*this);
         if (!v.isObject())
@@ -395,7 +397,7 @@ QDebug &operator<<(QDebug &d, const QScriptValueImpl &object)
         QScriptObject *od = object.objectValue();
         for (int i=0; i<od->memberCount(); ++i) {
             if (i != 0)
-                d << ",";
+                d << ',';
 
             QScript::Member m;
             od->member(i, &m);
@@ -404,7 +406,7 @@ QDebug &operator<<(QDebug &d, const QScriptValueImpl &object)
                 d << object.engine()->toString(m.nameId());
                 QScriptValueImpl o;
                 od->get(m, &o);
-                d.nospace() << QLatin1String(":")
+                d.nospace() << QLatin1Char(':')
                             << (o.classInfo()
                                 ? o.classInfo()->name()
                                 : QLatin1String("?"));
@@ -415,14 +417,14 @@ QDebug &operator<<(QDebug &d, const QScriptValueImpl &object)
         QScriptValueImpl scope = object.scope();
         while (scope.isValid()) {
             Q_ASSERT(scope.isObject());
-            d.nospace() << " " << scope.objectValue();
+            d.nospace() << ' ' << scope.objectValue();
             scope = scope.scope();
         }
-        d.nospace() << "}";
+        d.nospace() << '}';
         break;
     }
 
-    d << ")";
+    d << ')';
     return d;
 }
 

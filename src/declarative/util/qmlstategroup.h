@@ -42,7 +42,7 @@
 #ifndef QMLSTATEGROUP_H
 #define QMLSTATEGROUP_H
 
-#include <qmlstate.h>
+#include <QtDeclarative/qmlstate.h>
 
 
 QT_BEGIN_HEADER
@@ -55,11 +55,11 @@ class QmlStateGroup : public QObject, public QmlParserStatus
 {
     Q_OBJECT
     Q_INTERFACES(QmlParserStatus)
-    Q_DECLARE_PRIVATE(QmlStateGroup);
+    Q_DECLARE_PRIVATE(QmlStateGroup)
 
-    Q_PROPERTY(QString state READ state WRITE setState NOTIFY stateChanged);
-    Q_PROPERTY(QmlList<QmlState *>* states READ statesProperty DESIGNABLE false);
-    Q_PROPERTY(QmlList<QmlTransition *>* transitions READ transitionsProperty DESIGNABLE false);
+    Q_PROPERTY(QString state READ state WRITE setState NOTIFY stateChanged)
+    Q_PROPERTY(QmlList<QmlState *>* states READ statesProperty DESIGNABLE false)
+    Q_PROPERTY(QmlList<QmlTransition *>* transitions READ transitionsProperty DESIGNABLE false)
 
 public:
     QmlStateGroup(QObject * = 0);
@@ -85,7 +85,7 @@ private:
     friend class QmlState;
     void updateAutoState();
 };
-QML_DECLARE_TYPE(QmlStateGroup);
+QML_DECLARE_TYPE(QmlStateGroup)
 
 #endif // QMLSTATEGROUP_H
 

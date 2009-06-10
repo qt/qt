@@ -42,10 +42,10 @@
 #ifndef QMLPARSER_P_H
 #define QMLPARSER_P_H
 
-#include <QByteArray>
-#include <QList>
+#include <QtCore/QByteArray>
+#include <QtCore/QList>
 #include <QtCore/qstring.h>
-#include <qml.h>
+#include <QtDeclarative/qml.h>
 #include <private/qmlrefcount_p.h>
 #include <private/qobject_p.h>
 
@@ -54,6 +54,8 @@ QT_BEGIN_HEADER
 QT_BEGIN_NAMESPACE
 
 QT_MODULE(Declarative)
+
+namespace JavaScript { namespace AST { class Node; } }
 
 /*
     XXX
@@ -129,7 +131,7 @@ namespace QmlParser
             DynamicProperty();
             DynamicProperty(const DynamicProperty &);
 
-            enum Type { Variant, Int, Bool, Real, String, Color, Date };
+            enum Type { Variant, Int, Bool, Real, String, Url, Color, Date };
 
             bool isDefaultProperty;
             Type type;
@@ -175,7 +177,8 @@ namespace QmlParser
         Variant(const Variant &);
         Variant(bool);
         Variant(double, const QString &asWritten=QString());
-        Variant(const QString &, Type = String);
+        Variant(const QString &);
+        Variant(const QString &, JavaScript::AST::Node *);
         Variant &operator=(const Variant &);
 
         Type type() const;
@@ -189,12 +192,14 @@ namespace QmlParser
         QString asString() const;
         double asNumber() const;
         QString asScript() const;
+        JavaScript::AST::Node *asAST() const;
 
     private:
         Type t;
         union {
             bool b;
             double d;
+            JavaScript::AST::Node *n;
         };
         QString s;
     };
@@ -247,6 +252,9 @@ namespace QmlParser
         Property(const QByteArray &n);
         virtual ~Property();
 
+        // The Object to which this property is attached
+        Object *parent;
+
         Object *getValue();
         void addValue(Value *v);
 
@@ -268,14 +276,16 @@ namespace QmlParser
         bool isDefault;
 
         LocationSpan location;
+        LocationRange listValueRange;
+        QList<int> listCommaPositions;
 
         void dump(int = 0) const;
     };
 }
-
-#endif // QMLPARSER_P_H
-
+Q_DECLARE_METATYPE(QmlParser::Variant)
 
 QT_END_NAMESPACE
 
 QT_END_HEADER
+
+#endif // QMLPARSER_P_H

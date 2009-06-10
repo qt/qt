@@ -52,6 +52,8 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Core)
 
+#ifndef QT_NO_STATEMACHINE
+
 class QEvent;
 class QAbstractState;
 class QState;
@@ -88,7 +90,7 @@ public:
 #endif
 
 protected:
-    virtual bool eventTest(QEvent *event) const = 0;
+    virtual bool eventTest(QEvent *event) = 0;
 
     virtual void onTransition(QEvent *event) = 0;
 
@@ -103,6 +105,8 @@ private:
     Q_DISABLE_COPY(QAbstractTransition)
     Q_DECLARE_PRIVATE(QAbstractTransition)
 };
+
+#endif //QT_NO_STATEMACHINE
 
 QT_END_NAMESPACE
 

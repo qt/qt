@@ -43,9 +43,9 @@
 #define QSIMPLECANVASFILTER_H
 
 #include <QtCore/qobject.h>
-#include <qfxglobal.h>
-#include <qsimplecanvasitem.h>
-#include <qsimplecanvas.h>
+#include <QtDeclarative/qfxglobal.h>
+#include <QtDeclarative/qsimplecanvasitem.h>
+#include <QtDeclarative/qsimplecanvas.h>
 
 
 QT_BEGIN_HEADER
@@ -70,7 +70,7 @@ public:
                  ChildrenAboveItem = 0x04,
                  All = 0x07 };
 
-    Q_PROPERTY(bool enabled READ enabled WRITE setEnabled NOTIFY enabledChanged);
+    Q_PROPERTY(bool enabled READ enabled WRITE setEnabled NOTIFY enabledChanged)
     bool enabled() const;
     void setEnabled(bool);
 

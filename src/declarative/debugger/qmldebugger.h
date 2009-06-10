@@ -61,7 +61,6 @@ class QmlPropertyView;
 class QmlWatches;
 class QmlObjectTree;
 class QmlContext;
-class QmlCanvasDebugger;
 class QSimpleCanvas;
 class QmlDebugger : public QWidget
 {
@@ -88,7 +87,6 @@ private:
     QTreeWidget *m_warnings;
     QTableView *m_watchTable;
     QmlWatches *m_watches;
-    QmlCanvasDebugger *m_canvas;
     QmlPropertyView *m_properties;
     QPlainTextEdit *m_text;
     QPointer<QObject> m_object;

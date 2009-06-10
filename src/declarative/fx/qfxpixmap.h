@@ -42,10 +42,10 @@
 #ifndef QFXPIXMAP_H
 #define QFXPIXMAP_H
 
-#include <QString>
-#include <qsimplecanvas.h>
-#include <qfxglobal.h>
-#include <QPixmap>
+#include <QtCore/QString>
+#include <QtGui/QPixmap>
+#include <QtDeclarative/qsimplecanvas.h>
+#include <QtDeclarative/qfxglobal.h>
 
 
 QT_BEGIN_HEADER
@@ -71,16 +71,10 @@ public:
 
     bool isNull() const;
 
-    bool opaque() const;
-    void setOpaque(bool);
-
     int width() const;
     int height() const;
 
-    QPixmap pixmap() const;
-    void setPixmap(const QPixmap &pix);
-
-    operator const QSimpleCanvasConfig::Image &() const;
+    operator const QPixmap &() const;
 
 private:
     QFxPixmapPrivate *d;

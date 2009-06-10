@@ -92,20 +92,6 @@ Q_INLINE_TEMPLATE bool QBasicAtomicPointer<T>::testAndSetOrdered(T *expectedValu
     return false;
 }
 
-template <typename T>
-Q_INLINE_TEMPLATE T *QBasicAtomicPointer<T>::fetchAndStoreRelaxed(T *newValue)
-{
-    T *currentValue = _q_value;
-    _q_value = newValue;
-    return currentValue;
-}
-
-template <typename T>
-Q_INLINE_TEMPLATE bool QBasicAtomicPointer<T>::testAndSetRelaxed(T *expectedValue, T *newValue)
-{
-    return testAndSetOrdered(expectedValue, newValue);
-}
-
 QT_END_NAMESPACE
 
 QT_END_HEADER

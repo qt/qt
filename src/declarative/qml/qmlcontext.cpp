@@ -73,8 +73,6 @@ void QmlContextPrivate::dump(int depth)
 
 void QmlContextPrivate::destroyed(QObject *obj)
 {
-    Q_Q(QmlContext);
-
     defaultObjects.removeAll(obj);
 
     QVariant variantObject = QVariant::fromValue(obj);
@@ -149,7 +147,7 @@ void QmlContextPrivate::addDefaultObject(QObject *object, Priority priority)
     QmlContext context(engine.rootContext());
     context.setContextProperty("myModel", modelData);
 
-    QmlComponent component("ListView { model=myModel }");
+    QmlComponent component(&engine, "ListView { model=myModel }");
     component.create(&context);
     \endcode
 
@@ -176,7 +174,7 @@ void QmlContextPrivate::addDefaultObject(QObject *object, Priority priority)
     QmlContext context(engine.rootContext());
     context.addDefaultObject(&myDataSet);
 
-    QmlComponent component("ListView { model=myModel }");
+    QmlComponent component(&engine, "ListView { model=myModel }");
     component.create(&context);
     \endcode
 

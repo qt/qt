@@ -40,11 +40,6 @@
 ****************************************************************************/
 
 #include <QtGui>
-#ifdef QT_STATEMACHINE_SOLUTION
-#include <qstate.h>
-#include <qstatemachine.h>
-#include <qfinalstate.h>
-#endif
 
 //! [0]
 class LightWidget : public QWidget

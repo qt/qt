@@ -92,6 +92,8 @@ public:
     QSimpleCanvasItem::Flip flip:2;
     bool dirty:1;
     bool transformValid:1;
+    bool doNotPaint:1;
+    bool doNotPaintChildren:1;
 
     qreal x;
     qreal y;
@@ -100,6 +102,7 @@ public:
 
     QSimpleCanvas::Matrix *transformUser;
     QSimpleCanvas::Matrix transformActive;
+    int transformVersion;
 
     float activeOpacity;
 
@@ -130,7 +133,7 @@ class QSimpleCanvasFilter;
 class QGraphicsQSimpleCanvasItem;
 class QSimpleCanvasItemPrivate : public QObjectPrivate
 {
-    Q_DECLARE_PUBLIC(QSimpleCanvasItem);
+    Q_DECLARE_PUBLIC(QSimpleCanvasItem)
 public:
     QSimpleCanvasItemPrivate()
     : parent(0), canvas(0), debuggerStatus(0), filter(0),
@@ -139,7 +142,7 @@ public:
       focusable(false), wantsActiveFocusPanelPendingCanvas(false),
       hasBeenActiveFocusPanel(false),
       hasFocus(false), hasActiveFocus(false), needsZOrder(false), 
-      widthValid(false), heightValid(false), width(0), height(0), scale(1), 
+      widthValid(false), heightValid(false), width(0), height(0), paintmargin(0), scale(1), 
       graphicsItem(0), data_ptr(0)
     {
     }
@@ -158,7 +161,7 @@ public:
 
     QSimpleCanvasItem::ClipType clip:3;
     QSimpleCanvasItem::TransformOrigin origin:4;
-    int options:9;
+    int options:10;
     bool focusable:1;
     bool wantsActiveFocusPanelPendingCanvas:1;
     bool hasBeenActiveFocusPanel:1;
@@ -173,6 +176,7 @@ public:
 
     qreal width;
     qreal height;
+    qreal paintmargin;
     qreal scale;
 
     QSimpleGraphicsItem *graphicsItem;
@@ -214,9 +218,11 @@ public:
 #endif
         float opacity;
         bool forceParamRefresh;
+
+        QSimpleCanvasItem::GLPainter *painter;
     };
 #if defined(QFX_RENDER_OPENGL2)
-    QRectF setupPainting(int version, const QRect &bounding);
+    QRectF setupPainting(int version, int &z, QSimpleCanvasItem **);
 #elif defined(QFX_RENDER_OPENGL1)
     QRectF setupPainting(int version, const QRect &bounding, unsigned int *zero);
 #endif
@@ -235,8 +241,9 @@ public:
 
 #endif
 
+    QSimpleCanvasItem *nextOpaque;
+
     void zOrderChildren();
-    static int nextTransformVersion;
     bool freshenNeeded() const;
     void doFreshenTransforms() const;
 
@@ -247,16 +254,16 @@ public:
                                InRealm = 0x02, 
                                InActiveFocusedRealm = 0x04
     };
-    Q_DECLARE_FLAGS(FocusStateCheckDatas, FocusStateCheckData);
+    Q_DECLARE_FLAGS(FocusStateCheckDatas, FocusStateCheckData)
     enum FocusStateCheckRData { NoCheckRData = 0x00, 
                                 SeenFocus = 0x01, 
                                 SeenActiveFocus = 0x02 };
-    Q_DECLARE_FLAGS(FocusStateCheckRDatas, FocusStateCheckRData);
+    Q_DECLARE_FLAGS(FocusStateCheckRDatas, FocusStateCheckRData)
     bool checkFocusState(FocusStateCheckDatas, FocusStateCheckRDatas *);
 };
 
-Q_DECLARE_OPERATORS_FOR_FLAGS(QSimpleCanvasItemPrivate::FocusStateCheckDatas);
-Q_DECLARE_OPERATORS_FOR_FLAGS(QSimpleCanvasItemPrivate::FocusStateCheckRDatas);
+Q_DECLARE_OPERATORS_FOR_FLAGS(QSimpleCanvasItemPrivate::FocusStateCheckDatas)
+Q_DECLARE_OPERATORS_FOR_FLAGS(QSimpleCanvasItemPrivate::FocusStateCheckRDatas)
 
 #endif // QSIMPLECANVASITEM_P_H
 

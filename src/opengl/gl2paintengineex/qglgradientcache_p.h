@@ -52,9 +52,11 @@
 
 #include <QMultiHash>
 #include <QObject>
-#include <QtOpenGL>
+#include <QtOpenGL/QtOpenGL>
 
-class QGLGradientCache : public QObject
+QT_BEGIN_NAMESPACE
+
+class QGL2GradientCache : public QObject
 {
     Q_OBJECT
     struct CacheInfo
@@ -71,7 +73,7 @@ class QGLGradientCache : public QObject
     typedef QMultiHash<quint64, CacheInfo> QGLGradientColorTableHash;
 
 public:
-    QGLGradientCache() : QObject(), buffer_ctx(0)
+    QGL2GradientCache() : QObject(), buffer_ctx(0)
     {
 /*
         connect(QGLSignalProxy::instance(),
@@ -104,5 +106,5 @@ public slots:
     }
 };
 
-
+QT_END_NAMESPACE
 

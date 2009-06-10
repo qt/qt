@@ -56,7 +56,7 @@ QmlPropertyView::QmlPropertyView(QmlWatches *watches, QWidget *parent)
     setLayout(layout);
 
     m_tree = new QTreeWidget(this);
-    m_tree->setHeaderLabels(QStringList() << "Property" << "Value");
+    m_tree->setHeaderLabels(QStringList() << tr("Property") << tr("Value"));
     QObject::connect(m_tree, SIGNAL(itemDoubleClicked(QTreeWidgetItem *, int)),
                      this, SLOT(itemDoubleClicked(QTreeWidgetItem *)));
     QObject::connect(m_tree, SIGNAL(itemClicked(QTreeWidgetItem *, int)),
@@ -210,7 +210,7 @@ void QmlPropertyView::setObject(QObject *object)
             ++iter) {
 
         QTreeWidgetItem *item = new QTreeWidgetItem(m_tree);
-        item->setText(0, iter.key());
+        item->setText(0, QString::fromAscii(iter.key()));
         item->setForeground(0, Qt::blue);
         item->setText(1, iter.value());
     }

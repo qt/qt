@@ -162,7 +162,7 @@ public:
     void data_insert(int, QObject *);
     QObject *data_at(int) const;
     void data_clear();
-    QML_DECLARE_LIST_PROXY(QFxFlickablePrivate, QObject *, data);
+    QML_DECLARE_LIST_PROXY(QFxFlickablePrivate, QObject *, data)
 };
 
 QT_END_NAMESPACE

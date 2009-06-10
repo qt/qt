@@ -239,9 +239,11 @@ void QVistaBackButton::paintEvent(QPaintEvent *)
 QVistaHelper::QVistaHelper(QWizard *wizard)
     : pressed(false)
     , wizard(wizard)
+    , backButton_(0)
 {
     is_vista = resolveSymbols();
-    backButton_ = new QVistaBackButton(wizard);
+    if (is_vista)
+        backButton_ = new QVistaBackButton(wizard);
 }
 
 QVistaHelper::~QVistaHelper()
@@ -310,6 +312,7 @@ void QVistaHelper::drawTitleBar(QPainter *painter)
             QRect(0, 0, wizard->width(), titleBarSize() + topOffset()),
             painter->paintEngine()->getDC());
 
+    Q_ASSERT(backButton_);
     const int btnTop = backButton_->mapToParent(QPoint()).y();
     const int btnHeight = backButton_->size().height();
     const int verticalCenter = (btnTop + btnHeight / 2);

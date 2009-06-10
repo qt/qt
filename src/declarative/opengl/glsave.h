@@ -42,9 +42,9 @@
 #ifndef _GLSAVE_H_
 #define _GLSAVE_H_
 
-#include <qglobal.h>
-#include <qfxglobal.h>
-#include <QRect>
+#include <QtCore/qglobal.h>
+#include <QtDeclarative/qfxglobal.h>
+#include <QtCore/QRect>
 #include "glheaders.h"
 
 
@@ -67,7 +67,7 @@ public:
     }
 
 private:
-    Q_DISABLE_COPY(GLSaveViewport);
+    Q_DISABLE_COPY(GLSaveViewport)
     GLint viewport[4];
 };
 
@@ -100,7 +100,7 @@ public:
     }
 
 private:
-    Q_DISABLE_COPY(GLSaveScissor);
+    Q_DISABLE_COPY(GLSaveScissor)
     GLint box[4];
     GLboolean enabled;
 };

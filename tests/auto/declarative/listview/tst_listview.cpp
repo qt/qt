@@ -169,7 +169,7 @@ tst_QFxListView::tst_QFxListView()
 template <class T>
 void tst_QFxListView::items()
 {
-    QFxView *canvas = createView(SRCDIR "/data/listview.xml");
+    QFxView *canvas = createView(SRCDIR "/data/listview.qml");
 
     T model;
     model.addItem("Fred", "12345");
@@ -205,7 +205,7 @@ void tst_QFxListView::items()
 template <class T>
 void tst_QFxListView::changed()
 {
-    QFxView *canvas = createView(SRCDIR "/data/listview.xml");
+    QFxView *canvas = createView(SRCDIR "/data/listview.qml");
 
     T model;
     model.addItem("Fred", "12345");
@@ -238,7 +238,7 @@ void tst_QFxListView::changed()
 template <class T>
 void tst_QFxListView::inserted()
 {
-    QFxView *canvas = createView(SRCDIR "/data/listview.xml");
+    QFxView *canvas = createView(SRCDIR "/data/listview.qml");
 
     T model;
     model.addItem("Fred", "12345");
@@ -305,7 +305,7 @@ void tst_QFxListView::inserted()
 template <class T>
 void tst_QFxListView::removed()
 {
-    QFxView *canvas = createView(SRCDIR "/data/listview.xml");
+    QFxView *canvas = createView(SRCDIR "/data/listview.qml");
 
     T model;
     for (int i = 0; i < 30; i++)
@@ -445,8 +445,8 @@ QFxView *tst_QFxListView::createView(const QString &filename)
 
     QFile file(filename);
     file.open(QFile::ReadOnly);
-    QString xml = file.readAll();
-    canvas->setQml(xml, filename);
+    QString qml = file.readAll();
+    canvas->setQml(qml, filename);
 
     return canvas;
 }
@@ -459,8 +459,10 @@ template<typename T>
 T *tst_QFxListView::findItem(QFxItem *parent, const QString &id, int index)
 {
     const QMetaObject &mo = T::staticMetaObject;
+    qDebug() << parent->children()->count() << "children";
     for (int i = 0; i < parent->children()->count(); ++i) {
         QFxItem *item = parent->children()->at(i);
+        qDebug() << "try" << item;
         if (mo.cast(item) && (id.isEmpty() || item->id() == id)) {
             if (index != -1) {
                 QmlExpression e(qmlContext(item), "index", item);

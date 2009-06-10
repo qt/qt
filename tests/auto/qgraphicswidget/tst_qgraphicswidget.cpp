@@ -51,6 +51,7 @@
 #include <qlineedit.h>
 #include <qboxlayout.h>
 #include <qaction.h>
+#include <qwidgetaction.h>
 #include "../../shared/util.h"
 
 
@@ -149,9 +150,11 @@ private slots:
     void defaultSize();
     void explicitMouseGrabber();
     void implicitMouseGrabber();
+    void doubleClickAfterExplicitMouseGrab();
     void popupMouseGrabber();
     void windowFlags_data();
     void windowFlags();
+    void shortcutsDeletion();
 
     // Task fixes
     void task236127_bspTreeIndexFails();
@@ -1998,6 +2001,104 @@ void tst_QGraphicsWidget::implicitMouseGrabber()
     QCOMPARE(scene.mouseGrabberItem(), (QGraphicsItem *)0);
 }
 
+class GrabOnPressItem : public QGraphicsRectItem
+{
+public:
+    GrabOnPressItem(const QRectF &rect)
+        : QGraphicsRectItem(rect),
+          npress(0), nrelease(0), ndoubleClick(0),
+          ngrab(0), nungrab(0)
+    {
+    }
+    int npress;
+    int nrelease;
+    int ndoubleClick;
+    int ngrab;
+    int nungrab;
+protected:
+    bool sceneEvent(QEvent *event)
+    {
+        switch (event->type()) {
+        case QEvent::GrabMouse:
+            ++ngrab;
+            break;
+        case QEvent::UngrabMouse:
+            ++nungrab;
+            break;
+        default:
+            break;
+        }
+        return QGraphicsRectItem::sceneEvent(event);
+    }
+
+    void mousePressEvent(QGraphicsSceneMouseEvent *)
+    {
+        grabMouse();
+        ++npress;
+    }
+    void mouseReleaseEvent(QGraphicsSceneMouseEvent *)
+    {
+        ungrabMouse();
+        ++nrelease;
+    }
+    void mouseDoubleClickEvent(QGraphicsSceneMouseEvent *)
+    {
+        ++ndoubleClick;
+    }
+};
+
+void tst_QGraphicsWidget::doubleClickAfterExplicitMouseGrab()
+{
+    QGraphicsScene scene;
+    GrabOnPressItem *item = new GrabOnPressItem(QRectF(0, 0, 100, 100));
+    scene.addItem(item);
+
+    {
+        QGraphicsSceneMouseEvent event(QEvent::GraphicsSceneMousePress);
+        event.setButton(Qt::LeftButton);
+        event.setButtons(Qt::LeftButton);
+        event.ignore();
+        event.setScenePos(QPointF(50, 50));
+        qApp->sendEvent(&scene, &event);
+    }
+    QCOMPARE(scene.mouseGrabberItem(), (QGraphicsItem *)item);
+    QCOMPARE(item->npress, 1);
+    QCOMPARE(item->ngrab, 1);
+    {
+        QGraphicsSceneMouseEvent event(QEvent::GraphicsSceneMouseRelease);
+        event.setButton(Qt::LeftButton);
+        event.setButtons(0);
+        event.ignore();
+        event.setScenePos(QPointF(50, 50));
+        qApp->sendEvent(&scene, &event);
+    }
+    QCOMPARE(scene.mouseGrabberItem(), (QGraphicsItem *)0);
+    QCOMPARE(item->nrelease, 1);
+    QCOMPARE(item->nungrab, 1);
+    {
+        QGraphicsSceneMouseEvent event(QEvent::GraphicsSceneMouseDoubleClick);
+        event.setButton(Qt::LeftButton);
+        event.setButtons(Qt::LeftButton);
+        event.ignore();
+        event.setScenePos(QPointF(50, 50));
+        qApp->sendEvent(&scene, &event);
+    }
+    QCOMPARE(scene.mouseGrabberItem(), (QGraphicsItem *)item);
+    QCOMPARE(item->ndoubleClick, 1);
+    QCOMPARE(item->ngrab, 2);
+    {
+        QGraphicsSceneMouseEvent event(QEvent::GraphicsSceneMouseRelease);
+        event.setButton(Qt::LeftButton);
+        event.setButtons(0);
+        event.ignore();
+        event.setScenePos(QPointF(50, 50));
+        qApp->sendEvent(&scene, &event);
+    }
+    QCOMPARE(scene.mouseGrabberItem(), (QGraphicsItem *)0);
+    QCOMPARE(item->nrelease, 2);
+    QCOMPARE(item->nungrab, 2);
+}
+
 void tst_QGraphicsWidget::popupMouseGrabber()
 {
     QGraphicsScene scene;
@@ -2165,6 +2266,20 @@ void tst_QGraphicsWidget::windowFlags()
     QGraphicsWidget window(0, Qt::Window);
     widget5->setParentItem(&window);
     QCOMPARE(widget5->windowFlags(), Qt::WindowFlags(outputFlags));
+}
+
+void tst_QGraphicsWidget::shortcutsDeletion()
+{
+    QGraphicsWidget *widget = new QGraphicsWidget;
+    QGraphicsWidget *widget2 = new QGraphicsWidget;
+    widget->setMinimumSize(40, 40);
+    QWidgetAction *del = new QWidgetAction(widget);
+    del->setIcon(QIcon("edit-delete"));
+    del->setShortcut(Qt::Key_Delete);
+    del->setShortcutContext(Qt::WidgetShortcut);
+    widget2->addAction(del);
+    widget2->addAction(del);
+    delete widget;
 }
 
 class ProxyStyle : public QCommonStyle

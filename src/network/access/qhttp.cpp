@@ -64,9 +64,9 @@
 # include "qtimer.h"
 #endif
 
-QT_BEGIN_NAMESPACE
-
 #ifndef QT_NO_HTTP
+
+QT_BEGIN_NAMESPACE
 
 class QHttpNormalRequest;
 class QHttpRequest
@@ -950,7 +950,7 @@ void QHttpHeader::setContentLength(int len)
 }
 
 /*!
-    Returns true if the header has an entry for the the special HTTP
+    Returns true if the header has an entry for the special HTTP
     header field \c content-type; otherwise returns false.
 
     \sa contentType() setContentType()
@@ -1446,7 +1446,7 @@ QString QHttpRequestHeader::toString() const
     that indicates if the request finished with an error.
 
     To make an HTTP request you must set up suitable HTTP headers. The
-    following example demonstrates, how to request the main HTML page
+    following example demonstrates how to request the main HTML page
     from the Trolltech home page (i.e., the URL
     \c http://qtsoftware.com/index.html):
 

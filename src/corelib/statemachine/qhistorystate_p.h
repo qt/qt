@@ -53,7 +53,7 @@
 // We mean it.
 //
 
-#include "qabstractstate_p.h"
+#include "private/qabstractstate_p.h"
 
 #include <QtCore/qlist.h>
 
@@ -68,7 +68,6 @@ public:
     QHistoryStatePrivate();
 
     static QHistoryStatePrivate *get(QHistoryState *q);
-    static const QHistoryStatePrivate *get(const QHistoryState *q);
 
     QAbstractState *defaultState;
     QHistoryState::HistoryType historyType;

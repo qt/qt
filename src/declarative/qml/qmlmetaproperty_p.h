@@ -54,7 +54,7 @@ public:
     QmlMetaPropertyPrivate(const QmlMetaPropertyPrivate &other)
         : name(other.name), signal(other.signal), context(other.context), 
           coreIdx(other.coreIdx), type(other.type), attachedFunc(other.attachedFunc), 
-          object(other.object), prop(other.prop), propType(other.propType),
+          object(other.object), propType(other.propType),
           category(other.category) {}
 
     QString name;
@@ -64,7 +64,6 @@ public:
     uint type;
     int attachedFunc;
     QObject *object;
-    QMetaProperty prop;
     int propType;
 
     mutable QmlMetaProperty::PropertyCategory category;

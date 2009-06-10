@@ -42,7 +42,7 @@
 #ifndef QMLBOUNDSIGNAL_P_H
 #define QMLBOUNDSIGNAL_P_H
 
-#include <qmlexpression.h>
+#include <QtDeclarative/qmlexpression.h>
 #include <private/qobject_p.h>
 
 QT_BEGIN_NAMESPACE

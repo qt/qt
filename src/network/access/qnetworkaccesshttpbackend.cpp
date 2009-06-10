@@ -212,6 +212,7 @@ QNetworkAccessHttpBackendFactory::create(QNetworkAccessManager::Operation op,
     case QNetworkAccessManager::PostOperation:
     case QNetworkAccessManager::HeadOperation:
     case QNetworkAccessManager::PutOperation:
+    case QNetworkAccessManager::DeleteOperation:
         break;
 
     default:
@@ -242,6 +243,10 @@ static QNetworkReply::NetworkError statusCodeFromHttp(int httpStatusCode, const 
 
     case 404:               // Not Found
         code = QNetworkReply::ContentNotFoundError;
+        break;
+
+    case 405:               // Method Not Allowed
+        code = QNetworkReply::ContentOperationNotPermittedError;
         break;
 
     case 407:
@@ -284,37 +289,6 @@ public:
 #endif
         delete this;
     }
-};
-
-class QNetworkAccessHttpBackendIODevice: public QIODevice
-{
-    // Q_OBJECT
-public:
-    bool eof;
-    QNetworkAccessHttpBackendIODevice(QNetworkAccessHttpBackend *parent)
-        : QIODevice(parent), eof(false)
-    {
-        setOpenMode(ReadOnly);
-    }
-    bool isSequential() const { return true; }
-    qint64 bytesAvailable() const
-    { return static_cast<QNetworkAccessHttpBackend *>(parent())->upstreamBytesAvailable(); }
-
-protected:
-    virtual qint64 readData(char *buffer, qint64 maxlen)
-    {
-        qint64 ret = static_cast<QNetworkAccessHttpBackend *>(parent())->deviceReadData(buffer, maxlen);
-        if (!ret && eof)
-            return -1;
-        return ret;
-    }
-
-    virtual qint64 writeData(const char *, qint64)
-    {
-        return -1;              // cannot write
-    }
-
-    friend class QNetworkAccessHttpBackend;
 };
 
 QNetworkAccessHttpBackend::QNetworkAccessHttpBackend()
@@ -507,20 +481,24 @@ void QNetworkAccessHttpBackend::postRequest()
     case QNetworkAccessManager::PostOperation:
         invalidateCache();
         httpRequest.setOperation(QHttpNetworkRequest::Post);
-        uploadDevice = new QNetworkAccessHttpBackendIODevice(this);
+        httpRequest.setUploadByteDevice(createUploadByteDevice());
         break;
 
     case QNetworkAccessManager::PutOperation:
         invalidateCache();
         httpRequest.setOperation(QHttpNetworkRequest::Put);
-        uploadDevice = new QNetworkAccessHttpBackendIODevice(this);
+        httpRequest.setUploadByteDevice(createUploadByteDevice());
+        break;
+
+    case QNetworkAccessManager::DeleteOperation:
+        invalidateCache();
+        httpRequest.setOperation(QHttpNetworkRequest::Delete);
         break;
 
     default:
         break;                  // can't happen
     }
 
-    httpRequest.setData(uploadDevice);
     httpRequest.setUrl(url());
 
     QList<QByteArray> headers = request().rawHeaderList();
@@ -528,7 +506,9 @@ void QNetworkAccessHttpBackend::postRequest()
         httpRequest.setHeaderField(header, request().rawHeader(header));
 
     if (loadedFromCache) {
-        QNetworkAccessBackend::finished();
+        // commented this out since it will be called later anyway
+        // by copyFinished()
+        //QNetworkAccessBackend::finished();
         return;    // no need to send the request! :)
     }
 
@@ -624,14 +604,6 @@ void QNetworkAccessHttpBackend::closeDownstreamChannel()
     // this indicates that the user closed the stream while the reply isn't finished yet
 }
 
-void QNetworkAccessHttpBackend::closeUpstreamChannel()
-{
-    // this indicates that the user finished uploading the data for POST
-    Q_ASSERT(uploadDevice);
-    uploadDevice->eof = true;
-    emit uploadDevice->readChannelFinished();
-}
-
 bool QNetworkAccessHttpBackend::waitForDownstreamReadyRead(int msecs)
 {
     Q_ASSERT(http);
@@ -651,38 +623,6 @@ bool QNetworkAccessHttpBackend::waitForDownstreamReadyRead(int msecs)
     return false;
 }
 
-bool QNetworkAccessHttpBackend::waitForUpstreamBytesWritten(int msecs)
-{
-
-    // ### FIXME: not implemented in QHttpNetworkAccess
-    Q_UNUSED(msecs);
-    qCritical("QNetworkAccess: HTTP backend does not support waitForBytesWritten()");
-    return false;
-}
-
-void QNetworkAccessHttpBackend::upstreamReadyRead()
-{
-    // There is more data available from the user to be uploaded
-    // QHttpNetworkAccess implements the upload rate control:
-    //  we simply tell QHttpNetworkAccess that there is more data available
-    //  it'll pull from us when it can (through uploadDevice)
-
-    Q_ASSERT(uploadDevice);
-    emit uploadDevice->readyRead();
-}
-
-qint64 QNetworkAccessHttpBackend::deviceReadData(char *buffer, qint64 maxlen)
-{
-    QByteArray toBeUploaded = readUpstream();
-    if (toBeUploaded.isEmpty())
-        return 0;               // nothing to be uploaded
-
-    maxlen = qMin<qint64>(maxlen, toBeUploaded.length());
-
-    memcpy(buffer, toBeUploaded.constData(), maxlen);
-    upstreamBytesConsumed(maxlen);
-    return maxlen;
-}
 
 void QNetworkAccessHttpBackend::downstreamReadyWrite()
 {
@@ -904,7 +844,14 @@ bool QNetworkAccessHttpBackend::sendCacheContents(const QNetworkCacheMetaData &m
 
     checkForRedirect(status);
 
-    writeDownstreamData(contents);
+    emit metaDataChanged();
+
+    // invoke this asynchronously, else Arora/QtDemoBrowser don't like cached downloads
+    // see task 250221 / 251801
+    qRegisterMetaType<QIODevice*>("QIODevice*");
+    QMetaObject::invokeMethod(this, "writeDownstreamData", Qt::QueuedConnection, Q_ARG(QIODevice*, contents));
+
+
 #if defined(QNETWORKACCESSHTTPBACKEND_DEBUG)
     qDebug() << "Successfully sent cache:" << url() << contents->size() << "bytes";
 #endif
@@ -1036,21 +983,39 @@ QNetworkCacheMetaData QNetworkAccessHttpBackend::fetchCacheMetaData(const QNetwo
     if (it != cacheHeaders.rawHeaders.constEnd())
         metaData.setLastModified(QNetworkHeadersPrivate::fromHttpDate(it->second));
 
-    bool canDiskCache = true; // Everything defaults to being cacheable on disk
+    bool canDiskCache;
+    // only cache GET replies by default, all other replies (POST, PUT, DELETE)
+    //  are not cacheable by default (according to RFC 2616 section 9)
+    if (httpReply->request().operation() == QHttpNetworkRequest::Get) {
 
-    // 14.32
-    // HTTP/1.1 caches SHOULD treat "Pragma: no-cache" as if the client
-    // had sent "Cache-Control: no-cache".
-    it = cacheHeaders.findRawHeader("pragma");
-    if (it != cacheHeaders.rawHeaders.constEnd()
-        && it->second == "no-cache")
-        canDiskCache = false;
+        canDiskCache = true;
+        // 14.32
+        // HTTP/1.1 caches SHOULD treat "Pragma: no-cache" as if the client
+        // had sent "Cache-Control: no-cache".
+        it = cacheHeaders.findRawHeader("pragma");
+        if (it != cacheHeaders.rawHeaders.constEnd()
+            && it->second == "no-cache")
+            canDiskCache = false;
 
-    // HTTP/1.1. Check the Cache-Control header
-    if (cacheControl.contains("no-cache"))
+        // HTTP/1.1. Check the Cache-Control header
+        if (cacheControl.contains("no-cache"))
+            canDiskCache = false;
+        else if (cacheControl.contains("no-store"))
+            canDiskCache = false;
+
+    // responses to POST might be cacheable
+    } else if (httpReply->request().operation() == QHttpNetworkRequest::Post) {
+
         canDiskCache = false;
-    else if (cacheControl.contains("no-store"))
+        // some pages contain "expires:" and "cache-control: no-cache" field,
+        // so we only might cache POST requests if we get "cache-control: max-age ..."
+        if (cacheControl.contains("max-age"))
+            canDiskCache = true;
+
+    // responses to PUT and DELETE are not cacheable
+    } else {
         canDiskCache = false;
+    }
 
     metaData.setSaveToDisk(canDiskCache);
     int statusCode = httpReply->statusCode();

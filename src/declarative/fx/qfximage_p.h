@@ -72,9 +72,9 @@ class QFxImagePrivate : public QFxItemPrivate
 
 public:
     QFxImagePrivate()
-      : _scaleGrid(0), _tiled(false), _smooth(false), _opaque(false),
+      : scaleGrid(0), tiled(false), smooth(false), opaque(false),
 #if defined(QFX_RENDER_OPENGL)
-        _texDirty(true),
+        texDirty(true), tex(0),
 #endif
         status(QFxImage::Idle), sciReply(0), progress(0.0)
     {
@@ -82,31 +82,30 @@ public:
 
     ~QFxImagePrivate() 
     {
-        delete _scaleGrid;
+        delete scaleGrid;
     }
 
     void setContent(QIODevice* dev, const QString &url);
 
-    QFxScaleGrid *scaleGrid()
+    QFxScaleGrid *getScaleGrid()
     {
-        if (!_scaleGrid) 
-            _scaleGrid = new QFxScaleGrid;
-        return _scaleGrid;
+        if (!scaleGrid) 
+            scaleGrid = new QFxScaleGrid;
+        return scaleGrid;
     }
             
-    QFxScaleGrid *_scaleGrid;
-    QFxPixmap _pix;
-    bool _tiled : 1;
-    bool _smooth : 1;
-    bool _opaque : 1;
+    QFxScaleGrid *scaleGrid;
+    QPixmap pix;
+    bool tiled : 1;
+    bool smooth : 1;
+    bool opaque : 1;
 #if defined(QFX_RENDER_OPENGL)
+    bool texDirty : 1;
     void checkDirty();
-    bool _texDirty;
-    GLTexture _tex;
+    QSimpleCanvasItem::CachedTexture *tex;
 #endif
 
     QFxImage::Status status;
-    QString source;
     QUrl url;
     QUrl sciurl;
     QNetworkReply *sciReply;

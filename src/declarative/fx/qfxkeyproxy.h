@@ -42,7 +42,7 @@
 #ifndef QFXKEYPROXY_H
 #define QFXKEYPROXY_H
 
-#include <qfxitem.h>
+#include <QtDeclarative/qfxitem.h>
 
 QT_BEGIN_HEADER
 
@@ -69,7 +69,7 @@ private:
     QFxKeyProxyPrivate *d;
 };
 
-QML_DECLARE_TYPE(QFxKeyProxy);
+QML_DECLARE_TYPE(QFxKeyProxy)
 
 QT_END_NAMESPACE
 

@@ -145,7 +145,7 @@ static int qtkeyForMacSymbol(const QChar ch)
 #else
 static bool qt_sequence_no_mnemonics = false;
 #endif
-void Q_GUI_EXPORT qt_set_sequence_auto_mnemonic(bool b) { qt_sequence_no_mnemonics = !b; }
+void Q_AUTOTEST_EXPORT qt_set_sequence_auto_mnemonic(bool b) { qt_sequence_no_mnemonics = !b; }
 
 /*!
     \class QKeySequence
@@ -652,8 +652,6 @@ const uint QKeySequencePrivate::numberOfKeyBindings = sizeof(QKeySequencePrivate
 
     This enum represent standard key bindings. They can be used to
     assign platform dependent keyboard shortcuts to a QAction.
-    QKeyEvent also provides the function  QKeyEvent::standardKey() to
-    query if it matches an existing key binding.
 
     Note that the key bindings are platform dependent. The currently
     bound shortcuts can be queried using keyBindings().

@@ -799,7 +799,7 @@ int QAccessibleSlider::defaultAction(int /*child*/) const
 /*! \internal */
 QString QAccessibleSlider::actionText(int /*action*/, Text /*t*/, int /*child*/) const
 {
-    return QString(QLatin1String(""));
+    return QLatin1String("");
 }
 
 QAccessibleAbstractSlider::QAccessibleAbstractSlider(QWidget *w, Role r)

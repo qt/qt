@@ -101,6 +101,9 @@ public:
         requestedIndex = -1;
         return item;
     }
+    void releaseItem(QFxItem *item) {
+        model->release(item);
+    }
 
     bool isValid() const {
         return model && model->count() > 0 && model->delegate() && path;

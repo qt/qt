@@ -42,9 +42,9 @@
 #ifndef QMLTIMELINE_H
 #define QMLTIMELINE_H
 
-#include <QObject>
-#include <qfxglobal.h>
-#include <QAbstractAnimation>
+#include <QtCore/QObject>
+#include <QtCore/QAbstractAnimation>
+#include <QtDeclarative/qfxglobal.h>
 
 QT_BEGIN_HEADER
 

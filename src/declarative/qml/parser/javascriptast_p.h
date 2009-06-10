@@ -61,8 +61,6 @@ QT_BEGIN_NAMESPACE
 #define JAVASCRIPT_DECLARE_AST_NODE(name) \
   enum { K = Kind_##name };
 
-class NameId;
-
 namespace QSOperator // ### rename
 {
 
@@ -106,7 +104,9 @@ enum Op {
 
 } // namespace QSOperator
 
-namespace JavaScript { namespace AST {
+namespace JavaScript { 
+class NameId;
+namespace AST {
 
 template <typename _T1, typename _T2>
 _T1 cast(_T2 *ast)
@@ -207,6 +207,7 @@ public:
         Kind_UiObjectDefinition,
         Kind_UiObjectInitializer,
         Kind_UiObjectMemberList,
+        Kind_UiArrayMemberList,
         Kind_UiProgram,
         Kind_UiPublicMember,
         Kind_UiQualifiedId,
@@ -398,8 +399,30 @@ class NumericLiteral: public ExpressionNode
 public:
     JAVASCRIPT_DECLARE_AST_NODE(NumericLiteral)
 
-    NumericLiteral(double v):
-        value (v) { kind = K; }
+    enum Suffix { // ### keep it in sync with the Suffix enum in javascriptlexer_p.h
+        noSuffix,
+        emSuffix,
+        exSuffix,
+        pxSuffix,
+        cmSuffix,
+        mmSuffix,
+        inSuffix,
+        ptSuffix,
+        pcSuffix,
+        degSuffix,
+        radSuffix,
+        gradSuffix,
+        msSuffix,
+        sSuffix,
+        hzSuffix,
+        khzSuffix
+    };
+
+    static int suffixLength[];
+    static const char *const suffixSpell[];
+
+    NumericLiteral(double v, int suffix):
+        value(v), suffix(suffix) { kind = K; }
     virtual ~NumericLiteral() {}
 
     virtual void accept0(Visitor *visitor);
@@ -412,6 +435,7 @@ public:
 
 // attributes:
     double value;
+    int suffix;
     SourceLocation literalToken;
 };
 
@@ -2278,6 +2302,38 @@ public:
     UiObjectMember *member;
 };
 
+class UiArrayMemberList: public Node
+{
+public:
+    JAVASCRIPT_DECLARE_AST_NODE(UiArrayMemberList)
+
+    UiArrayMemberList(UiObjectMember *member)
+        : next(this), member(member)
+    { kind = K; }
+
+    UiArrayMemberList(UiArrayMemberList *previous, UiObjectMember *member)
+        : member(member)
+    {
+        kind = K;
+        next = previous->next;
+        previous->next = this;
+    }
+
+    virtual void accept0(Visitor *visitor);
+
+    UiArrayMemberList *finish()
+    {
+        UiArrayMemberList *head = next;
+        next = 0;
+        return head;
+    }
+
+// attributes
+    UiArrayMemberList *next;
+    UiObjectMember *member;
+    SourceLocation commaToken;
+};
+
 class UiObjectInitializer: public Node
 {
 public:
@@ -2314,7 +2370,7 @@ public:
     virtual SourceLocation firstSourceLocation() const
     {
       if (defaultToken.isValid())
-	return defaultToken;
+        return defaultToken;
 
       return propertyToken;
     }
@@ -2345,28 +2401,22 @@ class UiObjectDefinition: public UiObjectMember
 public:
     JAVASCRIPT_DECLARE_AST_NODE(UiObjectDefinition)
 
-    UiObjectDefinition(NameId *name,
+    UiObjectDefinition(UiQualifiedId *qualifiedTypeNameId,
                        UiObjectInitializer *initializer)
-        : name(name), initializer(initializer)
+        : qualifiedTypeNameId(qualifiedTypeNameId), initializer(initializer)
     { kind = K; }
 
     virtual SourceLocation firstSourceLocation() const
-    { return identifierToken; }
+    { return qualifiedTypeNameId->identifierToken; }
 
     virtual SourceLocation lastSourceLocation() const
-    {
-      if (initializer)
-	return initializer->rbraceToken;
-
-      return identifierToken;
-    }
+    { return initializer->rbraceToken; }
 
     virtual void accept0(Visitor *visitor);
 
 // attributes
-    NameId *name;
+    UiQualifiedId *qualifiedTypeNameId;
     UiObjectInitializer *initializer;
-    SourceLocation identifierToken;
 };
 
 class UiSourceElement: public UiObjectMember
@@ -2381,9 +2431,9 @@ public:
     virtual SourceLocation firstSourceLocation() const
     {
       if (FunctionDeclaration *funDecl = cast<FunctionDeclaration *>(sourceElement))
-	return funDecl->firstSourceLocation();
+        return funDecl->firstSourceLocation();
       else if (VariableStatement *varStmt = cast<VariableStatement *>(sourceElement))
-	return varStmt->firstSourceLocation();
+        return varStmt->firstSourceLocation();
 
       return SourceLocation();
     }
@@ -2391,9 +2441,9 @@ public:
     virtual SourceLocation lastSourceLocation() const
     {
       if (FunctionDeclaration *funDecl = cast<FunctionDeclaration *>(sourceElement))
-	return funDecl->lastSourceLocation();
+        return funDecl->lastSourceLocation();
       else if (VariableStatement *varStmt = cast<VariableStatement *>(sourceElement))
-	return varStmt->lastSourceLocation();
+        return varStmt->lastSourceLocation();
 
       return SourceLocation();
     }
@@ -2411,10 +2461,10 @@ public:
     JAVASCRIPT_DECLARE_AST_NODE(UiObjectBinding)
 
     UiObjectBinding(UiQualifiedId *qualifiedId,
-                    NameId *name,
+                    UiQualifiedId *qualifiedTypeNameId,
                     UiObjectInitializer *initializer)
         : qualifiedId(qualifiedId),
-          name(name),
+          qualifiedTypeNameId(qualifiedTypeNameId),
           initializer(initializer)
     { kind = K; }
 
@@ -2428,10 +2478,9 @@ public:
 
 // attributes
     UiQualifiedId *qualifiedId;
-    NameId *name;
+    UiQualifiedId *qualifiedTypeNameId;
     UiObjectInitializer *initializer;
     SourceLocation colonToken;
-    SourceLocation identifierToken;
 };
 
 class UiScriptBinding: public UiObjectMember
@@ -2465,7 +2514,7 @@ public:
     JAVASCRIPT_DECLARE_AST_NODE(UiArrayBinding)
 
     UiArrayBinding(UiQualifiedId *qualifiedId,
-                   UiObjectMemberList *members)
+                   UiArrayMemberList *members)
         : qualifiedId(qualifiedId),
           members(members)
     { kind = K; }
@@ -2480,7 +2529,7 @@ public:
 
 // attributes
     UiQualifiedId *qualifiedId;
-    UiObjectMemberList *members;
+    UiArrayMemberList *members;
     SourceLocation colonToken;
     SourceLocation lbracketToken;
     SourceLocation rbracketToken;

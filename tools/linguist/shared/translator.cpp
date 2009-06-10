@@ -416,6 +416,26 @@ void Translator::dropTranslations()
     }
 }
 
+void Translator::dropUiLines()
+{
+    QString uiXt = QLatin1String(".ui");
+    QString juiXt = QLatin1String(".jui");
+    for (TMM::Iterator it = m_messages.begin(); it != m_messages.end(); ++it) {
+        QHash<QString, int> have;
+        QList<TranslatorMessage::Reference> refs;
+        foreach (const TranslatorMessage::Reference &itref, it->allReferences()) {
+            const QString &fn = itref.fileName();
+            if (fn.endsWith(uiXt) || fn.endsWith(juiXt)) {
+                if (++have[fn] == 1)
+                    refs.append(TranslatorMessage::Reference(fn, -1));
+            } else {
+                refs.append(itref);
+            }
+        }
+        it->setReferences(refs);
+    }
+}
+
 QSet<TranslatorMessagePtr> Translator::resolveDuplicates()
 {
     QSet<TranslatorMessagePtr> dups;

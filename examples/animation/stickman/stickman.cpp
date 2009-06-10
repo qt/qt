@@ -48,6 +48,10 @@
 #define _USE_MATH_DEFINES
 #include <math.h>
 
+#ifndef M_PI
+#define M_PI 3.14159265358979323846
+#endif
+
 static const int NodeCount = 16;
 static const qreal Coords[NodeCount * 2] = {
     0.0, -150.0, // head, #0
@@ -178,7 +182,7 @@ Node *StickMan::node(int idx) const
         return 0;
 }
 
-void StickMan::timerEvent(QTimerEvent *e)
+void StickMan::timerEvent(QTimerEvent *)
 {
     update();
 }

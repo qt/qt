@@ -42,8 +42,8 @@
 #ifndef QFXBLURFILTER_H
 #define QFXBLURFILTER_H
 
-#include <qsimplecanvasfilter.h>
-#include <qml.h>
+#include <QtDeclarative/qsimplecanvasfilter.h>
+#include <QtDeclarative/qml.h>
 
 
 QT_BEGIN_HEADER
@@ -73,7 +73,7 @@ protected:
 private:
     QFxBlurFilterPrivate *d;
 };
-QML_DECLARE_TYPE(QFxBlurFilter);
+QML_DECLARE_TYPE(QFxBlurFilter)
 
 
 QT_END_NAMESPACE

@@ -186,7 +186,7 @@ QString AbstractFloat<isDouble>::stringValue() const
         if(sign)
             valueAsString += QLatin1Char('-');
 
-        valueAsString += qret.left(1);
+        valueAsString += qret.at(0);
         valueAsString += QLatin1Char('.');
 
         if(1 == qret.size())

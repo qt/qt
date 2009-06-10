@@ -43,7 +43,7 @@
 #define QMLFONT_H
 
 #include <QtCore/qobject.h>
-#include <qml.h>
+#include <QtDeclarative/qml.h>
 
 
 QT_BEGIN_HEADER
@@ -83,7 +83,7 @@ public:
 Q_SIGNALS:
     void updated();
 };
-QML_DECLARE_TYPE(QmlFont);
+QML_DECLARE_TYPE(QmlFont)
 
 
 QT_END_NAMESPACE

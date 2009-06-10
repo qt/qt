@@ -24,6 +24,7 @@
 
 #include <QNetworkDiskCache>
 #include <QNetworkAccessManager>
+#include <QSignalMapper>
 #include <QmlComponent>
 #include <QWidget>
 #include <QApplication>
@@ -39,8 +40,91 @@
 #include <QFileDialog>
 #include <QTimer>
 
+class PreviewDeviceSkin : public DeviceSkin
+{
+    Q_OBJECT
+public:
+    explicit PreviewDeviceSkin(const DeviceSkinParameters &parameters, QWidget *parent);
+
+    void setPreview(QWidget *formWidget);
+    void setPreviewAndScale(QWidget *formWidget);
+
+    void setScreenSize(const QSize& size)
+    {
+        QMatrix fit;
+        fit = fit.scale(qreal(size.width())/m_screenSize.width(),
+            qreal(size.height())/m_screenSize.height());
+        setTransform(fit);
+        QApplication::syncX();
+    }
+
+    QSize standardScreenSize() const { return m_screenSize; }
+
+    QMenu* menu;
+
+private slots:
+    void slotSkinKeyPressEvent(int code, const QString& text, bool autorep);
+    void slotSkinKeyReleaseEvent(int code, const QString& text, bool autorep);
+    void slotPopupMenu();
+
+private:
+    const QSize m_screenSize;
+};
+
+
+PreviewDeviceSkin::PreviewDeviceSkin(const DeviceSkinParameters &parameters, QWidget *parent) :
+    DeviceSkin(parameters, parent),
+    m_screenSize(parameters.screenSize())
+{
+    menu = new QMenu(this);
+    connect(this, SIGNAL(skinKeyPressEvent(int,QString,bool)),
+            this, SLOT(slotSkinKeyPressEvent(int,QString,bool)));
+    connect(this, SIGNAL(skinKeyReleaseEvent(int,QString,bool)),
+            this, SLOT(slotSkinKeyReleaseEvent(int,QString,bool)));
+    connect(this, SIGNAL(popupMenu()), this, SLOT(slotPopupMenu()));
+}
+
+void PreviewDeviceSkin::setPreview(QWidget *formWidget)
+{
+    formWidget->setFixedSize(m_screenSize);
+    formWidget->setParent(this, Qt::SubWindow);
+    formWidget->setAutoFillBackground(true);
+    setView(formWidget);
+}
+
+void PreviewDeviceSkin::setPreviewAndScale(QWidget *formWidget)
+{
+    setScreenSize(formWidget->sizeHint());
+    formWidget->setParent(this, Qt::SubWindow);
+    formWidget->setAutoFillBackground(true);
+    setView(formWidget);
+}
+
+void PreviewDeviceSkin::slotSkinKeyPressEvent(int code, const QString& text, bool autorep)
+{
+    if (QWidget *focusWidget =  QApplication::focusWidget()) {
+        QKeyEvent e(QEvent::KeyPress,code,0,text,autorep);
+        QApplication::sendEvent(focusWidget, &e);
+    }
+
+}
+
+void PreviewDeviceSkin::slotSkinKeyReleaseEvent(int code, const QString& text, bool autorep)
+{
+    if (QWidget *focusWidget =  QApplication::focusWidget()) {
+        QKeyEvent e(QEvent::KeyRelease,code,0,text,autorep);
+        QApplication::sendEvent(focusWidget, &e);
+    }
+}
+
+void PreviewDeviceSkin::slotPopupMenu()
+{
+    menu->exec(QCursor::pos());
+}
+
+
 QmlViewer::QmlViewer(QFxTestEngine::TestMode testMode, const QString &testDir, QWidget *parent, Qt::WindowFlags flags)
-    : QMainWindow(parent, flags), frame_stream(0)
+    : QWidget(parent, flags), frame_stream(0), scaleSkin(true), mb(0)
 {
     testEngine = 0;
     devicemode = false;
@@ -49,42 +133,48 @@ QmlViewer::QmlViewer(QFxTestEngine::TestMode testMode, const QString &testDir, Q
     record_autotime = 0;
     record_period = 20;
 
-    setAttribute(Qt::WA_OpaquePaintEvent);
-    setAttribute(Qt::WA_NoSystemBackground);
     if (!(flags & Qt::FramelessWindowHint))
         createMenu(menuBar(),0);
 
     canvas = new QFxView(this);
+    canvas->setAttribute(Qt::WA_OpaquePaintEvent);
+    canvas->setAttribute(Qt::WA_NoSystemBackground);
+    canvas->setContentResizable(!skin || !scaleSkin);
+
     if(testMode != QFxTestEngine::NoTest)
         testEngine = new QFxTestEngine(testMode, testDir, canvas, this);
 
     QObject::connect(canvas, SIGNAL(sceneResized(QSize)), this, SLOT(sceneResized(QSize)));
 
-    setCentralWidget(canvas);
+    QVBoxLayout *layout = new QVBoxLayout;
+    layout->setMargin(0);
+    layout->setSpacing(0);
+    setLayout(layout);
+    if (mb)
+        layout->addWidget(mb);
+    layout->addWidget(canvas);
 }
 
-QSize QmlViewer::sizeHint() const
+QMenuBar *QmlViewer::menuBar() const
 {
-    if (skin)
-        return QMainWindow::sizeHint();
-    else {
-        // Kludge to force QMainWindow to be EXACTLY the right size for the canvas.
-        QSize sh = canvas->sizeHint();
-        sh.setHeight(sh.height()+menuBar()->sizeHint().height()+1);
-        return sh;
-    }
+    if (!mb)
+        mb = new QMenuBar((QWidget*)this);
+
+    return mb;
 }
 
 void QmlViewer::createMenu(QMenuBar *menu, QMenu *flatmenu)
 {
+    QObject *parent = flatmenu ? (QObject*)flatmenu : (QObject*)menu;
+
     QMenu *fileMenu = flatmenu ? flatmenu : menu->addMenu(tr("&File"));
 
-    QAction *openAction = new QAction(tr("&Open..."), this);
+    QAction *openAction = new QAction(tr("&Open..."), parent);
     openAction->setShortcut(QKeySequence("Ctrl+O"));
     connect(openAction, SIGNAL(triggered()), this, SLOT(open()));
     fileMenu->addAction(openAction);
 
-    QAction *reloadAction = new QAction(tr("&Reload"), this);
+    QAction *reloadAction = new QAction(tr("&Reload"), parent);
     reloadAction->setShortcut(QKeySequence("Ctrl+R"));
     connect(reloadAction, SIGNAL(triggered()), this, SLOT(reload()));
     fileMenu->addAction(reloadAction);
@@ -93,28 +183,109 @@ void QmlViewer::createMenu(QMenuBar *menu, QMenu *flatmenu)
 
     QMenu *recordMenu = flatmenu ? flatmenu : menu->addMenu(tr("&Recording"));
 
-    QAction *snapshotAction = new QAction(tr("&Take Snapsot\tF3"), this);
+    QAction *snapshotAction = new QAction(tr("&Take Snapsot\tF3"), parent);
     connect(snapshotAction, SIGNAL(triggered()), this, SLOT(takeSnapShot()));
     recordMenu->addAction(snapshotAction);
     
-    recordAction = new QAction(tr("Start Recording &Video\tF2"), this);
+    recordAction = new QAction(tr("Start Recording &Video\tF2"), parent);
     connect(recordAction, SIGNAL(triggered()), this, SLOT(toggleRecordingWithSelection()));
     recordMenu->addAction(recordAction);
 
     if (flatmenu) flatmenu->addSeparator();
 
+    QMenu *skinMenu = flatmenu ? flatmenu->addMenu(tr("&Skin")) : menu->addMenu(tr("&Skin"));
+
+    QActionGroup *skinActions;
+    QAction *skinAction;
+
+    skinActions = new QActionGroup(parent);
+    skinAction = new QAction(tr("Scale skin"), parent);
+    skinAction->setCheckable(true);
+    skinAction->setChecked(scaleSkin);
+    skinActions->addAction(skinAction);
+    skinMenu->addAction(skinAction);
+    connect(skinAction, SIGNAL(triggered()), this, SLOT(setScaleSkin()));
+    skinAction = new QAction(tr("Scale view"), parent);
+    skinAction->setCheckable(true);
+    skinAction->setChecked(!scaleSkin);
+    skinActions->addAction(skinAction);
+    skinMenu->addAction(skinAction);
+    connect(skinAction, SIGNAL(triggered()), this, SLOT(setScaleView()));
+    skinMenu->addSeparator();
+
+    skinActions = new QActionGroup(parent);
+    QSignalMapper *mapper = new QSignalMapper(parent);
+    skinAction = new QAction(tr("None"), parent);
+    skinAction->setCheckable(true);
+    if (currentSkin.isEmpty())
+        skinAction->setChecked(true);
+    skinActions->addAction(skinAction);
+    skinMenu->addAction(skinAction);
+    mapper->setMapping(skinAction, "");
+    connect(skinAction, SIGNAL(triggered()), mapper, SLOT(map()));
+    skinMenu->addSeparator();
+
+    QDir dir(":/skins/","*.skin");
+    const QFileInfoList l = dir.entryInfoList();
+    for (QFileInfoList::const_iterator it = l.begin(); it != l.end(); ++it) {
+        QString name = (*it).baseName(); // should perhaps be in file
+        QString file = (*it).filePath();
+        skinAction = new QAction(name, parent);
+        skinActions->addAction(skinAction);
+        skinMenu->addAction(skinAction);
+        skinAction->setCheckable(true);
+        if (file == currentSkin)
+            skinAction->setChecked(true);
+        mapper->setMapping(skinAction, file);
+        connect(skinAction, SIGNAL(triggered()), mapper, SLOT(map()));
+    }
+    //connect(skinActions, SIGNAL(triggered(QAction*)), mapper, SLOT(map(QObject*))); // "incompatible"
+    connect(mapper, SIGNAL(mapped(QString)), this, SLOT(setSkin(QString)));
+
+    if (flatmenu) flatmenu->addSeparator();
+
     QMenu *helpMenu = flatmenu ? flatmenu : menu->addMenu(tr("&Help"));
-    QAction *aboutAction = new QAction(tr("&About Qt..."), this);
+    QAction *aboutAction = new QAction(tr("&About Qt..."), parent);
     connect(aboutAction, SIGNAL(triggered()), qApp, SLOT(aboutQt()));
     helpMenu->addAction(aboutAction);
 
-    QAction *quitAction = new QAction(tr("&Quit"), this);
+    QAction *quitAction = new QAction(tr("&Quit"), parent);
     quitAction->setShortcut(QKeySequence("Ctrl+Q"));
     connect(quitAction, SIGNAL(triggered()), qApp, SLOT(quit()));
     fileMenu->addSeparator();
     fileMenu->addAction(quitAction);
-
+    if (menu) {
+        menu->setFixedHeight(menu->sizeHint().height());
+        menu->setMinimumWidth(10);
+    }
 }
+
+void QmlViewer::setScaleSkin()
+{
+    if (scaleSkin)
+        return;
+    scaleSkin = true;
+    canvas->setContentResizable(!skin || !scaleSkin);
+    if (skin) {
+        canvas->setFixedSize(canvas->sizeHint());
+        skin->setScreenSize(canvas->sizeHint());
+    }
+}
+
+void QmlViewer::setScaleView()
+{
+    if (!scaleSkin)
+        return;
+    scaleSkin = false;
+    if (skin) {
+        canvas->setContentResizable(!skin || !scaleSkin);
+        canvas->setMinimumSize(QSize(0,0));
+        canvas->setMaximumSize(QSize(16777215,16777215));
+        canvas->resize(skin->standardScreenSize());
+        skin->setScreenSize(skin->standardScreenSize());
+    }
+}
+
 
 void QmlViewer::takeSnapShot()
 {
@@ -149,6 +320,10 @@ void QmlViewer::toggleRecording()
     setRecording(recording);
 }
 
+void QmlViewer::addLibraryPath(const QString& lib)
+{
+    canvas->engine()->addNameSpacePath("",lib);
+}
 
 void QmlViewer::reload()
 {
@@ -210,100 +385,79 @@ void QmlViewer::openQml(const QString& fileName)
     canvas->execute();
     qWarning() << "Wall startup time:" << t.elapsed();
 
-    resize(sizeHint());
+    if (!skin) {
+        canvas->resize(canvas->sizeHint());
+        resize(sizeHint());
+    } else {
+        if (scaleSkin)
+            canvas->resize(canvas->sizeHint());
+        else {
+            canvas->setFixedSize(skin->standardScreenSize());
+            canvas->resize(skin->standardScreenSize());
+        }
+    }
 
 #ifdef QTOPIA
     show();
 #endif
 }
 
-class PreviewDeviceSkin : public  DeviceSkin
-{
-    Q_OBJECT
-public:
-    explicit PreviewDeviceSkin(const DeviceSkinParameters &parameters, QWidget *parent);
-
-    void setPreview(QWidget *formWidget);
-    void setScreenSize(const QSize& size)
-    {
-        QMatrix fit;
-        fit = fit.scale(qreal(size.width())/m_screenSize.width(),
-            qreal(size.height())/m_screenSize.height());
-        setTransform(fit);
-    }
-
-    QMenu* menu;
-
-private slots:
-    void slotSkinKeyPressEvent(int code, const QString& text, bool autorep);
-    void slotSkinKeyReleaseEvent(int code, const QString& text, bool autorep);
-    void slotPopupMenu();
-
-private:
-    const QSize m_screenSize;
-};
-
-
-PreviewDeviceSkin::PreviewDeviceSkin(const DeviceSkinParameters &parameters, QWidget *parent) :
-    DeviceSkin(parameters, parent),
-    m_screenSize(parameters.screenSize())
-{
-    menu = new QMenu(this);
-    connect(this, SIGNAL(skinKeyPressEvent(int,QString,bool)),
-            this, SLOT(slotSkinKeyPressEvent(int,QString,bool)));
-    connect(this, SIGNAL(skinKeyReleaseEvent(int,QString,bool)),
-            this, SLOT(slotSkinKeyReleaseEvent(int,QString,bool)));
-    connect(this, SIGNAL(popupMenu()), this, SLOT(slotPopupMenu()));
-}
-
-void PreviewDeviceSkin::setPreview(QWidget *formWidget)
-{
-    formWidget->setFixedSize(m_screenSize);
-    formWidget->setParent(this, Qt::SubWindow);
-    formWidget->setAutoFillBackground(true);
-    setView(formWidget);
-}
-
-void PreviewDeviceSkin::slotSkinKeyPressEvent(int code, const QString& text, bool autorep)
-{
-    if (QWidget *focusWidget =  QApplication::focusWidget()) {
-        QKeyEvent e(QEvent::KeyPress,code,0,text,autorep);
-        QApplication::sendEvent(focusWidget, &e);
-    }
-
-}
-
-void PreviewDeviceSkin::slotSkinKeyReleaseEvent(int code, const QString& text, bool autorep)
-{
-    if (QWidget *focusWidget =  QApplication::focusWidget()) {
-        QKeyEvent e(QEvent::KeyRelease,code,0,text,autorep);
-        QApplication::sendEvent(focusWidget, &e);
-    }
-}
-
-void PreviewDeviceSkin::slotPopupMenu()
-{
-    menu->exec(QCursor::pos());
-}
 
 void QmlViewer::setSkin(const QString& skinDirectory)
 {
-    DeviceSkinParameters parameters;
+    // XXX QWidget::setMask does not handle changes well, and we may
+    // XXX have been signalled from an item in a menu we're replacing,
+    // XXX hence some rather convoluted resetting here...
+
+    if (currentSkin == skinDirectory)
+        return;
+
+    currentSkin = skinDirectory;
+
     QString err;
-    if (parameters.read(skinDirectory,DeviceSkinParameters::ReadAll,&err)) {
-        delete skin;
+    if (skin) {
+        skin->hide();
+        skin->deleteLater();
+    }
+
+    canvas->setContentResizable(!skin || !scaleSkin);
+
+    DeviceSkinParameters parameters;
+    if (!skinDirectory.isEmpty() && parameters.read(skinDirectory,DeviceSkinParameters::ReadAll,&err)) {
+        layout()->setEnabled(false);
+        //setMenuBar(0);
+        if (mb)
+            mb->hide();
         if (!err.isEmpty())
             qWarning() << err;
-        delete menuBar();
         skin = new PreviewDeviceSkin(parameters,this);
-        skin->setScreenSize(canvas->sizeHint());
-        canvas->setParent(skin, Qt::SubWindow);
-        canvas->setAutoFillBackground(true);
-        skin->setView(canvas);
+        canvas->resize(canvas->sizeHint());
+        if (scaleSkin)
+            skin->setPreviewAndScale(canvas);
+        else
+            skin->setPreview(canvas);
         createMenu(0,skin->menu);
-
-        canvas->show();
+        skin->show();
+    } else {
+        skin = 0;
+        clearMask();
+        menuBar()->clear();
+        canvas->setParent(this, Qt::SubWindow);
+        createMenu(menuBar(),0);
+        mb->show();
+        setMinimumSize(QSize(0,0));
+        setMaximumSize(QSize(16777215,16777215));
+        canvas->setMinimumSize(QSize(0,0));
+        canvas->setMaximumSize(QSize(16777215,16777215));
+        QRect g = geometry();
+        g.setSize(sizeHint());
+        setParent(0,windowFlags()); // recreate
+        canvas->move(0,menuBar()->sizeHint().height());
+        setGeometry(g);
+        layout()->setEnabled(true);
+        show();
     }
+    canvas->show();
 }
 
 void QmlViewer::setAutoRecord(int from, int to)
@@ -335,7 +489,7 @@ void QmlViewer::setRecordPeriod(int ms)
 void QmlViewer::sceneResized(QSize size)
 {
     if (size.width() > 0 && size.height() > 0) {
-        if (skin)
+        if (skin && scaleSkin)
             skin->setScreenSize(size);
     }
 }
@@ -395,7 +549,6 @@ void QmlViewer::setRecording(bool on)
             connect(proc, SIGNAL(finished(int)), this, SLOT(ffmpegFinished(int)));
             frame_stream = proc;
 
-qDebug() << canvas->width() << canvas->height();
             QStringList args;
             args << "-sameq"; // ie. high
             args << "-y";

@@ -77,7 +77,7 @@ class QScriptEnginePrivate;
 namespace QScript
 {
     class Member;
-};
+}
 
 class QScriptValueImpl
 {

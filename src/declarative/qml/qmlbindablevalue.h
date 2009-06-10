@@ -42,10 +42,10 @@
 #ifndef QMLBINDABLEVALUE_H
 #define QMLBINDABLEVALUE_H
 
-#include <QObject>
-#include <qfxglobal.h>
-#include <qml.h>
-#include <qmlpropertyvaluesource.h>
+#include <QtCore/QObject>
+#include <QtDeclarative/qfxglobal.h>
+#include <QtDeclarative/qml.h>
+#include <QtDeclarative/qmlpropertyvaluesource.h>
 #include <QtDeclarative/qmlexpression.h>
 
 
@@ -63,15 +63,15 @@ class Q_DECLARATIVE_EXPORT QmlBindableValue : public QmlPropertyValueSource,
 Q_OBJECT
 public:
     QmlBindableValue(QObject *parent);
-    QmlBindableValue(const QString &, QObject *, bool = true, QObject *parent=0);
+    QmlBindableValue(const QString &, QObject *, QObject *parent=0);
     QmlBindableValue(void *, QmlRefCount *, QObject *, QObject *parent);
     ~QmlBindableValue();
 
     virtual void setTarget(const QmlMetaProperty &);
     QmlMetaProperty property() const;
 
-    Q_CLASSINFO("DefaultProperty", "expression");
-    Q_PROPERTY(QString expression READ expression WRITE setExpression);
+    Q_CLASSINFO("DefaultProperty", "expression")
+    Q_PROPERTY(QString expression READ expression WRITE setExpression)
     virtual void setExpression(const QString &);
 
     void init();
@@ -85,7 +85,7 @@ protected:
 private:
     Q_DECLARE_PRIVATE(QmlBindableValue)
 };
-QML_DECLARE_TYPE(QmlBindableValue);
+QML_DECLARE_TYPE(QmlBindableValue)
 
 
 QT_END_NAMESPACE

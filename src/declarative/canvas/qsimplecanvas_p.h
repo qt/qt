@@ -43,6 +43,7 @@
 #define QSIMPLECANVAS_P_H
 
 #include "qsimplecanvas.h"
+#include "qsimplecanvasitem.h"
 #include <qstack.h>
 #include <qdatetime.h>
 
@@ -101,17 +102,18 @@ private:
 };
 
 class QGLFramebufferObject;
-class QSimpleCanvasServer;
+class QSimpleCanvasDebugPlugin;
 class QSimpleCanvasPrivate
 {
 public:
     QSimpleCanvasPrivate(QSimpleCanvas *canvas)
-    : q(canvas), timer(0), root(0), lrpTime(0), canvasServer(0), focusItem(0), 
+    : q(canvas), timer(0), root(0), lrpTime(0), debugPlugin(0), focusItem(0), 
       lastFocusItem(0), lastMouseItem(0),
       isSetup(false), view(0)
 #if defined(QFX_RENDER_OPENGL)
       ,egl(q, this), basicShadersInstance(0)
 #endif
+      , paintVersion(1)
     {
     }
 
@@ -125,9 +127,10 @@ public:
 #else
     QRect oldDirty;
 #endif
-    QRegion resetDirty();
+    QRect resetDirty();
     void paint(QPainter &p);
 
+    QSimpleCanvasItem *opaqueList;
 
     int timer;
 
@@ -138,7 +141,7 @@ public:
     QTime frameTimer;
     QTime lrpTimer;
 
-    QSimpleCanvasServer *canvasServer;
+    QSimpleCanvasDebugPlugin *debugPlugin;
 
     QStack<QSimpleCanvasItem *> focusPanels;
     QHash<QSimpleCanvasItem *, QSimpleCanvasItem *> focusPanelData;
@@ -185,11 +188,14 @@ public:
     }
     mutable GLBasicShaders *basicShadersInstance;
 
+    QHash<QString, QSimpleCanvasItem::CachedTexture *> cachedTextures;
+
     QList<QGLFramebufferObject *> frameBuffers;
     QGLFramebufferObject *acquire(int, int);
     void release(QGLFramebufferObject *);
     void paintGL();
 #endif
+    int paintVersion;
 };
 
 #endif

@@ -2,23 +2,21 @@
 #ifndef CARD_H
 #define CARD_H
 
-#include <QLayout>
+#include <QtGui>
 #include <QList>
 
 class CardLayout : public QLayout
 {
 public:
-    CardLayout(QWidget *parent, int dist)
-        : QLayout(parent, 0, dist) {}
-    CardLayout(QLayout *parent, int dist)
-        : QLayout(parent, dist) {}
-    CardLayout(int dist)
-        : QLayout(dist) {}
+    CardLayout(QWidget *parent, int dist): QLayout(parent, 0, dist) {}
+    CardLayout(QLayout *parent, int dist): QLayout(parent, dist) {}
+    CardLayout(int dist): QLayout(dist) {}
     ~CardLayout();
 
     void addItem(QLayoutItem *item);
     QSize sizeHint() const;
     QSize minimumSize() const;
+	QLayoutItem *count() const;
     QLayoutItem *itemAt(int) const;
     QLayoutItem *takeAt(int);
     void setGeometry(const QRect &rect);
@@ -31,11 +29,18 @@ private:
 
 
 //! [1]
-#include "card.h"
+//#include "card.h"
 //! [1]
 
-
 //! [2]
+QLayoutItem *CardLayout::count() const
+{
+	// QList::size() returns the number of QLayoutItems in the list
+    return list.size();
+}
+//! [2]
+
+//! [3]
 QLayoutItem *CardLayout::itemAt(int idx) const
 {
     // QList::value() performs index checking, and returns 0 if we are
@@ -48,26 +53,28 @@ QLayoutItem *CardLayout::takeAt(int idx)
     // QList::take does not do index checking
     return idx >= 0 && idx < list.size() ? list.takeAt(idx) : 0;
 }
-//! [2]
-
-
-//! [3]
-void CardLayout::addItem(QLayoutItem *item)
-{
-    list.append(item);
-}
 //! [3]
 
 
 //! [4]
-CardLayout::~CardLayout()
+void CardLayout::addItem(QLayoutItem *item)
 {
-    deleteAllItems();
+    list.append(item);
 }
 //! [4]
 
 
 //! [5]
+CardLayout::~CardLayout()
+{
+     QLayoutItem *item;
+     while ((item = takeAt(0)))
+         delete item;
+}
+//! [5]
+
+
+//! [6]
 void CardLayout::setGeometry(const QRect &r)
 {
     QLayout::setGeometry(r);
@@ -85,10 +92,10 @@ void CardLayout::setGeometry(const QRect &r)
         ++i;
     }
 }
-//! [5]
-
-
 //! [6]
+
+
+//! [7]
 QSize CardLayout::sizeHint() const
 {
     QSize s(0,0);
@@ -116,4 +123,4 @@ QSize CardLayout::minimumSize() const
     }
     return s + n*QSize(spacing(), spacing());
 }
-//! [6]
+//! [7]

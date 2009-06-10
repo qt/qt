@@ -151,6 +151,10 @@ QNetworkReplyPrivate::QNetworkReplyPrivate()
     authentication to serve the content but the credentials provided
     were not accepted (if any)
 
+    \value ContentReSendError          the request needed to be sent
+    again, but this failed for example because the upload data
+    could not be read a second time.
+
     \value ProtocolUnknownError         the Network Access API cannot
     honor the request because the protocol is not known
 

@@ -42,12 +42,12 @@
 #ifndef QMLVME_P_H
 #define QMLVME_P_H
 
-#include <QString>
-#include <QStack>
-#include <qmlerror.h>
-class QObject;
+#include <QtCore/QString>
+#include <QtCore/QStack>
+#include <QtDeclarative/qmlerror.h>
 
 QT_BEGIN_NAMESPACE
+class QObject;
 class QmlInstruction;
 class QmlCompiledComponent;
 class QmlCompiledData;
@@ -64,9 +64,6 @@ public:
     QList<QmlError> errors() const;
 
 private:
-    void runStoreInstruction(QStack<QObject *> &stack,
-                             QmlInstruction &, QmlCompiledData *);
-
     QList<QmlError> vmeErrors;
 };
 

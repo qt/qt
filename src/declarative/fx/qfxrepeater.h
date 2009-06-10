@@ -42,7 +42,7 @@
 #ifndef QFXREPEATER_H
 #define QFXREPEATER_H
 
-#include <qfxitem.h>
+#include <QtDeclarative/qfxitem.h>
 
 
 QT_BEGIN_HEADER
@@ -80,7 +80,7 @@ private:
     Q_DISABLE_COPY(QFxRepeater)
     Q_DECLARE_PRIVATE(QFxRepeater)
 };
-QML_DECLARE_TYPE(QFxRepeater);
+QML_DECLARE_TYPE(QFxRepeater)
 
 QT_END_NAMESPACE
 

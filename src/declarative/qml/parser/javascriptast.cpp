@@ -49,6 +49,44 @@ QT_BEGIN_NAMESPACE
 
 namespace JavaScript { namespace AST {
 
+int NumericLiteral::suffixLength[] = {
+    0, // noSuffix
+    2, // emSuffix
+    2, // exSuffix
+    2, // pxSuffix
+    2, // cmSuffix
+    2, // mmSuffix
+    2, // inSuffix
+    2, // ptSuffix
+    2, // pcSuffix
+    3, // degSuffix
+    3, // radSuffix
+    4, // gradSuffix
+    2, // msSuffix
+    1, // sSuffix
+    2, // hzSuffix
+    3  // khzSuffix
+};
+
+const char *const NumericLiteral::suffixSpell[] = {
+    "",
+    "em",
+    "ex",
+    "px",
+    "cm",
+    "mm",
+    "in",
+    "pt",
+    "pc",
+    "deg",
+    "rad",
+    "grad",
+    "ms",
+    "s",
+    "hz",
+    "khz"
+};
+
 ExpressionNode *Node::expressionCast()
 {
     return 0;
@@ -813,6 +851,7 @@ void UiPublicMember::accept0(Visitor *visitor)
 void UiObjectDefinition::accept0(Visitor *visitor)
 {
     if (visitor->visit(this)) {
+        acceptChild(qualifiedTypeNameId, visitor);
         acceptChild(initializer, visitor);
     }
 
@@ -833,6 +872,7 @@ void UiObjectBinding::accept0(Visitor *visitor)
 {
     if (visitor->visit(this)) {
         acceptChild(qualifiedId, visitor);
+        acceptChild(qualifiedTypeNameId, visitor);
         acceptChild(initializer, visitor);
     }
 
@@ -853,7 +893,7 @@ void UiArrayBinding::accept0(Visitor *visitor)
 {
     if (visitor->visit(this)) {
         acceptChild(qualifiedId, visitor);
-        for (UiObjectMemberList *it = members; it; it = it->next)
+        for (UiArrayMemberList *it = members; it; it = it->next)
             acceptChild(it->member, visitor);
     }
 
@@ -864,6 +904,16 @@ void UiObjectMemberList::accept0(Visitor *visitor)
 {
     if (visitor->visit(this)) {
         for (UiObjectMemberList *it = this; it; it = it->next)
+            acceptChild(it->member, visitor);
+    }
+
+    visitor->endVisit(this);
+}
+
+void UiArrayMemberList::accept0(Visitor *visitor)
+{
+    if (visitor->visit(this)) {
+        for (UiArrayMemberList *it = this; it; it = it->next)
             acceptChild(it->member, visitor);
     }
 

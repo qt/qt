@@ -364,4 +364,10 @@
     In Qt 4.2 and later, \l{Qt Style Sheets} can be used to
     implement many common modifications to existing styles, and
     this may be sufficient for Qt 3 applications.
+
+    \section2 Events
+    In Qt 3, QCloseEvents were not accepted by default. In Qt 4,
+    the event handler QWidget::closeEvent() receives QCloseEvents,
+    and accepts them by default closing the application. To avoid 
+    this, please reimplement QWidget::closeEvent().  
 */

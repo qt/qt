@@ -351,6 +351,7 @@ Configure::Configure( int& argc, char** argv )
     dictionary[ "QMAKESPEC" ] = tmp;
 
     dictionary[ "INCREDIBUILD_XGE" ] = "auto";
+    dictionary[ "LTCG" ]            = "no";
 }
 
 Configure::~Configure()
@@ -486,6 +487,12 @@ void Configure::parseCmdLine()
         }
         else if( configCmdLine.at(i) == "-commercial" ) {
             dictionary[ "BUILDTYPE" ] = "commercial";
+        }
+        else if( configCmdLine.at(i) == "-ltcg" ) {
+            dictionary[ "LTCG" ] = "yes";
+        }
+        else if( configCmdLine.at(i) == "-no-ltcg" ) {
+            dictionary[ "LTCG" ] = "no";
         }
 #endif
 
@@ -1318,6 +1325,7 @@ void Configure::applySpecSpecifics()
         dictionary[ "WEBKIT" ]              = "no";
         dictionary[ "PHONON" ]              = "yes";
         dictionary[ "DIRECTSHOW" ]          = "no";
+        dictionary[ "LTCG" ]                = "yes";
         // We only apply MMX/IWMMXT for mkspecs we know they work
         if (dictionary[ "XQMAKESPEC" ].startsWith("wincewm")) {
             dictionary[ "MMX" ]    = "yes";
@@ -1463,6 +1471,9 @@ bool Configure::displayHelp()
 
         desc("SHARED", "yes",   "-shared",              "Create and use shared Qt libraries.");
         desc("SHARED", "no",    "-static",              "Create and use static Qt libraries.\n");
+
+        desc("LTCG", "yes",   "-ltcg",                  "Use Link Time Code Generation. (Release builds only)");
+        desc("LTCG", "no",    "-no-ltcg",               "Do not use Link Time Code Generation.\n");
 
         desc("FAST", "no",      "-no-fast",             "Configure Qt normally by generating Makefiles for all project files.");
         desc("FAST", "yes",     "-fast",                "Configure Qt quickly by generating Makefiles only for library and "
@@ -2451,6 +2462,8 @@ void Configure::generateCachefile()
         else
             configStream << " static";
 
+        if( dictionary[ "LTCG" ] == "yes" )
+            configStream << " ltcg";
         if( dictionary[ "STL" ] == "yes" )
             configStream << " stl";
         if ( dictionary[ "EXCEPTIONS" ] == "yes" )
@@ -2873,6 +2886,7 @@ void Configure::displayConfig()
     cout << "Architecture................" << dictionary[ "ARCHITECTURE" ] << endl;
     cout << "Maketool...................." << dictionary[ "MAKE" ] << endl;
     cout << "Debug symbols..............." << (dictionary[ "BUILD" ] == "debug" ? "yes" : "no") << endl;
+    cout << "Link Time Code Generation..." << dictionary[ "LTCG" ] << endl;
     cout << "Accessibility support......." << dictionary[ "ACCESSIBILITY" ] << endl;
     cout << "STL support................." << dictionary[ "STL" ] << endl;
     cout << "Exception support..........." << dictionary[ "EXCEPTIONS" ] << endl;
@@ -3426,12 +3440,15 @@ void Configure::readLicense()
     dictionary[ "PLATFORM NAME" ]   = (QFile::exists(dictionary["QT_SOURCE_TREE"] + "/src/corelib/kernel/qfunctions_wince.h")
                                       && (dictionary.value("QMAKESPEC").startsWith("wince") || dictionary.value("XQMAKESPEC").startsWith("wince")))
                                         ? "Qt for Windows CE" : "Qt for Windows";
+    dictionary["LICENSE FILE"] = sourcePath;
+
     bool openSource = false;
+    bool hasOpenSource = QFile::exists(dictionary["LICENSE FILE"] + "/LICENSE.GPL3") || QFile::exists(dictionary["LICENSE FILE"] + "/LICENSE.LGPL");
     if (dictionary["BUILDNOKIA"] == "yes" || dictionary["BUILDTYPE"] == "commercial") {
         openSource = false;
     } else if (dictionary["BUILDTYPE"] == "opensource") {
         openSource = true;
-    } else {
+    } else if (hasOpenSource) { // No Open Source? Just display the commercial license right away
         forever {
             char accept = '?';
             cout << "Which edition of Qt do you want to use ?" << endl;
@@ -3449,28 +3466,23 @@ void Configure::readLicense()
             }
         }
     }
-    if (openSource) {
-        dictionary["LICENSE FILE"] = sourcePath;
-        if (QFile::exists(dictionary["LICENSE FILE"] + "/LICENSE.GPL3") || QFile::exists(dictionary["LICENSE FILE"] + "/LICENSE.LGPL")) {
-            cout << endl << "This is the " << dictionary["PLATFORM NAME"] << " Open Source Edition." << endl;
-            licenseInfo["LICENSEE"] = "Open Source";
-            dictionary["EDITION"] = "OpenSource";
-            dictionary["QT_EDITION"] = "QT_EDITION_OPENSOURCE";
-            cout << endl;
-            if (!showLicense(dictionary["LICENSE FILE"])) {
-                cout << "Configuration aborted since license was not accepted";
-                dictionary["DONE"] = "error";
-                return;
-            }
+    if (hasOpenSource && openSource) {
+        cout << endl << "This is the " << dictionary["PLATFORM NAME"] << " Open Source Edition." << endl;
+        licenseInfo["LICENSEE"] = "Open Source";
+        dictionary["EDITION"] = "OpenSource";
+        dictionary["QT_EDITION"] = "QT_EDITION_OPENSOURCE";
+        cout << endl;
+        if (!showLicense(dictionary["LICENSE FILE"])) {
+            cout << "Configuration aborted since license was not accepted";
+            dictionary["DONE"] = "error";
             return;
         }
-#ifndef COMMERCIAL_VERSION
-    else {
-        cout << endl << "Cannot find the GPL license files!" << endl;
+    } else if (openSource) {
+        cout << endl << "Cannot find the GPL license files! Please download the Open Source version of the library." << endl;
         dictionary["DONE"] = "error";
     }
-#else
-    } else {
+#ifdef COMMERCIAL_VERSION
+    else {
         Tools::checkLicense(dictionary, licenseInfo, firstLicensePath());
         if (dictionary["DONE"] != "error" && dictionary["BUILDNOKIA"] != "yes") {
             // give the user some feedback, and prompt for license acceptance
@@ -3482,7 +3494,12 @@ void Configure::readLicense()
             }
         }
     }
-#endif // COMMERCIAL_VERSION
+#else // !COMMERCIAL_VERSION
+    else {
+        cout << endl << "Cannot build commercial edition from the open source version of the library." << endl;
+        dictionary["DONE"] = "error";
+    }
+#endif
 }
 
 void Configure::reloadCmdLine()

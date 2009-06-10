@@ -42,7 +42,7 @@
 #ifndef QFXFOCUSPANEL_H
 #define QFXFOCUSPANEL_H
 
-#include <qfxitem.h>
+#include <QtDeclarative/qfxitem.h>
 
 
 QT_BEGIN_HEADER
@@ -72,7 +72,7 @@ private:
     Q_DISABLE_COPY(QFxFocusPanel)
 };
 
-QML_DECLARE_TYPE(QFxFocusPanel);
+QML_DECLARE_TYPE(QFxFocusPanel)
 
 QT_END_NAMESPACE
 

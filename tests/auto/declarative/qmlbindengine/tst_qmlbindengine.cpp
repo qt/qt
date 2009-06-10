@@ -3,10 +3,21 @@
 #include <QtDeclarative/qmlengine.h>
 #include <QtDeclarative/qmlexpression.h>
 #include <QtDeclarative/qmlcontext.h>
+#include <QtCore/qfileinfo.h>
+#include <QtCore/qdebug.h>
+#include <QtCore/qdir.h>
 #include "testtypes.h"
 
-#define TEST_FILE(filename) \
-    QUrl::fromLocalFile(QApplication::applicationDirPath() + "/" + filename)
+inline QUrl TEST_FILE(const QString &filename)
+{
+    QFileInfo fileInfo(__FILE__);
+    return QUrl::fromLocalFile(fileInfo.absoluteDir().filePath(filename));
+}
+
+inline QUrl TEST_FILE(const char *filename)
+{
+    return TEST_FILE(QLatin1String(filename));
+}
 
 class tst_qmlbindengine : public QObject
 {
@@ -15,6 +26,7 @@ public:
     tst_qmlbindengine() {}
 
 private slots:
+    void idShortcutInvalidates();
     void boolPropertiesEvaluateAsBool();
     void methods();
     void signalAssignment();
@@ -28,6 +40,27 @@ private slots:
 private:
     QmlEngine engine;
 };
+
+void tst_qmlbindengine::idShortcutInvalidates()
+{
+    {
+        QmlComponent component(&engine, TEST_FILE("idShortcutInvalidates.txt"));
+        MyQmlObject *object = qobject_cast<MyQmlObject *>(component.create());
+        QVERIFY(object != 0);
+        QVERIFY(object->objectProperty() != 0);
+        delete object->objectProperty();
+        QVERIFY(object->objectProperty() == 0);
+    }
+
+    {
+        QmlComponent component(&engine, TEST_FILE("idShortcutInvalidates.1.txt"));
+        MyQmlObject *object = qobject_cast<MyQmlObject *>(component.create());
+        QVERIFY(object != 0);
+        QVERIFY(object->objectProperty() != 0);
+        delete object->objectProperty();
+        QVERIFY(object->objectProperty() == 0);
+    }
+}
 
 void tst_qmlbindengine::boolPropertiesEvaluateAsBool()
 {

@@ -117,6 +117,7 @@ public:
       AST::UiArrayBinding *UiArrayBinding;
       AST::UiObjectMember *UiObjectMember;
       AST::UiObjectMemberList *UiObjectMemberList;
+      AST::UiArrayMemberList *UiArrayMemberList;
       AST::UiQualifiedId *UiQualifiedId;
     };
 
@@ -160,6 +161,8 @@ protected:
     inline AST::SourceLocation &loc(int index)
     { return location_stack [tos + index - 1]; }
 
+    AST::UiQualifiedId *reparseAsQualifiedId(AST::ExpressionNode *expr);
+
 protected:
     Engine *driver;
     int tos;
@@ -194,9 +197,9 @@ protected:
 
 
 
-#define J_SCRIPT_REGEXPLITERAL_RULE1 52
+#define J_SCRIPT_REGEXPLITERAL_RULE1 54
 
-#define J_SCRIPT_REGEXPLITERAL_RULE2 53
+#define J_SCRIPT_REGEXPLITERAL_RULE2 55
 
 QT_END_NAMESPACE
 

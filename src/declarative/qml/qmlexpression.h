@@ -62,7 +62,6 @@ class Q_DECLARATIVE_EXPORT QmlExpression
 public:
     QmlExpression();
     QmlExpression(QmlContext *, const QString &, QObject *);
-    QmlExpression(QmlContext *, const QString &, QObject *, bool);
     QmlExpression(QmlContext *, void *, QmlRefCount *rc, QObject *me);
     virtual ~QmlExpression();
 
@@ -77,6 +76,8 @@ public:
 
     bool trackChange() const;
     void setTrackChange(bool);
+
+    void setSourceLocation(const QUrl &fileName, int line);
 
     QObject *scopeObject() const;
 
@@ -99,7 +100,6 @@ class Q_DECLARATIVE_EXPORT QmlExpressionObject : public QObject,
 public:
     QmlExpressionObject(QObject *parent = 0);
     QmlExpressionObject(QmlContext *, const QString &, QObject *scope, QObject *parent = 0);
-    QmlExpressionObject(QmlContext *, const QString &, QObject *scope, bool);
     QmlExpressionObject(QmlContext *, void *, QmlRefCount *, QObject *);
 
 public Q_SLOTS:

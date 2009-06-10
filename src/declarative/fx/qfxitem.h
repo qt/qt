@@ -42,9 +42,9 @@
 #ifndef QFXITEM_H
 #define QFXITEM_H
 
-#include <QObject>
+#include <QtCore/QObject>
 #include <QtScript/qscriptvalue.h>
-#include <QList>
+#include <QtCore/QList>
 #include <QtDeclarative/qfxanchors.h>
 #include <QtDeclarative/qfxglobal.h>
 #include <QtDeclarative/qml.h>
@@ -63,8 +63,8 @@ QT_MODULE(Declarative)
 class Q_DECLARATIVE_EXPORT QFxContents : public QObject
 {
     Q_OBJECT
-    Q_PROPERTY(int height READ height NOTIFY heightChanged);
-    Q_PROPERTY(int width READ width NOTIFY widthChanged);
+    Q_PROPERTY(int height READ height NOTIFY heightChanged)
+    Q_PROPERTY(int width READ width NOTIFY widthChanged)
 public:
     QFxContents();
 
@@ -87,8 +87,8 @@ private:
     int _height;
     int _width;
 };
-QML_DECLARE_TYPE(QFxContents);
-Q_DECLARE_OPERATORS_FOR_FLAGS(QFxAnchors::UsedAnchors);
+QML_DECLARE_TYPE(QFxContents)
+Q_DECLARE_OPERATORS_FOR_FLAGS(QFxAnchors::UsedAnchors)
 
 class QmlState;
 class QmlTransition;
@@ -111,7 +111,7 @@ class Q_DECLARATIVE_EXPORT QFxItem : public QSimpleCanvasItem, public QmlParserS
     Q_PROPERTY(QmlList<QmlState *>* states READ states DESIGNABLE false)
     Q_PROPERTY(QmlList<QmlTransition *>* transitions READ transitions DESIGNABLE false)
     Q_PROPERTY(QString state READ state WRITE setState NOTIFY stateChanged)
-    Q_PROPERTY(QString qml READ qml WRITE setQml NOTIFY qmlChanged)
+    Q_PROPERTY(QUrl qml READ qml WRITE setQml NOTIFY qmlChanged)
     Q_PROPERTY(QFxItem *qmlItem READ qmlItem NOTIFY qmlChanged)
     Q_PROPERTY(qreal x READ x WRITE setX NOTIFY leftChanged)
     Q_PROPERTY(qreal y READ y WRITE setY NOTIFY topChanged)
@@ -127,6 +127,7 @@ class Q_DECLARATIVE_EXPORT QFxItem : public QSimpleCanvasItem, public QmlParserS
     Q_PROPERTY(QFxAnchorLine top READ top)
     Q_PROPERTY(QFxAnchorLine bottom READ bottom)
     Q_PROPERTY(QFxAnchorLine verticalCenter READ verticalCenter)
+    Q_PROPERTY(QFxAnchorLine baseline READ baseline)
     Q_PROPERTY(qreal rotation READ rotation WRITE setRotation NOTIFY rotationChanged)
     Q_PROPERTY(qreal scale READ scale WRITE setScale NOTIFY scaleChanged)
     Q_PROPERTY(qreal opacity READ opacity WRITE setOpacity NOTIFY opacityChanged)
@@ -170,8 +171,8 @@ public:
     void setState(const QString &);
 
     QFxItem *qmlItem() const;
-    QString qml() const;
-    void setQml(const QString &);
+    QUrl qml() const;
+    void setQml(const QUrl &);
 
     bool flipVertically() const;
     void setFlipVertically(bool);
@@ -213,14 +214,9 @@ public Q_SLOTS:
 
 Q_SIGNALS:
     void leftChanged();
-    void rightChanged();
     void widthChanged();
     void heightChanged();
     void topChanged();
-    void bottomChanged();
-    void hcenterChanged();
-    void vcenterChanged();
-    void baselineChanged();
     void baselineOffsetChanged();
     void stateChanged(const QString &);
     void focusChanged();
@@ -263,6 +259,7 @@ private:
     QFxAnchorLine top() const;
     QFxAnchorLine bottom() const;
     QFxAnchorLine verticalCenter() const;
+    QFxAnchorLine baseline() const;
 
     void init(QFxItem *parent);
     friend class QmlStatePrivate;
@@ -270,9 +267,9 @@ private:
     Q_DISABLE_COPY(QFxItem)
     Q_DECLARE_PRIVATE(QFxItem)
 };
-QML_DECLARE_TYPE(QFxItem);
+QML_DECLARE_TYPE(QFxItem)
 
-QML_DECLARE_TYPE(QSimpleCanvasFilter);
+QML_DECLARE_TYPE(QSimpleCanvasFilter)
 
 QT_END_NAMESPACE
 

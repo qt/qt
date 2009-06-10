@@ -381,10 +381,7 @@
     \list
     \o Any imported directories. These are listed at the start of the file using
         \c { import "path" }.
-    \o The run directory
-    \o The run directory + "/qml"
     \o the directory of the QML code file
-    \o the directory of the QML code file + "/qml"
     \endlist
 
     All the properties of the button are

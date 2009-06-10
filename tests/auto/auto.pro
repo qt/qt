@@ -4,7 +4,8 @@ TEMPLATE = subdirs
 !wince*:SUBDIRS += \
            headers
 
-SUBDIRS += bic \
+SUBDIRS += _networkselftest \
+           bic \
            dynamicobject \
            collections \
            compile \
@@ -212,6 +213,7 @@ SUBDIRS += bic \
            qnumeric \
            qobject \
            qobjectrace \
+           qcontiguouscache \
            qpaintengine \
            qpainter \
            qpainterpath \
@@ -243,6 +245,7 @@ SUBDIRS += bic \
            qregexpvalidator \
            qregion \
            qresourceengine \
+           qringbuffer \
            qscriptable \
            qscriptclass \
            qscriptcontext \
@@ -294,6 +297,7 @@ SUBDIRS += bic \
            qstandarditem \
            qstandarditemmodel \
            qstate \
+           qstatemachine \
            qstatusbar \
            qstl \
            qstring \
@@ -347,7 +351,6 @@ SUBDIRS += bic \
            qtranslator \
            qtransform \
            qtransformedscreen \
-           qtransition \
            qtreeview \
            qtreewidget \
            qtreewidgetitemiterator \

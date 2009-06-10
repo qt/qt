@@ -86,6 +86,8 @@ QmlComponent *QmlCompositeTypeData::toComponent(QmlEngine *engine)
             component = new QmlComponent(engine, cc, -1, -1, 0);
         } else {
             component = new QmlComponent(engine, 0);
+            component->d_func()->url = QUrl(url);
+            component->d_func()->errors = errors;
         }
 
     }
@@ -315,7 +317,7 @@ void QmlCompositeTypeManager::compile(QmlCompositeTypeData *unit)
             continue;
         }
 
-        QUrl url = engine->componentUrl(QUrl(type + ".qml"), QUrl(unit->url));
+        QUrl url = engine->componentUrl(QUrl(QLatin1String(type + ".qml")), QUrl(unit->url));
         QmlCompositeTypeData *urlUnit = components.value(url.toString());
 
         if (!urlUnit) {
@@ -335,7 +337,7 @@ void QmlCompositeTypeManager::compile(QmlCompositeTypeData *unit)
             {
                 QmlError error;
                 error.setUrl(unit->url);
-                error.setDescription("Type " + type + " unavailable");
+                error.setDescription(tr("Type %1 unavailable").arg(QLatin1String(type)));
                 unit->errors << error;
             }
             if (urlUnit->errorType != QmlCompositeTypeData::AccessError) 
