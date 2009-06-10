@@ -276,21 +276,31 @@ inline void QDirPrivate::sortFileList(QDir::SortFlags sort, QFileInfoList &l,
         names->clear();
     if(infos)
         infos->clear();
-    if(!l.isEmpty()) {
-        QDirSortItem *si= new QDirSortItem[l.count()];
-        int i;
-        for (i = 0; i < l.size(); ++i)
-            si[i].item = l.at(i);
-        if ((sort & QDir::SortByMask) != QDir::Unsorted)
-            qStableSort(si, si + i, QDirSortItemComparator(sort));
-        // put them back in the list(s)
-        for (int j = 0; j < i; j++) {
+    int n = l.size();
+    if(n > 0) {
+        if (n == 1 || (sort & QDir::SortByMask) == QDir::Unsorted) {
             if(infos)
-                infos->append(si[j].item);
-            if(names)
-                names->append(si[j].item.fileName());
+                *infos = l;
+            if(names) {
+                for (int i = 0; i < n; ++i)
+                    names->append(l.at(i).fileName());
+            }
+        } else {
+            QDirSortItem *si = new QDirSortItem[n];
+            for (int i = 0; i < n; ++i)
+                si[i].item = l.at(i);
+            qStableSort(si, si + n, QDirSortItemComparator(sort));
+            // put them back in the list(s)
+            if(infos) {
+                for (int i = 0; i < n; ++i)
+                    infos->append(si[i].item);
+            }
+            if(names) {
+                for (int i = 0; i < n; ++i)
+                    names->append(si[i].item.fileName());
+            }
+            delete [] si;
         }
-        delete [] si;
     }
 }
 
@@ -1354,9 +1364,6 @@ QStringList QDir::entryList(const QStringList &nameFilters, Filters filters,
         it.next();
         l.append(it.fileInfo());
     }
-    if ((sort & QDir::SortByMask) == QDir::Unsorted)
-        return l;
-
     QStringList ret;
     d->sortFileList(sort, l, &ret, 0);
     return ret;
@@ -1402,9 +1409,6 @@ QFileInfoList QDir::entryInfoList(const QStringList &nameFilters, Filters filter
         it.next();
         l.append(it.fileInfo());
     }
-    if ((sort & QDir::SortByMask) == QDir::Unsorted)
-        return l;
-
     QFileInfoList ret;
     d->sortFileList(sort, l, 0, &ret);
     return ret;
