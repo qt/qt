@@ -392,7 +392,9 @@ void QMetaObject::removeGuard(QObject **ptr)
     if (!*ptr)
         return;
     GuardHash *hash = guardHash();
-    if (!hash)
+    /* check that the hash is empty - otherwise we might detach
+       the shared_null hash, which will alloc, which is not nice */
+    if (!hash || hash->isEmpty())
         return;
     QMutexLocker locker(guardHashLock());
     GuardHash::iterator it = hash->find(*ptr);
@@ -434,9 +436,19 @@ void QMetaObject::changeGuard(QObject **ptr, QObject *o)
  */
 void QObjectPrivate::clearGuards(QObject *object)
 {
-    GuardHash *hash = guardHash();
-    if (hash) {
-        QMutexLocker locker(guardHashLock());
+    GuardHash *hash = 0;
+    QMutex *mutex = 0;
+    QT_TRY {
+        hash = guardHash();
+        mutex = guardHashLock();
+    } QT_CATCH(const std::bad_alloc &) {
+        // do nothing in case of OOM - code below is safe
+    }
+
+    /* check that the hash is empty - otherwise we might detach
+       the shared_null hash, which will alloc, which is not nice */
+    if (hash && !hash->isEmpty()) {
+        QMutexLocker locker(mutex);
         GuardHash::iterator it = hash->find(object);
         const GuardHash::iterator end = hash->end();
         while (it.key() == object && it != end) {
@@ -754,7 +766,14 @@ QObject::~QObject()
         QObjectPrivate::clearGuards(this);
     }
 
-    emit destroyed(this);
+    QT_TRY {
+        emit destroyed(this);
+    } QT_CATCH(...) {
+        // all the signal/slots connections are still in place - if we don't
+        // quit now, we will crash pretty soon.
+        qWarning("Detected an unexpected exception in ~QObject while emitting destroyed().");
+        QT_RETHROW;
+    }
 
     {
         QMutexLocker locker(&d->threadData->mutex);
@@ -853,9 +872,6 @@ QObject::~QObject()
                  objectName().isNull() ? "unnamed" : qPrintable(objectName()));
     }
 #endif
-
-    delete d;
-    d_ptr = 0;
 }
 
 
@@ -1098,11 +1114,11 @@ bool QObject::event(QEvent *e)
 #if defined(QT_NO_EXCEPTIONS)
             mce->placeMetaCall(this);
 #else
-            try {
+            QT_TRY {
                 mce->placeMetaCall(this);
-            } catch (...) {
+            } QT_CATCH(...) {
                 QObjectPrivate::resetCurrentSender(this, &currentSender, previousSender);
-                throw;
+                QT_RETHROW;
             }
 #endif
             QObjectPrivate::resetCurrentSender(this, &currentSender, previousSender);
@@ -3102,9 +3118,9 @@ void QMetaObject::activate(QObject *sender, int from_signal_index, int to_signal
 #if defined(QT_NO_EXCEPTIONS)
             receiver->qt_metacall(QMetaObject::InvokeMetaMethod, method, argv ? argv : empty_argv);
 #else
-            try {
+            QT_TRY {
                 receiver->qt_metacall(QMetaObject::InvokeMetaMethod, method, argv ? argv : empty_argv);
-            } catch (...) {
+            } QT_CATCH(...) {
                 locker.relock();
 
                 QObjectPrivate::resetCurrentSender(receiver, &currentSender, previousSender);
@@ -3113,7 +3129,7 @@ void QMetaObject::activate(QObject *sender, int from_signal_index, int to_signal
                 Q_ASSERT(connectionLists->inUse >= 0);
                 if (connectionLists->orphaned && !connectionLists->inUse)
                     delete connectionLists;
-                throw;
+                QT_RETHROW;
             }
 #endif
 

@@ -219,8 +219,6 @@ QScriptContext::QScriptContext():
 */
 QScriptContext::~QScriptContext()
 {
-    delete d_ptr;
-    d_ptr = 0;
 }
 
 /*!

@@ -1215,7 +1215,7 @@ OSStatus QWidgetPrivate::qt_widget_event(EventHandlerCallRef er, EventRef event,
                         QAbstractScrollArea *scrollArea = qobject_cast<QAbstractScrollArea *>(widget->parent());
                         QPoint scrollAreaOffset;
                         if (scrollArea && scrollArea->viewport() == widget) {
-                            QAbstractScrollAreaPrivate *priv = static_cast<QAbstractScrollAreaPrivate *>(static_cast<QWidget *>(scrollArea)->d_ptr);
+                            QAbstractScrollAreaPrivate *priv = static_cast<QAbstractScrollAreaPrivate *>(static_cast<QWidget *>(scrollArea)->d_ptr.data());
                             scrollAreaOffset = priv->contentsOffset();
                             p.translate(-scrollAreaOffset);
                         }

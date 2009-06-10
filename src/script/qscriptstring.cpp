@@ -54,6 +54,29 @@
 
 QT_BEGIN_NAMESPACE
 
+/*! \internal */
+struct QScriptStringPrivatePointerHandler
+{
+    static inline void cleanup(QScriptStringPrivate *d)
+    {
+        if (!d || d->ref.deref())
+            return;
+
+        if (d->nameId) {
+            d->engine->uninternString(d);
+        } else {
+            // the engine has already been deleted
+            delete d;
+        }
+    }
+
+    static inline void reset(QScriptStringPrivate *&d, QScriptStringPrivate *other)
+    {
+        cleanup(d);
+        d = other;
+    }
+};
+
 /*!
   \since 4.4
   \class QScriptString
@@ -108,8 +131,8 @@ QScriptStringPrivate *QScriptStringPrivate::get(const QScriptString &q)
 void QScriptStringPrivate::init(QScriptString &q, QScriptStringPrivate *d)
 {
     Q_ASSERT(q.d_ptr == 0);
-    q.d_ptr = d;
-    q.d_ptr->ref.ref();
+    q.d_ptr.data_ptr() = d;
+    d->ref.ref();
 }
 
 /*!
@@ -124,7 +147,7 @@ QScriptString::QScriptString()
   Constructs a new QScriptString that is a copy of \a other.
 */
 QScriptString::QScriptString(const QScriptString &other)
-    : d_ptr(other.d_ptr)
+    : d_ptr(other.d_ptr.data())
 {
     if (d_ptr)
         d_ptr->ref.ref();
@@ -135,15 +158,6 @@ QScriptString::QScriptString(const QScriptString &other)
 */
 QScriptString::~QScriptString()
 {
-    if (d_ptr && !d_ptr->ref.deref()) {
-        if (isValid()) {
-            d_ptr->engine->uninternString(d_ptr);
-        } else {
-            // the engine has already been deleted
-            delete d_ptr;
-        }
-        d_ptr = 0;
-    }
 }
 
 /*!
@@ -153,15 +167,7 @@ QScriptString &QScriptString::operator=(const QScriptString &other)
 {
     if (d_ptr == other.d_ptr)
         return *this;
-    if (d_ptr && !d_ptr->ref.deref()) {
-        if (isValid()) {
-            d_ptr->engine->uninternString(d_ptr);
-        } else {
-            // the engine has already been deleted
-            delete d_ptr;
-        }
-    }
-    d_ptr = other.d_ptr;
+    d_ptr.reset(other.d_ptr.data());
     if (d_ptr)
         d_ptr->ref.ref();
     return *this;

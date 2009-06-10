@@ -305,7 +305,7 @@ void QLocalSocketPrivate::_q_connectToSocket()
         case EAGAIN:
             // Try again later, all of the sockets listening are full
             if (!delayConnect) {
-                delayConnect = new QSocketNotifier(connectingSocket, QSocketNotifier::Write);
+                delayConnect = new QSocketNotifier(connectingSocket, QSocketNotifier::Write, q);
                 q->connect(delayConnect, SIGNAL(activated(int)), q, SLOT(_q_connectToSocket()));
             }
             if (!connectTimer) {

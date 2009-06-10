@@ -77,6 +77,7 @@ struct Q_CORE_EXPORT QVectorData
     static QVectorData shared_null;
     // ### Qt 5: rename to 'allocate()'. The current name causes problems for
     // some debugges when the QVector is member of a class within an unnamed namespace.
+    // ### Qt 5: can be removed completely. (Ralf)
     static QVectorData *malloc(int sizeofTypedData, int size, int sizeofT, QVectorData *init);
     static int grow(int sizeofTypedData, int size, int sizeofT, bool excessive);
 };
@@ -379,7 +380,9 @@ QVector<T> &QVector<T>::operator=(const QVector<T> &v)
 template <typename T>
 inline QVectorData *QVector<T>::malloc(int aalloc)
 {
-    return static_cast<QVectorData *>(qMalloc(sizeOfTypedData() + (aalloc - 1) * sizeof(T)));
+    QVectorData *data = static_cast<QVectorData *>(qMalloc(sizeOfTypedData() + (aalloc - 1) * sizeof(T)));
+    Q_CHECK_PTR(data);
+    return data;
 }
 
 template <typename T>
@@ -428,74 +431,79 @@ void QVector<T>::free(Data *x)
 template <typename T>
 void QVector<T>::realloc(int asize, int aalloc)
 {
-    T *j, *i, *b;
+    T *pOld;
+    T *pNew;
     union { QVectorData *p; Data *d; } x;
     x.d = d;
 
-    if (QTypeInfo<T>::isComplex && aalloc == d->alloc && d->ref == 1) {
-        // pure resize
-        i = d->array + d->size;
-        j = d->array + asize;
-        if (i > j) {
-            while (i-- != j)
-                i->~T();
-        } else {
-            while (j-- != i)
-                new (j) T;
+    if (QTypeInfo<T>::isComplex && asize < d->size && d->ref == 1 ) {
+        // call the destructor on all objects that need to be
+        // destroyed when shrinking
+        pOld = d->array + d->size;
+        pNew = d->array + asize;
+        while (asize < d->size) {
+            (--pOld)->~T();
+            d->size--;
         }
-        d->size = asize;
-        return;
     }
 
     if (aalloc != d->alloc || d->ref != 1) {
         // (re)allocate memory
         if (QTypeInfo<T>::isStatic) {
             x.p = malloc(aalloc);
+            Q_CHECK_PTR(x.p);
+            x.d->size = 0;
         } else if (d->ref != 1) {
-            x.p = QVectorData::malloc(sizeOfTypedData(), aalloc, sizeof(T), p);
-        } else {
+            x.p = malloc(aalloc);
+            Q_CHECK_PTR(x.p);
             if (QTypeInfo<T>::isComplex) {
-                // call the destructor on all objects that need to be
-                // destroyed when shrinking
-                if (asize < d->size) {
-                    j = d->array + asize;
-                    i = d->array + d->size;
-                    while (i-- != j)
-                        i->~T();
-                    i = d->array + asize;
-                }
+                x.d->size = 0;
+            } else {
+                ::memcpy(x.p, p, sizeOfTypedData() + (qMin(aalloc, p->alloc) - 1) * sizeof(T));
+                x.d->size = d->size;
             }
-            x.p = p = static_cast<QVectorData *>(qRealloc(p, sizeOfTypedData() + (aalloc - 1) * sizeof(T)));
+        } else {
+            QT_TRY {
+                QVectorData *mem = static_cast<QVectorData *>(qRealloc(p, sizeOfTypedData() + (aalloc - 1) * sizeof(T)));
+                Q_CHECK_PTR(mem);
+                x.p = p = mem;
+                x.d->size = d->size;
+            } QT_CATCH (const std::bad_alloc &) {
+                if (aalloc > d->alloc) // ignore the error in case we are just shrinking.
+                    QT_RETHROW;
+            }
         }
         x.d->ref = 1;
+        x.d->alloc = aalloc;
         x.d->sharable = true;
         x.d->capacity = d->capacity;
-
     }
+
     if (QTypeInfo<T>::isComplex) {
-        if (asize < d->size) {
-            j = d->array + asize;
-            i = x.d->array + asize;
-        } else {
-            // construct all new objects when growing
-            i = x.d->array + asize;
-            j = x.d->array + d->size;
-            while (i != j)
-                new (--i) T;
-            j = d->array + d->size;
-        }
-        if (i != j) {
+        QT_TRY {
+            pOld = d->array + x.d->size;
+            pNew = x.d->array + x.d->size;
             // copy objects from the old array into the new array
-            b = x.d->array;
-            while (i != b)
-                new (--i) T(*--j);
+            while (x.d->size < qMin(asize, d->size)) {
+                new (pNew++) T(*pOld++);
+                x.d->size++;
+            }
+            // construct all new objects when growing
+            while (x.d->size < asize) {
+                new (pNew++) T;
+                x.d->size++;
+            }
+        } QT_CATCH (...) {
+            free(x.d);
+            QT_RETHROW;
         }
-    } else if (asize > d->size) {
+
+    } else if (asize > x.d->size) {
         // initialize newly allocated memory to 0
-        qMemSet(x.d->array + d->size, 0, (asize - d->size) * sizeof(T));
+        qMemSet(x.d->array + x.d->size, 0, (asize - x.d->size) * sizeof(T));
     }
     x.d->size = asize;
-    x.d->alloc = aalloc;
+
     if (d != x.d) {
         if (!d->ref.deref())
             free(d);

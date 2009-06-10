@@ -163,9 +163,9 @@ QAdoptedThread::~QAdoptedThread()
 
 QThread *QAdoptedThread::createThreadForAdoption()
 {
-    QThread *t = new QAdoptedThread(0);
-    t->moveToThread(t);
-    return t;
+    QScopedPointer<QThread> t(new QAdoptedThread(0));
+    t->moveToThread(t.data());
+    return t.take();
 }
 
 void QAdoptedThread::run()
@@ -483,10 +483,10 @@ uint QThread::stackSize() const
 int QThread::exec()
 {
     Q_D(QThread);
-    d->mutex.lock();
+    QMutexLocker locker(&d->mutex);
     d->data->quitNow = false;
     QEventLoop eventLoop;
-    d->mutex.unlock();
+    locker.unlock();
     int returnCode = eventLoop.exec();
     return returnCode;
 }
@@ -734,8 +734,9 @@ QThreadData* QThreadData::current()
 {
     static QThreadData *data = 0; // reinterpret_cast<QThreadData *>(pthread_getspecific(current_thread_data_key));
     if (!data) {
-        data = new QThreadData;
-        data->thread = new QAdoptedThread(data);
+        QScopedPointer<QThreadData> newdata(new QThreadData);
+        newdata->thread = new QAdoptedThread(newdata.data());
+        data = newdata.take();
         data->deref();
     }
     return data;

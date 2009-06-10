@@ -90,7 +90,7 @@ QScriptDebuggerConsoleCommandGroupData::QScriptDebuggerConsoleCommandGroupData(
 
 QScriptDebuggerConsoleCommandGroupData::QScriptDebuggerConsoleCommandGroupData(
     const QScriptDebuggerConsoleCommandGroupData &other)
-    : d_ptr(other.d_ptr)
+    : d_ptr(other.d_ptr.data())
 {
     if (d_ptr)
         d_ptr->ref.ref();
@@ -98,22 +98,12 @@ QScriptDebuggerConsoleCommandGroupData::QScriptDebuggerConsoleCommandGroupData(
 
 QScriptDebuggerConsoleCommandGroupData::~QScriptDebuggerConsoleCommandGroupData()
 {
-    if (d_ptr && !d_ptr->ref.deref()) {
-        delete d_ptr;
-        d_ptr = 0;
-    }
 }
 
 QScriptDebuggerConsoleCommandGroupData &QScriptDebuggerConsoleCommandGroupData::operator=(
     const QScriptDebuggerConsoleCommandGroupData &other)
 {
-    if (d_ptr == other.d_ptr)
-        return *this;
-    if (d_ptr && !d_ptr->ref.deref())
-        delete d_ptr;
-    d_ptr = other.d_ptr;
-    if (d_ptr)
-        d_ptr->ref.ref();
+    d_ptr.assign(other.d_ptr.data());
     return *this;
 }
 

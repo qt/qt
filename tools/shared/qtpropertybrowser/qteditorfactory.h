@@ -60,7 +60,7 @@ protected:
                 QWidget *parent);
     void disconnectPropertyManager(QtIntPropertyManager *manager);
 private:
-    QtSpinBoxFactoryPrivate *d_ptr;
+    QScopedPointer<QtSpinBoxFactoryPrivate> d_ptr;
     Q_DECLARE_PRIVATE(QtSpinBoxFactory)
     Q_DISABLE_COPY(QtSpinBoxFactory)
     Q_PRIVATE_SLOT(d_func(), void slotPropertyChanged(QtProperty *, int))
@@ -84,7 +84,7 @@ protected:
                 QWidget *parent);
     void disconnectPropertyManager(QtIntPropertyManager *manager);
 private:
-    QtSliderFactoryPrivate *d_ptr;
+    QScopedPointer<QtSliderFactoryPrivate> d_ptr;
     Q_DECLARE_PRIVATE(QtSliderFactory)
     Q_DISABLE_COPY(QtSliderFactory)
     Q_PRIVATE_SLOT(d_func(), void slotPropertyChanged(QtProperty *, int))
@@ -108,7 +108,7 @@ protected:
                 QWidget *parent);
     void disconnectPropertyManager(QtIntPropertyManager *manager);
 private:
-    QtScrollBarFactoryPrivate *d_ptr;
+    QScopedPointer<QtScrollBarFactoryPrivate> d_ptr;
     Q_DECLARE_PRIVATE(QtScrollBarFactory)
     Q_DISABLE_COPY(QtScrollBarFactory)
     Q_PRIVATE_SLOT(d_func(), void slotPropertyChanged(QtProperty *, int))
@@ -132,7 +132,7 @@ protected:
                 QWidget *parent);
     void disconnectPropertyManager(QtBoolPropertyManager *manager);
 private:
-    QtCheckBoxFactoryPrivate *d_ptr;
+    QScopedPointer<QtCheckBoxFactoryPrivate> d_ptr;
     Q_DECLARE_PRIVATE(QtCheckBoxFactory)
     Q_DISABLE_COPY(QtCheckBoxFactory)
     Q_PRIVATE_SLOT(d_func(), void slotPropertyChanged(QtProperty *, bool))
@@ -154,7 +154,7 @@ protected:
                 QWidget *parent);
     void disconnectPropertyManager(QtDoublePropertyManager *manager);
 private:
-    QtDoubleSpinBoxFactoryPrivate *d_ptr;
+    QScopedPointer<QtDoubleSpinBoxFactoryPrivate> d_ptr;
     Q_DECLARE_PRIVATE(QtDoubleSpinBoxFactory)
     Q_DISABLE_COPY(QtDoubleSpinBoxFactory)
     Q_PRIVATE_SLOT(d_func(), void slotPropertyChanged(QtProperty *, double))
@@ -179,7 +179,7 @@ protected:
                 QWidget *parent);
     void disconnectPropertyManager(QtStringPropertyManager *manager);
 private:
-    QtLineEditFactoryPrivate *d_ptr;
+    QScopedPointer<QtLineEditFactoryPrivate> d_ptr;
     Q_DECLARE_PRIVATE(QtLineEditFactory)
     Q_DISABLE_COPY(QtLineEditFactory)
     Q_PRIVATE_SLOT(d_func(), void slotPropertyChanged(QtProperty *, const QString &))
@@ -202,7 +202,7 @@ protected:
                 QWidget *parent);
     void disconnectPropertyManager(QtDatePropertyManager *manager);
 private:
-    QtDateEditFactoryPrivate *d_ptr;
+    QScopedPointer<QtDateEditFactoryPrivate> d_ptr;
     Q_DECLARE_PRIVATE(QtDateEditFactory)
     Q_DISABLE_COPY(QtDateEditFactory)
     Q_PRIVATE_SLOT(d_func(), void slotPropertyChanged(QtProperty *, const QDate &))
@@ -226,7 +226,7 @@ protected:
                 QWidget *parent);
     void disconnectPropertyManager(QtTimePropertyManager *manager);
 private:
-    QtTimeEditFactoryPrivate *d_ptr;
+    QScopedPointer<QtTimeEditFactoryPrivate> d_ptr;
     Q_DECLARE_PRIVATE(QtTimeEditFactory)
     Q_DISABLE_COPY(QtTimeEditFactory)
     Q_PRIVATE_SLOT(d_func(), void slotPropertyChanged(QtProperty *, const QTime &))
@@ -248,7 +248,7 @@ protected:
                 QWidget *parent);
     void disconnectPropertyManager(QtDateTimePropertyManager *manager);
 private:
-    QtDateTimeEditFactoryPrivate *d_ptr;
+    QScopedPointer<QtDateTimeEditFactoryPrivate> d_ptr;
     Q_DECLARE_PRIVATE(QtDateTimeEditFactory)
     Q_DISABLE_COPY(QtDateTimeEditFactory)
     Q_PRIVATE_SLOT(d_func(), void slotPropertyChanged(QtProperty *, const QDateTime &))
@@ -270,7 +270,7 @@ protected:
                 QWidget *parent);
     void disconnectPropertyManager(QtKeySequencePropertyManager *manager);
 private:
-    QtKeySequenceEditorFactoryPrivate *d_ptr;
+    QScopedPointer<QtKeySequenceEditorFactoryPrivate> d_ptr;
     Q_DECLARE_PRIVATE(QtKeySequenceEditorFactory)
     Q_DISABLE_COPY(QtKeySequenceEditorFactory)
     Q_PRIVATE_SLOT(d_func(), void slotPropertyChanged(QtProperty *, const QKeySequence &))
@@ -292,7 +292,7 @@ protected:
                 QWidget *parent);
     void disconnectPropertyManager(QtCharPropertyManager *manager);
 private:
-    QtCharEditorFactoryPrivate *d_ptr;
+    QScopedPointer<QtCharEditorFactoryPrivate> d_ptr;
     Q_DECLARE_PRIVATE(QtCharEditorFactory)
     Q_DISABLE_COPY(QtCharEditorFactory)
     Q_PRIVATE_SLOT(d_func(), void slotPropertyChanged(QtProperty *, const QChar &))
@@ -314,7 +314,7 @@ protected:
                 QWidget *parent);
     void disconnectPropertyManager(QtEnumPropertyManager *manager);
 private:
-    QtEnumEditorFactoryPrivate *d_ptr;
+    QScopedPointer<QtEnumEditorFactoryPrivate> d_ptr;
     Q_DECLARE_PRIVATE(QtEnumEditorFactory)
     Q_DISABLE_COPY(QtEnumEditorFactory)
     Q_PRIVATE_SLOT(d_func(), void slotPropertyChanged(QtProperty *, int))
@@ -340,7 +340,7 @@ protected:
                 QWidget *parent);
     void disconnectPropertyManager(QtCursorPropertyManager *manager);
 private:
-    QtCursorEditorFactoryPrivate *d_ptr;
+    QScopedPointer<QtCursorEditorFactoryPrivate> d_ptr;
     Q_DECLARE_PRIVATE(QtCursorEditorFactory)
     Q_DISABLE_COPY(QtCursorEditorFactory)
     Q_PRIVATE_SLOT(d_func(), void slotPropertyChanged(QtProperty *, const QCursor &))
@@ -362,7 +362,7 @@ protected:
                 QWidget *parent);
     void disconnectPropertyManager(QtColorPropertyManager *manager);
 private:
-    QtColorEditorFactoryPrivate *d_ptr;
+    QScopedPointer<QtColorEditorFactoryPrivate> d_ptr;
     Q_DECLARE_PRIVATE(QtColorEditorFactory)
     Q_DISABLE_COPY(QtColorEditorFactory)
     Q_PRIVATE_SLOT(d_func(), void slotPropertyChanged(QtProperty *, const QColor &))
@@ -384,7 +384,7 @@ protected:
                 QWidget *parent);
     void disconnectPropertyManager(QtFontPropertyManager *manager);
 private:
-    QtFontEditorFactoryPrivate *d_ptr;
+    QScopedPointer<QtFontEditorFactoryPrivate> d_ptr;
     Q_DECLARE_PRIVATE(QtFontEditorFactory)
     Q_DISABLE_COPY(QtFontEditorFactory)
     Q_PRIVATE_SLOT(d_func(), void slotPropertyChanged(QtProperty *, const QFont &))

@@ -90,12 +90,12 @@ public:
 #endif // !Q_WS_S60
 
 #ifdef Q_WS_S60
-public slots:
+public Q_SLOTS:
     void handleDynamicLayoutVariantSwitch();
     void handleSkinChange();
 #endif // Q_WS_S60
 
-protected slots:
+protected Q_SLOTS:
     QIcon standardIconImplementation(
             StandardPixmap standardIcon, const QStyleOption * option = 0, const QWidget * widget = 0 ) const;
 

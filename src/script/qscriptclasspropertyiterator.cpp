@@ -111,8 +111,6 @@ QScriptClassPropertyIterator::QScriptClassPropertyIterator(const QScriptValue &o
 */
 QScriptClassPropertyIterator::~QScriptClassPropertyIterator()
 {
-    delete d_ptr;
-    d_ptr = 0;
 }
 
 /*!

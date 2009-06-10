@@ -136,6 +136,9 @@ public:
 protected:
     void DoCancel();
     void RunL();
+    
+private:
+    void Run();
 
 private:
     SymbianTimerInfo *m_timerInfo;

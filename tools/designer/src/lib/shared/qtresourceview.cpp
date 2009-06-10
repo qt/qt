@@ -499,8 +499,6 @@ QtResourceView::~QtResourceView()
 {
     if (!d_ptr->m_settingsKey.isEmpty())
         d_ptr->saveSettings();
-
-    delete d_ptr;
 }
 
 bool QtResourceView::event(QEvent *event)
@@ -737,8 +735,6 @@ QtResourceViewDialog::~QtResourceViewDialog()
     settings->setValue(QLatin1String(Geometry), geometry());
 
     settings->endGroup();
-
-    delete d_ptr;
 }
 
 QString QtResourceViewDialog::selectedResource() const

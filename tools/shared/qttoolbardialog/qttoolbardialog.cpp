@@ -119,7 +119,7 @@ signals:
     void toolBarChanged(QToolBar *toolBar, const QList<QAction *> &actions);
 
 private:
-    QtFullToolBarManagerPrivate *d_ptr;
+    QScopedPointer<QtFullToolBarManagerPrivate> d_ptr;
     Q_DECLARE_PRIVATE(QtFullToolBarManager)
     Q_DISABLE_COPY(QtFullToolBarManager)
 };
@@ -443,15 +443,13 @@ QToolBar *QtFullToolBarManagerPrivate::toolBarByName(const QString &toolBarName)
 //////////////////////////////
 
 QtFullToolBarManager::QtFullToolBarManager(QObject *parent)
-    : QObject(parent)
+    : QObject(parent), d_ptr(new QtFullToolBarManagerPrivate)
 {
-    d_ptr = new QtFullToolBarManagerPrivate;
     d_ptr->q_ptr = this;
 }
 
 QtFullToolBarManager::~QtFullToolBarManager()
 {
-    delete d_ptr;
 }
 
 void QtFullToolBarManager::setMainWindow(QMainWindow *mainWindow)
@@ -831,9 +829,8 @@ public:
     Creates a toolbar manager with the given \a parent.
 */
 QtToolBarManager::QtToolBarManager(QObject *parent)
-    : QObject(parent)
+    : QObject(parent), d_ptr(new QtToolBarManagerPrivate)
 {
-    d_ptr = new QtToolBarManagerPrivate;
     d_ptr->q_ptr = this;
 
     d_ptr->manager = new QtFullToolBarManager(this);
@@ -844,7 +841,6 @@ QtToolBarManager::QtToolBarManager(QObject *parent)
 */
 QtToolBarManager::~QtToolBarManager()
 {
-    delete d_ptr;
 }
 
 /*!
@@ -1781,9 +1777,8 @@ void QtToolBarListWidget::dropEvent(QDropEvent *event)
     window \a flags.
 */
 QtToolBarDialog::QtToolBarDialog(QWidget *parent, Qt::WindowFlags flags)
-    : QDialog(parent, flags)
+    : QDialog(parent, flags), d_ptr(new QtToolBarDialogPrivate)
 {
-    d_ptr = new QtToolBarDialogPrivate;
     d_ptr->q_ptr = this;
     d_ptr->ui.setupUi(this);
     d_ptr->separatorText = tr("< S E P A R A T O R >");
@@ -1834,7 +1829,6 @@ QtToolBarDialog::QtToolBarDialog(QWidget *parent, Qt::WindowFlags flags)
 QtToolBarDialog::~QtToolBarDialog()
 {
     d_ptr->clearOld();
-    delete d_ptr;
 }
 
 /*!

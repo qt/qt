@@ -5124,6 +5124,7 @@ static Bigint *Balloc(int k)
 
     x = 1 << k;
     rv = static_cast<Bigint *>(MALLOC(sizeof(Bigint) + (x-1)*sizeof(Long)));
+    Q_CHECK_PTR(rv);
     rv->k = k;
     rv->maxwds = x;
     rv->sign = rv->wds = 0;
@@ -6788,6 +6789,7 @@ static char *_qdtoa( NEEDS_VOLATILE double d, int mode, int ndigits, int *decpt,
             i = 1;
     }
     *resultp = static_cast<char *>(malloc(i + 1));
+    Q_CHECK_PTR(resultp);
     s = s0 = *resultp;
 
     if (ilim >= 0 && ilim <= Quick_max && try_quick) {
@@ -7209,6 +7211,7 @@ Q_CORE_EXPORT char *qdtoa( double d, int mode, int ndigits, int *decpt, int *sig
         n = i + 1;
     }
     *resultp = static_cast<char*>(malloc(n + 1));
+    Q_CHECK_PTR(resultp);
     qstrncpy(*resultp, res, n + 1);
     return *resultp;
 }

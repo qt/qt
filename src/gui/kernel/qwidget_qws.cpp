@@ -652,7 +652,8 @@ void QWidgetPrivate::hide_sys()
         q->releaseMouse();
 //        requestWindowRegion(QRegion());
 
-        extra->topextra->backingStore->releaseBuffer();
+        if (extra->topextra->backingStore)
+            extra->topextra->backingStore->releaseBuffer();
 
 
         QWidget::qwsDisplay()->requestFocus(data.winid,false);

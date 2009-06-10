@@ -116,11 +116,9 @@ bool QSharedMemoryPrivate::create(int size)
         return false;
     }
 
-    HBufC* buffer = qt_QString2HBufCNewL(safeKey);
+    TPtrC ptr(qt_QString2TPtrC(safeKey));
 
-    TInt err = chunk.CreateGlobal(*buffer, size, size);
-
-    delete buffer;
+    TInt err = chunk.CreateGlobal(ptr, size, size);
 
     setErrorString(function, err);
 
@@ -147,15 +145,11 @@ bool QSharedMemoryPrivate::attach(QSharedMemory::AccessMode mode)
             return false;
         }
 
-        HBufC* buffer = qt_QString2HBufCNewL(safeKey);
+        TPtrC ptr(qt_QString2TPtrC(safeKey));
 
         TInt err = KErrNoMemory;
 
-        if (buffer) {
-            err = chunk.OpenGlobal(*buffer, false);
-        }
-
-        delete buffer;
+        err = chunk.OpenGlobal(ptr, false);
 
         if (err != KErrNone) {
             setErrorString(function, err);

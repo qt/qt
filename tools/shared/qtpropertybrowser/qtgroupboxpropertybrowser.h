@@ -63,7 +63,7 @@ protected:
 
 private:
 
-    QtGroupBoxPropertyBrowserPrivate *d_ptr;
+    QScopedPointer<QtGroupBoxPropertyBrowserPrivate> d_ptr;
     Q_DECLARE_PRIVATE(QtGroupBoxPropertyBrowser)
     Q_DISABLE_COPY(QtGroupBoxPropertyBrowser)
     Q_PRIVATE_SLOT(d_func(), void slotUpdate())

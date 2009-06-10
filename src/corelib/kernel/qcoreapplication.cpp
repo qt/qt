@@ -63,8 +63,10 @@
 #include <private/qfactoryloader_p.h>
 
 #ifdef Q_OS_SYMBIAN
+#  include <exception>
 #  include <f32file.h>
 #  include "qeventdispatcher_symbian_p.h"
+#  include "private/qcore_symbian_p.h"
 #elif defined(Q_OS_UNIX)
 #  if !defined(QT_NO_GLIB)
 #    include "qeventdispatcher_glib_p.h"
@@ -87,6 +89,21 @@
 #endif
 
 QT_BEGIN_NAMESPACE
+
+class QLockedMutexUnlocker
+{
+public:
+    inline explicit QLockedMutexUnlocker(QMutex *m)
+        : mtx(m)
+    { }
+    inline ~QLockedMutexUnlocker() { unlock(); }
+    inline void unlock() { if (mtx) mtx->unlock(); mtx = 0; }
+
+private:
+    Q_DISABLE_COPY(QLockedMutexUnlocker)
+
+    QMutex *mtx;
+};
 
 #if defined(Q_WS_WIN) || defined(Q_WS_MAC)
 extern QString qAppFileName();
@@ -159,7 +176,14 @@ void qRemovePostRoutine(QtCleanUpFunction p)
 
 void Q_CORE_EXPORT qt_call_post_routines()
 {
-    QVFuncList *list = postRList();
+    QVFuncList *list = 0;
+    QT_TRY {
+        list = postRList();
+    } QT_CATCH(const std::bad_alloc &) {
+        // ignore - if we can't allocate a post routine list,
+        // there's a high probability that there's no post
+        // routine to be executed :)
+    }
     if (!list)
         return;
     while (!list->isEmpty())
@@ -248,24 +272,26 @@ QCoreApplicationPrivate::QCoreApplicationPrivate(int &aargc, char **aargv)
 
 QCoreApplicationPrivate::~QCoreApplicationPrivate()
 {
+    if (threadData) {
 #ifndef QT_NO_THREAD
-    void *data = &threadData->tls;
-    QThreadStorageData::finish((void **)data);
+        void *data = &threadData->tls;
+        QThreadStorageData::finish((void **)data);
 #endif
 
-    // need to clear the state of the mainData, just in case a new QCoreApplication comes along.
-    QMutexLocker locker(&threadData->postEventList.mutex);
-    for (int i = 0; i < threadData->postEventList.size(); ++i) {
-        const QPostEvent &pe = threadData->postEventList.at(i);
-        if (pe.event) {
-            --pe.receiver->d_func()->postedEvents;
-            pe.event->posted = false;
-            delete pe.event;
+        // need to clear the state of the mainData, just in case a new QCoreApplication comes along.
+        QMutexLocker locker(&threadData->postEventList.mutex);
+        for (int i = 0; i < threadData->postEventList.size(); ++i) {
+            const QPostEvent &pe = threadData->postEventList.at(i);
+            if (pe.event) {
+                --pe.receiver->d_func()->postedEvents;
+                pe.event->posted = false;
+                delete pe.event;
+            }
         }
+        threadData->postEventList.clear();
+        threadData->postEventList.recursion = 0;
+        threadData->quitNow = false;
     }
-    threadData->postEventList.clear();
-    threadData->postEventList.recursion = 0;
-    threadData->quitNow = false;
 }
 
 void QCoreApplicationPrivate::createEventDispatcher()
@@ -544,7 +570,14 @@ QCoreApplication::~QCoreApplication()
 #if !defined(QT_NO_THREAD)
 #if !defined(QT_NO_CONCURRENT)
     // Synchronize and stop the global thread pool threads.
-    QThreadPool::globalInstance()->waitForDone();
+    QThreadPool *globalThreadPool = 0;
+    QT_TRY {
+        globalThreadPool = QThreadPool::globalInstance();
+    } QT_CATCH (...) {
+        // swallow the exception, since destructors shouldn't throw
+    }
+    if (globalThreadPool)
+        globalThreadPool->waitForDone();
 #endif
     QThread::cleanup();
 #endif
@@ -626,26 +659,13 @@ bool QCoreApplication::notifyInternal(QObject *receiver, QEvent *event)
     d->inEventHandler = true;
 #endif
 
-#if defined(Q_OS_SYMBIAN)
-//    __UHEAP_MARK;
-    TInt error;
-    bool returnValue = false;
-    TRAP(error, returnValue = notify(receiver, event));
-    if (error != KErrNone) {
-        qWarning(QString("Symbian OS error: %1").arg(error).toAscii().constData());
-    }
-//    __UHEAP_MARKEND;
-#elif defined(QT_NO_EXCEPTIONS)
-    bool returnValue = notify(receiver, event);
-#else
     bool returnValue;
-    try {
+    QT_TRY {
         returnValue = notify(receiver, event);
-    } catch(...) {
+    } QT_CATCH (...) {
         --threadData->loopLevel;
-        throw;
+        QT_RETHROW;
     }
-#endif
 
 #ifdef QT_JAMBI_BUILD
     // Restore the previous state if the object was not deleted..
@@ -1066,15 +1086,14 @@ void QCoreApplication::postEvent(QObject *receiver, QEvent *event, int priority)
         data->postEventList.mutex.lock();
     }
 
+    QLockedMutexUnlocker locker(&data->postEventList.mutex);
+
     // if this is one of the compressible events, do compression
     if (receiver->d_func()->postedEvents
         && self && self->compressEvent(event, receiver, &data->postEventList)) {
-        data->postEventList.mutex.unlock();
         return;
     }
 
-    event->posted = true;
-    ++receiver->d_func()->postedEvents;
     if (event->type() == QEvent::DeferredDelete && data == QThreadData::current()) {
         // remember the current running eventloop for DeferredDelete
         // events posted in the receiver's thread
@@ -1095,8 +1114,10 @@ void QCoreApplication::postEvent(QObject *receiver, QEvent *event, int priority)
         QPostEventList::iterator at = qUpperBound(begin, end, priority);
         data->postEventList.insert(at, QPostEvent(receiver, event, priority));
     }
+    event->posted = true;
+    ++receiver->d_func()->postedEvents;
     data->canWait = false;
-    data->postEventList.mutex.unlock();
+    locker.unlock();
 
     if (data->eventDispatcher)
         data->eventDispatcher->wakeUp();

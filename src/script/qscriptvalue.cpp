@@ -57,6 +57,28 @@
 
 QT_BEGIN_NAMESPACE
 
+/*! \internal
+ */
+struct QScriptValuePrivatePointerHandler
+{
+    static inline void cleanup(QScriptValuePrivate *d)
+    {
+        if (!d || d->ref.deref())
+            return;
+        if (d->engine) {
+            QScriptEnginePrivate::get(d->engine)->unregisterValue(d);
+        } else {
+            delete d;
+        }
+    }
+
+    static inline void reset(QScriptValuePrivate *&d, QScriptValuePrivate *other)
+    {
+        cleanup(d);
+        d = other;
+    }
+};
+
 /*!
   \since 4.3
   \class QScriptValue
@@ -194,14 +216,6 @@ QScriptValue::QScriptValue()
 */
 QScriptValue::~QScriptValue()
 {
-    if (d_ptr && !d_ptr->ref.deref()) {
-        if (engine()) {
-            QScriptEnginePrivate::get(engine())->unregisterValue(d_ptr);
-        } else {
-            delete d_ptr;
-        }
-        d_ptr = 0;
-    }
 }
 
 /*!
@@ -212,7 +226,7 @@ QScriptValue::~QScriptValue()
   the new script value (i.e., the object itself is not copied).
 */
 QScriptValue::QScriptValue(const QScriptValue &other)
-    : d_ptr(other.d_ptr)
+    : d_ptr(other.d_ptr.data())
 {
     if (d_ptr)
         d_ptr->ref.ref();
@@ -225,13 +239,12 @@ QScriptValue::QScriptValue(const QScriptValue &other)
   registers it with the script \a engine.
 */
 QScriptValue::QScriptValue(QScriptEngine *engine, QScriptValue::SpecialValue value)
+    : d_ptr(0)
 {
     if (engine) {
         QScriptEnginePrivate *eng_p = QScriptEnginePrivate::get(engine);
-        d_ptr = eng_p->registerValue(QScriptValueImpl(value));
+        d_ptr.data_ptr() = eng_p->registerValue(QScriptValueImpl(value));
         d_ptr->ref.ref();
-    } else {
-        d_ptr = 0;
     }
 }
 
@@ -244,13 +257,12 @@ QScriptValue::QScriptValue(QScriptEngine *engine, QScriptValue::SpecialValue val
   registers it with the script \a engine.
 */
 QScriptValue::QScriptValue(QScriptEngine *engine, bool val)
+    : d_ptr(0)
 {
     if (engine) {
         QScriptEnginePrivate *eng_p = QScriptEnginePrivate::get(engine);
-        d_ptr = eng_p->registerValue(QScriptValueImpl(val));
+        d_ptr.data_ptr() = eng_p->registerValue(QScriptValueImpl(val));
         d_ptr->ref.ref();
-    } else {
-        d_ptr = 0;
     }
 }
 
@@ -262,13 +274,12 @@ QScriptValue::QScriptValue(QScriptEngine *engine, bool val)
   registers it with the script \a engine.
 */
 QScriptValue::QScriptValue(QScriptEngine *engine, int val)
+    : d_ptr(0)
 {
     if (engine) {
         QScriptEnginePrivate *eng_p = QScriptEnginePrivate::get(engine);
-        d_ptr = eng_p->registerValue(QScriptValueImpl(val));
+        d_ptr.data_ptr() = eng_p->registerValue(QScriptValueImpl(val));
         d_ptr->ref.ref();
-    } else {
-        d_ptr = 0;
     }
 }
 
@@ -280,13 +291,12 @@ QScriptValue::QScriptValue(QScriptEngine *engine, int val)
   registers it with the script \a engine.
  */
 QScriptValue::QScriptValue(QScriptEngine *engine, uint val)
+    : d_ptr(0)
 {
     if (engine) {
         QScriptEnginePrivate *eng_p = QScriptEnginePrivate::get(engine);
-        d_ptr = eng_p->registerValue(QScriptValueImpl(val));
+        d_ptr.data_ptr() = eng_p->registerValue(QScriptValueImpl(val));
         d_ptr->ref.ref();
-    } else {
-        d_ptr = 0;
     }
 }
 
@@ -298,13 +308,12 @@ QScriptValue::QScriptValue(QScriptEngine *engine, uint val)
   registers it with the script \a engine.
 */
 QScriptValue::QScriptValue(QScriptEngine *engine, qsreal val)
+    : d_ptr(0)
 {
     if (engine) {
         QScriptEnginePrivate *eng_p = QScriptEnginePrivate::get(engine);
-        d_ptr = eng_p->registerValue(QScriptValueImpl(val));
+        d_ptr.data_ptr() = eng_p->registerValue(QScriptValueImpl(val));
         d_ptr->ref.ref();
-    } else {
-        d_ptr = 0;
     }
 }
 
@@ -316,15 +325,14 @@ QScriptValue::QScriptValue(QScriptEngine *engine, qsreal val)
   registers it with the script \a engine.
 */
 QScriptValue::QScriptValue(QScriptEngine *engine, const QString &val)
+    : d_ptr(0)
 {
     if (engine) {
         QScriptValueImpl v;
         QScriptEnginePrivate *eng_p = QScriptEnginePrivate::get(engine);
         eng_p->newString(&v, val);
-        d_ptr = eng_p->registerValue(v);
+        d_ptr.data_ptr() = eng_p->registerValue(v);
         d_ptr->ref.ref();
-    } else {
-        d_ptr = 0;
     }
 }
 
@@ -338,15 +346,14 @@ QScriptValue::QScriptValue(QScriptEngine *engine, const QString &val)
 
 #ifndef QT_NO_CAST_FROM_ASCII
 QScriptValue::QScriptValue(QScriptEngine *engine, const char *val)
+    : d_ptr(0)
 {
     if (engine) {
         QScriptValueImpl v;
         QScriptEnginePrivate *eng_p = QScriptEnginePrivate::get(engine);
         eng_p->newString(&v, QString::fromAscii(val));
-        d_ptr = eng_p->registerValue(v);
+        d_ptr.data_ptr() = eng_p->registerValue(v);
         d_ptr->ref.ref();
-    } else {
-        d_ptr = 0;
     }
 }
 #endif
@@ -464,14 +471,7 @@ QScriptValue &QScriptValue::operator=(const QScriptValue &other)
 {
     if (d_ptr == other.d_ptr)
         return *this;
-    if (d_ptr && !d_ptr->ref.deref()) {
-        if (engine()) {
-            QScriptEnginePrivate::get(engine())->unregisterValue(d_ptr);
-        } else {
-            delete d_ptr;
-        }
-    }
-    d_ptr = other.d_ptr;
+    d_ptr.reset(other.d_ptr.data());
     if (d_ptr)
         d_ptr->ref.ref();
     return *this;

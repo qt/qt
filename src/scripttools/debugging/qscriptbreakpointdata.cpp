@@ -136,7 +136,6 @@ QScriptBreakpointData::QScriptBreakpointData(const QScriptBreakpointData &other)
 */
 QScriptBreakpointData::~QScriptBreakpointData()
 {
-    delete d_ptr;
 }
 
 /*!
@@ -355,7 +354,7 @@ bool QScriptBreakpointData::operator!=(const QScriptBreakpointData &other) const
 */
 QDataStream &operator<<(QDataStream &out, const QScriptBreakpointData &data)
 {
-    const QScriptBreakpointDataPrivate *d = data.d_ptr;
+    const QScriptBreakpointDataPrivate *d = data.d_ptr.data();
     out << d->scriptId;
     out << d->fileName;
     out << d->lineNumber;
@@ -377,7 +376,7 @@ QDataStream &operator<<(QDataStream &out, const QScriptBreakpointData &data)
 */
 QDataStream &operator>>(QDataStream &in, QScriptBreakpointData &data)
 {
-    QScriptBreakpointDataPrivate *d = data.d_ptr;
+    QScriptBreakpointDataPrivate *d = data.d_ptr.data();
     in >> d->scriptId;
     in >> d->fileName;
     in >> d->lineNumber;

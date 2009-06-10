@@ -214,7 +214,7 @@ class PHONON_EXPORT AbstractMediaStream : public QObject
         virtual void seekStream(qint64 offset);
 
         AbstractMediaStream(AbstractMediaStreamPrivate &dd, QObject *parent);
-        AbstractMediaStreamPrivate *d_ptr;
+        QScopedPointer<AbstractMediaStreamPrivate> d_ptr;
 };
 
 } // namespace Phonon

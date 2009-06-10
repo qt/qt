@@ -44,7 +44,6 @@
 #ifndef QT_NO_PRINTDIALOG
 
 #include "private/qabstractprintdialog_p.h"
-#include "qfiledialog_p.h"
 #include <QtGui/qmessagebox.h>
 #include "qprintdialog.h"
 #include "qfiledialog.h"
@@ -55,6 +54,7 @@
 
 #include <QtGui/qdialogbuttonbox.h>
 
+#include "qfscompleter_p.h"
 #include "ui_qprintpropertieswidget.h"
 #include "ui_qprintsettingsoutput.h"
 #include "ui_qprintwidget.h"
@@ -696,7 +696,7 @@ QUnixPrintWidgetPrivate::QUnixPrintWidgetPrivate(QUnixPrintWidget *p)
     QFileSystemModel *fsm = new QFileSystemModel(widget.filename);
     fsm->setRootPath(QDir::homePath());
 #if !defined(QT_NO_COMPLETER) && !defined(QT_NO_FILEDIALOG)
-    widget.filename->setCompleter(new QFSCompletor(fsm, widget.filename));
+    widget.filename->setCompleter(new QFSCompleter(fsm, widget.filename));
 #endif
 #endif
     _q_printerChanged(currentPrinterIndex);

@@ -1484,8 +1484,8 @@ Q_OPENGL_EXPORT QGLShareRegister* qgl_share_reg()
 */
 
 QGLContext::QGLContext(const QGLFormat &format, QPaintDevice *device)
+    : d_ptr(new QGLContextPrivate(this))
 {
-    d_ptr = new QGLContextPrivate(this);
     Q_D(QGLContext);
     d->init(device, format);
 }
@@ -1507,8 +1507,8 @@ QGLContext::QGLContext(const QGLFormat &format, QPaintDevice *device)
     \sa format(), isValid()
 */
 QGLContext::QGLContext(const QGLFormat &format)
+    : d_ptr(new QGLContextPrivate(this))
 {
-    d_ptr = new QGLContextPrivate(this);
     Q_D(QGLContext);
     d->init(0, format);
 }
@@ -1539,7 +1539,6 @@ QGLContext::~QGLContext()
 
     QGLSignalProxy::instance()->emitAboutToDestroyContext(this);
     reset();
-    delete d;
 }
 
 void QGLContextPrivate::cleanup()

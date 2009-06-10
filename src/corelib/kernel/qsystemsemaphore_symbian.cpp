@@ -90,13 +90,12 @@ int QSystemSemaphorePrivate::handle(QSystemSemaphore::AccessMode)
     if (key.isEmpty())
         return 0;
     QString safeName = makeKeyFileName();
-    HBufC* name = qt_QString2HBufCNewL(safeName);
+    TPtrC name(qt_QString2TPtrC(safeName));
     int err;
-    err = semaphore.OpenGlobal(*name,EOwnerProcess);
+    err = semaphore.OpenGlobal(name,EOwnerProcess);
     if (err == KErrNotFound){
-        err = semaphore.CreateGlobal(*name,initialValue, EOwnerProcess);
+        err = semaphore.CreateGlobal(name,initialValue, EOwnerProcess);
     }
-    delete name;
     if (err){
         setErrorString(QLatin1String("QSystemSemaphore::handle"),err);
         return 0;

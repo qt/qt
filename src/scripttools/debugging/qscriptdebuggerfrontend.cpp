@@ -143,7 +143,6 @@ QScriptDebuggerFrontend::QScriptDebuggerFrontend()
 
 QScriptDebuggerFrontend::~QScriptDebuggerFrontend()
 {
-    delete d_ptr;
 }
 
 QScriptDebuggerFrontend::QScriptDebuggerFrontend(QScriptDebuggerFrontendPrivate &dd)

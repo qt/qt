@@ -63,7 +63,7 @@ QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-Q_CORE_EXPORT HBufC* qt_QString2HBufCNewL(const QString& aString);
+Q_CORE_EXPORT HBufC* qt_QString2HBufC(const QString& aString);
 
 Q_CORE_EXPORT QString qt_TDesC2QStringL(const TDesC& aDescriptor);
 inline QString qt_TDes2QStringL(const TDes& aDescriptor) { return qt_TDesC2QStringL(aDescriptor); }
@@ -91,7 +91,7 @@ static inline TRect qt_QRect2TRect(const QRect& qr)
 // Returned TPtrC is valid as long as the given parameter is valid and unmodified
 static inline TPtrC qt_QString2TPtrC( const QString& string )
 {
-    return reinterpret_cast<const TUint16*>(string.utf16());
+    return TPtrC16(static_cast<const TUint16*>(string.utf16()), string.length());
 }
 
 class Q_CORE_EXPORT QHBufC

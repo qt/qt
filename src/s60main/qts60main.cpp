@@ -40,6 +40,7 @@
 ****************************************************************************/
 
 // INCLUDE FILES
+#include <exception>
 #include <eikstart.h>
 #include "qts60mainapplication.h"
 

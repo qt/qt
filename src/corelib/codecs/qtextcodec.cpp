@@ -92,6 +92,11 @@
 #  define QT_NO_SETLOCALE
 #endif
 
+#if 0 // ### TODO - remove me!
+// enabling this is not exception safe!
+#define Q_DEBUG_TEXTCODEC
+#endif
+
 QT_BEGIN_NAMESPACE
 
 #ifndef QT_NO_TEXTCODECPLUGIN
@@ -165,7 +170,9 @@ static QTextCodec *createForMib(int mib)
 }
 
 static QList<QTextCodec*> *all = 0;
+#ifdef Q_DEBUG_TEXTCODEC
 static bool destroying_is_ok = false;
+#endif
 
 static QTextCodec *localeMapper = 0;
 QTextCodec *QTextCodec::cftr = 0;
@@ -187,15 +194,21 @@ QTextCodecCleanup::~QTextCodecCleanup()
     if (!all)
         return;
 
+#ifdef Q_DEBUG_TEXTCODEC
     destroying_is_ok = true;
+#endif
 
-    while (all->size())
-        delete all->takeFirst();
+    for (QList<QTextCodec *>::const_iterator it = all->constBegin()
+            ; it != all->constEnd(); ++it) {
+        delete *it;
+    }
     delete all;
     all = 0;
     localeMapper = 0;
 
+#ifdef Q_DEBUG_TEXTCODEC
     destroying_is_ok = false;
+#endif
 }
 
 Q_GLOBAL_STATIC(QTextCodecCleanup, createQTextCodecCleanup)
@@ -659,8 +672,10 @@ static void setup()
     if (all)
         return;
 
+#ifdef Q_DEBUG_TEXTCODEC
     if (destroying_is_ok)
         qWarning("QTextCodec: Creating new codec during codec cleanup");
+#endif
     all = new QList<QTextCodec*>;
     // create the cleanup object to cleanup all codecs on exit
     (void) createQTextCodecCleanup();
@@ -915,8 +930,10 @@ QTextCodec::QTextCodec()
 */
 QTextCodec::~QTextCodec()
 {
+#ifdef Q_DEBUG_TEXTCODEC
     if (!destroying_is_ok)
         qWarning("QTextCodec::~QTextCodec: Called by application");
+#endif
     if (all)
         all->removeAll(this);
 }

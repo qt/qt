@@ -78,8 +78,8 @@ void QtGradientStop::setPosition(qreal position)
 }
 
 QtGradientStop::QtGradientStop(QtGradientStopsModel *model)
+    : d_ptr(new QtGradientStopPrivate())
 {
-    d_ptr = new QtGradientStopPrivate();
     d_ptr->m_position = 0;
     d_ptr->m_color = Qt::white;
     d_ptr->m_model = model;
@@ -87,7 +87,6 @@ QtGradientStop::QtGradientStop(QtGradientStopsModel *model)
 
 QtGradientStop::~QtGradientStop()
 {
-    delete d_ptr;
 }
 
 class QtGradientStopsModelPrivate
@@ -104,9 +103,8 @@ public:
 
 
 QtGradientStopsModel::QtGradientStopsModel(QObject *parent)
-    : QObject(parent)
+    : QObject(parent), d_ptr(new QtGradientStopsModelPrivate)
 {
-    d_ptr = new QtGradientStopsModelPrivate;
     d_ptr->q_ptr = this;
     d_ptr->m_current = 0;
 }
@@ -114,7 +112,6 @@ QtGradientStopsModel::QtGradientStopsModel(QObject *parent)
 QtGradientStopsModel::~QtGradientStopsModel()
 {
     clear();
-    delete d_ptr;
 }
 
 QtGradientStopsModel::PositionStopMap QtGradientStopsModel::stops() const

@@ -47,6 +47,7 @@
 #ifndef QT_NO_SCRIPT
 
 #include <QtCore/qlist.h>
+#include <QtCore/qscopedpointer.h>
 
 QT_BEGIN_HEADER
 
@@ -71,6 +72,7 @@ typedef QList<QScriptValue> QScriptValueList;
 typedef double qsreal;
 
 class QScriptValuePrivate;
+struct QScriptValuePrivatePointerHandler;
 class Q_SCRIPT_EXPORT QScriptValue
 {
 public:
@@ -216,12 +218,12 @@ public:
 
 private:
     // force compile error, prevent QScriptValue(bool) to be called
-    inline QScriptValue(void *) { Q_ASSERT(false); }
+    inline QScriptValue(void *);
     // force compile error, prevent QScriptValue(QScriptEngine*, bool) to be called
-    inline QScriptValue(QScriptEngine *, void *) { Q_ASSERT(false); }
+    inline QScriptValue(QScriptEngine *, void *);
 
 private:
-    QScriptValuePrivate *d_ptr;
+    QScopedCustomPointer<QScriptValuePrivate, QScriptValuePrivatePointerHandler> d_ptr;
 
     Q_DECLARE_PRIVATE(QScriptValue)
 };

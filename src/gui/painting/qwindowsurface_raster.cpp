@@ -115,8 +115,6 @@ QRasterWindowSurface::~QRasterWindowSurface()
 #endif
     if (d_ptr->image)
         delete d_ptr->image;
-
-    delete d_ptr;
 }
 
 

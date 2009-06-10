@@ -118,7 +118,6 @@ QScriptDebuggerCommand::QScriptDebuggerCommand(const QScriptDebuggerCommand &oth
 */
 QScriptDebuggerCommand::~QScriptDebuggerCommand()
 {
-    delete d_ptr;
 }
 
 /*!
@@ -646,7 +645,7 @@ QScriptDebuggerCommand QScriptDebuggerCommand::clearExceptionsCommand()
 */
 QDataStream &operator<<(QDataStream &out, const QScriptDebuggerCommand &command)
 {
-    const QScriptDebuggerCommandPrivate *d = command.d_ptr;
+    const QScriptDebuggerCommandPrivate *d = command.d_ptr.data();
     out << (quint32)d->type;
     out << (qint32)d->attributes.size();
     QHash<QScriptDebuggerCommand::Attribute, QVariant>::const_iterator it;
@@ -666,7 +665,7 @@ QDataStream &operator<<(QDataStream &out, const QScriptDebuggerCommand &command)
 */
 QDataStream &operator>>(QDataStream &in, QScriptDebuggerCommand &command)
 {
-    QScriptDebuggerCommandPrivate *d = command.d_ptr;
+    QScriptDebuggerCommandPrivate *d = command.d_ptr.data();
 
     quint32 type;
     in >> type;

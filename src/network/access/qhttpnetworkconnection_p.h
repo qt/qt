@@ -244,8 +244,8 @@ public:
 #ifndef QT_NO_OPENSSL
         bool ignoreSSLErrors;
 #endif
-        Channel() :state(IdleState), reply(0), written(0), bytesTotal(0), resendCurrent(false), reconnectAttempts(2),
-            authMehtod(QAuthenticatorPrivate::None), proxyAuthMehtod(QAuthenticatorPrivate::None)
+        Channel() : socket(0), state(IdleState), reply(0), written(0), bytesTotal(0), resendCurrent(false),
+            reconnectAttempts(2), authMehtod(QAuthenticatorPrivate::None), proxyAuthMehtod(QAuthenticatorPrivate::None)
 #ifndef QT_NO_OPENSSL
             , ignoreSSLErrors(false)
 #endif

@@ -105,7 +105,7 @@ public:
     QSslCertificate certificate() const;
     
 private:
-    QSslErrorPrivate *d;
+    QScopedPointer<QSslErrorPrivate> d;
 };
 
 #ifndef QT_NO_DEBUG_STREAM

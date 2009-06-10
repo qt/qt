@@ -83,6 +83,21 @@ static const qreal aliasedCoordinateDelta = 0.5 - 0.015625;
 bool qt_show_painter_debug_output = true;
 #endif
 
+class QPainterPrivateCleaner
+{
+public:
+    static inline void cleanup(QPainterPrivate *d)
+    {
+        delete d;
+    }
+
+    static inline void reset(QPainterPrivate *&d, QPainterPrivate *other)
+    {
+        delete d;
+        d = other;
+    }
+};
+
 extern QPixmap qt_pixmapForBrush(int style, bool invert);
 
 void qt_format_text(const QFont &font,
@@ -259,14 +274,17 @@ bool QPainterPrivate::attachPainterPrivate(QPainter *q, QPaintDevice *pdev)
         // in 99% of all cases). E.g: A renders B which renders C which renders D.
         sp->d_ptr->d_ptrs_size = 4;
         sp->d_ptr->d_ptrs = (QPainterPrivate **)malloc(4 * sizeof(QPainterPrivate *));
+        Q_CHECK_PTR(sp->d_ptr->d_ptrs);
     } else if (sp->d_ptr->refcount - 1 == sp->d_ptr->d_ptrs_size) {
         // However, to support corner cases we grow the array dynamically if needed.
         sp->d_ptr->d_ptrs_size <<= 1;
         const int newSize = sp->d_ptr->d_ptrs_size * sizeof(QPainterPrivate *);
-        sp->d_ptr->d_ptrs = (QPainterPrivate **)realloc(sp->d_ptr->d_ptrs, newSize);
+        QPainterPrivate ** newPointers = (QPainterPrivate **)realloc(sp->d_ptr->d_ptrs, newSize);
+        Q_CHECK_PTR(newPointers);
+        sp->d_ptr->d_ptrs = newPointers;
     }
-    sp->d_ptr->d_ptrs[++sp->d_ptr->refcount - 2] = q->d_ptr;
-    q->d_ptr = sp->d_ptr;
+    sp->d_ptr->d_ptrs[++sp->d_ptr->refcount - 2] = q->d_ptr.data();
+    q->d_ptr.data_ptr() = sp->d_ptr.data();
 
     Q_ASSERT(q->d_ptr->state);
 
@@ -315,7 +333,7 @@ void QPainterPrivate::detachPainterPrivate(QPainter *q)
 
     d_ptrs[refcount - 1] = 0;
     q->restore();
-    q->d_ptr = original;
+    q->d_ptr.data_ptr() = original;
 
     if (emulationEngine) {
         extended = emulationEngine->real_engine;
@@ -1374,8 +1392,8 @@ void QPainterPrivate::updateState(QPainterState *newState)
 */
 
 QPainter::QPainter()
+    : d_ptr(new QPainterPrivate(this))
 {
-    d_ptr = new QPainterPrivate(this);
 }
 
 /*!
@@ -1407,7 +1425,7 @@ QPainter::QPainter(QPaintDevice *pd)
 {
     Q_ASSERT(pd != 0);
     if (!QPainterPrivate::attachPainterPrivate(this, pd)) {
-        d_ptr = new QPainterPrivate(this);
+        d_ptr.reset(new QPainterPrivate(this));
         begin(pd);
     }
     Q_ASSERT(d_ptr);
@@ -1419,11 +1437,14 @@ QPainter::QPainter(QPaintDevice *pd)
 QPainter::~QPainter()
 {
     d_ptr->inDestructor = true;
-    if (isActive())
-        end();
-    else if (d_ptr->refcount > 1)
-        d_ptr->detachPainterPrivate(this);
-
+    QT_TRY {
+        if (isActive())
+            end();
+        else if (d_ptr->refcount > 1)
+            d_ptr->detachPainterPrivate(this);
+    } QT_CATCH(...) {
+        // don't throw anything in the destructor.
+    }
     if (d_ptr) {
         // Make sure we haven't messed things up.
         Q_ASSERT(d_ptr->inDestructor);
@@ -1431,7 +1452,6 @@ QPainter::~QPainter()
         Q_ASSERT(d_ptr->refcount == 1);
         if (d_ptr->d_ptrs)
             free(d_ptr->d_ptrs);
-        delete d_ptr;
     }
 }
 
@@ -7417,8 +7437,21 @@ QPaintDevice *QPainter::redirected(const QPaintDevice *device, QPoint *offset)
 
 void qt_painter_removePaintDevice(QPaintDevice *dev)
 {
-    QMutexLocker locker(globalRedirectionsMutex());
-    if(QPaintDeviceRedirectionList *redirections = globalRedirections()) {
+    QMutex *mutex = 0;
+    QT_TRY {
+        mutex = globalRedirectionsMutex();
+    } QT_CATCH(...) {
+        // ignore the missing mutex, since we could be called from
+        // a destructor, and destructors shall not throw
+    }
+    QMutexLocker locker(mutex);
+    QPaintDeviceRedirectionList *redirections = 0;
+    QT_TRY {
+        redirections = globalRedirections();
+    } QT_CATCH(...) {
+        // do nothing - code below is safe with redirections being 0.
+    }
+    if (redirections) {
         for (int i = 0; i < redirections->size(); ) {
             if(redirections->at(i) == dev || redirections->at(i).replacement == dev)
                 redirections->removeAt(i);

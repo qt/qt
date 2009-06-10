@@ -441,6 +441,13 @@ void QSymbianControl::sendMouseEvent(QWidget *widget, QMouseEvent *mEvent)
 
 TKeyResponse QSymbianControl::OfferKeyEventL(const TKeyEvent& keyEvent, TEventCode type)
 {
+    TKeyResponse r = EKeyWasNotConsumed;
+    QT_TRANSLATE_EXCEPTION_TO_SYMBIAN_LEAVE(r = OfferKeyEvent(keyEvent, type));
+    return r;
+}
+
+TKeyResponse QSymbianControl::OfferKeyEvent(const TKeyEvent& keyEvent, TEventCode type)
+{
     switch (type) {
     //case EEventKeyDown: // <-- Intentionally left out. See below.
     case EEventKeyUp:

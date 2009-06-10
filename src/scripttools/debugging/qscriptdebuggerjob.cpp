@@ -85,7 +85,6 @@ QScriptDebuggerJob::QScriptDebuggerJob(QScriptDebuggerJobPrivate &dd)
 
 QScriptDebuggerJob::~QScriptDebuggerJob()
 {
-    delete d_ptr;
 }
 
 void QScriptDebuggerJob::finish()

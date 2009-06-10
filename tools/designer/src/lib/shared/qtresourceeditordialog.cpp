@@ -1949,9 +1949,8 @@ bool QtResourceEditorDialogPrivate::saveQrcFile(const QtQrcFileData &qrcFileData
 }
 
 QtResourceEditorDialog::QtResourceEditorDialog(QDesignerFormEditorInterface *core, QDesignerDialogGuiInterface *dlgGui, QWidget *parent)
-    : QDialog(parent)
+    : QDialog(parent), d_ptr(new QtResourceEditorDialogPrivate())
 {
-    d_ptr = new QtResourceEditorDialogPrivate();
     d_ptr->q_ptr = this;
     d_ptr->m_ui.setupUi(this);
     d_ptr->m_qrcManager = new QtQrcManager(this);
@@ -2085,8 +2084,6 @@ QtResourceEditorDialog::~QtResourceEditorDialog()
     settings->setValue(QLatin1String(SplitterPosition), d_ptr->m_ui.splitter->saveState());
     settings->setValue(QLatin1String(Geometry), geometry());
     settings->endGroup();
-
-    delete d_ptr;
 }
 
 QtResourceModel *QtResourceEditorDialog::model() const

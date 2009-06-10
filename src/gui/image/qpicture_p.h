@@ -156,7 +156,7 @@ public:
     int formatMinor;
     QRect brect;
     QRect override_rect;
-    QPaintEngine *paintEngine;
+    QScopedPointer<QPaintEngine> paintEngine;
     bool in_memory_only;
     QList<QImage> image_list;
     QList<QPixmap> pixmap_list;

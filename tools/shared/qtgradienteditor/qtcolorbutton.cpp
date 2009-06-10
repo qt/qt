@@ -121,9 +121,8 @@ QPixmap QtColorButtonPrivate::generatePixmap() const
 ///////////////
 
 QtColorButton::QtColorButton(QWidget *parent)
-    : QToolButton(parent)
+    : QToolButton(parent), d_ptr(new QtColorButtonPrivate)
 {
-    d_ptr = new QtColorButtonPrivate;
     d_ptr->q_ptr = this;
     d_ptr->m_dragging = false;
     d_ptr->m_backgroundCheckered = true;
@@ -136,7 +135,6 @@ QtColorButton::QtColorButton(QWidget *parent)
 
 QtColorButton::~QtColorButton()
 {
-    delete d_ptr;
 }
 
 void QtColorButton::setColor(const QColor &color)

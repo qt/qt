@@ -375,8 +375,6 @@ QMngHandler::QMngHandler()
 
 QMngHandler::~QMngHandler()
 {
-    Q_D(QMngHandler);
-    delete d;
 }
 
 /*! \reimp */

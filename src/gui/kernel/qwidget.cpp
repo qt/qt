@@ -172,7 +172,8 @@ extern bool qt_sendSpontaneousEvent(QObject*, QEvent*); // qapplication.cpp
 extern QDesktopWidget *qt_desktopWidget; // qapplication.cpp
 
 QWidgetPrivate::QWidgetPrivate(int version) :
-        QObjectPrivate(version), extra(0), focus_child(0)
+        QObjectPrivate(version), extra(0),
+        focus_next(0), focus_prev(0), focus_child(0)
         ,layout(0), widgetItem(0)
         ,leftmargin(0), topmargin(0), rightmargin(0), bottommargin(0)
         ,leftLayoutItemMargin(0), topLayoutItemMargin(0), rightLayoutItemMargin(0)
@@ -927,6 +928,23 @@ QRegion qt_dirtyRegion(QWidget *widget)
   \endlist
 */
 
+struct QWidgetExceptionCleaner
+{
+    /* this cleans up when the constructor throws an exception */
+    static inline void cleanup(QWidget *that, QWidgetPrivate *d)
+    {
+#ifndef QT_NO_EXCEPTIONS
+        QWidgetPrivate::uncreatedWidgets->remove(that);
+        if (d->focus_next != that) {
+            if (d->focus_next)
+                d->focus_next->d_func()->focus_prev = d->focus_prev;
+            if (d->focus_prev)
+                d->focus_prev->d_func()->focus_next = d->focus_next;
+        }
+#endif
+    }
+};
+
 /*!
     Constructs a widget which is a child of \a parent, with  widget
     flags set to \a f.
@@ -956,7 +974,12 @@ QRegion qt_dirtyRegion(QWidget *widget)
 QWidget::QWidget(QWidget *parent, Qt::WindowFlags f)
     : QObject(*new QWidgetPrivate, 0), QPaintDevice()
 {
-    d_func()->init(parent, f);
+    QT_TRY {
+        d_func()->init(parent, f);
+    } QT_CATCH(...) {
+        QWidgetExceptionCleaner::cleanup(this, d_func());
+        QT_RETHROW;
+    }
 }
 
 #ifdef QT3_SUPPORT
@@ -967,8 +990,13 @@ QWidget::QWidget(QWidget *parent, Qt::WindowFlags f)
 QWidget::QWidget(QWidget *parent, const char *name, Qt::WindowFlags f)
     : QObject(*new QWidgetPrivate, 0), QPaintDevice()
 {
-    d_func()->init(parent , f);
-    setObjectName(QString::fromAscii(name));
+    QT_TRY {
+        d_func()->init(parent , f);
+        setObjectName(QString::fromAscii(name));
+    } QT_CATCH(...) {
+        QWidgetExceptionCleaner::cleanup(this, d_func());
+        QT_RETHROW;
+    }
 }
 #endif
 
@@ -977,7 +1005,13 @@ QWidget::QWidget(QWidget *parent, const char *name, Qt::WindowFlags f)
 QWidget::QWidget(QWidgetPrivate &dd, QWidget* parent, Qt::WindowFlags f)
     : QObject(dd, 0), QPaintDevice()
 {
-    d_func()->init(parent, f);
+    Q_D(QWidget);
+    QT_TRY {
+        d->init(parent, f);
+    } QT_CATCH(...) {
+        QWidgetExceptionCleaner::cleanup(this, d_func());
+        QT_RETHROW;
+    }
 }
 
 /*!
@@ -5068,7 +5102,7 @@ void QWidgetPrivate::drawWidget(QPaintDevice *pdev, const QRegion &rgn, const QP
 #ifndef QT_NO_SCROLLAREA
                     QAbstractScrollArea *scrollArea = qobject_cast<QAbstractScrollArea *>(q->parent());
                     if (scrollArea && scrollArea->viewport() == q) {
-                        QObjectData *scrollPrivate = static_cast<QWidget *>(scrollArea)->d_ptr;
+                        QObjectData *scrollPrivate = static_cast<QWidget *>(scrollArea)->d_ptr.data();
                         QAbstractScrollAreaPrivate *priv = static_cast<QAbstractScrollAreaPrivate *>(scrollPrivate);
                         scrollAreaOffset = priv->contentsOffset();
                         p.translate(-scrollAreaOffset);

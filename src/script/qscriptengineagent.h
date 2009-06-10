@@ -47,6 +47,7 @@
 #ifndef QT_NO_SCRIPT
 
 #include <QtCore/qvariant.h>
+#include <QtCore/qscopedpointer.h>
 
 QT_BEGIN_HEADER
 
@@ -96,7 +97,7 @@ public:
 
 protected:
     QScriptEngineAgent(QScriptEngineAgentPrivate &dd, QScriptEngine *engine);
-    QScriptEngineAgentPrivate *d_ptr;
+    QScopedPointer<QScriptEngineAgentPrivate> d_ptr;
 
 private:
     Q_DECLARE_PRIVATE(QScriptEngineAgent)

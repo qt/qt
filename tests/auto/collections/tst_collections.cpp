@@ -1364,6 +1364,9 @@ void tst_Collections::byteArray()
         ba1 = "FooFoo";
         ba1.replace(char('F'), ba1);
         QCOMPARE(ba1, QByteArray("FooFooooFooFoooo"));
+        ba1 = "FooFoo";
+        ba1.replace(char('o'), ba1);
+        QCOMPARE(ba1, QByteArray("FFooFooFooFooFFooFooFooFoo"));
 
         ba1.replace(ba1, "xxx");
         QCOMPARE(ba1, QByteArray("xxx"));
@@ -2354,6 +2357,9 @@ void tst_Collections::qstring()
         str1 = "FooFoo";
         str1.replace(char('F'), str1);
         QCOMPARE(str1, QString("FooFooooFooFoooo"));
+        str1 = "FooFoo";
+        str1.replace(char('o'), str1);
+        QCOMPARE(str1, QString("FFooFooFooFooFFooFooFooFoo"));
 
         str1 = "Foo";
         str1.replace("Foo", str1);

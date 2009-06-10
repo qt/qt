@@ -39,6 +39,7 @@
 **
 ****************************************************************************/
 
+#include <new>
 #include "qlist.h"
 #include "qtools_p.h"
 #include <string.h>
@@ -71,8 +72,7 @@ static int grow(int size)
 QListData::Data *QListData::detach()
 {
     Data *x = static_cast<Data *>(qMalloc(DataHeaderSize + d->alloc * sizeof(void *)));
-    if (!x)
-        qFatal("QList: Out of memory");
+    Q_CHECK_PTR(x);
 
     ::memcpy(x, d, DataHeaderSize + d->alloc * sizeof(void *));
     x->alloc = d->alloc;
@@ -91,10 +91,10 @@ QListData::Data *QListData::detach()
 QListData::Data *QListData::detach2()
 {
     Data *x = d;
-    d = static_cast<Data *>(qMalloc(DataHeaderSize + x->alloc * sizeof(void *)));
-    if (!d)
-        qFatal("QList: Out of memory");
+    Data* t = static_cast<Data *>(qMalloc(DataHeaderSize + x->alloc * sizeof(void *)));
+    Q_CHECK_PTR(t);
 
+    d = t;
     ::memcpy(d, x, DataHeaderSize + x->alloc * sizeof(void *));
     d->alloc = x->alloc;
     d->ref = 1;
@@ -109,8 +109,7 @@ void QListData::realloc(int alloc)
 {
     Q_ASSERT(d->ref == 1);
     Data *x = static_cast<Data *>(qRealloc(d, DataHeaderSize + alloc * sizeof(void *)));
-    if (!x)
-        qFatal("QList: Out of memory");
+    Q_CHECK_PTR(x);
 
     d = x;
     d->alloc = alloc;
@@ -512,6 +511,15 @@ void **QListData::erase(void **xi)
 /*! \fn void QList::detach()
 
     \internal
+*/
+
+/*! \fn void QList::detachShared()
+
+    \internal
+
+    like detach(), but does nothing if we're shared_null.
+    This prevents needless mallocs, and makes QList more exception safe
+    in case of cleanup work done in destructors on empty lists.
 */
 
 /*! \fn bool QList::isDetached() const

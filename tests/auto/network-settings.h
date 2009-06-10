@@ -59,27 +59,28 @@
 // network tests. WINPCAP connectivity uses Symbian OS IP stack,
 // correspondingly as HW does. When using WINPCAP disable this define
 //#define SYMBIAN_WINSOCK_CONNECTIVITY
+
+class QtNetworkSettingsRecord {
+public:
+    QtNetworkSettingsRecord() { }
+
+    QtNetworkSettingsRecord(const QString& recName, const QString& recVal)
+        : strRecordName(recName), strRecordValue(recVal) { }
+
+    QtNetworkSettingsRecord(const QtNetworkSettingsRecord & other)
+         : strRecordName(other.strRecordName), strRecordValue(other.strRecordValue) { }
+
+    ~QtNetworkSettingsRecord() { }
+
+    const QString& recordName() const { return strRecordName; }
+    const QString& recordValue() const { return strRecordValue; }
+
+private:
+    QString strRecordName;
+    QString strRecordValue;
+};
+
 #endif
-
-    class QtNetworkSettingsRecord {
-    public:
-        QtNetworkSettingsRecord() { }
-
-        QtNetworkSettingsRecord(const QString& recName, const QString& recVal)
-            : strRecordName(recName), strRecordValue(recVal) { }
-
-        QtNetworkSettingsRecord(const QtNetworkSettingsRecord & other)
-             : strRecordName(other.strRecordName), strRecordValue(other.strRecordValue) { }
-
-        ~QtNetworkSettingsRecord() { }
-
-        const QString& recordName() const { return strRecordName; }
-        const QString& recordValue() const { return strRecordValue; }
-
-    private:
-        QString strRecordName;
-        QString strRecordValue;
-    };
 
 class QtNetworkSettings
 {
@@ -171,6 +172,7 @@ public:
 
     static QByteArray expectedReplySSL()
     {
+#ifdef Q_OS_SYMBIAN
         loadTestSettings();
 
         if(QtNetworkSettings::entries.contains("imap.expectedreplyssl")) {
@@ -180,12 +182,12 @@ public:
                 imapExpectedReplySsl.append('\r').append('\n');
             }
             return imapExpectedReplySsl.data();
-        } else {
-            QByteArray expected( "* OK [CAPABILITY IMAP4 IMAP4rev1 LITERAL+ ID AUTH=PLAIN SASL-IR] " );
-            expected = expected.append(QtNetworkSettings::serverLocalName().toAscii());
-            expected = expected.append(" Cyrus IMAP4 v2.3.11-Mandriva-RPM-2.3.11-6mdv2008.1 server ready\r\n");
-            return expected;
         }
+#endif
+        QByteArray expected( "* OK [CAPABILITY IMAP4 IMAP4rev1 LITERAL+ ID AUTH=PLAIN SASL-IR] " );
+        expected = expected.append(QtNetworkSettings::serverLocalName().toAscii());
+        expected = expected.append(" Cyrus IMAP4 v2.3.11-Mandriva-RPM-2.3.11-6mdv2008.1 server ready\r\n");
+        return expected;
     }
 
     static QByteArray expectedReplyFtp()
