@@ -1102,8 +1102,6 @@ bool QmlCompiler::compileListProperty(QmlParser::Property *prop,
                 QmlInstruction assign;
                 assign.type = QmlInstruction::AssignObjectList;
                 assign.line = prop->location.start.line;
-                assign.assignObject.property = output->indexForByteArray(prop->name);
-                assign.assignObject.castValue = 0;
                 output->bytecode << assign;
             } else {
                 COMPILE_EXCEPTION("Cannot assign primitives to lists");
@@ -1130,8 +1128,6 @@ bool QmlCompiler::compileListProperty(QmlParser::Property *prop,
                 QmlInstruction assign;
                 assign.type = QmlInstruction::AssignObjectList;
                 assign.line = v->location.start.line;
-                assign.assignObject.property = output->indexForByteArray(prop->name);
-                assign.assignObject.castValue = 0;
                 output->bytecode << assign;
             } else if (v->value.isScript()) {
                 if (assignedBinding)

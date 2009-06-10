@@ -122,7 +122,7 @@ public:
         BeginObject,              /* begin */
         CompleteObject,           /* complete */
 
-        AssignObjectList,         /* assignObject */
+        AssignObjectList,         /* NA */
 
         FetchAttached,            /* fetchAttached */
         FetchQmlList,             /* fetchQmlList */ 
@@ -168,10 +168,6 @@ public:
             int value;
             int save;
         } setId;
-        struct {
-            int property;
-            int castValue;
-        } assignObject;
         struct {
             int property;
         } assignValueSource;
