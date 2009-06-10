@@ -695,29 +695,6 @@ bool QTreeModel::itemGreaterThan(const QPair<QTreeWidgetItem*,int> &left,
 }
 
 /*!
-    \internal
-
-    Returns true if the type of the variant \a value
-    can be casted as double.
-*/
-bool QTreeModel::canConvertToDouble(const QVariant &value)
-{
-    switch (value.type()) {
-        case QVariant::Bool:
-        case QVariant::Int:
-        case QVariant::UInt:
-        case QVariant::LongLong:
-        case QVariant::ULongLong:
-        case QVariant::Double:
-        case QVariant::Char:
-            return true;
-        default:
-            return false;
-    }
-    return false;
-}
-
-/*!
   \internal
 */
 QList<QTreeWidgetItem*>::iterator QTreeModel::sortedInsertionIterator(
@@ -1812,7 +1789,7 @@ bool QTreeWidgetItem::operator<(const QTreeWidgetItem &other) const
     int column = view ? view->sortColumn() : 0;
     const QVariant v1 = data(column, Qt::DisplayRole);
     const QVariant v2 = other.data(column, Qt::DisplayRole);
-    if (QTreeModel::canConvertToDouble(v1) && QTreeModel::canConvertToDouble(v2))
+    if (QAbstractItemModelPrivate::canConvertToDouble(v1) && QAbstractItemModelPrivate::canConvertToDouble(v2))
         return v1.toDouble() < v2.toDouble();
     return v1.toString() < v2.toString();
 }

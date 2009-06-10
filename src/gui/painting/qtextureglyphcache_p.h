@@ -121,7 +121,7 @@ protected:
 };
 
 
-class Q_GUI_EXPORT QImageTextureGlyphCache : public QTextureGlyphCache
+class QImageTextureGlyphCache : public QTextureGlyphCache
 {
 public:
     QImageTextureGlyphCache(QFontEngineGlyphCache::Type type, const QTransform &matrix)

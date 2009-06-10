@@ -1099,6 +1099,9 @@ void QGraphicsWidget::updateGeometry()
     ItemParentChange both to deliver \l ParentChange events, and for managing
     the focus chain.
 
+    QGraphicsWidget enables the ItemSendsGeometryChanges flag by default in
+    order to track position changes.
+
     \sa propertyChange()
 */
 QVariant QGraphicsWidget::itemChange(GraphicsItemChange change, const QVariant &value)

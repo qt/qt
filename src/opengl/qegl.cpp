@@ -413,12 +413,18 @@ int QEglProperties::value(int name) const
     case EGL_RED_SIZE: return 0;
     case EGL_GREEN_SIZE: return 0;
     case EGL_BLUE_SIZE: return 0;
-    case EGL_LUMINANCE_SIZE: return 0;
     case EGL_ALPHA_SIZE: return 0;
+#if defined(EGL_LUMINANCE_SIZE)
+    case EGL_LUMINANCE_SIZE: return 0;
+#endif
+#if defined(EGL_ALPHA_MASK_SIZE)
     case EGL_ALPHA_MASK_SIZE: return 0;
+#endif
     case EGL_BIND_TO_TEXTURE_RGB: return EGL_DONT_CARE;
     case EGL_BIND_TO_TEXTURE_RGBA: return EGL_DONT_CARE;
+#if defined(EGL_COLOR_BUFFER_TYPE)
     case EGL_COLOR_BUFFER_TYPE: return EGL_RGB_BUFFER;
+#endif
     case EGL_CONFIG_CAVEAT: return EGL_DONT_CARE;
     case EGL_CONFIG_ID: return EGL_DONT_CARE;
     case EGL_DEPTH_SIZE: return 0;
@@ -427,7 +433,9 @@ int QEglProperties::value(int name) const
     case EGL_NATIVE_VISUAL_TYPE: return EGL_DONT_CARE;
     case EGL_MAX_SWAP_INTERVAL: return EGL_DONT_CARE;
     case EGL_MIN_SWAP_INTERVAL: return EGL_DONT_CARE;
+#if defined(EGL_RENDERABLE_TYPE)
     case EGL_RENDERABLE_TYPE: return EGL_OPENGL_ES_BIT;
+#endif
     case EGL_SAMPLE_BUFFERS: return 0;
     case EGL_SAMPLES: return 0;
     case EGL_STENCIL_SIZE: return 0;

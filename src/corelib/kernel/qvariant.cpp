@@ -1823,7 +1823,7 @@ QVariant::Type QVariant::nameToType(const char *name)
 
 #ifndef QT_NO_DATASTREAM
 enum { MapFromThreeCount = 35 };
-static const uint map_from_three[MapFromThreeCount] =
+static const ushort map_from_three[MapFromThreeCount] =
 {
     QVariant::Invalid,
     QVariant::Map,

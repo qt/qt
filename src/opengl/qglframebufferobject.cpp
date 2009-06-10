@@ -43,7 +43,9 @@
 
 #include <qdebug.h>
 #include <private/qgl_p.h>
+#if !defined(QT_OPENGL_ES_1) && !defined(QT_OPENGL_ES_1_CL)
 #include <private/qpaintengineex_opengl2_p.h>
+#endif
 
 #ifndef QT_OPENGL_ES_2
 #include <private/qpaintengine_opengl_p.h>

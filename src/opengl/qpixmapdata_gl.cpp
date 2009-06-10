@@ -389,6 +389,11 @@ QPaintEngine* QGLPixmapData::paintEngine() const
                     sz.setWidth(qMax(m_width, qRound(sz.width() * 1.5)));
                 if (sz.height() < m_height)
                     sz.setHeight(qMax(m_height, qRound(sz.height() * 1.5)));
+
+                // wasting too much space?
+                if (sz.width() * sz.height() > m_width * m_height * 2.5)
+                    sz = QSize(m_width, m_height);
+
                 delete textureBufferStack.at(currentTextureBuffer).fbo;
                 textureBufferStack[currentTextureBuffer] =
                     createTextureBuffer(sz, textureBufferStack.at(currentTextureBuffer).engine);

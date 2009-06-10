@@ -128,7 +128,7 @@ void QToolBarLayout::setUsePopupMenu(bool set)
         invalidate();
     if (!set) {
         QObject::connect(extension, SIGNAL(clicked(bool)),
-                        this, SLOT(setExpanded(bool)));
+                        this, SLOT(setExpanded(bool)), Qt::UniqueConnection);
         extension->setPopupMode(QToolButton::DelayedPopup);
         extension->setMenu(0);
         delete popupMenu;

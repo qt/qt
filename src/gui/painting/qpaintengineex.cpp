@@ -138,6 +138,75 @@ QPaintEngineExPrivate::~QPaintEngineExPrivate()
 }
 
 
+void QPaintEngineExPrivate::replayClipOperations()
+{
+    Q_Q(QPaintEngineEx);
+
+    QPainter *p = q->painter();
+    if (!p || !p->d_ptr)
+        return;
+
+    QPainterPrivate *pp = p->d_ptr;
+    QList<QPainterClipInfo> clipInfo = pp->state->clipInfo;
+
+    QTransform transform = q->state()->matrix;
+
+    const QTransform &redirection = q->state()->redirectionMatrix;
+
+    for (int i = 0; i <  clipInfo.size(); ++i) {
+        const QPainterClipInfo &info = clipInfo.at(i);
+
+        QTransform combined = info.matrix * redirection;
+
+        if (combined != q->state()->matrix) {
+            q->state()->matrix = combined;
+            q->transformChanged();
+        }
+
+        switch (info.clipType) {
+        case QPainterClipInfo::RegionClip:
+            q->clip(info.region, info.operation);
+            break;
+        case QPainterClipInfo::PathClip:
+            q->clip(info.path, info.operation);
+            break;
+        case QPainterClipInfo::RectClip:
+            q->clip(info.rect, info.operation);
+            break;
+        case QPainterClipInfo::RectFClip: {
+            qreal right = info.rectf.x() + info.rectf.width();
+            qreal bottom = info.rectf.y() + info.rectf.height();
+            qreal pts[] = { info.rectf.x(), info.rectf.y(),
+                            right, info.rectf.y(),
+                            right, bottom,
+                            info.rectf.x(), bottom };
+            QVectorPath vp(pts, 4, 0, QVectorPath::RectangleHint);
+            q->clip(vp, info.operation);
+            break;
+            }
+        }
+    }
+
+    if (transform != q->state()->matrix) {
+        q->state()->matrix = transform;
+        q->transformChanged();
+    }
+}
+
+
+bool QPaintEngineExPrivate::hasClipOperations() const
+{
+    Q_Q(const QPaintEngineEx);
+
+    QPainter *p = q->painter();
+    if (!p || !p->d_ptr)
+        return false;
+
+    QPainterPrivate *pp = p->d_ptr;
+    QList<QPainterClipInfo> clipInfo = pp->state->clipInfo;
+
+    return !clipInfo.isEmpty();
+}
 
 /*******************************************************************************
  *
@@ -244,12 +313,17 @@ static void qpaintengineex_cubicTo(qreal c1x, qreal c1y, qreal c2x, qreal c2y, q
     ((StrokeHandler *) data)->types.add(QPainterPath::CurveToDataElement);
 }
 
+QPaintEngineEx::QPaintEngineEx()
+    : QPaintEngine(*new QPaintEngineExPrivate, AllFeatures)
+{
+    extended = true;
+}
+
 QPaintEngineEx::QPaintEngineEx(QPaintEngineExPrivate &data)
     : QPaintEngine(data, AllFeatures)
 {
     extended = true;
 }
-
 
 QPainterState *QPaintEngineEx::createState(QPainterState *orig) const
 {
@@ -483,6 +557,9 @@ void QPaintEngineEx::clip(const QRect &r, Qt::ClipOperation op)
 
 void QPaintEngineEx::clip(const QRegion &region, Qt::ClipOperation op)
 {
+    if (region.numRects() == 1)
+        clip(region.boundingRect(), op);
+
     QVector<QRect> rects = region.rects();
     if (rects.size() <= 32) {
         qreal pts[2*32*4];
