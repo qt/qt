@@ -4332,7 +4332,9 @@ void QClipData::initialize()
     if (m_spans)
         return;
 
-    m_clipLines = (ClipLine *)calloc(sizeof(ClipLine), clipSpanHeight);
+    if (!m_clipLines)
+        m_clipLines = (ClipLine *)calloc(sizeof(ClipLine), clipSpanHeight);
+
     m_spans = (QSpan *)malloc(clipSpanHeight*sizeof(QSpan));
     allocated = clipSpanHeight;
 
