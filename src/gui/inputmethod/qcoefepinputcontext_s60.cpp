@@ -88,10 +88,9 @@ QCoeFepInputContext::~QCoeFepInputContext()
 
     // This is to make sure that the FEP manager "forgets" about us,
     // otherwise we may get callbacks even after we're destroyed.
-    // The call is asynchronous though, so we must spin the event loop
-    // to make sure it gets detected.
-    CCoeEnv::Static()->InputCapabilitiesChanged();
-    QApplication::processEvents();
+    // The call below is essentially equivalent to InputCapabilitiesChanged(),
+    // but is synchronous, rather than asynchronous.
+    CCoeEnv::Static()->SyncNotifyFocusObserversOfChangeInFocus();
 
     if (m_fepState)
         delete m_fepState;
