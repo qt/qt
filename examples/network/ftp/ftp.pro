@@ -13,9 +13,7 @@ INSTALLS += target sources
 include($$QT_SOURCE_TREE/examples/examplebase.pri)
 
 symbian {
-    #Enable this macro if you have latest Open C and you want to get rid of IAP queries
-    #DEFINES += SETDEFAULTIF_AVAILABLE
     TARGET.CAPABILITY="NetworkServices"
     TARGET.UID3 = 0xA000A648
-    contains( DEFINES, SETDEFAULTIF_AVAILABLE ):LIBS+=-lesock
+    LIBS+=-lesock   # For IAP selection
 }

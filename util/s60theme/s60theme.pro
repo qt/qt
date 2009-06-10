@@ -7,3 +7,6 @@ HEADERS += \
 
 QT += \
     webkit
+
+CONFIG += \
+    console

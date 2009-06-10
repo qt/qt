@@ -318,8 +318,8 @@ QVariant QS60StylePrivate::styleProperty(const char *name) const
     if (name == propertyKeyLayouts) {
         static QStringList layouts;
         if (layouts.isEmpty())
-            for (int i = 0; i < QS60StylePrivate::m_numberOfLayouts; i++)
-                layouts.append(QS60StylePrivate::m_layoutHeaders[i].layoutName);
+            for (int i = 0; i < m_numberOfLayouts; i++)
+                layouts.append(m_layoutHeaders[i].layoutName);
         return layouts;
     }
     return QVariant();
@@ -388,7 +388,7 @@ QFont QS60StylePrivate::s60Font(
     return result;
 }
 
-void QS60StylePrivate::clearCaches(QS60StylePrivate::CacheClearReason reason)
+void QS60StylePrivate::clearCaches(CacheClearReason reason)
 {
     switch(reason){
     case CC_LayoutChange:
@@ -416,12 +416,12 @@ void QS60StylePrivate::clearCaches(QS60StylePrivate::CacheClearReason reason)
 // for QPalette::Button and QPalette::ToolTipBase. Therefore S60Style needs to guesstimate
 // palette colors by calculating average rgb values for button pixels.
 // Returns Qt::black if there is an issue with the graphics (image is NULL, or no bits() found).
-QColor QS60StylePrivate::colorFromFrameGraphics(QS60StylePrivate::SkinFrameElements frame) const
+QColor QS60StylePrivate::colorFromFrameGraphics(SkinFrameElements frame) const
 {
     const bool cachedColorExists = m_colorCache.contains(frame);
     if (!cachedColorExists) {
-        const int frameCornerWidth = QS60StylePrivate::pixelMetric(PM_Custom_FrameCornerWidth);
-        const int frameCornerHeight = QS60StylePrivate::pixelMetric(PM_Custom_FrameCornerHeight);
+        const int frameCornerWidth = pixelMetric(PM_Custom_FrameCornerWidth);
+        const int frameCornerHeight = pixelMetric(PM_Custom_FrameCornerHeight);
         Q_ASSERT(2*frameCornerWidth<32);
         Q_ASSERT(2*frameCornerHeight<32);
 
@@ -495,15 +495,15 @@ void QS60StylePrivate::setBackgroundTexture(QApplication *app) const
 {
     Q_UNUSED(app)
     QPalette applicationPalette = QApplication::palette();
-    applicationPalette.setBrush(QPalette::Window, QS60StylePrivate::backgroundTexture());
+    applicationPalette.setBrush(QPalette::Window, backgroundTexture());
     QApplication::setPalette(applicationPalette);
 }
 
 void QS60StylePrivate::deleteBackground()
 {
-    if (QS60StylePrivate::m_background) {
-        delete QS60StylePrivate::m_background;
-        QS60StylePrivate::m_background = 0;
+    if (m_background) {
+        delete m_background;
+        m_background = 0;
     }
 }
 
@@ -670,7 +670,7 @@ void QS60StylePrivate::setThemePalette(QWidget *widget) const
     //draw transparent theme graphics to table column and row headers.
     if (qobject_cast<QHeaderView *>(widget)){
         widgetPalette.setColor(QPalette::Active, QPalette::ButtonText,
-            QS60StylePrivate::s60Color(QS60StyleEnums::CL_QsnTextColors, 23, 0));
+            s60Color(QS60StyleEnums::CL_QsnTextColors, 23, 0));
         QHeaderView* header = qobject_cast<QHeaderView *>(widget);
         widgetPalette.setColor(QPalette::Button, Qt::transparent );
         if ( header->viewport() )
@@ -686,30 +686,30 @@ void QS60StylePrivate::setThemePalette(QPalette *palette) const
 
     // basic colors
     palette->setColor(QPalette::WindowText,
-        QS60StylePrivate::s60Color(QS60StyleEnums::CL_QsnTextColors, 6, 0));
+        s60Color(QS60StyleEnums::CL_QsnTextColors, 6, 0));
     palette->setColor(QPalette::ButtonText,
-        QS60StylePrivate::s60Color(QS60StyleEnums::CL_QsnTextColors, 6, 0));
+        s60Color(QS60StyleEnums::CL_QsnTextColors, 6, 0));
     palette->setColor(QPalette::Text,
-        QS60StylePrivate::s60Color(QS60StyleEnums::CL_QsnTextColors, 6, 0));
+        s60Color(QS60StyleEnums::CL_QsnTextColors, 6, 0));
     palette->setColor(QPalette::ToolTipText,
-        QS60StylePrivate::s60Color(QS60StyleEnums::CL_QsnTextColors, 55, 0));
+        s60Color(QS60StyleEnums::CL_QsnTextColors, 55, 0));
     palette->setColor(QPalette::BrightText, palette->color(QPalette::WindowText).lighter());
     palette->setColor(QPalette::HighlightedText,
-        QS60StylePrivate::s60Color(QS60StyleEnums::CL_QsnTextColors, 10, 0));
+        s60Color(QS60StyleEnums::CL_QsnTextColors, 10, 0));
     palette->setColor(QPalette::Link,
-        QS60StylePrivate::s60Color(QS60StyleEnums::CL_QsnHighlightColors, 3, 0));
+        s60Color(QS60StyleEnums::CL_QsnHighlightColors, 3, 0));
     palette->setColor(QPalette::LinkVisited, palette->color(QPalette::Link).darker());
     palette->setColor(QPalette::Highlight,
-            QS60StylePrivate::s60Color(QS60StyleEnums::CL_QsnHighlightColors, 2, 0));
+        s60Color(QS60StyleEnums::CL_QsnHighlightColors, 2, 0));
     // set background image as a texture brush
-    palette->setBrush(QPalette::Window, QS60StylePrivate::backgroundTexture());
+    palette->setBrush(QPalette::Window, backgroundTexture());
     // set these as transparent so that styled full screen theme background is visible
     palette->setColor(QPalette::AlternateBase, Qt::transparent);
     palette->setBrush(QPalette::Base, Qt::transparent);
     // set button and tooltipbase based on pixel colors
-    const QColor buttonColor = this->colorFromFrameGraphics(QS60StylePrivate::SF_ButtonNormal);
+    const QColor buttonColor = this->colorFromFrameGraphics(SF_ButtonNormal);
     palette->setColor(QPalette::Button, buttonColor );
-    const QColor toolTipColor = this->colorFromFrameGraphics(QS60StylePrivate::SF_ToolTip);
+    const QColor toolTipColor = this->colorFromFrameGraphics(SF_ToolTip);
     palette->setColor(QPalette::ToolTipBase, toolTipColor );
     palette->setColor(QPalette::Light, palette->color(QPalette::Button).lighter());
     palette->setColor(QPalette::Dark, palette->color(QPalette::Button).darker());
@@ -718,7 +718,7 @@ void QS60StylePrivate::setThemePalette(QPalette *palette) const
     palette->setColor(QPalette::Shadow, Qt::black);
 
     setThemePaletteHash(palette);
-    QS60StylePrivate::storeThemePalette(palette);
+    storeThemePalette(palette);
 }
 
 void QS60StylePrivate::deleteThemePalette()
@@ -745,10 +745,10 @@ void QS60StylePrivate::setThemePaletteHash(QPalette *palette) const
     //store the original palette
     QPalette widgetPalette = *palette;
     const QColor mainAreaTextColor =
-        QS60StylePrivate::s60Color(QS60StyleEnums::CL_QsnTextColors, 6, 0);
+        s60Color(QS60StyleEnums::CL_QsnTextColors, 6, 0);
 
     widgetPalette.setColor(QPalette::All, QPalette::WindowText,
-        QS60StylePrivate::s60Color(QS60StyleEnums::CL_QsnLineColors, 8, 0));
+        s60Color(QS60StyleEnums::CL_QsnLineColors, 8, 0));
     QApplication::setPalette(widgetPalette, "QSlider");
     // return to original palette after each widget
     widgetPalette = *palette;
@@ -757,7 +757,7 @@ void QS60StylePrivate::setThemePaletteHash(QPalette *palette) const
     widgetPalette.setColor(QPalette::Inactive, QPalette::ButtonText, mainAreaTextColor);
     const QStyleOption opt;
     widgetPalette.setColor(QPalette::Disabled, QPalette::ButtonText,
-        QS60StylePrivate::s60Color(QS60StyleEnums::CL_QsnTextColors, 6, &opt));
+        s60Color(QS60StyleEnums::CL_QsnTextColors, 6, &opt));
     QApplication::setPalette(widgetPalette, "QPushButton");
     widgetPalette = *palette;
 
@@ -767,27 +767,27 @@ void QS60StylePrivate::setThemePaletteHash(QPalette *palette) const
     widgetPalette = *palette;
 
     widgetPalette.setColor(QPalette::Active, QPalette::ButtonText,
-        QS60StylePrivate::s60Color(QS60StyleEnums::CL_QsnTextColors, 23, 0));
+        s60Color(QS60StyleEnums::CL_QsnTextColors, 23, 0));
     QApplication::setPalette(widgetPalette, "QHeaderView");
     widgetPalette = *palette;
 
     widgetPalette.setColor(QPalette::All, QPalette::ButtonText,
-        QS60StylePrivate::s60Color(QS60StyleEnums::CL_QsnTextColors, 8, 0));
+        s60Color(QS60StyleEnums::CL_QsnTextColors, 8, 0));
     QApplication::setPalette(widgetPalette, "QMenuBar");
     widgetPalette = *palette;
 
     widgetPalette.setColor(QPalette::Active, QPalette::WindowText,
-        QS60StylePrivate::s60Color(QS60StyleEnums::CL_QsnTextColors, 4, 0));
+        s60Color(QS60StyleEnums::CL_QsnTextColors, 4, 0));
     QApplication::setPalette(widgetPalette, "QTabBar");
     widgetPalette = *palette;
 
     widgetPalette.setColor(QPalette::All, QPalette::Text,
-        QS60StylePrivate::s60Color(QS60StyleEnums::CL_QsnTextColors, 22, 0));
+        s60Color(QS60StyleEnums::CL_QsnTextColors, 22, 0));
     QApplication::setPalette(widgetPalette, "QTableView");
     widgetPalette = *palette;
 
     widgetPalette.setColor(QPalette::All, QPalette::HighlightedText,
-        QS60StylePrivate::s60Color(QS60StyleEnums::CL_QsnTextColors, 24, 0));
+        s60Color(QS60StyleEnums::CL_QsnTextColors, 24, 0));
     QApplication::setPalette(widgetPalette, "QLineEdit");
     widgetPalette = *palette;
 
@@ -861,7 +861,7 @@ QSize QS60StylePrivate::partSize(QS60StyleEnums::SkinParts part, SkinElementFlag
             }
             break;
     }
-    if (flags & (QS60StylePrivate::SF_PointEast | QS60StylePrivate::SF_PointWest)) {
+    if (flags & (SF_PointEast | SF_PointWest)) {
         const int temp = result.width();
         result.setWidth(result.height());
         result.setHeight(temp);
@@ -1880,11 +1880,11 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
         }
         break;
 #endif //QT_NO_TOOLBAR
-    case CE_ShapedFrame: {
-        const QTextEdit *txt = qobject_cast<const QTextEdit *>(widget);                
-        if (txt)
+    case CE_ShapedFrame:
+        if (qobject_cast<const QTextEdit *>(widget))
             QS60StylePrivate::drawSkinElement(QS60StylePrivate::SE_Editor, painter, option->rect, flags);
-    }
+        if (option->state & State_HasFocus)
+            drawPrimitive(PE_FrameFocusRect, option, painter, widget);
         break;
     default:
         QCommonStyle::drawControl(element, option, painter, widget);
