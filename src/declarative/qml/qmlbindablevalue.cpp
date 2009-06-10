@@ -58,12 +58,6 @@ QmlBindableValuePrivate::QmlBindableValuePrivate()
 }
 
 QML_DEFINE_NOCREATE_TYPE(QmlBindableValue);
-QmlBindableValue::QmlBindableValue(QObject *parent)
-: QmlPropertyValueSource(*new QmlBindableValuePrivate, parent)
-{
-    qFatal("QmlBindableValue: Default constructor not supported");
-}
-
 QmlBindableValue::QmlBindableValue(void *data, QmlRefCount *rc, QObject *obj, QObject *parent)
 : QmlPropertyValueSource(*new QmlBindableValuePrivate, parent), QmlExpression(QmlContext::activeContext(), data, rc, obj)
 {
