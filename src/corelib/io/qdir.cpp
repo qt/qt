@@ -45,6 +45,7 @@
 #ifndef QT_NO_DEBUG_STREAM
 #include "qdebug.h"
 #endif
+#include "qdiriterator.h"
 #include "qfsfileengine.h"
 #include "qdatetime.h"
 #include "qstring.h"
@@ -92,7 +93,7 @@ protected:
     QString initFileEngine(const QString &file);
 
     void updateFileLists() const;
-    void sortFileList(QDir::SortFlags, QStringList &, QStringList *, QFileInfoList *) const;
+    void sortFileList(QDir::SortFlags, QFileInfoList &, QStringList *, QFileInfoList *) const;
 
 private:
 #ifdef QT3_SUPPORT
@@ -268,7 +269,7 @@ bool QDirSortItemComparator::operator()(const QDirSortItem &n1, const QDirSortIt
     return r < 0;
 }
 
-inline void QDirPrivate::sortFileList(QDir::SortFlags sort, QStringList &l,
+inline void QDirPrivate::sortFileList(QDir::SortFlags sort, QFileInfoList &l,
                                       QStringList *names, QFileInfoList *infos) const
 {
     if(names)
@@ -278,16 +279,12 @@ inline void QDirPrivate::sortFileList(QDir::SortFlags sort, QStringList &l,
     if(!l.isEmpty()) {
         QDirSortItem *si= new QDirSortItem[l.count()];
         int i;
-        for (i = 0; i < l.size(); ++i) {
-            QString path = data->path;
-            if (!path.isEmpty() && !path.endsWith(QLatin1Char('/')))
-                path += QLatin1Char('/');
-            si[i].item = QFileInfo(path + l.at(i));
-        }
+        for (i = 0; i < l.size(); ++i)
+            si[i].item = l.at(i);
         if ((sort & QDir::SortByMask) != QDir::Unsorted)
-            qStableSort(si, si+i, QDirSortItemComparator(sort));
+            qStableSort(si, si + i, QDirSortItemComparator(sort));
         // put them back in the list(s)
-        for (int j = 0; j<i; j++) {
+        for (int j = 0; j < i; j++) {
             if(infos)
                 infos->append(si[j].item);
             if(names)
@@ -300,7 +297,12 @@ inline void QDirPrivate::sortFileList(QDir::SortFlags sort, QStringList &l,
 inline void QDirPrivate::updateFileLists() const
 {
     if(data->listsDirty) {
-        QStringList l = data->fileEngine->entryList(data->filters, data->nameFilters);
+        QFileInfoList l;
+        QDirIterator it(data->path, data->nameFilters, data->filters);
+        while (it.hasNext()) {
+            it.next();
+            l.append(it.fileInfo());
+        }
         sortFileList(data->sort, l, &data->files, &data->fileInfos);
         data->listsDirty = 0;
     }
@@ -1346,7 +1348,12 @@ QStringList QDir::entryList(const QStringList &nameFilters, Filters filters,
         d->updateFileLists();
         return d->data->files;
     }
-    QStringList l = d->data->fileEngine->entryList(filters, nameFilters);
+    QFileInfoList l;
+    QDirIterator it(d->data->path, nameFilters, filters);
+    while (it.hasNext()) {
+        it.next();
+        l.append(it.fileInfo());
+    }
     if ((sort & QDir::SortByMask) == QDir::Unsorted)
         return l;
 
@@ -1389,8 +1396,16 @@ QFileInfoList QDir::entryInfoList(const QStringList &nameFilters, Filters filter
         d->updateFileLists();
         return d->data->fileInfos;
     }
+    QFileInfoList l;
+    QDirIterator it(d->data->path, nameFilters, filters);
+    while (it.hasNext()) {
+        it.next();
+        l.append(it.fileInfo());
+    }
+    if ((sort & QDir::SortByMask) == QDir::Unsorted)
+        return l;
+
     QFileInfoList ret;
-    QStringList l = d->data->fileEngine->entryList(filters, nameFilters);
     d->sortFileList(sort, l, 0, &ret);
     return ret;
 }
