@@ -2069,10 +2069,12 @@ void QTextEngine::LayoutData::reallocate(int totalGlyphs)
 
     int newAllocated = space_charAttributes + space_glyphs + space_logClusters;
     Q_ASSERT(newAllocated >= allocated);
-    void **old_mem = memory;
-    memory = (void **)::realloc(memory_on_stack ? 0 : old_mem, newAllocated*sizeof(void *));
-    if (memory_on_stack && memory)
-        memcpy(memory, old_mem, allocated*sizeof(void *));
+    void **newMem = memory;
+    newMem = (void **)::realloc(memory_on_stack ? 0 : memory, newAllocated*sizeof(void *));
+    Q_CHECK_PTR(newMem);
+    if (memory_on_stack && newMem)
+        memcpy(newMem, memory, allocated*sizeof(void *));
+    memory = newMem;
     memory_on_stack = false;
 
     void **m = memory;

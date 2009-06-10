@@ -935,7 +935,13 @@ static HB_Stream getTableStream(void *font, HB_GetFontTableFunc tableFunc, HB_Ta
     if (error)
         return 0;
     stream = (HB_Stream)malloc(sizeof(HB_StreamRec));
+    if (!stream)
+        return 0;
     stream->base = (HB_Byte*)malloc(length);
+    if (!stream->base) {
+        free(stream);
+        return 0;
+    }
     error = tableFunc(font, tag, stream->base, &length);
     if (error) {
         _hb_close_stream(stream);
@@ -950,6 +956,8 @@ static HB_Stream getTableStream(void *font, HB_GetFontTableFunc tableFunc, HB_Ta
 HB_Face HB_NewFace(void *font, HB_GetFontTableFunc tableFunc)
 {
     HB_Face face = (HB_Face )malloc(sizeof(HB_FaceRec));
+    if (!face)
+        return 0;
 
     face->isSymbolFont = false;
     face->gdef = 0;

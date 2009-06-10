@@ -157,7 +157,6 @@ LanguageResourceDialog::LanguageResourceDialog(QDesignerResourceBrowserInterface
 
 LanguageResourceDialog::~LanguageResourceDialog()
 {
-    delete d_ptr;
 }
 
 void LanguageResourceDialog::setCurrentPath(const QString &filePath)
@@ -427,9 +426,8 @@ void IconSelectorPrivate::slotResetAllActivated()
 
 // ------------- IconSelector
 IconSelector::IconSelector(QWidget *parent) :
-    QWidget(parent)
+    QWidget(parent), d_ptr(new IconSelectorPrivate())
 {
-    d_ptr = new IconSelectorPrivate();
     d_ptr->q_ptr = this;
 
     d_ptr->m_stateComboBox = new QComboBox(this);
@@ -500,7 +498,6 @@ IconSelector::IconSelector(QWidget *parent) :
 
 IconSelector::~IconSelector()
 {
-    delete d_ptr;
 }
 
 void IconSelector::setIcon(const PropertySheetIconValue &icon)

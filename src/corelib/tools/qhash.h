@@ -129,12 +129,15 @@ struct Q_CORE_EXPORT QHashData
 
     void *allocateNode();
     void freeNode(void *node);
-    QHashData *detach_helper(void (*node_duplicate)(Node *, void *), int nodeSize);
+    QHashData *detach_helper(void (*node_duplicate)(Node *, void *), int nodeSize); // ### Qt5 remove me
+    QHashData *detach_helper(void (*node_duplicate)(Node *, void *), void (*node_delete)(Node *),
+            int nodeSize);
     void mightGrow();
     bool willGrow();
     void hasShrunk();
     void rehash(int hint);
-    void destroyAndFree();
+    void free_helper(void (*node_delete)(Node *));
+    void destroyAndFree(); // ### Qt5 remove me
     Node *firstNode();
 #ifdef QT_QHASH_DEBUG
     void dump();
@@ -476,21 +479,30 @@ private:
     Node **findNode(const Key &key, uint *hp = 0) const;
     Node *createNode(uint h, const Key &key, const T &value, Node **nextNode);
     void deleteNode(Node *node);
+    static void deleteNode(QHashData::Node *node);
 
     static void duplicateNode(QHashData::Node *originalNode, void *newNode);
 };
 
+
 template <class Key, class T>
 Q_INLINE_TEMPLATE void QHash<Key, T>::deleteNode(Node *node)
 {
+    deleteNode(reinterpret_cast<QHashData::Node*>(node));
+}
+
+
+template <class Key, class T>
+Q_INLINE_TEMPLATE void QHash<Key, T>::deleteNode(QHashData::Node *node)
+{
 #ifdef Q_CC_BOR
-    node->~QHashNode<Key, T>();
+    concrete(node)->~QHashNode<Key, T>();
 #elif defined(QT_NO_PARTIAL_TEMPLATE_SPECIALIZATION)
-    node->~QHashNode();
+    concrete(node)->~QHashNode();
 #else
-    node->~Node();
+    concrete(node)->~Node();
 #endif
-    d->freeNode(node);
+    qFree(node);
 }
 
 template <class Key, class T>
@@ -538,18 +550,7 @@ Q_INLINE_TEMPLATE QHash<Key, T> &QHash<Key, T>::unite(const QHash<Key, T> &other
 template <class Key, class T>
 Q_OUTOFLINE_TEMPLATE void QHash<Key, T>::freeData(QHashData *x)
 {
-    Node *e_for_x = reinterpret_cast<Node *>(x);
-    Node **bucket = reinterpret_cast<Node **>(x->buckets);
-    int n = x->numBuckets;
-    while (n--) {
-        Node *cur = *bucket++;
-        while (cur != e_for_x) {
-            Node *next = cur->next;
-            deleteNode(cur);
-            cur = next;
-        }
-    }
-    x->destroyAndFree();
+    x->free_helper(deleteNode);
 }
 
 template <class Key, class T>
@@ -561,7 +562,7 @@ Q_INLINE_TEMPLATE void QHash<Key, T>::clear()
 template <class Key, class T>
 Q_OUTOFLINE_TEMPLATE void QHash<Key, T>::detach_helper()
 {
-    QHashData *x = d->detach_helper(duplicateNode,
+    QHashData *x = d->detach_helper(duplicateNode, deleteNode,
         QTypeInfo<T>::isDummy ? sizeof(DummyNode) : sizeof(Node));
     if (!d->ref.deref())
         freeData(d);

@@ -45,6 +45,7 @@ class PHONON_EXPORT AbstractMediaStreamPrivate : private MediaNodeDestructionHan
     public:
         void setStreamInterface(StreamInterface *);
         void setMediaObjectPrivate(MediaObjectPrivate *);
+        ~AbstractMediaStreamPrivate();
 
     protected:
         AbstractMediaStreamPrivate()
@@ -56,7 +57,6 @@ class PHONON_EXPORT AbstractMediaStreamPrivate : private MediaNodeDestructionHan
             errorType(NoError)
         {
         }
-        ~AbstractMediaStreamPrivate();
 
         virtual void setStreamSize(qint64 newSize);
         virtual void setStreamSeekable(bool s);

@@ -44,6 +44,7 @@
 
 #include <QtCore/qcoreevent.h>
 #include <QtCore/qpoint.h>
+#include <QtCore/qscopedpointer.h>
 
 QT_BEGIN_HEADER
 
@@ -70,7 +71,7 @@ public:
 
 protected:
     QGraphicsSceneEvent(QGraphicsSceneEventPrivate &dd, Type type = None);
-    QGraphicsSceneEventPrivate *d_ptr;
+    QScopedPointer<QGraphicsSceneEventPrivate> d_ptr;
     Q_DECLARE_PRIVATE(QGraphicsSceneEvent)
 };
 

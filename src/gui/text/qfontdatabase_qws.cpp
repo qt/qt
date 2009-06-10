@@ -566,8 +566,8 @@ QFontEngine *loadSingleEngine(int script, const QFontPrivate *fp,
             QFontEngineQPF *fe = new QFontEngineQPF(request, res.data(), res.size());
             if (fe->isValid())
                 return fe;
-            qDebug() << "fontengine is not valid! " << size->fileName;
             delete fe;
+            qDebug() << "fontengine is not valid! " << size->fileName;
         } else {
             qDebug() << "Resource not valid" << size->fileName;
         }
@@ -577,8 +577,8 @@ QFontEngine *loadSingleEngine(int script, const QFontPrivate *fp,
             QFontEngineQPF *fe = new QFontEngineQPF(request, f);
             if (fe->isValid())
                 return fe;
-            qDebug() << "fontengine is not valid!";
             delete fe; // will close f
+            qDebug() << "fontengine is not valid!";
         }
 #endif
     } else
@@ -592,70 +592,67 @@ QFontEngine *loadSingleEngine(int script, const QFontPrivate *fp,
         static bool dontShareFonts = !qgetenv("QWS_NO_SHARE_FONTS").isEmpty();
         bool shareFonts = !dontShareFonts;
 
-        QFontEngine *engine = 0;
+        QScopedPointer<QFontEngine> engine;
 
 #ifndef QT_NO_LIBRARY
         QFontEngineFactoryInterface *factory = qobject_cast<QFontEngineFactoryInterface *>(loader()->instance(foundry->name));
-            if (factory) {
-                QFontEngineInfo info;
-                info.setFamily(request.family);
-                info.setPixelSize(request.pixelSize);
-                info.setStyle(QFont::Style(request.style));
-                info.setWeight(request.weight);
-                // #### antialiased
+        if (factory) {
+            QFontEngineInfo info;
+            info.setFamily(request.family);
+            info.setPixelSize(request.pixelSize);
+            info.setStyle(QFont::Style(request.style));
+            info.setWeight(request.weight);
+            // #### antialiased
 
-                QAbstractFontEngine *customEngine = factory->create(info);
-                if (customEngine) {
-                    engine = new QProxyFontEngine(customEngine, def);
+            QAbstractFontEngine *customEngine = factory->create(info);
+            if (customEngine) {
+                engine.reset(new QProxyFontEngine(customEngine, def));
 
-                    if (shareFonts) {
-                        QVariant hint = customEngine->fontProperty(QAbstractFontEngine::CacheGlyphsHint);
-                        if (hint.isValid())
-                            shareFonts = hint.toBool();
-                        else
-                            shareFonts = (pixelSize < 64);
-                    }
+                if (shareFonts) {
+                    QVariant hint = customEngine->fontProperty(QAbstractFontEngine::CacheGlyphsHint);
+                    if (hint.isValid())
+                        shareFonts = hint.toBool();
+                    else
+                        shareFonts = (pixelSize < 64);
                 }
+            }
         }
 #endif // QT_NO_LIBRARY
-            if (!engine && !file.isEmpty() && QFile::exists(file) || privateDb()->isApplicationFont(file)) {
+        if ((engine.isNull() && !file.isEmpty() && QFile::exists(file)) || privateDb()->isApplicationFont(file)) {
             QFontEngine::FaceId faceId;
             faceId.filename = file.toLocal8Bit();
             faceId.index = size->fileIndex;
 
 #ifndef QT_NO_FREETYPE
 
-            QFontEngineFT *fte = new QFontEngineFT(def);
+            QScopedPointer<QFontEngineFT> fte(new QFontEngineFT(def));
             if (fte->init(faceId, style->antialiased,
                           style->antialiased ? QFontEngineFT::Format_A8 : QFontEngineFT::Format_Mono)) {
 #ifdef QT_NO_QWS_QPF2
-                return fte;
+                return fte.take();
 #else
-                engine = fte;
                 // try to distinguish between bdf and ttf fonts we can pre-render
                 // and don't try to share outline fonts
                 shareFonts = shareFonts
                              && !fte->defaultGlyphs()->outline_drawing
                              && !fte->getSfntTable(MAKE_TAG('h', 'e', 'a', 'd')).isEmpty();
+                engine.reset(fte.take());
 #endif
-            } else {
-                delete fte;
             }
 #endif // QT_NO_FREETYPE
         }
-        if (engine) {
+        if (!engine.isNull()) {
 #if !defined(QT_NO_QWS_QPF2) && !defined(QT_FONTS_ARE_RESOURCES)
             if (shareFonts) {
-                QFontEngineQPF *fe = new QFontEngineQPF(def, -1, engine);
-                engine = 0;
+                QScopedPointer<QFontEngineQPF> fe(new QFontEngineQPF(def, -1, engine.data()));
+                engine.take();
                 if (fe->isValid())
-                    return fe;
+                    return fe.take();
                 qWarning("Initializing QFontEngineQPF failed for %s", qPrintable(file));
-                engine = fe->takeRenderingEngine();
-                delete fe;
+                engine.reset(fe->takeRenderingEngine());
             }
 #endif
-            return engine;
+            return engine.take();
         }
     } else
     {
@@ -682,20 +679,22 @@ QFontEngine *loadEngine(int script, const QFontPrivate *fp,
                         QtFontFamily *family, QtFontFoundry *foundry,
                         QtFontStyle *style, QtFontSize *size)
 {
-    QFontEngine *fe = loadSingleEngine(script, fp, request, family, foundry,
-                                       style, size);
-    if (fe
+    QScopedPointer<QFontEngine> engine(loadSingleEngine(script, fp, request, family, foundry,
+                                       style, size));
+    if (!engine.isNull()
         && script == QUnicodeTables::Common
-        && !(request.styleStrategy & QFont::NoFontMerging) && !fe->symbol) {
+        && !(request.styleStrategy & QFont::NoFontMerging) && !engine->symbol) {
 
         QStringList fallbacks = privateDb()->fallbackFamilies;
 
         if (family && !family->fallbackFamilies.isEmpty())
             fallbacks = family->fallbackFamilies;
 
-        fe = new QFontEngineMultiQWS(fe, script, fallbacks);
+        QFontEngine *fe = new QFontEngineMultiQWS(engine.data(), script, fallbacks);
+        engine.take();
+        engine.reset(fe);
     }
-    return fe;
+    return engine.take();
 }
 
 static void registerFont(QFontDatabasePrivate::ApplicationFont *fnt)

@@ -448,7 +448,6 @@ QGLFramebufferObject::~QGLFramebufferObject()
             glDeleteRenderbuffersEXT(1, &d->depth_stencil_buffer);
         glDeleteFramebuffersEXT(1, &d->fbo);
     }
-    delete d_ptr;
 }
 
 /*!

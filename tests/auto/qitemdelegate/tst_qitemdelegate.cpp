@@ -1115,13 +1115,16 @@ void tst_QItemDelegate::enterKey()
     QList<QWidget*> lineEditors = qFindChildren<QWidget *>(view.viewport(), QString::fromLatin1("TheEditor"));
     QCOMPARE(lineEditors.count(), 1);
     
-    QWidget *editor = lineEditors.at(0);
+    QPointer<QWidget> editor = lineEditors.at(0);
     QCOMPARE(editor->hasFocus(), true);
     
     QTest::keyClick(editor, Qt::Key(key));
     QApplication::processEvents();
     
-    QCOMPARE(editor->hasFocus(), expectedFocus);
+    if (widget == 2 || widget == 3) {
+        QVERIFY(!editor.isNull());
+        QCOMPARE(editor->hasFocus(), expectedFocus);
+    }
 }
 
 

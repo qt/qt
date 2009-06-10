@@ -124,7 +124,14 @@ QThreadData *QThreadData::current()
         } else {
             data = new QThreadData;
             pthread_setspecific(current_thread_data_key, data);
-            data->thread = new QAdoptedThread(data);
+            QT_TRY {
+                data->thread = new QAdoptedThread(data);
+            } QT_CATCH(...) {
+                pthread_setspecific(current_thread_data_key, 0);
+                data->deref();
+                data = 0;
+                QT_RETHROW;
+            }
             data->deref();
         }
         if (!QCoreApplicationPrivate::theMainThread)

@@ -172,7 +172,8 @@ extern bool qt_sendSpontaneousEvent(QObject*, QEvent*); // qapplication.cpp
 extern QDesktopWidget *qt_desktopWidget; // qapplication.cpp
 
 QWidgetPrivate::QWidgetPrivate(int version) :
-        QObjectPrivate(version), extra(0), focus_child(0)
+        QObjectPrivate(version), extra(0),
+        focus_next(0), focus_prev(0), focus_child(0)
         ,layout(0), widgetItem(0)
         ,leftmargin(0), topmargin(0), rightmargin(0), bottommargin(0)
         ,leftLayoutItemMargin(0), topLayoutItemMargin(0), rightLayoutItemMargin(0)
@@ -927,6 +928,23 @@ QRegion qt_dirtyRegion(QWidget *widget)
   \endlist
 */
 
+struct QWidgetExceptionCleaner
+{
+    /* this cleans up when the constructor throws an exception */
+    static inline void cleanup(QWidget *that, QWidgetPrivate *d)
+    {
+#ifndef QT_NO_EXCEPTIONS
+        QWidgetPrivate::uncreatedWidgets->remove(that);
+        if (d->focus_next != that) {
+            if (d->focus_next)
+                d->focus_next->d_func()->focus_prev = d->focus_prev;
+            if (d->focus_prev)
+                d->focus_prev->d_func()->focus_next = d->focus_next;
+        }
+#endif
+    }
+};
+
 /*!
     Constructs a widget which is a child of \a parent, with  widget
     flags set to \a f.
@@ -956,7 +974,12 @@ QRegion qt_dirtyRegion(QWidget *widget)
 QWidget::QWidget(QWidget *parent, Qt::WindowFlags f)
     : QObject(*new QWidgetPrivate, 0), QPaintDevice()
 {
-    d_func()->init(parent, f);
+    QT_TRY {
+        d_func()->init(parent, f);
+    } QT_CATCH(...) {
+        QWidgetExceptionCleaner::cleanup(this, d_func());
+        QT_RETHROW;
+    }
 }
 
 #ifdef QT3_SUPPORT
@@ -967,8 +990,13 @@ QWidget::QWidget(QWidget *parent, Qt::WindowFlags f)
 QWidget::QWidget(QWidget *parent, const char *name, Qt::WindowFlags f)
     : QObject(*new QWidgetPrivate, 0), QPaintDevice()
 {
-    d_func()->init(parent , f);
-    setObjectName(QString::fromAscii(name));
+    QT_TRY {
+        d_func()->init(parent , f);
+        setObjectName(QString::fromAscii(name));
+    } QT_CATCH(...) {
+        QWidgetExceptionCleaner::cleanup(this, d_func());
+        QT_RETHROW;
+    }
 }
 #endif
 
@@ -977,7 +1005,13 @@ QWidget::QWidget(QWidget *parent, const char *name, Qt::WindowFlags f)
 QWidget::QWidget(QWidgetPrivate &dd, QWidget* parent, Qt::WindowFlags f)
     : QObject(dd, 0), QPaintDevice()
 {
-    d_func()->init(parent, f);
+    Q_D(QWidget);
+    QT_TRY {
+        d->init(parent, f);
+    } QT_CATCH(...) {
+        QWidgetExceptionCleaner::cleanup(this, d_func());
+        QT_RETHROW;
+    }
 }
 
 /*!
@@ -4880,6 +4914,13 @@ void QWidget::render(QPainter *painter, const QPoint &targetOffset,
     d->extra->inRenderWithPainter = false;
 }
 
+#if !defined(Q_WS_S60)
+void QWidgetPrivate::setSoftKeys_sys(const QList<QAction*> &softkeys)
+{
+    Q_UNUSED(softkeys)
+}
+#endif // !defined(Q_WS_S60)
+
 bool QWidgetPrivate::isAboutToShow() const
 {
     if (data.in_show)
@@ -5068,7 +5109,7 @@ void QWidgetPrivate::drawWidget(QPaintDevice *pdev, const QRegion &rgn, const QP
 #ifndef QT_NO_SCROLLAREA
                     QAbstractScrollArea *scrollArea = qobject_cast<QAbstractScrollArea *>(q->parent());
                     if (scrollArea && scrollArea->viewport() == q) {
-                        QObjectData *scrollPrivate = static_cast<QWidget *>(scrollArea)->d_ptr;
+                        QObjectData *scrollPrivate = static_cast<QWidget *>(scrollArea)->d_ptr.data();
                         QAbstractScrollAreaPrivate *priv = static_cast<QAbstractScrollAreaPrivate *>(scrollPrivate);
                         scrollAreaOffset = priv->contentsOffset();
                         p.translate(-scrollAreaOffset);
@@ -5715,9 +5756,12 @@ bool QWidget::hasFocus() const
 
 void QWidget::setFocus(Qt::FocusReason reason)
 {
+    Q_D(QWidget);
+    d->setSoftKeys_sys(softKeys());
+
     if (!isEnabled())
         return;
-
+    
     QWidget *f = this;
     while (f->d_func()->extra && f->d_func()->extra->focus_proxy)
         f = f->d_func()->extra->focus_proxy;
@@ -11508,6 +11552,60 @@ void QWidget::setMask(const QBitmap &bitmap)
 void QWidget::clearMask()
 {
     setMask(QRegion());
+}
+
+/*!
+    Returns the (possibly empty) list of this widget's softkeys.
+    Returned list cannot be changed. Softkeys should be added
+    and removed via method called setSoftKeys
+
+    \sa setSoftKey(), setSoftKeys()
+*/
+const QList<QAction*>& QWidget::softKeys() const
+{
+    Q_D(const QWidget);
+    if( d->softKeys.count() > 0)
+        return d->softKeys;
+    if (isWindow() || !parentWidget())
+        return d->softKeys;
+
+    return parentWidget()->softKeys();
+}
+
+/*!
+    Sets the softkey \a softkey to this widget's list of softkeys,
+    Setting 0 as softkey will clear all the existing softkeys set
+    to the widget
+    A QWidget can have 0 or more softkeys
+
+    \sa softKeys(), setSoftKeys()
+*/
+void QWidget::setSoftKey(QAction *softKey)
+{
+    Q_D(QWidget);
+    qDeleteAll(d->softKeys);
+    d->softKeys.clear();
+    if (softKey)
+        d->softKeys.append(softKey);
+    if (QApplication::focusWidget() == this)
+        d->setSoftKeys_sys(this->softKeys());
+}
+
+/*!
+    Sets the list of softkeys \a softkeys to this widget's list of softkeys,
+    A QWidget can have 0 or more softkeys
+
+    \sa softKeys(), setSoftKey()
+*/
+void QWidget::setSoftKeys(const QList<QAction*> &softKeys)
+{
+    Q_D(QWidget);
+    qDeleteAll(d->softKeys);
+    d->softKeys.clear();
+        d->softKeys = softKeys;
+
+    if ((QApplication::focusWidget() == this) || (QApplication::focusWidget()==0))
+        d->setSoftKeys_sys(this->softKeys());
 }
 
 /*! \fn const QX11Info &QWidget::x11Info() const

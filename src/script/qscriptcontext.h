@@ -46,6 +46,7 @@
 
 #ifndef QT_NO_SCRIPT
 
+#include <QtCore/qscopedpointer.h>
 #include <QtScript/qscriptvalue.h>
 
 QT_BEGIN_HEADER
@@ -111,7 +112,7 @@ public:
 private:
     QScriptContext();
 
-    QScriptContextPrivate *d_ptr;
+    QScopedPointer<QScriptContextPrivate> d_ptr;
 
     Q_DECLARE_PRIVATE(QScriptContext)
     Q_DISABLE_COPY(QScriptContext)

@@ -243,8 +243,10 @@ public slots:
         // Let all the events occur twice so we know they reactivated after
         // each occurrence.
         if (++timerCount >= 2) {
+#ifdef Q_OS_SYMBIAN
             // This will hopefully run last, so stop the active scheduler.
             CActiveScheduler::Stop();
+#endif
         }
     }
     void zeroTimerSlot()

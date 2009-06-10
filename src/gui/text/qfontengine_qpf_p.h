@@ -243,6 +243,7 @@ private:
     quint32 glyphDataOffset;
     quint32 glyphDataSize;
     QString fileName;
+    QByteArray encodedFileName;
     bool readOnly;
 
     QFreetypeFace *freetype;

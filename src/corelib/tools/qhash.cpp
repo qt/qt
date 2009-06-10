@@ -171,7 +171,9 @@ QHashData QHashData::shared_null = {
 
 void *QHashData::allocateNode()
 {
-    return qMalloc(nodeSize);
+    void *ptr = qMalloc(nodeSize);
+    Q_CHECK_PTR(ptr);
+    return ptr;
 }
 
 void QHashData::freeNode(void *node)
@@ -180,6 +182,13 @@ void QHashData::freeNode(void *node)
 }
 
 QHashData *QHashData::detach_helper(void (*node_duplicate)(Node *, void *), int nodeSize)
+{
+    return detach_helper( node_duplicate, 0, nodeSize );
+}
+
+QHashData *QHashData::detach_helper(void (*node_duplicate)(Node *, void *),
+        void (*node_delete)(Node *),
+        int nodeSize)
 {
     union {
         QHashData *d;
@@ -197,23 +206,68 @@ QHashData *QHashData::detach_helper(void (*node_duplicate)(Node *, void *), int 
     d->sharable = true;
 
     if (numBuckets) {
-        d->buckets = new Node *[numBuckets];
+        QT_TRY {
+            d->buckets = new Node *[numBuckets];
+        } QT_CATCH(...) {
+            // restore a consistent state for d
+            d->numBuckets = 0;
+            // roll back
+            d->free_helper(node_delete);
+            QT_RETHROW;
+        }
+
         Node *this_e = reinterpret_cast<Node *>(this);
         for (int i = 0; i < numBuckets; ++i) {
             Node **nextNode = &d->buckets[i];
             Node *oldNode = buckets[i];
             while (oldNode != this_e) {
-                Node *dup = static_cast<Node *>(allocateNode());
-                node_duplicate(oldNode, dup);
-                dup->h = oldNode->h;
-                *nextNode = dup;
-                nextNode = &dup->next;
-                oldNode = oldNode->next;
+                QT_TRY {
+                    Node *dup = static_cast<Node *>(allocateNode());
+
+                    QT_TRY {
+                        node_duplicate(oldNode, dup);
+                    } QT_CATCH(...) {
+                        freeNode( dup );
+                        QT_RETHROW;
+                    }
+
+                    dup->h = oldNode->h;
+                    *nextNode = dup;
+                    nextNode = &dup->next;
+                    oldNode = oldNode->next;
+                } QT_CATCH(...) {
+                    // restore a consistent state for d
+                    *nextNode = e;
+                    d->numBuckets = i+1;
+                    // roll back
+                    d->free_helper(node_delete);
+                    QT_RETHROW;
+                }
             }
             *nextNode = e;
         }
     }
     return d;
+}
+
+void QHashData::free_helper(void (*node_delete)(Node *))
+{
+    if (node_delete) {
+        Node *this_e = reinterpret_cast<Node *>(this);
+        Node **bucket = reinterpret_cast<Node **>(this->buckets);
+
+        int n = numBuckets;
+        while (n--) {
+            Node *cur = *bucket++;
+            while (cur != this_e) {
+                Node *next = cur->next;
+                node_delete(cur);
+                cur = next;
+            }
+        }
+    }
+    delete [] buckets;
+    delete this;
 }
 
 QHashData::Node *QHashData::nextNode(Node *node)
@@ -298,9 +352,10 @@ void QHashData::rehash(int hint)
         Node **oldBuckets = buckets;
         int oldNumBuckets = numBuckets;
 
+        int nb = primeForNumBits(hint);
+        buckets = new Node *[nb];
         numBits = hint;
-        numBuckets = primeForNumBits(hint);
-        buckets = new Node *[numBuckets];
+        numBuckets = nb;
         for (int i = 0; i < numBuckets; ++i)
             buckets[i] = e;
 
@@ -327,8 +382,7 @@ void QHashData::rehash(int hint)
 
 void QHashData::destroyAndFree()
 {
-    delete [] buckets;
-    delete this;
+    free_helper(0);
 }
 
 #ifdef QT_QHASH_DEBUG

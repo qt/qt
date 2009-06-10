@@ -82,6 +82,8 @@ public:
 
 private:
     QRect adjustedRectangle(const QRect &r);
+    
+    Q_DISABLE_COPY(Q3Painter)
 };
 
 void inline Q3Painter::drawRect(const QRect &r)

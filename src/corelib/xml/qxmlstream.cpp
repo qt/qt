@@ -429,7 +429,6 @@ QXmlStreamReader::~QXmlStreamReader()
     Q_D(QXmlStreamReader);
     if (d->deleteDevice)
         delete d->device;
-    delete d;
 }
 
 /*! \fn bool QXmlStreamReader::hasError() const
@@ -819,7 +818,9 @@ inline void QXmlStreamReaderPrivate::reallocateStack()
 {
     stack_size <<= 1;
     sym_stack = reinterpret_cast<Value*> (qRealloc(sym_stack, stack_size * sizeof(Value)));
+    Q_CHECK_PTR(sym_stack);
     state_stack = reinterpret_cast<int*> (qRealloc(state_stack, stack_size * sizeof(int)));
+    Q_CHECK_PTR(sym_stack);
 }
 
 
@@ -3131,8 +3132,6 @@ QXmlStreamWriter::QXmlStreamWriter(QString *string)
 */
 QXmlStreamWriter::~QXmlStreamWriter()
 {
-    Q_D(QXmlStreamWriter);
-    delete d;
 }
 
 

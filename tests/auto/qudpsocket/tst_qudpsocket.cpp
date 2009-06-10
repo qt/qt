@@ -853,4 +853,4 @@ void tst_QUdpSocket::zeroLengthDatagram()
 }
 
 QTEST_MAIN(tst_QUdpSocket)
-#include "test/tmp/tst_qudpsocket.moc"
+#include "tst_qudpsocket.moc"

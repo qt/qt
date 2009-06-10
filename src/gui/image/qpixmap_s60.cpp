@@ -38,6 +38,7 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+#include <exception>
 #include <w32std.h>
 #include <fbs.h>
 

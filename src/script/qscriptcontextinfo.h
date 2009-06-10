@@ -48,6 +48,7 @@
 
 #include <QtCore/qlist.h>
 #include <QtCore/qstringlist.h>
+#include <QtCore/qscopedpointer.h>
 
 QT_BEGIN_HEADER
 
@@ -104,7 +105,7 @@ public:
     bool operator!=(const QScriptContextInfo &other) const;
 
 private:
-    QScriptContextInfoPrivate *d_ptr;
+    QScopedSharedPointer<QScriptContextInfoPrivate> d_ptr;
 
     Q_DECLARE_PRIVATE(QScriptContextInfo)
 };

@@ -71,7 +71,7 @@ int QPageSetupDialog::exec()
         return Rejected;
 
     QWin32PrintEngine *engine = static_cast<QWin32PrintEngine*>(d->printer->paintEngine());
-    QWin32PrintEnginePrivate *ep = static_cast<QWin32PrintEnginePrivate *>(engine->d_ptr);
+    QWin32PrintEnginePrivate *ep = static_cast<QWin32PrintEnginePrivate *>(engine->d_ptr.data());
 
     PAGESETUPDLG psd;
     memset(&psd, 0, sizeof(PAGESETUPDLG));

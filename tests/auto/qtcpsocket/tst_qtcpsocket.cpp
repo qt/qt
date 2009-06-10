@@ -81,10 +81,8 @@
 #ifndef TEST_QNETWORK_PROXY
 //#define TEST_QNETWORK_PROXY
 #endif
-#if defined(TEST_QNETWORK_PROXY) || defined (Q_CC_RVCT)
 // RVCT compiles also unused inline methods
 # include <QNetworkProxy>
-#endif
 
 #ifdef Q_OS_LINUX
 #include <stdio.h>
@@ -1185,7 +1183,7 @@ void tst_QTcpSocket::readLine()
 
     char buffer[1024];
     int expectedReplySize = QtNetworkSettings::expectedReplyIMAP().size();
-    ASSERT(expectedReplySize >= 3);
+    Q_ASSERT(expectedReplySize >= 3);
     QCOMPARE(socket->readLine(buffer, sizeof(buffer)), qint64(expectedReplySize));
 
     QCOMPARE((int) buffer[expectedReplySize-2], (int) '\r');

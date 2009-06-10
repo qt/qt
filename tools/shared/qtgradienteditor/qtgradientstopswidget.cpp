@@ -360,9 +360,8 @@ void QtGradientStopsWidgetPrivate::slotResetZoom()
 }
 
 QtGradientStopsWidget::QtGradientStopsWidget(QWidget *parent)
-    : QAbstractScrollArea(parent)
+    : QAbstractScrollArea(parent), d_ptr(new QtGradientStopsWidgetPrivate)
 {
-    d_ptr = new QtGradientStopsWidgetPrivate;
     d_ptr->q_ptr = this;
     d_ptr->m_backgroundCheckered = true;
     d_ptr->m_model = 0;
@@ -391,7 +390,6 @@ QtGradientStopsWidget::QtGradientStopsWidget(QWidget *parent)
 
 QtGradientStopsWidget::~QtGradientStopsWidget()
 {
-    delete d_ptr;
 }
 
 QSize QtGradientStopsWidget::sizeHint() const

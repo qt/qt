@@ -110,7 +110,7 @@ protected:
     void mouseDoubleClickEvent(QMouseEvent *e);
 
 private:
-    class QtGradientWidgetPrivate *d_ptr;
+    QScopedPointer<class QtGradientWidgetPrivate> d_ptr;
     Q_DECLARE_PRIVATE(QtGradientWidget)
     Q_DISABLE_COPY(QtGradientWidget)
 };

@@ -91,7 +91,7 @@ inline QScriptValueImpl QScriptValuePrivate::valueOf(const QScriptValue &value)
 
 inline void QScriptValuePrivate::init(QScriptValue &value, QScriptValuePrivate *p)
 {
-    value.d_ptr = p;
+    value.d_ptr.data_ptr() = p;
     value.d_ptr->ref.ref();
 }
 

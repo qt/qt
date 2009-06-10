@@ -170,8 +170,8 @@ QT_BEGIN_NAMESPACE
   \sa acquire(), key()
  */
 QSystemSemaphore::QSystemSemaphore(const QString &key, int initialValue, AccessMode mode)
+    : d(new QSystemSemaphorePrivate)
 {
-    d = new QSystemSemaphorePrivate;
     setKey(key, initialValue, mode);
 }
 
@@ -193,7 +193,6 @@ QSystemSemaphore::QSystemSemaphore(const QString &key, int initialValue, AccessM
 QSystemSemaphore::~QSystemSemaphore()
 {
     d->cleanHandle();
-    delete d;
 }
 
 /*!

@@ -1407,8 +1407,8 @@ void Configure::applySpecSpecifics()
         dictionary[ "OPENGL" ]              = "no";
         dictionary[ "OPENSSL" ]             = "yes";
         dictionary[ "STL" ]                 = "yes";
-        dictionary[ "EXCEPTIONS" ]          = "no";
-        dictionary[ "RTTI" ]                = "no";
+        dictionary[ "EXCEPTIONS" ]          = "yes";
+        dictionary[ "RTTI" ]                = "yes";
         dictionary[ "ARCHITECTURE" ]        = "symbian";
         dictionary[ "3DNOW" ]               = "no";
         dictionary[ "SSE" ]                 = "no";

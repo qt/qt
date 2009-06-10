@@ -1006,7 +1006,8 @@ QApplication::~QApplication()
     if (QWidgetPrivate::mapper) {
         QWidgetMapper * myMapper = QWidgetPrivate::mapper;
         QWidgetPrivate::mapper = 0;
-        for (QWidgetMapper::Iterator it = myMapper->begin(); it != myMapper->end(); ++it) {
+        for (QWidgetMapper::ConstIterator it = myMapper->constBegin();
+                it != myMapper->constEnd(); ++it) {
             register QWidget *w = *it;
             if (!w->parent())                        // window
                 w->destroy(true, true);
@@ -1018,7 +1019,7 @@ QApplication::~QApplication()
     if (QWidgetPrivate::uncreatedWidgets) {
         QWidgetSet *mySet = QWidgetPrivate::uncreatedWidgets;
         QWidgetPrivate::uncreatedWidgets = 0;
-        for (QWidgetSet::Iterator it = mySet->begin(); it != mySet->end(); ++it) {
+        for (QWidgetSet::ConstIterator it = mySet->constBegin(); it != mySet->constEnd(); ++it) {
             register QWidget *w = *it;
             if (!w->parent())                        // window
                 w->destroy(true, true);
@@ -4993,8 +4994,7 @@ void QApplication::setInputContext(QInputContext *inputContext)
         qWarning("QApplication::setInputContext: called with 0 input context");
         return;
     }
-    if (d->inputContext)
-        delete d->inputContext;
+    delete d->inputContext;
     d->inputContext = inputContext;
 }
 

@@ -106,7 +106,7 @@ private:
     bool exec(QPainter *p, QDataStream &ds, int i);
     void detach_helper();
 
-    QPicturePrivate *d_ptr;
+    QScopedSharedPointer<QPicturePrivate> d_ptr;
     friend class QPicturePaintEngine;
     friend class Q3Picture;
     friend class QAlphaPaintEngine;
@@ -114,7 +114,7 @@ private:
 
 public:
     typedef QPicturePrivate* DataPtr;
-    inline DataPtr &data_ptr() { return d_ptr; }
+    inline DataPtr &data_ptr() { return d_ptr.data_ptr(); }
 };
 
 Q_DECLARE_SHARED(QPicture)

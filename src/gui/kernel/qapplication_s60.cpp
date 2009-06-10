@@ -441,6 +441,13 @@ void QSymbianControl::sendMouseEvent(QWidget *widget, QMouseEvent *mEvent)
 
 TKeyResponse QSymbianControl::OfferKeyEventL(const TKeyEvent& keyEvent, TEventCode type)
 {
+    TKeyResponse r = EKeyWasNotConsumed;
+    QT_TRANSLATE_EXCEPTION_TO_SYMBIAN_LEAVE(r = OfferKeyEvent(keyEvent, type));
+    return r;
+}
+
+TKeyResponse QSymbianControl::OfferKeyEvent(const TKeyEvent& keyEvent, TEventCode type)
+{
     switch (type) {
     //case EEventKeyDown: // <-- Intentionally left out. See below.
     case EEventKeyUp:
@@ -1059,13 +1066,19 @@ void QApplication::symbianHandleCommand(int command)
 {
     switch (command) {
     case EEikCmdExit:
-    case EAknSoftkeyBack:
     case EAknSoftkeyExit:
-        qApp->exit();
+        exit();
         break;
     default:
-        // For now assume all unknown menu items are Qt menu items
-        QMenuBarPrivate::symbianCommands(command);
+        if (command >= SOFTKEYSTART && command <= SOFTKEYEND) {
+            int index= command-SOFTKEYSTART;
+            QWidget* focused = QApplication::focusWidget();
+            const QList<QAction*>& softKeys = focused->softKeys();
+            Q_ASSERT(index<softKeys.count());
+            softKeys.at(index)->activate(QAction::Trigger);
+        }
+        else
+            QMenuBarPrivate::symbianCommands(command);
         break;
     }
 }

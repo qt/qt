@@ -98,7 +98,6 @@ QScriptDebuggerCommandExecutor::QScriptDebuggerCommandExecutor()
 
 QScriptDebuggerCommandExecutor::~QScriptDebuggerCommandExecutor()
 {
-    delete d_ptr;
 }
 
 /*!

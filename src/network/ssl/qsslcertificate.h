@@ -118,7 +118,7 @@ public:
     Qt::HANDLE handle() const;
 
 private:
-    QSslCertificatePrivate *d;
+    QScopedSharedPointer<QSslCertificatePrivate> d;
     friend class QSslCertificatePrivate;
     friend class QSslSocketBackendPrivate;
 };

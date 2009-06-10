@@ -193,7 +193,7 @@ protected:
     QAbstractFileEngine();
     QAbstractFileEngine(QAbstractFileEnginePrivate &);
 
-    QAbstractFileEnginePrivate *d_ptr;
+    QScopedPointer<QAbstractFileEnginePrivate> d_ptr;
 private:
     Q_DECLARE_PRIVATE(QAbstractFileEngine)
     Q_DISABLE_COPY(QAbstractFileEngine)
@@ -237,7 +237,7 @@ private:
     friend class QDirIterator;
     friend class QDirIteratorPrivate;
     void setPath(const QString &path);
-    QAbstractFileEngineIteratorPrivate *d;
+    QScopedPointer<QAbstractFileEngineIteratorPrivate> d;
 };
 
 QT_END_NAMESPACE

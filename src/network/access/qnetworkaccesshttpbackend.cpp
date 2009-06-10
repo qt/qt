@@ -605,6 +605,7 @@ void QNetworkAccessHttpBackend::open()
     QNetworkAccessCache *cache = QNetworkAccessManagerPrivate::getCache(this);
     if ((http = static_cast<QNetworkAccessHttpBackendCache *>(cache->requestEntryNow(cacheKey))) == 0) {
         // no entry in cache; create an object
+        //### thiago: can we try/catch/ignore this????
         http = new QNetworkAccessHttpBackendCache(url.host(), url.port(), encrypt);
 
 #ifndef QT_NO_NETWORKPROXY
@@ -732,10 +733,15 @@ void QNetworkAccessHttpBackend::replyFinished()
     // store the SSL configuration now
     // once we call finished(), we won't have access to httpReply anymore
     QSslConfiguration sslConfig = httpReply->sslConfiguration();
-    if (pendingSslConfiguration)
+    if (pendingSslConfiguration) {
         *pendingSslConfiguration = sslConfig;
-    else if (!sslConfig.isNull())
-        pendingSslConfiguration = new QSslConfiguration(sslConfig);
+    } else if (!sslConfig.isNull()) {
+        QT_TRY {
+            pendingSslConfiguration = new QSslConfiguration(sslConfig);
+        } QT_CATCH(...) {
+            qWarning("QNetworkAccess: could not allocate a QSslConfiguration object for a SSL connection.");
+        }
+    }
 #endif
 
     finished();

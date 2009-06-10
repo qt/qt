@@ -296,9 +296,13 @@ QDialog::QDialog(QDialogPrivate &dd, QWidget *parent, Qt::WindowFlags f)
 
 QDialog::~QDialog()
 {
-    // Need to hide() here, as our (to-be) overridden hide()
-    // will not be called in ~QWidget.
-    hide();
+    QT_TRY {
+        // Need to hide() here, as our (to-be) overridden hide()
+        // will not be called in ~QWidget.
+        hide();
+    } QT_CATCH(...) {
+        // we're in the destructor - just swallow the exception
+    }
 }
 
 /*!

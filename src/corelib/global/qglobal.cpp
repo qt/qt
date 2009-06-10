@@ -1929,6 +1929,15 @@ void qt_check_pointer(const char *n, int l)
     qWarning("In file %s, line %d: Out of memory", n, l);
 }
 
+/* \internal
+   Allows you to throw an exception without including <new>
+   Called internally from Q_CHECK_PTR on certain OS combinations
+*/
+void qBadAlloc()
+{
+    QT_THROW(std::bad_alloc());
+}
+
 /*
   The Q_ASSERT macro calls this function when the test fails.
 */
@@ -2177,13 +2186,59 @@ void qt_message_output(QtMsgType msgType, const char *buf)
 
 #if defined(Q_OS_SYMBIAN)
         __DEBUGGER(); // on the emulator, get the debugger to kick in if there's one around
-        User::Invariant(); // Panic the current thread
+        TBuf<256> tmp;
+        TPtrC8 ptr(reinterpret_cast<const TUint8*>(buf));
+        TInt len = Min(tmp.MaxLength(), ptr.Length());
+        tmp.Copy(ptr.Left(len));
+        User::Panic(tmp, 0); // Panic the current thread
 #elif (defined(Q_OS_UNIX) || defined(Q_CC_MINGW))
         abort(); // trap; generates core dump
 #else
         exit(1); // goodbye cruel world
 #endif
     }
+}
+
+#if !defined(QT_NO_EXCEPTIONS)
+/*!
+    \internal
+    Uses a local buffer to output the message. Not locale safe + cuts off
+    everything after character 1023, but will work in out of memory situations.
+*/
+static void qEmergencyOut(QtMsgType msgType, const char *msg, va_list ap)
+{
+    char emergency_buf[1024] = { '\0' };
+    emergency_buf[1023] = '\0';
+    if (msg)
+        qvsnprintf(emergency_buf, 1023, msg, ap);
+    qt_message_output(msgType, emergency_buf);
+}
+#endif
+
+/*!
+    \internal
+*/
+static void qt_message(QtMsgType msgType, const char *msg, va_list ap)
+{
+#if !defined(QT_NO_EXCEPTIONS)
+    if (std::uncaught_exception()) {
+        qEmergencyOut(msgType, msg, ap);
+        return;
+    }
+#endif
+    QByteArray buf;
+    if (msg) {
+        QT_TRY {
+            buf = QString().vsprintf(msg, ap).toLocal8Bit();
+        } QT_CATCH(const std::bad_alloc &) {
+#if !defined(QT_NO_EXCEPTIONS)
+            qEmergencyOut(msgType, msg, ap);
+            // don't rethrow - we use qWarning and friends in destructors.
+            return;
+#endif
+        }
+    }
+    qt_message_output(msgType, buf.constData());
 }
 
 #undef qDebug
@@ -2223,14 +2278,10 @@ void qt_message_output(QtMsgType msgType, const char *buf)
 */
 void qDebug(const char *msg, ...)
 {
-    QString buf;
     va_list ap;
-    va_start(ap, msg);                        // use variable arg list
-    if (msg)
-        buf.vsprintf(msg, ap);
+    va_start(ap, msg); // use variable arg list
+    qt_message(QtDebugMsg, msg, ap);
     va_end(ap);
-
-    qt_message_output(QtDebugMsg, buf.toLocal8Bit().constData());
 }
 
 #undef qWarning
@@ -2267,14 +2318,10 @@ void qDebug(const char *msg, ...)
 */
 void qWarning(const char *msg, ...)
 {
-    QString buf;
     va_list ap;
     va_start(ap, msg); // use variable arg list
-    if (msg)
-        buf.vsprintf(msg, ap);
+    qt_message(QtWarningMsg, msg, ap);
     va_end(ap);
-
-    qt_message_output(QtWarningMsg, buf.toLocal8Bit().constData());
 }
 
 /*!
@@ -2307,15 +2354,12 @@ void qWarning(const char *msg, ...)
 */
 void qCritical(const char *msg, ...)
 {
-    QString buf;
     va_list ap;
     va_start(ap, msg); // use variable arg list
-    if (msg)
-        buf.vsprintf(msg, ap);
+    qt_message(QtCriticalMsg, msg, ap);
     va_end(ap);
-
-    qt_message_output(QtCriticalMsg, buf.toLocal8Bit().constData());
 }
+
 #ifdef QT3_SUPPORT
 void qSystemWarning(const char *msg, int code)
    { qCritical("%s (%s)", msg, qt_error_string(code).toLocal8Bit().constData()); }
@@ -2323,6 +2367,8 @@ void qSystemWarning(const char *msg, int code)
 
 void qErrnoWarning(const char *msg, ...)
 {
+    // qt_error_string() will allocate anyway, so we don't have
+    // to be careful here (like we do in plain qWarning())
     QString buf;
     va_list ap;
     va_start(ap, msg);
@@ -2335,6 +2381,8 @@ void qErrnoWarning(const char *msg, ...)
 
 void qErrnoWarning(int code, const char *msg, ...)
 {
+    // qt_error_string() will allocate anyway, so we don't have
+    // to be careful here (like we do in plain qWarning())
     QString buf;
     va_list ap;
     va_start(ap, msg);
@@ -2371,14 +2419,10 @@ void qErrnoWarning(int code, const char *msg, ...)
 */
 void qFatal(const char *msg, ...)
 {
-    QString buf;
     va_list ap;
     va_start(ap, msg); // use variable arg list
-    if (msg)
-        buf.vsprintf(msg, ap);
+    qt_message(QtFatalMsg, msg, ap);
     va_end(ap);
-
-    qt_message_output(QtFatalMsg, buf.toLocal8Bit().constData());
 }
 
 // getenv is declared as deprecated in VS2005. This function
@@ -3165,5 +3209,60 @@ bool QInternal::callFunction(InternalFunction func, void **args)
 
     \sa Q_DECL_EXPORT
 */
+
+#if defined(Q_OS_SYMBIAN)
+
+#include <typeinfo>
+
+const char* QSymbianLeaveException::what() const throw()
+{
+    static const char str[] = "Symbian leave exception %d";
+    static char msg[sizeof(str)+12];
+    sprintf(msg, str, error);
+    return msg;
+}
+
+void qt_translateSymbianErrorToException(int error)
+{
+    if (error >= KErrNone)
+        return;  // do nothing - not an exception
+    switch (error) {
+    case KErrNoMemory:
+        throw std::bad_alloc();
+    default:
+        throw QSymbianLeaveException(error);
+    }
+}
+
+void qt_translateExceptionToSymbianErrorL(const std::exception& aThrow)
+{
+    User::Leave(qt_translateExceptionToSymbianError(aThrow));
+}
+
+int qt_translateExceptionToSymbianError(const std::exception& aThrow)
+{
+    const std::type_info& atype = typeid(aThrow);
+    int err = KErrGeneral;
+
+    if(atype == typeid (std::bad_alloc))
+        err = KErrNoMemory;
+    else if(atype == typeid(QSymbianLeaveException))
+        err = static_cast<const QSymbianLeaveException&>(aThrow).error;
+    else if(atype == typeid(std::invalid_argument))
+        err =  KErrArgument;
+    else if(atype == typeid(std::out_of_range))
+        // std::out_of_range is of type logic_error which by definition means that it is
+        // "presumably detectable before the program executes".
+        // std::out_of_range is used to report an argument is not within the expected range.
+        // The description of KErrArgument says an argument is out of range. Hence the mapping.
+        err =  KErrArgument;
+    else if(atype == typeid(std::overflow_error))
+        err =  KErrOverflow;
+    else if(atype == typeid(std::underflow_error))
+        err =  KErrUnderflow;
+
+    return err;
+}
+#endif
 
 QT_END_NAMESPACE

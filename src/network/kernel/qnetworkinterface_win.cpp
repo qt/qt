@@ -115,6 +115,8 @@ static QHash<QHostAddress, QHostAddress> ipv4Netmasks()
     if (retval == ERROR_BUFFER_OVERFLOW) {
         // need more memory
         pAdapter = (IP_ADAPTER_INFO *)qMalloc(bufSize);
+        if (!pAdapter)
+            return ipv4netmasks;
         // try again
         if (ptrGetAdaptersInfo(pAdapter, &bufSize) != ERROR_SUCCESS) {
             qFree(pAdapter);
@@ -156,7 +158,8 @@ static QList<QNetworkInterfacePrivate *> interfaceListingWinXP()
     if (retval == ERROR_BUFFER_OVERFLOW) {
         // need more memory
         pAdapter = (IP_ADAPTER_ADDRESSES *)qMalloc(bufSize);
-
+        if (!pAdapter)
+            return interfaces;
         // try again
         if (ptrGetAdaptersAddresses(AF_UNSPEC, flags, NULL, pAdapter, &bufSize) != ERROR_SUCCESS) {
             qFree(pAdapter);
@@ -236,7 +239,8 @@ static QList<QNetworkInterfacePrivate *> interfaceListingWin2k()
     if (retval == ERROR_BUFFER_OVERFLOW) {
         // need more memory
         pAdapter = (IP_ADAPTER_INFO *)qMalloc(bufSize);
-
+        if (!pAdapter)
+            return interfaces;
         // try again
         if (ptrGetAdaptersInfo(pAdapter, &bufSize) != ERROR_SUCCESS) {
             qFree(pAdapter);
@@ -306,7 +310,8 @@ QString QHostInfo::localDomainName()
     pinfo = &info;
     if (ptrGetNetworkParams(pinfo, &bufSize) == ERROR_BUFFER_OVERFLOW) {
         pinfo = (FIXED_INFO *)qMalloc(bufSize);
-
+        if (!pinfo)
+            return QString();
         // try again
         if (ptrGetNetworkParams(pinfo, &bufSize) != ERROR_SUCCESS) {
             qFree(pinfo);

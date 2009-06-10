@@ -159,6 +159,8 @@ bool qws_overrideCursor = false;
 #ifndef QT_NO_QWS_MANAGER
 #include "qdecorationfactory_qws.h"
 
+extern Q_GUI_EXPORT QWSServer *qwsServer;
+
 QT_BEGIN_NAMESPACE
 
 QT_USE_NAMESPACE
@@ -485,8 +487,13 @@ QList<QWSCommand*> *qt_get_server_queue()
 void qt_server_enqueue(const QWSCommand *command)
 {
     QWSCommand *copy = QWSCommand::factory(command->type);
-    copy->copyFrom(command);
-    outgoing.append(copy);
+    QT_TRY {
+        copy->copyFrom(command);
+        outgoing.append(copy);
+    } QT_CATCH(...) {
+        delete copy;
+        QT_RETHROW;
+    }
 }
 
 QWSDisplay::Data::Data(QObject* parent, bool singleProcess)
@@ -2295,7 +2302,7 @@ void qt_init(QApplicationPrivate *priv, int type)
             qws_decoration = QApplication::qwsSetDecoration(decoration);
 #endif // QT_NO_QWS_MANAGER
 #ifndef QT_NO_QWS_INPUTMETHODS
-        qApp->setInputContext(new QWSInputContext);
+        qApp->setInputContext(new QWSInputContext(qApp));
 #endif
     }
 
@@ -3542,10 +3549,10 @@ bool QETWidget::translateKeyEvent(const QWSKeyEvent *event, bool grab) /* grab i
 
 #if defined QT3_SUPPORT && !defined(QT_NO_SHORTCUT)
     if (type == QEvent::KeyPress && !grab
-        && static_cast<QApplicationPrivate*>(qApp->d_ptr)->use_compat()) {
+        && static_cast<QApplicationPrivate*>(qApp->d_ptr.data())->use_compat()) {
         // send accel events if the keyboard is not grabbed
         QKeyEvent a(type, code, state, text, autor, int(text.length()));
-        if (static_cast<QApplicationPrivate*>(qApp->d_ptr)->qt_tryAccelEvent(this, &a))
+        if (static_cast<QApplicationPrivate*>(qApp->d_ptr.data())->qt_tryAccelEvent(this, &a))
             return true;
     }
 #else
@@ -3743,6 +3750,16 @@ void QApplication::setArgs(int c, char **v)
     Q_D(QApplication);
     d->argc = c;
     d->argv = v;
+}
+
+/* \internal
+   This is used to clean up the qws server
+   in case the QApplication constructor threw an exception
+ */
+QWSServerCleaner::~QWSServerCleaner()
+{
+    if (qwsServer && qws_single_process)
+        QWSServer::closedown();
 }
 
 QT_END_NAMESPACE

@@ -875,8 +875,6 @@ QGraphicsItem::~QGraphicsItem()
     if (d_ptr->scene)
         d_ptr->scene->d_func()->_q_removeItemLater(this);
 
-    delete d_ptr;
-
     qt_dataStore()->data.remove(this);
 }
 
@@ -2732,7 +2730,7 @@ QTransform QGraphicsItem::itemTransform(const QGraphicsItem *other, bool *ok) co
     QTransform x;
     const QGraphicsItem *p = child;
     do {
-        const QGraphicsItemPrivate *pd = p->d_ptr;
+        const QGraphicsItemPrivate *pd = p->d_ptr.data();
         if (pd->hasTransform)
             x *= p->transform();
         if (!pd->pos.isNull())
@@ -3070,7 +3068,7 @@ QRectF QGraphicsItem::sceneBoundingRect() const
     const QGraphicsItem *parentItem = this;
     const QGraphicsItemPrivate *itemd;
     do {
-        itemd = parentItem->d_ptr;
+        itemd = parentItem->d_ptr.data();
         if (itemd->hasTransform)
             break;
         offset += itemd->pos;

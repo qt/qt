@@ -265,15 +265,22 @@ void QLinkedList<T>::detach_helper()
     x.d->ref = 1;
     x.d->size = d->size;
     x.d->sharable = true;
-    Node *i = e->n, *j = x.e;
-    while (i != e) {
-        j->n = new Node(i->t);
-        j->n->p = j;
-        i = i->n;
-        j = j->n;
+    Node *original = e->n;
+    Node *copy = x.e;
+    while (original != e) {
+        QT_TRY {
+            copy->n = new Node(original->t);
+            copy->n->p = copy;
+            original = original->n;
+            copy = copy->n;
+        } QT_CATCH(...) {
+            copy->n = x.e;
+            free(x.d);
+            QT_RETHROW;
+        }
     }
-    j->n = x.e;
-    x.e->p = j;
+    copy->n = x.e;
+    x.e->p = copy;
     if (!d->ref.deref())
         free(d);
     d = x.d;
@@ -474,14 +481,21 @@ QLinkedList<T> &QLinkedList<T>::operator+=(const QLinkedList<T> &l)
     detach();
     int n = l.d->size;
     d->size += n;
-    Node *o = l.e->n;
+    Node *original = l.e->n;
     while (n--) {
-        Node *i = new Node(o->t);
-        o = o->n;
-        i->n = e;
-        i->p = e->p;
-        i->p->n = i;
-        e->p = i;
+        QT_TRY {
+            Node *copy = new Node(original->t);
+            original = original->n;
+            copy->n = e;
+            copy->p = e->p;
+            copy->p->n = copy;
+            e->p = copy;
+        } QT_CATCH(...) {
+            // restore the original list
+            while (n++<d->size)
+                removeLast();
+            QT_RETHROW;
+        }
     }
     return *this;
 }

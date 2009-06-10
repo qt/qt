@@ -123,9 +123,7 @@ void QCoeFepInputContext::update()
 
 void QCoeFepInputContext::setFocusWidget(QWidget *w)
 {
-    commitCurrentString();
-
-    CCoeEnv::Static()->Fep()->CancelTransaction();
+    commitCurrentString(false);
 
     QInputContext::setFocusWidget(w);
 
@@ -292,56 +290,17 @@ bool QCoeFepInputContext::filterEvent(const QEvent *event)
 void QCoeFepInputContext::mouseHandler( int x, QMouseEvent *event)
 {
     Q_ASSERT(m_isEditing);
+    Q_ASSERT(focusWidget());
 
-    if (!m_pointerHandler) {
-        QInputContext::mouseHandler(x, event);
-    }
+    if (event->type() == QEvent::MouseButtonPress && event->button() == Qt::LeftButton) {
+        commitCurrentString(false);
+        int pos = focusWidget()->inputMethodQuery(Qt::ImCursorPosition).toInt();
 
-    TPointerEvent::TType type;
-    TUint modifiers = 0;
-
-    if (event->type() == QEvent::MouseButtonPress) {
-        if (event->button() == Qt::LeftButton) {
-            type = TPointerEvent::EButton1Down;
-        } else if (event->button() == Qt::RightButton) {
-            type = TPointerEvent::EButton3Down;
-        } else if (event->button() == Qt::MidButton) {
-            type = TPointerEvent::EButton2Down;
-        } else {
-            return;
-        }
-    } else if (event->type() == QEvent::MouseButtonRelease) {
-        if (event->button() == Qt::LeftButton) {
-            type = TPointerEvent::EButton1Up;
-        } else if (event->button() == Qt::RightButton) {
-            type = TPointerEvent::EButton3Up;
-        } else if (event->button() == Qt::MidButton) {
-            type = TPointerEvent::EButton2Up;
-        } else {
-            return;
-        }
-    } else if (event->type() == QEvent::MouseMove) {
-        type = TPointerEvent::EMove;
-    } else if (event->type() == QEvent::DragMove) {
-        type = TPointerEvent::EDrag;
-    } else {
-        return;
+        QList<QInputMethodEvent::Attribute> attributes;
+        attributes << QInputMethodEvent::Attribute(QInputMethodEvent::Selection, pos + x, 0, QVariant());
+        QInputMethodEvent event("", attributes);
+        sendEvent(event);
     }
-
-    if (event->modifiers() & Qt::ShiftModifier) {
-        modifiers |= EModifierShift;
-    }
-    if (event->modifiers() & Qt::AltModifier) {
-        modifiers |= EModifierAlt;
-    }
-    if (event->modifiers() & Qt::ControlModifier) {
-        modifiers |= EModifierCtrl;
-    }
-    if (event->modifiers() & Qt::KeypadModifier) {
-        modifiers |= EModifierKeypad;
-    }
-
-    m_pointerHandler->HandlePointerEventInInlineTextL(type, modifiers, x);
 }
 
 TCoeInputCapabilities QCoeFepInputContext::inputCapabilities()
@@ -712,12 +671,10 @@ void QCoeFepInputContext::GetScreenCoordinatesForFepL(TPoint& aLeftSideOfBaseLin
 
 void QCoeFepInputContext::DoCommitFepInlineEditL()
 {
-    commitCurrentString();
-
-    m_isEditing = false;
+    commitCurrentString(true);
 }
 
-void QCoeFepInputContext::commitCurrentString()
+void QCoeFepInputContext::commitCurrentString(bool triggeredBySymbian)
 {
     if (m_preeditString.size() == 0) {
         return;
@@ -728,6 +685,12 @@ void QCoeFepInputContext::commitCurrentString()
     event.setCommitString(m_preeditString, 0, 0);//m_preeditString.size());
     m_preeditString.clear();
     sendEvent(event);
+
+    m_isEditing = false;
+
+    if (!triggeredBySymbian) {
+        CCoeEnv::Static()->Fep()->CancelTransaction();
+    }
 }
 
 MCoeFepAwareTextEditor_Extension1* QCoeFepInputContext::Extension1(TBool& aSetToTrue)

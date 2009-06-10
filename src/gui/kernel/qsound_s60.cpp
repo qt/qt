@@ -146,10 +146,11 @@ QAuServer* qt_new_audio_server()
 QAuBucketS60::QAuBucketS60( QAuServerS60 *server, QSound *sound )
     : m_sound( sound ), m_server( server ), m_prepared(false), m_playCalled(false)
 {
+    QString filepath = QFileInfo( m_sound->fileName() ).absoluteFilePath();
+    filepath = QDir::toNativeSeparators(filepath);
+    TPtrC filepathPtr(qt_QString2TPtrC(filepath));
     TRAPD(err, m_playUtility = CMdaAudioPlayerUtility::NewL(*this);
-               QString filepath = QFileInfo( m_sound->fileName() ).absoluteFilePath();
-               filepath = QDir::toNativeSeparators(filepath);
-               m_playUtility->OpenFileL(qt_QString2TPtrC(filepath)));
+               m_playUtility->OpenFileL(filepathPtr));
     if(err){
         m_server->playCompleted(this, err);
     }

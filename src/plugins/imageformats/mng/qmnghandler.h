@@ -42,6 +42,7 @@
 #ifndef QMNGHANDLER_H
 #define QMNGHANDLER_H
 
+#include <QtCore/qscopedpointer.h>
 #include <QtGui/qimageiohandler.h>
 
 QT_BEGIN_NAMESPACE
@@ -74,7 +75,7 @@ class QMngHandler : public QImageIOHandler
 
     private:
     Q_DECLARE_PRIVATE(QMngHandler)
-    QMngHandlerPrivate *d_ptr;
+    QScopedPointer<QMngHandlerPrivate> d_ptr;
 };
 
 QT_END_NAMESPACE

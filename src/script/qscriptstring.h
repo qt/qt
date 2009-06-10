@@ -46,6 +46,8 @@
 
 #ifndef QT_NO_SCRIPT
 
+#include <QtCore/qscopedpointer.h>
+
 QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
@@ -54,6 +56,7 @@ QT_MODULE(Script)
 
 class QScriptEngine;
 class QScriptStringPrivate;
+struct QScriptStringPrivatePointerHandler;
 
 class Q_SCRIPT_EXPORT QScriptString
 {
@@ -73,7 +76,7 @@ public:
     operator QString() const;
 
 private:
-    QScriptStringPrivate *d_ptr;
+    QScopedCustomPointer<QScriptStringPrivate, QScriptStringPrivatePointerHandler> d_ptr;
 
     Q_DECLARE_PRIVATE(QScriptString)
 };

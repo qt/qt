@@ -1834,9 +1834,9 @@ QSocks5SocketEngineHandler::createSocketEngine(QAbstractSocket::SocketType socke
         QSOCKS5_DEBUG << "not proxying";
         return 0;
     }
-    QSocks5SocketEngine *engine = new QSocks5SocketEngine(parent);
+    QScopedPointer<QSocks5SocketEngine> engine(new QSocks5SocketEngine(parent));
     engine->setProxy(proxy);
-    return engine;
+    return engine.take();
 }
 
 QAbstractSocketEngine *QSocks5SocketEngineHandler::createSocketEngine(int socketDescriptor, QObject *parent)

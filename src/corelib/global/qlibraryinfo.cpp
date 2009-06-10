@@ -40,11 +40,11 @@
 ****************************************************************************/
 
 #include "qdir.h"
-#include "qfile.h"    
+#include "qfile.h"
 #include "qconfig.h"
 #include "qsettings.h"
 #include "qlibraryinfo.h"
-#include "qpointer.h"
+#include "qscopedpointer.h"
 
 #ifdef QT_BUILD_QMAKE
 QT_BEGIN_NAMESPACE
@@ -67,8 +67,7 @@ QT_BEGIN_NAMESPACE
 struct QLibrarySettings
 {
     QLibrarySettings();
-    ~QLibrarySettings() { delete static_cast<QSettings *>(settings); }
-    QSettings *settings;
+    QScopedPointer<QSettings> settings;
 };
 Q_GLOBAL_STATIC(QLibrarySettings, qt_library_settings)
 
@@ -79,32 +78,19 @@ public:
     static void cleanup()
     {
         QLibrarySettings *ls = qt_library_settings();
-        if (ls) {
-            delete static_cast<QSettings *>(ls->settings);
-            ls->settings = 0;
-        }
+        if (ls)
+            ls->settings.reset(0);
     }
     static QSettings *configuration()
     {
-#ifdef QT_NO_THREAD
-        // This recursion guard should be a temporary solution; the recursive
-        // dependency should be found and removed.
-        static bool initializing = false;
-        if (initializing)
-            return 0;
-        initializing = true;
-#endif
         QLibrarySettings *ls = qt_library_settings();
-#ifdef QT_NO_THREAD
-        initializing = false;
-#endif
-        return ls ? static_cast<QSettings *>(qt_library_settings()->settings) : (QSettings*)0;
+        return ls ? ls->settings.data() : 0;
     }
 };
 
 QLibrarySettings::QLibrarySettings()
+    : settings(QLibraryInfoPrivate::findConfiguration())
 {
-    settings = QLibraryInfoPrivate::findConfiguration();
 #ifndef QT_BUILD_QMAKE
     qAddPostRoutine(QLibraryInfoPrivate::cleanup);
 #endif

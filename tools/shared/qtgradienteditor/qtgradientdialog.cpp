@@ -200,10 +200,9 @@ void QtGradientDialogPrivate::slotAboutToShowDetails(bool details, int extension
 */
 
 QtGradientDialog::QtGradientDialog(QWidget *parent)
-    : QDialog(parent)
+    : QDialog(parent), d_ptr(new QtGradientDialogPrivate())
 {
 //    setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
-    d_ptr = new QtGradientDialogPrivate();
     d_ptr->q_ptr = this;
     d_ptr->m_ui.setupUi(this);
     QPushButton *button = d_ptr->m_ui.buttonBox->button(QDialogButtonBox::Ok);
@@ -222,7 +221,6 @@ QtGradientDialog::QtGradientDialog(QWidget *parent)
 
 QtGradientDialog::~QtGradientDialog()
 {
-    delete d_ptr;
 }
 
 /*!

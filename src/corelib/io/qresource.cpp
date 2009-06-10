@@ -334,7 +334,6 @@ QResource::QResource(const QString &file, const QLocale &locale) : d_ptr(new QRe
 */
 QResource::~QResource()
 {
-    delete d_ptr;
 }
 
 /*!

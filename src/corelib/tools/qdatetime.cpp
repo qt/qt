@@ -2200,8 +2200,8 @@ int QTime::elapsed() const
     \sa isValid()
 */
 QDateTime::QDateTime()
+    : d(new QDateTimePrivate)
 {
-    d = new QDateTimePrivate;
 }
 
 
@@ -2211,8 +2211,8 @@ QDateTime::QDateTime()
 */
 
 QDateTime::QDateTime(const QDate &date)
+    : d(new QDateTimePrivate)
 {
-    d = new QDateTimePrivate;
     d->date = date;
     d->time = QTime(0, 0, 0);
 }
@@ -2225,8 +2225,8 @@ QDateTime::QDateTime(const QDate &date)
 */
 
 QDateTime::QDateTime(const QDate &date, const QTime &time, Qt::TimeSpec spec)
+    : d(new QDateTimePrivate)
 {
-    d = new QDateTimePrivate;
     d->date = date;
     d->time = date.isValid() && !time.isValid() ? QTime(0, 0, 0) : time;
     d->spec = (spec == Qt::UTC) ? QDateTimePrivate::UTC : QDateTimePrivate::LocalUnknown;
@@ -2237,8 +2237,8 @@ QDateTime::QDateTime(const QDate &date, const QTime &time, Qt::TimeSpec spec)
 */
 
 QDateTime::QDateTime(const QDateTime &other)
+    : d(other.d.data())
 {
-    d = other.d;
     d->ref.ref();
 }
 
@@ -2247,8 +2247,6 @@ QDateTime::QDateTime(const QDateTime &other)
 */
 QDateTime::~QDateTime()
 {
-    if (!d->ref.deref())
-        delete d;
 }
 
 /*!
@@ -2258,7 +2256,7 @@ QDateTime::~QDateTime()
 
 QDateTime &QDateTime::operator=(const QDateTime &other)
 {
-    qAtomicAssign(d, other.d);
+    d.assign(other.d.data());
     return *this;
 }
 
@@ -3298,7 +3296,7 @@ QDateTime QDateTime::fromString(const QString &string, const QString &format)
  */
 void QDateTime::detach()
 {
-    qAtomicDetach(d);
+    d.detach();
 }
 
 /*****************************************************************************

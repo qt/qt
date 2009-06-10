@@ -53,6 +53,7 @@
 // We mean it.
 //
 
+#include <QtCore/qscopedpointer.h>
 #include <QPaintDevice>
 
 QT_BEGIN_NAMESPACE
@@ -76,7 +77,7 @@ public:
 
 private:
     friend class QWSGLWindowSurface;
-    QWSGLPaintDevicePrivate *d_ptr;
+    QScopedPointer<QWSGLPaintDevicePrivate> d_ptr;
 };
 
 

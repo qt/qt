@@ -29,7 +29,8 @@ symbian: SUBDIRS = \
                 lineedits \
                 shapedclock \
                 tetrix \
-                wiggly
+                wiggly \
+                softkeys
 
 contains(styles, motif): SUBDIRS += styles
 

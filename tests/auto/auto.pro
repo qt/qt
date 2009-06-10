@@ -231,6 +231,7 @@ SUBDIRS += _networkselftest \
            qprogressbar \
            qprogressdialog \
            qpushbutton \
+           qscopedpointer \
            qqueue \
            qradiobutton \
            qreadlocker \
