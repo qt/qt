@@ -105,8 +105,6 @@ public:
 
         StoreSignal,              /* storeSignal */
 
-        StoreObjectQmlList,
-
         // XXX need to handle storing objects in variants
 
         //
@@ -122,6 +120,8 @@ public:
         BeginObject,              /* begin */
         CompleteObject,           /* complete */
 
+        StoreObjectQmlList,       /* NA */
+        StoreObjectQList,         /* NA */
         AssignObjectList,         /* NA */
 
         FetchAttached,            /* fetchAttached */

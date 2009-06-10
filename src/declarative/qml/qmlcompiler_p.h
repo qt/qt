@@ -179,6 +179,8 @@ private:
     struct BindingReference;
     void finalizeBinding(const BindingReference &); 
 
+    bool canConvert(int, QmlParser::Object *);
+
     struct IdReference {
         QString id;
         QmlParser::Object *object;

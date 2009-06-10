@@ -1091,7 +1091,9 @@ bool QmlCompiler::compileListProperty(QmlParser::Property *prop,
         fetch.line = prop->location.start.line;
         fetch.type = QmlInstruction::FetchQmlList;
         fetch.fetchQmlList.property = prop->index;
-        fetch.fetchQmlList.type = QmlMetaType::qmlListType(t);
+        int listType = QmlMetaType::qmlListType(t);
+        bool listTypeIsInterface = QmlMetaType::isInterface(listType);
+        fetch.fetchQmlList.type = listType;
         output->bytecode << fetch;
 
         for (int ii = 0; ii < prop->values.count(); ++ii) {
@@ -1099,10 +1101,23 @@ bool QmlCompiler::compileListProperty(QmlParser::Property *prop,
             if (v->object) {
                 v->type = Value::CreatedObject;
                 COMPILE_CHECK(compileObject(v->object, ctxt));
-                QmlInstruction assign;
-                assign.type = QmlInstruction::AssignObjectList;
-                assign.line = prop->location.start.line;
-                output->bytecode << assign;
+
+                if (!listTypeIsInterface) {
+                    if (canConvert(listType, v->object)) {
+                        QmlInstruction store;
+                        store.type = QmlInstruction::StoreObjectQmlList;
+                        store.line = prop->location.start.line;
+                        output->bytecode << store;
+                    } else {
+                        COMPILE_EXCEPTION("Cannot assign object to list");
+                    }
+
+                } else {
+                    QmlInstruction assign;
+                    assign.type = QmlInstruction::AssignObjectList;
+                    assign.line = prop->location.start.line;
+                    output->bytecode << assign;
+                }
             } else {
                 COMPILE_EXCEPTION("Cannot assign primitives to lists");
             }
@@ -1116,7 +1131,10 @@ bool QmlCompiler::compileListProperty(QmlParser::Property *prop,
         QmlInstruction fetch;
         fetch.type = QmlInstruction::FetchQList;
         fetch.line = prop->location.start.line;
-        fetch.fetch.property = prop->index;
+        fetch.fetchQmlList.property = prop->index;
+        int listType = QmlMetaType::listType(t);
+        bool listTypeIsInterface = QmlMetaType::isInterface(listType);
+        fetch.fetchQmlList.type = listType;
         output->bytecode << fetch;
 
         bool assignedBinding = false;
@@ -1125,10 +1143,22 @@ bool QmlCompiler::compileListProperty(QmlParser::Property *prop,
             if (v->object) {
                 v->type = Value::CreatedObject;
                 COMPILE_CHECK(compileObject(v->object, ctxt));
-                QmlInstruction assign;
-                assign.type = QmlInstruction::AssignObjectList;
-                assign.line = v->location.start.line;
-                output->bytecode << assign;
+
+                if (!listTypeIsInterface) {
+                    if (canConvert(listType, v->object)) {
+                        QmlInstruction store;
+                        store.type = QmlInstruction::StoreObjectQList;
+                        store.line = prop->location.start.line;
+                        output->bytecode << store;
+                    } else {
+                        COMPILE_EXCEPTION("Cannot assign object to list");
+                    }
+                } else {
+                    QmlInstruction assign;
+                    assign.type = QmlInstruction::AssignObjectList;
+                    assign.line = v->location.start.line;
+                    output->bytecode << assign;
+                }
             } else if (v->value.isScript()) {
                 if (assignedBinding)
                     COMPILE_EXCEPTION("Can only assign one binding to lists");
@@ -1573,6 +1603,24 @@ void QmlCompiler::finalizeBinding(const BindingReference &binding)
     instr.assignBinding.value = bref;
     QMetaProperty mp = binding.property->parent->metaObject()->property(binding.property->index);
     instr.assignBinding.category = QmlMetaProperty::propertyCategory(mp);
+}
+
+/*!
+    Returns true if object can be assigned to a (QObject) property of type 
+    convertType.
+*/
+bool QmlCompiler::canConvert(int convertType, QmlParser::Object *object)
+{
+    const QMetaObject *convertTypeMo = 
+        QmlMetaType::rawMetaObjectForType(convertType);
+    const QMetaObject *objectMo = object->metaObject();
+
+    while (objectMo) {
+        if (objectMo == convertTypeMo)
+            return true;
+        objectMo = objectMo->superClass();
+    }
+    return false;
 }
 
 QmlCompiledData::QmlCompiledData()

@@ -87,6 +87,7 @@ Q_DECLARE_PERFORMANCE_LOG(QFxCompiler) {
     Q_DECLARE_PERFORMANCE_METRIC(InstrStoreObject);
     Q_DECLARE_PERFORMANCE_METRIC(InstrStoreSignal);
     Q_DECLARE_PERFORMANCE_METRIC(InstrStoreObjectQmlList);
+    Q_DECLARE_PERFORMANCE_METRIC(InstrStoreObjectQList);
     Q_DECLARE_PERFORMANCE_METRIC(InstrAssignSignalObject);
     Q_DECLARE_PERFORMANCE_METRIC(InstrStoreBinding);
     Q_DECLARE_PERFORMANCE_METRIC(InstrStoreCompiledBinding);
@@ -126,6 +127,7 @@ Q_DEFINE_PERFORMANCE_LOG(QFxCompiler, "QFxCompiler") {
     Q_DEFINE_PERFORMANCE_METRIC(InstrStoreObject, "StoreObject");
     Q_DEFINE_PERFORMANCE_METRIC(InstrStoreSignal, "StoreSignal");
     Q_DEFINE_PERFORMANCE_METRIC(InstrStoreObjectQmlList, "StoreObjectQmlList");
+    Q_DEFINE_PERFORMANCE_METRIC(InstrStoreObjectQList, "StoreObjectQList");
     Q_DEFINE_PERFORMANCE_METRIC(InstrAssignSignalObject, "AssignSignalObject");
     Q_DEFINE_PERFORMANCE_METRIC(InstrStoreBinding, "StoreBinding");
     Q_DEFINE_PERFORMANCE_METRIC(InstrStoreCompiledBinding, "StoreCompiledBinding");
@@ -171,13 +173,18 @@ QmlVME::QmlVME()
 struct ListInstance
 {
     ListInstance() {}
+    /*
     ListInstance(const QVariant &l, int t)
         : list(l), type(t), qmlListInterface(0) {}
+        */
+    ListInstance(QList<void *> *q, int t)
+        : type(t), qListInterface(q) {}
     ListInstance(QmlPrivate::ListInterface *q, int t)
         : type(t), qmlListInterface(q) {}
 
-    QVariant list;
+    //QVariant list;
     int type;
+    QList<void *> *qListInterface;
     QmlPrivate::ListInterface *qmlListInterface;
 };
 
@@ -737,65 +744,56 @@ case QmlInstruction::StoreDouble:
             }
             break;
 
+        case QmlInstruction::StoreObjectQmlList:
+            {
+#ifdef Q_ENABLE_PERFORMANCE_LOG
+                QFxCompilerTimer<QFxCompiler::InstrStoreObjectQmlList> cc;
+#endif
+                QObject *assign = stack.pop();
+                const ListInstance &list = qliststack.top();
+
+                void *d = (void *)&assign;
+                list.qmlListInterface->append(d);
+            }
+            break;
+
+        case QmlInstruction::StoreObjectQList:
+            {
+#ifdef Q_ENABLE_PERFORMANCE_LOG
+                QFxCompilerTimer<QFxCompiler::InstrStoreObjectQList> cc;
+#endif
+                QObject *assign = stack.pop();
+
+                const ListInstance &list = qliststack.top();
+                list.qListInterface->append((void *)assign);
+            }
+            break;
+
         case QmlInstruction::AssignObjectList:
             {
+                // This is only used for assigning interfaces
 #ifdef Q_ENABLE_PERFORMANCE_LOG
                 QFxCompilerTimer<QFxCompiler::InstrAssignObjectList> cc;
 #endif
                 QObject *assign = stack.pop();
                 const ListInstance &list = qliststack.top();
+
+                int type = list.type;
+
+                void *ptr = 0;
+
+                const char *iid = QmlMetaType::interfaceIId(type);
+                if (iid) 
+                    ptr = assign->qt_metacast(iid);
+                if (!ptr) 
+                    VME_EXCEPTION("Cannot assign object to list");
+
+
                 if (list.qmlListInterface) {
-                    int type = list.type;
-
-                    void *d = 0;
-                    void *ptr = 0;
-                    bool found = false;
-
-                    if (QmlMetaType::isInterface(type)) {
-                        const char *iid = QmlMetaType::interfaceIId(type);
-                        if (iid) 
-                            ptr = assign->qt_metacast(iid);
-                        if (ptr) {
-                            d = &ptr;
-                            found = true;
-                        }
-                    } else {
-                        const QMetaObject *mo = 
-                            QmlMetaType::rawMetaObjectForType(type);
-
-                        const QMetaObject *assignMo = assign->metaObject();
-                        while(!found && assignMo) {
-                            if (assignMo == mo)
-                                found = true;
-                            else
-                                assignMo = assignMo->superClass();
-                        }
-
-                        // NOTE: This assumes a cast to QObject does not alter 
-                        // the object pointer
-                        d = (void *)&assign;
-                    }
-
-
-                    if (!found) 
-                        VME_EXCEPTION("Cannot assign object to list");
-
+                    void *d = (void *)&ptr;
                     list.qmlListInterface->append(d);
-
                 } else {
-                    int type = list.type;
-
-                    if (QmlMetaType::isInterface(type)) {
-                        void *ptr = 0;
-                        const char *iid = QmlMetaType::interfaceIId(type);
-                        if (iid) 
-                            ptr = assign->qt_metacast(iid);
-                        QVariant v(list.type, &ptr);
-                        QmlMetaType::append(list.list, v);
-                    } else {
-                        QVariant v = QmlMetaType::fromObject(assign, list.type);
-                        QmlMetaType::append(list.list, v);
-                    }
+                    list.qListInterface->append(ptr);
                 }
             }
             break;
@@ -883,10 +881,18 @@ case QmlInstruction::StoreDouble:
                 QFxCompilerTimer<QFxCompiler::InstrFetchQList> cc;
 #endif
                 QObject *target = stack.top();
-                QMetaProperty prop = 
-                    target->metaObject()->property(instr.fetch.property);
-                QVariant v = prop.read(target);
-                qliststack.push(ListInstance(v, QmlMetaType::listType(prop.userType())));
+
+                void *a[1];
+                // We know that QList<T *>* can be converted to 
+                // QList<void *>*
+                QList<void *> *list = 0;
+                a[0] = &list;
+                QMetaObject::metacall(target, QMetaObject::ReadProperty, 
+                                      instr.fetchQmlList.property, a);
+                if (!list) 
+                    VME_EXCEPTION("Cannot assign to null list");
+
+                qliststack.push(ListInstance(list, instr.fetchQmlList.type));
             }
             break;
 
