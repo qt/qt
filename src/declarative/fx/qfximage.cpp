@@ -825,19 +825,19 @@ qreal QFxImage::progress() const
     The content specified can be of any image type loadable by QImage. Alternatively,
     you can specify an sci format file, which specifies both an image and it's scale grid.
 */
-QString QFxImage::source() const
+QUrl QFxImage::source() const
 {
     Q_D(const QFxImage);
-    return d->source;
+    return d->url;
 }
 
-void QFxImage::setSource(const QString &url)
+void QFxImage::setSource(const QUrl &url)
 {
 #ifdef Q_ENABLE_PERFORMANCE_LOG
     QFxPerfTimer<QFxPerf::PixmapLoad> perf;
 #endif
     Q_D(QFxImage);
-    if (url == d->source)
+    if (url == d->url)
         return;
 
     if (d->sciReply) {
@@ -850,8 +850,7 @@ void QFxImage::setSource(const QString &url)
     if (!d->sciurl.isEmpty())
         QFxPixmap::cancelGet(d->sciurl, this);
 
-    d->source = url;
-    d->url = qmlContext(this)->resolvedUrl(url);
+    d->url = url;
     d->sciurl = QUrl();
     if (d->progress != 0.0) {
         d->progress = 0.0;
@@ -872,7 +871,7 @@ void QFxImage::setSource(const QString &url)
         }
 #endif
         emit statusChanged(d->status);
-        emit sourceChanged(d->source);
+        emit sourceChanged(d->url);
         emit progressChanged(1.0);
         update();
     } else {
@@ -936,7 +935,7 @@ void QFxImage::requestFinished()
     }
 #endif
     emit statusChanged(d->status);
-    emit sourceChanged(d->source);
+    emit sourceChanged(d->url);
     emit progressChanged(1.0);
     update();
 }

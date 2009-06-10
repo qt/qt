@@ -77,6 +77,7 @@ Q_DECLARE_PERFORMANCE_LOG(QFxCompiler) {
     Q_DECLARE_PERFORMANCE_METRIC(InstrStoreInteger);
     Q_DECLARE_PERFORMANCE_METRIC(InstrStoreBool);
     Q_DECLARE_PERFORMANCE_METRIC(InstrStoreString);
+    Q_DECLARE_PERFORMANCE_METRIC(InstrStoreUrl);
     Q_DECLARE_PERFORMANCE_METRIC(InstrStoreColor);
     Q_DECLARE_PERFORMANCE_METRIC(InstrStoreDate);
     Q_DECLARE_PERFORMANCE_METRIC(InstrStoreDateTime);
@@ -116,6 +117,7 @@ Q_DEFINE_PERFORMANCE_LOG(QFxCompiler, "QFxCompiler") {
     Q_DEFINE_PERFORMANCE_METRIC(InstrStoreInteger, "StoreInteger");
     Q_DEFINE_PERFORMANCE_METRIC(InstrStoreBool, "StoreBool");
     Q_DEFINE_PERFORMANCE_METRIC(InstrStoreString, "StoreString");
+    Q_DEFINE_PERFORMANCE_METRIC(InstrStoreUrl, "StoreUrl");
     Q_DEFINE_PERFORMANCE_METRIC(InstrStoreColor, "StoreColor");
     Q_DEFINE_PERFORMANCE_METRIC(InstrStoreDate, "StoreDate");
     Q_DEFINE_PERFORMANCE_METRIC(InstrStoreDateTime, "StoreDateTime");
@@ -334,6 +336,20 @@ QObject *QmlVME::run(QmlContext *ctxt, QmlCompiledComponent *comp, int start, in
                 a[0] = (void *)&primitives.at(instr.storeString.value);
                 QMetaObject::metacall(target, QMetaObject::WriteProperty, 
                                       instr.storeString.propertyIndex, a);
+            }
+            break;
+
+        case QmlInstruction::StoreUrl:
+            {
+#ifdef Q_ENABLE_PERFORMANCE_LOG
+                QFxCompilerTimer<QFxCompiler::InstrStoreUrl> cc;
+#endif
+                QObject *target = stack.top();
+                void *a[1];
+                QUrl u(primitives.at(instr.storeUrl.value));
+                a[0] = (void *)&u;
+                QMetaObject::metacall(target, QMetaObject::WriteProperty, 
+                                      instr.storeUrl.propertyIndex, a);
             }
             break;
 

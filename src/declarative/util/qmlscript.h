@@ -58,7 +58,7 @@ class Q_DECLARATIVE_EXPORT QmlScript : public QObject
     Q_DECLARE_PRIVATE(QmlScript)
 
     Q_PROPERTY(QString script READ script WRITE setScript)
-    Q_PROPERTY(QString source READ source WRITE setSource)
+    Q_PROPERTY(QUrl source READ source WRITE setSource)
     Q_CLASSINFO("DefaultProperty", "script")
 
 public:
@@ -67,8 +67,8 @@ public:
     QString script() const;
     void setScript(const QString &);
 
-    QString source() const;
-    void setSource(const QString &);
+    QUrl source() const;
+    void setSource(const QUrl &);
 
 private Q_SLOTS:
     void replyFinished();

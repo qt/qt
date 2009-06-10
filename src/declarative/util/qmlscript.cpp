@@ -69,7 +69,6 @@ public:
     void addScriptToEngine(const QString &, const QString &fileName=QString());
 
     QString script;
-    QString source;
     QNetworkReply *reply;
     QUrl url;
 };
@@ -138,26 +137,26 @@ void QmlScript::setScript(const QString &script)
     \property QmlScript::source
     \brief the path to a script file.
 */
-QString QmlScript::source() const
+QUrl QmlScript::source() const
 {
     Q_D(const QmlScript);
-    return d->source;
+    return d->url;
 }
 
-void QmlScript::setSource(const QString &source)
+void QmlScript::setSource(const QUrl &source)
 {
     Q_D(QmlScript);
-    if (d->source == source)
+    if (d->url == source)
         return;
-    d->source = source;
-    d->url = qmlContext(this)->resolvedUrl(source);
+    d->url = source;
+    Q_ASSERT(!source.isRelative());
 
 #ifndef QT_NO_LOCALFILE_OPTIMIZED_QML
     if (d->url.scheme() == QLatin1String("file")) {
         QFile file(d->url.toLocalFile());
         file.open(QIODevice::ReadOnly);
         QByteArray ba = file.readAll();
-        d->addScriptToEngine(QString::fromUtf8(ba), d->source);
+        d->addScriptToEngine(QString::fromUtf8(ba), d->url);
     } else
 #endif
     {
@@ -174,7 +173,7 @@ void QmlScript::replyFinished()
     Q_D(QmlScript);
     if (!d->reply->error()) {
         QByteArray ba = d->reply->readAll();
-        d->addScriptToEngine(QString::fromUtf8(ba), d->source);
+        d->addScriptToEngine(QString::fromUtf8(ba), d->url);
     }
     d->reply->deleteLater();
     d->reply = 0;

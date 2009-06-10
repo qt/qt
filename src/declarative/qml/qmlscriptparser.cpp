@@ -501,6 +501,7 @@ bool ProcessAST::visit(AST::UiPublicMember *node)
             { "double", Object::DynamicProperty::Real },
             { "real", Object::DynamicProperty::Real },
             { "string", Object::DynamicProperty::String },
+            { "url", Object::DynamicProperty::Url },
             { "color", Object::DynamicProperty::Color },
             { "date", Object::DynamicProperty::Date },
             { "var", Object::DynamicProperty::Variant },

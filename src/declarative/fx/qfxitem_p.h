@@ -133,9 +133,8 @@ public:
     QFxAnchors *_anchors;
     QFxContents *_contents;
     QFxItem *qmlItem;
-    QUrl _qmlurl;
     QmlComponent *_qmlcomp;
-    QString _qml;
+    QUrl _qml;
     QList<QUrl> _qmlnewloading;
     QList<QmlComponent*> _qmlnewcomp;
 

@@ -111,7 +111,7 @@ class Q_DECLARATIVE_EXPORT QFxItem : public QSimpleCanvasItem, public QmlParserS
     Q_PROPERTY(QmlList<QmlState *>* states READ states DESIGNABLE false)
     Q_PROPERTY(QmlList<QmlTransition *>* transitions READ transitions DESIGNABLE false)
     Q_PROPERTY(QString state READ state WRITE setState NOTIFY stateChanged)
-    Q_PROPERTY(QString qml READ qml WRITE setQml NOTIFY qmlChanged)
+    Q_PROPERTY(QUrl qml READ qml WRITE setQml NOTIFY qmlChanged)
     Q_PROPERTY(QFxItem *qmlItem READ qmlItem NOTIFY qmlChanged)
     Q_PROPERTY(qreal x READ x WRITE setX NOTIFY leftChanged)
     Q_PROPERTY(qreal y READ y WRITE setY NOTIFY topChanged)
@@ -171,8 +171,8 @@ public:
     void setState(const QString &);
 
     QFxItem *qmlItem() const;
-    QString qml() const;
-    void setQml(const QString &);
+    QUrl qml() const;
+    void setQml(const QUrl &);
 
     bool flipVertically() const;
     void setFlipVertically(bool);
