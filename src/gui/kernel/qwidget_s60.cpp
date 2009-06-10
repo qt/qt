@@ -95,7 +95,7 @@ void QWidgetPrivate::setSoftKeys_sys(const QList<QAction*> &softkeys)
         const QAction* softKeyAction = softkeys.at(index);
         if (softKeyAction->softKeyRole() != QAction::ContextMenuSoftKey) {
 
-            HBufC* text = qt_QString2HBufCNewL(softKeyAction->text());
+            HBufC* text = qt_QString2HBufC(softKeyAction->text());
             CleanupStack::PushL(text);
             if (softKeyAction->softKeyRole() == QAction::MenuSoftKey) {
                 nativeContainer->SetCommandL(placeInScreen, EAknSoftkeyOptions, *text);
