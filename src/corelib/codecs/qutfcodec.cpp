@@ -387,7 +387,7 @@ QString QUtf16Codec::convertToUnicode(const char *chars, int len, ConverterState
     result.truncate(qch - result.unicode());
 
     if (state) {
-        if (endian != Detect)
+        if (headerdone)
             state->flags |= IgnoreHeader;
         state->state_data[Endian] = endian;
         if (half) {
@@ -569,7 +569,7 @@ QString QUtf32Codec::convertToUnicode(const char *chars, int len, ConverterState
     result.truncate(qch - result.unicode());
     
     if (state) {
-        if (endian != Detect)
+        if (headerdone)
             state->flags |= IgnoreHeader;
         state->state_data[Endian] = endian;
         state->remainingChars = num;
