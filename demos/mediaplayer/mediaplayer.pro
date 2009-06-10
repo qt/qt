@@ -26,3 +26,5 @@ DEPLOYMENT_PLUGIN += phonon_ds9 phonon_waveout
 }
 
 include($$QT_SOURCE_TREE/demos/demobase.pri)
+
+symbian:TARGET.UID3 = 0xA000C613

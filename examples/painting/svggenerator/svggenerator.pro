@@ -13,3 +13,5 @@ target.path = $$[QT_INSTALL_EXAMPLES]/painting/svggenerator
 sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS svggenerator.pro
 sources.path = $$[QT_INSTALL_EXAMPLES]/painting/svggenerator
 INSTALLS += target sources
+
+symbian:TARGET.UID3 = 0xA000CF68
