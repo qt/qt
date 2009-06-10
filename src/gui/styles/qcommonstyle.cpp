@@ -848,7 +848,7 @@ void QCommonStylePrivate::lookupIconTheme() const
         dataDirs = QLatin1String("/usr/local/share/:/usr/share/");
     dataDirs += QLatin1Char(':') + QApplicationPrivate::kdeHome() + QLatin1String("/share");
     dataDirs.prepend(QDir::homePath() + QLatin1String("/:"));
-    QStringList kdeDirs = QString::fromLocal8Bit(getenv("KDEDIRS")).split(QLatin1Char(':'));
+    QStringList kdeDirs = QString::fromLocal8Bit(getenv("KDEDIRS")).split(QLatin1Char(':'), QString::SkipEmptyParts);
     foreach (const QString &dirName, kdeDirs)
         dataDirs.append(QLatin1String(":") + dirName + QLatin1String("/share"));
     iconDirs = dataDirs.split(QLatin1Char(':'));

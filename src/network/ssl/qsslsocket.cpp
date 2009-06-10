@@ -1527,7 +1527,7 @@ void QSslSocket::startServerEncryption()
 {
     Q_D(QSslSocket);
     if (d->mode != UnencryptedMode) {
-        qWarning("QSslSocket::startClientEncryption: cannot start handshake on non-plain connection");
+        qWarning("QSslSocket::startServerEncryption: cannot start handshake on non-plain connection");
         return;
     }
 #ifdef QSSLSOCKET_DEBUG
