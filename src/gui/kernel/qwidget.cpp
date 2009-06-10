@@ -4880,6 +4880,13 @@ void QWidget::render(QPainter *painter, const QPoint &targetOffset,
     d->extra->inRenderWithPainter = false;
 }
 
+#if !defined(Q_WS_S60)
+void QWidgetPrivate::setSoftKeys_sys(const QList<QAction*> &softkeys)
+{
+    Q_UNUSED(softkeys)
+}
+#endif // !defined(Q_WS_S60)
+
 bool QWidgetPrivate::isAboutToShow() const
 {
     if (data.in_show)
@@ -5715,9 +5722,12 @@ bool QWidget::hasFocus() const
 
 void QWidget::setFocus(Qt::FocusReason reason)
 {
+    Q_D(QWidget);
+    d->setSoftKeys_sys(softKeys());
+
     if (!isEnabled())
         return;
-
+    
     QWidget *f = this;
     while (f->d_func()->extra && f->d_func()->extra->focus_proxy)
         f = f->d_func()->extra->focus_proxy;
@@ -11508,6 +11518,60 @@ void QWidget::setMask(const QBitmap &bitmap)
 void QWidget::clearMask()
 {
     setMask(QRegion());
+}
+
+/*!
+    Returns the (possibly empty) list of this widget's softkeys.
+    Returned list cannot be changed. Softkeys should be added
+    and removed via method called setSoftKeys
+
+    \sa setSoftKey(), setSoftKeys()
+*/
+const QList<QAction*>& QWidget::softKeys() const
+{
+    Q_D(const QWidget);
+    if( d->softKeys.count() > 0)
+        return d->softKeys;
+    if (isWindow() || !parentWidget())
+        return d->softKeys;
+
+    return parentWidget()->softKeys();
+}
+
+/*!
+    Sets the softkey \a softkey to this widget's list of softkeys,
+    Setting 0 as softkey will clear all the existing softkeys set
+    to the widget
+    A QWidget can have 0 or more softkeys
+
+    \sa softKeys(), setSoftKeys()
+*/
+void QWidget::setSoftKey(QAction *softKey)
+{
+    Q_D(QWidget);
+    qDeleteAll(d->softKeys);
+    d->softKeys.clear();
+    if (softKey)
+        d->softKeys.append(softKey);
+    if (QApplication::focusWidget() == this)
+        d->setSoftKeys_sys(this->softKeys());
+}
+
+/*!
+    Sets the list of softkeys \a softkeys to this widget's list of softkeys,
+    A QWidget can have 0 or more softkeys
+
+    \sa softKeys(), setSoftKey()
+*/
+void QWidget::setSoftKeys(const QList<QAction*> &softKeys)
+{
+    Q_D(QWidget);
+    qDeleteAll(d->softKeys);
+    d->softKeys.clear();
+        d->softKeys = softKeys;
+
+    if ((QApplication::focusWidget() == this) || (QApplication::focusWidget()==0))
+        d->setSoftKeys_sys(this->softKeys());
 }
 
 /*! \fn const QX11Info &QWidget::x11Info() const

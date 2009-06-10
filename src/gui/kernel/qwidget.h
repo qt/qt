@@ -554,6 +554,9 @@ public:
     void removeAction(QAction *action);
     QList<QAction*> actions() const;
 #endif
+    const QList<QAction*>& softKeys() const;
+    void setSoftKey(QAction *softKey);
+    void setSoftKeys(const QList<QAction*> &softKeys);
 
     QWidget *parentWidget() const;
 

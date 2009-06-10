@@ -39,92 +39,32 @@
 **
 ****************************************************************************/
 
-#ifndef QACTION_P_H
-#define QACTION_P_H
+#ifndef QACTIONTOKEYEVENTMAPPER_P_H
+#define QACTIONTOKEYEVENTMAPPER_P_H
 
-//
-//  W A R N I N G
-//  -------------
-//
-// This file is not part of the Qt API.  It exists for the convenience
-// of other Qt classes.  This header file may change from version to
-// version without notice, or even be removed.
-//
-// We mean it.
-//
-
+#include <QtCore/qobject.h>
 #include "QtGui/qaction.h"
-#include "QtGui/qmenu.h"
-#include "private/qgraphicswidget_p.h"
-#include "private/qobject_p.h"
+QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-#ifndef QT_NO_ACTION
-
-#ifdef QT3_SUPPORT
-class QMenuItemEmitter;
-#endif
-
-class QShortcutMap;
-
-class Q_AUTOTEST_EXPORT QActionPrivate : public QObjectPrivate
+class QActionToKeyEventMapper : public QObject
 {
-    Q_DECLARE_PUBLIC(QAction)
+    Q_OBJECT
 public:
-    QActionPrivate();
-    ~QActionPrivate();
-
-    QPointer<QActionGroup> group;
-    QString text;
-    QString iconText;
-    QIcon icon;
-    QString tooltip;
-    QString statustip;
-    QString whatsthis;
-#ifndef QT_NO_SHORTCUT
-    QKeySequence shortcut;
-    QList<QKeySequence> alternateShortcuts;
-#endif
-    QVariant userData;
-#ifndef QT_NO_SHORTCUT
-    int shortcutId;
-    QList<int> alternateShortcutIds;
-    Qt::ShortcutContext shortcutContext;
-    uint autorepeat : 1;
-#endif
-    QFont font;
-    QPointer<QMenu> menu;
-    uint enabled : 1, forceDisabled : 1;
-    uint visible : 1, forceInvisible : 1;
-    uint checkable : 1;
-    uint checked : 1;
-    uint separator : 1;
-    uint fontSet : 1;
-    QAction::MenuRole menuRole;
-    QAction::SoftKeyRole softKeyRole;
-    int iconVisibleInMenu : 3;  // Only has values -1, 0, and 1
-    QList<QWidget *> widgets;
-#ifndef QT_NO_GRAPHICSVIEW
-    QList<QGraphicsWidget *> graphicsWidgets;
-#endif
-#ifndef QT_NO_SHORTCUT
-    void redoGrab(QShortcutMap &map);
-    void redoGrabAlternate(QShortcutMap &map);
-    void setShortcutEnabled(bool enable, QShortcutMap &map);
-
-    static QShortcutMap *globalMap;
-#endif // QT_NO_SHORTCUT
-
-#ifdef QT3_SUPPORT //for menubar/menu compat
-    QMenuItemEmitter *act_signal;
-    int id, param;
-#endif
-    void sendDataChanged();
+    QActionToKeyEventMapper(QAction *softKeyAction, Qt::Key key, QObject *parent);
+    static QString roleText(QAction::SoftKeyRole role);
+    static void addSoftKey(QAction::SoftKeyRole standardRole, Qt::Key key, QWidget *actionWidget);
+    static void removeSoftkey(QWidget *focussedWidget);
+private:
+    QAction *m_softKeyAction;
+    Qt::Key m_key;
+private Q_SLOTS:
+    void sendKeyEvent();
 };
-
-#endif // QT_NO_ACTION
 
 QT_END_NAMESPACE
 
-#endif // QACTION_P_H
+QT_END_HEADER
+
+#endif //QACTIONTOKEYEVENTMAPPER_H

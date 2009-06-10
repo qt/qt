@@ -52,12 +52,64 @@
 
 #include <qinputcontext.h>
 
+#include <aknappui.h>
+
 QT_BEGIN_NAMESPACE
 
 extern bool qt_nograb();
 
 QWidget *QWidgetPrivate::mouseGrabber = 0;
 QWidget *QWidgetPrivate::keyboardGrabber = 0;
+
+static bool isEqual(const QList<QAction*>& a, const QList<QAction*>& b)
+{
+    if ( a.count() != b.count())
+        return false;
+    int index=0;
+    while (index<a.count()) {
+        if (a.at(index)->softKeyRole() != b.at(index)->softKeyRole())
+            return false;
+        if (a.at(index)->text().compare(b.at(index)->text())!=0)
+            return false;
+        index++;
+    }
+    return true;
+}
+
+
+void QWidgetPrivate::setSoftKeys_sys(const QList<QAction*> &softkeys)
+{
+    Q_Q(QWidget);
+    if (QApplication::focusWidget() && q!=QApplication::focusWidget()) {
+        QList<QAction *> old = QApplication::focusWidget()->softKeys();
+        if (isEqual(old, softkeys ))
+            return;
+    }
+    CCoeAppUi* appui = CEikonEnv::Static()->AppUi();
+    CAknAppUi* aknAppUi = static_cast <CAknAppUi*>(appui);
+    CEikButtonGroupContainer* nativeContainer = aknAppUi->Cba();
+    nativeContainer->SetCommandSetL(R_AVKON_SOFTKEYS_EMPTY_WITH_IDS);
+
+    int placeInScreen=0;
+    for (int index = 0; index < softkeys.count(); index++) {
+        const QAction* softKeyAction = softkeys.at(index);
+        if (softKeyAction->softKeyRole() != QAction::ContextMenuSoftKey) {
+
+            HBufC* text = qt_QString2HBufCNewL(softKeyAction->text());
+            CleanupStack::PushL(text);
+            if (softKeyAction->softKeyRole() == QAction::MenuSoftKey) {
+                nativeContainer->SetCommandL(placeInScreen, EAknSoftkeyOptions, *text);
+            } else {
+                nativeContainer->SetCommandL(placeInScreen, SOFTKEYSTART + index, *text);
+            }
+            CleanupStack::PopAndDestroy();
+            placeInScreen++;
+        }
+    if (placeInScreen==1)
+        placeInScreen=2;
+    }
+    nativeContainer->DrawDeferred(); // 3.1 needs an extra invitation
+}
 
 void QWidgetPrivate::setWSGeometry(bool dontShow)
 {
@@ -1006,5 +1058,4 @@ void QWidget::activateWindow()
         rw->SetOrdinalPosition(0);
     }
 }
-
 QT_END_NAMESPACE

@@ -1059,13 +1059,19 @@ void QApplication::symbianHandleCommand(int command)
 {
     switch (command) {
     case EEikCmdExit:
-    case EAknSoftkeyBack:
     case EAknSoftkeyExit:
-        qApp->exit();
+        exit();
         break;
     default:
-        // For now assume all unknown menu items are Qt menu items
-        QMenuBarPrivate::symbianCommands(command);
+        if (command >= SOFTKEYSTART && command <= SOFTKEYEND) {
+            int index= command-SOFTKEYSTART;
+            QWidget* focused = QApplication::focusWidget();
+            const QList<QAction*>& softKeys = focused->softKeys();
+            Q_ASSERT(index<softKeys.count());
+            softKeys.at(index)->activate(QAction::Trigger);
+        }
+        else
+            QMenuBarPrivate::symbianCommands(command);
         break;
     }
 }

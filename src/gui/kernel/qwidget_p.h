@@ -84,6 +84,9 @@ class RDrawableWindow;
 class CCoeControl;
 class CAknTitlePane;
 class CAknContextPane;
+// The following 2 defines may only be needed for s60. To be seen.
+const int SOFTKEYSTART=5000;
+const int SOFTKEYEND=5004;
 #endif
 
 QT_BEGIN_NAMESPACE
@@ -224,6 +227,7 @@ public:
     explicit QWidgetPrivate(int version = QObjectPrivateVersion);
     ~QWidgetPrivate();
 
+    void setSoftKeys_sys(const QList<QAction*> &softkeys);
     QWExtra *extraData() const;
     QTLWExtra *topData() const;
     QTLWExtra *maybeTopData() const;
@@ -511,6 +515,7 @@ public:
 #ifndef QT_NO_ACTION
     QList<QAction*> actions;
 #endif
+    QList<QAction*> softKeys;
     QLayout *layout;
     QWidgetItemV2 *widgetItem;
 #if !defined(QT_NO_IM)
