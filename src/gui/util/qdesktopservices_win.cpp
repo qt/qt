@@ -165,6 +165,9 @@ static bool launchWebBrowser(const QUrl &url)
     if (!url.isValid())
         return false;
 
+    if (url.scheme().isEmpty())
+        return openDocument(url);
+
     quintptr returnValue;
     returnValue = (quintptr)ShellExecute(0, 0, (TCHAR *) QString::fromUtf8(url.toEncoded().constData()).utf16(),
                                          0, 0, SW_SHOWNORMAL);
