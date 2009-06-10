@@ -220,7 +220,8 @@ void QMenuBarPrivate::updateGeometries()
 
     //we try to see if the actions will fit there
     bool hasHiddenActions = false;
-    foreach(QAction *action, actionList) {
+    for (int i = 0; i < actionList.count(); ++i) {
+        QAction *action = actionList.at(i);
         if (!menuRect.contains(actionRect(action))) {
             hasHiddenActions = true;
             break;
@@ -230,7 +231,8 @@ void QMenuBarPrivate::updateGeometries()
     //...and if not, determine the ones that fit on the menu with the extension visible
     if (hasHiddenActions) {
         menuRect = this->menuRect(true);
-        foreach(QAction *action, actionList) {
+        for (int i = 0; i < actionList.count(); ++i) {
+            QAction *action = actionList.at(i);
             if (!menuRect.contains(actionRect(action))) {
                 hiddenActions.append(action);
             }

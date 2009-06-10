@@ -2202,8 +2202,8 @@ QSet<QWidget*> QDockAreaLayoutInfo::usedSeparatorWidgets() const
 {
     QSet<QWidget*> result;
 
-    foreach (QWidget *sepWidget, separatorWidgets)
-        result << sepWidget;
+    for (int i = 0; i < separatorWidgets.count(); ++i)
+        result << separatorWidgets.at(i);
 
     for (int i = 0; i < item_list.count(); ++i) {
         const QDockAreaLayoutItem &item = item_list.at(i);
@@ -3244,8 +3244,8 @@ QSet<QWidget*> QDockAreaLayout::usedSeparatorWidgets() const
 {
     QSet<QWidget*> result;
 
-    foreach (QWidget *sepWidget, separatorWidgets)
-        result << sepWidget;
+    for (int i = 0; i < separatorWidgets.count(); ++i)
+        result << separatorWidgets.at(i);
     for (int i = 0; i < QInternal::DockCount; ++i) {
         const QDockAreaLayoutInfo &dock = docks[i];
         result += dock.usedSeparatorWidgets();
