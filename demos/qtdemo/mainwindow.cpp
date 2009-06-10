@@ -190,6 +190,7 @@ void MainWindow::switchTimerOnOff(bool on)
 
     if (on && !Colors::noTimerUpdate){
         this->useTimer = true;
+        this->setViewportUpdateMode(QGraphicsView::NoViewportUpdate);
         this->fpsTime = QTime::currentTime();
         this->updateTimer.start(int(1000 / Colors::fps));
     }
@@ -261,6 +262,7 @@ void MainWindow::tick()
     if (MenuManager::instance()->ticker)
         MenuManager::instance()->ticker->tick();
 
+    this->viewport()->update();
     if (this->useTimer)
         this->updateTimer.start(int(1000 / Colors::fps));
 }
