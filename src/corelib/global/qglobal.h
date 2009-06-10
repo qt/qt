@@ -2468,10 +2468,11 @@ QT_LICENSED_MODULE(DBus)
 #if defined(Q_OS_SYMBIAN)
 
 #include <stdexcept>
+
 class QSymbianLeaveException : public std::exception
 {
 public:
-    QSymbianLeaveException(int err) : error(err){ }
+    inline QSymbianLeaveException(int err) : error(err) {}
     const char* what() const throw();
 public:
     int error;

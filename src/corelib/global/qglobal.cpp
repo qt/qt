@@ -3214,14 +3214,85 @@ bool QInternal::callFunction(InternalFunction func, void **args)
 
 #include <typeinfo>
 
-const char* QSymbianLeaveException::what() const throw()
+/*! \macro QT_TRANSLATE_SYMBIAN_LEAVE_TO_EXCEPTION(function)
+    \relates QSymbianLeaveException
+
+    TRAP leaves from Symbian \a function and throws an appropriate
+    standard C++ exception instead.
+    This must be used when calling Symbian OS leaving functions
+    from inside Qt or standard C++ code, so that the code can respond
+    correctly to the exception.
+
+    \warning This macro is only available on Symbian.
+
+    \sa QT_TRANSLATE_EXCEPTION_TO_SYMBIAN_ERROR(), QT_TRANSLATE_EXCEPTION_TO_SYMBIAN_LEAVE()
+*/
+
+/*! \macro QT_TRANSLATE_EXCEPTION_TO_SYMBIAN_ERROR(error, function)
+    \relates QSymbianLeaveException
+    \ingroup qts60
+
+    Catch standard C++ exceptions from a \a function and convert them to a Symbian OS
+    \a error code, or \c KErrNone if there is no exception.
+    This must be used inside Qt or standard C++ code when using exception throwing
+    code (practically anything) and returning an error code to Symbian OS.
+
+    \warning This macro is only available on Symbian.
+
+    \sa QT_TRANSLATE_EXCEPTION_TO_SYMBIAN_LEAVE(), QT_TRANSLATE_SYMBIAN_LEAVE_TO_EXCEPTION()
+*/
+
+/*! \macro QT_TRANSLATE_EXCEPTION_TO_SYMBIAN_LEAVE(function)
+    \relates QSymbianLeaveException
+    \ingroup qts60
+
+    Catch standard C++ exceptions from \a function and convert them to Symbian OS
+    leaves. This must be used inside Qt or standard C++ code when using exception
+    throwing code (practically anything) and returning to Symbian OS from a leaving function.
+    For example inside a Symbian active object's \c RunL function implemented with Qt code.
+
+    \warning This macro is only available on Symbian.
+
+    \sa QT_TRANSLATE_SYMBIAN_LEAVE_TO_EXCEPTION(), QT_TRANSLATE_EXCEPTION_TO_SYMBIAN_ERROR()
+*/
+
+/*! \class QSymbianLeaveException
+    \ingroup qts60
+    \brief Exception class representing a Symbian leave code.
+
+    \warning This class is only available on Symbian.
+*/
+
+/*! \fn QSymbianLeaveException::QSymbianLeaveException(int error)
+
+    Constructs a QSymbianLeaveException object that stores the given
+    Symbian \a error code.
+*/
+
+/*! \fn const char *QSymbianLeaveException::what() const
+
+    Returns a C-style character string describing the general
+    cause of the current error.
+
+    The string is not localized.
+*/
+const char *QSymbianLeaveException::what() const throw()
 {
-    static const char str[] = "Symbian leave exception %d";
-    static char msg[sizeof(str)+12];
-    sprintf(msg, str, error);
+    static char msg[36];
+    snprintf(msg, sizeof(msg), "Symbian leave exception %d", error);
     return msg;
 }
 
+/*! \relates QSymbianLeaveException
+    \ingroup qts60
+
+    Throws a QSymbianLeaveException if the \a error parameter is a symbian error code.
+    This is the exception throwing equivalent of Symbian's User::LeaveIfError.
+
+    \warning This function is only available on Symbian.
+
+    \sa qt_translateExceptionToSymbianErrorL(), qt_translateExceptionToSymbianError()
+*/
 void qt_translateSymbianErrorToException(int error)
 {
     if (error >= KErrNone)
@@ -3234,11 +3305,29 @@ void qt_translateSymbianErrorToException(int error)
     }
 }
 
+/*! \relates QSymbianLeaveException
+    \ingroup qts60
+
+    Convert a caught standard C++ exception \a aThrow to a Symbian leave
+
+    \warning This function is only available on Symbian.
+
+    \sa qt_translateSymbianErrorToException(), qt_translateExceptionToSymbianError()
+*/
 void qt_translateExceptionToSymbianErrorL(const std::exception& aThrow)
 {
     User::Leave(qt_translateExceptionToSymbianError(aThrow));
 }
 
+/*! \relates QSymbianLeaveException
+    \ingroup qts60
+
+    Convert a caught standard C++ exception \a aThrow to a Symbian error code
+
+    \warning This function is only available on Symbian.
+
+    \sa qt_translateSymbianErrorToException(), qt_translateExceptionToSymbianErrorL()
+*/
 int qt_translateExceptionToSymbianError(const std::exception& aThrow)
 {
     const std::type_info& atype = typeid(aThrow);
