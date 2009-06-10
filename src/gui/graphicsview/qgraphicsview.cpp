@@ -3238,7 +3238,6 @@ void QGraphicsView::paintEvent(QPaintEvent *event)
 
     // Set up the painter
     QPainter painter(viewport());
-    QTransform original = painter.worldTransform();
 #ifndef QT_NO_RUBBERBAND
     if (d->rubberBanding && !d->rubberBandRect.isEmpty())
         painter.save();
@@ -3249,7 +3248,7 @@ void QGraphicsView::paintEvent(QPaintEvent *event)
 
     // Set up viewport transform
     const QTransform viewTransform = viewportTransform();
-    painter.setTransform(viewTransform, true);
+    painter.setWorldTransform(viewTransform);
 
     // Draw background
     if ((d->cacheMode & CacheBackground)
@@ -3281,10 +3280,9 @@ void QGraphicsView::paintEvent(QPaintEvent *event)
         }
 
         // Blit the background from the background pixmap
-        QTransform oldMatrix = painter.worldTransform();
-        painter.setWorldTransform(original);
+        painter.setWorldTransform(QTransform());
         painter.drawPixmap(QPoint(), d->backgroundPixmap);
-        painter.setWorldTransform(oldMatrix);
+        painter.setWorldTransform(viewTransform);
     } else {
         if (!(d->optimizationFlags & DontSavePainterState))
             painter.save();
