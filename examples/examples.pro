@@ -23,7 +23,8 @@ SUBDIRS       = \
                 uitools \
                 xml \
                 script \
-                multitouch
+                multitouch \
+                gestures
 
 contains(QT_CONFIG, phonon):!static: SUBDIRS += phonon
 contains(QT_CONFIG, webkit): SUBDIRS += webkit
