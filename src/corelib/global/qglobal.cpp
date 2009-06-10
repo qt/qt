@@ -2207,10 +2207,10 @@ void qt_message_output(QtMsgType msgType, const char *buf)
 */
 static void qEmergencyOut(QtMsgType msgType, const char *msg, va_list ap)
 {
-    char emergency_buf[1024] = { '\0' };
-    emergency_buf[1023] = '\0';
+    char emergency_buf[256] = { '\0' };
+    emergency_buf[255] = '\0';
     if (msg)
-        qvsnprintf(emergency_buf, 1023, msg, ap);
+        qvsnprintf(emergency_buf, 255, msg, ap);
     qt_message_output(msgType, emergency_buf);
 }
 #endif
