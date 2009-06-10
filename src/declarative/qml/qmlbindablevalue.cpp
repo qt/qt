@@ -179,34 +179,29 @@ void QmlBindableValue::update()
             }
         } else if (d->property.propertyCategory() == QmlMetaProperty::Bindable) {
 
-            // NOTE: We assume that only core properties can have
-            // propertyType == Bindable
             int idx = d->property.coreIndex();
             Q_ASSERT(idx != -1);
 
             void *a[1];
             QmlBindableValue *t = this;
             a[0] = (void *)&t;
-            d->property.object()->qt_metacall(QMetaObject::WriteProperty,
-                                              idx, a);
+            QMetaObject::metacall(d->property.object(), 
+                                  QMetaObject::WriteProperty,
+                                  idx, a);
 
         } else if (d->property.propertyCategory() == QmlMetaProperty::Object) {
 
             QVariant value = this->value();
-            if ((int)value.type() != qMetaTypeId<QObject *>()) {
-                if (scriptWarnings()) {
-                    if (!value.isValid()) {
-                        qWarning() << "QmlBindableValue: Unable to assign invalid value to object property";
-                    } else {
-                        qWarning() << "QmlBindableValue: Unable to assign non-object to object property";
-                    }
-                }
+
+            QObject *obj = QmlMetaType::toQObject(value);
+
+            if (!obj) {
+                if (scriptWarnings())
+                    qWarning() << "QmlBindableValue: Unable to assign non-object to object property";
                 return;
             }
 
-            // NOTE: This assumes a cast to QObject does not alter the
-            // object pointer
-            QObject *obj = *(QObject **)value.data();
+            // XXX This isn't type safe
 
             // NOTE: We assume that only core properties can have
             // propertyType == Object
@@ -220,7 +215,8 @@ void QmlBindableValue::update()
 
         } else if (d->property.propertyCategory() == QmlMetaProperty::Normal) {
             QVariant value = this->value();
-            if (d->property.propertyType() == QVariant::Url && value.canConvert(QVariant::String) && !value.isNull()) {
+            if (d->property.propertyType() == QVariant::Url && 
+                value.canConvert(QVariant::String) && !value.isNull()) {
                 // Must resolve first
                 value.setValue(context()->resolvedUrl(value.toString()));
             }
