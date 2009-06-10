@@ -3456,7 +3456,9 @@ void HtmlGenerator::generateDetailedQmlMember(const Node *node,
                 generateQmlItem(qpn, relative, marker, false);
                 out() << "</td></tr>";
                 if (qpgn->isDefault()) {
-                    out() << "<div class=\"qmlitem\">"
+                    out() << "</table>"
+                          << "</div></div>"
+                          << "<div class=\"qmlitem\">"
                           << "<div class=\"qmlproto\">"
                           << "<table class=\"qmlname\">"
                           << "<tr><td><font color=\"green\">"
