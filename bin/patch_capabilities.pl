@@ -59,7 +59,7 @@ if (@ARGV)
 
         print ("\n");
 
-        my $baseCommandToExecute = "elftran -capability \"";
+        my $baseCommandToExecute = "elftran -vid 0x0 -capability \"";
         if (@capabilitiesToSet)
         {
             $baseCommandToExecute .= join(" ", @capabilitiesToSet);
