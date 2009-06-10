@@ -35,11 +35,6 @@ embedded {
 				util/qsystemtrayicon_qws.cpp
 }
 
-symbian {
-    # QDesktopServices uses CSendUi which is located on app layer
-    INCLUDEPATH	+= $$APP_LAYER_SYSTEMINCLUDE
-}
-
 !embedded:!x11:mac {
 		OBJECTIVE_SOURCES += util/qsystemtrayicon_mac.mm
 }

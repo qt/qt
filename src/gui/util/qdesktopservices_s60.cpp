@@ -54,8 +54,8 @@
 #include <eikenv.h>                 // CEikonEnv
 #include <apgcli.h>                 // RApaLsSession
 #include <apgtask.h>                // TApaTaskList, TApaTask
-#include <sendui.h>                 // CSendUi
-#include <cmessagedata.h>           // CMessageData
+#include <rsendas.h>                // RSendAs
+#include <rsendasmessage.h>         // RSendAsMessage
 #include <pathinfo.h>               // PathInfo
 #ifdef USE_DOCUMENTHANDLER
 #include <documenthandler.h>        // CDocumentHandler
@@ -85,52 +85,44 @@ static void handleMailtoSchemeL(const QUrl &url)
     QStringList bccs = bcc.split(",");
 
 
-    CSendUi* sendUi = CSendUi::NewLC();
+	RSendAs sendAs;
+	User::LeaveIfError(sendAs.Connect());
+	CleanupClosePushL(sendAs);
 
-    // Construct symbian sendUI data holder
-    CMessageData* messageData = CMessageData::NewLC();
+	RSendAsMessage sendAsMessage;
+	sendAsMessage.CreateL(sendAs, KUidMsgTypeSMTP);
+	CleanupClosePushL(sendAsMessage);
+
 
     // Subject
-    TPtrC subj( qt_QString2TPtrC(subject) );
-    messageData->SetSubjectL( &subj );
+    sendAsMessage.SetSubjectL(qt_QString2TPtrC(subject));
 
     // Body
-    CParaFormatLayer* paraFormat = CParaFormatLayer::NewL();
-    CleanupStack::PushL( paraFormat );
-    CCharFormatLayer* charFormat = CCharFormatLayer::NewL();
-    CleanupStack::PushL( charFormat );
-    CRichText* bodyRichText = CRichText::NewL( paraFormat, charFormat );
-    CleanupStack::PushL( bodyRichText );
-
-    TPtrC bodyPtr( qt_QString2TPtrC(body) );
-    if( bodyPtr.Length() )
-		{
-        bodyRichText->InsertL( 0, bodyPtr );
-		}
-    else
-		{
-        bodyRichText->InsertL( 0, KNullDesC );
-		}
-
-    messageData->SetBodyTextL( bodyRichText );
+    sendAsMessage.SetBodyTextL(qt_QString2TPtrC(body));
 
     // To
     foreach(QString item, recipients)
-        messageData->AppendToAddressL(qt_QString2TPtrC(item));
+        sendAsMessage.AddRecipientL(qt_QString2TPtrC(item), RSendAsMessage::ESendAsRecipientTo );
 
     foreach(QString item, tos)
-        messageData->AppendToAddressL(qt_QString2TPtrC(item));
+        sendAsMessage.AddRecipientL(qt_QString2TPtrC(item), RSendAsMessage::ESendAsRecipientTo );
 
     // Cc
     foreach(QString item, ccs)
-        messageData->AppendCcAddressL(qt_QString2TPtrC(item));
+        sendAsMessage.AddRecipientL(qt_QString2TPtrC(item), RSendAsMessage::ESendAsRecipientCc );
 
     // Bcc
     foreach(QString item, bccs)
-        messageData->AppendBccAddressL(qt_QString2TPtrC(item));
+        sendAsMessage.AddRecipientL(qt_QString2TPtrC(item), RSendAsMessage::ESendAsRecipientBcc );
 
-	sendUi->CreateAndSendMessageL( KUidMsgTypeSMTP, messageData );
-    CleanupStack::PopAndDestroy( 5 ); // bodyRichText, charFormat, paraFormat, messageData, sendUi
+	// send the message
+	sendAsMessage.LaunchEditorAndCloseL();
+
+	// sendAsMessage (already closed)
+	CleanupStack::Pop();
+
+	// sendAs
+	CleanupStack::PopAndDestroy();             
 }
 
 static bool handleMailtoScheme(const QUrl &url)
