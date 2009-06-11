@@ -4040,27 +4040,27 @@ bool QApplicationPrivate::translateTouchEvent(const MSG &msg)
         QTouchEvent::TouchPoint touchPoint(touchPointID);
 
         // update state
-        QPointF globalPos(qreal(touchInput.x) / qreal(100.), qreal(touchInput.y) / qreal(100.));
-        QRectF globalRect;
+        QPointF screenPos(qreal(touchInput.x) / qreal(100.), qreal(touchInput.y) / qreal(100.));
+        QRectF screenRect;
         if (touchInput.dwMask & TOUCHINPUTMASKF_CONTACTAREA)
-            globalRect.setSize(QSizeF(qreal(touchInput.cxContact) / qreal(100.),
+            screenRect.setSize(QSizeF(qreal(touchInput.cxContact) / qreal(100.),
                                       qreal(touchInput.cyContact) / qreal(100.)));
-        globalRect.moveCenter(globalPos);
+        screenRect.moveCenter(screenPos);
 
         if (touchInput.dwFlags & TOUCHEVENTF_DOWN) {
             touchPoint.setState(Qt::TouchPointPressed);
-            touchPoint.setGlobalPos(globalPos);
-            touchPoint.setRect(globalRect);
+            touchPoint.setScreenPos(screenPos);
+            touchPoint.setRect(screenRect);
         } else if (touchInput.dwFlags & TOUCHEVENTF_UP) {
             touchPoint.setState(Qt::TouchPointReleased);
-            touchPoint.setGlobalPos(globalPos);
-            touchPoint.setRect(globalRect);
+            touchPoint.setScreenPos(screenPos);
+            touchPoint.setRect(screenRect);
         } else {
-            touchPoint.setState(globalPos == touchPoint.globalPos()
+            touchPoint.setState(screenPos == touchPoint.screenPos()
                                  ? Qt::TouchPointStationary
                                  : Qt::TouchPointMoved);
-            touchPoint.setGlobalPos(globalPos);
-            touchPoint.setRect(globalRect);
+            touchPoint.setScreenPos(screenPos);
+            touchPoint.setRect(screenRect);
         }
 
         touchPoints.append(touchPoint);

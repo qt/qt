@@ -4052,6 +4052,7 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
         while (widget) {
             // first, try to deliver the touch event
             bool acceptTouchEvents = widget->testAttribute(Qt::WA_AcceptTouchEvents);
+            touchEvent->setWidget(widget);
             touchEvent->setAccepted(acceptTouchEvents);
             res = acceptTouchEvents && d->notify_helper(widget, touchEvent);
             eventAccepted = touchEvent->isAccepted();
@@ -5258,10 +5259,15 @@ void QApplicationPrivate::updateTouchPointsForWidget(QWidget *widget, QTouchEven
         QTouchEvent::TouchPoint &touchPoint = touchEvent->_touchPoints[i];
 
         // preserve the sub-pixel resolution
-        const QPointF delta = touchPoint.globalPos() - touchPoint.globalPos().toPoint();
-        touchPoint.setPos(widget->mapFromGlobal(touchPoint.globalPos().toPoint()) + delta);
-        touchPoint.setStartPos(widget->mapFromGlobal(touchPoint.startGlobalPos().toPoint()) + delta);
-        touchPoint.setLastPos(widget->mapFromGlobal(touchPoint.lastGlobalPos().toPoint()) + delta);
+        QRectF rect = touchPoint.screenRect();
+        const QPointF screenPos = rect.center();
+        const QPointF delta = screenPos - screenPos.toPoint();
+
+        rect.moveCenter(widget->mapFromGlobal(screenPos.toPoint()) + delta);
+        touchPoint.setRect(rect);
+
+        touchPoint.setStartPos(widget->mapFromGlobal(touchPoint.startScreenPos().toPoint()) + delta);
+        touchPoint.setLastPos(widget->mapFromGlobal(touchPoint.lastScreenPos().toPoint()) + delta);
     }
 }
 
@@ -5281,12 +5287,12 @@ void QApplicationPrivate::cleanupMultitouch()
     appCurrentTouchPoints.clear();
 }
 
-int QApplicationPrivate::findClosestTouchPointId(const QPointF &globalPos)
+int QApplicationPrivate::findClosestTouchPointId(const QPointF &screenPos)
 {
     int closestTouchPointId = -1;
     qreal closestDistance = qreal(0.);
     foreach (const QTouchEvent::TouchPoint &touchPoint, appCurrentTouchPoints) {
-        qreal distance = QLineF(globalPos, touchPoint.globalPos()).length();
+        qreal distance = QLineF(screenPos, touchPoint.screenPos()).length();
         if (closestTouchPointId == -1 || distance < closestDistance) {
             closestTouchPointId = touchPoint.id();
             closestDistance = distance;
@@ -5314,22 +5320,22 @@ bool QApplicationPrivate::translateRawTouchEvent(QWidget *window,
         {
             // determine which widget this event will go to
             if (!window)
-                window = q->topLevelAt(touchPoint.globalPos().toPoint());
+                window = q->topLevelAt(touchPoint.screenPos().toPoint());
             if (!window)
                 continue;
-            widget = window->childAt(window->mapFromGlobal(touchPoint.globalPos().toPoint()));
+            widget = window->childAt(window->mapFromGlobal(touchPoint.screenPos().toPoint()));
             if (!widget)
                 widget = window;
 
-            int closestTouchPointId = d->findClosestTouchPointId(touchPoint.globalPos());
+            int closestTouchPointId = d->findClosestTouchPointId(touchPoint.screenPos());
             QWidget *closestWidget = d->widgetForTouchPointId.value(closestTouchPointId);
             if (closestWidget
                 && (widget->isAncestorOf(closestWidget) || closestWidget->isAncestorOf(widget))) {
                 widget = closestWidget;
             }
             d->widgetForTouchPointId[touchPoint.id()] = widget;
-            touchPoint.setStartGlobalPos(touchPoint.globalPos());
-            touchPoint.setLastGlobalPos(touchPoint.globalPos());
+            touchPoint.setStartScreenPos(touchPoint.screenPos());
+            touchPoint.setLastScreenPos(touchPoint.screenPos());
             d->appCurrentTouchPoints.insert(touchPoint.id(), touchPoint);
             break;
         }
@@ -5340,8 +5346,8 @@ bool QApplicationPrivate::translateRawTouchEvent(QWidget *window,
                 continue;
 
             QTouchEvent::TouchPoint previousTouchPoint = d->appCurrentTouchPoints.take(touchPoint.id());
-            touchPoint.setStartGlobalPos(previousTouchPoint.startGlobalPos());
-            touchPoint.setLastGlobalPos(previousTouchPoint.globalPos());
+            touchPoint.setStartScreenPos(previousTouchPoint.startScreenPos());
+            touchPoint.setLastScreenPos(previousTouchPoint.screenPos());
             break;
         }
         default:
@@ -5350,8 +5356,8 @@ bool QApplicationPrivate::translateRawTouchEvent(QWidget *window,
                 continue;
             Q_ASSERT(d->appCurrentTouchPoints.contains(touchPoint.id()));
             QTouchEvent::TouchPoint previousTouchPoint = d->appCurrentTouchPoints.value(touchPoint.id());
-            touchPoint.setStartGlobalPos(previousTouchPoint.startGlobalPos());
-            touchPoint.setLastGlobalPos(previousTouchPoint.globalPos());
+            touchPoint.setStartScreenPos(previousTouchPoint.startScreenPos());
+            touchPoint.setLastScreenPos(previousTouchPoint.screenPos());
             d->appCurrentTouchPoints[touchPoint.id()] = touchPoint;
             break;
         }

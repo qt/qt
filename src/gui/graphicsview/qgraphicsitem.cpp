@@ -2232,9 +2232,8 @@ void QGraphicsItem::setAcceptsHoverEvents(bool enabled)
 
 /*! \since 4.6
 
-    Returns true if an item accepts touch events
-    (QGraphicsSceneTouchEvent); otherwise, returns false. By default,
-    items do not accept touch events.
+    Returns true if an item accepts touch events (QTouchEvent); otherwise, returns false. By
+    default, items do not accept touch events.
 
     \sa setAcceptTouchEvents()
 */

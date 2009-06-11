@@ -70,6 +70,7 @@ public:
     QInputEvent(Type type, Qt::KeyboardModifiers modifiers = Qt::NoModifier);
     ~QInputEvent();
     inline Qt::KeyboardModifiers modifiers() const { return modState; }
+    inline void setModifiers(Qt::KeyboardModifiers modifiers) { modState = modifiers; }
 protected:
     Qt::KeyboardModifiers modState;
 };
@@ -769,68 +770,66 @@ public:
         ~TouchPoint();
 
         int id() const;
-        void setId(int id);
 
         Qt::TouchPointState state() const;
-        void setState(Qt::TouchPointState state);
 
         QPointF pos() const;
-        void setPos(const QPointF &pos);
-
         QPointF startPos() const;
-        void setStartPos(const QPointF &startPos);
-
         QPointF lastPos() const;
-        void setLastPos(const QPointF &lastPos);
 
-        QPointF globalPos() const;
-        void setGlobalPos(const QPointF &globalPos);
+        QPointF scenePos() const;
+        QPointF startScenePos() const;
+        QPointF lastScenePos() const;
 
-        QPointF startGlobalPos() const;
-        void setStartGlobalPos(const QPointF &startGlobalPos);
-
-        QPointF lastGlobalPos() const;
-        void setLastGlobalPos(const QPointF &lastGlobalPos);
+        QPointF screenPos() const;
+        QPointF startScreenPos() const;
+        QPointF lastScreenPos() const;
 
         QRectF rect() const;
-        void setRect(const QRectF &rect);
+        QRectF sceneRect() const;
+        QRectF screenRect() const;
 
         qreal pressure() const;
-        void setPressure(qreal pressure);
 
+        // internal
+        void setId(int id);
+        void setState(Qt::TouchPointState state);
+        void setPos(const QPointF &pos);
+        void setScenePos(const QPointF &scenePos);
+        void setScreenPos(const QPointF &screenPos);
+        void setStartPos(const QPointF &startPos);
+        void setStartScenePos(const QPointF &startScenePos);
+        void setStartScreenPos(const QPointF &startScreenPos);
+        void setLastPos(const QPointF &lastPos);
+        void setLastScenePos(const QPointF &lastScenePos);
+        void setLastScreenPos(const QPointF &lastScreenPos);
+        void setRect(const QRectF &rect);
+        void setSceneRect(const QRectF &sceneRect);
+        void setScreenRect(const QRectF &screenRect);
+        void setPressure(qreal pressure);
         TouchPoint &operator=(const TouchPoint &other);
 
     private:
         QTouchEventTouchPointPrivate *d;
-
-        friend class QTouchEventTouchPointPrivate;
     };
 
     QTouchEvent(QEvent::Type type,
-                Qt::KeyboardModifiers modifiers,
-                Qt::TouchPointStates touchPointStates,
-                const QList<QTouchEvent::TouchPoint> &touchPoints);
+                Qt::KeyboardModifiers modifiers = Qt::NoModifier,
+                Qt::TouchPointStates touchPointStates = 0,
+                const QList<QTouchEvent::TouchPoint> &touchPoints = QList<QTouchEvent::TouchPoint>());
     ~QTouchEvent();
 
-    inline Qt::TouchPointStates touchPointStates() const
-    {
-        return _touchPointStates;
-    }
-    inline void setTouchPointStates(Qt::TouchPointStates touchPointStates)
-    {
-        _touchPointStates = touchPointStates;
-    }
+    inline QWidget *widget() const { return _widget; }
+    inline Qt::TouchPointStates touchPointStates() const { return _touchPointStates; }
+    inline const QList<QTouchEvent::TouchPoint> &touchPoints() const { return _touchPoints; }
 
-    inline const QList<QTouchEvent::TouchPoint> &touchPoints() const
-    {
-        return _touchPoints;
-    }
-    inline void setTouchPoints(const QList<QTouchEvent::TouchPoint> &touchPoints)
-    {
-        _touchPoints = touchPoints;
-    }
+    // internal
+    inline void setWidget(QWidget *widget) { _widget = widget; }
+    inline void setTouchPointStates(Qt::TouchPointStates touchPointStates) { _touchPointStates = touchPointStates; }
+    inline void setTouchPoints(const QList<QTouchEvent::TouchPoint> &touchPoints) { _touchPoints = touchPoints; }
 
 protected:
+    QWidget *_widget;
     Qt::TouchPointStates _touchPointStates;
     QList<QTouchEvent::TouchPoint> _touchPoints;
 

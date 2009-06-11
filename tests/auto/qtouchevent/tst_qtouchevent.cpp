@@ -250,7 +250,7 @@ void tst_QTouchEvent::basicRawEventTranslation()
     touchWidget.setAttribute(Qt::WA_AcceptTouchEvents);
 
     QPointF pos = touchWidget.rect().center();
-    QPointF globalPos = touchWidget.mapToGlobal(pos.toPoint());
+    QPointF screenPos = touchWidget.mapToGlobal(pos.toPoint());
     QPointF delta(10, 10);
 
     QTouchEvent::TouchPoint rawTouchPoint;
@@ -258,7 +258,7 @@ void tst_QTouchEvent::basicRawEventTranslation()
 
     // this should be translated to a TouchBegin
     rawTouchPoint.setState(Qt::TouchPointPressed);
-    rawTouchPoint.setGlobalPos(globalPos);
+    rawTouchPoint.setScreenPos(screenPos);
     bool res = qt_translateRawTouchEvent(QList<QTouchEvent::TouchPoint>() << rawTouchPoint, &touchWidget);
     QVERIFY(res);
     QVERIFY(touchWidget.seenTouchBegin);
@@ -271,15 +271,16 @@ void tst_QTouchEvent::basicRawEventTranslation()
     QCOMPARE(touchBeginPoint.pos(), pos);
     QCOMPARE(touchBeginPoint.startPos(), pos);
     QCOMPARE(touchBeginPoint.lastPos(), pos);
-    QCOMPARE(touchBeginPoint.globalPos(), rawTouchPoint.globalPos());
-    QCOMPARE(touchBeginPoint.startGlobalPos(), rawTouchPoint.globalPos());
-    QCOMPARE(touchBeginPoint.lastGlobalPos(), rawTouchPoint.globalPos());
-    QCOMPARE(touchBeginPoint.size(), QSizeF());
+    QCOMPARE(touchBeginPoint.screenPos(), rawTouchPoint.screenPos());
+    QCOMPARE(touchBeginPoint.startScreenPos(), rawTouchPoint.screenPos());
+    QCOMPARE(touchBeginPoint.lastScreenPos(), rawTouchPoint.screenPos());
+    QCOMPARE(touchBeginPoint.rect(), QRectF(pos, QSizeF(0, 0)));
+    QCOMPARE(touchBeginPoint.screenRect(), QRectF(rawTouchPoint.screenPos(), QSizeF(0, 0)));
     QCOMPARE(touchBeginPoint.pressure(), qreal(-1.));
 
     // moving the point should translate to TouchUpdate
     rawTouchPoint.setState(Qt::TouchPointMoved);
-    rawTouchPoint.setGlobalPos(globalPos + delta);
+    rawTouchPoint.setScreenPos(screenPos + delta);
     res = qt_translateRawTouchEvent(QList<QTouchEvent::TouchPoint>() << rawTouchPoint, &touchWidget);
     QVERIFY(res);
     QVERIFY(touchWidget.seenTouchBegin);
@@ -292,15 +293,16 @@ void tst_QTouchEvent::basicRawEventTranslation()
     QCOMPARE(touchUpdatePoint.pos(), pos + delta);
     QCOMPARE(touchUpdatePoint.startPos(), pos);
     QCOMPARE(touchUpdatePoint.lastPos(), pos);
-    QCOMPARE(touchUpdatePoint.globalPos(), rawTouchPoint.globalPos());
-    QCOMPARE(touchUpdatePoint.startGlobalPos(), globalPos);
-    QCOMPARE(touchUpdatePoint.lastGlobalPos(), globalPos);
-    QCOMPARE(touchUpdatePoint.size(), QSizeF());
+    QCOMPARE(touchUpdatePoint.screenPos(), rawTouchPoint.screenPos());
+    QCOMPARE(touchUpdatePoint.startScreenPos(), screenPos);
+    QCOMPARE(touchUpdatePoint.lastScreenPos(), screenPos);
+    QCOMPARE(touchUpdatePoint.rect(), QRectF(pos + delta, QSizeF(0, 0)));
+    QCOMPARE(touchUpdatePoint.screenRect(), QRectF(rawTouchPoint.screenPos(), QSizeF(0, 0)));
     QCOMPARE(touchUpdatePoint.pressure(), qreal(-1.));
 
     // releasing the point translates to TouchEnd
     rawTouchPoint.setState(Qt::TouchPointReleased);
-    rawTouchPoint.setGlobalPos(globalPos + delta + delta);
+    rawTouchPoint.setScreenPos(screenPos + delta + delta);
     res = qt_translateRawTouchEvent(QList<QTouchEvent::TouchPoint>() << rawTouchPoint, &touchWidget);
     QVERIFY(res);
     QVERIFY(touchWidget.seenTouchBegin);
@@ -313,10 +315,11 @@ void tst_QTouchEvent::basicRawEventTranslation()
     QCOMPARE(touchEndPoint.pos(), pos + delta + delta);
     QCOMPARE(touchEndPoint.startPos(), pos);
     QCOMPARE(touchEndPoint.lastPos(), pos + delta);
-    QCOMPARE(touchEndPoint.globalPos(), rawTouchPoint.globalPos());
-    QCOMPARE(touchEndPoint.startGlobalPos(), globalPos);
-    QCOMPARE(touchEndPoint.lastGlobalPos(), globalPos + delta);
-    QCOMPARE(touchEndPoint.size(), QSizeF());
+    QCOMPARE(touchEndPoint.screenPos(), rawTouchPoint.screenPos());
+    QCOMPARE(touchEndPoint.startScreenPos(), screenPos);
+    QCOMPARE(touchEndPoint.lastScreenPos(), screenPos + delta);
+    QCOMPARE(touchEndPoint.rect(), QRectF(pos + delta + delta, QSizeF(0, 0)));
+    QCOMPARE(touchEndPoint.screenRect(), QRectF(rawTouchPoint.screenPos(), QSizeF(0, 0)));
     QCOMPARE(touchEndPoint.pressure(), qreal(-1.));
 }
 

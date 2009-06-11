@@ -78,21 +78,21 @@ namespace QTest
         QTouchEventSequence& press(int touchId, const QPoint &pt, QWidget *widget = 0)
         {
             QTouchEvent::TouchPoint &p = point(touchId);
-            p.setGlobalPos(mapToScreen(widget, pt));
+            p.setScreenPos(mapToScreen(widget, pt));
             p.setState(Qt::TouchPointPressed);
             return *this;
         }
         QTouchEventSequence& move(int touchId, const QPoint &pt, QWidget *widget = 0)
         {
             QTouchEvent::TouchPoint &p = point(touchId);
-            p.setGlobalPos(mapToScreen(widget, pt));
+            p.setScreenPos(mapToScreen(widget, pt));
             p.setState(Qt::TouchPointMoved);
             return *this;
         }
         QTouchEventSequence& release(int touchId, const QPoint &pt, QWidget *widget = 0)
         {
             QTouchEvent::TouchPoint &p = point(touchId);
-            p.setGlobalPos(mapToScreen(widget, pt));
+            p.setScreenPos(mapToScreen(widget, pt));
             p.setState(Qt::TouchPointReleased);
             return *this;
         }

@@ -297,34 +297,21 @@ inline int q_round_bound(qreal d) //### (int)(qreal) INT_MAX != INT_MAX for sing
     return d >= 0.0 ? int(d + 0.5) : int(d - int(d-1) + 0.5) + int(d-1);
 }
 
-void QGraphicsViewPrivate::convertTouchEventToGraphicsSceneTouchEvent(QGraphicsViewPrivate *d,
-                                                                      QTouchEvent *originalEvent,
-                                                                      QGraphicsSceneTouchEvent *touchEvent)
+void QGraphicsViewPrivate::translateTouchEvent(QGraphicsViewPrivate *d, QTouchEvent *touchEvent)
 {
-    QList<QTouchEvent::TouchPoint> originalTouchPoints = originalEvent->touchPoints();
-    QList<QGraphicsSceneTouchEvent::TouchPoint> touchPoints;
-    for (int i = 0; i < originalTouchPoints.count(); ++i) {
-        QGraphicsSceneTouchEvent::TouchPoint touchPoint =
-                QTouchEventTouchPointPrivate::get(originalTouchPoints.at(i));
-        // the scene will set the item local pos, startPos, lastPos, and size before delivering to
-        // an item, but for now those functions are returning the view's local coordinates (since
-        // we're reusing the d-pointer from the orignalTouchPoint)
-        touchPoint.setScenePos(d->mapToScene(touchPoint.pos()));
+    QList<QTouchEvent::TouchPoint> touchPoints = touchEvent->touchPoints();
+    for (int i = 0; i < touchPoints.count(); ++i) {
+        QTouchEvent::TouchPoint &touchPoint = touchPoints[i];
+        // the scene will set the item local pos, startPos, lastPos, and rect before delivering to
+        // an item, but for now those functions are returning the view's local coordinates
+        touchPoint.setSceneRect(d->mapToScene(touchPoint.rect()));
         touchPoint.setStartScenePos(d->mapToScene(touchPoint.startPos()));
         touchPoint.setLastScenePos(d->mapToScene(touchPoint.lastPos()));
-#ifdef Q_CC_GNU
-#  warning FIXME
-#endif
-        // ### touchPoint.setSceneSize(d->mapToScene(touchPoint.screenSize()));
 
-        // screenPos, startScreenPos, lastScreenPos, and screenSize are already set from the
-        // originalTouchPoint
-
-        touchPoints.append(touchPoint);
+        // screenPos, startScreenPos, lastScreenPos, and screenRect are already set
     }
 
     touchEvent->setTouchPoints(touchPoints);
-    touchEvent->setModifiers(originalEvent->modifiers());
 }
 
 /*!
@@ -2768,23 +2755,10 @@ bool QGraphicsView::viewportEvent(QEvent *event)
 
         if (d->scene && d->sceneInteractionAllowed) {
             // Convert and deliver the touch event to the scene.
-            QEvent::Type eventType;
-            switch(event->type()) {
-            case QEvent::TouchUpdate:
-                eventType = QEvent::GraphicsSceneTouchUpdate;
-                break;
-            case QEvent::TouchBegin:
-                eventType = QEvent::GraphicsSceneTouchBegin;
-                break;
-            default:
-                eventType = QEvent::GraphicsSceneTouchEnd;
-            }
-            QGraphicsSceneTouchEvent touchEvent(eventType);
-            touchEvent.setWidget(viewport());
-            QGraphicsViewPrivate::convertTouchEventToGraphicsSceneTouchEvent(d, static_cast<QTouchEvent *>(event), &touchEvent);
-            touchEvent.setAccepted(false);
-            QApplication::sendEvent(d->scene, &touchEvent);
-            event->setAccepted(touchEvent.isAccepted());
+            QTouchEvent *touchEvent = static_cast<QTouchEvent *>(event);
+            touchEvent->setWidget(viewport());
+            QGraphicsViewPrivate::translateTouchEvent(d, touchEvent);
+            (void) QApplication::sendEvent(d->scene, touchEvent);
         }
 
         return true;
@@ -3717,6 +3691,31 @@ QPointF QGraphicsViewPrivate::mapToScene(const QPointF &point) const
     p.rx() += horizontalScroll();
     p.ry() += verticalScroll();
     return identityMatrix ? p : matrix.inverted().map(p);
+}
+
+QRectF QGraphicsViewPrivate::mapToScene(const QRectF &rect) const
+{
+    QPointF scrollOffset(horizontalScroll(), verticalScroll());
+    QPointF tl = scrollOffset + rect.topLeft();
+    QPointF tr = scrollOffset + rect.topRight();
+    QPointF br = scrollOffset + rect.bottomRight();
+    QPointF bl = scrollOffset + rect.bottomLeft();
+
+    QPolygonF poly;
+    poly.resize(4);
+    if (!identityMatrix) {
+        QTransform x = matrix.inverted();
+        poly[0] = x.map(tl);
+        poly[1] = x.map(tr);
+        poly[2] = x.map(br);
+        poly[3] = x.map(bl);
+    } else {
+        poly[0] = tl;
+        poly[1] = tr;
+        poly[2] = br;
+        poly[3] = bl;
+    }
+    return poly.boundingRect();
 }
 
 QT_END_NAMESPACE

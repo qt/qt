@@ -42,7 +42,7 @@
 #include "knob.h"
 
 #include <QBrush>
-#include <QGraphicsSceneTouchEvent>
+#include <QTouchEvent>
 
 Knob::Knob()
     : QGraphicsEllipseItem(-50, -50, 100, 100)
@@ -62,15 +62,15 @@ Knob::Knob()
 bool Knob::sceneEvent(QEvent *event)
 {
     switch (event->type()) {
-    case QEvent::GraphicsSceneTouchBegin:
-    case QEvent::GraphicsSceneTouchUpdate:
-    case QEvent::GraphicsSceneTouchEnd:
+    case QEvent::TouchBegin:
+    case QEvent::TouchUpdate:
+    case QEvent::TouchEnd:
     {
-        QGraphicsSceneTouchEvent *touchEvent = static_cast<QGraphicsSceneTouchEvent *>(event);
+        QTouchEvent *touchEvent = static_cast<QTouchEvent *>(event);
 
         if (touchEvent->touchPoints().count() == 2) {
-            const QGraphicsSceneTouchEvent::TouchPoint &touchPoint1 = touchEvent->touchPoints().first();
-            const QGraphicsSceneTouchEvent::TouchPoint &touchPoint2 = touchEvent->touchPoints().last();
+            const QTouchEvent::TouchPoint &touchPoint1 = touchEvent->touchPoints().first();
+            const QTouchEvent::TouchPoint &touchPoint2 = touchEvent->touchPoints().last();
 
             QLineF line1(touchPoint1.lastScenePos(), touchPoint2.lastScenePos());
             QLineF line2(touchPoint1.scenePos(), touchPoint2.scenePos());

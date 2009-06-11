@@ -42,7 +42,7 @@
 #ifndef QGRAPHICSSCENEEVENT_H
 #define QGRAPHICSSCENEEVENT_H
 
-#include <QtGui/qevent.h>
+#include <QtCore/qcoreevent.h>
 #include <QtCore/qpoint.h>
 #include <QtCore/qrect.h>
 #include <QtGui/qpolygon.h>
@@ -60,7 +60,6 @@ QT_MODULE(Gui)
 class QMimeData;
 class QPointF;
 class QSizeF;
-class QRectF;
 class QWidget;
 
 class QGraphicsSceneEventPrivate;
@@ -348,86 +347,6 @@ public:
 protected:
     QHash<QString, QGesture*> m_gestures;
     QSet<QString> m_cancelledGestures;
-};
-
-class QGraphicsSceneTouchEventPrivate;
-class Q_GUI_EXPORT QGraphicsSceneTouchEvent : public QGraphicsSceneEvent
-{
-public:
-    class Q_GUI_EXPORT TouchPoint
-    {
-    public:
-        TouchPoint(int id = -1);
-        TouchPoint(const TouchPoint &other);
-        ~TouchPoint();
-
-        int id() const;
-        void setId(int id);
-
-        Qt::TouchPointState state() const;
-        void setState(Qt::TouchPointState state);
-
-        QPointF pos() const;
-        void setPos(const QPointF &pos);
-
-        QPointF startPos() const;
-        void setStartPos(const QPointF &startPos);
-
-        QPointF lastPos() const;
-        void setLastPos(const QPointF &lastPos);        
-
-        QPointF scenePos() const;
-        void setScenePos(const QPointF &scenePos);
-
-        QPointF startScenePos() const;
-        void setStartScenePos(const QPointF &startScenePos);
-
-        QPointF lastScenePos() const;
-        void setLastScenePos(const QPointF &lastScenePos);
-
-        QPointF screenPos() const;
-        void setScreenPos(const QPointF &screenPos);
-
-        QPointF startScreenPos() const;
-        void setStartScreenPos(const QPointF &startScreenPos);
-
-        QPointF lastScreenPos() const;
-        void setLastScreenPos(const QPointF &lastScreenPos);
-
-        QRectF rect() const;
-        void setRect(const QRectF &rect);
-
-        QRectF sceneRect() const;
-        void setSceneRect(const QRectF &sceneRect);
-
-        QRectF screenRect() const;
-        void setScreenRect(const QRectF &screenRect);
-
-        qreal pressure() const;
-        void setPressure(qreal pressure);
-
-        TouchPoint &operator=(const TouchPoint &other);
-
-    private:
-        TouchPoint(QTouchEventTouchPointPrivate *dd);
-        QTouchEventTouchPointPrivate *d;
-        friend class QGraphicsViewPrivate;
-    };
-
-    QGraphicsSceneTouchEvent(Type type = None);
-    ~QGraphicsSceneTouchEvent();
-
-    Qt::KeyboardModifiers modifiers() const;
-    void setModifiers(Qt::KeyboardModifiers modifiers);
-
-    Qt::TouchPointStates touchPointStates() const;
-    void setTouchPointStates(Qt::TouchPointStates touchPointStates);
-
-    const QList<QGraphicsSceneTouchEvent::TouchPoint> &touchPoints() const;
-    void setTouchPoints(const QList<QGraphicsSceneTouchEvent::TouchPoint> &touchPoints);
-
-private:
-    Q_DECLARE_PRIVATE(QGraphicsSceneTouchEvent);
 };
 
 #endif // QT_NO_GRAPHICSVIEW

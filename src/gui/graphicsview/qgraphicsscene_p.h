@@ -35,7 +35,7 @@
 **
 ** If you are unsure which license is appropriate for your use, please
 ** contact the sales department at qt-sales@nokia.com.
-** $QT_END_LICENSE$
+** $QT_END_LICENSE$'
 **
 ****************************************************************************/
 
@@ -304,12 +304,12 @@ public:
     void releaseGesture(QGraphicsItem *item, int gestureId);
     void sendGestureEvent(const QSet<QGesture*> &gestures, const QSet<QString> &cancelled);
 
-    QMap<int, QGraphicsSceneTouchEvent::TouchPoint> sceneCurrentTouchPoints;
+    QMap<int, QTouchEvent::TouchPoint> sceneCurrentTouchPoints;
     QHash<int, QGraphicsItem *> itemForTouchPointId;
-    static void updateTouchPointsForItem(QGraphicsItem *item, QGraphicsSceneTouchEvent *touchEvent);
+    static void updateTouchPointsForItem(QGraphicsItem *item, QTouchEvent *touchEvent);
     int findClosestTouchPointId(const QPointF &scenePos);
-    void touchEventHandler(QGraphicsSceneTouchEvent *touchEvent);
-    bool sendTouchBeginEvent(QGraphicsItem *item, QGraphicsSceneTouchEvent *touchEvent);
+    void touchEventHandler(QTouchEvent *touchEvent);
+    bool sendTouchBeginEvent(QGraphicsItem *item, QTouchEvent *touchEvent);
 };
 
 QT_END_NAMESPACE

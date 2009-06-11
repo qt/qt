@@ -179,9 +179,8 @@ public:
 			      const QRegion &exposedRegion) const;
 
     QPointF mapToScene(const QPointF &point) const;
-    static void convertTouchEventToGraphicsSceneTouchEvent(QGraphicsViewPrivate *d,
-                                                           QTouchEvent *originalEvent,
-                                                           QGraphicsSceneTouchEvent *touchEvent);
+    QRectF mapToScene(const QRectF &rect) const;
+    static void translateTouchEvent(QGraphicsViewPrivate *d, QTouchEvent *touchEvent);
 };
 
 QT_END_NAMESPACE

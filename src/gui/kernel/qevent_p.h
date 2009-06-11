@@ -109,13 +109,10 @@ public:
     QAtomicInt ref;
     int id;
     Qt::TouchPointState state;
-    QPointF pos, startPos, lastPos;
-    QPointF scenePos, startScenePos, lastScenePos;
-    QPointF screenPos, startScreenPos, lastScreenPos;
     QRectF rect, sceneRect, screenRect;
+    QPointF startPos, startScenePos, startScreenPos;
+    QPointF lastPos, lastScenePos, lastScreenPos;
     qreal pressure;
-
-    static QTouchEventTouchPointPrivate *get(const QTouchEvent::TouchPoint &tp);
 };
 
 QT_END_NAMESPACE
