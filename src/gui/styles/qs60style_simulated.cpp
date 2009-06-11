@@ -274,7 +274,7 @@ QPixmap QS60StylePrivate::frame(SkinFrameElements frame, const QSize &size,
     const QRect leftRect = rightRect.translated(cornerWidth - rectWidth, 0);
     const QRect centerRect = drawOnlyCenter ? rect : rect.adjusted(cornerWidth, cornerWidth, -cornerWidth, -cornerWidth);
 
-    QImage result(size, QImage::Format_ARGB32);
+    QPixmap result(size);
     result.fill(Qt::transparent);
     QPainter painter(&result);
 
@@ -303,7 +303,7 @@ QPixmap QS60StylePrivate::frame(SkinFrameElements frame, const QSize &size,
     drawPart(center, &painter, centerRect, flags);
 #endif
 
-    return QPixmap::fromImage(result);
+    return result;
 }
 
 void QS60StylePrivate::setStyleProperty_specific(const char *name, const QVariant &value)
