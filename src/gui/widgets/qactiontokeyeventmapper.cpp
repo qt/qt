@@ -41,7 +41,7 @@
 
 #include "qapplication.h"
 #include "qevent.h"
-#include "QActionToKeyEventMapper_p.h"
+#include "qactiontokeyeventmapper_p.h"
 
 QT_BEGIN_NAMESPACE
 

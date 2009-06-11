@@ -2310,6 +2310,50 @@ QT3_SUPPORT Q_CORE_EXPORT const char *qInstallPathTranslations();
 QT3_SUPPORT Q_CORE_EXPORT const char *qInstallPathSysconf();
 #endif
 
+#if defined(Q_OS_SYMBIAN)
+
+#include <stdexcept>
+
+class QSymbianLeaveException : public std::exception
+{
+public:
+    inline QSymbianLeaveException(int err) : error(err) {}
+    const char* what() const throw();
+public:
+    int error;
+};
+
+Q_CORE_EXPORT void qt_translateSymbianErrorToException(int error);
+Q_CORE_EXPORT void qt_translateExceptionToSymbianErrorL(const std::exception& ex);
+Q_CORE_EXPORT int qt_translateExceptionToSymbianError(const std::exception& ex);
+
+#define QT_TRANSLATE_SYMBIAN_LEAVE_TO_EXCEPTION(f)  \
+    {                                               \
+        TInt error;                                 \
+        TRAP(error, f);                             \
+        if (error)                                    \
+            qt_translateSymbianErrorToException(error); \
+     }
+
+#define QT_TRANSLATE_EXCEPTION_TO_SYMBIAN_ERROR(err, f)     \
+    {                                                       \
+        err = KErrNone;                                     \
+        try {                                               \
+            f;                                              \
+        } catch (const std::exception &ex) {                \
+            err = qt_translateExceptionToSymbianError(ex);  \
+        }                                                   \
+    }
+
+#define QT_TRANSLATE_EXCEPTION_TO_SYMBIAN_LEAVE(f)      \
+    {                                                   \
+    TInt err;                                           \
+    QT_TRANSLATE_EXCEPTION_TO_SYMBIAN_ERROR(err, f)     \
+    User::LeaveIfError(err);                            \
+    }
+#endif
+
+
 /*
    This gives us the possibility to check which modules the user can
    use. These are purely compile time checks and will generate no code.
@@ -2382,6 +2426,9 @@ QT3_SUPPORT Q_CORE_EXPORT const char *qInstallPathSysconf();
 
 #define QT_LICENSED_MODULE(x) \
     enum QtValidLicenseFor##x##Module { Licensed##x = true };
+
+/* qdoc is really unhappy with the following block of preprocessor checks,
+   making it difficult to document classes properly after this point. */
 
 #if (QT_EDITION & QT_MODULE_CORE)
 QT_LICENSED_MODULE(Core)
@@ -2463,49 +2510,6 @@ QT_LICENSED_MODULE(DBus)
 #if (defined(Q_OS_IRIX) || defined(Q_CC_MINGW) || defined (Q_OS_SOLARIS)) && (__GNUC__ < 4)
 #  define QT_NO_CONCURRENT_MAP
 #  define QT_NO_CONCURRENT_FILTER
-#endif
-
-#if defined(Q_OS_SYMBIAN)
-
-#include <stdexcept>
-
-class QSymbianLeaveException : public std::exception
-{
-public:
-    inline QSymbianLeaveException(int err) : error(err) {}
-    const char* what() const throw();
-public:
-    int error;
-};
-
-Q_CORE_EXPORT void qt_translateSymbianErrorToException(int error);
-Q_CORE_EXPORT void qt_translateExceptionToSymbianErrorL(const std::exception& ex);
-Q_CORE_EXPORT int qt_translateExceptionToSymbianError(const std::exception& ex);
-
-#define QT_TRANSLATE_SYMBIAN_LEAVE_TO_EXCEPTION(f)  \
-    {                                               \
-        TInt error;                                 \
-        TRAP(error, f);                             \
-        if (error)                                    \
-            qt_translateSymbianErrorToException(error); \
-     }
-
-#define QT_TRANSLATE_EXCEPTION_TO_SYMBIAN_ERROR(err, f)     \
-    {                                                       \
-        err = KErrNone;                                     \
-        try {                                               \
-            f;                                              \
-        } catch (const std::exception &ex) {                \
-            err = qt_translateExceptionToSymbianError(ex);  \
-        }                                                   \
-    }
-
-#define QT_TRANSLATE_EXCEPTION_TO_SYMBIAN_LEAVE(f)      \
-    {                                                   \
-    TInt err;                                           \
-    QT_TRANSLATE_EXCEPTION_TO_SYMBIAN_ERROR(err, f)     \
-    User::LeaveIfError(err);                            \
-    }
 #endif
 
 QT_END_NAMESPACE

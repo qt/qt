@@ -53,6 +53,7 @@
 #include "qmetaobject.h"
 #include "qdebug.h"
 #include "qbuffer.h"
+#include "qdesktopwidget.h"
 
 #if !defined(QT_NO_STYLE_S60) || defined(QT_PLUGIN)
 
@@ -61,13 +62,20 @@ QT_BEGIN_NAMESPACE
 static const quint32 blobVersion = 1;
 static const int pictureSize = 256;
 
+#if defined(Q_CC_GNU)
+#if __GNUC__ >= 2
+#define __FUNCTION__ __func__
+#endif
+#endif
+
+
 bool saveThemeToBlob(const QString &themeBlob,
     const QHash<QString, QPicture> &partPictures,
     const QHash<QPair<QString, int>, QColor> &colors)
 {
     QFile blob(themeBlob);
     if (!blob.open(QIODevice::WriteOnly)) {
-        qWarning() << __FUNCTION__": Could not create blob: " << themeBlob;
+        qWarning() << __FUNCTION__ << ": Could not create blob: " << themeBlob;
         return false;
     }
 
@@ -106,7 +114,7 @@ bool loadThemeFromBlob(const QString &themeBlob,
 {
     QFile blob(themeBlob);
     if (!blob.open(QIODevice::ReadOnly)) {
-        qWarning() << __FUNCTION__": Could not read blob: " << themeBlob;
+        qWarning() << __FUNCTION__ << ": Could not read blob: " << themeBlob;
         return false;
     }
     QDataStream blobIn(&blob);
@@ -115,7 +123,7 @@ bool loadThemeFromBlob(const QString &themeBlob,
     blobIn >> version;
 
     if (version != blobVersion) {
-        qWarning() << __FUNCTION__": Invalid blob version: " << version << " ...expected: " << blobVersion;
+        qWarning() << __FUNCTION__ << ": Invalid blob version: " << version << " ...expected: " << blobVersion;
         return false;
     }
 
@@ -148,7 +156,7 @@ bool loadThemeFromBlob(const QString &themeBlob,
     }
 
     if (dataIn.status() != QDataStream::Ok) {
-        qWarning() << __FUNCTION__": Invalid data blob: " << themeBlob;
+        qWarning() << __FUNCTION__ << ": Invalid data blob: " << themeBlob;
         return false;
     }
     return true;
