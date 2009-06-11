@@ -1533,6 +1533,10 @@ void QGraphicsView::setScene(QGraphicsScene *scene)
             || !d->scene->d_func()->allItemsUseDefaultCursor) {
             d->viewport->setMouseTracking(true);
         }
+
+        // enable touch events if any items is interested in them
+        if (!d->scene->d_func()->allItemsIgnoreTouchEvents)
+            d->viewport->setAttribute(Qt::WA_AcceptTouchEvents);
     } else {
         d->recalculateContentSize();
     }
@@ -2616,6 +2620,11 @@ void QGraphicsView::setupViewport(QWidget *widget)
                      || !d->scene->d_func()->allItemsUseDefaultCursor)) {
         widget->setMouseTracking(true);
     }
+
+    // enable touch events if any items is interested in them
+    if (d->scene && !d->scene->d_func()->allItemsIgnoreTouchEvents)
+        widget->setAttribute(Qt::WA_AcceptTouchEvents);
+
     widget->setAcceptDrops(acceptDrops());
 }
 
