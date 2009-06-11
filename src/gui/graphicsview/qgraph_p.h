@@ -131,7 +131,16 @@ public:
             for (int i = 0; i < adjacents.count(); ++i) {
                 Vertex *v1 = adjacents.at(i);
                 EdgeData *data = edgeData(v, v1);
-                edges += QString::fromAscii("%1->%2 [label=\"[%3,%4]\"]\n").arg(v->toString()).arg(v1->toString()).arg(data->minSize).arg(data->maxSize);
+                bool forward = data->origin == v;
+                if (forward) {
+                    edges += QString::fromAscii("%1->%2 [label=\"[%3,%4]\" dir=both color=\"#000000:#a0a0a0\"] \n")
+                        .arg(v->toString())
+                        .arg(v1->toString())
+                        .arg(data->minSize)
+                        .arg(data->maxSize)
+                        ;
+                }
+                
             }
             strVertices += QString::fromAscii("%1 [label=\"%2\"]\n").arg(v->toString()).arg(v->toString());
         }
