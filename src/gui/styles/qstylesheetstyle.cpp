@@ -2850,7 +2850,7 @@ void QStyleSheetStyle::drawComplexControl(ComplexControl cc, const QStyleOptionC
                 rule.drawBackgroundImage(p, cmbOpt.rect);
                 rule.configurePalette(&cmbOpt.palette, QPalette::ButtonText, QPalette::Button);
                 bool customDropDown = (opt->subControls & QStyle::SC_ComboBoxArrow)
-                                      && hasStyleRule(w, PseudoElement_ComboBoxDropDown);
+                                && (hasStyleRule(w, PseudoElement_ComboBoxDropDown) || hasStyleRule(w, PseudoElement_ComboBoxArrow));
                 if (customDropDown)
                     cmbOpt.subControls &= ~QStyle::SC_ComboBoxArrow;
                 if (rule.baseStyleCanDraw()) {
@@ -2896,11 +2896,11 @@ void QStyleSheetStyle::drawComplexControl(ComplexControl cc, const QStyleOptionC
             if (rule.hasNativeBorder() && !upRuleMatch && !downRuleMatch) {
                 rule.drawBackgroundImage(p, spinOpt.rect);
                 customUp = (opt->subControls & QStyle::SC_SpinBoxUp)
-                           && hasStyleRule(w, PseudoElement_SpinBoxUpButton);
+                        && (hasStyleRule(w, PseudoElement_SpinBoxUpButton) || hasStyleRule(w, PseudoElement_UpArrow));
                 if (customUp)
                     spinOpt.subControls &= ~QStyle::SC_SpinBoxUp;
                 customDown = (opt->subControls & QStyle::SC_SpinBoxDown)
-                             && hasStyleRule(w, PseudoElement_SpinBoxDownButton);
+                        && (hasStyleRule(w, PseudoElement_SpinBoxDownButton) || hasStyleRule(w, PseudoElement_DownArrow));
                 if (customDown)
                     spinOpt.subControls &= ~QStyle::SC_SpinBoxDown;
                 if (rule.baseStyleCanDraw()) {
@@ -3573,7 +3573,7 @@ void QStyleSheetStyle::drawControl(ControlElement ce, const QStyleOption *opt, Q
                     mi.rect = positionRect(w, subRule, subRule2, PseudoElement_MenuRightArrow, opt->rect, mi.direction);
                     drawPrimitive(arrow, &mi, p, w);
                 }
-            } else if (hasStyleRule(w, PseudoElement_MenuCheckMark)) {
+            } else if (hasStyleRule(w, PseudoElement_MenuCheckMark) || hasStyleRule(w, PseudoElement_MenuRightArrow)) {
                 QWindowsStyle::drawControl(ce, &mi, p, w);
             } else {
                 if (rule.hasDrawable() && !subRule.hasDrawable() && !(opt->state & QStyle::State_Selected)) {
@@ -4337,6 +4337,16 @@ void QStyleSheetStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *op
 
     case PE_PanelScrollAreaCorner:
         pseudoElement = PseudoElement_ScrollAreaCorner;
+        break;
+
+    case PE_IndicatorSpinDown:
+    case PE_IndicatorSpinMinus:
+        pseudoElement = PseudoElement_SpinBoxDownArrow;
+        break;
+
+    case PE_IndicatorSpinUp:
+    case PE_IndicatorSpinPlus:
+        pseudoElement = PseudoElement_SpinBoxUpArrow;
         break;
 
     default:
