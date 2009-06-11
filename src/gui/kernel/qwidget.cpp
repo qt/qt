@@ -889,26 +889,19 @@ void QWidget::setAutoFillBackground(bool enabled)
     \section1 SoftKeys
     \since 4.6
     \preliminary
-    Softkeys are visualization and platform independent way of setting actions 
-    to widgets. Some platforms  might omit the visualization part and map
-    hardware keys directly to actions. Softkeys are needed by users
-    who want to take full advantage of hardware keys and toolbars 
-    in underlying platform. 
 
+    Softkeys API is a platform independent way of mapping actions to (hardware)keys 
+    and toolbars provided by the underlying platform.
+    
     There are three major use cases supported. First one is a mobile device 
     with keypad navigation and no touch ui. Second use case is a mobile
     device with touch ui. Third use case is desktop. For now the softkey API is 
     only implemented for Series60.
-
-    The most common use case for mobile platforms is to map a menu to 
-    left softkey. Another very common use case is to have buttons from dialog
-    such as ok/cancel mapped to softkeys which then can be mapped to hardware
-    keys. 
     
-    Softkeys API allows user to set any amount of softkeys. Focused widget
-    will automatically handle setting the softkeys. Though one should
-    be aware that there might be restrictions to amount of softkeys that can 
-    be used by the device.
+    QActions are set to widget(s) via softkey API. Actions in focused widget are 
+    mapped to native toolbar or hardware keys. Even though the API allows to set
+    any amount of widgets there might be physical restrictions to amount of 
+    softkeys that can be used by the device and this shou
 
     \o Series60: For series60 menu button is automatically mapped to left
     soft key if there is QMainWindow with QMenuBar in widgets parent hierarchy.
