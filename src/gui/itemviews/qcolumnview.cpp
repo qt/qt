@@ -1116,7 +1116,7 @@ void QColumnViewDelegate::paint(QPainter *painter,
     // Draw >
     if (index.model()->hasChildren(index)) {
         const QWidget *view = opt.widget;
-        QStyle *style = view ? view->style() : qApp->style();
+        QStyle *style = view ? view->style() : QApplication::style();
         style->drawPrimitive(QStyle::PE_IndicatorColumnViewArrow, &opt, painter, view);
     }
 }

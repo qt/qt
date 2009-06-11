@@ -643,7 +643,7 @@ void QProgressDialog::setValue(int progress)
 
     if (d->shown_once) {
         if (isModal())
-            qApp->processEvents();
+            QApplication::processEvents();
     } else {
         if (progress == 0) {
             d->starttime.start();

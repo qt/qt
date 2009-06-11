@@ -4419,7 +4419,7 @@ QIcon QCleanlooksStyle::standardIconImplementation(StandardPixmap standardIcon,
 {
 #ifdef Q_WS_X11
     Q_D(const QCleanlooksStyle);
-    if (!qApp->desktopSettingsAware())
+    if (!QApplication::desktopSettingsAware())
         return QWindowsStyle::standardIconImplementation(standardIcon, option, widget);
     QIcon icon;
     QPixmap pixmap;
@@ -4588,7 +4588,7 @@ QPixmap QCleanlooksStyle::standardPixmap(StandardPixmap standardPixmap, const QS
 #ifdef Q_WS_X11
     Q_D(const QCleanlooksStyle);
     QPixmap pixmap;
-    if (!qApp->desktopSettingsAware())
+    if (!QApplication::desktopSettingsAware())
         return QWindowsStyle::standardPixmap(standardPixmap, opt, widget);
     d->lookupIconTheme();
 #ifndef QT_NO_IMAGEFORMAT_XPM

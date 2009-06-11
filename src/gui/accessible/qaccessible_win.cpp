@@ -270,9 +270,9 @@ void QAccessible::updateAccessibility(QObject *o, int who, Event reason)
     if (!w) {
         if (reason != QAccessible::ContextHelpStart &&
              reason != QAccessible::ContextHelpEnd)
-            w = qApp->focusWidget();
+            w = QApplication::focusWidget();
         if (!w) {
-            w = qApp->activeWindow();
+            w = QApplication::activeWindow();
 
             if (!w)
                 return;

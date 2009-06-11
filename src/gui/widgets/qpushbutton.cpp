@@ -589,7 +589,7 @@ void QPushButtonPrivate::_q_popupPressed()
     int x = globalPos.x();
     int y = globalPos.y();
     if (horizontal) {
-        if (globalPos.y() + rect.height() + menuSize.height() <= qApp->desktop()->height()) {
+        if (globalPos.y() + rect.height() + menuSize.height() <= QApplication::desktop()->height()) {
             y += rect.height();
         } else {
             y -= menuSize.height();
@@ -597,7 +597,7 @@ void QPushButtonPrivate::_q_popupPressed()
         if (q->layoutDirection() == Qt::RightToLeft)
             x += rect.width() - menuSize.width();
     } else {
-        if (globalPos.x() + rect.width() + menu->sizeHint().width() <= qApp->desktop()->width())
+        if (globalPos.x() + rect.width() + menu->sizeHint().width() <= QApplication::desktop()->width())
             x += rect.width();
         else
             x -= menuSize.width();

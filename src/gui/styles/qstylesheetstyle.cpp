@@ -867,7 +867,7 @@ static QStyle::StandardPixmap subControlIcon(int pe)
 QRenderRule::QRenderRule(const QVector<Declaration> &declarations, const QWidget *widget)
 : features(0), hasFont(false), pal(0), b(0), bg(0), bd(0), ou(0), geo(0), p(0), img(0), clipset(0)
 {
-    QPalette palette = qApp->palette(); // ###: ideally widget's palette
+    QPalette palette = QApplication::palette(); // ###: ideally widget's palette
     ValueExtractor v(declarations, palette);
     features = v.extractStyleFeatures();
 
@@ -2584,7 +2584,7 @@ static void updateWidgets(const QList<const QWidget *>& widgets)
             continue;
         widget->style()->polish(widget);
         QEvent event(QEvent::StyleChange);
-        qApp->sendEvent(widget, &event);
+        QApplication::sendEvent(widget, &event);
         widget->update();
         widget->updateGeometry();
     }
@@ -2630,9 +2630,9 @@ QStyle *QStyleSheetStyle::baseStyle() const
 {
     if (base)
         return base;
-    if (QStyleSheetStyle *me = qobject_cast<QStyleSheetStyle *>(qApp->style()))
+    if (QStyleSheetStyle *me = qobject_cast<QStyleSheetStyle *>(QApplication::style()))
         return me->base;
-    return qApp->style();
+    return QApplication::style();
 }
 
 void QStyleSheetStyle::widgetDestroyed(QObject *o)

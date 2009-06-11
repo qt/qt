@@ -1181,7 +1181,7 @@ bool QToolBar::event(QEvent *event)
             if (!d->layout->expanded)
                 break;
 
-            QWidget *w = qApp->activePopupWidget();
+            QWidget *w = QApplication::activePopupWidget();
             if (waitForPopup(this, w)) {
                 d->waitForPopupTimer->start();
                 break;
@@ -1201,7 +1201,7 @@ void QToolBarPrivate::_q_waitForPopup()
 {
     Q_Q(QToolBar);
 
-    QWidget *w = qApp->activePopupWidget();
+    QWidget *w = QApplication::activePopupWidget();
     if (!waitForPopup(q, w)) {
         waitForPopupTimer->stop();
         if (!q->underMouse())

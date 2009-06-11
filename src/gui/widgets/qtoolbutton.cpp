@@ -895,7 +895,7 @@ void QToolButtonPrivate::popupTimerDone()
         horizontal = false;
 #endif
     QPoint p;
-    QRect screen = qApp->desktop()->availableGeometry(q);
+    QRect screen = QApplication::desktop()->availableGeometry(q);
     QSize sh = ((QToolButton*)(QMenu*)actualMenu)->receivers(SIGNAL(aboutToShow()))? QSize() : actualMenu->sizeHint();
     QRect rect = q->rect();
     if (horizontal) {
