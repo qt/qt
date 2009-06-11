@@ -81,12 +81,17 @@ public:
     Q_DECLARE_FLAGS(FormattingOptions, FormattingOption)
 
     QUrl();
+#ifdef Q_EXPLICIT_URL_QSTRING_CONVERSION
+    explicit
+#endif
     QUrl(const QString &url);
     QUrl(const QString &url, ParsingMode mode);
     // ### Qt 5: merge the two constructors, with mode = TolerantMode
     QUrl(const QUrl &copy);
     QUrl &operator =(const QUrl &copy);
+#ifndef Q_EXPLICIT_URL_QSTRING_CONVERSION
     QUrl &operator =(const QString &url);
+#endif
     ~QUrl();
 
     void setUrl(const QString &url);
@@ -235,7 +240,9 @@ public:
     {
         url = QString::fromLatin1(QUrl::toPercentEncoding(url).constData());
     }
+#ifndef Q_EXPLICIT_URL_QSTRING_CONVERSION
     inline QT3_SUPPORT operator QString() const { return toString(); }
+#endif
     inline QT3_SUPPORT bool cdUp()
     {
         *this = resolved(QUrl(QLatin1String("..")));
