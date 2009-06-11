@@ -281,14 +281,10 @@ bool QPainterPrivate::attachPainterPrivate(QPainter *q, QPaintDevice *pdev)
     q->d_ptr->state->wh = q->d_ptr->state->vh = widget->height();
 
     // Update matrix.
-    if (q->d_ptr->state->WxF) {
-        q->d_ptr->state->redirectionMatrix *= q->d_ptr->state->worldMatrix;
-        q->d_ptr->state->redirectionMatrix.translate(-offset.x(), -offset.y());
-        q->d_ptr->state->worldMatrix = QTransform();
-        q->d_ptr->state->WxF = false;
-    } else {
-        q->d_ptr->state->redirectionMatrix = QTransform::fromTranslate(-offset.x(), -offset.y());
-    }
+    if (q->d_ptr->state->WxF)
+        q->d_ptr->state->worldMatrix.translate(-offset.x(), -offset.y());
+    else
+        q->d_ptr->state->redirection_offset = offset;
     q->d_ptr->updateMatrix();
 
     QPaintEnginePrivate *enginePrivate = q->d_ptr->engine->d_func();
@@ -414,7 +410,7 @@ void QPainterPrivate::draw_helper(const QPainterPath &originalPath, DrawOperatio
             bool old_txinv = txinv;
             QTransform old_invMatrix = invMatrix;
             txinv = true;
-            invMatrix = state->redirectionMatrix;
+            invMatrix = QTransform().translate(-state->redirection_offset.x(), -state->redirection_offset.y());
             QPainterPath clipPath = q->clipPath();
             QRectF r = clipPath.boundingRect().intersected(absPathRect);
             absPathRect = r.toAlignedRect();
@@ -638,7 +634,20 @@ void QPainterPrivate::updateMatrix()
         state->matrix *= viewTransform();
 
     txinv = false;                                // no inverted matrix
-    state->matrix *= state->redirectionMatrix;
+    if (!state->redirection_offset.isNull()) {
+        // We want to translate in dev space so we do the adding of the redirection
+        // offset manually.
+        if (state->matrix.isAffine()) {
+            state->matrix = QTransform(state->matrix.m11(), state->matrix.m12(),
+                                       state->matrix.m21(), state->matrix.m22(),
+                                       state->matrix.dx()-state->redirection_offset.x(),
+                                       state->matrix.dy()-state->redirection_offset.y());
+        } else {
+            QTransform temp;
+            temp.translate(-state->redirection_offset.x(), -state->redirection_offset.y());
+            state->matrix *= temp;
+        }
+    }
     if (extended)
         extended->transformChanged();
     else
@@ -1563,8 +1572,10 @@ void QPainter::restore()
         // replay the list of clip states,
         for (int i=0; i<d->state->clipInfo.size(); ++i) {
             const QPainterClipInfo &info = d->state->clipInfo.at(i);
-            tmp->matrix = info.matrix;
-            tmp->matrix *= d->state->redirectionMatrix;
+            tmp->matrix.setMatrix(info.matrix.m11(), info.matrix.m12(), info.matrix.m13(),
+                                  info.matrix.m21(), info.matrix.m22(), info.matrix.m23(),
+                                  info.matrix.dx() - d->state->redirection_offset.x(),
+                                  info.matrix.dy() - d->state->redirection_offset.y(), info.matrix.m33());
             tmp->clipOperation = info.operation;
             if (info.clipType == QPainterClipInfo::RectClip) {
                 tmp->dirtyFlags = QPaintEngine::DirtyClipRegion | QPaintEngine::DirtyTransform;
@@ -1678,7 +1689,7 @@ bool QPainter::begin(QPaintDevice *pd)
     d->state->painter = this;
     d->states.push_back(d->state);
 
-    d->state->redirectionMatrix.translate(-redirectionOffset.x(), -redirectionOffset.y());
+    d->state->redirection_offset = redirectionOffset;
     d->state->brushOrigin = QPointF();
 
     if (!d->engine) {
@@ -1712,8 +1723,7 @@ bool QPainter::begin(QPaintDevice *pd)
             // Adjust offset for alien widgets painting outside the paint event.
             if (!inPaintEvent && paintOutsidePaintEvent && !widget->internalWinId()
                 && widget->testAttribute(Qt::WA_WState_Created)) {
-                const QPoint offset = widget->mapTo(widget->nativeParentWidget(), QPoint());
-                d->state->redirectionMatrix.translate(offset.x(), offset.y());
+                d->state->redirection_offset -= widget->mapTo(widget->nativeParentWidget(), QPoint());
             }
             break;
         }
@@ -1795,12 +1805,11 @@ bool QPainter::begin(QPaintDevice *pd)
         d->state->wh = d->state->vh = pd->metric(QPaintDevice::PdmHeight);
     }
 
-    const QPoint coordinateOffset = d->engine->coordinateOffset();
-    d->state->redirectionMatrix.translate(-coordinateOffset.x(), -coordinateOffset.y());
+    d->state->redirection_offset += d->engine->coordinateOffset();
 
     Q_ASSERT(d->engine->isActive());
 
-    if (!d->state->redirectionMatrix.isIdentity())
+    if (!d->state->redirection_offset.isNull())
         d->updateMatrix();
 
     Q_ASSERT(d->engine->isActive());
@@ -6073,22 +6082,22 @@ void QPainter::drawTextItem(const QPointF &p, const QTextItem &_ti)
         const QTransform &m = d->state->matrix;
         if (d->state->matrix.type() < QTransform::TxShear) {
             bool isPlain90DegreeRotation =
-                (qFuzzyIsNull(m.m11())
-                 && qFuzzyIsNull(m.m12() - qreal(1))
-                 && qFuzzyIsNull(m.m21() + qreal(1))
-                 && qFuzzyIsNull(m.m22())
+                (qFuzzyCompare(m.m11() + 1, qreal(1))
+                 && qFuzzyCompare(m.m12(), qreal(1))
+                 && qFuzzyCompare(m.m21(), qreal(-1))
+                 && qFuzzyCompare(m.m22() + 1, qreal(1))
                     )
                 ||
-                (qFuzzyIsNull(m.m11() + qreal(1))
-                 && qFuzzyIsNull(m.m12())
-                 && qFuzzyIsNull(m.m21())
-                 && qFuzzyIsNull(m.m22() + qreal(1))
+                (qFuzzyCompare(m.m11(), qreal(-1))
+                 && qFuzzyCompare(m.m12() + 1, qreal(1))
+                 && qFuzzyCompare(m.m21() + 1, qreal(1))
+                 && qFuzzyCompare(m.m22(), qreal(-1))
                     )
                 ||
-                (qFuzzyIsNull(m.m11())
-                 && qFuzzyIsNull(m.m12() + qreal(1))
-                 && qFuzzyIsNull(m.m21() - qreal(1))
-                 && qFuzzyIsNull(m.m22())
+                (qFuzzyCompare(m.m11() + 1, qreal(1))
+                 && qFuzzyCompare(m.m12(), qreal(-1))
+                 && qFuzzyCompare(m.m21(), qreal(1))
+                 && qFuzzyCompare(m.m22() + 1, qreal(1))
                     )
                 ;
             aa = !isPlain90DegreeRotation;
@@ -7695,7 +7704,7 @@ QPainterState::QPainterState(const QPainterState *s)
       clipRegion(s->clipRegion), clipPath(s->clipPath),
       clipOperation(s->clipOperation),
       renderHints(s->renderHints), clipInfo(s->clipInfo),
-      worldMatrix(s->worldMatrix), matrix(s->matrix), redirectionMatrix(s->redirectionMatrix),
+      worldMatrix(s->worldMatrix), matrix(s->matrix), redirection_offset(s->redirection_offset),
       wx(s->wx), wy(s->wy), ww(s->ww), wh(s->wh),
       vx(s->vx), vy(s->vy), vw(s->vw), vh(s->vh),
       opacity(s->opacity), WxF(s->WxF), VxF(s->VxF),
