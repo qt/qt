@@ -1,0 +1,101 @@
+Qt 4.5.2-tower
+---------------
+
+The Qt for S60 "Tower" release is the fifth pre-release from the Qt for
+S60 porting project. "Tower" is based on the Qt 4.5 codebase.
+
+Up to and including SHA: not yet started :D
+
+Lists just S60 fixes, for general 4.5.0 changes go to:
+
+  http://www.qtsoftware.com/developer/changes/changes-4.5.0
+
+Some of the changes listed in this file include issue tracking numbers
+corresponding to tasks in the Task Tracker:
+
+  http://qtsoftware.com/developer/task-tracker
+
+Each of these identifiers can be entered in the task tracker to obtain
+more information about a particular change. Sometimes the task is internal
+and cannot be viewed by the public, a lot of them are non-public for Qt for
+S60 at the moment.
+
+****************************************************************************
+*                          New features                                    *
+****************************************************************************
+
+New modules
+-----------
+
+- QtSql
+    * todo
+- QtWebkit
+    * todo
+- Phonon
+    * todo
+
+
+New classes
+------------
+
+- todo
+    * todo
+
+Ported classes
+--------------
+
+- todo
+    * todo
+
+Features
+--------
+
+- todo
+    * todo
+
+Optimizations
+-------------
+
+- todo
+    * todo
+
+****************************************************************************
+*                          Build issues                                    *
+****************************************************************************
+
+- todo
+
+****************************************************************************
+*                          Changes to existing classes                     *
+****************************************************************************
+
+- todo
+    * todo
+
+****************************************************************************
+*                          Examples and demos                              *
+****************************************************************************
+
+- todo
+    * todo
+
+****************************************************************************
+*                          Tools                                           *
+****************************************************************************
+
+- todo
+    * todo
+
+****************************************************************************
+*                          Plugins                                         *
+****************************************************************************
+
+- todo
+    * todo
+
+****************************************************************************
+*                   Important Behavior Changes                             *
+****************************************************************************
+
+- todo
+    * todo
