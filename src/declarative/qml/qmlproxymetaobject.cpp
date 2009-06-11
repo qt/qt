@@ -50,7 +50,7 @@ QmlProxyMetaObject::QmlProxyMetaObject(QObject *obj, QList<ProxyData> *mList)
     qWarning() << "QmlProxyMetaObject" << obj->metaObject()->className();
 #endif
 
-    *static_cast<QMetaObject *>(this) = *metaObjects->last().metaObject;
+    *static_cast<QMetaObject *>(this) = *metaObjects->first().metaObject;
 
     QObjectPrivate *op = QObjectPrivate::get(obj);
     if (op->metaObject)
