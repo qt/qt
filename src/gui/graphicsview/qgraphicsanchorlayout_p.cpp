@@ -282,20 +282,10 @@ void QGraphicsAnchorLayoutPrivate::simplifyGraph(QGraphicsAnchorLayoutPrivate::O
             for (i = 1; i <= candidates.count() + 1; ++i) {
                 AnchorVertex *v1 = (i <= candidates.count()) ? candidates.at(i - 1) : afterSequence;
                 AnchorData *data = g.edgeData(prev, v1);
-                bool shouldSimplify = false;
-                if (data) {
-                    if (!forwardSet) {
-                        forward = (prev == data->origin ? true : false);
-                        forwardSet = true;
-                    } else if ((forward != (prev == data->origin))) {
-                        shouldSimplify = true;
-                    }
-                } else {
-                    shouldSimplify = true;
-                    forwardSet = false;
-                }
-
-                if (shouldSimplify) {
+                Q_ASSERT(data);
+                if (i == 1) {
+                    forward = (prev == data->origin ? true : false);
+                } else if ((forward != (prev == data->origin))) {
                     intervalTo = i - 1;
                     if (intervalTo - intervalFrom >= 2) {
                         // simplify in the range [intervalFrom, intervalTo]
