@@ -44,6 +44,7 @@
 #include <private/qmlboundsignal_p.h>
 #include <private/qmlstringconverters_p.h>
 #include "private/qmetaobjectbuilder_p.h"
+#include "private/qmldeclarativedata_p.h"
 #include <qml.h>
 #include <private/qmlcustomparser_p.h>
 #include <qperformancelog.h>
@@ -742,6 +743,18 @@ QObject *QmlVME::run(QmlContext *ctxt, QmlCompiledComponent *comp, int start, in
         case QmlInstruction::PopQList:
             {
                 qliststack.pop();
+            }
+            break;
+
+        case QmlInstruction::Defer:
+            {
+                QObject *target = stack.top();
+                QmlInstanceDeclarativeData *data = 
+                    QmlInstanceDeclarativeData::get(target, true);
+                comp->addref();
+                data->deferredComponent = comp;
+                data->deferredIdx = ii;
+                ii += instr.defer.deferCount;
             }
             break;
 

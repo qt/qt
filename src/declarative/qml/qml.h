@@ -90,6 +90,7 @@ QT_MODULE(Declarative)
 
 class QmlContext;
 class QmlEngine;
+Q_DECLARATIVE_EXPORT void qmlExecuteDeferred(QObject *);
 Q_DECLARATIVE_EXPORT QmlContext *qmlContext(const QObject *);
 Q_DECLARATIVE_EXPORT QmlEngine *qmlEngine(const QObject *);
 Q_DECLARATIVE_EXPORT QObject *qmlAttachedPropertiesObjectById(int, const QObject *);

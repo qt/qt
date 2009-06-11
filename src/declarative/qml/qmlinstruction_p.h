@@ -139,6 +139,11 @@ public:
         PopFetchedObject,
         PopQList,
 
+        // 
+        // Deferred creation
+        //
+        Defer,                    /* defer */
+
         //
         // Expression optimizations
         //
@@ -270,6 +275,9 @@ public:
             int property;
             int object;
         } assignStackObject;
+        struct {
+            int deferCount;
+        } defer;
     };
 
     void dump(QmlCompiledComponent *);

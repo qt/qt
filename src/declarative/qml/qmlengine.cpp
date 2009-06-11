@@ -706,6 +706,14 @@ void QmlEngine::setContextForObject(QObject *object, QmlContext *context)
     context->d_func()->contextObjects.append(object);
 }
 
+void qmlExecuteDeferred(QObject *object)
+{
+    QmlInstanceDeclarativeData *data = QmlInstanceDeclarativeData::get(object);
+
+    if (data) {
+    }
+}
+
 QmlContext *qmlContext(const QObject *obj)
 {
     return QmlEngine::contextForObject(obj);
@@ -719,36 +727,21 @@ QmlEngine *qmlEngine(const QObject *obj)
 
 QObject *qmlAttachedPropertiesObjectById(int id, const QObject *object)
 {
-    QObjectPrivate *priv = QObjectPrivate::get(const_cast<QObject *>(object));
+    QmlExtendedDeclarativeData *edata = 
+        QmlExtendedDeclarativeData::get(const_cast<QObject *>(object), true);
 
-
-    QmlSimpleDeclarativeData *data = static_cast<QmlSimpleDeclarativeData *>(priv->declarativeData);
-
-    QmlExtendedDeclarativeData *edata = (data && data->flags & QmlSimpleDeclarativeData::Extended)?static_cast<QmlExtendedDeclarativeData *>(data):0;
-
-    if (edata) {
-        QObject *rv = edata->attachedProperties.value(id);
-        if (rv)
-            return rv;
-    }
+    QObject *rv = edata->attachedProperties.value(id);
+    if (rv)
+        return rv;
 
     QmlAttachedPropertiesFunc pf = QmlMetaType::attachedPropertiesFuncById(id);
     if (!pf)
         return 0;
 
-    QObject *rv = pf(const_cast<QObject *>(object));
+    rv = pf(const_cast<QObject *>(object));
 
-    if (rv) {
-        if (!edata) {
-
-            edata = new QmlExtendedDeclarativeData;
-            if (data) edata->context = data->context;
-            priv->declarativeData = edata;
-
-        }
-
+    if (rv) 
         edata->attachedProperties.insert(id, rv);
-    }
 
     return rv;
 }
@@ -759,9 +752,11 @@ void QmlSimpleDeclarativeData::destroyed(QObject *object)
         context->d_func()->contextObjects.removeAll(object);
 }
 
-void QmlExtendedDeclarativeData::destroyed(QObject *object)
+void QmlInstanceDeclarativeData::destroyed(QObject *object)
 {
     QmlSimpleDeclarativeData::destroyed(object);
+    if (deferredComponent)
+        deferredComponent->release();
     delete this;
 }
 

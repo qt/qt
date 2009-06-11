@@ -621,13 +621,19 @@ bool QmlCompiler::compileObject(Object *obj, const BindingContext &ctxt)
                           output->types.at(obj->type).type->customParser() != 0;
     QList<QmlCustomParserProperty> customProps;
 
+    QStringList deferred = deferredProperties(obj);
+    QList<Property *> deferredProps;
+
     // Compile all explicit properties specified
     foreach(Property *prop, obj->properties) {
 
         if (isCustomParser) {
             // Custom parser types don't support signal properties
             if (testProperty(prop, obj)) {
-                COMPILE_CHECK(compileProperty(prop, obj, objCtxt));
+                if (deferred.contains(prop->name))
+                    deferredProps << prop;
+                else 
+                    COMPILE_CHECK(compileProperty(prop, obj, objCtxt));
             } else {
                 customProps << QmlCustomParserNodePrivate::fromProperty(prop);
             }
@@ -635,7 +641,10 @@ bool QmlCompiler::compileObject(Object *obj, const BindingContext &ctxt)
             if (isSignalPropertyName(prop->name))  {
                 COMPILE_CHECK(compileSignal(prop,obj));
             } else {
-                COMPILE_CHECK(compileProperty(prop, obj, objCtxt));
+                if (deferred.contains(prop->name))
+                    deferredProps << prop;
+                else 
+                    COMPILE_CHECK(compileProperty(prop, obj, objCtxt));
             }
         }
 
@@ -647,12 +656,20 @@ bool QmlCompiler::compileObject(Object *obj, const BindingContext &ctxt)
 
         if (isCustomParser) {
             if (testProperty(prop, obj)) {
-                COMPILE_CHECK(compileProperty(prop, obj, objCtxt));
+                QMetaProperty p = deferred.isEmpty()?QMetaProperty():QmlMetaType::defaultProperty(obj->metaObject());
+                if (deferred.contains(p.name()))
+                    deferredProps << prop;
+                else
+                    COMPILE_CHECK(compileProperty(prop, obj, objCtxt));
             } else {
                 customProps << QmlCustomParserNodePrivate::fromProperty(prop);
             }
         } else {
-            COMPILE_CHECK(compileProperty(prop, obj, objCtxt));
+            QMetaProperty p = deferred.isEmpty()?QMetaProperty():QmlMetaType::defaultProperty(obj->metaObject());
+            if (deferred.contains(p.name()))
+                deferredProps << prop;
+            else
+                COMPILE_CHECK(compileProperty(prop, obj, objCtxt));
         }
 
     }
@@ -668,6 +685,22 @@ bool QmlCompiler::compileObject(Object *obj, const BindingContext &ctxt)
         if(!customData.isEmpty())
             output->bytecode[createInstrIdx].create.data = 
                 output->indexForByteArray(customData);
+    }
+
+    // Build the deferred block (### Need to check for presence of "id")
+    if (!deferredProps.isEmpty()) {
+        QmlInstruction defer;
+        defer.type = QmlInstruction::Defer;
+        defer.line = 0;
+        int deferIdx = output->bytecode.count();
+        output->bytecode << defer;
+
+        foreach (Property *prop, deferredProps) {
+            COMPILE_CHECK(compileProperty(prop, obj, objCtxt));
+        }
+
+        output->bytecode[deferIdx].defer.deferCount = 
+            output->bytecode.count() - deferIdx - 1;
     }
 
     // If the type support the QmlParserStatusInterface we need to invoke
@@ -1632,6 +1665,19 @@ bool QmlCompiler::canConvert(int convertType, QmlParser::Object *object)
         objectMo = objectMo->superClass();
     }
     return false;
+}
+
+QStringList QmlCompiler::deferredProperties(QmlParser::Object *obj)
+{
+    const QMetaObject *mo = obj->metatype;
+
+    int idx = mo->indexOfClassInfo("DeferredPropertyNames");
+    if (idx == -1)
+        return QStringList();
+
+    QMetaClassInfo classInfo = mo->classInfo(idx);
+    QStringList rv = QString(QLatin1String(classInfo.value())).split(',');
+    return rv;
 }
 
 QmlCompiledData::QmlCompiledData()
