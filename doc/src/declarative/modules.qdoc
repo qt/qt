@@ -20,3 +20,103 @@ the component issuing the import.
 
 The import statement cannot be used by remote content.
 */
+
+/*
+
+Ideas for full module support....
+
+
+* Modularity within applications
+
+This is the currently-supported mechanism.
+
+By using the "import" statement, a subdirectory of types can be added to the
+empty namespace. Alternatively, a type in a subdirectory can be referenced
+explicitly.
+
+So, given these files:
+
+    ./SubModule1/Type1.qml
+    ./SubModule2/Type1.qml
+
+This is valid QML:
+
+    import "SubModule1"
+    Type1 { ... }
+    SubModule2.Type1 { ... }
+
+
+* System-installed modules (dependencies)
+
+To use system-installed modules, the dependency must be explicitly stated
+using the "require" statement. Types in required modules must still be
+explicitly qualified. Dependencies cannot be added to the empty namespace.
+
+    QMLPATH=/opt/Nokia/qml:/usr/share/lib/qml
+    /opt/Nokia/qml/Module1/Type1.qml
+    /usr/share/lib/qml/Module1/Type1.qml
+
+    require "Module1"
+    Module1.Type1 { ... }
+
+
+* Grouping of components within application modules
+
+Sub-sub directories allow further grouping of types.
+
+    ./SubModule1/Group1/*.qml
+    ./SubModule1/Group2/*.qml
+
+    SubModule1.Group1.Type1 { ... }
+    SubModule1.Group1.Type2 { ... }
+    SubModule1.Group2.Type1 { ... }
+    SubModule1.Group2.Type2 { ... }
+
+    import "SubModule1/Group1"
+    Type1 { ... }
+
+    import "SubModule1"
+    Group1.Type1 { ... }
+
+
+* Grouping of components within system-installed modules
+
+System-installed types may also be grouped into types. The hierarchy is a
+global namespace, so such grouping is recommended to reduce clashes.
+
+    /opt/Nokia/qml/Module1/Group1/*.qml
+    /opt/Nokia/qml/Module1/Group2/*.qml
+
+    require "Module1"
+    Module1.Group1.Type1 { ... }
+    Module1.Group1.Type2 { ... }
+    Module1.Group2.Type1 { ... }
+    Module1.Group2.Type2 { ... }
+
+    require "Module1/Group1"
+    Group1.Type1 { ... }
+
+    // Alternative syntax
+    /opt/qml/com/nokia/qml/Module1/Group1/*.qml
+    require "com.nokia.qml.Module1.Group1"
+    Group1.Type1 { ... }
+
+
+* Private sub-components
+
+Directories begining with _ cannot be referenced except by types in the
+directory immediately containing it.
+
+    /opt/Nokia/qml/Module1/_private/Type1.qml
+    ./SubModule1/_private/Type1.qml
+
+    SubModule1._private.Type1 { ... } // Not allowed
+    import "SubModule1._private" // Not allowed
+    require "SubModule1._private" // Not allowed
+    require "SubModule1"
+    Module1._private.Type1 { ... } // Not allowed
+
+    import "_private" // allowed
+    Type1 { ... }
+
+*/

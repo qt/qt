@@ -102,7 +102,7 @@ void QFxBlendedImage::setPrimaryUrl(const QUrl &url)
         return;
     if (!primUrl.isEmpty())
         QFxPixmap::cancelGet(primUrl,this);
-    Q_ASSERT(!primUrl.isRelative());
+    Q_ASSERT(!url.isRelative());
     primUrl = url;
     if (!primUrl.isEmpty())
         QFxPixmap::get(qmlEngine(this), primUrl,this,SLOT(primaryLoaded()));

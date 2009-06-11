@@ -162,6 +162,9 @@ public:
         int method;
         uint connectionType : 3; // 0 == auto, 1 == direct, 2 == queued, 4 == blocking
         QBasicAtomicPointer<int> argumentTypes;
+        //senders linked list
+        Connection *next;
+        Connection **prev;
         ~Connection();
     };
     typedef QList<Connection *> ConnectionList;
@@ -170,7 +173,7 @@ public:
     void addConnection(int signal, Connection *c);
     void cleanConnectionLists();
 
-    ConnectionList senders;
+    Connection *senders; //linked list;
 
     static Sender *setCurrentSender(QObject *receiver,
                                     Sender *sender);

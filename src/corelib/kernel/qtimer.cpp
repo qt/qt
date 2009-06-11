@@ -251,7 +251,7 @@ void QTimer::stop()
 
 
 /*!
-    \reimp
+  \reimp
 */
 void QTimer::timerEvent(QTimerEvent *e)
 {

@@ -207,6 +207,7 @@ public:
         Kind_UiObjectDefinition,
         Kind_UiObjectInitializer,
         Kind_UiObjectMemberList,
+        Kind_UiArrayMemberList,
         Kind_UiProgram,
         Kind_UiPublicMember,
         Kind_UiQualifiedId,
@@ -2301,6 +2302,38 @@ public:
     UiObjectMember *member;
 };
 
+class UiArrayMemberList: public Node
+{
+public:
+    JAVASCRIPT_DECLARE_AST_NODE(UiArrayMemberList)
+
+    UiArrayMemberList(UiObjectMember *member)
+        : next(this), member(member)
+    { kind = K; }
+
+    UiArrayMemberList(UiArrayMemberList *previous, UiObjectMember *member)
+        : member(member)
+    {
+        kind = K;
+        next = previous->next;
+        previous->next = this;
+    }
+
+    virtual void accept0(Visitor *visitor);
+
+    UiArrayMemberList *finish()
+    {
+        UiArrayMemberList *head = next;
+        next = 0;
+        return head;
+    }
+
+// attributes
+    UiArrayMemberList *next;
+    UiObjectMember *member;
+    SourceLocation commaToken;
+};
+
 class UiObjectInitializer: public Node
 {
 public:
@@ -2481,7 +2514,7 @@ public:
     JAVASCRIPT_DECLARE_AST_NODE(UiArrayBinding)
 
     UiArrayBinding(UiQualifiedId *qualifiedId,
-                   UiObjectMemberList *members)
+                   UiArrayMemberList *members)
         : qualifiedId(qualifiedId),
           members(members)
     { kind = K; }
@@ -2496,7 +2529,7 @@ public:
 
 // attributes
     UiQualifiedId *qualifiedId;
-    UiObjectMemberList *members;
+    UiArrayMemberList *members;
     SourceLocation colonToken;
     SourceLocation lbracketToken;
     SourceLocation rbracketToken;
