@@ -3,6 +3,15 @@
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)      
 {
+    central = new QWidget(this);
+    setCentralWidget(central);
+    infoLabel = new QLabel(tr("Funky stuff in menu!"));
+
+    layout = new QVBoxLayout;
+    layout->addWidget(infoLabel);
+    central->setLayout(layout);
+    central->setFocusPolicy(Qt::TabFocus);
+    
     fileMenu = menuBar()->addMenu(tr("&File"));
     openDialogAct = new QAction(tr("&Open Dialog"), this);
     addSoftKeysAct = new QAction(tr("&Add Softkeys"), this);
@@ -13,12 +22,6 @@ MainWindow::MainWindow(QWidget *parent)
     connect(openDialogAct, SIGNAL(triggered()), this, SLOT(openDialog()));    
     connect(addSoftKeysAct, SIGNAL(triggered()), this, SLOT(addSoftKeys()));    
     connect(clearSoftKeysAct, SIGNAL(triggered()), this, SLOT(clearSoftKeys()));    
-    QWidget *central = new QWidget(this);
-    central->setLayout(new QVBoxLayout);
-//    central->setFocus();
-    setCentralWidget(central);
-    QPushButton button1;
-//    QAction* menuAction = 
 }
 
 MainWindow::~MainWindow()
@@ -43,19 +46,24 @@ void MainWindow::addSoftKeys()
     QList<QAction*> softkeys;
     softkeys.append(ok);
     softkeys.append(cancel);
-    setSoftKeys(softkeys);
+    central->setSoftKeys(softkeys);
+    central->setFocus();
     
 }
 
 void MainWindow::clearSoftKeys()
 {
-    setSoftKey(0);
+    central->setSoftKey(0);
 }
 
 void MainWindow::okPressed()
 {
+    infoLabel->setText(tr("OK pressed"));
+    central->setSoftKey(0);
 }
 
 void MainWindow::cancelPressed()
 {
+    infoLabel->setText(tr("Cancel pressed"));
+    central->setSoftKey(0);
 }
