@@ -53,6 +53,7 @@
 #include "qmetaobject.h"
 #include "qdebug.h"
 #include "qbuffer.h"
+#include "qdesktopwidget.h"
 
 #if !defined(QT_NO_STYLE_S60) || defined(QT_PLUGIN)
 
