@@ -440,9 +440,10 @@ void QToolBarAreaLayoutInfo::moveToolBar(QToolBar *toolbar, int pos)
 
                     //we check if the previous is near its size hint
                     //in which case we try to stick to it
-                    if (qAbs(pick(o, previous.sizeHint()) - (previous.size + extra)) < QApplication::startDragDistance()) {
-                        //we stick to the default space
-                        extra = 0;
+                    const int diff = pick(o, previous.sizeHint()) - (previous.size + extra);
+                    if (qAbs(diff) < QApplication::startDragDistance()) {
+                        //we stick to the default place and size
+                        extra += diff;
                     }
 
                     //update for the current item
