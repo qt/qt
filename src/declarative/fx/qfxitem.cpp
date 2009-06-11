@@ -1490,9 +1490,8 @@ void QFxItem::setRotation(qreal rotation)
     trans.rotate(d->_rotation, 0, 0, 1);
     trans.translate(-to.x(), -to.y());
 #else
-    QTransform trans;
-    QPointF to = transformOriginPoint();
-    trans.translate(to.x(), to.y());
+    QPointF to = d->transformOrigin();
+    QTransform trans = QTransform::fromTranslate(to.x(), to.y());
     trans.rotate(d->_rotation);
     trans.translate(-to.x(), -to.y());
 #endif
