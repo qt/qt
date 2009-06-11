@@ -46,12 +46,12 @@
 #include <QtCore/QString>
 
 #include "textwriter_p.h"
-#include "javascriptastvisitor_p.h"
+#include "qmljsastvisitor_p.h"
 
 QT_BEGIN_HEADER
 QT_BEGIN_NAMESPACE
 
-namespace JavaScript {
+namespace QmlJS {
 
 ////////////////////////////////////////////////////////////////////////////////
 // Replacement
@@ -143,7 +143,7 @@ private:
 	QList<Replacement> _replacementList;
 };
 
-} // end of namespace JavaScript
+} // end of namespace QmlJS
 
 QT_END_NAMESPACE
 QT_END_HEADER

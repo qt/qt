@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef JAVASCRIPTAST_FWD_P_H
-#define JAVASCRIPTAST_FWD_P_H
+#ifndef QMLJSAST_FWD_P_H
+#define QMLJSAST_FWD_P_H
 
 #include <QtCore/qglobal.h>
 
@@ -57,7 +57,7 @@
 
 QT_BEGIN_NAMESPACE
 
-namespace JavaScript { namespace AST {
+namespace QmlJS { namespace AST {
 
 class SourceLocation
 {

@@ -51,10 +51,10 @@
 // We mean it.
 //
 
-#ifndef JAVASCRIPTGRAMMAR_P_H
-#define JAVASCRIPTGRAMMAR_P_H
+#ifndef QMLJSGRAMMAR_P_H
+#define QMLJSGRAMMAR_P_H
 
-class JavaScriptGrammar
+class QmlJSGrammar
 {
 public:
   enum {
@@ -196,5 +196,5 @@ public:
 };
 
 
-#endif // JAVASCRIPTGRAMMAR_P_H
+#endif // QMLJSGRAMMAR_P_H
 

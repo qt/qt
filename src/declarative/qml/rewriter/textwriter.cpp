@@ -43,7 +43,7 @@
 
 QT_BEGIN_NAMESPACE
 
-using namespace JavaScript;
+using namespace QmlJS;
 
 TextWriter::TextWriter()
         :string(0), cursor(0)

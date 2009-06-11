@@ -39,15 +39,15 @@
 **
 ****************************************************************************/
 
-#include "javascriptast_p.h"
+#include "qmljsast_p.h"
 
 
 
-#include "javascriptastvisitor_p.h"
+#include "qmljsastvisitor_p.h"
 
 QT_BEGIN_NAMESPACE
 
-namespace JavaScript { namespace AST {
+namespace QmlJS { namespace AST {
 
 int NumericLiteral::suffixLength[] = {
     0, // noSuffix
@@ -955,7 +955,7 @@ void UiSourceElement::accept0(Visitor *visitor)
     visitor->endVisit(this);
 }
 
-} } // namespace JavaScript::AST
+} } // namespace QmlJS::AST
 
 QT_END_NAMESPACE
 

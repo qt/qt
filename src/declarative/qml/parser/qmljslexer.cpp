@@ -43,9 +43,9 @@
 #include "config.h"
 #endif
 
-#include "javascriptengine_p.h"
-#include "javascriptlexer_p.h"
-#include "javascriptgrammar_p.h"
+#include "qmljsengine_p.h"
+#include "qmljslexer_p.h"
+#include "qmljsgrammar_p.h"
 
 #include <ctype.h>
 #include <stdlib.h>
@@ -65,11 +65,11 @@ extern double qstrtod(const char *s00, char const **se, bool *ok);
     } \
     while (0)
 
-namespace JavaScript {
+namespace QmlJS {
 extern double integerFromString(const char *buf, int size, int radix);
 }
 
-using namespace JavaScript;
+using namespace QmlJS;
 
 Lexer::Lexer(Engine *eng)
     : driver(eng),
@@ -154,66 +154,66 @@ int Lexer::findReservedWord(const QChar *c, int size) const
     switch (size) {
     case 2: {
         if (c[0] == QLatin1Char('d') && c[1] == QLatin1Char('o'))
-            return JavaScriptGrammar::T_DO;
+            return QmlJSGrammar::T_DO;
         else if (c[0] == QLatin1Char('i') && c[1] == QLatin1Char('f'))
-            return JavaScriptGrammar::T_IF;
+            return QmlJSGrammar::T_IF;
         else if (c[0] == QLatin1Char('i') && c[1] == QLatin1Char('n'))
-            return JavaScriptGrammar::T_IN;
+            return QmlJSGrammar::T_IN;
     }   break;
 
     case 3: {
         if (c[0] == QLatin1Char('f') && c[1] == QLatin1Char('o') && c[2] == QLatin1Char('r'))
-            return JavaScriptGrammar::T_FOR;
+            return QmlJSGrammar::T_FOR;
         else if (c[0] == QLatin1Char('n') && c[1] == QLatin1Char('e') && c[2] == QLatin1Char('w'))
-            return JavaScriptGrammar::T_NEW;
+            return QmlJSGrammar::T_NEW;
         else if (c[0] == QLatin1Char('t') && c[1] == QLatin1Char('r') && c[2] == QLatin1Char('y'))
-            return JavaScriptGrammar::T_TRY;
+            return QmlJSGrammar::T_TRY;
         else if (c[0] == QLatin1Char('v') && c[1] == QLatin1Char('a') && c[2] == QLatin1Char('r'))
-            return JavaScriptGrammar::T_VAR;
+            return QmlJSGrammar::T_VAR;
         else if (check_reserved) {
             if (c[0] == QLatin1Char('i') && c[1] == QLatin1Char('n') && c[2] == QLatin1Char('t'))
-                return JavaScriptGrammar::T_RESERVED_WORD;
+                return QmlJSGrammar::T_RESERVED_WORD;
         }
     }   break;
 
     case 4: {
         if (c[0] == QLatin1Char('c') && c[1] == QLatin1Char('a')
                 && c[2] == QLatin1Char('s') && c[3] == QLatin1Char('e'))
-            return JavaScriptGrammar::T_CASE;
+            return QmlJSGrammar::T_CASE;
         else if (c[0] == QLatin1Char('e') && c[1] == QLatin1Char('l')
                 && c[2] == QLatin1Char('s') && c[3] == QLatin1Char('e'))
-            return JavaScriptGrammar::T_ELSE;
+            return QmlJSGrammar::T_ELSE;
         else if (c[0] == QLatin1Char('t') && c[1] == QLatin1Char('h')
                 && c[2] == QLatin1Char('i') && c[3] == QLatin1Char('s'))
-            return JavaScriptGrammar::T_THIS;
+            return QmlJSGrammar::T_THIS;
         else if (c[0] == QLatin1Char('v') && c[1] == QLatin1Char('o')
                 && c[2] == QLatin1Char('i') && c[3] == QLatin1Char('d'))
-            return JavaScriptGrammar::T_VOID;
+            return QmlJSGrammar::T_VOID;
         else if (c[0] == QLatin1Char('w') && c[1] == QLatin1Char('i')
                 && c[2] == QLatin1Char('t') && c[3] == QLatin1Char('h'))
-            return JavaScriptGrammar::T_WITH;
+            return QmlJSGrammar::T_WITH;
         else if (c[0] == QLatin1Char('t') && c[1] == QLatin1Char('r')
                 && c[2] == QLatin1Char('u') && c[3] == QLatin1Char('e'))
-            return JavaScriptGrammar::T_TRUE;
+            return QmlJSGrammar::T_TRUE;
         else if (c[0] == QLatin1Char('n') && c[1] == QLatin1Char('u')
                 && c[2] == QLatin1Char('l') && c[3] == QLatin1Char('l'))
-            return JavaScriptGrammar::T_NULL;
+            return QmlJSGrammar::T_NULL;
         else if (check_reserved) {
             if (c[0] == QLatin1Char('e') && c[1] == QLatin1Char('n')
                     && c[2] == QLatin1Char('u') && c[3] == QLatin1Char('m'))
-                return JavaScriptGrammar::T_RESERVED_WORD;
+                return QmlJSGrammar::T_RESERVED_WORD;
             else if (c[0] == QLatin1Char('b') && c[1] == QLatin1Char('y')
                     && c[2] == QLatin1Char('t') && c[3] == QLatin1Char('e'))
-                return JavaScriptGrammar::T_RESERVED_WORD;
+                return QmlJSGrammar::T_RESERVED_WORD;
             else if (c[0] == QLatin1Char('l') && c[1] == QLatin1Char('o')
                     && c[2] == QLatin1Char('n') && c[3] == QLatin1Char('g'))
-                return JavaScriptGrammar::T_RESERVED_WORD;
+                return QmlJSGrammar::T_RESERVED_WORD;
             else if (c[0] == QLatin1Char('c') && c[1] == QLatin1Char('h')
                     && c[2] == QLatin1Char('a') && c[3] == QLatin1Char('r'))
-                return JavaScriptGrammar::T_RESERVED_WORD;
+                return QmlJSGrammar::T_RESERVED_WORD;
             else if (c[0] == QLatin1Char('g') && c[1] == QLatin1Char('o')
                     && c[2] == QLatin1Char('t') && c[3] == QLatin1Char('o'))
-                return JavaScriptGrammar::T_RESERVED_WORD;
+                return QmlJSGrammar::T_RESERVED_WORD;
         }
     }   break;
 
@@ -221,48 +221,48 @@ int Lexer::findReservedWord(const QChar *c, int size) const
         if (c[0] == QLatin1Char('b') && c[1] == QLatin1Char('r')
                 && c[2] == QLatin1Char('e') && c[3] == QLatin1Char('a')
                 && c[4] == QLatin1Char('k'))
-            return JavaScriptGrammar::T_BREAK;
+            return QmlJSGrammar::T_BREAK;
         else if (c[0] == QLatin1Char('c') && c[1] == QLatin1Char('a')
                 && c[2] == QLatin1Char('t') && c[3] == QLatin1Char('c')
                 && c[4] == QLatin1Char('h'))
-            return JavaScriptGrammar::T_CATCH;
+            return QmlJSGrammar::T_CATCH;
         else if (c[0] == QLatin1Char('t') && c[1] == QLatin1Char('h')
                 && c[2] == QLatin1Char('r') && c[3] == QLatin1Char('o')
                 && c[4] == QLatin1Char('w'))
-            return JavaScriptGrammar::T_THROW;
+            return QmlJSGrammar::T_THROW;
         else if (c[0] == QLatin1Char('w') && c[1] == QLatin1Char('h')
                 && c[2] == QLatin1Char('i') && c[3] == QLatin1Char('l')
                 && c[4] == QLatin1Char('e'))
-            return JavaScriptGrammar::T_WHILE;
+            return QmlJSGrammar::T_WHILE;
         else if (c[0] == QLatin1Char('c') && c[1] == QLatin1Char('o')
                 && c[2] == QLatin1Char('n') && c[3] == QLatin1Char('s')
                 && c[4] == QLatin1Char('t'))
-            return JavaScriptGrammar::T_CONST;
+            return QmlJSGrammar::T_CONST;
         else if (c[0] == QLatin1Char('f') && c[1] == QLatin1Char('a')
                 && c[2] == QLatin1Char('l') && c[3] == QLatin1Char('s')
                 && c[4] == QLatin1Char('e'))
-            return JavaScriptGrammar::T_FALSE;
+            return QmlJSGrammar::T_FALSE;
         else if (check_reserved) {
             if (c[0] == QLatin1Char('s') && c[1] == QLatin1Char('h')
                     && c[2] == QLatin1Char('o') && c[3] == QLatin1Char('r')
                     && c[4] == QLatin1Char('t'))
-                return JavaScriptGrammar::T_RESERVED_WORD;
+                return QmlJSGrammar::T_RESERVED_WORD;
             else if (c[0] == QLatin1Char('s') && c[1] == QLatin1Char('u')
                     && c[2] == QLatin1Char('p') && c[3] == QLatin1Char('e')
                     && c[4] == QLatin1Char('r'))
-                return JavaScriptGrammar::T_RESERVED_WORD;
+                return QmlJSGrammar::T_RESERVED_WORD;
             else if (c[0] == QLatin1Char('f') && c[1] == QLatin1Char('i')
                     && c[2] == QLatin1Char('n') && c[3] == QLatin1Char('a')
                     && c[4] == QLatin1Char('l'))
-                return JavaScriptGrammar::T_RESERVED_WORD;
+                return QmlJSGrammar::T_RESERVED_WORD;
             else if (c[0] == QLatin1Char('c') && c[1] == QLatin1Char('l')
                     && c[2] == QLatin1Char('a') && c[3] == QLatin1Char('s')
                     && c[4] == QLatin1Char('s'))
-                return JavaScriptGrammar::T_RESERVED_WORD;
+                return QmlJSGrammar::T_RESERVED_WORD;
             else if (c[0] == QLatin1Char('f') && c[1] == QLatin1Char('l')
                     && c[2] == QLatin1Char('o') && c[3] == QLatin1Char('a')
                     && c[4] == QLatin1Char('t'))
-                return JavaScriptGrammar::T_RESERVED_WORD;
+                return QmlJSGrammar::T_RESERVED_WORD;
         }
     }   break;
 
@@ -270,56 +270,56 @@ int Lexer::findReservedWord(const QChar *c, int size) const
         if (c[0] == QLatin1Char('d') && c[1] == QLatin1Char('e')
                 && c[2] == QLatin1Char('l') && c[3] == QLatin1Char('e')
                 && c[4] == QLatin1Char('t') && c[5] == QLatin1Char('e'))
-            return JavaScriptGrammar::T_DELETE;
+            return QmlJSGrammar::T_DELETE;
         else if (c[0] == QLatin1Char('r') && c[1] == QLatin1Char('e')
                 && c[2] == QLatin1Char('t') && c[3] == QLatin1Char('u')
                 && c[4] == QLatin1Char('r') && c[5] == QLatin1Char('n'))
-            return JavaScriptGrammar::T_RETURN;
+            return QmlJSGrammar::T_RETURN;
         else if (c[0] == QLatin1Char('s') && c[1] == QLatin1Char('w')
                 && c[2] == QLatin1Char('i') && c[3] == QLatin1Char('t')
                 && c[4] == QLatin1Char('c') && c[5] == QLatin1Char('h'))
-            return JavaScriptGrammar::T_SWITCH;
+            return QmlJSGrammar::T_SWITCH;
         else if (c[0] == QLatin1Char('t') && c[1] == QLatin1Char('y')
                 && c[2] == QLatin1Char('p') && c[3] == QLatin1Char('e')
                 && c[4] == QLatin1Char('o') && c[5] == QLatin1Char('f'))
-            return JavaScriptGrammar::T_TYPEOF;
+            return QmlJSGrammar::T_TYPEOF;
         else if (c[0] == QLatin1Char('i') && c[1] == QLatin1Char('m')
             && c[2] == QLatin1Char('p') && c[3] == QLatin1Char('o')
             && c[4] == QLatin1Char('r') && c[5] == QLatin1Char('t'))
-            return JavaScriptGrammar::T_IMPORT;
+            return QmlJSGrammar::T_IMPORT;
         else if (c[0] == QLatin1Char('s') && c[1] == QLatin1Char('i')
             && c[2] == QLatin1Char('g') && c[3] == QLatin1Char('n')
             && c[4] == QLatin1Char('a') && c[5] == QLatin1Char('l'))
-            return JavaScriptGrammar::T_SIGNAL;
+            return QmlJSGrammar::T_SIGNAL;
         else if (check_reserved) {
             if (c[0] == QLatin1Char('e') && c[1] == QLatin1Char('x')
                     && c[2] == QLatin1Char('p') && c[3] == QLatin1Char('o')
                     && c[4] == QLatin1Char('r') && c[5] == QLatin1Char('t'))
-                return JavaScriptGrammar::T_RESERVED_WORD;
+                return QmlJSGrammar::T_RESERVED_WORD;
             else if (c[0] == QLatin1Char('s') && c[1] == QLatin1Char('t')
                     && c[2] == QLatin1Char('a') && c[3] == QLatin1Char('t')
                     && c[4] == QLatin1Char('i') && c[5] == QLatin1Char('c'))
-                return JavaScriptGrammar::T_RESERVED_WORD;
+                return QmlJSGrammar::T_RESERVED_WORD;
             else if (c[0] == QLatin1Char('d') && c[1] == QLatin1Char('o')
                     && c[2] == QLatin1Char('u') && c[3] == QLatin1Char('b')
                     && c[4] == QLatin1Char('l') && c[5] == QLatin1Char('e'))
-                return JavaScriptGrammar::T_RESERVED_WORD;
+                return QmlJSGrammar::T_RESERVED_WORD;
             else if (c[0] == QLatin1Char('i') && c[1] == QLatin1Char('m')
                     && c[2] == QLatin1Char('p') && c[3] == QLatin1Char('o')
                     && c[4] == QLatin1Char('r') && c[5] == QLatin1Char('t'))
-                return JavaScriptGrammar::T_RESERVED_WORD;
+                return QmlJSGrammar::T_RESERVED_WORD;
             else if (c[0] == QLatin1Char('p') && c[1] == QLatin1Char('u')
                     && c[2] == QLatin1Char('b') && c[3] == QLatin1Char('l')
                     && c[4] == QLatin1Char('i') && c[5] == QLatin1Char('c'))
-                return JavaScriptGrammar::T_PUBLIC;
+                return QmlJSGrammar::T_PUBLIC;
             else if (c[0] == QLatin1Char('n') && c[1] == QLatin1Char('a')
                     && c[2] == QLatin1Char('t') && c[3] == QLatin1Char('i')
                     && c[4] == QLatin1Char('v') && c[5] == QLatin1Char('e'))
-                return JavaScriptGrammar::T_RESERVED_WORD;
+                return QmlJSGrammar::T_RESERVED_WORD;
             else if (c[0] == QLatin1Char('t') && c[1] == QLatin1Char('h')
                     && c[2] == QLatin1Char('r') && c[3] == QLatin1Char('o')
                     && c[4] == QLatin1Char('w') && c[5] == QLatin1Char('s'))
-                return JavaScriptGrammar::T_RESERVED_WORD;
+                return QmlJSGrammar::T_RESERVED_WORD;
         }
     }   break;
 
@@ -328,33 +328,33 @@ int Lexer::findReservedWord(const QChar *c, int size) const
                 && c[2] == QLatin1Char('f') && c[3] == QLatin1Char('a')
                 && c[4] == QLatin1Char('u') && c[5] == QLatin1Char('l')
                 && c[6] == QLatin1Char('t'))
-            return JavaScriptGrammar::T_DEFAULT;
+            return QmlJSGrammar::T_DEFAULT;
         else if (c[0] == QLatin1Char('f') && c[1] == QLatin1Char('i')
                 && c[2] == QLatin1Char('n') && c[3] == QLatin1Char('a')
                 && c[4] == QLatin1Char('l') && c[5] == QLatin1Char('l')
                 && c[6] == QLatin1Char('y'))
-            return JavaScriptGrammar::T_FINALLY;
+            return QmlJSGrammar::T_FINALLY;
         else if (check_reserved) {
             if (c[0] == QLatin1Char('b') && c[1] == QLatin1Char('o')
                     && c[2] == QLatin1Char('o') && c[3] == QLatin1Char('l')
                     && c[4] == QLatin1Char('e') && c[5] == QLatin1Char('a')
                     && c[6] == QLatin1Char('n'))
-                return JavaScriptGrammar::T_RESERVED_WORD;
+                return QmlJSGrammar::T_RESERVED_WORD;
             else if (c[0] == QLatin1Char('e') && c[1] == QLatin1Char('x')
                     && c[2] == QLatin1Char('t') && c[3] == QLatin1Char('e')
                     && c[4] == QLatin1Char('n') && c[5] == QLatin1Char('d')
                     && c[6] == QLatin1Char('s'))
-                return JavaScriptGrammar::T_RESERVED_WORD;
+                return QmlJSGrammar::T_RESERVED_WORD;
             else if (c[0] == QLatin1Char('p') && c[1] == QLatin1Char('a')
                     && c[2] == QLatin1Char('c') && c[3] == QLatin1Char('k')
                     && c[4] == QLatin1Char('a') && c[5] == QLatin1Char('g')
                     && c[6] == QLatin1Char('e'))
-                return JavaScriptGrammar::T_RESERVED_WORD;
+                return QmlJSGrammar::T_RESERVED_WORD;
             else if (c[0] == QLatin1Char('p') && c[1] == QLatin1Char('r')
                     && c[2] == QLatin1Char('i') && c[3] == QLatin1Char('v')
                     && c[4] == QLatin1Char('a') && c[5] == QLatin1Char('t')
                     && c[6] == QLatin1Char('e'))
-                return JavaScriptGrammar::T_RESERVED_WORD;
+                return QmlJSGrammar::T_RESERVED_WORD;
         }
     }   break;
 
@@ -363,33 +363,33 @@ int Lexer::findReservedWord(const QChar *c, int size) const
                 && c[2] == QLatin1Char('n') && c[3] == QLatin1Char('t')
                 && c[4] == QLatin1Char('i') && c[5] == QLatin1Char('n')
                 && c[6] == QLatin1Char('u') && c[7] == QLatin1Char('e'))
-            return JavaScriptGrammar::T_CONTINUE;
+            return QmlJSGrammar::T_CONTINUE;
         else if (c[0] == QLatin1Char('f') && c[1] == QLatin1Char('u')
                 && c[2] == QLatin1Char('n') && c[3] == QLatin1Char('c')
                 && c[4] == QLatin1Char('t') && c[5] == QLatin1Char('i')
                 && c[6] == QLatin1Char('o') && c[7] == QLatin1Char('n'))
-            return JavaScriptGrammar::T_FUNCTION;
+            return QmlJSGrammar::T_FUNCTION;
         else if (c[0] == QLatin1Char('d') && c[1] == QLatin1Char('e')
                 && c[2] == QLatin1Char('b') && c[3] == QLatin1Char('u')
                 && c[4] == QLatin1Char('g') && c[5] == QLatin1Char('g')
                 && c[6] == QLatin1Char('e') && c[7] == QLatin1Char('r'))
-            return JavaScriptGrammar::T_DEBUGGER;
+            return QmlJSGrammar::T_DEBUGGER;
         else if (c[0] == QLatin1Char('p') && c[1] == QLatin1Char('r')
                 && c[2] == QLatin1Char('o') && c[3] == QLatin1Char('p')
                 && c[4] == QLatin1Char('e') && c[5] == QLatin1Char('r')
                 && c[6] == QLatin1Char('t') && c[7] == QLatin1Char('y'))
-            return JavaScriptGrammar::T_PROPERTY;
+            return QmlJSGrammar::T_PROPERTY;
         else if (check_reserved) {
             if (c[0] == QLatin1Char('a') && c[1] == QLatin1Char('b')
                     && c[2] == QLatin1Char('s') && c[3] == QLatin1Char('t')
                     && c[4] == QLatin1Char('r') && c[5] == QLatin1Char('a')
                     && c[6] == QLatin1Char('c') && c[7] == QLatin1Char('t'))
-                return JavaScriptGrammar::T_RESERVED_WORD;
+                return QmlJSGrammar::T_RESERVED_WORD;
             else if (c[0] == QLatin1Char('v') && c[1] == QLatin1Char('o')
                     && c[2] == QLatin1Char('l') && c[3] == QLatin1Char('a')
                     && c[4] == QLatin1Char('t') && c[5] == QLatin1Char('i')
                     && c[6] == QLatin1Char('l') && c[7] == QLatin1Char('e'))
-                return JavaScriptGrammar::T_RESERVED_WORD;
+                return QmlJSGrammar::T_RESERVED_WORD;
         }
     }   break;
 
@@ -400,19 +400,19 @@ int Lexer::findReservedWord(const QChar *c, int size) const
                     && c[4] == QLatin1Char('r') && c[5] == QLatin1Char('f')
                     && c[6] == QLatin1Char('a') && c[7] == QLatin1Char('c')
                     && c[8] == QLatin1Char('e'))
-                return JavaScriptGrammar::T_RESERVED_WORD;
+                return QmlJSGrammar::T_RESERVED_WORD;
             else if (c[0] == QLatin1Char('t') && c[1] == QLatin1Char('r')
                     && c[2] == QLatin1Char('a') && c[3] == QLatin1Char('n')
                     && c[4] == QLatin1Char('s') && c[5] == QLatin1Char('i')
                     && c[6] == QLatin1Char('e') && c[7] == QLatin1Char('n')
                     && c[8] == QLatin1Char('t'))
-                return JavaScriptGrammar::T_RESERVED_WORD;
+                return QmlJSGrammar::T_RESERVED_WORD;
             else if (c[0] == QLatin1Char('p') && c[1] == QLatin1Char('r')
                     && c[2] == QLatin1Char('o') && c[3] == QLatin1Char('t')
                     && c[4] == QLatin1Char('e') && c[5] == QLatin1Char('c')
                     && c[6] == QLatin1Char('t') && c[7] == QLatin1Char('e')
                     && c[8] == QLatin1Char('d'))
-                return JavaScriptGrammar::T_RESERVED_WORD;
+                return QmlJSGrammar::T_RESERVED_WORD;
         }
     }   break;
 
@@ -422,14 +422,14 @@ int Lexer::findReservedWord(const QChar *c, int size) const
                 && c[4] == QLatin1Char('a') && c[5] == QLatin1Char('n')
                 && c[6] == QLatin1Char('c') && c[7] == QLatin1Char('e')
                 && c[8] == QLatin1Char('o') && c[9] == QLatin1Char('f'))
-            return JavaScriptGrammar::T_INSTANCEOF;
+            return QmlJSGrammar::T_INSTANCEOF;
         else if (check_reserved) {
             if (c[0] == QLatin1Char('i') && c[1] == QLatin1Char('m')
                     && c[2] == QLatin1Char('p') && c[3] == QLatin1Char('l')
                     && c[4] == QLatin1Char('e') && c[5] == QLatin1Char('m')
                     && c[6] == QLatin1Char('e') && c[7] == QLatin1Char('n')
                     && c[8] == QLatin1Char('t') && c[9] == QLatin1Char('s'))
-                return JavaScriptGrammar::T_RESERVED_WORD;
+                return QmlJSGrammar::T_RESERVED_WORD;
         }
     }   break;
 
@@ -441,7 +441,7 @@ int Lexer::findReservedWord(const QChar *c, int size) const
                     && c[6] == QLatin1Char('o') && c[7] == QLatin1Char('n')
                     && c[8] == QLatin1Char('i') && c[9] == QLatin1Char('z')
                     && c[10] == QLatin1Char('e') && c[11] == QLatin1Char('d'))
-                return JavaScriptGrammar::T_RESERVED_WORD;
+                return QmlJSGrammar::T_RESERVED_WORD;
         }
     }   break;
 
@@ -485,7 +485,7 @@ int Lexer::lex()
                 syncProhibitAutomaticSemicolon();
                 if (!terminator && !delimited && !prohibitAutomaticSemicolon) {
                     // automatic semicolon insertion if program incomplete
-                    token = JavaScriptGrammar::T_SEMICOLON;
+                    token = QmlJSGrammar::T_SEMICOLON;
                     stackToken = 0;
                     setDone(Other);
                 } else {
@@ -499,7 +499,7 @@ int Lexer::lex()
                 terminator = true;
                 syncProhibitAutomaticSemicolon();
                 if (restrKeyword) {
-                    token = JavaScriptGrammar::T_SEMICOLON;
+                    token = QmlJSGrammar::T_SEMICOLON;
                     setDone(Other);
                 }
             } else if (current == '"' || current == '\'') {
@@ -528,11 +528,11 @@ int Lexer::lex()
                 token = matchPunctuator(current, next1, next2, next3);
                 if (token != -1) {
                     if (terminator && !delimited && !prohibitAutomaticSemicolon
-                        && (token == JavaScriptGrammar::T_PLUS_PLUS
-                            || token == JavaScriptGrammar::T_MINUS_MINUS)) {
+                        && (token == QmlJSGrammar::T_PLUS_PLUS
+                            || token == QmlJSGrammar::T_MINUS_MINUS)) {
                         // automatic semicolon insertion
                         stackToken = token;
-                        token = JavaScriptGrammar::T_SEMICOLON;
+                        token = QmlJSGrammar::T_SEMICOLON;
                     }
                     setDone(Other);
                 }
@@ -636,7 +636,7 @@ int Lexer::lex()
                 terminator = true;
                 bol = true;
                 if (restrKeyword) {
-                    token = JavaScriptGrammar::T_SEMICOLON;
+                    token = QmlJSGrammar::T_SEMICOLON;
                     setDone(Other);
                 } else
                     state = Start;
@@ -840,11 +840,11 @@ int Lexer::lex()
     case IgnoreParentheses:
         break;
     case CountParentheses:
-        if (token == JavaScriptGrammar::T_RPAREN) {
+        if (token == QmlJSGrammar::T_RPAREN) {
             --parenthesesCount;
             if (parenthesesCount == 0)
                 parenthesesState = BalancedParentheses;
-        } else if (token == JavaScriptGrammar::T_LPAREN) {
+        } else if (token == QmlJSGrammar::T_LPAREN) {
             ++parenthesesCount;
         }
         break;
@@ -857,7 +857,7 @@ int Lexer::lex()
     case Eof:
         return 0;
     case Other:
-        if (token == JavaScriptGrammar::T_RBRACE || token == JavaScriptGrammar::T_SEMICOLON)
+        if (token == QmlJSGrammar::T_RBRACE || token == QmlJSGrammar::T_SEMICOLON)
             delimited = true;
         return token;
     case Identifier:
@@ -867,16 +867,16 @@ int Lexer::lex()
                 qsyylval.ustr = driver->intern(buffer16, pos16);
             else
                 qsyylval.ustr = 0;
-            return JavaScriptGrammar::T_IDENTIFIER;
+            return QmlJSGrammar::T_IDENTIFIER;
         }
-        if (token == JavaScriptGrammar::T_CONTINUE || token == JavaScriptGrammar::T_BREAK
-            || token == JavaScriptGrammar::T_RETURN || token == JavaScriptGrammar::T_THROW) {
+        if (token == QmlJSGrammar::T_CONTINUE || token == QmlJSGrammar::T_BREAK
+            || token == QmlJSGrammar::T_RETURN || token == QmlJSGrammar::T_THROW) {
             restrKeyword = true;
-        } else if (token == JavaScriptGrammar::T_IF || token == JavaScriptGrammar::T_FOR
-                   || token == JavaScriptGrammar::T_WHILE || token == JavaScriptGrammar::T_WITH) {
+        } else if (token == QmlJSGrammar::T_IF || token == QmlJSGrammar::T_FOR
+                   || token == QmlJSGrammar::T_WHILE || token == QmlJSGrammar::T_WITH) {
             parenthesesState = CountParentheses;
             parenthesesCount = 0;
-        } else if (token == JavaScriptGrammar::T_DO) {
+        } else if (token == QmlJSGrammar::T_DO) {
             parenthesesState = BalancedParentheses;
         }
         return token;
@@ -885,10 +885,10 @@ int Lexer::lex()
             qsyylval.ustr = driver->intern(buffer16, pos16);
         else
             qsyylval.ustr = 0;
-        return multiLineString?JavaScriptGrammar::T_MULTILINE_STRING_LITERAL:JavaScriptGrammar::T_STRING_LITERAL;
+        return multiLineString?QmlJSGrammar::T_MULTILINE_STRING_LITERAL:QmlJSGrammar::T_STRING_LITERAL;
     case Number:
         qsyylval.dval = dval;
-        return JavaScriptGrammar::T_NUMERIC_LITERAL;
+        return QmlJSGrammar::T_NUMERIC_LITERAL;
     case Bad:
         return -1;
     default:
@@ -939,103 +939,103 @@ int Lexer::matchPunctuator(ushort c1, ushort c2,
 {
     if (c1 == '>' && c2 == '>' && c3 == '>' && c4 == '=') {
         shift(4);
-        return JavaScriptGrammar::T_GT_GT_GT_EQ;
+        return QmlJSGrammar::T_GT_GT_GT_EQ;
     } else if (c1 == '=' && c2 == '=' && c3 == '=') {
         shift(3);
-        return JavaScriptGrammar::T_EQ_EQ_EQ;
+        return QmlJSGrammar::T_EQ_EQ_EQ;
     } else if (c1 == '!' && c2 == '=' && c3 == '=') {
         shift(3);
-        return JavaScriptGrammar::T_NOT_EQ_EQ;
+        return QmlJSGrammar::T_NOT_EQ_EQ;
     } else if (c1 == '>' && c2 == '>' && c3 == '>') {
         shift(3);
-        return JavaScriptGrammar::T_GT_GT_GT;
+        return QmlJSGrammar::T_GT_GT_GT;
     } else if (c1 == '<' && c2 == '<' && c3 == '=') {
         shift(3);
-        return JavaScriptGrammar::T_LT_LT_EQ;
+        return QmlJSGrammar::T_LT_LT_EQ;
     } else if (c1 == '>' && c2 == '>' && c3 == '=') {
         shift(3);
-        return JavaScriptGrammar::T_GT_GT_EQ;
+        return QmlJSGrammar::T_GT_GT_EQ;
     } else if (c1 == '<' && c2 == '=') {
         shift(2);
-        return JavaScriptGrammar::T_LE;
+        return QmlJSGrammar::T_LE;
     } else if (c1 == '>' && c2 == '=') {
         shift(2);
-        return JavaScriptGrammar::T_GE;
+        return QmlJSGrammar::T_GE;
     } else if (c1 == '!' && c2 == '=') {
         shift(2);
-        return JavaScriptGrammar::T_NOT_EQ;
+        return QmlJSGrammar::T_NOT_EQ;
     } else if (c1 == '+' && c2 == '+') {
         shift(2);
-        return JavaScriptGrammar::T_PLUS_PLUS;
+        return QmlJSGrammar::T_PLUS_PLUS;
     } else if (c1 == '-' && c2 == '-') {
         shift(2);
-        return JavaScriptGrammar::T_MINUS_MINUS;
+        return QmlJSGrammar::T_MINUS_MINUS;
     } else if (c1 == '=' && c2 == '=') {
         shift(2);
-        return JavaScriptGrammar::T_EQ_EQ;
+        return QmlJSGrammar::T_EQ_EQ;
     } else if (c1 == '+' && c2 == '=') {
         shift(2);
-        return JavaScriptGrammar::T_PLUS_EQ;
+        return QmlJSGrammar::T_PLUS_EQ;
     } else if (c1 == '-' && c2 == '=') {
         shift(2);
-        return JavaScriptGrammar::T_MINUS_EQ;
+        return QmlJSGrammar::T_MINUS_EQ;
     } else if (c1 == '*' && c2 == '=') {
         shift(2);
-        return JavaScriptGrammar::T_STAR_EQ;
+        return QmlJSGrammar::T_STAR_EQ;
     } else if (c1 == '/' && c2 == '=') {
         shift(2);
-        return JavaScriptGrammar::T_DIVIDE_EQ;
+        return QmlJSGrammar::T_DIVIDE_EQ;
     } else if (c1 == '&' && c2 == '=') {
         shift(2);
-        return JavaScriptGrammar::T_AND_EQ;
+        return QmlJSGrammar::T_AND_EQ;
     } else if (c1 == '^' && c2 == '=') {
         shift(2);
-        return JavaScriptGrammar::T_XOR_EQ;
+        return QmlJSGrammar::T_XOR_EQ;
     } else if (c1 == '%' && c2 == '=') {
         shift(2);
-        return JavaScriptGrammar::T_REMAINDER_EQ;
+        return QmlJSGrammar::T_REMAINDER_EQ;
     } else if (c1 == '|' && c2 == '=') {
         shift(2);
-        return JavaScriptGrammar::T_OR_EQ;
+        return QmlJSGrammar::T_OR_EQ;
     } else if (c1 == '<' && c2 == '<') {
         shift(2);
-        return JavaScriptGrammar::T_LT_LT;
+        return QmlJSGrammar::T_LT_LT;
     } else if (c1 == '>' && c2 == '>') {
         shift(2);
-        return JavaScriptGrammar::T_GT_GT;
+        return QmlJSGrammar::T_GT_GT;
     } else if (c1 == '&' && c2 == '&') {
         shift(2);
-        return JavaScriptGrammar::T_AND_AND;
+        return QmlJSGrammar::T_AND_AND;
     } else if (c1 == '|' && c2 == '|') {
         shift(2);
-        return JavaScriptGrammar::T_OR_OR;
+        return QmlJSGrammar::T_OR_OR;
     }
 
     switch(c1) {
-        case '=': shift(1); return JavaScriptGrammar::T_EQ;
-        case '>': shift(1); return JavaScriptGrammar::T_GT;
-        case '<': shift(1); return JavaScriptGrammar::T_LT;
-        case ',': shift(1); return JavaScriptGrammar::T_COMMA;
-        case '!': shift(1); return JavaScriptGrammar::T_NOT;
-        case '~': shift(1); return JavaScriptGrammar::T_TILDE;
-        case '?': shift(1); return JavaScriptGrammar::T_QUESTION;
-        case ':': shift(1); return JavaScriptGrammar::T_COLON;
-        case '.': shift(1); return JavaScriptGrammar::T_DOT;
-        case '+': shift(1); return JavaScriptGrammar::T_PLUS;
-        case '-': shift(1); return JavaScriptGrammar::T_MINUS;
-        case '*': shift(1); return JavaScriptGrammar::T_STAR;
-        case '/': shift(1); return JavaScriptGrammar::T_DIVIDE_;
-        case '&': shift(1); return JavaScriptGrammar::T_AND;
-        case '|': shift(1); return JavaScriptGrammar::T_OR;
-        case '^': shift(1); return JavaScriptGrammar::T_XOR;
-        case '%': shift(1); return JavaScriptGrammar::T_REMAINDER;
-        case '(': shift(1); return JavaScriptGrammar::T_LPAREN;
-        case ')': shift(1); return JavaScriptGrammar::T_RPAREN;
-        case '{': shift(1); return JavaScriptGrammar::T_LBRACE;
-        case '}': shift(1); return JavaScriptGrammar::T_RBRACE;
-        case '[': shift(1); return JavaScriptGrammar::T_LBRACKET;
-        case ']': shift(1); return JavaScriptGrammar::T_RBRACKET;
-        case ';': shift(1); return JavaScriptGrammar::T_SEMICOLON;
+        case '=': shift(1); return QmlJSGrammar::T_EQ;
+        case '>': shift(1); return QmlJSGrammar::T_GT;
+        case '<': shift(1); return QmlJSGrammar::T_LT;
+        case ',': shift(1); return QmlJSGrammar::T_COMMA;
+        case '!': shift(1); return QmlJSGrammar::T_NOT;
+        case '~': shift(1); return QmlJSGrammar::T_TILDE;
+        case '?': shift(1); return QmlJSGrammar::T_QUESTION;
+        case ':': shift(1); return QmlJSGrammar::T_COLON;
+        case '.': shift(1); return QmlJSGrammar::T_DOT;
+        case '+': shift(1); return QmlJSGrammar::T_PLUS;
+        case '-': shift(1); return QmlJSGrammar::T_MINUS;
+        case '*': shift(1); return QmlJSGrammar::T_STAR;
+        case '/': shift(1); return QmlJSGrammar::T_DIVIDE_;
+        case '&': shift(1); return QmlJSGrammar::T_AND;
+        case '|': shift(1); return QmlJSGrammar::T_OR;
+        case '^': shift(1); return QmlJSGrammar::T_XOR;
+        case '%': shift(1); return QmlJSGrammar::T_REMAINDER;
+        case '(': shift(1); return QmlJSGrammar::T_LPAREN;
+        case ')': shift(1); return QmlJSGrammar::T_RPAREN;
+        case '{': shift(1); return QmlJSGrammar::T_LBRACE;
+        case '}': shift(1); return QmlJSGrammar::T_RBRACE;
+        case '[': shift(1); return QmlJSGrammar::T_LBRACKET;
+        case ']': shift(1); return QmlJSGrammar::T_RBRACKET;
+        case ';': shift(1); return QmlJSGrammar::T_SEMICOLON;
 
         default: return -1;
     }

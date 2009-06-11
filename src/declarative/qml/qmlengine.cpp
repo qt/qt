@@ -823,7 +823,7 @@ QScriptValue QmlEngine::qmlScriptObject(QObject* object, QmlEngine* engine)
     This function takes the URL of a QML file as its only argument. It returns
     a component object which can be used to create and load that QML file.
 
-    Example JavaScript is below, remember that QML files that might be loaded
+    Example QmlJS is below, remember that QML files that might be loaded
     over the network cannot be expected to be ready immediately.
     \code
         var component;

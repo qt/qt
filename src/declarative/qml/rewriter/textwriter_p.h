@@ -49,7 +49,7 @@
 QT_BEGIN_HEADER
 QT_BEGIN_NAMESPACE
 
-namespace JavaScript {
+namespace QmlJS {
 
 class TextWriter
 {
@@ -91,7 +91,7 @@ public:
 
 };
 
-} // end of namespace JavaScript
+} // end of namespace QmlJS
 
 QT_END_NAMESPACE
 QT_END_HEADER
