@@ -66,7 +66,7 @@ class QmlScriptPrivate : public QObjectPrivate
 public:
     QmlScriptPrivate() : reply(0) {}
 
-    void addScriptToEngine(const QString &, const QString &fileName=QString());
+    void addScriptToEngine(const QString &, const QString &source=QString());
 
     QString script;
     QNetworkReply *reply;
@@ -156,7 +156,7 @@ void QmlScript::setSource(const QUrl &source)
         QFile file(d->url.toLocalFile());
         file.open(QIODevice::ReadOnly);
         QByteArray ba = file.readAll();
-        d->addScriptToEngine(QString::fromUtf8(ba), d->url);
+        d->addScriptToEngine(QString::fromUtf8(ba), file.fileName());
     } else
 #endif
     {
@@ -173,13 +173,13 @@ void QmlScript::replyFinished()
     Q_D(QmlScript);
     if (!d->reply->error()) {
         QByteArray ba = d->reply->readAll();
-        d->addScriptToEngine(QString::fromUtf8(ba), d->url);
+        d->addScriptToEngine(QString::fromUtf8(ba), d->url.toString());
     }
     d->reply->deleteLater();
     d->reply = 0;
 }
 
-void QmlScriptPrivate::addScriptToEngine(const QString &script, const QString &fileName)
+void QmlScriptPrivate::addScriptToEngine(const QString &script, const QString &source)
 {
 #ifdef Q_ENABLE_PERFORMANCE_LOG
     QFxPerfTimer<QFxPerf::AddScript> pt;
@@ -202,7 +202,7 @@ void QmlScriptPrivate::addScriptToEngine(const QString &script, const QString &f
 
     currentContext->setActivationObject(context->d_func()->scopeChain.at(0));
 
-    QScriptValue val = scriptEngine->evaluate(script, fileName);
+    QScriptValue val = scriptEngine->evaluate(script, source);
     if (scriptEngine->hasUncaughtException()) {
         if (scriptEngine->uncaughtException().isError()){
             QScriptValue exception = scriptEngine->uncaughtException();

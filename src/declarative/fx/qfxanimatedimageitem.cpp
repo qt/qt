@@ -152,7 +152,7 @@ int QFxAnimatedImageItem::frameCount() const
     return d->_movie->frameCount();
 }
 
-void QFxAnimatedImageItem::setSource(const QString &url)
+void QFxAnimatedImageItem::setSource(const QUrl &url)
 {
     Q_D(QFxAnimatedImageItem);
     if (url == d->url)

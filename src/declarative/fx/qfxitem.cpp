@@ -901,11 +901,11 @@ void QFxItem::qmlLoaded()
         QFxItem *qmlChild = qobject_cast<QFxItem *>(obj);
         if (qmlChild) {
             qmlChild->setItemParent(this);
-            d->_qmlChildren.insert(d->_qml, qmlChild);
+            d->_qmlChildren.insert(d->_qml.toString(), qmlChild);
             d->qmlItem = qmlChild;
         } else {
             delete qmlChild;
-            d->_qml = QString();
+            d->_qml = QUrl();
         }
         delete d->_qmlcomp;
         d->_qmlcomp = 0;
@@ -1962,7 +1962,7 @@ void QFxItem::newChild(const QString &type)
 {
     Q_D(QFxItem);
 
-    QUrl url = qmlContext(this)->resolvedUri(type);
+    QUrl url = qmlContext(this)->resolvedUri(QUrl(type));
     if (url.isEmpty())
         return;
 

@@ -281,7 +281,7 @@ bool QmlCompiler::compileStoreInstruction(QmlInstruction &instr,
         case QVariant::Url:
             {
             instr.type = QmlInstruction::StoreUrl;
-            QUrl u = output->url.resolved(string);
+            QUrl u = output->url.resolved(QUrl(string));
             instr.storeUrl.propertyIndex = prop.propertyIndex();
             instr.storeUrl.value = output->indexForString(u.toString());
             }
