@@ -289,7 +289,7 @@ inline void QDirPrivate::sortFileList(QDir::SortFlags sort, QFileInfoList &l,
             QDirSortItem *si = new QDirSortItem[n];
             for (int i = 0; i < n; ++i)
                 si[i].item = l.at(i);
-            qStableSort(si, si + n, QDirSortItemComparator(sort));
+            qSort(si, si+n, QDirSortItemComparator(sort));
             // put them back in the list(s)
             if(infos) {
                 for (int i = 0; i < n; ++i)
@@ -1316,7 +1316,6 @@ QStringList QDir::entryList(Filters filters, SortFlags sort) const
 
     \sa entryList(), setNameFilters(), setSorting(), setFilter(), isReadable(), exists()
 */
-
 QFileInfoList QDir::entryInfoList(Filters filters, SortFlags sort) const
 {
     Q_D(const QDir);
