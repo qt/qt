@@ -3258,7 +3258,7 @@ bool QInternal::callFunction(InternalFunction func, void **args)
 
 /*! \class QSymbianLeaveException
     \ingroup qts60
-    \brief Exception class representing a Symbian leave code.
+    \brief The QSymbianLeaveException class represents a block of Symbian leave code.
 
     \warning This class is only available on Symbian.
 */
