@@ -183,6 +183,7 @@ struct SequentialAnchorData : public AnchorData
 {
     SequentialAnchorData() : AnchorData(AnchorData::Sequential) {}
     QVector<AnchorVertex*> m_children;          // list of vertices in the sequence
+    QVector<AnchorData*> m_edges;               // keep the list of edges too.
 };
 
 struct ParallelAnchorData : public AnchorData
@@ -294,6 +295,7 @@ public:
 
     // Activation methods
     void simplifyGraph(Orientation orientation);
+    void restoreSimplifiedGraph(Orientation orientation);
     void calculateGraphs();
     void calculateGraphs(Orientation orientation);
     void setAnchorSizeHintsFromItems(Orientation orientation);

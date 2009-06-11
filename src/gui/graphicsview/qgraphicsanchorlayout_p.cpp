@@ -126,21 +126,84 @@ inline static qreal checkAdd(qreal a, qreal b)
         return FLT_MAX;
     return a + b;
 }
+
+/*!
+ * \internal
+ *
+ * Takes the sequence of vertices described by (\a before, \a vertices, \a after) and replaces
+ * all anchors connected to the vertices in \a vertices with one simplified anchor between
+ * \a before and \a after. The simplified anchor will be a placeholder for all the previous
+ * anchors between \a before and \a after, and can be restored back to the anchors it is a
+ * placeholder for.
+ */
+static void simplifySequentialChunk(Graph<AnchorVertex, AnchorData> *graph,
+                                    AnchorVertex *before,
+                                    const QVector<AnchorVertex*> &vertices,
+                                    AnchorVertex *after)
+{
+    int i;
+#if 0
+    QString strVertices;
+    for (i = 0; i < vertices.count(); ++i)
+        strVertices += QString::fromAscii("%1 - ").arg(vertices.at(i)->toString());
+    QString strPath = QString::fromAscii("%1 - %2%3").arg(before->toString(), strVertices, after->toString());
+    qDebug("simplifying [%s] to [%s - %s]", qPrintable(strPath), qPrintable(before->toString()), qPrintable(after->toString()));
+#endif
+
+    if (graph->edgeData(before, after)) {
+        qDebug("### FIXME: Need to merge parallel anchors, ignoring this simplification for now");
+        return;
+    }
+
+    qreal min = 0;
+    qreal pref = 0;
+    qreal max = 0;
+
+    SequentialAnchorData *sequence = new SequentialAnchorData;
+    AnchorVertex *prev = before;
+    AnchorData *data;
+    for (i = 0; i <= vertices.count(); ++i) {
+        AnchorVertex *next = (i < vertices.count()) ? vertices.at(i) : after;
+        data = graph->takeEdge(prev, next);
+        min += data->minSize;
+        pref += data->prefSize;
+        max = checkAdd(max, data->maxSize);
+        sequence->m_edges.append(data);
+        prev = next;
+    }
+
+    // insert new
+    sequence->minSize = min;
+    sequence->prefSize = pref;
+    sequence->maxSize = max;
+    sequence->m_children = vertices;
+    sequence->origin = data->origin == vertices.last() ? before : after;
+    graph->createEdge(before, after, sequence);
+}
 /*!
  * \internal
  *
  * The purpose of this function is to simplify the graph. The process of simplification can be
- * broken down to two methods:
- * Algorithm can be described as:
+ * described as:
  *
- * 1. Simplify all sequence of anchors into one anchor.
+ * 1. Simplify all sequences of anchors into one anchor.
  *    If not first iteration and no further simplification was done, go to (3)
  * 2. Simplify two parallel anchors into one anchor.
  *    If any simplification was done, go to (1)
  * 3. Done
  *
+ *
+ * The algorithm walks the graph in depth-first order, and only collects vertices that has two
+ * edges connected to it. If the vertex does not have two edges or if it is a layout edge,
+ * it will take all the previously collected vertices and try to create a simplified sequential
+ * anchor representing all the previously collected vertices.
+ * Once the simplified anchor is inserted, the collected list is cleared in order to find the next
+ * sequence to simplify.
+ * Note that there are some catches to this that are not covered by the above explanation.
+ *
+ *
  * Notes:
- *  * The algorithm should not make a sequence of the layout edge anchors. 
+ *  * The algorithm should not make a sequence of the layout edge anchors.
  *      => Make sure those edges are not traversed
  *  * A generic algorithm will make a sequential simplification node of a Left-HCenter-Right
  *    sequence. This is ok, but that sequence should not be affected by stretch factors.
@@ -165,67 +228,98 @@ void QGraphicsAnchorLayoutPrivate::simplifyGraph(QGraphicsAnchorLayoutPrivate::O
         v = stack.pop();
         QList<AnchorVertex *> vertices = g.adjacentVertices(v);
         const int count = vertices.count();
+        bool endOfSequence = (v->m_item == q && v->m_edge == layoutEdge) || count != 2;
         if (count == 2 && v->m_item != q) {
             candidates.append(v);
+            if (visited.contains(vertices.first()) && visited.contains(vertices.last())) {
+                // in case of a cycle
+                endOfSequence = true;
+            }
         }
-        if ((v->m_item == q && v->m_edge == layoutEdge) || (count != 2 && candidates.count() >= 1)) {
-            SequentialAnchorData *sequence = new SequentialAnchorData;
-            AnchorVertex * &sequenceLast = v;   //alias
-            AnchorVertex *sequenceFirst = 0;
+        if (endOfSequence && candidates.count() >= 2) {
+            int i;
+            AnchorVertex *afterSequence= 0;
+            {
+            QList<AnchorVertex *> adjacentOfSecondLastVertex = g.adjacentVertices(candidates.last());
+            Q_ASSERT(adjacentOfSecondLastVertex.count() == 2);
+            if (adjacentOfSecondLastVertex.first() == candidates.at(candidates.count() - 2))
+                afterSequence = adjacentOfSecondLastVertex.last();
+            else
+                afterSequence = adjacentOfSecondLastVertex.first();
+            }
+
+            AnchorVertex *beforeSequence = 0;
+            {
             QList<AnchorVertex *> adjacentOfSecondVertex = g.adjacentVertices(candidates.first());
             Q_ASSERT(adjacentOfSecondVertex.count() == 2);
             if (adjacentOfSecondVertex.first() == candidates.at(1))
-                sequenceFirst = adjacentOfSecondVertex.last();
+                beforeSequence = adjacentOfSecondVertex.last();
             else
-                sequenceFirst = adjacentOfSecondVertex.first();
-
-            // The complete path of the sequence to simplify is: sequenceFirst, <candidates>, sequenceLast
-            qreal min = 0;
-            qreal pref = 0;
-            qreal max = 0;
-
-/*          // ### DEBUG
-            QString strCandidates;
-            for (int i = 0; i < candidates.count(); ++i)
-                strCandidates += QString::fromAscii("%1--").arg(candidates.at(i)->toString());
-            QString strPath = QString::fromAscii("%1--%2%3").arg(sequenceFirst->toString(), strCandidates, sequenceLast->toString());
-            qDebug("simplifying [%s] to [%s--%s]", qPrintable(strPath), qPrintable(sequenceFirst->toString()), qPrintable(sequenceLast->toString()));
-*/
-
-            AnchorData *data = g.edgeData(sequenceFirst, candidates.first());
-            min += data->minSize;
-            pref += data->prefSize;
-            max = checkAdd(max, data->maxSize);
-            g.removeEdge(sequenceFirst, candidates.first());
-
-            for (int i = 0; i < candidates.count() - 1; ++i) {
-                AnchorVertex *v1 = candidates.at(i);
-                AnchorVertex *v2 = candidates.at(i + 1);
-                data = g.edgeData(v1, v2);
-                min += data->minSize;
-                pref += data->prefSize;
-                max = checkAdd(max, data->maxSize);
-                g.removeEdge(v1, v2);
+                beforeSequence = adjacentOfSecondVertex.first();
             }
+            // The complete path of the sequence to simplify is: beforeSequence, <candidates>, afterSequence
+            // where beforeSequence and afterSequence are the endpoints where the anchor is inserted
+            // between.
+#if 0
+            // ### DEBUG
+            QString strCandidates;
+            for (i = 0; i < candidates.count(); ++i)
+                strCandidates += QString::fromAscii("%1 - ").arg(candidates.at(i)->toString());
+            QString strPath = QString::fromAscii("%1 - %2%3").arg(beforeSequence->toString(), strCandidates, afterSequence->toString());
+            qDebug("candidate list for sequential simplification:\n[%s]", qPrintable(strPath), qPrintable(beforeSequence->toString()), qPrintable(afterSequence->toString()));
+#endif
 
-            data = g.edgeData(candidates.last(), sequenceLast);
-            min += data->minSize;
-            pref += data->prefSize;
-            max = checkAdd(max, data->maxSize);
-            g.removeEdge(candidates.last(), sequenceLast);
+            bool forward;
+            AnchorVertex *prev = beforeSequence;
+            int intervalFrom = 0;
+            int intervalTo = candidates.count() + 1;
+            bool forwardSet = false;
 
-            // insert new
-            sequence->minSize = min;
-            sequence->prefSize = pref;
-            sequence->maxSize = max;
-            sequence->m_children = candidates;
-            sequence->origin = sequenceFirst;
-            g.createEdge(sequenceFirst, sequenceLast, sequence);
-            
-            // start all over again
-            candidates.clear();
+            // Check for directionality (origin). We don't want to destroy that information,
+            // thus we only combine anchors with the same direction.
+
+            // "i" is the index *including* the beforeSequence and afterSequence vertices.
+            for (i = 1; i <= candidates.count() + 1; ++i) {
+                AnchorVertex *v1 = (i <= candidates.count()) ? candidates.at(i - 1) : afterSequence;
+                AnchorData *data = g.edgeData(prev, v1);
+                bool shouldSimplify = false;
+                if (data) {
+                    if (!forwardSet) {
+                        forward = (prev == data->origin ? true : false);
+                        forwardSet = true;
+                    } else if ((forward != (prev == data->origin))) {
+                        shouldSimplify = true;
+                    }
+                } else {
+                    shouldSimplify = true;
+                    forwardSet = false;
+                }
+
+                if (shouldSimplify) {
+                    intervalTo = i - 1;
+                    if (intervalTo - intervalFrom >= 2) {
+                        // simplify in the range [intervalFrom, intervalTo]
+                        AnchorVertex *intervalVertexFrom = intervalFrom == 0 ? beforeSequence : candidates.at(intervalFrom - 1);
+                        AnchorVertex *intervalVertexTo = intervalTo <= candidates.count() ? candidates.at(intervalTo - 1) : afterSequence;
+                        QVector<AnchorVertex*> subCandidates = candidates.mid(intervalFrom, intervalTo - intervalFrom - 1);
+                        simplifySequentialChunk(&g, intervalVertexFrom, subCandidates, intervalVertexTo);
+                        // finished simplification of chunk with same direction
+                    }
+                    intervalFrom = intervalTo;
+                    forward = !forward;
+                }
+                prev = v1;
+            }
+            if (intervalTo - intervalFrom >= 2) {
+                // simplify in the range [intervalFrom, intervalTo]
+                AnchorVertex *intervalVertexFrom = intervalFrom == 0 ? beforeSequence : candidates.at(intervalFrom - 1);
+                AnchorVertex *intervalVertexTo = intervalTo <= candidates.count() ? candidates.at(intervalTo - 1) : afterSequence;
+                QVector<AnchorVertex*> subCandidates = candidates.mid(intervalFrom, intervalTo - intervalFrom - 1);
+                simplifySequentialChunk(&g, intervalVertexFrom, subCandidates, intervalVertexTo);
+                // finished simplification of chunk with same direction
+            }
         }
-        if (count != 2)
+        if (endOfSequence)
             candidates.clear();
 
         QGraphicsAnchorLayout::Edge centerEdge = pickEdge(QGraphicsAnchorLayout::HCenter, orientation);
@@ -235,6 +329,49 @@ void QGraphicsAnchorLayoutPrivate::simplifyGraph(QGraphicsAnchorLayoutPrivate::O
                 continue;
             if (visited.contains(next))
                 continue;
+            stack.push(next);
+        }
+        visited.insert(v);
+    }
+}
+
+void QGraphicsAnchorLayoutPrivate::restoreSimplifiedGraph(Orientation orientation)
+{
+    Q_Q(QGraphicsAnchorLayout);
+    Graph<AnchorVertex, AnchorData> &g = graph[orientation];
+    AnchorVertex *v = g.rootVertex();
+
+    if (!v)
+        return;
+    QSet<AnchorVertex*> visited;
+    QStack<AnchorVertex *> stack;
+    stack.push(v);
+
+    QGraphicsAnchorLayout::Edge layoutCenterEdge = pickEdge(QGraphicsAnchorLayout::HCenter, orientation);
+    // walk depth-first.
+    while (!stack.isEmpty()) {
+        v = stack.pop();
+        QList<AnchorVertex *> vertices = g.adjacentVertices(v);
+        const int count = vertices.count();
+        for (int i = 0; i < count; ++i) {
+            AnchorVertex *next = vertices.at(i);
+            if (next->m_item == q && next->m_edge == layoutCenterEdge)
+                continue;
+            if (visited.contains(next))
+                continue;
+            AnchorData *edge = g.edgeData(v, next);
+            if (edge->type == AnchorData::Sequential) {
+                SequentialAnchorData* seqEdge = static_cast<SequentialAnchorData*>(edge);
+                // restore the sequential anchor
+                AnchorVertex *prev = v;
+                for (int i = 0; i < seqEdge->m_edges.count(); ++i) {
+                    AnchorVertex *v1 = (i < seqEdge->m_children.count()) ? seqEdge->m_children.at(i) : next;
+                    AnchorData *data = seqEdge->m_edges.at(i);
+                    g.createEdge(prev, v1, data);
+                    prev = v1;
+                }
+                g.removeEdge(v, next);
+            }
             stack.push(next);
         }
         visited.insert(v);
@@ -613,9 +750,11 @@ void QGraphicsAnchorLayoutPrivate::calculateGraphs(
     setAnchorSizeHintsFromItems(orientation);
 
 //    ### currently crashes
-//    q->dumpGraph();
+    //q->dumpGraph();
 //    simplifyGraph(orientation);
-//    q->dumpGraph();
+    //q->dumpGraph();
+//    restoreSimplifiedGraph(orientation);    // should not be here
+    //q->dumpGraph();
 
     // Traverse all graph edges and store the possible paths to each vertex
     findPaths(orientation);
