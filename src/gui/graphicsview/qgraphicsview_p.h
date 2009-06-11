@@ -94,6 +94,7 @@ public:
     QPoint mousePressScreenPoint;
     QPointF lastMouseMoveScenePoint;
     QPoint lastMouseMoveScreenPoint;
+    QPoint dirtyScrollOffset;
     Qt::MouseButton mousePressButton;
     QTransform matrix;
     bool identityMatrix;

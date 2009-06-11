@@ -188,6 +188,8 @@ private slots:
     void embeddedViews();
     void scrollAfterResize_data();
     void scrollAfterResize();
+    void moveItemWhileScrolling_data();
+    void moveItemWhileScrolling();
     void centerOnDirtyItem();
     void mouseTracking();
     void mouseTracking2();
@@ -3043,6 +3045,67 @@ void tst_QGraphicsView::scrollAfterResize()
     QCOMPARE(view.viewportTransform(), x2);
     view.horizontalScrollBar()->setValue(10);
     QCOMPARE(view.viewportTransform(), x3);
+}
+
+void tst_QGraphicsView::moveItemWhileScrolling_data()
+{
+    QTest::addColumn<bool>("adjustForAntialiasing");
+
+    QTest::newRow("no adjust") << false;
+    QTest::newRow("adjust") << true;
+}
+
+void tst_QGraphicsView::moveItemWhileScrolling()
+{
+    QFETCH(bool, adjustForAntialiasing);
+
+    class MoveItemScrollView : public QGraphicsView
+    {
+    public:
+        MoveItemScrollView()
+        {
+            setScene(new QGraphicsScene(0, 0, 1000, 1000));
+            rect = scene()->addRect(0, 0, 10, 10);
+            rect->setPos(50, 50);
+        }
+        QRegion lastPaintedRegion;
+        QGraphicsItem *rect;
+    protected:
+        void paintEvent(QPaintEvent *event)
+        {
+            lastPaintedRegion = event->region();
+            QGraphicsView::paintEvent(event);
+        }
+    };
+
+    MoveItemScrollView view;
+    view.setFrameStyle(0);
+    view.setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    view.setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    view.setResizeAnchor(QGraphicsView::NoAnchor);
+    view.setTransformationAnchor(QGraphicsView::NoAnchor);
+    if (!adjustForAntialiasing)
+        view.setOptimizationFlag(QGraphicsView::DontAdjustForAntialiasing);
+    view.show();
+    view.resize(200, 200);
+#ifdef Q_WS_X11
+    qt_x11_wait_for_window_manager(&view);
+#endif
+    QTest::qWait(100);
+
+    view.lastPaintedRegion = QRegion();
+    view.horizontalScrollBar()->setValue(view.horizontalScrollBar()->value() + 10);
+    view.rect->moveBy(0, 10);
+    QTest::qWait(100);
+
+    QRegion expectedRegion;
+    expectedRegion += QRect(0, 0, 200, 200);
+    expectedRegion -= QRect(0, 0, 190, 200);
+    int a = adjustForAntialiasing ? 2 : 1;
+    expectedRegion += QRect(40, 50, 10, 10).adjusted(-a, -a, a, a);
+    expectedRegion += QRect(40, 60, 10, 10).adjusted(-a, -a, a, a);
+
+    QCOMPARE(view.lastPaintedRegion, expectedRegion);
 }
 
 void tst_QGraphicsView::centerOnDirtyItem()

@@ -812,7 +812,7 @@ void QGraphicsViewPrivate::processPendingUpdates()
 
     if (viewportUpdateMode == QGraphicsView::BoundingRectViewportUpdate) {
         if (optimizationFlags & QGraphicsView::DontAdjustForAntialiasing)
-            viewport->update(dirtyBoundingRect);
+            viewport->update(dirtyBoundingRect.adjusted(-1, -1, 1, 1));
         else
             viewport->update(dirtyBoundingRect.adjusted(-2, -2, 2, 2));
     } else {
@@ -843,14 +843,16 @@ void QGraphicsViewPrivate::updateRegion(const QRegion &r)
         break;
     case QGraphicsView::SmartViewportUpdate: // ### DEPRECATE
     case QGraphicsView::MinimalViewportUpdate:
-        if (optimizationFlags & QGraphicsView::DontAdjustForAntialiasing) {
-            dirtyRegion += r;
-        } else {
-            const QVector<QRect> &rects = r.rects();
-            for (int i = 0; i < rects.size(); ++i)
+    {
+        const QVector<QRect> &rects = r.rects();
+        for (int i = 0; i < rects.size(); ++i) {
+            if (optimizationFlags & QGraphicsView::DontAdjustForAntialiasing)
+                dirtyRegion += rects.at(i).adjusted(-1, -1, 1, 1);
+            else
                 dirtyRegion += rects.at(i).adjusted(-2, -2, 2, 2);
         }
         break;
+    }
     case QGraphicsView::NoViewportUpdate:
         // Unreachable
         break;
@@ -878,7 +880,7 @@ void QGraphicsViewPrivate::updateRect(const QRect &r)
     case QGraphicsView::SmartViewportUpdate: // ### DEPRECATE
     case QGraphicsView::MinimalViewportUpdate:
         if (optimizationFlags & QGraphicsView::DontAdjustForAntialiasing)
-            dirtyRegion += r;
+            dirtyRegion += r.adjusted(-1, -1, 1, 1);
         else
             dirtyRegion += r.adjusted(-2, -2, 2, 2);
         break;
@@ -2678,6 +2680,7 @@ bool QGraphicsView::viewportEvent(QEvent *event)
     case QEvent::Paint:
         // Reset full update
         d->fullUpdatePending = false;
+        d->dirtyScrollOffset = QPoint();
         if (d->scene) {
             // Check if this view reimplements the updateScene slot; if it
             // does, we can't do direct update delivery and have to fall back
@@ -3375,7 +3378,6 @@ void QGraphicsView::scrollContentsBy(int dx, int dy)
 
     if (d->viewportUpdateMode != QGraphicsView::NoViewportUpdate) {
         if (d->viewportUpdateMode != QGraphicsView::FullViewportUpdate) {
-            d->dirtyRegion.translate(dx, dy);
             if (d->accelerateScrolling) {
 #ifndef QT_NO_RUBBERBAND
                 // Update new and old rubberband regions
@@ -3385,6 +3387,9 @@ void QGraphicsView::scrollContentsBy(int dx, int dy)
                     viewport()->update(rubberBandRegion);
                 }
 #endif
+                d->dirtyScrollOffset.rx() += dx;
+                d->dirtyScrollOffset.ry() += dy;
+                d->dirtyRegion.translate(dx, dy);
                 viewport()->scroll(dx, dy);
             } else {
                 d->updateAll();

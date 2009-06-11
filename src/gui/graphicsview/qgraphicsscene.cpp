@@ -5269,7 +5269,9 @@ void QGraphicsScenePrivate::markDirty(QGraphicsItem *item, const QRectF &rect, b
 
         for (int i = 0; i < views.size(); ++i) {
             QGraphicsViewPrivate *viewPrivate = views.at(i)->d_func();
-            viewPrivate->updateRect(item->d_ptr->paintedViewBoundingRects.value(viewPrivate->viewport));
+            QRect rect = item->d_ptr->paintedViewBoundingRects.value(viewPrivate->viewport);
+            rect.translate(viewPrivate->dirtyScrollOffset);
+            viewPrivate->updateRect(rect);
         }
         return;
     }
@@ -5350,7 +5352,9 @@ void QGraphicsScenePrivate::processDirtyItemsRecursive(QGraphicsItem *item, bool
 
                 if (item->d_ptr->paintedViewBoundingRectsNeedRepaint) {
                     wasDirtyParentViewBoundingRects = true;
-                    viewPrivate->updateRect(item->d_ptr->paintedViewBoundingRects.value(viewPrivate->viewport));
+                    QRect rect = item->d_ptr->paintedViewBoundingRects.value(viewPrivate->viewport);
+                    rect.translate(viewPrivate->dirtyScrollOffset);
+                    viewPrivate->updateRect(rect);
                 }
 
                 if (!item->d_ptr->dirty)
