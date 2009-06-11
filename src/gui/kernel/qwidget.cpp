@@ -901,10 +901,13 @@ void QWidget::setAutoFillBackground(bool enabled)
     QActions are set to widget(s) via softkey API. Actions in focused widget are 
     mapped to native toolbar or hardware keys. Even though the API allows to set
     any amount of widgets there might be physical restrictions to amount of 
-    softkeys that can be used by the device and this shou
+    softkeys that can be used by the device.
 
     \o Series60: For series60 menu button is automatically mapped to left
     soft key if there is QMainWindow with QMenuBar in widgets parent hierarchy.
+
+    \sa softKeys()
+    \sa setSoftKey()
         
 */
 
