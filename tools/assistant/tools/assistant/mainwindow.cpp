@@ -468,7 +468,7 @@ void MainWindow::setupActions()
 
     menu = menuBar()->addMenu(tr("&Go"));
     m_homeAction = menu->addAction(tr("&Home"), m_centralWidget, SLOT(home()));
-    m_homeAction->setShortcut(tr("Ctrl+Home"));
+    m_homeAction->setShortcut(tr("ALT+Home"));
     m_homeAction->setIcon(QIcon(resourcePath + QLatin1String("/home.png")));
 
     m_backAction = menu->addAction(tr("&Back"), m_centralWidget, SLOT(backward()));
