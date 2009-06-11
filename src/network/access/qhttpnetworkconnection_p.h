@@ -250,7 +250,7 @@ public:
         {}
     };
     static const int channelCount;
-    Channel channels[2]; // maximum of 2 socket connections to the server
+    Channel *channels; // parallel connections to the server
     bool pendingAuthSignal; // there is an incomplete authentication signal
     bool pendingProxyAuthSignal; // there is an incomplete proxy authentication signal
 
