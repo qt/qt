@@ -576,7 +576,7 @@ void QPushButtonPrivate::_q_popupPressed()
     menu->setNoReplayFor(q);
     bool horizontal = true;
 #if !defined(QT_NO_TOOLBAR)
-    QToolBar *tb = qobject_cast<QToolBar*>(q->parentWidget());
+    QToolBar *tb = qobject_cast<QToolBar*>(parent);
     if (tb && tb->orientation() == Qt::Vertical)
         horizontal = false;
 #endif

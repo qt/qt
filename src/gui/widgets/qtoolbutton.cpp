@@ -278,7 +278,7 @@ void QToolButtonPrivate::init()
 #endif
     defaultAction = 0;
 #ifndef QT_NO_TOOLBAR
-    if (qobject_cast<QToolBar*>(q->parentWidget()))
+    if (qobject_cast<QToolBar*>(parent))
         autoRaise = true;
     else
 #endif
@@ -890,7 +890,7 @@ void QToolButtonPrivate::popupTimerDone()
     q->setAutoRepeat(false);
     bool horizontal = true;
 #if !defined(QT_NO_TOOLBAR)
-    QToolBar *tb = qobject_cast<QToolBar*>(q->parentWidget());
+    QToolBar *tb = qobject_cast<QToolBar*>(parent);
     if (tb && tb->orientation() == Qt::Vertical)
         horizontal = false;
 #endif

@@ -258,10 +258,8 @@ void QMessageBoxPrivate::init(const QString &title, const QString &text)
 
 int QMessageBoxPrivate::layoutMinimumWidth()
 {
-    Q_Q(QMessageBox);
-
-    q->layout()->activate();
-    return q->layout()->totalMinimumSize().width();
+    layout->activate();
+    return layout->totalMinimumSize().width();
 }
 
 void QMessageBoxPrivate::updateSize()
@@ -339,10 +337,10 @@ void QMessageBoxPrivate::updateSize()
     if (windowTitleWidth > width)
         width = windowTitleWidth;
 
-    q->layout()->activate();
-    int height = (q->layout()->hasHeightForWidth())
-                     ? q->layout()->totalHeightForWidth(width)
-                     : q->layout()->totalMinimumSize().height();
+    layout->activate();
+    int height = (layout->hasHeightForWidth())
+                     ? layout->totalHeightForWidth(width)
+                     : layout->totalMinimumSize().height();
     q->setFixedSize(width, height);
     QCoreApplication::removePostedEvents(q, QEvent::LayoutRequest);
 }

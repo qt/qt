@@ -2748,9 +2748,9 @@ void QApplicationPrivate::openPopup(QWidget *popup)
     if (popup->focusWidget()) {
         popup->focusWidget()->setFocus(Qt::PopupFocusReason);
     } else if (QApplicationPrivate::popupWidgets->count() == 1) { // this was the first popup
-        if (QWidget *fw = q_func()->focusWidget()) {
+        if (QWidget *fw = QApplication::focusWidget()) {
             QFocusEvent e(QEvent::FocusOut, Qt::PopupFocusReason);
-            q_func()->sendEvent(fw, &e);
+            QApplication::sendEvent(fw, &e);
         }
     }
 }
@@ -2777,13 +2777,13 @@ void QApplicationPrivate::closePopup(QWidget *popup)
         if (!qt_nograb())                        // grabbing not disabled
             releaseAutoCapture();
         QWidget *fw = QApplicationPrivate::active_window ? QApplicationPrivate::active_window->focusWidget()
-            : q_func()->focusWidget();
+            : QApplication::focusWidget();
         if (fw) {
-            if (fw != q_func()->focusWidget()) {
+            if (fw != QApplication::focusWidget()) {
                 fw->setFocus(Qt::PopupFocusReason);
             } else {
                 QFocusEvent e(QEvent::FocusIn, Qt::PopupFocusReason);
-                q_func()->sendEvent(fw, &e);
+                QApplication::sendEvent(fw, &e);
             }
         }
     } else {

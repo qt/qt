@@ -7268,10 +7268,10 @@ QSize QWidgetPrivate::adjustedSize() const
 
     if (q->isWindow()) {
         Qt::Orientations exp;
-        if (QLayout *l = q->layout()) {
-            if (l->hasHeightForWidth())
-                s.setHeight(l->totalHeightForWidth(s.width()));
-            exp = l->expandingDirections();
+        if (layout) {
+            if (layout->hasHeightForWidth())
+                s.setHeight(layout->totalHeightForWidth(s.width()));
+            exp = layout->expandingDirections();
         } else
         {
             if (q->sizePolicy().hasHeightForWidth())

@@ -2280,10 +2280,9 @@ void QTreeWidgetPrivate::_q_emitCurrentItemChanged(const QModelIndex &current,
 
 void QTreeWidgetPrivate::_q_sort()
 {
-    Q_Q(QTreeWidget);
     if (sortingEnabled) {
-        int column = q->header()->sortIndicatorSection();
-        Qt::SortOrder order = q->header()->sortIndicatorOrder();
+        int column = header->sortIndicatorSection();
+        Qt::SortOrder order = header->sortIndicatorOrder();
         model()->sort(column, order);
     }
 }
@@ -2311,12 +2310,11 @@ void QTreeWidgetPrivate::_q_selectionChanged(const QItemSelection &selected, con
 void QTreeWidgetPrivate::_q_dataChanged(const QModelIndex &topLeft,
                                         const QModelIndex &bottomRight)
 {
-    Q_Q(QTreeWidget);
     if (sortingEnabled && topLeft.isValid() && bottomRight.isValid()
         && !model()->sortPendingTimer.isActive()) {
-        int column = q->header()->sortIndicatorSection();
+        int column = header->sortIndicatorSection();
         if (column >= topLeft.column() && column <= bottomRight.column()) {
-            Qt::SortOrder order = q->header()->sortIndicatorOrder();
+            Qt::SortOrder order = header->sortIndicatorOrder();
             model()->ensureSorted(column, order, topLeft.row(),
                                   bottomRight.row(), topLeft.parent());
         }
