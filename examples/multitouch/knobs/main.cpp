@@ -50,7 +50,6 @@ int main(int argc, char **argv)
 
     QGraphicsScene scene;
     QGraphicsView view(&scene);
-    view.viewport()->setAttribute(Qt::WA_AcceptTouchEvents);
 
     Knob *knob1 = new Knob;
     knob1->setPos(-110, 0);

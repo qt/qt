@@ -360,7 +360,8 @@ QGraphicsScenePrivate::QGraphicsScenePrivate()
       painterStateProtection(true),
       sortCacheEnabled(false),
       updatingSortCache(false),
-      style(0)
+      style(0),
+      allItemsIgnoreTouchEvents(true)
 {
 }
 
@@ -2888,6 +2889,7 @@ void QGraphicsScene::clear()
     d->largestUntransformableItem = QRectF();
     d->allItemsIgnoreHoverEvents = true;
     d->allItemsUseDefaultCursor = true;
+    d->allItemsIgnoreTouchEvents = true;
 }
 
 /*!
@@ -3064,6 +3066,12 @@ void QGraphicsScene::addItem(QGraphicsItem *item)
             d->enableMouseTrackingOnViews();
     }
 #endif //QT_NO_CURSOR
+
+    // Enable touch events if the item accepts touch events.
+    if (d->allItemsIgnoreTouchEvents && item->acceptTouchEvents()) {
+        d->allItemsIgnoreTouchEvents = false;
+        d->enableTouchEventsOnViews();
+    }
 
     // Update selection lists
     if (item->isSelected())
@@ -5958,14 +5966,10 @@ void QGraphicsScenePrivate::updateTouchPointsForItem(QGraphicsItem *item, QTouch
 {
     QList<QTouchEvent::TouchPoint> touchPoints = touchEvent->touchPoints();
     for (int i = 0; i < touchPoints.count(); ++i) {
-        QTouchEvent::TouchPoint &touchPoint = touchPoints[i];
-        touchPoint.setPos(item->d_ptr->genericMapFromScene(touchPoint.scenePos(), touchEvent->widget()));
+        QTouchEvent::TouchPoint &touchPoint = touchPoints[i];        
+        touchPoint.setRect(item->mapFromScene(touchPoint.sceneRect()).boundingRect());
         touchPoint.setStartPos(item->d_ptr->genericMapFromScene(touchPoint.startScenePos(), touchEvent->widget()));
         touchPoint.setLastPos(item->d_ptr->genericMapFromScene(touchPoint.lastScenePos(), touchEvent->widget()));
-#ifdef Q_CC_GNU
-#  warning FIXME
-#endif
-        // ### touchPoint.setSize(item->d_ptr->genericMapFromScene(touchPoint.sceneSize(), touchEvent->widget()));
     }
     touchEvent->setTouchPoints(touchPoints);
 }
@@ -6145,6 +6149,13 @@ bool QGraphicsScenePrivate::sendTouchBeginEvent(QGraphicsItem *origin, QTouchEve
     touchEvent->setAccepted(eventAccepted);
     return res;
 }
+
+void QGraphicsScenePrivate::enableTouchEventsOnViews()
+{
+    foreach (QGraphicsView *view, views)
+        view->viewport()->setAttribute(Qt::WA_AcceptTouchEvents, true);
+}
+
 
 QT_END_NAMESPACE
 

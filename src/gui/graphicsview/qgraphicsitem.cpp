@@ -2251,7 +2251,13 @@ bool QGraphicsItem::acceptTouchEvents() const
 */
 void QGraphicsItem::setAcceptTouchEvents(bool enabled)
 {
+    if (d_ptr->acceptTouchEvents == quint32(enabled))
+        return;
     d_ptr->acceptTouchEvents = quint32(enabled);
+    if (d_ptr->acceptTouchEvents && d_ptr->scene && d_ptr->scene->d_func()->allItemsIgnoreTouchEvents) {
+        d_ptr->scene->d_func()->allItemsIgnoreTouchEvents = false;
+        d_ptr->scene->d_func()->enableTouchEventsOnViews();
+    }
 }
 
 /*!

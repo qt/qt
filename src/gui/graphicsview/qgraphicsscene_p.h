@@ -310,6 +310,8 @@ public:
     int findClosestTouchPointId(const QPointF &scenePos);
     void touchEventHandler(QTouchEvent *touchEvent);
     bool sendTouchBeginEvent(QGraphicsItem *item, QTouchEvent *touchEvent);
+    bool allItemsIgnoreTouchEvents;
+    void enableTouchEventsOnViews();
 };
 
 QT_END_NAMESPACE
