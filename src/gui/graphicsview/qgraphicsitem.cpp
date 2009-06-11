@@ -4281,7 +4281,9 @@ void QGraphicsItemPrivate::updateCachedClipPathFromSetPosHelper(const QPointF &n
     // Find closest clip ancestor and transform.
     Q_Q(QGraphicsItem);
     // COMBINE
-    QTransform thisToParentTransform = transformToParent();
+    QTransform thisToParentTransform = transformData
+        ? transformData->computedFullTransform() * QTransform::fromTranslate(newPos.x(), newPos.y())
+        : QTransform::fromTranslate(newPos.x(), newPos.y());
     QGraphicsItem *clipParent = parent;
     while (clipParent && !(clipParent->d_ptr->flags & QGraphicsItem::ItemClipsChildrenToShape)) {
         thisToParentTransform *= clipParent->d_ptr->transformToParent();
