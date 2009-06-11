@@ -125,7 +125,7 @@ StationDialog::StationDialog(const QString &name, const QStringList &lineNumbers
             m_ui.m_line4->setText(lineNumbers.at(i));
     }
 
-    searchStations();
+    QMetaObject::invokeMethod(this, SLOT(searchStations()), Qt::QueuedConnection);
 }
 
 StationInformation StationDialog::selectedStation() const
