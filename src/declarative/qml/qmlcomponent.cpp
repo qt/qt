@@ -59,6 +59,7 @@
 
 QT_BEGIN_NAMESPACE
 class QByteArray;
+int statusId = qRegisterMetaType<QmlComponent::Status>("QmlComponent::Status");
 
 /*!
     \class QmlComponent

@@ -40,9 +40,9 @@
 **
 ****************************************************************************/
 
-#include "javascriptgrammar_p.h"
+#include "qmljsgrammar_p.h"
 
-const char *const JavaScriptGrammar::spell [] = {
+const char *const QmlJSGrammar::spell [] = {
   "end of file", "&", "&&", "&=", "break", "case", "catch", ":", ";", "continue", 
   "default", "delete", "/", "/=", "do", ".", "else", "=", "==", "===", 
   "finally", "for", "function", ">=", ">", ">>", ">>=", ">>>", ">>>=", "identifier", 
@@ -54,7 +54,7 @@ const char *const JavaScriptGrammar::spell [] = {
   "null", "true", "false", "const", "debugger", "reserved word", "multiline string literal", "public", "import", 0, 
   0};
 
-const int JavaScriptGrammar::lhs [] = {
+const int QmlJSGrammar::lhs [] = {
   91, 92, 92, 95, 95, 96, 96, 94, 93, 98, 
   98, 100, 100, 101, 101, 97, 99, 99, 103, 104, 
   104, 99, 99, 99, 99, 99, 99, 99, 111, 111, 
@@ -89,7 +89,7 @@ const int JavaScriptGrammar::lhs [] = {
   185, 186, 186, 189, 190, 190, 191, 191, 187, 187, 
   118, 118, 192};
 
-const int JavaScriptGrammar:: rhs[] = {
+const int QmlJSGrammar:: rhs[] = {
   2, 1, 1, 1, 2, 3, 3, 0, 1, 1, 
   2, 1, 3, 2, 3, 2, 1, 5, 1, 2, 
   2, 4, 3, 3, 3, 3, 3, 3, 1, 1, 
@@ -124,7 +124,7 @@ const int JavaScriptGrammar:: rhs[] = {
   1, 0, 1, 1, 1, 2, 1, 1, 0, 1, 
   0, 1, 2};
 
-const int JavaScriptGrammar::action_default [] = {
+const int QmlJSGrammar::action_default [] = {
   8, 2, 0, 4, 3, 0, 0, 0, 6, 7, 
   5, 65, 45, 46, 43, 44, 47, 9, 0, 1, 
   0, 0, 16, 66, 41, 248, 0, 0, 46, 14, 
@@ -185,7 +185,7 @@ const int JavaScriptGrammar::action_default [] = {
   0, 12, 0, 18, 13, 20, 21, 257, 250, 0, 
   258, 254, 0, 256, 246, 0, 247, 251, 323};
 
-const int JavaScriptGrammar::goto_default [] = {
+const int QmlJSGrammar::goto_default [] = {
   6, 5, 19, 1, 4, 3, 32, 34, 33, 570, 
   22, 18, 538, 539, 231, 226, 230, 232, 229, 236, 
   517, 235, 264, 57, 65, 495, 494, 388, 387, 48, 
@@ -198,7 +198,7 @@ const int JavaScriptGrammar::goto_default [] = {
   454, 453, 473, 474, 220, 234, 216, 219, 233, 241, 
   240, 0};
 
-const int JavaScriptGrammar::action_index [] = {
+const int QmlJSGrammar::action_index [] = {
   8, -91, 14, -91, -15, 296, 67, 94, -91, -91, 
   -91, -91, -91, -91, -91, -91, -91, -91, 109, -91, 
   184, 408, -91, -91, -91, -91, 45, 125, 170, -91, 
@@ -319,7 +319,7 @@ const int JavaScriptGrammar::action_index [] = {
   -102, -102, 128, -102, -102, -102, -102, -102, -102, -102, 
   -102, -102, -6, -102, -102, 58, -102, -102, -102};
 
-const int JavaScriptGrammar::action_info [] = {
+const int QmlJSGrammar::action_info [] = {
   338, 174, 289, 485, 472, 472, -89, 480, -105, 380, 
   43, 472, -79, -78, -100, 448, -97, 435, -102, 134, 
   304, 326, 132, 104, 478, 375, 489, 372, 374, 456, 
@@ -573,7 +573,7 @@ const int JavaScriptGrammar::action_info [] = {
   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
   0, 0, 0};
 
-const int JavaScriptGrammar::action_check [] = {
+const int QmlJSGrammar::action_check [] = {
   60, 8, 36, 36, 33, 33, 7, 60, 7, 36, 
   29, 33, 7, 7, 7, 36, 7, 55, 7, 78, 
   1, 78, 48, 1, 36, 33, 36, 36, 60, 5, 

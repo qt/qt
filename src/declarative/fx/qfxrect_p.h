@@ -68,14 +68,17 @@ class QFxRectPrivate : public QFxItemPrivate
     Q_DECLARE_PUBLIC(QFxRect)
 
 public:
-    QFxRectPrivate()
-      : gradient(0), _pen(0), _radius(0)
+    QFxRectPrivate() :
+#if defined(QFX_RENDER_OPENGL)
+    rectTexture(0),
+#endif //QFX_RENDER_OPENGL
+    gradient(0), pen(0), radius(0)
     {
     }
 
     ~QFxRectPrivate()
     {
-        delete _pen;
+        delete pen;
     }
 
     void init()
@@ -83,24 +86,24 @@ public:
     }
 
 #if defined(QFX_RENDER_OPENGL)
-    GLTexture _rectTexture;
+    QSimpleCanvasItem::CachedTexture *rectTexture;
 #endif
     QColor getColor();
-    QColor _color;
+    QColor color;
     QFxGradient *gradient;
-    QColor _tintColor;
-    QFxPen *pen() {
-        if (!_pen) {
+    QColor tintColor;
+    QFxPen *getPen() {
+        if (!pen) {
             Q_Q(QFxRect);
-            _pen = new QFxPen;
-            QObject::connect(_pen, SIGNAL(updated()), q, SLOT(doUpdate()));
+            pen = new QFxPen;
+            QObject::connect(pen, SIGNAL(updated()), q, SLOT(doUpdate()));
         }
-        return _pen;
+        return pen;
     }
-    QFxPen *_pen;
-    qreal _radius;
+    QFxPen *pen;
+    qreal radius;
 #if defined(QFX_RENDER_QPAINTER)
-    QPixmap _rectImage;
+    QPixmap rectImage;
 #endif
 };
 

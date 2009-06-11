@@ -45,6 +45,9 @@
 #include <QtDeclarative/qfxglobal.h>
 #include <QtDeclarative/qmldebuggerstatus.h>
 #include <QtDeclarative/qsimplecanvas.h>
+#if defined(QFX_RENDER_OPENGL)
+#include <QtDeclarative/gltexture.h>
+#endif
 #include <QtCore/qobject.h>
 #include <QtGui/qgraphicsitem.h>
 
@@ -90,7 +93,8 @@ public:
                   SimpleItem = 0x00000020,
                   IsFocusPanel = 0x00000040,
                   IsFocusRealm = 0x00000080,
-                  AcceptsInputMethods = 0x00000100};
+                  AcceptsInputMethods = 0x00000100,
+                  IsOpaque = 0x00000200 };
     Q_DECLARE_FLAGS(Options, Option)
 
     QSimpleCanvasItem(QSimpleCanvasItem *parent=0);
@@ -167,7 +171,8 @@ public:
     class GLPainter 
     {
     public:
-        GLPainter(QSimpleCanvasItem *i) : item(i), activeOpacity(1) {}
+        GLPainter();
+        GLPainter(QSimpleCanvasItem *i);
         QSimpleCanvasItem *item;
         QSimpleCanvas::Matrix activeTransform;
         qreal activeOpacity;
@@ -175,9 +180,16 @@ public:
 
         QGLShaderProgram *useTextureShader();
         QGLShaderProgram *useColorShader(const QColor &);
-        void  drawPixmap(const QPointF &, const GLTexture &);
-        void  drawPixmap(const QRectF &, const GLTexture &);
+        void drawPixmap(const QPointF &, const GLTexture &);
+        void drawPixmap(const QRectF &, const GLTexture &);
+        void fillRect(const QRectF &, const QColor &);
+
+        void invalidate();
+        
+        bool blendEnabled;
+
     private:
+        int flags;
         GLPainter(const GLPainter &);
         GLPainter &operator=(const GLPainter &);
     };
@@ -227,6 +239,28 @@ public:
     static QSimpleCanvasItem *findNextFocus(QSimpleCanvasItem *item);
 
     GLBasicShaders *basicShaders() const;
+
+#if defined(QFX_RENDER_OPENGL)
+    class CachedTexture : public GLTexture 
+    {
+    public:
+        void addRef();
+        void release();
+
+        int pixmapWidth() const;
+        int pixmapHeight() const;
+
+    private:
+        CachedTexture();
+        friend class QSimpleCanvasItem;
+        QSimpleCanvasPrivate *d;
+        QString s;
+        int r, w, h;
+    };
+
+    CachedTexture *cachedTexture(const QString &);
+    CachedTexture *cachedTexture(const QString &, const QPixmap &);
+#endif
   
     static QPixmap string(const QString &, const QColor & = Qt::black, const QFont & = QFont());
 

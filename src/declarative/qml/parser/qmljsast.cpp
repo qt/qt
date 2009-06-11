@@ -39,15 +39,15 @@
 **
 ****************************************************************************/
 
-#include "javascriptast_p.h"
+#include "qmljsast_p.h"
 
 
 
-#include "javascriptastvisitor_p.h"
+#include "qmljsastvisitor_p.h"
 
 QT_BEGIN_NAMESPACE
 
-namespace JavaScript { namespace AST {
+namespace QmlJS { namespace AST {
 
 int NumericLiteral::suffixLength[] = {
     0, // noSuffix
@@ -893,7 +893,7 @@ void UiArrayBinding::accept0(Visitor *visitor)
 {
     if (visitor->visit(this)) {
         acceptChild(qualifiedId, visitor);
-        for (UiObjectMemberList *it = members; it; it = it->next)
+        for (UiArrayMemberList *it = members; it; it = it->next)
             acceptChild(it->member, visitor);
     }
 
@@ -904,6 +904,16 @@ void UiObjectMemberList::accept0(Visitor *visitor)
 {
     if (visitor->visit(this)) {
         for (UiObjectMemberList *it = this; it; it = it->next)
+            acceptChild(it->member, visitor);
+    }
+
+    visitor->endVisit(this);
+}
+
+void UiArrayMemberList::accept0(Visitor *visitor)
+{
+    if (visitor->visit(this)) {
+        for (UiArrayMemberList *it = this; it; it = it->next)
             acceptChild(it->member, visitor);
     }
 
@@ -945,7 +955,7 @@ void UiSourceElement::accept0(Visitor *visitor)
     visitor->endVisit(this);
 }
 
-} } // namespace JavaScript::AST
+} } // namespace QmlJS::AST
 
 QT_END_NAMESPACE
 

@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef JAVASCRIPTPRETTYPRETTY_P_H
-#define JAVASCRIPTPRETTYPRETTY_P_H
+#ifndef QMLJSPRETTYPRETTY_P_H
+#define QMLJSPRETTYPRETTY_P_H
 
 //
 //  W A R N I N G
@@ -55,13 +55,13 @@
 
 #include <QtCore/qglobal.h>
 
-#include "javascriptastvisitor_p.h"
+#include "qmljsastvisitor_p.h"
 
 QT_BEGIN_NAMESPACE
 
 class QTextStream;
 
-namespace JavaScript {
+namespace QmlJS {
 
 class PrettyPretty: protected AST::Visitor
 {
@@ -322,7 +322,7 @@ private:
     Q_DISABLE_COPY(PrettyPretty)
 };
 
-} // namespace JavaScript
+} // namespace QmlJS
 
 QT_END_NAMESPACE
 

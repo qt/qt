@@ -238,11 +238,6 @@ void QTreeView::setModel(QAbstractItemModel *model)
     connect(d->model, SIGNAL(rowsRemoved(QModelIndex,int,int)),
             this, SLOT(rowsRemoved(QModelIndex,int,int)));
 
-    connect(d->model, SIGNAL(columnsAboutToBeRemoved(QModelIndex,int,int)),
-            this, SLOT(_q_columnsAboutToBeRemoved(QModelIndex,int,int)));
-    connect(d->model, SIGNAL(columnsRemoved(QModelIndex,int,int)),
-            this, SLOT(_q_columnsRemoved(QModelIndex,int,int)));
-
     connect(d->model, SIGNAL(modelAboutToBeReset()), SLOT(_q_modelAboutToBeReset()));
 
     if (d->sortingEnabled)
@@ -2072,7 +2067,8 @@ QModelIndex QTreeView::moveCursor(CursorAction cursorAction, Qt::KeyboardModifie
             const bool useTopIndex = (cursorAction == MoveUp || cursorAction == MovePrevious);
             int index = useTopIndex ? INT_MAX : INT_MIN;
             const QItemSelection selection = d->selectionModel->selection();
-            foreach (const QItemSelectionRange &range, selection) {
+            for (int i = 0; i < selection.count(); ++i) {
+                const QItemSelectionRange &range = selection.at(i);
                 int candidate = d->viewIndex(useTopIndex ? range.topLeft() : range.bottomRight());
                 if (candidate >= 0)
                     index = useTopIndex ? qMin(index, candidate) : qMax(index, candidate);
@@ -3071,16 +3067,16 @@ void QTreeViewPrivate::_q_modelAboutToBeReset()
 
 void QTreeViewPrivate::_q_columnsAboutToBeRemoved(const QModelIndex &parent, int start, int end)
 {
-    Q_UNUSED(parent);
     if (start <= 0 && 0 <= end)
         viewItems.clear();
+    QAbstractItemViewPrivate::_q_columnsAboutToBeRemoved(parent, start, end);
 }
 
 void QTreeViewPrivate::_q_columnsRemoved(const QModelIndex &parent, int start, int end)
 {
-    Q_UNUSED(parent);
     if (start <= 0 && 0 <= end)
         doDelayedItemsLayout();
+    QAbstractItemViewPrivate::_q_columnsRemoved(parent, start, end);
 }
 
 void QTreeViewPrivate::layout(int i)
@@ -3558,7 +3554,8 @@ QList<QPair<int, int> > QTreeViewPrivate::columnRanges(const QModelIndex &topInd
     QPair<int, int> current;
     current.first = -2; // -1 is not enough because -1+1 = 0
     current.second = -2;
-    foreach (int logicalColumn, logicalIndexes) {
+    for(int i = 0; i < logicalIndexes.count(); ++i) {
+        const int logicalColumn = logicalIndexes.at(i);
         if (current.second + 1 != logicalColumn) {
             if (current.first != -2) {
                 //let's save the current one

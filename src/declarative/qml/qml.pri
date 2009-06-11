@@ -63,7 +63,8 @@ HEADERS += qml/qmlparser_p.h \
     qml/qmldeclarativedata_p.h \
     qml/qmlerror.h \
     qml/qmlscriptparser_p.h \
-    qml/qmlbasicscript_p.h  
+    qml/qmlbasicscript_p.h \
+    qml/qpodvector_p.h
 
 # for qtscript debugger
 QT += scripttools

@@ -288,6 +288,7 @@ private slots:
     void render_systemClip3_data();
     void render_systemClip3();
     void render_task252837();
+    void render_worldTransform();
 
     void setContentsMargins();
 
@@ -7151,6 +7152,99 @@ void tst_QWidget::render_task252837()
     // Please do not crash.
     widget.render(&painter);
 }
+
+void tst_QWidget::render_worldTransform()
+{
+    class MyWidget : public QWidget
+    { public:
+        void paintEvent(QPaintEvent *)
+        {
+            QPainter painter(this);
+            // Make sure world transform is identity.
+            QCOMPARE(painter.worldTransform(), QTransform());
+
+            // Make sure device transform is correct.
+            const QPoint widgetOffset = geometry().topLeft();
+            QTransform expectedDeviceTransform = QTransform::fromTranslate(105, 5);
+            expectedDeviceTransform.rotate(90);
+            expectedDeviceTransform.translate(widgetOffset.x(), widgetOffset.y());
+            QCOMPARE(painter.deviceTransform(), expectedDeviceTransform);
+
+            // Set new world transform.
+            QTransform newWorldTransform = QTransform::fromTranslate(10, 10);
+            newWorldTransform.rotate(90);
+            painter.setWorldTransform(newWorldTransform);
+            QCOMPARE(painter.worldTransform(), newWorldTransform);
+
+            // Again, check device transform.
+            expectedDeviceTransform.translate(10, 10);
+            expectedDeviceTransform.rotate(90);
+            QCOMPARE(painter.deviceTransform(), expectedDeviceTransform);
+
+            painter.fillRect(QRect(0, 0, 20, 10), Qt::green);
+        }
+    };
+
+    MyWidget widget;
+    widget.setFixedSize(100, 100);
+    widget.setPalette(Qt::red);
+    widget.setAutoFillBackground(true);
+
+    MyWidget child;
+    child.setParent(&widget);
+    child.move(50, 50);
+    child.setFixedSize(50, 50);
+    child.setPalette(Qt::blue);
+    child.setAutoFillBackground(true);
+
+    QImage image(QSize(110, 110), QImage::Format_RGB32);
+    image.fill(QColor(Qt::black).rgb());
+
+    QPainter painter(&image);
+    painter.translate(105, 5);
+    painter.rotate(90);
+
+    const QTransform worldTransform = painter.worldTransform();
+    const QTransform deviceTransform = painter.deviceTransform();
+
+    // Render widgets onto image.
+    widget.render(&painter);
+#ifdef RENDER_DEBUG
+    image.save("render_worldTransform_image.png");
+#endif
+
+    // Ensure the transforms are unchanged after render.
+    QCOMPARE(painter.worldTransform(), painter.worldTransform());
+    QCOMPARE(painter.deviceTransform(), painter.deviceTransform());
+    painter.end();
+
+    // Paint expected image.
+    QImage expected(QSize(110, 110), QImage::Format_RGB32);
+    expected.fill(QColor(Qt::black).rgb());
+
+    QPainter expectedPainter(&expected);
+    expectedPainter.translate(105, 5);
+    expectedPainter.rotate(90);
+    expectedPainter.save();
+    expectedPainter.fillRect(widget.rect(),Qt::red);
+    expectedPainter.translate(10, 10);
+    expectedPainter.rotate(90);
+    expectedPainter.fillRect(QRect(0, 0, 20, 10), Qt::green);
+    expectedPainter.restore();
+    expectedPainter.translate(50, 50);
+    expectedPainter.fillRect(child.rect(),Qt::blue);
+    expectedPainter.translate(10, 10);
+    expectedPainter.rotate(90);
+    expectedPainter.fillRect(QRect(0, 0, 20, 10), Qt::green);
+    expectedPainter.end();
+
+#ifdef RENDER_DEBUG
+    expected.save("render_worldTransform_expected.png");
+#endif
+
+    QCOMPARE(image, expected);
+}
+
 void tst_QWidget::setContentsMargins()
 {
     QLabel label("why does it always rain on me?");

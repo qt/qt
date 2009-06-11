@@ -3,7 +3,7 @@
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
 ** Contact: Qt Software Information (qt-info@nokia.com)
 **
-** This file is part of the QtDeclarative module of the Qt Toolkit.
+** This file is part of the QtScript module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef QFXIMAGE_P_H
-#define QFXIMAGE_P_H
+#ifndef QMLJSMEMORYPOOL_P_H
+#define QMLJSMEMORYPOOL_P_H
 
 //
 //  W A R N I N G
@@ -53,66 +53,78 @@
 // We mean it.
 //
 
-#include "qfxitem_p.h"
-
-#if defined(QFX_RENDER_OPENGL)
-#include "gltexture.h"
-#endif
+#include <QtCore/qglobal.h>
+#include <QtCore/qshareddata.h>
+#include <string.h>
 
 QT_BEGIN_NAMESPACE
 
-class QSvgRenderer;
-class QWebPage;
-class QNetworkReply;
-class QIODevice;
+namespace QmlJS {
 
-class QFxImagePrivate : public QFxItemPrivate
+class MemoryPool : public QSharedData
 {
-    Q_DECLARE_PUBLIC(QFxImage)
-
 public:
-    QFxImagePrivate()
-      : scaleGrid(0), tiled(false), smooth(false), opaque(false),
-#if defined(QFX_RENDER_OPENGL)
-        texDirty(true), tex(0),
-#endif
-        status(QFxImage::Idle), sciReply(0), progress(0.0)
-    {
+    enum { maxBlockCount = -1 };
+    enum { defaultBlockSize = 1 << 12 };
+
+    MemoryPool() {
+        m_blockIndex = maxBlockCount;
+        m_currentIndex = 0;
+        m_storage = 0;
+        m_currentBlock = 0;
+        m_currentBlockSize = 0;
     }
 
-    ~QFxImagePrivate() 
-    {
-        delete scaleGrid;
+    virtual ~MemoryPool() {
+        for (int index = 0; index < m_blockIndex + 1; ++index)
+            qFree(m_storage[index]);
+
+        qFree(m_storage);
     }
 
-    void setContent(QIODevice* dev, const QString &url);
+    char *allocate(int bytes) {
+        bytes += (8 - bytes) & 7; // ensure multiple of 8 bytes (maintain alignment)
+        if (m_currentBlock == 0 || m_currentBlockSize < m_currentIndex + bytes) {
+            ++m_blockIndex;
+            m_currentBlockSize = defaultBlockSize << m_blockIndex;
 
-    QFxScaleGrid *getScaleGrid()
-    {
-        if (!scaleGrid) 
-            scaleGrid = new QFxScaleGrid;
-        return scaleGrid;
+            m_storage = reinterpret_cast<char**>(qRealloc(m_storage, sizeof(char*) * (1 + m_blockIndex)));
+            m_currentBlock = m_storage[m_blockIndex] = reinterpret_cast<char*>(qMalloc(m_currentBlockSize));
+            ::memset(m_currentBlock, 0, m_currentBlockSize);
+
+            m_currentIndex = (8 - quintptr(m_currentBlock)) & 7; // ensure first chunk is 64-bit aligned
+            Q_ASSERT(m_currentIndex + bytes <= m_currentBlockSize);
+        }
+
+        char *p = reinterpret_cast<char *>
+            (m_currentBlock + m_currentIndex);
+
+        m_currentIndex += bytes;
+
+        return p;
     }
-            
-    QFxScaleGrid *scaleGrid;
-    QPixmap pix;
-    bool tiled : 1;
-    bool smooth : 1;
-    bool opaque : 1;
-#if defined(QFX_RENDER_OPENGL)
-    bool texDirty : 1;
-    void checkDirty();
-    QSimpleCanvasItem::CachedTexture *tex;
-#endif
 
-    QFxImage::Status status;
-    QUrl url;
-    QUrl sciurl;
-    QNetworkReply *sciReply;
-    QPointer<QNetworkReply> reply;
-    qreal progress;
+    int bytesAllocated() const {
+        int bytes = 0;
+        for (int index = 0; index < m_blockIndex; ++index)
+            bytes += (defaultBlockSize << index);
+        bytes += m_currentIndex;
+        return bytes;
+    }
+
+private:
+    int m_blockIndex;
+    int m_currentIndex;
+    char *m_currentBlock;
+    int m_currentBlockSize;
+    char **m_storage;
+
+private:
+    Q_DISABLE_COPY(MemoryPool)
 };
+
+} // namespace QmlJS
 
 QT_END_NAMESPACE
 
-#endif // QFXIMAGE_P_H
+#endif

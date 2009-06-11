@@ -72,7 +72,7 @@
 
 QT_BEGIN_NAMESPACE
 
-class Q_GUI_EXPORT QFontEngineGlyphCache
+class QFontEngineGlyphCache
 {
 public:
     QFontEngineGlyphCache(const QTransform &matrix) : m_transform(matrix) { }
@@ -83,7 +83,7 @@ public:
         Raster_Mono
     };
 
-    virtual ~QFontEngineGlyphCache();
+    virtual ~QFontEngineGlyphCache() { }
 
     QTransform m_transform;
 };

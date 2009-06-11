@@ -157,6 +157,7 @@ QGLEngineShaderManager::QGLEngineShaderManager(QGLContext* context)
     simpleShaderProg->addShader(compiledShaders[PositionOnlyVertexShader]);
     simpleShaderProg->addShader(compiledShaders[MainFragmentShader]);
     simpleShaderProg->addShader(compiledShaders[ShockingPinkSrcFragmentShader]);
+    simpleShaderProg->bindAttributeLocation("vertexCoordsArray", QT_VERTEX_COORDS_ATTR);
     simpleShaderProg->link();
     if (!simpleShaderProg->isLinked()) {
         qCritical() << "Errors linking simple shader:"
@@ -444,7 +445,7 @@ bool QGLEngineShaderManager::useCorrectShaderProg()
     requiredProgram.program->addShader(requiredProgram.compositionFragShader);
 
     // We have to bind the vertex attribute names before the program is linked:
-    requiredProgram.program->bindAttributeLocation("inputVertex", QT_VERTEX_COORDS_ATTR);
+    requiredProgram.program->bindAttributeLocation("vertexCoordsArray", QT_VERTEX_COORDS_ATTR);
     if (useTextureCoords)
         requiredProgram.program->bindAttributeLocation("textureCoordArray", QT_TEXTURE_COORDS_ATTR);
 

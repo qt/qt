@@ -3,7 +3,7 @@
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
 ** Contact: Qt Software Information (qt-info@nokia.com)
 **
-** This file is part of the QtScript module of the Qt Toolkit.
+** This file is part of the QtCore module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef JAVASCRIPTMEMORYPOOL_P_H
-#define JAVASCRIPTMEMORYPOOL_P_H
+#ifndef QFILEINFO_P_H
+#define QFILEINFO_P_H
 
 //
 //  W A R N I N G
@@ -53,78 +53,74 @@
 // We mean it.
 //
 
-#include <QtCore/qglobal.h>
-#include <QtCore/qshareddata.h>
-#include <string.h>
+#include "qfileinfo.h"
 
 QT_BEGIN_NAMESPACE
 
-namespace JavaScript {
-
-class MemoryPool : public QSharedData
+class QFileInfoPrivate
 {
 public:
-    enum { maxBlockCount = -1 };
-    enum { defaultBlockSize = 1 << 12 };
+    QFileInfoPrivate(const QFileInfo *copy=0);
+    ~QFileInfoPrivate();
 
-    MemoryPool() {
-        m_blockIndex = maxBlockCount;
-        m_currentIndex = 0;
-        m_storage = 0;
-        m_currentBlock = 0;
-        m_currentBlockSize = 0;
-    }
+    void initFileEngine(const QString &);
 
-    virtual ~MemoryPool() {
-        for (int index = 0; index < m_blockIndex + 1; ++index)
-            qFree(m_storage[index]);
+    enum Access {
+        ReadAccess,
+        WriteAccess,
+        ExecuteAccess
+    };
+    bool hasAccess(Access access) const;
 
-        qFree(m_storage);
-    }
+    uint getFileFlags(QAbstractFileEngine::FileFlags) const;
+    QDateTime &getFileTime(QAbstractFileEngine::FileTime) const;
+    QString getFileName(QAbstractFileEngine::FileName) const;
 
-    char *allocate(int bytes) {
-        bytes += (8 - bytes) & 7; // ensure multiple of 8 bytes (maintain alignment)
-        if (m_currentBlock == 0 || m_currentBlockSize < m_currentIndex + bytes) {
-            ++m_blockIndex;
-            m_currentBlockSize = defaultBlockSize << m_blockIndex;
-
-            m_storage = reinterpret_cast<char**>(qRealloc(m_storage, sizeof(char*) * (1 + m_blockIndex)));
-            m_currentBlock = m_storage[m_blockIndex] = reinterpret_cast<char*>(qMalloc(m_currentBlockSize));
-            ::memset(m_currentBlock, 0, m_currentBlockSize);
-
-            m_currentIndex = (8 - quintptr(m_currentBlock)) & 7; // ensure first chunk is 64-bit aligned
-            Q_ASSERT(m_currentIndex + bytes <= m_currentBlockSize);
+    enum { CachedFileFlags=0x01, CachedLinkTypeFlag=0x02, CachedBundleTypeFlag=0x04,
+           CachedMTime=0x10, CachedCTime=0x20, CachedATime=0x40,
+           CachedSize =0x08 };
+    struct Data {
+        inline Data()
+            : ref(1), fileEngine(0), cache_enabled(1)
+        { clear(); }
+        inline Data(const Data &copy)
+            : ref(1), fileEngine(QAbstractFileEngine::create(copy.fileName)),
+              fileName(copy.fileName), cache_enabled(copy.cache_enabled)
+        { clear(); }
+        inline ~Data() { delete fileEngine; }
+        inline void clearFlags() {
+            fileFlags = 0;
+            cachedFlags = 0;
+            if (fileEngine)
+                (void)fileEngine->fileFlags(QFSFileEngine::Refresh);
         }
+        inline void clear() {
+            fileNames.clear();
+            clearFlags();
+        }
+        mutable QAtomicInt ref;
 
-        char *p = reinterpret_cast<char *>
-            (m_currentBlock + m_currentIndex);
+        QAbstractFileEngine *fileEngine;
+        mutable QString fileName;
+        mutable QHash<int, QString> fileNames;
 
-        m_currentIndex += bytes;
-
-        return p;
+        mutable uint cachedFlags : 31;
+        mutable uint cache_enabled : 1;
+        mutable uint fileFlags;
+        mutable qint64 fileSize;
+        mutable QDateTime fileTimes[3];
+        inline bool getCachedFlag(uint c) const
+        { return cache_enabled ? (cachedFlags & c) : 0; }
+        inline void setCachedFlag(uint c)
+        { if (cache_enabled) cachedFlags |= c; }
+    } *data;
+    inline void reset() {
+        detach();
+        data->clear();
     }
-
-    int bytesAllocated() const {
-        int bytes = 0;
-        for (int index = 0; index < m_blockIndex; ++index)
-            bytes += (defaultBlockSize << index);
-        bytes += m_currentIndex;
-        return bytes;
-    }
-
-private:
-    int m_blockIndex;
-    int m_currentIndex;
-    char *m_currentBlock;
-    int m_currentBlockSize;
-    char **m_storage;
-
-private:
-    Q_DISABLE_COPY(MemoryPool)
+    void detach();
 };
-
-} // namespace JavaScript
 
 QT_END_NAMESPACE
 
-#endif
+#endif // QFILEINFO_P_H

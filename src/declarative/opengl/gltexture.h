@@ -69,11 +69,15 @@ public:
     bool isNull() const;
     void clear();
 
-    void setImage(const QImage &);
+    enum ImageMode { NonPowerOfTwo, PowerOfTwo };
+    void setImage(const QImage &, ImageMode = NonPowerOfTwo);
     void copyImage(const QImage &, const QPoint & = QPoint(0, 0), const QRect & = QRect());
 
     int width() const;
     int height() const;
+    qreal glWidth() const;
+    qreal glHeight() const;
+    QSize glSize() const;
     QSize size() const;
     void setSize(const QSize &);
 

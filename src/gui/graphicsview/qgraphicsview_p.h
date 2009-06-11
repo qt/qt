@@ -159,19 +159,15 @@ public:
 
     QRect mapToViewRect(const QGraphicsItem *item, const QRectF &rect) const;
     QRegion mapToViewRegion(const QGraphicsItem *item, const QRectF &rect) const;
-    void itemUpdated(QGraphicsItem *item, const QRectF &rect);
     bool fullUpdatePending;
-    QList<QRect> dirtyRects;
-    QList<QRegion> dirtyRegions;
-    int dirtyRectCount;
+    QRegion dirtyRegion;
     QRect dirtyBoundingRect;
-    void updateLater();
-    bool updatingLater;
-    void _q_updateLaterSlot();
+    void processPendingUpdates();
     void updateAll();
     void updateRect(const QRect &rect);
     void updateRegion(const QRegion &region);
     bool updateSceneSlotReimplementedChecked;
+    QRegion exposedRegion;
 
     QList<QGraphicsItem *> findItems(const QRegion &exposedRegion, bool *allItems) const;
 };

@@ -1,4 +1,5 @@
 #include <qtest.h>
+#include <QDebug>
 #include <QtDeclarative/qmlengine.h>
 #include <QtDeclarative/qmlcomponent.h>
 #include <QtDeclarative/qnumberformat.h>

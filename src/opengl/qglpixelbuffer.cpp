@@ -76,7 +76,11 @@
     \sa {opengl/pbuffers}{Pbuffers Example}
 */
 
+#include <QtCore/qglobal.h>
+
+#if !defined(QT_OPENGL_ES_1) && !defined(QT_OPENGL_ES_1_CL)
 #include <private/qpaintengineex_opengl2_p.h>
+#endif
 
 #include <qglpixelbuffer.h>
 #include <private/qglpixelbuffer_p.h>

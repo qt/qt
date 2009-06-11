@@ -696,7 +696,7 @@ void QFxTextPrivate::checkImgCache()
         }
 
 #if defined(QFX_RENDER_OPENGL)
-    tex.setImage(imgCache.toImage());
+    tex.setImage(imgCache.toImage(), GLTexture::PowerOfTwo);
 #endif
 
     imgDirty = false;
@@ -755,6 +755,7 @@ void QFxText::paintContents(QPainter &p)
 #elif defined(QFX_RENDER_OPENGL2)
 void QFxText::paintGLContents(GLPainter &p)
 {
+    //return;
     Q_D(QFxText);
     d->checkImgCache();
     if (d->imgCache.isNull())
@@ -792,105 +793,40 @@ void QFxText::paintGLContents(GLPainter &p)
 
     float widthV = d->imgCache.width();
     float heightV = d->imgCache.height();
+    float glWidth = d->tex.glWidth();
+    float glHeight = d->tex.glHeight();
 
     QGLShaderProgram *shader = p.useTextureShader();
 
-    GLfloat vertices[] = { x, y + heightV,
-        x + widthV, y + heightV,
-        x, y, 
-        x + widthV, y };
+    float deltaX = 0.5 / qreal(d->tex.glSize().width());
+    float deltaY = 0.5 / qreal(d->tex.glSize().height());
+    glWidth -= deltaX;
+    glHeight -= deltaY;
 
-    GLfloat texVertices[] = { 0, 0, 
-                              1, 0, 
-                              0, 1,
-                              1, 1 };
+    GLfloat vertices[] = { x, y + heightV,
+                           x + widthV, y + heightV,
+                           x, y, 
+
+                           x + widthV, y + heightV,
+                           x, y, 
+                           x + widthV, y };
+
+    GLfloat texVertices[] = { deltaX, deltaY, 
+                              glWidth, deltaY, 
+                              deltaX, glHeight,
+
+                              glWidth, deltaY, 
+                              deltaX, glHeight,
+                              glWidth, glHeight };
 
     shader->setAttributeArray(SingleTextureShader::Vertices, vertices, 2);
     shader->setAttributeArray(SingleTextureShader::TextureCoords, texVertices, 2);
 
     glBindTexture(GL_TEXTURE_2D, d->tex.texture());
-    glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+    glDrawArrays(GL_TRIANGLES, 0, 6);
 
     shader->disableAttributeArray(SingleTextureShader::Vertices);
     shader->disableAttributeArray(SingleTextureShader::TextureCoords);
-}
-
-#elif defined(QFX_RENDER_OPENGL)
-void QFxText::paintGLContents(GLPainter &p)
-{
-    Q_D(QFxText);
-    d->checkImgCache();
-    if (d->imgCache.isNull())
-        return;
-
-    int w = width();
-    int h = height();
-
-    float x = 0;
-    float y = 0;
-
-    switch (d->hAlign) {
-    case AlignLeft:
-        x = 0;
-        break;
-    case AlignRight:
-        x = w - d->imgCache.width();
-        break;
-    case AlignHCenter:
-        x = (w - d->imgCache.width()) / 2;
-        break;
-    }
-
-    switch (d->vAlign) {
-    case AlignTop:
-        y = 0;
-        break;
-    case AlignBottom:
-        y = h - d->imgCache.height();
-        break;
-    case AlignVCenter:
-        y = (h - d->imgCache.height()) / 2;
-        break;
-    }
-
-    float widthV = d->imgCache.width();
-    float heightV = d->imgCache.height();
-
-    GLfloat vertices[] = { x, y + heightV,
-        x + widthV, y + heightV,
-        x, y, 
-        x + widthV, y };
-
-    GLfloat texVertices[] = { 0, 0, 
-                              1, 0, 
-                              0, 1,
-                              1, 1 };
-
-    glMatrixMode(GL_MODELVIEW);
-    glLoadMatrixf(p.activeTransform.data());
-    glEnable(GL_TEXTURE_2D);
-    if (p.activeOpacity == 1.) {
-        GLint i = GL_REPLACE;
-        glTexEnviv(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, &i);
-    } else {
-        GLint i = GL_MODULATE;
-        glTexEnviv(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, &i);
-        glColor4f(1, 1, 1, p.activeOpacity);
-    }
-
-    glBindTexture(GL_TEXTURE_2D, d->tex.texture());
-
-    glEnableClientState(GL_VERTEX_ARRAY);
-    glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-
-    glVertexPointer(2, GL_FLOAT, 0, vertices);
-    glTexCoordPointer(2, GL_FLOAT, 0, texVertices);
-
-    glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-
-    glDisableClientState(GL_VERTEX_ARRAY);
-    glDisableClientState(GL_TEXTURE_COORD_ARRAY);
-    glDisable(GL_TEXTURE_2D);
 }
 
 #endif

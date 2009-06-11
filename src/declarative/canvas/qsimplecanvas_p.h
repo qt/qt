@@ -43,6 +43,7 @@
 #define QSIMPLECANVAS_P_H
 
 #include "qsimplecanvas.h"
+#include "qsimplecanvasitem.h"
 #include <qstack.h>
 #include <qdatetime.h>
 
@@ -126,9 +127,10 @@ public:
 #else
     QRect oldDirty;
 #endif
-    QRegion resetDirty();
+    QRect resetDirty();
     void paint(QPainter &p);
 
+    QSimpleCanvasItem *opaqueList;
 
     int timer;
 
@@ -185,6 +187,8 @@ public:
 #endif
     }
     mutable GLBasicShaders *basicShadersInstance;
+
+    QHash<QString, QSimpleCanvasItem::CachedTexture *> cachedTextures;
 
     QList<QGLFramebufferObject *> frameBuffers;
     QGLFramebufferObject *acquire(int, int);

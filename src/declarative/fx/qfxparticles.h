@@ -153,7 +153,7 @@ class Q_DECLARATIVE_EXPORT QFxParticles : public QFxItem
 {
     Q_OBJECT
 
-    Q_PROPERTY(QString source READ source WRITE setSource)
+    Q_PROPERTY(QUrl source READ source WRITE setSource)
     Q_PROPERTY(int count READ count WRITE setCount)
     Q_PROPERTY(int lifeSpan READ lifeSpan WRITE setLifeSpan)
     Q_PROPERTY(int lifeSpanDeviation READ lifeSpanDeviation WRITE setLifeSpanDeviation)
@@ -172,8 +172,8 @@ public:
     QFxParticles(QFxItem *parent=0);
     ~QFxParticles();
 
-    QString source() const;
-    void setSource(const QString &);
+    QUrl source() const;
+    void setSource(const QUrl &);
 
     int count() const;
     void setCount(int cnt);

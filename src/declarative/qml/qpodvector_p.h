@@ -39,42 +39,86 @@
 **
 ****************************************************************************/
 
-#ifndef QMLSCRIPT_H
-#define QMLSCRIPT_H
+#ifndef QPODVECTOR_P_H
+#define QPODVECTOR_P_H
 
-#include <QtDeclarative/qfxglobal.h>
-#include <QtCore/qobject.h>
-#include <QtDeclarative/qml.h>
+#include <QtCore/qglobal.h>
 
-QT_BEGIN_HEADER
 QT_BEGIN_NAMESPACE
 
-QT_MODULE(Declarative)
-
-class QmlScriptPrivate;
-class Q_DECLARATIVE_EXPORT QmlScript : public QObject
+template<class T>
+class QPODVector 
 {
-    Q_OBJECT
-    Q_DECLARE_PRIVATE(QmlScript)
-
-    Q_PROPERTY(QString script READ script WRITE setScript)
-    Q_PROPERTY(QUrl source READ source WRITE setSource)
-    Q_CLASSINFO("DefaultProperty", "script")
-
 public:
-    QmlScript(QObject *parent=0);
+    QPODVector()
+    : m_count(0), m_capacity(0), m_data(0) {}
 
-    QString script() const;
-    void setScript(const QString &);
+    const T &at(int idx) {
+        return m_data[idx];
+    }
 
-    QUrl source() const;
-    void setSource(const QUrl &);
+    T &operator[](int idx) {
+        return m_data[idx];
+    }
 
-private Q_SLOTS:
-    void replyFinished();
+    void clear() {
+        m_count = 0;
+    }
+
+    void prepend(const T &v) {
+        insert(0, v);
+    }
+
+    void append(const T &v) {
+        insert(m_count, v);
+    }
+
+    void insert(int idx, const T &v) {
+        if (m_count == m_capacity) {
+            m_capacity += 1024;
+            m_data = (T *)realloc(m_data, m_capacity * sizeof(T));
+        }
+        int moveCount = m_count - idx;
+        if (moveCount)
+            ::memmove(m_data + idx + 1, m_data + idx, moveCount * sizeof(T));
+        m_count++;
+        m_data[idx] = v;
+    }
+
+    void insertBlank(int idx, int count) {
+        int newSize = m_count + count;
+        if (newSize >= m_capacity) {
+            m_capacity = (newSize + 1023) & 0xFFFFFC00;
+            m_data = (T *)realloc(m_data, m_capacity * sizeof(T));
+        }
+
+        int moveCount = m_count - idx;
+        if (moveCount) 
+            ::memmove(m_data + idx + count,  m_data + idx, 
+                      moveCount * sizeof(T));
+        m_count = newSize;
+    }
+
+    void remove(int idx, int count = 1) {
+        int moveCount = m_count - (idx + count);
+        if (moveCount)
+            ::memmove(m_data + idx, m_data + idx + count, 
+                      moveCount * sizeof(T));
+        m_count -= count;
+    }
+    
+    int count() const {
+        return m_count;
+    }
+
+    QPODVector<T> &operator<<(const T &v) { append(v); return *this; }
+private:
+    QPODVector(const QPODVector &);
+    QPODVector &operator=(const QPODVector &);
+    int m_count;
+    int m_capacity;
+    T *m_data;
 };
-QML_DECLARE_TYPE(QmlScript)
-
 QT_END_NAMESPACE
-QT_END_HEADER
+
 #endif

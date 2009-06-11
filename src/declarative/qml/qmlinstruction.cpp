@@ -85,6 +85,9 @@ void QmlCompiledComponent::dump(QmlInstruction *instr, int idx)
     case QmlInstruction::StoreString:
         qWarning() << idx << "\t" << line << "\t" << "STORE_STRING\t\t" << instr->storeString.propertyIndex << "\t" << instr->storeString.value << "\t\t" << primitives.at(instr->storeString.value);
         break;
+    case QmlInstruction::StoreUrl:
+        qWarning() << idx << "\t" << line << "\t" << "STORE_URL\t\t" << instr->storeUrl.propertyIndex << "\t" << instr->storeUrl.value << "\t\t" << primitives.at(instr->storeUrl.value);
+        break;
     case QmlInstruction::StoreColor:
         qWarning() << idx << "\t" << line << "\t" << "STORE_COLOR\t\t" << instr->storeColor.propertyIndex << "\t" << QString::number(instr->storeColor.value, 16);
         break;
@@ -146,7 +149,7 @@ void QmlCompiledComponent::dump(QmlInstruction *instr, int idx)
         qWarning() << idx << "\t" << line << "\t" << "COMPLETE\t\t" << instr->complete.castValue;
         break;
     case QmlInstruction::AssignObjectList:
-        qWarning() << idx << "\t" << line << "\t" << "ASSIGN_OBJECT_LIST\t" << instr->assignObject.property << "\t" << instr->assignObject.castValue << "\t\t" << ((instr->assignObject.property == -1)?QByteArray("default"):datas.at(instr->assignObject.property));
+        qWarning() << idx << "\t" << line << "\t" << "ASSIGN_OBJECT_LIST\t";
         break;
     case QmlInstruction::FetchAttached:
         qWarning() << idx << "\t" << line << "\t" << "FETCH_ATTACHED\t\t" << instr->fetchAttached.id;

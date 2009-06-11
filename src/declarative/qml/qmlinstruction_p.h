@@ -76,6 +76,7 @@ public:
         //    StoreInteger - Store a int or uint in a core property
         //    StoreBool - Store a bool in a core property
         //    StoreString - Store a QString in a core property
+        //    StoreUrl - Store a QUrl in a core property
         //    StoreColor - Store a QColor in a core property
         //    StoreDate - Store a QDate in a core property
         //    StoreTime - Store a QTime in a core property
@@ -88,6 +89,7 @@ public:
         StoreInteger,             /* storeInteger */
         StoreBool,                /* storeBool */
         StoreString,              /* storeString */
+        StoreUrl,                 /* storeUrl */
         StoreColor,               /* storeColor */
         StoreDate,                /* storeDate */
         StoreTime,                /* storeTime */
@@ -105,8 +107,6 @@ public:
 
         StoreSignal,              /* storeSignal */
 
-        StoreObjectQmlList,
-
         // XXX need to handle storing objects in variants
 
         //
@@ -122,7 +122,9 @@ public:
         BeginObject,              /* begin */
         CompleteObject,           /* complete */
 
-        AssignObjectList,         /* assignObject */
+        StoreObjectQmlList,       /* NA */
+        StoreObjectQList,         /* NA */
+        AssignObjectList,         /* NA */
 
         FetchAttached,            /* fetchAttached */
         FetchQmlList,             /* fetchQmlList */ 
@@ -170,10 +172,6 @@ public:
         } setId;
         struct {
             int property;
-            int castValue;
-        } assignObject;
-        struct {
-            int property;
         } assignValueSource;
         struct {
             int property;
@@ -215,6 +213,10 @@ public:
             int propertyIndex;
             int value;
         } storeString;
+        struct {
+            int propertyIndex;
+            int value;
+        } storeUrl;
         struct {
             int propertyIndex;
             unsigned int value;

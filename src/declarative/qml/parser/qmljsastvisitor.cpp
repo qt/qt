@@ -39,11 +39,11 @@
 **
 ****************************************************************************/
 
-#include "javascriptastvisitor_p.h"
+#include "qmljsastvisitor_p.h"
 
 QT_BEGIN_NAMESPACE
 
-namespace JavaScript { namespace AST {
+namespace QmlJS { namespace AST {
 
 Visitor::Visitor()
 {
@@ -53,6 +53,6 @@ Visitor::~Visitor()
 {
 }
 
-} } // namespace JavaScript::AST
+} } // namespace QmlJS::AST
 
 QT_END_NAMESPACE
