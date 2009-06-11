@@ -225,7 +225,7 @@ int QPrintDialogPrivate::openWindowsPrintDialogModally()
     if (parent)
         parent = parent->window();
     else
-        parent = qApp->activeWindow();
+        parent = QApplication::activeWindow();
 
     QWidget modal_widget;
     modal_widget.setAttribute(Qt::WA_NoChildEventsForParent, true);

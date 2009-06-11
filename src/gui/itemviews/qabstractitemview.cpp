@@ -3784,7 +3784,7 @@ void QAbstractItemViewPrivate::clearOrRemove()
 void QAbstractItemViewPrivate::checkPersistentEditorFocus()
 {
     Q_Q(QAbstractItemView);
-    if (QWidget *widget = qApp->focusWidget()) {
+    if (QWidget *widget = QApplication::focusWidget()) {
         if (persistent.contains(widget)) {
             //a persistent editor has gained the focus
             QModelIndex index = indexForEditor(widget);

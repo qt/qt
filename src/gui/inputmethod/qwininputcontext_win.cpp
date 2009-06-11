@@ -539,7 +539,7 @@ bool QWinInputContext::endComposition()
     }
 
     if (!fw)
-        fw = qApp->focusWidget();
+        fw = QApplication::focusWidget();
 
     if (fw) {
         QInputMethodEvent e;
@@ -637,7 +637,7 @@ bool QWinInputContext::composition(LPARAM lParam)
         // bogus event
         return true;
 
-    QWidget *fw = qApp->focusWidget();
+    QWidget *fw = QApplication::focusWidget();
     if (fw) {
         Q_ASSERT(fw->testAttribute(Qt::WA_WState_Created));
         HIMC imc = getContext(fw->effectiveWinId());

@@ -308,7 +308,7 @@ public:
     inline void setNewGeometry(QRect *geometry)
     {
         Q_Q(QMdiSubWindow);
-        Q_ASSERT(q->parent());
+        Q_ASSERT(parent);
         geometry->setSize(geometry->size().expandedTo(internalMinimumSize));
 #ifndef QT_NO_RUBBERBAND
         if (isInRubberBandMode)

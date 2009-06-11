@@ -379,7 +379,7 @@ void QAbstractButtonPrivate::moveFocus(int key)
 #else
     bool exclusive = autoExclusive;
 #endif
-    QWidget *f = qApp->focusWidget();
+    QWidget *f = QApplication::focusWidget();
     QAbstractButton *fb = qobject_cast<QAbstractButton *>(f);
     if (!fb || !buttonList.contains(fb))
         return;

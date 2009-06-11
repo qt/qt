@@ -1212,7 +1212,7 @@ void QMdiAreaPrivate::internalRaise(QMdiSubWindow *mdiChild) const
 
     QMdiSubWindow *stackUnderChild = 0;
     if (!windowStaysOnTop(mdiChild)) {
-        foreach (QObject *object, q_func()->viewport()->children()) {
+        foreach (QObject *object, viewport->children()) {
             QMdiSubWindow *child = qobject_cast<QMdiSubWindow *>(object);
             if (!child || !childWindows.contains(child))
                 continue;
