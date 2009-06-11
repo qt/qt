@@ -553,6 +553,13 @@ void tst_QTextStream::generateLineData(bool for_QString)
     QTest::newRow("threelines/crlf/crlf/nothing") << QByteArray("ole\r\ndole\r\ndoffen") << (QStringList() << "ole" << "dole" << "doffen");
 
     if (!for_QString) {
+        // utf-8
+        QTest::newRow("utf8/twolines")
+            << QByteArray("\xef\xbb\xbf"
+                          "\x66\x67\x65\x0a"
+                          "\x66\x67\x65\x0a", 11)
+            << (QStringList() << "fge" << "fge");
+
         // utf-16
         // one line
         QTest::newRow("utf16-BE/nothing")
