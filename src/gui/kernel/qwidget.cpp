@@ -885,6 +885,34 @@ void QWidget::setAutoFillBackground(bool enabled)
     \endlist
 
     \sa QEvent, QPainter, QGridLayout, QBoxLayout
+    
+    \section1 SoftKeys
+    \since 4.6
+    \preliminary
+    Softkeys are visualization and platform independent way of setting actions 
+    to widgets. Some platforms  might omit the visualization part and map
+    hardware keys directly to actions. Softkeys are needed by users
+    who want to take full advantage of hardware keys and toolbars 
+    in underlying platform. 
+
+    There are three major use cases supported. First one is a mobile device 
+    with keypad navigation and no touch ui. Second use case is a mobile
+    device with touch ui. Third use case is desktop. For now the softkey API is 
+    only implemented for Series60.
+
+    The most common use case for mobile platforms is to map a menu to 
+    left softkey. Another very common use case is to have buttons from dialog
+    such as ok/cancel mapped to softkeys which then can be mapped to hardware
+    keys. 
+    
+    Softkeys API allows user to set any amount of softkeys. Focused widget
+    will automatically handle setting the softkeys. Though one should
+    be aware that there might be restrictions to amount of softkeys that can 
+    be used by the device.
+
+    \o Series60: For series60 menu button is automatically mapped to left
+    soft key if there is QMainWindow with QMenuBar in widgets parent hierarchy.
+        
 */
 
 QWidgetMapper *QWidgetPrivate::mapper = 0;                // widget with wid
@@ -11555,6 +11583,9 @@ void QWidget::clearMask()
 }
 
 /*!
+    \preliminary
+    \since 4.6
+    
     Returns the (possibly empty) list of this widget's softkeys.
     Returned list cannot be changed. Softkeys should be added
     and removed via method called setSoftKeys
@@ -11573,6 +11604,9 @@ const QList<QAction*>& QWidget::softKeys() const
 }
 
 /*!
+    \preliminary
+    \since 4.6
+    
     Sets the softkey \a softkey to this widget's list of softkeys,
     Setting 0 as softkey will clear all the existing softkeys set
     to the widget
