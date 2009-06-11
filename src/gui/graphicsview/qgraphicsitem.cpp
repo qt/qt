@@ -3064,7 +3064,7 @@ QPointF QGraphicsItem::transformOrigin() const
 /*!
     \since 4.6
 
-    Sets the origin for transformation in item coordinate
+    Sets the \a origin for transformation in item coordinate
 
     \sa transformOrigin(), {Transformations}
 */
@@ -3079,11 +3079,14 @@ void QGraphicsItem::setTransformOrigin(const QPointF &origin)
 }
 
 /*!
-    \fn inline void setTransformOrigin(qreal x, qreal y)
+    \fn void QGraphicsItem::setTransformOrigin(qreal x, qreal y)
 
     \since 4.6
     \overload
 
+    Sets the origin for the transformation to the point
+    composed of \a x and \a y.
+    
     \sa setTransformOrigin(), {Transformations}
 */
 
@@ -6483,7 +6486,7 @@ QGraphicsObject::QGraphicsObject(QGraphicsItemPrivate &dd, QGraphicsItem *parent
 */
 
 /*!
-  \property QGraphicsObject:y
+  \property QGraphicsObject::y
   \brief the y position of the item
 
   Describes the items y position.
