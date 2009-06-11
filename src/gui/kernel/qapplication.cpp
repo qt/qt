@@ -4055,7 +4055,7 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
             touchEvent->setAccepted(acceptTouchEvents);
             res = acceptTouchEvents && d->notify_helper(widget, touchEvent);
             eventAccepted = touchEvent->isAccepted();
-            widget->setAttribute(Qt::WA_AcceptedTouchBeginEvent, res && eventAccepted);
+            widget->setAttribute(Qt::WA_WState_AcceptedTouchBeginEvent, res && eventAccepted);
             touchEvent->spont = false;
             if (res && eventAccepted) {
                 // the first widget to accept the TouchBegin gets an implicit grab.
@@ -5402,13 +5402,15 @@ bool QApplicationPrivate::translateRawTouchEvent(QWidget *window,
         {
             // if the TouchBegin handler recurses, we assume that means the event
             // has been implicitly accepted and continue to send touch events
-            widget->setAttribute(Qt::WA_AcceptedTouchBeginEvent);
+            widget->setAttribute(Qt::WA_WState_AcceptedTouchBeginEvent);
             res = QApplication::sendSpontaneousEvent(widget, &touchEvent)
                   && touchEvent.isAccepted();
             break;
         }
         default:
-            if (widget->testAttribute(Qt::WA_AcceptedTouchBeginEvent)) {
+            if (widget->testAttribute(Qt::WA_WState_AcceptedTouchBeginEvent)) {
+                if (touchEvent.type() == QEvent::TouchEnd)
+                    widget->setAttribute(Qt::WA_WState_AcceptedTouchBeginEvent, false);
                 (void) QApplication::sendSpontaneousEvent(widget, &touchEvent);
                 res = true;
             }

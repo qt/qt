@@ -492,7 +492,7 @@ public:
         WA_TranslucentBackground = 120,
 
         WA_AcceptTouchEvents = 121,
-        WA_AcceptedTouchBeginEvent = 122,
+        WA_WState_AcceptedTouchBeginEvent = 122,
 
         // Add new attributes before this line
         WA_AttributeCount

@@ -1237,6 +1237,7 @@
     \omitvalue WA_X11BypassTransientForHint
     \omitvalue WA_SetWindowModality
     \omitvalue WA_WState_WindowOpacitySet
+    \omitvalue WA_WState_AcceptedTouchBeginEvent
 */
 
 /*! \typedef Qt::HANDLE
