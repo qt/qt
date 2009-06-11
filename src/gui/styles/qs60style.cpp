@@ -44,7 +44,7 @@
 #include "qapplication.h"
 #include "qpainter.h"
 #include "qstyleoption.h"
-#include "qresizeevent.h"
+#include "qevent.h"
 #include "qpixmapcache.h"
 
 #include "qcalendarwidget.h"
