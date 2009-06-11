@@ -70,14 +70,13 @@ class QGraphicsSceneIndexPrivate : public QObjectPrivate
 public:
     QGraphicsSceneIndexPrivate(QGraphicsScene *scene);
 
+    void recursive_items_helper(QGraphicsItem *item, QRectF rect, QList<QGraphicsItem *> *items,
+                           const QTransform &parentTransform, const QTransform &viewTransform,
+                           Qt::ItemSelectionMode mode, Qt::SortOrder order, qreal parentOpacity = 1.0) const;
 
     void childItems_helper(QList<QGraphicsItem *> *items,
                            const QGraphicsItem *parent,
                            const QPointF &pos) const;
-    void childItems_helper(QList<QGraphicsItem *> *items,
-                           const QGraphicsItem *parent,
-                           const QRectF &rect,
-                           Qt::ItemSelectionMode mode) const;
     void childItems_helper(QList<QGraphicsItem *> *items,
                            const QGraphicsItem *parent,
                            const QPolygonF &polygon,

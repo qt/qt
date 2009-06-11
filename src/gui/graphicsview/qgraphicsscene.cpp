@@ -1734,10 +1734,7 @@ QList<QGraphicsItem *> QGraphicsScene::items(const QPointF &pos) const
 QList<QGraphicsItem *> QGraphicsScene::items(const QRectF &rect, Qt::ItemSelectionMode mode) const
 {
     Q_D(const QGraphicsScene);
-    QList<QGraphicsItem *> itemList;
-    //###d->index->items(rect, mode, Qt::AscendingOrder);
-    d->recursive_items_helper(0, rect, &itemList, QTransform(), QTransform(), mode, Qt::AscendingOrder);
-    return itemList;
+    return d->index->items(rect, mode, Qt::AscendingOrder);
 }
 
 /*!
