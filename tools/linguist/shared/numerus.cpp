@@ -246,6 +246,7 @@ static const QLocale::Language englishStyleLanguages[] = {
     QLocale::Turkmen,
     QLocale::Twi,
     QLocale::Uigur,
+    QLocale::Urdu,
     QLocale::Uzbek,
     QLocale::Volapuk,
     QLocale::Wolof,
