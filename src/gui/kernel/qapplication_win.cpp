@@ -4041,25 +4041,26 @@ bool QApplicationPrivate::translateTouchEvent(const MSG &msg)
 
         // update state
         QPointF globalPos(qreal(touchInput.x) / qreal(100.), qreal(touchInput.y) / qreal(100.));
-        QSizeF contactArea = (touchInput.dwMask & TOUCHINPUTMASKF_CONTACTAREA)
-                             ? QSizeF(qreal(touchInput.cxContact) / qreal(100.),
-                                      qreal(touchInput.cyContact) / qreal(100.))
-                             : QSizeF();
+        QRectF globalRect;
+        if (touchInput.dwMask & TOUCHINPUTMASKF_CONTACTAREA)
+            globalRect.setSize(QSizeF(qreal(touchInput.cxContact) / qreal(100.),
+                                      qreal(touchInput.cyContact) / qreal(100.)));
+        globalRect.moveCenter(globalPos);
 
         if (touchInput.dwFlags & TOUCHEVENTF_DOWN) {
             touchPoint.setState(Qt::TouchPointPressed);
             touchPoint.setGlobalPos(globalPos);
-            touchPoint.setSize(contactArea);
+            touchPoint.setRect(globalRect);
         } else if (touchInput.dwFlags & TOUCHEVENTF_UP) {
             touchPoint.setState(Qt::TouchPointReleased);
             touchPoint.setGlobalPos(globalPos);
-            touchPoint.setSize(QSizeF());
+            touchPoint.setRect(globalRect);
         } else {
             touchPoint.setState(globalPos == touchPoint.globalPos()
                                  ? Qt::TouchPointStationary
                                  : Qt::TouchPointMoved);
             touchPoint.setGlobalPos(globalPos);
-            touchPoint.setSize(contactArea);
+            touchPoint.setRect(globalRect);
         }
 
         touchPoints.append(touchPoint);

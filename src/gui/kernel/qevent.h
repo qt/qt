@@ -792,8 +792,8 @@ public:
         QPointF lastGlobalPos() const;
         void setLastGlobalPos(const QPointF &lastGlobalPos);
 
-        QSizeF size() const;
-        void setSize(const QSizeF &size);
+        QRectF rect() const;
+        void setRect(const QRectF &rect);
 
         qreal pressure() const;
         void setPressure(qreal pressure);

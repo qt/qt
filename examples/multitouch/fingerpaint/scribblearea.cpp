@@ -184,24 +184,21 @@ bool ScribbleArea::event(QEvent *event)
                 continue;
             default:
                 {
-                    QSizeF size= touchPoint.size();
-                    if (size.isEmpty()) {
+                    QRectF rect = touchPoint.rect();
+                    if (rect.isEmpty()) {
                         qreal diameter = qreal(50) * touchPoint.pressure();
-                        size = QSizeF(diameter, diameter);
+                        rect.setSize(QSizeF(diameter, diameter));
                     }
-                    QRectF rectF(QPointF(), size);
-                    rectF.moveCenter(touchPoint.pos());
-                    QRect rect = rectF.toRect();
 
                     QPainter painter(&image);
                     painter.setPen(Qt::NoPen);
                     painter.setBrush(myPenColors.at(touchPoint.id()));
-                    painter.drawEllipse(rectF);
+                    painter.drawEllipse(rect);
                     painter.end();
 
                     modified = true;
                     int rad = 2;
-                    update(rect.adjusted(-rad,-rad, +rad, +rad));
+                    update(rect.toRect().adjusted(-rad,-rad, +rad, +rad));
                 }
                 break;
             }

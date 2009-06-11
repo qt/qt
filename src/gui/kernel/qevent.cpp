@@ -3933,19 +3933,20 @@ void QTouchEvent::TouchPoint::setLastGlobalPos(const QPointF &lastGlobalPos)
 }
 
 /*!
-    Returns the size of this touch point.
+    Returns the rect for this touch point. The rect is centered around the point returned by pos().
+    Note this function returns an empty rect if the device does not report touch point sizes.
 */
-QSizeF QTouchEvent::TouchPoint::size() const
+QRectF QTouchEvent::TouchPoint::rect() const
 {
-    return d->screenSize;
+    return d->screenRect;
 }
 
 /*! \internal */
-void QTouchEvent::TouchPoint::setSize(const QSizeF &size)
+void QTouchEvent::TouchPoint::setRect(const QRectF &rect)
 {
     if (d->ref != 1)
         d = d->detach();
-    d->screenSize = size;
+    d->screenRect = rect;
 }
 
 /*!

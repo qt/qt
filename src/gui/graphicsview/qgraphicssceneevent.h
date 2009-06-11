@@ -60,6 +60,7 @@ QT_MODULE(Gui)
 class QMimeData;
 class QPointF;
 class QSizeF;
+class QRectF;
 class QWidget;
 
 class QGraphicsSceneEventPrivate;
@@ -393,14 +394,14 @@ public:
         QPointF lastScreenPos() const;
         void setLastScreenPos(const QPointF &lastScreenPos);
 
-        QSizeF size() const;
-        void setSize(const QSizeF &size);
+        QRectF rect() const;
+        void setRect(const QRectF &rect);
 
-        QSizeF sceneSize() const;
-        void setSceneSize(const QSizeF &sceneSize);
+        QRectF sceneRect() const;
+        void setSceneRect(const QRectF &sceneRect);
 
-        QSizeF screenSize() const;
-        void setScreenSize(const QSizeF &screenSize);
+        QRectF screenRect() const;
+        void setScreenRect(const QRectF &screenRect);
 
         qreal pressure() const;
         void setPressure(qreal pressure);

@@ -2249,51 +2249,51 @@ void QGraphicsSceneTouchEvent::TouchPoint::setLastScreenPos(const QPointF &lastS
 }
 
 /*!
-    Returns the size of this touch point.
+    Returns the rect for this touch point.
 */
-QSizeF QGraphicsSceneTouchEvent::TouchPoint::size() const
+QRectF QGraphicsSceneTouchEvent::TouchPoint::rect() const
 {
-    return d->size;
+    return d->rect;
 }
 
 /*! \internal */
-void QGraphicsSceneTouchEvent::TouchPoint::setSize(const QSizeF &size)
+void QGraphicsSceneTouchEvent::TouchPoint::setRect(const QRectF &rect)
 {
     if (d->ref != 1)
         d = d->detach();
-    d->size = size;
+    d->rect = rect;
 }
 
 /*!
-    Returns the size of this touch point in scene coordinates.
+    Returns the rect of this touch point in scene coordinates.
 */
-QSizeF QGraphicsSceneTouchEvent::TouchPoint::sceneSize() const
+QRectF QGraphicsSceneTouchEvent::TouchPoint::sceneRect() const
 {
-    return d->sceneSize;
+    return d->sceneRect;
 }
 
 /*! \internal */
-void QGraphicsSceneTouchEvent::TouchPoint::setSceneSize(const QSizeF &sceneSize)
+void QGraphicsSceneTouchEvent::TouchPoint::setSceneRect(const QRectF &sceneRect)
 {
     if (d->ref != 1)
         d = d->detach();
-    d->sceneSize = sceneSize;
+    d->sceneRect = sceneRect;
 }
 
 /*!
-    Returns the size of this touch point in screen coordinates.
+    Returns the rect of this touch point in screen coordinates.
 */
-QSizeF QGraphicsSceneTouchEvent::TouchPoint::screenSize() const
+QRectF QGraphicsSceneTouchEvent::TouchPoint::screenRect() const
 {
-    return d->screenSize;
+    return d->screenRect;
 }
 
 /*! \internal */
-void QGraphicsSceneTouchEvent::TouchPoint::setScreenSize(const QSizeF &screenSize)
+void QGraphicsSceneTouchEvent::TouchPoint::setScreenRect(const QRectF &screenRect)
 {
     if (d->ref != 1)
         d = d->detach();
-    d->screenSize = screenSize;
+    d->screenRect = screenRect;
 }
 
 /*!
