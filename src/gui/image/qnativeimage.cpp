@@ -236,8 +236,7 @@ QNativeImage::QNativeImage(int width, int height, QImage::Format format, bool /*
     uint cgflags = kCGImageAlphaNoneSkipFirst;
 
 #ifdef kCGBitmapByteOrder32Host //only needed because CGImage.h added symbols in the minor version
-    if(QSysInfo::MacintoshVersion >= QSysInfo::MV_10_4)
-        cgflags |= kCGBitmapByteOrder32Host;
+    cgflags |= kCGBitmapByteOrder32Host;
 #endif
 
     cg = CGBitmapContextCreate(image.bits(), width, height, 8, image.bytesPerLine(), cgColorSpace, cgflags);

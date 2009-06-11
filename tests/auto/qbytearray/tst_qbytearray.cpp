@@ -239,10 +239,6 @@ void tst_QByteArray::qUncompress()
 
     QTEST(::qUncompress(in), "out");
 
-#if defined Q_WS_MAC && (MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_4)
-    QSKIP("Corrupt data causes this test to lock up on Mac OS X Panther", SkipSingle);
-#endif
-
     QTEST(::qUncompress(in + "blah"), "out");
 }
 #endif
