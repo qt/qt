@@ -1050,19 +1050,19 @@ void qDrawItem(QPainter *p, Qt::GUIStyle gs,
 */
 
 /*!
-  \fn QMargins::QMargins(int margin)
-  
-  Constructs an instance of QMargins setting all four
-  margins to \a margin.
- */
+    \fn QMargins::QMargins(int margin)
+
+    Constructs an instance of QMargins setting all four
+    margins to \a margin.
+*/
 
 /*!
-  \fn QMargins::QMargins(int topMargin, int leftMargin, int bottomMargin, int rightMargin)
-  
-  Constructs an instance of QMargins setting the four
-  margins to \a topMargin, \a leftMargin, \a bottomMargin,
-  and \a rightMargin.
- */
+    \fn QMargins::QMargins(int topMargin, int leftMargin, int bottomMargin, int rightMargin)
+
+    Constructs an instance of QMargins setting the four
+    margins to \a topMargin, \a leftMargin, \a bottomMargin,
+    and \a rightMargin.
+*/
 
 /*!
     \class QTileRules

@@ -178,7 +178,7 @@ QLayoutStyleInfo QGraphicsLinearLayoutPrivate::styleInfo() const
     if (!wid)
         wid = new QWidget;
     QGraphicsItem *item = parentItem();
-    QStyle *style = (item && item->isWidget()) ? static_cast<QGraphicsWidget*>(item)->style() : qApp->style();
+    QStyle *style = (item && item->isWidget()) ? static_cast<QGraphicsWidget*>(item)->style() : QApplication::style();
     return QLayoutStyleInfo(style, wid);
 }
 

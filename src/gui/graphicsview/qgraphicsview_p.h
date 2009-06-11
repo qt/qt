@@ -94,6 +94,7 @@ public:
     QPoint mousePressScreenPoint;
     QPointF lastMouseMoveScenePoint;
     QPoint lastMouseMoveScreenPoint;
+    QPoint dirtyScrollOffset;
     Qt::MouseButton mousePressButton;
     QTransform matrix;
     bool identityMatrix;
@@ -163,7 +164,13 @@ public:
     QRegion dirtyRegion;
     QRect dirtyBoundingRect;
     void processPendingUpdates();
-    void updateAll();
+    inline void updateAll()
+    {
+        viewport->update();
+        fullUpdatePending = true;
+        dirtyBoundingRect = QRect();
+        dirtyRegion = QRegion();
+    }
     void updateRect(const QRect &rect);
     void updateRegion(const QRegion &region);
     bool updateSceneSlotReimplementedChecked;

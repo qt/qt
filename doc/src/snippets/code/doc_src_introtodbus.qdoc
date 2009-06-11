@@ -1,3 +1,8 @@
 //! [0]
 org.freedesktop.DBus
 //! [0]
+
+//! [QDBUS_DEBUG]
+examples/dbus/remotecontrolledcar/controller/controller &
+QDBUS_DEBUG=1 examples/dbus/remotecontrolledcar/car/car &
+//! [QDBUS_DEBUG]

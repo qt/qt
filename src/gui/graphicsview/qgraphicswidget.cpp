@@ -170,134 +170,13 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-  \property QGraphicsWidget::xScale
-  \brief the x scale factor
-
-  This property is declared in QGraphicsItem.
-  \sa QGraphicsItem::xScale(), QGraphicsItem::setXScale()
- */
-
-/*!
-  \property QGraphicsWidget::yScale
-  \brief the y scale factor
-
-  This property is declared in QGraphicsItem.
-  \sa QGraphicsItem::yScale(), QGraphicsItem::setYScale()
-*/
-
-/*!
-  \property QGraphicsWidget::zRotation
-  \brief the z rotation angle
-
-  This property is declared in QGraphicsItem.
-  \sa QGraphicsItem::zRotation(), QGraphicsItem::setZRotation()
-*/
-
-/*!
-  \property QGraphicsWidget::xRotation
-  \brief the x rotation angle
-
-  This property is declared in QGraphicsItem.
-  \sa QGraphicsItem::xRotation(), QGraphicsItem::setXRotation()
-*/
-
-/*!
-  \property QGraphicsWidget::yRotation
-  \brief the y rotation angle.
-
-  This property is declared in QGraphicsItem.
-  \sa QGraphicsItem::yRotation(), QGraphicsItem::setYRotation()
-*/
-
-/*!
-  \property QGraphicsWidget::enabled
-  \brief whether the item is enabled or not
-
-  This property is declared in QGraphicsItem.
-
-  By default, this property is true.
-
-  \sa QGraphicsItem::isEnabled(), QGraphicsItem::setEnabled()
-*/
-
-/*!
-    \property QGraphicsWidget::visible
-    \brief whether the item is visible or not
-
-    This property is declared in QGraphicsItem.
-
-    By default, this property is true.
-
-    \sa QGraphicsItem::isVisible(), QGraphicsItem::setVisible(), show(),
-    hide()
-*/
-
-/*!
-    \property QGraphicsWidget::opacity
-    \brief the opacity of the widget
-*/    
-
-/*!
-    \property QGraphicsWidget::pos
-    \brief the position of the widget
-*/
-
-/*!
-    \property QGraphicsWidget::xRotation
-    \since 4.6
-    \brief the rotation angle in degrees around the X axis
-*/
-
-/*!
-    \property QGraphicsWidget::yRotation
-    \since 4.6
-    \brief the rotation angle in degrees around the Y axis
-*/
-
-/*!
-    \property QGraphicsWidget::zRotation
-    \since 4.6
-    \brief the rotation angle in degrees around the Z axis
-*/
-
-/*!
-    \property QGraphicsWidget::xScale
-    \since 4.6
-    \brief the scale factor on the X axis.
-*/
-
-/*!
-    \property QGraphicsWidget::yScale
-    \since 4.6
-    \brief the scale factor on the Y axis.
-*/
-
-/*!
-    \property QGraphicsWidget::horizontalShear
-    \since 4.6
-    \brief the horizontal shear.
-*/
-
-/*!
-    \property QGraphicsWidget::verticalShear
-    \since 4.6
-    \brief the vertical shear.
-*/
-
-/*!
-    \property QGraphicsWidget::transformOrigin
-    \since 4.6
-    \brief the transformation origin for the transformation properties.
-*/
-
-/*!
     Constructs a QGraphicsWidget instance. The optional \a parent argument is
     passed to QGraphicsItem's constructor. The optional \a wFlags argument
     specifies the widget's window flags (e.g., whether the widget should be a
     window, a tool, a popup, etc).
 */
 QGraphicsWidget::QGraphicsWidget(QGraphicsItem *parent, Qt::WindowFlags wFlags)
-    : QGraphicsItem(*new QGraphicsWidgetPrivate, 0, 0), QGraphicsLayoutItem(0, false)
+    : QGraphicsObject(*new QGraphicsWidgetPrivate, 0, 0), QGraphicsLayoutItem(0, false)
 {
     Q_D(QGraphicsWidget);
     d->init(parent, wFlags);
@@ -309,7 +188,7 @@ QGraphicsWidget::QGraphicsWidget(QGraphicsItem *parent, Qt::WindowFlags wFlags)
     Constructs a new QGraphicsWidget, using \a dd as parent.
 */
 QGraphicsWidget::QGraphicsWidget(QGraphicsWidgetPrivate &dd, QGraphicsItem *parent, QGraphicsScene *scene, Qt::WindowFlags wFlags)
-    : QGraphicsItem(dd, 0, scene), QGraphicsLayoutItem(0, false)
+    : QGraphicsObject(dd, 0, scene), QGraphicsLayoutItem(0, false)
 {
     Q_D(QGraphicsWidget);
     d->init(parent, wFlags);

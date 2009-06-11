@@ -287,7 +287,7 @@ public:
     inline int titleBarHeight() const
     {
         Q_Q(const QMdiSubWindow);
-        if (!q->parent() || q->windowFlags() & Qt::FramelessWindowHint
+        if (!parent || q->windowFlags() & Qt::FramelessWindowHint
             || (q->isMaximized() && !drawTitleBarWhenMaximized())) {
             return 0;
         }
@@ -308,7 +308,7 @@ public:
     inline void setNewGeometry(QRect *geometry)
     {
         Q_Q(QMdiSubWindow);
-        Q_ASSERT(q->parent());
+        Q_ASSERT(parent);
         geometry->setSize(geometry->size().expandedTo(internalMinimumSize));
 #ifndef QT_NO_RUBBERBAND
         if (isInRubberBandMode)

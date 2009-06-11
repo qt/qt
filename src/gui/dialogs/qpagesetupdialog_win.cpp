@@ -98,7 +98,7 @@ int QPageSetupDialog::exec()
     psd.hDevNames = tempDevNames;
 
     QWidget *parent = parentWidget();
-    parent = parent ? parent->window() : qApp->activeWindow();
+    parent = parent ? parent->window() : QApplication::activeWindow();
     Q_ASSERT(!parent ||parent->testAttribute(Qt::WA_WState_Created));
     psd.hwndOwner = parent ? parent->winId() : 0;
 

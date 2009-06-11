@@ -959,6 +959,9 @@ void QGraphicsItemPrivate::setParentItemHelper(QGraphicsItem *newParent)
 
     // Deliver post-change notification
     q->itemChange(QGraphicsItem::ItemParentHasChanged, newParentVariant);
+
+    if (isObject)
+        emit static_cast<QGraphicsObject *>(q)->parentChanged();
 }
 
 /*!
@@ -1213,6 +1216,20 @@ QGraphicsItem *QGraphicsItem::topLevelItem() const
 /*!
     \since 4.4
 
+    Returns a pointer to the item's parent, cast to a QGraphicsObject. returns 0 if the parent item
+    is not a QGraphicsObject.
+
+    \sa parentItem(), childItems()
+*/
+QGraphicsObject *QGraphicsItem::parentObject() const
+{
+    QGraphicsItem *p = d_ptr->parent;
+    return (p && p->d_ptr->isObject) ? static_cast<QGraphicsObject *>(p) : 0;
+}
+
+/*!
+    \since 4.4
+
     Returns a pointer to the item's parent widget. The item's parent widget is
     the closest parent item that is a widget.
 
@@ -1257,6 +1274,28 @@ QGraphicsWidget *QGraphicsItem::window() const
     if (QGraphicsWidget *parent = parentWidget())
         return parent->window();
     return 0;
+}
+
+/*!
+  \since 4.6
+
+  Return the graphics item cast to a QGraphicsObject, if the class is actually a
+  graphics object, 0 otherwise.
+*/
+QGraphicsObject *QGraphicsItem::toGraphicsObject()
+{
+    return d_ptr->isObject ? static_cast<QGraphicsObject *>(this) : 0;
+}
+
+/*!
+  \since 4.6
+
+  Return the graphics item cast to a QGraphicsObject, if the class is actually a
+  graphics object, 0 otherwise.
+*/
+const QGraphicsObject *QGraphicsItem::toGraphicsObject() const
+{
+    return d_ptr->isObject ? static_cast<const QGraphicsObject *>(this) : 0;
 }
 
 /*!
@@ -1767,6 +1806,9 @@ void QGraphicsItemPrivate::setVisibleHelper(bool newVisible, bool explicitly, bo
 
     // Deliver post-change notification.
     q_ptr->itemChange(QGraphicsItem::ItemVisibleHasChanged, newVisibleVariant);
+
+    if (isObject)
+        emit static_cast<QGraphicsObject *>(q_ptr)->visibleChanged();
 }
 
 /*!
@@ -1887,6 +1929,9 @@ void QGraphicsItemPrivate::setEnabledHelper(bool newEnabled, bool explicitly, bo
 
     // Deliver post-change notification.
     q_ptr->itemChange(QGraphicsItem::ItemEnabledHasChanged, newEnabledVariant);
+
+    if (isObject)
+        emit static_cast<QGraphicsObject *>(q_ptr)->enabledChanged();
 }
 
 /*!
@@ -2082,6 +2127,9 @@ void QGraphicsItem::setOpacity(qreal opacity)
                                           /*maybeDirtyClipPath=*/false,
                                           /*force=*/false,
                                           /*ignoreOpacity=*/true);
+
+    if (d_ptr->isObject)
+        emit static_cast<QGraphicsObject *>(this)->opacityChanged();
 }
 
 /*!
@@ -2490,6 +2538,17 @@ QPointF QGraphicsItem::pos() const
     \sa y()
 */
 
+/*
+  Set's the x coordinate of the item's position. Equivalent to
+  calling setPos(x, y()).
+
+  \sa x(), setPos()
+*/
+void QGraphicsItem::setX(qreal x)
+{
+    d_ptr->setPosHelper(QPointF(x, d_ptr->pos.y()));
+}
+
 /*!
     \fn QGraphicsItem::y() const
 
@@ -2497,6 +2556,17 @@ QPointF QGraphicsItem::pos() const
 
     \sa x()
 */
+
+/*
+  Set's the y coordinate of the item's position. Equivalent to
+  calling setPos(x(), y).
+
+  \sa x(), setPos()
+*/
+void QGraphicsItem::setY(qreal y)
+{
+    d_ptr->setPosHelper(QPointF(d_ptr->pos.x(), y));
+}
 
 /*!
     Returns the item's position in scene coordinates. This is
@@ -2521,9 +2591,16 @@ void QGraphicsItemPrivate::setPosHelper(const QPointF &pos)
     updateCachedClipPathFromSetPosHelper(pos);
     if (scene)
         q->prepareGeometryChange();
+    QPointF oldPos = this->pos;
     this->pos = pos;
     dirtySceneTransform = 1;
     inSetPosHelper = 0;
+    if (isObject) {
+        if (pos.x() != oldPos.x())
+            emit static_cast<QGraphicsObject *>(q_ptr)->xChanged();
+        if (pos.y() != oldPos.y())
+            emit static_cast<QGraphicsObject *>(q_ptr)->yChanged();
+    }
 }
 
 /*!
@@ -2987,7 +3064,7 @@ QPointF QGraphicsItem::transformOrigin() const
 /*!
     \since 4.6
 
-    Sets the origin for transformation in item coordinate
+    Sets the \a origin for transformation in item coordinate
 
     \sa transformOrigin(), {Transformations}
 */
@@ -3002,11 +3079,14 @@ void QGraphicsItem::setTransformOrigin(const QPointF &origin)
 }
 
 /*!
-    \fn inline void setTransformOrigin(qreal x, qreal y)
+    \fn void QGraphicsItem::setTransformOrigin(qreal x, qreal y)
 
     \since 4.6
     \overload
 
+    Sets the origin for the transformation to the point
+    composed of \a x and \a y.
+    
     \sa setTransformOrigin(), {Transformations}
 */
 
@@ -3503,6 +3583,9 @@ void QGraphicsItem::setZValue(qreal z)
     }
 
     itemChange(ItemZValueHasChanged, newZVariant);
+
+    if (d_ptr->isObject)
+        emit static_cast<QGraphicsObject *>(this)->zChanged();
 }
 
 /*!
@@ -4281,7 +4364,9 @@ void QGraphicsItemPrivate::updateCachedClipPathFromSetPosHelper(const QPointF &n
     // Find closest clip ancestor and transform.
     Q_Q(QGraphicsItem);
     // COMBINE
-    QTransform thisToParentTransform = transformToParent();
+    QTransform thisToParentTransform = transformData
+        ? transformData->computedFullTransform() * QTransform::fromTranslate(newPos.x(), newPos.y())
+        : QTransform::fromTranslate(newPos.x(), newPos.y());
     QGraphicsItem *clipParent = parent;
     while (clipParent && !(clipParent->d_ptr->flags & QGraphicsItem::ItemClipsChildrenToShape)) {
         thisToParentTransform *= clipParent->d_ptr->transformToParent();
@@ -6322,6 +6407,160 @@ static void qt_graphicsItem_highlightSelected(
 }
 
 /*!
+    \class QGraphicsObject
+    \brief The QGraphicsObject class provides a base class for all graphics items that
+    require signals, slots and properties.
+    \since 4.6
+    \ingroup graphicsview-api
+
+    The class extends a QGraphicsItem with QObject's signal/slot and property mechanisms.
+    It maps many of QGraphicsItem's basic setters and getters to properties and adds notification
+    signals for many of them.
+*/
+
+/*!
+    Constructs a QGraphicsObject with \a parent.
+*/
+QGraphicsObject::QGraphicsObject(QGraphicsItem *parent)
+        : QGraphicsItem(parent)
+{
+    QGraphicsItem::d_ptr->isObject = true;
+}
+
+/*!
+  \internal
+*/
+QGraphicsObject::QGraphicsObject(QGraphicsItemPrivate &dd, QGraphicsItem *parent, QGraphicsScene *scene)
+    : QGraphicsItem(dd, parent, scene)
+{
+    QGraphicsItem::d_ptr->isObject = true;
+}
+
+/*!
+  \property QGraphicsObject::parent
+  \brief the parent of the item
+
+  \sa QGraphicsItem::setParentItem, QGraphicsItem::parentObject
+*/
+
+
+/*!
+  \property QGraphicsObject::opacity
+  \brief the opacity of the item
+
+  \sa QGraphicsItem::setOpacity, QGraphicsItem::opacity
+*/
+
+/*!
+  \fn QGraphicsObject::opacityChanged()
+
+  This signal gets emitted whenever the opacity of the item changes
+
+  \sa opacity
+*/
+
+/*!
+  \property QGraphicsObject::pos
+  \brief the position of the item
+
+  Describes the items position.
+
+  \sa QGraphicsItem::setPos, QGraphicsItem::pos, positionChanged
+*/
+
+/*!
+  \property QGraphicsObject::x
+  \brief the x position of the item
+
+  Describes the items x position.
+
+  \sa QGraphicsItem::setX, setPos, xChanged
+*/
+
+/*!
+  \fn QGraphicsObject::xChanged()
+
+  This signal gets emitted whenever the x position of the item changes
+
+  \sa pos
+*/
+
+/*!
+  \property QGraphicsObject::y
+  \brief the y position of the item
+
+  Describes the items y position.
+
+  \sa QGraphicsItem::setY, setPos, yChanged
+*/
+
+/*!
+  \fn QGraphicsObject::yChanged()
+
+  This signal gets emitted whenever the y position of the item changes
+
+  \sa pos
+*/
+
+/*!
+  \property QGraphicsObject::z
+  \brief the z value of the item
+
+  Describes the items z value.
+
+  \sa QGraphicsItem::setZValue, zValue, zChanged
+*/
+
+/*!
+  \fn QGraphicsObject::zChanged()
+
+  This signal gets emitted whenever the z value of the item changes
+
+  \sa pos
+*/
+
+
+/*!
+  \property QGraphicsObject::enabled
+  \brief whether the item is enabled or not
+
+  This property is declared in QGraphicsItem.
+
+  By default, this property is true.
+
+  \sa QGraphicsItem::isEnabled(), QGraphicsItem::setEnabled(), enabledChanged()
+*/
+
+/*!
+  \fn QGraphicsObject::enabledChanged()
+
+  This signal gets emitted whenever the item get's enabled or disabled.
+
+  \sa enabled
+*/
+
+/*!
+  \property QGraphicsObject::visible
+  \brief whether the item is visible or not
+
+  This property is declared in QGraphicsItem.
+
+  By default, this property is true.
+
+  \sa QGraphicsItem::isVisible(), QGraphicsItem::setVisible(), visibleChanged()
+*/
+
+/*!
+  \fn QGraphicsObject::visibleChanged()
+
+  This signal gets emitted whenever the visibility of the item changes
+
+  \sa visible
+*/
+
+
+
+/*!
     \class QAbstractGraphicsShapeItem
     \brief The QAbstractGraphicsShapeItem class provides a common base for
     all path items.
@@ -8145,6 +8384,7 @@ public:
     QGraphicsTextItem *qq;
 };
 
+
 /*!
     Constructs a QGraphicsTextItem, using \a text as the default plain
     text. \a parent is passed to QGraphicsItem's constructor.
@@ -8157,7 +8397,7 @@ QGraphicsTextItem::QGraphicsTextItem(const QString &text, QGraphicsItem *parent
                                      , QGraphicsScene *scene
 #endif
     )
-    : QGraphicsItem(parent, scene), dd(new QGraphicsTextItemPrivate)
+    : QGraphicsObject(*new QGraphicsItemPrivate, parent, scene), dd(new QGraphicsTextItemPrivate)
 {
     dd->qq = this;
     if (!text.isEmpty())
@@ -8179,7 +8419,7 @@ QGraphicsTextItem::QGraphicsTextItem(QGraphicsItem *parent
                                      , QGraphicsScene *scene
 #endif
     )
-    : QGraphicsItem(parent, scene), dd(new QGraphicsTextItemPrivate)
+    : QGraphicsObject(*new QGraphicsItemPrivate, parent, scene), dd(new QGraphicsTextItemPrivate)
 {
     dd->qq = this;
     setAcceptDrops(true);

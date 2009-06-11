@@ -284,7 +284,7 @@ void QMenuBarPrivate::setKeyboardMode(bool b)
     }
     keyboardState = b;
     if(b) {
-        QWidget *fw = qApp->focusWidget();
+        QWidget *fw = QApplication::focusWidget();
         if (fw != q)
             keyboardFocusWidget = fw;
         if(!currentAction && !actionList.isEmpty())
@@ -294,7 +294,7 @@ void QMenuBarPrivate::setKeyboardMode(bool b)
         if(!popupState)
             setCurrentAction(0);
         if(keyboardFocusWidget) {
-            if (qApp->focusWidget() == q)
+            if (QApplication::focusWidget() == q)
                 keyboardFocusWidget->setFocus(Qt::MenuBarFocusReason);
             keyboardFocusWidget = 0;
         }
