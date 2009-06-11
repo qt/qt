@@ -95,8 +95,8 @@ void tst_QTextCodec::toUnicode_data()
     QTest::addColumn<QString>("fileName");
     QTest::addColumn<QString>("codecName");
 
-    QTest::newRow( "korean-eucKR" ) << "korean.txt" << "eucKR";
-    QTest::newRow( "UTF-8" ) << "utf8.txt" << "UTF-8";
+    QTest::newRow( "korean-eucKR" ) << SRCDIR "korean.txt" << "eucKR";
+    QTest::newRow( "UTF-8" ) << SRCDIR "utf8.txt" << "UTF-8";
 }
 
 void tst_QTextCodec::toUnicode()
@@ -237,7 +237,7 @@ void tst_QTextCodec::fromUnicode()
 
 void tst_QTextCodec::toUnicode_codecForHtml()
 {
-    QFile file(QString("QT4-crashtest.txt"));
+    QFile file(QString(SRCDIR "QT4-crashtest.txt"));
     QVERIFY(file.open(QFile::ReadOnly));
 
     QByteArray data = file.readAll();
