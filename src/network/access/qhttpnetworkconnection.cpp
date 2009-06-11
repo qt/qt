@@ -918,13 +918,12 @@ void QHttpNetworkConnectionPrivate::unqueueAndSendRequest(QAbstractSocket *socke
             HttpMessagePair &messagePair = highPriorityQueue[j];
             if (!messagePair.second->d_func()->requestIsPrepared)
                 prepareRequest(messagePair);
-            if (!messagePair.second->d_func()->requestIsBuffering) {
-                channels[i].request = messagePair.first;
-                channels[i].reply = messagePair.second;
-                sendRequest(socket);
-                highPriorityQueue.removeAt(j);
-                return;
-            }
+
+            channels[i].request = messagePair.first;
+            channels[i].reply = messagePair.second;
+            sendRequest(socket);
+            highPriorityQueue.removeAt(j);
+            return;
         }
     }
 
@@ -933,13 +932,11 @@ void QHttpNetworkConnectionPrivate::unqueueAndSendRequest(QAbstractSocket *socke
             HttpMessagePair &messagePair = lowPriorityQueue[j];
             if (!messagePair.second->d_func()->requestIsPrepared)
                 prepareRequest(messagePair);
-            if (!messagePair.second->d_func()->requestIsBuffering) {
-                channels[i].request = messagePair.first;
-                channels[i].reply = messagePair.second;
-                sendRequest(socket);
-                lowPriorityQueue.removeAt(j);
-                return;
-            }
+            channels[i].request = messagePair.first;
+            channels[i].reply = messagePair.second;
+            sendRequest(socket);
+            lowPriorityQueue.removeAt(j);
+            return;
         }
     }
 }
