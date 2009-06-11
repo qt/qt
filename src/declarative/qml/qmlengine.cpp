@@ -1128,7 +1128,7 @@ QVariant QmlExpression::value()
         for (int i = context()->d_func()->scopeChain.size() - 1; i > -1; --i) {
             scriptEngine->currentContext()->pushScope(context()->d_func()->scopeChain.at(i));
         }
-        QScriptValue svalue = scriptEngine->evaluate(expression(), d->fileName, d->line);
+        QScriptValue svalue = scriptEngine->evaluate(expression(), d->fileName.toString(), d->line);
         if (scriptEngine->hasUncaughtException()) {
             if (scriptEngine->uncaughtException().isError()){
                 QScriptValue exception = scriptEngine->uncaughtException();
