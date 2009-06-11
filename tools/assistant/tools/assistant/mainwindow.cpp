@@ -748,7 +748,7 @@ void MainWindow::copyAvailable(bool yes)
 
 void MainWindow::addNewBookmark(const QString &title, const QString &url)
 {
-    if (url.isEmpty())
+    if (url.isEmpty() || url == QLatin1String("about:blank"))
         return;
 
     m_bookmarkManager->showBookmarkDialog(this, title, url);
