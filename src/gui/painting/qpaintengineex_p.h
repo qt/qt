@@ -139,27 +139,13 @@ public:
 QDebug Q_GUI_EXPORT &operator<<(QDebug &, const QVectorPath &path);
 #endif
 
-class Q_GUI_EXPORT QPaintEngineExPrivate : public QPaintEnginePrivate
-{
-public:
-    QPaintEngineExPrivate();
-    ~QPaintEngineExPrivate();
-
-    QStroker stroker;
-    QDashStroker dasher;
-    StrokeHandler *strokeHandler;
-    QStrokerOps *activeStroker;
-    QPen strokerPen;
-};
-
 class QPixmapFilter;
 
 class Q_GUI_EXPORT QPaintEngineEx : public QPaintEngine
 {
     Q_DECLARE_PRIVATE(QPaintEngineEx)
 public:
-    inline QPaintEngineEx()
-        : QPaintEngine(*new QPaintEngineExPrivate, AllFeatures) { extended = true; }
+    QPaintEngineEx();
 
     virtual QPainterState *createState(QPainterState *orig) const;
 
@@ -216,12 +202,30 @@ public:
     inline QPainterState *state() { return static_cast<QPainterState *>(QPaintEngine::state); }
     inline const QPainterState *state() const { return static_cast<const QPainterState *>(QPaintEngine::state); }
 
+    virtual void sync() {}
+
     virtual QPixmapFilter *createPixmapFilter(int /*type*/) const { return 0; }
 
 protected:
     QPaintEngineEx(QPaintEngineExPrivate &data);
 };
 
+class Q_GUI_EXPORT QPaintEngineExPrivate : public QPaintEnginePrivate
+{
+    Q_DECLARE_PUBLIC(QPaintEngineEx)
+public:
+    QPaintEngineExPrivate();
+    ~QPaintEngineExPrivate();
+
+    void replayClipOperations();
+    bool hasClipOperations() const;
+
+    QStroker stroker;
+    QDashStroker dasher;
+    StrokeHandler *strokeHandler;
+    QStrokerOps *activeStroker;
+    QPen strokerPen;
+};
 
 inline uint QVectorPath::polygonFlags(QPaintEngine::PolygonDrawMode mode) {
     switch (mode) {

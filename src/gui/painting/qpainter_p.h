@@ -92,8 +92,8 @@ inline Qt::PenJoinStyle qpen_joinStyle(const QPen &p) { return data_ptr(p)->join
 // QBrush inline functions...
 inline QBrush::DataPtr &data_ptr(const QBrush &p) { return const_cast<QBrush &>(p).data_ptr(); }
 inline bool qbrush_fast_equals(const QBrush &a, const QBrush &b) { return data_ptr(a) == data_ptr(b); }
-inline Qt::BrushStyle qbrush_style(const QBrush &b) { return data_ptr(b)->style; };
-inline const QColor &qbrush_color(const QBrush &b) { return data_ptr(b)->color; };
+inline Qt::BrushStyle qbrush_style(const QBrush &b) { return data_ptr(b)->style; }
+inline const QColor &qbrush_color(const QBrush &b) { return data_ptr(b)->color; }
 inline bool qbrush_has_transform(const QBrush &b) { return data_ptr(b)->transform.type() > QTransform::TxNone; }
 
 class QPainterClipInfo
@@ -158,7 +158,7 @@ public:
     QList<QPainterClipInfo> clipInfo; // ### Make me smaller and faster to copy around...
     QTransform worldMatrix;       // World transformation matrix, not window and viewport
     QTransform matrix;            // Complete transformation matrix,
-    QPoint redirection_offset;
+    QTransform redirectionMatrix;
     int wx, wy, ww, wh;         // window rectangle
     int vx, vy, vw, vh;         // viewport rectangle
     qreal opacity;
