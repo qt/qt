@@ -1852,8 +1852,7 @@ void QRasterPaintEngine::fill(const QVectorPath &path, const QBrush &brush)
     }
 
     // ### Optimize for non transformed ellipses and rectangles...
-    QRealRect r = path.controlPointRect();
-    QRectF cpRect(r.x1, r.y1, r.x2 - r.x1, r.y2 - r.y1);
+    QRectF cpRect = path.controlPointRect();
     const QRect deviceRect = s->matrix.mapRect(cpRect).toRect();
     ProcessSpans blend = d->getBrushFunc(deviceRect, &s->brushData);
 
@@ -4311,7 +4310,7 @@ QClipData::QClipData(int height)
     clipSpanHeight = height;
     m_clipLines = 0;
 
-    allocated = height;
+    allocated = 0;
     m_spans = 0;
     xmin = xmax = ymin = ymax = 0;
     count = 0;
@@ -4333,7 +4332,9 @@ void QClipData::initialize()
     if (m_spans)
         return;
 
-    m_clipLines = (ClipLine *)calloc(sizeof(ClipLine), clipSpanHeight);
+    if (!m_clipLines)
+        m_clipLines = (ClipLine *)calloc(sizeof(ClipLine), clipSpanHeight);
+
     m_spans = (QSpan *)malloc(clipSpanHeight*sizeof(QSpan));
     allocated = clipSpanHeight;
 
@@ -4479,7 +4480,7 @@ void QClipData::fixup()
  */
 void QClipData::setClipRect(const QRect &rect)
 {
-    if (rect == clipRect)
+    if (hasRectClip && rect == clipRect)
         return;
 
 //    qDebug() << "setClipRect" << clipSpanHeight << count << allocated << rect;

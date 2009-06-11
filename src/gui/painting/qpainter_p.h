@@ -158,7 +158,7 @@ public:
     QList<QPainterClipInfo> clipInfo; // ### Make me smaller and faster to copy around...
     QTransform worldMatrix;       // World transformation matrix, not window and viewport
     QTransform matrix;            // Complete transformation matrix,
-    QPoint redirection_offset;
+    QTransform redirectionMatrix;
     int wx, wy, ww, wh;         // window rectangle
     int vx, vy, vw, vh;         // viewport rectangle
     qreal opacity;

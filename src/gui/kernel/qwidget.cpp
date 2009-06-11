@@ -1067,7 +1067,7 @@ void QWidgetPrivate::init(QWidget *parentWidget, Qt::WindowFlags f)
     q->data = &data;
 
 #ifndef QT_NO_THREAD
-    if (!q->parent()) {
+    if (!parent) {
         Q_ASSERT_X(q->thread() == qApp->thread(), "QWidget",
                    "Widgets must be created in the GUI thread.");
     }
@@ -4993,7 +4993,7 @@ void QWidgetPrivate::drawWidget(QPaintDevice *pdev, const QRegion &rgn, const QP
                     QPoint scrollAreaOffset;
 
 #ifndef QT_NO_SCROLLAREA
-                    QAbstractScrollArea *scrollArea = qobject_cast<QAbstractScrollArea *>(q->parent());
+                    QAbstractScrollArea *scrollArea = qobject_cast<QAbstractScrollArea *>(parent);
                     if (scrollArea && scrollArea->viewport() == q) {
                         QObjectData *scrollPrivate = static_cast<QWidget *>(scrollArea)->d_ptr;
                         QAbstractScrollAreaPrivate *priv = static_cast<QAbstractScrollAreaPrivate *>(scrollPrivate);

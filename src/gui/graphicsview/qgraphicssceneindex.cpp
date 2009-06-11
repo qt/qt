@@ -71,7 +71,7 @@ void QGraphicsSceneIndexPrivate::childItems_helper(QList<QGraphicsItem *> *items
     QList<QGraphicsItem *> &children = parent->d_ptr->children;
     for (int i = 0; i < children.size(); ++i) {
         QGraphicsItem *item = children.at(i);
-        if (item->d_ptr->hasTransform && !item->transform().isInvertible())
+        if (item->d_ptr->transformData && !item->d_ptr->transformData->computedFullTransform().isInvertible())
             continue;
 
         // Skip invisible items and all their children.
@@ -111,7 +111,7 @@ void QGraphicsSceneIndexPrivate::childItems_helper(QList<QGraphicsItem *> *items
     QList<QGraphicsItem *> &children = parent->d_ptr->children;
     for (int i = 0; i < children.size(); ++i) {
         QGraphicsItem *item = children.at(i);
-        if (item->d_ptr->hasTransform && !item->transform().isInvertible())
+        if (item->d_ptr->transformData && !item->d_ptr->transformData->computedFullTransform().isInvertible())
             continue;
 
         // Skip invisible items and all their children.
@@ -147,7 +147,7 @@ void QGraphicsSceneIndexPrivate::childItems_helper(QList<QGraphicsItem *> *items
 
         if ((keep || !(item->flags() & QGraphicsItem::ItemClipsChildrenToShape)) && !item->d_ptr->children.isEmpty()) {
             // Recurse into children.
-            if (!item->d_ptr->hasTransform || item->transform().type() <= QTransform::TxScale) {
+            if (!item->d_ptr->transformData || item->d_ptr->transformData->computedFullTransform().type() <= QTransform::TxScale) {
                 // Rect
                 childItems_helper(items, item, item->mapRectFromParent(rect), mode);
             } else {
@@ -177,7 +177,7 @@ void QGraphicsSceneIndexPrivate::childItems_helper(QList<QGraphicsItem *> *items
     QList<QGraphicsItem *> &children = parent->d_ptr->children;
     for (int i = 0; i < children.size(); ++i) {
         QGraphicsItem *item = children.at(i);
-        if (item->d_ptr->hasTransform && !item->transform().isInvertible())
+        if (item->d_ptr->transformData && !item->d_ptr->transformData->computedFullTransform().isInvertible())
             continue;
 
         // Skip invisible items.
@@ -236,7 +236,7 @@ void QGraphicsSceneIndexPrivate::childItems_helper(QList<QGraphicsItem *> *items
     QList<QGraphicsItem *> &children = parent->d_ptr->children;
     for (int i = 0; i < children.size(); ++i) {
         QGraphicsItem *item = children.at(i);
-        if (item->d_ptr->hasTransform && !item->transform().isInvertible())
+        if (item->d_ptr->transformData && !item->d_ptr->transformData->computedFullTransform().isInvertible())
             continue;
 
         // Skip invisible items.

@@ -530,24 +530,6 @@ void QTableModel::sort(int column, Qt::SortOrder order)
     emit layoutChanged();
 }
 
-bool QTableModel::canConvertToDouble(const QVariant &value)
-{
-    switch (value.type()) {
-    case QVariant::Bool:
-    case QVariant::Int:
-    case QVariant::UInt:
-    case QVariant::LongLong:
-    case QVariant::ULongLong:
-    case QVariant::Double:
-    case QVariant::Char:
-        return true;
-    default:
-        return false;
-    }
-    return false;
-}
-
-
 /*
   \internal
 
@@ -1410,7 +1392,7 @@ QVariant QTableWidgetItem::data(int role) const
 bool QTableWidgetItem::operator<(const QTableWidgetItem &other) const
 {
     const QVariant v1 = data(Qt::DisplayRole), v2 = other.data(Qt::DisplayRole);
-    if (QTableModel::canConvertToDouble(v1) && QTableModel::canConvertToDouble(v2))
+    if (QAbstractItemModelPrivate::canConvertToDouble(v1) && QAbstractItemModelPrivate::canConvertToDouble(v2))
         return v1.toDouble() < v2.toDouble();
     return v1.toString() < v2.toString();
 }

@@ -287,7 +287,7 @@ public:
     inline int titleBarHeight() const
     {
         Q_Q(const QMdiSubWindow);
-        if (!q->parent() || q->windowFlags() & Qt::FramelessWindowHint
+        if (!parent || q->windowFlags() & Qt::FramelessWindowHint
             || (q->isMaximized() && !drawTitleBarWhenMaximized())) {
             return 0;
         }

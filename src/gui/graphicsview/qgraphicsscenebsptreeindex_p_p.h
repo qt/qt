@@ -62,6 +62,8 @@
 
 QT_BEGIN_NAMESPACE
 
+static const int QGRAPHICSSCENE_INDEXTIMER_TIMEOUT = 2000;
+
 class QGraphicsScene;
 
 class QGraphicsSceneBspTreeIndexPrivate : public QObjectPrivate
@@ -84,11 +86,11 @@ public:
     QList<int> freeItemIndexes;
 
     bool purgePending;
-    QList<QGraphicsItem *> removedItems;
+    QSet<QGraphicsItem *> removedItems;
     void purgeRemovedItems();
 
     void _q_updateIndex();
-    void startIndexTimer();
+    void startIndexTimer(int interval = QGRAPHICSSCENE_INDEXTIMER_TIMEOUT);
     void resetIndex();
 
     void addToIndex(QGraphicsItem *item);
@@ -129,8 +131,17 @@ inline bool qt_closestLeaf(const QGraphicsItem *item1, const QGraphicsItem *item
     if (f1 != f2) return f2;
     qreal z1 = d1->z;
     qreal z2 = d2->z;
-    return z1 != z2 ? z1 > z2 : d1->siblingIndex > d2->siblingIndex;
+    return z1 > z2;
 }
+
+/*!
+    \internal
+*/
+static inline bool qt_notclosestLeaf(const QGraphicsItem *item1, const QGraphicsItem *item2)
+{
+    return qt_closestLeaf(item2, item1);
+}
+
 
 QT_END_NAMESPACE
 

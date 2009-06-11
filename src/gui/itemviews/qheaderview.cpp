@@ -1153,7 +1153,8 @@ void QHeaderView::setResizeMode(ResizeMode mode)
     \overload
 
     Sets the constraints on how the section specified by \a logicalIndex in
-    the header can be resized to those described by the given \a mode.
+    the header can be resized to those described by the given \a mode. The logical
+    index should exist at the time this function is called.
 
     \note This setting will be ignored for the last section if the stretchLastSection
     property is set to true. This is the default for the horizontal headers provided
@@ -3473,11 +3474,10 @@ void QHeaderViewPrivate::setGlobalHeaderResizeMode(QHeaderView::ResizeMode mode)
 
 int QHeaderViewPrivate::viewSectionSizeHint(int logical) const
 {
-    Q_Q(const QHeaderView);
-    if (QAbstractItemView *parent = qobject_cast<QAbstractItemView*>(q->parent())) {
+    if (QAbstractItemView *view = qobject_cast<QAbstractItemView*>(parent)) {
         return (orientation == Qt::Horizontal
-                ? parent->sizeHintForColumn(logical)
-                : parent->sizeHintForRow(logical));
+                ? view->sizeHintForColumn(logical)
+                : view->sizeHintForRow(logical));
     }
     return 0;
 }

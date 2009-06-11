@@ -191,6 +191,7 @@ private slots:
     void centerOnDirtyItem();
     void mouseTracking();
     void mouseTracking2();
+    void render();
 
     // task specific tests below me
     void task172231_untransformableItems();
@@ -2525,6 +2526,8 @@ void tst_QGraphicsView::acceptMousePressEvent()
 
     scene.addRect(0, 0, 2000, 2000)->setFlag(QGraphicsItem::ItemIsMovable);
 
+    qApp->processEvents(); // ensure scene rect is updated
+
     QApplication::sendEvent(view.viewport(), &event);
     QVERIFY(view.accepted);
 }
@@ -3199,6 +3202,62 @@ void tst_QGraphicsView::mouseTracking2()
     QCOMPARE(spy.count(), 0);
     sendMouseMove(view.viewport(), view.viewport()->rect().center());
     QCOMPARE(spy.count(), 1);
+}
+
+class RenderTester : public QGraphicsRectItem
+{
+public:
+    RenderTester(const QRectF &rect)
+        : QGraphicsRectItem(rect), paints(0)
+    { }
+
+    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
+               QWidget *widget)
+    {
+        QGraphicsRectItem::paint(painter, option, widget);
+        ++paints;
+    }
+    
+    int paints;
+};
+
+void tst_QGraphicsView::render()
+{
+    // ### This test can be much more thorough - see QGraphicsScene::render.
+    QGraphicsScene scene;
+    RenderTester *r1 = new RenderTester(QRectF(0, 0, 50, 50));
+    RenderTester *r2 = new RenderTester(QRectF(50, 50, 50, 50));
+    RenderTester *r3 = new RenderTester(QRectF(0, 50, 50, 50));
+    RenderTester *r4 = new RenderTester(QRectF(50, 0, 50, 50));
+    scene.addItem(r1);
+    scene.addItem(r2);
+    scene.addItem(r3);
+    scene.addItem(r4);
+
+    QGraphicsView view(&scene);
+    view.setFrameStyle(0);
+    view.resize(200, 200);
+    view.show();
+#ifdef Q_WS_X11
+    qt_x11_wait_for_window_manager(&view);
+#endif
+    QTest::qWait(200);
+
+    QCOMPARE(r1->paints, 1);
+    QCOMPARE(r2->paints, 1);
+    QCOMPARE(r3->paints, 1);
+    QCOMPARE(r4->paints, 1);
+
+    QPixmap pix(200, 200);
+    pix.fill(Qt::transparent);
+    QPainter painter(&pix);
+    view.render(&painter);
+    painter.end();
+
+    QCOMPARE(r1->paints, 2);
+    QCOMPARE(r2->paints, 2);
+    QCOMPARE(r3->paints, 2);
+    QCOMPARE(r4->paints, 2);
 }
 
 void tst_QGraphicsView::task253415_reconnectUpdateSceneOnSceneChanged()

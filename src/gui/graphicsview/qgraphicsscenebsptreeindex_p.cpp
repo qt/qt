@@ -40,8 +40,6 @@
 ****************************************************************************/
 
 
-static const int QGRAPHICSSCENE_INDEXTIMER_TIMEOUT = 2000;
-
 #include "qgraphicsscenebsptreeindex_p.h"
 
 #ifndef QT_NO_GRAPHICSVIEW
@@ -182,7 +180,7 @@ void QGraphicsSceneBspTreeIndexPrivate::purgeRemovedItems()
         return;
 
     // Remove stale items from the BSP tree.
-    bsp.removeItems(removedItems.toSet());
+    bsp.removeItems(removedItems);
     // Purge this list.
     removedItems.clear();
     freeItemIndexes.clear();
@@ -191,9 +189,6 @@ void QGraphicsSceneBspTreeIndexPrivate::purgeRemovedItems()
             freeItemIndexes << i;
     }
     purgePending = false;
-
-    // No locality info for the items; update the whole scene.
-    q->scene()->update();
 }
 
 /*!
@@ -201,13 +196,13 @@ void QGraphicsSceneBspTreeIndexPrivate::purgeRemovedItems()
 
     Starts or restarts the timer used for reindexing unindexed items.
 */
-void QGraphicsSceneBspTreeIndexPrivate::startIndexTimer()
+void QGraphicsSceneBspTreeIndexPrivate::startIndexTimer(int interval)
 {
     Q_Q(QGraphicsSceneBspTreeIndex);
     if (indexTimerId) {
         restartIndexTimer = true;
     } else {
-        indexTimerId = q->startTimer(QGRAPHICSSCENE_INDEXTIMER_TIMEOUT);
+        indexTimerId = q->startTimer(interval);
     }
 }
 
@@ -407,7 +402,7 @@ void QGraphicsSceneBspTreeIndex::addItem(QGraphicsItem *item)
     // a temporary list and schedule an indexing for later.
     d->unindexedItems << item;
     item->d_func()->index = -1;
-    d->startIndexTimer();
+    d->startIndexTimer(0);
 }
 
 /*!
@@ -557,8 +552,10 @@ QList<QGraphicsItem *> QGraphicsSceneBspTreeIndex::items(Qt::SortOrder order) co
                 itemList << item;
         }
     }
-    //We sort descending order
-    d->sortItems(&itemList, order, d->sortCacheEnabled);
+    if (order != -1) {
+        //We sort descending order
+        d->sortItems(&itemList, order, d->sortCacheEnabled);
+    }
     return itemList;
 }
 
