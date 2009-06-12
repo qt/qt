@@ -49,7 +49,6 @@
 #include <QtCore/qdebug.h>
 #include <QtGui/qboxlayout.h>
 #include <QtGui/qstackedwidget.h>
-#include <QtGui/qtooltip.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -197,17 +196,7 @@ void QScriptDebuggerCodeWidgetPrivate::_q_onScriptsChanged()
 void QScriptDebuggerCodeWidgetPrivate::_q_onToolTipRequest(
     const QPoint &pos, int lineNumber, const QStringList &path)
 {
-    QString tip = toolTipProvider->toolTip(/*frameIndex=*/-1, lineNumber, path);
-    if (tip.indexOf(QLatin1Char('\n')) != -1) {
-        QStringList lines = tip.split(QLatin1Char('\n'));
-        int lineCount = lines.size();
-        if (lineCount > 5) {
-            lines = lines.mid(0, 5);
-            lines.append(QString::fromLatin1("(... %0 more lines ...)").arg(lineCount - 5));
-        }
-        tip = lines.join(QLatin1String("\n"));
-    }
-    QToolTip::showText(pos, tip);
+    toolTipProvider->showToolTip(pos, /*frameIndex=*/-1, lineNumber, path);
 }
 
 QScriptDebuggerCodeWidget::QScriptDebuggerCodeWidget(QWidget *parent)

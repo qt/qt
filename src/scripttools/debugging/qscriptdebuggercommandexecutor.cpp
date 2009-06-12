@@ -105,8 +105,8 @@ QScriptDebuggerCommandExecutor::~QScriptDebuggerCommandExecutor()
   Applies the given \a command to the given \a backend.
 */
 QScriptDebuggerResponse QScriptDebuggerCommandExecutor::execute(
-        QScriptDebuggerBackend *backend,
-        const QScriptDebuggerCommand &command)
+    QScriptDebuggerBackend *backend,
+    const QScriptDebuggerCommand &command)
 {
     QScriptDebuggerResponse response;
     switch (command.type()) {
@@ -298,6 +298,43 @@ QScriptDebuggerResponse QScriptDebuggerCommandExecutor::execute(
 
     case QScriptDebuggerCommand::ContextsCheckpoint: {
         response.setResult(qVariantFromValue(backend->contextsCheckpoint()));
+    }   break;
+
+    case QScriptDebuggerCommand::GetPropertyExpressionValue: {
+        QScriptContext *ctx = backend->context(command.contextIndex());
+        int lineNumber = command.lineNumber();
+        QVariant attr = command.attribute(QScriptDebuggerCommand::UserAttribute);
+        QStringList path = attr.toStringList();
+        if (!ctx || path.isEmpty())
+            break;
+        QScriptContextInfo ctxInfo(ctx);
+        if (ctx->callee().isValid()
+            && ((lineNumber < ctxInfo.functionStartLineNumber())
+                || (lineNumber > ctxInfo.functionEndLineNumber()))) {
+            break;
+        }
+        QScriptValueList objects;
+        int pathIndex = 0;
+        if (path.at(0) == QLatin1String("this")) {
+            objects.append(ctx->thisObject());
+            ++pathIndex;
+        } else {
+            objects << ctx->scopeChain();
+        }
+        for (int i = 0; i < objects.size(); ++i) {
+            QScriptValue val = objects.at(i);
+            for (int j = pathIndex; val.isValid() && (j < path.size()); ++j) {
+                val = val.property(path.at(j));
+            }
+            if (val.isValid()) {
+                bool hadException = (ctx->state() == QScriptContext::ExceptionState);
+                QString str = val.toString();
+                if (!hadException && backend->engine()->hasUncaughtException())
+                    backend->engine()->clearExceptions();
+                response.setResult(str);
+                break;
+            }
+        }
     }   break;
 
     case QScriptDebuggerCommand::NewScriptObjectSnapshot: {

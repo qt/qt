@@ -109,6 +109,8 @@ public:
      int scheduleGetActivationObject(int contextIndex);
      int scheduleGetScopeChain(int contextIndex);
      int scheduleContextsCheckpoint();
+     int scheduleGetPropertyExpressionValue(int contextIndex, int lineNumber,
+                                            const QStringList &path);
 
      // iteration
      int scheduleNewScriptValueIterator(const QScriptDebuggerValue &object);

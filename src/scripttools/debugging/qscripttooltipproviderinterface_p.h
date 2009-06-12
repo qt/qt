@@ -57,6 +57,7 @@
 
 QT_BEGIN_NAMESPACE
 
+class QPoint;
 class QStringList;
 
 class Q_AUTOTEST_EXPORT QScriptToolTipProviderInterface
@@ -64,8 +65,8 @@ class Q_AUTOTEST_EXPORT QScriptToolTipProviderInterface
 public:
     virtual ~QScriptToolTipProviderInterface() {}
 
-    virtual QString toolTip(int frameIndex, int lineNumber,
-                            const QStringList &path) = 0;
+    virtual void showToolTip(const QPoint &pos, int frameIndex,
+                             int lineNumber, const QStringList &path) = 0;
 };
 
 QT_END_NAMESPACE

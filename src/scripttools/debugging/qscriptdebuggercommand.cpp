@@ -558,6 +558,16 @@ QScriptDebuggerCommand QScriptDebuggerCommand::contextsCheckpoint()
     return cmd;
 }
 
+QScriptDebuggerCommand QScriptDebuggerCommand::getPropertyExpressionValue(
+    int contextIndex, int lineNumber, const QStringList &path)
+{
+    QScriptDebuggerCommand cmd(GetPropertyExpressionValue);
+    cmd.setContextIndex(contextIndex);
+    cmd.setLineNumber(lineNumber);
+    cmd.setAttribute(UserAttribute, path);
+    return cmd;
+}
+
 QScriptDebuggerCommand QScriptDebuggerCommand::newScriptObjectSnapshotCommand()
 {
     QScriptDebuggerCommand cmd(NewScriptObjectSnapshot);
