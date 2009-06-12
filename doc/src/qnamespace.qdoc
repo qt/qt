@@ -2061,9 +2061,9 @@
                             should be taken over by the target application,
                             i.e., the source application should not delete
                             the data.
-
-                            On X11 this value is used to do a move.
-
+			    \br
+			    On X11 this value is used to do a move.
+			    \br
                             TargetMoveAction is not used on the Mac.
 */
 
