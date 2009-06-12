@@ -74,7 +74,7 @@ struct SymbianMenuItem
 static QList<SymbianMenuItem*> symbianMenus;
 static QList<QMenuBar*> nativeMenuBars;
 static uint qt_symbian_menu_static_cmd_id = QT_FIRST_MENU_ITEM;
-static QWidget* widgetWithContextMenu=0;
+static QPointer<QWidget> widgetWithContextMenu;
 static QList<QAction*> contextMenuActionList;
 static QAction contextAction(0);
 static int contexMenuCommand=0;
@@ -254,7 +254,7 @@ Q_GUI_EXPORT void qt_symbian_show_submenu( CEikMenuPane* menuPane, int id)
 
 void QMenuBarPrivate::symbianCommands(int command)
 {
-    if (command == contexMenuCommand) {
+    if (command == contexMenuCommand && !widgetWithContextMenu.isNull()) {
         QContextMenuEvent* event = new QContextMenuEvent(QContextMenuEvent::Keyboard, QPoint(0,0));
         QCoreApplication::postEvent(widgetWithContextMenu, event);
     }
