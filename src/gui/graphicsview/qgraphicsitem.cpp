@@ -824,7 +824,7 @@ void QGraphicsItemPrivate::combineTransformFromParent(QTransform *x, const QTran
     } else {
         x->translate(pos.x(), pos.y());
         if (transformData)
-            *x = transformData->computedFullTransform() * *x;
+            *x = transformData->computedFullTransform(x);
     }
 }
 
@@ -2777,6 +2777,7 @@ void QGraphicsItem::setXRotation(qreal angle)
     if (!d_ptr->transformData)
         d_ptr->transformData = new QGraphicsItemPrivate::TransformData;
     d_ptr->transformData->xRotation = angle;
+    d_ptr->transformData->onlyTransform = false;
     d_ptr->dirtySceneTransform = 1;
 }
 
@@ -2813,6 +2814,7 @@ void QGraphicsItem::setYRotation(qreal angle)
     if (!d_ptr->transformData)
         d_ptr->transformData = new QGraphicsItemPrivate::TransformData;
     d_ptr->transformData->yRotation = angle;
+    d_ptr->transformData->onlyTransform = false;
     d_ptr->dirtySceneTransform = 1;
 }
 
@@ -2849,6 +2851,7 @@ void QGraphicsItem::setZRotation(qreal angle)
     if (!d_ptr->transformData)
         d_ptr->transformData = new QGraphicsItemPrivate::TransformData;
     d_ptr->transformData->zRotation = angle;
+    d_ptr->transformData->onlyTransform = false;
     d_ptr->dirtySceneTransform = 1;
 }
 
@@ -2868,6 +2871,7 @@ void QGraphicsItem::setRotation(qreal x, qreal y, qreal z)
     d_ptr->transformData->xRotation = x;
     d_ptr->transformData->yRotation = y;
     d_ptr->transformData->zRotation = z;
+    d_ptr->transformData->onlyTransform = false;
     d_ptr->dirtySceneTransform = 1;
 }
 
@@ -2904,6 +2908,7 @@ void QGraphicsItem::setXScale(qreal factor)
     if (!d_ptr->transformData)
         d_ptr->transformData = new QGraphicsItemPrivate::TransformData;
     d_ptr->transformData->xScale = factor;
+    d_ptr->transformData->onlyTransform = false;
     d_ptr->dirtySceneTransform = 1;
 }
 
@@ -2940,6 +2945,7 @@ void QGraphicsItem::setYScale(qreal factor)
     if (!d_ptr->transformData)
         d_ptr->transformData = new QGraphicsItemPrivate::TransformData;
     d_ptr->transformData->yScale = factor;
+    d_ptr->transformData->onlyTransform = false;
     d_ptr->dirtySceneTransform = 1;
 }
 
@@ -2959,6 +2965,7 @@ void QGraphicsItem::setScale(qreal sx, qreal sy)
         d_ptr->transformData = new QGraphicsItemPrivate::TransformData;
     d_ptr->transformData->xScale = sx;
     d_ptr->transformData->yScale = sy;
+    d_ptr->transformData->onlyTransform = false;
     d_ptr->dirtySceneTransform = 1;
 }
 
@@ -2995,6 +3002,7 @@ void QGraphicsItem::setHorizontalShear(qreal shear)
     if (!d_ptr->transformData)
         d_ptr->transformData = new QGraphicsItemPrivate::TransformData;
     d_ptr->transformData->horizontalShear = shear;
+    d_ptr->transformData->onlyTransform = false;
     d_ptr->dirtySceneTransform = 1;
 }
 
@@ -3031,6 +3039,7 @@ void QGraphicsItem::setVerticalShear(qreal shear)
     if (!d_ptr->transformData)
         d_ptr->transformData = new QGraphicsItemPrivate::TransformData;
     d_ptr->transformData->verticalShear = shear;
+    d_ptr->transformData->onlyTransform = false;
     d_ptr->dirtySceneTransform = 1;
 }
 
@@ -3050,6 +3059,7 @@ void QGraphicsItem::setShear(qreal sh, qreal sv)
         d_ptr->transformData = new QGraphicsItemPrivate::TransformData;
     d_ptr->transformData->horizontalShear = sh;
     d_ptr->transformData->verticalShear = sv;
+    d_ptr->transformData->onlyTransform = false;
     d_ptr->dirtySceneTransform = 1;
 }
 
@@ -3083,6 +3093,7 @@ void QGraphicsItem::setTransformOrigin(const QPointF &origin)
         d_ptr->transformData = new QGraphicsItemPrivate::TransformData;
     d_ptr->transformData->xOrigin = origin.x();
     d_ptr->transformData->yOrigin = origin.y();
+    d_ptr->transformData->onlyTransform = false;
     d_ptr->dirtySceneTransform = 1;
 }
 
@@ -3196,7 +3207,7 @@ QTransform QGraphicsItem::deviceTransform(const QTransform &viewportTransform) c
     QTransform matrix;
     matrix.translate(mappedPoint.x(), mappedPoint.y());
     if (untransformedAncestor->d_ptr->transformData)
-        matrix = untransformedAncestor->d_ptr->transformData->computedFullTransform() * matrix;
+        matrix = untransformedAncestor->d_ptr->transformData->computedFullTransform(&matrix);
 
     // Then transform and translate all children.
     for (int i = 0; i < parents.size(); ++i) {
@@ -4372,9 +4383,9 @@ void QGraphicsItemPrivate::updateCachedClipPathFromSetPosHelper(const QPointF &n
     // Find closest clip ancestor and transform.
     Q_Q(QGraphicsItem);
     // COMBINE
-    QTransform thisToParentTransform = transformData
-        ? transformData->computedFullTransform() * QTransform::fromTranslate(newPos.x(), newPos.y())
-        : QTransform::fromTranslate(newPos.x(), newPos.y());
+    QTransform thisToParentTransform = QTransform::fromTranslate(newPos.x(), newPos.y());
+    if (transformData)
+        thisToParentTransform = transformData->computedFullTransform(&thisToParentTransform);
     QGraphicsItem *clipParent = parent;
     while (clipParent && !(clipParent->d_ptr->flags & QGraphicsItem::ItemClipsChildrenToShape)) {
         thisToParentTransform *= clipParent->d_ptr->transformToParent();
