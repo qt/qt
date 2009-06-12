@@ -1387,7 +1387,7 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
                 QS60StylePrivate::drawSkinElement(QS60StylePrivate::SE_ListHighlight, painter, option->rect, flags);
 
              // draw the icon
-             const QIcon::Mode mode = !(voptAdj.state & QStyle::State_Enabled) ? QIcon::Normal : QIcon::Disabled;
+             const QIcon::Mode mode = (voptAdj.state & QStyle::State_Enabled) ? QIcon::Normal : QIcon::Disabled;
              const QIcon::State state = voptAdj.state & QStyle::State_Open ? QIcon::On : QIcon::Off;
              voptAdj.icon.paint(painter, iconRect, voptAdj.decorationAlignment, mode, state);
 
