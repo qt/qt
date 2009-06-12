@@ -5074,8 +5074,8 @@ void QGraphicsScenePrivate::drawSubtreeRecursive(QGraphicsItem *item, QPainter *
     }
 
     // Calculate the full transform for this item.
-    QRect viewBoundingRect;
     bool wasDirtyParentSceneTransform = false;
+    bool dontDrawItem = true;
     QTransform transform;
     if (item) {
         if (item->d_ptr->itemIsUntransformable()) {
@@ -5091,15 +5091,17 @@ void QGraphicsScenePrivate::drawSubtreeRecursive(QGraphicsItem *item, QPainter *
             transform = item->d_ptr->sceneTransform;
             transform *= viewTransform;
         }
-        
+
         QRectF brect = item->boundingRect();
         // ### This does not take the clip into account.
         _q_adjustRect(&brect);
-        viewBoundingRect = transform.mapRect(brect).toRect();
+        QRect viewBoundingRect = transform.mapRect(brect).toRect();
         item->d_ptr->paintedViewBoundingRects.insert(widget, viewBoundingRect);
         viewBoundingRect.adjust(-1, -1, 1, 1);
         if (exposedRegion)
-            viewBoundingRect &= exposedRegion->boundingRect();
+            dontDrawItem = !exposedRegion->intersects(viewBoundingRect);
+        else
+            dontDrawItem = viewBoundingRect.isEmpty();
     }
 
     // Find and sort children.
@@ -5154,7 +5156,6 @@ void QGraphicsScenePrivate::drawSubtreeRecursive(QGraphicsItem *item, QPainter *
     }
 
     bool childClip = (item && (item->d_ptr->flags & QGraphicsItem::ItemClipsChildrenToShape));
-    bool dontDrawItem = !item || viewBoundingRect.isEmpty();
     bool dontDrawChildren = item && dontDrawItem && childClip;
     childClip &= !dontDrawChildren && !children->isEmpty();
     if (item && ((item->d_ptr->flags & QGraphicsItem::ItemHasNoContents) || invisibleButChildIgnoresParentOpacity))
