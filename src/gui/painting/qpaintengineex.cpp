@@ -149,15 +149,11 @@ void QPaintEngineExPrivate::replayClipOperations()
 
     QTransform transform = q->state()->matrix;
 
-    const QTransform &redirection = q->state()->redirectionMatrix;
-
     for (int i = 0; i <  clipInfo.size(); ++i) {
         const QPainterClipInfo &info = clipInfo.at(i);
 
-        QTransform combined = info.matrix * redirection;
-
-        if (combined != q->state()->matrix) {
-            q->state()->matrix = combined;
+        if (info.matrix != q->state()->matrix) {
+            q->state()->matrix = info.matrix;
             q->transformChanged();
         }
 
