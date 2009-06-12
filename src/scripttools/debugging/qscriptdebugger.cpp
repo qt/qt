@@ -695,7 +695,7 @@ QScriptCompletionTaskInterface *QScriptDebuggerPrivate::createCompletionTask(
     const QString &contents, int cursorPosition, int frameIndex, int options)
 {
     return new QScriptCompletionTask(
-        contents, cursorPosition, frameIndex, frontend,
+        contents, cursorPosition, frameIndex, this, this,
         (options & QScriptCompletionProviderInterface::ConsoleCommandCompletion) ? console : 0);
 }
 

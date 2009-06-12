@@ -568,6 +568,15 @@ QScriptDebuggerCommand QScriptDebuggerCommand::getPropertyExpressionValue(
     return cmd;
 }
 
+QScriptDebuggerCommand QScriptDebuggerCommand::getCompletions(
+    int contextIndex, const QStringList &path)
+{
+    QScriptDebuggerCommand cmd(GetCompletions);
+    cmd.setContextIndex(contextIndex);
+    cmd.setAttribute(UserAttribute, path);
+    return cmd;
+}
+
 QScriptDebuggerCommand QScriptDebuggerCommand::newScriptObjectSnapshotCommand()
 {
     QScriptDebuggerCommand cmd(NewScriptObjectSnapshot);

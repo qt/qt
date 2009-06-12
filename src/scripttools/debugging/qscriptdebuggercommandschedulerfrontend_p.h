@@ -111,6 +111,7 @@ public:
      int scheduleContextsCheckpoint();
      int scheduleGetPropertyExpressionValue(int contextIndex, int lineNumber,
                                             const QStringList &path);
+     int scheduleGetCompletions(int contextIndex, const QStringList &path);
 
      // iteration
      int scheduleNewScriptValueIterator(const QScriptDebuggerValue &object);
