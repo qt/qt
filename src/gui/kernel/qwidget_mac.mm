@@ -4347,20 +4347,9 @@ void QWidgetPrivate::scroll_sys(int dx, int dy, const QRect &r)
         }
     }
 
-    // ### Scroll the dirty regions as well, the following is not correct.
-    QRegion displayRegion = r.isNull() ? dirtyOnWidget : (dirtyOnWidget & r);
-    const QVector<QRect> &rects = dirtyOnWidget.rects();
-    const QVector<QRect>::const_iterator end = rects.end();
-    QVector<QRect>::const_iterator it = rects.begin();
-    while (it != end) {
-         const QRect rect = *it;
-         const NSRect dirtyRect = NSMakeRect(rect.x() + dx, rect.y() + dy,
-                                             rect.width(), rect.height());
-         [view setNeedsDisplayInRect:dirtyRect];
-         ++it;
-    }
-    [view scrollRect:scrollRect by:NSMakeSize(dx, dy)];
-    // Yes, we potentially send a duplicate area, but I think Cocoa can handle it.
+    NSSize deltaSize = NSMakeSize(dx, dy);
+    [view translateRectsNeedingDisplayInRect:scrollRect by:deltaSize];
+    [view scrollRect:scrollRect by:deltaSize];
     [view setNeedsDisplayInRect:deltaXRect];
     [view setNeedsDisplayInRect:deltaYRect];
 #endif // QT_MAC_USE_COCOA
