@@ -272,6 +272,24 @@ QGLWindowSurface::~QGLWindowSurface()
     delete d_ptr;
 }
 
+void QGLWindowSurface::deleted(QObject *object)
+{
+    QWidget *widget = qobject_cast<QWidget *>(object);
+    if (widget) {
+        QWidgetPrivate *widgetPrivate = widget->d_func();
+        if (widgetPrivate->extraData()) {
+            union { QGLContext **ctxPtr; void **voidPtr; };
+            voidPtr = &widgetPrivate->extraData()->glContext;
+            int index = d_ptr->contexts.indexOf(ctxPtr);
+            if (index != -1) {
+                delete *ctxPtr;
+                *ctxPtr = 0;
+                d_ptr->contexts.removeAt(index);
+            }
+        }
+    }
+}
+
 void QGLWindowSurface::hijackWindow(QWidget *widget)
 {
     QWidgetPrivate *widgetPrivate = widget->d_func();
@@ -287,6 +305,8 @@ void QGLWindowSurface::hijackWindow(QWidget *widget)
     widgetPrivate->extraData()->glContext = ctx;
 
     union { QGLContext **ctxPtr; void **voidPtr; };
+
+    connect(widget, SIGNAL(destroyed(QObject *)), this, SLOT(deleted(QObject *)));
 
     voidPtr = &widgetPrivate->extraData()->glContext;
     d_ptr->contexts << ctxPtr;

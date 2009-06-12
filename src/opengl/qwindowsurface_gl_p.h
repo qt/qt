@@ -65,8 +65,9 @@ class QRegion;
 class QWidget;
 struct QGLWindowSurfacePrivate;
 
-class QGLWindowSurface : public QWindowSurface, public QPaintDevice
+class QGLWindowSurface : public QObject, public QWindowSurface, public QPaintDevice
 {
+    Q_OBJECT
 public:
     QGLWindowSurface(QWidget *window);
     ~QGLWindowSurface();
@@ -90,6 +91,9 @@ public:
 
 protected:
     int metric(PaintDeviceMetric metric) const;
+
+private slots:
+    void deleted(QObject *object);
 
 private:
     void hijackWindow(QWidget *widget);
