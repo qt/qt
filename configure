@@ -7035,9 +7035,9 @@ BEGIN {
 
 FNR == 1 {
     if ( input_file ) {
-  if ( ! target_file )
-      target_file = third
-  print input_file >target_file
+        if ( ! target_file )
+            target_file = third
+        print input_file >target_file
     }
 
     matched_target = 0
@@ -7048,32 +7048,32 @@ FNR == 1 {
 
 /^(TARGET.*=)/ {
     if ( \$3 == "moc" || \$3 ~ /^Qt/ ) {
-  target_file = first
+        target_file = first
         matched_target = 1
     }
 }
 
 matched_target == 0 && /^(TEMPLATE.*=)/ {
     if ( \$3 == "subdirs" )
-  target_file = second
+        target_file = second
     else if ( \$3 == "lib" )
-  template_lib = 1
+        template_lib = 1
     else
-  target_file = third
+        target_file = third
 }
 
 matched_target == 0 && template_lib == 1 && /^(CONFIG.*=)/ {
     if ( \$0 ~ /plugin/ )
         target_file = third
     else
-  target_file = second
+        target_file = second
 }
 
 END {
     if ( input_file ) {
-  if ( ! target_file )
-      target_file = third
-  print input_file >>target_file
+        if ( ! target_file )
+            target_file = third
+        print input_file >>target_file
     }
 }
 
