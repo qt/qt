@@ -84,7 +84,7 @@ public:
 class QDB2ResultPrivate
 {
 public:
-    QDB2ResultPrivate(const QDB2DriverPrivate* d): dp(d), hStmt(0), precisionPolicy(QSql::HighPrecision)
+    QDB2ResultPrivate(const QDB2DriverPrivate* d): dp(d), hStmt(0)
     {}
     ~QDB2ResultPrivate()
     {
@@ -107,7 +107,6 @@ public:
     SQLHANDLE hStmt;
     QSqlRecord recInf;
     QVector<QVariant*> valueCache;
-    QSql::NumericalPrecisionPolicy precisionPolicy;
 };
 
 static QString qFromTChar(SQLTCHAR* str)
@@ -1146,10 +1145,6 @@ void QDB2Result::virtual_hook(int id, void *data)
     case QSqlResult::NextResult:
         Q_ASSERT(data);
         *static_cast<bool*>(data) = nextResult();
-        break;
-    case QSqlResult::SetNumericalPrecision:
-        Q_ASSERT(data);
-        d->precisionPolicy = *reinterpret_cast<QSql::NumericalPrecisionPolicy *>(data);
         break;
     default:
         QSqlResult::virtual_hook(id, data);

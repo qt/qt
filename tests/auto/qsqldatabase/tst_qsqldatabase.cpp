@@ -1078,8 +1078,8 @@ void tst_QSqlDatabase::recordMySQL()
     FieldDef("bigint unsigned", QVariant::ULongLong, Q_UINT64_C(18446744073709551615)),
     FieldDef("float", QVariant::Double,	    1.12345),
     FieldDef("double", QVariant::Double,	    1.123456789),
-    FieldDef("decimal(10, 9)", QVariant::String,1.123456789),
-    FieldDef("numeric(5, 2)", QVariant::String, 123.67),
+    FieldDef("decimal(10, 9)", QVariant::Double,1.123456789),
+    FieldDef("numeric(5, 2)", QVariant::Double, 123.67),
     FieldDef("date", QVariant::Date,	    QDate::currentDate()),
     FieldDef("datetime", QVariant::DateTime,   dt),
     FieldDef("timestamp", QVariant::DateTime,  dt, false),
@@ -1616,16 +1616,17 @@ void tst_QSqlDatabase::precisionPolicy()
         QSKIP("Driver or database doesn't support setting precision policy", SkipSingle);
 
     // Create a test table with some data
-    QVERIFY_SQL(q, exec(QString("CREATE TABLE %1 (id smallint, num numeric(20,0))").arg(tableName)));
+    QVERIFY_SQL(q, exec(QString("CREATE TABLE %1 (id smallint, num numeric(18,5))").arg(tableName)));
     QVERIFY_SQL(q, prepare(QString("INSERT INTO %1 VALUES (?, ?)").arg(tableName)));
     q.bindValue(0, 1);
     q.bindValue(1, 123);
     QVERIFY_SQL(q, exec());
     q.bindValue(0, 2);
-    q.bindValue(1, QString("18500000000000000000"));
+    q.bindValue(1, QString("1850000000000.0001"));
     QVERIFY_SQL(q, exec());
 
     // These are expected to pass
+    q.setNumericalPrecisionPolicy(QSql::HighPrecision);
     QString query = QString("SELECT num FROM %1 WHERE id = 1").arg(tableName);
     QVERIFY_SQL(q, exec(query));
     QVERIFY_SQL(q, next());
@@ -1653,7 +1654,7 @@ void tst_QSqlDatabase::precisionPolicy()
     QVERIFY_SQL(q, exec(query));
     QVERIFY_SQL(q, next());
     QCOMPARE(q.value(0).type(), QVariant::Double);
-    QCOMPARE(q.value(0).toDouble(), QString("18500000000000000000").toDouble());
+    QCOMPARE(q.value(0).toDouble(), QString("1850000000000.0001").toDouble());
 
     // Postgres returns invalid QVariants on overflow
     q.setNumericalPrecisionPolicy(QSql::HighPrecision);
@@ -1662,14 +1663,19 @@ void tst_QSqlDatabase::precisionPolicy()
     QCOMPARE(q.value(0).type(), QVariant::String);
 
     q.setNumericalPrecisionPolicy(QSql::LowPrecisionInt64);
+    QEXPECT_FAIL("QOCI", "Oracle fails here, to retrieve next", Continue);
     QVERIFY_SQL(q, exec(query));
     QVERIFY_SQL(q, next());
-    QCOMPARE(q.value(0).type(), QVariant::Invalid);
+    QCOMPARE(q.value(0).type(), QVariant::LongLong);
 
-    q.setNumericalPrecisionPolicy(QSql::LowPrecisionInt32);
-    QVERIFY_SQL(q, exec(query));
-    QVERIFY_SQL(q, next());
-    QCOMPARE(q.value(0).type(), QVariant::Invalid);
+    QSql::NumericalPrecisionPolicy oldPrecision= db.numericalPrecisionPolicy();
+    db.setNumericalPrecisionPolicy(QSql::LowPrecisionDouble);
+    QSqlQuery q2(db);
+    q2.exec(QString("SELECT num FROM %1 WHERE id = 2").arg(tableName));
+    QVERIFY_SQL(q2, exec(query));
+    QVERIFY_SQL(q2, next());
+    QCOMPARE(q2.value(0).type(), QVariant::Double);
+    db.setNumericalPrecisionPolicy(oldPrecision);
 }
 
 // This test needs a ODBC data source containing MYSQL in it's name
