@@ -230,7 +230,7 @@ void QmlXmlQuery::doSubQueryJob()
         QXmlItem item(output3.next());
         QList<QVariant> resultList;
         while (!item.isNull()) {
-            resultList << item.toAtomicValue();
+            resultList << item.toAtomicValue(); //### we used to trim strings
             item = output3.next();
         }
         m_modelData << resultList;
@@ -346,7 +346,7 @@ void QmlXmlRoleList::insert(int i, XmlListModelRole *role)
         query: "doc($src)/rss/channel/item"
         Role { name: "title"; query: "title/string()" }
         Role { name: "link"; query: "link/string()" }
-        Role { name: "description"; query: "description/string()"; isCData: true }
+        Role { name: "description"; query: "description/string()" }
     }
     \endqml
     \note The model is currently static, so the above is really just a snapshot of an RSS feed.

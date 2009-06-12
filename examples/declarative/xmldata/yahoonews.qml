@@ -21,7 +21,6 @@ Rect {
             Role {
                 name: "description"
                 query: "description/string()"
-                isCData: true
             }
         },
         Component {
