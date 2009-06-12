@@ -141,9 +141,17 @@ SUBDIRS += _networkselftest \
            qglobal \
            qgraphicsitem \
            qgraphicsitemanimation \
+           qgraphicslayout \
+           qgraphicslayoutitem \
+           qgraphicslinearlayout \
+           qgraphicsobject \
+           qgraphicspixmapitem \
+	   qgraphicspolygonitem \
+	   qgraphicsproxywidget \
            qgraphicsscene \
            qgraphicsview \
-           qgridlayout \
+           qgraphicswidget \
+	   qgridlayout \
            qgroupbox \
            qguivariant \
            qhash \

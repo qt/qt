@@ -319,20 +319,16 @@ QList<QAbstractButton *>QAbstractButtonPrivate::queryButtonList() const
         return group->d_func()->buttonList;
 #endif
 
-    Q_Q(const QAbstractButton);
-    QList<QAbstractButton*>candidates;
-    if (q->parentWidget()) {
-        candidates =  qFindChildren<QAbstractButton *>(q->parentWidget());
-        if (autoExclusive) {
-            for (int i = candidates.count() - 1; i >= 0; --i) {
-                QAbstractButton *candidate = candidates.at(i);
-                if (!candidate->autoExclusive()
+    QList<QAbstractButton*>candidates = qFindChildren<QAbstractButton *>(parent);
+    if (autoExclusive) {
+        for (int i = candidates.count() - 1; i >= 0; --i) {
+            QAbstractButton *candidate = candidates.at(i);
+            if (!candidate->autoExclusive()
 #ifndef QT_NO_BUTTONGROUP
-                    || candidate->group()
+                || candidate->group()
 #endif
-                    )
-                    candidates.removeAt(i);
-            }
+                )
+                candidates.removeAt(i);
         }
     }
     return candidates;
@@ -383,7 +379,7 @@ void QAbstractButtonPrivate::moveFocus(int key)
 #else
     bool exclusive = autoExclusive;
 #endif
-    QWidget *f = qApp->focusWidget();
+    QWidget *f = QApplication::focusWidget();
     QAbstractButton *fb = qobject_cast<QAbstractButton *>(f);
     if (!fb || !buttonList.contains(fb))
         return;

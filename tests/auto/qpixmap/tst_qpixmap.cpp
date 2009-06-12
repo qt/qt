@@ -376,7 +376,7 @@ void tst_QPixmap::scroll()
     QFETCH(QRegion, exposed);
     QFETCH(bool, newPix);
 
-    QPixmap pixmap(input);
+    QPixmap pixmap = QPixmap::fromImage(input);
     QRegion exp;
     qint64 oldKey = pixmap.cacheKey();
     pixmap.scroll(dx, dy, rect, &exp);

@@ -767,7 +767,8 @@ void Moc::generate(FILE *out)
     if (classList.size() && classList.first().classname == "Qt")
         fprintf(out, "#include <QtCore/qobject.h>\n");
 
-    fprintf(out, "#include <QtCore/qmetatype.h>\n");
+    if (mustIncludeQMetaTypeH)
+        fprintf(out, "#include <QtCore/qmetatype.h>\n");
 
     fprintf(out, "#if !defined(Q_MOC_OUTPUT_REVISION)\n"
             "#error \"The header file '%s' doesn't include <QObject>.\"\n", (const char *)fn);
@@ -900,6 +901,9 @@ void Moc::parseProperty(ClassDef *def)
         type = "qlonglong";
     else if (type == "ULongLong")
         type = "qulonglong";
+    else if (type == "qreal")
+        mustIncludeQMetaTypeH = true;
+
     propDef.type = type;
 
     next();
@@ -961,7 +965,7 @@ void Moc::parseProperty(ClassDef *def)
         msg += " has no READ accessor function. The property will be invalid.";
         warning(msg.constData());
     }
-    if(!propDef.notify.isEmpty()) 
+    if(!propDef.notify.isEmpty())
         def->notifyableProperties++;
 
     def->propertyList += propDef;

@@ -133,7 +133,7 @@ void tst_QTextOdfWriter::testWriteParagraph_data()
     QTest::newRow("tab") << "word\ttab x" <<
         "<text:p text:style-name=\"p1\"><text:span text:style-name=\"c0\">word<text:tab/>tab x</text:span></text:p>";
     QTest::newRow("tab2") << "word\t\ttab\tx" <<
-        "<text:p text:style-name=\"p1\"><text:span text:style-name=\"c0\">word<text:tab text:tab-ref=\"2\"/>tab<text:tab/>x</text:span></text:p>";
+        "<text:p text:style-name=\"p1\"><text:span text:style-name=\"c0\">word<text:tab/><text:tab/>tab<text:tab/>x</text:span></text:p>";
     QTest::newRow("misc") << "foobar   word\ttab x" <<
         "<text:p text:style-name=\"p1\"><text:span text:style-name=\"c0\">foobar <text:s text:c=\"2\"/>word<text:tab/>tab x</text:span></text:p>";
     QTest::newRow("misc2") << "\t     \tFoo" <<

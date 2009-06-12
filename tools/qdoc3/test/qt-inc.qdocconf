@@ -99,7 +99,8 @@ Cpp.ignoretokens        = QAXFACTORY_EXPORT \
                           Q_TESTLIB_EXPORT \
                           Q_TYPENAME \
                           Q_XML_EXPORT \
-                          QDBUS_EXPORT
+                          QDBUS_EXPORT \
+			  Q_GADGET
 Cpp.ignoredirectives    = Q_DECLARE_HANDLE \
                           Q_DECLARE_INTERFACE \
                           Q_DECLARE_METATYPE \

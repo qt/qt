@@ -206,7 +206,7 @@ static OPENFILENAMEA *qt_win_make_OFNA(QWidget *parent,
     if (parent)
         parent = parent->window();
     else
-        parent = qApp->activeWindow();
+        parent = QApplication::activeWindow();
 
     aTitle = title.toLocal8Bit();
     aInitDir = QDir::toNativeSeparators(initialDirectory).toLocal8Bit();
@@ -279,7 +279,7 @@ static OPENFILENAME* qt_win_make_OFN(QWidget *parent,
     if (parent)
         parent = parent->window();
     else
-        parent = qApp->activeWindow();
+        parent = QApplication::activeWindow();
 
     tInitDir = QDir::toNativeSeparators(initialDirectory);
     tFilters = filters;
@@ -692,7 +692,7 @@ QString qt_win_get_existing_directory(const QFileDialogArgs &args)
     if (parent)
         parent = parent->window();
     else
-        parent = qApp->activeWindow();
+        parent = QApplication::activeWindow();
     if (parent)
         parent->createWinId();
 

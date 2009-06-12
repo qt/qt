@@ -279,7 +279,7 @@ QVistaHelper::VistaState QVistaHelper::vistaState()
 QColor QVistaHelper::basicWindowFrameColor()
 {
     DWORD rgb;
-    HANDLE hTheme = pOpenThemeData(qApp->desktop()->winId(), L"WINDOW");
+    HANDLE hTheme = pOpenThemeData(QApplication::desktop()->winId(), L"WINDOW");
     pGetThemeColor(
         hTheme, WIZ_WP_CAPTION, WIZ_CS_ACTIVE,
         wizard->isActiveWindow() ? WIZ_TMT_FILLCOLORHINT : WIZ_TMT_BORDERCOLORHINT,
@@ -611,7 +611,7 @@ bool QVistaHelper::drawTitleText(QPainter *painter, const QString &text, const Q
 {
     bool value = false;
     if (vistaState() == VistaAero) {
-        HANDLE hTheme = pOpenThemeData(qApp->desktop()->winId(), L"WINDOW");
+        HANDLE hTheme = pOpenThemeData(QApplication::desktop()->winId(), L"WINDOW");
         if (!hTheme) return false;
         // Set up a memory DC and bitmap that we'll draw into
         HDC dcMem;

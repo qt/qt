@@ -157,6 +157,7 @@ public:
         dirtySceneTransform(1),
         geometryChanged(0),
         inDestructor(0),
+        isObject(0),
         acceptTouchEvents(0),
         acceptedTouchBeginEvent(0),
         globalStackingOrder(-1),
@@ -375,7 +376,7 @@ public:
     QGraphicsScene *scene;
     QGraphicsItem *parent;
     QList<QGraphicsItem *> children;
-    class TransformData;
+    struct TransformData;
     TransformData *transformData;
     QTransform sceneTransform;
     int index;
@@ -439,9 +440,10 @@ public:
     quint32 dirtySceneTransform  : 1;
     quint32 geometryChanged : 1;
     quint32 inDestructor : 1;
+    quint32 isObject : 1;
     quint32 acceptTouchEvents : 1;
     quint32 acceptedTouchBeginEvent : 1;
-    quint32 unused : 13; // feel free to use
+    quint32 unused : 12; // feel free to use
 
     // Optional stacking order
     int globalStackingOrder;
