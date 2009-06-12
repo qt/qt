@@ -42,6 +42,17 @@
 #ifndef QACTIONTOKEYEVENTMAPPER_P_H
 #define QACTIONTOKEYEVENTMAPPER_P_H
 
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists purely as an
+// implementation detail.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
+
 #include <QtCore/qobject.h>
 #include "QtGui/qaction.h"
 QT_BEGIN_HEADER
@@ -67,4 +78,4 @@ QT_END_NAMESPACE
 
 QT_END_HEADER
 
-#endif //QACTIONTOKEYEVENTMAPPER_H
+#endif //QACTIONTOKEYEVENTMAPPER_P_H

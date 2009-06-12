@@ -9,8 +9,7 @@ DEFINES *= $$STLLIB_USAGE_DEFINES
 
 # Legacy support requires some hardcoded stdapis paths.
 # Note: Also the new header is used from STL when it is enabled
-INCLUDEPATH += $$OS_LAYER_STDCPP_SYSTEMINCLUDE \
-               $${EPOCROOT}epoc32/include/stdapis/stlport
+INCLUDEPATH += $$OS_LAYER_STDCPP_SYSTEMINCLUDE 
 
 # Remove mkspecs/common/symbian/stl-off from beginning of includepath 
 # in order to use new and delete operators from STL

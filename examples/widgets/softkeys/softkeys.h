@@ -59,6 +59,9 @@ public:
         MainWindow(QWidget *parent = 0);
     ~MainWindow();
 private:
+    QVBoxLayout *layout;
+    QWidget *central;
+    QLabel *infoLabel;
     QMenu* fileMenu;
     QAction* openDialogAct;
     QAction* addSoftKeysAct;

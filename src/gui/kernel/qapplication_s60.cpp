@@ -392,7 +392,7 @@ void QSymbianControl::HandlePointerEventL(const TPointerEvent& pEvent)
     alienWidget = S60->mousePressTarget;
 
     if (alienWidget != S60->lastPointerEventTarget)
-        if (type == QEvent::MouseButtonPress || QEvent::MouseButtonDblClick || type == QEvent::MouseMove)
+        if (type == QEvent::MouseButtonPress || type == QEvent::MouseButtonDblClick || type == QEvent::MouseMove)
         {
             //moved to another widget, create enter and leave events
             if (S60->lastPointerEventTarget)
@@ -1088,6 +1088,9 @@ void QApplication::symbianResourceChange(int type)
     switch (type) {
     case KEikDynamicLayoutVariantSwitch:
         {
+        if (S60)
+            S60->updateScreenSize();            
+        
 #ifndef QT_NO_STYLE_S60
         QS60Style *s60Style = 0;
 
