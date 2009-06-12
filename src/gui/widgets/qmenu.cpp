@@ -205,7 +205,6 @@ void QMenuPrivate::calcActionRects(QMap<QAction*, QRect> &actionRects, QList<QAc
 
     actionRects.clear();
     actionList.clear();
-    QList<QAction*> items = filterActions(q->actions());
     int max_column_width = 0,
         dh = popupGeometry(QApplication::desktop()->screenNumber(q)).height(),
         ncols = 1,
@@ -218,6 +217,7 @@ void QMenuPrivate::calcActionRects(QMap<QAction*, QRect> &actionRects, QList<QAc
     tabWidth = 0;
     maxIconWidth = 0;
     hasCheckableItems = false;
+    QList<QAction*> items = filteredActions();
     for(int i = 0; i < items.count(); i++) {
         QAction *action = items.at(i);
         if (widgetItems.value(action))
@@ -348,7 +348,7 @@ void QMenuPrivate::updateActions()
     itemsDirty = 0;
 }
 
-QList<QAction *> QMenuPrivate::filterActions(const QList<QAction *> &actions) const
+QList<QAction *> QMenuPrivate::filteredActions() const
 {
     QList<QAction *> visibleActions;
     int i = 0;

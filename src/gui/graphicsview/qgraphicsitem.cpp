@@ -91,30 +91,33 @@
 
     \snippet doc/src/snippets/code/src_gui_graphicsview_qgraphicsitem.cpp 0
 
-    The boundingRect() function has many different purposes. QGraphicsScene
-    bases its item index on boundingRect(), and QGraphicsView uses it both for
-    culling invisible items, and for determining the area that needs to be
-    recomposed when drawing overlapping items. In addition, QGraphicsItem's
-    collision detection mechanisms use boundingRect() to provide an efficient
-    cut-off. The fine grained collision algorithm in collidesWithItem() is based
-    on calling shape(), which returns an accurate outline of the item's shape
-    as a QPainterPath.
+    The boundingRect() function has many different purposes.
+    QGraphicsScene bases its item index on boundingRect(), and
+    QGraphicsView uses it both for culling invisible items, and for
+    determining the area that needs to be recomposed when drawing
+    overlapping items. In addition, QGraphicsItem's collision
+    detection mechanisms use boundingRect() to provide an efficient
+    cut-off. The fine grained collision algorithm in
+    collidesWithItem() is based on calling shape(), which returns an
+    accurate outline of the item's shape as a QPainterPath.
 
-    QGraphicsScene expects all items boundingRect() and shape() to remain
-    unchanged unless it is notified. If you want to change an item's geometry
-    in any way, you must first call prepareGeometryChange() to allow
-    QGraphicsScene to update its bookkeeping.
+    QGraphicsScene expects all items boundingRect() and shape() to
+    remain unchanged unless it is notified. If you want to change an
+    item's geometry in any way, you must first call
+    prepareGeometryChange() to allow QGraphicsScene to update its
+    bookkeeping.
 
     Collision detection can be done in two ways:
 
     \list 1
 
-    \o Reimplement shape() to return an accurate shape for your item, and rely
-    on the default implementation of collidesWithItem() to do shape-shape
-    intersection. This can be rather expensive if the shapes are complex.
+    \o Reimplement shape() to return an accurate shape for your item,
+    and rely on the default implementation of collidesWithItem() to do
+    shape-shape intersection. This can be rather expensive if the
+    shapes are complex.
 
-    \o Reimplement collidesWithItem() to provide your own custom item and shape
-    collision algorithm.
+    \o Reimplement collidesWithItem() to provide your own custom item
+    and shape collision algorithm.
 
     \endlist
 
@@ -136,24 +139,28 @@
     position, pos(). To change the item's transformation, you can pass
     a transformation matrix to setTransform()
 
-    Item transformations accumulate from parent to child, so if both a parent and child
-    item are rotated 90 degrees, the child's total transformation will be 180 degrees.
-    Similarly, if the item's parent is scaled to 2x its original size, its
-    children will also be twice as large. An item's transformation does not
-    affect its own local geometry; all geometry functions (e.g., contains(),
+    Item transformations accumulate from parent to child, so if both a
+    parent and child item are rotated 90 degrees, the child's total
+    transformation will be 180 degrees.  Similarly, if the item's
+    parent is scaled to 2x its original size, its children will also
+    be twice as large. An item's transformation does not affect its
+    own local geometry; all geometry functions (e.g., contains(),
     update(), and all the mapping functions) still operate in local
     coordinates. For convenience, QGraphicsItem provides the functions
-    sceneTransform(), which returns the item's total transformation matrix
-    (including its position and all parents' positions and transformations),
-    and scenePos(), which returns its position in scene coordinates. To reset
-    an item's matrix, call resetTransform().
+    sceneTransform(), which returns the item's total transformation
+    matrix (including its position and all parents' positions and
+    transformations), and scenePos(), which returns its position in
+    scene coordinates. To reset an item's matrix, call
+    resetTransform().
 
-    Another way to apply transformation to an item is to use the , or set the
-    different transformation properties (transformOrigin, x/y/zRotation, x/yScale,
-    horizontal/verticalShear).  Those properties come in addition to the base transformation
+    Another way to apply transformation to an item is to use the , or
+    set the different transformation properties (transformOrigin,
+    x/y/zRotation, x/yScale, horizontal/verticalShear).  Those
+    properties come in addition to the base transformation
 
-    The order you set the transformation properties does not affect the resulting transformation
-    The resulting transformation is always computed in the following order
+    The order you set the transformation properties does not affect
+    the resulting transformation The resulting transformation is
+    always computed in the following order
 
     \code
     [Origin] [Base] [RotateX] [RotateY] [RotateZ] [Shear] [Scale] [-Origin]
@@ -2538,8 +2545,8 @@ QPointF QGraphicsItem::pos() const
     \sa y()
 */
 
-/*
-  Set's the x coordinate of the item's position. Equivalent to
+/*!
+  Set's the \a x coordinate of the item's position. Equivalent to
   calling setPos(x, y()).
 
   \sa x(), setPos()
@@ -2557,8 +2564,8 @@ void QGraphicsItem::setX(qreal x)
     \sa x()
 */
 
-/*
-  Set's the y coordinate of the item's position. Equivalent to
+/*!
+  Set's the \a y coordinate of the item's position. Equivalent to
   calling setPos(x(), y).
 
   \sa x(), setPos()
@@ -2743,7 +2750,8 @@ QTransform QGraphicsItem::transform() const
 
     The default is 0
 
-    \warning The value doesn't take in account any rotation set with the setTransform() method.
+    \warning The value doesn't take in account any rotation set with
+    the setTransform() method.
 
     \sa setXRotation(), {Transformations}
 */
@@ -3048,7 +3056,7 @@ void QGraphicsItem::setShear(qreal sh, qreal sv)
 /*!
     \since 4.6
 
-    Returns the origin point using for transformation in item coordinate.
+    Returns the origin point used for transformation in item coordinate.
 
     The default is QPointF(0,0).
 
@@ -6440,15 +6448,21 @@ QGraphicsObject::QGraphicsObject(QGraphicsItemPrivate &dd, QGraphicsItem *parent
   \property QGraphicsObject::parent
   \brief the parent of the item
 
-  \sa QGraphicsItem::setParentItem, QGraphicsItem::parentObject
+  \sa QGraphicsItem::setParentItem(), QGraphicsItem::parentObject()
 */
 
+/*!
+  \property QGraphicsObject::id
+  \brief the id of of the item
+
+  \sa QGraphicsItem::opacity(), QGraphicsItem::setOpacity()
+*/
 
 /*!
   \property QGraphicsObject::opacity
   \brief the opacity of the item
 
-  \sa QGraphicsItem::setOpacity, QGraphicsItem::opacity
+  \sa QGraphicsItem::setOpacity(), QGraphicsItem::opacity()
 */
 
 /*!
@@ -6456,7 +6470,13 @@ QGraphicsObject::QGraphicsObject(QGraphicsItemPrivate &dd, QGraphicsItem *parent
 
   This signal gets emitted whenever the opacity of the item changes
 
-  \sa opacity
+  \sa QGraphicsItem::opacity()
+*/
+
+/*!
+  \fn QGraphicsObject::parentChanged()
+
+  This signal gets emitted whenever the parent of the item changes
 */
 
 /*!
@@ -6465,7 +6485,7 @@ QGraphicsObject::QGraphicsObject(QGraphicsItemPrivate &dd, QGraphicsItem *parent
 
   Describes the items position.
 
-  \sa QGraphicsItem::setPos, QGraphicsItem::pos, positionChanged
+  \sa QGraphicsItem::setPos(), QGraphicsItem::pos()
 */
 
 /*!
@@ -6474,7 +6494,7 @@ QGraphicsObject::QGraphicsObject(QGraphicsItemPrivate &dd, QGraphicsItem *parent
 
   Describes the items x position.
 
-  \sa QGraphicsItem::setX, setPos, xChanged
+  \sa QGraphicsItem::setX(), setPos(), xChanged()
 */
 
 /*!
@@ -6482,7 +6502,7 @@ QGraphicsObject::QGraphicsObject(QGraphicsItemPrivate &dd, QGraphicsItem *parent
 
   This signal gets emitted whenever the x position of the item changes
 
-  \sa pos
+  \sa pos()
 */
 
 /*!
@@ -6491,15 +6511,15 @@ QGraphicsObject::QGraphicsObject(QGraphicsItemPrivate &dd, QGraphicsItem *parent
 
   Describes the items y position.
 
-  \sa QGraphicsItem::setY, setPos, yChanged
+  \sa QGraphicsItem::setY(), setPos(), yChanged()
 */
 
 /*!
   \fn QGraphicsObject::yChanged()
 
-  This signal gets emitted whenever the y position of the item changes
+  This signal gets emitted whenever the y position of the item changes.
 
-  \sa pos
+  \sa pos()
 */
 
 /*!
@@ -6508,15 +6528,15 @@ QGraphicsObject::QGraphicsObject(QGraphicsItemPrivate &dd, QGraphicsItem *parent
 
   Describes the items z value.
 
-  \sa QGraphicsItem::setZValue, zValue, zChanged
+  \sa QGraphicsItem::setZValue(), zValue(), zChanged()
 */
 
 /*!
   \fn QGraphicsObject::zChanged()
 
-  This signal gets emitted whenever the z value of the item changes
+  This signal gets emitted whenever the z value of the item changes.
 
-  \sa pos
+  \sa pos()
 */
 
 
@@ -6536,7 +6556,7 @@ QGraphicsObject::QGraphicsObject(QGraphicsItemPrivate &dd, QGraphicsItem *parent
 
   This signal gets emitted whenever the item get's enabled or disabled.
 
-  \sa enabled
+  \sa isEnabled()
 */
 
 /*!

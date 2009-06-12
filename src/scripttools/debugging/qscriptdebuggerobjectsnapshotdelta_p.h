@@ -60,6 +60,8 @@
 
 QT_BEGIN_NAMESPACE
 
+class QDataStream;
+
 class Q_AUTOTEST_EXPORT QScriptDebuggerObjectSnapshotDelta
 {
 public:
@@ -67,6 +69,9 @@ public:
     QScriptDebuggerValuePropertyList changedProperties;
     QScriptDebuggerValuePropertyList addedProperties;
 };
+
+Q_AUTOTEST_EXPORT QDataStream &operator<<(QDataStream &, const QScriptDebuggerObjectSnapshotDelta &);
+Q_AUTOTEST_EXPORT QDataStream &operator>>(QDataStream &, QScriptDebuggerObjectSnapshotDelta &);
 
 QT_END_NAMESPACE
 

@@ -194,6 +194,7 @@ private slots:
     void mouseTracking();
     void mouseTracking2();
     void render();
+    void exposeRegion();
 
     // task specific tests below me
     void task172231_untransformableItems();
@@ -3321,6 +3322,39 @@ void tst_QGraphicsView::render()
     QCOMPARE(r2->paints, 2);
     QCOMPARE(r3->paints, 2);
     QCOMPARE(r4->paints, 2);
+}
+
+void tst_QGraphicsView::exposeRegion()
+{
+    RenderTester *item = new RenderTester(QRectF(0, 0, 20, 20));
+    QGraphicsScene scene;
+    scene.addItem(item);
+
+    CustomView view;
+    view.setScene(&scene);
+    view.show();
+#ifdef Q_WS_X11
+    qt_x11_wait_for_window_manager(&view);
+#endif
+    QTest::qWait(125);
+
+    item->paints = 0;
+    view.lastUpdateRegions.clear();
+
+    // Update a small area in the viewport's topLeft() and bottomRight().
+    // (the boundingRect() of this area covers the entire viewport).
+    QWidget *viewport = view.viewport();
+    QRegion expectedExposeRegion = QRect(0, 0, 5, 5);
+    expectedExposeRegion += QRect(viewport->rect().bottomRight() - QPoint(5, 5), QSize(5, 5));
+    viewport->update(expectedExposeRegion);
+    qApp->processEvents();
+
+    // Make sure it triggers correct repaint on the view.
+    QCOMPARE(view.lastUpdateRegions.size(), 1);
+    QCOMPARE(view.lastUpdateRegions.at(0), expectedExposeRegion);
+
+    // Make sure the item didn't get any repaints.
+    QCOMPARE(item->paints, 0);
 }
 
 void tst_QGraphicsView::task253415_reconnectUpdateSceneOnSceneChanged()
