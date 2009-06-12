@@ -78,6 +78,10 @@
 #include <openssl/x509v3.h>
 #include <openssl/x509_vfy.h>
 
+#if OPENSSL_VERSION_NUMBER >= 0x10000000L
+typedef _STACK STACK;
+#endif
+
 QT_BEGIN_NAMESPACE
 
 class QSslSocketBackendPrivate : public QSslSocketPrivate

@@ -3565,10 +3565,12 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
 #if !defined(QT_NO_WHEELEVENT) || !defined(QT_NO_TABLETEVENT)
         else if (
 #  ifndef QT_NO_WHEELEVENT
-                 e->type() == QEvent::Wheel ||
+                 e->type() == QEvent::Wheel
+#  else
+                 false
 #  endif
 #  ifndef QT_NO_TABLETEVENT
-                 e->type() == QEvent::TabletMove
+                 || e->type() == QEvent::TabletMove
                  || e->type() == QEvent::TabletPress
                  || e->type() == QEvent::TabletRelease
 #  endif
