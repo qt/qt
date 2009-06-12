@@ -128,6 +128,10 @@ extern "C" {
 
 #include <private/qbackingstore_p.h>
 
+#if defined(Q_OS_BSD4) || _POSIX_VERSION+0 < 200112L
+# define QT_NO_UNSETENV
+#endif
+
 QT_BEGIN_NAMESPACE
 
 //#define X_NOT_BROKEN
@@ -1757,7 +1761,7 @@ void qt_init(QApplicationPrivate *priv, int,
         X11->pattern_fills[i].screen = -1;
 #endif
 
-    X11->startupId = X11->originalStartupId = 0;
+    X11->startupId = X11->originalStartupId = X11->startupIdString = 0;
 
     int argc = priv->argc;
     char **argv = priv->argv;
@@ -2556,9 +2560,16 @@ void qt_init(QApplicationPrivate *priv, int,
 
         X11->startupId = getenv("DESKTOP_STARTUP_ID");
         X11->originalStartupId = X11->startupId;
-        static char desktop_startup_id[] = "DESKTOP_STARTUP_ID=";
-        putenv(desktop_startup_id);
-
+        if (X11->startupId) {
+#ifndef QT_NO_UNSETENV
+            unsetenv("DESKTOP_STARTUP_ID");
+#else
+            // it's a small memory leak, however we won't crash if Qt is
+            // unloaded and someones tries to use the envoriment.
+            X11->startupIdString = strdup("DESKTOP_STARTUP_ID=");
+            putenv(X11->startupIdString);
+#endif
+        }
    } else {
         // read some non-GUI settings when not using the X server...
 
@@ -2690,9 +2701,14 @@ void qt_cleanup()
 #endif
     }
 
-    // restore original value back. This is also done in QWidgetPrivate::show_sys.
-    if (X11->originalStartupId)
+#ifdef QT_NO_UNSETENV
+    // restore original value back.
+    if (X11->originalStartupId && X11->startupIdString) {
         putenv(X11->originalStartupId);
+        free(X11->startupIdString);
+        X11->startupIdString = 0;
+    }
+#endif
 
 #ifndef QT_NO_XRENDER
     for (int i = 0; i < X11->solid_fill_count; ++i) {
