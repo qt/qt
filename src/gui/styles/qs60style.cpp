@@ -2314,6 +2314,8 @@ int QS60Style::styleHint(StyleHint sh, const QStyleOption *opt, const QWidget *w
         case SH_BlinkCursorWhenTextSelected:
             retValue = true;
             break;
+        case SH_UnderlineShortcut:
+            retValue = 0;
         default:
             break;
     }
