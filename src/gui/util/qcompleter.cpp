@@ -1077,7 +1077,7 @@ void QCompleter::setPopup(QAbstractItemView *popup)
         delete d->popup;
     if (popup->model() != d->proxy)
         popup->setModel(d->proxy);
-    popup->hide();
+    popup->show();
     popup->setParent(0, Qt::Popup);
 
     Qt::FocusPolicy origPolicy = Qt::NoFocus;
