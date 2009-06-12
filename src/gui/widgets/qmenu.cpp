@@ -60,7 +60,7 @@
 #ifndef QT_NO_WHATSTHIS
 # include <qwhatsthis.h>
 #endif
-#include <qactiontokeyeventmapper_p.h>
+#include <private/qactiontokeyeventmapper_p.h>
 
 #include "qmenu_p.h"
 #include "qmenubar_p.h"

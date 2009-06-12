@@ -43,7 +43,6 @@
 
 #include "qcoefepinputcontext_p.h"
 #include <qapplication.h>
-#include <private/qapplication_p.h>
 #include <qtextformat.h>
 
 #include <fepitfr.h>
@@ -89,13 +88,9 @@ QCoeFepInputContext::~QCoeFepInputContext()
 
     // This is to make sure that the FEP manager "forgets" about us,
     // otherwise we may get callbacks even after we're destroyed.
-    // The call is asynchronous though, so we must spin the event loop
-    // to make sure it gets detected. However we will not spin eventloop
-    // in case that app is closing, since eventDispatcher is already deleted.
-    CCoeEnv::Static()->InputCapabilitiesChanged();
-    if(!QApplicationPrivate::is_app_closing) {
-        QApplication::processEvents();
-    }
+    // The call below is essentially equivalent to InputCapabilitiesChanged(),
+    // but is synchronous, rather than asynchronous.
+    CCoeEnv::Static()->SyncNotifyFocusObserversOfChangeInFocus();
 
     if (m_fepState)
         delete m_fepState;
@@ -334,6 +329,8 @@ void QCoeFepInputContext::updateHints()
             m_lastImHints = hints;
             applyHints(hints);
         }
+    } else {
+        CCoeEnv::Static()->InputCapabilitiesChanged();
     }
 }
 

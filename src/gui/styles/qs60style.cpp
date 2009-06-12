@@ -44,8 +44,8 @@
 #include "qapplication.h"
 #include "qpainter.h"
 #include "qstyleoption.h"
-#include "qresizeevent"
-#include "qpixmapcache"
+#include "qevent.h"
+#include "qpixmapcache.h"
 
 #include "qcalendarwidget.h"
 #include "qdial.h"
@@ -574,7 +574,7 @@ void QS60StylePrivate::drawRow(QS60StyleEnums::SkinParts start,
         if (startRect.topRight().y() > endRect.bottomLeft().y()) {
             const int overlap = (startRect.topRight().y() - endRect.bottomLeft().y())>>1;
             startRect.setHeight(startRect.height()-overlap);
-            endRect.adjust(0,overlap,0,0);        
+            endRect.adjust(0,overlap,0,0);
         }
     }
 
@@ -1129,7 +1129,7 @@ void QS60Style::drawComplexControl(ComplexControl control, const QStyleOptionCom
                     copy.state |= State_Raised;
                     copy.state &= ~State_Sunken;
                 }
-                pe = (spinBox->buttonSymbols == QAbstractSpinBox::PlusMinus) ? 
+                pe = (spinBox->buttonSymbols == QAbstractSpinBox::PlusMinus) ?
                       PE_IndicatorSpinPlus :
                       PE_IndicatorSpinUp;
 
@@ -1156,7 +1156,7 @@ void QS60Style::drawComplexControl(ComplexControl control, const QStyleOptionCom
                     copy.state |= State_Raised;
                     copy.state &= ~State_Sunken;
                 }
-                pe = (spinBox->buttonSymbols == QAbstractSpinBox::PlusMinus) ? 
+                pe = (spinBox->buttonSymbols == QAbstractSpinBox::PlusMinus) ?
                       PE_IndicatorSpinMinus :
                       PE_IndicatorSpinDown;
 
@@ -1586,12 +1586,12 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
                 QPixmap tabIcon = optionTab.icon.pixmap(iconSize,
                     (optionTab.state & State_Enabled) ? QIcon::Normal : QIcon::Disabled);
                 if (tab->text.isEmpty())
-                    painter->drawPixmap(tr.center().x() - (tabIcon.height() >>1), 
-                                        tr.center().y() - (tabIcon.height() >>1), 
+                    painter->drawPixmap(tr.center().x() - (tabIcon.height() >>1),
+                                        tr.center().y() - (tabIcon.height() >>1),
                                         tabIcon);
                 else
-                    painter->drawPixmap(tr.left() + tabOverlap, 
-                                        tr.center().y() - (tabIcon.height() >>1), 
+                    painter->drawPixmap(tr.left() + tabOverlap,
+                                        tr.center().y() - (tabIcon.height() >>1),
                                         tabIcon);
                 tr.setLeft(tr.left() + iconSize.width() + 4);
             }
@@ -1822,7 +1822,7 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
                 }
             }
             QS60StylePrivate::drawSkinElement(QS60StylePrivate::SE_TableHeaderItem, painter, mtyRect, adjFlags);
-            
+
             QRegion clipRegion = painter->clipRegion();
             painter->setClipRect(option->rect);
             drawControl(CE_HeaderSection, header, painter, widget);
@@ -2038,8 +2038,18 @@ void QS60Style::drawPrimitive(PrimitiveElement element, const QStyleOption *opti
 #endif //QT_NO_SPINBOX
     case PE_FrameFocusRect:
 // Calendar widget and combox both do not use styled itemDelegate
-        if (!(widget && qobject_cast<const QCalendarWidget *>(widget->parent())) ||
-                        qobject_cast<const QComboBoxListView *>(widget)) {
+        if ( widget && (
+#ifndef QT_NO_CALENDARWIDGET
+             (qobject_cast<const QCalendarWidget *>(widget->parent()))
+#else
+             false
+#endif //QT_NO_CALENDARWIDGET
+#ifndef QT_NO_COMBOBOX
+            || (qobject_cast<const QComboBoxListView *>(widget))
+#else
+            || false
+#endif //QT_NO_COMBOBOX
+            )) {
             // no focus selection for touch
             if (option->state & State_HasFocus && !QS60StylePrivate::isTouchSupported()) {
                 painter->save();
@@ -2292,9 +2302,9 @@ int QS60Style::styleHint(StyleHint sh, const QStyleOption *opt, const QWidget *w
             retValue = true;
             break;
         case SH_ProgressDialog_TextLabelAlignment:
-            retValue = (QApplication::layoutDirection() == Qt::LeftToRight) ? 
+            retValue = (QApplication::layoutDirection() == Qt::LeftToRight) ?
                 Qt::AlignLeft :
-                Qt::AlignRight;  
+                Qt::AlignRight;
             break;
         case SH_Menu_SubMenuPopupDelay:
             retValue = 300;
@@ -2314,6 +2324,8 @@ int QS60Style::styleHint(StyleHint sh, const QStyleOption *opt, const QWidget *w
         case SH_BlinkCursorWhenTextSelected:
             retValue = true;
             break;
+        case SH_UnderlineShortcut:
+            retValue = 0;
         default:
             break;
     }
@@ -2406,7 +2418,7 @@ QRect QS60Style::subControlRect(ComplexControl control, const QStyleOptionComple
 
             const int y = frameThickness + spinbox->rect.y();
             const int x = spinbox->rect.x() + spinbox->rect.width() - frameThickness - 2*buttonSize.width();
-            
+
             switch (scontrol) {
                 case SC_SpinBoxUp:
                     if (spinbox->buttonSymbols == QAbstractSpinBox::NoButtons)
@@ -2641,7 +2653,7 @@ QRect QS60Style::subElementRect(SubElement element, const QStyleOption *opt, con
                     // a) highlight border does not cross the rect
                     // b) in s60 list checkbox is smaller than normal checkbox
                     //todo; magic three
-                    ret.setRect(opt->rect.left()+3, opt->rect.top() + heightOffset, 
+                    ret.setRect(opt->rect.left()+3, opt->rect.top() + heightOffset,
                         indicatorWidth-3, indicatorHeight-3);
                 } else {
                     ret.setRect(opt->rect.right() - indicatorWidth - spacing, opt->rect.top() + heightOffset,
@@ -2780,8 +2792,8 @@ QIcon QS60Style::standardIconImplementation(StandardPixmap standardIcon,
     QS60StyleEnums::SkinParts part;
     QS60StylePrivate::SkinElementFlags adjustedFlags;
     if (option)
-        adjustedFlags = (option->state & State_Enabled) ?  
-            QS60StylePrivate::SF_StateEnabled : 
+        adjustedFlags = (option->state & State_Enabled) ?
+            QS60StylePrivate::SF_StateEnabled :
             QS60StylePrivate::SF_StateDisabled;
 
     switch(standardIcon) {

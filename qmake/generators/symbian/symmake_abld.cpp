@@ -184,6 +184,10 @@ void SymbianAbldMakefileGenerator::writeWrapperMakefile(QFile& wrapperFile, bool
     t << "#" << endl;
     t << "# ==============================================================================" << "\n" << endl;
     t << endl;
+    QString ofile = Option::fixPathToTargetOS(Option::output.fileName());
+    if(ofile.lastIndexOf(Option::dir_sep) != -1)
+        ofile = ofile.right(ofile.length() - ofile.lastIndexOf(Option::dir_sep) -1);
+    t << "MAKEFILE          = " << ofile << endl;
     t << "QMAKE             = " << Option::fixPathToTargetOS(var("QMAKE_QMAKE")) << endl;
     t << "DEL_FILE          = " << var("QMAKE_DEL_FILE") << endl;
     t << "DEL_DIR           = " << var("QMAKE_DEL_DIR") << endl;
@@ -273,8 +277,6 @@ void SymbianAbldMakefileGenerator::writeWrapperMakefile(QFile& wrapperFile, bool
 
     }
 
-    writeExtraTargets(t);
-
     // pre_targetdeps target depends on:
     //  - all targets specified in PRE_TARGETDEPS
     //  - the GENERATED_SOURCES sources (so that they get generated)
@@ -285,6 +287,7 @@ void SymbianAbldMakefileGenerator::writeWrapperMakefile(QFile& wrapperFile, bool
     // so supporting generating sources is the best we can do. This is enough for mocs.
 
     if (!isSubdirs) {
+        writeExtraTargets(t);
         writeExtraCompilerTargets(t);
 
         t << CREATE_TEMPS_TARGET ":" << endl;
@@ -344,6 +347,11 @@ void SymbianAbldMakefileGenerator::writeWrapperMakefile(QFile& wrapperFile, bool
             t << endl;
         }
         t << endl;
+    }
+    else {
+        QList<MakefileGenerator::SubTarget*> subtargets = findSubDirsSubTargets();
+        writeSubTargets(t, subtargets, SubTargetSkipDefaultVariables|SubTargetSkipDefaultTargets);
+        qDeleteAll(subtargets);
     }
 
     writeDeploymentTargets(t);

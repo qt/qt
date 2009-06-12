@@ -61,7 +61,7 @@
 #ifndef QT_NO_ACCESSIBILITY
 #include <qaccessible.h>
 #endif
-#include <qactiontokeyeventmapper_p.h>
+#include <private/qactiontokeyeventmapper_p.h>
 
 QT_BEGIN_NAMESPACE
 
