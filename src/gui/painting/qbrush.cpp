@@ -846,7 +846,9 @@ bool QBrush::isOpaque() const
                 return false;
         return true;
     } else if (d->style == Qt::TexturePattern) {
-        return !texture().hasAlpha();
+        return qHasPixmapTexture(*this)
+            ? !texture().hasAlphaChannel() && !texture().isQBitmap()
+            : !textureImage().hasAlphaChannel();
     }
 
     return false;

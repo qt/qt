@@ -1002,8 +1002,10 @@ void QGL2PaintEngineEx::drawPixmap(const QRectF& dest, const QPixmap & pixmap, c
     glActiveTexture(GL_TEXTURE0 + QT_IMAGE_TEXTURE_UNIT);
     ctx->d_func()->bindTexture(pixmap, GL_TEXTURE_2D, GL_RGBA, true);
 
-    //FIXME: we should use hasAlpha() instead, but that's SLOW at the moment
-    d->drawTexture(dest, src, pixmap.size(), !pixmap.hasAlphaChannel(), pixmap.depth() == 1);
+    bool isBitmap = pixmap.isQBitmap();
+    bool isOpaque = !isBitmap && !pixmap.hasAlphaChannel();
+
+    d->drawTexture(dest, src, pixmap.size(), isOpaque, isBitmap);
 }
 
 void QGL2PaintEngineEx::drawImage(const QRectF& dest, const QImage& image, const QRectF& src,

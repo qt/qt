@@ -262,7 +262,7 @@ void QGLPixmapData::fill(const QColor &color)
 
 bool QGLPixmapData::hasAlphaChannel() const
 {
-    return pixelType() == BitmapType || m_hasAlpha;
+    return m_hasAlpha;
 }
 
 QImage QGLPixmapData::fillImage(const QColor &color) const

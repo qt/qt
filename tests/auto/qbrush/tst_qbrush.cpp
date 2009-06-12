@@ -44,6 +44,7 @@
 
 #include "qbrush.h"
 #include <QPainter>
+#include <QBitmap>
 
 #include <qdebug.h>
 
@@ -76,6 +77,7 @@ private slots:
     void textures();
     
     void nullBrush();
+    void isOpaque();
 };
 
 Q_DECLARE_METATYPE(QBrush)
@@ -377,6 +379,15 @@ void tst_QBrush::nullBrush()
 {
     QBrush brush(QColor(100,0,0), Qt::NoBrush);
     QCOMPARE(brush.color(), QColor(100,0,0));
+}
+
+void tst_QBrush::isOpaque()
+{
+    QBitmap bm(8, 8);
+    bm.fill(Qt::black);
+
+    QBrush brush(bm);
+    QVERIFY(!brush.isOpaque());
 }
 
 QTEST_MAIN(tst_QBrush)
