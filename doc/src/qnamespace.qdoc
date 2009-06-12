@@ -2674,11 +2674,14 @@
   \enum Qt::TileRule
   \since 4.6
 
-  This enum describes how to repeat or stretch the parts of an image when drawing.
+  This enum describes how to repeat or stretch the parts of an image
+  when drawing.
 
   \value Stretch   Scale the image to fit to the available area.
-  \value Repeat    Tile the image until there is no more space. May crop the last image.
-  \value Round     Like Repeat, but scales the images down to ensure that the last image is not cropped.
 
-  \sa QPixmapBorders, qDrawBorderPixmap()
+  \value Repeat    Tile the image until there is no more space. May crop
+  the last image.
+
+  \value Round 	   Like Repeat, but scales the images down to ensure that
+  the last image is not cropped.
 */
