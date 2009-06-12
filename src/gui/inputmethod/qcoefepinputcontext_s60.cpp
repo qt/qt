@@ -329,6 +329,8 @@ void QCoeFepInputContext::updateHints()
             m_lastImHints = hints;
             applyHints(hints);
         }
+    } else {
+        CCoeEnv::Static()->InputCapabilitiesChanged();
     }
 }
 
