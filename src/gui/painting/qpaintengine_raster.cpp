@@ -1053,7 +1053,7 @@ void QRasterPaintEnginePrivate::drawImage(const QPointF &pt,
         int d = x + iw - cx2;
         iw -= d;
     }
-    if (iw < 0)
+    if (iw <= 0)
         return;
 
     // adapt the y paremeters...
@@ -1070,7 +1070,7 @@ void QRasterPaintEnginePrivate::drawImage(const QPointF &pt,
         int d = y + ih - cy2;
         ih -= d;
     }
-    if (ih < 0)
+    if (ih <= 0)
         return;
 
     // call the blend function...
@@ -3876,11 +3876,7 @@ static void qt_merge_clip(const QClipData *c1, const QClipData *c2, QClipData *r
 {
     Q_ASSERT(c1->clipSpanHeight == c2->clipSpanHeight && c1->clipSpanHeight == result->clipSpanHeight);
 
-    // ### buffer overflow possible
-    const int BUFFER_SIZE = 4096;
-    int buffer[BUFFER_SIZE];
-    int *b = buffer;
-    int bsize = BUFFER_SIZE;
+    QVarLengthArray<short, 4096> buffer;
 
     QClipData::ClipLine *c1ClipLines = const_cast<QClipData *>(c1)->clipLines();
     QClipData::ClipLine *c2ClipLines = const_cast<QClipData *>(c2)->clipLines();
@@ -3907,11 +3903,8 @@ static void qt_merge_clip(const QClipData *c1, const QClipData *c2, QClipData *r
         // find required length
         int max = qMax(c1_spans[c1_count - 1].x + c1_spans[c1_count - 1].len,
                        c2_spans[c2_count - 1].x + c2_spans[c2_count - 1].len);
-        if (max > bsize) {
-            b = (int *)realloc(bsize == BUFFER_SIZE ? 0 : b, max*sizeof(int));
-            bsize = max;
-        }
-        memset(buffer, 0, BUFFER_SIZE * sizeof(int));
+        buffer.resize(max);
+        memset(buffer.data(), 0, buffer.size() * sizeof(short));
 
         // Fill with old spans.
         for (int i = 0; i < c1_count; ++i) {
@@ -3947,8 +3940,6 @@ static void qt_merge_clip(const QClipData *c1, const QClipData *c2, QClipData *r
             result->appendSpan(sx, x - sx, y, coverage);
         }
     }
-    if (b != buffer)
-        free(b);
 }
 
 void QRasterPaintEnginePrivate::initializeRasterizer(QSpanData *data)

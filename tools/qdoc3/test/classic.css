@@ -77,10 +77,10 @@ table.annotated td {
 
 table tr pre
 {
-  padding-top: none;
-  padding-bottom: none;
-  padding-left: none;
-  padding-right: none;
+  padding-top: 0px;
+  padding-bottom: 0px;
+  padding-left: 0px;
+  padding-right: 0px;
   border: none;
   background: none
 }

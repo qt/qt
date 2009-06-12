@@ -44,5 +44,6 @@ TRANSLATIONS=$$[QT_INSTALL_TRANSLATIONS]/qt_help_de.ts \
              $$[QT_INSTALL_TRANSLATIONS]/qt_help_pl.ts \
              $$[QT_INSTALL_TRANSLATIONS]/qt_help_untranslated.ts \
              $$[QT_INSTALL_TRANSLATIONS]/qt_help_zh_CN.ts \
-             $$[QT_INSTALL_TRANSLATIONS]/qt_help_zh_TW.ts
+             $$[QT_INSTALL_TRANSLATIONS]/qt_help_zh_TW.ts \
+             $$[QT_INSTALL_TRANSLATIONS]/qt_help_da.ts
 error("This is a dummy profile to be used for translations ONLY.")

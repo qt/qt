@@ -263,9 +263,6 @@ void MainWindow::tick()
         MenuManager::instance()->ticker->tick();
 
     this->viewport()->update();
-    if (Colors::softwareRendering)
-        QApplication::syncX();
-
     if (this->useTimer)
         this->updateTimer.start(int(1000 / Colors::fps));
 }

@@ -97,7 +97,7 @@ inline bool qCompare
         variance = 0.001;
     }
     else if (r1.unit == "ticks") {
-        variance = 0.0001;
+        variance = 0.001;
     }
     if (variance == 0.) {
         /* No variance allowed - compare whole string */
@@ -295,6 +295,11 @@ void tst_Selftests::initTestCase()
     m_checkXMLBlacklist.append("differentexec");
     m_checkXMLBlacklist.append("qexecstringlist");
     m_checkXMLBlacklist.append("benchliboptions");
+
+    /* These tests use printf and therefore corrupt the testlog */
+    m_checkXMLBlacklist.append("subtest");
+    m_checkXMLBlacklist.append("globaldata");
+    m_checkXMLBlacklist.append("warnings");
 }
 
 void tst_Selftests::checkXML() const

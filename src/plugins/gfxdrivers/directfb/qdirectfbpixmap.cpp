@@ -76,7 +76,6 @@ void QDirectFBPixmapData::resize(int width, int height)
                                                                format,
                                                                QDirectFBScreen::TrackSurface);
     alpha = false;
-    forceRaster = (format == QImage::Format_RGB32);
     if (!dfbSurface) {
         invalidate();
         qWarning("QDirectFBPixmapData::resize(): Unable to allocate surface");
@@ -187,7 +186,6 @@ void QDirectFBPixmapData::fromImage(const QImage &i,
     }
     dfbSurface = screen->copyToDFBSurface(img, format,
                                           QDirectFBScreen::TrackSurface);
-    forceRaster = (format == QImage::Format_RGB32);
     if (!dfbSurface) {
         qWarning("QDirectFBPixmapData::fromImage()");
         invalidate();
@@ -204,10 +202,11 @@ void QDirectFBPixmapData::copy(const QPixmapData *data, const QRect &rect)
     }
 
     IDirectFBSurface *src = static_cast<const QDirectFBPixmapData*>(data)->directFBSurface();
-    const bool hasAlpha = data->hasAlphaChannel();
-    format = (hasAlpha
+    alpha = data->hasAlphaChannel();
+    format = (alpha
               ? QDirectFBScreen::instance()->alphaPixmapFormat()
               : QDirectFBScreen::instance()->pixelFormat());
+
 
     dfbSurface = screen->createDFBSurface(rect.size(), format,
                                           QDirectFBScreen::TrackSurface);
@@ -216,9 +215,8 @@ void QDirectFBPixmapData::copy(const QPixmapData *data, const QRect &rect)
         invalidate();
         return;
     }
-    forceRaster = (format == QImage::Format_RGB32);
 
-    if (hasAlpha) {
+    if (alpha) {
         dfbSurface->Clear(dfbSurface, 0, 0, 0, 0);
         dfbSurface->SetBlittingFlags(dfbSurface, DSBLIT_BLEND_ALPHACHANNEL);
     } else {
@@ -227,7 +225,9 @@ void QDirectFBPixmapData::copy(const QPixmapData *data, const QRect &rect)
     const DFBRectangle blitRect = { rect.x(), rect.y(),
                                     rect.width(), rect.height() };
     DFBResult result = dfbSurface->Blit(dfbSurface, src, &blitRect, 0, 0);
+#if (Q_DIRECTFB_VERSION >= 0x010000)
     dfbSurface->ReleaseSource(dfbSurface);
+#endif
     if (result != DFB_OK) {
         DirectFBError("QDirectFBPixmapData::copy()", result);
         invalidate();
@@ -268,7 +268,6 @@ void QDirectFBPixmapData::fill(const QColor &color)
         screen->releaseDFBSurface(dfbSurface);
         format = screen->alphaPixmapFormat();
         dfbSurface = screen->createDFBSurface(size, screen->alphaPixmapFormat(), QDirectFBScreen::TrackSurface);
-        forceRaster = false;
         setSerialNumber(++global_ser_no);
         if (!dfbSurface) {
             qWarning("QDirectFBPixmapData::fill()");
@@ -277,24 +276,7 @@ void QDirectFBPixmapData::fill(const QColor &color)
         }
     }
 
-    if (forceRaster) {
-        // in DSPF_RGB32 all dfb drawing causes the Alpha byte to be
-        // set to 0. This causes issues for the raster engine.
-        uchar *mem = QDirectFBScreen::lockSurface(dfbSurface, DSLF_WRITE, &bpl);
-        if (mem) {
-            const int h = QPixmapData::height();
-            const int w = QPixmapData::width() * 4; // 4 bytes per 32 bit pixel
-            const int c = color.rgba();
-            for (int i = 0; i < h; ++i) {
-                memset(mem, c, w);
-                mem += bpl;
-            }
-            dfbSurface->Unlock(dfbSurface);
-        }
-    } else {
-        dfbSurface->Clear(dfbSurface, color.red(), color.green(), color.blue(),
-                          color.alpha());
-    }
+    dfbSurface->Clear(dfbSurface, color.red(), color.green(), color.blue(), color.alpha());
 }
 
 QPixmap QDirectFBPixmapData::transformed(const QTransform &transform,
@@ -336,8 +318,9 @@ QPixmap QDirectFBPixmapData::transformed(const QTransform &transform,
 
     const DFBRectangle destRect = { 0, 0, size.width(), size.height() };
     data->dfbSurface->StretchBlit(data->dfbSurface, dfbSurface, 0, &destRect);
+#if (Q_DIRECTFB_VERSION >= 0x010000)
     data->dfbSurface->ReleaseSource(data->dfbSurface);
-
+#endif
     return QPixmap(data);
 }
 
@@ -356,7 +339,9 @@ QImage QDirectFBPixmapData::toImage() const
             imgSurface->SetBlittingFlags(imgSurface, DSBLIT_NOFX);
         }
         imgSurface->Blit(imgSurface, dfbSurface, 0, 0, 0);
+#if (Q_DIRECTFB_VERSION >= 0x010000)
         imgSurface->ReleaseSource(imgSurface);
+#endif
         imgSurface->Release(imgSurface);
         return ret;
     }

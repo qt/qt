@@ -46,7 +46,6 @@ MediaObject::MediaObject(QObject *parent) : MediaNode(AudioSource | VideoSource,
     m_mediaObjectAudioNode = new MediaObjectAudioNode(m_audioPlayer, m_nextAudioPlayer);
     setAudioNode(m_mediaObjectAudioNode);
 
-    m_metaData = new QuickTimeMetaData();
     m_audioGraph = new AudioGraph(this);
 
     m_tickInterval = 0;
@@ -55,6 +54,7 @@ MediaObject::MediaObject(QObject *parent) : MediaNode(AudioSource | VideoSource,
     m_transitionTime = 0;
     m_percentageLoaded = 0;
     m_waitNextSwap = false;
+    m_autoplayTitles = true;
     m_audioEffectCount = 0;
     m_audioOutputCount = 0;
     m_videoEffectCount = 0;
@@ -70,13 +70,12 @@ MediaObject::MediaObject(QObject *parent) : MediaNode(AudioSource | VideoSource,
 }
 
 MediaObject::~MediaObject()
-{   
+{
     // m_mediaObjectAudioNode is owned by super class.    
     m_audioPlayer->unsetVideoPlayer();
     m_nextAudioPlayer->unsetVideoPlayer();
     delete m_videoPlayer;
     delete m_nextVideoPlayer;
-    delete m_metaData;
     checkForError();
 }
 
@@ -122,7 +121,7 @@ void MediaObject::inspectGraph()
     // Inspect the graph to check wether there are any
     // effects or outputs connected. This will have
     // influence on the audio system and video system that ends up beeing used:
-    int prevVideoOutputCount = m_videoOutputCount;	
+    int prevVideoOutputCount = m_videoOutputCount;
     m_audioEffectCount = 0;
     m_audioOutputCount = 0;
     m_videoEffectCount = 0;
@@ -134,7 +133,7 @@ void MediaObject::inspectGraph()
 	if (m_videoOutputCount != prevVideoOutputCount){
 	    MediaNodeEvent e1(MediaNodeEvent::VideoOutputCountChanged, &m_videoOutputCount);
 	    notify(&e1);
-	}	
+    }
 }
 
 void MediaObject::setupAudioSystem()
@@ -167,14 +166,14 @@ void MediaObject::setupAudioSystem()
 
     if (newAudioSystem == m_audioSystem)
         return;
-  
+
     // Enable selected audio system:
-    m_audioSystem = newAudioSystem; 
+    m_audioSystem = newAudioSystem;
     switch (newAudioSystem){
         case AS_Silent:
             m_audioGraph->stop();
             m_videoPlayer->enableAudio(false);
-            m_nextVideoPlayer->enableAudio(false);    
+            m_nextVideoPlayer->enableAudio(false);
             m_audioPlayer->enableAudio(false);
             m_nextAudioPlayer->enableAudio(false);
         break;
@@ -214,28 +213,28 @@ void MediaObject::setSource(const MediaSource &source)
     IMPLEMENTED;
 	PhononAutoReleasePool pool;
     setState(Phonon::LoadingState);
-    
+
     // Save current state for event/signal handling below:
     bool prevHasVideo = m_videoPlayer->hasVideo();
     qint64 prevTotalTime = totalTime();
+    int prevTrackCount = m_videoPlayer->trackCount();
     m_waitNextSwap = false;
-        
+
     // Cancel cross-fade if any:
     m_nextVideoPlayer->pause();
     m_nextAudioPlayer->pause();
     m_mediaObjectAudioNode->cancelCrossFade();
-    
+
     // Set new source:
     m_audioPlayer->unsetVideoPlayer();
     m_videoPlayer->setMediaSource(source);
     m_audioPlayer->setVideoPlayer(m_videoPlayer);
-    m_metaData->setVideo(m_videoPlayer);        
 
-    m_audioGraph->updateStreamSpecifications();        
+    m_audioGraph->updateStreamSpecifications();
     m_nextAudioPlayer->unsetVideoPlayer();
-    m_nextVideoPlayer->unsetVideo();
+    m_nextVideoPlayer->unsetCurrentMediaSource();
     m_currentTime = 0;
-        
+
     // Emit/notify information about the new source:
     QRect videoRect = m_videoPlayer->videoRect();
     MediaNodeEvent e1(MediaNodeEvent::VideoFrameSizeChanged, &videoRect);
@@ -246,12 +245,14 @@ void MediaObject::setSource(const MediaSource &source)
     updateVideo(emptyFrame);
 
     emit currentSourceChanged(source);
-    emit metaDataChanged(m_metaData->metaData());
+    emit metaDataChanged(m_videoPlayer->metaData());
 
     if (prevHasVideo != m_videoPlayer->hasVideo())
-        emit hasVideoChanged(m_videoPlayer->hasVideo());        
+        emit hasVideoChanged(m_videoPlayer->hasVideo());
     if (prevTotalTime != totalTime())
-        emit totalTimeChanged(totalTime());        
+        emit totalTimeChanged(totalTime());
+    if (prevTrackCount != m_videoPlayer->trackCount())
+        emit availableTitlesChanged(m_videoPlayer->trackCount());
     if (checkForError())
         return;
     if (!m_videoPlayer->isDrmAuthorized())
@@ -260,7 +261,7 @@ void MediaObject::setSource(const MediaSource &source)
         return;
     if (!m_videoPlayer->canPlayMedia())
         SET_ERROR("Cannot play media.", FATAL_ERROR)
-        
+
     // The state might have changed from LoadingState
     // as a response to an error state change. So we
     // need to check it before stopping: 
@@ -287,28 +288,30 @@ void MediaObject::swapCurrentWithNext(qint32 transitionTime)
     // Save current state for event/signal handling below:
     bool prevHasVideo = m_videoPlayer->hasVideo();
     qint64 prevTotalTime = totalTime();
+    int prevTrackCount = m_videoPlayer->trackCount();
 
     qSwap(m_audioPlayer, m_nextAudioPlayer);
     qSwap(m_videoPlayer, m_nextVideoPlayer);
     m_mediaObjectAudioNode->startCrossFade(transitionTime);
     m_audioGraph->updateStreamSpecifications();
-    m_metaData->setVideo(m_videoPlayer);
 
     m_waitNextSwap = false;
     m_currentTime = 0;
-        
+
     // Emit/notify information about the new source:
     QRect videoRect = m_videoPlayer->videoRect();
     MediaNodeEvent e1(MediaNodeEvent::VideoFrameSizeChanged, &videoRect);
     notify(&e1);
 
     emit currentSourceChanged(m_videoPlayer->mediaSource());
-    emit metaDataChanged(m_metaData->metaData());
+    emit metaDataChanged(m_videoPlayer->metaData());
 
     if (prevHasVideo != m_videoPlayer->hasVideo())
-        emit hasVideoChanged(m_videoPlayer->hasVideo());        
+        emit hasVideoChanged(m_videoPlayer->hasVideo());
     if (prevTotalTime != totalTime())
         emit totalTimeChanged(totalTime());
+    if (prevTrackCount != m_videoPlayer->trackCount())
+        emit availableTitlesChanged(m_videoPlayer->trackCount());
     if (checkForError())
         return;
     if (!m_videoPlayer->isDrmAuthorized())
@@ -332,15 +335,15 @@ void MediaObject::updateTimer(int &timer, int interval)
     if (timer)
         killTimer(timer);
     timer = 0;
-    if (interval >= 0)    
-        timer = startTimer(interval); 
+    if (interval >= 0)
+        timer = startTimer(interval);
 }
 
 void MediaObject::play_internal()
 {
     // Play main audio/video:
     m_videoPlayer->play();
-    m_audioPlayer->play();     
+    m_audioPlayer->play();
     updateLipSynch(0);
     // Play old audio/video to finish cross-fade:
     if (m_nextVideoPlayer->currentTime() > 0){
@@ -382,7 +385,7 @@ void MediaObject::play()
     if (!m_videoPlayer->canPlayMedia())
         return;
     if (!setState(Phonon::PlayingState))
-        return;        
+        return;
     if (m_audioSystem == AS_Graph){
         m_audioGraph->start();
         m_mediaObjectAudioNode->setMute(true);
@@ -423,7 +426,7 @@ void MediaObject::stop()
     if (!setState(Phonon::StoppedState))
         return;
     m_waitNextSwap = false;
-    m_nextVideoPlayer->unsetVideo();
+    m_nextVideoPlayer->unsetCurrentMediaSource();
     m_nextAudioPlayer->unsetVideoPlayer();
     pause_internal();
     seek(0);
@@ -435,9 +438,9 @@ void MediaObject::seek(qint64 milliseconds)
     IMPLEMENTED;
     if (m_state == Phonon::ErrorState)
         return;
-        
+
     // Stop cross-fade if any:
-    m_nextVideoPlayer->unsetVideo();
+    m_nextVideoPlayer->unsetCurrentMediaSource();
     m_nextAudioPlayer->unsetVideoPlayer();
     m_mediaObjectAudioNode->cancelCrossFade();
 
@@ -446,7 +449,7 @@ void MediaObject::seek(qint64 milliseconds)
     m_videoPlayer->seek(milliseconds);
     m_audioPlayer->seek(m_videoPlayer->currentTime());
     m_mediaObjectAudioNode->setMute(false);
-    
+
     // Update time and cancel pending swap:
     if (m_currentTime < m_videoPlayer->duration())
         m_waitNextSwap = false;
@@ -557,7 +560,7 @@ bool MediaObject::isSeekable() const
 qint64 MediaObject::currentTime() const
 {
     IMPLEMENTED_SILENT;
-    const_cast<MediaObject *>(this)->updateCurrentTime(); 
+    const_cast<MediaObject *>(this)->updateCurrentTime();
     return m_currentTime;
 }
 
@@ -567,19 +570,24 @@ void MediaObject::updateCurrentTime()
     m_currentTime = (m_audioSystem == AS_Graph) ? m_audioPlayer->currentTime() : m_videoPlayer->currentTime();
     quint64 total = m_videoPlayer->duration();
 
-    // Check if it's time to emit aboutToFinish:
-    quint32 mark = qMax(quint64(0), qMin(total, total + m_transitionTime - 2000));
-    if (lastUpdateTime < mark && mark <= m_currentTime)
-        emit aboutToFinish();
+    if (m_videoPlayer->currentTrack() < m_videoPlayer->trackCount() - 1){
+        // There are still more tracks to play after the current track.
+        if (m_autoplayTitles) {
+            if (lastUpdateTime < m_currentTime && m_currentTime == total)
+                setCurrentTrack(m_videoPlayer->currentTrack() + 1);
+        }
+    } else if (m_nextVideoPlayer->state() == QuickTimeVideoPlayer::NoMedia){
+        // There is no more sources or tracks to play after the current source.
+        // Check if it's time to emit aboutToFinish:
+        quint32 mark = qMax(quint64(0), qMin(total, total + m_transitionTime - 2000));
+        if (lastUpdateTime < mark && mark <= m_currentTime)
+            emit aboutToFinish();
 
-    // Check if it's time to emit prefinishMarkReached:
-    mark = qMax(quint64(0), total - m_prefinishMark);
-    if (lastUpdateTime < mark && mark <= m_currentTime)
-        emit prefinishMarkReached(total - m_currentTime);
+        // Check if it's time to emit prefinishMarkReached:
+        mark = qMax(quint64(0), total - m_prefinishMark);
+        if (lastUpdateTime < mark && mark <= m_currentTime)
+            emit prefinishMarkReached(total - m_currentTime);
 
-    if (m_nextVideoPlayer->state() == QuickTimeVideoPlayer::NoMedia){
-        // There is no next source in que.
-        // Check if it's time to emit finished:
         if (lastUpdateTime < m_currentTime && m_currentTime == total){
             emit finished();
             m_currentTime = (m_audioSystem == AS_Graph) ? m_audioPlayer->currentTime() : m_videoPlayer->currentTime();
@@ -589,7 +597,7 @@ void MediaObject::updateCurrentTime()
     } else {
         // We have a next source.
         // Check if it's time to swap to next source:
-        mark = qMax(quint64(0), total + m_transitionTime);
+        quint32 mark = qMax(quint64(0), total + m_transitionTime);
         if (m_waitNextSwap && m_state == Phonon::PlayingState &&
             m_transitionTime < m_swapTime.msecsTo(QTime::currentTime())){
             swapCurrentWithNext(0);
@@ -692,14 +700,14 @@ bool MediaObject::setAudioDeviceOnMovie(int id)
 
 void MediaObject::updateCrossFade()
 {
-    m_mediaObjectAudioNode->updateCrossFade(m_currentTime);   
+    m_mediaObjectAudioNode->updateCrossFade(m_currentTime);
     // Clean-up previous movie if done fading:
     if (m_mediaObjectAudioNode->m_fadeDuration == 0){
         if (m_nextVideoPlayer->isPlaying() || m_nextAudioPlayer->isPlaying()){
-            m_nextVideoPlayer->unsetVideo();
+            m_nextVideoPlayer->unsetCurrentMediaSource();
             m_nextAudioPlayer->unsetVideoPlayer();
         }
-    }        
+    }
 }
 
 void MediaObject::updateBufferStatus()
@@ -728,7 +736,7 @@ void MediaObject::updateVideoFrames()
     // Draw next frame if awailable:
     if (m_videoPlayer->videoFrameChanged()){
         updateLipSynch(50);
-        VideoFrame frame(m_videoPlayer);           
+        VideoFrame frame(m_videoPlayer);
         if (m_nextVideoPlayer->isPlaying()
             && m_nextVideoPlayer->hasVideo()
             && isCrossFading()){
@@ -736,9 +744,9 @@ void MediaObject::updateVideoFrames()
             frame.setBackgroundFrame(bgFrame);
             frame.setBaseOpacity(m_mediaObjectAudioNode->m_volume1);
         }
-        
+
         // Send the frame through the graph:
-        updateVideo(frame);    
+        updateVideo(frame);
         checkForError();
     }
 }
@@ -749,7 +757,7 @@ void MediaObject::updateLipSynch(int allowedOffset)
         return;
     if (m_videoSinkList.isEmpty() || m_audioSinkList.isEmpty())
         return;
-        
+
     if (m_videoPlayer->hasVideo()){
         qint64 diff = m_audioPlayer->currentTime() - m_videoPlayer->currentTime();
         if (-allowedOffset > diff || diff > allowedOffset)
@@ -834,13 +842,42 @@ bool MediaObject::event(QEvent *event)
     return QObject::event(event);
 }
 
-bool MediaObject::hasInterface(Interface /*interface*/) const
+void MediaObject::setCurrentTrack(int track)
 {
-    return false;
+    if (track == m_videoPlayer->currentTrack() || track < 0 || track >= m_videoPlayer->trackCount())
+        return;
+
+    m_videoPlayer->setCurrentTrack(track);
+    emit titleChanged(track);
+    emit metaDataChanged(m_videoPlayer->metaData());
 }
 
-QVariant MediaObject::interfaceCall(Interface /*interface*/, int /*command*/, const QList<QVariant> &/*arguments*/)
+bool MediaObject::hasInterface(Interface iface) const
 {
+    return iface == AddonInterface::TitleInterface;
+}
+
+QVariant MediaObject::interfaceCall(Interface iface, int command, const QList<QVariant> &params)
+{
+    switch (iface) {
+        case TitleInterface:
+            switch (command) {
+                case availableTitles:
+                    return m_videoPlayer->trackCount();
+                case title:
+                    return m_videoPlayer->currentTrack();
+                case setTitle:
+                    setCurrentTrack(params.first().toInt());
+                    break;
+                case autoplayTitles:
+                    return m_autoplayTitles;
+                case setAutoplayTitles:
+                    m_autoplayTitles = params.first().toBool();
+                    break;
+            }
+        default:
+            break;
+    }
     return QVariant();
 }
 

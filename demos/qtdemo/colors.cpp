@@ -97,7 +97,7 @@ bool Colors::noTickerMorph = false;
 bool Colors::adapted = false;
 bool Colors::verbose = false;
 bool Colors::pause = true;
-int Colors::fps = 100;
+int Colors::fps = 60;
 int Colors::menuCount = 18;
 float Colors::animSpeed = 1.0;
 float Colors::animSpeedButtons = 1.0;
@@ -337,7 +337,7 @@ void Colors::detectSystemResources()
 #if defined(Q_WS_X11)
     // check if X render is present:
     QPixmap tmp(1, 1);
-    if (!tmp.x11PictureHandle()){
+    if (!tmp.x11PictureHandle() && tmp.paintEngine()->type() == QPaintEngine::X11){
         Colors::xRenderPresent = false;
         if (Colors::verbose)
             qDebug("- X render not present");

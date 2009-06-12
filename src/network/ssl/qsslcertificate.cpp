@@ -267,7 +267,7 @@ QByteArray QSslCertificate::serialNumber() const
 
 /*!
     Returns a cryptographic digest of this certificate. By default,
-    and MD5 digest will be generated, but you can also specify a
+    an MD5 digest will be generated, but you can also specify a
     custom \a algorithm.
 */
 QByteArray QSslCertificate::digest(QCryptographicHash::Algorithm algorithm) const
@@ -362,7 +362,7 @@ QMultiMap<QSsl::AlternateNameEntryType, QString> QSslCertificate::alternateSubje
     if (!d->x509)
         return result;
 
-    STACK *altNames = (STACK *)q_X509_get_ext_d2i(d->x509, NID_subject_alt_name, 0, 0);
+    STACK_OF(GENERAL_NAME) *altNames = (STACK_OF(GENERAL_NAME)*)q_X509_get_ext_d2i(d->x509, NID_subject_alt_name, 0, 0);
 
     if (altNames) {
         for (int i = 0; i < q_sk_GENERAL_NAME_num(altNames); ++i) {
@@ -383,7 +383,7 @@ QMultiMap<QSsl::AlternateNameEntryType, QString> QSslCertificate::alternateSubje
             else if (genName->type == GEN_EMAIL)
                 result.insert(QSsl::EmailEntry, altName);
         }
-        q_sk_free(altNames);
+        q_sk_free((STACK*)altNames);
     }
 
     return result;

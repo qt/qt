@@ -207,6 +207,7 @@ private slots:
     void opacity_data();
     void opacity();
     void opacity2();
+    void opacityZeroUpdates();
     void itemStacksBehindParent();
     void nestedClipping();
     void nestedClippingTransforms();
@@ -226,6 +227,7 @@ private slots:
     void task240400_clickOnTextItem_data();
     void task240400_clickOnTextItem();
     void task243707_addChildBeforeParent();
+    void task197802_childrenVisibility();
 };
 
 void tst_QGraphicsItem::init()
@@ -5346,13 +5348,48 @@ void tst_QGraphicsItem::task243707_addChildBeforeParent()
     // inconsistent internal state that can cause a crash.  This test shows
     // one such crash.
     QGraphicsScene scene;
-    QGraphicsWidget *widget = new QGraphicsWidget; 
+    QGraphicsWidget *widget = new QGraphicsWidget;
     QGraphicsWidget *widget2 = new QGraphicsWidget(widget);
     scene.addItem(widget2);
     QVERIFY(!widget2->parentItem());
     scene.addItem(widget);
     QVERIFY(!widget->commonAncestorItem(widget2));
     QVERIFY(!widget2->commonAncestorItem(widget));
+}
+
+void tst_QGraphicsItem::task197802_childrenVisibility()
+{
+    QGraphicsScene scene;
+    QGraphicsRectItem item(QRectF(0,0,20,20));
+
+    QGraphicsRectItem *item2 = new QGraphicsRectItem(QRectF(0,0,10,10), &item);
+    scene.addItem(&item);
+
+    //freshly created: both visible
+    QVERIFY(item.isVisible());
+    QVERIFY(item2->isVisible());
+
+    //hide child: parent visible, child not
+    item2->hide();
+    QVERIFY(item.isVisible());
+    QVERIFY(!item2->isVisible());
+
+    //hide parent: parent and child invisible
+    item.hide();
+    QVERIFY(!item.isVisible());
+    QVERIFY(!item2->isVisible());
+
+    //ask to show the child: parent and child invisible anyways
+    item2->show();
+    QVERIFY(!item.isVisible());
+    QVERIFY(!item2->isVisible());
+
+    //show the parent: both parent and child visible
+    item.show();
+    QVERIFY(item.isVisible());
+    QVERIFY(item2->isVisible());
+
+    delete item2;
 }
 
 void tst_QGraphicsItem::boundingRegion_data()
@@ -5462,7 +5499,7 @@ void tst_QGraphicsItem::itemTransform_unrelated()
     QCOMPARE(stranger1->itemTransform(stranger2).map(QPointF(10, 10)), QPointF(10, 10));
     QCOMPARE(stranger2->itemTransform(stranger1).map(QPointF(10, 10)), QPointF(10, 10));
 }
-        
+
 void tst_QGraphicsItem::opacity_data()
 {
     QTest::addColumn<qreal>("p_opacity");
@@ -5655,6 +5692,54 @@ void tst_QGraphicsItem::opacity2()
     QCOMPARE(parent->repaints, 0);
     QCOMPARE(child->repaints, 0);
     QCOMPARE(grandChild->repaints, 0);
+}
+
+void tst_QGraphicsItem::opacityZeroUpdates()
+{
+    EventTester *parent = new EventTester;
+    EventTester *child = new EventTester(parent);
+
+    child->setPos(10, 10);
+
+    QGraphicsScene scene;
+    scene.addItem(parent);
+
+    class MyGraphicsView : public QGraphicsView
+    { public:
+        int repaints;
+        QRegion paintedRegion;
+        MyGraphicsView(QGraphicsScene *scene) : QGraphicsView(scene), repaints(0) {}
+        void paintEvent(QPaintEvent *e)
+        {
+            ++repaints;
+            paintedRegion += e->region();
+            QGraphicsView::paintEvent(e);
+        }
+        void reset() { repaints = 0; paintedRegion = QRegion(); }
+    };
+
+    MyGraphicsView view(&scene);
+    view.show();
+#ifdef Q_WS_X11
+    qt_x11_wait_for_window_manager(&view);
+#endif
+    QTest::qWait(250);
+
+    view.reset();
+    parent->setOpacity(0.0);
+
+    QTest::qWait(200);
+
+    // transforming items bounding rect to view coordinates
+    const QRect childDeviceBoundingRect = child->deviceTransform(view.viewportTransform())
+                                           .mapRect(child->boundingRect()).toRect();
+    const QRect parentDeviceBoundingRect = parent->deviceTransform(view.viewportTransform())
+                                           .mapRect(parent->boundingRect()).toRect();
+
+    QRegion expectedRegion = parentDeviceBoundingRect.adjusted(-2, -2, 2, 2);
+    expectedRegion += childDeviceBoundingRect.adjusted(-2, -2, 2, 2);
+
+    QCOMPARE(view.paintedRegion, expectedRegion);
 }
 
 void tst_QGraphicsItem::itemStacksBehindParent()

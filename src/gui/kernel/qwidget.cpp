@@ -5687,8 +5687,8 @@ bool QWidget::hasFocus() const
     called from focusOutEvent() or focusInEvent(), you may get an
     infinite recursion.
 
-    \sa hasFocus(), clearFocus(), focusInEvent(), focusOutEvent(),
-    setFocusPolicy(), QApplication::focusWidget(), grabKeyboard(),
+    \sa focus(), hasFocus(), clearFocus(), focusInEvent(), focusOutEvent(),
+    setFocusPolicy(), focusWidget(), QApplication::focusWidget(), grabKeyboard(),
     grabMouse(), {Keyboard Focus}
 */
 
@@ -5804,8 +5804,9 @@ void QWidget::setFocus(Qt::FocusReason reason)
 void QWidget::clearFocus()
 {
     QWidget *w = this;
-    while (w && w->d_func()->focus_child == this) {
-        w->d_func()->focus_child = 0;
+    while (w) {
+        if (w->d_func()->focus_child == this)
+            w->d_func()->focus_child = 0;
         w = w->parentWidget();
     }
 #ifndef QT_NO_GRAPHICSVIEW
