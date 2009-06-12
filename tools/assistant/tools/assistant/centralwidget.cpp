@@ -780,6 +780,9 @@ void CentralWidget::showTabBarContextMenu(const QPoint &point)
     menu.addSeparator();
 
     QAction *newBookmark = menu.addAction(tr("Add Bookmark for this Page..."));
+    const QString &url = viewer->source().toString();
+    if (url.isEmpty() || url == QLatin1String("about:blank"))
+        newBookmark->setEnabled(false);
 
     QAction *pickedAction = menu.exec(tabBar->mapToGlobal(point));
     if (pickedAction == newPage)

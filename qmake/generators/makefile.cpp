@@ -289,7 +289,6 @@ MakefileGenerator::initOutPaths()
         if(Option::fixPathToLocalOS(d.absolutePath()) == Option::fixPathToLocalOS(Option::output_dir))
             v.remove("DESTDIR");
     }
-    QDir::current().cd(currentDir);
 }
 
 QMakeProject
