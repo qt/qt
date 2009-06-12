@@ -54,7 +54,7 @@ Rect {
         width: 100
         height: 100
         id: bluerect
-        x: Behaviour {
+        x: Behavior {
             SequentialAnimation {
                 NumericAnimation {
                     target: bluerect
@@ -73,13 +73,9 @@ Rect {
                     duration: 250
                 }
             }
-            NumericAnimation {
-                target: bluerect
-                property: "x"
-                duration: 500
-            }
+            NumericAnimation { duration: 500 }
         }
-        parent: Behaviour {
+        parent: Behavior {
             SequentialAnimation {
                 NumericAnimation {
                     target: bluerect
@@ -87,10 +83,7 @@ Rect {
                     to: 0
                     duration: 150
                 }
-                SetPropertyAction {
-                    target: bluerect
-                    property: "parent"
-                }
+                SetPropertyAction {}
                 NumericAnimation {
                     target: bluerect
                     properties: "opacity"
