@@ -503,6 +503,9 @@ QTransform QTransform::fromScale(qreal sx, qreal sy)
 */
 QTransform & QTransform::shear(qreal sh, qreal sv)
 {
+    if (sh == 0 && sv == 0)
+        return *this;
+
     switch(inline_type()) {
     case TxNone:
     case TxTranslate:
