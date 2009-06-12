@@ -46,6 +46,66 @@
 
 QT_BEGIN_NAMESPACE
 
+/*! \enum QTest::AttributeIndex
+  This enum numbers the different tests.
+
+  \value AI_Undefined
+        
+  \value AI_Name
+        
+  \value AI_Result
+        
+  \value AI_Tests
+        
+  \value AI_Failures
+        
+  \value AI_Errors
+        
+  \value AI_Type
+        
+  \value AI_Description
+        
+  \value AI_PropertyValue
+        
+  \value AI_QTestVersion
+        
+  \value AI_QtVersion
+        
+  \value AI_File
+        
+  \value AI_Line
+        
+  \value AI_Metric
+        
+  \value AI_Tag
+        
+  \value AI_Value
+        
+  \value AI_Iterations
+*/
+
+/*! \enum QTest::LogElementType
+  The enum specifies the kinds of test log messages.
+
+  \value LET_Undefined
+
+  \value LET_Property
+
+  \value LET_Properties
+
+  \value LET_Failure
+
+  \value LET_Error
+
+  \value LET_TestCase
+
+  \value LET_TestSuite
+
+  \value LET_Benchmark
+
+  \value LET_SystemError
+*/
+
 QTestElementAttribute::QTestElementAttribute()
     :attributeValue(0),
     attributeIndex(QTest::AI_Undefined)

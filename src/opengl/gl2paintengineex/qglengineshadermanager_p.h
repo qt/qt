@@ -129,9 +129,11 @@
 
     Brushes & image drawing are implementations of "qcolorp vec4 srcPixel()":
         qglslImageSrcFragShader
+        qglslImageSrcWithPatternFragShader
         qglslNonPremultipliedImageSrcFragShader
         qglslSolidBrushSrcFragShader
         qglslTextureBrushSrcFragShader
+        qglslTextureBrushWithPatternFragShader
         qglslPatternBrushSrcFragShader
         qglslLinearGradientBrushSrcFragShader
         qglslRadialGradientBrushSrcFragShader
@@ -265,7 +267,9 @@ public:
     enum MaskType {NoMask, PixelMask, SubPixelMask, SubPixelWithGammaMask};
     enum PixelSrcType {
         ImageSrc = Qt::TexturePattern+1,
-        NonPremultipliedImageSrc = Qt::TexturePattern+2
+        NonPremultipliedImageSrc = Qt::TexturePattern+2,
+        PatternSrc = Qt::TexturePattern+3,
+        TextureSrcWithPattern = Qt::TexturePattern+4
     };
 
     // There are optimisations we can do, depending on the brush transform:
@@ -313,9 +317,11 @@ public:
         MainFragmentShader,
 
         ImageSrcFragmentShader,
+        ImageSrcWithPatternFragmentShader,
         NonPremultipliedImageSrcFragmentShader,
         SolidBrushSrcFragmentShader,
         TextureBrushSrcFragmentShader,
+        TextureBrushSrcWithPatternFragmentShader,
         PatternBrushSrcFragmentShader,
         LinearGradientBrushSrcFragmentShader,
         RadialGradientBrushSrcFragmentShader,

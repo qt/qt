@@ -161,10 +161,18 @@ struct Q_GUI_EXPORT QTileRules
     Qt::TileRule vertical;
 };
 
-Q_GUI_EXPORT void qDrawBorderPixmap(QPainter *painter, const QRect &targetRect, const QMargins &targetMargins, const QPixmap &pixmap,
-                                    const QRect &sourceRect, const QMargins &sourceMargins, const QTileRules &rules = QTileRules());
+Q_GUI_EXPORT void qDrawBorderPixmap(QPainter *painter, 
+                                    const QRect &targetRect, 
+                                    const QMargins &targetMargins, 
+                                    const QPixmap &pixmap,
+                                    const QRect &sourceRect, 
+                                    const QMargins &sourceMargins, 
+                                    const QTileRules &rules = QTileRules());
 
-Q_GUI_EXPORT inline void qDrawBorderPixmap(QPainter *painter, const QRect &target, const QMargins &margins, const QPixmap &pixmap)
+Q_GUI_EXPORT inline void qDrawBorderPixmap(QPainter *painter, 
+                                           const QRect &target, 
+                                           const QMargins &margins, 
+                                           const QPixmap &pixmap)
 {
     qDrawBorderPixmap(painter, target, margins, pixmap, pixmap.rect(), margins);
 }
