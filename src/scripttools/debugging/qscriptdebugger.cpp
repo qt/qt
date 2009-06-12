@@ -1337,6 +1337,122 @@ void QScriptDebugger::setFrontend(QScriptDebuggerFrontend *frontend)
     }
 }
 
+QAction *QScriptDebugger::action(DebuggerAction action, QObject *parent)
+{
+    switch (action) {
+    case InterruptAction:
+        return interruptAction(parent);
+    case ContinueAction:
+        return continueAction(parent);
+    case StepIntoAction:
+        return stepIntoAction(parent);
+    case StepOverAction:
+        return stepOverAction(parent);
+    case StepOutAction:
+        return stepOutAction(parent);
+    case RunToCursorAction:
+        return runToCursorAction(parent);
+    case RunToNewScriptAction:
+        return runToNewScriptAction(parent);
+    case ToggleBreakpointAction:
+        return toggleBreakpointAction(parent);
+    case ClearDebugOutputAction:
+        return clearDebugOutputAction(parent);
+    case ClearErrorLogAction:
+        return clearErrorLogAction(parent);
+    case ClearConsoleAction:
+        return clearConsoleAction(parent);
+    case FindInScriptAction:
+        return findInScriptAction(parent);
+    case FindNextInScriptAction:
+        return findNextInScriptAction(parent);
+    case FindPreviousInScriptAction:
+        return findPreviousInScriptAction(parent);
+    case GoToLineAction:
+        return goToLineAction(parent);
+    }
+    return 0;
+}
+
+QWidget *QScriptDebugger::widget(DebuggerWidget widget)
+{
+    switch (widget) {
+    case ConsoleWidget: {
+        QScriptDebuggerConsoleWidgetInterface *w = consoleWidget();
+        if (!w && widgetFactory()) {
+            w = widgetFactory()->createConsoleWidget();
+            setConsoleWidget(w);
+        }
+        return w;
+    }
+    case StackWidget: {
+        QScriptDebuggerStackWidgetInterface *w = stackWidget();
+        if (!w && widgetFactory()) {
+            w = widgetFactory()->createStackWidget();
+            setStackWidget(w);
+        }
+        return w;
+    }
+    case ScriptsWidget: {
+        QScriptDebuggerScriptsWidgetInterface *w = scriptsWidget();
+        if (!w && widgetFactory()) {
+            w = widgetFactory()->createScriptsWidget();
+            setScriptsWidget(w);
+        }
+        return w;
+    }
+    case LocalsWidget: {
+        QScriptDebuggerLocalsWidgetInterface *w = localsWidget();
+        if (!w && widgetFactory()) {
+            w = widgetFactory()->createLocalsWidget();
+            setLocalsWidget(w);
+        }
+        return w;
+    }
+    case CodeWidget: {
+        QScriptDebuggerCodeWidgetInterface *w = codeWidget();
+        if (!w && widgetFactory()) {
+            w = widgetFactory()->createCodeWidget();
+            setCodeWidget(w);
+        }
+        return w;
+    }
+    case CodeFinderWidget: {
+        QScriptDebuggerCodeFinderWidgetInterface *w = codeFinderWidget();
+        if (!w && widgetFactory()) {
+            w = widgetFactory()->createCodeFinderWidget();
+            setCodeFinderWidget(w);
+        }
+        return w;
+    }
+    case BreakpointsWidget: {
+        QScriptBreakpointsWidgetInterface *w = breakpointsWidget();
+        if (!w && widgetFactory()) {
+            w = widgetFactory()->createBreakpointsWidget();
+            setBreakpointsWidget(w);
+        }
+        return w;
+    }
+    case DebugOutputWidget: {
+        QScriptDebugOutputWidgetInterface *w = debugOutputWidget();
+        if (!w && widgetFactory()) {
+            w = widgetFactory()->createDebugOutputWidget();
+            setDebugOutputWidget(w);
+        }
+        return w;
+    }
+    case ErrorLogWidget: {
+        QScriptErrorLogWidgetInterface *w = errorLogWidget();
+        if (!w && widgetFactory()) {
+            w = widgetFactory()->createErrorLogWidget();
+            setErrorLogWidget(w);
+        }
+        return w;
+    }
+    }
+    return 0;
+}
+
 QScriptDebuggerConsoleWidgetInterface *QScriptDebugger::consoleWidget() const
 {
     Q_D(const QScriptDebugger);
