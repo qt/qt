@@ -1088,6 +1088,9 @@ void QApplication::symbianResourceChange(int type)
     switch (type) {
     case KEikDynamicLayoutVariantSwitch:
         {
+        if (S60)
+            S60->updateScreenSize();            
+        
 #ifndef QT_NO_STYLE_S60
         QS60Style *s60Style = 0;
 
