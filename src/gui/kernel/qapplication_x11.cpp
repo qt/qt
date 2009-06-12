@@ -799,6 +799,14 @@ Q_GUI_EXPORT void qt_x11_apply_settings_in_all_apps()
                     PropModeReplace, (unsigned char *)stamp.data(), stamp.size());
 }
 
+static int kdeSessionVersion()
+{
+    static int kdeVersion = 0;
+    if (!kdeVersion)
+        kdeVersion = QString::fromLocal8Bit(qgetenv("KDE_SESSION_VERSION")).toInt();
+    return kdeVersion;
+}
+
 /*! \internal
     Gets the current KDE 3 or 4 home path
 */
@@ -808,10 +816,9 @@ QString QApplicationPrivate::kdeHome()
     if (kdeHomePath.isEmpty()) {
         kdeHomePath = QString::fromLocal8Bit(qgetenv("KDEHOME"));
         if (kdeHomePath.isEmpty()) {
-            int kdeSessionVersion = QString::fromLocal8Bit(qgetenv("KDE_SESSION_VERSION")).toInt();
             QDir homeDir(QDir::homePath());
             QString kdeConfDir(QLatin1String("/.kde"));
-            if (4 == kdeSessionVersion && homeDir.exists(QLatin1String(".kde4")))
+            if (4 == kdeSessionVersion() && homeDir.exists(QLatin1String(".kde4")))
                 kdeConfDir = QLatin1String("/.kde4");
             kdeHomePath = QDir::homePath() + kdeConfDir;
         }
@@ -880,13 +887,11 @@ bool QApplicationPrivate::x11_apply_settings()
             QApplicationPrivate::setSystemPalette(pal);
     }
 
-    int kdeSessionVersion = QString::fromLocal8Bit(qgetenv("KDE_SESSION_VERSION")).toInt();
-
     if (!appFont) {
         QFont font(QApplication::font());
         QString fontDescription;
         // Override Qt font if KDE4 settings can be used
-        if (4 == kdeSessionVersion) {
+        if (4 == kdeSessionVersion()) {
             QSettings kdeSettings(kdeHome() + QLatin1String("/share/config/kdeglobals"), QSettings::IniFormat);
             fontDescription = kdeSettings.value(QLatin1String("font")).toString();
             if (fontDescription.isEmpty()) {
@@ -916,29 +921,16 @@ bool QApplicationPrivate::x11_apply_settings()
 
     // read new QStyle
     QString stylename = settings.value(QLatin1String("style")).toString();
-    if (stylename.isEmpty() && !QApplicationPrivate::styleOverride && X11->use_xrender) {
-        QStringList availableStyles = QStyleFactory::keys();
-        // Override Qt style if KDE4 settings can be used
-        if (4 == kdeSessionVersion) {
-            QSettings kdeSettings(kdeHome() + QLatin1String("/share/config/kdeglobals"), QSettings::IniFormat);
-            QString kde4Style = kdeSettings.value(QLatin1String("widgetStyle"),
-                                                  QLatin1String("Oxygen")).toString();
-            foreach (const QString &style, availableStyles) {
-                if (style.toLower() == kde4Style.toLower())
-                    stylename = kde4Style;
-            }
-        // Set QGtkStyle for GNOME
-        } else if (X11->desktopEnvironment == DE_GNOME) {
-            QString gtkStyleKey = QString::fromLatin1("GTK+");
-            if (availableStyles.contains(gtkStyleKey))
-                stylename = gtkStyleKey;
-        }
+
+
+    if (stylename.isEmpty() && QApplicationPrivate::styleOverride.isNull() && X11->use_xrender) {
+        stylename = x11_desktop_style();
     }
 
     static QString currentStyleName = stylename;
     if (QCoreApplication::startingUp()) {
-        if (!stylename.isEmpty() && !QApplicationPrivate::styleOverride)
-            QApplicationPrivate::styleOverride = new QString(stylename);
+        if (!stylename.isEmpty() && QApplicationPrivate::styleOverride.isNull())
+            QApplicationPrivate::styleOverride = stylename;
     } else {
         if (currentStyleName != stylename) {
             currentStyleName = stylename;
@@ -2625,31 +2617,49 @@ void qt_init(QApplicationPrivate *priv, int,
 /*!
     \internal
 */
-void QApplicationPrivate::x11_initialize_style()
+QString QApplicationPrivate::x11_desktop_style()
 {
-    if (QApplicationPrivate::app_style)
-        return;
+    QString stylename;
+    QStringList availableStyles = QStyleFactory::keys();
+    // Override Qt style if KDE4 settings can be used
+    if (4 == kdeSessionVersion()) {
+        QSettings kdeSettings(kdeHome() + QLatin1String("/share/config/kdeglobals"), QSettings::IniFormat);
+        QString kde4Style = kdeSettings.value(QLatin1String("widgetStyle"),
+                                              QLatin1String("Oxygen")).toString();
+        foreach (const QString &style, availableStyles) {
+            if (style.toLower() == kde4Style.toLower())
+                stylename = kde4Style;
+        }
+    // Set QGtkStyle for GNOME
+    } else if (X11->desktopEnvironment == DE_GNOME) {
+        QString gtkStyleKey = QString::fromLatin1("GTK+");
+        if (availableStyles.contains(gtkStyleKey))
+            stylename = gtkStyleKey;
+    }
 
-    switch(X11->desktopEnvironment) {
+    if (stylename.isEmpty()) {
+        switch(X11->desktopEnvironment) {
         case DE_KDE:
             if (X11->use_xrender)
-                QApplicationPrivate::app_style = QStyleFactory::create(QLatin1String("plastique"));
+                stylename = QLatin1String("plastique");
             else
-                QApplicationPrivate::app_style = QStyleFactory::create(QLatin1String("windows"));
+                stylename = QLatin1String("windows");
             break;
         case DE_GNOME:
             if (X11->use_xrender)
-                QApplicationPrivate::app_style = QStyleFactory::create(QLatin1String("cleanlooks"));
+                stylename = QLatin1String("cleanlooks");
             else
-                QApplicationPrivate::app_style = QStyleFactory::create(QLatin1String("windows"));
+                stylename = QLatin1String("windows");
             break;
         case DE_CDE:
-            QApplicationPrivate::app_style = QStyleFactory::create(QLatin1String("cde"));
+            stylename = QLatin1String("cde");
             break;
         default:
             // Don't do anything
             break;
+        }
     }
+    return stylename;
 }
 
 void QApplicationPrivate::initializeWidgetPaletteHash()
