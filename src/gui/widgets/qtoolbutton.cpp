@@ -104,10 +104,9 @@ public:
 #ifndef QT_NO_MENU
 bool QToolButtonPrivate::hasMenu() const
 {
-    Q_Q(const QToolButton);
     return ((defaultAction && defaultAction->menu())
             || (menuAction && menuAction->menu())
-            || q->actions().size() > (defaultAction ? 1 : 0));
+            || actions.size() > (defaultAction ? 1 : 0));
 }
 #endif
 
@@ -882,7 +881,6 @@ void QToolButtonPrivate::popupTimerDone()
     } else {
         actualMenu = new QMenu(q);
         mustDeleteActualMenu = true;
-        QList<QAction*> actions = q->actions();
         for(int i = 0; i < actions.size(); i++)
             actualMenu->addAction(actions.at(i));
     }
