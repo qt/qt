@@ -45,6 +45,7 @@
 
 #include <QtCore/qhash.h>
 #include <QtCore/qdatastream.h>
+#include <QtCore/qstringlist.h>
 
 Q_DECLARE_METATYPE(QScriptBreakpointData)
 Q_DECLARE_METATYPE(QScriptDebuggerValue)
