@@ -827,7 +827,7 @@ QmlEngine *QmlEngine::activeEngine()
     dynamically creates and returns objects when called from QtScript,
     and these objects are visual items in the QML tree.
 
-    \sa QmlEngine::newQObject()
+    \sa QScriptEngine::newQObject()
 */
 QScriptValue QmlEngine::qmlScriptObject(QObject* object, QmlEngine* engine)
 {
@@ -884,6 +884,7 @@ QScriptValue QmlEngine::qmlScriptObject(QObject* object, QmlEngine* engine)
         }
     \endcode
 
+    \sa QmlComponent::createObject()
 */
 QScriptValue QmlEngine::createComponent(QScriptContext *ctxt, QScriptEngine *engine)
 {
