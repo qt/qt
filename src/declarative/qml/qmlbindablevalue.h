@@ -62,7 +62,6 @@ class Q_DECLARATIVE_EXPORT QmlBindableValue : public QmlPropertyValueSource,
 {
 Q_OBJECT
 public:
-    QmlBindableValue(QObject *parent);
     QmlBindableValue(const QString &, QObject *, QObject *parent=0);
     QmlBindableValue(void *, QmlRefCount *, QObject *, QObject *parent);
     ~QmlBindableValue();

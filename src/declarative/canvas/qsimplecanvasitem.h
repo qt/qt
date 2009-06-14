@@ -45,7 +45,9 @@
 #include <QtDeclarative/qfxglobal.h>
 #include <QtDeclarative/qmldebuggerstatus.h>
 #include <QtDeclarative/qsimplecanvas.h>
+#if defined(QFX_RENDER_OPENGL)
 #include <QtDeclarative/gltexture.h>
+#endif
 #include <QtCore/qobject.h>
 #include <QtGui/qgraphicsitem.h>
 

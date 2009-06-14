@@ -395,7 +395,6 @@ public:
     void createParticle(int time);
     void updateOpacity(QFxParticle &p, int age);
 
-    QString source;
     QUrl url;
     QPixmap image;
     int count;
@@ -642,10 +641,10 @@ QFxParticles::~QFxParticles()
     \property QFxParticles::source
     \brief the URL of the particle image.
 */
-QString QFxParticles::source() const
+QUrl QFxParticles::source() const
 {
     Q_D(const QFxParticles);
-    return d->source;
+    return d->url;
 }
 
 void QFxParticles::imageLoaded()
@@ -659,18 +658,17 @@ void QFxParticles::imageLoaded()
     update();
 }
 
-void QFxParticles::setSource(const QString &name)
+void QFxParticles::setSource(const QUrl &name)
 {
     Q_D(QFxParticles);
 
-    if (name == d->source)
+    if (name == d->url)
         return;
 
-    if (!d->source.isEmpty())
+    if (!d->url.isEmpty())
         QFxPixmap::cancelGet(d->url, this);
     if (name.isEmpty()) {
-        d->source = name;
-        d->url = QUrl();
+        d->url = name;
         d->image = QPixmap();
 #if defined(QFX_RENDER_OPENGL)
         d->texDirty = true;
@@ -678,8 +676,8 @@ void QFxParticles::setSource(const QString &name)
 #endif
         update();
     } else {
-        d->source = name;
-        d->url = qmlContext(this)->resolvedUrl(name);
+        d->url = name;
+        Q_ASSERT(!name.isRelative());
         QFxPixmap::get(qmlEngine(this), d->url, this, SLOT(imageLoaded()));
     }
 }

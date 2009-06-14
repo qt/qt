@@ -91,6 +91,8 @@ public:
     QString property() const;
     void setProperty(const QString &);
 
+    virtual void setTarget(const QmlMetaProperty &);
+
     void classBegin();
     void componentComplete();
 
@@ -109,7 +111,6 @@ public Q_SLOTS:
     void complete();
 
 protected:
-    virtual void setTarget(const QmlMetaProperty &);
     QmlAbstractAnimation(QmlAbstractAnimationPrivate &dd, QObject *parent);
 
 public:
@@ -446,8 +447,8 @@ Q_SIGNALS:
 };
 QML_DECLARE_TYPE(QmlVariantAnimation)
 
-#endif // QMLANIMATION_H
-
 QT_END_NAMESPACE
 
 QT_END_HEADER
+
+#endif // QMLANIMATION_H

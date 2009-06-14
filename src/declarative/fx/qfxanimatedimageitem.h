@@ -73,7 +73,7 @@ public:
     int frameCount() const;
 
     // Extends QFxImage's src property*/
-    virtual void setSource(const QString&);
+    virtual void setSource(const QUrl&);
 
 Q_SIGNALS:
     void playingChanged();

@@ -76,7 +76,6 @@ int main(int argc, char *argv[])
     view.scale(0.5, 0.5);
     view.setRenderHints(view.renderHints() | QPainter::Antialiasing | QPainter::SmoothPixmapTransform);
     view.setBackgroundBrush(QPixmap(":/No-Ones-Laughing-3.jpg"));
-    view.setCacheMode(QGraphicsView::CacheBackground);
     view.setViewportUpdateMode(QGraphicsView::BoundingRectViewportUpdate);
     view.show();
     view.setWindowTitle("Embedded Dialogs Demo");

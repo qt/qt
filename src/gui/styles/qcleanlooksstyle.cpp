@@ -3305,7 +3305,8 @@ void QCleanlooksStyle::drawComplexControl(ComplexControl control, const QStyleOp
                     }
                 }
                 // Draw the focus rect
-                if ((focus && (option->state & State_KeyboardFocusChange)) && !comboBox->editable) {
+                if (focus && !comboBox->editable
+                    && ((option->state & State_KeyboardFocusChange) || styleHint(SH_UnderlineShortcut, option, widget))) {
                     QStyleOptionFocusRect focus;
                     focus.rect = subControlRect(CC_ComboBox, &comboBoxCopy, SC_ComboBoxEditField, widget)
                                  .adjusted(0, 2, option->direction == Qt::RightToLeft ? 1 : -1, -2);
@@ -4418,7 +4419,7 @@ QIcon QCleanlooksStyle::standardIconImplementation(StandardPixmap standardIcon,
 {
 #ifdef Q_WS_X11
     Q_D(const QCleanlooksStyle);
-    if (!qApp->desktopSettingsAware())
+    if (!QApplication::desktopSettingsAware())
         return QWindowsStyle::standardIconImplementation(standardIcon, option, widget);
     QIcon icon;
     QPixmap pixmap;
@@ -4587,7 +4588,7 @@ QPixmap QCleanlooksStyle::standardPixmap(StandardPixmap standardPixmap, const QS
 #ifdef Q_WS_X11
     Q_D(const QCleanlooksStyle);
     QPixmap pixmap;
-    if (!qApp->desktopSettingsAware())
+    if (!QApplication::desktopSettingsAware())
         return QWindowsStyle::standardPixmap(standardPixmap, opt, widget);
     d->lookupIconTheme();
 #ifndef QT_NO_IMAGEFORMAT_XPM

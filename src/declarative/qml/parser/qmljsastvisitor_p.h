@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef JAVASCRIPTASTVISITOR_P_H
-#define JAVASCRIPTASTVISITOR_P_H
+#ifndef QMLJSASTVISITOR_P_H
+#define QMLJSASTVISITOR_P_H
 
 //
 //  W A R N I N G
@@ -53,11 +53,11 @@
 // We mean it.
 //
 
-#include "javascriptastfwd_p.h"
+#include "qmljsastfwd_p.h"
 
 QT_BEGIN_NAMESPACE
 
-namespace JavaScript { namespace AST {
+namespace QmlJS { namespace AST {
 
 class Visitor
 {
@@ -80,6 +80,7 @@ public:
     virtual bool visit(UiScriptBinding *) { return true; }
     virtual bool visit(UiArrayBinding *) { return true; }
     virtual bool visit(UiObjectMemberList *) { return true; }
+    virtual bool visit(UiArrayMemberList *) { return true; }
     virtual bool visit(UiQualifiedId *) { return true; }
 
     virtual void endVisit(UiProgram *) {}
@@ -93,9 +94,10 @@ public:
     virtual void endVisit(UiScriptBinding *) {}
     virtual void endVisit(UiArrayBinding *) {}
     virtual void endVisit(UiObjectMemberList *) {}
+    virtual void endVisit(UiArrayMemberList *) {}
     virtual void endVisit(UiQualifiedId *) {}
 
-    // JavaScript
+    // QmlJS
     virtual bool visit(ThisExpression *) { return true; }
     virtual void endVisit(ThisExpression *) {}
 
@@ -323,4 +325,4 @@ public:
 
 QT_END_NAMESPACE
 
-#endif // JAVASCRIPTASTVISITOR_P_H
+#endif // QMLJSASTVISITOR_P_H

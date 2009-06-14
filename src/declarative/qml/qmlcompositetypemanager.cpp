@@ -109,7 +109,7 @@ QmlCompositeTypeData::toCompiledComponent(QmlEngine *engine)
             status = Error;
             errors = compiler.errors();
             for(int ii = 0; ii < errors.count(); ++ii)
-                errors[ii].setUrl(url);
+                errors[ii].setUrl(compiledComponent->url);
             compiledComponent->release();
             compiledComponent = 0;
         }
@@ -336,7 +336,7 @@ void QmlCompositeTypeManager::compile(QmlCompositeTypeData *unit)
             unit->status = QmlCompositeTypeData::Error;
             {
                 QmlError error;
-                error.setUrl(unit->url);
+                error.setUrl(QUrl(unit->url));
                 error.setDescription(tr("Type %1 unavailable").arg(QLatin1String(type)));
                 unit->errors << error;
             }

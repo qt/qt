@@ -38,7 +38,16 @@ public:
 
     QByteArray expression() const;
 
-    bool compile(const QmlParser::Variant &);
+    struct Expression
+    {
+        QmlParser::Object *component;
+        QmlParser::Object *context;
+        QmlParser::Property *property;
+        QmlParser::Variant expression;
+        QHash<QString, QPair<QmlParser::Object *, int> > ids;
+    };
+
+    bool compile(const Expression &);
     bool isValid() const;
 
     void clear();

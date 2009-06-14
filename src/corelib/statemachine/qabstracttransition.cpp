@@ -113,8 +113,7 @@ QAbstractTransitionPrivate *QAbstractTransitionPrivate::get(QAbstractTransition 
 
 QStateMachine *QAbstractTransitionPrivate::machine() const
 {
-    Q_Q(const QAbstractTransition);
-    QObject *par = q->parent();
+    QObject *par = parent;
     while (par != 0) {
         if (QStateMachine *mach = qobject_cast<QStateMachine*>(par))
             return mach;
@@ -137,8 +136,7 @@ void QAbstractTransitionPrivate::callOnTransition(QEvent *e)
 
 QState *QAbstractTransitionPrivate::sourceState() const
 {
-    Q_Q(const QAbstractTransition);
-    return qobject_cast<QState*>(q->parent());
+    return qobject_cast<QState*>(parent);
 }
 
 /*!

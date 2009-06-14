@@ -49,12 +49,12 @@
 
 QT_BEGIN_NAMESPACE
 
-#include "parser/javascriptengine_p.h"
-#include "parser/javascriptparser_p.h"
-#include "parser/javascriptlexer_p.h"
-#include "parser/javascriptnodepool_p.h"
-#include "parser/javascriptastvisitor_p.h"
-#include "parser/javascriptast_p.h"
+#include "parser/qmljsengine_p.h"
+#include "parser/qmljsparser_p.h"
+#include "parser/qmljslexer_p.h"
+#include "parser/qmljsnodepool_p.h"
+#include "parser/qmljsastvisitor_p.h"
+#include "parser/qmljsast_p.h"
 
 #include <QCoreApplication>
 #include <QFile>
@@ -65,7 +65,7 @@ QT_BEGIN_NAMESPACE
 #include <iostream>
 #include <cstdlib>
 
-using namespace JavaScript;
+using namespace QmlJS;
 
 class FindTrCalls: protected AST::Visitor
 {

@@ -415,7 +415,7 @@ QSqlDatabase QmlSqlConnection::database() const
             qmlContext(this)) {
         // SQLITE uses files for databases, hence use relative pathing
         // if possible.
-        QUrl url = qmlContext(this)->resolvedUrl(d->databaseName);
+        QUrl url = qmlContext(this)->resolvedUrl(QUrl(d->databaseName));
         if (url.isRelative() || url.scheme() == QLatin1String("file"))
             db.setDatabaseName(url.toLocalFile());
         else

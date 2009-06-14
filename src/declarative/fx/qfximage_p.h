@@ -106,7 +106,6 @@ public:
 #endif
 
     QFxImage::Status status;
-    QString source;
     QUrl url;
     QUrl sciurl;
     QNetworkReply *sciReply;

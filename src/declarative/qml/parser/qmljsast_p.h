@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef JAVASCRIPTAST_P_H
-#define JAVASCRIPTAST_P_H
+#ifndef QMLJSAST_P_H
+#define QMLJSAST_P_H
 
 //
 //  W A R N I N G
@@ -53,12 +53,12 @@
 // We mean it.
 //
 
-#include "javascriptastvisitor_p.h"
+#include "qmljsastvisitor_p.h"
 #include <QtCore/QString>
 
 QT_BEGIN_NAMESPACE
 
-#define JAVASCRIPT_DECLARE_AST_NODE(name) \
+#define QMLJS_DECLARE_AST_NODE(name) \
   enum { K = Kind_##name };
 
 namespace QSOperator // ### rename
@@ -104,7 +104,7 @@ enum Op {
 
 } // namespace QSOperator
 
-namespace JavaScript { 
+namespace QmlJS { 
 class NameId;
 namespace AST {
 
@@ -207,6 +207,7 @@ public:
         Kind_UiObjectDefinition,
         Kind_UiObjectInitializer,
         Kind_UiObjectMemberList,
+        Kind_UiArrayMemberList,
         Kind_UiProgram,
         Kind_UiPublicMember,
         Kind_UiQualifiedId,
@@ -270,7 +271,7 @@ public:
 class NestedExpression: public ExpressionNode
 {
 public:
-    JAVASCRIPT_DECLARE_AST_NODE(NestedExpression)
+    QMLJS_DECLARE_AST_NODE(NestedExpression)
 
     NestedExpression(ExpressionNode *expression)
         : expression(expression)
@@ -293,7 +294,7 @@ public:
 class ThisExpression: public ExpressionNode
 {
 public:
-    JAVASCRIPT_DECLARE_AST_NODE(ThisExpression)
+    QMLJS_DECLARE_AST_NODE(ThisExpression)
 
     ThisExpression() { kind = K; }
     virtual ~ThisExpression() {}
@@ -313,7 +314,7 @@ public:
 class IdentifierExpression: public ExpressionNode
 {
 public:
-    JAVASCRIPT_DECLARE_AST_NODE(IdentifierExpression)
+    QMLJS_DECLARE_AST_NODE(IdentifierExpression)
 
     IdentifierExpression(NameId *n):
         name (n) { kind = K; }
@@ -336,7 +337,7 @@ public:
 class NullExpression: public ExpressionNode
 {
 public:
-    JAVASCRIPT_DECLARE_AST_NODE(NullExpression)
+    QMLJS_DECLARE_AST_NODE(NullExpression)
 
     NullExpression() { kind = K; }
     virtual ~NullExpression() {}
@@ -356,7 +357,7 @@ public:
 class TrueLiteral: public ExpressionNode
 {
 public:
-    JAVASCRIPT_DECLARE_AST_NODE(TrueLiteral)
+    QMLJS_DECLARE_AST_NODE(TrueLiteral)
 
     TrueLiteral() { kind = K; }
     virtual ~TrueLiteral() {}
@@ -376,7 +377,7 @@ public:
 class FalseLiteral: public ExpressionNode
 {
 public:
-    JAVASCRIPT_DECLARE_AST_NODE(FalseLiteral)
+    QMLJS_DECLARE_AST_NODE(FalseLiteral)
 
     FalseLiteral() { kind = K; }
     virtual ~FalseLiteral() {}
@@ -396,9 +397,9 @@ public:
 class NumericLiteral: public ExpressionNode
 {
 public:
-    JAVASCRIPT_DECLARE_AST_NODE(NumericLiteral)
+    QMLJS_DECLARE_AST_NODE(NumericLiteral)
 
-    enum Suffix { // ### keep it in sync with the Suffix enum in javascriptlexer_p.h
+    enum Suffix { // ### keep it in sync with the Suffix enum in qmljslexer_p.h
         noSuffix,
         emSuffix,
         exSuffix,
@@ -441,7 +442,7 @@ public:
 class StringLiteral: public ExpressionNode
 {
 public:
-    JAVASCRIPT_DECLARE_AST_NODE(StringLiteral)
+    QMLJS_DECLARE_AST_NODE(StringLiteral)
 
     StringLiteral(NameId *v):
         value (v) { kind = K; }
@@ -464,7 +465,7 @@ public:
 class RegExpLiteral: public ExpressionNode
 {
 public:
-    JAVASCRIPT_DECLARE_AST_NODE(RegExpLiteral)
+    QMLJS_DECLARE_AST_NODE(RegExpLiteral)
 
     RegExpLiteral(NameId *p, int f):
         pattern (p), flags (f) { kind = K; }
@@ -488,7 +489,7 @@ public:
 class ArrayLiteral: public ExpressionNode
 {
 public:
-    JAVASCRIPT_DECLARE_AST_NODE(ArrayLiteral)
+    QMLJS_DECLARE_AST_NODE(ArrayLiteral)
 
     ArrayLiteral(Elision *e):
         elements (0), elision (e)
@@ -523,7 +524,7 @@ public:
 class ObjectLiteral: public ExpressionNode
 {
 public:
-    JAVASCRIPT_DECLARE_AST_NODE(ObjectLiteral)
+    QMLJS_DECLARE_AST_NODE(ObjectLiteral)
 
     ObjectLiteral():
         properties (0) { kind = K; }
@@ -550,7 +551,7 @@ public:
 class ElementList: public Node
 {
 public:
-    JAVASCRIPT_DECLARE_AST_NODE(ElementList)
+    QMLJS_DECLARE_AST_NODE(ElementList)
 
     ElementList(Elision *e, ExpressionNode *expr):
         elision (e), expression (expr), next (this)
@@ -585,7 +586,7 @@ public:
 class Elision: public Node
 {
 public:
-    JAVASCRIPT_DECLARE_AST_NODE(Elision)
+    QMLJS_DECLARE_AST_NODE(Elision)
 
     Elision():
         next (this) { kind = K; }
@@ -616,7 +617,7 @@ public:
 class PropertyNameAndValueList: public Node
 {
 public:
-    JAVASCRIPT_DECLARE_AST_NODE(PropertyNameAndValueList)
+    QMLJS_DECLARE_AST_NODE(PropertyNameAndValueList)
 
     PropertyNameAndValueList(PropertyName *n, ExpressionNode *v):
         name (n), value (v), next (this)
@@ -652,7 +653,7 @@ public:
 class PropertyName: public Node
 {
 public:
-    JAVASCRIPT_DECLARE_AST_NODE(PropertyName)
+    QMLJS_DECLARE_AST_NODE(PropertyName)
 
     PropertyName() { kind = K; }
     virtual ~PropertyName() {}
@@ -664,7 +665,7 @@ public:
 class IdentifierPropertyName: public PropertyName
 {
 public:
-    JAVASCRIPT_DECLARE_AST_NODE(IdentifierPropertyName)
+    QMLJS_DECLARE_AST_NODE(IdentifierPropertyName)
 
     IdentifierPropertyName(NameId *n):
         id (n) { kind = K; }
@@ -680,7 +681,7 @@ public:
 class StringLiteralPropertyName: public PropertyName
 {
 public:
-    JAVASCRIPT_DECLARE_AST_NODE(StringLiteralPropertyName)
+    QMLJS_DECLARE_AST_NODE(StringLiteralPropertyName)
 
     StringLiteralPropertyName(NameId *n):
         id (n) { kind = K; }
@@ -695,7 +696,7 @@ public:
 class NumericLiteralPropertyName: public PropertyName
 {
 public:
-    JAVASCRIPT_DECLARE_AST_NODE(NumericLiteralPropertyName)
+    QMLJS_DECLARE_AST_NODE(NumericLiteralPropertyName)
 
     NumericLiteralPropertyName(double n):
         id (n) { kind = K; }
@@ -710,7 +711,7 @@ public:
 class ArrayMemberExpression: public ExpressionNode
 {
 public:
-    JAVASCRIPT_DECLARE_AST_NODE(ArrayMemberExpression)
+    QMLJS_DECLARE_AST_NODE(ArrayMemberExpression)
 
     ArrayMemberExpression(ExpressionNode *b, ExpressionNode *e):
         base (b), expression (e)
@@ -736,7 +737,7 @@ public:
 class FieldMemberExpression: public ExpressionNode
 {
 public:
-    JAVASCRIPT_DECLARE_AST_NODE(FieldMemberExpression)
+    QMLJS_DECLARE_AST_NODE(FieldMemberExpression)
 
     FieldMemberExpression(ExpressionNode *b, NameId *n):
         base (b), name (n)
@@ -762,7 +763,7 @@ public:
 class NewMemberExpression: public ExpressionNode
 {
 public:
-    JAVASCRIPT_DECLARE_AST_NODE(NewMemberExpression)
+    QMLJS_DECLARE_AST_NODE(NewMemberExpression)
 
     NewMemberExpression(ExpressionNode *b, ArgumentList *a):
         base (b), arguments (a)
@@ -789,7 +790,7 @@ public:
 class NewExpression: public ExpressionNode
 {
 public:
-    JAVASCRIPT_DECLARE_AST_NODE(NewExpression)
+    QMLJS_DECLARE_AST_NODE(NewExpression)
 
     NewExpression(ExpressionNode *e):
         expression (e) { kind = K; }
@@ -812,7 +813,7 @@ public:
 class CallExpression: public ExpressionNode
 {
 public:
-    JAVASCRIPT_DECLARE_AST_NODE(CallExpression)
+    QMLJS_DECLARE_AST_NODE(CallExpression)
 
     CallExpression(ExpressionNode *b, ArgumentList *a):
         base (b), arguments (a)
@@ -838,7 +839,7 @@ public:
 class ArgumentList: public Node
 {
 public:
-    JAVASCRIPT_DECLARE_AST_NODE(ArgumentList)
+    QMLJS_DECLARE_AST_NODE(ArgumentList)
 
     ArgumentList(ExpressionNode *e):
         expression (e), next (this)
@@ -872,7 +873,7 @@ public:
 class PostIncrementExpression: public ExpressionNode
 {
 public:
-    JAVASCRIPT_DECLARE_AST_NODE(PostIncrementExpression)
+    QMLJS_DECLARE_AST_NODE(PostIncrementExpression)
 
     PostIncrementExpression(ExpressionNode *b):
         base (b) { kind = K; }
@@ -895,7 +896,7 @@ public:
 class PostDecrementExpression: public ExpressionNode
 {
 public:
-    JAVASCRIPT_DECLARE_AST_NODE(PostDecrementExpression)
+    QMLJS_DECLARE_AST_NODE(PostDecrementExpression)
 
     PostDecrementExpression(ExpressionNode *b):
         base (b) { kind = K; }
@@ -918,7 +919,7 @@ public:
 class DeleteExpression: public ExpressionNode
 {
 public:
-    JAVASCRIPT_DECLARE_AST_NODE(DeleteExpression)
+    QMLJS_DECLARE_AST_NODE(DeleteExpression)
 
     DeleteExpression(ExpressionNode *e):
         expression (e) { kind = K; }
@@ -940,7 +941,7 @@ public:
 class VoidExpression: public ExpressionNode
 {
 public:
-    JAVASCRIPT_DECLARE_AST_NODE(VoidExpression)
+    QMLJS_DECLARE_AST_NODE(VoidExpression)
 
     VoidExpression(ExpressionNode *e):
         expression (e) { kind = K; }
@@ -963,7 +964,7 @@ public:
 class TypeOfExpression: public ExpressionNode
 {
 public:
-    JAVASCRIPT_DECLARE_AST_NODE(TypeOfExpression)
+    QMLJS_DECLARE_AST_NODE(TypeOfExpression)
 
     TypeOfExpression(ExpressionNode *e):
         expression (e) { kind = K; }
@@ -986,7 +987,7 @@ public:
 class PreIncrementExpression: public ExpressionNode
 {
 public:
-    JAVASCRIPT_DECLARE_AST_NODE(PreIncrementExpression)
+    QMLJS_DECLARE_AST_NODE(PreIncrementExpression)
 
     PreIncrementExpression(ExpressionNode *e):
         expression (e) { kind = K; }
@@ -1009,7 +1010,7 @@ public:
 class PreDecrementExpression: public ExpressionNode
 {
 public:
-    JAVASCRIPT_DECLARE_AST_NODE(PreDecrementExpression)
+    QMLJS_DECLARE_AST_NODE(PreDecrementExpression)
 
     PreDecrementExpression(ExpressionNode *e):
         expression (e) { kind = K; }
@@ -1032,7 +1033,7 @@ public:
 class UnaryPlusExpression: public ExpressionNode
 {
 public:
-    JAVASCRIPT_DECLARE_AST_NODE(UnaryPlusExpression)
+    QMLJS_DECLARE_AST_NODE(UnaryPlusExpression)
 
     UnaryPlusExpression(ExpressionNode *e):
         expression (e) { kind = K; }
@@ -1055,7 +1056,7 @@ public:
 class UnaryMinusExpression: public ExpressionNode
 {
 public:
-    JAVASCRIPT_DECLARE_AST_NODE(UnaryMinusExpression)
+    QMLJS_DECLARE_AST_NODE(UnaryMinusExpression)
 
     UnaryMinusExpression(ExpressionNode *e):
         expression (e) { kind = K; }
@@ -1078,7 +1079,7 @@ public:
 class TildeExpression: public ExpressionNode
 {
 public:
-    JAVASCRIPT_DECLARE_AST_NODE(TildeExpression)
+    QMLJS_DECLARE_AST_NODE(TildeExpression)
 
     TildeExpression(ExpressionNode *e):
         expression (e) { kind = K; }
@@ -1101,7 +1102,7 @@ public:
 class NotExpression: public ExpressionNode
 {
 public:
-    JAVASCRIPT_DECLARE_AST_NODE(NotExpression)
+    QMLJS_DECLARE_AST_NODE(NotExpression)
 
     NotExpression(ExpressionNode *e):
         expression (e) { kind = K; }
@@ -1124,7 +1125,7 @@ public:
 class BinaryExpression: public ExpressionNode
 {
 public:
-    JAVASCRIPT_DECLARE_AST_NODE(BinaryExpression)
+    QMLJS_DECLARE_AST_NODE(BinaryExpression)
 
     BinaryExpression(ExpressionNode *l, int o, ExpressionNode *r):
         left (l), op (o), right (r)
@@ -1152,7 +1153,7 @@ public:
 class ConditionalExpression: public ExpressionNode
 {
 public:
-    JAVASCRIPT_DECLARE_AST_NODE(ConditionalExpression)
+    QMLJS_DECLARE_AST_NODE(ConditionalExpression)
 
     ConditionalExpression(ExpressionNode *e, ExpressionNode *t, ExpressionNode *f):
         expression (e), ok (t), ko (f)
@@ -1179,7 +1180,7 @@ public:
 class Expression: public ExpressionNode // ### rename
 {
 public:
-    JAVASCRIPT_DECLARE_AST_NODE(Expression)
+    QMLJS_DECLARE_AST_NODE(Expression)
 
     Expression(ExpressionNode *l, ExpressionNode *r):
         left (l), right (r) { kind = K; }
@@ -1203,7 +1204,7 @@ public:
 class Block: public Statement
 {
 public:
-    JAVASCRIPT_DECLARE_AST_NODE(Block)
+    QMLJS_DECLARE_AST_NODE(Block)
 
     Block(StatementList *slist):
         statements (slist) { kind = K; }
@@ -1227,7 +1228,7 @@ public:
 class StatementList: public Node
 {
 public:
-    JAVASCRIPT_DECLARE_AST_NODE(StatementList)
+    QMLJS_DECLARE_AST_NODE(StatementList)
 
     StatementList(Statement *stmt):
         statement (stmt), next (this)
@@ -1260,7 +1261,7 @@ public:
 class VariableStatement: public Statement
 {
 public:
-    JAVASCRIPT_DECLARE_AST_NODE(VariableStatement)
+    QMLJS_DECLARE_AST_NODE(VariableStatement)
 
     VariableStatement(VariableDeclarationList *vlist):
         declarations (vlist)
@@ -1285,7 +1286,7 @@ public:
 class VariableDeclaration: public Node
 {
 public:
-    JAVASCRIPT_DECLARE_AST_NODE(VariableDeclaration)
+    QMLJS_DECLARE_AST_NODE(VariableDeclaration)
 
     VariableDeclaration(NameId *n, ExpressionNode *e):
         name (n), expression (e), readOnly(false)
@@ -1305,7 +1306,7 @@ public:
 class VariableDeclarationList: public Node
 {
 public:
-    JAVASCRIPT_DECLARE_AST_NODE(VariableDeclarationList)
+    QMLJS_DECLARE_AST_NODE(VariableDeclarationList)
 
     VariableDeclarationList(VariableDeclaration *decl):
         declaration (decl), next (this)
@@ -1344,7 +1345,7 @@ public:
 class EmptyStatement: public Statement
 {
 public:
-    JAVASCRIPT_DECLARE_AST_NODE(EmptyStatement)
+    QMLJS_DECLARE_AST_NODE(EmptyStatement)
 
     EmptyStatement() { kind = K; }
     virtual ~EmptyStatement() {}
@@ -1364,7 +1365,7 @@ public:
 class ExpressionStatement: public Statement
 {
 public:
-    JAVASCRIPT_DECLARE_AST_NODE(ExpressionStatement)
+    QMLJS_DECLARE_AST_NODE(ExpressionStatement)
 
     ExpressionStatement(ExpressionNode *e):
         expression (e) { kind = K; }
@@ -1387,7 +1388,7 @@ public:
 class IfStatement: public Statement
 {
 public:
-    JAVASCRIPT_DECLARE_AST_NODE(IfStatement)
+    QMLJS_DECLARE_AST_NODE(IfStatement)
 
     IfStatement(ExpressionNode *e, Statement *t, Statement *f = 0):
         expression (e), ok (t), ko (f)
@@ -1421,7 +1422,7 @@ public:
 class DoWhileStatement: public Statement
 {
 public:
-    JAVASCRIPT_DECLARE_AST_NODE(DoWhileStatement)
+    QMLJS_DECLARE_AST_NODE(DoWhileStatement)
 
     DoWhileStatement(Statement *stmt, ExpressionNode *e):
         statement (stmt), expression (e)
@@ -1450,7 +1451,7 @@ public:
 class WhileStatement: public Statement
 {
 public:
-    JAVASCRIPT_DECLARE_AST_NODE(WhileStatement)
+    QMLJS_DECLARE_AST_NODE(WhileStatement)
 
     WhileStatement(ExpressionNode *e, Statement *stmt):
         expression (e), statement (stmt)
@@ -1477,7 +1478,7 @@ public:
 class ForStatement: public Statement
 {
 public:
-    JAVASCRIPT_DECLARE_AST_NODE(ForStatement)
+    QMLJS_DECLARE_AST_NODE(ForStatement)
 
     ForStatement(ExpressionNode *i, ExpressionNode *c, ExpressionNode *e, Statement *stmt):
         initialiser (i), condition (c), expression (e), statement (stmt)
@@ -1508,7 +1509,7 @@ public:
 class LocalForStatement: public Statement
 {
 public:
-    JAVASCRIPT_DECLARE_AST_NODE(LocalForStatement)
+    QMLJS_DECLARE_AST_NODE(LocalForStatement)
 
     LocalForStatement(VariableDeclarationList *vlist, ExpressionNode *c, ExpressionNode *e, Statement *stmt):
         declarations (vlist), condition (c), expression (e), statement (stmt)
@@ -1540,7 +1541,7 @@ public:
 class ForEachStatement: public Statement
 {
 public:
-    JAVASCRIPT_DECLARE_AST_NODE(ForEachStatement)
+    QMLJS_DECLARE_AST_NODE(ForEachStatement)
 
     ForEachStatement(ExpressionNode *i, ExpressionNode *e, Statement *stmt):
         initialiser (i), expression (e), statement (stmt)
@@ -1569,7 +1570,7 @@ public:
 class LocalForEachStatement: public Statement
 {
 public:
-    JAVASCRIPT_DECLARE_AST_NODE(LocalForEachStatement)
+    QMLJS_DECLARE_AST_NODE(LocalForEachStatement)
 
     LocalForEachStatement(VariableDeclaration *v, ExpressionNode *e, Statement *stmt):
         declaration (v), expression (e), statement (stmt)
@@ -1599,7 +1600,7 @@ public:
 class ContinueStatement: public Statement
 {
 public:
-    JAVASCRIPT_DECLARE_AST_NODE(ContinueStatement)
+    QMLJS_DECLARE_AST_NODE(ContinueStatement)
 
     ContinueStatement(NameId *l = 0):
         label (l) { kind = K; }
@@ -1624,7 +1625,7 @@ public:
 class BreakStatement: public Statement
 {
 public:
-    JAVASCRIPT_DECLARE_AST_NODE(BreakStatement)
+    QMLJS_DECLARE_AST_NODE(BreakStatement)
 
     BreakStatement(NameId *l = 0):
         label (l) { kind = K; }
@@ -1649,7 +1650,7 @@ public:
 class ReturnStatement: public Statement
 {
 public:
-    JAVASCRIPT_DECLARE_AST_NODE(ReturnStatement)
+    QMLJS_DECLARE_AST_NODE(ReturnStatement)
 
     ReturnStatement(ExpressionNode *e):
         expression (e) { kind = K; }
@@ -1673,7 +1674,7 @@ public:
 class WithStatement: public Statement
 {
 public:
-    JAVASCRIPT_DECLARE_AST_NODE(WithStatement)
+    QMLJS_DECLARE_AST_NODE(WithStatement)
 
     WithStatement(ExpressionNode *e, Statement *stmt):
         expression (e), statement (stmt)
@@ -1700,7 +1701,7 @@ public:
 class CaseBlock: public Node
 {
 public:
-    JAVASCRIPT_DECLARE_AST_NODE(CaseBlock)
+    QMLJS_DECLARE_AST_NODE(CaseBlock)
 
     CaseBlock(CaseClauses *c, DefaultClause *d = 0, CaseClauses *r = 0):
         clauses (c), defaultClause (d), moreClauses (r)
@@ -1721,7 +1722,7 @@ public:
 class SwitchStatement: public Statement
 {
 public:
-    JAVASCRIPT_DECLARE_AST_NODE(SwitchStatement)
+    QMLJS_DECLARE_AST_NODE(SwitchStatement)
 
     SwitchStatement(ExpressionNode *e, CaseBlock *b):
         expression (e), block (b)
@@ -1748,7 +1749,7 @@ public:
 class CaseClauses: public Node
 {
 public:
-    JAVASCRIPT_DECLARE_AST_NODE(CaseClauses)
+    QMLJS_DECLARE_AST_NODE(CaseClauses)
 
     CaseClauses(CaseClause *c):
         clause (c), next (this)
@@ -1781,7 +1782,7 @@ public:
 class CaseClause: public Node
 {
 public:
-    JAVASCRIPT_DECLARE_AST_NODE(CaseClause)
+    QMLJS_DECLARE_AST_NODE(CaseClause)
 
     CaseClause(ExpressionNode *e, StatementList *slist):
         expression (e), statements (slist)
@@ -1801,7 +1802,7 @@ public:
 class DefaultClause: public Node
 {
 public:
-    JAVASCRIPT_DECLARE_AST_NODE(DefaultClause)
+    QMLJS_DECLARE_AST_NODE(DefaultClause)
 
     DefaultClause(StatementList *slist):
         statements (slist)
@@ -1820,7 +1821,7 @@ public:
 class LabelledStatement: public Statement
 {
 public:
-    JAVASCRIPT_DECLARE_AST_NODE(LabelledStatement)
+    QMLJS_DECLARE_AST_NODE(LabelledStatement)
 
     LabelledStatement(NameId *l, Statement *stmt):
         label (l), statement (stmt)
@@ -1846,7 +1847,7 @@ public:
 class ThrowStatement: public Statement
 {
 public:
-    JAVASCRIPT_DECLARE_AST_NODE(ThrowStatement)
+    QMLJS_DECLARE_AST_NODE(ThrowStatement)
 
     ThrowStatement(ExpressionNode *e):
         expression (e) { kind = K; }
@@ -1870,7 +1871,7 @@ public:
 class Catch: public Node
 {
 public:
-    JAVASCRIPT_DECLARE_AST_NODE(Catch)
+    QMLJS_DECLARE_AST_NODE(Catch)
 
     Catch(NameId *n, Block *stmt):
         name (n), statement (stmt)
@@ -1892,7 +1893,7 @@ public:
 class Finally: public Node
 {
 public:
-    JAVASCRIPT_DECLARE_AST_NODE(Finally)
+    QMLJS_DECLARE_AST_NODE(Finally)
 
     Finally(Block *stmt):
         statement (stmt)
@@ -1910,7 +1911,7 @@ public:
 class TryStatement: public Statement
 {
 public:
-    JAVASCRIPT_DECLARE_AST_NODE(TryStatement)
+    QMLJS_DECLARE_AST_NODE(TryStatement)
 
     TryStatement(Statement *stmt, Catch *c, Finally *f):
         statement (stmt), catchExpression (c), finallyExpression (f)
@@ -1951,7 +1952,7 @@ public:
 class FunctionExpression: public ExpressionNode
 {
 public:
-    JAVASCRIPT_DECLARE_AST_NODE(FunctionExpression)
+    QMLJS_DECLARE_AST_NODE(FunctionExpression)
 
     FunctionExpression(NameId *n, FormalParameterList *f, FunctionBody *b):
         name (n), formals (f), body (b)
@@ -1982,7 +1983,7 @@ public:
 class FunctionDeclaration: public FunctionExpression
 {
 public:
-    JAVASCRIPT_DECLARE_AST_NODE(FunctionDeclaration)
+    QMLJS_DECLARE_AST_NODE(FunctionDeclaration)
 
     FunctionDeclaration(NameId *n, FormalParameterList *f, FunctionBody *b):
         FunctionExpression(n, f, b)
@@ -1996,7 +1997,7 @@ public:
 class FormalParameterList: public Node
 {
 public:
-    JAVASCRIPT_DECLARE_AST_NODE(FormalParameterList)
+    QMLJS_DECLARE_AST_NODE(FormalParameterList)
 
     FormalParameterList(NameId *n):
         name (n), next (this)
@@ -2031,7 +2032,7 @@ public:
 class FunctionBody: public Node
 {
 public:
-    JAVASCRIPT_DECLARE_AST_NODE(FunctionBody)
+    QMLJS_DECLARE_AST_NODE(FunctionBody)
 
     FunctionBody(SourceElements *elts):
         elements (elts)
@@ -2048,7 +2049,7 @@ public:
 class Program: public Node
 {
 public:
-    JAVASCRIPT_DECLARE_AST_NODE(Program)
+    QMLJS_DECLARE_AST_NODE(Program)
 
     Program(SourceElements *elts):
         elements (elts)
@@ -2065,7 +2066,7 @@ public:
 class SourceElements: public Node
 {
 public:
-    JAVASCRIPT_DECLARE_AST_NODE(SourceElements)
+    QMLJS_DECLARE_AST_NODE(SourceElements)
 
     SourceElements(SourceElement *elt):
         element (elt), next (this)
@@ -2098,7 +2099,7 @@ public:
 class SourceElement: public Node
 {
 public:
-    JAVASCRIPT_DECLARE_AST_NODE(SourceElement)
+    QMLJS_DECLARE_AST_NODE(SourceElement)
 
     inline SourceElement()
         { kind = K; }
@@ -2109,7 +2110,7 @@ public:
 class FunctionSourceElement: public SourceElement
 {
 public:
-    JAVASCRIPT_DECLARE_AST_NODE(FunctionSourceElement)
+    QMLJS_DECLARE_AST_NODE(FunctionSourceElement)
 
     FunctionSourceElement(FunctionDeclaration *f):
         declaration (f)
@@ -2126,7 +2127,7 @@ public:
 class StatementSourceElement: public SourceElement
 {
 public:
-    JAVASCRIPT_DECLARE_AST_NODE(StatementSourceElement)
+    QMLJS_DECLARE_AST_NODE(StatementSourceElement)
 
     StatementSourceElement(Statement *stmt):
         statement (stmt)
@@ -2143,7 +2144,7 @@ public:
 class DebuggerStatement: public Statement
 {
 public:
-    JAVASCRIPT_DECLARE_AST_NODE(DebuggerStatement)
+    QMLJS_DECLARE_AST_NODE(DebuggerStatement)
 
     DebuggerStatement()
         { kind = K; }
@@ -2166,7 +2167,7 @@ public:
 class UiProgram: public Node
 {
 public:
-    JAVASCRIPT_DECLARE_AST_NODE(UiProgram)
+    QMLJS_DECLARE_AST_NODE(UiProgram)
 
     UiProgram(UiImportList *imports, UiObjectMemberList *members)
         : imports(imports), members(members)
@@ -2182,7 +2183,7 @@ public:
 class UiQualifiedId: public Node
 {
 public:
-    JAVASCRIPT_DECLARE_AST_NODE(UiQualifiedId)
+    QMLJS_DECLARE_AST_NODE(UiQualifiedId)
 
     UiQualifiedId(NameId *name)
         : next(this), name(name)
@@ -2216,7 +2217,7 @@ public:
 class UiImport: public Node
 {
 public:
-    JAVASCRIPT_DECLARE_AST_NODE(UiImport)
+    QMLJS_DECLARE_AST_NODE(UiImport)
 
     UiImport(NameId *fileName)
         : fileName(fileName)
@@ -2234,7 +2235,7 @@ public:
 class UiImportList: public Node
 {
 public:
-    JAVASCRIPT_DECLARE_AST_NODE(UiImportList)
+    QMLJS_DECLARE_AST_NODE(UiImportList)
 
     UiImportList(UiImport *import)
         : import(import),
@@ -2273,7 +2274,7 @@ public:
 class UiObjectMemberList: public Node
 {
 public:
-    JAVASCRIPT_DECLARE_AST_NODE(UiObjectMemberList)
+    QMLJS_DECLARE_AST_NODE(UiObjectMemberList)
 
     UiObjectMemberList(UiObjectMember *member)
         : next(this), member(member)
@@ -2301,10 +2302,42 @@ public:
     UiObjectMember *member;
 };
 
+class UiArrayMemberList: public Node
+{
+public:
+    QMLJS_DECLARE_AST_NODE(UiArrayMemberList)
+
+    UiArrayMemberList(UiObjectMember *member)
+        : next(this), member(member)
+    { kind = K; }
+
+    UiArrayMemberList(UiArrayMemberList *previous, UiObjectMember *member)
+        : member(member)
+    {
+        kind = K;
+        next = previous->next;
+        previous->next = this;
+    }
+
+    virtual void accept0(Visitor *visitor);
+
+    UiArrayMemberList *finish()
+    {
+        UiArrayMemberList *head = next;
+        next = 0;
+        return head;
+    }
+
+// attributes
+    UiArrayMemberList *next;
+    UiObjectMember *member;
+    SourceLocation commaToken;
+};
+
 class UiObjectInitializer: public Node
 {
 public:
-    JAVASCRIPT_DECLARE_AST_NODE(UiObjectInitializer)
+    QMLJS_DECLARE_AST_NODE(UiObjectInitializer)
 
     UiObjectInitializer(UiObjectMemberList *members)
         : members(members)
@@ -2321,7 +2354,7 @@ public:
 class UiPublicMember: public UiObjectMember
 {
 public:
-    JAVASCRIPT_DECLARE_AST_NODE(UiPublicMember)
+    QMLJS_DECLARE_AST_NODE(UiPublicMember)
 
     UiPublicMember(NameId *memberType,
                    NameId *name)
@@ -2366,7 +2399,7 @@ public:
 class UiObjectDefinition: public UiObjectMember
 {
 public:
-    JAVASCRIPT_DECLARE_AST_NODE(UiObjectDefinition)
+    QMLJS_DECLARE_AST_NODE(UiObjectDefinition)
 
     UiObjectDefinition(UiQualifiedId *qualifiedTypeNameId,
                        UiObjectInitializer *initializer)
@@ -2389,7 +2422,7 @@ public:
 class UiSourceElement: public UiObjectMember
 {
 public:
-    JAVASCRIPT_DECLARE_AST_NODE(UiSourceElement)
+    QMLJS_DECLARE_AST_NODE(UiSourceElement)
 
     UiSourceElement(Node *sourceElement)
         : sourceElement(sourceElement)
@@ -2425,7 +2458,7 @@ public:
 class UiObjectBinding: public UiObjectMember
 {
 public:
-    JAVASCRIPT_DECLARE_AST_NODE(UiObjectBinding)
+    QMLJS_DECLARE_AST_NODE(UiObjectBinding)
 
     UiObjectBinding(UiQualifiedId *qualifiedId,
                     UiQualifiedId *qualifiedTypeNameId,
@@ -2453,7 +2486,7 @@ public:
 class UiScriptBinding: public UiObjectMember
 {
 public:
-    JAVASCRIPT_DECLARE_AST_NODE(UiScriptBinding)
+    QMLJS_DECLARE_AST_NODE(UiScriptBinding)
 
     UiScriptBinding(UiQualifiedId *qualifiedId,
                     Statement *statement)
@@ -2478,10 +2511,10 @@ public:
 class UiArrayBinding: public UiObjectMember
 {
 public:
-    JAVASCRIPT_DECLARE_AST_NODE(UiArrayBinding)
+    QMLJS_DECLARE_AST_NODE(UiArrayBinding)
 
     UiArrayBinding(UiQualifiedId *qualifiedId,
-                   UiObjectMemberList *members)
+                   UiArrayMemberList *members)
         : qualifiedId(qualifiedId),
           members(members)
     { kind = K; }
@@ -2496,7 +2529,7 @@ public:
 
 // attributes
     UiQualifiedId *qualifiedId;
-    UiObjectMemberList *members;
+    UiArrayMemberList *members;
     SourceLocation colonToken;
     SourceLocation lbracketToken;
     SourceLocation rbracketToken;

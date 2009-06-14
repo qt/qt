@@ -1300,6 +1300,9 @@ void QSimpleCanvasItem::setOptions(Options options, bool set)
         d->options &= ~IsFocusRealm;
     }
 
+    if (d->graphicsItem)
+        d->graphicsItem->setFlag(QGraphicsItem::ItemHasNoContents, !(d->options & HasContents));
+
     if ((old & MouseFilter) != (d->options & MouseFilter)) {
         if (d->graphicsItem) {
             if (d->options & MouseFilter)
@@ -1487,6 +1490,7 @@ void QSimpleCanvasItemPrivate::convertToGraphicsItem(QGraphicsItem *parent)
     Q_Q(QSimpleCanvasItem);
     Q_ASSERT(!graphicsItem);
     graphicsItem = new QSimpleGraphicsItem(q);
+    graphicsItem->setFlag(QGraphicsItem::ItemHasNoContents, !(q->options() & QSimpleCanvasItem::HasContents));
     if (parent)
         graphicsItem->setParentItem(parent);
 

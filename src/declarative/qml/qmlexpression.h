@@ -77,7 +77,7 @@ public:
     bool trackChange() const;
     void setTrackChange(bool);
 
-    void setSourceLocation(const QString &fileName, int line);
+    void setSourceLocation(const QUrl &fileName, int line);
 
     QObject *scopeObject() const;
 

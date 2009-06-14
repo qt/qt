@@ -55,7 +55,7 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Declarative)
 
-namespace JavaScript { namespace AST { class Node; } }
+namespace QmlJS { namespace AST { class Node; } }
 
 /*
     XXX
@@ -131,7 +131,7 @@ namespace QmlParser
             DynamicProperty();
             DynamicProperty(const DynamicProperty &);
 
-            enum Type { Variant, Int, Bool, Real, String, Color, Date };
+            enum Type { Variant, Int, Bool, Real, String, Url, Color, Date };
 
             bool isDefaultProperty;
             Type type;
@@ -178,7 +178,7 @@ namespace QmlParser
         Variant(bool);
         Variant(double, const QString &asWritten=QString());
         Variant(const QString &);
-        Variant(const QString &, JavaScript::AST::Node *);
+        Variant(const QString &, QmlJS::AST::Node *);
         Variant &operator=(const Variant &);
 
         Type type() const;
@@ -192,14 +192,14 @@ namespace QmlParser
         QString asString() const;
         double asNumber() const;
         QString asScript() const;
-        JavaScript::AST::Node *asAST() const;
+        QmlJS::AST::Node *asAST() const;
 
     private:
         Type t;
         union {
             bool b;
             double d;
-            JavaScript::AST::Node *n;
+            QmlJS::AST::Node *n;
         };
         QString s;
     };
@@ -277,6 +277,7 @@ namespace QmlParser
 
         LocationSpan location;
         LocationRange listValueRange;
+        QList<int> listCommaPositions;
 
         void dump(int = 0) const;
     };

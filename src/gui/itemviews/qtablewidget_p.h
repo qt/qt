@@ -144,7 +144,6 @@ public:
                              const QPair<QTableWidgetItem*,int> &right);
     static bool itemGreaterThan(const QPair<QTableWidgetItem*,int> &left,
                                 const QPair<QTableWidgetItem*,int> &right);
-    static bool canConvertToDouble(const QVariant &value);
 
     void ensureSorted(int column, Qt::SortOrder order, int start, int end);
     QVector<QTableWidgetItem*> columnItems(int column) const;
@@ -190,7 +189,7 @@ class QTableWidgetPrivate : public QTableViewPrivate
     Q_DECLARE_PUBLIC(QTableWidget)
 public:
     QTableWidgetPrivate() : QTableViewPrivate() {}
-    inline QTableModel *model() const { return qobject_cast<QTableModel*>(q_func()->model()); }
+    inline QTableModel *tableModel() const { return qobject_cast<QTableModel*>(model); }
     void setup();
 
     // view signals

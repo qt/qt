@@ -27,17 +27,17 @@
 **
 **************************************************************************/
 
-#ifndef JAVASCRIPTENGINE_P_H
-#define JAVASCRIPTENGINE_P_H
+#ifndef QMLJSENGINE_P_H
+#define QMLJSENGINE_P_H
 
 #include <QString>
 #include <QSet>
 
-#include "javascriptastfwd_p.h"
+#include "qmljsastfwd_p.h"
 
 QT_BEGIN_NAMESPACE
 
-namespace JavaScript {
+namespace QmlJS {
 class NameId
 {
     QString _text;
@@ -60,17 +60,17 @@ public:
     { return _text < other._text; }
 };
 
-uint qHash(const JavaScript::NameId &id);
+uint qHash(const QmlJS::NameId &id);
 
-} // end of namespace JavaScript
+} // end of namespace QmlJS
 
 #if defined(Q_CC_MSVC) && _MSC_VER <= 1300
-//this ensures that code outside JavaScript can use the hash function
+//this ensures that code outside QmlJS can use the hash function
 //it also a workaround for some compilers
-inline uint qHash(const JavaScript::NameId &nameId) { return JavaScript::qHash(nameId); }
+inline uint qHash(const QmlJS::NameId &nameId) { return QmlJS::qHash(nameId); }
 #endif
 
-namespace JavaScript {
+namespace QmlJS {
 
 class Lexer;
 class NodePool;
@@ -138,8 +138,8 @@ public:
     void setNodePool(NodePool *nodePool);
 };
 
-} // end of namespace JavaScript
+} // end of namespace QmlJS
 
 QT_END_NAMESPACE
 
-#endif // JAVASCRIPTENGINE_P_H
+#endif // QMLJSENGINE_P_H

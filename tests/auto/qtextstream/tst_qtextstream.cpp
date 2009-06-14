@@ -552,8 +552,15 @@ void tst_QTextStream::generateLineData(bool for_QString)
     QTest::newRow("threelines/crlf/crlf/crlf") << QByteArray("ole\r\ndole\r\ndoffen\r\n") << (QStringList() << "ole" << "dole" << "doffen");
     QTest::newRow("threelines/crlf/crlf/nothing") << QByteArray("ole\r\ndole\r\ndoffen") << (QStringList() << "ole" << "dole" << "doffen");
 
-    // utf-16
     if (!for_QString) {
+        // utf-8
+        QTest::newRow("utf8/twolines")
+            << QByteArray("\xef\xbb\xbf"
+                          "\x66\x67\x65\x0a"
+                          "\x66\x67\x65\x0a", 11)
+            << (QStringList() << "fge" << "fge");
+
+        // utf-16
         // one line
         QTest::newRow("utf16-BE/nothing")
             << QByteArray("\xfe\xff"
@@ -593,6 +600,18 @@ void tst_QTextStream::generateLineData(bool for_QString)
                           "\xe5\x00\x67\x00\x65\x00\x0a\x00"
                           "\xe5\x00\x67\x00\x65\x00\x0a\x00", 26)
             << (QStringList() << "\345ge" << "\345ge" << "\345ge");
+
+        // utf-32
+        QTest::newRow("utf32-BE/twolines")
+            << QByteArray("\x00\x00\xfe\xff"
+                          "\x00\x00\x00\xe5\x00\x00\x00\x67\x00\x00\x00\x65\x00\x00\x00\x0a"
+                          "\x00\x00\x00\xe5\x00\x00\x00\x67\x00\x00\x00\x65\x00\x00\x00\x0a", 36)
+            << (QStringList() << "\345ge" << "\345ge");
+        QTest::newRow("utf32-LE/twolines")
+            << QByteArray("\xff\xfe\x00\x00"
+                          "\xe5\x00\x00\x00\x67\x00\x00\x00\x65\x00\x00\x00\x0a\x00\x00\x00"
+                          "\xe5\x00\x00\x00\x67\x00\x00\x00\x65\x00\x00\x00\x0a\x00\x00\x00", 36)
+            << (QStringList() << "\345ge" << "\345ge");
     }
 
     // partials

@@ -44,11 +44,11 @@
 #include "qmltransition.h"
 #include "qmlbehaviour.h"
 #include <QtDeclarative/qmlcontext.h>
-
+#include <QtCore/qparallelanimationgroup.h>
 
 QT_BEGIN_NAMESPACE
-QML_DEFINE_TYPE(QmlBehaviour,Behaviour)
 
+QML_DEFINE_TYPE(QmlBehaviour,Behavior)
 
 class QmlBehaviourData : public QObject
 {
@@ -92,18 +92,21 @@ public:
         {
             QmlConcreteList<QmlAbstractAnimation *>::append(a);
             _parent->group->addAnimation(a->qtAnimation());
+            if (_parent->property.isValid()) {
+                a->setTarget(_parent->property);
+            }
         }
         virtual void clear() {  QmlConcreteList<QmlAbstractAnimation *>::clear(); } //###
     private:
         QmlBehaviourPrivate *_parent;
     };
     AnimationList operations;
-    QSequentialAnimationGroup *group;
+    QParallelAnimationGroup *group;
 };
 
 /*!
-    \qmlclass Behaviour QmlBehaviour
-    \brief The Behaviour element allows you to specify a default animation for a property change.
+    \qmlclass Behavior QmlBehaviour
+    \brief The Behavior element allows you to specify a default animation for a property change.
 
     In example below, the rect will use a bounce easing curve over 200 millisecond for any changes to its y property:
     \code
@@ -111,7 +114,7 @@ public:
         width: 20; height: 20
         color: "#00ff00"
         y: 200  //initial value
-        y: Behaviour {
+        y: Behavior {
             NumericAnimation {
                 easing: "easeOutBounce(amplitude:100)"
                 duration: 200
@@ -126,14 +129,14 @@ QmlBehaviour::QmlBehaviour(QObject *parent)
 {
     Q_D(QmlBehaviour);
     d->valueData = new QmlBehaviourData(this);
-    d->group = new QSequentialAnimationGroup(this);
+    d->group = new QParallelAnimationGroup(this);
 }
 
 /*!
-    \qmlproperty QVariant Behaviour::fromValue
-    This property holds a selector specifying a starting value for the behaviour
+    \qmlproperty QVariant Behavior::fromValue
+    This property holds a selector specifying a starting value for the behavior
 
-    If you only want the behaviour to apply when the change starts at a
+    If you only want the behavior to apply when the change starts at a
     specific value you can specify fromValue. This selector is used in conjunction
     with the toValue selector.
 */
@@ -151,10 +154,10 @@ void QmlBehaviour::setFromValue(const QVariant &v)
 }
 
 /*!
-    \qmlproperty QVariant Behaviour::toValue
-    This property holds a selector specifying a ending value for the behaviour
+    \qmlproperty QVariant Behavior::toValue
+    This property holds a selector specifying a ending value for the behavior
 
-    If you only want the behaviour to apply when the change ends at a
+    If you only want the behavior to apply when the change ends at a
     specific value you can specify toValue. This selector is used in conjunction
     with the fromValue selector.
 */
@@ -230,6 +233,9 @@ void QmlBehaviour::setTarget(const QmlMetaProperty &property)
     d->property = property;
     d->currentValue = property.read();
     d->property.connectNotifier(this, SLOT(propertyValueChanged()));
+    for (int ii = 0; ii < d->operations.count(); ++ii) {
+        d->operations.at(ii)->setTarget(property);
+    }
 }
 
 void QmlBehaviour::classBegin()

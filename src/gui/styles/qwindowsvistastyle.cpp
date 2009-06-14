@@ -1436,7 +1436,7 @@ void QWindowsVistaStyle::drawControl(ControlElement element, const QStyleOption 
 
             if (isFloating) {
                 titleRect.adjust(0, -fw, 0, 0);
-                if (widget != 0 && widget->windowIcon().cacheKey() != qApp->windowIcon().cacheKey())
+                if (widget != 0 && widget->windowIcon().cacheKey() != QApplication::windowIcon().cacheKey())
                     titleRect.adjust(titleRect.height() + mw, 0, 0, 0);
             } else {
                 titleRect.adjust(mw, 0, 0, 0);
@@ -2435,7 +2435,7 @@ void QWindowsVistaStyle::unpolish(QWidget *widget)
     else if (QTreeView *tree = qobject_cast<QTreeView *> (widget)) {
         tree->viewport()->setAttribute(Qt::WA_Hover, false);
     } else if (qobject_cast<QCommandLinkButton*>(widget)) {
-        QFont font = qApp->font("QCommandLinkButton");
+        QFont font = QApplication::font("QCommandLinkButton");
         QFont widgetFont = widget->font();
         widgetFont.setFamily(font.family()); //Only family set by polish
         widget->setFont(widgetFont);

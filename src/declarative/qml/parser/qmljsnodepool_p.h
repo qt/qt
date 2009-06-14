@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef JAVASCRIPTNODEPOOL_P_H
-#define JAVASCRIPTNODEPOOL_P_H
+#ifndef QMLJSNODEPOOL_P_H
+#define QMLJSNODEPOOL_P_H
 
 //
 //  W A R N I N G
@@ -56,11 +56,11 @@
 #include <QtCore/QHash>
 #include <QtCore/QString>
 
-#include "javascriptmemorypool_p.h"
+#include "qmljsmemorypool_p.h"
 
 QT_BEGIN_NAMESPACE
 
-namespace JavaScript {
+namespace QmlJS {
 
 namespace AST {
 class Node;
@@ -131,7 +131,7 @@ private:
     Q_DISABLE_COPY(NodePool)
 };
 
-} // namespace JavaScript
+} // namespace QmlJS
 
 QT_END_NAMESPACE
 

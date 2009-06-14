@@ -51,6 +51,7 @@ QT_BEGIN_HEADER
 QT_BEGIN_NAMESPACE
 
 QT_MODULE(Declarative)
+
 class QmlBindPrivate;
 class Q_DECLARATIVE_EXPORT QmlBind : public QObject
 {
@@ -86,4 +87,5 @@ QML_DECLARE_TYPE(QmlBind)
 QT_END_NAMESPACE
 
 QT_END_HEADER
+
 #endif

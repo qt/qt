@@ -116,11 +116,9 @@ QSize QMenuBarExtension::sizeHint() const
 */
 QAction *QMenuBarPrivate::actionAt(QPoint p) const
 {
-    Q_Q(const QMenuBar);
-    QList<QAction*> items = q->actions();
-    for(int i = 0; i < items.size(); ++i) {
-        if(actionRect(items.at(i)).contains(p))
-            return items.at(i);
+    for(int i = 0; i < actions.size(); ++i) {
+        if(actionRect(actions.at(i)).contains(p))
+            return actions.at(i);
     }
     return 0;
 }
@@ -220,7 +218,8 @@ void QMenuBarPrivate::updateGeometries()
 
     //we try to see if the actions will fit there
     bool hasHiddenActions = false;
-    foreach(QAction *action, actionList) {
+    for (int i = 0; i < actionList.count(); ++i) {
+        QAction *action = actionList.at(i);
         if (!menuRect.contains(actionRect(action))) {
             hasHiddenActions = true;
             break;
@@ -230,7 +229,8 @@ void QMenuBarPrivate::updateGeometries()
     //...and if not, determine the ones that fit on the menu with the extension visible
     if (hasHiddenActions) {
         menuRect = this->menuRect(true);
-        foreach(QAction *action, actionList) {
+        for (int i = 0; i < actionList.count(); ++i) {
+            QAction *action = actionList.at(i);
             if (!menuRect.contains(actionRect(action))) {
                 hiddenActions.append(action);
             }
@@ -257,9 +257,9 @@ void QMenuBarPrivate::updateGeometries()
     }
     q->updateGeometry();
 #ifdef QT3_SUPPORT
-    if (q->parentWidget() != 0) {
+    if (parent) {
         QMenubarUpdatedEvent menubarUpdated(q);
-        QApplication::sendEvent(q->parentWidget(), &menubarUpdated);
+        QApplication::sendEvent(parent, &menubarUpdated);
     }
 #endif
 }
@@ -282,7 +282,7 @@ void QMenuBarPrivate::setKeyboardMode(bool b)
     }
     keyboardState = b;
     if(b) {
-        QWidget *fw = qApp->focusWidget();
+        QWidget *fw = QApplication::focusWidget();
         if (fw != q)
             keyboardFocusWidget = fw;
         if(!currentAction && !actionList.isEmpty())
@@ -292,7 +292,7 @@ void QMenuBarPrivate::setKeyboardMode(bool b)
         if(!popupState)
             setCurrentAction(0);
         if(keyboardFocusWidget) {
-            if (qApp->focusWidget() == q)
+            if (QApplication::focusWidget() == q)
                 keyboardFocusWidget->setFocus(Qt::MenuBarFocusReason);
             keyboardFocusWidget = 0;
         }
@@ -411,15 +411,14 @@ void QMenuBarPrivate::calcActionRects(int max_width, int start, QMap<QAction*, Q
     actionList.clear();
     const int itemSpacing = q->style()->pixelMetric(QStyle::PM_MenuBarItemSpacing, 0, q);
     int max_item_height = 0, separator = -1, separator_start = 0, separator_len = 0;
-    QList<QAction*> items = q->actions();
 
     //calculate size
     const QFontMetrics fm = q->fontMetrics();
     const int hmargin = q->style()->pixelMetric(QStyle::PM_MenuBarHMargin, 0, q),
               vmargin = q->style()->pixelMetric(QStyle::PM_MenuBarVMargin, 0, q),
                 icone = q->style()->pixelMetric(QStyle::PM_SmallIconSize, 0, q);
-    for(int i = 0; i < items.count(); i++) {
-        QAction *action = items.at(i);
+    for(int i = 0; i < actions.count(); i++) {
+        QAction *action = actions.at(i);
         if(!action->isVisible())
             continue;
 
@@ -532,7 +531,6 @@ void QMenuBarPrivate::_q_actionHovered()
         emit q->hovered(action);
 #ifndef QT_NO_ACCESSIBILITY
         if (QAccessible::isActive()) {
-            QList<QAction*> actions = q->actions();
             int actionIndex = actions.indexOf(action);
             ++actionIndex;
             QAccessible::updateAccessibility(q, actionIndex, QAccessible::Focus);

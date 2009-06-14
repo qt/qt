@@ -139,6 +139,12 @@ struct QTLWExtra {
     WId parentWinId; // parent window Id (valid after reparenting)
     WId userTimeWindow; // window id that contains user-time timestamp when WM supports a _NET_WM_USER_TIME_WINDOW atom
     QPoint fullScreenOffset;
+#ifndef QT_NO_XSYNC
+    WId syncUpdateCounter;
+    ulong syncRequestTimestamp;
+    qint32 newCounterValueHi;
+    quint32 newCounterValueLo;
+#endif
 #elif defined(Q_WS_WIN) // <--------------------------------------------------------- WIN
     HICON winIconBig; // internal big Windows icon
     HICON winIconSmall; // internal small Windows icon

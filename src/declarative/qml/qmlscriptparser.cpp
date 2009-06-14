@@ -42,12 +42,12 @@
 #include "qmlscriptparser_p.h"
 #include "qmlparser_p.h"
 
-#include "parser/javascriptengine_p.h"
-#include "parser/javascriptparser_p.h"
-#include "parser/javascriptlexer_p.h"
-#include "parser/javascriptnodepool_p.h"
-#include "parser/javascriptastvisitor_p.h"
-#include "parser/javascriptast_p.h"
+#include "parser/qmljsengine_p.h"
+#include "parser/qmljsparser_p.h"
+#include "parser/qmljslexer_p.h"
+#include "parser/qmljsnodepool_p.h"
+#include "parser/qmljsastvisitor_p.h"
+#include "parser/qmljsast_p.h"
 
 #include "rewriter/textwriter_p.h"
 
@@ -59,7 +59,7 @@
 
 QT_BEGIN_NAMESPACE
 
-using namespace JavaScript;
+using namespace QmlJS;
 using namespace QmlParser;
 
 namespace {
@@ -501,6 +501,7 @@ bool ProcessAST::visit(AST::UiPublicMember *node)
             { "double", Object::DynamicProperty::Real },
             { "real", Object::DynamicProperty::Real },
             { "string", Object::DynamicProperty::String },
+            { "url", Object::DynamicProperty::Url },
             { "color", Object::DynamicProperty::Color },
             { "date", Object::DynamicProperty::Date },
             { "var", Object::DynamicProperty::Variant },
@@ -648,7 +649,20 @@ bool ProcessAST::visit(AST::ExpressionStatement *node)
     return true;
 }
 
-// UiObjectMember: UiQualifiedId T_COLON T_LBRACKET UiObjectMemberList T_RBRACKET ;
+static QList<int> collectCommas(AST::UiArrayMemberList *members)
+{
+    QList<int> commas;
+
+    if (members) {
+        for (AST::UiArrayMemberList *it = members->next; it; it = it->next) {
+            commas.append(it->commaToken.offset);
+        }
+    }
+
+    return commas;
+}
+
+// UiObjectMember: UiQualifiedId T_COLON T_LBRACKET UiArrayMemberList T_RBRACKET ;
 bool ProcessAST::visit(AST::UiArrayBinding *node)
 {
     int propertyCount = 0;
@@ -665,6 +679,9 @@ bool ProcessAST::visit(AST::UiArrayBinding *node)
     Property* prop = currentProperty();
     prop->listValueRange.offset = node->lbracketToken.offset;
     prop->listValueRange.length = node->rbracketToken.offset + node->rbracketToken.length - node->lbracketToken.offset;
+
+    // Store the positions of the comma token too, again for the DOM to be able to retreive it.
+    prop->listCommaPositions = collectCommas(node->members);
 
     while (propertyCount--)
         _stateStack.pop();
@@ -698,7 +715,7 @@ bool ProcessAST::visit(AST::UiSourceElement *node)
             obj->dynamicSlots << slot;
         } else {
             QmlError error;
-            error.setDescription(QCoreApplication::translate("QmlParser","JavaScript declaration outside Script element"));
+            error.setDescription(QCoreApplication::translate("QmlParser","QmlJS declaration outside Script element"));
             error.setLine(node->firstSourceLocation().startLine);
             error.setColumn(node->firstSourceLocation().startColumn);
             _parser->_errors << error;
