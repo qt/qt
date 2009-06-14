@@ -806,13 +806,13 @@ QDirectFBPaintEnginePrivate::~QDirectFBPaintEnginePrivate()
     delete surfaceCache;
 }
 
-bool QDirectFBPaintEnginePrivate::dfbCanHandleClip(const QRect &rect) const
+bool QDirectFBPaintEnginePrivate::dfbCanHandleClip(const QRect &) const
 {
     // TODO: Check to see if DirectFB can handle the clip for the given rect
     return dfbHandledClip;
 }
 
-bool QDirectFBPaintEnginePrivate::dfbCanHandleClip(const QRectF &rect) const
+bool QDirectFBPaintEnginePrivate::dfbCanHandleClip(const QRectF &) const
 {
     // TODO: Check to see if DirectFB can handle the clip for the given rect
     return dfbHandledClip;
