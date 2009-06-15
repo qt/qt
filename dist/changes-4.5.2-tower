@@ -33,8 +33,11 @@ New modules
 - QtWebkit
     * Experimental webkit build for s60. Can be enabled by passing -webkit to configure.
 - Phonon
-    * todo
-
+    * The Phonon library is now part of Qt, but it comes without a backend.
+      This means that applications can build and run against the Phonon
+      library, but there is currently no S60 backend plugin providing actual
+      multimedia playback. Possible alternatives such as Helix and MMF are
+      being investigated.
 
 New classes
 ------------
