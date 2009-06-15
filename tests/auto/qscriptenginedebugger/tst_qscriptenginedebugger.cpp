@@ -118,8 +118,22 @@ void tst_QScriptEngineDebugger::attachAndDetach()
     {
         QScriptEngineDebugger debugger;
         QScriptEngine engine;
+        QScriptValue oldPrint = engine.globalObject().property("print");
+        QVERIFY(oldPrint.isFunction());
+        QVERIFY(!engine.globalObject().property("__FILE__").isValid());
+        QVERIFY(!engine.globalObject().property("__LINE__").isValid());
+
         debugger.attachTo(&engine);
+        QVERIFY(engine.globalObject().property("__FILE__").isUndefined());
+        QVERIFY(engine.globalObject().property("__LINE__").isNumber());
+        QVERIFY(!engine.globalObject().property("print").strictlyEquals(oldPrint));
+
         debugger.detach();
+        QEXPECT_FAIL("", "Task 256184", Continue);
+        QVERIFY(!engine.globalObject().property("print").isValid());
+        QEXPECT_FAIL("", "Task 256184", Continue);
+        QVERIFY(!engine.globalObject().property("__FILE__").isValid());
+//        QVERIFY(!engine.globalObject().property("__LINE__").isValid());
     }
     {
         QScriptEngineDebugger debugger;
