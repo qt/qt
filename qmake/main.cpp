@@ -84,6 +84,13 @@ bool qmake_setpwd(const QString &p)
 
 int runQMake(int argc, char **argv)
 {
+    // stderr is unbuffered by default, but stdout buffering depends on whether
+    // there is a terminal attached. Buffering can make output from stderr and stdout
+    // appear out of sync, so force stdout to be line buffered to minimize this without
+    // hurting performance too much (if at all). This is particularly important for
+    // things like QtCreator and scripted builds.
+    setvbuf(stdout, (char *)NULL, _IOLBF, 0);
+
     // parse command line
     int ret = Option::init(argc, argv);
     if(ret != Option::QMAKE_CMDLINE_SUCCESS) {
