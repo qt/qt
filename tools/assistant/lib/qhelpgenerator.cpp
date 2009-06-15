@@ -533,7 +533,7 @@ bool QHelpGenerator::insertFiles(const QStringList &files, const QString &rootPa
                 stream.setCodec(QTextCodec::codecForName(charSet.toLatin1().constData()));
                 title = QHelpGlobal::documentTitle(stream.readAll());
         } else {
-            title = fi.fileName();
+            title = fileName.mid(fileName.lastIndexOf(QLatin1Char('/')) + 1);
         }
 
         int fileId = -1;
