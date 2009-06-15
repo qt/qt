@@ -81,6 +81,7 @@ class QInputContext;
 class QObject;
 class QWidget;
 class QGestureManager;
+class QSocketNotifier;
 
 extern bool qt_is_gui_used;
 #ifndef QT_NO_CLIPBOARD
@@ -455,6 +456,24 @@ public:
     QHash<DWORD, int> touchInputIDToTouchPointID;
     QList<QTouchEvent::TouchPoint> appAllTouchPoints;
     bool translateTouchEvent(const MSG &msg);
+#endif
+
+#ifdef QT_RX71_MULTITOUCH
+    bool hasRX71MultiTouch;
+
+    struct RX71TouchPointState {
+        QSocketNotifier *socketNotifier;
+        QTouchEvent::TouchPoint touchPoint;
+
+        int minX, maxX, scaleX;
+        int minY, maxY, scaleY;
+        int minZ, maxZ;
+    };
+    QList<RX71TouchPointState> allRX71TouchPoints;
+
+    bool readRX71MultiTouchEvents(int deviceNumber);
+    void fakeMouseEventFromRX71TouchEvent();
+    void _q_readRX71MultiTouchEvents();
 #endif
 
 private:
