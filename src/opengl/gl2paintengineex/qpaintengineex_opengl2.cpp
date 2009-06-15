@@ -982,6 +982,14 @@ void QGL2PaintEngineEx::compositionModeChanged()
 
 void QGL2PaintEngineEx::renderHintsChanged()
 {
+#if !defined(QT_OPENGL_ES_2)
+    if ((state()->renderHints & QPainter::Antialiasing)
+        || (state()->renderHints & QPainter::HighQualityAntialiasing))
+        glEnable(GL_MULTISAMPLE);
+    else
+        glDisable(GL_MULTISAMPLE);
+#endif
+
 //    qDebug("QGL2PaintEngineEx::renderHintsChanged() not implemented!");
 }
 
@@ -1179,6 +1187,10 @@ bool QGL2PaintEngineEx::begin(QPaintDevice *pdev)
     glDisable(GL_SCISSOR_TEST);
     glDepthFunc(GL_LEQUAL);
     glDepthMask(false);
+
+#if !defined(QT_OPENGL_ES_2)
+    glDisable(GL_MULTISAMPLE);
+#endif
 
     QGLPixmapData *source = d->drawable.copyOnBegin();
     if (d->drawable.context()->d_func()->clear_on_painter_begin && d->drawable.autoFillBackground()) {
@@ -1484,6 +1496,8 @@ void QGL2PaintEngineEx::setState(QPainterState *new_state)
         d->last_created_state = 0;
         return;
     }
+
+    renderHintsChanged();
 
     d->matrixDirty = true;
     d->compositionModeDirty = true;
