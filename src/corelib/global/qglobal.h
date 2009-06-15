@@ -2314,7 +2314,7 @@ QT3_SUPPORT Q_CORE_EXPORT const char *qInstallPathSysconf();
 
 #include <stdexcept>
 
-class QSymbianLeaveException : public std::exception
+class Q_CORE_EXPORT QSymbianLeaveException : public std::exception
 {
 public:
     inline QSymbianLeaveException(int err) : error(err) {}
