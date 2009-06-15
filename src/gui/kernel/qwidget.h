@@ -731,7 +731,7 @@ private:
     friend class QGraphicsProxyWidget;
     friend class QGraphicsProxyWidgetPrivate;
     friend class QStyleSheetStyle;
-    friend class QWidgetExceptionCleaner;
+    friend struct QWidgetExceptionCleaner;
 
 #ifdef Q_WS_MAC
     friend class QCoreGraphicsPaintEnginePrivate;
