@@ -70,12 +70,14 @@ bool QEventDispatcherS60::processEvents ( QEventLoop::ProcessEventsFlags flags )
             m_noInputEvents = false;
             ret = sendDeferredInputEvents() || ret;
         }
-    
+
         ret = QEventDispatcherSymbian::processEvents(flags) || ret;
-    
+
         m_noInputEvents = oldNoInputEventsValue;
     } QT_CATCH (const std::exception& ex) {
-        CActiveScheduler::Current()->Error(qt_translateExceptionToSymbianError(ex));        
+#ifndef QT_NO_EXCEPTIONS
+        CActiveScheduler::Current()->Error(qt_translateExceptionToSymbianError(ex));
+#endif
     }
 
     return ret;
