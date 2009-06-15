@@ -70,6 +70,8 @@ class QScriptErrorLogWidgetInterface;
 class QScriptDebuggerWidgetFactoryInterface;
 class QAction;
 class QEvent;
+class QMenu;
+class QToolBar;
 
 class QScriptDebuggerPrivate;
 class Q_AUTOTEST_EXPORT QScriptDebugger : public QObject
@@ -164,6 +166,9 @@ public:
     QAction *clearDebugOutputAction(QObject *parent) const;
     QAction *clearConsoleAction(QObject *parent) const;
     QAction *clearErrorLogAction(QObject *parent) const;
+
+    QMenu *createStandardMenu(QWidget *widgetParent, QObject *actionParent);
+    QToolBar *createStandardToolBar(QWidget *widgetParent, QObject *actionParent);
 
     bool eventFilter(QObject *, QEvent *e);
 
