@@ -143,7 +143,7 @@ public:
         PdcReservedStop = 199 //   for Qt
     };
 
-    inline QPicturePrivate() : in_memory_only(false), q_ptr(0) { ref = 1; }
+    QPicturePrivate();
     QAtomicInt ref;
 
     bool checkFormat();
