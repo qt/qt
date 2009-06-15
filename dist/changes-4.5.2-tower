@@ -31,7 +31,7 @@ New modules
     * Implemented QtSql module with sqlite3 backend. For now backend is
       provided only in binary format.
 - QtWebkit
-    * todo
+    * Experimental webkit build for s60. Can be enabled by passing -webkit to configure.
 - Phonon
     * todo
 
@@ -101,6 +101,8 @@ Optimizations
 
 - QTest
     * Fixed testlib export macros for RVCT builds.
+- namespaces
+    * Now builds when -qtnamespace option is defined 
 
 ****************************************************************************
 *                          Changes to existing classes                     *
@@ -177,6 +179,7 @@ Optimizations
 - QApplication
     * 252798: Fixed layout when orientation changed via
       AknAppUi::SetOrientationL.
+    * Generating MouseEvents has gone through several changes
 
 - QUdpSocket
     * Wrote hack for QUdpSocket::writeDatagram return value in Symbian OS.
@@ -241,6 +244,7 @@ Optimizations
     * -cetest is no longer a supported switch for configure.
     * -stl option is enabled by default for Symbian OS
     * -openssl option is enabled by default for Symbian OS.
+    * -fpu option enables vfpu type selection for ARM targets.
 
 - Release package creation
     * Removed the obsolete script to create release package.
