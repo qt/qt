@@ -48,24 +48,27 @@ class MainWindow : public QMainWindow
 {
     Q_OBJECT
 public:
-    
+
 private slots:
+    void fillTextEditor();
+    void clearTextEditor();
     void openDialog();
     void addSoftKeys();
-    void clearSoftKeys();
+    void exitApplication();
     void okPressed();
     void cancelPressed();
 public:
-        MainWindow(QWidget *parent = 0);
+    MainWindow(QWidget *parent = 0);
     ~MainWindow();
 private:
     QVBoxLayout *layout;
     QWidget *central;
+    QTextEdit* textEditor;
     QLabel *infoLabel;
+    QPushButton* pushButton;
     QMenu* fileMenu;
-    QAction* openDialogAct;
     QAction* addSoftKeysAct;
-    QAction* clearSoftKeysAct;
+    QAction* exit;
     QAction* ok;
     QAction* cancel;
 };
