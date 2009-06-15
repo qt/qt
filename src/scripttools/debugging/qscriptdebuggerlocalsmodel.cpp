@@ -152,7 +152,6 @@ QScriptDebuggerLocalsModelPrivate::QScriptDebuggerLocalsModelPrivate()
 
 QScriptDebuggerLocalsModelPrivate::~QScriptDebuggerLocalsModelPrivate()
 {
-    deleteAllObjectSnapshots();
     delete invisibleRootNode;
 }
 
