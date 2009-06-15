@@ -487,6 +487,34 @@ void QFileDialog::changeEvent(QEvent *e)
     QDialog::changeEvent(e);
 }
 
+QFileDialogPrivate::QFileDialogPrivate()
+    :
+#ifndef QT_NO_PROXYMODEL
+        proxyModel(0),
+#endif
+        model(0),
+        fileMode(QFileDialog::AnyFile),
+        acceptMode(QFileDialog::AcceptOpen),
+        currentHistoryLocation(-1),
+        renameAction(0),
+        deleteAction(0),
+        showHiddenAction(0),
+        useDefaultCaption(true),
+        defaultFileTypes(true),
+        fileNameLabelExplicitlySat(false),
+        nativeDialogInUse(false),
+#ifdef Q_WS_MAC
+        mDelegate(0),
+#ifndef QT_MAC_USE_COCOA
+        mDialog(0),
+        mDialogStarted(false),
+        mDialogClosed(true),
+#endif
+#endif
+        qFileDialogUi(0)
+{
+}
+
 QFileDialogPrivate::~QFileDialogPrivate()
 {
 }
