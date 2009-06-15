@@ -95,7 +95,7 @@ protected:
     }
 };
 
-void *nsCursorForQCursor(const QCursor &c)
+void *qt_mac_nsCursorForQCursor(const QCursor &c)
 {
     c.d->update();
     return [[static_cast<NSCursor *>(c.d->curs.cp.nscursor) retain] autorelease];

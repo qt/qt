@@ -257,7 +257,7 @@ extern "C" {
     }
 
     QRegion mask = qt_widget_private(cursorWidget)->extra->mask;
-    NSCursor *nscursor = static_cast<NSCursor *>(nsCursorForQCursor(cursorWidget->cursor()));
+    NSCursor *nscursor = static_cast<NSCursor *>(qt_mac_nsCursorForQCursor(cursorWidget->cursor()));
     if (mask.isEmpty()) {
         [self addCursorRect:[qt_mac_nativeview_for(cursorWidget) visibleRect] cursor:nscursor];
     } else {
