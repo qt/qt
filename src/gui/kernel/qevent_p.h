@@ -103,6 +103,8 @@ public:
     {
         QTouchEventTouchPointPrivate *d = new QTouchEventTouchPointPrivate(*this);
         d->ref = 1;
+        if (!this->ref.deref())
+            delete this;
         return d;
     }
 
