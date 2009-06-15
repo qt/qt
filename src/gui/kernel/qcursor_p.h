@@ -69,6 +69,7 @@
 QT_BEGIN_NAMESPACE
 
 #if defined (Q_WS_MAC)
+void *qt_mac_nsCursorForQCursor(const QCursor &c);
 class QMacAnimateCursor;
 #endif
 
