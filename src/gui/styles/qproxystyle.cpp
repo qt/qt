@@ -53,27 +53,28 @@ QT_BEGIN_NAMESPACE
 /*!
     \class QProxyStyle
 
-    \brief The QProxyStyle is a convenience class that simplifies
-    the creation of proxy styles in Qt.
+    \brief The QProxyStyle class is a convenience class that simplifies
+    the overriding of QStyle elements.
 
     \since 4.6
 
-    A proxy style is a style that wraps a different,
-    usually the default system style, to override the painting or
-    behavior of only specific parts.
+    A QProxyStyle wraps a QStyle (usually the default system style) for the
+    purpose of overriding the painting or other specific behavior of the
+    wrapped style.
 
-    Here's an example allowing you to override the shortcut underline
+    Below is an example that overrides the shortcut underline
     behavior on all platforms:
 
-    \snippet doc/src/snippets/code/src_gui_proxystyle.cpp 0
+    \snippet doc/src/snippets/code/src_gui_qproxystyle.cpp 0
 
-    Warning: Note that even though Qt's internal styles should respect this.
-    hint, there is no guarantee that it will work for all styles.
-    The example above would for instance not work on Mac since menus are
-    handled by the operating system.
+    Warning: Although Qt's internal styles should respect this hint,
+    there is no guarantee that it will work for all styles. It would
+    not work on a Mac, for example, because menus are handled by the
+    operating system on the Mac.
 
     \sa QStyle
 */
+
 void QProxyStylePrivate::ensureBaseStyle() const
 {
     Q_Q(const QProxyStyle);
@@ -105,12 +106,12 @@ void QProxyStylePrivate::ensureBaseStyle() const
 }
 
 /*!
-    Constructs a QProxyStyle object.
+  Constructs a QProxyStyle object for overriding behavior in \a style
+  or in the current application \l{QStyle}{style} if \a style is 0
+  (default). Normally \a style is 0, because you want to override
+  behavior in the system style.
 
-    If no base style is provided, the current application style
-    will be used as the base style.
-
-    Ownership of \style is transferred to QProxyStyle.
+  Ownership of \a style is transferred to QProxyStyle.
 */
 QProxyStyle::QProxyStyle(QStyle *style) :
     QCommonStyle(*new QProxyStylePrivate())
@@ -147,7 +148,7 @@ QStyle *QProxyStyle::baseStyle() const
 /*!
     Sets the base style that should be proxied.
 
-    Ownership of \style is transferred to QProxyStyle.
+    Ownership of \a style is transferred to QProxyStyle.
 
     If style is zero, a desktop-dependant style will be
     assigned automatically.
@@ -167,7 +168,8 @@ void QProxyStyle::setBaseStyle(QStyle *style)
     }
 }
 
-/*! reimp */
+/*! \reimp
+ */
 void QProxyStyle::drawPrimitive(PrimitiveElement element, const QStyleOption *option, QPainter *painter, const QWidget *widget) const
 {
     Q_D (const QProxyStyle);
@@ -175,7 +177,9 @@ void QProxyStyle::drawPrimitive(PrimitiveElement element, const QStyleOption *op
     d->baseStyle->drawPrimitive(element, option, painter, widget);
 }
 
-/*! reimp */
+/*!
+  \reimp
+ */
 void QProxyStyle::drawControl(ControlElement element, const QStyleOption *option, QPainter *painter, const QWidget *widget) const
 {
     Q_D (const QProxyStyle);
@@ -183,7 +187,8 @@ void QProxyStyle::drawControl(ControlElement element, const QStyleOption *option
     d->baseStyle->drawControl(element, option, painter, widget);
 }
 
-/*! reimp */
+/*! \reimp
+ */
 void QProxyStyle::drawComplexControl(ComplexControl control, const QStyleOptionComplex *option, QPainter *painter, const QWidget *widget) const
 {
     Q_D (const QProxyStyle);
@@ -191,7 +196,8 @@ void QProxyStyle::drawComplexControl(ComplexControl control, const QStyleOptionC
     d->baseStyle->drawComplexControl(control, option, painter, widget);
 }
 
-/*! reimp */
+/*! \reimp
+ */
 void QProxyStyle::drawItemText(QPainter *painter, const QRect &rect, int flags, const QPalette &pal, bool enabled,
                                const QString &text, QPalette::ColorRole textRole) const
 {
@@ -200,7 +206,8 @@ void QProxyStyle::drawItemText(QPainter *painter, const QRect &rect, int flags, 
     d->baseStyle->drawItemText(painter, rect, flags, pal, enabled, text, textRole);
 }
 
-/*! reimp */
+/*! \reimp
+ */
 void QProxyStyle::drawItemPixmap(QPainter *painter, const QRect &rect, int alignment, const QPixmap &pixmap) const
 {
     Q_D (const QProxyStyle);
@@ -208,7 +215,8 @@ void QProxyStyle::drawItemPixmap(QPainter *painter, const QRect &rect, int align
     d->baseStyle->drawItemPixmap(painter, rect, alignment, pixmap);
 }
 
-/*! reimp */
+/*! \reimp
+ */
 QSize QProxyStyle::sizeFromContents(ContentsType type, const QStyleOption *option, const QSize &size, const QWidget *widget) const
 {
     Q_D (const QProxyStyle);
@@ -216,7 +224,8 @@ QSize QProxyStyle::sizeFromContents(ContentsType type, const QStyleOption *optio
     return d->baseStyle->sizeFromContents(type, option, size, widget);
 }
 
-/*! reimp */
+/*! \reimp
+ */
 QRect QProxyStyle::subElementRect(SubElement element, const QStyleOption *option, const QWidget *widget) const
 {
     Q_D (const QProxyStyle);
@@ -224,7 +233,8 @@ QRect QProxyStyle::subElementRect(SubElement element, const QStyleOption *option
     return d->baseStyle->subElementRect(element, option, widget);
 }
 
-/*! reimp */
+/*! \reimp
+ */
 QRect QProxyStyle::subControlRect(ComplexControl cc, const QStyleOptionComplex *option, SubControl sc, const QWidget *widget) const
 {
     Q_D (const QProxyStyle);
@@ -232,7 +242,8 @@ QRect QProxyStyle::subControlRect(ComplexControl cc, const QStyleOptionComplex *
     return d->baseStyle->subControlRect(cc, option, sc, widget);
 }
 
-/*! reimp */
+/*! \reimp
+ */
 QRect QProxyStyle::itemTextRect(const QFontMetrics &fm, const QRect &r, int flags, bool enabled, const QString &text) const
 {
     Q_D (const QProxyStyle);
@@ -240,7 +251,8 @@ QRect QProxyStyle::itemTextRect(const QFontMetrics &fm, const QRect &r, int flag
     return d->baseStyle->itemTextRect(fm, r, flags, enabled, text);
 }
 
-/*! reimp */
+/*! \reimp
+ */
 QRect QProxyStyle::itemPixmapRect(const QRect &r, int flags, const QPixmap &pixmap) const
 {
     Q_D (const QProxyStyle);
@@ -248,7 +260,8 @@ QRect QProxyStyle::itemPixmapRect(const QRect &r, int flags, const QPixmap &pixm
     return d->baseStyle->itemPixmapRect(r, flags, pixmap);
 }
 
-/*! reimp */
+/*! \reimp
+ */
 QStyle::SubControl QProxyStyle::hitTestComplexControl(ComplexControl control, const QStyleOptionComplex *option, const QPoint &pos, const QWidget *widget) const
 {
     Q_D (const QProxyStyle);
@@ -256,7 +269,8 @@ QStyle::SubControl QProxyStyle::hitTestComplexControl(ComplexControl control, co
     return d->baseStyle->hitTestComplexControl(control, option, pos, widget);
 }
 
-/*! reimp */
+/*! \reimp
+ */
 int QProxyStyle::styleHint(StyleHint hint, const QStyleOption *option, const QWidget *widget, QStyleHintReturn *returnData) const
 {
     Q_D (const QProxyStyle);
@@ -264,7 +278,8 @@ int QProxyStyle::styleHint(StyleHint hint, const QStyleOption *option, const QWi
     return d->baseStyle->styleHint(hint, option, widget, returnData);
 }
 
-/*! reimp */
+/*! \reimp
+ */
 int QProxyStyle::pixelMetric(PixelMetric metric, const QStyleOption *option, const QWidget *widget) const
 {
     Q_D (const QProxyStyle);
@@ -272,7 +287,8 @@ int QProxyStyle::pixelMetric(PixelMetric metric, const QStyleOption *option, con
     return d->baseStyle->pixelMetric(metric, option, widget);
 }
 
-/*! reimp */
+/*! \reimp
+ */
 QPixmap QProxyStyle::standardPixmap(StandardPixmap standardPixmap, const QStyleOption *opt, const QWidget *widget) const
 {
     Q_D (const QProxyStyle);
@@ -280,7 +296,8 @@ QPixmap QProxyStyle::standardPixmap(StandardPixmap standardPixmap, const QStyleO
     return d->baseStyle->standardPixmap(standardPixmap, opt, widget);
 }
 
-/*! reimp */
+/*! \reimp
+ */
 QPixmap QProxyStyle::generatedIconPixmap(QIcon::Mode iconMode, const QPixmap &pixmap, const QStyleOption *opt) const
 {
     Q_D (const QProxyStyle);
@@ -288,7 +305,8 @@ QPixmap QProxyStyle::generatedIconPixmap(QIcon::Mode iconMode, const QPixmap &pi
     return d->baseStyle->generatedIconPixmap(iconMode, pixmap, opt);
 }
 
-/*! reimp */
+/*! \reimp
+ */
 QPalette QProxyStyle::standardPalette() const
 {
     Q_D (const QProxyStyle);
@@ -296,7 +314,8 @@ QPalette QProxyStyle::standardPalette() const
     return d->baseStyle->standardPalette();
 }
 
-/*! reimp */
+/*! \reimp
+ */
 void QProxyStyle::polish(QWidget *widget)
 {
     Q_D (QProxyStyle);
@@ -304,7 +323,8 @@ void QProxyStyle::polish(QWidget *widget)
     d->baseStyle->polish(widget);
 }
 
-/*! reimp */
+/*! \reimp
+ */
 void QProxyStyle::polish(QPalette &pal)
 {
     Q_D (QProxyStyle);
@@ -312,7 +332,8 @@ void QProxyStyle::polish(QPalette &pal)
     d->baseStyle->polish(pal);
 }
 
-/*! reimp */
+/*! \reimp
+ */
 void QProxyStyle::polish(QApplication *app)
 {
     Q_D (QProxyStyle);
@@ -320,7 +341,8 @@ void QProxyStyle::polish(QApplication *app)
     d->baseStyle->polish(app);
 }
 
-/*! reimp */
+/*! \reimp
+ */
 void QProxyStyle::unpolish(QWidget *widget)
 {
     Q_D (QProxyStyle);
@@ -328,7 +350,8 @@ void QProxyStyle::unpolish(QWidget *widget)
     d->baseStyle->unpolish(widget);
 }
 
-/*! reimp */
+/*! \reimp
+ */
 void QProxyStyle::unpolish(QApplication *app)
 {
     Q_D (QProxyStyle);
@@ -336,7 +359,8 @@ void QProxyStyle::unpolish(QApplication *app)
     d->baseStyle->unpolish(app);
 }
 
-/*! reimp */
+/*! \reimp
+ */
 bool QProxyStyle::event(QEvent *e)
 {
     Q_D (QProxyStyle);
@@ -344,17 +368,44 @@ bool QProxyStyle::event(QEvent *e)
     return d->baseStyle->event(e);
 }
 
-/*! reimp */
-QIcon QProxyStyle::standardIconImplementation(StandardPixmap standardIcon, const QStyleOption *option, const QWidget *widget) const
+/*! 
+  Returns an icon for the given \a standardIcon.
+
+  Reimplement this slot to provide your own icons in a QStyle
+  subclass; because of binary compatibility constraints, the
+  standardIcon() function (introduced in Qt 4.1) is not
+  virtual. Instead, standardIcon() will dynamically detect and call \e
+  this slot.  The default implementation simply calls the
+  standardPixmap() function with the given parameters.
+
+  \sa standardIcon()
+ */
+QIcon QProxyStyle::standardIconImplementation(StandardPixmap standardIcon,
+                                              const QStyleOption *option,
+                                              const QWidget *widget) const
 {
     Q_D (const QProxyStyle);
     d->ensureBaseStyle();
     return d->baseStyle->standardIcon(standardIcon, option, widget);
 }
 
-/*! reimp */
-int QProxyStyle::layoutSpacingImplementation(QSizePolicy::ControlType control1, QSizePolicy::ControlType control2,
-                                    Qt::Orientation orientation, const QStyleOption *option, const QWidget *widget) const
+/*!
+  This slot is called by layoutSpacing() to determine the spacing that
+  should be used between \a control1 and \a control2 in a layout. \a
+  orientation specifies whether the controls are laid out side by side
+  or stacked vertically. The \a option parameter can be used to pass
+  extra information about the parent widget.  The \a widget parameter
+  is optional and can also be used if \a option is 0.
+
+  The default implementation returns -1.
+
+  \sa layoutSpacing(), combinedLayoutSpacing()
+ */
+int QProxyStyle::layoutSpacingImplementation(QSizePolicy::ControlType control1,
+                                             QSizePolicy::ControlType control2,
+                                             Qt::Orientation orientation,
+                                             const QStyleOption *option,
+                                             const QWidget *widget) const
 {
     Q_D (const QProxyStyle);
     d->ensureBaseStyle();

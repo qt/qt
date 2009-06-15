@@ -1182,6 +1182,7 @@ void QStyle::drawItemPixmap(QPainter *painter, const QRect &rect, int alignment,
 
     \value SC_All  Special value that matches all sub-controls.
     \omitvalue SC_Q3ListViewBranch
+    \omitvalue SC_CustomBase
 
     \sa ComplexControl
 */
@@ -2450,14 +2451,12 @@ QDebug operator<<(QDebug debug, QStyle::State state)
 /*!
     \since 4.6
 
-    \fn const QStyle * proxy() const
+    \fn const QStyle *QStyle::proxy() const
 
     This function returns the current proxy for this style.
     By default most styles will return themselves. However
     when a proxy style is in use, it will allow the style to
     call back into its proxy.
-
-    \sa setProxyStyle
 */
 const QStyle * QStyle::proxy() const
 {
