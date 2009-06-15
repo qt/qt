@@ -89,6 +89,8 @@ extern void qt_wince_hide_taskbar(HWND hwnd); //defined in qguifunctions_wince.c
 #include <private/qkeymapper_p.h>
 #include <private/qlocale_p.h>
 #include "qevent_p.h"
+#include "qstandardgestures.h"
+#include "qstandardgestures_p.h"
 
 //#define ALIEN_DEBUG
 
@@ -451,6 +453,7 @@ public:
     bool        translateConfigEvent(const MSG &msg);
     bool        translateCloseEvent(const MSG &msg);
     bool        translateTabletEvent(const MSG &msg, PACKET *localPacketBuf, int numPackets);
+    bool        translateGestureEvent(const MSG &msg);
     void        repolishStyle(QStyle &style);
     inline void showChildren(bool spontaneous) { d_func()->showChildren(spontaneous); }
     inline void hideChildren(bool spontaneous) { d_func()->hideChildren(spontaneous); }
@@ -809,6 +812,33 @@ void qt_init(QApplicationPrivate *priv, int)
         QLibrary::resolve(QLatin1String("user32"), "SetProcessDPIAware"))
     ptrSetProcessDPIAware();
 #endif
+
+    priv->lastGestureId = 0;
+
+    priv->GetGestureInfo =
+        (PtrGetGestureInfo)QLibrary::resolve(QLatin1String("user32"),
+                                             "GetGestureInfo");
+    priv->GetGestureExtraArgs =
+        (PtrGetGestureExtraArgs)QLibrary::resolve(QLatin1String("user32"),
+                                                  "GetGestureExtraArgs");
+    priv->CloseGestureInfoHandle =
+        (PtrCloseGestureInfoHandle)QLibrary::resolve(QLatin1String("user32"),
+                                                     "CloseGestureInfoHandle");
+    priv->SetGestureConfig =
+        (PtrSetGestureConfig)QLibrary::resolve(QLatin1String("user32"),
+                                               "SetGestureConfig");
+    priv->GetGestureConfig =
+        (PtrGetGestureConfig)QLibrary::resolve(QLatin1String("user32"),
+                                               "GetGestureConfig");
+    priv->BeginPanningFeedback =
+        (PtrBeginPanningFeedback)QLibrary::resolve(QLatin1String("uxtheme"),
+                                                   "BeginPanningFeedback");
+    priv->UpdatePanningFeedback =
+        (PtrUpdatePanningFeedback)QLibrary::resolve(QLatin1String("uxtheme"),
+                                                   "UpdatePanningFeedback");
+    priv->EndPanningFeedback =
+        (PtrEndPanningFeedback)QLibrary::resolve(QLatin1String("uxtheme"),
+                                                   "EndPanningFeedback");
 }
 
 /*****************************************************************************
@@ -2469,6 +2499,10 @@ LRESULT CALLBACK QtWndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam
             }
             result = false;
             break;
+        case WM_GESTURE:
+            widget->translateGestureEvent(msg);
+            result = true;
+            break;
         default:
             result = false;                        // event was not processed
             break;
@@ -3649,6 +3683,60 @@ bool QETWidget::translateCloseEvent(const MSG &)
     return d_func()->close_helper(QWidgetPrivate::CloseWithSpontaneousEvent);
 }
 
+bool QETWidget::translateGestureEvent(const MSG &msg)
+{
+    GESTUREINFO gi;
+    gi.cbSize = sizeof(GESTUREINFO);
+    gi.dwFlags       = 0;
+    gi.ptsLocation.x = 0;
+    gi.ptsLocation.y = 0;
+    gi.dwID          = 0;
+    gi.dwInstanceID  = 0;
+    gi.dwSequenceID  = 0;
+
+    QApplicationPrivate *qAppPriv = getQApplicationPrivateInternal();
+    BOOL bResult = qAppPriv->GetGestureInfo((HGESTUREINFO)msg.lParam, &gi);
+
+    const QPoint widgetPos = QPoint(gi.ptsLocation.x, gi.ptsLocation.y);
+    QWidget *alienWidget = !internalWinId() ? this : childAt(widgetPos);
+    if (alienWidget && alienWidget->internalWinId())
+        alienWidget = 0;
+    QWidget *widget = alienWidget ? alienWidget : this;
+
+    QWinGestureEvent event;
+    event.sequenceId = gi.dwSequenceID;
+    event.position = QPoint(gi.ptsLocation.x, gi.ptsLocation.y);
+    if (bResult) {
+        switch (gi.dwID) {
+        case GID_BEGIN:
+            // we are not interested in this type of event.
+            break;
+        case GID_END:
+            event.gestureType = QWinGestureEvent::GestureEnd;
+            break;
+        case GID_ZOOM:
+            event.gestureType = QWinGestureEvent::Pinch;
+            break;
+        case GID_PAN:
+            event.gestureType = QWinGestureEvent::Pan;
+            break;
+        case GID_ROTATE:
+        case GID_TWOFINGERTAP:
+        case GID_ROLLOVER:
+        default:
+            break;
+        }
+        if (event.gestureType != QWinGestureEvent::None)
+            qt_sendSpontaneousEvent(widget, &event);
+    } else {
+        DWORD dwErr = GetLastError();
+        if (dwErr > 0)
+            qWarning() << "translateGestureEvent: error = " << dwErr;
+    }
+    qAppPriv->CloseGestureInfoHandle((HGESTUREINFO)msg.lParam);
+    return true;
+}
+
 
 void  QApplication::setCursorFlashTime(int msecs)
 {
@@ -3829,6 +3917,7 @@ void QSessionManager::cancel()
 }
 
 #endif //QT_NO_SESSIONMANAGER
+
 
 qt_RegisterTouchWindowPtr QApplicationPrivate::RegisterTouchWindow = 0;
 qt_GetTouchInputInfoPtr QApplicationPrivate::GetTouchInputInfo = 0;

@@ -3,7 +3,7 @@
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the examples of the Qt Toolkit.
+** This file is part of the QtGui module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,46 +39,53 @@
 **
 ****************************************************************************/
 
-#ifndef TOOLBARSEARCH_H
-#define TOOLBARSEARCH_H
+#ifndef QSTANDARDGESTURES_P_H
+#define QSTANDARDGESTURES_P_H
 
-#include "searchlineedit.h"
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists for the convenience
+// of other Qt classes.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
+
+#include "qevent.h"
+#include "qbasictimer.h"
+#include "qdebug.h"
+
+#include "qgesture.h"
+#include "qgesture_p.h"
 
 QT_BEGIN_NAMESPACE
-class QUrl;
-class QAction;
-class QStringListModel;
-QT_END_NAMESPACE
 
-class AutoSaver;
-
-class ToolbarSearch : public SearchLineEdit
+class QPanGesturePrivate : public QGesturePrivate
 {
-    Q_OBJECT
-
-signals:
-    void search(const QUrl &url);
+    Q_DECLARE_PUBLIC(QPanGesture)
 
 public:
-    ToolbarSearch(QWidget *parent = 0);
-    ~ToolbarSearch();
+    QPanGesturePrivate() { }
 
-public slots:
-    void clear();
-    void searchNow();
-
-private slots:
-    void save();
-    void aboutToShowMenu();
-    void triggeredMenuAction(QAction *action);
-
-private:
-    void load();
-
-    AutoSaver *m_autosaver;
-    int m_maxSavedSearches;
-    QStringListModel *m_stringListModel;
+    QList<QTouchEvent::TouchPoint> touchPoints;
 };
 
-#endif // TOOLBARSEARCH_H
+class QTapAndHoldGesturePrivate : public QGesturePrivate
+{
+    Q_DECLARE_PUBLIC(QTapAndHoldGesture)
 
+public:
+    QTapAndHoldGesturePrivate()
+        : iteration(0) { }
+
+    QBasicTimer timer;
+    int iteration;
+    static const int iterationCount;
+    static const int iterationTimeout;
+};
+
+QT_END_NAMESPACE
+
+#endif // QSTANDARDGESTURES_P_H

@@ -90,8 +90,6 @@
 
 #include "qapplication.h"
 
-#include <private/qgesturemanager_p.h>
-
 #ifdef Q_WS_WINCE
 #include "qdatetime.h"
 #include "qguifunctions_wince.h"
@@ -137,14 +135,6 @@ int QApplicationPrivate::autoMaximizeThreshold = -1;
 bool QApplicationPrivate::autoSipEnabled = false;
 #endif
 
-QGestureManager* QGestureManager::instance()
-{
-    QApplicationPrivate *d = qApp->d_func();
-    if (!d->gestureManager)
-        d->gestureManager = new QGestureManager(qApp);
-    return d->gestureManager;
-}
-
 QApplicationPrivate::QApplicationPrivate(int &argc, char **argv, QApplication::Type type)
     : QCoreApplicationPrivate(argc, argv)
 {
@@ -167,8 +157,6 @@ QApplicationPrivate::QApplicationPrivate(int &argc, char **argv, QApplication::T
 #if defined(Q_WS_QWS) && !defined(QT_NO_DIRECTPAINTER)
     directPainters = 0;
 #endif
-
-    gestureManager = 0;
 
     if (!self)
         self = this;
@@ -3595,14 +3583,6 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
 #endif // !QT_NO_WHEELEVENT || !QT_NO_TABLETEVENT
     }
 
-    if (!d->grabbedGestures.isEmpty() && e->spontaneous() && receiver->isWidgetType()) {
-        const QEvent::Type t = e->type();
-        if (t != QEvent::Gesture && t != QEvent::GraphicsSceneGesture) {
-            if (QGestureManager::instance()->filterEvent(static_cast<QWidget*>(receiver), e))
-                return true;
-        }
-    }
-
     // User input and window activation makes tooltips sleep
     switch (e->type()) {
     case QEvent::Wheel:
@@ -4059,6 +4039,19 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
         }
 
         touchEvent->setAccepted(eventAccepted);
+        break;
+    }
+    case QEvent::WinGesture:
+    {
+        // only propagate the first gesture event (after the GID_BEGIN)
+        QWidget *w = static_cast<QWidget *>(receiver);
+        while (w) {
+            e->ignore();
+            res = d->notify_helper(w, e);
+            if ((res && e->isAccepted()) || w->isWindow())
+                break;
+            w = w->parentWidget();
+        }
         break;
     }
     default:
@@ -5055,57 +5048,6 @@ bool QApplicationPrivate::shouldSetFocus(QWidget *w, Qt::FocusPolicy policy)
     if (w != f && (f->focusPolicy() & policy) != policy)
         return false;
     return true;
-}
-
-/*!
-    \since 4.6
-
-    Adds custom gesture \a recognizer object.
-
-    Qt takes ownership of the provided \a recognizer.
-
-    \sa QGestureEvent
-*/
-void QApplication::addGestureRecognizer(QGestureRecognizer *recognizer)
-{
-    QGestureManager::instance()->addRecognizer(recognizer);
-}
-
-/*!
-    \since 4.6
-
-    Removes custom gesture \a recognizer object.
-
-    \sa QGestureEvent
-*/
-void QApplication::removeGestureRecognizer(QGestureRecognizer *recognizer)
-{
-    Q_D(QApplication);
-    if (!d->gestureManager)
-        return;
-    d->gestureManager->removeRecognizer(recognizer);
-}
-
-/*!
-    \property QApplication::eventDeliveryDelayForGestures
-    \since 4.6
-
-    Specifies the \a delay before input events are delivered to the
-    gesture enabled widgets.
-
-    The delay allows to postpone widget's input event handling until
-    gestures framework can successfully recognize a gesture.
-
-    \sa QWidget::grabGesture()
-*/
-void QApplication::setEventDeliveryDelayForGestures(int delay)
-{
-    QGestureManager::instance()->setEventDeliveryDelay(delay);
-}
-
-int QApplication::eventDeliveryDelayForGestures()
-{
-    return QGestureManager::instance()->eventDeliveryDelay();
 }
 
 /*! \fn QDecoration &QApplication::qwsDecoration()

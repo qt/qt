@@ -714,41 +714,6 @@ private:
 };
 #endif
 
-class Q_GUI_EXPORT QGestureEvent : public QEvent
-{
-public:
-    QGestureEvent(const QSet<QGesture*> &gestures,
-                  const QSet<QString> &cancelledGestures = QSet<QString>());
-    ~QGestureEvent();
-
-    bool contains(Qt::GestureType type) const;
-    bool contains(const QString &type) const;
-
-    QList<QString> gestureTypes() const;
-
-    const QGesture* gesture(Qt::GestureType type) const;
-    const QGesture* gesture(const QString &type) const;
-    QList<QGesture*> gestures() const;
-
-    QSet<QString> cancelledGestures() const;
-
-    void acceptAll();
-#ifndef Q_NO_USING_KEYWORD
-    using QEvent::accept;
-#else
-    inline void accept() { QEvent::accept(); }
-#endif
-    void accept(Qt::GestureType type);
-    void accept(const QString &type);
-
-protected:
-    QHash<QString, QGesture*> m_gestures;
-    QSet<QString> m_cancelledGestures;
-
-    friend class QApplication;
-    friend class QGestureManager;
-};
-
 #ifndef QT_NO_DEBUG_STREAM
 Q_GUI_EXPORT QDebug operator<<(QDebug, const QEvent *);
 #endif

@@ -93,12 +93,6 @@ public:
     void purge();
 };
 
-class QGestureExtraData
-{
-public:
-    QSet<int> gestures;
-};
-
 class Q_AUTOTEST_EXPORT QGraphicsItemPrivate
 {
     Q_DECLARE_PUBLIC(QGraphicsItem)
@@ -108,8 +102,7 @@ public:
         ExtraCursor,
         ExtraCacheData,
         ExtraMaxDeviceCoordCacheSize,
-        ExtraBoundingRegionGranularity,
-        ExtraGestures
+        ExtraBoundingRegionGranularity
     };
 
     enum AncestorFlag {
@@ -393,30 +386,6 @@ public:
     QTransform sceneTransform;
     int index;
     int depth;
-
-    inline QGestureExtraData* extraGestures() const
-    {
-        QGestureExtraData *c = (QGestureExtraData *)qVariantValue<void *>(extra(ExtraGestures));
-        if (!c) {
-            QGraphicsItemPrivate *that = const_cast<QGraphicsItemPrivate *>(this);
-            c = new QGestureExtraData;
-            that->setExtra(ExtraGestures, qVariantFromValue<void *>(c));
-        }
-        return c;
-    }
-    QGestureExtraData* maybeExtraGestures() const
-    {
-        return (QGestureExtraData *)qVariantValue<void *>(extra(ExtraGestures));
-    }
-    inline void removeExtraGestures()
-    {
-        QGestureExtraData *c = (QGestureExtraData *)qVariantValue<void *>(extra(ExtraGestures));
-        delete c;
-        unsetExtra(ExtraGestures);
-    }
-    bool hasGesture(const QString &gesture) const;
-    void grabGesture(int id);
-    bool releaseGesture(int id);
 
     // Packed 32 bytes
     quint32 acceptedMouseButtons : 5;

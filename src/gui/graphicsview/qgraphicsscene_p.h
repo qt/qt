@@ -78,7 +78,6 @@ QT_BEGIN_NAMESPACE
 
 class QGraphicsView;
 class QGraphicsWidget;
-class QGesture;
 
 class QGraphicsScenePrivate : public QObjectPrivate
 {
@@ -308,13 +307,6 @@ public:
     void updatePalette(const QPalette &palette);
 
     QStyleOptionGraphicsItem styleOptionTmp;
-
-    // items with gestures -> list of started gestures.
-    QMap<QGraphicsItem*, QSet<QGesture*> > itemsWithGestures;
-    QSet<int> grabbedGestures;
-    void grabGesture(QGraphicsItem *item, int gestureId);
-    void releaseGesture(QGraphicsItem *item, int gestureId);
-    void sendGestureEvent(const QSet<QGesture*> &gestures, const QSet<QString> &cancelled);
 
     QMap<int, QTouchEvent::TouchPoint> sceneCurrentTouchPoints;
     QMap<int, QGraphicsItem *> itemForTouchPointId;

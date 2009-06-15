@@ -99,6 +99,11 @@ public:
     inline bool viewportEvent(QEvent *event)
     { return q_func()->viewportEvent(event); }
     QObject *viewportFilter;
+
+#ifdef Q_WS_WIN
+    bool singleFingerPanEnabled;
+#endif
+    void setupGestures();
 };
 
 class QAbstractScrollAreaFilter : public QObject

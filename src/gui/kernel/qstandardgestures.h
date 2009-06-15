@@ -3,7 +3,7 @@
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the examples of the Qt Toolkit.
+** This file is part of the QtGui module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,77 +39,64 @@
 **
 ****************************************************************************/
 
-#ifndef URLLINEEDIT_H
-#define URLLINEEDIT_H
+#ifndef QSTANDARDGESTURES_H
+#define QSTANDARDGESTURES_H
 
-#include <QtCore/QUrl>
-#include <QtGui/QWidget>
-#include <QtGui/QStyleOptionFrame>
+#include "qevent.h"
+#include "qbasictimer.h"
+#include "qdebug.h"
+
+#include "qgesture.h"
+
+QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
-class QLineEdit;
-QT_END_NAMESPACE
 
-class ClearButton;
-class ExLineEdit : public QWidget
+QT_MODULE(Gui)
+
+class QPanGesturePrivate;
+class Q_GUI_EXPORT QPanGesture : public QGesture
 {
     Q_OBJECT
+    Q_DECLARE_PRIVATE(QPanGesture)
+
+    Q_PROPERTY(QSize totalOffset READ totalOffset)
+    Q_PROPERTY(QSize lastOffset READ lastOffset)
 
 public:
-    ExLineEdit(QWidget *parent = 0);
+    QPanGesture(QWidget *parent);
 
-    inline QLineEdit *lineEdit() const { return m_lineEdit; }
+    bool filterEvent(QEvent *event);
+    void reset();
 
-    void setLeftWidget(QWidget *widget);
-    QWidget *leftWidget() const;
+    QSize totalOffset() const;
+    QSize lastOffset() const;
 
-    QSize sizeHint() const;
-
-    QVariant inputMethodQuery(Qt::InputMethodQuery property) const;
 protected:
-    void focusInEvent(QFocusEvent *event);
-    void focusOutEvent(QFocusEvent *event);
-    void keyPressEvent(QKeyEvent *event);
-    void paintEvent(QPaintEvent *event);
-    void resizeEvent(QResizeEvent *event);
-    void inputMethodEvent(QInputMethodEvent *e);
     bool event(QEvent *event);
 
-protected:
-    void updateGeometries();
-    void initStyleOption(QStyleOptionFrameV2 *option) const;
-
-    QWidget *m_leftWidget;
-    QLineEdit *m_lineEdit;
-    ClearButton *m_clearButton;
+private:
+    friend class QWidget;
 };
 
-class UrlIconLabel;
-class WebView;
-class UrlLineEdit : public ExLineEdit
+class QTapAndHoldGesturePrivate;
+class Q_GUI_EXPORT QTapAndHoldGesture : public QGesture
 {
     Q_OBJECT
+    Q_DECLARE_PRIVATE(QTapAndHoldGesture)
 
 public:
-    UrlLineEdit(QWidget *parent = 0);
-    void setWebView(WebView *webView);
+    QTapAndHoldGesture(QWidget *parent);
+
+    bool filterEvent(QEvent *event);
+    void reset();
 
 protected:
-    void paintEvent(QPaintEvent *event);
-    void focusOutEvent(QFocusEvent *event);
-
-private slots:
-    void webViewUrlChanged(const QUrl &url);
-    void webViewIconChanged();
-
-private:
-    QLinearGradient generateGradient(const QColor &color) const;
-    WebView *m_webView;
-    UrlIconLabel *m_iconLabel;
-    QColor m_defaultBaseColor;
-
+    void timerEvent(QTimerEvent *event);
 };
 
+QT_END_NAMESPACE
 
-#endif // URLLINEEDIT_H
+QT_END_HEADER
 
+#endif // QSTANDARDGESTURES_H

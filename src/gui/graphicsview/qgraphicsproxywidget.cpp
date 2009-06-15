@@ -48,7 +48,6 @@
 #include "private/qgraphicsproxywidget_p.h"
 #include "private/qwidget_p.h"
 #include "private/qapplication_p.h"
-#include "private/qgesturemanager_p.h"
 
 #include <QtCore/qdebug.h>
 #include <QtGui/qevent.h>
@@ -649,9 +648,6 @@ void QGraphicsProxyWidgetPrivate::setWidget_helper(QWidget *newWidget, bool auto
         q->setAttribute(Qt::WA_OpaquePaintEvent);
 
     widget = newWidget;
-    foreach(int gestureId, widget->d_func()->gestures) {
-        grabGesture(gestureId);
-    }
 
     // Changes only go from the widget to the proxy.
     enabledChangeMode = QGraphicsProxyWidgetPrivate::WidgetToProxyMode;
@@ -872,15 +868,6 @@ bool QGraphicsProxyWidget::event(QEvent *event)
                 }
                 return true;
             }
-        }
-        break;
-    }
-    case QEvent::GraphicsSceneGesture: {
-        qDebug() << "QGraphicsProxyWidget: graphicsscenegesture";
-        if (d->widget && d->widget->isVisible()) {
-            //### TODO: widget->childAt(): decompose gesture event and find widget under hotspots.
-            //QGestureManager::instance()->sendGestureEvent(d->widget, ge->gestures().toSet(), ge->cancelledGestures());
-            return true;
         }
         break;
     }

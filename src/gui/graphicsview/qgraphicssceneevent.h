@@ -306,49 +306,6 @@ public:
     void setNewPos(const QPointF &pos);
 };
 
-class QGesture;
-class QGraphicsItem;
-class QGraphicsSceneGestureEventPrivate;
-class Q_GUI_EXPORT QGraphicsSceneGestureEvent : public QGraphicsSceneEvent
-{
-    Q_DECLARE_PRIVATE(QGraphicsSceneGestureEvent)
-public:
-    QGraphicsSceneGestureEvent();
-    ~QGraphicsSceneGestureEvent();
-
-    bool contains(const QString &type) const;
-    bool contains(Qt::GestureType type) const;
-
-    QList<QString> gestureTypes() const;
-
-    const QGesture* gesture(Qt::GestureType type) const;
-    const QGesture* gesture(const QString &type) const;
-    QList<QGesture*> gestures() const;
-    void setGestures(const QList<QGesture*> &gestures);
-    void setGestures(const QSet<QGesture*> &gestures);
-
-    QSet<QString> cancelledGestures() const;
-    void setCancelledGestures(const QSet<QString> &cancelledGestures);
-
-    void acceptAll();
-#ifndef Q_NO_USING_KEYWORD
-    using QEvent::accept;
-#else
-    inline void accept() { QEvent::accept(); }
-#endif
-    void accept(Qt::GestureType type);
-    void accept(const QString &type);
-
-    QPointF mapToScene(const QPoint &point) const;
-    QPolygonF mapToScene(const QRect &rect) const;
-    QPointF mapToItem(const QPoint &point, QGraphicsItem *item) const;
-    QPolygonF mapToItem(const QRect &rect, QGraphicsItem *item) const;
-
-protected:
-    QHash<QString, QGesture*> m_gestures;
-    QSet<QString> m_cancelledGestures;
-};
-
 #endif // QT_NO_GRAPHICSVIEW
 
 QT_END_NAMESPACE
