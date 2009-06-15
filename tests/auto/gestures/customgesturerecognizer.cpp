@@ -115,30 +115,30 @@ PanGestureRecognizer::PanGestureRecognizer(QObject *parent)
 
 QGestureRecognizer::Result PanGestureRecognizer::filterEvent(const QEvent *event)
 {
-    if (event->type() != QEvent::TouchBegin ||
-        event->type() != QEvent::TouchUpdate ||
+    if (event->type() != QEvent::TouchBegin &&
+        event->type() != QEvent::TouchUpdate &&
         event->type() != QEvent::TouchEnd)
         return QGestureRecognizer::Ignore;
 
     const QTouchEvent *e = static_cast<const QTouchEvent*>(event);
-    const QList<QTouchEvent::TouchPoint*> &points = e->touchPoints();
+    const QList<QTouchEvent::TouchPoint> &points = e->touchPoints();
 
     if (points.size() >= 1) {
         gesture->lastPoints[0] = gesture->points[0];
-        gesture->points[0].id = points.at(0)->id();
-        gesture->points[0].pt = points.at(0)->startPos().toPoint();
-        gesture->points[0].state = (TouchPoint::State)points.at(0)->state();
-        if (points.at(0)->state() == Qt::TouchPointPressed) {
+        gesture->points[0].id = points.at(0).id();
+        gesture->points[0].pt = points.at(0).startPos().toPoint();
+        gesture->points[0].state = (TouchPoint::State)points.at(0).state();
+        if (points.at(0).state() == Qt::TouchPointPressed) {
             gesture->startPoints[0] = gesture->points[0];
             gesture->lastPoints[0] = gesture->points[0];
         }
     }
     if (points.size() >= 2) {
         gesture->lastPoints[1] = gesture->points[1];
-        gesture->points[1].id = points.at(1)->id();
-        gesture->points[1].pt = points.at(1)->startPos().toPoint();
-        gesture->points[1].state = (TouchPoint::State)points.at(1)->state();
-        if (points.at(1)->state() == Qt::TouchPointPressed) {
+        gesture->points[1].id = points.at(1).id();
+        gesture->points[1].pt = points.at(1).startPos().toPoint();
+        gesture->points[1].state = (TouchPoint::State)points.at(1).state();
+        if (points.at(1).state() == Qt::TouchPointPressed) {
             gesture->startPoints[1] = gesture->points[1];
             gesture->lastPoints[1] = gesture->points[1];
         }
@@ -148,9 +148,9 @@ QGestureRecognizer::Result PanGestureRecognizer::filterEvent(const QEvent *event
         return QGestureRecognizer::GestureStarted;
     if (points.size() > 2)
         return QGestureRecognizer::MaybeGesture;
-    if (points.at(0)->state() == Qt::TouchPointPressed)
+    if (points.at(0).state() == Qt::TouchPointPressed)
         return QGestureRecognizer::MaybeGesture;
-    if (points.at(0)->state() == Qt::TouchPointReleased)
+    if (points.at(0).state() == Qt::TouchPointReleased)
         return QGestureRecognizer::GestureFinished;
     return QGestureRecognizer::GestureStarted;
 }
