@@ -446,6 +446,8 @@ unix:!embedded:contains(QT_CONFIG, dbus):SUBDIRS += \
 
 contains(QT_CONFIG, webkit): SUBDIRS += \
            qwebframe \
-           qwebpage
+           qwebpage \
+           qwebhistoryinterface \
+           qwebelement
 
 SUBDIRS += math3d
