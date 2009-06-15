@@ -15,5 +15,5 @@ include($$QT_SOURCE_TREE/examples/examplebase.pri)
 symbian {
     TARGET.CAPABILITY="NetworkServices"
     TARGET.UID3 = 0xA000A648
-    LIBS+=-lesock   # For IAP selection
+    LIBS+=-lesock -lconnmon   # For IAP selection
 }
