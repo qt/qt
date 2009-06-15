@@ -610,7 +610,7 @@ QByteArray QSslCertificatePrivate::QByteArray_from_X509(X509 *x509, QSsl::Encodi
     // Convert to Base64 - wrap at 64 characters.
     array = array.toBase64();
     QByteArray tmp;
-    for (int i = 0; i < array.size() - 64; i += 64) {
+    for (int i = 0; i <= array.size() - 64; i += 64) {
         tmp += QByteArray::fromRawData(array.data() + i, 64);
         tmp += "\n";
     }
