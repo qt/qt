@@ -6027,6 +6027,11 @@ void QSessionManager::requestPhase2()
 
 #if defined(QT_RX71_MULTITOUCH)
 
+static inline int testBit(const char *array, int bit)
+{
+    return (array[bit/8] & (1<<(bit%8)));
+}
+
 static int openRX71Device(const QByteArray &deviceName)
 {
     int fd = open(deviceName, O_RDONLY | O_NONBLOCK);
@@ -6036,23 +6041,25 @@ static int openRX71Device(const QByteArray &deviceName)
     }
 
     // fetch the event type mask and check that the device reports absolute coordinates
-    QBitArray eventTypeMask(EV_MAX + 1, false);
-    if (ioctl(fd, EVIOCGBIT(0, eventTypeMask.size()), eventTypeMask.data_ptr()->data) < 0) {
+    char eventTypeMask[(EV_MAX + sizeof(char) - 1) * sizeof(char) + 1];
+    memset(eventTypeMask, 0, sizeof(eventTypeMask));
+    if (ioctl(fd, EVIOCGBIT(0, sizeof(eventTypeMask)), eventTypeMask) < 0) {
         close(fd);
         return -1;
     }
-    if (!eventTypeMask.testBit(EV_ABS)) {
+    if (!testBit(eventTypeMask, EV_ABS)) {
         close(fd);
         return -1;
     }
 
     // make sure that we can get the absolute X and Y positions from the device
-    QBitArray absMask(ABS_MAX + 1, false);
-    if (ioctl(fd, EVIOCGBIT(EV_ABS, absMask.size()), absMask.data_ptr()->data) < 0) {
+    char absMask[(ABS_MAX + sizeof(char) - 1) * sizeof(char) + 1];
+    memset(absMask, 0, sizeof(absMask));
+    if (ioctl(fd, EVIOCGBIT(EV_ABS, sizeof(absMask)), absMask) < 0) {
         close(fd);
         return -1;
     }
-    if (!absMask.testBit(ABS_X) || !absMask.testBit(ABS_Y)) {
+    if (!testBit(absMask, ABS_X) || !testBit(absMask, ABS_Y)) {
         close(fd);
         return -1;
     }
@@ -6067,7 +6074,7 @@ void QApplicationPrivate::initializeMultitouch_sys()
     QByteArray deviceName = QByteArray("/dev/input/event");
     int currentDeviceNumber = 0;
     for (;;) {
-        int fd = openRX71Device(QByteArray(deviceName + QByteArray::number(currentDeviceNumber++)).data());
+        int fd = openRX71Device(QByteArray(deviceName + QByteArray::number(currentDeviceNumber++)));
         if (fd == -ENOENT) {
             // no more devices
             break;
