@@ -199,7 +199,6 @@ QScriptDebuggerConsole::QScriptDebuggerConsole()
 
 QScriptDebuggerConsole::~QScriptDebuggerConsole()
 {
-    delete d_ptr;
 }
 
 void QScriptDebuggerConsole::loadScriptedCommands(const QString &scriptsPath,

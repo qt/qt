@@ -366,7 +366,7 @@ void QGraphicsWidget::resize(const QSizeF &size)
 void QGraphicsWidget::setGeometry(const QRectF &rect)
 {
     QGraphicsWidgetPrivate *wd = QGraphicsWidget::d_func();
-    QGraphicsLayoutItemPrivate *d = QGraphicsLayoutItem::d_ptr;
+    QGraphicsLayoutItemPrivate *d = QGraphicsLayoutItem::d_ptr.data();
     QRectF newGeom;
     QPointF oldPos = d->geom.topLeft();
     if (!wd->inSetPos) {
@@ -1887,8 +1887,10 @@ void QGraphicsWidget::insertAction(QAction *before, QAction *action)
     }
     d->actions.insert(pos, action);
 
-    QActionPrivate *apriv = action->d_func();
-    apriv->graphicsWidgets.append(this);
+    if (index == -1) {
+        QActionPrivate *apriv = action->d_func();
+        apriv->graphicsWidgets.append(this);
+    }
 
     QActionEvent e(QEvent::ActionAdded, action, before);
     QApplication::sendEvent(this, &e);

@@ -36,7 +36,8 @@ HEADERS +=  \
 	tools/qtimeline.h \
 	tools/qunicodetables_p.h \
 	tools/qvarlengtharray.h \
-	tools/qvector.h
+	tools/qvector.h \
+        tools/qscopedpointer.h
 
 
 SOURCES += \
@@ -65,6 +66,7 @@ SOURCES += \
 	tools/qvector.cpp \
         tools/qvsnprintf.cpp
 
+symbian:SOURCES+=tools/qlocale_symbian.cpp
 
 #zlib support
 contains(QT_CONFIG, zlib) {

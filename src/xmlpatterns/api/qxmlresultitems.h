@@ -43,6 +43,7 @@
 #define QXMLRESULTITEMS
 
 #include <QtCore/QString>
+#include <QtCore/QScopedPointer>
 
 QT_BEGIN_HEADER
 QT_BEGIN_NAMESPACE
@@ -66,7 +67,7 @@ public:
 private:
     friend class QXmlQuery;
     Q_DECLARE_PRIVATE(QXmlResultItems)
-    QXmlResultItemsPrivate *d_ptr;
+    QScopedPointer<QXmlResultItemsPrivate> d_ptr;
     Q_DISABLE_COPY(QXmlResultItems)
 };
 

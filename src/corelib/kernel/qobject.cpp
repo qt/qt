@@ -345,18 +345,6 @@ void QObjectPrivate::derefSender(QObject *sender, int signal)
     // Q_ASSERT_X(false, "QObjectPrivate::derefSender", "sender not found");
 }
 
-void QObjectPrivate::removeSender(QObject *sender, int signal)
-{
-    for (int i = 0; i < senders.count(); ++i) {
-        Sender &s = senders[i];
-        if (s.sender == sender && s.signal == signal) {
-            senders.removeAt(i);
-            return;
-        }
-    }
-    // Q_ASSERT_X(false, "QObjectPrivate::removeSender", "sender not found");
-}
-
 QObjectPrivate::Sender *QObjectPrivate::setCurrentSender(QObject *receiver,
                                                          Sender *sender)
 {
@@ -404,7 +392,9 @@ void QMetaObject::removeGuard(QObject **ptr)
     if (!*ptr)
         return;
     GuardHash *hash = guardHash();
-    if (!hash)
+    /* check that the hash is empty - otherwise we might detach
+       the shared_null hash, which will alloc, which is not nice */
+    if (!hash || hash->isEmpty())
         return;
     QMutexLocker locker(guardHashLock());
     GuardHash::iterator it = hash->find(*ptr);
@@ -446,9 +436,19 @@ void QMetaObject::changeGuard(QObject **ptr, QObject *o)
  */
 void QObjectPrivate::clearGuards(QObject *object)
 {
-    GuardHash *hash = guardHash();
-    if (hash) {
-        QMutexLocker locker(guardHashLock());
+    GuardHash *hash = 0;
+    QMutex *mutex = 0;
+    QT_TRY {
+        hash = guardHash();
+        mutex = guardHashLock();
+    } QT_CATCH(const std::bad_alloc &) {
+        // do nothing in case of OOM - code below is safe
+    }
+
+    /* check that the hash is empty - otherwise we might detach
+       the shared_null hash, which will alloc, which is not nice */
+    if (hash && !hash->isEmpty()) {
+        QMutexLocker locker(mutex);
         GuardHash::iterator it = hash->find(object);
         const GuardHash::iterator end = hash->end();
         while (it.key() == object && it != end) {
@@ -766,7 +766,14 @@ QObject::~QObject()
         QObjectPrivate::clearGuards(this);
     }
 
-    emit destroyed(this);
+    QT_TRY {
+        emit destroyed(this);
+    } QT_CATCH(...) {
+        // all the signal/slots connections are still in place - if we don't
+        // quit now, we will crash pretty soon.
+        qWarning("Detected an unexpected exception in ~QObject while emitting destroyed().");
+        QT_RETHROW;
+    }
 
     {
         QMutexLocker locker(&d->threadData->mutex);
@@ -790,7 +797,7 @@ QObject::~QObject()
                     bool needToUnlock = QOrderedMutexLocker::relock(locker.mutex(), m);
                     c = &connectionList[i];
                     if (c->receiver)
-                        c->receiver->d_func()->removeSender(this, signal);
+                        c->receiver->d_func()->derefSender(this, signal);
                     if (needToUnlock)
                         m->unlock();
 
@@ -811,18 +818,22 @@ QObject::~QObject()
         }
 
         // disconnect all senders
-        for (int i = 0; i < d->senders.count(); ++i) {
+        for (int i = 0; i < d->senders.count(); ) {
             QObjectPrivate::Sender *s = &d->senders[i];
-            if (!s->sender)
-                continue;
 
             QMutex *m = &s->sender->d_func()->threadData->mutex;
             bool needToUnlock = QOrderedMutexLocker::relock(locker.mutex(), m);
-            s = &d->senders[i];
-            if (s->sender)
-                s->sender->d_func()->removeReceiver(s->signal, this);
+            if (m < locker.mutex()) {
+                if (i >= d->senders.count() || s != &d->senders[i]) {
+                    if (needToUnlock)
+                        m->unlock();
+                    continue;
+                }
+            }
+            s->sender->d_func()->removeReceiver(s->signal, this);
             if (needToUnlock)
                 m->unlock();
+            ++i;
         }
 
         d->senders.clear();
@@ -861,9 +872,6 @@ QObject::~QObject()
                  objectName().isNull() ? "unnamed" : qPrintable(objectName()));
     }
 #endif
-
-    delete d;
-    d_ptr = 0;
 }
 
 
@@ -920,7 +928,8 @@ QObject::~QObject()
     \relates QObject
 
     Returns the given \a object cast to type T if the object is of type
-    T (or of a subclass); otherwise returns 0.
+    T (or of a subclass); otherwise returns 0.  If \a object is 0 then 
+    it will also return 0.
 
     The class T must inherit (directly or indirectly) QObject and be
     declared with the \l Q_OBJECT macro.
@@ -1105,11 +1114,11 @@ bool QObject::event(QEvent *e)
 #if defined(QT_NO_EXCEPTIONS)
             mce->placeMetaCall(this);
 #else
-            try {
+            QT_TRY {
                 mce->placeMetaCall(this);
-            } catch (...) {
+            } QT_CATCH(...) {
                 QObjectPrivate::resetCurrentSender(this, &currentSender, previousSender);
-                throw;
+                QT_RETHROW;
             }
 #endif
             QObjectPrivate::resetCurrentSender(this, &currentSender, previousSender);
@@ -2076,7 +2085,7 @@ void QObject::deleteLater()
 
     or
 
-    \tt{/*: ... \starslash}
+    \tt{\begincomment: ... \endcomment}
 
     Examples:
 
@@ -3109,9 +3118,9 @@ void QMetaObject::activate(QObject *sender, int from_signal_index, int to_signal
 #if defined(QT_NO_EXCEPTIONS)
             receiver->qt_metacall(QMetaObject::InvokeMetaMethod, method, argv ? argv : empty_argv);
 #else
-            try {
+            QT_TRY {
                 receiver->qt_metacall(QMetaObject::InvokeMetaMethod, method, argv ? argv : empty_argv);
-            } catch (...) {
+            } QT_CATCH(...) {
                 locker.relock();
 
                 QObjectPrivate::resetCurrentSender(receiver, &currentSender, previousSender);
@@ -3120,7 +3129,7 @@ void QMetaObject::activate(QObject *sender, int from_signal_index, int to_signal
                 Q_ASSERT(connectionLists->inUse >= 0);
                 if (connectionLists->orphaned && !connectionLists->inUse)
                     delete connectionLists;
-                throw;
+                QT_RETHROW;
             }
 #endif
 

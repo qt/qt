@@ -64,9 +64,9 @@
 # include "qtimer.h"
 #endif
 
-QT_BEGIN_NAMESPACE
-
 #ifndef QT_NO_HTTP
+
+QT_BEGIN_NAMESPACE
 
 class QHttpNormalRequest;
 class QHttpRequest
@@ -624,7 +624,6 @@ QHttpHeader::QHttpHeader(QHttpHeaderPrivate &dd, const QHttpHeader &header)
 */
 QHttpHeader::~QHttpHeader()
 {
-    delete d_ptr;
 }
 
 /*!
@@ -950,7 +949,7 @@ void QHttpHeader::setContentLength(int len)
 }
 
 /*!
-    Returns true if the header has an entry for the the special HTTP
+    Returns true if the header has an entry for the special HTTP
     header field \c content-type; otherwise returns false.
 
     \sa contentType() setContentType()

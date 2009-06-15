@@ -107,7 +107,7 @@ protected:
 
 private:
     Q_DISABLE_COPY(QGLPixelBuffer)
-    QGLPixelBufferPrivate *d_ptr;
+    QScopedPointer<QGLPixelBufferPrivate> d_ptr;
     friend class QGLDrawable;
     friend class QGLWindowSurface;
 };

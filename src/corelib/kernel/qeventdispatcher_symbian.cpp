@@ -5,7 +5,37 @@
 **
 ** This file is part of the $MODULE$ of the Qt Toolkit.
 **
-** $TROLLTECH_DUAL_EMBEDDED_LICENSE$
+** $QT_BEGIN_LICENSE:LGPL$
+** No Commercial Usage
+** This file contains pre-release code and may not be distributed.
+** You may use this file in accordance with the terms and conditions
+** contained in the either Technology Preview License Agreement or the
+** Beta Release License Agreement.
+**
+** GNU Lesser General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU Lesser
+** General Public License version 2.1 as published by the Free Software
+** Foundation and appearing in the file LICENSE.LGPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU Lesser General Public License version 2.1 requirements
+** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+**
+** In addition, as a special exception, Nokia gives you certain
+** additional rights. These rights are described in the Nokia Qt LGPL
+** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
+** package.
+**
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU
+** General Public License version 3.0 as published by the Free Software
+** Foundation and appearing in the file LICENSE.GPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU General Public License version 3.0 requirements will be
+** met: http://www.gnu.org/copyleft/gpl.html.
+**
+** If you are unsure which license is appropriate for your use, please
+** contact the sales department at qt-sales@nokia.com.
+** $QT_END_LICENSE$
 **
 ****************************************************************************/
 
@@ -163,7 +193,7 @@ void QWakeUpActiveObject::RunL()
 {
     iStatus = KRequestPending;
     SetActive();
-    m_dispatcher->wakeUpWasCalled();
+    QT_TRANSLATE_EXCEPTION_TO_SYMBIAN_LEAVE(m_dispatcher->wakeUpWasCalled());
 }
 
 QTimerActiveObject::QTimerActiveObject(QEventDispatcherSymbian *dispatcher, SymbianTimerInfo *timerInfo)
@@ -192,9 +222,15 @@ void QTimerActiveObject::DoCancel()
 
 void QTimerActiveObject::RunL()
 {
-    if (!okToRun())
-        return;
+    int error;
+    QT_TRANSLATE_EXCEPTION_TO_SYMBIAN_ERROR(error, Run());
+    if (error < 0) {
+        CActiveScheduler::Current()->Error(error);  // stop and report here, as this timer will be deleted on scope exit
+    }
+}
 
+void QTimerActiveObject::Run()
+{
     if (m_timerInfo->interval > 0) {
         // Start a new timer immediately so that we don't lose time.
         iStatus = KRequestPending;
@@ -210,7 +246,7 @@ void QTimerActiveObject::RunL()
         SymbianTimerInfoPtr timerInfoPtr(m_timerInfo);
 
         m_timerInfo->dispatcher->timerFired(m_timerInfo->timerId);
-
+            
         iStatus = KRequestPending;
         SetActive();
         TRequestStatus *status = &iStatus;
@@ -274,7 +310,7 @@ void QCompleteDeferredAOs::RunL()
     iStatus = KRequestPending;
     SetActive();
 
-    m_dispatcher->reactivateDeferredActiveObjects();
+    QT_TRANSLATE_EXCEPTION_TO_SYMBIAN_LEAVE(m_dispatcher->reactivateDeferredActiveObjects());
 }
 
 QSelectThread::QSelectThread()
@@ -424,8 +460,8 @@ void QSelectThread::requestSocketEvents ( QSocketNotifier *notifier, TRequestSta
     }
 
     QSelectMutexGrabber lock(m_pipeEnds[1], &m_mutex);
-    
-    Q_ASSERT(!m_AOStatuses.contains(notifier));    
+
+    Q_ASSERT(!m_AOStatuses.contains(notifier));
 
     m_AOStatuses.insert(notifier, status);
 
@@ -547,7 +583,7 @@ void QSocketActiveObject::RunL()
     if (!okToRun())
         return;
 
-    m_dispatcher->socketFired(this);
+    QT_TRANSLATE_EXCEPTION_TO_SYMBIAN_LEAVE(m_dispatcher->socketFired(this));
 }
 
 void QSocketActiveObject::deleteLater()
@@ -603,101 +639,108 @@ void QEventDispatcherSymbian::closingDown()
 
 bool QEventDispatcherSymbian::processEvents ( QEventLoop::ProcessEventsFlags flags )
 {
-    Q_D(QAbstractEventDispatcher);
+    bool handledAnyEvent = false;
 
+    QT_TRY {
+        Q_D(QAbstractEventDispatcher);
+    
     // It is safe if this counter overflows. The main importance is that each
     // iteration count is different from the last.
     m_iterationCount++;
 
-    RThread &thread = d->threadData->symbian_thread_handle;
-
-    bool block;
-    if (flags & QEventLoop::WaitForMoreEvents) {
-        block = true;
-        emit aboutToBlock();
-    } else {
-        block = false;
-    }
-
-    bool handledAnyEvent = false;
-
-    bool oldNoSocketEventsValue = m_noSocketEvents;
-    if (flags & QEventLoop::ExcludeSocketNotifiers) {
-        m_noSocketEvents = true;
-    } else {
-        m_noSocketEvents = false;
-        handledAnyEvent = sendDeferredSocketEvents();
-    }
-
-    bool handledSymbianEvent = false;
-    m_interrupt = false;
-
-    /*
-     * This QTime variable is used to measure the time it takes to finish
-     * the event loop. If we take too long in the loop, other processes
-     * may be starved and killed. After the first event has completed, we
-     * take the current time, and if the remaining events take longer than
-     * a preset time, we temporarily lower the priority to force a context
-     * switch. For applications that do not take unecessarily long in the
-     * event loop, the priority will not be altered.
-     */
-    QTime time;
-    enum {
-        FirstRun,
-        SubsequentRun,
-        TimeStarted
-    } timeState = FirstRun;
-
-    TProcessPriority priority;
-
-    while (1) {
-        if (block) {
-            // This is where Qt will spend most of its time.
-            CActiveScheduler::Current()->WaitForAnyRequest();
+        RThread &thread = d->threadData->symbian_thread_handle;
+    
+        bool block;
+        if (flags & QEventLoop::WaitForMoreEvents) {
+            block = true;
+            emit aboutToBlock();
         } else {
-            if (thread.RequestCount() == 0) {
+            block = false;
+        }
+    
+        bool oldNoSocketEventsValue = m_noSocketEvents;
+        if (flags & QEventLoop::ExcludeSocketNotifiers) {
+            m_noSocketEvents = true;
+        } else {
+            m_noSocketEvents = false;
+            handledAnyEvent = sendDeferredSocketEvents();
+        }
+    
+        bool handledSymbianEvent = false;
+        m_interrupt = false;
+    
+        /*
+         * This QTime variable is used to measure the time it takes to finish
+         * the event loop. If we take too long in the loop, other processes
+         * may be starved and killed. After the first event has completed, we
+         * take the current time, and if the remaining events take longer than
+         * a preset time, we temporarily lower the priority to force a context
+         * switch. For applications that do not take unecessarily long in the
+         * event loop, the priority will not be altered.
+         */
+        QTime time;
+        enum {
+            FirstRun,
+            SubsequentRun,
+            TimeStarted
+        } timeState = FirstRun;
+    
+        TProcessPriority priority;
+    
+        while (1) {
+            if (block) {
+                // This is where Qt will spend most of its time.
+                CActiveScheduler::Current()->WaitForAnyRequest();
+            } else {
+                if (thread.RequestCount() == 0) {
+                    break;
+                }
+                // This one should return without delay.
+                CActiveScheduler::Current()->WaitForAnyRequest();
+            }
+    
+            if (timeState == SubsequentRun) {
+                time.start();
+                timeState = TimeStarted;
+            }
+    
+            TInt error;
+            handledSymbianEvent = CActiveScheduler::RunIfReady(error, CActive::EPriorityIdle);
+            if (error) {
+                qWarning("CActiveScheduler::RunIfReady() returned error: %i\n", error);
+                CActiveScheduler::Current()->Error(error);
+            }
+            
+            if (!handledSymbianEvent) {
+                qFatal("QEventDispatcherSymbian::processEvents(): Caught Symbian stray signal");
+            }
+            handledAnyEvent = true;
+            if (m_interrupt) {
                 break;
             }
-            // This one should return without delay.
-            CActiveScheduler::Current()->WaitForAnyRequest();
-        }
-
-        if (timeState == SubsequentRun) {
-            time.start();
-            timeState = TimeStarted;
-        }
-
-        TInt error;
-        handledSymbianEvent = CActiveScheduler::RunIfReady(error, CActive::EPriorityIdle);
-        if (error) {
-            qWarning("CActiveScheduler::RunIfReady() returned error: %i\n", error);
-            CActiveScheduler::Current()->Error(error);
-        }
-        if (!handledSymbianEvent) {
-            qFatal("QEventDispatcherSymbian::processEvents(): Caught Symbian stray signal");
-        }
-        handledAnyEvent = true;
-        if (m_interrupt) {
-            break;
-        }
-        block = false;
-        if (timeState == TimeStarted && time.elapsed() > 500) {
-            priority = m_processHandle.Priority();
-            m_processHandle.SetPriority(EPriorityLow);
-            time.start();
-            // Slight chance of race condition in the next lines, but nothing fatal
-            // will happen, just wrong priority.
-            if (m_processHandle.Priority() == EPriorityLow) {
-                m_processHandle.SetPriority(priority);
+            block = false;
+        if (timeState == TimeStarted && time.elapsed() > 100) {
+                priority = m_processHandle.Priority();
+                m_processHandle.SetPriority(EPriorityLow);
+                time.start();
+                // Slight chance of race condition in the next lines, but nothing fatal
+                // will happen, just wrong priority.
+                if (m_processHandle.Priority() == EPriorityLow) {
+                    m_processHandle.SetPriority(priority);
+                }
             }
-        }
-        if (timeState == FirstRun)
-            timeState = SubsequentRun;
-    };
-
-    emit awake();
-
-    m_noSocketEvents = oldNoSocketEventsValue;
+            if (timeState == FirstRun)
+                timeState = SubsequentRun;
+        };
+    
+        emit awake();
+    
+        m_noSocketEvents = oldNoSocketEventsValue;
+    } QT_CATCH (const std::exception& ex) {
+#ifndef QT_NO_EXCEPTIONS    
+        CActiveScheduler::Current()->Error(qt_translateExceptionToSymbianError(ex));
+#endif        
+    }
 
     return handledAnyEvent;
 }

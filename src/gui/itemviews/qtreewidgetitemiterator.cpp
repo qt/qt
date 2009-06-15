@@ -97,7 +97,7 @@ QTreeWidgetItemIterator::QTreeWidgetItemIterator(QTreeWidget *widget, IteratorFl
     Q_ASSERT(widget);
     QTreeModel *model = qobject_cast<QTreeModel*>(widget->model());
     Q_ASSERT(model);
-    d_ptr = new QTreeWidgetItemIteratorPrivate(this, model);
+    d_ptr.reset(new QTreeWidgetItemIteratorPrivate(this, model));
     model->iterators.append(this);
     if (!model->rootItem->children.isEmpty()) current = model->rootItem->children.first();
     if (current && !matchesFlags(current))
@@ -150,7 +150,6 @@ QTreeWidgetItemIterator::QTreeWidgetItemIterator(QTreeWidgetItem *item, Iterator
 QTreeWidgetItemIterator::~QTreeWidgetItemIterator()
 {
     d_func()->m_model->iterators.removeAll(this);
-    delete d_ptr;
 }
 
 /*!

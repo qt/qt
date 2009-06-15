@@ -424,7 +424,8 @@ public:
        TextFormat,
        Cursor,
        Language,
-       Ruby
+       Ruby,
+       Selection
     };
     class Attribute {
     public:

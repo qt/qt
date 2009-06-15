@@ -57,6 +57,7 @@
 #include <QtCore/qcoreevent.h>
 #include <QtCore/qhash.h>
 #include <QtCore/qvariant.h>
+#include <QtCore/qscopedpointer.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -137,7 +138,7 @@ public:
     bool operator!=(const QScriptDebuggerEvent &other) const;
 
 private:
-    QScriptDebuggerEventPrivate *d_ptr;
+    QScopedPointer<QScriptDebuggerEventPrivate> d_ptr;
 
     Q_DECLARE_PRIVATE(QScriptDebuggerEvent)
 };

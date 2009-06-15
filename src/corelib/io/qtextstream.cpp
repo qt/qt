@@ -1112,9 +1112,6 @@ QTextStream::~QTextStream()
 #endif
     if (!d->writeBuffer.isEmpty())
         d->flushWriteBuffer();
-
-    delete d;
-    d_ptr = 0;
 }
 
 /*!

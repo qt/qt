@@ -5,7 +5,37 @@
 **
 ** This file is part of the $MODULE$ of the Qt Toolkit.
 **
-** $TROLLTECH_DUAL_LICENSE$
+** $QT_BEGIN_LICENSE:LGPL$
+** No Commercial Usage
+** This file contains pre-release code and may not be distributed.
+** You may use this file in accordance with the terms and conditions
+** contained in the either Technology Preview License Agreement or the
+** Beta Release License Agreement.
+**
+** GNU Lesser General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU Lesser
+** General Public License version 2.1 as published by the Free Software
+** Foundation and appearing in the file LICENSE.LGPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU Lesser General Public License version 2.1 requirements
+** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+**
+** In addition, as a special exception, Nokia gives you certain
+** additional rights. These rights are described in the Nokia Qt LGPL
+** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
+** package.
+**
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU
+** General Public License version 3.0 as published by the Free Software
+** Foundation and appearing in the file LICENSE.GPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU General Public License version 3.0 requirements will be
+** met: http://www.gnu.org/copyleft/gpl.html.
+**
+** If you are unsure which license is appropriate for your use, please
+** contact the sales department at qt-sales@nokia.com.
+** $QT_END_LICENSE$
 **
 ****************************************************************************/
 
@@ -21,10 +51,116 @@
 #include "qlayout.h"
 #include "qpixmapcache.h"
 #include "qmetaobject.h"
+#include "qdebug.h"
+#include "qbuffer.h"
+#include "qdesktopwidget.h"
 
 #if !defined(QT_NO_STYLE_S60) || defined(QT_PLUGIN)
 
 QT_BEGIN_NAMESPACE
+
+static const quint32 blobVersion = 1;
+static const int pictureSize = 256;
+
+#if defined(Q_CC_GNU)
+#if __GNUC__ >= 2
+#define __FUNCTION__ __func__
+#endif
+#endif
+
+
+bool saveThemeToBlob(const QString &themeBlob,
+    const QHash<QString, QPicture> &partPictures,
+    const QHash<QPair<QString, int>, QColor> &colors)
+{
+    QFile blob(themeBlob);
+    if (!blob.open(QIODevice::WriteOnly)) {
+        qWarning() << __FUNCTION__ << ": Could not create blob: " << themeBlob;
+        return false;
+    }
+
+    QByteArray data;
+    QBuffer dataBuffer(&data);
+    dataBuffer.open(QIODevice::WriteOnly);
+    QDataStream dataOut(&dataBuffer);
+
+    const int colorsCount = colors.count();
+    dataOut << colorsCount;
+    const QList<QPair<QString, int> > colorKeys = colors.keys();
+    for (int i = 0; i < colorsCount; ++i) {
+        const QPair<QString, int> &key = colorKeys.at(i);
+        dataOut << key;
+        const QColor color = colors.value(key);
+        dataOut << color;
+    }
+
+    const int picturesCount = partPictures.count();
+    dataOut << picturesCount;
+    foreach (const QString &key, partPictures.keys()) {
+        const QPicture picture = partPictures.value(key);
+        dataOut << key;
+        dataOut << picture;
+    }
+
+    QDataStream blobOut(&blob);
+    blobOut << blobVersion;
+    blobOut << qCompress(data);
+    return blobOut.status() == QDataStream::Ok;
+}
+
+bool loadThemeFromBlob(const QString &themeBlob,
+    QHash<QString, QPicture> &partPictures,
+    QHash<QPair<QString, int>, QColor> &colors)
+{
+    QFile blob(themeBlob);
+    if (!blob.open(QIODevice::ReadOnly)) {
+        qWarning() << __FUNCTION__ << ": Could not read blob: " << themeBlob;
+        return false;
+    }
+    QDataStream blobIn(&blob);
+
+    quint32 version;
+    blobIn >> version;
+
+    if (version != blobVersion) {
+        qWarning() << __FUNCTION__ << ": Invalid blob version: " << version << " ...expected: " << blobVersion;
+        return false;
+    }
+
+    QByteArray data;
+    blobIn >> data;
+    data = qUncompress(data);
+    QBuffer dataBuffer(&data);
+    dataBuffer.open(QIODevice::ReadOnly);
+    QDataStream dataIn(&dataBuffer);
+
+    int colorsCount;
+    dataIn >> colorsCount;
+    for (int i = 0; i < colorsCount; ++i) {
+        QPair<QString, int> key;
+        dataIn >> key;
+        QColor value;
+        dataIn >> value;
+        colors.insert(key, value);
+    }
+
+    int picturesCount;
+    dataIn >> picturesCount;
+    for (int i = 0; i < picturesCount; ++i) {
+        QString key;
+        dataIn >> key;
+        QPicture value;
+        dataIn >> value;
+        value.setBoundingRect(QRect(0, 0, pictureSize, pictureSize)); // Bug? The forced bounding rect was not deserialized.
+        partPictures.insert(key, value);
+    }
+
+    if (dataIn.status() != QDataStream::Ok) {
+        qWarning() << __FUNCTION__ << ": Invalid data blob: " << themeBlob;
+        return false;
+    }
+    return true;
+}
 
 class QS60StyleModeSpecifics
 {
@@ -40,19 +176,6 @@ QHash<QPair<QString , int>, QColor> QS60StyleModeSpecifics::m_colors;
 QS60StylePrivate::QS60StylePrivate()
 {
     setCurrentLayout(0);
-}
-
-QS60StylePrivate::~QS60StylePrivate()
-{
-}
-
-short QS60StylePrivate::pixelMetric(int metric)
-{
-    Q_ASSERT(metric < MAX_PIXELMETRICS);
-    const short returnValue = m_pmPointer[metric];
-    if (returnValue==-909)
-        return -1;
-    return returnValue;
 }
 
 QColor QS60StylePrivate::s60Color(QS60StyleEnums::ColorLists list,
@@ -106,9 +229,10 @@ QPixmap QS60StylePrivate::part(QS60StyleEnums::SkinParts part, const QSize &size
 
     QPixmap result = QPixmap::fromImage(partImage);
     if (flags & SF_StateDisabled) {
-        // TODO: fix this
         QStyleOption opt;
-//        opt.palette = q->standardPalette();
+        QPalette *themePalette = QS60StylePrivate::themePalette();
+        if (themePalette)
+            opt.palette = *themePalette;
         result = QApplication::style()->generatedIconPixmap(QIcon::Disabled, result, &opt);
     }
 
@@ -150,7 +274,8 @@ QPixmap QS60StylePrivate::frame(SkinFrameElements frame, const QSize &size,
     const QRect leftRect = rightRect.translated(cornerWidth - rectWidth, 0);
     const QRect centerRect = drawOnlyCenter ? rect : rect.adjusted(cornerWidth, cornerWidth, -cornerWidth, -cornerWidth);
 
-    QImage result(size, QImage::Format_ARGB32);
+    QPixmap result(size);
+    result.fill(Qt::transparent);
     QPainter painter(&result);
 
 #if 0
@@ -178,7 +303,7 @@ QPixmap QS60StylePrivate::frame(SkinFrameElements frame, const QSize &size,
     drawPart(center, &painter, centerRect, flags);
 #endif
 
-    return QPixmap::fromImage(result);
+    return result;
 }
 
 void QS60StylePrivate::setStyleProperty_specific(const char *name, const QVariant &value)
@@ -193,22 +318,14 @@ QVariant QS60StylePrivate::styleProperty_specific(const char *name) const
 
 QPixmap QS60StylePrivate::backgroundTexture()
 {
-    static QPixmap result;
-    // Poor mans caching. + Making sure that there is always only one background image in memory at a time
-
-/*
-    TODO: 1) Hold the background QPixmap as pointer in a static class member.
-             Also add a deleteBackground() function and call that in ~QS60StylePrivate()
-          2) Don't cache the background at all as soon as we have native pixmap support
-*/
-
-    if (!m_backgroundValid) {
-        result = QPixmap();
-        result = part(QS60StyleEnums::SP_QsnBgScreen, QApplication::activeWindow()->size());
-        m_backgroundValid = true;
+    if (!m_background) {
+        const QSize size = QApplication::desktop()->screen()->size();
+        QPixmap background = part(QS60StyleEnums::SP_QsnBgScreen, size);
+        m_background = new QPixmap(background);
     }
-    return result;
+    return *m_background;
 }
+
 
 bool QS60StylePrivate::isTouchSupported()
 {
@@ -223,7 +340,6 @@ bool QS60StylePrivate::isToolBarBackground()
 {
     return true;
 }
-
 
 QFont QS60StylePrivate::s60Font_specific(QS60StyleEnums::FontCategories fontCategory, int pointSize)
 {
@@ -242,6 +358,18 @@ QFont QS60StylePrivate::s60Font_specific(QS60StyleEnums::FontCategories fontCate
             break;
     }
     return result;
+}
+
+/*!
+  Constructs a QS60Style object.
+*/
+QS60Style::QS60Style()
+    : QCommonStyle(*new QS60StylePrivate)
+{
+    // Assume, that the resource system has a ':/s60Stylethemes/Default.blob'
+    const QString defaultBlob = QString::fromLatin1(":/s60Stylethemes/Default.blob");
+    if (QFile::exists(defaultBlob))
+        loadS60ThemeFromBlob(defaultBlob);
 }
 
 Q_GLOBAL_STATIC_WITH_INITIALIZER(QStringList, enumPartKeys, {
@@ -285,8 +413,35 @@ QStringList QS60Style::colorListKeys()
 void QS60Style::setS60Theme(const QHash<QString, QPicture> &parts,
     const QHash<QPair<QString , int>, QColor> &colors)
 {
+    Q_D(QS60Style);
     QS60StyleModeSpecifics::m_partPictures = parts;
     QS60StyleModeSpecifics::m_colors = colors;
+    d->clearCaches(QS60StylePrivate::CC_ThemeChange);
+    d->setBackgroundTexture(qApp);
+    d->setThemePalette(qApp);
+}
+
+bool QS60Style::loadS60ThemeFromBlob(const QString &blobFile)
+{
+    QHash<QString, QPicture> partPictures;
+    QHash<QPair<QString, int>, QColor> colors;
+
+    if (!loadThemeFromBlob(blobFile, partPictures, colors))
+        return false;
+    setS60Theme(partPictures, colors);
+    return true;
+}
+
+bool QS60Style::saveS60ThemeToBlob(const QString &blobFile) const
+{
+    return saveThemeToBlob(blobFile,
+        QS60StyleModeSpecifics::m_partPictures, QS60StyleModeSpecifics::m_colors);
+}
+
+QPoint qt_s60_fill_background_offset(const QWidget *targetWidget)
+{
+    Q_UNUSED(targetWidget)
+    return QPoint();
 }
 
 QT_END_NAMESPACE

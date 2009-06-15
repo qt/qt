@@ -428,10 +428,13 @@ bool QPixmapIconEngine::read(QDataStream &in)
         in >> sz;
         in >> mode;
         in >> state;
-        if (pm.isNull())
+        if (pm.isNull()) {
             addFile(fileName, sz, QIcon::Mode(mode), QIcon::State(state));
-        else
-            addPixmap(pm, QIcon::Mode(mode), QIcon::State(state));
+        } else {
+            QPixmapIconEngineEntry pe(fileName, sz, QIcon::Mode(mode), QIcon::State(state));
+            pe.pixmap = pm;
+            pixmaps += pe;
+        }
     }
     return true;
 }
@@ -922,7 +925,7 @@ QList<QSize> QIcon::availableSizes(Mode mode, State state) const
     \relates QIcon
     \since 4.2
 
-    Writes the given \a icon to the the given \a stream as a PNG
+    Writes the given \a icon to the given \a stream as a PNG
     image. If the icon contains more than one image, all images will
     be written to the stream. Note that writing the stream to a file
     will not produce a valid image file.

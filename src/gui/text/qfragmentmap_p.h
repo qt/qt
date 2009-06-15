@@ -214,6 +214,7 @@ private:
 
 template <class Fragment>
 QFragmentMapData<Fragment>::QFragmentMapData()
+    : fragments(0)
 {
     init();
 }
@@ -222,6 +223,7 @@ template <class Fragment>
 void QFragmentMapData<Fragment>::init()
 {
     fragments = (Fragment *)malloc(64*fragmentSize);
+    Q_CHECK_PTR(fragments);
     head->tag = (((quint32)'p') << 24) | (((quint32)'m') << 16) | (((quint32)'a') << 8) | 'p'; //TAG('p', 'm', 'a', 'p');
     head->root = 0;
     head->freelist = 1;
@@ -247,7 +249,9 @@ uint QFragmentMapData<Fragment>::createFragment()
         // need to create some free space
         uint needed = qAllocMore((freePos+1)*fragmentSize, 0);
         Q_ASSERT(needed/fragmentSize > head->allocated);
-        fragments = (Fragment *)realloc(fragments, needed);
+        Fragment *newFragments = (Fragment *)realloc(fragments, needed);
+        Q_CHECK_PTR(newFragments);
+        fragments = newFragments;
         head->allocated = needed/fragmentSize;
         F(freePos).right = 0;
     }
@@ -787,6 +791,8 @@ public:
     QFragmentMap() {}
     ~QFragmentMap()
     {
+        if (!data.fragments)
+            return; // in case of out-of-memory, we won't have fragments
         for (Iterator it = begin(); !it.atEnd(); ++it)
             it.value()->free();
     }

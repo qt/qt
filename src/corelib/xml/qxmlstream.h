@@ -48,6 +48,7 @@
 
 #include <QtCore/QString>
 #include <QtCore/QVector>
+#include <QtCore/QScopedPointer>
 
 QT_BEGIN_HEADER
 
@@ -392,7 +393,7 @@ public:
 private:
     Q_DISABLE_COPY(QXmlStreamReader)
     Q_DECLARE_PRIVATE(QXmlStreamReader)
-    QXmlStreamReaderPrivate *d_ptr;
+    QScopedPointer<QXmlStreamReaderPrivate> d_ptr;
 
 };
 #endif // QT_NO_XMLSTREAMREADER
@@ -465,7 +466,7 @@ public:
 private:
     Q_DISABLE_COPY(QXmlStreamWriter)
     Q_DECLARE_PRIVATE(QXmlStreamWriter)
-    QXmlStreamWriterPrivate *d_ptr;
+    QScopedPointer<QXmlStreamWriterPrivate> d_ptr;
 };
 #endif // QT_NO_XMLSTREAMWRITER
 

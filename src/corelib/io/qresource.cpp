@@ -334,7 +334,6 @@ QResource::QResource(const QString &file, const QLocale &locale) : d_ptr(new QRe
 */
 QResource::~QResource()
 {
-    delete d_ptr;
 }
 
 /*!
@@ -406,7 +405,7 @@ QString QResource::absoluteFilePath() const
 }
 
 /*!
-    Returns true if the resource really exists in the resource heirarchy,
+    Returns true if the resource really exists in the resource hierarchy,
     false otherwise.
 
 */

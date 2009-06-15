@@ -300,10 +300,15 @@ QT_BEGIN_NAMESPACE
     the \a TestClass, and executes all tests in the order they were defined.
     Use this macro to build stand-alone executables.
 
+    \bold {Note:} On platforms that have keypad navigation enabled by default (eg: Symbian),
+    this macro will forcfully disable it to simplify the usage of key events when writing
+    autotests. If you wish to write a test case that uses keypad navigation, you should
+    enable it either in the \c {initTestCase()} or \c {init()} functions of your test case.
+
     Example:
     \snippet doc/src/snippets/code/src_qtestlib_qtestcase.cpp 11
 
-    \sa QTEST_APPLESS_MAIN(), QTest::qExec()
+    \sa QTEST_APPLESS_MAIN(), QTest::qExec(), QApplication::setKeypadNavigationEnabled()
 */
 
 /*! \macro QTEST_APPLESS_MAIN(TestClass)
@@ -1432,7 +1437,7 @@ int QTest::qExec(QObject *testObject, int argc, char **argv)
     }
 #endif
 
- #ifndef QT_NO_EXCEPTIONS
+#ifndef QT_NO_EXCEPTIONS
      } catch (...) {
          QTestResult::addFailure("Caught unhandled exception", __FILE__, __LINE__);
          if (QTestResult::currentTestFunction()) {
@@ -1446,13 +1451,13 @@ int QTest::qExec(QObject *testObject, int argc, char **argv)
              IOPMAssertionRelease(powerID);
          }
 #endif
- #ifdef Q_OS_WIN
+//#  ifdef Q_OS_WIN
          // rethrow exception to make debugging easier
          throw;
- #endif
-         return -1;
+//#  endif
+         return 1;
      }
- #endif
+#  endif
 
     currentTestObject = 0;
 #ifdef QT_MAC_USE_COCOA

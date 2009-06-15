@@ -1215,7 +1215,7 @@ OSStatus QWidgetPrivate::qt_widget_event(EventHandlerCallRef er, EventRef event,
                         QAbstractScrollArea *scrollArea = qobject_cast<QAbstractScrollArea *>(widget->parent());
                         QPoint scrollAreaOffset;
                         if (scrollArea && scrollArea->viewport() == widget) {
-                            QAbstractScrollAreaPrivate *priv = static_cast<QAbstractScrollAreaPrivate *>(static_cast<QWidget *>(scrollArea)->d_ptr);
+                            QAbstractScrollAreaPrivate *priv = static_cast<QAbstractScrollAreaPrivate *>(static_cast<QWidget *>(scrollArea)->d_ptr.data());
                             scrollAreaOffset = priv->contentsOffset();
                             p.translate(-scrollAreaOffset);
                         }
@@ -3600,11 +3600,15 @@ void QWidgetPrivate::raise_sys()
         }
     } else {
         // Cocoa doesn't really have an idea of Z-ordering, but you can
-        // fake it by changing the order of it.
+        // fake it by changing the order of it. But beware, removing an
+        // NSView will also remove it as the first responder. So we re-set
+        // the first responder just in case:
         NSView *view = qt_mac_nativeview_for(q);
         NSView *parentView = [view superview];
+        NSResponder *firstResponder = [[view window] firstResponder];
         [view removeFromSuperview];
         [parentView addSubview:view];
+        [[view window] makeFirstResponder:firstResponder];
     }
 #else
     if(q->isWindow()) {
@@ -3642,6 +3646,7 @@ void QWidgetPrivate::lower_sys()
         NSArray *tmpViews = [parentView subviews];
         NSMutableArray *subviews = [[NSMutableArray alloc] initWithCapacity:[tmpViews count]];
         [subviews addObjectsFromArray:tmpViews];
+        NSResponder *firstResponder = [[myview window] firstResponder];
         // Implicit assumption that myViewIndex is included in subviews, that's why I'm not checking
         // myViewIndex.
         NSUInteger index = 0;
@@ -3661,6 +3666,7 @@ void QWidgetPrivate::lower_sys()
         for (NSView *subview in subviews)
             [parentView addSubview:subview];
         [subviews release];
+        [[myview window] makeFirstResponder:firstResponder];
     }
 #else
     if(q->isWindow()) {

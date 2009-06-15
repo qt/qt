@@ -927,6 +927,7 @@ bool QMYSQLResult::exec()
             nullVector[i] = static_cast<my_bool>(val.isNull());
             currBind->is_null = &nullVector[i];
             currBind->length = 0;
+            currBind->is_unsigned = 0;
 
             switch (val.type()) {
                 case QVariant::ByteArray:
@@ -973,7 +974,6 @@ bool QMYSQLResult::exec()
                     currBind->buffer_type = MYSQL_TYPE_DOUBLE;
                     currBind->buffer = data;
                     currBind->buffer_length = sizeof(double);
-                    currBind->is_unsigned = 0;
                     break;
                 case QVariant::LongLong:
                 case QVariant::ULongLong:
@@ -989,7 +989,6 @@ bool QMYSQLResult::exec()
                     currBind->buffer_type = MYSQL_TYPE_STRING;
                     currBind->buffer = const_cast<char *>(ba.constData());
                     currBind->buffer_length = ba.length();
-                    currBind->is_unsigned = 0;
                     break; }
             }
         }
@@ -1279,6 +1278,11 @@ bool QMYSQLDriver::open(const QString& db,
     d->preparedQuerysEnabled = false;
 #endif
 
+#ifndef QT_NO_THREAD
+    mysql_thread_init();
+#endif
+
+
     setOpen(true);
     setOpenError(false);
     return true;
@@ -1287,6 +1291,9 @@ bool QMYSQLDriver::open(const QString& db,
 void QMYSQLDriver::close()
 {
     if (isOpen()) {
+#ifndef QT_NO_THREAD
+        mysql_thread_end();
+#endif
         mysql_close(d->mysql);
         d->mysql = NULL;
         setOpen(false);

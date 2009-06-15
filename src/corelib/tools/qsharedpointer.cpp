@@ -102,13 +102,18 @@
     except that it only detaches if
     QExplicitlySharedDataPointer::detach() is explicitly called.
 
+    QScopedPointer simply holds a pointer to a heap allocated object and
+    deletes it in its destructor. This class is useful when an object needs to
+    be heap allocated and deleted, but no more. QScopedPointer is lightweight,
+    it makes no use of additional structure or reference counting.
+
     Finally, QPointer holds a pointer to a QObject-derived object, but
     it does so weakly. QPointer is similar, in that behaviour, to
     QWeakPointer: it does not allow you to prevent the object from
     being destroyed. All you can do is query whether it has been
     destroyed or not.
 
-    \sa QSharedDataPointer, QWeakPointer
+    \sa QSharedDataPointer, QWeakPointer, QScopedPointer
 */
 
 /*!
@@ -130,7 +135,7 @@
     must first create a QSharedPointer object and verify if the pointer
     is null or not.
 
-    \sa QSharedPointer
+    \sa QSharedPointer, QScopedPointer
 */
 
 /*!

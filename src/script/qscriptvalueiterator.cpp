@@ -115,12 +115,11 @@ QScriptValueIteratorPrivate::~QScriptValueIteratorPrivate()
   first property).
 */
 QScriptValueIterator::QScriptValueIterator(const QScriptValue &object)
+    : d_ptr(0)
 {
     QScriptValueImpl val = QScriptValuePrivate::valueOf(object);
-    if (!val.isObject()) {
-        d_ptr = 0;
-    } else {
-        d_ptr = new QScriptValueIteratorPrivate();
+    if (val.isObject()) {
+        d_ptr.reset(new QScriptValueIteratorPrivate());
         d_ptr->it = new QScriptValueIteratorImpl(val);
     }
 }
@@ -130,10 +129,6 @@ QScriptValueIterator::QScriptValueIterator(const QScriptValue &object)
 */
 QScriptValueIterator::~QScriptValueIterator()
 {
-    if (d_ptr) {
-        delete d_ptr;
-        d_ptr = 0;
-    }
 }
 
 /*!
@@ -311,13 +306,10 @@ void QScriptValueIterator::remove()
 */
 QScriptValueIterator& QScriptValueIterator::operator=(QScriptValue &object)
 {
-    if (d_ptr) {
-        delete d_ptr;
-        d_ptr = 0;
-    }
+    d_ptr.reset();
     QScriptValueImpl val = QScriptValuePrivate::valueOf(object);
     if (val.isObject()) {
-        d_ptr = new QScriptValueIteratorPrivate();
+        d_ptr.reset(new QScriptValueIteratorPrivate());
         d_ptr->it = new QScriptValueIteratorImpl(val);
     }
     return *this;

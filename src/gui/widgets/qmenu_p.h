@@ -227,7 +227,7 @@ public:
     QString searchBuffer;
     QBasicTimer searchBufferTimer;
 
-    //passing of mouse events up the parent heirarchy
+    //passing of mouse events up the parent hierarchy
     QPointer<QMenu> activeMenu;
     bool mouseEventTaken(QMouseEvent *);
 
@@ -358,7 +358,6 @@ public:
             return 0;
         }
     } *symbian_menu;
-    bool symbianCommands(int command);
 #endif
     QPointer<QWidget> noReplayFor;
 };

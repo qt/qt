@@ -1055,8 +1055,13 @@ inline T qAbs(const T &t) { return t >= 0 ? t : -t; }
 inline int qRound(qreal d)
 { return d >= 0.0 ? int(d + 0.5) : int(d - int(d-1) + 0.5) + int(d-1); }
 
+#if defined(QT_NO_FPU) || defined(QT_ARCH_ARM) || defined(QT_ARCH_WINDOWSCE) || defined(QT_ARCH_SYMBIAN)
+inline qint64 qRound64(double d)
+{ return d >= 0.0 ? qint64(d + 0.5) : qint64(d - qint64(d-1) + 0.5) + qint64(d-1); }
+#else
 inline qint64 qRound64(qreal d)
 { return d >= 0.0 ? qint64(d + 0.5) : qint64(d - qint64(d-1) + 0.5) + qint64(d-1); }
+#endif
 
 template <typename T>
 inline const T &qMin(const T &a, const T &b) { if (a < b) return a; return b; }
@@ -1118,7 +1123,7 @@ class QDataStream;
 #ifndef Q_DECL_EXPORT
 #  ifdef Q_OS_WIN
 #    define Q_DECL_EXPORT __declspec(dllexport)
-#  elif  defined(Q_CC_NOKIAX86) || defined(Q_CC_RVCT)
+#  elif  defined(Q_CC_NOKIAX86)
 #    define Q_DECL_EXPORT __declspec(dllexport)
 #  elif defined(QT_VISIBILITY_AVAILABLE)
 #    define Q_DECL_EXPORT __attribute__((visibility("default")))
@@ -1130,7 +1135,7 @@ class QDataStream;
 #ifndef Q_DECL_IMPORT
 #  if defined(Q_OS_WIN)
 #    define Q_DECL_IMPORT __declspec(dllimport)
-#  elif defined(Q_CC_NOKIAX86) || defined(Q_CC_RVCT)
+#  elif defined(Q_CC_NOKIAX86)
 #    define Q_DECL_IMPORT __declspec(dllimport)
 #  else
 #    define Q_DECL_IMPORT
@@ -1294,6 +1299,32 @@ class QDataStream;
 #    define Q_AUTOTEST_EXPORT Q_DECL_EXPORT
 #else
 #    define Q_AUTOTEST_EXPORT
+#endif
+
+inline void qt_noop() {}
+
+/* These wrap try/catch so we can switch off exceptions later.
+
+   Beware - do not use more than one QT_CATCH per QT_TRY, and do not use
+   the exception instance in the catch block.
+   If you can't live with those constraints, don't use these macros.
+   Use the QT_NO_EXCEPTIONS macro to protect your code instead.
+*/
+
+#ifdef QT_BOOTSTRAPPED
+#  define QT_NO_EXCEPTIONS
+#endif
+
+#ifdef QT_NO_EXCEPTIONS
+#  define QT_TRY if (true)
+#  define QT_CATCH(A) else
+#  define QT_THROW(A) qt_noop()
+#  define QT_RETHROW qt_noop()
+#else
+#  define QT_TRY try
+#  define QT_CATCH(A) catch (A)
+#  define QT_THROW(A) throw A
+#  define QT_RETHROW throw
 #endif
 
 /*
@@ -1549,8 +1580,6 @@ inline QNoDebug qDebug();
 #endif
 
 
-inline void qt_noop() {}
-
 Q_CORE_EXPORT void qt_assert(const char *assertion, const char *file, int line);
 
 #if !defined(Q_ASSERT)
@@ -1576,11 +1605,16 @@ Q_CORE_EXPORT void qt_assert_x(const char *where, const char *what, const char *
 #endif
 
 Q_CORE_EXPORT void qt_check_pointer(const char *, int);
+Q_CORE_EXPORT void qBadAlloc();
 
-#ifndef QT_NO_DEBUG
-#  define Q_CHECK_PTR(p) do {if(!(p))qt_check_pointer(__FILE__,__LINE__);} while (0)
+#ifdef QT_NO_EXCEPTIONS
+#  if defined(QT_NO_DEBUG)
+#    define Q_CHECK_PTR(p) qt_noop();
+#  else
+#    define Q_CHECK_PTR(p) do {if(!(p))qt_check_pointer(__FILE__,__LINE__);} while (0)
+#  endif
 #else
-#  define Q_CHECK_PTR(p)
+#  define Q_CHECK_PTR(p) do { if (!(p)) qBadAlloc(); } while (0)
 #endif
 
 #if (defined(Q_CC_GNU) && !defined(Q_OS_SOLARIS)) || defined(Q_CC_HPACC)
@@ -1729,12 +1763,12 @@ public:
     static TYPE *NAME()                                                 \
     {                                                                   \
         if (!this_##NAME.pointer && !this_##NAME.destroyed) {           \
-            TYPE *x = new TYPE;                                         \
+            QScopedPointer<TYPE > x(new TYPE);                          \
             INITIALIZER;                                                \
-            if (!this_##NAME.pointer.testAndSetOrdered(0, x))           \
-                delete x;                                               \
-            else                                                        \
+            if (this_##NAME.pointer.testAndSetOrdered(0, x.data())) {   \
                 static QGlobalStaticDeleter<TYPE > cleanup(this_##NAME); \
+                x.take();                                               \
+            }                                                           \
         }                                                               \
         return this_##NAME.pointer;                                     \
     }
@@ -2188,8 +2222,8 @@ inline const QForeachContainer<T> *qForeachContainer(const QForeachContainerBase
 #endif
 
 #define Q_DECLARE_PRIVATE(Class) \
-    inline Class##Private* d_func() { return reinterpret_cast<Class##Private *>(d_ptr); } \
-    inline const Class##Private* d_func() const { return reinterpret_cast<const Class##Private *>(d_ptr); } \
+    inline Class##Private* d_func() { return reinterpret_cast<Class##Private *>(d_ptr.data()); } \
+    inline const Class##Private* d_func() const { return reinterpret_cast<const Class##Private *>(d_ptr.data()); } \
     friend class Class##Private;
 
 #define Q_DECLARE_PRIVATE_D(Dptr, Class) \
@@ -2237,7 +2271,9 @@ inline const QForeachContainer<T> *qForeachContainer(const QForeachContainerBase
      Class(const Class &); \
      Class &operator=(const Class &);
 #else
-# define Q_DISABLE_COPY(Class)
+# define Q_DISABLE_COPY(Class) \
+     Class(const Class &); \
+     Class &operator=(const Class &);
 #endif
 
 class QByteArray;
@@ -2273,6 +2309,42 @@ QT3_SUPPORT Q_CORE_EXPORT const char *qInstallPathData();
 QT3_SUPPORT Q_CORE_EXPORT const char *qInstallPathTranslations();
 QT3_SUPPORT Q_CORE_EXPORT const char *qInstallPathSysconf();
 #endif
+
+#if defined(Q_OS_SYMBIAN)
+
+// forward declare std::exception
+namespace std { class exception; }
+
+Q_CORE_EXPORT void qt_translateSymbianErrorToException(int error);
+Q_CORE_EXPORT void qt_translateExceptionToSymbianErrorL(const std::exception& ex);
+Q_CORE_EXPORT int qt_translateExceptionToSymbianError(const std::exception& ex);
+
+#define QT_TRANSLATE_SYMBIAN_LEAVE_TO_EXCEPTION(f)  \
+    {                                               \
+        TInt error;                                 \
+        TRAP(error, f);                             \
+        if (error)                                    \
+            qt_translateSymbianErrorToException(error); \
+     }
+
+#define QT_TRANSLATE_EXCEPTION_TO_SYMBIAN_ERROR(err, f)     \
+    {                                                       \
+        err = KErrNone;                                     \
+        try {                                               \
+            f;                                              \
+        } catch (const std::exception &ex) {                \
+            err = qt_translateExceptionToSymbianError(ex);  \
+        }                                                   \
+    }
+
+#define QT_TRANSLATE_EXCEPTION_TO_SYMBIAN_LEAVE(f)      \
+    {                                                   \
+    TInt err;                                           \
+    QT_TRANSLATE_EXCEPTION_TO_SYMBIAN_ERROR(err, f)     \
+    User::LeaveIfError(err);                            \
+    }
+#endif
+
 
 /*
    This gives us the possibility to check which modules the user can
@@ -2346,6 +2418,9 @@ QT3_SUPPORT Q_CORE_EXPORT const char *qInstallPathSysconf();
 
 #define QT_LICENSED_MODULE(x) \
     enum QtValidLicenseFor##x##Module { Licensed##x = true };
+
+/* qdoc is really unhappy with the following block of preprocessor checks,
+   making it difficult to document classes properly after this point. */
 
 #if (QT_EDITION & QT_MODULE_CORE)
 QT_LICENSED_MODULE(Core)

@@ -237,7 +237,7 @@ void QLocalSocket::connectToServer(const QString &name, OpenMode openMode)
                         QLatin1String("QLocalSocket::connectToServer"));
         return;
     }
-
+#ifndef Q_OS_SYMBIAN
     // set non blocking so we can try to connect and it wont wait
     int flags = fcntl(d->connectingSocket, F_GETFL, 0);
     if (-1 == flags
@@ -246,6 +246,7 @@ void QLocalSocket::connectToServer(const QString &name, OpenMode openMode)
                 QLatin1String("QLocalSocket::connectToServer"));
         return;
     }
+#endif
 
     // _q_connectToSocket does the actual connecting
     d->connectingName = name;
@@ -304,7 +305,7 @@ void QLocalSocketPrivate::_q_connectToSocket()
         case EAGAIN:
             // Try again later, all of the sockets listening are full
             if (!delayConnect) {
-                delayConnect = new QSocketNotifier(connectingSocket, QSocketNotifier::Write);
+                delayConnect = new QSocketNotifier(connectingSocket, QSocketNotifier::Write, q);
                 q->connect(delayConnect, SIGNAL(activated(int)), q, SLOT(_q_connectToSocket()));
             }
             if (!connectTimer) {

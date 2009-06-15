@@ -149,6 +149,9 @@ static int numerusHelper(int n, const uchar *rules, int rulesSize)
                     leftOperand %= 10;
                 } else if (opcode & Q_MOD_100) {
                     leftOperand %= 100;
+                } else if (opcode & Q_LEAD_1000) {
+                    while (leftOperand >= 1000)
+                        leftOperand /= 1000;
                 }
 
                 int op = opcode & Q_OP_MASK;
@@ -819,6 +822,6 @@ bool QTranslator::isEmpty() const
     Use translate(\a context, \a sourceText, \a comment) instead.
 */
 
-#endif // QT_NO_TRANSLATION
-
 QT_END_NAMESPACE
+
+#endif // QT_NO_TRANSLATION

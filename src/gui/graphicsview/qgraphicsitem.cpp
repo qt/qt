@@ -515,6 +515,7 @@
 #include <QtGui/qpixmapcache.h>
 #include <QtGui/qstyleoption.h>
 #include <QtGui/qevent.h>
+#include <QInputContext>
 
 #include <private/qgraphicsitem_p.h>
 #include <private/qgraphicswidget_p.h>
@@ -873,8 +874,6 @@ QGraphicsItem::~QGraphicsItem()
     }
     if (d_ptr->scene)
         d_ptr->scene->d_func()->_q_removeItemLater(this);
-
-    delete d_ptr;
 
     qt_dataStore()->data.remove(this);
 }
@@ -1520,6 +1519,10 @@ void QGraphicsItemPrivate::setVisibleHelper(bool newVisible, bool explicitly, bo
 
     // Check if there's nothing to do.
     if (visible == quint32(newVisible))
+        return;
+
+    // Don't show child if parent is not visible
+    if (parent && newVisible && !parent->d_ptr->visible)
         return;
 
     // Modify the property.
@@ -2727,7 +2730,7 @@ QTransform QGraphicsItem::itemTransform(const QGraphicsItem *other, bool *ok) co
     QTransform x;
     const QGraphicsItem *p = child;
     do {
-        const QGraphicsItemPrivate *pd = p->d_ptr;
+        const QGraphicsItemPrivate *pd = p->d_ptr.data();
         if (pd->hasTransform)
             x *= p->transform();
         if (!pd->pos.isNull())
@@ -3065,7 +3068,7 @@ QRectF QGraphicsItem::sceneBoundingRect() const
     const QGraphicsItem *parentItem = this;
     const QGraphicsItemPrivate *itemd;
     do {
-        itemd = parentItem->d_ptr;
+        itemd = parentItem->d_ptr.data();
         if (itemd->hasTransform)
             break;
         offset += itemd->pos;
@@ -7605,7 +7608,7 @@ class QGraphicsTextItemPrivate
 {
 public:
     QGraphicsTextItemPrivate()
-        : control(0), pageNumber(0), useDefaultImpl(false), tabChangesFocus(false)
+        : control(0), pageNumber(0), useDefaultImpl(false), tabChangesFocus(false), clickCausedFocus(0)
     { }
 
     mutable QTextControl *control;
@@ -7625,6 +7628,8 @@ public:
     int pageNumber;
     bool useDefaultImpl;
     bool tabChangesFocus;
+
+    uint clickCausedFocus : 1;
 
     QGraphicsTextItem *qq;
 };
@@ -7952,7 +7957,13 @@ void QGraphicsTextItem::mousePressEvent(QGraphicsSceneMouseEvent *event)
 	    dd->useDefaultImpl = false;
         return;
     }
+
     dd->sendControlEvent(event);
+    Q_ASSERT(event->widget());
+    QInputContext *qic = event->widget()->inputContext();
+    if(qic) {
+        qic->update();
+    }
 }
 
 /*!
@@ -7964,7 +7975,13 @@ void QGraphicsTextItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
         QGraphicsItem::mouseMoveEvent(event);
         return;
     }
+
     dd->sendControlEvent(event);
+    Q_ASSERT(event->widget());
+    QInputContext *qic = event->widget()->inputContext();
+    if(qic) {
+        qic->update();
+    }
 }
 
 /*!
@@ -7984,7 +8001,23 @@ void QGraphicsTextItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
 	}
         return;
     }
+
+    if (event->button() == Qt::LeftButton && qApp->autoSipEnabled()
+            && (!dd->clickCausedFocus || qApp->autoSipOnMouseFocus())) {
+        QEvent _event(QEvent::RequestSoftwareInputPanel);
+        QApplication::sendEvent(event->widget(), &_event);
+    } else {
+        QGraphicsItem::mouseReleaseEvent(event);
+    }
+    dd->clickCausedFocus = 0;
+
     dd->sendControlEvent(event);
+
+    Q_ASSERT(event->widget());
+    QInputContext *qic = event->widget()->inputContext();
+    if(qic) {
+        qic->update();
+    }
 }
 
 /*!
@@ -8003,6 +8036,11 @@ void QGraphicsTextItem::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event)
     }
 
     dd->sendControlEvent(event);
+    Q_ASSERT(event->widget());
+    QInputContext *qic = event->widget()->inputContext();
+    if(qic) {
+        qic->update();
+    }
 }
 
 /*!
@@ -8011,6 +8049,11 @@ void QGraphicsTextItem::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event)
 void QGraphicsTextItem::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
 {
     dd->sendControlEvent(event);
+    Q_ASSERT(event->widget());
+    QInputContext *qic = event->widget()->inputContext();
+    if(qic) {
+        qic->update();
+    }
 }
 
 /*!
@@ -8019,6 +8062,18 @@ void QGraphicsTextItem::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
 void QGraphicsTextItem::keyPressEvent(QKeyEvent *event)
 {
     dd->sendControlEvent(event);
+    QList<QGraphicsView *> views = scene()->views();
+    for (int i = 0; i < views.size(); ++i) {
+        QGraphicsView *view = views.at(i);
+        Q_ASSERT(view->viewport());
+        if(view->viewport()->hasFocus()) {
+            QInputContext *qic = view->viewport()->inputContext();
+            if(qic){
+               qic->update();
+            }
+            break;
+        }
+    }
 }
 
 /*!
@@ -8027,6 +8082,18 @@ void QGraphicsTextItem::keyPressEvent(QKeyEvent *event)
 void QGraphicsTextItem::keyReleaseEvent(QKeyEvent *event)
 {
     dd->sendControlEvent(event);
+    QList<QGraphicsView *> views = scene()->views();
+    for (int i = 0; i < views.size(); ++i) {
+        QGraphicsView *view = views.at(i);
+        Q_ASSERT(view->viewport());
+        if(view->viewport()->hasFocus()) {
+            QInputContext *qic = view->viewport()->inputContext();
+            if(qic){
+               qic->update();
+            }
+            break;
+        }
+    }
 }
 
 /*!
@@ -8035,7 +8102,22 @@ void QGraphicsTextItem::keyReleaseEvent(QKeyEvent *event)
 void QGraphicsTextItem::focusInEvent(QFocusEvent *event)
 {
     dd->sendControlEvent(event);
+    if (event->reason() == Qt::MouseFocusReason) {
+        dd->clickCausedFocus = 1;
+    }
     update();
+    QList<QGraphicsView *> views = scene()->views();
+    for (int i = 0; i < views.size(); ++i) {
+        QGraphicsView *view = views.at(i);
+        Q_ASSERT(view->viewport());
+        if(view->viewport()->hasFocus()) {
+            QInputContext *qic = view->viewport()->inputContext();
+            if(qic){
+               qic->reset();
+            }
+            break;
+        }
+    }
 }
 
 /*!
@@ -8045,6 +8127,18 @@ void QGraphicsTextItem::focusOutEvent(QFocusEvent *event)
 {
     dd->sendControlEvent(event);
     update();
+    QList<QGraphicsView *> views = scene()->views();
+    for (int i = 0; i < views.size(); ++i) {
+        QGraphicsView *view = views.at(i);
+        Q_ASSERT(view->viewport());
+        if(view->viewport()->hasFocus()) {
+            QInputContext *qic = view->viewport()->inputContext();
+            if(qic){
+               qic->reset();
+            }
+            break;
+        }
+    }
 }
 
 /*!
@@ -8053,6 +8147,11 @@ void QGraphicsTextItem::focusOutEvent(QFocusEvent *event)
 void QGraphicsTextItem::dragEnterEvent(QGraphicsSceneDragDropEvent *event)
 {
     dd->sendControlEvent(event);
+    Q_ASSERT(event->widget());
+    QInputContext *qic = event->widget()->inputContext();
+    if(qic) {
+        qic->update();
+    }
 }
 
 /*!
@@ -8061,6 +8160,11 @@ void QGraphicsTextItem::dragEnterEvent(QGraphicsSceneDragDropEvent *event)
 void QGraphicsTextItem::dragLeaveEvent(QGraphicsSceneDragDropEvent *event)
 {
     dd->sendControlEvent(event);
+    Q_ASSERT(event->widget());
+    QInputContext *qic = event->widget()->inputContext();
+    if(qic) {
+        qic->update();
+    }
 }
 
 /*!
@@ -8069,6 +8173,11 @@ void QGraphicsTextItem::dragLeaveEvent(QGraphicsSceneDragDropEvent *event)
 void QGraphicsTextItem::dragMoveEvent(QGraphicsSceneDragDropEvent *event)
 {
     dd->sendControlEvent(event);
+    Q_ASSERT(event->widget());
+    QInputContext *qic = event->widget()->inputContext();
+    if(qic) {
+        qic->update();
+    }
 }
 
 /*!
@@ -8077,6 +8186,11 @@ void QGraphicsTextItem::dragMoveEvent(QGraphicsSceneDragDropEvent *event)
 void QGraphicsTextItem::dropEvent(QGraphicsSceneDragDropEvent *event)
 {
     dd->sendControlEvent(event);
+    Q_ASSERT(event->widget());
+    QInputContext *qic = event->widget()->inputContext();
+    if(qic) {
+        qic->update();
+    }
 }
 
 /*!
@@ -8093,6 +8207,11 @@ void QGraphicsTextItem::inputMethodEvent(QInputMethodEvent *event)
 void QGraphicsTextItem::hoverEnterEvent(QGraphicsSceneHoverEvent *event)
 {
     dd->sendControlEvent(event);
+    Q_ASSERT(event->widget());
+    QInputContext *qic = event->widget()->inputContext();
+    if(qic) {
+        qic->update();
+    }
 }
 
 /*!
@@ -8101,6 +8220,11 @@ void QGraphicsTextItem::hoverEnterEvent(QGraphicsSceneHoverEvent *event)
 void QGraphicsTextItem::hoverMoveEvent(QGraphicsSceneHoverEvent *event)
 {
     dd->sendControlEvent(event);
+    Q_ASSERT(event->widget());
+    QInputContext *qic = event->widget()->inputContext();
+    if(qic) {
+        qic->update();
+    }
 }
 
 /*!
@@ -8109,6 +8233,11 @@ void QGraphicsTextItem::hoverMoveEvent(QGraphicsSceneHoverEvent *event)
 void QGraphicsTextItem::hoverLeaveEvent(QGraphicsSceneHoverEvent *event)
 {
     dd->sendControlEvent(event);
+    Q_ASSERT(event->widget());
+    QInputContext *qic = event->widget()->inputContext();
+    if(qic) {
+        qic->update();
+    }
 }
 
 /*!

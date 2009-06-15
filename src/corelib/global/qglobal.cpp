@@ -69,6 +69,7 @@
 #endif
 
 #if defined(Q_OS_SYMBIAN)
+#include <e32def.h>
 #include <e32debug.h>
 #endif
 
@@ -131,7 +132,8 @@ QT_BEGIN_NAMESPACE
 
     If you want to use QFlags for your own enum types, use
     the Q_DECLARE_FLAGS() and Q_DECLARE_OPERATORS_FOR_FLAGS().
-    For example:
+
+    Example:
 
     \snippet doc/src/snippets/code/src_corelib_global_qglobal.cpp 1
 
@@ -448,14 +450,18 @@ QT_BEGIN_NAMESPACE
     function. You can retrieve the minimum and maximum of two given
     objects using qMin() and qMax() respectively. All these functions
     return a corresponding template type; the template types can be
-    replaced by any other type. For example:
+    replaced by any other type.
+
+    Example:
 
     \snippet doc/src/snippets/code/src_corelib_global_qglobal.cpp 3
 
     <QtGlobal> also contains functions that generate messages from the
     given string argument: qCritical(), qDebug(), qFatal() and
     qWarning(). These functions call the message handler with the
-    given message. For example:
+    given message.
+
+    Example:
 
     \snippet doc/src/snippets/code/src_corelib_global_qglobal.cpp 4
 
@@ -700,7 +706,9 @@ QT_BEGIN_NAMESPACE
     \relates <QtGlobal>
 
     Wraps the signed 64-bit integer \a literal in a
-    platform-independent way. For example:
+    platform-independent way.
+
+    Example:
 
     \snippet doc/src/snippets/code/src_corelib_global_qglobal.cpp 8
 
@@ -711,7 +719,9 @@ QT_BEGIN_NAMESPACE
     \relates <QtGlobal>
 
     Wraps the unsigned 64-bit integer \a literal in a
-    platform-independent way. For example:
+    platform-independent way.
+
+    Example:
 
     \snippet doc/src/snippets/code/src_corelib_global_qglobal.cpp 9
 
@@ -740,7 +750,11 @@ QT_BEGIN_NAMESPACE
 /*! \fn const T &qAbs(const T &value)
     \relates <QtGlobal>
 
-    Returns the absolute value of \a value. For example:
+    Compares \a value to the 0 of type T and returns the absolute
+    value. Thus if T is \e {double}, then \a value is compared to
+    \e{(double) 0}.
+
+    Example:
 
     \snippet doc/src/snippets/code/src_corelib_global_qglobal.cpp 10
 */
@@ -748,7 +762,9 @@ QT_BEGIN_NAMESPACE
 /*! \fn int qRound(qreal value)
     \relates <QtGlobal>
 
-    Rounds \a value to the nearest integer. For example:
+    Rounds \a value to the nearest integer.
+
+    Example:
 
     \snippet doc/src/snippets/code/src_corelib_global_qglobal.cpp 11
 */
@@ -756,7 +772,9 @@ QT_BEGIN_NAMESPACE
 /*! \fn qint64 qRound64(qreal value)
     \relates <QtGlobal>
 
-    Rounds \a value to the nearest 64-bit integer. For example:
+    Rounds \a value to the nearest 64-bit integer.
+
+    Example:
 
     \snippet doc/src/snippets/code/src_corelib_global_qglobal.cpp 12
 */
@@ -764,7 +782,9 @@ QT_BEGIN_NAMESPACE
 /*! \fn const T &qMin(const T &value1, const T &value2)
     \relates <QtGlobal>
 
-    Returns the minimum of \a value1 and \a value2. For example:
+    Returns the minimum of \a value1 and \a value2.
+
+    Example:
 
     \snippet doc/src/snippets/code/src_corelib_global_qglobal.cpp 13
 
@@ -774,7 +794,9 @@ QT_BEGIN_NAMESPACE
 /*! \fn const T &qMax(const T &value1, const T &value2)
     \relates <QtGlobal>
 
-    Returns the maximum of \a value1 and \a value2. For example:
+    Returns the maximum of \a value1 and \a value2.
+
+    Example:
 
     \snippet doc/src/snippets/code/src_corelib_global_qglobal.cpp 14
 
@@ -785,7 +807,9 @@ QT_BEGIN_NAMESPACE
     \relates <QtGlobal>
 
     Returns \a value bounded by \a min and \a max. This is equivalent
-    to qMax(\a min, qMin(\a value, \a max)). For example:
+    to qMax(\a min, qMin(\a value, \a max)).
+
+    Example:
 
     \snippet doc/src/snippets/code/src_corelib_global_qglobal.cpp 15
 
@@ -931,7 +955,9 @@ QT_BEGIN_NAMESPACE
     4.1.2, the QT_VERSION macro will expand to 0x040102.
 
     You can use QT_VERSION to use the latest Qt features where
-    available. For example:
+    available.
+
+    Example:
 
     \snippet doc/src/snippets/code/src_corelib_global_qglobal.cpp 16
 
@@ -1903,6 +1929,15 @@ void qt_check_pointer(const char *n, int l)
     qWarning("In file %s, line %d: Out of memory", n, l);
 }
 
+/* \internal
+   Allows you to throw an exception without including <new>
+   Called internally from Q_CHECK_PTR on certain OS combinations
+*/
+void qBadAlloc()
+{
+    QT_THROW(std::bad_alloc());
+}
+
 /*
   The Q_ASSERT macro calls this function when the test fails.
 */
@@ -2150,13 +2185,60 @@ void qt_message_output(QtMsgType msgType, const char *buf)
 #endif
 
 #if defined(Q_OS_SYMBIAN)
-        User::Invariant(); // Panic the current thread
+        __DEBUGGER(); // on the emulator, get the debugger to kick in if there's one around
+        TBuf<256> tmp;
+        TPtrC8 ptr(reinterpret_cast<const TUint8*>(buf));
+        TInt len = Min(tmp.MaxLength(), ptr.Length());
+        tmp.Copy(ptr.Left(len));
+        User::Panic(tmp, 0); // Panic the current thread
 #elif (defined(Q_OS_UNIX) || defined(Q_CC_MINGW))
         abort(); // trap; generates core dump
 #else
         exit(1); // goodbye cruel world
 #endif
     }
+}
+
+#if !defined(QT_NO_EXCEPTIONS)
+/*!
+    \internal
+    Uses a local buffer to output the message. Not locale safe + cuts off
+    everything after character 1023, but will work in out of memory situations.
+*/
+static void qEmergencyOut(QtMsgType msgType, const char *msg, va_list ap)
+{
+    char emergency_buf[256] = { '\0' };
+    emergency_buf[255] = '\0';
+    if (msg)
+        qvsnprintf(emergency_buf, 255, msg, ap);
+    qt_message_output(msgType, emergency_buf);
+}
+#endif
+
+/*!
+    \internal
+*/
+static void qt_message(QtMsgType msgType, const char *msg, va_list ap)
+{
+#if !defined(QT_NO_EXCEPTIONS)
+    if (std::uncaught_exception()) {
+        qEmergencyOut(msgType, msg, ap);
+        return;
+    }
+#endif
+    QByteArray buf;
+    if (msg) {
+        QT_TRY {
+            buf = QString().vsprintf(msg, ap).toLocal8Bit();
+        } QT_CATCH(const std::bad_alloc &) {
+#if !defined(QT_NO_EXCEPTIONS)
+            qEmergencyOut(msgType, msg, ap);
+            // don't rethrow - we use qWarning and friends in destructors.
+            return;
+#endif
+        }
+    }
+    qt_message_output(msgType, buf.constData());
 }
 
 #undef qDebug
@@ -2196,14 +2278,10 @@ void qt_message_output(QtMsgType msgType, const char *buf)
 */
 void qDebug(const char *msg, ...)
 {
-    QString buf;
     va_list ap;
-    va_start(ap, msg);                        // use variable arg list
-    if (msg)
-        buf.vsprintf(msg, ap);
+    va_start(ap, msg); // use variable arg list
+    qt_message(QtDebugMsg, msg, ap);
     va_end(ap);
-
-    qt_message_output(QtDebugMsg, buf.toLocal8Bit().constData());
 }
 
 #undef qWarning
@@ -2240,14 +2318,10 @@ void qDebug(const char *msg, ...)
 */
 void qWarning(const char *msg, ...)
 {
-    QString buf;
     va_list ap;
     va_start(ap, msg); // use variable arg list
-    if (msg)
-        buf.vsprintf(msg, ap);
+    qt_message(QtWarningMsg, msg, ap);
     va_end(ap);
-
-    qt_message_output(QtWarningMsg, buf.toLocal8Bit().constData());
 }
 
 /*!
@@ -2280,15 +2354,12 @@ void qWarning(const char *msg, ...)
 */
 void qCritical(const char *msg, ...)
 {
-    QString buf;
     va_list ap;
     va_start(ap, msg); // use variable arg list
-    if (msg)
-        buf.vsprintf(msg, ap);
+    qt_message(QtCriticalMsg, msg, ap);
     va_end(ap);
-
-    qt_message_output(QtCriticalMsg, buf.toLocal8Bit().constData());
 }
+
 #ifdef QT3_SUPPORT
 void qSystemWarning(const char *msg, int code)
    { qCritical("%s (%s)", msg, qt_error_string(code).toLocal8Bit().constData()); }
@@ -2296,6 +2367,8 @@ void qSystemWarning(const char *msg, int code)
 
 void qErrnoWarning(const char *msg, ...)
 {
+    // qt_error_string() will allocate anyway, so we don't have
+    // to be careful here (like we do in plain qWarning())
     QString buf;
     va_list ap;
     va_start(ap, msg);
@@ -2308,6 +2381,8 @@ void qErrnoWarning(const char *msg, ...)
 
 void qErrnoWarning(int code, const char *msg, ...)
 {
+    // qt_error_string() will allocate anyway, so we don't have
+    // to be careful here (like we do in plain qWarning())
     QString buf;
     va_list ap;
     va_start(ap, msg);
@@ -2344,14 +2419,10 @@ void qErrnoWarning(int code, const char *msg, ...)
 */
 void qFatal(const char *msg, ...)
 {
-    QString buf;
     va_list ap;
     va_start(ap, msg); // use variable arg list
-    if (msg)
-        buf.vsprintf(msg, ap);
+    qt_message(QtFatalMsg, msg, ap);
     va_end(ap);
-
-    qt_message_output(QtFatalMsg, buf.toLocal8Bit().constData());
 }
 
 // getenv is declared as deprecated in VS2005. This function
@@ -3138,5 +3209,177 @@ bool QInternal::callFunction(InternalFunction func, void **args)
 
     \sa Q_DECL_EXPORT
 */
+
+#if defined(Q_OS_SYMBIAN)
+
+#include <typeinfo>
+
+/*! \macro QT_TRANSLATE_SYMBIAN_LEAVE_TO_EXCEPTION(function)
+    \relates <QtGlobal>
+    \ingroup qts60
+
+    TRAP leaves from Symbian \a function and throws an appropriate
+    standard C++ exception instead.
+    This must be used when calling Symbian OS leaving functions
+    from inside Qt or standard C++ code, so that the code can respond
+    correctly to the exception.
+
+    \warning This macro is only available on Symbian.
+
+    Example:
+
+    \code
+    // A Symbian leaving function is being called within a Qt function.
+    // Any leave must be converted to an exception
+    CAknTitlePane* titlePane = S60->titlePane();
+    if (titlePane) {
+        TPtrC captionPtr(qt_QString2TPtrC(caption));
+        QT_TRANSLATE_SYMBIAN_LEAVE_TO_EXCEPTION(titlePane->SetTextL(captionPtr));
+    }
+    \endcode
+
+    \sa QT_TRANSLATE_EXCEPTION_TO_SYMBIAN_ERROR(), QT_TRANSLATE_EXCEPTION_TO_SYMBIAN_LEAVE()
+*/
+
+/*! \macro QT_TRANSLATE_EXCEPTION_TO_SYMBIAN_ERROR(error, function)
+    \relates <QtGlobal>
+    \ingroup qts60
+
+    Catch standard C++ exceptions from a \a function and convert them to a Symbian OS
+    \a error code, or \c KErrNone if there is no exception.
+    This must be used inside Qt or standard C++ code when using exception throwing
+    code (practically anything) and returning an error code to Symbian OS.
+
+    \warning This macro is only available on Symbian.
+
+    Example:
+
+    \code
+    // An exception might be thrown in this Symbian TInt error returning function.
+    // It is caught and translated to an error code
+    TInt QServerApp::Connect(const QString &serverName)
+    {
+        TPtrC name;
+        TInt err;
+        QT_TRANSLATE_EXCEPTION_TO_SYMBIAN_ERROR(err, name.Set(qt_QString2TPtrC(serverName)));
+        if (err != KErrNone)
+            return err;
+        return iServer.Connect(name);
+    }
+    \endcode
+}
+
+    \sa QT_TRANSLATE_EXCEPTION_TO_SYMBIAN_LEAVE(), QT_TRANSLATE_SYMBIAN_LEAVE_TO_EXCEPTION()
+*/
+
+/*! \macro QT_TRANSLATE_EXCEPTION_TO_SYMBIAN_LEAVE(function)
+    \relates <QtGlobal>
+    \ingroup qts60
+
+    Catch standard C++ exceptions from \a function and convert them to Symbian OS
+    leaves. This must be used inside Qt or standard C++ code when using exception
+    throwing code (practically anything) and returning to Symbian OS from a leaving function.
+    For example inside a Symbian active object's \c RunL function implemented with Qt code.
+
+    \warning This macro is only available on Symbian.
+
+    Example:
+
+    \code
+    // This active object signals Qt code
+    // Exceptions from the Qt code must be converted to Symbian OS leaves for the active scheduler
+    void QWakeUpActiveObject::RunL()
+    {
+        iStatus = KRequestPending;
+        SetActive();
+        QT_TRANSLATE_EXCEPTION_TO_SYMBIAN_LEAVE(m_dispatcher->wakeUpWasCalled());
+    }
+    \endcode
+
+    \sa QT_TRANSLATE_SYMBIAN_LEAVE_TO_EXCEPTION(), QT_TRANSLATE_EXCEPTION_TO_SYMBIAN_ERROR()
+*/
+
+#include <stdexcept>
+
+class QSymbianLeaveException : public std::exception
+{
+public:
+    inline QSymbianLeaveException(int err) : error(err) {}
+    inline const char* what() const throw() { return "Symbian leave exception"; }
+
+public:
+    int error;
+};
+
+/*! \relates <QtGlobal>
+    \ingroup qts60
+
+    Throws an exception if the \a error parameter is a symbian error code.
+    This is the exception throwing equivalent of Symbian's User::LeaveIfError.
+
+    \warning This function is only available on Symbian.
+
+    \sa qt_translateExceptionToSymbianErrorL(), qt_translateExceptionToSymbianError()
+*/
+void qt_translateSymbianErrorToException(int error)
+{
+    if (error >= KErrNone)
+        return;  // do nothing - not an exception
+    switch (error) {
+    case KErrNoMemory:
+        throw std::bad_alloc();
+    default:
+        throw QSymbianLeaveException(error);
+    }
+}
+
+/*! \relates <QtGlobal>
+    \ingroup qts60
+
+    Convert a caught standard C++ exception \a aThrow to a Symbian leave
+
+    \warning This function is only available on Symbian.
+
+    \sa qt_translateSymbianErrorToException(), qt_translateExceptionToSymbianError()
+*/
+void qt_translateExceptionToSymbianErrorL(const std::exception& aThrow)
+{
+    User::Leave(qt_translateExceptionToSymbianError(aThrow));
+}
+
+/*! \relates <QtGlobal>
+    \ingroup qts60
+
+    Convert a caught standard C++ exception \a aThrow to a Symbian error code
+
+    \warning This function is only available on Symbian.
+
+    \sa qt_translateSymbianErrorToException(), qt_translateExceptionToSymbianErrorL()
+*/
+int qt_translateExceptionToSymbianError(const std::exception& aThrow)
+{
+    const std::type_info& atype = typeid(aThrow);
+    int err = KErrGeneral;
+
+    if(atype == typeid (std::bad_alloc))
+        err = KErrNoMemory;
+    else if(atype == typeid(QSymbianLeaveException))
+        err = static_cast<const QSymbianLeaveException&>(aThrow).error;
+    else if(atype == typeid(std::invalid_argument))
+        err =  KErrArgument;
+    else if(atype == typeid(std::out_of_range))
+        // std::out_of_range is of type logic_error which by definition means that it is
+        // "presumably detectable before the program executes".
+        // std::out_of_range is used to report an argument is not within the expected range.
+        // The description of KErrArgument says an argument is out of range. Hence the mapping.
+        err =  KErrArgument;
+    else if(atype == typeid(std::overflow_error))
+        err =  KErrOverflow;
+    else if(atype == typeid(std::underflow_error))
+        err =  KErrUnderflow;
+
+    return err;
+}
+#endif
 
 QT_END_NAMESPACE

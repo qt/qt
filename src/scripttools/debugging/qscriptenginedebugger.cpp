@@ -63,15 +63,22 @@
 #include <QtGui/qtoolbar.h>
 #include <QtGui/qboxlayout.h>
 
+// this has to be outside the namespace
+static void initScriptEngineDebuggerResources()
+{
+    Q_INIT_RESOURCE(scripttools_debugging);
+}
+
+QT_BEGIN_NAMESPACE
+
 class QtScriptDebuggerResourceInitializer
 {
 public:
     QtScriptDebuggerResourceInitializer() {
-        Q_INIT_RESOURCE(scripttools_debugging);
+        // call outside-the-namespace function
+        initScriptEngineDebuggerResources();
     }
 };
-
-QT_BEGIN_NAMESPACE
 
 /*!
   \since 4.5

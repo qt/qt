@@ -1,3 +1,143 @@
+2009-05-19  Kenneth Rohde Christiansen  <kenneth.christiansen@openbossa.org>
+
+        Reviewed by Simon Hausmann.
+
+        Do not call the parent implementation (Widget::) in show() and hide()
+        of the PluginViewQt, as it always changes the visible state of the
+        platformWidget (equal to the platformPluginWidget in the Qt port),
+        thus ignoring the isParentVisible() test.
+
+        * plugins/qt/PluginViewQt.cpp:
+        (WebCore::PluginView::show):
+        (WebCore::PluginView::hide):
+
+2009-04-22  Tamas Szirbucz  <szirbucz.tamas@stud.u-szeged.hu>
+
+        Reviewed by Ariya Hidayat.
+
+        https://bugs.webkit.org/show_bug.cgi?id=25023
+        Delete reply in QNetworkReplyHandler::abort() to avoid leak.
+
+        * platform/network/qt/QNetworkReplyHandler.cpp:
+        (WebCore::QNetworkReplyHandler::abort):
+
+2009-05-20  Holger Hans Peter Freyther  <zecke@selfish.org>
+
+        Reviewed by Anders Carlsson.
+
+        https://bugs.webkit.org/show_bug.cgi?id=24510
+
+        Fix a bug where the browserfuncs were not properly assigned,
+        make hasproperty use _NP_HasProperty and hasmethod _NP_HasMethod.
+
+        Test: plugins/netscape-invoke-browserfuncs.html
+
+        * plugins/gtk/PluginPackageGtk.cpp:
+        (WebCore::PluginPackage::load): Fix assignment
+        * plugins/qt/PluginPackageQt.cpp:
+        (WebCore::PluginPackage::load): Fix assignment
+
+2009-05-11  Yael Aharon  <yael.aharon@nokia.com>
+
+        Reviewed by Holger Freyther.
+
+        Change Qt port to match the mac and windows ports, and unregister plugins when plugins are stopped.
+        Not doing that can cause assersion failure.
+        https://bugs.webkit.org/show_bug.cgi?id=25702
+
+        * plugins/qt/PluginViewQt.cpp:
+        (WebCore::PluginView::stop):
+
+2009-05-18  Ariya Hidayat  <ariya.hidayat@nokia.com>
+
+        Reviewed by Simon Hausmann.
+
+        Done together with Balazs Kelemen  <kelemen.balazs@stud.u-szeged.hu>.
+
+        https://bugs.webkit.org/show_bug.cgi?id=24551
+
+        [Qt] Reuse FontPlatformData for the same FontDescription.
+        This effectively prevents growing heap usage for loading every web page.
+
+        * platform/graphics/qt/FontCacheQt.cpp:
+        (WebCore::qHash): Necessary for FontPlatformDataCache.
+        (WebCore::FontCache::getCachedFontPlatformData): Reuse the instance if
+        it exists, otherwise create a new one and insert it in the cache.
+
+2009-05-18  Balazs Kelemen  <kelemen.balazs@stud.u-szeged.hu>
+
+        Reviewed by Ariya Hidayat.
+
+        https://bugs.webkit.org/show_bug.cgi?id=24551
+
+        [Qt] Fix the leak in FontFallbackList::fontDataAt() function.
+        When creating a new instance of SimpleFontData, put it in the font list
+        so that it can deleted later on.
+
+        * platform/graphics/qt/FontFallbackListQt.cpp:
+        (WebCore::FontFallbackList::invalidate):
+        (WebCore::FontFallbackList::releaseFontData):
+        (WebCore::FontFallbackList::fontDataAt):
+
+2009-05-15  Ariya Hidayat  <ariya.hidayat@nokia.com>
+
+        Reviewed by Holger Freyther.
+
+        [Qt] In the image decoder, remove the raw image data represented as QImage
+        once the image is converted to QPixmap and inserted in the pixmap cache.
+        This effectively reduces the heap usage when running on graphics system
+        other than raster (i.e the case where QImage != QPixmap).
+
+        * platform/graphics/qt/ImageDecoderQt.cpp:
+        (WebCore::ImageDecoderQt::imageAtIndex): Nullified the image on purpose.
+        * platform/graphics/qt/ImageDecoderQt.h: Made m_imageList mutable.
+
+2009-05-15  Ariya Hidayat  <ariya.hidayat@nokia.com>
+
+        Reviewed by Holger Freyther.
+
+        [Qt] Refactor alpha channel detection the image decoder.
+        Sets the boolean flag as soon as the image is being read.
+
+        * platform/graphics/qt/ImageDecoderQt.cpp:
+        (WebCore::ImageDecoderQt::ImageDecoderQt): Initialized m_hasAlphaChannel.
+        (WebCore::ImageDecoderQt::setData): Set the flag when appropriate.
+        (WebCore::ImageDecoderQt::supportsAlpha): Simplified.
+        (WebCore::ImageDecoderQt::reset): Resetted the flag.
+        * platform/graphics/qt/ImageDecoderQt.h: Added m_hasAlphaChannel.
+
+2009-05-13  Ariya Hidayat  <ariya.hidayat@nokia.com>
+
+        Reviewed by Sam Weinig.
+
+        [Qt] Fix "lighther" composition mode.
+        QPainter::CompositionMode_Plus is the right match.
+
+        * platform/graphics/qt/GraphicsContextQt.cpp:
+        (WebCore::toQtCompositionMode):
+
+2009-04-29  Ariya Hidayat  <ariya.hidayat@nokia.com>
+
+        Reviewed by Simon Fraser.
+
+        [Qt] Initialize GraphicsContext's and ImageBuffer's QPainter to match
+        the default values of canvas attributes.
+
+        * platform/graphics/qt/ImageBufferQt.cpp:
+        (WebCore::ImageBufferData::ImageBufferData):
+
+2009-04-27  Ariya Hidayat  <ariya.hidayat@nokia.com>
+
+        Reviewed by Tor Arne Vestbø.
+
+        https://bugs.webkit.org/show_bug.cgi?id=18475
+
+        [Qt] Widget painting should follow the layout direction (LTR, RTL)
+        of the element style, not the application layout direction.
+
+        * platform/qt/RenderThemeQt.cpp:
+        (WebCore::RenderThemeQt::applyTheme):
+
 2009-03-13  Adam Bergkvist <adam.bergkvist@ericsson.com>
 
         Reviewed by Alexey Proskuryakov.

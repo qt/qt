@@ -554,6 +554,9 @@ public:
     void removeAction(QAction *action);
     QList<QAction*> actions() const;
 #endif
+    const QList<QAction*>& softKeys() const;
+    void setSoftKey(QAction *softKey);
+    void setSoftKeys(const QList<QAction*> &softKeys);
 
     QWidget *parentWidget() const;
 
@@ -728,6 +731,7 @@ private:
     friend class QGraphicsProxyWidget;
     friend class QGraphicsProxyWidgetPrivate;
     friend class QStyleSheetStyle;
+    friend struct QWidgetExceptionCleaner;
 
 #ifdef Q_WS_MAC
     friend class QCoreGraphicsPaintEnginePrivate;

@@ -57,16 +57,13 @@ public:
 };
 
 QtBrushManager::QtBrushManager(QObject *parent)
-    : QDesignerBrushManagerInterface(parent)
+    : QDesignerBrushManagerInterface(parent), d_ptr(new QtBrushManagerPrivate)
 {
-    d_ptr = new QtBrushManagerPrivate;
     d_ptr->q_ptr = this;
-
 }
 
 QtBrushManager::~QtBrushManager()
 {
-    delete d_ptr;
 }
 
 QBrush QtBrushManager::brush(const QString &name) const

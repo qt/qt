@@ -9,3 +9,11 @@ sources.path = $$[QT_INSTALL_EXAMPLES]/widgets/movie
 INSTALLS += target sources
 
 include($$QT_SOURCE_TREE/examples/examplebase.pri)
+
+wince*: {
+   addFiles.sources += *.mng
+   addFiles.path = .
+   DEPLOYMENT += addFiles
+   DEPLOYMENT_PLUGIN += qmng
+}
+

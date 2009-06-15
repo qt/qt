@@ -349,6 +349,7 @@ void QRasterPaintEngine::init()
 #else
         (unsigned char *) malloc(d->rasterPoolSize);
 #endif
+    Q_CHECK_PTR(d->rasterPoolBase);
 
     // The antialiasing raster.
     d->grayRaster = new QT_FT_Raster;
@@ -1055,7 +1056,7 @@ void QRasterPaintEnginePrivate::drawImage(const QPointF &pt,
         int d = x + iw - cx2;
         iw -= d;
     }
-    if (iw < 0)
+    if (iw <= 0)
         return;
 
     // adapt the y paremeters...
@@ -1072,7 +1073,7 @@ void QRasterPaintEnginePrivate::drawImage(const QPointF &pt,
         int d = y + ih - cy2;
         ih -= d;
     }
-    if (ih < 0)
+    if (ih <= 0)
         return;
 
     // call the blend function...
@@ -3878,11 +3879,7 @@ static void qt_merge_clip(const QClipData *c1, const QClipData *c2, QClipData *r
 {
     Q_ASSERT(c1->clipSpanHeight == c2->clipSpanHeight && c1->clipSpanHeight == result->clipSpanHeight);
 
-    // ### buffer overflow possible
-    const int BUFFER_SIZE = 4096;
-    int buffer[BUFFER_SIZE];
-    int *b = buffer;
-    int bsize = BUFFER_SIZE;
+    QVarLengthArray<short, 4096> buffer;
 
     QClipData::ClipLine *c1ClipLines = const_cast<QClipData *>(c1)->clipLines();
     QClipData::ClipLine *c2ClipLines = const_cast<QClipData *>(c2)->clipLines();
@@ -3908,12 +3905,9 @@ static void qt_merge_clip(const QClipData *c1, const QClipData *c2, QClipData *r
 
         // find required length
         int max = qMax(c1_spans[c1_count - 1].x + c1_spans[c1_count - 1].len,
-                       c2_spans[c2_count - 1].x + c2_spans[c2_count - 1].len);
-        if (max > bsize) {
-            b = (int *)realloc(bsize == BUFFER_SIZE ? 0 : b, max*sizeof(int));
-            bsize = max;
-        }
-        memset(buffer, 0, BUFFER_SIZE * sizeof(int));
+                c2_spans[c2_count - 1].x + c2_spans[c2_count - 1].len);
+        buffer.resize(max);
+        memset(buffer.data(), 0, buffer.size() * sizeof(short));
 
         // Fill with old spans.
         for (int i = 0; i < c1_count; ++i) {
@@ -3949,8 +3943,6 @@ static void qt_merge_clip(const QClipData *c1, const QClipData *c2, QClipData *r
             result->appendSpan(sx, x - sx, y, coverage);
         }
     }
-    if (b != buffer)
-        free(b);
 }
 
 void QRasterPaintEnginePrivate::initializeRasterizer(QSpanData *data)
@@ -3967,7 +3959,7 @@ void QRasterPaintEnginePrivate::initializeRasterizer(QSpanData *data)
     const QClipData *c = clip();
     if (c) {
         const QRect r(QPoint(c->xmin, c->ymin),
-                      QPoint(c->xmax, c->ymax));
+                QPoint(c->xmax, c->ymax));
         clipRect = clipRect.intersected(r);
         blend = data->blend;
     } else {
@@ -4075,6 +4067,7 @@ void QRasterPaintEnginePrivate::rasterize(QT_FT_Outline *outline,
 #else
                 (unsigned char *) malloc(rasterPoolSize);
 #endif
+            Q_CHECK_PTR(rasterPoolBase); // note: we just freed the old rasterPoolBase. I hope it's not fatal.
 
             qt_ft_grays_raster.raster_done(*grayRaster);
             qt_ft_grays_raster.raster_new(0, grayRaster);
@@ -4310,93 +4303,107 @@ void QClipData::initialize()
         return;
 
     m_clipLines = (ClipLine *)calloc(sizeof(ClipLine), clipSpanHeight);
-    m_spans = (QSpan *)malloc(clipSpanHeight*sizeof(QSpan));
+    Q_CHECK_PTR(m_clipLines);
+    QT_TRY {
+        m_spans = (QSpan *)malloc(clipSpanHeight*sizeof(QSpan));
+        Q_CHECK_PTR(m_spans);
 
-    if (hasRectClip) {
-        int y = 0;
-        while (y < ymin) {
-            m_clipLines[y].spans = 0;
-            m_clipLines[y].count = 0;
-            ++y;
-        }
+        QT_TRY {
+            if (hasRectClip) {
+                int y = 0;
+                while (y < ymin) {
+                    m_clipLines[y].spans = 0;
+                    m_clipLines[y].count = 0;
+                    ++y;
+                }
 
-        const int len = clipRect.width();
-        count = 0;
-        while (y < ymax) {
-            QSpan *span = m_spans + count;
-            span->x = xmin;
-            span->len = len;
-            span->y = y;
-            span->coverage = 255;
-            ++count;
-
-            m_clipLines[y].spans = span;
-            m_clipLines[y].count = 1;
-            ++y;
-        }
-
-        while (y < clipSpanHeight) {
-            m_clipLines[y].spans = 0;
-            m_clipLines[y].count = 0;
-            ++y;
-        }
-    } else if (hasRegionClip) {
-
-        const QVector<QRect> rects = clipRegion.rects();
-        const int numRects = rects.size();
-
-        { // resize
-            const int maxSpans = (ymax - ymin) * numRects;
-            if (maxSpans > allocated) {
-                m_spans = (QSpan *)realloc(m_spans, maxSpans * sizeof(QSpan));
-                allocated = maxSpans;
-            }
-        }
-
-        int y = 0;
-        int firstInBand = 0;
-        while (firstInBand < numRects) {
-            const int currMinY = rects.at(firstInBand).y();
-            const int currMaxY = currMinY + rects.at(firstInBand).height();
-
-            while (y < currMinY) {
-                m_clipLines[y].spans = 0;
-                m_clipLines[y].count = 0;
-                ++y;
-            }
-
-            int lastInBand = firstInBand;
-            while (lastInBand + 1 < numRects && rects.at(lastInBand+1).top() == y)
-                ++lastInBand;
-
-            while (y < currMaxY) {
-
-                m_clipLines[y].spans = m_spans + count;
-                m_clipLines[y].count = lastInBand - firstInBand + 1;
-
-                for (int r = firstInBand; r <= lastInBand; ++r) {
-                    const QRect &currRect = rects.at(r);
+                const int len = clipRect.width();
+                count = 0;
+                while (y < ymax) {
                     QSpan *span = m_spans + count;
-                    span->x = currRect.x();
-                    span->len = currRect.width();
+                    span->x = xmin;
+                    span->len = len;
                     span->y = y;
                     span->coverage = 255;
                     ++count;
+
+                    m_clipLines[y].spans = span;
+                    m_clipLines[y].count = 1;
+                    ++y;
                 }
-                ++y;
+
+                while (y < clipSpanHeight) {
+                    m_clipLines[y].spans = 0;
+                    m_clipLines[y].count = 0;
+                    ++y;
+                }
+            } else if (hasRegionClip) {
+
+                const QVector<QRect> rects = clipRegion.rects();
+                const int numRects = rects.size();
+
+                { // resize
+                    const int maxSpans = (ymax - ymin) * numRects;
+                    if (maxSpans > allocated) {
+                        QSpan *newSpans = (QSpan *)realloc(m_spans, maxSpans * sizeof(QSpan));
+                        Q_CHECK_PTR(newSpans);
+                        m_spans = newSpans;
+                        allocated = maxSpans;
+                    }
+                }
+
+                int y = 0;
+                int firstInBand = 0;
+                while (firstInBand < numRects) {
+                    const int currMinY = rects.at(firstInBand).y();
+                    const int currMaxY = currMinY + rects.at(firstInBand).height();
+
+                    while (y < currMinY) {
+                        m_clipLines[y].spans = 0;
+                        m_clipLines[y].count = 0;
+                        ++y;
+                    }
+
+                    int lastInBand = firstInBand;
+                    while (lastInBand + 1 < numRects && rects.at(lastInBand+1).top() == y)
+                        ++lastInBand;
+
+                    while (y < currMaxY) {
+
+                        m_clipLines[y].spans = m_spans + count;
+                        m_clipLines[y].count = lastInBand - firstInBand + 1;
+
+                        for (int r = firstInBand; r <= lastInBand; ++r) {
+                            const QRect &currRect = rects.at(r);
+                            QSpan *span = m_spans + count;
+                            span->x = currRect.x();
+                            span->len = currRect.width();
+                            span->y = y;
+                            span->coverage = 255;
+                            ++count;
+                        }
+                        ++y;
+                    }
+
+                    firstInBand = lastInBand + 1;
+                }
+
+                Q_ASSERT(count <= allocated);
+
+                while (y < clipSpanHeight) {
+                    m_clipLines[y].spans = 0;
+                    m_clipLines[y].count = 0;
+                    ++y;
+                }
+
             }
-
-            firstInBand = lastInBand + 1;
+        } QT_CATCH(...) {
+            free(m_spans);
+            QT_RETHROW;
         }
-
-        Q_ASSERT(count <= allocated);
-
-        while (y < clipSpanHeight) {
-            m_clipLines[y].spans = 0;
-            m_clipLines[y].count = 0;
-            ++y;
-        }
-
+    } QT_CATCH(...) {
+        free(m_clipLines);
+        QT_RETHROW;
     }
 }
 
@@ -4773,8 +4780,10 @@ static void qt_span_clip(int count, const QSpan *spans, void *userData)
                                            &newspans, newClip->allocated - newClip->count);
                 newClip->count = newspans - newClip->m_spans;
                 if (spans < end) {
+                    QSpan *newSpan = (QSpan *)realloc(newClip->m_spans, newClip->allocated*2*sizeof(QSpan));
+                    Q_CHECK_PTR(newSpan);
+                    newClip->m_spans = newSpan;
                     newClip->allocated *= 2;
-                    newClip->m_spans = (QSpan *)realloc(newClip->m_spans, newClip->allocated*sizeof(QSpan));
                 }
             }
         }

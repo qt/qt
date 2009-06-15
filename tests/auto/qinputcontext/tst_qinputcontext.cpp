@@ -66,6 +66,7 @@ private slots:
     void filterMouseEvents();
     void requestSoftwareInputPanel();
     void closeSoftwareInputPanel();
+    void selections();
 };
 
 void tst_QInputContext::maximumTextLength()
@@ -86,7 +87,7 @@ void tst_QInputContext::maximumTextLength()
 class QFilterInputContext : public QInputContext
 {
 public:
-    QFilterInputContext() : lastType(QEvent::None) {}
+    QFilterInputContext() {}
     ~QFilterInputContext() {}
 
     QString identifierName() { return QString(); }
@@ -98,12 +99,12 @@ public:
 
     bool filterEvent( const QEvent *event )
     {
-        lastType = event->type();
+        lastTypes.append(event->type());
         return false;
     }
 
 public:
-    QEvent::Type lastType;
+    QList<QEvent::Type> lastTypes;
 };
 
 void tst_QInputContext::filterMouseEvents()
@@ -116,7 +117,7 @@ void tst_QInputContext::filterMouseEvents()
     le.setInputContext(ic);
     QTest::mouseClick(&le, Qt::LeftButton);
 
-    QCOMPARE(ic->lastType, QEvent::MouseButtonRelease);
+    QVERIFY(ic->lastTypes.indexOf(QEvent::MouseButtonRelease) >= 0);
 
     le.setInputContext(0);
 }
@@ -142,20 +143,22 @@ void tst_QInputContext::requestSoftwareInputPanel()
     QApplication::setActiveWindow(&w);
 
     // Testing single click panel activation.
-    QApplication::setTwoClicksToRequestSIP(false);
+    qApp->setAutoSipOnMouseFocus(true);
     QTest::mouseClick(le2, Qt::LeftButton, Qt::NoModifier, QPoint(5, 5));
-    QCOMPARE(ic2->lastType, QEvent::RequestSoftwareInputPanel);
+    QVERIFY(ic2->lastTypes.indexOf(QEvent::RequestSoftwareInputPanel) >= 0);
+    ic2->lastTypes.clear();
 
     // Testing double click panel activation.
-    QApplication::setTwoClicksToRequestSIP(true);
+    qApp->setAutoSipOnMouseFocus(false);
     QTest::mouseClick(le1, Qt::LeftButton, Qt::NoModifier, QPoint(5, 5));
-    QVERIFY(ic1->lastType != QEvent::RequestSoftwareInputPanel);
+    QVERIFY(ic1->lastTypes.indexOf(QEvent::RequestSoftwareInputPanel) < 0);
     QTest::mouseClick(le1, Qt::LeftButton, Qt::NoModifier, QPoint(5, 5));
-    QCOMPARE(ic1->lastType, QEvent::RequestSoftwareInputPanel);
+    QVERIFY(ic1->lastTypes.indexOf(QEvent::RequestSoftwareInputPanel) >= 0);
+    ic1->lastTypes.clear();
 
     // Testing right mouse button
     QTest::mouseClick(le1, Qt::RightButton, Qt::NoModifier, QPoint(5, 5));
-    QVERIFY(ic1->lastType != QEvent::RequestSoftwareInputPanel);
+    QVERIFY(ic1->lastTypes.indexOf(QEvent::RequestSoftwareInputPanel) < 0);
 }
 
 void tst_QInputContext::closeSoftwareInputPanel()
@@ -184,11 +187,29 @@ void tst_QInputContext::closeSoftwareInputPanel()
     // Testing that panel doesn't close between two input methods aware widgets.
     QTest::mouseClick(le1, Qt::LeftButton, Qt::NoModifier, QPoint(5, 5));
     QTest::mouseClick(le2, Qt::LeftButton, Qt::NoModifier, QPoint(5, 5));
-    QVERIFY(ic2->lastType != QEvent::CloseSoftwareInputPanel);
+    QVERIFY(ic2->lastTypes.indexOf(QEvent::CloseSoftwareInputPanel) < 0);
 
     // Testing that panel closes when focusing non-aware widget.
     QTest::mouseClick(rb, Qt::LeftButton, Qt::NoModifier, QPoint(5, 5));
-    QCOMPARE(ic2->lastType, QEvent::CloseSoftwareInputPanel);
+    QVERIFY(ic2->lastTypes.indexOf(QEvent::CloseSoftwareInputPanel) >= 0);
+}
+
+void tst_QInputContext::selections()
+{
+    QLineEdit le;
+    le.setText("Test text");
+    le.setSelection(2, 2);
+    QCOMPARE(le.inputMethodQuery(Qt::ImCursorPosition).toInt(), 4);
+    QCOMPARE(le.inputMethodQuery(Qt::ImAnchorPosition).toInt(), 2);
+
+    QList<QInputMethodEvent::Attribute> attributes;
+    attributes.append(QInputMethodEvent::Attribute(QInputMethodEvent::Selection, 5, 3, QVariant()));
+    QInputMethodEvent event("", attributes);
+    QApplication::sendEvent(&le, &event);
+    QCOMPARE(le.cursorPosition(), 8);
+    QCOMPARE(le.selectionStart(), 5);
+    QCOMPARE(le.inputMethodQuery(Qt::ImCursorPosition).toInt(), 8);
+    QCOMPARE(le.inputMethodQuery(Qt::ImAnchorPosition).toInt(), 5);
 }
 
 QTEST_MAIN(tst_QInputContext)

@@ -172,7 +172,8 @@ extern bool qt_sendSpontaneousEvent(QObject*, QEvent*); // qapplication.cpp
 extern QDesktopWidget *qt_desktopWidget; // qapplication.cpp
 
 QWidgetPrivate::QWidgetPrivate(int version) :
-        QObjectPrivate(version), extra(0), focus_child(0)
+        QObjectPrivate(version), extra(0),
+        focus_next(0), focus_prev(0), focus_child(0)
         ,layout(0), widgetItem(0)
         ,leftmargin(0), topmargin(0), rightmargin(0), bottommargin(0)
         ,leftLayoutItemMargin(0), topLayoutItemMargin(0), rightLayoutItemMargin(0)
@@ -884,6 +885,30 @@ void QWidget::setAutoFillBackground(bool enabled)
     \endlist
 
     \sa QEvent, QPainter, QGridLayout, QBoxLayout
+    
+    \section1 SoftKeys
+    \since 4.6
+    \preliminary
+
+    Softkeys API is a platform independent way of mapping actions to (hardware)keys 
+    and toolbars provided by the underlying platform.
+    
+    There are three major use cases supported. First one is a mobile device 
+    with keypad navigation and no touch ui. Second use case is a mobile
+    device with touch ui. Third use case is desktop. For now the softkey API is 
+    only implemented for Series60.
+    
+    QActions are set to widget(s) via softkey API. Actions in focused widget are 
+    mapped to native toolbar or hardware keys. Even though the API allows to set
+    any amount of widgets there might be physical restrictions to amount of 
+    softkeys that can be used by the device.
+
+    \o Series60: For series60 menu button is automatically mapped to left
+    soft key if there is QMainWindow with QMenuBar in widgets parent hierarchy.
+
+    \sa softKeys()
+    \sa setSoftKey()
+        
 */
 
 QWidgetMapper *QWidgetPrivate::mapper = 0;                // widget with wid
@@ -927,6 +952,23 @@ QRegion qt_dirtyRegion(QWidget *widget)
   \endlist
 */
 
+struct QWidgetExceptionCleaner
+{
+    /* this cleans up when the constructor throws an exception */
+    static inline void cleanup(QWidget *that, QWidgetPrivate *d)
+    {
+#ifndef QT_NO_EXCEPTIONS
+        QWidgetPrivate::uncreatedWidgets->remove(that);
+        if (d->focus_next != that) {
+            if (d->focus_next)
+                d->focus_next->d_func()->focus_prev = d->focus_prev;
+            if (d->focus_prev)
+                d->focus_prev->d_func()->focus_next = d->focus_next;
+        }
+#endif
+    }
+};
+
 /*!
     Constructs a widget which is a child of \a parent, with  widget
     flags set to \a f.
@@ -956,7 +998,12 @@ QRegion qt_dirtyRegion(QWidget *widget)
 QWidget::QWidget(QWidget *parent, Qt::WindowFlags f)
     : QObject(*new QWidgetPrivate, 0), QPaintDevice()
 {
-    d_func()->init(parent, f);
+    QT_TRY {
+        d_func()->init(parent, f);
+    } QT_CATCH(...) {
+        QWidgetExceptionCleaner::cleanup(this, d_func());
+        QT_RETHROW;
+    }
 }
 
 #ifdef QT3_SUPPORT
@@ -967,8 +1014,13 @@ QWidget::QWidget(QWidget *parent, Qt::WindowFlags f)
 QWidget::QWidget(QWidget *parent, const char *name, Qt::WindowFlags f)
     : QObject(*new QWidgetPrivate, 0), QPaintDevice()
 {
-    d_func()->init(parent , f);
-    setObjectName(QString::fromAscii(name));
+    QT_TRY {
+        d_func()->init(parent , f);
+        setObjectName(QString::fromAscii(name));
+    } QT_CATCH(...) {
+        QWidgetExceptionCleaner::cleanup(this, d_func());
+        QT_RETHROW;
+    }
 }
 #endif
 
@@ -977,7 +1029,13 @@ QWidget::QWidget(QWidget *parent, const char *name, Qt::WindowFlags f)
 QWidget::QWidget(QWidgetPrivate &dd, QWidget* parent, Qt::WindowFlags f)
     : QObject(dd, 0), QPaintDevice()
 {
-    d_func()->init(parent, f);
+    Q_D(QWidget);
+    QT_TRY {
+        d->init(parent, f);
+    } QT_CATCH(...) {
+        QWidgetExceptionCleaner::cleanup(this, d_func());
+        QT_RETHROW;
+    }
 }
 
 /*!
@@ -2046,17 +2104,20 @@ static inline void fillRegion(QPainter *painter, const QRegion &rgn, const QPoin
         // Defined in qmacstyle_mac.cpp
         extern void qt_mac_fill_background(QPainter *painter, const QRegion &rgn, const QPoint &offset, const QBrush &brush);
         qt_mac_fill_background(painter, rgn, offset, brush);
-#elif defined(Q_WS_S60)
-        // Defined in qs60style_symbian.cpp
-        extern void qt_s60_fill_background(QPainter *painter, const QRegion &rgn,
-                        const QPoint &offset, const QBrush &brush);
-        qt_s60_fill_background(painter, rgn, offset, brush);
 #else
-        const QRegion translated = rgn.translated(offset);
-        const QRect rect(translated.boundingRect());
-        painter->setClipRegion(translated);
-        painter->drawTiledPixmap(rect, brush.texture(), rect.topLeft());
-#endif
+#if !defined(QT_NO_STYLE_S60)
+        // Defined in qs60style.cpp
+        extern bool qt_s60_fill_background(QPainter *painter, const QRegion &rgn,
+                        const QPoint &offset, const QBrush &brush);
+        if (!qt_s60_fill_background(painter, rgn, offset, brush))
+#endif // !defined(QT_NO_STYLE_S60)
+        {
+            const QRegion translated = rgn.translated(offset);
+            const QRect rect(translated.boundingRect());
+            painter->setClipRegion(translated);
+            painter->drawTiledPixmap(rect, brush.texture(), rect.topLeft());
+        }
+#endif // Q_WS_MAC
     } else {
         const QVector<QRect> &rects = rgn.rects();
         for (int i = 0; i < rects.size(); ++i)
@@ -2361,13 +2422,26 @@ void QWidgetPrivate::setStyle_helper(QStyle *newStyle, bool propagate, bool
         )
 {
     Q_Q(QWidget);
-    createExtra();
-
     QStyle *oldStyle  = q->style();
 #ifndef QT_NO_STYLE_STYLESHEET
-    QStyle *origStyle = extra->style;
+    QStyle *origStyle = 0;
 #endif
-    extra->style = newStyle;
+
+#ifdef Q_WS_MAC
+    // the metalhack boolean allows Qt/Mac to do a proper re-polish depending
+    // on how the Qt::WA_MacBrushedMetal attribute is set. It is only ever
+    // set when changing that attribute and passes the widget's CURRENT style.
+    // therefore no need to do a reassignment.
+    if (!metalHack)
+#endif
+    {
+        createExtra();
+
+#ifndef QT_NO_STYLE_STYLESHEET
+        origStyle = extra->style;
+#endif
+        extra->style = newStyle;
+    }
 
     // repolish
     if (q->windowType() != Qt::Desktop) {
@@ -4864,6 +4938,13 @@ void QWidget::render(QPainter *painter, const QPoint &targetOffset,
     d->extra->inRenderWithPainter = false;
 }
 
+#if !defined(Q_WS_S60)
+void QWidgetPrivate::setSoftKeys_sys(const QList<QAction*> &softkeys)
+{
+    Q_UNUSED(softkeys)
+}
+#endif // !defined(Q_WS_S60)
+
 bool QWidgetPrivate::isAboutToShow() const
 {
     if (data.in_show)
@@ -5052,7 +5133,7 @@ void QWidgetPrivate::drawWidget(QPaintDevice *pdev, const QRegion &rgn, const QP
 #ifndef QT_NO_SCROLLAREA
                     QAbstractScrollArea *scrollArea = qobject_cast<QAbstractScrollArea *>(q->parent());
                     if (scrollArea && scrollArea->viewport() == q) {
-                        QObjectData *scrollPrivate = static_cast<QWidget *>(scrollArea)->d_ptr;
+                        QObjectData *scrollPrivate = static_cast<QWidget *>(scrollArea)->d_ptr.data();
                         QAbstractScrollAreaPrivate *priv = static_cast<QAbstractScrollAreaPrivate *>(scrollPrivate);
                         scrollAreaOffset = priv->contentsOffset();
                         p.translate(-scrollAreaOffset);
@@ -5699,9 +5780,12 @@ bool QWidget::hasFocus() const
 
 void QWidget::setFocus(Qt::FocusReason reason)
 {
+    Q_D(QWidget);
+    d->setSoftKeys_sys(softKeys());
+
     if (!isEnabled())
         return;
-
+    
     QWidget *f = this;
     while (f->d_func()->extra && f->d_func()->extra->focus_proxy)
         f = f->d_func()->extra->focus_proxy;
@@ -5809,8 +5893,9 @@ void QWidget::setFocus(Qt::FocusReason reason)
 void QWidget::clearFocus()
 {
     QWidget *w = this;
-    while (w && w->d_func()->focus_child == this) {
-        w->d_func()->focus_child = 0;
+    while (w) {
+        if (w->d_func()->focus_child == this)
+            w->d_func()->focus_child = 0;
         w = w->parentWidget();
     }
 #ifndef QT_NO_GRAPHICSVIEW
@@ -6287,7 +6372,7 @@ QByteArray QWidget::saveGeometry() const
     returns false.
 
     If the restored geometry is off-screen, it will be modified to be
-    inside the the available screen geometry.
+    inside the available screen geometry.
 
     To restore geometry saved using QSettings, you can use code like
     this:
@@ -8484,6 +8569,9 @@ QVariant QWidget::inputMethodQuery(Qt::InputMethodQuery query) const
         return QRect(width()/2, 0, 1, height());
     case Qt::ImFont:
         return font();
+    case Qt::ImAnchorPosition:
+        // Fallback.
+        return inputMethodQuery(Qt::ImCursorPosition);
     default:
         return QVariant();
     }
@@ -11488,6 +11576,66 @@ void QWidget::setMask(const QBitmap &bitmap)
 void QWidget::clearMask()
 {
     setMask(QRegion());
+}
+
+/*!
+    \preliminary
+    \since 4.6
+    
+    Returns the (possibly empty) list of this widget's softkeys.
+    Returned list cannot be changed. Softkeys should be added
+    and removed via method called setSoftKeys
+
+    \sa setSoftKey(), setSoftKeys()
+*/
+const QList<QAction*>& QWidget::softKeys() const
+{
+    Q_D(const QWidget);
+    if( d->softKeys.count() > 0)
+        return d->softKeys;
+    if (isWindow() || !parentWidget())
+        return d->softKeys;
+
+    return parentWidget()->softKeys();
+}
+
+/*!
+    \preliminary
+    \since 4.6
+    
+    Sets the softkey \a softkey to this widget's list of softkeys,
+    Setting 0 as softkey will clear all the existing softkeys set
+    to the widget
+    A QWidget can have 0 or more softkeys
+
+    \sa softKeys(), setSoftKeys()
+*/
+void QWidget::setSoftKey(QAction *softKey)
+{
+    Q_D(QWidget);
+    qDeleteAll(d->softKeys);
+    d->softKeys.clear();
+    if (softKey)
+        d->softKeys.append(softKey);
+    if (QApplication::focusWidget() == this)
+        d->setSoftKeys_sys(this->softKeys());
+}
+
+/*!
+    Sets the list of softkeys \a softkeys to this widget's list of softkeys,
+    A QWidget can have 0 or more softkeys
+
+    \sa softKeys(), setSoftKey()
+*/
+void QWidget::setSoftKeys(const QList<QAction*> &softKeys)
+{
+    Q_D(QWidget);
+    qDeleteAll(d->softKeys);
+    d->softKeys.clear();
+        d->softKeys = softKeys;
+
+    if ((QApplication::focusWidget() == this) || (QApplication::focusWidget()==0))
+        d->setSoftKeys_sys(this->softKeys());
 }
 
 /*! \fn const QX11Info &QWidget::x11Info() const

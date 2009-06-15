@@ -83,10 +83,10 @@ QFileInfoGatherer::QFileInfoGatherer(QObject *parent)
 */
 QFileInfoGatherer::~QFileInfoGatherer()
 {
-    mutex.lock();
+    QMutexLocker locker(&mutex);
     abort = true;
     condition.wakeOne();
-    mutex.unlock();
+    locker.unlock();
     wait();
 }
 
@@ -94,9 +94,8 @@ void QFileInfoGatherer::setResolveSymlinks(bool enable)
 {
     Q_UNUSED(enable);
 #ifdef Q_OS_WIN
-    mutex.lock();
+    QMutexLocker locker(&mutex);
     m_resolveSymlinks = enable;
-    mutex.unlock();
 #endif
 }
 
@@ -107,9 +106,8 @@ bool QFileInfoGatherer::resolveSymlinks() const
 
 void QFileInfoGatherer::setIconProvider(QFileIconProvider *provider)
 {
-    mutex.lock();
+    QMutexLocker locker(&mutex);
     m_iconProvider = provider;
-    mutex.unlock();
 }
 
 QFileIconProvider *QFileInfoGatherer::iconProvider() const
@@ -124,12 +122,11 @@ QFileIconProvider *QFileInfoGatherer::iconProvider() const
 */
 void QFileInfoGatherer::fetchExtendedInformation(const QString &path, const QStringList &files)
 {
-    mutex.lock();
+    QMutexLocker locker(&mutex);
     // See if we already have this dir/file in our que
     int loc = this->path.lastIndexOf(path);
     while (loc > 0)  {
         if (this->files.at(loc) == files) {
-            mutex.unlock();
             return;
         }
         loc = this->path.lastIndexOf(path, loc - 1);
@@ -137,7 +134,6 @@ void QFileInfoGatherer::fetchExtendedInformation(const QString &path, const QStr
     this->path.push(path);
     this->files.push(files);
     condition.wakeAll();
-    mutex.unlock();
 }
 
 /*!
@@ -160,10 +156,9 @@ void QFileInfoGatherer::updateFile(const QString &filePath)
 void QFileInfoGatherer::clear()
 {
 #ifndef QT_NO_FILESYSTEMWATCHER
-    mutex.lock();
+    QMutexLocker locker(&mutex);
     watcher->removePaths(watcher->files());
     watcher->removePaths(watcher->directories());
-    mutex.unlock();
 #endif
 }
 
@@ -175,9 +170,8 @@ void QFileInfoGatherer::clear()
 void QFileInfoGatherer::removePath(const QString &path)
 {
 #ifndef QT_NO_FILESYSTEMWATCHER
-    mutex.lock();
+    QMutexLocker locker(&mutex);
     watcher->removePath(path);
-    mutex.unlock();
 #endif
 }
 
@@ -198,9 +192,8 @@ void QFileInfoGatherer::run()
 {
     forever {
         bool updateFiles = false;
-        mutex.lock();
+        QMutexLocker locker(&mutex);
         if (abort) {
-            mutex.unlock();
             return;
         }
         if (this->path.isEmpty())
@@ -214,8 +207,9 @@ void QFileInfoGatherer::run()
             this->files.pop_front();
             updateFiles = true;
         }
-        mutex.unlock();
-        if (updateFiles) getFileInfos(path, list);
+        locker.unlock();
+        if (updateFiles)
+            getFileInfos(path, list);
     }
 }
 

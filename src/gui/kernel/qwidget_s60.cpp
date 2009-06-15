@@ -5,7 +5,37 @@
 **
 ** This file is part of the $MODULE$ of the Qt Toolkit.
 **
-** $TROLLTECH_DUAL_EMBEDDED_LICENSE$
+** $QT_BEGIN_LICENSE:LGPL$
+** No Commercial Usage
+** This file contains pre-release code and may not be distributed.
+** You may use this file in accordance with the terms and conditions
+** contained in the either Technology Preview License Agreement or the
+** Beta Release License Agreement.
+**
+** GNU Lesser General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU Lesser
+** General Public License version 2.1 as published by the Free Software
+** Foundation and appearing in the file LICENSE.LGPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU Lesser General Public License version 2.1 requirements
+** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+**
+** In addition, as a special exception, Nokia gives you certain
+** additional rights. These rights are described in the Nokia Qt LGPL
+** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
+** package.
+**
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU
+** General Public License version 3.0 as published by the Free Software
+** Foundation and appearing in the file LICENSE.GPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU General Public License version 3.0 requirements will be
+** met: http://www.gnu.org/copyleft/gpl.html.
+**
+** If you are unsure which license is appropriate for your use, please
+** contact the sales department at qt-sales@nokia.com.
+** $QT_END_LICENSE$
 **
 ****************************************************************************/
 
@@ -22,12 +52,64 @@
 
 #include <qinputcontext.h>
 
+#include <aknappui.h>
+
 QT_BEGIN_NAMESPACE
 
 extern bool qt_nograb();
 
 QWidget *QWidgetPrivate::mouseGrabber = 0;
 QWidget *QWidgetPrivate::keyboardGrabber = 0;
+
+static bool isEqual(const QList<QAction*>& a, const QList<QAction*>& b)
+{
+    if ( a.count() != b.count())
+        return false;
+    int index=0;
+    while (index<a.count()) {
+        if (a.at(index)->softKeyRole() != b.at(index)->softKeyRole())
+            return false;
+        if (a.at(index)->text().compare(b.at(index)->text())!=0)
+            return false;
+        index++;
+    }
+    return true;
+}
+
+
+void QWidgetPrivate::setSoftKeys_sys(const QList<QAction*> &softkeys)
+{
+    Q_Q(QWidget);
+    if (QApplication::focusWidget() && q!=QApplication::focusWidget()) {
+        QList<QAction *> old = QApplication::focusWidget()->softKeys();
+        if (isEqual(old, softkeys ))
+            return;
+    }
+    CCoeAppUi* appui = CEikonEnv::Static()->AppUi();
+    CAknAppUi* aknAppUi = static_cast <CAknAppUi*>(appui);
+    CEikButtonGroupContainer* nativeContainer = aknAppUi->Cba();
+    nativeContainer->SetCommandSetL(R_AVKON_SOFTKEYS_EMPTY_WITH_IDS);
+
+    int placeInScreen=0;
+    for (int index = 0; index < softkeys.count(); index++) {
+        const QAction* softKeyAction = softkeys.at(index);
+        if (softKeyAction->softKeyRole() != QAction::ContextMenuSoftKey) {
+
+            HBufC* text = qt_QString2HBufC(softKeyAction->text());
+            CleanupStack::PushL(text);
+            if (softKeyAction->softKeyRole() == QAction::MenuSoftKey) {
+                nativeContainer->SetCommandL(placeInScreen, EAknSoftkeyOptions, *text);
+            } else {
+                nativeContainer->SetCommandL(placeInScreen, SOFTKEYSTART + index, *text);
+            }
+            CleanupStack::PopAndDestroy();
+            placeInScreen++;
+        }
+    if (placeInScreen==1)
+        placeInScreen=2;
+    }
+    nativeContainer->DrawDeferred(); // 3.1 needs an extra invitation
+}
 
 void QWidgetPrivate::setWSGeometry(bool dontShow)
 {
@@ -289,7 +371,8 @@ void QWidgetPrivate::hide_sys()
     deactivateWidgetCleanup();
     WId id = q->internalWinId();
     if (q->isWindow() && id) {
-        id->SetFocus(false);
+        if(id->IsFocused()) // Avoid unnecessry calls to FocusChanged()
+            id->SetFocus(false);
         id->MakeVisible(false);
         id->ControlEnv()->AppUi()->RemoveFromStack(id);
         if (QWidgetBackingStore *bs = maybeBackingStore())
@@ -305,7 +388,8 @@ void QWidgetPrivate::setFocus_sys()
 {
     Q_Q(QWidget);
     if (q->testAttribute(Qt::WA_WState_Created) && q->window()->windowType() != Qt::Popup)
-        q->effectiveWinId()->SetFocus(true);
+        if(!q->effectiveWinId()->IsFocused()) // Avoid unnecessry calls to FocusChanged()
+            q->effectiveWinId()->SetFocus(true);
 }
 
 void QWidgetPrivate::raise_sys()
@@ -892,7 +976,8 @@ void QWidget::destroy(bool destroyWindow, bool destroySubWindows)
             releaseKeyboard();
         if (destroyWindow && !(windowType() == Qt::Desktop) && internalWinId()) {
             WId id = internalWinId();
-            id->SetFocus(false);
+            if(id->IsFocused()) // Avoid unnecessry calls to FocusChanged()
+                id->SetFocus(false);
             id->ControlEnv()->AppUi()->RemoveFromStack(id);
             CBase::Delete(id);
 
@@ -973,5 +1058,4 @@ void QWidget::activateWindow()
         rw->SetOrdinalPosition(0);
     }
 }
-
 QT_END_NAMESPACE

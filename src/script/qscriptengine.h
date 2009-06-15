@@ -47,6 +47,7 @@
 #ifndef QT_NO_SCRIPT
 
 #include <QtCore/qvariant.h>
+#include <QtCore/qscopedpointer.h>
 
 #ifndef QT_NO_QOBJECT
 #include <QtCore/qobject.h>
@@ -114,7 +115,7 @@ public:
 private:
     QScriptSyntaxCheckResult();
     QScriptSyntaxCheckResult(QScriptSyntaxCheckResultPrivate *d);
-    QScriptSyntaxCheckResultPrivate *d_ptr;
+    QScopedSharedPointer<QScriptSyntaxCheckResultPrivate> d_ptr;
 
     Q_DECLARE_PRIVATE(QScriptSyntaxCheckResult)
     friend class QScriptEnginePrivate;
@@ -282,7 +283,7 @@ private:
 
 protected:
 #ifdef QT_NO_QOBJECT
-    QScriptEnginePrivate *d_ptr;
+    QScopedPointer<QScriptEnginePrivate> d_ptr;
 
     QScriptEngine(QScriptEnginePrivate &dd);
 #else

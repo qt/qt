@@ -3,7 +3,7 @@ load(qttest_p4)
 DEFINES += QLOCALSERVER_DEBUG
 DEFINES += QLOCALSOCKET_DEBUG
 
-symbian* {
+symbian {
     # nothing
 } else:wince* {
     DEFINES += QT_LOCALSOCKET_TCP
@@ -27,12 +27,21 @@ CONFIG(debug_and_release) {
   DESTDIR = ..
 }
 
-wince* | symbian* {
+wince* {
     additionalFiles.sources = ../lackey/lackey.exe
     additionalFiles.path = lackey
+}
+
+symbian {
+    additionalFiles.sources = lackey.exe
+    additionalFiles.path = \sys\bin
+    DEFINES += SYMBIAN_SRCDIR_UID=$$lower($$replace(TARGET.UID3,"0x",""))
+}
+
+wince*|symbian {
     scriptFiles.sources = ../lackey/scripts/*.js
     scriptFiles.path = lackey/scripts
     DEPLOYMENT = additionalFiles scriptFiles
     QT += script    # for easy deployment of QtScript
-}
+} 
 

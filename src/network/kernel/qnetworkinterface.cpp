@@ -170,7 +170,7 @@ QNetworkAddressEntry::QNetworkAddressEntry()
     object \a other.
 */
 QNetworkAddressEntry::QNetworkAddressEntry(const QNetworkAddressEntry &other)
-    : d(new QNetworkAddressEntryPrivate(*other.d))
+    : d(new QNetworkAddressEntryPrivate(*other.d.data()))
 {
 }
 
@@ -179,7 +179,7 @@ QNetworkAddressEntry::QNetworkAddressEntry(const QNetworkAddressEntry &other)
 */
 QNetworkAddressEntry &QNetworkAddressEntry::operator=(const QNetworkAddressEntry &other)
 {
-    *d = *other.d;
+    *d.data() = *other.d.data();
     return *this;
 }
 
@@ -188,7 +188,6 @@ QNetworkAddressEntry &QNetworkAddressEntry::operator=(const QNetworkAddressEntry
 */
 QNetworkAddressEntry::~QNetworkAddressEntry()
 {
-    delete d;
 }
 
 /*!
@@ -397,7 +396,7 @@ QNetworkInterface::~QNetworkInterface()
 }
 
 /*!
-    Creates a copy of the the QNetworkInterface object contained in \a
+    Creates a copy of the QNetworkInterface object contained in \a
     other.
 */
 QNetworkInterface::QNetworkInterface(const QNetworkInterface &other)

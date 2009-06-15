@@ -1824,8 +1824,8 @@ void QGraphicsScenePrivate::invalidateSortCache()
 inline bool qt_closestLeaf(const QGraphicsItem *item1, const QGraphicsItem *item2)
 {
     // Return true if sibling item1 is on top of item2.
-    const QGraphicsItemPrivate *d1 = item1->d_ptr;
-    const QGraphicsItemPrivate *d2 = item2->d_ptr;
+    const QGraphicsItemPrivate *d1 = item1->d_ptr.data();
+    const QGraphicsItemPrivate *d2 = item2->d_ptr.data();
     bool f1 = d1->flags & QGraphicsItem::ItemStacksBehindParent;
     bool f2 = d2->flags & QGraphicsItem::ItemStacksBehindParent;
     if (f1 != f2) return f2;
@@ -1852,8 +1852,8 @@ inline bool qt_closestItemFirst(const QGraphicsItem *item1, const QGraphicsItem 
 bool QGraphicsScenePrivate::closestItemFirst_withoutCache(const QGraphicsItem *item1, const QGraphicsItem *item2)
 {
     // Siblings? Just check their z-values.
-    const QGraphicsItemPrivate *d1 = item1->d_ptr;
-    const QGraphicsItemPrivate *d2 = item2->d_ptr;
+    const QGraphicsItemPrivate *d1 = item1->d_ptr.data();
+    const QGraphicsItemPrivate *d2 = item2->d_ptr.data();
     if (d1->parent == d2->parent)
         return qt_closestLeaf(item1, item2);
 
@@ -4687,7 +4687,7 @@ void QGraphicsScenePrivate::drawItemHelper(QGraphicsItem *item, QPainter *painte
                                            const QStyleOptionGraphicsItem *option, QWidget *widget,
                                            bool painterStateProtection)
 {
-    QGraphicsItemPrivate *itemd = item->d_ptr;
+    QGraphicsItemPrivate *itemd = item->d_ptr.data();
     QGraphicsItem::CacheMode cacheMode = QGraphicsItem::CacheMode(itemd->cacheMode);
 
     // Render directly, using no cache.

@@ -185,6 +185,13 @@ static int depthForFormat(QImage::Format format)
     return depth;
 }
 
+/*! \fn QImageData * QImageData::create(const QSize &size, QImage::Format format, int numColors)
+
+    \internal
+
+    Creates a new image data.
+    Returns 0 if invalid parameters are give or anything else failed.
+*/
 QImageData * QImageData::create(const QSize &size, QImage::Format format, int numColors)
 {
     if (!size.isValid() || numColors < 0 || format == QImage::Format_Invalid)
@@ -223,7 +230,7 @@ QImageData * QImageData::create(const QSize &size, QImage::Format format, int nu
         || INT_MAX/sizeof(uchar *) < uint(height))
         return 0;
 
-    QImageData *d = new QImageData;
+    QScopedPointer<QImageData> d(new QImageData);
     d->colortable.resize(numColors);
     if (depth == 1) {
         d->colortable[0] = QColor(Qt::black).rgba();
@@ -246,12 +253,11 @@ QImageData * QImageData::create(const QSize &size, QImage::Format format, int nu
     d->data  = (uchar *)malloc(d->nbytes);
 
     if (!d->data) {
-        delete d;
         return 0;
     }
 
     d->ref.ref();
-    return d;
+    return d.take();
 
 }
 
@@ -1621,6 +1627,7 @@ int QImage::numColors() const
 /*!
     Returns a pointer to the scanline pointer table. This is the
     beginning of the data block for the image.
+    Returns 0 in case of an error.
 
     Use the bits() or scanLine() function instead.
 */
@@ -1636,6 +1643,8 @@ uchar **QImage::jumpTable()
 
     if (!d->jumptable) {
         d->jumptable = (uchar **)malloc(d->height*sizeof(uchar *));
+        if (!d->jumptable)
+            return 0;
         uchar *data = d->data;
         int height = d->height;
         uchar **p = d->jumptable;
@@ -1656,6 +1665,8 @@ const uchar * const *QImage::jumpTable() const
         return 0;
     if (!d->jumptable) {
         d->jumptable = (uchar **)malloc(d->height*sizeof(uchar *));
+        if (!d->jumptable)
+            return 0;
         uchar *data = d->data;
         int height = d->height;
         uchar **p = d->jumptable;
@@ -4996,7 +5007,7 @@ QPoint QImage::offset() const
 /*!
     \fn void QImage::setOffset(const QPoint& offset)
 
-    Sets the the number of pixels by which the image is intended to be
+    Sets the number of pixels by which the image is intended to be
     offset by when positioning relative to other images, to \a offset.
 
     \sa offset(), {QImage#Image Information}{Image Information}

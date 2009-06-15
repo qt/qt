@@ -753,7 +753,7 @@ QRect QGraphicsViewPrivate::mapToViewRect(const QGraphicsItem *item, const QRect
     const QGraphicsItem *parentItem = item;
     const QGraphicsItemPrivate *itemd;
     do {
-        itemd = parentItem->d_ptr;
+        itemd = parentItem->d_ptr.data();
         if (itemd->hasTransform)
             break;
         offset += itemd->pos;
@@ -1195,6 +1195,11 @@ QGraphicsView::QGraphicsView(QWidget *parent)
     // using a simple reference count. The same goes for acceptDrops and mouse
     // tracking.
     setAttribute(Qt::WA_InputMethodEnabled);
+
+    // viewport part of the graphics view has to be enabled
+    // as well, because when events come this widget is asked
+    // for input context and so on
+    viewport()->setAttribute(Qt::WA_InputMethodEnabled);
 }
 
 /*!
@@ -1209,6 +1214,11 @@ QGraphicsView::QGraphicsView(QGraphicsScene *scene, QWidget *parent)
     setAcceptDrops(true);
     setBackgroundRole(QPalette::Base);
     setAttribute(Qt::WA_InputMethodEnabled);
+
+    // viewport part of the graphics view has to be enabled
+    // as well, because when events come this widget is asked
+    // for input context and so on
+    viewport()->setAttribute(Qt::WA_InputMethodEnabled);
 }
 
 /*!
@@ -1221,6 +1231,11 @@ QGraphicsView::QGraphicsView(QGraphicsViewPrivate &dd, QWidget *parent)
     setAcceptDrops(true);
     setBackgroundRole(QPalette::Base);
     setAttribute(Qt::WA_InputMethodEnabled);
+
+    // viewport part of the graphics view has to be enabled
+    // as well, because when events come this widget is asked
+    // for input context and so on
+    viewport()->setAttribute(Qt::WA_InputMethodEnabled);
 }
 
 /*!

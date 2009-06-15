@@ -73,6 +73,24 @@
 
 QT_BEGIN_NAMESPACE
 
+struct QPainterPathPrivateHandler
+{
+    static inline void cleanup(QPainterPathPrivate *d)
+    {
+        // note - we must up-cast to QPainterPathData since QPainterPathPrivate
+        // has a non-virtual destructor!
+        if (d && !d->ref.deref())
+            delete static_cast<QPainterPathData *>(d);
+    }
+
+    static inline void reset(QPainterPathPrivate *&d, QPainterPathPrivate *other)
+    {
+        QPainterPathPrivate *oldD = d;
+        d = other;
+        cleanup(oldD);
+    }
+};
+
 // This value is used to determine the length of control point vectors
 // when approximating arc segments as curves. The factor is multiplied
 // with the radius of the circle.
@@ -506,10 +524,10 @@ QPainterPath::QPainterPath()
     \sa operator=()
 */
 QPainterPath::QPainterPath(const QPainterPath &other)
-    : d_ptr(other.d_ptr)
+    : d_ptr(other.d_ptr.data())
 {
-    if (d_func())
-        d_func()->ref.ref();
+    if (d_ptr)
+        d_ptr->ref.ref();
 }
 
 /*!
@@ -530,9 +548,7 @@ QPainterPath::QPainterPath(const QPointF &startPoint)
 void QPainterPath::detach_helper()
 {
     QPainterPathPrivate *data = new QPainterPathData(*d_func());
-    if (d_ptr && !d_ptr->ref.deref())
-        delete d_ptr;
-    d_ptr = data;
+    d_ptr.reset(data);
 }
 
 /*!
@@ -544,9 +560,7 @@ void QPainterPath::ensureData_helper()
     data->elements.reserve(16);
     QPainterPath::Element e = { 0, 0, QPainterPath::MoveToElement };
     data->elements << e;
-    if (d_ptr && !d_ptr->ref.deref())
-        delete d_ptr;
-    d_ptr = data;
+    d_ptr.reset(data);
     Q_ASSERT(d_ptr != 0);
 }
 
@@ -563,9 +577,7 @@ QPainterPath &QPainterPath::operator=(const QPainterPath &other)
         QPainterPathPrivate *data = other.d_func();
         if (data)
             data->ref.ref();
-        if (d_ptr && !d_ptr->ref.deref())
-            delete d_ptr;
-        d_ptr = data;
+        d_ptr.reset(data);
     }
     return *this;
 }
@@ -575,8 +587,6 @@ QPainterPath &QPainterPath::operator=(const QPainterPath &other)
 */
 QPainterPath::~QPainterPath()
 {
-    if (d_func() && !d_func()->ref.deref())
-        delete d_func();
 }
 
 /*!
@@ -1006,7 +1016,7 @@ void QPainterPath::addPolygon(const QPolygonF &polygon)
 /*!
     \fn void QPainterPath::addEllipse(const QRectF &boundingRectangle)
 
-    Creates an ellipse within the the specified \a boundingRectangle
+    Creates an ellipse within the specified \a boundingRectangle
     and adds it to the painter path as a closed subpath.
 
     The ellipse is composed of a clockwise curve, starting and
@@ -2408,7 +2418,6 @@ QPainterPathStroker::QPainterPathStroker()
 */
 QPainterPathStroker::~QPainterPathStroker()
 {
-    delete d_ptr;
 }
 
 
@@ -2695,7 +2704,7 @@ qreal QPainterPath::length() const
 /*!
     Returns percentage of the whole path at the specified length \a len.
 
-    Note that similarly to other percent methods, the percentage measurment
+    Note that similarly to other percent methods, the percentage measurement
     is not linear with regards to the length, if curves are present
     in the path. When curves are present the percentage argument is mapped
     to the t parameter of the Bezier equations.
@@ -2812,7 +2821,7 @@ static inline QBezier bezierAtT(const QPainterPath &path, qreal t, qreal *starti
     Returns the point at at the percentage \a t of the current path.
     The argument \a t has to be between 0 and 1.
 
-    Note that similarly to other percent methods, the percentage measurment
+    Note that similarly to other percent methods, the percentage measurement
     is not linear with regards to the length, if curves are present
     in the path. When curves are present the percentage argument is mapped
     to the t parameter of the Bezier equations.
@@ -2843,7 +2852,7 @@ QPointF QPainterPath::pointAtPercent(qreal t) const
     Positive values for the angles mean counter-clockwise while negative values
     mean the clockwise direction. Zero degrees is at the 3 o'clock position.
 
-    Note that similarly to the other percent methods, the percentage measurment
+    Note that similarly to the other percent methods, the percentage measurement
     is not linear with regards to the length if curves are present
     in the path. When curves are present the percentage argument is mapped
     to the t parameter of the Bezier equations.
@@ -2875,7 +2884,7 @@ qreal QPainterPath::angleAtPercent(qreal t) const
     Returns the slope of the path at the percentage \a t. The
     argument \a t has to be between 0 and 1.
 
-    Note that similarly to other percent methods, the percentage measurment
+    Note that similarly to other percent methods, the percentage measurement
     is not linear with regards to the length, if curves are present
     in the path. When curves are present the percentage argument is mapped
     to the t parameter of the Bezier equations.

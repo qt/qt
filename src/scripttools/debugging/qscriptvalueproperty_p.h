@@ -55,6 +55,7 @@
 
 #include <QtCore/qobjectdefs.h>
 #include <QtCore/qlist.h>
+#include <QtCore/qscopedpointer.h>
 #include <QtScript/qscriptvalue.h>
 
 QT_BEGIN_NAMESPACE
@@ -81,7 +82,7 @@ public:
     bool isValid() const;
 
 private:
-    QScriptValuePropertyPrivate *d_ptr;
+    QScopedSharedPointer<QScriptValuePropertyPrivate> d_ptr;
 
     Q_DECLARE_PRIVATE(QScriptValueProperty)
 };

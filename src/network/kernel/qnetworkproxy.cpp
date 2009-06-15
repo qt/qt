@@ -1258,6 +1258,6 @@ QList<QNetworkProxy> QNetworkProxyFactory::proxyForQuery(const QNetworkProxyQuer
     return globalNetworkProxy()->proxyForQuery(query);
 }
 
-#endif // QT_NO_NETWORKPROXY
-
 QT_END_NAMESPACE
+
+#endif // QT_NO_NETWORKPROXY

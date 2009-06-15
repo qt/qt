@@ -5,7 +5,37 @@
 **
 ** This file is part of the $MODULE$ of the Qt Toolkit.
 **
-** $TROLLTECH_DUAL_EMBEDDED_LICENSE$
+** $QT_BEGIN_LICENSE:LGPL$
+** No Commercial Usage
+** This file contains pre-release code and may not be distributed.
+** You may use this file in accordance with the terms and conditions
+** contained in the either Technology Preview License Agreement or the
+** Beta Release License Agreement.
+**
+** GNU Lesser General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU Lesser
+** General Public License version 2.1 as published by the Free Software
+** Foundation and appearing in the file LICENSE.LGPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU Lesser General Public License version 2.1 requirements
+** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+**
+** In addition, as a special exception, Nokia gives you certain
+** additional rights. These rights are described in the Nokia Qt LGPL
+** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
+** package.
+**
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU
+** General Public License version 3.0 as published by the Free Software
+** Foundation and appearing in the file LICENSE.GPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU General Public License version 3.0 requirements will be
+** met: http://www.gnu.org/copyleft/gpl.html.
+**
+** If you are unsure which license is appropriate for your use, please
+** contact the sales department at qt-sales@nokia.com.
+** $QT_END_LICENSE$
 **
 ****************************************************************************/
 
@@ -50,7 +80,7 @@ void CNotifyChangeEvent::RunL()
     if (iStatus.Int() == KErrNone){
         fsSession.NotifyChange(ENotifyAll, iStatus, watchedPath);
         SetActive();
-        engine->emitPathChanged(this);
+        QT_TRANSLATE_EXCEPTION_TO_SYMBIAN_LEAVE(engine->emitPathChanged(this));
     } else {
         qWarning("CNotifyChangeEvent::RunL() - Failed to order change notifications: %d", iStatus.Int());
     }
@@ -232,9 +262,9 @@ void QSymbianFileSystemWatcherEngine::run()
 void QSymbianFileSystemWatcherEngine::addNativeListener(const QString &directoryPath)
 {
     QMutexLocker locker(&mutex);
-    HBufC* buffer = qt_QString2HBufCNewL(QDir::toNativeSeparators(directoryPath));
-    currentEvent = CNotifyChangeEvent::New(fsSession, *buffer, this);
-    delete buffer;
+    QString nativeDir(QDir::toNativeSeparators(directoryPath));
+    TPtrC ptr(qt_QString2TPtrC(nativeDir));
+    currentEvent = CNotifyChangeEvent::New(fsSession, ptr, this);
     syncCondition.wakeOne();
 }
 

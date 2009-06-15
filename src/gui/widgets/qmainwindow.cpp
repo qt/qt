@@ -481,6 +481,11 @@ void QMainWindow::setMenuBar(QMenuBar *menuBar)
         oldMenuBar->deleteLater();
     }
     d->layout->setMenuBar(menuBar);
+    if (menuBar) {
+        QAction* menu = new QAction(QString::fromLatin1("Menu"), this);
+        menu->setSoftKeyRole(QAction::MenuSoftKey);
+        setSoftKey(menu);
+    }
 }
 
 /*!

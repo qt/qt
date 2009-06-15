@@ -3,11 +3,7 @@ contains(QT_CONFIG, openssl) | contains(QT_CONFIG, openssl-linked) {
     
 
 symbian {
-	TRY_INCLUDEPATHS = $${EPOCROOT}epoc32/include $${EPOCROOT}epoc32/include/stdapis $${EPOCROOT}epoc32/include/stdapis/sys $$OS_LAYER_LIBC_SYSTEMINCLUDE
-	for(p, TRY_INCLUDEPATHS) {
-		pp = $$join(p, "", "", "/openssl")
-		exists($$pp):INCLUDEPATH *= $$pp
-	}
+	INCLUDEPATH *= $$OS_LAYER_SSL_SYSTEMINCLUDE
 } else {
 	include($$QT_SOURCE_TREE/config.tests/unix/openssl/openssl.pri) 
 }

@@ -432,6 +432,13 @@ void QTextTablePrivate::fragmentRemoved(const QChar &type, uint fragment)
     QTextFramePrivate::fragmentRemoved(type, fragment);
 }
 
+/*!
+    /fn void QTextTablePrivate::update() const
+
+    This function is usually called when the table is "dirty".
+    It seems to update all kind of table information.
+
+*/
 void QTextTablePrivate::update() const
 {
     Q_Q(const QTextTable);
@@ -439,7 +446,9 @@ void QTextTablePrivate::update() const
     nRows = (cells.size() + nCols-1)/nCols;
 //     qDebug(">>>> QTextTablePrivate::update, nRows=%d, nCols=%d", nRows, nCols);
 
-    grid = (int *)realloc(grid, nRows*nCols*sizeof(int));
+    int* newGrid = (int *)realloc(grid, nRows*nCols*sizeof(int));
+    Q_CHECK_PTR(newGrid);
+    grid = newGrid;
     memset(grid, 0, nRows*nCols*sizeof(int));
 
     QTextDocumentPrivate *p = pieceTable;
@@ -463,7 +472,9 @@ void QTextTablePrivate::update() const
         cellIndices[i] = cell;
 
         if (r + rowspan > nRows) {
-            grid = (int *)realloc(grid, sizeof(int)*(r + rowspan)*nCols);
+            newGrid = (int *)realloc(grid, sizeof(int)*(r + rowspan)*nCols);
+            Q_CHECK_PTR(newGrid);
+            grid = newGrid;
             memset(grid + (nRows*nCols), 0, sizeof(int)*(r+rowspan-nRows)*nCols);
             nRows = r + rowspan;
         }

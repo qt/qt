@@ -137,22 +137,29 @@ configure -platform win32-mwc -xplatform symbian-abld
 make debug-winscw
 //! [24]
 
-
 //! [25]
 cd examples
-make debug-gcce
+qmake
+make
 cd ..\demos
-
-make debug-gcce
-cd embedded\fluidlauncher
-createpackage -i fluidlauncher_gcce_udeb.pkg
+qmake
+make 
 //! [25]
-
-
-//! [26]
-wiggly.exe -small-screen
-//! [26]
 
 //! [27]
 make run
 //! [27]
+
+//! [28]
+make release-armv5
+//! [28]
+
+//! [29]
+cd src\s60installs
+createpackage -i qt_libs_armv5_urel.pkg <certificate file> <certificate key file>
+//! [29]
+
+//! [30]
+cd embedded\fluidlauncher
+createpackage -i fluidlauncher_armv5_urel.pkg
+//! [30]

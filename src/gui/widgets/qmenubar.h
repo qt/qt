@@ -118,10 +118,6 @@ public:
     static void wceRefresh();
 #endif
 
-#ifdef Q_OS_SYMBIAN
-    static void symbianCommands(int command);
-#endif
-
 public Q_SLOTS:
     virtual void setVisible(bool visible);
 

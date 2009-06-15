@@ -155,7 +155,7 @@ QSslCertificate::QSslCertificate(const QByteArray &data, QSsl::EncodingFormat fo
 /*!
     Constructs an identical copy of \a other.
 */
-QSslCertificate::QSslCertificate(const QSslCertificate &other) : d(other.d)
+QSslCertificate::QSslCertificate(const QSslCertificate &other) : d(other.d.data())
 {
     d->ref.ref();
 }
@@ -165,8 +165,6 @@ QSslCertificate::QSslCertificate(const QSslCertificate &other) : d(other.d)
 */
 QSslCertificate::~QSslCertificate()
 {
-    if (!d->ref.deref())
-        delete d;
 }
 
 /*!
@@ -175,7 +173,7 @@ QSslCertificate::~QSslCertificate()
 */
 QSslCertificate &QSslCertificate::operator=(const QSslCertificate &other)
 {
-    qAtomicAssign(d, other.d);
+    d.assign(other.d.data());
     return *this;
 }
 
@@ -241,12 +239,7 @@ void QSslCertificate::clear()
 {
     if (isNull())
         return;
-    if (d->ref == 1)
-        delete d;
-    else
-        d->ref.deref();
-
-    d = new QSslCertificatePrivate;
+    d.reset(new QSslCertificatePrivate);
 }
 
 /*!
@@ -267,7 +260,7 @@ QByteArray QSslCertificate::serialNumber() const
 
 /*!
     Returns a cryptographic digest of this certificate. By default,
-    and MD5 digest will be generated, but you can also specify a
+    an MD5 digest will be generated, but you can also specify a
     custom \a algorithm.
 */
 QByteArray QSslCertificate::digest(QCryptographicHash::Algorithm algorithm) const

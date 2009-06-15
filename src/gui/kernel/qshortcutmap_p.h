@@ -55,6 +55,7 @@
 
 #include "QtGui/qkeysequence.h"
 #include "QtCore/qvector.h"
+#include "QtCore/qscopedpointer.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -104,7 +105,7 @@ private:
 #ifndef QT_NO_ACTION
     bool correctContext(Qt::ShortcutContext context,QAction *a, QWidget *active_window) const;
 #endif
-    QShortcutMapPrivate *d_ptr;
+    QScopedPointer<QShortcutMapPrivate> d_ptr;
 
     QKeySequence::SequenceMatch find(QKeyEvent *e);
     QKeySequence::SequenceMatch matches(const QKeySequence &seq1, const QKeySequence &seq2) const;

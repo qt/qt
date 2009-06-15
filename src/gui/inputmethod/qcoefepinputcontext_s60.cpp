@@ -5,7 +5,37 @@
 **
 ** This file is part of the $MODULE$ of the Qt Toolkit.
 **
-** $TROLLTECH_DUAL_EMBEDDED_LICENSE$
+** $QT_BEGIN_LICENSE:LGPL$
+** No Commercial Usage
+** This file contains pre-release code and may not be distributed.
+** You may use this file in accordance with the terms and conditions
+** contained in the either Technology Preview License Agreement or the
+** Beta Release License Agreement.
+**
+** GNU Lesser General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU Lesser
+** General Public License version 2.1 as published by the Free Software
+** Foundation and appearing in the file LICENSE.LGPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU Lesser General Public License version 2.1 requirements
+** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+**
+** In addition, as a special exception, Nokia gives you certain
+** additional rights. These rights are described in the Nokia Qt LGPL
+** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
+** package.
+**
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU
+** General Public License version 3.0 as published by the Free Software
+** Foundation and appearing in the file LICENSE.GPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU General Public License version 3.0 requirements will be
+** met: http://www.gnu.org/copyleft/gpl.html.
+**
+** If you are unsure which license is appropriate for your use, please
+** contact the sales department at qt-sales@nokia.com.
+** $QT_END_LICENSE$
 **
 ****************************************************************************/
 
@@ -58,10 +88,9 @@ QCoeFepInputContext::~QCoeFepInputContext()
 
     // This is to make sure that the FEP manager "forgets" about us,
     // otherwise we may get callbacks even after we're destroyed.
-    // The call is asynchronous though, so we must spin the event loop
-    // to make sure it gets detected.
-    CCoeEnv::Static()->InputCapabilitiesChanged();
-    QApplication::processEvents();
+    // The call below is essentially equivalent to InputCapabilitiesChanged(),
+    // but is synchronous, rather than asynchronous.
+    CCoeEnv::Static()->SyncNotifyFocusObserversOfChangeInFocus();
 
     if (m_fepState)
         delete m_fepState;
@@ -89,9 +118,7 @@ void QCoeFepInputContext::update()
 
 void QCoeFepInputContext::setFocusWidget(QWidget *w)
 {
-    commitCurrentString();
-
-    CCoeEnv::Static()->Fep()->CancelTransaction();
+    commitCurrentString(false);
 
     QInputContext::setFocusWidget(w);
 
@@ -258,56 +285,17 @@ bool QCoeFepInputContext::filterEvent(const QEvent *event)
 void QCoeFepInputContext::mouseHandler( int x, QMouseEvent *event)
 {
     Q_ASSERT(m_isEditing);
+    Q_ASSERT(focusWidget());
 
-    if (!m_pointerHandler) {
-        QInputContext::mouseHandler(x, event);
-    }
+    if (event->type() == QEvent::MouseButtonPress && event->button() == Qt::LeftButton) {
+        commitCurrentString(false);
+        int pos = focusWidget()->inputMethodQuery(Qt::ImCursorPosition).toInt();
 
-    TPointerEvent::TType type;
-    TUint modifiers = 0;
-
-    if (event->type() == QEvent::MouseButtonPress) {
-        if (event->button() == Qt::LeftButton) {
-            type = TPointerEvent::EButton1Down;
-        } else if (event->button() == Qt::RightButton) {
-            type = TPointerEvent::EButton3Down;
-        } else if (event->button() == Qt::MidButton) {
-            type = TPointerEvent::EButton2Down;
-        } else {
-            return;
-        }
-    } else if (event->type() == QEvent::MouseButtonRelease) {
-        if (event->button() == Qt::LeftButton) {
-            type = TPointerEvent::EButton1Up;
-        } else if (event->button() == Qt::RightButton) {
-            type = TPointerEvent::EButton3Up;
-        } else if (event->button() == Qt::MidButton) {
-            type = TPointerEvent::EButton2Up;
-        } else {
-            return;
-        }
-    } else if (event->type() == QEvent::MouseMove) {
-        type = TPointerEvent::EMove;
-    } else if (event->type() == QEvent::DragMove) {
-        type = TPointerEvent::EDrag;
-    } else {
-        return;
+        QList<QInputMethodEvent::Attribute> attributes;
+        attributes << QInputMethodEvent::Attribute(QInputMethodEvent::Selection, pos + x, 0, QVariant());
+        QInputMethodEvent event("", attributes);
+        sendEvent(event);
     }
-
-    if (event->modifiers() & Qt::ShiftModifier) {
-        modifiers |= EModifierShift;
-    }
-    if (event->modifiers() & Qt::AltModifier) {
-        modifiers |= EModifierAlt;
-    }
-    if (event->modifiers() & Qt::ControlModifier) {
-        modifiers |= EModifierCtrl;
-    }
-    if (event->modifiers() & Qt::KeypadModifier) {
-        modifiers |= EModifierKeypad;
-    }
-
-    m_pointerHandler->HandlePointerEventInInlineTextL(type, modifiers, x);
 }
 
 TCoeInputCapabilities QCoeFepInputContext::inputCapabilities()
@@ -341,6 +329,8 @@ void QCoeFepInputContext::updateHints()
             m_lastImHints = hints;
             applyHints(hints);
         }
+    } else {
+        CCoeEnv::Static()->InputCapabilitiesChanged();
     }
 }
 
@@ -606,13 +596,13 @@ void QCoeFepInputContext::SetCursorSelectionForFepL(const TCursorSelection& aCur
     if (!w)
         return;
 
-    int pos = w->inputMethodQuery(Qt::ImCursorPosition).toInt() + aCursorSelection.iCursorPos + 1;
+    int pos = aCursorSelection.iAnchorPos;
+    int length = aCursorSelection.iCursorPos - pos;
 
     QList<QInputMethodEvent::Attribute> attributes;
-    attributes << QInputMethodEvent::Attribute(QInputMethodEvent::Cursor, pos, 1, QVariant());
+    attributes << QInputMethodEvent::Attribute(QInputMethodEvent::Selection, pos, length, QVariant());
     QInputMethodEvent event(m_preeditString, attributes);
-    // ### FIXME Sets preeditcursor and not cursor. Probably needs new API.
-    //sendEvent(event);
+    sendEvent(event);
 }
 
 void QCoeFepInputContext::GetCursorSelectionForFep(TCursorSelection& aCursorSelection) const
@@ -621,9 +611,8 @@ void QCoeFepInputContext::GetCursorSelectionForFep(TCursorSelection& aCursorSele
     if (!w)
         return;
 
-    QVariant cursorVar = w->inputMethodQuery(Qt::ImCursorPosition);
-    int cursor = cursorVar.toInt() + m_preeditString.size();
-    int anchor = cursor - w->inputMethodQuery(Qt::ImCurrentSelection).toString().size();
+    int cursor = w->inputMethodQuery(Qt::ImCursorPosition).toInt() + m_preeditString.size();
+    int anchor = w->inputMethodQuery(Qt::ImAnchorPosition).toInt() + m_preeditString.size();
     aCursorSelection.iAnchorPos = anchor;
     aCursorSelection.iCursorPos = cursor;
 }
@@ -679,12 +668,10 @@ void QCoeFepInputContext::GetScreenCoordinatesForFepL(TPoint& aLeftSideOfBaseLin
 
 void QCoeFepInputContext::DoCommitFepInlineEditL()
 {
-    commitCurrentString();
-
-    m_isEditing = false;
+    commitCurrentString(true);
 }
 
-void QCoeFepInputContext::commitCurrentString()
+void QCoeFepInputContext::commitCurrentString(bool triggeredBySymbian)
 {
     if (m_preeditString.size() == 0) {
         return;
@@ -695,6 +682,12 @@ void QCoeFepInputContext::commitCurrentString()
     event.setCommitString(m_preeditString, 0, 0);//m_preeditString.size());
     m_preeditString.clear();
     sendEvent(event);
+
+    m_isEditing = false;
+
+    if (!triggeredBySymbian) {
+        CCoeEnv::Static()->Fep()->CancelTransaction();
+    }
 }
 
 MCoeFepAwareTextEditor_Extension1* QCoeFepInputContext::Extension1(TBool& aSetToTrue)

@@ -127,8 +127,8 @@ symbian {
     desktopservices_images.sources = $$PWD/../desktopservices/data/*.png
     desktopservices_images.path = /data/images    
 
-    saxbookmarks.sources = $$PWD/../../../examples/xml/saxbookmarks/frankf.xbel
-    saxbookmarks.sources += $$PWD/../../../examples/xml/saxbookmarks/jenniferf.xbel
+    saxbookmarks.sources = $$PWD/../../../examples/xml/saxbookmarks/frank.xbel
+    saxbookmarks.sources += $$PWD/../../../examples/xml/saxbookmarks/jennifer.xbel
     saxbookmarks.path = /data/qt/saxbookmarks
 
     DEPLOYMENT += config files executables viewerimages saxbookmarks reg_resource resource \ 

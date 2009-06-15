@@ -1006,7 +1006,8 @@ QApplication::~QApplication()
     if (QWidgetPrivate::mapper) {
         QWidgetMapper * myMapper = QWidgetPrivate::mapper;
         QWidgetPrivate::mapper = 0;
-        for (QWidgetMapper::Iterator it = myMapper->begin(); it != myMapper->end(); ++it) {
+        for (QWidgetMapper::ConstIterator it = myMapper->constBegin();
+                it != myMapper->constEnd(); ++it) {
             register QWidget *w = *it;
             if (!w->parent())                        // window
                 w->destroy(true, true);
@@ -1018,7 +1019,7 @@ QApplication::~QApplication()
     if (QWidgetPrivate::uncreatedWidgets) {
         QWidgetSet *mySet = QWidgetPrivate::uncreatedWidgets;
         QWidgetPrivate::uncreatedWidgets = 0;
-        for (QWidgetSet::Iterator it = mySet->begin(); it != mySet->end(); ++it) {
+        for (QWidgetSet::ConstIterator it = mySet->constBegin(); it != mySet->constEnd(); ++it) {
             register QWidget *w = *it;
             if (!w->parent())                        // window
                 w->destroy(true, true);
@@ -4764,7 +4765,7 @@ void QApplicationPrivate::emitLastWindowClosed()
 
     If \a enable is true, Qt::Key_Up and Qt::Key_Down are used to change focus.
 
-    This feature is available in Qt for Embedded Linux only.
+    This feature is available in Qt for Embedded Linux and Symbian only.
 
     \sa keypadNavigationEnabled()
 */
@@ -4775,9 +4776,9 @@ void QApplication::setKeypadNavigationEnabled(bool enable)
 
 /*!
     Returns true if Qt is set to use keypad navigation; otherwise returns
-    false. The default is false.
+    false.  The default value is true on Symbian, but false on other platforms.
 
-    This feature is available in Qt for Embedded Linux only.
+    This feature is available in Qt for Embedded Linux and Symbian only.
 
     \sa setKeypadNavigationEnabled()
 */
@@ -4993,8 +4994,7 @@ void QApplication::setInputContext(QInputContext *inputContext)
         qWarning("QApplication::setInputContext: called with 0 input context");
         return;
     }
-    if (d->inputContext)
-        delete d->inputContext;
+    delete d->inputContext;
     d->inputContext = inputContext;
 }
 

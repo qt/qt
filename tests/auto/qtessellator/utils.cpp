@@ -43,7 +43,7 @@
 #include <assert.h>
 #include <qglobal.h>
 
-#include <qnum.h>
+#include "qnum.h"
 
 #define FloatToXFixed(i) (int)((i) * 65536)
 #define IntToXFixed(i) ((i) << 16)

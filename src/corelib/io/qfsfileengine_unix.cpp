@@ -293,9 +293,8 @@ qint64 QFSFileEnginePrivate::nativeRead(char *data, qint64 len)
         int oldFlags = fcntl(QT_FILENO(fh), F_GETFL);
         for (int i = 0; i < 2; ++i) {
             // Unix: Make the underlying file descriptor non-blocking
-            int v = 1;
             if ((oldFlags & O_NONBLOCK) == 0)
-                fcntl(QT_FILENO(fh), F_SETFL, oldFlags | O_NONBLOCK, &v, sizeof(v));
+                fcntl(QT_FILENO(fh), F_SETFL, oldFlags | O_NONBLOCK);
 
             // Cross platform stdlib read
             size_t read = 0;
@@ -313,8 +312,7 @@ qint64 QFSFileEnginePrivate::nativeRead(char *data, qint64 len)
 
             // Unix: Restore the blocking state of the underlying socket
             if ((oldFlags & O_NONBLOCK) == 0) {
-                int v = 1;
-                fcntl(QT_FILENO(fh), F_SETFL, oldFlags, &v, sizeof(v));
+                fcntl(QT_FILENO(fh), F_SETFL, oldFlags);
                 if (readBytes == 0) {
                     int readByte = 0;
                     do {
@@ -331,8 +329,7 @@ qint64 QFSFileEnginePrivate::nativeRead(char *data, qint64 len)
         }
         // Unix: Restore the blocking state of the underlying socket
         if ((oldFlags & O_NONBLOCK) == 0) {
-            int v = 1;
-            fcntl(QT_FILENO(fh), F_SETFL, oldFlags, &v, sizeof(v));
+            fcntl(QT_FILENO(fh), F_SETFL, oldFlags);
         }
         if (readBytes == 0 && !feof(fh)) {
             // if we didn't read anything and we're not at EOF, it must be an error
@@ -407,23 +404,21 @@ bool QFSFileEngine::copy(const QString &newName)
     TInt err = rfs.Connect();
     if (err == KErrNone) {
         CFileMan* fm = NULL;
-        HBufC* oldBuf = NULL;
-        HBufC* newBuf = NULL;
+        QString oldNative(QDir::toNativeSeparators(d->filePath));
+        TPtrC oldPtr(qt_QString2TPtrC(oldNative));
+        QFileInfo fi(newName);
+        QString absoluteNewName = fi.absolutePath() + QDir::separator() + fi.fileName();
+        QString newNative(QDir::toNativeSeparators(absoluteNewName));
+        TPtrC newPtr(qt_QString2TPtrC(newNative));
         TRAP (err,
             fm = CFileMan::NewL(rfs);
-            oldBuf = qt_QString2HBufCNewL(QDir::toNativeSeparators(d->filePath));
             RFile rfile;
-            err = rfile.Open(rfs, *oldBuf, EFileShareReadersOrWriters);
+            err = rfile.Open(rfs, oldPtr, EFileShareReadersOrWriters);
             if (err == KErrNone) {
-                QFileInfo fi(newName);
-                QString absoluteNewName = fi.absolutePath() + QDir::separator() + fi.fileName();
-                newBuf = qt_QString2HBufCNewL(QDir::toNativeSeparators(absoluteNewName));
-                err = fm->Copy(rfile, *newBuf);
+                err = fm->Copy(rfile, newPtr);
                 rfile.Close();
             }
         ) // End TRAP
-        delete oldBuf;
-        delete newBuf;
         delete fm;
         rfs.Close();
     }
@@ -678,10 +673,10 @@ static bool _q_isSymbianHidden(const QString &path, bool isDir)
         if (isDir && absPath.at(absPath.size()-1) != QChar('/')) {
             absPath += QChar('/');
         }
-        HBufC* buffer = qt_QString2HBufCNewL(QDir::toNativeSeparators(absPath));
+        QString native(QDir::toNativeSeparators(absPath));
+        TPtrC ptr(qt_QString2TPtrC(native));
         TUint attributes;
-        err = rfs.Att(*buffer, attributes);
-        delete buffer;
+        err = rfs.Att(ptr, attributes);
         rfs.Close();
         if (err == KErrNone && (attributes & KEntryAttHidden)) {
             retval = true;

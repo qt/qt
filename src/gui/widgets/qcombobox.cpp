@@ -63,7 +63,7 @@
 #include <private/qabstractitemmodel_p.h>
 #include <private/qabstractscrollarea_p.h>
 #include <qdebug.h>
-
+#include <private/qactiontokeyeventmapper_p.h>
 #ifdef Q_WS_X11
 #include <private/qt_x11_p.h>
 #endif
@@ -628,6 +628,9 @@ bool QComboBoxPrivateContainer::eventFilter(QObject *o, QEvent *e)
         case Qt::Key_Select:
 #endif
             if (view->currentIndex().isValid() && (view->currentIndex().flags() & Qt::ItemIsEnabled) ) {
+#ifdef QT_KEYPAD_NAVIGATION
+                QActionToKeyEventMapper::removeSoftkey(this);
+#endif
                 combo->hidePopup();
                 emit itemSelected(view->currentIndex());
             }
@@ -640,7 +643,7 @@ bool QComboBoxPrivateContainer::eventFilter(QObject *o, QEvent *e)
         case Qt::Key_Escape:
 #ifdef QT_KEYPAD_NAVIGATION
         case Qt::Key_Back:
-        case Qt::Key_Context2: // TODO: aportale, KEYPAD_NAVIGATION_HACK when softkey support is there
+            QActionToKeyEventMapper::removeSoftkey(this);
 #endif
             combo->hidePopup();
             return true;
@@ -948,7 +951,7 @@ QComboBoxPrivateContainer* QComboBoxPrivate::viewContainer()
     container = new QComboBoxPrivateContainer(new QComboBoxListView(q), q);
     container->itemView()->setModel(model);
     container->itemView()->setTextElideMode(Qt::ElideMiddle);
-    updateDelegate();
+    updateDelegate(true);
     updateLayoutDirection();
     QObject::connect(container, SIGNAL(itemSelected(QModelIndex)),
                      q, SLOT(_q_itemSelected(QModelIndex)));
@@ -1568,15 +1571,25 @@ bool QComboBox::isEditable() const
     return d->lineEdit != 0;
 }
 
-void QComboBoxPrivate::updateDelegate()
+/*! \internal
+    update the default delegate
+    depending on the style's SH_ComboBox_Popup hint, we use a different default delegate.
+
+    but we do not change the delegate is the combobox use a custom delegate,
+    unless \a force is set to true.
+ */
+void QComboBoxPrivate::updateDelegate(bool force)
 {
     Q_Q(QComboBox);
     QStyleOptionComboBox opt;
     q->initStyleOption(&opt);
-    if (q->style()->styleHint(QStyle::SH_ComboBox_Popup, &opt, q))
-        q->setItemDelegate(new QComboMenuDelegate(q->view(), q));
-    else
-        q->setItemDelegate(new QComboBoxDelegate(q->view(), q));
+    if (q->style()->styleHint(QStyle::SH_ComboBox_Popup, &opt, q)) {
+        if (force || qobject_cast<QComboBoxDelegate *>(q->itemDelegate()))
+            q->setItemDelegate(new QComboMenuDelegate(q->view(), q));
+    } else {
+        if (force || qobject_cast<QComboMenuDelegate *>(q->itemDelegate()))
+            q->setItemDelegate(new QComboBoxDelegate(q->view(), q));
+    }
 }
 
 QIcon QComboBoxPrivate::itemIcon(const QModelIndex &index) const
@@ -2425,6 +2438,7 @@ void QComboBox::showPopup()
 #ifdef QT_KEYPAD_NAVIGATION
     if (QApplication::keypadNavigationEnabled())
         view()->setEditFocus(true);
+    QActionToKeyEventMapper::addSoftKey(QAction::CancelSoftKey, Qt::Key_Back, view());
 #endif
 }
 

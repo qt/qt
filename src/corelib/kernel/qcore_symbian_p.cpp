@@ -5,13 +5,45 @@
 **
 ** This file is part of the $MODULE$ of the Qt Toolkit.
 **
-** $TROLLTECH_DUAL_EMBEDDED_LICENSE$
+** $QT_BEGIN_LICENSE:LGPL$
+** No Commercial Usage
+** This file contains pre-release code and may not be distributed.
+** You may use this file in accordance with the terms and conditions
+** contained in the either Technology Preview License Agreement or the
+** Beta Release License Agreement.
+**
+** GNU Lesser General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU Lesser
+** General Public License version 2.1 as published by the Free Software
+** Foundation and appearing in the file LICENSE.LGPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU Lesser General Public License version 2.1 requirements
+** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+**
+** In addition, as a special exception, Nokia gives you certain
+** additional rights. These rights are described in the Nokia Qt LGPL
+** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
+** package.
+**
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU
+** General Public License version 3.0 as published by the Free Software
+** Foundation and appearing in the file LICENSE.GPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU General Public License version 3.0 requirements will be
+** met: http://www.gnu.org/copyleft/gpl.html.
+**
+** If you are unsure which license is appropriate for your use, please
+** contact the sales department at qt-sales@nokia.com.
+** $QT_END_LICENSE$
 **
 ****************************************************************************/
 
+#include <exception>
 #include <e32base.h>
 #include <e32uid.h>
 #include "qcore_symbian_p.h"
+#include <string>
 
 QT_BEGIN_NAMESPACE
 
@@ -21,18 +53,17 @@ QT_BEGIN_NAMESPACE
     must be deleted by the caller.
 */
 
-Q_CORE_EXPORT HBufC* qt_QString2HBufCNewL(const QString& aString)
+Q_CORE_EXPORT HBufC* qt_QString2HBufC(const QString& aString)
 {
     HBufC *buffer;
 #ifdef QT_NO_UNICODE
     TPtrC8 ptr(reinterpret_cast<const TUint8*>(aString.toLocal8Bit().constData()));
-    buffer = HBufC8::NewL(ptr.Length());
-    buffer->Des().Copy(ptr);
 #else
-    TPtrC16 ptr(reinterpret_cast<const TUint16*>(aString.utf16()));
-    buffer = HBufC16::NewL(ptr.Length());
-    buffer->Des().Copy(ptr);
+    TPtrC16 ptr(qt_QString2TPtrC(aString));
 #endif
+    buffer = HBufC::New(ptr.Length());
+    Q_CHECK_PTR(buffer);
+    buffer->Des().Copy(ptr);
     return buffer;
 }
 
@@ -52,7 +83,8 @@ QHBufC::QHBufC()
 
 QHBufC::QHBufC(const QHBufC &src)
 {
-    m_hBufC = src.m_hBufC->AllocL();
+    m_hBufC = src.m_hBufC->Alloc();
+    Q_CHECK_PTR(m_hBufC);
 }
 
 /*!
@@ -67,7 +99,7 @@ QHBufC::QHBufC(HBufC *src)
 
 QHBufC::QHBufC(const QString &src)
 {
-    m_hBufC = qt_QString2HBufCNewL(src);
+    m_hBufC = qt_QString2HBufC(src);
 }
 
 QHBufC::~QHBufC()
@@ -141,5 +173,6 @@ Q_CORE_EXPORT TLibraryFunction qt_resolveS60PluginFunc(int ordinal)
 {
     return qt_s60_plugin_resolver()->resolve(ordinal);
 }
+
 
 QT_END_NAMESPACE

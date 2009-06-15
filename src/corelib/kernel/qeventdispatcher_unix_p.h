@@ -57,6 +57,7 @@
 #include "QtCore/qlist.h"
 #include "private/qabstracteventdispatcher_p.h"
 #include "private/qpodlist_p.h"
+#include "QtCore/qvarlengtharray.h"
 
 #include <sys/types.h>
 #include <sys/time.h>

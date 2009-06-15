@@ -15,4 +15,4 @@ DEFINES += QLOCALSOCKET_DEBUG
 SOURCES		+= main.cpp 
 TARGET		= lackey
 
-
+symbian:TARGET.CAPABILITY = ALL -TCB 

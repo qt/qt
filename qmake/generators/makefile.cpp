@@ -2234,8 +2234,8 @@ MakefileGenerator::writeHeader(QTextStream &t)
     t << endl;
 }
 
-void
-MakefileGenerator::writeSubDirs(QTextStream &t)
+QList<MakefileGenerator::SubTarget*>
+MakefileGenerator::findSubDirsSubTargets() const
 {
     QList<SubTarget*> targets;
     {
@@ -2332,6 +2332,13 @@ MakefileGenerator::writeSubDirs(QTextStream &t)
             }
         }
     }
+    return targets;
+}
+
+void
+MakefileGenerator::writeSubDirs(QTextStream &t)
+{
+    QList<SubTarget*> targets = findSubDirsSubTargets();
     t << "first: make_default" << endl;
     int flags = SubTargetInstalls;
     if(project->isActiveConfig("ordered"))
@@ -2348,39 +2355,43 @@ MakefileGenerator::writeSubTargets(QTextStream &t, QList<MakefileGenerator::SubT
     for(QStringList::Iterator qeui_it = qeui.begin(); qeui_it != qeui.end(); ++qeui_it)
         t << "include " << (*qeui_it) << endl;
 
-    QString ofile = Option::fixPathToTargetOS(Option::output.fileName());
-    if(ofile.lastIndexOf(Option::dir_sep) != -1)
-        ofile = ofile.right(ofile.length() - ofile.lastIndexOf(Option::dir_sep) -1);
-    t << "MAKEFILE      = " << ofile << endl;
-    /* Calling Option::fixPathToTargetOS() is necessary for MinGW/MSYS, which requires
-     * back-slashes to be turned into slashes. */
-    t << "QMAKE         = " << Option::fixPathToTargetOS(var("QMAKE_QMAKE")) << endl;
-    t << "DEL_FILE      = " << var("QMAKE_DEL_FILE") << endl;
-    t << "CHK_DIR_EXISTS= " << var("QMAKE_CHK_DIR_EXISTS") << endl;
-    t << "MKDIR         = " << var("QMAKE_MKDIR") << endl;
-    t << "COPY          = " << var("QMAKE_COPY") << endl;
-    t << "COPY_FILE     = " << var("QMAKE_COPY_FILE") << endl;
-    t << "COPY_DIR      = " << var("QMAKE_COPY_DIR") << endl;
-    t << "INSTALL_FILE  = " << var("QMAKE_INSTALL_FILE") << endl;
-    t << "INSTALL_PROGRAM = " << var("QMAKE_INSTALL_PROGRAM") << endl;
-    t << "INSTALL_DIR   = " << var("QMAKE_INSTALL_DIR") << endl;
-    t << "DEL_FILE      = " << var("QMAKE_DEL_FILE") << endl;
-    t << "SYMLINK       = " << var("QMAKE_SYMBOLIC_LINK") << endl;
-    t << "DEL_DIR       = " << var("QMAKE_DEL_DIR") << endl;
-    t << "MOVE          = " << var("QMAKE_MOVE") << endl;
-    t << "CHK_DIR_EXISTS= " << var("QMAKE_CHK_DIR_EXISTS") << endl;
-    t << "MKDIR         = " << var("QMAKE_MKDIR") << endl;
+    if (!(flags & SubTargetSkipDefaultVariables)) {
+        QString ofile = Option::fixPathToTargetOS(Option::output.fileName());
+        if(ofile.lastIndexOf(Option::dir_sep) != -1)
+            ofile = ofile.right(ofile.length() - ofile.lastIndexOf(Option::dir_sep) -1);
+        t << "MAKEFILE      = " << ofile << endl;
+        /* Calling Option::fixPathToTargetOS() is necessary for MinGW/MSYS, which requires
+         * back-slashes to be turned into slashes. */
+        t << "QMAKE         = " << Option::fixPathToTargetOS(var("QMAKE_QMAKE")) << endl;
+        t << "DEL_FILE      = " << var("QMAKE_DEL_FILE") << endl;
+        t << "CHK_DIR_EXISTS= " << var("QMAKE_CHK_DIR_EXISTS") << endl;
+        t << "MKDIR         = " << var("QMAKE_MKDIR") << endl;
+        t << "COPY          = " << var("QMAKE_COPY") << endl;
+        t << "COPY_FILE     = " << var("QMAKE_COPY_FILE") << endl;
+        t << "COPY_DIR      = " << var("QMAKE_COPY_DIR") << endl;
+        t << "INSTALL_FILE  = " << var("QMAKE_INSTALL_FILE") << endl;
+        t << "INSTALL_PROGRAM = " << var("QMAKE_INSTALL_PROGRAM") << endl;
+        t << "INSTALL_DIR   = " << var("QMAKE_INSTALL_DIR") << endl;
+        t << "DEL_FILE      = " << var("QMAKE_DEL_FILE") << endl;
+        t << "SYMLINK       = " << var("QMAKE_SYMBOLIC_LINK") << endl;
+        t << "DEL_DIR       = " << var("QMAKE_DEL_DIR") << endl;
+        t << "MOVE          = " << var("QMAKE_MOVE") << endl;
+        t << "CHK_DIR_EXISTS= " << var("QMAKE_CHK_DIR_EXISTS") << endl;
+        t << "MKDIR         = " << var("QMAKE_MKDIR") << endl;
+        t << "SUBTARGETS    = ";     // subtargets are sub-directory
+        for(int target = 0; target < targets.size(); ++target)
+            t << " \\\n\t\t" << targets.at(target)->target;
+        t << endl << endl;
+    }
     writeExtraVariables(t);
-    t << "SUBTARGETS    = ";     // subtargets are sub-directory
-    for(int target = 0; target < targets.size(); ++target)
-        t << " \\\n\t\t" << targets.at(target)->target;
-    t << endl << endl;
 
     QStringList targetSuffixes;
     const QString abs_source_path = project->first("QMAKE_ABSOLUTE_SOURCE_PATH");
-    targetSuffixes << "make_default" << "make_first" << "all" << "clean" << "distclean"
-                   << QString((flags & SubTargetInstalls) ? "install_subtargets" : "install")
-                   << QString((flags & SubTargetInstalls) ? "uninstall_subtargets" : "uninstall");
+    if (!(flags & SubTargetSkipDefaultTargets)) {
+        targetSuffixes << "make_default" << "make_first" << "all" << "clean" << "distclean"
+                       << QString((flags & SubTargetInstalls) ? "install_subtargets" : "install")
+                       << QString((flags & SubTargetInstalls) ? "uninstall_subtargets" : "uninstall");
+    }
 
     // generate target rules
     for(int target = 0; target < targets.size(); ++target) {
@@ -2500,23 +2511,25 @@ MakefileGenerator::writeSubTargets(QTextStream &t, QList<MakefileGenerator::SubT
     }
     t << endl;
 
-    if(project->values("QMAKE_INTERNAL_QMAKE_DEPS").indexOf("qmake_all") == -1)
-        project->values("QMAKE_INTERNAL_QMAKE_DEPS").append("qmake_all");
+    if (!(flags & SubTargetSkipDefaultTargets)) {
+        if(project->values("QMAKE_INTERNAL_QMAKE_DEPS").indexOf("qmake_all") == -1)
+            project->values("QMAKE_INTERNAL_QMAKE_DEPS").append("qmake_all");
 
-    writeMakeQmake(t);
+        writeMakeQmake(t);
 
-    t << "qmake_all:";
-    if(!targets.isEmpty()) {
-        for(QList<SubTarget*>::Iterator it = targets.begin(); it != targets.end(); ++it) {
-            if(!(*it)->profile.isEmpty())
-                t << " " << (*it)->target << "-" << "qmake_all";
+        t << "qmake_all:";
+        if(!targets.isEmpty()) {
+            for(QList<SubTarget*>::Iterator it = targets.begin(); it != targets.end(); ++it) {
+                if(!(*it)->profile.isEmpty())
+                    t << " " << (*it)->target << "-" << "qmake_all";
+            }
         }
+        if(project->isEmpty("QMAKE_NOFORCE"))
+            t <<  " FORCE";
+        if(project->isActiveConfig("no_empty_targets"))
+            t << "\n\t" << "@cd .";
+        t << endl << endl;
     }
-    if(project->isEmpty("QMAKE_NOFORCE"))
-        t <<  " FORCE";
-    if(project->isActiveConfig("no_empty_targets"))
-        t << "\n\t" << "@cd .";
-    t << endl << endl;
 
     for(int s = 0; s < targetSuffixes.size(); ++s) {
         QString suffix = targetSuffixes.at(s);

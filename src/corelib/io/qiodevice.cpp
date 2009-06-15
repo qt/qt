@@ -362,7 +362,7 @@ QIODevice::QIODevice()
 {
 #if defined QIODEVICE_DEBUG
     QFile *file = qobject_cast<QFile *>(this);
-    printf("%p QIODevice::QIODevice(\"%s\") %s\n", this, className(),
+    printf("%p QIODevice::QIODevice(\"%s\") %s\n", this, metaObject()->className(),
            qPrintable(file ? file->fileName() : QString()));
 #endif
 }
@@ -375,7 +375,7 @@ QIODevice::QIODevice(QObject *parent)
     : QObject(*new QIODevicePrivate, parent)
 {
 #if defined QIODEVICE_DEBUG
-    printf("%p QIODevice::QIODevice(%p \"%s\")\n", this, parent, className());
+    printf("%p QIODevice::QIODevice(%p \"%s\")\n", this, parent, metaObject()->className());
 #endif
 }
 
@@ -945,9 +945,9 @@ QByteArray QIODevice::readAll()
 
     QByteArray tmp;
     if (d->isSequential() || size() == 0) {
-        // Read it in chunks, bytesAvailable() is unreliable for sequential
-        // devices.
-        const int chunkSize = 4096;
+        // Read it in chunks. Use bytesAvailable() as an unreliable hint for
+        // sequential devices, but try to read 4K as a minimum.
+        int chunkSize = qMax(qint64(4096), bytesAvailable());
         qint64 totalRead = 0;
         forever {
             tmp.resize(tmp.size() + chunkSize);
@@ -956,6 +956,7 @@ QByteArray QIODevice::readAll()
             if (readBytes <= 0)
                 return tmp;
             totalRead += readBytes;
+            chunkSize = qMax(qint64(4096), bytesAvailable());
         }
     } else {
         // Read it all in one go.

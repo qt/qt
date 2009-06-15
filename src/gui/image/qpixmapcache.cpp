@@ -323,7 +323,12 @@ void QPixmapCache::remove(const QString &key)
 
 void QPixmapCache::clear()
 {
-    pm_cache()->clear();
+    QT_TRY {
+        pm_cache()->clear();
+    } QT_CATCH(const std::bad_alloc &) {
+        // if we ran out of memory during pm_cache(), it's no leak,
+        // so just ignore it.
+    }
 }
 
 QT_END_NAMESPACE

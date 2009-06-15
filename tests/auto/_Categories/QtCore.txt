@@ -3,13 +3,14 @@
 collections
 exceptionsafety
 qabstractitemmodel
-# Requires std
-#qalgorithms 
+#Requires STL
+qalgorithms 
 qatomicint
 qatomicpointer
 qbitarray
 qbuffer
 qbytearray
+qbytearraymatcher
 qcache
 qchar
 qcoreapplication
@@ -68,7 +69,8 @@ qsignalspy
 qsize
 qsizef
 qsocketnotifier
-#qstl requires STL
+#Requires STL
+qstl 
 qstring
 qstringlist
 qstringmatcher
@@ -103,3 +105,4 @@ qwaitcondition
 qwineventnotifier
 qwritelocker
 q_func_info
+utf8

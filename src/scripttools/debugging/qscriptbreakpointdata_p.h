@@ -54,7 +54,7 @@
 //
 
 #include <QtCore/qobjectdefs.h>
-
+#include <QtCore/qscopedpointer.h>
 #include <QtCore/qmap.h>
 
 QT_BEGIN_NAMESPACE
@@ -114,7 +114,7 @@ public:
     bool operator!=(const QScriptBreakpointData &other) const;
 
 private:
-    QScriptBreakpointDataPrivate *d_ptr;
+    QScopedPointer<QScriptBreakpointDataPrivate> d_ptr;
 
     Q_DECLARE_PRIVATE(QScriptBreakpointData)
 };

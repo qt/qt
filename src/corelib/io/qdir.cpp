@@ -83,6 +83,7 @@ class QDirPrivate
     QDir *q_ptr;
     Q_DECLARE_PUBLIC(QDir)
 
+    friend class QScopedPointer<QDirPrivate>;
 protected:
     QDirPrivate(QDir*, const QDir *copy=0);
     ~QDirPrivate();
@@ -573,8 +574,6 @@ QDir::QDir(const QDir &dir)  : d_ptr(new QDirPrivate(this, &dir))
 
 QDir::~QDir()
 {
-    delete d_ptr;
-    d_ptr = 0;
 }
 
 /*!

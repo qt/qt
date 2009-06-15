@@ -1,6 +1,4 @@
 /****************************************************************************
-**
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
 ** Contact: Qt Software Information (qt-info@nokia.com)
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -40,6 +38,12 @@
 ****************************************************************************/
 #include <QString>
 
+/*
+#ifdef QT_NETWORK_LIB
+#include <QtNetwork/QHostInfo>
+#endif
+*/
+
 #ifdef Q_OS_SYMBIAN
 #include <sys/socket.h>
 #include <net/if.h>
@@ -49,33 +53,34 @@
 #if defined(Q_OS_SYMBIAN) && defined(Q_CC_NOKIAX86)
 // In emulator we use WINSOCK connectivity by default. Unfortunately winsock
 // does not work very well with UDP sockets. This defines skips some test
-// cases which have known problems. 
+// cases which have known problems.
 
 // NOTE: Prefer to use WINPCAP based connectivity in S60 emulator when running
-// network tests. WINPCAP connectivity uses Symbian OS IP stack, 
+// network tests. WINPCAP connectivity uses Symbian OS IP stack,
 // correspondingly as HW does. When using WINPCAP disable this define
 //#define SYMBIAN_WINSOCK_CONNECTIVITY
+
+class QtNetworkSettingsRecord {
+public:
+    QtNetworkSettingsRecord() { }
+
+    QtNetworkSettingsRecord(const QString& recName, const QString& recVal)
+        : strRecordName(recName), strRecordValue(recVal) { }
+
+    QtNetworkSettingsRecord(const QtNetworkSettingsRecord & other)
+         : strRecordName(other.strRecordName), strRecordValue(other.strRecordValue) { }
+
+    ~QtNetworkSettingsRecord() { }
+
+    const QString& recordName() const { return strRecordName; }
+    const QString& recordValue() const { return strRecordValue; }
+
+private:
+    QString strRecordName;
+    QString strRecordValue;
+};
+
 #endif
-
-    class QtNetworkSettingsRecord {
-    public:
-        QtNetworkSettingsRecord() { }
-
-        QtNetworkSettingsRecord(const QString& recName, const QString& recVal)
-            : strRecordName(recName), strRecordValue(recVal) { }
-
-        QtNetworkSettingsRecord(const QtNetworkSettingsRecord & other)
-             : strRecordName(other.strRecordName), strRecordValue(other.strRecordValue) { }
-
-        ~QtNetworkSettingsRecord() { }
-
-        const QString& recordName() const { return strRecordName; }
-        const QString& recordValue() const { return strRecordValue; }
-
-    private:
-        QString strRecordName;
-        QString strRecordValue;
-    };
 
 class QtNetworkSettings
 {
@@ -139,7 +144,7 @@ public:
 #endif
         return "10.10.14.172";
     }
-    
+
     static QByteArray expectedReplyIMAP()
     {
 #ifdef Q_OS_SYMBIAN
@@ -161,12 +166,13 @@ public:
         QByteArray expected( "* OK [CAPABILITY IMAP4 IMAP4REV1] " );
         expected = expected.append(QtNetworkSettings::serverLocalName().toAscii());
         expected = expected.append(" Cyrus IMAP4 v2.3.11-Mandriva-RPM-2.3.11-6mdv2008.1 server ready\r\n");
-        
+
         return expected;
     }
 
     static QByteArray expectedReplySSL()
     {
+#ifdef Q_OS_SYMBIAN
         loadTestSettings();
 
         if(QtNetworkSettings::entries.contains("imap.expectedreplyssl")) {
@@ -176,19 +182,19 @@ public:
                 imapExpectedReplySsl.append('\r').append('\n');
             }
             return imapExpectedReplySsl.data();
-        } else {
-            QByteArray expected( "* OK [CAPABILITY IMAP4 IMAP4rev1 LITERAL+ ID AUTH=PLAIN SASL-IR] " );
-            expected = expected.append(QtNetworkSettings::serverLocalName().toAscii());
-            expected = expected.append(" Cyrus IMAP4 v2.3.11-Mandriva-RPM-2.3.11-6mdv2008.1 server ready\r\n");
-            return expected;
         }
+#endif
+        QByteArray expected( "* OK [CAPABILITY IMAP4 IMAP4rev1 LITERAL+ ID AUTH=PLAIN SASL-IR] " );
+        expected = expected.append(QtNetworkSettings::serverLocalName().toAscii());
+        expected = expected.append(" Cyrus IMAP4 v2.3.11-Mandriva-RPM-2.3.11-6mdv2008.1 server ready\r\n");
+        return expected;
     }
-    
+
     static QByteArray expectedReplyFtp()
     {
         QByteArray expected( "220 (vsFTPd 2.0.5)\r\n221 Goodbye.\r\n" );
         return expected;
-    }    
+    }
 
 #ifdef Q_OS_SYMBIAN
     static void setDefaultIap()
@@ -251,7 +257,7 @@ private:
                     position += QString("=").length();
 
                     //create record
-                    QtNetworkSettingsRecord *entry = 
+                    QtNetworkSettingsRecord *entry =
                         new QtNetworkSettingsRecord( QString("iap.default"), line.mid(position).trimmed() );
                     entries.insert(entry->recordName(), entry);
                     break;
@@ -306,6 +312,15 @@ private:
         return bTestSettingsLoaded = true;
     }
 #endif
+
+/*
+#ifdef QT_NETWORK_LIB
+    static QHostAddress serverIP()
+    {
+        return QHostInfo::fromName(serverName()).addresses().first();
+    }
+#endif
+*/
 
 };
 #ifdef Q_OS_SYMBIAN

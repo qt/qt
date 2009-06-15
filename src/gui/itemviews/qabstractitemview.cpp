@@ -61,6 +61,7 @@
 #ifndef QT_NO_ACCESSIBILITY
 #include <qaccessible.h>
 #endif
+#include <private/qactiontokeyeventmapper_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -1338,7 +1339,7 @@ QSize QAbstractItemView::iconSize() const
 /*!
     \property QAbstractItemView::textElideMode
 
-    \brief the the position of the "..." in elided text.
+    \brief the position of the "..." in elided text.
 
     The default value for all item views is Qt::ElideRight.
 */
@@ -2003,16 +2004,18 @@ void QAbstractItemView::keyPressEvent(QKeyEvent *event)
         if (QApplication::keypadNavigationEnabled()) {
             if (!hasEditFocus()) {
                 setEditFocus(true);
+                QActionToKeyEventMapper::addSoftKey(QAction::BackSoftKey, Qt::Key_Back, this);
                 return;
             }
         }
         break;
     case Qt::Key_Back:
-    case Qt::Key_Context2: // TODO: aportale, remove KEYPAD_NAVIGATION_HACK when softkey support is there
-        if (QApplication::keypadNavigationEnabled() && hasEditFocus())
+        if (QApplication::keypadNavigationEnabled() && hasEditFocus()) {
+            QActionToKeyEventMapper::removeSoftkey(this);
             setEditFocus(false);
-        else
+        } else {
             event->ignore();
+        }
         return;
     default:
         if (QApplication::keypadNavigationEnabled() && !hasEditFocus()) {
@@ -3221,9 +3224,9 @@ QStyleOptionViewItem QAbstractItemView::viewOptions() const
     option.state &= ~QStyle::State_MouseOver;
     option.font = font();
 
-#ifdef Q_WS_WIN
-    // Note this is currently required on Windows
-    // do give non-focused item views inactive appearance
+#ifndef Q_WS_MAC
+    // On mac the focus appearance follows window activation
+    // not widget activation
     if (!hasFocus())
         option.state &= ~QStyle::State_Active;
 #endif

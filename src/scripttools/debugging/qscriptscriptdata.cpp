@@ -98,7 +98,7 @@ QScriptScriptData::QScriptScriptData(const QString &contents, const QString &fil
 }
 
 QScriptScriptData::QScriptScriptData(const QScriptScriptData &other)
-    : d_ptr(other.d_ptr)
+    : d_ptr(other.d_ptr.data())
 {
     if (d_ptr)
         d_ptr->ref.ref();
@@ -106,21 +106,11 @@ QScriptScriptData::QScriptScriptData(const QScriptScriptData &other)
 
 QScriptScriptData::~QScriptScriptData()
 {
-    if (d_ptr && !d_ptr->ref.deref()) {
-        delete d_ptr;
-        d_ptr = 0;
-    }
 }
 
 QScriptScriptData &QScriptScriptData::operator=(const QScriptScriptData &other)
 {
-    if (d_ptr == other.d_ptr)
-        return *this;
-    if (d_ptr && !d_ptr->ref.deref())
-        delete d_ptr;
-    d_ptr = other.d_ptr;
-    if (d_ptr)
-        d_ptr->ref.ref();
+    d_ptr.assign(other.d_ptr.data());
     return *this;
 }
 
@@ -191,7 +181,7 @@ bool QScriptScriptData::operator!=(const QScriptScriptData &other) const
 
 QDataStream &operator<<(QDataStream &out, const QScriptScriptData &data)
 {
-    const QScriptScriptDataPrivate *d = data.d_ptr;
+    const QScriptScriptDataPrivate *d = data.d_ptr.data();
     if (d) {
         out << d->contents;
         out << d->fileName;
@@ -207,10 +197,10 @@ QDataStream &operator<<(QDataStream &out, const QScriptScriptData &data)
 QDataStream &operator>>(QDataStream &in, QScriptScriptData &data)
 {
     if (!data.d_ptr) {
-        data.d_ptr = new QScriptScriptDataPrivate();
+        data.d_ptr.reset(new QScriptScriptDataPrivate());
         data.d_ptr->ref.ref();
     }
-    QScriptScriptDataPrivate *d = data.d_ptr;
+    QScriptScriptDataPrivate *d = data.d_ptr.data();
     in >> d->contents;
     in >> d->fileName;
     qint32 ln;

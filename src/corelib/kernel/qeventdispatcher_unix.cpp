@@ -54,7 +54,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#if (_POSIX_MONOTONIC_CLOCK-0 <= 0) || defined(QT_BOOTSTRAPPED) && !defined(Q_OS_SYMBIAN)
+#if (_POSIX_MONOTONIC_CLOCK-0 <= 0) || defined(QT_BOOTSTRAPPED)
 #  include <sys/times.h>
 #endif
 
@@ -65,7 +65,7 @@ Q_CORE_EXPORT bool qt_disable_lowpriority_timers=false;
 /*****************************************************************************
  UNIX signal handling
  *****************************************************************************/
-#if !defined(Q_OS_SYMBIAN)
+
 static sig_atomic_t signal_received;
 static sig_atomic_t signals_fired[NSIG];
 
@@ -74,7 +74,7 @@ static void signalHandler(int sig)
     signals_fired[sig] = 1;
     signal_received = 1;
 }
-#endif
+
 
 static void initThreadPipeFD(int fd)
 {
@@ -134,7 +134,6 @@ int QEventDispatcherUNIXPrivate::doSelect(QEventLoop::ProcessEventsFlags flags, 
 
     int nsel;
     do {
-#if !defined(Q_OS_SYMBIAN)
         if (mainThread) {
             while (signal_received) {
                 signal_received = 0;
@@ -146,7 +145,7 @@ int QEventDispatcherUNIXPrivate::doSelect(QEventLoop::ProcessEventsFlags flags, 
                 }
             }
         }
-#endif
+
         // Process timers and socket notifiers - the common UNIX stuff
         int highest = 0;
         if (! (flags & QEventLoop::ExcludeSocketNotifiers) && (sn_highest >= 0)) {
@@ -185,7 +184,7 @@ int QEventDispatcherUNIXPrivate::doSelect(QEventLoop::ProcessEventsFlags flags, 
                     continue;
 
                 for (int i = 0; i < list.size(); ++i) {
-                    QSockNot *sn = list.at(i);
+                    QSockNot *sn = list[i];
 
                     FD_ZERO(&fdset);
                     FD_SET(sn->fd, &fdset);
@@ -242,7 +241,7 @@ int QEventDispatcherUNIXPrivate::doSelect(QEventLoop::ProcessEventsFlags flags, 
         for (int i=0; i<3; i++) {
             QSockNotType::List &list = sn_vec[i].list;
             for (int j = 0; j < list.size(); ++j) {
-                QSockNot *sn = list.at(j);
+                QSockNot *sn = list[j];
                 if (FD_ISSET(sn->fd, &sn_vec[i].select_fds))
                     q->setSocketNotifierPending(sn->obj);
             }
@@ -258,7 +257,7 @@ int QEventDispatcherUNIXPrivate::doSelect(QEventLoop::ProcessEventsFlags flags, 
 
 QTimerInfoList::QTimerInfoList()
 {
-#if (_POSIX_MONOTONIC_CLOCK-0 <= 0) && !defined(Q_OS_SYMBIAN)
+#if (_POSIX_MONOTONIC_CLOCK-0 <= 0)
     useMonotonicTimers = false;
 
 #  if (_POSIX_MONOTONIC_CLOCK == 0)
@@ -299,7 +298,7 @@ timeval QTimerInfoList::updateCurrentTime()
     return currentTime;
 }
 
-#if ((_POSIX_MONOTONIC_CLOCK-0 <= 0) || defined(QT_BOOTSTRAPPED)) && !defined(Q_OS_SYMBIAN)
+#if (_POSIX_MONOTONIC_CLOCK-0 <= 0) || defined(QT_BOOTSTRAPPED)
 
 /*
   Returns true if the real time clock has changed by more than 10%
@@ -375,11 +374,7 @@ void QTimerInfoList::repairTimersIfNeeded()
 void QTimerInfoList::getTime(timeval &t)
 {
     timespec ts;
-#if !defined(Q_OS_SYMBIAN)
     clock_gettime(CLOCK_MONOTONIC, &ts);
-#else
-    clock_gettime(CLOCK_REALTIME, &ts);
-#endif
     t.tv_sec = ts.tv_sec;
     t.tv_usec = ts.tv_nsec / 1000;
 }
@@ -425,10 +420,18 @@ bool QTimerInfoList::timerWait(timeval &tm)
     timeval currentTime = updateCurrentTime();
     repairTimersIfNeeded();
 
-    if (isEmpty())
-        return false;
+    // Find first waiting timer not already active
+    QTimerInfo *t = 0;
+    for (QTimerInfoList::const_iterator it = constBegin(); it != constEnd(); ++it) {
+	if (!(*it)->inTimerEvent) {
+	    t = *it;
+	    break;
+	}
+    }
 
-    QTimerInfo *t = first();        // first waiting timer
+    if (!t)
+      return false;
+
     if (currentTime < t->timeout) {
         // time to wait
         tm = t->timeout - currentTime;
@@ -596,7 +599,10 @@ QEventDispatcherUNIX::QEventDispatcherUNIX(QEventDispatcherUNIXPrivate &dd, QObj
 { }
 
 QEventDispatcherUNIX::~QEventDispatcherUNIX()
-{ }
+{
+    Q_D(QEventDispatcherUNIX);
+    d->threadData->eventDispatcher = 0;
+}
 
 int QEventDispatcherUNIX::select(int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfds,
                                  timeval *timeout)
@@ -703,8 +709,8 @@ QSockNotType::QSockNotType()
 
 QSockNotType::~QSockNotType()
 {
-    while (!list.isEmpty())
-        delete list.takeFirst();
+    for (int i = 0; i < list.size(); ++i)
+        delete list[i];
 }
 
 /*****************************************************************************
@@ -740,7 +746,7 @@ void QEventDispatcherUNIX::registerSocketNotifier(QSocketNotifier *notifier)
 
     int i;
     for (i = 0; i < list.size(); ++i) {
-        QSockNot *p = list.at(i);
+        QSockNot *p = list[i];
         if (p->fd < sockfd)
             break;
         if (p->fd == sockfd) {
@@ -778,7 +784,7 @@ void QEventDispatcherUNIX::unregisterSocketNotifier(QSocketNotifier *notifier)
     QSockNot *sn = 0;
     int i;
     for (i = 0; i < list.size(); ++i) {
-        sn = list.at(i);
+        sn = list[i];
         if(sn->obj == notifier && sn->fd == sockfd)
             break;
     }
@@ -796,7 +802,7 @@ void QEventDispatcherUNIX::unregisterSocketNotifier(QSocketNotifier *notifier)
         for (int i=0; i<3; i++) {
             if (!d->sn_vec[i].list.isEmpty())
                 d->sn_highest = qMax(d->sn_highest,  // list is fd-sorted
-                                     d->sn_vec[i].list.first()->fd);
+                                     d->sn_vec[i].list[0]->fd);
         }
     }
 }
@@ -820,7 +826,7 @@ void QEventDispatcherUNIX::setSocketNotifierPending(QSocketNotifier *notifier)
     QSockNot *sn = 0;
     int i;
     for (i = 0; i < list.size(); ++i) {
-        sn = list.at(i);
+        sn = list[i];
         if(sn->obj == notifier && sn->fd == sockfd)
             break;
     }
@@ -944,7 +950,7 @@ void QEventDispatcherUNIX::flush()
 
 
 
-#if !defined(Q_OS_SYMBIAN)
+
 void QCoreApplication::watchUnixSignal(int sig, bool watch)
 {
     if (sig < NSIG) {
@@ -958,10 +964,5 @@ void QCoreApplication::watchUnixSignal(int sig, bool watch)
         sigaction(sig, &sa, 0);
     }
 }
-#else
-void QCoreApplication::watchUnixSignal(int, bool)
-{
-}
-#endif
 
 QT_END_NAMESPACE

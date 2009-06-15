@@ -286,11 +286,9 @@ including ARM, Intel x86, MIPS and SH-4.
     \o \l {Qt for Windows CE Requirements}
     \o \l {Installing Qt on Windows CE}
     \o \l {Windows CE - Introduction to using Qt}{Introduction to using Qt}
-    \o \l {Qt Examples#Qt for Embedded Linux}{Examples}
 \endlist
 \o
 \list
-    \o \l {Qt for Embedded Linux Classes}{Classes}
     \o \l {Windows CE - Using shadow builds}{Using shadow builds}
     \o \l {Windows CE - Working with Custom SDKs}{Working with Custom SDKs}
 \endlist
@@ -301,4 +299,15 @@ including ARM, Intel x86, MIPS and SH-4.
     \o \l {Fine-Tuning Features in Qt}
 \endlist
 \endtable
+*/
+
+/*!
+\group qts60
+\title Qt for S60
+\ingroup topics
+\brief Documents related to Qt for S60
+
+\list
+    \o \l {Exception Safety with Symbian}
+\endlist
 */

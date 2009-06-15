@@ -54,7 +54,7 @@
 //
 
 #include <QtCore/qobjectdefs.h>
-
+#include <QtCore/qscopedpointer.h>
 #include <QtCore/qstring.h>
 
 #include "qscriptdebuggercommandschedulerinterface_p.h"
@@ -90,7 +90,7 @@ protected:
 
 protected:
     QScriptDebuggerFrontend(QScriptDebuggerFrontendPrivate &dd);
-    QScriptDebuggerFrontendPrivate *d_ptr;
+    QScopedPointer<QScriptDebuggerFrontendPrivate> d_ptr;
 
 private:
     Q_DECLARE_PRIVATE(QScriptDebuggerFrontend)

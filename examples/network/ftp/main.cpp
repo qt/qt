@@ -40,13 +40,12 @@
 ****************************************************************************/
 
 #include <QApplication>
+#include "ftpwindow.h"
+
 #ifdef Q_OS_SYMBIAN
 #include <QDir>
 #include <QDesktopWidget> 
-#endif
-#include "ftpwindow.h"
 
-#if defined Q_OS_SYMBIAN && defined SETDEFAULTIF_AVAILABLE
 #include <es_sock.h>
 #include <sys/socket.h>
 #include <net/if.h>
@@ -66,13 +65,15 @@ static void setDefaultIapL()
     _LIT(KIapNameSetting, "IAP\\Name");
     TBuf8<50> iapName;
     User::LeaveIfError(conn.GetDesSetting(TPtrC(KIapNameSetting), iapName));   
+    iapName.ZeroTerminate();
     
-    struct ifreq ifReq; 
+    conn.Stop();
+    CleanupStack::PopAndDestroy(&conn);
+    CleanupStack::PopAndDestroy(&serv);    
+    
+    struct ifreq ifReq;
     strcpy( ifReq.ifr_name, (char*)iapName.Ptr()); 
     User::LeaveIfError(setdefaultif( &ifReq ));
-    
-    CleanupStack::PopAndDestroy(&conn);
-    CleanupStack::PopAndDestroy(&serv);
 }
 
 static int setDefaultIap()
@@ -80,7 +81,6 @@ static int setDefaultIap()
     TRAPD(err, setDefaultIapL());
     return err;
 }
-
 #endif
 
 int main(int argc, char *argv[])
@@ -88,9 +88,7 @@ int main(int argc, char *argv[])
     Q_INIT_RESOURCE(ftp);
     
 #ifdef Q_OS_SYMBIAN
-#ifdef SETDEFAULTIF_AVAILABLE
-    setDefaultIap();
-#endif    
+    setDefaultIap(); 
     // Change current directory from default private to c:\data
     // in order that user can access the downloaded content
     QDir::setCurrent( "c:\\data" );
@@ -100,7 +98,8 @@ int main(int argc, char *argv[])
 #ifdef Q_OS_SYMBIAN    
     // Make application better looking and more usable on small screen
     ftpWin.showMaximized();
-#endif        
+#else    
     ftpWin.show();
+#endif            
     return ftpWin.exec();
 }

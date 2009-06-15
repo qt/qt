@@ -5,7 +5,37 @@
 **
 ** This file is part of the $MODULE$ of the Qt Toolkit.
 **
-** $TROLLTECH_DUAL_LICENSE$
+** $QT_BEGIN_LICENSE:LGPL$
+** No Commercial Usage
+** This file contains pre-release code and may not be distributed.
+** You may use this file in accordance with the terms and conditions
+** contained in the either Technology Preview License Agreement or the
+** Beta Release License Agreement.
+**
+** GNU Lesser General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU Lesser
+** General Public License version 2.1 as published by the Free Software
+** Foundation and appearing in the file LICENSE.LGPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU Lesser General Public License version 2.1 requirements
+** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+**
+** In addition, as a special exception, Nokia gives you certain
+** additional rights. These rights are described in the Nokia Qt LGPL
+** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
+** package.
+**
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU
+** General Public License version 3.0 as published by the Free Software
+** Foundation and appearing in the file LICENSE.GPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU General Public License version 3.0 requirements will be
+** met: http://www.gnu.org/copyleft/gpl.html.
+**
+** If you are unsure which license is appropriate for your use, please
+** contact the sales department at qt-sales@nokia.com.
+** $QT_END_LICENSE$
 **
 ****************************************************************************/
 
@@ -154,6 +184,10 @@ void SymbianAbldMakefileGenerator::writeWrapperMakefile(QFile& wrapperFile, bool
     t << "#" << endl;
     t << "# ==============================================================================" << "\n" << endl;
     t << endl;
+    QString ofile = Option::fixPathToTargetOS(Option::output.fileName());
+    if(ofile.lastIndexOf(Option::dir_sep) != -1)
+        ofile = ofile.right(ofile.length() - ofile.lastIndexOf(Option::dir_sep) -1);
+    t << "MAKEFILE          = " << ofile << endl;
     t << "QMAKE             = " << Option::fixPathToTargetOS(var("QMAKE_QMAKE")) << endl;
     t << "DEL_FILE          = " << var("QMAKE_DEL_FILE") << endl;
     t << "DEL_DIR           = " << var("QMAKE_DEL_DIR") << endl;
@@ -243,8 +277,6 @@ void SymbianAbldMakefileGenerator::writeWrapperMakefile(QFile& wrapperFile, bool
 
     }
 
-    writeExtraTargets(t);
-
     // pre_targetdeps target depends on:
     //  - all targets specified in PRE_TARGETDEPS
     //  - the GENERATED_SOURCES sources (so that they get generated)
@@ -255,6 +287,7 @@ void SymbianAbldMakefileGenerator::writeWrapperMakefile(QFile& wrapperFile, bool
     // so supporting generating sources is the best we can do. This is enough for mocs.
 
     if (!isSubdirs) {
+        writeExtraTargets(t);
         writeExtraCompilerTargets(t);
 
         t << CREATE_TEMPS_TARGET ":" << endl;
@@ -314,6 +347,11 @@ void SymbianAbldMakefileGenerator::writeWrapperMakefile(QFile& wrapperFile, bool
             t << endl;
         }
         t << endl;
+    }
+    else {
+        QList<MakefileGenerator::SubTarget*> subtargets = findSubDirsSubTargets();
+        writeSubTargets(t, subtargets, SubTargetSkipDefaultVariables|SubTargetSkipDefaultTargets);
+        qDeleteAll(subtargets);
     }
 
     writeDeploymentTargets(t);

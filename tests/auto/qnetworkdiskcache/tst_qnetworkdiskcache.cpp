@@ -76,7 +76,7 @@ private slots:
 
     void oldCacheVersionFile_data();
     void oldCacheVersionFile();
-
+    
     void sync();
 };
 
@@ -389,7 +389,8 @@ void tst_QNetworkDiskCache::expire()
     qint64 max = cache.maximumCacheSize();
     QCOMPARE(max, limit);
     for (int i = 0; i < 10; ++i) {
-        QTest::qWait(2000);
+        if (i % 3 == 0)
+            QTest::qWait(2000);
         QNetworkCacheMetaData m;
         m.setUrl(QUrl("http://www.foo.com/" + QString::number(i)));
         QIODevice *d = cache.prepare(m);
@@ -485,7 +486,7 @@ public:
     void run()
     {
         QByteArray longString = "Hello World, this is some long string, well not really that long";
-        for (int i = 0; i < 10; ++i)
+        for (int j = 0; j < 10; ++j)
             longString += longString;
         QByteArray longString2 = "Help, I am stuck in an autotest!";
         QUrl url(EXAMPLE_URL);

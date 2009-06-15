@@ -45,6 +45,8 @@
 
 #include <q3socketdevice.h>
 
+#include "../network-settings.h"
+
 //TESTED_CLASS=
 //TESTED_FILES=
 
@@ -97,8 +99,7 @@ void tst_Q3SocketDevice::readNull()
 
     int attempts = 10;
     while (attempts--) {
-        // connect to imap.troll.no
-        if (device.connect(QHostAddress("62.70.27.18"), 143))
+        if (device.connect(QtNetworkSettings::serverIP(), 143))
             break;
     }
 
@@ -117,7 +118,7 @@ void tst_Q3SocketDevice::readNull()
 #endif
     QCOMPARE(device.peerPort(), quint16(143));
     QCOMPARE(device.peerAddress().toString(),
-            QHostAddress("62.70.27.18").toString());
+            QtNetworkSettings::serverIP().toString());
     QCOMPARE(device.error(), Q3SocketDevice::NoError);
 
     // write a logout notice

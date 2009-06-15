@@ -5,7 +5,8 @@ TEMPLATE = subdirs
 !wince*:SUBDIRS += \
            headers
 
-SUBDIRS += bic \
+SUBDIRS += _networkselftest \
+           bic \
            collections \
            compile \
            compilerwarnings \
@@ -230,6 +231,7 @@ SUBDIRS += bic \
            qprogressbar \
            qprogressdialog \
            qpushbutton \
+           qscopedpointer \
            qqueue \
            qradiobutton \
            qreadlocker \
