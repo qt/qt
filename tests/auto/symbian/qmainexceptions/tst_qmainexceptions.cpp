@@ -52,12 +52,12 @@ class tst_qmainexceptions : public QObject
 public:
     tst_qmainexceptions(){};
     ~tst_qmainexceptions(){};
-    
+
     void TestSchedulerCatchesError(TLeavingFunc* f, int error);
     void TestSymbianRoundTrip(int leave, int trap);
-   
+
     bool event(QEvent *event);
-    
+
 public slots:
     void initTestCase();
 private slots:
@@ -101,6 +101,7 @@ void tst_qmainexceptions::cleanupstack()
     CleanupStack::PopAndDestroy(dummy1);
     __UHEAP_MARKEND;
 }
+
 void tst_qmainexceptions::leave()
 {
     __UHEAP_MARK;
@@ -109,58 +110,57 @@ void tst_qmainexceptions::leave()
         CDummy* csDummy = new (ELeave) CDummy;
         CleanupStack::PushL(csDummy);
         __UHEAP_FAILNEXT(1);
-        dummy1 = new (ELeave) CDummy;        
+        dummy1 = new (ELeave) CDummy;
         //CleanupStack::PopAndDestroy(csDummy); not executed as previous line throws
     });
     QCOMPARE(err,KErrNoMemory);
-    QVERIFY(!((int)dummy1));    
+    QVERIFY(!((int)dummy1));
     __UHEAP_MARKEND;
 }
 
 class CTestActive : public CActive
-    {
+{
 public:
-    CTestActive(TLeavingFunc* aFunc) : CActive(EPriorityStandard), iFunc(aFunc) 
-        {
+    CTestActive(TLeavingFunc* aFunc) : CActive(EPriorityStandard), iFunc(aFunc)
+    {
         CActiveScheduler::Add(this);
-        }
+    }
     ~CTestActive()
-        {
+    {
         Cancel();
-        }
-    void DoCancel()
-        {}
+    }
+    void DoCancel() {}
     void Test()
-        {
+    {
         // complete this AO in a nested scheduler, to make it synchronous
         TRequestStatus* s = &iStatus;
         SetActive();
         User::RequestComplete(s, KErrNone);
         CActiveScheduler::Start();
-        }
+    }
     void RunL()
-        {
+    {
         (*iFunc)();
         CActiveScheduler::Stop();   // will only get here if iFunc does not leave
-        }
+    }
     TInt RunError(TInt aError)
-        {
+    {
         error = aError;
         CActiveScheduler::Stop();   // will only get here if iFunc leaves
         return KErrNone;
-        }
+    }
 public:
     TLeavingFunc* iFunc;
     int error;
-    };
+};
 
 void tst_qmainexceptions::TestSchedulerCatchesError(TLeavingFunc* f, int error)
-    {
+{
     CTestActive *act = new(ELeave) CTestActive(f);
     act->Test();
     QCOMPARE(act->error, error);
     delete act;
-    }
+}
 
 void ThrowBadAlloc()
 {
@@ -200,9 +200,9 @@ void tst_qmainexceptions::TestSymbianRoundTrip(int leave, int trap)
     // check that leave converted to exception, converted to error gives expected error code
     int trapped;
     QT_TRANSLATE_EXCEPTION_TO_SYMBIAN_ERROR(
-            trapped,
-            QT_TRANSLATE_SYMBIAN_LEAVE_TO_EXCEPTION(
-                    User::LeaveIfError(leave)));
+        trapped,
+        QT_TRANSLATE_SYMBIAN_LEAVE_TO_EXCEPTION(
+            User::LeaveIfError(leave)));
     QCOMPARE(trap, trapped);
 }
 
@@ -224,31 +224,36 @@ void tst_qmainexceptions::testTrap()
 }
 
 bool tst_qmainexceptions::event(QEvent *aEvent)
-    {
+{
     if (aEvent->type() == QEvent::User+1)
         throw std::bad_alloc();
-    else if (aEvent->type() == QEvent::User+2)
-        {
+    else if (aEvent->type() == QEvent::User+2) {
         QEvent event(QEvent::Type(QEvent::User+1));
         QApplication::sendEvent(this, &event);
-        }
-    return QObject::event(aEvent);
     }
+    return QObject::event(aEvent);
+}
 
 void tst_qmainexceptions::testPropagation()
 {
     // test exception thrown from event is propagated back to sender
     QEvent event(QEvent::Type(QEvent::User+1));
     bool caught = false;
-    try { QApplication::sendEvent(this, &event); }
-    catch (const std::bad_alloc&) { caught = true; }
+    try {
+        QApplication::sendEvent(this, &event);
+    } catch (const std::bad_alloc&) {
+        caught = true;
+    }
     QCOMPARE(caught, true);
 
     // testing nested events propagate back to top level sender
     caught = false;
     QEvent event2(QEvent::Type(QEvent::User+2));
-    try { QApplication::sendEvent(this, &event2); }
-    catch (const std::bad_alloc&) { caught = true; }
+    try {
+        QApplication::sendEvent(this, &event2);
+    } catch (const std::bad_alloc&) {
+        caught = true;
+    }
     QCOMPARE(caught, true);
 }
 
@@ -290,13 +295,13 @@ void tst_qmainexceptions::testDtor2()
 void tst_qmainexceptions::testNestedExceptions()
 {
     // throwing exceptions while handling exceptions
-    struct Oops { 
+    struct Oops {
         Oops* next;
         Oops(int level) : next(level > 0 ? new Oops(level-1) : 0) {}
-        ~Oops() { 
-            try { throw std::bad_alloc(); } 
-            catch (const std::exception&) {delete next;} 
-        } 
+        ~Oops() {
+            try { throw std::bad_alloc(); }
+            catch (const std::exception&) {delete next;}
+        }
     };
     try {
         Oops oops(5);
