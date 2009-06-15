@@ -86,7 +86,6 @@ static const SQLSMALLINT qParamType[4] = { SQL_PARAM_INPUT, SQL_PARAM_INPUT, SQL
 class QODBCDriverPrivate
 {
 public:
-    enum DefaultCase{Lower, Mixed, Upper, Sensitive};
     QODBCDriverPrivate()
     : hEnv(0), hDbc(0), useSchema(false), disconnectCount(0), isMySqlServer(false),
            isMSSqlServer(false), hasSQLFetchScroll(true), hasMultiResultSets(false)
@@ -118,9 +117,6 @@ public:
     bool setConnectionOptions(const QString& connOpts);
     void splitTableQualifier(const QString &qualifier, QString &catalog,
                              QString &schema, QString &table);
-    DefaultCase defaultCase() const;
-    QString adjustCase(const QString&) const;
-    QChar quoteChar() const;
 };
 
 class QODBCPrivate
@@ -557,28 +553,6 @@ static int qGetODBCVersion(const QString &connOpts)
     return SQL_OV_ODBC2;
 }
 
-QChar QODBCDriverPrivate::quoteChar() const
-{
-    static bool isQuoteInitialized = false;
-    static QChar quote = QChar::fromLatin1('"');
-    if (!isQuoteInitialized) {
-        char driverResponse[4];
-        SQLSMALLINT length;
-        int r = SQLGetInfo(hDbc,
-                SQL_IDENTIFIER_QUOTE_CHAR,
-                &driverResponse,
-                sizeof(driverResponse),
-                &length);
-        if (r == SQL_SUCCESS || r == SQL_SUCCESS_WITH_INFO) {
-            quote = QChar::fromLatin1(driverResponse[0]);
-        } else {
-            quote = QChar::fromLatin1('"');
-        }
-        isQuoteInitialized = true;
-    }
-    return quote;
-}
-
 bool QODBCDriverPrivate::setConnectionOptions(const QString& connOpts)
 {
     // Set any connection attributes
@@ -727,65 +701,6 @@ void QODBCDriverPrivate::splitTableQualifier(const QString & qualifier, QString 
             i++;
         }
     }
-}
-
-QODBCDriverPrivate::DefaultCase QODBCDriverPrivate::defaultCase() const
-{
-    static bool isInitialized = false;
-    static DefaultCase ret;
-
-    if (!isInitialized) {
-        SQLUSMALLINT casing;
-        int r = SQLGetInfo(hDbc,
-                SQL_IDENTIFIER_CASE,
-                &casing,
-                sizeof(casing),
-                NULL);
-        if ( r != SQL_SUCCESS)
-            ret = Lower;//arbitrary case if driver cannot be queried
-        else {
-            switch (casing) {
-                case (SQL_IC_UPPER):
-                    ret = Upper;
-                    break;
-                case (SQL_IC_LOWER):
-                    ret = Lower;
-                    break;
-                case (SQL_IC_SENSITIVE):
-                    ret = Sensitive;
-                    break;
-                case (SQL_IC_MIXED):
-                    ret = Mixed;
-                    break;
-                default:
-                    ret = Upper;
-            }
-        }
-        isInitialized = true;
-    }
-    return ret;
-}
-
-/*
-   Adjust the casing of an identifier to match what the
-   database engine would have done to it.
-*/
-QString QODBCDriverPrivate::adjustCase(const QString &identifier) const
-{
-    QString ret = identifier;
-    switch(defaultCase()) {
-        case (Lower):
-            ret = identifier.toLower();
-            break;
-        case (Upper):
-            ret = identifier.toUpper();
-            break;
-        case(Mixed):
-        case(Sensitive):
-        default:
-            ret = identifier;
-    }
-    return ret;
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -2171,22 +2086,6 @@ QSqlIndex QODBCDriver::primaryIndex(const QString& tablename) const
     }
     QString catalog, schema, table;
     d->splitTableQualifier(tablename, catalog, schema, table);
-
-    if (isIdentifierEscaped(catalog, QSqlDriver::TableName))
-        catalog = stripDelimiters(catalog, QSqlDriver::TableName);
-    else
-        catalog = d->adjustCase(catalog);
-
-    if (isIdentifierEscaped(schema, QSqlDriver::TableName))
-        schema = stripDelimiters(schema, QSqlDriver::TableName);
-    else
-        schema = d->adjustCase(schema);
-
-    if (isIdentifierEscaped(table, QSqlDriver::TableName))
-        table = stripDelimiters(table, QSqlDriver::TableName);
-    else
-        table = d->adjustCase(table);
-
     r = SQLSetStmtAttr(hStmt,
                         SQL_ATTR_CURSOR_TYPE,
                         (SQLPOINTER)SQL_CURSOR_FORWARD_ONLY,
@@ -2289,22 +2188,6 @@ QSqlRecord QODBCDriver::record(const QString& tablename) const
     SQLHANDLE hStmt;
     QString catalog, schema, table;
     d->splitTableQualifier(tablename, catalog, schema, table);
-
-    if (isIdentifierEscaped(catalog, QSqlDriver::TableName))
-        catalog = stripDelimiters(catalog, QSqlDriver::TableName);
-    else
-        catalog = d->adjustCase(catalog);
-
-    if (isIdentifierEscaped(schema, QSqlDriver::TableName))
-        schema = stripDelimiters(schema, QSqlDriver::TableName);
-    else
-        schema = d->adjustCase(schema);
-
-    if (isIdentifierEscaped(table, QSqlDriver::TableName))
-        table = stripDelimiters(table, QSqlDriver::TableName);
-    else
-        table = d->adjustCase(table);
-
     SQLRETURN r = SQLAllocHandle(SQL_HANDLE_STMT,
                                   d->hDbc,
                                   &hStmt);
@@ -2426,17 +2309,6 @@ QString QODBCDriver::escapeIdentifier(const QString &identifier, IdentifierType)
         }
     }
     return res;
-}
-
-bool QODBCDriver::isIdentifierEscapedImplementation(const QString &identifier, IdentifierType) const
-{
-    QString quote = d->quoteChar();
-    bool isLeftDelimited = identifier.left(1) == quote;
-    bool isRightDelimited = identifier.right(1) == quote;
-    if( identifier.size() > 2 && isLeftDelimited && isRightDelimited )
-        return true;
-    else
-        return false;
 }
 
 QT_END_NAMESPACE

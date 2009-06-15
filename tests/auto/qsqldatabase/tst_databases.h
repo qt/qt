@@ -105,7 +105,11 @@ inline static QString qTableName( const QString& prefix, QSqlDriver* driver = 0 
 
 inline static bool testWhiteSpaceNames( const QString &name )
 {
-    return name != QLatin1String("QTDS7");
+/*    return name.startsWith( "QPSQL" )
+           || name.startsWith( "QODBC" )
+           || name.startsWith( "QSQLITE" )
+           || name.startsWith( "QMYSQL" );*/
+    return name != QLatin1String("QSQLITE2");
 }
 
 inline static QString toHex( const QString& binary )
@@ -207,7 +211,7 @@ public:
 //      This requires a local ODBC data source to be configured( pointing to a MySql database )
 //         addDb( "QODBC", "mysqlodbc", "troll", "trond" );
 //         addDb( "QODBC", "SqlServer", "troll", "trond" );
-//         addDb( "QTDS7", "testdb", "troll", "trondk", "horsehead" );
+//         addDb( "QTDS7", "testdb", "troll", "trondk", "horsehead.nokia.troll.no" );
 //         addDb( "QODBC", "silencetestdb", "troll", "trond", "silence" );
 //         addDb( "QODBC", "horseheadtestdb", "troll", "trondk", "horsehead" );
 
@@ -247,7 +251,6 @@ public:
 //         addDb( "QODBC", "DRIVER={MySQL ODBC 3.51 Driver};SERVER=mysql5-nokia.trolltech.com.au;DATABASE=testdb", "testuser", "Ee4Gabf6_", "" );
 //         addDb( "QODBC", "DRIVER={FreeTDS};SERVER=horsehead.nokia.troll.no;DATABASE=testdb;PORT=4101;UID=troll;PWD=trondk", "troll", "trondk", "" );
 //         addDb( "QODBC", "DRIVER={FreeTDS};SERVER=silence.nokia.troll.no;DATABASE=testdb;PORT=2392;UID=troll;PWD=trond", "troll", "trond", "" );
-
     }
 
     void open()
@@ -313,22 +316,16 @@ public:
         QSqlQuery q( db );
         QStringList dbtables=db.tables();
 
-        foreach(const QString &tableName, tableNames)
-        {
+        foreach(const QString &tableName, tableNames) {
             wasDropped = true;
-            QString table=tableName;
-            if ( db.driver()->isIdentifierEscaped(table, QSqlDriver::TableName))
-                table = db.driver()->stripDelimiters(table, QSqlDriver::TableName);
-
             foreach(const QString dbtablesName, dbtables) {
-                if(dbtablesName.toUpper() == table.toUpper()) {
+                if(dbtablesName.toUpper() == tableName.toUpper()) {
                     dbtables.removeAll(dbtablesName);
                     wasDropped = q.exec("drop table " + db.driver()->escapeIdentifier( dbtablesName, QSqlDriver::TableName ));
                     if(!wasDropped)
                         wasDropped = q.exec("drop table " + dbtablesName);
                 }
             }
-
             if ( !wasDropped )
                 qWarning() << dbToString(db) << "unable to drop table" << tableName << ':' << q.lastError().text() << "tables:" << dbtables;
         }
