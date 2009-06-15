@@ -271,11 +271,15 @@ void tst_QTouchEvent::basicRawEventTranslation()
     QCOMPARE(touchBeginPoint.pos(), pos);
     QCOMPARE(touchBeginPoint.startPos(), pos);
     QCOMPARE(touchBeginPoint.lastPos(), pos);
+    QCOMPARE(touchBeginPoint.scenePos(), rawTouchPoint.screenPos());
+    QCOMPARE(touchBeginPoint.startScenePos(), rawTouchPoint.screenPos());
+    QCOMPARE(touchBeginPoint.lastScenePos(), rawTouchPoint.screenPos());
     QCOMPARE(touchBeginPoint.screenPos(), rawTouchPoint.screenPos());
     QCOMPARE(touchBeginPoint.startScreenPos(), rawTouchPoint.screenPos());
     QCOMPARE(touchBeginPoint.lastScreenPos(), rawTouchPoint.screenPos());
     QCOMPARE(touchBeginPoint.rect(), QRectF(pos, QSizeF(0, 0)));
     QCOMPARE(touchBeginPoint.screenRect(), QRectF(rawTouchPoint.screenPos(), QSizeF(0, 0)));
+    QCOMPARE(touchBeginPoint.sceneRect(), touchBeginPoint.screenRect());
     QCOMPARE(touchBeginPoint.pressure(), qreal(-1.));
 
     // moving the point should translate to TouchUpdate
@@ -293,11 +297,15 @@ void tst_QTouchEvent::basicRawEventTranslation()
     QCOMPARE(touchUpdatePoint.pos(), pos + delta);
     QCOMPARE(touchUpdatePoint.startPos(), pos);
     QCOMPARE(touchUpdatePoint.lastPos(), pos);
+    QCOMPARE(touchUpdatePoint.scenePos(), rawTouchPoint.screenPos());
+    QCOMPARE(touchUpdatePoint.startScenePos(), screenPos);
+    QCOMPARE(touchUpdatePoint.lastScenePos(), screenPos);
     QCOMPARE(touchUpdatePoint.screenPos(), rawTouchPoint.screenPos());
     QCOMPARE(touchUpdatePoint.startScreenPos(), screenPos);
     QCOMPARE(touchUpdatePoint.lastScreenPos(), screenPos);
     QCOMPARE(touchUpdatePoint.rect(), QRectF(pos + delta, QSizeF(0, 0)));
     QCOMPARE(touchUpdatePoint.screenRect(), QRectF(rawTouchPoint.screenPos(), QSizeF(0, 0)));
+    QCOMPARE(touchUpdatePoint.sceneRect(), touchUpdatePoint.screenRect());
     QCOMPARE(touchUpdatePoint.pressure(), qreal(-1.));
 
     // releasing the point translates to TouchEnd
@@ -315,11 +323,15 @@ void tst_QTouchEvent::basicRawEventTranslation()
     QCOMPARE(touchEndPoint.pos(), pos + delta + delta);
     QCOMPARE(touchEndPoint.startPos(), pos);
     QCOMPARE(touchEndPoint.lastPos(), pos + delta);
+    QCOMPARE(touchEndPoint.scenePos(), rawTouchPoint.screenPos());
+    QCOMPARE(touchEndPoint.startScenePos(), screenPos);
+    QCOMPARE(touchEndPoint.lastScenePos(), screenPos + delta);
     QCOMPARE(touchEndPoint.screenPos(), rawTouchPoint.screenPos());
     QCOMPARE(touchEndPoint.startScreenPos(), screenPos);
     QCOMPARE(touchEndPoint.lastScreenPos(), screenPos + delta);
     QCOMPARE(touchEndPoint.rect(), QRectF(pos + delta + delta, QSizeF(0, 0)));
     QCOMPARE(touchEndPoint.screenRect(), QRectF(rawTouchPoint.screenPos(), QSizeF(0, 0)));
+    QCOMPARE(touchEndPoint.sceneRect(), touchEndPoint.screenRect());
     QCOMPARE(touchEndPoint.pressure(), qreal(-1.));
 }
 

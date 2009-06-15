@@ -5358,6 +5358,11 @@ bool QApplicationPrivate::translateRawTouchEvent(QWidget *window,
         }
         Q_ASSERT(widget != 0);
 
+        // make the *scene* functions return the same as the *screen* functions
+        touchPoint.setSceneRect(touchPoint.screenRect());
+        touchPoint.setStartScenePos(touchPoint.startScreenPos());
+        touchPoint.setLastScenePos(touchPoint.lastScreenPos());
+
         StatesAndTouchPoints &maskAndPoints = widgetsNeedingEvents[widget];
         maskAndPoints.first |= touchPoint.state();
         maskAndPoints.second.append(touchPoint);
