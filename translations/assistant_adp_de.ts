@@ -939,7 +939,7 @@ Bitte überprüfen Sie, das dieser an der angegeben Stelle existiert.</translati
     <message>
         <location/>
         <source>Quit Qt Assistant.</source>
-        <translation>Beende Qt Assistant.</translation>
+        <translation>Qt Assistant beenden.</translation>
     </message>
     <message>
         <location/>
@@ -949,7 +949,7 @@ Bitte überprüfen Sie, das dieser an der angegeben Stelle existiert.</translati
     <message>
         <location/>
         <source>Copy the selected text to the clipboard.</source>
-        <translation>Kopiere den markierten Text in die Zwischenablage.</translation>
+        <translation>Den markierten Text in die Zwischenablage kopieren.</translation>
     </message>
     <message>
         <location/>
@@ -959,7 +959,7 @@ Bitte überprüfen Sie, das dieser an der angegeben Stelle existiert.</translati
     <message>
         <location/>
         <source>Open the Find dialog. Qt Assistant will search the currently displayed page for the text you enter.</source>
-        <translation>Öffne den Suchdialog. Qt Assistant sucht in der aktuellen Seite nach dem eingegebenen Text.</translation>
+        <translation>Den Suchdialog öffnen. Qt Assistant sucht in der aktuellen Seite nach dem eingegebenen Text.</translation>
     </message>
     <message>
         <location/>
@@ -969,7 +969,7 @@ Bitte überprüfen Sie, das dieser an der angegeben Stelle existiert.</translati
     <message>
         <location/>
         <source>Go to the home page. Qt Assistant&apos;s home page is the Qt Reference Documentation.</source>
-        <translation>Gehe zur Startseite. Qt Assistants Startseite ist die Qt Referenzdokumentation.</translation>
+        <translation>Zur Startseite gehen. Startseite im Qt Assistant ist die Qt-Referenzdokumentation.</translation>
     </message>
     <message>
         <location/>
@@ -999,7 +999,7 @@ Bitte überprüfen Sie, das dieser an der angegeben Stelle existiert.</translati
     <message>
         <location/>
         <source>Display further information about Qt Assistant.</source>
-        <translation>Zeigt das Qt Designer Handbuch an.</translation>
+        <translation>Zeigt das Handbuch zum Qt Designer an.</translation>
     </message>
     <message>
         <location/>
@@ -1052,7 +1052,7 @@ Bitte überprüfen Sie, das dieser an der angegeben Stelle existiert.</translati
     <message>
         <location/>
         <source>Qt Assistant Manual</source>
-        <translation>Zeigt das Qt Assistant Handbuch an.</translation>
+        <translation>Handbuch zu Qt Assistant</translation>
     </message>
     <message>
         <location/>
@@ -1062,7 +1062,7 @@ Bitte überprüfen Sie, das dieser an der angegeben Stelle existiert.</translati
     <message>
         <location/>
         <source>Add the currently displayed page as a new bookmark.</source>
-        <translation>Füge aktuelle Seite zu den Lesezeichen hinzu.</translation>
+        <translation>Aktuelle Seite zu den Lesezeichen hinzufügen.</translation>
     </message>
     <message>
         <location/>
@@ -1087,7 +1087,7 @@ Bitte überprüfen Sie, das dieser an der angegeben Stelle existiert.</translati
     <message>
         <location line="-33"/>
         <source>Initializing Qt Assistant...</source>
-        <translation>Initialisiere Qt Assistant...</translation>
+        <translation>Qt Assistant wird initialisiert...</translation>
     </message>
     <message>
         <location filename="../tools/assistant/compat/mainwindow.ui"/>
@@ -1170,7 +1170,7 @@ Bitte überprüfen Sie, das dieser an der angegeben Stelle existiert.</translati
     <message>
         <location filename="../tools/assistant/compat/mainwindow.cpp" line="+191"/>
         <source>Failed to open about application contents in file: &apos;%1&apos;</source>
-        <translation>Fehler beim öffnen des Inhalts in Datei: &apos;%1&apos;</translation>
+        <translation>Fehler beim Öffnen des Inhalts in Datei: &apos;%1&apos;</translation>
     </message>
     <message>
         <source>Error...</source>
@@ -1252,7 +1252,7 @@ Bitte überprüfen Sie, das dieser an der angegeben Stelle existiert.</translati
     <message>
         <location line="+0"/>
         <source>Cannot open file for writing!</source>
-        <translation>Die Datei konnte nicht zum schreiben geöffnet werden!</translation>
+        <translation>Die Datei konnte nicht zum Schreiben geöffnet werden.</translation>
     </message>
     <message>
         <location filename="../tools/assistant/compat/mainwindow.ui"/>
@@ -1267,12 +1267,12 @@ Bitte überprüfen Sie, das dieser an der angegeben Stelle existiert.</translati
     <message>
         <location/>
         <source>Sync with Table of Contents</source>
-        <translation>Seite mit Inhalt Tab syncronisieren</translation>
+        <translation>Seite mit Inhalt-Tab syncronisieren</translation>
     </message>
     <message>
         <location/>
         <source>Select the page in contents tab.</source>
-        <translation>Wählt die Seite im Inhalt Tab aus.</translation>
+        <translation>Wählt die Seite im Inhalt-Tab aus.</translation>
     </message>
     <message>
         <location/>
@@ -1289,7 +1289,7 @@ Bitte überprüfen Sie, das dieser an der angegeben Stelle existiert.</translati
     <message>
         <location filename="../tools/assistant/compat/config.cpp" line="+350"/>
         <source>Qt Assistant by Nokia</source>
-        <translation type="unfinished"></translation>
+        <translation>Qt Assistant von Nokia</translation>
     </message>
 </context>
 <context>
@@ -1497,22 +1497,22 @@ Es müssen zuerst alle Inhalte gelöscht werden.</translation>
     <message>
         <location filename="../tools/assistant/compat/tabbedbrowser.ui"/>
         <source>Previous</source>
-        <translation>Vorherige</translation>
+        <translation>Vorheriger</translation>
     </message>
     <message>
         <location/>
         <source>Next</source>
-        <translation>Nächste</translation>
+        <translation>Nächster</translation>
     </message>
     <message>
         <location/>
         <source>Case Sensitive</source>
-        <translation>Groß/ Kleinschreibung beachten</translation>
+        <translation>Groß-/Kleinschreibung beachten</translation>
     </message>
     <message>
         <location/>
         <source>Whole words</source>
-        <translation>Gesamte Worte</translation>
+        <translation>Ganze Wörter</translation>
     </message>
     <message>
         <location/>
