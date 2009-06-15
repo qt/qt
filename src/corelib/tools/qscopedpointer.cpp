@@ -134,6 +134,21 @@
 */
 
 /*!
+    \fn bool QScopedPointer::operator==(const QScopedPointer<T> &other) const
+
+    Equality operator. Returns true if the scoped pointer \a other
+    is pointing to the same object as this pointer, otherwise returns false.
+*/
+
+
+/*!
+    \fn bool QScopedPointer::operator!=(const QScopedPointer<T> *other) const
+
+    Inequality operator. Returns true if the scoped pointer \a other
+    is not pointing to the same object as this pointer, otherwise returns false.
+*/
+
+/*!
     \fn bool QScopedPointer::isNull() const
 
     Returns \c true if this object is holding a pointer that is \c null.

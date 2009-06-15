@@ -57,6 +57,7 @@ QT_MODULE(Gui)
 
 class QFont;
 class QPainterPathPrivate;
+struct QPainterPathPrivateHandler;
 class QPainterPathData;
 class QPainterPathStrokerPrivate;
 class QPolygonF;
@@ -196,7 +197,7 @@ public:
     QPainterPath &operator-=(const QPainterPath &other);
 
 private:
-    QScopedSharedPointer<QPainterPathPrivate> d_ptr;
+    QScopedCustomPointer<QPainterPathPrivate, QPainterPathPrivateHandler> d_ptr;
 
     inline void ensureData() { if (!d_ptr) ensureData_helper(); }
     void ensureData_helper();
@@ -230,8 +231,7 @@ public:
     friend class QPainterPathStrokerPrivate;
     friend class QMatrix;
     friend class QTransform;
-    friend class QScopedSharedPointer<QPainterPathPrivate>;
-    friend class QScopedSharedPointerHandler<QPainterPathPrivate>;
+    friend struct QPainterPathPrivateHandler;
 #ifndef QT_NO_DATASTREAM
     friend Q_GUI_EXPORT QDataStream &operator<<(QDataStream &, const QPainterPath &);
     friend Q_GUI_EXPORT QDataStream &operator>>(QDataStream &, QPainterPath &);
