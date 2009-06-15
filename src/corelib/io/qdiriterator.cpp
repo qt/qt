@@ -229,7 +229,7 @@ void QDirIteratorPrivate::advance()
                 QString subDir = it->currentFilePath();
 #ifdef Q_OS_WIN
                 if (info.isSymLink())
-                    subDir = fileInfo.canonicalFilePath();
+                    subDir = info.canonicalFilePath();
 #endif
                 pushSubDirectory(subDir, it->nameFilters(), it->filters());
                 
