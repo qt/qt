@@ -1026,7 +1026,7 @@ bool QFile::open(OpenMode mode)
     \bold{Warning:}
     \list 1
         \o If \a fh is \c stdin, \c stdout, or \c stderr, you may not be able
-           to seek(). See QIODevice::isSequentialAccess() for more information.
+           to seek(). See QIODevice::isSequential() for more information.
         \o Since this function opens the file without specifying the file name,
            you cannot use this QFile with a QFileInfo.
     \endlist
