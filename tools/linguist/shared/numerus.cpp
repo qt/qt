@@ -41,7 +41,6 @@
 
 #include "translator.h"
 
-#include <QtCore/QCoreApplication>
 #include <QtCore/QByteArray>
 #include <QtCore/QDebug>
 #include <QtCore/QDir>

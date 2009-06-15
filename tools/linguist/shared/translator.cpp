@@ -45,7 +45,6 @@
 
 #include <stdio.h>
 
-#include <QtCore/QCoreApplication>
 #include <QtCore/QDebug>
 #include <QtCore/QDir>
 #include <QtCore/QFile>
