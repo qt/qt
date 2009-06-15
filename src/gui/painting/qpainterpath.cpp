@@ -73,6 +73,24 @@
 
 QT_BEGIN_NAMESPACE
 
+struct QPainterPathPrivateHandler
+{
+    static inline void cleanup(QPainterPathPrivate *d)
+    {
+        // note - we must up-cast to QPainterPathData since QPainterPathPrivate
+        // has a non-virtual destructor!
+        if (d && !d->ref.deref())
+            delete static_cast<QPainterPathData *>(d);
+    }
+
+    static inline void reset(QPainterPathPrivate *&d, QPainterPathPrivate *other)
+    {
+        QPainterPathPrivate *oldD = d;
+        d = other;
+        cleanup(oldD);
+    }
+};
+
 // This value is used to determine the length of control point vectors
 // when approximating arc segments as curves. The factor is multiplied
 // with the radius of the circle.

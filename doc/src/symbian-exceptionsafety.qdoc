@@ -80,11 +80,11 @@
     Symbian leaves to standard C++ exceptions. The following help is provided:
 
     \list
-        \o \l qt_translateSymbianErrorToException(int error) takes a Symbian 
+        \o \l qt_translateSymbianErrorToException() takes a Symbian
         error code and throws an appropriate exception to represent it. 
         This will do nothing if the error code is not in fact an error. The 
         function is equivalent to Symbian's \c User::LeaveIfError.
-        \o \l QT_TRANSLATE_SYMBIAN_LEAVE_TO_EXCEPTION(f) takes a Symbian leaving 
+        \o \l QT_TRANSLATE_SYMBIAN_LEAVE_TO_EXCEPTION() takes a Symbian leaving
         code fragment f and runs it under a trap harness converting any resulting 
         error into an exception.
         \o \c TRAP and \c TRAPD from the Symbian libraries can be used to convert 
@@ -113,18 +113,18 @@
     provided:
 
     \list
-        \o \l qt_translateExceptionToSymbianError(const std::exception& ex) - 
+        \o \l qt_translateExceptionToSymbianError() -
         this takes a standard exception and gives an appropriate Symbian 
         error code. If no mapping is known for the exception type, 
         \c KErrGeneral is returned.
-        \o \l qt_translateExceptionToSymbianErrorL(const std::exception& ex) - 
+        \o \l qt_translateExceptionToSymbianErrorL() -
         this takes a standard exception and generates an appropriate Symbian 
         leave.
-        \o \l QT_TRANSLATE_EXCEPTION_TO_SYMBIAN_ERROR(err, f) - this macro 
+        \o \l QT_TRANSLATE_EXCEPTION_TO_SYMBIAN_ERROR() - this macro
         takes the standard C++ code fragment \c f, catches any std::exceptions 
         thrown from it, and sets err to the corresponding Symbian error code. 
         err is set to \c KErrNone otherwise.
-        \o \l QT_TRANSLATE_EXCEPTION_TO_SYMBIAN_LEAVE(f) - this macro takes the 
+        \o \l QT_TRANSLATE_EXCEPTION_TO_SYMBIAN_LEAVE() - this macro takes the
         standard C++ code fragment \c f, catches any std::exceptions thrown from 
         it, and throws a corresponding Symbian leave. 
     \endlist
@@ -164,9 +164,8 @@
     it's dealing with strings it probably does, again bad.
 
     Line 4 is tricky, it calls a leaving function which is ok within a \c TRAP, 
-    but it also uses \l qt_QString2TPtrC. You might think this is safe, but 
-    there is a potential realloc call in there, so this can cause an unwelcome 
-    exception.
+    but it also uses a helper function to convert string types. In this case
+    the helper function may cause an unwelcome exception.
 
     We could rewrite this with nested exception translations, but it's much 
     easier to refactor it. 

@@ -3215,7 +3215,8 @@ bool QInternal::callFunction(InternalFunction func, void **args)
 #include <typeinfo>
 
 /*! \macro QT_TRANSLATE_SYMBIAN_LEAVE_TO_EXCEPTION(function)
-    \relates QSymbianLeaveException
+    \relates <QtGlobal>
+    \ingroup qts60
 
     TRAP leaves from Symbian \a function and throws an appropriate
     standard C++ exception instead.
@@ -3241,7 +3242,7 @@ bool QInternal::callFunction(InternalFunction func, void **args)
 */
 
 /*! \macro QT_TRANSLATE_EXCEPTION_TO_SYMBIAN_ERROR(error, function)
-    \relates QSymbianLeaveException
+    \relates <QtGlobal>
     \ingroup qts60
 
     Catch standard C++ exceptions from a \a function and convert them to a Symbian OS
@@ -3272,7 +3273,7 @@ bool QInternal::callFunction(InternalFunction func, void **args)
 */
 
 /*! \macro QT_TRANSLATE_EXCEPTION_TO_SYMBIAN_LEAVE(function)
-    \relates QSymbianLeaveException
+    \relates <QtGlobal>
     \ingroup qts60
 
     Catch standard C++ exceptions from \a function and convert them to Symbian OS
@@ -3298,37 +3299,22 @@ bool QInternal::callFunction(InternalFunction func, void **args)
     \sa QT_TRANSLATE_SYMBIAN_LEAVE_TO_EXCEPTION(), QT_TRANSLATE_EXCEPTION_TO_SYMBIAN_ERROR()
 */
 
-/*! \class QSymbianLeaveException
-    \ingroup qts60
-    \brief The QSymbianLeaveException class represents a block of Symbian leave code.
+#include <stdexcept>
 
-    \warning This class is only available on Symbian.
-*/
-
-/*! \fn QSymbianLeaveException::QSymbianLeaveException(int error)
-
-    Constructs a QSymbianLeaveException object that stores the given
-    Symbian \a error code.
-*/
-
-/*! \fn const char *QSymbianLeaveException::what() const
-
-    Returns a C-style character string describing the general
-    cause of the current error.
-
-    The string is not localized.
-*/
-const char *QSymbianLeaveException::what() const throw()
+class QSymbianLeaveException : public std::exception
 {
-    static char msg[36];
-    snprintf(msg, sizeof(msg), "Symbian leave exception %d", error);
-    return msg;
-}
+public:
+    inline QSymbianLeaveException(int err) : error(err) {}
+    inline const char* what() const throw() { return "Symbian leave exception"; }
 
-/*! \relates QSymbianLeaveException
+public:
+    int error;
+};
+
+/*! \relates <QtGlobal>
     \ingroup qts60
 
-    Throws a QSymbianLeaveException if the \a error parameter is a symbian error code.
+    Throws an exception if the \a error parameter is a symbian error code.
     This is the exception throwing equivalent of Symbian's User::LeaveIfError.
 
     \warning This function is only available on Symbian.
@@ -3347,7 +3333,7 @@ void qt_translateSymbianErrorToException(int error)
     }
 }
 
-/*! \relates QSymbianLeaveException
+/*! \relates <QtGlobal>
     \ingroup qts60
 
     Convert a caught standard C++ exception \a aThrow to a Symbian leave
@@ -3361,7 +3347,7 @@ void qt_translateExceptionToSymbianErrorL(const std::exception& aThrow)
     User::Leave(qt_translateExceptionToSymbianError(aThrow));
 }
 
-/*! \relates QSymbianLeaveException
+/*! \relates <QtGlobal>
     \ingroup qts60
 
     Convert a caught standard C++ exception \a aThrow to a Symbian error code
