@@ -89,38 +89,51 @@ static void handleMailtoSchemeL(const QUrl &url)
 	User::LeaveIfError(sendAs.Connect());
 	CleanupClosePushL(sendAs);
 
-	RSendAsMessage sendAsMessage;
-	sendAsMessage.CreateL(sendAs, KUidMsgTypeSMTP);
-	CleanupClosePushL(sendAsMessage);
 
+    CSendAsAccounts* accounts = CSendAsAccounts::NewL();
+    CleanupStack::PushL(accounts);
+    sendAs.AvailableAccountsL(KUidMsgTypeSMTP, *accounts);
+    TInt count = accounts->Count();
+    CleanupStack::PopAndDestroy(accounts);
 
-    // Subject
-    sendAsMessage.SetSubjectL(qt_QString2TPtrC(subject));
-
-    // Body
-    sendAsMessage.SetBodyTextL(qt_QString2TPtrC(body));
-
-    // To
-    foreach(QString item, recipients)
-        sendAsMessage.AddRecipientL(qt_QString2TPtrC(item), RSendAsMessage::ESendAsRecipientTo );
-
-    foreach(QString item, tos)
-        sendAsMessage.AddRecipientL(qt_QString2TPtrC(item), RSendAsMessage::ESendAsRecipientTo );
-
-    // Cc
-    foreach(QString item, ccs)
-        sendAsMessage.AddRecipientL(qt_QString2TPtrC(item), RSendAsMessage::ESendAsRecipientCc );
-
-    // Bcc
-    foreach(QString item, bccs)
-        sendAsMessage.AddRecipientL(qt_QString2TPtrC(item), RSendAsMessage::ESendAsRecipientBcc );
-
-	// send the message
-	sendAsMessage.LaunchEditorAndCloseL();
-
-	// sendAsMessage (already closed)
-	CleanupStack::Pop();
-
+	if(!count) {
+        // TODO: we should try to create account if count == 0
+        // CSendUi would provide account creation service for us, but it requires ridicilous
+        // capabilities: LocalServices NetworkServices ReadDeviceData ReadUserData WriteDeviceData WriteUserData
+        User::Leave(KErrNotSupported);	
+	} else {
+        RSendAsMessage sendAsMessage;    
+        sendAsMessage.CreateL(sendAs, KUidMsgTypeSMTP);
+        CleanupClosePushL(sendAsMessage);
+        
+        
+        // Subject
+        sendAsMessage.SetSubjectL(qt_QString2TPtrC(subject));
+        
+        // Body
+        sendAsMessage.SetBodyTextL(qt_QString2TPtrC(body));
+        
+        // To
+        foreach(QString item, recipients)
+         sendAsMessage.AddRecipientL(qt_QString2TPtrC(item), RSendAsMessage::ESendAsRecipientTo );
+        
+        foreach(QString item, tos)
+         sendAsMessage.AddRecipientL(qt_QString2TPtrC(item), RSendAsMessage::ESendAsRecipientTo );
+        
+        // Cc
+        foreach(QString item, ccs)
+         sendAsMessage.AddRecipientL(qt_QString2TPtrC(item), RSendAsMessage::ESendAsRecipientCc );
+        
+        // Bcc
+        foreach(QString item, bccs)
+         sendAsMessage.AddRecipientL(qt_QString2TPtrC(item), RSendAsMessage::ESendAsRecipientBcc );
+        
+        // send the message
+        sendAsMessage.LaunchEditorAndCloseL();
+        
+        // sendAsMessage (already closed)
+        CleanupStack::Pop();
+	}
 	// sendAs
 	CleanupStack::PopAndDestroy();             
 }
