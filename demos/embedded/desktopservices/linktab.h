@@ -71,6 +71,7 @@ public:     // Constructors & Destructors
 protected:  // Derived Methods  
     virtual void populateListWidget();
     virtual QUrl itemUrl(QListWidgetItem *item);    
+    virtual void handleErrorInOpen(QListWidgetItem *item);
     
 private:    // Used variables  
     QListWidgetItem *m_WebItem;
