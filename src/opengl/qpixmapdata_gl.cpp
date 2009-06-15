@@ -398,7 +398,8 @@ static TextureBuffer createTextureBuffer(const QSize &size, QGL2PaintEngineEx *e
 bool QGLPixmapData::useFramebufferObjects()
 {
     return QGLFramebufferObject::hasOpenGLFramebufferObjects()
-           && QGLFramebufferObject::hasOpenGLFramebufferBlit();
+           && QGLFramebufferObject::hasOpenGLFramebufferBlit()
+           && qt_gl_preferGL2Engine();
 }
 
 QPaintEngine* QGLPixmapData::paintEngine() const
