@@ -64,7 +64,7 @@ static inline int intmaxlog(int n)
     Constructs a private scene index.
 */
 QGraphicsSceneBspTreeIndexPrivate::QGraphicsSceneBspTreeIndexPrivate(QGraphicsScene *scene)
-    : scene(scene),
+    : QGraphicsSceneIndexPrivate(scene),
     bspTreeDepth(0),
     indexTimerId(0),
     restartIndexTimer(false),
@@ -175,7 +175,6 @@ void QGraphicsSceneBspTreeIndexPrivate::_q_updateIndex()
 */
 void QGraphicsSceneBspTreeIndexPrivate::purgeRemovedItems()
 {
-    Q_Q(QGraphicsSceneBspTreeIndex);
     if (!purgePending && removedItems.isEmpty())
         return;
 

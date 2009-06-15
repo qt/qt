@@ -50,14 +50,88 @@
 
 QT_BEGIN_NAMESPACE
 
+class QGraphicsSceneIndexRectIntersector : public QGraphicsSceneIndexIntersector
+{
+public:
+    QGraphicsSceneIndexRectIntersector(QGraphicsScene *scene) : QGraphicsSceneIndexIntersector(scene) {}
+    bool intersect(const QRectF &brect) const
+    {
+        bool keep = true;
+        if (mode == Qt::ContainsItemShape || mode == Qt::ContainsItemBoundingRect)
+            keep = rect.contains(transform.mapRect(brect)) && rect != brect;
+        else
+            keep = rect.intersects(transform.mapRect(brect));
+
+        if (keep && (mode == Qt::ContainsItemShape || mode == Qt::IntersectsItemShape)) {
+            QPainterPath rectPath;
+            rectPath.addRect(rect);
+            keep = QGraphicsScenePrivate::get(scene)->itemCollidesWithPath(item, transform.inverted().map(rectPath), mode);
+        }
+        return keep;
+    }
+};
+
+class QGraphicsSceneIndexPointIntersector : public QGraphicsSceneIndexIntersector
+{
+public:
+    QGraphicsSceneIndexPointIntersector(QGraphicsScene *scene) : QGraphicsSceneIndexIntersector(scene) {}
+    bool intersect(const QRectF &brect) const
+    {
+        bool keep = false;
+        if (rect.intersects(transform.mapRect(brect)))
+            if (item->contains(transform.inverted().map(pos)))
+                keep = true;
+        if (keep && (mode == Qt::ContainsItemShape || mode == Qt::IntersectsItemShape)) {
+            QPainterPath rectPath;
+            rectPath.addRect(rect);
+            keep = QGraphicsScenePrivate::get(scene)->itemCollidesWithPath(item, transform.inverted().map(rectPath), mode);
+        }
+        return keep;
+    }
+    QPointF pos;
+};
+
+class QGraphicsSceneIndexPathIntersector : public QGraphicsSceneIndexIntersector
+{
+public:
+    QGraphicsSceneIndexPathIntersector(QGraphicsScene *scene) : QGraphicsSceneIndexIntersector(scene) {}
+    bool intersect(const QRectF &brect) const
+    {
+        bool keep = true;
+        if (mode == Qt::ContainsItemShape || mode == Qt::ContainsItemBoundingRect)
+            keep = rect.contains(transform.mapRect(brect)) && rect != brect;
+        else
+            keep = rect.intersects(transform.mapRect(brect));
+
+        if (keep && (mode == Qt::ContainsItemShape || mode == Qt::IntersectsItemShape)) {
+            keep = QGraphicsScenePrivate::get(scene)->itemCollidesWithPath(item, transform.inverted().map(path), mode);
+        }
+        return keep;
+    }
+    QPainterPath path;
+};
+
 /*!
     Constructs a private scene index.
 */
 QGraphicsSceneIndexPrivate::QGraphicsSceneIndexPrivate(QGraphicsScene *scene) : scene(scene)
 {
+    pointIntersector = new QGraphicsSceneIndexPointIntersector(scene);
+    rectIntersector = new QGraphicsSceneIndexRectIntersector(scene);
+    pathIntersector =  new QGraphicsSceneIndexPathIntersector(scene);
 }
 
-void QGraphicsSceneIndexPrivate::recursive_items_helper(QGraphicsItem *item, QRectF rect,
+/*!
+    Destructor of private scene index.
+*/
+QGraphicsSceneIndexPrivate::~QGraphicsSceneIndexPrivate()
+{
+    delete pointIntersector;
+    delete rectIntersector;
+    delete pathIntersector;
+}
+
+void QGraphicsSceneIndexPrivate::recursive_items_helper(QGraphicsItem *item, QGraphicsSceneIndexIntersector *intersector,
                                                    QList<QGraphicsItem *> *items,
                                                    const QTransform &parentTransform,
                                                    const QTransform &viewTransform,
@@ -93,17 +167,10 @@ void QGraphicsSceneIndexPrivate::recursive_items_helper(QGraphicsItem *item, QRe
         QRectF brect = item->boundingRect();
         _q_adjustRect(&brect);
 
-        keep = true;
-        if (mode == Qt::ContainsItemShape || mode == Qt::ContainsItemBoundingRect)
-            keep = rect.contains(transform.mapRect(brect)) && rect != brect;
-        else
-            keep = rect.intersects(transform.mapRect(brect));
-
-        if (keep && (mode == Qt::ContainsItemShape || mode == Qt::IntersectsItemShape)) {
-            QPainterPath rectPath;
-            rectPath.addRect(rect);
-            keep = scene->d_func()->itemCollidesWithPath(item, transform.inverted().map(rectPath), mode);
-        }
+        //We fill the intersector with needed informations
+        intersector->transform = transform;
+        intersector->item = item;
+        keep = intersector->intersect(brect);
     }
 
     bool childClip = (item && (item->d_ptr->flags & QGraphicsItem::ItemClipsChildrenToShape));
@@ -126,7 +193,7 @@ void QGraphicsSceneIndexPrivate::recursive_items_helper(QGraphicsItem *item, QRe
 
     // Clip.
     if (childClip)
-        rect &= transform.map(item->shape()).controlPointRect();
+        intersector->rect &= transform.map(item->shape()).controlPointRect();
 
     // Process children behind
     int i = 0;
@@ -135,7 +202,7 @@ void QGraphicsSceneIndexPrivate::recursive_items_helper(QGraphicsItem *item, QRe
             QGraphicsItem *child = children.at(i);
             if (!(child->d_ptr->flags & QGraphicsItem::ItemStacksBehindParent))
                 break;
-            recursive_items_helper(child, rect, items, transform, viewTransform,
+            recursive_items_helper(child, intersector, items, transform, viewTransform,
                                    mode, order, opacity);
         }
     }
@@ -147,7 +214,7 @@ void QGraphicsSceneIndexPrivate::recursive_items_helper(QGraphicsItem *item, QRe
     // Process children in front
     if (!dontProcessChildren) {
         for (; i < children.size(); ++i)
-            recursive_items_helper(children.at(i), rect, items, transform, viewTransform,
+            recursive_items_helper(children.at(i), intersector, items, transform, viewTransform,
                                    mode, order, opacity);
     }
 
@@ -157,156 +224,6 @@ void QGraphicsSceneIndexPrivate::recursive_items_helper(QGraphicsItem *item, QRe
             QGraphicsItem *tmp = (*items)[n - i - 1];
             (*items)[n - i - 1] = (*items)[i];
             (*items)[i] = tmp;
-        }
-    }
-}
-
-void QGraphicsSceneIndexPrivate::childItems_helper(QList<QGraphicsItem *> *items,
-                                              const QGraphicsItem *parent,
-                                              const QPointF &pos) const
-{
-    bool parentClip = (parent->flags() & QGraphicsItem::ItemClipsChildrenToShape);
-    if (parentClip && parent->d_ptr->isClippedAway())
-        return;
-    // ### is this needed?
-    if (parentClip && !parent->boundingRect().contains(pos))
-        return;
-
-    QList<QGraphicsItem *> &children = parent->d_ptr->children;
-    for (int i = 0; i < children.size(); ++i) {
-        QGraphicsItem *item = children.at(i);
-        if (item->d_ptr->transformData && !item->d_ptr->transformData->computedFullTransform().isInvertible())
-            continue;
-
-        // Skip invisible items and all their children.
-        if (item->d_ptr->isInvisible())
-            continue;
-
-        bool keep = false;
-        if (!item->d_ptr->isClippedAway()) {
-            if (item->contains(item->mapFromParent(pos))) {
-                items->append(item);
-                keep = true;
-            }
-        }
-
-        if ((keep || !(item->flags() & QGraphicsItem::ItemClipsChildrenToShape)) && !item->d_ptr->children.isEmpty())
-            // Recurse into children.
-            childItems_helper(items, item, item->mapFromParent(pos));
-    }
-}
-
-void QGraphicsSceneIndexPrivate::childItems_helper(QList<QGraphicsItem *> *items,
-                                              const QGraphicsItem *parent,
-                                              const QPolygonF &polygon,
-                                              Qt::ItemSelectionMode mode) const
-{
-    bool parentClip = (parent->flags() & QGraphicsItem::ItemClipsChildrenToShape);
-    if (parentClip && parent->d_ptr->isClippedAway())
-        return;
-    QRectF polyRect(polygon.boundingRect());
-    _q_adjustRect(&polyRect);
-    QRectF r = !parentClip ? polyRect : polyRect.intersected(adjustedItemBoundingRect(parent));
-    if (r.isEmpty())
-        return;
-
-    QPainterPath path;
-    QList<QGraphicsItem *> &children = parent->d_ptr->children;
-    for (int i = 0; i < children.size(); ++i) {
-        QGraphicsItem *item = children.at(i);
-        if (item->d_ptr->transformData && !item->d_ptr->transformData->computedFullTransform().isInvertible())
-            continue;
-
-        // Skip invisible items.
-        if (item->d_ptr->isInvisible())
-            continue;
-
-        bool keep = false;
-        if (!item->d_ptr->isClippedAway()) {
-            // ### _q_adjustedRect is only needed because QRectF::intersects,
-            // QRectF::contains and QTransform::map() and friends don't work with
-            // flat rectangles.
-            const QRectF br(adjustedItemBoundingRect(item));
-            if (mode >= Qt::ContainsItemBoundingRect) {
-                // Polygon contains/intersects item's bounding rect
-                if (path == QPainterPath())
-                    path.addPolygon(polygon);
-                if ((mode == Qt::IntersectsItemBoundingRect && path.intersects(item->mapRectToParent(br)))
-                    || (mode == Qt::ContainsItemBoundingRect && path.contains(item->mapRectToParent(br)))) {
-                    items->append(item);
-                    keep = true;
-                }
-            } else {
-                // Polygon contains/intersects item's shape
-                if (QRectF_intersects(polyRect, item->mapRectToParent(br))) {
-                    if (path == QPainterPath())
-                        path.addPolygon(polygon);
-                    if (scene->d_func()->itemCollidesWithPath(item, item->mapFromParent(path), mode)) {
-                        items->append(item);
-                        keep = true;
-                    }
-                }
-            }
-        }
-
-        if ((keep || !(item->flags() & QGraphicsItem::ItemClipsChildrenToShape)) && !item->d_ptr->children.isEmpty()) {
-            // Recurse into children that clip children.
-            childItems_helper(items, item, item->mapFromParent(polygon), mode);
-        }
-    }
-}
-
-void QGraphicsSceneIndexPrivate::childItems_helper(QList<QGraphicsItem *> *items,
-                                              const QGraphicsItem *parent,
-                                              const QPainterPath &path,
-                                              Qt::ItemSelectionMode mode) const
-{
-    bool parentClip = (parent->flags() & QGraphicsItem::ItemClipsChildrenToShape);
-    if (parentClip && parent->d_ptr->isClippedAway())
-        return;
-    QRectF pathRect(path.boundingRect());
-    _q_adjustRect(&pathRect);
-    QRectF r = !parentClip ? pathRect : pathRect.intersected(adjustedItemBoundingRect(parent));
-    if (r.isEmpty())
-        return;
-
-    QList<QGraphicsItem *> &children = parent->d_ptr->children;
-    for (int i = 0; i < children.size(); ++i) {
-        QGraphicsItem *item = children.at(i);
-        if (item->d_ptr->transformData && !item->d_ptr->transformData->computedFullTransform().isInvertible())
-            continue;
-
-        // Skip invisible items.
-        if (item->d_ptr->isInvisible())
-            continue;
-
-        bool keep = false;
-        if (!item->d_ptr->isClippedAway()) {
-            // ### _q_adjustedRect is only needed because QRectF::intersects,
-            // QRectF::contains and QTransform::map() and friends don't work with
-            // flat rectangles.
-            const QRectF br(adjustedItemBoundingRect(item));
-            if (mode >= Qt::ContainsItemBoundingRect) {
-                // Polygon contains/intersects item's bounding rect
-                if ((mode == Qt::IntersectsItemBoundingRect && path.intersects(item->mapRectToParent(br)))
-                    || (mode == Qt::ContainsItemBoundingRect && path.contains(item->mapRectToParent(br)))) {
-                    items->append(item);
-                    keep = true;
-                }
-            } else {
-                // Path contains/intersects item's shape
-                if (QRectF_intersects(pathRect, item->mapRectToParent(br))) {
-                    if (scene->d_func()->itemCollidesWithPath(item, item->mapFromParent(path), mode)) {
-                        items->append(item);
-                        keep = true;
-                    }
-                }
-            }
-        }
-
-        if ((keep || !(item->flags() & QGraphicsItem::ItemClipsChildrenToShape)) && !item->d_ptr->children.isEmpty()) {
-            // Recurse into children that clip children.
-            childItems_helper(items, item, item->mapFromParent(path), mode);
         }
     }
 }
@@ -363,162 +280,50 @@ QRectF QGraphicsSceneIndex::indexedRect() const
 QList<QGraphicsItem *> QGraphicsSceneIndex::items(const QPointF &pos, Qt::ItemSelectionMode mode, Qt::SortOrder order, const QTransform &deviceTransform) const
 {
     Q_D(const QGraphicsSceneIndex);
-    QList<QGraphicsItem *> items;
-
-    // The index returns a rough estimate of what items are inside the rect.
-    // Refine it by iterating through all returned items.
-    QRectF adjustedRect = QRectF(pos, QSize(1,1));
-    foreach (QGraphicsItem *item, estimateItems(adjustedRect, order, deviceTransform)) {
-        // Find the item's scene transform in a clever way.
-        QTransform x = item->sceneTransform();
-        bool keep = false;
-
-        // ### _q_adjustedRect is only needed because QRectF::intersects,
-        // QRectF::contains and QTransform::map() and friends don't work with
-        // flat rectangles.
-        const QRectF br(adjustedItemBoundingRect(item));
-            // Rect intersects/contains item's shape
-        if (QRectF_intersects(adjustedRect, x.mapRect(br))) {
-            bool ok;
-            QTransform xinv = x.inverted(&ok);
-            if (ok) {
-                if (item->contains(xinv.map(pos))) {
-                    items << item;
-                    keep = true;
-                }
-            }
-        }
-
-        if (keep && (item->flags() & QGraphicsItem::ItemClipsChildrenToShape)) {
-            // Recurse into children that clip children.
-            bool ok;
-            QTransform xinv = x.inverted(&ok);
-            if (ok)
-                d->childItems_helper(&items, item, xinv.map(pos));
-        }
-    }
-    //### Needed but it should be handle differently
-    if (order != Qt::SortOrder(-1))
-        QGraphicsSceneBspTreeIndexPrivate::sortItems(&items, order, false);
-    return items;
+    QList<QGraphicsItem *> itemList;
+    d->pointIntersector->mode = mode;
+    d->pointIntersector->rect = QRectF(pos, QSize(1,1));
+    d->pointIntersector->pos = pos;
+    d->recursive_items_helper(0, d->pointIntersector, &itemList, QTransform(), deviceTransform, mode, order);
+    return itemList;
 }
 
 QList<QGraphicsItem *> QGraphicsSceneIndex::items(const QRectF &rect, Qt::ItemSelectionMode mode, Qt::SortOrder order, const QTransform &deviceTransform) const
 {
     Q_D(const QGraphicsSceneIndex);
     QList<QGraphicsItem *> itemList;
-    d->recursive_items_helper(0, rect, &itemList, QTransform(), deviceTransform, mode, order);
+    d->rectIntersector->mode = mode;
+    d->rectIntersector->rect = rect;
+    d->recursive_items_helper(0, d->rectIntersector, &itemList, QTransform(), deviceTransform, mode, order);
     return itemList;
 }
 
 QList<QGraphicsItem *> QGraphicsSceneIndex::items(const QPolygonF &polygon, Qt::ItemSelectionMode mode, Qt::SortOrder order, const QTransform &deviceTransform) const
 {
     Q_D(const QGraphicsSceneIndex);
-    QList<QGraphicsItem *> items;
-
+    QList<QGraphicsItem *> itemList;
     QRectF polyRect(polygon.boundingRect());
      _q_adjustRect(&polyRect);
+    d->pathIntersector->mode = mode;
+    d->pathIntersector->rect = polyRect;
     QPainterPath path;
-
-    // The index returns a rough estimate of what items are inside the rect.
-    // Refine it by iterating through all returned items.
-    foreach (QGraphicsItem *item, estimateItems(polyRect, order, deviceTransform)) {
-        // Find the item's scene transform in a clever way.
-        QTransform x = item->sceneTransform();
-        bool keep = false;
-
-        // ### _q_adjustedRect is only needed because QRectF::intersects,
-        // QRectF::contains and QTransform::map() and friends don't work with
-        // flat rectangles.
-        const QRectF br(adjustedItemBoundingRect(item));
-        if (mode >= Qt::ContainsItemBoundingRect) {
-            // Polygon contains/intersects item's bounding rect
-            if (path == QPainterPath())
-                path.addPolygon(polygon);
-            if ((mode == Qt::IntersectsItemBoundingRect && path.intersects(x.mapRect(br)))
-                || (mode == Qt::ContainsItemBoundingRect && path.contains(x.mapRect(br)))) {
-                items << item;
-                keep = true;
-            }
-        } else {
-            // Polygon contains/intersects item's shape
-            if (QRectF_intersects(polyRect, x.mapRect(br))) {
-                bool ok;
-                QTransform xinv = x.inverted(&ok);
-                if (ok) {
-                    if (path == QPainterPath())
-                        path.addPolygon(polygon);
-                    if (d->scene->d_func()->itemCollidesWithPath(item, xinv.map(path), mode)) {
-                        items << item;
-                        keep = true;
-                    }
-                }
-            }
-        }
-
-        if (keep && (item->flags() & QGraphicsItem::ItemClipsChildrenToShape)) {
-            // Recurse into children that clip children.
-            bool ok;
-            QTransform xinv = x.inverted(&ok);
-            if (ok)
-                d->childItems_helper(&items, item, xinv.map(polygon), mode);
-        }
-    }
-    //### Needed but it should be handle differently
-    if (order != Qt::SortOrder(-1))
-        QGraphicsSceneBspTreeIndexPrivate::sortItems(&items, order, false);
-    return items;
+    path.addPolygon(polygon);
+    d->pathIntersector->path = path;
+    d->recursive_items_helper(0, d->pathIntersector, &itemList, QTransform(), deviceTransform, mode, order);
+    return itemList;
 }
+
 QList<QGraphicsItem *> QGraphicsSceneIndex::items(const QPainterPath &path, Qt::ItemSelectionMode mode, Qt::SortOrder order, const QTransform &deviceTransform) const
 {
     Q_D(const QGraphicsSceneIndex);
-    QList<QGraphicsItem *> items;
+    QList<QGraphicsItem *> itemList;
     QRectF pathRect(path.controlPointRect());
     _q_adjustRect(&pathRect);
-
-    // The index returns a rough estimate of what items are inside the rect.
-    // Refine it by iterating through all returned items.
-    foreach (QGraphicsItem *item, estimateItems(pathRect, order, deviceTransform)) {
-        // Find the item's scene transform in a clever way.
-        QTransform x = item->sceneTransform();
-        bool keep = false;
-
-        // ### _q_adjustedRect is only needed because QRectF::intersects,
-        // QRectF::contains and QTransform::map() and friends don't work with
-        // flat rectangles.
-        const QRectF br(adjustedItemBoundingRect(item));
-        if (mode >= Qt::ContainsItemBoundingRect) {
-            // Path contains/intersects item's bounding rect
-            if ((mode == Qt::IntersectsItemBoundingRect && path.intersects(x.mapRect(br)))
-                || (mode == Qt::ContainsItemBoundingRect && path.contains(x.mapRect(br)))) {
-                items << item;
-                keep = true;
-            }
-        } else {
-            // Path contains/intersects item's shape
-            if (QRectF_intersects(pathRect, x.mapRect(br))) {
-                bool ok;
-                QTransform xinv = x.inverted(&ok);
-                if (ok) {
-                    if (d->scene->d_func()->itemCollidesWithPath(item, xinv.map(path), mode)) {
-                        items << item;
-                        keep = true;
-                    }
-                }
-            }
-        }
-
-        if (keep && (item->flags() & QGraphicsItem::ItemClipsChildrenToShape)) {
-            bool ok;
-            QTransform xinv = x.inverted(&ok);
-            if (ok)
-                d->childItems_helper(&items, item, xinv.map(path), mode);
-        }
-    }
-    //### Needed but it should be handle differently
-    if (order != Qt::SortOrder(-1))
-        QGraphicsSceneBspTreeIndexPrivate::sortItems(&items, order, false);
-    return items;
+    d->pathIntersector->mode = mode;
+    d->pathIntersector->rect = pathRect;
+    d->pathIntersector->path = path;
+    d->recursive_items_helper(0, d->pathIntersector, &itemList, QTransform(), deviceTransform, mode, order);
+    return itemList;
 }
 
 /*!
@@ -592,6 +397,8 @@ void QGraphicsSceneIndex::deleteItem(QGraphicsItem *item)
 */
 void QGraphicsSceneIndex::itemChanged(const QGraphicsItem *item, QGraphicsItem::GraphicsItemChange, const QVariant &value)
 {
+    //Q_UNUSED(item);
+    //Q_UNUSED(value);
 }
 
 /*!
@@ -601,6 +408,7 @@ void QGraphicsSceneIndex::itemChanged(const QGraphicsItem *item, QGraphicsItem::
 */
 void QGraphicsSceneIndex::prepareBoundingRectChange(const QGraphicsItem *item)
 {
+    //Q_UNUSED(item);
 }
 
 /*!

@@ -85,6 +85,8 @@ public:
     QGraphicsScenePrivate();
     void init();
 
+    static QGraphicsScenePrivate *get(QGraphicsScene *q);
+
     quint32 changedSignalMask;
 
     QGraphicsScene::ItemIndexMethod indexMethod;

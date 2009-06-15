@@ -57,7 +57,7 @@
 
 #if !defined(QT_NO_GRAPHICSVIEW) || (QT_EDITION & QT_MODULE_GRAPHICSVIEW) != QT_MODULE_GRAPHICSVIEW
 
-#include <private/qobject_p.h>
+#include <private/qgraphicssceneindex_p.h>
 #include <private/qgraphicsitem_p.h>
 
 QT_BEGIN_NAMESPACE
@@ -66,13 +66,12 @@ static const int QGRAPHICSSCENE_INDEXTIMER_TIMEOUT = 2000;
 
 class QGraphicsScene;
 
-class QGraphicsSceneBspTreeIndexPrivate : public QObjectPrivate
+class QGraphicsSceneBspTreeIndexPrivate : public QGraphicsSceneIndexPrivate
 {
     Q_DECLARE_PUBLIC(QGraphicsSceneBspTreeIndex)
 public:
     QGraphicsSceneBspTreeIndexPrivate(QGraphicsScene *scene);
 
-    QGraphicsScene *scene;
     QGraphicsSceneBspTree bsp;
     QRectF sceneRect;
     int bspTreeDepth;

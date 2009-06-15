@@ -312,6 +312,11 @@ void QGraphicsScenePrivate::init()
     q->update();
 }
 
+QGraphicsScenePrivate *QGraphicsScenePrivate::get(QGraphicsScene *q)
+{
+    return q->d_func();
+}
+
 void QGraphicsScenePrivate::_q_emitUpdated()
 {
     Q_Q(QGraphicsScene);

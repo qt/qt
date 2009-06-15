@@ -63,30 +63,38 @@
 QT_BEGIN_NAMESPACE
 
 class QGraphicsScene;
+class QGraphicsSceneIndexIntersector;
+class QGraphicsSceneIndexRectIntersector;
+class QGraphicsSceneIndexPointIntersector;
+class QGraphicsSceneIndexPathIntersector;
 
 class QGraphicsSceneIndexPrivate : public QObjectPrivate
 {
     Q_DECLARE_PUBLIC(QGraphicsSceneIndex)
 public:
     QGraphicsSceneIndexPrivate(QGraphicsScene *scene);
+    ~QGraphicsSceneIndexPrivate();
 
-    void recursive_items_helper(QGraphicsItem *item, QRectF rect, QList<QGraphicsItem *> *items,
+    void recursive_items_helper(QGraphicsItem *item, QGraphicsSceneIndexIntersector *intersector, QList<QGraphicsItem *> *items,
                            const QTransform &parentTransform, const QTransform &viewTransform,
                            Qt::ItemSelectionMode mode, Qt::SortOrder order, qreal parentOpacity = 1.0) const;
-
-    void childItems_helper(QList<QGraphicsItem *> *items,
-                           const QGraphicsItem *parent,
-                           const QPointF &pos) const;
-    void childItems_helper(QList<QGraphicsItem *> *items,
-                           const QGraphicsItem *parent,
-                           const QPolygonF &polygon,
-                           Qt::ItemSelectionMode mode) const;
-    void childItems_helper(QList<QGraphicsItem *> *items,
-                           const QGraphicsItem *parent,
-                           const QPainterPath &path,
-                           Qt::ItemSelectionMode mode) const;
-
    QGraphicsScene *scene;
+   QGraphicsSceneIndexPointIntersector *pointIntersector;
+   QGraphicsSceneIndexRectIntersector *rectIntersector;
+   QGraphicsSceneIndexPathIntersector *pathIntersector;
+};
+
+class QGraphicsSceneIndexIntersector
+{
+public:
+    QGraphicsSceneIndexIntersector(QGraphicsScene *scene) : scene(scene) { }
+    virtual ~QGraphicsSceneIndexIntersector() { }
+    virtual bool intersect(const QRectF &rect) const = 0;
+    Qt::ItemSelectionMode mode;
+    QGraphicsItem *item;
+    QGraphicsScene *scene;
+    QRectF rect;
+    QTransform transform;
 };
 
 QT_END_NAMESPACE
