@@ -21,8 +21,9 @@
 
 #include "config.h"
 
-#if ENABLE(SVG) && ENABLE(SVG_FILTERS)
+#if ENABLE(SVG) && ENABLE(FILTERS)
 #include "SVGFEConvolveMatrix.h"
+#include "Filter.h"
 #include "SVGRenderTreeAsText.h"
 
 namespace WebCore {
@@ -133,7 +134,7 @@ void FEConvolveMatrix::setPreserveAlpha(bool preserveAlpha)
     m_preserveAlpha = preserveAlpha; 
 }
 
-void FEConvolveMatrix::apply()
+void FEConvolveMatrix::apply(Filter*)
 {
 }
 
@@ -174,4 +175,4 @@ TextStream& FEConvolveMatrix::externalRepresentation(TextStream& ts) const
 
 }; // namespace WebCore
 
-#endif // ENABLE(SVG) && ENABLE(SVG_FILTERS)
+#endif // ENABLE(SVG) && ENABLE(FILTERS)

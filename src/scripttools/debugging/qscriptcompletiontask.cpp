@@ -44,12 +44,10 @@
 #include "qscriptdebuggerconsole_p.h"
 #include "qscriptdebuggerconsolecommand_p.h"
 #include "qscriptdebuggerconsolecommandmanager_p.h"
-
-#include "qscriptenginedebuggerfrontend_p.h" // ### kill
-#include "qscriptdebuggerbackend_p.h" // ### kill
-#include <QtScript/qscriptcontext.h>
-#include <QtScript/qscriptvalue.h>
-#include <QtScript/qscriptvalueiterator.h>
+#include "qscriptdebuggercommandschedulerjob_p.h"
+#include "qscriptdebuggercommandschedulerfrontend_p.h"
+#include "qscriptdebuggerjobschedulerinterface_p.h"
+#include "qscriptdebuggerresponse_p.h"
 
 #include "private/qobject_p.h"
 
@@ -67,11 +65,13 @@ public:
     ~QScriptCompletionTaskPrivate();
 
     void completeScriptExpression();
+    void emitFinished();
 
     QString contents;
     int cursorPosition;
     int frameIndex;
-    QScriptDebuggerFrontend *frontend;
+    QScriptDebuggerCommandSchedulerInterface *commandScheduler;
+    QScriptDebuggerJobSchedulerInterface *jobScheduler;
     QScriptDebuggerConsole *console;
 };
 
@@ -83,28 +83,33 @@ QScriptCompletionTaskPrivate::~QScriptCompletionTaskPrivate()
 {
 }
 
-QScriptCompletionTask::QScriptCompletionTask(
-    const QString &contents, int cursorPosition,
-    int frameIndex, QScriptDebuggerFrontend *frontend,
-    QScriptDebuggerConsole *console,
-    QObject *parent)
-    : QScriptCompletionTaskInterface(
-        *new QScriptCompletionTaskPrivate, parent)
+class QScriptCompleteExpressionJob : public QScriptDebuggerCommandSchedulerJob
 {
-    Q_D(QScriptCompletionTask);
-    d->contents = contents;
-    d->cursorPosition = cursorPosition;
-    if ((frameIndex == -1) && console)
-        d->frameIndex = console->currentFrameIndex();
-    else
-        d->frameIndex = frameIndex;
-    d->frontend = frontend;
-    d->console = console;
-}
+public:
+    QScriptCompleteExpressionJob(int frameIndex, const QStringList &path,
+                                 QScriptCompletionTaskPrivate *task,
+                                 QScriptDebuggerCommandSchedulerInterface *scheduler)
+        : QScriptDebuggerCommandSchedulerJob(scheduler),
+          m_frameIndex(frameIndex), m_path(path), m_task(task)
+        {}
 
-QScriptCompletionTask::~QScriptCompletionTask()
-{
-}
+    void start()
+    {
+        QScriptDebuggerCommandSchedulerFrontend frontend(commandScheduler(), this);
+        frontend.scheduleGetCompletions(m_frameIndex, m_path);
+    }
+    void handleResponse(const QScriptDebuggerResponse &response, int /*commandId*/)
+    {
+        m_task->results = response.result().toStringList();
+        m_task->emitFinished();
+        finish();
+    }
+
+private:
+    int m_frameIndex;
+    QStringList m_path;
+    QScriptCompletionTaskPrivate *m_task;
+};
 
 namespace {
 
@@ -122,17 +127,49 @@ static bool isPrefixOf(const QString &prefix, const QString &what)
 
 } // namespace
 
+class QScriptCompleteScriptsJob : public QScriptDebuggerCommandSchedulerJob
+{
+public:
+    QScriptCompleteScriptsJob(const QString &prefix, QScriptCompletionTaskPrivate *task,
+                              QScriptDebuggerCommandSchedulerInterface *scheduler)
+        : QScriptDebuggerCommandSchedulerJob(scheduler),
+          m_prefix(prefix), m_task(task)
+        {}
+
+    void start()
+    {
+        QScriptDebuggerCommandSchedulerFrontend frontend(commandScheduler(), this);
+        frontend.scheduleGetScripts();
+    }
+    void handleResponse(const QScriptDebuggerResponse &response, int /*commandId*/)
+    {
+        QScriptScriptMap scripts = response.resultAsScripts();
+        QScriptScriptMap::const_iterator it;
+        for (it = scripts.constBegin(); it != scripts.constEnd(); ++it) {
+            QString fileName = it.value().fileName();
+            if (isPrefixOf(m_prefix, fileName))
+                m_task->results.append(fileName);
+        }
+        m_task->emitFinished();
+        finish();
+    }
+private:
+    QString m_prefix;
+    QScriptCompletionTaskPrivate *m_task;
+};
+
 void QScriptCompletionTaskPrivate::completeScriptExpression()
 {
     int pos = cursorPosition;
     if ((pos > 0) && contents.at(pos-1).isNumber()) {
         // completion of numbers is pointless
+        emitFinished();
         return;
     }
 
     while ((pos > 0) && isIdentChar(contents.at(pos-1)))
         --pos;
-    int pos2 = cursorPosition;
+    int pos2 = cursorPosition - 1;
     while ((pos2 < contents.size()-1) && isIdentChar(contents.at(pos2+1)))
         ++pos2;
     QString ident = contents.mid(pos, pos2 - pos + 1);
@@ -148,65 +185,41 @@ void QScriptCompletionTaskPrivate::completeScriptExpression()
         path.prepend(contents.mid(pos, pos2 - pos));
     }
 
-    // ### super-cheating for now; have to use the async API
-    QScriptEngineDebuggerFrontend *edf = static_cast<QScriptEngineDebuggerFrontend*>(frontend);
-    QScriptDebuggerBackend *backend = edf->backend();
-    QScriptContext *ctx = backend->context(frameIndex);
-    QScriptValueList objects;
-    QString prefix = path.last();
-    QSet<QString> matches;
-    if (path.size() > 1) {
-        const QString &topLevelIdent = path.at(0);
-        QScriptValue obj;
-        if (topLevelIdent == QLatin1String("this")) {
-            obj = ctx->thisObject();
-        } else {
-            QScriptValueList scopeChain;
-            scopeChain = ctx->scopeChain();
-            for (int i = 0; i < scopeChain.size(); ++i) {
-                QScriptValue oo = scopeChain.at(i).property(topLevelIdent);
-                if (oo.isObject()) {
-                    obj = oo;
-                    break;
-                }
-            }
-        }
-        for (int i = 1; obj.isObject() && (i < path.size()-1); ++i)
-            obj = obj.property(path.at(i));
-        if (obj.isValid())
-            objects.append(obj);
-    } else {
-        objects << ctx->scopeChain();
-        QStringList keywords;
-        keywords.append(QString::fromLatin1("this"));
-        keywords.append(QString::fromLatin1("true"));
-        keywords.append(QString::fromLatin1("false"));
-        keywords.append(QString::fromLatin1("null"));
-        for (int i = 0; i < keywords.size(); ++i) {
-            const QString &kwd = keywords.at(i);
-            if (isPrefixOf(prefix, kwd))
-                matches.insert(kwd);
-        }
-    }
-
-    for (int i = 0; i < objects.size(); ++i) {
-        QScriptValue obj = objects.at(i);
-        while (obj.isObject()) {
-            QScriptValueIterator it(obj);
-            while (it.hasNext()) {
-                it.next();
-                QString propertyName = it.name();
-                if (isPrefixOf(prefix, propertyName))
-                    matches.insert(propertyName);
-            }
-            obj = obj.prototype();
-        }
-    }
-    results = matches.toList();
-    qStableSort(results);
-
-    length = prefix.length();
+    length = path.last().length();
     type = QScriptCompletionTask::ScriptIdentifierCompletion;
+
+    QScriptDebuggerJob *job = new QScriptCompleteExpressionJob(frameIndex, path, this, commandScheduler);
+    jobScheduler->scheduleJob(job);
+}
+
+void QScriptCompletionTaskPrivate::emitFinished()
+{
+    emit q_func()->finished();
+}
+
+QScriptCompletionTask::QScriptCompletionTask(
+    const QString &contents, int cursorPosition, int frameIndex,
+    QScriptDebuggerCommandSchedulerInterface *commandScheduler,
+    QScriptDebuggerJobSchedulerInterface *jobScheduler,
+    QScriptDebuggerConsole *console,
+    QObject *parent)
+    : QScriptCompletionTaskInterface(
+        *new QScriptCompletionTaskPrivate, parent)
+{
+    Q_D(QScriptCompletionTask);
+    d->contents = contents;
+    d->cursorPosition = cursorPosition;
+    if ((frameIndex == -1) && console)
+        d->frameIndex = console->currentFrameIndex();
+    else
+        d->frameIndex = frameIndex;
+    d->commandScheduler = commandScheduler;
+    d->jobScheduler = jobScheduler;
+    d->console = console;
+}
+
+QScriptCompletionTask::~QScriptCompletionTask()
+{
 }
 
 void QScriptCompletionTask::start()
@@ -223,7 +236,6 @@ void QScriptCompletionTask::start()
         if ((d->cursorPosition >= cmdIndex) && (d->cursorPosition <= (cmdIndex+len))) {
             // editing command --> get command completions
             d->results = d->console->commandManager()->completions(prefix);
-            qStableSort(d->results);
             d->position = cmdRx.pos(1);
             d->length = prefix.length();
             d->type = CommandNameCompletion;
@@ -259,38 +271,34 @@ void QScriptCompletionTask::start()
                 if (argType == QLatin1String("command-or-group-name")) {
                     d->results = d->console->commandManager()->completions(arg);
                 } else if (argType == QLatin1String("script-filename")) {
-                    // ### super-cheating for now; have to use the async API
-                    QScriptEngineDebuggerFrontend *edf = static_cast<QScriptEngineDebuggerFrontend*>(d->frontend);
-                    QScriptDebuggerBackend *backend = edf->backend();
-                    QScriptScriptMap scripts = backend->scripts();
-                    QScriptScriptMap::const_iterator it;
-                    for (it = scripts.constBegin(); it != scripts.constEnd(); ++it) {
-                        QString fileName = it.value().fileName();
-                        if (isPrefixOf(arg, fileName))
-                            d->results.append(fileName);
-                    }
+                    d->position = pos;
+                    d->length = arg.length();
+                    d->type = CommandArgumentCompletion;
+                    QScriptDebuggerJob *job = new QScriptCompleteScriptsJob(arg, d, d->commandScheduler);
+                    d->jobScheduler->scheduleJob(job);
                 } else if (argType == QLatin1String("subcommand-name")) {
                     for (int i = 0; i < cmd->subCommands().size(); ++i) {
                         QString name = cmd->subCommands().at(i);
                         if (isPrefixOf(arg, name))
                             d->results.append(name);
                     }
+                    qStableSort(d->results);
                 } else if (argType == QLatin1String("script")) {
                     d->completeScriptExpression();
+                } else {
+                    emit finished();
                 }
                 if ((d->type == NoCompletion) && !d->results.isEmpty()) {
-                    qStableSort(d->results);
                     d->position = pos;
                     d->length = arg.length();
                     d->type = CommandArgumentCompletion;
+                    emit finished();
                 }
             }
-            emit finished();
         }
     } else {
         // assume it's an eval expression
         d->completeScriptExpression();
-        emit finished();
     }
 }
 

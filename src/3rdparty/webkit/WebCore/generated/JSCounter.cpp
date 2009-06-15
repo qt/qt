@@ -34,7 +34,7 @@ using namespace JSC;
 
 namespace WebCore {
 
-ASSERT_CLASS_FITS_IN_CELL(JSCounter)
+ASSERT_CLASS_FITS_IN_CELL(JSCounter);
 
 /* Hash table */
 
@@ -73,13 +73,13 @@ public:
     JSCounterConstructor(ExecState* exec)
         : DOMObject(JSCounterConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
     {
-        putDirect(exec->propertyNames().prototype, JSCounterPrototype::self(exec), None);
+        putDirect(exec->propertyNames().prototype, JSCounterPrototype::self(exec, exec->lexicalGlobalObject()), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
     static const ClassInfo s_info;
 
-    static PassRefPtr<Structure> createStructure(JSValuePtr proto) 
+    static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
         return Structure::create(proto, TypeInfo(ObjectType, ImplementsHasInstance)); 
     }
@@ -108,9 +108,9 @@ static const HashTable JSCounterPrototypeTable =
 
 const ClassInfo JSCounterPrototype::s_info = { "CounterPrototype", 0, &JSCounterPrototypeTable, 0 };
 
-JSObject* JSCounterPrototype::self(ExecState* exec)
+JSObject* JSCounterPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSCounter>(exec);
+    return getDOMPrototype<JSCounter>(exec, globalObject);
 }
 
 const ClassInfo JSCounter::s_info = { "Counter", 0, &JSCounterTable, 0 };
@@ -124,12 +124,11 @@ JSCounter::JSCounter(PassRefPtr<Structure> structure, PassRefPtr<Counter> impl)
 JSCounter::~JSCounter()
 {
     forgetDOMObject(*Heap::heap(this)->globalData(), m_impl.get());
-
 }
 
-JSObject* JSCounter::createPrototype(ExecState* exec)
+JSObject* JSCounter::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSCounterPrototype(JSCounterPrototype::createStructure(exec->lexicalGlobalObject()->objectPrototype()));
+    return new (exec) JSCounterPrototype(JSCounterPrototype::createStructure(globalObject->objectPrototype()));
 }
 
 bool JSCounter::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -137,40 +136,43 @@ bool JSCounter::getOwnPropertySlot(ExecState* exec, const Identifier& propertyNa
     return getStaticValueSlot<JSCounter, Base>(exec, &JSCounterTable, this, propertyName, slot);
 }
 
-JSValuePtr jsCounterIdentifier(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsCounterIdentifier(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     Counter* imp = static_cast<Counter*>(static_cast<JSCounter*>(asObject(slot.slotBase()))->impl());
     return jsString(exec, imp->identifier());
 }
 
-JSValuePtr jsCounterListStyle(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsCounterListStyle(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     Counter* imp = static_cast<Counter*>(static_cast<JSCounter*>(asObject(slot.slotBase()))->impl());
     return jsString(exec, imp->listStyle());
 }
 
-JSValuePtr jsCounterSeparator(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsCounterSeparator(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     Counter* imp = static_cast<Counter*>(static_cast<JSCounter*>(asObject(slot.slotBase()))->impl());
     return jsString(exec, imp->separator());
 }
 
-JSValuePtr jsCounterConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsCounterConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     return static_cast<JSCounter*>(asObject(slot.slotBase()))->getConstructor(exec);
 }
-JSValuePtr JSCounter::getConstructor(ExecState* exec)
+JSValue JSCounter::getConstructor(ExecState* exec)
 {
     return getDOMConstructor<JSCounterConstructor>(exec);
 }
 
-JSC::JSValuePtr toJS(JSC::ExecState* exec, Counter* object)
+JSC::JSValue toJS(JSC::ExecState* exec, Counter* object)
 {
     return getDOMObjectWrapper<JSCounter>(exec, object);
 }
-Counter* toCounter(JSC::JSValuePtr value)
+Counter* toCounter(JSC::JSValue value)
 {
-    return value->isObject(&JSCounter::s_info) ? static_cast<JSCounter*>(asObject(value))->impl() : 0;
+    return value.isObject(&JSCounter::s_info) ? static_cast<JSCounter*>(asObject(value))->impl() : 0;
 }
 
 }

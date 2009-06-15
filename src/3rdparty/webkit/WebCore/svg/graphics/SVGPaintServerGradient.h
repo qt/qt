@@ -52,9 +52,6 @@ namespace WebCore {
         void setGradient(PassRefPtr<Gradient>);
         Gradient* gradient() const;
 
-        GradientSpreadMethod spreadMethod() const;
-        void setGradientSpreadMethod(const GradientSpreadMethod&);
-
         // Gradient start and end points are percentages when used in boundingBox mode.
         // For instance start point with value (0,0) is top-left and end point with
         // value (100, 100) is bottom-right. BoundingBox mode is enabled by default.
@@ -71,7 +68,6 @@ namespace WebCore {
 
         virtual bool setup(GraphicsContext*&, const RenderObject*, SVGPaintTargetType, bool isPaintingText) const;
         virtual void teardown(GraphicsContext*&, const RenderObject*, SVGPaintTargetType, bool isPaintingText) const;
-        virtual void renderPath(GraphicsContext*&, const RenderObject*, SVGPaintTargetType) const;
 
     protected:
         SVGPaintServerGradient(const SVGGradientElement* owner);
@@ -79,7 +75,6 @@ namespace WebCore {
     private:
         Vector<SVGGradientStop> m_stops;
         RefPtr<Gradient> m_gradient;
-        GradientSpreadMethod m_spreadMethod;
         bool m_boundingBoxMode;
         TransformationMatrix m_gradientTransform;
         const SVGGradientElement* m_ownerElement;

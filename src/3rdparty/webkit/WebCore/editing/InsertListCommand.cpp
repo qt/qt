@@ -39,7 +39,7 @@ using namespace HTMLNames;
 
 PassRefPtr<HTMLElement> InsertListCommand::insertList(Document* document, Type type)
 {
-    RefPtr<InsertListCommand> insertCommand = new InsertListCommand(document, type, "");
+    RefPtr<InsertListCommand> insertCommand = new InsertListCommand(document, type);
     insertCommand->apply();
     return insertCommand->m_listElement;
 }
@@ -54,14 +54,14 @@ HTMLElement* InsertListCommand::fixOrphanedListChild(Node* node)
     return listElement.get();
 }
 
-InsertListCommand::InsertListCommand(Document* document, Type type, const String& id) 
-    : CompositeEditCommand(document), m_type(type), m_id(id), m_forceCreateList(false)
+InsertListCommand::InsertListCommand(Document* document, Type type) 
+    : CompositeEditCommand(document), m_type(type), m_forceCreateList(false)
 {
 }
 
 bool InsertListCommand::modifyRange()
 {
-    Selection selection = selectionForParagraphIteration(endingSelection());
+    VisibleSelection selection = selectionForParagraphIteration(endingSelection());
     ASSERT(selection.isRange());
     VisiblePosition startOfSelection = selection.visibleStart();
     VisiblePosition endOfSelection = selection.visibleEnd();
@@ -99,7 +99,7 @@ bool InsertListCommand::modifyRange()
     doApply();
     // Fetch the end of the selection, for the reason mentioned above.
     endOfSelection = endingSelection().visibleEnd();
-    setEndingSelection(Selection(startOfSelection, endOfSelection));
+    setEndingSelection(VisibleSelection(startOfSelection, endOfSelection));
     m_forceCreateList = false;
     return true;
 }
@@ -123,7 +123,7 @@ void InsertListCommand::doApply()
     // margin/padding, but not others.  We should make the gap painting more consistent and 
     // then use a left margin/padding rule here.
     if (visibleEnd != visibleStart && isStartOfParagraph(visibleEnd))
-        setEndingSelection(Selection(visibleStart, visibleEnd.previous(true)));
+        setEndingSelection(VisibleSelection(visibleStart, visibleEnd.previous(true)));
 
     if (endingSelection().isRange() && modifyRange())
         return;
@@ -148,8 +148,8 @@ void InsertListCommand::doApply()
         VisiblePosition start;
         VisiblePosition end;
         if (listChildNode->hasTagName(liTag)) {
-            start = VisiblePosition(Position(listChildNode, 0));
-            end = VisiblePosition(Position(listChildNode, maxDeepOffset(listChildNode)));
+            start = firstDeepEditingPositionForNode(listChildNode);
+            end = lastDeepEditingPositionForNode(listChildNode);
             nextListChild = listChildNode->nextSibling();
             previousListChild = listChildNode->previousSibling();
         } else {
@@ -202,7 +202,8 @@ void InsertListCommand::doApply()
     }
     if (!listChildNode || switchListType || m_forceCreateList) {
         // Create list.
-        VisiblePosition start = startOfParagraph(endingSelection().visibleStart());
+        VisiblePosition originalStart = endingSelection().visibleStart();
+        VisiblePosition start = startOfParagraph(originalStart);
         VisiblePosition end = endOfParagraph(endingSelection().visibleEnd());
         
         // Check for adjoining lists.
@@ -230,8 +231,6 @@ void InsertListCommand::doApply()
             // Create the list.
             RefPtr<HTMLElement> listElement = m_type == OrderedList ? createOrderedListElement(document()) : createUnorderedListElement(document());
             m_listElement = listElement;
-            if (!m_id.isEmpty())
-                listElement->setId(m_id);
             appendNode(listItemElement, listElement);
             
             if (start == end && isBlock(start.deepEquivalent().node())) {
@@ -253,12 +252,17 @@ void InsertListCommand::doApply()
             Node* listChild = enclosingListChild(insertionPos.node());
             if (listChild && listChild->hasTagName(liTag))
                 insertionPos = positionBeforeNode(listChild);
-                
+
             insertNodeAt(listElement, insertionPos);
+
+            // We inserted the list at the start of the content we're about to move
+            // Update the start of content, so we don't try to move the list into itself.  bug 19066
+            if (insertionPos == start.deepEquivalent())
+                start = startOfParagraph(originalStart);
         }
         moveParagraph(start, end, VisiblePosition(Position(placeholder.get(), 0)), true);
         if (nextList && previousList)
-            mergeIdenticalElements(static_cast<Element*>(previousList), static_cast<Element*>(nextList));
+            mergeIdenticalElements(previousList, nextList);
     }
 }
 

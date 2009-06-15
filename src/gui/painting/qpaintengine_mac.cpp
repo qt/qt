@@ -1496,23 +1496,23 @@ QCoreGraphicsPaintEnginePrivate::setStrokePen(const QPen &pen)
         for(int i = 0; i < customs.size(); ++i)
             linedashes.append(customs.at(i));
     } else if(pen.style() == Qt::DashLine) {
-        linedashes.append(3);
-        linedashes.append(1);
+        linedashes.append(4);
+        linedashes.append(2);
     } else if(pen.style() == Qt::DotLine) {
         linedashes.append(1);
-        linedashes.append(1);
+        linedashes.append(2);
     } else if(pen.style() == Qt::DashDotLine) {
-        linedashes.append(3);
+        linedashes.append(4);
+        linedashes.append(2);
         linedashes.append(1);
-        linedashes.append(1);
-        linedashes.append(1);
+        linedashes.append(2);
     } else if(pen.style() == Qt::DashDotDotLine) {
-        linedashes.append(3);
+        linedashes.append(4);
+        linedashes.append(2);
         linedashes.append(1);
+        linedashes.append(2);
         linedashes.append(1);
-        linedashes.append(1);
-        linedashes.append(1);
-        linedashes.append(1);
+        linedashes.append(2);
     }
     const CGFloat cglinewidth = pen.widthF() <= 0.0f ? 1.0f : float(pen.widthF());
     for(int i = 0; i < linedashes.size(); ++i) {

@@ -217,6 +217,8 @@ static const int QGRAPHICSVIEW_PREALLOC_STYLE_OPTIONS = 503; // largest prime < 
     minimizing the areas that require redrawing, which improves performance. A
     common side effect is that items that do draw with antialiasing can leave
     painting traces behind on the scene as they are moved.
+
+    \omitvalue IndirectPainting
 */
 
 /*!

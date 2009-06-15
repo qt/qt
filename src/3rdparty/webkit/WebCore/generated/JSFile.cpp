@@ -34,7 +34,7 @@ using namespace JSC;
 
 namespace WebCore {
 
-ASSERT_CLASS_FITS_IN_CELL(JSFile)
+ASSERT_CLASS_FITS_IN_CELL(JSFile);
 
 /* Hash table */
 
@@ -72,13 +72,13 @@ public:
     JSFileConstructor(ExecState* exec)
         : DOMObject(JSFileConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
     {
-        putDirect(exec->propertyNames().prototype, JSFilePrototype::self(exec), None);
+        putDirect(exec->propertyNames().prototype, JSFilePrototype::self(exec, exec->lexicalGlobalObject()), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
     static const ClassInfo s_info;
 
-    static PassRefPtr<Structure> createStructure(JSValuePtr proto) 
+    static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
         return Structure::create(proto, TypeInfo(ObjectType, ImplementsHasInstance)); 
     }
@@ -107,9 +107,9 @@ static const HashTable JSFilePrototypeTable =
 
 const ClassInfo JSFilePrototype::s_info = { "FilePrototype", 0, &JSFilePrototypeTable, 0 };
 
-JSObject* JSFilePrototype::self(ExecState* exec)
+JSObject* JSFilePrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSFile>(exec);
+    return getDOMPrototype<JSFile>(exec, globalObject);
 }
 
 const ClassInfo JSFile::s_info = { "File", 0, &JSFileTable, 0 };
@@ -123,12 +123,11 @@ JSFile::JSFile(PassRefPtr<Structure> structure, PassRefPtr<File> impl)
 JSFile::~JSFile()
 {
     forgetDOMObject(*Heap::heap(this)->globalData(), m_impl.get());
-
 }
 
-JSObject* JSFile::createPrototype(ExecState* exec)
+JSObject* JSFile::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSFilePrototype(JSFilePrototype::createStructure(exec->lexicalGlobalObject()->objectPrototype()));
+    return new (exec) JSFilePrototype(JSFilePrototype::createStructure(globalObject->objectPrototype()));
 }
 
 bool JSFile::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -136,34 +135,36 @@ bool JSFile::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName,
     return getStaticValueSlot<JSFile, Base>(exec, &JSFileTable, this, propertyName, slot);
 }
 
-JSValuePtr jsFileFileName(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsFileFileName(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     File* imp = static_cast<File*>(static_cast<JSFile*>(asObject(slot.slotBase()))->impl());
     return jsString(exec, imp->fileName());
 }
 
-JSValuePtr jsFileFileSize(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsFileFileSize(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     File* imp = static_cast<File*>(static_cast<JSFile*>(asObject(slot.slotBase()))->impl());
     return jsNumber(exec, imp->fileSize());
 }
 
-JSValuePtr jsFileConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsFileConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     return static_cast<JSFile*>(asObject(slot.slotBase()))->getConstructor(exec);
 }
-JSValuePtr JSFile::getConstructor(ExecState* exec)
+JSValue JSFile::getConstructor(ExecState* exec)
 {
     return getDOMConstructor<JSFileConstructor>(exec);
 }
 
-JSC::JSValuePtr toJS(JSC::ExecState* exec, File* object)
+JSC::JSValue toJS(JSC::ExecState* exec, File* object)
 {
     return getDOMObjectWrapper<JSFile>(exec, object);
 }
-File* toFile(JSC::JSValuePtr value)
+File* toFile(JSC::JSValue value)
 {
-    return value->isObject(&JSFile::s_info) ? static_cast<JSFile*>(asObject(value))->impl() : 0;
+    return value.isObject(&JSFile::s_info) ? static_cast<JSFile*>(asObject(value))->impl() : 0;
 }
 
 }

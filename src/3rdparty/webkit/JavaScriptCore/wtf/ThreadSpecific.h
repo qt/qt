@@ -45,13 +45,15 @@
 
 #if USE(PTHREADS)
 #include <pthread.h>
+#elif PLATFORM(QT)
+#include <QThreadStorage>
 #elif PLATFORM(WIN_OS)
 #include <windows.h>
 #endif
 
 namespace WTF {
 
-#if !USE(PTHREADS) && PLATFORM(WIN_OS)
+#if !USE(PTHREADS) && !PLATFORM(QT) && PLATFORM(WIN_OS)
 // ThreadSpecificThreadExit should be called each time when a thread is detached.
 // This is done automatically for threads created with WTF::createThread.
 void ThreadSpecificThreadExit();
@@ -66,7 +68,7 @@ public:
     ~ThreadSpecific();
 
 private:
-#if !USE(PTHREADS) && PLATFORM(WIN_OS)
+#if !USE(PTHREADS) && !PLATFORM(QT) && PLATFORM(WIN_OS)
     friend void ThreadSpecificThreadExit();
 #endif
     
@@ -74,7 +76,7 @@ private:
     void set(T*);
     void static destroy(void* ptr);
 
-#if USE(PTHREADS) || PLATFORM(WIN_OS)
+#if USE(PTHREADS) || PLATFORM(QT) || PLATFORM(WIN_OS)
     struct Data : Noncopyable {
         Data(T* value, ThreadSpecific<T>* owner) : value(value), owner(owner) {}
 
@@ -88,6 +90,8 @@ private:
 
 #if USE(PTHREADS)
     pthread_key_t m_key;
+#elif PLATFORM(QT)
+    QThreadStorage<Data*> m_key;
 #elif PLATFORM(WIN_OS)
     int m_index;
 #endif
@@ -122,41 +126,25 @@ inline void ThreadSpecific<T>::set(T* ptr)
     pthread_setspecific(m_key, new Data(ptr, this));
 }
 
-#elif PLATFORM(WIN_OS)
-
-// The maximum number of TLS keys that can be created. For simplification, we assume that:
-// 1) Once the instance of ThreadSpecific<> is created, it will not be destructed until the program dies.
-// 2) We do not need to hold many instances of ThreadSpecific<> data. This fixed number should be far enough.
-const int kMaxTlsKeySize = 256;
-
-extern long g_tls_key_count;
-extern DWORD g_tls_keys[kMaxTlsKeySize];
+#elif PLATFORM(QT)
 
 template<typename T>
 inline ThreadSpecific<T>::ThreadSpecific()
-    : m_index(-1)
 {
-    DWORD tls_key = TlsAlloc();
-    if (tls_key == TLS_OUT_OF_INDEXES)
-        CRASH();
-
-    m_index = InterlockedIncrement(&g_tls_key_count) - 1;
-    if (m_index >= kMaxTlsKeySize)
-        CRASH();
-    g_tls_keys[m_index] = tls_key;
 }
 
 template<typename T>
 inline ThreadSpecific<T>::~ThreadSpecific()
 {
-    // Does not invoke destructor functions. They will be called from ThreadSpecificThreadExit when the thread is detached.
-    TlsFree(g_tls_keys[m_index]);
+    Data* data = static_cast<Data*>(m_key.localData());
+    if (data)
+        data->destructor(data);
 }
 
 template<typename T>
 inline T* ThreadSpecific<T>::get()
 {
-    Data* data = static_cast<Data*>(TlsGetValue(g_tls_keys[m_index]));
+    Data* data = static_cast<Data*>(m_key.localData());
     return data ? data->value : 0;
 }
 
@@ -166,7 +154,54 @@ inline void ThreadSpecific<T>::set(T* ptr)
     ASSERT(!get());
     Data* data = new Data(ptr, this);
     data->destructor = &ThreadSpecific<T>::destroy;
-    TlsSetValue(g_tls_keys[m_index], data);
+    m_key.setLocalData(data);
+}
+
+#elif PLATFORM(WIN_OS)
+
+// The maximum number of TLS keys that can be created. For simplification, we assume that:
+// 1) Once the instance of ThreadSpecific<> is created, it will not be destructed until the program dies.
+// 2) We do not need to hold many instances of ThreadSpecific<> data. This fixed number should be far enough.
+const int kMaxTlsKeySize = 256;
+
+long& tlsKeyCount();
+DWORD* tlsKeys();
+
+template<typename T>
+inline ThreadSpecific<T>::ThreadSpecific()
+    : m_index(-1)
+{
+    DWORD tls_key = TlsAlloc();
+    if (tls_key == TLS_OUT_OF_INDEXES)
+        CRASH();
+
+    m_index = InterlockedIncrement(&tlsKeyCount()) - 1;
+    if (m_index >= kMaxTlsKeySize)
+        CRASH();
+    tlsKeys()[m_index] = tls_key;
+}
+
+template<typename T>
+inline ThreadSpecific<T>::~ThreadSpecific()
+{
+    // Does not invoke destructor functions. They will be called from ThreadSpecificThreadExit when the thread is detached.
+    TlsFree(tlsKeys()[m_index]);
+}
+
+template<typename T>
+inline T* ThreadSpecific<T>::get()
+{
+    Data* data = static_cast<Data*>(TlsGetValue(tlsKeys()[m_index]));
+    return data ? data->value : 0;
+}
+
+template<typename T>
+inline void ThreadSpecific<T>::set(T* ptr)
+{
+    ASSERT(!get());
+    Data* data = new Data(ptr, this);
+    data->destructor = &ThreadSpecific<T>::destroy;
+    TlsSetValue(tlsKeys()[m_index], data);
 }
 
 #else
@@ -189,8 +224,10 @@ inline void ThreadSpecific<T>::destroy(void* ptr)
 
 #if USE(PTHREADS)
     pthread_setspecific(data->owner->m_key, 0);
+#elif PLATFORM(QT)
+    data->owner->m_key.setLocalData(0);
 #elif PLATFORM(WIN_OS)
-    TlsSetValue(g_tls_keys[data->owner->m_index], 0);
+    TlsSetValue(tlsKeys()[data->owner->m_index], 0);
 #else
 #error ThreadSpecific is not implemented for this platform.
 #endif

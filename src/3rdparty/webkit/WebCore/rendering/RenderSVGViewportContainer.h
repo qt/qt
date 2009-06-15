@@ -1,8 +1,7 @@
 /*
     Copyright (C) 2004, 2005, 2007 Nikolas Zimmermann <zimmermann@kde.org>
                   2004, 2005, 2007 Rob Buis <buis@kde.org>
-
-    This file is part of the KDE project
+                  2009 Google, Inc.
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -29,6 +28,8 @@
 
 namespace WebCore {
 
+// This is used for non-root <svg> elements and <marker> elements, neither of which are SVGTransformable
+// thus we inherit from RenderSVGContainer instead of RenderSVGTransformableContainer
 class RenderSVGViewportContainer : public RenderSVGContainer {
 public:
     RenderSVGViewportContainer(SVGStyledElement*);
@@ -37,22 +38,24 @@ public:
     virtual bool isSVGContainer() const { return true; }
     virtual const char* renderName() const { return "RenderSVGViewportContainer"; }
 
-    virtual void layout();
     virtual void paint(PaintInfo&, int parentX, int parentY);
 
-    virtual TransformationMatrix absoluteTransform() const;
-    virtual TransformationMatrix viewportTransform() const;
+    virtual TransformationMatrix localToParentTransform() const;
 
-    virtual bool nodeAtPoint(const HitTestRequest&, HitTestResult&, int x, int y, int tx, int ty, HitTestAction);
+    // FIXME: This override should be removed once callers of RenderBox::absoluteTransform() can be removed.
+    virtual TransformationMatrix absoluteTransform() const;
 
     FloatRect viewport() const;
 
-private:
-    void calcViewport(); 
+    // FIXME: This is only public for SVGResourceMarker::draw, likely the callsite should be changed.
+    TransformationMatrix viewportTransform() const;
 
-    virtual void applyContentTransforms(PaintInfo&);
-    virtual void applyAdditionalTransforms(PaintInfo&);
-    
+private:
+    virtual void calcViewport();
+
+    virtual void applyViewportClip(PaintInfo&);
+    virtual bool pointIsInsideViewportClip(const FloatPoint& pointInParent);
+
     FloatRect m_viewport;
 };
   

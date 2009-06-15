@@ -216,6 +216,7 @@ public:
 #if defined(Q_WS_X11)
 #ifndef QT_NO_SETTINGS
     static QString kdeHome();
+    static QString x11_desktop_style();
     static bool x11_apply_settings();
 #endif
     static void reset_instance_pointer();
@@ -229,6 +230,7 @@ public:
     static int autoMaximizeThreshold;
     static bool autoSipEnabled;
 #endif
+    static QString desktopStyleKey();
 
     static QGraphicsSystem *graphicsSystem()
 #if !defined(Q_WS_QWS)
@@ -398,7 +400,7 @@ public:
 
     static QApplicationPrivate *instance() { return self; }
 
-    static QString *styleOverride;
+    static QString styleOverride;
 
     static int app_compile_version;
 

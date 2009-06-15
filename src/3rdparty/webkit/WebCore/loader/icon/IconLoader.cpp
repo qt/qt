@@ -35,7 +35,9 @@
 #include "ResourceHandle.h"
 #include "ResourceResponse.h"
 #include "ResourceRequest.h"
+#include "SharedBuffer.h"
 #include "SubresourceLoader.h"
+#include <wtf/UnusedParam.h>
 
 using namespace std;
 
@@ -60,14 +62,6 @@ void IconLoader::startLoading()
 {    
     if (m_resourceLoader)
         return;
-
-    // FIXME: http://bugs.webkit.org/show_bug.cgi?id=10902
-    // Once ResourceHandle will load without a DocLoader, we can remove this check.
-    // A frame may be documentless - one example is a frame containing only a PDF.
-    if (!m_frame->document()) {
-        LOG(IconDatabase, "Documentless-frame - icon won't be loaded");
-        return;
-    }
 
     // Set flag so we can detect the case where the load completes before
     // SubresourceLoader::create returns.
@@ -101,9 +95,13 @@ void IconLoader::didReceiveResponse(SubresourceLoader* resourceLoader, const Res
     }
 }
 
-void IconLoader::didReceiveData(SubresourceLoader* loader, const char*, int size)
+void IconLoader::didReceiveData(SubresourceLoader* unusedLoader, const char*, int unusedSize)
 {
-    LOG(IconDatabase, "IconLoader::didReceiveData() - Loader %p, number of bytes %i", loader, size);
+#if LOG_DISABLED
+    UNUSED_PARAM(unusedLoader);
+    UNUSED_PARAM(unusedSize);
+#endif
+    LOG(IconDatabase, "IconLoader::didReceiveData() - Loader %p, number of bytes %i", unusedLoader, unusedSize);
 }
 
 void IconLoader::didFail(SubresourceLoader* resourceLoader, const ResourceError&)
@@ -153,9 +151,12 @@ void IconLoader::finishLoading(const KURL& iconURL, PassRefPtr<SharedBuffer> dat
     // <rdar://problem/5463392> tracks that enhancement
     
     if (!iconURL.isEmpty() && m_loadIsInProgress) {
-        iconDatabase()->setIconDataForIconURL(data, iconURL.string());
         LOG(IconDatabase, "IconLoader::finishLoading() - Committing iconURL %s to database", iconURL.string().ascii().data());
         m_frame->loader()->commitIconURLToIconDatabase(iconURL);
+        // Setting the icon data only after committing to the database ensures that the data is
+        // kept in memory (so it does not have to be read from the database asynchronously), since
+        // there is a page URL referencing it.
+        iconDatabase()->setIconDataForIconURL(data, iconURL.string());
         m_frame->loader()->client()->dispatchDidReceiveIcon();
     }
 

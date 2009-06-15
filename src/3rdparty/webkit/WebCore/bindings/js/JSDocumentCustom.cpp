@@ -20,7 +20,6 @@
 #include "config.h"
 #include "JSDocument.h"
 
-#include "DOMWindow.h"
 #include "ExceptionCode.h"
 #include "Frame.h"
 #include "FrameLoader.h"
@@ -28,9 +27,7 @@
 #include "JSDOMWindowCustom.h"
 #include "JSHTMLDocument.h"
 #include "JSLocation.h"
-#include "JSNodeList.h"
 #include "Location.h"
-#include "NodeList.h"
 #include "ScriptController.h"
 
 #if ENABLE(SVG)
@@ -44,27 +41,34 @@ namespace WebCore {
 
 void JSDocument::mark()
 {
-    JSEventTargetNode::mark();
+    JSNode::mark();
     markDOMNodesForDocument(impl());
     markActiveObjectsForContext(*Heap::heap(this)->globalData(), impl());
 }
 
-JSValuePtr JSDocument::location(ExecState* exec) const
+JSValue JSDocument::location(ExecState* exec) const
 {
     Frame* frame = static_cast<Document*>(impl())->frame();
     if (!frame)
         return jsNull();
 
-    return toJS(exec, frame->domWindow()->location());
+    Location* location = frame->domWindow()->location();
+    if (DOMObject* wrapper = getCachedDOMObjectWrapper(exec->globalData(), location))
+        return wrapper;
+
+    JSDOMWindow* window = static_cast<JSDOMWindow*>(exec->lexicalGlobalObject());
+    JSLocation* jsLocation = new (exec) JSLocation(getDOMStructure<JSLocation>(exec, window), location);
+    cacheDOMObjectWrapper(exec->globalData(), location, jsLocation);
+    return jsLocation;
 }
 
-void JSDocument::setLocation(ExecState* exec, JSValuePtr value)
+void JSDocument::setLocation(ExecState* exec, JSValue value)
 {
     Frame* frame = static_cast<Document*>(impl())->frame();
     if (!frame)
         return;
 
-    String str = value->toString(exec);
+    String str = value.toString(exec);
 
     // IE and Mozilla both resolve the URL relative to the source frame,
     // not the target frame.
@@ -73,10 +77,10 @@ void JSDocument::setLocation(ExecState* exec, JSValuePtr value)
         str = activeFrame->document()->completeURL(str).string();
 
     bool userGesture = activeFrame->script()->processingUserGesture();
-    frame->loader()->scheduleLocationChange(str, activeFrame->loader()->outgoingReferrer(), false, userGesture);
+    frame->loader()->scheduleLocationChange(str, activeFrame->loader()->outgoingReferrer(), !activeFrame->script()->anyPageIsProcessingUserGesture(), false, userGesture);
 }
 
-JSValuePtr toJS(ExecState* exec, Document* document)
+JSValue toJS(ExecState* exec, Document* document)
 {
     if (!document)
         return jsNull();

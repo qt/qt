@@ -25,6 +25,7 @@
 #include "qwebpage.h"
 #include <QtGui/qwidget.h>
 #include <QtGui/qicon.h>
+#include <QtGui/qpainter.h>
 #include <QtCore/qurl.h>
 #if QT_VERSION >= 0x040400
 #include <QtNetwork/qnetworkaccessmanager.h>
@@ -50,12 +51,16 @@ class QWEBKIT_EXPORT QWebView : public QWidget
     //Q_PROPERTY(Qt::TextInteractionFlags textInteractionFlags READ textInteractionFlags WRITE setTextInteractionFlags)
     Q_PROPERTY(qreal textSizeMultiplier READ textSizeMultiplier WRITE setTextSizeMultiplier DESIGNABLE false)
     Q_PROPERTY(qreal zoomFactor READ zoomFactor WRITE setZoomFactor)
+    Q_PROPERTY(QPainter::RenderHints renderHints READ renderHints WRITE setRenderHints)
+    Q_FLAGS(QPainter::RenderHints)
 public:
     explicit QWebView(QWidget *parent = 0);
     virtual ~QWebView();
 
     QWebPage *page() const;
     void setPage(QWebPage *page);
+
+    static QUrl guessUrlFromString(const QString &string);
 
     void load(const QUrl &url);
 #if QT_VERSION < 0x040400 && !defined(qdoc)
@@ -98,6 +103,10 @@ public:
 
     void setTextSizeMultiplier(qreal factor);
     qreal textSizeMultiplier() const;
+
+    QPainter::RenderHints renderHints() const;
+    void setRenderHints(QPainter::RenderHints hints);
+    void setRenderHint(QPainter::RenderHint hint, bool enabled);
 
     bool findText(const QString &subString, QWebPage::FindFlags options = 0);
 

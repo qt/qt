@@ -1,5 +1,5 @@
 TARGET = phonon
-include($$QT_SOURCE_TREE/src/qbase.pri)
+include(../qbase.pri)
 
 PHONON_MAJOR_VERSION = $${QT_MAJOR_VERSION}
 PHONON_MINOR_VERSION = 3

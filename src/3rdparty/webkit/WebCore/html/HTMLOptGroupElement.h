@@ -25,17 +25,18 @@
 #define HTMLOptGroupElement_h
 
 #include "HTMLFormControlElement.h"
+#include "OptionGroupElement.h"
 
 namespace WebCore {
     
 class HTMLSelectElement;
 
-class HTMLOptGroupElement : public HTMLFormControlElement {
+class HTMLOptGroupElement : public HTMLFormControlElement, public OptionGroupElement {
 public:
     HTMLOptGroupElement(const QualifiedName&, Document*, HTMLFormElement* = 0);
 
     virtual bool checkDTD(const Node*);
-    virtual const AtomicString& type() const;
+    virtual const AtomicString& formControlType() const;
     virtual bool isFocusable() const;
     virtual void parseMappedAttribute(MappedAttribute*);
     virtual bool rendererIsNeeded(RenderStyle*) { return false; }
@@ -53,7 +54,7 @@ public:
     String label() const;
     void setLabel(const String&);
     
-    String groupLabelText() const;
+    virtual String groupLabelText() const;
     HTMLSelectElement* ownerSelectElement() const;
     virtual void accessKeyAction(bool sendToAnyElement);
     

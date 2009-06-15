@@ -21,8 +21,10 @@
 
 #include "config.h"
 
-#if ENABLE(SVG) && ENABLE(SVG_FILTERS)
+#if ENABLE(FILTERS)
 #include "FEComposite.h"
+
+#include "Filter.h"
 
 namespace WebCore {
 
@@ -95,7 +97,7 @@ void FEComposite::setK4(float k4)
     m_k4 = k4;
 }
 
-void FEComposite::apply()
+void FEComposite::apply(Filter*)
 {
 }
 
@@ -105,4 +107,4 @@ void FEComposite::dump()
 
 } // namespace WebCore
 
-#endif // ENABLE(SVG) && ENABLE(SVG_FILTERS)
+#endif // ENABLE(FILTERS)

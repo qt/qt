@@ -51,6 +51,7 @@
 #include "Pen.h"
 #include "NotImplemented.h"
 
+#include <QBrush>
 #include <QDebug>
 #include <QGradient>
 #include <QPainter>
@@ -150,22 +151,6 @@ static Qt::PenStyle toQPenStyle(StrokeStyle style)
     }
     qWarning("couldn't recognize the pen style");
     return Qt::NoPen;
-}
-
-static inline QGradient applySpreadMethod(QGradient gradient, GradientSpreadMethod spreadMethod)
-{
-    switch (spreadMethod) {
-        case SpreadMethodPad:
-            gradient.setSpread(QGradient::PadSpread);
-           break;
-        case SpreadMethodReflect:
-            gradient.setSpread(QGradient::ReflectSpread);
-            break;
-        case SpreadMethodRepeat:
-            gradient.setSpread(QGradient::RepeatSpread);
-            break;
-    }
-    return gradient;
 }
 
 static inline Qt::FillRule toQtFillRule(WindRule rule)
@@ -294,7 +279,11 @@ PlatformGraphicsContext* GraphicsContext::platformContext() const
 
 TransformationMatrix GraphicsContext::getCTM() const
 {
-    return platformContext()->combinedMatrix();
+    QTransform matrix(platformContext()->combinedTransform());
+    return TransformationMatrix(matrix.m11(), matrix.m12(), 0, matrix.m13(), 
+                                matrix.m21(), matrix.m22(), 0, matrix.m23(),
+                                           0,            0, 1,            0,
+                                matrix.m31(), matrix.m32(), 0, matrix.m33());
 }
 
 void GraphicsContext::savePlatformState()
@@ -307,7 +296,7 @@ void GraphicsContext::restorePlatformState()
     m_data->p()->restore();
 
     if (!m_data->currentPath.isEmpty() && m_common->state.pathTransform.isInvertible()) {
-        QMatrix matrix = m_common->state.pathTransform;
+        QTransform matrix = m_common->state.pathTransform;
         m_data->currentPath = m_data->currentPath * matrix;
     }
 }
@@ -516,11 +505,11 @@ void GraphicsContext::drawLine(const IntPoint& point1, const IntPoint& point2)
         // Do a rect fill of our endpoints.  This ensures we always have the
         // appearance of being a border.  We then draw the actual dotted/dashed line.
         if (isVerticalLine) {
-            p->fillRect(FloatRect(p1.x() - width / 2, p1.y() - width, width, width), color);
-            p->fillRect(FloatRect(p2.x() - width / 2, p2.y(), width, width), color);
+            p->fillRect(FloatRect(p1.x() - width / 2, p1.y() - width, width, width), QColor(color));
+            p->fillRect(FloatRect(p2.x() - width / 2, p2.y(), width, width), QColor(color));
         } else {
-            p->fillRect(FloatRect(p1.x() - width, p1.y() - width / 2, width, width), color);
-            p->fillRect(FloatRect(p2.x(), p2.y() - width / 2, width, width), color);
+            p->fillRect(FloatRect(p1.x() - width, p1.y() - width / 2, width, width), QColor(color));
+            p->fillRect(FloatRect(p2.x(), p2.y() - width / 2, width, width), QColor(color));
         }
 
         // Example: 80 pixels with a width of 30 pixels.
@@ -586,7 +575,7 @@ void GraphicsContext::strokeArc(const IntRect& rect, int startAngle, int angleSp
 
     QPainter *p = m_data->p();
     const bool antiAlias = p->testRenderHint(QPainter::Antialiasing);
-    p->setRenderHint(QPainter::Antialiasing, m_data->antiAliasingForRectsAndLines);
+    p->setRenderHint(QPainter::Antialiasing, true);
 
     p->drawArc(rect, startAngle * 16, angleSpan * 16);
 
@@ -642,9 +631,9 @@ void GraphicsContext::fillPath()
         break;
     }
     case GradientColorSpace:
-        QGradient* gradient = m_common->state.fillGradient->platformGradient();
-        *gradient = applySpreadMethod(*gradient, spreadMethod());  
-        p->fillPath(path, QBrush(*gradient));
+        QBrush brush(*m_common->state.fillGradient->platformGradient());
+        brush.setTransform(m_common->state.fillGradient->gradientSpaceTransform());
+        p->fillPath(path, brush);
         break;
     }
     m_data->currentPath = QPainterPath();
@@ -673,9 +662,9 @@ void GraphicsContext::strokePath()
         break;
     }
     case GradientColorSpace: {
-        QGradient* gradient = m_common->state.strokeGradient->platformGradient();
-        *gradient = applySpreadMethod(*gradient, spreadMethod()); 
-        pen.setBrush(QBrush(*gradient));
+        QBrush brush(*m_common->state.strokeGradient->platformGradient());
+        brush.setTransform(m_common->state.strokeGradient->gradientSpaceTransform());
+        pen.setBrush(brush);
         p->setPen(pen);
         p->strokePath(path, pen);
         break;
@@ -702,7 +691,9 @@ void GraphicsContext::fillRect(const FloatRect& rect)
         break;
     }
     case GradientColorSpace:
-        p->fillRect(rect, QBrush(*(m_common->state.fillGradient.get()->platformGradient())));
+        QBrush brush(*m_common->state.fillGradient->platformGradient());
+        brush.setTransform(m_common->state.fillGradient->gradientSpaceTransform());
+        p->fillRect(rect, brush);
         break;
     }
     m_data->currentPath = QPainterPath();
@@ -1026,7 +1017,7 @@ void GraphicsContext::translate(float x, float y)
     m_data->p()->translate(x, y);
 
     if (!m_data->currentPath.isEmpty()) {
-        QMatrix matrix;
+        QTransform matrix;
         m_data->currentPath = m_data->currentPath * matrix.translate(-x, -y);
         m_common->state.pathTransform.translate(x, y);
     }
@@ -1048,7 +1039,7 @@ void GraphicsContext::rotate(float radians)
     m_data->p()->rotate(180/M_PI*radians);
 
     if (!m_data->currentPath.isEmpty()) {
-        QMatrix matrix;
+        QTransform matrix;
         m_data->currentPath = m_data->currentPath * matrix.rotate(-180/M_PI*radians);
         m_common->state.pathTransform.rotate(radians);
     }
@@ -1062,9 +1053,9 @@ void GraphicsContext::scale(const FloatSize& s)
     m_data->p()->scale(s.width(), s.height());
 
     if (!m_data->currentPath.isEmpty()) {
-        QMatrix matrix;
+        QTransform matrix;
         m_data->currentPath = m_data->currentPath * matrix.scale(1 / s.width(), 1 / s.height());
-        m_common->state.pathTransform.scale(s.width(), s.height());
+        m_common->state.pathTransform.scaleNonUniform(s.width(), s.height());
     }
 }
 
@@ -1120,7 +1111,13 @@ void GraphicsContext::addInnerRoundedRectClip(const IntRect& rect,
                            rect.width() - (thickness * 2), rect.height() - (thickness * 2)));
 
     path.setFillRule(Qt::OddEvenFill);
-    m_data->p()->setClipPath(path, Qt::IntersectClip);
+
+    QPainter *p = m_data->p();
+
+    const bool antiAlias = p->testRenderHint(QPainter::Antialiasing);
+    p->setRenderHint(QPainter::Antialiasing, true);
+    p->setClipPath(path, Qt::IntersectClip);
+    p->setRenderHint(QPainter::Antialiasing, antiAlias);
 }
 
 void GraphicsContext::concatCTM(const TransformationMatrix& transform)
@@ -1128,12 +1125,12 @@ void GraphicsContext::concatCTM(const TransformationMatrix& transform)
     if (paintingDisabled())
         return;
 
-    m_data->p()->setMatrix(transform, true);
+    m_data->p()->setWorldTransform(transform, true);
 
     // Transformations to the context shouldn't transform the currentPath. 
     // We have to undo every change made to the context from the currentPath to avoid wrong drawings.
     if (!m_data->currentPath.isEmpty() && transform.isInvertible()) {
-        QMatrix matrix = transform.inverse();
+        QTransform matrix = transform.inverse();
         m_data->currentPath = m_data->currentPath * matrix;
         m_common->state.pathTransform.multiply(transform);
     }
@@ -1142,13 +1139,6 @@ void GraphicsContext::concatCTM(const TransformationMatrix& transform)
 void GraphicsContext::setURLForRect(const KURL& link, const IntRect& destRect)
 {
     notImplemented();
-}
-
-void GraphicsContext::setPlatformFont(const Font& aFont)
-{
-    if (paintingDisabled())
-        return;
-    m_data->p()->setFont(aFont.font());
 }
 
 void GraphicsContext::setPlatformStrokeColor(const Color& color)
@@ -1188,7 +1178,7 @@ void GraphicsContext::setPlatformFillColor(const Color& color)
     m_data->p()->setBrush(QBrush(color));
 }
 
-void GraphicsContext::setUseAntialiasing(bool enable)
+void GraphicsContext::setPlatformShouldAntialias(bool enable)
 {
     if (paintingDisabled())
         return;

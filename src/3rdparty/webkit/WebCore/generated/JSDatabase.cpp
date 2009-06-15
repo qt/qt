@@ -20,6 +20,9 @@
 
 #include "config.h"
 
+
+#if ENABLE(DATABASE)
+
 #include "JSDatabase.h"
 
 #include <wtf/GetPtr.h>
@@ -34,7 +37,7 @@ using namespace JSC;
 
 namespace WebCore {
 
-ASSERT_CLASS_FITS_IN_CELL(JSDatabase)
+ASSERT_CLASS_FITS_IN_CELL(JSDatabase);
 
 /* Hash table */
 
@@ -69,9 +72,9 @@ static const HashTable JSDatabasePrototypeTable =
 
 const ClassInfo JSDatabasePrototype::s_info = { "DatabasePrototype", 0, &JSDatabasePrototypeTable, 0 };
 
-JSObject* JSDatabasePrototype::self(ExecState* exec)
+JSObject* JSDatabasePrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSDatabase>(exec);
+    return getDOMPrototype<JSDatabase>(exec, globalObject);
 }
 
 bool JSDatabasePrototype::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -90,12 +93,11 @@ JSDatabase::JSDatabase(PassRefPtr<Structure> structure, PassRefPtr<Database> imp
 JSDatabase::~JSDatabase()
 {
     forgetDOMObject(*Heap::heap(this)->globalData(), m_impl.get());
-
 }
 
-JSObject* JSDatabase::createPrototype(ExecState* exec)
+JSObject* JSDatabase::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSDatabasePrototype(JSDatabasePrototype::createStructure(exec->lexicalGlobalObject()->objectPrototype()));
+    return new (exec) JSDatabasePrototype(JSDatabasePrototype::createStructure(globalObject->objectPrototype()));
 }
 
 bool JSDatabase::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -103,35 +105,40 @@ bool JSDatabase::getOwnPropertySlot(ExecState* exec, const Identifier& propertyN
     return getStaticValueSlot<JSDatabase, Base>(exec, &JSDatabaseTable, this, propertyName, slot);
 }
 
-JSValuePtr jsDatabaseVersion(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDatabaseVersion(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     Database* imp = static_cast<Database*>(static_cast<JSDatabase*>(asObject(slot.slotBase()))->impl());
     return jsString(exec, imp->version());
 }
 
-JSValuePtr jsDatabasePrototypeFunctionChangeVersion(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsDatabasePrototypeFunctionChangeVersion(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSDatabase::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSDatabase::s_info))
         return throwError(exec, TypeError);
     JSDatabase* castedThisObj = static_cast<JSDatabase*>(asObject(thisValue));
     return castedThisObj->changeVersion(exec, args);
 }
 
-JSValuePtr jsDatabasePrototypeFunctionTransaction(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsDatabasePrototypeFunctionTransaction(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSDatabase::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSDatabase::s_info))
         return throwError(exec, TypeError);
     JSDatabase* castedThisObj = static_cast<JSDatabase*>(asObject(thisValue));
     return castedThisObj->transaction(exec, args);
 }
 
-JSC::JSValuePtr toJS(JSC::ExecState* exec, Database* object)
+JSC::JSValue toJS(JSC::ExecState* exec, Database* object)
 {
     return getDOMObjectWrapper<JSDatabase>(exec, object);
 }
-Database* toDatabase(JSC::JSValuePtr value)
+Database* toDatabase(JSC::JSValue value)
 {
-    return value->isObject(&JSDatabase::s_info) ? static_cast<JSDatabase*>(asObject(value))->impl() : 0;
+    return value.isObject(&JSDatabase::s_info) ? static_cast<JSDatabase*>(asObject(value))->impl() : 0;
 }
 
 }
+
+#endif // ENABLE(DATABASE)

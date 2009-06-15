@@ -29,6 +29,7 @@
 #include "CSSValueKeywords.h"
 #include "Document.h"
 #include "HTMLNames.h"
+#include "MappedAttribute.h"
 #include <wtf/HashFunctions.h>
 
 using namespace std;
@@ -157,7 +158,7 @@ void StyledElement::attributeChanged(Attribute* attr, bool preserveDecls)
     MappedAttribute* mappedAttr = static_cast<MappedAttribute*>(attr);
     if (mappedAttr->decl() && !preserveDecls) {
         mappedAttr->setDecl(0);
-        setChanged();
+        setNeedsStyleRecalc();
         if (namedAttrMap)
             mappedAttributes()->declRemoved();
     }
@@ -167,7 +168,7 @@ void StyledElement::attributeChanged(Attribute* attr, bool preserveDecls)
     bool needToParse = mapToEntry(attr->name(), entry);
     if (preserveDecls) {
         if (mappedAttr->decl()) {
-            setChanged();
+            setNeedsStyleRecalc();
             if (namedAttrMap)
                 mappedAttributes()->declAdded();
             checkDecl = false;
@@ -177,7 +178,7 @@ void StyledElement::attributeChanged(Attribute* attr, bool preserveDecls)
         CSSMappedAttributeDeclaration* decl = getMappedAttributeDecl(entry, attr);
         if (decl) {
             mappedAttr->setDecl(decl);
-            setChanged();
+            setNeedsStyleRecalc();
             if (namedAttrMap)
                 mappedAttributes()->declAdded();
             checkDecl = false;
@@ -185,11 +186,16 @@ void StyledElement::attributeChanged(Attribute* attr, bool preserveDecls)
             needToParse = true;
     }
 
+    // parseMappedAttribute() might create a CSSMappedAttributeDeclaration on the attribute.  
+    // Normally we would be concerned about reseting the parent of those declarations in StyledElement::didMoveToNewOwnerDocument().
+    // But currently we always clear its parent and node below when adding it to the decl table.  
+    // If that changes for some reason moving between documents will be buggy.
+    // webarchive/adopt-attribute-styled-node-webarchive.html should catch any resulting crashes.
     if (needToParse)
         parseMappedAttribute(mappedAttr);
 
     if (entry == eNone && ownerDocument()->attached() && ownerDocument()->styleSelector()->hasSelectorForAttribute(attr->name().localName()))
-        setChanged();
+        setNeedsStyleRecalc();
 
     if (checkDecl && mappedAttr->decl()) {
         // Add the decl to the table in the appropriate spot.
@@ -227,7 +233,7 @@ void StyledElement::classAttributeChanged(const AtomicString& newClassString)
         else
             mappedAttributes()->clearClass();
     }
-    setChanged();
+    setNeedsStyleRecalc();
     dispatchSubtreeModifiedEvent();
 }
 
@@ -244,7 +250,7 @@ void StyledElement::parseMappedAttribute(MappedAttribute *attr)
             else
                 namedAttrMap->setID(attr->value());
         }
-        setChanged();
+        setNeedsStyleRecalc();
     } else if (attr->name() == classAttr)
         classAttributeChanged(attr->value());
     else if (attr->name() == styleAttr) {
@@ -253,7 +259,7 @@ void StyledElement::parseMappedAttribute(MappedAttribute *attr)
         else
             getInlineStyleDecl()->parseDeclaration(attr->value());
         m_isStyleAttributeValid = true;
-        setChanged();
+        setNeedsStyleRecalc();
     }
 }
 
@@ -500,6 +506,15 @@ void StyledElement::addSubresourceAttributeURLs(ListHashSet<KURL>& urls) const
 {
     if (CSSMutableStyleDeclaration* style = inlineStyleDecl())
         style->addSubresourceStyleURLs(urls);
+}
+
+
+void StyledElement::didMoveToNewOwnerDocument()
+{
+    if (m_inlineStyleDecl)
+        m_inlineStyleDecl->setParent(document()->elementSheet());
+
+    Element::didMoveToNewOwnerDocument();
 }
 
 }

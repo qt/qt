@@ -32,7 +32,7 @@ using namespace JSC;
 
 namespace WebCore {
 
-ASSERT_CLASS_FITS_IN_CELL(JSHTMLDListElement)
+ASSERT_CLASS_FITS_IN_CELL(JSHTMLDListElement);
 
 /* Hash table */
 
@@ -69,13 +69,13 @@ public:
     JSHTMLDListElementConstructor(ExecState* exec)
         : DOMObject(JSHTMLDListElementConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
     {
-        putDirect(exec->propertyNames().prototype, JSHTMLDListElementPrototype::self(exec), None);
+        putDirect(exec->propertyNames().prototype, JSHTMLDListElementPrototype::self(exec, exec->lexicalGlobalObject()), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
     static const ClassInfo s_info;
 
-    static PassRefPtr<Structure> createStructure(JSValuePtr proto) 
+    static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
         return Structure::create(proto, TypeInfo(ObjectType, ImplementsHasInstance)); 
     }
@@ -104,9 +104,9 @@ static const HashTable JSHTMLDListElementPrototypeTable =
 
 const ClassInfo JSHTMLDListElementPrototype::s_info = { "HTMLDListElementPrototype", 0, &JSHTMLDListElementPrototypeTable, 0 };
 
-JSObject* JSHTMLDListElementPrototype::self(ExecState* exec)
+JSObject* JSHTMLDListElementPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSHTMLDListElement>(exec);
+    return getDOMPrototype<JSHTMLDListElement>(exec, globalObject);
 }
 
 const ClassInfo JSHTMLDListElement::s_info = { "HTMLDListElement", &JSHTMLElement::s_info, &JSHTMLDListElementTable, 0 };
@@ -116,9 +116,9 @@ JSHTMLDListElement::JSHTMLDListElement(PassRefPtr<Structure> structure, PassRefP
 {
 }
 
-JSObject* JSHTMLDListElement::createPrototype(ExecState* exec)
+JSObject* JSHTMLDListElement::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSHTMLDListElementPrototype(JSHTMLDListElementPrototype::createStructure(JSHTMLElementPrototype::self(exec)));
+    return new (exec) JSHTMLDListElementPrototype(JSHTMLDListElementPrototype::createStructure(JSHTMLElementPrototype::self(exec, globalObject)));
 }
 
 bool JSHTMLDListElement::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -126,28 +126,29 @@ bool JSHTMLDListElement::getOwnPropertySlot(ExecState* exec, const Identifier& p
     return getStaticValueSlot<JSHTMLDListElement, Base>(exec, &JSHTMLDListElementTable, this, propertyName, slot);
 }
 
-JSValuePtr jsHTMLDListElementCompact(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLDListElementCompact(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     HTMLDListElement* imp = static_cast<HTMLDListElement*>(static_cast<JSHTMLDListElement*>(asObject(slot.slotBase()))->impl());
     return jsBoolean(imp->compact());
 }
 
-JSValuePtr jsHTMLDListElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLDListElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     return static_cast<JSHTMLDListElement*>(asObject(slot.slotBase()))->getConstructor(exec);
 }
-void JSHTMLDListElement::put(ExecState* exec, const Identifier& propertyName, JSValuePtr value, PutPropertySlot& slot)
+void JSHTMLDListElement::put(ExecState* exec, const Identifier& propertyName, JSValue value, PutPropertySlot& slot)
 {
     lookupPut<JSHTMLDListElement, Base>(exec, propertyName, value, &JSHTMLDListElementTable, this, slot);
 }
 
-void setJSHTMLDListElementCompact(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSHTMLDListElementCompact(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     HTMLDListElement* imp = static_cast<HTMLDListElement*>(static_cast<JSHTMLDListElement*>(thisObject)->impl());
-    imp->setCompact(value->toBoolean(exec));
+    imp->setCompact(value.toBoolean(exec));
 }
 
-JSValuePtr JSHTMLDListElement::getConstructor(ExecState* exec)
+JSValue JSHTMLDListElement::getConstructor(ExecState* exec)
 {
     return getDOMConstructor<JSHTMLDListElementConstructor>(exec);
 }

@@ -420,7 +420,8 @@ QTransform &QTransform::translate(qreal dx, qreal dy)
         affine._dy += dy*affine._m22 + dx*affine._m12;
         break;
     }
-    m_dirty |= TxTranslate;
+    if (m_dirty < TxTranslate)
+        m_dirty = TxTranslate;
     return *this;
 }
 
@@ -472,7 +473,8 @@ QTransform & QTransform::scale(qreal sx, qreal sy)
         affine._m22 *= sy;
         break;
     }
-    m_dirty |= TxScale;
+    if (m_dirty < TxScale)
+        m_dirty = TxScale;
     return *this;
 }
 
@@ -501,6 +503,9 @@ QTransform QTransform::fromScale(qreal sx, qreal sy)
 */
 QTransform & QTransform::shear(qreal sh, qreal sv)
 {
+    if (sh == 0 && sv == 0)
+        return *this;
+
     switch(inline_type()) {
     case TxNone:
     case TxTranslate:
@@ -529,7 +534,8 @@ QTransform & QTransform::shear(qreal sh, qreal sv)
         break;
     }
     }
-    m_dirty |= TxShear;
+    if (m_dirty < TxShear)
+        m_dirty = TxShear;
     return *this;
 }
 
@@ -605,7 +611,8 @@ QTransform & QTransform::rotate(qreal a, Qt::Axis axis)
             break;
         }
         }
-        m_dirty |= TxRotate;
+        if (m_dirty < TxRotate)
+            m_dirty = TxRotate;
     } else {
         QTransform result;
         if (axis == Qt::YAxis) {
@@ -677,7 +684,8 @@ QTransform & QTransform::rotateRadians(qreal a, Qt::Axis axis)
             break;
         }
         }
-        m_dirty |= TxRotate;
+        if (m_dirty < TxRotate)
+            m_dirty = TxRotate;
     } else {
         QTransform result;
         if (axis == Qt::YAxis) {

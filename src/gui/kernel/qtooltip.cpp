@@ -126,14 +126,15 @@ public:
 
     bool eventFilter(QObject *, QEvent *);
 
-    QBasicTimer hideTimer;
+    QBasicTimer hideTimer, expireTimer;
+
     bool fadingOut;
 
     void reuseTip(const QString &text);
     void hideTip();
     void hideTipImmediately();
     void setTipRect(QWidget *w, const QRect &r);
-    void restartHideTimer();
+    void restartExpireTimer();
     bool tipChanged(const QPoint &pos, const QString &text, QObject *o);
     void placeTip(const QPoint &pos, QWidget *w);
 
@@ -190,16 +191,17 @@ QTipLabel::QTipLabel(const QString &text, QWidget *w)
     reuseTip(text);
 }
 
-void QTipLabel::restartHideTimer()
+void QTipLabel::restartExpireTimer()
 {
     int time = 10000 + 40 * qMax(0, text().length()-100);
-    hideTimer.start(time, this);
+    expireTimer.start(time, this);
+    hideTimer.stop();
 }
 
 void QTipLabel::reuseTip(const QString &text)
 {
 #ifndef QT_NO_STYLE_STYLESHEET
-    if (styleSheetParent) {
+    if (styleSheetParent){
         disconnect(styleSheetParent, SIGNAL(destroyed()),
                    QTipLabel::instance, SLOT(styleSheetParentDestroyed()));
         styleSheetParent = 0;
@@ -213,7 +215,7 @@ void QTipLabel::reuseTip(const QString &text)
     if (fm.descent() == 2 && fm.ascent() >= 11)
         ++extra.rheight();
     resize(sizeHint() + extra);
-    restartHideTimer();
+    restartExpireTimer();
 }
 
 void QTipLabel::paintEvent(QPaintEvent *ev)
@@ -257,7 +259,8 @@ QTipLabel::~QTipLabel()
 
 void QTipLabel::hideTip()
 {
-    hideTimer.start(300, this);
+    if (!hideTimer.isActive())
+        hideTimer.start(300, this);
 }
 
 void QTipLabel::hideTipImmediately()
@@ -278,8 +281,10 @@ void QTipLabel::setTipRect(QWidget *w, const QRect &r)
 
 void QTipLabel::timerEvent(QTimerEvent *e)
 {
-    if (e->timerId() == hideTimer.timerId()){
+    if (e->timerId() == hideTimer.timerId()
+        || e->timerId() == expireTimer.timerId()){
         hideTimer.stop();
+        expireTimer.stop();
 #if defined(Q_WS_MAC) && !defined(QT_NO_EFFECTS)
         if (QApplication::isEffectEnabled(Qt::UI_FadeTooltip)){
             // Fade out tip on mac (makes it invisible).

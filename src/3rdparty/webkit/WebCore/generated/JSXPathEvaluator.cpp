@@ -45,7 +45,7 @@ using namespace JSC;
 
 namespace WebCore {
 
-ASSERT_CLASS_FITS_IN_CELL(JSXPathEvaluator)
+ASSERT_CLASS_FITS_IN_CELL(JSXPathEvaluator);
 
 /* Hash table */
 
@@ -81,13 +81,13 @@ public:
     JSXPathEvaluatorConstructor(ExecState* exec)
         : DOMObject(JSXPathEvaluatorConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
     {
-        putDirect(exec->propertyNames().prototype, JSXPathEvaluatorPrototype::self(exec), None);
+        putDirect(exec->propertyNames().prototype, JSXPathEvaluatorPrototype::self(exec, exec->lexicalGlobalObject()), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
     static const ClassInfo s_info;
 
-    static PassRefPtr<Structure> createStructure(JSValuePtr proto) 
+    static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
         return Structure::create(proto, TypeInfo(ObjectType, ImplementsHasInstance)); 
     }
@@ -128,9 +128,9 @@ static const HashTable JSXPathEvaluatorPrototypeTable =
 
 const ClassInfo JSXPathEvaluatorPrototype::s_info = { "XPathEvaluatorPrototype", 0, &JSXPathEvaluatorPrototypeTable, 0 };
 
-JSObject* JSXPathEvaluatorPrototype::self(ExecState* exec)
+JSObject* JSXPathEvaluatorPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSXPathEvaluator>(exec);
+    return getDOMPrototype<JSXPathEvaluator>(exec, globalObject);
 }
 
 bool JSXPathEvaluatorPrototype::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -149,12 +149,11 @@ JSXPathEvaluator::JSXPathEvaluator(PassRefPtr<Structure> structure, PassRefPtr<X
 JSXPathEvaluator::~JSXPathEvaluator()
 {
     forgetDOMObject(*Heap::heap(this)->globalData(), m_impl.get());
-
 }
 
-JSObject* JSXPathEvaluator::createPrototype(ExecState* exec)
+JSObject* JSXPathEvaluator::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSXPathEvaluatorPrototype(JSXPathEvaluatorPrototype::createStructure(exec->lexicalGlobalObject()->objectPrototype()));
+    return new (exec) JSXPathEvaluatorPrototype(JSXPathEvaluatorPrototype::createStructure(globalObject->objectPrototype()));
 }
 
 bool JSXPathEvaluator::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -162,84 +161,87 @@ bool JSXPathEvaluator::getOwnPropertySlot(ExecState* exec, const Identifier& pro
     return getStaticValueSlot<JSXPathEvaluator, Base>(exec, &JSXPathEvaluatorTable, this, propertyName, slot);
 }
 
-JSValuePtr jsXPathEvaluatorConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsXPathEvaluatorConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     return static_cast<JSXPathEvaluator*>(asObject(slot.slotBase()))->getConstructor(exec);
 }
-JSValuePtr JSXPathEvaluator::getConstructor(ExecState* exec)
+JSValue JSXPathEvaluator::getConstructor(ExecState* exec)
 {
     return getDOMConstructor<JSXPathEvaluatorConstructor>(exec);
 }
 
-JSValuePtr jsXPathEvaluatorPrototypeFunctionCreateExpression(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsXPathEvaluatorPrototypeFunctionCreateExpression(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSXPathEvaluator::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSXPathEvaluator::s_info))
         return throwError(exec, TypeError);
     JSXPathEvaluator* castedThisObj = static_cast<JSXPathEvaluator*>(asObject(thisValue));
     XPathEvaluator* imp = static_cast<XPathEvaluator*>(castedThisObj->impl());
     ExceptionCode ec = 0;
-    const UString& expression = args.at(exec, 0)->toString(exec);
+    const UString& expression = args.at(0).toString(exec);
     RefPtr<XPathNSResolver> customResolver;
-    XPathNSResolver* resolver = toXPathNSResolver(args.at(exec, 1));
+    XPathNSResolver* resolver = toXPathNSResolver(args.at(1));
     if (!resolver) {
-        customResolver = JSCustomXPathNSResolver::create(exec, args.at(exec, 1));
+        customResolver = JSCustomXPathNSResolver::create(exec, args.at(1));
         if (exec->hadException())
             return jsUndefined();
         resolver = customResolver.get();
     }
 
 
-    JSC::JSValuePtr result = toJS(exec, WTF::getPtr(imp->createExpression(expression, resolver, ec)));
+    JSC::JSValue result = toJS(exec, WTF::getPtr(imp->createExpression(expression, resolver, ec)));
     setDOMException(exec, ec);
     return result;
 }
 
-JSValuePtr jsXPathEvaluatorPrototypeFunctionCreateNSResolver(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsXPathEvaluatorPrototypeFunctionCreateNSResolver(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSXPathEvaluator::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSXPathEvaluator::s_info))
         return throwError(exec, TypeError);
     JSXPathEvaluator* castedThisObj = static_cast<JSXPathEvaluator*>(asObject(thisValue));
     XPathEvaluator* imp = static_cast<XPathEvaluator*>(castedThisObj->impl());
-    Node* nodeResolver = toNode(args.at(exec, 0));
+    Node* nodeResolver = toNode(args.at(0));
 
 
-    JSC::JSValuePtr result = toJS(exec, WTF::getPtr(imp->createNSResolver(nodeResolver)));
+    JSC::JSValue result = toJS(exec, WTF::getPtr(imp->createNSResolver(nodeResolver)));
     return result;
 }
 
-JSValuePtr jsXPathEvaluatorPrototypeFunctionEvaluate(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsXPathEvaluatorPrototypeFunctionEvaluate(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSXPathEvaluator::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSXPathEvaluator::s_info))
         return throwError(exec, TypeError);
     JSXPathEvaluator* castedThisObj = static_cast<JSXPathEvaluator*>(asObject(thisValue));
     XPathEvaluator* imp = static_cast<XPathEvaluator*>(castedThisObj->impl());
     ExceptionCode ec = 0;
-    const UString& expression = args.at(exec, 0)->toString(exec);
-    Node* contextNode = toNode(args.at(exec, 1));
+    const UString& expression = args.at(0).toString(exec);
+    Node* contextNode = toNode(args.at(1));
     RefPtr<XPathNSResolver> customResolver;
-    XPathNSResolver* resolver = toXPathNSResolver(args.at(exec, 2));
+    XPathNSResolver* resolver = toXPathNSResolver(args.at(2));
     if (!resolver) {
-        customResolver = JSCustomXPathNSResolver::create(exec, args.at(exec, 2));
+        customResolver = JSCustomXPathNSResolver::create(exec, args.at(2));
         if (exec->hadException())
             return jsUndefined();
         resolver = customResolver.get();
     }
-    unsigned short type = args.at(exec, 3)->toInt32(exec);
-    XPathResult* inResult = toXPathResult(args.at(exec, 4));
+    unsigned short type = args.at(3).toInt32(exec);
+    XPathResult* inResult = toXPathResult(args.at(4));
 
 
-    JSC::JSValuePtr result = toJS(exec, WTF::getPtr(imp->evaluate(expression, contextNode, resolver, type, inResult, ec)));
+    JSC::JSValue result = toJS(exec, WTF::getPtr(imp->evaluate(expression, contextNode, resolver, type, inResult, ec)));
     setDOMException(exec, ec);
     return result;
 }
 
-JSC::JSValuePtr toJS(JSC::ExecState* exec, XPathEvaluator* object)
+JSC::JSValue toJS(JSC::ExecState* exec, XPathEvaluator* object)
 {
     return getDOMObjectWrapper<JSXPathEvaluator>(exec, object);
 }
-XPathEvaluator* toXPathEvaluator(JSC::JSValuePtr value)
+XPathEvaluator* toXPathEvaluator(JSC::JSValue value)
 {
-    return value->isObject(&JSXPathEvaluator::s_info) ? static_cast<JSXPathEvaluator*>(asObject(value))->impl() : 0;
+    return value.isObject(&JSXPathEvaluator::s_info) ? static_cast<JSXPathEvaluator*>(asObject(value))->impl() : 0;
 }
 
 }

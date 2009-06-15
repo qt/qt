@@ -22,7 +22,7 @@
 #ifndef SVGFESpecularLightingElement_h
 #define SVGFESpecularLightingElement_h
 
-#if ENABLE(SVG) && ENABLE(SVG_FILTERS)
+#if ENABLE(SVG) && ENABLE(FILTERS)
 #include "SVGFESpecularLighting.h"
 #include "SVGFilterPrimitiveStandardAttributes.h"
 
@@ -39,8 +39,7 @@ namespace WebCore {
         virtual ~SVGFESpecularLightingElement();
         
         virtual void parseMappedAttribute(MappedAttribute*);
-        virtual SVGFilterEffect* filterEffect(SVGResourceFilter*) const;
-        bool build(FilterBuilder*);
+        virtual bool build(SVGResourceFilter*);
 
     private:
         ANIMATED_PROPERTY_DECLARATIONS(SVGFESpecularLightingElement, SVGNames::feSpecularLightingTagString, SVGNames::inAttrString, String, In1, in1)
@@ -49,8 +48,6 @@ namespace WebCore {
         ANIMATED_PROPERTY_DECLARATIONS(SVGFESpecularLightingElement, SVGNames::feSpecularLightingTagString, SVGNames::surfaceScaleAttrString, float, SurfaceScale, surfaceScale)
         ANIMATED_PROPERTY_DECLARATIONS(SVGFESpecularLightingElement, SVGNames::feSpecularLightingTagString, SVGKernelUnitLengthXIdentifier, float, KernelUnitLengthX, kernelUnitLengthX)
         ANIMATED_PROPERTY_DECLARATIONS(SVGFESpecularLightingElement, SVGNames::feSpecularLightingTagString, SVGKernelUnitLengthYIdentifier, float, KernelUnitLengthY, kernelUnitLengthY)
-
-        mutable RefPtr<FESpecularLighting> m_filterEffect;
         
         LightSource* findLights() const;
     };

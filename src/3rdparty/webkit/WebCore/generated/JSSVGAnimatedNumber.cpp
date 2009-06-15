@@ -35,7 +35,7 @@ using namespace JSC;
 
 namespace WebCore {
 
-ASSERT_CLASS_FITS_IN_CELL(JSSVGAnimatedNumber)
+ASSERT_CLASS_FITS_IN_CELL(JSSVGAnimatedNumber);
 
 /* Hash table */
 
@@ -69,9 +69,9 @@ static const HashTable JSSVGAnimatedNumberPrototypeTable =
 
 const ClassInfo JSSVGAnimatedNumberPrototype::s_info = { "SVGAnimatedNumberPrototype", 0, &JSSVGAnimatedNumberPrototypeTable, 0 };
 
-JSObject* JSSVGAnimatedNumberPrototype::self(ExecState* exec)
+JSObject* JSSVGAnimatedNumberPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSSVGAnimatedNumber>(exec);
+    return getDOMPrototype<JSSVGAnimatedNumber>(exec, globalObject);
 }
 
 const ClassInfo JSSVGAnimatedNumber::s_info = { "SVGAnimatedNumber", 0, &JSSVGAnimatedNumberTable, 0 };
@@ -86,12 +86,11 @@ JSSVGAnimatedNumber::JSSVGAnimatedNumber(PassRefPtr<Structure> structure, PassRe
 JSSVGAnimatedNumber::~JSSVGAnimatedNumber()
 {
     forgetDOMObject(*Heap::heap(this)->globalData(), m_impl.get());
-
 }
 
-JSObject* JSSVGAnimatedNumber::createPrototype(ExecState* exec)
+JSObject* JSSVGAnimatedNumber::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSSVGAnimatedNumberPrototype(JSSVGAnimatedNumberPrototype::createStructure(exec->lexicalGlobalObject()->objectPrototype()));
+    return new (exec) JSSVGAnimatedNumberPrototype(JSSVGAnimatedNumberPrototype::createStructure(globalObject->objectPrototype()));
 }
 
 bool JSSVGAnimatedNumber::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -99,38 +98,40 @@ bool JSSVGAnimatedNumber::getOwnPropertySlot(ExecState* exec, const Identifier& 
     return getStaticValueSlot<JSSVGAnimatedNumber, Base>(exec, &JSSVGAnimatedNumberTable, this, propertyName, slot);
 }
 
-JSValuePtr jsSVGAnimatedNumberBaseVal(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGAnimatedNumberBaseVal(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGAnimatedNumber* imp = static_cast<SVGAnimatedNumber*>(static_cast<JSSVGAnimatedNumber*>(asObject(slot.slotBase()))->impl());
     return jsNumber(exec, imp->baseVal());
 }
 
-JSValuePtr jsSVGAnimatedNumberAnimVal(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGAnimatedNumberAnimVal(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGAnimatedNumber* imp = static_cast<SVGAnimatedNumber*>(static_cast<JSSVGAnimatedNumber*>(asObject(slot.slotBase()))->impl());
     return jsNumber(exec, imp->animVal());
 }
 
-void JSSVGAnimatedNumber::put(ExecState* exec, const Identifier& propertyName, JSValuePtr value, PutPropertySlot& slot)
+void JSSVGAnimatedNumber::put(ExecState* exec, const Identifier& propertyName, JSValue value, PutPropertySlot& slot)
 {
     lookupPut<JSSVGAnimatedNumber, Base>(exec, propertyName, value, &JSSVGAnimatedNumberTable, this, slot);
 }
 
-void setJSSVGAnimatedNumberBaseVal(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSSVGAnimatedNumberBaseVal(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     SVGAnimatedNumber* imp = static_cast<SVGAnimatedNumber*>(static_cast<JSSVGAnimatedNumber*>(thisObject)->impl());
-    imp->setBaseVal(value->toFloat(exec));
+    imp->setBaseVal(value.toFloat(exec));
     if (static_cast<JSSVGAnimatedNumber*>(thisObject)->context())
         static_cast<JSSVGAnimatedNumber*>(thisObject)->context()->svgAttributeChanged(static_cast<JSSVGAnimatedNumber*>(thisObject)->impl()->associatedAttributeName());
 }
 
-JSC::JSValuePtr toJS(JSC::ExecState* exec, SVGAnimatedNumber* object, SVGElement* context)
+JSC::JSValue toJS(JSC::ExecState* exec, SVGAnimatedNumber* object, SVGElement* context)
 {
     return getDOMObjectWrapper<JSSVGAnimatedNumber>(exec, object, context);
 }
-SVGAnimatedNumber* toSVGAnimatedNumber(JSC::JSValuePtr value)
+SVGAnimatedNumber* toSVGAnimatedNumber(JSC::JSValue value)
 {
-    return value->isObject(&JSSVGAnimatedNumber::s_info) ? static_cast<JSSVGAnimatedNumber*>(asObject(value))->impl() : 0;
+    return value.isObject(&JSSVGAnimatedNumber::s_info) ? static_cast<JSSVGAnimatedNumber*>(asObject(value))->impl() : 0;
 }
 
 }

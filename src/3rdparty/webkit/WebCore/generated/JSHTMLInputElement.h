@@ -31,33 +31,39 @@ class JSHTMLInputElement : public JSHTMLElement {
     typedef JSHTMLElement Base;
 public:
     JSHTMLInputElement(PassRefPtr<JSC::Structure>, PassRefPtr<HTMLInputElement>);
-    static JSC::JSObject* createPrototype(JSC::ExecState*);
+    static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
-    bool customGetOwnPropertySlot(JSC::ExecState*, const JSC::Identifier&, JSC::PropertySlot&);
-    virtual void put(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::JSValuePtr, JSC::PutPropertySlot&);
+    virtual void put(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::JSValue, JSC::PutPropertySlot&);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
     static const JSC::ClassInfo s_info;
 
-    static PassRefPtr<JSC::Structure> createStructure(JSC::JSValuePtr prototype)
+    static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
     {
         return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType));
     }
 
-    static JSC::JSValuePtr getConstructor(JSC::ExecState*);
+    static JSC::JSValue getConstructor(JSC::ExecState*);
 
     // Custom attributes
-    JSC::JSValuePtr selectionStart(JSC::ExecState*) const;
-    JSC::JSValuePtr selectionEnd(JSC::ExecState*) const;
+    JSC::JSValue type(JSC::ExecState*) const;
+    JSC::JSValue selectionStart(JSC::ExecState*) const;
+    void setSelectionStart(JSC::ExecState*, JSC::JSValue);
+    JSC::JSValue selectionEnd(JSC::ExecState*) const;
+    void setSelectionEnd(JSC::ExecState*, JSC::JSValue);
+
+    // Custom functions
+    JSC::JSValue setSelectionRange(JSC::ExecState*, const JSC::ArgList&);
 };
 
 
 class JSHTMLInputElementPrototype : public JSC::JSObject {
+    typedef JSC::JSObject Base;
 public:
-    static JSC::JSObject* self(JSC::ExecState*);
+    static JSC::JSObject* self(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
     static const JSC::ClassInfo s_info;
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier&, JSC::PropertySlot&);
-    static PassRefPtr<JSC::Structure> createStructure(JSC::JSValuePtr prototype)
+    static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
     {
         return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType));
     }
@@ -66,55 +72,59 @@ public:
 
 // Functions
 
-JSC::JSValuePtr jsHTMLInputElementPrototypeFunctionSelect(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr, const JSC::ArgList&);
-JSC::JSValuePtr jsHTMLInputElementPrototypeFunctionClick(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr, const JSC::ArgList&);
-JSC::JSValuePtr jsHTMLInputElementPrototypeFunctionSetSelectionRange(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr, const JSC::ArgList&);
+JSC::JSValue JSC_HOST_CALL jsHTMLInputElementPrototypeFunctionSelect(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
+JSC::JSValue JSC_HOST_CALL jsHTMLInputElementPrototypeFunctionClick(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
+JSC::JSValue JSC_HOST_CALL jsHTMLInputElementPrototypeFunctionSetSelectionRange(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
 // Attributes
 
-JSC::JSValuePtr jsHTMLInputElementDefaultValue(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-void setJSHTMLInputElementDefaultValue(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr);
-JSC::JSValuePtr jsHTMLInputElementDefaultChecked(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-void setJSHTMLInputElementDefaultChecked(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr);
-JSC::JSValuePtr jsHTMLInputElementForm(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValuePtr jsHTMLInputElementAccept(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-void setJSHTMLInputElementAccept(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr);
-JSC::JSValuePtr jsHTMLInputElementAccessKey(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-void setJSHTMLInputElementAccessKey(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr);
-JSC::JSValuePtr jsHTMLInputElementAlign(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-void setJSHTMLInputElementAlign(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr);
-JSC::JSValuePtr jsHTMLInputElementAlt(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-void setJSHTMLInputElementAlt(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr);
-JSC::JSValuePtr jsHTMLInputElementChecked(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-void setJSHTMLInputElementChecked(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr);
-JSC::JSValuePtr jsHTMLInputElementDisabled(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-void setJSHTMLInputElementDisabled(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr);
-JSC::JSValuePtr jsHTMLInputElementAutofocus(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-void setJSHTMLInputElementAutofocus(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr);
-JSC::JSValuePtr jsHTMLInputElementMaxLength(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-void setJSHTMLInputElementMaxLength(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr);
-JSC::JSValuePtr jsHTMLInputElementName(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-void setJSHTMLInputElementName(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr);
-JSC::JSValuePtr jsHTMLInputElementReadOnly(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-void setJSHTMLInputElementReadOnly(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr);
-JSC::JSValuePtr jsHTMLInputElementSize(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-void setJSHTMLInputElementSize(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr);
-JSC::JSValuePtr jsHTMLInputElementSrc(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-void setJSHTMLInputElementSrc(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr);
-JSC::JSValuePtr jsHTMLInputElementType(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-void setJSHTMLInputElementType(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr);
-JSC::JSValuePtr jsHTMLInputElementUseMap(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-void setJSHTMLInputElementUseMap(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr);
-JSC::JSValuePtr jsHTMLInputElementValue(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-void setJSHTMLInputElementValue(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr);
-JSC::JSValuePtr jsHTMLInputElementWillValidate(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValuePtr jsHTMLInputElementIndeterminate(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-void setJSHTMLInputElementIndeterminate(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr);
-JSC::JSValuePtr jsHTMLInputElementSelectionStart(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-void setJSHTMLInputElementSelectionStart(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr);
-JSC::JSValuePtr jsHTMLInputElementSelectionEnd(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-void setJSHTMLInputElementSelectionEnd(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr);
-JSC::JSValuePtr jsHTMLInputElementFiles(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValuePtr jsHTMLInputElementConstructor(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsHTMLInputElementDefaultValue(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSHTMLInputElementDefaultValue(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsHTMLInputElementDefaultChecked(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSHTMLInputElementDefaultChecked(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsHTMLInputElementForm(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsHTMLInputElementAccept(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSHTMLInputElementAccept(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsHTMLInputElementAccessKey(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSHTMLInputElementAccessKey(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsHTMLInputElementAlign(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSHTMLInputElementAlign(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsHTMLInputElementAlt(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSHTMLInputElementAlt(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsHTMLInputElementChecked(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSHTMLInputElementChecked(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsHTMLInputElementDisabled(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSHTMLInputElementDisabled(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsHTMLInputElementAutofocus(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSHTMLInputElementAutofocus(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsHTMLInputElementMaxLength(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSHTMLInputElementMaxLength(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsHTMLInputElementMultiple(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSHTMLInputElementMultiple(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsHTMLInputElementName(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSHTMLInputElementName(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsHTMLInputElementPlaceholder(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSHTMLInputElementPlaceholder(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsHTMLInputElementReadOnly(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSHTMLInputElementReadOnly(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsHTMLInputElementSize(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSHTMLInputElementSize(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsHTMLInputElementSrc(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSHTMLInputElementSrc(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsHTMLInputElementType(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSHTMLInputElementType(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsHTMLInputElementUseMap(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSHTMLInputElementUseMap(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsHTMLInputElementValue(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSHTMLInputElementValue(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsHTMLInputElementWillValidate(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsHTMLInputElementIndeterminate(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSHTMLInputElementIndeterminate(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsHTMLInputElementSelectionStart(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSHTMLInputElementSelectionStart(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsHTMLInputElementSelectionEnd(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSHTMLInputElementSelectionEnd(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsHTMLInputElementFiles(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsHTMLInputElementConstructor(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
 
 } // namespace WebCore
 

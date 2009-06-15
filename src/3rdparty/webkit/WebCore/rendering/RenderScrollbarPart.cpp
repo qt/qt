@@ -45,14 +45,14 @@ RenderScrollbarPart::~RenderScrollbarPart()
 
 void RenderScrollbarPart::layout()
 {
-    setPos(0, 0); // We don't worry about positioning ourselves.  We're just determining our minimum width/height.
+    setLocation(IntPoint()); // We don't worry about positioning ourselves.  We're just determining our minimum width/height.
     if (m_scrollbar->orientation() == HorizontalScrollbar)
         layoutHorizontalPart();
     else
         layoutVerticalPart();
 
-    m_overflowWidth = max(m_width, m_overflowWidth);
-    m_overflowHeight = max(m_height, m_overflowHeight);
+    m_overflowWidth = max(width(), m_overflowWidth);
+    m_overflowHeight = max(height(), m_overflowHeight);
     
     setNeedsLayout(false);
 }
@@ -60,11 +60,11 @@ void RenderScrollbarPart::layout()
 void RenderScrollbarPart::layoutHorizontalPart()
 {
     if (m_part == ScrollbarBGPart) {
-        m_width = m_scrollbar->width();
+        setWidth(m_scrollbar->width());
         computeScrollbarHeight();
     } else {
         computeScrollbarWidth();
-        m_height = m_scrollbar->height();
+        setHeight(m_scrollbar->height());
     }
 }
 
@@ -72,9 +72,9 @@ void RenderScrollbarPart::layoutVerticalPart()
 {
     if (m_part == ScrollbarBGPart) {
         computeScrollbarWidth();
-        m_height = m_scrollbar->height();
+        setHeight(m_scrollbar->height());
     } else {
-        m_width = m_scrollbar->width();
+        setWidth(m_scrollbar->width());
         computeScrollbarHeight();
     } 
 }
@@ -89,10 +89,10 @@ static int calcScrollbarThicknessUsing(const Length& l, int containingLength)
 void RenderScrollbarPart::computeScrollbarWidth()
 {
     int visibleSize = m_scrollbar->owningRenderer()->width() - m_scrollbar->owningRenderer()->borderLeft() - m_scrollbar->owningRenderer()->borderRight();
-    int width = calcScrollbarThicknessUsing(style()->width(), visibleSize);
+    int w = calcScrollbarThicknessUsing(style()->width(), visibleSize);
     int minWidth = calcScrollbarThicknessUsing(style()->minWidth(), visibleSize);
-    int maxWidth = style()->maxWidth().isUndefined() ? width : calcScrollbarThicknessUsing(style()->maxWidth(), visibleSize);
-    m_width = max(minWidth, min(maxWidth, width));
+    int maxWidth = style()->maxWidth().isUndefined() ? w : calcScrollbarThicknessUsing(style()->maxWidth(), visibleSize);
+    setWidth(max(minWidth, min(maxWidth, w)));
     
     // Buttons and track pieces can all have margins along the axis of the scrollbar. 
     m_marginLeft = style()->marginLeft().calcMinValue(visibleSize);
@@ -102,10 +102,10 @@ void RenderScrollbarPart::computeScrollbarWidth()
 void RenderScrollbarPart::computeScrollbarHeight()
 {
     int visibleSize = m_scrollbar->owningRenderer()->height() -  m_scrollbar->owningRenderer()->borderTop() - m_scrollbar->owningRenderer()->borderBottom();
-    int height = calcScrollbarThicknessUsing(style()->height(), visibleSize);
+    int h = calcScrollbarThicknessUsing(style()->height(), visibleSize);
     int minHeight = calcScrollbarThicknessUsing(style()->minHeight(), visibleSize);
-    int maxHeight = style()->maxHeight().isUndefined() ? height : calcScrollbarThicknessUsing(style()->maxHeight(), visibleSize);
-    m_height = max(minHeight, min(maxHeight, height));
+    int maxHeight = style()->maxHeight().isUndefined() ? h : calcScrollbarThicknessUsing(style()->maxHeight(), visibleSize);
+    setHeight(max(minHeight, min(maxHeight, h)));
 
     // Buttons and track pieces can all have margins along the axis of the scrollbar. 
     m_marginTop = style()->marginTop().calcMinValue(visibleSize);
@@ -122,14 +122,20 @@ void RenderScrollbarPart::calcPrefWidths()
     setPrefWidthsDirty(false);
 }
 
-void RenderScrollbarPart::styleDidChange(RenderStyle::Diff diff, const RenderStyle* oldStyle)
+void RenderScrollbarPart::styleWillChange(StyleDifference diff, const RenderStyle* newStyle)
+{
+    RenderBlock::styleWillChange(diff, newStyle);
+    setInline(false);
+}
+
+void RenderScrollbarPart::styleDidChange(StyleDifference diff, const RenderStyle* oldStyle)
 {
     RenderBlock::styleDidChange(diff, oldStyle);
     setInline(false);
     setPositioned(false);
     setFloating(false);
     setHasOverflowClip(false);
-    if (oldStyle && m_scrollbar && m_part != NoPart && diff >= RenderStyle::Repaint)
+    if (oldStyle && m_scrollbar && m_part != NoPart && diff >= StyleDifferenceRepaint)
         m_scrollbar->theme()->invalidatePart(m_scrollbar, m_part);
 }
 
@@ -144,7 +150,7 @@ void RenderScrollbarPart::imageChanged(WrappedImagePtr image, const IntRect* rec
 void RenderScrollbarPart::paintIntoRect(GraphicsContext* graphicsContext, int tx, int ty, const IntRect& rect)
 {
     // Make sure our dimensions match the rect.
-    setPos(rect.x() - tx, rect.y() - ty);
+    setLocation(rect.x() - tx, rect.y() - ty);
     setWidth(rect.width());
     setHeight(rect.height());
     setOverflowWidth(max(rect.width(), overflowWidth()));

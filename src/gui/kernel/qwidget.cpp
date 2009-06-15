@@ -5638,8 +5638,8 @@ bool QWidget::hasFocus() const
     called from focusOutEvent() or focusInEvent(), you may get an
     infinite recursion.
 
-    \sa hasFocus(), clearFocus(), focusInEvent(), focusOutEvent(),
-    setFocusPolicy(), QApplication::focusWidget(), grabKeyboard(),
+    \sa focus(), hasFocus(), clearFocus(), focusInEvent(), focusOutEvent(),
+    setFocusPolicy(), focusWidget(), QApplication::focusWidget(), grabKeyboard(),
     grabMouse(), {Keyboard Focus}
 */
 
@@ -5860,7 +5860,7 @@ QWidget *QWidget::focusWidget() const
 /*!
     Returns the next widget in this widget's focus chain.
 
-    \sa previousInFocusChain
+    \sa previousInFocusChain()
 */
 QWidget *QWidget::nextInFocusChain() const
 {
@@ -5870,7 +5870,7 @@ QWidget *QWidget::nextInFocusChain() const
 /*!
     Returns the previous widget in this widget's focus chain.
 
-    \sa nextInFocusChain
+    \sa nextInFocusChain()
 
     \since 4.6
 */

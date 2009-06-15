@@ -130,20 +130,20 @@ void PluginStream::startStream()
 
     // Some plugins (Flash) expect that javascript URLs are passed back decoded as this is the
     // format used when requesting the URL.
-    if (responseURL.protocolIs("javascript"))
+    if (protocolIsJavaScript(responseURL))
         m_stream.url = strdup(decodeURLEscapeSequences(responseURL.string()).utf8().data());
     else
         m_stream.url = strdup(responseURL.string().utf8().data());
-    
+
     CString mimeTypeStr = m_resourceResponse.mimeType().utf8();
-    
+
     long long expectedContentLength = m_resourceResponse.expectedContentLength();
 
     if (m_resourceResponse.isHTTP()) {
         Vector<UChar> stringBuilder;
         String separator(": ");
 
-        String statusLine = String::format("HTTP %lu OK\n", m_resourceResponse.httpStatusCode());
+        String statusLine = String::format("HTTP %d OK\n", m_resourceResponse.httpStatusCode());
 
         stringBuilder.append(statusLine.characters(), statusLine.length());
 

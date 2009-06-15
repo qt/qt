@@ -130,6 +130,9 @@ public:
     bool isIdentifierEscaped(const QString &identifier, IdentifierType type) const; // ### Qt 5: make virtual
     QString stripDelimiters(const QString &identifier, IdentifierType type) const;  // ### Qt 5: make virtual
 
+    void setNumericalPrecisionPolicy(QSql::NumericalPrecisionPolicy precisionPolicy);
+    QSql::NumericalPrecisionPolicy numericalPrecisionPolicy() const;
+
 Q_SIGNALS:
     void notification(const QString &name);
 

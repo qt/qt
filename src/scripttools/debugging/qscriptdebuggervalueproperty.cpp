@@ -41,6 +41,7 @@
 
 #include "qscriptdebuggervalueproperty_p.h"
 #include "qscriptdebuggervalue_p.h"
+#include "qscriptdebuggerobjectsnapshotdelta_p.h"
 
 #include <QtCore/qatomic.h>
 #include <QtCore/qdatastream.h>
@@ -222,6 +223,22 @@ QDataStream &operator>>(QDataStream &in, QScriptDebuggerValueProperty &property)
     in >> flags;
     property = QScriptDebuggerValueProperty(
         name, value, valueAsString, QScriptValue::PropertyFlags(flags));
+    return in;
+}
+
+QDataStream &operator<<(QDataStream &out, const QScriptDebuggerObjectSnapshotDelta &delta)
+{
+    out << delta.removedProperties;
+    out << delta.changedProperties;
+    out << delta.addedProperties;
+    return out;
+}
+
+QDataStream &operator>>(QDataStream &in, QScriptDebuggerObjectSnapshotDelta &delta)
+{
+    in >> delta.removedProperties;
+    in >> delta.changedProperties;
+    in >> delta.addedProperties;
     return in;
 }
 

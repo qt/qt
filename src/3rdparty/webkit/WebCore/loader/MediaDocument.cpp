@@ -38,7 +38,9 @@
 #include "HTMLEmbedElement.h"
 #include "HTMLNames.h"
 #include "HTMLVideoElement.h"
+#include "KeyboardEvent.h"
 #include "MainResourceLoader.h"
+#include "NodeList.h"
 #include "Page.h"
 #include "SegmentedString.h"
 #include "Settings.h"
@@ -54,7 +56,7 @@ public:
     MediaTokenizer(Document* doc) : m_doc(doc), m_mediaElement(0) {}
         
 private:
-    virtual bool write(const SegmentedString&, bool appendData);
+    virtual void write(const SegmentedString&, bool appendData);
     virtual void stopParsing();
     virtual void finish();
     virtual bool isWaitingForScripts() const;
@@ -68,24 +70,23 @@ private:
     HTMLMediaElement* m_mediaElement;
 };
 
-bool MediaTokenizer::write(const SegmentedString&, bool)
+void MediaTokenizer::write(const SegmentedString&, bool)
 {
     ASSERT_NOT_REACHED();
-    return false;
 }
     
 void MediaTokenizer::createDocumentStructure()
 {
     ExceptionCode ec;
-    RefPtr<Element> rootElement = m_doc->createElementNS(xhtmlNamespaceURI, "html", ec);
+    RefPtr<Element> rootElement = m_doc->createElement(htmlTag, false);
     m_doc->appendChild(rootElement, ec);
         
-    RefPtr<Element> body = m_doc->createElementNS(xhtmlNamespaceURI, "body", ec);
+    RefPtr<Element> body = m_doc->createElement(bodyTag, false);
     body->setAttribute(styleAttr, "background-color: rgb(38,38,38);");
 
     rootElement->appendChild(body, ec);
         
-    RefPtr<Element> mediaElement = m_doc->createElementNS(xhtmlNamespaceURI, "video", ec);
+    RefPtr<Element> mediaElement = m_doc->createElement(videoTag, false);
         
     m_mediaElement = static_cast<HTMLVideoElement*>(mediaElement.get());
     m_mediaElement->setAttribute(controlsAttr, "");
@@ -134,8 +135,14 @@ bool MediaTokenizer::isWaitingForScripts() const
     
 MediaDocument::MediaDocument(Frame* frame)
     : HTMLDocument(frame)
+    , m_replaceMediaElementTimer(this, &MediaDocument::replaceMediaElementTimerFired)
 {
     setParseMode(Compat);
+}
+
+MediaDocument::~MediaDocument()
+{
+    ASSERT(!m_replaceMediaElementTimer.isActive());
 }
 
 Tokenizer* MediaDocument::createTokenizer()
@@ -147,21 +154,83 @@ void MediaDocument::defaultEventHandler(Event* event)
 {
     // Match the default Quicktime plugin behavior to allow 
     // clicking and double-clicking to pause and play the media.
-    EventTargetNode* targetNode = event->target()->toNode();
+    Node* targetNode = event->target()->toNode();
     if (targetNode && targetNode->hasTagName(videoTag)) {
         HTMLVideoElement* video = static_cast<HTMLVideoElement*>(targetNode);
-        ExceptionCode ec;
         if (event->type() == eventNames().clickEvent) {
             if (!video->canPlay()) {
-                video->pause(ec);
+                video->pause();
                 event->setDefaultHandled();
             }
         } else if (event->type() == eventNames().dblclickEvent) {
             if (video->canPlay()) {
-                video->play(ec);
+                video->play();
                 event->setDefaultHandled();
             }
         }
+    }
+
+    if (event->type() == eventNames().keydownEvent && event->isKeyboardEvent()) {
+        HTMLVideoElement* video = 0;
+        if (targetNode) {
+            if (targetNode->hasTagName(videoTag))
+                video = static_cast<HTMLVideoElement*>(targetNode);
+            else {
+                RefPtr<NodeList> nodeList = targetNode->getElementsByTagName("video");
+                if (nodeList.get()->length() > 0)
+                    video = static_cast<HTMLVideoElement*>(nodeList.get()->item(0));
+            }
+        }
+        if (video) {
+            KeyboardEvent* keyboardEvent = static_cast<KeyboardEvent*>(event);
+            if (keyboardEvent->keyIdentifier() == "U+0020") { // space
+                if (video->paused()) {
+                    if (video->canPlay())
+                        video->play();
+                } else
+                    video->pause();
+                event->setDefaultHandled();
+            }
+        }
+    }
+}
+
+void MediaDocument::mediaElementSawUnsupportedTracks()
+{
+    // The HTMLMediaElement was told it has something that the underlying 
+    // MediaPlayer cannot handle so we should switch from <video> to <embed> 
+    // and let the plugin handle this. Don't do it immediately as this 
+    // function may be called directly from a media engine callback, and 
+    // replaceChild will destroy the element, media player, and media engine.
+    m_replaceMediaElementTimer.startOneShot(0);
+}
+
+void MediaDocument::replaceMediaElementTimerFired(Timer<MediaDocument>*)
+{
+    HTMLElement* htmlBody = body();
+    if (!htmlBody)
+        return;
+
+    // Set body margin width and height to 0 as that is what a PluginDocument uses.
+    htmlBody->setAttribute(marginwidthAttr, "0");
+    htmlBody->setAttribute(marginheightAttr, "0");
+
+    RefPtr<NodeList> nodeList = htmlBody->getElementsByTagName("video");
+
+    if (nodeList.get()->length() > 0) {
+        HTMLVideoElement* videoElement = static_cast<HTMLVideoElement*>(nodeList.get()->item(0));
+
+        RefPtr<Element> element = Document::createElement(embedTag, false);
+        HTMLEmbedElement* embedElement = static_cast<HTMLEmbedElement*>(element.get());
+
+        embedElement->setAttribute(widthAttr, "100%");
+        embedElement->setAttribute(heightAttr, "100%");
+        embedElement->setAttribute(nameAttr, "plugin");
+        embedElement->setSrc(url().string());
+        embedElement->setType(frame()->loader()->responseMIMEType());
+
+        ExceptionCode ec;
+        videoElement->parent()->replaceChild(embedElement, videoElement, ec);
     }
 }
 

@@ -34,6 +34,7 @@
 #include "FrameLoader.h"
 #include "FrameLoaderClientQt.h"
 #include "FrameView.h"
+#include "FormState.h"
 #include "ChromeClientQt.h"
 #include "ContextMenu.h"
 #include "ContextMenuClientQt.h"
@@ -60,9 +61,11 @@
 #include "ProgressTracker.h"
 #include "RefPtr.h"
 #include "HashMap.h"
+#include "HTMLFormElement.h"
 #include "HitTestResult.h"
 #include "WindowFeatures.h"
 #include "LocalizedStrings.h"
+#include "Cache.h"
 #include "runtime/InitializeThreading.h"
 
 #include <QApplication>
@@ -179,6 +182,21 @@ static const char* editorCommandWebActions[] =
 
     "SelectAll", // SelectAll
 
+    "PasteAndMatchStyle", // PasteAndMatchStyle
+    "RemoveFormat", // RemoveFormat
+    "Strikethrough", // ToggleStrikethrough,
+    "Subscript", // ToggleSubscript
+    "Superscript", // ToggleSuperscript
+    "InsertUnorderedList", // InsertUnorderedList
+    "InsertOrderedList", // InsertOrderedList
+    "Indent", // Indent
+    "Outdent", // Outdent,
+
+    "AlignCenter", // AlignCenter,
+    "AlignJustified", // AlignJustified,
+    "AlignLeft", // AlignLeft,
+    "AlignRight", // AlignRight,
+
     0 // WebActionCount
 };
 
@@ -263,6 +281,7 @@ QWebPagePrivate::QWebPagePrivate(QWebPage *qq)
     insideOpenCall = false;
     forwardUnsupportedContent = false;
     editable = false;
+    useFixedLayout = false;
     linkPolicy = QWebPage::DontDelegateLinks;
 #ifndef QT_NO_CONTEXTMENU
     currentContextMenu = 0;
@@ -426,6 +445,14 @@ void QWebPagePrivate::_q_webActionTriggered(bool checked)
     q->triggerAction(action, checked);
 }
 
+#ifndef NDEBUG
+void QWebPagePrivate::_q_cleanupLeakMessages()
+{
+    // Need this to make leak messages accurate.
+    cache()->setCapacities(0, 0, 0);
+}
+#endif
+
 void QWebPagePrivate::updateAction(QWebPage::WebAction action)
 {
     QAction *a = actions[action];
@@ -535,6 +562,19 @@ void QWebPagePrivate::updateEditorActions()
     updateAction(QWebPage::ToggleUnderline);
     updateAction(QWebPage::InsertParagraphSeparator);
     updateAction(QWebPage::InsertLineSeparator);
+    updateAction(QWebPage::PasteAndMatchStyle);
+    updateAction(QWebPage::RemoveFormat);
+    updateAction(QWebPage::ToggleStrikethrough);
+    updateAction(QWebPage::ToggleSubscript);
+    updateAction(QWebPage::ToggleSuperscript);
+    updateAction(QWebPage::InsertUnorderedList);
+    updateAction(QWebPage::InsertOrderedList);
+    updateAction(QWebPage::Indent);
+    updateAction(QWebPage::Outdent);
+    updateAction(QWebPage::AlignCenter);
+    updateAction(QWebPage::AlignJustified);
+    updateAction(QWebPage::AlignLeft);
+    updateAction(QWebPage::AlignRight);
 }
 
 void QWebPagePrivate::timerEvent(QTimerEvent *ev)
@@ -1026,9 +1066,9 @@ QVariant QWebPage::inputMethodQuery(Qt::InputMethodQuery property) const
     case Qt::ImCursorPosition: {
         Frame *frame = d->page->focusController()->focusedFrame();
         if (frame) {
-            Selection selection = frame->selection()->selection();
+            VisibleSelection selection = frame->selection()->selection();
             if (selection.isCaret()) {
-                return QVariant(selection.start().offset());
+                return QVariant(selection.start().deprecatedEditingOffset());
             }
         }
         return QVariant();
@@ -1155,6 +1195,21 @@ QVariant QWebPage::inputMethodQuery(Qt::InputMethodQuery property) const
     \value InsertParagraphSeparator Insert a new paragraph.
     \value InsertLineSeparator Insert a new line.
     \value SelectAll Selects all content.
+    \value PasteAndMatchStyle Paste content from the clipboard with current style.
+    \value RemoveFormat Removes formatting and style.
+    \value ToggleStrikethrough Toggle the formatting between strikethrough and normal style.
+    \value ToggleSubscript Toggle the formatting between subscript and baseline.
+    \value ToggleSuperscript Toggle the formatting between supercript and baseline.
+    \value InsertUnorderedList Toggles the selection between an ordered list and a normal block.
+    \value InsertOrderedList Toggles the selection between an ordered list and a normal block.
+    \value Indent Increases the indentation of the currently selected format block by one increment.
+    \value Outdent Decreases the indentation of the currently selected format block by one increment.
+    \value AlignCenter Applies center alignment to content.
+    \value AlignJustified Applies full justification to content.
+    \value AlignLeft Applies left justification to content.
+    \value AlignRight Applies right justification to content.
+
+
     \omitvalue WebActionCount
 
 */
@@ -1230,6 +1285,9 @@ QWebPage::QWebPage(QObject *parent)
     setView(qobject_cast<QWidget *>(parent));
 
     connect(this, SIGNAL(loadProgress(int)), this, SLOT(_q_onLoadProgressChanged(int)));
+#ifndef NDEBUG
+    connect(QCoreApplication::instance(), SIGNAL(aboutToQuit()), this, SLOT(_q_cleanupLeakMessages()));
+#endif
 }
 
 /*!
@@ -1433,10 +1491,9 @@ void QWebPage::triggerAction(WebAction action, bool checked)
         case OpenLink:
             if (QWebFrame *targetFrame = d->hitTestResult.linkTargetFrame()) {
                 WTF::RefPtr<WebCore::Frame> wcFrame = targetFrame->d->frame;
-                targetFrame->d->frame->loader()->loadFrameRequestWithFormAndValues(frameLoadRequest(d->hitTestResult.linkUrl(), wcFrame.get()),
-                                                                                   /*lockHistory*/ false, /*event*/ 0,
-                                                                                   /*HTMLFormElement*/ 0, /*formValues*/
-                                                                                   WTF::HashMap<String, String>());
+                targetFrame->d->frame->loader()->loadFrameRequest(frameLoadRequest(d->hitTestResult.linkUrl(), wcFrame.get()),
+                                                                  /*lockHistory*/ false, /*lockBackForwardList*/ false, /*event*/ 0,
+                                                                  /*FormState*/ 0);
                 break;
             }
             // fall through
@@ -1536,11 +1593,61 @@ void QWebPage::setViewportSize(const QSize &size) const
     if (frame->d->frame && frame->d->frame->view()) {
         WebCore::FrameView* view = frame->d->frame->view();
         view->setFrameRect(QRect(QPoint(0, 0), size));
-        frame->d->frame->forceLayout();
+        view->forceLayout();
         view->adjustViewSize();
     }
 }
 
+QSize QWebPage::fixedLayoutSize() const
+{
+    if (d->mainFrame && d->mainFrame->d->frame->view())
+        return d->mainFrame->d->frame->view()->fixedLayoutSize();
+
+    return d->fixedLayoutSize;
+}
+
+/*!
+    \property QWebPage::fixedLayoutSize
+    \since 4.6
+    \brief the size of the fixed layout
+
+    The size affects the layout of the page in the viewport.  If set to a fixed size of
+    1024x768 for example then webkit will layout the page as if the viewport were that size
+    rather than something different.
+*/
+void QWebPage::setFixedLayoutSize(const QSize &size) const
+{
+    d->fixedLayoutSize = size;
+
+    QWebFrame *frame = mainFrame();
+    if (frame->d->frame && frame->d->frame->view()) {
+        WebCore::FrameView* view = frame->d->frame->view();
+        view->setFixedLayoutSize(size);
+        view->forceLayout();
+    }
+}
+
+bool QWebPage::useFixedLayout() const
+{
+    return d->useFixedLayout;
+}
+
+/*!
+    \property QWebPage::useFixedLayout
+    \since 4.6
+    \brief whether to use a fixed layout size
+*/
+void QWebPage::setUseFixedLayout(bool useFixedLayout)
+{
+    d->useFixedLayout = useFixedLayout;
+
+    QWebFrame *frame = mainFrame();
+    if (frame->d->frame && frame->d->frame->view()) {
+        WebCore::FrameView* view = frame->d->frame->view();
+        view->setUseFixedLayout(useFixedLayout);
+        view->forceLayout();
+    }
+}
 
 /*!
     \fn bool QWebPage::acceptNavigationRequest(QWebFrame *frame, const QNetworkRequest &request, QWebPage::NavigationType type)
@@ -1568,7 +1675,7 @@ bool QWebPage::acceptNavigationRequest(QWebFrame *frame, const QWebNetworkReques
                 return true;
 
             case DelegateExternalLinks:
-                if (WebCore::FrameLoader::shouldTreatSchemeAsLocal(request.url().scheme()))
+                if (WebCore::FrameLoader::shouldTreatURLSchemeAsLocal(request.url().scheme()))
                     return true;
                 emit linkClicked(request.url());
                 return false;
@@ -1808,6 +1915,52 @@ QAction *QWebPage::action(WebAction action) const
             text = tr("Insert a new line");
             break;
 
+        case PasteAndMatchStyle:
+            text = tr("Paste and Match Style");
+            break;
+        case RemoveFormat:
+            text = tr("Remove formatting");
+            break;
+
+        case ToggleStrikethrough:
+            text = tr("Strikethrough");
+            checkable = true;
+            break;
+        case ToggleSubscript:
+            text = tr("Subscript");
+            checkable = true;
+            break;
+        case ToggleSuperscript:
+            text = tr("Superscript");
+            checkable = true;
+            break;
+        case InsertUnorderedList:
+            text = tr("Insert Bulleted List");
+            checkable = true;
+            break;
+        case InsertOrderedList:
+            text = tr("Insert Numbered List");
+            checkable = true;
+            break;
+        case Indent:
+            text = tr("Indent");
+            break;
+        case Outdent:
+            text = tr("Outdent");
+            break;
+        case AlignCenter:
+            text = tr("Center");
+            break;
+        case AlignJustified:
+            text = tr("Justify");
+            break;
+        case AlignLeft:
+            text = tr("Align Left");
+            break;
+        case AlignRight:
+            text = tr("Align Right");
+            break;
+
         case NoWebAction:
             return 0;
     }
@@ -1986,12 +2139,10 @@ bool QWebPage::isContentEditable() const
 
 /*!
     \property QWebPage::forwardUnsupportedContent
-    \brief whether QWebPage should forward unsupported content
+    \brief whether QWebPage should forward unsupported content through the
+    unsupportedContent signal
 
-    If enabled, the unsupportedContent() signal is emitted with a network reply that
-    can be used to read the content.
-
-    If disabled, the download of such content is aborted immediately.
+    If disabled the download of such content is aborted immediately.
 
     By default unsupported content is not forwarded.
 */

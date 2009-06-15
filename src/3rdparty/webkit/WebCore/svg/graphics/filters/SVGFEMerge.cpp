@@ -21,9 +21,10 @@
 
 #include "config.h"
 
-#if ENABLE(SVG) && ENABLE(SVG_FILTERS)
+#if ENABLE(SVG) && ENABLE(FILTERS)
 #include "SVGFEMerge.h"
 #include "SVGRenderTreeAsText.h"
+#include "Filter.h"
 
 namespace WebCore {
 
@@ -48,7 +49,7 @@ void FEMerge::setMergeInputs(const Vector<FilterEffect*>& mergeInputs)
     m_mergeInputs = mergeInputs;
 }
 
-void FEMerge::apply()
+void FEMerge::apply(Filter*)
 {
 }
 
@@ -75,4 +76,4 @@ TextStream& FEMerge::externalRepresentation(TextStream& ts) const
 
 } // namespace WebCore
 
-#endif // ENABLE(SVG) && ENABLE(SVG_FILTERS)
+#endif // ENABLE(SVG) && ENABLE(FILTERS)

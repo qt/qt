@@ -34,22 +34,18 @@
 #include "GraphicsContext.h"
 #include "ImageBuffer.h"
 #include "RenderObject.h"
+#include "RenderView.h"
 #include "SVGGradientElement.h"
 #include "SVGPaintServerLinearGradient.h"
 #include "SVGPaintServerRadialGradient.h"
 #include "SVGRenderSupport.h"
 #include "SVGRenderTreeAsText.h"
 
-#if PLATFORM(CG)
-#include <wtf/MathExtras.h>
-#include <wtf/RetainPtr.h>
-#endif
-
 using namespace std;
 
 namespace WebCore {
 
-TextStream& operator<<(TextStream& ts, GradientSpreadMethod m)
+static TextStream& operator<<(TextStream& ts, GradientSpreadMethod m)
 {
     switch (m) {
         case SpreadMethodPad:
@@ -63,7 +59,7 @@ TextStream& operator<<(TextStream& ts, GradientSpreadMethod m)
     return ts;
 }
 
-TextStream& operator<<(TextStream& ts, const Vector<SVGGradientStop>& l)
+static TextStream& operator<<(TextStream& ts, const Vector<SVGGradientStop>& l)
 {
     ts << "[";
     for (Vector<SVGGradientStop>::const_iterator it = l.begin(); it != l.end(); ++it) {
@@ -76,10 +72,8 @@ TextStream& operator<<(TextStream& ts, const Vector<SVGGradientStop>& l)
 }
 
 SVGPaintServerGradient::SVGPaintServerGradient(const SVGGradientElement* owner)
-    : m_spreadMethod(SpreadMethodPad)
-    , m_boundingBoxMode(true)
+    : m_boundingBoxMode(true)
     , m_ownerElement(owner)
-
 #if PLATFORM(CG)
     , m_savedContext(0)
     , m_imageBuffer(0)
@@ -100,16 +94,6 @@ Gradient* SVGPaintServerGradient::gradient() const
 void SVGPaintServerGradient::setGradient(PassRefPtr<Gradient> gradient)
 {
     m_gradient = gradient;
-}
-
-GradientSpreadMethod SVGPaintServerGradient::spreadMethod() const
-{
-    return m_spreadMethod;
-}
-
-void SVGPaintServerGradient::setGradientSpreadMethod(const GradientSpreadMethod& method)
-{
-    m_spreadMethod = method;
 }
 
 bool SVGPaintServerGradient::boundingBoxMode() const
@@ -133,8 +117,6 @@ void SVGPaintServerGradient::setGradientTransform(const TransformationMatrix& tr
 }
 
 #if PLATFORM(CG)
-// Helper function for text painting in CG
-// This Cg specific code should move to GraphicsContext and Font* in a next step.
 static inline const RenderObject* findTextRootObject(const RenderObject* start)
 {
     while (start && !start->isSVGText())
@@ -149,15 +131,15 @@ static inline bool createMaskAndSwapContextForTextGradient(
     GraphicsContext*& context, GraphicsContext*& savedContext,
     OwnPtr<ImageBuffer>& imageBuffer, const RenderObject* object)
 {
-    FloatRect maskBBox = const_cast<RenderObject*>(findTextRootObject(object))->relativeBBox(false);
+    FloatRect maskBBox = const_cast<RenderObject*>(findTextRootObject(object))->objectBoundingBox();
     IntRect maskRect = enclosingIntRect(object->absoluteTransform().mapRect(maskBBox));
 
     IntSize maskSize(maskRect.width(), maskRect.height());
-    clampImageBufferSizeToViewport(object->document()->renderer(), maskSize);
+    clampImageBufferSizeToViewport(object->view()->frameView(), maskSize);
 
-    auto_ptr<ImageBuffer> maskImage = ImageBuffer::create(maskSize, false);
+    OwnPtr<ImageBuffer> maskImage = ImageBuffer::create(maskSize, false);
 
-    if (!maskImage.get())
+    if (!maskImage)
         return false;
 
     GraphicsContext* maskImageContext = maskImage->context();
@@ -174,18 +156,18 @@ static inline bool createMaskAndSwapContextForTextGradient(
     return true;
 }
 
-static inline void clipToTextMask(GraphicsContext* context,
+static inline TransformationMatrix clipToTextMask(GraphicsContext* context,
     OwnPtr<ImageBuffer>& imageBuffer, const RenderObject* object,
     const SVGPaintServerGradient* gradientServer)
 {
-    FloatRect maskBBox = const_cast<RenderObject*>(findTextRootObject(object))->relativeBBox(false);
+    FloatRect maskBBox = const_cast<RenderObject*>(findTextRootObject(object))->objectBoundingBox();
 
     // Fixup transformations to be able to clip to mask
     TransformationMatrix transform = object->absoluteTransform();
     FloatRect textBoundary = transform.mapRect(maskBBox);
 
     IntSize maskSize(lroundf(textBoundary.width()), lroundf(textBoundary.height()));
-    clampImageBufferSizeToViewport(object->document()->renderer(), maskSize);
+    clampImageBufferSizeToViewport(object->view()->frameView(), maskSize);
     textBoundary.setSize(textBoundary.size().shrunkTo(maskSize));
 
     // Clip current context to mask image (gradient)
@@ -193,11 +175,13 @@ static inline void clipToTextMask(GraphicsContext* context,
     context->clipToImageBuffer(textBoundary, imageBuffer.get());
     context->concatCTM(transform);
 
+    TransformationMatrix matrix;
     if (gradientServer->boundingBoxMode()) {
-        context->translate(maskBBox.x(), maskBBox.y());
-        context->scale(FloatSize(maskBBox.width(), maskBBox.height()));
+        matrix.translate(maskBBox.x(), maskBBox.y());
+        matrix.scaleNonUniform(maskBBox.width(), maskBBox.height());
     }
-    context->concatCTM(gradientServer->gradientTransform());
+    matrix.multiply(gradientServer->gradientTransform());
+    return matrix;
 }
 #endif
 
@@ -234,38 +218,31 @@ bool SVGPaintServerGradient::setup(GraphicsContext*& context, const RenderObject
         applyStrokeStyleToContext(context, object->style(), object);
     }
 
+    TransformationMatrix matrix;
+    // CG platforms will handle the gradient space transform for text in
+    // teardown, so we don't apply it here.  For non-CG platforms, we
+    // want the text bounding box applied to the gradient space transform now,
+    // so the gradient shader can use it.
+#if PLATFORM(CG)
     if (boundingBoxMode() && !isPaintingText) {
-        FloatRect bbox = object->relativeBBox(false);
-        // Don't use gradientes for 1d objects like horizontal/vertical 
+#else
+    if (boundingBoxMode()) {
+#endif
+        FloatRect bbox = object->objectBoundingBox();
+        // Don't use gradients for 1d objects like horizontal/vertical 
         // lines or rectangles without width or height.
         if (bbox.width() == 0 || bbox.height() == 0) {
             Color color(0, 0, 0);
             context->setStrokeColor(color);
             return true;
         }
-        context->translate(bbox.x(), bbox.y());
-        context->scale(FloatSize(bbox.width(), bbox.height()));
-
-        // With scaling the context, the strokeThickness is scaled too. We have to
-        // undo this.
-        float strokeThickness = std::max((context->strokeThickness() / ((bbox.width() + bbox.height()) / 2) - 0.001f), 0.f);
-        context->setStrokeThickness(strokeThickness);
+        matrix.translate(bbox.x(), bbox.y());
+        matrix.scaleNonUniform(bbox.width(), bbox.height());
     }
-    context->concatCTM(gradientTransform());
-    context->setSpreadMethod(spreadMethod());
+    matrix.multiply(gradientTransform());
+    m_gradient->setGradientSpaceTransform(matrix);
 
     return true;
-}
-
-void SVGPaintServerGradient::renderPath(GraphicsContext*& context, const RenderObject* path, SVGPaintTargetType type) const
-{
-    const SVGRenderStyle* style = path->style()->svgStyle();
-
-    if ((type & ApplyToFillTargetType) && style->hasFill())
-        context->fillPath();
-
-    if ((type & ApplyToStrokeTargetType) && style->hasStroke())
-        context->strokePath();
 }
 
 void SVGPaintServerGradient::teardown(GraphicsContext*& context, const RenderObject* object, SVGPaintTargetType, bool isPaintingText) const
@@ -273,15 +250,19 @@ void SVGPaintServerGradient::teardown(GraphicsContext*& context, const RenderObj
 #if PLATFORM(CG)
     // renderPath() is not used when painting text, so we paint the gradient during teardown()
     if (isPaintingText && m_savedContext) {
+
         // Restore on-screen drawing context
         context = m_savedContext;
         m_savedContext = 0;
 
-        clipToTextMask(context, m_imageBuffer, object, this);
+        TransformationMatrix matrix = clipToTextMask(context, m_imageBuffer, object, this);
+        m_gradient->setGradientSpaceTransform(matrix);
+        context->setFillGradient(m_gradient);
 
-        // finally fill the text clip with the shading
-        CGContextDrawShading(context->platformContext(), m_gradient->platformGradient());
- 
+        FloatRect maskBBox = const_cast<RenderObject*>(findTextRootObject(object))->objectBoundingBox();
+
+        context->fillRect(maskBBox);
+
         m_imageBuffer.clear(); // we're done with our text mask buffer
     }
 #endif
@@ -295,8 +276,8 @@ TextStream& SVGPaintServerGradient::externalRepresentation(TextStream& ts) const
 
     // abstract, don't stream type
     ts  << "[stops=" << gradientStops() << "]";
-    if (spreadMethod() != SpreadMethodPad)
-        ts << "[method=" << spreadMethod() << "]";
+    if (m_gradient->spreadMethod() != SpreadMethodPad)
+        ts << "[method=" << m_gradient->spreadMethod() << "]";
     if (!boundingBoxMode())
         ts << " [bounding box mode=" << boundingBoxMode() << "]";
     if (!gradientTransform().isIdentity())

@@ -36,7 +36,7 @@ using namespace JSC;
 
 namespace WebCore {
 
-ASSERT_CLASS_FITS_IN_CELL(JSSVGTRefElement)
+ASSERT_CLASS_FITS_IN_CELL(JSSVGTRefElement);
 
 /* Hash table */
 
@@ -69,9 +69,9 @@ static const HashTable JSSVGTRefElementPrototypeTable =
 
 const ClassInfo JSSVGTRefElementPrototype::s_info = { "SVGTRefElementPrototype", 0, &JSSVGTRefElementPrototypeTable, 0 };
 
-JSObject* JSSVGTRefElementPrototype::self(ExecState* exec)
+JSObject* JSSVGTRefElementPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSSVGTRefElement>(exec);
+    return getDOMPrototype<JSSVGTRefElement>(exec, globalObject);
 }
 
 const ClassInfo JSSVGTRefElement::s_info = { "SVGTRefElement", &JSSVGTextPositioningElement::s_info, &JSSVGTRefElementTable, 0 };
@@ -81,9 +81,9 @@ JSSVGTRefElement::JSSVGTRefElement(PassRefPtr<Structure> structure, PassRefPtr<S
 {
 }
 
-JSObject* JSSVGTRefElement::createPrototype(ExecState* exec)
+JSObject* JSSVGTRefElement::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSSVGTRefElementPrototype(JSSVGTRefElementPrototype::createStructure(JSSVGTextPositioningElementPrototype::self(exec)));
+    return new (exec) JSSVGTRefElementPrototype(JSSVGTRefElementPrototype::createStructure(JSSVGTextPositioningElementPrototype::self(exec, globalObject)));
 }
 
 bool JSSVGTRefElement::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -91,8 +91,9 @@ bool JSSVGTRefElement::getOwnPropertySlot(ExecState* exec, const Identifier& pro
     return getStaticValueSlot<JSSVGTRefElement, Base>(exec, &JSSVGTRefElementTable, this, propertyName, slot);
 }
 
-JSValuePtr jsSVGTRefElementHref(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGTRefElementHref(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGTRefElement* imp = static_cast<SVGTRefElement*>(static_cast<JSSVGTRefElement*>(asObject(slot.slotBase()))->impl());
     RefPtr<SVGAnimatedString> obj = imp->hrefAnimated();
     return toJS(exec, obj.get(), imp);

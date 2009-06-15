@@ -25,8 +25,6 @@
 
 namespace JSC {
 
-    class JSNumberCell;
-
     class NumberObject : public JSWrapperObject {
     public:
         explicit NumberObject(PassRefPtr<Structure>);
@@ -36,11 +34,10 @@ namespace JSC {
     private:
         virtual const ClassInfo* classInfo() const { return &info; }
 
-        virtual JSValuePtr getJSNumber();
+        virtual JSValue getJSNumber();
     };
 
-    NumberObject* constructNumber(ExecState*, JSNumberCell*);
-    NumberObject* constructNumberFromImmediateNumber(ExecState*, JSValuePtr);
+    NumberObject* constructNumber(ExecState*, JSValue);
 
 } // namespace JSC
 

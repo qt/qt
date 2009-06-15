@@ -428,6 +428,20 @@ QClipboard::QClipboard(QObject *parent)
     // XFixesSelectionNotify events when someone changes the
     // clipboard.
     (void)QApplication::desktop();
+
+#ifndef QT_NO_XFIXES
+    if (X11->use_xfixes && X11->ptrXFixesSelectSelectionInput) {
+        const unsigned long eventMask =
+            XFixesSetSelectionOwnerNotifyMask | XFixesSelectionWindowDestroyNotifyMask | XFixesSelectionClientCloseNotifyMask;
+        for (int i = 0; i < X11->screenCount; ++i) {
+            X11->ptrXFixesSelectSelectionInput(X11->display, QX11Info::appRootWindow(i),
+                                               XA_PRIMARY, eventMask);
+            X11->ptrXFixesSelectSelectionInput(X11->display, QX11Info::appRootWindow(i),
+                                               ATOM(CLIPBOARD), eventMask);
+        }
+    }
+#endif // QT_NO_XFIXES
+
     if (X11->time == CurrentTime) {
         // send a dummy event to myself to get the timestamp from X11.
         qt_init_timestamp_data data;

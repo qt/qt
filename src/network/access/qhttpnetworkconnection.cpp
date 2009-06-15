@@ -64,7 +64,7 @@
 
 QT_BEGIN_NAMESPACE
 
-const int QHttpNetworkConnectionPrivate::channelCount = 2;
+const int QHttpNetworkConnectionPrivate::channelCount = 6;
 
 QHttpNetworkConnectionPrivate::QHttpNetworkConnectionPrivate(const QString &hostName, quint16 port, bool encrypt)
 : hostName(hostName), port(port), encrypt(encrypt),
@@ -74,6 +74,7 @@ QHttpNetworkConnectionPrivate::QHttpNetworkConnectionPrivate(const QString &host
 #endif
 
 {
+    channels = new Channel[channelCount];
 }
 
 QHttpNetworkConnectionPrivate::~QHttpNetworkConnectionPrivate()
@@ -82,6 +83,7 @@ QHttpNetworkConnectionPrivate::~QHttpNetworkConnectionPrivate()
         channels[i].socket->close();
         delete channels[i].socket;
     }
+    delete []channels;
 }
 
 void QHttpNetworkConnectionPrivate::connectSignals(QAbstractSocket *socket)
@@ -1090,25 +1092,26 @@ void QHttpNetworkConnectionPrivate::_q_disconnected()
 
 void QHttpNetworkConnectionPrivate::_q_startNextRequest()
 {
-    // send the current request again
-    if (channels[0].resendCurrent || channels[1].resendCurrent) {
-        int i = channels[0].resendCurrent ? 0:1;
-        QAbstractSocket *socket = channels[i].socket;
-        channels[i].resendCurrent = false;
-        channels[i].state = IdleState;
-        if (channels[i].reply)
-            sendRequest(socket);
-        return;
+    //resend the necessary ones.
+    for (int i = 0; i < channelCount; ++i) {
+        if (channels[i].resendCurrent) {
+            channels[i].resendCurrent = false;
+            channels[i].state = IdleState;
+            if (channels[i].reply)
+                sendRequest(channels[i].socket);
+        }
     }
-    // send the request using the idle socket
-    QAbstractSocket *socket = channels[0].socket;
-    if (isSocketBusy(socket)) {
-        socket = (isSocketBusy(channels[1].socket) ? 0 :channels[1].socket);
+    QAbstractSocket *socket = 0;
+    for (int i = 0; i < channelCount; ++i) {
+        QAbstractSocket *chSocket = channels[i].socket;
+        // send the request using the idle socket
+        if (!isSocketBusy(chSocket)) {
+            socket = chSocket;
+            break;
+        }
     }
-
-    if (!socket) {
+    if (!socket)
         return; // this will be called after finishing current request.
-    }
     unqueueAndSendRequest(socket);
 }
 

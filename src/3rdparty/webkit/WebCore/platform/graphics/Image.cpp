@@ -62,11 +62,6 @@ bool Image::supportsType(const String& type)
     return MIMETypeRegistry::isSupportedImageResourceMIMEType(type); 
 } 
 
-bool Image::isNull() const
-{
-    return size().isEmpty();
-}
-
 bool Image::setData(PassRefPtr<SharedBuffer> data, bool allDataReceived)
 {
     m_data = data;
@@ -78,21 +73,6 @@ bool Image::setData(PassRefPtr<SharedBuffer> data, bool allDataReceived)
         return true;
     
     return dataChanged(allDataReceived);
-}
-
-IntRect Image::rect() const
-{
-    return IntRect(IntPoint(), size());
-}
-
-int Image::width() const
-{
-    return size().width();
-}
-
-int Image::height() const
-{
-    return size().height();
 }
 
 void Image::fillWithSolidColor(GraphicsContext* ctxt, const FloatRect& dstRect, const Color& color, CompositeOperator op)
@@ -139,7 +119,7 @@ void Image::drawTiled(GraphicsContext* ctxt, const FloatRect& destRect, const Fl
 
     FloatSize scale(scaledTileSize.width() / intrinsicTileSize.width(),
                     scaledTileSize.height() / intrinsicTileSize.height());
-    TransformationMatrix patternTransform = TransformationMatrix().scale(scale.width(), scale.height());
+    TransformationMatrix patternTransform = TransformationMatrix().scaleNonUniform(scale.width(), scale.height());
 
     FloatRect oneTileRect;
     oneTileRect.setX(destRect.x() + fmodf(fmodf(-srcPoint.x(), scaledTileSize.width()) - scaledTileSize.width(), scaledTileSize.width()));
@@ -178,7 +158,7 @@ void Image::drawTiled(GraphicsContext* ctxt, const FloatRect& dstRect, const Flo
         vRule = RepeatTile;
 
     FloatSize scale = calculatePatternScale(dstRect, srcRect, hRule, vRule);
-    TransformationMatrix patternTransform = TransformationMatrix().scale(scale.width(), scale.height());
+    TransformationMatrix patternTransform = TransformationMatrix().scaleNonUniform(scale.width(), scale.height());
 
     // We want to construct the phase such that the pattern is centered (when stretch is not
     // set for a particular rule).

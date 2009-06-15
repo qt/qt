@@ -34,12 +34,12 @@ class JSMessageChannel : public DOMObject {
 public:
     JSMessageChannel(PassRefPtr<JSC::Structure>, PassRefPtr<MessageChannel>);
     virtual ~JSMessageChannel();
-    static JSC::JSObject* createPrototype(JSC::ExecState*);
+    static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
     static const JSC::ClassInfo s_info;
 
-    static PassRefPtr<JSC::Structure> createStructure(JSC::JSValuePtr prototype)
+    static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
     {
         return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType));
     }
@@ -52,12 +52,13 @@ private:
     RefPtr<MessageChannel> m_impl;
 };
 
-JSC::JSValuePtr toJS(JSC::ExecState*, MessageChannel*);
-MessageChannel* toMessageChannel(JSC::JSValuePtr);
+JSC::JSValue toJS(JSC::ExecState*, MessageChannel*);
+MessageChannel* toMessageChannel(JSC::JSValue);
 
 class JSMessageChannelPrototype : public JSC::JSObject {
+    typedef JSC::JSObject Base;
 public:
-    static JSC::JSObject* self(JSC::ExecState*);
+    static JSC::JSObject* self(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
     static const JSC::ClassInfo s_info;
     JSMessageChannelPrototype(PassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
@@ -65,8 +66,8 @@ public:
 
 // Attributes
 
-JSC::JSValuePtr jsMessageChannelPort1(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValuePtr jsMessageChannelPort2(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsMessageChannelPort1(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsMessageChannelPort2(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
 
 } // namespace WebCore
 

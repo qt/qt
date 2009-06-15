@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008 Apple Inc. All Rights Reserved.
+ * Copyright (C) 2008, 2009 Apple Inc. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -42,6 +42,44 @@
 using namespace std;
 
 namespace WebCore {
+
+class ResourceStorageIDJournal {
+public:  
+    ~ResourceStorageIDJournal()
+    {
+        size_t size = m_records.size();
+        for (size_t i = 0; i < size; ++i)
+            m_records[i].restore();
+    }
+
+    void add(ApplicationCacheResource* resource, unsigned storageID)
+    {
+        m_records.append(Record(resource, storageID));
+    }
+
+    void commit()
+    {
+        m_records.clear();
+    }
+
+private:
+    class Record {
+    public:
+        Record() : m_resource(0), m_storageID(0) { }
+        Record(ApplicationCacheResource* resource, unsigned storageID) : m_resource(resource), m_storageID(storageID) { }
+
+        void restore()
+        {
+            m_resource->setStorageID(m_storageID);
+        }
+
+    private:
+        ApplicationCacheResource* m_resource;
+        unsigned m_storageID;
+    };
+
+    Vector<Record> m_records;
+};
 
 static unsigned urlHostHash(const KURL& url)
 {
@@ -147,7 +185,9 @@ ApplicationCacheGroup* ApplicationCacheStorage::cacheGroupForURL(const KURL& url
     CacheGroupMap::const_iterator end = m_cachesInMemory.end();
     for (CacheGroupMap::const_iterator it = m_cachesInMemory.begin(); it != end; ++it) {
         ApplicationCacheGroup* group = it->second;
-        
+
+        ASSERT(!group->isObsolete());
+
         if (!protocolHostAndPortAreEqual(url, group->manifestURL()))
             continue;
         
@@ -213,6 +253,8 @@ ApplicationCacheGroup* ApplicationCacheStorage::fallbackCacheGroupForURL(const K
     for (CacheGroupMap::const_iterator it = m_cachesInMemory.begin(); it != end; ++it) {
         ApplicationCacheGroup* group = it->second;
         
+        ASSERT(!group->isObsolete());
+
         if (ApplicationCache* cache = group->newestCache()) {
             KURL fallbackURL;
             if (!cache->urlMatchesFallbackNamespace(url, &fallbackURL))
@@ -271,13 +313,31 @@ ApplicationCacheGroup* ApplicationCacheStorage::fallbackCacheGroupForURL(const K
 
 void ApplicationCacheStorage::cacheGroupDestroyed(ApplicationCacheGroup* group)
 {
+    if (group->isObsolete()) {
+        ASSERT(!group->storageID());
+        ASSERT(m_cachesInMemory.get(group->manifestURL()) != group);
+        return;
+    }
+
     ASSERT(m_cachesInMemory.get(group->manifestURL()) == group);
 
     m_cachesInMemory.remove(group->manifestURL());
     
-    // If the cache is half-created, we don't want it in the saved set.
-    if (!group->savedNewestCachePointer())
+    // If the cache group is half-created, we don't want it in the saved set (as it is not stored in database).
+    if (!group->storageID())
         m_cacheHostSet.remove(urlHostHash(group->manifestURL()));
+}
+
+void ApplicationCacheStorage::cacheGroupMadeObsolete(ApplicationCacheGroup* group)
+{
+    ASSERT(m_cachesInMemory.get(group->manifestURL()) == group);
+    ASSERT(m_cacheHostSet.contains(urlHostHash(group->manifestURL())));
+
+    if (ApplicationCache* newestCache = group->newestCache())
+        remove(newestCache);
+
+    m_cachesInMemory.remove(group->manifestURL());
+    m_cacheHostSet.remove(urlHostHash(group->manifestURL()));
 }
 
 void ApplicationCacheStorage::setCacheDirectory(const String& cacheDirectory)
@@ -321,8 +381,8 @@ void ApplicationCacheStorage::verifySchemaVersion()
     setDatabaseVersion.begin();
 
     char userVersionSQL[32];
-    int numBytes = snprintf(userVersionSQL, sizeof(userVersionSQL), "PRAGMA user_version=%d", schemaVersion);
-    ASSERT_UNUSED(numBytes, static_cast<int>(sizeof(userVersionSQL)) >= numBytes);
+    int unusedNumBytes = snprintf(userVersionSQL, sizeof(userVersionSQL), "PRAGMA user_version=%d", schemaVersion);
+    ASSERT_UNUSED(unusedNumBytes, static_cast<int>(sizeof(userVersionSQL)) >= unusedNumBytes);
 
     SQLiteStatement statement(m_database, userVersionSQL);
     if (statement.prepare() != SQLResultOk)
@@ -372,7 +432,13 @@ void ApplicationCacheStorage::openDatabase(bool createIfDoesNotExist)
                       "  DELETE FROM CacheWhitelistURLs WHERE cache = OLD.id;"
                       "  DELETE FROM FallbackURLs WHERE cache = OLD.id;"
                       " END");
-    
+
+    // When a cache entry is deleted, its resource should also be deleted.
+    executeSQLCommand("CREATE TRIGGER IF NOT EXISTS CacheEntryDeleted AFTER DELETE ON CacheEntries"
+                      " FOR EACH ROW BEGIN"
+                      "  DELETE FROM CacheResources WHERE id = OLD.resource;"
+                      " END");
+
     // When a cache resource is deleted, its data blob should also be deleted.
     executeSQLCommand("CREATE TRIGGER IF NOT EXISTS CacheResourceDeleted AFTER DELETE ON CacheResources"
                       " FOR EACH ROW BEGIN"
@@ -408,10 +474,11 @@ bool ApplicationCacheStorage::store(ApplicationCacheGroup* group)
     return true;
 }    
 
-bool ApplicationCacheStorage::store(ApplicationCache* cache)
+bool ApplicationCacheStorage::store(ApplicationCache* cache, ResourceStorageIDJournal* storageIDJournal)
 {
     ASSERT(cache->storageID() == 0);
     ASSERT(cache->group()->storageID() != 0);
+    ASSERT(storageIDJournal);
     
     SQLiteStatement statement(m_database, "INSERT INTO Caches (cacheGroup) VALUES (?)");
     if (statement.prepare() != SQLResultOk)
@@ -428,8 +495,13 @@ bool ApplicationCacheStorage::store(ApplicationCache* cache)
     {
         ApplicationCache::ResourceMap::const_iterator end = cache->end();
         for (ApplicationCache::ResourceMap::const_iterator it = cache->begin(); it != end; ++it) {
+            unsigned oldStorageID = it->second->storageID();
             if (!store(it->second.get(), cacheStorageID))
                 return false;
+
+            // Storing the resource succeeded. Log its old storageID in case
+            // it needs to be restored later.
+            storageIDJournal->add(it->second.get(), oldStorageID);
         }
     }
     
@@ -587,10 +659,16 @@ bool ApplicationCacheStorage::storeNewestCache(ApplicationCacheGroup* group)
     }
     
     ASSERT(group->newestCache());
+    ASSERT(!group->isObsolete());
     ASSERT(!group->newestCache()->storageID());
     
+    // Log the storageID changes to the in-memory resource objects. The journal
+    // object will roll them back automatically in case a database operation
+    // fails and this method returns early.
+    ResourceStorageIDJournal storageIDJournal;
+
     // Store the newest cache
-    if (!store(group->newestCache()))
+    if (!store(group->newestCache(), &storageIDJournal))
         return false;
     
     // Update the newest cache in the group.
@@ -605,6 +683,7 @@ bool ApplicationCacheStorage::storeNewestCache(ApplicationCacheGroup* group)
     if (!executeStatement(statement))
         return false;
     
+    storageIDJournal.commit();
     storeCacheTransaction.commit();
     return true;
 }
@@ -724,12 +803,30 @@ void ApplicationCacheStorage::remove(ApplicationCache* cache)
     if (!m_database.isOpen())
         return;
 
+    ASSERT(cache->group());
+    ASSERT(cache->group()->storageID());
+
+    // All associated data will be deleted by database triggers.
     SQLiteStatement statement(m_database, "DELETE FROM Caches WHERE id=?");
     if (statement.prepare() != SQLResultOk)
         return;
     
     statement.bindInt64(1, cache->storageID());
     executeStatement(statement);
+
+    cache->clearStorageID();
+
+    if (cache->group()->newestCache() == cache) {
+        // Currently, there are no triggers on the cache group, which is why the cache had to be removed separately above.
+        SQLiteStatement groupStatement(m_database, "DELETE FROM CacheGroups WHERE id=?");
+        if (groupStatement.prepare() != SQLResultOk)
+            return;
+        
+        groupStatement.bindInt64(1, cache->group()->storageID());
+        executeStatement(groupStatement);
+
+        cache->group()->clearStorageID();
+    }
 }    
 
 void ApplicationCacheStorage::empty()
@@ -742,7 +839,6 @@ void ApplicationCacheStorage::empty()
     // Clear cache groups, caches and cache resources.
     executeSQLCommand("DELETE FROM CacheGroups");
     executeSQLCommand("DELETE FROM Caches");
-    executeSQLCommand("DELETE FROM CacheResources");
     
     // Clear the storage IDs for the caches in memory.
     // The caches will still work, but cached resources will not be saved to disk 

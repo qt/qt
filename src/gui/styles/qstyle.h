@@ -848,6 +848,8 @@ public:
                               QSizePolicy::ControlTypes controls2, Qt::Orientation orientation,
                               QStyleOption *option = 0, QWidget *widget = 0) const;
 
+    const QStyle * proxy() const;
+
 protected Q_SLOTS:
     QIcon standardIconImplementation(StandardPixmap standardIcon, const QStyleOption *opt = 0,
                                      const QWidget *widget = 0) const;
@@ -862,6 +864,9 @@ private:
     friend class QWidget;
     friend class QWidgetPrivate;
     friend class QApplication;
+    friend class QProxyStyle;
+    friend class QProxyStylePrivate;
+    void setProxy(QStyle *style);
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QStyle::State)

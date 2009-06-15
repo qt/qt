@@ -35,7 +35,7 @@ public:
     HTMLScriptElement(const QualifiedName&, Document*, bool createdByParser);
     ~HTMLScriptElement();
 
-    bool shouldExecuteAsJavaScript() const;
+    virtual bool shouldExecuteAsJavaScript() const;
     virtual String scriptContent() const;
 
     virtual HTMLTagStatus endTagRequirement() const { return TagStatusRequired; }
@@ -75,11 +75,14 @@ public:
     
     virtual void addSubresourceAttributeURLs(ListHashSet<KURL>&) const;
 
+    bool haveFiredLoadEvent() const { return m_data.haveFiredLoadEvent(); }
+
 protected:
     virtual String sourceAttributeValue() const;
     virtual String charsetAttributeValue() const;
     virtual String typeAttributeValue() const;
     virtual String languageAttributeValue() const;
+    virtual String forAttributeValue() const;
 
     virtual void dispatchLoadEvent();
     virtual void dispatchErrorEvent();

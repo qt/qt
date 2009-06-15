@@ -33,7 +33,7 @@
 #include "FrameView.h"
 #include "Request.h"
 #include "Settings.h"
-#include "SystemTime.h"
+#include <wtf/CurrentTime.h>
 #include <wtf/StdLibExtras.h>
 #include <wtf/Vector.h>
 
@@ -53,6 +53,7 @@ CachedImage::CachedImage(const String& url)
     : CachedResource(url, ImageResource)
     , m_image(0)
     , m_decodedDataDeletionTimer(this, &CachedImage::decodedDataDeletionTimerFired)
+    , m_httpStatusCodeErrorOccurred(false)
 {
     m_status = Unknown;
 }
@@ -61,6 +62,7 @@ CachedImage::CachedImage(Image* image)
     : CachedResource(String(), ImageResource)
     , m_image(image)
     , m_decodedDataDeletionTimer(this, &CachedImage::decodedDataDeletionTimerFired)
+    , m_httpStatusCodeErrorOccurred(false)
 {
     m_status = Cached;
     m_loading = false;
@@ -96,7 +98,7 @@ void CachedImage::addClient(CachedResourceClient* c)
         m_image->setData(m_data, true);
     }
 
-    if (m_image && !m_image->rect().isEmpty())
+    if (m_image && !m_image->isNull())
         c->imageChanged(this);
 
     if (!m_loading)
@@ -305,6 +307,7 @@ void CachedImage::error()
 {
     clear();
     m_errorOccurred = true;
+    m_data.clear();
     notifyObservers();
     m_loading = false;
     checkNotify();

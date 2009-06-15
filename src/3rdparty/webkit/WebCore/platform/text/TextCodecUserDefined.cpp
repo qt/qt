@@ -30,8 +30,7 @@
 #include "PlatformString.h"
 #include "StringBuffer.h"
 #include <stdio.h>
-
-using std::auto_ptr;
+#include <wtf/PassOwnPtr.h>
 
 namespace WebCore {
 
@@ -40,9 +39,9 @@ void TextCodecUserDefined::registerEncodingNames(EncodingNameRegistrar registrar
     registrar("x-user-defined", "x-user-defined");
 }
 
-static auto_ptr<TextCodec> newStreamingTextDecoderUserDefined(const TextEncoding&, const void*)
+static PassOwnPtr<TextCodec> newStreamingTextDecoderUserDefined(const TextEncoding&, const void*)
 {
-    return auto_ptr<TextCodec>(new TextCodecUserDefined);
+    return new TextCodecUserDefined;
 }
 
 void TextCodecUserDefined::registerCodecs(TextCodecRegistrar registrar)
@@ -52,14 +51,15 @@ void TextCodecUserDefined::registerCodecs(TextCodecRegistrar registrar)
 
 String TextCodecUserDefined::decode(const char* bytes, size_t length, bool, bool, bool&)
 {
-    StringBuffer buffer(length);
+    UChar* buffer;
+    String result = String::createUninitialized(length, buffer);
 
     for (size_t i = 0; i < length; ++i) {
         signed char c = bytes[i];
         buffer[i] = c & 0xF7FF;
     }
 
-    return String::adopt(buffer);
+    return result;
 }
 
 static CString encodeComplexUserDefined(const UChar* characters, size_t length, UnencodableHandling handling)

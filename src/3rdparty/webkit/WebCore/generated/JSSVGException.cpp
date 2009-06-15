@@ -39,7 +39,7 @@ using namespace JSC;
 
 namespace WebCore {
 
-ASSERT_CLASS_FITS_IN_CELL(JSSVGException)
+ASSERT_CLASS_FITS_IN_CELL(JSSVGException);
 
 /* Hash table */
 
@@ -81,13 +81,13 @@ public:
     JSSVGExceptionConstructor(ExecState* exec)
         : DOMObject(JSSVGExceptionConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
     {
-        putDirect(exec->propertyNames().prototype, JSSVGExceptionPrototype::self(exec), None);
+        putDirect(exec->propertyNames().prototype, JSSVGExceptionPrototype::self(exec, exec->lexicalGlobalObject()), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
     static const ClassInfo s_info;
 
-    static PassRefPtr<Structure> createStructure(JSValuePtr proto) 
+    static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
         return Structure::create(proto, TypeInfo(ObjectType, ImplementsHasInstance)); 
     }
@@ -120,9 +120,9 @@ static const HashTable JSSVGExceptionPrototypeTable =
 
 const ClassInfo JSSVGExceptionPrototype::s_info = { "SVGExceptionPrototype", 0, &JSSVGExceptionPrototypeTable, 0 };
 
-JSObject* JSSVGExceptionPrototype::self(ExecState* exec)
+JSObject* JSSVGExceptionPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSSVGException>(exec);
+    return getDOMPrototype<JSSVGException>(exec, globalObject);
 }
 
 bool JSSVGExceptionPrototype::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -142,12 +142,11 @@ JSSVGException::JSSVGException(PassRefPtr<Structure> structure, PassRefPtr<SVGEx
 JSSVGException::~JSSVGException()
 {
     forgetDOMObject(*Heap::heap(this)->globalData(), m_impl.get());
-
 }
 
-JSObject* JSSVGException::createPrototype(ExecState* exec)
+JSObject* JSSVGException::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSSVGExceptionPrototype(JSSVGExceptionPrototype::createStructure(exec->lexicalGlobalObject()->objectPrototype()));
+    return new (exec) JSSVGExceptionPrototype(JSSVGExceptionPrototype::createStructure(globalObject->objectPrototype()));
 }
 
 bool JSSVGException::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -155,69 +154,73 @@ bool JSSVGException::getOwnPropertySlot(ExecState* exec, const Identifier& prope
     return getStaticValueSlot<JSSVGException, Base>(exec, &JSSVGExceptionTable, this, propertyName, slot);
 }
 
-JSValuePtr jsSVGExceptionCode(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGExceptionCode(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGException* imp = static_cast<SVGException*>(static_cast<JSSVGException*>(asObject(slot.slotBase()))->impl());
     return jsNumber(exec, imp->code());
 }
 
-JSValuePtr jsSVGExceptionName(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGExceptionName(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGException* imp = static_cast<SVGException*>(static_cast<JSSVGException*>(asObject(slot.slotBase()))->impl());
     return jsString(exec, imp->name());
 }
 
-JSValuePtr jsSVGExceptionMessage(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGExceptionMessage(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGException* imp = static_cast<SVGException*>(static_cast<JSSVGException*>(asObject(slot.slotBase()))->impl());
     return jsString(exec, imp->message());
 }
 
-JSValuePtr jsSVGExceptionConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGExceptionConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     return static_cast<JSSVGException*>(asObject(slot.slotBase()))->getConstructor(exec);
 }
-JSValuePtr JSSVGException::getConstructor(ExecState* exec)
+JSValue JSSVGException::getConstructor(ExecState* exec)
 {
     return getDOMConstructor<JSSVGExceptionConstructor>(exec);
 }
 
-JSValuePtr jsSVGExceptionPrototypeFunctionToString(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsSVGExceptionPrototypeFunctionToString(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSSVGException::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSSVGException::s_info))
         return throwError(exec, TypeError);
     JSSVGException* castedThisObj = static_cast<JSSVGException*>(asObject(thisValue));
     SVGException* imp = static_cast<SVGException*>(castedThisObj->impl());
 
 
-    JSC::JSValuePtr result = jsString(exec, imp->toString());
+    JSC::JSValue result = jsString(exec, imp->toString());
     return result;
 }
 
 // Constant getters
 
-JSValuePtr jsSVGExceptionSVG_WRONG_TYPE_ERR(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsSVGExceptionSVG_WRONG_TYPE_ERR(ExecState* exec, const Identifier&, const PropertySlot&)
 {
     return jsNumber(exec, static_cast<int>(0));
 }
 
-JSValuePtr jsSVGExceptionSVG_INVALID_VALUE_ERR(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsSVGExceptionSVG_INVALID_VALUE_ERR(ExecState* exec, const Identifier&, const PropertySlot&)
 {
     return jsNumber(exec, static_cast<int>(1));
 }
 
-JSValuePtr jsSVGExceptionSVG_MATRIX_NOT_INVERTABLE(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsSVGExceptionSVG_MATRIX_NOT_INVERTABLE(ExecState* exec, const Identifier&, const PropertySlot&)
 {
     return jsNumber(exec, static_cast<int>(2));
 }
 
-JSC::JSValuePtr toJS(JSC::ExecState* exec, SVGException* object, SVGElement* context)
+JSC::JSValue toJS(JSC::ExecState* exec, SVGException* object, SVGElement* context)
 {
     return getDOMObjectWrapper<JSSVGException>(exec, object, context);
 }
-SVGException* toSVGException(JSC::JSValuePtr value)
+SVGException* toSVGException(JSC::JSValue value)
 {
-    return value->isObject(&JSSVGException::s_info) ? static_cast<JSSVGException*>(asObject(value))->impl() : 0;
+    return value.isObject(&JSSVGException::s_info) ? static_cast<JSSVGException*>(asObject(value))->impl() : 0;
 }
 
 }

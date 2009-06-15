@@ -37,7 +37,7 @@ using namespace JSC;
 
 namespace WebCore {
 
-ASSERT_CLASS_FITS_IN_CELL(JSSVGTextPositioningElement)
+ASSERT_CLASS_FITS_IN_CELL(JSSVGTextPositioningElement);
 
 /* Hash table */
 
@@ -74,9 +74,9 @@ static const HashTable JSSVGTextPositioningElementPrototypeTable =
 
 const ClassInfo JSSVGTextPositioningElementPrototype::s_info = { "SVGTextPositioningElementPrototype", 0, &JSSVGTextPositioningElementPrototypeTable, 0 };
 
-JSObject* JSSVGTextPositioningElementPrototype::self(ExecState* exec)
+JSObject* JSSVGTextPositioningElementPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSSVGTextPositioningElement>(exec);
+    return getDOMPrototype<JSSVGTextPositioningElement>(exec, globalObject);
 }
 
 const ClassInfo JSSVGTextPositioningElement::s_info = { "SVGTextPositioningElement", &JSSVGTextContentElement::s_info, &JSSVGTextPositioningElementTable, 0 };
@@ -86,9 +86,9 @@ JSSVGTextPositioningElement::JSSVGTextPositioningElement(PassRefPtr<Structure> s
 {
 }
 
-JSObject* JSSVGTextPositioningElement::createPrototype(ExecState* exec)
+JSObject* JSSVGTextPositioningElement::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSSVGTextPositioningElementPrototype(JSSVGTextPositioningElementPrototype::createStructure(JSSVGTextContentElementPrototype::self(exec)));
+    return new (exec) JSSVGTextPositioningElementPrototype(JSSVGTextPositioningElementPrototype::createStructure(JSSVGTextContentElementPrototype::self(exec, globalObject)));
 }
 
 bool JSSVGTextPositioningElement::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -96,36 +96,41 @@ bool JSSVGTextPositioningElement::getOwnPropertySlot(ExecState* exec, const Iden
     return getStaticValueSlot<JSSVGTextPositioningElement, Base>(exec, &JSSVGTextPositioningElementTable, this, propertyName, slot);
 }
 
-JSValuePtr jsSVGTextPositioningElementX(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGTextPositioningElementX(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGTextPositioningElement* imp = static_cast<SVGTextPositioningElement*>(static_cast<JSSVGTextPositioningElement*>(asObject(slot.slotBase()))->impl());
     RefPtr<SVGAnimatedLengthList> obj = imp->xAnimated();
     return toJS(exec, obj.get(), imp);
 }
 
-JSValuePtr jsSVGTextPositioningElementY(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGTextPositioningElementY(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGTextPositioningElement* imp = static_cast<SVGTextPositioningElement*>(static_cast<JSSVGTextPositioningElement*>(asObject(slot.slotBase()))->impl());
     RefPtr<SVGAnimatedLengthList> obj = imp->yAnimated();
     return toJS(exec, obj.get(), imp);
 }
 
-JSValuePtr jsSVGTextPositioningElementDx(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGTextPositioningElementDx(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGTextPositioningElement* imp = static_cast<SVGTextPositioningElement*>(static_cast<JSSVGTextPositioningElement*>(asObject(slot.slotBase()))->impl());
     RefPtr<SVGAnimatedLengthList> obj = imp->dxAnimated();
     return toJS(exec, obj.get(), imp);
 }
 
-JSValuePtr jsSVGTextPositioningElementDy(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGTextPositioningElementDy(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGTextPositioningElement* imp = static_cast<SVGTextPositioningElement*>(static_cast<JSSVGTextPositioningElement*>(asObject(slot.slotBase()))->impl());
     RefPtr<SVGAnimatedLengthList> obj = imp->dyAnimated();
     return toJS(exec, obj.get(), imp);
 }
 
-JSValuePtr jsSVGTextPositioningElementRotate(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGTextPositioningElementRotate(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGTextPositioningElement* imp = static_cast<SVGTextPositioningElement*>(static_cast<JSSVGTextPositioningElement*>(asObject(slot.slotBase()))->impl());
     RefPtr<SVGAnimatedNumberList> obj = imp->rotateAnimated();
     return toJS(exec, obj.get(), imp);

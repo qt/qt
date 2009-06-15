@@ -21,43 +21,41 @@
 #ifndef InlineBox_h
 #define InlineBox_h
 
-#include "RenderObject.h" // needed for RenderObject::PaintInfo
+#include "RenderBoxModelObject.h"
 #include "TextDirection.h"
 
 namespace WebCore {
 
+class HitTestRequest;
 class HitTestResult;
 class RootInlineBox;
 
-struct HitTestRequest;
 
 // InlineBox represents a rectangle that occurs on a line.  It corresponds to
 // some RenderObject (i.e., it represents a portion of that RenderObject).
 class InlineBox {
 public:
     InlineBox(RenderObject* obj)
-        : m_object(obj)
+        : m_next(0)
+        , m_prev(0)
+        , m_parent(0)
+        , m_renderer(obj)
         , m_x(0)
         , m_y(0)
         , m_width(0)
-        , m_height(0)
-        , m_baseline(0)
-        , m_next(0)
-        , m_prev(0)
-        , m_parent(0)
         , m_firstLine(false)
         , m_constructed(false)
         , m_bidiEmbeddingLevel(0)
         , m_dirty(false)
         , m_extracted(false)
-        , m_includeLeftEdge(false)
-        , m_includeRightEdge(false)
-        , m_hasTextChildren(true)
+#if ENABLE(SVG)
+        , m_isSVG(false)
+#endif
         , m_endsWithBreak(false)
         , m_hasSelectedChildren(false)
         , m_hasEllipsisBox(false)
         , m_dirOverride(false)
-        , m_treatAsText(true)
+        , m_isText(false)
         , m_determinedIfNextOnLineExists(false)
         , m_determinedIfPrevOnLineExists(false)
         , m_nextOnLineExists(false)
@@ -69,30 +67,28 @@ public:
     {
     }
 
-    InlineBox(RenderObject* obj, int x, int y, int width, int height, int baseline, bool firstLine, bool constructed,
+    InlineBox(RenderObject* obj, int x, int y, int width, bool firstLine, bool constructed,
               bool dirty, bool extracted, InlineBox* next, InlineBox* prev, InlineFlowBox* parent)
-        : m_object(obj)
+        : m_next(next)
+        , m_prev(prev)
+        , m_parent(parent)
+        , m_renderer(obj)
         , m_x(x)
         , m_y(y)
         , m_width(width)
-        , m_height(height)
-        , m_baseline(baseline)
-        , m_next(next)
-        , m_prev(prev)
-        , m_parent(parent)
         , m_firstLine(firstLine)
         , m_constructed(constructed)
         , m_bidiEmbeddingLevel(0)
         , m_dirty(dirty)
         , m_extracted(extracted)
-        , m_includeLeftEdge(false)
-        , m_includeRightEdge(false)
-        , m_hasTextChildren(true)
+#if ENABLE(SVG)
+        , m_isSVG(false)
+#endif
         , m_endsWithBreak(false)
         , m_hasSelectedChildren(false)   
         , m_hasEllipsisBox(false)
         , m_dirOverride(false)
-        , m_treatAsText(true)
+        , m_isText(false)
         , m_determinedIfNextOnLineExists(false)
         , m_determinedIfPrevOnLineExists(false)
         , m_nextOnLineExists(false)
@@ -134,14 +130,16 @@ public:
     void showTreeForThis() const;
 #endif
     virtual bool isInlineBox() { return false; }
-    virtual bool isInlineFlowBox() { return false; }
-    virtual bool isContainer() { return false; }
+    virtual bool isInlineFlowBox() const { return false; }
     virtual bool isInlineTextBox() { return false; }
-    virtual bool isRootInlineBox() { return false; }
+    virtual bool isRootInlineBox() const { return false; }
 #if ENABLE(SVG) 
     virtual bool isSVGRootInlineBox() { return false; }
+    bool isSVG() const { return m_isSVG; }
+    void setIsSVG(bool b) { m_isSVG = b; }
 #endif
-    virtual bool isText() const { return false; }
+    bool isText() const { return m_isText; }
+    void setIsText(bool b) { m_isText = b; }
 
     bool isConstructed() { return m_constructed; }
     virtual void setConstructed()
@@ -178,7 +176,7 @@ public:
     InlineBox* nextLeafChild();
     InlineBox* prevLeafChild();
         
-    RenderObject* object() const { return m_object; }
+    RenderObject* renderer() const { return m_renderer; }
 
     InlineFlowBox* parent() const
     {
@@ -187,29 +185,26 @@ public:
     }
     void setParent(InlineFlowBox* par) { m_parent = par; }
 
+    const RootInlineBox* root() const;
     RootInlineBox* root();
-    
+
     void setWidth(int w) { m_width = w; }
     int width() const { return m_width; }
 
-    void setXPos(int x) { m_x = x; }
-    int xPos() const { return m_x; }
+    // x() is the left side of the box in the parent's coordinate system.
+    void setX(int x) { m_x = x; }
+    int x() const { return m_x; }
 
-    void setYPos(int y) { m_y = y; }
-    int yPos() const { return m_y; }
+    // y() is the top of the box in the parent's coordinate system.
+    void setY(int y) { m_y = y; }
+    int y() const { return m_y; }
 
-    void setHeight(int h) { m_height = h; }
-    int height() const { return m_height; }
-    
-    void setBaseline(int b) { m_baseline = b; }
-    int baseline() const { return m_baseline; }
+    int height() const;
 
-    bool hasTextChildren() const { return m_hasTextChildren; }
-
-    virtual int topOverflow() { return yPos(); }
-    virtual int bottomOverflow() { return yPos() + height(); }
-    virtual int leftOverflow() { return xPos(); }
-    virtual int rightOverflow() { return xPos() + width(); }
+    virtual int topOverflow() const { return y(); }
+    virtual int bottomOverflow() const { return y() + height(); }
+    virtual int leftOverflow() const { return x(); }
+    virtual int rightOverflow() const { return x() + width(); }
 
     virtual int caretMinOffset() const;
     virtual int caretMaxOffset() const;
@@ -231,28 +226,40 @@ public:
     virtual RenderObject::SelectionState selectionState();
 
     virtual bool canAccommodateEllipsis(bool ltr, int blockEdge, int ellipsisWidth);
-    virtual int placeEllipsisBox(bool ltr, int blockEdge, int ellipsisWidth, bool&);
+    // visibleLeftEdge, visibleRightEdge are in the parent's coordinate system.
+    virtual int placeEllipsisBox(bool ltr, int visibleLeftEdge, int visibleRightEdge, int ellipsisWidth, bool&);
 
     void setHasBadParent();
 
     int toAdd() const { return m_toAdd; }
     
-    bool visibleToHitTesting() const { return object()->style()->visibility() == VISIBLE && object()->style()->pointerEvents() != PE_NONE; }
+    bool visibleToHitTesting() const { return renderer()->style()->visibility() == VISIBLE && renderer()->style()->pointerEvents() != PE_NONE; }
     
-public:
-    RenderObject* m_object;
+    // Use with caution! The type is not checked!
+    RenderBoxModelObject* boxModelObject() const
+    { 
+        if (!m_renderer->isText())
+            return static_cast<RenderBoxModelObject*>(m_renderer);
+        return 0;
+    }
 
-    int m_x;
-    int m_y;
-    int m_width;
-    int m_height;
-    int m_baseline;
+protected:
+#if ENABLE(SVG)
+    virtual int svgBoxHeight() const { return 0; }
+#endif
 
 private:
     InlineBox* m_next; // The next element on the same line as us.
     InlineBox* m_prev; // The previous element on the same line as us.
 
     InlineFlowBox* m_parent; // The box that contains us.
+
+public:
+    RenderObject* m_renderer;
+
+    int m_x;
+    int m_y;
+    int m_width;
     
     // Some of these bits are actually for subclasses and moved here to compact the structures.
 
@@ -266,10 +273,9 @@ protected:
     bool m_dirty : 1;
     bool m_extracted : 1;
 
-    // for InlineFlowBox
-    bool m_includeLeftEdge : 1;
-    bool m_includeRightEdge : 1;
-    bool m_hasTextChildren : 1;
+#if ENABLE(SVG)
+    bool m_isSVG : 1;
+#endif
 
     // for RootInlineBox
     bool m_endsWithBreak : 1;  // Whether the line ends with a <br>.
@@ -279,13 +285,13 @@ protected:
     // for InlineTextBox
 public:
     bool m_dirOverride : 1;
-    bool m_treatAsText : 1; // Whether or not to treat a <br> as text for the purposes of line height.
+    bool m_isText : 1; // Whether or not this object represents text with a non-zero height. Includes non-image list markers, text boxes.
 protected:
     mutable bool m_determinedIfNextOnLineExists : 1;
     mutable bool m_determinedIfPrevOnLineExists : 1;
     mutable bool m_nextOnLineExists : 1;
     mutable bool m_prevOnLineExists : 1;
-    int m_toAdd : 13; // for justified text
+    int m_toAdd : 12; // for justified text
 
 #ifndef NDEBUG
 private:

@@ -29,8 +29,8 @@
 #include "config.h"
 #include "JSCustomSQLStatementErrorCallback.h"
 
-#include "CString.h"
-#include "DOMWindow.h"
+#if ENABLE(DATABASE)
+
 #include "Frame.h"
 #include "ScriptController.h"
 #include "JSSQLError.h"
@@ -60,9 +60,9 @@ bool JSCustomSQLStatementErrorCallback::handleEvent(SQLTransaction* transaction,
         
     JSC::JSLock lock(false);
         
-    JSValuePtr handleEventFunction = m_callback->get(exec, Identifier(exec, "handleEvent"));
+    JSValue handleEventFunction = m_callback->get(exec, Identifier(exec, "handleEvent"));
     CallData handleEventCallData;
-    CallType handleEventCallType = handleEventFunction->getCallData(handleEventCallData);
+    CallType handleEventCallType = handleEventFunction.getCallData(handleEventCallData);
     CallData callbackCallData;
     CallType callbackCallType = CallTypeNone;
 
@@ -76,17 +76,17 @@ bool JSCustomSQLStatementErrorCallback::handleEvent(SQLTransaction* transaction,
         
     RefPtr<JSCustomSQLStatementErrorCallback> protect(this);
         
-    ArgList args;
+    MarkedArgumentBuffer args;
     args.append(toJS(exec, transaction));
     args.append(toJS(exec, error));
         
-    JSValuePtr result;
-    globalObject->startTimeoutCheck();
+    JSValue result;
+    globalObject->globalData()->timeoutChecker.start();
     if (handleEventCallType != CallTypeNone)
         result = call(exec, handleEventFunction, handleEventCallType, handleEventCallData, m_callback, args);
     else
         result = call(exec, m_callback, callbackCallType, callbackCallData, m_callback, args);
-    globalObject->stopTimeoutCheck();
+    globalObject->globalData()->timeoutChecker.stop();
         
     if (exec->hadException()) {
         reportCurrentException(exec);
@@ -98,9 +98,11 @@ bool JSCustomSQLStatementErrorCallback::handleEvent(SQLTransaction* transaction,
         return true;
     }
         
-    Document::updateDocumentsRendering();
+    Document::updateStyleForAllDocuments();
 
-    return result->toBoolean(exec);
+    return result.toBoolean(exec);
 }
 
 }
+
+#endif // ENABLE(DATABASE)

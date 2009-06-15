@@ -32,23 +32,23 @@ namespace WebCore {
 using namespace JSC;
 using namespace HTMLNames;
 
-JSValuePtr JSHTMLSelectElement::remove(ExecState* exec, const ArgList& args)
+JSValue JSHTMLSelectElement::remove(ExecState* exec, const ArgList& args)
 {
     HTMLSelectElement& select = *static_cast<HTMLSelectElement*>(impl());
 
     // we support both options index and options objects
-    HTMLElement* element = toHTMLElement(args.at(exec, 0));
+    HTMLElement* element = toHTMLElement(args.at(0));
     if (element && element->hasTagName(optionTag))
         select.remove(static_cast<HTMLOptionElement*>(element)->index());
     else
-        select.remove(args.at(exec, 0)->toInt32(exec));
+        select.remove(args.at(0).toInt32(exec));
 
     return jsUndefined();
 }
 
-void selectIndexSetter(HTMLSelectElement* select, JSC::ExecState* exec, unsigned index, JSC::JSValuePtr value)
+void selectIndexSetter(HTMLSelectElement* select, JSC::ExecState* exec, unsigned index, JSC::JSValue value)
 {
-    if (value->isUndefinedOrNull())
+    if (value.isUndefinedOrNull())
         select->remove(index);
     else {
         ExceptionCode ec = 0;
@@ -61,7 +61,7 @@ void selectIndexSetter(HTMLSelectElement* select, JSC::ExecState* exec, unsigned
     }
 }
 
-void JSHTMLSelectElement::indexSetter(JSC::ExecState* exec, unsigned index, JSC::JSValuePtr value)
+void JSHTMLSelectElement::indexSetter(JSC::ExecState* exec, unsigned index, JSC::JSValue value)
 {
     selectIndexSetter(static_cast<HTMLSelectElement*>(impl()), exec, index, value);
 }

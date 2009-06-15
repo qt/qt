@@ -47,7 +47,7 @@ QT_END_NAMESPACE
 #endif
 
 #if USE(GOOGLEURL)
-#include "GoogleURLPrivate.h"
+#include "KURLGooglePrivate.h"
 #endif
 
 namespace WebCore {
@@ -66,19 +66,8 @@ public:
     KURL() { invalidate(); }
 
     // The argument is an absolute URL string. The string is assumed to be
-    // already encoded.
-    // FIXME: This constructor has a special case for strings that start with
-    // "/", prepending "file://" to such strings; it would be good to get
-    // rid of that special case.
+    // an already encoded (ASCII-only) valid absolute URL.
     explicit KURL(const char*);
-
-    // The argument is an absolute URL string. The string is assumed to be
-    // already encoded.
-    // FIXME: For characters with codes other than 0000-00FF will be chopped
-    // off, so this call is currently not safe to use with arbitrary strings.
-    // FIXME: This constructor has a special case for strings that start with
-    // "/", prepending "file://" to such strings; it would be good to get
-    // rid of that special case.
     explicit KURL(const String&);
 
     // Resolves the relative URL with the given base URL. If provided, the
@@ -95,7 +84,7 @@ public:
     // For conversions for other structures that have already parsed and
     // canonicalized the URL. The input must be exactly what KURL would have
     // done with the same input.
-    KURL(const char* canonicalSpec, int canonicalSpecLen,
+    KURL(const CString& canonicalSpec,
          const url_parse::Parsed& parsed, bool isValid);
 #endif
 
@@ -130,9 +119,11 @@ public:
     String pass() const;
     String path() const;
     String lastPathComponent() const;
-    String query() const; // Includes the "?".
-    String ref() const; // Does *not* include the "#".
+    String query() const;
+    String ref() const;
     bool hasRef() const;
+
+    String baseAsString() const;
 
     String prettyURL() const;
     String fileSystemPath() const;
@@ -140,6 +131,7 @@ public:
     // Returns true if the current URL's protocol is the same as the null-
     // terminated ASCII argument. The argument must be lower-case.
     bool protocolIs(const char*) const;
+    bool protocolInHTTPFamily() const;
     bool isLocalFile() const;
 
     void setProtocol(const String&);
@@ -214,10 +206,10 @@ private:
     bool isHierarchical() const;
     static bool protocolIs(const String&, const char*);
 #if USE(GOOGLEURL)
-    friend class GoogleURLPrivate;
+    friend class KURLGooglePrivate;
     void parse(const char* url, const String* originalString);  // KURLMac calls this.
     void copyToBuffer(Vector<char, 512>& buffer) const;  // KURLCFNet uses this.
-    GoogleURLPrivate m_url;
+    KURLGooglePrivate m_url;
 #else  // !USE(GOOGLEURL)
     void init(const KURL&, const String&, const TextEncoding&);
     void copyToBuffer(Vector<char, 512>& buffer) const;
@@ -229,7 +221,9 @@ private:
     void parse(const char* url, const String* originalString);
 
     String m_string;
-    bool m_isValid;
+    bool m_isValid : 1;
+    bool m_protocolInHTTPFamily : 1;
+
     int m_schemeEnd;
     int m_userStart;
     int m_userEnd;
@@ -257,8 +251,11 @@ const KURL& blankURL();
 
 // Functions to do URL operations on strings.
 // These are operations that aren't faster on a parsed URL.
+// These are also different from the KURL functions in that they don't require the string to be a valid and parsable URL.
+// This is especially important because valid javascript URLs are not necessarily considered valid by KURL.
 
 bool protocolIs(const String& url, const char* protocol);
+bool protocolIsJavaScript(const String& url);
 
 String mimeTypeFromDataURL(const String& url);
 
@@ -320,6 +317,11 @@ inline bool KURL::isEmpty() const
 inline bool KURL::isValid() const
 {
     return m_isValid;
+}
+
+inline bool KURL::protocolInHTTPFamily() const
+{
+    return m_protocolInHTTPFamily;
 }
 
 inline unsigned KURL::hostStart() const

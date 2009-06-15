@@ -129,11 +129,16 @@ Q_GLOBAL_STATIC(QConnectionDict, dbDict)
 class QSqlDatabasePrivate
 {
 public:
-    QSqlDatabasePrivate(QSqlDriver *dr = 0):
+    QSqlDatabasePrivate(QSqlDatabase *d, QSqlDriver *dr = 0):
+        q(d),
         driver(dr),
         port(-1)
     {
         ref = 1;
+        if(driver)
+            precisionPolicy = driver->numericalPrecisionPolicy();
+        else
+            precisionPolicy= QSql::LowPrecisionDouble;
     }
     QSqlDatabasePrivate(const QSqlDatabasePrivate &other);
     ~QSqlDatabasePrivate();
@@ -142,6 +147,7 @@ public:
     void disable();
 
     QAtomicInt ref;
+    QSqlDatabase *q;
     QSqlDriver* driver;
     QString dbname;
     QString uname;
@@ -151,6 +157,7 @@ public:
     int port;
     QString connOptions;
     QString connName;
+    QSql::NumericalPrecisionPolicy precisionPolicy;
 
     static QSqlDatabasePrivate *shared_null();
     static QSqlDatabase database(const QString& name, bool open);
@@ -164,6 +171,7 @@ public:
 QSqlDatabasePrivate::QSqlDatabasePrivate(const QSqlDatabasePrivate &other)
 {
     ref = 1;
+    q = other.q;
     dbname = other.dbname;
     uname = other.uname;
     pword = other.pword;
@@ -172,6 +180,7 @@ QSqlDatabasePrivate::QSqlDatabasePrivate(const QSqlDatabasePrivate &other)
     port = other.port;
     connOptions = other.connOptions;
     driver = other.driver;
+    precisionPolicy = other.precisionPolicy;
 }
 
 QSqlDatabasePrivate::~QSqlDatabasePrivate()
@@ -216,7 +225,7 @@ DriverDict &QSqlDatabasePrivate::driverDict()
 QSqlDatabasePrivate *QSqlDatabasePrivate::shared_null()
 {
     static QSqlNullDriver dr;
-    static QSqlDatabasePrivate n(&dr);
+    static QSqlDatabasePrivate n(NULL, &dr);
     return &n;
 }
 
@@ -281,6 +290,7 @@ QSqlDatabase QSqlDatabasePrivate::database(const QString& name, bool open)
 */
 void QSqlDatabasePrivate::copy(const QSqlDatabasePrivate *other)
 {
+    q = other->q;
     dbname = other->dbname;
     uname = other->uname;
     pword = other->pword;
@@ -288,6 +298,7 @@ void QSqlDatabasePrivate::copy(const QSqlDatabasePrivate *other)
     drvName = other->drvName;
     port = other->port;
     connOptions = other->connOptions;
+    precisionPolicy = other->precisionPolicy;
 }
 
 void QSqlDatabasePrivate::disable()
@@ -658,7 +669,7 @@ QStringList QSqlDatabase::connectionNames()
 
 QSqlDatabase::QSqlDatabase(const QString &type)
 {
-    d = new QSqlDatabasePrivate();
+    d = new QSqlDatabasePrivate(this);
     d->init(type);
 }
 
@@ -670,7 +681,7 @@ QSqlDatabase::QSqlDatabase(const QString &type)
 
 QSqlDatabase::QSqlDatabase(QSqlDriver *driver)
 {
-    d = new QSqlDatabasePrivate(driver);
+    d = new QSqlDatabasePrivate(this, driver);
 }
 
 /*!
@@ -1468,6 +1479,42 @@ QString QSqlDatabase::connectionName() const
 {
     return d->connName;
 }
+
+/*!
+
+  Sets the default numerical precision policy that queries use when created
+  on this database connection.
+
+  Note: Drivers that don't support fetching numerical values with low
+  precision will ignore the precision policy. You can use
+  QSqlDriver::hasFeature() to find out whether a driver supports this
+  feature.
+
+  Note: Setting the default precision policy doesn't affect any currently
+  active queries.
+
+  \sa QSql::NumericalPrecisionPolicy, numericalPrecisionPolicy(), QSqlQuery::setNumericalPrecisionPolicy(), QSqlQuery::numericalPrecisionPolicy()
+*/
+void QSqlDatabase::setNumericalPrecisionPolicy(QSql::NumericalPrecisionPolicy precisionPolicy)
+{
+    if(driver())
+        driver()->setNumericalPrecisionPolicy(precisionPolicy);
+    d->precisionPolicy = precisionPolicy;
+}
+
+/*!
+  Returns the current default precision policy for the database connection.
+
+  \sa QSql::NumericalPrecisionPolicy, setNumericalPrecisionPolicy(), QSqlQuery::numericalPrecisionPolicy(), QSqlQuery::setNumericalPrecisionPolicy()
+*/
+QSql::NumericalPrecisionPolicy QSqlDatabase::numericalPrecisionPolicy() const
+{
+    if(driver())
+        return driver()->numericalPrecisionPolicy();
+    else
+        return d->precisionPolicy;
+}
+
 
 #ifndef QT_NO_DEBUG_STREAM
 QDebug operator<<(QDebug dbg, const QSqlDatabase &d)

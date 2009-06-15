@@ -46,9 +46,24 @@ WebInspector.DatabasesPanel = function(database)
 
     this.sidebarTree = new TreeOutline(this.sidebarTreeElement);
 
-    this.databaseViews = document.createElement("div");
-    this.databaseViews.id = "database-views";
-    this.element.appendChild(this.databaseViews);
+    this.databasesListTreeElement = new WebInspector.SidebarSectionTreeElement(WebInspector.UIString("DATABASES"), {}, true);
+    this.sidebarTree.appendChild(this.databasesListTreeElement);
+    this.databasesListTreeElement.expand();
+
+    this.localStorageListTreeElement = new WebInspector.SidebarSectionTreeElement(WebInspector.UIString("LOCAL STORAGE"), {}, true);
+    this.sidebarTree.appendChild(this.localStorageListTreeElement);
+    this.localStorageListTreeElement.expand();
+
+    this.sessionStorageListTreeElement = new WebInspector.SidebarSectionTreeElement(WebInspector.UIString("SESSION STORAGE"), {}, true);
+    this.sidebarTree.appendChild(this.sessionStorageListTreeElement);
+    this.sessionStorageListTreeElement.expand();
+
+    this.storageViews = document.createElement("div");
+    this.storageViews.id = "storage-views";
+    this.element.appendChild(this.storageViews);
+
+    this.storageViewStatusBarItemsContainer = document.createElement("div");
+    this.storageViewStatusBarItemsContainer.id = "storage-view-status-bar-items";
 
     this.reset();
 }
@@ -59,6 +74,11 @@ WebInspector.DatabasesPanel.prototype = {
     get toolbarItemLabel()
     {
         return WebInspector.UIString("Databases");
+    },
+
+    get statusBarItems()
+    {
+        return [this.storageViewStatusBarItemsContainer];
     },
 
     show: function()
@@ -81,8 +101,23 @@ WebInspector.DatabasesPanel.prototype = {
 
         this._databases = [];
 
-        this.sidebarTree.removeChildren();
-        this.databaseViews.removeChildren();
+        if (this._domStorage) {
+            var domStorageLength = this._domStorage.length;
+            for (var i = 0; i < domStorageLength; ++i) {
+                var domStorage = this._domStorage[i];
+
+                delete domStorage._domStorageView;
+            }
+        }
+
+        this._domStorage = [];
+
+        this.databasesListTreeElement.removeChildren();
+        this.localStorageListTreeElement.removeChildren();
+        this.sessionStorageListTreeElement.removeChildren();
+        this.storageViews.removeChildren();
+        
+        this.storageViewStatusBarItemsContainer.removeChildren();
     },
 
     handleKeyEvent: function(event)
@@ -96,8 +131,18 @@ WebInspector.DatabasesPanel.prototype = {
 
         var databaseTreeElement = new WebInspector.DatabaseSidebarTreeElement(database);
         database._databasesTreeElement = databaseTreeElement;
+        this.databasesListTreeElement.appendChild(databaseTreeElement);
+    },
 
-        this.sidebarTree.appendChild(databaseTreeElement);
+    addDOMStorage: function(domStorage)
+    {
+        this._domStorage.push(domStorage);
+        var domStorageTreeElement = new WebInspector.DOMStorageSidebarTreeElement(domStorage);
+        domStorage._domStorageTreeElement = domStorageTreeElement;
+        if (domStorage.isLocalStorage)
+            this.localStorageListTreeElement.appendChild(domStorageTreeElement);
+        else
+            this.sessionStorageListTreeElement.appendChild(domStorageTreeElement);
     },
 
     showDatabase: function(database, tableName)
@@ -105,8 +150,8 @@ WebInspector.DatabasesPanel.prototype = {
         if (!database)
             return;
 
-        if (this.visibleDatabaseView)
-            this.visibleDatabaseView.hide();
+        if (this.visibleView)
+            this.visibleView.hide();
 
         var view;
         if (tableName) {
@@ -125,16 +170,46 @@ WebInspector.DatabasesPanel.prototype = {
             }
         }
 
-        view.show(this.databaseViews);
+        view.show(this.storageViews);
 
-        this.visibleDatabaseView = view;
+        this.visibleView = view;
+
+        this.storageViewStatusBarItemsContainer.removeChildren();
+        var statusBarItems = view.statusBarItems;
+        for (var i = 0; i < statusBarItems.length; ++i)
+            this.storageViewStatusBarItemsContainer.appendChild(statusBarItems[i]);
+    },
+
+    showDOMStorage: function(domStorage)
+    {
+        if (!domStorage)
+            return;
+
+        if (this.visibleView)
+            this.visibleView.hide();
+
+        var view;
+        view = domStorage._domStorageView;
+        if (!view) {
+            view = new WebInspector.DOMStorageItemsView(domStorage);
+            domStorage._domStorageView = view;
+        }
+
+        view.show(this.storageViews);
+
+        this.visibleView = view;
+
+        this.storageViewStatusBarItemsContainer.removeChildren();
+        var statusBarItems = view.statusBarItems;
+        for (var i = 0; i < statusBarItems.length; ++i)
+            this.storageViewStatusBarItemsContainer.appendChild(statusBarItems[i]);
     },
 
     closeVisibleView: function()
     {
-        if (this.visibleDatabaseView)
-            this.visibleDatabaseView.hide();
-        delete this.visibleDatabaseView;
+        if (this.visibleView)
+            this.visibleView.hide();
+        delete this.visibleView;
     },
 
     updateDatabaseTables: function(database)
@@ -155,7 +230,7 @@ WebInspector.DatabasesPanel.prototype = {
 
         for (var tableName in database._tableViews) {
             if (!(tableName in tableNamesHash)) {
-                if (this.visibleDatabaseView === database._tableViews[tableName])
+                if (this.visibleView === database._tableViews[tableName])
                     this.closeVisibleView();
                 delete database._tableViews[tableName];
             }
@@ -241,6 +316,60 @@ WebInspector.DatabasesPanel.prototype = {
         return dataGrid;
     },
 
+    dataGridForDOMStorage: function(domStorage)
+    {
+        if (!domStorage.length)
+            return null;
+
+        var columns = {};
+        columns[0] = {};
+        columns[1] = {};
+        columns[0].title = WebInspector.UIString("Key");
+        columns[0].width = columns[0].title.length;
+        columns[1].title = WebInspector.UIString("Value");
+        columns[1].width = columns[0].title.length;
+
+        var nodes = [];
+        
+        var length = domStorage.length;
+        for (index = 0; index < domStorage.length; index++) {
+            var data = {};
+       
+            var key = String(domStorage.key(index));
+            data[0] = key;
+            if (key.length > columns[0].width)
+                columns[0].width = key.length;
+        
+            var value = String(domStorage.getItem(key));
+            data[1] = value;
+            if (value.length > columns[1].width)
+                columns[1].width = value.length;
+            var node = new WebInspector.DataGridNode(data, false);
+            node.selectable = true;
+            nodes.push(node);
+        }
+
+        var totalColumnWidths = columns[0].width + columns[1].width;
+        width = Math.round((columns[0].width * 100) / totalColumnWidths);
+        const minimumPrecent = 10;
+        if (width < minimumPrecent)
+            width = minimumPrecent;
+        if (width > 100 - minimumPrecent)
+            width = 100 - minimumPrecent;
+        columns[0].width = width;
+        columns[1].width = 100 - width;
+        columns[0].width += "%";
+        columns[1].width += "%";
+
+        var dataGrid = new WebInspector.DOMStorageDataGrid(columns);
+        var length = nodes.length;
+        for (var i = 0; i < length; ++i)
+            dataGrid.appendChild(nodes[i]);
+        if (length > 0)
+            nodes[0].selected = true;
+        return dataGrid;
+    },
+
     _startSidebarDragging: function(event)
     {
         WebInspector.elementDragStart(this.sidebarResizeElement, this._sidebarDragging.bind(this), this._endSidebarDragging.bind(this), event, "col-resize");
@@ -277,7 +406,8 @@ WebInspector.DatabasesPanel.prototype = {
         this._currentSidebarWidth = width;
 
         this.sidebarElement.style.width = width + "px";
-        this.databaseViews.style.left = width + "px";
+        this.storageViews.style.left = width + "px";
+        this.storageViewStatusBarItemsContainer.style.left = width + "px";
         this.sidebarResizeElement.style.left = (width - 3) + "px";
     }
 }
@@ -355,3 +485,42 @@ WebInspector.SidebarDatabaseTableTreeElement.prototype = {
 }
 
 WebInspector.SidebarDatabaseTableTreeElement.prototype.__proto__ = WebInspector.SidebarTreeElement.prototype;
+
+WebInspector.DOMStorageSidebarTreeElement = function(domStorage)
+{
+
+    this.domStorage = domStorage;
+
+    WebInspector.SidebarTreeElement.call(this, "domstorage-sidebar-tree-item", domStorage, "", null, false);
+
+    this.refreshTitles();
+}
+
+WebInspector.DOMStorageSidebarTreeElement.prototype = {
+    onselect: function()
+    {
+        WebInspector.panels.databases.showDOMStorage(this.domStorage);
+    },
+
+    get mainTitle()
+    {
+        return this.domStorage.domain;
+    },
+
+    set mainTitle(x)
+    {
+        // Do nothing.
+    },
+
+    get subtitle()
+    {
+        return ""; //this.database.displayDomain;
+    },
+
+    set subtitle(x)
+    {
+        // Do nothing.
+    }
+}
+
+WebInspector.DOMStorageSidebarTreeElement.prototype.__proto__ = WebInspector.SidebarTreeElement.prototype;

@@ -22,8 +22,10 @@
 #ifndef SVGFEBlend_h
 #define SVGFEBlend_h
 
-#if ENABLE(SVG) && ENABLE(SVG_FILTERS)
+#if ENABLE(FILTERS)
 #include "FilterEffect.h"
+
+#include "Filter.h"
 
 namespace WebCore {
 
@@ -46,8 +48,8 @@ namespace WebCore {
         BlendModeType blendMode() const;
         void setBlendMode(BlendModeType);
         
-        virtual void apply();
-        virtual void dump();
+        void apply(Filter*);
+        void dump();
 
     private:
         FEBlend(FilterEffect*, FilterEffect*, BlendModeType);
@@ -59,6 +61,6 @@ namespace WebCore {
 
 } // namespace WebCore
 
-#endif // ENABLE(SVG) && ENABLE(SVG_FILTERS)
+#endif // ENABLE(FILTERS)
 
 #endif // SVGFEBlend_h

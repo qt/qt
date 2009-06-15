@@ -31,33 +31,34 @@ class JSHTMLTableSectionElement : public JSHTMLElement {
     typedef JSHTMLElement Base;
 public:
     JSHTMLTableSectionElement(PassRefPtr<JSC::Structure>, PassRefPtr<HTMLTableSectionElement>);
-    static JSC::JSObject* createPrototype(JSC::ExecState*);
+    static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
-    virtual void put(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::JSValuePtr, JSC::PutPropertySlot&);
+    virtual void put(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::JSValue, JSC::PutPropertySlot&);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
     static const JSC::ClassInfo s_info;
 
-    static PassRefPtr<JSC::Structure> createStructure(JSC::JSValuePtr prototype)
+    static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
     {
         return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType));
     }
 
-    static JSC::JSValuePtr getConstructor(JSC::ExecState*);
+    static JSC::JSValue getConstructor(JSC::ExecState*);
     HTMLTableSectionElement* impl() const
     {
         return static_cast<HTMLTableSectionElement*>(Base::impl());
     }
 };
 
-HTMLTableSectionElement* toHTMLTableSectionElement(JSC::JSValuePtr);
+HTMLTableSectionElement* toHTMLTableSectionElement(JSC::JSValue);
 
 class JSHTMLTableSectionElementPrototype : public JSC::JSObject {
+    typedef JSC::JSObject Base;
 public:
-    static JSC::JSObject* self(JSC::ExecState*);
+    static JSC::JSObject* self(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
     static const JSC::ClassInfo s_info;
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier&, JSC::PropertySlot&);
-    static PassRefPtr<JSC::Structure> createStructure(JSC::JSValuePtr prototype)
+    static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
     {
         return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType));
     }
@@ -66,20 +67,20 @@ public:
 
 // Functions
 
-JSC::JSValuePtr jsHTMLTableSectionElementPrototypeFunctionInsertRow(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr, const JSC::ArgList&);
-JSC::JSValuePtr jsHTMLTableSectionElementPrototypeFunctionDeleteRow(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr, const JSC::ArgList&);
+JSC::JSValue JSC_HOST_CALL jsHTMLTableSectionElementPrototypeFunctionInsertRow(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
+JSC::JSValue JSC_HOST_CALL jsHTMLTableSectionElementPrototypeFunctionDeleteRow(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
 // Attributes
 
-JSC::JSValuePtr jsHTMLTableSectionElementAlign(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-void setJSHTMLTableSectionElementAlign(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr);
-JSC::JSValuePtr jsHTMLTableSectionElementCh(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-void setJSHTMLTableSectionElementCh(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr);
-JSC::JSValuePtr jsHTMLTableSectionElementChOff(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-void setJSHTMLTableSectionElementChOff(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr);
-JSC::JSValuePtr jsHTMLTableSectionElementVAlign(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-void setJSHTMLTableSectionElementVAlign(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr);
-JSC::JSValuePtr jsHTMLTableSectionElementRows(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValuePtr jsHTMLTableSectionElementConstructor(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsHTMLTableSectionElementAlign(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSHTMLTableSectionElementAlign(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsHTMLTableSectionElementCh(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSHTMLTableSectionElementCh(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsHTMLTableSectionElementChOff(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSHTMLTableSectionElementChOff(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsHTMLTableSectionElementVAlign(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSHTMLTableSectionElementVAlign(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsHTMLTableSectionElementRows(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsHTMLTableSectionElementConstructor(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
 
 } // namespace WebCore
 

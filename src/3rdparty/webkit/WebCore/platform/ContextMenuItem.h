@@ -124,6 +124,21 @@ namespace WebCore {
         ContextMenuItemTagTextDirectionDefault,
         ContextMenuItemTagTextDirectionLeftToRight,
         ContextMenuItemTagTextDirectionRightToLeft,
+#if PLATFORM(MAC)
+        ContextMenuItemTagCorrectSpellingAutomatically,
+        ContextMenuItemTagSubstitutionsMenu,
+        ContextMenuItemTagShowSubstitutions,
+        ContextMenuItemTagSmartCopyPaste,
+        ContextMenuItemTagSmartQuotes,
+        ContextMenuItemTagSmartDashes,
+        ContextMenuItemTagSmartLinks,
+        ContextMenuItemTagTextReplacement,
+        ContextMenuItemTagTransformationsMenu,
+        ContextMenuItemTagMakeUpperCase,
+        ContextMenuItemTagMakeLowerCase,
+        ContextMenuItemTagCapitalize,
+        ContextMenuItemTagChangeBack,
+#endif
         ContextMenuItemBaseApplicationTag = 10000
     };
 

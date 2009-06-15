@@ -35,8 +35,8 @@
 #include "Database.h"
 #include "Document.h"
 #include "Element.h"
+#include "Event.h"
 #include "EventListener.h"
-#include "History.h"
 #include "JSAttr.h"
 #include "JSBarInfo.h"
 #include "JSCDATASection.h"
@@ -57,6 +57,8 @@
 #include "JSCSSVariablesRule.h"
 #include "JSCanvasRenderingContext2D.h"
 #include "JSCharacterData.h"
+#include "JSClientRect.h"
+#include "JSClientRectList.h"
 #include "JSClipboard.h"
 #include "JSComment.h"
 #include "JSConsole.h"
@@ -145,9 +147,7 @@
 #include "JSHTMLTitleElement.h"
 #include "JSHTMLUListElement.h"
 #include "JSHTMLVideoElement.h"
-#include "JSHistory.h"
 #include "JSKeyboardEvent.h"
-#include "JSLocation.h"
 #include "JSMediaError.h"
 #include "JSMediaList.h"
 #include "JSMessageEvent.h"
@@ -195,9 +195,13 @@
 #include "JSWebKitAnimationEvent.h"
 #include "JSWebKitCSSKeyframeRule.h"
 #include "JSWebKitCSSKeyframesRule.h"
+#include "JSWebKitCSSMatrix.h"
 #include "JSWebKitCSSTransformValue.h"
+#include "JSWebKitPoint.h"
 #include "JSWebKitTransitionEvent.h"
 #include "JSWheelEvent.h"
+#include "JSWorker.h"
+#include "JSXMLHttpRequest.h"
 #include "JSXMLHttpRequestException.h"
 #include "JSXMLHttpRequestUpload.h"
 #include "JSXMLSerializer.h"
@@ -205,10 +209,11 @@
 #include "JSXPathException.h"
 #include "JSXPathResult.h"
 #include "KURL.h"
-#include "Location.h"
 #include "Navigator.h"
+#include "RegisteredEventListener.h"
 #include "Screen.h"
 #include "Storage.h"
+#include "WebKitPoint.h"
 
 #include <runtime/Error.h>
 #include <runtime/JSNumberCell.h>
@@ -218,11 +223,11 @@ using namespace JSC;
 
 namespace WebCore {
 
-ASSERT_CLASS_FITS_IN_CELL(JSDOMWindow)
+ASSERT_CLASS_FITS_IN_CELL(JSDOMWindow);
 
 /* Hash table */
 
-static const HashTableValue JSDOMWindowTableValues[227] =
+static const HashTableValue JSDOMWindowTableValues[271] =
 {
     { "screen", DontDelete|ReadOnly, (intptr_t)jsDOMWindowScreen, (intptr_t)0 },
     { "history", DontDelete|ReadOnly, (intptr_t)jsDOMWindowHistory, (intptr_t)0 },
@@ -235,6 +240,8 @@ static const HashTableValue JSDOMWindowTableValues[227] =
     { "navigator", DontDelete, (intptr_t)jsDOMWindowNavigator, (intptr_t)setJSDOMWindowNavigator },
     { "clientInformation", DontDelete, (intptr_t)jsDOMWindowClientInformation, (intptr_t)setJSDOMWindowClientInformation },
     { "location", DontDelete, (intptr_t)jsDOMWindowLocation, (intptr_t)setJSDOMWindowLocation },
+    { "event", DontDelete, (intptr_t)jsDOMWindowEvent, (intptr_t)setJSDOMWindowEvent },
+    { "crypto", DontDelete|ReadOnly, (intptr_t)jsDOMWindowCrypto, (intptr_t)0 },
     { "frameElement", DontDelete|ReadOnly, (intptr_t)jsDOMWindowFrameElement, (intptr_t)0 },
     { "offscreenBuffering", DontDelete, (intptr_t)jsDOMWindowOffscreenBuffering, (intptr_t)setJSDOMWindowOffscreenBuffering },
     { "outerHeight", DontDelete, (intptr_t)jsDOMWindowOuterHeight, (intptr_t)setJSDOMWindowOuterHeight },
@@ -268,33 +275,66 @@ static const HashTableValue JSDOMWindowTableValues[227] =
     { "localStorage", DontDelete|ReadOnly, (intptr_t)jsDOMWindowLocalStorage, (intptr_t)0 },
     { "console", DontDelete, (intptr_t)jsDOMWindowConsole, (intptr_t)setJSDOMWindowConsole },
     { "onabort", DontDelete, (intptr_t)jsDOMWindowOnabort, (intptr_t)setJSDOMWindowOnabort },
+    { "onbeforeunload", DontDelete, (intptr_t)jsDOMWindowOnbeforeunload, (intptr_t)setJSDOMWindowOnbeforeunload },
     { "onblur", DontDelete, (intptr_t)jsDOMWindowOnblur, (intptr_t)setJSDOMWindowOnblur },
+    { "oncanplay", DontDelete, (intptr_t)jsDOMWindowOncanplay, (intptr_t)setJSDOMWindowOncanplay },
+    { "oncanplaythrough", DontDelete, (intptr_t)jsDOMWindowOncanplaythrough, (intptr_t)setJSDOMWindowOncanplaythrough },
     { "onchange", DontDelete, (intptr_t)jsDOMWindowOnchange, (intptr_t)setJSDOMWindowOnchange },
     { "onclick", DontDelete, (intptr_t)jsDOMWindowOnclick, (intptr_t)setJSDOMWindowOnclick },
+    { "oncontextmenu", DontDelete, (intptr_t)jsDOMWindowOncontextmenu, (intptr_t)setJSDOMWindowOncontextmenu },
     { "ondblclick", DontDelete, (intptr_t)jsDOMWindowOndblclick, (intptr_t)setJSDOMWindowOndblclick },
+    { "ondrag", DontDelete, (intptr_t)jsDOMWindowOndrag, (intptr_t)setJSDOMWindowOndrag },
+    { "ondragend", DontDelete, (intptr_t)jsDOMWindowOndragend, (intptr_t)setJSDOMWindowOndragend },
+    { "ondragenter", DontDelete, (intptr_t)jsDOMWindowOndragenter, (intptr_t)setJSDOMWindowOndragenter },
+    { "ondragleave", DontDelete, (intptr_t)jsDOMWindowOndragleave, (intptr_t)setJSDOMWindowOndragleave },
+    { "ondragover", DontDelete, (intptr_t)jsDOMWindowOndragover, (intptr_t)setJSDOMWindowOndragover },
+    { "ondragstart", DontDelete, (intptr_t)jsDOMWindowOndragstart, (intptr_t)setJSDOMWindowOndragstart },
+    { "ondrop", DontDelete, (intptr_t)jsDOMWindowOndrop, (intptr_t)setJSDOMWindowOndrop },
+    { "ondurationchange", DontDelete, (intptr_t)jsDOMWindowOndurationchange, (intptr_t)setJSDOMWindowOndurationchange },
+    { "onemptied", DontDelete, (intptr_t)jsDOMWindowOnemptied, (intptr_t)setJSDOMWindowOnemptied },
+    { "onended", DontDelete, (intptr_t)jsDOMWindowOnended, (intptr_t)setJSDOMWindowOnended },
     { "onerror", DontDelete, (intptr_t)jsDOMWindowOnerror, (intptr_t)setJSDOMWindowOnerror },
     { "onfocus", DontDelete, (intptr_t)jsDOMWindowOnfocus, (intptr_t)setJSDOMWindowOnfocus },
+    { "oninput", DontDelete, (intptr_t)jsDOMWindowOninput, (intptr_t)setJSDOMWindowOninput },
     { "onkeydown", DontDelete, (intptr_t)jsDOMWindowOnkeydown, (intptr_t)setJSDOMWindowOnkeydown },
     { "onkeypress", DontDelete, (intptr_t)jsDOMWindowOnkeypress, (intptr_t)setJSDOMWindowOnkeypress },
     { "onkeyup", DontDelete, (intptr_t)jsDOMWindowOnkeyup, (intptr_t)setJSDOMWindowOnkeyup },
     { "onload", DontDelete, (intptr_t)jsDOMWindowOnload, (intptr_t)setJSDOMWindowOnload },
+    { "onloadeddata", DontDelete, (intptr_t)jsDOMWindowOnloadeddata, (intptr_t)setJSDOMWindowOnloadeddata },
+    { "onloadedmetadata", DontDelete, (intptr_t)jsDOMWindowOnloadedmetadata, (intptr_t)setJSDOMWindowOnloadedmetadata },
+    { "onloadstart", DontDelete, (intptr_t)jsDOMWindowOnloadstart, (intptr_t)setJSDOMWindowOnloadstart },
+    { "onmessage", DontDelete, (intptr_t)jsDOMWindowOnmessage, (intptr_t)setJSDOMWindowOnmessage },
     { "onmousedown", DontDelete, (intptr_t)jsDOMWindowOnmousedown, (intptr_t)setJSDOMWindowOnmousedown },
     { "onmousemove", DontDelete, (intptr_t)jsDOMWindowOnmousemove, (intptr_t)setJSDOMWindowOnmousemove },
     { "onmouseout", DontDelete, (intptr_t)jsDOMWindowOnmouseout, (intptr_t)setJSDOMWindowOnmouseout },
     { "onmouseover", DontDelete, (intptr_t)jsDOMWindowOnmouseover, (intptr_t)setJSDOMWindowOnmouseover },
     { "onmouseup", DontDelete, (intptr_t)jsDOMWindowOnmouseup, (intptr_t)setJSDOMWindowOnmouseup },
     { "onmousewheel", DontDelete, (intptr_t)jsDOMWindowOnmousewheel, (intptr_t)setJSDOMWindowOnmousewheel },
-    { "onreset", DontDelete, (intptr_t)jsDOMWindowOnreset, (intptr_t)setJSDOMWindowOnreset },
+    { "onoffline", DontDelete, (intptr_t)jsDOMWindowOnoffline, (intptr_t)setJSDOMWindowOnoffline },
+    { "ononline", DontDelete, (intptr_t)jsDOMWindowOnonline, (intptr_t)setJSDOMWindowOnonline },
+    { "onpause", DontDelete, (intptr_t)jsDOMWindowOnpause, (intptr_t)setJSDOMWindowOnpause },
+    { "onplay", DontDelete, (intptr_t)jsDOMWindowOnplay, (intptr_t)setJSDOMWindowOnplay },
+    { "onplaying", DontDelete, (intptr_t)jsDOMWindowOnplaying, (intptr_t)setJSDOMWindowOnplaying },
+    { "onprogress", DontDelete, (intptr_t)jsDOMWindowOnprogress, (intptr_t)setJSDOMWindowOnprogress },
+    { "onratechange", DontDelete, (intptr_t)jsDOMWindowOnratechange, (intptr_t)setJSDOMWindowOnratechange },
     { "onresize", DontDelete, (intptr_t)jsDOMWindowOnresize, (intptr_t)setJSDOMWindowOnresize },
     { "onscroll", DontDelete, (intptr_t)jsDOMWindowOnscroll, (intptr_t)setJSDOMWindowOnscroll },
-    { "onsearch", DontDelete, (intptr_t)jsDOMWindowOnsearch, (intptr_t)setJSDOMWindowOnsearch },
+    { "onseeked", DontDelete, (intptr_t)jsDOMWindowOnseeked, (intptr_t)setJSDOMWindowOnseeked },
+    { "onseeking", DontDelete, (intptr_t)jsDOMWindowOnseeking, (intptr_t)setJSDOMWindowOnseeking },
     { "onselect", DontDelete, (intptr_t)jsDOMWindowOnselect, (intptr_t)setJSDOMWindowOnselect },
+    { "onstalled", DontDelete, (intptr_t)jsDOMWindowOnstalled, (intptr_t)setJSDOMWindowOnstalled },
+    { "onstorage", DontDelete, (intptr_t)jsDOMWindowOnstorage, (intptr_t)setJSDOMWindowOnstorage },
     { "onsubmit", DontDelete, (intptr_t)jsDOMWindowOnsubmit, (intptr_t)setJSDOMWindowOnsubmit },
+    { "onsuspend", DontDelete, (intptr_t)jsDOMWindowOnsuspend, (intptr_t)setJSDOMWindowOnsuspend },
+    { "ontimeupdate", DontDelete, (intptr_t)jsDOMWindowOntimeupdate, (intptr_t)setJSDOMWindowOntimeupdate },
     { "onunload", DontDelete, (intptr_t)jsDOMWindowOnunload, (intptr_t)setJSDOMWindowOnunload },
-    { "onbeforeunload", DontDelete, (intptr_t)jsDOMWindowOnbeforeunload, (intptr_t)setJSDOMWindowOnbeforeunload },
-    { "onwebkitanimationstart", DontDelete, (intptr_t)jsDOMWindowOnwebkitanimationstart, (intptr_t)setJSDOMWindowOnwebkitanimationstart },
-    { "onwebkitanimationiteration", DontDelete, (intptr_t)jsDOMWindowOnwebkitanimationiteration, (intptr_t)setJSDOMWindowOnwebkitanimationiteration },
+    { "onvolumechange", DontDelete, (intptr_t)jsDOMWindowOnvolumechange, (intptr_t)setJSDOMWindowOnvolumechange },
+    { "onwaiting", DontDelete, (intptr_t)jsDOMWindowOnwaiting, (intptr_t)setJSDOMWindowOnwaiting },
+    { "onreset", DontDelete, (intptr_t)jsDOMWindowOnreset, (intptr_t)setJSDOMWindowOnreset },
+    { "onsearch", DontDelete, (intptr_t)jsDOMWindowOnsearch, (intptr_t)setJSDOMWindowOnsearch },
     { "onwebkitanimationend", DontDelete, (intptr_t)jsDOMWindowOnwebkitanimationend, (intptr_t)setJSDOMWindowOnwebkitanimationend },
+    { "onwebkitanimationiteration", DontDelete, (intptr_t)jsDOMWindowOnwebkitanimationiteration, (intptr_t)setJSDOMWindowOnwebkitanimationiteration },
+    { "onwebkitanimationstart", DontDelete, (intptr_t)jsDOMWindowOnwebkitanimationstart, (intptr_t)setJSDOMWindowOnwebkitanimationstart },
     { "onwebkittransitionend", DontDelete, (intptr_t)jsDOMWindowOnwebkittransitionend, (intptr_t)setJSDOMWindowOnwebkittransitionend },
     { "StyleSheet", DontDelete, (intptr_t)jsDOMWindowStyleSheetConstructor, (intptr_t)setJSDOMWindowStyleSheetConstructor },
     { "CSSStyleSheet", DontDelete, (intptr_t)jsDOMWindowCSSStyleSheetConstructor, (intptr_t)setJSDOMWindowCSSStyleSheetConstructor },
@@ -395,6 +435,8 @@ static const HashTableValue JSDOMWindowTableValues[227] =
     { "HTMLTitleElement", DontDelete, (intptr_t)jsDOMWindowHTMLTitleElementConstructor, (intptr_t)setJSDOMWindowHTMLTitleElementConstructor },
     { "HTMLUListElement", DontDelete, (intptr_t)jsDOMWindowHTMLUListElementConstructor, (intptr_t)setJSDOMWindowHTMLUListElementConstructor },
     { "HTMLCollection", DontDelete, (intptr_t)jsDOMWindowHTMLCollectionConstructor, (intptr_t)setJSDOMWindowHTMLCollectionConstructor },
+    { "Image", DontDelete, (intptr_t)jsDOMWindowImageConstructor, (intptr_t)setJSDOMWindowImageConstructor },
+    { "Option", DontDelete, (intptr_t)jsDOMWindowOptionConstructor, (intptr_t)setJSDOMWindowOptionConstructor },
     { "CanvasRenderingContext2D", DontDelete, (intptr_t)jsDOMWindowCanvasRenderingContext2DConstructor, (intptr_t)setJSDOMWindowCanvasRenderingContext2DConstructor },
     { "TextMetrics", DontDelete, (intptr_t)jsDOMWindowTextMetricsConstructor, (intptr_t)setJSDOMWindowTextMetricsConstructor },
     { "Event", DontDelete, (intptr_t)jsDOMWindowEventConstructor, (intptr_t)setJSDOMWindowEventConstructor },
@@ -412,6 +454,8 @@ static const HashTableValue JSDOMWindowTableValues[227] =
     { "EventException", DontDelete, (intptr_t)jsDOMWindowEventExceptionConstructor, (intptr_t)setJSDOMWindowEventExceptionConstructor },
     { "WebKitCSSKeyframeRule", DontDelete, (intptr_t)jsDOMWindowWebKitCSSKeyframeRuleConstructor, (intptr_t)setJSDOMWindowWebKitCSSKeyframeRuleConstructor },
     { "WebKitCSSKeyframesRule", DontDelete, (intptr_t)jsDOMWindowWebKitCSSKeyframesRuleConstructor, (intptr_t)setJSDOMWindowWebKitCSSKeyframesRuleConstructor },
+    { "WebKitCSSMatrix", DontDelete, (intptr_t)jsDOMWindowWebKitCSSMatrixConstructor, (intptr_t)setJSDOMWindowWebKitCSSMatrixConstructor },
+    { "WebKitPoint", DontDelete, (intptr_t)jsDOMWindowWebKitPointConstructor, (intptr_t)setJSDOMWindowWebKitPointConstructor },
     { "Clipboard", DontDelete, (intptr_t)jsDOMWindowClipboardConstructor, (intptr_t)setJSDOMWindowClipboardConstructor },
     { "File", DontDelete, (intptr_t)jsDOMWindowFileConstructor, (intptr_t)setJSDOMWindowFileConstructor },
     { "FileList", DontDelete, (intptr_t)jsDOMWindowFileListConstructor, (intptr_t)setJSDOMWindowFileListConstructor },
@@ -421,14 +465,21 @@ static const HashTableValue JSDOMWindowTableValues[227] =
     { "XMLDocument", DontDelete, (intptr_t)jsDOMWindowXMLDocumentConstructor, (intptr_t)setJSDOMWindowXMLDocumentConstructor },
     { "DOMParser", DontDelete, (intptr_t)jsDOMWindowDOMParserConstructor, (intptr_t)setJSDOMWindowDOMParserConstructor },
     { "XMLSerializer", DontDelete, (intptr_t)jsDOMWindowXMLSerializerConstructor, (intptr_t)setJSDOMWindowXMLSerializerConstructor },
+    { "XMLHttpRequest", DontDelete, (intptr_t)jsDOMWindowXMLHttpRequestConstructor, (intptr_t)setJSDOMWindowXMLHttpRequestConstructor },
     { "XMLHttpRequestUpload", DontDelete, (intptr_t)jsDOMWindowXMLHttpRequestUploadConstructor, (intptr_t)setJSDOMWindowXMLHttpRequestUploadConstructor },
     { "XMLHttpRequestException", DontDelete, (intptr_t)jsDOMWindowXMLHttpRequestExceptionConstructor, (intptr_t)setJSDOMWindowXMLHttpRequestExceptionConstructor },
+    { "Worker", DontDelete, (intptr_t)jsDOMWindowWorkerConstructor, (intptr_t)setJSDOMWindowWorkerConstructor },
     { "Plugin", DontDelete, (intptr_t)jsDOMWindowPluginConstructor, (intptr_t)setJSDOMWindowPluginConstructor },
     { "PluginArray", DontDelete, (intptr_t)jsDOMWindowPluginArrayConstructor, (intptr_t)setJSDOMWindowPluginArrayConstructor },
     { "MimeType", DontDelete, (intptr_t)jsDOMWindowMimeTypeConstructor, (intptr_t)setJSDOMWindowMimeTypeConstructor },
     { "MimeTypeArray", DontDelete, (intptr_t)jsDOMWindowMimeTypeArrayConstructor, (intptr_t)setJSDOMWindowMimeTypeArrayConstructor },
+    { "ClientRect", DontDelete, (intptr_t)jsDOMWindowClientRectConstructor, (intptr_t)setJSDOMWindowClientRectConstructor },
+    { "ClientRectList", DontDelete, (intptr_t)jsDOMWindowClientRectListConstructor, (intptr_t)setJSDOMWindowClientRectListConstructor },
     { "Storage", DontDelete, (intptr_t)jsDOMWindowStorageConstructor, (intptr_t)setJSDOMWindowStorageConstructor },
     { "StorageEvent", DontDelete, (intptr_t)jsDOMWindowStorageEventConstructor, (intptr_t)setJSDOMWindowStorageEventConstructor },
+#if ENABLE(VIDEO)
+    { "Audio", DontDelete, (intptr_t)jsDOMWindowAudioConstructor, (intptr_t)setJSDOMWindowAudioConstructor },
+#endif
 #if ENABLE(VIDEO)
     { "HTMLAudioElement", DontDelete, (intptr_t)jsDOMWindowHTMLAudioElementConstructor, (intptr_t)setJSDOMWindowHTMLAudioElementConstructor },
 #endif
@@ -465,12 +516,12 @@ static const HashTable JSDOMWindowTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 32767, JSDOMWindowTableValues, 0 };
 #else
-    { 553, 511, JSDOMWindowTableValues, 0 };
+    { 1062, 1023, JSDOMWindowTableValues, 0 };
 #endif
 
 /* Hash table for prototype */
 
-static const HashTableValue JSDOMWindowPrototypeTableValues[30] =
+static const HashTableValue JSDOMWindowPrototypeTableValues[37] =
 {
     { "getSelection", DontDelete|Function, (intptr_t)jsDOMWindowPrototypeFunctionGetSelection, (intptr_t)0 },
     { "focus", DontDelete|Function, (intptr_t)jsDOMWindowPrototypeFunctionFocus, (intptr_t)0 },
@@ -478,6 +529,8 @@ static const HashTableValue JSDOMWindowPrototypeTableValues[30] =
     { "close", DontDelete|Function, (intptr_t)jsDOMWindowPrototypeFunctionClose, (intptr_t)0 },
     { "print", DontDelete|Function, (intptr_t)jsDOMWindowPrototypeFunctionPrint, (intptr_t)0 },
     { "stop", DontDelete|Function, (intptr_t)jsDOMWindowPrototypeFunctionStop, (intptr_t)0 },
+    { "open", DontDelete|Function, (intptr_t)jsDOMWindowPrototypeFunctionOpen, (intptr_t)3 },
+    { "showModalDialog", DontDelete|Function, (intptr_t)jsDOMWindowPrototypeFunctionShowModalDialog, (intptr_t)3 },
     { "alert", DontDelete|Function, (intptr_t)jsDOMWindowPrototypeFunctionAlert, (intptr_t)1 },
     { "confirm", DontDelete|Function, (intptr_t)jsDOMWindowPrototypeFunctionConfirm, (intptr_t)1 },
     { "prompt", DontDelete|Function, (intptr_t)jsDOMWindowPrototypeFunctionPrompt, (intptr_t)2 },
@@ -491,6 +544,8 @@ static const HashTableValue JSDOMWindowPrototypeTableValues[30] =
     { "resizeTo", DontDelete|Function, (intptr_t)jsDOMWindowPrototypeFunctionResizeTo, (intptr_t)2 },
     { "getComputedStyle", DontDelete|Function, (intptr_t)jsDOMWindowPrototypeFunctionGetComputedStyle, (intptr_t)2 },
     { "getMatchedCSSRules", DontDelete|Function, (intptr_t)jsDOMWindowPrototypeFunctionGetMatchedCSSRules, (intptr_t)3 },
+    { "webkitConvertPointFromPageToNode", DontDelete|Function, (intptr_t)jsDOMWindowPrototypeFunctionWebkitConvertPointFromPageToNode, (intptr_t)2 },
+    { "webkitConvertPointFromNodeToPage", DontDelete|Function, (intptr_t)jsDOMWindowPrototypeFunctionWebkitConvertPointFromNodeToPage, (intptr_t)2 },
     { "openDatabase", DontDelete|Function, (intptr_t)jsDOMWindowPrototypeFunctionOpenDatabase, (intptr_t)4 },
     { "postMessage", DontDelete|Function, (intptr_t)jsDOMWindowPrototypeFunctionPostMessage, (intptr_t)3 },
     { "setTimeout", DontDelete|Function, (intptr_t)jsDOMWindowPrototypeFunctionSetTimeout, (intptr_t)2 },
@@ -501,14 +556,17 @@ static const HashTableValue JSDOMWindowPrototypeTableValues[30] =
     { "btoa", DontDelete|Function, (intptr_t)jsDOMWindowPrototypeFunctionBtoa, (intptr_t)1 },
     { "addEventListener", DontDelete|Function, (intptr_t)jsDOMWindowPrototypeFunctionAddEventListener, (intptr_t)3 },
     { "removeEventListener", DontDelete|Function, (intptr_t)jsDOMWindowPrototypeFunctionRemoveEventListener, (intptr_t)3 },
+    { "dispatchEvent", DontDelete|Function, (intptr_t)jsDOMWindowPrototypeFunctionDispatchEvent, (intptr_t)1 },
+    { "captureEvents", DontDelete|Function, (intptr_t)jsDOMWindowPrototypeFunctionCaptureEvents, (intptr_t)0 },
+    { "releaseEvents", DontDelete|Function, (intptr_t)jsDOMWindowPrototypeFunctionReleaseEvents, (intptr_t)0 },
     { 0, 0, 0, 0 }
 };
 
 static const HashTable JSDOMWindowPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
-    { 511, JSDOMWindowPrototypeTableValues, 0 };
+    { 1023, JSDOMWindowPrototypeTableValues, 0 };
 #else
-    { 69, 63, JSDOMWindowPrototypeTableValues, 0 };
+    { 134, 127, JSDOMWindowPrototypeTableValues, 0 };
 #endif
 
 const ClassInfo JSDOMWindowPrototype::s_info = { "DOMWindowPrototype", 0, &JSDOMWindowPrototypeTable, 0 };
@@ -530,6 +588,11 @@ JSDOMWindow::JSDOMWindow(PassRefPtr<Structure> structure, PassRefPtr<DOMWindow> 
 {
 }
 
+JSDOMWindow::~JSDOMWindow()
+{
+    invalidateEventListeners(impl()->eventListeners());
+}
+
 bool JSDOMWindow::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     if (customGetOwnPropertySlot(exec, propertyName, slot))
@@ -537,91 +600,112 @@ bool JSDOMWindow::getOwnPropertySlot(ExecState* exec, const Identifier& property
     return getStaticValueSlot<JSDOMWindow, Base>(exec, &JSDOMWindowTable, this, propertyName, slot);
 }
 
-JSValuePtr jsDOMWindowScreen(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowScreen(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(exec);
     DOMWindow* imp = static_cast<DOMWindow*>(static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->impl());
     return toJS(exec, WTF::getPtr(imp->screen()));
 }
 
-JSValuePtr jsDOMWindowHistory(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowHistory(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
-    DOMWindow* imp = static_cast<DOMWindow*>(static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->impl());
-    return toJS(exec, WTF::getPtr(imp->history()));
+    return static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->history(exec);
 }
 
-JSValuePtr jsDOMWindowLocationbar(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowLocationbar(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(exec);
     DOMWindow* imp = static_cast<DOMWindow*>(static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->impl());
     return toJS(exec, WTF::getPtr(imp->locationbar()));
 }
 
-JSValuePtr jsDOMWindowMenubar(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowMenubar(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(exec);
     DOMWindow* imp = static_cast<DOMWindow*>(static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->impl());
     return toJS(exec, WTF::getPtr(imp->menubar()));
 }
 
-JSValuePtr jsDOMWindowPersonalbar(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowPersonalbar(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(exec);
     DOMWindow* imp = static_cast<DOMWindow*>(static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->impl());
     return toJS(exec, WTF::getPtr(imp->personalbar()));
 }
 
-JSValuePtr jsDOMWindowScrollbars(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowScrollbars(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(exec);
     DOMWindow* imp = static_cast<DOMWindow*>(static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->impl());
     return toJS(exec, WTF::getPtr(imp->scrollbars()));
 }
 
-JSValuePtr jsDOMWindowStatusbar(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowStatusbar(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(exec);
     DOMWindow* imp = static_cast<DOMWindow*>(static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->impl());
     return toJS(exec, WTF::getPtr(imp->statusbar()));
 }
 
-JSValuePtr jsDOMWindowToolbar(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowToolbar(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(exec);
     DOMWindow* imp = static_cast<DOMWindow*>(static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->impl());
     return toJS(exec, WTF::getPtr(imp->toolbar()));
 }
 
-JSValuePtr jsDOMWindowNavigator(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowNavigator(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(exec);
     DOMWindow* imp = static_cast<DOMWindow*>(static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->impl());
     return toJS(exec, WTF::getPtr(imp->navigator()));
 }
 
-JSValuePtr jsDOMWindowClientInformation(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowClientInformation(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(exec);
     DOMWindow* imp = static_cast<DOMWindow*>(static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->impl());
     return toJS(exec, WTF::getPtr(imp->clientInformation()));
 }
 
-JSValuePtr jsDOMWindowLocation(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowLocation(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
-    DOMWindow* imp = static_cast<DOMWindow*>(static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->impl());
-    return toJS(exec, WTF::getPtr(imp->location()));
+    return static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->location(exec);
 }
 
-JSValuePtr jsDOMWindowFrameElement(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowEvent(ExecState* exec, const Identifier&, const PropertySlot& slot)
+{
+    if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
+        return jsUndefined();
+    return static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->event(exec);
+}
+
+JSValue jsDOMWindowCrypto(ExecState* exec, const Identifier&, const PropertySlot& slot)
+{
+    if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
+        return jsUndefined();
+    return static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->crypto(exec);
+}
+
+JSValue jsDOMWindowFrameElement(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
@@ -629,2163 +713,3267 @@ JSValuePtr jsDOMWindowFrameElement(ExecState* exec, const Identifier&, const Pro
     return checkNodeSecurity(exec, imp->frameElement()) ? toJS(exec, WTF::getPtr(imp->frameElement())) : jsUndefined();
 }
 
-JSValuePtr jsDOMWindowOffscreenBuffering(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowOffscreenBuffering(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(exec);
     DOMWindow* imp = static_cast<DOMWindow*>(static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->impl());
     return jsBoolean(imp->offscreenBuffering());
 }
 
-JSValuePtr jsDOMWindowOuterHeight(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowOuterHeight(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(exec);
     DOMWindow* imp = static_cast<DOMWindow*>(static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->impl());
     return jsNumber(exec, imp->outerHeight());
 }
 
-JSValuePtr jsDOMWindowOuterWidth(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowOuterWidth(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(exec);
     DOMWindow* imp = static_cast<DOMWindow*>(static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->impl());
     return jsNumber(exec, imp->outerWidth());
 }
 
-JSValuePtr jsDOMWindowInnerHeight(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowInnerHeight(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(exec);
     DOMWindow* imp = static_cast<DOMWindow*>(static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->impl());
     return jsNumber(exec, imp->innerHeight());
 }
 
-JSValuePtr jsDOMWindowInnerWidth(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowInnerWidth(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(exec);
     DOMWindow* imp = static_cast<DOMWindow*>(static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->impl());
     return jsNumber(exec, imp->innerWidth());
 }
 
-JSValuePtr jsDOMWindowScreenX(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowScreenX(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(exec);
     DOMWindow* imp = static_cast<DOMWindow*>(static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->impl());
     return jsNumber(exec, imp->screenX());
 }
 
-JSValuePtr jsDOMWindowScreenY(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowScreenY(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(exec);
     DOMWindow* imp = static_cast<DOMWindow*>(static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->impl());
     return jsNumber(exec, imp->screenY());
 }
 
-JSValuePtr jsDOMWindowScreenLeft(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowScreenLeft(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(exec);
     DOMWindow* imp = static_cast<DOMWindow*>(static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->impl());
     return jsNumber(exec, imp->screenLeft());
 }
 
-JSValuePtr jsDOMWindowScreenTop(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowScreenTop(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(exec);
     DOMWindow* imp = static_cast<DOMWindow*>(static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->impl());
     return jsNumber(exec, imp->screenTop());
 }
 
-JSValuePtr jsDOMWindowScrollX(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowScrollX(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(exec);
     DOMWindow* imp = static_cast<DOMWindow*>(static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->impl());
     return jsNumber(exec, imp->scrollX());
 }
 
-JSValuePtr jsDOMWindowScrollY(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowScrollY(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(exec);
     DOMWindow* imp = static_cast<DOMWindow*>(static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->impl());
     return jsNumber(exec, imp->scrollY());
 }
 
-JSValuePtr jsDOMWindowPageXOffset(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowPageXOffset(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(exec);
     DOMWindow* imp = static_cast<DOMWindow*>(static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->impl());
     return jsNumber(exec, imp->pageXOffset());
 }
 
-JSValuePtr jsDOMWindowPageYOffset(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowPageYOffset(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(exec);
     DOMWindow* imp = static_cast<DOMWindow*>(static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->impl());
     return jsNumber(exec, imp->pageYOffset());
 }
 
-JSValuePtr jsDOMWindowClosed(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowClosed(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     DOMWindow* imp = static_cast<DOMWindow*>(static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->impl());
     return jsBoolean(imp->closed());
 }
 
-JSValuePtr jsDOMWindowLength(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowLength(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     DOMWindow* imp = static_cast<DOMWindow*>(static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->impl());
     return jsNumber(exec, imp->length());
 }
 
-JSValuePtr jsDOMWindowName(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowName(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(exec);
     DOMWindow* imp = static_cast<DOMWindow*>(static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->impl());
     return jsString(exec, imp->name());
 }
 
-JSValuePtr jsDOMWindowStatus(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowStatus(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(exec);
     DOMWindow* imp = static_cast<DOMWindow*>(static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->impl());
     return jsString(exec, imp->status());
 }
 
-JSValuePtr jsDOMWindowDefaultStatus(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowDefaultStatus(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(exec);
     DOMWindow* imp = static_cast<DOMWindow*>(static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->impl());
     return jsString(exec, imp->defaultStatus());
 }
 
-JSValuePtr jsDOMWindowDefaultstatus(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowDefaultstatus(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(exec);
     DOMWindow* imp = static_cast<DOMWindow*>(static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->impl());
     return jsString(exec, imp->defaultstatus());
 }
 
-JSValuePtr jsDOMWindowSelf(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowSelf(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     DOMWindow* imp = static_cast<DOMWindow*>(static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->impl());
     return toJS(exec, WTF::getPtr(imp->self()));
 }
 
-JSValuePtr jsDOMWindowWindow(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowWindow(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     DOMWindow* imp = static_cast<DOMWindow*>(static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->impl());
     return toJS(exec, WTF::getPtr(imp->window()));
 }
 
-JSValuePtr jsDOMWindowFrames(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowFrames(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     DOMWindow* imp = static_cast<DOMWindow*>(static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->impl());
     return toJS(exec, WTF::getPtr(imp->frames()));
 }
 
-JSValuePtr jsDOMWindowOpener(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowOpener(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     DOMWindow* imp = static_cast<DOMWindow*>(static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->impl());
     return toJS(exec, WTF::getPtr(imp->opener()));
 }
 
-JSValuePtr jsDOMWindowParent(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowParent(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     DOMWindow* imp = static_cast<DOMWindow*>(static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->impl());
     return toJS(exec, WTF::getPtr(imp->parent()));
 }
 
-JSValuePtr jsDOMWindowTop(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowTop(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     DOMWindow* imp = static_cast<DOMWindow*>(static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->impl());
     return toJS(exec, WTF::getPtr(imp->top()));
 }
 
-JSValuePtr jsDOMWindowDocument(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowDocument(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(exec);
     DOMWindow* imp = static_cast<DOMWindow*>(static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->impl());
     return toJS(exec, WTF::getPtr(imp->document()));
 }
 
-JSValuePtr jsDOMWindowDevicePixelRatio(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowDevicePixelRatio(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(exec);
     DOMWindow* imp = static_cast<DOMWindow*>(static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->impl());
     return jsNumber(exec, imp->devicePixelRatio());
 }
 
-JSValuePtr jsDOMWindowApplicationCache(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowApplicationCache(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(exec);
     DOMWindow* imp = static_cast<DOMWindow*>(static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->impl());
     return toJS(exec, WTF::getPtr(imp->applicationCache()));
 }
 
-JSValuePtr jsDOMWindowSessionStorage(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowSessionStorage(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(exec);
     DOMWindow* imp = static_cast<DOMWindow*>(static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->impl());
     return toJS(exec, WTF::getPtr(imp->sessionStorage()));
 }
 
-JSValuePtr jsDOMWindowLocalStorage(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowLocalStorage(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(exec);
     DOMWindow* imp = static_cast<DOMWindow*>(static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->impl());
     return toJS(exec, WTF::getPtr(imp->localStorage()));
 }
 
-JSValuePtr jsDOMWindowConsole(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowConsole(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(exec);
     DOMWindow* imp = static_cast<DOMWindow*>(static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->impl());
     return toJS(exec, WTF::getPtr(imp->console()));
 }
 
-JSValuePtr jsDOMWindowOnabort(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowOnabort(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(exec);
     DOMWindow* imp = static_cast<DOMWindow*>(static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->impl());
-    if (JSEventListener* listener = static_cast<JSEventListener*>(imp->onabort())) {
-        if (JSObject* listenerObj = listener->listenerObj())
-            return listenerObj;
+    if (EventListener* listener = imp->onabort()) {
+        if (JSObject* jsFunction = listener->jsFunction())
+            return jsFunction;
     }
     return jsNull();
 }
 
-JSValuePtr jsDOMWindowOnblur(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowOnbeforeunload(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(exec);
     DOMWindow* imp = static_cast<DOMWindow*>(static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->impl());
-    if (JSEventListener* listener = static_cast<JSEventListener*>(imp->onblur())) {
-        if (JSObject* listenerObj = listener->listenerObj())
-            return listenerObj;
+    if (EventListener* listener = imp->onbeforeunload()) {
+        if (JSObject* jsFunction = listener->jsFunction())
+            return jsFunction;
     }
     return jsNull();
 }
 
-JSValuePtr jsDOMWindowOnchange(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowOnblur(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(exec);
     DOMWindow* imp = static_cast<DOMWindow*>(static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->impl());
-    if (JSEventListener* listener = static_cast<JSEventListener*>(imp->onchange())) {
-        if (JSObject* listenerObj = listener->listenerObj())
-            return listenerObj;
+    if (EventListener* listener = imp->onblur()) {
+        if (JSObject* jsFunction = listener->jsFunction())
+            return jsFunction;
     }
     return jsNull();
 }
 
-JSValuePtr jsDOMWindowOnclick(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowOncanplay(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(exec);
     DOMWindow* imp = static_cast<DOMWindow*>(static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->impl());
-    if (JSEventListener* listener = static_cast<JSEventListener*>(imp->onclick())) {
-        if (JSObject* listenerObj = listener->listenerObj())
-            return listenerObj;
+    if (EventListener* listener = imp->oncanplay()) {
+        if (JSObject* jsFunction = listener->jsFunction())
+            return jsFunction;
     }
     return jsNull();
 }
 
-JSValuePtr jsDOMWindowOndblclick(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowOncanplaythrough(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(exec);
     DOMWindow* imp = static_cast<DOMWindow*>(static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->impl());
-    if (JSEventListener* listener = static_cast<JSEventListener*>(imp->ondblclick())) {
-        if (JSObject* listenerObj = listener->listenerObj())
-            return listenerObj;
+    if (EventListener* listener = imp->oncanplaythrough()) {
+        if (JSObject* jsFunction = listener->jsFunction())
+            return jsFunction;
     }
     return jsNull();
 }
 
-JSValuePtr jsDOMWindowOnerror(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowOnchange(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(exec);
     DOMWindow* imp = static_cast<DOMWindow*>(static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->impl());
-    if (JSEventListener* listener = static_cast<JSEventListener*>(imp->onerror())) {
-        if (JSObject* listenerObj = listener->listenerObj())
-            return listenerObj;
+    if (EventListener* listener = imp->onchange()) {
+        if (JSObject* jsFunction = listener->jsFunction())
+            return jsFunction;
     }
     return jsNull();
 }
 
-JSValuePtr jsDOMWindowOnfocus(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowOnclick(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(exec);
     DOMWindow* imp = static_cast<DOMWindow*>(static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->impl());
-    if (JSEventListener* listener = static_cast<JSEventListener*>(imp->onfocus())) {
-        if (JSObject* listenerObj = listener->listenerObj())
-            return listenerObj;
+    if (EventListener* listener = imp->onclick()) {
+        if (JSObject* jsFunction = listener->jsFunction())
+            return jsFunction;
     }
     return jsNull();
 }
 
-JSValuePtr jsDOMWindowOnkeydown(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowOncontextmenu(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(exec);
     DOMWindow* imp = static_cast<DOMWindow*>(static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->impl());
-    if (JSEventListener* listener = static_cast<JSEventListener*>(imp->onkeydown())) {
-        if (JSObject* listenerObj = listener->listenerObj())
-            return listenerObj;
+    if (EventListener* listener = imp->oncontextmenu()) {
+        if (JSObject* jsFunction = listener->jsFunction())
+            return jsFunction;
     }
     return jsNull();
 }
 
-JSValuePtr jsDOMWindowOnkeypress(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowOndblclick(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(exec);
     DOMWindow* imp = static_cast<DOMWindow*>(static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->impl());
-    if (JSEventListener* listener = static_cast<JSEventListener*>(imp->onkeypress())) {
-        if (JSObject* listenerObj = listener->listenerObj())
-            return listenerObj;
+    if (EventListener* listener = imp->ondblclick()) {
+        if (JSObject* jsFunction = listener->jsFunction())
+            return jsFunction;
     }
     return jsNull();
 }
 
-JSValuePtr jsDOMWindowOnkeyup(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowOndrag(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(exec);
     DOMWindow* imp = static_cast<DOMWindow*>(static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->impl());
-    if (JSEventListener* listener = static_cast<JSEventListener*>(imp->onkeyup())) {
-        if (JSObject* listenerObj = listener->listenerObj())
-            return listenerObj;
+    if (EventListener* listener = imp->ondrag()) {
+        if (JSObject* jsFunction = listener->jsFunction())
+            return jsFunction;
     }
     return jsNull();
 }
 
-JSValuePtr jsDOMWindowOnload(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowOndragend(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(exec);
     DOMWindow* imp = static_cast<DOMWindow*>(static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->impl());
-    if (JSEventListener* listener = static_cast<JSEventListener*>(imp->onload())) {
-        if (JSObject* listenerObj = listener->listenerObj())
-            return listenerObj;
+    if (EventListener* listener = imp->ondragend()) {
+        if (JSObject* jsFunction = listener->jsFunction())
+            return jsFunction;
     }
     return jsNull();
 }
 
-JSValuePtr jsDOMWindowOnmousedown(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowOndragenter(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(exec);
     DOMWindow* imp = static_cast<DOMWindow*>(static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->impl());
-    if (JSEventListener* listener = static_cast<JSEventListener*>(imp->onmousedown())) {
-        if (JSObject* listenerObj = listener->listenerObj())
-            return listenerObj;
+    if (EventListener* listener = imp->ondragenter()) {
+        if (JSObject* jsFunction = listener->jsFunction())
+            return jsFunction;
     }
     return jsNull();
 }
 
-JSValuePtr jsDOMWindowOnmousemove(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowOndragleave(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(exec);
     DOMWindow* imp = static_cast<DOMWindow*>(static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->impl());
-    if (JSEventListener* listener = static_cast<JSEventListener*>(imp->onmousemove())) {
-        if (JSObject* listenerObj = listener->listenerObj())
-            return listenerObj;
+    if (EventListener* listener = imp->ondragleave()) {
+        if (JSObject* jsFunction = listener->jsFunction())
+            return jsFunction;
     }
     return jsNull();
 }
 
-JSValuePtr jsDOMWindowOnmouseout(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowOndragover(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(exec);
     DOMWindow* imp = static_cast<DOMWindow*>(static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->impl());
-    if (JSEventListener* listener = static_cast<JSEventListener*>(imp->onmouseout())) {
-        if (JSObject* listenerObj = listener->listenerObj())
-            return listenerObj;
+    if (EventListener* listener = imp->ondragover()) {
+        if (JSObject* jsFunction = listener->jsFunction())
+            return jsFunction;
     }
     return jsNull();
 }
 
-JSValuePtr jsDOMWindowOnmouseover(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowOndragstart(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(exec);
     DOMWindow* imp = static_cast<DOMWindow*>(static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->impl());
-    if (JSEventListener* listener = static_cast<JSEventListener*>(imp->onmouseover())) {
-        if (JSObject* listenerObj = listener->listenerObj())
-            return listenerObj;
+    if (EventListener* listener = imp->ondragstart()) {
+        if (JSObject* jsFunction = listener->jsFunction())
+            return jsFunction;
     }
     return jsNull();
 }
 
-JSValuePtr jsDOMWindowOnmouseup(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowOndrop(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(exec);
     DOMWindow* imp = static_cast<DOMWindow*>(static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->impl());
-    if (JSEventListener* listener = static_cast<JSEventListener*>(imp->onmouseup())) {
-        if (JSObject* listenerObj = listener->listenerObj())
-            return listenerObj;
+    if (EventListener* listener = imp->ondrop()) {
+        if (JSObject* jsFunction = listener->jsFunction())
+            return jsFunction;
     }
     return jsNull();
 }
 
-JSValuePtr jsDOMWindowOnmousewheel(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowOndurationchange(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(exec);
     DOMWindow* imp = static_cast<DOMWindow*>(static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->impl());
-    if (JSEventListener* listener = static_cast<JSEventListener*>(imp->onmousewheel())) {
-        if (JSObject* listenerObj = listener->listenerObj())
-            return listenerObj;
+    if (EventListener* listener = imp->ondurationchange()) {
+        if (JSObject* jsFunction = listener->jsFunction())
+            return jsFunction;
     }
     return jsNull();
 }
 
-JSValuePtr jsDOMWindowOnreset(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowOnemptied(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(exec);
     DOMWindow* imp = static_cast<DOMWindow*>(static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->impl());
-    if (JSEventListener* listener = static_cast<JSEventListener*>(imp->onreset())) {
-        if (JSObject* listenerObj = listener->listenerObj())
-            return listenerObj;
+    if (EventListener* listener = imp->onemptied()) {
+        if (JSObject* jsFunction = listener->jsFunction())
+            return jsFunction;
     }
     return jsNull();
 }
 
-JSValuePtr jsDOMWindowOnresize(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowOnended(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(exec);
     DOMWindow* imp = static_cast<DOMWindow*>(static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->impl());
-    if (JSEventListener* listener = static_cast<JSEventListener*>(imp->onresize())) {
-        if (JSObject* listenerObj = listener->listenerObj())
-            return listenerObj;
+    if (EventListener* listener = imp->onended()) {
+        if (JSObject* jsFunction = listener->jsFunction())
+            return jsFunction;
     }
     return jsNull();
 }
 
-JSValuePtr jsDOMWindowOnscroll(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowOnerror(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(exec);
     DOMWindow* imp = static_cast<DOMWindow*>(static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->impl());
-    if (JSEventListener* listener = static_cast<JSEventListener*>(imp->onscroll())) {
-        if (JSObject* listenerObj = listener->listenerObj())
-            return listenerObj;
+    if (EventListener* listener = imp->onerror()) {
+        if (JSObject* jsFunction = listener->jsFunction())
+            return jsFunction;
     }
     return jsNull();
 }
 
-JSValuePtr jsDOMWindowOnsearch(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowOnfocus(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(exec);
     DOMWindow* imp = static_cast<DOMWindow*>(static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->impl());
-    if (JSEventListener* listener = static_cast<JSEventListener*>(imp->onsearch())) {
-        if (JSObject* listenerObj = listener->listenerObj())
-            return listenerObj;
+    if (EventListener* listener = imp->onfocus()) {
+        if (JSObject* jsFunction = listener->jsFunction())
+            return jsFunction;
     }
     return jsNull();
 }
 
-JSValuePtr jsDOMWindowOnselect(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowOninput(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(exec);
     DOMWindow* imp = static_cast<DOMWindow*>(static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->impl());
-    if (JSEventListener* listener = static_cast<JSEventListener*>(imp->onselect())) {
-        if (JSObject* listenerObj = listener->listenerObj())
-            return listenerObj;
+    if (EventListener* listener = imp->oninput()) {
+        if (JSObject* jsFunction = listener->jsFunction())
+            return jsFunction;
     }
     return jsNull();
 }
 
-JSValuePtr jsDOMWindowOnsubmit(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowOnkeydown(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(exec);
     DOMWindow* imp = static_cast<DOMWindow*>(static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->impl());
-    if (JSEventListener* listener = static_cast<JSEventListener*>(imp->onsubmit())) {
-        if (JSObject* listenerObj = listener->listenerObj())
-            return listenerObj;
+    if (EventListener* listener = imp->onkeydown()) {
+        if (JSObject* jsFunction = listener->jsFunction())
+            return jsFunction;
     }
     return jsNull();
 }
 
-JSValuePtr jsDOMWindowOnunload(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowOnkeypress(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(exec);
     DOMWindow* imp = static_cast<DOMWindow*>(static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->impl());
-    if (JSEventListener* listener = static_cast<JSEventListener*>(imp->onunload())) {
-        if (JSObject* listenerObj = listener->listenerObj())
-            return listenerObj;
+    if (EventListener* listener = imp->onkeypress()) {
+        if (JSObject* jsFunction = listener->jsFunction())
+            return jsFunction;
     }
     return jsNull();
 }
 
-JSValuePtr jsDOMWindowOnbeforeunload(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowOnkeyup(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(exec);
     DOMWindow* imp = static_cast<DOMWindow*>(static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->impl());
-    if (JSEventListener* listener = static_cast<JSEventListener*>(imp->onbeforeunload())) {
-        if (JSObject* listenerObj = listener->listenerObj())
-            return listenerObj;
+    if (EventListener* listener = imp->onkeyup()) {
+        if (JSObject* jsFunction = listener->jsFunction())
+            return jsFunction;
     }
     return jsNull();
 }
 
-JSValuePtr jsDOMWindowOnwebkitanimationstart(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowOnload(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(exec);
     DOMWindow* imp = static_cast<DOMWindow*>(static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->impl());
-    if (JSEventListener* listener = static_cast<JSEventListener*>(imp->onwebkitanimationstart())) {
-        if (JSObject* listenerObj = listener->listenerObj())
-            return listenerObj;
+    if (EventListener* listener = imp->onload()) {
+        if (JSObject* jsFunction = listener->jsFunction())
+            return jsFunction;
     }
     return jsNull();
 }
 
-JSValuePtr jsDOMWindowOnwebkitanimationiteration(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowOnloadeddata(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(exec);
     DOMWindow* imp = static_cast<DOMWindow*>(static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->impl());
-    if (JSEventListener* listener = static_cast<JSEventListener*>(imp->onwebkitanimationiteration())) {
-        if (JSObject* listenerObj = listener->listenerObj())
-            return listenerObj;
+    if (EventListener* listener = imp->onloadeddata()) {
+        if (JSObject* jsFunction = listener->jsFunction())
+            return jsFunction;
     }
     return jsNull();
 }
 
-JSValuePtr jsDOMWindowOnwebkitanimationend(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowOnloadedmetadata(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(exec);
     DOMWindow* imp = static_cast<DOMWindow*>(static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->impl());
-    if (JSEventListener* listener = static_cast<JSEventListener*>(imp->onwebkitanimationend())) {
-        if (JSObject* listenerObj = listener->listenerObj())
-            return listenerObj;
+    if (EventListener* listener = imp->onloadedmetadata()) {
+        if (JSObject* jsFunction = listener->jsFunction())
+            return jsFunction;
     }
     return jsNull();
 }
 
-JSValuePtr jsDOMWindowOnwebkittransitionend(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowOnloadstart(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(exec);
     DOMWindow* imp = static_cast<DOMWindow*>(static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->impl());
-    if (JSEventListener* listener = static_cast<JSEventListener*>(imp->onwebkittransitionend())) {
-        if (JSObject* listenerObj = listener->listenerObj())
-            return listenerObj;
+    if (EventListener* listener = imp->onloadstart()) {
+        if (JSObject* jsFunction = listener->jsFunction())
+            return jsFunction;
     }
     return jsNull();
 }
 
-JSValuePtr jsDOMWindowStyleSheetConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowOnmessage(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(exec);
+    DOMWindow* imp = static_cast<DOMWindow*>(static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->impl());
+    if (EventListener* listener = imp->onmessage()) {
+        if (JSObject* jsFunction = listener->jsFunction())
+            return jsFunction;
+    }
+    return jsNull();
+}
+
+JSValue jsDOMWindowOnmousedown(ExecState* exec, const Identifier&, const PropertySlot& slot)
+{
+    if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
+        return jsUndefined();
+    UNUSED_PARAM(exec);
+    DOMWindow* imp = static_cast<DOMWindow*>(static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->impl());
+    if (EventListener* listener = imp->onmousedown()) {
+        if (JSObject* jsFunction = listener->jsFunction())
+            return jsFunction;
+    }
+    return jsNull();
+}
+
+JSValue jsDOMWindowOnmousemove(ExecState* exec, const Identifier&, const PropertySlot& slot)
+{
+    if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
+        return jsUndefined();
+    UNUSED_PARAM(exec);
+    DOMWindow* imp = static_cast<DOMWindow*>(static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->impl());
+    if (EventListener* listener = imp->onmousemove()) {
+        if (JSObject* jsFunction = listener->jsFunction())
+            return jsFunction;
+    }
+    return jsNull();
+}
+
+JSValue jsDOMWindowOnmouseout(ExecState* exec, const Identifier&, const PropertySlot& slot)
+{
+    if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
+        return jsUndefined();
+    UNUSED_PARAM(exec);
+    DOMWindow* imp = static_cast<DOMWindow*>(static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->impl());
+    if (EventListener* listener = imp->onmouseout()) {
+        if (JSObject* jsFunction = listener->jsFunction())
+            return jsFunction;
+    }
+    return jsNull();
+}
+
+JSValue jsDOMWindowOnmouseover(ExecState* exec, const Identifier&, const PropertySlot& slot)
+{
+    if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
+        return jsUndefined();
+    UNUSED_PARAM(exec);
+    DOMWindow* imp = static_cast<DOMWindow*>(static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->impl());
+    if (EventListener* listener = imp->onmouseover()) {
+        if (JSObject* jsFunction = listener->jsFunction())
+            return jsFunction;
+    }
+    return jsNull();
+}
+
+JSValue jsDOMWindowOnmouseup(ExecState* exec, const Identifier&, const PropertySlot& slot)
+{
+    if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
+        return jsUndefined();
+    UNUSED_PARAM(exec);
+    DOMWindow* imp = static_cast<DOMWindow*>(static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->impl());
+    if (EventListener* listener = imp->onmouseup()) {
+        if (JSObject* jsFunction = listener->jsFunction())
+            return jsFunction;
+    }
+    return jsNull();
+}
+
+JSValue jsDOMWindowOnmousewheel(ExecState* exec, const Identifier&, const PropertySlot& slot)
+{
+    if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
+        return jsUndefined();
+    UNUSED_PARAM(exec);
+    DOMWindow* imp = static_cast<DOMWindow*>(static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->impl());
+    if (EventListener* listener = imp->onmousewheel()) {
+        if (JSObject* jsFunction = listener->jsFunction())
+            return jsFunction;
+    }
+    return jsNull();
+}
+
+JSValue jsDOMWindowOnoffline(ExecState* exec, const Identifier&, const PropertySlot& slot)
+{
+    if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
+        return jsUndefined();
+    UNUSED_PARAM(exec);
+    DOMWindow* imp = static_cast<DOMWindow*>(static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->impl());
+    if (EventListener* listener = imp->onoffline()) {
+        if (JSObject* jsFunction = listener->jsFunction())
+            return jsFunction;
+    }
+    return jsNull();
+}
+
+JSValue jsDOMWindowOnonline(ExecState* exec, const Identifier&, const PropertySlot& slot)
+{
+    if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
+        return jsUndefined();
+    UNUSED_PARAM(exec);
+    DOMWindow* imp = static_cast<DOMWindow*>(static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->impl());
+    if (EventListener* listener = imp->ononline()) {
+        if (JSObject* jsFunction = listener->jsFunction())
+            return jsFunction;
+    }
+    return jsNull();
+}
+
+JSValue jsDOMWindowOnpause(ExecState* exec, const Identifier&, const PropertySlot& slot)
+{
+    if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
+        return jsUndefined();
+    UNUSED_PARAM(exec);
+    DOMWindow* imp = static_cast<DOMWindow*>(static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->impl());
+    if (EventListener* listener = imp->onpause()) {
+        if (JSObject* jsFunction = listener->jsFunction())
+            return jsFunction;
+    }
+    return jsNull();
+}
+
+JSValue jsDOMWindowOnplay(ExecState* exec, const Identifier&, const PropertySlot& slot)
+{
+    if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
+        return jsUndefined();
+    UNUSED_PARAM(exec);
+    DOMWindow* imp = static_cast<DOMWindow*>(static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->impl());
+    if (EventListener* listener = imp->onplay()) {
+        if (JSObject* jsFunction = listener->jsFunction())
+            return jsFunction;
+    }
+    return jsNull();
+}
+
+JSValue jsDOMWindowOnplaying(ExecState* exec, const Identifier&, const PropertySlot& slot)
+{
+    if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
+        return jsUndefined();
+    UNUSED_PARAM(exec);
+    DOMWindow* imp = static_cast<DOMWindow*>(static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->impl());
+    if (EventListener* listener = imp->onplaying()) {
+        if (JSObject* jsFunction = listener->jsFunction())
+            return jsFunction;
+    }
+    return jsNull();
+}
+
+JSValue jsDOMWindowOnprogress(ExecState* exec, const Identifier&, const PropertySlot& slot)
+{
+    if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
+        return jsUndefined();
+    UNUSED_PARAM(exec);
+    DOMWindow* imp = static_cast<DOMWindow*>(static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->impl());
+    if (EventListener* listener = imp->onprogress()) {
+        if (JSObject* jsFunction = listener->jsFunction())
+            return jsFunction;
+    }
+    return jsNull();
+}
+
+JSValue jsDOMWindowOnratechange(ExecState* exec, const Identifier&, const PropertySlot& slot)
+{
+    if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
+        return jsUndefined();
+    UNUSED_PARAM(exec);
+    DOMWindow* imp = static_cast<DOMWindow*>(static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->impl());
+    if (EventListener* listener = imp->onratechange()) {
+        if (JSObject* jsFunction = listener->jsFunction())
+            return jsFunction;
+    }
+    return jsNull();
+}
+
+JSValue jsDOMWindowOnresize(ExecState* exec, const Identifier&, const PropertySlot& slot)
+{
+    if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
+        return jsUndefined();
+    UNUSED_PARAM(exec);
+    DOMWindow* imp = static_cast<DOMWindow*>(static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->impl());
+    if (EventListener* listener = imp->onresize()) {
+        if (JSObject* jsFunction = listener->jsFunction())
+            return jsFunction;
+    }
+    return jsNull();
+}
+
+JSValue jsDOMWindowOnscroll(ExecState* exec, const Identifier&, const PropertySlot& slot)
+{
+    if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
+        return jsUndefined();
+    UNUSED_PARAM(exec);
+    DOMWindow* imp = static_cast<DOMWindow*>(static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->impl());
+    if (EventListener* listener = imp->onscroll()) {
+        if (JSObject* jsFunction = listener->jsFunction())
+            return jsFunction;
+    }
+    return jsNull();
+}
+
+JSValue jsDOMWindowOnseeked(ExecState* exec, const Identifier&, const PropertySlot& slot)
+{
+    if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
+        return jsUndefined();
+    UNUSED_PARAM(exec);
+    DOMWindow* imp = static_cast<DOMWindow*>(static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->impl());
+    if (EventListener* listener = imp->onseeked()) {
+        if (JSObject* jsFunction = listener->jsFunction())
+            return jsFunction;
+    }
+    return jsNull();
+}
+
+JSValue jsDOMWindowOnseeking(ExecState* exec, const Identifier&, const PropertySlot& slot)
+{
+    if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
+        return jsUndefined();
+    UNUSED_PARAM(exec);
+    DOMWindow* imp = static_cast<DOMWindow*>(static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->impl());
+    if (EventListener* listener = imp->onseeking()) {
+        if (JSObject* jsFunction = listener->jsFunction())
+            return jsFunction;
+    }
+    return jsNull();
+}
+
+JSValue jsDOMWindowOnselect(ExecState* exec, const Identifier&, const PropertySlot& slot)
+{
+    if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
+        return jsUndefined();
+    UNUSED_PARAM(exec);
+    DOMWindow* imp = static_cast<DOMWindow*>(static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->impl());
+    if (EventListener* listener = imp->onselect()) {
+        if (JSObject* jsFunction = listener->jsFunction())
+            return jsFunction;
+    }
+    return jsNull();
+}
+
+JSValue jsDOMWindowOnstalled(ExecState* exec, const Identifier&, const PropertySlot& slot)
+{
+    if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
+        return jsUndefined();
+    UNUSED_PARAM(exec);
+    DOMWindow* imp = static_cast<DOMWindow*>(static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->impl());
+    if (EventListener* listener = imp->onstalled()) {
+        if (JSObject* jsFunction = listener->jsFunction())
+            return jsFunction;
+    }
+    return jsNull();
+}
+
+JSValue jsDOMWindowOnstorage(ExecState* exec, const Identifier&, const PropertySlot& slot)
+{
+    if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
+        return jsUndefined();
+    UNUSED_PARAM(exec);
+    DOMWindow* imp = static_cast<DOMWindow*>(static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->impl());
+    if (EventListener* listener = imp->onstorage()) {
+        if (JSObject* jsFunction = listener->jsFunction())
+            return jsFunction;
+    }
+    return jsNull();
+}
+
+JSValue jsDOMWindowOnsubmit(ExecState* exec, const Identifier&, const PropertySlot& slot)
+{
+    if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
+        return jsUndefined();
+    UNUSED_PARAM(exec);
+    DOMWindow* imp = static_cast<DOMWindow*>(static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->impl());
+    if (EventListener* listener = imp->onsubmit()) {
+        if (JSObject* jsFunction = listener->jsFunction())
+            return jsFunction;
+    }
+    return jsNull();
+}
+
+JSValue jsDOMWindowOnsuspend(ExecState* exec, const Identifier&, const PropertySlot& slot)
+{
+    if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
+        return jsUndefined();
+    UNUSED_PARAM(exec);
+    DOMWindow* imp = static_cast<DOMWindow*>(static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->impl());
+    if (EventListener* listener = imp->onsuspend()) {
+        if (JSObject* jsFunction = listener->jsFunction())
+            return jsFunction;
+    }
+    return jsNull();
+}
+
+JSValue jsDOMWindowOntimeupdate(ExecState* exec, const Identifier&, const PropertySlot& slot)
+{
+    if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
+        return jsUndefined();
+    UNUSED_PARAM(exec);
+    DOMWindow* imp = static_cast<DOMWindow*>(static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->impl());
+    if (EventListener* listener = imp->ontimeupdate()) {
+        if (JSObject* jsFunction = listener->jsFunction())
+            return jsFunction;
+    }
+    return jsNull();
+}
+
+JSValue jsDOMWindowOnunload(ExecState* exec, const Identifier&, const PropertySlot& slot)
+{
+    if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
+        return jsUndefined();
+    UNUSED_PARAM(exec);
+    DOMWindow* imp = static_cast<DOMWindow*>(static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->impl());
+    if (EventListener* listener = imp->onunload()) {
+        if (JSObject* jsFunction = listener->jsFunction())
+            return jsFunction;
+    }
+    return jsNull();
+}
+
+JSValue jsDOMWindowOnvolumechange(ExecState* exec, const Identifier&, const PropertySlot& slot)
+{
+    if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
+        return jsUndefined();
+    UNUSED_PARAM(exec);
+    DOMWindow* imp = static_cast<DOMWindow*>(static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->impl());
+    if (EventListener* listener = imp->onvolumechange()) {
+        if (JSObject* jsFunction = listener->jsFunction())
+            return jsFunction;
+    }
+    return jsNull();
+}
+
+JSValue jsDOMWindowOnwaiting(ExecState* exec, const Identifier&, const PropertySlot& slot)
+{
+    if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
+        return jsUndefined();
+    UNUSED_PARAM(exec);
+    DOMWindow* imp = static_cast<DOMWindow*>(static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->impl());
+    if (EventListener* listener = imp->onwaiting()) {
+        if (JSObject* jsFunction = listener->jsFunction())
+            return jsFunction;
+    }
+    return jsNull();
+}
+
+JSValue jsDOMWindowOnreset(ExecState* exec, const Identifier&, const PropertySlot& slot)
+{
+    if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
+        return jsUndefined();
+    UNUSED_PARAM(exec);
+    DOMWindow* imp = static_cast<DOMWindow*>(static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->impl());
+    if (EventListener* listener = imp->onreset()) {
+        if (JSObject* jsFunction = listener->jsFunction())
+            return jsFunction;
+    }
+    return jsNull();
+}
+
+JSValue jsDOMWindowOnsearch(ExecState* exec, const Identifier&, const PropertySlot& slot)
+{
+    if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
+        return jsUndefined();
+    UNUSED_PARAM(exec);
+    DOMWindow* imp = static_cast<DOMWindow*>(static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->impl());
+    if (EventListener* listener = imp->onsearch()) {
+        if (JSObject* jsFunction = listener->jsFunction())
+            return jsFunction;
+    }
+    return jsNull();
+}
+
+JSValue jsDOMWindowOnwebkitanimationend(ExecState* exec, const Identifier&, const PropertySlot& slot)
+{
+    if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
+        return jsUndefined();
+    UNUSED_PARAM(exec);
+    DOMWindow* imp = static_cast<DOMWindow*>(static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->impl());
+    if (EventListener* listener = imp->onwebkitanimationend()) {
+        if (JSObject* jsFunction = listener->jsFunction())
+            return jsFunction;
+    }
+    return jsNull();
+}
+
+JSValue jsDOMWindowOnwebkitanimationiteration(ExecState* exec, const Identifier&, const PropertySlot& slot)
+{
+    if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
+        return jsUndefined();
+    UNUSED_PARAM(exec);
+    DOMWindow* imp = static_cast<DOMWindow*>(static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->impl());
+    if (EventListener* listener = imp->onwebkitanimationiteration()) {
+        if (JSObject* jsFunction = listener->jsFunction())
+            return jsFunction;
+    }
+    return jsNull();
+}
+
+JSValue jsDOMWindowOnwebkitanimationstart(ExecState* exec, const Identifier&, const PropertySlot& slot)
+{
+    if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
+        return jsUndefined();
+    UNUSED_PARAM(exec);
+    DOMWindow* imp = static_cast<DOMWindow*>(static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->impl());
+    if (EventListener* listener = imp->onwebkitanimationstart()) {
+        if (JSObject* jsFunction = listener->jsFunction())
+            return jsFunction;
+    }
+    return jsNull();
+}
+
+JSValue jsDOMWindowOnwebkittransitionend(ExecState* exec, const Identifier&, const PropertySlot& slot)
+{
+    if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
+        return jsUndefined();
+    UNUSED_PARAM(exec);
+    DOMWindow* imp = static_cast<DOMWindow*>(static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->impl());
+    if (EventListener* listener = imp->onwebkittransitionend()) {
+        if (JSObject* jsFunction = listener->jsFunction())
+            return jsFunction;
+    }
+    return jsNull();
+}
+
+JSValue jsDOMWindowStyleSheetConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+{
+    if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
+        return jsUndefined();
+    UNUSED_PARAM(slot);
     return JSStyleSheet::getConstructor(exec);
 }
 
-JSValuePtr jsDOMWindowCSSStyleSheetConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowCSSStyleSheetConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(slot);
     return JSCSSStyleSheet::getConstructor(exec);
 }
 
-JSValuePtr jsDOMWindowCSSValueConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowCSSValueConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(slot);
     return JSCSSValue::getConstructor(exec);
 }
 
-JSValuePtr jsDOMWindowCSSPrimitiveValueConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowCSSPrimitiveValueConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(slot);
     return JSCSSPrimitiveValue::getConstructor(exec);
 }
 
-JSValuePtr jsDOMWindowCSSValueListConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowCSSValueListConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(slot);
     return JSCSSValueList::getConstructor(exec);
 }
 
-JSValuePtr jsDOMWindowWebKitCSSTransformValueConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowWebKitCSSTransformValueConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(slot);
     return JSWebKitCSSTransformValue::getConstructor(exec);
 }
 
-JSValuePtr jsDOMWindowCSSRuleConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowCSSRuleConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(slot);
     return JSCSSRule::getConstructor(exec);
 }
 
-JSValuePtr jsDOMWindowCSSCharsetRuleConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowCSSCharsetRuleConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(slot);
     return JSCSSCharsetRule::getConstructor(exec);
 }
 
-JSValuePtr jsDOMWindowCSSFontFaceRuleConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowCSSFontFaceRuleConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(slot);
     return JSCSSFontFaceRule::getConstructor(exec);
 }
 
-JSValuePtr jsDOMWindowCSSImportRuleConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowCSSImportRuleConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(slot);
     return JSCSSImportRule::getConstructor(exec);
 }
 
-JSValuePtr jsDOMWindowCSSMediaRuleConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowCSSMediaRuleConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(slot);
     return JSCSSMediaRule::getConstructor(exec);
 }
 
-JSValuePtr jsDOMWindowCSSPageRuleConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowCSSPageRuleConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(slot);
     return JSCSSPageRule::getConstructor(exec);
 }
 
-JSValuePtr jsDOMWindowCSSStyleRuleConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowCSSStyleRuleConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(slot);
     return JSCSSStyleRule::getConstructor(exec);
 }
 
-JSValuePtr jsDOMWindowCSSVariablesRuleConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowCSSVariablesRuleConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(slot);
     return JSCSSVariablesRule::getConstructor(exec);
 }
 
-JSValuePtr jsDOMWindowCSSVariablesDeclarationConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowCSSVariablesDeclarationConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(slot);
     return JSCSSVariablesDeclaration::getConstructor(exec);
 }
 
-JSValuePtr jsDOMWindowCSSStyleDeclarationConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowCSSStyleDeclarationConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(slot);
     return JSCSSStyleDeclaration::getConstructor(exec);
 }
 
-JSValuePtr jsDOMWindowMediaListConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowMediaListConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(slot);
     return JSMediaList::getConstructor(exec);
 }
 
-JSValuePtr jsDOMWindowCounterConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowCounterConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(slot);
     return JSCounter::getConstructor(exec);
 }
 
-JSValuePtr jsDOMWindowCSSRuleListConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowCSSRuleListConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(slot);
     return JSCSSRuleList::getConstructor(exec);
 }
 
-JSValuePtr jsDOMWindowRectConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowRectConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(slot);
     return JSRect::getConstructor(exec);
 }
 
-JSValuePtr jsDOMWindowStyleSheetListConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowStyleSheetListConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(slot);
     return JSStyleSheetList::getConstructor(exec);
 }
 
-JSValuePtr jsDOMWindowDOMExceptionConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowDOMExceptionConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(slot);
     return JSDOMCoreException::getConstructor(exec);
 }
 
-JSValuePtr jsDOMWindowDOMStringListConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowDOMStringListConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(slot);
     return JSDOMStringList::getConstructor(exec);
 }
 
-JSValuePtr jsDOMWindowDOMImplementationConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowDOMImplementationConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(slot);
     return JSDOMImplementation::getConstructor(exec);
 }
 
-JSValuePtr jsDOMWindowDocumentFragmentConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowDocumentFragmentConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(slot);
     return JSDocumentFragment::getConstructor(exec);
 }
 
-JSValuePtr jsDOMWindowDocumentConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowDocumentConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(slot);
     return JSDocument::getConstructor(exec);
 }
 
-JSValuePtr jsDOMWindowNodeConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowNodeConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(slot);
     return JSNode::getConstructor(exec);
 }
 
-JSValuePtr jsDOMWindowNodeListConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowNodeListConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(slot);
     return JSNodeList::getConstructor(exec);
 }
 
-JSValuePtr jsDOMWindowNamedNodeMapConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowNamedNodeMapConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(slot);
     return JSNamedNodeMap::getConstructor(exec);
 }
 
-JSValuePtr jsDOMWindowCharacterDataConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowCharacterDataConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(slot);
     return JSCharacterData::getConstructor(exec);
 }
 
-JSValuePtr jsDOMWindowAttrConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowAttrConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(slot);
     return JSAttr::getConstructor(exec);
 }
 
-JSValuePtr jsDOMWindowElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(slot);
     return JSElement::getConstructor(exec);
 }
 
-JSValuePtr jsDOMWindowTextConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowTextConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(slot);
     return JSText::getConstructor(exec);
 }
 
-JSValuePtr jsDOMWindowCommentConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowCommentConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(slot);
     return JSComment::getConstructor(exec);
 }
 
-JSValuePtr jsDOMWindowCDATASectionConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowCDATASectionConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(slot);
     return JSCDATASection::getConstructor(exec);
 }
 
-JSValuePtr jsDOMWindowDocumentTypeConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowDocumentTypeConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(slot);
     return JSDocumentType::getConstructor(exec);
 }
 
-JSValuePtr jsDOMWindowNotationConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowNotationConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(slot);
     return JSNotation::getConstructor(exec);
 }
 
-JSValuePtr jsDOMWindowEntityConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowEntityConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(slot);
     return JSEntity::getConstructor(exec);
 }
 
-JSValuePtr jsDOMWindowEntityReferenceConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowEntityReferenceConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(slot);
     return JSEntityReference::getConstructor(exec);
 }
 
-JSValuePtr jsDOMWindowProcessingInstructionConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowProcessingInstructionConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(slot);
     return JSProcessingInstruction::getConstructor(exec);
 }
 
-JSValuePtr jsDOMWindowHTMLDocumentConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowHTMLDocumentConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(slot);
     return JSHTMLDocument::getConstructor(exec);
 }
 
-JSValuePtr jsDOMWindowHTMLElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowHTMLElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(slot);
     return JSHTMLElement::getConstructor(exec);
 }
 
-JSValuePtr jsDOMWindowHTMLAnchorElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowHTMLAnchorElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(slot);
     return JSHTMLAnchorElement::getConstructor(exec);
 }
 
-JSValuePtr jsDOMWindowHTMLAppletElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowHTMLAppletElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(slot);
     return JSHTMLAppletElement::getConstructor(exec);
 }
 
-JSValuePtr jsDOMWindowHTMLAreaElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowHTMLAreaElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(slot);
     return JSHTMLAreaElement::getConstructor(exec);
 }
 
-JSValuePtr jsDOMWindowHTMLBRElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowHTMLBRElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(slot);
     return JSHTMLBRElement::getConstructor(exec);
 }
 
-JSValuePtr jsDOMWindowHTMLBaseElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowHTMLBaseElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(slot);
     return JSHTMLBaseElement::getConstructor(exec);
 }
 
-JSValuePtr jsDOMWindowHTMLBaseFontElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowHTMLBaseFontElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(slot);
     return JSHTMLBaseFontElement::getConstructor(exec);
 }
 
-JSValuePtr jsDOMWindowHTMLBlockquoteElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowHTMLBlockquoteElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(slot);
     return JSHTMLBlockquoteElement::getConstructor(exec);
 }
 
-JSValuePtr jsDOMWindowHTMLBodyElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowHTMLBodyElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(slot);
     return JSHTMLBodyElement::getConstructor(exec);
 }
 
-JSValuePtr jsDOMWindowHTMLButtonElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowHTMLButtonElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(slot);
     return JSHTMLButtonElement::getConstructor(exec);
 }
 
-JSValuePtr jsDOMWindowHTMLCanvasElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowHTMLCanvasElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(slot);
     return JSHTMLCanvasElement::getConstructor(exec);
 }
 
-JSValuePtr jsDOMWindowHTMLDListElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowHTMLDListElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(slot);
     return JSHTMLDListElement::getConstructor(exec);
 }
 
-JSValuePtr jsDOMWindowHTMLDirectoryElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowHTMLDirectoryElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(slot);
     return JSHTMLDirectoryElement::getConstructor(exec);
 }
 
-JSValuePtr jsDOMWindowHTMLDivElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowHTMLDivElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(slot);
     return JSHTMLDivElement::getConstructor(exec);
 }
 
-JSValuePtr jsDOMWindowHTMLEmbedElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowHTMLEmbedElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(slot);
     return JSHTMLEmbedElement::getConstructor(exec);
 }
 
-JSValuePtr jsDOMWindowHTMLFieldSetElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowHTMLFieldSetElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(slot);
     return JSHTMLFieldSetElement::getConstructor(exec);
 }
 
-JSValuePtr jsDOMWindowHTMLFontElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowHTMLFontElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(slot);
     return JSHTMLFontElement::getConstructor(exec);
 }
 
-JSValuePtr jsDOMWindowHTMLFormElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowHTMLFormElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(slot);
     return JSHTMLFormElement::getConstructor(exec);
 }
 
-JSValuePtr jsDOMWindowHTMLFrameElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowHTMLFrameElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(slot);
     return JSHTMLFrameElement::getConstructor(exec);
 }
 
-JSValuePtr jsDOMWindowHTMLFrameSetElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowHTMLFrameSetElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(slot);
     return JSHTMLFrameSetElement::getConstructor(exec);
 }
 
-JSValuePtr jsDOMWindowHTMLHRElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowHTMLHRElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(slot);
     return JSHTMLHRElement::getConstructor(exec);
 }
 
-JSValuePtr jsDOMWindowHTMLHeadElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowHTMLHeadElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(slot);
     return JSHTMLHeadElement::getConstructor(exec);
 }
 
-JSValuePtr jsDOMWindowHTMLHeadingElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowHTMLHeadingElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(slot);
     return JSHTMLHeadingElement::getConstructor(exec);
 }
 
-JSValuePtr jsDOMWindowHTMLHtmlElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowHTMLHtmlElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(slot);
     return JSHTMLHtmlElement::getConstructor(exec);
 }
 
-JSValuePtr jsDOMWindowHTMLIFrameElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowHTMLIFrameElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(slot);
     return JSHTMLIFrameElement::getConstructor(exec);
 }
 
-JSValuePtr jsDOMWindowHTMLImageElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowHTMLImageElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(slot);
     return JSHTMLImageElement::getConstructor(exec);
 }
 
-JSValuePtr jsDOMWindowHTMLInputElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowHTMLInputElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(slot);
     return JSHTMLInputElement::getConstructor(exec);
 }
 
-JSValuePtr jsDOMWindowHTMLIsIndexElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowHTMLIsIndexElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(slot);
     return JSHTMLIsIndexElement::getConstructor(exec);
 }
 
-JSValuePtr jsDOMWindowHTMLLIElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowHTMLLIElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(slot);
     return JSHTMLLIElement::getConstructor(exec);
 }
 
-JSValuePtr jsDOMWindowHTMLLabelElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowHTMLLabelElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(slot);
     return JSHTMLLabelElement::getConstructor(exec);
 }
 
-JSValuePtr jsDOMWindowHTMLLegendElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowHTMLLegendElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(slot);
     return JSHTMLLegendElement::getConstructor(exec);
 }
 
-JSValuePtr jsDOMWindowHTMLLinkElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowHTMLLinkElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(slot);
     return JSHTMLLinkElement::getConstructor(exec);
 }
 
-JSValuePtr jsDOMWindowHTMLMapElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowHTMLMapElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(slot);
     return JSHTMLMapElement::getConstructor(exec);
 }
 
-JSValuePtr jsDOMWindowHTMLMarqueeElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowHTMLMarqueeElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(slot);
     return JSHTMLMarqueeElement::getConstructor(exec);
 }
 
-JSValuePtr jsDOMWindowHTMLMenuElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowHTMLMenuElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(slot);
     return JSHTMLMenuElement::getConstructor(exec);
 }
 
-JSValuePtr jsDOMWindowHTMLMetaElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowHTMLMetaElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(slot);
     return JSHTMLMetaElement::getConstructor(exec);
 }
 
-JSValuePtr jsDOMWindowHTMLModElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowHTMLModElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(slot);
     return JSHTMLModElement::getConstructor(exec);
 }
 
-JSValuePtr jsDOMWindowHTMLOListElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowHTMLOListElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(slot);
     return JSHTMLOListElement::getConstructor(exec);
 }
 
-JSValuePtr jsDOMWindowHTMLObjectElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowHTMLObjectElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(slot);
     return JSHTMLObjectElement::getConstructor(exec);
 }
 
-JSValuePtr jsDOMWindowHTMLOptGroupElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowHTMLOptGroupElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(slot);
     return JSHTMLOptGroupElement::getConstructor(exec);
 }
 
-JSValuePtr jsDOMWindowHTMLOptionElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowHTMLOptionElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(slot);
     return JSHTMLOptionElement::getConstructor(exec);
 }
 
-JSValuePtr jsDOMWindowHTMLParagraphElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowHTMLParagraphElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(slot);
     return JSHTMLParagraphElement::getConstructor(exec);
 }
 
-JSValuePtr jsDOMWindowHTMLParamElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowHTMLParamElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(slot);
     return JSHTMLParamElement::getConstructor(exec);
 }
 
-JSValuePtr jsDOMWindowHTMLPreElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowHTMLPreElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(slot);
     return JSHTMLPreElement::getConstructor(exec);
 }
 
-JSValuePtr jsDOMWindowHTMLQuoteElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowHTMLQuoteElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(slot);
     return JSHTMLQuoteElement::getConstructor(exec);
 }
 
-JSValuePtr jsDOMWindowHTMLScriptElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowHTMLScriptElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(slot);
     return JSHTMLScriptElement::getConstructor(exec);
 }
 
-JSValuePtr jsDOMWindowHTMLSelectElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowHTMLSelectElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(slot);
     return JSHTMLSelectElement::getConstructor(exec);
 }
 
-JSValuePtr jsDOMWindowHTMLStyleElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowHTMLStyleElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(slot);
     return JSHTMLStyleElement::getConstructor(exec);
 }
 
-JSValuePtr jsDOMWindowHTMLTableCaptionElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowHTMLTableCaptionElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(slot);
     return JSHTMLTableCaptionElement::getConstructor(exec);
 }
 
-JSValuePtr jsDOMWindowHTMLTableCellElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowHTMLTableCellElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(slot);
     return JSHTMLTableCellElement::getConstructor(exec);
 }
 
-JSValuePtr jsDOMWindowHTMLTableColElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowHTMLTableColElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(slot);
     return JSHTMLTableColElement::getConstructor(exec);
 }
 
-JSValuePtr jsDOMWindowHTMLTableElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowHTMLTableElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(slot);
     return JSHTMLTableElement::getConstructor(exec);
 }
 
-JSValuePtr jsDOMWindowHTMLTableRowElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowHTMLTableRowElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(slot);
     return JSHTMLTableRowElement::getConstructor(exec);
 }
 
-JSValuePtr jsDOMWindowHTMLTableSectionElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowHTMLTableSectionElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(slot);
     return JSHTMLTableSectionElement::getConstructor(exec);
 }
 
-JSValuePtr jsDOMWindowHTMLTextAreaElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowHTMLTextAreaElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(slot);
     return JSHTMLTextAreaElement::getConstructor(exec);
 }
 
-JSValuePtr jsDOMWindowHTMLTitleElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowHTMLTitleElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(slot);
     return JSHTMLTitleElement::getConstructor(exec);
 }
 
-JSValuePtr jsDOMWindowHTMLUListElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowHTMLUListElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(slot);
     return JSHTMLUListElement::getConstructor(exec);
 }
 
-JSValuePtr jsDOMWindowHTMLCollectionConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowHTMLCollectionConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(slot);
     return JSHTMLCollection::getConstructor(exec);
 }
 
-JSValuePtr jsDOMWindowCanvasRenderingContext2DConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowImageConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    return static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->image(exec);
+}
+
+JSValue jsDOMWindowOptionConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+{
+    if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
+        return jsUndefined();
+    return static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->option(exec);
+}
+
+JSValue jsDOMWindowCanvasRenderingContext2DConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+{
+    if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
+        return jsUndefined();
+    UNUSED_PARAM(slot);
     return JSCanvasRenderingContext2D::getConstructor(exec);
 }
 
-JSValuePtr jsDOMWindowTextMetricsConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowTextMetricsConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(slot);
     return JSTextMetrics::getConstructor(exec);
 }
 
-JSValuePtr jsDOMWindowEventConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowEventConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(slot);
     return JSEvent::getConstructor(exec);
 }
 
-JSValuePtr jsDOMWindowKeyboardEventConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowKeyboardEventConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(slot);
     return JSKeyboardEvent::getConstructor(exec);
 }
 
-JSValuePtr jsDOMWindowMouseEventConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowMouseEventConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(slot);
     return JSMouseEvent::getConstructor(exec);
 }
 
-JSValuePtr jsDOMWindowMutationEventConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowMutationEventConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(slot);
     return JSMutationEvent::getConstructor(exec);
 }
 
-JSValuePtr jsDOMWindowOverflowEventConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowOverflowEventConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(slot);
     return JSOverflowEvent::getConstructor(exec);
 }
 
-JSValuePtr jsDOMWindowProgressEventConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowProgressEventConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(slot);
     return JSProgressEvent::getConstructor(exec);
 }
 
-JSValuePtr jsDOMWindowTextEventConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowTextEventConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(slot);
     return JSTextEvent::getConstructor(exec);
 }
 
-JSValuePtr jsDOMWindowUIEventConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowUIEventConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(slot);
     return JSUIEvent::getConstructor(exec);
 }
 
-JSValuePtr jsDOMWindowWebKitAnimationEventConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowWebKitAnimationEventConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(slot);
     return JSWebKitAnimationEvent::getConstructor(exec);
 }
 
-JSValuePtr jsDOMWindowWebKitTransitionEventConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowWebKitTransitionEventConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(slot);
     return JSWebKitTransitionEvent::getConstructor(exec);
 }
 
-JSValuePtr jsDOMWindowWheelEventConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowWheelEventConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(slot);
     return JSWheelEvent::getConstructor(exec);
 }
 
-JSValuePtr jsDOMWindowMessageEventConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowMessageEventConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(slot);
     return JSMessageEvent::getConstructor(exec);
 }
 
-JSValuePtr jsDOMWindowEventExceptionConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowEventExceptionConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(slot);
     return JSEventException::getConstructor(exec);
 }
 
-JSValuePtr jsDOMWindowWebKitCSSKeyframeRuleConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowWebKitCSSKeyframeRuleConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(slot);
     return JSWebKitCSSKeyframeRule::getConstructor(exec);
 }
 
-JSValuePtr jsDOMWindowWebKitCSSKeyframesRuleConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowWebKitCSSKeyframesRuleConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(slot);
     return JSWebKitCSSKeyframesRule::getConstructor(exec);
 }
 
-JSValuePtr jsDOMWindowClipboardConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowWebKitCSSMatrixConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    return static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->webKitCSSMatrix(exec);
+}
+
+JSValue jsDOMWindowWebKitPointConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+{
+    if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
+        return jsUndefined();
+    return static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->webKitPoint(exec);
+}
+
+JSValue jsDOMWindowClipboardConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+{
+    if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
+        return jsUndefined();
+    UNUSED_PARAM(slot);
     return JSClipboard::getConstructor(exec);
 }
 
-JSValuePtr jsDOMWindowFileConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowFileConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(slot);
     return JSFile::getConstructor(exec);
 }
 
-JSValuePtr jsDOMWindowFileListConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowFileListConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(slot);
     return JSFileList::getConstructor(exec);
 }
 
-JSValuePtr jsDOMWindowNodeFilterConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowNodeFilterConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(slot);
     return JSNodeFilter::getConstructor(exec);
 }
 
-JSValuePtr jsDOMWindowRangeConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowRangeConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(slot);
     return JSRange::getConstructor(exec);
 }
 
-JSValuePtr jsDOMWindowRangeExceptionConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowRangeExceptionConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(slot);
     return JSRangeException::getConstructor(exec);
 }
 
-JSValuePtr jsDOMWindowXMLDocumentConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowXMLDocumentConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(slot);
     return JSDocument::getConstructor(exec);
 }
 
-JSValuePtr jsDOMWindowDOMParserConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowDOMParserConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(slot);
     return JSDOMParser::getConstructor(exec);
 }
 
-JSValuePtr jsDOMWindowXMLSerializerConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowXMLSerializerConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(slot);
     return JSXMLSerializer::getConstructor(exec);
 }
 
-JSValuePtr jsDOMWindowXMLHttpRequestUploadConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowXMLHttpRequestConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    return static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->xmlHttpRequest(exec);
+}
+
+JSValue jsDOMWindowXMLHttpRequestUploadConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+{
+    if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
+        return jsUndefined();
+    UNUSED_PARAM(slot);
     return JSXMLHttpRequestUpload::getConstructor(exec);
 }
 
-JSValuePtr jsDOMWindowXMLHttpRequestExceptionConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowXMLHttpRequestExceptionConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(slot);
     return JSXMLHttpRequestException::getConstructor(exec);
 }
 
-JSValuePtr jsDOMWindowPluginConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowWorkerConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    return static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->worker(exec);
+}
+
+JSValue jsDOMWindowPluginConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+{
+    if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
+        return jsUndefined();
+    UNUSED_PARAM(slot);
     return JSPlugin::getConstructor(exec);
 }
 
-JSValuePtr jsDOMWindowPluginArrayConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowPluginArrayConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(slot);
     return JSPluginArray::getConstructor(exec);
 }
 
-JSValuePtr jsDOMWindowMimeTypeConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowMimeTypeConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(slot);
     return JSMimeType::getConstructor(exec);
 }
 
-JSValuePtr jsDOMWindowMimeTypeArrayConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowMimeTypeArrayConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(slot);
     return JSMimeTypeArray::getConstructor(exec);
 }
 
-JSValuePtr jsDOMWindowStorageConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowClientRectConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(slot);
+    return JSClientRect::getConstructor(exec);
+}
+
+JSValue jsDOMWindowClientRectListConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+{
+    if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
+        return jsUndefined();
+    UNUSED_PARAM(slot);
+    return JSClientRectList::getConstructor(exec);
+}
+
+JSValue jsDOMWindowStorageConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+{
+    if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
+        return jsUndefined();
+    UNUSED_PARAM(slot);
     return JSStorage::getConstructor(exec);
 }
 
-JSValuePtr jsDOMWindowStorageEventConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowStorageEventConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(slot);
     return JSStorageEvent::getConstructor(exec);
 }
 
 #if ENABLE(VIDEO)
-JSValuePtr jsDOMWindowHTMLAudioElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowAudioConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    return static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->audio(exec);
+}
+#endif
+
+#if ENABLE(VIDEO)
+JSValue jsDOMWindowHTMLAudioElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+{
+    if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
+        return jsUndefined();
+    UNUSED_PARAM(slot);
     return JSHTMLAudioElement::getConstructor(exec);
 }
 #endif
 
 #if ENABLE(VIDEO)
-JSValuePtr jsDOMWindowHTMLMediaElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowHTMLMediaElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(slot);
     return JSHTMLMediaElement::getConstructor(exec);
 }
 #endif
 
 #if ENABLE(VIDEO)
-JSValuePtr jsDOMWindowHTMLVideoElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowHTMLVideoElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(slot);
     return JSHTMLVideoElement::getConstructor(exec);
 }
 #endif
 
 #if ENABLE(VIDEO)
-JSValuePtr jsDOMWindowMediaErrorConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowMediaErrorConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(slot);
     return JSMediaError::getConstructor(exec);
 }
 #endif
 
-JSValuePtr jsDOMWindowXPathEvaluatorConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowXPathEvaluatorConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(slot);
     return JSXPathEvaluator::getConstructor(exec);
 }
 
-JSValuePtr jsDOMWindowXPathResultConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowXPathResultConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(slot);
     return JSXPathResult::getConstructor(exec);
 }
 
-JSValuePtr jsDOMWindowXPathExceptionConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowXPathExceptionConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(slot);
     return JSXPathException::getConstructor(exec);
 }
 
-JSValuePtr jsDOMWindowSVGAngleConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowSVGAngleConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(slot);
     return JSSVGAngle::getConstructor(exec);
 }
 
-JSValuePtr jsDOMWindowSVGColorConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowSVGColorConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(slot);
     return JSSVGColor::getConstructor(exec);
 }
 
-JSValuePtr jsDOMWindowSVGExceptionConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowSVGExceptionConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(slot);
     return JSSVGException::getConstructor(exec);
 }
 
-JSValuePtr jsDOMWindowSVGGradientElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowSVGGradientElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(slot);
     return JSSVGGradientElement::getConstructor(exec);
 }
 
-JSValuePtr jsDOMWindowSVGLengthConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowSVGLengthConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(slot);
     return JSSVGLength::getConstructor(exec);
 }
 
-JSValuePtr jsDOMWindowSVGMarkerElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowSVGMarkerElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(slot);
     return JSSVGMarkerElement::getConstructor(exec);
 }
 
-JSValuePtr jsDOMWindowSVGPaintConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowSVGPaintConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(slot);
     return JSSVGPaint::getConstructor(exec);
 }
 
-JSValuePtr jsDOMWindowSVGPathSegConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowSVGPathSegConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(slot);
     return JSSVGPathSeg::getConstructor(exec);
 }
 
-JSValuePtr jsDOMWindowSVGPreserveAspectRatioConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowSVGPreserveAspectRatioConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(slot);
     return JSSVGPreserveAspectRatio::getConstructor(exec);
 }
 
-JSValuePtr jsDOMWindowSVGRenderingIntentConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowSVGRenderingIntentConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(slot);
     return JSSVGRenderingIntent::getConstructor(exec);
 }
 
-JSValuePtr jsDOMWindowSVGTextContentElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowSVGTextContentElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(slot);
     return JSSVGTextContentElement::getConstructor(exec);
 }
 
-JSValuePtr jsDOMWindowSVGTextPathElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowSVGTextPathElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(slot);
     return JSSVGTextPathElement::getConstructor(exec);
 }
 
-JSValuePtr jsDOMWindowSVGTransformConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowSVGTransformConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(slot);
     return JSSVGTransform::getConstructor(exec);
 }
 
-JSValuePtr jsDOMWindowSVGUnitTypesConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMWindowSVGUnitTypesConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     if (!static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->allowsAccessFrom(exec))
         return jsUndefined();
+    UNUSED_PARAM(slot);
     return JSSVGUnitTypes::getConstructor(exec);
 }
 
-void JSDOMWindow::put(ExecState* exec, const Identifier& propertyName, JSValuePtr value, PutPropertySlot& slot)
+void JSDOMWindow::put(ExecState* exec, const Identifier& propertyName, JSValue value, PutPropertySlot& slot)
 {
     if (customPut(exec, propertyName, value, slot))
         return;
     lookupPut<JSDOMWindow, Base>(exec, propertyName, value, &JSDOMWindowTable, this, slot);
 }
 
-void setJSDOMWindowLocationbar(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowLocationbar(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
+    // Shadowing a built-in object
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "locationbar"), value);
 }
 
-void setJSDOMWindowMenubar(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowMenubar(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
+    // Shadowing a built-in object
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "menubar"), value);
 }
 
-void setJSDOMWindowPersonalbar(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowPersonalbar(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
+    // Shadowing a built-in object
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "personalbar"), value);
 }
 
-void setJSDOMWindowScrollbars(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowScrollbars(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
+    // Shadowing a built-in object
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "scrollbars"), value);
 }
 
-void setJSDOMWindowStatusbar(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowStatusbar(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
+    // Shadowing a built-in object
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "statusbar"), value);
 }
 
-void setJSDOMWindowToolbar(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowToolbar(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
+    // Shadowing a built-in object
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "toolbar"), value);
 }
 
-void setJSDOMWindowNavigator(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowNavigator(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
+    // Shadowing a built-in object
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "navigator"), value);
 }
 
-void setJSDOMWindowClientInformation(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowClientInformation(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
+    // Shadowing a built-in object
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "clientInformation"), value);
 }
 
-void setJSDOMWindowLocation(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowLocation(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     static_cast<JSDOMWindow*>(thisObject)->setLocation(exec, value);
 }
 
-void setJSDOMWindowOffscreenBuffering(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowEvent(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
+    // Shadowing a built-in object
+    static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "event"), value);
+}
+
+void setJSDOMWindowOffscreenBuffering(ExecState* exec, JSObject* thisObject, JSValue value)
+{
+    if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
+        return;
+    // Shadowing a built-in object
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "offscreenBuffering"), value);
 }
 
-void setJSDOMWindowOuterHeight(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowOuterHeight(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
+    // Shadowing a built-in object
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "outerHeight"), value);
 }
 
-void setJSDOMWindowOuterWidth(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowOuterWidth(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
+    // Shadowing a built-in object
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "outerWidth"), value);
 }
 
-void setJSDOMWindowInnerHeight(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowInnerHeight(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
+    // Shadowing a built-in object
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "innerHeight"), value);
 }
 
-void setJSDOMWindowInnerWidth(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowInnerWidth(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
+    // Shadowing a built-in object
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "innerWidth"), value);
 }
 
-void setJSDOMWindowScreenX(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowScreenX(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
+    // Shadowing a built-in object
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "screenX"), value);
 }
 
-void setJSDOMWindowScreenY(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowScreenY(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
+    // Shadowing a built-in object
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "screenY"), value);
 }
 
-void setJSDOMWindowScreenLeft(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowScreenLeft(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
+    // Shadowing a built-in object
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "screenLeft"), value);
 }
 
-void setJSDOMWindowScreenTop(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowScreenTop(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
+    // Shadowing a built-in object
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "screenTop"), value);
 }
 
-void setJSDOMWindowScrollX(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowScrollX(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
+    // Shadowing a built-in object
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "scrollX"), value);
 }
 
-void setJSDOMWindowScrollY(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowScrollY(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
+    // Shadowing a built-in object
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "scrollY"), value);
 }
 
-void setJSDOMWindowLength(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowLength(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
+    // Shadowing a built-in object
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "length"), value);
 }
 
-void setJSDOMWindowName(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowName(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
     DOMWindow* imp = static_cast<DOMWindow*>(static_cast<JSDOMWindow*>(thisObject)->impl());
-    imp->setName(value->toString(exec));
+    imp->setName(value.toString(exec));
 }
 
-void setJSDOMWindowStatus(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowStatus(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
     DOMWindow* imp = static_cast<DOMWindow*>(static_cast<JSDOMWindow*>(thisObject)->impl());
-    imp->setStatus(value->toString(exec));
+    imp->setStatus(value.toString(exec));
 }
 
-void setJSDOMWindowDefaultStatus(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowDefaultStatus(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
     DOMWindow* imp = static_cast<DOMWindow*>(static_cast<JSDOMWindow*>(thisObject)->impl());
-    imp->setDefaultStatus(value->toString(exec));
+    imp->setDefaultStatus(value.toString(exec));
 }
 
-void setJSDOMWindowDefaultstatus(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowDefaultstatus(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
     DOMWindow* imp = static_cast<DOMWindow*>(static_cast<JSDOMWindow*>(thisObject)->impl());
-    imp->setDefaultstatus(value->toString(exec));
+    imp->setDefaultstatus(value.toString(exec));
 }
 
-void setJSDOMWindowSelf(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowSelf(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
+    // Shadowing a built-in object
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "self"), value);
 }
 
-void setJSDOMWindowFrames(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowFrames(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
+    // Shadowing a built-in object
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "frames"), value);
 }
 
-void setJSDOMWindowOpener(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowOpener(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
+    // Shadowing a built-in object
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "opener"), value);
 }
 
-void setJSDOMWindowParent(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowParent(ExecState* exec, JSObject* thisObject, JSValue value)
 {
+    // Shadowing a built-in object
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "parent"), value);
 }
 
-void setJSDOMWindowTop(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowTop(ExecState* exec, JSObject* thisObject, JSValue value)
 {
+    // Shadowing a built-in object
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "top"), value);
 }
 
-void setJSDOMWindowDevicePixelRatio(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowDevicePixelRatio(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
+    // Shadowing a built-in object
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "devicePixelRatio"), value);
 }
 
-void setJSDOMWindowConsole(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowConsole(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
+    // Shadowing a built-in object
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "console"), value);
 }
 
-void setJSDOMWindowOnabort(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowOnabort(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
+    UNUSED_PARAM(exec);
     DOMWindow* imp = static_cast<DOMWindow*>(static_cast<JSDOMWindow*>(thisObject)->impl());
     JSDOMGlobalObject* globalObject = static_cast<JSDOMWindow*>(thisObject);
-    imp->setOnabort(globalObject->findOrCreateJSEventListener(exec, value, true));
+    imp->setOnabort(globalObject->createJSAttributeEventListener(value));
 }
 
-void setJSDOMWindowOnblur(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowOnbeforeunload(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
+    UNUSED_PARAM(exec);
     DOMWindow* imp = static_cast<DOMWindow*>(static_cast<JSDOMWindow*>(thisObject)->impl());
     JSDOMGlobalObject* globalObject = static_cast<JSDOMWindow*>(thisObject);
-    imp->setOnblur(globalObject->findOrCreateJSEventListener(exec, value, true));
+    imp->setOnbeforeunload(globalObject->createJSAttributeEventListener(value));
 }
 
-void setJSDOMWindowOnchange(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowOnblur(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
+    UNUSED_PARAM(exec);
     DOMWindow* imp = static_cast<DOMWindow*>(static_cast<JSDOMWindow*>(thisObject)->impl());
     JSDOMGlobalObject* globalObject = static_cast<JSDOMWindow*>(thisObject);
-    imp->setOnchange(globalObject->findOrCreateJSEventListener(exec, value, true));
+    imp->setOnblur(globalObject->createJSAttributeEventListener(value));
 }
 
-void setJSDOMWindowOnclick(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowOncanplay(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
+    UNUSED_PARAM(exec);
     DOMWindow* imp = static_cast<DOMWindow*>(static_cast<JSDOMWindow*>(thisObject)->impl());
     JSDOMGlobalObject* globalObject = static_cast<JSDOMWindow*>(thisObject);
-    imp->setOnclick(globalObject->findOrCreateJSEventListener(exec, value, true));
+    imp->setOncanplay(globalObject->createJSAttributeEventListener(value));
 }
 
-void setJSDOMWindowOndblclick(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowOncanplaythrough(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
+    UNUSED_PARAM(exec);
     DOMWindow* imp = static_cast<DOMWindow*>(static_cast<JSDOMWindow*>(thisObject)->impl());
     JSDOMGlobalObject* globalObject = static_cast<JSDOMWindow*>(thisObject);
-    imp->setOndblclick(globalObject->findOrCreateJSEventListener(exec, value, true));
+    imp->setOncanplaythrough(globalObject->createJSAttributeEventListener(value));
 }
 
-void setJSDOMWindowOnerror(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowOnchange(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
+    UNUSED_PARAM(exec);
     DOMWindow* imp = static_cast<DOMWindow*>(static_cast<JSDOMWindow*>(thisObject)->impl());
     JSDOMGlobalObject* globalObject = static_cast<JSDOMWindow*>(thisObject);
-    imp->setOnerror(globalObject->findOrCreateJSEventListener(exec, value, true));
+    imp->setOnchange(globalObject->createJSAttributeEventListener(value));
 }
 
-void setJSDOMWindowOnfocus(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowOnclick(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
+    UNUSED_PARAM(exec);
     DOMWindow* imp = static_cast<DOMWindow*>(static_cast<JSDOMWindow*>(thisObject)->impl());
     JSDOMGlobalObject* globalObject = static_cast<JSDOMWindow*>(thisObject);
-    imp->setOnfocus(globalObject->findOrCreateJSEventListener(exec, value, true));
+    imp->setOnclick(globalObject->createJSAttributeEventListener(value));
 }
 
-void setJSDOMWindowOnkeydown(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowOncontextmenu(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
+    UNUSED_PARAM(exec);
     DOMWindow* imp = static_cast<DOMWindow*>(static_cast<JSDOMWindow*>(thisObject)->impl());
     JSDOMGlobalObject* globalObject = static_cast<JSDOMWindow*>(thisObject);
-    imp->setOnkeydown(globalObject->findOrCreateJSEventListener(exec, value, true));
+    imp->setOncontextmenu(globalObject->createJSAttributeEventListener(value));
 }
 
-void setJSDOMWindowOnkeypress(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowOndblclick(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
+    UNUSED_PARAM(exec);
     DOMWindow* imp = static_cast<DOMWindow*>(static_cast<JSDOMWindow*>(thisObject)->impl());
     JSDOMGlobalObject* globalObject = static_cast<JSDOMWindow*>(thisObject);
-    imp->setOnkeypress(globalObject->findOrCreateJSEventListener(exec, value, true));
+    imp->setOndblclick(globalObject->createJSAttributeEventListener(value));
 }
 
-void setJSDOMWindowOnkeyup(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowOndrag(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
+    UNUSED_PARAM(exec);
     DOMWindow* imp = static_cast<DOMWindow*>(static_cast<JSDOMWindow*>(thisObject)->impl());
     JSDOMGlobalObject* globalObject = static_cast<JSDOMWindow*>(thisObject);
-    imp->setOnkeyup(globalObject->findOrCreateJSEventListener(exec, value, true));
+    imp->setOndrag(globalObject->createJSAttributeEventListener(value));
 }
 
-void setJSDOMWindowOnload(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowOndragend(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
+    UNUSED_PARAM(exec);
     DOMWindow* imp = static_cast<DOMWindow*>(static_cast<JSDOMWindow*>(thisObject)->impl());
     JSDOMGlobalObject* globalObject = static_cast<JSDOMWindow*>(thisObject);
-    imp->setOnload(globalObject->findOrCreateJSEventListener(exec, value, true));
+    imp->setOndragend(globalObject->createJSAttributeEventListener(value));
 }
 
-void setJSDOMWindowOnmousedown(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowOndragenter(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
+    UNUSED_PARAM(exec);
     DOMWindow* imp = static_cast<DOMWindow*>(static_cast<JSDOMWindow*>(thisObject)->impl());
     JSDOMGlobalObject* globalObject = static_cast<JSDOMWindow*>(thisObject);
-    imp->setOnmousedown(globalObject->findOrCreateJSEventListener(exec, value, true));
+    imp->setOndragenter(globalObject->createJSAttributeEventListener(value));
 }
 
-void setJSDOMWindowOnmousemove(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowOndragleave(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
+    UNUSED_PARAM(exec);
     DOMWindow* imp = static_cast<DOMWindow*>(static_cast<JSDOMWindow*>(thisObject)->impl());
     JSDOMGlobalObject* globalObject = static_cast<JSDOMWindow*>(thisObject);
-    imp->setOnmousemove(globalObject->findOrCreateJSEventListener(exec, value, true));
+    imp->setOndragleave(globalObject->createJSAttributeEventListener(value));
 }
 
-void setJSDOMWindowOnmouseout(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowOndragover(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
+    UNUSED_PARAM(exec);
     DOMWindow* imp = static_cast<DOMWindow*>(static_cast<JSDOMWindow*>(thisObject)->impl());
     JSDOMGlobalObject* globalObject = static_cast<JSDOMWindow*>(thisObject);
-    imp->setOnmouseout(globalObject->findOrCreateJSEventListener(exec, value, true));
+    imp->setOndragover(globalObject->createJSAttributeEventListener(value));
 }
 
-void setJSDOMWindowOnmouseover(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowOndragstart(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
+    UNUSED_PARAM(exec);
     DOMWindow* imp = static_cast<DOMWindow*>(static_cast<JSDOMWindow*>(thisObject)->impl());
     JSDOMGlobalObject* globalObject = static_cast<JSDOMWindow*>(thisObject);
-    imp->setOnmouseover(globalObject->findOrCreateJSEventListener(exec, value, true));
+    imp->setOndragstart(globalObject->createJSAttributeEventListener(value));
 }
 
-void setJSDOMWindowOnmouseup(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowOndrop(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
+    UNUSED_PARAM(exec);
     DOMWindow* imp = static_cast<DOMWindow*>(static_cast<JSDOMWindow*>(thisObject)->impl());
     JSDOMGlobalObject* globalObject = static_cast<JSDOMWindow*>(thisObject);
-    imp->setOnmouseup(globalObject->findOrCreateJSEventListener(exec, value, true));
+    imp->setOndrop(globalObject->createJSAttributeEventListener(value));
 }
 
-void setJSDOMWindowOnmousewheel(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowOndurationchange(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
+    UNUSED_PARAM(exec);
     DOMWindow* imp = static_cast<DOMWindow*>(static_cast<JSDOMWindow*>(thisObject)->impl());
     JSDOMGlobalObject* globalObject = static_cast<JSDOMWindow*>(thisObject);
-    imp->setOnmousewheel(globalObject->findOrCreateJSEventListener(exec, value, true));
+    imp->setOndurationchange(globalObject->createJSAttributeEventListener(value));
 }
 
-void setJSDOMWindowOnreset(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowOnemptied(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
+    UNUSED_PARAM(exec);
     DOMWindow* imp = static_cast<DOMWindow*>(static_cast<JSDOMWindow*>(thisObject)->impl());
     JSDOMGlobalObject* globalObject = static_cast<JSDOMWindow*>(thisObject);
-    imp->setOnreset(globalObject->findOrCreateJSEventListener(exec, value, true));
+    imp->setOnemptied(globalObject->createJSAttributeEventListener(value));
 }
 
-void setJSDOMWindowOnresize(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowOnended(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
+    UNUSED_PARAM(exec);
     DOMWindow* imp = static_cast<DOMWindow*>(static_cast<JSDOMWindow*>(thisObject)->impl());
     JSDOMGlobalObject* globalObject = static_cast<JSDOMWindow*>(thisObject);
-    imp->setOnresize(globalObject->findOrCreateJSEventListener(exec, value, true));
+    imp->setOnended(globalObject->createJSAttributeEventListener(value));
 }
 
-void setJSDOMWindowOnscroll(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowOnerror(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
+    UNUSED_PARAM(exec);
     DOMWindow* imp = static_cast<DOMWindow*>(static_cast<JSDOMWindow*>(thisObject)->impl());
     JSDOMGlobalObject* globalObject = static_cast<JSDOMWindow*>(thisObject);
-    imp->setOnscroll(globalObject->findOrCreateJSEventListener(exec, value, true));
+    imp->setOnerror(globalObject->createJSAttributeEventListener(value));
 }
 
-void setJSDOMWindowOnsearch(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowOnfocus(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
+    UNUSED_PARAM(exec);
     DOMWindow* imp = static_cast<DOMWindow*>(static_cast<JSDOMWindow*>(thisObject)->impl());
     JSDOMGlobalObject* globalObject = static_cast<JSDOMWindow*>(thisObject);
-    imp->setOnsearch(globalObject->findOrCreateJSEventListener(exec, value, true));
+    imp->setOnfocus(globalObject->createJSAttributeEventListener(value));
 }
 
-void setJSDOMWindowOnselect(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowOninput(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
+    UNUSED_PARAM(exec);
     DOMWindow* imp = static_cast<DOMWindow*>(static_cast<JSDOMWindow*>(thisObject)->impl());
     JSDOMGlobalObject* globalObject = static_cast<JSDOMWindow*>(thisObject);
-    imp->setOnselect(globalObject->findOrCreateJSEventListener(exec, value, true));
+    imp->setOninput(globalObject->createJSAttributeEventListener(value));
 }
 
-void setJSDOMWindowOnsubmit(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowOnkeydown(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
+    UNUSED_PARAM(exec);
     DOMWindow* imp = static_cast<DOMWindow*>(static_cast<JSDOMWindow*>(thisObject)->impl());
     JSDOMGlobalObject* globalObject = static_cast<JSDOMWindow*>(thisObject);
-    imp->setOnsubmit(globalObject->findOrCreateJSEventListener(exec, value, true));
+    imp->setOnkeydown(globalObject->createJSAttributeEventListener(value));
 }
 
-void setJSDOMWindowOnunload(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowOnkeypress(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
+    UNUSED_PARAM(exec);
     DOMWindow* imp = static_cast<DOMWindow*>(static_cast<JSDOMWindow*>(thisObject)->impl());
     JSDOMGlobalObject* globalObject = static_cast<JSDOMWindow*>(thisObject);
-    imp->setOnunload(globalObject->findOrCreateJSEventListener(exec, value, true));
+    imp->setOnkeypress(globalObject->createJSAttributeEventListener(value));
 }
 
-void setJSDOMWindowOnbeforeunload(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowOnkeyup(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
+    UNUSED_PARAM(exec);
     DOMWindow* imp = static_cast<DOMWindow*>(static_cast<JSDOMWindow*>(thisObject)->impl());
     JSDOMGlobalObject* globalObject = static_cast<JSDOMWindow*>(thisObject);
-    imp->setOnbeforeunload(globalObject->findOrCreateJSEventListener(exec, value, true));
+    imp->setOnkeyup(globalObject->createJSAttributeEventListener(value));
 }
 
-void setJSDOMWindowOnwebkitanimationstart(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowOnload(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
+    UNUSED_PARAM(exec);
     DOMWindow* imp = static_cast<DOMWindow*>(static_cast<JSDOMWindow*>(thisObject)->impl());
     JSDOMGlobalObject* globalObject = static_cast<JSDOMWindow*>(thisObject);
-    imp->setOnwebkitanimationstart(globalObject->findOrCreateJSEventListener(exec, value, true));
+    imp->setOnload(globalObject->createJSAttributeEventListener(value));
 }
 
-void setJSDOMWindowOnwebkitanimationiteration(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowOnloadeddata(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
+    UNUSED_PARAM(exec);
     DOMWindow* imp = static_cast<DOMWindow*>(static_cast<JSDOMWindow*>(thisObject)->impl());
     JSDOMGlobalObject* globalObject = static_cast<JSDOMWindow*>(thisObject);
-    imp->setOnwebkitanimationiteration(globalObject->findOrCreateJSEventListener(exec, value, true));
+    imp->setOnloadeddata(globalObject->createJSAttributeEventListener(value));
 }
 
-void setJSDOMWindowOnwebkitanimationend(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowOnloadedmetadata(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
+    UNUSED_PARAM(exec);
     DOMWindow* imp = static_cast<DOMWindow*>(static_cast<JSDOMWindow*>(thisObject)->impl());
     JSDOMGlobalObject* globalObject = static_cast<JSDOMWindow*>(thisObject);
-    imp->setOnwebkitanimationend(globalObject->findOrCreateJSEventListener(exec, value, true));
+    imp->setOnloadedmetadata(globalObject->createJSAttributeEventListener(value));
 }
 
-void setJSDOMWindowOnwebkittransitionend(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowOnloadstart(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
+    UNUSED_PARAM(exec);
     DOMWindow* imp = static_cast<DOMWindow*>(static_cast<JSDOMWindow*>(thisObject)->impl());
     JSDOMGlobalObject* globalObject = static_cast<JSDOMWindow*>(thisObject);
-    imp->setOnwebkittransitionend(globalObject->findOrCreateJSEventListener(exec, value, true));
+    imp->setOnloadstart(globalObject->createJSAttributeEventListener(value));
 }
 
-void setJSDOMWindowStyleSheetConstructor(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowOnmessage(ExecState* exec, JSObject* thisObject, JSValue value)
+{
+    if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
+        return;
+    UNUSED_PARAM(exec);
+    DOMWindow* imp = static_cast<DOMWindow*>(static_cast<JSDOMWindow*>(thisObject)->impl());
+    JSDOMGlobalObject* globalObject = static_cast<JSDOMWindow*>(thisObject);
+    imp->setOnmessage(globalObject->createJSAttributeEventListener(value));
+}
+
+void setJSDOMWindowOnmousedown(ExecState* exec, JSObject* thisObject, JSValue value)
+{
+    if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
+        return;
+    UNUSED_PARAM(exec);
+    DOMWindow* imp = static_cast<DOMWindow*>(static_cast<JSDOMWindow*>(thisObject)->impl());
+    JSDOMGlobalObject* globalObject = static_cast<JSDOMWindow*>(thisObject);
+    imp->setOnmousedown(globalObject->createJSAttributeEventListener(value));
+}
+
+void setJSDOMWindowOnmousemove(ExecState* exec, JSObject* thisObject, JSValue value)
+{
+    if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
+        return;
+    UNUSED_PARAM(exec);
+    DOMWindow* imp = static_cast<DOMWindow*>(static_cast<JSDOMWindow*>(thisObject)->impl());
+    JSDOMGlobalObject* globalObject = static_cast<JSDOMWindow*>(thisObject);
+    imp->setOnmousemove(globalObject->createJSAttributeEventListener(value));
+}
+
+void setJSDOMWindowOnmouseout(ExecState* exec, JSObject* thisObject, JSValue value)
+{
+    if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
+        return;
+    UNUSED_PARAM(exec);
+    DOMWindow* imp = static_cast<DOMWindow*>(static_cast<JSDOMWindow*>(thisObject)->impl());
+    JSDOMGlobalObject* globalObject = static_cast<JSDOMWindow*>(thisObject);
+    imp->setOnmouseout(globalObject->createJSAttributeEventListener(value));
+}
+
+void setJSDOMWindowOnmouseover(ExecState* exec, JSObject* thisObject, JSValue value)
+{
+    if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
+        return;
+    UNUSED_PARAM(exec);
+    DOMWindow* imp = static_cast<DOMWindow*>(static_cast<JSDOMWindow*>(thisObject)->impl());
+    JSDOMGlobalObject* globalObject = static_cast<JSDOMWindow*>(thisObject);
+    imp->setOnmouseover(globalObject->createJSAttributeEventListener(value));
+}
+
+void setJSDOMWindowOnmouseup(ExecState* exec, JSObject* thisObject, JSValue value)
+{
+    if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
+        return;
+    UNUSED_PARAM(exec);
+    DOMWindow* imp = static_cast<DOMWindow*>(static_cast<JSDOMWindow*>(thisObject)->impl());
+    JSDOMGlobalObject* globalObject = static_cast<JSDOMWindow*>(thisObject);
+    imp->setOnmouseup(globalObject->createJSAttributeEventListener(value));
+}
+
+void setJSDOMWindowOnmousewheel(ExecState* exec, JSObject* thisObject, JSValue value)
+{
+    if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
+        return;
+    UNUSED_PARAM(exec);
+    DOMWindow* imp = static_cast<DOMWindow*>(static_cast<JSDOMWindow*>(thisObject)->impl());
+    JSDOMGlobalObject* globalObject = static_cast<JSDOMWindow*>(thisObject);
+    imp->setOnmousewheel(globalObject->createJSAttributeEventListener(value));
+}
+
+void setJSDOMWindowOnoffline(ExecState* exec, JSObject* thisObject, JSValue value)
+{
+    if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
+        return;
+    UNUSED_PARAM(exec);
+    DOMWindow* imp = static_cast<DOMWindow*>(static_cast<JSDOMWindow*>(thisObject)->impl());
+    JSDOMGlobalObject* globalObject = static_cast<JSDOMWindow*>(thisObject);
+    imp->setOnoffline(globalObject->createJSAttributeEventListener(value));
+}
+
+void setJSDOMWindowOnonline(ExecState* exec, JSObject* thisObject, JSValue value)
+{
+    if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
+        return;
+    UNUSED_PARAM(exec);
+    DOMWindow* imp = static_cast<DOMWindow*>(static_cast<JSDOMWindow*>(thisObject)->impl());
+    JSDOMGlobalObject* globalObject = static_cast<JSDOMWindow*>(thisObject);
+    imp->setOnonline(globalObject->createJSAttributeEventListener(value));
+}
+
+void setJSDOMWindowOnpause(ExecState* exec, JSObject* thisObject, JSValue value)
+{
+    if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
+        return;
+    UNUSED_PARAM(exec);
+    DOMWindow* imp = static_cast<DOMWindow*>(static_cast<JSDOMWindow*>(thisObject)->impl());
+    JSDOMGlobalObject* globalObject = static_cast<JSDOMWindow*>(thisObject);
+    imp->setOnpause(globalObject->createJSAttributeEventListener(value));
+}
+
+void setJSDOMWindowOnplay(ExecState* exec, JSObject* thisObject, JSValue value)
+{
+    if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
+        return;
+    UNUSED_PARAM(exec);
+    DOMWindow* imp = static_cast<DOMWindow*>(static_cast<JSDOMWindow*>(thisObject)->impl());
+    JSDOMGlobalObject* globalObject = static_cast<JSDOMWindow*>(thisObject);
+    imp->setOnplay(globalObject->createJSAttributeEventListener(value));
+}
+
+void setJSDOMWindowOnplaying(ExecState* exec, JSObject* thisObject, JSValue value)
+{
+    if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
+        return;
+    UNUSED_PARAM(exec);
+    DOMWindow* imp = static_cast<DOMWindow*>(static_cast<JSDOMWindow*>(thisObject)->impl());
+    JSDOMGlobalObject* globalObject = static_cast<JSDOMWindow*>(thisObject);
+    imp->setOnplaying(globalObject->createJSAttributeEventListener(value));
+}
+
+void setJSDOMWindowOnprogress(ExecState* exec, JSObject* thisObject, JSValue value)
+{
+    if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
+        return;
+    UNUSED_PARAM(exec);
+    DOMWindow* imp = static_cast<DOMWindow*>(static_cast<JSDOMWindow*>(thisObject)->impl());
+    JSDOMGlobalObject* globalObject = static_cast<JSDOMWindow*>(thisObject);
+    imp->setOnprogress(globalObject->createJSAttributeEventListener(value));
+}
+
+void setJSDOMWindowOnratechange(ExecState* exec, JSObject* thisObject, JSValue value)
+{
+    if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
+        return;
+    UNUSED_PARAM(exec);
+    DOMWindow* imp = static_cast<DOMWindow*>(static_cast<JSDOMWindow*>(thisObject)->impl());
+    JSDOMGlobalObject* globalObject = static_cast<JSDOMWindow*>(thisObject);
+    imp->setOnratechange(globalObject->createJSAttributeEventListener(value));
+}
+
+void setJSDOMWindowOnresize(ExecState* exec, JSObject* thisObject, JSValue value)
+{
+    if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
+        return;
+    UNUSED_PARAM(exec);
+    DOMWindow* imp = static_cast<DOMWindow*>(static_cast<JSDOMWindow*>(thisObject)->impl());
+    JSDOMGlobalObject* globalObject = static_cast<JSDOMWindow*>(thisObject);
+    imp->setOnresize(globalObject->createJSAttributeEventListener(value));
+}
+
+void setJSDOMWindowOnscroll(ExecState* exec, JSObject* thisObject, JSValue value)
+{
+    if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
+        return;
+    UNUSED_PARAM(exec);
+    DOMWindow* imp = static_cast<DOMWindow*>(static_cast<JSDOMWindow*>(thisObject)->impl());
+    JSDOMGlobalObject* globalObject = static_cast<JSDOMWindow*>(thisObject);
+    imp->setOnscroll(globalObject->createJSAttributeEventListener(value));
+}
+
+void setJSDOMWindowOnseeked(ExecState* exec, JSObject* thisObject, JSValue value)
+{
+    if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
+        return;
+    UNUSED_PARAM(exec);
+    DOMWindow* imp = static_cast<DOMWindow*>(static_cast<JSDOMWindow*>(thisObject)->impl());
+    JSDOMGlobalObject* globalObject = static_cast<JSDOMWindow*>(thisObject);
+    imp->setOnseeked(globalObject->createJSAttributeEventListener(value));
+}
+
+void setJSDOMWindowOnseeking(ExecState* exec, JSObject* thisObject, JSValue value)
+{
+    if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
+        return;
+    UNUSED_PARAM(exec);
+    DOMWindow* imp = static_cast<DOMWindow*>(static_cast<JSDOMWindow*>(thisObject)->impl());
+    JSDOMGlobalObject* globalObject = static_cast<JSDOMWindow*>(thisObject);
+    imp->setOnseeking(globalObject->createJSAttributeEventListener(value));
+}
+
+void setJSDOMWindowOnselect(ExecState* exec, JSObject* thisObject, JSValue value)
+{
+    if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
+        return;
+    UNUSED_PARAM(exec);
+    DOMWindow* imp = static_cast<DOMWindow*>(static_cast<JSDOMWindow*>(thisObject)->impl());
+    JSDOMGlobalObject* globalObject = static_cast<JSDOMWindow*>(thisObject);
+    imp->setOnselect(globalObject->createJSAttributeEventListener(value));
+}
+
+void setJSDOMWindowOnstalled(ExecState* exec, JSObject* thisObject, JSValue value)
+{
+    if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
+        return;
+    UNUSED_PARAM(exec);
+    DOMWindow* imp = static_cast<DOMWindow*>(static_cast<JSDOMWindow*>(thisObject)->impl());
+    JSDOMGlobalObject* globalObject = static_cast<JSDOMWindow*>(thisObject);
+    imp->setOnstalled(globalObject->createJSAttributeEventListener(value));
+}
+
+void setJSDOMWindowOnstorage(ExecState* exec, JSObject* thisObject, JSValue value)
+{
+    if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
+        return;
+    UNUSED_PARAM(exec);
+    DOMWindow* imp = static_cast<DOMWindow*>(static_cast<JSDOMWindow*>(thisObject)->impl());
+    JSDOMGlobalObject* globalObject = static_cast<JSDOMWindow*>(thisObject);
+    imp->setOnstorage(globalObject->createJSAttributeEventListener(value));
+}
+
+void setJSDOMWindowOnsubmit(ExecState* exec, JSObject* thisObject, JSValue value)
+{
+    if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
+        return;
+    UNUSED_PARAM(exec);
+    DOMWindow* imp = static_cast<DOMWindow*>(static_cast<JSDOMWindow*>(thisObject)->impl());
+    JSDOMGlobalObject* globalObject = static_cast<JSDOMWindow*>(thisObject);
+    imp->setOnsubmit(globalObject->createJSAttributeEventListener(value));
+}
+
+void setJSDOMWindowOnsuspend(ExecState* exec, JSObject* thisObject, JSValue value)
+{
+    if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
+        return;
+    UNUSED_PARAM(exec);
+    DOMWindow* imp = static_cast<DOMWindow*>(static_cast<JSDOMWindow*>(thisObject)->impl());
+    JSDOMGlobalObject* globalObject = static_cast<JSDOMWindow*>(thisObject);
+    imp->setOnsuspend(globalObject->createJSAttributeEventListener(value));
+}
+
+void setJSDOMWindowOntimeupdate(ExecState* exec, JSObject* thisObject, JSValue value)
+{
+    if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
+        return;
+    UNUSED_PARAM(exec);
+    DOMWindow* imp = static_cast<DOMWindow*>(static_cast<JSDOMWindow*>(thisObject)->impl());
+    JSDOMGlobalObject* globalObject = static_cast<JSDOMWindow*>(thisObject);
+    imp->setOntimeupdate(globalObject->createJSAttributeEventListener(value));
+}
+
+void setJSDOMWindowOnunload(ExecState* exec, JSObject* thisObject, JSValue value)
+{
+    if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
+        return;
+    UNUSED_PARAM(exec);
+    DOMWindow* imp = static_cast<DOMWindow*>(static_cast<JSDOMWindow*>(thisObject)->impl());
+    JSDOMGlobalObject* globalObject = static_cast<JSDOMWindow*>(thisObject);
+    imp->setOnunload(globalObject->createJSAttributeEventListener(value));
+}
+
+void setJSDOMWindowOnvolumechange(ExecState* exec, JSObject* thisObject, JSValue value)
+{
+    if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
+        return;
+    UNUSED_PARAM(exec);
+    DOMWindow* imp = static_cast<DOMWindow*>(static_cast<JSDOMWindow*>(thisObject)->impl());
+    JSDOMGlobalObject* globalObject = static_cast<JSDOMWindow*>(thisObject);
+    imp->setOnvolumechange(globalObject->createJSAttributeEventListener(value));
+}
+
+void setJSDOMWindowOnwaiting(ExecState* exec, JSObject* thisObject, JSValue value)
+{
+    if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
+        return;
+    UNUSED_PARAM(exec);
+    DOMWindow* imp = static_cast<DOMWindow*>(static_cast<JSDOMWindow*>(thisObject)->impl());
+    JSDOMGlobalObject* globalObject = static_cast<JSDOMWindow*>(thisObject);
+    imp->setOnwaiting(globalObject->createJSAttributeEventListener(value));
+}
+
+void setJSDOMWindowOnreset(ExecState* exec, JSObject* thisObject, JSValue value)
+{
+    if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
+        return;
+    UNUSED_PARAM(exec);
+    DOMWindow* imp = static_cast<DOMWindow*>(static_cast<JSDOMWindow*>(thisObject)->impl());
+    JSDOMGlobalObject* globalObject = static_cast<JSDOMWindow*>(thisObject);
+    imp->setOnreset(globalObject->createJSAttributeEventListener(value));
+}
+
+void setJSDOMWindowOnsearch(ExecState* exec, JSObject* thisObject, JSValue value)
+{
+    if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
+        return;
+    UNUSED_PARAM(exec);
+    DOMWindow* imp = static_cast<DOMWindow*>(static_cast<JSDOMWindow*>(thisObject)->impl());
+    JSDOMGlobalObject* globalObject = static_cast<JSDOMWindow*>(thisObject);
+    imp->setOnsearch(globalObject->createJSAttributeEventListener(value));
+}
+
+void setJSDOMWindowOnwebkitanimationend(ExecState* exec, JSObject* thisObject, JSValue value)
+{
+    if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
+        return;
+    UNUSED_PARAM(exec);
+    DOMWindow* imp = static_cast<DOMWindow*>(static_cast<JSDOMWindow*>(thisObject)->impl());
+    JSDOMGlobalObject* globalObject = static_cast<JSDOMWindow*>(thisObject);
+    imp->setOnwebkitanimationend(globalObject->createJSAttributeEventListener(value));
+}
+
+void setJSDOMWindowOnwebkitanimationiteration(ExecState* exec, JSObject* thisObject, JSValue value)
+{
+    if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
+        return;
+    UNUSED_PARAM(exec);
+    DOMWindow* imp = static_cast<DOMWindow*>(static_cast<JSDOMWindow*>(thisObject)->impl());
+    JSDOMGlobalObject* globalObject = static_cast<JSDOMWindow*>(thisObject);
+    imp->setOnwebkitanimationiteration(globalObject->createJSAttributeEventListener(value));
+}
+
+void setJSDOMWindowOnwebkitanimationstart(ExecState* exec, JSObject* thisObject, JSValue value)
+{
+    if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
+        return;
+    UNUSED_PARAM(exec);
+    DOMWindow* imp = static_cast<DOMWindow*>(static_cast<JSDOMWindow*>(thisObject)->impl());
+    JSDOMGlobalObject* globalObject = static_cast<JSDOMWindow*>(thisObject);
+    imp->setOnwebkitanimationstart(globalObject->createJSAttributeEventListener(value));
+}
+
+void setJSDOMWindowOnwebkittransitionend(ExecState* exec, JSObject* thisObject, JSValue value)
+{
+    if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
+        return;
+    UNUSED_PARAM(exec);
+    DOMWindow* imp = static_cast<DOMWindow*>(static_cast<JSDOMWindow*>(thisObject)->impl());
+    JSDOMGlobalObject* globalObject = static_cast<JSDOMWindow*>(thisObject);
+    imp->setOnwebkittransitionend(globalObject->createJSAttributeEventListener(value));
+}
+
+void setJSDOMWindowStyleSheetConstructor(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
@@ -2793,7 +3981,7 @@ void setJSDOMWindowStyleSheetConstructor(ExecState* exec, JSObject* thisObject, 
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "StyleSheet"), value);
 }
 
-void setJSDOMWindowCSSStyleSheetConstructor(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowCSSStyleSheetConstructor(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
@@ -2801,7 +3989,7 @@ void setJSDOMWindowCSSStyleSheetConstructor(ExecState* exec, JSObject* thisObjec
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "CSSStyleSheet"), value);
 }
 
-void setJSDOMWindowCSSValueConstructor(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowCSSValueConstructor(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
@@ -2809,7 +3997,7 @@ void setJSDOMWindowCSSValueConstructor(ExecState* exec, JSObject* thisObject, JS
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "CSSValue"), value);
 }
 
-void setJSDOMWindowCSSPrimitiveValueConstructor(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowCSSPrimitiveValueConstructor(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
@@ -2817,7 +4005,7 @@ void setJSDOMWindowCSSPrimitiveValueConstructor(ExecState* exec, JSObject* thisO
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "CSSPrimitiveValue"), value);
 }
 
-void setJSDOMWindowCSSValueListConstructor(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowCSSValueListConstructor(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
@@ -2825,7 +4013,7 @@ void setJSDOMWindowCSSValueListConstructor(ExecState* exec, JSObject* thisObject
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "CSSValueList"), value);
 }
 
-void setJSDOMWindowWebKitCSSTransformValueConstructor(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowWebKitCSSTransformValueConstructor(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
@@ -2833,7 +4021,7 @@ void setJSDOMWindowWebKitCSSTransformValueConstructor(ExecState* exec, JSObject*
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "WebKitCSSTransformValue"), value);
 }
 
-void setJSDOMWindowCSSRuleConstructor(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowCSSRuleConstructor(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
@@ -2841,7 +4029,7 @@ void setJSDOMWindowCSSRuleConstructor(ExecState* exec, JSObject* thisObject, JSV
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "CSSRule"), value);
 }
 
-void setJSDOMWindowCSSCharsetRuleConstructor(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowCSSCharsetRuleConstructor(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
@@ -2849,7 +4037,7 @@ void setJSDOMWindowCSSCharsetRuleConstructor(ExecState* exec, JSObject* thisObje
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "CSSCharsetRule"), value);
 }
 
-void setJSDOMWindowCSSFontFaceRuleConstructor(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowCSSFontFaceRuleConstructor(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
@@ -2857,7 +4045,7 @@ void setJSDOMWindowCSSFontFaceRuleConstructor(ExecState* exec, JSObject* thisObj
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "CSSFontFaceRule"), value);
 }
 
-void setJSDOMWindowCSSImportRuleConstructor(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowCSSImportRuleConstructor(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
@@ -2865,7 +4053,7 @@ void setJSDOMWindowCSSImportRuleConstructor(ExecState* exec, JSObject* thisObjec
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "CSSImportRule"), value);
 }
 
-void setJSDOMWindowCSSMediaRuleConstructor(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowCSSMediaRuleConstructor(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
@@ -2873,7 +4061,7 @@ void setJSDOMWindowCSSMediaRuleConstructor(ExecState* exec, JSObject* thisObject
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "CSSMediaRule"), value);
 }
 
-void setJSDOMWindowCSSPageRuleConstructor(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowCSSPageRuleConstructor(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
@@ -2881,7 +4069,7 @@ void setJSDOMWindowCSSPageRuleConstructor(ExecState* exec, JSObject* thisObject,
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "CSSPageRule"), value);
 }
 
-void setJSDOMWindowCSSStyleRuleConstructor(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowCSSStyleRuleConstructor(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
@@ -2889,7 +4077,7 @@ void setJSDOMWindowCSSStyleRuleConstructor(ExecState* exec, JSObject* thisObject
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "CSSStyleRule"), value);
 }
 
-void setJSDOMWindowCSSVariablesRuleConstructor(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowCSSVariablesRuleConstructor(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
@@ -2897,7 +4085,7 @@ void setJSDOMWindowCSSVariablesRuleConstructor(ExecState* exec, JSObject* thisOb
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "CSSVariablesRule"), value);
 }
 
-void setJSDOMWindowCSSVariablesDeclarationConstructor(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowCSSVariablesDeclarationConstructor(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
@@ -2905,7 +4093,7 @@ void setJSDOMWindowCSSVariablesDeclarationConstructor(ExecState* exec, JSObject*
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "CSSVariablesDeclaration"), value);
 }
 
-void setJSDOMWindowCSSStyleDeclarationConstructor(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowCSSStyleDeclarationConstructor(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
@@ -2913,7 +4101,7 @@ void setJSDOMWindowCSSStyleDeclarationConstructor(ExecState* exec, JSObject* thi
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "CSSStyleDeclaration"), value);
 }
 
-void setJSDOMWindowMediaListConstructor(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowMediaListConstructor(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
@@ -2921,7 +4109,7 @@ void setJSDOMWindowMediaListConstructor(ExecState* exec, JSObject* thisObject, J
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "MediaList"), value);
 }
 
-void setJSDOMWindowCounterConstructor(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowCounterConstructor(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
@@ -2929,7 +4117,7 @@ void setJSDOMWindowCounterConstructor(ExecState* exec, JSObject* thisObject, JSV
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "Counter"), value);
 }
 
-void setJSDOMWindowCSSRuleListConstructor(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowCSSRuleListConstructor(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
@@ -2937,7 +4125,7 @@ void setJSDOMWindowCSSRuleListConstructor(ExecState* exec, JSObject* thisObject,
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "CSSRuleList"), value);
 }
 
-void setJSDOMWindowRectConstructor(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowRectConstructor(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
@@ -2945,7 +4133,7 @@ void setJSDOMWindowRectConstructor(ExecState* exec, JSObject* thisObject, JSValu
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "Rect"), value);
 }
 
-void setJSDOMWindowStyleSheetListConstructor(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowStyleSheetListConstructor(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
@@ -2953,7 +4141,7 @@ void setJSDOMWindowStyleSheetListConstructor(ExecState* exec, JSObject* thisObje
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "StyleSheetList"), value);
 }
 
-void setJSDOMWindowDOMExceptionConstructor(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowDOMExceptionConstructor(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
@@ -2961,7 +4149,7 @@ void setJSDOMWindowDOMExceptionConstructor(ExecState* exec, JSObject* thisObject
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "DOMException"), value);
 }
 
-void setJSDOMWindowDOMStringListConstructor(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowDOMStringListConstructor(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
@@ -2969,7 +4157,7 @@ void setJSDOMWindowDOMStringListConstructor(ExecState* exec, JSObject* thisObjec
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "DOMStringList"), value);
 }
 
-void setJSDOMWindowDOMImplementationConstructor(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowDOMImplementationConstructor(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
@@ -2977,7 +4165,7 @@ void setJSDOMWindowDOMImplementationConstructor(ExecState* exec, JSObject* thisO
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "DOMImplementation"), value);
 }
 
-void setJSDOMWindowDocumentFragmentConstructor(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowDocumentFragmentConstructor(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
@@ -2985,7 +4173,7 @@ void setJSDOMWindowDocumentFragmentConstructor(ExecState* exec, JSObject* thisOb
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "DocumentFragment"), value);
 }
 
-void setJSDOMWindowDocumentConstructor(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowDocumentConstructor(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
@@ -2993,7 +4181,7 @@ void setJSDOMWindowDocumentConstructor(ExecState* exec, JSObject* thisObject, JS
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "Document"), value);
 }
 
-void setJSDOMWindowNodeConstructor(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowNodeConstructor(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
@@ -3001,7 +4189,7 @@ void setJSDOMWindowNodeConstructor(ExecState* exec, JSObject* thisObject, JSValu
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "Node"), value);
 }
 
-void setJSDOMWindowNodeListConstructor(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowNodeListConstructor(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
@@ -3009,7 +4197,7 @@ void setJSDOMWindowNodeListConstructor(ExecState* exec, JSObject* thisObject, JS
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "NodeList"), value);
 }
 
-void setJSDOMWindowNamedNodeMapConstructor(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowNamedNodeMapConstructor(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
@@ -3017,7 +4205,7 @@ void setJSDOMWindowNamedNodeMapConstructor(ExecState* exec, JSObject* thisObject
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "NamedNodeMap"), value);
 }
 
-void setJSDOMWindowCharacterDataConstructor(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowCharacterDataConstructor(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
@@ -3025,7 +4213,7 @@ void setJSDOMWindowCharacterDataConstructor(ExecState* exec, JSObject* thisObjec
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "CharacterData"), value);
 }
 
-void setJSDOMWindowAttrConstructor(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowAttrConstructor(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
@@ -3033,7 +4221,7 @@ void setJSDOMWindowAttrConstructor(ExecState* exec, JSObject* thisObject, JSValu
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "Attr"), value);
 }
 
-void setJSDOMWindowElementConstructor(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowElementConstructor(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
@@ -3041,7 +4229,7 @@ void setJSDOMWindowElementConstructor(ExecState* exec, JSObject* thisObject, JSV
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "Element"), value);
 }
 
-void setJSDOMWindowTextConstructor(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowTextConstructor(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
@@ -3049,7 +4237,7 @@ void setJSDOMWindowTextConstructor(ExecState* exec, JSObject* thisObject, JSValu
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "Text"), value);
 }
 
-void setJSDOMWindowCommentConstructor(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowCommentConstructor(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
@@ -3057,7 +4245,7 @@ void setJSDOMWindowCommentConstructor(ExecState* exec, JSObject* thisObject, JSV
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "Comment"), value);
 }
 
-void setJSDOMWindowCDATASectionConstructor(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowCDATASectionConstructor(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
@@ -3065,7 +4253,7 @@ void setJSDOMWindowCDATASectionConstructor(ExecState* exec, JSObject* thisObject
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "CDATASection"), value);
 }
 
-void setJSDOMWindowDocumentTypeConstructor(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowDocumentTypeConstructor(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
@@ -3073,7 +4261,7 @@ void setJSDOMWindowDocumentTypeConstructor(ExecState* exec, JSObject* thisObject
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "DocumentType"), value);
 }
 
-void setJSDOMWindowNotationConstructor(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowNotationConstructor(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
@@ -3081,7 +4269,7 @@ void setJSDOMWindowNotationConstructor(ExecState* exec, JSObject* thisObject, JS
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "Notation"), value);
 }
 
-void setJSDOMWindowEntityConstructor(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowEntityConstructor(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
@@ -3089,7 +4277,7 @@ void setJSDOMWindowEntityConstructor(ExecState* exec, JSObject* thisObject, JSVa
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "Entity"), value);
 }
 
-void setJSDOMWindowEntityReferenceConstructor(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowEntityReferenceConstructor(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
@@ -3097,7 +4285,7 @@ void setJSDOMWindowEntityReferenceConstructor(ExecState* exec, JSObject* thisObj
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "EntityReference"), value);
 }
 
-void setJSDOMWindowProcessingInstructionConstructor(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowProcessingInstructionConstructor(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
@@ -3105,7 +4293,7 @@ void setJSDOMWindowProcessingInstructionConstructor(ExecState* exec, JSObject* t
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "ProcessingInstruction"), value);
 }
 
-void setJSDOMWindowHTMLDocumentConstructor(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowHTMLDocumentConstructor(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
@@ -3113,7 +4301,7 @@ void setJSDOMWindowHTMLDocumentConstructor(ExecState* exec, JSObject* thisObject
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "HTMLDocument"), value);
 }
 
-void setJSDOMWindowHTMLElementConstructor(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowHTMLElementConstructor(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
@@ -3121,7 +4309,7 @@ void setJSDOMWindowHTMLElementConstructor(ExecState* exec, JSObject* thisObject,
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "HTMLElement"), value);
 }
 
-void setJSDOMWindowHTMLAnchorElementConstructor(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowHTMLAnchorElementConstructor(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
@@ -3129,7 +4317,7 @@ void setJSDOMWindowHTMLAnchorElementConstructor(ExecState* exec, JSObject* thisO
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "HTMLAnchorElement"), value);
 }
 
-void setJSDOMWindowHTMLAppletElementConstructor(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowHTMLAppletElementConstructor(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
@@ -3137,7 +4325,7 @@ void setJSDOMWindowHTMLAppletElementConstructor(ExecState* exec, JSObject* thisO
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "HTMLAppletElement"), value);
 }
 
-void setJSDOMWindowHTMLAreaElementConstructor(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowHTMLAreaElementConstructor(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
@@ -3145,7 +4333,7 @@ void setJSDOMWindowHTMLAreaElementConstructor(ExecState* exec, JSObject* thisObj
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "HTMLAreaElement"), value);
 }
 
-void setJSDOMWindowHTMLBRElementConstructor(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowHTMLBRElementConstructor(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
@@ -3153,7 +4341,7 @@ void setJSDOMWindowHTMLBRElementConstructor(ExecState* exec, JSObject* thisObjec
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "HTMLBRElement"), value);
 }
 
-void setJSDOMWindowHTMLBaseElementConstructor(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowHTMLBaseElementConstructor(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
@@ -3161,7 +4349,7 @@ void setJSDOMWindowHTMLBaseElementConstructor(ExecState* exec, JSObject* thisObj
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "HTMLBaseElement"), value);
 }
 
-void setJSDOMWindowHTMLBaseFontElementConstructor(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowHTMLBaseFontElementConstructor(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
@@ -3169,7 +4357,7 @@ void setJSDOMWindowHTMLBaseFontElementConstructor(ExecState* exec, JSObject* thi
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "HTMLBaseFontElement"), value);
 }
 
-void setJSDOMWindowHTMLBlockquoteElementConstructor(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowHTMLBlockquoteElementConstructor(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
@@ -3177,7 +4365,7 @@ void setJSDOMWindowHTMLBlockquoteElementConstructor(ExecState* exec, JSObject* t
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "HTMLBlockquoteElement"), value);
 }
 
-void setJSDOMWindowHTMLBodyElementConstructor(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowHTMLBodyElementConstructor(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
@@ -3185,7 +4373,7 @@ void setJSDOMWindowHTMLBodyElementConstructor(ExecState* exec, JSObject* thisObj
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "HTMLBodyElement"), value);
 }
 
-void setJSDOMWindowHTMLButtonElementConstructor(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowHTMLButtonElementConstructor(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
@@ -3193,7 +4381,7 @@ void setJSDOMWindowHTMLButtonElementConstructor(ExecState* exec, JSObject* thisO
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "HTMLButtonElement"), value);
 }
 
-void setJSDOMWindowHTMLCanvasElementConstructor(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowHTMLCanvasElementConstructor(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
@@ -3201,7 +4389,7 @@ void setJSDOMWindowHTMLCanvasElementConstructor(ExecState* exec, JSObject* thisO
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "HTMLCanvasElement"), value);
 }
 
-void setJSDOMWindowHTMLDListElementConstructor(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowHTMLDListElementConstructor(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
@@ -3209,7 +4397,7 @@ void setJSDOMWindowHTMLDListElementConstructor(ExecState* exec, JSObject* thisOb
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "HTMLDListElement"), value);
 }
 
-void setJSDOMWindowHTMLDirectoryElementConstructor(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowHTMLDirectoryElementConstructor(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
@@ -3217,7 +4405,7 @@ void setJSDOMWindowHTMLDirectoryElementConstructor(ExecState* exec, JSObject* th
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "HTMLDirectoryElement"), value);
 }
 
-void setJSDOMWindowHTMLDivElementConstructor(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowHTMLDivElementConstructor(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
@@ -3225,7 +4413,7 @@ void setJSDOMWindowHTMLDivElementConstructor(ExecState* exec, JSObject* thisObje
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "HTMLDivElement"), value);
 }
 
-void setJSDOMWindowHTMLEmbedElementConstructor(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowHTMLEmbedElementConstructor(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
@@ -3233,7 +4421,7 @@ void setJSDOMWindowHTMLEmbedElementConstructor(ExecState* exec, JSObject* thisOb
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "HTMLEmbedElement"), value);
 }
 
-void setJSDOMWindowHTMLFieldSetElementConstructor(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowHTMLFieldSetElementConstructor(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
@@ -3241,7 +4429,7 @@ void setJSDOMWindowHTMLFieldSetElementConstructor(ExecState* exec, JSObject* thi
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "HTMLFieldSetElement"), value);
 }
 
-void setJSDOMWindowHTMLFontElementConstructor(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowHTMLFontElementConstructor(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
@@ -3249,7 +4437,7 @@ void setJSDOMWindowHTMLFontElementConstructor(ExecState* exec, JSObject* thisObj
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "HTMLFontElement"), value);
 }
 
-void setJSDOMWindowHTMLFormElementConstructor(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowHTMLFormElementConstructor(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
@@ -3257,7 +4445,7 @@ void setJSDOMWindowHTMLFormElementConstructor(ExecState* exec, JSObject* thisObj
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "HTMLFormElement"), value);
 }
 
-void setJSDOMWindowHTMLFrameElementConstructor(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowHTMLFrameElementConstructor(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
@@ -3265,7 +4453,7 @@ void setJSDOMWindowHTMLFrameElementConstructor(ExecState* exec, JSObject* thisOb
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "HTMLFrameElement"), value);
 }
 
-void setJSDOMWindowHTMLFrameSetElementConstructor(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowHTMLFrameSetElementConstructor(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
@@ -3273,7 +4461,7 @@ void setJSDOMWindowHTMLFrameSetElementConstructor(ExecState* exec, JSObject* thi
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "HTMLFrameSetElement"), value);
 }
 
-void setJSDOMWindowHTMLHRElementConstructor(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowHTMLHRElementConstructor(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
@@ -3281,7 +4469,7 @@ void setJSDOMWindowHTMLHRElementConstructor(ExecState* exec, JSObject* thisObjec
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "HTMLHRElement"), value);
 }
 
-void setJSDOMWindowHTMLHeadElementConstructor(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowHTMLHeadElementConstructor(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
@@ -3289,7 +4477,7 @@ void setJSDOMWindowHTMLHeadElementConstructor(ExecState* exec, JSObject* thisObj
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "HTMLHeadElement"), value);
 }
 
-void setJSDOMWindowHTMLHeadingElementConstructor(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowHTMLHeadingElementConstructor(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
@@ -3297,7 +4485,7 @@ void setJSDOMWindowHTMLHeadingElementConstructor(ExecState* exec, JSObject* this
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "HTMLHeadingElement"), value);
 }
 
-void setJSDOMWindowHTMLHtmlElementConstructor(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowHTMLHtmlElementConstructor(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
@@ -3305,7 +4493,7 @@ void setJSDOMWindowHTMLHtmlElementConstructor(ExecState* exec, JSObject* thisObj
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "HTMLHtmlElement"), value);
 }
 
-void setJSDOMWindowHTMLIFrameElementConstructor(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowHTMLIFrameElementConstructor(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
@@ -3313,7 +4501,7 @@ void setJSDOMWindowHTMLIFrameElementConstructor(ExecState* exec, JSObject* thisO
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "HTMLIFrameElement"), value);
 }
 
-void setJSDOMWindowHTMLImageElementConstructor(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowHTMLImageElementConstructor(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
@@ -3321,7 +4509,7 @@ void setJSDOMWindowHTMLImageElementConstructor(ExecState* exec, JSObject* thisOb
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "HTMLImageElement"), value);
 }
 
-void setJSDOMWindowHTMLInputElementConstructor(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowHTMLInputElementConstructor(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
@@ -3329,7 +4517,7 @@ void setJSDOMWindowHTMLInputElementConstructor(ExecState* exec, JSObject* thisOb
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "HTMLInputElement"), value);
 }
 
-void setJSDOMWindowHTMLIsIndexElementConstructor(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowHTMLIsIndexElementConstructor(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
@@ -3337,7 +4525,7 @@ void setJSDOMWindowHTMLIsIndexElementConstructor(ExecState* exec, JSObject* this
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "HTMLIsIndexElement"), value);
 }
 
-void setJSDOMWindowHTMLLIElementConstructor(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowHTMLLIElementConstructor(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
@@ -3345,7 +4533,7 @@ void setJSDOMWindowHTMLLIElementConstructor(ExecState* exec, JSObject* thisObjec
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "HTMLLIElement"), value);
 }
 
-void setJSDOMWindowHTMLLabelElementConstructor(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowHTMLLabelElementConstructor(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
@@ -3353,7 +4541,7 @@ void setJSDOMWindowHTMLLabelElementConstructor(ExecState* exec, JSObject* thisOb
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "HTMLLabelElement"), value);
 }
 
-void setJSDOMWindowHTMLLegendElementConstructor(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowHTMLLegendElementConstructor(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
@@ -3361,7 +4549,7 @@ void setJSDOMWindowHTMLLegendElementConstructor(ExecState* exec, JSObject* thisO
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "HTMLLegendElement"), value);
 }
 
-void setJSDOMWindowHTMLLinkElementConstructor(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowHTMLLinkElementConstructor(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
@@ -3369,7 +4557,7 @@ void setJSDOMWindowHTMLLinkElementConstructor(ExecState* exec, JSObject* thisObj
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "HTMLLinkElement"), value);
 }
 
-void setJSDOMWindowHTMLMapElementConstructor(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowHTMLMapElementConstructor(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
@@ -3377,7 +4565,7 @@ void setJSDOMWindowHTMLMapElementConstructor(ExecState* exec, JSObject* thisObje
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "HTMLMapElement"), value);
 }
 
-void setJSDOMWindowHTMLMarqueeElementConstructor(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowHTMLMarqueeElementConstructor(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
@@ -3385,7 +4573,7 @@ void setJSDOMWindowHTMLMarqueeElementConstructor(ExecState* exec, JSObject* this
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "HTMLMarqueeElement"), value);
 }
 
-void setJSDOMWindowHTMLMenuElementConstructor(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowHTMLMenuElementConstructor(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
@@ -3393,7 +4581,7 @@ void setJSDOMWindowHTMLMenuElementConstructor(ExecState* exec, JSObject* thisObj
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "HTMLMenuElement"), value);
 }
 
-void setJSDOMWindowHTMLMetaElementConstructor(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowHTMLMetaElementConstructor(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
@@ -3401,7 +4589,7 @@ void setJSDOMWindowHTMLMetaElementConstructor(ExecState* exec, JSObject* thisObj
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "HTMLMetaElement"), value);
 }
 
-void setJSDOMWindowHTMLModElementConstructor(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowHTMLModElementConstructor(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
@@ -3409,7 +4597,7 @@ void setJSDOMWindowHTMLModElementConstructor(ExecState* exec, JSObject* thisObje
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "HTMLModElement"), value);
 }
 
-void setJSDOMWindowHTMLOListElementConstructor(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowHTMLOListElementConstructor(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
@@ -3417,7 +4605,7 @@ void setJSDOMWindowHTMLOListElementConstructor(ExecState* exec, JSObject* thisOb
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "HTMLOListElement"), value);
 }
 
-void setJSDOMWindowHTMLObjectElementConstructor(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowHTMLObjectElementConstructor(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
@@ -3425,7 +4613,7 @@ void setJSDOMWindowHTMLObjectElementConstructor(ExecState* exec, JSObject* thisO
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "HTMLObjectElement"), value);
 }
 
-void setJSDOMWindowHTMLOptGroupElementConstructor(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowHTMLOptGroupElementConstructor(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
@@ -3433,7 +4621,7 @@ void setJSDOMWindowHTMLOptGroupElementConstructor(ExecState* exec, JSObject* thi
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "HTMLOptGroupElement"), value);
 }
 
-void setJSDOMWindowHTMLOptionElementConstructor(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowHTMLOptionElementConstructor(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
@@ -3441,7 +4629,7 @@ void setJSDOMWindowHTMLOptionElementConstructor(ExecState* exec, JSObject* thisO
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "HTMLOptionElement"), value);
 }
 
-void setJSDOMWindowHTMLParagraphElementConstructor(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowHTMLParagraphElementConstructor(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
@@ -3449,7 +4637,7 @@ void setJSDOMWindowHTMLParagraphElementConstructor(ExecState* exec, JSObject* th
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "HTMLParagraphElement"), value);
 }
 
-void setJSDOMWindowHTMLParamElementConstructor(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowHTMLParamElementConstructor(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
@@ -3457,7 +4645,7 @@ void setJSDOMWindowHTMLParamElementConstructor(ExecState* exec, JSObject* thisOb
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "HTMLParamElement"), value);
 }
 
-void setJSDOMWindowHTMLPreElementConstructor(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowHTMLPreElementConstructor(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
@@ -3465,7 +4653,7 @@ void setJSDOMWindowHTMLPreElementConstructor(ExecState* exec, JSObject* thisObje
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "HTMLPreElement"), value);
 }
 
-void setJSDOMWindowHTMLQuoteElementConstructor(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowHTMLQuoteElementConstructor(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
@@ -3473,7 +4661,7 @@ void setJSDOMWindowHTMLQuoteElementConstructor(ExecState* exec, JSObject* thisOb
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "HTMLQuoteElement"), value);
 }
 
-void setJSDOMWindowHTMLScriptElementConstructor(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowHTMLScriptElementConstructor(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
@@ -3481,7 +4669,7 @@ void setJSDOMWindowHTMLScriptElementConstructor(ExecState* exec, JSObject* thisO
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "HTMLScriptElement"), value);
 }
 
-void setJSDOMWindowHTMLSelectElementConstructor(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowHTMLSelectElementConstructor(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
@@ -3489,7 +4677,7 @@ void setJSDOMWindowHTMLSelectElementConstructor(ExecState* exec, JSObject* thisO
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "HTMLSelectElement"), value);
 }
 
-void setJSDOMWindowHTMLStyleElementConstructor(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowHTMLStyleElementConstructor(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
@@ -3497,7 +4685,7 @@ void setJSDOMWindowHTMLStyleElementConstructor(ExecState* exec, JSObject* thisOb
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "HTMLStyleElement"), value);
 }
 
-void setJSDOMWindowHTMLTableCaptionElementConstructor(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowHTMLTableCaptionElementConstructor(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
@@ -3505,7 +4693,7 @@ void setJSDOMWindowHTMLTableCaptionElementConstructor(ExecState* exec, JSObject*
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "HTMLTableCaptionElement"), value);
 }
 
-void setJSDOMWindowHTMLTableCellElementConstructor(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowHTMLTableCellElementConstructor(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
@@ -3513,7 +4701,7 @@ void setJSDOMWindowHTMLTableCellElementConstructor(ExecState* exec, JSObject* th
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "HTMLTableCellElement"), value);
 }
 
-void setJSDOMWindowHTMLTableColElementConstructor(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowHTMLTableColElementConstructor(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
@@ -3521,7 +4709,7 @@ void setJSDOMWindowHTMLTableColElementConstructor(ExecState* exec, JSObject* thi
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "HTMLTableColElement"), value);
 }
 
-void setJSDOMWindowHTMLTableElementConstructor(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowHTMLTableElementConstructor(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
@@ -3529,7 +4717,7 @@ void setJSDOMWindowHTMLTableElementConstructor(ExecState* exec, JSObject* thisOb
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "HTMLTableElement"), value);
 }
 
-void setJSDOMWindowHTMLTableRowElementConstructor(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowHTMLTableRowElementConstructor(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
@@ -3537,7 +4725,7 @@ void setJSDOMWindowHTMLTableRowElementConstructor(ExecState* exec, JSObject* thi
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "HTMLTableRowElement"), value);
 }
 
-void setJSDOMWindowHTMLTableSectionElementConstructor(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowHTMLTableSectionElementConstructor(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
@@ -3545,7 +4733,7 @@ void setJSDOMWindowHTMLTableSectionElementConstructor(ExecState* exec, JSObject*
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "HTMLTableSectionElement"), value);
 }
 
-void setJSDOMWindowHTMLTextAreaElementConstructor(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowHTMLTextAreaElementConstructor(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
@@ -3553,7 +4741,7 @@ void setJSDOMWindowHTMLTextAreaElementConstructor(ExecState* exec, JSObject* thi
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "HTMLTextAreaElement"), value);
 }
 
-void setJSDOMWindowHTMLTitleElementConstructor(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowHTMLTitleElementConstructor(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
@@ -3561,7 +4749,7 @@ void setJSDOMWindowHTMLTitleElementConstructor(ExecState* exec, JSObject* thisOb
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "HTMLTitleElement"), value);
 }
 
-void setJSDOMWindowHTMLUListElementConstructor(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowHTMLUListElementConstructor(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
@@ -3569,7 +4757,7 @@ void setJSDOMWindowHTMLUListElementConstructor(ExecState* exec, JSObject* thisOb
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "HTMLUListElement"), value);
 }
 
-void setJSDOMWindowHTMLCollectionConstructor(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowHTMLCollectionConstructor(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
@@ -3577,7 +4765,23 @@ void setJSDOMWindowHTMLCollectionConstructor(ExecState* exec, JSObject* thisObje
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "HTMLCollection"), value);
 }
 
-void setJSDOMWindowCanvasRenderingContext2DConstructor(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowImageConstructor(ExecState* exec, JSObject* thisObject, JSValue value)
+{
+    if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
+        return;
+    // Shadowing a built-in constructor
+    static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "Image"), value);
+}
+
+void setJSDOMWindowOptionConstructor(ExecState* exec, JSObject* thisObject, JSValue value)
+{
+    if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
+        return;
+    // Shadowing a built-in constructor
+    static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "Option"), value);
+}
+
+void setJSDOMWindowCanvasRenderingContext2DConstructor(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
@@ -3585,7 +4789,7 @@ void setJSDOMWindowCanvasRenderingContext2DConstructor(ExecState* exec, JSObject
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "CanvasRenderingContext2D"), value);
 }
 
-void setJSDOMWindowTextMetricsConstructor(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowTextMetricsConstructor(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
@@ -3593,7 +4797,7 @@ void setJSDOMWindowTextMetricsConstructor(ExecState* exec, JSObject* thisObject,
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "TextMetrics"), value);
 }
 
-void setJSDOMWindowEventConstructor(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowEventConstructor(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
@@ -3601,7 +4805,7 @@ void setJSDOMWindowEventConstructor(ExecState* exec, JSObject* thisObject, JSVal
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "Event"), value);
 }
 
-void setJSDOMWindowKeyboardEventConstructor(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowKeyboardEventConstructor(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
@@ -3609,7 +4813,7 @@ void setJSDOMWindowKeyboardEventConstructor(ExecState* exec, JSObject* thisObjec
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "KeyboardEvent"), value);
 }
 
-void setJSDOMWindowMouseEventConstructor(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowMouseEventConstructor(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
@@ -3617,7 +4821,7 @@ void setJSDOMWindowMouseEventConstructor(ExecState* exec, JSObject* thisObject, 
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "MouseEvent"), value);
 }
 
-void setJSDOMWindowMutationEventConstructor(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowMutationEventConstructor(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
@@ -3625,7 +4829,7 @@ void setJSDOMWindowMutationEventConstructor(ExecState* exec, JSObject* thisObjec
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "MutationEvent"), value);
 }
 
-void setJSDOMWindowOverflowEventConstructor(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowOverflowEventConstructor(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
@@ -3633,7 +4837,7 @@ void setJSDOMWindowOverflowEventConstructor(ExecState* exec, JSObject* thisObjec
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "OverflowEvent"), value);
 }
 
-void setJSDOMWindowProgressEventConstructor(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowProgressEventConstructor(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
@@ -3641,7 +4845,7 @@ void setJSDOMWindowProgressEventConstructor(ExecState* exec, JSObject* thisObjec
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "ProgressEvent"), value);
 }
 
-void setJSDOMWindowTextEventConstructor(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowTextEventConstructor(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
@@ -3649,7 +4853,7 @@ void setJSDOMWindowTextEventConstructor(ExecState* exec, JSObject* thisObject, J
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "TextEvent"), value);
 }
 
-void setJSDOMWindowUIEventConstructor(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowUIEventConstructor(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
@@ -3657,7 +4861,7 @@ void setJSDOMWindowUIEventConstructor(ExecState* exec, JSObject* thisObject, JSV
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "UIEvent"), value);
 }
 
-void setJSDOMWindowWebKitAnimationEventConstructor(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowWebKitAnimationEventConstructor(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
@@ -3665,7 +4869,7 @@ void setJSDOMWindowWebKitAnimationEventConstructor(ExecState* exec, JSObject* th
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "WebKitAnimationEvent"), value);
 }
 
-void setJSDOMWindowWebKitTransitionEventConstructor(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowWebKitTransitionEventConstructor(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
@@ -3673,7 +4877,7 @@ void setJSDOMWindowWebKitTransitionEventConstructor(ExecState* exec, JSObject* t
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "WebKitTransitionEvent"), value);
 }
 
-void setJSDOMWindowWheelEventConstructor(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowWheelEventConstructor(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
@@ -3681,7 +4885,7 @@ void setJSDOMWindowWheelEventConstructor(ExecState* exec, JSObject* thisObject, 
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "WheelEvent"), value);
 }
 
-void setJSDOMWindowMessageEventConstructor(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowMessageEventConstructor(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
@@ -3689,7 +4893,7 @@ void setJSDOMWindowMessageEventConstructor(ExecState* exec, JSObject* thisObject
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "MessageEvent"), value);
 }
 
-void setJSDOMWindowEventExceptionConstructor(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowEventExceptionConstructor(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
@@ -3697,7 +4901,7 @@ void setJSDOMWindowEventExceptionConstructor(ExecState* exec, JSObject* thisObje
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "EventException"), value);
 }
 
-void setJSDOMWindowWebKitCSSKeyframeRuleConstructor(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowWebKitCSSKeyframeRuleConstructor(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
@@ -3705,7 +4909,7 @@ void setJSDOMWindowWebKitCSSKeyframeRuleConstructor(ExecState* exec, JSObject* t
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "WebKitCSSKeyframeRule"), value);
 }
 
-void setJSDOMWindowWebKitCSSKeyframesRuleConstructor(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowWebKitCSSKeyframesRuleConstructor(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
@@ -3713,7 +4917,23 @@ void setJSDOMWindowWebKitCSSKeyframesRuleConstructor(ExecState* exec, JSObject* 
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "WebKitCSSKeyframesRule"), value);
 }
 
-void setJSDOMWindowClipboardConstructor(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowWebKitCSSMatrixConstructor(ExecState* exec, JSObject* thisObject, JSValue value)
+{
+    if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
+        return;
+    // Shadowing a built-in constructor
+    static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "WebKitCSSMatrix"), value);
+}
+
+void setJSDOMWindowWebKitPointConstructor(ExecState* exec, JSObject* thisObject, JSValue value)
+{
+    if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
+        return;
+    // Shadowing a built-in constructor
+    static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "WebKitPoint"), value);
+}
+
+void setJSDOMWindowClipboardConstructor(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
@@ -3721,7 +4941,7 @@ void setJSDOMWindowClipboardConstructor(ExecState* exec, JSObject* thisObject, J
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "Clipboard"), value);
 }
 
-void setJSDOMWindowFileConstructor(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowFileConstructor(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
@@ -3729,7 +4949,7 @@ void setJSDOMWindowFileConstructor(ExecState* exec, JSObject* thisObject, JSValu
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "File"), value);
 }
 
-void setJSDOMWindowFileListConstructor(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowFileListConstructor(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
@@ -3737,7 +4957,7 @@ void setJSDOMWindowFileListConstructor(ExecState* exec, JSObject* thisObject, JS
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "FileList"), value);
 }
 
-void setJSDOMWindowNodeFilterConstructor(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowNodeFilterConstructor(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
@@ -3745,7 +4965,7 @@ void setJSDOMWindowNodeFilterConstructor(ExecState* exec, JSObject* thisObject, 
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "NodeFilter"), value);
 }
 
-void setJSDOMWindowRangeConstructor(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowRangeConstructor(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
@@ -3753,7 +4973,7 @@ void setJSDOMWindowRangeConstructor(ExecState* exec, JSObject* thisObject, JSVal
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "Range"), value);
 }
 
-void setJSDOMWindowRangeExceptionConstructor(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowRangeExceptionConstructor(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
@@ -3761,7 +4981,7 @@ void setJSDOMWindowRangeExceptionConstructor(ExecState* exec, JSObject* thisObje
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "RangeException"), value);
 }
 
-void setJSDOMWindowXMLDocumentConstructor(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowXMLDocumentConstructor(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
@@ -3769,7 +4989,7 @@ void setJSDOMWindowXMLDocumentConstructor(ExecState* exec, JSObject* thisObject,
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "XMLDocument"), value);
 }
 
-void setJSDOMWindowDOMParserConstructor(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowDOMParserConstructor(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
@@ -3777,7 +4997,7 @@ void setJSDOMWindowDOMParserConstructor(ExecState* exec, JSObject* thisObject, J
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "DOMParser"), value);
 }
 
-void setJSDOMWindowXMLSerializerConstructor(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowXMLSerializerConstructor(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
@@ -3785,7 +5005,15 @@ void setJSDOMWindowXMLSerializerConstructor(ExecState* exec, JSObject* thisObjec
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "XMLSerializer"), value);
 }
 
-void setJSDOMWindowXMLHttpRequestUploadConstructor(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowXMLHttpRequestConstructor(ExecState* exec, JSObject* thisObject, JSValue value)
+{
+    if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
+        return;
+    // Shadowing a built-in constructor
+    static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "XMLHttpRequest"), value);
+}
+
+void setJSDOMWindowXMLHttpRequestUploadConstructor(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
@@ -3793,7 +5021,7 @@ void setJSDOMWindowXMLHttpRequestUploadConstructor(ExecState* exec, JSObject* th
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "XMLHttpRequestUpload"), value);
 }
 
-void setJSDOMWindowXMLHttpRequestExceptionConstructor(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowXMLHttpRequestExceptionConstructor(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
@@ -3801,7 +5029,15 @@ void setJSDOMWindowXMLHttpRequestExceptionConstructor(ExecState* exec, JSObject*
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "XMLHttpRequestException"), value);
 }
 
-void setJSDOMWindowPluginConstructor(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowWorkerConstructor(ExecState* exec, JSObject* thisObject, JSValue value)
+{
+    if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
+        return;
+    // Shadowing a built-in constructor
+    static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "Worker"), value);
+}
+
+void setJSDOMWindowPluginConstructor(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
@@ -3809,7 +5045,7 @@ void setJSDOMWindowPluginConstructor(ExecState* exec, JSObject* thisObject, JSVa
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "Plugin"), value);
 }
 
-void setJSDOMWindowPluginArrayConstructor(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowPluginArrayConstructor(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
@@ -3817,7 +5053,7 @@ void setJSDOMWindowPluginArrayConstructor(ExecState* exec, JSObject* thisObject,
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "PluginArray"), value);
 }
 
-void setJSDOMWindowMimeTypeConstructor(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowMimeTypeConstructor(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
@@ -3825,7 +5061,7 @@ void setJSDOMWindowMimeTypeConstructor(ExecState* exec, JSObject* thisObject, JS
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "MimeType"), value);
 }
 
-void setJSDOMWindowMimeTypeArrayConstructor(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowMimeTypeArrayConstructor(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
@@ -3833,7 +5069,23 @@ void setJSDOMWindowMimeTypeArrayConstructor(ExecState* exec, JSObject* thisObjec
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "MimeTypeArray"), value);
 }
 
-void setJSDOMWindowStorageConstructor(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowClientRectConstructor(ExecState* exec, JSObject* thisObject, JSValue value)
+{
+    if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
+        return;
+    // Shadowing a built-in constructor
+    static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "ClientRect"), value);
+}
+
+void setJSDOMWindowClientRectListConstructor(ExecState* exec, JSObject* thisObject, JSValue value)
+{
+    if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
+        return;
+    // Shadowing a built-in constructor
+    static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "ClientRectList"), value);
+}
+
+void setJSDOMWindowStorageConstructor(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
@@ -3841,7 +5093,7 @@ void setJSDOMWindowStorageConstructor(ExecState* exec, JSObject* thisObject, JSV
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "Storage"), value);
 }
 
-void setJSDOMWindowStorageEventConstructor(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowStorageEventConstructor(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
@@ -3849,7 +5101,15 @@ void setJSDOMWindowStorageEventConstructor(ExecState* exec, JSObject* thisObject
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "StorageEvent"), value);
 }
 
-void setJSDOMWindowHTMLAudioElementConstructor(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowAudioConstructor(ExecState* exec, JSObject* thisObject, JSValue value)
+{
+    if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
+        return;
+    // Shadowing a built-in constructor
+    static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "Audio"), value);
+}
+
+void setJSDOMWindowHTMLAudioElementConstructor(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
@@ -3857,7 +5117,7 @@ void setJSDOMWindowHTMLAudioElementConstructor(ExecState* exec, JSObject* thisOb
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "HTMLAudioElement"), value);
 }
 
-void setJSDOMWindowHTMLMediaElementConstructor(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowHTMLMediaElementConstructor(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
@@ -3865,7 +5125,7 @@ void setJSDOMWindowHTMLMediaElementConstructor(ExecState* exec, JSObject* thisOb
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "HTMLMediaElement"), value);
 }
 
-void setJSDOMWindowHTMLVideoElementConstructor(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowHTMLVideoElementConstructor(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
@@ -3873,7 +5133,7 @@ void setJSDOMWindowHTMLVideoElementConstructor(ExecState* exec, JSObject* thisOb
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "HTMLVideoElement"), value);
 }
 
-void setJSDOMWindowMediaErrorConstructor(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowMediaErrorConstructor(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
@@ -3881,7 +5141,7 @@ void setJSDOMWindowMediaErrorConstructor(ExecState* exec, JSObject* thisObject, 
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "MediaError"), value);
 }
 
-void setJSDOMWindowXPathEvaluatorConstructor(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowXPathEvaluatorConstructor(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
@@ -3889,7 +5149,7 @@ void setJSDOMWindowXPathEvaluatorConstructor(ExecState* exec, JSObject* thisObje
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "XPathEvaluator"), value);
 }
 
-void setJSDOMWindowXPathResultConstructor(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowXPathResultConstructor(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
@@ -3897,7 +5157,7 @@ void setJSDOMWindowXPathResultConstructor(ExecState* exec, JSObject* thisObject,
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "XPathResult"), value);
 }
 
-void setJSDOMWindowXPathExceptionConstructor(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowXPathExceptionConstructor(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
@@ -3905,7 +5165,7 @@ void setJSDOMWindowXPathExceptionConstructor(ExecState* exec, JSObject* thisObje
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "XPathException"), value);
 }
 
-void setJSDOMWindowSVGAngleConstructor(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowSVGAngleConstructor(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
@@ -3913,7 +5173,7 @@ void setJSDOMWindowSVGAngleConstructor(ExecState* exec, JSObject* thisObject, JS
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "SVGAngle"), value);
 }
 
-void setJSDOMWindowSVGColorConstructor(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowSVGColorConstructor(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
@@ -3921,7 +5181,7 @@ void setJSDOMWindowSVGColorConstructor(ExecState* exec, JSObject* thisObject, JS
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "SVGColor"), value);
 }
 
-void setJSDOMWindowSVGExceptionConstructor(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowSVGExceptionConstructor(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
@@ -3929,7 +5189,7 @@ void setJSDOMWindowSVGExceptionConstructor(ExecState* exec, JSObject* thisObject
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "SVGException"), value);
 }
 
-void setJSDOMWindowSVGGradientElementConstructor(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowSVGGradientElementConstructor(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
@@ -3937,7 +5197,7 @@ void setJSDOMWindowSVGGradientElementConstructor(ExecState* exec, JSObject* this
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "SVGGradientElement"), value);
 }
 
-void setJSDOMWindowSVGLengthConstructor(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowSVGLengthConstructor(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
@@ -3945,7 +5205,7 @@ void setJSDOMWindowSVGLengthConstructor(ExecState* exec, JSObject* thisObject, J
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "SVGLength"), value);
 }
 
-void setJSDOMWindowSVGMarkerElementConstructor(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowSVGMarkerElementConstructor(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
@@ -3953,7 +5213,7 @@ void setJSDOMWindowSVGMarkerElementConstructor(ExecState* exec, JSObject* thisOb
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "SVGMarkerElement"), value);
 }
 
-void setJSDOMWindowSVGPaintConstructor(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowSVGPaintConstructor(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
@@ -3961,7 +5221,7 @@ void setJSDOMWindowSVGPaintConstructor(ExecState* exec, JSObject* thisObject, JS
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "SVGPaint"), value);
 }
 
-void setJSDOMWindowSVGPathSegConstructor(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowSVGPathSegConstructor(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
@@ -3969,7 +5229,7 @@ void setJSDOMWindowSVGPathSegConstructor(ExecState* exec, JSObject* thisObject, 
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "SVGPathSeg"), value);
 }
 
-void setJSDOMWindowSVGPreserveAspectRatioConstructor(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowSVGPreserveAspectRatioConstructor(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
@@ -3977,7 +5237,7 @@ void setJSDOMWindowSVGPreserveAspectRatioConstructor(ExecState* exec, JSObject* 
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "SVGPreserveAspectRatio"), value);
 }
 
-void setJSDOMWindowSVGRenderingIntentConstructor(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowSVGRenderingIntentConstructor(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
@@ -3985,7 +5245,7 @@ void setJSDOMWindowSVGRenderingIntentConstructor(ExecState* exec, JSObject* this
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "SVGRenderingIntent"), value);
 }
 
-void setJSDOMWindowSVGTextContentElementConstructor(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowSVGTextContentElementConstructor(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
@@ -3993,7 +5253,7 @@ void setJSDOMWindowSVGTextContentElementConstructor(ExecState* exec, JSObject* t
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "SVGTextContentElement"), value);
 }
 
-void setJSDOMWindowSVGTextPathElementConstructor(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowSVGTextPathElementConstructor(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
@@ -4001,7 +5261,7 @@ void setJSDOMWindowSVGTextPathElementConstructor(ExecState* exec, JSObject* this
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "SVGTextPathElement"), value);
 }
 
-void setJSDOMWindowSVGTransformConstructor(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowSVGTransformConstructor(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
@@ -4009,7 +5269,7 @@ void setJSDOMWindowSVGTransformConstructor(ExecState* exec, JSObject* thisObject
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "SVGTransform"), value);
 }
 
-void setJSDOMWindowSVGUnitTypesConstructor(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMWindowSVGUnitTypesConstructor(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
         return;
@@ -4024,9 +5284,10 @@ void JSDOMWindow::getPropertyNames(ExecState* exec, PropertyNameArray& propertyN
      Base::getPropertyNames(exec, propertyNames);
 }
 
-JSValuePtr jsDOMWindowPrototypeFunctionGetSelection(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsDOMWindowPrototypeFunctionGetSelection(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    JSDOMWindow* castedThisObj = toJSDOMWindow(thisValue);
+    UNUSED_PARAM(args);
+    JSDOMWindow* castedThisObj = toJSDOMWindow(thisValue.toThisObject(exec));
     if (!castedThisObj)
         return throwError(exec, TypeError);
     if (!castedThisObj->allowsAccessFrom(exec))
@@ -4034,13 +5295,14 @@ JSValuePtr jsDOMWindowPrototypeFunctionGetSelection(ExecState* exec, JSObject*, 
     DOMWindow* imp = static_cast<DOMWindow*>(castedThisObj->impl());
 
 
-    JSC::JSValuePtr result = toJS(exec, WTF::getPtr(imp->getSelection()));
+    JSC::JSValue result = toJS(exec, WTF::getPtr(imp->getSelection()));
     return result;
 }
 
-JSValuePtr jsDOMWindowPrototypeFunctionFocus(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsDOMWindowPrototypeFunctionFocus(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    JSDOMWindow* castedThisObj = toJSDOMWindow(thisValue);
+    UNUSED_PARAM(args);
+    JSDOMWindow* castedThisObj = toJSDOMWindow(thisValue.toThisObject(exec));
     if (!castedThisObj)
         return throwError(exec, TypeError);
     DOMWindow* imp = static_cast<DOMWindow*>(castedThisObj->impl());
@@ -4049,9 +5311,10 @@ JSValuePtr jsDOMWindowPrototypeFunctionFocus(ExecState* exec, JSObject*, JSValue
     return jsUndefined();
 }
 
-JSValuePtr jsDOMWindowPrototypeFunctionBlur(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsDOMWindowPrototypeFunctionBlur(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    JSDOMWindow* castedThisObj = toJSDOMWindow(thisValue);
+    UNUSED_PARAM(args);
+    JSDOMWindow* castedThisObj = toJSDOMWindow(thisValue.toThisObject(exec));
     if (!castedThisObj)
         return throwError(exec, TypeError);
     DOMWindow* imp = static_cast<DOMWindow*>(castedThisObj->impl());
@@ -4060,9 +5323,10 @@ JSValuePtr jsDOMWindowPrototypeFunctionBlur(ExecState* exec, JSObject*, JSValueP
     return jsUndefined();
 }
 
-JSValuePtr jsDOMWindowPrototypeFunctionClose(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsDOMWindowPrototypeFunctionClose(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    JSDOMWindow* castedThisObj = toJSDOMWindow(thisValue);
+    UNUSED_PARAM(args);
+    JSDOMWindow* castedThisObj = toJSDOMWindow(thisValue.toThisObject(exec));
     if (!castedThisObj)
         return throwError(exec, TypeError);
     DOMWindow* imp = static_cast<DOMWindow*>(castedThisObj->impl());
@@ -4071,9 +5335,10 @@ JSValuePtr jsDOMWindowPrototypeFunctionClose(ExecState* exec, JSObject*, JSValue
     return jsUndefined();
 }
 
-JSValuePtr jsDOMWindowPrototypeFunctionPrint(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsDOMWindowPrototypeFunctionPrint(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    JSDOMWindow* castedThisObj = toJSDOMWindow(thisValue);
+    UNUSED_PARAM(args);
+    JSDOMWindow* castedThisObj = toJSDOMWindow(thisValue.toThisObject(exec));
     if (!castedThisObj)
         return throwError(exec, TypeError);
     if (!castedThisObj->allowsAccessFrom(exec))
@@ -4084,9 +5349,10 @@ JSValuePtr jsDOMWindowPrototypeFunctionPrint(ExecState* exec, JSObject*, JSValue
     return jsUndefined();
 }
 
-JSValuePtr jsDOMWindowPrototypeFunctionStop(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsDOMWindowPrototypeFunctionStop(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    JSDOMWindow* castedThisObj = toJSDOMWindow(thisValue);
+    UNUSED_PARAM(args);
+    JSDOMWindow* castedThisObj = toJSDOMWindow(thisValue.toThisObject(exec));
     if (!castedThisObj)
         return throwError(exec, TypeError);
     if (!castedThisObj->allowsAccessFrom(exec))
@@ -4097,75 +5363,102 @@ JSValuePtr jsDOMWindowPrototypeFunctionStop(ExecState* exec, JSObject*, JSValueP
     return jsUndefined();
 }
 
-JSValuePtr jsDOMWindowPrototypeFunctionAlert(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsDOMWindowPrototypeFunctionOpen(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    JSDOMWindow* castedThisObj = toJSDOMWindow(thisValue);
+    UNUSED_PARAM(args);
+    JSDOMWindow* castedThisObj = toJSDOMWindow(thisValue.toThisObject(exec));
+    if (!castedThisObj)
+        return throwError(exec, TypeError);
+    if (!castedThisObj->allowsAccessFrom(exec))
+        return jsUndefined();
+    return castedThisObj->open(exec, args);
+}
+
+JSValue JSC_HOST_CALL jsDOMWindowPrototypeFunctionShowModalDialog(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
+{
+    UNUSED_PARAM(args);
+    JSDOMWindow* castedThisObj = toJSDOMWindow(thisValue.toThisObject(exec));
+    if (!castedThisObj)
+        return throwError(exec, TypeError);
+    if (!castedThisObj->allowsAccessFrom(exec))
+        return jsUndefined();
+    return castedThisObj->showModalDialog(exec, args);
+}
+
+JSValue JSC_HOST_CALL jsDOMWindowPrototypeFunctionAlert(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
+{
+    UNUSED_PARAM(args);
+    JSDOMWindow* castedThisObj = toJSDOMWindow(thisValue.toThisObject(exec));
     if (!castedThisObj)
         return throwError(exec, TypeError);
     if (!castedThisObj->allowsAccessFrom(exec))
         return jsUndefined();
     DOMWindow* imp = static_cast<DOMWindow*>(castedThisObj->impl());
-    const UString& message = args.at(exec, 0)->toString(exec);
+    const UString& message = args.at(0).toString(exec);
 
     imp->alert(message);
     return jsUndefined();
 }
 
-JSValuePtr jsDOMWindowPrototypeFunctionConfirm(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsDOMWindowPrototypeFunctionConfirm(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    JSDOMWindow* castedThisObj = toJSDOMWindow(thisValue);
+    UNUSED_PARAM(args);
+    JSDOMWindow* castedThisObj = toJSDOMWindow(thisValue.toThisObject(exec));
     if (!castedThisObj)
         return throwError(exec, TypeError);
     if (!castedThisObj->allowsAccessFrom(exec))
         return jsUndefined();
     DOMWindow* imp = static_cast<DOMWindow*>(castedThisObj->impl());
-    const UString& message = args.at(exec, 0)->toString(exec);
+    const UString& message = args.at(0).toString(exec);
 
 
-    JSC::JSValuePtr result = jsBoolean(imp->confirm(message));
+    JSC::JSValue result = jsBoolean(imp->confirm(message));
     return result;
 }
 
-JSValuePtr jsDOMWindowPrototypeFunctionPrompt(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsDOMWindowPrototypeFunctionPrompt(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    JSDOMWindow* castedThisObj = toJSDOMWindow(thisValue);
+    UNUSED_PARAM(args);
+    JSDOMWindow* castedThisObj = toJSDOMWindow(thisValue.toThisObject(exec));
     if (!castedThisObj)
         return throwError(exec, TypeError);
     if (!castedThisObj->allowsAccessFrom(exec))
         return jsUndefined();
     DOMWindow* imp = static_cast<DOMWindow*>(castedThisObj->impl());
-    const UString& message = args.at(exec, 0)->toString(exec);
-    const UString& defaultValue = valueToStringWithUndefinedOrNullCheck(exec, args.at(exec, 1));
+    const UString& message = args.at(0).toString(exec);
+    const UString& defaultValue = valueToStringWithUndefinedOrNullCheck(exec, args.at(1));
 
 
-    JSC::JSValuePtr result = jsStringOrNull(exec, imp->prompt(message, defaultValue));
+    JSC::JSValue result = jsStringOrNull(exec, imp->prompt(message, defaultValue));
     return result;
 }
 
-JSValuePtr jsDOMWindowPrototypeFunctionFind(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsDOMWindowPrototypeFunctionFind(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    JSDOMWindow* castedThisObj = toJSDOMWindow(thisValue);
+    UNUSED_PARAM(args);
+    JSDOMWindow* castedThisObj = toJSDOMWindow(thisValue.toThisObject(exec));
     if (!castedThisObj)
         return throwError(exec, TypeError);
     if (!castedThisObj->allowsAccessFrom(exec))
         return jsUndefined();
     DOMWindow* imp = static_cast<DOMWindow*>(castedThisObj->impl());
-    const UString& string = args.at(exec, 0)->toString(exec);
-    bool caseSensitive = args.at(exec, 1)->toBoolean(exec);
-    bool backwards = args.at(exec, 2)->toBoolean(exec);
-    bool wrap = args.at(exec, 3)->toBoolean(exec);
-    bool wholeWord = args.at(exec, 4)->toBoolean(exec);
-    bool searchInFrames = args.at(exec, 5)->toBoolean(exec);
-    bool showDialog = args.at(exec, 6)->toBoolean(exec);
+    const UString& string = args.at(0).toString(exec);
+    bool caseSensitive = args.at(1).toBoolean(exec);
+    bool backwards = args.at(2).toBoolean(exec);
+    bool wrap = args.at(3).toBoolean(exec);
+    bool wholeWord = args.at(4).toBoolean(exec);
+    bool searchInFrames = args.at(5).toBoolean(exec);
+    bool showDialog = args.at(6).toBoolean(exec);
 
 
-    JSC::JSValuePtr result = jsBoolean(imp->find(string, caseSensitive, backwards, wrap, wholeWord, searchInFrames, showDialog));
+    JSC::JSValue result = jsBoolean(imp->find(string, caseSensitive, backwards, wrap, wholeWord, searchInFrames, showDialog));
     return result;
 }
 
-JSValuePtr jsDOMWindowPrototypeFunctionScrollBy(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsDOMWindowPrototypeFunctionScrollBy(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    JSDOMWindow* castedThisObj = toJSDOMWindow(thisValue);
+    UNUSED_PARAM(args);
+    JSDOMWindow* castedThisObj = toJSDOMWindow(thisValue.toThisObject(exec));
     if (!castedThisObj)
         return throwError(exec, TypeError);
     if (!castedThisObj->allowsAccessFrom(exec))
@@ -4173,16 +5466,17 @@ JSValuePtr jsDOMWindowPrototypeFunctionScrollBy(ExecState* exec, JSObject*, JSVa
     DOMWindow* imp = static_cast<DOMWindow*>(castedThisObj->impl());
     if (args.size() < 2)
         return jsUndefined();
-    int x = args.at(exec, 0)->toInt32(exec);
-    int y = args.at(exec, 1)->toInt32(exec);
+    int x = args.at(0).toInt32(exec);
+    int y = args.at(1).toInt32(exec);
 
     imp->scrollBy(x, y);
     return jsUndefined();
 }
 
-JSValuePtr jsDOMWindowPrototypeFunctionScrollTo(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsDOMWindowPrototypeFunctionScrollTo(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    JSDOMWindow* castedThisObj = toJSDOMWindow(thisValue);
+    UNUSED_PARAM(args);
+    JSDOMWindow* castedThisObj = toJSDOMWindow(thisValue.toThisObject(exec));
     if (!castedThisObj)
         return throwError(exec, TypeError);
     if (!castedThisObj->allowsAccessFrom(exec))
@@ -4190,16 +5484,17 @@ JSValuePtr jsDOMWindowPrototypeFunctionScrollTo(ExecState* exec, JSObject*, JSVa
     DOMWindow* imp = static_cast<DOMWindow*>(castedThisObj->impl());
     if (args.size() < 2)
         return jsUndefined();
-    int x = args.at(exec, 0)->toInt32(exec);
-    int y = args.at(exec, 1)->toInt32(exec);
+    int x = args.at(0).toInt32(exec);
+    int y = args.at(1).toInt32(exec);
 
     imp->scrollTo(x, y);
     return jsUndefined();
 }
 
-JSValuePtr jsDOMWindowPrototypeFunctionScroll(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsDOMWindowPrototypeFunctionScroll(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    JSDOMWindow* castedThisObj = toJSDOMWindow(thisValue);
+    UNUSED_PARAM(args);
+    JSDOMWindow* castedThisObj = toJSDOMWindow(thisValue.toThisObject(exec));
     if (!castedThisObj)
         return throwError(exec, TypeError);
     if (!castedThisObj->allowsAccessFrom(exec))
@@ -4207,16 +5502,17 @@ JSValuePtr jsDOMWindowPrototypeFunctionScroll(ExecState* exec, JSObject*, JSValu
     DOMWindow* imp = static_cast<DOMWindow*>(castedThisObj->impl());
     if (args.size() < 2)
         return jsUndefined();
-    int x = args.at(exec, 0)->toInt32(exec);
-    int y = args.at(exec, 1)->toInt32(exec);
+    int x = args.at(0).toInt32(exec);
+    int y = args.at(1).toInt32(exec);
 
     imp->scroll(x, y);
     return jsUndefined();
 }
 
-JSValuePtr jsDOMWindowPrototypeFunctionMoveBy(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsDOMWindowPrototypeFunctionMoveBy(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    JSDOMWindow* castedThisObj = toJSDOMWindow(thisValue);
+    UNUSED_PARAM(args);
+    JSDOMWindow* castedThisObj = toJSDOMWindow(thisValue.toThisObject(exec));
     if (!castedThisObj)
         return throwError(exec, TypeError);
     if (!castedThisObj->allowsAccessFrom(exec))
@@ -4224,16 +5520,17 @@ JSValuePtr jsDOMWindowPrototypeFunctionMoveBy(ExecState* exec, JSObject*, JSValu
     DOMWindow* imp = static_cast<DOMWindow*>(castedThisObj->impl());
     if (args.size() < 2)
         return jsUndefined();
-    float x = args.at(exec, 0)->toFloat(exec);
-    float y = args.at(exec, 1)->toFloat(exec);
+    float x = args.at(0).toFloat(exec);
+    float y = args.at(1).toFloat(exec);
 
     imp->moveBy(x, y);
     return jsUndefined();
 }
 
-JSValuePtr jsDOMWindowPrototypeFunctionMoveTo(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsDOMWindowPrototypeFunctionMoveTo(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    JSDOMWindow* castedThisObj = toJSDOMWindow(thisValue);
+    UNUSED_PARAM(args);
+    JSDOMWindow* castedThisObj = toJSDOMWindow(thisValue.toThisObject(exec));
     if (!castedThisObj)
         return throwError(exec, TypeError);
     if (!castedThisObj->allowsAccessFrom(exec))
@@ -4241,16 +5538,17 @@ JSValuePtr jsDOMWindowPrototypeFunctionMoveTo(ExecState* exec, JSObject*, JSValu
     DOMWindow* imp = static_cast<DOMWindow*>(castedThisObj->impl());
     if (args.size() < 2)
         return jsUndefined();
-    float x = args.at(exec, 0)->toFloat(exec);
-    float y = args.at(exec, 1)->toFloat(exec);
+    float x = args.at(0).toFloat(exec);
+    float y = args.at(1).toFloat(exec);
 
     imp->moveTo(x, y);
     return jsUndefined();
 }
 
-JSValuePtr jsDOMWindowPrototypeFunctionResizeBy(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsDOMWindowPrototypeFunctionResizeBy(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    JSDOMWindow* castedThisObj = toJSDOMWindow(thisValue);
+    UNUSED_PARAM(args);
+    JSDOMWindow* castedThisObj = toJSDOMWindow(thisValue.toThisObject(exec));
     if (!castedThisObj)
         return throwError(exec, TypeError);
     if (!castedThisObj->allowsAccessFrom(exec))
@@ -4258,16 +5556,17 @@ JSValuePtr jsDOMWindowPrototypeFunctionResizeBy(ExecState* exec, JSObject*, JSVa
     DOMWindow* imp = static_cast<DOMWindow*>(castedThisObj->impl());
     if (args.size() < 2)
         return jsUndefined();
-    float x = args.at(exec, 0)->toFloat(exec);
-    float y = args.at(exec, 1)->toFloat(exec);
+    float x = args.at(0).toFloat(exec);
+    float y = args.at(1).toFloat(exec);
 
     imp->resizeBy(x, y);
     return jsUndefined();
 }
 
-JSValuePtr jsDOMWindowPrototypeFunctionResizeTo(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsDOMWindowPrototypeFunctionResizeTo(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    JSDOMWindow* castedThisObj = toJSDOMWindow(thisValue);
+    UNUSED_PARAM(args);
+    JSDOMWindow* castedThisObj = toJSDOMWindow(thisValue.toThisObject(exec));
     if (!castedThisObj)
         return throwError(exec, TypeError);
     if (!castedThisObj->allowsAccessFrom(exec))
@@ -4275,85 +5574,124 @@ JSValuePtr jsDOMWindowPrototypeFunctionResizeTo(ExecState* exec, JSObject*, JSVa
     DOMWindow* imp = static_cast<DOMWindow*>(castedThisObj->impl());
     if (args.size() < 2)
         return jsUndefined();
-    float width = args.at(exec, 0)->toFloat(exec);
-    float height = args.at(exec, 1)->toFloat(exec);
+    float width = args.at(0).toFloat(exec);
+    float height = args.at(1).toFloat(exec);
 
     imp->resizeTo(width, height);
     return jsUndefined();
 }
 
-JSValuePtr jsDOMWindowPrototypeFunctionGetComputedStyle(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsDOMWindowPrototypeFunctionGetComputedStyle(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    JSDOMWindow* castedThisObj = toJSDOMWindow(thisValue);
+    UNUSED_PARAM(args);
+    JSDOMWindow* castedThisObj = toJSDOMWindow(thisValue.toThisObject(exec));
     if (!castedThisObj)
         return throwError(exec, TypeError);
     if (!castedThisObj->allowsAccessFrom(exec))
         return jsUndefined();
     DOMWindow* imp = static_cast<DOMWindow*>(castedThisObj->impl());
-    Element* element = toElement(args.at(exec, 0));
-    const UString& pseudoElement = args.at(exec, 1)->toString(exec);
+    Element* element = toElement(args.at(0));
+    const UString& pseudoElement = args.at(1).toString(exec);
 
 
-    JSC::JSValuePtr result = toJS(exec, WTF::getPtr(imp->getComputedStyle(element, pseudoElement)));
+    JSC::JSValue result = toJS(exec, WTF::getPtr(imp->getComputedStyle(element, pseudoElement)));
     return result;
 }
 
-JSValuePtr jsDOMWindowPrototypeFunctionGetMatchedCSSRules(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsDOMWindowPrototypeFunctionGetMatchedCSSRules(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    JSDOMWindow* castedThisObj = toJSDOMWindow(thisValue);
+    UNUSED_PARAM(args);
+    JSDOMWindow* castedThisObj = toJSDOMWindow(thisValue.toThisObject(exec));
     if (!castedThisObj)
         return throwError(exec, TypeError);
     if (!castedThisObj->allowsAccessFrom(exec))
         return jsUndefined();
     DOMWindow* imp = static_cast<DOMWindow*>(castedThisObj->impl());
-    Element* element = toElement(args.at(exec, 0));
-    const UString& pseudoElement = args.at(exec, 1)->toString(exec);
+    Element* element = toElement(args.at(0));
+    const UString& pseudoElement = args.at(1).toString(exec);
 
     int argsCount = args.size();
     if (argsCount < 3) {
 
-        JSC::JSValuePtr result = toJS(exec, WTF::getPtr(imp->getMatchedCSSRules(element, pseudoElement)));
+        JSC::JSValue result = toJS(exec, WTF::getPtr(imp->getMatchedCSSRules(element, pseudoElement)));
         return result;
     }
 
-    bool authorOnly = args.at(exec, 2)->toBoolean(exec);
+    bool authorOnly = args.at(2).toBoolean(exec);
 
 
-    JSC::JSValuePtr result = toJS(exec, WTF::getPtr(imp->getMatchedCSSRules(element, pseudoElement, authorOnly)));
+    JSC::JSValue result = toJS(exec, WTF::getPtr(imp->getMatchedCSSRules(element, pseudoElement, authorOnly)));
     return result;
 }
 
-JSValuePtr jsDOMWindowPrototypeFunctionOpenDatabase(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsDOMWindowPrototypeFunctionWebkitConvertPointFromPageToNode(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    JSDOMWindow* castedThisObj = toJSDOMWindow(thisValue);
+    UNUSED_PARAM(args);
+    JSDOMWindow* castedThisObj = toJSDOMWindow(thisValue.toThisObject(exec));
+    if (!castedThisObj)
+        return throwError(exec, TypeError);
+    if (!castedThisObj->allowsAccessFrom(exec))
+        return jsUndefined();
+    DOMWindow* imp = static_cast<DOMWindow*>(castedThisObj->impl());
+    Node* node = toNode(args.at(0));
+    WebKitPoint* p = toWebKitPoint(args.at(1));
+
+
+    JSC::JSValue result = toJS(exec, WTF::getPtr(imp->webkitConvertPointFromPageToNode(node, p)));
+    return result;
+}
+
+JSValue JSC_HOST_CALL jsDOMWindowPrototypeFunctionWebkitConvertPointFromNodeToPage(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
+{
+    UNUSED_PARAM(args);
+    JSDOMWindow* castedThisObj = toJSDOMWindow(thisValue.toThisObject(exec));
+    if (!castedThisObj)
+        return throwError(exec, TypeError);
+    if (!castedThisObj->allowsAccessFrom(exec))
+        return jsUndefined();
+    DOMWindow* imp = static_cast<DOMWindow*>(castedThisObj->impl());
+    Node* node = toNode(args.at(0));
+    WebKitPoint* p = toWebKitPoint(args.at(1));
+
+
+    JSC::JSValue result = toJS(exec, WTF::getPtr(imp->webkitConvertPointFromNodeToPage(node, p)));
+    return result;
+}
+
+JSValue JSC_HOST_CALL jsDOMWindowPrototypeFunctionOpenDatabase(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
+{
+    UNUSED_PARAM(args);
+    JSDOMWindow* castedThisObj = toJSDOMWindow(thisValue.toThisObject(exec));
     if (!castedThisObj)
         return throwError(exec, TypeError);
     if (!castedThisObj->allowsAccessFrom(exec))
         return jsUndefined();
     DOMWindow* imp = static_cast<DOMWindow*>(castedThisObj->impl());
     ExceptionCode ec = 0;
-    const UString& name = args.at(exec, 0)->toString(exec);
-    const UString& version = args.at(exec, 1)->toString(exec);
-    const UString& displayName = args.at(exec, 2)->toString(exec);
-    unsigned estimatedSize = args.at(exec, 3)->toInt32(exec);
+    const UString& name = args.at(0).toString(exec);
+    const UString& version = args.at(1).toString(exec);
+    const UString& displayName = args.at(2).toString(exec);
+    unsigned estimatedSize = args.at(3).toInt32(exec);
 
 
-    JSC::JSValuePtr result = toJS(exec, WTF::getPtr(imp->openDatabase(name, version, displayName, estimatedSize, ec)));
+    JSC::JSValue result = toJS(exec, WTF::getPtr(imp->openDatabase(name, version, displayName, estimatedSize, ec)));
     setDOMException(exec, ec);
     return result;
 }
 
-JSValuePtr jsDOMWindowPrototypeFunctionPostMessage(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsDOMWindowPrototypeFunctionPostMessage(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    JSDOMWindow* castedThisObj = toJSDOMWindow(thisValue);
+    UNUSED_PARAM(args);
+    JSDOMWindow* castedThisObj = toJSDOMWindow(thisValue.toThisObject(exec));
     if (!castedThisObj)
         return throwError(exec, TypeError);
     return castedThisObj->postMessage(exec, args);
 }
 
-JSValuePtr jsDOMWindowPrototypeFunctionSetTimeout(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsDOMWindowPrototypeFunctionSetTimeout(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    JSDOMWindow* castedThisObj = toJSDOMWindow(thisValue);
+    UNUSED_PARAM(args);
+    JSDOMWindow* castedThisObj = toJSDOMWindow(thisValue.toThisObject(exec));
     if (!castedThisObj)
         return throwError(exec, TypeError);
     if (!castedThisObj->allowsAccessFrom(exec))
@@ -4361,19 +5699,25 @@ JSValuePtr jsDOMWindowPrototypeFunctionSetTimeout(ExecState* exec, JSObject*, JS
     return castedThisObj->setTimeout(exec, args);
 }
 
-JSValuePtr jsDOMWindowPrototypeFunctionClearTimeout(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsDOMWindowPrototypeFunctionClearTimeout(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    JSDOMWindow* castedThisObj = toJSDOMWindow(thisValue);
+    UNUSED_PARAM(args);
+    JSDOMWindow* castedThisObj = toJSDOMWindow(thisValue.toThisObject(exec));
     if (!castedThisObj)
         return throwError(exec, TypeError);
     if (!castedThisObj->allowsAccessFrom(exec))
         return jsUndefined();
-    return castedThisObj->clearTimeout(exec, args);
+    DOMWindow* imp = static_cast<DOMWindow*>(castedThisObj->impl());
+    int handle = args.at(0).toInt32(exec);
+
+    imp->clearTimeout(handle);
+    return jsUndefined();
 }
 
-JSValuePtr jsDOMWindowPrototypeFunctionSetInterval(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsDOMWindowPrototypeFunctionSetInterval(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    JSDOMWindow* castedThisObj = toJSDOMWindow(thisValue);
+    UNUSED_PARAM(args);
+    JSDOMWindow* castedThisObj = toJSDOMWindow(thisValue.toThisObject(exec));
     if (!castedThisObj)
         return throwError(exec, TypeError);
     if (!castedThisObj->allowsAccessFrom(exec))
@@ -4381,19 +5725,25 @@ JSValuePtr jsDOMWindowPrototypeFunctionSetInterval(ExecState* exec, JSObject*, J
     return castedThisObj->setInterval(exec, args);
 }
 
-JSValuePtr jsDOMWindowPrototypeFunctionClearInterval(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsDOMWindowPrototypeFunctionClearInterval(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    JSDOMWindow* castedThisObj = toJSDOMWindow(thisValue);
+    UNUSED_PARAM(args);
+    JSDOMWindow* castedThisObj = toJSDOMWindow(thisValue.toThisObject(exec));
     if (!castedThisObj)
         return throwError(exec, TypeError);
     if (!castedThisObj->allowsAccessFrom(exec))
         return jsUndefined();
-    return castedThisObj->clearInterval(exec, args);
+    DOMWindow* imp = static_cast<DOMWindow*>(castedThisObj->impl());
+    int handle = args.at(0).toInt32(exec);
+
+    imp->clearInterval(handle);
+    return jsUndefined();
 }
 
-JSValuePtr jsDOMWindowPrototypeFunctionAtob(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsDOMWindowPrototypeFunctionAtob(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    JSDOMWindow* castedThisObj = toJSDOMWindow(thisValue);
+    UNUSED_PARAM(args);
+    JSDOMWindow* castedThisObj = toJSDOMWindow(thisValue.toThisObject(exec));
     if (!castedThisObj)
         return throwError(exec, TypeError);
     if (!castedThisObj->allowsAccessFrom(exec))
@@ -4401,9 +5751,10 @@ JSValuePtr jsDOMWindowPrototypeFunctionAtob(ExecState* exec, JSObject*, JSValueP
     return castedThisObj->atob(exec, args);
 }
 
-JSValuePtr jsDOMWindowPrototypeFunctionBtoa(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsDOMWindowPrototypeFunctionBtoa(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    JSDOMWindow* castedThisObj = toJSDOMWindow(thisValue);
+    UNUSED_PARAM(args);
+    JSDOMWindow* castedThisObj = toJSDOMWindow(thisValue.toThisObject(exec));
     if (!castedThisObj)
         return throwError(exec, TypeError);
     if (!castedThisObj->allowsAccessFrom(exec))
@@ -4411,9 +5762,10 @@ JSValuePtr jsDOMWindowPrototypeFunctionBtoa(ExecState* exec, JSObject*, JSValueP
     return castedThisObj->btoa(exec, args);
 }
 
-JSValuePtr jsDOMWindowPrototypeFunctionAddEventListener(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsDOMWindowPrototypeFunctionAddEventListener(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    JSDOMWindow* castedThisObj = toJSDOMWindow(thisValue);
+    UNUSED_PARAM(args);
+    JSDOMWindow* castedThisObj = toJSDOMWindow(thisValue.toThisObject(exec));
     if (!castedThisObj)
         return throwError(exec, TypeError);
     if (!castedThisObj->allowsAccessFrom(exec))
@@ -4421,14 +5773,61 @@ JSValuePtr jsDOMWindowPrototypeFunctionAddEventListener(ExecState* exec, JSObjec
     return castedThisObj->addEventListener(exec, args);
 }
 
-JSValuePtr jsDOMWindowPrototypeFunctionRemoveEventListener(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsDOMWindowPrototypeFunctionRemoveEventListener(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    JSDOMWindow* castedThisObj = toJSDOMWindow(thisValue);
+    UNUSED_PARAM(args);
+    JSDOMWindow* castedThisObj = toJSDOMWindow(thisValue.toThisObject(exec));
     if (!castedThisObj)
         return throwError(exec, TypeError);
     if (!castedThisObj->allowsAccessFrom(exec))
         return jsUndefined();
     return castedThisObj->removeEventListener(exec, args);
+}
+
+JSValue JSC_HOST_CALL jsDOMWindowPrototypeFunctionDispatchEvent(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
+{
+    UNUSED_PARAM(args);
+    JSDOMWindow* castedThisObj = toJSDOMWindow(thisValue.toThisObject(exec));
+    if (!castedThisObj)
+        return throwError(exec, TypeError);
+    if (!castedThisObj->allowsAccessFrom(exec))
+        return jsUndefined();
+    DOMWindow* imp = static_cast<DOMWindow*>(castedThisObj->impl());
+    ExceptionCode ec = 0;
+    Event* evt = toEvent(args.at(0));
+
+
+    JSC::JSValue result = jsBoolean(imp->dispatchEvent(evt, ec));
+    setDOMException(exec, ec);
+    return result;
+}
+
+JSValue JSC_HOST_CALL jsDOMWindowPrototypeFunctionCaptureEvents(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
+{
+    UNUSED_PARAM(args);
+    JSDOMWindow* castedThisObj = toJSDOMWindow(thisValue.toThisObject(exec));
+    if (!castedThisObj)
+        return throwError(exec, TypeError);
+    if (!castedThisObj->allowsAccessFrom(exec))
+        return jsUndefined();
+    DOMWindow* imp = static_cast<DOMWindow*>(castedThisObj->impl());
+
+    imp->captureEvents();
+    return jsUndefined();
+}
+
+JSValue JSC_HOST_CALL jsDOMWindowPrototypeFunctionReleaseEvents(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
+{
+    UNUSED_PARAM(args);
+    JSDOMWindow* castedThisObj = toJSDOMWindow(thisValue.toThisObject(exec));
+    if (!castedThisObj)
+        return throwError(exec, TypeError);
+    if (!castedThisObj->allowsAccessFrom(exec))
+        return jsUndefined();
+    DOMWindow* imp = static_cast<DOMWindow*>(castedThisObj->impl());
+
+    imp->releaseEvents();
+    return jsUndefined();
 }
 
 

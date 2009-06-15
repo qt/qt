@@ -30,6 +30,7 @@
 #include "Color.h"
 #include "GraphicsTypes.h"
 #include "ImageSource.h"
+#include "IntRect.h"
 #include <wtf/RefPtr.h>
 #include <wtf/PassRefPtr.h>
 #include "SharedBuffer.h"
@@ -60,6 +61,10 @@ class NativeImageSkia;
 #include <QPixmap>
 #endif
 
+#if PLATFORM(GTK)
+typedef struct _GdkPixbuf GdkPixbuf;
+#endif
+
 namespace WebCore {
 
 class TransformationMatrix;
@@ -67,8 +72,6 @@ class FloatPoint;
 class FloatRect;
 class FloatSize;
 class GraphicsContext;
-class IntRect;
-class IntSize;
 class SharedBuffer;
 class String;
 
@@ -92,7 +95,7 @@ public:
     virtual bool hasSingleSecurityOrigin() const { return false; }
 
     static Image* nullImage();
-    bool isNull() const;
+    bool isNull() const { return size().isEmpty(); }
 
     // These are only used for SVGImage right now
     virtual void setContainerSize(const IntSize&) { }
@@ -101,9 +104,9 @@ public:
     virtual bool hasRelativeHeight() const { return false; }
 
     virtual IntSize size() const = 0;
-    IntRect rect() const;
-    int width() const;
-    int height() const;
+    IntRect rect() const { return IntRect(IntPoint(), size()); }
+    int width() const { return size().width(); }
+    int height() const { return size().height(); }
 
     bool setData(PassRefPtr<SharedBuffer> data, bool allDataReceived);
     virtual bool dataChanged(bool /*allDataReceived*/) { return false; }
@@ -115,9 +118,9 @@ public:
 
     SharedBuffer* data() { return m_data.get(); }
 
-    // It may look unusual that there is no start animation call as public API.  This is because
-    // we start and stop animating lazily.  Animation begins whenever someone draws the image.  It will
-    // automatically pause once all observers no longer want to render the image anywhere.
+    // Animation begins whenever someone draws the image, so startAnimation() is not normally called.
+    // It will automatically pause once all observers no longer want to render the image anywhere.
+    virtual void startAnimation(bool /*catchUpIfNecessary*/ = true) { }
     virtual void stopAnimation() {}
     virtual void resetAnimation() {}
     
@@ -143,6 +146,10 @@ public:
     virtual bool getHBITMAPOfSize(HBITMAP, LPSIZE) { return false; }
 #endif
 
+#if PLATFORM(GTK)
+    virtual GdkPixbuf* getGdkPixbuf() { return 0; }
+#endif
+
 protected:
     Image(ImageObserver* = 0);
 
@@ -156,10 +163,8 @@ protected:
     void drawTiled(GraphicsContext*, const FloatRect& dstRect, const FloatRect& srcRect, TileRule hRule, TileRule vRule, CompositeOperator);
 
     // Supporting tiled drawing
-    virtual bool mayFillWithSolidColor() const { return false; }
+    virtual bool mayFillWithSolidColor() { return false; }
     virtual Color solidColor() const { return Color(); }
-    
-    virtual void startAnimation(bool /*catchUpIfNecessary*/ = true) { }
     
     virtual void drawPattern(GraphicsContext*, const FloatRect& srcRect, const TransformationMatrix& patternTransform,
                              const FloatPoint& phase, CompositeOperator, const FloatRect& destRect);

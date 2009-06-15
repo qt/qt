@@ -414,7 +414,7 @@ void QPainterPrivate::draw_helper(const QPainterPath &originalPath, DrawOperatio
             bool old_txinv = txinv;
             QTransform old_invMatrix = invMatrix;
             txinv = true;
-            invMatrix = state->redirectionMatrix.inverted();
+            invMatrix = QTransform();
             QPainterPath clipPath = q->clipPath();
             QRectF r = clipPath.boundingRect().intersected(absPathRect);
             absPathRect = r.toAlignedRect();

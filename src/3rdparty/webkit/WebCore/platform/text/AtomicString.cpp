@@ -101,7 +101,7 @@ static inline bool equal(StringImpl* string, const UChar* characters, unsigned l
     if (string->length() != length)
         return false;
 
-#if PLATFORM(ARM)
+#if PLATFORM(ARM) || PLATFORM(SH4)
     const UChar* stringCharacters = string->characters();
     for (unsigned i = 0; i != length; ++i) {
         if (*stringCharacters++ != *characters++)
@@ -206,7 +206,7 @@ PassRefPtr<StringImpl> AtomicString::add(const UChar* s)
 
 PassRefPtr<StringImpl> AtomicString::add(StringImpl* r)
 {
-    if (!r || r->m_inTable)
+    if (!r || r->inTable())
         return r;
 
     if (r->length() == 0)
@@ -214,7 +214,7 @@ PassRefPtr<StringImpl> AtomicString::add(StringImpl* r)
     
     StringImpl* result = *stringTable().add(r).first;
     if (result == r)
-        r->m_inTable = true;
+        r->setInTable();
     return result;
 }
 

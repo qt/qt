@@ -28,6 +28,8 @@
 #ifndef SQLTransaction_h
 #define SQLTransaction_h
 
+#if ENABLE(DATABASE)
+
 #include <wtf/Threading.h>
 
 #include "SQLiteTransaction.h"
@@ -117,7 +119,6 @@ private:
     RefPtr<SQLTransactionErrorCallback> m_errorCallback;
     RefPtr<SQLError> m_transactionError;
     bool m_shouldRetryCurrentStatement;
-    bool m_shouldCommitAfterErrorCallback;
     bool m_modifiedDatabase;
     
     Mutex m_statementMutex;
@@ -127,5 +128,7 @@ private:
 };
     
 } // namespace WebCore
+
+#endif
 
 #endif // SQLTransaction_h

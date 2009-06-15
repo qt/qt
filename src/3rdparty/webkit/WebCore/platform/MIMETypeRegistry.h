@@ -38,6 +38,8 @@ public:
     static String getMIMETypeForExtension(const String& ext);
     static Vector<String> getExtensionsForMIMEType(const String& type);
     static String getPreferredExtensionForMIMEType(const String& type);
+    static String getMediaMIMETypeForExtension(const String& ext);
+
     static String getMIMETypeForPath(const String& path);
 
     // Check to see if a mime type is suitable for being loaded inline as an
@@ -71,6 +73,8 @@ public:
     static HashSet<String>& getSupportedNonImageMIMETypes();
     static HashSet<String>& getSupportedMediaMIMETypes();
 };
+
+const String& defaultMIMEType();
 
 } // namespace WebCore
 

@@ -21,6 +21,7 @@
 #include "config.h"
 #include "ErrorPrototype.h"
 
+#include "JSFunction.h"
 #include "JSString.h"
 #include "ObjectPrototype.h"
 #include "PrototypeFunction.h"
@@ -30,7 +31,7 @@ namespace JSC {
 
 ASSERT_CLASS_FITS_IN_CELL(ErrorPrototype);
 
-static JSValuePtr errorProtoFuncToString(ExecState*, JSObject*, JSValuePtr, const ArgList&);
+static JSValue JSC_HOST_CALL errorProtoFuncToString(ExecState*, JSObject*, JSValue, const ArgList&);
 
 // ECMA 15.9.4
 ErrorPrototype::ErrorPrototype(ExecState* exec, PassRefPtr<Structure> structure, Structure* prototypeFunctionStructure)
@@ -41,24 +42,24 @@ ErrorPrototype::ErrorPrototype(ExecState* exec, PassRefPtr<Structure> structure,
     putDirectWithoutTransition(exec->propertyNames().name, jsNontrivialString(exec, "Error"), DontEnum);
     putDirectWithoutTransition(exec->propertyNames().message, jsNontrivialString(exec, "Unknown error"), DontEnum);
 
-    putDirectFunctionWithoutTransition(exec, new (exec) PrototypeFunction(exec, prototypeFunctionStructure, 0, exec->propertyNames().toString, errorProtoFuncToString), DontEnum);
+    putDirectFunctionWithoutTransition(exec, new (exec) NativeFunctionWrapper(exec, prototypeFunctionStructure, 0, exec->propertyNames().toString, errorProtoFuncToString), DontEnum);
 }
 
-JSValuePtr errorProtoFuncToString(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList&)
+JSValue JSC_HOST_CALL errorProtoFuncToString(ExecState* exec, JSObject*, JSValue thisValue, const ArgList&)
 {
-    JSObject* thisObj = thisValue->toThisObject(exec);
+    JSObject* thisObj = thisValue.toThisObject(exec);
 
     UString s = "Error";
 
-    JSValuePtr v = thisObj->get(exec, exec->propertyNames().name);
-    if (!v->isUndefined())
-        s = v->toString(exec);
+    JSValue v = thisObj->get(exec, exec->propertyNames().name);
+    if (!v.isUndefined())
+        s = v.toString(exec);
 
     v = thisObj->get(exec, exec->propertyNames().message);
-    if (!v->isUndefined()) {
+    if (!v.isUndefined()) {
         // Mozilla-compatible format.
         s += ": ";
-        s += v->toString(exec);
+        s += v.toString(exec);
     }
 
     return jsNontrivialString(exec, s);

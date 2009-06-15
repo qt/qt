@@ -135,7 +135,6 @@ void AddressBook::submitContact()
     if (name == "" || address == "") {
         QMessageBox::information(this, tr("Empty Field"),
             tr("Please enter a name and address."));
-        return;
     }
 //! [submitContact() function part1]
     if (currentMode == AddingMode) {
@@ -147,7 +146,6 @@ void AddressBook::submitContact()
         } else {
             QMessageBox::information(this, tr("Add Unsuccessful"),
                 tr("Sorry, \"%1\" is already in your address book.").arg(name));
-            return;
         }
 //! [submitContact() function part1]
 //! [submitContact() function part2]
@@ -162,7 +160,6 @@ void AddressBook::submitContact()
             } else {
                 QMessageBox::information(this, tr("Edit Unsuccessful"),
                     tr("Sorry, \"%1\" is already in your address book.").arg(name));
-                return;
             }
         } else if (oldAddress != address) {
             QMessageBox::information(this, tr("Edit Successful"),

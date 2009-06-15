@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2008 Apple Inc. All rights reseved.
+ *  Copyright (C) 2008, 2009 Apple Inc. All rights reseved.
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -21,6 +21,7 @@
 
 #include "JSDOMWindow.h"
 #include "JSDOMWindowShell.h"
+#include <runtime/PrototypeFunction.h>
 #include <wtf/AlwaysInline.h>
 
 namespace WebCore {
@@ -35,10 +36,11 @@ inline const JSDOMWindow* asJSDOMWindow(const JSC::JSGlobalObject* globalObject)
     return static_cast<const JSDOMWindow*>(globalObject);
 }
 
-JSC::JSValuePtr nonCachingStaticCloseFunctionGetter(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValuePtr nonCachingStaticBlurFunctionGetter(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValuePtr nonCachingStaticFocusFunctionGetter(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValuePtr nonCachingStaticPostMessageFunctionGetter(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+template<JSC::NativeFunction nativeFunction, int length>
+JSC::JSValue nonCachingStaticFunctionGetter(JSC::ExecState* exec, const JSC::Identifier& propertyName, const JSC::PropertySlot&)
+{
+    return new (exec) JSC::PrototypeFunction(exec, length, propertyName, nativeFunction);
+}
 
 ALWAYS_INLINE bool JSDOMWindow::customGetOwnPropertySlot(JSC::ExecState* exec, const JSC::Identifier& propertyName, JSC::PropertySlot& slot)
 {
@@ -59,7 +61,7 @@ ALWAYS_INLINE bool JSDOMWindow::customGetOwnPropertySlot(JSC::ExecState* exec, c
         }
         entry = JSDOMWindowPrototype::s_info.propHashTable(exec)->entry(exec, propertyName);
         if (entry && (entry->attributes() & JSC::Function) && entry->function() == jsDOMWindowPrototypeFunctionClose) {
-            slot.setCustom(this, nonCachingStaticCloseFunctionGetter);
+            slot.setCustom(this, nonCachingStaticFunctionGetter<jsDOMWindowPrototypeFunctionClose, 0>);
             return true;
         }
 
@@ -74,12 +76,10 @@ ALWAYS_INLINE bool JSDOMWindow::customGetOwnPropertySlot(JSC::ExecState* exec, c
     // is allowed.
     bool allowsAccess = allowsAccessFromNoErrorMessage(exec);
 
-    // Look for overrides before looking at any of our own properties.
-    if (JSGlobalObject::getOwnPropertySlot(exec, propertyName, slot)) {
-        // But ignore overrides completely if this is cross-domain access.
-        if (allowsAccess)
-            return true;
-    }
+    // Look for overrides before looking at any of our own properties, but ignore overrides completely
+    // if this is cross-domain access.
+    if (allowsAccess && JSGlobalObject::getOwnPropertySlot(exec, propertyName, slot))
+        return true;
 
     // We need this code here because otherwise JSC::Window will stop the search before we even get to the
     // prototype due to the blanket same origin (allowsAccessFrom) check at the end of getOwnPropertySlot.
@@ -90,22 +90,27 @@ ALWAYS_INLINE bool JSDOMWindow::customGetOwnPropertySlot(JSC::ExecState* exec, c
         if (entry->attributes() & JSC::Function) {
             if (entry->function() == jsDOMWindowPrototypeFunctionBlur) {
                 if (!allowsAccess) {
-                    slot.setCustom(this, nonCachingStaticBlurFunctionGetter);
+                    slot.setCustom(this, nonCachingStaticFunctionGetter<jsDOMWindowPrototypeFunctionBlur, 0>);
                     return true;
                 }
             } else if (entry->function() == jsDOMWindowPrototypeFunctionClose) {
                 if (!allowsAccess) {
-                    slot.setCustom(this, nonCachingStaticCloseFunctionGetter);
+                    slot.setCustom(this, nonCachingStaticFunctionGetter<jsDOMWindowPrototypeFunctionClose, 0>);
                     return true;
                 }
             } else if (entry->function() == jsDOMWindowPrototypeFunctionFocus) {
                 if (!allowsAccess) {
-                    slot.setCustom(this, nonCachingStaticFocusFunctionGetter);
+                    slot.setCustom(this, nonCachingStaticFunctionGetter<jsDOMWindowPrototypeFunctionFocus, 0>);
                     return true;
                 }
             } else if (entry->function() == jsDOMWindowPrototypeFunctionPostMessage) {
                 if (!allowsAccess) {
-                    slot.setCustom(this, nonCachingStaticPostMessageFunctionGetter);
+                    slot.setCustom(this, nonCachingStaticFunctionGetter<jsDOMWindowPrototypeFunctionPostMessage, 2>);
+                    return true;
+                }
+            } else if (entry->function() == jsDOMWindowPrototypeFunctionShowModalDialog) {
+                if (!DOMWindow::canShowModalDialog(impl()->frame())) {
+                    slot.setUndefined();
                     return true;
                 }
             }
@@ -123,12 +128,12 @@ ALWAYS_INLINE bool JSDOMWindow::customGetOwnPropertySlot(JSC::ExecState* exec, c
     return false;
 }
 
-inline bool JSDOMWindow::customPut(JSC::ExecState* exec, const JSC::Identifier& propertyName, JSC::JSValuePtr value, JSC::PutPropertySlot& slot)
+inline bool JSDOMWindow::customPut(JSC::ExecState* exec, const JSC::Identifier& propertyName, JSC::JSValue value, JSC::PutPropertySlot& slot)
 {
     if (!impl()->frame())
         return true;
 
-    // We have a local override (e.g. "var location"), save time and jump directly to JSGlobalObject.
+    // Optimization: access JavaScript global variables directly before involving the DOM.
     JSC::PropertySlot getSlot;
     bool slotIsWriteable;
     if (JSGlobalObject::getOwnPropertySlot(exec, propertyName, getSlot, slotIsWriteable)) {
@@ -146,8 +151,6 @@ inline bool JSDOMWindow::customPut(JSC::ExecState* exec, const JSC::Identifier& 
     return false;
 }
 
-
-
 inline bool JSDOMWindowBase::allowsAccessFrom(const JSGlobalObject* other) const
 {
     if (allowsAccessFromPrivate(other))
@@ -156,7 +159,7 @@ inline bool JSDOMWindowBase::allowsAccessFrom(const JSGlobalObject* other) const
     return false;
 }
 
-    inline bool JSDOMWindowBase::allowsAccessFrom(JSC::ExecState* exec) const
+inline bool JSDOMWindowBase::allowsAccessFrom(JSC::ExecState* exec) const
 {
     if (allowsAccessFromPrivate(exec->lexicalGlobalObject()))
         return true;
@@ -183,12 +186,6 @@ ALWAYS_INLINE bool JSDOMWindowBase::allowsAccessFromPrivate(const JSGlobalObject
     const JSDOMWindow* targetWindow = d()->shell->window();
 
     if (originWindow == targetWindow)
-        return true;
-
-    // JS may be attempting to access the "window" object, which should be valid,
-    // even if the document hasn't been constructed yet.  If the document doesn't
-    // exist yet allow JS to access the window object.
-    if (!originWindow->impl()->document())
         return true;
 
     const SecurityOrigin* originSecurityOrigin = originWindow->impl()->securityOrigin();

@@ -23,6 +23,8 @@
 #include "Debugger.h"
 
 #include "JSGlobalObject.h"
+#include "Interpreter.h"
+#include "Parser.h"
 
 namespace JSC {
 
@@ -49,6 +51,20 @@ void Debugger::detach(JSGlobalObject* globalObject)
     ASSERT(m_globalObjects.contains(globalObject));
     m_globalObjects.remove(globalObject);
     globalObject->setDebugger(0);
+}
+
+JSValue evaluateInGlobalCallFrame(const UString& script, JSValue& exception, JSGlobalObject* globalObject)
+{
+    CallFrame* globalCallFrame = globalObject->globalExec();
+
+    int errLine;
+    UString errMsg;
+    SourceCode source = makeSource(script);
+    RefPtr<EvalNode> evalNode = globalObject->globalData()->parser->parse<EvalNode>(globalCallFrame, globalObject->debugger(), source, &errLine, &errMsg);
+    if (!evalNode)
+        return Error::create(globalCallFrame, SyntaxError, errMsg, errLine, source.provider()->asID(), source.provider()->url());
+
+    return globalObject->globalData()->interpreter->execute(evalNode.get(), globalCallFrame, globalObject, globalCallFrame->scopeChain(), &exception);
 }
 
 } // namespace JSC

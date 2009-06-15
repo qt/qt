@@ -461,23 +461,35 @@ struct QGraphicsItemPrivate::TransformData {
     qreal verticalShear;
     qreal xOrigin;
     qreal yOrigin;
+    bool onlyTransform;
 
     TransformData() :
         xScale(1.0), yScale(1.0), xRotation(0.0), yRotation(0.0), zRotation(0.0),
-        horizontalShear(0.0), verticalShear(0.0), xOrigin(0.0), yOrigin(0.0)
+        horizontalShear(0.0), verticalShear(0.0), xOrigin(0.0), yOrigin(0.0),
+        onlyTransform(true)
     {}
 
-    QTransform computedFullTransform() const
+    QTransform computedFullTransform(QTransform *postmultiplyTransform = 0) const
     {
-        QTransform x;
-        x.translate(xOrigin, yOrigin);
-        x = transform * x;
+        if (onlyTransform) {
+            if (!postmultiplyTransform)
+                return transform;
+            QTransform x(transform);
+            x *= *postmultiplyTransform;
+            return x;
+        }
+
+        QTransform x(transform);
+        if (xOrigin != 0 || yOrigin != 0)
+            x *= QTransform::fromTranslate(xOrigin, yOrigin);
         x.rotate(xRotation, Qt::XAxis);
         x.rotate(yRotation, Qt::YAxis);
         x.rotate(zRotation, Qt::ZAxis);
         x.shear(horizontalShear, verticalShear);
         x.scale(xScale, yScale);
         x.translate(-xOrigin, -yOrigin);
+        if (postmultiplyTransform)
+            x *= *postmultiplyTransform;
         return x;
     }
 };

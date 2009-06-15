@@ -30,10 +30,5 @@ static const struct HashTableValue regExpConstructorTableValues[22] = {
 };
 
 extern const struct HashTable regExpConstructorTable =
-#if ENABLE(PERFECT_HASH_SIZE)
-    { 511, regExpConstructorTableValues, 0 };
-#else
     { 65, 63, regExpConstructorTableValues, 0 };
-#endif
-
 } // namespace

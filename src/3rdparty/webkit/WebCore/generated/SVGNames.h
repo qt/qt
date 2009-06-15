@@ -67,52 +67,6 @@ extern const WebCore::QualifiedName descTag;
 extern char descTagString[];
 extern const WebCore::QualifiedName ellipseTag;
 extern char ellipseTagString[];
-extern const WebCore::QualifiedName feBlendTag;
-extern char feBlendTagString[];
-extern const WebCore::QualifiedName feColorMatrixTag;
-extern char feColorMatrixTagString[];
-extern const WebCore::QualifiedName feComponentTransferTag;
-extern char feComponentTransferTagString[];
-extern const WebCore::QualifiedName feCompositeTag;
-extern char feCompositeTagString[];
-extern const WebCore::QualifiedName feDiffuseLightingTag;
-extern char feDiffuseLightingTagString[];
-extern const WebCore::QualifiedName feDisplacementMapTag;
-extern char feDisplacementMapTagString[];
-extern const WebCore::QualifiedName feDistantLightTag;
-extern char feDistantLightTagString[];
-extern const WebCore::QualifiedName feFloodTag;
-extern char feFloodTagString[];
-extern const WebCore::QualifiedName feFuncATag;
-extern char feFuncATagString[];
-extern const WebCore::QualifiedName feFuncBTag;
-extern char feFuncBTagString[];
-extern const WebCore::QualifiedName feFuncGTag;
-extern char feFuncGTagString[];
-extern const WebCore::QualifiedName feFuncRTag;
-extern char feFuncRTagString[];
-extern const WebCore::QualifiedName feGaussianBlurTag;
-extern char feGaussianBlurTagString[];
-extern const WebCore::QualifiedName feImageTag;
-extern char feImageTagString[];
-extern const WebCore::QualifiedName feMergeTag;
-extern char feMergeTagString[];
-extern const WebCore::QualifiedName feMergeNodeTag;
-extern char feMergeNodeTagString[];
-extern const WebCore::QualifiedName feOffsetTag;
-extern char feOffsetTagString[];
-extern const WebCore::QualifiedName fePointLightTag;
-extern char fePointLightTagString[];
-extern const WebCore::QualifiedName feSpecularLightingTag;
-extern char feSpecularLightingTagString[];
-extern const WebCore::QualifiedName feSpotLightTag;
-extern char feSpotLightTagString[];
-extern const WebCore::QualifiedName feTileTag;
-extern char feTileTagString[];
-extern const WebCore::QualifiedName feTurbulenceTag;
-extern char feTurbulenceTagString[];
-extern const WebCore::QualifiedName filterTag;
-extern char filterTagString[];
 extern const WebCore::QualifiedName fontTag;
 extern char fontTagString[];
 extern const WebCore::QualifiedName font_faceTag;
@@ -189,9 +143,6 @@ extern const WebCore::QualifiedName useTag;
 extern char useTagString[];
 extern const WebCore::QualifiedName viewTag;
 extern char viewTagString[];
-
-
-WebCore::QualifiedName** getSVGTags(size_t* size);
 // Attributes
 extern const WebCore::QualifiedName accent_heightAttr;
 extern char accent_heightAttrString[];
@@ -687,10 +638,10 @@ extern const WebCore::QualifiedName zAttr;
 extern char zAttrString[];
 extern const WebCore::QualifiedName zoomAndPanAttr;
 extern char zoomAndPanAttrString[];
-
-
-WebCore::QualifiedName** getSVGAttr(size_t* size);
 #endif
+
+WebCore::QualifiedName** getSVGTags(size_t* size);
+WebCore::QualifiedName** getSVGAttrs(size_t* size);
 
 void init();
 

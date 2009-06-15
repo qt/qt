@@ -2011,8 +2011,8 @@ bool QApplicationPrivate::qws_apply_settings()
     // read new QStyle
     QString stylename = settings.value(QLatin1String("style")).toString();
     if (QCoreApplication::startingUp()) {
-        if (!stylename.isEmpty() && !QApplicationPrivate::styleOverride)
-            QApplicationPrivate::styleOverride = new QString(stylename);
+        if (!stylename.isEmpty() && QApplicationPrivate::styleOverride.isNull())
+            QApplicationPrivate::styleOverride = stylename;
     } else {
         QApplication::setStyle(stylename);
     }

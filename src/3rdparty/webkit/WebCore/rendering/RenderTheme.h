@@ -29,6 +29,7 @@
 #else
 #include "ThemeTypes.h"
 #endif
+#include "ScrollTypes.h"
 
 namespace WebCore {
 
@@ -104,23 +105,21 @@ public:
     // A method asking if the theme's controls actually care about redrawing when hovered.
     virtual bool supportsHover(const RenderStyle*) const { return false; }
 
-    // The selection color.
+    // Text selection colors.
     Color activeSelectionBackgroundColor() const;
     Color inactiveSelectionBackgroundColor() const;
+    Color activeSelectionForegroundColor() const;
+    Color inactiveSelectionForegroundColor() const;
 
-    virtual Color platformTextSearchHighlightColor() const;
+    // List box selection colors
+    Color activeListBoxSelectionBackgroundColor() const;
+    Color activeListBoxSelectionForegroundColor() const;
+    Color inactiveListBoxSelectionBackgroundColor() const;
+    Color inactiveListBoxSelectionForegroundColor() const;
 
-    // The platform selection color.
-    virtual Color platformActiveSelectionBackgroundColor() const;
-    virtual Color platformInactiveSelectionBackgroundColor() const;
-    virtual Color platformActiveSelectionForegroundColor() const;
-    virtual Color platformInactiveSelectionForegroundColor() const;
-
-    // List Box selection color
-    virtual Color activeListBoxSelectionBackgroundColor() const;
-    virtual Color activeListBoxSelectionForegroundColor() const;
-    virtual Color inactiveListBoxSelectionBackgroundColor() const;
-    virtual Color inactiveListBoxSelectionForegroundColor() const;
+    // Highlighting colors for TextMatches.
+    virtual Color platformActiveTextSearchHighlightColor() const;
+    virtual Color platformInactiveTextSearchHighlightColor() const;
 
     virtual void platformColorsDidChange();
 
@@ -132,22 +131,44 @@ public:
 
     virtual int minimumMenuListSize(RenderStyle*) const { return 0; }
 
-    virtual void adjustButtonInnerStyle(RenderStyle*) const;
     virtual void adjustSliderThumbSize(RenderObject*) const;
 
     virtual int popupInternalPaddingLeft(RenderStyle*) const { return 0; }
     virtual int popupInternalPaddingRight(RenderStyle*) const { return 0; }
     virtual int popupInternalPaddingTop(RenderStyle*) const { return 0; }
     virtual int popupInternalPaddingBottom(RenderStyle*) const { return 0; }
-    
+    virtual bool popupOptionSupportsTextIndent() const { return false; }
+
+    virtual int buttonInternalPaddingLeft() const { return 0; }
+    virtual int buttonInternalPaddingRight() const { return 0; }
+    virtual int buttonInternalPaddingTop() const { return 0; }
+    virtual int buttonInternalPaddingBottom() const { return 0; }
+
+    virtual ScrollbarControlSize scrollbarControlSizeForPart(ControlPart) { return RegularScrollbar; }
+
     // Method for painting the caps lock indicator
     virtual bool paintCapsLockIndicator(RenderObject*, const RenderObject::PaintInfo&, const IntRect&) { return 0; };
 
 #if ENABLE(VIDEO)
+    // Media controls
     virtual bool hitTestMediaControlPart(RenderObject*, const IntPoint& absPoint);
 #endif
 
 protected:
+    // The platform selection color.
+    virtual Color platformActiveSelectionBackgroundColor() const;
+    virtual Color platformInactiveSelectionBackgroundColor() const;
+    virtual Color platformActiveSelectionForegroundColor() const;
+    virtual Color platformInactiveSelectionForegroundColor() const;
+
+    virtual Color platformActiveListBoxSelectionBackgroundColor() const;
+    virtual Color platformInactiveListBoxSelectionBackgroundColor() const;
+    virtual Color platformActiveListBoxSelectionForegroundColor() const;
+    virtual Color platformInactiveListBoxSelectionForegroundColor() const;
+
+    virtual bool supportsSelectionForegroundColors() const { return true; }
+    virtual bool supportsListBoxSelectionForegroundColors() const { return true; }
+
 #if !USE(NEW_THEME)
     // Methods for each appearance value.
     virtual void adjustCheckboxStyle(CSSStyleSelector*, RenderStyle*, Element*) const;
@@ -203,6 +224,9 @@ protected:
     virtual bool paintMediaSeekForwardButton(RenderObject*, const RenderObject::PaintInfo&, const IntRect&) { return true; }
     virtual bool paintMediaSliderTrack(RenderObject*, const RenderObject::PaintInfo&, const IntRect&) { return true; }
     virtual bool paintMediaSliderThumb(RenderObject*, const RenderObject::PaintInfo&, const IntRect&) { return true; }
+    virtual bool paintMediaTimelineContainer(RenderObject*, const RenderObject::PaintInfo&, const IntRect&) { return true; }
+    virtual bool paintMediaCurrentTime(RenderObject*, const RenderObject::PaintInfo&, const IntRect&) { return true; }
+    virtual bool paintMediaTimeRemaining(RenderObject*, const RenderObject::PaintInfo&, const IntRect&) { return true; }
 
 public:
     // Methods for state querying
@@ -218,8 +242,16 @@ public:
     bool isDefault(const RenderObject*) const;
 
 private:
-    mutable Color m_activeSelectionColor;
-    mutable Color m_inactiveSelectionColor;
+    mutable Color m_activeSelectionBackgroundColor;
+    mutable Color m_inactiveSelectionBackgroundColor;
+    mutable Color m_activeSelectionForegroundColor;
+    mutable Color m_inactiveSelectionForegroundColor;
+
+    mutable Color m_activeListBoxSelectionBackgroundColor;
+    mutable Color m_inactiveListBoxSelectionBackgroundColor;
+    mutable Color m_activeListBoxSelectionForegroundColor;
+    mutable Color m_inactiveListBoxSelectionForegroundColor;
+
 #if USE(NEW_THEME)
     Theme* m_theme; // The platform-specific theme.
 #endif

@@ -37,29 +37,28 @@ namespace WebCore {
     public:
         RenderSVGHiddenContainer(SVGStyledElement*);
         virtual ~RenderSVGHiddenContainer();
-        
+
         virtual bool isSVGContainer() const { return true; }
         virtual bool isSVGHiddenContainer() const { return true; }
 
         virtual const char* renderName() const { return "RenderSVGHiddenContainer"; }
-        
-        virtual bool requiresLayer();
-        
-        virtual int lineHeight(bool b, bool isRootLineBox = false) const;
-        virtual int baselinePosition(bool b, bool isRootLineBox = false) const;
-        
+
+        virtual bool requiresLayer() const { return false; }
+
         virtual void layout();
         virtual void paint(PaintInfo&, int parentX, int parentY);
         
-        virtual IntRect absoluteClippedOverflowRect();
-        virtual void absoluteRects(Vector<IntRect>& rects, int tx, int ty, bool topLevel = true);
-        virtual void absoluteQuads(Vector<FloatQuad>&, bool topLevel = true);
-        
-        virtual TransformationMatrix absoluteTransform() const;
-        virtual TransformationMatrix localTransform() const;
+        virtual IntRect clippedOverflowRectForRepaint(RenderBoxModelObject* repaintContainer);
+        virtual void absoluteRects(Vector<IntRect>& rects, int tx, int ty);
+        virtual void absoluteQuads(Vector<FloatQuad>&);
 
-        virtual FloatRect relativeBBox(bool includeStroke = true) const;
-        virtual bool nodeAtPoint(const HitTestRequest&, HitTestResult&, int x, int y, int tx, int ty, HitTestAction);
+        // FIXME: This override only exists to match existing LayoutTest results.
+        virtual TransformationMatrix absoluteTransform() const { return TransformationMatrix(); }
+
+        virtual FloatRect objectBoundingBox() const;
+        virtual FloatRect repaintRectInLocalCoordinates() const;
+
+        virtual bool nodeAtFloatPoint(const HitTestRequest&, HitTestResult&, const FloatPoint& pointInParent, HitTestAction);
     };
 }
 

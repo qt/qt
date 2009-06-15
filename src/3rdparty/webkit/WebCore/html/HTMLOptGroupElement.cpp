@@ -49,7 +49,7 @@ bool HTMLOptGroupElement::isFocusable() const
     return HTMLElement::isFocusable();
 }
 
-const AtomicString& HTMLOptGroupElement::type() const
+const AtomicString& HTMLOptGroupElement::formControlType() const
 {
     DEFINE_STATIC_LOCAL(const AtomicString, optgroup, ("optgroup"));
     return optgroup;
@@ -58,40 +58,30 @@ const AtomicString& HTMLOptGroupElement::type() const
 bool HTMLOptGroupElement::insertBefore(PassRefPtr<Node> newChild, Node* refChild, ExceptionCode& ec, bool shouldLazyAttach)
 {
     bool result = HTMLFormControlElement::insertBefore(newChild, refChild, ec, shouldLazyAttach);
-    if (result)
-        recalcSelectOptions();
     return result;
 }
 
 bool HTMLOptGroupElement::replaceChild(PassRefPtr<Node> newChild, Node* oldChild, ExceptionCode& ec, bool shouldLazyAttach)
 {
     bool result = HTMLFormControlElement::replaceChild(newChild, oldChild, ec, shouldLazyAttach);
-    if (result)
-        recalcSelectOptions();
     return result;
 }
 
 bool HTMLOptGroupElement::removeChild(Node* oldChild, ExceptionCode& ec)
 {
     bool result = HTMLFormControlElement::removeChild(oldChild, ec);
-    if (result)
-        recalcSelectOptions();
     return result;
 }
 
 bool HTMLOptGroupElement::appendChild(PassRefPtr<Node> newChild, ExceptionCode& ec, bool shouldLazyAttach)
 {
     bool result = HTMLFormControlElement::appendChild(newChild, ec, shouldLazyAttach);
-    if (result)
-        recalcSelectOptions();
     return result;
 }
 
 bool HTMLOptGroupElement::removeChildren()
 {
     bool result = HTMLFormControlElement::removeChildren();
-    if (result)
-        recalcSelectOptions();
     return result;
 }
 
@@ -157,9 +147,8 @@ RenderStyle* HTMLOptGroupElement::nonRendererRenderStyle() const
 
 String HTMLOptGroupElement::groupLabelText() const
 {
-    String itemText = getAttribute(labelAttr);
+    String itemText = document()->displayStringModifiedByEncoding(getAttribute(labelAttr));
     
-    itemText.replace('\\', document()->backslashAsCurrencySymbol());
     // In WinIE, leading and trailing whitespace is ignored in options and optgroups. We match this behavior.
     itemText = itemText.stripWhiteSpace();
     // We want to collapse our whitespace too.  This will match other browsers.

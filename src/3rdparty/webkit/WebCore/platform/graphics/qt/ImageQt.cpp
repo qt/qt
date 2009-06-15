@@ -2,6 +2,7 @@
  * Copyright (C) 2006 Dirk Mueller <mueller@kde.org>
  * Copyright (C) 2006 Zack Rusin <zack@kde.org>
  * Copyright (C) 2006 Simon Hausmann <hausmann@kde.org>
+ * Copyright (C) 2009 Torch Mobile Inc. http://www.torchmobile.com/
  *
  * All rights reserved.
  *
@@ -30,12 +31,12 @@
 #include "config.h"
 #include "Image.h"
 
+#include "ImageObserver.h"
 #include "BitmapImage.h"
 #include "FloatRect.h"
 #include "PlatformString.h"
 #include "GraphicsContext.h"
 #include "TransformationMatrix.h"
-#include "NotImplemented.h"
 #include "StillImageQt.h"
 #include "qwebsettings.h"
 
@@ -69,14 +70,16 @@ static QPixmap loadResourcePixmap(const char *name)
 
 namespace WebCore {
 
-void FrameData::clear()
+bool FrameData::clear(bool clearMetadata)
 {
+    if (clearMetadata)
+        m_haveMetadata = false;
+
     if (m_frame) {
         m_frame = 0;
-        // NOTE: We purposefully don't reset metadata here, so that even if we
-        // throw away previously-decoded data, animation loops can still access
-        // properties like frame durations without re-decoding.
+        return true;
     }
+    return false;
 }
 
 
@@ -105,7 +108,7 @@ void Image::drawPattern(GraphicsContext* ctxt, const FloatRect& tileRect, const 
     }
 
     QBrush b(pixmap);
-    b.setMatrix(patternTransform);
+    b.setTransform(patternTransform);
     ctxt->save();
     ctxt->setCompositeOperation(op);
     QPainter* p = ctxt->platformContext();
@@ -114,6 +117,9 @@ void Image::drawPattern(GraphicsContext* ctxt, const FloatRect& tileRect, const 
     p->setBrushOrigin(phase);
     p->fillRect(destRect, b);
     ctxt->restore();
+
+    if (imageObserver())
+        imageObserver()->didDraw(this);
 }
 
 void BitmapImage::initPlatformData()
@@ -156,12 +162,25 @@ void BitmapImage::draw(GraphicsContext* ctxt, const FloatRect& dst,
     painter->drawPixmap(dst, *image, src);
 
     ctxt->restore();
+
+    if (imageObserver())
+        imageObserver()->didDraw(this);
 }
 
 void BitmapImage::checkForSolidColor()
 {
-    // FIXME: It's easy to implement this optimization. Just need to check the RGBA32 buffer to see if it is 1x1.
     m_isSolidColor = false;
+    m_checkedForSolidColor = true;
+
+    if (frameCount() > 1)
+        return;
+
+    QPixmap* framePixmap = frameAtIndex(0);
+    if (!framePixmap || framePixmap->width() != 1 || framePixmap->height() != 1)
+        return;
+
+    m_isSolidColor = true;
+    m_solidColor = QColor::fromRgba(framePixmap->toImage().pixel(0, 0));
 }
 
 }

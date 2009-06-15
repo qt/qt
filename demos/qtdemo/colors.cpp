@@ -328,7 +328,7 @@ void Colors::detectSystemResources()
 #if defined(Q_WS_X11)
     // check if X render is present:
     QPixmap tmp(1, 1);
-    if (!tmp.x11PictureHandle()){
+    if (!tmp.x11PictureHandle() && tmp.paintEngine()->type() == QPaintEngine::X11){
         Colors::xRenderPresent = false;
         if (Colors::verbose)
             qDebug("- X render not present");

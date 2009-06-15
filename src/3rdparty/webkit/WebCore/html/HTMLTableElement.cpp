@@ -31,9 +31,10 @@
 #include "ExceptionCode.h"
 #include "HTMLNames.h"
 #include "HTMLTableCaptionElement.h"
-#include "HTMLTableRowsCollection.h"
 #include "HTMLTableRowElement.h"
+#include "HTMLTableRowsCollection.h"
 #include "HTMLTableSectionElement.h"
+#include "MappedAttribute.h"
 #include "RenderTable.h"
 #include "Text.h"
 
@@ -310,7 +311,7 @@ static bool setTableCellsChanged(Node* n)
     }
 
     if (cellChanged)
-       n->setChanged();
+       n->setNeedsStyleRecalc();
 
     return cellChanged;
 }
@@ -455,7 +456,7 @@ void HTMLTableElement::parseMappedAttribute(MappedAttribute* attr)
         for (Node* child = firstChild(); child; child = child->nextSibling())
             cellChanged |= setTableCellsChanged(child);
         if (cellChanged)
-            setChanged();
+            setNeedsStyleRecalc();
     }
 }
 
@@ -655,7 +656,7 @@ PassRefPtr<HTMLCollection> HTMLTableElement::rows()
 
 PassRefPtr<HTMLCollection> HTMLTableElement::tBodies()
 {
-    return HTMLCollection::create(this, HTMLCollection::TableTBodies);
+    return HTMLCollection::create(this, TableTBodies);
 }
 
 String HTMLTableElement::align() const

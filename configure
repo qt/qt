@@ -2105,8 +2105,9 @@ fi
 
 # symlink files from src/gui/embedded neccessary to build qvfb
 if [ "$CFG_DEV" = "yes" ]; then
+    mkdir -p "$outpath/tools/qvfb"
     for f in qvfbhdr.h qlock_p.h qlock.cpp qwssignalhandler_p.h qwssignalhandler.cpp; do
-	dest="${relpath}/tools/qvfb/${f}"
+	dest="${outpath}/tools/qvfb/${f}"
 	rm -f "$dest"
 	ln -s "${relpath}/src/gui/embedded/${f}" "${dest}"
     done

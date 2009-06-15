@@ -42,16 +42,7 @@
 #include "qscriptenginedebugger.h"
 #include "qscriptdebugger_p.h"
 #include "qscriptenginedebuggerfrontend_p.h"
-#include "qscriptdebuggerconsolewidget_p.h"
-#include "qscriptdebuggerstackwidget_p.h"
-#include "qscriptdebuggerscriptswidget_p.h"
-#include "qscriptdebuggerlocalswidget_p.h"
-#include "qscriptdebuggercodewidget_p.h"
-#include "qscriptdebuggercodefinderwidget_p.h"
-#include "qscriptbreakpointswidget_p.h"
-#include "qscriptdebugoutputwidget_p.h"
-#include "qscripterrorlogwidget_p.h"
-#include "qscriptdebuggerwidgetfactoryinterface_p.h"
+#include "qscriptdebuggerstandardwidgetfactory_p.h"
 #include <private/qobject_p.h>
 
 #include <QtCore/qsettings.h>
@@ -238,18 +229,12 @@ public:
 */
 
 class QScriptEngineDebuggerPrivate
-    : public QObjectPrivate,
-      public QScriptDebuggerWidgetFactoryInterface
+    : public QObjectPrivate
 {
     Q_DECLARE_PUBLIC(QScriptEngineDebugger)
 public:
     QScriptEngineDebuggerPrivate();
     ~QScriptEngineDebuggerPrivate();
-
-    QScriptDebugOutputWidgetInterface *createDebugOutputWidget();
-    QScriptDebuggerConsoleWidgetInterface *createConsoleWidget();
-    QScriptErrorLogWidgetInterface *createErrorLogWidget();
-    QScriptDebuggerCodeFinderWidgetInterface *createCodeFinderWidget();
 
     // private slots
     void _q_showStandardWindow();
@@ -320,26 +305,6 @@ QScriptEngineDebuggerPrivate::~QScriptEngineDebuggerPrivate()
     }
 }
 
-QScriptDebugOutputWidgetInterface *QScriptEngineDebuggerPrivate::createDebugOutputWidget()
-{
-    return new QScriptDebugOutputWidget();
-}
-
-QScriptDebuggerConsoleWidgetInterface *QScriptEngineDebuggerPrivate::createConsoleWidget()
-{
-    return new QScriptDebuggerConsoleWidget();
-}
-
-QScriptErrorLogWidgetInterface *QScriptEngineDebuggerPrivate::createErrorLogWidget()
-{
-    return new QScriptErrorLogWidget();
-}
-
-QScriptDebuggerCodeFinderWidgetInterface *QScriptEngineDebuggerPrivate::createCodeFinderWidget()
-{
-    return new QScriptDebuggerCodeFinderWidget();
-}
-
 void QScriptEngineDebuggerPrivate::_q_showStandardWindow()
 {
     Q_Q(QScriptEngineDebugger);
@@ -352,7 +317,7 @@ void QScriptEngineDebuggerPrivate::createDebugger()
     Q_Q(QScriptEngineDebugger);
     if (!debugger) {
         debugger = new QScriptDebugger();
-        debugger->setWidgetFactory(this);
+        debugger->setWidgetFactory(new QScriptDebuggerStandardWidgetFactory(q));
         QObject::connect(debugger, SIGNAL(started()),
                          q, SIGNAL(evaluationResumed()));
         QObject::connect(debugger, SIGNAL(stopped()),
@@ -447,81 +412,7 @@ QWidget *QScriptEngineDebugger::widget(DebuggerWidget widget) const
 {
     Q_D(const QScriptEngineDebugger);
     const_cast<QScriptEngineDebuggerPrivate*>(d)->createDebugger();
-    switch (widget) {
-    case ConsoleWidget: {
-        QScriptDebuggerConsoleWidgetInterface *w = d->debugger->consoleWidget();
-        if (!w) {
-            w = new QScriptDebuggerConsoleWidget();
-            d->debugger->setConsoleWidget(w);
-        }
-        return w;
-    }
-    case StackWidget: {
-        QScriptDebuggerStackWidgetInterface *w = d->debugger->stackWidget();
-        if (!w) {
-            w = new QScriptDebuggerStackWidget();
-            d->debugger->setStackWidget(w);
-        }
-        return w;
-    }
-    case ScriptsWidget: {
-        QScriptDebuggerScriptsWidgetInterface *w = d->debugger->scriptsWidget();
-        if (!w) {
-            w = new QScriptDebuggerScriptsWidget();
-            d->debugger->setScriptsWidget(w);
-        }
-        return w;
-    }
-    case LocalsWidget: {
-        QScriptDebuggerLocalsWidgetInterface *w = d->debugger->localsWidget();
-        if (!w) {
-            w = new QScriptDebuggerLocalsWidget();
-            d->debugger->setLocalsWidget(w);
-        }
-        return w;
-    }
-    case CodeWidget: {
-        QScriptDebuggerCodeWidgetInterface *w = d->debugger->codeWidget();
-        if (!w) {
-            w = new QScriptDebuggerCodeWidget();
-            d->debugger->setCodeWidget(w);
-        }
-        return w;
-    }
-    case CodeFinderWidget: {
-        QScriptDebuggerCodeFinderWidgetInterface *w = d->debugger->codeFinderWidget();
-        if (!w) {
-            w = new QScriptDebuggerCodeFinderWidget();
-            d->debugger->setCodeFinderWidget(w);
-        }
-        return w;
-    }
-    case BreakpointsWidget: {
-        QScriptBreakpointsWidgetInterface *w = d->debugger->breakpointsWidget();
-        if (!w) {
-            w = new QScriptBreakpointsWidget();
-            d->debugger->setBreakpointsWidget(w);
-        }
-        return w;
-    }
-    case DebugOutputWidget: {
-        QScriptDebugOutputWidgetInterface *w = d->debugger->debugOutputWidget();
-        if (!w) {
-            w = new QScriptDebugOutputWidget();
-            d->debugger->setDebugOutputWidget(w);
-        }
-        return w;
-    }
-    case ErrorLogWidget: {
-        QScriptErrorLogWidgetInterface *w = d->debugger->errorLogWidget();
-        if (!w) {
-            w = new QScriptErrorLogWidget();
-            d->debugger->setErrorLogWidget(w);
-        }
-        return w;
-    }
-    }
-    return 0;
+    return d->debugger->widget(static_cast<QScriptDebugger::DebuggerWidget>(widget));
 }
 
 /*!
@@ -545,39 +436,7 @@ QAction *QScriptEngineDebugger::action(DebuggerAction action) const
     Q_D(const QScriptEngineDebugger);
     QScriptEngineDebugger *that = const_cast<QScriptEngineDebugger*>(this);
     that->d_func()->createDebugger();
-    switch (action) {
-    case InterruptAction:
-        return d->debugger->interruptAction(that);
-    case ContinueAction:
-        return d->debugger->continueAction(that);
-    case StepIntoAction:
-        return d->debugger->stepIntoAction(that);
-    case StepOverAction:
-        return d->debugger->stepOverAction(that);
-    case StepOutAction:
-        return d->debugger->stepOutAction(that);
-    case RunToCursorAction:
-        return d->debugger->runToCursorAction(that);
-    case RunToNewScriptAction:
-        return d->debugger->runToNewScriptAction(that);
-    case ToggleBreakpointAction:
-        return d->debugger->toggleBreakpointAction(that);
-    case ClearDebugOutputAction:
-        return d->debugger->clearDebugOutputAction(that);
-    case ClearErrorLogAction:
-        return d->debugger->clearErrorLogAction(that);
-    case ClearConsoleAction:
-        return d->debugger->clearConsoleAction(that);
-    case FindInScriptAction:
-        return d->debugger->findInScriptAction(that);
-    case FindNextInScriptAction:
-        return d->debugger->findNextInScriptAction(that);
-    case FindPreviousInScriptAction:
-        return d->debugger->findPreviousInScriptAction(that);
-    case GoToLineAction:
-        return d->debugger->goToLineAction(that);
-    }
-    return 0;
+    return d->debugger->action(static_cast<QScriptDebugger::DebuggerAction>(action), that);
 }
 
 /*!

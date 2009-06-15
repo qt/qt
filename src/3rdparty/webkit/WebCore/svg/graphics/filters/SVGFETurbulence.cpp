@@ -21,9 +21,10 @@
 
 #include "config.h"
 
-#if ENABLE(SVG) && ENABLE(SVG_FILTERS)
+#if ENABLE(SVG) && ENABLE(FILTERS)
 #include "SVGFETurbulence.h"
 #include "SVGRenderTreeAsText.h"
+#include "Filter.h"
 
 namespace WebCore {
 
@@ -105,7 +106,7 @@ void FETurbulence::setStitchTiles(bool stitch)
     m_stitchTiles = stitch;
 }
 
-void FETurbulence::apply()
+void FETurbulence::apply(Filter*)
 {
 }
 
@@ -142,4 +143,4 @@ TextStream& FETurbulence::externalRepresentation(TextStream& ts) const
 
 } // namespace WebCore
 
-#endif // ENABLE(SVG) && ENABLE(SVG_FILTERS)
+#endif // ENABLE(SVG) && ENABLE(FILTERS)

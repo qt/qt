@@ -37,8 +37,9 @@
 #include "PlatformString.h"
 #include "StrokeStyleApplier.h"
 #include <QPainterPath>
-#include <QMatrix>
+#include <QTransform>
 #include <QString>
+#include <wtf/OwnPtr.h>
 
 #define _USE_MATH_DEFINES
 #include <math.h>
@@ -85,9 +86,31 @@ bool Path::contains(const FloatPoint& point, WindRule rule) const
     return contains;
 }
 
+bool Path::strokeContains(StrokeStyleApplier* applier, const FloatPoint& point) const
+{
+    ASSERT(applier);
+
+    // FIXME: We should try to use a 'shared Context' instead of creating a new ImageBuffer
+    // on each call.
+    OwnPtr<ImageBuffer> scratchImage = ImageBuffer::create(IntSize(1, 1), false);
+    GraphicsContext* gc = scratchImage->context();
+    QPainterPathStroker stroke;
+    applier->strokeStyle(gc);
+
+    QPen pen = gc->pen();
+    stroke.setWidth(pen.widthF());
+    stroke.setCapStyle(pen.capStyle());
+    stroke.setJoinStyle(pen.joinStyle());
+    stroke.setMiterLimit(pen.miterLimit());
+    stroke.setDashPattern(pen.dashPattern());
+    stroke.setDashOffset(pen.dashOffset());
+
+    return (stroke.createStroke(*platformPath())).contains(point);
+}
+
 void Path::translate(const FloatSize& size)
 {
-    QMatrix matrix;
+    QTransform matrix;
     matrix.translate(size.width(), size.height());
     *m_path = (*m_path) * matrix;
 }
@@ -101,7 +124,7 @@ FloatRect Path::strokeBoundingRect(StrokeStyleApplier* applier)
 {
     // FIXME: We should try to use a 'shared Context' instead of creating a new ImageBuffer
     // on each call.
-    std::auto_ptr<ImageBuffer> scratchImage = ImageBuffer::create(IntSize(1, 1), false);
+    OwnPtr<ImageBuffer> scratchImage = ImageBuffer::create(IntSize(1, 1), false);
     GraphicsContext* gc = scratchImage->context();
     QPainterPathStroker stroke;
     if (applier) {
@@ -286,10 +309,10 @@ String Path::debugString() const
 
         switch (cur.type) {
             case QPainterPath::MoveToElement:
-                ret += QString::fromLatin1("M %1 %2").arg(cur.x).arg(cur.y);
+                ret += QString(QLatin1String("M %1 %2")).arg(cur.x).arg(cur.y);
                 break;
             case QPainterPath::LineToElement:
-                ret += QString::fromLatin1("L %1 %2").arg(cur.x).arg(cur.y);
+                ret += QString(QLatin1String("L %1 %2")).arg(cur.x).arg(cur.y);
                 break;
             case QPainterPath::CurveToElement:
             {
@@ -299,7 +322,7 @@ String Path::debugString() const
                 Q_ASSERT(c1.type == QPainterPath::CurveToDataElement);
                 Q_ASSERT(c2.type == QPainterPath::CurveToDataElement);
 
-                ret += QString::fromLatin1("C %1 %2 %3 %4 %5 %6").arg(cur.x).arg(cur.y).arg(c1.x).arg(c1.y).arg(c2.x).arg(c2.y);
+                ret += QString(QLatin1String("C %1 %2 %3 %4 %5 %6")).arg(cur.x).arg(cur.y).arg(c1.x).arg(c1.y).arg(c2.x).arg(c2.y);
 
                 i += 2;
                 break;
@@ -358,7 +381,7 @@ void Path::apply(void* info, PathApplierFunction function) const
 void Path::transform(const TransformationMatrix& transform)
 {
     if (m_path) {
-        QMatrix mat = transform;
+        QTransform mat = transform;
         QPainterPath temp = mat.map(*m_path);
         delete m_path;
         m_path = new QPainterPath(temp);

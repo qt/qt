@@ -34,32 +34,33 @@ class JSStyleSheet : public DOMObject {
 public:
     JSStyleSheet(PassRefPtr<JSC::Structure>, PassRefPtr<StyleSheet>);
     virtual ~JSStyleSheet();
-    static JSC::JSObject* createPrototype(JSC::ExecState*);
+    static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
-    virtual void put(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::JSValuePtr, JSC::PutPropertySlot&);
+    virtual void put(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::JSValue, JSC::PutPropertySlot&);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
     static const JSC::ClassInfo s_info;
 
-    static PassRefPtr<JSC::Structure> createStructure(JSC::JSValuePtr prototype)
+    static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
     {
         return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType));
     }
 
     virtual void mark();
 
-    static JSC::JSValuePtr getConstructor(JSC::ExecState*);
+    static JSC::JSValue getConstructor(JSC::ExecState*);
     StyleSheet* impl() const { return m_impl.get(); }
 
 private:
     RefPtr<StyleSheet> m_impl;
 };
 
-JSC::JSValuePtr toJS(JSC::ExecState*, StyleSheet*);
-StyleSheet* toStyleSheet(JSC::JSValuePtr);
+JSC::JSValue toJS(JSC::ExecState*, StyleSheet*);
+StyleSheet* toStyleSheet(JSC::JSValue);
 
 class JSStyleSheetPrototype : public JSC::JSObject {
+    typedef JSC::JSObject Base;
 public:
-    static JSC::JSObject* self(JSC::ExecState*);
+    static JSC::JSObject* self(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
     static const JSC::ClassInfo s_info;
     JSStyleSheetPrototype(PassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
@@ -67,15 +68,15 @@ public:
 
 // Attributes
 
-JSC::JSValuePtr jsStyleSheetType(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValuePtr jsStyleSheetDisabled(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-void setJSStyleSheetDisabled(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr);
-JSC::JSValuePtr jsStyleSheetOwnerNode(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValuePtr jsStyleSheetParentStyleSheet(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValuePtr jsStyleSheetHref(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValuePtr jsStyleSheetTitle(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValuePtr jsStyleSheetMedia(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValuePtr jsStyleSheetConstructor(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsStyleSheetType(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsStyleSheetDisabled(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSStyleSheetDisabled(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsStyleSheetOwnerNode(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsStyleSheetParentStyleSheet(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsStyleSheetHref(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsStyleSheetTitle(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsStyleSheetMedia(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsStyleSheetConstructor(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
 
 } // namespace WebCore
 

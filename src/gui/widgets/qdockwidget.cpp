@@ -1053,7 +1053,7 @@ void QDockWidgetPrivate::setWindowState(bool floating, bool unplug, const QRect 
 
     if (floating != wasFloating) {
         emit q->topLevelChanged(floating);
-        if (!floating && q->parentWidget()) {
+        if (!floating && parent) {
             QMainWindowLayout *mwlayout = qobject_cast<QMainWindowLayout *>(q->parentWidget()->layout());
             if (mwlayout)
                 emit q->dockLocationChanged(mwlayout->dockWidgetArea(q));

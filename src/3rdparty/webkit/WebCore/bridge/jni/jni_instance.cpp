@@ -80,7 +80,7 @@ Class *JavaInstance::getClass() const
     return _class;
 }
 
-JSValuePtr JavaInstance::stringValue(ExecState* exec) const
+JSValue JavaInstance::stringValue(ExecState* exec) const
 {
     JSLock lock(false);
     
@@ -92,23 +92,23 @@ JSValuePtr JavaInstance::stringValue(ExecState* exec) const
     return jsString(exec, u);
 }
 
-JSValuePtr JavaInstance::numberValue(ExecState* exec) const
+JSValue JavaInstance::numberValue(ExecState* exec) const
 {
     jdouble doubleValue = callJNIMethod<jdouble>(_instance->_instance, "doubleValue", "()D");
     return jsNumber(exec, doubleValue);
 }
 
-JSValuePtr JavaInstance::booleanValue() const
+JSValue JavaInstance::booleanValue() const
 {
     jboolean booleanValue = callJNIMethod<jboolean>(_instance->_instance, "booleanValue", "()Z");
     return jsBoolean(booleanValue);
 }
 
-JSValuePtr JavaInstance::invokeMethod (ExecState *exec, const MethodList &methodList, const ArgList &args)
+JSValue JavaInstance::invokeMethod (ExecState *exec, const MethodList &methodList, const ArgList &args)
 {
     int i, count = args.size();
     jvalue *jArgs;
-    JSValuePtr resultValue;
+    JSValue resultValue;
     Method *method = 0;
     size_t numMethods = methodList.size();
     
@@ -131,7 +131,7 @@ JSValuePtr JavaInstance::invokeMethod (ExecState *exec, const MethodList &method
     }
     
     const JavaMethod *jMethod = static_cast<const JavaMethod*>(method);
-    JS_LOG ("call %s %s on %p\n", method->name(), jMethod->signature(), _instance->_instance);
+    JS_LOG ("call %s %s on %p\n", UString(jMethod->name()).UTF8String().c_str(), jMethod->signature(), _instance->_instance);
     
     if (count > 0) {
         jArgs = (jvalue *)malloc (count * sizeof(jvalue));
@@ -141,8 +141,8 @@ JSValuePtr JavaInstance::invokeMethod (ExecState *exec, const MethodList &method
         
     for (i = 0; i < count; i++) {
         JavaParameter* aParameter = jMethod->parameterAt(i);
-        jArgs[i] = convertValueToJValue(exec, args.at(exec, i), aParameter->getJNIType(), aParameter->type());
-        JS_LOG("arg[%d] = %s\n", i, args.at(exec, i)->toString(exec).ascii());
+        jArgs[i] = convertValueToJValue(exec, args.at(i), aParameter->getJNIType(), aParameter->type());
+        JS_LOG("arg[%d] = %s\n", i, args.at(i).toString(exec).ascii());
     }
         
     jvalue result;
@@ -157,11 +157,11 @@ JSValuePtr JavaInstance::invokeMethod (ExecState *exec, const MethodList &method
     bool handled = false;
     if (rootObject->nativeHandle()) {
         jobject obj = _instance->_instance;
-        JSValuePtr exceptionDescription = noValue();
+        JSValue exceptionDescription;
         const char *callingURL = 0;  // FIXME, need to propagate calling URL to Java
         handled = dispatchJNICall(exec, rootObject->nativeHandle(), obj, jMethod->isStatic(), jMethod->JNIReturnType(), jMethod->methodID(obj), jArgs, result, callingURL, exceptionDescription);
         if (exceptionDescription) {
-            throwError(exec, GeneralError, exceptionDescription->toString(exec));
+            throwError(exec, GeneralError, exceptionDescription.toString(exec));
             free (jArgs);
             return jsUndefined();
         }
@@ -222,7 +222,7 @@ JSValuePtr JavaInstance::invokeMethod (ExecState *exec, const MethodList &method
                     resultValue = JavaArray::convertJObjectToArray(exec, result.l, arrayType, rootObject);
                 }
                 else {
-                    resultValue = Instance::createRuntimeObject(exec, JavaInstance::create(result.l, rootObject));
+                    resultValue = JavaInstance::create(result.l, rootObject)->createRuntimeObject(exec);
                 }
             }
             else {
@@ -283,7 +283,7 @@ JSValuePtr JavaInstance::invokeMethod (ExecState *exec, const MethodList &method
     return resultValue;
 }
 
-JSValuePtr JavaInstance::defaultValue(ExecState* exec, PreferredPrimitiveType hint) const
+JSValue JavaInstance::defaultValue(ExecState* exec, PreferredPrimitiveType hint) const
 {
     if (hint == PreferString)
         return stringValue(exec);
@@ -299,7 +299,7 @@ JSValuePtr JavaInstance::defaultValue(ExecState* exec, PreferredPrimitiveType hi
     return valueOf(exec);
 }
 
-JSValuePtr JavaInstance::valueOf(ExecState* exec) const 
+JSValue JavaInstance::valueOf(ExecState* exec) const 
 {
     return stringValue(exec);
 }

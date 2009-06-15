@@ -111,7 +111,8 @@ SOURCES += \
     $$PWD/qscriptbreakpointswidget.cpp \
     $$PWD/qscriptbreakpointsmodel.cpp \
     $$PWD/qscripterrorlogwidgetinterface.cpp \
-    $$PWD/qscripterrorlogwidget.cpp
+    $$PWD/qscripterrorlogwidget.cpp \
+    $$PWD/qscriptdebuggerstandardwidgetfactory.cpp
 
 HEADERS += \
     $$PWD/qscriptdebuggerconsolewidgetinterface_p_p.h \
@@ -148,7 +149,8 @@ HEADERS += \
     $$PWD/qscripterrorlogwidgetinterface_p_p.h \
     $$PWD/qscripterrorlogwidgetinterface_p.h \
     $$PWD/qscripterrorlogwidget_p.h \
-    $$PWD/qscriptdebuggerwidgetfactoryinterface_p.h
+    $$PWD/qscriptdebuggerwidgetfactoryinterface_p.h \
+    $$PWD/qscriptdebuggerstandardwidgetfactory_p.h
 
 SOURCES += \
     $$PWD/qscriptenginedebugger.cpp

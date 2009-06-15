@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008 Apple Inc. All rights reserved.
+ * Copyright (C) 2008, 2009 Apple Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -41,7 +41,7 @@ namespace JSC {
 
     class EvalCodeCache {
     public:
-        PassRefPtr<EvalNode> get(ExecState* exec, const UString& evalSource, ScopeChainNode* scopeChain, JSValuePtr& exceptionValue)
+        PassRefPtr<EvalNode> get(ExecState* exec, const UString& evalSource, ScopeChainNode* scopeChain, JSValue& exceptionValue)
         {
             RefPtr<EvalNode> evalNode;
 
@@ -68,11 +68,18 @@ namespace JSC {
 
         bool isEmpty() const { return m_cacheMap.isEmpty(); }
 
+        void mark()
+        {
+            EvalCacheMap::iterator end = m_cacheMap.end();
+            for (EvalCacheMap::iterator ptr = m_cacheMap.begin(); ptr != end; ++ptr)
+                ptr->second->mark();
+        }
     private:
         static const int maxCacheableSourceLength = 256;
         static const int maxCacheEntries = 64;
 
-        HashMap<RefPtr<UString::Rep>, RefPtr<EvalNode> > m_cacheMap;
+        typedef HashMap<RefPtr<UString::Rep>, RefPtr<EvalNode> > EvalCacheMap;
+        EvalCacheMap m_cacheMap;
     };
 
 } // namespace JSC

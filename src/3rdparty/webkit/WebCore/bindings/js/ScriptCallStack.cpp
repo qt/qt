@@ -50,18 +50,18 @@ ScriptCallStack::ScriptCallStack(ExecState* exec, const ArgList& args, unsigned 
     int signedLineNumber;
     intptr_t sourceID;
     UString urlString;
-    JSValuePtr function;
+    JSValue function;
 
     exec->interpreter()->retrieveLastCaller(exec, signedLineNumber, sourceID, urlString, function);
 
     if (function) {
         m_caller = asInternalFunction(function);
         unsigned lineNumber = signedLineNumber >= 0 ? signedLineNumber : 0;
-        m_frames.append(ScriptCallFrame(m_caller->name(&m_exec->globalData()), urlString, lineNumber, exec, args, skipArgumentCount));
+        m_frames.append(ScriptCallFrame(m_caller->name(&m_exec->globalData()), urlString, lineNumber, args, skipArgumentCount));
     } else {
         // Caller is unknown, but we should still add the frame, because
         // something called us, and gave us arguments.
-        m_frames.append(ScriptCallFrame(UString(), UString(), 0, exec, args, skipArgumentCount));
+        m_frames.append(ScriptCallFrame(UString(), UString(), 0, args, skipArgumentCount));
     }
 }
 
@@ -90,11 +90,11 @@ void ScriptCallStack::initialize()
     if (!m_caller || m_initialized)
         return;
 
-    JSValuePtr func = m_exec->interpreter()->retrieveCaller(m_exec, m_caller);
-    while (!func->isNull()) {
+    JSValue func = m_exec->interpreter()->retrieveCaller(m_exec, m_caller);
+    while (!func.isNull()) {
         InternalFunction* internalFunction = asInternalFunction(func);
         ArgList emptyArgList;
-        m_frames.append(ScriptCallFrame(internalFunction->name(&m_exec->globalData()), UString(), 0, 0, emptyArgList, 0));
+        m_frames.append(ScriptCallFrame(internalFunction->name(&m_exec->globalData()), UString(), 0, emptyArgList, 0));
         func = m_exec->interpreter()->retrieveCaller(m_exec, internalFunction);
     }
     m_initialized = true;

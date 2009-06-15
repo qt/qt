@@ -32,13 +32,14 @@
 #include "HTMLFormElement.h"
 #include "HTMLImageLoader.h"
 #include "HTMLNames.h"
+#include "ScriptEventListener.h"
 #include "MIMETypeRegistry.h"
+#include "MappedAttribute.h"
 #include "RenderImage.h"
 #include "RenderPartObject.h"
 #include "RenderWidget.h"
 #include "ScriptController.h"
 #include "Text.h"
-
 
 namespace WebCore {
 
@@ -94,7 +95,7 @@ void HTMLObjectElement::parseMappedAttribute(MappedAttribute *attr)
         if (renderer())
           m_needWidgetUpdate = true;
     } else if (attr->name() == onloadAttr) {
-        setInlineEventListenerForTypeAndAttribute(eventNames().loadEvent, attr);
+        setAttributeEventListener(eventNames().loadEvent, createAttributeEventListener(this, attr));
     } else if (attr->name() == nameAttr) {
         const AtomicString& newName = attr->value();
         if (isDocNamedItem() && inDocument() && document()->isHTMLDocument()) {
@@ -119,14 +120,15 @@ void HTMLObjectElement::parseMappedAttribute(MappedAttribute *attr)
 
 bool HTMLObjectElement::rendererIsNeeded(RenderStyle* style)
 {
-    if (m_useFallbackContent || isImageType())
-        return HTMLPlugInElement::rendererIsNeeded(style);
-
     Frame* frame = document()->frame();
     if (!frame)
         return false;
     
-    return true;
+    // Temporary Workaround for Gears plugin - see bug 24215 for details and bug 24346 to track removal.
+    // Gears expects the plugin to be instantiated even if display:none is set
+    // for the object element.
+    bool isGearsPlugin = equalIgnoringCase(getAttribute(typeAttr), "application/x-googlegears");
+    return isGearsPlugin || HTMLPlugInElement::rendererIsNeeded(style);
 }
 
 RenderObject *HTMLObjectElement::createRenderer(RenderArena* arena, RenderStyle* style)
@@ -156,13 +158,13 @@ void HTMLObjectElement::attach()
             return;
 
         if (renderer())
-            static_cast<RenderImage*>(renderer())->setCachedImage(m_imageLoader->image());
+            toRenderImage(renderer())->setCachedImage(m_imageLoader->image());
     }
 }
 
 void HTMLObjectElement::updateWidget()
 {
-    document()->updateRendering();
+    document()->updateStyleIfNeeded();
     if (m_needWidgetUpdate && renderer() && !m_useFallbackContent && !isImageType())
         static_cast<RenderPartObject*>(renderer())->updateWidget(true);
 }
@@ -173,7 +175,7 @@ void HTMLObjectElement::finishParsingChildren()
     if (!m_useFallbackContent) {
         m_needWidgetUpdate = true;
         if (inDocument())
-            setChanged();
+            setNeedsStyleRecalc();
     }
 }
 
@@ -221,7 +223,7 @@ void HTMLObjectElement::childrenChanged(bool changedByParser, Node* beforeChange
     updateDocNamedItem();
     if (inDocument() && !m_useFallbackContent) {
         m_needWidgetUpdate = true;
-        setChanged();
+        setNeedsStyleRecalc();
     }
     HTMLPlugInElement::childrenChanged(changedByParser, beforeChange, afterChange, childCountDelta);
 }
