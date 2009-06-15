@@ -446,7 +446,7 @@ static QVariant qGetIntData(SQLHANDLE hStmt, int column, bool isSigned = true)
 static QVariant qGetDoubleData(SQLHANDLE hStmt, int column)
 {
     SQLDOUBLE dblbuf;
-    SQLINTEGER lengthIndicator = 0;
+    QSQLLEN lengthIndicator = 0;
     SQLRETURN r = SQLGetData(hStmt,
                               column+1,
                               SQL_C_DOUBLE,
