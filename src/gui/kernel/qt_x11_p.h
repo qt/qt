@@ -506,8 +506,6 @@ struct QX11Data
     int fc_hint_style;
 
     char *startupId;
-    char *originalStartupId;
-    char *startupIdString;
 
     DesktopEnvironment desktopEnvironment;
 
