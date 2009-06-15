@@ -34,29 +34,30 @@ class JSFile : public DOMObject {
 public:
     JSFile(PassRefPtr<JSC::Structure>, PassRefPtr<File>);
     virtual ~JSFile();
-    static JSC::JSObject* createPrototype(JSC::ExecState*);
+    static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
     static const JSC::ClassInfo s_info;
 
-    static PassRefPtr<JSC::Structure> createStructure(JSC::JSValuePtr prototype)
+    static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
     {
         return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType));
     }
 
-    static JSC::JSValuePtr getConstructor(JSC::ExecState*);
+    static JSC::JSValue getConstructor(JSC::ExecState*);
     File* impl() const { return m_impl.get(); }
 
 private:
     RefPtr<File> m_impl;
 };
 
-JSC::JSValuePtr toJS(JSC::ExecState*, File*);
-File* toFile(JSC::JSValuePtr);
+JSC::JSValue toJS(JSC::ExecState*, File*);
+File* toFile(JSC::JSValue);
 
 class JSFilePrototype : public JSC::JSObject {
+    typedef JSC::JSObject Base;
 public:
-    static JSC::JSObject* self(JSC::ExecState*);
+    static JSC::JSObject* self(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
     static const JSC::ClassInfo s_info;
     JSFilePrototype(PassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
@@ -64,9 +65,9 @@ public:
 
 // Attributes
 
-JSC::JSValuePtr jsFileFileName(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValuePtr jsFileFileSize(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValuePtr jsFileConstructor(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsFileFileName(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsFileFileSize(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsFileConstructor(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
 
 } // namespace WebCore
 

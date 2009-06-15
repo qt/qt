@@ -28,8 +28,8 @@ namespace WebCore {
 
     class JSOptionConstructor : public DOMObject {
     public:
-        JSOptionConstructor(JSC::ExecState*, ScriptExecutionContext*);
-        Document* document() const { return m_document->impl(); }
+        JSOptionConstructor(JSC::ExecState*, JSDOMGlobalObject*);
+        Document* document() const;
 
         static const JSC::ClassInfo s_info;
         
@@ -38,7 +38,7 @@ namespace WebCore {
         virtual JSC::ConstructType getConstructData(JSC::ConstructData&);
         virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
 
-        JSDocument* m_document;
+        JSDOMGlobalObject* m_globalObject;
     };
 
 } // namespace WebCore

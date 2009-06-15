@@ -23,6 +23,7 @@
 */
 
 #include "config.h"
+
 #if ENABLE(SVG_ANIMATION)
 #include "SVGAnimationElement.h"
 
@@ -34,6 +35,7 @@
 #include "EventListener.h"
 #include "FloatConversion.h"
 #include "HTMLNames.h"
+#include "MappedAttribute.h"
 #include "SVGElementInstance.h"
 #include "SVGNames.h"
 #include "SVGURIReference.h"
@@ -321,7 +323,7 @@ void SVGAnimationElement::setTargetAttributeAnimatedValue(const String& value)
             shadowTreeElement->style()->setProperty(attributeName, value, "", ec);
         else
             shadowTreeElement->setAttribute(attributeName, value, ec);
-        (*it)->correspondingUseElement()->setChanged();
+        (*it)->correspondingUseElement()->setNeedsStyleRecalc();
     }
 }
     

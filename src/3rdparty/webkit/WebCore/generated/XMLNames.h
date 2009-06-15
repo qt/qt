@@ -44,10 +44,9 @@ extern const WebCore::AtomicString xmlNamespaceURI;
 extern const WebCore::QualifiedName baseAttr;
 extern const WebCore::QualifiedName langAttr;
 extern const WebCore::QualifiedName spaceAttr;
-
-
-WebCore::QualifiedName** getXMLAttr(size_t* size);
 #endif
+
+WebCore::QualifiedName** getXMLAttrs(size_t* size);
 
 void init();
 

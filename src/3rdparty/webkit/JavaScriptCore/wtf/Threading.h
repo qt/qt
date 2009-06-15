@@ -108,9 +108,16 @@ namespace WTF {
 typedef uint32_t ThreadIdentifier;
 typedef void* (*ThreadFunction)(void* argument);
 
-// Returns 0 if thread creation failed
+// Returns 0 if thread creation failed.
+// The thread name must be a literal since on some platforms it's passed in to the thread.
 ThreadIdentifier createThread(ThreadFunction, void*, const char* threadName);
+
+// Internal platform-specific createThread implementation.
 ThreadIdentifier createThreadInternal(ThreadFunction, void*, const char* threadName);
+
+// Called in the thread during initialization.
+// Helpful for platforms where the thread name must be set from within the thread.
+void setThreadNameInternal(const char* threadName);
 
 ThreadIdentifier currentThread();
 bool isMainThread();
@@ -132,12 +139,15 @@ struct PlatformMutex {
     size_t m_recursionCount;
 };
 struct PlatformCondition {
-    size_t m_timedOut;
-    size_t m_blocked;
-    size_t m_waitingForRemoval;
-    HANDLE m_gate;
-    HANDLE m_queue;
-    HANDLE m_mutex;
+    size_t m_waitersGone;
+    size_t m_waitersBlocked;
+    size_t m_waitersToUnblock; 
+    HANDLE m_blockLock;
+    HANDLE m_blockQueue;
+    HANDLE m_unblockLock;
+
+    bool timedWait(PlatformMutex&, DWORD durationMilliseconds);
+    void signal(bool unblockAll);
 };
 #else
 typedef void* PlatformMutex;
@@ -167,8 +177,9 @@ public:
     ~ThreadCondition();
     
     void wait(Mutex& mutex);
-    // Returns true if the condition was signaled before the timeout, false if the timeout was reached
-    bool timedWait(Mutex&, double interval);
+    // Returns true if the condition was signaled before absoluteTime, false if the absoluteTime was reached or is in the past.
+    // The absoluteTime is in seconds, starting on January 1, 1970. The time is assumed to use the same time zone as WTF::currentTime().
+    bool timedWait(Mutex&, double absoluteTime);
     void signal();
     void broadcast();
     
@@ -201,9 +212,9 @@ inline int atomicDecrement(int volatile* addend) { return __gnu_cxx::__exchange_
 
 #endif
 
-template<class T> class ThreadSafeShared : Noncopyable {
+class ThreadSafeSharedBase : Noncopyable {
 public:
-    ThreadSafeShared(int initialRefCount = 1)
+    ThreadSafeSharedBase(int initialRefCount = 1)
         : m_refCount(initialRefCount)
     {
     }
@@ -216,20 +227,6 @@ public:
         MutexLocker locker(m_mutex);
         ++m_refCount;
 #endif
-    }
-
-    void deref()
-    {
-#if USE(LOCKFREE_THREADSAFESHARED)
-        if (atomicDecrement(&m_refCount) <= 0)
-#else
-        {
-            MutexLocker locker(m_mutex);
-            --m_refCount;
-        }
-        if (m_refCount <= 0)
-#endif
-            delete static_cast<T*>(this);
     }
 
     bool hasOneRef()
@@ -245,11 +242,48 @@ public:
         return static_cast<int const volatile &>(m_refCount);
     }
 
+protected:
+    // Returns whether the pointer should be freed or not.
+    bool derefBase()
+    {
+#if USE(LOCKFREE_THREADSAFESHARED)
+        if (atomicDecrement(&m_refCount) <= 0)
+            return true;
+#else
+        int refCount;
+        {
+            MutexLocker locker(m_mutex);
+            --m_refCount;
+            refCount = m_refCount;
+        }
+        if (refCount <= 0)
+            return true;
+#endif
+        return false;
+    }
+
 private:
+    template<class T>
+    friend class CrossThreadRefCounted;
+
     int m_refCount;
 #if !USE(LOCKFREE_THREADSAFESHARED)
     mutable Mutex m_mutex;
 #endif
+};
+
+template<class T> class ThreadSafeShared : public ThreadSafeSharedBase {
+public:
+    ThreadSafeShared(int initialRefCount = 1)
+        : ThreadSafeSharedBase(initialRefCount)
+    {
+    }
+
+    void deref()
+    {
+        if (derefBase())
+            delete static_cast<T*>(this);
+    }
 };
 
 // This function must be called from the main thread. It is safe to call it repeatedly.

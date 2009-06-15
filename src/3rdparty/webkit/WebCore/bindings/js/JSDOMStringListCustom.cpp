@@ -32,14 +32,14 @@ using namespace JSC;
 
 namespace WebCore {
 
-JSValuePtr JSDOMStringList::getByIndex(ExecState* exec, unsigned index)
+JSValue JSDOMStringList::getByIndex(ExecState* exec, unsigned index)
 {
     return jsString(exec, impl()->item(index));
 }
 
-JSValuePtr JSDOMStringList::item(ExecState* exec, const ArgList& args)
+JSValue JSDOMStringList::item(ExecState* exec, const ArgList& args)
 {
-    unsigned index = args.at(exec, 0)->toUInt32(exec);
+    unsigned index = args.at(0).toUInt32(exec);
     if (index >= impl()->length())
         return jsNull();
 

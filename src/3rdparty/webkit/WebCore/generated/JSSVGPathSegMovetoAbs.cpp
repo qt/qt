@@ -36,7 +36,7 @@ using namespace JSC;
 
 namespace WebCore {
 
-ASSERT_CLASS_FITS_IN_CELL(JSSVGPathSegMovetoAbs)
+ASSERT_CLASS_FITS_IN_CELL(JSSVGPathSegMovetoAbs);
 
 /* Hash table */
 
@@ -70,9 +70,9 @@ static const HashTable JSSVGPathSegMovetoAbsPrototypeTable =
 
 const ClassInfo JSSVGPathSegMovetoAbsPrototype::s_info = { "SVGPathSegMovetoAbsPrototype", 0, &JSSVGPathSegMovetoAbsPrototypeTable, 0 };
 
-JSObject* JSSVGPathSegMovetoAbsPrototype::self(ExecState* exec)
+JSObject* JSSVGPathSegMovetoAbsPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSSVGPathSegMovetoAbs>(exec);
+    return getDOMPrototype<JSSVGPathSegMovetoAbs>(exec, globalObject);
 }
 
 const ClassInfo JSSVGPathSegMovetoAbs::s_info = { "SVGPathSegMovetoAbs", &JSSVGPathSeg::s_info, &JSSVGPathSegMovetoAbsTable, 0 };
@@ -82,9 +82,9 @@ JSSVGPathSegMovetoAbs::JSSVGPathSegMovetoAbs(PassRefPtr<Structure> structure, Pa
 {
 }
 
-JSObject* JSSVGPathSegMovetoAbs::createPrototype(ExecState* exec)
+JSObject* JSSVGPathSegMovetoAbs::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSSVGPathSegMovetoAbsPrototype(JSSVGPathSegMovetoAbsPrototype::createStructure(JSSVGPathSegPrototype::self(exec)));
+    return new (exec) JSSVGPathSegMovetoAbsPrototype(JSSVGPathSegMovetoAbsPrototype::createStructure(JSSVGPathSegPrototype::self(exec, globalObject)));
 }
 
 bool JSSVGPathSegMovetoAbs::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -92,35 +92,37 @@ bool JSSVGPathSegMovetoAbs::getOwnPropertySlot(ExecState* exec, const Identifier
     return getStaticValueSlot<JSSVGPathSegMovetoAbs, Base>(exec, &JSSVGPathSegMovetoAbsTable, this, propertyName, slot);
 }
 
-JSValuePtr jsSVGPathSegMovetoAbsX(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGPathSegMovetoAbsX(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGPathSegMovetoAbs* imp = static_cast<SVGPathSegMovetoAbs*>(static_cast<JSSVGPathSegMovetoAbs*>(asObject(slot.slotBase()))->impl());
     return jsNumber(exec, imp->x());
 }
 
-JSValuePtr jsSVGPathSegMovetoAbsY(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGPathSegMovetoAbsY(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGPathSegMovetoAbs* imp = static_cast<SVGPathSegMovetoAbs*>(static_cast<JSSVGPathSegMovetoAbs*>(asObject(slot.slotBase()))->impl());
     return jsNumber(exec, imp->y());
 }
 
-void JSSVGPathSegMovetoAbs::put(ExecState* exec, const Identifier& propertyName, JSValuePtr value, PutPropertySlot& slot)
+void JSSVGPathSegMovetoAbs::put(ExecState* exec, const Identifier& propertyName, JSValue value, PutPropertySlot& slot)
 {
     lookupPut<JSSVGPathSegMovetoAbs, Base>(exec, propertyName, value, &JSSVGPathSegMovetoAbsTable, this, slot);
 }
 
-void setJSSVGPathSegMovetoAbsX(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSSVGPathSegMovetoAbsX(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     SVGPathSegMovetoAbs* imp = static_cast<SVGPathSegMovetoAbs*>(static_cast<JSSVGPathSegMovetoAbs*>(thisObject)->impl());
-    imp->setX(value->toFloat(exec));
+    imp->setX(value.toFloat(exec));
     if (static_cast<JSSVGPathSegMovetoAbs*>(thisObject)->context())
         static_cast<JSSVGPathSegMovetoAbs*>(thisObject)->context()->svgAttributeChanged(static_cast<JSSVGPathSegMovetoAbs*>(thisObject)->impl()->associatedAttributeName());
 }
 
-void setJSSVGPathSegMovetoAbsY(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSSVGPathSegMovetoAbsY(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     SVGPathSegMovetoAbs* imp = static_cast<SVGPathSegMovetoAbs*>(static_cast<JSSVGPathSegMovetoAbs*>(thisObject)->impl());
-    imp->setY(value->toFloat(exec));
+    imp->setY(value.toFloat(exec));
     if (static_cast<JSSVGPathSegMovetoAbs*>(thisObject)->context())
         static_cast<JSSVGPathSegMovetoAbs*>(thisObject)->context()->svgAttributeChanged(static_cast<JSSVGPathSegMovetoAbs*>(thisObject)->impl()->associatedAttributeName());
 }

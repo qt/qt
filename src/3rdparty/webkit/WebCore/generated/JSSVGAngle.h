@@ -37,18 +37,18 @@ class JSSVGAngle : public DOMObject {
 public:
     JSSVGAngle(PassRefPtr<JSC::Structure>, PassRefPtr<SVGAngle>, SVGElement* context);
     virtual ~JSSVGAngle();
-    static JSC::JSObject* createPrototype(JSC::ExecState*);
+    static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
-    virtual void put(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::JSValuePtr, JSC::PutPropertySlot&);
+    virtual void put(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::JSValue, JSC::PutPropertySlot&);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
     static const JSC::ClassInfo s_info;
 
-    static PassRefPtr<JSC::Structure> createStructure(JSC::JSValuePtr prototype)
+    static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
     {
         return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType));
     }
 
-    static JSC::JSValuePtr getConstructor(JSC::ExecState*);
+    static JSC::JSValue getConstructor(JSC::ExecState*);
     SVGAngle* impl() const { return m_impl.get(); }
     SVGElement* context() const { return m_context.get(); }
 
@@ -57,16 +57,17 @@ private:
     RefPtr<SVGAngle > m_impl;
 };
 
-JSC::JSValuePtr toJS(JSC::ExecState*, SVGAngle*, SVGElement* context);
-SVGAngle* toSVGAngle(JSC::JSValuePtr);
+JSC::JSValue toJS(JSC::ExecState*, SVGAngle*, SVGElement* context);
+SVGAngle* toSVGAngle(JSC::JSValue);
 
 class JSSVGAnglePrototype : public JSC::JSObject {
+    typedef JSC::JSObject Base;
 public:
-    static JSC::JSObject* self(JSC::ExecState*);
+    static JSC::JSObject* self(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
     static const JSC::ClassInfo s_info;
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier&, JSC::PropertySlot&);
-    static PassRefPtr<JSC::Structure> createStructure(JSC::JSValuePtr prototype)
+    static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
     {
         return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType));
     }
@@ -75,25 +76,25 @@ public:
 
 // Functions
 
-JSC::JSValuePtr jsSVGAnglePrototypeFunctionNewValueSpecifiedUnits(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr, const JSC::ArgList&);
-JSC::JSValuePtr jsSVGAnglePrototypeFunctionConvertToSpecifiedUnits(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr, const JSC::ArgList&);
+JSC::JSValue JSC_HOST_CALL jsSVGAnglePrototypeFunctionNewValueSpecifiedUnits(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
+JSC::JSValue JSC_HOST_CALL jsSVGAnglePrototypeFunctionConvertToSpecifiedUnits(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
 // Attributes
 
-JSC::JSValuePtr jsSVGAngleUnitType(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValuePtr jsSVGAngleValue(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-void setJSSVGAngleValue(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr);
-JSC::JSValuePtr jsSVGAngleValueInSpecifiedUnits(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-void setJSSVGAngleValueInSpecifiedUnits(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr);
-JSC::JSValuePtr jsSVGAngleValueAsString(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-void setJSSVGAngleValueAsString(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr);
-JSC::JSValuePtr jsSVGAngleConstructor(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsSVGAngleUnitType(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsSVGAngleValue(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSSVGAngleValue(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsSVGAngleValueInSpecifiedUnits(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSSVGAngleValueInSpecifiedUnits(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsSVGAngleValueAsString(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSSVGAngleValueAsString(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsSVGAngleConstructor(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
 // Constants
 
-JSC::JSValuePtr jsSVGAngleSVG_ANGLETYPE_UNKNOWN(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValuePtr jsSVGAngleSVG_ANGLETYPE_UNSPECIFIED(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValuePtr jsSVGAngleSVG_ANGLETYPE_DEG(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValuePtr jsSVGAngleSVG_ANGLETYPE_RAD(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValuePtr jsSVGAngleSVG_ANGLETYPE_GRAD(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsSVGAngleSVG_ANGLETYPE_UNKNOWN(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsSVGAngleSVG_ANGLETYPE_UNSPECIFIED(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsSVGAngleSVG_ANGLETYPE_DEG(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsSVGAngleSVG_ANGLETYPE_RAD(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsSVGAngleSVG_ANGLETYPE_GRAD(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
 
 } // namespace WebCore
 

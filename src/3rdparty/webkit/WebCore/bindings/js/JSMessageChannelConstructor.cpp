@@ -29,7 +29,6 @@
 #include "Document.h"
 #include "JSDocument.h"
 #include "JSMessageChannel.h"
-#include "JSWorkerContext.h"
 #include "MessageChannel.h"
 
 using namespace JSC;
@@ -38,24 +37,20 @@ namespace WebCore {
 
 const ClassInfo JSMessageChannelConstructor::s_info = { "MessageChannelConstructor", 0, 0, 0 };
 
-JSMessageChannelConstructor::JSMessageChannelConstructor(ExecState* exec, ScriptExecutionContext* scriptExecutionContext)
+JSMessageChannelConstructor::JSMessageChannelConstructor(ExecState* exec, JSDOMGlobalObject* globalObject)
     : DOMObject(JSMessageChannelConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
-    , m_scriptExecutionContext(scriptExecutionContext)
+    , m_globalObject(globalObject)
 {
-    if (m_scriptExecutionContext->isDocument())
-        m_contextWrapper = toJS(exec, static_cast<Document*>(scriptExecutionContext));
-#if ENABLE(WORKERS)
-    else if (m_scriptExecutionContext->isWorkerContext())
-        m_contextWrapper = toJSDOMGlobalObject(scriptExecutionContext);
-#endif
-    else
-        ASSERT_NOT_REACHED();
-
-    putDirect(exec->propertyNames().prototype, JSMessageChannelPrototype::self(exec), None);
+    putDirect(exec->propertyNames().prototype, JSMessageChannelPrototype::self(exec, exec->lexicalGlobalObject()), None);
 }
 
 JSMessageChannelConstructor::~JSMessageChannelConstructor()
 {
+}
+
+ScriptExecutionContext* JSMessageChannelConstructor::scriptExecutionContext() const
+{
+    return m_globalObject->scriptExecutionContext();
 }
 
 ConstructType JSMessageChannelConstructor::getConstructData(ConstructData& constructData)
@@ -66,14 +61,18 @@ ConstructType JSMessageChannelConstructor::getConstructData(ConstructData& const
 
 JSObject* JSMessageChannelConstructor::construct(ExecState* exec, JSObject* constructor, const ArgList&)
 {
-    return asObject(toJS(exec, MessageChannel::create(static_cast<JSMessageChannelConstructor*>(constructor)->scriptExecutionContext())));
+    ScriptExecutionContext* context = static_cast<JSMessageChannelConstructor*>(constructor)->scriptExecutionContext();
+    if (!context)
+        return throwError(exec, ReferenceError, "MessageChannel constructor associated document is unavailable");
+
+    return asObject(toJS(exec, MessageChannel::create(context)));
 }
 
 void JSMessageChannelConstructor::mark()
 {
     DOMObject::mark();
-    if (!m_contextWrapper->marked())
-        m_contextWrapper->mark();
+    if (!m_globalObject->marked())
+        m_globalObject->mark();
 }
 
 } // namespace WebCore

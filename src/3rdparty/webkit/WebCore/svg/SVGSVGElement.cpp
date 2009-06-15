@@ -24,7 +24,6 @@
 #if ENABLE(SVG)
 #include "SVGSVGElement.h"
 
-#include "TransformationMatrix.h"
 #include "CSSHelper.h"
 #include "CSSPropertyNames.h"
 #include "Document.h"
@@ -34,8 +33,10 @@
 #include "FloatRect.h"
 #include "Frame.h"
 #include "HTMLNames.h"
-#include "RenderSVGViewportContainer.h"
+#include "MappedAttribute.h"
 #include "RenderSVGRoot.h"
+#include "RenderSVGViewportContainer.h"
+#include "SMILTimeContainer.h"
 #include "SVGAngle.h"
 #include "SVGLength.h"
 #include "SVGNames.h"
@@ -45,8 +46,9 @@
 #include "SVGViewElement.h"
 #include "SVGViewSpec.h"
 #include "SVGZoomEvent.h"
+#include "ScriptEventListener.h"
 #include "SelectionController.h"
-#include "SMILTimeContainer.h"
+#include "TransformationMatrix.h"
 #include <wtf/StdLibExtras.h>
 
 namespace WebCore {
@@ -125,8 +127,8 @@ FloatRect SVGSVGElement::viewport() const
     TransformationMatrix viewBox = viewBoxToViewTransform(w, h);
     double wDouble = w;
     double hDouble = h;
-    viewBox.map(_x, _y, &_x, &_y);
-    viewBox.map(w, h, &wDouble, &hDouble);
+    viewBox.map(_x, _y, _x, _y);
+    viewBox.map(w, h, wDouble, hDouble);
     return FloatRect::narrowPrecision(_x, _y, wDouble, hDouble);
 }
 
@@ -220,13 +222,13 @@ void SVGSVGElement::parseMappedAttribute(MappedAttribute* attr)
 
         // Only handle events if we're the outermost <svg> element
         if (attr->name() == onunloadAttr)
-            document()->setWindowInlineEventListenerForTypeAndAttribute(eventNames().unloadEvent, attr);
+            document()->setWindowAttributeEventListener(eventNames().unloadEvent, createAttributeEventListener(document()->frame(), attr));
         else if (attr->name() == onresizeAttr)
-            document()->setWindowInlineEventListenerForTypeAndAttribute(eventNames().resizeEvent, attr);
+            document()->setWindowAttributeEventListener(eventNames().resizeEvent, createAttributeEventListener(document()->frame(), attr));
         else if (attr->name() == onscrollAttr)
-            document()->setWindowInlineEventListenerForTypeAndAttribute(eventNames().scrollEvent, attr);
+            document()->setWindowAttributeEventListener(eventNames().scrollEvent, createAttributeEventListener(document()->frame(), attr));
         else if (attr->name() == SVGNames::onzoomAttr)
-            document()->setWindowInlineEventListenerForTypeAndAttribute(eventNames().zoomEvent, attr);
+            document()->setWindowAttributeEventListener(eventNames().zoomEvent, createAttributeEventListener(document()->frame(), attr));
         else
             setListener = false;
  
@@ -235,9 +237,9 @@ void SVGSVGElement::parseMappedAttribute(MappedAttribute* attr)
     }
 
     if (attr->name() == onabortAttr)
-        document()->setWindowInlineEventListenerForTypeAndAttribute(eventNames().abortEvent, attr);
+        document()->setWindowAttributeEventListener(eventNames().abortEvent, createAttributeEventListener(document()->frame(), attr));
     else if (attr->name() == onerrorAttr)
-        document()->setWindowInlineEventListenerForTypeAndAttribute(eventNames().errorEvent, attr);
+        document()->setWindowAttributeEventListener(eventNames().errorEvent, createAttributeEventListener(document()->frame(), attr));
     else if (attr->name() == SVGNames::xAttr)
         setXBaseValue(SVGLength(LengthModeWidth, attr->value()));
     else if (attr->name() == SVGNames::yAttr)
@@ -268,15 +270,34 @@ void SVGSVGElement::parseMappedAttribute(MappedAttribute* attr)
     }
 }
 
+// This hack will not handle the case where we're setting a width/height
+// on a root <svg> via svg.width.baseValue = when it has none.
+static void updateCSSForAttribute(SVGSVGElement* element, const QualifiedName& attrName, CSSPropertyID property, const SVGLength& value)
+{
+    Attribute* attribute = element->attributes(false)->getAttributeItem(attrName);
+    if (!attribute || !attribute->isMappedAttribute())
+        return;
+    element->addCSSProperty(static_cast<MappedAttribute*>(attribute), property, value.valueAsString());
+}
+
 void SVGSVGElement::svgAttributeChanged(const QualifiedName& attrName)
 {
     SVGStyledElement::svgAttributeChanged(attrName);
+
+    // FIXME: Ugly, ugly hack to around that parseMappedAttribute is not called
+    // when svg.width.baseValue = 100 is evaluated.
+    // Thus the CSS length value for width is not updated, and width() calcWidth()
+    // calculations on RenderSVGRoot will be wrong.
+    // https://bugs.webkit.org/show_bug.cgi?id=25387
+    if (attrName == SVGNames::widthAttr)
+        updateCSSForAttribute(this, attrName, CSSPropertyWidth, widthBaseValue());
+    else if (attrName == SVGNames::heightAttr)
+        updateCSSForAttribute(this, attrName, CSSPropertyHeight, heightBaseValue());
 
     if (!renderer())
         return;
 
     if (attrName == SVGNames::xAttr || attrName == SVGNames::yAttr ||
-        attrName == SVGNames::widthAttr || attrName == SVGNames::heightAttr ||
         SVGTests::isKnownAttribute(attrName) ||
         SVGLangSpace::isKnownAttribute(attrName) ||
         SVGExternalResourcesRequired::isKnownAttribute(attrName) ||
@@ -387,7 +408,7 @@ TransformationMatrix SVGSVGElement::getCTM() const
     if (!isOutermostSVG())
         mat.translate(x().value(this), y().value(this));
 
-    if (attributes()->getNamedItem(SVGNames::viewBoxAttr)) {
+    if (attributes()->getAttributeItem(SVGNames::viewBoxAttr)) {
         TransformationMatrix viewBox = viewBoxToViewTransform(width().value(this), height().value(this));
         mat = viewBox * mat;
     }
@@ -398,14 +419,14 @@ TransformationMatrix SVGSVGElement::getCTM() const
 TransformationMatrix SVGSVGElement::getScreenCTM() const
 {
     document()->updateLayoutIgnorePendingStylesheets();
-    FloatPoint rootLocation;    
+    FloatPoint rootLocation;
 
     if (RenderObject* renderer = this->renderer()) {
         if (isOutermostSVG()) {
             // FIXME: This doesn't work correctly with CSS transforms.
             FloatPoint point;
             if (renderer->parent())
-                point = renderer->localToAbsolute(point, true);
+                point = renderer->localToAbsolute(point, false, true);
             rootLocation.move(point.x(), point.y());
         } else
             rootLocation.move(x().value(this), y().value(this));
@@ -414,7 +435,7 @@ TransformationMatrix SVGSVGElement::getScreenCTM() const
     TransformationMatrix mat = SVGStyledLocatableElement::getScreenCTM();
     mat.translate(rootLocation.x(), rootLocation.y());
 
-    if (attributes()->getNamedItem(SVGNames::viewBoxAttr)) {
+    if (attributes()->getAttributeItem(SVGNames::viewBoxAttr)) {
         TransformationMatrix viewBox = viewBoxToViewTransform(width().value(this), height().value(this));
         mat = viewBox * mat;
     }
@@ -477,6 +498,10 @@ bool SVGSVGElement::hasRelativeValues() const
 
 bool SVGSVGElement::isOutermostSVG() const
 {
+    // Element may not be in the document, pretend we're outermost for viewport(), getCTM(), etc.
+    if (!parentNode())
+        return true;
+
     // This is true whenever this is the outermost SVG, even if there are HTML elements outside it
     return !parentNode()->isSVGElement();
 }

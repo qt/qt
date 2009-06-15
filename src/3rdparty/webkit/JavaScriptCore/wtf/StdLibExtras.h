@@ -23,7 +23,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
  */
 
+#ifndef WTF_StdLibExtras_h
+#define WTF_StdLibExtras_h
+
 #include <wtf/Platform.h>
+#include <wtf/Assertions.h>
 
 // Use these to declare and define a static local variable (static T;) so that
 //  it is leaked so that its destructors are not called at exit. Using this
@@ -35,4 +39,25 @@
 #else
 #define DEFINE_STATIC_LOCAL(type, name, arguments) \
     static type& name = *new type arguments
+#endif
+
+namespace WTF {
+
+    /*
+     * C++'s idea of a reinterpret_cast lacks sufficient cojones.
+     */
+    template<typename TO, typename FROM>
+    TO bitwise_cast(FROM from)
+    {
+        COMPILE_ASSERT(sizeof(TO) == sizeof(FROM), WTF_bitwise_cast_sizeof_casted_types_is_equal);
+        union {
+            FROM from;
+            TO to;
+        } u;
+        u.from = from;
+        return u.to;
+    }
+
+} // namespace WTF
+
 #endif

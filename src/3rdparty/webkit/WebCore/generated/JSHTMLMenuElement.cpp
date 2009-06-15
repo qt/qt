@@ -32,7 +32,7 @@ using namespace JSC;
 
 namespace WebCore {
 
-ASSERT_CLASS_FITS_IN_CELL(JSHTMLMenuElement)
+ASSERT_CLASS_FITS_IN_CELL(JSHTMLMenuElement);
 
 /* Hash table */
 
@@ -69,13 +69,13 @@ public:
     JSHTMLMenuElementConstructor(ExecState* exec)
         : DOMObject(JSHTMLMenuElementConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
     {
-        putDirect(exec->propertyNames().prototype, JSHTMLMenuElementPrototype::self(exec), None);
+        putDirect(exec->propertyNames().prototype, JSHTMLMenuElementPrototype::self(exec, exec->lexicalGlobalObject()), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
     static const ClassInfo s_info;
 
-    static PassRefPtr<Structure> createStructure(JSValuePtr proto) 
+    static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
         return Structure::create(proto, TypeInfo(ObjectType, ImplementsHasInstance)); 
     }
@@ -104,9 +104,9 @@ static const HashTable JSHTMLMenuElementPrototypeTable =
 
 const ClassInfo JSHTMLMenuElementPrototype::s_info = { "HTMLMenuElementPrototype", 0, &JSHTMLMenuElementPrototypeTable, 0 };
 
-JSObject* JSHTMLMenuElementPrototype::self(ExecState* exec)
+JSObject* JSHTMLMenuElementPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSHTMLMenuElement>(exec);
+    return getDOMPrototype<JSHTMLMenuElement>(exec, globalObject);
 }
 
 const ClassInfo JSHTMLMenuElement::s_info = { "HTMLMenuElement", &JSHTMLElement::s_info, &JSHTMLMenuElementTable, 0 };
@@ -116,9 +116,9 @@ JSHTMLMenuElement::JSHTMLMenuElement(PassRefPtr<Structure> structure, PassRefPtr
 {
 }
 
-JSObject* JSHTMLMenuElement::createPrototype(ExecState* exec)
+JSObject* JSHTMLMenuElement::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSHTMLMenuElementPrototype(JSHTMLMenuElementPrototype::createStructure(JSHTMLElementPrototype::self(exec)));
+    return new (exec) JSHTMLMenuElementPrototype(JSHTMLMenuElementPrototype::createStructure(JSHTMLElementPrototype::self(exec, globalObject)));
 }
 
 bool JSHTMLMenuElement::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -126,28 +126,29 @@ bool JSHTMLMenuElement::getOwnPropertySlot(ExecState* exec, const Identifier& pr
     return getStaticValueSlot<JSHTMLMenuElement, Base>(exec, &JSHTMLMenuElementTable, this, propertyName, slot);
 }
 
-JSValuePtr jsHTMLMenuElementCompact(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLMenuElementCompact(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     HTMLMenuElement* imp = static_cast<HTMLMenuElement*>(static_cast<JSHTMLMenuElement*>(asObject(slot.slotBase()))->impl());
     return jsBoolean(imp->compact());
 }
 
-JSValuePtr jsHTMLMenuElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLMenuElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     return static_cast<JSHTMLMenuElement*>(asObject(slot.slotBase()))->getConstructor(exec);
 }
-void JSHTMLMenuElement::put(ExecState* exec, const Identifier& propertyName, JSValuePtr value, PutPropertySlot& slot)
+void JSHTMLMenuElement::put(ExecState* exec, const Identifier& propertyName, JSValue value, PutPropertySlot& slot)
 {
     lookupPut<JSHTMLMenuElement, Base>(exec, propertyName, value, &JSHTMLMenuElementTable, this, slot);
 }
 
-void setJSHTMLMenuElementCompact(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSHTMLMenuElementCompact(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     HTMLMenuElement* imp = static_cast<HTMLMenuElement*>(static_cast<JSHTMLMenuElement*>(thisObject)->impl());
-    imp->setCompact(value->toBoolean(exec));
+    imp->setCompact(value.toBoolean(exec));
 }
 
-JSValuePtr JSHTMLMenuElement::getConstructor(ExecState* exec)
+JSValue JSHTMLMenuElement::getConstructor(ExecState* exec)
 {
     return getDOMConstructor<JSHTMLMenuElementConstructor>(exec);
 }

@@ -40,6 +40,7 @@ class ApplicationCache;
 class ApplicationCacheGroup;
 class ApplicationCacheResource;
 class KURL;
+class ResourceStorageIDJournal;
     
 class ApplicationCacheStorage {
 public:
@@ -51,11 +52,13 @@ public:
 
     ApplicationCacheGroup* findOrCreateCacheGroup(const KURL& manifestURL);
     void cacheGroupDestroyed(ApplicationCacheGroup*);
+    void cacheGroupMadeObsolete(ApplicationCacheGroup*);
         
-    bool storeNewestCache(ApplicationCacheGroup*);
+    bool storeNewestCache(ApplicationCacheGroup*); // Updates the cache group, but doesn't remove old cache.
     void store(ApplicationCacheResource*, ApplicationCache*);
     bool storeUpdatedType(ApplicationCacheResource*, ApplicationCache*);
 
+    // Removes the group if the cache to be removed is the newest one (so, storeNewestCache() needs to be called beforehand when updating).
     void remove(ApplicationCache*);
     
     void empty();
@@ -67,7 +70,7 @@ private:
     ApplicationCacheGroup* loadCacheGroup(const KURL& manifestURL);
     
     bool store(ApplicationCacheGroup*);
-    bool store(ApplicationCache*);
+    bool store(ApplicationCache*, ResourceStorageIDJournal*);
     bool store(ApplicationCacheResource*, unsigned cacheStorageID);
 
     void loadManifestHostHashes();
@@ -84,11 +87,11 @@ private:
     SQLiteDatabase m_database;
 
     // In order to quickly determine if a given resource exists in an application cache,
-    // we keep a hash set of the hosts of the manifest URLs of all cache groups.
+    // we keep a hash set of the hosts of the manifest URLs of all non-obsolete cache groups.
     HashCountedSet<unsigned, AlreadyHashed> m_cacheHostSet;
     
     typedef HashMap<String, ApplicationCacheGroup*> CacheGroupMap;
-    CacheGroupMap m_cachesInMemory;
+    CacheGroupMap m_cachesInMemory; // Excludes obsolete cache groups.
 };
  
 ApplicationCacheStorage& cacheStorage();

@@ -52,10 +52,10 @@ private:
         ASSERT(m_port);
     }
 
-    virtual void performTask(ScriptExecutionContext* context)
+    virtual void performTask(ScriptExecutionContext* unusedContext)
     {
+        ASSERT_UNUSED(unusedContext, unusedContext == m_port->scriptExecutionContext());
         ASSERT(!m_port->active());
-        ASSERT(context == m_port->scriptExecutionContext());
 
         // Closing may destroy the port, dispatch any remaining messages now.
         if (m_port->queueIsOpen())
@@ -108,7 +108,7 @@ PassRefPtr<MessagePort> MessagePort::clone(ExceptionCode& ec)
         return 0;
     }
 
-    RefPtr<MessagePort> remotePort = m_entangledPort;
+    RefPtr<MessagePortProxy> remotePort = m_entangledPort;
     RefPtr<MessagePort> newPort = MessagePort::create(0);
 
     // Move all the events in the port message queue of original port to the port message queue of new port, if any, leaving the new port's port message queue in its initial closed state.
@@ -137,14 +137,20 @@ void MessagePort::postMessage(const String& message, MessagePort* dataPort, Exce
             ec = INVALID_ACCESS_ERR;
             return;
         }
+        ec = 0;
         newMessagePort = dataPort->clone(ec);
         if (ec)
             return;
     }
 
-    m_entangledPort->m_messageQueue.append(EventData::create(message, newMessagePort));
-    if (m_entangledPort->m_queueIsOpen && m_entangledPort->m_scriptExecutionContext)
-        m_entangledPort->m_scriptExecutionContext->processMessagePortMessagesSoon();
+    m_entangledPort->deliverMessage(message, newMessagePort);
+}
+
+void MessagePort::deliverMessage(const String& message, PassRefPtr<MessagePort> dataPort)
+{
+    m_messageQueue.append(EventData::create(message, dataPort));
+    if (m_queueIsOpen && m_scriptExecutionContext)
+        m_scriptExecutionContext->processMessagePortMessagesSoon();
 }
 
 PassRefPtr<MessagePort> MessagePort::startConversation(ScriptExecutionContext* scriptExecutionContext, const String& message)
@@ -156,9 +162,7 @@ PassRefPtr<MessagePort> MessagePort::startConversation(ScriptExecutionContext* s
 
     entangle(port1.get(), port2.get());
 
-    m_entangledPort->m_messageQueue.append(EventData::create(message, port2));
-    if (m_entangledPort->m_queueIsOpen && m_entangledPort->m_scriptExecutionContext)
-        m_entangledPort->m_scriptExecutionContext->processMessagePortMessagesSoon();
+    m_entangledPort->deliverMessage(message, port2);
     return port1;
 }
 
@@ -176,35 +180,37 @@ void MessagePort::close()
     if (!m_entangledPort)
         return;
 
-    MessagePort* otherPort = m_entangledPort;
+    MessagePortProxy* otherPort = m_entangledPort;
     unentangle();
 
     queueCloseEvent();
     otherPort->queueCloseEvent();
 }
 
-void MessagePort::entangle(MessagePort* port1, MessagePort* port2)
+void MessagePort::entangle(MessagePortProxy* port1, MessagePortProxy* port2)
 {
-    if (port1->m_entangledPort) {
-        ASSERT(port1->m_entangledPort != port2);
-        port1->unentangle();
-    }
+    port1->entangle(port2);
+    port2->entangle(port1);
+}
 
-    if (port2->m_entangledPort) {
-        ASSERT(port2->m_entangledPort != port1);
-        port2->unentangle();
+void MessagePort::entangle(MessagePortProxy* remote)
+{
+    // Unentangle from our current port first.
+    if (m_entangledPort) {
+        ASSERT(m_entangledPort != remote);
+        unentangle();
     }
-
-    port1->m_entangledPort = port2;
-    port2->m_entangledPort = port1;
+    m_entangledPort = remote;
 }
 
 void MessagePort::unentangle()
 {
-    ASSERT(this == m_entangledPort->m_entangledPort);
-
-    m_entangledPort->m_entangledPort = 0;
-    m_entangledPort = 0;
+    // Unentangle our end before unentangling the other end.
+    if (m_entangledPort) {
+        MessagePortProxy* remote = m_entangledPort;
+        m_entangledPort = 0;
+        remote->unentangle();
+    }
 }
 
 void MessagePort::contextDestroyed()

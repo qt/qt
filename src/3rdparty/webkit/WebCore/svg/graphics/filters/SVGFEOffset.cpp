@@ -21,9 +21,10 @@
 
 #include "config.h"
 
-#if ENABLE(SVG) && ENABLE(SVG_FILTERS)
+#if ENABLE(SVG) && ENABLE(FILTERS)
 #include "SVGFEOffset.h"
 #include "SVGRenderTreeAsText.h"
+#include "Filter.h"
 
 namespace WebCore {
 
@@ -60,7 +61,7 @@ void FEOffset::setDy(float dy)
     m_dy = dy;
 }
 
-void FEOffset::apply()
+void FEOffset::apply(Filter*)
 {
 }
 
@@ -78,4 +79,4 @@ TextStream& FEOffset::externalRepresentation(TextStream& ts) const
 
 } // namespace WebCore
 
-#endif // ENABLE(SVG) && ENABLE(SVG_FILTERS)
+#endif // ENABLE(SVG) && ENABLE(FILTERS)

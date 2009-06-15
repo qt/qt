@@ -29,17 +29,17 @@ namespace WebCore {
 
 using namespace JSC;
 
-ASSERT_CLASS_FITS_IN_CELL(JSNodeFilterCondition)
+ASSERT_CLASS_FITS_IN_CELL(JSNodeFilterCondition);
 
-JSNodeFilterCondition::JSNodeFilterCondition(JSValuePtr filter)
+JSNodeFilterCondition::JSNodeFilterCondition(JSValue filter)
     : m_filter(filter)
 {
 }
 
 void JSNodeFilterCondition::mark()
 {
-    if (!m_filter->marked())
-        m_filter->mark();
+    if (!m_filter.marked())
+        m_filter.mark();
 }
 
 short JSNodeFilterCondition::acceptNode(JSC::ExecState* exec, Node* filterNode) const
@@ -47,7 +47,7 @@ short JSNodeFilterCondition::acceptNode(JSC::ExecState* exec, Node* filterNode) 
     JSLock lock(false);
 
     CallData callData;
-    CallType callType = m_filter->getCallData(callData);
+    CallType callType = m_filter.getCallData(callData);
     if (callType == CallTypeNone)
         return NodeFilter::FILTER_ACCEPT;
 
@@ -60,16 +60,16 @@ short JSNodeFilterCondition::acceptNode(JSC::ExecState* exec, Node* filterNode) 
     if (!exec)
         return NodeFilter::FILTER_REJECT;
 
-    ArgList args;
+    MarkedArgumentBuffer args;
     args.append(toJS(exec, filterNode));
     if (exec->hadException())
         return NodeFilter::FILTER_REJECT;
 
-    JSValuePtr result = call(exec, m_filter, callType, callData, m_filter, args);
+    JSValue result = call(exec, m_filter, callType, callData, m_filter, args);
     if (exec->hadException())
         return NodeFilter::FILTER_REJECT;
 
-    int intResult = result->toInt32(exec);
+    int intResult = result.toInt32(exec);
     if (exec->hadException())
         return NodeFilter::FILTER_REJECT;
 

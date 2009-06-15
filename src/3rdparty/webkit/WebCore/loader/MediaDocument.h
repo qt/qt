@@ -41,11 +41,17 @@ public:
 
     virtual void defaultEventHandler(Event*);
 
+    void mediaElementSawUnsupportedTracks();
+
 private:
     MediaDocument(Frame*);
+    virtual ~MediaDocument();
+    Timer<MediaDocument> m_replaceMediaElementTimer;
 
     virtual bool isMediaDocument() const { return true; }        
     virtual Tokenizer* createTokenizer();
+
+    void replaceMediaElementTimerFired(Timer<MediaDocument>*);
 };
     
 }

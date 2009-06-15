@@ -37,8 +37,9 @@
 #include "FrameLoader.h"
 #include "HTMLNames.h"
 #include "KeyboardEvent.h"
+#include "MappedAttribute.h"
 #include "MouseEvent.h"
-#include "RenderFlow.h"
+#include "RenderBox.h"
 #include "WMLNames.h"
 
 namespace WebCore {
@@ -56,7 +57,7 @@ void WMLAElement::parseMappedAttribute(MappedAttribute* attr)
         bool wasLink = isLink();
         setIsLink(!attr->isNull());
         if (wasLink != isLink())
-            setChanged();
+            setNeedsStyleRecalc();
         if (isLink() && document()->isDNSPrefetchEnabled()) {
             String value = attr->value();
             if (protocolIs(value, "http") || protocolIs(value, "https") || value.startsWith("//"))
@@ -101,12 +102,14 @@ bool WMLAElement::isKeyboardFocusable(KeyboardEvent* event) const
     if (!document()->frame()->eventHandler()->tabsToLinks(event))
         return false;
 
+    if (!renderer() || !renderer()->isBoxModelObject())
+        return false;
+
     // Before calling absoluteRects, check for the common case where the renderer
-    // or one of the continuations is non-empty, since this is a faster check and
-    // almost always returns true.
-    for (RenderObject* r = renderer(); r; r = r->continuation())
-        if (r->width() > 0 && r->height() > 0)
-            return true;
+    // is non-empty, since this is a faster check and almost always returns true.
+    RenderBoxModelObject* box = toRenderBoxModelObject(renderer());
+    if (!box->borderBoundingBox().isEmpty())
+        return true;
 
     Vector<IntRect> rects;
     FloatPoint absPos = renderer()->localToAbsolute();
@@ -148,7 +151,7 @@ void WMLAElement::defaultEventHandler(Event* event)
  
         if (!event->defaultPrevented() && document()->frame()) {
             KURL url = document()->completeURL(parseURL(getAttribute(HTMLNames::hrefAttr)));
-            document()->frame()->loader()->urlSelected(url, target(), event, false, true);
+            document()->frame()->loader()->urlSelected(url, target(), event, false, false, true);
         }
 
         event->setDefaultHandled();

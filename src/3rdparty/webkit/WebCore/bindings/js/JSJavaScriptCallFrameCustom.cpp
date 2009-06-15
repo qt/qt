@@ -26,6 +26,8 @@
 #include "config.h"
 #include "JSJavaScriptCallFrame.h"
 
+#if ENABLE(JAVASCRIPT_DEBUGGER)
+
 #include "JavaScriptCallFrame.h"
 #include <runtime/ArrayPrototype.h>
 
@@ -33,10 +35,10 @@ using namespace JSC;
 
 namespace WebCore {
 
-JSValuePtr JSJavaScriptCallFrame::evaluate(ExecState* exec, const ArgList& args)
+JSValue JSJavaScriptCallFrame::evaluate(ExecState* exec, const ArgList& args)
 {
-    JSValuePtr exception = noValue();
-    JSValuePtr result = impl()->evaluate(args.at(exec, 0)->toString(exec), exception);
+    JSValue exception;
+    JSValue result = impl()->evaluate(args.at(0).toString(exec), exception);
 
     if (exception)
         exec->setException(exception);
@@ -44,12 +46,12 @@ JSValuePtr JSJavaScriptCallFrame::evaluate(ExecState* exec, const ArgList& args)
     return result;
 }
 
-JSValuePtr JSJavaScriptCallFrame::thisObject(ExecState*) const
+JSValue JSJavaScriptCallFrame::thisObject(ExecState*) const
 {
     return impl()->thisObject() ? impl()->thisObject() : jsNull();
 }
 
-JSValuePtr JSJavaScriptCallFrame::type(ExecState* exec) const
+JSValue JSJavaScriptCallFrame::type(ExecState* exec) const
 {
     switch (impl()->type()) {
         case DebuggerCallFrame::FunctionType:
@@ -62,7 +64,7 @@ JSValuePtr JSJavaScriptCallFrame::type(ExecState* exec) const
     return jsNull();
 }
 
-JSValuePtr JSJavaScriptCallFrame::scopeChain(ExecState* exec) const
+JSValue JSJavaScriptCallFrame::scopeChain(ExecState* exec) const
 {
     if (!impl()->scopeChain())
         return jsNull();
@@ -74,7 +76,7 @@ JSValuePtr JSJavaScriptCallFrame::scopeChain(ExecState* exec) const
     // we must always have something in the scope chain
     ASSERT(iter != end);
 
-    ArgList list;
+    MarkedArgumentBuffer list;
     do {
         list.append(*iter);
         ++iter;
@@ -84,3 +86,5 @@ JSValuePtr JSJavaScriptCallFrame::scopeChain(ExecState* exec) const
 }
 
 } // namespace WebCore
+
+#endif // ENABLE(JAVASCRIPT_DEBUGGER)

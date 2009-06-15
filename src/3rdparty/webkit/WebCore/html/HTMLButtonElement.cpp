@@ -30,7 +30,9 @@
 #include "FormDataList.h"
 #include "HTMLFormElement.h"
 #include "HTMLNames.h"
+#include "ScriptEventListener.h"
 #include "KeyboardEvent.h"
+#include "MappedAttribute.h"
 #include "RenderButton.h"
 #include <wtf/StdLibExtras.h>
 
@@ -55,7 +57,7 @@ RenderObject* HTMLButtonElement::createRenderer(RenderArena* arena, RenderStyle*
     return new (arena) RenderButton(this);
 }
 
-const AtomicString& HTMLButtonElement::type() const
+const AtomicString& HTMLButtonElement::formControlType() const
 {
     switch (m_type) {
         case SUBMIT: {
@@ -89,9 +91,9 @@ void HTMLButtonElement::parseMappedAttribute(MappedAttribute* attr)
         // Don't map 'align' attribute.  This matches what Firefox and IE do, but not Opera.
         // See http://bugs.webkit.org/show_bug.cgi?id=12071
     } else if (attr->name() == onfocusAttr) {
-        setInlineEventListenerForTypeAndAttribute(eventNames().focusEvent, attr);
+        setAttributeEventListener(eventNames().focusEvent, createAttributeEventListener(this, attr));
     } else if (attr->name() == onblurAttr) {
-        setInlineEventListenerForTypeAndAttribute(eventNames().blurEvent, attr);
+        setAttributeEventListener(eventNames().blurEvent, createAttributeEventListener(this, attr));
     } else
         HTMLFormControlElement::parseMappedAttribute(attr);
 }

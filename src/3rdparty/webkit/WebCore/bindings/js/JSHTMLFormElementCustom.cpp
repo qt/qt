@@ -26,8 +26,10 @@
 #include "config.h"
 #include "JSHTMLFormElement.h"
 
+#include "Frame.h"
 #include "HTMLCollection.h"
 #include "HTMLFormElement.h"
+#include "JSDOMWindowCustom.h"
 #include "JSNamedNodesCollection.h"
 
 using namespace JSC;
@@ -41,7 +43,7 @@ bool JSHTMLFormElement::canGetItemsForName(ExecState*, HTMLFormElement* form, co
     return namedItems.size();
 }
 
-JSValuePtr JSHTMLFormElement::nameGetter(ExecState* exec, const Identifier& propertyName, const PropertySlot& slot)
+JSValue JSHTMLFormElement::nameGetter(ExecState* exec, const Identifier& propertyName, const PropertySlot& slot)
 {
     HTMLFormElement* form = static_cast<HTMLFormElement*>(static_cast<JSHTMLElement*>(asObject(slot.slotBase()))->impl());
     
@@ -52,6 +54,15 @@ JSValuePtr JSHTMLFormElement::nameGetter(ExecState* exec, const Identifier& prop
         return toJS(exec, namedItems[0].get());
     if (namedItems.size() > 1) 
         return new (exec) JSNamedNodesCollection(exec, namedItems);
+    return jsUndefined();
+}
+
+JSValue JSHTMLFormElement::submit(ExecState* exec, const ArgList&)
+{
+    Frame* activeFrame = asJSDOMWindow(exec->dynamicGlobalObject())->impl()->frame();
+    if (!activeFrame)
+        return jsUndefined();
+    static_cast<HTMLFormElement*>(impl())->submit(0, false, !activeFrame->script()->anyPageIsProcessingUserGesture(), false);
     return jsUndefined();
 }
 

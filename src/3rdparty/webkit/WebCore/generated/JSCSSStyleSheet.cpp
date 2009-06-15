@@ -37,7 +37,7 @@ using namespace JSC;
 
 namespace WebCore {
 
-ASSERT_CLASS_FITS_IN_CELL(JSCSSStyleSheet)
+ASSERT_CLASS_FITS_IN_CELL(JSCSSStyleSheet);
 
 /* Hash table */
 
@@ -76,13 +76,13 @@ public:
     JSCSSStyleSheetConstructor(ExecState* exec)
         : DOMObject(JSCSSStyleSheetConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
     {
-        putDirect(exec->propertyNames().prototype, JSCSSStyleSheetPrototype::self(exec), None);
+        putDirect(exec->propertyNames().prototype, JSCSSStyleSheetPrototype::self(exec, exec->lexicalGlobalObject()), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
     static const ClassInfo s_info;
 
-    static PassRefPtr<Structure> createStructure(JSValuePtr proto) 
+    static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
         return Structure::create(proto, TypeInfo(ObjectType, ImplementsHasInstance)); 
     }
@@ -115,9 +115,9 @@ static const HashTable JSCSSStyleSheetPrototypeTable =
 
 const ClassInfo JSCSSStyleSheetPrototype::s_info = { "CSSStyleSheetPrototype", 0, &JSCSSStyleSheetPrototypeTable, 0 };
 
-JSObject* JSCSSStyleSheetPrototype::self(ExecState* exec)
+JSObject* JSCSSStyleSheetPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSCSSStyleSheet>(exec);
+    return getDOMPrototype<JSCSSStyleSheet>(exec, globalObject);
 }
 
 bool JSCSSStyleSheetPrototype::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -132,9 +132,9 @@ JSCSSStyleSheet::JSCSSStyleSheet(PassRefPtr<Structure> structure, PassRefPtr<CSS
 {
 }
 
-JSObject* JSCSSStyleSheet::createPrototype(ExecState* exec)
+JSObject* JSCSSStyleSheet::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSCSSStyleSheetPrototype(JSCSSStyleSheetPrototype::createStructure(JSStyleSheetPrototype::self(exec)));
+    return new (exec) JSCSSStyleSheetPrototype(JSCSSStyleSheetPrototype::createStructure(JSStyleSheetPrototype::self(exec, globalObject)));
 }
 
 bool JSCSSStyleSheet::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -142,97 +142,104 @@ bool JSCSSStyleSheet::getOwnPropertySlot(ExecState* exec, const Identifier& prop
     return getStaticValueSlot<JSCSSStyleSheet, Base>(exec, &JSCSSStyleSheetTable, this, propertyName, slot);
 }
 
-JSValuePtr jsCSSStyleSheetOwnerRule(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsCSSStyleSheetOwnerRule(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     CSSStyleSheet* imp = static_cast<CSSStyleSheet*>(static_cast<JSCSSStyleSheet*>(asObject(slot.slotBase()))->impl());
     return toJS(exec, WTF::getPtr(imp->ownerRule()));
 }
 
-JSValuePtr jsCSSStyleSheetCssRules(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsCSSStyleSheetCssRules(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     CSSStyleSheet* imp = static_cast<CSSStyleSheet*>(static_cast<JSCSSStyleSheet*>(asObject(slot.slotBase()))->impl());
     return toJS(exec, WTF::getPtr(imp->cssRules()));
 }
 
-JSValuePtr jsCSSStyleSheetRules(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsCSSStyleSheetRules(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     CSSStyleSheet* imp = static_cast<CSSStyleSheet*>(static_cast<JSCSSStyleSheet*>(asObject(slot.slotBase()))->impl());
     return toJS(exec, WTF::getPtr(imp->rules()));
 }
 
-JSValuePtr jsCSSStyleSheetConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsCSSStyleSheetConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     return static_cast<JSCSSStyleSheet*>(asObject(slot.slotBase()))->getConstructor(exec);
 }
-JSValuePtr JSCSSStyleSheet::getConstructor(ExecState* exec)
+JSValue JSCSSStyleSheet::getConstructor(ExecState* exec)
 {
     return getDOMConstructor<JSCSSStyleSheetConstructor>(exec);
 }
 
-JSValuePtr jsCSSStyleSheetPrototypeFunctionInsertRule(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsCSSStyleSheetPrototypeFunctionInsertRule(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSCSSStyleSheet::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSCSSStyleSheet::s_info))
         return throwError(exec, TypeError);
     JSCSSStyleSheet* castedThisObj = static_cast<JSCSSStyleSheet*>(asObject(thisValue));
     CSSStyleSheet* imp = static_cast<CSSStyleSheet*>(castedThisObj->impl());
     ExceptionCode ec = 0;
-    const UString& rule = args.at(exec, 0)->toString(exec);
-    unsigned index = args.at(exec, 1)->toInt32(exec);
+    const UString& rule = args.at(0).toString(exec);
+    unsigned index = args.at(1).toInt32(exec);
 
 
-    JSC::JSValuePtr result = jsNumber(exec, imp->insertRule(rule, index, ec));
+    JSC::JSValue result = jsNumber(exec, imp->insertRule(rule, index, ec));
     setDOMException(exec, ec);
     return result;
 }
 
-JSValuePtr jsCSSStyleSheetPrototypeFunctionDeleteRule(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsCSSStyleSheetPrototypeFunctionDeleteRule(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSCSSStyleSheet::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSCSSStyleSheet::s_info))
         return throwError(exec, TypeError);
     JSCSSStyleSheet* castedThisObj = static_cast<JSCSSStyleSheet*>(asObject(thisValue));
     CSSStyleSheet* imp = static_cast<CSSStyleSheet*>(castedThisObj->impl());
     ExceptionCode ec = 0;
-    unsigned index = args.at(exec, 0)->toInt32(exec);
+    unsigned index = args.at(0).toInt32(exec);
 
     imp->deleteRule(index, ec);
     setDOMException(exec, ec);
     return jsUndefined();
 }
 
-JSValuePtr jsCSSStyleSheetPrototypeFunctionAddRule(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsCSSStyleSheetPrototypeFunctionAddRule(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSCSSStyleSheet::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSCSSStyleSheet::s_info))
         return throwError(exec, TypeError);
     JSCSSStyleSheet* castedThisObj = static_cast<JSCSSStyleSheet*>(asObject(thisValue));
     CSSStyleSheet* imp = static_cast<CSSStyleSheet*>(castedThisObj->impl());
     ExceptionCode ec = 0;
-    const UString& selector = args.at(exec, 0)->toString(exec);
-    const UString& style = args.at(exec, 1)->toString(exec);
+    const UString& selector = args.at(0).toString(exec);
+    const UString& style = args.at(1).toString(exec);
 
     int argsCount = args.size();
     if (argsCount < 3) {
 
-        JSC::JSValuePtr result = jsNumber(exec, imp->addRule(selector, style, ec));
+        JSC::JSValue result = jsNumber(exec, imp->addRule(selector, style, ec));
         setDOMException(exec, ec);
         return result;
     }
 
-    unsigned index = args.at(exec, 2)->toInt32(exec);
+    unsigned index = args.at(2).toInt32(exec);
 
 
-    JSC::JSValuePtr result = jsNumber(exec, imp->addRule(selector, style, index, ec));
+    JSC::JSValue result = jsNumber(exec, imp->addRule(selector, style, index, ec));
     setDOMException(exec, ec);
     return result;
 }
 
-JSValuePtr jsCSSStyleSheetPrototypeFunctionRemoveRule(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsCSSStyleSheetPrototypeFunctionRemoveRule(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSCSSStyleSheet::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSCSSStyleSheet::s_info))
         return throwError(exec, TypeError);
     JSCSSStyleSheet* castedThisObj = static_cast<JSCSSStyleSheet*>(asObject(thisValue));
     CSSStyleSheet* imp = static_cast<CSSStyleSheet*>(castedThisObj->impl());
     ExceptionCode ec = 0;
-    unsigned index = args.at(exec, 0)->toInt32(exec);
+    unsigned index = args.at(0).toInt32(exec);
 
     imp->removeRule(index, ec);
     setDOMException(exec, ec);

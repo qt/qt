@@ -377,7 +377,8 @@ namespace WTF {
         VectorBuffer(size_t capacity)
             : Base(inlineBuffer(), inlineCapacity)
         {
-            allocateBuffer(capacity);
+            if (capacity > inlineCapacity)
+                Base::allocateBuffer(capacity);
         }
 
         ~VectorBuffer()
@@ -389,6 +390,10 @@ namespace WTF {
         {
             if (newCapacity > inlineCapacity)
                 Base::allocateBuffer(newCapacity);
+            else {
+                m_buffer = inlineBuffer();
+                m_capacity = inlineCapacity;
+            }
         }
 
         void deallocateBuffer(T* bufferToDeallocate)
@@ -503,6 +508,7 @@ namespace WTF {
         void grow(size_t size);
         void resize(size_t size);
         void reserveCapacity(size_t newCapacity);
+        void reserveInitialCapacity(size_t initialCapacity);
         void shrinkCapacity(size_t newCapacity);
         void shrinkToFit() { shrinkCapacity(size()); }
 
@@ -686,7 +692,7 @@ namespace WTF {
     }
 
     template<typename T, size_t inlineCapacity>
-    void Vector<T, inlineCapacity>::resize(size_t size)
+    inline void Vector<T, inlineCapacity>::resize(size_t size)
     {
         if (size <= m_size)
             TypeOperations::destruct(begin() + size, end());
@@ -733,6 +739,15 @@ namespace WTF {
     }
     
     template<typename T, size_t inlineCapacity>
+    inline void Vector<T, inlineCapacity>::reserveInitialCapacity(size_t initialCapacity)
+    {
+        ASSERT(!m_size);
+        ASSERT(capacity() == inlineCapacity);
+        if (initialCapacity > inlineCapacity)
+            m_buffer.allocateBuffer(initialCapacity);
+    }
+    
+    template<typename T, size_t inlineCapacity>
     void Vector<T, inlineCapacity>::shrinkCapacity(size_t newCapacity)
     {
         if (newCapacity >= capacity())
@@ -766,6 +781,8 @@ namespace WTF {
             if (!begin())
                 return;
         }
+        if (newSize < m_size)
+            CRASH();
         T* dest = end();
         for (size_t i = 0; i < dataSize; ++i)
             new (&dest[i]) T(data[i]);
@@ -773,7 +790,7 @@ namespace WTF {
     }
 
     template<typename T, size_t inlineCapacity> template<typename U>
-    inline void Vector<T, inlineCapacity>::append(const U& val)
+    ALWAYS_INLINE void Vector<T, inlineCapacity>::append(const U& val)
     {
         const U* ptr = &val;
         if (size() == capacity()) {
@@ -827,6 +844,8 @@ namespace WTF {
             if (!begin())
                 return;
         }
+        if (newSize < m_size)
+            CRASH();
         T* spot = begin() + position;
         TypeOperations::moveOverlapping(spot, end(), spot + dataSize);
         for (size_t i = 0; i < dataSize; ++i)

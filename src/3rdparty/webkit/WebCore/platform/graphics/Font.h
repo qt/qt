@@ -27,7 +27,9 @@
 
 #include "TextRun.h"
 #include "FontDescription.h"
+#include "SimpleFontData.h"
 #include <wtf/HashMap.h>
+#include <wtf/MathExtras.h>
 
 #if PLATFORM(QT)
 #include <QFont>
@@ -45,7 +47,6 @@ class GlyphBuffer;
 class GlyphPageTreeNode;
 class GraphicsContext;
 class IntPoint;
-class SimpleFontData;
 class SVGFontElement;
 
 struct GlyphData;
@@ -77,8 +78,8 @@ public:
 
     void drawText(GraphicsContext*, const TextRun&, const FloatPoint&, int from = 0, int to = -1) const;
 
-    int width(const TextRun&) const;
-    float floatWidth(const TextRun&) const;
+    int width(const TextRun& run, HashSet<const SimpleFontData*>* fallbackFonts = 0) const { return lroundf(floatWidth(run, fallbackFonts)); }
+    float floatWidth(const TextRun&, HashSet<const SimpleFontData*>* fallbackFonts = 0) const;
     float floatWidth(const TextRun& run, int extraCharsAvailable, int& charsConsumed, String& glyphName) const;
 
     int offsetForPosition(const TextRun&, int position, bool includePartialGlyphs) const;
@@ -104,30 +105,35 @@ public:
     bool isPlatformFont() const { return m_isPlatformFont; }
 
     // Metrics that we query the FontFallbackList for.
-    int ascent() const;
-    int descent() const;
+    int ascent() const { return primaryFont()->ascent(); }
+    int descent() const { return primaryFont()->descent(); }
     int height() const { return ascent() + descent(); }
-    int lineSpacing() const;
-    int lineGap() const;
-    float xHeight() const;
-    unsigned unitsPerEm() const;
-    int spaceWidth() const;
+    int lineSpacing() const { return primaryFont()->lineSpacing(); }
+    int lineGap() const { return primaryFont()->lineGap(); }
+    float xHeight() const { return primaryFont()->xHeight(); }
+    unsigned unitsPerEm() const { return primaryFont()->unitsPerEm(); }
+    int spaceWidth() const { return (int)ceilf(primaryFont()->adjustedSpaceWidth() + m_letterSpacing); }
     int tabWidth() const { return 8 * spaceWidth(); }
 
-    const SimpleFontData* primaryFont() const {
+    const SimpleFontData* primaryFont() const
+    {
+        ASSERT(isMainThread());
         if (!m_cachedPrimaryFont)
             cachePrimaryFont();
         return m_cachedPrimaryFont;
     }
 
     const FontData* fontDataAt(unsigned) const;
-    const GlyphData& glyphDataForCharacter(UChar32, bool mirror, bool forceSmallCaps = false) const;
+    GlyphData glyphDataForCharacter(UChar32, bool mirror, bool forceSmallCaps = false) const;
     // Used for complex text, and does not utilize the glyph map cache.
     const FontData* fontDataForCharacters(const UChar*, int length) const;
 
 #if PLATFORM(QT)
     QFont font() const;
 #endif
+
+    static void setShouldUseSmoothing(bool);
+    static bool shouldUseSmoothing();
 
 private:
 #if ENABLE(SVG_FONTS)
@@ -143,13 +149,15 @@ private:
     void drawSimpleText(GraphicsContext*, const TextRun&, const FloatPoint&, int from, int to) const;
     void drawGlyphs(GraphicsContext*, const SimpleFontData*, const GlyphBuffer&, int from, int to, const FloatPoint&) const;
     void drawGlyphBuffer(GraphicsContext*, const GlyphBuffer&, const TextRun&, const FloatPoint&) const;
-    float floatWidthForSimpleText(const TextRun&, GlyphBuffer*) const;
+    float floatWidthForSimpleText(const TextRun&, GlyphBuffer*, HashSet<const SimpleFontData*>* fallbackFonts = 0) const;
     int offsetForPositionForSimpleText(const TextRun&, int position, bool includePartialGlyphs) const;
     FloatRect selectionRectForSimpleText(const TextRun&, const IntPoint&, int h, int from, int to) const;
+
+    static bool canReturnFallbackFontsForComplexText();
 #endif
 
     void drawComplexText(GraphicsContext*, const TextRun&, const FloatPoint&, int from, int to) const;
-    float floatWidthForComplexText(const TextRun&) const;
+    float floatWidthForComplexText(const TextRun&, HashSet<const SimpleFontData*>* fallbackFonts = 0) const;
     int offsetForPositionForComplexText(const TextRun&, int position, bool includePartialGlyphs) const;
     FloatRect selectionRectForComplexText(const TextRun&, const IntPoint&, int h, int from, int to) const;
     void cachePrimaryFont() const;

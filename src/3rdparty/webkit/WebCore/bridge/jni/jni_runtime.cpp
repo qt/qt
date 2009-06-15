@@ -70,7 +70,7 @@ JavaField::JavaField (JNIEnv *env, jobject aField)
     _field = new JObjectWrapper(aField);
 }
 
-JSValuePtr JavaArray::convertJObjectToArray(ExecState* exec, jobject anObject, const char* type, PassRefPtr<RootObject> rootObject)
+JSValue JavaArray::convertJObjectToArray(ExecState* exec, jobject anObject, const char* type, PassRefPtr<RootObject> rootObject)
 {
     if (type[0] != '[')
         return jsUndefined();
@@ -93,24 +93,24 @@ jvalue JavaField::dispatchValueFromInstance(ExecState *exec, const JavaInstance 
         {
             RootObject* rootObject = instance->rootObject();
             if (rootObject && rootObject->nativeHandle()) {
-                JSValuePtr exceptionDescription = noValue();
+                JSValue exceptionDescription;
                 jvalue args[1];
                 
                 args[0].l = jinstance;
                 dispatchJNICall(exec, rootObject->nativeHandle(), fieldJInstance, false, returnType, mid, args, result, 0, exceptionDescription);
                 if (exceptionDescription)
-                    throwError(exec, GeneralError, exceptionDescription->toString(exec));
+                    throwError(exec, GeneralError, exceptionDescription.toString(exec));
             }
         }
     }
     return result;
 }
 
-JSValuePtr JavaField::valueFromInstance(ExecState* exec, const Instance* i) const 
+JSValue JavaField::valueFromInstance(ExecState* exec, const Instance* i) const 
 {
     const JavaInstance *instance = static_cast<const JavaInstance *>(i);
 
-    JSValuePtr jsresult = jsUndefined();
+    JSValue jsresult = jsUndefined();
     
     switch (_JNIType) {
         case array_type:
@@ -123,7 +123,7 @@ JSValuePtr JavaField::valueFromInstance(ExecState* exec, const Instance* i) cons
                 jsresult = JavaArray::convertJObjectToArray(exec, anObject, arrayType, instance->rootObject());
             }
             else if (anObject != 0){
-                jsresult = Instance::createRuntimeObject(exec, JavaInstance::create(anObject, instance->rootObject()));
+                jsresult = JavaInstance::create(anObject, instance->rootObject())->createRuntimeObject(exec);
             }
         }
         break;
@@ -157,7 +157,7 @@ JSValuePtr JavaField::valueFromInstance(ExecState* exec, const Instance* i) cons
         break;
     }
 
-    JS_LOG ("getting %s = %s\n", name(), jsresult->toString(exec).ascii());
+    JS_LOG ("getting %s = %s\n", UString(name()).UTF8String().c_str(), jsresult.toString(exec).ascii());
     
     return jsresult;
 }
@@ -175,7 +175,7 @@ void JavaField::dispatchSetValueToInstance(ExecState *exec, const JavaInstance *
         {
             RootObject* rootObject = instance->rootObject();
             if (rootObject && rootObject->nativeHandle()) {
-                JSValuePtr exceptionDescription = noValue();
+                JSValue exceptionDescription;
                 jvalue args[2];
                 jvalue result;
                 
@@ -183,18 +183,18 @@ void JavaField::dispatchSetValueToInstance(ExecState *exec, const JavaInstance *
                 args[1] = javaValue;
                 dispatchJNICall(exec, rootObject->nativeHandle(), fieldJInstance, false, void_type, mid, args, result, 0, exceptionDescription);
                 if (exceptionDescription)
-                    throwError(exec, GeneralError, exceptionDescription->toString(exec));
+                    throwError(exec, GeneralError, exceptionDescription.toString(exec));
             }
         }
     }
 }
 
-void JavaField::setValueToInstance(ExecState* exec, const Instance* i, JSValuePtr aValue) const
+void JavaField::setValueToInstance(ExecState* exec, const Instance* i, JSValue aValue) const
 {
     const JavaInstance *instance = static_cast<const JavaInstance *>(i);
     jvalue javaValue = convertValueToJValue (exec, aValue, _JNIType, type());
 
-    JS_LOG ("setting value %s to %s\n", name(), aValue->toString(exec).ascii());
+    JS_LOG ("setting value %s to %s\n", UString(name()).UTF8String().c_str(), aValue.toString(exec).ascii());
 
     switch (_JNIType) {
         case array_type:
@@ -359,7 +359,7 @@ JNIType JavaMethod::JNIReturnType() const
 jmethodID JavaMethod::methodID (jobject obj) const
 {
     if (_methodID == 0) {
-        _methodID = getMethodID (obj, name(), signature());
+        _methodID = getMethodID (obj, _name.UTF8String(), signature());
     }
     return _methodID;
 }
@@ -386,7 +386,7 @@ RootObject* JavaArray::rootObject() const
     return _rootObject && _rootObject->isValid() ? _rootObject.get() : 0;
 }
 
-void JavaArray::setValueAt(ExecState* exec, unsigned index, JSValuePtr aValue) const
+void JavaArray::setValueAt(ExecState* exec, unsigned index, JSValue aValue) const
 {
     JNIEnv *env = getJNIEnv();
     char *javaClassName = 0;
@@ -454,7 +454,7 @@ void JavaArray::setValueAt(ExecState* exec, unsigned index, JSValuePtr aValue) c
 }
 
 
-JSValuePtr JavaArray::valueAt(ExecState* exec, unsigned index) const
+JSValue JavaArray::valueAt(ExecState* exec, unsigned index) const
 {
     JNIEnv *env = getJNIEnv();
     JNIType arrayType = JNITypeFromPrimitiveType(_type[1]);
@@ -474,7 +474,7 @@ JSValuePtr JavaArray::valueAt(ExecState* exec, unsigned index) const
                 return JavaArray::convertJObjectToArray(exec, anObject, _type+1, rootObject());
             }
             // or array of other object type?
-            return Instance::createRuntimeObject(exec, JavaInstance::create(anObject, rootObject()));
+            return JavaInstance::create(anObject, rootObject())->createRuntimeObject(exec);
         }
             
         case boolean_type: {

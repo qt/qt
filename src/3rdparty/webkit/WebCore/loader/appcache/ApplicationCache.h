@@ -41,7 +41,8 @@ class ApplicationCacheGroup;
 class ApplicationCacheResource;
 class DocumentLoader;
 class KURL;
-class ResourceRequest;
+
+struct ResourceRequest;
 
 typedef Vector<std::pair<KURL, KURL> > FallbackURLVector;
 
@@ -58,7 +59,9 @@ public:
     
     void setGroup(ApplicationCacheGroup*);
     ApplicationCacheGroup* group() const { return m_group; }
-    
+
+    bool isComplete() const;
+
     ApplicationCacheResource* resourceForRequest(const ResourceRequest&);
     ApplicationCacheResource* resourceForURL(const String& url);
 

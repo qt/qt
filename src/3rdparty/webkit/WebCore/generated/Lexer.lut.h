@@ -45,10 +45,5 @@ static const struct HashTableValue mainTableValues[37] = {
 };
 
 extern const struct HashTable mainTable =
-#if ENABLE(PERFECT_HASH_SIZE)
-    { 1023, mainTableValues, 0 };
-#else
     { 133, 127, mainTableValues, 0 };
-#endif
-
 } // namespace

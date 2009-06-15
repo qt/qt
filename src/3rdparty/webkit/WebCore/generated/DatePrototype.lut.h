@@ -12,7 +12,7 @@ static const struct HashTableValue dateTableValues[45] = {
    { "toLocaleString", DontEnum|Function, (intptr_t)dateProtoFuncToLocaleString, (intptr_t)0 },
    { "toLocaleDateString", DontEnum|Function, (intptr_t)dateProtoFuncToLocaleDateString, (intptr_t)0 },
    { "toLocaleTimeString", DontEnum|Function, (intptr_t)dateProtoFuncToLocaleTimeString, (intptr_t)0 },
-   { "valueOf", DontEnum|Function, (intptr_t)dateProtoFuncValueOf, (intptr_t)0 },
+   { "valueOf", DontEnum|Function, (intptr_t)dateProtoFuncGetTime, (intptr_t)0 },
    { "getTime", DontEnum|Function, (intptr_t)dateProtoFuncGetTime, (intptr_t)0 },
    { "getFullYear", DontEnum|Function, (intptr_t)dateProtoFuncGetFullYear, (intptr_t)0 },
    { "getUTCFullYear", DontEnum|Function, (intptr_t)dateProtoFuncGetUTCFullYear, (intptr_t)0 },
@@ -53,10 +53,5 @@ static const struct HashTableValue dateTableValues[45] = {
 };
 
 extern const struct HashTable dateTable =
-#if ENABLE(PERFECT_HASH_SIZE)
-    { 2047, dateTableValues, 0 };
-#else
     { 134, 127, dateTableValues, 0 };
-#endif
-
 } // namespace

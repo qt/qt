@@ -359,9 +359,10 @@ textarea {
     -webkit-box-orient: vertical;
     resize: auto;
     cursor: auto;
+    padding: 2px;
 }
 
-input::-webkit-input-placeholder {
+input::-webkit-input-placeholder, isindex::-webkit-input-placeholder {
     color: darkGray;
 }
 
@@ -591,6 +592,10 @@ frameset {
 
 iframe {
     border: 2px inset
+}
+
+img, input[type=image], video, iframe, object, embed, applet {
+    overflow: hidden;   /* Default to overflow:hidden so that border-radius clipping works on the foreground of these elements. */
 }
 
 /* noscript is handled internally, as it depends on settings */

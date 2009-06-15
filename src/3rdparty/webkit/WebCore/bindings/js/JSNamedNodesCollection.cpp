@@ -29,13 +29,13 @@
 #include "AtomicString.h"
 #include "Element.h"
 #include "JSNode.h"
-#include "NamedAttrMap.h"
+#include "NamedNodeMap.h"
 
 namespace WebCore {
 
 using namespace JSC;
 
-ASSERT_CLASS_FITS_IN_CELL(JSNamedNodesCollection)
+ASSERT_CLASS_FITS_IN_CELL(JSNamedNodesCollection);
 
 const ClassInfo JSNamedNodesCollection::s_info = { "Collection", 0, 0, 0 };
 
@@ -48,13 +48,13 @@ JSNamedNodesCollection::JSNamedNodesCollection(ExecState* exec, const Vector<Ref
 {
 }
 
-JSValuePtr JSNamedNodesCollection::lengthGetter(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue JSNamedNodesCollection::lengthGetter(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     JSNamedNodesCollection* thisObj = static_cast<JSNamedNodesCollection*>(asObject(slot.slotBase()));
     return jsNumber(exec, thisObj->m_nodes->size());
 }
 
-JSValuePtr JSNamedNodesCollection::indexGetter(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue JSNamedNodesCollection::indexGetter(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     JSNamedNodesCollection *thisObj = static_cast<JSNamedNodesCollection*>(asObject(slot.slotBase()));
     return toJS(exec, (*thisObj->m_nodes)[slot.index()].get());

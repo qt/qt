@@ -46,19 +46,27 @@ JSCallbackFunction::JSCallbackFunction(ExecState* exec, JSObjectCallAsFunctionCa
 {
 }
 
-JSValuePtr JSCallbackFunction::call(ExecState* exec, JSObject* functionObject, JSValuePtr thisValue, const ArgList& args)
+JSValue JSCallbackFunction::call(ExecState* exec, JSObject* functionObject, JSValue thisValue, const ArgList& args)
 {
     JSContextRef execRef = toRef(exec);
     JSObjectRef functionRef = toRef(functionObject);
-    JSObjectRef thisObjRef = toRef(thisValue->toThisObject(exec));
+    JSObjectRef thisObjRef = toRef(thisValue.toThisObject(exec));
 
     int argumentCount = static_cast<int>(args.size());
     Vector<JSValueRef, 16> arguments(argumentCount);
     for (int i = 0; i < argumentCount; i++)
-        arguments[i] = toRef(args.at(exec, i));
+        arguments[i] = toRef(exec, args.at(i));
 
-    JSLock::DropAllLocks dropAllLocks(exec);
-    return toJS(static_cast<JSCallbackFunction*>(functionObject)->m_callback(execRef, functionRef, thisObjRef, argumentCount, arguments.data(), toRef(exec->exceptionSlot())));
+    JSValueRef exception = 0;
+    JSValueRef result;
+    {
+        JSLock::DropAllLocks dropAllLocks(exec);
+        result = static_cast<JSCallbackFunction*>(functionObject)->m_callback(execRef, functionRef, thisObjRef, argumentCount, arguments.data(), &exception);
+    }
+    if (exception)
+        exec->setException(toJS(exec, exception));
+
+    return toJS(exec, result);
 }
 
 CallType JSCallbackFunction::getCallData(CallData& callData)

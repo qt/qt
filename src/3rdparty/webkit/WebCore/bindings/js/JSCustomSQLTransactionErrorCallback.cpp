@@ -29,8 +29,8 @@
 #include "config.h"
 #include "JSCustomSQLTransactionErrorCallback.h"
 
-#include "CString.h"
-#include "DOMWindow.h"
+#if ENABLE(DATABASE)
+
 #include "Frame.h"
 #include "ScriptController.h"
 #include "JSSQLError.h"
@@ -46,47 +46,46 @@ JSCustomSQLTransactionErrorCallback::JSCustomSQLTransactionErrorCallback(JSObjec
 {
 }
     
-bool JSCustomSQLTransactionErrorCallback::handleEvent(SQLError* error)
+void JSCustomSQLTransactionErrorCallback::handleEvent(SQLError* error)
 {
     ASSERT(m_callback);
     ASSERT(m_frame);
-        
+
     if (!m_frame->script()->isEnabled())
-        return true;
-        
+        return;
+
     JSGlobalObject* globalObject = m_frame->script()->globalObject();
     ExecState* exec = globalObject->globalExec();
-        
+
     JSC::JSLock lock(false);
-        
-    JSValuePtr function = m_callback->get(exec, Identifier(exec, "handleEvent"));
+
+    JSValue function = m_callback->get(exec, Identifier(exec, "handleEvent"));
     CallData callData;
-    CallType callType = function->getCallData(callData);
+    CallType callType = function.getCallData(callData);
     if (callType == CallTypeNone) {
         callType = m_callback->getCallData(callData);
         if (callType == CallTypeNone) {
             // FIXME: Should an exception be thrown here?
-            return true;
+            return;
         }
         function = m_callback;
     }
 
     RefPtr<JSCustomSQLTransactionErrorCallback> protect(this);
-        
-    ArgList args;
+
+    MarkedArgumentBuffer args;
     args.append(toJS(exec, error));
 
-    JSValuePtr result;
-    globalObject->startTimeoutCheck();
-    result = call(exec, function, callType, callData, m_callback, args);
-    globalObject->stopTimeoutCheck();
-        
+    globalObject->globalData()->timeoutChecker.start();
+    call(exec, function, callType, callData, m_callback, args);
+    globalObject->globalData()->timeoutChecker.stop();
+
     if (exec->hadException())
         reportCurrentException(exec);
-        
-    Document::updateDocumentsRendering();
-    
-    return result->toBoolean(exec);
+
+    Document::updateStyleForAllDocuments();
 }
-    
+
 }
+
+#endif // ENABLE(DATABASE)

@@ -57,7 +57,7 @@ class FTPDirectoryTokenizer : public HTMLTokenizer {
 public:
     FTPDirectoryTokenizer(HTMLDocument*);
 
-    virtual bool write(const SegmentedString&, bool appendData);
+    virtual void write(const SegmentedString&, bool appendData);
     virtual void finish();
     
     virtual bool isWaitingForScripts() const { return false; }
@@ -117,7 +117,7 @@ void FTPDirectoryTokenizer::appendEntry(const String& filename, const String& si
     RefPtr<Element> rowElement = m_tableElement->insertRow(-1, ec);
     rowElement->setAttribute("class", "ftpDirectoryEntryRow", ec);
    
-    RefPtr<Element> element = m_doc->createElementNS(xhtmlNamespaceURI, "td", ec);
+    RefPtr<Element> element = m_doc->createElement(tdTag, false);
     element->appendChild(new Text(m_doc, String(&noBreakSpace, 1)), ec);
     if (isDirectory)
         element->setAttribute("class", "ftpDirectoryIcon ftpDirectoryTypeDirectory", ec);
@@ -129,12 +129,12 @@ void FTPDirectoryTokenizer::appendEntry(const String& filename, const String& si
     element->setAttribute("class", "ftpDirectoryFileName", ec);
     rowElement->appendChild(element, ec);
     
-    element = m_doc->createElementNS(xhtmlNamespaceURI, "td", ec);
+    element = m_doc->createElement(tdTag, false);
     element->appendChild(new Text(m_doc, date), ec);
     element->setAttribute("class", "ftpDirectoryFileDate", ec);
     rowElement->appendChild(element, ec);
     
-    element = m_doc->createElementNS(xhtmlNamespaceURI, "td", ec);
+    element = m_doc->createElement(tdTag, false);
     element->appendChild(new Text(m_doc, size), ec);
     element->setAttribute("class", "ftpDirectoryFileSize", ec);
     rowElement->appendChild(element, ec);
@@ -150,11 +150,11 @@ PassRefPtr<Element> FTPDirectoryTokenizer::createTDForFilename(const String& fil
     else
         fullURL.append("/" + filename);
 
-    RefPtr<Element> anchorElement = m_doc->createElementNS(xhtmlNamespaceURI, "a", ec);
+    RefPtr<Element> anchorElement = m_doc->createElement(aTag, false);
     anchorElement->setAttribute("href", fullURL, ec);
     anchorElement->appendChild(new Text(m_doc, filename), ec);
     
-    RefPtr<Element> tdElement = m_doc->createElementNS(xhtmlNamespaceURI, "td", ec);
+    RefPtr<Element> tdElement = m_doc->createElement(tdTag, false);
     tdElement->appendChild(anchorElement, ec);
     
     return tdElement.release();
@@ -235,7 +235,11 @@ static struct tm *localTimeQt(const time_t *const timep, struct tm *result)
 
 #define localtime_r(x, y) localTimeQt(x, y)
 #elif PLATFORM(WIN_OS) && !defined(localtime_r)
+#if defined(_MSC_VER) && (_MSC_VER >= 1400) 
 #define localtime_r(x, y) localtime_s((y), (x))
+#else /* !_MSC_VER */ 
+#define localtime_r(x,y) (localtime(x)?(*(y)=*localtime(x),(y)):0)
+#endif
 #endif
 
 static String processFileDateString(const FTPTime& fileTime)
@@ -276,7 +280,7 @@ static String processFileDateString(const FTPTime& fileTime)
                 return "Yesterday" + timeOfDay;
         }
         
-        if (now.tm_mday == 1 && (now.tm_mon == fileTime.tm_mon + 1 || now.tm_mon == 0 && fileTime.tm_mon == 11) &&
+        if (now.tm_mday == 1 && (now.tm_mon == fileTime.tm_mon + 1 || (now.tm_mon == 0 && fileTime.tm_mon == 11)) &&
             wasLastDayOfMonth(fileTime.tm_year, fileTime.tm_mon, fileTime.tm_mday))
                 return "Yesterday" + timeOfDay;
     }
@@ -303,8 +307,9 @@ static String processFileDateString(const FTPTime& fileTime)
 void FTPDirectoryTokenizer::parseAndAppendOneLine(const String& inputLine)
 {
     ListResult result;
+    CString latin1Input = inputLine.latin1();
 
-    FTPEntryType typeResult = parseOneFTPLine(inputLine.latin1().data(), m_listState, result);
+    FTPEntryType typeResult = parseOneFTPLine(latin1Input.data(), m_listState, result);
     
     // FTPMiscEntry is a comment or usage statistic which we don't care about, and junk is invalid data - bail in these 2 cases
     if (typeResult == FTPMiscEntry || typeResult == FTPJunkEntry)
@@ -364,9 +369,9 @@ bool FTPDirectoryTokenizer::loadDocumentTemplate()
         return true;
 
     // Otherwise create one manually
-    ExceptionCode ec;        
-    tableElement = m_doc->createElementNS(xhtmlNamespaceURI, "table", ec);
+    tableElement = m_doc->createElement(tableTag, false);
     m_tableElement = static_cast<HTMLTableElement*>(tableElement.get());
+    ExceptionCode ec;        
     m_tableElement->setAttribute("id", "ftpDirectoryTable", ec);
 
     // If we didn't find the table element, lets try to append our own to the body
@@ -386,20 +391,20 @@ void FTPDirectoryTokenizer::createBasicDocument()
 
     // FIXME: Make this "basic document" more acceptable
 
-    ExceptionCode ec;
     
-    RefPtr<Element> bodyElement = m_doc->createElementNS(xhtmlNamespaceURI, "body", ec);
+    RefPtr<Element> bodyElement = m_doc->createElement(bodyTag, false);
                             
+    ExceptionCode ec;
     m_doc->appendChild(bodyElement, ec);
     
-    RefPtr<Element> tableElement = m_doc->createElementNS(xhtmlNamespaceURI, "table", ec);
+    RefPtr<Element> tableElement = m_doc->createElement(tableTag, false);
     m_tableElement = static_cast<HTMLTableElement*>(tableElement.get());
     m_tableElement->setAttribute("id", "ftpDirectoryTable", ec);
 
     bodyElement->appendChild(m_tableElement, ec);
 }
 
-bool FTPDirectoryTokenizer::write(const SegmentedString& s, bool /*appendData*/)
+void FTPDirectoryTokenizer::write(const SegmentedString& s, bool /*appendData*/)
 {    
     // Make sure we have the table element to append to by loading the template set in the pref, or
     // creating a very basic document with the appropriate table
@@ -439,7 +444,7 @@ bool FTPDirectoryTokenizer::write(const SegmentedString& s, bool /*appendData*/)
     
     if (!foundNewLine) {
         m_dest = m_buffer;
-        return false;
+        return;
     }
 
     UChar* start = m_buffer;
@@ -460,8 +465,6 @@ bool FTPDirectoryTokenizer::write(const SegmentedString& s, bool /*appendData*/)
     // Copy the partial line we have left to the carryover buffer
     if (cursor - start > 1)
         m_carryOver.append(String(start, cursor - start - 1));
-    
-    return false;
 }
 
 void FTPDirectoryTokenizer::finish()

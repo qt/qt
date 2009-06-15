@@ -24,7 +24,9 @@
 
 #include "config.h"
 #include "HTMLIsIndexElement.h"
+
 #include "HTMLNames.h"
+#include "MappedAttribute.h"
 
 namespace WebCore {
 
@@ -34,13 +36,15 @@ HTMLIsIndexElement::HTMLIsIndexElement(const QualifiedName& tagName, Document *d
     : HTMLInputElement(tagName, doc, f)
 {
     ASSERT(hasTagName(isindexTag));
-    m_name = "isindex";
+    setDefaultName(isindexTag.localName());
 }
 
 void HTMLIsIndexElement::parseMappedAttribute(MappedAttribute* attr)
 {
     if (attr->name() == promptAttr)
         setValue(attr->value());
+    else if (attr->name() == placeholderAttr)
+        updatePlaceholderVisibility();
     else
         // don't call HTMLInputElement::parseMappedAttribute here, as it would
         // accept attributes this element does not support

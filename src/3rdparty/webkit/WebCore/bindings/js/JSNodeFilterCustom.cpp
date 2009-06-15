@@ -41,14 +41,14 @@ void JSNodeFilter::mark()
     DOMObject::mark();
 }
 
-JSValuePtr JSNodeFilter::acceptNode(ExecState* exec, const ArgList& args)
+JSValue JSNodeFilter::acceptNode(ExecState* exec, const ArgList& args)
 {
-    return jsNumber(exec, impl()->acceptNode(exec, toNode(args.at(exec, 0))));
+    return jsNumber(exec, impl()->acceptNode(exec, toNode(args.at(0))));
 }
 
-PassRefPtr<NodeFilter> toNodeFilter(JSValuePtr value)
+PassRefPtr<NodeFilter> toNodeFilter(JSValue value)
 {
-    if (value->isObject(&JSNodeFilter::s_info))
+    if (value.isObject(&JSNodeFilter::s_info))
         return static_cast<JSNodeFilter*>(asObject(value))->impl();
 
     return NodeFilter::create(JSNodeFilterCondition::create(value));

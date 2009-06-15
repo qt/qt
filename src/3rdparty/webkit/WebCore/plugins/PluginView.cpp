@@ -57,6 +57,7 @@
 #include "PluginDebug.h"
 #include "PluginMainThreadScheduler.h"
 #include "PluginPackage.h"
+#include "RenderBox.h"
 #include "RenderObject.h"
 #include "c_instance.h"
 #include "npruntime_impl.h"
@@ -71,7 +72,6 @@ using JSC::ExecState;
 using JSC::JSLock;
 using JSC::JSObject;
 using JSC::JSValue;
-using JSC::JSValuePtr;
 using JSC::UString;
 
 using std::min;
@@ -86,7 +86,7 @@ static int s_callingPlugin;
 
 static String scriptStringIfJavaScriptURL(const KURL& url)
 {
-    if (!url.protocolIs("javascript"))
+    if (!protocolIsJavaScript(url))
         return String();
 
     // This returns an unescaped string
@@ -205,14 +205,14 @@ static char* createUTF8String(const String& str)
     return result;
 }
 
-static bool getString(ScriptController* proxy, JSValuePtr result, String& string)
+static bool getString(ScriptController* proxy, JSValue result, String& string)
 {
-    if (!proxy || !result || result->isUndefined())
+    if (!proxy || !result || result.isUndefined())
         return false;
     JSLock lock(false);
 
     ExecState* exec = proxy->globalObject()->globalExec();
-    UString ustring = result->toString(exec);
+    UString ustring = result.toString(exec);
     exec->clearException();
 
     string = ustring;
@@ -239,7 +239,7 @@ void PluginView::performRequest(PluginRequest* request)
             m_streams.add(stream);
             stream->start();
         } else {
-            m_parentFrame->loader()->load(request->frameLoadRequest().resourceRequest(), targetFrameName);
+            m_parentFrame->loader()->load(request->frameLoadRequest().resourceRequest(), targetFrameName, false);
       
             // FIXME: <rdar://problem/4807469> This should be sent when the document has finished loading
             if (request->sendNotification()) {
@@ -260,7 +260,7 @@ void PluginView::performRequest(PluginRequest* request)
     
     // Executing a script can cause the plugin view to be destroyed, so we keep a reference to the parent frame.
     RefPtr<Frame> parentFrame = m_parentFrame;
-    JSValuePtr result = m_parentFrame->loader()->executeScript(jsString, request->shouldAllowPopups()).jsValue();
+    JSValue result = m_parentFrame->loader()->executeScript(jsString, request->shouldAllowPopups()).jsValue();
 
     if (targetFrameName.isNull()) {
         String resultString;
@@ -397,12 +397,12 @@ int32 PluginView::write(NPStream* stream, int32 len, void* buffer)
 
 NPError PluginView::destroyStream(NPStream* stream, NPReason reason)
 {
-    PluginStream* browserStream = static_cast<PluginStream*>(stream->ndata);
-
     if (!stream || PluginStream::ownerForStream(stream) != m_instance)
         return NPERR_INVALID_INSTANCE_ERROR;
 
+    PluginStream* browserStream = static_cast<PluginStream*>(stream->ndata);
     browserStream->cancelAndDestroyStream(reason);
+
     return NPERR_NO_ERROR;
 }
 
@@ -563,6 +563,7 @@ PluginView::PluginView(Frame* parentFrame, const IntSize& size, PluginPackage* p
     , m_pluginWndProc(0)
     , m_lastMessage(0)
     , m_isCallingPluginWndProc(false)
+    , m_wmPrintHDC(0)
 #endif
 #if (PLATFORM(QT) && PLATFORM(WIN_OS)) || defined(XP_MACOSX)
     , m_window(0)
@@ -591,6 +592,14 @@ PluginView::PluginView(Frame* parentFrame, const IntSize& size, PluginPackage* p
     m_mode = m_loadManually ? NP_FULL : NP_EMBED;
 
     resize(size);
+}
+
+void PluginView::focusPluginElement()
+{
+    // Focus the plugin
+    if (Page* page = m_parentFrame->page())
+        page->focusController()->setFocusedFrame(m_parentFrame);
+    m_parentFrame->document()->setFocusedNode(m_element);
 }
 
 void PluginView::didReceiveResponse(const ResourceResponse& response)
@@ -904,9 +913,9 @@ void PluginView::invalidateWindowlessPluginRect(const IntRect& rect)
     if (!isVisible())
         return;
     
-    RenderObject* renderer = m_element->renderer();
-    if (!renderer)
+    if (!m_element->renderer())
         return;
+    RenderBox* renderer = toRenderBox(m_element->renderer());
     
     IntRect dirtyRect = rect;
     dirtyRect.move(renderer->borderLeft() + renderer->paddingLeft(), renderer->borderTop() + renderer->paddingTop());

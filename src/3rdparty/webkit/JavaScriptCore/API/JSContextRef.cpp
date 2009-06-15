@@ -44,6 +44,7 @@ using namespace JSC;
 
 JSContextGroupRef JSContextGroupCreate()
 {
+    initializeThreading();
     return toRef(JSGlobalData::create().releaseRef());
 }
 
@@ -60,6 +61,7 @@ void JSContextGroupRelease(JSContextGroupRef group)
 
 JSGlobalContextRef JSGlobalContextCreate(JSClassRef globalObjectClass)
 {
+    initializeThreading();
 #if PLATFORM(DARWIN)
     // When running on Tiger or Leopard, or if the application was linked before JSGlobalContextCreate was changed
     // to use a unique JSGlobalData, we use a shared one for compatibility.
@@ -95,7 +97,7 @@ JSGlobalContextRef JSGlobalContextCreateInGroup(JSContextGroupRef group, JSClass
 
     JSGlobalObject* globalObject = new (globalData.get()) JSCallbackObject<JSGlobalObject>(globalObjectClass);
     ExecState* exec = globalObject->globalExec();
-    JSValuePtr prototype = globalObjectClass->prototype(exec);
+    JSValue prototype = globalObjectClass->prototype(exec);
     if (!prototype)
         prototype = jsNull();
     globalObject->resetPrototype(prototype);

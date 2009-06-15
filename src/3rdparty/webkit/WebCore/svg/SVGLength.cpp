@@ -285,7 +285,7 @@ float SVGLength::PercentageOfViewport(float value, const SVGElement* context, SV
     Document* doc = context->document();
     if (doc->documentElement() == context) {
         // We have to ask the canvas for the full "canvas size"...
-        RenderView* view = static_cast<RenderView*>(doc->renderer());
+        RenderView* view = toRenderView(doc->renderer());
         if (view && view->frameView()) {
             width = view->frameView()->visibleWidth(); // TODO: recheck!
             height = view->frameView()->visibleHeight(); // TODO: recheck!
@@ -301,8 +301,11 @@ float SVGLength::PercentageOfViewport(float value, const SVGElement* context, SV
         }
     } else if (context->parent() && !context->parent()->isSVGElement()) {
         if (RenderObject* renderer = context->renderer()) {
-            width = renderer->width();
-            height = renderer->height();
+            if (renderer->isBox()) {
+                RenderBox* box = toRenderBox(renderer);
+                width = box->width();
+                height = box->height();
+            }
         }
     }
 

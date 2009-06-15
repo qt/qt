@@ -23,7 +23,7 @@
 #ifndef SVGFEComponentTransferElement_h
 #define SVGFEComponentTransferElement_h
 
-#if ENABLE(SVG) && ENABLE(SVG_FILTERS)
+#if ENABLE(SVG) && ENABLE(FILTERS)
 #include "SVGFilterPrimitiveStandardAttributes.h"
 #include "FEComponentTransfer.h"
 
@@ -35,13 +35,10 @@ namespace WebCore {
         virtual ~SVGFEComponentTransferElement();
 
         virtual void parseMappedAttribute(MappedAttribute*);
-        virtual SVGFilterEffect* filterEffect(SVGResourceFilter*) const;
-        bool build(FilterBuilder*);
+        virtual bool build(SVGResourceFilter*);
 
     private:
         ANIMATED_PROPERTY_DECLARATIONS(SVGFEComponentTransferElement, SVGNames::feComponentTransferTagString, SVGNames::inAttrString, String, In1, in1)
-
-        mutable RefPtr<FEComponentTransfer> m_filterEffect;
     };
 
 } // namespace WebCore

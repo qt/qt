@@ -21,7 +21,7 @@
 #include "config.h"
 
 
-#if ENABLE(SVG) && ENABLE(SVG_FILTERS)
+#if ENABLE(SVG) && ENABLE(FILTERS)
 
 #include "SVGElement.h"
 #include "JSSVGFEPointLightElement.h"
@@ -36,7 +36,7 @@ using namespace JSC;
 
 namespace WebCore {
 
-ASSERT_CLASS_FITS_IN_CELL(JSSVGFEPointLightElement)
+ASSERT_CLASS_FITS_IN_CELL(JSSVGFEPointLightElement);
 
 /* Hash table */
 
@@ -71,9 +71,9 @@ static const HashTable JSSVGFEPointLightElementPrototypeTable =
 
 const ClassInfo JSSVGFEPointLightElementPrototype::s_info = { "SVGFEPointLightElementPrototype", 0, &JSSVGFEPointLightElementPrototypeTable, 0 };
 
-JSObject* JSSVGFEPointLightElementPrototype::self(ExecState* exec)
+JSObject* JSSVGFEPointLightElementPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSSVGFEPointLightElement>(exec);
+    return getDOMPrototype<JSSVGFEPointLightElement>(exec, globalObject);
 }
 
 const ClassInfo JSSVGFEPointLightElement::s_info = { "SVGFEPointLightElement", &JSSVGElement::s_info, &JSSVGFEPointLightElementTable, 0 };
@@ -83,9 +83,9 @@ JSSVGFEPointLightElement::JSSVGFEPointLightElement(PassRefPtr<Structure> structu
 {
 }
 
-JSObject* JSSVGFEPointLightElement::createPrototype(ExecState* exec)
+JSObject* JSSVGFEPointLightElement::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSSVGFEPointLightElementPrototype(JSSVGFEPointLightElementPrototype::createStructure(JSSVGElementPrototype::self(exec)));
+    return new (exec) JSSVGFEPointLightElementPrototype(JSSVGFEPointLightElementPrototype::createStructure(JSSVGElementPrototype::self(exec, globalObject)));
 }
 
 bool JSSVGFEPointLightElement::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -93,22 +93,25 @@ bool JSSVGFEPointLightElement::getOwnPropertySlot(ExecState* exec, const Identif
     return getStaticValueSlot<JSSVGFEPointLightElement, Base>(exec, &JSSVGFEPointLightElementTable, this, propertyName, slot);
 }
 
-JSValuePtr jsSVGFEPointLightElementX(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGFEPointLightElementX(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGFEPointLightElement* imp = static_cast<SVGFEPointLightElement*>(static_cast<JSSVGFEPointLightElement*>(asObject(slot.slotBase()))->impl());
     RefPtr<SVGAnimatedNumber> obj = imp->xAnimated();
     return toJS(exec, obj.get(), imp);
 }
 
-JSValuePtr jsSVGFEPointLightElementY(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGFEPointLightElementY(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGFEPointLightElement* imp = static_cast<SVGFEPointLightElement*>(static_cast<JSSVGFEPointLightElement*>(asObject(slot.slotBase()))->impl());
     RefPtr<SVGAnimatedNumber> obj = imp->yAnimated();
     return toJS(exec, obj.get(), imp);
 }
 
-JSValuePtr jsSVGFEPointLightElementZ(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGFEPointLightElementZ(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGFEPointLightElement* imp = static_cast<SVGFEPointLightElement*>(static_cast<JSSVGFEPointLightElement*>(asObject(slot.slotBase()))->impl());
     RefPtr<SVGAnimatedNumber> obj = imp->zAnimated();
     return toJS(exec, obj.get(), imp);
@@ -117,4 +120,4 @@ JSValuePtr jsSVGFEPointLightElementZ(ExecState* exec, const Identifier&, const P
 
 }
 
-#endif // ENABLE(SVG) && ENABLE(SVG_FILTERS)
+#endif // ENABLE(SVG) && ENABLE(FILTERS)

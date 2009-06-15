@@ -36,7 +36,7 @@ using namespace JSC;
 
 namespace WebCore {
 
-JSValuePtr toJS(ExecState* exec, ImageData* imageData)
+JSValue toJS(ExecState* exec, ImageData* imageData)
 {
     if (!imageData)
         return jsNull();
@@ -49,7 +49,7 @@ JSValuePtr toJS(ExecState* exec, ImageData* imageData)
     Identifier dataName(exec, "data");
     DEFINE_STATIC_LOCAL(RefPtr<Structure>, cpaStructure, (JSByteArray::createStructure(jsNull())));
     static const ClassInfo cpaClassInfo = { "CanvasPixelArray", 0, 0, 0 };
-    wrapper->putDirect(dataName, new (exec) JSByteArray(exec, cpaStructure, imageData->data(), &cpaClassInfo), DontDelete | ReadOnly);
+    wrapper->putDirect(dataName, new (exec) JSByteArray(exec, cpaStructure, imageData->data()->data(), &cpaClassInfo), DontDelete | ReadOnly);
     exec->heap()->reportExtraMemoryCost(imageData->data()->length());
     
     return wrapper;

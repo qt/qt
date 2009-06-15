@@ -37,33 +37,34 @@ class JSXPathResult : public DOMObject {
 public:
     JSXPathResult(PassRefPtr<JSC::Structure>, PassRefPtr<XPathResult>);
     virtual ~JSXPathResult();
-    static JSC::JSObject* createPrototype(JSC::ExecState*);
+    static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
     static const JSC::ClassInfo s_info;
 
-    static PassRefPtr<JSC::Structure> createStructure(JSC::JSValuePtr prototype)
+    static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
     {
         return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType));
     }
 
-    static JSC::JSValuePtr getConstructor(JSC::ExecState*);
+    static JSC::JSValue getConstructor(JSC::ExecState*);
     XPathResult* impl() const { return m_impl.get(); }
 
 private:
     RefPtr<XPathResult> m_impl;
 };
 
-JSC::JSValuePtr toJS(JSC::ExecState*, XPathResult*);
-XPathResult* toXPathResult(JSC::JSValuePtr);
+JSC::JSValue toJS(JSC::ExecState*, XPathResult*);
+XPathResult* toXPathResult(JSC::JSValue);
 
 class JSXPathResultPrototype : public JSC::JSObject {
+    typedef JSC::JSObject Base;
 public:
-    static JSC::JSObject* self(JSC::ExecState*);
+    static JSC::JSObject* self(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
     static const JSC::ClassInfo s_info;
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier&, JSC::PropertySlot&);
-    static PassRefPtr<JSC::Structure> createStructure(JSC::JSValuePtr prototype)
+    static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
     {
         return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType));
     }
@@ -72,30 +73,30 @@ public:
 
 // Functions
 
-JSC::JSValuePtr jsXPathResultPrototypeFunctionIterateNext(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr, const JSC::ArgList&);
-JSC::JSValuePtr jsXPathResultPrototypeFunctionSnapshotItem(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr, const JSC::ArgList&);
+JSC::JSValue JSC_HOST_CALL jsXPathResultPrototypeFunctionIterateNext(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
+JSC::JSValue JSC_HOST_CALL jsXPathResultPrototypeFunctionSnapshotItem(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
 // Attributes
 
-JSC::JSValuePtr jsXPathResultResultType(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValuePtr jsXPathResultNumberValue(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValuePtr jsXPathResultStringValue(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValuePtr jsXPathResultBooleanValue(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValuePtr jsXPathResultSingleNodeValue(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValuePtr jsXPathResultInvalidIteratorState(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValuePtr jsXPathResultSnapshotLength(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValuePtr jsXPathResultConstructor(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsXPathResultResultType(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsXPathResultNumberValue(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsXPathResultStringValue(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsXPathResultBooleanValue(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsXPathResultSingleNodeValue(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsXPathResultInvalidIteratorState(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsXPathResultSnapshotLength(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsXPathResultConstructor(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
 // Constants
 
-JSC::JSValuePtr jsXPathResultANY_TYPE(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValuePtr jsXPathResultNUMBER_TYPE(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValuePtr jsXPathResultSTRING_TYPE(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValuePtr jsXPathResultBOOLEAN_TYPE(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValuePtr jsXPathResultUNORDERED_NODE_ITERATOR_TYPE(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValuePtr jsXPathResultORDERED_NODE_ITERATOR_TYPE(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValuePtr jsXPathResultUNORDERED_NODE_SNAPSHOT_TYPE(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValuePtr jsXPathResultORDERED_NODE_SNAPSHOT_TYPE(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValuePtr jsXPathResultANY_UNORDERED_NODE_TYPE(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValuePtr jsXPathResultFIRST_ORDERED_NODE_TYPE(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsXPathResultANY_TYPE(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsXPathResultNUMBER_TYPE(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsXPathResultSTRING_TYPE(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsXPathResultBOOLEAN_TYPE(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsXPathResultUNORDERED_NODE_ITERATOR_TYPE(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsXPathResultORDERED_NODE_ITERATOR_TYPE(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsXPathResultUNORDERED_NODE_SNAPSHOT_TYPE(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsXPathResultORDERED_NODE_SNAPSHOT_TYPE(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsXPathResultANY_UNORDERED_NODE_TYPE(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsXPathResultFIRST_ORDERED_NODE_TYPE(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
 
 } // namespace WebCore
 

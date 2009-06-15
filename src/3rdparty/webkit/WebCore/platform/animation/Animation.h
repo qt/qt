@@ -35,6 +35,12 @@ namespace WebCore {
 const int cAnimateNone = 0;
 const int cAnimateAll = -2;
 
+// These were in RenderStyle, but have been moved here as
+// animation-play-state is in the process of being removed.
+
+const unsigned AnimPlayStatePlaying = 0;
+const unsigned AnimPlayStatePaused = 1;
+
 class Animation : public RefCounted<Animation> {
 public:
     ~Animation();
@@ -77,8 +83,13 @@ public:
     void clearTimingFunction() { m_timingFunctionSet = false; }
 
     double delay() const { return m_delay; }
-    bool direction() const { return m_direction; }
+
+    enum AnimationDirection { AnimationDirectionNormal, AnimationDirectionAlternate };
+    AnimationDirection direction() const { return m_direction; }
+
     double duration() const { return m_duration; }
+
+    enum { IterationCountInfinite = -1 };
     int iterationCount() const { return m_iterationCount; }
     const String& name() const { return m_name; }
     unsigned playState() const { return m_playState; }
@@ -86,7 +97,7 @@ public:
     const TimingFunction& timingFunction() const { return m_timingFunction; }
 
     void setDelay(double c) { m_delay = c; m_delaySet = true; }
-    void setDirection(bool d) { m_direction = d; m_directionSet = true; }
+    void setDirection(AnimationDirection d) { m_direction = d; m_directionSet = true; }
     void setDuration(double d) { ASSERT(d >= 0); m_duration = d; m_durationSet = true; }
     void setIterationCount(int c) { m_iterationCount = c; m_iterationCountSet = true; }
     void setName(const String& n) { m_name = n; m_nameSet = true; }
@@ -109,13 +120,13 @@ private:
     Animation();
     Animation(const Animation& o);
     
-    double m_delay;
-    bool m_direction;
-    double m_duration;
-    int m_iterationCount;
     String m_name;
     int m_property;
+    int m_iterationCount;
+    double m_delay;
+    double m_duration;
     TimingFunction m_timingFunction;
+    AnimationDirection m_direction : 1;
 
     unsigned m_playState     : 2;
 
@@ -132,7 +143,7 @@ private:
 
 public:
     static float initialAnimationDelay() { return 0; }
-    static bool initialAnimationDirection() { return false; }
+    static AnimationDirection initialAnimationDirection() { return AnimationDirectionNormal; }
     static double initialAnimationDuration() { return 0; }
     static int initialAnimationIterationCount() { return 1; }
     static String initialAnimationName() { return String("none"); }

@@ -34,13 +34,13 @@ class JSSVGPathSegLinetoRel : public JSSVGPathSeg {
     typedef JSSVGPathSeg Base;
 public:
     JSSVGPathSegLinetoRel(PassRefPtr<JSC::Structure>, PassRefPtr<SVGPathSegLinetoRel>, SVGElement* context);
-    static JSC::JSObject* createPrototype(JSC::ExecState*);
+    static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
-    virtual void put(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::JSValuePtr, JSC::PutPropertySlot&);
+    virtual void put(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::JSValue, JSC::PutPropertySlot&);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
     static const JSC::ClassInfo s_info;
 
-    static PassRefPtr<JSC::Structure> createStructure(JSC::JSValuePtr prototype)
+    static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
     {
         return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType));
     }
@@ -49,8 +49,9 @@ public:
 
 
 class JSSVGPathSegLinetoRelPrototype : public JSC::JSObject {
+    typedef JSC::JSObject Base;
 public:
-    static JSC::JSObject* self(JSC::ExecState*);
+    static JSC::JSObject* self(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
     static const JSC::ClassInfo s_info;
     JSSVGPathSegLinetoRelPrototype(PassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
@@ -58,10 +59,10 @@ public:
 
 // Attributes
 
-JSC::JSValuePtr jsSVGPathSegLinetoRelX(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-void setJSSVGPathSegLinetoRelX(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr);
-JSC::JSValuePtr jsSVGPathSegLinetoRelY(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-void setJSSVGPathSegLinetoRelY(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr);
+JSC::JSValue jsSVGPathSegLinetoRelX(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSSVGPathSegLinetoRelX(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsSVGPathSegLinetoRelY(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSSVGPathSegLinetoRelY(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
 
 } // namespace WebCore
 

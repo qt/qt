@@ -31,28 +31,29 @@ class JSHTMLCanvasElement : public JSHTMLElement {
     typedef JSHTMLElement Base;
 public:
     JSHTMLCanvasElement(PassRefPtr<JSC::Structure>, PassRefPtr<HTMLCanvasElement>);
-    static JSC::JSObject* createPrototype(JSC::ExecState*);
+    static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
-    virtual void put(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::JSValuePtr, JSC::PutPropertySlot&);
+    virtual void put(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::JSValue, JSC::PutPropertySlot&);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
     static const JSC::ClassInfo s_info;
 
-    static PassRefPtr<JSC::Structure> createStructure(JSC::JSValuePtr prototype)
+    static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
     {
         return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType));
     }
 
-    static JSC::JSValuePtr getConstructor(JSC::ExecState*);
+    static JSC::JSValue getConstructor(JSC::ExecState*);
 };
 
 
 class JSHTMLCanvasElementPrototype : public JSC::JSObject {
+    typedef JSC::JSObject Base;
 public:
-    static JSC::JSObject* self(JSC::ExecState*);
+    static JSC::JSObject* self(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
     static const JSC::ClassInfo s_info;
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier&, JSC::PropertySlot&);
-    static PassRefPtr<JSC::Structure> createStructure(JSC::JSValuePtr prototype)
+    static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
     {
         return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType));
     }
@@ -61,15 +62,15 @@ public:
 
 // Functions
 
-JSC::JSValuePtr jsHTMLCanvasElementPrototypeFunctionToDataURL(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr, const JSC::ArgList&);
-JSC::JSValuePtr jsHTMLCanvasElementPrototypeFunctionGetContext(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr, const JSC::ArgList&);
+JSC::JSValue JSC_HOST_CALL jsHTMLCanvasElementPrototypeFunctionToDataURL(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
+JSC::JSValue JSC_HOST_CALL jsHTMLCanvasElementPrototypeFunctionGetContext(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
 // Attributes
 
-JSC::JSValuePtr jsHTMLCanvasElementWidth(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-void setJSHTMLCanvasElementWidth(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr);
-JSC::JSValuePtr jsHTMLCanvasElementHeight(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-void setJSHTMLCanvasElementHeight(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr);
-JSC::JSValuePtr jsHTMLCanvasElementConstructor(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsHTMLCanvasElementWidth(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSHTMLCanvasElementWidth(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsHTMLCanvasElementHeight(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSHTMLCanvasElementHeight(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsHTMLCanvasElementConstructor(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
 
 } // namespace WebCore
 

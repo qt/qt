@@ -30,7 +30,6 @@
 #include "TransformationMatrix.h"
 #include "FloatRect.h"
 #include "Document.h"
-#include "FramePrivate.h"
 #include "RenderView.h"
 #include "Settings.h"
 
@@ -62,7 +61,7 @@ void computePageRectsForFrame(Frame* frame, const IntRect& printRect, float head
     
     float ratio = static_cast<float>(printRect.height()) / static_cast<float>(printRect.width());
  
-    float pageWidth  = static_cast<float>(root->docWidth());
+    float pageWidth  = static_cast<float>(root->overflowWidth());
     float pageHeight = pageWidth * ratio;
     outPageHeight = static_cast<int>(pageHeight);   // this is the height of the page adjusted by margins
     pageHeight -= (headerHeight + footerHeight);
@@ -82,7 +81,7 @@ void computePageRectsForFrame(Frame* frame, const IntRect& printRect, float head
     float printedPagesHeight = 0.0f;
     do {
         float proposedBottom = min(docHeight, printedPagesHeight + pageHeight);
-        frame->adjustPageHeight(&proposedBottom, printedPagesHeight, proposedBottom, printedPagesHeight);
+        frame->view()->adjustPageHeight(&proposedBottom, printedPagesHeight, proposedBottom, printedPagesHeight);
         currPageHeight = max(1.0f, proposedBottom - printedPagesHeight);
        
         pages.append(IntRect(0, printedPagesHeight, currPageWidth, currPageHeight));

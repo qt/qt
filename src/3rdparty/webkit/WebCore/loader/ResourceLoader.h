@@ -106,6 +106,9 @@ namespace WebCore {
 #if PLATFORM(MAC)
         virtual NSCachedURLResponse* willCacheResponse(ResourceHandle*, NSCachedURLResponse*);
 #endif
+#if USE(CFNETWORK)
+        virtual bool shouldCacheResponse(ResourceHandle*, CFCachedURLResponseRef);
+#endif
 
         ResourceHandle* handle() const { return m_handle.get(); }
         bool sendResourceLoadCallbacks() const { return m_sendResourceLoadCallbacks; }
@@ -146,9 +149,6 @@ namespace WebCore {
         bool m_shouldContentSniff;
         bool m_shouldBufferData;
         bool m_defersLoading;
-#if ENABLE(OFFLINE_WEB_APPLICATIONS)
-        bool m_wasLoadedFromApplicationCache;
-#endif
         ResourceRequest m_deferredRequest;
     };
 

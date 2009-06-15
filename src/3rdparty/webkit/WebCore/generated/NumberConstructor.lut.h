@@ -14,10 +14,5 @@ static const struct HashTableValue numberTableValues[6] = {
 };
 
 extern const struct HashTable numberTable =
-#if ENABLE(PERFECT_HASH_SIZE)
-    { 15, numberTableValues, 0 };
-#else
     { 16, 15, numberTableValues, 0 };
-#endif
-
 } // namespace

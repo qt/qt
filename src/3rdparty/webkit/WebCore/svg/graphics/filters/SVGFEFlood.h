@@ -22,15 +22,16 @@
 #ifndef SVGFEFlood_h
 #define SVGFEFlood_h
 
-#if ENABLE(SVG) && ENABLE(SVG_FILTERS)
+#if ENABLE(SVG) && ENABLE(FILTERS)
 #include "Color.h"
+#include "Filter.h"
 #include "FilterEffect.h"
 
 namespace WebCore {
 
     class FEFlood : public FilterEffect {
     public:
-        static PassRefPtr<FEFlood> create(const Color&, const float&);
+        static PassRefPtr<FEFlood> create(FilterEffect*, const Color&, const float&);
 
         Color floodColor() const;
         void setFloodColor(const Color &);
@@ -38,19 +39,20 @@ namespace WebCore {
         float floodOpacity() const;
         void setFloodOpacity(float);
 
-        virtual void apply();
-        virtual void dump();
+        void apply(Filter*);
+        void dump();
         TextStream& externalRepresentation(TextStream& ts) const;
 
     private:
-        FEFlood(const Color&, const float&);
+        FEFlood(FilterEffect*, const Color&, const float&);
 
+        RefPtr<FilterEffect> m_in;
         Color m_floodColor;
         float m_floodOpacity;
     };
 
 } // namespace WebCore
 
-#endif // ENABLE(SVG) && ENABLE(SVG_FILTERS)
+#endif // ENABLE(SVG) && ENABLE(FILTERS)
 
 #endif // SVGFEFlood_h

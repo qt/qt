@@ -21,6 +21,7 @@
 #include <QtTest/QtTest>
 
 #include <qwebpage.h>
+#include <qwebelement.h>
 #include <qwidget.h>
 #include <qwebview.h>
 #include <qwebframe.h>
@@ -570,14 +571,17 @@ private slots:
     void typeConversion();
     void symmetricUrl();
     void progressSignal();
+    void urlChange();
     void domCycles();
     void setHtml();
     void setHtmlWithResource();
     void ipv6HostEncoding();
     void metaData();
     void popupFocus();
+    void hitTestContent();
     void jsByteArray();
     void ownership();
+    void nullValue();
 private:
     QString  evalJS(const QString&s) {
         // Convert an undefined return variant to the string "undefined"
@@ -2124,6 +2128,26 @@ void tst_QWebFrame::progressSignal()
     QCOMPARE(progressSpy.last().first().toInt(), 100);
 }
 
+void tst_QWebFrame::urlChange()
+{
+    QSignalSpy urlSpy(m_page->mainFrame(), SIGNAL(urlChanged(QUrl)));
+
+    QUrl dataUrl("data:text/html,<h1>Test");
+    m_view->setUrl(dataUrl);
+
+    ::waitForSignal(m_page->mainFrame(), SIGNAL(urlChanged(QUrl)));
+
+    QCOMPARE(urlSpy.size(), 1);
+
+    QUrl dataUrl2("data:text/html,<html><head><title>title</title></head><body><h1>Test</body></html>");
+    m_view->setUrl(dataUrl2);
+
+    ::waitForSignal(m_page->mainFrame(), SIGNAL(urlChanged(QUrl)));
+
+    QCOMPARE(urlSpy.size(), 2);
+}
+
+
 void tst_QWebFrame::domCycles()
 {
     m_view->setHtml("<html><body>");
@@ -2133,7 +2157,7 @@ void tst_QWebFrame::domCycles()
 
 void tst_QWebFrame::setHtml()
 {
-    QString html("<html><body><p>hello world</p></body></html>");
+    QString html("<html><head></head><body><p>hello world</p></body></html>");
     m_view->page()->mainFrame()->setHtml(html);
     QCOMPARE(m_view->page()->mainFrame()->toHtml(), html);
 }
@@ -2154,6 +2178,24 @@ void tst_QWebFrame::setHtmlWithResource()
     QCOMPARE(frame->evaluateJavaScript("document.images.length").toInt(), 1);
     QCOMPARE(frame->evaluateJavaScript("document.images[0].width").toInt(), 128);
     QCOMPARE(frame->evaluateJavaScript("document.images[0].height").toInt(), 128);
+
+    QString html2 =
+        "<html>"
+            "<head>"
+                "<link rel='stylesheet' href='qrc:/style.css' type='text/css' />"
+            "</head>"
+            "<body>"
+                "<p id='idP'>some text</p>"
+            "</body>"
+        "</html>";
+
+    // in few seconds, the CSS should be completey loaded
+    frame->setHtml(html2);
+    QTest::qWait(200);
+    QCOMPARE(spy.size(), 2);
+
+    QWebElement p = frame->documentElement().findAll("p").at(0);
+    QCOMPARE(p.styleProperty("color", QWebElement::RespectCascadingStyles), QLatin1String("red"));
 }
 
 class TestNetworkManager : public QNetworkAccessManager
@@ -2274,6 +2316,19 @@ void tst_QWebFrame::popupFocus()
              "The input field should have a blinking caret");
 }
 
+void tst_QWebFrame::hitTestContent()
+{
+    QString html("<html><body><p>A paragraph</p><br/><br/><br/><a href=\"about:blank\" target=\"_foo\">link text</a></body></html>");
+
+    QWebPage page;
+    QWebFrame* frame = page.mainFrame();
+    frame->setHtml(html);
+    page.setViewportSize(QSize(200, 0)); //no height so link is not visible
+    QWebHitTestResult result = frame->hitTestContent(QPoint(10, 100));
+    QCOMPARE(result.linkText(), QString("link text"));
+    QCOMPARE(result.linkTarget(), QString("_foo"));
+}
+
 void tst_QWebFrame::jsByteArray()
 {
     QByteArray ba("hello world");
@@ -2349,6 +2404,12 @@ void tst_QWebFrame::ownership()
         QVERIFY(child != 0);
         delete parent;
     }
+}
+
+void tst_QWebFrame::nullValue()
+{
+    QVariant v = m_view->page()->mainFrame()->evaluateJavaScript("null");
+    QVERIFY(v.isNull());
 }
 
 QTEST_MAIN(tst_QWebFrame)

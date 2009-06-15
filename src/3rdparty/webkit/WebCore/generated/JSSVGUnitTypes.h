@@ -37,17 +37,17 @@ class JSSVGUnitTypes : public DOMObject {
 public:
     JSSVGUnitTypes(PassRefPtr<JSC::Structure>, PassRefPtr<SVGUnitTypes>, SVGElement* context);
     virtual ~JSSVGUnitTypes();
-    static JSC::JSObject* createPrototype(JSC::ExecState*);
+    static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
     static const JSC::ClassInfo s_info;
 
-    static PassRefPtr<JSC::Structure> createStructure(JSC::JSValuePtr prototype)
+    static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
     {
         return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType));
     }
 
-    static JSC::JSValuePtr getConstructor(JSC::ExecState*);
+    static JSC::JSValue getConstructor(JSC::ExecState*);
     SVGUnitTypes* impl() const { return m_impl.get(); }
     SVGElement* context() const { return m_context.get(); }
 
@@ -56,16 +56,17 @@ private:
     RefPtr<SVGUnitTypes > m_impl;
 };
 
-JSC::JSValuePtr toJS(JSC::ExecState*, SVGUnitTypes*, SVGElement* context);
-SVGUnitTypes* toSVGUnitTypes(JSC::JSValuePtr);
+JSC::JSValue toJS(JSC::ExecState*, SVGUnitTypes*, SVGElement* context);
+SVGUnitTypes* toSVGUnitTypes(JSC::JSValue);
 
 class JSSVGUnitTypesPrototype : public JSC::JSObject {
+    typedef JSC::JSObject Base;
 public:
-    static JSC::JSObject* self(JSC::ExecState*);
+    static JSC::JSObject* self(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
     static const JSC::ClassInfo s_info;
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier&, JSC::PropertySlot&);
-    static PassRefPtr<JSC::Structure> createStructure(JSC::JSValuePtr prototype)
+    static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
     {
         return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType));
     }
@@ -74,12 +75,12 @@ public:
 
 // Attributes
 
-JSC::JSValuePtr jsSVGUnitTypesConstructor(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsSVGUnitTypesConstructor(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
 // Constants
 
-JSC::JSValuePtr jsSVGUnitTypesSVG_UNIT_TYPE_UNKNOWN(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValuePtr jsSVGUnitTypesSVG_UNIT_TYPE_USERSPACEONUSE(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValuePtr jsSVGUnitTypesSVG_UNIT_TYPE_OBJECTBOUNDINGBOX(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsSVGUnitTypesSVG_UNIT_TYPE_UNKNOWN(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsSVGUnitTypesSVG_UNIT_TYPE_USERSPACEONUSE(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsSVGUnitTypesSVG_UNIT_TYPE_OBJECTBOUNDINGBOX(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
 
 } // namespace WebCore
 

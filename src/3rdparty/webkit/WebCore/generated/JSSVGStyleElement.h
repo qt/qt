@@ -34,13 +34,13 @@ class JSSVGStyleElement : public JSSVGElement {
     typedef JSSVGElement Base;
 public:
     JSSVGStyleElement(PassRefPtr<JSC::Structure>, PassRefPtr<SVGStyleElement>);
-    static JSC::JSObject* createPrototype(JSC::ExecState*);
+    static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
-    virtual void put(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::JSValuePtr, JSC::PutPropertySlot&);
+    virtual void put(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::JSValue, JSC::PutPropertySlot&);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
     static const JSC::ClassInfo s_info;
 
-    static PassRefPtr<JSC::Structure> createStructure(JSC::JSValuePtr prototype)
+    static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
     {
         return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType));
     }
@@ -49,8 +49,9 @@ public:
 
 
 class JSSVGStyleElementPrototype : public JSC::JSObject {
+    typedef JSC::JSObject Base;
 public:
-    static JSC::JSObject* self(JSC::ExecState*);
+    static JSC::JSObject* self(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
     static const JSC::ClassInfo s_info;
     JSSVGStyleElementPrototype(PassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
@@ -58,14 +59,14 @@ public:
 
 // Attributes
 
-JSC::JSValuePtr jsSVGStyleElementXmlspace(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-void setJSSVGStyleElementXmlspace(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr);
-JSC::JSValuePtr jsSVGStyleElementType(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-void setJSSVGStyleElementType(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr);
-JSC::JSValuePtr jsSVGStyleElementMedia(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-void setJSSVGStyleElementMedia(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr);
-JSC::JSValuePtr jsSVGStyleElementTitle(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-void setJSSVGStyleElementTitle(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr);
+JSC::JSValue jsSVGStyleElementXmlspace(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSSVGStyleElementXmlspace(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsSVGStyleElementType(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSSVGStyleElementType(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsSVGStyleElementMedia(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSSVGStyleElementMedia(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsSVGStyleElementTitle(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSSVGStyleElementTitle(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
 
 } // namespace WebCore
 

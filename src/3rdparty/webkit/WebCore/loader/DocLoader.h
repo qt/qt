@@ -2,6 +2,7 @@
     Copyright (C) 1998 Lars Knoll (knoll@mpi-hd.mpg.de)
     Copyright (C) 2001 Dirk Mueller <mueller@kde.org>
     Copyright (C) 2004, 2005, 2006 Apple Computer, Inc.
+    Copyright (C) 2009 Torch Mobile Inc. http://www.torchmobile.com/
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -91,15 +92,12 @@ public:
     
     void setAllowStaleResources(bool allowStaleResources) { m_allowStaleResources = allowStaleResources; }
 
-#if USE(LOW_BANDWIDTH_DISPLAY)
-    void replaceDocument(Document* doc) { m_doc = doc; }
-#endif
-
     void incrementRequestCount();
     void decrementRequestCount();
     int requestCount();
     
     void clearPreloads();
+    void clearPendingPreloads();
     void preload(CachedResource::Type, const String& url, const String& charset, bool referencedFromBody);
     void checkForPendingPreloads();
     void printPreloadStats();

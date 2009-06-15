@@ -30,7 +30,7 @@
 
 #include "CharacterNames.h"
 #include "KURL.h"
-#include "TextEncoding.h"
+#include "TextResourceDecoder.h"
 
 using namespace std;
 
@@ -45,36 +45,27 @@ bool parseManifest(const KURL& manifestURL, const char* data, int length, Manife
     ASSERT(manifest.fallbackURLs.isEmpty());
     
     Mode mode = Explicit;
-    String s = UTF8Encoding().decode(data, length);
+
+    RefPtr<TextResourceDecoder> decoder = TextResourceDecoder::create("text/cache-manifest", "UTF-8");
+    String s = decoder->decode(data, length);
+    s += decoder->flush();
     
-    if (s.isEmpty())
+    // Look for the magic signature: "^\xFEFF?CACHE MANIFEST[ \t]?" (the BOM is removed by TextResourceDecoder).
+    // Example: "CACHE MANIFEST #comment" is a valid signature.
+    // Example: "CACHE MANIFEST;V2" is not.
+    if (!s.startsWith("CACHE MANIFEST"))
         return false;
-    
-    // Replace nulls with U+FFFD REPLACEMENT CHARACTER
-    s.replace(0, replacementCharacter);
-    
-    // Look for the magic signature
-    if (!s.startsWith("CACHE MANIFEST")) {
-        // The magic signature was not found.
-        return false;
-    }
     
     const UChar* end = s.characters() + s.length();    
     const UChar* p = s.characters() + 14; // "CACHE MANIFEST" is 14 characters.
-    
-    while (p < end) {
-        // Skip whitespace
-        if (*p == ' ' || *p == '\t') {
-            p++;
-        } else
-            break;
-    }
-    
-    if (p < end && *p != '\n' && *p != '\r') {
-        // The magic signature was invalid
+
+    if (p < end && *p != ' ' && *p != '\t' && *p != '\n' && *p != '\r')
         return false;
-    }
-    
+
+    // Skip to the end of the line.
+    while (p < end && *p != '\r' && *p != '\n')
+        p++;
+
     while (1) {
         // Skip whitespace
         while (p < end && (*p == '\n' || *p == '\r' || *p == ' ' || *p == '\t'))

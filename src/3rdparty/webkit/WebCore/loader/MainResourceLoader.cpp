@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2006 Apple Computer, Inc.  All rights reserved.
+ * Copyright (C) 2006, 2007, 2008, 2009 Apple Inc. All rights reserved.
  * Copyright (C) 2008 Torch Mobile Inc. All rights reserved. (http://www.torchmobile.com/)
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,12 +30,8 @@
 #include "config.h"
 #include "MainResourceLoader.h"
 
-#if ENABLE(OFFLINE_WEB_APPLICATIONS)
-#include "ApplicationCache.h"
-#include "ApplicationCacheGroup.h"
-#include "ApplicationCacheResource.h"
-#endif
 #include "DocumentLoader.h"
+#include "FormState.h"
 #include "Frame.h"
 #include "FrameLoader.h"
 #include "FrameLoaderClient.h"
@@ -44,6 +40,12 @@
 #include "ResourceError.h"
 #include "ResourceHandle.h"
 #include "Settings.h"
+
+#if ENABLE(OFFLINE_WEB_APPLICATIONS)
+#include "ApplicationCache.h"
+#include "ApplicationCacheGroup.h"
+#include "ApplicationCacheResource.h"
+#endif
 
 // FIXME: More that is in common with SubresourceLoader should move up into ResourceLoader.
 
@@ -161,7 +163,7 @@ void MainResourceLoader::willSendRequest(ResourceRequest& newRequest, const Reso
     // Update cookie policy base URL as URL changes, except for subframes, which use the
     // URL of the main frame which doesn't change when we redirect.
     if (frameLoader()->isLoadingMainFrame())
-        newRequest.setMainDocumentURL(newRequest.url());
+        newRequest.setFirstPartyForCookies(newRequest.url());
     
     // If we're fielding a redirect in response to a POST, force a load from origin, since
     // this is a common site technique to return to a page viewing some data that the POST
@@ -179,14 +181,19 @@ void MainResourceLoader::willSendRequest(ResourceRequest& newRequest, const Reso
     // listener. But there's no way to do that in practice. So instead we cancel later if the
     // listener tells us to. In practice that means the navigation policy needs to be decided
     // synchronously for these redirect cases.
-
-    ref(); // balanced by deref in continueAfterNavigationPolicy
-    frameLoader()->checkNavigationPolicy(newRequest, callContinueAfterNavigationPolicy, this);
+    if (!redirectResponse.isNull()) {
+        ref(); // balanced by deref in continueAfterNavigationPolicy
+        frameLoader()->checkNavigationPolicy(newRequest, callContinueAfterNavigationPolicy, this);
+    }
 }
 
 static bool shouldLoadAsEmptyDocument(const KURL& url)
 {
-    return url.isEmpty() || equalIgnoringCase(String(url.protocol()), "about");
+#if PLATFORM(TORCHMOBILE)
+    return url.isEmpty() || (url.protocolIs("about") && equalIgnoringRef(url, blankURL()));
+#else 
+    return url.isEmpty() || url.protocolIs("about");
+#endif
 }
 
 void MainResourceLoader::continueAfterContentPolicy(PolicyAction contentPolicy, const ResourceResponse& r)
@@ -248,7 +255,7 @@ void MainResourceLoader::continueAfterContentPolicy(PolicyAction contentPolicy, 
     if (!reachedTerminalState())
         ResourceLoader::didReceiveResponse(r);
 
-    if (frameLoader() && !frameLoader()->isStopping())
+    if (frameLoader() && !frameLoader()->isStopping()) {
         if (m_substituteData.isValid()) {
             if (m_substituteData.content()->size())
                 didReceiveData(m_substituteData.content()->data(), m_substituteData.content()->size(), m_substituteData.content()->size(), true);
@@ -256,6 +263,7 @@ void MainResourceLoader::continueAfterContentPolicy(PolicyAction contentPolicy, 
                 didFinishLoading();
         } else if (shouldLoadAsEmptyDocument(url) || frameLoader()->representationExistsForURLScheme(url.protocol()))
             didFinishLoading();
+    }
 }
 
 void MainResourceLoader::callContinueAfterContentPolicy(void* argument, PolicyAction policy)
@@ -285,6 +293,15 @@ void MainResourceLoader::didReceiveResponse(const ResourceResponse& r)
         }
     }
 #endif
+
+    HTTPHeaderMap::const_iterator it = r.httpHeaderFields().find(AtomicString("x-frame-options"));
+    if (it != r.httpHeaderFields().end()) {
+        String content = it->second;
+        if (m_frame->loader()->shouldInterruptLoadForXFrameOptions(content, r.url())) {
+            cancel();
+            return;
+        }
+    }
 
     // There is a bug in CFNetwork where callbacks can be dispatched even when loads are deferred.
     // See <rdar://problem/6304600> for more details.
@@ -318,6 +335,17 @@ void MainResourceLoader::didReceiveData(const char* data, int length, long long 
 {
     ASSERT(data);
     ASSERT(length != 0);
+
+    ASSERT(!m_response.isNull());
+
+#if USE(CFNETWORK) || (PLATFORM(MAC) && !defined(BUILDING_ON_TIGER))
+    // Workaround for <rdar://problem/6060782>
+    if (m_response.isNull()) {
+        m_response = ResourceResponse(KURL(), "text/html", 0, String(), String());
+        if (DocumentLoader* documentLoader = frameLoader()->activeDocumentLoader())
+            documentLoader->setResponse(m_response);
+    }
+#endif
 
     // There is a bug in CFNetwork where callbacks can be dispatched even when loads are deferred.
     // See <rdar://problem/6304600> for more details.
@@ -396,7 +424,7 @@ void MainResourceLoader::handleEmptyLoad(const KURL& url, bool forURLScheme)
     didReceiveResponse(response);
 }
 
-void MainResourceLoader::handleDataLoadNow(Timer<MainResourceLoader>*)
+void MainResourceLoader::handleDataLoadNow(MainResourceLoaderTimer*)
 {
     RefPtr<MainResourceLoader> protect(this);
 
@@ -408,12 +436,22 @@ void MainResourceLoader::handleDataLoadNow(Timer<MainResourceLoader>*)
     didReceiveResponse(response);
 }
 
+void MainResourceLoader::startDataLoadTimer()
+{
+    m_dataLoadTimer.startOneShot(0);
+
+#if HAVE(RUNLOOP_TIMER)
+    if (SchedulePairHashSet* scheduledPairs = m_frame->page()->scheduledRunLoopPairs())
+        m_dataLoadTimer.schedule(*scheduledPairs);
+#endif
+}
+
 void MainResourceLoader::handleDataLoadSoon(ResourceRequest& r)
 {
     m_initialRequest = r;
     
     if (m_documentLoader->deferMainResourceDataLoad())
-        m_dataLoadTimer.startOneShot(0);
+        startDataLoadTimer();
     else
         handleDataLoadNow(0);
 }
@@ -497,17 +535,16 @@ bool MainResourceLoader::load(const ResourceRequest& r, const SubstituteData& su
 void MainResourceLoader::setDefersLoading(bool defers)
 {
     ResourceLoader::setDefersLoading(defers);
-    
+
     if (defers) {
         if (m_dataLoadTimer.isActive())
             m_dataLoadTimer.stop();
     } else {
         if (m_initialRequest.isNull())
             return;
-        
-        if (m_substituteData.isValid() &&
-            m_documentLoader->deferMainResourceDataLoad())
-                m_dataLoadTimer.startOneShot(0);
+
+        if (m_substituteData.isValid() && m_documentLoader->deferMainResourceDataLoad())
+            startDataLoadTimer();
         else {
             ResourceRequest r(m_initialRequest);
             m_initialRequest = ResourceRequest();

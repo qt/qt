@@ -23,6 +23,7 @@
 
 #include "ArrayPrototype.h"
 #include "JSArray.h"
+#include "JSFunction.h"
 #include "JSObject.h"
 #include "JSString.h"
 #include "JSValue.h"
@@ -35,10 +36,10 @@ namespace JSC {
 
 ASSERT_CLASS_FITS_IN_CELL(RegExpPrototype);
 
-static JSValuePtr regExpProtoFuncTest(ExecState*, JSObject*, JSValuePtr, const ArgList&);
-static JSValuePtr regExpProtoFuncExec(ExecState*, JSObject*, JSValuePtr, const ArgList&);
-static JSValuePtr regExpProtoFuncCompile(ExecState*, JSObject*, JSValuePtr, const ArgList&);
-static JSValuePtr regExpProtoFuncToString(ExecState*, JSObject*, JSValuePtr, const ArgList&);
+static JSValue JSC_HOST_CALL regExpProtoFuncTest(ExecState*, JSObject*, JSValue, const ArgList&);
+static JSValue JSC_HOST_CALL regExpProtoFuncExec(ExecState*, JSObject*, JSValue, const ArgList&);
+static JSValue JSC_HOST_CALL regExpProtoFuncCompile(ExecState*, JSObject*, JSValue, const ArgList&);
+static JSValue JSC_HOST_CALL regExpProtoFuncToString(ExecState*, JSObject*, JSValue, const ArgList&);
 
 // ECMA 15.10.5
 
@@ -47,44 +48,44 @@ const ClassInfo RegExpPrototype::info = { "RegExpPrototype", 0, 0, 0 };
 RegExpPrototype::RegExpPrototype(ExecState* exec, PassRefPtr<Structure> structure, Structure* prototypeFunctionStructure)
     : JSObject(structure)
 {
-    putDirectFunctionWithoutTransition(exec, new (exec) PrototypeFunction(exec, prototypeFunctionStructure, 0, exec->propertyNames().compile, regExpProtoFuncCompile), DontEnum);
-    putDirectFunctionWithoutTransition(exec, new (exec) PrototypeFunction(exec, prototypeFunctionStructure, 0, exec->propertyNames().exec, regExpProtoFuncExec), DontEnum);
-    putDirectFunctionWithoutTransition(exec, new (exec) PrototypeFunction(exec, prototypeFunctionStructure, 0, exec->propertyNames().test, regExpProtoFuncTest), DontEnum);
-    putDirectFunctionWithoutTransition(exec, new (exec) PrototypeFunction(exec, prototypeFunctionStructure, 0, exec->propertyNames().toString, regExpProtoFuncToString), DontEnum);
+    putDirectFunctionWithoutTransition(exec, new (exec) NativeFunctionWrapper(exec, prototypeFunctionStructure, 0, exec->propertyNames().compile, regExpProtoFuncCompile), DontEnum);
+    putDirectFunctionWithoutTransition(exec, new (exec) NativeFunctionWrapper(exec, prototypeFunctionStructure, 0, exec->propertyNames().exec, regExpProtoFuncExec), DontEnum);
+    putDirectFunctionWithoutTransition(exec, new (exec) NativeFunctionWrapper(exec, prototypeFunctionStructure, 0, exec->propertyNames().test, regExpProtoFuncTest), DontEnum);
+    putDirectFunctionWithoutTransition(exec, new (exec) NativeFunctionWrapper(exec, prototypeFunctionStructure, 0, exec->propertyNames().toString, regExpProtoFuncToString), DontEnum);
 }
 
 // ------------------------------ Functions ---------------------------
     
-JSValuePtr regExpProtoFuncTest(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL regExpProtoFuncTest(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&RegExpObject::info))
+    if (!thisValue.isObject(&RegExpObject::info))
         return throwError(exec, TypeError);
     return asRegExpObject(thisValue)->test(exec, args);
 }
 
-JSValuePtr regExpProtoFuncExec(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL regExpProtoFuncExec(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&RegExpObject::info))
+    if (!thisValue.isObject(&RegExpObject::info))
         return throwError(exec, TypeError);
     return asRegExpObject(thisValue)->exec(exec, args);
 }
 
-JSValuePtr regExpProtoFuncCompile(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL regExpProtoFuncCompile(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&RegExpObject::info))
+    if (!thisValue.isObject(&RegExpObject::info))
         return throwError(exec, TypeError);
 
     RefPtr<RegExp> regExp;
-    JSValuePtr arg0 = args.at(exec, 0);
-    JSValuePtr arg1 = args.at(exec, 1);
+    JSValue arg0 = args.at(0);
+    JSValue arg1 = args.at(1);
     
-    if (arg0->isObject(&RegExpObject::info)) {
-        if (!arg1->isUndefined())
+    if (arg0.isObject(&RegExpObject::info)) {
+        if (!arg1.isUndefined())
             return throwError(exec, TypeError, "Cannot supply flags when constructing one RegExp from another.");
         regExp = asRegExpObject(arg0)->regExp();
     } else {
-        UString pattern = args.isEmpty() ? UString("") : arg0->toString(exec);
-        UString flags = arg1->isUndefined() ? UString("") : arg1->toString(exec);
+        UString pattern = args.isEmpty() ? UString("") : arg0.toString(exec);
+        UString flags = arg1.isUndefined() ? UString("") : arg1.toString(exec);
         regExp = RegExp::create(&exec->globalData(), pattern, flags);
     }
 
@@ -96,21 +97,21 @@ JSValuePtr regExpProtoFuncCompile(ExecState* exec, JSObject*, JSValuePtr thisVal
     return jsUndefined();
 }
 
-JSValuePtr regExpProtoFuncToString(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList&)
+JSValue JSC_HOST_CALL regExpProtoFuncToString(ExecState* exec, JSObject*, JSValue thisValue, const ArgList&)
 {
-    if (!thisValue->isObject(&RegExpObject::info)) {
-        if (thisValue->isObject(&RegExpPrototype::info))
+    if (!thisValue.isObject(&RegExpObject::info)) {
+        if (thisValue.isObject(&RegExpPrototype::info))
             return jsNontrivialString(exec, "//");
         return throwError(exec, TypeError);
     }
 
-    UString result = "/" + asRegExpObject(thisValue)->get(exec, exec->propertyNames().source)->toString(exec);
+    UString result = "/" + asRegExpObject(thisValue)->get(exec, exec->propertyNames().source).toString(exec);
     result.append('/');
-    if (asRegExpObject(thisValue)->get(exec, exec->propertyNames().global)->toBoolean(exec))
+    if (asRegExpObject(thisValue)->get(exec, exec->propertyNames().global).toBoolean(exec))
         result.append('g');
-    if (asRegExpObject(thisValue)->get(exec, exec->propertyNames().ignoreCase)->toBoolean(exec))
+    if (asRegExpObject(thisValue)->get(exec, exec->propertyNames().ignoreCase).toBoolean(exec))
         result.append('i');
-    if (asRegExpObject(thisValue)->get(exec, exec->propertyNames().multiline)->toBoolean(exec))
+    if (asRegExpObject(thisValue)->get(exec, exec->propertyNames().multiline).toBoolean(exec))
         result.append('m');
     return jsNontrivialString(exec, result);
 }

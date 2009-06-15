@@ -55,10 +55,9 @@ extern const WebCore::QualifiedName titleAttr;
 extern char titleAttrString[];
 extern const WebCore::QualifiedName typeAttr;
 extern char typeAttrString[];
-
-
-WebCore::QualifiedName** getXLinkAttr(size_t* size);
 #endif
+
+WebCore::QualifiedName** getXLinkAttrs(size_t* size);
 
 void init();
 

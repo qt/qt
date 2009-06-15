@@ -34,12 +34,12 @@ class JSSVGTRefElement : public JSSVGTextPositioningElement {
     typedef JSSVGTextPositioningElement Base;
 public:
     JSSVGTRefElement(PassRefPtr<JSC::Structure>, PassRefPtr<SVGTRefElement>);
-    static JSC::JSObject* createPrototype(JSC::ExecState*);
+    static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
     static const JSC::ClassInfo s_info;
 
-    static PassRefPtr<JSC::Structure> createStructure(JSC::JSValuePtr prototype)
+    static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
     {
         return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType));
     }
@@ -48,8 +48,9 @@ public:
 
 
 class JSSVGTRefElementPrototype : public JSC::JSObject {
+    typedef JSC::JSObject Base;
 public:
-    static JSC::JSObject* self(JSC::ExecState*);
+    static JSC::JSObject* self(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
     static const JSC::ClassInfo s_info;
     JSSVGTRefElementPrototype(PassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
@@ -57,7 +58,7 @@ public:
 
 // Attributes
 
-JSC::JSValuePtr jsSVGTRefElementHref(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsSVGTRefElementHref(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
 
 } // namespace WebCore
 

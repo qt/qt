@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2006, 2007, 2008 Apple Inc. All rights reserved.
+ * Copyright (C) 2006, 2007, 2008, 2009 Apple Inc. All rights reserved.
  * Copyright (C) 2007 Nicholas Shanks <webkit@nickshanks.com>
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,10 +28,13 @@
  */
 
 #import "config.h"
-#import "FontTraitsMask.h"
 #import "WebFontCache.h"
 
+#import "FontTraitsMask.h"
+#import <AppKit/AppKit.h>
+#import <Foundation/Foundation.h>
 #import <math.h>
+#import <wtf/UnusedParam.h>
 
 using namespace WebCore;
 
@@ -51,7 +54,7 @@ typedef int NSInteger;
     | NSSmallCapsFontMask \
 )
 
-static BOOL acceptableChoice(NSFontTraitMask desiredTraits, int desiredWeight, NSFontTraitMask candidateTraits, int candidateWeight)
+static BOOL acceptableChoice(NSFontTraitMask desiredTraits, NSFontTraitMask candidateTraits)
 {
     desiredTraits &= ~SYNTHESIZED_FONT_TRAITS;
     return (candidateTraits & desiredTraits) == desiredTraits;
@@ -61,7 +64,7 @@ static BOOL betterChoice(NSFontTraitMask desiredTraits, int desiredWeight,
     NSFontTraitMask chosenTraits, int chosenWeight,
     NSFontTraitMask candidateTraits, int candidateWeight)
 {
-    if (!acceptableChoice(desiredTraits, desiredWeight, candidateTraits, candidateWeight))
+    if (!acceptableChoice(desiredTraits, candidateTraits))
         return NO;
 
     // A list of the traits we care about.
@@ -104,8 +107,13 @@ static BOOL betterChoice(NSFontTraitMask desiredTraits, int desiredWeight,
 // Workaround for <rdar://problem/5781372>.
 static inline void fixUpWeight(NSInteger& weight, NSString *fontName)
 {
+#if !defined(BUILDING_ON_TIGER) && !defined(BUILDING_ON_LEOPARD)
+    UNUSED_PARAM(weight);
+    UNUSED_PARAM(fontName);
+#else
     if (weight == 3 && [fontName rangeOfString:@"ultralight" options:NSCaseInsensitiveSearch | NSBackwardsSearch | NSLiteralSearch].location != NSNotFound)
         weight = 2;
+#endif
 }
 
 static inline FontTraitsMask toTraitsMask(NSFontTraitMask appKitTraits, NSInteger appKitWeight)
@@ -230,7 +238,7 @@ static inline FontTraitsMask toTraitsMask(NSFontTraitMask appKitTraits, NSIntege
 
         BOOL newWinner;
         if (!choseFont)
-            newWinner = acceptableChoice(desiredTraits, desiredWeight, fontTraits, fontWeight);
+            newWinner = acceptableChoice(desiredTraits, fontTraits);
         else
             newWinner = betterChoice(desiredTraits, desiredWeight, chosenTraits, chosenWeight, fontTraits, fontWeight);
 
@@ -296,6 +304,12 @@ static inline FontTraitsMask toTraitsMask(NSFontTraitMask appKitTraits, NSIntege
 #endif
 
     return [self internalFontWithFamily:desiredFamily traits:desiredTraits weight:desiredWeight size:size];
+}
+
++ (NSFont *)fontWithFamily:(NSString *)desiredFamily traits:(NSFontTraitMask)desiredTraits size:(float)size
+{
+    int desiredWeight = (desiredTraits & NSBoldFontMask) ? 9 : 5;
+    return [self fontWithFamily:desiredFamily traits:desiredTraits weight:desiredWeight size:size];
 }
 
 @end
