@@ -167,15 +167,7 @@ void QSQLite2ResultPrivate::init(const char **cnames, int numCols)
     for (int i = 0; i < numCols; ++i) {
         const char* lastDot = strrchr(cnames[i], '.');
         const char* fieldName = lastDot ? lastDot + 1 : cnames[i];
-        
-        //remove quotations around the field name if any
-        QString fieldStr = QString::fromAscii(fieldName);
-        QString quote = QString::fromLatin1("\"");
-        if ( fieldStr.length() > 2 && fieldStr.left(1) == quote && fieldStr.right(1) == quote) {
-            fieldStr = fieldStr.mid(1);
-            fieldStr.chop(1);
-        }
-        rInf.append(QSqlField(fieldStr,
+        rInf.append(QSqlField(QString::fromAscii(fieldName),
                               nameToType(QString::fromAscii(cnames[i+numCols]))));
     }
 }
@@ -511,11 +503,8 @@ QSqlIndex QSQLite2Driver::primaryIndex(const QString &tblname) const
 
     QSqlQuery q(createResult());
     q.setForwardOnly(true);
-    QString table = tblname;
-    if (isIdentifierEscaped(table, QSqlDriver::TableName))
-        table = stripDelimiters(table, QSqlDriver::TableName);
     // finrst find a UNIQUE INDEX
-    q.exec(QLatin1String("PRAGMA index_list('") + table + QLatin1String("');"));
+    q.exec(QLatin1String("PRAGMA index_list('") + tblname + QLatin1String("');"));
     QString indexname;
     while(q.next()) {
         if (q.value(2).toInt()==1) {
@@ -528,7 +517,7 @@ QSqlIndex QSQLite2Driver::primaryIndex(const QString &tblname) const
 
     q.exec(QLatin1String("PRAGMA index_info('") + indexname + QLatin1String("');"));
 
-    QSqlIndex index(table, indexname);
+    QSqlIndex index(tblname, indexname);
     while(q.next()) {
         QString name = q.value(2).toString();
         QVariant::Type type = QVariant::Invalid;
@@ -543,9 +532,6 @@ QSqlRecord QSQLite2Driver::record(const QString &tbl) const
 {
     if (!isOpen())
         return QSqlRecord();
-    QString table = tbl;
-    if (isIdentifierEscaped(tbl, QSqlDriver::TableName))
-        table = stripDelimiters(table, QSqlDriver::TableName);
 
     QSqlQuery q(createResult());
     q.setForwardOnly(true);
