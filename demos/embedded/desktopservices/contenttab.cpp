@@ -41,6 +41,7 @@
 
 // EXTERNAL INCLUDES
 #include <QKeyEvent>
+#include <QMessageBox>
 #include <QListWidget>
 #include <QVBoxLayout>
 #include <QFileInfoList>
@@ -135,10 +136,19 @@ void ContentTab::keyPressEvent(QKeyEvent *event)
     }
 }
 
+void ContentTab::handleErrorInOpen(QListWidgetItem *item)
+{
+    Q_UNUSED(item);    
+    QMessageBox::warning( this, tr("Operation Failed"), tr("Unkown error!"), QMessageBox::Close);
+}
+
 // NEW SLOTS
 void ContentTab::openItem(QListWidgetItem *item)
 {
-    QDesktopServices::openUrl(itemUrl(item));
+    bool ret = QDesktopServices::openUrl(itemUrl(item));
+    if(!ret)
+        handleErrorInOpen(item);
 }
+
 
 // End of File
