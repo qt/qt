@@ -1482,21 +1482,43 @@ void tst_QScriptValue::toObject()
     {
         QScriptValue undefined = QScriptValue(QScriptValue::UndefinedValue);
         QVERIFY(!undefined.toObject().isValid());
+        QVERIFY(!eng.toObject(undefined).isValid());
 
         QScriptValue null = QScriptValue(QScriptValue::NullValue);
         QVERIFY(!null.toObject().isValid());
+        QVERIFY(!eng.toObject(null).isValid());
 
         QScriptValue falskt = QScriptValue(false);
         QVERIFY(!falskt.toObject().isValid());
+        {
+            QScriptValue tmp = eng.toObject(falskt);
+            QVERIFY(tmp.isObject());
+            QVERIFY(tmp.toBool());
+        }
 
         QScriptValue sant = QScriptValue(true);
         QVERIFY(!sant.toObject().isValid());
+        {
+            QScriptValue tmp = eng.toObject(sant);
+            QVERIFY(tmp.isObject());
+            QVERIFY(tmp.toBool());
+        }
 
         QScriptValue number = QScriptValue(123.0);
         QVERIFY(!number.toObject().isValid());
+        {
+            QScriptValue tmp = eng.toObject(number);
+            QVERIFY(tmp.isObject());
+            QCOMPARE(tmp.toInt32(), number.toInt32());
+        }
 
-        QScriptValue str = QScriptValue(QString("ciao"));
+        QScriptValue str = QScriptValue(QString::fromLatin1("ciao"));
         QVERIFY(!str.toObject().isValid());
+        {
+            QScriptValue tmp = eng.toObject(str);
+            QVERIFY(tmp.isObject());
+            QCOMPARE(tmp.toString(), QString::fromLatin1("ciao"));
+        }
     }
 }
 
@@ -2359,6 +2381,16 @@ void tst_QScriptValue::call()
             QCOMPARE(ret.isNumber(), true);
             QCOMPARE(qIsNaN(ret.toNumber()), true);
         }
+    }
+    {
+        QScriptValue fun = eng.evaluate("Object");
+        QVERIFY(fun.isFunction());
+        QScriptEngine eng2;
+        QScriptValue objectInDifferentEngine = eng2.newObject();
+        QScriptValueList args;
+        args << objectInDifferentEngine;
+        QTest::ignoreMessage(QtWarningMsg, "QScriptValue::call() failed: cannot call function with argument created in a different engine");
+        fun.call(QScriptValue(), args);
     }
 
     // test that invalid return value is handled gracefully
