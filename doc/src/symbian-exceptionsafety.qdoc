@@ -164,9 +164,8 @@
     it's dealing with strings it probably does, again bad.
 
     Line 4 is tricky, it calls a leaving function which is ok within a \c TRAP, 
-    but it also uses \l qt_QString2TPtrC. You might think this is safe, but 
-    there is a potential realloc call in there, so this can cause an unwelcome 
-    exception.
+    but it also uses a helper function to convert string types. In this case
+    the helper function may cause an unwelcome exception.
 
     We could rewrite this with nested exception translations, but it's much 
     easier to refactor it. 
