@@ -5073,6 +5073,9 @@ void QGraphicsScenePrivate::drawSubtreeRecursive(QGraphicsItem *item, QPainter *
         opacity = parentOpacity;
     }
 
+    // Item is invisible.
+    bool invisible = !item || ((item->d_ptr->flags & QGraphicsItem::ItemHasNoContents) || invisibleButChildIgnoresParentOpacity);
+
     // Calculate the full transform for this item.
     bool wasDirtyParentSceneTransform = false;
     bool dontDrawItem = true;
@@ -5092,16 +5095,18 @@ void QGraphicsScenePrivate::drawSubtreeRecursive(QGraphicsItem *item, QPainter *
             transform *= viewTransform;
         }
 
-        QRectF brect = item->boundingRect();
-        // ### This does not take the clip into account.
-        _q_adjustRect(&brect);
-        QRect viewBoundingRect = transform.mapRect(brect).toRect();
-        item->d_ptr->paintedViewBoundingRects.insert(widget, viewBoundingRect);
-        viewBoundingRect.adjust(-1, -1, 1, 1);
-        if (exposedRegion)
-            dontDrawItem = !exposedRegion->intersects(viewBoundingRect);
-        else
-            dontDrawItem = viewBoundingRect.isEmpty();
+        if (!invisible) {
+            QRectF brect = item->boundingRect();
+            // ### This does not take the clip into account.
+            _q_adjustRect(&brect);
+            QRect viewBoundingRect = transform.mapRect(brect).toRect();
+            item->d_ptr->paintedViewBoundingRects.insert(widget, viewBoundingRect);
+            viewBoundingRect.adjust(-1, -1, 1, 1);
+            if (exposedRegion)
+                dontDrawItem = !exposedRegion->intersects(viewBoundingRect);
+            else
+                dontDrawItem = viewBoundingRect.isEmpty();
+        }
     }
 
     // Find and sort children.
@@ -5158,7 +5163,7 @@ void QGraphicsScenePrivate::drawSubtreeRecursive(QGraphicsItem *item, QPainter *
     bool childClip = (item && (item->d_ptr->flags & QGraphicsItem::ItemClipsChildrenToShape));
     bool dontDrawChildren = item && dontDrawItem && childClip;
     childClip &= !dontDrawChildren && !children->isEmpty();
-    if (item && ((item->d_ptr->flags & QGraphicsItem::ItemHasNoContents) || invisibleButChildIgnoresParentOpacity))
+    if (item && invisible)
         dontDrawItem = true;
 
     // Clip children.
