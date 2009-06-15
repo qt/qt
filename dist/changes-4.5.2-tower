@@ -28,7 +28,8 @@ New modules
 -----------
 
 - QtSql
-    * todo
+    * Implemented QtSql module with sqlite3 backend. For now backend is 
+      provided only in binary format.
 - QtWebkit
     * todo
 - Phonon
@@ -44,12 +45,19 @@ New classes
 Ported classes
 --------------
 
-- todo
-    * todo
+- QSound
+    * Implemented CMdaAudioPlayerUtility based Symbian backend for QSound.
+- QLocalSocket and QLocalServer
+    * Added support for QLocalSocket and QLocalServer on Symbian
 
 Features
 --------
+- QApplication
+    * Implemented QApplication::beep() for Symbian
 
+- QSslSocket
+    * Added support for -openssl option i.e. runtime resolving of OpenSSL 
+      symbols
 - todo
     * todo
 
@@ -58,6 +66,33 @@ Optimizations
 
 - qdrawhelper
     * Optimized drawing operations for RVCT builds, particulary for ARMV6.
+    
+- qwidget_s60.cpp
+    * Avoid unnecessary calls to FocusChanged in Symbian
+
+****************************************************************************
+*                          Code clean-up                                   *
+****************************************************************************
+
+- Cleanup qeventdispatcher_unix.cpp
+    * 247268: All qeventdispatcher_unix.cpp changes were reverted since, 
+    this file is not anymore used in Symbian OS branch.
+- Cleanup QtNetwork workarounds implemented earlier due to Open C bugs.
+    * 247287: Removed getaddrinfo workaround 
+    * 247288: Removed waitForConnected workaround
+    * 247289: Removed qt_socket_accept workaround
+    * 247290: Removed qt_socket_connect workaround
+    * 247290: Removed E32IONREAD workaround
+    * 247293: Removed nativeHasPendingDatagrams workaround
+    * 247295: Removed QNativeSocketEnginePrivate::nativeRead EPIPE 
+      workaround
+- Other code clean-ups
+    * 247278: Removed unnecessary includes from qbackingstore.cpp.    
+    * Fixed Q_OS_SYMBIAN ifdef usage in qfiledialog_p.h
+    * 247272: Removed qtestnetworkservers.h dependency, used 
+      network-settings.h
+    * Revert "Work around compiler bug on Nokia Metrowerks compiler."
+    
 
 ****************************************************************************
 *                          Build issues                                    *
@@ -70,6 +105,9 @@ Optimizations
 *                          Changes to existing classes                     *
 ****************************************************************************
 
+- QDesktopServices
+    * Fixed forwardslash/backslash usage as an path separator
+
 - QPluginLoader 
     * QPluginLoader will look for plugin stubs from the same folder on other
       drives if it can't find them from the indicated drive.
@@ -77,13 +115,77 @@ Optimizations
 - QEventDispatcher
     * Lowered the timeout for reprioritizing the process to 100ms
 
+- QNetworkInterface
+    * Fixed R-handle leak in Symbian version of qnetworkinterface_unix.cpp
+    * Introduced a new qnetworkinterface_symbian.cpp, because there wasn't 
+      really anything common to UNIX equivalent
+      
+- QHostInfo
+    * Added support for host lookups with multiple ipv4 addresses.
+    
+- QUdpSocket
+    *  Updated BindFlag documentation to reflect behaviour on Symbian OS 
+      
+- QLocale
+    * Removed workaround for missing tzname symbol, fixes QLocal timeZone
+      implementation for Symbian.
+      
+- QTemporaryFile
+    * Fixed temporary file rename in Symbian OS.      
+    
+- QThread
+    * Fix for thread termination in Symbian OS.
+    
+- QIoDevice    
+    * Fixed compilation error when QIODEVICE_DEBUG is defined.
+    
+- QS60Style
+    * Added subElementRect implementation for SE_ItemViewItemCheckIndicator.
+      
+- QDesktopServices
+    * Switched QDesktopServices mail-to URL handling to RSendAs in Symbian,
+      due to the fact that CSendUi requires extensive capabilities to work 
+      correctly. Currently e-mail sending with qdesktopservices::openUrl 
+      works in Symbian only if e-mail account already exists.
+      
+- QCoeFepInputContext (non-public)
+    * Fixes FEP crash when changing the focused Qt widget to NULL.
+    
+- QApplication
+    * 252798: Fixed layout when orientation changed via 
+      AknAppUi::SetOrientationL.         
+      
+- QUdpSocket
+    * Wrote hack for QUdpSocket::writeDatagram return value in Symbian OS.      
+      
+- QNativeSocketEnginePrivate (non-public)
+    * Changed select to listen also expectfds in Symbain OS for given 
+      sockets (Workaround to Open C bug).
+    * Fix to Open C bug: Socket connect failure is indicated exception set.
+      
+- QEventDispatcherSymbian (non-public)
+    * Fixed ASSERT panic in Symbian event dispatcher
+    * 246600: Fix problem in eventdispatcher destructor / AO canceling
+    * Fixed active scheduler removal when calling QThread::terminate
+    * Fix to Open C bug: select sometimes returns -1 and errno is 
+      ECONNREFUSED
+
 ****************************************************************************
 *                          Examples and demos                              *
 ****************************************************************************
-
+- Drilldown
+    * Added to demonstrate QtSql usage in Symbian OS
+ 
 - Deform, Pathstroke, and Wiggly
     * Removed Symbian specific animation timer fixes since more generic
       fix was made to event dispatcher.
+
+- Ftp  
+    * Enabled default iap setting for FTP example
+    
+- DesktopServices
+    * Implemented content filters for desktopservices example.
+    * Added error handling to qdesktopservices example when openUrl fails.
 
 - SecureSocketClient
     * Fixed build issue caused by lack of cursor.
@@ -91,6 +193,7 @@ Optimizations
 - Fluidlauncher
     * Removed ugly workaround to make emulator deployment work correctly, 
       since the issue has been fixed in qmake.
+    * Included drilldown to demonstrate QtSql usage
     * Updated screenshots to S60 style  
 
 
@@ -113,6 +216,8 @@ Optimizations
       
 - configure
     * -cetest is no longer a supported switch for configure.
+    * -stl option is enabled by default for Symbian OS
+    * -openssl option is enabled by default for Symbian OS.
       
 - Release package creation
     * Removed the obsolete script to create release package.
@@ -122,6 +227,12 @@ Optimizations
     
 - Patch_capabilities script    
     * Will now patch also vendor id.
+    
+****************************************************************************
+*                          Documnetation                                   *
+****************************************************************************
+- qmake-manual
+    * 250370: Added documentation for ICON keyword     
 
 ****************************************************************************
 *                          Plugins                                         *
