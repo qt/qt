@@ -2312,16 +2312,8 @@ QT3_SUPPORT Q_CORE_EXPORT const char *qInstallPathSysconf();
 
 #if defined(Q_OS_SYMBIAN)
 
-#include <stdexcept>
-
-class Q_CORE_EXPORT QSymbianLeaveException : public std::exception
-{
-public:
-    inline QSymbianLeaveException(int err) : error(err) {}
-    const char* what() const throw();
-public:
-    int error;
-};
+// forward declare std::exception
+namespace std { class exception; }
 
 Q_CORE_EXPORT void qt_translateSymbianErrorToException(int error);
 Q_CORE_EXPORT void qt_translateExceptionToSymbianErrorL(const std::exception& ex);

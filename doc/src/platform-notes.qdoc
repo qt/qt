@@ -521,7 +521,7 @@
     supported by Qt can be found on the \l{Supported Platforms} page.
 
     For information about mixing exceptions with symbian leaves,
-    see \l QSymbianLeaveException.
+    see \l{Exception Safety with Symbian}
 */
 
 /*!
