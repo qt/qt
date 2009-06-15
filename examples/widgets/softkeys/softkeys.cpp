@@ -46,7 +46,7 @@ MainWindow::MainWindow(QWidget *parent)
 {
     central = new QWidget(this);
     setCentralWidget(central);
-    infoLabel = new QLabel(tr("Funky stuff in menu!"));
+    infoLabel = new QLabel(tr("Open menu to start!"));
 
     layout = new QVBoxLayout;
     layout->addWidget(infoLabel);
