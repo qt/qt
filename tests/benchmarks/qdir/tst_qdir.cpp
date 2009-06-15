@@ -73,6 +73,7 @@ private slots:
             }
         }
     }
+#ifndef Q_OS_WIN
     void testLowLevel() {
         QDir testdir(QDir::tempPath() + QLatin1String("/test_speed"));
         DIR *dir = opendir(qPrintable(testdir.absolutePath()));
@@ -90,6 +91,7 @@ private slots:
         }
         closedir(dir);
     }
+#endif
 };
 
 QTEST_MAIN(Test)
