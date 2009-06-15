@@ -6036,7 +6036,7 @@ static int openRX71Device(const QByteArray &deviceName)
     }
 
     // fetch the event type mask and check that the device reports absolute coordinates
-    QBitArray eventTypeMask(EV_CNT, false);
+    QBitArray eventTypeMask(EV_MAX + 1, false);
     if (ioctl(fd, EVIOCGBIT(0, eventTypeMask.size()), eventTypeMask.data_ptr()->data) < 0) {
         close(fd);
         return -1;
@@ -6047,7 +6047,7 @@ static int openRX71Device(const QByteArray &deviceName)
     }
 
     // make sure that we can get the absolute X and Y positions from the device
-    QBitArray absMask(ABS_CNT, false);
+    QBitArray absMask(ABS_MAX + 1, false);
     if (ioctl(fd, EVIOCGBIT(EV_ABS, absMask.size()), absMask.data_ptr()->data) < 0) {
         close(fd);
         return -1;
