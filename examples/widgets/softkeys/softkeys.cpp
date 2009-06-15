@@ -42,31 +42,71 @@
 #include "softkeys.h"
 
 MainWindow::MainWindow(QWidget *parent)
-    : QMainWindow(parent)      
+    : QMainWindow(parent)
 {
     central = new QWidget(this);
+    central->setContextMenuPolicy(Qt::NoContextMenu); // explicitly forbid usage of context menu so actions item is not shown menu
     setCentralWidget(central);
-    infoLabel = new QLabel(tr("Open menu to start!"));
+
+    // Create text editor and set softkeys to it
+    textEditor= new QTextEdit(tr("Choose items from menu or navigate around with tab+selection to see what softkeys can do"), this);
+    QAction* fill = new QAction(tr("Fill"), this);
+    fill->setSoftKeyRole(QAction::OkSoftKey);
+    QAction* clear = new QAction(tr("Clear"), this);
+    clear->setSoftKeyRole(QAction::CancelSoftKey);
+
+    QList<QAction*> textEditorSoftKeys;
+    textEditorSoftKeys.append(fill);
+    textEditorSoftKeys.append(clear);
+    textEditor->setSoftKeys(textEditorSoftKeys);
+
+    infoLabel = new QLabel(tr(""), this);
+    infoLabel->setContextMenuPolicy(Qt::NoContextMenu);
+
+    pushButton = new QPushButton(tr("Open File Dialog"), this);
+    pushButton->setContextMenuPolicy(Qt::NoContextMenu);
+
+    QComboBox* comboBox = new QComboBox(this);
+    comboBox->setContextMenuPolicy(Qt::NoContextMenu);
+    comboBox->insertItems(0, QStringList()
+     << QApplication::translate("MainWindow", "Selection1", 0, QApplication::UnicodeUTF8)
+     << QApplication::translate("MainWindow", "Selection2", 0, QApplication::UnicodeUTF8)
+     << QApplication::translate("MainWindow", "Selection3", 0, QApplication::UnicodeUTF8)
+    );
 
     layout = new QVBoxLayout;
+    layout->addWidget(textEditor);
     layout->addWidget(infoLabel);
+    layout->addWidget(pushButton);
+    layout->addWidget(comboBox);
     central->setLayout(layout);
-    central->setFocusPolicy(Qt::TabFocus);
-    
+
     fileMenu = menuBar()->addMenu(tr("&File"));
-    openDialogAct = new QAction(tr("&Open Dialog"), this);
     addSoftKeysAct = new QAction(tr("&Add Softkeys"), this);
-    clearSoftKeysAct = new QAction(tr("&Clear Softkeys"), this);
-    fileMenu->addAction(openDialogAct);
     fileMenu->addAction(addSoftKeysAct);
-    fileMenu->addAction(clearSoftKeysAct);
-    connect(openDialogAct, SIGNAL(triggered()), this, SLOT(openDialog()));    
-    connect(addSoftKeysAct, SIGNAL(triggered()), this, SLOT(addSoftKeys()));    
-    connect(clearSoftKeysAct, SIGNAL(triggered()), this, SLOT(clearSoftKeys()));    
+    exit = new QAction(tr("&Exit"), this);
+    fileMenu->addAction(exit);
+
+    connect(fill, SIGNAL(triggered()), this, SLOT(fillTextEditor()));
+    connect(clear, SIGNAL(triggered()), this, SLOT(clearTextEditor()));
+    connect(pushButton, SIGNAL(clicked()), this, SLOT(openDialog()));
+    connect(addSoftKeysAct, SIGNAL(triggered()), this, SLOT(addSoftKeys()));
+    connect(exit, SIGNAL(triggered()), this, SLOT(exitApplication()));
+    pushButton->setFocus();
 }
 
 MainWindow::~MainWindow()
 {
+}
+
+void MainWindow::fillTextEditor()
+{
+    textEditor->setText(tr("The fill softkey was pressed and here is some text to fill the editor"));
+}
+
+void MainWindow::clearTextEditor()
+{
+    textEditor->setText(tr(""));
 }
 
 void MainWindow::openDialog()
@@ -78,33 +118,34 @@ void MainWindow::addSoftKeys()
 {
     ok = new QAction(tr("Ok"), this);
     ok->setSoftKeyRole(QAction::OkSoftKey);
-    connect(ok, SIGNAL(triggered()), this, SLOT(okPressed()));  
-    
+    connect(ok, SIGNAL(triggered()), this, SLOT(okPressed()));
+
     cancel = new QAction(tr("Cancel"), this);
     cancel->setSoftKeyRole(QAction::OkSoftKey);
-    connect(cancel, SIGNAL(triggered()), this, SLOT(cancelPressed()));  
+    connect(cancel, SIGNAL(triggered()), this, SLOT(cancelPressed()));
 
     QList<QAction*> softkeys;
     softkeys.append(ok);
     softkeys.append(cancel);
-    central->setSoftKeys(softkeys);
-    central->setFocus();
-    
+    pushButton->setSoftKeys(softkeys);
 }
 
-void MainWindow::clearSoftKeys()
+void MainWindow::exitApplication()
 {
-    central->setSoftKey(0);
+    qApp->exit();
 }
 
 void MainWindow::okPressed()
 {
     infoLabel->setText(tr("OK pressed"));
-    central->setSoftKey(0);
+    pushButton->setSoftKey(0);
 }
 
 void MainWindow::cancelPressed()
 {
     infoLabel->setText(tr("Cancel pressed"));
-    central->setSoftKey(0);
+    pushButton->setSoftKey(0);
 }
+
+
+
