@@ -37,6 +37,7 @@ private slots:
     void contextPropertiesTriggerReeval();
     void objectPropertiesTriggerReeval();
     void deferredProperties();
+    void extensionObjects();
 
 private:
     QmlEngine engine;
@@ -353,6 +354,21 @@ void tst_qmlbindengine::deferredProperties()
     MyQmlObject *qmlObject = 
         qobject_cast<MyQmlObject *>(object->objectProperty());
     QVERIFY(qmlObject != 0);
+}
+
+void tst_qmlbindengine::extensionObjects()
+{
+    QmlComponent component(&engine, TEST_FILE("extensionObjects.txt"));
+    MyExtendedObject *object = 
+        qobject_cast<MyExtendedObject *>(component.create());
+    QVERIFY(object != 0);
+    QCOMPARE(object->baseProperty(), 13);
+    QCOMPARE(object->coreProperty(), 9);
+
+    object->setProperty("extendedProperty", QVariant(11));
+    object->setProperty("baseExtendedProperty", QVariant(92));
+    QCOMPARE(object->coreProperty(), 11);
+    QCOMPARE(object->baseProperty(), 92);
 }
 
 QTEST_MAIN(tst_qmlbindengine)

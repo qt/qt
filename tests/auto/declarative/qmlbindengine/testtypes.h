@@ -148,5 +148,35 @@ private:
 };
 QML_DECLARE_TYPE(MyDeferredObject);
 
+class MyBaseExtendedObject : public QObject
+{
+Q_OBJECT
+Q_PROPERTY(int baseProperty READ baseProperty WRITE setBaseProperty);
+public:
+    MyBaseExtendedObject() : m_value(0) {}
+
+    int baseProperty() const { return m_value; }
+    void setBaseProperty(int v) { m_value = v; }
+
+private:
+    int m_value;
+};
+QML_DECLARE_TYPE(MyBaseExtendedObject);
+
+class MyExtendedObject : public MyBaseExtendedObject
+{
+Q_OBJECT
+Q_PROPERTY(int coreProperty READ coreProperty WRITE setCoreProperty);
+public:
+    MyExtendedObject() : m_value(0) {}
+
+    int coreProperty() const { return m_value; }
+    void setCoreProperty(int v) { m_value = v; }
+
+private:
+    int m_value;
+};
+QML_DECLARE_TYPE(MyExtendedObject);
+
 #endif // TESTTYPES_H
 
