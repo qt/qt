@@ -68,6 +68,8 @@ private slots:
     void setScaleView();
 
 private:
+    void setupProxy();
+
     QString currentFileName;
     PreviewDeviceSkin *skin;
     QSize skinscreensize;
