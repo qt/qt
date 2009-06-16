@@ -103,7 +103,7 @@
     Note that implicitly shared Qt classes will not throw in their assignment
     operators or copy constructors, so the limitation above does not apply.
 
-    \section1 Out of memory handling
+    \section1 Out of Memory Handling
 
     Most desktop operating systems overcommit memory. This means that \c malloc()
     or \c{operator new} return a valid pointer, even though there is not enough
@@ -141,4 +141,16 @@
     After an exception is thrown, the connection to the windowing server
     might already be closed. It is not safe to call a GUI related function
     after catching an exception.
+
+    \section1 Platform-Specific Exception Handling
+
+    \section2 Symbian (Qt for S60)
+
+    The Symbian platform implements its own exception system that differs from the standard
+    C++ mechanism. When using Qt for S60, and especially when writing code to access Symbian
+    functionality directly, it may be necessary to know about the underlying implementation
+    and how it interacts with Qt.
+
+    The \l{Exception Safety with Symbian} document shows how to use the facilities provided
+    by Qt to use exceptions as safely as possible.
 */
