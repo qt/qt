@@ -311,7 +311,7 @@ elif [ $COMMERCIAL_USER = "yes" ]; then
             echo
             echo "You are using an old license file."
             echo
-            echo "Please install the license file supplied by Qt Software,"
+            echo "Please install the license file supplied by Nokia,"
             echo "or install the Qt Open Source Edition if you intend to"
             echo "develop free software."
             exit 1

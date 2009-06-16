@@ -192,7 +192,7 @@ void RenderArea::paintEvent(QPaintEvent * /* event */)
                 painter.drawPath(path);
                 break;
             case Text:
-                painter.drawText(rect, Qt::AlignCenter, tr("Qt by\nQt Software"));
+                painter.drawText(rect, Qt::AlignCenter, tr("Qt by\nNokia"));
                 break;
             case Pixmap:
                 painter.drawPixmap(10, 10, pixmap);

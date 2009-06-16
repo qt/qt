@@ -46,7 +46,7 @@
     \ingroup qttools
     \keyword Qt Designer
 
-    \QD is Qt Software's tool for designing and building graphical user
+    \QD is Qt's tool for designing and building graphical user
     interfaces (GUIs) from Qt components. You can compose and customize your
     widgets or dialogs in a what-you-see-is-what-you-get (WYSIWYG) manner, and
     test them using different styles and resolutions.
