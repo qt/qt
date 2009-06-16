@@ -296,6 +296,9 @@ void tst_QSqlDatabase::createTestTables(QSqlDatabase db)
         // ### stupid workaround until we find a way to hardcode this
         // in the MySQL server startup script
         q.exec("set table_type=innodb");
+    if (tst_Databases::isSqlServer(db)) {
+        QVERIFY_SQL(q, exec("SET ANSI_DEFAULTS ON"));
+    }
 
     // please never ever change this table; otherwise fix all tests ;)
     if (tst_Databases::isMSAccess(db)) {
