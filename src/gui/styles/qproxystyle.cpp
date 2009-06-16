@@ -65,7 +65,7 @@ QT_BEGIN_NAMESPACE
     Below is an example that overrides the shortcut underline
     behavior on all platforms:
 
-    \snippet doc/src/snippets/code/src_gui_qproxystyle.cpp 0
+    \snippet doc/src/snippets/code/src_gui_qproxystyle.cpp 1
 
     Warning: Although Qt's internal styles should respect this hint,
     there is no guarantee that it will work for all styles. It would
