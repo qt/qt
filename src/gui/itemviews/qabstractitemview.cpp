@@ -2901,8 +2901,14 @@ void QAbstractItemView::scrollToBottom()
 void QAbstractItemView::update(const QModelIndex &index)
 {
     Q_D(QAbstractItemView);
-    if (index.isValid())
-        d->viewport->update(visualRect(index));
+    if (index.isValid()) {
+        const QRect rect = visualRect(index);
+        //this test is important for peformance reason
+        //For example in dataChanged we simply update all the cells without checking
+        //it can be a major bottleneck to update rects that aren't even part of the viewport
+        if (d->viewport->geometry().intersects(rect))
+            d->viewport->update(rect);
+    }
 }
 
 /*!
