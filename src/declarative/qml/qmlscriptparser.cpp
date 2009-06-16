@@ -628,6 +628,8 @@ bool ProcessAST::visit(AST::UiScriptBinding *node)
                                        node->statement);
     }
 
+    prop->location.range.length = prop->location.range.offset + prop->location.range.length - node->qualifiedId->identifierToken.offset;
+    prop->location.range.offset = node->qualifiedId->identifierToken.offset;
     Value *v = new Value;
     v->value = primitive;
     v->location = location(node->statement->firstSourceLocation(),
