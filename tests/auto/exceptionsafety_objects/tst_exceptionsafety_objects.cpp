@@ -59,36 +59,80 @@ public slots:
     void initTestCase();
 
 private slots:
+    void objects_data();
+    void objects();
+
     void widgets_data();
     void widgets();
 };
 
 void tst_ExceptionSafetyObjects::initTestCase()
 {
+    // sanity check whether OOM simulation works
+    AllocFailActivator allocFailActivator;
+    mallocFailIndex = 0;
+
+    // malloc fail index is 0 -> this malloc should fail.
+    void *buf = malloc(42);
+    QVERIFY(!buf);
 }
 
 // helper structs to create an arbitrary widget
-struct AbstractWidgetCreator
+struct AbstractObjectCreator
 {
-    virtual QWidget *create(QWidget *parent) = 0;
+    virtual QObject *create(QObject *parent) = 0;
 };
 
-Q_DECLARE_METATYPE(AbstractWidgetCreator *)
+Q_DECLARE_METATYPE(AbstractObjectCreator *)
 
 template <typename T>
-struct WidgetCreator : public AbstractWidgetCreator
+struct ObjectCreator : public AbstractObjectCreator
 {
-    QWidget *create(QWidget *parent)
+    QObject *create(QObject *parent)
     {
         return parent ? new T(parent) : new T;
     }
 };
 
+void tst_ExceptionSafetyObjects::objects_data()
+{
+    QTest::addColumn<AbstractObjectCreator *>("objectCreator");
+
+#define NEWROW(T) QTest::newRow(#T) << static_cast<AbstractObjectCreator *>(new ObjectCreator<T >)
+    NEWROW(QObject);
+}
+
+void tst_ExceptionSafetyObjects::objects()
+{
+    QFETCH(AbstractObjectCreator *, objectCreator);
+
+    AllocFailActivator allocFailActivator;
+    int currentOOMIndex = 0;
+    do {
+        mallocFailIndex = ++currentOOMIndex;
+
+        try {
+            QScopedPointer<QObject> ptr(objectCreator->create(0));
+        } catch (const std::bad_alloc &) {
+        }
+    } while (mallocFailIndex <= 0);
+}
+
+template <typename T>
+struct WidgetCreator : public AbstractObjectCreator
+{
+    QObject *create(QObject *parent)
+    {
+        return parent ? new T(static_cast<QWidget *>(parent)) : new T;
+    }
+};
+
 void tst_ExceptionSafetyObjects::widgets_data()
 {
-    QTest::addColumn<AbstractWidgetCreator *>("widgetCreator");
+    QTest::addColumn<AbstractObjectCreator *>("widgetCreator");
 
-#define NEWROW(T) QTest::newRow(#T) << static_cast<AbstractWidgetCreator *>(new WidgetCreator<T >)
+#undef NEWROW
+#define NEWROW(T) QTest::newRow(#T) << static_cast<AbstractObjectCreator *>(new WidgetCreator<T >)
     NEWROW(QWidget);
     NEWROW(QPushButton);
     NEWROW(QLabel);
@@ -96,7 +140,7 @@ void tst_ExceptionSafetyObjects::widgets_data()
 
 void tst_ExceptionSafetyObjects::widgets()
 {
-    QFETCH(AbstractWidgetCreator *, widgetCreator);
+    QFETCH(AbstractObjectCreator *, widgetCreator);
 
     mallocCount = freeCount = 0;
 
@@ -111,7 +155,7 @@ void tst_ExceptionSafetyObjects::widgets()
 
         // first, create without a parent
         try {
-            QScopedPointer<QWidget> ptr(widgetCreator->create(0));
+            QScopedPointer<QObject> ptr(widgetCreator->create(0));
             // QScopedPointer deletes the widget again here.
         } catch (const std::bad_alloc &) {
             // ignore all std::bad_alloc - note: valgrind should show no leaks
