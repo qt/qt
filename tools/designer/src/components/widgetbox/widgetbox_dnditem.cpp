@@ -50,6 +50,7 @@
 #include <formwindowbase_p.h>
 #include <qdesigner_utils_p.h>
 #include <qdesigner_dockwidget_p.h>
+#include <qsimpleresource_p.h>
 
 #include <QtDesigner/QDesignerFormEditorInterface>
 #include <QtDesigner/QDesignerFormWindowManagerInterface>
@@ -84,6 +85,7 @@ protected:
 
     virtual QWidget *create(DomWidget *ui_widget, QWidget *parents);
     virtual QWidget *createWidget(const QString &widgetName, QWidget *parentWidget, const QString &name);
+    virtual void createCustomWidgets(DomCustomWidgets *);
 };
 
 WidgetBoxResource::WidgetBoxResource(QDesignerFormEditorInterface *core) :
@@ -118,6 +120,14 @@ QWidget *WidgetBoxResource::create(DomWidget *ui_widget, QWidget *parent)
     result->setFocusPolicy(Qt::NoFocus);
     result->setObjectName(ui_widget->attributeName());
     return result;
+}
+
+void WidgetBoxResource::createCustomWidgets(DomCustomWidgets *dc)
+{
+    // Make a promotion entry in  case someone has a promoted widget
+    // in the scratchpad.
+    QSimpleResource::handleDomCustomWidgets(core(), dc);
+
 }
 
 /*******************************************************************************
