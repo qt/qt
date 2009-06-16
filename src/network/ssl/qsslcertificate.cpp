@@ -125,6 +125,9 @@
 
 QT_BEGIN_NAMESPACE
 
+// forward declaration
+static QMap<QString, QString> _q_mapFromOnelineName(char *name);
+
 /*!
     Constructs a QSslCertificate by reading \a format encoded data
     from \a device and using the first certificate found. You can
@@ -300,6 +303,10 @@ static QString _q_SubjectInfoToString(QSslCertificate::SubjectInfo info)
 */
 QString QSslCertificate::issuerInfo(SubjectInfo info) const
 {
+    if (d->issuerInfo.isEmpty() && d->x509)
+        d->issuerInfo =
+                _q_mapFromOnelineName(q_X509_NAME_oneline(q_X509_get_issuer_name(d->x509), 0, 0));
+
     return d->issuerInfo.value(_q_SubjectInfoToString(info));
 }
 
@@ -327,6 +334,10 @@ QString QSslCertificate::issuerInfo(const QByteArray &tag) const
 */
 QString QSslCertificate::subjectInfo(SubjectInfo info) const
 {
+    if (d->subjectInfo.isEmpty() && d->x509)
+        d->subjectInfo =
+                _q_mapFromOnelineName(q_X509_NAME_oneline(q_X509_get_subject_name(d->x509), 0, 0));
+
     return d->subjectInfo.value(_q_SubjectInfoToString(info));
 }
 
@@ -661,11 +672,6 @@ QSslCertificate QSslCertificatePrivate::QSslCertificate_from_X509(X509 *x509)
     QSslCertificate certificate;
     if (!x509 || !QSslSocket::supportsSsl())
         return certificate;
-
-    certificate.d->issuerInfo =
-        _q_mapFromOnelineName(q_X509_NAME_oneline(q_X509_get_issuer_name(x509), 0, 0));
-    certificate.d->subjectInfo =
-        _q_mapFromOnelineName(q_X509_NAME_oneline(q_X509_get_subject_name(x509), 0, 0));
 
     ASN1_TIME *nbef = q_X509_get_notBefore(x509);
     ASN1_TIME *naft = q_X509_get_notAfter(x509);
