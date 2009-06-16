@@ -80,6 +80,21 @@
 
     \note QScopedPointer does not work with arrays.
 
+    \section1 Forward Declared Pointers
+
+    Classes that are forward declared can be used within QScopedPointer, as
+    long as the destructor of the forward declared class is available whenever
+    a QScopedPointer needs to clean up.
+
+    Concretely, this means that all classes containing a QScopedPointer that
+    points to a forward declared class must have non-inline constructors,
+    destructors and assignment operators:
+
+    \snippet doc/src/snippets/code/src_corelib_tools_qscopedpointer.cpp 4
+
+    Otherwise, the compiler output a warning about not being able to destruct
+    \c MyPrivateClass.
+
     \sa QSharedPointer
 */
 
@@ -142,7 +157,7 @@
 
 
 /*!
-    \fn bool QScopedPointer::operator!=(const QScopedPointer<T> *other) const
+    \fn bool QScopedPointer::operator!=(const QScopedPointer<T> &other) const
 
     Inequality operator. Returns true if the scoped pointer \a other
     is not pointing to the same object as this pointer, otherwise returns false.
