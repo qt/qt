@@ -446,7 +446,7 @@ static QVariant qGetIntData(SQLHANDLE hStmt, int column, bool isSigned = true)
 static QVariant qGetDoubleData(SQLHANDLE hStmt, int column)
 {
     SQLDOUBLE dblbuf;
-    SQLINTEGER lengthIndicator = 0;
+    QSQLLEN lengthIndicator = 0;
     SQLRETURN r = SQLGetData(hStmt,
                               column+1,
                               SQL_C_DOUBLE,
@@ -572,7 +572,7 @@ static int qGetODBCVersion(const QString &connOpts)
 #ifndef Q_ODBC_VERSION_2
     if (connOpts.contains(QLatin1String("SQL_ATTR_ODBC_VERSION=SQL_OV_ODBC3"), Qt::CaseInsensitive))
         return SQL_OV_ODBC3;
-#endif 
+#endif
     return SQL_OV_ODBC2;
 }
 
@@ -984,7 +984,7 @@ bool QODBCResult::fetchFirst()
     r = SQLFetchScroll(d->hStmt,
                        SQL_FETCH_FIRST,
                        0);
-    if (r != SQL_SUCCESS) { 
+    if (r != SQL_SUCCESS) {
         if (r != SQL_NO_DATA)
             setLastError(qMakeError(QCoreApplication::translate("QODBCResult",
                 "Unable to fetch first"), QSqlError::ConnectionError, d));
@@ -1003,7 +1003,7 @@ bool QODBCResult::fetchPrevious()
     r = SQLFetchScroll(d->hStmt,
                        SQL_FETCH_PRIOR,
                        0);
-    if (r != SQL_SUCCESS) { 
+    if (r != SQL_SUCCESS) {
         if (r != SQL_NO_DATA)
             setLastError(qMakeError(QCoreApplication::translate("QODBCResult",
                 "Unable to fetch previous"), QSqlError::ConnectionError, d));
@@ -1034,7 +1034,7 @@ bool QODBCResult::fetchLast()
     r = SQLFetchScroll(d->hStmt,
                        SQL_FETCH_LAST,
                        0);
-    if (r != SQL_SUCCESS) { 
+    if (r != SQL_SUCCESS) {
         if (r != SQL_NO_DATA)
             setLastError(qMakeError(QCoreApplication::translate("QODBCResult",
                 "Unable to fetch last"), QSqlError::ConnectionError, d));
@@ -1469,7 +1469,7 @@ bool QODBCResult::exec()
                     if (*ind != SQL_NULL_DATA)
                         *ind = str.length();
                     int strSize = str.length();
-                    
+
                     r = SQLBindParameter(d->hStmt,
                                           i + 1,
                                           qParamType[(QFlag)(bindValueType(i)) & QSql::InOut],
@@ -1759,7 +1759,7 @@ bool QODBCDriver::open(const QString & db,
     // support the "DRIVER={SQL SERVER};SERVER=blah" syntax
     if (db.contains(QLatin1String(".dsn"), Qt::CaseInsensitive))
         connQStr = QLatin1String("FILEDSN=") + db;
-    else if (db.contains(QLatin1String("DRIVER="), Qt::CaseInsensitive) 
+    else if (db.contains(QLatin1String("DRIVER="), Qt::CaseInsensitive)
             || db.contains(QLatin1String("SERVER="), Qt::CaseInsensitive))
         connQStr = db;
     else
@@ -1769,7 +1769,7 @@ bool QODBCDriver::open(const QString & db,
         connQStr += QLatin1String(";UID=") + user;
     if (!password.isEmpty())
         connQStr += QLatin1String(";PWD=") + password;
-    
+
     SQLSMALLINT cb;
     SQLTCHAR connOut[1024];
     r = SQLDriverConnect(d->hDbc,

@@ -59,7 +59,6 @@ QFileInfoPrivate::QFileInfoPrivate(const QFileInfo *copy)
         data = copy->d_func()->data;
     } else {
         data = new QFileInfoPrivate::Data;
-        data->clear();
     }
 }
 
@@ -134,11 +133,11 @@ void QFileInfoPrivate::detach()
 
 QString QFileInfoPrivate::getFileName(QAbstractFileEngine::FileName name) const
 {
-    if(data->cache_enabled && data->fileNames.contains((int)name))
-        return data->fileNames.value(name);
+    if(data->cache_enabled && !data->fileNames[(int)name].isNull())
+        return data->fileNames[(int)name];
     QString ret = data->fileEngine->fileName(name);
     if(data->cache_enabled)
-        data->fileNames.insert((int)name, ret);
+        data->fileNames[(int)name] = ret;
     return ret;
 }
 

@@ -3,7 +3,7 @@
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
 ** Contact: Qt Software Information (qt-info@nokia.com)
 **
-** This file is part of the QtOpenGL module of the Qt Toolkit.
+** This file is part of the Qt Linguist of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,35 +39,17 @@
 **
 ****************************************************************************/
 
-#include "qgraphicssystem_gl_p.h"
+#include "globals.h"
 
-#include "private/qpixmap_raster_p.h"
-#include "private/qpixmapdata_gl_p.h"
-#include "private/qwindowsurface_gl_p.h"
-#include "private/qgl_p.h"
-#include <private/qwindowsurface_raster_p.h>
-
-QT_BEGIN_NAMESPACE
-
-extern QGLWidget *qt_gl_getShareWidget();
-
-QPixmapData *QGLGraphicsSystem::createPixmapData(QPixmapData::PixelType type) const
+const QString &settingsPrefix()
 {
-    return new QGLPixmapData(type);
+    static QString prefix = QString(QLatin1String("%1.%2/"))
+        .arg((QT_VERSION >> 16) & 0xff)
+        .arg((QT_VERSION >> 8) & 0xff);
+    return prefix;
 }
 
-QWindowSurface *QGLGraphicsSystem::createWindowSurface(QWidget *widget) const
+QString settingPath(const char *path)
 {
-#ifdef Q_WS_WIN
-    // On Windows the QGLWindowSurface class can't handle
-    // drop shadows and native effects, e.g. fading a menu in/out using
-    // top level window opacity.
-    if (widget->windowType() == Qt::Popup)
-        return new QRasterWindowSurface(widget);
-#endif
-
-    return new QGLWindowSurface(widget);
+    return settingsPrefix() + QLatin1String(path);
 }
-
-QT_END_NAMESPACE
-

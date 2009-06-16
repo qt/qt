@@ -1906,6 +1906,22 @@ void tst_QScriptExtQObject::cppConnectAndDisconnect()
         QVERIFY(qScriptDisconnect(m_myObject, SIGNAL(mySignal()), QScriptValue(), fun));
         QCOMPARE(m_myObject->disconnectedSignal().constData(), SIGNAL(mySignal()));
     }
+
+    // bad args
+    QVERIFY(!qScriptConnect(0, SIGNAL(foo()), QScriptValue(), fun));
+    QVERIFY(!qScriptConnect(&edit, 0, QScriptValue(), fun));
+    QVERIFY(!qScriptConnect(&edit, SIGNAL(foo()), QScriptValue(), fun));
+    QVERIFY(!qScriptConnect(&edit, SIGNAL(textChanged(QString)), QScriptValue(), QScriptValue()));
+    QVERIFY(!qScriptDisconnect(0, SIGNAL(foo()), QScriptValue(), fun));
+    QVERIFY(!qScriptDisconnect(&edit, 0, QScriptValue(), fun));
+    QVERIFY(!qScriptDisconnect(&edit, SIGNAL(foo()), QScriptValue(), fun));
+    QVERIFY(!qScriptDisconnect(&edit, SIGNAL(textChanged(QString)), QScriptValue(), QScriptValue()));
+    {
+        QScriptEngine eng2;
+        QScriptValue receiverInDifferentEngine = eng2.newObject();
+        QVERIFY(!qScriptConnect(&edit, SIGNAL(textChanged(QString)), receiverInDifferentEngine, fun));
+        QVERIFY(!qScriptDisconnect(&edit, SIGNAL(textChanged(QString)), receiverInDifferentEngine, fun));
+    }
 }
 
 void tst_QScriptExtQObject::classEnums()

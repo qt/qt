@@ -1659,6 +1659,7 @@ void QTextEdit::inputMethodEvent(QInputMethodEvent *e)
     }
 #endif
     d->sendControlEvent(e);
+    ensureCursorVisible();
 }
 
 /*!\reimp

@@ -79,8 +79,6 @@ class Statistics;
 class TranslateDialog;
 class TranslationSettingsDialog;
 
-const QString &settingsPrefix();
-
 class MainWindow : public QMainWindow
 {
     Q_OBJECT

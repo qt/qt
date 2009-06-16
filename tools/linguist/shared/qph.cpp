@@ -54,32 +54,18 @@ QT_BEGIN_NAMESPACE
 class QPHReader : public QXmlStreamReader
 {
 public:
-    QPHReader(QIODevice &dev, ConversionData &cd)
-      : QXmlStreamReader(&dev), m_cd(cd)
+    QPHReader(QIODevice &dev)
+      : QXmlStreamReader(&dev)
     {}
 
     // the "real thing"
     bool read(Translator &translator);
 
 private:
-    bool elementStarts(const QString &str) const
-    {
-        return isStartElement() && name() == str;
-    }
-
     bool isWhiteSpace() const
     {
         return isCharacters() && text().toString().trimmed().isEmpty();
     }
-
-    // needed to expand <byte ... />
-    QString readContents();
-    // needed to join <lengthvariant>s
-    QString readTransContents();
-
-    void handleError();
-
-    ConversionData &m_cd;
 
     enum DataField { NoField, SourceField, TargetField, DefinitionField };
     DataField m_currentField;
@@ -126,10 +112,10 @@ bool QPHReader::read(Translator &translator)
     return true;
 }
 
-static bool loadQPH(Translator &translator, QIODevice &dev, ConversionData &cd)
+static bool loadQPH(Translator &translator, QIODevice &dev, ConversionData &)
 {
     translator.setLocationsType(Translator::NoLocations);
-    QPHReader reader(dev, cd);
+    QPHReader reader(dev);
     return reader.read(translator);
 }
 

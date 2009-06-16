@@ -1400,7 +1400,7 @@ void QApplication::setStyle(QStyle *style)
 #endif // QT_NO_STYLE_STYLESHEET
         QApplicationPrivate::app_style = style;
     QApplicationPrivate::app_style->setParent(qApp); // take ownership
-    
+
     // take care of possible palette requirements of certain gui
     // styles. Do it before polishing the application since the style
     // might call QApplication::setPalette() itself

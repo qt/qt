@@ -39,6 +39,7 @@
 **
 ****************************************************************************/
 
+#include "globals.h"
 #include "mainwindow.h"
 #include "messagemodel.h"
 #include "phrase.h"
@@ -61,7 +62,7 @@ static const int MaxCandidates = 5;
 
 static QString phraseViewHeaderKey()
 {
-    return settingsPrefix() + QLatin1String("PhraseViewHeader");
+    return settingPath("PhraseViewHeader");
 }
 
 PhraseView::PhraseView(MultiDataModel *model, QList<QHash<QString, QList<Phrase *> > > *phraseDict, QWidget *parent)

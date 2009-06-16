@@ -331,6 +331,20 @@ inline QTransform &QTransform::operator-=(qreal num)
     return *this;
 }
 
+inline bool qFuzzyCompare(const QTransform& t1, const QTransform& t2)
+{
+    return qFuzzyCompare(t1.m11(), t2.m11())
+        && qFuzzyCompare(t1.m12(), t2.m12())
+        && qFuzzyCompare(t1.m13(), t2.m13())
+        && qFuzzyCompare(t1.m21(), t2.m21())
+        && qFuzzyCompare(t1.m22(), t2.m22())
+        && qFuzzyCompare(t1.m23(), t2.m23())
+        && qFuzzyCompare(t1.m31(), t2.m31())
+        && qFuzzyCompare(t1.m32(), t2.m32())
+        && qFuzzyCompare(t1.m33(), t2.m33());
+}
+
+
 /****** stream functions *******************/
 #ifndef QT_NO_DATASTREAM
 Q_GUI_EXPORT QDataStream &operator<<(QDataStream &, const QTransform &);

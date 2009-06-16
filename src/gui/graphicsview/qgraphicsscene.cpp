@@ -5197,6 +5197,9 @@ void QGraphicsScenePrivate::drawSubtreeRecursive(QGraphicsItem *item, QPainter *
         opacity = parentOpacity;
     }
 
+    // Item is invisible.
+    bool invisible = !item || ((item->d_ptr->flags & QGraphicsItem::ItemHasNoContents) || invisibleButChildIgnoresParentOpacity);
+
     // Calculate the full transform for this item.
     bool wasDirtyParentSceneTransform = false;
     bool dontDrawItem = true;
@@ -5216,16 +5219,18 @@ void QGraphicsScenePrivate::drawSubtreeRecursive(QGraphicsItem *item, QPainter *
             transform *= viewTransform;
         }
 
-        QRectF brect = item->boundingRect();
-        // ### This does not take the clip into account.
-        _q_adjustRect(&brect);
-        QRect viewBoundingRect = transform.mapRect(brect).toRect();
-        item->d_ptr->paintedViewBoundingRects.insert(widget, viewBoundingRect);
-        viewBoundingRect.adjust(-1, -1, 1, 1);
-        if (exposedRegion)
-            dontDrawItem = !exposedRegion->intersects(viewBoundingRect);
-        else
-            dontDrawItem = viewBoundingRect.isEmpty();
+        if (!invisible) {
+            QRectF brect = item->boundingRect();
+            // ### This does not take the clip into account.
+            _q_adjustRect(&brect);
+            QRect viewBoundingRect = transform.mapRect(brect).toRect();
+            item->d_ptr->paintedViewBoundingRects.insert(widget, viewBoundingRect);
+            viewBoundingRect.adjust(-1, -1, 1, 1);
+            if (exposedRegion)
+                dontDrawItem = !exposedRegion->intersects(viewBoundingRect);
+            else
+                dontDrawItem = viewBoundingRect.isEmpty();
+        }
     }
 
     // Find and sort children.
@@ -5282,7 +5287,7 @@ void QGraphicsScenePrivate::drawSubtreeRecursive(QGraphicsItem *item, QPainter *
     bool childClip = (item && (item->d_ptr->flags & QGraphicsItem::ItemClipsChildrenToShape));
     bool dontDrawChildren = item && dontDrawItem && childClip;
     childClip &= !dontDrawChildren && !children->isEmpty();
-    if (item && ((item->d_ptr->flags & QGraphicsItem::ItemHasNoContents) || invisibleButChildIgnoresParentOpacity))
+    if (item && invisible)
         dontDrawItem = true;
 
     // Clip children.
@@ -5291,7 +5296,7 @@ void QGraphicsScenePrivate::drawSubtreeRecursive(QGraphicsItem *item, QPainter *
         painter->setWorldTransform(transform);
         painter->setClipPath(item->shape(), Qt::IntersectClip);
     }
-    
+
     if (!dontDrawChildren) {
         if (item && item->d_ptr->needSortChildren) {
             item->d_ptr->needSortChildren = 0;
@@ -5401,11 +5406,14 @@ void QGraphicsScenePrivate::markDirty(QGraphicsItem *item, const QRectF &rect, b
         return;
     }
 
-    item->d_ptr->dirty = 1;
-    if (fullItemUpdate)
-        item->d_ptr->fullUpdatePending = 1;
-    else if (!item->d_ptr->fullUpdatePending)
-        item->d_ptr->needsRepaint |= rect;
+    bool hasNoContents = item->d_ptr->flags & QGraphicsItem::ItemHasNoContents;
+    if (!hasNoContents) {
+        item->d_ptr->dirty = 1;
+        if (fullItemUpdate)
+            item->d_ptr->fullUpdatePending = 1;
+        else if (!item->d_ptr->fullUpdatePending)
+            item->d_ptr->needsRepaint |= rect;
+    }
 
     if (invalidateChildren) {
         item->d_ptr->allChildrenDirty = 1;
@@ -5971,7 +5979,7 @@ void QGraphicsScenePrivate::updateTouchPointsForItem(QGraphicsItem *item, QTouch
 {
     QList<QTouchEvent::TouchPoint> touchPoints = touchEvent->touchPoints();
     for (int i = 0; i < touchPoints.count(); ++i) {
-        QTouchEvent::TouchPoint &touchPoint = touchPoints[i];        
+        QTouchEvent::TouchPoint &touchPoint = touchPoints[i];
         touchPoint.setRect(item->mapFromScene(touchPoint.sceneRect()).boundingRect());
         touchPoint.setStartPos(item->d_ptr->genericMapFromScene(touchPoint.startScenePos(), touchEvent->widget()));
         touchPoint.setLastPos(item->d_ptr->genericMapFromScene(touchPoint.lastScenePos(), touchEvent->widget()));

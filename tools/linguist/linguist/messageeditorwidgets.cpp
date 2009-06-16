@@ -145,16 +145,15 @@ void FormatTextEdit::setEditable(bool editable)
 
 void FormatTextEdit::setPlainText(const QString &text, bool userAction)
 {
-    bool oldBlockState = false;
     if (!userAction) {
         // Prevent contentsChanged signal
-        oldBlockState = document()->blockSignals(true);
+        bool oldBlockState = blockSignals(true);
         document()->setUndoRedoEnabled(false);
         ExpandingTextEdit::setPlainText(text);
         // highlighter is out of sync because of blocked signals
         m_highlighter->rehighlight();
         document()->setUndoRedoEnabled(true);
-        document()->blockSignals(oldBlockState);
+        blockSignals(oldBlockState);
     } else {
         ExpandingTextEdit::setPlainText(text);
     }
@@ -178,9 +177,19 @@ FormWidget::FormWidget(const QString &label, bool isEditable, QWidget *parent)
 
     setLayout(layout);
 
-    connect(m_editor->document(), SIGNAL(contentsChanged()), SIGNAL(textChanged()));
-    connect(m_editor, SIGNAL(selectionChanged()), SIGNAL(selectionChanged()));
+    connect(m_editor, SIGNAL(textChanged()), SLOT(slotTextChanged()));
+    connect(m_editor, SIGNAL(selectionChanged()), SLOT(slotSelectionChanged()));
     connect(m_editor, SIGNAL(cursorPositionChanged()), SIGNAL(cursorPositionChanged()));
+}
+
+void FormWidget::slotSelectionChanged()
+{
+    emit selectionChanged(m_editor);
+}
+
+void FormWidget::slotTextChanged()
+{
+    emit textChanged(m_editor);
 }
 
 void FormWidget::setTranslation(const QString &text, bool userAction)

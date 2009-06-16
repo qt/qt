@@ -6,7 +6,7 @@
     <message>
         <location filename="../tools/assistant/lib/qhelpsearchresultwidget.cpp" line="+110"/>
         <source>Search Results</source>
-        <translation>Ergebnisse</translation>
+        <translation>Suchergebnisse</translation>
     </message>
     <message>
         <location line="+7"/>
@@ -16,7 +16,7 @@
     <message>
         <location line="+1"/>
         <source>The search results may not be complete since the documentation is still being indexed!</source>
-        <translation>Es können nicht alle möglichen Ergebnisse angezeigt werden, da die Dokumentation noch indiziert wird!</translation>
+        <translation>Es können nicht alle möglichen Ergebnisse angezeigt werden, da die Dokumentation noch indiziert wird.</translation>
     </message>
     <message>
         <location line="+11"/>
@@ -26,7 +26,7 @@
     <message>
         <location line="+4"/>
         <source>(The reason for this might be that the documentation is still being indexed.)</source>
-        <translation>(Ein Möglichkeit dafür könnte sein, das die Dokumentation noch nicht vollständig indiziert ist.)</translation>
+        <translation>(Ein Grund dafür könnte sein, das die Dokumentation noch nicht vollständig indiziert ist.)</translation>
     </message>
 </context>
 <context>
@@ -34,78 +34,78 @@
     <message>
         <location filename="../tools/assistant/lib/qhelpcollectionhandler.cpp" line="+79"/>
         <source>The collection file is not set up yet!</source>
-        <translation>Das &quot;Collection File&quot; ist noch nicht eingerichtet.</translation>
+        <translation>Die Katalogdatei ist noch nicht eingerichtet.</translation>
     </message>
     <message>
         <location line="+22"/>
         <source>Cannot load sqlite database driver!</source>
-        <translation>Der Datenbanktreiber für SQLite kann nicht geladen werden!</translation>
+        <translation>Der Datenbanktreiber für SQLite kann nicht geladen werden.</translation>
     </message>
     <message>
         <location line="+11"/>
         <location line="+48"/>
         <source>Cannot open collection file: %1</source>
-        <translation>Kann &quot;Collection File&quot; nicht öffnen: %1</translation>
+        <translation>Katalogdatei kann nicht geöffnet werden: %1</translation>
     </message>
     <message>
         <location line="-39"/>
         <source>Cannot create tables in file %1!</source>
-        <translation>Kann keine Tabellen in Datei %1 anlegen!</translation>
+        <translation>In Datei %1 können keine Tabellen angelegt werden.</translation>
     </message>
     <message>
         <location line="+16"/>
         <source>The specified collection file already exists!</source>
-        <translation>Das angegebene &quot;Collection File&quot; existiert bereits!</translation>
+        <translation>Die angegebene Katalogdatei existiert bereits.</translation>
     </message>
     <message>
         <location line="+5"/>
         <source>Cannot create directory: %1</source>
-        <translation>Kann Verzeichnis nicht anlegen: %1</translation>
+        <translation>Das Verzeichnis kann nicht angelegt werden: %1</translation>
     </message>
     <message>
         <location line="+23"/>
         <source>Cannot copy collection file: %1</source>
-        <translation>Kann &quot;Collection File&quot; nicht kopieren: %1</translation>
+        <translation>Die Katalogdatei kann nicht kopiert werden: %1</translation>
     </message>
     <message>
         <location line="+119"/>
         <source>Unknown filter!</source>
-        <translation>Unbekannter Filter!</translation>
+        <translation>Unbekannter Filter.</translation>
     </message>
     <message>
         <location line="+55"/>
         <source>Cannot register filter %1!</source>
-        <translation>Kann Filter nicht registrieren: %1</translation>
+        <translation>Der Filter kann nicht registriert werden: %1</translation>
     </message>
     <message>
         <location line="+44"/>
         <source>Cannot open documentation file %1!</source>
-        <translation>Kann Dokumentations-Datei nicht öffnen: %1</translation>
+        <translation>Die Dokumentationsdatei kann nicht geöffnet werden: %1</translation>
     </message>
     <message>
         <location line="+6"/>
         <source>Invalid documentation file!</source>
-        <translation>Ungültige Dokumentations-Datei!</translation>
+        <translation>Ungültige Dokumentationsdatei.</translation>
     </message>
     <message>
         <location line="+34"/>
         <source>The namespace %1 was not registered!</source>
-        <translation>Der Namensraum %1 wurde nicht registriert!</translation>
+        <translation>Der Namensraum %1 wurde nicht registriert.</translation>
     </message>
     <message>
         <location line="+120"/>
         <source>Namespace %1 already exists!</source>
-        <translation>Der Namensraum %1 existiert bereits!</translation>
+        <translation>Der Namensraum %1 existiert bereits.</translation>
     </message>
     <message>
         <location line="+13"/>
         <source>Cannot register namespace!</source>
-        <translation>Kann den Namensraum nicht registrieren!</translation>
+        <translation>Der Namensraum kann nicht registriert werden.</translation>
     </message>
     <message>
         <location line="+24"/>
         <source>Cannot open database to optimize!</source>
-        <translation>Kann die Datenbank zur Optimierung nicht öffnen!</translation>
+        <translation>Die Datenbank kann nicht zur Optimierung geöffnet werden.</translation>
     </message>
 </context>
 <context>
@@ -121,7 +121,7 @@
     <message>
         <location filename="../tools/assistant/lib/qhelpenginecore.cpp" line="+516"/>
         <source>The specified namespace does not exist!</source>
-        <translation>Der angegebene Namensraum existiert nicht!</translation>
+        <translation>Der angegebene Namensraum existiert nicht.</translation>
     </message>
 </context>
 <context>
@@ -129,7 +129,7 @@
     <message>
         <location line="-394"/>
         <source>Cannot open documentation file %1: %2!</source>
-        <translation>Kann Dokumentations-Datei nicht öffnen: %1: %2!</translation>
+        <translation>Die Dokumentationsdatei %1 kann nicht geöffnet werden: %2.</translation>
     </message>
 </context>
 <context>
@@ -137,42 +137,42 @@
     <message>
         <location filename="../tools/assistant/lib/qhelpgenerator.cpp" line="+157"/>
         <source>Invalid help data!</source>
-        <translation>Ungültige Hilfe-Daten!</translation>
+        <translation>Ungültige Hilfe-Daten.</translation>
     </message>
     <message>
         <location line="+6"/>
         <source>No output file name specified!</source>
-        <translation>Name für die Ausgabe-Datei wurde nicht angegeben!</translation>
+        <translation>Für die Ausgabe-Datei wurde kein Name angegeben.</translation>
     </message>
     <message>
         <location line="+14"/>
         <source>Building up file structure...</source>
-        <translation>Erzeuge Dateistruktur...</translation>
+        <translation>Dateistruktur wird erzeugt...</translation>
     </message>
     <message>
         <location line="-7"/>
         <source>The file %1 cannot be overwritten!</source>
-        <translation>Die Datei %1 kann nicht überschrieben werden!</translation>
+        <translation>Die Datei %1 kann nicht überschrieben werden.</translation>
     </message>
     <message>
         <location line="+18"/>
         <source>Cannot open data base file %1!</source>
-        <translation>Kann Datenbank-Datei nicht öffnen: %1!</translation>
+        <translation>Die Datenbank-Datei %1 kann nicht geöffnet werden.</translation>
     </message>
     <message>
         <location line="+11"/>
         <source>Cannot register namespace %1!</source>
-        <translation>Kann Namensraum %1 nicht registrieren!</translation>
+        <translation>Der Namensraum %1 kann nicht registriert werden.</translation>
     </message>
     <message>
         <location line="+6"/>
         <source>Insert custom filters...</source>
-        <translation>Füge benutzerdefinierte Filter ein...</translation>
+        <translation>Benutzerdefinierte Filter einfügen...</translation>
     </message>
     <message>
         <location line="+12"/>
         <source>Insert help data for filter section (%1 of %2)...</source>
-        <translation>Füge Hilfe-Daten für Filter-Sektion (%1 von %2) ein...</translation>
+        <translation>Hilfe-Daten für Filter-Sektion (%1 von %2) einfügen...</translation>
     </message>
     <message>
         <location line="+18"/>
@@ -182,62 +182,62 @@
     <message>
         <location line="+76"/>
         <source>Some tables already exist!</source>
-        <translation>Einige Tabellen existieren bereits!</translation>
+        <translation>Einige Tabellen existieren bereits.</translation>
     </message>
     <message>
         <location line="+61"/>
         <source>Cannot create tables!</source>
-        <translation>Kann keine Tabellen erstellen!</translation>
+        <translation>Tabellen können nicht erstellt werden.</translation>
     </message>
     <message>
         <location line="+86"/>
         <source>Cannot register virtual folder!</source>
-        <translation>Kann virtuelles Verzeichnis nicht registrieren!</translation>
+        <translation>Virtuelles Verzeichnis nicht registriert werden.</translation>
     </message>
     <message>
         <location line="+10"/>
         <source>Insert files...</source>
-        <translation>Füge Dateien ein...</translation>
+        <translation>Dateien einfügen...</translation>
     </message>
     <message>
         <location line="+41"/>
         <source>The file %1 does not exist! Skipping it.</source>
-        <translation>Die Datei %1 existiert nicht! Überspringe sie.</translation>
+        <translation>Die Datei %1 existiert nicht. Wird übersprungen.</translation>
     </message>
     <message>
         <location line="+7"/>
         <source>Cannot open file %1! Skipping it.</source>
-        <translation>Kann Datei %1 nicht öffnen! Überspringe sie.</translation>
+        <translation>Die Datei %1 kann nicht geöffnet werden. Wird übersprungen.</translation>
     </message>
     <message>
         <location line="+134"/>
         <source>The filter %1 is already registered!</source>
-        <translation>Der Filter %1 is bereits registriert!</translation>
+        <translation>Der Filter %1 ist bereits registriert.</translation>
     </message>
     <message>
         <location line="+5"/>
         <source>Cannot register filter %1!</source>
-        <translation>Kann filter nicht registrieren: %1!</translation>
+        <translation>Der Filter %1 kann nicht registriert werden.</translation>
     </message>
     <message>
         <location line="+24"/>
         <source>Insert indices...</source>
-        <translation>Füge Indizes ein...</translation>
+        <translation>Indizes einfügen...</translation>
     </message>
     <message>
         <location line="+80"/>
         <source>Insert contents...</source>
-        <translation>Füge Inhalt ein...</translation>
+        <translation>Inhalt einfügen...</translation>
     </message>
     <message>
         <location line="+8"/>
         <source>Cannot insert contents!</source>
-        <translation>Kann Inhalt nicht einfügen!</translation>
+        <translation>Inhalt kann nicht eingefügt werden.</translation>
     </message>
     <message>
         <location line="+12"/>
         <source>Cannot register contents!</source>
-        <translation>Kann Inhalt nicht registrieren!</translation>
+        <translation>Inhalt kann nicht registriert werden.</translation>
     </message>
 </context>
 <context>
@@ -314,7 +314,7 @@
     <message>
         <location line="+13"/>
         <source>Unknown token. Expected &quot;QtHelpProject&quot;!</source>
-        <translation>Unbekanntes Token. Erwartete &quot;QtHelpProject&quot;!</translation>
+        <translation>Unbekanntes Token. &quot;QtHelpProject&quot; erwartet.</translation>
     </message>
     <message>
         <location line="+5"/>
@@ -324,12 +324,12 @@
     <message>
         <location line="+13"/>
         <source>A virtual folder must not contain a &apos;/&apos; character!</source>
-        <translation>Ein virtuelles Verzeichnis darf kein &apos;/&apos;-Zeichen enthalten!</translation>
+        <translation>Ein virtuelles Verzeichnis darf kein &apos;/&apos;-Zeichen enthalten.</translation>
     </message>
     <message>
         <location line="+4"/>
         <source>A namespace must not contain a &apos;/&apos; character!</source>
-        <translation>Ein Namensraum darf kein &apos;/&apos;-Zeichen enthalten!</translation>
+        <translation>Ein Namensraum darf kein &apos;/&apos;-Zeichen enthalten.</translation>
     </message>
     <message>
         <location line="+16"/>
@@ -349,7 +349,7 @@
     <message>
         <location line="+83"/>
         <source>The input file %1 could not be opened!</source>
-        <translation>Die Eingabe-Datei %1 konnte nicht geöffnet werden!</translation>
+        <translation>Die Eingabe-Datei %1 kann nicht geöffnet werden.</translation>
     </message>
 </context>
 </TS>

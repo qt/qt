@@ -95,14 +95,15 @@ public:
                 (void)fileEngine->fileFlags(QFSFileEngine::Refresh);
         }
         inline void clear() {
-            fileNames.clear();
             clearFlags();
+            for (int i = QAbstractFileEngine::NFileNames - 1 ; i >= 0 ; --i)
+                fileNames[i].clear();
         }
         mutable QAtomicInt ref;
 
         QAbstractFileEngine *fileEngine;
         mutable QString fileName;
-        mutable QHash<int, QString> fileNames;
+        mutable QString fileNames[QAbstractFileEngine::NFileNames];
 
         mutable uint cachedFlags : 31;
         mutable uint cache_enabled : 1;

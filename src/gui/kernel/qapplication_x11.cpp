@@ -134,7 +134,7 @@ extern "C" {
 #  include <errno.h>
 #endif
 
-#if defined(Q_OS_BSD4) || _POSIX_VERSION+0 < 200112L
+#if _POSIX_VERSION+0 < 200112L && !defined(Q_OS_BSD4)
 # define QT_NO_UNSETENV
 #endif
 
@@ -1767,7 +1767,7 @@ void qt_init(QApplicationPrivate *priv, int,
         X11->pattern_fills[i].screen = -1;
 #endif
 
-    X11->startupId = X11->originalStartupId = X11->startupIdString = 0;
+    X11->startupId = 0;
 
     int argc = priv->argc;
     char **argv = priv->argv;
@@ -2565,15 +2565,13 @@ void qt_init(QApplicationPrivate *priv, int,
 #endif // QT_NO_TABLET
 
         X11->startupId = getenv("DESKTOP_STARTUP_ID");
-        X11->originalStartupId = X11->startupId;
         if (X11->startupId) {
 #ifndef QT_NO_UNSETENV
             unsetenv("DESKTOP_STARTUP_ID");
 #else
             // it's a small memory leak, however we won't crash if Qt is
             // unloaded and someones tries to use the envoriment.
-            X11->startupIdString = strdup("DESKTOP_STARTUP_ID=");
-            putenv(X11->startupIdString);
+            putenv(strdup("DESKTOP_STARTUP_ID="));
 #endif
         }
    } else {
@@ -2706,15 +2704,6 @@ void qt_cleanup()
         devices->clear();
 #endif
     }
-
-#ifdef QT_NO_UNSETENV
-    // restore original value back.
-    if (X11->originalStartupId && X11->startupIdString) {
-        putenv(X11->originalStartupId);
-        free(X11->startupIdString);
-        X11->startupIdString = 0;
-    }
-#endif
 
 #ifndef QT_NO_XRENDER
     for (int i = 0; i < X11->solid_fill_count; ++i) {

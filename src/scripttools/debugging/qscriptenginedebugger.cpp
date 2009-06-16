@@ -49,9 +49,7 @@
 #include <QtGui/qapplication.h>
 #include <QtGui/qdockwidget.h>
 #include <QtGui/qmainwindow.h>
-#include <QtGui/qmenu.h>
 #include <QtGui/qmenubar.h>
-#include <QtGui/qtoolbar.h>
 #include <QtGui/qboxlayout.h>
 
 // this has to be outside the namespace
@@ -412,7 +410,7 @@ QWidget *QScriptEngineDebugger::widget(DebuggerWidget widget) const
 {
     Q_D(const QScriptEngineDebugger);
     const_cast<QScriptEngineDebuggerPrivate*>(d)->createDebugger();
-    return d->debugger->widget(static_cast<QScriptDebugger::DebuggerWidget>(widget));
+    return d->debugger->widget(static_cast<QScriptDebugger::DebuggerWidget>(static_cast<int>(widget)));
 }
 
 /*!
@@ -436,7 +434,7 @@ QAction *QScriptEngineDebugger::action(DebuggerAction action) const
     Q_D(const QScriptEngineDebugger);
     QScriptEngineDebugger *that = const_cast<QScriptEngineDebugger*>(this);
     that->d_func()->createDebugger();
-    return d->debugger->action(static_cast<QScriptDebugger::DebuggerAction>(action), that);
+    return d->debugger->action(static_cast<QScriptDebugger::DebuggerAction>(static_cast<int>(action)), that);
 }
 
 /*!
@@ -589,25 +587,9 @@ QMainWindow *QScriptEngineDebugger::standardWindow() const
 */
 QMenu *QScriptEngineDebugger::createStandardMenu(QWidget *parent)
 {
-    QMenu *menu = new QMenu(parent);
-    menu->setTitle(QObject::tr("Debug"));
-    menu->addAction(action(ContinueAction));
-    menu->addAction(action(InterruptAction));
-    menu->addAction(action(StepIntoAction));
-    menu->addAction(action(StepOverAction));
-    menu->addAction(action(StepOutAction));
-    menu->addAction(action(RunToCursorAction));
-    menu->addAction(action(RunToNewScriptAction));
-
-    menu->addSeparator();
-    menu->addAction(action(ToggleBreakpointAction));
-
-    menu->addSeparator();
-    menu->addAction(action(ClearDebugOutputAction));
-    menu->addAction(action(ClearErrorLogAction));
-    menu->addAction(action(ClearConsoleAction));
-
-    return menu;
+    Q_D(QScriptEngineDebugger);
+    d->createDebugger();
+    return d->debugger->createStandardMenu(parent, this);
 }
 
 /*!
@@ -618,18 +600,9 @@ QMenu *QScriptEngineDebugger::createStandardMenu(QWidget *parent)
 */
 QToolBar *QScriptEngineDebugger::createStandardToolBar(QWidget *parent)
 {
-    QToolBar *tb = new QToolBar(parent);
-    tb->setObjectName(QLatin1String("qtscriptdebugger_standardToolBar"));
-    tb->addAction(action(ContinueAction));
-    tb->addAction(action(InterruptAction));
-    tb->addAction(action(StepIntoAction));
-    tb->addAction(action(StepOverAction));
-    tb->addAction(action(StepOutAction));
-    tb->addAction(action(RunToCursorAction));
-    tb->addAction(action(RunToNewScriptAction));
-    tb->addSeparator();
-    tb->addAction(action(FindInScriptAction));
-    return tb;
+    Q_D(QScriptEngineDebugger);
+    d->createDebugger();
+    return d->debugger->createStandardToolBar(parent, this);
 }
 
 /*!

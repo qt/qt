@@ -72,6 +72,10 @@
 
 #include <private/qpaintengineex_opengl2_p.h>
 
+#ifndef QT_OPENGL_ES_2
+#include <private/qpaintengine_opengl_p.h>
+#endif
+
 #ifndef GLX_ARB_multisample
 #define GLX_SAMPLE_BUFFERS_ARB  100000
 #define GLX_SAMPLES_ARB         100001
@@ -315,9 +319,17 @@ void QGLWindowSurface::hijackWindow(QWidget *widget)
 
 Q_GLOBAL_STATIC(QGL2PaintEngineEx, qt_gl_window_surface_2_engine)
 
+#if !defined (QT_OPENGL_ES_2)
+Q_GLOBAL_STATIC(QOpenGLPaintEngine, qt_gl_window_surface_engine)
+#endif
+
 /*! \reimp */
 QPaintEngine *QGLWindowSurface::paintEngine() const
 {
+#if !defined(QT_OPENGL_ES_2)
+    if (!qt_gl_preferGL2Engine())
+        return qt_gl_window_surface_engine();
+#endif
     return qt_gl_window_surface_2_engine();
 }
 

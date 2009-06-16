@@ -263,8 +263,9 @@ public:
     struct QMacMenuPrivate {
         QList<QMacMenuAction*> actionItems;
         OSMenuRef menu;
-        QMacMenuPrivate();
-        ~QMacMenuPrivate();
+        QMenuPrivate *qmenu;
+        QMacMenuPrivate(QMenuPrivate *menu);
+        ~QMacMenuPrivate();    
 
         bool merged(const QAction *action) const;
         void addAction(QAction *, QMacMenuAction* =0, QMenuPrivate *qmenu = 0);

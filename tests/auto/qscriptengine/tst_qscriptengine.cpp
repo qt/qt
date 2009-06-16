@@ -64,6 +64,7 @@ public:
     virtual ~tst_QScriptEngine();
 
 private slots:
+    void constructWithParent();
     void currentContext();
     void pushPopContext();
     void getSetDefaultPrototype();
@@ -119,6 +120,7 @@ private slots:
     void getSetAgent();
     void reentrancy();
     void incDecNonObjectProperty();
+    void installTranslatorFunctions();
 };
 
 tst_QScriptEngine::tst_QScriptEngine()
@@ -127,6 +129,17 @@ tst_QScriptEngine::tst_QScriptEngine()
 
 tst_QScriptEngine::~tst_QScriptEngine()
 {
+}
+
+void tst_QScriptEngine::constructWithParent()
+{
+    QPointer<QScriptEngine> ptr;
+    {
+        QObject obj;
+        QScriptEngine *engine = new QScriptEngine(&obj);
+        ptr = engine;
+    }
+    QVERIFY(ptr == 0);
 }
 
 void tst_QScriptEngine::currentContext()
@@ -945,6 +958,22 @@ void tst_QScriptEngine::checkSyntax()
     QCOMPARE(result.errorLineNumber(), errorLineNumber);
     QCOMPARE(result.errorColumnNumber(), errorColumnNumber);
     QCOMPARE(result.errorMessage(), errorMessage);
+
+    // assignment
+    {
+        QScriptSyntaxCheckResult copy = result;
+        QCOMPARE(copy.state(), result.state());
+        QCOMPARE(copy.errorLineNumber(), result.errorLineNumber());
+        QCOMPARE(copy.errorColumnNumber(), result.errorColumnNumber());
+        QCOMPARE(copy.errorMessage(), result.errorMessage());
+    }
+    {
+        QScriptSyntaxCheckResult copy(result);
+        QCOMPARE(copy.state(), result.state());
+        QCOMPARE(copy.errorLineNumber(), result.errorLineNumber());
+        QCOMPARE(copy.errorColumnNumber(), result.errorColumnNumber());
+        QCOMPARE(copy.errorMessage(), result.errorMessage());
+    }
 }
 
 void tst_QScriptEngine::canEvaluate_data()
@@ -1466,6 +1495,61 @@ void tst_QScriptEngine::valueConversion()
         QScriptValue str(&eng, "123");
         Foo foo = qScriptValueToValue<Foo>(str);
         QCOMPARE(foo.x, 123);
+    }
+
+    // more built-in types
+    {
+        QScriptValue val = qScriptValueFromValue(&eng, uint(123));
+        QVERIFY(val.isNumber());
+        QCOMPARE(val.toInt32(), 123);
+    }
+    {
+        QScriptValue val = qScriptValueFromValue(&eng, qulonglong(123));
+        QVERIFY(val.isNumber());
+        QCOMPARE(val.toInt32(), 123);
+    }
+    {
+        QScriptValue val = qScriptValueFromValue(&eng, float(123));
+        QVERIFY(val.isNumber());
+        QCOMPARE(val.toInt32(), 123);
+    }
+    {
+        QScriptValue val = qScriptValueFromValue(&eng, short(123));
+        QVERIFY(val.isNumber());
+        QCOMPARE(val.toInt32(), 123);
+    }
+    {
+        QScriptValue val = qScriptValueFromValue(&eng, ushort(123));
+        QVERIFY(val.isNumber());
+        QCOMPARE(val.toInt32(), 123);
+    }
+    {
+        QScriptValue val = qScriptValueFromValue(&eng, char(123));
+        QVERIFY(val.isNumber());
+        QCOMPARE(val.toInt32(), 123);
+    }
+    {
+        QScriptValue val = qScriptValueFromValue(&eng, uchar(123));
+        QVERIFY(val.isNumber());
+        QCOMPARE(val.toInt32(), 123);
+    }
+    {
+        QDateTime in = QDateTime::currentDateTime();
+        QScriptValue val = qScriptValueFromValue(&eng, in);
+        QVERIFY(val.isDate());
+        QCOMPARE(val.toDateTime(), in);
+    }
+    {
+        QDate in = QDate::currentDate();
+        QScriptValue val = qScriptValueFromValue(&eng, in);
+        QVERIFY(val.isDate());
+        QCOMPARE(val.toDateTime().date(), in);
+    }
+    {
+        QRegExp in = QRegExp("foo");
+        QScriptValue val = qScriptValueFromValue(&eng, in);
+        QVERIFY(val.isRegExp());
+        QCOMPARE(val.toRegExp(), in);
     }
 }
 
@@ -3412,6 +3496,50 @@ void tst_QScriptEngine:: incDecNonObjectProperty()
         QScriptValue ret = eng.evaluate("var a = 'ciao'; --a.length");
         QVERIFY(ret.isNumber());
         QCOMPARE(ret.toInt32(), 3);
+    }
+}
+
+void tst_QScriptEngine::installTranslatorFunctions()
+{
+    QScriptEngine eng;
+    QScriptValue global = eng.globalObject();
+    QVERIFY(!global.property("qsTranslate").isValid());
+    QVERIFY(!global.property("QT_TRANSLATE_NOOP").isValid());
+    QVERIFY(!global.property("qsTr").isValid());
+    QVERIFY(!global.property("QT_TR_NOOP").isValid());
+    QVERIFY(!global.property("String").property("prototype").property("arg").isValid());
+
+    eng.installTranslatorFunctions();
+    QVERIFY(global.property("qsTranslate").isFunction());
+    QVERIFY(global.property("QT_TRANSLATE_NOOP").isFunction());
+    QVERIFY(global.property("qsTr").isFunction());
+    QVERIFY(global.property("QT_TR_NOOP").isFunction());
+    QVERIFY(global.property("String").property("prototype").property("arg").isFunction());
+
+    {
+        QScriptValue ret = eng.evaluate("qsTr('foo')");
+        QVERIFY(ret.isString());
+        QCOMPARE(ret.toString(), QString::fromLatin1("foo"));
+    }
+    {
+        QScriptValue ret = eng.evaluate("qsTranslate('foo', 'bar')");
+        QVERIFY(ret.isString());
+        QCOMPARE(ret.toString(), QString::fromLatin1("bar"));
+    }
+    {
+        QScriptValue ret = eng.evaluate("QT_TR_NOOP('foo')");
+        QVERIFY(ret.isString());
+        QCOMPARE(ret.toString(), QString::fromLatin1("foo"));
+    }
+    {
+        QScriptValue ret = eng.evaluate("QT_TRANSLATE_NOOP('foo', 'bar')");
+        QVERIFY(ret.isString());
+        QCOMPARE(ret.toString(), QString::fromLatin1("bar"));
+    }
+    {
+        QScriptValue ret = eng.evaluate("'foo%0'.arg('bar')");
+        QVERIFY(ret.isString());
+        QCOMPARE(ret.toString(), QString::fromLatin1("foobar"));
     }
 }
 

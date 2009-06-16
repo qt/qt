@@ -960,7 +960,7 @@ bool QSqlDatabase::rollback()
     connection, set the database name, and call open() again.  \note
     The \e{database name} is not the \e{connection name}. The
     connection name must be passed to addDatabase() at connection
-    object create time. 
+    object create time.
 
     For the QOCI (Oracle) driver, the database name is the TNS
     Service Name.
@@ -1481,17 +1481,16 @@ QString QSqlDatabase::connectionName() const
 }
 
 /*!
-
-  Sets the default numerical precision policy that queries use when created
-  on this database connection.
+  Sets the default numerical precision policy used by queries created
+  on this database connection to \a precisionPolicy.
 
   Note: Drivers that don't support fetching numerical values with low
   precision will ignore the precision policy. You can use
   QSqlDriver::hasFeature() to find out whether a driver supports this
   feature.
 
-  Note: Setting the default precision policy doesn't affect any currently
-  active queries.
+  Note: Setting the default precision policy to \a precisionPolicy
+  doesn't affect any currently active queries.
 
   \sa QSql::NumericalPrecisionPolicy, numericalPrecisionPolicy(), QSqlQuery::setNumericalPrecisionPolicy(), QSqlQuery::numericalPrecisionPolicy()
 */
