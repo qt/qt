@@ -914,12 +914,11 @@ QString QSqlDriver::stripDelimitersImplementation(const QString &identifier, Ide
 }
 
 /*!
+  Sets the default numerical precision policy used by queries created
+  by this driver to \a precisionPolicy.
 
-  Sets the default numerical precision policy that queries use when created
-  by this driver.
-
-  Note: Setting the default precision policy doesn't affect any currently
-  active queries.
+  Note: Setting the default precision policy to \a precisionPolicy
+  doesn't affect any currently active queries.
 
   \sa QSql::NumericalPrecisionPolicy, numericalPrecisionPolicy(), QSqlQuery::setNumericalPrecisionPolicy(), QSqlQuery::numericalPrecisionPolicy()
 */
