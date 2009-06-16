@@ -410,7 +410,7 @@ QWidget *QScriptEngineDebugger::widget(DebuggerWidget widget) const
 {
     Q_D(const QScriptEngineDebugger);
     const_cast<QScriptEngineDebuggerPrivate*>(d)->createDebugger();
-    return d->debugger->widget(static_cast<QScriptDebugger::DebuggerWidget>(widget));
+    return d->debugger->widget(static_cast<QScriptDebugger::DebuggerWidget>(static_cast<int>(widget)));
 }
 
 /*!
@@ -434,7 +434,7 @@ QAction *QScriptEngineDebugger::action(DebuggerAction action) const
     Q_D(const QScriptEngineDebugger);
     QScriptEngineDebugger *that = const_cast<QScriptEngineDebugger*>(this);
     that->d_func()->createDebugger();
-    return d->debugger->action(static_cast<QScriptDebugger::DebuggerAction>(action), that);
+    return d->debugger->action(static_cast<QScriptDebugger::DebuggerAction>(static_cast<int>(action)), that);
 }
 
 /*!
