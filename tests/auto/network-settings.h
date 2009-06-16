@@ -50,7 +50,8 @@
 #include <QSharedPointer>
 #include <QHash>
 #endif
-#if defined(Q_OS_SYMBIAN) && defined(Q_CC_NOKIAX86)
+#if defined(Q_OS_SYMBIAN)
+#if defined(Q_CC_NOKIAX86)
 // In emulator we use WINSOCK connectivity by default. Unfortunately winsock
 // does not work very well with UDP sockets. This defines skips some test
 // cases which have known problems.
@@ -59,6 +60,7 @@
 // network tests. WINPCAP connectivity uses Symbian OS IP stack,
 // correspondingly as HW does. When using WINPCAP disable this define
 //#define SYMBIAN_WINSOCK_CONNECTIVITY
+#endif // Q_CC_NOKIAX86
 
 class QtNetworkSettingsRecord {
 public:
@@ -80,7 +82,7 @@ private:
     QString strRecordValue;
 };
 
-#endif
+#endif // Q_OS_SYMBIAN
 
 class QtNetworkSettings
 {
