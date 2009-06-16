@@ -391,6 +391,8 @@ void QFxRect::dump(int depth)
     // steelblue rect using SVG color name
     Rect { color: "steelblue" }
     \endqml
+
+    The default color is white.
 */
 
 /*!
