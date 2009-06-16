@@ -1168,11 +1168,16 @@ void QmlSetPropertyAction::transition(QmlStateActions &actions,
         }
     };
 
-    QStringList props = d->properties.split(QLatin1Char(','));
+    QStringList props = d->properties.isEmpty() ? QStringList() : d->properties.split(QLatin1Char(','));
     for (int ii = 0; ii < props.count(); ++ii)
         props[ii] = props.at(ii).trimmed();
     if (!d->propertyName.isEmpty() && !props.contains(d->propertyName))
         props.append(d->propertyName);
+
+    if (d->userProperty.isValid() && props.isEmpty() && !target()) {
+        props.append(d->userProperty.value.name());
+        d->target = d->userProperty.value.object();
+   }
 
     QmlSetPropertyAnimationAction *data = new QmlSetPropertyAnimationAction;
 
@@ -1649,11 +1654,16 @@ void QmlNumericAnimation::transition(QmlStateActions &actions,
         }
     };
 
-    QStringList props = d->properties.split(QLatin1Char(','));
+    QStringList props = d->properties.isEmpty() ? QStringList() : d->properties.split(QLatin1Char(','));
     for (int ii = 0; ii < props.count(); ++ii)
         props[ii] = props.at(ii).trimmed();
     if (!d->propertyName.isEmpty() && !props.contains(d->propertyName))
         props.append(d->propertyName);
+
+   if (d->userProperty.isValid() && props.isEmpty() && !target()) {
+        props.append(d->userProperty.value.name());
+        d->target = d->userProperty.value.object();
+   }
 
     NTransitionData *data = new NTransitionData;
 
@@ -1785,6 +1795,12 @@ void QmlSequentialAnimation::transition(QmlStateActions &actions,
         inc = -1;
         from = d->animations.count() - 1;
     }
+    
+    //### needed for Behavior
+    if (d->userProperty.isValid() && d->propertyName.isEmpty() && !target()) {
+        for (int i = 0; i < d->animations.count(); ++i)
+            d->animations.at(i)->setTarget(d->userProperty);
+   }
 
     //XXX removing and readding isn't ideal; we do it to get around the problem mentioned below.
     for (int i = d->ag->animationCount()-1; i >= 0; --i)
@@ -1869,6 +1885,12 @@ void QmlParallelAnimation::transition(QmlStateActions &actions,
                                       TransitionDirection direction)
 {
     Q_D(QmlAnimationGroup);
+
+     //### needed for Behavior
+    if (d->userProperty.isValid() && d->propertyName.isEmpty() && !target()) {
+        for (int i = 0; i < d->animations.count(); ++i)
+            d->animations.at(i)->setTarget(d->userProperty);
+   }
 
     for (int ii = 0; ii < d->animations.count(); ++ii) {
         d->animations.at(ii)->transition(actions, modified, direction);

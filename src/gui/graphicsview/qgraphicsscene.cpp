@@ -2161,7 +2161,7 @@ void QGraphicsScenePrivate::setFont_helper(const QFont &font)
 */
 void QGraphicsScenePrivate::resolveFont()
 {
-    QFont naturalFont = qApp->font();
+    QFont naturalFont = QApplication::font();
     naturalFont.resolve(0);
     QFont resolvedFont = font.resolve(naturalFont);
     updateFont(resolvedFont);
@@ -2217,7 +2217,7 @@ void QGraphicsScenePrivate::setPalette_helper(const QPalette &palette)
 */
 void QGraphicsScenePrivate::resolvePalette()
 {
-    QPalette naturalPalette = qApp->palette();
+    QPalette naturalPalette = QApplication::palette();
     naturalPalette.resolve(0);
     QPalette resolvedPalette = palette.resolve(naturalPalette);
     updatePalette(resolvedPalette);
@@ -3975,10 +3975,10 @@ bool QGraphicsScene::eventFilter(QObject *watched, QEvent *event)
 
     switch (event->type()) {
     case QEvent::ApplicationPaletteChange:
-        qApp->postEvent(this, new QEvent(QEvent::ApplicationPaletteChange));
+        QApplication::postEvent(this, new QEvent(QEvent::ApplicationPaletteChange));
         break;
     case QEvent::ApplicationFontChange:
-        qApp->postEvent(this, new QEvent(QEvent::ApplicationFontChange));
+        QApplication::postEvent(this, new QEvent(QEvent::ApplicationFontChange));
         break;
     default:
         break;
@@ -4918,7 +4918,7 @@ void QGraphicsScenePrivate::drawItemHelper(QGraphicsItem *item, QPainter *painte
         bool allowPartialCacheExposure = !viewRect.contains(deviceRect);
 #else
         // Only if deviceRect is 20% taller or wider than the desktop.
-        QRect desktopRect = qApp->desktop()->availableGeometry(widget);
+        QRect desktopRect = QApplication::desktop()->availableGeometry(widget);
         bool allowPartialCacheExposure = (desktopRect.width() * 1.2 < deviceRect.width()
                                           || desktopRect.height() * 1.2 < deviceRect.height());
 #endif
@@ -5074,8 +5074,8 @@ void QGraphicsScenePrivate::drawSubtreeRecursive(QGraphicsItem *item, QPainter *
     }
 
     // Calculate the full transform for this item.
-    QRect viewBoundingRect;
     bool wasDirtyParentSceneTransform = false;
+    bool dontDrawItem = true;
     QTransform transform;
     if (item) {
         if (item->d_ptr->itemIsUntransformable()) {
@@ -5091,15 +5091,17 @@ void QGraphicsScenePrivate::drawSubtreeRecursive(QGraphicsItem *item, QPainter *
             transform = item->d_ptr->sceneTransform;
             transform *= viewTransform;
         }
-        
+
         QRectF brect = item->boundingRect();
         // ### This does not take the clip into account.
         _q_adjustRect(&brect);
-        viewBoundingRect = transform.mapRect(brect).toRect();
+        QRect viewBoundingRect = transform.mapRect(brect).toRect();
         item->d_ptr->paintedViewBoundingRects.insert(widget, viewBoundingRect);
         viewBoundingRect.adjust(-1, -1, 1, 1);
         if (exposedRegion)
-            viewBoundingRect &= exposedRegion->boundingRect();
+            dontDrawItem = !exposedRegion->intersects(viewBoundingRect);
+        else
+            dontDrawItem = viewBoundingRect.isEmpty();
     }
 
     // Find and sort children.
@@ -5154,7 +5156,6 @@ void QGraphicsScenePrivate::drawSubtreeRecursive(QGraphicsItem *item, QPainter *
     }
 
     bool childClip = (item && (item->d_ptr->flags & QGraphicsItem::ItemClipsChildrenToShape));
-    bool dontDrawItem = !item || viewBoundingRect.isEmpty();
     bool dontDrawChildren = item && dontDrawItem && childClip;
     childClip &= !dontDrawChildren && !children->isEmpty();
     if (item && ((item->d_ptr->flags & QGraphicsItem::ItemHasNoContents) || invisibleButChildIgnoresParentOpacity))
@@ -5269,7 +5270,9 @@ void QGraphicsScenePrivate::markDirty(QGraphicsItem *item, const QRectF &rect, b
 
         for (int i = 0; i < views.size(); ++i) {
             QGraphicsViewPrivate *viewPrivate = views.at(i)->d_func();
-            viewPrivate->updateRect(item->d_ptr->paintedViewBoundingRects.value(viewPrivate->viewport));
+            QRect rect = item->d_ptr->paintedViewBoundingRects.value(viewPrivate->viewport);
+            rect.translate(viewPrivate->dirtyScrollOffset);
+            viewPrivate->updateRect(rect);
         }
         return;
     }
@@ -5350,7 +5353,9 @@ void QGraphicsScenePrivate::processDirtyItemsRecursive(QGraphicsItem *item, bool
 
                 if (item->d_ptr->paintedViewBoundingRectsNeedRepaint) {
                     wasDirtyParentViewBoundingRects = true;
-                    viewPrivate->updateRect(item->d_ptr->paintedViewBoundingRects.value(viewPrivate->viewport));
+                    QRect rect = item->d_ptr->paintedViewBoundingRects.value(viewPrivate->viewport);
+                    rect.translate(viewPrivate->dirtyScrollOffset);
+                    viewPrivate->updateRect(rect);
                 }
 
                 if (!item->d_ptr->dirty)
@@ -5606,7 +5611,7 @@ QStyle *QGraphicsScene::style() const
 {
     Q_D(const QGraphicsScene);
     // ### This function, and the use of styles in general, is non-reentrant.
-    return d->style ? d->style : qApp->style();
+    return d->style ? d->style : QApplication::style();
 }
 
 /*!
@@ -5683,7 +5688,7 @@ QFont QGraphicsScene::font() const
 void QGraphicsScene::setFont(const QFont &font)
 {
     Q_D(QGraphicsScene);
-    QFont naturalFont = qApp->font();
+    QFont naturalFont = QApplication::font();
     naturalFont.resolve(0);
     QFont resolvedFont = font.resolve(naturalFont);
     d->setFont_helper(resolvedFont);
@@ -5720,7 +5725,7 @@ QPalette QGraphicsScene::palette() const
 void QGraphicsScene::setPalette(const QPalette &palette)
 {
     Q_D(QGraphicsScene);
-    QPalette naturalPalette = qApp->palette();
+    QPalette naturalPalette = QApplication::palette();
     naturalPalette.resolve(0);
     QPalette resolvedPalette = palette.resolve(naturalPalette);
     d->setPalette_helper(resolvedPalette);

@@ -803,7 +803,7 @@ QmlEngine *QmlEngine::activeEngine()
     dynamically creates and returns objects when called from QtScript,
     and these objects are visual items in the QML tree.
 
-    \sa QmlEngine::newQObject()
+    \sa QScriptEngine::newQObject()
 */
 QScriptValue QmlEngine::qmlScriptObject(QObject* object, QmlEngine* engine)
 {
@@ -818,7 +818,7 @@ QScriptValue QmlEngine::qmlScriptObject(QObject* object, QmlEngine* engine)
     This function takes the URL of a QML file as its only argument. It returns
     a component object which can be used to create and load that QML file.
 
-    Example JavaScript is below, remember that QML files that might be loaded
+    Example QmlJS is below, remember that QML files that might be loaded
     over the network cannot be expected to be ready immediately.
     \code
         var component;
@@ -860,6 +860,7 @@ QScriptValue QmlEngine::qmlScriptObject(QObject* object, QmlEngine* engine)
         }
     \endcode
 
+    \sa QmlComponent::createObject()
 */
 QScriptValue QmlEngine::createComponent(QScriptContext *ctxt, QScriptEngine *engine)
 {
@@ -1123,7 +1124,7 @@ QVariant QmlExpression::value()
         for (int i = context()->d_func()->scopeChain.size() - 1; i > -1; --i) {
             scriptEngine->currentContext()->pushScope(context()->d_func()->scopeChain.at(i));
         }
-        QScriptValue svalue = scriptEngine->evaluate(expression(), d->fileName, d->line);
+        QScriptValue svalue = scriptEngine->evaluate(expression(), d->fileName.toString(), d->line);
         if (scriptEngine->hasUncaughtException()) {
             if (scriptEngine->uncaughtException().isError()){
                 QScriptValue exception = scriptEngine->uncaughtException();

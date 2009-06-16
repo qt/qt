@@ -64,15 +64,15 @@
     \sa QStringBuilder, QLatin1String, QString, QStringRef
 */
 
-/*! \fn QLatin1Literal::QLatin1Literal(const char(&string)[N])
- 
-    Constructs a new literal from the given \a string.
-*/
-
 /*! \fn int QLatin1Literal::size() const
  
     Returns the number of characters in the literal \e{excluding} the trailing
     NULL char.
+*/
+
+/*! \fn QLatin1Literal::QLatin1Literal(const char(&string)[N])
+ 
+    Constructs a new literal from the given \a string.
 */
 
 /*! \fn char *QLatin1Literal::data() const

@@ -39,16 +39,16 @@
 **
 ****************************************************************************/
 
-#include "javascriptprettypretty_p.h"
+#include "qmljsprettypretty_p.h"
 
 
 
-#include "javascriptengine_p.h"
+#include "qmljsengine_p.h"
 
 
 
 
-#include "javascriptast_p.h"
+#include "qmljsast_p.h"
 
 #include <QtCore/QString>
 #include <QtCore/QTextStream>
@@ -56,11 +56,11 @@
 
 QT_BEGIN_NAMESPACE
 
-namespace JavaScript {
+namespace QmlJS {
 QString numberToString(double value);
 }
 
-using namespace JavaScript;
+using namespace QmlJS;
 
 PrettyPretty::PrettyPretty(QTextStream &o):
     out(o), m_indentLevel(0)
@@ -242,7 +242,7 @@ void PrettyPretty::endVisit(AST::StringLiteral *node)
 
 bool PrettyPretty::visit(AST::NumericLiteral *node)
 {
-    out << JavaScript::numberToString(node->value);
+    out << QmlJS::numberToString(node->value);
     return true;
 }
 
@@ -255,7 +255,7 @@ bool PrettyPretty::visit(AST::RegExpLiteral *node)
 {
     out << "/" << Engine::toString(node->pattern) << "/";
     if (node->flags)
-        out << JavaScript::Ecma::RegExp::flagsToString(node->flags);
+        out << QmlJS::Ecma::RegExp::flagsToString(node->flags);
 
     return true;
 }

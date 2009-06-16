@@ -3130,7 +3130,7 @@ QRect QCommonStyle::subElementRect(SubElement sr, const QStyleOption *opt,
                 if (dw->isFloating())
                     icon = dw->windowIcon();
                 if (!icon.isNull()
-                        && icon.cacheKey() != qApp->windowIcon().cacheKey()) {
+                        && icon.cacheKey() != QApplication::windowIcon().cacheKey()) {
                     QSize sz = icon.actualSize(QSize(r.height(), r.height()));
                     if (verticalTitleBar)
                         sz.transpose();
@@ -5309,7 +5309,7 @@ QPixmap QCommonStyle::standardPixmap(StandardPixmap sp, const QStyleOption *opti
 #ifdef Q_WS_X11
     Q_D(const QCommonStyle);
     QPixmap pixmap;
-    if (qApp->desktopSettingsAware()) {
+    if (QApplication::desktopSettingsAware()) {
         d->lookupIconTheme();
         switch (sp) {
         case SP_DirHomeIcon:
@@ -5730,7 +5730,7 @@ QIcon QCommonStyle::standardIconImplementation(StandardPixmap standardIcon, cons
     QIcon icon;
 #ifdef Q_WS_X11
     Q_D(const QCommonStyle);
-    if (qApp->desktopSettingsAware()) {
+    if (QApplication::desktopSettingsAware()) {
         d->lookupIconTheme();
         QPixmap pixmap;
         switch (standardIcon) {

@@ -108,16 +108,16 @@ void QAbstractItemViewPrivate::init()
     Q_Q(QAbstractItemView);
     q->setItemDelegate(new QStyledItemDelegate(q));
 
-    q->verticalScrollBar()->setRange(0, 0);
-    q->horizontalScrollBar()->setRange(0, 0);
+    vbar->setRange(0, 0);
+    hbar->setRange(0, 0);
 
-    QObject::connect(q->verticalScrollBar(), SIGNAL(actionTriggered(int)),
+    QObject::connect(vbar, SIGNAL(actionTriggered(int)),
                      q, SLOT(verticalScrollbarAction(int)));
-    QObject::connect(q->horizontalScrollBar(), SIGNAL(actionTriggered(int)),
+    QObject::connect(hbar, SIGNAL(actionTriggered(int)),
                      q, SLOT(horizontalScrollbarAction(int)));
-    QObject::connect(q->verticalScrollBar(), SIGNAL(valueChanged(int)),
+    QObject::connect(vbar, SIGNAL(valueChanged(int)),
                      q, SLOT(verticalScrollbarValueChanged(int)));
-    QObject::connect(q->horizontalScrollBar(), SIGNAL(valueChanged(int)),
+    QObject::connect(hbar, SIGNAL(valueChanged(int)),
                      q, SLOT(horizontalScrollbarValueChanged(int)));
 
     viewport->setBackgroundRole(QPalette::Base);
@@ -3784,7 +3784,7 @@ void QAbstractItemViewPrivate::clearOrRemove()
 void QAbstractItemViewPrivate::checkPersistentEditorFocus()
 {
     Q_Q(QAbstractItemView);
-    if (QWidget *widget = qApp->focusWidget()) {
+    if (QWidget *widget = QApplication::focusWidget()) {
         if (persistent.contains(widget)) {
             //a persistent editor has gained the focus
             QModelIndex index = indexForEditor(widget);

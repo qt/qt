@@ -58,7 +58,6 @@ public:
     QFxHighlightFilterPrivate()
         : xOffset(0), yOffset(0), tiled(false) {}
 
-    QString source;
     QUrl url;
     int xOffset;
     int yOffset;
@@ -130,7 +129,7 @@ QFxHighlightFilter::~QFxHighlightFilter()
 */
 QUrl QFxHighlightFilter::source() const
 {
-    return d->source;
+    return d->url;
 }
 
 void QFxHighlightFilter::imageLoaded()
@@ -140,7 +139,7 @@ void QFxHighlightFilter::imageLoaded()
     if (!img.isNull()) 
         d->tex.setImage(img.toImage());
 #endif
-    emit sourceChanged(d->source);
+    emit sourceChanged(d->url);
     update();
 }
 
@@ -158,7 +157,7 @@ void QFxHighlightFilter::setSource(const QUrl &f)
     if (!f.isEmpty())
         QFxPixmap::get(qmlEngine(this), d->url, this, SLOT(imageLoaded()));
     else
-        emit sourceChanged(d->source);
+        emit sourceChanged(d->url);
 }
 
 /*!

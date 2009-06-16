@@ -154,11 +154,11 @@ int main(int argc, char ** argv)
         viewer.setDeviceKeys(true);
     viewer.setRecordDither(dither);
     viewer.setRecordArgs(recordargs);
+    viewer.show();
     if (!fileName.isEmpty())
         viewer.openQml(fileName);
     else
         viewer.open();
-    viewer.show();
 
     return app.exec();
 }

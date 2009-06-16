@@ -290,7 +290,7 @@ QmlParser::Variant::Variant(const QString &v)
 {
 }
 
-QmlParser::Variant::Variant(const QString &v, JavaScript::AST::Node *n)
+QmlParser::Variant::Variant(const QString &v, QmlJS::AST::Node *n)
 : t(Script), n(n), s(v)
 {
 }
@@ -342,7 +342,7 @@ QString QmlParser::Variant::asScript() const
     }
 }
 
-JavaScript::AST::Node *QmlParser::Variant::asAST() const
+QmlJS::AST::Node *QmlParser::Variant::asAST() const
 {
     if (type() == Script)
         return n;

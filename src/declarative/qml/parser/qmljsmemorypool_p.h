@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef JAVASCRIPTMEMORYPOOL_P_H
-#define JAVASCRIPTMEMORYPOOL_P_H
+#ifndef QMLJSMEMORYPOOL_P_H
+#define QMLJSMEMORYPOOL_P_H
 
 //
 //  W A R N I N G
@@ -59,7 +59,7 @@
 
 QT_BEGIN_NAMESPACE
 
-namespace JavaScript {
+namespace QmlJS {
 
 class MemoryPool : public QSharedData
 {
@@ -123,7 +123,7 @@ private:
     Q_DISABLE_COPY(MemoryPool)
 };
 
-} // namespace JavaScript
+} // namespace QmlJS
 
 QT_END_NAMESPACE
 

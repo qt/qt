@@ -27,16 +27,16 @@
 **
 **************************************************************************/
 
-#include "javascriptengine_p.h"
-#include "javascriptnodepool_p.h"
+#include "qmljsengine_p.h"
+#include "qmljsnodepool_p.h"
 #include <qnumeric.h>
 #include <QHash>
 
 QT_BEGIN_NAMESPACE
 
-namespace JavaScript {
+namespace QmlJS {
 
-uint qHash(const JavaScript::NameId &id)
+uint qHash(const QmlJS::NameId &id)
 { return qHash(id.asString()); }
 
 QString numberToString(double value)
@@ -186,6 +186,6 @@ void Engine::setNodePool(NodePool *nodePool)
 
 
 
-} // end of namespace JavaScript
+} // end of namespace QmlJS
 
 QT_END_NAMESPACE

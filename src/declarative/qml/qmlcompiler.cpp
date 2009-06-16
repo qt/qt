@@ -62,7 +62,7 @@
 #include "private/qmlcustomparser_p_p.h"
 #include <private/qmlcontext_p.h>
 #include <private/qmlcomponent_p.h>
-#include "parser/javascriptast_p.h"
+#include "parser/qmljsast_p.h"
 
 #include "qmlscriptparser_p.h"
 
@@ -281,7 +281,7 @@ bool QmlCompiler::compileStoreInstruction(QmlInstruction &instr,
         case QVariant::Url:
             {
             instr.type = QmlInstruction::StoreUrl;
-            QUrl u = output->url.resolved(string);
+            QUrl u = output->url.resolved(QUrl(string));
             instr.storeUrl.propertyIndex = prop.propertyIndex();
             instr.storeUrl.value = output->indexForString(u.toString());
             }
@@ -1517,7 +1517,7 @@ bool QmlCompiler::compileBinding(QmlParser::Value *value,
 //////////////////////////////////////////////////////////////////////////////// 
 // AST Dump 
 //////////////////////////////////////////////////////////////////////////////// 
-class Dump: protected JavaScript::AST::Visitor 
+class Dump: protected QmlJS::AST::Visitor 
 { 
     std::ostream &out; 
     int depth; 
@@ -1527,11 +1527,11 @@ public:
         : out(out), depth(-1) 
      { } 
  
-    void operator()(JavaScript::AST::Node *node) 
-    { JavaScript::AST::Node::acceptChild(node, this); } 
+    void operator()(QmlJS::AST::Node *node) 
+    { QmlJS::AST::Node::acceptChild(node, this); } 
  
 protected: 
-    virtual bool preVisit(JavaScript::AST::Node *node) 
+    virtual bool preVisit(QmlJS::AST::Node *node) 
     { 
         const char *name = typeid(*node).name(); 
 #ifdef Q_CC_GNU 
@@ -1541,7 +1541,7 @@ protected:
         return true; 
     } 
  
-    virtual void postVisit(JavaScript::AST::Node *) 
+    virtual void postVisit(QmlJS::AST::Node *) 
     { 
         --depth; 
     } 

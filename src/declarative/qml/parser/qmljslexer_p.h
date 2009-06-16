@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef JAVASCRIPTLEXER_P_H
-#define JAVASCRIPTLEXER_P_H
+#ifndef QMLJSLEXER_P_H
+#define QMLJSLEXER_P_H
 
 //
 //  W A R N I N G
@@ -59,7 +59,7 @@
 
 QT_BEGIN_NAMESPACE
 
-namespace JavaScript {
+namespace QmlJS {
 
 class Engine;
 class NameId;
@@ -260,7 +260,7 @@ private:
     bool prohibitAutomaticSemicolon;
 };
 
-} // namespace JavaScript
+} // namespace QmlJS
 
 QT_END_NAMESPACE
 

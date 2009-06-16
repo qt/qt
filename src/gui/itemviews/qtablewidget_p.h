@@ -189,7 +189,7 @@ class QTableWidgetPrivate : public QTableViewPrivate
     Q_DECLARE_PUBLIC(QTableWidget)
 public:
     QTableWidgetPrivate() : QTableViewPrivate() {}
-    inline QTableModel *model() const { return qobject_cast<QTableModel*>(q_func()->model()); }
+    inline QTableModel *tableModel() const { return qobject_cast<QTableModel*>(model); }
     void setup();
 
     // view signals
