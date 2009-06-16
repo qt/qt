@@ -7050,9 +7050,6 @@ FNR == 1 {
     if ( \$3 == "moc" || \$3 ~ /^Qt/ ) {
         target_file = first
         matched_target = 1
-    } else if ( \$3 == "lrelease" || \$3 == "qm_phony_target" ) {
-        target_file = second
-        matched_target = 1
     }
 }
 
@@ -7137,7 +7134,6 @@ for part in $CFG_BUILD_PARTS; do
     case "$part" in
     tools) PART_ROOTS="$PART_ROOTS tools" ;;
     libs) PART_ROOTS="$PART_ROOTS src" ;;
-    translations) PART_ROOTS="$PART_ROOTS tools/linguist/lrelease translations" ;;
     examples) PART_ROOTS="$PART_ROOTS examples demos" ;;
     *) ;;
     esac

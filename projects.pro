@@ -10,10 +10,6 @@ cross_compile: CONFIG += nostrip
 isEmpty(QT_BUILD_PARTS) { #defaults
    QT_BUILD_PARTS = libs tools examples demos docs translations
 } else { #make sure the order makes sense
-   contains(QT_BUILD_PARTS, translations) {
-       QT_BUILD_PARTS -= translations
-       QT_BUILD_PARTS = translations $$QT_BUILD_PARTS
-   }
    contains(QT_BUILD_PARTS, tools) {
        QT_BUILD_PARTS -= tools
        QT_BUILD_PARTS = tools $$QT_BUILD_PARTS
@@ -43,10 +39,8 @@ for(PROJECT, $$list($$lower($$unique(QT_BUILD_PARTS)))) {
     } else:isEqual(PROJECT, translations) {
        contains(QT_BUILD_PARTS, tools) {
           include(translations/translations.pri)  # ts targets
-       } else {
-          SUBDIRS += tools/linguist/lrelease
+          SUBDIRS += translations                 # qm build step
        }
-       SUBDIRS += translations                    # qm build step
     } else:isEqual(PROJECT, qmake) {
 #      SUBDIRS += qmake
     } else {
