@@ -201,6 +201,8 @@
     however, is done in constant time. This approach is ideal for dynamic
     scenes, where many items are added, moved or removed continuously.
 
+    \omitvalue CustomIndex
+
     \sa setItemIndexMethod(), bspTreeDepth
 */
 
@@ -312,6 +314,9 @@ void QGraphicsScenePrivate::init()
     q->update();
 }
 
+/*!
+    \internal
+*/
 QGraphicsScenePrivate *QGraphicsScenePrivate::get(QGraphicsScene *q)
 {
     return q->d_func();
@@ -454,11 +459,11 @@ void QGraphicsScenePrivate::removeItemHelper(QGraphicsItem *item)
     markDirty(item, QRectF(), false, false, false, false, /*removingItemFromScene=*/true);
 
     if (item->d_ptr->inDestructor) {
-        // Can potentially call item->boundingRect() (virtual function), that's why
-        // we only can call this function if the item is not in its destructor.
+        // The item is actually in its destructor, we call the special method in the index.
         index->deleteItem(item);
     } else {
-        // Remove it from the index properly
+        // Can potentially call item->boundingRect() (virtual function), that's why
+        // we only can call this function if the item is not in its destructor.
         index->removeItem(item);
     }
 
@@ -1569,6 +1574,13 @@ void QGraphicsScene::setItemIndexMethod(ItemIndexMethod method)
     d->indexMethod = method;
 }
 
+/*!
+    \brief the item indexing method.
+    This method allow to apply an indexing algorithm \a index to the scene, to speed up
+    item discovery functions like items() and itemAt().
+
+    \sa sceneIndex(), QGraphicsSceneIndex
+*/
 void QGraphicsScene::setSceneIndex(QGraphicsSceneIndex *index)
 {
     Q_D(QGraphicsScene);
@@ -1583,6 +1595,11 @@ void QGraphicsScene::setSceneIndex(QGraphicsSceneIndex *index)
     }
 }
 
+/*!
+    This method return the current indexing algorithm of the scene.
+
+    \sa setSceneIndex(), QGraphicsSceneIndex
+*/
 QGraphicsSceneIndex* QGraphicsScene::sceneIndex() const
 {
     Q_D(const QGraphicsScene);
@@ -1784,10 +1801,13 @@ QList<QGraphicsItem *> QGraphicsScene::items(const QPainterPath &path, Qt::ItemS
 }
 
 /*!
-    Returns all visible items at position \a pos in the scene.
+    Returns all visible items that, depending on \a mode, are at the specified \a pos
+    and return a list sorted using \a order.
 
     The default value for \a mode is Qt::IntersectsItemShape; all items whose
-    exact shape intersects with or is contained by \a path are returned.
+    exact shape intersects with \a pos are returned.
+
+    \a deviceTransform is the transformation apply to the view.
 
     \sa itemAt()
 */
@@ -1798,15 +1818,15 @@ QList<QGraphicsItem *> QGraphicsScene::items(const QPointF &pos, Qt::ItemSelecti
 }
 
 /*!
-    \fn QList<QGraphicsItem *> QGraphicsScene::items(const QRectF &rectangle, Qt::SortOrder order, const QTransform &deviceTransform) const
-
     \overload
 
     Returns all visible items that, depending on \a mode, are either inside or
-    intersect with the specified \a rectangle.
+    intersect with the specified \a rect and return a list sorted using \a order.
 
     The default value for \a mode is Qt::IntersectsItemShape; all items whose
-    exact shape intersects with or is contained by \a rectangle are returned.
+    exact shape intersects with or is contained by \a rect are returned.
+
+    \a deviceTransform is the transformation apply to the view.
 
     \sa itemAt()
 */
@@ -1820,10 +1840,12 @@ QList<QGraphicsItem *> QGraphicsScene::items(const QRectF &rect, Qt::ItemSelecti
     \overload
 
     Returns all visible items that, depending on \a mode, are either inside or
-    intersect with the polygon \a polygon.
+    intersect with the specified \a polygon and return a list sorted using \a order.
 
     The default value for \a mode is Qt::IntersectsItemShape; all items whose
     exact shape intersects with or is contained by \a polygon are returned.
+
+    \a deviceTransform is the transformation apply to the view.
 
     \sa itemAt()
 */
@@ -1834,13 +1856,15 @@ QList<QGraphicsItem *> QGraphicsScene::items(const QPolygonF &polygon, Qt::ItemS
 }
 
 /*!
-    \overload
+   \overload
 
-    Returns all visible items that, depending on \a path, are either inside or
-    intersect with the path \a path.
+    Returns all visible items that, depending on \a mode, are either inside or
+    intersect with the specified \a path and return a list sorted using \a order.
 
     The default value for \a mode is Qt::IntersectsItemShape; all items whose
     exact shape intersects with or is contained by \a path are returned.
+
+    \a deviceTransform is the transformation apply to the view.
 
     \sa itemAt()
 */

@@ -418,8 +418,6 @@ protected:
     virtual void setExtension(Extension extension, const QVariant &variant);
     virtual QVariant extension(const QVariant &variant) const;
 
-    bool operator<(const QGraphicsItem *other) const;
-
 protected:
     QGraphicsItem(QGraphicsItemPrivate &dd,
                   QGraphicsItem *parent, QGraphicsScene *scene);

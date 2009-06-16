@@ -38,6 +38,22 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+/*!
+    \class QGraphicsSceneIndex
+    \brief The QGraphicsSceneIndex class provides a base class to implement
+    a custom indexing algorithm for discovering items in QGraphicsScene.
+    \since 4.6
+    \ingroup multimedia
+    \ingroup graphicsview-api
+    \mainclass
+
+    The QGraphicsSceneIndex class provides a base class to implement
+    a custom indexing algorithm for discovering items in QGraphicsScene. You
+    need to subclass it and reimplement addItem, removeItem, estimateItems
+    and items in order to have an functional indexing.
+
+    \sa QGraphicsScene, QGraphicsView
+*/
 
 #include "qgraphicssceneindex.h"
 #include "qgraphicssceneindex_p.h"
@@ -229,7 +245,7 @@ void QGraphicsSceneIndexPrivate::recursive_items_helper(QGraphicsItem *item, QGr
 }
 
 /*!
-    Constructs an abstract scene index.
+    Constructs an abstract scene index for a given \a scene.
 */
 QGraphicsSceneIndex::QGraphicsSceneIndex(QGraphicsScene *scene)
 : QObject(*new QGraphicsSceneIndexPrivate(scene), scene)
@@ -271,12 +287,17 @@ QRectF QGraphicsSceneIndex::indexedRect() const
 }
 
 /*!
-    \fn QList<QGraphicsItem *> items() const  = 0
+    \fn QList<QGraphicsItem *> QGraphicsSceneIndex::items(const QPointF &pos, Qt::ItemSelectionMode mode, Qt::SortOrder order, const QTransform &deviceTransform) const
 
-    This pure virtual function return the list of items that are actually in the index.
+    Returns all visible items that, depending on \a mode, are at the specified \a pos
+    and return a list sorted using \a order.
+
+    The default value for \a mode is Qt::IntersectsItemShape; all items whose
+    exact shape intersects with \a pos are returned.
+
+    \a deviceTransform is the transformation apply to the view.
 
 */
-
 QList<QGraphicsItem *> QGraphicsSceneIndex::items(const QPointF &pos, Qt::ItemSelectionMode mode, Qt::SortOrder order, const QTransform &deviceTransform) const
 {
     Q_D(const QGraphicsSceneIndex);
@@ -288,6 +309,20 @@ QList<QGraphicsItem *> QGraphicsSceneIndex::items(const QPointF &pos, Qt::ItemSe
     return itemList;
 }
 
+/*!
+    \fn QList<QGraphicsItem *> QGraphicsSceneIndex::items(const QRectF &rect, Qt::ItemSelectionMode mode, Qt::SortOrder order, const QTransform &deviceTransform) const
+
+    \overload
+
+    Returns all visible items that, depending on \a mode, are either inside or
+    intersect with the specified \a rect and return a list sorted using \a order.
+
+    The default value for \a mode is Qt::IntersectsItemShape; all items whose
+    exact shape intersects with or is contained by \a rect are returned.
+
+    \a deviceTransform is the transformation apply to the view.
+
+*/
 QList<QGraphicsItem *> QGraphicsSceneIndex::items(const QRectF &rect, Qt::ItemSelectionMode mode, Qt::SortOrder order, const QTransform &deviceTransform) const
 {
     Q_D(const QGraphicsSceneIndex);
@@ -298,6 +333,20 @@ QList<QGraphicsItem *> QGraphicsSceneIndex::items(const QRectF &rect, Qt::ItemSe
     return itemList;
 }
 
+/*!
+    \fn QList<QGraphicsItem *> QGraphicsSceneIndex::items(const QPolygonF &polygon, Qt::ItemSelectionMode mode, Qt::SortOrder order, const QTransform &deviceTransform) const
+
+    \overload
+
+    Returns all visible items that, depending on \a mode, are either inside or
+    intersect with the specified \a polygon and return a list sorted using \a order.
+
+    The default value for \a mode is Qt::IntersectsItemShape; all items whose
+    exact shape intersects with or is contained by \a polygon are returned.
+
+    \a deviceTransform is the transformation apply to the view.
+
+*/
 QList<QGraphicsItem *> QGraphicsSceneIndex::items(const QPolygonF &polygon, Qt::ItemSelectionMode mode, Qt::SortOrder order, const QTransform &deviceTransform) const
 {
     Q_D(const QGraphicsSceneIndex);
@@ -313,6 +362,20 @@ QList<QGraphicsItem *> QGraphicsSceneIndex::items(const QPolygonF &polygon, Qt::
     return itemList;
 }
 
+/*!
+    \fn QList<QGraphicsItem *> QGraphicsSceneIndex::items(const QPainterPath &path, Qt::ItemSelectionMode mode, Qt::SortOrder order, const QTransform &deviceTransform) const
+
+    \overload
+
+    Returns all visible items that, depending on \a mode, are either inside or
+    intersect with the specified \a path and return a list sorted using \a order.
+
+    The default value for \a mode is Qt::IntersectsItemShape; all items whose
+    exact shape intersects with or is contained by \a path are returned.
+
+    \a deviceTransform is the transformation apply to the view.
+
+*/
 QList<QGraphicsItem *> QGraphicsSceneIndex::items(const QPainterPath &path, Qt::ItemSelectionMode mode, Qt::SortOrder order, const QTransform &deviceTransform) const
 {
     Q_D(const QGraphicsSceneIndex);
@@ -327,8 +390,9 @@ QList<QGraphicsItem *> QGraphicsSceneIndex::items(const QPainterPath &path, Qt::
 }
 
 /*!
-    This pure virtual function return an estimation of items at position \a pos.
-
+    This virtual function return an estimation of items at position \a point.
+    This method return a list sorted using \a order.
+    \a deviceTransform is the transformation apply to the view.
 */
 QList<QGraphicsItem *> QGraphicsSceneIndex::estimateItems(const QPointF &point, Qt::SortOrder order, const QTransform &deviceTransform) const
 {
@@ -336,12 +400,18 @@ QList<QGraphicsItem *> QGraphicsSceneIndex::estimateItems(const QPointF &point, 
 }
 
 /*!
-    \fn virtual QList<QGraphicsItem *> estimateItems(const QRectF &rect, Qt::SortOrder order, const QTransform &deviceTransform) const = 0
+    \fn virtual QList<QGraphicsItem *> QGraphicsSceneIndex::estimateItems(const QRectF &rect, Qt::SortOrder order, const QTransform &deviceTransform) const = 0
 
     This pure virtual function return an estimation of items in the \a rect.
+    This method return a list sorted using \a order.
 
+    \a deviceTransform is the transformation apply to the view.
 */
 
+/*!
+    \fn virtual QList<QGraphicsItem *> QGraphicsSceneIndex::items(Qt::SortOrder order = Qt::AscendingOrder) const  = 0;
+    This pure virtual function all items in the index and sort them using \a order.
+*/
 
 /*!
     This virtual function removes all items in the scene index.
@@ -353,23 +423,23 @@ void QGraphicsSceneIndex::clear()
 }
 
 /*!
-    \fn virtual void addItem(QGraphicsItem *item) = 0
+    \fn virtual void QGraphicsSceneIndex::addItem(QGraphicsItem *item) = 0
 
-    This pure virtual function inserts an item to the scene index.
+    This pure virtual function inserts an \a item to the scene index.
 
     \sa removeItem(), deleteItem()
 */
 
 /*!
-    \fn virtual void removeItem(QGraphicsItem *item) = 0
+    \fn virtual void QGraphicsSceneIndex::removeItem(QGraphicsItem *item) = 0
 
-    This pure virtual function removes an item to the scene index.
+    This pure virtual function removes an \a item to the scene index.
 
     \sa addItem(), deleteItem()
 */
 
 /*!
-    This method is called when an item has been deleted.
+    This method is called when an \a item has been deleted.
     The default implementation call removeItem. Be carefull,
     if your implementation of removeItem use pure virtual method
     of QGraphicsItem like boundingRect(), then you should reimplement
@@ -384,7 +454,7 @@ void QGraphicsSceneIndex::deleteItem(QGraphicsItem *item)
 
 /*!
     This virtual function is called by QGraphicsItem to notify the index
-    that some part of the item's state changes. By reimplementing this
+    that some part of the \a item 's state changes. By reimplementing this
     function, your can react to a change, and in some cases, (depending on \a
     change,) adjustments in the index can be made.
 
@@ -393,7 +463,7 @@ void QGraphicsSceneIndex::deleteItem(QGraphicsItem *item)
 
     The default implementation does nothing.
 
-    \sa GraphicsItemChange
+    \sa QGraphicsItem::GraphicsItemChange
 */
 void QGraphicsSceneIndex::itemChanged(const QGraphicsItem *item, QGraphicsItem::GraphicsItemChange change, const QVariant &value)
 {
@@ -403,9 +473,9 @@ void QGraphicsSceneIndex::itemChanged(const QGraphicsItem *item, QGraphicsItem::
 }
 
 /*!
-    Notify the index for a geometry change of an item.
+    Notify the index for a geometry change of an \a item.
 
-    \sa QGraphicsItem::prepareGeometryChange
+    \sa QGraphicsItem::prepareGeometryChange()
 */
 void QGraphicsSceneIndex::prepareBoundingRectChange(const QGraphicsItem *item)
 {
@@ -414,8 +484,8 @@ void QGraphicsSceneIndex::prepareBoundingRectChange(const QGraphicsItem *item)
 
 /*!
     This virtual function is called when the scene changes its bounding
-    rectangle.
-    \sa QGraphicsScene::sceneRect
+    rectangle. \a rect is the new value of the scene rectangle.
+    \sa QGraphicsScene::sceneRect()
 */
 void QGraphicsSceneIndex::sceneRectChanged(const QRectF &rect)
 {
