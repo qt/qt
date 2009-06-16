@@ -1041,6 +1041,18 @@ QPicture& QPicture::operator=(const QPicture &p)
 /*!
   \internal
 
+  Constructs a QPicturePrivate
+*/
+QPicturePrivate::QPicturePrivate()
+    : in_memory_only(false),
+      q_ptr(0)
+{
+    ref = 1;
+}
+
+/*!
+  \internal
+
   Sets formatOk to false and resets the format version numbers to default
 */
 

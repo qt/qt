@@ -127,7 +127,9 @@ void MainWindow::addSoftKeys()
     QList<QAction*> softkeys;
     softkeys.append(ok);
     softkeys.append(cancel);
-    pushButton->setSoftKeys(softkeys);
+    QWidget* focusWidget = QApplication::focusWidget();
+    if (focusWidget)
+        focusWidget->setSoftKeys(softkeys);
 }
 
 void MainWindow::exitApplication()
@@ -138,13 +140,17 @@ void MainWindow::exitApplication()
 void MainWindow::okPressed()
 {
     infoLabel->setText(tr("OK pressed"));
-    pushButton->setSoftKey(0);
+    QWidget* focusWidget = QApplication::focusWidget();
+    if (focusWidget)
+        focusWidget->setSoftKey(0);
 }
 
 void MainWindow::cancelPressed()
 {
     infoLabel->setText(tr("Cancel pressed"));
-    pushButton->setSoftKey(0);
+    QWidget* focusWidget = QApplication::focusWidget();
+    if (focusWidget)
+        focusWidget->setSoftKey(0);
 }
 
 
