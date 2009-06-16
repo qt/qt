@@ -214,9 +214,12 @@ void QmlTypePrivate::init() const
         mo = mo->d.superdata;
     }
 
-    for (int ii = 0; ii < m_metaObjects.count(); ++ii) 
+    for (int ii = 0; ii < m_metaObjects.count(); ++ii) {
         m_metaObjects[ii].propertyOffset = 
             m_metaObjects.at(ii).metaObject->propertyOffset();
+        m_metaObjects[ii].methodOffset = 
+            m_metaObjects.at(ii).metaObject->methodOffset();
+    }
 
     // Calculate hash
     QByteArray hashData;
