@@ -66,7 +66,7 @@ public:
         hboxLayout->setSpacing(6);
 #endif
 #ifndef Q_OS_MAC
-        hboxLayout->setMargin(9);
+        hboxLayout->setContentsMargins(9, 9, 9, 9);
 #endif
         hboxLayout->setObjectName(QString::fromUtf8("hboxLayout"));
         vboxLayout = new QVBoxLayout();
@@ -74,7 +74,7 @@ public:
         vboxLayout->setSpacing(6);
 #endif
 #ifndef Q_OS_MAC
-        vboxLayout->setMargin(0);
+        vboxLayout->setContentsMargins(0, 0, 0, 0);
 #endif
         vboxLayout->setObjectName(QString::fromUtf8("vboxLayout"));
         chatHistory = new QTextBrowser(centralwidget);
@@ -88,7 +88,7 @@ public:
 #ifndef Q_OS_MAC
         hboxLayout1->setSpacing(6);
 #endif
-        hboxLayout1->setMargin(0);
+        hboxLayout1->setContentsMargins(0, 0, 0, 0);
         hboxLayout1->setObjectName(QString::fromUtf8("hboxLayout1"));
         label = new QLabel(centralwidget);
         label->setObjectName(QString::fromUtf8("label"));

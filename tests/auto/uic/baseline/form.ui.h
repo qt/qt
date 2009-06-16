@@ -51,7 +51,7 @@ public:
         hboxLayout->setSpacing(6);
 #endif
 #ifndef Q_OS_MAC
-        hboxLayout->setMargin(9);
+        hboxLayout->setContentsMargins(9, 9, 9, 9);
 #endif
         hboxLayout->setObjectName(QString::fromUtf8("hboxLayout"));
         worldTimeClock = new WorldTimeClock(WorldTimeForm);
@@ -63,7 +63,7 @@ public:
 #ifndef Q_OS_MAC
         vboxLayout->setSpacing(6);
 #endif
-        vboxLayout->setMargin(1);
+        vboxLayout->setContentsMargins(1, 1, 1, 1);
         vboxLayout->setObjectName(QString::fromUtf8("vboxLayout"));
         spacerItem = new QSpacerItem(20, 40, QSizePolicy::Minimum, QSizePolicy::Expanding);
 
@@ -73,7 +73,7 @@ public:
 #ifndef Q_OS_MAC
         hboxLayout1->setSpacing(6);
 #endif
-        hboxLayout1->setMargin(1);
+        hboxLayout1->setContentsMargins(1, 1, 1, 1);
         hboxLayout1->setObjectName(QString::fromUtf8("hboxLayout1"));
         label = new QLabel(WorldTimeForm);
         label->setObjectName(QString::fromUtf8("label"));
@@ -93,7 +93,7 @@ public:
 #ifndef Q_OS_MAC
         hboxLayout2->setSpacing(6);
 #endif
-        hboxLayout2->setMargin(1);
+        hboxLayout2->setContentsMargins(1, 1, 1, 1);
         hboxLayout2->setObjectName(QString::fromUtf8("hboxLayout2"));
         label_2 = new QLabel(WorldTimeForm);
         label_2->setObjectName(QString::fromUtf8("label_2"));

@@ -139,7 +139,7 @@ public:
         Config->setSizeGripEnabled(true);
         vboxLayout = new QVBoxLayout(Config);
         vboxLayout->setSpacing(6);
-        vboxLayout->setMargin(11);
+        vboxLayout->setContentsMargins(11, 11, 11, 11);
         vboxLayout->setObjectName(QString::fromUtf8("vboxLayout"));
         vboxLayout->setContentsMargins(8, 8, 8, 8);
         hboxLayout = new QHBoxLayout();
@@ -155,7 +155,7 @@ public:
         ButtonGroup1->setSizePolicy(sizePolicy);
         vboxLayout1 = new QVBoxLayout(ButtonGroup1);
         vboxLayout1->setSpacing(6);
-        vboxLayout1->setMargin(11);
+        vboxLayout1->setContentsMargins(11, 11, 11, 11);
         vboxLayout1->setObjectName(QString::fromUtf8("vboxLayout1"));
         vboxLayout1->setContentsMargins(11, 11, 11, 11);
         size_176_220 = new QRadioButton(ButtonGroup1);
@@ -230,7 +230,7 @@ public:
         ButtonGroup2->setObjectName(QString::fromUtf8("ButtonGroup2"));
         vboxLayout2 = new QVBoxLayout(ButtonGroup2);
         vboxLayout2->setSpacing(6);
-        vboxLayout2->setMargin(11);
+        vboxLayout2->setContentsMargins(11, 11, 11, 11);
         vboxLayout2->setObjectName(QString::fromUtf8("vboxLayout2"));
         vboxLayout2->setContentsMargins(11, 11, 11, 11);
         depth_1 = new QRadioButton(ButtonGroup2);
@@ -337,7 +337,7 @@ public:
         GroupBox1->setObjectName(QString::fromUtf8("GroupBox1"));
         gridLayout = new QGridLayout(GroupBox1);
         gridLayout->setSpacing(6);
-        gridLayout->setMargin(11);
+        gridLayout->setContentsMargins(11, 11, 11, 11);
         gridLayout->setObjectName(QString::fromUtf8("gridLayout"));
         gridLayout->setHorizontalSpacing(6);
         gridLayout->setVerticalSpacing(6);

@@ -118,7 +118,7 @@ public:
         gridLayout->setSpacing(6);
 #endif
 #ifndef Q_OS_MAC
-        gridLayout->setMargin(9);
+        gridLayout->setContentsMargins(9, 9, 9, 9);
 #endif
         gridLayout->setObjectName(QString::fromUtf8("gridLayout"));
         vboxLayout = new QVBoxLayout();
@@ -126,7 +126,7 @@ public:
         vboxLayout->setSpacing(6);
 #endif
 #ifndef Q_OS_MAC
-        vboxLayout->setMargin(0);
+        vboxLayout->setContentsMargins(0, 0, 0, 0);
 #endif
         vboxLayout->setObjectName(QString::fromUtf8("vboxLayout"));
         LineEdit1 = new QLineEdit(qdesigner_internal__PreviewWidget);
@@ -143,7 +143,7 @@ public:
 #ifndef Q_OS_MAC
         hboxLayout->setSpacing(6);
 #endif
-        hboxLayout->setMargin(0);
+        hboxLayout->setContentsMargins(0, 0, 0, 0);
         hboxLayout->setObjectName(QString::fromUtf8("hboxLayout"));
         SpinBox1 = new QSpinBox(qdesigner_internal__PreviewWidget);
         SpinBox1->setObjectName(QString::fromUtf8("SpinBox1"));
@@ -196,7 +196,7 @@ public:
         vboxLayout1->setSpacing(6);
 #endif
 #ifndef Q_OS_MAC
-        vboxLayout1->setMargin(9);
+        vboxLayout1->setContentsMargins(9, 9, 9, 9);
 #endif
         vboxLayout1->setObjectName(QString::fromUtf8("vboxLayout1"));
         CheckBox1 = new QCheckBox(ButtonGroup2);
@@ -220,7 +220,7 @@ public:
         vboxLayout2->setSpacing(6);
 #endif
 #ifndef Q_OS_MAC
-        vboxLayout2->setMargin(9);
+        vboxLayout2->setContentsMargins(9, 9, 9, 9);
 #endif
         vboxLayout2->setObjectName(QString::fromUtf8("vboxLayout2"));
         RadioButton1 = new QRadioButton(ButtonGroup1);

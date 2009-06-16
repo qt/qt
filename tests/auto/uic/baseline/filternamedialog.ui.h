@@ -42,7 +42,7 @@ public:
         FilterNameDialogClass->resize(312, 95);
         gridLayout = new QGridLayout(FilterNameDialogClass);
         gridLayout->setSpacing(6);
-        gridLayout->setMargin(9);
+        gridLayout->setContentsMargins(9, 9, 9, 9);
         gridLayout->setObjectName(QString::fromUtf8("gridLayout"));
         label = new QLabel(FilterNameDialogClass);
         label->setObjectName(QString::fromUtf8("label"));

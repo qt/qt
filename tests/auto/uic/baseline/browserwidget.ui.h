@@ -60,7 +60,7 @@ public:
 #ifndef Q_OS_MAC
         vboxLayout->setSpacing(6);
 #endif
-        vboxLayout->setMargin(8);
+        vboxLayout->setContentsMargins(8, 8, 8, 8);
         vboxLayout->setObjectName(QString::fromUtf8("vboxLayout"));
         splitter_2 = new QSplitter(Browser);
         splitter_2->setObjectName(QString::fromUtf8("splitter_2"));
@@ -104,7 +104,7 @@ public:
         vboxLayout1->setSpacing(6);
 #endif
 #ifndef Q_OS_MAC
-        vboxLayout1->setMargin(9);
+        vboxLayout1->setContentsMargins(9, 9, 9, 9);
 #endif
         vboxLayout1->setObjectName(QString::fromUtf8("vboxLayout1"));
         sqlEdit = new QTextEdit(groupBox);
@@ -123,7 +123,7 @@ public:
 #ifndef Q_OS_MAC
         hboxLayout->setSpacing(6);
 #endif
-        hboxLayout->setMargin(1);
+        hboxLayout->setContentsMargins(1, 1, 1, 1);
         hboxLayout->setObjectName(QString::fromUtf8("hboxLayout"));
         spacerItem = new QSpacerItem(40, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
 

@@ -47,7 +47,7 @@ public:
         vboxLayout->setSpacing(6);
 #endif
 #ifndef Q_OS_MAC
-        vboxLayout->setMargin(9);
+        vboxLayout->setContentsMargins(9, 9, 9, 9);
 #endif
         vboxLayout->setObjectName(QString::fromUtf8("vboxLayout"));
         groupBox = new QGroupBox(TranslationSettings);
@@ -57,7 +57,7 @@ public:
         gridLayout->setSpacing(6);
 #endif
 #ifndef Q_OS_MAC
-        gridLayout->setMargin(9);
+        gridLayout->setContentsMargins(9, 9, 9, 9);
 #endif
         gridLayout->setObjectName(QString::fromUtf8("gridLayout"));
         cbLanguageList = new QComboBox(groupBox);

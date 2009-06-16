@@ -59,7 +59,7 @@ public:
 #ifndef Q_OS_MAC
         gridLayout->setSpacing(6);
 #endif
-        gridLayout->setMargin(8);
+        gridLayout->setContentsMargins(8, 8, 8, 8);
         gridLayout->setObjectName(QString::fromUtf8("gridLayout"));
         actionTree = new QTreeWidget(QtToolBarDialog);
         actionTree->setObjectName(QString::fromUtf8("actionTree"));
@@ -75,7 +75,7 @@ public:
 #ifndef Q_OS_MAC
         hboxLayout->setSpacing(6);
 #endif
-        hboxLayout->setMargin(0);
+        hboxLayout->setContentsMargins(0, 0, 0, 0);
         hboxLayout->setObjectName(QString::fromUtf8("hboxLayout"));
         label_2 = new QLabel(QtToolBarDialog);
         label_2->setObjectName(QString::fromUtf8("label_2"));
@@ -104,7 +104,7 @@ public:
 #ifndef Q_OS_MAC
         vboxLayout->setSpacing(6);
 #endif
-        vboxLayout->setMargin(0);
+        vboxLayout->setContentsMargins(0, 0, 0, 0);
         vboxLayout->setObjectName(QString::fromUtf8("vboxLayout"));
         upButton = new QToolButton(QtToolBarDialog);
         upButton->setObjectName(QString::fromUtf8("upButton"));

@@ -87,7 +87,7 @@ public:
         vboxLayout->setSpacing(6);
 #endif
 #ifndef Q_OS_MAC
-        vboxLayout->setMargin(9);
+        vboxLayout->setContentsMargins(9, 9, 9, 9);
 #endif
         vboxLayout->setObjectName(QString::fromUtf8("vboxLayout"));
         hboxLayout = new QHBoxLayout();
@@ -95,7 +95,7 @@ public:
         hboxLayout->setSpacing(6);
 #endif
 #ifndef Q_OS_MAC
-        hboxLayout->setMargin(0);
+        hboxLayout->setContentsMargins(0, 0, 0, 0);
 #endif
         hboxLayout->setObjectName(QString::fromUtf8("hboxLayout"));
         localeSelector = new LocaleSelector(ValidatorsForm);
@@ -117,7 +117,7 @@ public:
         vboxLayout1->setSpacing(6);
 #endif
 #ifndef Q_OS_MAC
-        vboxLayout1->setMargin(9);
+        vboxLayout1->setContentsMargins(9, 9, 9, 9);
 #endif
         vboxLayout1->setObjectName(QString::fromUtf8("vboxLayout1"));
         hboxLayout1 = new QHBoxLayout();
@@ -125,7 +125,7 @@ public:
         hboxLayout1->setSpacing(6);
 #endif
 #ifndef Q_OS_MAC
-        hboxLayout1->setMargin(0);
+        hboxLayout1->setContentsMargins(0, 0, 0, 0);
 #endif
         hboxLayout1->setObjectName(QString::fromUtf8("hboxLayout1"));
         gridLayout = new QGridLayout();
@@ -133,7 +133,7 @@ public:
         gridLayout->setSpacing(6);
 #endif
 #ifndef Q_OS_MAC
-        gridLayout->setMargin(0);
+        gridLayout->setContentsMargins(0, 0, 0, 0);
 #endif
         gridLayout->setObjectName(QString::fromUtf8("gridLayout"));
         label = new QLabel(groupBox);
@@ -182,7 +182,7 @@ public:
         vboxLayout2->setSpacing(6);
 #endif
 #ifndef Q_OS_MAC
-        vboxLayout2->setMargin(9);
+        vboxLayout2->setContentsMargins(9, 9, 9, 9);
 #endif
         vboxLayout2->setObjectName(QString::fromUtf8("vboxLayout2"));
         ledWidget = new LEDWidget(frame);
@@ -227,7 +227,7 @@ public:
         vboxLayout3->setSpacing(6);
 #endif
 #ifndef Q_OS_MAC
-        vboxLayout3->setMargin(9);
+        vboxLayout3->setContentsMargins(9, 9, 9, 9);
 #endif
         vboxLayout3->setObjectName(QString::fromUtf8("vboxLayout3"));
         hboxLayout2 = new QHBoxLayout();
@@ -235,7 +235,7 @@ public:
         hboxLayout2->setSpacing(6);
 #endif
 #ifndef Q_OS_MAC
-        hboxLayout2->setMargin(0);
+        hboxLayout2->setContentsMargins(0, 0, 0, 0);
 #endif
         hboxLayout2->setObjectName(QString::fromUtf8("hboxLayout2"));
         gridLayout1 = new QGridLayout();
@@ -243,7 +243,7 @@ public:
         gridLayout1->setSpacing(6);
 #endif
 #ifndef Q_OS_MAC
-        gridLayout1->setMargin(0);
+        gridLayout1->setContentsMargins(0, 0, 0, 0);
 #endif
         gridLayout1->setObjectName(QString::fromUtf8("gridLayout1"));
         label_3 = new QLabel(groupBox_2);
@@ -313,7 +313,7 @@ public:
         vboxLayout4->setSpacing(6);
 #endif
 #ifndef Q_OS_MAC
-        vboxLayout4->setMargin(9);
+        vboxLayout4->setContentsMargins(9, 9, 9, 9);
 #endif
         vboxLayout4->setObjectName(QString::fromUtf8("vboxLayout4"));
         doubleLedWidget = new LEDWidget(frame_2);
@@ -354,7 +354,7 @@ public:
 #ifndef Q_OS_MAC
         hboxLayout3->setSpacing(6);
 #endif
-        hboxLayout3->setMargin(0);
+        hboxLayout3->setContentsMargins(0, 0, 0, 0);
         hboxLayout3->setObjectName(QString::fromUtf8("hboxLayout3"));
         spacerItem4 = new QSpacerItem(40, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
 

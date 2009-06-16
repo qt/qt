@@ -96,7 +96,7 @@ public:
         PhraseBookBox->resize(596, 454);
         unnamed = new QHBoxLayout(PhraseBookBox);
         unnamed->setSpacing(6);
-        unnamed->setMargin(11);
+        unnamed->setContentsMargins(11, 11, 11, 11);
         unnamed->setObjectName(QString::fromUtf8("unnamed"));
         inputsLayout = new QVBoxLayout();
         inputsLayout->setSpacing(6);

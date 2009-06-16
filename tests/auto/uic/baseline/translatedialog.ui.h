@@ -104,7 +104,7 @@ public:
         TranslateDialog->setSizePolicy(sizePolicy);
         hboxLayout = new QHBoxLayout(TranslateDialog);
         hboxLayout->setSpacing(6);
-        hboxLayout->setMargin(11);
+        hboxLayout->setContentsMargins(11, 11, 11, 11);
         hboxLayout->setObjectName(QString::fromUtf8("hboxLayout"));
         hboxLayout->setContentsMargins(9, 9, 9, 9);
         vboxLayout = new QVBoxLayout();
@@ -144,7 +144,7 @@ public:
         groupBox->setObjectName(QString::fromUtf8("groupBox"));
         vboxLayout1 = new QVBoxLayout(groupBox);
         vboxLayout1->setSpacing(6);
-        vboxLayout1->setMargin(11);
+        vboxLayout1->setContentsMargins(11, 11, 11, 11);
         vboxLayout1->setObjectName(QString::fromUtf8("vboxLayout1"));
         ckMatchCase = new QCheckBox(groupBox);
         ckMatchCase->setObjectName(QString::fromUtf8("ckMatchCase"));

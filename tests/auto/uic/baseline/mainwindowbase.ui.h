@@ -218,7 +218,7 @@ public:
         widget->setGeometry(QRect(0, 28, 724, 587));
         hboxLayout = new QHBoxLayout(widget);
         hboxLayout->setSpacing(4);
-        hboxLayout->setMargin(8);
+        hboxLayout->setContentsMargins(8, 8, 8, 8);
         hboxLayout->setObjectName(QString::fromUtf8("hboxLayout"));
         hboxLayout->setContentsMargins(0, 0, 0, 0);
         helpview = new QTextEdit(widget);
@@ -234,13 +234,13 @@ public:
         tab1->setObjectName(QString::fromUtf8("tab1"));
         vboxLayout = new QVBoxLayout(tab1);
         vboxLayout->setSpacing(4);
-        vboxLayout->setMargin(4);
+        vboxLayout->setContentsMargins(4, 4, 4, 4);
         vboxLayout->setObjectName(QString::fromUtf8("vboxLayout"));
         GroupBox40 = new QGroupBox(tab1);
         GroupBox40->setObjectName(QString::fromUtf8("GroupBox40"));
         hboxLayout1 = new QHBoxLayout(GroupBox40);
         hboxLayout1->setSpacing(4);
-        hboxLayout1->setMargin(8);
+        hboxLayout1->setContentsMargins(8, 8, 8, 8);
         hboxLayout1->setObjectName(QString::fromUtf8("hboxLayout1"));
         gstylebuddy = new QLabel(GroupBox40);
         gstylebuddy->setObjectName(QString::fromUtf8("gstylebuddy"));
@@ -264,7 +264,7 @@ public:
         groupAutoPalette->setSizePolicy(sizePolicy);
         hboxLayout2 = new QHBoxLayout(groupAutoPalette);
         hboxLayout2->setSpacing(4);
-        hboxLayout2->setMargin(8);
+        hboxLayout2->setContentsMargins(8, 8, 8, 8);
         hboxLayout2->setObjectName(QString::fromUtf8("hboxLayout2"));
         labelMainColor = new QLabel(groupAutoPalette);
         labelMainColor->setObjectName(QString::fromUtf8("labelMainColor"));
@@ -317,7 +317,7 @@ public:
         GroupBox126->setSizePolicy(sizePolicy2);
         gridLayout = new QGridLayout(GroupBox126);
         gridLayout->setSpacing(4);
-        gridLayout->setMargin(8);
+        gridLayout->setContentsMargins(8, 8, 8, 8);
         gridLayout->setObjectName(QString::fromUtf8("gridLayout"));
         TextLabel1 = new QLabel(GroupBox126);
         TextLabel1->setObjectName(QString::fromUtf8("TextLabel1"));
@@ -348,13 +348,13 @@ public:
         tab2->setObjectName(QString::fromUtf8("tab2"));
         vboxLayout1 = new QVBoxLayout(tab2);
         vboxLayout1->setSpacing(4);
-        vboxLayout1->setMargin(8);
+        vboxLayout1->setContentsMargins(8, 8, 8, 8);
         vboxLayout1->setObjectName(QString::fromUtf8("vboxLayout1"));
         GroupBox1 = new QGroupBox(tab2);
         GroupBox1->setObjectName(QString::fromUtf8("GroupBox1"));
         gridLayout1 = new QGridLayout(GroupBox1);
         gridLayout1->setSpacing(4);
-        gridLayout1->setMargin(8);
+        gridLayout1->setContentsMargins(8, 8, 8, 8);
         gridLayout1->setObjectName(QString::fromUtf8("gridLayout1"));
         stylecombo = new QComboBox(GroupBox1);
         stylecombo->setObjectName(QString::fromUtf8("stylecombo"));
@@ -406,12 +406,12 @@ public:
         GroupBox2->setObjectName(QString::fromUtf8("GroupBox2"));
         vboxLayout2 = new QVBoxLayout(GroupBox2);
         vboxLayout2->setSpacing(4);
-        vboxLayout2->setMargin(8);
+        vboxLayout2->setContentsMargins(8, 8, 8, 8);
         vboxLayout2->setObjectName(QString::fromUtf8("vboxLayout2"));
         hboxLayout3 = new QHBoxLayout();
         hboxLayout3->setSpacing(4);
 #ifndef Q_OS_MAC
-        hboxLayout3->setMargin(0);
+        hboxLayout3->setContentsMargins(0, 0, 0, 0);
 #endif
         hboxLayout3->setObjectName(QString::fromUtf8("hboxLayout3"));
         famsubbuddy = new QLabel(GroupBox2);
@@ -450,7 +450,7 @@ public:
 
         hboxLayout4 = new QHBoxLayout();
         hboxLayout4->setSpacing(4);
-        hboxLayout4->setMargin(0);
+        hboxLayout4->setContentsMargins(0, 0, 0, 0);
         hboxLayout4->setObjectName(QString::fromUtf8("hboxLayout4"));
         PushButton2 = new QPushButton(GroupBox2);
         PushButton2->setObjectName(QString::fromUtf8("PushButton2"));
@@ -480,7 +480,7 @@ public:
 
         hboxLayout5 = new QHBoxLayout();
         hboxLayout5->setSpacing(4);
-        hboxLayout5->setMargin(0);
+        hboxLayout5->setContentsMargins(0, 0, 0, 0);
         hboxLayout5->setObjectName(QString::fromUtf8("hboxLayout5"));
         choosebuddy = new QLabel(GroupBox2);
         choosebuddy->setObjectName(QString::fromUtf8("choosebuddy"));
@@ -510,13 +510,13 @@ public:
         tab->setObjectName(QString::fromUtf8("tab"));
         vboxLayout3 = new QVBoxLayout(tab);
         vboxLayout3->setSpacing(4);
-        vboxLayout3->setMargin(7);
+        vboxLayout3->setContentsMargins(7, 7, 7, 7);
         vboxLayout3->setObjectName(QString::fromUtf8("vboxLayout3"));
         GroupBox4 = new QGroupBox(tab);
         GroupBox4->setObjectName(QString::fromUtf8("GroupBox4"));
         gridLayout2 = new QGridLayout(GroupBox4);
         gridLayout2->setSpacing(4);
-        gridLayout2->setMargin(8);
+        gridLayout2->setContentsMargins(8, 8, 8, 8);
         gridLayout2->setObjectName(QString::fromUtf8("gridLayout2"));
         dcispin = new QSpinBox(GroupBox4);
         dcispin->setObjectName(QString::fromUtf8("dcispin"));
@@ -566,7 +566,7 @@ public:
         GroupBox3->setObjectName(QString::fromUtf8("GroupBox3"));
         vboxLayout4 = new QVBoxLayout(GroupBox3);
         vboxLayout4->setSpacing(4);
-        vboxLayout4->setMargin(8);
+        vboxLayout4->setContentsMargins(8, 8, 8, 8);
         vboxLayout4->setObjectName(QString::fromUtf8("vboxLayout4"));
         effectcheckbox = new QCheckBox(GroupBox3);
         effectcheckbox->setObjectName(QString::fromUtf8("effectcheckbox"));
@@ -579,7 +579,7 @@ public:
         effectbase->setFrameShadow(QFrame::Plain);
         gridLayout3 = new QGridLayout(effectbase);
         gridLayout3->setSpacing(4);
-        gridLayout3->setMargin(0);
+        gridLayout3->setContentsMargins(0, 0, 0, 0);
         gridLayout3->setObjectName(QString::fromUtf8("gridLayout3"));
         meffectbuddy = new QLabel(effectbase);
         meffectbuddy->setObjectName(QString::fromUtf8("meffectbuddy"));
@@ -632,7 +632,7 @@ public:
         GroupBox5->setObjectName(QString::fromUtf8("GroupBox5"));
         gridLayout4 = new QGridLayout(GroupBox5);
         gridLayout4->setSpacing(4);
-        gridLayout4->setMargin(8);
+        gridLayout4->setContentsMargins(8, 8, 8, 8);
         gridLayout4->setObjectName(QString::fromUtf8("gridLayout4"));
         swbuddy = new QLabel(GroupBox5);
         swbuddy->setObjectName(QString::fromUtf8("swbuddy"));
@@ -683,7 +683,7 @@ public:
         tab3->setObjectName(QString::fromUtf8("tab3"));
         vboxLayout5 = new QVBoxLayout(tab3);
         vboxLayout5->setSpacing(4);
-        vboxLayout5->setMargin(8);
+        vboxLayout5->setContentsMargins(8, 8, 8, 8);
         vboxLayout5->setObjectName(QString::fromUtf8("vboxLayout5"));
         fontembeddingcheckbox = new QCheckBox(tab3);
         fontembeddingcheckbox->setObjectName(QString::fromUtf8("fontembeddingcheckbox"));
@@ -697,12 +697,12 @@ public:
         GroupBox10->setSizePolicy(sizePolicy2);
         vboxLayout6 = new QVBoxLayout(GroupBox10);
         vboxLayout6->setSpacing(4);
-        vboxLayout6->setMargin(8);
+        vboxLayout6->setContentsMargins(8, 8, 8, 8);
         vboxLayout6->setObjectName(QString::fromUtf8("vboxLayout6"));
         gridLayout5 = new QGridLayout();
         gridLayout5->setSpacing(4);
 #ifndef Q_OS_MAC
-        gridLayout5->setMargin(0);
+        gridLayout5->setContentsMargins(0, 0, 0, 0);
 #endif
         gridLayout5->setObjectName(QString::fromUtf8("gridLayout5"));
         PushButton11 = new QPushButton(GroupBox10);
@@ -730,7 +730,7 @@ public:
 
         gridLayout6 = new QGridLayout();
         gridLayout6->setSpacing(4);
-        gridLayout6->setMargin(0);
+        gridLayout6->setContentsMargins(0, 0, 0, 0);
         gridLayout6->setObjectName(QString::fromUtf8("gridLayout6"));
         spacerItem2 = new QSpacerItem(20, 20, QSizePolicy::Minimum, QSizePolicy::Minimum);
 

@@ -102,7 +102,7 @@ public:
         vboxLayout->setSpacing(6);
 #endif
 #ifndef Q_OS_MAC
-        vboxLayout->setMargin(9);
+        vboxLayout->setContentsMargins(9, 9, 9, 9);
 #endif
         vboxLayout->setObjectName(QString::fromUtf8("vboxLayout"));
         groupBox = new QGroupBox(centralwidget);
@@ -112,7 +112,7 @@ public:
         hboxLayout->setSpacing(6);
 #endif
 #ifndef Q_OS_MAC
-        hboxLayout->setMargin(9);
+        hboxLayout->setContentsMargins(9, 9, 9, 9);
 #endif
         hboxLayout->setObjectName(QString::fromUtf8("hboxLayout"));
         label = new QLabel(groupBox);
@@ -165,7 +165,7 @@ public:
         vboxLayout1->setSpacing(6);
 #endif
 #ifndef Q_OS_MAC
-        vboxLayout1->setMargin(9);
+        vboxLayout1->setContentsMargins(9, 9, 9, 9);
 #endif
         vboxLayout1->setObjectName(QString::fromUtf8("vboxLayout1"));
         chooseFromCodePoints = new QRadioButton(groupBox_2);
@@ -178,7 +178,7 @@ public:
 #ifndef Q_OS_MAC
         vboxLayout2->setSpacing(6);
 #endif
-        vboxLayout2->setMargin(0);
+        vboxLayout2->setContentsMargins(0, 0, 0, 0);
         vboxLayout2->setObjectName(QString::fromUtf8("vboxLayout2"));
         characterRangeView = new QListWidget(groupBox_2);
         characterRangeView->setObjectName(QString::fromUtf8("characterRangeView"));
@@ -189,7 +189,7 @@ public:
 #ifndef Q_OS_MAC
         hboxLayout1->setSpacing(6);
 #endif
-        hboxLayout1->setMargin(0);
+        hboxLayout1->setContentsMargins(0, 0, 0, 0);
         hboxLayout1->setObjectName(QString::fromUtf8("hboxLayout1"));
         selectAll = new QPushButton(groupBox_2);
         selectAll->setObjectName(QString::fromUtf8("selectAll"));
@@ -225,7 +225,7 @@ public:
 #ifndef Q_OS_MAC
         hboxLayout2->setSpacing(6);
 #endif
-        hboxLayout2->setMargin(0);
+        hboxLayout2->setContentsMargins(0, 0, 0, 0);
         hboxLayout2->setObjectName(QString::fromUtf8("hboxLayout2"));
         label_5 = new QLabel(groupBox_2);
         label_5->setObjectName(QString::fromUtf8("label_5"));
@@ -264,7 +264,7 @@ public:
         hboxLayout3->setSpacing(6);
 #endif
 #ifndef Q_OS_MAC
-        hboxLayout3->setMargin(9);
+        hboxLayout3->setContentsMargins(9, 9, 9, 9);
 #endif
         hboxLayout3->setObjectName(QString::fromUtf8("hboxLayout3"));
         preview = new QLineEdit(groupBox_3);
@@ -282,7 +282,7 @@ public:
         hboxLayout4->setSpacing(6);
 #endif
 #ifndef Q_OS_MAC
-        hboxLayout4->setMargin(9);
+        hboxLayout4->setContentsMargins(9, 9, 9, 9);
 #endif
         hboxLayout4->setObjectName(QString::fromUtf8("hboxLayout4"));
         label_3 = new QLabel(groupBox_4);
@@ -318,7 +318,7 @@ public:
 #ifndef Q_OS_MAC
         hboxLayout5->setSpacing(6);
 #endif
-        hboxLayout5->setMargin(0);
+        hboxLayout5->setContentsMargins(0, 0, 0, 0);
         hboxLayout5->setObjectName(QString::fromUtf8("hboxLayout5"));
         generate = new QPushButton(centralwidget);
         generate->setObjectName(QString::fromUtf8("generate"));

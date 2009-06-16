@@ -53,7 +53,7 @@ public:
             QPrintWidget->setObjectName(QString::fromUtf8("QPrintWidget"));
         QPrintWidget->resize(443, 175);
         horizontalLayout_2 = new QHBoxLayout(QPrintWidget);
-        horizontalLayout_2->setMargin(0);
+        horizontalLayout_2->setContentsMargins(0, 0, 0, 0);
         horizontalLayout_2->setObjectName(QString::fromUtf8("horizontalLayout_2"));
         printerGroup = new QGroupBox(QPrintWidget);
         printerGroup->setObjectName(QString::fromUtf8("printerGroup"));

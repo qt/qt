@@ -68,7 +68,7 @@ public:
 #ifndef Q_OS_MAC
         vboxLayout->setSpacing(6);
 #endif
-        vboxLayout->setMargin(8);
+        vboxLayout->setContentsMargins(8, 8, 8, 8);
         vboxLayout->setObjectName(QString::fromUtf8("vboxLayout"));
         groupBox = new QGroupBox(AddTorrentFile);
         groupBox->setObjectName(QString::fromUtf8("groupBox"));
@@ -79,7 +79,7 @@ public:
 #ifndef Q_OS_MAC
         gridLayout->setSpacing(6);
 #endif
-        gridLayout->setMargin(8);
+        gridLayout->setContentsMargins(8, 8, 8, 8);
         gridLayout->setObjectName(QString::fromUtf8("gridLayout"));
         label_4 = new QLabel(groupBox);
         label_4->setObjectName(QString::fromUtf8("label_4"));
@@ -175,7 +175,7 @@ public:
 #ifndef Q_OS_MAC
         hboxLayout->setSpacing(6);
 #endif
-        hboxLayout->setMargin(0);
+        hboxLayout->setContentsMargins(0, 0, 0, 0);
         hboxLayout->setObjectName(QString::fromUtf8("hboxLayout"));
         spacerItem = new QSpacerItem(131, 31, QSizePolicy::Expanding, QSizePolicy::Minimum);
 

@@ -58,7 +58,7 @@ public:
         vboxLayout->setSpacing(6);
 #endif
 #ifndef Q_OS_MAC
-        vboxLayout->setMargin(9);
+        vboxLayout->setContentsMargins(9, 9, 9, 9);
 #endif
         vboxLayout->setObjectName(QString::fromUtf8("vboxLayout"));
         vboxLayout->setObjectName(QString::fromUtf8(""));
@@ -66,7 +66,7 @@ public:
 #ifndef Q_OS_MAC
         gridLayout->setSpacing(6);
 #endif
-        gridLayout->setMargin(1);
+        gridLayout->setContentsMargins(1, 1, 1, 1);
         gridLayout->setObjectName(QString::fromUtf8("gridLayout"));
         gridLayout->setObjectName(QString::fromUtf8(""));
         widthLabel = new QLabel(dialog);
@@ -164,7 +164,7 @@ public:
 #ifndef Q_OS_MAC
         hboxLayout->setSpacing(6);
 #endif
-        hboxLayout->setMargin(1);
+        hboxLayout->setContentsMargins(1, 1, 1, 1);
         hboxLayout->setObjectName(QString::fromUtf8("hboxLayout"));
         hboxLayout->setObjectName(QString::fromUtf8(""));
         spacerItem1 = new QSpacerItem(QSizePolicy::Expanding, QSizePolicy::Minimum);

@@ -51,7 +51,7 @@ public:
 #ifndef Q_OS_MAC
         vboxLayout->setSpacing(6);
 #endif
-        vboxLayout->setMargin(8);
+        vboxLayout->setContentsMargins(8, 8, 8, 8);
         vboxLayout->setObjectName(QString::fromUtf8("vboxLayout"));
         groupBox = new QGroupBox(Form);
         groupBox->setObjectName(QString::fromUtf8("groupBox"));
@@ -59,7 +59,7 @@ public:
 #ifndef Q_OS_MAC
         gridLayout->setSpacing(6);
 #endif
-        gridLayout->setMargin(8);
+        gridLayout->setContentsMargins(8, 8, 8, 8);
         gridLayout->setObjectName(QString::fromUtf8("gridLayout"));
         radioButton_2 = new QRadioButton(groupBox);
         radioButton_2->setObjectName(QString::fromUtf8("radioButton_2"));

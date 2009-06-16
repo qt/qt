@@ -48,7 +48,7 @@ public:
 #ifndef Q_OS_MAC
         vboxLayout->setSpacing(6);
 #endif
-        vboxLayout->setMargin(11);
+        vboxLayout->setContentsMargins(11, 11, 11, 11);
         vboxLayout->setObjectName(QString::fromUtf8("vboxLayout"));
         vboxLayout->setObjectName(QString::fromUtf8("unnamed"));
         label = new QLabel(TopicChooser);
@@ -67,7 +67,7 @@ public:
 #ifndef Q_OS_MAC
         hboxLayout->setSpacing(6);
 #endif
-        hboxLayout->setMargin(0);
+        hboxLayout->setContentsMargins(0, 0, 0, 0);
         hboxLayout->setObjectName(QString::fromUtf8("hboxLayout"));
         hboxLayout->setObjectName(QString::fromUtf8("unnamed"));
         hboxLayout->setContentsMargins(0, 0, 0, 0);

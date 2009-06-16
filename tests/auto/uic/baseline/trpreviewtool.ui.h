@@ -142,7 +142,7 @@ public:
         dockWidgetContents->setObjectName(QString::fromUtf8("dockWidgetContents"));
         vboxLayout = new QVBoxLayout(dockWidgetContents);
         vboxLayout->setSpacing(0);
-        vboxLayout->setMargin(0);
+        vboxLayout->setContentsMargins(0, 0, 0, 0);
         vboxLayout->setObjectName(QString::fromUtf8("vboxLayout"));
         viewForms = new QListView(dockWidgetContents);
         viewForms->setObjectName(QString::fromUtf8("viewForms"));

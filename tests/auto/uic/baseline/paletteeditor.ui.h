@@ -106,7 +106,7 @@ public:
         vboxLayout->setSpacing(6);
 #endif
 #ifndef Q_OS_MAC
-        vboxLayout->setMargin(9);
+        vboxLayout->setContentsMargins(9, 9, 9, 9);
 #endif
         vboxLayout->setObjectName(QString::fromUtf8("vboxLayout"));
         advancedBox = new QGroupBox(qdesigner_internal__PaletteEditor);
@@ -118,7 +118,7 @@ public:
         gridLayout->setSpacing(6);
 #endif
 #ifndef Q_OS_MAC
-        gridLayout->setMargin(9);
+        gridLayout->setContentsMargins(9, 9, 9, 9);
 #endif
         gridLayout->setObjectName(QString::fromUtf8("gridLayout"));
         buildButton = new QtColorButton(advancedBox);
@@ -167,7 +167,7 @@ public:
 #ifndef Q_OS_MAC
         gridLayout1->setSpacing(6);
 #endif
-        gridLayout1->setMargin(8);
+        gridLayout1->setContentsMargins(8, 8, 8, 8);
         gridLayout1->setObjectName(QString::fromUtf8("gridLayout1"));
         disabledRadio = new QRadioButton(GroupBox126);
         disabledRadio->setObjectName(QString::fromUtf8("disabledRadio"));

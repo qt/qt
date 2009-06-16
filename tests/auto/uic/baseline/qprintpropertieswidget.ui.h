@@ -42,7 +42,7 @@ public:
             QPrintPropertiesWidget->setObjectName(QString::fromUtf8("QPrintPropertiesWidget"));
         QPrintPropertiesWidget->resize(396, 288);
         verticalLayout_4 = new QVBoxLayout(QPrintPropertiesWidget);
-        verticalLayout_4->setMargin(0);
+        verticalLayout_4->setContentsMargins(0, 0, 0, 0);
         verticalLayout_4->setObjectName(QString::fromUtf8("verticalLayout_4"));
         tabs = new QTabWidget(QPrintPropertiesWidget);
         tabs->setObjectName(QString::fromUtf8("tabs"));

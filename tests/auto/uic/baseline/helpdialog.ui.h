@@ -119,7 +119,7 @@ public:
 #ifndef Q_OS_MAC
         vboxLayout->setSpacing(6);
 #endif
-        vboxLayout->setMargin(0);
+        vboxLayout->setContentsMargins(0, 0, 0, 0);
         vboxLayout->setObjectName(QString::fromUtf8("vboxLayout"));
         tabWidget = new QTabWidget(HelpDialog);
         tabWidget->setObjectName(QString::fromUtf8("tabWidget"));
@@ -129,7 +129,7 @@ public:
 #ifndef Q_OS_MAC
         vboxLayout1->setSpacing(6);
 #endif
-        vboxLayout1->setMargin(5);
+        vboxLayout1->setContentsMargins(5, 5, 5, 5);
         vboxLayout1->setObjectName(QString::fromUtf8("vboxLayout1"));
         listContents = new QTreeWidget(contentPage);
         listContents->setObjectName(QString::fromUtf8("listContents"));
@@ -146,7 +146,7 @@ public:
 #ifndef Q_OS_MAC
         vboxLayout2->setSpacing(6);
 #endif
-        vboxLayout2->setMargin(5);
+        vboxLayout2->setContentsMargins(5, 5, 5, 5);
         vboxLayout2->setObjectName(QString::fromUtf8("vboxLayout2"));
         TextLabel1 = new QLabel(indexPage);
         TextLabel1->setObjectName(QString::fromUtf8("TextLabel1"));
@@ -171,7 +171,7 @@ public:
 #ifndef Q_OS_MAC
         vboxLayout3->setSpacing(6);
 #endif
-        vboxLayout3->setMargin(5);
+        vboxLayout3->setContentsMargins(5, 5, 5, 5);
         vboxLayout3->setObjectName(QString::fromUtf8("vboxLayout3"));
         listBookmarks = new QTreeWidget(bookmarkPage);
         listBookmarks->setObjectName(QString::fromUtf8("listBookmarks"));
@@ -184,7 +184,7 @@ public:
 #ifndef Q_OS_MAC
         hboxLayout->setSpacing(6);
 #endif
-        hboxLayout->setMargin(0);
+        hboxLayout->setContentsMargins(0, 0, 0, 0);
         hboxLayout->setObjectName(QString::fromUtf8("hboxLayout"));
         spacerItem = new QSpacerItem(20, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
 
@@ -210,7 +210,7 @@ public:
 #ifndef Q_OS_MAC
         gridLayout->setSpacing(6);
 #endif
-        gridLayout->setMargin(5);
+        gridLayout->setContentsMargins(5, 5, 5, 5);
         gridLayout->setObjectName(QString::fromUtf8("gridLayout"));
         spacerItem1 = new QSpacerItem(20, 20, QSizePolicy::Minimum, QSizePolicy::Fixed);
 
@@ -241,7 +241,7 @@ public:
 #ifndef Q_OS_MAC
         hboxLayout1->setSpacing(6);
 #endif
-        hboxLayout1->setMargin(1);
+        hboxLayout1->setContentsMargins(1, 1, 1, 1);
         hboxLayout1->setObjectName(QString::fromUtf8("hboxLayout1"));
         helpButton = new QPushButton(searchPage);
         helpButton->setObjectName(QString::fromUtf8("helpButton"));
@@ -273,7 +273,7 @@ public:
 #ifndef Q_OS_MAC
         hboxLayout2->setSpacing(6);
 #endif
-        hboxLayout2->setMargin(3);
+        hboxLayout2->setContentsMargins(3, 3, 3, 3);
         hboxLayout2->setObjectName(QString::fromUtf8("hboxLayout2"));
         labelPrepare = new QLabel(framePrepare);
         labelPrepare->setObjectName(QString::fromUtf8("labelPrepare"));

@@ -114,7 +114,7 @@ public:
 #ifndef Q_OS_MAC
         vboxLayout->setSpacing(6);
 #endif
-        vboxLayout->setMargin(11);
+        vboxLayout->setContentsMargins(11, 11, 11, 11);
         vboxLayout->setObjectName(QString::fromUtf8("vboxLayout"));
         vboxLayout->setObjectName(QString::fromUtf8("unnamed"));
         hboxLayout = new QHBoxLayout();
@@ -122,7 +122,7 @@ public:
         hboxLayout->setSpacing(6);
 #endif
 #ifndef Q_OS_MAC
-        hboxLayout->setMargin(0);
+        hboxLayout->setContentsMargins(0, 0, 0, 0);
 #endif
         hboxLayout->setObjectName(QString::fromUtf8("hboxLayout"));
         hboxLayout->setObjectName(QString::fromUtf8("unnamed"));
@@ -150,7 +150,7 @@ public:
 #ifndef Q_OS_MAC
         ButtonGroup1->layout()->setSpacing(6);
 #endif
-        ButtonGroup1->layout()->setMargin(11);
+        ButtonGroup1->layout()->setContentsMargins(11, 11, 11, 11);
         vboxLayout1 = new QVBoxLayout();
         QBoxLayout *boxlayout = qobject_cast<QBoxLayout *>(ButtonGroup1->layout());
         if (boxlayout)
@@ -179,7 +179,7 @@ public:
 #ifndef Q_OS_MAC
         groupCentral->layout()->setSpacing(6);
 #endif
-        groupCentral->layout()->setMargin(11);
+        groupCentral->layout()->setContentsMargins(11, 11, 11, 11);
         vboxLayout2 = new QVBoxLayout();
         QBoxLayout *boxlayout1 = qobject_cast<QBoxLayout *>(groupCentral->layout());
         if (boxlayout1)
@@ -196,7 +196,7 @@ public:
 #ifndef Q_OS_MAC
         hboxLayout1->setSpacing(6);
 #endif
-        hboxLayout1->setMargin(0);
+        hboxLayout1->setContentsMargins(0, 0, 0, 0);
         hboxLayout1->setObjectName(QString::fromUtf8("hboxLayout1"));
         hboxLayout1->setObjectName(QString::fromUtf8("unnamed"));
         Horizontal_Spacing1 = new QSpacerItem(20, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
@@ -237,7 +237,7 @@ public:
 #ifndef Q_OS_MAC
         groupEffect->layout()->setSpacing(6);
 #endif
-        groupEffect->layout()->setMargin(11);
+        groupEffect->layout()->setContentsMargins(11, 11, 11, 11);
         vboxLayout3 = new QVBoxLayout();
         QBoxLayout *boxlayout2 = qobject_cast<QBoxLayout *>(groupEffect->layout());
         if (boxlayout2)
@@ -250,7 +250,7 @@ public:
         hboxLayout2->setSpacing(6);
 #endif
 #ifndef Q_OS_MAC
-        hboxLayout2->setMargin(0);
+        hboxLayout2->setContentsMargins(0, 0, 0, 0);
 #endif
         hboxLayout2->setObjectName(QString::fromUtf8("hboxLayout2"));
         hboxLayout2->setObjectName(QString::fromUtf8("unnamed"));
@@ -272,7 +272,7 @@ public:
 #ifndef Q_OS_MAC
         hboxLayout3->setSpacing(6);
 #endif
-        hboxLayout3->setMargin(0);
+        hboxLayout3->setContentsMargins(0, 0, 0, 0);
         hboxLayout3->setObjectName(QString::fromUtf8("hboxLayout3"));
         hboxLayout3->setObjectName(QString::fromUtf8("unnamed"));
         Horizontal_Spacing3 = new QSpacerItem(20, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
@@ -305,7 +305,7 @@ public:
 #ifndef Q_OS_MAC
         hboxLayout4->setSpacing(6);
 #endif
-        hboxLayout4->setMargin(0);
+        hboxLayout4->setContentsMargins(0, 0, 0, 0);
         hboxLayout4->setObjectName(QString::fromUtf8("hboxLayout4"));
         hboxLayout4->setObjectName(QString::fromUtf8("unnamed"));
         Horizontal_Spacing2 = new QSpacerItem(20, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);

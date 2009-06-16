@@ -105,7 +105,7 @@ public:
         vboxLayout->setSpacing(6);
 #endif
 #ifndef Q_OS_MAC
-        vboxLayout->setMargin(9);
+        vboxLayout->setContentsMargins(9, 9, 9, 9);
 #endif
         vboxLayout->setObjectName(QString::fromUtf8("vboxLayout"));
         groupBox = new QGroupBox(qdesigner_internal__Dialog);
@@ -115,7 +115,7 @@ public:
         gridLayout->setSpacing(6);
 #endif
 #ifndef Q_OS_MAC
-        gridLayout->setMargin(9);
+        gridLayout->setContentsMargins(9, 9, 9, 9);
 #endif
         gridLayout->setObjectName(QString::fromUtf8("gridLayout"));
         vboxLayout1 = new QVBoxLayout();
@@ -123,7 +123,7 @@ public:
         vboxLayout1->setSpacing(6);
 #endif
 #ifndef Q_OS_MAC
-        vboxLayout1->setMargin(0);
+        vboxLayout1->setContentsMargins(0, 0, 0, 0);
 #endif
         vboxLayout1->setObjectName(QString::fromUtf8("vboxLayout1"));
         hboxLayout = new QHBoxLayout();
@@ -131,7 +131,7 @@ public:
         hboxLayout->setSpacing(6);
 #endif
 #ifndef Q_OS_MAC
-        hboxLayout->setMargin(0);
+        hboxLayout->setContentsMargins(0, 0, 0, 0);
 #endif
         hboxLayout->setObjectName(QString::fromUtf8("hboxLayout"));
         newButton = new QToolButton(groupBox);
@@ -157,7 +157,7 @@ public:
 #ifndef Q_OS_MAC
         hboxLayout1->setSpacing(6);
 #endif
-        hboxLayout1->setMargin(0);
+        hboxLayout1->setContentsMargins(0, 0, 0, 0);
         hboxLayout1->setObjectName(QString::fromUtf8("hboxLayout1"));
         label = new QLabel(groupBox);
         label->setObjectName(QString::fromUtf8("label"));
@@ -179,7 +179,7 @@ public:
 #ifndef Q_OS_MAC
         vboxLayout2->setSpacing(6);
 #endif
-        vboxLayout2->setMargin(0);
+        vboxLayout2->setContentsMargins(0, 0, 0, 0);
         vboxLayout2->setObjectName(QString::fromUtf8("vboxLayout2"));
         spacerItem1 = new QSpacerItem(20, 40, QSizePolicy::Minimum, QSizePolicy::Expanding);
 

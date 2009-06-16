@@ -102,15 +102,15 @@ public:
         FindDialog->setSizePolicy(sizePolicy);
         hboxLayout = new QHBoxLayout(FindDialog);
         hboxLayout->setSpacing(6);
-        hboxLayout->setMargin(11);
+        hboxLayout->setContentsMargins(11, 11, 11, 11);
         hboxLayout->setObjectName(QString::fromUtf8("hboxLayout"));
         vboxLayout = new QVBoxLayout();
         vboxLayout->setSpacing(6);
-        vboxLayout->setMargin(0);
+        vboxLayout->setContentsMargins(0, 0, 0, 0);
         vboxLayout->setObjectName(QString::fromUtf8("vboxLayout"));
         hboxLayout1 = new QHBoxLayout();
         hboxLayout1->setSpacing(6);
-        hboxLayout1->setMargin(0);
+        hboxLayout1->setContentsMargins(0, 0, 0, 0);
         hboxLayout1->setObjectName(QString::fromUtf8("hboxLayout1"));
         findWhat = new QLabel(FindDialog);
         findWhat->setObjectName(QString::fromUtf8("findWhat"));
@@ -129,7 +129,7 @@ public:
         groupBox->setObjectName(QString::fromUtf8("groupBox"));
         gridLayout = new QGridLayout(groupBox);
         gridLayout->setSpacing(6);
-        gridLayout->setMargin(9);
+        gridLayout->setContentsMargins(9, 9, 9, 9);
         gridLayout->setObjectName(QString::fromUtf8("gridLayout"));
         sourceText = new QCheckBox(groupBox);
         sourceText->setObjectName(QString::fromUtf8("sourceText"));
@@ -168,7 +168,7 @@ public:
 
         vboxLayout1 = new QVBoxLayout();
         vboxLayout1->setSpacing(6);
-        vboxLayout1->setMargin(0);
+        vboxLayout1->setContentsMargins(0, 0, 0, 0);
         vboxLayout1->setObjectName(QString::fromUtf8("vboxLayout1"));
         findNxt = new QPushButton(FindDialog);
         findNxt->setObjectName(QString::fromUtf8("findNxt"));

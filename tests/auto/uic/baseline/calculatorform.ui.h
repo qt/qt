@@ -59,7 +59,7 @@ public:
         gridLayout->setSpacing(6);
 #endif
 #ifndef Q_OS_MAC
-        gridLayout->setMargin(9);
+        gridLayout->setContentsMargins(9, 9, 9, 9);
 #endif
         gridLayout->setObjectName(QString::fromUtf8("gridLayout"));
         gridLayout->setObjectName(QString::fromUtf8(""));
@@ -67,14 +67,14 @@ public:
 #ifndef Q_OS_MAC
         hboxLayout->setSpacing(6);
 #endif
-        hboxLayout->setMargin(1);
+        hboxLayout->setContentsMargins(1, 1, 1, 1);
         hboxLayout->setObjectName(QString::fromUtf8("hboxLayout"));
         hboxLayout->setObjectName(QString::fromUtf8(""));
         vboxLayout = new QVBoxLayout();
 #ifndef Q_OS_MAC
         vboxLayout->setSpacing(6);
 #endif
-        vboxLayout->setMargin(1);
+        vboxLayout->setContentsMargins(1, 1, 1, 1);
         vboxLayout->setObjectName(QString::fromUtf8("vboxLayout"));
         vboxLayout->setObjectName(QString::fromUtf8(""));
         label = new QLabel(CalculatorForm);
@@ -104,7 +104,7 @@ public:
 #ifndef Q_OS_MAC
         vboxLayout1->setSpacing(6);
 #endif
-        vboxLayout1->setMargin(1);
+        vboxLayout1->setContentsMargins(1, 1, 1, 1);
         vboxLayout1->setObjectName(QString::fromUtf8("vboxLayout1"));
         vboxLayout1->setObjectName(QString::fromUtf8(""));
         label_2 = new QLabel(CalculatorForm);
@@ -134,7 +134,7 @@ public:
 #ifndef Q_OS_MAC
         vboxLayout2->setSpacing(6);
 #endif
-        vboxLayout2->setMargin(1);
+        vboxLayout2->setContentsMargins(1, 1, 1, 1);
         vboxLayout2->setObjectName(QString::fromUtf8("vboxLayout2"));
         vboxLayout2->setObjectName(QString::fromUtf8(""));
         label_2_2_2 = new QLabel(CalculatorForm);

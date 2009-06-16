@@ -130,7 +130,7 @@ public:
 #ifndef Q_OS_MAC
         hboxLayout->setSpacing(6);
 #endif
-        hboxLayout->setMargin(0);
+        hboxLayout->setContentsMargins(0, 0, 0, 0);
         hboxLayout->setObjectName(QString::fromUtf8("hboxLayout"));
         layoutDefaultGroupBox = new QGroupBox(FormWindowSettings);
         layoutDefaultGroupBox->setObjectName(QString::fromUtf8("layoutDefaultGroupBox"));
@@ -139,7 +139,7 @@ public:
 #ifndef Q_OS_MAC
         gridLayout1->setSpacing(6);
 #endif
-        gridLayout1->setMargin(8);
+        gridLayout1->setContentsMargins(8, 8, 8, 8);
         gridLayout1->setObjectName(QString::fromUtf8("gridLayout1"));
         label_2 = new QLabel(layoutDefaultGroupBox);
         label_2->setObjectName(QString::fromUtf8("label_2"));
@@ -171,7 +171,7 @@ public:
 #ifndef Q_OS_MAC
         gridLayout2->setSpacing(6);
 #endif
-        gridLayout2->setMargin(8);
+        gridLayout2->setContentsMargins(8, 8, 8, 8);
         gridLayout2->setObjectName(QString::fromUtf8("gridLayout2"));
         spacingFunctionLineEdit = new QLineEdit(layoutFunctionGroupBox);
         spacingFunctionLineEdit->setObjectName(QString::fromUtf8("spacingFunctionLineEdit"));
@@ -205,7 +205,7 @@ public:
 #ifndef Q_OS_MAC
         vboxLayout->setSpacing(6);
 #endif
-        vboxLayout->setMargin(8);
+        vboxLayout->setContentsMargins(8, 8, 8, 8);
         vboxLayout->setObjectName(QString::fromUtf8("vboxLayout"));
         authorLineEdit = new QLineEdit(pixmapFunctionGroupBox_2);
         authorLineEdit->setObjectName(QString::fromUtf8("authorLineEdit"));
@@ -221,7 +221,7 @@ public:
 #ifndef Q_OS_MAC
         vboxLayout1->setSpacing(6);
 #endif
-        vboxLayout1->setMargin(8);
+        vboxLayout1->setContentsMargins(8, 8, 8, 8);
         vboxLayout1->setObjectName(QString::fromUtf8("vboxLayout1"));
         includeHintsTextEdit = new QTextEdit(includeHintsGroupBox);
         includeHintsTextEdit->setObjectName(QString::fromUtf8("includeHintsTextEdit"));
@@ -235,7 +235,7 @@ public:
 #ifndef Q_OS_MAC
         hboxLayout1->setSpacing(6);
 #endif
-        hboxLayout1->setMargin(0);
+        hboxLayout1->setContentsMargins(0, 0, 0, 0);
         hboxLayout1->setObjectName(QString::fromUtf8("hboxLayout1"));
         pixmapFunctionGroupBox = new QGroupBox(FormWindowSettings);
         pixmapFunctionGroupBox->setObjectName(QString::fromUtf8("pixmapFunctionGroupBox"));
@@ -244,7 +244,7 @@ public:
 #ifndef Q_OS_MAC
         vboxLayout2->setSpacing(6);
 #endif
-        vboxLayout2->setMargin(8);
+        vboxLayout2->setContentsMargins(8, 8, 8, 8);
         vboxLayout2->setObjectName(QString::fromUtf8("vboxLayout2"));
         pixmapFunctionLineEdit = new QLineEdit(pixmapFunctionGroupBox);
         pixmapFunctionLineEdit->setObjectName(QString::fromUtf8("pixmapFunctionLineEdit"));

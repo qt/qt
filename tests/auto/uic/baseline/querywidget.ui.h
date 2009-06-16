@@ -62,7 +62,7 @@ public:
         vboxLayout->setSpacing(6);
 #endif
 #ifndef Q_OS_MAC
-        vboxLayout->setMargin(0);
+        vboxLayout->setContentsMargins(0, 0, 0, 0);
 #endif
         vboxLayout->setObjectName(QString::fromUtf8("vboxLayout"));
         inputGroupBox = new QGroupBox(centralwidget);
@@ -75,7 +75,7 @@ public:
         _2->setSpacing(6);
 #endif
 #ifndef Q_OS_MAC
-        _2->setMargin(0);
+        _2->setContentsMargins(0, 0, 0, 0);
 #endif
         _2->setObjectName(QString::fromUtf8("_2"));
         inputTextEdit = new QTextEdit(inputGroupBox);
@@ -120,7 +120,7 @@ public:
         _3->setSpacing(6);
 #endif
 #ifndef Q_OS_MAC
-        _3->setMargin(0);
+        _3->setContentsMargins(0, 0, 0, 0);
 #endif
         _3->setObjectName(QString::fromUtf8("_3"));
         outputTextEdit = new QTextEdit(outputGroupBox);
