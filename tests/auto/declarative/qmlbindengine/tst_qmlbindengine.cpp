@@ -36,6 +36,7 @@ private slots:
     void arrayExpressions();
     void contextPropertiesTriggerReeval();
     void objectPropertiesTriggerReeval();
+    void deferredProperties();
 
 private:
     QmlEngine engine;
@@ -335,6 +336,23 @@ void tst_qmlbindengine::objectPropertiesTriggerReeval()
         expr.changed = false;
         QCOMPARE(expr.value(), QVariant("Donkey"));
     }
+}
+
+void tst_qmlbindengine::deferredProperties()
+{
+    QmlComponent component(&engine, TEST_FILE("deferredProperties.txt"));
+    MyDeferredObject *object = 
+        qobject_cast<MyDeferredObject *>(component.create());
+    QVERIFY(object != 0);
+    QCOMPARE(object->value(), 0);
+    QVERIFY(object->objectProperty() == 0);
+    QVERIFY(object->objectProperty2() != 0);
+    qmlExecuteDeferred(object);
+    QCOMPARE(object->value(), 10);
+    QVERIFY(object->objectProperty() != 0);
+    MyQmlObject *qmlObject = 
+        qobject_cast<MyQmlObject *>(object->objectProperty());
+    QVERIFY(qmlObject != 0);
 }
 
 QTEST_MAIN(tst_qmlbindengine)

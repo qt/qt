@@ -71,7 +71,7 @@
 #include <qmlcomponent.h>
 #include "private/qmlmetaproperty_p.h"
 #include <private/qmlbindablevalue_p.h>
-
+#include <private/qmlvme_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -710,7 +710,12 @@ void qmlExecuteDeferred(QObject *object)
 {
     QmlInstanceDeclarativeData *data = QmlInstanceDeclarativeData::get(object);
 
-    if (data) {
+    if (data && data->deferredComponent) {
+        QmlVME vme;
+        vme.runDeferred(object);
+
+        data->deferredComponent->release();
+        data->deferredComponent = 0;
     }
 }
 
