@@ -51,7 +51,7 @@ QT_BEGIN_NAMESPACE
 QT_MODULE(Declarative)
 
 class QmlStateGroupPrivate;
-class QmlStateGroup : public QObject, public QmlParserStatus
+class Q_DECLARATIVE_EXPORT QmlStateGroup : public QObject, public QmlParserStatus
 {
     Q_OBJECT
     Q_INTERFACES(QmlParserStatus)
