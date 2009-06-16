@@ -50,6 +50,7 @@ QT_USE_NAMESPACE
 #else
 
 #include "oomsimulator.h"
+#include "3rdparty/memcheck.h"
 
 class tst_ExceptionSafetyObjects: public QObject
 {
@@ -65,17 +66,6 @@ private slots:
     void widgets_data();
     void widgets();
 };
-
-void tst_ExceptionSafetyObjects::initTestCase()
-{
-    // sanity check whether OOM simulation works
-    AllocFailActivator allocFailActivator;
-    mallocFailIndex = 0;
-
-    // malloc fail index is 0 -> this malloc should fail.
-    void *buf = malloc(42);
-    QVERIFY(!buf);
-}
 
 // helper structs to create an arbitrary widget
 struct AbstractObjectCreator
@@ -102,20 +92,107 @@ void tst_ExceptionSafetyObjects::objects_data()
     NEWROW(QObject);
 }
 
+// create and destructs an object, and lets each and every allocation
+// during construction and destruction fail.
+static void doOOMTest(AbstractObjectCreator *creator, QObject *parent)
+{
+    AllocFailer allocFailer;
+    int currentOOMIndex = 0;
+    bool caught = false;
+
+    int allocStartIndex = 0;
+    int allocEndIndex = 0;
+    int lastAllocCount = 0;
+
+    do {
+        allocFailer.setAllocFailIndex(++currentOOMIndex);
+
+        caught = false;
+        lastAllocCount = allocEndIndex - allocStartIndex;
+        allocStartIndex = allocFailer.currentAllocIndex();
+
+        try {
+            QScopedPointer<QObject> ptr(creator->create(parent));
+        } catch (const std::bad_alloc &) {
+            caught = true;
+        }
+
+        allocEndIndex = allocFailer.currentAllocIndex();
+
+    } while (caught || allocEndIndex - allocStartIndex != lastAllocCount);
+
+    allocFailer.deactivate();
+}
+
+static bool alloc1Failed = false;
+static bool alloc2Failed = false;
+static bool alloc3Failed = false;
+static bool alloc4Failed = false;
+static bool malloc1Failed = false;
+static bool malloc2Failed = false;
+
+// Tests that new, new[] and malloc() fail at least once during OOM testing.
+class SelfTestObject : public QObject
+{
+public:
+    SelfTestObject(QObject *parent = 0)
+        : QObject(parent)
+    {
+        try { delete new int; } catch (const std::bad_alloc &) { alloc1Failed = true; }
+        try { delete [] new double[5]; } catch (const std::bad_alloc &) { alloc2Failed = true; }
+        void *buf = malloc(42);
+        if (buf)
+            free(buf);
+        else
+            malloc1Failed = true;
+    }
+
+    ~SelfTestObject()
+    {
+        try { delete new int; } catch (const std::bad_alloc &) { alloc3Failed = true; }
+        try { delete [] new double[5]; } catch (const std::bad_alloc &) { alloc4Failed = true; }
+        void *buf = malloc(42);
+        if (buf)
+            free(buf);
+        else
+            malloc2Failed = true;
+    }
+};
+
+void tst_ExceptionSafetyObjects::initTestCase()
+{
+    if (RUNNING_ON_VALGRIND) {
+        QVERIFY2(VALGRIND_GET_ALLOC_INDEX != -1u,
+                 "You must use a valgrind with oom simulation support");
+        // running in valgrind - don't use glibc hooks
+        disableHooks();
+    }
+
+    // sanity check whether OOM simulation works
+    AllocFailer allocFailer;
+
+    // malloc fail index is 0 -> this malloc should fail.
+    void *buf = malloc(42);
+    QVERIFY(!buf);
+
+    // malloc fail index is 1 - second malloc should fail.
+    allocFailer.setAllocFailIndex(1);
+    buf = malloc(42);
+    QVERIFY(buf);
+    free(buf);
+    buf = malloc(42);
+    QVERIFY(!buf);
+
+    allocFailer.deactivate();
+
+    doOOMTest(new ObjectCreator<SelfTestObject>, 0);
+}
+
 void tst_ExceptionSafetyObjects::objects()
 {
     QFETCH(AbstractObjectCreator *, objectCreator);
 
-    AllocFailActivator allocFailActivator;
-    int currentOOMIndex = 0;
-    do {
-        mallocFailIndex = ++currentOOMIndex;
-
-        try {
-            QScopedPointer<QObject> ptr(objectCreator->create(0));
-        } catch (const std::bad_alloc &) {
-        }
-    } while (mallocFailIndex <= 0);
+    doOOMTest(objectCreator, 0);
 }
 
 template <typename T>
@@ -136,56 +213,18 @@ void tst_ExceptionSafetyObjects::widgets_data()
     NEWROW(QWidget);
     NEWROW(QPushButton);
     NEWROW(QLabel);
+    NEWROW(QFrame);
+    NEWROW(QStackedWidget);
 }
 
 void tst_ExceptionSafetyObjects::widgets()
 {
     QFETCH(AbstractObjectCreator *, widgetCreator);
 
-    mallocCount = freeCount = 0;
+    doOOMTest(widgetCreator, 0);
 
-    int currentOOMIndex = 0;
-
-    // activate mallocFail - WE'RE HOT!
-    AllocFailActivator allocFailActivator;
-
-    do {
-        // start after first alloc (the first alloc is creation of the widget itself)
-        mallocFailIndex = ++currentOOMIndex;
-
-        // first, create without a parent
-        try {
-            QScopedPointer<QObject> ptr(widgetCreator->create(0));
-            // QScopedPointer deletes the widget again here.
-        } catch (const std::bad_alloc &) {
-            // ignore all std::bad_alloc - note: valgrind should show no leaks
-        }
-
-        // repeat the loop until we the malloc fail index indicates that
-        // there was no OOM simulation happening
-    } while (mallocFailIndex <= 0);
-
-    // reset counting
-    currentOOMIndex = 0;
-
-    do {
-        mallocFailIndex = ++currentOOMIndex;
-
-        // create the widget with a parent
-        try {
-            QWidget parent;
-            widgetCreator->create(&parent);
-            // parent goes out of scope - widget should be deleted as well
-        } catch (const std::bad_alloc &) {
-        }
-    } while (mallocFailIndex <= 0);
-
-#ifdef VERBOSE
-    allocFailActivator.deactivate();
-
-    qDebug() << "mallocCount" << mallocCount << "freeCount" << freeCount <<
-                "simulated alloc fails" << currentOOMIndex;
-#endif
+    QWidget parent;
+    doOOMTest(widgetCreator, &parent);
 }
 
 QTEST_MAIN(tst_ExceptionSafetyObjects)
