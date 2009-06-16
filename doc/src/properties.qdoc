@@ -56,7 +56,7 @@
     \section1 Requirements for Declaring Properties
 
     To declare a property, use the \l {Q_PROPERTY()} {Q_PROPERTY()}
-    macro in a class that inherits QObject. 
+    macro in a class that inherits QObject.
 
     \snippet doc/src/snippets/code/doc_src_properties.qdoc 0
 

@@ -462,184 +462,184 @@
   the level of granularity that's most appropriate.
 
   \section1 Using Restore Policy To Automatically Restore Properties
-  
+
   In some state machines it can be useful to focus the attention on assigning properties in states,
   not on restoring them when the state is no longer active. If you know that a property should
-  always be restored to its initial value when the machine enters a state that does not explicitly 
-  give the property a value, you can set the global restore policy to 
-  QStateMachine::RestoreProperties. 
-  
+  always be restored to its initial value when the machine enters a state that does not explicitly
+  give the property a value, you can set the global restore policy to
+  QStateMachine::RestoreProperties.
+
   \code
     QStateMachine machine;
     machine.setGlobalRestorePolicy(QStateMachine::RestoreProperties);
   \endcode
-  
+
   When this restore policy is set, the machine will automatically restore all properties. If it
   enters a state where a given property is not set, it will first search the hierarchy of ancestors
   to see if the property is defined there. If it is, the property will be restored to the value
-  defined by the closest ancestor. If not, it will be restored to its initial value (i.e. the 
+  defined by the closest ancestor. If not, it will be restored to its initial value (i.e. the
   value of the property before any property assignments in states were executed.)
-  
+
   Take the following code:
   \code
     QStateMachine machine;
     machine.setGlobalRestorePolicy(QStateMachine::RestoreProperties);
-      
+
     QState *s1 = new QState();
     s1->assignProperty(object, "fooBar", 1.0);
     machine.addState(s1);
     machine.setInitialState(s1);
-      
-    QState *s2 = new QState();  
+
+    QState *s2 = new QState();
     machine.addState(s2);
   \endcode
-  
-  Lets say the property \c fooBar is 0.0 when the machine starts. When the machine is in state 
+
+  Lets say the property \c fooBar is 0.0 when the machine starts. When the machine is in state
   \c s1, the property will be 1.0, since the state explicitly assigns this value to it. When the
   machine is in state \c s2, no value is explicitly defined for the property, so it will implicitly
   be restored to 0.0.
-  
-  If we are using nested states, the parent defines a value for the property which is inherited by 
+
+  If we are using nested states, the parent defines a value for the property which is inherited by
   all descendants that do not explicitly assign a value to the property.
   \code
     QStateMachine machine;
     machine.setGlobalRestorePolicy(QStateMachine::RestoreProperties);
-      
+
     QState *s1 = new QState();
     s1->assignProperty(object, "fooBar", 1.0);
     machine.addState(s1);
     machine.setInitialState(s1);
-      
-    QState *s2 = new QState(s1);  
+
+    QState *s2 = new QState(s1);
     s2->assignProperty(object, "fooBar", 2.0);
     s1->setInitialState(s2);
-          
+
     QState *s3 = new QState(s1);
   \endcode
-  
-  Here \c s1 has two children: \c s2 and \c s3. When \c s2 is entered, the property \c fooBar 
+
+  Here \c s1 has two children: \c s2 and \c s3. When \c s2 is entered, the property \c fooBar
   will have the value 2.0, since this is explicitly defined for the state. When the machine is in
   state \c s3, no value is defined for the state, but \c s1 defines the property to be 1.0, so this
-  is the value that will be assigned to \c fooBar. 
-  
+  is the value that will be assigned to \c fooBar.
+
   \section1 Animating Property Assignments
-  
-  The State Machine API connects with the Animation API in Qt to allow automatically animating 
-  properties as they are assigned in states. 
-  
+
+  The State Machine API connects with the Animation API in Qt to allow automatically animating
+  properties as they are assigned in states.
+
   Say we have the following code:
-  \code 
+  \code
     QState *s1 = new QState();
-    QState *s2 = new QState();      
-    
+    QState *s2 = new QState();
+
     s1->assignProperty(button, "geometry", QRectF(0, 0, 50, 50));
     s2->assignProperty(button, "geometry", QRectF(0, 0, 100, 100));
-    
+
     s1->addTransition(button, SIGNAL(clicked()), s2);
   \endcode
-  
+
   Here we define two states of a user interface. In \c s1 the \c button is small, and in \c s2
-  it is bigger. If we click the button to transition from \c s1 to \c s2, the geometry of the button 
-  will be set immediately when a given state has been entered. If we want the transition to be 
+  it is bigger. If we click the button to transition from \c s1 to \c s2, the geometry of the button
+  will be set immediately when a given state has been entered. If we want the transition to be
   smooth, however, all we need to do is make a QPropertyAnimation and add this to the transition
   object.
-  
-  \code 
+
+  \code
     QState *s1 = new QState();
-    QState *s2 = new QState();      
-    
+    QState *s2 = new QState();
+
     s1->assignProperty(button, "geometry", QRectF(0, 0, 50, 50));
     s2->assignProperty(button, "geometry", QRectF(0, 0, 100, 100));
-    
+
     QSignalTransition *transition = s1->addTransition(button, SIGNAL(clicked()), s2);
     transition->addAnimation(new QPropertyAnimation(button, "geometry"));
   \endcode
-  
+
   Adding an animation for the property in question means that the property assignment will no
   longer take immediate effect when the state has been entered. Instead, the animation will start
   playing when the state has been entered and smoothly animate the property assignment. Since we
-  do not set the start value or end value of the animation, these will be set implicitly. The 
+  do not set the start value or end value of the animation, these will be set implicitly. The
   start value of the animation will be the property's current value when the animation starts, and
   the end value will be set based on the property assignments defined for the state.
-  
+
   If the global restore policy of the state machine is set to QStateMachine::RestoreProperties,
   it is possible to also add animations for the property restorations.
-      
+
   \section1 Detecting That All Properties Have Been Set In A State
-  
-  When animations are used to assign properties, a state no longer defines the exact values that a 
+
+  When animations are used to assign properties, a state no longer defines the exact values that a
   property will have when the machine is in the given state. While the animation is running, the
-  property can potentially have any value, depending on the animation. 
-  
+  property can potentially have any value, depending on the animation.
+
   In some cases, it can be useful to be able to detect when the property has actually been assigned
   the value defined by a state. For this, we can use the state's polished() signal.
   \code
     QState *s1 = new QState();
     s1->assignProperty(button, "geometry", QRectF(0, 0, 50, 50));
-    
+
     QState *s2 = new QState();
-    
+
     s1->addTransition(s1, SIGNAL(polished()), s2);
   \endcode
-  
-  The machine will be in state \c s1 until the \c geometry property has been set. Then it will 
+
+  The machine will be in state \c s1 until the \c geometry property has been set. Then it will
   immediately transition into \c s2. If the transition into \c s1 has an animation for the \c
   geometry property, then the machine will stay in \c s1 until the animation has finished. If there
   is no animation, it will simply set the property and immediately enter state \c s2.
-  
-  Either way, when the machine is in state \c s2, the property \c geometry has been assigned the 
+
+  Either way, when the machine is in state \c s2, the property \c geometry has been assigned the
   defined value.
-  
+
   If the global restore policy is set to QStateMachine::RestoreProperties, the state will not emit
   the polished() signal until these have been executed as well.
-  
+
   \section1 What happens if a state is exited before the animation has finished
-  
-  If a state has property assignments, and the transition into the state has animations for the 
-  properties, the state can potentially be exited before the properties have been assigned to the 
-  values defines by the state. This is true in particular when there are transitions out from the 
+
+  If a state has property assignments, and the transition into the state has animations for the
+  properties, the state can potentially be exited before the properties have been assigned to the
+  values defines by the state. This is true in particular when there are transitions out from the
   state that do not depend on the state being polished, as described in the previous section.
-  
-  The State Machine API guarantees that a property assigned by the state machine either: 
+
+  The State Machine API guarantees that a property assigned by the state machine either:
   \list
   \o Has a value explicitly assigned to the property.
   \o Is currently being animated into a value explicitly assigned to the property.
   \endlist
-  
+
   When a state is exited prior to the animation finishing, the behavior of the state machine depends
-  on the target state of the transition. If the target state explicitly assigns a value to the 
+  on the target state of the transition. If the target state explicitly assigns a value to the
   property, no additional action will be taken. The property will be assigned the value defined by
-  the target state. 
-  
+  the target state.
+
   If the target state does not assign any value to the property, there are two
   options: By default, the property will be assigned the value defined by the state it is leaving
-  (the value it would have been assigned if the animation had been permitted to finish playing.) If 
-  a global restore policy is set, however, this will take precedence, and the property will be 
+  (the value it would have been assigned if the animation had been permitted to finish playing.) If
+  a global restore policy is set, however, this will take precedence, and the property will be
   restored as usual.
-  
+
   \section1 Default Animations
-    
+
   As described earlier, you can add animations to transitions to make sure property assignments
   in the target state are animated. If you want a specific animation to be used for a given property
-  regardless of which transition is taken, you can add it as a default animation to the state 
-  machine. This is in particular useful when the properties assigned (or restored) by specific 
-  states is not known when the machine is constructed. 
-  
-  \code    
+  regardless of which transition is taken, you can add it as a default animation to the state
+  machine. This is in particular useful when the properties assigned (or restored) by specific
+  states is not known when the machine is constructed.
+
+  \code
     QState *s1 = new QState();
     QState *s2 = new QState();
-    
+
     s2->assignProperty(object, "fooBar", 2.0);
-    s1->addTransition(s2);    
-    
+    s1->addTransition(s2);
+
     QStateMachine machine;
     machine.setInitialState(s1);
-    machine.addDefaultAnimation(new QPropertyAnimation(object, "fooBar"));    
-  \endcode    
-  
-  When the machine is in state \c s2, the machine will play the default animation for the 
-  property \c fooBar since this property is assigned by \c s2. 
-  
-  Note that animations explicitly set on transitions will take precedence over any default 
-  animation for the given property.  
+    machine.addDefaultAnimation(new QPropertyAnimation(object, "fooBar"));
+  \endcode
+
+  When the machine is in state \c s2, the machine will play the default animation for the
+  property \c fooBar since this property is assigned by \c s2.
+
+  Note that animations explicitly set on transitions will take precedence over any default
+  animation for the given property.
 */
