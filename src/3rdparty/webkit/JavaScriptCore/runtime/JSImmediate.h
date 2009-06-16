@@ -130,7 +130,7 @@ namespace JSC {
      */
 
     class JSImmediate {
-    private:
+    public: // ### we need it!
         friend class JIT;
         friend class JSValue;
         friend class JSFastMath;

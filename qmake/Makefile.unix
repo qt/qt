@@ -19,20 +19,6 @@ QOBJS=qstring.o qtextstream.o qiodevice.o qmalloc.o qglobal.o \
       qfileinfo.o qdatetime.o qstringlist.o qabstractfileengine.o qtemporaryfile.o \
       qmap.o qmetatype.o qsettings.o qlibraryinfo.o qvariant.o qvsnprintf.o \
       qlocale.o qlinkedlist.o qurl.o qnumeric.o qcryptographichash.o \
-      qscriptasm.o qscriptast.o qscriptastvisitor.o \
-      qscriptcompiler.o qscriptecmaarray.o qscriptecmaboolean.o \
-      qscriptecmacore.o qscriptecmadate.o qscriptecmafunction.o \
-      qscriptecmaglobal.o qscriptecmamath.o qscriptecmanumber.o \
-      qscriptecmaobject.o qscriptecmaregexp.o qscriptecmastring.o \
-      qscriptecmaerror.o qscriptcontext_p.o qscriptengine.o \
-      qscriptengine_p.o qscriptextenumeration.o qscriptextvariant.o \
-      qscriptcontext.o qscriptfunction.o \
-      qscriptgrammar.o qscriptlexer.o qscriptclassdata.o \
-      qscriptparser.o qscriptprettypretty.o qscriptsyntaxchecker.o \
-      qscriptvalue.o qscriptvalueimpl.o qscriptvalueiterator.o \
-      qscriptvalueiteratorimpl.o \
-      qscriptclass.o qscriptclasspropertyiterator.o \
-      qscriptengineagent.o qscriptcontextinfo.o qscriptstring.o \
       $(QTOBJS)
 
 
@@ -65,27 +51,6 @@ DEPEND_SRC=project.cpp property.cpp meta.cpp main.cpp generators/makefile.cpp ge
 	   $(SOURCE_PATH)/src/corelib/io/qsettings.cpp $(SOURCE_PATH)/src/corelib/kernel/qvariant.cpp \
 	   $(SOURCE_PATH)/src/corelib/global/qlibraryinfo.cpp $(SOURCE_PATH)/src/corelib/tools/qcryptographichash.cpp \
 	   $(SOURCE_PATH)/src/corelib/tools/qvsnprintf.cpp $(SOURCE_PATH)/src/corelib/global/qnumeric.cpp \
-	   $(SOURCE_PATH)/src/script/qscriptasm.cpp \
-	   $(SOURCE_PATH)/src/script/qscriptast.cpp $(SOURCE_PATH)/src/script/qscriptastvisitor.cpp \
-	   $(SOURCE_PATH)/src/script/qscriptcompiler.cpp $(SOURCE_PATH)/src/script/qscriptecmaarray.cpp \
-	   $(SOURCE_PATH)/src/script/qscriptecmaboolean.cpp $(SOURCE_PATH)/src/script/qscriptecmacore.cpp \
-	   $(SOURCE_PATH)/src/script/qscriptecmadate.cpp $(SOURCE_PATH)/src/script/qscriptecmafunction.cpp \
-	   $(SOURCE_PATH)/src/script/qscriptecmaglobal.cpp $(SOURCE_PATH)/src/script/qscriptecmamath.cpp \
-	   $(SOURCE_PATH)/src/script/qscriptecmanumber.cpp $(SOURCE_PATH)/src/script/qscriptecmaobject.cpp \
-	   $(SOURCE_PATH)/src/script/qscriptecmaregexp.cpp $(SOURCE_PATH)/src/script/qscriptecmastring.cpp \
-	   $(SOURCE_PATH)/src/script/qscriptecmaerror.cpp $(SOURCE_PATH)/src/script/qscriptcontext_p.cpp \
-	   $(SOURCE_PATH)/src/script/qscriptengine.cpp $(SOURCE_PATH)/src/script/qscriptengine_p.cpp \
-	   $(SOURCE_PATH)/src/script/qscriptextenumeration.cpp $(SOURCE_PATH)/src/script/qscriptextvariant.cpp \
-	   $(SOURCE_PATH)/src/script/qscriptcontext.cpp $(SOURCE_PATH)/src/script/qscriptfunction.cpp \
-	   $(SOURCE_PATH)/src/script/qscriptgrammar.cpp \
-	   $(SOURCE_PATH)/src/script/qscriptlexer.cpp $(SOURCE_PATH)/src/script/qscriptclassdata.cpp \
-	   $(SOURCE_PATH)/src/script/qscriptparser.cpp $(SOURCE_PATH)/src/script/qscriptprettypretty.cpp \
-	   $(SOURCE_PATH)/src/script/qscriptsyntaxchecker.cpp $(SOURCE_PATH)/src/script/qscriptvalueimpl.cpp \
-	   $(SOURCE_PATH)/src/script/qscriptvalue.cpp $(SOURCE_PATH)/src/script/qscriptvalueiterator.cpp \
-	   $(SOURCE_PATH)/src/script/qscriptvalueiteratorimpl.cpp \
-	   $(SOURCE_PATH)/src/script/qscriptclass.cpp $(SOURCE_PATH)/src/script/qscriptclasspropertyiterator.cpp \
-	   $(SOURCE_PATH)/src/script/qscriptengineagent.cpp $(SOURCE_PATH)/src/script/qscriptcontextinfo.cpp \
-	   $(SOURCE_PATH)/src/script/qscriptstring.cpp \
 	   $(QTSRCS)
 
 CPPFLAGS = -I. -Igenerators -Igenerators/unix -Igenerators/win32 -Igenerators/mac \
@@ -294,120 +259,6 @@ msvc_dsp.o: generators/win32/msvc_dsp.cpp
 
 projectgenerator.o: generators/projectgenerator.cpp
 	$(CXX) -c -o $@ $(CXXFLAGS) generators/projectgenerator.cpp
-
-qscriptasm.o: $(SOURCE_PATH)/src/script/qscriptasm.cpp
-	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/src/script/qscriptasm.cpp
-
-qscriptast.o: $(SOURCE_PATH)/src/script/qscriptast.cpp
-	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/src/script/qscriptast.cpp
-
-qscriptastvisitor.o: $(SOURCE_PATH)/src/script/qscriptastvisitor.cpp
-	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/src/script/qscriptastvisitor.cpp
-
-qscriptcompiler.o: $(SOURCE_PATH)/src/script/qscriptcompiler.cpp
-	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/src/script/qscriptcompiler.cpp
-
-qscriptecmaarray.o: $(SOURCE_PATH)/src/script/qscriptecmaarray.cpp
-	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/src/script/qscriptecmaarray.cpp
-
-qscriptecmaboolean.o: $(SOURCE_PATH)/src/script/qscriptecmaboolean.cpp
-	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/src/script/qscriptecmaboolean.cpp
-
-qscriptecmacore.o: $(SOURCE_PATH)/src/script/qscriptecmacore.cpp
-	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/src/script/qscriptecmacore.cpp
-
-qscriptecmadate.o: $(SOURCE_PATH)/src/script/qscriptecmadate.cpp
-	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/src/script/qscriptecmadate.cpp
-
-qscriptecmafunction.o: $(SOURCE_PATH)/src/script/qscriptecmafunction.cpp
-	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/src/script/qscriptecmafunction.cpp
-
-qscriptecmaglobal.o: $(SOURCE_PATH)/src/script/qscriptecmaglobal.cpp
-	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/src/script/qscriptecmaglobal.cpp
-
-qscriptecmamath.o: $(SOURCE_PATH)/src/script/qscriptecmamath.cpp
-	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/src/script/qscriptecmamath.cpp
-
-qscriptecmanumber.o: $(SOURCE_PATH)/src/script/qscriptecmanumber.cpp
-	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/src/script/qscriptecmanumber.cpp
-
-qscriptecmaobject.o: $(SOURCE_PATH)/src/script/qscriptecmaobject.cpp
-	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/src/script/qscriptecmaobject.cpp
-
-qscriptecmaregexp.o: $(SOURCE_PATH)/src/script/qscriptecmaregexp.cpp
-	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/src/script/qscriptecmaregexp.cpp
-
-qscriptecmastring.o: $(SOURCE_PATH)/src/script/qscriptecmastring.cpp
-	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/src/script/qscriptecmastring.cpp
-
-qscriptecmaerror.o: $(SOURCE_PATH)/src/script/qscriptecmaerror.cpp
-	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/src/script/qscriptecmaerror.cpp
-
-qscriptcontext_p.o: $(SOURCE_PATH)/src/script/qscriptcontext_p.cpp
-	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/src/script/qscriptcontext_p.cpp
-
-qscriptengine.o: $(SOURCE_PATH)/src/script/qscriptengine.cpp
-	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/src/script/qscriptengine.cpp
-
-qscriptengine_p.o: $(SOURCE_PATH)/src/script/qscriptengine_p.cpp
-	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/src/script/qscriptengine_p.cpp
-
-qscriptextenumeration.o: $(SOURCE_PATH)/src/script/qscriptextenumeration.cpp
-	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/src/script/qscriptextenumeration.cpp
-
-qscriptextvariant.o: $(SOURCE_PATH)/src/script/qscriptextvariant.cpp
-	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/src/script/qscriptextvariant.cpp
-
-qscriptcontext.o: $(SOURCE_PATH)/src/script/qscriptcontext.cpp
-	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/src/script/qscriptcontext.cpp
-
-qscriptfunction.o: $(SOURCE_PATH)/src/script/qscriptfunction.cpp
-	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/src/script/qscriptfunction.cpp
-
-qscriptgrammar.o: $(SOURCE_PATH)/src/script/qscriptgrammar.cpp
-	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/src/script/qscriptgrammar.cpp
-
-qscriptlexer.o: $(SOURCE_PATH)/src/script/qscriptlexer.cpp
-	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/src/script/qscriptlexer.cpp
-
-qscriptclassdata.o: $(SOURCE_PATH)/src/script/qscriptclassdata.cpp
-	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/src/script/qscriptclassdata.cpp
-
-qscriptparser.o: $(SOURCE_PATH)/src/script/qscriptparser.cpp
-	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/src/script/qscriptparser.cpp
-
-qscriptprettypretty.o: $(SOURCE_PATH)/src/script/qscriptprettypretty.cpp
-	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/src/script/qscriptprettypretty.cpp
-
-qscriptsyntaxchecker.o: $(SOURCE_PATH)/src/script/qscriptsyntaxchecker.cpp
-	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/src/script/qscriptsyntaxchecker.cpp
-
-qscriptvalue.o: $(SOURCE_PATH)/src/script/qscriptvalue.cpp
-	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/src/script/qscriptvalue.cpp
-
-qscriptvalueimpl.o: $(SOURCE_PATH)/src/script/qscriptvalueimpl.cpp
-	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/src/script/qscriptvalueimpl.cpp
-
-qscriptvalueiterator.o: $(SOURCE_PATH)/src/script/qscriptvalueiterator.cpp
-	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/src/script/qscriptvalueiterator.cpp
-
-qscriptvalueiteratorimpl.o: $(SOURCE_PATH)/src/script/qscriptvalueiteratorimpl.cpp
-	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/src/script/qscriptvalueiteratorimpl.cpp
-
-qscriptclass.o: $(SOURCE_PATH)/src/script/qscriptclass.cpp
-	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/src/script/qscriptclass.cpp
-
-qscriptclasspropertyiterator.o: $(SOURCE_PATH)/src/script/qscriptclasspropertyiterator.cpp
-	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/src/script/qscriptclasspropertyiterator.cpp
-
-qscriptengineagent.o: $(SOURCE_PATH)/src/script/qscriptengineagent.cpp
-	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/src/script/qscriptengineagent.cpp
-
-qscriptcontextinfo.o: $(SOURCE_PATH)/src/script/qscriptcontextinfo.cpp
-	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/src/script/qscriptcontextinfo.cpp
-
-qscriptstring.o: $(SOURCE_PATH)/src/script/qscriptstring.cpp
-	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/src/script/qscriptstring.cpp
 
 #default rules
 .cpp.o:

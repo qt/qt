@@ -50,7 +50,7 @@
 #include <qmetatype.h>
 
 #ifndef QT_BUILD_QMAKE_LIBRARY
-# define QTSCRIPT_SUPPORT
+//# define QTSCRIPT_SUPPORT
 #endif
 
 #ifdef QTSCRIPT_SUPPORT
