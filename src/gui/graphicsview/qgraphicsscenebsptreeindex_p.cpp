@@ -39,6 +39,40 @@
 **
 ****************************************************************************/
 
+/*!
+    \class QGraphicsSceneBspTreeIndex
+    \brief The QGraphicsSceneBspTreeIndex class provides an implementation of
+    a BSP indexing algorithm for discovering items in QGraphicsScene.
+    \since 4.6
+    \ingroup multimedia
+    \ingroup graphicsview-api
+    \mainclass
+
+    QGraphicsSceneBspTreeIndex index use a BSP(Binary Space Partitioning)
+    implementation to discover items quickly. This implementation is
+    very efficient for static scene. It has a depth that you can set.
+    The depth directly affects performance and memory usage; the latter
+    growing exponentially with the depth of the tree. With an optimal tree
+    depth, the index can instantly determine the locality of items, even
+    for scenes with thousands or millions of items. This also greatly improves
+    rendering performance.
+
+    By default, the value is 0, in which case Qt will guess a reasonable
+    default depth based on the size, location and number of items in the
+    scene. If these parameters change frequently, however, you may experience
+    slowdowns as the index retunes the depth internally. You can avoid
+    potential slowdowns by fixating the tree depth through setting this
+    property.
+
+    The depth of the tree and the size of the scene rectangle decide the
+    granularity of the scene's partitioning. The size of each scene segment is
+    determined by the following algorithm:
+
+    The BSP tree has an optimal size when each segment contains between 0 and
+    10 items.
+
+    \sa QGraphicsScene, QGraphicsView, QGraphicsSceneIndex
+*/
 
 #include "qgraphicsscenebsptreeindex_p.h"
 
@@ -61,7 +95,7 @@ static inline int intmaxlog(int n)
 }
 
 /*!
-    Constructs a private scene index.
+    Constructs a private scene bsp index.
 */
 QGraphicsSceneBspTreeIndexPrivate::QGraphicsSceneBspTreeIndexPrivate(QGraphicsScene *scene)
     : QGraphicsSceneIndexPrivate(scene),
@@ -78,6 +112,11 @@ QGraphicsSceneBspTreeIndexPrivate::QGraphicsSceneBspTreeIndexPrivate(QGraphicsSc
 
 
 /*!
+    This method will update the BSP index by removing the items from the temporary
+    unindexed list and add them in the indexedItems list. This will also
+    update the growingItemsBoundingRect if needed. This will update the BSP
+    implementation as well.
+
     \internal
 */
 void QGraphicsSceneBspTreeIndexPrivate::_q_updateIndex()
@@ -223,6 +262,9 @@ void QGraphicsSceneBspTreeIndexPrivate::resetIndex()
     startIndexTimer();
 }
 
+/*!
+    \internal
+*/
 void QGraphicsSceneBspTreeIndexPrivate::climbTree(QGraphicsItem *item, int *stackingOrder)
 {
     if (!item->d_ptr->children.isEmpty()) {
@@ -244,6 +286,9 @@ void QGraphicsSceneBspTreeIndexPrivate::climbTree(QGraphicsItem *item, int *stac
     }
 }
 
+/*!
+    \internal
+*/
 void QGraphicsSceneBspTreeIndexPrivate::_q_updateSortCache()
 {
     Q_Q(QGraphicsSceneBspTreeIndex);
@@ -268,6 +313,9 @@ void QGraphicsSceneBspTreeIndexPrivate::_q_updateSortCache()
         climbTree(topLevels.at(i), &stackingOrder);
 }
 
+/*!
+    \internal
+*/
 void QGraphicsSceneBspTreeIndexPrivate::invalidateSortCache()
 {
     Q_Q(QGraphicsSceneBspTreeIndex);
@@ -342,6 +390,11 @@ bool QGraphicsSceneBspTreeIndexPrivate::closestItemLast_withoutCache(const QGrap
     return closestItemFirst_withoutCache(item2, item1);
 }
 
+/*!
+    Sort a list of \a itemList in a specific \a order and use the cache if requested.
+
+    \internal
+*/
 void QGraphicsSceneBspTreeIndexPrivate::sortItems(QList<QGraphicsItem *> *itemList, Qt::SortOrder order,
                                       bool sortCacheEnabled)
 {
@@ -360,12 +413,19 @@ void QGraphicsSceneBspTreeIndexPrivate::sortItems(QList<QGraphicsItem *> *itemLi
     }
 }
 
+/*!
+    Constructs a BSP scene index for the given \a scene.
+*/
 QGraphicsSceneBspTreeIndex::QGraphicsSceneBspTreeIndex(QGraphicsScene *scene)
     : QGraphicsSceneIndex(*new QGraphicsSceneBspTreeIndexPrivate(scene), scene)
 {
 
 }
 
+/*!
+    \reimp
+    Return the rect indexed by the BSP index.
+*/
 QRectF QGraphicsSceneBspTreeIndex::indexedRect() const
 {
     Q_D(const QGraphicsSceneBspTreeIndex);
@@ -373,6 +433,10 @@ QRectF QGraphicsSceneBspTreeIndex::indexedRect() const
     return scene()->d_func()->hasSceneRect ? scene()->d_func()->sceneRect : scene()->d_func()->growingItemsBoundingRect;
 }
 
+/*!
+    \reimp
+    Clear the all the BSP index.
+*/
 void QGraphicsSceneBspTreeIndex::clear()
 {
     Q_D(QGraphicsSceneBspTreeIndex);
@@ -383,6 +447,9 @@ void QGraphicsSceneBspTreeIndex::clear()
     d->unindexedItems.clear();
 }
 
+/*!
+    Add the \a item into the BSP index.
+*/
 void QGraphicsSceneBspTreeIndex::addItem(QGraphicsItem *item)
 {
     Q_D(QGraphicsSceneBspTreeIndex);
@@ -405,6 +472,7 @@ void QGraphicsSceneBspTreeIndex::addItem(QGraphicsItem *item)
 }
 
 /*!
+    This really add the item in the BSP.
     \internal
 */
 void QGraphicsSceneBspTreeIndexPrivate::addToIndex(QGraphicsItem *item)
@@ -421,6 +489,9 @@ void QGraphicsSceneBspTreeIndexPrivate::addToIndex(QGraphicsItem *item)
     }
 }
 
+/*!
+    Remove the \a item from the BSP index.
+*/
 void QGraphicsSceneBspTreeIndex::removeItem(QGraphicsItem *item)
 {
     Q_D(QGraphicsSceneBspTreeIndex);
@@ -443,6 +514,10 @@ void QGraphicsSceneBspTreeIndex::removeItem(QGraphicsItem *item)
     }
 }
 
+/*!
+    \reimp
+    Delete the \a item from the BSP index (without accessing its boundingRect).
+*/
 void QGraphicsSceneBspTreeIndex::deleteItem(QGraphicsItem *item)
 {
     Q_D(QGraphicsSceneBspTreeIndex);
@@ -469,6 +544,7 @@ void QGraphicsSceneBspTreeIndex::deleteItem(QGraphicsItem *item)
 }
 
 /*!
+    Really remove the item from the BSP
     \internal
 */
 void QGraphicsSceneBspTreeIndexPrivate::removeFromIndex(QGraphicsItem *item)
@@ -492,6 +568,10 @@ void QGraphicsSceneBspTreeIndexPrivate::removeFromIndex(QGraphicsItem *item)
     startIndexTimer();
 }
 
+/*!
+    \reimp
+    Update the BSP when the \a item 's bounding rect has changed.
+*/
 void QGraphicsSceneBspTreeIndex::prepareBoundingRectChange(const QGraphicsItem *item)
 {
     Q_D(QGraphicsSceneBspTreeIndex);
@@ -501,6 +581,13 @@ void QGraphicsSceneBspTreeIndex::prepareBoundingRectChange(const QGraphicsItem *
     d->removeFromIndex(const_cast<QGraphicsItem *>(item));
 }
 
+/*!
+    Returns an estimation visible items that are either inside or
+    intersect with the specified \a rect and return a list sorted using \a order.
+
+    \a deviceTransform is the transformation apply to the view.
+
+*/
 QList<QGraphicsItem *> QGraphicsSceneBspTreeIndex::estimateItems(const QRectF &rect, Qt::SortOrder order, const QTransform &deviceTransform) const
 {
     Q_D(const QGraphicsSceneBspTreeIndex);
@@ -530,6 +617,12 @@ QList<QGraphicsItem *> QGraphicsSceneBspTreeIndex::estimateItems(const QRectF &r
     return rectItems;
 }
 
+
+/*!
+    \fn QList<QGraphicsItem *> QGraphicsSceneBspTreeIndex::items(Qt::SortOrder order = Qt::AscendingOrder) const;
+
+    Return all items in the BSP index and sort them using \a order.
+*/
 QList<QGraphicsItem *> QGraphicsSceneBspTreeIndex::items(Qt::SortOrder order) const
 {
     Q_D(const QGraphicsSceneBspTreeIndex);
@@ -558,19 +651,52 @@ QList<QGraphicsItem *> QGraphicsSceneBspTreeIndex::items(Qt::SortOrder order) co
     return itemList;
 }
 
-int QGraphicsSceneBspTreeIndex::bspDepth()
+/*!
+    \property QGraphicsSceneBspTreeIndex::bspTreeDepth
+    \brief the depth of the BSP index tree
+    \since 4.6
+
+    This value determines the depth of BSP tree. The depth
+    directly affects performance and memory usage; the latter
+    growing exponentially with the depth of the tree. With an optimal tree
+    depth, the index can instantly determine the locality of items, even
+    for scenes with thousands or millions of items. This also greatly improves
+    rendering performance.
+
+    By default, the value is 0, in which case Qt will guess a reasonable
+    default depth based on the size, location and number of items in the
+    scene. If these parameters change frequently, however, you may experience
+    slowdowns as the index retunes the depth internally. You can avoid
+    potential slowdowns by fixating the tree depth through setting this
+    property.
+
+    The depth of the tree and the size of the scene rectangle decide the
+    granularity of the scene's partitioning. The size of each scene segment is
+    determined by the following algorithm:
+
+    The BSP tree has an optimal size when each segment contains between 0 and
+    10 items.
+
+*/
+int QGraphicsSceneBspTreeIndex::bspTreeDepth()
 {
     Q_D(const QGraphicsSceneBspTreeIndex);
     return d->bspTreeDepth;
 }
 
-void QGraphicsSceneBspTreeIndex::setBspDepth(int depth)
+void QGraphicsSceneBspTreeIndex::setBspTreeDepth(int depth)
 {
     Q_D(QGraphicsSceneBspTreeIndex);
     d->bspTreeDepth = depth;
     d->resetIndex();
 }
 
+/*!
+    \reimp
+
+    This method react to the  \a rect change of the scene and
+    reset the BSP tree index.
+*/
 void QGraphicsSceneBspTreeIndex::sceneRectChanged(const QRectF &rect)
 {
     Q_D(QGraphicsSceneBspTreeIndex);
@@ -578,6 +704,13 @@ void QGraphicsSceneBspTreeIndex::sceneRectChanged(const QRectF &rect)
     d->resetIndex();
 }
 
+/*!
+    \reimp
+
+    This method react to the \a change of the \a item and use the \a value to
+    update the BSP tree if necessary.
+
+*/
 void QGraphicsSceneBspTreeIndex::itemChanged(const QGraphicsItem *item, QGraphicsItem::GraphicsItemChange change, const QVariant &value)
 {
     Q_D(QGraphicsSceneBspTreeIndex);
@@ -592,7 +725,13 @@ void QGraphicsSceneBspTreeIndex::itemChanged(const QGraphicsItem *item, QGraphic
     }
     return QGraphicsSceneIndex::itemChanged(item, change, value);
 }
+/*!
+    \reimp
 
+    Used to catch the timer event.
+
+    \internal
+*/
 bool QGraphicsSceneBspTreeIndex::event(QEvent *event)
 {
     Q_D(QGraphicsSceneBspTreeIndex);

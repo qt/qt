@@ -60,6 +60,7 @@ class QGraphicsSceneBspTreeIndexPrivate;
 class Q_AUTOTEST_EXPORT QGraphicsSceneBspTreeIndex : public QGraphicsSceneIndex
 {
     Q_OBJECT
+    Q_PROPERTY(int bspTreeDepth READ bspTreeDepth WRITE setBspTreeDepth)
 public:
     QGraphicsSceneBspTreeIndex(QGraphicsScene *scene = 0);
     QRectF indexedRect() const;
@@ -68,8 +69,8 @@ public:
 
     QList<QGraphicsItem *> items(Qt::SortOrder order = Qt::AscendingOrder) const;
 
-    int bspDepth();
-    void setBspDepth(int depth);
+    int bspTreeDepth();
+    void setBspTreeDepth(int depth);
 
 protected:
     bool event(QEvent *event);

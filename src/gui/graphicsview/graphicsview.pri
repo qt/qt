@@ -18,6 +18,7 @@ SOURCES += graphicsview/qgraphicsitem.cpp \
     graphicsview/qgraphicsscene.cpp \
     graphicsview/qgraphicsscene_bsp.cpp \
     graphicsview/qgraphicsscenebsptreeindex_p.cpp \
+    graphicsview/qgraphicsscenelinearindex.cpp \
     graphicsview/qgraphicssceneindex.cpp \
     graphicsview/qgraphicssceneevent.cpp \
     graphicsview/qgraphicsview.cpp

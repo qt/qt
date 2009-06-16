@@ -147,6 +147,9 @@ QGraphicsSceneIndexPrivate::~QGraphicsSceneIndexPrivate()
     delete pathIntersector;
 }
 
+/*!
+    \internal
+*/
 void QGraphicsSceneIndexPrivate::recursive_items_helper(QGraphicsItem *item, QGraphicsSceneIndexIntersector *intersector,
                                                    QList<QGraphicsItem *> *items,
                                                    const QTransform &parentTransform,
@@ -297,6 +300,12 @@ QRectF QGraphicsSceneIndex::indexedRect() const
 
     \a deviceTransform is the transformation apply to the view.
 
+    This method use the estimation of the index (estimateItems) and refine
+    the list to get an exact result. If you want to implement your own
+    refinement algorithm you can reimplement this method.
+
+    \sa estimateItems()
+
 */
 QList<QGraphicsItem *> QGraphicsSceneIndex::items(const QPointF &pos, Qt::ItemSelectionMode mode, Qt::SortOrder order, const QTransform &deviceTransform) const
 {
@@ -322,6 +331,12 @@ QList<QGraphicsItem *> QGraphicsSceneIndex::items(const QPointF &pos, Qt::ItemSe
 
     \a deviceTransform is the transformation apply to the view.
 
+    This method use the estimation of the index (estimateItems) and refine
+    the list to get an exact result. If you want to implement your own
+    refinement algorithm you can reimplement this method.
+
+    \sa estimateItems()
+
 */
 QList<QGraphicsItem *> QGraphicsSceneIndex::items(const QRectF &rect, Qt::ItemSelectionMode mode, Qt::SortOrder order, const QTransform &deviceTransform) const
 {
@@ -345,6 +360,12 @@ QList<QGraphicsItem *> QGraphicsSceneIndex::items(const QRectF &rect, Qt::ItemSe
     exact shape intersects with or is contained by \a polygon are returned.
 
     \a deviceTransform is the transformation apply to the view.
+
+    This method use the estimation of the index (estimateItems) and refine
+    the list to get an exact result. If you want to implement your own
+    refinement algorithm you can reimplement this method.
+
+    \sa estimateItems()
 
 */
 QList<QGraphicsItem *> QGraphicsSceneIndex::items(const QPolygonF &polygon, Qt::ItemSelectionMode mode, Qt::SortOrder order, const QTransform &deviceTransform) const
@@ -374,6 +395,12 @@ QList<QGraphicsItem *> QGraphicsSceneIndex::items(const QPolygonF &polygon, Qt::
     exact shape intersects with or is contained by \a path are returned.
 
     \a deviceTransform is the transformation apply to the view.
+
+    This method use the estimation of the index (estimateItems) and refine
+    the list to get an exact result. If you want to implement your own
+    refinement algorithm you can reimplement this method.
+
+    \sa estimateItems()
 
 */
 QList<QGraphicsItem *> QGraphicsSceneIndex::items(const QPainterPath &path, Qt::ItemSelectionMode mode, Qt::SortOrder order, const QTransform &deviceTransform) const

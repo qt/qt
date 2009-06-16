@@ -68,21 +68,30 @@ class Q_AUTOTEST_EXPORT QGraphicsSceneLinearIndex : public QGraphicsSceneIndex
 {
     Q_OBJECT
 
-private:
-    QRectF m_sceneRect;
-    QList<QGraphicsItem*> m_items;
-
 public:
     QGraphicsSceneLinearIndex(QGraphicsScene *scene = 0): QGraphicsSceneIndex(scene)
     {
     }
 
-    virtual void setRect(const QRectF &rect) {
-        m_sceneRect = rect;
+    QList<QGraphicsItem *> items(Qt::SortOrder order = Qt::AscendingOrder) const {
+        Q_UNUSED(order);
+        return m_items;
     }
 
-    virtual QRectF rect() const {
+    virtual QList<QGraphicsItem *> estimateItems(const QRectF &rect, Qt::SortOrder order, const QTransform &deviceTransform) const {
+        Q_UNUSED(rect);
+        Q_UNUSED(order);
+        Q_UNUSED(deviceTransform);
+        return m_items;
+    }
+
+    virtual QRectF indexedRect() const {
         return m_sceneRect;
+    }
+
+protected :
+    void sceneRectChanged(const QRectF &rect) {
+        m_sceneRect = rect;
     }
 
     virtual void clear() {
@@ -97,17 +106,9 @@ public:
         m_items.removeAll(item);
     }
 
-    virtual QList<QGraphicsItem *> estimateItems(const QRectF &rect, Qt::SortOrder order, const QTransform &deviceTransform) const {
-        QList<QGraphicsItem*> result;
-        foreach (QGraphicsItem *item, m_items)
-            if (item->sceneBoundingRect().intersects(rect))
-                result << item;
-        return result;
-    }
-
-    QList<QGraphicsItem *> items(Qt::SortOrder order = Qt::AscendingOrder) const {
-        return m_items;
-    }
+private:
+    QRectF m_sceneRect;
+    QList<QGraphicsItem*> m_items;
 };
 
 QT_END_NAMESPACE

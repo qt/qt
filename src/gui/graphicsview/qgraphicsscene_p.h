@@ -90,11 +90,9 @@ public:
     quint32 changedSignalMask;
 
     QGraphicsScene::ItemIndexMethod indexMethod;
-    int bspTreeDepth;
+    QGraphicsSceneIndex *index;
 
     int lastItemCount;
-
-    QGraphicsSceneIndex *index;
 
     QRectF sceneRect;
     bool hasSceneRect;
