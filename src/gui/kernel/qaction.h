@@ -94,7 +94,7 @@ public:
     enum SoftKeyRole { OptionsSoftKey, SelectSoftKey, BackSoftKey, NextSoftKey, PreviousSoftKey, 
                     OkSoftKey, CancelSoftKey, EditSoftKey, ViewSoftKey, BackSpaceSoftKey, 
                     EndEditSoftKey, RevertEditSoftKey, DeselectSoftKey, FinishSoftKey, 
-                    MenuSoftKey, ContextMenuSoftKey, Key1SoftKey, Key2SoftKey, 
+                    MenuSoftKey, ContextMenuSoftKey, ExitSoftKey, Key1SoftKey, Key2SoftKey, 
                     Key3SoftKey, Key4SoftKey, CustomSoftKey };
     explicit QAction(QObject* parent);
     QAction(const QString &text, QObject* parent);

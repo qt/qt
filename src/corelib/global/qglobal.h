@@ -1605,7 +1605,10 @@ Q_CORE_EXPORT void qt_assert_x(const char *where, const char *what, const char *
 #endif
 
 Q_CORE_EXPORT void qt_check_pointer(const char *, int);
+
+#ifndef QT_NO_EXCEPTIONS
 Q_CORE_EXPORT void qBadAlloc();
+#endif
 
 #ifdef QT_NO_EXCEPTIONS
 #  if defined(QT_NO_DEBUG)
@@ -2312,16 +2315,8 @@ QT3_SUPPORT Q_CORE_EXPORT const char *qInstallPathSysconf();
 
 #if defined(Q_OS_SYMBIAN)
 
-#include <stdexcept>
-
-class QSymbianLeaveException : public std::exception
-{
-public:
-    inline QSymbianLeaveException(int err) : error(err) {}
-    const char* what() const throw();
-public:
-    int error;
-};
+// forward declare std::exception
+namespace std { class exception; }
 
 Q_CORE_EXPORT void qt_translateSymbianErrorToException(int error);
 Q_CORE_EXPORT void qt_translateExceptionToSymbianErrorL(const std::exception& ex);

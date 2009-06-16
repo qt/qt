@@ -300,3 +300,14 @@ including ARM, Intel x86, MIPS and SH-4.
 \endlist
 \endtable
 */
+
+/*!
+\group qts60
+\title Qt for S60
+\ingroup topics
+\brief Documents related to Qt for S60
+
+\list
+    \o \l {Exception Safety with Symbian}
+\endlist
+*/

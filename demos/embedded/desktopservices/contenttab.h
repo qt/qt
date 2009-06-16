@@ -83,7 +83,7 @@ protected:      // New Methods
     virtual void populateListWidget();
     virtual QString itemName(const QFileInfo &item);
     virtual QUrl itemUrl(QListWidgetItem *item);
-    
+    virtual void handleErrorInOpen(QListWidgetItem *item);
 protected:
     void keyPressEvent(QKeyEvent *event);   
     

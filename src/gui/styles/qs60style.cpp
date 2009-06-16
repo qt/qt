@@ -559,7 +559,7 @@ void QS60StylePrivate::drawRow(QS60StyleEnums::SkinParts start,
     QRect endRect;
 
     if (orientation == Qt::Horizontal) {
-        startRect.setWidth(qMin(rect.width() >>1 - 1, startRect.width()));
+        startRect.setWidth(qMin((rect.width() >> 1) - 1, startRect.width()));
         endRect = startRect.translated(rect.width() - startRect.width(), 0);
         middleRect.adjust(startRect.width(), 0, -startRect.width(), 0);
         if (startRect.bottomRight().x() > endRect.topLeft().x()) {
@@ -568,7 +568,7 @@ void QS60StylePrivate::drawRow(QS60StyleEnums::SkinParts start,
             endRect.adjust(overlap,0,0,0);
         }
     } else {
-        startRect.setHeight(qMin(rect.height() >>1 - 1, startRect.height()));
+        startRect.setHeight(qMin((rect.height() >> 1) - 1, startRect.height()));
         endRect = startRect.translated(0, rect.height() - startRect.height());
         middleRect.adjust(0, startRect.height(), 0, -startRect.height());
         if (startRect.topRight().y() > endRect.bottomLeft().y()) {
@@ -1387,7 +1387,7 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
                 QS60StylePrivate::drawSkinElement(QS60StylePrivate::SE_ListHighlight, painter, option->rect, flags);
 
              // draw the icon
-             const QIcon::Mode mode = !(voptAdj.state & QStyle::State_Enabled) ? QIcon::Normal : QIcon::Disabled;
+             const QIcon::Mode mode = (voptAdj.state & QStyle::State_Enabled) ? QIcon::Normal : QIcon::Disabled;
              const QIcon::State state = voptAdj.state & QStyle::State_Open ? QIcon::On : QIcon::Off;
              voptAdj.icon.paint(painter, iconRect, voptAdj.decorationAlignment, mode, state);
 
@@ -2038,16 +2038,12 @@ void QS60Style::drawPrimitive(PrimitiveElement element, const QStyleOption *opti
 #endif //QT_NO_SPINBOX
     case PE_FrameFocusRect:
 // Calendar widget and combox both do not use styled itemDelegate
-        if ( widget && (
+        if (widget && !(false
 #ifndef QT_NO_CALENDARWIDGET
-             (qobject_cast<const QCalendarWidget *>(widget->parent()))
-#else
-             false
+            || qobject_cast<const QCalendarWidget *>(widget->parent())
 #endif //QT_NO_CALENDARWIDGET
 #ifndef QT_NO_COMBOBOX
-            || (qobject_cast<const QComboBoxListView *>(widget))
-#else
-            || false
+            || qobject_cast<const QComboBoxListView *>(widget)
 #endif //QT_NO_COMBOBOX
             )) {
             // no focus selection for touch
@@ -2326,6 +2322,7 @@ int QS60Style::styleHint(StyleHint sh, const QStyleOption *opt, const QWidget *w
             break;
         case SH_UnderlineShortcut:
             retValue = 0;
+            break;
         default:
             break;
     }

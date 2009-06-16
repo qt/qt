@@ -41,6 +41,7 @@
 
 // EXTERNAL INCLUDES
 #include <QUrl>
+#include <QMessageBox>
 #include <QListWidgetItem>
 
 // INTERNAL INCLUDES
@@ -73,6 +74,14 @@ QUrl LinkTab::itemUrl(QListWidgetItem *item)
         // We should never endup here
         Q_ASSERT(false);
         return QUrl();
+    }
+}
+void LinkTab::handleErrorInOpen(QListWidgetItem *item)
+{
+    if(m_MailToItem == item) {   
+        QMessageBox::warning( this, tr("Operation Failed"), tr("Please check that you have\ne-mail accunt defined"), QMessageBox::Close);    
+    } else {
+        ContentTab::handleErrorInOpen(item);
     }
 }
 

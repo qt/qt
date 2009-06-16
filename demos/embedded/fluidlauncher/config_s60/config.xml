@@ -12,6 +12,7 @@
     <example filename="desktopservices_s60" name="Desktop Services" image="screenshots/desktopservices_s60.png"/>
     <example filename="fridgemagnets_s60" name="Fridge Magnets" image="screenshots/fridgemagnets_s60.png" args="-small-screen"/>
     <example filename="drilldown_s60" name="Drilldown" image="screenshots/drilldown_s60.png"/>
+    <example filename="softkeys" name="Softkeys" image="screenshots/softkeys.png"/>
   </demos>
   <slideshow timeout="60000" interval="10000">
     <imagedir dir="slides"/>
