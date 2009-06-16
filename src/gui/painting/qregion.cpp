@@ -698,6 +698,8 @@ bool QRegion::intersects(const QRegion &region) const
 
     if (!rect_intersects(boundingRect(), region.boundingRect()))
         return false;
+    if (numRects() == 1 && region.numRects() == 1)
+        return true;
 
     const QVector<QRect> myRects = rects();
     const QVector<QRect> otherRects = region.rects();
