@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtSql module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -98,10 +98,7 @@ bool QSqlTableModelPrivate::setRecord(int row, const QSqlRecord &record)
 
 int QSqlTableModelPrivate::nameToIndex(const QString &name) const
 {
-    QString fieldname = name;
-    if (db.driver()->isIdentifierEscaped(fieldname, QSqlDriver::FieldName))
-        fieldname = db.driver()->stripDelimiters(fieldname, QSqlDriver::FieldName);
-    return rec.indexOf(fieldname);
+    return rec.indexOf(name);
 }
 
 void QSqlTableModelPrivate::initRecordAndPrimaryIndex()
@@ -370,7 +367,10 @@ void QSqlTableModel::setTable(const QString &tableName)
 {
     Q_D(QSqlTableModel);
     clear();
-    d->tableName = tableName;
+    if(d->db.tables().contains(tableName.toUpper()))
+        d->tableName = tableName.toUpper();
+    else
+        d->tableName = tableName;
     d->initRecordAndPrimaryIndex();
     d->initColOffsets(d->rec.count());
 
@@ -976,9 +976,7 @@ QString QSqlTableModel::orderByClause() const
     if (!f.isValid())
         return s;
         
-    QString table = d->tableName;
-    //we can safely escape the field because it would have been obtained from the database
-    //and have the correct case
+    QString table = d->db.driver()->escapeIdentifier(d->tableName, QSqlDriver::TableName);
     QString field = d->db.driver()->escapeIdentifier(f.name(), QSqlDriver::FieldName);
     s.append(QLatin1String("ORDER BY ")).append(table).append(QLatin1Char('.')).append(field);
     s += d->sortOrder == Qt::AscendingOrder ? QLatin1String(" ASC") : QLatin1String(" DESC");
@@ -1319,12 +1317,8 @@ bool QSqlTableModel::setRecord(int row, const QSqlRecord &record)
             mrow.rec = d->rec;
             mrow.primaryValues = d->primaryValues(indexInQuery(createIndex(row, 0)).row());
         }
-        QString fieldName;
         for (int i = 0; i < record.count(); ++i) {
-            fieldName = record.fieldName(i);
-            if (d->db.driver()->isIdentifierEscaped(fieldName, QSqlDriver::FieldName))
-                fieldName = d->db.driver()->stripDelimiters(fieldName, QSqlDriver::FieldName);
-            int idx = mrow.rec.indexOf(fieldName);
+            int idx = mrow.rec.indexOf(record.fieldName(i));
             if (idx == -1)
                 isOk = false;
             else

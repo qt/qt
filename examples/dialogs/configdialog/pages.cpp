@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the examples of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -50,11 +50,11 @@ ConfigurationPage::ConfigurationPage(QWidget *parent)
 
     QLabel *serverLabel = new QLabel(tr("Server:"));
     QComboBox *serverCombo = new QComboBox;
-    serverCombo->addItem(tr("Qt Software (Australia)"));
-    serverCombo->addItem(tr("Qt Software (Germany)"));
-    serverCombo->addItem(tr("Qt Software (Norway)"));
-    serverCombo->addItem(tr("Qt Software (People's Republic of China)"));
-    serverCombo->addItem(tr("Qt Software (USA)"));
+    serverCombo->addItem(tr("Qt (Australia)"));
+    serverCombo->addItem(tr("Qt (Germany)"));
+    serverCombo->addItem(tr("Qt (Norway)"));
+    serverCombo->addItem(tr("Qt (People's Republic of China)"));
+    serverCombo->addItem(tr("Qt (USA)"));
 
     QHBoxLayout *serverLayout = new QHBoxLayout;
     serverLayout->addWidget(serverLabel);

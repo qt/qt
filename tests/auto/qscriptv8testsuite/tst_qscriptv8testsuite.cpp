@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the test suite of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -194,20 +194,18 @@ int tst_Suite::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
 tst_Suite::tst_Suite()
 {
     testsDir = QDir(".");
-    if (!testsDir.cd("tests")) {
+    bool testsFound = testsDir.cd("tests");
+    if (!testsFound) {
         qWarning("*** no tests/ dir!");
-        return;
+    } else {
+        if (!testsDir.exists("mjsunit.js"))
+            qWarning("*** no tests/mjsunit.js file!");
+        else {
+            mjsunitContents = readFile(testsDir.absoluteFilePath("mjsunit.js"));
+            if (mjsunitContents.isEmpty())
+                qWarning("*** tests/mjsunit.js is empty!");
+        }
     }
-    if (!testsDir.exists("mjsunit.js")) {
-        qWarning("*** no tests/mjsunit.js file!");
-        return;
-    }
-    mjsunitContents = readFile(testsDir.absoluteFilePath("mjsunit.js"));
-    if (mjsunitContents.isEmpty()) {
-        qWarning("*** tests/mjsunit.js is empty!");
-        return;
-    }
-
     QString willFixInNextReleaseMessage = QString::fromLatin1("Will fix in next release");
     addExpectedFailure("apply", "morundefineder", "morseper", willFixInNextReleaseMessage);
     addExpectedFailure("arguments-enum", "2", "0", willFixInNextReleaseMessage);
@@ -270,7 +268,9 @@ tst_Suite::tst_Suite()
     appendCString(stringdata, "tst_Suite");
     appendCString(stringdata, "");
 
-    QFileInfoList testFileInfos = testsDir.entryInfoList(QStringList() << "*.js", QDir::Files);
+    QFileInfoList testFileInfos;
+    if (testsFound)
+        testFileInfos = testsDir.entryInfoList(QStringList() << "*.js", QDir::Files);
     foreach (QFileInfo tfi, testFileInfos) {
         QString name = tfi.baseName();
         // slot: signature, parameters, type, tag, flags

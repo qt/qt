@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the test suite of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -177,12 +177,14 @@ private slots:
 #ifdef NOT_READY_YET
     void task_217003_data() { generic_data(); }
     void task_217003();
+
+    void task_229811();
+    void task_229811_data() { generic_data(); }
 #endif
     void task_250026_data() { generic_data("QODBC"); }
     void task_250026();
     void task_205701_data() { generic_data("QMYSQL"); }
     void task_205701();
-
 
 
 private:
@@ -2715,12 +2717,12 @@ void tst_QSqlQuery::task_250026()
 
 void tst_QSqlQuery::task_205701()
 {
-    QSqlDatabase qsdb = QSqlDatabase::addDatabase("QMYSQL", "atest"); 
-    qsdb.setHostName("test"); 
-    qsdb.setDatabaseName("test"); 
-    qsdb.setUserName("test"); 
-    qsdb.setPassword("test"); 
-    qsdb.open(); 
+    QSqlDatabase qsdb = QSqlDatabase::addDatabase("QMYSQL", "atest");
+    qsdb.setHostName("test");
+    qsdb.setDatabaseName("test");
+    qsdb.setUserName("test");
+    qsdb.setPassword("test");
+    qsdb.open();
 
 //     {
         QSqlQuery query(qsdb);
@@ -2728,6 +2730,52 @@ void tst_QSqlQuery::task_205701()
     QSqlDatabase::removeDatabase("atest");
 }
 
+#ifdef NOT_READY_YET
+// For task: 229811
+void tst_QSqlQuery::task_229811()
+{
+    QFETCH( QString, dbName );
+    QSqlDatabase db = QSqlDatabase::database( dbName );
+    CHECK_DATABASE( db );
+
+    if (!db.driverName().startsWith( "QODBC" )) return;
+
+    QSqlQuery q( db );
+
+    QString tableName = qTableName( "task_229811" );
+
+    if ( !q.exec( "CREATE TABLE " + tableName + " (Word varchar(20))" ) ) {
+        qDebug() << "Warning" << q.lastError();
+    }
+
+    QVERIFY_SQL( q, exec( "INSERT INTO " + tableName + " values ('Albert')" ) );
+    QVERIFY_SQL( q, exec( "INSERT INTO " + tableName + " values ('Beehive')" ) );
+    QVERIFY_SQL( q, exec( "INSERT INTO " + tableName + " values ('Alimony')" ) );
+    QVERIFY_SQL( q, exec( "INSERT INTO " + tableName + " values ('Bohemian')" ) );
+    QVERIFY_SQL( q, exec( "INSERT INTO " + tableName + " values ('AllStars')" ) );
+
+
+    QString stmt = "SELECT * FROM " + tableName  +  " WHERE Word LIKE :name";
+    QVERIFY_SQL(q,prepare(stmt));
+    q.bindValue(":name", "A%");
+    QVERIFY_SQL(q,exec());
+
+    QVERIFY(q.isActive());
+    QVERIFY(q.isSelect());
+    QVERIFY(q.first());
+
+    QSqlRecord rec = q.record();
+    QCOMPARE(rec.field(0).value().toString(), QString("Albert"));
+    QVERIFY(q.next());
+    rec = q.record();
+    QCOMPARE(rec.field(0).value().toString(), QString("Alimony"));
+    QVERIFY(q.next());
+    rec = q.record();
+    QCOMPARE(rec.field(0).value().toString(),QString("AllStars"));
+
+    q.exec("DROP TABLE " + tableName );
+}
+#endif
 
 QTEST_MAIN( tst_QSqlQuery )
 #include "tst_qsqlquery.moc"
