@@ -19,17 +19,18 @@
 
 #include "config.h"
 
-#if ENABLE(SVG) && ENABLE(SVG_FILTERS)
+#if ENABLE(SVG) && ENABLE(FILTERS)
 #include "SVGFEDiffuseLightingElement.h"
 
 #include "Attr.h"
+#include "MappedAttribute.h"
 #include "RenderObject.h"
 #include "SVGColor.h"
+#include "SVGFEDiffuseLighting.h"
 #include "SVGFELightElement.h"
 #include "SVGNames.h"
 #include "SVGParserUtilities.h"
 #include "SVGRenderStyle.h"
-#include "SVGFEDiffuseLighting.h"
 #include "SVGResourceFilter.h"
 
 namespace WebCore {
@@ -44,7 +45,6 @@ SVGFEDiffuseLightingElement::SVGFEDiffuseLightingElement(const QualifiedName& ta
     , m_surfaceScale(this, SVGNames::surfaceScaleAttr, 1.0f)
     , m_kernelUnitLengthX(this, SVGNames::kernelUnitLengthAttr)
     , m_kernelUnitLengthY(this, SVGNames::kernelUnitLengthAttr)
-    , m_filterEffect(0)
 {
 }
 
@@ -71,15 +71,9 @@ void SVGFEDiffuseLightingElement::parseMappedAttribute(MappedAttribute *attr)
         SVGFilterPrimitiveStandardAttributes::parseMappedAttribute(attr);
 }
 
-SVGFilterEffect* SVGFEDiffuseLightingElement::filterEffect(SVGResourceFilter* filter) const
+bool SVGFEDiffuseLightingElement::build(SVGResourceFilter* filterResource)
 {
-    ASSERT_NOT_REACHED();
-    return 0;
-}
-
-bool SVGFEDiffuseLightingElement::build(FilterBuilder* builder)
-{
-    FilterEffect* input1 = builder->getEffectById(in1());
+    FilterEffect* input1 = filterResource->builder()->getEffectById(in1());
     
     if(!input1)
         return false;
@@ -87,9 +81,9 @@ bool SVGFEDiffuseLightingElement::build(FilterBuilder* builder)
     RefPtr<RenderStyle> filterStyle = styleForRenderer();
     Color color = filterStyle->svgStyle()->lightingColor();
     
-    RefPtr<FilterEffect> addedEffect = FEDiffuseLighting::create(input1, color, surfaceScale(), diffuseConstant(), 
+    RefPtr<FilterEffect> effect = FEDiffuseLighting::create(input1, color, surfaceScale(), diffuseConstant(), 
                                             kernelUnitLengthX(), kernelUnitLengthY(), findLights());
-    builder->add(result(), addedEffect.release());
+    filterResource->addFilterEffect(this, effect.release());
     
     return true;
 }

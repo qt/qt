@@ -31,6 +31,8 @@
 #ifndef ScriptValue_h
 #define ScriptValue_h
 
+#include "PlatformString.h"
+#include "ScriptState.h"
 #include <runtime/Protect.h>
 
 namespace WebCore {
@@ -39,15 +41,19 @@ class String;
 
 class ScriptValue {
 public:
-    ScriptValue(JSC::JSValuePtr value = JSC::noValue()) : m_value(value) {}
+    ScriptValue(JSC::JSValue value = JSC::JSValue()) : m_value(value) {}
+    virtual ~ScriptValue() {}
 
-    JSC::JSValuePtr jsValue() const { return m_value.get(); }
+    JSC::JSValue jsValue() const { return m_value.get(); }
     bool getString(String& result) const;
+    String toString(ScriptState* scriptState) const { return m_value.get().toString(scriptState); }
+    bool isEqual(ScriptState*, const ScriptValue&) const;
     bool isNull() const;
     bool isUndefined() const;
+    bool hasNoValue() const { return m_value == JSC::JSValue(); }
 
 private:
-    JSC::ProtectedJSValuePtr m_value;
+    JSC::ProtectedJSValue m_value;
 };
 
 } // namespace WebCore

@@ -139,7 +139,7 @@ public:
 void QSizeGripPrivate::updateMacSizer(bool hide) const
 {
     Q_Q(const QSizeGrip);
-    if (QApplication::closingDown() || !q->parentWidget())
+    if (QApplication::closingDown() || !parent)
         return;
     QWidget *topLevelWindow = qt_sizegrip_topLevelWidget(const_cast<QSizeGrip *>(q));
     if(topLevelWindow && topLevelWindow->isWindow())

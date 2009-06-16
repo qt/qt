@@ -23,6 +23,7 @@
 #include "NumberPrototype.h"
 
 #include "Error.h"
+#include "JSFunction.h"
 #include "JSString.h"
 #include "PrototypeFunction.h"
 #include "dtoa.h"
@@ -35,12 +36,12 @@ namespace JSC {
 
 ASSERT_CLASS_FITS_IN_CELL(NumberPrototype);
 
-static JSValuePtr numberProtoFuncToString(ExecState*, JSObject*, JSValuePtr, const ArgList&);
-static JSValuePtr numberProtoFuncToLocaleString(ExecState*, JSObject*, JSValuePtr, const ArgList&);
-static JSValuePtr numberProtoFuncValueOf(ExecState*, JSObject*, JSValuePtr, const ArgList&);
-static JSValuePtr numberProtoFuncToFixed(ExecState*, JSObject*, JSValuePtr, const ArgList&);
-static JSValuePtr numberProtoFuncToExponential(ExecState*, JSObject*, JSValuePtr, const ArgList&);
-static JSValuePtr numberProtoFuncToPrecision(ExecState*, JSObject*, JSValuePtr, const ArgList&);
+static JSValue JSC_HOST_CALL numberProtoFuncToString(ExecState*, JSObject*, JSValue, const ArgList&);
+static JSValue JSC_HOST_CALL numberProtoFuncToLocaleString(ExecState*, JSObject*, JSValue, const ArgList&);
+static JSValue JSC_HOST_CALL numberProtoFuncValueOf(ExecState*, JSObject*, JSValue, const ArgList&);
+static JSValue JSC_HOST_CALL numberProtoFuncToFixed(ExecState*, JSObject*, JSValue, const ArgList&);
+static JSValue JSC_HOST_CALL numberProtoFuncToExponential(ExecState*, JSObject*, JSValue, const ArgList&);
+static JSValue JSC_HOST_CALL numberProtoFuncToPrecision(ExecState*, JSObject*, JSValue, const ArgList&);
 
 // ECMA 15.7.4
 
@@ -51,12 +52,12 @@ NumberPrototype::NumberPrototype(ExecState* exec, PassRefPtr<Structure> structur
 
     // The constructor will be added later, after NumberConstructor has been constructed
 
-    putDirectFunctionWithoutTransition(exec, new (exec) PrototypeFunction(exec, prototypeFunctionStructure, 1, exec->propertyNames().toString, numberProtoFuncToString), DontEnum);
-    putDirectFunctionWithoutTransition(exec, new (exec) PrototypeFunction(exec, prototypeFunctionStructure, 0, exec->propertyNames().toLocaleString, numberProtoFuncToLocaleString), DontEnum);
-    putDirectFunctionWithoutTransition(exec, new (exec) PrototypeFunction(exec, prototypeFunctionStructure, 0, exec->propertyNames().valueOf, numberProtoFuncValueOf), DontEnum);
-    putDirectFunctionWithoutTransition(exec, new (exec) PrototypeFunction(exec, prototypeFunctionStructure, 1, exec->propertyNames().toFixed, numberProtoFuncToFixed), DontEnum);
-    putDirectFunctionWithoutTransition(exec, new (exec) PrototypeFunction(exec, prototypeFunctionStructure, 1, exec->propertyNames().toExponential, numberProtoFuncToExponential), DontEnum);
-    putDirectFunctionWithoutTransition(exec, new (exec) PrototypeFunction(exec, prototypeFunctionStructure, 1, exec->propertyNames().toPrecision, numberProtoFuncToPrecision), DontEnum);
+    putDirectFunctionWithoutTransition(exec, new (exec) NativeFunctionWrapper(exec, prototypeFunctionStructure, 1, exec->propertyNames().toString, numberProtoFuncToString), DontEnum);
+    putDirectFunctionWithoutTransition(exec, new (exec) NativeFunctionWrapper(exec, prototypeFunctionStructure, 0, exec->propertyNames().toLocaleString, numberProtoFuncToLocaleString), DontEnum);
+    putDirectFunctionWithoutTransition(exec, new (exec) NativeFunctionWrapper(exec, prototypeFunctionStructure, 0, exec->propertyNames().valueOf, numberProtoFuncValueOf), DontEnum);
+    putDirectFunctionWithoutTransition(exec, new (exec) NativeFunctionWrapper(exec, prototypeFunctionStructure, 1, exec->propertyNames().toFixed, numberProtoFuncToFixed), DontEnum);
+    putDirectFunctionWithoutTransition(exec, new (exec) NativeFunctionWrapper(exec, prototypeFunctionStructure, 1, exec->propertyNames().toExponential, numberProtoFuncToExponential), DontEnum);
+    putDirectFunctionWithoutTransition(exec, new (exec) NativeFunctionWrapper(exec, prototypeFunctionStructure, 1, exec->propertyNames().toPrecision, numberProtoFuncToPrecision), DontEnum);
 }
 
 // ------------------------------ Functions ---------------------------
@@ -67,7 +68,8 @@ static UString integerPartNoExp(double d)
 {
     int decimalPoint;
     int sign;
-    char* result = WTF::dtoa(d, 0, &decimalPoint, &sign, NULL);
+    char result[80];
+    WTF::dtoa(result, d, 0, &decimalPoint, &sign, NULL);
     bool resultIsInfOrNan = (decimalPoint == 9999);
     size_t length = strlen(result);
 
@@ -80,16 +82,15 @@ static UString integerPartNoExp(double d)
         Vector<char, 1024> buf(decimalPoint + 1);
 
         if (static_cast<int>(length) <= decimalPoint) {
-            strcpy(buf.data(), result);
+            ASSERT(decimalPoint < 1024);
+            memcpy(buf.data(), result, length);
             memset(buf.data() + length, '0', decimalPoint - length);
         } else
             strncpy(buf.data(), result, decimalPoint);
-
         buf[decimalPoint] = '\0';
+
         str.append(buf.data());
     }
-
-    WTF::freedtoa(result);
 
     return str;
 }
@@ -133,15 +134,15 @@ static double intPow10(int e)
     return static_cast<double>(result);
 }
 
-JSValuePtr numberProtoFuncToString(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL numberProtoFuncToString(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    JSValuePtr v = thisValue->getJSNumber();
+    JSValue v = thisValue.getJSNumber();
     if (!v)
         return throwError(exec, TypeError);
 
-    double radixAsDouble = args.at(exec, 0)->toInteger(exec); // nan -> 0
-    if (radixAsDouble == 10 || args.at(exec, 0)->isUndefined())
-        return jsString(exec, v->toString(exec));
+    double radixAsDouble = args.at(0).toInteger(exec); // nan -> 0
+    if (radixAsDouble == 10 || args.at(0).isUndefined())
+        return jsString(exec, v.toString(exec));
 
     if (radixAsDouble < 2 || radixAsDouble > 36)
         return throwError(exec, RangeError, "toString() radix argument must be between 2 and 36");
@@ -153,7 +154,7 @@ JSValuePtr numberProtoFuncToString(ExecState* exec, JSObject*, JSValuePtr thisVa
     // unless someone finds a precise rule.
     char s[2048 + 3];
     const char* lastCharInString = s + sizeof(s) - 1;
-    double x = v->uncheckedGetNumber();
+    double x = v.uncheckedGetNumber();
     if (isnan(x) || isinf(x))
         return jsString(exec, UString::from(x));
 
@@ -197,39 +198,39 @@ JSValuePtr numberProtoFuncToString(ExecState* exec, JSObject*, JSValuePtr thisVa
     return jsString(exec, startOfResultString);
 }
 
-JSValuePtr numberProtoFuncToLocaleString(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList&)
+JSValue JSC_HOST_CALL numberProtoFuncToLocaleString(ExecState* exec, JSObject*, JSValue thisValue, const ArgList&)
 {
     // FIXME: Not implemented yet.
 
-    JSValuePtr v = thisValue->getJSNumber();
+    JSValue v = thisValue.getJSNumber();
     if (!v)
         return throwError(exec, TypeError);
 
-    return jsString(exec, v->toString(exec));
+    return jsString(exec, v.toString(exec));
 }
 
-JSValuePtr numberProtoFuncValueOf(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList&)
+JSValue JSC_HOST_CALL numberProtoFuncValueOf(ExecState* exec, JSObject*, JSValue thisValue, const ArgList&)
 {
-    JSValuePtr v = thisValue->getJSNumber();
+    JSValue v = thisValue.getJSNumber();
     if (!v)
         return throwError(exec, TypeError);
 
     return v;
 }
 
-JSValuePtr numberProtoFuncToFixed(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL numberProtoFuncToFixed(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    JSValuePtr v = thisValue->getJSNumber();
+    JSValue v = thisValue.getJSNumber();
     if (!v)
         return throwError(exec, TypeError);
 
-    JSValuePtr fractionDigits = args.at(exec, 0);
-    double df = fractionDigits->toInteger(exec);
+    JSValue fractionDigits = args.at(0);
+    double df = fractionDigits.toInteger(exec);
     if (!(df >= 0 && df <= 20))
         return throwError(exec, RangeError, "toFixed() digits argument must be between 0 and 20");
     int f = static_cast<int>(df);
 
-    double x = v->uncheckedGetNumber();
+    double x = v.uncheckedGetNumber();
     if (isnan(x))
         return jsNontrivialString(exec, "NaN");
 
@@ -277,7 +278,8 @@ static void fractionalPartToString(char* buf, int& i, const char* result, int re
             strncpy(buf + i, result + 1, fractionalDigits);
             i += fractionalDigits;
         } else {
-            strcpy(buf + i, result + 1);
+            ASSERT(i + resultLength - 1 < 80);
+            memcpy(buf + i, result + 1, resultLength - 1);
             i += static_cast<int>(resultLength) - 1;
         }
     }
@@ -302,23 +304,23 @@ static void exponentialPartToString(char* buf, int& i, int decimalPoint)
     buf[i++] = static_cast<char>('0' + exponential % 10);
 }
 
-JSValuePtr numberProtoFuncToExponential(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL numberProtoFuncToExponential(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    JSValuePtr v = thisValue->getJSNumber();
+    JSValue v = thisValue.getJSNumber();
     if (!v)
         return throwError(exec, TypeError);
 
-    double x = v->uncheckedGetNumber();
+    double x = v.uncheckedGetNumber();
 
     if (isnan(x) || isinf(x))
         return jsString(exec, UString::from(x));
 
-    JSValuePtr fractionalDigitsValue = args.at(exec, 0);
-    double df = fractionalDigitsValue->toInteger(exec);
+    JSValue fractionalDigitsValue = args.at(0);
+    double df = fractionalDigitsValue.toInteger(exec);
     if (!(df >= 0 && df <= 20))
         return throwError(exec, RangeError, "toExponential() argument must between 0 and 20");
     int fractionalDigits = static_cast<int>(df);
-    bool includeAllDigits = fractionalDigitsValue->isUndefined();
+    bool includeAllDigits = fractionalDigitsValue.isUndefined();
 
     int decimalAdjust = 0;
     if (x && !includeAllDigits) {
@@ -344,7 +346,8 @@ JSValuePtr numberProtoFuncToExponential(ExecState* exec, JSObject*, JSValuePtr t
 
     int decimalPoint;
     int sign;
-    char* result = WTF::dtoa(x, 0, &decimalPoint, &sign, NULL);
+    char result[80];
+    WTF::dtoa(result, x, 0, &decimalPoint, &sign, NULL);
     size_t resultLength = strlen(result);
     decimalPoint += decimalAdjust;
 
@@ -353,9 +356,12 @@ JSValuePtr numberProtoFuncToExponential(ExecState* exec, JSObject*, JSValuePtr t
     if (sign)
         buf[i++] = '-';
 
-    if (decimalPoint == 999) // ? 9999 is the magical "result is Inf or NaN" value.  what's 999??
-        strcpy(buf + i, result);
-    else {
+    // ? 9999 is the magical "result is Inf or NaN" value.  what's 999??
+    if (decimalPoint == 999) {
+        ASSERT(i + resultLength < 80);
+        memcpy(buf + i, result, resultLength);
+        buf[i + resultLength] = '\0';
+    } else {
         buf[i++] = result[0];
 
         if (includeAllDigits)
@@ -367,21 +373,19 @@ JSValuePtr numberProtoFuncToExponential(ExecState* exec, JSObject*, JSValuePtr t
     }
     ASSERT(i <= 80);
 
-    WTF::freedtoa(result);
-
     return jsString(exec, buf);
 }
 
-JSValuePtr numberProtoFuncToPrecision(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL numberProtoFuncToPrecision(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    JSValuePtr v = thisValue->getJSNumber();
+    JSValue v = thisValue.getJSNumber();
     if (!v)
         return throwError(exec, TypeError);
 
-    double doublePrecision = args.at(exec, 0)->toIntegerPreserveNaN(exec);
-    double x = v->uncheckedGetNumber();
-    if (args.at(exec, 0)->isUndefined() || isnan(x) || isinf(x))
-        return jsString(exec, v->toString(exec));
+    double doublePrecision = args.at(0).toIntegerPreserveNaN(exec);
+    double x = v.uncheckedGetNumber();
+    if (args.at(0).isUndefined() || isnan(x) || isinf(x))
+        return jsString(exec, v.toString(exec));
 
     UString s;
     if (x < 0) {

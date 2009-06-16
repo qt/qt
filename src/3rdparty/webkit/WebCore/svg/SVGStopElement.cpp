@@ -26,6 +26,7 @@
 #include "SVGStopElement.h"
 
 #include "Document.h"
+#include "MappedAttribute.h"
 #include "RenderSVGGradientStop.h"
 #include "SVGGradientElement.h"
 #include "SVGNames.h"
@@ -51,7 +52,7 @@ void SVGStopElement::parseMappedAttribute(MappedAttribute* attr)
         else
             setOffsetBaseValue(value.toFloat());
 
-        setChanged();
+        setNeedsStyleRecalc();
     } else
         SVGStyledElement::parseMappedAttribute(attr);
 }

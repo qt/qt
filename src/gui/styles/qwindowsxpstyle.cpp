@@ -261,7 +261,7 @@ void QWindowsXPStylePrivate::cleanup(bool force)
     use_xp = false;
     cleanupHandleMap();
     if (limboWidget) {
-        if (qApp->closingDown())
+        if (QApplication::closingDown())
             delete limboWidget;
         else
             limboWidget->deleteLater();
@@ -1026,7 +1026,7 @@ void QWindowsXPStylePrivate::drawBackgroundThruNativeBuffer(XPThemeData &themeDa
     Most of the functions are documented in the base classes
     QWindowsStyle, QCommonStyle, and QStyle, but the
     QWindowsXPStyle overloads of drawComplexControl(), drawControl(),
-    drawControlMask(), drawPrimitive(), subControlRect(), and
+    drawControlMask(), drawPrimitive(), proxy()->subControlRect(), and
     sizeFromContents(), are documented here.
 
     \img qwindowsxpstyle.png
@@ -1193,8 +1193,8 @@ QRect QWindowsXPStyle::subElementRect(SubElement sr, const QStyleOption *option,
             QStyleOptionTab otherOption;
             otherOption.shape = (twfOption->shape == QTabBar::RoundedNorth
                                 ? QTabBar::RoundedEast : QTabBar::RoundedSouth);
-            int overlap = pixelMetric(PM_TabBarBaseOverlap, &otherOption, widget);
-            int borderThickness = pixelMetric(PM_DefaultFrameWidth, option, widget);
+            int overlap = proxy()->pixelMetric(PM_TabBarBaseOverlap, &otherOption, widget);
+            int borderThickness = proxy()->pixelMetric(PM_DefaultFrameWidth, option, widget);
             rect.adjust(-overlap + borderThickness, 0, -overlap + borderThickness, 0);
         }
         break;}
@@ -1217,7 +1217,7 @@ QRect QWindowsXPStyle::subElementRect(SubElement sr, const QStyleOption *option,
                     else
                         stateId = PBS_NORMAL;
 
-                    int border = pixelMetric(PM_DefaultFrameWidth, btn, widget);
+                    int border = proxy()->pixelMetric(PM_DefaultFrameWidth, btn, widget);
                     rect = option->rect.adjusted(border, border, -border, -border);
 
                     int result = pGetThemeMargins(theme,
@@ -1533,7 +1533,7 @@ case PE_Frame:
             }
 
             if (panel->lineWidth > 0)
-                drawPrimitive(PE_FrameLineEdit, panel, p, widget);
+                proxy()->drawPrimitive(PE_FrameLineEdit, panel, p, widget);
             return;
         }
         break;
@@ -1618,7 +1618,7 @@ case PE_Frame:
             else
                 stateId = FS_INACTIVE;
 
-            int fwidth = pixelMetric(PM_DockWidgetFrameWidth, frm, widget);
+            int fwidth = proxy()->pixelMetric(PM_DockWidgetFrameWidth, frm, widget);
 
             XPThemeData theme(widget, p, name, 0, stateId);
             if (!theme.isValid())
@@ -1826,7 +1826,7 @@ case PE_Frame:
         QStyleOptionButton button;
         button.QStyleOption::operator=(*option);
         button.state &= ~State_MouseOver;
-        drawPrimitive(PE_IndicatorCheckBox, &button, p, widget);
+        proxy()->drawPrimitive(PE_IndicatorCheckBox, &button, p, widget);
         return;
     }
 
@@ -1954,7 +1954,7 @@ void QWindowsXPStyle::drawControl(ControlElement element, const QStyleOption *op
                 QRect ir = btn->rect;
                 QStyleOptionButton newBtn = *btn;
                 newBtn.rect = QRect(ir.right() - mbiw - 1, 1 + (ir.height()/2) - (mbih/2), mbiw, mbih);
-                drawPrimitive(PE_IndicatorArrowDown, &newBtn, p, widget);
+                proxy()->drawPrimitive(PE_IndicatorArrowDown, &newBtn, p, widget);
             }
             return;
         }
@@ -1977,10 +1977,10 @@ void QWindowsXPStyle::drawControl(ControlElement element, const QStyleOption *op
             bool lastTab = tab->position == QStyleOptionTab::End;
             bool firstTab = tab->position == QStyleOptionTab::Beginning;
             bool onlyOne = tab->position == QStyleOptionTab::OnlyOneTab;
-            bool leftAligned = styleHint(SH_TabBar_Alignment, tab, widget) == Qt::AlignLeft;
-            bool centerAligned = styleHint(SH_TabBar_Alignment, tab, widget) == Qt::AlignCenter;
-            int borderThickness = pixelMetric(PM_DefaultFrameWidth, option, widget);
-            int tabOverlap = pixelMetric(PM_TabBarTabOverlap, option, widget);
+            bool leftAligned = proxy()->styleHint(SH_TabBar_Alignment, tab, widget) == Qt::AlignLeft;
+            bool centerAligned = proxy()->styleHint(SH_TabBar_Alignment, tab, widget) == Qt::AlignCenter;
+            int borderThickness = proxy()->pixelMetric(PM_DefaultFrameWidth, option, widget);
+            int tabOverlap = proxy()->pixelMetric(PM_TabBarTabOverlap, option, widget);
 
             if (isDisabled)
                 stateId = TIS_DISABLED;
@@ -2125,8 +2125,8 @@ void QWindowsXPStyle::drawControl(ControlElement element, const QStyleOption *op
                 if (act && !dis)
                     mode = QIcon::Active;
                 QPixmap pixmap = checked ?
-                                 menuitem->icon.pixmap(pixelMetric(PM_SmallIconSize, option, widget), mode, QIcon::On) :
-                                 menuitem->icon.pixmap(pixelMetric(PM_SmallIconSize, option, widget), mode);
+                                 menuitem->icon.pixmap(proxy()->pixelMetric(PM_SmallIconSize, option, widget), mode, QIcon::On) :
+                                 menuitem->icon.pixmap(proxy()->pixelMetric(PM_SmallIconSize, option, widget), mode);
                 int pixw = pixmap.width();
                 int pixh = pixmap.height();
                 QRect iconRect(0, 0, pixw, pixh);
@@ -2152,7 +2152,7 @@ void QWindowsXPStyle::drawControl(ControlElement element, const QStyleOption *op
                                             checkcol - 2 * windowsItemFrame,
                                             menuitem->rect.height() - 2*windowsItemFrame);
                 newMi.rect = visualRect(option->direction, option->rect, checkMarkRect);
-                drawPrimitive(PE_IndicatorMenuCheckMark, &newMi, p, widget);
+                proxy()->drawPrimitive(PE_IndicatorMenuCheckMark, &newMi, p, widget);
             }
 
             QColor textColor = dis ? menuitem->palette.text().color() :
@@ -2169,12 +2169,12 @@ void QWindowsXPStyle::drawControl(ControlElement element, const QStyleOption *op
                 p->save();
                 int t = s.indexOf(QLatin1Char('\t'));
                 int text_flags = Qt::AlignVCenter|Qt::TextShowMnemonic | Qt::TextDontClip | Qt::TextSingleLine | Qt::AlignLeft;
-                if (!styleHint(SH_UnderlineShortcut, menuitem, widget))
+                if (!proxy()->styleHint(SH_UnderlineShortcut, menuitem, widget))
                     text_flags |= Qt::TextHideMnemonic;
                 // draw tab text ----------------
                 if (t >= 0) {
                     QRect vShortcutRect = visualRect(option->direction, option->rect, QRect(textRect.topRight(), menuitem->rect.bottomRight()));
-                    if (dis && !act && styleHint(SH_EtchDisabledText, option, widget)) {
+                    if (dis && !act && proxy()->styleHint(SH_EtchDisabledText, option, widget)) {
                         p->setPen(menuitem->palette.light().color());
                         p->drawText(vShortcutRect.adjusted(1,1,1,1), text_flags, s.mid(t + 1));
                         p->setPen(textColor);
@@ -2186,7 +2186,7 @@ void QWindowsXPStyle::drawControl(ControlElement element, const QStyleOption *op
                 if (menuitem->menuItemType == QStyleOptionMenuItem::DefaultItem)
                     font.setBold(true);
                 p->setFont(font);
-                if (dis && !act && styleHint(SH_EtchDisabledText, option, widget)) {
+                if (dis && !act && proxy()->styleHint(SH_EtchDisabledText, option, widget)) {
                     p->setPen(menuitem->palette.light().color());
                     p->drawText(vTextRect.adjusted(1,1,1,1), text_flags, s.left(t));
                     p->setPen(textColor);
@@ -2207,7 +2207,7 @@ void QWindowsXPStyle::drawControl(ControlElement element, const QStyleOption *op
                 newMI.state = dis ? State_None : State_Enabled;
                 if (act)
                     newMI.palette.setColor(QPalette::ButtonText, newMI.palette.highlightedText().color());
-                drawPrimitive(arrow, &newMI, p, widget);
+                proxy()->drawPrimitive(arrow, &newMI, p, widget);
             }
         }
         return;
@@ -2224,10 +2224,10 @@ void QWindowsXPStyle::drawControl(ControlElement element, const QStyleOption *op
             QBrush fill = mbi->palette.brush(act ? QPalette::Highlight : QPalette::Button);
             QPalette::ColorRole textRole = dis ? QPalette::Text:
                                            act ? QPalette::HighlightedText : QPalette::ButtonText;
-            QPixmap pix = mbi->icon.pixmap(pixelMetric(PM_SmallIconSize, option, widget), QIcon::Normal);
+            QPixmap pix = mbi->icon.pixmap(proxy()->pixelMetric(PM_SmallIconSize, option, widget), QIcon::Normal);
 
             uint alignment = Qt::AlignCenter | Qt::TextShowMnemonic | Qt::TextDontClip | Qt::TextSingleLine;
-            if (!styleHint(SH_UnderlineShortcut, mbi, widget))
+            if (!proxy()->styleHint(SH_UnderlineShortcut, mbi, widget))
                 alignment |= Qt::TextHideMnemonic;
 
             p->fillRect(rect, fill);
@@ -2242,8 +2242,8 @@ void QWindowsXPStyle::drawControl(ControlElement element, const QStyleOption *op
         if (const QStyleOptionDockWidget *dwOpt = qstyleoption_cast<const QStyleOptionDockWidget *>(option))
         {
             int buttonMargin = 4;
-            int mw = pixelMetric(QStyle::PM_DockWidgetTitleMargin, dwOpt, widget);
-            int fw = pixelMetric(PM_DockWidgetFrameWidth, dwOpt, widget);
+            int mw = proxy()->pixelMetric(QStyle::PM_DockWidgetTitleMargin, dwOpt, widget);
+            int fw = proxy()->pixelMetric(PM_DockWidgetFrameWidth, dwOpt, widget);
             bool isFloating = widget && widget->isWindow();
             bool isActive = dwOpt->state & State_Active;
 
@@ -2264,18 +2264,18 @@ void QWindowsXPStyle::drawControl(ControlElement element, const QStyleOption *op
             QRect titleRect = r;
 
             if (dwOpt->closable) {
-                QSize sz = standardIcon(QStyle::SP_TitleBarCloseButton, dwOpt, widget).actualSize(QSize(10, 10));
+                QSize sz = proxy()->standardIcon(QStyle::SP_TitleBarCloseButton, dwOpt, widget).actualSize(QSize(10, 10));
                 titleRect.adjust(0, 0, -sz.width() - mw - buttonMargin, 0);
             }
 
             if (dwOpt->floatable) {
-                QSize sz = standardIcon(QStyle::SP_TitleBarMaxButton, dwOpt, widget).actualSize(QSize(10, 10));
+                QSize sz = proxy()->standardIcon(QStyle::SP_TitleBarMaxButton, dwOpt, widget).actualSize(QSize(10, 10));
                 titleRect.adjust(0, 0, -sz.width() - mw - buttonMargin, 0);
             }
 
             if (isFloating) {
                 titleRect.adjust(0, -fw, 0, 0);
-                if (widget != 0 && widget->windowIcon().cacheKey() != qApp->windowIcon().cacheKey())
+                if (widget != 0 && widget->windowIcon().cacheKey() != QApplication::windowIcon().cacheKey())
                     titleRect.adjust(titleRect.height() + mw, 0, 0, 0);
             } else {
                 titleRect.adjust(mw, 0, 0, 0);
@@ -2322,7 +2322,7 @@ void QWindowsXPStyle::drawControl(ControlElement element, const QStyleOption *op
                 // Figure out maximal button space on title bar
 
                 QIcon ico = widget->windowIcon();
-                bool hasIcon = (ico.cacheKey() != qApp->windowIcon().cacheKey());
+                bool hasIcon = (ico.cacheKey() != QApplication::windowIcon().cacheKey());
                 if (hasIcon) {
                     QPixmap pxIco = ico.pixmap(titleHeight);
                     if (!verticalTitleBar && QApplication::layoutDirection() == Qt::RightToLeft)
@@ -2455,7 +2455,7 @@ void QWindowsXPStyle::drawComplexControl(ComplexControl cc, const QStyleOptionCo
                 d->drawBackground(ftheme);
             }
             if (sub & SC_SpinBoxUp) {
-                theme.rect = subControlRect(CC_SpinBox, option, SC_SpinBoxUp, widget);
+                theme.rect = proxy()->subControlRect(CC_SpinBox, option, SC_SpinBoxUp, widget);
                 partId = SPNP_UP;
                 if (!(sb->stepEnabled & QAbstractSpinBox::StepUpEnabled) || !(flags & State_Enabled))
                     stateId = UPS_DISABLED;
@@ -2470,7 +2470,7 @@ void QWindowsXPStyle::drawComplexControl(ComplexControl cc, const QStyleOptionCo
                 d->drawBackground(theme);
             }
             if (sub & SC_SpinBoxDown) {
-                theme.rect = subControlRect(CC_SpinBox, option, SC_SpinBoxDown, widget);
+                theme.rect = proxy()->subControlRect(CC_SpinBox, option, SC_SpinBoxDown, widget);
                 partId = SPNP_DOWN;
                 if (!(sb->stepEnabled & QAbstractSpinBox::StepDownEnabled) || !(flags & State_Enabled))
                     stateId = DNS_DISABLED;
@@ -2507,7 +2507,7 @@ void QWindowsXPStyle::drawComplexControl(ComplexControl cc, const QStyleOptionCo
                     p->fillRect(option->rect, editBrush);
                 }
                 if (!cmb->editable) {
-                    QRect re = subControlRect(CC_ComboBox, option, SC_ComboBoxEditField, widget);
+                    QRect re = proxy()->subControlRect(CC_ComboBox, option, SC_ComboBoxEditField, widget);
                     if (option->state & State_HasFocus) {
                         p->fillRect(re, option->palette.highlight());
                         p->setPen(option->palette.highlightedText().color());
@@ -2522,7 +2522,7 @@ void QWindowsXPStyle::drawComplexControl(ComplexControl cc, const QStyleOptionCo
 
             if (sub & SC_ComboBoxArrow) {
                 XPThemeData theme(widget, p, QLatin1String("COMBOBOX"));
-                theme.rect = subControlRect(CC_ComboBox, option, SC_ComboBoxArrow, widget);
+                theme.rect = proxy()->subControlRect(CC_ComboBox, option, SC_ComboBoxArrow, widget);
                 partId = CP_DROPDOWNBUTTON;
                 if (!(flags & State_Enabled))
                     stateId = CBXS_DISABLED;
@@ -2550,7 +2550,7 @@ void QWindowsXPStyle::drawComplexControl(ComplexControl cc, const QStyleOptionCo
             bool isHorz = flags & State_Horizontal;
             bool isRTL  = option->direction == Qt::RightToLeft;
             if (sub & SC_ScrollBarAddLine) {
-                theme.rect = subControlRect(CC_ScrollBar, option, SC_ScrollBarAddLine, widget);
+                theme.rect = proxy()->subControlRect(CC_ScrollBar, option, SC_ScrollBarAddLine, widget);
                 partId = SBP_ARROWBTN;
                 if (!(flags & State_Enabled))
                     stateId = (isHorz ? (isRTL ? ABS_LEFTDISABLED : ABS_RIGHTDISABLED) : ABS_DOWNDISABLED);
@@ -2565,7 +2565,7 @@ void QWindowsXPStyle::drawComplexControl(ComplexControl cc, const QStyleOptionCo
                 d->drawBackground(theme);
             }
             if (sub & SC_ScrollBarSubLine) {
-                theme.rect = subControlRect(CC_ScrollBar, option, SC_ScrollBarSubLine, widget);
+                theme.rect = proxy()->subControlRect(CC_ScrollBar, option, SC_ScrollBarSubLine, widget);
                 partId = SBP_ARROWBTN;
                 if (!(flags & State_Enabled))
                     stateId = (isHorz ? (isRTL ? ABS_RIGHTDISABLED : ABS_LEFTDISABLED) : ABS_UPDISABLED);
@@ -2580,9 +2580,9 @@ void QWindowsXPStyle::drawComplexControl(ComplexControl cc, const QStyleOptionCo
                 d->drawBackground(theme);
             }
             if (maxedOut) {
-                theme.rect = subControlRect(CC_ScrollBar, option, SC_ScrollBarSlider, widget);
-                theme.rect = theme.rect.united(subControlRect(CC_ScrollBar, option, SC_ScrollBarSubPage, widget));
-                theme.rect = theme.rect.united(subControlRect(CC_ScrollBar, option, SC_ScrollBarAddPage, widget));
+                theme.rect = proxy()->subControlRect(CC_ScrollBar, option, SC_ScrollBarSlider, widget);
+                theme.rect = theme.rect.united(proxy()->subControlRect(CC_ScrollBar, option, SC_ScrollBarSubPage, widget));
+                theme.rect = theme.rect.united(proxy()->subControlRect(CC_ScrollBar, option, SC_ScrollBarAddPage, widget));
                 partId = scrollbar->orientation == Qt::Horizontal ? SBP_LOWERTRACKHORZ : SBP_LOWERTRACKVERT;
                 stateId = SCRBS_DISABLED;
                 theme.partId = partId;
@@ -2590,7 +2590,7 @@ void QWindowsXPStyle::drawComplexControl(ComplexControl cc, const QStyleOptionCo
                 d->drawBackground(theme);
             } else {
                 if (sub & SC_ScrollBarSubPage) {
-                    theme.rect = subControlRect(CC_ScrollBar, option, SC_ScrollBarSubPage, widget);
+                    theme.rect = proxy()->subControlRect(CC_ScrollBar, option, SC_ScrollBarSubPage, widget);
                     partId = flags & State_Horizontal ? SBP_UPPERTRACKHORZ : SBP_UPPERTRACKVERT;
                     if (!(flags & State_Enabled))
                         stateId = SCRBS_DISABLED;
@@ -2605,7 +2605,7 @@ void QWindowsXPStyle::drawComplexControl(ComplexControl cc, const QStyleOptionCo
                     d->drawBackground(theme);
                 }
                 if (sub & SC_ScrollBarAddPage) {
-                    theme.rect = subControlRect(CC_ScrollBar, option, SC_ScrollBarAddPage, widget);
+                    theme.rect = proxy()->subControlRect(CC_ScrollBar, option, SC_ScrollBarAddPage, widget);
                     partId = flags & State_Horizontal ? SBP_LOWERTRACKHORZ : SBP_LOWERTRACKVERT;
                     if (!(flags & State_Enabled))
                         stateId = SCRBS_DISABLED;
@@ -2620,7 +2620,7 @@ void QWindowsXPStyle::drawComplexControl(ComplexControl cc, const QStyleOptionCo
                     d->drawBackground(theme);
                 }
                 if (sub & SC_ScrollBarSlider) {
-                    theme.rect = subControlRect(CC_ScrollBar, option, SC_ScrollBarSlider, widget);
+                    theme.rect = proxy()->subControlRect(CC_ScrollBar, option, SC_ScrollBarSlider, widget);
                     if (!(flags & State_Enabled))
                         stateId = SCRBS_DISABLED;
                     else if (scrollbar->activeSubControls & SC_ScrollBarSlider && (scrollbar->state & State_Sunken))
@@ -2631,7 +2631,7 @@ void QWindowsXPStyle::drawComplexControl(ComplexControl cc, const QStyleOptionCo
                         stateId = SCRBS_NORMAL;
 
                     // Draw handle
-                    theme.rect = subControlRect(CC_ScrollBar, option, SC_ScrollBarSlider, widget);
+                    theme.rect = proxy()->subControlRect(CC_ScrollBar, option, SC_ScrollBarSlider, widget);
                     theme.partId = flags & State_Horizontal ? SBP_THUMBBTNHORZ : SBP_THUMBBTNVERT;
                     theme.stateId = stateId;
                     d->drawBackground(theme);
@@ -2687,7 +2687,7 @@ void QWindowsXPStyle::drawComplexControl(ComplexControl cc, const QStyleOptionCo
             QRect slrect = slider->rect;
             QRegion tickreg = slrect;
             if (sub & SC_SliderGroove) {
-                theme.rect = subControlRect(CC_Slider, option, SC_SliderGroove, widget);
+                theme.rect = proxy()->subControlRect(CC_Slider, option, SC_SliderGroove, widget);
                 if (slider->orientation == Qt::Horizontal) {
                     partId = TKP_TRACK;
                     stateId = TRS_NORMAL;
@@ -2703,11 +2703,11 @@ void QWindowsXPStyle::drawComplexControl(ComplexControl cc, const QStyleOptionCo
                 tickreg -= theme.rect;
             }
             if (sub & SC_SliderTickmarks) {
-                int tickOffset = pixelMetric(PM_SliderTickmarkOffset, slider, widget);
+                int tickOffset = proxy()->pixelMetric(PM_SliderTickmarkOffset, slider, widget);
                 int ticks = slider->tickPosition;
-                int thickness = pixelMetric(PM_SliderControlThickness, slider, widget);
-                int len = pixelMetric(PM_SliderLength, slider, widget);
-                int available = pixelMetric(PM_SliderSpaceAvailable, slider, widget);
+                int thickness = proxy()->pixelMetric(PM_SliderControlThickness, slider, widget);
+                int len = proxy()->pixelMetric(PM_SliderLength, slider, widget);
+                int available = proxy()->pixelMetric(PM_SliderSpaceAvailable, slider, widget);
                 int interval = slider->tickInterval;
                 if (interval <= 0) {
                     interval = slider->singleStep;
@@ -2763,7 +2763,7 @@ void QWindowsXPStyle::drawComplexControl(ComplexControl cc, const QStyleOptionCo
                 }
             }
             if (sub & SC_SliderHandle) {
-                theme.rect = subControlRect(CC_Slider, option, SC_SliderHandle, widget);
+                theme.rect = proxy()->subControlRect(CC_Slider, option, SC_SliderHandle, widget);
                 if (slider->orientation == Qt::Horizontal) {
                     if (slider->tickPosition == QSlider::TicksAbove)
                         partId = TKP_THUMBTOP;
@@ -2809,7 +2809,7 @@ void QWindowsXPStyle::drawComplexControl(ComplexControl cc, const QStyleOptionCo
                 QStyleOptionFocusRect fropt;
                 fropt.QStyleOption::operator=(*slider);
                 fropt.rect = subElementRect(SE_SliderFocusRect, slider, widget);
-                drawPrimitive(PE_FrameFocusRect, &fropt, p, widget);
+                proxy()->drawPrimitive(PE_FrameFocusRect, &fropt, p, widget);
             }
         }
         break;
@@ -2819,8 +2819,8 @@ void QWindowsXPStyle::drawComplexControl(ComplexControl cc, const QStyleOptionCo
         if (const QStyleOptionToolButton *toolbutton
             = qstyleoption_cast<const QStyleOptionToolButton *>(option)) {
             QRect button, menuarea;
-            button = subControlRect(cc, toolbutton, SC_ToolButton, widget);
-            menuarea = subControlRect(cc, toolbutton, SC_ToolButtonMenu, widget);
+            button = proxy()->subControlRect(cc, toolbutton, SC_ToolButton, widget);
+            menuarea = proxy()->subControlRect(cc, toolbutton, SC_ToolButtonMenu, widget);
 
             State bflags = toolbutton->state & ~State_Sunken;
             State mflags = bflags;
@@ -2868,9 +2868,9 @@ void QWindowsXPStyle::drawComplexControl(ComplexControl cc, const QStyleOptionCo
                         tool.state = bflags;
                         if (widget && !qobject_cast<QToolBar*>(widget->parentWidget())
                                    && !(bflags & State_AutoRaise))
-                            drawPrimitive(PE_PanelButtonBevel, &tool, p, widget);
+                            proxy()->drawPrimitive(PE_PanelButtonBevel, &tool, p, widget);
                         else
-                            drawPrimitive(PE_PanelButtonTool, &tool, p, widget);
+                            proxy()->drawPrimitive(PE_PanelButtonTool, &tool, p, widget);
                     }
                 }
             }
@@ -2880,26 +2880,26 @@ void QWindowsXPStyle::drawComplexControl(ComplexControl cc, const QStyleOptionCo
                 fr.QStyleOption::operator=(*toolbutton);
                 fr.rect.adjust(3, 3, -3, -3);
                 if (toolbutton->features & QStyleOptionToolButton::MenuButtonPopup)
-                    fr.rect.adjust(0, 0, -pixelMetric(QStyle::PM_MenuButtonIndicator,
+                    fr.rect.adjust(0, 0, -proxy()->pixelMetric(QStyle::PM_MenuButtonIndicator,
                                                       toolbutton, widget), 0);
-                drawPrimitive(PE_FrameFocusRect, &fr, p, widget);
+                proxy()->drawPrimitive(PE_FrameFocusRect, &fr, p, widget);
             }
             QStyleOptionToolButton label = *toolbutton;
             label.state = bflags;
             int fw = 2;
             label.rect = button.adjusted(fw, fw, -fw, -fw);
-            drawControl(CE_ToolButtonLabel, &label, p, widget);
+            proxy()->drawControl(CE_ToolButtonLabel, &label, p, widget);
 
             if (toolbutton->subControls & SC_ToolButtonMenu) {
                 tool.rect = menuarea;
                 tool.state = mflags;
-                drawPrimitive(PE_IndicatorButtonDropDown, &tool, p, widget);
+                proxy()->drawPrimitive(PE_IndicatorButtonDropDown, &tool, p, widget);
             } else if (toolbutton->features & QStyleOptionToolButton::HasMenu) {
-                int mbi = pixelMetric(PM_MenuButtonIndicator, toolbutton, widget);
+                int mbi = proxy()->pixelMetric(PM_MenuButtonIndicator, toolbutton, widget);
                 QRect ir = toolbutton->rect;
                 QStyleOptionToolButton newBtn = *toolbutton;
                 newBtn.rect = QRect(ir.right() + 4 - mbi, ir.height() - mbi + 4, mbi - 5, mbi - 5);
-                drawPrimitive(PE_IndicatorArrowDown, &newBtn, p, widget);
+                proxy()->drawPrimitive(PE_IndicatorArrowDown, &newBtn, p, widget);
             }
         }
         break;
@@ -2931,7 +2931,7 @@ void QWindowsXPStyle::drawComplexControl(ComplexControl cc, const QStyleOptionCo
                     theme.stateId = stateId;
                     d->drawBackground(theme);
 
-                    QRect ir = subControlRect(CC_TitleBar, tb, SC_TitleBarLabel, widget);
+                    QRect ir = proxy()->subControlRect(CC_TitleBar, tb, SC_TitleBarLabel, widget);
 
                     int result = TST_NONE;
                     pGetThemeEnumValue(theme.handle(), WP_CAPTION, isActive ? CS_ACTIVE : CS_INACTIVE, TMT_TEXTSHADOWTYPE, &result);
@@ -2950,7 +2950,7 @@ void QWindowsXPStyle::drawComplexControl(ComplexControl cc, const QStyleOptionCo
                                 Qt::AlignLeft | Qt::AlignVCenter | Qt::TextSingleLine, tb->text);
                 }
                 if (sub & SC_TitleBarSysMenu && tb->titleBarFlags & Qt::WindowSystemMenuHint) {
-                    theme.rect = subControlRect(CC_TitleBar, option, SC_TitleBarSysMenu, widget);
+                    theme.rect = proxy()->subControlRect(CC_TitleBar, option, SC_TitleBarSysMenu, widget);
                     partId = WP_SYSBUTTON;
                     if ((widget && !widget->isEnabled()) || !isActive)
                         stateId = SBS_DISABLED;
@@ -2968,8 +2968,8 @@ void QWindowsXPStyle::drawComplexControl(ComplexControl cc, const QStyleOptionCo
                         SIZE sz;
                         pGetThemePartSize(theme.handle(), qt_win_display_dc(), theme.partId, theme.stateId, 0, TS_TRUE, &sz);
                         if (sz.cx == 0 || sz.cy == 0) {
-                            int iconSize = pixelMetric(PM_SmallIconSize, tb, widget);
-                            QPixmap pm = standardIcon(SP_TitleBarMenuButton, tb, widget).pixmap(iconSize, iconSize);
+                            int iconSize = proxy()->pixelMetric(PM_SmallIconSize, tb, widget);
+                            QPixmap pm = proxy()->standardIcon(SP_TitleBarMenuButton, tb, widget).pixmap(iconSize, iconSize);
                             p->save();
                             drawItemPixmap(p, theme.rect, Qt::AlignCenter, pm);
                             p->restore();
@@ -2981,7 +2981,7 @@ void QWindowsXPStyle::drawComplexControl(ComplexControl cc, const QStyleOptionCo
 
                 if (sub & SC_TitleBarMinButton && tb->titleBarFlags & Qt::WindowMinimizeButtonHint
                         && !(tb->titleBarState & Qt::WindowMinimized)) {
-                    theme.rect = subControlRect(CC_TitleBar, option, SC_TitleBarMinButton, widget);
+                    theme.rect = proxy()->subControlRect(CC_TitleBar, option, SC_TitleBarMinButton, widget);
                     partId = WP_MINBUTTON;
                     if (widget && !widget->isEnabled())
                         stateId = MINBS_DISABLED;
@@ -2999,7 +2999,7 @@ void QWindowsXPStyle::drawComplexControl(ComplexControl cc, const QStyleOptionCo
                 }
                 if (sub & SC_TitleBarMaxButton && tb->titleBarFlags & Qt::WindowMaximizeButtonHint
                         && !(tb->titleBarState & Qt::WindowMaximized)) {
-                    theme.rect = subControlRect(CC_TitleBar, option, SC_TitleBarMaxButton, widget);
+                    theme.rect = proxy()->subControlRect(CC_TitleBar, option, SC_TitleBarMaxButton, widget);
                     partId = WP_MAXBUTTON;
                     if (widget && !widget->isEnabled())
                         stateId = MAXBS_DISABLED;
@@ -3017,7 +3017,7 @@ void QWindowsXPStyle::drawComplexControl(ComplexControl cc, const QStyleOptionCo
                 }
                 if (sub & SC_TitleBarContextHelpButton
                     && tb->titleBarFlags & Qt::WindowContextHelpButtonHint) {
-                    theme.rect = subControlRect(CC_TitleBar, option, SC_TitleBarContextHelpButton, widget);
+                    theme.rect = proxy()->subControlRect(CC_TitleBar, option, SC_TitleBarContextHelpButton, widget);
                     partId = WP_HELPBUTTON;
                     if (widget && !widget->isEnabled())
                         stateId = MINBS_DISABLED;
@@ -3039,7 +3039,7 @@ void QWindowsXPStyle::drawComplexControl(ComplexControl cc, const QStyleOptionCo
                                         || ((tb->titleBarFlags & Qt::WindowMaximizeButtonHint)
                                         && (tb->titleBarState & Qt::WindowMaximized)));
                 if (drawNormalButton) {
-                    theme.rect = subControlRect(CC_TitleBar, option, SC_TitleBarNormalButton, widget);
+                    theme.rect = proxy()->subControlRect(CC_TitleBar, option, SC_TitleBarNormalButton, widget);
                     partId = WP_RESTOREBUTTON;
                     if (widget && !widget->isEnabled())
                         stateId = RBS_DISABLED;
@@ -3057,7 +3057,7 @@ void QWindowsXPStyle::drawComplexControl(ComplexControl cc, const QStyleOptionCo
                 }
                 if (sub & SC_TitleBarShadeButton && tb->titleBarFlags & Qt::WindowShadeButtonHint
                         && !(tb->titleBarState & Qt::WindowMinimized)) {
-                    theme.rect = subControlRect(CC_TitleBar, option, SC_TitleBarShadeButton, widget);
+                    theme.rect = proxy()->subControlRect(CC_TitleBar, option, SC_TitleBarShadeButton, widget);
                     partId = WP_MINBUTTON;
                     if (widget && !widget->isEnabled())
                         stateId = MINBS_DISABLED;
@@ -3075,7 +3075,7 @@ void QWindowsXPStyle::drawComplexControl(ComplexControl cc, const QStyleOptionCo
                 }
                 if (sub & SC_TitleBarUnshadeButton && tb->titleBarFlags & Qt::WindowShadeButtonHint
                         && tb->titleBarState & Qt::WindowMinimized) {
-                    theme.rect = subControlRect(CC_TitleBar, option, SC_TitleBarUnshadeButton, widget);
+                    theme.rect = proxy()->subControlRect(CC_TitleBar, option, SC_TitleBarUnshadeButton, widget);
                     partId = WP_RESTOREBUTTON;
                     if (widget && !widget->isEnabled())
                         stateId = RBS_DISABLED;
@@ -3092,7 +3092,7 @@ void QWindowsXPStyle::drawComplexControl(ComplexControl cc, const QStyleOptionCo
                     d->drawBackground(theme);
                 }
                 if (sub & SC_TitleBarCloseButton && tb->titleBarFlags & Qt::WindowSystemMenuHint) {
-                    theme.rect = subControlRect(CC_TitleBar, option, SC_TitleBarCloseButton, widget);
+                    theme.rect = proxy()->subControlRect(CC_TitleBar, option, SC_TitleBarCloseButton, widget);
                     //partId = titlebar->testWFlags(Qt::WA_WState_Tool) ? WP_SMALLCLOSEBUTTON : WP_CLOSEBUTTON;
                     partId = WP_CLOSEBUTTON;
                     if (widget && !widget->isEnabled())
@@ -3120,7 +3120,7 @@ void QWindowsXPStyle::drawComplexControl(ComplexControl cc, const QStyleOptionCo
             XPThemeData theme(widget, p, QLatin1String("WINDOW"), WP_MDICLOSEBUTTON, CBS_NORMAL);
 
             if (option->subControls & SC_MdiCloseButton) {
-                buttonRect = subControlRect(CC_MdiControls, option, SC_MdiCloseButton, widget);
+                buttonRect = proxy()->subControlRect(CC_MdiControls, option, SC_MdiCloseButton, widget);
                 if (theme.isValid()) {
                     theme.partId = WP_MDICLOSEBUTTON;
                     theme.rect = buttonRect;
@@ -3136,7 +3136,7 @@ void QWindowsXPStyle::drawComplexControl(ComplexControl cc, const QStyleOptionCo
                 }
             }
             if (option->subControls & SC_MdiNormalButton) {
-                buttonRect = subControlRect(CC_MdiControls, option, SC_MdiNormalButton, widget);
+                buttonRect = proxy()->subControlRect(CC_MdiControls, option, SC_MdiNormalButton, widget);
                 if (theme.isValid()) {
                     theme.partId = WP_MDIRESTOREBUTTON;
                     theme.rect = buttonRect;
@@ -3152,7 +3152,7 @@ void QWindowsXPStyle::drawComplexControl(ComplexControl cc, const QStyleOptionCo
                 }
             }
             if (option->subControls & QStyle::SC_MdiMinButton) {
-                buttonRect = subControlRect(CC_MdiControls, option, SC_MdiMinButton, widget);
+                buttonRect = proxy()->subControlRect(CC_MdiControls, option, SC_MdiMinButton, widget);
                 if (theme.isValid()) {
                     theme.partId = WP_MDIMINBUTTON;
                     theme.rect = buttonRect;
@@ -3439,7 +3439,7 @@ QRect QWindowsXPStyle::subControlRect(ComplexControl cc, const QStyleOptionCompl
             int buttonWidth = GetSystemMetrics(SM_CXSIZE) - 4;
             const int delta = buttonWidth + 2;
             int controlTop = option->rect.bottom() - buttonHeight - 2;
-            const int frameWidth = pixelMetric(PM_MdiSubWindowFrameWidth, option, widget);
+            const int frameWidth = proxy()->pixelMetric(PM_MdiSubWindowFrameWidth, option, widget);
             const bool sysmenuHint  = (tb->titleBarFlags & Qt::WindowSystemMenuHint) != 0;
             const bool minimizeHint = (tb->titleBarFlags & Qt::WindowMinimizeButtonHint) != 0;
             const bool maximizeHint = (tb->titleBarFlags & Qt::WindowMaximizeButtonHint) != 0;
@@ -3524,7 +3524,7 @@ QRect QWindowsXPStyle::subControlRect(ComplexControl cc, const QStyleOptionCompl
                 {
                     const int controlTop = 6;
                     const int controlHeight = height - controlTop - 3;
-                    const int iconExtent = pixelMetric(PM_SmallIconSize);
+                    const int iconExtent = proxy()->pixelMetric(PM_SmallIconSize);
                     QSize iconSize = tb->icon.actualSize(QSize(iconExtent, iconExtent));
                     if (tb->icon.isNull())
                         iconSize = QSize(controlHeight, controlHeight);
@@ -3645,7 +3645,7 @@ QSize QWindowsXPStyle::sizeFromContents(ContentsType ct, const QStyleOption *opt
         {
             //Spinbox adds frame twice
             sz = QWindowsStyle::sizeFromContents(ct, option, contentsSize, widget);
-            int border = pixelMetric(PM_SpinBoxFrameWidth, option, widget);
+            int border = proxy()->pixelMetric(PM_SpinBoxFrameWidth, option, widget);
             sz -= QSize(2*border, 2*border);
         }
         break;

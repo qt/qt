@@ -29,10 +29,9 @@
 #include "config.h"
 #include "JSCustomSQLTransactionCallback.h"
 
-#include "CString.h"
-#include "DOMWindow.h"
+#if ENABLE(DATABASE)
+
 #include "Frame.h"
-#include "Logging.h"
 #include "ScriptController.h"
 #include "JSSQLTransaction.h"
 #include "Page.h"
@@ -101,9 +100,9 @@ void JSCustomSQLTransactionCallback::handleEvent(SQLTransaction* transaction, bo
         
     JSC::JSLock lock(false);
         
-    JSValuePtr handleEventFunction = m_data->callback()->get(exec, Identifier(exec, "handleEvent"));
+    JSValue handleEventFunction = m_data->callback()->get(exec, Identifier(exec, "handleEvent"));
     CallData handleEventCallData;
-    CallType handleEventCallType = handleEventFunction->getCallData(handleEventCallData);
+    CallType handleEventCallType = handleEventFunction.getCallData(handleEventCallData);
     CallData callbackCallData;
     CallType callbackCallType = CallTypeNone;
 
@@ -117,15 +116,15 @@ void JSCustomSQLTransactionCallback::handleEvent(SQLTransaction* transaction, bo
         
     RefPtr<JSCustomSQLTransactionCallback> protect(this);
         
-    ArgList args;
+    MarkedArgumentBuffer args;
     args.append(toJS(exec, transaction));
 
-    globalObject->startTimeoutCheck();
+    globalObject->globalData()->timeoutChecker.start();
     if (handleEventCallType != CallTypeNone)
         call(exec, handleEventFunction, handleEventCallType, handleEventCallData, m_data->callback(), args);
     else
         call(exec, m_data->callback(), callbackCallType, callbackCallData, m_data->callback(), args);
-    globalObject->stopTimeoutCheck();
+    globalObject->globalData()->timeoutChecker.stop();
         
     if (exec->hadException()) {
         reportCurrentException(exec);
@@ -133,7 +132,9 @@ void JSCustomSQLTransactionCallback::handleEvent(SQLTransaction* transaction, bo
         raisedException = true;
     }
         
-    Document::updateDocumentsRendering();
+    Document::updateStyleForAllDocuments();
 }
     
 }
+
+#endif // ENABLE(DATABASE)

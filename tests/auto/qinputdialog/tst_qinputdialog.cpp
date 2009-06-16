@@ -67,6 +67,7 @@ private slots:
     void getInteger();
     void getDouble_data();
     void getDouble();
+    void task255502getDouble();
     void getText_data();
     void getText();
     void getItem_data();
@@ -313,6 +314,20 @@ void tst_QInputDialog::getDouble()
     const double value = static_cast<int>(min + (max - min) / 2);
     const double result =
         QInputDialog::getDouble(parent, "", "", value, min, max, decimals, &ok);
+    QVERIFY(ok);
+    QCOMPARE(result, value);
+    delete parent;
+}
+
+void tst_QInputDialog::task255502getDouble()
+{
+    parent = new QWidget;
+    testFunc = &tst_QInputDialog::testFuncGetDouble;
+    startTimer(0);
+    bool ok = false;
+    const double value = 0.001;
+    const double result =
+        QInputDialog::getDouble(parent, "", "", value, -1, 1, 4, &ok);
     QVERIFY(ok);
     QCOMPARE(result, value);
     delete parent;

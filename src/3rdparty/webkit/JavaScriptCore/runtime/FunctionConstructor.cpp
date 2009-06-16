@@ -54,7 +54,7 @@ ConstructType FunctionConstructor::getConstructData(ConstructData& constructData
     return ConstructTypeHost;
 }
 
-static JSValuePtr callFunctionConstructor(ExecState* exec, JSObject*, JSValuePtr, const ArgList& args)
+static JSValue JSC_HOST_CALL callFunctionConstructor(ExecState* exec, JSObject*, JSValue, const ArgList& args)
 {
     return constructFunction(exec, args);
 }
@@ -66,7 +66,7 @@ CallType FunctionConstructor::getCallData(CallData& callData)
     return CallTypeHost;
 }
 
-static FunctionBodyNode* functionBody(ProgramNode* program)
+FunctionBodyNode* extractFunctionBody(ProgramNode* program)
 {
     if (!program)
         return 0;
@@ -75,17 +75,19 @@ static FunctionBodyNode* functionBody(ProgramNode* program)
     if (children.size() != 1)
         return 0;
 
-    ExprStatementNode* exprStatement = static_cast<ExprStatementNode*>(children[0].get()); 
+    StatementNode* exprStatement = children[0];
+    ASSERT(exprStatement);
     ASSERT(exprStatement->isExprStatement());
     if (!exprStatement || !exprStatement->isExprStatement())
         return 0;
 
-    FuncExprNode* funcExpr = static_cast<FuncExprNode*>(exprStatement->expr());
+    ExpressionNode* funcExpr = static_cast<ExprStatementNode*>(exprStatement)->expr();
+    ASSERT(funcExpr);
     ASSERT(funcExpr->isFuncExprNode());
     if (!funcExpr || !funcExpr->isFuncExprNode())
         return 0;
 
-    FunctionBodyNode* body = funcExpr->body();
+    FunctionBodyNode* body = static_cast<FuncExprNode*>(funcExpr)->body();
     ASSERT(body);
     return body;
 }
@@ -93,16 +95,19 @@ static FunctionBodyNode* functionBody(ProgramNode* program)
 // ECMA 15.3.2 The Function Constructor
 JSObject* constructFunction(ExecState* exec, const ArgList& args, const Identifier& functionName, const UString& sourceURL, int lineNumber)
 {
+    // Functions need to have a space following the opening { due to for web compatibility
+    // see https://bugs.webkit.org/show_bug.cgi?id=24350
+    // We also need \n before the closing } to handle // comments at the end of the last line
     UString program;
     if (args.isEmpty())
-        program = "(function(){})";
+        program = "(function() { \n})";
     else if (args.size() == 1)
-        program = "(function(){" + args.at(exec, 0)->toString(exec) + "})";
+        program = "(function() { " + args.at(0).toString(exec) + "\n})";
     else {
-        program = "(function(" + args.at(exec, 0)->toString(exec);
+        program = "(function(" + args.at(0).toString(exec);
         for (size_t i = 1; i < args.size() - 1; i++)
-            program += "," + args.at(exec, i)->toString(exec);
-        program += "){" + args.at(exec, args.size() - 1)->toString(exec) + "})";
+            program += "," + args.at(i).toString(exec);
+        program += ") { " + args.at(args.size() - 1).toString(exec) + "\n})";
     }
 
     int errLine;
@@ -110,7 +115,7 @@ JSObject* constructFunction(ExecState* exec, const ArgList& args, const Identifi
     SourceCode source = makeSource(program, sourceURL, lineNumber);
     RefPtr<ProgramNode> programNode = exec->globalData().parser->parse<ProgramNode>(exec, exec->dynamicGlobalObject()->debugger(), source, &errLine, &errMsg);
 
-    FunctionBodyNode* body = functionBody(programNode.get());
+    FunctionBodyNode* body = extractFunctionBody(programNode.get());
     if (!body)
         return throwError(exec, SyntaxError, errMsg, errLine, source.provider()->asID(), source.provider()->url());
 

@@ -36,7 +36,7 @@ using namespace JSC;
 
 namespace WebCore {
 
-ASSERT_CLASS_FITS_IN_CELL(JSDOMParser)
+ASSERT_CLASS_FITS_IN_CELL(JSDOMParser);
 
 /* Hash table */
 
@@ -72,13 +72,13 @@ public:
     JSDOMParserConstructor(ExecState* exec)
         : DOMObject(JSDOMParserConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
     {
-        putDirect(exec->propertyNames().prototype, JSDOMParserPrototype::self(exec), None);
+        putDirect(exec->propertyNames().prototype, JSDOMParserPrototype::self(exec, exec->lexicalGlobalObject()), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
     static const ClassInfo s_info;
 
-    static PassRefPtr<Structure> createStructure(JSValuePtr proto) 
+    static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
         return Structure::create(proto, TypeInfo(ObjectType, ImplementsHasInstance)); 
     }
@@ -117,9 +117,9 @@ static const HashTable JSDOMParserPrototypeTable =
 
 const ClassInfo JSDOMParserPrototype::s_info = { "DOMParserPrototype", 0, &JSDOMParserPrototypeTable, 0 };
 
-JSObject* JSDOMParserPrototype::self(ExecState* exec)
+JSObject* JSDOMParserPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSDOMParser>(exec);
+    return getDOMPrototype<JSDOMParser>(exec, globalObject);
 }
 
 bool JSDOMParserPrototype::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -138,12 +138,11 @@ JSDOMParser::JSDOMParser(PassRefPtr<Structure> structure, PassRefPtr<DOMParser> 
 JSDOMParser::~JSDOMParser()
 {
     forgetDOMObject(*Heap::heap(this)->globalData(), m_impl.get());
-
 }
 
-JSObject* JSDOMParser::createPrototype(ExecState* exec)
+JSObject* JSDOMParser::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSDOMParserPrototype(JSDOMParserPrototype::createStructure(exec->lexicalGlobalObject()->objectPrototype()));
+    return new (exec) JSDOMParserPrototype(JSDOMParserPrototype::createStructure(globalObject->objectPrototype()));
 }
 
 bool JSDOMParser::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -151,36 +150,37 @@ bool JSDOMParser::getOwnPropertySlot(ExecState* exec, const Identifier& property
     return getStaticValueSlot<JSDOMParser, Base>(exec, &JSDOMParserTable, this, propertyName, slot);
 }
 
-JSValuePtr jsDOMParserConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMParserConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     return static_cast<JSDOMParser*>(asObject(slot.slotBase()))->getConstructor(exec);
 }
-JSValuePtr JSDOMParser::getConstructor(ExecState* exec)
+JSValue JSDOMParser::getConstructor(ExecState* exec)
 {
     return getDOMConstructor<JSDOMParserConstructor>(exec);
 }
 
-JSValuePtr jsDOMParserPrototypeFunctionParseFromString(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsDOMParserPrototypeFunctionParseFromString(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSDOMParser::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSDOMParser::s_info))
         return throwError(exec, TypeError);
     JSDOMParser* castedThisObj = static_cast<JSDOMParser*>(asObject(thisValue));
     DOMParser* imp = static_cast<DOMParser*>(castedThisObj->impl());
-    const UString& str = args.at(exec, 0)->toString(exec);
-    const UString& contentType = args.at(exec, 1)->toString(exec);
+    const UString& str = args.at(0).toString(exec);
+    const UString& contentType = args.at(1).toString(exec);
 
 
-    JSC::JSValuePtr result = toJS(exec, WTF::getPtr(imp->parseFromString(str, contentType)));
+    JSC::JSValue result = toJS(exec, WTF::getPtr(imp->parseFromString(str, contentType)));
     return result;
 }
 
-JSC::JSValuePtr toJS(JSC::ExecState* exec, DOMParser* object)
+JSC::JSValue toJS(JSC::ExecState* exec, DOMParser* object)
 {
     return getDOMObjectWrapper<JSDOMParser>(exec, object);
 }
-DOMParser* toDOMParser(JSC::JSValuePtr value)
+DOMParser* toDOMParser(JSC::JSValue value)
 {
-    return value->isObject(&JSDOMParser::s_info) ? static_cast<JSDOMParser*>(asObject(value))->impl() : 0;
+    return value.isObject(&JSDOMParser::s_info) ? static_cast<JSDOMParser*>(asObject(value))->impl() : 0;
 }
 
 }

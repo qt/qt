@@ -35,7 +35,7 @@ using namespace JSC;
 
 namespace WebCore {
 
-ASSERT_CLASS_FITS_IN_CELL(JSSVGMissingGlyphElement)
+ASSERT_CLASS_FITS_IN_CELL(JSSVGMissingGlyphElement);
 
 /* Hash table for prototype */
 
@@ -53,9 +53,9 @@ static const HashTable JSSVGMissingGlyphElementPrototypeTable =
 
 const ClassInfo JSSVGMissingGlyphElementPrototype::s_info = { "SVGMissingGlyphElementPrototype", 0, &JSSVGMissingGlyphElementPrototypeTable, 0 };
 
-JSObject* JSSVGMissingGlyphElementPrototype::self(ExecState* exec)
+JSObject* JSSVGMissingGlyphElementPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSSVGMissingGlyphElement>(exec);
+    return getDOMPrototype<JSSVGMissingGlyphElement>(exec, globalObject);
 }
 
 const ClassInfo JSSVGMissingGlyphElement::s_info = { "SVGMissingGlyphElement", &JSSVGElement::s_info, 0, 0 };
@@ -65,9 +65,9 @@ JSSVGMissingGlyphElement::JSSVGMissingGlyphElement(PassRefPtr<Structure> structu
 {
 }
 
-JSObject* JSSVGMissingGlyphElement::createPrototype(ExecState* exec)
+JSObject* JSSVGMissingGlyphElement::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSSVGMissingGlyphElementPrototype(JSSVGMissingGlyphElementPrototype::createStructure(JSSVGElementPrototype::self(exec)));
+    return new (exec) JSSVGMissingGlyphElementPrototype(JSSVGMissingGlyphElementPrototype::createStructure(JSSVGElementPrototype::self(exec, globalObject)));
 }
 
 

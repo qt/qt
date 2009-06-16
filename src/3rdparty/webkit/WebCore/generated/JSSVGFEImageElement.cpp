@@ -21,7 +21,7 @@
 #include "config.h"
 
 
-#if ENABLE(SVG) && ENABLE(SVG_FILTERS)
+#if ENABLE(SVG) && ENABLE(FILTERS)
 
 #include "SVGElement.h"
 #include "JSSVGFEImageElement.h"
@@ -46,7 +46,7 @@ using namespace JSC;
 
 namespace WebCore {
 
-ASSERT_CLASS_FITS_IN_CELL(JSSVGFEImageElement)
+ASSERT_CLASS_FITS_IN_CELL(JSSVGFEImageElement);
 
 /* Hash table */
 
@@ -90,9 +90,9 @@ static const HashTable JSSVGFEImageElementPrototypeTable =
 
 const ClassInfo JSSVGFEImageElementPrototype::s_info = { "SVGFEImageElementPrototype", 0, &JSSVGFEImageElementPrototypeTable, 0 };
 
-JSObject* JSSVGFEImageElementPrototype::self(ExecState* exec)
+JSObject* JSSVGFEImageElementPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSSVGFEImageElement>(exec);
+    return getDOMPrototype<JSSVGFEImageElement>(exec, globalObject);
 }
 
 bool JSSVGFEImageElementPrototype::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -107,9 +107,9 @@ JSSVGFEImageElement::JSSVGFEImageElement(PassRefPtr<Structure> structure, PassRe
 {
 }
 
-JSObject* JSSVGFEImageElement::createPrototype(ExecState* exec)
+JSObject* JSSVGFEImageElement::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSSVGFEImageElementPrototype(JSSVGFEImageElementPrototype::createStructure(JSSVGElementPrototype::self(exec)));
+    return new (exec) JSSVGFEImageElementPrototype(JSSVGFEImageElementPrototype::createStructure(JSSVGElementPrototype::self(exec, globalObject)));
 }
 
 bool JSSVGFEImageElement::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -117,111 +117,123 @@ bool JSSVGFEImageElement::getOwnPropertySlot(ExecState* exec, const Identifier& 
     return getStaticValueSlot<JSSVGFEImageElement, Base>(exec, &JSSVGFEImageElementTable, this, propertyName, slot);
 }
 
-JSValuePtr jsSVGFEImageElementHref(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGFEImageElementHref(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGFEImageElement* imp = static_cast<SVGFEImageElement*>(static_cast<JSSVGFEImageElement*>(asObject(slot.slotBase()))->impl());
     RefPtr<SVGAnimatedString> obj = imp->hrefAnimated();
     return toJS(exec, obj.get(), imp);
 }
 
-JSValuePtr jsSVGFEImageElementXmllang(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGFEImageElementXmllang(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGFEImageElement* imp = static_cast<SVGFEImageElement*>(static_cast<JSSVGFEImageElement*>(asObject(slot.slotBase()))->impl());
     return jsString(exec, imp->xmllang());
 }
 
-JSValuePtr jsSVGFEImageElementXmlspace(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGFEImageElementXmlspace(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGFEImageElement* imp = static_cast<SVGFEImageElement*>(static_cast<JSSVGFEImageElement*>(asObject(slot.slotBase()))->impl());
     return jsString(exec, imp->xmlspace());
 }
 
-JSValuePtr jsSVGFEImageElementExternalResourcesRequired(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGFEImageElementExternalResourcesRequired(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGFEImageElement* imp = static_cast<SVGFEImageElement*>(static_cast<JSSVGFEImageElement*>(asObject(slot.slotBase()))->impl());
     RefPtr<SVGAnimatedBoolean> obj = imp->externalResourcesRequiredAnimated();
     return toJS(exec, obj.get(), imp);
 }
 
-JSValuePtr jsSVGFEImageElementX(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGFEImageElementX(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGFEImageElement* imp = static_cast<SVGFEImageElement*>(static_cast<JSSVGFEImageElement*>(asObject(slot.slotBase()))->impl());
     RefPtr<SVGAnimatedLength> obj = imp->xAnimated();
     return toJS(exec, obj.get(), imp);
 }
 
-JSValuePtr jsSVGFEImageElementY(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGFEImageElementY(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGFEImageElement* imp = static_cast<SVGFEImageElement*>(static_cast<JSSVGFEImageElement*>(asObject(slot.slotBase()))->impl());
     RefPtr<SVGAnimatedLength> obj = imp->yAnimated();
     return toJS(exec, obj.get(), imp);
 }
 
-JSValuePtr jsSVGFEImageElementWidth(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGFEImageElementWidth(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGFEImageElement* imp = static_cast<SVGFEImageElement*>(static_cast<JSSVGFEImageElement*>(asObject(slot.slotBase()))->impl());
     RefPtr<SVGAnimatedLength> obj = imp->widthAnimated();
     return toJS(exec, obj.get(), imp);
 }
 
-JSValuePtr jsSVGFEImageElementHeight(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGFEImageElementHeight(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGFEImageElement* imp = static_cast<SVGFEImageElement*>(static_cast<JSSVGFEImageElement*>(asObject(slot.slotBase()))->impl());
     RefPtr<SVGAnimatedLength> obj = imp->heightAnimated();
     return toJS(exec, obj.get(), imp);
 }
 
-JSValuePtr jsSVGFEImageElementResult(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGFEImageElementResult(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGFEImageElement* imp = static_cast<SVGFEImageElement*>(static_cast<JSSVGFEImageElement*>(asObject(slot.slotBase()))->impl());
     RefPtr<SVGAnimatedString> obj = imp->resultAnimated();
     return toJS(exec, obj.get(), imp);
 }
 
-JSValuePtr jsSVGFEImageElementClassName(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGFEImageElementClassName(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGFEImageElement* imp = static_cast<SVGFEImageElement*>(static_cast<JSSVGFEImageElement*>(asObject(slot.slotBase()))->impl());
     RefPtr<SVGAnimatedString> obj = imp->classNameAnimated();
     return toJS(exec, obj.get(), imp);
 }
 
-JSValuePtr jsSVGFEImageElementStyle(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGFEImageElementStyle(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGFEImageElement* imp = static_cast<SVGFEImageElement*>(static_cast<JSSVGFEImageElement*>(asObject(slot.slotBase()))->impl());
     return toJS(exec, WTF::getPtr(imp->style()));
 }
 
-void JSSVGFEImageElement::put(ExecState* exec, const Identifier& propertyName, JSValuePtr value, PutPropertySlot& slot)
+void JSSVGFEImageElement::put(ExecState* exec, const Identifier& propertyName, JSValue value, PutPropertySlot& slot)
 {
     lookupPut<JSSVGFEImageElement, Base>(exec, propertyName, value, &JSSVGFEImageElementTable, this, slot);
 }
 
-void setJSSVGFEImageElementXmllang(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSSVGFEImageElementXmllang(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     SVGFEImageElement* imp = static_cast<SVGFEImageElement*>(static_cast<JSSVGFEImageElement*>(thisObject)->impl());
-    imp->setXmllang(value->toString(exec));
+    imp->setXmllang(value.toString(exec));
 }
 
-void setJSSVGFEImageElementXmlspace(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSSVGFEImageElementXmlspace(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     SVGFEImageElement* imp = static_cast<SVGFEImageElement*>(static_cast<JSSVGFEImageElement*>(thisObject)->impl());
-    imp->setXmlspace(value->toString(exec));
+    imp->setXmlspace(value.toString(exec));
 }
 
-JSValuePtr jsSVGFEImageElementPrototypeFunctionGetPresentationAttribute(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsSVGFEImageElementPrototypeFunctionGetPresentationAttribute(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSSVGFEImageElement::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSSVGFEImageElement::s_info))
         return throwError(exec, TypeError);
     JSSVGFEImageElement* castedThisObj = static_cast<JSSVGFEImageElement*>(asObject(thisValue));
     SVGFEImageElement* imp = static_cast<SVGFEImageElement*>(castedThisObj->impl());
-    const UString& name = args.at(exec, 0)->toString(exec);
+    const UString& name = args.at(0).toString(exec);
 
 
-    JSC::JSValuePtr result = toJS(exec, WTF::getPtr(imp->getPresentationAttribute(name)));
+    JSC::JSValue result = toJS(exec, WTF::getPtr(imp->getPresentationAttribute(name)));
     return result;
 }
 
 
 }
 
-#endif // ENABLE(SVG) && ENABLE(SVG_FILTERS)
+#endif // ENABLE(SVG) && ENABLE(FILTERS)

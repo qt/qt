@@ -38,7 +38,7 @@ using namespace JSC;
 
 namespace WebCore {
 
-ASSERT_CLASS_FITS_IN_CELL(JSDocumentFragment)
+ASSERT_CLASS_FITS_IN_CELL(JSDocumentFragment);
 
 /* Hash table */
 
@@ -74,13 +74,13 @@ public:
     JSDocumentFragmentConstructor(ExecState* exec)
         : DOMObject(JSDocumentFragmentConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
     {
-        putDirect(exec->propertyNames().prototype, JSDocumentFragmentPrototype::self(exec), None);
+        putDirect(exec->propertyNames().prototype, JSDocumentFragmentPrototype::self(exec, exec->lexicalGlobalObject()), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
     static const ClassInfo s_info;
 
-    static PassRefPtr<Structure> createStructure(JSValuePtr proto) 
+    static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
         return Structure::create(proto, TypeInfo(ObjectType, ImplementsHasInstance)); 
     }
@@ -111,9 +111,9 @@ static const HashTable JSDocumentFragmentPrototypeTable =
 
 const ClassInfo JSDocumentFragmentPrototype::s_info = { "DocumentFragmentPrototype", 0, &JSDocumentFragmentPrototypeTable, 0 };
 
-JSObject* JSDocumentFragmentPrototype::self(ExecState* exec)
+JSObject* JSDocumentFragmentPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSDocumentFragment>(exec);
+    return getDOMPrototype<JSDocumentFragment>(exec, globalObject);
 }
 
 bool JSDocumentFragmentPrototype::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -121,16 +121,16 @@ bool JSDocumentFragmentPrototype::getOwnPropertySlot(ExecState* exec, const Iden
     return getStaticFunctionSlot<JSObject>(exec, &JSDocumentFragmentPrototypeTable, this, propertyName, slot);
 }
 
-const ClassInfo JSDocumentFragment::s_info = { "DocumentFragment", &JSEventTargetNode::s_info, &JSDocumentFragmentTable, 0 };
+const ClassInfo JSDocumentFragment::s_info = { "DocumentFragment", &JSNode::s_info, &JSDocumentFragmentTable, 0 };
 
 JSDocumentFragment::JSDocumentFragment(PassRefPtr<Structure> structure, PassRefPtr<DocumentFragment> impl)
-    : JSEventTargetNode(structure, impl)
+    : JSNode(structure, impl)
 {
 }
 
-JSObject* JSDocumentFragment::createPrototype(ExecState* exec)
+JSObject* JSDocumentFragment::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSDocumentFragmentPrototype(JSDocumentFragmentPrototype::createStructure(JSEventTargetNodePrototype::self(exec)));
+    return new (exec) JSDocumentFragmentPrototype(JSDocumentFragmentPrototype::createStructure(JSNodePrototype::self(exec, globalObject)));
 }
 
 bool JSDocumentFragment::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -138,41 +138,43 @@ bool JSDocumentFragment::getOwnPropertySlot(ExecState* exec, const Identifier& p
     return getStaticValueSlot<JSDocumentFragment, Base>(exec, &JSDocumentFragmentTable, this, propertyName, slot);
 }
 
-JSValuePtr jsDocumentFragmentConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDocumentFragmentConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     return static_cast<JSDocumentFragment*>(asObject(slot.slotBase()))->getConstructor(exec);
 }
-JSValuePtr JSDocumentFragment::getConstructor(ExecState* exec)
+JSValue JSDocumentFragment::getConstructor(ExecState* exec)
 {
     return getDOMConstructor<JSDocumentFragmentConstructor>(exec);
 }
 
-JSValuePtr jsDocumentFragmentPrototypeFunctionQuerySelector(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsDocumentFragmentPrototypeFunctionQuerySelector(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSDocumentFragment::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSDocumentFragment::s_info))
         return throwError(exec, TypeError);
     JSDocumentFragment* castedThisObj = static_cast<JSDocumentFragment*>(asObject(thisValue));
     DocumentFragment* imp = static_cast<DocumentFragment*>(castedThisObj->impl());
     ExceptionCode ec = 0;
-    const UString& selectors = valueToStringWithUndefinedOrNullCheck(exec, args.at(exec, 0));
+    const UString& selectors = args.at(0).toString(exec);
 
 
-    JSC::JSValuePtr result = toJS(exec, WTF::getPtr(imp->querySelector(selectors, ec)));
+    JSC::JSValue result = toJS(exec, WTF::getPtr(imp->querySelector(selectors, ec)));
     setDOMException(exec, ec);
     return result;
 }
 
-JSValuePtr jsDocumentFragmentPrototypeFunctionQuerySelectorAll(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsDocumentFragmentPrototypeFunctionQuerySelectorAll(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSDocumentFragment::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSDocumentFragment::s_info))
         return throwError(exec, TypeError);
     JSDocumentFragment* castedThisObj = static_cast<JSDocumentFragment*>(asObject(thisValue));
     DocumentFragment* imp = static_cast<DocumentFragment*>(castedThisObj->impl());
     ExceptionCode ec = 0;
-    const UString& selectors = valueToStringWithUndefinedOrNullCheck(exec, args.at(exec, 0));
+    const UString& selectors = args.at(0).toString(exec);
 
 
-    JSC::JSValuePtr result = toJS(exec, WTF::getPtr(imp->querySelectorAll(selectors, ec)));
+    JSC::JSValue result = toJS(exec, WTF::getPtr(imp->querySelectorAll(selectors, ec)));
     setDOMException(exec, ec);
     return result;
 }

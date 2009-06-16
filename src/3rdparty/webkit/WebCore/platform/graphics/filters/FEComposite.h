@@ -22,9 +22,11 @@
 #ifndef SVGFEComposite_h
 #define SVGFEComposite_h
 
-#if ENABLE(SVG) && ENABLE(SVG_FILTERS)
+#if ENABLE(FILTERS)
 #include "FilterEffect.h"
+
 #include "PlatformString.h"
+#include "Filter.h"
 
 namespace WebCore {
 
@@ -58,8 +60,8 @@ namespace WebCore {
         float k4() const;
         void setK4(float);
         
-        virtual void apply();
-        virtual void dump();
+        void apply(Filter*);
+        void dump();
 
     private:
         FEComposite(FilterEffect*, FilterEffect*, const CompositeOperationType&,
@@ -76,6 +78,6 @@ namespace WebCore {
 
 } // namespace WebCore
 
-#endif // ENABLE(SVG) && ENABLE(SVG_FILTERS)
+#endif // ENABLE(FILTERS)
 
 #endif // SVGFEComposite_h

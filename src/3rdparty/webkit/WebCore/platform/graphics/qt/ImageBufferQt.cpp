@@ -101,7 +101,7 @@ Image* ImageBuffer::image() const
 PassRefPtr<ImageData> ImageBuffer::getImageData(const IntRect& rect) const
 {
     PassRefPtr<ImageData> result = ImageData::create(rect.width(), rect.height());
-    unsigned char* data = result->data()->data();
+    unsigned char* data = result->data()->data()->data();
 
     if (rect.x() < 0 || rect.y() < 0 || (rect.x() + rect.width()) > m_size.width() || (rect.y() + rect.height()) > m_size.height())
         memset(data, 0, result->data()->length());
@@ -184,9 +184,8 @@ void ImageBuffer::putImageData(ImageData* source, const IntRect& sourceRect, con
         m_data.m_painter->end();
 
     QImage image = m_data.m_pixmap.toImage().convertToFormat(QImage::Format_ARGB32);
-    ASSERT(!image.isNull());
 
-    unsigned char* srcRows = source->data()->data() + originy * srcBytesPerRow + originx * 4;
+    unsigned char* srcRows = source->data()->data()->data() + originy * srcBytesPerRow + originx * 4;
     for (int y = 0; y < numRows; ++y) {
         quint32* scanLine = reinterpret_cast<quint32*>(image.scanLine(y + desty));
         for (int x = 0; x < numColumns; x++) {

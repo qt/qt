@@ -1407,7 +1407,7 @@ void QFileSystemModel::setIconProvider(QFileIconProvider *provider)
 {
     Q_D(QFileSystemModel);
     d->fileInfoGatherer.setIconProvider(provider);
-    qApp->processEvents();
+    QApplication::processEvents();
     d->root.updateIcon(provider, QString());
 }
 

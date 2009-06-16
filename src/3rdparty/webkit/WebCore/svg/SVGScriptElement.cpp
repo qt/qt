@@ -27,6 +27,7 @@
 
 #include "Document.h"
 #include "EventNames.h"
+#include "MappedAttribute.h"
 #include "SVGNames.h"
 
 namespace WebCore {
@@ -173,6 +174,11 @@ String SVGScriptElement::languageAttributeValue() const
     return String();
 }
 
+String SVGScriptElement::forAttributeValue() const
+{
+    return String();
+}
+
 void SVGScriptElement::dispatchLoadEvent()
 {
     bool externalResourcesRequired = externalResourcesRequiredBaseValue();
@@ -203,7 +209,7 @@ void SVGScriptElement::dispatchLoadEvent()
 
 void SVGScriptElement::dispatchErrorEvent()
 {
-    dispatchEventForType(eventNames().errorEvent, true, false);
+    dispatchEvent(eventNames().errorEvent, true, false);
 }
 
 }

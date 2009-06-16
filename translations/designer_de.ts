@@ -1703,7 +1703,7 @@ Script: %3</source>
     <message>
         <location line="+31"/>
         <source>Qt Designer &amp;Help</source>
-        <translation>Qt Designer &amp;Hilfe</translation>
+        <translation>&amp;Hilfe zum Qt Designer</translation>
     </message>
     <message>
         <location line="+7"/>
@@ -1713,7 +1713,7 @@ Script: %3</source>
     <message>
         <location line="+7"/>
         <source>What&apos;s New in Qt Designer?</source>
-        <translation>Was gibt es Neues beim  Qt Designer?</translation>
+        <translation>Was gibt es Neues beim Qt Designer?</translation>
     </message>
     <message>
         <location line="+7"/>
@@ -1742,14 +1742,14 @@ Script: %3</source>
         <location line="+37"/>
         <location line="+160"/>
         <source>Designer UI files (*.%1);;All Files (*)</source>
-        <translation>Designer UI-Dateien (*.%1);;Alle Dateien (*)</translation>
+        <translation>Designer-UI-Dateien (*.%1);;Alle Dateien (*)</translation>
     </message>
     <message>
         <location line="-615"/>
         <source>%1 already exists.
 Do you want to replace it?</source>
         <translation>Die Datei %1 existiert bereits.
-Wollen Sie sie überschreiben?</translation>
+Möchten Sie sie überschreiben?</translation>
     </message>
     <message>
         <location line="-26"/>
@@ -1769,7 +1769,7 @@ Wollen Sie sie überschreiben?</translation>
     <message>
         <location line="+0"/>
         <source>Feature not implemented yet!</source>
-        <translation>Diese Funktionalität ist noch nicht implementiert!</translation>
+        <translation>Diese Funktionalität ist noch nicht implementiert.</translation>
     </message>
     <message>
         <location line="+59"/>
@@ -5750,12 +5750,12 @@ Please select another name.</source>
     <message>
         <location line="+1"/>
         <source>Scan for newly installed custom widget plugins.</source>
-        <translation>Sucht nach neuinstallierten Plugins mit benutzerdefinierten Widgets.</translation>
+        <translation>Nach neu installierten Plugins mit benutzerdefinierten Widgets suchen.</translation>
     </message>
     <message>
         <location line="+48"/>
         <source>Qt Designer couldn&apos;t find any plugins</source>
-        <translation>Qt Designer konnte keine plugins finden</translation>
+        <translation>Qt Designer kann keine Plugins finden</translation>
     </message>
     <message>
         <location line="+3"/>
@@ -6420,7 +6420,7 @@ Klasse: %2</translation>
     <message>
         <location line="-50"/>
         <source>&lt;html&gt;Enter a Qt Script snippet to be executed while loading the form.&lt;br&gt;The widget and its children are accessible via the variables &lt;i&gt;widget&lt;/i&gt; and &lt;i&gt;childWidgets&lt;/i&gt;, respectively.</source>
-        <translation>&lt;html&gt;Geben Sie ein Qt Script zur Ausführung während des Formularaufbaus ein.&lt;br&gt;Auf das Widget und seine untergeordneten Widgets kann durch die Variablen &lt;i&gt;widget&lt;/i&gt; und &lt;i&gt;childWidgets&lt;/i&gt; zugegriffen werden.</translation>
+        <translation>&lt;html&gt;Geben Sie ein Qt-Skript zur Ausführung während des Formularaufbaus ein.&lt;br&gt;Auf das Widget und seine untergeordneten Widgets kann durch die Variablen &lt;i&gt;widget&lt;/i&gt; und &lt;i&gt;childWidgets&lt;/i&gt; zugegriffen werden.</translation>
     </message>
 </context>
 <context>

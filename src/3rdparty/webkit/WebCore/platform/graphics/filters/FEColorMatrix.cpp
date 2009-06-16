@@ -21,8 +21,10 @@
 
 #include "config.h"
 
-#if ENABLE(SVG) && ENABLE(SVG_FILTERS)
+#if ENABLE(FILTERS)
 #include "FEColorMatrix.h"
+
+#include "Filter.h"
 
 namespace WebCore {
 
@@ -59,7 +61,7 @@ void FEColorMatrix::setValues(const Vector<float> &values)
     m_values = values;
 }
 
-void FEColorMatrix::apply()
+void FEColorMatrix::apply(Filter*)
 {
 }
 
@@ -69,4 +71,4 @@ void FEColorMatrix::dump()
 
 } // namespace WebCore
 
-#endif // ENABLE(SVG) && ENABLE(SVG_FILTERS)
+#endif // ENABLE(FILTERS)

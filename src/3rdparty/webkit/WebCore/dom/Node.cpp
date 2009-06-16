@@ -2,8 +2,9 @@
  * Copyright (C) 1999 Lars Knoll (knoll@kde.org)
  *           (C) 1999 Antti Koivisto (koivisto@kde.org)
  *           (C) 2001 Dirk Mueller (mueller@kde.org)
- * Copyright (C) 2004, 2005, 2006, 2007, 2008 Apple Inc. All rights reserved.
+ * Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009 Apple Inc. All rights reserved.
  * Copyright (C) 2008 Nokia Corporation and/or its subsidiary(-ies)
+ * Copyright (C) 2009 Torch Mobile Inc. All rights reserved. (http://www.torchmobile.com/)
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -24,6 +25,7 @@
 #include "config.h"
 #include "Node.h"
 
+#include "Attr.h"
 #include "CSSParser.h"
 #include "CSSRule.h"
 #include "CSSRuleList.h"
@@ -39,24 +41,59 @@
 #include "Document.h"
 #include "DynamicNodeList.h"
 #include "Element.h"
+#include "Event.h"
+#include "EventException.h"
+#include "EventHandler.h"
+#include "EventListener.h"
+#include "EventNames.h"
 #include "ExceptionCode.h"
 #include "Frame.h"
+#include "FrameView.h"
 #include "HTMLNames.h"
-#include "JSDOMBinding.h"
+#include "KeyboardEvent.h"
 #include "Logging.h"
+#include "MouseEvent.h"
+#include "MutationEvent.h"
 #include "NameNodeList.h"
-#include "NamedAttrMap.h"
+#include "NamedNodeMap.h"
 #include "NodeRareData.h"
+#include "Page.h"
+#include "PlatformMouseEvent.h"
+#include "PlatformWheelEvent.h"
 #include "ProcessingInstruction.h"
+#include "ProgressEvent.h"
+#include "RegisteredEventListener.h"
 #include "RenderObject.h"
 #include "ScriptController.h"
 #include "SelectorNodeList.h"
 #include "StringBuilder.h"
 #include "TagNodeList.h"
 #include "Text.h"
+#include "TextEvent.h"
+#include "UIEvent.h"
+#include "UIEventWithKeyState.h"
+#include "WebKitAnimationEvent.h"
+#include "WebKitTransitionEvent.h"
+#include "WheelEvent.h"
 #include "XMLNames.h"
 #include "htmlediting.h"
+#include <wtf/HashSet.h>
+#include <wtf/PassOwnPtr.h>
 #include <wtf/RefCountedLeakCounter.h>
+#include <wtf/UnusedParam.h>
+
+#if ENABLE(DOM_STORAGE)
+#include "StorageEvent.h"
+#endif
+
+#if ENABLE(SVG)
+#include "SVGElementInstance.h"
+#include "SVGUseElement.h"
+#endif
+
+#if ENABLE(XHTMLMP)
+#include "HTMLNoScriptElement.h"
+#endif
 
 #define DUMP_NODE_STATISTICS 0
 
@@ -65,6 +102,8 @@ using namespace std;
 namespace WebCore {
 
 using namespace HTMLNames;
+
+static HashSet<Node*>* gNodesDispatchingSimulatedClicks = 0;
 
 bool Node::isSupported(const String& feature, const String& version)
 {
@@ -120,7 +159,7 @@ void Node::dumpStatistics()
                     result.first->second++;
 
                 // AttributeMap stats
-                if (NamedAttrMap* attrMap = element->attributes(true)) {
+                if (NamedNodeMap* attrMap = element->attributes(true)) {
                     attributes += attrMap->length();
                     ++attrMaps;
                     if (attrMap->isMappedAttributeMap())
@@ -217,7 +256,7 @@ void Node::dumpStatistics()
     printf("  Number of MappedAttributes: %zu [%zu]\n", mappedAttributes, sizeof(MappedAttribute));
     printf("  Number of MappedAttributes with a StyleDeclaration: %zu\n", mappedAttributesWithStyleDecl);
     printf("  Number of Attributes with an Attr: %zu\n", attributesWithAttr);
-    printf("  Number of NamedAttrMaps: %zu\n", attrMaps);
+    printf("  Number of NamedNodeMaps: %zu\n", attrMaps);
     printf("  Number of NamedMappedAttrMap: %zu\n", mappedAttrMaps);
 #endif
 }
@@ -250,9 +289,9 @@ Node::StyleChange Node::diff( RenderStyle *s1, RenderStyle *s2 )
     // style in cases where you need to.
     StyleChange ch = NoInherit;
     EDisplay display1 = s1 ? s1->display() : NONE;
-    bool fl1 = s1 && s1->hasPseudoStyle(RenderStyle::FIRST_LETTER);
+    bool fl1 = s1 && s1->hasPseudoStyle(FIRST_LETTER);
     EDisplay display2 = s2 ? s2->display() : NONE;
-    bool fl2 = s2 && s2->hasPseudoStyle(RenderStyle::FIRST_LETTER);
+    bool fl2 = s2 && s2->hasPseudoStyle(FIRST_LETTER);
         
     if (display1 != display2 || fl1 != fl2 || (s1 && s2 && !s1->contentDataEquivalent(s2)))
         ch = Detach;
@@ -265,21 +304,21 @@ Node::StyleChange Node::diff( RenderStyle *s1, RenderStyle *s2 )
     
     // If the pseudoStyles have changed, we want any StyleChange that is not NoChange
     // because setStyle will do the right thing with anything else.
-    if (ch == NoChange && s1->hasPseudoStyle(RenderStyle::BEFORE)) {
-        RenderStyle* ps2 = s2->getCachedPseudoStyle(RenderStyle::BEFORE);
+    if (ch == NoChange && s1->hasPseudoStyle(BEFORE)) {
+        RenderStyle* ps2 = s2->getCachedPseudoStyle(BEFORE);
         if (!ps2)
             ch = NoInherit;
         else {
-            RenderStyle* ps1 = s1->getCachedPseudoStyle(RenderStyle::BEFORE);
+            RenderStyle* ps1 = s1->getCachedPseudoStyle(BEFORE);
             ch = ps1 && *ps1 == *ps2 ? NoChange : NoInherit;
         }
     }
-    if (ch == NoChange && s1->hasPseudoStyle(RenderStyle::AFTER)) {
-        RenderStyle* ps2 = s2->getCachedPseudoStyle(RenderStyle::AFTER);
+    if (ch == NoChange && s1->hasPseudoStyle(AFTER)) {
+        RenderStyle* ps2 = s2->getCachedPseudoStyle(AFTER);
         if (!ps2)
             ch = NoInherit;
         else {
-            RenderStyle* ps1 = s1->getCachedPseudoStyle(RenderStyle::AFTER);
+            RenderStyle* ps1 = s1->getCachedPseudoStyle(AFTER);
             ch = ps2 && *ps1 == *ps2 ? NoChange : NoInherit;
         }
     }
@@ -287,7 +326,7 @@ Node::StyleChange Node::diff( RenderStyle *s1, RenderStyle *s2 )
     return ch;
 }
 
-Node::Node(Document* doc, bool isElement, bool isContainer)
+Node::Node(Document* doc, bool isElement, bool isContainer, bool isText)
     : m_document(doc)
     , m_previous(0)
     , m_next(0)
@@ -296,7 +335,7 @@ Node::Node(Document* doc, bool isElement, bool isContainer)
     , m_hasId(false)
     , m_hasClass(false)
     , m_attached(false)
-    , m_hasChangedChild(false)
+    , m_childNeedsStyleRecalc(false)
     , m_inDocument(false)
     , m_isLink(false)
     , m_active(false)
@@ -307,6 +346,7 @@ Node::Node(Document* doc, bool isElement, bool isContainer)
     , m_hasRareData(false)
     , m_isElement(isElement)
     , m_isContainer(isContainer)
+    , m_isText(isText)
     , m_parsingChildrenFinished(true)
 #if ENABLE(SVG)
     , m_areSVGAttributesValid(true)
@@ -342,6 +382,9 @@ Node::~Node()
     liveNodeSet.remove(this);
 #endif
 
+    if (!eventListeners().isEmpty() && !inDocument())
+        document()->unregisterDisconnectedNodeWithEventListeners(this);
+
     if (!hasRareData())
         ASSERT(!NodeRareData::rareDataMap().contains(this));
     else {
@@ -364,18 +407,51 @@ Node::~Node()
         m_next->setPreviousSibling(0);
 }
 
-void Node::setDocument(Document* doc)
+#ifdef NDEBUG
+
+static inline void setWillMoveToNewOwnerDocumentWasCalled(bool)
 {
-    if (inDocument() || m_document == doc)
+}
+
+static inline void setDidMoveToNewOwnerDocumentWasCalled(bool)
+{
+}
+
+#else
+    
+static bool willMoveToNewOwnerDocumentWasCalled;
+static bool didMoveToNewOwnerDocumentWasCalled;
+
+static void setWillMoveToNewOwnerDocumentWasCalled(bool wasCalled)
+{
+    willMoveToNewOwnerDocumentWasCalled = wasCalled;
+}
+
+static void setDidMoveToNewOwnerDocumentWasCalled(bool wasCalled)
+{
+    didMoveToNewOwnerDocumentWasCalled = wasCalled;
+}
+    
+#endif
+    
+void Node::setDocument(Document* document)
+{
+    if (inDocument() || m_document == document)
         return;
 
+    setWillMoveToNewOwnerDocumentWasCalled(false);
     willMoveToNewOwnerDocument();
+    ASSERT(willMoveToNewOwnerDocumentWasCalled);
 
-    updateDOMNodeDocument(this, m_document.get(), doc);
+#if USE(JSC)
+    updateDOMNodeDocument(this, m_document.get(), document);
+#endif
 
-    m_document = doc;
+    m_document = document;
 
+    setDidMoveToNewOwnerDocumentWasCalled(false);
     didMoveToNewOwnerDocument();
+    ASSERT(didMoveToNewOwnerDocumentWasCalled);
 }
 
 NodeRareData* Node::rareData() const
@@ -431,7 +507,7 @@ PassRefPtr<NodeList> Node::childNodes()
 {
     NodeRareData* data = ensureRareData();
     if (!data->nodeLists()) {
-        data->setNodeLists(auto_ptr<NodeListsNodeData>(new NodeListsNodeData));
+        data->setNodeLists(NodeListsNodeData::create());
         document()->addNodeListCache();
     }
 
@@ -491,43 +567,57 @@ void Node::remove(ExceptionCode& ec)
 void Node::normalize()
 {
     // Go through the subtree beneath us, normalizing all nodes. This means that
-    // any two adjacent text nodes are merged together.
+    // any two adjacent text nodes are merged and any empty text nodes are removed.
 
     RefPtr<Node> node = this;
     while (Node* firstChild = node->firstChild())
         node = firstChild;
-    for (; node; node = node->traverseNextNodePostOrder()) {
+    while (node) {
         NodeType type = node->nodeType();
         if (type == ELEMENT_NODE)
             static_cast<Element*>(node.get())->normalizeAttributes();
 
-        Node* firstChild = node->firstChild();
-        if (firstChild && !firstChild->nextSibling() && firstChild->isTextNode()) {
-            Text* text = static_cast<Text*>(firstChild);
-            if (!text->length()) {
-                ExceptionCode ec;
-                text->remove(ec);
-            }
-        }
-
         if (node == this)
             break;
 
-        if (type == TEXT_NODE) {
-            while (1) {
-                Node* nextSibling = node->nextSibling();
-                if (!nextSibling || !nextSibling->isTextNode())
-                    break;
-                // Current child and the next one are both text nodes. Merge them.
-                Text* text = static_cast<Text*>(node.get());
-                RefPtr<Text> nextText = static_cast<Text*>(nextSibling);
-                unsigned offset = text->length();
-                ExceptionCode ec;
-                text->appendData(nextText->data(), ec);
-                document()->textNodesMerged(nextText.get(), offset);
-                nextText->remove(ec);
-            }
+        if (type != TEXT_NODE) {
+            node = node->traverseNextNodePostOrder();
+            continue;
         }
+
+        Text* text = static_cast<Text*>(node.get());
+
+        // Remove empty text nodes.
+        if (!text->length()) {
+            // Care must be taken to get the next node before removing the current node.
+            node = node->traverseNextNodePostOrder();
+            ExceptionCode ec;
+            text->remove(ec);
+            continue;
+        }
+
+        // Merge text nodes.
+        while (Node* nextSibling = node->nextSibling()) {
+            if (!nextSibling->isTextNode())
+                break;
+            RefPtr<Text> nextText = static_cast<Text*>(nextSibling);
+
+            // Remove empty text nodes.
+            if (!nextText->length()) {
+                ExceptionCode ec;
+                nextText->remove(ec);
+                continue;
+            }
+
+            // Both non-empty text nodes. Merge them.
+            unsigned offset = text->length();
+            ExceptionCode ec;
+            text->appendData(nextText->data(), ec);
+            document()->textNodesMerged(nextText.get(), offset);
+            nextText->remove(ec);
+        }
+
+        node = node->traverseNextNodePostOrder();
     }
 }
 
@@ -575,18 +665,25 @@ bool Node::shouldUseInputMethod() const
     return isContentEditable();
 }
 
+RenderBox* Node::renderBox() const
+{
+    return m_renderer && m_renderer->isBox() ? toRenderBox(m_renderer) : 0;
+}
+
+RenderBoxModelObject* Node::renderBoxModelObject() const
+{
+    return m_renderer && m_renderer->isBoxModelObject() ? toRenderBoxModelObject(m_renderer) : 0;
+}
+
 IntRect Node::getRect() const
 {
     // FIXME: broken with transforms
-    if (renderer()) {
-        FloatPoint absPos = renderer()->localToAbsolute();
-        return IntRect(roundedIntPoint(absPos),
-                       IntSize(renderer()->width(), renderer()->height() + renderer()->borderTopExtra() + renderer()->borderBottomExtra()));
-    }
+    if (renderer())
+        return renderer()->absoluteBoundingBoxRect();
     return IntRect();
 }
 
-void Node::setChanged(StyleChangeType changeType)
+void Node::setNeedsStyleRecalc(StyleChangeType changeType)
 {
     if ((changeType != NoStyleChange) && !attached()) // changed compared to what?
         return;
@@ -595,9 +692,10 @@ void Node::setChanged(StyleChangeType changeType)
         m_styleChange = changeType;
 
     if (m_styleChange != NoStyleChange) {
-        for (Node* p = parentNode(); p && !p->hasChangedChild(); p = p->parentNode())
-            p->setHasChangedChild(true);
-        document()->setDocumentChanged(true);
+        for (Node* p = parentNode(); p && !p->childNeedsStyleRecalc(); p = p->parentNode())
+            p->setChildNeedsStyleRecalc(true);
+        if (document()->childNeedsStyleRecalc())
+            document()->scheduleStyleRecalc();
     }
 }
 
@@ -619,7 +717,7 @@ void Node::lazyAttach()
         }
 
         if (n->firstChild())
-            n->setHasChangedChild(true);
+            n->setChildNeedsStyleRecalc(true);
         n->m_styleChange = FullStyleChange;
         n->m_attached = true;
     }
@@ -630,9 +728,10 @@ void Node::lazyAttach()
             lazyAttachedAncestor->detach();
         lazyAttachedAncestor->attach();
     } else {
-        for (Node* p = parentNode(); p && !p->hasChangedChild(); p = p->parentNode())
-            p->setHasChangedChild(true);
-        document()->setDocumentChanged(true);
+        for (Node* p = parentNode(); p && !p->childNeedsStyleRecalc(); p = p->parentNode())
+            p->setChildNeedsStyleRecalc(true);
+        if (document()->childNeedsStyleRecalc())
+            document()->scheduleStyleRecalc();
     }
 }
 
@@ -681,7 +780,7 @@ void Node::registerDynamicNodeList(DynamicNodeList* list)
 {
     NodeRareData* data = ensureRareData();
     if (!data->nodeLists()) {
-        data->setNodeLists(auto_ptr<NodeListsNodeData>(new NodeListsNodeData));
+        data->setNodeLists(NodeListsNodeData::create());
         document()->addNodeListCache();
     } else if (!m_document->hasNodeListCaches()) {
         // We haven't been receiving notifications while there were no registered lists, so the cache is invalid now.
@@ -1073,21 +1172,6 @@ void Node::detach()
     m_inDetach = false;
 }
 
-void Node::insertedIntoDocument()
-{
-    setInDocument(true);
-    insertedIntoTree(false);
-}
-
-void Node::removedFromDocument()
-{
-    if (m_document && m_document->getCSSTarget() == this)
-        m_document->setCSSTarget(0);
-
-    setInDocument(false);
-    removedFromTree(false);
-}
-
 Node *Node::previousEditable() const
 {
     Node *node = previousLeafNode();
@@ -1198,7 +1282,7 @@ void Node::createRendererIfNeeded()
     
     RenderObject* parentRenderer = parent->renderer();
     if (parentRenderer && parentRenderer->canHaveChildren()
-#if ENABLE(SVG)
+#if ENABLE(SVG) || ENABLE(XHTMLMP)
         && parent->childShouldCreateRenderer(this)
 #endif
         ) {
@@ -1219,8 +1303,14 @@ void Node::createRendererIfNeeded()
 
 PassRefPtr<RenderStyle> Node::styleForRenderer()
 {
-    if (isElementNode())
-        return document()->styleSelector()->styleForElement(static_cast<Element*>(this));
+    if (isElementNode()) {
+        bool allowSharing = true;
+#if ENABLE(XHTMLMP)
+        // noscript needs the display property protected - it's a special case
+        allowSharing = localName() != HTMLNames::noscriptTag.localName();
+#endif
+        return document()->styleSelector()->styleForElement(static_cast<Element*>(this), 0, allowSharing);
+    }
     return parentNode() && parentNode()->renderer() ? parentNode()->renderer()->style() : 0;
 }
 
@@ -1309,7 +1399,7 @@ bool Node::isBlockFlow() const
 
 bool Node::isBlockFlowOrBlockTable() const
 {
-    return renderer() && (renderer()->isBlockFlow() || renderer()->isTable() && !renderer()->isInline());
+    return renderer() && (renderer()->isBlockFlow() || (renderer()->isTable() && !renderer()->isInline()));
 }
 
 bool Node::isEditableBlock() const
@@ -1384,7 +1474,7 @@ PassRefPtr<NodeList> Node::getElementsByTagNameNS(const AtomicString& namespaceU
     
     NodeRareData* data = ensureRareData();
     if (!data->nodeLists()) {
-        data->setNodeLists(auto_ptr<NodeListsNodeData>(new NodeListsNodeData));
+        data->setNodeLists(NodeListsNodeData::create());
         document()->addNodeListCache();
     }
 
@@ -1405,7 +1495,7 @@ PassRefPtr<NodeList> Node::getElementsByName(const String& elementName)
 {
     NodeRareData* data = ensureRareData();
     if (!data->nodeLists()) {
-        data->setNodeLists(auto_ptr<NodeListsNodeData>(new NodeListsNodeData));
+        data->setNodeLists(NodeListsNodeData::create());
         document()->addNodeListCache();
     }
 
@@ -1420,7 +1510,7 @@ PassRefPtr<NodeList> Node::getElementsByClassName(const String& classNames)
 {
     NodeRareData* data = ensureRareData();
     if (!data->nodeLists()) {
-        data->setNodeLists(auto_ptr<NodeListsNodeData>(new NodeListsNodeData));
+        data->setNodeLists(NodeListsNodeData::create());
         document()->addNodeListCache();
     }
 
@@ -1585,8 +1675,8 @@ bool Node::isEqualNode(Node *other) const
     if (nodeValue() != other->nodeValue())
         return false;
     
-    NamedAttrMap *attrs = attributes();
-    NamedAttrMap *otherAttrs = other->attributes();
+    NamedNodeMap *attrs = attributes();
+    NamedNodeMap *otherAttrs = other->attributes();
     
     if (!attrs && otherAttrs)
         return false;
@@ -1627,7 +1717,7 @@ bool Node::isDefaultNamespace(const AtomicString &namespaceURI) const
                 return elem->namespaceURI() == namespaceURI;
 
             if (elem->hasAttributes()) {
-                NamedAttrMap *attrs = elem->attributes();
+                NamedNodeMap *attrs = elem->attributes();
                 
                 for (unsigned i = 0; i < attrs->length(); i++) {
                     Attribute *attr = attrs->attributeItem(i);
@@ -1713,7 +1803,7 @@ String Node::lookupNamespaceURI(const String &prefix) const
                 return elem->namespaceURI();
             
             if (elem->hasAttributes()) {
-                NamedAttrMap *attrs = elem->attributes();
+                NamedNodeMap *attrs = elem->attributes();
                 
                 for (unsigned i = 0; i < attrs->length(); i++) {
                     Attribute *attr = attrs->attributeItem(i);
@@ -1768,7 +1858,7 @@ String Node::lookupNamespacePrefix(const AtomicString &_namespaceURI, const Elem
         return prefix();
     
     if (hasAttributes()) {
-        NamedAttrMap *attrs = attributes();
+        NamedNodeMap *attrs = attributes();
         
         for (unsigned i = 0; i < attrs->length(); i++) {
             Attribute *attr = attrs->attributeItem(i);
@@ -1909,7 +1999,7 @@ unsigned short Node::compareDocumentPosition(Node* otherNode)
     if (attr1 && attr2 && start1 == start2 && start1) {
         // We are comparing two attributes on the same node.  Crawl our attribute map
         // and see which one we hit first.
-        NamedAttrMap* map = attr1->ownerElement()->attributes(true);
+        NamedNodeMap* map = attr1->ownerElement()->attributes(true);
         unsigned length = map->length();
         for (unsigned i = 0; i < length; ++i) {
             // If neither of the two determining nodes is a child node and nodeType is the same for both determining nodes, then an 
@@ -1974,6 +2064,36 @@ unsigned short Node::compareDocumentPosition(Node* otherNode)
     return index1 < index2 ? 
                DOCUMENT_POSITION_FOLLOWING | DOCUMENT_POSITION_CONTAINED_BY :
                DOCUMENT_POSITION_PRECEDING | DOCUMENT_POSITION_CONTAINS;
+}
+
+FloatPoint Node::convertToPage(const FloatPoint& p) const
+{
+    // If there is a renderer, just ask it to do the conversion
+    if (renderer())
+        return renderer()->localToAbsolute(p, false, true);
+    
+    // Otherwise go up the tree looking for a renderer
+    Element *parent = ancestorElement();
+    if (parent)
+        return parent->convertToPage(p);
+
+    // No parent - no conversion needed
+    return p;
+}
+
+FloatPoint Node::convertFromPage(const FloatPoint& p) const
+{
+    // If there is a renderer, just ask it to do the conversion
+    if (renderer())
+        return renderer()->absoluteToLocal(p, false, true);
+
+    // Otherwise go up the tree looking for a renderer
+    Element *parent = ancestorElement();
+    if (parent)
+        return parent->convertFromPage(p);
+
+    // No parent - no conversion needed
+    return p;
 }
 
 #ifndef NDEBUG
@@ -2111,6 +2231,1067 @@ ContainerNode* Node::eventParentNode()
 }
 
 // --------
+
+ScriptExecutionContext* Node::scriptExecutionContext() const
+{
+    return document();
+}
+
+const RegisteredEventListenerVector& Node::eventListeners() const
+{
+    if (hasRareData()) {
+        if (RegisteredEventListenerVector* listeners = rareData()->listeners())
+            return *listeners;
+    }
+    static const RegisteredEventListenerVector* emptyListenersVector = new RegisteredEventListenerVector;
+    return *emptyListenersVector;
+}
+
+void Node::insertedIntoDocument()
+{
+    if (!eventListeners().isEmpty())
+        document()->unregisterDisconnectedNodeWithEventListeners(this);
+
+    setInDocument(true);
+}
+
+void Node::removedFromDocument()
+{
+    if (!eventListeners().isEmpty())
+        document()->registerDisconnectedNodeWithEventListeners(this);
+
+    setInDocument(false);
+}
+
+void Node::willMoveToNewOwnerDocument()
+{
+    if (!eventListeners().isEmpty())
+        document()->unregisterDisconnectedNodeWithEventListeners(this);
+
+    ASSERT(!willMoveToNewOwnerDocumentWasCalled);
+    setWillMoveToNewOwnerDocumentWasCalled(true);
+}
+
+void Node::didMoveToNewOwnerDocument()
+{
+    if (!eventListeners().isEmpty())
+        document()->registerDisconnectedNodeWithEventListeners(this);
+
+    ASSERT(!didMoveToNewOwnerDocumentWasCalled);
+    setDidMoveToNewOwnerDocumentWasCalled(true);
+}
+
+static inline void updateSVGElementInstancesAfterEventListenerChange(Node* referenceNode)
+{
+#if !ENABLE(SVG)
+    UNUSED_PARAM(referenceNode);
+#else
+    ASSERT(referenceNode);
+    if (!referenceNode->isSVGElement())
+        return;
+
+    // Elements living inside a <use> shadow tree, never cause any updates!
+    if (referenceNode->shadowTreeRootNode())
+        return;
+
+    // We're possibly (a child of) an element that is referenced by a <use> client
+    // If an event listeners changes on a referenced element, update all instances.
+    for (Node* node = referenceNode; node; node = node->parentNode()) {
+        if (!node->hasID() || !node->isSVGElement())
+            continue;
+
+        SVGElementInstance::invalidateAllInstancesOfElement(static_cast<SVGElement*>(node));
+        break;
+    }
+#endif
+}
+
+void Node::addEventListener(const AtomicString& eventType, PassRefPtr<EventListener> listener, bool useCapture)
+{
+    Document* document = this->document();
+    if (!document->attached())
+        return;
+
+    document->addListenerTypeIfNeeded(eventType);
+
+    RegisteredEventListenerVector& listeners = ensureRareData()->ensureListeners();
+
+    // Remove existing identical listener set with identical arguments.
+    // The DOM2 spec says that "duplicate instances are discarded" in this case.
+    removeEventListener(eventType, listener.get(), useCapture);
+
+    // adding the first one
+    if (listeners.isEmpty() && !inDocument())
+        document->registerDisconnectedNodeWithEventListeners(this);
+
+    listeners.append(RegisteredEventListener::create(eventType, listener, useCapture));
+    updateSVGElementInstancesAfterEventListenerChange(this);
+}
+
+void Node::removeEventListener(const AtomicString& eventType, EventListener* listener, bool useCapture)
+{
+    if (!hasRareData())
+        return;
+
+    RegisteredEventListenerVector* listeners = rareData()->listeners();
+    if (!listeners)
+        return;
+
+    size_t size = listeners->size();
+    for (size_t i = 0; i < size; ++i) {
+        RegisteredEventListener& r = *listeners->at(i);
+        if (r.eventType() == eventType && r.listener() == listener && r.useCapture() == useCapture) {
+            r.setRemoved(true);
+            listeners->remove(i);
+
+            // removed last
+            if (listeners->isEmpty() && !inDocument())
+                document()->unregisterDisconnectedNodeWithEventListeners(this);
+
+            updateSVGElementInstancesAfterEventListenerChange(this);
+            return;
+        }
+    }
+}
+
+void Node::removeAllEventListenersSlowCase()
+{
+    ASSERT(hasRareData());
+
+    RegisteredEventListenerVector* listeners = rareData()->listeners();
+    if (!listeners)
+        return;
+
+    size_t size = listeners->size();
+    for (size_t i = 0; i < size; ++i)
+        listeners->at(i)->setRemoved(true);
+    listeners->clear();
+}
+
+void Node::handleLocalEvents(Event* event, bool useCapture)
+{
+    if (disabled() && event->isMouseEvent())
+        return;
+
+    RegisteredEventListenerVector listenersCopy = eventListeners();
+    size_t size = listenersCopy.size();
+    for (size_t i = 0; i < size; ++i) {
+        const RegisteredEventListener& r = *listenersCopy[i];
+        if (r.eventType() == event->type() && r.useCapture() == useCapture && !r.removed())
+            r.listener()->handleEvent(event, false);
+    }
+}
+
+#if ENABLE(SVG)
+static inline SVGElementInstance* eventTargetAsSVGElementInstance(Node* referenceNode)
+{
+    ASSERT(referenceNode);
+    if (!referenceNode->isSVGElement())
+        return 0;
+
+    // Spec: The event handling for the non-exposed tree works as if the referenced element had been textually included
+    // as a deeply cloned child of the 'use' element, except that events are dispatched to the SVGElementInstance objects
+    for (Node* n = referenceNode; n; n = n->parentNode()) {
+        if (!n->isShadowNode() || !n->isSVGElement())
+            continue;
+
+        Node* shadowTreeParentElement = n->shadowParentNode();
+        ASSERT(shadowTreeParentElement->hasTagName(SVGNames::useTag));
+
+        if (SVGElementInstance* instance = static_cast<SVGUseElement*>(shadowTreeParentElement)->instanceForShadowTreeElement(referenceNode))
+            return instance;
+    }
+
+    return 0;
+}
+#endif
+
+static inline EventTarget* eventTargetRespectingSVGTargetRules(Node* referenceNode)
+{
+    ASSERT(referenceNode);
+
+#if ENABLE(SVG)
+    if (SVGElementInstance* instance = eventTargetAsSVGElementInstance(referenceNode)) {
+        ASSERT(instance->shadowTreeElement() == referenceNode);
+        return instance;
+    }
+#endif
+
+    return referenceNode;
+}
+
+bool Node::dispatchEvent(PassRefPtr<Event> e, ExceptionCode& ec)
+{
+    RefPtr<Event> evt(e);
+    ASSERT(!eventDispatchForbidden());
+    if (!evt || evt->type().isEmpty()) { 
+        ec = EventException::UNSPECIFIED_EVENT_TYPE_ERR;
+        return false;
+    }
+
+    evt->setTarget(eventTargetRespectingSVGTargetRules(this));
+
+    RefPtr<FrameView> view = document()->view();
+    return dispatchGenericEvent(evt.release());
+}
+
+bool Node::dispatchGenericEvent(PassRefPtr<Event> prpEvent)
+{
+    RefPtr<Event> event(prpEvent);
+
+    ASSERT(!eventDispatchForbidden());
+    ASSERT(event->target());
+    ASSERT(!event->type().isNull()); // JavaScript code can create an event with an empty name, but not null.
+
+    // Make a vector of ancestors to send the event to.
+    // If the node is not in a document just send the event to it.
+    // Be sure to ref all of nodes since event handlers could result in the last reference going away.
+    RefPtr<Node> thisNode(this);
+    Vector<RefPtr<ContainerNode> > ancestors;
+    if (inDocument()) {
+        for (ContainerNode* ancestor = eventParentNode(); ancestor; ancestor = ancestor->eventParentNode()) {
+#if ENABLE(SVG)
+            // Skip <use> shadow tree elements.
+            if (ancestor->isSVGElement() && ancestor->isShadowNode())
+                continue;
+#endif
+            ancestors.append(ancestor);
+        }
+    }
+
+    // Set up a pointer to indicate whether / where to dispatch window events.
+    // We don't dispatch load events to the window. That quirk was originally
+    // added because Mozilla doesn't propagate load events to the window object.
+    DOMWindow* targetForWindowEvents = 0;
+    if (event->type() != eventNames().loadEvent) {
+        Node* topLevelContainer = ancestors.isEmpty() ? this : ancestors.last().get();
+        if (topLevelContainer->isDocumentNode())
+            targetForWindowEvents = static_cast<Document*>(topLevelContainer)->domWindow();
+    }
+
+    // Give the target node a chance to do some work before DOM event handlers get a crack.
+    void* data = preDispatchEventHandler(event.get());
+    if (event->propagationStopped())
+        goto doneDispatching;
+
+    // Trigger capturing event handlers, starting at the top and working our way down.
+    event->setEventPhase(Event::CAPTURING_PHASE);
+
+    if (targetForWindowEvents) {
+        event->setCurrentTarget(targetForWindowEvents->document()); // FIXME: targetForWindowEvents should be the event target.
+        targetForWindowEvents->handleEvent(event.get(), true);
+        if (event->propagationStopped())
+            goto doneDispatching;
+    }
+    for (size_t i = ancestors.size(); i; --i) {
+        ContainerNode* ancestor = ancestors[i - 1].get();
+        event->setCurrentTarget(eventTargetRespectingSVGTargetRules(ancestor));
+        ancestor->handleLocalEvents(event.get(), true);
+        if (event->propagationStopped())
+            goto doneDispatching;
+    }
+
+    event->setEventPhase(Event::AT_TARGET);
+
+    // We do want capturing event listeners to be invoked here, even though
+    // that violates some versions of the DOM specification; Mozilla does it.
+    event->setCurrentTarget(eventTargetRespectingSVGTargetRules(this));
+    handleLocalEvents(event.get(), true);
+    if (event->propagationStopped())
+        goto doneDispatching;
+    handleLocalEvents(event.get(), false);
+    if (event->propagationStopped())
+        goto doneDispatching;
+
+    if (event->bubbles() && !event->cancelBubble()) {
+        // Trigger bubbling event handlers, starting at the bottom and working our way up.
+        event->setEventPhase(Event::BUBBLING_PHASE);
+
+        size_t size = ancestors.size();
+        for (size_t i = 0; i < size; ++i) {
+            ContainerNode* ancestor = ancestors[i].get();
+            event->setCurrentTarget(eventTargetRespectingSVGTargetRules(ancestor));
+            ancestor->handleLocalEvents(event.get(), false);
+            if (event->propagationStopped() || event->cancelBubble())
+                goto doneDispatching;
+        }
+        if (targetForWindowEvents) {
+            event->setCurrentTarget(targetForWindowEvents->document()); // FIXME: targetForWindowEvents should be the event target.
+            targetForWindowEvents->handleEvent(event.get(), false);
+            if (event->propagationStopped() || event->cancelBubble())
+                goto doneDispatching;
+        }
+    }
+
+doneDispatching:
+    event->setCurrentTarget(0);
+    event->setEventPhase(0);
+
+    // Pass the data from the preDispatchEventHandler to the postDispatchEventHandler.
+    postDispatchEventHandler(event.get(), data);
+
+    // Call default event handlers. While the DOM does have a concept of preventing
+    // default handling, the detail of which handlers are called is an internal
+    // implementation detail and not part of the DOM.
+    if (!event->defaultPrevented() && !event->defaultHandled()) {
+        // Non-bubbling events call only one default event handler, the one for the target.
+        defaultEventHandler(event.get());
+        ASSERT(!event->defaultPrevented());
+        if (event->defaultHandled())
+            goto doneWithDefault;
+        // For bubbling events, call default event handlers on the same targets in the
+        // same order as the bubbling phase.
+        if (event->bubbles()) {
+            size_t size = ancestors.size();
+            for (size_t i = 0; i < size; ++i) {
+                ContainerNode* ancestor = ancestors[i].get();
+                ancestor->defaultEventHandler(event.get());
+                ASSERT(!event->defaultPrevented());
+                if (event->defaultHandled())
+                    goto doneWithDefault;
+            }
+        }
+    }
+
+doneWithDefault:
+    Document::updateStyleForAllDocuments();
+
+    return !event->defaultPrevented();
+}
+
+void Node::dispatchSubtreeModifiedEvent()
+{
+    ASSERT(!eventDispatchForbidden());
+    
+    document()->incDOMTreeVersion();
+
+    notifyNodeListsAttributeChanged(); // FIXME: Can do better some day. Really only care about the name attribute changing.
+    
+    if (!document()->hasListenerType(Document::DOMSUBTREEMODIFIED_LISTENER))
+        return;
+
+    ExceptionCode ec = 0;
+    dispatchMutationEvent(eventNames().DOMSubtreeModifiedEvent, true, 0, String(), String(), ec); 
+}
+
+void Node::dispatchUIEvent(const AtomicString& eventType, int detail, PassRefPtr<Event> underlyingEvent)
+{
+    ASSERT(!eventDispatchForbidden());
+    ASSERT(eventType == eventNames().DOMFocusInEvent || eventType == eventNames().DOMFocusOutEvent || eventType == eventNames().DOMActivateEvent);
+    
+    bool cancelable = eventType == eventNames().DOMActivateEvent;
+    
+    ExceptionCode ec = 0;
+    RefPtr<UIEvent> evt = UIEvent::create(eventType, true, cancelable, document()->defaultView(), detail);
+    evt->setUnderlyingEvent(underlyingEvent);
+    dispatchEvent(evt.release(), ec);
+}
+
+bool Node::dispatchKeyEvent(const PlatformKeyboardEvent& key)
+{
+    ASSERT(!eventDispatchForbidden());
+    ExceptionCode ec = 0;
+    RefPtr<KeyboardEvent> keyboardEvent = KeyboardEvent::create(key, document()->defaultView());
+    bool r = dispatchEvent(keyboardEvent, ec);
+    
+    // we want to return false if default is prevented (already taken care of)
+    // or if the element is default-handled by the DOM. Otherwise we let it just
+    // let it get handled by AppKit 
+    if (keyboardEvent->defaultHandled())
+        r = false;
+    
+    return r;
+}
+
+bool Node::dispatchMouseEvent(const PlatformMouseEvent& event, const AtomicString& eventType,
+    int detail, Node* relatedTarget)
+{
+    ASSERT(!eventDispatchForbidden());
+    
+    IntPoint contentsPos;
+    if (FrameView* view = document()->view())
+        contentsPos = view->windowToContents(event.pos());
+
+    short button = event.button();
+
+    ASSERT(event.eventType() == MouseEventMoved || button != NoButton);
+    
+    return dispatchMouseEvent(eventType, button, detail,
+        contentsPos.x(), contentsPos.y(), event.globalX(), event.globalY(),
+        event.ctrlKey(), event.altKey(), event.shiftKey(), event.metaKey(),
+        false, relatedTarget);
+}
+
+void Node::dispatchSimulatedMouseEvent(const AtomicString& eventType,
+    PassRefPtr<Event> underlyingEvent)
+{
+    ASSERT(!eventDispatchForbidden());
+
+    bool ctrlKey = false;
+    bool altKey = false;
+    bool shiftKey = false;
+    bool metaKey = false;
+    if (UIEventWithKeyState* keyStateEvent = findEventWithKeyState(underlyingEvent.get())) {
+        ctrlKey = keyStateEvent->ctrlKey();
+        altKey = keyStateEvent->altKey();
+        shiftKey = keyStateEvent->shiftKey();
+        metaKey = keyStateEvent->metaKey();
+    }
+
+    // Like Gecko, we just pass 0 for everything when we make a fake mouse event.
+    // Internet Explorer instead gives the current mouse position and state.
+    dispatchMouseEvent(eventType, 0, 0, 0, 0, 0, 0,
+        ctrlKey, altKey, shiftKey, metaKey, true, 0, underlyingEvent);
+}
+
+void Node::dispatchSimulatedClick(PassRefPtr<Event> event, bool sendMouseEvents, bool showPressedLook)
+{
+    if (!gNodesDispatchingSimulatedClicks)
+        gNodesDispatchingSimulatedClicks = new HashSet<Node*>;
+    else if (gNodesDispatchingSimulatedClicks->contains(this))
+        return;
+    
+    gNodesDispatchingSimulatedClicks->add(this);
+    
+    // send mousedown and mouseup before the click, if requested
+    if (sendMouseEvents)
+        dispatchSimulatedMouseEvent(eventNames().mousedownEvent, event.get());
+    setActive(true, showPressedLook);
+    if (sendMouseEvents)
+        dispatchSimulatedMouseEvent(eventNames().mouseupEvent, event.get());
+    setActive(false);
+
+    // always send click
+    dispatchSimulatedMouseEvent(eventNames().clickEvent, event);
+    
+    gNodesDispatchingSimulatedClicks->remove(this);
+}
+
+bool Node::dispatchMouseEvent(const AtomicString& eventType, int button, int detail,
+    int pageX, int pageY, int screenX, int screenY,
+    bool ctrlKey, bool altKey, bool shiftKey, bool metaKey, 
+    bool isSimulated, Node* relatedTargetArg, PassRefPtr<Event> underlyingEvent)
+{
+    ASSERT(!eventDispatchForbidden());
+    if (disabled()) // Don't even send DOM events for disabled controls..
+        return true;
+    
+    if (eventType.isEmpty())
+        return false; // Shouldn't happen.
+    
+    // Dispatching the first event can easily result in this node being destroyed.
+    // Since we dispatch up to three events here, we need to make sure we're referenced
+    // so the pointer will be good for the two subsequent ones.
+    RefPtr<Node> protect(this);
+    
+    bool cancelable = eventType != eventNames().mousemoveEvent;
+    
+    ExceptionCode ec = 0;
+    
+    bool swallowEvent = false;
+    
+    // Attempting to dispatch with a non-EventTarget relatedTarget causes the relatedTarget to be silently ignored.
+    RefPtr<Node> relatedTarget = relatedTargetArg;
+
+    int adjustedPageX = pageX;
+    int adjustedPageY = pageY;
+    if (Frame* frame = document()->frame()) {
+        float pageZoom = frame->pageZoomFactor();
+        if (pageZoom != 1.0f) {
+            // Adjust our pageX and pageY to account for the page zoom.
+            adjustedPageX = lroundf(pageX / pageZoom);
+            adjustedPageY = lroundf(pageY / pageZoom);
+        }
+    }
+
+    RefPtr<MouseEvent> mouseEvent = MouseEvent::create(eventType,
+        true, cancelable, document()->defaultView(),
+        detail, screenX, screenY, adjustedPageX, adjustedPageY,
+        ctrlKey, altKey, shiftKey, metaKey, button,
+        relatedTarget, 0, isSimulated);
+    mouseEvent->setUnderlyingEvent(underlyingEvent.get());
+    mouseEvent->setAbsoluteLocation(IntPoint(pageX, pageY));
+    
+    dispatchEvent(mouseEvent, ec);
+    bool defaultHandled = mouseEvent->defaultHandled();
+    bool defaultPrevented = mouseEvent->defaultPrevented();
+    if (defaultHandled || defaultPrevented)
+        swallowEvent = true;
+    
+    // Special case: If it's a double click event, we also send the dblclick event. This is not part
+    // of the DOM specs, but is used for compatibility with the ondblclick="" attribute.  This is treated
+    // as a separate event in other DOM-compliant browsers like Firefox, and so we do the same.
+    if (eventType == eventNames().clickEvent && detail == 2) {
+        RefPtr<Event> doubleClickEvent = MouseEvent::create(eventNames().dblclickEvent,
+            true, cancelable, document()->defaultView(),
+            detail, screenX, screenY, pageX, pageY,
+            ctrlKey, altKey, shiftKey, metaKey, button,
+            relatedTarget, 0, isSimulated);
+        doubleClickEvent->setUnderlyingEvent(underlyingEvent.get());
+        if (defaultHandled)
+            doubleClickEvent->setDefaultHandled();
+        dispatchEvent(doubleClickEvent, ec);
+        if (doubleClickEvent->defaultHandled() || doubleClickEvent->defaultPrevented())
+            swallowEvent = true;
+    }
+
+    return swallowEvent;
+}
+
+void Node::dispatchWheelEvent(PlatformWheelEvent& e)
+{
+    ASSERT(!eventDispatchForbidden());
+    if (e.deltaX() == 0 && e.deltaY() == 0)
+        return;
+    
+    FrameView* view = document()->view();
+    if (!view)
+        return;
+    
+    IntPoint pos = view->windowToContents(e.pos());
+
+    int adjustedPageX = pos.x();
+    int adjustedPageY = pos.y();
+    if (Frame* frame = document()->frame()) {
+        float pageZoom = frame->pageZoomFactor();
+        if (pageZoom != 1.0f) {
+            // Adjust our pageX and pageY to account for the page zoom.
+            adjustedPageX = lroundf(pos.x() / pageZoom);
+            adjustedPageY = lroundf(pos.y() / pageZoom);
+        }
+    }
+    
+    RefPtr<WheelEvent> we = WheelEvent::create(e.wheelTicksX(), e.wheelTicksY(),
+        document()->defaultView(), e.globalX(), e.globalY(), adjustedPageX, adjustedPageY,
+        e.ctrlKey(), e.altKey(), e.shiftKey(), e.metaKey());
+
+    we->setAbsoluteLocation(IntPoint(pos.x(), pos.y()));
+
+    ExceptionCode ec = 0;
+    if (!dispatchEvent(we.release(), ec))
+        e.accept();
+}
+
+void Node::dispatchWebKitAnimationEvent(const AtomicString& eventType, const String& animationName, double elapsedTime)
+{
+    ASSERT(!eventDispatchForbidden());
+    
+    ExceptionCode ec = 0;
+    dispatchEvent(WebKitAnimationEvent::create(eventType, animationName, elapsedTime), ec);
+}
+
+void Node::dispatchWebKitTransitionEvent(const AtomicString& eventType, const String& propertyName, double elapsedTime)
+{
+    ASSERT(!eventDispatchForbidden());
+    
+    ExceptionCode ec = 0;
+    dispatchEvent(WebKitTransitionEvent::create(eventType, propertyName, elapsedTime), ec);
+}
+
+void Node::dispatchMutationEvent(const AtomicString& eventType, bool canBubble, PassRefPtr<Node> relatedNode, const String& prevValue, const String& newValue, ExceptionCode& ec)
+{
+    ASSERT(!eventDispatchForbidden());
+
+    dispatchEvent(MutationEvent::create(eventType, canBubble, false, relatedNode, prevValue, newValue, String(), 0), ec);
+}
+
+void Node::dispatchFocusEvent()
+{
+    dispatchEvent(eventNames().focusEvent, false, false);
+}
+
+void Node::dispatchBlurEvent()
+{
+    dispatchEvent(eventNames().blurEvent, false, false);
+}
+
+bool Node::dispatchEvent(const AtomicString& eventType, bool canBubbleArg, bool cancelableArg)
+{
+    ASSERT(!eventDispatchForbidden());
+    ExceptionCode ec = 0;
+    return dispatchEvent(Event::create(eventType, canBubbleArg, cancelableArg), ec);
+}
+
+void Node::dispatchProgressEvent(const AtomicString &eventType, bool lengthComputableArg, unsigned loadedArg, unsigned totalArg)
+{
+    ASSERT(!eventDispatchForbidden());
+    ExceptionCode ec = 0;
+    dispatchEvent(ProgressEvent::create(eventType, lengthComputableArg, loadedArg, totalArg), ec);
+}
+
+void Node::clearAttributeEventListener(const AtomicString& eventType)
+{
+    if (!hasRareData())
+        return;
+
+    RegisteredEventListenerVector* listeners = rareData()->listeners();
+    if (!listeners)
+        return;
+
+    size_t size = listeners->size();
+    for (size_t i = 0; i < size; ++i) {
+        RegisteredEventListener& r = *listeners->at(i);
+        if (r.eventType() != eventType || !r.listener()->isAttribute())
+            continue;
+
+        r.setRemoved(true);
+        listeners->remove(i);
+
+        // removed last
+        if (listeners->isEmpty() && !inDocument())
+            document()->unregisterDisconnectedNodeWithEventListeners(this);
+
+        updateSVGElementInstancesAfterEventListenerChange(this);
+        return;
+    }
+}
+
+void Node::setAttributeEventListener(const AtomicString& eventType, PassRefPtr<EventListener> listener)
+{
+    clearAttributeEventListener(eventType);
+    if (listener)
+        addEventListener(eventType, listener, false);
+}
+
+EventListener* Node::getAttributeEventListener(const AtomicString& eventType) const
+{
+    const RegisteredEventListenerVector& listeners = eventListeners();
+    size_t size = listeners.size();
+    for (size_t i = 0; i < size; ++i) {
+        const RegisteredEventListener& r = *listeners[i];
+        if (r.eventType() == eventType && r.listener()->isAttribute())
+            return r.listener();
+    }
+    return 0;
+}
+
+bool Node::disabled() const
+{
+    return false;
+}
+
+void Node::defaultEventHandler(Event* event)
+{
+    if (event->target() != this)
+        return;
+    const AtomicString& eventType = event->type();
+    if (eventType == eventNames().keydownEvent || eventType == eventNames().keypressEvent) {
+        if (event->isKeyboardEvent())
+            if (Frame* frame = document()->frame())
+                frame->eventHandler()->defaultKeyboardEventHandler(static_cast<KeyboardEvent*>(event));
+    } else if (eventType == eventNames().clickEvent) {
+        int detail = event->isUIEvent() ? static_cast<UIEvent*>(event)->detail() : 0;
+        dispatchUIEvent(eventNames().DOMActivateEvent, detail, event);
+    } else if (eventType == eventNames().contextmenuEvent) {
+        if (Frame* frame = document()->frame())
+            if (Page* page = frame->page())
+                page->contextMenuController()->handleContextMenuEvent(event);
+    } else if (eventType == eventNames().textInputEvent) {
+        if (event->isTextEvent())
+            if (Frame* frame = document()->frame())
+                frame->eventHandler()->defaultTextInputEventHandler(static_cast<TextEvent*>(event));
+    }
+}
+
+EventListener* Node::onabort() const
+{
+    return getAttributeEventListener(eventNames().abortEvent);
+}
+
+void Node::setOnabort(PassRefPtr<EventListener> eventListener)
+{
+    setAttributeEventListener(eventNames().abortEvent, eventListener);
+}
+
+EventListener* Node::onblur() const
+{
+    return getAttributeEventListener(eventNames().blurEvent);
+}
+
+void Node::setOnblur(PassRefPtr<EventListener> eventListener)
+{
+    setAttributeEventListener(eventNames().blurEvent, eventListener);
+}
+
+EventListener* Node::onchange() const
+{
+    return getAttributeEventListener(eventNames().changeEvent);
+}
+
+void Node::setOnchange(PassRefPtr<EventListener> eventListener)
+{
+    setAttributeEventListener(eventNames().changeEvent, eventListener);
+}
+
+EventListener* Node::onclick() const
+{
+    return getAttributeEventListener(eventNames().clickEvent);
+}
+
+void Node::setOnclick(PassRefPtr<EventListener> eventListener)
+{
+    setAttributeEventListener(eventNames().clickEvent, eventListener);
+}
+
+EventListener* Node::oncontextmenu() const
+{
+    return getAttributeEventListener(eventNames().contextmenuEvent);
+}
+
+void Node::setOncontextmenu(PassRefPtr<EventListener> eventListener)
+{
+    setAttributeEventListener(eventNames().contextmenuEvent, eventListener);
+}
+
+EventListener* Node::ondblclick() const
+{
+    return getAttributeEventListener(eventNames().dblclickEvent);
+}
+
+void Node::setOndblclick(PassRefPtr<EventListener> eventListener)
+{
+    setAttributeEventListener(eventNames().dblclickEvent, eventListener);
+}
+
+EventListener* Node::onerror() const
+{
+    return getAttributeEventListener(eventNames().errorEvent);
+}
+
+void Node::setOnerror(PassRefPtr<EventListener> eventListener)
+{
+    setAttributeEventListener(eventNames().errorEvent, eventListener);
+}
+
+EventListener* Node::onfocus() const
+{
+    return getAttributeEventListener(eventNames().focusEvent);
+}
+
+void Node::setOnfocus(PassRefPtr<EventListener> eventListener)
+{
+    setAttributeEventListener(eventNames().focusEvent, eventListener);
+}
+
+EventListener* Node::oninput() const
+{
+    return getAttributeEventListener(eventNames().inputEvent);
+}
+
+void Node::setOninput(PassRefPtr<EventListener> eventListener)
+{
+    setAttributeEventListener(eventNames().inputEvent, eventListener);
+}
+
+EventListener* Node::onkeydown() const
+{
+    return getAttributeEventListener(eventNames().keydownEvent);
+}
+
+void Node::setOnkeydown(PassRefPtr<EventListener> eventListener)
+{
+    setAttributeEventListener(eventNames().keydownEvent, eventListener);
+}
+
+EventListener* Node::onkeypress() const
+{
+    return getAttributeEventListener(eventNames().keypressEvent);
+}
+
+void Node::setOnkeypress(PassRefPtr<EventListener> eventListener)
+{
+    setAttributeEventListener(eventNames().keypressEvent, eventListener);
+}
+
+EventListener* Node::onkeyup() const
+{
+    return getAttributeEventListener(eventNames().keyupEvent);
+}
+
+void Node::setOnkeyup(PassRefPtr<EventListener> eventListener)
+{
+    setAttributeEventListener(eventNames().keyupEvent, eventListener);
+}
+
+EventListener* Node::onload() const
+{
+    return getAttributeEventListener(eventNames().loadEvent);
+}
+
+void Node::setOnload(PassRefPtr<EventListener> eventListener)
+{
+    setAttributeEventListener(eventNames().loadEvent, eventListener);
+}
+
+EventListener* Node::onmousedown() const
+{
+    return getAttributeEventListener(eventNames().mousedownEvent);
+}
+
+void Node::setOnmousedown(PassRefPtr<EventListener> eventListener)
+{
+    setAttributeEventListener(eventNames().mousedownEvent, eventListener);
+}
+
+EventListener* Node::onmousemove() const
+{
+    return getAttributeEventListener(eventNames().mousemoveEvent);
+}
+
+void Node::setOnmousemove(PassRefPtr<EventListener> eventListener)
+{
+    setAttributeEventListener(eventNames().mousemoveEvent, eventListener);
+}
+
+EventListener* Node::onmouseout() const
+{
+    return getAttributeEventListener(eventNames().mouseoutEvent);
+}
+
+void Node::setOnmouseout(PassRefPtr<EventListener> eventListener)
+{
+    setAttributeEventListener(eventNames().mouseoutEvent, eventListener);
+}
+
+EventListener* Node::onmouseover() const
+{
+    return getAttributeEventListener(eventNames().mouseoverEvent);
+}
+
+void Node::setOnmouseover(PassRefPtr<EventListener> eventListener)
+{
+    setAttributeEventListener(eventNames().mouseoverEvent, eventListener);
+}
+
+EventListener* Node::onmouseup() const
+{
+    return getAttributeEventListener(eventNames().mouseupEvent);
+}
+
+void Node::setOnmouseup(PassRefPtr<EventListener> eventListener)
+{
+    setAttributeEventListener(eventNames().mouseupEvent, eventListener);
+}
+
+EventListener* Node::onmousewheel() const
+{
+    return getAttributeEventListener(eventNames().mousewheelEvent);
+}
+
+void Node::setOnmousewheel(PassRefPtr<EventListener> eventListener)
+{
+    setAttributeEventListener(eventNames().mousewheelEvent, eventListener);
+}
+
+EventListener* Node::onbeforecut() const
+{
+    return getAttributeEventListener(eventNames().beforecutEvent);
+}
+
+void Node::setOnbeforecut(PassRefPtr<EventListener> eventListener)
+{
+    setAttributeEventListener(eventNames().beforecutEvent, eventListener);
+}
+
+EventListener* Node::oncut() const
+{
+    return getAttributeEventListener(eventNames().cutEvent);
+}
+
+void Node::setOncut(PassRefPtr<EventListener> eventListener)
+{
+    setAttributeEventListener(eventNames().cutEvent, eventListener);
+}
+
+EventListener* Node::onbeforecopy() const
+{
+    return getAttributeEventListener(eventNames().beforecopyEvent);
+}
+
+void Node::setOnbeforecopy(PassRefPtr<EventListener> eventListener)
+{
+    setAttributeEventListener(eventNames().beforecopyEvent, eventListener);
+}
+
+EventListener* Node::oncopy() const
+{
+    return getAttributeEventListener(eventNames().copyEvent);
+}
+
+void Node::setOncopy(PassRefPtr<EventListener> eventListener)
+{
+    setAttributeEventListener(eventNames().copyEvent, eventListener);
+}
+
+EventListener* Node::onbeforepaste() const
+{
+    return getAttributeEventListener(eventNames().beforepasteEvent);
+}
+
+void Node::setOnbeforepaste(PassRefPtr<EventListener> eventListener)
+{
+    setAttributeEventListener(eventNames().beforepasteEvent, eventListener);
+}
+
+EventListener* Node::onpaste() const
+{
+    return getAttributeEventListener(eventNames().pasteEvent);
+}
+
+void Node::setOnpaste(PassRefPtr<EventListener> eventListener)
+{
+    setAttributeEventListener(eventNames().pasteEvent, eventListener);
+}
+
+EventListener* Node::ondragenter() const
+{
+    return getAttributeEventListener(eventNames().dragenterEvent);
+}
+
+void Node::setOndragenter(PassRefPtr<EventListener> eventListener)
+{
+    setAttributeEventListener(eventNames().dragenterEvent, eventListener);
+}
+
+EventListener* Node::ondragover() const
+{
+    return getAttributeEventListener(eventNames().dragoverEvent);
+}
+
+void Node::setOndragover(PassRefPtr<EventListener> eventListener)
+{
+    setAttributeEventListener(eventNames().dragoverEvent, eventListener);
+}
+
+EventListener* Node::ondragleave() const
+{
+    return getAttributeEventListener(eventNames().dragleaveEvent);
+}
+
+void Node::setOndragleave(PassRefPtr<EventListener> eventListener)
+{
+    setAttributeEventListener(eventNames().dragleaveEvent, eventListener);
+}
+
+EventListener* Node::ondrop() const
+{
+    return getAttributeEventListener(eventNames().dropEvent);
+}
+
+void Node::setOndrop(PassRefPtr<EventListener> eventListener)
+{
+    setAttributeEventListener(eventNames().dropEvent, eventListener);
+}
+
+EventListener* Node::ondragstart() const
+{
+    return getAttributeEventListener(eventNames().dragstartEvent);
+}
+
+void Node::setOndragstart(PassRefPtr<EventListener> eventListener)
+{
+    setAttributeEventListener(eventNames().dragstartEvent, eventListener);
+}
+
+EventListener* Node::ondrag() const
+{
+    return getAttributeEventListener(eventNames().dragEvent);
+}
+
+void Node::setOndrag(PassRefPtr<EventListener> eventListener)
+{
+    setAttributeEventListener(eventNames().dragEvent, eventListener);
+}
+
+EventListener* Node::ondragend() const
+{
+    return getAttributeEventListener(eventNames().dragendEvent);
+}
+
+void Node::setOndragend(PassRefPtr<EventListener> eventListener)
+{
+    setAttributeEventListener(eventNames().dragendEvent, eventListener);
+}
+
+EventListener* Node::onreset() const
+{
+    return getAttributeEventListener(eventNames().resetEvent);
+}
+
+void Node::setOnreset(PassRefPtr<EventListener> eventListener)
+{
+    setAttributeEventListener(eventNames().resetEvent, eventListener);
+}
+
+EventListener* Node::onresize() const
+{
+    return getAttributeEventListener(eventNames().resizeEvent);
+}
+
+void Node::setOnresize(PassRefPtr<EventListener> eventListener)
+{
+    setAttributeEventListener(eventNames().resizeEvent, eventListener);
+}
+
+EventListener* Node::onscroll() const
+{
+    return getAttributeEventListener(eventNames().scrollEvent);
+}
+
+void Node::setOnscroll(PassRefPtr<EventListener> eventListener)
+{
+    setAttributeEventListener(eventNames().scrollEvent, eventListener);
+}
+
+EventListener* Node::onsearch() const
+{
+    return getAttributeEventListener(eventNames().searchEvent);
+}
+
+void Node::setOnsearch(PassRefPtr<EventListener> eventListener)
+{
+    setAttributeEventListener(eventNames().searchEvent, eventListener);
+}
+
+EventListener* Node::onselect() const
+{
+    return getAttributeEventListener(eventNames().selectEvent);
+}
+
+void Node::setOnselect(PassRefPtr<EventListener> eventListener)
+{
+    setAttributeEventListener(eventNames().selectEvent, eventListener);
+}
+
+EventListener* Node::onselectstart() const
+{
+    return getAttributeEventListener(eventNames().selectstartEvent);
+}
+
+void Node::setOnselectstart(PassRefPtr<EventListener> eventListener)
+{
+    setAttributeEventListener(eventNames().selectstartEvent, eventListener);
+}
+
+EventListener* Node::onsubmit() const
+{
+    return getAttributeEventListener(eventNames().submitEvent);
+}
+
+void Node::setOnsubmit(PassRefPtr<EventListener> eventListener)
+{
+    setAttributeEventListener(eventNames().submitEvent, eventListener);
+}
+
+EventListener* Node::onunload() const
+{
+    return getAttributeEventListener(eventNames().unloadEvent);
+}
+
+void Node::setOnunload(PassRefPtr<EventListener> eventListener)
+{
+    setAttributeEventListener(eventNames().unloadEvent, eventListener);
+}
 
 } // namespace WebCore
 

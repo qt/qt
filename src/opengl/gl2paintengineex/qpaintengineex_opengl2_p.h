@@ -165,7 +165,7 @@ public:
     // fill, drawOutline, drawTexture & drawCachedGlyphs are the rendering entry points:
     void fill(const QVectorPath &path);
     void drawOutline(const QVectorPath& path);
-    void drawTexture(const QGLRect& dest, const QGLRect& src, const QSize &textureSize, bool opaque);
+    void drawTexture(const QGLRect& dest, const QGLRect& src, const QSize &textureSize, bool opaque, bool pattern = false);
     void drawCachedGlyphs(const QPointF &p, const QTextItemInt &ti);
 
     void drawVertexArrays(QGL2PEXVertexArray& vertexArray, GLenum primitive);

@@ -55,12 +55,13 @@ namespace WebCore {
 
         virtual ScriptExecutionContext* scriptExecutionContext() const;
 
-        virtual EventTargetNode* toNode() { return shadowTreeElement(); }
+        virtual Node* toNode() { return shadowTreeElement(); }
         virtual SVGElementInstance* toSVGElementInstance() { return this; }
 
         virtual void addEventListener(const AtomicString& eventType, PassRefPtr<EventListener>, bool useCapture);
         virtual void removeEventListener(const AtomicString& eventType, EventListener*, bool useCapture);
         virtual bool dispatchEvent(PassRefPtr<Event>, ExceptionCode&);
+        const RegisteredEventListenerVector& eventListeners() const { return correspondingElement()->eventListeners(); }
 
         SVGElement* correspondingElement() const { return m_element.get(); }
         SVGUseElement* correspondingUseElement() const { return m_useElement; }

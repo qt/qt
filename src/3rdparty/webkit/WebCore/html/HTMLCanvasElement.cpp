@@ -39,6 +39,7 @@
 #include "HTMLNames.h"
 #include "ImageBuffer.h"
 #include "MIMETypeRegistry.h"
+#include "MappedAttribute.h"
 #include "Page.h"
 #include "RenderHTMLCanvas.h"
 #include "Settings.h"
@@ -71,6 +72,8 @@ HTMLCanvasElement::HTMLCanvasElement(const QualifiedName& tagName, Document* doc
 
 HTMLCanvasElement::~HTMLCanvasElement()
 {
+    if (m_observer)
+        m_observer->canvasDestroyed(this);
 }
 
 #if ENABLE(DASHBOARD_SUPPORT)
@@ -155,8 +158,8 @@ void HTMLCanvasElement::willDraw(const FloatRect& rect)
 {
     m_imageBuffer->clearImage();
     
-    if (RenderObject* ro = renderer()) {
-        FloatRect destRect = ro->contentBox();
+    if (RenderBox* ro = renderBox()) {
+        FloatRect destRect = ro->contentBoxRect();
         FloatRect r = mapRect(rect, FloatRect(0, 0, m_size.width(), m_size.height()), destRect);
         r.intersect(destRect);
         if (m_dirtyRect.contains(r))
@@ -256,7 +259,7 @@ void HTMLCanvasElement::createImageBuffer() const
     if (!size.width() || !size.height())
         return;
 
-    m_imageBuffer.set(ImageBuffer::create(size, false).release());
+    m_imageBuffer = ImageBuffer::create(size, false);
     // The convertLogicalToDevice MaxCanvasArea check should prevent common cases
     // where ImageBuffer::create() returns NULL, however we could still be low on memory.
     if (!m_imageBuffer)
@@ -284,7 +287,7 @@ TransformationMatrix HTMLCanvasElement::baseTransform() const
     IntSize size = convertLogicalToDevice(unscaledSize);
     TransformationMatrix transform;
     if (size.width() && size.height())
-        transform.scale(size.width() / unscaledSize.width(), size.height() / unscaledSize.height());
+        transform.scaleNonUniform(size.width() / unscaledSize.width(), size.height() / unscaledSize.height());
     transform.multiply(m_imageBuffer->baseTransform());
     return transform;
 }

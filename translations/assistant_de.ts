@@ -409,12 +409,12 @@
     <message>
         <location line="-70"/>
         <source>Documentation info file is corrupt!</source>
-        <translation>Die Dokumentationsdatei ist beschädigt!</translation>
+        <translation>Die Dokumentationsdatei ist beschädigt.</translation>
     </message>
     <message>
         <location line="+37"/>
         <source>Download failed: Downloaded file is corrupted.</source>
-        <translation>Herunterladen fehlgeschlagen: Die Datei ist warscheinlich beschädigt!</translation>
+        <translation>Herunterladen fehlgeschlagen: Die Datei ist warscheinlich beschädigt.</translation>
     </message>
     <message>
         <location line="+2"/>
@@ -775,7 +775,7 @@
     <message>
         <location line="-601"/>
         <source>Looking for Qt Documentation...</source>
-        <translation>Suche nach Qt Dokumentationen...</translation>
+        <translation>Suche nach Qt-Dokumentation...</translation>
     </message>
     <message>
         <location line="+195"/>
@@ -858,7 +858,7 @@
     </message>
     <message>
         <source>Download from Help Server...</source>
-        <translation type="obsolete">Von Helpserver herunterladen...</translation>
+        <translation type="obsolete">Von Hilfe-Server herunterladen...</translation>
     </message>
     <message>
         <location filename="../tools/assistant/tools/assistant/preferencesdialog.cpp" line="+256"/>
@@ -869,17 +869,17 @@
     <message>
         <location line="-43"/>
         <source>Qt Compressed Help Files (*.qch)</source>
-        <translation>Komprimierte Hilfe Dateien (*.qch)</translation>
+        <translation>Komprimierte Hilfe-Dateien (*.qch)</translation>
     </message>
     <message>
         <location line="+37"/>
         <source>The specified file is not a valid Qt Help File!</source>
-        <translation>Die angegebene Datei ist keine Qt Hilfe Datei!</translation>
+        <translation>Die angegebene Datei ist keine Qt-Hilfe-Datei.</translation>
     </message>
     <message>
         <location line="-8"/>
         <source>The namespace %1 is already registered!</source>
-        <translation>Der Namespace %1 ist bereits registriert!</translation>
+        <translation>Der Namespace %1 ist bereits registriert.</translation>
     </message>
     <message>
         <location line="+31"/>
@@ -1025,22 +1025,22 @@
     <message>
         <location filename="../tools/assistant/tools/assistant/cmdlineparser.cpp" line="+112"/>
         <source>The specified collection file does not exist!</source>
-        <translation>Die angegeben Katalogdatei (collection file) konnte nicht gefunden werden!</translation>
+        <translation>Die angegebene Katalogdatei (collection file) kann nicht gefunden werden.</translation>
     </message>
     <message>
         <location line="+4"/>
         <source>Missing collection file!</source>
-        <translation>Fehlende Katalogdatei (collection file)!</translation>
+        <translation>Fehlende Katalogdatei.</translation>
     </message>
     <message>
         <location line="+9"/>
         <source>Invalid URL!</source>
-        <translation>Unbekannte URL!</translation>
+        <translation>Unbekannte URL.</translation>
     </message>
     <message>
         <location line="+4"/>
         <source>Missing URL!</source>
-        <translation>Fehlende URL!</translation>
+        <translation>Fehlende URL.</translation>
     </message>
     <message>
         <location line="+17"/>
@@ -1054,24 +1054,24 @@
         <location line="+19"/>
         <location line="+19"/>
         <source>Missing widget!</source>
-        <translation>Fehlendes Objekt!</translation>
+        <translation>Fehlendes Objekt.</translation>
     </message>
     <message>
         <location line="+7"/>
         <location line="+12"/>
         <source>The specified Qt help file does not exist!</source>
-        <translation>Die angegeben Hilfe Datei konnte nicht gefunden werden!</translation>
+        <translation>Die angegebene Hilfedatei kann nicht gefunden werden.</translation>
     </message>
     <message>
         <location line="-7"/>
         <location line="+12"/>
         <source>Missing help file!</source>
-        <translation>Fehlende Hilfedatei!</translation>
+        <translation>Fehlende Hilfedatei.</translation>
     </message>
     <message>
         <location line="+7"/>
         <source>Missing filter argument!</source>
-        <translation>Das Filter-Argument fehlt!</translation>
+        <translation>Das Filter-Argument fehlt.</translation>
     </message>
     <message>
         <location line="+12"/>
@@ -1115,12 +1115,12 @@ Reason:
     <message>
         <location line="+40"/>
         <source>Cannot load sqlite database driver!</source>
-        <translation>Der Datenbanktreiber für SQLite kann nicht geladen werden!</translation>
+        <translation>Der Datenbanktreiber für SQLite kann nicht geladen werden.</translation>
     </message>
     <message>
         <location line="+9"/>
         <source>The specified collection file could not be read!</source>
-        <translation>Die angegeben Katalogdatei (collection file) konnte nicht gelesen werden!</translation>
+        <translation>Die angegebene Katalogdatei (collection file) kann nicht gelesen werden.</translation>
     </message>
     <message>
         <location filename="../tools/assistant/tools/assistant/bookmarkmanager.cpp" line="+167"/>

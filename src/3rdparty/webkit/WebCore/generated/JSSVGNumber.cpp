@@ -35,7 +35,7 @@ using namespace JSC;
 
 namespace WebCore {
 
-ASSERT_CLASS_FITS_IN_CELL(JSSVGNumber)
+ASSERT_CLASS_FITS_IN_CELL(JSSVGNumber);
 
 /* Hash table */
 
@@ -68,9 +68,9 @@ static const HashTable JSSVGNumberPrototypeTable =
 
 const ClassInfo JSSVGNumberPrototype::s_info = { "SVGNumberPrototype", 0, &JSSVGNumberPrototypeTable, 0 };
 
-JSObject* JSSVGNumberPrototype::self(ExecState* exec)
+JSObject* JSSVGNumberPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSSVGNumber>(exec);
+    return getDOMPrototype<JSSVGNumber>(exec, globalObject);
 }
 
 const ClassInfo JSSVGNumber::s_info = { "SVGNumber", 0, &JSSVGNumberTable, 0 };
@@ -85,12 +85,11 @@ JSSVGNumber::JSSVGNumber(PassRefPtr<Structure> structure, PassRefPtr<JSSVGPODTyp
 JSSVGNumber::~JSSVGNumber()
 {
     forgetDOMObject(*Heap::heap(this)->globalData(), m_impl.get());
-
 }
 
-JSObject* JSSVGNumber::createPrototype(ExecState* exec)
+JSObject* JSSVGNumber::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSSVGNumberPrototype(JSSVGNumberPrototype::createStructure(exec->lexicalGlobalObject()->objectPrototype()));
+    return new (exec) JSSVGNumberPrototype(JSSVGNumberPrototype::createStructure(globalObject->objectPrototype()));
 }
 
 bool JSSVGNumber::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -98,31 +97,32 @@ bool JSSVGNumber::getOwnPropertySlot(ExecState* exec, const Identifier& property
     return getStaticValueSlot<JSSVGNumber, Base>(exec, &JSSVGNumberTable, this, propertyName, slot);
 }
 
-JSValuePtr jsSVGNumberValue(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGNumberValue(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     float imp(*static_cast<JSSVGNumber*>(asObject(slot.slotBase()))->impl());
     return jsNumber(exec, imp);
 }
 
-void JSSVGNumber::put(ExecState* exec, const Identifier& propertyName, JSValuePtr value, PutPropertySlot& slot)
+void JSSVGNumber::put(ExecState* exec, const Identifier& propertyName, JSValue value, PutPropertySlot& slot)
 {
     lookupPut<JSSVGNumber, Base>(exec, propertyName, value, &JSSVGNumberTable, this, slot);
 }
 
-void setJSSVGNumberValue(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSSVGNumberValue(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     float imp(*static_cast<JSSVGNumber*>(thisObject)->impl());
-    imp = value->toFloat(exec);
+    imp = value.toFloat(exec);
         static_cast<JSSVGNumber*>(thisObject)->impl()->commitChange(imp, static_cast<JSSVGNumber*>(thisObject)->context());
 }
 
-JSC::JSValuePtr toJS(JSC::ExecState* exec, JSSVGPODTypeWrapper<float>* object, SVGElement* context)
+JSC::JSValue toJS(JSC::ExecState* exec, JSSVGPODTypeWrapper<float>* object, SVGElement* context)
 {
     return getDOMObjectWrapper<JSSVGNumber, JSSVGPODTypeWrapper<float> >(exec, object, context);
 }
-float toSVGNumber(JSC::JSValuePtr value)
+float toSVGNumber(JSC::JSValue value)
 {
-    return value->isObject(&JSSVGNumber::s_info) ? (float) *static_cast<JSSVGNumber*>(asObject(value))->impl() : 0;
+    return value.isObject(&JSSVGNumber::s_info) ? (float) *static_cast<JSSVGNumber*>(asObject(value))->impl() : 0;
 }
 
 }

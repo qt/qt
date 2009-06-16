@@ -28,12 +28,10 @@
 #include <wtf/GetPtr.h>
 
 #include "DOMApplicationCache.h"
-#include "DOMStringList.h"
 #include "Event.h"
 #include "EventListener.h"
 #include "Frame.h"
 #include "JSDOMGlobalObject.h"
-#include "JSDOMStringList.h"
 #include "JSEvent.h"
 #include "JSEventListener.h"
 
@@ -44,14 +42,13 @@ using namespace JSC;
 
 namespace WebCore {
 
-ASSERT_CLASS_FITS_IN_CELL(JSDOMApplicationCache)
+ASSERT_CLASS_FITS_IN_CELL(JSDOMApplicationCache);
 
 /* Hash table */
 
 static const HashTableValue JSDOMApplicationCacheTableValues[10] =
 {
     { "status", DontDelete|ReadOnly, (intptr_t)jsDOMApplicationCacheStatus, (intptr_t)0 },
-    { "items", DontDelete|ReadOnly, (intptr_t)jsDOMApplicationCacheItems, (intptr_t)0 },
     { "onchecking", DontDelete, (intptr_t)jsDOMApplicationCacheOnchecking, (intptr_t)setJSDOMApplicationCacheOnchecking },
     { "onerror", DontDelete, (intptr_t)jsDOMApplicationCacheOnerror, (intptr_t)setJSDOMApplicationCacheOnerror },
     { "onnoupdate", DontDelete, (intptr_t)jsDOMApplicationCacheOnnoupdate, (intptr_t)setJSDOMApplicationCacheOnnoupdate },
@@ -59,6 +56,7 @@ static const HashTableValue JSDOMApplicationCacheTableValues[10] =
     { "onprogress", DontDelete, (intptr_t)jsDOMApplicationCacheOnprogress, (intptr_t)setJSDOMApplicationCacheOnprogress },
     { "onupdateready", DontDelete, (intptr_t)jsDOMApplicationCacheOnupdateready, (intptr_t)setJSDOMApplicationCacheOnupdateready },
     { "oncached", DontDelete, (intptr_t)jsDOMApplicationCacheOncached, (intptr_t)setJSDOMApplicationCacheOncached },
+    { "onobsolete", DontDelete, (intptr_t)jsDOMApplicationCacheOnobsolete, (intptr_t)setJSDOMApplicationCacheOnobsolete },
     { 0, 0, 0, 0 }
 };
 
@@ -71,18 +69,16 @@ static const HashTable JSDOMApplicationCacheTable =
 
 /* Hash table for prototype */
 
-static const HashTableValue JSDOMApplicationCachePrototypeTableValues[14] =
+static const HashTableValue JSDOMApplicationCachePrototypeTableValues[12] =
 {
     { "UNCACHED", DontDelete|ReadOnly, (intptr_t)jsDOMApplicationCacheUNCACHED, (intptr_t)0 },
     { "IDLE", DontDelete|ReadOnly, (intptr_t)jsDOMApplicationCacheIDLE, (intptr_t)0 },
     { "CHECKING", DontDelete|ReadOnly, (intptr_t)jsDOMApplicationCacheCHECKING, (intptr_t)0 },
     { "DOWNLOADING", DontDelete|ReadOnly, (intptr_t)jsDOMApplicationCacheDOWNLOADING, (intptr_t)0 },
     { "UPDATEREADY", DontDelete|ReadOnly, (intptr_t)jsDOMApplicationCacheUPDATEREADY, (intptr_t)0 },
+    { "OBSOLETE", DontDelete|ReadOnly, (intptr_t)jsDOMApplicationCacheOBSOLETE, (intptr_t)0 },
     { "update", DontDelete|Function, (intptr_t)jsDOMApplicationCachePrototypeFunctionUpdate, (intptr_t)0 },
     { "swapCache", DontDelete|Function, (intptr_t)jsDOMApplicationCachePrototypeFunctionSwapCache, (intptr_t)0 },
-    { "hasItem", DontDelete|Function, (intptr_t)jsDOMApplicationCachePrototypeFunctionHasItem, (intptr_t)1 },
-    { "add", DontDelete|Function, (intptr_t)jsDOMApplicationCachePrototypeFunctionAdd, (intptr_t)1 },
-    { "remove", DontDelete|Function, (intptr_t)jsDOMApplicationCachePrototypeFunctionRemove, (intptr_t)1 },
     { "addEventListener", DontDelete|Function, (intptr_t)jsDOMApplicationCachePrototypeFunctionAddEventListener, (intptr_t)3 },
     { "removeEventListener", DontDelete|Function, (intptr_t)jsDOMApplicationCachePrototypeFunctionRemoveEventListener, (intptr_t)3 },
     { "dispatchEvent", DontDelete|Function, (intptr_t)jsDOMApplicationCachePrototypeFunctionDispatchEvent, (intptr_t)1 },
@@ -93,14 +89,14 @@ static const HashTable JSDOMApplicationCachePrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 255, JSDOMApplicationCachePrototypeTableValues, 0 };
 #else
-    { 35, 31, JSDOMApplicationCachePrototypeTableValues, 0 };
+    { 33, 31, JSDOMApplicationCachePrototypeTableValues, 0 };
 #endif
 
 const ClassInfo JSDOMApplicationCachePrototype::s_info = { "DOMApplicationCachePrototype", 0, &JSDOMApplicationCachePrototypeTable, 0 };
 
-JSObject* JSDOMApplicationCachePrototype::self(ExecState* exec)
+JSObject* JSDOMApplicationCachePrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSDOMApplicationCache>(exec);
+    return getDOMPrototype<JSDOMApplicationCache>(exec, globalObject);
 }
 
 bool JSDOMApplicationCachePrototype::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -119,12 +115,11 @@ JSDOMApplicationCache::JSDOMApplicationCache(PassRefPtr<Structure> structure, Pa
 JSDOMApplicationCache::~JSDOMApplicationCache()
 {
     forgetDOMObject(*Heap::heap(this)->globalData(), m_impl.get());
-
 }
 
-JSObject* JSDOMApplicationCache::createPrototype(ExecState* exec)
+JSObject* JSDOMApplicationCache::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSDOMApplicationCachePrototype(JSDOMApplicationCachePrototype::createStructure(exec->lexicalGlobalObject()->objectPrototype()));
+    return new (exec) JSDOMApplicationCachePrototype(JSDOMApplicationCachePrototype::createStructure(globalObject->objectPrototype()));
 }
 
 bool JSDOMApplicationCache::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -132,159 +127,190 @@ bool JSDOMApplicationCache::getOwnPropertySlot(ExecState* exec, const Identifier
     return getStaticValueSlot<JSDOMApplicationCache, Base>(exec, &JSDOMApplicationCacheTable, this, propertyName, slot);
 }
 
-JSValuePtr jsDOMApplicationCacheStatus(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMApplicationCacheStatus(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     DOMApplicationCache* imp = static_cast<DOMApplicationCache*>(static_cast<JSDOMApplicationCache*>(asObject(slot.slotBase()))->impl());
     return jsNumber(exec, imp->status());
 }
 
-JSValuePtr jsDOMApplicationCacheItems(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMApplicationCacheOnchecking(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     DOMApplicationCache* imp = static_cast<DOMApplicationCache*>(static_cast<JSDOMApplicationCache*>(asObject(slot.slotBase()))->impl());
-    return toJS(exec, WTF::getPtr(imp->items()));
-}
-
-JSValuePtr jsDOMApplicationCacheOnchecking(ExecState* exec, const Identifier&, const PropertySlot& slot)
-{
-    DOMApplicationCache* imp = static_cast<DOMApplicationCache*>(static_cast<JSDOMApplicationCache*>(asObject(slot.slotBase()))->impl());
-    if (JSUnprotectedEventListener* listener = static_cast<JSUnprotectedEventListener*>(imp->onchecking())) {
-        if (JSObject* listenerObj = listener->listenerObj())
-            return listenerObj;
+    if (EventListener* listener = imp->onchecking()) {
+        if (JSObject* jsFunction = listener->jsFunction())
+            return jsFunction;
     }
     return jsNull();
 }
 
-JSValuePtr jsDOMApplicationCacheOnerror(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMApplicationCacheOnerror(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     DOMApplicationCache* imp = static_cast<DOMApplicationCache*>(static_cast<JSDOMApplicationCache*>(asObject(slot.slotBase()))->impl());
-    if (JSUnprotectedEventListener* listener = static_cast<JSUnprotectedEventListener*>(imp->onerror())) {
-        if (JSObject* listenerObj = listener->listenerObj())
-            return listenerObj;
+    if (EventListener* listener = imp->onerror()) {
+        if (JSObject* jsFunction = listener->jsFunction())
+            return jsFunction;
     }
     return jsNull();
 }
 
-JSValuePtr jsDOMApplicationCacheOnnoupdate(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMApplicationCacheOnnoupdate(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     DOMApplicationCache* imp = static_cast<DOMApplicationCache*>(static_cast<JSDOMApplicationCache*>(asObject(slot.slotBase()))->impl());
-    if (JSUnprotectedEventListener* listener = static_cast<JSUnprotectedEventListener*>(imp->onnoupdate())) {
-        if (JSObject* listenerObj = listener->listenerObj())
-            return listenerObj;
+    if (EventListener* listener = imp->onnoupdate()) {
+        if (JSObject* jsFunction = listener->jsFunction())
+            return jsFunction;
     }
     return jsNull();
 }
 
-JSValuePtr jsDOMApplicationCacheOndownloading(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMApplicationCacheOndownloading(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     DOMApplicationCache* imp = static_cast<DOMApplicationCache*>(static_cast<JSDOMApplicationCache*>(asObject(slot.slotBase()))->impl());
-    if (JSUnprotectedEventListener* listener = static_cast<JSUnprotectedEventListener*>(imp->ondownloading())) {
-        if (JSObject* listenerObj = listener->listenerObj())
-            return listenerObj;
+    if (EventListener* listener = imp->ondownloading()) {
+        if (JSObject* jsFunction = listener->jsFunction())
+            return jsFunction;
     }
     return jsNull();
 }
 
-JSValuePtr jsDOMApplicationCacheOnprogress(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMApplicationCacheOnprogress(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     DOMApplicationCache* imp = static_cast<DOMApplicationCache*>(static_cast<JSDOMApplicationCache*>(asObject(slot.slotBase()))->impl());
-    if (JSUnprotectedEventListener* listener = static_cast<JSUnprotectedEventListener*>(imp->onprogress())) {
-        if (JSObject* listenerObj = listener->listenerObj())
-            return listenerObj;
+    if (EventListener* listener = imp->onprogress()) {
+        if (JSObject* jsFunction = listener->jsFunction())
+            return jsFunction;
     }
     return jsNull();
 }
 
-JSValuePtr jsDOMApplicationCacheOnupdateready(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMApplicationCacheOnupdateready(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     DOMApplicationCache* imp = static_cast<DOMApplicationCache*>(static_cast<JSDOMApplicationCache*>(asObject(slot.slotBase()))->impl());
-    if (JSUnprotectedEventListener* listener = static_cast<JSUnprotectedEventListener*>(imp->onupdateready())) {
-        if (JSObject* listenerObj = listener->listenerObj())
-            return listenerObj;
+    if (EventListener* listener = imp->onupdateready()) {
+        if (JSObject* jsFunction = listener->jsFunction())
+            return jsFunction;
     }
     return jsNull();
 }
 
-JSValuePtr jsDOMApplicationCacheOncached(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsDOMApplicationCacheOncached(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     DOMApplicationCache* imp = static_cast<DOMApplicationCache*>(static_cast<JSDOMApplicationCache*>(asObject(slot.slotBase()))->impl());
-    if (JSUnprotectedEventListener* listener = static_cast<JSUnprotectedEventListener*>(imp->oncached())) {
-        if (JSObject* listenerObj = listener->listenerObj())
-            return listenerObj;
+    if (EventListener* listener = imp->oncached()) {
+        if (JSObject* jsFunction = listener->jsFunction())
+            return jsFunction;
     }
     return jsNull();
 }
 
-void JSDOMApplicationCache::put(ExecState* exec, const Identifier& propertyName, JSValuePtr value, PutPropertySlot& slot)
+JSValue jsDOMApplicationCacheOnobsolete(ExecState* exec, const Identifier&, const PropertySlot& slot)
+{
+    UNUSED_PARAM(exec);
+    DOMApplicationCache* imp = static_cast<DOMApplicationCache*>(static_cast<JSDOMApplicationCache*>(asObject(slot.slotBase()))->impl());
+    if (EventListener* listener = imp->onobsolete()) {
+        if (JSObject* jsFunction = listener->jsFunction())
+            return jsFunction;
+    }
+    return jsNull();
+}
+
+void JSDOMApplicationCache::put(ExecState* exec, const Identifier& propertyName, JSValue value, PutPropertySlot& slot)
 {
     lookupPut<JSDOMApplicationCache, Base>(exec, propertyName, value, &JSDOMApplicationCacheTable, this, slot);
 }
 
-void setJSDOMApplicationCacheOnchecking(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMApplicationCacheOnchecking(ExecState* exec, JSObject* thisObject, JSValue value)
 {
+    UNUSED_PARAM(exec);
     DOMApplicationCache* imp = static_cast<DOMApplicationCache*>(static_cast<JSDOMApplicationCache*>(thisObject)->impl());
     JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext());
     if (!globalObject)
         return;
-    imp->setOnchecking(globalObject->findOrCreateJSUnprotectedEventListener(exec, value, true));
+    imp->setOnchecking(globalObject->createJSAttributeEventListener(value));
 }
 
-void setJSDOMApplicationCacheOnerror(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMApplicationCacheOnerror(ExecState* exec, JSObject* thisObject, JSValue value)
 {
+    UNUSED_PARAM(exec);
     DOMApplicationCache* imp = static_cast<DOMApplicationCache*>(static_cast<JSDOMApplicationCache*>(thisObject)->impl());
     JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext());
     if (!globalObject)
         return;
-    imp->setOnerror(globalObject->findOrCreateJSUnprotectedEventListener(exec, value, true));
+    imp->setOnerror(globalObject->createJSAttributeEventListener(value));
 }
 
-void setJSDOMApplicationCacheOnnoupdate(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMApplicationCacheOnnoupdate(ExecState* exec, JSObject* thisObject, JSValue value)
 {
+    UNUSED_PARAM(exec);
     DOMApplicationCache* imp = static_cast<DOMApplicationCache*>(static_cast<JSDOMApplicationCache*>(thisObject)->impl());
     JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext());
     if (!globalObject)
         return;
-    imp->setOnnoupdate(globalObject->findOrCreateJSUnprotectedEventListener(exec, value, true));
+    imp->setOnnoupdate(globalObject->createJSAttributeEventListener(value));
 }
 
-void setJSDOMApplicationCacheOndownloading(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMApplicationCacheOndownloading(ExecState* exec, JSObject* thisObject, JSValue value)
 {
+    UNUSED_PARAM(exec);
     DOMApplicationCache* imp = static_cast<DOMApplicationCache*>(static_cast<JSDOMApplicationCache*>(thisObject)->impl());
     JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext());
     if (!globalObject)
         return;
-    imp->setOndownloading(globalObject->findOrCreateJSUnprotectedEventListener(exec, value, true));
+    imp->setOndownloading(globalObject->createJSAttributeEventListener(value));
 }
 
-void setJSDOMApplicationCacheOnprogress(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMApplicationCacheOnprogress(ExecState* exec, JSObject* thisObject, JSValue value)
 {
+    UNUSED_PARAM(exec);
     DOMApplicationCache* imp = static_cast<DOMApplicationCache*>(static_cast<JSDOMApplicationCache*>(thisObject)->impl());
     JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext());
     if (!globalObject)
         return;
-    imp->setOnprogress(globalObject->findOrCreateJSUnprotectedEventListener(exec, value, true));
+    imp->setOnprogress(globalObject->createJSAttributeEventListener(value));
 }
 
-void setJSDOMApplicationCacheOnupdateready(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMApplicationCacheOnupdateready(ExecState* exec, JSObject* thisObject, JSValue value)
 {
+    UNUSED_PARAM(exec);
     DOMApplicationCache* imp = static_cast<DOMApplicationCache*>(static_cast<JSDOMApplicationCache*>(thisObject)->impl());
     JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext());
     if (!globalObject)
         return;
-    imp->setOnupdateready(globalObject->findOrCreateJSUnprotectedEventListener(exec, value, true));
+    imp->setOnupdateready(globalObject->createJSAttributeEventListener(value));
 }
 
-void setJSDOMApplicationCacheOncached(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSDOMApplicationCacheOncached(ExecState* exec, JSObject* thisObject, JSValue value)
 {
+    UNUSED_PARAM(exec);
     DOMApplicationCache* imp = static_cast<DOMApplicationCache*>(static_cast<JSDOMApplicationCache*>(thisObject)->impl());
     JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext());
     if (!globalObject)
         return;
-    imp->setOncached(globalObject->findOrCreateJSUnprotectedEventListener(exec, value, true));
+    imp->setOncached(globalObject->createJSAttributeEventListener(value));
 }
 
-JSValuePtr jsDOMApplicationCachePrototypeFunctionUpdate(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+void setJSDOMApplicationCacheOnobsolete(ExecState* exec, JSObject* thisObject, JSValue value)
 {
-    if (!thisValue->isObject(&JSDOMApplicationCache::s_info))
+    UNUSED_PARAM(exec);
+    DOMApplicationCache* imp = static_cast<DOMApplicationCache*>(static_cast<JSDOMApplicationCache*>(thisObject)->impl());
+    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext());
+    if (!globalObject)
+        return;
+    imp->setOnobsolete(globalObject->createJSAttributeEventListener(value));
+}
+
+JSValue JSC_HOST_CALL jsDOMApplicationCachePrototypeFunctionUpdate(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
+{
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSDOMApplicationCache::s_info))
         return throwError(exec, TypeError);
     JSDOMApplicationCache* castedThisObj = static_cast<JSDOMApplicationCache*>(asObject(thisValue));
     DOMApplicationCache* imp = static_cast<DOMApplicationCache*>(castedThisObj->impl());
@@ -295,9 +321,10 @@ JSValuePtr jsDOMApplicationCachePrototypeFunctionUpdate(ExecState* exec, JSObjec
     return jsUndefined();
 }
 
-JSValuePtr jsDOMApplicationCachePrototypeFunctionSwapCache(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsDOMApplicationCachePrototypeFunctionSwapCache(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSDOMApplicationCache::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSDOMApplicationCache::s_info))
         return throwError(exec, TypeError);
     JSDOMApplicationCache* castedThisObj = static_cast<JSDOMApplicationCache*>(asObject(thisValue));
     DOMApplicationCache* imp = static_cast<DOMApplicationCache*>(castedThisObj->impl());
@@ -308,95 +335,79 @@ JSValuePtr jsDOMApplicationCachePrototypeFunctionSwapCache(ExecState* exec, JSOb
     return jsUndefined();
 }
 
-JSValuePtr jsDOMApplicationCachePrototypeFunctionHasItem(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsDOMApplicationCachePrototypeFunctionAddEventListener(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSDOMApplicationCache::s_info))
-        return throwError(exec, TypeError);
-    JSDOMApplicationCache* castedThisObj = static_cast<JSDOMApplicationCache*>(asObject(thisValue));
-    return castedThisObj->hasItem(exec, args);
-}
-
-JSValuePtr jsDOMApplicationCachePrototypeFunctionAdd(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
-{
-    if (!thisValue->isObject(&JSDOMApplicationCache::s_info))
-        return throwError(exec, TypeError);
-    JSDOMApplicationCache* castedThisObj = static_cast<JSDOMApplicationCache*>(asObject(thisValue));
-    return castedThisObj->add(exec, args);
-}
-
-JSValuePtr jsDOMApplicationCachePrototypeFunctionRemove(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
-{
-    if (!thisValue->isObject(&JSDOMApplicationCache::s_info))
-        return throwError(exec, TypeError);
-    JSDOMApplicationCache* castedThisObj = static_cast<JSDOMApplicationCache*>(asObject(thisValue));
-    return castedThisObj->remove(exec, args);
-}
-
-JSValuePtr jsDOMApplicationCachePrototypeFunctionAddEventListener(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
-{
-    if (!thisValue->isObject(&JSDOMApplicationCache::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSDOMApplicationCache::s_info))
         return throwError(exec, TypeError);
     JSDOMApplicationCache* castedThisObj = static_cast<JSDOMApplicationCache*>(asObject(thisValue));
     return castedThisObj->addEventListener(exec, args);
 }
 
-JSValuePtr jsDOMApplicationCachePrototypeFunctionRemoveEventListener(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsDOMApplicationCachePrototypeFunctionRemoveEventListener(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSDOMApplicationCache::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSDOMApplicationCache::s_info))
         return throwError(exec, TypeError);
     JSDOMApplicationCache* castedThisObj = static_cast<JSDOMApplicationCache*>(asObject(thisValue));
     return castedThisObj->removeEventListener(exec, args);
 }
 
-JSValuePtr jsDOMApplicationCachePrototypeFunctionDispatchEvent(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsDOMApplicationCachePrototypeFunctionDispatchEvent(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSDOMApplicationCache::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSDOMApplicationCache::s_info))
         return throwError(exec, TypeError);
     JSDOMApplicationCache* castedThisObj = static_cast<JSDOMApplicationCache*>(asObject(thisValue));
     DOMApplicationCache* imp = static_cast<DOMApplicationCache*>(castedThisObj->impl());
     ExceptionCode ec = 0;
-    Event* evt = toEvent(args.at(exec, 0));
+    Event* evt = toEvent(args.at(0));
 
 
-    JSC::JSValuePtr result = jsBoolean(imp->dispatchEvent(evt, ec));
+    JSC::JSValue result = jsBoolean(imp->dispatchEvent(evt, ec));
     setDOMException(exec, ec);
     return result;
 }
 
 // Constant getters
 
-JSValuePtr jsDOMApplicationCacheUNCACHED(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsDOMApplicationCacheUNCACHED(ExecState* exec, const Identifier&, const PropertySlot&)
 {
     return jsNumber(exec, static_cast<int>(0));
 }
 
-JSValuePtr jsDOMApplicationCacheIDLE(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsDOMApplicationCacheIDLE(ExecState* exec, const Identifier&, const PropertySlot&)
 {
     return jsNumber(exec, static_cast<int>(1));
 }
 
-JSValuePtr jsDOMApplicationCacheCHECKING(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsDOMApplicationCacheCHECKING(ExecState* exec, const Identifier&, const PropertySlot&)
 {
     return jsNumber(exec, static_cast<int>(2));
 }
 
-JSValuePtr jsDOMApplicationCacheDOWNLOADING(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsDOMApplicationCacheDOWNLOADING(ExecState* exec, const Identifier&, const PropertySlot&)
 {
     return jsNumber(exec, static_cast<int>(3));
 }
 
-JSValuePtr jsDOMApplicationCacheUPDATEREADY(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsDOMApplicationCacheUPDATEREADY(ExecState* exec, const Identifier&, const PropertySlot&)
 {
     return jsNumber(exec, static_cast<int>(4));
 }
 
-JSC::JSValuePtr toJS(JSC::ExecState* exec, DOMApplicationCache* object)
+JSValue jsDOMApplicationCacheOBSOLETE(ExecState* exec, const Identifier&, const PropertySlot&)
+{
+    return jsNumber(exec, static_cast<int>(5));
+}
+
+JSC::JSValue toJS(JSC::ExecState* exec, DOMApplicationCache* object)
 {
     return getDOMObjectWrapper<JSDOMApplicationCache>(exec, object);
 }
-DOMApplicationCache* toDOMApplicationCache(JSC::JSValuePtr value)
+DOMApplicationCache* toDOMApplicationCache(JSC::JSValue value)
 {
-    return value->isObject(&JSDOMApplicationCache::s_info) ? static_cast<JSDOMApplicationCache*>(asObject(value))->impl() : 0;
+    return value.isObject(&JSDOMApplicationCache::s_info) ? static_cast<JSDOMApplicationCache*>(asObject(value))->impl() : 0;
 }
 
 }

@@ -198,7 +198,24 @@
     \row    \o Interface      \o Plugin identifier  \o Dot-separated
     \endtable
 
-    \section2 Further Reading
+    \section1 Debugging
+
+    When developing applications that use D-Bus, it is sometimes useful to be able
+    to see information about the messages that are sent and received across the
+    bus by each application.
+
+    This feature can be enabled on a per-application basis by setting the
+    \c QDBUS_DEBUG environment variable before running each application.
+    For example, we can enable debugging only for the car in the
+    \l{Remote Controlled Car Example} by running the controller and the
+    car in the following way:
+
+    \snippet doc/src/snippets/code/doc_src_introtodbus.qdoc QDBUS_DEBUG
+
+    Information about the messages will be written to the console the application
+    was launched from.
+
+    \section1 Further Reading
 
     The following documents contain information about Qt's D-Bus integration
     features, and provide details about the mechanisms used to send and receive

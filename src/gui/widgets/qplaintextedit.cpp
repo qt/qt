@@ -761,7 +761,7 @@ void QPlainTextEditPrivate::init(const QString &txt)
     // set a null page size initially to avoid any relayouting until the textedit
     // is shown. relayoutDocument() will take care of setting the page size to the
     // viewport dimensions later.
-    doc->setTextWidth(0);
+    doc->setTextWidth(-1);
     doc->documentLayout()->setPaintDevice(viewport);
     doc->setDefaultFont(q->font());
 

@@ -3,6 +3,7 @@
     Copyright (C) 2001 Dirk Mueller (mueller@kde.org)
     Copyright (C) 2002 Waldo Bastian (bastian@kde.org)
     Copyright (C) 2004, 2005, 2006, 2008 Apple Inc. All rights reserved.
+    Copyright (C) 2009 Torch Mobile Inc. http://www.torchmobile.com/
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -36,6 +37,7 @@
 #include "CString.h"
 #include "Document.h"
 #include "DOMWindow.h"
+#include "HTMLElement.h"
 #include "Frame.h"
 #include "FrameLoader.h"
 #include "loader.h"
@@ -64,6 +66,9 @@ DocLoader::~DocLoader()
     for (DocumentResourceMap::iterator it = m_documentResources.begin(); it != end; ++it)
         it->second->setDocLoader(0);
     m_cache->removeDocLoader(this);
+
+    // Make sure no requests still point to this DocLoader
+    ASSERT(m_requestCount == 0);
 }
 
 Frame* DocLoader::frame() const
@@ -191,7 +196,7 @@ CachedResource* DocLoader::requestResource(CachedResource::Type type, const Stri
 {
     KURL fullURL = m_doc->completeURL(url);
 
-    if (!canRequest(type, fullURL))
+    if (!fullURL.isValid() || !canRequest(type, fullURL))
         return 0;
 
     if (cache()->disabled()) {
@@ -266,11 +271,16 @@ void DocLoader::setAutoLoadImages(bool enable)
 
 CachePolicy DocLoader::cachePolicy() const
 {
-    return frame() ? frame()->loader()->cachePolicy() : CachePolicyVerify;
+    return frame() ? frame()->loader()->subresourceCachePolicy() : CachePolicyVerify;
 }
 
 void DocLoader::removeCachedResource(CachedResource* resource) const
 {
+#ifndef NDEBUG
+    DocumentResourceMap::iterator it = m_documentResources.find(resource->url());
+    if (it != m_documentResources.end())
+        ASSERT(it->second.get() == resource);
+#endif
     m_documentResources.remove(resource->url());
 }
 
@@ -339,7 +349,9 @@ void DocLoader::checkForPendingPreloads()
         return;
     for (unsigned i = 0; i < count; ++i) {
         PendingPreload& preload = m_pendingPreloads[i];
-        requestPreload(preload.m_type, preload.m_url, preload.m_charset);
+        // Don't request preload if the resource already loaded normally (this will result in double load if the page is being reloaded with cached results ignored).
+        if (!cachedResource(m_doc->completeURL(preload.m_url)))
+            requestPreload(preload.m_type, preload.m_url, preload.m_charset);
     }
     m_pendingPreloads.clear();
 }
@@ -375,6 +387,11 @@ void DocLoader::clearPreloads()
             cache()->remove(res);
     }
     m_preloads.clear();
+}
+
+void DocLoader::clearPendingPreloads()
+{
+    m_pendingPreloads.clear();
 }
 
 #if PRELOAD_DEBUG

@@ -251,6 +251,17 @@ int QScriptDebuggerCommandSchedulerFrontend::scheduleContextsCheckpoint()
     return scheduleCommand(QScriptDebuggerCommand::contextsCheckpoint());
 }
 
+int QScriptDebuggerCommandSchedulerFrontend::scheduleGetPropertyExpressionValue(
+    int contextIndex, int lineNumber, const QStringList &path)
+{
+    return scheduleCommand(QScriptDebuggerCommand::getPropertyExpressionValue(contextIndex, lineNumber, path));
+}
+
+int QScriptDebuggerCommandSchedulerFrontend::scheduleGetCompletions(int contextIndex, const QStringList &path)
+{
+    return scheduleCommand(QScriptDebuggerCommand::getCompletions(contextIndex, path));
+}
+
 int QScriptDebuggerCommandSchedulerFrontend::scheduleEvaluate(int contextIndex,
                                               const QString &program,
                                               const QString &fileName,

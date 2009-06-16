@@ -38,7 +38,7 @@ using namespace JSC;
 
 namespace WebCore {
 
-ASSERT_CLASS_FITS_IN_CELL(JSNavigator)
+ASSERT_CLASS_FITS_IN_CELL(JSNavigator);
 
 /* Hash table */
 
@@ -85,9 +85,9 @@ static const HashTable JSNavigatorPrototypeTable =
 
 const ClassInfo JSNavigatorPrototype::s_info = { "NavigatorPrototype", 0, &JSNavigatorPrototypeTable, 0 };
 
-JSObject* JSNavigatorPrototype::self(ExecState* exec)
+JSObject* JSNavigatorPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSNavigator>(exec);
+    return getDOMPrototype<JSNavigator>(exec, globalObject);
 }
 
 bool JSNavigatorPrototype::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -106,12 +106,11 @@ JSNavigator::JSNavigator(PassRefPtr<Structure> structure, PassRefPtr<Navigator> 
 JSNavigator::~JSNavigator()
 {
     forgetDOMObject(*Heap::heap(this)->globalData(), m_impl.get());
-
 }
 
-JSObject* JSNavigator::createPrototype(ExecState* exec)
+JSObject* JSNavigator::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSNavigatorPrototype(JSNavigatorPrototype::createStructure(exec->lexicalGlobalObject()->objectPrototype()));
+    return new (exec) JSNavigatorPrototype(JSNavigatorPrototype::createStructure(globalObject->objectPrototype()));
 }
 
 bool JSNavigator::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -119,108 +118,124 @@ bool JSNavigator::getOwnPropertySlot(ExecState* exec, const Identifier& property
     return getStaticValueSlot<JSNavigator, Base>(exec, &JSNavigatorTable, this, propertyName, slot);
 }
 
-JSValuePtr jsNavigatorAppCodeName(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsNavigatorAppCodeName(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     Navigator* imp = static_cast<Navigator*>(static_cast<JSNavigator*>(asObject(slot.slotBase()))->impl());
     return jsString(exec, imp->appCodeName());
 }
 
-JSValuePtr jsNavigatorAppName(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsNavigatorAppName(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     Navigator* imp = static_cast<Navigator*>(static_cast<JSNavigator*>(asObject(slot.slotBase()))->impl());
     return jsString(exec, imp->appName());
 }
 
-JSValuePtr jsNavigatorAppVersion(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsNavigatorAppVersion(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
-    return static_cast<JSNavigator*>(asObject(slot.slotBase()))->appVersion(exec);
+    UNUSED_PARAM(exec);
+    Navigator* imp = static_cast<Navigator*>(static_cast<JSNavigator*>(asObject(slot.slotBase()))->impl());
+    return jsString(exec, imp->appVersion());
 }
 
-JSValuePtr jsNavigatorLanguage(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsNavigatorLanguage(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     Navigator* imp = static_cast<Navigator*>(static_cast<JSNavigator*>(asObject(slot.slotBase()))->impl());
     return jsString(exec, imp->language());
 }
 
-JSValuePtr jsNavigatorUserAgent(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsNavigatorUserAgent(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     Navigator* imp = static_cast<Navigator*>(static_cast<JSNavigator*>(asObject(slot.slotBase()))->impl());
     return jsString(exec, imp->userAgent());
 }
 
-JSValuePtr jsNavigatorPlatform(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsNavigatorPlatform(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     Navigator* imp = static_cast<Navigator*>(static_cast<JSNavigator*>(asObject(slot.slotBase()))->impl());
     return jsString(exec, imp->platform());
 }
 
-JSValuePtr jsNavigatorPlugins(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsNavigatorPlugins(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     Navigator* imp = static_cast<Navigator*>(static_cast<JSNavigator*>(asObject(slot.slotBase()))->impl());
     return toJS(exec, WTF::getPtr(imp->plugins()));
 }
 
-JSValuePtr jsNavigatorMimeTypes(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsNavigatorMimeTypes(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     Navigator* imp = static_cast<Navigator*>(static_cast<JSNavigator*>(asObject(slot.slotBase()))->impl());
     return toJS(exec, WTF::getPtr(imp->mimeTypes()));
 }
 
-JSValuePtr jsNavigatorProduct(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsNavigatorProduct(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     Navigator* imp = static_cast<Navigator*>(static_cast<JSNavigator*>(asObject(slot.slotBase()))->impl());
     return jsString(exec, imp->product());
 }
 
-JSValuePtr jsNavigatorProductSub(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsNavigatorProductSub(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     Navigator* imp = static_cast<Navigator*>(static_cast<JSNavigator*>(asObject(slot.slotBase()))->impl());
     return jsString(exec, imp->productSub());
 }
 
-JSValuePtr jsNavigatorVendor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsNavigatorVendor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     Navigator* imp = static_cast<Navigator*>(static_cast<JSNavigator*>(asObject(slot.slotBase()))->impl());
     return jsString(exec, imp->vendor());
 }
 
-JSValuePtr jsNavigatorVendorSub(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsNavigatorVendorSub(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     Navigator* imp = static_cast<Navigator*>(static_cast<JSNavigator*>(asObject(slot.slotBase()))->impl());
     return jsString(exec, imp->vendorSub());
 }
 
-JSValuePtr jsNavigatorCookieEnabled(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsNavigatorCookieEnabled(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     Navigator* imp = static_cast<Navigator*>(static_cast<JSNavigator*>(asObject(slot.slotBase()))->impl());
     return jsBoolean(imp->cookieEnabled());
 }
 
-JSValuePtr jsNavigatorOnLine(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsNavigatorOnLine(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     Navigator* imp = static_cast<Navigator*>(static_cast<JSNavigator*>(asObject(slot.slotBase()))->impl());
     return jsBoolean(imp->onLine());
 }
 
-JSValuePtr jsNavigatorPrototypeFunctionJavaEnabled(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsNavigatorPrototypeFunctionJavaEnabled(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSNavigator::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSNavigator::s_info))
         return throwError(exec, TypeError);
     JSNavigator* castedThisObj = static_cast<JSNavigator*>(asObject(thisValue));
     Navigator* imp = static_cast<Navigator*>(castedThisObj->impl());
 
 
-    JSC::JSValuePtr result = jsBoolean(imp->javaEnabled());
+    JSC::JSValue result = jsBoolean(imp->javaEnabled());
     return result;
 }
 
-JSC::JSValuePtr toJS(JSC::ExecState* exec, Navigator* object)
+JSC::JSValue toJS(JSC::ExecState* exec, Navigator* object)
 {
     return getDOMObjectWrapper<JSNavigator>(exec, object);
 }
-Navigator* toNavigator(JSC::JSValuePtr value)
+Navigator* toNavigator(JSC::JSValue value)
 {
-    return value->isObject(&JSNavigator::s_info) ? static_cast<JSNavigator*>(asObject(value))->impl() : 0;
+    return value.isObject(&JSNavigator::s_info) ? static_cast<JSNavigator*>(asObject(value))->impl() : 0;
 }
 
 }

@@ -26,6 +26,10 @@
 #import "config.h"
 #import "Widget.h"
 
+#ifdef BUILDING_ON_TIGER
+#import "AutodrainedPool.h"
+#endif
+
 #import "BlockExceptions.h"
 #import "Cursor.h"
 #import "Document.h"
@@ -38,7 +42,6 @@
 #import "ScrollView.h"
 #import "WebCoreFrameView.h"
 #import "WebCoreView.h"
-
 #import <wtf/RetainPtr.h>
 
 @interface NSWindow (WebWindowDetails)
@@ -218,8 +221,13 @@ void Widget::paint(GraphicsContext* p, const IntRect& r)
         CGContextScaleCTM(cgContext, 1, -1);
 
         BEGIN_BLOCK_OBJC_EXCEPTIONS;
-        NSGraphicsContext *nsContext = [NSGraphicsContext graphicsContextWithGraphicsPort:cgContext flipped:YES];
-        [view displayRectIgnoringOpacity:[view convertRect:r fromView:[view superview]] inContext:nsContext];
+        {
+#ifdef BUILDING_ON_TIGER
+            AutodrainedPool pool;
+#endif
+            NSGraphicsContext *nsContext = [NSGraphicsContext graphicsContextWithGraphicsPort:cgContext flipped:YES];
+            [view displayRectIgnoringOpacity:[view convertRect:r fromView:[view superview]] inContext:nsContext];
+        }
         END_BLOCK_OBJC_EXCEPTIONS;
 
         CGContextRestoreGState(cgContext);
@@ -252,10 +260,10 @@ void Widget::removeFromSuperview()
     }
 }
 
-void Widget::beforeMouseDown(NSView *view, Widget* widget)
+void Widget::beforeMouseDown(NSView *unusedView, Widget* widget)
 {
     if (widget) {
-        ASSERT(view == widget->getOuterView());
+        ASSERT_UNUSED(unusedView, unusedView == widget->getOuterView());
         ASSERT(!widget->m_data->mustStayInWindow);
         widget->m_data->mustStayInWindow = true;
     }
@@ -277,7 +285,9 @@ void Widget::afterMouseDown(NSView *view, Widget* widget)
 
 IntPoint Widget::convertFromContainingWindow(const IntPoint& point) const
 {
-    if (!platformWidget() && parent()) {
+    if (!platformWidget()) {
+        if (!parent())
+            return point;
         IntPoint result = parent()->convertFromContainingWindow(point);
         result.move(parent()->scrollX() - x(), parent()->scrollY() - y());
         return result;
@@ -292,7 +302,9 @@ IntPoint Widget::convertFromContainingWindow(const IntPoint& point) const
 
 IntRect Widget::convertFromContainingWindow(const IntRect& rect) const
 {
-    if (!platformWidget() && parent()) {
+    if (!platformWidget()) {
+        if (!parent())
+            return rect;
         IntRect result = parent()->convertFromContainingWindow(rect);
         result.move(parent()->scrollX() - x(), parent()->scrollY() - y());
         return result;

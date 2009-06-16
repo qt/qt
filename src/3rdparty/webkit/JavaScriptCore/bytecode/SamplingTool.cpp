@@ -39,24 +39,57 @@
 
 namespace JSC {
 
-void ScopeSampleRecord::sample(CodeBlock* codeBlock, Instruction* vPC)
+#if ENABLE(SAMPLING_FLAGS)
+
+void SamplingFlags::sample()
 {
-    if (!m_samples) {
-        m_size = codeBlock->instructions().size();
-        m_samples = static_cast<int*>(calloc(m_size, sizeof(int)));
-        m_codeBlock = codeBlock;
+    uint32_t mask = 1 << 31;
+    unsigned index;
+
+    for (index = 0; index < 32; ++index) {
+        if (mask & s_flags)
+            break;
+        mask >>= 1;
     }
 
-    ++m_sampleCount;
-
-    unsigned offest = vPC - codeBlock->instructions().begin();
-    // Since we don't read and write codeBlock and vPC atomically, this check
-    // can fail if we sample mid op_call / op_ret.
-    if (offest < m_size) {
-        m_samples[offest]++;
-        m_opcodeSampleCount++;
-    }
+    s_flagCounts[32 - index]++;
 }
+
+void SamplingFlags::start()
+{
+    for (unsigned i = 0; i <= 32; ++i)
+        s_flagCounts[i] = 0;
+}
+void SamplingFlags::stop()
+{
+    uint64_t total = 0;
+    for (unsigned i = 0; i <= 32; ++i)
+        total += s_flagCounts[i];
+
+    if (total) {
+        printf("\nSamplingFlags: sample counts with flags set: (%lld total)\n", total);
+        for (unsigned i = 0; i <= 32; ++i) {
+            if (s_flagCounts[i])
+                printf("  [ %02d ] : %lld\t\t(%03.2f%%)\n", i, s_flagCounts[i], (100.0 * s_flagCounts[i]) / total);
+        }
+        printf("\n");
+    } else
+    printf("\nSamplingFlags: no samples.\n\n");
+}
+uint64_t SamplingFlags::s_flagCounts[33];
+
+#else
+void SamplingFlags::start() {}
+void SamplingFlags::stop() {}
+#endif
+
+/*
+  Start with flag 16 set.
+  By doing this the monitoring of lower valued flags will be masked out
+  until flag 16 is explictly cleared.
+*/
+uint32_t SamplingFlags::s_flags = 1 << 15;
+
 
 #if PLATFORM(WIN_OS)
 
@@ -82,62 +115,113 @@ static inline unsigned hertz2us(unsigned hertz)
     return 1000000 / hertz;
 }
 
-void SamplingTool::run()
+
+SamplingTool* SamplingTool::s_samplingTool = 0;
+
+
+bool SamplingThread::s_running = false;
+unsigned SamplingThread::s_hertz = 10000;
+ThreadIdentifier SamplingThread::s_samplingThread;
+
+void* SamplingThread::threadStartFunc(void*)
 {
-    while (m_running) {
-        sleepForMicroseconds(hertz2us(m_hertz));
+    while (s_running) {
+        sleepForMicroseconds(hertz2us(s_hertz));
 
-        Sample sample(m_sample, m_codeBlock);
-        ++m_sampleCount;
-
-        if (sample.isNull())
-            continue;
-
-        if (!sample.inHostFunction()) {
-            unsigned opcodeID = m_interpreter->getOpcodeID(sample.vPC()[0].u.opcode);
-
-            ++m_opcodeSampleCount;
-            ++m_opcodeSamples[opcodeID];
-
-            if (sample.inCTIFunction())
-                m_opcodeSamplesInCTIFunctions[opcodeID]++;
-        }
-
-#if ENABLE(CODEBLOCK_SAMPLING)
-        MutexLocker locker(m_scopeSampleMapMutex);
-        ScopeSampleRecord* record = m_scopeSampleMap->get(sample.codeBlock()->ownerNode);
-        ASSERT(record);
-        record->sample(sample.codeBlock(), sample.vPC());
+#if ENABLE(SAMPLING_FLAGS)
+        SamplingFlags::sample();
 #endif
+#if ENABLE(OPCODE_SAMPLING)
+        SamplingTool::sample();
+#endif
+    }
+
+    return 0;
+}
+
+
+void SamplingThread::start(unsigned hertz)
+{
+    ASSERT(!s_running);
+    s_running = true;
+    s_hertz = hertz;
+
+    s_samplingThread = createThread(threadStartFunc, 0, "JavaScriptCore::Sampler");
+}
+
+void SamplingThread::stop()
+{
+    ASSERT(s_running);
+    s_running = false;
+    waitForThreadCompletion(s_samplingThread, 0);
+}
+
+
+void ScopeSampleRecord::sample(CodeBlock* codeBlock, Instruction* vPC)
+{
+    if (!m_samples) {
+        m_size = codeBlock->instructions().size();
+        m_samples = static_cast<int*>(calloc(m_size, sizeof(int)));
+        m_codeBlock = codeBlock;
+    }
+
+    ++m_sampleCount;
+
+    unsigned offest = vPC - codeBlock->instructions().begin();
+    // Since we don't read and write codeBlock and vPC atomically, this check
+    // can fail if we sample mid op_call / op_ret.
+    if (offest < m_size) {
+        m_samples[offest]++;
+        m_opcodeSampleCount++;
     }
 }
 
-void* SamplingTool::threadStartFunc(void* samplingTool)
+void SamplingTool::doRun()
 {
-    reinterpret_cast<SamplingTool*>(samplingTool)->run();
-    return 0;
+    Sample sample(m_sample, m_codeBlock);
+    ++m_sampleCount;
+
+    if (sample.isNull())
+        return;
+
+    if (!sample.inHostFunction()) {
+        unsigned opcodeID = m_interpreter->getOpcodeID(sample.vPC()[0].u.opcode);
+
+        ++m_opcodeSampleCount;
+        ++m_opcodeSamples[opcodeID];
+
+        if (sample.inCTIFunction())
+            m_opcodeSamplesInCTIFunctions[opcodeID]++;
+    }
+
+#if ENABLE(CODEBLOCK_SAMPLING)
+    if (CodeBlock* codeBlock = sample.codeBlock()) {
+        MutexLocker locker(m_scopeSampleMapMutex);
+        ScopeSampleRecord* record = m_scopeSampleMap->get(codeBlock->ownerNode());
+        ASSERT(record);
+        record->sample(codeBlock, sample.vPC());
+    }
+#endif
+}
+
+void SamplingTool::sample()
+{
+    s_samplingTool->doRun();
 }
 
 void SamplingTool::notifyOfScope(ScopeNode* scope)
 {
+#if ENABLE(CODEBLOCK_SAMPLING)
     MutexLocker locker(m_scopeSampleMapMutex);
     m_scopeSampleMap->set(scope, new ScopeSampleRecord(scope));
+#else
+    UNUSED_PARAM(scope);
+#endif
 }
 
-void SamplingTool::start(unsigned hertz)
+void SamplingTool::setup()
 {
-    ASSERT(!m_running);
-    m_running = true;
-    m_hertz = hertz;
-
-    m_samplingThread = createThread(threadStartFunc, this, "JavaScriptCore::Sampler");
-}
-
-void SamplingTool::stop()
-{
-    ASSERT(m_running);
-    m_running = false;
-    waitForThreadCompletion(m_samplingThread, 0);
+    s_samplingTool = this;
 }
 
 #if ENABLE(OPCODE_SAMPLING)
@@ -153,20 +237,21 @@ struct LineCountInfo {
     unsigned count;
 };
 
-static int compareLineCountInfoSampling(const void* left, const void* right)
-{
-    const LineCountInfo* leftLineCount = reinterpret_cast<const LineCountInfo*>(left);
-    const LineCountInfo* rightLineCount = reinterpret_cast<const LineCountInfo*>(right);
-
-    return (leftLineCount->line > rightLineCount->line) ? 1 : (leftLineCount->line < rightLineCount->line) ? -1 : 0;
-}
-
 static int compareOpcodeIndicesSampling(const void* left, const void* right)
 {
     const OpcodeSampleInfo* leftSampleInfo = reinterpret_cast<const OpcodeSampleInfo*>(left);
     const OpcodeSampleInfo* rightSampleInfo = reinterpret_cast<const OpcodeSampleInfo*>(right);
 
     return (leftSampleInfo->count < rightSampleInfo->count) ? 1 : (leftSampleInfo->count > rightSampleInfo->count) ? -1 : 0;
+}
+
+#if ENABLE(CODEBLOCK_SAMPLING)
+static int compareLineCountInfoSampling(const void* left, const void* right)
+{
+    const LineCountInfo* leftLineCount = reinterpret_cast<const LineCountInfo*>(left);
+    const LineCountInfo* rightLineCount = reinterpret_cast<const LineCountInfo*>(right);
+
+    return (leftLineCount->line > rightLineCount->line) ? 1 : (leftLineCount->line < rightLineCount->line) ? -1 : 0;
 }
 
 static int compareScopeSampleRecords(const void* left, const void* right)
@@ -176,6 +261,7 @@ static int compareScopeSampleRecords(const void* left, const void* right)
 
     return (leftValue->m_sampleCount < rightValue->m_sampleCount) ? 1 : (leftValue->m_sampleCount > rightValue->m_sampleCount) ? -1 : 0;
 }
+#endif
 
 void SamplingTool::dump(ExecState* exec)
 {
@@ -227,6 +313,8 @@ void SamplingTool::dump(ExecState* exec)
     printf("\tcti count:\tsamples inside a CTI function called by this opcode\n");
     printf("\tcti %% of self:\tcti count / sample count\n");
     
+#if ENABLE(CODEBLOCK_SAMPLING)
+
     // (3) Build and sort 'codeBlockSamples' array.
 
     int scopeCount = m_scopeSampleMap->size();
@@ -248,8 +336,8 @@ void SamplingTool::dump(ExecState* exec)
         double blockPercent = (record->m_sampleCount * 100.0) / m_sampleCount;
 
         if (blockPercent >= 1) {
-            Instruction* code = codeBlock->instructions().begin();
-            printf("#%d: %s:%d: %d / %lld (%.3f%%)\n", i + 1, record->m_scope->sourceURL().UTF8String().c_str(), codeBlock->lineNumberForBytecodeOffset(0), record->m_sampleCount, m_sampleCount, blockPercent);
+            //Instruction* code = codeBlock->instructions().begin();
+            printf("#%d: %s:%d: %d / %lld (%.3f%%)\n", i + 1, record->m_scope->sourceURL().UTF8String().c_str(), codeBlock->lineNumberForBytecodeOffset(exec, 0), record->m_sampleCount, m_sampleCount, blockPercent);
             if (i < 10) {
                 HashMap<unsigned,unsigned> lineCounts;
                 codeBlock->dump(exec);
@@ -259,9 +347,7 @@ void SamplingTool::dump(ExecState* exec)
                     int count = record->m_samples[op];
                     if (count) {
                         printf("    [% 4d] has sample count: % 4d\n", op, count);
-                        // It is okay to pass 0 as the CallFrame for lineNumberForBytecodeOffset since
-                        // we ensure exception information when Sampling is enabled.
-                        unsigned line = codeBlock->lineNumberForBytecodeOffset(0, op);
+                        unsigned line = codeBlock->lineNumberForBytecodeOffset(exec, op);
                         lineCounts.set(line, (lineCounts.contains(line) ? lineCounts.get(line) : 0) + count);
                     }
                 }
@@ -287,6 +373,9 @@ void SamplingTool::dump(ExecState* exec)
             }
         }
     }
+#else
+    UNUSED_PARAM(exec);
+#endif
 }
 
 #else
@@ -296,5 +385,22 @@ void SamplingTool::dump(ExecState*)
 }
 
 #endif
+
+void AbstractSamplingCounter::dump()
+{
+#if ENABLE(SAMPLING_COUNTERS)
+    if (s_abstractSamplingCounterChain != &s_abstractSamplingCounterChainEnd) {
+        printf("\nSampling Counter Values:\n");
+        for (AbstractSamplingCounter* currCounter = s_abstractSamplingCounterChain; (currCounter != &s_abstractSamplingCounterChainEnd); currCounter = currCounter->m_next)
+            printf("\t%s\t: %lld\n", currCounter->m_name, currCounter->m_counter);
+        printf("\n\n");
+    }
+    s_completed = true;
+#endif
+}
+
+AbstractSamplingCounter AbstractSamplingCounter::s_abstractSamplingCounterChainEnd;
+AbstractSamplingCounter* AbstractSamplingCounter::s_abstractSamplingCounterChain = &s_abstractSamplingCounterChainEnd;
+bool AbstractSamplingCounter::s_completed = false;
 
 } // namespace JSC

@@ -27,6 +27,7 @@
 #include "EventHandler.h"
 #include "KURL.h"
 #include "PlatformString.h"
+#include "qwebelement.h"
 #include "wtf/RefPtr.h"
 #include "Frame.h"
 
@@ -38,7 +39,6 @@ namespace WebCore
     class Scrollbar;
 }
 class QWebPage;
-
 
 class QWebFrameData
 {
@@ -81,6 +81,8 @@ public:
     static WebCore::Frame* core(QWebFrame*);
     static QWebFrame* kit(WebCore::Frame*);
 
+    void renderPrivate(QPainter *painter, const QRegion &clip, bool contents = false);
+
     QWebFrame *q;
     WebCore::FrameLoaderClientQt *frameLoaderClient;
     WebCore::Frame *frame;
@@ -94,22 +96,26 @@ public:
 class QWebHitTestResultPrivate
 {
 public:
-    QWebHitTestResultPrivate() : isContentEditable(false), isContentSelected(false) {}
+    QWebHitTestResultPrivate() : isContentEditable(false), isContentSelected(false), isScrollBar(false) {}
     QWebHitTestResultPrivate(const WebCore::HitTestResult &hitTest);
 
     QPoint pos;
     QRect boundingRect;
+    QWebElement enclosingBlock;
     QString title;
     QString linkText;
     QUrl linkUrl;
     QString linkTitle;
     QPointer<QWebFrame> linkTargetFrame;
+    QString linkTarget;
     QString alternateText;
     QUrl imageUrl;
     QPixmap pixmap;
     bool isContentEditable;
     bool isContentSelected;
+    bool isScrollBar;
     QPointer<QWebFrame> frame;
+    RefPtr<WebCore::Node> innerNode;
     RefPtr<WebCore::Node> innerNonSharedNode;
 };
 

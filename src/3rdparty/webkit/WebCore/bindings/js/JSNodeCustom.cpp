@@ -43,6 +43,7 @@
 #include "JSDocumentType.h"
 #include "JSEntity.h"
 #include "JSEntityReference.h"
+#include "JSEventListener.h"
 #include "JSHTMLElement.h"
 #include "JSHTMLElementWrapperFactory.h"
 #include "JSNotation.h"
@@ -51,6 +52,7 @@
 #include "Node.h"
 #include "Notation.h"
 #include "ProcessingInstruction.h"
+#include "RegisteredEventListener.h"
 #include "Text.h"
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefPtr.h>
@@ -66,44 +68,72 @@ namespace WebCore {
 
 typedef int ExpectionCode;
 
-JSValuePtr JSNode::insertBefore(ExecState* exec, const ArgList& args)
+JSValue JSNode::insertBefore(ExecState* exec, const ArgList& args)
 {
     ExceptionCode ec = 0;
-    bool ok = impl()->insertBefore(toNode(args.at(exec, 0)), toNode(args.at(exec, 1)), ec, true);
+    bool ok = impl()->insertBefore(toNode(args.at(0)), toNode(args.at(1)), ec, true);
     setDOMException(exec, ec);
     if (ok)
-        return args.at(exec, 0);
+        return args.at(0);
     return jsNull();
 }
 
-JSValuePtr JSNode::replaceChild(ExecState* exec, const ArgList& args)
+JSValue JSNode::replaceChild(ExecState* exec, const ArgList& args)
 {
     ExceptionCode ec = 0;
-    bool ok = impl()->replaceChild(toNode(args.at(exec, 0)), toNode(args.at(exec, 1)), ec, true);
+    bool ok = impl()->replaceChild(toNode(args.at(0)), toNode(args.at(1)), ec, true);
     setDOMException(exec, ec);
     if (ok)
-        return args.at(exec, 1);
+        return args.at(1);
     return jsNull();
 }
 
-JSValuePtr JSNode::removeChild(ExecState* exec, const ArgList& args)
+JSValue JSNode::removeChild(ExecState* exec, const ArgList& args)
 {
     ExceptionCode ec = 0;
-    bool ok = impl()->removeChild(toNode(args.at(exec, 0)), ec);
+    bool ok = impl()->removeChild(toNode(args.at(0)), ec);
     setDOMException(exec, ec);
     if (ok)
-        return args.at(exec, 0);
+        return args.at(0);
     return jsNull();
 }
 
-JSValuePtr JSNode::appendChild(ExecState* exec, const ArgList& args)
+JSValue JSNode::appendChild(ExecState* exec, const ArgList& args)
 {
     ExceptionCode ec = 0;
-    bool ok = impl()->appendChild(toNode(args.at(exec, 0)), ec, true);
+    bool ok = impl()->appendChild(toNode(args.at(0)), ec, true);
     setDOMException(exec, ec);
     if (ok)
-        return args.at(exec, 0);
+        return args.at(0);
     return jsNull();
+}
+
+JSValue JSNode::addEventListener(ExecState* exec, const ArgList& args)
+{
+    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(impl()->scriptExecutionContext());
+    if (!globalObject)
+        return jsUndefined();
+
+    if (RefPtr<JSEventListener> listener = globalObject->findOrCreateJSEventListener(args.at(1)))
+        impl()->addEventListener(args.at(0).toString(exec), listener.release(), args.at(2).toBoolean(exec));
+
+    return jsUndefined();
+}
+
+JSValue JSNode::removeEventListener(ExecState* exec, const ArgList& args)
+{
+    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(impl()->scriptExecutionContext());
+    if (!globalObject)
+        return jsUndefined();
+
+    if (JSEventListener* listener = globalObject->findJSEventListener(args.at(1)))
+        impl()->removeEventListener(args.at(0).toString(exec), listener, args.at(2).toBoolean(exec));
+
+    return jsUndefined();
+}
+
+void JSNode::pushEventHandlerScope(ExecState*, ScopeChain&) const
+{
 }
 
 void JSNode::mark()
@@ -112,16 +142,16 @@ void JSNode::mark()
 
     Node* node = m_impl.get();
 
-    // Nodes in the document are kept alive by JSDocument::mark,
-    // so we have no special responsibilities and can just call the base class here.
+    // Nodes in the document are kept alive by JSDocument::mark, so, if we're in
+    // the document, we need to mark the document, but we don't need to explicitly
+    // mark any other nodes.
     if (node->inDocument()) {
-        // But if the document isn't marked we have to mark it to ensure that
-        // nodes reachable from this one are also marked
+        DOMObject::mark();
+        markEventListeners(node->eventListeners());
         if (Document* doc = node->ownerDocument())
             if (DOMObject* docWrapper = getCachedDOMObjectWrapper(*Heap::heap(this)->globalData(), doc))
                 if (!docWrapper->marked())
                     docWrapper->mark();
-        DOMObject::mark();
         return;
     }
 
@@ -131,14 +161,15 @@ void JSNode::mark()
     for (Node* current = m_impl.get(); current; current = current->parentNode())
         root = current;
 
-    // If we're already marking this tree, then we can simply mark this wrapper
-    // by calling the base class; our caller is iterating the tree.
+    // Nodes in a subtree are marked by the tree's root, so, if the root is already
+    // marking the tree, we don't need to explicitly mark any other nodes.
     if (root->inSubtreeMark()) {
         DOMObject::mark();
+        markEventListeners(node->eventListeners());
         return;
     }
 
-    // Mark the whole tree; use the global set of roots to avoid reentering.
+    // Mark the whole tree subtree.
     root->setInSubtreeMark(true);
     for (Node* nodeToMark = root; nodeToMark; nodeToMark = nodeToMark->traverseNextNode()) {
         JSNode* wrapper = getCachedDOMNodeWrapper(m_impl->document(), nodeToMark);
@@ -161,7 +192,7 @@ void JSNode::mark()
     ASSERT(marked());
 }
 
-static ALWAYS_INLINE JSValuePtr createWrapper(ExecState* exec, Node* node)
+static ALWAYS_INLINE JSValue createWrapper(ExecState* exec, Node* node)
 {
     ASSERT(node);
     ASSERT(!getCachedDOMNodeWrapper(node->document(), node));
@@ -218,7 +249,7 @@ static ALWAYS_INLINE JSValuePtr createWrapper(ExecState* exec, Node* node)
     return wrapper;    
 }
     
-JSValuePtr toJSNewlyCreated(ExecState* exec, Node* node)
+JSValue toJSNewlyCreated(ExecState* exec, Node* node)
 {
     if (!node)
         return jsNull();
@@ -226,7 +257,7 @@ JSValuePtr toJSNewlyCreated(ExecState* exec, Node* node)
     return createWrapper(exec, node);
 }
     
-JSValuePtr toJS(ExecState* exec, Node* node)
+JSValue toJS(ExecState* exec, Node* node)
 {
     if (!node)
         return jsNull();

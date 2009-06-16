@@ -30,7 +30,6 @@
 
 #include "IntSize.h"
 #include "LocalizedStrings.h"
-#include "NotImplemented.h"
 #include "PlatformString.h"
 
 #include <QCoreApplication>
@@ -245,12 +244,12 @@ String contextMenuItemTagDefaultDirection()
 
 String contextMenuItemTagLeftToRight()
 {
-    return QCoreApplication::translate("QWebPage", "LTR", "Left to Right context menu item");
+    return QCoreApplication::translate("QWebPage", "Left to Right", "Left to Right context menu item");
 }
 
 String contextMenuItemTagRightToLeft()
 {
-    return QCoreApplication::translate("QWebPage", "RTL", "Right to Left context menu item");
+    return QCoreApplication::translate("QWebPage", "Right to Left", "Right to Left context menu item");
 }
 
 String contextMenuItemTagInspectElement()

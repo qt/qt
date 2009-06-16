@@ -1106,7 +1106,8 @@ NSString* QuickTimeVideoPlayer::pathToCompactDisc()
 {
     PhononAutoReleasePool pool;
     NSArray *devices = [[NSWorkspace sharedWorkspace] mountedRemovableMedia];
-    for (NSString *dev in devices) {
+    for (unsigned int i=0; i<[devices count]; ++i) {
+        NSString *dev = [devices objectAtIndex:i];
         if (isCompactDisc(dev))
             return [dev retain];
     }

@@ -33,10 +33,11 @@
 namespace WTF {
 
 void initializeThreading() { }
-ThreadIdentifier createThreadInternal(ThreadFunction, void*, const char*) { return 0; }
+ThreadIdentifier createThreadInternal(ThreadFunction, void*, const char*) { return ThreadIdentifier(); }
+void setThreadNameInternal(const char*) { }
 int waitForThreadCompletion(ThreadIdentifier, void**) { return 0; }
 void detachThread(ThreadIdentifier) { }
-ThreadIdentifier currentThread() { return 0; }
+ThreadIdentifier currentThread() { return ThreadIdentifier(); }
 bool isMainThread() { return true; }
 
 Mutex::Mutex() { }
@@ -48,7 +49,7 @@ void Mutex::unlock() { }
 ThreadCondition::ThreadCondition() { }
 ThreadCondition::~ThreadCondition() { }
 void ThreadCondition::wait(Mutex& mutex) { }
-bool ThreadCondition::timedWait(Mutex& mutex, double interval) { return false; }
+bool ThreadCondition::timedWait(Mutex& mutex, double absoluteTime) { return false; }
 void ThreadCondition::signal() { }
 void ThreadCondition::broadcast() { }
 

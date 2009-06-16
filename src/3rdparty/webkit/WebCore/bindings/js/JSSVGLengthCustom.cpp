@@ -26,18 +26,18 @@ using namespace JSC;
 
 namespace WebCore {
 
-JSValuePtr JSSVGLength::value(ExecState* exec) const
+JSValue JSSVGLength::value(ExecState* exec) const
 {
     SVGLength imp(*impl());
     return jsNumber(exec, imp.value(context()));
 }
 
-JSValuePtr JSSVGLength::convertToSpecifiedUnits(ExecState* exec, const ArgList& args)
+JSValue JSSVGLength::convertToSpecifiedUnits(ExecState* exec, const ArgList& args)
 {
     JSSVGPODTypeWrapper<SVGLength>* wrapper = impl();
 
     SVGLength imp(*wrapper);
-    imp.convertToSpecifiedUnits(args.at(exec, 0)->toInt32(exec), context());
+    imp.convertToSpecifiedUnits(args.at(0).toInt32(exec), context());
 
     wrapper->commitChange(imp, context());
     return jsUndefined();

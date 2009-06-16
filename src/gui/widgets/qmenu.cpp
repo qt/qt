@@ -205,7 +205,6 @@ void QMenuPrivate::calcActionRects(QMap<QAction*, QRect> &actionRects, QList<QAc
 
     actionRects.clear();
     actionList.clear();
-    QList<QAction*> items = filterActions(q->actions());
     int max_column_width = 0,
         dh = popupGeometry(QApplication::desktop()->screenNumber(q)).height(),
         ncols = 1,
@@ -218,6 +217,7 @@ void QMenuPrivate::calcActionRects(QMap<QAction*, QRect> &actionRects, QList<QAc
     tabWidth = 0;
     maxIconWidth = 0;
     hasCheckableItems = false;
+    QList<QAction*> items = filteredActions();
     for(int i = 0; i < items.count(); i++) {
         QAction *action = items.at(i);
         if (widgetItems.value(action))
@@ -348,7 +348,7 @@ void QMenuPrivate::updateActions()
     itemsDirty = 0;
 }
 
-QList<QAction *> QMenuPrivate::filterActions(const QList<QAction *> &actions) const
+QList<QAction *> QMenuPrivate::filteredActions() const
 {
     QList<QAction *> visibleActions;
     int i = 0;
@@ -1048,7 +1048,7 @@ void QMenuPrivate::activateAction(QAction *action, QAction::ActionEvent action_e
         if (q->testAttribute(Qt::WA_DontShowOnScreen)) {
             hideUpToMenuBar();
         } else {
-            for(QWidget *widget = qApp->activePopupWidget(); widget; ) {
+            for(QWidget *widget = QApplication::activePopupWidget(); widget; ) {
                 if (QMenu *qmenu = qobject_cast<QMenu*>(widget)) {
                     if(qmenu == q)
                         hideUpToMenuBar();
@@ -1843,7 +1843,7 @@ void QMenu::popup(const QPoint &p, QAction *atAction)
 
     if (adjustToDesktop) {
         //handle popup falling "off screen"
-        if (qApp->layoutDirection() == Qt::RightToLeft) {
+        if (QApplication::layoutDirection() == Qt::RightToLeft) {
             if(snapToMouse) //position flowing left from the mouse
                 pos.setX(mouse.x()-size.width());
 
@@ -1881,9 +1881,9 @@ void QMenu::popup(const QPoint &p, QAction *atAction)
     }
     setGeometry(QRect(pos, size));
 #ifndef QT_NO_EFFECTS
-    int hGuess = qApp->layoutDirection() == Qt::RightToLeft ? QEffects::LeftScroll : QEffects::RightScroll;
+    int hGuess = QApplication::layoutDirection() == Qt::RightToLeft ? QEffects::LeftScroll : QEffects::RightScroll;
     int vGuess = QEffects::DownScroll;
-    if (qApp->layoutDirection() == Qt::RightToLeft) {
+    if (QApplication::layoutDirection() == Qt::RightToLeft) {
         if ((snapToMouse && (pos.x() + size.width()/2 > mouse.x())) ||
            (qobject_cast<QMenu*>(d->causedPopup.widget) && pos.x() + size.width()/2 > d->causedPopup.widget->x()))
             hGuess = QEffects::RightScroll;
@@ -2575,7 +2575,7 @@ void QMenu::keyPressEvent(QKeyEvent *e)
         {
             d->hideMenu(this);
 #ifndef QT_NO_MENUBAR
-            if (QMenuBar *mb = qobject_cast<QMenuBar*>(qApp->focusWidget())) {
+            if (QMenuBar *mb = qobject_cast<QMenuBar*>(QApplication::focusWidget())) {
                 mb->d_func()->setKeyboardMode(false);
             }
 #endif
@@ -2719,7 +2719,7 @@ void QMenu::keyPressEvent(QKeyEvent *e)
 
 #ifdef Q_OS_WIN32
         if (key_consumed && (e->key() == Qt::Key_Control || e->key() == Qt::Key_Shift || e->key() == Qt::Key_Meta))
-            qApp->beep();
+            QApplication::beep();
 #endif // Q_OS_WIN32
     }
     if (key_consumed)

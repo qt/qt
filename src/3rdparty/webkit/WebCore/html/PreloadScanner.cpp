@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2008 Apple Inc. All Rights Reserved.
+ * Copyright (C) 2009 Torch Mobile, Inc. http://www.torchmobile.com/
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -40,10 +41,11 @@
 #include "FrameLoader.h"
 #include "HTMLLinkElement.h"
 #include "HTMLNames.h"
-#include "SystemTime.h"
+#include <wtf/CurrentTime.h>
 #include <wtf/unicode/Unicode.h>
 
-#if COMPILER(GCC)
+// Use __GNUC__ instead of PLATFORM(GCC) to stay consistent with the gperf generated c file
+#ifdef __GNUC__
 // The main tokenizer includes this too so we are getting two copies of the data. However, this way the code gets inlined.
 #include "HTMLEntityNames.c"
 #else
@@ -128,9 +130,13 @@ bool PreloadScanner::scanningBody() const
     
 void PreloadScanner::write(const SegmentedString& source)
 {
+#if PRELOAD_DEBUG
     double startTime = currentTime();
+#endif
     tokenize(source);
+#if PRELOAD_DEBUG
     m_timeUsed += currentTime() - startTime;
+#endif
 }
     
 static inline bool isWhitespace(UChar c)
@@ -220,8 +226,8 @@ unsigned PreloadScanner::consumeEntity(SegmentedString& source, bool& notEnoughC
             else if (cc >= 'A' && cc <= 'F')
                 result = 10 + cc - 'A';
             else {
-                source.push(seenChars[1]);
                 source.push('#');
+                source.push(seenChars[1]);
                 return 0;
             }
             entityState = Hex;
@@ -275,8 +281,8 @@ unsigned PreloadScanner::consumeEntity(SegmentedString& source, bool& notEnoughC
             if (seenChars.size() == 2)
                 source.push(seenChars[0]);
             else if (seenChars.size() == 3) {
-                source.push(seenChars[1]);
                 source.push(seenChars[0]);
+                source.push(seenChars[1]);
             } else
                 source.prepend(SegmentedString(String(seenChars.data(), seenChars.size() - 1)));
             return 0;

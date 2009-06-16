@@ -27,7 +27,7 @@ build_all:!build_pass {
 
 # install
 target.path = $$[QT_INSTALL_DEMOS]/spreadsheet
-sources.files = $$SOURCES $$RESOURCES *.pro images
+sources.files = $$SOURCES $$RESOURCES *.pro images $$HEADERS
 sources.path = $$[QT_INSTALL_DEMOS]/spreadsheet
 INSTALLS += target sources
 

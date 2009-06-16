@@ -26,17 +26,12 @@
 #include "config.h"
 #include "ScrollbarThemeMac.h"
 
-#include "GraphicsContext.h"
 #include "ImageBuffer.h"
-#include "IntRect.h"
-#include "Page.h"
 #include "PlatformMouseEvent.h"
-#include "Scrollbar.h"
-#include "ScrollbarClient.h"
-#include "Settings.h"
-#include <wtf/StdLibExtras.h>
-
+#include "ScrollView.h"
 #include <Carbon/Carbon.h>
+#include <wtf/StdLibExtras.h>
+#include <wtf/UnusedParam.h>
 
 // FIXME: There are repainting problems due to Aqua scroll bar buttons' visual overflow.
 
@@ -58,8 +53,10 @@ static HashSet<Scrollbar*>* gScrollbars;
 
 @implementation ScrollbarPrefsObserver
 
-+ (void)appearancePrefsChanged:(NSNotification*)theNotification
++ (void)appearancePrefsChanged:(NSNotification*)unusedNotification
 {
+    UNUSED_PARAM(unusedNotification);
+
     static_cast<ScrollbarThemeMac*>(ScrollbarTheme::nativeTheme())->preferencesChanged();
     if (!gScrollbars)
         return;
@@ -70,8 +67,10 @@ static HashSet<Scrollbar*>* gScrollbars;
     }
 }
 
-+ (void)behaviorPrefsChanged:(NSNotification*)theNotification
++ (void)behaviorPrefsChanged:(NSNotification*)unusedNotification
 {
+    UNUSED_PARAM(unusedNotification);
+
     static_cast<ScrollbarThemeMac*>(ScrollbarTheme::nativeTheme())->preferencesChanged();
 }
 
@@ -367,9 +366,12 @@ bool ScrollbarThemeMac::paint(Scrollbar* scrollbar, GraphicsContext* context, co
     trackInfo.attributes = 0;
     if (scrollbar->orientation() == HorizontalScrollbar)
         trackInfo.attributes |= kThemeTrackHorizontal;
-    trackInfo.enableState = scrollbar->client()->isActive() ? kThemeTrackActive : kThemeTrackInactive;
+
     if (!scrollbar->enabled())
         trackInfo.enableState = kThemeTrackDisabled;
+    else
+        trackInfo.enableState = scrollbar->client()->isActive() ? kThemeTrackActive : kThemeTrackInactive;
+
     if (hasThumb(scrollbar))
         trackInfo.attributes |= kThemeTrackShowThumb;
     else if (!hasButtons(scrollbar))
@@ -389,8 +391,8 @@ bool ScrollbarThemeMac::paint(Scrollbar* scrollbar, GraphicsContext* context, co
         bufferRect.intersect(damageRect);
         bufferRect.move(-scrollbar->frameRect().x(), -scrollbar->frameRect().y());
         
-        auto_ptr<ImageBuffer> imageBuffer = ImageBuffer::create(bufferRect.size(), false);
-        if (!imageBuffer.get())
+        OwnPtr<ImageBuffer> imageBuffer = ImageBuffer::create(bufferRect.size(), false);
+        if (!imageBuffer)
             return true;
         
         HIThemeDrawTrack(&trackInfo, 0, imageBuffer->context()->platformContext(), kHIThemeOrientationNormal);

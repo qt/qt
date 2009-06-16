@@ -1,6 +1,6 @@
 /*
- * Copyright 2005 Frerich Raabe <raabe@kde.org>
- * Copyright (C) 2006 Apple Computer, Inc.
+ * Copyright (C) 2005 Frerich Raabe <raabe@kde.org>
+ * Copyright (C) 2006, 2009 Apple Inc.
  * Copyright (C) 2007 Alexey Proskuryakov <ap@webkit.org>
  *
  * Redistribution and use in source and binary forms, with or without
@@ -41,6 +41,9 @@ namespace XPath {
 Filter::Filter(Expression* expr, const Vector<Predicate*>& predicates)
     : m_expr(expr), m_predicates(predicates)
 {
+    setIsContextNodeSensitive(m_expr->isContextNodeSensitive());
+    setIsContextPositionSensitive(m_expr->isContextPositionSensitive());
+    setIsContextSizeSensitive(m_expr->isContextSizeSensitive());
 }
 
 Filter::~Filter()
@@ -53,9 +56,6 @@ Value Filter::evaluate() const
 {
     Value v = m_expr->evaluate();
     
-    if (!v.isNodeSet()) 
-        return v;
-
     NodeSet& nodes = v.modifiableNodeSet();
     nodes.sort();
 
@@ -83,6 +83,7 @@ Value Filter::evaluate() const
 LocationPath::LocationPath()
     : m_absolute(false)
 {
+    setIsContextNodeSensitive(true);
 }
 
 LocationPath::~LocationPath()
@@ -94,9 +95,8 @@ Value LocationPath::evaluate() const
 {
     EvaluationContext& evaluationContext = Expression::evaluationContext();
     EvaluationContext backupContext = evaluationContext;
-    /* For absolute location paths, the context node is ignored - the
-     * document's root node is used instead.
-     */
+    // For absolute location paths, the context node is ignored - the
+    // document's root node is used instead.
     Node* context = evaluationContext.node.get();
     if (m_absolute && context->nodeType() != Node::DOCUMENT_NODE) 
         context = context->ownerDocument();
@@ -111,18 +111,33 @@ Value LocationPath::evaluate() const
 
 void LocationPath::evaluate(NodeSet& nodes) const
 {
+    bool resultIsSorted = nodes.isSorted();
+
     for (unsigned i = 0; i < m_steps.size(); i++) {
         Step* step = m_steps[i];
         NodeSet newNodes;
         HashSet<Node*> newNodesSet;
 
+        bool needToCheckForDuplicateNodes = !nodes.subtreesAreDisjoint() || (step->axis() != Step::ChildAxis && step->axis() != Step::SelfAxis
+            && step->axis() != Step::DescendantAxis && step->axis() != Step::DescendantOrSelfAxis && step->axis() != Step::AttributeAxis);
+
+        if (needToCheckForDuplicateNodes)
+            resultIsSorted = false;
+
+        // This is a simplified check that can be improved to handle more cases.
+        if (nodes.subtreesAreDisjoint() && (step->axis() == Step::ChildAxis || step->axis() == Step::SelfAxis))
+            newNodes.markSubtreesDisjoint(true);
+
         for (unsigned j = 0; j < nodes.size(); j++) {
             NodeSet matches;
             step->evaluate(nodes[j], matches);
-            
+
+            if (!matches.isSorted())
+                resultIsSorted = false;
+
             for (size_t nodeIndex = 0; nodeIndex < matches.size(); ++nodeIndex) {
                 Node* node = matches[nodeIndex];
-                if (newNodesSet.add(node).second)
+                if (!needToCheckForDuplicateNodes || newNodesSet.add(node).second)
                     newNodes.append(node);
             }
         }
@@ -130,53 +145,46 @@ void LocationPath::evaluate(NodeSet& nodes) const
         nodes.swap(newNodes);
     }
 
-    nodes.markSorted(false);
-}
-
-void LocationPath::optimizeStepPair(unsigned index)
-{
-    Step* first = m_steps[index];
-    
-    if (first->axis() == Step::DescendantOrSelfAxis
-        && first->nodeTest().kind() == Step::NodeTest::AnyNodeTest
-        && first->predicates().size() == 0) {
-
-        Step* second = m_steps[index + 1];
-        if (second->axis() == Step::ChildAxis
-            && second->nodeTest().namespaceURI().isEmpty()
-            && second->nodeTest().kind() == Step::NodeTest::NameTest
-            && second->nodeTest().data() == "*") {
-
-            // Optimize the common case of "//*" AKA descendant-or-self::node()/child::*.
-            first->setAxis(Step::DescendantAxis);
-            second->setAxis(Step::SelfAxis);
-            second->setNodeTest(Step::NodeTest::ElementNodeTest);
-            ASSERT(second->nodeTest().data().isEmpty());
-        }
-    }
+    nodes.markSorted(resultIsSorted);
 }
 
 void LocationPath::appendStep(Step* step)
 {
-    m_steps.append(step);
-    
     unsigned stepCount = m_steps.size();
-    if (stepCount > 1)
-        optimizeStepPair(stepCount - 2);
+    if (stepCount) {
+        bool dropSecondStep;
+        optimizeStepPair(m_steps[stepCount - 1], step, dropSecondStep);
+        if (dropSecondStep) {
+            delete step;
+            return;
+        }
+    }
+    step->optimize();
+    m_steps.append(step);
 }
 
 void LocationPath::insertFirstStep(Step* step)
 {
+    if (m_steps.size()) {
+        bool dropSecondStep;
+        optimizeStepPair(step, m_steps[0], dropSecondStep);
+        if (dropSecondStep) {
+            delete m_steps[0];
+            m_steps[0] = step;
+            return;
+        }
+    }
+    step->optimize();
     m_steps.insert(0, step);
-
-    if (m_steps.size() > 1)
-        optimizeStepPair(0);
 }
 
 Path::Path(Filter* filter, LocationPath* path)
-    : m_filter(filter),
-    m_path(path)
+    : m_filter(filter)
+    , m_path(path)
 {
+    setIsContextNodeSensitive(filter->isContextNodeSensitive());
+    setIsContextPositionSensitive(filter->isContextPositionSensitive());
+    setIsContextSizeSensitive(filter->isContextSizeSensitive());
 }
 
 Path::~Path()

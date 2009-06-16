@@ -35,41 +35,87 @@
 
 namespace JSC {
 
-// ECMA 11.9.3
-bool equal(ExecState* exec, JSValuePtr v1, JSValuePtr v2)
-{
-    if (JSImmediate::areBothImmediateNumbers(v1, v2))
-        return v1 == v2;
-
-    return equalSlowCaseInline(exec, v1, v2);
-}
-
-bool equalSlowCase(ExecState* exec, JSValuePtr v1, JSValuePtr v2)
+bool JSValue::equalSlowCase(ExecState* exec, JSValue v1, JSValue v2)
 {
     return equalSlowCaseInline(exec, v1, v2);
 }
 
-bool strictEqual(JSValuePtr v1, JSValuePtr v2)
-{
-    if (JSImmediate::areBothImmediate(v1, v2))
-        return v1 == v2;
-
-    if (JSImmediate::isEitherImmediate(v1, v2) & (v1 != JSImmediate::from(0)) & (v2 != JSImmediate::from(0)))
-        return false;
-
-    return strictEqualSlowCaseInline(v1, v2);
-}
-
-bool strictEqualSlowCase(JSValuePtr v1, JSValuePtr v2)
+bool JSValue::strictEqualSlowCase(JSValue v1, JSValue v2)
 {
     return strictEqualSlowCaseInline(v1, v2);
 }
 
-NEVER_INLINE JSValuePtr throwOutOfMemoryError(ExecState* exec)
+NEVER_INLINE JSValue throwOutOfMemoryError(ExecState* exec)
 {
     JSObject* error = Error::create(exec, GeneralError, "Out of memory");
     exec->setException(error);
     return error;
+}
+
+NEVER_INLINE JSValue jsAddSlowCase(CallFrame* callFrame, JSValue v1, JSValue v2)
+{
+    // exception for the Date exception in defaultValue()
+    JSValue p1 = v1.toPrimitive(callFrame);
+    JSValue p2 = v2.toPrimitive(callFrame);
+
+    if (p1.isString() || p2.isString()) {
+        RefPtr<UString::Rep> value = concatenate(p1.toString(callFrame).rep(), p2.toString(callFrame).rep());
+        if (!value)
+            return throwOutOfMemoryError(callFrame);
+        return jsString(callFrame, value.release());
+    }
+
+    return jsNumber(callFrame, p1.toNumber(callFrame) + p2.toNumber(callFrame));
+}
+
+JSValue jsTypeStringForValue(CallFrame* callFrame, JSValue v)
+{
+    if (v.isUndefined())
+        return jsNontrivialString(callFrame, "undefined");
+    if (v.isBoolean())
+        return jsNontrivialString(callFrame, "boolean");
+    if (v.isNumber())
+        return jsNontrivialString(callFrame, "number");
+    if (v.isString())
+        return jsNontrivialString(callFrame, "string");
+    if (v.isObject()) {
+        // Return "undefined" for objects that should be treated
+        // as null when doing comparisons.
+        if (asObject(v)->structure()->typeInfo().masqueradesAsUndefined())
+            return jsNontrivialString(callFrame, "undefined");
+        CallData callData;
+        if (asObject(v)->getCallData(callData) != CallTypeNone)
+            return jsNontrivialString(callFrame, "function");
+    }
+    return jsNontrivialString(callFrame, "object");
+}
+
+bool jsIsObjectType(JSValue v)
+{
+    if (!v.isCell())
+        return v.isNull();
+
+    JSType type = asCell(v)->structure()->typeInfo().type();
+    if (type == NumberType || type == StringType)
+        return false;
+    if (type == ObjectType) {
+        if (asObject(v)->structure()->typeInfo().masqueradesAsUndefined())
+            return false;
+        CallData callData;
+        if (asObject(v)->getCallData(callData) != CallTypeNone)
+            return false;
+    }
+    return true;
+}
+
+bool jsIsFunctionType(JSValue v)
+{
+    if (v.isObject()) {
+        CallData callData;
+        if (asObject(v)->getCallData(callData) != CallTypeNone)
+            return true;
+    }
+    return false;
 }
 
 } // namespace JSC

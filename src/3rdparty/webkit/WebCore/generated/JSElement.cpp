@@ -27,9 +27,13 @@
 #include "Attr.h"
 #include "CSSMutableStyleDeclaration.h"
 #include "CSSStyleDeclaration.h"
+#include "ClientRect.h"
+#include "ClientRectList.h"
 #include "Element.h"
 #include "JSAttr.h"
 #include "JSCSSStyleDeclaration.h"
+#include "JSClientRect.h"
+#include "JSClientRectList.h"
 #include "JSElement.h"
 #include "JSNodeList.h"
 #include "KURL.h"
@@ -44,7 +48,7 @@ using namespace JSC;
 
 namespace WebCore {
 
-ASSERT_CLASS_FITS_IN_CELL(JSElement)
+ASSERT_CLASS_FITS_IN_CELL(JSElement);
 
 /* Hash table */
 
@@ -100,13 +104,13 @@ public:
     JSElementConstructor(ExecState* exec)
         : DOMObject(JSElementConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
     {
-        putDirect(exec->propertyNames().prototype, JSElementPrototype::self(exec), None);
+        putDirect(exec->propertyNames().prototype, JSElementPrototype::self(exec, exec->lexicalGlobalObject()), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
     static const ClassInfo s_info;
 
-    static PassRefPtr<Structure> createStructure(JSValuePtr proto) 
+    static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
         return Structure::create(proto, TypeInfo(ObjectType, ImplementsHasInstance)); 
     }
@@ -121,7 +125,7 @@ bool JSElementConstructor::getOwnPropertySlot(ExecState* exec, const Identifier&
 
 /* Hash table for prototype */
 
-static const HashTableValue JSElementPrototypeTableValues[26] =
+static const HashTableValue JSElementPrototypeTableValues[28] =
 {
     { "getAttribute", DontDelete|Function, (intptr_t)jsElementPrototypeFunctionGetAttribute, (intptr_t)1 },
     { "setAttribute", DontDelete|Function, (intptr_t)jsElementPrototypeFunctionSetAttribute, (intptr_t)2 },
@@ -148,6 +152,8 @@ static const HashTableValue JSElementPrototypeTableValues[26] =
     { "getElementsByClassName", DontDelete|Function, (intptr_t)jsElementPrototypeFunctionGetElementsByClassName, (intptr_t)1 },
     { "querySelector", DontDelete|Function, (intptr_t)jsElementPrototypeFunctionQuerySelector, (intptr_t)1 },
     { "querySelectorAll", DontDelete|Function, (intptr_t)jsElementPrototypeFunctionQuerySelectorAll, (intptr_t)1 },
+    { "getClientRects", DontDelete|Function, (intptr_t)jsElementPrototypeFunctionGetClientRects, (intptr_t)0 },
+    { "getBoundingClientRect", DontDelete|Function, (intptr_t)jsElementPrototypeFunctionGetBoundingClientRect, (intptr_t)0 },
     { 0, 0, 0, 0 }
 };
 
@@ -155,14 +161,14 @@ static const HashTable JSElementPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 1023, JSElementPrototypeTableValues, 0 };
 #else
-    { 68, 63, JSElementPrototypeTableValues, 0 };
+    { 69, 63, JSElementPrototypeTableValues, 0 };
 #endif
 
 const ClassInfo JSElementPrototype::s_info = { "ElementPrototype", 0, &JSElementPrototypeTable, 0 };
 
-JSObject* JSElementPrototype::self(ExecState* exec)
+JSObject* JSElementPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSElement>(exec);
+    return getDOMPrototype<JSElement>(exec, globalObject);
 }
 
 bool JSElementPrototype::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -170,351 +176,387 @@ bool JSElementPrototype::getOwnPropertySlot(ExecState* exec, const Identifier& p
     return getStaticFunctionSlot<JSObject>(exec, &JSElementPrototypeTable, this, propertyName, slot);
 }
 
-const ClassInfo JSElement::s_info = { "Element", &JSEventTargetNode::s_info, &JSElementTable, 0 };
+const ClassInfo JSElement::s_info = { "Element", &JSNode::s_info, &JSElementTable, 0 };
 
 JSElement::JSElement(PassRefPtr<Structure> structure, PassRefPtr<Element> impl)
-    : JSEventTargetNode(structure, impl)
+    : JSNode(structure, impl)
 {
 }
 
-JSObject* JSElement::createPrototype(ExecState* exec)
+JSObject* JSElement::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSElementPrototype(JSElementPrototype::createStructure(JSEventTargetNodePrototype::self(exec)));
+    return new (exec) JSElementPrototype(JSElementPrototype::createStructure(JSNodePrototype::self(exec, globalObject)));
 }
 
-JSValuePtr jsElementTagName(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsElementTagName(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     Element* imp = static_cast<Element*>(static_cast<JSElement*>(asObject(slot.slotBase()))->impl());
     return jsStringOrNull(exec, imp->tagName());
 }
 
-JSValuePtr jsElementStyle(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsElementStyle(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     Element* imp = static_cast<Element*>(static_cast<JSElement*>(asObject(slot.slotBase()))->impl());
     return toJS(exec, WTF::getPtr(imp->style()));
 }
 
-JSValuePtr jsElementOffsetLeft(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsElementOffsetLeft(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     Element* imp = static_cast<Element*>(static_cast<JSElement*>(asObject(slot.slotBase()))->impl());
     return jsNumber(exec, imp->offsetLeft());
 }
 
-JSValuePtr jsElementOffsetTop(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsElementOffsetTop(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     Element* imp = static_cast<Element*>(static_cast<JSElement*>(asObject(slot.slotBase()))->impl());
     return jsNumber(exec, imp->offsetTop());
 }
 
-JSValuePtr jsElementOffsetWidth(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsElementOffsetWidth(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     Element* imp = static_cast<Element*>(static_cast<JSElement*>(asObject(slot.slotBase()))->impl());
     return jsNumber(exec, imp->offsetWidth());
 }
 
-JSValuePtr jsElementOffsetHeight(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsElementOffsetHeight(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     Element* imp = static_cast<Element*>(static_cast<JSElement*>(asObject(slot.slotBase()))->impl());
     return jsNumber(exec, imp->offsetHeight());
 }
 
-JSValuePtr jsElementOffsetParent(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsElementOffsetParent(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     Element* imp = static_cast<Element*>(static_cast<JSElement*>(asObject(slot.slotBase()))->impl());
     return toJS(exec, WTF::getPtr(imp->offsetParent()));
 }
 
-JSValuePtr jsElementClientLeft(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsElementClientLeft(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     Element* imp = static_cast<Element*>(static_cast<JSElement*>(asObject(slot.slotBase()))->impl());
     return jsNumber(exec, imp->clientLeft());
 }
 
-JSValuePtr jsElementClientTop(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsElementClientTop(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     Element* imp = static_cast<Element*>(static_cast<JSElement*>(asObject(slot.slotBase()))->impl());
     return jsNumber(exec, imp->clientTop());
 }
 
-JSValuePtr jsElementClientWidth(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsElementClientWidth(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     Element* imp = static_cast<Element*>(static_cast<JSElement*>(asObject(slot.slotBase()))->impl());
     return jsNumber(exec, imp->clientWidth());
 }
 
-JSValuePtr jsElementClientHeight(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsElementClientHeight(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     Element* imp = static_cast<Element*>(static_cast<JSElement*>(asObject(slot.slotBase()))->impl());
     return jsNumber(exec, imp->clientHeight());
 }
 
-JSValuePtr jsElementScrollLeft(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsElementScrollLeft(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     Element* imp = static_cast<Element*>(static_cast<JSElement*>(asObject(slot.slotBase()))->impl());
     return jsNumber(exec, imp->scrollLeft());
 }
 
-JSValuePtr jsElementScrollTop(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsElementScrollTop(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     Element* imp = static_cast<Element*>(static_cast<JSElement*>(asObject(slot.slotBase()))->impl());
     return jsNumber(exec, imp->scrollTop());
 }
 
-JSValuePtr jsElementScrollWidth(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsElementScrollWidth(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     Element* imp = static_cast<Element*>(static_cast<JSElement*>(asObject(slot.slotBase()))->impl());
     return jsNumber(exec, imp->scrollWidth());
 }
 
-JSValuePtr jsElementScrollHeight(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsElementScrollHeight(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     Element* imp = static_cast<Element*>(static_cast<JSElement*>(asObject(slot.slotBase()))->impl());
     return jsNumber(exec, imp->scrollHeight());
 }
 
-JSValuePtr jsElementFirstElementChild(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsElementFirstElementChild(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     Element* imp = static_cast<Element*>(static_cast<JSElement*>(asObject(slot.slotBase()))->impl());
     return toJS(exec, WTF::getPtr(imp->firstElementChild()));
 }
 
-JSValuePtr jsElementLastElementChild(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsElementLastElementChild(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     Element* imp = static_cast<Element*>(static_cast<JSElement*>(asObject(slot.slotBase()))->impl());
     return toJS(exec, WTF::getPtr(imp->lastElementChild()));
 }
 
-JSValuePtr jsElementPreviousElementSibling(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsElementPreviousElementSibling(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     Element* imp = static_cast<Element*>(static_cast<JSElement*>(asObject(slot.slotBase()))->impl());
     return toJS(exec, WTF::getPtr(imp->previousElementSibling()));
 }
 
-JSValuePtr jsElementNextElementSibling(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsElementNextElementSibling(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     Element* imp = static_cast<Element*>(static_cast<JSElement*>(asObject(slot.slotBase()))->impl());
     return toJS(exec, WTF::getPtr(imp->nextElementSibling()));
 }
 
-JSValuePtr jsElementChildElementCount(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsElementChildElementCount(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     Element* imp = static_cast<Element*>(static_cast<JSElement*>(asObject(slot.slotBase()))->impl());
     return jsNumber(exec, imp->childElementCount());
 }
 
-JSValuePtr jsElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     return static_cast<JSElement*>(asObject(slot.slotBase()))->getConstructor(exec);
 }
-void JSElement::put(ExecState* exec, const Identifier& propertyName, JSValuePtr value, PutPropertySlot& slot)
+void JSElement::put(ExecState* exec, const Identifier& propertyName, JSValue value, PutPropertySlot& slot)
 {
     lookupPut<JSElement, Base>(exec, propertyName, value, &JSElementTable, this, slot);
 }
 
-void setJSElementScrollLeft(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSElementScrollLeft(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     Element* imp = static_cast<Element*>(static_cast<JSElement*>(thisObject)->impl());
-    imp->setScrollLeft(value->toInt32(exec));
+    imp->setScrollLeft(value.toInt32(exec));
 }
 
-void setJSElementScrollTop(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSElementScrollTop(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     Element* imp = static_cast<Element*>(static_cast<JSElement*>(thisObject)->impl());
-    imp->setScrollTop(value->toInt32(exec));
+    imp->setScrollTop(value.toInt32(exec));
 }
 
-JSValuePtr JSElement::getConstructor(ExecState* exec)
+JSValue JSElement::getConstructor(ExecState* exec)
 {
     return getDOMConstructor<JSElementConstructor>(exec);
 }
 
-JSValuePtr jsElementPrototypeFunctionGetAttribute(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsElementPrototypeFunctionGetAttribute(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSElement::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSElement::s_info))
         return throwError(exec, TypeError);
     JSElement* castedThisObj = static_cast<JSElement*>(asObject(thisValue));
     Element* imp = static_cast<Element*>(castedThisObj->impl());
-    const UString& name = args.at(exec, 0)->toString(exec);
+    const UString& name = args.at(0).toString(exec);
 
 
-    JSC::JSValuePtr result = jsStringOrNull(exec, imp->getAttribute(name));
+    JSC::JSValue result = jsStringOrNull(exec, imp->getAttribute(name));
     return result;
 }
 
-JSValuePtr jsElementPrototypeFunctionSetAttribute(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsElementPrototypeFunctionSetAttribute(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSElement::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSElement::s_info))
         return throwError(exec, TypeError);
     JSElement* castedThisObj = static_cast<JSElement*>(asObject(thisValue));
     return castedThisObj->setAttribute(exec, args);
 }
 
-JSValuePtr jsElementPrototypeFunctionRemoveAttribute(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsElementPrototypeFunctionRemoveAttribute(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSElement::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSElement::s_info))
         return throwError(exec, TypeError);
     JSElement* castedThisObj = static_cast<JSElement*>(asObject(thisValue));
     Element* imp = static_cast<Element*>(castedThisObj->impl());
     ExceptionCode ec = 0;
-    const UString& name = args.at(exec, 0)->toString(exec);
+    const UString& name = args.at(0).toString(exec);
 
     imp->removeAttribute(name, ec);
     setDOMException(exec, ec);
     return jsUndefined();
 }
 
-JSValuePtr jsElementPrototypeFunctionGetAttributeNode(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsElementPrototypeFunctionGetAttributeNode(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSElement::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSElement::s_info))
         return throwError(exec, TypeError);
     JSElement* castedThisObj = static_cast<JSElement*>(asObject(thisValue));
     Element* imp = static_cast<Element*>(castedThisObj->impl());
-    const UString& name = args.at(exec, 0)->toString(exec);
+    const UString& name = args.at(0).toString(exec);
 
 
-    JSC::JSValuePtr result = toJS(exec, WTF::getPtr(imp->getAttributeNode(name)));
+    JSC::JSValue result = toJS(exec, WTF::getPtr(imp->getAttributeNode(name)));
     return result;
 }
 
-JSValuePtr jsElementPrototypeFunctionSetAttributeNode(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsElementPrototypeFunctionSetAttributeNode(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSElement::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSElement::s_info))
         return throwError(exec, TypeError);
     JSElement* castedThisObj = static_cast<JSElement*>(asObject(thisValue));
     return castedThisObj->setAttributeNode(exec, args);
 }
 
-JSValuePtr jsElementPrototypeFunctionRemoveAttributeNode(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsElementPrototypeFunctionRemoveAttributeNode(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSElement::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSElement::s_info))
         return throwError(exec, TypeError);
     JSElement* castedThisObj = static_cast<JSElement*>(asObject(thisValue));
     Element* imp = static_cast<Element*>(castedThisObj->impl());
     ExceptionCode ec = 0;
-    Attr* oldAttr = toAttr(args.at(exec, 0));
+    Attr* oldAttr = toAttr(args.at(0));
 
 
-    JSC::JSValuePtr result = toJS(exec, WTF::getPtr(imp->removeAttributeNode(oldAttr, ec)));
+    JSC::JSValue result = toJS(exec, WTF::getPtr(imp->removeAttributeNode(oldAttr, ec)));
     setDOMException(exec, ec);
     return result;
 }
 
-JSValuePtr jsElementPrototypeFunctionGetElementsByTagName(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsElementPrototypeFunctionGetElementsByTagName(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSElement::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSElement::s_info))
         return throwError(exec, TypeError);
     JSElement* castedThisObj = static_cast<JSElement*>(asObject(thisValue));
     Element* imp = static_cast<Element*>(castedThisObj->impl());
-    const UString& name = args.at(exec, 0)->toString(exec);
+    const UString& name = args.at(0).toString(exec);
 
 
-    JSC::JSValuePtr result = toJS(exec, WTF::getPtr(imp->getElementsByTagName(name)));
+    JSC::JSValue result = toJS(exec, WTF::getPtr(imp->getElementsByTagName(name)));
     return result;
 }
 
-JSValuePtr jsElementPrototypeFunctionGetAttributeNS(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsElementPrototypeFunctionGetAttributeNS(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSElement::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSElement::s_info))
         return throwError(exec, TypeError);
     JSElement* castedThisObj = static_cast<JSElement*>(asObject(thisValue));
     Element* imp = static_cast<Element*>(castedThisObj->impl());
-    const UString& namespaceURI = valueToStringWithNullCheck(exec, args.at(exec, 0));
-    const UString& localName = args.at(exec, 1)->toString(exec);
+    const UString& namespaceURI = valueToStringWithNullCheck(exec, args.at(0));
+    const UString& localName = args.at(1).toString(exec);
 
 
-    JSC::JSValuePtr result = jsString(exec, imp->getAttributeNS(namespaceURI, localName));
+    JSC::JSValue result = jsString(exec, imp->getAttributeNS(namespaceURI, localName));
     return result;
 }
 
-JSValuePtr jsElementPrototypeFunctionSetAttributeNS(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsElementPrototypeFunctionSetAttributeNS(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSElement::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSElement::s_info))
         return throwError(exec, TypeError);
     JSElement* castedThisObj = static_cast<JSElement*>(asObject(thisValue));
     return castedThisObj->setAttributeNS(exec, args);
 }
 
-JSValuePtr jsElementPrototypeFunctionRemoveAttributeNS(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsElementPrototypeFunctionRemoveAttributeNS(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSElement::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSElement::s_info))
         return throwError(exec, TypeError);
     JSElement* castedThisObj = static_cast<JSElement*>(asObject(thisValue));
     Element* imp = static_cast<Element*>(castedThisObj->impl());
     ExceptionCode ec = 0;
-    const UString& namespaceURI = valueToStringWithNullCheck(exec, args.at(exec, 0));
-    const UString& localName = args.at(exec, 1)->toString(exec);
+    const UString& namespaceURI = valueToStringWithNullCheck(exec, args.at(0));
+    const UString& localName = args.at(1).toString(exec);
 
     imp->removeAttributeNS(namespaceURI, localName, ec);
     setDOMException(exec, ec);
     return jsUndefined();
 }
 
-JSValuePtr jsElementPrototypeFunctionGetElementsByTagNameNS(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsElementPrototypeFunctionGetElementsByTagNameNS(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSElement::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSElement::s_info))
         return throwError(exec, TypeError);
     JSElement* castedThisObj = static_cast<JSElement*>(asObject(thisValue));
     Element* imp = static_cast<Element*>(castedThisObj->impl());
-    const UString& namespaceURI = valueToStringWithNullCheck(exec, args.at(exec, 0));
-    const UString& localName = args.at(exec, 1)->toString(exec);
+    const UString& namespaceURI = valueToStringWithNullCheck(exec, args.at(0));
+    const UString& localName = args.at(1).toString(exec);
 
 
-    JSC::JSValuePtr result = toJS(exec, WTF::getPtr(imp->getElementsByTagNameNS(namespaceURI, localName)));
+    JSC::JSValue result = toJS(exec, WTF::getPtr(imp->getElementsByTagNameNS(namespaceURI, localName)));
     return result;
 }
 
-JSValuePtr jsElementPrototypeFunctionGetAttributeNodeNS(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsElementPrototypeFunctionGetAttributeNodeNS(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSElement::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSElement::s_info))
         return throwError(exec, TypeError);
     JSElement* castedThisObj = static_cast<JSElement*>(asObject(thisValue));
     Element* imp = static_cast<Element*>(castedThisObj->impl());
-    const UString& namespaceURI = valueToStringWithNullCheck(exec, args.at(exec, 0));
-    const UString& localName = args.at(exec, 1)->toString(exec);
+    const UString& namespaceURI = valueToStringWithNullCheck(exec, args.at(0));
+    const UString& localName = args.at(1).toString(exec);
 
 
-    JSC::JSValuePtr result = toJS(exec, WTF::getPtr(imp->getAttributeNodeNS(namespaceURI, localName)));
+    JSC::JSValue result = toJS(exec, WTF::getPtr(imp->getAttributeNodeNS(namespaceURI, localName)));
     return result;
 }
 
-JSValuePtr jsElementPrototypeFunctionSetAttributeNodeNS(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsElementPrototypeFunctionSetAttributeNodeNS(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSElement::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSElement::s_info))
         return throwError(exec, TypeError);
     JSElement* castedThisObj = static_cast<JSElement*>(asObject(thisValue));
     return castedThisObj->setAttributeNodeNS(exec, args);
 }
 
-JSValuePtr jsElementPrototypeFunctionHasAttribute(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsElementPrototypeFunctionHasAttribute(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSElement::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSElement::s_info))
         return throwError(exec, TypeError);
     JSElement* castedThisObj = static_cast<JSElement*>(asObject(thisValue));
     Element* imp = static_cast<Element*>(castedThisObj->impl());
-    const UString& name = args.at(exec, 0)->toString(exec);
+    const UString& name = args.at(0).toString(exec);
 
 
-    JSC::JSValuePtr result = jsBoolean(imp->hasAttribute(name));
+    JSC::JSValue result = jsBoolean(imp->hasAttribute(name));
     return result;
 }
 
-JSValuePtr jsElementPrototypeFunctionHasAttributeNS(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsElementPrototypeFunctionHasAttributeNS(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSElement::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSElement::s_info))
         return throwError(exec, TypeError);
     JSElement* castedThisObj = static_cast<JSElement*>(asObject(thisValue));
     Element* imp = static_cast<Element*>(castedThisObj->impl());
-    const UString& namespaceURI = valueToStringWithNullCheck(exec, args.at(exec, 0));
-    const UString& localName = args.at(exec, 1)->toString(exec);
+    const UString& namespaceURI = valueToStringWithNullCheck(exec, args.at(0));
+    const UString& localName = args.at(1).toString(exec);
 
 
-    JSC::JSValuePtr result = jsBoolean(imp->hasAttributeNS(namespaceURI, localName));
+    JSC::JSValue result = jsBoolean(imp->hasAttributeNS(namespaceURI, localName));
     return result;
 }
 
-JSValuePtr jsElementPrototypeFunctionFocus(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsElementPrototypeFunctionFocus(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSElement::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSElement::s_info))
         return throwError(exec, TypeError);
     JSElement* castedThisObj = static_cast<JSElement*>(asObject(thisValue));
     Element* imp = static_cast<Element*>(castedThisObj->impl());
@@ -523,9 +565,10 @@ JSValuePtr jsElementPrototypeFunctionFocus(ExecState* exec, JSObject*, JSValuePt
     return jsUndefined();
 }
 
-JSValuePtr jsElementPrototypeFunctionBlur(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsElementPrototypeFunctionBlur(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSElement::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSElement::s_info))
         return throwError(exec, TypeError);
     JSElement* castedThisObj = static_cast<JSElement*>(asObject(thisValue));
     Element* imp = static_cast<Element*>(castedThisObj->impl());
@@ -534,9 +577,10 @@ JSValuePtr jsElementPrototypeFunctionBlur(ExecState* exec, JSObject*, JSValuePtr
     return jsUndefined();
 }
 
-JSValuePtr jsElementPrototypeFunctionScrollIntoView(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsElementPrototypeFunctionScrollIntoView(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSElement::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSElement::s_info))
         return throwError(exec, TypeError);
     JSElement* castedThisObj = static_cast<JSElement*>(asObject(thisValue));
     Element* imp = static_cast<Element*>(castedThisObj->impl());
@@ -547,28 +591,30 @@ JSValuePtr jsElementPrototypeFunctionScrollIntoView(ExecState* exec, JSObject*, 
         return jsUndefined();
     }
 
-    bool alignWithTop = args.at(exec, 0)->toBoolean(exec);
+    bool alignWithTop = args.at(0).toBoolean(exec);
 
     imp->scrollIntoView(alignWithTop);
     return jsUndefined();
 }
 
-JSValuePtr jsElementPrototypeFunctionContains(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsElementPrototypeFunctionContains(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSElement::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSElement::s_info))
         return throwError(exec, TypeError);
     JSElement* castedThisObj = static_cast<JSElement*>(asObject(thisValue));
     Element* imp = static_cast<Element*>(castedThisObj->impl());
-    Element* element = toElement(args.at(exec, 0));
+    Element* element = toElement(args.at(0));
 
 
-    JSC::JSValuePtr result = jsBoolean(imp->contains(element));
+    JSC::JSValue result = jsBoolean(imp->contains(element));
     return result;
 }
 
-JSValuePtr jsElementPrototypeFunctionScrollIntoViewIfNeeded(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsElementPrototypeFunctionScrollIntoViewIfNeeded(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSElement::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSElement::s_info))
         return throwError(exec, TypeError);
     JSElement* castedThisObj = static_cast<JSElement*>(asObject(thisValue));
     Element* imp = static_cast<Element*>(castedThisObj->impl());
@@ -579,82 +625,113 @@ JSValuePtr jsElementPrototypeFunctionScrollIntoViewIfNeeded(ExecState* exec, JSO
         return jsUndefined();
     }
 
-    bool centerIfNeeded = args.at(exec, 0)->toBoolean(exec);
+    bool centerIfNeeded = args.at(0).toBoolean(exec);
 
     imp->scrollIntoViewIfNeeded(centerIfNeeded);
     return jsUndefined();
 }
 
-JSValuePtr jsElementPrototypeFunctionScrollByLines(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsElementPrototypeFunctionScrollByLines(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSElement::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSElement::s_info))
         return throwError(exec, TypeError);
     JSElement* castedThisObj = static_cast<JSElement*>(asObject(thisValue));
     Element* imp = static_cast<Element*>(castedThisObj->impl());
-    int lines = args.at(exec, 0)->toInt32(exec);
+    int lines = args.at(0).toInt32(exec);
 
     imp->scrollByLines(lines);
     return jsUndefined();
 }
 
-JSValuePtr jsElementPrototypeFunctionScrollByPages(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsElementPrototypeFunctionScrollByPages(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSElement::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSElement::s_info))
         return throwError(exec, TypeError);
     JSElement* castedThisObj = static_cast<JSElement*>(asObject(thisValue));
     Element* imp = static_cast<Element*>(castedThisObj->impl());
-    int pages = args.at(exec, 0)->toInt32(exec);
+    int pages = args.at(0).toInt32(exec);
 
     imp->scrollByPages(pages);
     return jsUndefined();
 }
 
-JSValuePtr jsElementPrototypeFunctionGetElementsByClassName(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsElementPrototypeFunctionGetElementsByClassName(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSElement::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSElement::s_info))
         return throwError(exec, TypeError);
     JSElement* castedThisObj = static_cast<JSElement*>(asObject(thisValue));
     Element* imp = static_cast<Element*>(castedThisObj->impl());
-    const UString& name = args.at(exec, 0)->toString(exec);
+    const UString& name = args.at(0).toString(exec);
 
 
-    JSC::JSValuePtr result = toJS(exec, WTF::getPtr(imp->getElementsByClassName(name)));
+    JSC::JSValue result = toJS(exec, WTF::getPtr(imp->getElementsByClassName(name)));
     return result;
 }
 
-JSValuePtr jsElementPrototypeFunctionQuerySelector(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsElementPrototypeFunctionQuerySelector(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSElement::s_info))
-        return throwError(exec, TypeError);
-    JSElement* castedThisObj = static_cast<JSElement*>(asObject(thisValue));
-    Element* imp = static_cast<Element*>(castedThisObj->impl());
-    ExceptionCode ec = 0;
-    const UString& selectors = valueToStringWithUndefinedOrNullCheck(exec, args.at(exec, 0));
-
-
-    JSC::JSValuePtr result = toJS(exec, WTF::getPtr(imp->querySelector(selectors, ec)));
-    setDOMException(exec, ec);
-    return result;
-}
-
-JSValuePtr jsElementPrototypeFunctionQuerySelectorAll(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
-{
-    if (!thisValue->isObject(&JSElement::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSElement::s_info))
         return throwError(exec, TypeError);
     JSElement* castedThisObj = static_cast<JSElement*>(asObject(thisValue));
     Element* imp = static_cast<Element*>(castedThisObj->impl());
     ExceptionCode ec = 0;
-    const UString& selectors = valueToStringWithUndefinedOrNullCheck(exec, args.at(exec, 0));
+    const UString& selectors = args.at(0).toString(exec);
 
 
-    JSC::JSValuePtr result = toJS(exec, WTF::getPtr(imp->querySelectorAll(selectors, ec)));
+    JSC::JSValue result = toJS(exec, WTF::getPtr(imp->querySelector(selectors, ec)));
     setDOMException(exec, ec);
     return result;
 }
 
-Element* toElement(JSC::JSValuePtr value)
+JSValue JSC_HOST_CALL jsElementPrototypeFunctionQuerySelectorAll(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    return value->isObject(&JSElement::s_info) ? static_cast<JSElement*>(asObject(value))->impl() : 0;
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSElement::s_info))
+        return throwError(exec, TypeError);
+    JSElement* castedThisObj = static_cast<JSElement*>(asObject(thisValue));
+    Element* imp = static_cast<Element*>(castedThisObj->impl());
+    ExceptionCode ec = 0;
+    const UString& selectors = args.at(0).toString(exec);
+
+
+    JSC::JSValue result = toJS(exec, WTF::getPtr(imp->querySelectorAll(selectors, ec)));
+    setDOMException(exec, ec);
+    return result;
+}
+
+JSValue JSC_HOST_CALL jsElementPrototypeFunctionGetClientRects(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
+{
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSElement::s_info))
+        return throwError(exec, TypeError);
+    JSElement* castedThisObj = static_cast<JSElement*>(asObject(thisValue));
+    Element* imp = static_cast<Element*>(castedThisObj->impl());
+
+
+    JSC::JSValue result = toJS(exec, WTF::getPtr(imp->getClientRects()));
+    return result;
+}
+
+JSValue JSC_HOST_CALL jsElementPrototypeFunctionGetBoundingClientRect(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
+{
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSElement::s_info))
+        return throwError(exec, TypeError);
+    JSElement* castedThisObj = static_cast<JSElement*>(asObject(thisValue));
+    Element* imp = static_cast<Element*>(castedThisObj->impl());
+
+
+    JSC::JSValue result = toJS(exec, WTF::getPtr(imp->getBoundingClientRect()));
+    return result;
+}
+
+Element* toElement(JSC::JSValue value)
+{
+    return value.isObject(&JSElement::s_info) ? static_cast<JSElement*>(asObject(value))->impl() : 0;
 }
 
 }

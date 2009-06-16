@@ -29,6 +29,8 @@
 #include "config.h"
 #include "JavaScriptDebugServer.h"
 
+#if ENABLE(JAVASCRIPT_DEBUGGER)
+
 #include "DOMWindow.h"
 #include "EventLoop.h"
 #include "Frame.h"
@@ -363,19 +365,25 @@ void JavaScriptDebugServer::setJavaScriptPaused(Frame* frame, bool paused)
 
     frame->script()->setPaused(paused);
 
-    if (Document* document = frame->document()) {
-        if (paused)
-            document->suspendActiveDOMObjects();
-        else
-            document->resumeActiveDOMObjects();
-    }
+    Document* document = frame->document();
+    if (paused)
+        document->suspendActiveDOMObjects();
+    else
+        document->resumeActiveDOMObjects();
 
     setJavaScriptPaused(frame->view(), paused);
 }
 
+#if PLATFORM(MAC)
+
+void JavaScriptDebugServer::setJavaScriptPaused(FrameView*, bool)
+{
+}
+
+#else
+
 void JavaScriptDebugServer::setJavaScriptPaused(FrameView* view, bool paused)
 {
-#if !PLATFORM(MAC)
     if (!view)
         return;
 
@@ -389,8 +397,9 @@ void JavaScriptDebugServer::setJavaScriptPaused(FrameView* view, bool paused)
             continue;
         static_cast<PluginView*>(widget)->setJavaScriptPaused(paused);
     }
-#endif
 }
+
+#endif
 
 void JavaScriptDebugServer::pauseIfNeeded(Page* page)
 {
@@ -424,6 +433,8 @@ void JavaScriptDebugServer::pauseIfNeeded(Page* page)
     setJavaScriptPaused(page->group(), false);
 
     m_paused = false;
+
+    dispatchFunctionToListeners(&JavaScriptDebugListener::didContinue, page);
 }
 
 void JavaScriptDebugServer::callEvent(const DebuggerCallFrame& debuggerCallFrame, intptr_t sourceID, int lineNumber)
@@ -542,8 +553,11 @@ void JavaScriptDebugServer::recompileAllJSFunctions(Timer<JavaScriptDebugServer>
     Vector<ProtectedPtr<JSFunction> > functions;
     Heap::iterator heapEnd = globalData->heap.primaryHeapEnd();
     for (Heap::iterator it = globalData->heap.primaryHeapBegin(); it != heapEnd; ++it) {
-        if ((*it)->isObject(&JSFunction::info))
-            functions.append(static_cast<JSFunction*>(*it));
+        if ((*it)->isObject(&JSFunction::info)) {
+            JSFunction* function = static_cast<JSFunction*>(*it);
+            if (!function->isHostFunction())
+                functions.append(function);
+        }
     }
 
     typedef HashMap<RefPtr<FunctionBodyNode>, RefPtr<FunctionBodyNode> > FunctionBodyMap;
@@ -573,7 +587,7 @@ void JavaScriptDebugServer::recompileAllJSFunctions(Timer<JavaScriptDebugServer>
         result.first->second = newBody;
         function->setBody(newBody.release());
 
-        if (hasListeners())
+        if (hasListeners() && function->scope().globalObject()->debugger() == this)
             sourceProviders.add(sourceCode.provider(), exec);
     }
 
@@ -613,3 +627,5 @@ void JavaScriptDebugServer::didRemoveLastListener()
 }
 
 } // namespace WebCore
+
+#endif // ENABLE(JAVASCRIPT_DEBUGGER)

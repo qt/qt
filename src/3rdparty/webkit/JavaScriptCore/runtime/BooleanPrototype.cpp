@@ -22,6 +22,7 @@
 #include "BooleanPrototype.h"
 
 #include "Error.h"
+#include "JSFunction.h"
 #include "JSString.h"
 #include "ObjectPrototype.h"
 #include "PrototypeFunction.h"
@@ -31,8 +32,8 @@ namespace JSC {
 ASSERT_CLASS_FITS_IN_CELL(BooleanPrototype);
 
 // Functions
-static JSValuePtr booleanProtoFuncToString(ExecState*, JSObject*, JSValuePtr, const ArgList&);
-static JSValuePtr booleanProtoFuncValueOf(ExecState*, JSObject*, JSValuePtr, const ArgList&);
+static JSValue JSC_HOST_CALL booleanProtoFuncToString(ExecState*, JSObject*, JSValue, const ArgList&);
+static JSValue JSC_HOST_CALL booleanProtoFuncValueOf(ExecState*, JSObject*, JSValue, const ArgList&);
 
 // ECMA 15.6.4
 
@@ -41,8 +42,8 @@ BooleanPrototype::BooleanPrototype(ExecState* exec, PassRefPtr<Structure> struct
 {
     setInternalValue(jsBoolean(false));
 
-    putDirectFunctionWithoutTransition(exec, new (exec) PrototypeFunction(exec, prototypeFunctionStructure, 0, exec->propertyNames().toString, booleanProtoFuncToString), DontEnum);
-    putDirectFunctionWithoutTransition(exec, new (exec) PrototypeFunction(exec, prototypeFunctionStructure, 0, exec->propertyNames().valueOf, booleanProtoFuncValueOf), DontEnum);
+    putDirectFunctionWithoutTransition(exec, new (exec) NativeFunctionWrapper(exec, prototypeFunctionStructure, 0, exec->propertyNames().toString, booleanProtoFuncToString), DontEnum);
+    putDirectFunctionWithoutTransition(exec, new (exec) NativeFunctionWrapper(exec, prototypeFunctionStructure, 0, exec->propertyNames().valueOf, booleanProtoFuncValueOf), DontEnum);
 }
 
 
@@ -50,7 +51,7 @@ BooleanPrototype::BooleanPrototype(ExecState* exec, PassRefPtr<Structure> struct
 
 // ECMA 15.6.4.2 + 15.6.4.3
 
-JSValuePtr booleanProtoFuncToString(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList&)
+JSValue JSC_HOST_CALL booleanProtoFuncToString(ExecState* exec, JSObject*, JSValue thisValue, const ArgList&)
 {
     if (thisValue == jsBoolean(false))
         return jsNontrivialString(exec, "false");
@@ -58,7 +59,7 @@ JSValuePtr booleanProtoFuncToString(ExecState* exec, JSObject*, JSValuePtr thisV
     if (thisValue == jsBoolean(true))
         return jsNontrivialString(exec, "true");
 
-    if (!thisValue->isObject(&BooleanObject::info))
+    if (!thisValue.isObject(&BooleanObject::info))
         return throwError(exec, TypeError);
 
     if (asBooleanObject(thisValue)->internalValue() == jsBoolean(false))
@@ -68,12 +69,12 @@ JSValuePtr booleanProtoFuncToString(ExecState* exec, JSObject*, JSValuePtr thisV
     return jsNontrivialString(exec, "true");
 }
 
-JSValuePtr booleanProtoFuncValueOf(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList&)
+JSValue JSC_HOST_CALL booleanProtoFuncValueOf(ExecState* exec, JSObject*, JSValue thisValue, const ArgList&)
 {
-    if (JSImmediate::isBoolean(thisValue))
+    if (thisValue.isBoolean())
         return thisValue;
 
-    if (!thisValue->isObject(&BooleanObject::info))
+    if (!thisValue.isObject(&BooleanObject::info))
         return throwError(exec, TypeError);
 
     return asBooleanObject(thisValue)->internalValue();

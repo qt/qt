@@ -1006,7 +1006,7 @@ void QMdiSubWindowPrivate::removeBaseWidget()
 
     Q_Q(QMdiSubWindow);
     baseWidget->removeEventFilter(q);
-    if (QLayout *layout = q->layout())
+    if (layout)
         layout->removeWidget(baseWidget);
     if (baseWidget->windowTitle() == q->windowTitle()) {
         ignoreWindowTitleChange = true;
@@ -1102,7 +1102,7 @@ void QMdiSubWindowPrivate::updateCursor()
 void QMdiSubWindowPrivate::updateDirtyRegions()
 {
     // No update necessary
-    if (!q_func()->parent())
+    if (!parent)
         return;
 
     foreach (Operation operation, operationMap.keys())
@@ -2180,17 +2180,17 @@ void QMdiSubWindowPrivate::setSizeGrip(QSizeGrip *newSizeGrip)
     if (!newSizeGrip || sizeGrip || q->windowFlags() & Qt::FramelessWindowHint)
         return;
 
-    if (q->layout() && q->layout()->indexOf(newSizeGrip) != -1)
+    if (layout && layout->indexOf(newSizeGrip) != -1)
         return;
     newSizeGrip->setFixedSize(newSizeGrip->sizeHint());
-    bool putSizeGripInLayout = q->layout() ? true : false;
+    bool putSizeGripInLayout = layout ? true : false;
 #if defined(Q_WS_MAC) && !defined(QT_NO_STYLE_MAC)
     if (qobject_cast<QMacStyle *>(q->style()))
         putSizeGripInLayout = false;
 #endif
     if (putSizeGripInLayout) {
-        q->layout()->addWidget(newSizeGrip);
-        q->layout()->setAlignment(newSizeGrip, Qt::AlignBottom | Qt::AlignRight);
+        layout->addWidget(newSizeGrip);
+        layout->setAlignment(newSizeGrip, Qt::AlignBottom | Qt::AlignRight);
     } else {
         newSizeGrip->setParent(q);
         newSizeGrip->move(q->isLeftToRight() ? q->width() - newSizeGrip->width() : 0,

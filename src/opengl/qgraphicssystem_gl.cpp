@@ -44,6 +44,7 @@
 #include "private/qpixmap_raster_p.h"
 #include "private/qpixmapdata_gl_p.h"
 #include "private/qwindowsurface_gl_p.h"
+#include "private/qgl_p.h"
 #include <private/qwindowsurface_raster_p.h>
 
 QT_BEGIN_NAMESPACE

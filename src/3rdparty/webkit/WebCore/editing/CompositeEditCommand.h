@@ -33,6 +33,7 @@
 namespace WebCore {
 
 class CSSStyleDeclaration;
+class HTMLElement;
 class Text;
 
 class CompositeEditCommand : public EditCommand {
@@ -52,7 +53,7 @@ protected:
     void applyStyledElement(PassRefPtr<Element>);
     void removeStyledElement(PassRefPtr<Element>);
     void deleteSelection(bool smartDelete = false, bool mergeBlocksAfterDelete = true, bool replace = false, bool expandForSpecialElements = true);
-    void deleteSelection(const Selection&, bool smartDelete = false, bool mergeBlocksAfterDelete = true, bool replace = false, bool expandForSpecialElements = true);
+    void deleteSelection(const VisibleSelection&, bool smartDelete = false, bool mergeBlocksAfterDelete = true, bool replace = false, bool expandForSpecialElements = true);
     virtual void deleteTextFromNode(PassRefPtr<Text>, unsigned offset, unsigned count);
     void inputText(const String&, bool selectInsertedText = false);
     void insertNodeAfter(PassRefPtr<Node>, PassRefPtr<Node> refChild);
@@ -71,6 +72,7 @@ protected:
     void removeNodeAttribute(PassRefPtr<Element>, const QualifiedName& attribute);
     void removeChildrenInRange(PassRefPtr<Node>, unsigned from, unsigned to);
     virtual void removeNode(PassRefPtr<Node>);
+    HTMLElement* replaceNodeWithSpanPreservingChildrenAndAttributes(PassRefPtr<Node>);
     void removeNodePreservingChildren(PassRefPtr<Node>);
     void removeNodeAndPruneAncestors(PassRefPtr<Node>);
     void prune(PassRefPtr<Node>);
@@ -89,7 +91,7 @@ protected:
     PassRefPtr<Node> appendBlockPlaceholder(PassRefPtr<Element>);
     PassRefPtr<Node> insertBlockPlaceholder(const Position&);
     PassRefPtr<Node> addBlockPlaceholderIfNeeded(Element*);
-    void removePlaceholderAt(const VisiblePosition&);
+    void removePlaceholderAt(const Position&);
 
     PassRefPtr<Node> insertNewDefaultParagraphElementAt(const Position&);
 

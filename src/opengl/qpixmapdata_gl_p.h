@@ -115,6 +115,8 @@ private:
 
     static bool useFramebufferObjects();
 
+    QImage fillImage(const QColor &color) const;
+
     int m_width;
     int m_height;
 
@@ -131,6 +133,8 @@ private:
     // represented by a single fill color
     mutable QColor m_fillColor;
     mutable bool m_hasFillColor;
+
+    mutable bool m_hasAlpha;
 };
 
 QT_END_NAMESPACE

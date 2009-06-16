@@ -29,6 +29,7 @@
 #include "FormDataList.h"
 #include "HTMLNames.h"
 #include "HTMLOptionElement.h"
+#include "MappedAttribute.h"
 #include "SSLKeyGenerator.h"
 #include "Text.h"
 #include <wtf/StdLibExtras.h>
@@ -54,7 +55,7 @@ HTMLKeygenElement::HTMLKeygenElement(const QualifiedName& tagName, Document* doc
     }
 }
 
-const AtomicString& HTMLKeygenElement::type() const
+const AtomicString& HTMLKeygenElement::formControlType() const
 {
     DEFINE_STATIC_LOCAL(const AtomicString, keygen, ("keygen"));
     return keygen;

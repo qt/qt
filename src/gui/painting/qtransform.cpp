@@ -420,7 +420,8 @@ QTransform &QTransform::translate(qreal dx, qreal dy)
         affine._dy += dy*affine._m22 + dx*affine._m12;
         break;
     }
-    m_dirty |= TxTranslate;
+    if (m_dirty < TxTranslate)
+        m_dirty = TxTranslate;
     return *this;
 }
 
@@ -472,7 +473,8 @@ QTransform & QTransform::scale(qreal sx, qreal sy)
         affine._m22 *= sy;
         break;
     }
-    m_dirty |= TxScale;
+    if (m_dirty < TxScale)
+        m_dirty = TxScale;
     return *this;
 }
 
@@ -501,6 +503,9 @@ QTransform QTransform::fromScale(qreal sx, qreal sy)
 */
 QTransform & QTransform::shear(qreal sh, qreal sv)
 {
+    if (sh == 0 && sv == 0)
+        return *this;
+
     switch(inline_type()) {
     case TxNone:
     case TxTranslate:
@@ -529,7 +534,8 @@ QTransform & QTransform::shear(qreal sh, qreal sv)
         break;
     }
     }
-    m_dirty |= TxShear;
+    if (m_dirty < TxShear)
+        m_dirty = TxShear;
     return *this;
 }
 
@@ -605,7 +611,8 @@ QTransform & QTransform::rotate(qreal a, Qt::Axis axis)
             break;
         }
         }
-        m_dirty |= TxRotate;
+        if (m_dirty < TxRotate)
+            m_dirty = TxRotate;
     } else {
         QTransform result;
         if (axis == Qt::YAxis) {
@@ -677,7 +684,8 @@ QTransform & QTransform::rotateRadians(qreal a, Qt::Axis axis)
             break;
         }
         }
-        m_dirty |= TxRotate;
+        if (m_dirty < TxRotate)
+            m_dirty = TxRotate;
     } else {
         QTransform result;
         if (axis == Qt::YAxis) {
@@ -700,11 +708,15 @@ QTransform & QTransform::rotateRadians(qreal a, Qt::Axis axis)
 */
 bool QTransform::operator==(const QTransform &o) const
 {
-#define qFZ qFuzzyCompare
-    return qFZ(affine._m11, o.affine._m11) &&  qFZ(affine._m12, o.affine._m12) &&  qFZ(m_13, o.m_13)
-        && qFZ(affine._m21, o.affine._m21) &&  qFZ(affine._m22, o.affine._m22) &&  qFZ(m_23, o.m_23)
-        && qFZ(affine._dx, o.affine._dx) &&  qFZ(affine._dy, o.affine._dy) &&  qFZ(m_33, o.m_33);
-#undef qFZ
+    return affine._m11 == o.affine._m11 &&
+           affine._m12 == o.affine._m12 &&
+           affine._m21 == o.affine._m21 &&
+           affine._m22 == o.affine._m22 &&
+           affine._dx == o.affine._dx &&
+           affine._dy == o.affine._dy &&
+           m_13 == o.m_13 &&
+           m_23 == o.m_23 &&
+           m_33 == o.m_33;
 }
 
 /*!
@@ -2169,6 +2181,17 @@ QTransform::operator QVariant() const
 
     \sa reset()
 */
+
+/*!
+    \fn bool qFuzzyCompare(const QTransform& t1, const QTransform& t2)
+
+    \relates QTransform
+    \since 4.6
+
+    Returns true if \a t1 and \a t2 are equal, allowing for a small
+    fuzziness factor for floating-point comparisons; false otherwise.
+*/
+
 
 // returns true if the transform is uniformly scaling
 // (same scale in x and y direction)

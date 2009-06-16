@@ -44,7 +44,12 @@ EventTarget::~EventTarget()
 {
 }
 
-EventTargetNode* EventTarget::toNode()
+Node* EventTarget::toNode()
+{
+    return 0;
+}
+
+DOMWindow* EventTarget::toDOMWindow()
 {
     return 0;
 }

@@ -29,26 +29,25 @@
 #include "config.h"
 #include "MainThread.h"
 
+#include "CurrentTime.h"
+#include "Deque.h"
 #include "StdLibExtras.h"
 #include "Threading.h"
-#include "Vector.h"
 
 namespace WTF {
 
 struct FunctionWithContext {
     MainThreadFunction* function;
     void* context;
-    ThreadCondition* syncFlag;
 
-    FunctionWithContext(MainThreadFunction* function = 0, void* context = 0, ThreadCondition* syncFlag = 0)
+    FunctionWithContext(MainThreadFunction* function = 0, void* context = 0)
         : function(function)
         , context(context)
-        , syncFlag(syncFlag)
     { 
     }
 };
 
-typedef Vector<FunctionWithContext> FunctionQueue;
+typedef Deque<FunctionWithContext> FunctionQueue;
 
 static bool callbacksPaused; // This global variable is only accessed from main thread.
 
@@ -64,12 +63,14 @@ static FunctionQueue& functionQueue()
     return staticFunctionQueue;
 }
 
-#if !PLATFORM(WIN)
 void initializeMainThread()
 {
     mainThreadFunctionQueueMutex();
+    initializeMainThreadPlatform();
 }
-#endif
+
+// 0.1 sec delays in UI is approximate threshold when they become noticeable. Have a limit that's half of that.
+static const double maxRunLoopSuspensionTime = 0.05;
 
 void dispatchFunctionsFromMainThread()
 {
@@ -78,52 +79,42 @@ void dispatchFunctionsFromMainThread()
     if (callbacksPaused)
         return;
 
-    FunctionQueue queueCopy;
-    {
-        MutexLocker locker(mainThreadFunctionQueueMutex());
-        queueCopy.swap(functionQueue());
-    }
+    double startTime = currentTime();
 
-    for (unsigned i = 0; i < queueCopy.size(); ++i) {
-        FunctionWithContext& invocation = queueCopy[i];
+    FunctionWithContext invocation;
+    while (true) {
+        {
+            MutexLocker locker(mainThreadFunctionQueueMutex());
+            if (!functionQueue().size())
+                break;
+            invocation = functionQueue().first();
+            functionQueue().removeFirst();
+        }
+
         invocation.function(invocation.context);
-        if (invocation.syncFlag)
-            invocation.syncFlag->signal();
+
+        // If we are running accumulated functions for too long so UI may become unresponsive, we need to
+        // yield so the user input can be processed. Otherwise user may not be able to even close the window.
+        // This code has effect only in case the scheduleDispatchFunctionsOnMainThread() is implemented in a way that
+        // allows input events to be processed before we are back here.
+        if (currentTime() - startTime > maxRunLoopSuspensionTime) {
+            scheduleDispatchFunctionsOnMainThread();
+            break;
+        }
     }
 }
 
 void callOnMainThread(MainThreadFunction* function, void* context)
 {
     ASSERT(function);
-
+    bool needToSchedule = false;
     {
         MutexLocker locker(mainThreadFunctionQueueMutex());
+        needToSchedule = functionQueue().size() == 0;
         functionQueue().append(FunctionWithContext(function, context));
     }
-
-    scheduleDispatchFunctionsOnMainThread();
-}
-
-void callOnMainThreadAndWait(MainThreadFunction* function, void* context)
-{
-    ASSERT(function);
-
-    if (isMainThread()) {
-        function(context);
-        return;
-    }
-
-    ThreadCondition syncFlag;
-    Mutex conditionMutex;
-
-    {
-        MutexLocker locker(mainThreadFunctionQueueMutex());
-        functionQueue().append(FunctionWithContext(function, context, &syncFlag));
-        conditionMutex.lock();
-    }
-
-    scheduleDispatchFunctionsOnMainThread();
-    syncFlag.wait(conditionMutex);
+    if (needToSchedule)
+        scheduleDispatchFunctionsOnMainThread();
 }
 
 void setMainThreadCallbacksPaused(bool paused)

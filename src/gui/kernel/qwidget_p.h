@@ -131,10 +131,6 @@ struct QTLWExtra {
     uint embedded : 1;
 
     // *************************** Platform specific values (bit fields first) **********
-#ifndef QT_NO_XSYNC
-    int newCounterValueHi : 32;
-    uint newCounterValueLo : 32;
-#endif
 #if defined(Q_WS_X11) // <----------------------------------------------------------- X11
     uint spont_unmapped: 1; // window was spontaneously unmapped
     uint dnd : 1; // DND properties installed
@@ -143,6 +139,12 @@ struct QTLWExtra {
     WId parentWinId; // parent window Id (valid after reparenting)
     WId userTimeWindow; // window id that contains user-time timestamp when WM supports a _NET_WM_USER_TIME_WINDOW atom
     QPoint fullScreenOffset;
+#ifndef QT_NO_XSYNC
+    WId syncUpdateCounter;
+    ulong syncRequestTimestamp;
+    qint32 newCounterValueHi;
+    quint32 newCounterValueLo;
+#endif
 #elif defined(Q_WS_WIN) // <--------------------------------------------------------- WIN
     HICON winIconBig; // internal big Windows icon
     HICON winIconSmall; // internal small Windows icon
@@ -159,10 +161,6 @@ struct QTLWExtra {
 #ifndef QT_NO_QWS_MANAGER
     QWSManager *qwsManager;
 #endif
-#endif
-#ifndef QT_NO_XSYNC
-    WId syncUpdateCounter;
-    ulong syncRequestTimestamp;
 #endif
 };
 

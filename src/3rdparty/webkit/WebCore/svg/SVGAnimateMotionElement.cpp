@@ -22,9 +22,11 @@
 */
 
 #include "config.h"
+
 #if ENABLE(SVG) && ENABLE(SVG_ANIMATION)
 #include "SVGAnimateMotionElement.h"
 
+#include "MappedAttribute.h"
 #include "RenderObject.h"
 #include "SVGElementInstance.h"
 #include "SVGMPathElement.h"
@@ -150,7 +152,7 @@ void SVGAnimateMotionElement::resetToBaseValue(const String&)
     TransformationMatrix* transform = target->supplementalTransform();
     if (!transform)
         return;
-    transform->reset();
+    transform->makeIdentity();
 }
 
 bool SVGAnimateMotionElement::calculateFromAndToValues(const String& fromString, const String& toString)
@@ -179,7 +181,7 @@ void SVGAnimateMotionElement::calculateAnimatedValue(float percentage, unsigned,
         return;
     
     if (!isAdditive())
-        transform->reset();
+        transform->makeIdentity();
     
     // FIXME: Implement accumulate.
     

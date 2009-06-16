@@ -28,8 +28,10 @@
 
 module storage {
 
-    interface SQLError {
-        readonly attribute unsigned int code;
+    interface [
+        Conditional=DATABASE
+    ] SQLError {
+        readonly attribute unsigned long code;
         readonly attribute DOMString message;
     };
 }

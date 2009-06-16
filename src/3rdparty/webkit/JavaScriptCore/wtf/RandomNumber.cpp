@@ -36,6 +36,16 @@
 
 namespace WTF {
 
+double weakRandomNumber()
+{
+#if COMPILER(MSVC) && defined(_CRT_RAND_S)
+    // rand_s is incredibly slow on windows so we fall back on rand for Math.random
+    return (rand() + (rand() / (RAND_MAX + 1.0))) / (RAND_MAX + 1.0);
+#else
+    return randomNumber();
+#endif
+}
+
 double randomNumber()
 {
 #if !ENABLE(JSC_MULTIPLE_THREADS)
@@ -46,42 +56,39 @@ double randomNumber()
     }
 #endif
     
-    uint32_t part1;
-    uint32_t part2;
-    uint64_t fullRandom;
 #if COMPILER(MSVC) && defined(_CRT_RAND_S)
-    rand_s(&part1);
-    rand_s(&part2);
-    fullRandom = part1;
-    fullRandom <<= 32;
-    fullRandom |= part2;
+    uint32_t bits;
+    rand_s(&bits);
+    return static_cast<double>(bits) / (static_cast<double>(std::numeric_limits<uint32_t>::max()) + 1.0);
 #elif PLATFORM(DARWIN)
-    part1 = arc4random();
-    part2 = arc4random();
-    fullRandom = part1;
-    fullRandom <<= 32;
-    fullRandom |= part2;
+    uint32_t bits = arc4random();
+    return static_cast<double>(bits) / (static_cast<double>(std::numeric_limits<uint32_t>::max()) + 1.0);
 #elif PLATFORM(UNIX)
-    part1 = random() & (RAND_MAX - 1);
-    part2 = random() & (RAND_MAX - 1);
+    uint32_t part1 = random() & (RAND_MAX - 1);
+    uint32_t part2 = random() & (RAND_MAX - 1);
     // random only provides 31 bits
-    fullRandom = part1;
+    uint64_t fullRandom = part1;
     fullRandom <<= 31;
     fullRandom |= part2;
+
+    // Mask off the low 53bits
+    fullRandom &= (1LL << 53) - 1;
+    return static_cast<double>(fullRandom)/static_cast<double>(1LL << 53);
 #else
-    part1 = rand() & (RAND_MAX - 1);
-    part2 = rand() & (RAND_MAX - 1);
+    uint32_t part1 = rand() & (RAND_MAX - 1);
+    uint32_t part2 = rand() & (RAND_MAX - 1);
     // rand only provides 31 bits, and the low order bits of that aren't very random
     // so we take the high 26 bits of part 1, and the high 27 bits of part2.
     part1 >>= 5; // drop the low 5 bits
     part2 >>= 4; // drop the low 4 bits
-    fullRandom = part1;
+    uint64_t fullRandom = part1;
     fullRandom <<= 27;
     fullRandom |= part2;
-#endif
+
     // Mask off the low 53bits
     fullRandom &= (1LL << 53) - 1;
     return static_cast<double>(fullRandom)/static_cast<double>(1LL << 53);
+#endif
 }
 
 }

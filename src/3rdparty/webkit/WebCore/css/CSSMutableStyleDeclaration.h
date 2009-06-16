@@ -144,7 +144,7 @@ private:
 
     virtual PassRefPtr<CSSMutableStyleDeclaration> makeMutable();
 
-    void setChanged();
+    void setNeedsStyleRecalc();
 
     String getShorthandValue(const int* properties, int number) const;
     String getCommonValue(const int* properties, int number) const;
@@ -157,7 +157,7 @@ private:
     Vector<CSSProperty>::const_iterator findPropertyWithId(int propertyId) const;
     Vector<CSSProperty>::iterator findPropertyWithId(int propertyId);
 
-    Vector<CSSProperty> m_properties;
+    Vector<CSSProperty, 4> m_properties;
 
     Node* m_node;
     unsigned m_variableDependentValueCount : 24;

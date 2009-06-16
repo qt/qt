@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008 Apple Inc. All rights reserved.
+ * Copyright (C) 2008, 2009 Apple Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -26,16 +26,21 @@
 #include "config.h"
 #include "Threading.h"
 
+#include <string.h>
+
 namespace WTF {
 
 struct NewThreadContext {
-    NewThreadContext(ThreadFunction entryPoint, void* data)
+    NewThreadContext(ThreadFunction entryPoint, void* data, const char* name)
         : entryPoint(entryPoint)
         , data(data)
-    { }
+        , name(name)
+    {
+    }
 
     ThreadFunction entryPoint;
     void* data;
+    const char* name;
 
     Mutex creationMutex;
 };
@@ -43,6 +48,8 @@ struct NewThreadContext {
 static void* threadEntryPoint(void* contextData)
 {
     NewThreadContext* context = reinterpret_cast<NewThreadContext*>(contextData);
+
+    setThreadNameInternal(context->name);
 
     // Block until our creating thread has completed any extra setup work
     {
@@ -59,7 +66,14 @@ static void* threadEntryPoint(void* contextData)
 
 ThreadIdentifier createThread(ThreadFunction entryPoint, void* data, const char* name)
 {
-    NewThreadContext* context = new NewThreadContext(entryPoint, data);
+    // Visual Studio has a 31-character limit on thread names. Longer names will
+    // be truncated silently, but we'd like callers to know about the limit.
+#if !LOG_DISABLED
+    if (strlen(name) > 31)
+        LOG_ERROR("Thread name \"%s\" is longer than 31 characters and will be truncated by Visual Studio", name);
+#endif
+
+    NewThreadContext* context = new NewThreadContext(entryPoint, data, name);
 
     // Prevent the thread body from executing until we've established the thread identifier
     MutexLocker locker(context->creationMutex);
@@ -71,6 +85,8 @@ ThreadIdentifier createThread(ThreadFunction entryPoint, void* data, const char*
 
 // This function is deprecated but needs to be kept around for backward
 // compatibility. Use the 3-argument version of createThread above.
+
+ThreadIdentifier createThread(ThreadFunction entryPoint, void* data);
 
 ThreadIdentifier createThread(ThreadFunction entryPoint, void* data)
 {

@@ -243,7 +243,7 @@ private:
     This enum type specifies the field names that are handled by the search engine.
 
     \value DEFAULT  the default field provided by the search widget, several terms should be
-                    splitted and stored in the wordlist except search terms enclosed in quotes.
+                    split and stored in the word list except search terms enclosed in quotes.
     \value FUZZY    a field only provided in use with clucene. Terms should be split in seperate
                     words and passed to the search engine.
     \value WITHOUT  a field only provided in use with clucene. Terms should be split in seperate

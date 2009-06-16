@@ -27,8 +27,9 @@
 
 #include "Attr.h"
 #include "Document.h"
-#include "SVGNames.h"
+#include "MappedAttribute.h"
 #include "SVGLength.h"
+#include "SVGNames.h"
 
 namespace WebCore {
 
@@ -91,7 +92,7 @@ void SVGCursorElement::svgAttributeChanged(const QualifiedName& attrName)
         HashSet<SVGElement*>::const_iterator end = m_clients.end();
 
         for (; it != end; ++it)
-            (*it)->setChanged();
+            (*it)->setNeedsStyleRecalc();
     }
 }
 

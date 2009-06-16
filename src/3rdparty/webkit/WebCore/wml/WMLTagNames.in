@@ -12,23 +12,24 @@ fieldset interfaceName=WMLFieldSetElement
 go
 head interfaceName=WMLElement
 img interfaceName=WMLImageElement
+input
+#if 0
 # Note: 'insertedLegend' is not an official WML element - internal purpose only!
+#endif
 insertedLegend interfaceName=WMLInsertedLegendElement
 meta
 noop
 onevent interfaceName=WMLOnEventElement
+optgroup interfaceName=WMLOptGroupElement
+option
 p
 postfield
 prev
 refresh
+select
 setvar
 table
 td interfaceName=WMLElement
 template
 timer
 tr interfaceName=WMLElement
-
-#if 0
-# These elements have a corresponding HTML*Element class, that we want to share code with.
-# input, optgroup, option, select
-#endif

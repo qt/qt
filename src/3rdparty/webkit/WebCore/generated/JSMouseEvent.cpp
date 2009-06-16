@@ -29,7 +29,6 @@
 #include "JSClipboard.h"
 #include "JSDOMWindow.h"
 #include "JSEventTarget.h"
-#include "JSEventTargetNode.h"
 #include "JSNode.h"
 #include "MouseEvent.h"
 #include "Node.h"
@@ -41,7 +40,7 @@ using namespace JSC;
 
 namespace WebCore {
 
-ASSERT_CLASS_FITS_IN_CELL(JSMouseEvent)
+ASSERT_CLASS_FITS_IN_CELL(JSMouseEvent);
 
 /* Hash table */
 
@@ -94,13 +93,13 @@ public:
     JSMouseEventConstructor(ExecState* exec)
         : DOMObject(JSMouseEventConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
     {
-        putDirect(exec->propertyNames().prototype, JSMouseEventPrototype::self(exec), None);
+        putDirect(exec->propertyNames().prototype, JSMouseEventPrototype::self(exec, exec->lexicalGlobalObject()), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
     static const ClassInfo s_info;
 
-    static PassRefPtr<Structure> createStructure(JSValuePtr proto) 
+    static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
         return Structure::create(proto, TypeInfo(ObjectType, ImplementsHasInstance)); 
     }
@@ -130,9 +129,9 @@ static const HashTable JSMouseEventPrototypeTable =
 
 const ClassInfo JSMouseEventPrototype::s_info = { "MouseEventPrototype", 0, &JSMouseEventPrototypeTable, 0 };
 
-JSObject* JSMouseEventPrototype::self(ExecState* exec)
+JSObject* JSMouseEventPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSMouseEvent>(exec);
+    return getDOMPrototype<JSMouseEvent>(exec, globalObject);
 }
 
 bool JSMouseEventPrototype::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -147,9 +146,9 @@ JSMouseEvent::JSMouseEvent(PassRefPtr<Structure> structure, PassRefPtr<MouseEven
 {
 }
 
-JSObject* JSMouseEvent::createPrototype(ExecState* exec)
+JSObject* JSMouseEvent::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSMouseEventPrototype(JSMouseEventPrototype::createStructure(JSUIEventPrototype::self(exec)));
+    return new (exec) JSMouseEventPrototype(JSMouseEventPrototype::createStructure(JSUIEventPrototype::self(exec, globalObject)));
 }
 
 bool JSMouseEvent::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -157,138 +156,156 @@ bool JSMouseEvent::getOwnPropertySlot(ExecState* exec, const Identifier& propert
     return getStaticValueSlot<JSMouseEvent, Base>(exec, &JSMouseEventTable, this, propertyName, slot);
 }
 
-JSValuePtr jsMouseEventScreenX(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsMouseEventScreenX(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     MouseEvent* imp = static_cast<MouseEvent*>(static_cast<JSMouseEvent*>(asObject(slot.slotBase()))->impl());
     return jsNumber(exec, imp->screenX());
 }
 
-JSValuePtr jsMouseEventScreenY(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsMouseEventScreenY(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     MouseEvent* imp = static_cast<MouseEvent*>(static_cast<JSMouseEvent*>(asObject(slot.slotBase()))->impl());
     return jsNumber(exec, imp->screenY());
 }
 
-JSValuePtr jsMouseEventClientX(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsMouseEventClientX(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     MouseEvent* imp = static_cast<MouseEvent*>(static_cast<JSMouseEvent*>(asObject(slot.slotBase()))->impl());
     return jsNumber(exec, imp->clientX());
 }
 
-JSValuePtr jsMouseEventClientY(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsMouseEventClientY(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     MouseEvent* imp = static_cast<MouseEvent*>(static_cast<JSMouseEvent*>(asObject(slot.slotBase()))->impl());
     return jsNumber(exec, imp->clientY());
 }
 
-JSValuePtr jsMouseEventCtrlKey(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsMouseEventCtrlKey(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     MouseEvent* imp = static_cast<MouseEvent*>(static_cast<JSMouseEvent*>(asObject(slot.slotBase()))->impl());
     return jsBoolean(imp->ctrlKey());
 }
 
-JSValuePtr jsMouseEventShiftKey(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsMouseEventShiftKey(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     MouseEvent* imp = static_cast<MouseEvent*>(static_cast<JSMouseEvent*>(asObject(slot.slotBase()))->impl());
     return jsBoolean(imp->shiftKey());
 }
 
-JSValuePtr jsMouseEventAltKey(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsMouseEventAltKey(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     MouseEvent* imp = static_cast<MouseEvent*>(static_cast<JSMouseEvent*>(asObject(slot.slotBase()))->impl());
     return jsBoolean(imp->altKey());
 }
 
-JSValuePtr jsMouseEventMetaKey(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsMouseEventMetaKey(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     MouseEvent* imp = static_cast<MouseEvent*>(static_cast<JSMouseEvent*>(asObject(slot.slotBase()))->impl());
     return jsBoolean(imp->metaKey());
 }
 
-JSValuePtr jsMouseEventButton(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsMouseEventButton(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     MouseEvent* imp = static_cast<MouseEvent*>(static_cast<JSMouseEvent*>(asObject(slot.slotBase()))->impl());
     return jsNumber(exec, imp->button());
 }
 
-JSValuePtr jsMouseEventRelatedTarget(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsMouseEventRelatedTarget(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     MouseEvent* imp = static_cast<MouseEvent*>(static_cast<JSMouseEvent*>(asObject(slot.slotBase()))->impl());
     return toJS(exec, WTF::getPtr(imp->relatedTarget()));
 }
 
-JSValuePtr jsMouseEventOffsetX(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsMouseEventOffsetX(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     MouseEvent* imp = static_cast<MouseEvent*>(static_cast<JSMouseEvent*>(asObject(slot.slotBase()))->impl());
     return jsNumber(exec, imp->offsetX());
 }
 
-JSValuePtr jsMouseEventOffsetY(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsMouseEventOffsetY(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     MouseEvent* imp = static_cast<MouseEvent*>(static_cast<JSMouseEvent*>(asObject(slot.slotBase()))->impl());
     return jsNumber(exec, imp->offsetY());
 }
 
-JSValuePtr jsMouseEventX(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsMouseEventX(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     MouseEvent* imp = static_cast<MouseEvent*>(static_cast<JSMouseEvent*>(asObject(slot.slotBase()))->impl());
     return jsNumber(exec, imp->x());
 }
 
-JSValuePtr jsMouseEventY(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsMouseEventY(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     MouseEvent* imp = static_cast<MouseEvent*>(static_cast<JSMouseEvent*>(asObject(slot.slotBase()))->impl());
     return jsNumber(exec, imp->y());
 }
 
-JSValuePtr jsMouseEventFromElement(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsMouseEventFromElement(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     MouseEvent* imp = static_cast<MouseEvent*>(static_cast<JSMouseEvent*>(asObject(slot.slotBase()))->impl());
     return toJS(exec, WTF::getPtr(imp->fromElement()));
 }
 
-JSValuePtr jsMouseEventToElement(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsMouseEventToElement(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     MouseEvent* imp = static_cast<MouseEvent*>(static_cast<JSMouseEvent*>(asObject(slot.slotBase()))->impl());
     return toJS(exec, WTF::getPtr(imp->toElement()));
 }
 
-JSValuePtr jsMouseEventDataTransfer(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsMouseEventDataTransfer(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     MouseEvent* imp = static_cast<MouseEvent*>(static_cast<JSMouseEvent*>(asObject(slot.slotBase()))->impl());
     return toJS(exec, WTF::getPtr(imp->dataTransfer()));
 }
 
-JSValuePtr jsMouseEventConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsMouseEventConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     return static_cast<JSMouseEvent*>(asObject(slot.slotBase()))->getConstructor(exec);
 }
-JSValuePtr JSMouseEvent::getConstructor(ExecState* exec)
+JSValue JSMouseEvent::getConstructor(ExecState* exec)
 {
     return getDOMConstructor<JSMouseEventConstructor>(exec);
 }
 
-JSValuePtr jsMouseEventPrototypeFunctionInitMouseEvent(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsMouseEventPrototypeFunctionInitMouseEvent(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSMouseEvent::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSMouseEvent::s_info))
         return throwError(exec, TypeError);
     JSMouseEvent* castedThisObj = static_cast<JSMouseEvent*>(asObject(thisValue));
     MouseEvent* imp = static_cast<MouseEvent*>(castedThisObj->impl());
-    const UString& type = args.at(exec, 0)->toString(exec);
-    bool canBubble = args.at(exec, 1)->toBoolean(exec);
-    bool cancelable = args.at(exec, 2)->toBoolean(exec);
-    DOMWindow* view = toDOMWindow(args.at(exec, 3));
-    int detail = args.at(exec, 4)->toInt32(exec);
-    int screenX = args.at(exec, 5)->toInt32(exec);
-    int screenY = args.at(exec, 6)->toInt32(exec);
-    int clientX = args.at(exec, 7)->toInt32(exec);
-    int clientY = args.at(exec, 8)->toInt32(exec);
-    bool ctrlKey = args.at(exec, 9)->toBoolean(exec);
-    bool altKey = args.at(exec, 10)->toBoolean(exec);
-    bool shiftKey = args.at(exec, 11)->toBoolean(exec);
-    bool metaKey = args.at(exec, 12)->toBoolean(exec);
-    unsigned short button = args.at(exec, 13)->toInt32(exec);
-    EventTargetNode* relatedTarget = toEventTargetNode(args.at(exec, 14));
+    const UString& type = args.at(0).toString(exec);
+    bool canBubble = args.at(1).toBoolean(exec);
+    bool cancelable = args.at(2).toBoolean(exec);
+    DOMWindow* view = toDOMWindow(args.at(3));
+    int detail = args.at(4).toInt32(exec);
+    int screenX = args.at(5).toInt32(exec);
+    int screenY = args.at(6).toInt32(exec);
+    int clientX = args.at(7).toInt32(exec);
+    int clientY = args.at(8).toInt32(exec);
+    bool ctrlKey = args.at(9).toBoolean(exec);
+    bool altKey = args.at(10).toBoolean(exec);
+    bool shiftKey = args.at(11).toBoolean(exec);
+    bool metaKey = args.at(12).toBoolean(exec);
+    unsigned short button = args.at(13).toInt32(exec);
+    EventTarget* relatedTarget = toEventTarget(args.at(14));
 
     imp->initMouseEvent(type, canBubble, cancelable, view, detail, screenX, screenY, clientX, clientY, ctrlKey, altKey, shiftKey, metaKey, button, relatedTarget);
     return jsUndefined();

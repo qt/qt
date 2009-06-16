@@ -27,14 +27,15 @@
 #include "Frame.h"
 #include "HTMLFrameSetElement.h"
 #include "HTMLNames.h"
+#include "MappedAttribute.h"
 #include "RenderFrame.h"
 
 namespace WebCore {
 
 using namespace HTMLNames;
 
-HTMLFrameElement::HTMLFrameElement(const QualifiedName& tagName, Document* doc, bool createdByParser)
-    : HTMLFrameElementBase(tagName, doc, createdByParser)
+HTMLFrameElement::HTMLFrameElement(const QualifiedName& tagName, Document* document)
+    : HTMLFrameElementBase(tagName, document)
     , m_frameBorder(true)
     , m_frameBorderSet(false)
 {

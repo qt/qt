@@ -47,8 +47,7 @@ EditCommand::EditCommand(Document* document)
 {
     ASSERT(m_document);
     ASSERT(m_document->frame());
-    DeleteButtonController* deleteButton = m_document->frame()->editor()->deleteButtonController();
-    setStartingSelection(avoidIntersectionWithNode(m_document->frame()->selection()->selection(), deleteButton ? deleteButton->containerElement() : 0));
+    setStartingSelection(avoidIntersectionWithNode(m_document->frame()->selection()->selection(), m_document->frame()->editor()->deleteButtonController()->containerElement()));
     setEndingSelection(m_startingSelection);
 }
 
@@ -94,7 +93,10 @@ void EditCommand::apply()
 
     if (!m_parent) {
         updateLayout();
-        frame->editor()->appliedEditing(this);
+        // Only need to call appliedEditing for top-level commands, and TypingCommands do it on their
+        // own (see TypingCommand::typingAddedToOpenCommand).
+        if (!isTypingCommand())
+            frame->editor()->appliedEditing(this);
     }
 }
 
@@ -158,7 +160,7 @@ EditAction EditCommand::editingAction() const
     return EditActionUnspecified;
 }
 
-void EditCommand::setStartingSelection(const Selection& s)
+void EditCommand::setStartingSelection(const VisibleSelection& s)
 {
     Element* root = s.rootEditableElement();
     for (EditCommand* cmd = this; ; cmd = cmd->m_parent) {
@@ -169,7 +171,7 @@ void EditCommand::setStartingSelection(const Selection& s)
     }
 }
 
-void EditCommand::setEndingSelection(const Selection &s)
+void EditCommand::setEndingSelection(const VisibleSelection &s)
 {
     Element* root = s.rootEditableElement();
     for (EditCommand* cmd = this; cmd; cmd = cmd->m_parent) {

@@ -1712,7 +1712,7 @@ void QTextControlPrivate::mouseDoubleClickEvent(QEvent *e, Qt::MouseButton butto
     selectedWordOnDoubleClick = cursor;
 
     trippleClickPoint = pos;
-    trippleClickTimer.start(qApp->doubleClickInterval(), q);
+    trippleClickTimer.start(QApplication::doubleClickInterval(), q);
     if (doEmit) {
         selectionChanged();
 #ifndef QT_NO_CLIPBOARD

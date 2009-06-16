@@ -1,3 +1,303 @@
+2009-05-29  Gustavo Noronha Silva  <gns@gnome.org>
+
+        Reviewed by Jan Alonzo.
+
+        Add a test-case for our HTTP backend, currently checking the
+        ref-counting of the SoupMessage.
+
+        * GNUmakefile.am:
+
+2009-05-28  Dirk Schulze  <krit@webkit.org>
+
+        Reviewed by Nikolas Zimmermann.
+
+        Enable the new build flag --filters for Gtk. More details in WebCore/ChangeLog.
+
+        * configure.ac:
+
+2009-05-19  Xan Lopez  <xlopez@igalia.com>
+
+        Reviewed by Jan Alonzo and Gustavo Noronha.
+
+        https://bugs.webkit.org/show_bug.cgi?id=25415
+        [GTK][ATK] Please implement support for get_text_at_offset
+
+        Add new test file for ATK.
+
+        * GNUmakefile.am:
+
+2009-05-28  Gustavo Noronha Silva  <gustavo.noronha@collabora.co.uk>
+
+        Rubber-stamped by Xan Lopez.
+
+        Fix webkitgtk_cleanfiles to clean gtk-doc-related files in the
+        correct directory, so that we pass make distcheck.
+
+        * GNUmakefile.am:
+
+2009-05-28  Xan Lopez  <xlopez@igalia.com>
+
+        Bump version numbers in preparation for 1.1.8 release.
+
+        * configure.ac:
+
+2009-05-23  Jan Michael Alonzo  <jmalonzo@webkit.org>
+
+        Unreviewed build fix. Add gstreamer-video-0.10 libs to
+        GSTREAMER_LIBS to resolve an undefined reference to gst_video_get_size
+        - symbol used in MediaPlayerPrivateGstreamer.
+
+        * configure.ac:
+
+2009-05-23  Jan Michael Alonzo  <jmalonzo@webkit.org>
+
+        Reviewed by Xan Lopez.
+
+        [Gtk] Various autotools build refactoring and fixes
+        https://bugs.webkit.org/show_bug.cgi?id=25286
+
+        Refactor library LIBS. Move third-party libs in libwebkit instead
+        of libWebCore.
+
+        * GNUmakefile.am:
+
+2009-05-22  Antonio Gomes  <antonio.gomes@openbossa.org>
+
+        Reviewed by Gustavo Noronha.
+
+        Make Gtk build not bail out if gtk-doc-tools is not installed.
+
+        Warning message shown instead.
+
+        * autogen.sh:
+
+2009-05-22  Gustavo Noronha Silva  <gustavo.noronha@collabora.co.uk>
+
+        Reviewed by Xan Lopez.
+
+        Add big warnings about the glib unicode backend being slow and
+        incomplete, since it is a work in progress.
+
+        * autotools/webkit.m4:
+        * configure.ac:
+
+2009-05-22  Dominik Röttsches  <dominik.roettsches@access-company.com>
+
+        Reviewed by Gustavo Noronha.
+
+        https://bugs.webkit.org/show_bug.cgi?id=15914
+        [GTK] Implement Unicode functionality using GLib
+
+        Initial version of this patch by Jürg Billeter.
+
+        Adding options for --with-unicode-backend=icu|glib
+        and checking for pango version >= 1.21.0 if GLib backend
+        is selected. Temporarily, until remaining parts of
+        this patch are committed, introduce WTF_USE_GLIB_ICU_UNICODE_HYBRID
+        macro to allow for a mixed compilation with WTF Unicode
+        backend based on GLib while text codecs and TextBreakIterator
+        remain ICU dependent.
+
+        * GNUmakefile.am:
+        * configure.ac:
+
+2009-05-18  Gustavo Noronha Silva  <gustavo.noronha@collabora.co.uk>
+
+        Reviewed by Gavin Barraclough.
+
+        Enable YARR, and disable WREC for GTK+.
+
+        * configure.ac:
+
+2009-05-18  Jan Michael Alonzo  <jmalonzo@webkit.org>
+
+         Reviewed by Xan Lopez.
+
+         [Gtk] Various autotools build refactoring and fixes
+         https://bugs.webkit.org/show_bug.cgi?id=25286
+
+         Add support for running unit tests. Also run the tests whenever
+         the 'check' target runs.
+
+         * GNUmakefile.am:
+
+2009-05-18  Jan Michael Alonzo  <jmalonzo@webkit.org>
+
+         Reviewed by Xan Lopez.
+
+         [Gtk] Various autotools build refactoring and fixes
+         https://bugs.webkit.org/show_bug.cgi?id=25286
+
+         Style fixes
+
+         * GNUmakefile.am:
+
+2009-05-18  Jan Michael Alonzo  <jmalonzo@webkit.org>
+
+         Reviewed by Xan Lopez.
+
+         [Gtk] Various autotools build refactoring and fixes
+         https://bugs.webkit.org/show_bug.cgi?id=25286
+
+         Add -no-install and -no-fast-install to programs and tests that we
+         don't install. Also remove -O2 since this is already handled at
+         configure time.
+
+         * GNUmakefile.am:
+
+2009-05-17  Jan Michael Alonzo  <jmalonzo@webkit.org>
+
+        Reviewed by Xan Lopez.
+
+        [Gtk] Various autotools build refactoring and fixes
+        https://bugs.webkit.org/show_bug.cgi?id=25286
+
+        Refactor library cflags
+
+        * GNUmakefile.am:
+
+2009-05-15  Fridrich Strba  <fridrich.strba@bluewin.ch>
+
+        Reviewed by Jan Alonzo.
+
+        Use AC_CANONICAL_HOST instead of AC_CANONICAL_SYSTEM, since
+        the JIT compiler is not a cross-compiler
+
+        * configure.ac:
+
+2009-05-13  Xan Lopez  <xlopez@igalia.com>
+
+        Unreviewed: bump versions in preparation for 1.1.7 release.
+
+        * configure.ac:
+
+2009-05-13  Xan Lopez  <xlopez@igalia.com>
+
+        Rubber-stamped by Gustavo Noronha.
+
+        Revert commit r43563, since it breaks WebKitGTK+ when compiled
+        with gcc 4.4.
+
+        * GNUmakefile.am:
+
+2009-05-12  Jan Michael Alonzo  <jmalonzo@webkit.org>
+
+        Reviewed by Holger Freyther.
+
+        [Gtk] Various autotools build refactoring and fixes
+        https://bugs.webkit.org/show_bug.cgi?id=25286
+
+        Refactor use of CFLAGS, CXXFLAGS, LIBADD and LDFLAGS.
+
+        * GNUmakefile.am:
+
+2009-05-09  Jan Michael Alonzo  <jmalonzo@webkit.org>
+
+        Reviewed by Gustavo Noronha.
+
+        WebKit-r43163 won't build for gtk-directfb
+        https://bugs.webkit.org/show_bug.cgi?id=25538
+
+        Move the ENCHANT check out of the with_target conditional since it
+        applies to all targets
+
+        * configure.ac:
+
+2009-05-09  Mike Hommey  <glandium@debian.org>
+
+        Reviewed by Geoffrey Garen. Landed by Jan Alonzo.
+
+        Enable JIT on x86-64 gtk+
+        https://bugs.webkit.org/show_bug.cgi?id=24724
+
+        * configure.ac:
+
+2009-05-08  Gustavo Noronha Silva  <gustavo.noronha@collabora.co.uk>
+
+        Reviewed by Xan Lopez.
+
+        Ship the gtk-doc.make file, so as to not depend on gtkdoc-tools.
+
+        * GNUmakefile.am:
+        * autogen.sh:
+
+2009-05-06  Tor Arne Vestbø  <tor.arne.vestbo@nokia.com>
+
+        Reviewed by Simon Hausmann.
+
+        Build QtWebKit as a framework on Mac
+
+        This implies both debug and release build by default, unless
+        one of the --debug or --release config options are passed to
+        the build-webkit script.
+
+        Frameworks can be disabled by passing CONFIG+=webkit_no_framework
+        to the build-webkit script.
+
+        To be able to build both debug and release targets in parallel
+        we have to use separate output directories for the generated
+        sources, which is not optimal, but required to avoid race conditions.
+
+        An optimization would be to only require this spit-up on Mac.
+
+        * WebKit.pri:
+
+2009-04-30  Jan Michael Alonzo  <jmalonzo@webkit.org>
+
+        Unreviewed build GTK build fix
+
+        * configure.ac: typo fix - javascript_debugger should be enable_javascript_debugger
+
+2009-04-30  Dimitri Glazkov  <dglazkov@chromium.org>
+
+        Unreviewed, build fix.
+
+        https://bugs.webkit.org/show_bug.cgi?id=25470
+        Extend the cover of ENABLE_JAVASCRIPT_DEBUGGER to profiler.
+
+        * configure.ac: Add autoconfig options, missed in the first commit.
+
+2009-04-28  Xan Lopez  <xlopez@igalia.com>
+
+        Unreviewed: bump versions in preparation for 1.1.6 release.
+
+        * configure.ac:
+
+2009-04-25  Jan Michael Alonzo  <jmalonzo@webkit.org>
+
+        Reviewed by Xan Lopez.
+
+        [GTK] Error reporting
+        https://bugs.webkit.org/show_bug.cgi?id=18344
+
+        Add webkiterror to the build.
+
+        * GNUmakefile.am:
+
+2009-04-25  Jan Michael Alonzo  <jmalonzo@webkit.org>
+
+         Reviewed by Xan Lopez.
+
+         [GTK] Error reporting
+         https://bugs.webkit.org/show_bug.cgi?id=18344
+
+         Add the default error page for installation.
+
+         * GNUmakefile.am:
+
+2009-04-24  Diego Escalante Urrelo  <diegoe@gnome.org>
+
+        Reviewed by Gustavo Noronha.
+
+        https://bugs.webkit.org/show_bug.cgi?id=15616
+        [GTK] Add spell checking
+
+        Add enchant support for spell-checking-languages property to work
+        properly.
+
+        * GNUmakefile.am:
+        * configure.ac:
+
 2009-04-24  Simon Hausmann  <simon.hausmann@nokia.com>
 
         Reviewed by Ariya Hidayat.
@@ -5,6 +305,375 @@
         Added support for generating API docs in the Qt build using "make docs"
 
         * WebKit.pro: Include docs.pri for "make docs" target.
+
+2009-04-14  Xan Lopez  <xlopez@igalia.com>
+
+        Unreviewed version bump in preparation for 1.1.5 release.
+
+        * configure.ac:
+
+2009-04-06  Gustavo Noronha Silva  <gustavo.noronha@collabora.co.uk>
+
+        Rubber-stamped by Sam Weinig.
+
+        Added rules to maintain the localization support. We cannot simply
+        use whatever gettextize gives us because our build system is
+        non-recursive.
+
+        * GNUmakefile.am:
+        * configure.ac:
+
+2009-04-05  Mike Hommey  <glandium@debian.org>
+
+        Reviewed by Holger Freyther.
+
+        Filter out all C++ symbols
+        https://bugs.webkit.org/show_bug.cgi?id=24960
+
+        Considering the public API is all C, we can just filter out all
+        C++ mangled symbols, which will avoid exporting symbols in some
+        corner cases such as gcc bugs on specific architectures, etc.
+
+        * autotools/symbols.filter:
+
+2009-04-03  Gustavo Noronha Silva  <gustavo.noronha@collabora.co.uk>
+
+        Reviewed by Holger Freyther.
+
+        Require GTK+ >= 2.10; 2.8 is already very old, and some very
+        useful APIs are only available since 2.10.
+
+        * configure.ac:
+
+2009-04-01  Christian Dywan  <christian@twotoasts.de>
+
+        Reviewed by Holger Freyther.
+
+        Unit test WebKitDownload
+        http://bugs.webkit.org/show_bug.cgi?id=24844
+
+        * GNUmakefile.am: Add a unit test for downloading.
+
+2009-04-01  Gustavo Noronha Silva  <gustavo.noronha@collabora.co.uk>
+
+        Unreviewed build fix. Fix make distcheck, after the gtk-doc
+        integration.
+
+        * GNUmakefile.am:
+
+2009-03-30  Gustavo Noronha Silva <gustavo.noronha@collabora.co.uk>
+
+        Reviewed by Holger Freyther.
+
+        Integrate gtk-doc into the Gtk+ buildsystem.
+
+        * autogen.sh:
+        * configure.ac:
+
+2009-03-30  Xan Lopez  <xlopez@igalia.com>
+
+        Unreviewed: bump version to 1.1.4 for release.
+
+        * configure.ac:
+
+2009-03-21  Xan Lopez  <xlopez@igalia.com>
+
+        Reviewed by Holger Freyther.
+
+        Require gnome-keyring 2.26.0, since we were depending on an
+        unreleased trunk revision between 2.25.91 and 2.26.0.
+
+        * configure.ac:
+
+2009-03-20  Jan Michael Alonzo  <jmalonzo@gmail.com>
+
+        Reviewed by Holger Freyther.
+
+        [GTK] Misc patches for WebKitWebHistoryItem
+        https://bugs.webkit.org/show_bug.cgi?id=24493
+
+        Added build support for build the WebKitWebHistoryItem unit test.
+
+        * GNUmakefile.am:
+
+2009-03-20  Jan Michael Alonzo  <jmalonzo@gmail.com>
+
+        Reviewed by Holger Freyther.
+
+        Separate gtk unit tests
+        https://bugs.webkit.org/show_bug.cgi?id=24039
+
+        Build the unit tests accordingly.
+
+        * GNUmakefile.am:
+
+2009-03-17  Gustavo Noronha Silva  <gns@gnome.org>
+
+        Reviewed by Mark Rowe.
+
+        Enable HTML5 media elements support by default in the GTK+ port.
+
+        * configure.ac:
+
+2009-03-17  Mike Hommey <glandium@debian.org>
+
+        Reviewed by Holger Freyther.
+
+        Do not export cti* symbols.
+        See http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=519924.
+
+        * autotools/symbols.filter:
+
+2009-03-15  Xan Lopez  <xlopez@igalia.com>
+
+        Bump version to 1.1.3 for release and fix soversion
+        calculation (oops). Thanks to Frederik Himpe for pointing this
+        out.
+
+        * configure.ac:
+
+2009-03-15  Xan Lopez  <xlopez@igalia.com>
+
+        Bump version and libtool version for release.
+
+        * configure.ac:
+
+2009-03-14  Xan Lopez  <xlopez@igalia.com>
+
+        No review, build fix.
+
+        Split clean rules to make distcheck pass.
+
+        * GNUmakefile.am:
+
+2009-03-13  Mark Rowe  <mrowe@apple.com>
+
+        Reviewed by Dan Bernstein.
+
+        Remove rarely used Makefile targets from the Makefile.
+
+        There are many situations in which the targets don't work as expected,
+        and their primary use is addressed by having the build system default
+        to building the appropriate architecture.
+
+        * Makefile.shared:
+
+2009-03-11  Jan Michael Alonzo  <jmalonzo@webkit.org>
+
+        Reviewed by Holger Freyther.
+
+        [Gtk] Fix make clean targets
+        https://bugs.webkit.org/show_bug.cgi?id=24450
+
+        Fix 'make' clean targets. We shouldn't be removing DerivedSources
+        if it's only clean. Only remove it if it's distclean or
+        maintainer-clean. Also remove build-related auxillary files on
+        dist/maintainer clean.
+
+        * GNUmakefile.am:
+
+2009-03-11  Jan Michael Alonzo  <jmalonzo@webkit.org>
+
+        Reviewed by Holger Freyther
+
+        [GTK]DumpRenderTree doesn't compile for non-X11 GTK ports anymore
+        https://bugs.webkit.org/show_bug.cgi?id=2260
+
+        pangoft2 is also used in directfb builds so use it for all targets
+
+        * configure.ac:
+
+2009-03-02  Xan Lopez  <xan@gnome.org>
+
+        Reviewed by Mark Rowe.
+
+        https://bugs.webkit.org/show_bug.cgi?id=24287
+        [GTK] Move auth dialog feature to WebKit/
+
+        Add WebKitSoupAuthDialog files to build.
+
+        * GNUmakefile.am:
+
+2009-03-03  Gustavo Noronha Silva  <gns@gnome.org>
+
+        Reviewed by Alexey Proskuryakov.
+
+        https://bugs.webkit.org/show_bug.cgi?id=16826
+        [Gtk] Implement WebKitDownload
+
+        Adding new files related to WebKitDownload to the GTK+ port.
+
+        * GNUmakefile.am:
+
+2009-03-02  Gustavo Noronha Silva  <gns@gnome.org>
+
+        Unreviewed build fix; adding missing files to EXTRA_DIST, so that
+        they show up in the tarball.
+
+        * GNUmakefile.am:
+
+2009-03-01  Christian Dywan  <christian@twotoasts.de>
+
+        * configure.ac: Bump GTK port version to 1.1.1.
+
+2009-02-27  Gustavo Noronha Silva  <gns@gnome.org>
+
+        Unreviewed build fix. Adding the WebKit/gtk/webkitmarshal.list
+        file to EXTRA_DIST to fix make dist.
+
+        * GNUmakefile.am:
+
+2009-02-26  Xan Lopez  <xan@gnome.org>
+
+        Reviewed by Holger Freyther.
+
+        https://bugs.webkit.org/show_bug.cgi?id=16947
+        [GTK] Missing HTTP Auth challenge
+
+        Add HTTP authentication dialog with optional GNOME Keyring
+        storage.
+
+        * GNUmakefile.am:
+        * configure.ac:
+
+2009-02-26  Xan Lopez  <xan@gnome.org>
+
+        Reviewed by Holger Freyther.
+
+        https://bugs.webkit.org/show_bug.cgi?id=16947
+        [GTK] Missing HTTP Auth challenge
+
+        Take marshallers to be built from a manually maintained list
+        instead of grepping the sources.
+
+        It's much faster, especially so now that we want to add
+        marshallers from WebCore too. A system to only take into account
+        the modified files when generating the marshallers from sources
+        could be hacked, but I think it's overkill considering how rarely
+        a new marshaller is added.
+
+        * GNUmakefile.am:
+
+2009-02-24  Jan Michael Alonzo  <jmalonzo@webkit.org>
+
+        Reviewed by Alexey Proskuryakov.
+
+        [Gtk] add options for 3D transforms and HTML5 channel messaging to the build
+        https://bugs.webkit.org/show_bug.cgi?id=24072
+
+        Add options for toggling 3D transforms and HTML5 channel messaging
+        support on or off.
+
+        Also fix the web-workers option. It should be web-workers and not workers.
+
+        * configure.ac:
+
+2009-02-23  Xan Lopez  <xan@gnome.org>
+
+        Reviewed by Alexey Proskuryakov.
+
+        https://bugs.webkit.org/show_bug.cgi?id=22624
+        [SOUP][GTK] Need API to get SoupSession from WebKit.
+
+        Remove CURL support, the only supported HTTP backend is SOUP now.
+
+        * GNUmakefile.am:
+        * configure.ac:
+
+2009-02-19  Christian Dywan  <christian@twotoasts.de>
+
+        Rubber-stamped by Holger Freyther.
+
+        http://bugs.webkit.org/show_bug.cgi?id=22811
+        Underlinking in Programs_UnitTests (GTK+ build)
+
+        * GNUmakefile.am: Add GLIB_LIBS to unit test library flags.
+
+2009-02-18  Gustavo Noronha Silva  <gns@gnome.org>
+
+        Reviewed by Holger Freyther.
+
+        Fix symbols.filter location, and add other missing files to the
+        autotools build, so that make dist works.
+
+        * GNUmakefile.am:
+
+2009-02-17  Gustavo Noronha Silva  <gns@gnome.org>
+
+        Reviewed by Alexey Proskuryakov.
+
+        https://bugs.webkit.org/show_bug.cgi?id=23939
+        Release build being built with debugging symbols
+
+        * configure.ac: Revert change done in revision 40790, since we
+        already have a AC_PROG_CXX macro call as part of WEBKIT_INIT
+
+2009-02-12  Gustavo Noronha Silva  <gns@gnome.org>
+
+        Reviewed by Eric Seidel.
+
+        * configure.ac: Make soup the default HTTP backend for the Gtk port.
+
+2009-02-09  Calvin Walton  <calvin.walton@gmail.com>
+
+        Reviewed by Holger Freyther.
+
+        https://bugs.webkit.org/show_bug.cgi?id=23823
+
+        [Gtk] Fix build with recent autotools
+
+        Current versions of automake/libtool don't assume you want C++ enabled
+        by default any more, so explicitly check for a C++ compiler.
+
+        * configure.ac: Add AC_PROG_CXX macro
+
+2009-02-02  Christian Dywan  <christian@twotoasts.de>
+
+        Rubber-stamped by Holger Freyther.
+
+        Don't require Geolocation by default.
+
+        * configure.ac:
+
+2009-01-30  Jan Michael Alonzo  <jmalonzo@webkit.org>
+
+        Reviewed by Nikolas Zimmermann.
+
+        [Gtk] Refactor autoconf/configure.ac in preparation for jsc and webkit build splits
+        https://bugs.webkit.org/show_bug.cgi?id=22136
+
+        * GNUmakefile.am:
+        * acinclude.m4: Removed.
+        * autogen.sh:
+        * autotools/acinclude.m4: Added.
+        * autotools/dolt.m4: Added.
+        * autotools/symbols.filter: Renamed from symbols.filter.
+        * autotools/webkit.m4: Added.
+        * configure.ac:
+
+2009-01-30  Holger Hans Peter Freyther  <zecke@selfish.org>
+
+        Reviewed by Nikolas Zimmermann.
+
+        [GTK] Implement GeolocationService using the Geoclue library
+
+        https://bugs.webkit.org/show_bug.cgi?id=22022
+
+        Untested implementation of the GeolocationService using the geoclue
+        library. Velocity handling is completely missing and the accuracy
+        handling might be wrong.
+
+        * GNUmakefile.am:
+        * configure.ac:
+
+2009-01-11  Xan Lopez  <xan@gnome.org>
+
+        Reviewed by Holger Freyther.
+
+        Bump version to 1.1.0 since we are breaking ABI and adding new
+        major features.
+
+        * configure.ac:
 
 2008-12-19  Marco Barisione  <marco.barisione@collabora.co.uk>
 
@@ -203,7 +872,7 @@
 2008-11-16  Geoffrey Garen  <ggaren@apple.com>
 
         Not reviewed.
-        
+
         Try to fix gtk build.
 
         * configure.ac:
@@ -801,7 +1470,7 @@
         Reviewed by Mark.
 
         Add x86_64 rule.
-        
+
         * Makefile:
 
 2008-05-09  Simon Hausmann  <hausmann@webkit.org>
@@ -809,11 +1478,11 @@
         Reviewed by Holger.
 
         Removed explicit linkage against libxml and libxslt on Qt/Mac builds.
-        
+
         This dependency is completely unnecessary here and creates only problems by
         propagating through WebCore.pro over libQtWebKit.prl right now customer
         applications.
-        
+
 
         * WebKit.pri:
 
@@ -822,7 +1491,7 @@
         Reviewed by Mark.
 
         Add an "x86_64" make rule.
-        
+
         * Makefile.shared:
 
 2008-05-02  Jan Michael Alonzo  <jmalonzo@unpluggable.com>
@@ -973,7 +1642,7 @@
         http://bugs.webkit.org/show_bug.cgi?id=16476
 
         Add support for multiple http backends, and add soup backend (off by default).
-        
+
         * GNUmakefile.am:
         * configure.ac:
 
@@ -1060,7 +1729,7 @@
         Add separator '\' after libJavaScriptCore_la_LIBADD and cleanup
         whitespaces introduced in the previous commit.
 
-        * GNUmakefile.am: 
+        * GNUmakefile.am:
 
 2008-02-23  Jan Michael Alonzo  <jmalonzo@unpluggable.com>
 
@@ -2452,7 +3121,7 @@
         Reviewed by Lars.
 
         Don't compile the ICO plugin when building against Qt >= 4.4
-        
+
 
         * WebKit.pro:
 

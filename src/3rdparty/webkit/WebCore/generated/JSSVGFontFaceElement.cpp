@@ -35,7 +35,7 @@ using namespace JSC;
 
 namespace WebCore {
 
-ASSERT_CLASS_FITS_IN_CELL(JSSVGFontFaceElement)
+ASSERT_CLASS_FITS_IN_CELL(JSSVGFontFaceElement);
 
 /* Hash table for prototype */
 
@@ -53,9 +53,9 @@ static const HashTable JSSVGFontFaceElementPrototypeTable =
 
 const ClassInfo JSSVGFontFaceElementPrototype::s_info = { "SVGFontFaceElementPrototype", 0, &JSSVGFontFaceElementPrototypeTable, 0 };
 
-JSObject* JSSVGFontFaceElementPrototype::self(ExecState* exec)
+JSObject* JSSVGFontFaceElementPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSSVGFontFaceElement>(exec);
+    return getDOMPrototype<JSSVGFontFaceElement>(exec, globalObject);
 }
 
 const ClassInfo JSSVGFontFaceElement::s_info = { "SVGFontFaceElement", &JSSVGElement::s_info, 0, 0 };
@@ -65,9 +65,9 @@ JSSVGFontFaceElement::JSSVGFontFaceElement(PassRefPtr<Structure> structure, Pass
 {
 }
 
-JSObject* JSSVGFontFaceElement::createPrototype(ExecState* exec)
+JSObject* JSSVGFontFaceElement::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSSVGFontFaceElementPrototype(JSSVGFontFaceElementPrototype::createStructure(JSSVGElementPrototype::self(exec)));
+    return new (exec) JSSVGFontFaceElementPrototype(JSSVGFontFaceElementPrototype::createStructure(JSSVGElementPrototype::self(exec, globalObject)));
 }
 
 

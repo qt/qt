@@ -54,6 +54,10 @@ namespace JSC {
         HashSet<JSGlobalObject*> m_globalObjects;
     };
 
+    // This method exists only for backwards compatibility with existing
+    // WebScriptDebugger clients
+    JSValue evaluateInGlobalCallFrame(const UString&, JSValue& exception, JSGlobalObject*);
+
 } // namespace JSC
 
 #endif // Debugger_h

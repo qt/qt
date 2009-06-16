@@ -41,8 +41,8 @@ ErrorConstructor::ErrorConstructor(ExecState* exec, PassRefPtr<Structure> struct
 ErrorInstance* constructError(ExecState* exec, const ArgList& args)
 {
     ErrorInstance* obj = new (exec) ErrorInstance(exec->lexicalGlobalObject()->errorStructure());
-    if (!args.at(exec, 0)->isUndefined())
-        obj->putDirect(exec->propertyNames().message, jsString(exec, args.at(exec, 0)->toString(exec)));
+    if (!args.at(0).isUndefined())
+        obj->putDirect(exec->propertyNames().message, jsString(exec, args.at(0).toString(exec)));
     return obj;
 }
 
@@ -58,7 +58,7 @@ ConstructType ErrorConstructor::getConstructData(ConstructData& constructData)
 }
 
 // ECMA 15.9.2
-static JSValuePtr callErrorConstructor(ExecState* exec, JSObject*, JSValuePtr, const ArgList& args)
+static JSValue JSC_HOST_CALL callErrorConstructor(ExecState* exec, JSObject*, JSValue, const ArgList& args)
 {
     // "Error()" gives the sames result as "new Error()"
     return constructError(exec, args);

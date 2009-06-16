@@ -107,9 +107,11 @@ QGLEngineShaderManager::QGLEngineShaderManager(QGLContext* context)
         code[MainFragmentShader] = qglslMainFragmentShader;
 
         code[ImageSrcFragmentShader] = qglslImageSrcFragmentShader;
+        code[ImageSrcWithPatternFragmentShader] = qglslImageSrcWithPatternFragmentShader;
         code[NonPremultipliedImageSrcFragmentShader] = qglslNonPremultipliedImageSrcFragmentShader;
         code[SolidBrushSrcFragmentShader] = qglslSolidBrushSrcFragmentShader;
         code[TextureBrushSrcFragmentShader] = qglslTextureBrushSrcFragmentShader;
+        code[TextureBrushSrcWithPatternFragmentShader] = qglslTextureBrushSrcWithPatternFragmentShader;
         code[PatternBrushSrcFragmentShader] = qglslPatternBrushSrcFragmentShader;
         code[LinearGradientBrushSrcFragmentShader] = qglslLinearGradientBrushSrcFragmentShader;
         code[RadialGradientBrushSrcFragmentShader] = qglslRadialGradientBrushSrcFragmentShader;
@@ -295,6 +297,15 @@ bool QGLEngineShaderManager::useCorrectShaderProg()
         case QGLEngineShaderManager::ImageSrc:
             srcPixelFragShaderName = ImageSrcFragmentShader;
             positionVertexShaderName = PositionOnlyVertexShader;
+            break;
+        case QGLEngineShaderManager::PatternSrc:
+            srcPixelFragShaderName = ImageSrcWithPatternFragmentShader;
+            positionVertexShaderName = PositionOnlyVertexShader;
+            break;
+        case QGLEngineShaderManager::TextureSrcWithPattern:
+            srcPixelFragShaderName = TextureBrushSrcWithPatternFragmentShader;
+            positionVertexShaderName = isAffine ? AffinePositionWithTextureBrushVertexShader
+                                                : PositionWithTextureBrushVertexShader;
             break;
         case QGLEngineShaderManager::NonPremultipliedImageSrc:
             srcPixelFragShaderName = NonPremultipliedImageSrcFragmentShader;

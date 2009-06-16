@@ -55,11 +55,10 @@
 #include <wtf/Assertions.h>
 #include <wtf/Platform.h>
 #include <wtf/Vector.h>
-#if PLATFORM(MAC)
-#include "SoftLinking.h"
-#endif
 
 #if PLATFORM(MAC)
+#include "SoftLinking.h"
+
 SOFT_LINK_LIBRARY(libxslt);
 SOFT_LINK(libxslt, xsltFreeStylesheet, void, (xsltStylesheetPtr sheet), (sheet))
 SOFT_LINK(libxslt, xsltFreeTransformContext, void, (xsltTransformContextPtr ctxt), (ctxt))
@@ -128,7 +127,7 @@ static xmlDocPtr docLoaderFunc(const xmlChar* uri,
 
             bool requestAllowed = globalDocLoader->frame() && globalDocLoader->doc()->securityOrigin()->canRequest(url);
             if (requestAllowed) {
-                globalDocLoader->frame()->loader()->loadResourceSynchronously(url, error, response, data);
+                globalDocLoader->frame()->loader()->loadResourceSynchronously(url, AllowStoredCredentials, error, response, data);
                 requestAllowed = globalDocLoader->doc()->securityOrigin()->canRequest(response.url());
             }
             if (!requestAllowed) {
@@ -284,7 +283,7 @@ PassRefPtr<Document> XSLTProcessor::createDocumentFromSource(const String& sourc
     return result.release();
 }
 
-static inline RefPtr<DocumentFragment> createFragmentFromSource(const String& sourceString, const String& sourceMIMEType, Node* sourceNode, Document* outputDoc)
+static inline RefPtr<DocumentFragment> createFragmentFromSource(const String& sourceString, const String& sourceMIMEType, Document* outputDoc)
 {
     RefPtr<DocumentFragment> fragment = new DocumentFragment(outputDoc);
     
@@ -433,7 +432,7 @@ PassRefPtr<DocumentFragment> XSLTProcessor::transformToFragment(Node* sourceNode
     
     if (!transformToString(sourceNode, resultMIMEType, resultString, resultEncoding))
         return 0;
-    return createFragmentFromSource(resultString, resultMIMEType, sourceNode, outputDoc);
+    return createFragmentFromSource(resultString, resultMIMEType, outputDoc);
 }
 
 void XSLTProcessor::setParameter(const String& /*namespaceURI*/, const String& localName, const String& value)

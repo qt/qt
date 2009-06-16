@@ -1,7 +1,5 @@
-/**
- * This file is part of the DOM implementation for KDE.
- *
- * Copyright (C) 2005, 2006 Apple Computer, Inc.
+/*
+ * Copyright (C) 2005, 2006, 2009 Apple Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -54,37 +52,14 @@ struct QNameComponentsTranslator {
 static QNameSet* gNameCache;
 
 QualifiedName::QualifiedName(const AtomicString& p, const AtomicString& l, const AtomicString& n)
-    : m_impl(0)
 {
     if (!gNameCache)
         gNameCache = new QNameSet;
-    QualifiedNameComponents components = { p.impl(), l.impl(), n.impl() };
+    QualifiedNameComponents components = { p.impl(), l.impl(), n.isEmpty() ? nullAtom.impl() : n.impl() };
     pair<QNameSet::iterator, bool> addResult = gNameCache->add<QualifiedNameComponents, QNameComponentsTranslator>(components);
     m_impl = *addResult.first;    
     if (!addResult.second)
         m_impl->ref();
-}
-
-QualifiedName::~QualifiedName()
-{
-    deref();
-}
-
-QualifiedName::QualifiedName(const QualifiedName& other)
-{
-    m_impl = other.m_impl;
-    ref();
-}
-
-const QualifiedName& QualifiedName::operator=(const QualifiedName& other)
-{
-    if (m_impl != other.m_impl) {
-        deref();
-        m_impl = other.m_impl;
-        ref();
-    }
-    
-    return *this;
 }
 
 void QualifiedName::deref()
@@ -97,12 +72,6 @@ void QualifiedName::deref()
     if (m_impl->hasOneRef())
         gNameCache->remove(m_impl);
     m_impl->deref();
-}
-
-void QualifiedName::setPrefix(const AtomicString& prefix)
-{
-    QualifiedName other(prefix, localName(), namespaceURI());
-    *this = other;
 }
 
 String QualifiedName::toString() const

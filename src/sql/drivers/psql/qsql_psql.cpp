@@ -136,13 +136,12 @@ void QPSQLDriverPrivate::appendTables(QStringList &tl, QSqlQuery &t, QChar type)
 class QPSQLResultPrivate
 {
 public:
-    QPSQLResultPrivate(QPSQLResult *qq): q(qq), driver(0), result(0), currentSize(-1), precisionPolicy(QSql::HighPrecision) {}
+    QPSQLResultPrivate(QPSQLResult *qq): q(qq), driver(0), result(0), currentSize(-1) {}
 
     QPSQLResult *q;
     const QPSQLDriverPrivate *driver;
     PGresult *result;
     int currentSize;
-    QSql::NumericalPrecisionPolicy precisionPolicy;
     bool preparedQueriesEnabled;
     QString preparedStmtId;
 
@@ -320,15 +319,16 @@ QVariant QPSQLResult::data(int i)
         return atoi(val);
     case QVariant::Double:
         if (ptype == QNUMERICOID) {
-            if (d->precisionPolicy != QSql::HighPrecision) {
+            if (numericalPrecisionPolicy() != QSql::HighPrecision) {
                 QVariant retval;
                 bool convert;
-                if (d->precisionPolicy == QSql::LowPrecisionInt64)
-                    retval = QString::fromAscii(val).toLongLong(&convert);
-                else if (d->precisionPolicy == QSql::LowPrecisionInt32)
-                    retval = QString::fromAscii(val).toInt(&convert);
-                else if (d->precisionPolicy == QSql::LowPrecisionDouble)
-                    retval = QString::fromAscii(val).toDouble(&convert);
+                double dbl=QString::fromAscii(val).toDouble(&convert);
+                if (numericalPrecisionPolicy() == QSql::LowPrecisionInt64)
+                    retval = (qlonglong)dbl;
+                else if (numericalPrecisionPolicy() == QSql::LowPrecisionInt32)
+                    retval = (int)dbl;
+                else if (numericalPrecisionPolicy() == QSql::LowPrecisionDouble)
+                    retval = dbl;
                 if (!convert)
                     return QVariant();
                 return retval;
@@ -467,9 +467,6 @@ void QPSQLResult::virtual_hook(int id, void *data)
     Q_ASSERT(data);
 
     switch (id) {
-    case QSqlResult::SetNumericalPrecision:
-        d->precisionPolicy = *reinterpret_cast<QSql::NumericalPrecisionPolicy *>(data);
-        break;
     default:
         QSqlResult::virtual_hook(id, data);
     }

@@ -28,6 +28,7 @@
 #include "Frame.h"
 #include "FrameLoader.h"
 #include "HTMLNames.h"
+#include "MappedAttribute.h"
 #include "ResourceRequest.h"
 #include "TextEncoding.h"
 #include "WMLCardElement.h"
@@ -64,7 +65,7 @@ void WMLGoElement::parseMappedAttribute(MappedAttribute* attr)
         WMLTaskElement::parseMappedAttribute(attr);
 }
 
-void WMLGoElement::executeTask(Event* event)
+void WMLGoElement::executeTask(Event*)
 {
     Document* doc = document();
     WMLPageState* pageState = wmlPageStateForDocument(doc);
@@ -131,7 +132,7 @@ void WMLGoElement::executeTask(Event* event)
             request.setCachePolicy(ReloadIgnoringCacheData);
     }
 
-    loader->load(request);
+    loader->load(request, false);
 }
 
 void WMLGoElement::preparePOSTRequest(ResourceRequest& request, bool inSameDeck, const String& cacheControl)

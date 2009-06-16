@@ -251,7 +251,8 @@ namespace WebCore {
 #if ENABLE(DASHBOARD_SUPPORT)
         void clearPathForDashboardBackwardCompatibilityMode();
 #endif
-
+        
+        void prepareGradientForDashboard(CanvasGradient* gradient) const;
         void checkOrigin(const KURL&);
 
         HTMLCanvasElement* m_canvas;

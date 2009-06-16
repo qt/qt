@@ -40,14 +40,14 @@ namespace WebCore {
 
 using namespace HTMLNames;
 
-void JSAttr::setValue(ExecState* exec, JSValuePtr value)
+void JSAttr::setValue(ExecState* exec, JSValue value)
 {
     Attr* imp = static_cast<Attr*>(impl());
     String attrValue = valueToStringWithNullCheck(exec, value);
 
     Element* ownerElement = imp->ownerElement();
     if (ownerElement && (ownerElement->hasTagName(iframeTag) || ownerElement->hasTagName(frameTag))) {
-        if (equalIgnoringCase(imp->name(), "src") && protocolIs(parseURL(attrValue), "javascript")) {
+        if (equalIgnoringCase(imp->name(), "src") && protocolIsJavaScript(parseURL(attrValue))) {
             if (!checkNodeSecurity(exec, static_cast<HTMLFrameElementBase*>(ownerElement)->contentDocument()))
                 return;
         }

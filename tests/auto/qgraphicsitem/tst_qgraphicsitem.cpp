@@ -210,6 +210,7 @@ private slots:
     void opacity_data();
     void opacity();
     void opacity2();
+    void opacityZeroUpdates();
     void itemStacksBehindParent();
     void nestedClipping();
     void nestedClippingTransforms();
@@ -5801,6 +5802,54 @@ void tst_QGraphicsItem::opacity2()
     QCOMPARE(parent->repaints, 0);
     QCOMPARE(child->repaints, 0);
     QCOMPARE(grandChild->repaints, 0);
+}
+
+void tst_QGraphicsItem::opacityZeroUpdates()
+{
+    EventTester *parent = new EventTester;
+    EventTester *child = new EventTester(parent);
+
+    child->setPos(10, 10);
+
+    QGraphicsScene scene;
+    scene.addItem(parent);
+
+    class MyGraphicsView : public QGraphicsView
+    { public:
+        int repaints;
+        QRegion paintedRegion;
+        MyGraphicsView(QGraphicsScene *scene) : QGraphicsView(scene), repaints(0) {}
+        void paintEvent(QPaintEvent *e)
+        {
+            ++repaints;
+            paintedRegion += e->region();
+            QGraphicsView::paintEvent(e);
+        }
+        void reset() { repaints = 0; paintedRegion = QRegion(); }
+    };
+
+    MyGraphicsView view(&scene);
+    view.show();
+#ifdef Q_WS_X11
+    qt_x11_wait_for_window_manager(&view);
+#endif
+    QTest::qWait(250);
+
+    view.reset();
+    parent->setOpacity(0.0);
+
+    QTest::qWait(200);
+
+    // transforming items bounding rect to view coordinates
+    const QRect childDeviceBoundingRect = child->deviceTransform(view.viewportTransform())
+                                           .mapRect(child->boundingRect()).toRect();
+    const QRect parentDeviceBoundingRect = parent->deviceTransform(view.viewportTransform())
+                                           .mapRect(parent->boundingRect()).toRect();
+
+    QRegion expectedRegion = parentDeviceBoundingRect.adjusted(-2, -2, 2, 2);
+    expectedRegion += childDeviceBoundingRect.adjusted(-2, -2, 2, 2);
+
+    QCOMPARE(view.paintedRegion, expectedRegion);
 }
 
 class StacksBehindParentHelper : public QGraphicsRectItem

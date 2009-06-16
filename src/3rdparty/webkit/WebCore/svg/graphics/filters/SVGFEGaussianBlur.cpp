@@ -21,9 +21,10 @@
 
 #include "config.h"
 
-#if ENABLE(SVG) && ENABLE(SVG_FILTERS)
+#if ENABLE(SVG) && ENABLE(FILTERS)
 #include "SVGFEGaussianBlur.h"
 #include "SVGRenderTreeAsText.h"
+#include "Filter.h"
 
 namespace WebCore {
 
@@ -60,7 +61,7 @@ void FEGaussianBlur::setStdDeviationY(float y)
     m_y = y;
 }
 
-void FEGaussianBlur::apply()
+void FEGaussianBlur::apply(Filter*)
 {
 }
 
@@ -78,4 +79,4 @@ TextStream& FEGaussianBlur::externalRepresentation(TextStream& ts) const
 
 } // namespace WebCore
 
-#endif // ENABLE(SVG) && ENABLE(SVG_FILTERS)
+#endif // ENABLE(SVG) && ENABLE(FILTERS)

@@ -37,7 +37,7 @@ namespace WebCore {
 using namespace HTMLNames;
 
 RenderTableCol::RenderTableCol(Node* node)
-    : RenderContainer(node), m_span(1)
+    : RenderBox(node), m_span(1)
 {
     // init RenderObject attributes
     setInline(true); // our object is not Inline
@@ -47,9 +47,9 @@ RenderTableCol::RenderTableCol(Node* node)
 void RenderTableCol::updateFromElement()
 {
     int oldSpan = m_span;
-    Node* node = element();
-    if (node && (node->hasTagName(colTag) || node->hasTagName(colgroupTag))) {
-        HTMLTableColElement* tc = static_cast<HTMLTableColElement*>(node);
+    Node* n = node();
+    if (n && (n->hasTagName(colTag) || n->hasTagName(colgroupTag))) {
+        HTMLTableColElement* tc = static_cast<HTMLTableColElement*>(n);
         m_span = tc->span();
     } else
         m_span = !(style() && style()->display() == TABLE_COLUMN_GROUP);
@@ -69,16 +69,17 @@ bool RenderTableCol::canHaveChildren() const
     return style()->display() == TABLE_COLUMN_GROUP;
 }
 
-IntRect RenderTableCol::absoluteClippedOverflowRect()
+IntRect RenderTableCol::clippedOverflowRectForRepaint(RenderBoxModelObject* repaintContainer)
 {
     // For now, just repaint the whole table.
     // FIXME: Find a better way to do this, e.g., need to repaint all the cells that we
     // might have propagated a background color or borders into.
+    // FIXME: check for repaintContainer each time here?
     RenderObject* table = parent();
     if (table && !table->isTable())
         table = table->parent();
     if (table && table->isTable())
-        return table->absoluteClippedOverflowRect();
+        return table->clippedOverflowRectForRepaint(repaintContainer);
 
     return IntRect();
 }

@@ -40,12 +40,21 @@ typedef struct _NSRect NSRect;
 #endif
 
 #ifdef __OBJC__
+@class NSArray;
 @class NSButtonCell;
 @class NSData;
+@class NSDate;
 @class NSEvent;
 @class NSFont;
+@class NSImage;
+@class NSMenu;
 @class NSMutableURLRequest;
+@class NSString;
+@class NSTextFieldCell;
+@class NSURLConnection;
 @class NSURLRequest;
+@class NSURLResponse;
+@class NSView;
 @class QTMovie;
 @class QTMovieView;
 #else
@@ -95,8 +104,8 @@ extern void (*wkDrawFocusRing)(CGContextRef, CGColorRef, int radius);
 extern NSFont* (*wkGetFontInLanguageForRange)(NSFont*, NSString*, NSRange);
 extern NSFont* (*wkGetFontInLanguageForCharacter)(NSFont*, UniChar);
 extern BOOL (*wkGetGlyphTransformedAdvances)(CGFontRef, NSFont*, CGAffineTransform*, ATSGlyphRef*, CGSize* advance);
-extern void (*wkDrawMediaSliderTrack)(CGContextRef context, CGRect rect, float timeLoaded, float currentTime, float duration);
-extern void (*wkDrawMediaUIPart)(int part, CGContextRef context, CGRect rect, BOOL active);
+extern void (*wkDrawMediaSliderTrack)(int themeStyle, CGContextRef context, CGRect rect, float timeLoaded, float currentTime, float duration);
+extern void (*wkDrawMediaUIPart)(int part, int themeStyle, CGContextRef context, CGRect rect, BOOL active);
 extern NSString* (*wkGetPreferredExtensionForMIMEType)(NSString*);
 extern NSArray* (*wkGetExtensionsForMIMEType)(NSString*);
 extern NSString* (*wkGetMIMETypeForExtension)(NSString*);
@@ -105,11 +114,14 @@ extern double (*wkGetNSURLResponseCalculatedExpiration)(NSURLResponse *response)
 extern NSDate *(*wkGetNSURLResponseLastModifiedDate)(NSURLResponse *response);
 extern BOOL (*wkGetNSURLResponseMustRevalidate)(NSURLResponse *response);
 extern void (*wkGetWheelEventDeltas)(NSEvent*, float* deltaX, float* deltaY, BOOL* continuous);
-extern BOOL (*wkHitTestMediaUIPart)(int part, CGRect bounds, CGPoint point);
-extern void (*wkMeasureMediaUIPart)(int part, CGRect *bounds, CGSize *naturalSize);
+extern BOOL (*wkHitTestMediaUIPart)(int part, int themeStyle, CGRect bounds, CGPoint point);
+extern void (*wkMeasureMediaUIPart)(int part, int themeStyle, CGRect *bounds, CGSize *naturalSize);
 extern void (*wkPopupMenu)(NSMenu*, NSPoint location, float width, NSView*, int selectedItem, NSFont*);
+extern unsigned (*wkQTIncludeOnlyModernMediaFileTypes)(void);
 extern int (*wkQTMovieDataRate)(QTMovie*);
 extern float (*wkQTMovieMaxTimeLoaded)(QTMovie*);
+extern NSString *(*wkQTMovieMaxTimeLoadedChangeNotification)(void);
+extern float (*wkQTMovieMaxTimeSeekable)(QTMovie*);
 extern void (*wkQTMovieViewSetDrawSynchronously)(QTMovieView*, BOOL);
 extern void (*wkSetCGFontRenderingMode)(CGContextRef, NSFont*);
 extern void (*wkSetDragImage)(NSImage*, NSPoint offset);
@@ -121,6 +133,7 @@ extern void (*wkSetUpFontCache)();
 extern void (*wkSignalCFReadStreamEnd)(CFReadStreamRef stream);
 extern void (*wkSignalCFReadStreamError)(CFReadStreamRef stream, CFStreamError *error);
 extern void (*wkSignalCFReadStreamHasBytes)(CFReadStreamRef stream);
+extern unsigned (*wkInitializeMaximumHTTPConnectionCountPerHost)(unsigned preferredConnectionCount);
 
 #ifndef BUILDING_ON_TIGER
 extern void (*wkGetGlyphsForCharacters)(CGFontRef, const UniChar[], CGGlyph[], size_t);

@@ -37,7 +37,8 @@
 #include "HitTestResult.h"
 #include "Page.h"
 #include "RenderView.h"
-#include "SystemTime.h"
+#include <wtf/CurrentTime.h>
+#include <wtf/UnusedParam.h>
 
 #if ENABLE(WML)
 #include "WMLImageElement.h"
@@ -281,21 +282,21 @@ void RenderImage::imageChanged(WrappedImagePtr newImage, const IntRect* rect)
         // layout when we get added in to the render tree hierarchy later.
         if (containingBlock()) {
             // lets see if we need to relayout at all..
-            int oldwidth = m_width;
-            int oldheight = m_height;
+            int oldwidth = width();
+            int oldheight = height();
             if (!prefWidthsDirty())
                 setPrefWidthsDirty(true);
             calcWidth();
             calcHeight();
 
-            if (imageSizeChanged || m_width != oldwidth || m_height != oldheight) {
+            if (imageSizeChanged || width() != oldwidth || height() != oldheight) {
                 shouldRepaint = false;
                 if (!selfNeedsLayout())
                     setNeedsLayout(true);
             }
 
-            m_width = oldwidth;
-            m_height = oldheight;
+            setWidth(oldwidth);
+            setHeight(oldheight);
         }
     }
 
@@ -304,16 +305,39 @@ void RenderImage::imageChanged(WrappedImagePtr newImage, const IntRect* rect)
         if (rect) {
             // The image changed rect is in source image coordinates (pre-zooming),
             // so map from the bounds of the image to the contentsBox.
-            repaintRect = enclosingIntRect(mapRect(*rect, FloatRect(FloatPoint(), imageSize(1.0f)), contentBox()));
+            repaintRect = enclosingIntRect(mapRect(*rect, FloatRect(FloatPoint(), imageSize(1.0f)), contentBoxRect()));
             // Guard against too-large changed rects.
-            repaintRect.intersect(contentBox());
+            repaintRect.intersect(contentBoxRect());
         } else
-            repaintRect = contentBox();
+            repaintRect = contentBoxRect();
         
         repaintRectangle(repaintRect);
+
+#if USE(ACCELERATED_COMPOSITING)
+        if (hasLayer()) {
+            // Tell any potential compositing layers that the image needs updating.
+            layer()->rendererContentChanged();
+        }
+#endif
     }
 }
 
+void RenderImage::notifyFinished(CachedResource* newImage)
+{
+    if (documentBeingDestroyed())
+        return;
+
+#if USE(ACCELERATED_COMPOSITING)
+    if ((newImage == m_cachedImage) && hasLayer()) {
+        // tell any potential compositing layers
+        // that the image is done and they can reference it directly.
+        layer()->rendererContentChanged();
+    }
+#else
+    UNUSED_PARAM(newImage);
+#endif
+}
+    
 void RenderImage::resetAnimation()
 {
     if (m_cachedImage) {
@@ -371,9 +395,7 @@ void RenderImage::paintReplaced(PaintInfo& paintInfo, int tx, int ty)
             }
 
             if (!m_altText.isEmpty()) {
-                String text = m_altText;
-                text.replace('\\', backslashAsCurrencySymbol());
-                context->setFont(style()->font());
+                String text = document()->displayStringModifiedByEncoding(m_altText);
                 context->setFillColor(style()->color());
                 int ax = tx + leftBorder + leftPad;
                 int ay = ty + topBorder + topPad;
@@ -386,9 +408,9 @@ void RenderImage::paintReplaced(PaintInfo& paintInfo, int tx, int ty)
                 int textWidth = font.width(textRun);
                 if (errorPictureDrawn) {
                     if (usableWidth >= textWidth && font.height() <= imageY)
-                        context->drawText(textRun, IntPoint(ax, ay + ascent));
+                        context->drawText(style()->font(), textRun, IntPoint(ax, ay + ascent));
                 } else if (usableWidth >= textWidth && cHeight >= font.height())
-                    context->drawText(textRun, IntPoint(ax, ay + ascent));
+                    context->drawText(style()->font(), textRun, IntPoint(ax, ay + ascent));
             }
         }
     } else if (hasImage() && cWidth > 0 && cHeight > 0) {
@@ -398,13 +420,13 @@ void RenderImage::paintReplaced(PaintInfo& paintInfo, int tx, int ty)
 
 #if PLATFORM(MAC)
         if (style()->highlight() != nullAtom && !paintInfo.context->paintingDisabled())
-            paintCustomHighlight(tx - m_x, ty - m_y, style()->highlight(), true);
+            paintCustomHighlight(tx - x(), ty - y(), style()->highlight(), true);
 #endif
 
         IntSize contentSize(cWidth, cHeight);
         bool useLowQualityScaling = RenderImageScaleObserver::shouldImagePaintAtLowQuality(this, contentSize);
         IntRect rect(IntPoint(tx + leftBorder + leftPad, ty + topBorder + topPad), contentSize);
-        HTMLImageElement* imageElt = (element() && element()->hasTagName(imgTag)) ? static_cast<HTMLImageElement*>(element()) : 0;
+        HTMLImageElement* imageElt = (node() && node()->hasTagName(imgTag)) ? static_cast<HTMLImageElement*>(node()) : 0;
         CompositeOperator compositeOperator = imageElt ? imageElt->compositeOperator() : CompositeSourceOver;
         context->drawImage(image(cWidth, cHeight), rect, compositeOperator, useLowQualityScaling);
     }
@@ -417,41 +439,44 @@ int RenderImage::minimumReplacedHeight() const
 
 HTMLMapElement* RenderImage::imageMap()
 {
-    HTMLImageElement* i = element() && element()->hasTagName(imgTag) ? static_cast<HTMLImageElement*>(element()) : 0;
+    HTMLImageElement* i = node() && node()->hasTagName(imgTag) ? static_cast<HTMLImageElement*>(node()) : 0;
     return i ? i->document()->getImageMap(i->useMap()) : 0;
 }
 
 bool RenderImage::nodeAtPoint(const HitTestRequest& request, HitTestResult& result, int _x, int _y, int _tx, int _ty, HitTestAction hitTestAction)
 {
-    bool inside = RenderReplaced::nodeAtPoint(request, result, _x, _y, _tx, _ty, hitTestAction);
+    HitTestResult tempResult(result.point());
+    bool inside = RenderReplaced::nodeAtPoint(request, tempResult, _x, _y, _tx, _ty, hitTestAction);
 
-    if (inside && element()) {
-        int tx = _tx + m_x;
-        int ty = _ty + m_y;
+    if (inside && node()) {
+        int tx = _tx + x();
+        int ty = _ty + y();
         
         HTMLMapElement* map = imageMap();
         if (map) {
             // we're a client side image map
-            inside = map->mapMouseEvent(_x - tx, _y - ty, IntSize(contentWidth(), contentHeight()), result);
-            result.setInnerNonSharedNode(element());
+            inside = map->mapMouseEvent(_x - tx, _y - ty, IntSize(contentWidth(), contentHeight()), tempResult);
+            tempResult.setInnerNonSharedNode(node());
         }
     }
 
+    if (inside)
+        result = tempResult;
     return inside;
 }
 
 void RenderImage::updateAltText()
 {
-    if (!element())
+    if (!node())
         return;
 
-    if (element()->hasTagName(inputTag))
-        m_altText = static_cast<HTMLInputElement*>(element())->altText();
-    else if (element()->hasTagName(imgTag))
-        m_altText = static_cast<HTMLImageElement*>(element())->altText();
+    if (node()->hasTagName(inputTag))
+        m_altText = static_cast<HTMLInputElement*>(node())->altText();
+    else if (node()->hasTagName(imgTag))
+        m_altText = static_cast<HTMLImageElement*>(node())->altText();
 #if ENABLE(WML)
-    else if (element()->hasTagName(WMLNames::imgTag))
-        m_altText = static_cast<WMLImageElement*>(element())->altText();
+    else if (node()->hasTagName(WMLNames::imgTag))
+        m_altText = static_cast<WMLImageElement*>(node())->altText();
 #endif
 }
 
@@ -492,8 +517,10 @@ bool RenderImage::isHeightSpecified() const
 int RenderImage::calcReplacedWidth(bool includeMaxWidth) const
 {
     if (imageHasRelativeWidth())
-        if (RenderObject* cb = isPositioned() ? container() : containingBlock())
-            setImageContainerSize(IntSize(cb->availableWidth(), cb->availableHeight()));
+        if (RenderObject* cb = isPositioned() ? container() : containingBlock()) {
+            if (cb->isBox())
+                setImageContainerSize(IntSize(toRenderBox(cb)->availableWidth(), toRenderBox(cb)->availableHeight()));
+        }
 
     int width;
     if (isWidthSpecified())

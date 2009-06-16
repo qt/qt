@@ -40,7 +40,7 @@ public:
 
     virtual const char* renderName() const { return "RenderScrollbarPart"; }
     
-    virtual bool requiresLayer() { return false; }
+    virtual bool requiresLayer() const { return false; }
 
     virtual void layout();
     virtual void calcPrefWidths();
@@ -48,7 +48,8 @@ public:
     void paintIntoRect(GraphicsContext*, int tx, int ty, const IntRect&);
     
 protected:
-    virtual void styleDidChange(RenderStyle::Diff, const RenderStyle* oldStyle);
+    virtual void styleWillChange(StyleDifference diff, const RenderStyle* newStyle);
+    virtual void styleDidChange(StyleDifference, const RenderStyle* oldStyle);
     virtual void imageChanged(WrappedImagePtr, const IntRect* = 0);
 
 private:

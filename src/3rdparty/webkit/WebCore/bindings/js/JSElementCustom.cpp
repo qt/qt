@@ -53,7 +53,7 @@ using namespace HTMLNames;
 
 static inline bool allowSettingSrcToJavascriptURL(ExecState* exec, Element* element, const String& name, const String& value)
 {
-    if ((element->hasTagName(iframeTag) || element->hasTagName(frameTag)) && equalIgnoringCase(name, "src") && protocolIs(parseURL(value), "javascript")) {
+    if ((element->hasTagName(iframeTag) || element->hasTagName(frameTag)) && equalIgnoringCase(name, "src") && protocolIsJavaScript(parseURL(value))) {
         HTMLFrameElementBase* frame = static_cast<HTMLFrameElementBase*>(element);
         if (!checkNodeSecurity(exec, frame->contentDocument()))
             return false;
@@ -61,11 +61,11 @@ static inline bool allowSettingSrcToJavascriptURL(ExecState* exec, Element* elem
     return true;
 } 
 
-JSValuePtr JSElement::setAttribute(ExecState* exec, const ArgList& args)
+JSValue JSElement::setAttribute(ExecState* exec, const ArgList& args)
 {
     ExceptionCode ec = 0;
-    AtomicString name = args.at(exec, 0)->toString(exec);
-    AtomicString value = args.at(exec, 1)->toString(exec);
+    AtomicString name = args.at(0).toString(exec);
+    AtomicString value = args.at(1).toString(exec);
 
     Element* imp = impl();
     if (!allowSettingSrcToJavascriptURL(exec, imp, name, value))
@@ -76,10 +76,10 @@ JSValuePtr JSElement::setAttribute(ExecState* exec, const ArgList& args)
     return jsUndefined();
 }
 
-JSValuePtr JSElement::setAttributeNode(ExecState* exec, const ArgList& args)
+JSValue JSElement::setAttributeNode(ExecState* exec, const ArgList& args)
 {
     ExceptionCode ec = 0;
-    Attr* newAttr = toAttr(args.at(exec, 0));
+    Attr* newAttr = toAttr(args.at(0));
     if (!newAttr) {
         setDOMException(exec, TYPE_MISMATCH_ERR);
         return jsUndefined();
@@ -89,17 +89,17 @@ JSValuePtr JSElement::setAttributeNode(ExecState* exec, const ArgList& args)
     if (!allowSettingSrcToJavascriptURL(exec, imp, newAttr->name(), newAttr->value()))
         return jsUndefined();
 
-    JSValuePtr result = toJS(exec, WTF::getPtr(imp->setAttributeNode(newAttr, ec)));
+    JSValue result = toJS(exec, WTF::getPtr(imp->setAttributeNode(newAttr, ec)));
     setDOMException(exec, ec);
     return result;
 }
 
-JSValuePtr JSElement::setAttributeNS(ExecState* exec, const ArgList& args)
+JSValue JSElement::setAttributeNS(ExecState* exec, const ArgList& args)
 {
     ExceptionCode ec = 0;
-    AtomicString namespaceURI = valueToStringWithNullCheck(exec, args.at(exec, 0));
-    AtomicString qualifiedName = args.at(exec, 1)->toString(exec);
-    AtomicString value = args.at(exec, 2)->toString(exec);
+    AtomicString namespaceURI = valueToStringWithNullCheck(exec, args.at(0));
+    AtomicString qualifiedName = args.at(1).toString(exec);
+    AtomicString value = args.at(2).toString(exec);
 
     Element* imp = impl();
     if (!allowSettingSrcToJavascriptURL(exec, imp, qualifiedName, value))
@@ -110,10 +110,10 @@ JSValuePtr JSElement::setAttributeNS(ExecState* exec, const ArgList& args)
     return jsUndefined();
 }
 
-JSValuePtr JSElement::setAttributeNodeNS(ExecState* exec, const ArgList& args)
+JSValue JSElement::setAttributeNodeNS(ExecState* exec, const ArgList& args)
 {
     ExceptionCode ec = 0;
-    Attr* newAttr = toAttr(args.at(exec, 0));
+    Attr* newAttr = toAttr(args.at(0));
     if (!newAttr) {
         setDOMException(exec, TYPE_MISMATCH_ERR);
         return jsUndefined();
@@ -123,12 +123,12 @@ JSValuePtr JSElement::setAttributeNodeNS(ExecState* exec, const ArgList& args)
     if (!allowSettingSrcToJavascriptURL(exec, imp, newAttr->name(), newAttr->value()))
         return jsUndefined();
 
-    JSValuePtr result = toJS(exec, WTF::getPtr(imp->setAttributeNodeNS(newAttr, ec)));
+    JSValue result = toJS(exec, WTF::getPtr(imp->setAttributeNodeNS(newAttr, ec)));
     setDOMException(exec, ec);
     return result;
 }
 
-JSValuePtr toJSNewlyCreated(ExecState* exec, Element* element)
+JSValue toJSNewlyCreated(ExecState* exec, Element* element)
 {
     if (!element)
         return jsNull();

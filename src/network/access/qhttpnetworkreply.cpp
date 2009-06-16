@@ -187,7 +187,7 @@ QHttpNetworkReplyPrivate::QHttpNetworkReplyPrivate(const QUrl &newUrl)
     : QHttpNetworkHeaderPrivate(newUrl), state(NothingDoneState), statusCode(100),
       majorVersion(0), minorVersion(0), bodyLength(0), contentRead(0), totalProgress(0),
       currentChunkSize(0), currentChunkRead(0), connection(0), initInflate(false),
-      autoDecompress(false), requestIsBuffering(false), requestIsPrepared(false)
+      autoDecompress(false), requestIsPrepared(false)
 {
 }
 

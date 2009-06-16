@@ -293,18 +293,18 @@ jobject JavaJSObject::call(jstring methodName, jobjectArray args) const
     JSLock lock(false);
     
     Identifier identifier(exec, JavaString(methodName));
-    JSValuePtr function = _imp->get(exec, identifier);
+    JSValue function = _imp->get(exec, identifier);
     CallData callData;
-    CallType callType = function->getCallData(callData);
+    CallType callType = function.getCallData(callData);
     if (callType == CallTypeNone)
         return 0;
 
     // Call the function object.
-    ArgList argList;
+    MarkedArgumentBuffer argList;
     getListFromJArray(exec, args, argList);
-    rootObject->globalObject()->startTimeoutCheck();
-    JSValuePtr result = JSC::call(exec, function, callType, callData, _imp, argList);
-    rootObject->globalObject()->stopTimeoutCheck();
+    rootObject->globalObject()->globalData()->timeoutChecker.start();
+    JSValue result = JSC::call(exec, function, callType, callData, _imp, argList);
+    rootObject->globalObject()->globalData()->timeoutChecker.stop();
 
     return convertValueToJObject(result);
 }
@@ -313,7 +313,7 @@ jobject JavaJSObject::eval(jstring script) const
 {
     JS_LOG ("script = %s\n", JavaString(script).UTF8String());
     
-    JSValuePtr result;
+    JSValue result;
 
     JSLock lock(false);
     
@@ -321,9 +321,9 @@ jobject JavaJSObject::eval(jstring script) const
     if (!rootObject)
         return 0;
 
-    rootObject->globalObject()->startTimeoutCheck();
+    rootObject->globalObject()->globalData()->timeoutChecker.start();
     Completion completion = JSC::evaluate(rootObject->globalObject()->globalExec(), rootObject->globalObject()->globalScopeChain(), makeSource(JavaString(script)));
-    rootObject->globalObject()->stopTimeoutCheck();
+    rootObject->globalObject()->globalData()->timeoutChecker.stop();
     ComplType type = completion.complType();
     
     if (type == Normal) {
@@ -347,7 +347,7 @@ jobject JavaJSObject::getMember(jstring memberName) const
     ExecState* exec = rootObject->globalObject()->globalExec();
     
     JSLock lock(false);
-    JSValuePtr result = _imp->get(exec, Identifier(exec, JavaString(memberName)));
+    JSValue result = _imp->get(exec, Identifier(exec, JavaString(memberName)));
 
     return convertValueToJObject(result);
 }
@@ -397,7 +397,7 @@ jobject JavaJSObject::getSlot(jint index) const
     ExecState* exec = rootObject->globalObject()->globalExec();
 
     JSLock lock(false);
-    JSValuePtr result = _imp->get(exec, index);
+    JSValue result = _imp->get(exec, index);
 
     return convertValueToJObject(result);
 }
@@ -485,7 +485,7 @@ jlong JavaJSObject::createNative(jlong nativeHandle)
     return nativeHandle;
 }
 
-jobject JavaJSObject::convertValueToJObject(JSValuePtr value) const
+jobject JavaJSObject::convertValueToJObject(JSValue value) const
 {
     JSLock lock(false);
     
@@ -505,28 +505,28 @@ jobject JavaJSObject::convertValueToJObject(JSValuePtr value) const
     // Java instance -> Java instance
     // Everything else -> JavaJSObject
     
-    if (value->isNumber()) {
+    if (value.isNumber()) {
         jclass JSObjectClass = env->FindClass ("java/lang/Double");
         jmethodID constructorID = env->GetMethodID (JSObjectClass, "<init>", "(D)V");
         if (constructorID != NULL) {
-            result = env->NewObject (JSObjectClass, constructorID, (jdouble)value->toNumber(exec));
+            result = env->NewObject (JSObjectClass, constructorID, (jdouble)value.toNumber(exec));
         }
-    } else if (value->isString()) {
-        UString stringValue = value->toString(exec);
+    } else if (value.isString()) {
+        UString stringValue = value.toString(exec);
         JNIEnv *env = getJNIEnv();
         result = env->NewString ((const jchar *)stringValue.data(), stringValue.size());
-    } else if (value->isBoolean()) {
+    } else if (value.isBoolean()) {
         jclass JSObjectClass = env->FindClass ("java/lang/Boolean");
         jmethodID constructorID = env->GetMethodID (JSObjectClass, "<init>", "(Z)V");
         if (constructorID != NULL) {
-            result = env->NewObject (JSObjectClass, constructorID, (jboolean)value->toBoolean(exec));
+            result = env->NewObject (JSObjectClass, constructorID, (jboolean)value.toBoolean(exec));
         }
     }
     else {
         // Create a JavaJSObject.
         jlong nativeHandle;
         
-        if (value->isObject()) {
+        if (value.isObject()) {
             JSObject* imp = asObject(value);
             
             // We either have a wrapper around a Java instance or a JavaScript
@@ -571,7 +571,7 @@ jobject JavaJSObject::convertValueToJObject(JSValuePtr value) const
     return result;
 }
 
-JSValuePtr JavaJSObject::convertJObjectToValue(ExecState* exec, jobject theObject) const
+JSValue JavaJSObject::convertJObjectToValue(ExecState* exec, jobject theObject) const
 {
     // Instances of netscape.javascript.JSObject get converted back to
     // JavaScript objects.  All other objects are wrapped.  It's not
@@ -602,10 +602,10 @@ JSValuePtr JavaJSObject::convertJObjectToValue(ExecState* exec, jobject theObjec
 
     JSLock lock(false);
 
-    return JSC::Bindings::Instance::createRuntimeObject(exec, JavaInstance::create(theObject, _rootObject));
+    return JavaInstance::create(theObject, _rootObject)->createRuntimeObject(exec);
 }
 
-void JavaJSObject::getListFromJArray(ExecState* exec, jobjectArray jArray, ArgList& list) const
+void JavaJSObject::getListFromJArray(ExecState* exec, jobjectArray jArray, MarkedArgumentBuffer& list) const
 {
     JNIEnv *env = getJNIEnv();
     int numObjects = jArray ? env->GetArrayLength(jArray) : 0;
