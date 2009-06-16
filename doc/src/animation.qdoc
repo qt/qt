@@ -327,11 +327,12 @@
     \section1 Animations and States
 
     When using a \l{The State Machine Framework}{state machine}, we
-    can associate an animation to a transition between states using a
-    QSignalTransition or QEventTransition class. These classes are both
-    derived from QAbstractClass, which defines the convenience function
-    addAnimation() that enables the appending of one or more animations
-    triggered when the transition occurs.
+    can associate one or more animations to a transition between states
+    using a QSignalTransition or QEventTransition class. These classes
+    are both derived from QAbstractTransition, which defines the
+    convenience function \l{QAbstractTransition::}{addAnimation()} that
+    enables the appending of one or more animations triggered when the
+    transition occurs.
 
     We also have the possibility to associate properties with the
     states rather than setting the start and end values ourselves.
