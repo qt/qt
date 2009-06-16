@@ -34,6 +34,20 @@ static QVariant myCustomVariantTypeConverter(const QString &data)
     return QVariant::fromValue(rv);
 }
 
+class MyAttachedObject : public QObject
+{
+    Q_OBJECT
+    Q_PROPERTY(int value READ value WRITE setValue)
+public:
+    MyAttachedObject(QObject *parent) : QObject(parent), m_value(0) {}
+
+    int value() const { return m_value; }
+    void setValue(int v) { m_value = v; }
+
+private:
+    int m_value;
+};
+
 class MyQmlObject : public QObject, public MyInterface, public QmlParserStatus
 {
     Q_OBJECT
@@ -66,10 +80,8 @@ public:
     MyInterface *interface() const { return m_interface; }
     void setInterface(MyInterface *iface) { m_interface = iface; }
 
-    static MyQmlObject *qmlAttachedProperties(QObject *other) {
-        MyQmlObject *rv = new MyQmlObject;
-        rv->setParent(other);
-        return rv;
+    static MyAttachedObject *qmlAttachedProperties(QObject *other) {
+        return new MyAttachedObject(other);
     }
     Q_CLASSINFO("DefaultMethod", "basicSlot()");
 
