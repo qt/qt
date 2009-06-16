@@ -395,10 +395,11 @@ void QGraphicsSceneIndex::deleteItem(QGraphicsItem *item)
 
     \sa GraphicsItemChange
 */
-void QGraphicsSceneIndex::itemChanged(const QGraphicsItem *item, QGraphicsItem::GraphicsItemChange, const QVariant &value)
+void QGraphicsSceneIndex::itemChanged(const QGraphicsItem *item, QGraphicsItem::GraphicsItemChange change, const QVariant &value)
 {
-    //Q_UNUSED(item);
-    //Q_UNUSED(value);
+    Q_UNUSED(item);
+    Q_UNUSED(change);
+    Q_UNUSED(value);
 }
 
 /*!
@@ -408,7 +409,7 @@ void QGraphicsSceneIndex::itemChanged(const QGraphicsItem *item, QGraphicsItem::
 */
 void QGraphicsSceneIndex::prepareBoundingRectChange(const QGraphicsItem *item)
 {
-    //Q_UNUSED(item);
+    Q_UNUSED(item);
 }
 
 /*!
@@ -418,6 +419,7 @@ void QGraphicsSceneIndex::prepareBoundingRectChange(const QGraphicsItem *item)
 */
 void QGraphicsSceneIndex::sceneRectChanged(const QRectF &rect)
 {
+    Q_UNUSED(rect);
 }
 
 QT_END_NAMESPACE
