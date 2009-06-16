@@ -305,7 +305,11 @@ including ARM, Intel x86, MIPS and SH-4.
 \group qts60
 \title Qt for S60
 \ingroup topics
+\ingroup qt-embedded
 \brief Documents related to Qt for S60
+
+Qt for S60 is a C++ framework for GUI and application development
+for embedded devices running Symbian.
 
 \list
     \o \l {Exception Safety with Symbian}
