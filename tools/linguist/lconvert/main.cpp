@@ -99,7 +99,7 @@ static int usage(const QStringList &args)
         "           Drop finished messages.\n\n"
         "    --locations {absolute|relative|none}\n"
         "           Override how source code references are saved in ts files.\n"
-        "           Default is absolute.\n}n"
+        "           Default is absolute.\n\n"
         "    --no-ui-lines\n"
         "           Drop line numbers from references to .ui files.\n\n"
         "    --verbose\n"
