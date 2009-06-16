@@ -63,7 +63,7 @@ int main(int argc, char *argv[])
 //! [write element]
     stream.writeStartElement("bookmark");
     stream.writeAttribute("href", "http://www.qtsoftware.com/");
-    stream.writeTextElement("title", "Qt Software");
+    stream.writeTextElement("title", "Qt Home");
     stream.writeEndElement(); // bookmark
 //! [write element]
     stream.writeEndElement(); // folder

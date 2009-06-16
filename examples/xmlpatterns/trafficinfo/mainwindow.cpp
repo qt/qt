@@ -69,7 +69,7 @@ MainWindow::MainWindow()
 
     setWindowTitle(tr("Traffic Info Oslo"));
 
-    const QSettings settings("Qt Software", "trafficinfo");
+    const QSettings settings("Qt Traffic Info", "trafficinfo");
     m_station = StationInformation(settings.value("stationId", "03012130").toString(),
                                    settings.value("stationName", "Nydalen [T-bane] (OSL)").toString());
     m_lines = settings.value("lines", QStringList()).toStringList();
@@ -82,7 +82,7 @@ MainWindow::MainWindow()
 
 MainWindow::~MainWindow()
 {
-    QSettings settings("Qt Software", "trafficinfo");
+    QSettings settings("Qt Traffic Info", "trafficinfo");
     settings.setValue("stationId", m_station.id());
     settings.setValue("stationName", m_station.name());
     settings.setValue("lines", m_lines);

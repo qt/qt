@@ -959,7 +959,7 @@ void KAsteroidsView::showEvent( QShowEvent *e )
         QMessageBox::information( this, tr("QGraphicsView demo"),
                                         tr("This game has been implemented using the QGraphicsView class.\n"
                                            "The QGraphicsView class is not part of the Light Platform Edition. Please \n"
-                                           "contact Qt Software if you want to upgrade to the Full Platform Edition.") );
+                                           "contact Nokia if you want to upgrade to the Full Platform Edition.") );
     }
 #endif
 
