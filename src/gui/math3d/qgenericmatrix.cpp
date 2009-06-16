@@ -61,7 +61,7 @@ QT_BEGIN_NAMESPACE
     But they can be different if the user wants to store elements
     internally in a fixed-point format for the underlying hardware.
 
-    \sa QMatrix4x4, QFixedPoint
+    \sa QMatrix4x4
 */
 
 /*!

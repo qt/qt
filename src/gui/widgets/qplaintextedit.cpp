@@ -2020,6 +2020,7 @@ void QPlainTextEdit::inputMethodEvent(QInputMethodEvent *e)
     }
 #endif
     d->sendControlEvent(e);
+    ensureCursorVisible();
 }
 
 /*!\reimp

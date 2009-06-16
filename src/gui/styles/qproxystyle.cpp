@@ -65,7 +65,7 @@ QT_BEGIN_NAMESPACE
     Below is an example that overrides the shortcut underline
     behavior on all platforms:
 
-    \snippet doc/src/snippets/code/src_gui_qproxystyle.cpp 0
+    \snippet doc/src/snippets/code/src_gui_qproxystyle.cpp 1
 
     Warning: Although Qt's internal styles should respect this hint,
     there is no guarantee that it will work for all styles. It would
@@ -372,11 +372,14 @@ bool QProxyStyle::event(QEvent *e)
   Returns an icon for the given \a standardIcon.
 
   Reimplement this slot to provide your own icons in a QStyle
-  subclass; because of binary compatibility constraints, the
-  standardIcon() function (introduced in Qt 4.1) is not
-  virtual. Instead, standardIcon() will dynamically detect and call \e
-  this slot.  The default implementation simply calls the
-  standardPixmap() function with the given parameters.
+  subclass. The \a option argument can be used to pass extra
+  information required to find the appropriate icon. The \a widget
+  argument is optional and can also be used to help find the icon.
+
+  \note Because of binary compatibility constraints, standardIcon()
+  introduced in Qt 4.1 is not virtual. Therefore it must dynamically
+  detect and call \e this slot.  This default implementation simply
+  calls standardIcon() with the given parameters.
 
   \sa standardIcon()
  */

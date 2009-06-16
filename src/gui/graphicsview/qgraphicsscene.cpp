@@ -5282,11 +5282,14 @@ void QGraphicsScenePrivate::markDirty(QGraphicsItem *item, const QRectF &rect, b
         return;
     }
 
-    item->d_ptr->dirty = 1;
-    if (fullItemUpdate)
-        item->d_ptr->fullUpdatePending = 1;
-    else if (!item->d_ptr->fullUpdatePending)
-        item->d_ptr->needsRepaint |= rect;
+    bool hasNoContents = item->d_ptr->flags & QGraphicsItem::ItemHasNoContents;
+    if (!hasNoContents) {
+        item->d_ptr->dirty = 1;
+        if (fullItemUpdate)
+            item->d_ptr->fullUpdatePending = 1;
+        else if (!item->d_ptr->fullUpdatePending)
+            item->d_ptr->needsRepaint |= rect;
+    }
 
     if (invalidateChildren) {
         item->d_ptr->allChildrenDirty = 1;
