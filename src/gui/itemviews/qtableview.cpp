@@ -1844,14 +1844,14 @@ void QTableView::setSortingEnabled(bool enable)
         disconnect(horizontalHeader(), SIGNAL(sectionPressed(int)),
                    this, SLOT(selectColumn(int)));
         connect(horizontalHeader(), SIGNAL(sortIndicatorChanged(int,Qt::SortOrder)),
-                this, SLOT(sortByColumn(int)));
+                this, SLOT(sortByColumn(int)), Qt::UniqueConnection);
         sortByColumn(horizontalHeader()->sortIndicatorSection(),
                      horizontalHeader()->sortIndicatorOrder());
     } else {
         connect(d->horizontalHeader, SIGNAL(sectionEntered(int)),
-                this, SLOT(_q_selectColumn(int)));
+                this, SLOT(_q_selectColumn(int)), Qt::UniqueConnection);
         connect(horizontalHeader(), SIGNAL(sectionPressed(int)),
-                this, SLOT(selectColumn(int)));
+                this, SLOT(selectColumn(int)), Qt::UniqueConnection);
         disconnect(horizontalHeader(), SIGNAL(sortIndicatorChanged(int,Qt::SortOrder)),
                    this, SLOT(sortByColumn(int)));
     }

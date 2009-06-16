@@ -55,9 +55,7 @@ public:
     ~FormExtractor();
 
 public slots:
-    void setValues(const QString &firstName, const QString &lastName,
-                   const QString &gender, bool updates);
-
+    void submit();
     void populateJavaScriptWindowObject();
 
 private:

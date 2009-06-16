@@ -800,12 +800,12 @@ void QMdiAreaPrivate::appendChild(QMdiSubWindow *child)
     Q_Q(QMdiArea);
     Q_ASSERT(child && childWindows.indexOf(child) == -1);
 
-    if (child->parent() != q->viewport())
-        child->setParent(q->viewport(), child->windowFlags());
+    if (child->parent() != viewport)
+        child->setParent(viewport, child->windowFlags());
     childWindows.append(QPointer<QMdiSubWindow>(child));
 
     if (!child->testAttribute(Qt::WA_Resized) && q->isVisible()) {
-        QSize newSize(child->sizeHint().boundedTo(q->viewport()->size()));
+        QSize newSize(child->sizeHint().boundedTo(viewport->size()));
         child->resize(newSize.expandedTo(qSmartMinSize(child)));
     }
 
@@ -931,7 +931,7 @@ void QMdiAreaPrivate::rearrange(Rearranger *rearranger)
             widgets.move(indexToActive, 0);
     }
 
-    QRect domain = q->viewport()->rect();
+    QRect domain = viewport->rect();
     if (rearranger->type() == Rearranger::RegularTiler && !widgets.isEmpty())
         domain = resizeToMinimumTileSize(minSubWindowSize, widgets.count());
 
@@ -1212,7 +1212,7 @@ void QMdiAreaPrivate::internalRaise(QMdiSubWindow *mdiChild) const
 
     QMdiSubWindow *stackUnderChild = 0;
     if (!windowStaysOnTop(mdiChild)) {
-        foreach (QObject *object, q_func()->viewport()->children()) {
+        foreach (QObject *object, viewport->children()) {
             QMdiSubWindow *child = qobject_cast<QMdiSubWindow *>(object);
             if (!child || !childWindows.contains(child))
                 continue;
@@ -1236,7 +1236,7 @@ QRect QMdiAreaPrivate::resizeToMinimumTileSize(const QSize &minSubWindowSize, in
 {
     Q_Q(QMdiArea);
     if (!minSubWindowSize.isValid() || subWindowCount <= 0)
-        return q->viewport()->rect();
+        return viewport->rect();
 
     // Calculate minimum size.
     const int columns = qMax(qCeil(qSqrt(qreal(subWindowCount))), 1);
@@ -1255,10 +1255,10 @@ QRect QMdiAreaPrivate::resizeToMinimumTileSize(const QSize &minSubWindowSize, in
         // We don't want sub-subwindows to be placed at the edge, thus add 2 pixels.
         int minAreaWidth = minWidth + left + right + 2;
         int minAreaHeight = minHeight + top + bottom + 2;
-        if (q->horizontalScrollBar()->isVisible())
-            minAreaHeight += q->horizontalScrollBar()->height();
-        if (q->verticalScrollBar()->isVisible())
-            minAreaWidth += q->verticalScrollBar()->width();
+        if (hbar->isVisible())
+            minAreaHeight += hbar->height();
+        if (vbar->isVisible())
+            minAreaWidth += vbar->width();
         if (q->style()->styleHint(QStyle::SH_ScrollView_FrameOnlyAroundContents, 0, q)) {
             const int frame = q->style()->pixelMetric(QStyle::PM_DefaultFrameWidth, 0, q);
             minAreaWidth += 2 * frame;
@@ -1268,23 +1268,23 @@ QRect QMdiAreaPrivate::resizeToMinimumTileSize(const QSize &minSubWindowSize, in
         topLevel->resize(topLevel->size() + diff);
     }
 
-    QRect domain = q->viewport()->rect();
+    QRect domain = viewport->rect();
 
     // Adjust domain width and provide horizontal scroll bar.
     if (domain.width() < minWidth) {
         domain.setWidth(minWidth);
-        if (q->horizontalScrollBarPolicy() == Qt::ScrollBarAlwaysOff)
+        if (hbarpolicy == Qt::ScrollBarAlwaysOff)
             q->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
-        else if (q->horizontalScrollBar()->value() != 0)
-            q->horizontalScrollBar()->setValue(0);
+        else
+            hbar->setValue(0);
     }
     // Adjust domain height and provide vertical scroll bar.
     if (domain.height() < minHeight) {
         domain.setHeight(minHeight);
-        if (q->verticalScrollBarPolicy() == Qt::ScrollBarAlwaysOff)
+        if (vbarpolicy  == Qt::ScrollBarAlwaysOff)
             q->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
-        else if (q->verticalScrollBar()->value() != 0)
-            q->verticalScrollBar()->setValue(0);
+        else
+            vbar->setValue(0);
     }
     return domain;
 }

@@ -377,7 +377,7 @@ void QDirectFBPaintEngine::clip(const QVectorPath &path, Qt::ClipOperation op)
 {
     Q_D(QDirectFBPaintEngine);
     d->dirtyClip = true;
-    const QPoint bottom = d->transform.map(QPoint(0, int(path.controlPointRect().y2)));
+    const QPoint bottom = d->transform.map(QPoint(0, int(path.controlPointRect().bottom())));
     if (bottom.y() >= d->lastLockedHeight)
         d->lock();
     QRasterPaintEngine::clip(path, op);
@@ -532,7 +532,9 @@ void QDirectFBPaintEngine::drawImage(const QRectF &r, const QImage &image,
     d->prepareForBlit(QDirectFBScreen::hasAlpha(imgSurface));
     d->blit(r, imgSurface, sr);
     if (release) {
+#if (Q_DIRECTFB_VERSION >= 0x010000)
         imgSurface->ReleaseSource(imgSurface);
+#endif
         imgSurface->Release(imgSurface);
     }
 #endif
@@ -897,7 +899,9 @@ void QDirectFBPaintEnginePrivate::end()
 {
     lockedMemory = 0;
     dfbDevice = 0;
+#if (Q_DIRECTFB_VERSION >= 0x010000)
     surface->ReleaseSource(surface);
+#endif
     surface->SetClip(surface, NULL);
     surface = 0;
 }

@@ -72,6 +72,10 @@
 
 #include <private/qpaintengineex_opengl2_p.h>
 
+#ifndef QT_OPENGL_ES_2
+#include <private/qpaintengine_opengl_p.h>
+#endif
+
 #ifndef GLX_ARB_multisample
 #define GLX_SAMPLE_BUFFERS_ARB  100000
 #define GLX_SAMPLES_ARB         100001
@@ -272,6 +276,24 @@ QGLWindowSurface::~QGLWindowSurface()
     delete d_ptr;
 }
 
+void QGLWindowSurface::deleted(QObject *object)
+{
+    QWidget *widget = qobject_cast<QWidget *>(object);
+    if (widget) {
+        QWidgetPrivate *widgetPrivate = widget->d_func();
+        if (widgetPrivate->extraData()) {
+            union { QGLContext **ctxPtr; void **voidPtr; };
+            voidPtr = &widgetPrivate->extraData()->glContext;
+            int index = d_ptr->contexts.indexOf(ctxPtr);
+            if (index != -1) {
+                delete *ctxPtr;
+                *ctxPtr = 0;
+                d_ptr->contexts.removeAt(index);
+            }
+        }
+    }
+}
+
 void QGLWindowSurface::hijackWindow(QWidget *widget)
 {
     QWidgetPrivate *widgetPrivate = widget->d_func();
@@ -288,6 +310,8 @@ void QGLWindowSurface::hijackWindow(QWidget *widget)
 
     union { QGLContext **ctxPtr; void **voidPtr; };
 
+    connect(widget, SIGNAL(destroyed(QObject *)), this, SLOT(deleted(QObject *)));
+
     voidPtr = &widgetPrivate->extraData()->glContext;
     d_ptr->contexts << ctxPtr;
     qDebug() << "hijackWindow() context created for" << widget << d_ptr->contexts.size();
@@ -295,9 +319,17 @@ void QGLWindowSurface::hijackWindow(QWidget *widget)
 
 Q_GLOBAL_STATIC(QGL2PaintEngineEx, qt_gl_window_surface_2_engine)
 
+#if !defined (QT_OPENGL_ES_2)
+Q_GLOBAL_STATIC(QOpenGLPaintEngine, qt_gl_window_surface_engine)
+#endif
+
 /*! \reimp */
 QPaintEngine *QGLWindowSurface::paintEngine() const
 {
+#if !defined(QT_OPENGL_ES_2)
+    if (!qt_gl_preferGL2Engine())
+        return qt_gl_window_surface_engine();
+#endif
     return qt_gl_window_surface_2_engine();
 }
 

@@ -266,11 +266,11 @@ void QGL2PaintEngineExPrivate::updateTextureFilter(GLenum target, GLenum wrapMod
 
 QColor QGL2PaintEngineExPrivate::premultiplyColor(QColor c, GLfloat opacity)
 {
-    uint alpha = qRound(c.alpha() * opacity);
-    return QColor ( ((c.red() * alpha + 128) >> 8),
-                    ((c.green() * alpha + 128) >> 8),
-                    ((c.blue() * alpha + 128) >> 8),
-                    alpha);
+    qreal alpha = c.alphaF() * opacity;
+    c.setRedF(c.redF() * alpha);
+    c.setGreenF(c.greenF() * alpha);
+    c.setBlueF(c.blueF() * alpha);
+    return c;
 }
 
 
@@ -279,7 +279,13 @@ void QGL2PaintEngineExPrivate::setBrush(const QBrush* brush)
     currentBrush = brush;
     brushTextureDirty = true;
     brushUniformsDirty = true;
-    shaderManager->setSrcPixelType(currentBrush->style());
+    if (currentBrush->style() == Qt::TexturePattern
+        && qHasPixmapTexture(*brush) && brush->texture().isQBitmap())
+    {
+        shaderManager->setSrcPixelType(QGLEngineShaderManager::TextureSrcWithPattern);
+    } else {
+        shaderManager->setSrcPixelType(currentBrush->style());
+    }
     shaderManager->optimiseForBrushTransform(currentBrush->transform());
 }
 
@@ -314,7 +320,7 @@ void QGL2PaintEngineExPrivate::updateBrushTexture()
 
     if ( (style >= Qt::Dense1Pattern) && (style <= Qt::DiagCrossPattern) ) {
         // Get the image data for the pattern
-        QImage texImage = qt_imageForBrush(style, true);
+        QImage texImage = qt_imageForBrush(style, false);
 
         glActiveTexture(GL_TEXTURE0 + QT_BRUSH_TEXTURE_UNIT);
         ctx->d_func()->bindTexture(texImage, GL_TEXTURE_2D, GL_RGBA, true);
@@ -431,6 +437,11 @@ void QGL2PaintEngineExPrivate::updateBrushUniforms()
             translationPoint = q->state()->brushOrigin;
 
             const QPixmap& texPixmap = currentBrush->texture();
+
+            if (qHasPixmapTexture(*currentBrush) && currentBrush->texture().isQBitmap()) {
+                QColor col = premultiplyColor(currentBrush->color(), (GLfloat)q->state()->opacity);
+                shaderManager->currentProgram()->setUniformValue("patternColor", col);
+            }
 
             QSizeF invertedTextureSize( 1.0 / texPixmap.width(), 1.0 / texPixmap.height() );
             shaderManager->currentProgram()->setUniformValue("invertedTextureSize", invertedTextureSize);
@@ -578,16 +589,21 @@ static inline void setCoords(GLfloat *coords, const QGLRect &rect)
     coords[7] = rect.bottom;
 }
 
-void QGL2PaintEngineExPrivate::drawTexture(const QGLRect& dest, const QGLRect& src, const QSize &textureSize, bool opaque)
+void QGL2PaintEngineExPrivate::drawTexture(const QGLRect& dest, const QGLRect& src, const QSize &textureSize, bool opaque, bool pattern)
 {
     transferMode(ImageDrawingMode);
 
     updateTextureFilter(GL_TEXTURE_2D, GL_REPEAT, q->state()->renderHints & QPainter::SmoothPixmapTransform);
 
     // Setup for texture drawing
-    shaderManager->setSrcPixelType(QGLEngineShaderManager::ImageSrc);
+    shaderManager->setSrcPixelType(pattern ? QGLEngineShaderManager::PatternSrc : QGLEngineShaderManager::ImageSrc);
     shaderManager->setTextureCoordsEnabled(true);
     prepareForDraw(opaque);
+
+    if (pattern) {
+        QColor col = premultiplyColor(q->state()->pen.color(), (GLfloat)q->state()->opacity);
+        shaderManager->currentProgram()->setUniformValue("patternColor", col);
+    }
 
     shaderManager->currentProgram()->setUniformValue("imageTexture", QT_IMAGE_TEXTURE_UNIT);
 
@@ -966,6 +982,14 @@ void QGL2PaintEngineEx::compositionModeChanged()
 
 void QGL2PaintEngineEx::renderHintsChanged()
 {
+#if !defined(QT_OPENGL_ES_2)
+    if ((state()->renderHints & QPainter::Antialiasing)
+        || (state()->renderHints & QPainter::HighQualityAntialiasing))
+        glEnable(GL_MULTISAMPLE);
+    else
+        glDisable(GL_MULTISAMPLE);
+#endif
+
 //    qDebug("QGL2PaintEngineEx::renderHintsChanged() not implemented!");
 }
 
@@ -986,8 +1010,10 @@ void QGL2PaintEngineEx::drawPixmap(const QRectF& dest, const QPixmap & pixmap, c
     glActiveTexture(GL_TEXTURE0 + QT_IMAGE_TEXTURE_UNIT);
     ctx->d_func()->bindTexture(pixmap, GL_TEXTURE_2D, GL_RGBA, true);
 
-    //FIXME: we should use hasAlpha() instead, but that's SLOW at the moment
-    d->drawTexture(dest, src, pixmap.size(), !pixmap.hasAlphaChannel());
+    bool isBitmap = pixmap.isQBitmap();
+    bool isOpaque = !isBitmap && !pixmap.hasAlphaChannel();
+
+    d->drawTexture(dest, src, pixmap.size(), isOpaque, isBitmap);
 }
 
 void QGL2PaintEngineEx::drawImage(const QRectF& dest, const QImage& image, const QRectF& src,
@@ -1161,6 +1187,10 @@ bool QGL2PaintEngineEx::begin(QPaintDevice *pdev)
     glDisable(GL_SCISSOR_TEST);
     glDepthFunc(GL_LEQUAL);
     glDepthMask(false);
+
+#if !defined(QT_OPENGL_ES_2)
+    glDisable(GL_MULTISAMPLE);
+#endif
 
     QGLPixmapData *source = d->drawable.copyOnBegin();
     if (d->drawable.context()->d_func()->clear_on_painter_begin && d->drawable.autoFillBackground()) {
@@ -1466,6 +1496,8 @@ void QGL2PaintEngineEx::setState(QPainterState *new_state)
         d->last_created_state = 0;
         return;
     }
+
+    renderHintsChanged();
 
     d->matrixDirty = true;
     d->compositionModeDirty = true;

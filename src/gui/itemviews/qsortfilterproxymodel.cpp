@@ -884,8 +884,8 @@ void QSortFilterProxyModelPrivate::proxy_item_range(
 {
     proxy_low = INT_MAX;
     proxy_high = INT_MIN;
-    foreach (int source_item, source_items) {
-        int proxy_item = source_to_proxy.at(source_item);
+    for (int i = 0; i < source_items.count(); ++i) {
+        int proxy_item = source_to_proxy.at(source_items.at(i));
         Q_ASSERT(proxy_item != -1);
         if (proxy_item < proxy_low)
             proxy_low = proxy_item;
@@ -985,7 +985,8 @@ QSet<int> QSortFilterProxyModelPrivate::handle_filter_changed(
     Q_Q(QSortFilterProxyModel);
     // Figure out which mapped items to remove
     QVector<int> source_items_remove;
-    foreach (int source_item, proxy_to_source) {
+    for (int i = 0; i < proxy_to_source.count(); ++i) {
+        const int source_item = proxy_to_source.at(i);
         if ((orient == Qt::Vertical)
             ? !q->filterAcceptsRow(source_item, source_parent)
             : !q->filterAcceptsColumn(source_item, source_parent)) {

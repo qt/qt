@@ -112,7 +112,7 @@ public:
     {
     }
 
-    const QRealRect &controlPointRect() const;
+    QRectF controlPointRect() const;
 
     inline Hint shape() const { return (Hint) (m_hints & ShapeHintMask); }
 

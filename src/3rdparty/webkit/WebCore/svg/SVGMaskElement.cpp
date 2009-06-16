@@ -29,6 +29,7 @@
 #include "CSSStyleSelector.h"
 #include "GraphicsContext.h"
 #include "ImageBuffer.h"
+#include "MappedAttribute.h"
 #include "RenderSVGContainer.h"
 #include "SVGLength.h"
 #include "SVGNames.h"
@@ -124,7 +125,7 @@ void SVGMaskElement::childrenChanged(bool changedByParser, Node* beforeChange, N
     m_masker->invalidate();
 }
 
-auto_ptr<ImageBuffer> SVGMaskElement::drawMaskerContent(const FloatRect& targetRect, FloatRect& maskDestRect) const
+PassOwnPtr<ImageBuffer> SVGMaskElement::drawMaskerContent(const FloatRect& targetRect, FloatRect& maskDestRect) const
 {    
     // Determine specified mask size
     float xValue;
@@ -145,7 +146,7 @@ auto_ptr<ImageBuffer> SVGMaskElement::drawMaskerContent(const FloatRect& targetR
     } 
 
     IntSize imageSize(lroundf(widthValue), lroundf(heightValue));
-    clampImageBufferSizeToViewport(document()->renderer(), imageSize);
+    clampImageBufferSizeToViewport(document()->view(), imageSize);
 
     if (imageSize.width() < static_cast<int>(widthValue))
         widthValue = imageSize.width();
@@ -153,9 +154,9 @@ auto_ptr<ImageBuffer> SVGMaskElement::drawMaskerContent(const FloatRect& targetR
     if (imageSize.height() < static_cast<int>(heightValue))
         heightValue = imageSize.height();
 
-    auto_ptr<ImageBuffer> maskImage = ImageBuffer::create(imageSize, false);
-    if (!maskImage.get())
-        return maskImage;
+    OwnPtr<ImageBuffer> maskImage = ImageBuffer::create(imageSize, false);
+    if (!maskImage)
+        return 0;
 
     maskDestRect = FloatRect(xValue, yValue, widthValue, heightValue);
     if (maskUnits() == SVGUnitTypes::SVG_UNIT_TYPE_OBJECTBOUNDINGBOX)
@@ -192,7 +193,7 @@ auto_ptr<ImageBuffer> SVGMaskElement::drawMaskerContent(const FloatRect& targetR
         maskImageContext->restore();
 
     maskImageContext->restore();
-    return maskImage;
+    return maskImage.release();
 }
  
 RenderObject* SVGMaskElement::createRenderer(RenderArena* arena, RenderStyle*)

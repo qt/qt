@@ -429,11 +429,4 @@ MyRecord record(int row) const
     \sa normalizeIndexes(), append(), prepend()
 */
 
-/*! \fn void QContiguousCache::dump() const
-
-    \internal
-
-    Sends information about the cache's internal structure to qDebug()
-*/
-
 QT_END_NAMESPACE

@@ -1,6 +1,6 @@
 /*
- * path.h - Copyright 2005 Frerich Raabe <raabe@kde.org>
- * Copyright (C) 2006 Apple Computer, Inc.
+ * Copyright (C) 2005 Frerich Raabe <raabe@kde.org>
+ * Copyright (C) 2006, 2009 Apple Inc.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -32,8 +32,6 @@
 #include "XPathExpressionNode.h"
 #include "XPathNodeSet.h"
 
-int xpathyyparse(void*);
-
 namespace WebCore {
 
     namespace XPath {
@@ -49,6 +47,8 @@ namespace WebCore {
             virtual Value evaluate() const;
 
         private:
+            virtual Value::Type resultType() const { return Value::NodeSetValue; }
+
             Expression* m_expr;
             Vector<Predicate*> m_predicates;
         };
@@ -57,7 +57,7 @@ namespace WebCore {
         public:
             LocationPath();
             virtual ~LocationPath();
-            void setAbsolute(bool value) { m_absolute = value; }
+            void setAbsolute(bool value) { m_absolute = value; setIsContextNodeSensitive(!m_absolute); }
 
             virtual Value evaluate() const;
             void evaluate(NodeSet& nodes) const; // nodes is an input/output parameter
@@ -66,7 +66,7 @@ namespace WebCore {
             void insertFirstStep(Step* step);
 
         private:
-            void optimizeStepPair(unsigned index);
+            virtual Value::Type resultType() const { return Value::NodeSetValue; }
 
             Vector<Step*> m_steps;
             bool m_absolute;
@@ -81,6 +81,8 @@ namespace WebCore {
             virtual Value evaluate() const;
 
         private:
+            virtual Value::Type resultType() const { return Value::NodeSetValue; }
+
             Filter* m_filter;
             LocationPath* m_path;
         };

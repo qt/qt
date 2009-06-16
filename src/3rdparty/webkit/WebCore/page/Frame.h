@@ -5,7 +5,7 @@
  *                     2000-2001 Simon Hausmann <hausmann@kde.org>
  *                     2000-2001 Dirk Mueller <mueller@kde.org>
  *                     2000 Stefan Schimanski <1Stein@gmx.de>
- * Copyright (C) 2004, 2005, 2006, 2007, 2008 Apple Inc. All rights reserved.
+ * Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009 Apple Inc. All rights reserved.
  * Copyright (C) 2008 Nokia Corporation and/or its subsidiary(-ies)
  * Copyright (C) 2008 Eric Seidel <eric@webkit.org>
  *
@@ -28,10 +28,23 @@
 #ifndef Frame_h
 #define Frame_h
 
+#include "AnimationController.h"
+#include "Document.h"
 #include "DragImage.h"
 #include "EditAction.h"
-#include "RenderLayer.h"
+#include "Editor.h"
+#include "EventHandler.h"
+#include "FrameLoader.h"
+#include "FrameTree.h"
+#include "Range.h"
+#include "ScrollBehavior.h"
+#include "ScriptController.h"
+#include "SelectionController.h"
 #include "TextGranularity.h"
+
+#if PLATFORM(WIN)
+#include "FrameWin.h"
+#endif
 
 #if PLATFORM(MAC)
 #ifndef __OBJC__
@@ -49,20 +62,26 @@ typedef struct HBITMAP__* HBITMAP;
 
 namespace WebCore {
 
+class CSSMutableStyleDeclaration;
 class Editor;
 class EventHandler;
 class FrameLoader;
 class FrameLoaderClient;
-class FramePrivate;
 class FrameTree;
+class FrameView;
 class HTMLFrameOwnerElement;
 class HTMLTableCellElement;
-class ScriptController;
 class RegularExpression;
 class RenderPart;
-class Selection;
+class ScriptController;
 class SelectionController;
+class Settings;
+class VisibleSelection;
 class Widget;
+
+#if FRAME_LOADS_USER_STYLESHEET
+    class UserStyleSheetLoader;
+#endif
 
 template <typename T> class Timer;
 
@@ -72,7 +91,7 @@ public:
     {
         return adoptRef(new Frame(page, ownerElement, client));
     }
-    void setView(FrameView*);
+    void setView(PassRefPtr<FrameView>);
     ~Frame();
     
     void init();
@@ -106,12 +125,12 @@ public:
     bool excludeFromTextSearch() const;
     void setExcludeFromTextSearch(bool);
 
-    friend class FramePrivate;
+    void createView(const IntSize&, const Color&, bool, const IntSize &, bool,
+                    ScrollbarMode = ScrollbarAuto, ScrollbarMode = ScrollbarAuto);
+
 
 private:
     Frame(Page*, HTMLFrameOwnerElement*, FrameLoaderClient*);
-
-    FramePrivate* d;
     
 // === undecided, would like to consider moving to another class
 
@@ -128,7 +147,7 @@ public:
     void setPrinting(bool printing, float minPageWidth, float maxPageWidth, bool adjustViewSize);
 
     bool inViewSourceMode() const;
-    void setInViewSourceMode(bool = true) const;
+    void setInViewSourceMode(bool = true);
 
     void keepAlive(); // Used to keep the frame alive when running a script that might destroy it.
 #ifndef NDEBUG
@@ -140,9 +159,6 @@ public:
     void clearTimers();
     static void clearTimers(FrameView*, Document*);
 
-    // Convenience, to avoid repeating the code to dig down to get this.
-    UChar backslashAsCurrencySymbol() const;
-
     void setNeedsReapplyStyles();
     bool needsReapplyStyles() const;
     void reapplyStyles();
@@ -153,28 +169,17 @@ public:
     // should move onto ScriptController
     void clearDOMWindow();
 
+    String displayStringModifiedByEncoding(const String& str) const 
+    {
+        return document() ? document()->displayStringModifiedByEncoding(str) : str;
+    }
+
 private:
     void lifeSupportTimerFired(Timer<Frame>*);
-
-// === to be moved into Document
-
-public:
-    bool isFrameSet() const;
-
-// === to be moved into EventHandler
-
-public:
-    void sendResizeEvent();
-    void sendScrollEvent();
 
 // === to be moved into FrameView
 
 public: 
-    void forceLayout(bool allowSubtree = false);
-    void forceLayoutWithPageWidthRange(float minPageWidth, float maxPageWidth, bool adjustViewSize);
-
-    void adjustPageHeight(float* newBottom, float oldTop, float oldBottom, float bottomLimit);
-
     void setZoomFactor(float scale, bool isTextOnly);
     float zoomFactor() const;
     bool isZoomFactorTextOnly() const;
@@ -188,7 +193,7 @@ public:
 public:
     void focusWindow();
     void unfocusWindow();
-    bool shouldClose();
+    bool shouldClose(RegisteredEventListenerVector* alternateEventListeners = 0);
     void scheduleClose();
 
     void setJSStatusBarText(const String&);
@@ -202,8 +207,8 @@ public:
     String selectedText() const;  
     bool findString(const String&, bool forward, bool caseFlag, bool wrapFlag, bool startInSelection);
 
-    const Selection& mark() const; // Mark, to be used as emacs uses it.
-    void setMark(const Selection&);
+    const VisibleSelection& mark() const; // Mark, to be used as emacs uses it.
+    void setMark(const VisibleSelection&);
 
     void computeAndSetTypingStyle(CSSStyleDeclaration* , EditAction = EditActionUnspecified);
     String selectionStartStylePropertyValue(int stylePropertyID) const;
@@ -214,8 +219,8 @@ public:
 
     IntRect firstRectForRange(Range*) const;
     
-    void respondToChangedSelection(const Selection& oldSelection, bool closeTyping);
-    bool shouldChangeSelection(const Selection& oldSelection, const Selection& newSelection, EAffinity, bool stillSelecting) const;
+    void respondToChangedSelection(const VisibleSelection& oldSelection, bool closeTyping);
+    bool shouldChangeSelection(const VisibleSelection& oldSelection, const VisibleSelection& newSelection, EAffinity, bool stillSelecting) const;
 
     RenderStyle* styleForSelectionStart(Node*& nodeToRemove) const;
 
@@ -238,10 +243,10 @@ public:
 
 public:
     TextGranularity selectionGranularity() const;
-    void setSelectionGranularity(TextGranularity) const;
+    void setSelectionGranularity(TextGranularity);
 
-    bool shouldChangeSelection(const Selection&) const;
-    bool shouldDeleteSelection(const Selection&) const;
+    bool shouldChangeSelection(const VisibleSelection&) const;
+    bool shouldDeleteSelection(const VisibleSelection&) const;
     void clearCaretRectIfNeeded();
     void setFocusedNodeIfNeeded();
     void selectionLayoutChanged();
@@ -266,8 +271,7 @@ public:
 
     HTMLFormElement* currentForm() const;
 
-    void revealSelection(const RenderLayer::ScrollAlignment& = RenderLayer::gAlignCenterIfNeeded) const;
-    void revealCaret(const RenderLayer::ScrollAlignment& = RenderLayer::gAlignCenterIfNeeded) const;
+    void revealSelection(const ScrollAlignment& = ScrollAlignment::alignCenterIfNeeded, bool revealExtent = false);
     void setSelectionFromNone();
 
     void setUseSecureKeyboardEntry(bool);
@@ -319,6 +323,51 @@ public:
     // FIXME - We should have a single version of nodeImage instead of using platform types.
     HBITMAP nodeImage(Node*) const;
 
+#endif
+
+private:
+    Page* m_page;
+    mutable FrameTree m_treeNode;
+    mutable FrameLoader m_loader;
+
+    mutable RefPtr<DOMWindow> m_domWindow;
+    HashSet<DOMWindow*> m_liveFormerWindows;
+
+    HTMLFrameOwnerElement* m_ownerElement;
+    RefPtr<FrameView> m_view;
+    RefPtr<Document> m_doc;
+
+    ScriptController m_script;
+
+    String m_kjsStatusBarText;
+    String m_kjsDefaultStatusBarText;
+
+    float m_zoomFactor;
+
+    TextGranularity m_selectionGranularity;
+
+    mutable SelectionController m_selectionController;
+    mutable VisibleSelection m_mark;
+    Timer<Frame> m_caretBlinkTimer;
+    mutable Editor m_editor;
+    mutable EventHandler m_eventHandler;
+    mutable AnimationController m_animationController;
+
+    RefPtr<CSSMutableStyleDeclaration> m_typingStyle;
+
+    Timer<Frame> m_lifeSupportTimer;
+
+    bool m_caretVisible;
+    bool m_caretPaint;
+    
+    bool m_highlightTextMatches;
+    bool m_inViewSourceMode;
+    bool m_needsReapplyStyles;
+    bool m_isDisconnected;
+    bool m_excludeFromTextSearch;
+
+#if FRAME_LOADS_USER_STYLESHEET
+    UserStyleSheetLoader* m_userStyleSheetLoader;
 #endif
 
 };

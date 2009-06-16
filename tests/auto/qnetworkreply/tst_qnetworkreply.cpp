@@ -243,6 +243,8 @@ private Q_SLOTS:
     void proxyChange();
     void authorizationError_data();
     void authorizationError();
+
+    void httpConnectionCount();
 };
 
 QT_BEGIN_NAMESPACE
@@ -3663,6 +3665,35 @@ void tst_QNetworkReply::authorizationError()
 
     QFETCH(QString, httpBody);
     QCOMPARE(QString(reply->readAll()), httpBody);
+}
+
+void tst_QNetworkReply::httpConnectionCount()
+{
+    QTcpServer server;
+    QVERIFY(server.listen());
+    QCoreApplication::instance()->processEvents();
+
+    for (int i = 0; i < 10; i++) {
+        QNetworkRequest request (QUrl("http://127.0.0.1:" + QString::number(server.serverPort()) + "/" +  QString::number(i)));
+        QNetworkReply* reply = manager.get(request);
+        reply->setParent(this);
+    }
+
+    int pendingConnectionCount = 0;
+    QTime time;
+    time.start();
+
+    while(pendingConnectionCount != 6) {
+        QCoreApplication::instance()->processEvents();
+        while (server.nextPendingConnection())
+            pendingConnectionCount++;
+
+        // at max. wait 10 sec
+        if (time.elapsed() > 10000)
+            break;
+    }
+
+    QCOMPARE(pendingConnectionCount, 6);
 }
 
 QTEST_MAIN(tst_QNetworkReply)

@@ -1039,37 +1039,64 @@ void qDrawItem(QPainter *p, Qt::GUIStyle gs,
 #endif
 
 /*!
-    \struct QMargins
+    \class QMargins
     \since 4.6
 
     Holds the borders used to split a pixmap into nine segments in order to
     draw it, similar to \l{http://www.w3.org/TR/css3-background/}
     {CSS3 border-images}.
 
-    \sa qDrawBorderPixmap, Qt::TileRule, QTileRules
+    \sa Qt::TileRule, QTileRules
 */
 
+/*! \fn QMargins::QMargins(int margin)
+  Constructs a QMargins with the top, left, bottom, and
+  right margins set to \a margin.
+*/
+
+/*! \fn QMargins::QMargins(int topMargin, int leftMargin, int bottomMargin, int rightMargin)
+  Constructs a QMargins with the given \a topMargin, \a leftMargin,
+  \a bottomMargin, and \a rightMargin.
+ */
+
 /*!
-    \struct QTileRules
+    \class QTileRules
     \since 4.6
 
     Holds the rules used to draw a pixmap or image split into nine segments,
     similar to \l{http://www.w3.org/TR/css3-background/}{CSS3 border-images}.
 
-    \sa qDrawBorderPixmap, Qt::TileRule, QMargins
+    \sa Qt::TileRule, QMargins
 */
 
+/*! \fn QTileRules::QTileRules(Qt::TileRule horizontalRule, Qt::TileRule verticalRule)
+  Constructs a QTileRules with the given \a horizontalRule and
+  \a verticalRule.
+ */
+
+/*! \fn QTileRules::QTileRules(Qt::TileRule rule)
+  Constructs a QTileRules with the given \a rule used for both
+  the horizontal rule and the vertical rule.
+ */
+
 /*!
-    \fn qDrawBorderPixmap(QPainter *painter, const QRect &target, const QMargins &margins, const QPixmap &pixmap)
+    \fn void qDrawBorderPixmap(QPainter *painter, const QRect &target, const QMargins &margins, const QPixmap &pixmap)
     \since 4.6
+    \relates QMargins
 
     Draws the given \a pixmap into the given \a target rectangle, using the
     given \a painter. The pixmap will be split into nine segments and drawn
     according to the \a margins structure.
 */
 
-static inline void qVerticalRepeat(QPainter *painter, const QRect &target, const QPixmap &pixmap, const QRect &source,
-                                   void (*drawPixmap)(QPainter*, const QRect&, const QPixmap&, const QRect&))
+static inline void qVerticalRepeat(QPainter *painter,
+                                   const QRect &target,
+                                   const QPixmap &pixmap,
+                                   const QRect &source,
+                                   void (*drawPixmap)(QPainter*,
+                                                      const QRect&,
+                                                      const QPixmap&,
+                                                      const QRect&))
 {
     const int x = target.x();
     const int width = target.width();

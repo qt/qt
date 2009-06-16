@@ -37,7 +37,7 @@ using namespace JSC;
 
 namespace WebCore {
 
-ASSERT_CLASS_FITS_IN_CELL(JSTreeWalker)
+ASSERT_CLASS_FITS_IN_CELL(JSTreeWalker);
 
 /* Hash table */
 
@@ -78,13 +78,13 @@ public:
     JSTreeWalkerConstructor(ExecState* exec)
         : DOMObject(JSTreeWalkerConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
     {
-        putDirect(exec->propertyNames().prototype, JSTreeWalkerPrototype::self(exec), None);
+        putDirect(exec->propertyNames().prototype, JSTreeWalkerPrototype::self(exec, exec->lexicalGlobalObject()), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
     static const ClassInfo s_info;
 
-    static PassRefPtr<Structure> createStructure(JSValuePtr proto) 
+    static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
         return Structure::create(proto, TypeInfo(ObjectType, ImplementsHasInstance)); 
     }
@@ -120,9 +120,9 @@ static const HashTable JSTreeWalkerPrototypeTable =
 
 const ClassInfo JSTreeWalkerPrototype::s_info = { "TreeWalkerPrototype", 0, &JSTreeWalkerPrototypeTable, 0 };
 
-JSObject* JSTreeWalkerPrototype::self(ExecState* exec)
+JSObject* JSTreeWalkerPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSTreeWalker>(exec);
+    return getDOMPrototype<JSTreeWalker>(exec, globalObject);
 }
 
 bool JSTreeWalkerPrototype::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -141,12 +141,11 @@ JSTreeWalker::JSTreeWalker(PassRefPtr<Structure> structure, PassRefPtr<TreeWalke
 JSTreeWalker::~JSTreeWalker()
 {
     forgetDOMObject(*Heap::heap(this)->globalData(), m_impl.get());
-
 }
 
-JSObject* JSTreeWalker::createPrototype(ExecState* exec)
+JSObject* JSTreeWalker::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSTreeWalkerPrototype(JSTreeWalkerPrototype::createStructure(exec->lexicalGlobalObject()->objectPrototype()));
+    return new (exec) JSTreeWalkerPrototype(JSTreeWalkerPrototype::createStructure(globalObject->objectPrototype()));
 }
 
 bool JSTreeWalker::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -154,46 +153,51 @@ bool JSTreeWalker::getOwnPropertySlot(ExecState* exec, const Identifier& propert
     return getStaticValueSlot<JSTreeWalker, Base>(exec, &JSTreeWalkerTable, this, propertyName, slot);
 }
 
-JSValuePtr jsTreeWalkerRoot(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsTreeWalkerRoot(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     TreeWalker* imp = static_cast<TreeWalker*>(static_cast<JSTreeWalker*>(asObject(slot.slotBase()))->impl());
     return toJS(exec, WTF::getPtr(imp->root()));
 }
 
-JSValuePtr jsTreeWalkerWhatToShow(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsTreeWalkerWhatToShow(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     TreeWalker* imp = static_cast<TreeWalker*>(static_cast<JSTreeWalker*>(asObject(slot.slotBase()))->impl());
     return jsNumber(exec, imp->whatToShow());
 }
 
-JSValuePtr jsTreeWalkerFilter(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsTreeWalkerFilter(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     TreeWalker* imp = static_cast<TreeWalker*>(static_cast<JSTreeWalker*>(asObject(slot.slotBase()))->impl());
     return toJS(exec, WTF::getPtr(imp->filter()));
 }
 
-JSValuePtr jsTreeWalkerExpandEntityReferences(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsTreeWalkerExpandEntityReferences(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     TreeWalker* imp = static_cast<TreeWalker*>(static_cast<JSTreeWalker*>(asObject(slot.slotBase()))->impl());
     return jsBoolean(imp->expandEntityReferences());
 }
 
-JSValuePtr jsTreeWalkerCurrentNode(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsTreeWalkerCurrentNode(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     TreeWalker* imp = static_cast<TreeWalker*>(static_cast<JSTreeWalker*>(asObject(slot.slotBase()))->impl());
     return toJS(exec, WTF::getPtr(imp->currentNode()));
 }
 
-JSValuePtr jsTreeWalkerConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsTreeWalkerConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     return static_cast<JSTreeWalker*>(asObject(slot.slotBase()))->getConstructor(exec);
 }
-void JSTreeWalker::put(ExecState* exec, const Identifier& propertyName, JSValuePtr value, PutPropertySlot& slot)
+void JSTreeWalker::put(ExecState* exec, const Identifier& propertyName, JSValue value, PutPropertySlot& slot)
 {
     lookupPut<JSTreeWalker, Base>(exec, propertyName, value, &JSTreeWalkerTable, this, slot);
 }
 
-void setJSTreeWalkerCurrentNode(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSTreeWalkerCurrentNode(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     TreeWalker* imp = static_cast<TreeWalker*>(static_cast<JSTreeWalker*>(thisObject)->impl());
     ExceptionCode ec = 0;
@@ -201,74 +205,81 @@ void setJSTreeWalkerCurrentNode(ExecState* exec, JSObject* thisObject, JSValuePt
     setDOMException(exec, ec);
 }
 
-JSValuePtr JSTreeWalker::getConstructor(ExecState* exec)
+JSValue JSTreeWalker::getConstructor(ExecState* exec)
 {
     return getDOMConstructor<JSTreeWalkerConstructor>(exec);
 }
 
-JSValuePtr jsTreeWalkerPrototypeFunctionParentNode(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsTreeWalkerPrototypeFunctionParentNode(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSTreeWalker::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSTreeWalker::s_info))
         return throwError(exec, TypeError);
     JSTreeWalker* castedThisObj = static_cast<JSTreeWalker*>(asObject(thisValue));
     return castedThisObj->parentNode(exec, args);
 }
 
-JSValuePtr jsTreeWalkerPrototypeFunctionFirstChild(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsTreeWalkerPrototypeFunctionFirstChild(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSTreeWalker::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSTreeWalker::s_info))
         return throwError(exec, TypeError);
     JSTreeWalker* castedThisObj = static_cast<JSTreeWalker*>(asObject(thisValue));
     return castedThisObj->firstChild(exec, args);
 }
 
-JSValuePtr jsTreeWalkerPrototypeFunctionLastChild(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsTreeWalkerPrototypeFunctionLastChild(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSTreeWalker::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSTreeWalker::s_info))
         return throwError(exec, TypeError);
     JSTreeWalker* castedThisObj = static_cast<JSTreeWalker*>(asObject(thisValue));
     return castedThisObj->lastChild(exec, args);
 }
 
-JSValuePtr jsTreeWalkerPrototypeFunctionPreviousSibling(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsTreeWalkerPrototypeFunctionPreviousSibling(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSTreeWalker::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSTreeWalker::s_info))
         return throwError(exec, TypeError);
     JSTreeWalker* castedThisObj = static_cast<JSTreeWalker*>(asObject(thisValue));
     return castedThisObj->previousSibling(exec, args);
 }
 
-JSValuePtr jsTreeWalkerPrototypeFunctionNextSibling(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsTreeWalkerPrototypeFunctionNextSibling(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSTreeWalker::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSTreeWalker::s_info))
         return throwError(exec, TypeError);
     JSTreeWalker* castedThisObj = static_cast<JSTreeWalker*>(asObject(thisValue));
     return castedThisObj->nextSibling(exec, args);
 }
 
-JSValuePtr jsTreeWalkerPrototypeFunctionPreviousNode(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsTreeWalkerPrototypeFunctionPreviousNode(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSTreeWalker::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSTreeWalker::s_info))
         return throwError(exec, TypeError);
     JSTreeWalker* castedThisObj = static_cast<JSTreeWalker*>(asObject(thisValue));
     return castedThisObj->previousNode(exec, args);
 }
 
-JSValuePtr jsTreeWalkerPrototypeFunctionNextNode(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsTreeWalkerPrototypeFunctionNextNode(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSTreeWalker::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSTreeWalker::s_info))
         return throwError(exec, TypeError);
     JSTreeWalker* castedThisObj = static_cast<JSTreeWalker*>(asObject(thisValue));
     return castedThisObj->nextNode(exec, args);
 }
 
-JSC::JSValuePtr toJS(JSC::ExecState* exec, TreeWalker* object)
+JSC::JSValue toJS(JSC::ExecState* exec, TreeWalker* object)
 {
     return getDOMObjectWrapper<JSTreeWalker>(exec, object);
 }
-TreeWalker* toTreeWalker(JSC::JSValuePtr value)
+TreeWalker* toTreeWalker(JSC::JSValue value)
 {
-    return value->isObject(&JSTreeWalker::s_info) ? static_cast<JSTreeWalker*>(asObject(value))->impl() : 0;
+    return value.isObject(&JSTreeWalker::s_info) ? static_cast<JSTreeWalker*>(asObject(value))->impl() : 0;
 }
 
 }

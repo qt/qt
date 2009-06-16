@@ -646,11 +646,11 @@
 
     \snippet tutorials/addressbook/part4/addressbook.cpp update interface() part 1
 
-    For \c NavigationMode, however, we include conditions within the
-    parameters of the QPushButton::setEnabled(). This is to ensure that
-    the \c editButton and \c removeButton push buttons are enabled when there
-    is at least one contact in the address book; \c nextButton and \c previousButton
-    are only enabled when there is more than one contact in the address book.
+    For \c NavigationMode, however, we include conditions within the parameters
+    of the QPushButton::setEnabled() function. This is to ensure that
+    \c editButton and \c removeButton are enabled when there is at least one
+    contact in the address book; \c nextButton and \c previousButton are only
+    enabled when there is more than one contact in the address book.
 
     \snippet tutorials/addressbook/part4/addressbook.cpp update interface() part 2
 

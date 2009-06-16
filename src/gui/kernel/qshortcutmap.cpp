@@ -628,13 +628,13 @@ QKeySequence::SequenceMatch QShortcutMap::matches(const QKeySequence &seq1,
 bool QShortcutMap::correctContext(const QShortcutEntry &item) const {
     Q_ASSERT_X(item.owner, "QShortcutMap", "Shortcut has no owner. Illegal map state!");
 
-    QWidget *active_window = qApp->activeWindow();
+    QWidget *active_window = QApplication::activeWindow();
 
     // popups do not become the active window,
     // so we fake it here to get the correct context
     // for the shortcut system.
-    if (qApp->activePopupWidget())
-        active_window = qApp->activePopupWidget();
+    if (QApplication::activePopupWidget())
+        active_window = QApplication::activePopupWidget();
 
     if (!active_window)
         return false;

@@ -518,7 +518,7 @@ void QSystemTrayIconPrivate::install_sys()
 QRect QSystemTrayIconSys::findTrayGeometry()
 {
     //Use lower right corner as fallback
-    QPoint brCorner = qApp->desktop()->screenGeometry().bottomRight();
+    QPoint brCorner = QApplication::desktop()->screenGeometry().bottomRight();
     QRect ret(brCorner.x() - 10, brCorner.y() - 10, 10, 10);
 #if defined(Q_OS_WINCE)
     HWND trayHandle = FindWindowW(L"Shell_TrayWnd", NULL);

@@ -303,7 +303,10 @@ static int checkEscape(const UChar** ptrPtr, const UChar* patternEnd, ErrorCode*
                 }
                 
                 c = *ptr;
-                if (!isASCIIAlpha(c)) {
+
+                /* To match Firefox, inside a character class, we also accept
+                   numbers and '_' as control characters */
+                if ((!isClass && !isASCIIAlpha(c)) || (!isASCIIAlphanumeric(c) && c != '_')) {
                     c = '\\';
                     ptr -= 2;
                     break;
@@ -1058,11 +1061,6 @@ compileBranch(int options, int* brackets, unsigned char** codePtr,
                 
                 reqvary = (repeatMin == repeat_max) ? 0 : REQ_VARY;
                 
-                // A quantifier after an assertion is meaningless, since assertions
-                // don't move index forward. So, we discard it.
-                if (*previous == OP_ASSERT || *previous == OP_ASSERT_NOT)
-                    goto END_REPEAT;
-                
                 opType = 0;                    /* Default single-char op codes */
                 
                 /* Save start of previous item, in case we have to move it up to make space
@@ -1414,6 +1412,15 @@ compileBranch(int options, int* brackets, unsigned char** codePtr,
                     
                     else
                         code[-ketoffset] = OP_KETRMAX + repeatType;
+                }
+                
+                // A quantifier after an assertion is mostly meaningless, but it
+                // can nullify the assertion if it has a 0 minimum.
+                else if (*previous == OP_ASSERT || *previous == OP_ASSERT_NOT) {
+                    if (repeatMin == 0) {
+                        code = previous;
+                        goto END_REPEAT;
+                    }
                 }
                 
                 /* Else there's some kind of shambles */
@@ -2209,7 +2216,7 @@ static int calculateCompiledPatternLength(const UChar* pattern, int patternLengt
                         
                         int d = -1;
                         if (safelyCheckNextChar(ptr, patternEnd, '-')) {
-                            UChar const *hyptr = ptr++;
+                            const UChar* hyptr = ptr++;
                             if (safelyCheckNextChar(ptr, patternEnd, '\\')) {
                                 ptr++;
                                 d = checkEscape(&ptr, patternEnd, &errorcode, cd.numCapturingBrackets, true);
@@ -2600,7 +2607,7 @@ JSRegExp* jsRegExpCompile(const UChar* pattern, int patternLength,
     
     const UChar* ptr = (const UChar*)pattern;
     const UChar* patternEnd = pattern + patternLength;
-    unsigned char* code = (unsigned char*)codeStart;
+    unsigned char* code = const_cast<unsigned char*>(codeStart);
     int firstByte, reqByte;
     int bracketCount = 0;
     if (!cd.needOuterBracket)

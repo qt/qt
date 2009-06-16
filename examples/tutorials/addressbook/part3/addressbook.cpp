@@ -125,8 +125,7 @@ void AddressBook::submitContact()
     
     if (name == "" || address == "") {
         QMessageBox::information(this, tr("Empty Field"),
-            tr("Please enter a name and adderss."));
-        return;
+            tr("Please enter a name and address."));
     }
 
     if (!contacts.contains(name)) {
@@ -136,7 +135,6 @@ void AddressBook::submitContact()
     } else {
         QMessageBox::information(this, tr("Add Unsuccessful"),
             tr("Sorry, \"%1\" is already in your address book.").arg(name));
-        return;
     }
 
     if (contacts.isEmpty()) {

@@ -21,7 +21,7 @@
 #include "config.h"
 
 
-#if ENABLE(SVG) && ENABLE(SVG_FILTERS)
+#if ENABLE(SVG) && ENABLE(FILTERS)
 
 #include "SVGElement.h"
 #include "JSSVGFEDistantLightElement.h"
@@ -36,7 +36,7 @@ using namespace JSC;
 
 namespace WebCore {
 
-ASSERT_CLASS_FITS_IN_CELL(JSSVGFEDistantLightElement)
+ASSERT_CLASS_FITS_IN_CELL(JSSVGFEDistantLightElement);
 
 /* Hash table */
 
@@ -70,9 +70,9 @@ static const HashTable JSSVGFEDistantLightElementPrototypeTable =
 
 const ClassInfo JSSVGFEDistantLightElementPrototype::s_info = { "SVGFEDistantLightElementPrototype", 0, &JSSVGFEDistantLightElementPrototypeTable, 0 };
 
-JSObject* JSSVGFEDistantLightElementPrototype::self(ExecState* exec)
+JSObject* JSSVGFEDistantLightElementPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSSVGFEDistantLightElement>(exec);
+    return getDOMPrototype<JSSVGFEDistantLightElement>(exec, globalObject);
 }
 
 const ClassInfo JSSVGFEDistantLightElement::s_info = { "SVGFEDistantLightElement", &JSSVGElement::s_info, &JSSVGFEDistantLightElementTable, 0 };
@@ -82,9 +82,9 @@ JSSVGFEDistantLightElement::JSSVGFEDistantLightElement(PassRefPtr<Structure> str
 {
 }
 
-JSObject* JSSVGFEDistantLightElement::createPrototype(ExecState* exec)
+JSObject* JSSVGFEDistantLightElement::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSSVGFEDistantLightElementPrototype(JSSVGFEDistantLightElementPrototype::createStructure(JSSVGElementPrototype::self(exec)));
+    return new (exec) JSSVGFEDistantLightElementPrototype(JSSVGFEDistantLightElementPrototype::createStructure(JSSVGElementPrototype::self(exec, globalObject)));
 }
 
 bool JSSVGFEDistantLightElement::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -92,15 +92,17 @@ bool JSSVGFEDistantLightElement::getOwnPropertySlot(ExecState* exec, const Ident
     return getStaticValueSlot<JSSVGFEDistantLightElement, Base>(exec, &JSSVGFEDistantLightElementTable, this, propertyName, slot);
 }
 
-JSValuePtr jsSVGFEDistantLightElementAzimuth(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGFEDistantLightElementAzimuth(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGFEDistantLightElement* imp = static_cast<SVGFEDistantLightElement*>(static_cast<JSSVGFEDistantLightElement*>(asObject(slot.slotBase()))->impl());
     RefPtr<SVGAnimatedNumber> obj = imp->azimuthAnimated();
     return toJS(exec, obj.get(), imp);
 }
 
-JSValuePtr jsSVGFEDistantLightElementElevation(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGFEDistantLightElementElevation(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGFEDistantLightElement* imp = static_cast<SVGFEDistantLightElement*>(static_cast<JSSVGFEDistantLightElement*>(asObject(slot.slotBase()))->impl());
     RefPtr<SVGAnimatedNumber> obj = imp->elevationAnimated();
     return toJS(exec, obj.get(), imp);
@@ -109,4 +111,4 @@ JSValuePtr jsSVGFEDistantLightElementElevation(ExecState* exec, const Identifier
 
 }
 
-#endif // ENABLE(SVG) && ENABLE(SVG_FILTERS)
+#endif // ENABLE(SVG) && ENABLE(FILTERS)

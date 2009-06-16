@@ -2449,14 +2449,22 @@ void tst_QVariant::saveLoadCustomTypes()
 
 void tst_QVariant::url()
 {
-    QUrl url("http://www.trolltech.com");
+    QString str("http://www.trolltech.com");
+    QUrl url(str);
 
-    QVariant v(url);
+    QVariant v(url); //built with a QUrl
 
     QVariant v2 = v;
 
-    QVERIFY(v2.toUrl() == url);
+    QVariant v3(str); //built with a QString
 
+    QCOMPARE(v2.toUrl(), url);
+    QVERIFY(qVariantCanConvert<QUrl>(v3));
+    QCOMPARE(v2.toUrl(), v3.toUrl());
+
+    QVERIFY(qVariantCanConvert<QString>(v2));
+    QCOMPARE(v2.toString(), str);
+    QCOMPARE(v3.toString(), str);
 }
 
 void tst_QVariant::globalColor()

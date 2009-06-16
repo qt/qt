@@ -110,6 +110,11 @@ WebInspector.SourceFrame.prototype = {
 
     revealLine: function(lineNumber)
     {
+        if (!this._isContentLoaded()) {
+            this._lineNumberToReveal = lineNumber;
+            return;
+        }
+    
         var row = this.sourceRow(lineNumber);
         if (row)
             row.scrollIntoViewIfNeeded(true);
@@ -172,6 +177,11 @@ WebInspector.SourceFrame.prototype = {
 
     highlightLine: function(lineNumber)
     {
+        if (!this._isContentLoaded()) {
+            this._lineNumberToHighlight = lineNumber;
+            return;
+        }
+
         var sourceRow = this.sourceRow(lineNumber);
         if (!sourceRow)
             return;
@@ -225,15 +235,36 @@ WebInspector.SourceFrame.prototype = {
 
         this.element.contentWindow.Element.prototype.addStyleClass = Element.prototype.addStyleClass;
         this.element.contentWindow.Element.prototype.removeStyleClass = Element.prototype.removeStyleClass;
+        this.element.contentWindow.Element.prototype.removeMatchingStyleClasses = Element.prototype.removeMatchingStyleClasses;
         this.element.contentWindow.Element.prototype.hasStyleClass = Element.prototype.hasStyleClass;
         this.element.contentWindow.Node.prototype.enclosingNodeOrSelfWithNodeName = Node.prototype.enclosingNodeOrSelfWithNodeName;
+        this.element.contentWindow.Node.prototype.enclosingNodeOrSelfWithNodeNameInArray = Node.prototype.enclosingNodeOrSelfWithNodeNameInArray;
 
         this._addExistingMessagesToSource();
         this._addExistingBreakpointsToSource();
         this._updateExecutionLine();
+        if (this._executionLine)
+            this.revealLine(this._executionLine);
 
         if (this.autoSizesToFitContentHeight)
             this.sizeToFitContentHeight();
+            
+        if (this._lineNumberToReveal) {
+            this.revealLine(this._lineNumberToReveal);
+            delete this._lineNumberToReveal;
+        }
+    
+        if (this._lineNumberToHighlight) {
+            this.highlightLine(this._lineNumberToHighlight);
+            delete this._lineNumberToHighlight;
+        }
+        
+        this.dispatchEventToListeners("content loaded");
+    },
+    
+    _isContentLoaded: function() {
+        var doc = this.element.contentDocument;
+        return doc && doc.getElementsByTagName("table")[0];
     },
 
     _windowResized: function(event)

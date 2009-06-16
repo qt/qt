@@ -2049,7 +2049,7 @@ QPainterPath QPainterPath::translated(qreal dx, qreal dy) const
 }
 
 /*!
-    \fn void QPainterPath::translated(const QPointF &offset)
+    \fn QPainterPath QPainterPath::translated(const QPointF &offset) const;
     \overload
     \since 4.6
 

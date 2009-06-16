@@ -123,7 +123,7 @@ private:
     friend class QRasterPaintEnginePrivate;
     friend struct QSpanData;
     friend class QPainter;
-    friend bool qHasPixmapTexture(const QBrush& brush);
+    friend bool Q_GUI_EXPORT qHasPixmapTexture(const QBrush& brush);
     void detach(Qt::BrushStyle newStyle);
     void init(const QColor &color, Qt::BrushStyle bs);
     QBrushData *d;

@@ -104,6 +104,7 @@ QGLPixmapData::QGLPixmapData(PixelType type)
     , m_ctx(0)
     , m_dirty(false)
     , m_hasFillColor(false)
+    , m_hasAlpha(false)
 {
     setSerialNumber(++qt_gl_pixmap_serial);
 }
@@ -136,6 +137,11 @@ void QGLPixmapData::resize(int width, int height)
     if (width == m_width && height == m_height)
         return;
 
+    if (width <= 0 || height <= 0) {
+        width = 0;
+        height = 0;
+    }
+
     m_width = width;
     m_height = height;
 
@@ -166,7 +172,8 @@ void QGLPixmapData::ensureCreated() const
     if (!m_textureId) {
         glGenTextures(1, &m_textureId);
         glBindTexture(target, m_textureId);
-        glTexImage2D(target, 0, GL_RGBA, m_width, m_height, 0,
+        GLenum format = m_hasAlpha ? GL_RGBA : GL_RGB;
+        glTexImage2D(target, 0, format, m_width, m_height, 0,
                 GL_RGBA, GL_UNSIGNED_BYTE, 0);
         glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
         glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
@@ -195,9 +202,19 @@ void QGLPixmapData::fromImage(const QImage &image,
     if (image.size() == QSize(m_width, m_height))
         setSerialNumber(++qt_gl_pixmap_serial);
     resize(image.width(), image.height());
-    m_source = image;
+
+    if (pixelType() == BitmapType) {
+        m_source = image.convertToFormat(QImage::Format_MonoLSB);
+    } else {
+        m_source = image.hasAlphaChannel()
+            ? image.convertToFormat(QImage::Format_ARGB32_Premultiplied)
+            : image.convertToFormat(QImage::Format_RGB32);
+    }
+
     m_dirty = true;
     m_hasFillColor = false;
+
+    m_hasAlpha = image.hasAlphaChannel();
 
     if (m_textureId) {
         QGLShareContextScope ctx(qt_gl_share_widget()->context());
@@ -230,24 +247,46 @@ void QGLPixmapData::fill(const QColor &color)
     if (!isValid())
         return;
 
+    if (!m_textureId)
+        m_hasAlpha = color.alpha() != 255;
+
     if (useFramebufferObjects()) {
         m_source = QImage();
         m_hasFillColor = true;
         m_fillColor = color;
-    } else if (!m_source.isNull()) {
-        m_source.fill(PREMUL(color.rgba()));
     } else {
-        // ## TODO: improve performance here
-        QImage img(m_width, m_height, QImage::Format_ARGB32_Premultiplied);
-        img.fill(PREMUL(color.rgba()));
-
-        fromImage(img, 0);
+        QImage image = fillImage(color);
+        fromImage(image, 0);
     }
 }
 
 bool QGLPixmapData::hasAlphaChannel() const
 {
-    return true;
+    return m_hasAlpha;
+}
+
+QImage QGLPixmapData::fillImage(const QColor &color) const
+{
+    QImage img;
+    if (pixelType() == BitmapType) {
+        img = QImage(m_width, m_height, QImage::Format_MonoLSB);
+        img.setNumColors(2);
+        img.setColor(0, QColor(Qt::color0).rgba());
+        img.setColor(1, QColor(Qt::color1).rgba());
+
+        int gray = qGray(color.rgba());
+        if (qAbs(255 - gray) < gray)
+            img.fill(0);
+        else
+            img.fill(1);
+    } else {
+        img = QImage(m_width, m_height,
+                m_hasAlpha
+                ? QImage::Format_ARGB32_Premultiplied
+                : QImage::Format_RGB32);
+        img.fill(PREMUL(color.rgba()));
+    }
+    return img;
 }
 
 QImage QGLPixmapData::toImage() const
@@ -260,10 +299,7 @@ QImage QGLPixmapData::toImage() const
     } else if (!m_source.isNull()) {
         return m_source;
     } else if (m_dirty || m_hasFillColor) {
-        QImage img(m_width, m_height, QImage::Format_ARGB32_Premultiplied);
-        if (m_hasFillColor)
-            img.fill(PREMUL(m_fillColor.rgba()));
-        return img;
+        return fillImage(m_fillColor);
     } else {
         ensureCreated();
     }
@@ -362,7 +398,8 @@ static TextureBuffer createTextureBuffer(const QSize &size, QGL2PaintEngineEx *e
 bool QGLPixmapData::useFramebufferObjects()
 {
     return QGLFramebufferObject::hasOpenGLFramebufferObjects()
-           && QGLFramebufferObject::hasOpenGLFramebufferBlit();
+           && QGLFramebufferObject::hasOpenGLFramebufferBlit()
+           && qt_gl_preferGL2Engine();
 }
 
 QPaintEngine* QGLPixmapData::paintEngine() const
@@ -453,6 +490,9 @@ extern int qt_defaultDpiY();
 
 int QGLPixmapData::metric(QPaintDevice::PaintDeviceMetric metric) const
 {
+    if (m_width == 0)
+        return 0;
+
     switch (metric) {
     case QPaintDevice::PdmWidth:
         return m_width;

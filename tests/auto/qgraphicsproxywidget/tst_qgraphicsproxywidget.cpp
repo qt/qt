@@ -1487,7 +1487,7 @@ void tst_QGraphicsProxyWidget::scrollUpdate()
 	     QVector<QRect>() << QRect(0, 0, 200, 12) << QRect(0, 12, 102, 10));
     QCOMPARE(widget->npaints, 2);
     QCOMPARE(widget->paintEventRegion.rects(),
-	     QVector<QRect>() << QRect(0, 0, 200, 13) << QRect(0, 13, 103, 10));
+             QVector<QRect>() << QRect(0, 0, 200, 12) << QRect(0, 12, 102, 10));
 }
 
 void tst_QGraphicsProxyWidget::setWidget_simple()

@@ -49,7 +49,7 @@
 //TESTED_CLASS=
 //TESTED_FILES=
 
-class MyScriptable : public QObject, protected QScriptable
+class MyScriptable : public QObject, public QScriptable
 {
     Q_OBJECT
     Q_PROPERTY(int baz READ baz WRITE setBaz)
@@ -87,6 +87,7 @@ public slots:
     QObject *zab();
     QObject *setZab(QObject *);
     QScriptValue getArguments();
+    int getArgumentCount();
 
 signals:
     void sig(int);
@@ -126,6 +127,11 @@ QObject *MyScriptable::setZab(QObject *)
 QScriptValue MyScriptable::getArguments()
 {
     return context()->argumentsObject();
+}
+
+int MyScriptable::getArgumentCount()
+{
+    return context()->argumentCount();
 }
 
 void MyScriptable::foo()
@@ -224,6 +230,8 @@ void tst_QScriptable::cleanupTestCase()
 
 void tst_QScriptable::engine()
 {
+    QCOMPARE(m_scriptable.engine(), (QScriptEngine*)0);
+    QCOMPARE(m_scriptable.context(), (QScriptContext*)0);
     QCOMPARE(m_scriptable.lastEngine(), (QScriptEngine *)0);
 
     // reading property
@@ -360,6 +368,14 @@ void tst_QScriptable::arguments()
     QVERIFY(args.property("1").strictlyEquals(QScriptValue(&m_engine, 20)));
     QVERIFY(args.property("2").strictlyEquals(QScriptValue(&m_engine, 30)));
     QVERIFY(args.property("3").strictlyEquals(QScriptValue(&m_engine, "hi")));
+
+    QScriptValue argc = m_engine.evaluate("scriptable.getArgumentCount(1, 2, 3)");
+    QVERIFY(argc.isNumber());
+    QCOMPARE(argc.toInt32(), 3);
+
+    QCOMPARE(m_scriptable.argumentCount(), -1);
+    QVERIFY(!m_scriptable.argument(-1).isValid());
+    QVERIFY(!m_scriptable.argument(0).isValid());
 }
 
 void tst_QScriptable::throwError()

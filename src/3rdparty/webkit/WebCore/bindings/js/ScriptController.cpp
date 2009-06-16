@@ -21,33 +21,22 @@
 #include "config.h"
 #include "ScriptController.h"
 
-#include "Console.h"
-#include "DOMWindow.h"
-#include "Document.h"
 #include "Event.h"
 #include "EventNames.h"
 #include "Frame.h"
-#include "FrameLoader.h"
 #include "GCController.h"
-#include "JSDOMWindow.h"
+#include "HTMLPlugInElement.h"
 #include "JSDocument.h"
-#include "JSEventListener.h"
-#include "npruntime_impl.h"
 #include "NP_jsobject.h"
 #include "Page.h"
 #include "PageGroup.h"
-#include "runtime_root.h"
 #include "ScriptSourceCode.h"
 #include "ScriptValue.h"
 #include "Settings.h"
-
-#include <runtime/Completion.h>
+#include "npruntime_impl.h"
+#include "runtime_root.h"
 #include <debugger/Debugger.h>
 #include <runtime/JSLock.h>
-
-#if ENABLE(NETSCAPE_PLUGIN_API)
-#include "HTMLPlugInElement.h"
-#endif
 
 using namespace JSC;
 
@@ -55,10 +44,11 @@ namespace WebCore {
 
 ScriptController::ScriptController(Frame* frame)
     : m_frame(frame)
-    , m_handlerLineno(0)
+    , m_handlerLineNumber(0)
     , m_sourceURL(0)
     , m_processingTimerCallback(false)
     , m_paused(false)
+    , m_allowPopupsFromPlugin(false)
 #if ENABLE(NETSCAPE_PLUGIN_API)
     , m_windowScriptNPObject(0)
 #endif
@@ -106,24 +96,26 @@ ScriptValue ScriptController::evaluate(const ScriptSourceCode& sourceCode)
 
     JSLock lock(false);
 
+    RefPtr<Frame> protect = m_frame;
+
+    m_windowShell->window()->globalData()->timeoutChecker.start();
+    Completion comp = JSC::evaluate(exec, exec->dynamicGlobalObject()->globalScopeChain(), jsSourceCode, m_windowShell);
+    m_windowShell->window()->globalData()->timeoutChecker.stop();
+
     // Evaluating the JavaScript could cause the frame to be deallocated
     // so we start the keep alive timer here.
     m_frame->keepAlive();
-
-    m_windowShell->window()->startTimeoutCheck();
-    Completion comp = JSC::evaluate(exec, exec->dynamicGlobalObject()->globalScopeChain(), jsSourceCode, m_windowShell);
-    m_windowShell->window()->stopTimeoutCheck();
 
     if (comp.complType() == Normal || comp.complType() == ReturnValue) {
         m_sourceURL = savedSourceURL;
         return comp.value();
     }
 
-    if (comp.complType() == Throw)
+    if (comp.complType() == Throw || comp.complType() == Interrupted)
         reportException(exec, comp.value());
 
     m_sourceURL = savedSourceURL;
-    return noValue();
+    return JSValue();
 }
 
 void ScriptController::clearWindowShell()
@@ -132,9 +124,13 @@ void ScriptController::clearWindowShell()
         return;
 
     JSLock lock(false);
-    m_windowShell->window()->clear();
-    m_liveFormerWindows.add(m_windowShell->window());
+
+    // Clear the debugger from the current window before setting the new window.
+    attachDebugger(0);
+
+    m_windowShell->window()->willRemoveFromWindowShell();
     m_windowShell->setWindow(m_frame->domWindow());
+
     if (Page* page = m_frame->page()) {
         attachDebugger(page->debugger());
         m_windowShell->window()->setProfileGroup(page->group().identifier());
@@ -144,22 +140,6 @@ void ScriptController::clearWindowShell()
     gcController().garbageCollectSoon();
 }
 
-PassRefPtr<EventListener> ScriptController::createInlineEventListener(const String& functionName, const String& code, Node* node)
-{
-    initScriptIfNeeded();
-    JSLock lock(false);
-    return JSLazyEventListener::create(JSLazyEventListener::HTMLLazyEventListener, functionName, code, m_windowShell->window(), node, m_handlerLineno);
-}
-
-#if ENABLE(SVG)
-PassRefPtr<EventListener> ScriptController::createSVGEventHandler(const String& functionName, const String& code, Node* node)
-{
-    initScriptIfNeeded();
-    JSLock lock(false);
-    return JSLazyEventListener::create(JSLazyEventListener::SVGLazyEventListener, functionName, code, m_windowShell->window(), node, m_handlerLineno);
-}
-#endif
-
 void ScriptController::initScript()
 {
     if (m_windowShell)
@@ -168,7 +148,7 @@ void ScriptController::initScript()
     JSLock lock(false);
 
     m_windowShell = new JSDOMWindowShell(m_frame->domWindow());
-    updateDocument();
+    m_windowShell->window()->updateDocument();
 
     if (Page* page = m_frame->page()) {
         attachDebugger(page->debugger());
@@ -179,6 +159,11 @@ void ScriptController::initScript()
 }
 
 bool ScriptController::processingUserGesture() const
+{
+    return m_allowPopupsFromPlugin || processingUserGestureEvent() || isJavaScriptAnchorNavigation();
+}
+
+bool ScriptController::processingUserGestureEvent() const
 {
     if (!m_windowShell)
         return false;
@@ -196,13 +181,37 @@ bool ScriptController::processingUserGesture() const
             type == eventNames().focusEvent || type == eventNames().blurEvent ||
             type == eventNames().submitEvent)
             return true;
-    } else { // no event
-        if (m_sourceURL && m_sourceURL->isNull() && !m_processingTimerCallback) {
-            // This is the <a href="javascript:window.open('...')> case -> we let it through
-            return true;
-        }
-        // This is the <script>window.open(...)</script> case or a timer callback -> block it
     }
+    
+    return false;
+}
+
+// FIXME: This seems like an insufficient check to verify a click on a javascript: anchor.
+bool ScriptController::isJavaScriptAnchorNavigation() const
+{
+    // This is the <a href="javascript:window.open('...')> case -> we let it through
+    if (m_sourceURL && m_sourceURL->isNull() && !m_processingTimerCallback)
+        return true;
+
+    // This is the <script>window.open(...)</script> case or a timer callback -> block it
+    return false;
+}
+
+bool ScriptController::anyPageIsProcessingUserGesture() const
+{
+    Page* page = m_frame->page();
+    if (!page)
+        return false;
+
+    const HashSet<Page*>& pages = page->group().pages();
+    HashSet<Page*>::const_iterator end = pages.end();
+    for (HashSet<Page*>::const_iterator it = pages.begin(); it != end; ++it) {
+        for (Frame* frame = page->mainFrame(); frame; frame = frame->tree()->traverseNext()) {
+            if (frame->script()->processingUserGesture())
+                return true;
+        }
+    }
+
     return false;
 }
 
@@ -231,9 +240,6 @@ void ScriptController::updateDocument()
     JSLock lock(false);
     if (m_windowShell)
         m_windowShell->window()->updateDocument();
-    HashSet<JSDOMWindow*>::iterator end = m_liveFormerWindows.end();
-    for (HashSet<JSDOMWindow*>::iterator it = m_liveFormerWindows.begin(); it != end; ++it)
-        (*it)->updateDocument();
 }
 
 void ScriptController::updateSecurityOrigin()
@@ -266,6 +272,7 @@ PassRefPtr<Bindings::RootObject> ScriptController::createRootObject(void* native
 }
 
 #if ENABLE(NETSCAPE_PLUGIN_API)
+
 NPObject* ScriptController::windowScriptNPObject()
 {
     if (!m_windowScriptNPObject) {
@@ -289,23 +296,34 @@ NPObject* ScriptController::windowScriptNPObject()
 
 NPObject* ScriptController::createScriptObjectForPluginElement(HTMLPlugInElement* plugin)
 {
-    // Can't create NPObjects when JavaScript is disabled
-    if (!isEnabled())
+    JSObject* object = jsObjectForPluginElement(plugin);
+    if (!object)
         return _NPN_CreateNoScriptObject();
+
+    // Wrap the JSObject in an NPObject
+    return _NPN_CreateScriptObject(0, object, bindingRootObject());
+}
+
+#endif
+
+JSObject* ScriptController::jsObjectForPluginElement(HTMLPlugInElement* plugin)
+{
+    // Can't create JSObjects when JavaScript is disabled
+    if (!isEnabled())
+        return 0;
 
     // Create a JSObject bound to this element
     JSLock lock(false);
     ExecState* exec = globalObject()->globalExec();
-    JSValuePtr jsElementValue = toJS(exec, plugin);
-    if (!jsElementValue || !jsElementValue->isObject())
-        return _NPN_CreateNoScriptObject();
-
-    // Wrap the JSObject in an NPObject
-    return _NPN_CreateScriptObject(0, jsElementValue->getObject(), bindingRootObject());
+    JSValue jsElementValue = toJS(exec, plugin);
+    if (!jsElementValue || !jsElementValue.isObject())
+        return 0;
+    
+    return jsElementValue.getObject();
 }
-#endif
 
 #if !PLATFORM(MAC)
+
 void ScriptController::updatePlatformScriptObjects()
 {
 }
@@ -313,6 +331,7 @@ void ScriptController::updatePlatformScriptObjects()
 void ScriptController::disconnectPlatformScriptObjects()
 {
 }
+
 #endif
 
 void ScriptController::cleanupScriptObjectsForPlugin(void* nativeHandle)

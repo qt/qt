@@ -69,6 +69,7 @@ class QSqlRecordInfo;
 class QMYSQLResult : public QSqlResult
 {
     friend class QMYSQLDriver;
+    friend class QMYSQLResultPrivate;
 public:
     explicit QMYSQLResult(const QMYSQLDriver* db);
     ~QMYSQLResult();

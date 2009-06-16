@@ -232,14 +232,6 @@ static QScriptValue qscript_projectWrapper(QScriptEngine *eng, QMakeProject *pro
     return ret;
 }
 
-static QScriptValue qscript_toArray(QScriptEngine *eng, const QStringList &elts)
-{
-    QScriptValue a = eng->newArray();
-    for (int i = 0; i < elts.count(); ++i)
-        a.setProperty(i, QScriptValue(eng, elts.at(i)));
-    return a;
-}
-
 QT_END_NAMESPACE
 
 #endif

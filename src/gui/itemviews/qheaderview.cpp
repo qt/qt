@@ -3474,11 +3474,10 @@ void QHeaderViewPrivate::setGlobalHeaderResizeMode(QHeaderView::ResizeMode mode)
 
 int QHeaderViewPrivate::viewSectionSizeHint(int logical) const
 {
-    Q_Q(const QHeaderView);
-    if (QAbstractItemView *parent = qobject_cast<QAbstractItemView*>(q->parent())) {
+    if (QAbstractItemView *view = qobject_cast<QAbstractItemView*>(parent)) {
         return (orientation == Qt::Horizontal
-                ? parent->sizeHintForColumn(logical)
-                : parent->sizeHintForRow(logical));
+                ? view->sizeHintForColumn(logical)
+                : view->sizeHintForRow(logical));
     }
     return 0;
 }

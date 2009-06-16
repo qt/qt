@@ -561,7 +561,7 @@ bool QTextStreamPrivate::fillReadBuffer(qint64 maxBytes)
     if (!codec || autoDetectUnicode) {
         autoDetectUnicode = false;
 
-        codec = QTextCodec::codecForUtfText(QByteArray::fromRawData(buf, bytesRead), 0);
+        codec = QTextCodec::codecForUtfText(QByteArray::fromRawData(buf, bytesRead), codec);
         if (!codec) {
             codec = QTextCodec::codecForLocale();
             writeConverterState.flags |= QTextCodec::IgnoreHeader;

@@ -41,6 +41,8 @@
 
 #include "formextractor.h"
 
+#include <QWebElement>
+
 FormExtractor::FormExtractor(QWidget *parent, Qt::WFlags flags)
     : QWidget(parent, flags)
 {
@@ -55,17 +57,28 @@ FormExtractor::~FormExtractor()
 {
 }
 
-void FormExtractor::setValues(const QString &firstName, const QString &lastName,
-                              const QString &gender, bool updates)
+void FormExtractor::submit()
 {
-    ui.firstNameEdit->setText(firstName);
-    ui.lastNameEdit->setText(lastName);
-    ui.genderEdit->setText(gender);
+    QWebFrame *frame = ui.webView->page()->mainFrame();
 
-    if (updates == false)
-        ui.updatesEdit->setText("No");
-    else
+    QWebElement firstName = frame->findFirstElement("#firstname");
+    QWebElement lastName = frame->findFirstElement("#lastname");
+    QWebElement maleGender = frame->findFirstElement("#genderMale");
+    QWebElement femaleGender = frame->findFirstElement("#genderFemale");
+    QWebElement updates = frame->findFirstElement("#updates");
+
+    ui.firstNameEdit->setText(firstName.scriptableProperty("value").toString());
+    ui.lastNameEdit->setText(lastName.scriptableProperty("value").toString());
+
+    if (maleGender.scriptableProperty("checked").toBool())
+        ui.genderEdit->setText(maleGender.scriptableProperty("value").toString());
+    else if (femaleGender.scriptableProperty("checked").toBool())
+        ui.genderEdit->setText(femaleGender.scriptableProperty("value").toString());
+
+    if (updates.scriptableProperty("checked").toBool())
         ui.updatesEdit->setText("Yes");
+    else
+        ui.updatesEdit->setText("No");
 }
 
 void FormExtractor::populateJavaScriptWindowObject()

@@ -467,6 +467,37 @@ QAbstractItemModel *QAbstractItemModelPrivate::staticEmptyModel()
     return qEmptyModel();
 }
 
+/*!
+    \internal
+    return true if \a value contains a numerical type
+
+    This function is used by our Q{Tree,Widget,Table}WidgetModel classes to sort.
+    We cannot rely on QVariant::canConvert because this would take strings as double
+    and then not sort strings correctly
+*/
+bool QAbstractItemModelPrivate::canConvertToDouble(const QVariant &value)
+{
+    switch (value.userType()) {
+        case QVariant::Bool:
+        case QVariant::Int:
+        case QVariant::UInt:
+        case QVariant::LongLong:
+        case QVariant::ULongLong:
+        case QVariant::Double:
+        case QVariant::Char:
+        case QMetaType::Float:
+        case QMetaType::Short:
+        case QMetaType::UShort:
+        case QMetaType::UChar:
+        case QMetaType::ULong:
+        case QMetaType::Long:
+            return true;
+        default:
+            return false;
+    }
+    return false;
+}
+
 void QAbstractItemModelPrivate::removePersistentIndexData(QPersistentModelIndexData *data)
 {
     if (data->index.isValid()) {

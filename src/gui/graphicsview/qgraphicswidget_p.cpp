@@ -77,7 +77,9 @@ void QGraphicsWidgetPrivate::init(QGraphicsItem *parentItem, Qt::WindowFlags wFl
     resolveLayoutDirection();
     q->unsetWindowFrameMargins();
     q->setFlag(QGraphicsItem::ItemUsesExtendedStyleOption);
+    q->setFlag(QGraphicsItem::ItemSendsGeometryChanges);
 }
+
 qreal QGraphicsWidgetPrivate::titleBarHeight(const QStyleOptionTitleBar &options) const
 {
     Q_Q(const QGraphicsWidget);

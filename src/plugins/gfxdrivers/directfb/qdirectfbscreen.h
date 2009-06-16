@@ -177,11 +177,15 @@ inline bool QDirectFBScreen::hasAlpha(DFBSurfacePixelFormat format)
     case DSPF_A1:
     case DSPF_ARGB2554:
     case DSPF_ARGB4444:
+#if (Q_DIRECTFB_VERSION >= 0x000923)
     case DSPF_AYUV:
+#endif
+#if (Q_DIRECTFB_VERSION >= 0x010000)
     case DSPF_A4:
     case DSPF_ARGB1666:
     case DSPF_ARGB6666:
     case DSPF_LUT2:
+#endif
         return true;
     default:
         return false;

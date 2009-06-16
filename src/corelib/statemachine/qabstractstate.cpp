@@ -89,8 +89,7 @@ QAbstractStatePrivate *QAbstractStatePrivate::get(QAbstractState *q)
 
 QStateMachine *QAbstractStatePrivate::machine() const
 {
-    Q_Q(const QAbstractState);
-    QObject *par = q->parent();
+    QObject *par = parent;
     while (par != 0) {
         if (QStateMachine *mach = qobject_cast<QStateMachine*>(par))
             return mach;

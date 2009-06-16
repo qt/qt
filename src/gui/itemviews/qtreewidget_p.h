@@ -116,7 +116,6 @@ public:
                              const QPair<QTreeWidgetItem*,int> &right);
     static bool itemGreaterThan(const QPair<QTreeWidgetItem*,int> &left,
                                 const QPair<QTreeWidgetItem*,int> &right);
-    static bool canConvertToDouble(const QVariant &value);
     static QList<QTreeWidgetItem*>::iterator sortedInsertionIterator(
         const QList<QTreeWidgetItem*>::iterator &begin,
         const QList<QTreeWidgetItem*>::iterator &end,
@@ -220,12 +219,11 @@ class QTreeWidgetPrivate : public QTreeViewPrivate
     Q_DECLARE_PUBLIC(QTreeWidget)
 public:
     QTreeWidgetPrivate() : QTreeViewPrivate(), explicitSortColumn(-1) {}
-    inline QTreeModel *model() const
-        { return qobject_cast<QTreeModel*>(q_func()->model()); }
+    inline QTreeModel *treeModel() const { return qobject_cast<QTreeModel*>(model); }
     inline QModelIndex index(const QTreeWidgetItem *item, int column = 0) const
-        { return model()->index(item, column); }
+        { return treeModel()->index(item, column); }
     inline QTreeWidgetItem *item(const QModelIndex &index) const
-        { return model()->item(index); }
+        { return treeModel()->item(index); }
     void _q_emitItemPressed(const QModelIndex &index);
     void _q_emitItemClicked(const QModelIndex &index);
     void _q_emitItemDoubleClicked(const QModelIndex &index);

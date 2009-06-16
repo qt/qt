@@ -289,7 +289,6 @@ MakefileGenerator::initOutPaths()
         if(Option::fixPathToLocalOS(d.absolutePath()) == Option::fixPathToLocalOS(Option::output_dir))
             v.remove("DESTDIR");
     }
-    QDir::current().cd(currentDir);
 }
 
 QMakeProject
@@ -1910,6 +1909,7 @@ MakefileGenerator::writeExtraCompilerTargets(QTextStream &t)
                    deps += replaceExtraCompilerVariables(pre_deps.at(i), (*input), out);
             }
             QString cmd = replaceExtraCompilerVariables(tmp_cmd, (*input), out);
+            // NOTE: The var -> QMAKE_COMP_var replace feature is unsupported, do not use!
             for(QStringList::ConstIterator it3 = vars.constBegin(); it3 != vars.constEnd(); ++it3)
                 cmd.replace("$(" + (*it3) + ")", "$(QMAKE_COMP_" + (*it3)+")");
             if(!tmp_dep_cmd.isEmpty() && doDepends()) {

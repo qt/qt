@@ -37,7 +37,7 @@ using namespace JSC;
 
 namespace WebCore {
 
-ASSERT_CLASS_FITS_IN_CELL(JSSVGAnimatedString)
+ASSERT_CLASS_FITS_IN_CELL(JSSVGAnimatedString);
 
 /* Hash table */
 
@@ -71,9 +71,9 @@ static const HashTable JSSVGAnimatedStringPrototypeTable =
 
 const ClassInfo JSSVGAnimatedStringPrototype::s_info = { "SVGAnimatedStringPrototype", 0, &JSSVGAnimatedStringPrototypeTable, 0 };
 
-JSObject* JSSVGAnimatedStringPrototype::self(ExecState* exec)
+JSObject* JSSVGAnimatedStringPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSSVGAnimatedString>(exec);
+    return getDOMPrototype<JSSVGAnimatedString>(exec, globalObject);
 }
 
 const ClassInfo JSSVGAnimatedString::s_info = { "SVGAnimatedString", 0, &JSSVGAnimatedStringTable, 0 };
@@ -88,12 +88,11 @@ JSSVGAnimatedString::JSSVGAnimatedString(PassRefPtr<Structure> structure, PassRe
 JSSVGAnimatedString::~JSSVGAnimatedString()
 {
     forgetDOMObject(*Heap::heap(this)->globalData(), m_impl.get());
-
 }
 
-JSObject* JSSVGAnimatedString::createPrototype(ExecState* exec)
+JSObject* JSSVGAnimatedString::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSSVGAnimatedStringPrototype(JSSVGAnimatedStringPrototype::createStructure(exec->lexicalGlobalObject()->objectPrototype()));
+    return new (exec) JSSVGAnimatedStringPrototype(JSSVGAnimatedStringPrototype::createStructure(globalObject->objectPrototype()));
 }
 
 bool JSSVGAnimatedString::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -101,38 +100,40 @@ bool JSSVGAnimatedString::getOwnPropertySlot(ExecState* exec, const Identifier& 
     return getStaticValueSlot<JSSVGAnimatedString, Base>(exec, &JSSVGAnimatedStringTable, this, propertyName, slot);
 }
 
-JSValuePtr jsSVGAnimatedStringBaseVal(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGAnimatedStringBaseVal(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGAnimatedString* imp = static_cast<SVGAnimatedString*>(static_cast<JSSVGAnimatedString*>(asObject(slot.slotBase()))->impl());
     return jsString(exec, imp->baseVal());
 }
 
-JSValuePtr jsSVGAnimatedStringAnimVal(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGAnimatedStringAnimVal(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGAnimatedString* imp = static_cast<SVGAnimatedString*>(static_cast<JSSVGAnimatedString*>(asObject(slot.slotBase()))->impl());
     return jsString(exec, imp->animVal());
 }
 
-void JSSVGAnimatedString::put(ExecState* exec, const Identifier& propertyName, JSValuePtr value, PutPropertySlot& slot)
+void JSSVGAnimatedString::put(ExecState* exec, const Identifier& propertyName, JSValue value, PutPropertySlot& slot)
 {
     lookupPut<JSSVGAnimatedString, Base>(exec, propertyName, value, &JSSVGAnimatedStringTable, this, slot);
 }
 
-void setJSSVGAnimatedStringBaseVal(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSSVGAnimatedStringBaseVal(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     SVGAnimatedString* imp = static_cast<SVGAnimatedString*>(static_cast<JSSVGAnimatedString*>(thisObject)->impl());
-    imp->setBaseVal(value->toString(exec));
+    imp->setBaseVal(value.toString(exec));
     if (static_cast<JSSVGAnimatedString*>(thisObject)->context())
         static_cast<JSSVGAnimatedString*>(thisObject)->context()->svgAttributeChanged(static_cast<JSSVGAnimatedString*>(thisObject)->impl()->associatedAttributeName());
 }
 
-JSC::JSValuePtr toJS(JSC::ExecState* exec, SVGAnimatedString* object, SVGElement* context)
+JSC::JSValue toJS(JSC::ExecState* exec, SVGAnimatedString* object, SVGElement* context)
 {
     return getDOMObjectWrapper<JSSVGAnimatedString>(exec, object, context);
 }
-SVGAnimatedString* toSVGAnimatedString(JSC::JSValuePtr value)
+SVGAnimatedString* toSVGAnimatedString(JSC::JSValue value)
 {
-    return value->isObject(&JSSVGAnimatedString::s_info) ? static_cast<JSSVGAnimatedString*>(asObject(value))->impl() : 0;
+    return value.isObject(&JSSVGAnimatedString::s_info) ? static_cast<JSSVGAnimatedString*>(asObject(value))->impl() : 0;
 }
 
 }

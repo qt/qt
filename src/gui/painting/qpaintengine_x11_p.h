@@ -153,6 +153,7 @@ public:
         txop = QTransform::TxNone;
         has_clipping = false;
         render_hints = 0;
+        xform_scale = 1;
 #ifndef QT_NO_XRENDER
         tessellator = 0;
 #endif

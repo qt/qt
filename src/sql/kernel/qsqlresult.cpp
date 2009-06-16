@@ -48,6 +48,7 @@
 #include "qsqlresult.h"
 #include "qvector.h"
 #include "qsqldriver.h"
+#include <QDebug>
 
 QT_BEGIN_NAMESPACE
 
@@ -64,7 +65,7 @@ class QSqlResultPrivate
 public:
     QSqlResultPrivate(QSqlResult* d)
     : q(d), sqldriver(0), idx(QSql::BeforeFirstRow), active(false),
-      isSel(false), forwardOnly(false), bindCount(0), binds(QSqlResult::PositionalBinding)
+      isSel(false), forwardOnly(false), precisionPolicy(QSql::LowPrecisionDouble), bindCount(0), binds(QSqlResult::PositionalBinding)
     {}
 
     void clearValues()
@@ -104,6 +105,7 @@ public:
     bool isSel;
     QSqlError error;
     bool forwardOnly;
+    QSql::NumericalPrecisionPolicy precisionPolicy;
 
     int bindCount;
     QSqlResult::BindingSyntax binds;
@@ -249,6 +251,9 @@ QSqlResult::QSqlResult(const QSqlDriver *db)
 {
     d = new QSqlResultPrivate(this);
     d->sqldriver = db;
+    if(db) {
+        setNumericalPrecisionPolicy(db->numericalPrecisionPolicy());
+    }
 }
 
 /*!
@@ -965,8 +970,14 @@ void QSqlResult::detachFromResultSet()
  */
 void QSqlResult::setNumericalPrecisionPolicy(QSql::NumericalPrecisionPolicy policy)
 {
-    if (driver()->hasFeature(QSqlDriver::LowPrecisionNumbers))
-        virtual_hook(SetNumericalPrecision, &policy);
+    d->precisionPolicy = policy;
+}
+
+/*! \internal
+ */
+QSql::NumericalPrecisionPolicy QSqlResult::numericalPrecisionPolicy() const
+{
+    return d->precisionPolicy;
 }
 
 /*! \internal

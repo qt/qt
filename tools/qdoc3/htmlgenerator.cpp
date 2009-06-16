@@ -678,13 +678,17 @@ int HtmlGenerator::generateAtom(const Atom *atom,
         else if (atom->string() == ATOM_LIST_VALUE) {
             threeColumnEnumValueTable = isThreeColumnEnumValueTable(atom);
             if (threeColumnEnumValueTable) {
-                out() << "<p><table border=\"1\" cellpadding=\"2\" cellspacing=\"1\" width=\"100%\">\n"
-                         "<tr><th width=\"25%\">Constant</th><th width=\"15%\">Value</th>"
-                         "<th width=\"60%\">Description</th></tr>\n";
+                out() << "<p><table class=\"valuelist\" border=\"1\" cellpadding=\"2\" "
+                      << "cellspacing=\"1\" width=\"100%\">\n"
+                      << "<tr><th width=\"25%\">Constant</th>"
+                      << "<th width=\"15%\">Value</th>"
+                      << "<th width=\"60%\">Description</th></tr>\n";
             }
             else {
-                out() << "<p><table border=\"1\" cellpadding=\"2\" cellspacing=\"1\" width=\"40%\">\n"
-                      << "<tr><th width=\"60%\">Constant</th><th width=\"40%\">Value</th></tr>\n";
+                out() << "<p><table  class=\"valuelist\" border=\"1\" cellpadding=\"2\" "
+                      << "cellspacing=\"1\" width=\"40%\">\n"
+                      << "<tr><th width=\"60%\">Constant</th><th "
+                      << "width=\"40%\">Value</th></tr>\n";
             }
         }
         else {
@@ -858,14 +862,17 @@ int HtmlGenerator::generateAtom(const Atom *atom,
         }
         if (!atom->string().isEmpty()) {
             if (atom->string().contains("%"))
-                out() << "<p><table width=\"" << atom->string() << "\" "
+                out() << "<p><table class=\"generic\" width=\"" << atom->string() << "\" "
                       << "align=\"center\" cellpadding=\"2\" "
                       << "cellspacing=\"1\" border=\"0\">\n";
-            else
-                out() << "<p><table align=\"center\" cellpadding=\"2\" cellspacing=\"1\" border=\"0\">\n";
+            else {
+                out() << "<p><table class=\"generic\" align=\"center\" cellpadding=\"2\" "
+                      << "cellspacing=\"1\" border=\"0\">\n";
+            }
         }
         else {
-            out() << "<p><table align=\"center\" cellpadding=\"2\" cellspacing=\"1\" border=\"0\">\n";
+            out() << "<p><table class=\"generic\" align=\"center\" cellpadding=\"2\" "
+                  << "cellspacing=\"1\" border=\"0\">\n";
         }
         numTableRows = 0;
         break;
@@ -1577,7 +1584,8 @@ void HtmlGenerator::generateTableOfContents(const Node *node,
     QString tdTag;
     if (numColumns > 1) {
         tdTag = "<td width=\"" + QString::number((100 + numColumns - 1) / numColumns) + "%\">";
-        out() << "<p><table width=\"100%\">\n<tr valign=\"top\">" << tdTag << "\n";
+        out() << "<p><table class=\"toc\" width=\"100%\">\n<tr valign=\"top\">"
+              << tdTag << "\n";
     }
 
     // disable nested links in table of contents
@@ -1596,7 +1604,8 @@ void HtmlGenerator::generateTableOfContents(const Node *node,
                 out() << "<ul>";
                 sectionNumber.append("1");
             } while (sectionNumber.size() < nextLevel);
-        } else {
+        }
+        else {
             while (sectionNumber.size() > nextLevel) {
                 out() << "</ul>\n";
                 sectionNumber.removeLast();
@@ -1804,10 +1813,13 @@ void HtmlGenerator::generateClassHierarchy(const Node *relative,
     }
 }
 
-void HtmlGenerator::generateAnnotatedList(const Node *relative, CodeMarker *marker,
-                    const QMap<QString, const Node *> &nodeMap)
+void
+HtmlGenerator::generateAnnotatedList(const Node *relative,
+                                     CodeMarker *marker,
+                                     const QMap<QString,const Node *>&nodeMap)
 {
-    out() << "<p><table width=\"100%\" class=\"annotated\" cellpadding=\"2\" cellspacing=\"1\" border=\"0\">\n";
+    out() << "<p><table width=\"100%\" class=\"annotated\" cellpadding=\"2\" "
+          << "cellspacing=\"1\" border=\"0\">\n";
 
     int row = 0;
     foreach (const QString &name, nodeMap.keys()) {
@@ -1960,7 +1972,7 @@ void HtmlGenerator::generateCompactList(const Node *relative, CodeMarker *marker
     }
     firstOffset[NumColumns] = classMap.count();
 
-    out() << "<p><table width=\"100%\">\n";
+    out() << "<p><table class=\"generic\" width=\"100%\">\n";
     for (k = 0; k < numRows; k++) {
         out() << "<tr>\n";
         for (i = 0; i < NumColumns; i++) {
@@ -2213,12 +2225,12 @@ void HtmlGenerator::generateSectionList(const Section& section,
             name_alignment = false;
         }
         if (name_alignment) {
-            out() << "<table border=\"0\" cellpadding=\"0\" "
+            out() << "<table class=\"alignedsummary\" border=\"0\" cellpadding=\"0\" "
                   << "cellspacing=\"0\" width=\"100%\">\n";
         }
         else {
             if (twoColumn)
-                out() << "<p><table width=\"100%\" "
+                out() << "<p><table class=\"propsummary\" width=\"100%\" "
                       << "border=\"0\" cellpadding=\"0\""
                       << " cellspacing=\"0\">\n"
                       << "<tr><td width=\"45%\" valign=\"top\">";
@@ -2513,12 +2525,13 @@ void HtmlGenerator::generateSectionList(const Section& section,
         bool twoColumn = false;
         if (style == CodeMarker::SeparateList) {
             twoColumn = (section.members.count() >= 16);
-        } else if (section.members.first()->type() == Node::Property) {
+        }
+        else if (section.members.first()->type() == Node::Property) {
             twoColumn = (section.members.count() >= 5);
         }
         if (twoColumn)
-            out() << "<p><table width=\"100%\" border=\"0\" cellpadding=\"0\""
-                     " cellspacing=\"0\">\n"
+            out() << "<p><table class=\"generic\" width=\"100%\" border=\"0\" "
+                  << "cellpadding=\"0\" cellspacing=\"0\">\n"
                   << "<tr><td width=\"45%\" valign=\"top\">";
         out() << "<ul>\n";
 

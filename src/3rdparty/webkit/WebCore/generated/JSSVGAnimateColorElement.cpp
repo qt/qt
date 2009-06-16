@@ -35,7 +35,7 @@ using namespace JSC;
 
 namespace WebCore {
 
-ASSERT_CLASS_FITS_IN_CELL(JSSVGAnimateColorElement)
+ASSERT_CLASS_FITS_IN_CELL(JSSVGAnimateColorElement);
 
 /* Hash table for prototype */
 
@@ -53,9 +53,9 @@ static const HashTable JSSVGAnimateColorElementPrototypeTable =
 
 const ClassInfo JSSVGAnimateColorElementPrototype::s_info = { "SVGAnimateColorElementPrototype", 0, &JSSVGAnimateColorElementPrototypeTable, 0 };
 
-JSObject* JSSVGAnimateColorElementPrototype::self(ExecState* exec)
+JSObject* JSSVGAnimateColorElementPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSSVGAnimateColorElement>(exec);
+    return getDOMPrototype<JSSVGAnimateColorElement>(exec, globalObject);
 }
 
 const ClassInfo JSSVGAnimateColorElement::s_info = { "SVGAnimateColorElement", &JSSVGAnimationElement::s_info, 0, 0 };
@@ -65,9 +65,9 @@ JSSVGAnimateColorElement::JSSVGAnimateColorElement(PassRefPtr<Structure> structu
 {
 }
 
-JSObject* JSSVGAnimateColorElement::createPrototype(ExecState* exec)
+JSObject* JSSVGAnimateColorElement::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSSVGAnimateColorElementPrototype(JSSVGAnimateColorElementPrototype::createStructure(JSSVGAnimationElementPrototype::self(exec)));
+    return new (exec) JSSVGAnimateColorElementPrototype(JSSVGAnimateColorElementPrototype::createStructure(JSSVGAnimationElementPrototype::self(exec, globalObject)));
 }
 
 

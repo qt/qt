@@ -37,24 +37,24 @@ class JSSVGLength : public DOMObject {
 public:
     JSSVGLength(PassRefPtr<JSC::Structure>, PassRefPtr<JSSVGPODTypeWrapper<SVGLength> >, SVGElement* context);
     virtual ~JSSVGLength();
-    static JSC::JSObject* createPrototype(JSC::ExecState*);
+    static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
-    virtual void put(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::JSValuePtr, JSC::PutPropertySlot&);
+    virtual void put(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::JSValue, JSC::PutPropertySlot&);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
     static const JSC::ClassInfo s_info;
 
-    static PassRefPtr<JSC::Structure> createStructure(JSC::JSValuePtr prototype)
+    static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
     {
         return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType));
     }
 
-    static JSC::JSValuePtr getConstructor(JSC::ExecState*);
+    static JSC::JSValue getConstructor(JSC::ExecState*);
 
     // Custom attributes
-    JSC::JSValuePtr value(JSC::ExecState*) const;
+    JSC::JSValue value(JSC::ExecState*) const;
 
     // Custom functions
-    JSC::JSValuePtr convertToSpecifiedUnits(JSC::ExecState*, const JSC::ArgList&);
+    JSC::JSValue convertToSpecifiedUnits(JSC::ExecState*, const JSC::ArgList&);
     JSSVGPODTypeWrapper<SVGLength>* impl() const { return m_impl.get(); }
     SVGElement* context() const { return m_context.get(); }
 
@@ -63,16 +63,17 @@ private:
     RefPtr<JSSVGPODTypeWrapper<SVGLength> > m_impl;
 };
 
-JSC::JSValuePtr toJS(JSC::ExecState*, JSSVGPODTypeWrapper<SVGLength>*, SVGElement* context);
-SVGLength toSVGLength(JSC::JSValuePtr);
+JSC::JSValue toJS(JSC::ExecState*, JSSVGPODTypeWrapper<SVGLength>*, SVGElement* context);
+SVGLength toSVGLength(JSC::JSValue);
 
 class JSSVGLengthPrototype : public JSC::JSObject {
+    typedef JSC::JSObject Base;
 public:
-    static JSC::JSObject* self(JSC::ExecState*);
+    static JSC::JSObject* self(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
     static const JSC::ClassInfo s_info;
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier&, JSC::PropertySlot&);
-    static PassRefPtr<JSC::Structure> createStructure(JSC::JSValuePtr prototype)
+    static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
     {
         return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType));
     }
@@ -81,31 +82,31 @@ public:
 
 // Functions
 
-JSC::JSValuePtr jsSVGLengthPrototypeFunctionNewValueSpecifiedUnits(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr, const JSC::ArgList&);
-JSC::JSValuePtr jsSVGLengthPrototypeFunctionConvertToSpecifiedUnits(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr, const JSC::ArgList&);
+JSC::JSValue JSC_HOST_CALL jsSVGLengthPrototypeFunctionNewValueSpecifiedUnits(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
+JSC::JSValue JSC_HOST_CALL jsSVGLengthPrototypeFunctionConvertToSpecifiedUnits(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
 // Attributes
 
-JSC::JSValuePtr jsSVGLengthUnitType(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValuePtr jsSVGLengthValue(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-void setJSSVGLengthValue(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr);
-JSC::JSValuePtr jsSVGLengthValueInSpecifiedUnits(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-void setJSSVGLengthValueInSpecifiedUnits(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr);
-JSC::JSValuePtr jsSVGLengthValueAsString(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-void setJSSVGLengthValueAsString(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr);
-JSC::JSValuePtr jsSVGLengthConstructor(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsSVGLengthUnitType(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsSVGLengthValue(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSSVGLengthValue(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsSVGLengthValueInSpecifiedUnits(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSSVGLengthValueInSpecifiedUnits(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsSVGLengthValueAsString(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSSVGLengthValueAsString(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsSVGLengthConstructor(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
 // Constants
 
-JSC::JSValuePtr jsSVGLengthSVG_LENGTHTYPE_UNKNOWN(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValuePtr jsSVGLengthSVG_LENGTHTYPE_NUMBER(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValuePtr jsSVGLengthSVG_LENGTHTYPE_PERCENTAGE(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValuePtr jsSVGLengthSVG_LENGTHTYPE_EMS(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValuePtr jsSVGLengthSVG_LENGTHTYPE_EXS(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValuePtr jsSVGLengthSVG_LENGTHTYPE_PX(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValuePtr jsSVGLengthSVG_LENGTHTYPE_CM(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValuePtr jsSVGLengthSVG_LENGTHTYPE_MM(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValuePtr jsSVGLengthSVG_LENGTHTYPE_IN(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValuePtr jsSVGLengthSVG_LENGTHTYPE_PT(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValuePtr jsSVGLengthSVG_LENGTHTYPE_PC(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsSVGLengthSVG_LENGTHTYPE_UNKNOWN(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsSVGLengthSVG_LENGTHTYPE_NUMBER(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsSVGLengthSVG_LENGTHTYPE_PERCENTAGE(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsSVGLengthSVG_LENGTHTYPE_EMS(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsSVGLengthSVG_LENGTHTYPE_EXS(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsSVGLengthSVG_LENGTHTYPE_PX(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsSVGLengthSVG_LENGTHTYPE_CM(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsSVGLengthSVG_LENGTHTYPE_MM(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsSVGLengthSVG_LENGTHTYPE_IN(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsSVGLengthSVG_LENGTHTYPE_PT(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsSVGLengthSVG_LENGTHTYPE_PC(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
 
 } // namespace WebCore
 

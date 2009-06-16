@@ -47,15 +47,19 @@ class SVGRootInlineBox : public RootInlineBox {
 public:
     SVGRootInlineBox(RenderObject* obj)
         : RootInlineBox(obj)
+        , m_height(0)
     {
     }
 
     virtual bool isSVGRootInlineBox() { return true; }
 
+    virtual int svgBoxHeight() const { return m_height; }
+    void setHeight(int h) { m_height = h; }
+    
     virtual void paint(RenderObject::PaintInfo&, int tx, int ty);
 
     virtual int placeBoxesHorizontally(int x, int& leftPosition, int& rightPosition, bool& needsWordSpacing);
-    virtual void verticallyAlignBoxes(int& heightOfBlock);
+    virtual int verticallyAlignBoxes(int heightOfBlock);
 
     virtual void computePerCharacterLayoutInformation();
 
@@ -80,6 +84,7 @@ private:
     SVGTextDecorationInfo retrievePaintServersForTextDecoration(RenderObject* start);
 
 private:
+    int m_height;
     Vector<SVGChar> m_svgChars;
     Vector<SVGTextChunk> m_svgTextChunks;
 };

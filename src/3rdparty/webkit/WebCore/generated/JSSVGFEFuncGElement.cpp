@@ -21,7 +21,7 @@
 #include "config.h"
 
 
-#if ENABLE(SVG) && ENABLE(SVG_FILTERS)
+#if ENABLE(SVG) && ENABLE(FILTERS)
 
 #include "SVGElement.h"
 #include "JSSVGFEFuncGElement.h"
@@ -35,7 +35,7 @@ using namespace JSC;
 
 namespace WebCore {
 
-ASSERT_CLASS_FITS_IN_CELL(JSSVGFEFuncGElement)
+ASSERT_CLASS_FITS_IN_CELL(JSSVGFEFuncGElement);
 
 /* Hash table for prototype */
 
@@ -53,9 +53,9 @@ static const HashTable JSSVGFEFuncGElementPrototypeTable =
 
 const ClassInfo JSSVGFEFuncGElementPrototype::s_info = { "SVGFEFuncGElementPrototype", 0, &JSSVGFEFuncGElementPrototypeTable, 0 };
 
-JSObject* JSSVGFEFuncGElementPrototype::self(ExecState* exec)
+JSObject* JSSVGFEFuncGElementPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSSVGFEFuncGElement>(exec);
+    return getDOMPrototype<JSSVGFEFuncGElement>(exec, globalObject);
 }
 
 const ClassInfo JSSVGFEFuncGElement::s_info = { "SVGFEFuncGElement", &JSSVGComponentTransferFunctionElement::s_info, 0, 0 };
@@ -65,12 +65,12 @@ JSSVGFEFuncGElement::JSSVGFEFuncGElement(PassRefPtr<Structure> structure, PassRe
 {
 }
 
-JSObject* JSSVGFEFuncGElement::createPrototype(ExecState* exec)
+JSObject* JSSVGFEFuncGElement::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSSVGFEFuncGElementPrototype(JSSVGFEFuncGElementPrototype::createStructure(JSSVGComponentTransferFunctionElementPrototype::self(exec)));
+    return new (exec) JSSVGFEFuncGElementPrototype(JSSVGFEFuncGElementPrototype::createStructure(JSSVGComponentTransferFunctionElementPrototype::self(exec, globalObject)));
 }
 
 
 }
 
-#endif // ENABLE(SVG) && ENABLE(SVG_FILTERS)
+#endif // ENABLE(SVG) && ENABLE(FILTERS)

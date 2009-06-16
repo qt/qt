@@ -66,7 +66,7 @@ class QStyleOption;
 
 class QGraphicsWidgetPrivate;
 
-class Q_GUI_EXPORT QGraphicsWidget : public QObject, public QGraphicsItem, public QGraphicsLayoutItem
+class Q_GUI_EXPORT QGraphicsWidget : public QGraphicsObject, public QGraphicsLayoutItem
 {
     Q_OBJECT
     Q_PROPERTY(QPalette palette READ palette WRITE setPalette)
@@ -74,12 +74,8 @@ class Q_GUI_EXPORT QGraphicsWidget : public QObject, public QGraphicsItem, publi
     Q_PROPERTY(Qt::LayoutDirection layoutDirection READ layoutDirection WRITE setLayoutDirection RESET unsetLayoutDirection)
     Q_PROPERTY(QSizeF size READ size WRITE resize)
     Q_PROPERTY(Qt::FocusPolicy focusPolicy READ focusPolicy WRITE setFocusPolicy)
-    Q_PROPERTY(bool enabled READ isEnabled WRITE setEnabled)
-    Q_PROPERTY(bool visible READ isVisible WRITE setVisible)
     Q_PROPERTY(Qt::WindowFlags windowFlags READ windowFlags WRITE setWindowFlags)
     Q_PROPERTY(QString windowTitle READ windowTitle WRITE setWindowTitle)
-    Q_PROPERTY(qreal opacity READ opacity WRITE setOpacity)
-    Q_PROPERTY(QPointF pos READ pos WRITE setPos)
     Q_PROPERTY(QRectF geometry READ geometry WRITE setGeometry)
     Q_PROPERTY(QPointF transformOrigin READ transformOrigin WRITE setTransformOrigin)
     Q_PROPERTY(qreal xRotation READ xRotation WRITE setXRotation)

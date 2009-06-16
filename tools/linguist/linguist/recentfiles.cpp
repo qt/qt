@@ -40,6 +40,7 @@
 ****************************************************************************/
 
 #include "recentfiles.h"
+#include "globals.h"
 
 #include <QtCore/QDebug>
 #include <QtCore/QFileInfo>
@@ -49,11 +50,9 @@
 
 QT_BEGIN_NAMESPACE
 
-const QString &settingsPrefix();
-
 static QString configKey()
 {
-    return settingsPrefix() + QLatin1String("RecentlyOpenedFiles");
+    return settingPath("RecentlyOpenedFiles");
 }
 
 

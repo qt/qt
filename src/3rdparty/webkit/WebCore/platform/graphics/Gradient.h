@@ -29,6 +29,8 @@
 
 #include "FloatPoint.h"
 #include "Generator.h"
+#include "GraphicsTypes.h"
+#include "TransformationMatrix.h"
 #include <wtf/PassRefPtr.h>
 #include <wtf/Vector.h>
 
@@ -86,6 +88,12 @@ namespace WebCore {
 
         void setStopsSorted(bool s) { m_stopsSorted = s; }
 
+        void setSpreadMethod(GradientSpreadMethod);
+        GradientSpreadMethod spreadMethod() { return m_spreadMethod; }
+        void setGradientSpaceTransform(const TransformationMatrix& gradientSpaceTransformation) { m_gradientSpaceTransformation = gradientSpaceTransformation; }
+        // Qt and CG transform the gradient at draw time
+        TransformationMatrix gradientSpaceTransform() { return m_gradientSpaceTransformation; }
+
         virtual void fill(GraphicsContext*, const FloatRect&);
 
     private:
@@ -105,6 +113,8 @@ namespace WebCore {
         mutable Vector<ColorStop> m_stops;
         mutable bool m_stopsSorted;
         mutable int m_lastStop;
+        GradientSpreadMethod m_spreadMethod;
+        TransformationMatrix m_gradientSpaceTransformation;
 
         PlatformGradient m_gradient;
     };

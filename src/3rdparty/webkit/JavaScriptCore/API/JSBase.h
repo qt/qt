@@ -65,14 +65,20 @@ typedef struct OpaqueJSValue* JSObjectRef;
 /* JavaScript symbol exports */
 
 #undef JS_EXPORT
-#if defined(__GNUC__)
+#if defined(BUILDING_WX__)
+    #define JS_EXPORT
+#elif defined(__GNUC__)
     #define JS_EXPORT __attribute__((visibility("default")))
 #elif defined(WIN32) || defined(_WIN32)
     /*
      * TODO: Export symbols with JS_EXPORT when using MSVC.
      * See http://bugs.webkit.org/show_bug.cgi?id=16227
      */
-    #define JS_EXPORT
+    #if defined(BUILDING_JavaScriptCore) || defined(BUILDING_WTF)
+    #define JS_EXPORT __declspec(dllexport)
+    #else
+    #define JS_EXPORT __declspec(dllimport)
+    #endif
 #else
     #define JS_EXPORT
 #endif

@@ -26,6 +26,7 @@
 #define MatrixTransformOperation_h
 
 #include "TransformOperation.h"
+#include "TransformationMatrix.h"
 
 namespace WebCore {
 
@@ -36,8 +37,14 @@ public:
         return adoptRef(new MatrixTransformOperation(a, b, c, d, e, f));
     }
 
+    static PassRefPtr<MatrixTransformOperation> create(const TransformationMatrix& t)
+    {
+        return adoptRef(new MatrixTransformOperation(t));
+    }
+
 private:
     virtual bool isIdentity() const { return m_a == 1 && m_b == 0 && m_c == 0 && m_d == 1 && m_e == 0 && m_f == 0; }
+
     virtual OperationType getOperationType() const { return MATRIX; }
     virtual bool isSameType(const TransformOperation& o) const { return o.getOperationType() == MATRIX; }
 
@@ -53,7 +60,7 @@ private:
     virtual bool apply(TransformationMatrix& transform, const IntSize&) const
     {
         TransformationMatrix matrix(m_a, m_b, m_c, m_d, m_e, m_f);
-        transform = matrix * transform;
+        transform.multLeft(TransformationMatrix(matrix));
         return false;
     }
 
@@ -66,6 +73,16 @@ private:
         , m_d(d)
         , m_e(e)
         , m_f(f)
+    {
+    }
+
+    MatrixTransformOperation(const TransformationMatrix& t)
+        : m_a(t.a())
+        , m_b(t.b())
+        , m_c(t.c())
+        , m_d(t.d())
+        , m_e(t.e())
+        , m_f(t.f())
     {
     }
     

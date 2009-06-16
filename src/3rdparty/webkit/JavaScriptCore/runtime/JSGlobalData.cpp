@@ -30,15 +30,19 @@
 #include "JSGlobalData.h"
 
 #include "ArgList.h"
+#include "Collector.h"
 #include "CommonIdentifiers.h"
+#include "FunctionConstructor.h"
+#include "Interpreter.h"
 #include "JSActivation.h"
+#include "JSArray.h"
+#include "JSByteArray.h"
 #include "JSClassRef.h"
+#include "JSFunction.h"
 #include "JSLock.h"
 #include "JSNotAnObject.h"
 #include "JSStaticScopeObject.h"
-#include "Interpreter.h"
 #include "Parser.h"
-#include "Collector.h"
 #include "Lexer.h"
 #include "Lookup.h"
 #include "Nodes.h"
@@ -63,40 +67,80 @@ extern const HashTable regExpTable;
 extern const HashTable regExpConstructorTable;
 extern const HashTable stringTable;
 
-JSGlobalData::JSGlobalData(bool isShared)
-    : interpreter(new Interpreter)
-    , exception(noValue())
-    , arrayTable(new HashTable(JSC::arrayTable))
-    , dateTable(new HashTable(JSC::dateTable))
-    , mathTable(new HashTable(JSC::mathTable))
-    , numberTable(new HashTable(JSC::numberTable))
-    , regExpTable(new HashTable(JSC::regExpTable))
-    , regExpConstructorTable(new HashTable(JSC::regExpConstructorTable))
-    , stringTable(new HashTable(JSC::stringTable))
+struct VPtrSet {
+    VPtrSet();
+
+    void* jsArrayVPtr;
+    void* jsByteArrayVPtr;
+    void* jsStringVPtr;
+    void* jsFunctionVPtr;
+};
+
+VPtrSet::VPtrSet()
+{
+    // Bizarrely, calling fastMalloc here is faster than allocating space on the stack.
+    void* storage = fastMalloc(sizeof(CollectorBlock));
+
+    JSCell* jsArray = new (storage) JSArray(JSArray::createStructure(jsNull()));
+    jsArrayVPtr = jsArray->vptr();
+    jsArray->~JSCell();
+
+    JSCell* jsByteArray = new (storage) JSByteArray(JSByteArray::VPtrStealingHack);
+    jsByteArrayVPtr = jsByteArray->vptr();
+    jsByteArray->~JSCell();
+
+    JSCell* jsString = new (storage) JSString(JSString::VPtrStealingHack);
+    jsStringVPtr = jsString->vptr();
+    jsString->~JSCell();
+
+    JSCell* jsFunction = new (storage) JSFunction(JSFunction::createStructure(jsNull()));
+    jsFunctionVPtr = jsFunction->vptr();
+    jsFunction->~JSCell();
+
+    fastFree(storage);
+}
+
+JSGlobalData::JSGlobalData(bool isShared, const VPtrSet& vptrSet)
+    : isSharedInstance(isShared)
+    , clientData(0)
+    , arrayTable(fastNew<HashTable>(JSC::arrayTable))
+    , dateTable(fastNew<HashTable>(JSC::dateTable))
+    , mathTable(fastNew<HashTable>(JSC::mathTable))
+    , numberTable(fastNew<HashTable>(JSC::numberTable))
+    , regExpTable(fastNew<HashTable>(JSC::regExpTable))
+    , regExpConstructorTable(fastNew<HashTable>(JSC::regExpConstructorTable))
+    , stringTable(fastNew<HashTable>(JSC::stringTable))
     , activationStructure(JSActivation::createStructure(jsNull()))
     , interruptedExecutionErrorStructure(JSObject::createStructure(jsNull()))
     , staticScopeStructure(JSStaticScopeObject::createStructure(jsNull()))
     , stringStructure(JSString::createStructure(jsNull()))
     , notAnObjectErrorStubStructure(JSNotAnObjectErrorStub::createStructure(jsNull()))
     , notAnObjectStructure(JSNotAnObject::createStructure(jsNull()))
+#if !USE(ALTERNATE_JSIMMEDIATE)
     , numberStructure(JSNumberCell::createStructure(jsNull()))
+#endif
+    , jsArrayVPtr(vptrSet.jsArrayVPtr)
+    , jsByteArrayVPtr(vptrSet.jsByteArrayVPtr)
+    , jsStringVPtr(vptrSet.jsStringVPtr)
+    , jsFunctionVPtr(vptrSet.jsFunctionVPtr)
     , identifierTable(createIdentifierTable())
     , propertyNames(new CommonIdentifiers(this))
-    , emptyList(new ArgList)
-    , newParserObjects(0)
-    , parserObjectExtraRefCounts(0)
+    , emptyList(new MarkedArgumentBuffer)
     , lexer(new Lexer(this))
     , parser(new Parser)
+    , interpreter(new Interpreter)
+#if ENABLE(JIT)
+    , jitStubs(this)
+#endif
+    , heap(this)
+    , initializingLazyNumericCompareFunction(false)
     , head(0)
     , dynamicGlobalObject(0)
-    , isSharedInstance(isShared)
-    , clientData(0)
-    , heap(this)
+    , scopeNodeBeingReparsed(0)
 {
 #if PLATFORM(MAC)
     startProfilerServerIfNeeded();
 #endif
-    interpreter->initialize(this);
 }
 
 JSGlobalData::~JSGlobalData()
@@ -116,13 +160,17 @@ JSGlobalData::~JSGlobalData()
     regExpTable->deleteTable();
     regExpConstructorTable->deleteTable();
     stringTable->deleteTable();
-    delete arrayTable;
-    delete dateTable;
-    delete mathTable;
-    delete numberTable;
-    delete regExpTable;
-    delete regExpConstructorTable;
-    delete stringTable;
+#if ENABLE(JIT)
+    lazyNativeFunctionThunk.clear();
+#endif
+
+    fastDelete(const_cast<HashTable*>(arrayTable));
+    fastDelete(const_cast<HashTable*>(dateTable));
+    fastDelete(const_cast<HashTable*>(mathTable));
+    fastDelete(const_cast<HashTable*>(numberTable));
+    fastDelete(const_cast<HashTable*>(regExpTable));
+    fastDelete(const_cast<HashTable*>(regExpConstructorTable));
+    fastDelete(const_cast<HashTable*>(stringTable));
 
     delete parser;
     delete lexer;
@@ -134,27 +182,20 @@ JSGlobalData::~JSGlobalData()
     delete propertyNames;
     deleteIdentifierTable(identifierTable);
 
-    delete newParserObjects;
-    delete parserObjectExtraRefCounts;
-    
     delete clientData;
 }
 
-PassRefPtr<JSGlobalData> JSGlobalData::create()
+PassRefPtr<JSGlobalData> JSGlobalData::create(bool isShared)
 {
-    return adoptRef(new JSGlobalData);
+    return adoptRef(new JSGlobalData(isShared, VPtrSet()));
 }
 
 PassRefPtr<JSGlobalData> JSGlobalData::createLeaked()
 {
-#ifndef NDEBUG
     Structure::startIgnoringLeaks();
     RefPtr<JSGlobalData> data = create();
     Structure::stopIgnoringLeaks();
     return data.release();
-#else
-    return create();
-#endif
 }
 
 bool JSGlobalData::sharedInstanceExists()
@@ -166,7 +207,7 @@ JSGlobalData& JSGlobalData::sharedInstance()
 {
     JSGlobalData*& instance = sharedInstanceInternal();
     if (!instance) {
-        instance = new JSGlobalData(true);
+        instance = create(true).releaseRef();
 #if ENABLE(JSC_MULTIPLE_THREADS)
         instance->makeUsableFromMultipleThreads();
 #endif
@@ -181,8 +222,31 @@ JSGlobalData*& JSGlobalData::sharedInstanceInternal()
     return sharedInstance;
 }
 
+#if ENABLE(JIT)
+
+void JSGlobalData::createNativeThunk()
+{
+    lazyNativeFunctionThunk = FunctionBodyNode::createNativeThunk(this);
+}
+
+#endif
+
+// FIXME: We can also detect forms like v1 < v2 ? -1 : 0, reverse comparison, etc.
+const Vector<Instruction>& JSGlobalData::numericCompareFunction(ExecState* exec)
+{
+    if (!lazyNumericCompareFunction.size() && !initializingLazyNumericCompareFunction) {
+        initializingLazyNumericCompareFunction = true;
+        RefPtr<ProgramNode> programNode = parser->parse<ProgramNode>(exec, 0, makeSource(UString("(function (v1, v2) { return v1 - v2; })")), 0, 0);
+        RefPtr<FunctionBodyNode> functionBody = extractFunctionBody(programNode.get());
+        lazyNumericCompareFunction = functionBody->bytecode(exec->scopeChain()).instructions();
+        initializingLazyNumericCompareFunction = false;
+    }
+
+    return lazyNumericCompareFunction;
+}
+
 JSGlobalData::ClientData::~ClientData()
 {
 }
 
-}
+} // namespace JSC

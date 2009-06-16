@@ -508,6 +508,9 @@ in the \l{Qt for Windows CE Requirements} document.
     This page describes the specific requirements of libraries and components on which
     Qt depends. For information about installing Qt, see the \l{Installation} page.
 
+    For information about the platforms that Qt supports, see the \l{Supported Platforms}
+    page.
+
     \section1 OpenSSL (version 0.9.7 or later)
 
     Support for \l{SSL}{Secure Sockets Layer (SSL)} communication is provided by the

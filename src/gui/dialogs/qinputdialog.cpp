@@ -1249,9 +1249,9 @@ double QInputDialog::getDouble(QWidget *parent, const QString &title, const QStr
     QInputDialog dialog(parent, flags);
     dialog.setWindowTitle(title);
     dialog.setLabelText(label);
+    dialog.setDoubleDecimals(decimals);
     dialog.setDoubleRange(min, max);
     dialog.setDoubleValue(value);
-    dialog.setDoubleDecimals(decimals);
 
     int ret = dialog.exec();
     if (ok)

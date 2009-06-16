@@ -1308,6 +1308,9 @@ void QPrinter::setNumCopies(int numCopies)
 
     Returns true if collation is turned on when multiple copies is selected.
     Returns false if it is turned off when multiple copies is selected.
+    When collating is turned off the printing of each individual page will be repeated
+    the numCopies() amount before the next page is started. With collating turned on
+    all pages are printed before the next copy of those pages is started.
 
     \sa setCollateCopies()
 */

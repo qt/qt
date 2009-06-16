@@ -2,7 +2,7 @@
  * Copyright (C) 1999 Lars Knoll (knoll@kde.org)
  *           (C) 1999 Antti Koivisto (koivisto@kde.org)
  *           (C) 2001 Dirk Mueller ( mueller@kde.org )
- * Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008 Apple Inc. All rights reserved.
+ * Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009 Apple Inc. All rights reserved.
  * Copyright (C) 2006 Andrew Wellington (proton@wiretapped.net)
  *
  * This library is free software; you can redistribute it and/or
@@ -44,6 +44,8 @@ using namespace Unicode;
 
 namespace WebCore {
 
+static const unsigned minLengthToShare = 20;
+
 static inline UChar* newUCharVector(unsigned n)
 {
     return static_cast<UChar*>(fastMalloc(sizeof(UChar) * n));
@@ -54,13 +56,33 @@ static inline void deleteUCharVector(const UChar* p)
     fastFree(const_cast<UChar*>(p));
 }
 
+// Some of the factory methods create buffers using fastMalloc.
+// We must ensure that ll allocations of StringImpl are allocated using
+// fastMalloc so that we don't have mis-matched frees. We accomplish 
+// this by overriding the new and delete operators.
+void* StringImpl::operator new(size_t size, void* address)
+{
+    if (address)
+        return address;  // Allocating using an internal buffer
+    return fastMalloc(size);
+}
+
+void* StringImpl::operator new(size_t size)
+{
+    return fastMalloc(size);
+}
+
+void StringImpl::operator delete(void* address)
+{
+    fastFree(address);
+}
+
 // This constructor is used only to create the empty string.
 StringImpl::StringImpl()
     : m_length(0)
     , m_data(0)
     , m_hash(0)
-    , m_inTable(false)
-    , m_hasTerminatingNullCharacter(false)
+    , m_bufferIsInternal(false)
 {
     // Ensure that the hash is computed so that AtomicStringHash can call existingHash()
     // with impunity. The empty string is special because it is never entered into
@@ -74,8 +96,7 @@ StringImpl::StringImpl()
 inline StringImpl::StringImpl(const UChar* characters, unsigned length)
     : m_length(length)
     , m_hash(0)
-    , m_inTable(false)
-    , m_hasTerminatingNullCharacter(false)
+    , m_bufferIsInternal(false)
 {
     UChar* data = newUCharVector(length);
     memcpy(data, characters, length * sizeof(UChar));
@@ -85,9 +106,9 @@ inline StringImpl::StringImpl(const UChar* characters, unsigned length)
 inline StringImpl::StringImpl(const StringImpl& str, WithTerminatingNullCharacter)
     : m_length(str.m_length)
     , m_hash(str.m_hash)
-    , m_inTable(false)
-    , m_hasTerminatingNullCharacter(true)
+    , m_bufferIsInternal(false)
 {
+    m_sharedBufferAndFlags.setFlag(HasTerminatingNullCharacter);
     UChar* data = newUCharVector(str.m_length + 1);
     memcpy(data, str.m_data, str.m_length * sizeof(UChar));
     data[str.m_length] = 0;
@@ -97,8 +118,7 @@ inline StringImpl::StringImpl(const StringImpl& str, WithTerminatingNullCharacte
 inline StringImpl::StringImpl(const char* characters, unsigned length)
     : m_length(length)
     , m_hash(0)
-    , m_inTable(false)
-    , m_hasTerminatingNullCharacter(false)
+    , m_bufferIsInternal(false)
 {
     ASSERT(characters);
     ASSERT(length);
@@ -115,8 +135,7 @@ inline StringImpl::StringImpl(UChar* characters, unsigned length, AdoptBuffer)
     : m_length(length)
     , m_data(characters)
     , m_hash(0)
-    , m_inTable(false)
-    , m_hasTerminatingNullCharacter(false)
+    , m_bufferIsInternal(false)
 {
     ASSERT(characters);
     ASSERT(length);
@@ -126,13 +145,13 @@ inline StringImpl::StringImpl(UChar* characters, unsigned length, AdoptBuffer)
 StringImpl::StringImpl(const UChar* characters, unsigned length, unsigned hash)
     : m_length(length)
     , m_hash(hash)
-    , m_inTable(true)
-    , m_hasTerminatingNullCharacter(false)
+    , m_bufferIsInternal(false)
 {
     ASSERT(hash);
     ASSERT(characters);
     ASSERT(length);
 
+    setInTable();
     UChar* data = newUCharVector(length);
     memcpy(data, characters, length * sizeof(UChar));
     m_data = data;
@@ -142,13 +161,13 @@ StringImpl::StringImpl(const UChar* characters, unsigned length, unsigned hash)
 StringImpl::StringImpl(const char* characters, unsigned length, unsigned hash)
     : m_length(length)
     , m_hash(hash)
-    , m_inTable(true)
-    , m_hasTerminatingNullCharacter(false)
+    , m_bufferIsInternal(false)
 {
     ASSERT(hash);
     ASSERT(characters);
     ASSERT(length);
 
+    setInTable();
     UChar* data = newUCharVector(length);
     for (unsigned i = 0; i != length; ++i) {
         unsigned char c = characters[i];
@@ -159,9 +178,15 @@ StringImpl::StringImpl(const char* characters, unsigned length, unsigned hash)
 
 StringImpl::~StringImpl()
 {
-    if (m_inTable)
+    if (inTable())
         AtomicString::remove(this);
-    deleteUCharVector(m_data);
+    if (!m_bufferIsInternal) {
+        SharedUChar* sharedBuffer = m_sharedBufferAndFlags.get();
+        if (sharedBuffer)
+            sharedBuffer->deref();
+        else
+            deleteUCharVector(m_data);
+    }
 }
 
 StringImpl* StringImpl::empty()
@@ -235,7 +260,8 @@ bool StringImpl::isLower()
 
 PassRefPtr<StringImpl> StringImpl::lower()
 {
-    StringBuffer data(m_length);
+    UChar* data;
+    PassRefPtr<StringImpl> newImpl = createUninitialized(m_length, data);
     int32_t length = m_length;
 
     // Do a faster loop for the case where all the characters are ASCII.
@@ -246,23 +272,24 @@ PassRefPtr<StringImpl> StringImpl::lower()
         data[i] = toASCIILower(c);
     }
     if (!(ored & ~0x7F))
-        return adopt(data);
+        return newImpl;
 
     // Do a slower implementation for cases that include non-ASCII characters.
     bool error;
-    int32_t realLength = Unicode::toLower(data.characters(), length, m_data, m_length, &error);
+    int32_t realLength = Unicode::toLower(data, length, m_data, m_length, &error);
     if (!error && realLength == length)
-        return adopt(data);
-    data.resize(realLength);
-    Unicode::toLower(data.characters(), realLength, m_data, m_length, &error);
+        return newImpl;
+    newImpl = createUninitialized(realLength, data);
+    Unicode::toLower(data, realLength, m_data, m_length, &error);
     if (error)
         return this;
-    return adopt(data);
+    return newImpl;
 }
 
 PassRefPtr<StringImpl> StringImpl::upper()
 {
-    StringBuffer data(m_length);
+    UChar* data;
+    PassRefPtr<StringImpl> newImpl = createUninitialized(m_length, data);
     int32_t length = m_length;
 
     // Do a faster loop for the case where all the characters are ASCII.
@@ -273,32 +300,34 @@ PassRefPtr<StringImpl> StringImpl::upper()
         data[i] = toASCIIUpper(c);
     }
     if (!(ored & ~0x7F))
-        return adopt(data);
+        return newImpl;
 
     // Do a slower implementation for cases that include non-ASCII characters.
     bool error;
-    int32_t realLength = Unicode::toUpper(data.characters(), length, m_data, m_length, &error);
+    int32_t realLength = Unicode::toUpper(data, length, m_data, m_length, &error);
     if (!error && realLength == length)
-        return adopt(data);
-    data.resize(realLength);
-    Unicode::toUpper(data.characters(), realLength, m_data, m_length, &error);
+        return newImpl;
+    newImpl = createUninitialized(realLength, data);
+    Unicode::toUpper(data, realLength, m_data, m_length, &error);
     if (error)
         return this;
-    return adopt(data);
+    return newImpl;
 }
 
 PassRefPtr<StringImpl> StringImpl::secure(UChar aChar)
 {
-    int length = m_length;
-    StringBuffer data(length);
+    UChar* data;
+    PassRefPtr<StringImpl> newImpl = createUninitialized(m_length, data);
+    int32_t length = m_length;
     for (int i = 0; i < length; ++i)
         data[i] = aChar;
-    return adopt(data);
+    return newImpl;
 }
 
 PassRefPtr<StringImpl> StringImpl::foldCase()
 {
-    StringBuffer data(m_length);
+    UChar* data;
+    PassRefPtr<StringImpl> newImpl = createUninitialized(m_length, data);
     int32_t length = m_length;
 
     // Do a faster loop for the case where all the characters are ASCII.
@@ -309,18 +338,18 @@ PassRefPtr<StringImpl> StringImpl::foldCase()
         data[i] = toASCIILower(c);
     }
     if (!(ored & ~0x7F))
-        return adopt(data);
+        return newImpl;
 
     // Do a slower implementation for cases that include non-ASCII characters.
     bool error;
-    int32_t realLength = Unicode::foldCase(data.characters(), length, m_data, m_length, &error);
+    int32_t realLength = Unicode::foldCase(data, length, m_data, m_length, &error);
     if (!error && realLength == length)
-        return adopt(data);
-    data.resize(realLength);
-    Unicode::foldCase(data.characters(), realLength, m_data, m_length, &error);
+        return newImpl;
+    newImpl = createUninitialized(realLength, data);
+    Unicode::foldCase(data, realLength, m_data, m_length, &error);
     if (error)
         return this;
-    return adopt(data);
+    return newImpl;
 }
 
 PassRefPtr<StringImpl> StringImpl::stripWhiteSpace()
@@ -698,14 +727,16 @@ PassRefPtr<StringImpl> StringImpl::replace(UChar oldC, UChar newC)
     if (i == m_length)
         return this;
 
-    StringBuffer data(m_length);
+    UChar* data;
+    PassRefPtr<StringImpl> newImpl = createUninitialized(m_length, data);
+
     for (i = 0; i != m_length; ++i) {
         UChar ch = m_data[i];
         if (ch == oldC)
             ch = newC;
         data[i] = ch;
     }
-    return adopt(data);
+    return newImpl;
 }
 
 PassRefPtr<StringImpl> StringImpl::replace(unsigned position, unsigned lengthToReplace, StringImpl* str)
@@ -715,13 +746,15 @@ PassRefPtr<StringImpl> StringImpl::replace(unsigned position, unsigned lengthToR
     unsigned lengthToInsert = str ? str->length() : 0;
     if (!lengthToReplace && !lengthToInsert)
         return this;
-    StringBuffer buffer(length() - lengthToReplace + lengthToInsert);
-    memcpy(buffer.characters(), characters(), position * sizeof(UChar));
+    UChar* data;
+    PassRefPtr<StringImpl> newImpl =
+        createUninitialized(length() - lengthToReplace + lengthToInsert, data);
+    memcpy(data, characters(), position * sizeof(UChar));
     if (str)
-        memcpy(buffer.characters() + position, str->characters(), lengthToInsert * sizeof(UChar));
-    memcpy(buffer.characters() + position + lengthToInsert, characters() + position + lengthToReplace,
+        memcpy(data + position, str->characters(), lengthToInsert * sizeof(UChar));
+    memcpy(data + position + lengthToInsert, characters() + position + lengthToReplace,
         (length() - position - lengthToReplace) * sizeof(UChar));
-    return adopt(buffer);
+    return newImpl;
 }
 
 PassRefPtr<StringImpl> StringImpl::replace(UChar pattern, StringImpl* replacement)
@@ -743,8 +776,10 @@ PassRefPtr<StringImpl> StringImpl::replace(UChar pattern, StringImpl* replacemen
     if (!matchCount)
         return this;
     
-    StringBuffer data(m_length - matchCount + (matchCount * repStrLength));
-    
+    UChar* data;
+    PassRefPtr<StringImpl> newImpl =
+        createUninitialized(m_length - matchCount + (matchCount * repStrLength), data);
+
     // Construct the new data
     int srcSegmentEnd;
     int srcSegmentLength;
@@ -753,19 +788,19 @@ PassRefPtr<StringImpl> StringImpl::replace(UChar pattern, StringImpl* replacemen
     
     while ((srcSegmentEnd = find(pattern, srcSegmentStart)) >= 0) {
         srcSegmentLength = srcSegmentEnd - srcSegmentStart;
-        memcpy(data.characters() + dstOffset, m_data + srcSegmentStart, srcSegmentLength * sizeof(UChar));
+        memcpy(data + dstOffset, m_data + srcSegmentStart, srcSegmentLength * sizeof(UChar));
         dstOffset += srcSegmentLength;
-        memcpy(data.characters() + dstOffset, replacement->m_data, repStrLength * sizeof(UChar));
+        memcpy(data + dstOffset, replacement->m_data, repStrLength * sizeof(UChar));
         dstOffset += repStrLength;
         srcSegmentStart = srcSegmentEnd + 1;
     }
 
     srcSegmentLength = m_length - srcSegmentStart;
-    memcpy(data.characters() + dstOffset, m_data + srcSegmentStart, srcSegmentLength * sizeof(UChar));
+    memcpy(data + dstOffset, m_data + srcSegmentStart, srcSegmentLength * sizeof(UChar));
 
-    ASSERT(dstOffset + srcSegmentLength == static_cast<int>(data.length()));
+    ASSERT(dstOffset + srcSegmentLength == static_cast<int>(newImpl->length()));
 
-    return adopt(data);
+    return newImpl;
 }
 
 PassRefPtr<StringImpl> StringImpl::replace(StringImpl* pattern, StringImpl* replacement)
@@ -791,7 +826,9 @@ PassRefPtr<StringImpl> StringImpl::replace(StringImpl* pattern, StringImpl* repl
     if (!matchCount)
         return this;
     
-    StringBuffer data(m_length + matchCount * (repStrLength - patternLength));
+    UChar* data;
+    PassRefPtr<StringImpl> newImpl =
+        createUninitialized(m_length + matchCount * (repStrLength - patternLength), data);
     
     // Construct the new data
     int srcSegmentEnd;
@@ -801,19 +838,19 @@ PassRefPtr<StringImpl> StringImpl::replace(StringImpl* pattern, StringImpl* repl
     
     while ((srcSegmentEnd = find(pattern, srcSegmentStart)) >= 0) {
         srcSegmentLength = srcSegmentEnd - srcSegmentStart;
-        memcpy(data.characters() + dstOffset, m_data + srcSegmentStart, srcSegmentLength * sizeof(UChar));
+        memcpy(data + dstOffset, m_data + srcSegmentStart, srcSegmentLength * sizeof(UChar));
         dstOffset += srcSegmentLength;
-        memcpy(data.characters() + dstOffset, replacement->m_data, repStrLength * sizeof(UChar));
+        memcpy(data + dstOffset, replacement->m_data, repStrLength * sizeof(UChar));
         dstOffset += repStrLength;
         srcSegmentStart = srcSegmentEnd + patternLength;
     }
 
     srcSegmentLength = m_length - srcSegmentStart;
-    memcpy(data.characters() + dstOffset, m_data + srcSegmentStart, srcSegmentLength * sizeof(UChar));
+    memcpy(data + dstOffset, m_data + srcSegmentStart, srcSegmentLength * sizeof(UChar));
 
-    ASSERT(dstOffset + srcSegmentLength == static_cast<int>(data.length()));
+    ASSERT(dstOffset + srcSegmentLength == static_cast<int>(newImpl->length()));
 
-    return adopt(data);
+    return newImpl;
 }
 
 bool equal(StringImpl* a, StringImpl* b)
@@ -907,26 +944,8 @@ WTF::Unicode::Direction StringImpl::defaultWritingDirection()
 }
 
 // This is a hot function because it's used when parsing HTML.
-PassRefPtr<StringImpl> StringImpl::createStrippingNullCharacters(const UChar* characters, unsigned length)
+PassRefPtr<StringImpl> StringImpl::createStrippingNullCharactersSlowCase(const UChar* characters, unsigned length)
 {
-    ASSERT(characters);
-    ASSERT(length);
-
-    // Optimize for the case where there are no Null characters by quickly
-    // searching for nulls, and then using StringImpl::create, which will
-    // memcpy the whole buffer.  This is faster than assigning character by
-    // character during the loop. 
-
-    // Fast case.
-    int foundNull = 0;
-    for (unsigned i = 0; !foundNull && i < length; i++) {
-        int c = characters[i]; // more efficient than using UChar here (at least on Intel Mac OS)
-        foundNull |= !c;
-    }
-    if (!foundNull)
-        return StringImpl::create(characters, length);
-    
-    // Slow case.
     StringBuffer strippedCopy(length);
     unsigned strippedLength = 0;
     for (unsigned i = 0; i < length; i++) {
@@ -954,29 +973,78 @@ PassRefPtr<StringImpl> StringImpl::adopt(Vector<UChar>& vector)
     return adoptRef(new StringImpl(vector.releaseBuffer(), size, AdoptBuffer()));
 }
 
+PassRefPtr<StringImpl> StringImpl::createUninitialized(unsigned length, UChar*& data)
+{
+    if (!length) {
+        data = 0;
+        return empty();
+    }
+
+    // Allocate a single buffer large enough to contain the StringImpl
+    // struct as well as the data which it contains. This removes one 
+    // heap allocation from this call.
+    size_t size = sizeof(StringImpl) + length * sizeof(UChar);
+    char* buffer = static_cast<char*>(fastMalloc(size));
+    data = reinterpret_cast<UChar*>(buffer + sizeof(StringImpl));
+    StringImpl* string = new (buffer) StringImpl(data, length, AdoptBuffer());
+    string->m_bufferIsInternal = true;
+    return adoptRef(string);
+}
+
 PassRefPtr<StringImpl> StringImpl::create(const UChar* characters, unsigned length)
 {
     if (!characters || !length)
         return empty();
-    return adoptRef(new StringImpl(characters, length));
+
+    UChar* data;
+    PassRefPtr<StringImpl> string = createUninitialized(length, data);
+    memcpy(data, characters, length * sizeof(UChar));
+    return string;
 }
 
 PassRefPtr<StringImpl> StringImpl::create(const char* characters, unsigned length)
 {
     if (!characters || !length)
         return empty();
-    return adoptRef(new StringImpl(characters, length));
+
+    UChar* data;
+    PassRefPtr<StringImpl> string = createUninitialized(length, data);
+    for (unsigned i = 0; i != length; ++i) {
+        unsigned char c = characters[i];
+        data[i] = c;
+    }
+    return string;
 }
 
 PassRefPtr<StringImpl> StringImpl::create(const char* string)
 {
     if (!string)
         return empty();
-    unsigned length = strlen(string);
-    if (!length)
-        return empty();
-    return adoptRef(new StringImpl(string, length));
+    return create(string, strlen(string));
 }
+
+#if USE(JSC)
+PassRefPtr<StringImpl> StringImpl::create(const JSC::UString& str)
+{
+    SharedUChar* sharedBuffer = const_cast<JSC::UString*>(&str)->rep()->baseString()->sharedBuffer();
+    if (sharedBuffer) {
+        PassRefPtr<StringImpl> impl = adoptRef(new StringImpl(const_cast<UChar*>(str.data()), str.size(), AdoptBuffer()));
+        sharedBuffer->ref();
+        impl->m_sharedBufferAndFlags.set(sharedBuffer);
+        return impl;
+    }
+    return StringImpl::create(str.data(), str.size());
+}
+
+JSC::UString StringImpl::ustring()
+{
+    SharedUChar* sharedBuffer = StringImpl::sharedBuffer();
+    if (sharedBuffer)
+        return JSC::UString::Rep::create(const_cast<UChar*>(m_data), m_length, sharedBuffer);
+
+    return JSC::UString(m_data, m_length);
+}
+#endif
 
 PassRefPtr<StringImpl> StringImpl::createWithTerminatingNullCharacter(const StringImpl& string)
 {
@@ -985,7 +1053,18 @@ PassRefPtr<StringImpl> StringImpl::createWithTerminatingNullCharacter(const Stri
 
 PassRefPtr<StringImpl> StringImpl::copy()
 {
-    return adoptRef(new StringImpl(m_data, m_length));
+    return create(m_data, m_length);
 }
+
+StringImpl::SharedUChar* StringImpl::sharedBuffer()
+{
+    if (m_length < minLengthToShare || m_bufferIsInternal)
+        return 0;
+
+    if (!m_sharedBufferAndFlags.get())
+        m_sharedBufferAndFlags.set(SharedUChar::create(new OwnFastMallocPtr<UChar>(const_cast<UChar*>(m_data))).releaseRef());
+    return m_sharedBufferAndFlags.get();
+}
+
 
 } // namespace WebCore

@@ -4281,6 +4281,11 @@ QImage QImage::mirrored(bool horizontal, bool vertical) const
     int h = d->height;
     // Create result image, copy colormap
     QImage result(d->width, d->height, d->format);
+
+    // check if we ran out of of memory..
+    if (!result.d)
+        return QImage();
+
     result.d->colortable = d->colortable;
     result.d->has_alpha_clut = d->has_alpha_clut;
 

@@ -21,10 +21,11 @@
 
 #include "config.h"
 
-#if ENABLE(SVG) && ENABLE(SVG_FILTERS)
+#if ENABLE(SVG) && ENABLE(FILTERS)
 #include "SVGLightSource.h"
 #include "SVGFEDiffuseLighting.h"
 #include "SVGRenderTreeAsText.h"
+#include "Filter.h"
 
 namespace WebCore {
 
@@ -112,7 +113,7 @@ void FEDiffuseLighting::setLightSource(LightSource* lightSource)
     m_lightSource = lightSource;
 }
 
-void FEDiffuseLighting::apply()
+void FEDiffuseLighting::apply(Filter*)
 {
 }
 
@@ -132,4 +133,4 @@ TextStream& FEDiffuseLighting::externalRepresentation(TextStream& ts) const
 
 } // namespace WebCore
 
-#endif // ENABLE(SVG) && ENABLE(SVG_FILTERS)
+#endif // ENABLE(SVG) && ENABLE(FILTERS)

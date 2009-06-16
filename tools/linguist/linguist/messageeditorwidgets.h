@@ -115,9 +115,13 @@ public:
     FormatTextEdit *getEditor() { return m_editor; }
 
 signals:
-    void textChanged();
-    void selectionChanged();
+    void textChanged(QTextEdit *);
+    void selectionChanged(QTextEdit *);
     void cursorPositionChanged();
+
+private slots:
+    void slotSelectionChanged();
+    void slotTextChanged();
 
 private:
     QLabel *m_label;

@@ -72,10 +72,11 @@ public:
     uint isOpen : 1;
     uint isOpenError : 1;
     QSqlError error;
+    QSql::NumericalPrecisionPolicy precisionPolicy;
 };
 
 inline QSqlDriverPrivate::QSqlDriverPrivate()
-    : QObjectPrivate(), isOpen(false), isOpenError(false)
+    : QObjectPrivate(), isOpen(false), isOpenError(false), precisionPolicy(QSql::LowPrecisionDouble)
 {
 }
 
@@ -910,6 +911,31 @@ QString QSqlDriver::stripDelimitersImplementation(const QString &identifier, Ide
         ret = identifier;
     }
     return ret;
+}
+
+/*!
+
+  Sets the default numerical precision policy that queries use when created
+  by this driver.
+
+  Note: Setting the default precision policy doesn't affect any currently
+  active queries.
+
+  \sa QSql::NumericalPrecisionPolicy, numericalPrecisionPolicy(), QSqlQuery::setNumericalPrecisionPolicy(), QSqlQuery::numericalPrecisionPolicy()
+*/
+void QSqlDriver::setNumericalPrecisionPolicy(QSql::NumericalPrecisionPolicy precisionPolicy)
+{
+    d_func()->precisionPolicy = precisionPolicy;
+}
+
+/*!
+  Returns the current default precision policy for the database connection.
+
+  \sa QSql::NumericalPrecisionPolicy, setNumericalPrecisionPolicy(), QSqlQuery::numericalPrecisionPolicy(), QSqlQuery::setNumericalPrecisionPolicy()
+*/
+QSql::NumericalPrecisionPolicy QSqlDriver::numericalPrecisionPolicy() const
+{
+    return d_func()->precisionPolicy;
 }
 
 QT_END_NAMESPACE

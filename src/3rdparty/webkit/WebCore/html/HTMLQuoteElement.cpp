@@ -22,6 +22,7 @@
 #include "config.h"
 #include "HTMLQuoteElement.h"
 
+#include "Document.h"
 #include "HTMLNames.h"
 
 namespace WebCore {
@@ -32,6 +33,13 @@ HTMLQuoteElement::HTMLQuoteElement(const QualifiedName& tagName, Document* doc)
     : HTMLElement(tagName, doc)
 {
     ASSERT(hasTagName(qTag));
+}
+
+void HTMLQuoteElement::insertedIntoDocument()
+{
+    document()->setUsesBeforeAfterRules(true);
+
+    HTMLElement::insertedIntoDocument();
 }
 
 String HTMLQuoteElement::cite() const

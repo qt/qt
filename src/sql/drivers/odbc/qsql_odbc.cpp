@@ -127,7 +127,7 @@ class QODBCPrivate
 {
 public:
     QODBCPrivate()
-    : hEnv(0), hDbc(0), hStmt(0), useSchema(false), hasSQLFetchScroll(true), precisionPolicy(QSql::HighPrecision)
+    : hEnv(0), hDbc(0), hStmt(0), useSchema(false), hasSQLFetchScroll(true)
     {
         sql_char_type = sql_varchar_type = sql_longvarchar_type = QVariant::ByteArray;
         unicode = false;
@@ -151,7 +151,6 @@ public:
     int fieldCacheIdx;
     int disconnectCount;
     bool hasSQLFetchScroll;
-    QSql::NumericalPrecisionPolicy precisionPolicy;
 
     bool isStmtHandleValid(const QSqlDriver *driver);
     void updateStmtHandleState(const QSqlDriver *driver);
@@ -443,6 +442,26 @@ static QVariant qGetIntData(SQLHANDLE hStmt, int column, bool isSigned = true)
     else
         return uint(intbuf);
 }
+
+static QVariant qGetDoubleData(SQLHANDLE hStmt, int column)
+{
+    SQLDOUBLE dblbuf;
+    QSQLLEN lengthIndicator = 0;
+    SQLRETURN r = SQLGetData(hStmt,
+                              column+1,
+                              SQL_C_DOUBLE,
+                              (SQLPOINTER) &dblbuf,
+                              0,
+                              &lengthIndicator);
+    if (r != SQL_SUCCESS && r != SQL_SUCCESS_WITH_INFO) {
+        return QVariant(QVariant::Invalid);
+    }
+    if(lengthIndicator == SQL_NULL_DATA)
+        return QVariant(QVariant::Double);
+
+    return (double) dblbuf;
+}
+
 
 static QVariant qGetBigIntData(SQLHANDLE hStmt, int column, bool isSigned = true)
 {
@@ -1109,29 +1128,21 @@ QVariant QODBCResult::data(int field)
             d->fieldCache[i] = qGetStringData(d->hStmt, i, info.length(), true);
             break;
         case QVariant::Double:
-            {
-                QString value=qGetStringData(d->hStmt, i, info.length(), false);
-                bool ok=false;
-                switch(d->precisionPolicy) {
-                    case QSql::LowPrecisionInt32:
-                        d->fieldCache[i] = value.toInt(&ok);
-                        break;
-                    case QSql::LowPrecisionInt64:
-                        d->fieldCache[i] = value.toLongLong(&ok);
-                        break;
-                    case QSql::LowPrecisionDouble:
-                        d->fieldCache[i] = value.toDouble(&ok);
-                        break;
-                    case QSql::HighPrecision:
-                    default:
-                        d->fieldCache[i] = value;
-                        ok=true;
-                        break;
-                }
-                if(ok==false)
-                    d->fieldCache[i] = QVariant();
-                break;
+            switch(numericalPrecisionPolicy()) {
+                case QSql::LowPrecisionInt32:
+                    d->fieldCache[i] = qGetIntData(d->hStmt, i);
+                    break;
+                case QSql::LowPrecisionInt64:
+                    d->fieldCache[i] = qGetBigIntData(d->hStmt, i);
+                    break;
+                case QSql::LowPrecisionDouble:
+                    d->fieldCache[i] = qGetDoubleData(d->hStmt, i);
+                    break;
+                case QSql::HighPrecision:
+                    d->fieldCache[i] = qGetStringData(d->hStmt, i, info.length(), false);
+                    break;
             }
+            break;
         default:
             d->fieldCache[i] = QVariant(qGetStringData(d->hStmt, i, info.length(), false));
             break;
@@ -1627,10 +1638,6 @@ void QODBCResult::virtual_hook(int id, void *data)
     case QSqlResult::NextResult:
         Q_ASSERT(data);
         *static_cast<bool*>(data) = nextResult();
-        break;
-    case QSqlResult::SetNumericalPrecision:
-        Q_ASSERT(data);
-        d->precisionPolicy = *reinterpret_cast<QSql::NumericalPrecisionPolicy *>(data);
         break;
     default:
         QSqlResult::virtual_hook(id, data);

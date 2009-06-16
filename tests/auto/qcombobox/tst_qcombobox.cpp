@@ -2197,8 +2197,8 @@ void tst_QComboBox::noScrollbar()
     {
         QTableWidget *table = new QTableWidget(2,2);
         QComboBox comboBox;
-        comboBox.setView(table);
         comboBox.setModel(table->model());
+        comboBox.setView(table);
         comboBox.show();
         QTest::qWait(100);
         comboBox.resize(200, comboBox.height());

@@ -522,7 +522,11 @@ void *QGLContext::tryVisual(const QGLFormat& f, int bufDepth)
     const QX11Info *xinfo = qt_x11Info(d->paintDevice);
     bool useFBConfig = false;
 
-#if defined(GLX_VERSION_1_3) && !defined(QT_NO_XRENDER)
+#if defined(GLX_VERSION_1_3) && !defined(QT_NO_XRENDER) && !defined(Q_OS_HPUX)
+    /*
+      HPUX defines GLX_VERSION_1_3 but does not implement the corresponding functions.
+      Specifically glXChooseFBConfig and glXGetVisualFromFBConfig are not implemented.
+     */
     QWidget* widget = 0;
     if (d->paintDevice->devType() == QInternal::Widget)
         widget = static_cast<QWidget*>(d->paintDevice);
@@ -565,7 +569,7 @@ void *QGLContext::tryVisual(const QGLFormat& f, int bufDepth)
     }
 #endif
 
-#if defined(GLX_VERSION_1_3)
+#if defined(GLX_VERSION_1_3)  && !defined(Q_OS_HPUX)
     // GLX_RENDER_TYPE is only in glx >=1.3
     if (useFBConfig) {
         spec[i++] = GLX_RENDER_TYPE;
@@ -627,7 +631,7 @@ void *QGLContext::tryVisual(const QGLFormat& f, int bufDepth)
         spec[i++] = f.samples() == -1 ? 4 : f.samples();
     }
 
-#if defined(GLX_VERSION_1_3)
+#if defined(GLX_VERSION_1_3) && !defined(Q_OS_HPUX)
     if (useFBConfig) {
         spec[i++] = GLX_DRAWABLE_TYPE;
         switch(d->paintDevice->devType()) {
@@ -652,7 +656,7 @@ void *QGLContext::tryVisual(const QGLFormat& f, int bufDepth)
 
     XVisualInfo* chosenVisualInfo = 0;
 
-#if defined(GLX_VERSION_1_3)
+#if defined(GLX_VERSION_1_3) && !defined(Q_OS_HPUX)
     while (useFBConfig) {
         GLXFBConfig *configs;
         int configCount = 0;

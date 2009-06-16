@@ -252,6 +252,8 @@ QAbstractFileEngine *QAbstractFileEngine::create(const QString &fileName)
     \value CanonicalPathName Same as CanonicalName, excluding the base name.
     \value BundleName Returns the name of the bundle implies BundleType is set.
 
+    \omitvalue NFileNames
+
     \sa fileName(), setFileName()
 */
 

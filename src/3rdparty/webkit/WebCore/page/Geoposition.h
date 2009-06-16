@@ -26,6 +26,7 @@
 #ifndef Geoposition_h
 #define Geoposition_h
 
+#include "Coordinates.h"
 #include "Event.h"
 #include "PlatformString.h"
 #include <wtf/RefCounted.h>
@@ -36,39 +37,21 @@ typedef int ExceptionCode;
 
 class Geoposition : public RefCounted<Geoposition> {
 public:
-    static PassRefPtr<Geoposition> create(double latitude, double longitude, double altitude, double accuracy, double altitudeAccuracy, double heading, double speed, DOMTimeStamp timestamp) { return adoptRef(new Geoposition(latitude, longitude, altitude, accuracy, altitudeAccuracy, heading, speed, timestamp)); }
+    static PassRefPtr<Geoposition> create(PassRefPtr<Coordinates> coordinates, DOMTimeStamp timestamp) { return adoptRef(new Geoposition(coordinates, timestamp)); }
     
-    double latitude() const { return m_latitude; }
-    double longitude() const { return m_longitude; }
-    double altitude() const { return m_altitude; }
-    double accuracy() const { return m_accuracy; }
-    double altitudeAccuracy() const { return m_altitudeAccuracy; }
-    double heading() const { return m_heading; }
-    double speed() const { return m_speed; }
     DOMTimeStamp timestamp() const { return m_timestamp; }
-
+    Coordinates* coords() const { return m_coordinates.get(); }
+    
     String toString() const;
 
 private:
-    Geoposition(double latitude, double longitude, double altitude, double accuracy, double altitudeAccuracy, double heading, double speed, DOMTimeStamp timestamp)
-        : m_latitude(latitude)
-        , m_longitude(longitude)
-        , m_altitude(altitude)
-        , m_accuracy(accuracy)
-        , m_altitudeAccuracy(altitudeAccuracy)
-        , m_heading(heading)
-        , m_speed(speed)
+    Geoposition(PassRefPtr<Coordinates> coordinates, DOMTimeStamp timestamp)
+        : m_coordinates(coordinates)
         , m_timestamp(timestamp)
     {
     }
 
-    double m_latitude;
-    double m_longitude;
-    double m_altitude;
-    double m_accuracy;
-    double m_altitudeAccuracy;
-    double m_heading;
-    double m_speed;
+    RefPtr<Coordinates> m_coordinates;
     DOMTimeStamp m_timestamp;
 };
     

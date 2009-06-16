@@ -2983,7 +2983,7 @@ Möchten Sie die Datei trotzdem löschen?</translation>
     <message>
         <location line="+1573"/>
         <source>&lt;h3&gt;About Qt&lt;/h3&gt;&lt;p&gt;This program uses Qt version %1.&lt;/p&gt;&lt;p&gt;Qt is a C++ toolkit for cross-platform application development.&lt;/p&gt;&lt;p&gt;Qt provides single-source portability across MS&amp;nbsp;Windows, Mac&amp;nbsp;OS&amp;nbsp;X, Linux, and all major commercial Unix variants. Qt is also available for embedded devices as Qt for Embedded Linux and Qt for Windows CE.&lt;/p&gt;&lt;p&gt;Qt is available under three different licensing options designed to accommodate the needs of our various users.&lt;/p&gt;Qt licensed under our commercial license agreement is appropriate for development of proprietary/commercial software where you do not want to share any source code with third parties or otherwise cannot comply with the terms of the GNU LGPL version 2.1 or GNU GPL version 3.0.&lt;/p&gt;&lt;p&gt;Qt licensed under the GNU LGPL version 2.1 is appropriate for the development of Qt applications (proprietary or open source) provided you can comply with the terms and conditions of the GNU LGPL version 2.1.&lt;/p&gt;&lt;p&gt;Qt licensed under the GNU General Public License version 3.0 is appropriate for the development of Qt applications where you wish to use such applications in combination with software subject to the terms of the GNU GPL version 3.0 or where you are otherwise willing to comply with the terms of the GNU GPL version 3.0.&lt;/p&gt;&lt;p&gt;Please see &lt;a href=&quot;http://www.qtsoftware.com/products/licensing&quot;&gt;www.qtsoftware.com/products/licensing&lt;/a&gt; for an overview of Qt licensing.&lt;/p&gt;&lt;p&gt;Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).&lt;/p&gt;&lt;p&gt;Qt is a Nokia product. See &lt;a href=&quot;http://www.qtsoftware.com/qt/&quot;&gt;www.qtsoftware.com/qt&lt;/a&gt; for more information.&lt;/p&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;h3&gt;Über Qt&lt;/h3&gt;&lt;p&gt;Dieses Programm verwendet Qt in Version %1.&lt;/p&gt;&lt;p&gt;Qt ist ein C++-Toolkit zur plattformübergreifenden Anwendungsentwicklung.&lt;/p&gt;&lt;p&gt;Qt bietet Single-Source-Übertragbarkeit von MS&amp;nbsp;Windows über Mac&amp;nbsp;OS&amp;nbsp;X bis zu Linux und alle großen kommerziellen Unix-Varianten. Zudem ist Qt für Embedded Linux und Windows CE für eingebettete Systeme verfügbar.&lt;/p&gt;&lt;p&gt;Qt wird unter drei verschiedenen Lizenzen angeboten, um den Wünschen unserer Kunden zu entsprechen.&lt;/p&gt;&lt;p&gt;Qt unter unserer kommerziellen Lizenz dient der Entwicklung proprietärer/kommerzieller Software, deren Quelltexte Sie nicht offenlegen möchten, oder wenn sie auf andere Weise nicht den Vereinbarungen der GNU LGPL Version 2.1 oder der GNU GPL Version 3.0 erfüllen können.&lt;/p&gt;&lt;p&gt;Qt unter der GNU LGPL Version 2.1 dient der Entwicklung von Qt-Anwendungen (proprietär oder quelloffen), sofern Sie den Vereinbarungen der GNU LGPL Version 2.1 entsprechen können.&lt;/p&gt;&lt;p&gt;Qt unter der GNU General Public License Version 3.0 dient der Entwicklung von Qt-Anwendungen, die in Verbindung mit Software verwendet werden soll, die den Vereinbarungen der GNU GPL Version 3.0 entspricht, oder die aus anderen Gründen den Bestimmungen der GNU GPL Version 3.0 unterliegen soll.&lt;/p&gt;&lt;p&gt;Auf &lt;a href=&quot;http://www.qtsoftware.com/products/licensing&quot;&gt;www.qtsoftware.com/products/licensing&lt;/a&gt; finden Sie eine Übersicht der Lizenzen.&lt;/p&gt;&lt;p&gt;Copyright (C) 2009 Nokia Corporation und/oder ihre Tochtergesellschaft(en).&lt;/p&gt;&lt;p&gt;Qt ist ein Produkt der Firma Nokia. Auf &lt;a href=&quot;http://www.qtsoftware.com/qt/&quot;&gt;www.qtsoftware.com/qt&lt;/a&gt; erhalten Sie weitere Informationen.&lt;/p&gt;</translation>
     </message>
 </context>
 <context>
@@ -6152,32 +6152,32 @@ Bitte wählen Sie einen anderen Dateinamen.</translation>
     <message>
         <location line="+3"/>
         <source>Select to the next character</source>
-        <translation>Bis zum folgenden Zeichen markieren</translation>
+        <translation>Bis zum nächsten Zeichen markieren</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Select to the previous character</source>
-        <translation>Bis zum vorangehenden Zeichen markieren</translation>
+        <translation>Bis zum vorherigen Zeichen markieren</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Select to the next word</source>
-        <translation>Bis zum folgenden Wort markieren</translation>
+        <translation>Bis zum nachsten Wort markieren</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Select to the previous word</source>
-        <translation>Bis zum vorangehenden Wort markieren</translation>
+        <translation>Bis zum vorherigen Wort markieren</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Select to the next line</source>
-        <translation>Bis zur folgenden Zeile markieren</translation>
+        <translation>Bis zur nächsten Zeile markieren</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Select to the previous line</source>
-        <translation>Bis zur vorangehenden Zeile markieren</translation>
+        <translation>Bis zur vorherigen Zeile markieren</translation>
     </message>
     <message>
         <location line="+3"/>
@@ -7087,7 +7087,7 @@ Bitte wählen Sie einen anderen Dateinamen.</translation>
     <message>
         <location filename="../src/xmlpatterns/expr/qattributenamevalidator.cpp" line="+66"/>
         <source>The namespace URI in the name for a computed attribute cannot be %1.</source>
-        <translation>Der Namensraum-URI im Namen eines berechneten Attributes darf nicht %1 sein</translation>
+        <translation>Der Namensraum-URI im Namen eines berechneten Attributes darf nicht %1 sein.</translation>
     </message>
     <message>
         <location line="+9"/>

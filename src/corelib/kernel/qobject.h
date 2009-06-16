@@ -106,7 +106,8 @@ public:
     uint receiveChildEvents : 1;
     uint inEventHandler : 1;
     uint inThreadChangeEvent : 1;
-    uint unused : 23;
+    uint hasGuards : 1; //true iff there is one or more QPointer attached to this object
+    uint unused : 22;
     int postedEvents;
 };
 

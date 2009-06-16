@@ -507,6 +507,7 @@ struct QX11Data
 
     char *startupId;
     char *originalStartupId;
+    char *startupIdString;
 
     DesktopEnvironment desktopEnvironment;
 

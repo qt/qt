@@ -1057,7 +1057,7 @@ void QTabWidget::keyPressEvent(QKeyEvent *e)
                 break;
             }
         }
-        if (!qApp->focusWidget())
+        if (!QApplication::focusWidget())
             d->tabs->setFocus();
     } else {
         e->ignore();

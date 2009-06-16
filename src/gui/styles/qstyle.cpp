@@ -325,8 +325,9 @@ static int unpackControlTypes(QSizePolicy::ControlTypes controls, QSizePolicy::C
 QStyle::QStyle()
     : QObject(*new QStylePrivate)
 {
+    Q_D(QStyle);
+    d->proxyStyle = this;
 }
-
 
 /*!
     \internal
@@ -336,6 +337,8 @@ QStyle::QStyle()
 QStyle::QStyle(QStylePrivate &dd)
     : QObject(dd)
 {
+  Q_D(QStyle);
+  d->proxyStyle = this;
 }
 
 /*!
@@ -1179,6 +1182,7 @@ void QStyle::drawItemPixmap(QPainter *painter, const QRect &rect, int alignment,
 
     \value SC_All  Special value that matches all sub-controls.
     \omitvalue SC_Q3ListViewBranch
+    \omitvalue SC_CustomBase
 
     \sa ComplexControl
 */
@@ -2443,5 +2447,32 @@ QDebug operator<<(QDebug debug, QStyle::State state)
     return debug;
 }
 #endif
+
+/*!
+    \since 4.6
+
+    \fn const QStyle *QStyle::proxy() const
+
+    This function returns the current proxy for this style.
+    By default most styles will return themselves. However
+    when a proxy style is in use, it will allow the style to
+    call back into its proxy.
+*/
+const QStyle * QStyle::proxy() const
+{
+    Q_D(const QStyle);
+    return d->proxyStyle;
+}
+
+/* \internal
+
+    This function sets the base style that style calls will be
+    redirected to. Note that ownership is not transferred.
+*/
+void QStyle::setProxy(QStyle *style)
+{
+    Q_D(QStyle);
+    d->proxyStyle = style;
+}
 
 QT_END_NAMESPACE

@@ -188,14 +188,25 @@ void QDirectFBWindowSurface::setGeometry(const QRect &rect, const QRegion &mask)
             if (!dfbWindow)
                 createWindow();
 
-            if (isResize && isMove)
+#if (Q_DIRECTFB_VERSION >= 0x010000)
+            if (isResize && isMove) {
                 result = dfbWindow->SetBounds(dfbWindow, rect.x(), rect.y(),
                                               rect.width(), rect.height());
-            else if (isResize)
+            } else if (isResize) {
                 result = dfbWindow->Resize(dfbWindow,
                                            rect.width(), rect.height());
-            else if (isMove)
+            } else if (isMove) {
                 result = dfbWindow->MoveTo(dfbWindow, rect.x(), rect.y());
+            }
+#else
+            if (isResize) {
+                result = dfbWindow->Resize(dfbWindow,
+                                           rect.width(), rect.height());
+            }
+            if (isMove) {
+                result = dfbWindow->MoveTo(dfbWindow, rect.x(), rect.y());
+            }
+#endif
 #endif
         }
 

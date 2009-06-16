@@ -135,6 +135,7 @@ protected:
     bool execBatch(bool arrayBind = false);
     void detachFromResultSet();
     void setNumericalPrecisionPolicy(QSql::NumericalPrecisionPolicy policy);
+    QSql::NumericalPrecisionPolicy numericalPrecisionPolicy() const;
     bool nextResult();
 
 private:

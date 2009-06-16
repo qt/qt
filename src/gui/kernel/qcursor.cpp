@@ -403,7 +403,7 @@ void QCursorData::initialize()
 QCursor::QCursor()
 {
     if (!QCursorData::initialized) {
-        if (qApp->startingUp()) {
+        if (QApplication::startingUp()) {
             d = 0;
             return;
         }

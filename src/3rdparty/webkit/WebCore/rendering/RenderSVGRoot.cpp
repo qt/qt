@@ -2,8 +2,7 @@
     Copyright (C) 2004, 2005, 2007 Nikolas Zimmermann <zimmermann@kde.org>
                   2004, 2005, 2007, 2008, 2009 Rob Buis <buis@kde.org>
                   2007 Eric Seidel <eric@webkit.org>
-
-    This file is part of the KDE project
+                  2009 Google, Inc.
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -27,24 +26,24 @@
 #include "RenderSVGRoot.h"
 
 #include "GraphicsContext.h"
-#include "RenderPath.h"
 #include "RenderSVGContainer.h"
 #include "RenderView.h"
 #include "SVGLength.h"
 #include "SVGRenderSupport.h"
-#include "SVGResourceClipper.h"
-#include "SVGResourceFilter.h"
-#include "SVGResourceMasker.h"
 #include "SVGSVGElement.h"
 #include "SVGStyledElement.h"
-#include "SVGURIReference.h"
+#include "TransformState.h"
+
+#if ENABLE(FILTERS)
+#include "SVGResourceFilter.h"
+#endif
 
 using namespace std;
 
 namespace WebCore {
 
 RenderSVGRoot::RenderSVGRoot(SVGStyledElement* node)
-    : RenderContainer(node)
+    : RenderBox(node)
 {
     setReplaced(true);
 }
@@ -86,69 +85,43 @@ void RenderSVGRoot::layout()
 {
     ASSERT(needsLayout());
 
-    calcViewport();
-
     // Arbitrary affine transforms are incompatible with LayoutState.
     view()->disableLayoutState();
 
-    IntRect oldBounds = m_absoluteBounds;
-    IntRect oldOutlineBox;
-    bool checkForRepaint = checkForRepaintDuringLayout() && selfNeedsLayout();
-    if (checkForRepaint)
-        oldOutlineBox = absoluteOutlineBounds();
+    LayoutRepainter repainter(*this, checkForRepaintDuringLayout() && selfNeedsLayout());
 
     calcWidth();
     calcHeight();
 
-    m_absoluteBounds = absoluteClippedOverflowRect();
-    SVGSVGElement* svg = static_cast<SVGSVGElement*>(element());
-    m_width = static_cast<int>(m_width * svg->currentScale());
-    m_height = static_cast<int>(m_height * svg->currentScale());
+    SVGSVGElement* svg = static_cast<SVGSVGElement*>(node());
+    setWidth(static_cast<int>(width() * svg->currentScale()));
+    setHeight(static_cast<int>(height() * svg->currentScale()));
+
+    calcViewport();
     
     for (RenderObject* child = firstChild(); child; child = child->nextSibling()) {
         if (selfNeedsLayout()) // either bounds or transform changed, force kids to relayout
-            child->setNeedsLayout(true);
+            child->setNeedsLayout(true, false);
         
         child->layoutIfNeeded();
         ASSERT(!child->needsLayout());
     }
 
-    if (checkForRepaint)
-        repaintAfterLayoutIfNeeded(oldBounds, oldOutlineBox);
+    repainter.repaintAfterLayout();
 
     view()->enableLayoutState();
     setNeedsLayout(false);
 }
 
-void RenderSVGRoot::applyContentTransforms(PaintInfo& paintInfo, int parentX, int parentY)
+bool RenderSVGRoot::selfWillPaint() const
 {
-    // Translate from parent offsets (html renderers) to a relative transform (svg renderers)
-    IntPoint origin;
-    origin.move(parentX, parentY);
-    origin.move(m_x, m_y);
-    origin.move(borderLeft(), borderTop());
-    origin.move(paddingLeft(), paddingTop());
-
-    if (origin.x() || origin.y()) {
-        paintInfo.context->concatCTM(TransformationMatrix().translate(origin.x(), origin.y()));
-        paintInfo.rect.move(-origin.x(), -origin.y());
-    }
-
-    // Respect scroll offset caused by html parents
-    TransformationMatrix ctm = RenderContainer::absoluteTransform();
-    paintInfo.rect.move(static_cast<int>(ctm.e()), static_cast<int>(ctm.f()));
-
-    SVGSVGElement* svg = static_cast<SVGSVGElement*>(element());
-    paintInfo.context->concatCTM(TransformationMatrix().scale(svg->currentScale()));
-
-    if (!viewport().isEmpty()) {
-        if (style()->overflowX() != OVISIBLE)
-            paintInfo.context->clip(enclosingIntRect(viewport())); // FIXME: Eventually we'll want float-precision clipping
-        
-        paintInfo.context->concatCTM(TransformationMatrix().translate(viewport().x(), viewport().y()));
-    }
-
-    paintInfo.context->concatCTM(TransformationMatrix().translate(svg->currentTranslate().x(), svg->currentTranslate().y()));
+#if ENABLE(FILTERS)
+    const SVGRenderStyle* svgStyle = style()->svgStyle();
+    SVGResourceFilter* filter = getFilterById(document(), svgStyle->filter());
+    if (filter)
+        return true;
+#endif
+    return false;
 }
 
 void RenderSVGRoot::paint(PaintInfo& paintInfo, int parentX, int parentY)
@@ -156,141 +129,131 @@ void RenderSVGRoot::paint(PaintInfo& paintInfo, int parentX, int parentY)
     if (paintInfo.context->paintingDisabled())
         return;
 
-    calcViewport();
+    IntPoint parentOriginInContainer(parentX, parentY);
+    IntPoint borderBoxOriginInContainer = parentOriginInContainer + IntSize(x(), y());
 
-    SVGSVGElement* svg = static_cast<SVGSVGElement*>(element());
-    // A value of zero disables rendering of the element. 
-    if (viewport().width() <= 0. || viewport().height() <= 0.)
+    if (hasBoxDecorations() && (paintInfo.phase == PaintPhaseForeground || paintInfo.phase == PaintPhaseSelection)) 
+        paintBoxDecorations(paintInfo, borderBoxOriginInContainer.x(), borderBoxOriginInContainer.y());
+
+    // An empty viewport disables rendering.  FIXME: Should we still render filters?
+    if (viewportSize().isEmpty())
         return;
 
-    // This should only exist for <svg> renderers
-    if (hasBoxDecorations() && (paintInfo.phase == PaintPhaseForeground || paintInfo.phase == PaintPhaseSelection)) 
-        paintBoxDecorations(paintInfo, m_x + parentX, m_y + parentY);
+    // Don't paint if we don't have kids, except if we have filters we should paint those.
+    if (!firstChild() && !selfWillPaint())
+        return;
 
-    if (!firstChild()) {
-#if ENABLE(SVG_FILTERS)
-        // Spec: groups w/o children still may render filter content.
-        const SVGRenderStyle* svgStyle = style()->svgStyle();
-        SVGResourceFilter* filter = getFilterById(document(), svgStyle->filter());
-        if (!filter)
-#endif
-            return;
-    }
-
+    // Make a copy of the PaintInfo because applyTransformToPaintInfo will modify the damage rect.
     RenderObject::PaintInfo childPaintInfo(paintInfo);
     childPaintInfo.context->save();
- 
-    applyContentTransforms(childPaintInfo, parentX, parentY);
+
+    // SVG does not support independent x/y clipping
+    if (style()->overflowX() != OVISIBLE)
+        childPaintInfo.context->clip(overflowClipRect(borderBoxOriginInContainer.x(), borderBoxOriginInContainer.y()));
+
+    // Convert from container offsets (html renderers) to a relative transform (svg renderers).
+    // Transform from our paint container's coordinate system to our local coords.
+    applyTransformToPaintInfo(childPaintInfo, localToRepaintContainerTransform(parentOriginInContainer));
 
     SVGResourceFilter* filter = 0;
-
-    FloatRect boundingBox = relativeBBox(true);
+    FloatRect boundingBox = repaintRectInLocalCoordinates();
     if (childPaintInfo.phase == PaintPhaseForeground)
-        prepareToRenderSVGContent(this, childPaintInfo, boundingBox, filter);        
+        prepareToRenderSVGContent(this, childPaintInfo, boundingBox, filter);
 
-    childPaintInfo.context->concatCTM(svg->viewBoxToViewTransform(width(), height()));
-    RenderContainer::paint(childPaintInfo, 0, 0);
+    RenderBox::paint(childPaintInfo, 0, 0);
 
     if (childPaintInfo.phase == PaintPhaseForeground)
-        finishRenderSVGContent(this, childPaintInfo, boundingBox, filter, paintInfo.context);
+        finishRenderSVGContent(this, childPaintInfo, filter, paintInfo.context);
 
     childPaintInfo.context->restore();
-    
-    if ((childPaintInfo.phase == PaintPhaseOutline || childPaintInfo.phase == PaintPhaseSelfOutline) && style()->outlineWidth() && style()->visibility() == VISIBLE)
-        paintOutline(childPaintInfo.context, m_absoluteBounds.x(), m_absoluteBounds.y(), m_absoluteBounds.width(), m_absoluteBounds.height(), style());
+
+    if ((paintInfo.phase == PaintPhaseOutline || paintInfo.phase == PaintPhaseSelfOutline) && style()->outlineWidth() && style()->visibility() == VISIBLE)
+        paintOutline(paintInfo.context, borderBoxOriginInContainer.x(), borderBoxOriginInContainer.y(), width(), height(), style());
 }
 
-FloatRect RenderSVGRoot::viewport() const
+const FloatSize& RenderSVGRoot::viewportSize() const
 {
-    return m_viewport;
+    return m_viewportSize;
 }
 
 void RenderSVGRoot::calcViewport()
 {
-    SVGElement* svgelem = static_cast<SVGElement*>(element());
-    if (svgelem->hasTagName(SVGNames::svgTag)) {
-        SVGSVGElement* svg = static_cast<SVGSVGElement*>(element());
+    SVGSVGElement* svg = static_cast<SVGSVGElement*>(node());
 
-        if (!selfNeedsLayout() && !svg->hasRelativeValues())
-            return;
+    if (!selfNeedsLayout() && !svg->hasRelativeValues())
+        return;
 
-        float w, h;
+    if (!svg->hasSetContainerSize()) {
+        // In the normal case of <svg> being stand-alone or in a CSSBoxModel object we use
+        // RenderBox::width()/height() (which pulls data from RenderStyle)
+        m_viewportSize = FloatSize(width(), height());
+    } else {
+        // In the SVGImage case grab the SVGLength values off of SVGSVGElement and use
+        // the special relativeWidthValue accessors which respect the specified containerSize
         SVGLength width = svg->width();
-        if (width.unitType() == LengthTypePercentage && svg->hasSetContainerSize())
-            w = svg->relativeWidthValue();
-        else
-            w = width.value(svg);
-        
         SVGLength height = svg->height();
-        if (height.unitType() == LengthTypePercentage && svg->hasSetContainerSize())
-            h = svg->relativeHeightValue();
-        else
-            h = height.value(svg);
-
-        m_viewport = FloatRect(0, 0, w, h);
+        float viewportWidth = (width.unitType() == LengthTypePercentage) ? svg->relativeWidthValue() : width.value(svg);
+        float viewportHeight = (height.unitType() == LengthTypePercentage) ? svg->relativeHeightValue() : height.value(svg);
+        m_viewportSize = FloatSize(viewportWidth, viewportHeight);
     }
 }
 
-IntRect RenderSVGRoot::absoluteClippedOverflowRect()
+// RenderBox methods will expect coordinates w/o any transforms in coordinates
+// relative to our borderBox origin.  This method gives us exactly that.
+TransformationMatrix RenderSVGRoot::localToBorderBoxTransform() const
 {
-    IntRect repaintRect;
-
-    for (RenderObject* current = firstChild(); current != 0; current = current->nextSibling())
-        repaintRect.unite(current->absoluteClippedOverflowRect());
-
-#if ENABLE(SVG_FILTERS)
-    // Filters can expand the bounding box
-    SVGResourceFilter* filter = getFilterById(document(), style()->svgStyle()->filter());
-    if (filter)
-        repaintRect.unite(enclosingIntRect(filter->filterBBoxForItemBBox(repaintRect)));
-#endif
-
-    return repaintRect;
-}
-
-void RenderSVGRoot::addFocusRingRects(GraphicsContext* graphicsContext, int, int)
-{
-    graphicsContext->addFocusRingRect(m_absoluteBounds);
-}
-
-void RenderSVGRoot::absoluteRects(Vector<IntRect>& rects, int, int)
-{
-    for (RenderObject* current = firstChild(); current != 0; current = current->nextSibling())
-        current->absoluteRects(rects, 0, 0);
-}
-
-void RenderSVGRoot::absoluteQuads(Vector<FloatQuad>& quads, bool)
-{
-    for (RenderObject* current = firstChild(); current != 0; current = current->nextSibling())
-        current->absoluteQuads(quads);
-}
-
-TransformationMatrix RenderSVGRoot::absoluteTransform() const
-{
-    TransformationMatrix ctm = RenderContainer::absoluteTransform();
-    ctm.translate(m_x, m_y);
-    SVGSVGElement* svg = static_cast<SVGSVGElement*>(element());
+    TransformationMatrix ctm;
+    IntSize borderAndPadding = borderOriginToContentBox();
+    ctm.translate(borderAndPadding.width(), borderAndPadding.height());
+    SVGSVGElement* svg = static_cast<SVGSVGElement*>(node());
     ctm.scale(svg->currentScale());
     ctm.translate(svg->currentTranslate().x(), svg->currentTranslate().y());
-    ctm.translate(viewport().x(), viewport().y());
     return svg->viewBoxToViewTransform(width(), height()) * ctm;
 }
 
-FloatRect RenderSVGRoot::relativeBBox(bool includeStroke) const
+IntSize RenderSVGRoot::parentOriginToBorderBox() const
 {
-    FloatRect rect;
-    
-    RenderObject* current = firstChild();
-    for (; current != 0; current = current->nextSibling()) {
-        FloatRect childBBox = current->relativeBBox(includeStroke);
-        FloatRect mappedBBox = current->localTransform().mapRect(childBBox);
-        // <svg> can have a viewBox contributing to the bbox
-        if (current->isSVGContainer())
-            mappedBBox = static_cast<RenderSVGContainer*>(current)->viewportTransform().mapRect(mappedBBox);
-        rect.unite(mappedBBox);
-    }
+    return IntSize(x(), y());
+}
 
-    return rect;
+IntSize RenderSVGRoot::borderOriginToContentBox() const
+{
+    return IntSize(borderLeft() + paddingLeft(), borderTop() + paddingTop());
+}
+
+TransformationMatrix RenderSVGRoot::localToRepaintContainerTransform(const IntPoint& parentOriginInContainer) const
+{
+    TransformationMatrix parentToContainer;
+    parentToContainer.translate(parentOriginInContainer.x(), parentOriginInContainer.y());
+    return localToParentTransform() * parentToContainer;
+}
+
+TransformationMatrix RenderSVGRoot::localToParentTransform() const
+{
+    IntSize parentToBorderBoxOffset = parentOriginToBorderBox();
+
+    TransformationMatrix borderBoxOriginToParentOrigin;
+    borderBoxOriginToParentOrigin.translate(parentToBorderBoxOffset.width(), parentToBorderBoxOffset.height());
+
+    return localToBorderBoxTransform() * borderBoxOriginToParentOrigin;
+}
+
+// FIXME: This method should be removed as soon as callers to RenderBox::absoluteTransform() can be removed.
+TransformationMatrix RenderSVGRoot::absoluteTransform() const
+{
+    // This would apply localTransform() twice if localTransform() were not the identity.
+    return localToParentTransform() * RenderBox::absoluteTransform();
+}
+
+FloatRect RenderSVGRoot::objectBoundingBox() const
+{
+    return computeContainerBoundingBox(this, false);
+}
+
+FloatRect RenderSVGRoot::repaintRectInLocalCoordinates() const
+{
+    // FIXME: This does not include the border but it should!
+    return computeContainerBoundingBox(this, true);
 }
 
 TransformationMatrix RenderSVGRoot::localTransform() const
@@ -298,46 +261,54 @@ TransformationMatrix RenderSVGRoot::localTransform() const
     return TransformationMatrix();
 }
 
+void RenderSVGRoot::computeRectForRepaint(RenderBoxModelObject* repaintContainer, IntRect& repaintRect, bool fixed)
+{
+    // Apply our local transforms (except for x/y translation) and call RenderBox's method to handle all the normal CSS Box model bits
+    repaintRect = localToBorderBoxTransform().mapRect(repaintRect);
+    RenderBox::computeRectForRepaint(repaintContainer, repaintRect, fixed);
+}
+
+void RenderSVGRoot::mapLocalToContainer(RenderBoxModelObject* repaintContainer, bool fixed , bool useTransforms, TransformState& transformState) const
+{
+    ASSERT(!fixed); // We should have no fixed content in the SVG rendering tree.
+    ASSERT(useTransforms); // mapping a point through SVG w/o respecting trasnforms is useless.
+
+    // Transform to our border box and let RenderBox transform the rest of the way.
+    transformState.applyTransform(localToBorderBoxTransform());
+    RenderBox::mapLocalToContainer(repaintContainer, fixed, useTransforms, transformState);
+}
+
 bool RenderSVGRoot::nodeAtPoint(const HitTestRequest& request, HitTestResult& result, int _x, int _y, int _tx, int _ty, HitTestAction hitTestAction)
 {
-    TransformationMatrix ctm = RenderContainer::absoluteTransform();
+    IntPoint pointInContainer(_x, _y);
+    IntSize containerToParentOffset(_tx, _ty);
 
-    int sx = (_tx - static_cast<int>(ctm.e())); // scroll offset
-    int sy = (_ty - static_cast<int>(ctm.f())); // scroll offset
- 
-    if (!viewport().isEmpty()
-        && style()->overflowX() == OHIDDEN
-        && style()->overflowY() == OHIDDEN) {
-        int tx = m_x - _tx + sx;
-        int ty = m_y - _ty + sy;
+    IntPoint pointInParent = pointInContainer - containerToParentOffset;
+    IntPoint pointInBorderBox = pointInParent - parentOriginToBorderBox();
 
-        // Check if we need to do anything at all.
-        IntRect overflowBox = overflowRect(false);
-        overflowBox.move(tx, ty);
-        ctm.translate(viewport().x(), viewport().y());
-        double localX, localY;
-        ctm.inverse().map(_x - _tx, _y - _ty, &localX, &localY);
-        if (!overflowBox.contains((int)localX, (int)localY))
+    // Note: For now, we're ignoring hits to border and padding for <svg>
+
+    if (style()->overflowX() == OHIDDEN) {
+        // SVG doesn't support independent x/y overflow
+        ASSERT(style()->overflowY() == OHIDDEN);
+        IntPoint pointInContentBox = pointInBorderBox - borderOriginToContentBox();
+        if (!contentBoxRect().contains(pointInContentBox))
             return false;
     }
 
+    IntPoint localPoint = localToParentTransform().inverse().mapPoint(pointInParent);
+
     for (RenderObject* child = lastChild(); child; child = child->previousSibling()) {
-        if (child->nodeAtPoint(request, result, _x - sx, _y - sy, 0, 0, hitTestAction)) {
-            updateHitTestResult(result, IntPoint(_x - _tx, _y - _ty));
+        if (child->nodeAtFloatPoint(request, result, localPoint, hitTestAction)) {
+            // FIXME: CSS/HTML assumes the local point is relative to the border box, right?
+            updateHitTestResult(result, pointInBorderBox);
             return true;
         }
     }
-    
-    // Spec: Only graphical elements can be targeted by the mouse, period.
+
+    // Spec: Only graphical elements can be targeted by the mouse, so we don't check self here.
     // 16.4: "If there are no graphics elements whose relevant graphics content is under the pointer (i.e., there is no target element), the event is not dispatched."
     return false;
-}
-
-void RenderSVGRoot::position(InlineBox* box)
-{
-    RenderContainer::position(box);
-    if (m_absoluteBounds.isEmpty())
-        setNeedsLayout(true, false);
 }
 
 }
