@@ -94,9 +94,9 @@ struct ListInstance
         : list(l), type(t), qmlListInterface(0) {}
         */
     ListInstance(QList<void *> *q, int t)
-        : type(t), qListInterface(q) {}
+        : type(t), qListInterface(q), qmlListInterface(0) {}
     ListInstance(QmlPrivate::ListInterface *q, int t)
-        : type(t), qmlListInterface(q) {}
+        : type(t), qListInterface(0), qmlListInterface(q) {}
 
     //QVariant list;
     int type;
