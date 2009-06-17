@@ -226,6 +226,15 @@ public:
     \value GoToLineAction Shows the "Go to Line" dialog.
 */
 
+/*!
+    \enum QScriptEngineDebugger::DebuggerState
+
+    This enum specifies the current state of the debugger.
+
+    \value RunningState   The debugger is running.  (Script evaluation is allowed.)
+    \value SuspendedState The debugger has suspended script evaluation.
+*/
+
 class QScriptEngineDebuggerPrivate
     : public QObjectPrivate
 {
@@ -384,6 +393,18 @@ void QScriptEngineDebugger::detach()
         d->frontend->detach();
     if (d->debugger)
         d->debugger->setFrontend(0);
+}
+
+/*!
+  Returns the current state of the debugger.
+
+  \sa evaluationResumed()
+  \sa evaluationSuspended()
+*/
+QScriptEngineDebugger::DebuggerState QScriptEngineDebugger::state() const
+{
+    Q_D(const QScriptEngineDebugger);
+    return (d->debugger && d->debugger->isInteractive() ? SuspendedState : RunningState);
 }
 
 /*!

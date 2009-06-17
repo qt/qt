@@ -1946,6 +1946,12 @@ QToolBar *QScriptDebugger::createStandardToolBar(QWidget *widgetParent, QObject 
     return tb;
 }
 
+bool QScriptDebugger::isInteractive() const
+{
+    Q_D(const QScriptDebugger);
+    return d->interactive;
+}
+
 /*!
   \reimp
 */
