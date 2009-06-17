@@ -131,11 +131,9 @@ void tst_QScriptEngineDebugger::attachAndDetach()
         QVERIFY(!engine.globalObject().property("print").strictlyEquals(oldPrint));
 
         debugger.detach();
-        QEXPECT_FAIL("", "Task 256184", Continue);
-        QVERIFY(!engine.globalObject().property("print").isValid());
-        QEXPECT_FAIL("", "Task 256184", Continue);
+        QVERIFY(engine.globalObject().property("print").strictlyEquals(oldPrint));
         QVERIFY(!engine.globalObject().property("__FILE__").isValid());
-//        QVERIFY(!engine.globalObject().property("__LINE__").isValid());
+        QVERIFY(!engine.globalObject().property("__LINE__").isValid());
     }
     {
         QScriptEngineDebugger debugger;

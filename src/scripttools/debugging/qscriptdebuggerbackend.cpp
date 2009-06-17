@@ -417,12 +417,10 @@ void QScriptDebuggerBackend::attachTo(QScriptEngine *engine)
 //    global.setProperty(QString::fromLatin1("qAssert"), assertFunction());
     d->origFileNameFunction = global.property(QString::fromLatin1("__FILE__"));
     global.setProperty(QString::fromLatin1("__FILE__"), fileNameFunction(),
-                       QScriptValue::PropertyGetter | QScriptValue::PropertySetter
-                       | QScriptValue::ReadOnly);
+                       QScriptValue::PropertyGetter | QScriptValue::ReadOnly);
     d->origLineNumberFunction = global.property(QString::fromLatin1("__LINE__"));
     global.setProperty(QString::fromLatin1("__LINE__"), lineNumberFunction(),
-                       QScriptValue::PropertyGetter | QScriptValue::PropertySetter
-                       | QScriptValue::ReadOnly);
+                       QScriptValue::PropertyGetter | QScriptValue::ReadOnly);
     engine->setAgent(d->agent);
 }
 
@@ -444,8 +442,12 @@ void QScriptDebuggerBackend::detach()
             global.setProperty(QString::fromLatin1("print"), d->origTraceFunction);
             d->origTraceFunction = QScriptValue();
 //            global.setProperty(QString::fromLatin1("qAssert"), QScriptValue());
+            global.setProperty(QString::fromLatin1("__FILE__"), QScriptValue(),
+                               QScriptValue::PropertyGetter);
             global.setProperty(QString::fromLatin1("__FILE__"), d->origFileNameFunction);
             d->origFileNameFunction = QScriptValue();
+            global.setProperty(QString::fromLatin1("__LINE__"), QScriptValue(),
+                               QScriptValue::PropertyGetter);
             global.setProperty(QString::fromLatin1("__LINE__"), d->origLineNumberFunction);
             d->origLineNumberFunction = QScriptValue();
             d->agent->nullifyBackendPointer();
