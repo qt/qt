@@ -66,6 +66,9 @@ public:
     QStateMachine *machine() const;
 
 Q_SIGNALS:
+#if !defined(Q_MOC_RUN) && !defined(qdoc)
+private: // can only be emitted by QAbstractState
+#endif
     void entered();
     void exited();
 
