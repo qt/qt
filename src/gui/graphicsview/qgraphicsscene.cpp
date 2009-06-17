@@ -5395,21 +5395,19 @@ void QGraphicsScenePrivate::processDirtyItemsRecursive(QGraphicsItem *item, bool
                 if (dirtyRect.isEmpty())
                     continue; // Discard updates outside the bounding rect.
 
-                QTransform deviceTransform = item->d_ptr->sceneTransform;
-                if (view->isTransformed()) {
-                    if (!untransformableItem)
-                        deviceTransform *= view->viewportTransform();
-                    else
-                        deviceTransform = item->deviceTransform(view->viewportTransform());
-                }
-
-                if (item->d_ptr->hasBoundingRegionGranularity) {
-                    if (!viewPrivate->updateRegion(deviceTransform.map(QRegion(dirtyRect.toRect()))))
-                        paintedViewBoundingRect = QRect();
+                bool valid = false;
+                if (untransformableItem) {
+                    valid = item->d_ptr->updateHelper(viewPrivate, dirtyRect,
+                                                      item->deviceTransform(view->viewportTransform()));
+                } else if (!view->isTransformed()) {
+                    valid = item->d_ptr->updateHelper(viewPrivate, dirtyRect, item->d_ptr->sceneTransform);
                 } else {
-                    if (!viewPrivate->updateRect(deviceTransform.mapRect(dirtyRect).toRect()))
-                        paintedViewBoundingRect = QRect();
+                    QTransform deviceTransform = item->d_ptr->sceneTransform;
+                    deviceTransform *= view->viewportTransform();
+                    valid = !item->d_ptr->updateHelper(viewPrivate, dirtyRect, deviceTransform);
                 }
+                if (!valid)
+                    paintedViewBoundingRect = QRect();
             }
         }
     }

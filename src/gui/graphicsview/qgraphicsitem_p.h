@@ -55,6 +55,7 @@
 
 #include "qgraphicsitem.h"
 #include "qpixmapcache.h"
+#include "qgraphicsview_p.h"
 
 #include <QtCore/qpoint.h>
 
@@ -363,6 +364,14 @@ public:
         return !visible
                || (childrenClippedToShape() && isClippedAway())
                || (childrenCombineOpacity() && isFullyTransparent());
+    }
+
+    inline bool updateHelper(QGraphicsViewPrivate *view, const QRectF &rect, const QTransform &xform) const
+    {
+        Q_ASSERT(view);
+        if (hasBoundingRegionGranularity)
+            return view->updateRegion(xform.map(QRegion(rect.toRect())));
+        return view->updateRect(xform.mapRect(rect).toRect());
     }
 
     inline QTransform transformToParent() const;
