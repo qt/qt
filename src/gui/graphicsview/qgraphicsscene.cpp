@@ -5206,7 +5206,11 @@ void QGraphicsScenePrivate::drawSubtreeRecursive(QGraphicsItem *item, QPainter *
         if (clipsToShape)
             painter->setClipPath(item->shape(), Qt::IntersectClip);
         painter->setOpacity(opacity);
-        drawItemHelper(item, painter, &styleOptionTmp, widget, painterStateProtection);
+
+        if (!item->d_ptr->cacheMode && !item->d_ptr->isWidget)
+            item->paint(painter, &styleOptionTmp, widget);
+        else
+            drawItemHelper(item, painter, &styleOptionTmp, widget, painterStateProtection);
 
         if (savePainter)
             painter->restore();
