@@ -56,11 +56,12 @@ QT_MODULE(Core)
 class QLatin1Literal
 {
 public:
-    template <int N>
-    QLatin1Literal(const char (&str)[N]) : m_size(N - 1), m_data(str) {}
+    int size() const { return m_size; }
+    const char *data() const { return m_data; }
 
-    inline int size() const { return m_size; }
-    inline const char *data() const { return m_data; }
+    template <int N>
+    QLatin1Literal(const char (&str)[N]) 
+        : m_size(N - 1), m_data(str) {}
 
 private:
     const int m_size;

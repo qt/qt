@@ -54,23 +54,23 @@ QT_BEGIN_NAMESPACE
     \class QProxyStyle
 
     \brief The QProxyStyle class is a convenience class that simplifies
-    the overriding of QStyle elements.
+    dynamically overriding QStyle elements.
 
     \since 4.6
 
     A QProxyStyle wraps a QStyle (usually the default system style) for the
-    purpose of overriding the painting or other specific behavior of the
-    wrapped style.
+    purpose of dynamically overriding painting or other specific style behavior.
 
-    Below is an example that overrides the shortcut underline
-    behavior on all platforms:
+    The following example shows how to override the shortcut underline
+    behavior on any platform:
 
     \snippet doc/src/snippets/code/src_gui_qproxystyle.cpp 1
 
-    Warning: Although Qt's internal styles should respect this hint,
-    there is no guarantee that it will work for all styles. It would
-    not work on a Mac, for example, because menus are handled by the
-    operating system on the Mac.
+    Warning: The \l {QCommonStyle} {common styles} provided by Qt will
+    respect this hint, because they call QStyle::proxy(), but there is
+    no guarantee that QStyle::proxy() will be called for user defined
+    or system controlled styles. It would not work on a Mac, for
+    example, where menus are handled by the operating system.
 
     \sa QStyle
 */
