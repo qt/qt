@@ -835,7 +835,6 @@ void QApplicationPrivate::openPopup(QWidget *popup)
     } else if (QApplicationPrivate::popupWidgets->count() == 1) { // this was the first popup
         fw = QApplication::focusWidget();
         if (fw) {
-//            static_cast<QSymbianControl*>(fw->effectiveWinId())->CancelLongTapTimer();
             QFocusEvent e(QEvent::FocusOut, Qt::PopupFocusReason);
             q_func()->sendEvent(fw, &e);
         }
