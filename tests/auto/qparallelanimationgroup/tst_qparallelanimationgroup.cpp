@@ -253,16 +253,16 @@ void tst_QParallelAnimationGroup::setCurrentTime()
 void tst_QParallelAnimationGroup::clearGroup()
 {
     QParallelAnimationGroup group;
+	static const int animationCount = 10;
 
-    for (int i = 0; i < 10; ++i) {
+    for (int i = 0; i < animationCount; ++i) {
         new QParallelAnimationGroup(&group);
     }
 
-    QCOMPARE(group.animationCount(), 10);
+    QCOMPARE(group.animationCount(), animationCount);
 
-    int count = group.animationCount();
-    QPointer<QAbstractAnimation> *children = new QPointer<QAbstractAnimation>[count];
-    for (int i = 0; i < count; ++i) {
+    QPointer<QAbstractAnimation> children[animationCount];
+    for (int i = 0; i < animationCount; ++i) {
         QVERIFY(group.animationAt(i) != 0);
         children[i] = group.animationAt(i);
     }
@@ -270,10 +270,8 @@ void tst_QParallelAnimationGroup::clearGroup()
     group.clearAnimations();
     QCOMPARE(group.animationCount(), 0);
     QCOMPARE(group.currentTime(), 0);
-    for (int i = 0; i < count; ++i)
-        QCOMPARE(children[i], QPointer<QAbstractAnimation>());
-
-    delete[] children;
+    for (int i = 0; i < animationCount; ++i)
+        QVERIFY(children[i].isNull());
 }
 
 void tst_QParallelAnimationGroup::propagateGroupUpdateToChildren()
@@ -807,15 +805,15 @@ void tst_QParallelAnimationGroup::autoAdd()
     QParallelAnimationGroup group;
     QCOMPARE(group.duration(), 0);
     TestAnimation2 *test = new TestAnimation2(250, &group);      // 0, duration = 250;
-    QCOMPARE(test->group(), &group);
+    QCOMPARE(test->group(), static_cast<QAnimationGroup*>(&group));
     QCOMPARE(test->duration(), 250);
     QCOMPARE(group.duration(), 250);
 
     test = new TestAnimation2(750, &group);     // 1
-    QCOMPARE(test->group(), &group);
+    QCOMPARE(test->group(), static_cast<QAnimationGroup*>(&group));
     QCOMPARE(group.duration(), 750);
     test = new TestAnimation2(500, &group);     // 2
-    QCOMPARE(test->group(), &group);
+    QCOMPARE(test->group(), static_cast<QAnimationGroup*>(&group));
     QCOMPARE(group.duration(), 750);
 
     delete group.animationAt(1);    // remove the one with duration = 750

@@ -206,9 +206,9 @@ void tst_QAnimationGroup::setCurrentTime()
 
     // sequence operating on same object/property
     QSequentialAnimationGroup *sequence = new QSequentialAnimationGroup();
-    QVariantAnimation *a1_s_o1 = new QPropertyAnimation(&s_o1, "value");
-    QVariantAnimation *a2_s_o1 = new QPropertyAnimation(&s_o1, "value");
-    QVariantAnimation *a3_s_o1 = new QPropertyAnimation(&s_o1, "value");
+    QAbstractAnimation *a1_s_o1 = new QPropertyAnimation(&s_o1, "value");
+    QAbstractAnimation *a2_s_o1 = new QPropertyAnimation(&s_o1, "value");
+    QAbstractAnimation *a3_s_o1 = new QPropertyAnimation(&s_o1, "value");
     a2_s_o1->setLoopCount(3);
     sequence->addAnimation(a1_s_o1);
     sequence->addAnimation(a2_s_o1);
@@ -216,25 +216,25 @@ void tst_QAnimationGroup::setCurrentTime()
 
     // sequence operating on different object/properties
     QAnimationGroup *sequence2 = new QSequentialAnimationGroup();
-    QVariantAnimation *a1_s_o2 = new QPropertyAnimation(&s_o2, "value");
-    QVariantAnimation *a1_s_o3 = new QPropertyAnimation(&s_o3, "value");
+    QAbstractAnimation *a1_s_o2 = new QPropertyAnimation(&s_o2, "value");
+    QAbstractAnimation *a1_s_o3 = new QPropertyAnimation(&s_o3, "value");
     sequence2->addAnimation(a1_s_o2);
     sequence2->addAnimation(a1_s_o3);
 
     // parallel operating on different object/properties
     QAnimationGroup *parallel = new QParallelAnimationGroup();
-    QVariantAnimation *a1_p_o1 = new QPropertyAnimation(&p_o1, "value");
-    QVariantAnimation *a1_p_o2 = new QPropertyAnimation(&p_o2, "value");
-    QVariantAnimation *a1_p_o3 = new QPropertyAnimation(&p_o3, "value");
+    QAbstractAnimation *a1_p_o1 = new QPropertyAnimation(&p_o1, "value");
+    QAbstractAnimation *a1_p_o2 = new QPropertyAnimation(&p_o2, "value");
+    QAbstractAnimation *a1_p_o3 = new QPropertyAnimation(&p_o3, "value");
     a1_p_o2->setLoopCount(3);
     parallel->addAnimation(a1_p_o1);
     parallel->addAnimation(a1_p_o2);
     parallel->addAnimation(a1_p_o3);
 
-    UncontrolledAnimation *notTimeDriven = new UncontrolledAnimation(&t_o1, "value");
+    QAbstractAnimation *notTimeDriven = new UncontrolledAnimation(&t_o1, "value");
     QCOMPARE(notTimeDriven->totalDuration(), -1);
 
-    QVariantAnimation *loopsForever = new QPropertyAnimation(&t_o2, "value");
+    QAbstractAnimation *loopsForever = new QPropertyAnimation(&t_o2, "value");
     loopsForever->setLoopCount(-1);
     QCOMPARE(loopsForever->totalDuration(), -1);
 
@@ -318,7 +318,7 @@ void tst_QAnimationGroup::setParentAutoAdd()
 {
     QParallelAnimationGroup group;
     QVariantAnimation *animation = new QPropertyAnimation(&group);
-    QCOMPARE(animation->group(), &group);
+    QCOMPARE(animation->group(), static_cast<QAnimationGroup*>(&group));
 }
 
 void tst_QAnimationGroup::beginNestedGroup()
@@ -347,8 +347,8 @@ void tst_QAnimationGroup::beginNestedGroup()
 
 void tst_QAnimationGroup::addChildTwice()
 {
-    QPropertyAnimation *subGroup;
-    QPropertyAnimation *subGroup2;
+    QAbstractAnimation *subGroup;
+    QAbstractAnimation *subGroup2;
     QAnimationGroup *parent = new QSequentialAnimationGroup();
 
     subGroup = new QPropertyAnimation();
