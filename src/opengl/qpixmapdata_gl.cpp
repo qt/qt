@@ -114,8 +114,11 @@ QGLPixmapData::~QGLPixmapData()
     QGLWidget *shareWidget = qt_gl_share_widget();
     if (!shareWidget)
         return;
-    QGLShareContextScope ctx(shareWidget->context());
-    glDeleteTextures(1, &m_textureId);
+
+    if (m_textureId) {
+        QGLShareContextScope ctx(shareWidget->context());
+        glDeleteTextures(1, &m_textureId);
+    }
 }
 
 bool QGLPixmapData::isValid() const

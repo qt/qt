@@ -89,6 +89,12 @@ public:
     QList<QAbstractAnimation*> animations() const;
 #endif
 
+Q_SIGNALS:
+#if !defined(Q_MOC_RUN) && !defined(qdoc)
+private: // can only be emitted by QAbstractTransition
+#endif
+    void triggered();
+
 protected:
     virtual bool eventTest(QEvent *event) = 0;
 

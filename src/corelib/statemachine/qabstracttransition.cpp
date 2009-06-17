@@ -67,6 +67,8 @@ QT_BEGIN_NAMESPACE
   targetStates() function returns the targets of the transition. The machine()
   function returns the state machine that the transition is part of.
 
+  The triggered() signal is emitted when the transition has been triggered.
+
   Transitions can cause animations to be played. Use the addAnimation()
   function to add an animation to the transition.
 
@@ -137,6 +139,12 @@ void QAbstractTransitionPrivate::callOnTransition(QEvent *e)
 QState *QAbstractTransitionPrivate::sourceState() const
 {
     return qobject_cast<QState*>(parent);
+}
+
+void QAbstractTransitionPrivate::emitTriggered()
+{
+    Q_Q(QAbstractTransition);
+    emit q->triggered();
 }
 
 /*!
@@ -330,6 +338,13 @@ QList<QAbstractAnimation*> QAbstractTransition::animations() const
   This function is called when the transition is triggered. The given \a event
   is what caused the transition to trigger. Reimplement this function to
   perform custom processing when the transition is triggered.
+*/
+
+/*!
+  \fn QAbstractTransition::triggered()
+
+  This signal is emitted when the transition has been triggered (after
+  onTransition() has been called).
 */
 
 /*!
