@@ -3233,10 +3233,6 @@ void QGraphicsView::paintEvent(QPaintEvent *event)
 
     // Determine the exposed region
     d->exposedRegion = event->region();
-    if (!d->accelerateScrolling)
-        d->exposedRegion = viewport()->rect();
-    else if (d->viewportUpdateMode == BoundingRectViewportUpdate)
-        d->exposedRegion = event->rect();
     QRectF exposedSceneRect = mapToScene(d->exposedRegion.boundingRect()).boundingRect();
 
     // Set up the painter
