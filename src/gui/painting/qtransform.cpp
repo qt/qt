@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -76,7 +76,9 @@ QT_BEGIN_NAMESPACE
             nx = affine._m11 * FX_ + affine._m21 * FY_ + affine._dx;        \
             ny = affine._m12 * FX_ + affine._m22 * FY_ + affine._dy;        \
             if (t == TxProject) {                                       \
-                qreal w = 1./(m_13 * FX_ + m_23 * FY_ + m_33);              \
+                qreal w = (m_13 * FX_ + m_23 * FY_ + m_33);              \
+                if (w < Q_NEAR_CLIP) w = Q_NEAR_CLIP;                   \
+                w = 1./w;                                               \
                 nx *= w;                                                \
                 ny *= w;                                                \
             }                                                           \
@@ -436,9 +438,10 @@ QTransform QTransform::fromTranslate(qreal dx, qreal dy)
 {
     QTransform transform(1, 0, 0, 0, 1, 0, dx, dy, 1, true);
     if (dx == 0 && dy == 0)
-        transform.m_dirty = TxNone;
+        transform.m_type = TxNone;
     else
-        transform.m_dirty = TxTranslate;
+        transform.m_type = TxTranslate;
+    transform.m_dirty = TxNone;
     return transform;
 }
 
@@ -489,9 +492,10 @@ QTransform QTransform::fromScale(qreal sx, qreal sy)
 {
     QTransform transform(sx, 0, 0, 0, sy, 0, 0, 0, 1, true);
     if (sx == 1. && sy == 1.)
-        transform.m_dirty = TxNone;
+        transform.m_type = TxNone;
     else
-        transform.m_dirty = TxScale;
+        transform.m_type = TxScale;
+    transform.m_dirty = TxNone;
     return transform;
 }
 
@@ -1800,7 +1804,7 @@ QRect QTransform::mapRect(const QRect &rect) const
             y -= h;
         }
         return QRect(x, y, w, h);
-    } else if (t < TxProject) {
+    } else {
         // see mapToPolygon for explanations of the algorithm.
         qreal x = 0, y = 0;
         MAP(rect.left(), rect.top(), x, y);
@@ -1824,10 +1828,6 @@ QRect QTransform::mapRect(const QRect &rect) const
         xmax = qMax(xmax, x);
         ymax = qMax(ymax, y);
         return QRect(qRound(xmin), qRound(ymin), qRound(xmax)-qRound(xmin), qRound(ymax)-qRound(ymin));
-    } else {
-        QPainterPath path;
-        path.addRect(rect);
-        return map(path).boundingRect().toRect();
     }
 }
 
@@ -1870,7 +1870,7 @@ QRectF QTransform::mapRect(const QRectF &rect) const
             y -= h;
         }
         return QRectF(x, y, w, h);
-    } else if (t < TxProject) {
+    } else {
         qreal x = 0, y = 0;
         MAP(rect.x(), rect.y(), x, y);
         qreal xmin = x;
@@ -1893,10 +1893,6 @@ QRectF QTransform::mapRect(const QRectF &rect) const
         xmax = qMax(xmax, x);
         ymax = qMax(ymax, y);
         return QRectF(xmin, ymin, xmax-xmin, ymax - ymin);
-    } else {
-        QPainterPath path;
-        path.addRect(rect);
-        return map(path).boundingRect();
     }
 }
 

@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the test suite of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -1155,6 +1155,11 @@ void tst_QStateMachine::stateEntryAndExit()
         QVERIFY(machine.configuration().isEmpty());
         globalTick = 0;
         QVERIFY(!machine.isRunning());
+        QSignalSpy s1EnteredSpy(s1, SIGNAL(entered()));
+        QSignalSpy s1ExitedSpy(s1, SIGNAL(exited()));
+        QSignalSpy tTriggeredSpy(t, SIGNAL(triggered()));
+        QSignalSpy s2EnteredSpy(s2, SIGNAL(entered()));
+        QSignalSpy s2ExitedSpy(s2, SIGNAL(exited()));
         machine.start();
 
         QTRY_COMPARE(startedSpy.count(), 1);
@@ -1180,6 +1185,12 @@ void tst_QStateMachine::stateEntryAndExit()
         // s2 is exited
         QCOMPARE(s2->events.at(1).first, 4);
         QCOMPARE(s2->events.at(1).second, TestState::Exit);
+
+        QCOMPARE(s1EnteredSpy.count(), 1);
+        QCOMPARE(s1ExitedSpy.count(), 1);
+        QCOMPARE(tTriggeredSpy.count(), 1);
+        QCOMPARE(s2EnteredSpy.count(), 1);
+        QCOMPARE(s2ExitedSpy.count(), 1);
     }
     // Two top-level states, one has two child states
     {

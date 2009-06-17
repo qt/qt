@@ -2139,10 +2139,12 @@ bool QWebPage::isContentEditable() const
 
 /*!
     \property QWebPage::forwardUnsupportedContent
-    \brief whether QWebPage should forward unsupported content through the
-    unsupportedContent signal
+    \brief whether QWebPage should forward unsupported content
 
-    If disabled the download of such content is aborted immediately.
+    If enabled, the unsupportedContent() signal is emitted with a network reply that
+    can be used to read the content.
+
+    If disabled, the download of such content is aborted immediately.
 
     By default unsupported content is not forwarded.
 */
@@ -2583,8 +2585,12 @@ QString QWebPage::userAgentForUrl(const QUrl& url) const
 
     QChar securityStrength(QLatin1Char('N'));
 #if !defined(QT_NO_OPENSSL)
-    if (QSslSocket::supportsSsl())
-        securityStrength = QLatin1Char('U');
+    // we could check QSslSocket::supportsSsl() here, but this makes
+    // OpenSSL, certificates etc being loaded in all cases were QWebPage
+    // is used. This loading is not needed for non-https.
+    securityStrength = QLatin1Char('U');
+    // this may lead to a false positive: We indicate SSL since it is
+    // compiled in even though supportsSsl() might return false
 #endif
     ua = ua.arg(securityStrength);
 

@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtSql module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -1481,17 +1481,16 @@ QString QSqlDatabase::connectionName() const
 }
 
 /*!
-
-  Sets the default numerical precision policy that queries use when created
-  on this database connection.
+  Sets the default numerical precision policy used by queries created
+  on this database connection to \a precisionPolicy.
 
   Note: Drivers that don't support fetching numerical values with low
   precision will ignore the precision policy. You can use
   QSqlDriver::hasFeature() to find out whether a driver supports this
   feature.
 
-  Note: Setting the default precision policy doesn't affect any currently
-  active queries.
+  Note: Setting the default precision policy to \a precisionPolicy
+  doesn't affect any currently active queries.
 
   \sa QSql::NumericalPrecisionPolicy, numericalPrecisionPolicy(), QSqlQuery::setNumericalPrecisionPolicy(), QSqlQuery::numericalPrecisionPolicy()
 */

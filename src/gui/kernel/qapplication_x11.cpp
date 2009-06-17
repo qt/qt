@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -128,7 +128,7 @@ extern "C" {
 
 #include <private/qbackingstore_p.h>
 
-#if defined(Q_OS_BSD4) || _POSIX_VERSION+0 < 200112L
+#if _POSIX_VERSION+0 < 200112L && !defined(Q_OS_BSD4)
 # define QT_NO_UNSETENV
 #endif
 
@@ -1761,7 +1761,7 @@ void qt_init(QApplicationPrivate *priv, int,
         X11->pattern_fills[i].screen = -1;
 #endif
 
-    X11->startupId = X11->originalStartupId = X11->startupIdString = 0;
+    X11->startupId = 0;
 
     int argc = priv->argc;
     char **argv = priv->argv;
@@ -2559,15 +2559,13 @@ void qt_init(QApplicationPrivate *priv, int,
 #endif // QT_NO_TABLET
 
         X11->startupId = getenv("DESKTOP_STARTUP_ID");
-        X11->originalStartupId = X11->startupId;
         if (X11->startupId) {
 #ifndef QT_NO_UNSETENV
             unsetenv("DESKTOP_STARTUP_ID");
 #else
             // it's a small memory leak, however we won't crash if Qt is
             // unloaded and someones tries to use the envoriment.
-            X11->startupIdString = strdup("DESKTOP_STARTUP_ID=");
-            putenv(X11->startupIdString);
+            putenv(strdup("DESKTOP_STARTUP_ID="));
 #endif
         }
    } else {
@@ -2700,15 +2698,6 @@ void qt_cleanup()
         devices->clear();
 #endif
     }
-
-#ifdef QT_NO_UNSETENV
-    // restore original value back.
-    if (X11->originalStartupId && X11->startupIdString) {
-        putenv(X11->originalStartupId);
-        free(X11->startupIdString);
-        X11->startupIdString = 0;
-    }
-#endif
 
 #ifndef QT_NO_XRENDER
     for (int i = 0; i < X11->solid_fill_count; ++i) {

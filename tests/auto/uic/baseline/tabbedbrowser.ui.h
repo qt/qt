@@ -96,7 +96,7 @@ public:
         TabbedBrowser->resize(710, 664);
         vboxLayout = new QVBoxLayout(TabbedBrowser);
         vboxLayout->setSpacing(0);
-        vboxLayout->setMargin(0);
+        vboxLayout->setContentsMargins(0, 0, 0, 0);
         vboxLayout->setObjectName(QString::fromUtf8("vboxLayout"));
         tab = new QTabWidget(TabbedBrowser);
         tab->setObjectName(QString::fromUtf8("tab"));
@@ -106,7 +106,7 @@ public:
 #ifndef Q_OS_MAC
         gridLayout->setSpacing(6);
 #endif
-        gridLayout->setMargin(8);
+        gridLayout->setContentsMargins(8, 8, 8, 8);
         gridLayout->setObjectName(QString::fromUtf8("gridLayout"));
         tab->addTab(frontpage, QString());
 
@@ -120,7 +120,7 @@ public:
 #ifndef Q_OS_MAC
         hboxLayout->setSpacing(6);
 #endif
-        hboxLayout->setMargin(0);
+        hboxLayout->setContentsMargins(0, 0, 0, 0);
         hboxLayout->setObjectName(QString::fromUtf8("hboxLayout"));
         toolClose = new QToolButton(frameFind);
         toolClose->setObjectName(QString::fromUtf8("toolClose"));
