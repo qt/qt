@@ -198,6 +198,13 @@ Optimizations
     * Fixed active scheduler removal when calling QThread::terminate
     * Fix to Open C bug: select sometimes returns -1 and errno is
       ECONNREFUSED
+- QWidget
+    * Added API for setting softkeys
+- QMenuBar
+    * Native menus are handled properly even when application has multiple QMainWindows
+    * Fixed a bug causing both native and qt menu to be created
+    * Fix for disappearing options menu after coming back from dialog
+
 
 ****************************************************************************
 *                          Examples and demos                              *
@@ -224,12 +231,15 @@ Optimizations
       since the issue has been fixed in qmake.
     * Included drilldown to demonstrate QtSql usage
     * Updated screenshots to S60 style
+    * Added softkeys example
+
+- Softkeys
+    * New example showing how to use softkeys API in QWidget
 
 
 ****************************************************************************
 *                          Tools                                           *
 ****************************************************************************
-
 - qmake
     * Support for generating Symbian "test" targets: CONFIG += symbian_test.
     * Support for Symbian Build System, version 2 (aka Raptor) via
@@ -259,7 +269,7 @@ Optimizations
     * Will now patch also vendor id.
 
 ****************************************************************************
-*                          Documnetation                                   *
+*                          Documentation                                   *
 ****************************************************************************
 - qmake-manual
     * 250370: Added documentation for ICON keyword
