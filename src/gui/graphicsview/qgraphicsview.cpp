@@ -3246,8 +3246,9 @@ void QGraphicsView::paintEvent(QPaintEvent *event)
     painter.setRenderHints(d->renderHints, true);
 
     // Set up viewport transform
-    const QTransform viewTransform = viewportTransform();
-    painter.setWorldTransform(viewTransform);
+    const bool viewTransformed = isTransformed();
+    if (viewTransformed)
+        painter.setWorldTransform(viewportTransform());
 
     // Draw background
     if ((d->cacheMode & CacheBackground)
@@ -3272,16 +3273,22 @@ void QGraphicsView::paintEvent(QPaintEvent *event)
         if (!d->backgroundPixmapExposed.isEmpty()) {
             QPainter backgroundPainter(&d->backgroundPixmap);
             backgroundPainter.setClipRegion(d->backgroundPixmapExposed, Qt::ReplaceClip);
-            backgroundPainter.setTransform(viewportTransform());
+            if (viewTransformed)
+                backgroundPainter.setTransform(painter.worldTransform());
             backgroundPainter.setCompositionMode(QPainter::CompositionMode_Source);
             drawBackground(&backgroundPainter, exposedSceneRect);
             d->backgroundPixmapExposed = QRegion();
         }
 
         // Blit the background from the background pixmap
-        painter.setWorldTransform(QTransform());
-        painter.drawPixmap(QPoint(), d->backgroundPixmap);
-        painter.setWorldTransform(viewTransform);
+        if (viewTransformed) {
+            const QTransform viewTransform = painter.worldTransform();
+            painter.setWorldTransform(QTransform());
+            painter.drawPixmap(QPoint(), d->backgroundPixmap);
+            painter.setWorldTransform(viewTransform);
+        } else {
+            painter.drawPixmap(QPoint(), d->backgroundPixmap);
+        }
     } else {
         if (!(d->optimizationFlags & DontSavePainterState))
             painter.save();
@@ -3292,7 +3299,7 @@ void QGraphicsView::paintEvent(QPaintEvent *event)
 
     // Items
     if (!(d->optimizationFlags & IndirectPainting)) {
-        d->scene->d_func()->drawSubtreeRecursive(0, &painter, viewTransform, &d->exposedRegion,
+        d->scene->d_func()->drawSubtreeRecursive(0, &painter, painter.worldTransform(), &d->exposedRegion,
                                                  viewport(), 0);
     } else {
         // Find all exposed items
@@ -3304,8 +3311,10 @@ void QGraphicsView::paintEvent(QPaintEvent *event)
             const int numItems = itemList.size();
             QGraphicsItem **itemArray = &itemList[0]; // Relies on QList internals, but is perfectly valid.
             QStyleOptionGraphicsItem *styleOptionArray = d->allocStyleOptionsArray(numItems);
-            for (int i = 0; i < numItems; ++i)
-                itemArray[i]->d_ptr->initStyleOption(&styleOptionArray[i], viewTransform, d->exposedRegion, allItems);
+            for (int i = 0; i < numItems; ++i) {
+                itemArray[i]->d_ptr->initStyleOption(&styleOptionArray[i], painter.worldTransform(),
+                                                     d->exposedRegion, allItems);
+            }
             // Draw the items.
             drawItems(&painter, numItems, itemArray, styleOptionArray);
             d->freeStyleOptionsArray(styleOptionArray);
