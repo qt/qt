@@ -316,6 +316,7 @@ void QNetworkAccessHttpBackend::disconnectFromHttp()
         cache->releaseEntry(cacheKey);
     }
 
+    // This is abut disconnecting signals, not about disconnecting TCP connections
     if (httpReply)
         disconnect(httpReply, 0, this, 0);
 
