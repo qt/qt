@@ -1157,6 +1157,7 @@ void tst_QStateMachine::stateEntryAndExit()
         QVERIFY(!machine.isRunning());
         QSignalSpy s1EnteredSpy(s1, SIGNAL(entered()));
         QSignalSpy s1ExitedSpy(s1, SIGNAL(exited()));
+        QSignalSpy tTriggeredSpy(t, SIGNAL(triggered()));
         QSignalSpy s2EnteredSpy(s2, SIGNAL(entered()));
         QSignalSpy s2ExitedSpy(s2, SIGNAL(exited()));
         machine.start();
@@ -1187,6 +1188,7 @@ void tst_QStateMachine::stateEntryAndExit()
 
         QCOMPARE(s1EnteredSpy.count(), 1);
         QCOMPARE(s1ExitedSpy.count(), 1);
+        QCOMPARE(tTriggeredSpy.count(), 1);
         QCOMPARE(s2EnteredSpy.count(), 1);
         QCOMPARE(s2ExitedSpy.count(), 1);
     }

@@ -78,6 +78,7 @@ public:
     void callOnTransition(QEvent *e);
     QState *sourceState() const;
     QStateMachine *machine() const;
+    void emitTriggered();
 
     QList<QPointer<QAbstractState> > targetStates;
 

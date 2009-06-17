@@ -498,6 +498,7 @@ void QStateMachinePrivate::executeTransitionContent(QEvent *event, const QList<Q
         qDebug() << q_func() << ": triggering" << t;
 #endif
         QAbstractTransitionPrivate::get(t)->callOnTransition(event);
+        QAbstractTransitionPrivate::get(t)->emitTriggered();
     }
 }
 
