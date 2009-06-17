@@ -1535,11 +1535,14 @@ void QGraphicsScene::setItemIndexMethod(ItemIndexMethod method)
 
     d->indexMethod = method;
 
+    QList<QGraphicsItem *> oldItems = d->index->items();
     delete d->index;
     if (method == BspTreeIndex)
         d->index = new QGraphicsSceneBspTreeIndex(this);
     else
         d->index = new QGraphicsSceneLinearIndex(this);
+    for (int i = 0; i < oldItems.size(); ++i)
+        d->index->addItem(oldItems.at(i));
 }
 
 /*!
