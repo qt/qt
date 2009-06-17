@@ -5419,12 +5419,18 @@ void QGraphicsScenePrivate::processDirtyItemsRecursive(QGraphicsItem *item, bool
             dirtyAncestorContainsChildren = item && item->d_ptr->fullUpdatePending
                                             && (item->d_ptr->flags & QGraphicsItem::ItemClipsChildrenToShape);
         }
+        const bool parentIgnoresVisible = item && item->d_ptr->ignoreVisible;
+        const bool parentIgnoresOpacity = item && item->d_ptr->ignoreOpacity;
         for (int i = 0; i < children->size(); ++i) {
             QGraphicsItem *child = children->at(i);
             if (wasDirtyParentSceneTransform)
                 child->d_ptr->dirtySceneTransform = 1;
             if (wasDirtyParentViewBoundingRects)
                 child->d_ptr->paintedViewBoundingRectsNeedRepaint = 1;
+            if (parentIgnoresVisible)
+                child->d_ptr->ignoreVisible = 1;
+            if (parentIgnoresOpacity)
+                child->d_ptr->ignoreOpacity = 1;
 
             if (allChildrenDirty) {
                 child->d_ptr->dirty = 1;
