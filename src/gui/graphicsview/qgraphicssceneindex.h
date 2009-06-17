@@ -85,12 +85,18 @@ public:
     virtual QRectF indexedRect() const;
 
     virtual QList<QGraphicsItem *> items(Qt::SortOrder order = Qt::AscendingOrder) const  = 0;
-    virtual QList<QGraphicsItem *> items(const QPointF &pos, Qt::ItemSelectionMode mode, Qt::SortOrder order, const QTransform &deviceTransform = QTransform()) const;
-    virtual QList<QGraphicsItem *> items(const QRectF &rect, Qt::ItemSelectionMode mode, Qt::SortOrder order, const QTransform &deviceTransform = QTransform()) const;
-    virtual QList<QGraphicsItem *> items(const QPolygonF &polygon, Qt::ItemSelectionMode mode, Qt::SortOrder order, const QTransform &deviceTransform = QTransform()) const;
-    virtual QList<QGraphicsItem *> items(const QPainterPath &path, Qt::ItemSelectionMode mode, Qt::SortOrder order, const QTransform &deviceTransform = QTransform()) const;
-    virtual QList<QGraphicsItem *> estimateItems(const QPointF &point, Qt::SortOrder order, const QTransform &deviceTransform) const;
-    virtual QList<QGraphicsItem *> estimateItems(const QRectF &rect, Qt::SortOrder order, const QTransform &deviceTransform) const = 0;
+    virtual QList<QGraphicsItem *> items(const QPointF &pos, Qt::ItemSelectionMode mode,
+                                         Qt::SortOrder order, const QTransform &deviceTransform = QTransform()) const;
+    virtual QList<QGraphicsItem *> items(const QRectF &rect, Qt::ItemSelectionMode mode,
+                                         Qt::SortOrder order, const QTransform &deviceTransform = QTransform()) const;
+    virtual QList<QGraphicsItem *> items(const QPolygonF &polygon, Qt::ItemSelectionMode mode,
+                                         Qt::SortOrder order, const QTransform &deviceTransform = QTransform()) const;
+    virtual QList<QGraphicsItem *> items(const QPainterPath &path, Qt::ItemSelectionMode mode,
+                                         Qt::SortOrder order, const QTransform &deviceTransform = QTransform()) const;
+    virtual QList<QGraphicsItem *> estimateItems(const QPointF &point,
+                                                 Qt::SortOrder order, const QTransform &deviceTransform) const;
+    virtual QList<QGraphicsItem *> estimateItems(const QRectF &rect,
+                                                 Qt::SortOrder order, const QTransform &deviceTransform) const = 0;
 
 protected:
     virtual void clear();

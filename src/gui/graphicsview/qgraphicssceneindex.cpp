@@ -119,9 +119,8 @@ public:
         else
             keep = rect.intersects(transform.mapRect(brect));
 
-        if (keep && (mode == Qt::ContainsItemShape || mode == Qt::IntersectsItemShape)) {
+        if (keep && (mode == Qt::ContainsItemShape || mode == Qt::IntersectsItemShape))
             keep = QGraphicsScenePrivate::get(scene)->itemCollidesWithPath(item, transform.inverted().map(path), mode);
-        }
         return keep;
     }
     QPainterPath path;
@@ -290,24 +289,27 @@ QRectF QGraphicsSceneIndex::indexedRect() const
 }
 
 /*!
-    \fn QList<QGraphicsItem *> QGraphicsSceneIndex::items(const QPointF &pos, Qt::ItemSelectionMode mode, Qt::SortOrder order, const QTransform &deviceTransform) const
+    \fn QList<QGraphicsItem *> QGraphicsSceneIndex::items(const QPointF &pos,
+    Qt::ItemSelectionMode mode, Qt::SortOrder order, const QTransform
+    &deviceTransform) const
 
-    Returns all visible items that, depending on \a mode, are at the specified \a pos
-    and return a list sorted using \a order.
+    Returns all visible items that, depending on \a mode, are at the specified
+    \a pos and return a list sorted using \a order.
 
     The default value for \a mode is Qt::IntersectsItemShape; all items whose
     exact shape intersects with \a pos are returned.
 
     \a deviceTransform is the transformation apply to the view.
 
-    This method use the estimation of the index (estimateItems) and refine
-    the list to get an exact result. If you want to implement your own
-    refinement algorithm you can reimplement this method.
+    This method use the estimation of the index (estimateItems) and refine the
+    list to get an exact result. If you want to implement your own refinement
+    algorithm you can reimplement this method.
 
     \sa estimateItems()
 
 */
-QList<QGraphicsItem *> QGraphicsSceneIndex::items(const QPointF &pos, Qt::ItemSelectionMode mode, Qt::SortOrder order, const QTransform &deviceTransform) const
+QList<QGraphicsItem *> QGraphicsSceneIndex::items(const QPointF &pos, Qt::ItemSelectionMode mode,
+                                                  Qt::SortOrder order, const QTransform &deviceTransform) const
 {
     Q_D(const QGraphicsSceneIndex);
     QList<QGraphicsItem *> itemList;
@@ -319,7 +321,9 @@ QList<QGraphicsItem *> QGraphicsSceneIndex::items(const QPointF &pos, Qt::ItemSe
 }
 
 /*!
-    \fn QList<QGraphicsItem *> QGraphicsSceneIndex::items(const QRectF &rect, Qt::ItemSelectionMode mode, Qt::SortOrder order, const QTransform &deviceTransform) const
+    \fn QList<QGraphicsItem *> QGraphicsSceneIndex::items(const QRectF &rect,
+    Qt::ItemSelectionMode mode, Qt::SortOrder order, const QTransform
+    &deviceTransform) const
 
     \overload
 
@@ -338,7 +342,8 @@ QList<QGraphicsItem *> QGraphicsSceneIndex::items(const QPointF &pos, Qt::ItemSe
     \sa estimateItems()
 
 */
-QList<QGraphicsItem *> QGraphicsSceneIndex::items(const QRectF &rect, Qt::ItemSelectionMode mode, Qt::SortOrder order, const QTransform &deviceTransform) const
+QList<QGraphicsItem *> QGraphicsSceneIndex::items(const QRectF &rect, Qt::ItemSelectionMode mode,
+                                                  Qt::SortOrder order, const QTransform &deviceTransform) const
 {
     Q_D(const QGraphicsSceneIndex);
     QList<QGraphicsItem *> itemList;
@@ -349,7 +354,9 @@ QList<QGraphicsItem *> QGraphicsSceneIndex::items(const QRectF &rect, Qt::ItemSe
 }
 
 /*!
-    \fn QList<QGraphicsItem *> QGraphicsSceneIndex::items(const QPolygonF &polygon, Qt::ItemSelectionMode mode, Qt::SortOrder order, const QTransform &deviceTransform) const
+    \fn QList<QGraphicsItem *> QGraphicsSceneIndex::items(const QPolygonF
+    &polygon, Qt::ItemSelectionMode mode, Qt::SortOrder order, const
+    QTransform &deviceTransform) const
 
     \overload
 
@@ -368,7 +375,8 @@ QList<QGraphicsItem *> QGraphicsSceneIndex::items(const QRectF &rect, Qt::ItemSe
     \sa estimateItems()
 
 */
-QList<QGraphicsItem *> QGraphicsSceneIndex::items(const QPolygonF &polygon, Qt::ItemSelectionMode mode, Qt::SortOrder order, const QTransform &deviceTransform) const
+QList<QGraphicsItem *> QGraphicsSceneIndex::items(const QPolygonF &polygon, Qt::ItemSelectionMode mode,
+                                                  Qt::SortOrder order, const QTransform &deviceTransform) const
 {
     Q_D(const QGraphicsSceneIndex);
     QList<QGraphicsItem *> itemList;
@@ -384,7 +392,9 @@ QList<QGraphicsItem *> QGraphicsSceneIndex::items(const QPolygonF &polygon, Qt::
 }
 
 /*!
-    \fn QList<QGraphicsItem *> QGraphicsSceneIndex::items(const QPainterPath &path, Qt::ItemSelectionMode mode, Qt::SortOrder order, const QTransform &deviceTransform) const
+    \fn QList<QGraphicsItem *> QGraphicsSceneIndex::items(const QPainterPath
+    &path, Qt::ItemSelectionMode mode, Qt::SortOrder order, const QTransform
+    &deviceTransform) const
 
     \overload
 
@@ -403,7 +413,8 @@ QList<QGraphicsItem *> QGraphicsSceneIndex::items(const QPolygonF &polygon, Qt::
     \sa estimateItems()
 
 */
-QList<QGraphicsItem *> QGraphicsSceneIndex::items(const QPainterPath &path, Qt::ItemSelectionMode mode, Qt::SortOrder order, const QTransform &deviceTransform) const
+QList<QGraphicsItem *> QGraphicsSceneIndex::items(const QPainterPath &path, Qt::ItemSelectionMode mode,
+                                                  Qt::SortOrder order, const QTransform &deviceTransform) const
 {
     Q_D(const QGraphicsSceneIndex);
     QList<QGraphicsItem *> itemList;
@@ -421,13 +432,16 @@ QList<QGraphicsItem *> QGraphicsSceneIndex::items(const QPainterPath &path, Qt::
     This method return a list sorted using \a order.
     \a deviceTransform is the transformation apply to the view.
 */
-QList<QGraphicsItem *> QGraphicsSceneIndex::estimateItems(const QPointF &point, Qt::SortOrder order, const QTransform &deviceTransform) const
+QList<QGraphicsItem *> QGraphicsSceneIndex::estimateItems(const QPointF &point, Qt::SortOrder order,
+                                                          const QTransform &deviceTransform) const
 {
     return estimateItems(QRectF(point, QSize(1,1)), order, deviceTransform);
 }
 
 /*!
-    \fn virtual QList<QGraphicsItem *> QGraphicsSceneIndex::estimateItems(const QRectF &rect, Qt::SortOrder order, const QTransform &deviceTransform) const = 0
+    \fn virtual QList<QGraphicsItem *>
+    QGraphicsSceneIndex::estimateItems(const QRectF &rect, Qt::SortOrder
+    order, const QTransform &deviceTransform) const = 0
 
     This pure virtual function return an estimation of items in the \a rect.
     This method return a list sorted using \a order.
@@ -436,8 +450,10 @@ QList<QGraphicsItem *> QGraphicsSceneIndex::estimateItems(const QPointF &point, 
 */
 
 /*!
-    \fn virtual QList<QGraphicsItem *> QGraphicsSceneIndex::items(Qt::SortOrder order = Qt::AscendingOrder) const  = 0;
-    This pure virtual function all items in the index and sort them using \a order.
+    \fn virtual QList<QGraphicsItem *>
+    QGraphicsSceneIndex::items(Qt::SortOrder order = Qt::AscendingOrder) const
+    = 0; This pure virtual function all items in the index and sort them using
+    \a order.
 */
 
 /*!
