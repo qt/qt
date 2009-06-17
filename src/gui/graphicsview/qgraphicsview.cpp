@@ -3249,6 +3249,7 @@ void QGraphicsView::paintEvent(QPaintEvent *event)
     const bool viewTransformed = isTransformed();
     if (viewTransformed)
         painter.setWorldTransform(viewportTransform());
+    const QTransform viewTransform = painter.worldTransform();
 
     // Draw background
     if ((d->cacheMode & CacheBackground)
@@ -3274,7 +3275,7 @@ void QGraphicsView::paintEvent(QPaintEvent *event)
             QPainter backgroundPainter(&d->backgroundPixmap);
             backgroundPainter.setClipRegion(d->backgroundPixmapExposed, Qt::ReplaceClip);
             if (viewTransformed)
-                backgroundPainter.setTransform(painter.worldTransform());
+                backgroundPainter.setTransform(viewTransform);
             backgroundPainter.setCompositionMode(QPainter::CompositionMode_Source);
             drawBackground(&backgroundPainter, exposedSceneRect);
             d->backgroundPixmapExposed = QRegion();
@@ -3282,7 +3283,6 @@ void QGraphicsView::paintEvent(QPaintEvent *event)
 
         // Blit the background from the background pixmap
         if (viewTransformed) {
-            const QTransform viewTransform = painter.worldTransform();
             painter.setWorldTransform(QTransform());
             painter.drawPixmap(QPoint(), d->backgroundPixmap);
             painter.setWorldTransform(viewTransform);
@@ -3299,7 +3299,7 @@ void QGraphicsView::paintEvent(QPaintEvent *event)
 
     // Items
     if (!(d->optimizationFlags & IndirectPainting)) {
-        d->scene->d_func()->drawSubtreeRecursive(0, &painter, painter.worldTransform(), &d->exposedRegion,
+        d->scene->d_func()->drawSubtreeRecursive(0, &painter, viewTransform, &d->exposedRegion,
                                                  viewport(), 0);
     } else {
         // Find all exposed items
@@ -3312,7 +3312,7 @@ void QGraphicsView::paintEvent(QPaintEvent *event)
             QGraphicsItem **itemArray = &itemList[0]; // Relies on QList internals, but is perfectly valid.
             QStyleOptionGraphicsItem *styleOptionArray = d->allocStyleOptionsArray(numItems);
             for (int i = 0; i < numItems; ++i) {
-                itemArray[i]->d_ptr->initStyleOption(&styleOptionArray[i], painter.worldTransform(),
+                itemArray[i]->d_ptr->initStyleOption(&styleOptionArray[i], viewTransform,
                                                      d->exposedRegion, allItems);
             }
             // Draw the items.
