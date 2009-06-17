@@ -687,20 +687,24 @@ bool QmlCompiler::compileObject(Object *obj, const BindingContext &ctxt)
                 output->indexForByteArray(customData);
     }
 
-    // Build the deferred block (### Need to check for presence of "id")
+    // Build the deferred block 
     if (!deferredProps.isEmpty()) {
         QmlInstruction defer;
         defer.type = QmlInstruction::Defer;
         defer.line = 0;
+        defer.defer.deferCount = 0;
         int deferIdx = output->bytecode.count();
         output->bytecode << defer;
 
+        // ### This is lame, we should check if individual properties have
+        // ids defined within them
+        int idCount = compileState.ids.count();
         foreach (Property *prop, deferredProps) {
             COMPILE_CHECK(compileProperty(prop, obj, objCtxt));
         }
-
-        output->bytecode[deferIdx].defer.deferCount = 
-            output->bytecode.count() - deferIdx - 1;
+        if (idCount == compileState.ids.count()) 
+            output->bytecode[deferIdx].defer.deferCount = 
+                output->bytecode.count() - deferIdx - 1;
     }
 
     // If the type support the QmlParserStatusInterface we need to invoke

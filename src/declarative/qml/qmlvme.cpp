@@ -778,13 +778,15 @@ QObject *QmlVME::run(QStack<QObject *> &stack, QmlContext *ctxt, QmlCompiledComp
 
         case QmlInstruction::Defer:
             {
-                QObject *target = stack.top();
-                QmlInstanceDeclarativeData *data = 
-                    QmlInstanceDeclarativeData::get(target, true);
-                comp->addref();
-                data->deferredComponent = comp;
-                data->deferredIdx = ii;
-                ii += instr.defer.deferCount;
+                if (instr.defer.deferCount) {
+                    QObject *target = stack.top();
+                    QmlInstanceDeclarativeData *data = 
+                        QmlInstanceDeclarativeData::get(target, true);
+                    comp->addref();
+                    data->deferredComponent = comp;
+                    data->deferredIdx = ii;
+                    ii += instr.defer.deferCount;
+                }
             }
             break;
 
