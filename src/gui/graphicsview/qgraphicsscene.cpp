@@ -5307,24 +5307,27 @@ void QGraphicsScenePrivate::processDirtyItemsRecursive(QGraphicsItem *item, bool
 {
     Q_Q(QGraphicsScene);
 
-    // Calculate the full scene transform for this item.
-    bool wasDirtyParentSceneTransform = false;
-    if (item && item->d_ptr->dirtySceneTransform && !item->d_ptr->itemIsUntransformable()) {
-        item->d_ptr->sceneTransform = item->d_ptr->parent ? item->d_ptr->parent->d_ptr->sceneTransform
-                                                          : QTransform();
-        item->d_ptr->combineTransformFromParent(&item->d_ptr->sceneTransform);
-        item->d_ptr->dirtySceneTransform = 0;
-        wasDirtyParentSceneTransform = true;
-    }
-
     bool wasDirtyParentViewBoundingRects = false;
+    bool wasDirtyParentSceneTransform = false;
     qreal opacity = parentOpacity;
+
     if (item) {
         wasDirtyParentViewBoundingRects = item->d_ptr->paintedViewBoundingRectsNeedRepaint;
         opacity = item->d_ptr->combineOpacityFromParent(parentOpacity);
-        if ((!item->d_ptr->ignoreVisible && !item->d_ptr->visible)
-            || (!item->d_ptr->ignoreOpacity && opacity == 0.0)
-            || (item->d_ptr->flags & QGraphicsItem::ItemHasNoContents)) {
+        const bool itemIsHidden = !item->d_ptr->ignoreVisible && !item->d_ptr->visible;
+        const bool itemIsFullyTransparent = !item->d_ptr->ignoreOpacity && opacity == 0.0;
+
+        if (item->d_ptr->dirtySceneTransform && !itemIsHidden && !item->d_ptr->itemIsUntransformable()
+            && !(itemIsFullyTransparent && item->d_ptr->childrenCombineOpacity())) {
+            // Calculate the full scene transform for this item.
+            item->d_ptr->sceneTransform = item->d_ptr->parent ? item->d_ptr->parent->d_ptr->sceneTransform
+                                                              : QTransform();
+            item->d_ptr->combineTransformFromParent(&item->d_ptr->sceneTransform);
+            item->d_ptr->dirtySceneTransform = 0;
+            wasDirtyParentSceneTransform = true;
+        }
+
+        if (itemIsHidden || itemIsFullyTransparent || (item->d_ptr->flags & QGraphicsItem::ItemHasNoContents)) {
             // Make sure we don't process invisible items or items with no content.
             item->d_ptr->dirty = 0;
             item->d_ptr->paintedViewBoundingRectsNeedRepaint = 0;
