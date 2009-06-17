@@ -589,11 +589,15 @@ void QGraphicsSceneBspTreeIndex::prepareBoundingRectChange(const QGraphicsItem *
     \a deviceTransform is the transformation apply to the view.
 
 */
-QList<QGraphicsItem *> QGraphicsSceneBspTreeIndex::estimateItems(const QRectF &rect, Qt::SortOrder order, const QTransform &deviceTransform) const
+QList<QGraphicsItem *> QGraphicsSceneBspTreeIndex::estimateItems(const QRectF &rect, Qt::SortOrder order,
+                                                                 const QTransform &deviceTransform) const
 {
     Q_D(const QGraphicsSceneBspTreeIndex);
     const_cast<QGraphicsSceneBspTreeIndexPrivate*>(d)->purgeRemovedItems();
     const_cast<QGraphicsSceneBspTreeIndexPrivate*>(d)->_q_updateSortCache();
+
+    // ### Handle items that ignore transformations
+    Q_UNUSED(deviceTransform);
 
     QList<QGraphicsItem *> rectItems = d->bsp.items(rect);
     // Fill in with any unindexed items

@@ -201,8 +201,6 @@
     however, is done in constant time. This approach is ideal for dynamic
     scenes, where many items are added, moved or removed continuously.
 
-    \omitvalue CustomIndex
-
     \sa setItemIndexMethod(), bspTreeDepth
 */
 
@@ -1529,85 +1527,19 @@ QGraphicsScene::ItemIndexMethod QGraphicsScene::itemIndexMethod() const
     Q_D(const QGraphicsScene);
     return d->indexMethod;
 }
-
-// Possibilities
-//      NoIndex -> CustomIndex  : warning
-// BspTreeIndex -> CustomIndex  : warning
-//  CustomIndex -> CustomIndex  : warning
-//      NoIndex -> BspTreeIndex : create an empty BSP if necessary
-// BspTreeIndex -> BspTreeIndex : nothing
-//  CustomIndex -> BspTreeIndex : create BSP and transfer items
-//      NoIndex -> NoIndex      : nothing
-// BspTreeIndex -> NoIndex      : nothing
-//  CustomIndex -> NoIndex      : create BSP tree but do not populate
 void QGraphicsScene::setItemIndexMethod(ItemIndexMethod method)
 {
     Q_D(QGraphicsScene);
-    if (method == CustomIndex) {
-        qWarning("QGraphicsScene: Invalid index type %d", CustomIndex);
+    if (d->indexMethod == method)
         return;
-    }
-    if (d->indexMethod == method) {
-        return;
-    }
-
-    if (d->indexMethod == NoIndex && method == BspTreeIndex) {
-        QGraphicsSceneBspTreeIndex *tree = qobject_cast<QGraphicsSceneBspTreeIndex*>(d->index);
-        if (!tree) {
-            delete d->index;
-            d->index = new QGraphicsSceneBspTreeIndex(this);
-        }
-    }
-
-    if (d->indexMethod == CustomIndex && method == BspTreeIndex) {
-        //We re-add in the new index all items from the old index
-        QGraphicsSceneIndex *oldIndex = d->index;
-        d->index = new QGraphicsSceneBspTreeIndex(this);
-        for (int i = 0 ; i < oldIndex->items().size() ; ++ i)
-            d->index->addItem(oldIndex->items().at(i));
-    }
-
-    if (d->indexMethod == CustomIndex && method == NoIndex) {
-        d->index = new QGraphicsSceneLinearIndex(this);
-    }
 
     d->indexMethod = method;
-}
 
-/*!
-    \internal
-
-    \brief the item indexing method.
-    This method allow to apply an indexing algorithm \a index to the scene, to speed up
-    item discovery functions like items() and itemAt().
-
-    \sa sceneIndex(), QGraphicsSceneIndex
-*/
-void QGraphicsScene::setSceneIndex(QGraphicsSceneIndex *index)
-{
-    Q_D(QGraphicsScene);
-    if (!index) {
-        qWarning("QGraphicsScene::setSceneIndex: Attempt to insert a null indexer");
-    } else {
-        if (d->indexMethod == BspTreeIndex) {
-            delete d->index;
-        }
-        d->indexMethod = CustomIndex;
-        d->index = index;
-    }
-}
-
-/*!
-    \internal
-
-    This method return the current indexing algorithm of the scene.
-
-    \sa setSceneIndex(), QGraphicsSceneIndex
-*/
-QGraphicsSceneIndex* QGraphicsScene::sceneIndex() const
-{
-    Q_D(const QGraphicsScene);
-    return d->index;
+    delete d->index;
+    if (method == BspTreeIndex)
+        d->index = new QGraphicsSceneBspTreeIndex(this);
+    else
+        d->index = new QGraphicsSceneLinearIndex(this);
 }
 
 /*!
@@ -1814,7 +1746,8 @@ QList<QGraphicsItem *> QGraphicsScene::items(const QPainterPath &path, Qt::ItemS
 
     \sa itemAt()
 */
-QList<QGraphicsItem *> QGraphicsScene::items(const QPointF &pos, Qt::ItemSelectionMode mode, Qt::SortOrder order, const QTransform &deviceTransform) const
+QList<QGraphicsItem *> QGraphicsScene::items(const QPointF &pos, Qt::ItemSelectionMode mode,
+                                             Qt::SortOrder order, const QTransform &deviceTransform) const
 {
     Q_D(const QGraphicsScene);
     return d->index->items(pos, mode, order, deviceTransform);
@@ -1833,7 +1766,8 @@ QList<QGraphicsItem *> QGraphicsScene::items(const QPointF &pos, Qt::ItemSelecti
 
     \sa itemAt()
 */
-QList<QGraphicsItem *> QGraphicsScene::items(const QRectF &rect, Qt::ItemSelectionMode mode, Qt::SortOrder order, const QTransform &deviceTransform) const
+QList<QGraphicsItem *> QGraphicsScene::items(const QRectF &rect, Qt::ItemSelectionMode mode,
+                                             Qt::SortOrder order, const QTransform &deviceTransform) const
 {
     Q_D(const QGraphicsScene);
     return d->index->items(rect, mode, order, deviceTransform);
@@ -1852,7 +1786,8 @@ QList<QGraphicsItem *> QGraphicsScene::items(const QRectF &rect, Qt::ItemSelecti
 
     \sa itemAt()
 */
-QList<QGraphicsItem *> QGraphicsScene::items(const QPolygonF &polygon, Qt::ItemSelectionMode mode, Qt::SortOrder order, const QTransform &deviceTransform) const
+QList<QGraphicsItem *> QGraphicsScene::items(const QPolygonF &polygon, Qt::ItemSelectionMode mode,
+                                             Qt::SortOrder order, const QTransform &deviceTransform) const
 {
     Q_D(const QGraphicsScene);
     return d->index->items(polygon, mode, order, deviceTransform);
@@ -1871,7 +1806,8 @@ QList<QGraphicsItem *> QGraphicsScene::items(const QPolygonF &polygon, Qt::ItemS
 
     \sa itemAt()
 */
-QList<QGraphicsItem *> QGraphicsScene::items(const QPainterPath &path, Qt::ItemSelectionMode mode, Qt::SortOrder order, const QTransform &deviceTransform) const
+QList<QGraphicsItem *> QGraphicsScene::items(const QPainterPath &path, Qt::ItemSelectionMode mode,
+                                             Qt::SortOrder order, const QTransform &deviceTransform) const
 {
     Q_D(const QGraphicsScene);
     return d->index->items(path, mode, order, deviceTransform);

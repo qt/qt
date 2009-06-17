@@ -229,46 +229,6 @@ public:
     QStyleOptionGraphicsItem styleOptionTmp;
 };
 
-static inline bool QRectF_intersects(const QRectF &s, const QRectF &r)
-{
-    qreal xp = s.left();
-    qreal yp = s.top();
-    qreal w = s.width();
-    qreal h = s.height();
-    qreal l1 = xp;
-    qreal r1 = xp;
-    if (w < 0)
-        l1 += w;
-    else
-        r1 += w;
-
-    qreal l2 = r.left();
-    qreal r2 = r.left();
-    if (w < 0)
-        l2 += r.width();
-    else
-        r2 += r.width();
-
-    if (l1 >= r2 || l2 >= r1)
-        return false;
-
-    qreal t1 = yp;
-    qreal b1 = yp;
-    if (h < 0)
-        t1 += h;
-    else
-        b1 += h;
-
-    qreal t2 = r.top();
-    qreal b2 = r.top();
-    if (r.height() < 0)
-        t2 += r.height();
-    else
-        b2 += r.height();
-
-    return !(t1 >= b2 || t2 >= b1);
-}
-
 // QRectF::intersects() returns false always if either the source or target
 // rectangle's width or height are 0. This works around that problem.
 static inline void _q_adjustRect(QRectF *rect)
