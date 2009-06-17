@@ -1155,6 +1155,10 @@ void tst_QStateMachine::stateEntryAndExit()
         QVERIFY(machine.configuration().isEmpty());
         globalTick = 0;
         QVERIFY(!machine.isRunning());
+        QSignalSpy s1EnteredSpy(s1, SIGNAL(entered()));
+        QSignalSpy s1ExitedSpy(s1, SIGNAL(exited()));
+        QSignalSpy s2EnteredSpy(s2, SIGNAL(entered()));
+        QSignalSpy s2ExitedSpy(s2, SIGNAL(exited()));
         machine.start();
 
         QTRY_COMPARE(startedSpy.count(), 1);
@@ -1180,6 +1184,11 @@ void tst_QStateMachine::stateEntryAndExit()
         // s2 is exited
         QCOMPARE(s2->events.at(1).first, 4);
         QCOMPARE(s2->events.at(1).second, TestState::Exit);
+
+        QCOMPARE(s1EnteredSpy.count(), 1);
+        QCOMPARE(s1ExitedSpy.count(), 1);
+        QCOMPARE(s2EnteredSpy.count(), 1);
+        QCOMPARE(s2ExitedSpy.count(), 1);
     }
     // Two top-level states, one has two child states
     {
