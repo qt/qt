@@ -1269,25 +1269,33 @@ void tst_QStateMachine::assignProperty()
     s1->addTransition(s2);
     machine.setInitialState(s1);
     machine.start();
-    QCoreApplication::processEvents();
-    QCOMPARE(s1->objectName(), QString::fromLatin1("s1"));
+    QTRY_COMPARE(s1->objectName(), QString::fromLatin1("s1"));
 
     s1->assignProperty(s1, "objectName", "foo");
     machine.start();
-    QCoreApplication::processEvents();
-    QCOMPARE(s1->objectName(), QString::fromLatin1("foo"));
+    QTRY_COMPARE(s1->objectName(), QString::fromLatin1("foo"));
 
     s1->assignProperty(s1, "noSuchProperty", 123);
     machine.start();
-    QCoreApplication::processEvents();
-    QCOMPARE(s1->objectName(), QString::fromLatin1("foo"));
-    QCOMPARE(s1->dynamicPropertyNames().size(), 1);
+    QTRY_COMPARE(s1->dynamicPropertyNames().size(), 1);
     QCOMPARE(s1->dynamicPropertyNames().at(0), QByteArray("noSuchProperty"));
+    QCOMPARE(s1->objectName(), QString::fromLatin1("foo"));
 
-    QSignalSpy polishedSpy(s1, SIGNAL(polished()));
-    machine.start();
-    QCoreApplication::processEvents();
-    QCOMPARE(polishedSpy.count(), 1);
+    {
+        QSignalSpy polishedSpy(s1, SIGNAL(polished()));
+        machine.start();
+        QTRY_COMPARE(polishedSpy.count(), 1);
+    }
+
+    // nested states
+    {
+        QState *s11 = new QState(s1);
+        QString str = QString::fromLatin1("set by nested state");
+        s11->assignProperty(s11, "objectName", str);
+        s1->setInitialState(s11);
+        machine.start();
+        QTRY_COMPARE(s11->objectName(), str);
+    }
 }
 
 void tst_QStateMachine::assignPropertyWithAnimation()
