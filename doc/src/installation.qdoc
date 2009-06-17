@@ -554,9 +554,9 @@ in the \l{Qt for S60 Requirements} document.
 \note Qt for S60 has some requirements that are given in more detail
 in the \l{Qt for S60 Requirements} document.
 
-\note This document describes how to install Qt for S60 from the source package. 
-Go \l{Installing Qt on S60 using binary package}{here} for instructions on how to install 
-Qt using binary package.
+\note \bold {This document describes how to install and configure Qt for S60 from scratch. 
+If you are using pre-built binaries, follow the instructions
+\l{Installing Qt on S60 using binary package}{here}.}
 
 \list 1
 
@@ -904,7 +904,12 @@ Qt using binary package.
 
     Qt for S60 requires the following software installed on your development PC:
     \list
-        \o \l{http://www.forum.nokia.com/main/resources/tools_and_sdks/carbide_cpp/}{Carbide.c++ v2.0.0 or higher}
+        \o \l{http://www.forum.nokia.com/main/resources/tools_and_sdks/carbide_cpp/}{Carbide.c++ v2.0.0 or higher}           
+           \list
+           \o \bold{Note:} It may be necessary to update the Carbide compiler.
+              See \l{http://pepper.troll.no/s60prereleases/patches/}{here} for instructions how to check your
+              compiler version and how to patch it, if needed.
+           \endlist
         \o \l{http://www.forum.nokia.com/main/resources/tools_and_sdks/S60SDK/}{S60 Platform SDK 3rd Edition FP1 or higher}
         \o \l{http://www.forum.nokia.com/main/resources/technologies/openc_cpp/}{Open C/C++ v1.6.0 or higher}. 
            Install this to all S60 SDKs you plan to use Qt with.

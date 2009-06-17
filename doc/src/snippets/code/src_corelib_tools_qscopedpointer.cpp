@@ -3,7 +3,6 @@ void myFunction(bool useSubClass)
 {
     MyClass *p = useSubClass ? new MyClass() : new MySubClass;
     QIODevice *device = handsOverOwnership();
-    QIODevi
 
     if (m_value > 3) {
         delete p;
@@ -62,3 +61,22 @@ if (scopedPointer) {
     ...
 }
 //! [3]
+
+//! [4]
+class MyPrivateClass; // forward declare MyPrivateClass
+
+class MyClass
+{
+private:
+    QScopedPointer<MyPrivateClass> privatePtr; // QScopedPointer to forward declared class
+
+public:
+    MyClass(); // OK
+    inline ~MyClass() {} // VIOLATION - Destructor must not be inline
+
+private:
+    Q_DISABLE_COPY(MyClass) // OK - copy constructor and assignment operators
+                             // are now disabled, so the compiler won't implicitely
+                             // generate them.
+};
+//! [4]

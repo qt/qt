@@ -139,6 +139,7 @@ void FtpWindow::connectOrDisconnect()
 #ifndef QT_NO_CURSOR
         setCursor(Qt::ArrowCursor);
 #endif
+        statusLabel->setText(tr("Please enter the name of an FTP server."));
         return;
     }
 

@@ -1075,9 +1075,10 @@ void QApplication::symbianHandleCommand(int command)
     default:
         if (command >= SOFTKEYSTART && command <= SOFTKEYEND) {
             int index= command-SOFTKEYSTART;
-            QWidget* focused = QApplication::focusWidget();
-            const QList<QAction*>& softKeys = focused->softKeys();
-            Q_ASSERT(index<softKeys.count());
+            QWidget *focused = QApplication::focusWidget();
+            QWidget *softKeySource = focused ? focused : QApplication::activeWindow();
+            const QList<QAction*>& softKeys = softKeySource->softKeys();
+            Q_ASSERT(index < softKeys.count());
             softKeys.at(index)->activate(QAction::Trigger);
         }
         else

@@ -74,8 +74,6 @@ QCoeFepInputContext::QCoeFepInputContext(QObject *parent)
     m_fepState->SetFlags(EAknEditorFlagDefault);
     m_fepState->SetDefaultInputMode( EAknEditorTextInputMode );
     m_fepState->SetPermittedInputModes( EAknEditorAllInputModes );
-    m_fepState->SetLocalLanguage(ELangEnglish);
-    m_fepState->SetDefaultLanguage(ELangEnglish);
     m_fepState->SetDefaultCase( EAknEditorLowerCase );
     m_fepState->SetPermittedCases( EAknEditorLowerCase|EAknEditorUpperCase );
     m_fepState->SetSpecialCharacterTableResourceId( 0 );

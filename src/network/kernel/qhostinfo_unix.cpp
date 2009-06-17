@@ -320,8 +320,7 @@ QString QHostInfo::localDomainName()
     if (local_res_ninit) {
         // using thread-safe version
         res_state_ptr state = res_state_ptr(qMalloc(sizeof(*state)));
-        if (!state)
-            qBadAlloc();
+        Q_CHECK_PTR(state);
         memset(state, 0, sizeof(*state));
         local_res_ninit(state);
         QString domainName = QUrl::fromAce(state->defdname);

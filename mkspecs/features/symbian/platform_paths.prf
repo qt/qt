@@ -112,6 +112,7 @@ exists($${EPOCROOT}epoc32/include/platform_paths.prf) {
         defineReplace(OSEXT_LAYER_SDK_EXPORT_PATH) {
              return (/epoc32/include/$$1)
         }
+        # WARNING: If the following path changes see the exists() function around line 219
         defineReplace(OS_LAYER_PUBLIC_EXPORT_PATH) {
              return (/epoc32/include/$$1)
         }
@@ -215,7 +216,7 @@ exists($${EPOCROOT}epoc32/include/platform_paths.prf) {
         OS_LAYER_SSL_SYSTEMINCLUDE = $$OS_LAYER_PUBLIC_EXPORT_PATH(stdapis/openssl)
 
         # stlportv5 is preferred over stlport as it has the throwing version of operator new
-        exists($${EPOCROOT}$$OS_LAYER_PUBLIC_EXPORT_PATH(stdapis/stlportv5)) {
+        exists($${EPOCROOT}epoc32/include/stdapis/stlportv5) {
             OS_LAYER_STDCPP_SYSTEMINCLUDE = $$OS_LAYER_PUBLIC_EXPORT_PATH(stdapis/stlportv5)
         } else {
             OS_LAYER_STDCPP_SYSTEMINCLUDE = $$OS_LAYER_PUBLIC_EXPORT_PATH(stdapis/stlport)
@@ -308,6 +309,7 @@ exists($${EPOCROOT}epoc32/include/platform_paths.prf) {
         defineReplace(OSEXT_LAYER_SDK_EXPORT_PATH) {
              return (/epoc32/include/osextensions/$$1)
         }
+        # WARNING: If the following path changes see the exists() function around line 430
         defineReplace(OS_LAYER_PUBLIC_EXPORT_PATH) {
              return (/epoc32/include/osextensions/$$1)
         }
@@ -425,7 +427,7 @@ exists($${EPOCROOT}epoc32/include/platform_paths.prf) {
                                      /epoc32/include/stdapis/openssl
 
         # stlportv5 is preferred over stlport as it has the throwing version of operator new
-        exists($${EPOCROOT}$$OS_LAYER_PUBLIC_EXPORT_PATH(stdapis/stlportv5))|exists($${EPOCROOT}epoc32/include/stdapis/stlportv5) {
+        exists($${EPOCROOT}epoc32/include/osextensions/stdapis/stlportv5)|exists($${EPOCROOT}epoc32/include/stdapis/stlportv5) {
             OS_LAYER_STDCPP_SYSTEMINCLUDE = $$OS_LAYER_PUBLIC_EXPORT_PATH(stdapis/stlportv5) \
                                             /epoc32/include/stdapis/stlportv5
         } else {

@@ -5781,7 +5781,6 @@ bool QWidget::hasFocus() const
 void QWidget::setFocus(Qt::FocusReason reason)
 {
     Q_D(QWidget);
-    d->setSoftKeys_sys(softKeys());
 
     if (!isEnabled())
         return;
@@ -7733,6 +7732,7 @@ bool QWidget::event(QEvent *event)
 #if defined(Q_WS_WIN)
         QInputContextPrivate::updateImeStatus(this, true);
 #endif
+        d->setSoftKeys_sys(softKeys());
         focusInEvent((QFocusEvent*)event);
         break;
 
@@ -7885,6 +7885,10 @@ bool QWidget::event(QEvent *event)
             if (w && w->isVisible() && !w->isWindow())
                 QApplication::sendEvent(w, event);
         }
+
+        if (isWindow() && isActiveWindow())
+            d->setSoftKeys_sys(softKeys());
+
         break; }
 
     case QEvent::LanguageChange:
@@ -11617,7 +11621,8 @@ void QWidget::setSoftKey(QAction *softKey)
     d->softKeys.clear();
     if (softKey)
         d->softKeys.append(softKey);
-    if (QApplication::focusWidget() == this)
+    if ((!QApplication::focusWidget() && this == QApplication::activeWindow())
+        || QApplication::focusWidget() == this)
         d->setSoftKeys_sys(this->softKeys());
 }
 
@@ -11634,7 +11639,8 @@ void QWidget::setSoftKeys(const QList<QAction*> &softKeys)
     d->softKeys.clear();
         d->softKeys = softKeys;
 
-    if ((QApplication::focusWidget() == this) || (QApplication::focusWidget()==0))
+    if ((!QApplication::focusWidget() && this == QApplication::activeWindow())
+        || QApplication::focusWidget() == this)
         d->setSoftKeys_sys(this->softKeys());
 }
 

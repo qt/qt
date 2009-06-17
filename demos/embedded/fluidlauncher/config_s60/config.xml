@@ -1,18 +1,18 @@
 <?xml version="1.0" encoding="iso-8859-1"?>
 <demolauncher>
   <demos>
-    <example filename="embeddedsvgviewer_s60" name="SVG Viewer" image="screenshots/embeddedsvgviewer_s60.png" args="/data/images/qt/demos/embeddedsvgviewer/shapes.svg"/>
-    <example filename="styledemo_s60" name="Stylesheets" image="screenshots/styledemo_s60.png"/>
+    <example filename="embeddedsvgviewer" name="SVG Viewer" image="screenshots/embeddedsvgviewer_s60.png" args="/data/images/qt/demos/embeddedsvgviewer/shapes.svg"/>
+    <example filename="styledemo" name="Stylesheets" image="screenshots/styledemo_s60.png"/>
     <example filename="deform" name="Vector Deformation" image="screenshots/deform.png" args="-small-screen"/>
     <example filename="pathstroke" name="Path Stroking" image="screenshots/pathstroke.png" args="-small-screen"/>
-    <example filename="wiggly_s60" name="Wiggly Text" image="screenshots/wiggly_s60.png" args="-small-screen"/>
-    <example filename="ftp_s60" name="Ftp Client" image="screenshots/ftp_s60.png"/>
-    <example filename="context2d_s60" name="Context2d" image="screenshots/context2d_s60.png"/>
-    <example filename="saxbookmarks_s60" name="SaxBookmarks" image="screenshots/saxbookmarks_s60.png"/>
-    <example filename="desktopservices_s60" name="Desktop Services" image="screenshots/desktopservices_s60.png"/>
-    <example filename="fridgemagnets_s60" name="Fridge Magnets" image="screenshots/fridgemagnets_s60.png" args="-small-screen"/>
-    <example filename="drilldown_s60" name="Drilldown" image="screenshots/drilldown_s60.png"/>
-    <example filename="softkeys" name="Softkeys" image="screenshots/softkeys.png"/>
+    <example filename="wiggly" name="Wiggly Text" image="screenshots/wiggly_s60.png" args="-small-screen"/>
+    <example filename="ftp" name="Ftp Client" image="screenshots/ftp_s60.png"/>
+    <example filename="context2d" name="Context2d" image="screenshots/context2d_s60.png"/>
+    <example filename="saxbookmarks" name="SaxBookmarks" image="screenshots/saxbookmarks_s60.png"/>
+    <example filename="desktopservices" name="Desktop Services" image="screenshots/desktopservices_s60.png"/>
+    <example filename="fridgemagnets" name="Fridge Magnets" image="screenshots/fridgemagnets_s60.png" args="-small-screen"/>
+    <example filename="drilldown" name="Drilldown" image="screenshots/drilldown_s60.png"/>
+    <example filename="softkeys" name="Softkeys" image="screenshots/softkeys_s60.png"/>
   </demos>
   <slideshow timeout="60000" interval="10000">
     <imagedir dir="slides"/>
