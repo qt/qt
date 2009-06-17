@@ -111,9 +111,11 @@ void tst_QScriptEngineDebugger::attachAndDetach()
 {
     {
         QScriptEngineDebugger debugger;
+        QCOMPARE(debugger.state(), QScriptEngineDebugger::SuspendedState);
         debugger.attachTo(0);
         QScriptEngine engine;
         debugger.attachTo(&engine);
+        QCOMPARE(debugger.state(), QScriptEngineDebugger::SuspendedState);
     }
     {
         QScriptEngineDebugger debugger;
