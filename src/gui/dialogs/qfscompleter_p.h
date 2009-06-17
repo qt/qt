@@ -55,8 +55,9 @@
 
 #include "qcompleter.h"
 #include <QtGui/qfilesystemmodel.h>
-
+QT_BEGIN_NAMESPACE
 #ifndef QT_NO_COMPLETER
+
 /*!
     QCompleter that can deal with QFileSystemModel
   */
@@ -76,6 +77,6 @@ public:
     QFileSystemModel *sourceModel;
 };
 #endif // QT_NO_COMPLETER
-
+QT_END_NAMESPACE
 #endif // QCOMPLETOR_P_H
 
