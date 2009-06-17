@@ -906,8 +906,9 @@ If you are using pre-built binaries, follow the instructions
     \list
         \o \l{http://www.forum.nokia.com/main/resources/tools_and_sdks/carbide_cpp/}{Carbide.c++ v2.0.0 or higher}           
            \list
-           \o \bold{Note:} It is necessary to update Carbide compiler if you are using Carbide 2.0.2 or older. 
-              You can find a compiler patch \l{http://pepper.troll.no/s60prereleases/patches/}{here}.
+           \o \bold{Note:} It may be necessary to update the Carbide compiler.
+              See \l{http://pepper.troll.no/s60prereleases/patches/}{here} for instructions how to check your
+              compiler version and how to patch it, if needed.
            \endlist
         \o \l{http://www.forum.nokia.com/main/resources/tools_and_sdks/S60SDK/}{S60 Platform SDK 3rd Edition FP1 or higher}
         \o \l{http://www.forum.nokia.com/main/resources/technologies/openc_cpp/}{Open C/C++ v1.6.0 or higher}. 
