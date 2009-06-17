@@ -231,6 +231,9 @@ void QTimerActiveObject::RunL()
 
 void QTimerActiveObject::Run()
 {
+    if (!okToRun())
+        return;
+
     if (m_timerInfo->interval > 0) {
         // Start a new timer immediately so that we don't lose time.
         iStatus = KRequestPending;
