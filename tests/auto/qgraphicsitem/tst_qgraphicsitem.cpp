@@ -229,6 +229,7 @@ private slots:
     void moveItem();
     void sorting_data();
     void sorting();
+    void itemHasNoContents();
 
     // task specific tests below me
     void task141694_textItemEnsureVisible();
@@ -7029,6 +7030,32 @@ void tst_QGraphicsItem::sorting()
                  << grid[2][0] << grid[2][1] << grid[2][2] << grid[2][3]
                  << grid[3][0] << grid[3][1] << grid[3][2] << grid[3][3]
                  << item1 << item2);
+}
+
+void tst_QGraphicsItem::itemHasNoContents()
+{
+    PainterItem *item1 = new PainterItem;
+    PainterItem *item2 = new PainterItem;
+    item2->setParentItem(item1);
+    item2->setPos(50, 50);
+    item1->setFlag(QGraphicsItem::ItemHasNoContents);
+    item1->setFlag(QGraphicsItem::ItemClipsChildrenToShape);
+
+    QGraphicsScene scene;
+    scene.addItem(item1);
+
+    QGraphicsView view(&scene);
+    view.show();
+#ifdef Q_WS_X11
+    qt_x11_wait_for_window_manager(&view);
+#endif
+    QTest::qWait(100);
+
+    _paintedItems.clear();
+
+    view.viewport()->repaint();
+
+    QCOMPARE(_paintedItems, QList<QGraphicsItem *>() << item2);
 }
 
 QTEST_MAIN(tst_QGraphicsItem)

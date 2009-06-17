@@ -5074,7 +5074,8 @@ void QGraphicsScenePrivate::drawSubtreeRecursive(QGraphicsItem *item, QPainter *
     }
 
     // Item is invisible.
-    bool invisible = !item || ((item->d_ptr->flags & QGraphicsItem::ItemHasNoContents) || invisibleButChildIgnoresParentOpacity);
+    bool hasContents = item && !(item->d_ptr->flags & QGraphicsItem::ItemHasNoContents);
+    bool invisible = !hasContents || invisibleButChildIgnoresParentOpacity;
 
     // Calculate the full transform for this item.
     bool wasDirtyParentSceneTransform = false;
@@ -5161,7 +5162,7 @@ void QGraphicsScenePrivate::drawSubtreeRecursive(QGraphicsItem *item, QPainter *
     }
 
     bool childClip = (item && (item->d_ptr->flags & QGraphicsItem::ItemClipsChildrenToShape));
-    bool dontDrawChildren = item && dontDrawItem && childClip;
+    bool dontDrawChildren = item && hasContents && dontDrawItem && childClip;
     childClip &= !dontDrawChildren && !children->isEmpty();
     if (item && invisible)
         dontDrawItem = true;
