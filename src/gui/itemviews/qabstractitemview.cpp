@@ -2932,7 +2932,7 @@ void QAbstractItemView::dataChanged(const QModelIndex &topLeft, const QModelInde
         }
         if (isVisible() && !d->delayedPendingLayout) {
             // otherwise the items will be update later anyway
-            d->viewport->update(visualRect(topLeft));
+            update(topLeft);
         }
         return;
     }
