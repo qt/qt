@@ -5056,14 +5056,7 @@ void QGraphicsScenePrivate::drawSubtreeRecursive(QGraphicsItem *item, QPainter *
     if (item) {
         if (!item->d_ptr->visible)
             return;
-        QGraphicsItem *p = item->d_ptr->parent;
-        bool itemIgnoresParentOpacity = item->d_ptr->flags & QGraphicsItem::ItemIgnoresParentOpacity;
-        bool parentDoesntPropagateOpacity = (p && (p->d_ptr->flags & QGraphicsItem::ItemDoesntPropagateOpacityToChildren));
-        if (!itemIgnoresParentOpacity && !parentDoesntPropagateOpacity) {
-            opacity = parentOpacity * item->opacity();
-        } else {
-            opacity = item->d_ptr->opacity;
-        }
+        opacity = item->d_ptr->combineOpacityFromParent(parentOpacity);
         if (opacity == 0.0 && !(item->d_ptr->flags & QGraphicsItem::ItemDoesntPropagateOpacityToChildren)) {
             invisibleButChildIgnoresParentOpacity = !item->d_ptr->childrenCombineOpacity();
             if (!invisibleButChildIgnoresParentOpacity)
@@ -5297,6 +5290,11 @@ void QGraphicsScenePrivate::markDirty(QGraphicsItem *item, const QRectF &rect, b
         item->d_ptr->dirtyChildren = 1;
     }
 
+    if (force)
+        item->d_ptr->ignoreVisible = 1;
+    if (ignoreOpacity)
+        item->d_ptr->ignoreOpacity = 1;
+
     QGraphicsItem *p = item->d_ptr->parent;
     while (p && !p->d_ptr->dirtyChildren) {
         p->d_ptr->dirtyChildren = 1;
@@ -5304,7 +5302,8 @@ void QGraphicsScenePrivate::markDirty(QGraphicsItem *item, const QRectF &rect, b
     }
 }
 
-void QGraphicsScenePrivate::processDirtyItemsRecursive(QGraphicsItem *item, bool dirtyAncestorContainsChildren)
+void QGraphicsScenePrivate::processDirtyItemsRecursive(QGraphicsItem *item, bool dirtyAncestorContainsChildren,
+                                                       qreal parentOpacity)
 {
     Q_Q(QGraphicsScene);
 
@@ -5318,20 +5317,30 @@ void QGraphicsScenePrivate::processDirtyItemsRecursive(QGraphicsItem *item, bool
         wasDirtyParentSceneTransform = true;
     }
 
-    // Process item.
     bool wasDirtyParentViewBoundingRects = false;
+    qreal opacity = parentOpacity;
+    if (item) {
+        wasDirtyParentViewBoundingRects = item->d_ptr->paintedViewBoundingRectsNeedRepaint;
+        opacity = item->d_ptr->combineOpacityFromParent(parentOpacity);
+        if ((!item->d_ptr->ignoreVisible && !item->d_ptr->visible)
+            || (!item->d_ptr->ignoreOpacity && opacity == 0.0)
+            || (item->d_ptr->flags & QGraphicsItem::ItemHasNoContents)) {
+            // Make sure we don't process invisible items or items with no content.
+            item->d_ptr->dirty = 0;
+            item->d_ptr->paintedViewBoundingRectsNeedRepaint = 0;
+        }
+    }
+
+    // Process item.
     if (item && (item->d_ptr->dirty || item->d_ptr->paintedViewBoundingRectsNeedRepaint)) {
         const bool useCompatUpdate = views.isEmpty() || (connectedSignals & changedSignalMask);
         const bool untransformableItem = item->d_ptr->itemIsUntransformable();
-        const QRectF itemBoundingRect = item->boundingRect();
+        const QRectF itemBoundingRect = adjustedItemBoundingRect(item);
 
         if (item->d_ptr->geometryChanged) {
             // Update growingItemsBoundingRect.
-            if (!hasSceneRect) {
-                QRectF itemSceneBoundingRect = item->d_ptr->sceneTransform.mapRect(itemBoundingRect);
-                _q_adjustRect(&itemSceneBoundingRect);
-                growingItemsBoundingRect |= itemSceneBoundingRect;
-            }
+            if (!hasSceneRect)
+                growingItemsBoundingRect |= item->d_ptr->sceneTransform.mapRect(itemBoundingRect);
             item->d_ptr->geometryChanged = 0;
         }
 
@@ -5360,11 +5369,12 @@ void QGraphicsScenePrivate::processDirtyItemsRecursive(QGraphicsItem *item, bool
                     break;
                 }
 
+                QRect &paintedViewBoundingRect = item->d_ptr->paintedViewBoundingRects[viewPrivate->viewport];
                 if (item->d_ptr->paintedViewBoundingRectsNeedRepaint) {
                     wasDirtyParentViewBoundingRects = true;
-                    QRect rect = item->d_ptr->paintedViewBoundingRects.value(viewPrivate->viewport);
-                    rect.translate(viewPrivate->dirtyScrollOffset);
-                    viewPrivate->updateRect(rect);
+                    paintedViewBoundingRect.translate(viewPrivate->dirtyScrollOffset);
+                    if (!viewPrivate->updateRect(paintedViewBoundingRect))
+                        paintedViewBoundingRect = QRect();
                 }
 
                 if (!item->d_ptr->dirty)
@@ -5372,7 +5382,6 @@ void QGraphicsScenePrivate::processDirtyItemsRecursive(QGraphicsItem *item, bool
 
                 if (uninitializedDirtyRect) {
                     dirtyRect = itemBoundingRect;
-                    _q_adjustRect(&dirtyRect);
                     if (!item->d_ptr->fullUpdatePending) {
                         _q_adjustRect(&item->d_ptr->needsRepaint);
                         dirtyRect &= item->d_ptr->needsRepaint;
@@ -5390,10 +5399,14 @@ void QGraphicsScenePrivate::processDirtyItemsRecursive(QGraphicsItem *item, bool
                     else
                         deviceTransform = item->deviceTransform(view->viewportTransform());
                 }
-                if (item->d_ptr->hasBoundingRegionGranularity)
-                    viewPrivate->updateRegion(deviceTransform.map(QRegion(dirtyRect.toRect())));
-                else
-                    viewPrivate->updateRect(deviceTransform.mapRect(dirtyRect).toRect());
+
+                if (item->d_ptr->hasBoundingRegionGranularity) {
+                    if (!viewPrivate->updateRegion(deviceTransform.map(QRegion(dirtyRect.toRect()))))
+                        paintedViewBoundingRect = QRect();
+                } else {
+                    if (!viewPrivate->updateRect(deviceTransform.mapRect(dirtyRect).toRect()))
+                        paintedViewBoundingRect = QRect();
+                }
             }
         }
     }
@@ -5434,7 +5447,7 @@ void QGraphicsScenePrivate::processDirtyItemsRecursive(QGraphicsItem *item, bool
                     child->d_ptr->paintedViewBoundingRectsNeedRepaint = 0;
             }
 
-            processDirtyItemsRecursive(child, dirtyAncestorContainsChildren);
+            processDirtyItemsRecursive(child, dirtyAncestorContainsChildren, opacity);
         }
     } else if (wasDirtyParentSceneTransform) {
         item->d_ptr->invalidateChildrenSceneTransform();

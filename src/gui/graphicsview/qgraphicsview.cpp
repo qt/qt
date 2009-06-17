@@ -825,19 +825,22 @@ void QGraphicsViewPrivate::processPendingUpdates()
     dirtyRegion = QRegion();
 }
 
-void QGraphicsViewPrivate::updateRegion(const QRegion &r)
+bool QGraphicsViewPrivate::updateRegion(const QRegion &r)
 {
-    if (r.isEmpty() || fullUpdatePending)
-        return;
+    if (fullUpdatePending || viewportUpdateMode == QGraphicsView::NoViewportUpdate || r.isEmpty())
+        return false;
 
-    // Rect intersects viewport - update everything?
+    const QRect boundingRect = r.boundingRect();
+    if (!boundingRect.intersects(viewport->rect()))
+        return false; // Update region outside viewport.
+
     switch (viewportUpdateMode) {
     case QGraphicsView::FullViewportUpdate:
         fullUpdatePending = true;
         viewport->update();
         break;
     case QGraphicsView::BoundingRectViewportUpdate:
-        dirtyBoundingRect |= r.boundingRect();
+        dirtyBoundingRect |= boundingRect;
         if (dirtyBoundingRect.contains(viewport->rect())) {
             fullUpdatePending = true;
             viewport->update();
@@ -855,18 +858,20 @@ void QGraphicsViewPrivate::updateRegion(const QRegion &r)
         }
         break;
     }
-    case QGraphicsView::NoViewportUpdate:
-        // Unreachable
+    default:
         break;
     }
+
+    return true;
 }
 
-void QGraphicsViewPrivate::updateRect(const QRect &r)
+bool QGraphicsViewPrivate::updateRect(const QRect &r)
 {
-    if (r.isEmpty() || fullUpdatePending)
-        return;
+    if (fullUpdatePending || viewportUpdateMode == QGraphicsView::NoViewportUpdate
+        || !r.intersects(viewport->rect())) {
+        return false;
+    }
 
-    // Rect intersects viewport - update everything?
     switch (viewportUpdateMode) {
     case QGraphicsView::FullViewportUpdate:
         fullUpdatePending = true;
@@ -886,10 +891,11 @@ void QGraphicsViewPrivate::updateRect(const QRect &r)
         else
             dirtyRegion += r.adjusted(-2, -2, 2, 2);
         break;
-    case QGraphicsView::NoViewportUpdate:
-        // Unreachable
+    default:
         break;
     }
+
+    return true;
 }
 
 QStyleOptionGraphicsItem *QGraphicsViewPrivate::allocStyleOptionsArray(int numItems)

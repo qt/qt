@@ -266,7 +266,8 @@ public:
     void markDirty(QGraphicsItem *item, const QRectF &rect = QRectF(), bool invalidateChildren = false,
                    bool maybeDirtyClipPath = false, bool force = false, bool ignoreOpacity = false,
                    bool removingItemFromScene = false);
-    void processDirtyItemsRecursive(QGraphicsItem *item, bool dirtyAncestorContainsChildren = false);
+    void processDirtyItemsRecursive(QGraphicsItem *item, bool dirtyAncestorContainsChildren = false,
+                                    qreal parentOpacity = qreal(1.0));
 
     inline void resetDirtyItem(QGraphicsItem *item)
     {
@@ -278,6 +279,8 @@ public:
         item->d_ptr->needsRepaint = QRectF();
         item->d_ptr->allChildrenDirty = 0;
         item->d_ptr->fullUpdatePending = 0;
+        item->d_ptr->ignoreVisible = 0;
+        item->d_ptr->ignoreOpacity = 0;
     }
 
     QStyle *style;
