@@ -47,7 +47,7 @@
 
 
 QT_BEGIN_NAMESPACE
-QML_DEFINE_TYPE(QmlFollow,Follow);
+QML_DEFINE_TYPE(QmlFollow,Follow)
 
 class QmlFollowPrivate : public QObjectPrivate
 {

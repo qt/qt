@@ -337,6 +337,14 @@ void QFontDialogPrivate::init()
 
 QFontDialog::~QFontDialog()
 {
+#ifdef Q_WS_MAC
+    Q_D(QFontDialog);
+    if (d->delegate) {
+        QFontDialogPrivate::closeCocoaFontPanel(d->delegate);
+        QFontDialogPrivate::sharedFontPanelAvailable = true;
+        return;
+    }
+#endif
 }
 
 /*!
@@ -932,7 +940,7 @@ bool QFontDialogPrivate::sharedFontPanelAvailable = true;
     \since 4.5
     \overload
 
-    Opens the dialog and connects its accepted() signal to the slot specified
+    Opens the dialog and connects its fontSelected() signal to the slot specified
     by \a receiver and \a member.
 
     The signal will be disconnected from the slot when the dialog is closed.

@@ -1036,7 +1036,7 @@ void QWidget::setWindowState(Qt::WindowStates newstate)
                 if (isVisible())
                     style |= WS_VISIBLE;
                 SetWindowLongA(internalWinId(), GWL_STYLE, style);
-                QRect r = qApp->desktop()->screenGeometry(this);
+                QRect r = QApplication::desktop()->screenGeometry(this);
                 UINT swpf = SWP_FRAMECHANGED;
                 if (newstate & Qt::WindowActive)
                     swpf |= SWP_NOACTIVATE;
@@ -1845,7 +1845,8 @@ void QWidgetPrivate::setMask_sys(const QRegion &region)
     OffsetRgn(wr, offset.x(), offset.y());
 
     Q_ASSERT(q->testAttribute(Qt::WA_WState_Created));
-    SetWindowRgn(data.winid, wr, true);
+    if (!SetWindowRgn(data.winid, wr, true))
+        DeleteObject(wr);
 }
 
 void QWidgetPrivate::updateFrameStrut()
@@ -1976,8 +1977,8 @@ public:
     // in
     QOnScreenRasterPaintEngine()
         : QRasterPaintEngine(new QImage(qt_primary_surface_bits,
-                                        qApp->desktop()->width(),
-                                        qApp->desktop()->height(),
+                                        QApplication::desktop()->width(),
+                                        QApplication::desktop()->height(),
                                         qt_primary_surface_stride,
                                         qt_primary_surface_format))
     {

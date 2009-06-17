@@ -822,7 +822,7 @@ QList<QPrinterInfo> QPrinterInfo::availablePrinters()
         for (int i = 0; i < cupsPrinterCount; ++i) {
             QString printerName(QString::fromLocal8Bit(cupsPrinters[i].name));
             if (cupsPrinters[i].instance)
-                printerName += QLatin1String("/") + QString::fromLocal8Bit(cupsPrinters[i].instance);
+                printerName += QLatin1Char('/') + QString::fromLocal8Bit(cupsPrinters[i].instance);
             list.append(QPrinterInfo(printerName));
             if (cupsPrinters[i].is_default)
                 list[i].d_ptr->m_default = true;
@@ -893,7 +893,7 @@ QPrinterInfo::QPrinterInfo(const QPrinter& printer)
         for (int i = 0; i < cupsPrinterCount; ++i) {
             QString printerName(QString::fromLocal8Bit(cupsPrinters[i].name));
             if (cupsPrinters[i].instance)
-                printerName += QLatin1String("/") + QString::fromLocal8Bit(cupsPrinters[i].instance);
+                printerName += QLatin1Char('/') + QString::fromLocal8Bit(cupsPrinters[i].instance);
             if (printerName == printer.printerName()) {
                 if (cupsPrinters[i].is_default)
                     d->m_default = true;

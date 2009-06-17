@@ -198,7 +198,7 @@ void QToolBarPrivate::initDrag(const QPoint &pos)
     if (state != 0)
         return;
 
-    QMainWindow *win = qobject_cast<QMainWindow*>(q->parentWidget());
+    QMainWindow *win = qobject_cast<QMainWindow*>(parent);
     Q_ASSERT(win != 0);
     QMainWindowLayout *layout = qobject_cast<QMainWindowLayout*>(win->layout());
     Q_ASSERT(layout != 0);
@@ -224,7 +224,7 @@ void QToolBarPrivate::startDrag(bool moving)
     if ((moving && state->moving) || state->dragging)
         return;
 
-    QMainWindow *win = qobject_cast<QMainWindow*>(q->parentWidget());
+    QMainWindow *win = qobject_cast<QMainWindow*>(parent);
     Q_ASSERT(win != 0);
     QMainWindowLayout *layout = qobject_cast<QMainWindowLayout*>(win->layout());
     Q_ASSERT(layout != 0);
@@ -283,7 +283,7 @@ bool QToolBarPrivate::mousePressEvent(QMouseEvent *event)
         // drag between toolbar contents to move the window. Make this work by
         // implementing the standard mouse-dragging code and then call
         // window->move() in mouseMoveEvent below.
-        if (QMainWindow *mainWindow = qobject_cast<QMainWindow *>(q->parentWidget())) {
+        if (QMainWindow *mainWindow = qobject_cast<QMainWindow *>(parent)) {
             if (mainWindow->toolBarArea(q) == Qt::TopToolBarArea
                     && mainWindow->unifiedTitleAndToolBarOnMac()
                     && q->childAt(event->pos()) == 0) {
@@ -337,7 +337,7 @@ bool QToolBarPrivate::mouseMoveEvent(QMouseEvent *event)
         return false;
     }
 
-    QMainWindow *win = qobject_cast<QMainWindow*>(q->parentWidget());
+    QMainWindow *win = qobject_cast<QMainWindow*>(parent);
     if (win == 0)
         return true;
 
@@ -1181,7 +1181,7 @@ bool QToolBar::event(QEvent *event)
             if (!d->layout->expanded)
                 break;
 
-            QWidget *w = qApp->activePopupWidget();
+            QWidget *w = QApplication::activePopupWidget();
             if (waitForPopup(this, w)) {
                 d->waitForPopupTimer->start();
                 break;
@@ -1201,7 +1201,7 @@ void QToolBarPrivate::_q_waitForPopup()
 {
     Q_Q(QToolBar);
 
-    QWidget *w = qApp->activePopupWidget();
+    QWidget *w = QApplication::activePopupWidget();
     if (!waitForPopup(q, w)) {
         waitForPopupTimer->stop();
         if (!q->underMouse())

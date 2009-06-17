@@ -768,6 +768,6 @@ QAbstractSocketEngine *QHttpSocketEngineHandler::createSocketEngine(int, QObject
     return 0;
 }
 
-#endif
-
 QT_END_NAMESPACE
+
+#endif

@@ -42,13 +42,8 @@
 #ifndef QANIMATION_H
 #define QANIMATION_H
 
-#if defined(QT_EXPERIMENTAL_SOLUTION)
-# include "qabstractanimation.h"
-# include "qeasingcurve.h"
-#else
-# include <QtCore/qeasingcurve.h>
-# include <QtCore/qabstractanimation.h>
-#endif
+#include <QtCore/qeasingcurve.h>
+#include <QtCore/qabstractanimation.h>
 #include <QtCore/qvector.h>
 #include <QtCore/qvariant.h>
 #include <QtCore/qpair.h>
@@ -122,7 +117,7 @@ private:
 };
 
 template <typename T>
-static void qRegisterAnimationInterpolator(QVariant (*func)(const T &from, const T &to, qreal progress)) {
+void qRegisterAnimationInterpolator(QVariant (*func)(const T &from, const T &to, qreal progress)) {
     QVariantAnimation::registerInterpolator(reinterpret_cast<QVariantAnimation::Interpolator>(func), qMetaTypeId<T>());
 }
 

@@ -129,7 +129,7 @@ struct QGLCMapCleanupHandler {
     CMapEntryHash *cmap_hash;
     GLCMapHash *qglcmap_hash;
 };
-Q_GLOBAL_STATIC(QGLCMapCleanupHandler, cmap_handler);
+Q_GLOBAL_STATIC(QGLCMapCleanupHandler, cmap_handler)
 
 static void cleanup_cmaps()
 {
@@ -433,7 +433,7 @@ bool QGLContext::chooseContext(const QGLContext* shareContext)
         if (!d->gpm)
             return false;
     }
-    QString glxExt = QString(QLatin1String(glXGetClientString(QX11Info::display(), GLX_EXTENSIONS)));
+    QString glxExt = QLatin1String(glXGetClientString(QX11Info::display(), GLX_EXTENSIONS));
     if (glxExt.contains(QLatin1String("GLX_SGI_video_sync"))) {
         if (d->glFormat.swapInterval() == -1)
             d->glFormat.setSwapInterval(0);
@@ -443,19 +443,9 @@ bool QGLContext::chooseContext(const QGLContext* shareContext)
     return true;
 }
 
-
-/*!
-  \bold{X11 only:} This virtual function tries to find a
-  visual that matches the format, reducing the demands if the original
-  request cannot be met.
-
-  The algorithm for reducing the demands of the format is quite
-  simple-minded, so override this method in your subclass if your
-  application has spcific requirements on visual selection.
-
-  \sa chooseContext()
-*/
-
+/*
+  See qgl.cpp for qdoc comment.
+ */
 void *QGLContext::chooseVisual()
 {
     Q_D(QGLContext);
@@ -519,25 +509,28 @@ void *QGLContext::chooseVisual()
     return vis;
 }
 
-
-/*!
-  \internal
-
-  \bold{X11 only:} This virtual function chooses a visual
-  that matches the OpenGL \link format() format\endlink. Reimplement this
-  function in a subclass if you need a custom visual.
-
-  \sa chooseContext()
-*/
-
+/*
+  See qgl.cpp for qdoc comment.
+ */
 void *QGLContext::tryVisual(const QGLFormat& f, int bufDepth)
 {
     Q_D(QGLContext);
-    int spec[40];
+    int spec[45];
     int i = 0;
     spec[i++] = GLX_LEVEL;
     spec[i++] = f.plane();
     const QX11Info *xinfo = qt_x11Info(d->paintDevice);
+    bool useFBConfig = false;
+
+#if defined(GLX_VERSION_1_3) && !defined(QT_NO_XRENDER)
+    QWidget* widget = 0;
+    if (d->paintDevice->devType() == QInternal::Widget)
+        widget = static_cast<QWidget*>(d->paintDevice);
+
+    // Only use glXChooseFBConfig for widgets if we're trying to get an ARGB visual
+    if (widget && widget->testAttribute(Qt::WA_TranslucentBackground) && X11->use_xrender)
+        useFBConfig = true;
+#endif
 
 #if defined(GLX_VERSION_1_1) && defined(GLX_EXT_visual_info)
     static bool useTranspExt = false;
@@ -565,28 +558,41 @@ void *QGLContext::tryVisual(const QGLFormat& f, int bufDepth)
 
         useTranspExtChecked = true;
     }
-    if (f.plane() && useTranspExt) {
+    if (f.plane() && useTranspExt && !useFBConfig) {
         // Required to avoid non-transparent overlay visual(!) on some systems
         spec[i++] = GLX_TRANSPARENT_TYPE_EXT;
         spec[i++] = f.rgba() ? GLX_TRANSPARENT_RGB_EXT : GLX_TRANSPARENT_INDEX_EXT;
     }
 #endif
 
+#if defined(GLX_VERSION_1_3)
+    // GLX_RENDER_TYPE is only in glx >=1.3
+    if (useFBConfig) {
+        spec[i++] = GLX_RENDER_TYPE;
+        spec[i++] = f.rgba() ? GLX_RGBA_BIT : GLX_COLOR_INDEX_BIT;
+    }
+#endif
+
     if (f.doubleBuffer())
         spec[i++] = GLX_DOUBLEBUFFER;
+        if (useFBConfig)
+            spec[i++] = True;
     if (f.depth()) {
         spec[i++] = GLX_DEPTH_SIZE;
         spec[i++] = f.depthBufferSize() == -1 ? 1 : f.depthBufferSize();
     }
     if (f.stereo()) {
         spec[i++] = GLX_STEREO;
+        if (useFBConfig)
+            spec[i++] = True;
     }
     if (f.stencil()) {
         spec[i++] = GLX_STENCIL_SIZE;
         spec[i++] = f.stencilBufferSize() == -1 ? 1 : f.stencilBufferSize();
     }
     if (f.rgba()) {
-        spec[i++] = GLX_RGBA;
+        if (!useFBConfig)
+            spec[i++] = GLX_RGBA;
         spec[i++] = GLX_RED_SIZE;
         spec[i++] = f.redBufferSize() == -1 ? 1 : f.redBufferSize();
         spec[i++] = GLX_GREEN_SIZE;
@@ -621,8 +627,86 @@ void *QGLContext::tryVisual(const QGLFormat& f, int bufDepth)
         spec[i++] = f.samples() == -1 ? 4 : f.samples();
     }
 
+#if defined(GLX_VERSION_1_3)
+    if (useFBConfig) {
+        spec[i++] = GLX_DRAWABLE_TYPE;
+        switch(d->paintDevice->devType()) {
+        case QInternal::Pixmap:
+            spec[i++] = GLX_PIXMAP_BIT;
+            break;
+        case QInternal::Pbuffer:
+            spec[i++] = GLX_PBUFFER_BIT;
+            break;
+        default:
+            qWarning("QGLContext: Unknown paint device type %d", d->paintDevice->devType());
+            // Fall-through & assume it's a window
+        case QInternal::Widget:
+            spec[i++] = GLX_WINDOW_BIT;
+            break;
+        };
+    }
+#endif
+
     spec[i] = XNone;
-    return glXChooseVisual(xinfo->display(), xinfo->screen(), spec);
+
+
+    XVisualInfo* chosenVisualInfo = 0;
+
+#if defined(GLX_VERSION_1_3)
+    while (useFBConfig) {
+        GLXFBConfig *configs;
+        int configCount = 0;
+        configs = glXChooseFBConfig(xinfo->display(), xinfo->screen(), spec, &configCount);
+
+        if (!configs)
+            break; // fallback to trying glXChooseVisual
+
+        for (i = 0; i < configCount; ++i) {
+            XVisualInfo* vi;
+            vi = glXGetVisualFromFBConfig(xinfo->display(), configs[i]);
+            if (!vi)
+                continue;
+
+#if !defined(QT_NO_XRENDER)
+            QWidget* w = 0;
+            if (d->paintDevice->devType() == QInternal::Widget)
+                w = static_cast<QWidget*>(d->paintDevice);
+
+            if (w && w->testAttribute(Qt::WA_TranslucentBackground) && f.alpha()) {
+                // Attempt to find a config who's visual has a proper alpha channel
+                XRenderPictFormat *pictFormat;
+                pictFormat = XRenderFindVisualFormat(xinfo->display(), vi->visual);
+
+                if (pictFormat && (pictFormat->type == PictTypeDirect) && pictFormat->direct.alphaMask) {
+                    // The pict format for the visual matching the FBConfig indicates ARGB
+                    if (chosenVisualInfo)
+                        XFree(chosenVisualInfo);
+                    chosenVisualInfo = vi;
+                    break;
+                }
+            } else
+#endif //QT_NO_XRENDER
+            if (chosenVisualInfo) {
+                // If we've got a visual we can use and we're not trying to find one with a
+                // real alpha channel, we might as well just use the one we've got
+                break;
+            }
+
+            if (!chosenVisualInfo)
+                chosenVisualInfo = vi; // Have something to fall back to
+            else
+                XFree(vi);
+        }
+
+        XFree(configs);
+        break;
+    }
+#endif // defined(GLX_VERSION_1_3)
+
+    if (!chosenVisualInfo)
+        chosenVisualInfo = glXChooseVisual(xinfo->display(), xinfo->screen(), spec);
+
+    return chosenVisualInfo;
 }
 
 
@@ -703,7 +787,7 @@ void QGLContext::swapBuffers() const
             static qt_glXWaitVideoSyncSGI glXWaitVideoSyncSGI = 0;
             static bool resolved = false;
             if (!resolved) {
-                QString glxExt = QString(QLatin1String(glXGetClientString(QX11Info::display(), GLX_EXTENSIONS)));
+                QString glxExt = QLatin1String(glXGetClientString(QX11Info::display(), GLX_EXTENSIONS));
                 if (glxExt.contains(QLatin1String("GLX_SGI_video_sync"))) {
 #if defined(Q_OS_LINUX) || defined(Q_OS_BSD4)
                     void *handle = dlopen(NULL, RTLD_LAZY);
@@ -948,7 +1032,7 @@ void *QGLContext::getProcAddress(const QString &proc) const
     if (resolved && !glXGetProcAddressARB)
         return 0;
     if (!glXGetProcAddressARB) {
-        QString glxExt = QString(QLatin1String(glXGetClientString(QX11Info::display(), GLX_EXTENSIONS)));
+        QString glxExt = QLatin1String(glXGetClientString(QX11Info::display(), GLX_EXTENSIONS));
         if (glxExt.contains(QLatin1String("GLX_ARB_get_proc_address"))) {
 #if defined(Q_OS_LINUX) || defined(Q_OS_BSD4)
             void *handle = dlopen(NULL, RTLD_LAZY);
@@ -1190,6 +1274,12 @@ void QGLWidget::setContext(QGLContext *context,
         if (parentWidget()->x11Info().screen() != x11Info().screen())
             d_func()->xinfo = parentWidget()->d_func()->xinfo;
     }
+
+    // If the application has set WA_TranslucentBackground and not explicitly set
+    // the alpha buffer size to zero, modify the format so it have an alpha channel
+    QGLFormat& fmt = d->glcx->d_func()->glFormat;
+    if (testAttribute(Qt::WA_TranslucentBackground) && fmt.alphaBufferSize() == -1)
+        fmt.setAlphaBufferSize(1);
 
     bool createFailed = false;
     if (!d->glcx->isValid()) {

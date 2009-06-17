@@ -1646,8 +1646,8 @@ void QCleanlooksStyle::drawControl(ControlElement element, const QStyleOption *o
         if (const QStyleOptionHeader *header = qstyleoption_cast<const QStyleOptionHeader *>(option)) {
             QPixmap cache;
             QString pixmapName = QStyleHelper::uniqueName(QLatin1String("headersection"), option, option->rect.size());
-            pixmapName += QLatin1String("-") + QString::number(int(header->position));
-            pixmapName += QLatin1String("-") + QString::number(int(header->orientation));
+            pixmapName += QString::number(- int(header->position));
+            pixmapName += QString::number(- int(header->orientation));
             QRect r = option->rect;
             QColor gradientStopColor;
             QColor gradientStartColor = option->palette.button().color();
@@ -1664,7 +1664,7 @@ void QCleanlooksStyle::drawControl(ControlElement element, const QStyleOption *o
             }
             painter->fillRect(r, gradient);
 
-            if (!UsePixmapCache || !QPixmapCache::find(pixmapName, cache)) {
+            if (!QPixmapCache::find(pixmapName, cache)) {
                 cache = QPixmap(r.size());
                 cache.fill(Qt::transparent);
                 QRect pixmapRect(0, 0, r.width(), r.height());
@@ -1683,8 +1683,7 @@ void QCleanlooksStyle::drawControl(ControlElement element, const QStyleOption *o
                     cachePainter.drawLine(pixmapRect.topRight() + QPoint(-1, 3), pixmapRect.bottomRight() + QPoint(-1, -3));                                  cachePainter.setPen(QPen(option->palette.light().color()));
                     cachePainter.drawLine(pixmapRect.topRight() + QPoint(0, 3), pixmapRect.bottomRight() + QPoint(0, -3));                                }
                 cachePainter.end();
-                if (UsePixmapCache)
-                    QPixmapCache::insert(pixmapName, cache);
+                QPixmapCache::insert(pixmapName, cache);
             }
             painter->drawPixmap(r.topLeft(), cache);
         }
@@ -2438,7 +2437,7 @@ void QCleanlooksStyle::drawComplexControl(ComplexControl control, const QStyleOp
         if (const QStyleOptionSpinBox *spinBox = qstyleoption_cast<const QStyleOptionSpinBox *>(option)) {
             QPixmap cache;
             QString pixmapName = QStyleHelper::uniqueName(QLatin1String("spinbox"), spinBox, spinBox->rect.size());
-            if (!UsePixmapCache || !QPixmapCache::find(pixmapName, cache)) {
+            if (!QPixmapCache::find(pixmapName, cache)) {
                 cache = QPixmap(spinBox->rect.size());
                 cache.fill(Qt::transparent);
                 QRect pixmapRect(0, 0, spinBox->rect.width(), spinBox->rect.height());
@@ -2655,8 +2654,7 @@ void QCleanlooksStyle::drawComplexControl(ComplexControl control, const QStyleOp
                     cachePainter.fillRect(downRect.adjusted(1, 0, 0, 0), disabledColor);
                 }
                 cachePainter.end();
-                if (UsePixmapCache)
-                    QPixmapCache::insert(pixmapName, cache);
+                QPixmapCache::insert(pixmapName, cache);
             }
             painter->drawPixmap(spinBox->rect.topLeft(), cache);
         }
@@ -3187,7 +3185,7 @@ void QCleanlooksStyle::drawComplexControl(ComplexControl control, const QStyleOp
             if (isEnabled)
                 pixmapName += QLatin1String("-enabled");
 
-            if (!UsePixmapCache || !QPixmapCache::find(pixmapName, cache)) {
+            if (!QPixmapCache::find(pixmapName, cache)) {
                 cache = QPixmap(comboBox->rect.size());
                 cache.fill(Qt::transparent);
                 QPainter cachePainter(&cache);
@@ -3307,15 +3305,15 @@ void QCleanlooksStyle::drawComplexControl(ComplexControl control, const QStyleOp
                     }
                 }
                 // Draw the focus rect
-                if ((focus && (option->state & State_KeyboardFocusChange)) && !comboBox->editable) {
+                if (focus && !comboBox->editable
+                    && ((option->state & State_KeyboardFocusChange) || styleHint(SH_UnderlineShortcut, option, widget))) {
                     QStyleOptionFocusRect focus;
                     focus.rect = subControlRect(CC_ComboBox, &comboBoxCopy, SC_ComboBoxEditField, widget)
                                  .adjusted(0, 2, option->direction == Qt::RightToLeft ? 1 : -1, -2);
                     drawPrimitive(PE_FrameFocusRect, &focus, &cachePainter, widget);
                 }
                 cachePainter.end();
-                if (UsePixmapCache)
-                    QPixmapCache::insert(pixmapName, cache);
+                QPixmapCache::insert(pixmapName, cache);
             }
             painter->drawPixmap(comboBox->rect.topLeft(), cache);
         }
@@ -3406,7 +3404,7 @@ void QCleanlooksStyle::drawComplexControl(ComplexControl control, const QStyleOp
                 QRect pixmapRect(0, 0, groove.width(), groove.height());
 
                 // draw background groove
-                if (!UsePixmapCache || !QPixmapCache::find(groovePixmapName, cache)) {
+                if (!QPixmapCache::find(groovePixmapName, cache)) {
                     cache = QPixmap(pixmapRect.size());
                     cache.fill(Qt::transparent);
                     QPainter groovePainter(&cache);
@@ -3433,15 +3431,14 @@ void QCleanlooksStyle::drawComplexControl(ComplexControl control, const QStyleOp
                     groovePainter.setBrush(gradient);
                     groovePainter.drawRect(pixmapRect.adjusted(1, 1, -2, -2));
                     groovePainter.end();
-                    if (UsePixmapCache)
-                        QPixmapCache::insert(groovePixmapName, cache);
+                    QPixmapCache::insert(groovePixmapName, cache);
                 }
                 painter->drawPixmap(groove.topLeft(), cache);
 
                 // draw blue groove highlight
                 QRect clipRect;
                 groovePixmapName += QLatin1String("_blue");
-                if (!UsePixmapCache || !QPixmapCache::find(groovePixmapName, cache)) {
+                if (!QPixmapCache::find(groovePixmapName, cache)) {
                     cache = QPixmap(pixmapRect.size());
                     cache.fill(Qt::transparent);
                     QPainter groovePainter(&cache);
@@ -3460,8 +3457,7 @@ void QCleanlooksStyle::drawComplexControl(ComplexControl control, const QStyleOp
                     groovePainter.setBrush(gradient);
                     groovePainter.drawRect(pixmapRect.adjusted(1, 1, -2, -2));
                     groovePainter.end();
-                    if (UsePixmapCache)
-                        QPixmapCache::insert(groovePixmapName, cache);
+                    QPixmapCache::insert(groovePixmapName, cache);
                 }
                 if (horizontal) {
                     if (slider->upsideDown)
@@ -3483,7 +3479,7 @@ void QCleanlooksStyle::drawComplexControl(ComplexControl control, const QStyleOp
             // draw handle
             if ((option->subControls & SC_SliderHandle) ) {
                 QString handlePixmapName = QStyleHelper::uniqueName(QLatin1String("slider_handle"), option, handle.size());
-                if (!UsePixmapCache || !QPixmapCache::find(handlePixmapName, cache)) {
+                if (!QPixmapCache::find(handlePixmapName, cache)) {
                     cache = QPixmap(handle.size());
                     cache.fill(Qt::transparent);
                     QRect pixmapRect(0, 0, handle.width(), handle.height());
@@ -3564,8 +3560,7 @@ void QCleanlooksStyle::drawComplexControl(ComplexControl control, const QStyleOp
                         }
                     }
                     handlePainter.end();
-                    if (UsePixmapCache)
-                        QPixmapCache::insert(handlePixmapName, cache);
+                    QPixmapCache::insert(handlePixmapName, cache);
                 }
 
                 painter->drawPixmap(handle.topLeft(), cache);
@@ -3858,7 +3853,7 @@ void QCleanlooksStyle::polish(QApplication *app)
         dataDirs = QLatin1String("/usr/local/share/:/usr/share/");
 
     dataDirs.prepend(QDir::homePath() + QLatin1String("/:"));
-    d->iconDirs = dataDirs.split(QLatin1String(":"));
+    d->iconDirs = dataDirs.split(QLatin1Char(':'));
 #endif
 }
 
@@ -4424,7 +4419,7 @@ QIcon QCleanlooksStyle::standardIconImplementation(StandardPixmap standardIcon,
 {
 #ifdef Q_WS_X11
     Q_D(const QCleanlooksStyle);
-    if (!qApp->desktopSettingsAware())
+    if (!QApplication::desktopSettingsAware())
         return QWindowsStyle::standardIconImplementation(standardIcon, option, widget);
     QIcon icon;
     QPixmap pixmap;
@@ -4593,7 +4588,7 @@ QPixmap QCleanlooksStyle::standardPixmap(StandardPixmap standardPixmap, const QS
 #ifdef Q_WS_X11
     Q_D(const QCleanlooksStyle);
     QPixmap pixmap;
-    if (!qApp->desktopSettingsAware())
+    if (!QApplication::desktopSettingsAware())
         return QWindowsStyle::standardPixmap(standardPixmap, opt, widget);
     d->lookupIconTheme();
 #ifndef QT_NO_IMAGEFORMAT_XPM

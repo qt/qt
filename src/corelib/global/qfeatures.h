@@ -311,6 +311,11 @@
 #define QT_NO_ACCESSIBILITY
 #endif
 
+// Animation
+#if !defined(QT_NO_ANIMATION) && (defined(QT_NO_PROPERTIES))
+#define QT_NO_ANIMATION
+#endif
+
 // QButtonGroup
 #if !defined(QT_NO_BUTTONGROUP) && (defined(QT_NO_GROUPBOX))
 #define QT_NO_BUTTONGROUP

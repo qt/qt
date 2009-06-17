@@ -397,7 +397,7 @@ void QSplitterPrivate::recalc(bool update)
     }
 
     if (empty) {
-        if (qobject_cast<QSplitter *>(q->parentWidget())) {
+        if (qobject_cast<QSplitter *>(parent)) {
             // nested splitters; be nice
             maxl = maxt = 0;
         } else {

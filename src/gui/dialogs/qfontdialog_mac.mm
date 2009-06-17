@@ -47,6 +47,7 @@
 #include <private/qapplication_p.h>
 #include <private/qfont_p.h>
 #include <private/qfontengine_p.h>
+#include <private/qt_cocoa_helpers_mac_p.h>
 #include <private/qt_mac_p.h>
 #include <qdebug.h>
 #import <AppKit/AppKit.h>
@@ -123,16 +124,16 @@ static QFont qfontForCocoaFont(NSFont *cocoaFont, const QFont &resolveFont)
     QFont newFont;
     if (cocoaFont) {
         int pSize = qRound([cocoaFont pointSize]);
-        QString family(QCFString::toQString(reinterpret_cast<CFStringRef>([cocoaFont familyName])));
-        QString typeface(QCFString::toQString(reinterpret_cast<CFStringRef>([cocoaFont fontName])));
-//        qDebug() << "original family" << family << "typeface" << typeface << "psize" << pSize;
+        QString family(qt_mac_NSStringToQString([cocoaFont familyName]));
+        QString typeface(qt_mac_NSStringToQString([cocoaFont fontName]));
+
         int hyphenPos = typeface.indexOf(QLatin1Char('-'));
         if (hyphenPos != -1) {
             typeface.remove(0, hyphenPos + 1);
         } else {
             typeface = QLatin1String("Normal");
         }
-//        qDebug() << " massaged family" << family << "typeface" << typeface << "psize" << pSize;
+
         newFont = QFontDatabase().font(family, typeface, pSize);
         newFont.setUnderline(resolveFont.underline());
         newFont.setStrikeOut(resolveFont.strikeOut());
@@ -566,6 +567,7 @@ void *QFontDialogPrivate::openCocoaFontPanel(const QFont &initial,
 
 void QFontDialogPrivate::closeCocoaFontPanel(void *delegate)
 {
+    QMacCocoaAutoReleasePool pool;
     QCocoaFontPanelDelegate *theDelegate = static_cast<QCocoaFontPanelDelegate *>(delegate);
     NSWindow *ourPanel = [theDelegate actualPanel];
     [ourPanel close];
@@ -597,15 +599,37 @@ QFont QFontDialogPrivate::execCocoaFontPanel(bool *ok, const QFont &initial,
     }
 }
 
-void QFontDialogPrivate::setFont(void * delegate, const QFont &font)
+void QFontDialogPrivate::setFont(void *delegate, const QFont &font)
 {
+    QMacCocoaAutoReleasePool pool;
     QFontEngine *fe = font.d->engineForScript(QUnicodeTables::Common);
+    NSFontManager *mgr = [NSFontManager sharedFontManager];
+    NSFont *nsFont = 0;
+
 #if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_5
     if (qstrcmp(fe->name(), "CoreText") == 0) {
-        const NSFont *nsFont = reinterpret_cast<const NSFont *>(static_cast<QCoreTextFontEngineMulti *>(fe)->ctfont);
-        [[NSFontManager sharedFontManager] setSelectedFont:nsFont isMultiple:NO];
-    }
+        nsFont = reinterpret_cast<const NSFont *>(static_cast<QCoreTextFontEngineMulti *>(fe)->ctfont);
+    } else
 #endif
+    {
+        int weight = 5;
+        NSFontTraitMask mask = 0;
+        if (font.style() == QFont::StyleItalic) {
+            mask |= NSItalicFontMask;
+        }
+        if (font.weight() == QFont::Bold) {
+            weight = 9;
+            mask |= NSBoldFontMask;
+        }
+
+        NSFontManager *mgr = [NSFontManager sharedFontManager];
+        nsFont = [mgr fontWithFamily:qt_mac_QStringToNSString(font.family())
+            traits:mask
+            weight:weight
+            size:font.pointSize()];
+    }
+
+    [mgr setSelectedFont:nsFont isMultiple:NO];
     [static_cast<QCocoaFontPanelDelegate *>(delegate) setQtFont:font];
 }
 

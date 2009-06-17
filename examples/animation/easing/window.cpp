@@ -41,28 +41,28 @@
 
 #include "window.h"
 
-Window::Window(QWidget *parent) 
+Window::Window(QWidget *parent)
     : QWidget(parent), m_iconSize(64, 64)
 {
     m_ui.setupUi(this);
     QButtonGroup *buttonGroup = qFindChild<QButtonGroup *>(this);     // ### workaround for uic in 4.4
-    m_ui.easingCurvePicker->setIconSize(m_iconSize);  
+    m_ui.easingCurvePicker->setIconSize(m_iconSize);
     m_ui.easingCurvePicker->setMinimumHeight(m_iconSize.height() + 50);
     buttonGroup->setId(m_ui.lineRadio, 0);
     buttonGroup->setId(m_ui.circleRadio, 1);
-    
+
     QEasingCurve dummy;
     m_ui.periodSpinBox->setValue(dummy.period());
     m_ui.amplitudeSpinBox->setValue(dummy.amplitude());
     m_ui.overshootSpinBox->setValue(dummy.overshoot());
-    
+
     connect(m_ui.easingCurvePicker, SIGNAL(currentRowChanged(int)), this, SLOT(curveChanged(int)));
     connect(buttonGroup, SIGNAL(buttonClicked(int)), this, SLOT(pathChanged(int)));
     connect(m_ui.periodSpinBox, SIGNAL(valueChanged(double)), this, SLOT(periodChanged(double)));
     connect(m_ui.amplitudeSpinBox, SIGNAL(valueChanged(double)), this, SLOT(amplitudeChanged(double)));
     connect(m_ui.overshootSpinBox, SIGNAL(valueChanged(double)), this, SLOT(overshootChanged(double)));
     createCurveIcons();
-    
+
     QPixmap pix(QLatin1String(":/images/qt-logo.png"));
     m_item = new PixmapItem(pix);
     m_scene.addItem(m_item);
@@ -94,18 +94,32 @@ void Window::createCurveIcons()
         qreal yAxis = m_iconSize.width()/3;
         painter.drawLine(0, xAxis, m_iconSize.width(),  xAxis);
         painter.drawLine(yAxis, 0, yAxis, m_iconSize.height());
-        painter.setPen(Qt::black);
-        
+
         qreal curveScale = m_iconSize.height()/2;
-        QPoint currentPos(yAxis, xAxis);
-        
-        for (qreal t = 0; t < 1.0; t+=1.0/curveScale) {
+
+        painter.setPen(Qt::NoPen);
+
+        // start point
+        painter.setBrush(Qt::red);
+        QPoint start(yAxis, xAxis - curveScale * curve.valueForProgress(0));
+        painter.drawRect(start.x() - 1, start.y() - 1, 3, 3);
+
+        // end point
+        painter.setBrush(Qt::blue);
+        QPoint end(yAxis + curveScale, xAxis - curveScale * curve.valueForProgress(1));
+        painter.drawRect(end.x() - 1, end.y() - 1, 3, 3);
+
+        QPainterPath curvePath;
+        curvePath.moveTo(start);
+        for (qreal t = 0; t <= 1.0; t+=1.0/curveScale) {
             QPoint to;
             to.setX(yAxis + curveScale * t);
             to.setY(xAxis - curveScale * curve.valueForProgress(t));
-            painter.drawLine(currentPos, to);
-            currentPos = to;
+            curvePath.lineTo(to);
         }
+        painter.setRenderHint(QPainter::Antialiasing, true);
+        painter.strokePath(curvePath, QColor(32, 32, 32));
+        painter.setRenderHint(QPainter::Antialiasing, false);
         QListWidgetItem *item = new QListWidgetItem;
         item->setIcon(QIcon(pix));
         item->setText(metaEnum.key(i));
@@ -127,7 +141,7 @@ void Window::curveChanged(int row)
     QEasingCurve::Type curveType = (QEasingCurve::Type)row;
     m_anim->setEasingCurve(curveType);
     m_anim->setCurrentTime(0);
-    
+
     bool isElastic = curveType >= QEasingCurve::InElastic && curveType <= QEasingCurve::OutInElastic;
     bool isBounce = curveType >= QEasingCurve::InBounce && curveType <= QEasingCurve::OutInBounce;
     m_ui.periodSpinBox->setEnabled(isElastic);

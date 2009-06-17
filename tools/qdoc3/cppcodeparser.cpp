@@ -591,22 +591,6 @@ Node *CppCodeParser::processTopicCommand(const Doc& doc,
         // ### split(" ") hack is there to support header file syntax
         QStringList paths = arg.split(" ");
         QStringList path = paths[0].split("::");
-        
-#if QDOC2DOX        
-        // qdoc -> doxygen.
-        if (Doc::isDoxPass(1)) {
-            if (command == COMMAND_PROPERTY) {
-                Doc::insertProperty(path);
-            }
-            else if (command == COMMAND_VARIABLE) {
-                Doc::insertVariable(path);
-            }
-            else if (command == COMMAND_ENUM) {
-                // zzz
-            }
-        }
-#endif
-
         Node *node = 0;
         if (!usedNamespaces.isEmpty()) {
             foreach (const QString &usedNamespace, usedNamespaces) {
@@ -1906,12 +1890,6 @@ bool CppCodeParser::matchDocsAndStuff()
             readToken();
 
             Doc::trimCStyleComment(start_loc,comment);
-            /*
-              qdoc --> doxygen
-              We must also remember the location of the end
-              of the comment, so we can construct a diff for
-              it.
-            */
             Location end_loc(location());
 
             /*

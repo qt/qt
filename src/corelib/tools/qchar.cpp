@@ -1321,7 +1321,7 @@ QDataStream &operator>>(QDataStream &in, QChar &chr)
     chr.unicode() = ushort(u);
     return in;
 }
-#endif
+#endif // QT_NO_DATASTREAM
 
 /*!
     \fn ushort & QChar::unicode()

@@ -52,8 +52,8 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Declarative)
 
-QML_DECLARE_INTERFACE(QGraphicsLayoutItem);
-QML_DECLARE_INTERFACE(QGraphicsLayout);
+QML_DECLARE_INTERFACE(QGraphicsLayoutItem)
+QML_DECLARE_INTERFACE(QGraphicsLayout)
 
 class QGraphicsLinearLayoutStretchItemObject : public QObject, public QGraphicsLayoutItem
 {
@@ -64,7 +64,7 @@ public:
 
     virtual QSizeF sizeHint(Qt::SizeHint, const QSizeF &) const;
 };
-QML_DECLARE_TYPE(QGraphicsLinearLayoutStretchItemObject);
+QML_DECLARE_TYPE(QGraphicsLinearLayoutStretchItemObject)
 
 //TODO:
 //  -content margins
@@ -120,7 +120,7 @@ private:
 
     ChildList _children;
 };
-QML_DECLARE_TYPE(QGraphicsLinearLayoutObject);
+QML_DECLARE_TYPE(QGraphicsLinearLayoutObject)
 
 //TODO:
 //  -content margins
@@ -181,7 +181,7 @@ private:
 
     ChildList _children;
 };
-QML_DECLARE_TYPE(QGraphicsGridLayoutObject);
+QML_DECLARE_TYPE(QGraphicsGridLayoutObject)
 
 #endif // GRAPHICSLAYOUTS_H
 

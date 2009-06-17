@@ -5362,10 +5362,10 @@ QDebug operator<<(QDebug debug, const QStyleOption &option)
 {
     debug << "QStyleOption(";
     debug << QStyleOption::OptionType(option.type);
-    debug << "," << (option.direction == Qt::RightToLeft ? "RightToLeft" : "LeftToRight");
-    debug << "," << option.state;
-    debug << "," << option.rect;
-    debug << ")";
+    debug << ',' << (option.direction == Qt::RightToLeft ? "RightToLeft" : "LeftToRight");
+    debug << ',' << option.state;
+    debug << ',' << option.rect;
+    debug << ')';
     return debug;
 }
 #endif

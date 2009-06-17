@@ -58,8 +58,8 @@
 
 QT_BEGIN_NAMESPACE
 
-QML_DEFINE_TYPE(XmlListModelRole, Role);
-QML_DEFINE_TYPE(QmlXmlListModel, XmlListModel);
+QML_DEFINE_TYPE(XmlListModelRole, Role)
+QML_DEFINE_TYPE(QmlXmlListModel, XmlListModel)
 
 
 class QmlXmlListModelPrivate;
@@ -202,11 +202,10 @@ void QmlXmlQuery::doQueryJob()
         QXmlItem item(result.next());
         if (item.isAtomicValue())
             count = item.toAtomicValue().toInt();
-        prefix += QLatin1String("[%1]/");
     }
     //qDebug() << count;
 
-    m_prefix = namespaces + prefix;
+    m_prefix = namespaces + prefix + QLatin1String("/");
     m_data = xml;
     if (count > 0)
         m_size = count;
@@ -222,8 +221,24 @@ void QmlXmlQuery::doSubQueryJob()
     QXmlQuery subquery;
     subquery.bindVariable(QLatin1String("inputDocument"), &b);
 
-    //XXX should we use an array of objects or something else rather than a table?
-    for (int j = 0; j < m_size; ++j) {
+    //### we might be able to condense even further (query for everything in one go)
+    for (int i = 0; i < m_roleObjects->size(); ++i) {
+        XmlListModelRole *role = m_roleObjects->at(i);
+        subquery.setQuery(m_prefix + QLatin1String("(let $v := ") + role->query() + QLatin1String(" return if ($v) then ") + role->query() + QLatin1String(" else \"\")"));
+        QXmlResultItems output3;
+        subquery.evaluateTo(&output3);
+        QXmlItem item(output3.next());
+        QList<QVariant> resultList;
+        while (!item.isNull()) {
+            resultList << item.toAtomicValue(); //### we used to trim strings
+            item = output3.next();
+        }
+        m_modelData << resultList;
+        b.seek(0);
+    }
+
+    //XXX this method is much slower, but would work better for incremental loading
+    /*for (int j = 0; j < m_size; ++j) {
         QList<QVariant> resultList;
         for (int i = 0; i < m_roleObjects->size(); ++i) {
             XmlListModelRole *role = m_roleObjects->at(i);
@@ -248,7 +263,7 @@ void QmlXmlQuery::doSubQueryJob()
             b.seek(0);
         }
         m_modelData << resultList;
-    }
+    }*/
 }
 
 
@@ -270,7 +285,7 @@ public:
         , queryId(-1), roleObjects(this) {}
 
     bool isClassComplete;
-    QString src;
+    QUrl src;
     QString query;
     QString namespaces;
     int size;
@@ -331,7 +346,7 @@ void QmlXmlRoleList::insert(int i, XmlListModelRole *role)
         query: "doc($src)/rss/channel/item"
         Role { name: "title"; query: "title/string()" }
         Role { name: "link"; query: "link/string()" }
-        Role { name: "description"; query: "description/string()"; isCData: true }
+        Role { name: "description"; query: "description/string()" }
     }
     \endqml
     \note The model is currently static, so the above is really just a snapshot of an RSS feed.
@@ -362,7 +377,7 @@ QHash<int,QVariant> QmlXmlListModel::data(int index, const QList<int> &roles) co
     for (int i = 0; i < roles.size(); ++i) {
         int role = roles.at(i);
         int roleIndex = d->roles.indexOf(role);
-        rv.insert(role, d->data.at(index).at(roleIndex));
+        rv.insert(role, d->data.at(roleIndex).at(index));
     }
     return rv;
 }
@@ -388,13 +403,13 @@ QString QmlXmlListModel::toString(int role) const
     return d->roleNames.at(index);
 }
 
-QString QmlXmlListModel::source() const
+QUrl QmlXmlListModel::source() const
 {
     Q_D(const QmlXmlListModel);
     return d->src;
 }
 
-void QmlXmlListModel::setSource(const QString &src)
+void QmlXmlListModel::setSource(const QUrl &src)
 {
     Q_D(QmlXmlListModel);
     if (d->src != src) {
@@ -462,8 +477,8 @@ void QmlXmlListModel::reload()
     d->queryId = -1;
 
     //clear existing data
+    int count = d->size;
     d->size = 0;
-    int count = d->data.count();
     d->data.clear();
     if (count > 0)
         emit itemsRemoved(0, count);
@@ -483,7 +498,7 @@ void QmlXmlListModel::reload()
     emit progressChanged(d->progress);
     emit statusChanged(d->status);
 
-    QNetworkRequest req((QUrl(d->src)));
+    QNetworkRequest req(d->src);
     req.setAttribute(QNetworkRequest::CacheLoadControlAttribute, QNetworkRequest::PreferCache);
     d->reply = qmlContext(this)->engine()->networkAccessManager()->get(req);
     QObject::connect(d->reply, SIGNAL(finished()), this, SLOT(requestFinished()));

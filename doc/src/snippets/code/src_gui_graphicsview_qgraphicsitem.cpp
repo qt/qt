@@ -6,7 +6,7 @@ public:
     {
         qreal penWidth = 1;
         return QRectF(-10 - penWidth / 2, -10 - penWidth / 2,
-                      20 + penWidth / 2, 20 + penWidth / 2);
+                      20 + penWidth, 20 + penWidth);
     }
 
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option,

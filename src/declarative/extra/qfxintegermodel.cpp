@@ -43,14 +43,14 @@
 
 
 QT_BEGIN_NAMESPACE
-QML_DEFINE_TYPE(QFxIntegerModel, IntegerModel);
+QML_DEFINE_TYPE(QFxIntegerModel, IntegerModel)
 
 class QFxIntegerModelPrivate
 {
 public:
-    QFxIntegerModelPrivate() : min(0), max(0) {}
-    int min;
-    int max;
+    QFxIntegerModelPrivate() : minimum(0), maximum(0) {}
+    int minimum;
+    int maximum;
 };
 
 QFxIntegerModel::QFxIntegerModel(QObject *parent)
@@ -66,27 +66,27 @@ QFxIntegerModel::~QFxIntegerModel()
 
 int QFxIntegerModel::minimum() const
 {
-    return d->min;
+    return d->minimum;
 }
 
-void QFxIntegerModel::setMinimum(int min)
+void QFxIntegerModel::setMinimum(int minimum)
 {
-    d->min = min;
+    d->minimum = minimum;
 }
 
 int QFxIntegerModel::maximum() const
 {
-    return d->max;
+    return d->maximum;
 }
 
-void QFxIntegerModel::setMaximum(int max)
+void QFxIntegerModel::setMaximum(int maximum)
 {
-    d->max = max;
+    d->maximum = maximum;
 }
 
 int QFxIntegerModel::count() const
 {
-    return qMax(0, d->max - d->min + 1);
+    return qMax(0, d->maximum - d->minimum + 1);
 }
 
 QHash<int,QVariant> QFxIntegerModel::data(int index, const QList<int> &roles) const
@@ -98,7 +98,7 @@ QHash<int,QVariant> QFxIntegerModel::data(int index, const QList<int> &roles) co
         QVariant info;
         switch(role) {
         case Qt::DisplayRole:
-            info = QVariant(QString::number(d->min+index));
+            info = QVariant(QString::number(d->minimum+index));
             break;
         default:
             break;

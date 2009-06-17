@@ -322,25 +322,36 @@ extern int qt_defaultDpiY();
 
 int QRasterPixmapData::metric(QPaintDevice::PaintDeviceMetric metric) const
 {
+    QImageData *d = image.d;
+    if (!d)
+        return 0;
+
     // override the image dpi with the screen dpi when rendering to a pixmap
-    const int dpmX = qRound(qt_defaultDpiX() * 100 / qreal(2.54));
-    const int dpmY = qRound(qt_defaultDpiY() * 100 / qreal(2.54));
     switch (metric) {
+    case QPaintDevice::PdmWidth:
+        return d->width;
+    case QPaintDevice::PdmHeight:
+        return d->height;
     case QPaintDevice::PdmWidthMM:
-        return qRound(image.width() * 1000 / dpmX);
+        return qRound(d->width * 25.4 / qt_defaultDpiX());
     case QPaintDevice::PdmHeightMM:
-        return qRound(image.height() * 1000 / dpmY);
-    case QPaintDevice::PdmDpiX:
-        return qRound(dpmX * qreal(0.0254));
-    case QPaintDevice::PdmDpiY:
-        return qRound(dpmY * qreal(0.0254));
+        return qRound(d->width * 25.4 / qt_defaultDpiY());
+    case QPaintDevice::PdmNumColors:
+        return d->colortable.size();
+    case QPaintDevice::PdmDepth:
+        return d->depth;
+    case QPaintDevice::PdmDpiX: // fall-through
     case QPaintDevice::PdmPhysicalDpiX:
-        return qRound(dpmX * qreal(0.0254));
+        return qt_defaultDpiX();
+    case QPaintDevice::PdmDpiY: // fall-through
     case QPaintDevice::PdmPhysicalDpiY:
-        return qRound(dpmY * qreal(0.0254));
+        return qt_defaultDpiY();
     default:
-        return image.metric(metric);
+        qWarning("QRasterPixmapData::metric(): Unhandled metric type %d", metric);
+        break;
     }
+
+    return 0;
 }
 
 QImage* QRasterPixmapData::buffer()

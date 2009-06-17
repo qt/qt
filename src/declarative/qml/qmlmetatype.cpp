@@ -214,9 +214,12 @@ void QmlTypePrivate::init() const
         mo = mo->d.superdata;
     }
 
-    for (int ii = 0; ii < m_metaObjects.count(); ++ii) 
+    for (int ii = 0; ii < m_metaObjects.count(); ++ii) {
         m_metaObjects[ii].propertyOffset = 
             m_metaObjects.at(ii).metaObject->propertyOffset();
+        m_metaObjects[ii].methodOffset = 
+            m_metaObjects.at(ii).metaObject->methodOffset();
+    }
 
     // Calculate hash
     QByteArray hashData;
@@ -771,6 +774,7 @@ const char *QmlMetaType::interfaceIId(int userType)
 
 bool QmlMetaType::isObject(const QMetaObject *mo)
 {
+    // ### Huh?
     while(mo) {
         if (mo == &QObject::staticMetaObject)
             return true;

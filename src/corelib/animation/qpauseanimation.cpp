@@ -42,9 +42,8 @@
 /*!
     \class QPauseAnimation
     \brief The QPauseAnimation class provides a pause for QSequentialAnimationGroup.
-    \since 4.5
-    \ingroup group_animation
-    \preliminary
+    \since 4.6
+    \ingroup animation
 
     If you wish to introduce a delay between animations in a
     QSequentialAnimationGroup, you can insert a QPauseAnimation. This
@@ -63,11 +62,11 @@
     \sa QSequentialAnimationGroup
 */
 
-#ifndef QT_NO_ANIMATION
-
 #include "qpauseanimation.h"
 #include "qabstractanimation_p.h"
 
+
+#ifndef QT_NO_ANIMATION
 
 QT_BEGIN_NAMESPACE
 

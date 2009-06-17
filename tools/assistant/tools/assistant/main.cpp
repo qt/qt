@@ -230,7 +230,7 @@ int main(int argc, char *argv[])
         if (file.isEmpty())
             file = MainWindow::defaultHelpCollectionFileName();
         QString path = QFileInfo(file).path();
-        path += QLatin1String("/") + indexFilesFolder(file);
+        path += QLatin1Char('/') + indexFilesFolder(file);
 
         QLocalSocket localSocket;
         localSocket.connectToServer(QString(QLatin1String("QtAssistant%1"))

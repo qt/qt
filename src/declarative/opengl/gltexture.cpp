@@ -79,7 +79,8 @@ public:
     GLTexturePrivate(GLTexture *_q)
         : q(_q), texture(0), width(0), height(0), 
            horizWrap(GLTexture::Repeat), vertWrap(GLTexture::Repeat),
-           minFilter(GLTexture::Linear), magFilter(GLTexture::Linear)
+           minFilter(GLTexture::Linear), magFilter(GLTexture::Linear),
+           glWidth(1.), glHeight(1.)
     {
     }
 
@@ -91,6 +92,10 @@ public:
     GLTexture::WrapMode vertWrap;
     GLTexture::FilterMode minFilter;
     GLTexture::FilterMode magFilter;
+
+    qreal glWidth;
+    qreal glHeight;
+    QSize glSize;
 
     void genTexture();
 };
@@ -167,32 +172,74 @@ static inline int npot(int size)
     by explicitly setting the size, or by previously setting an image), it will
     be destroyed and a new texture created with \a img's contents and size.
  */
-void GLTexture::setImage(const QImage &img)
+void GLTexture::setImage(const QImage &img, ImageMode mode)
 {
     if (img.isNull())
         return;
 
     d->genTexture();
 
-    //QImage dataImage = img.scaled(npot(img.width()), npot(img.height()), Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
-    QImage dataImage = QGLWidget_convertToGLFormat(img);
-
     glBindTexture(GL_TEXTURE_2D, d->texture);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, dataImage.width(), 
-                 dataImage.height(), 0, 
-                 (dataImage.format() == QImage::Format_ARGB32)?GL_RGBA:GL_RGB, 
-                 GL_UNSIGNED_BYTE, dataImage.bits());
-    d->width = dataImage.width();
-    d->height = dataImage.height();
 
-#if 0
-    glGenerateMipmap(GL_TEXTURE_2D);
-    int e = glGetError();
-    if (d->magFilter == Linear)
-        setMagFilter(MipmapLinear);
-    if (d->minFilter == Linear)
-        setMinFilter((GLTexture::FilterMode)GL_LINEAR_MIPMAP_LINEAR);
-#endif
+    if (mode == NonPowerOfTwo) {
+
+        if (img.format() == QImage::Format_RGB16) {
+            QImage dataImage = img.mirrored();
+
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, dataImage.width(),
+                         dataImage.height(), 0, 
+                         GL_RGB,
+                         GL_UNSIGNED_SHORT_5_6_5, dataImage.bits());
+        } else {
+            QImage dataImage = QGLWidget_convertToGLFormat(img);
+
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, dataImage.width(), 
+                         dataImage.height(), 0, 
+                         (dataImage.format() == QImage::Format_ARGB32)?GL_RGBA:GL_RGB, 
+                         GL_UNSIGNED_BYTE, dataImage.bits());
+        }
+        d->glWidth = 1.;
+        d->glHeight = 1.;
+        d->glSize = img.size();
+
+    } else {
+        // mode == PowerOfTwo
+        int max = (img.width() > img.height())?img.width():img.height();
+        max = npot(max);
+
+        if (img.format() == QImage::Format_RGB16) {
+            QImage dataImage = img.mirrored();
+
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, max,
+                         max, 0, 
+                         GL_RGB,
+                         GL_UNSIGNED_SHORT_5_6_5, 0);
+
+            glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, dataImage.width(),
+                            dataImage.height(), GL_RGB, GL_UNSIGNED_SHORT_5_6_5, 
+                            dataImage.bits()); 
+            
+        } else {
+            QImage dataImage = QGLWidget_convertToGLFormat(img);
+
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, max,
+                         max, 0, 
+                         (dataImage.format() == QImage::Format_ARGB32)?GL_RGBA:GL_RGB, 
+                         GL_UNSIGNED_BYTE, 0);
+
+            glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, dataImage.width(), 
+                         dataImage.height(), 
+                         (dataImage.format() == QImage::Format_ARGB32)?GL_RGBA:GL_RGB, 
+                         GL_UNSIGNED_BYTE, dataImage.bits());
+        }
+
+        d->glWidth = qreal(img.width()) / qreal(max);
+        d->glHeight = qreal(img.height()) / qreal(max);
+        d->glSize = QSize(max, max);
+    }
+
+    d->width = img.width();
+    d->height = img.height();
 }
 
 void GLTexture::copyImage(const QImage &img, const QPoint &point, 
@@ -217,6 +264,21 @@ int GLTexture::width() const
 int GLTexture::height() const
 {
     return d->height;
+}
+
+qreal GLTexture::glWidth() const
+{
+    return d->glWidth;
+}
+
+qreal GLTexture::glHeight() const
+{
+    return d->glHeight;
+}
+
+QSize GLTexture::glSize() const
+{
+    return d->glSize;
 }
 
 /*!

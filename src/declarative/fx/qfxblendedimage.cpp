@@ -84,9 +84,9 @@ QFxBlendedImage::QFxBlendedImage(QFxItem *parent)
     \qmlproperty string BlendedImage::primaryUrl
     The URL of the first image to be displayed in this item.
 */
-QString QFxBlendedImage::primaryUrl() const
+QUrl QFxBlendedImage::primaryUrl() const
 {
-    return primSrc;
+    return primUrl;
 }
 
 void QFxBlendedImage::primaryLoaded()
@@ -96,15 +96,15 @@ void QFxBlendedImage::primaryLoaded()
     update();
 }
 
-void QFxBlendedImage::setPrimaryUrl(const QString &url)
+void QFxBlendedImage::setPrimaryUrl(const QUrl &url)
 {
-    if (primSrc == url)
+    if (primUrl == url)
         return;
-    if (!primSrc.isEmpty())
+    if (!primUrl.isEmpty())
         QFxPixmap::cancelGet(primUrl,this);
-    primSrc = url;
-    primUrl = qmlContext(this)->resolvedUrl(url);
-    if (!primSrc.isEmpty())
+    Q_ASSERT(!url.isRelative());
+    primUrl = url;
+    if (!primUrl.isEmpty())
         QFxPixmap::get(qmlEngine(this), primUrl,this,SLOT(primaryLoaded()));
 }
 
@@ -112,9 +112,9 @@ void QFxBlendedImage::setPrimaryUrl(const QString &url)
     \qmlproperty string BlendedImage::secondaryUrl
     The URL of the second image to be displayed in this item.
 */
-QString QFxBlendedImage::secondaryUrl() const
+QUrl QFxBlendedImage::secondaryUrl() const
 {
-    return secSrc;
+    return secUrl;
 }
 
 void QFxBlendedImage::secondaryLoaded()
@@ -124,15 +124,15 @@ void QFxBlendedImage::secondaryLoaded()
     update();
 }
 
-void QFxBlendedImage::setSecondaryUrl(const QString &url)
+void QFxBlendedImage::setSecondaryUrl(const QUrl &url)
 {
-    if (secSrc == url)
+    if (secUrl == url)
         return;
-    if (!secSrc.isEmpty())
+    if (!secUrl.isEmpty())
         QFxPixmap::cancelGet(secUrl,this);
-    secSrc = url;
-    secUrl = qmlContext(this)->resolvedUrl(url);
-    if (!secSrc.isEmpty())
+    Q_ASSERT(!url.isRelative());
+    secUrl = url;
+    if (!secUrl.isEmpty())
         QFxPixmap::get(qmlEngine(this), secUrl,this,SLOT(secondaryLoaded()));
 }
 
@@ -183,7 +183,7 @@ void QFxBlendedImage::setSmoothTransform(bool s)
 
 void QFxBlendedImage::paintContents(QPainter &p)
 {
-    if (primSrc.isNull() && secSrc.isNull())
+    if (primUrl.isEmpty() && secUrl.isEmpty())
         return;
 
     if (_smooth) {
@@ -192,9 +192,9 @@ void QFxBlendedImage::paintContents(QPainter &p)
     }
 
     if (_blend < 0.75)
-        p.drawImage(0, 0, primPix);
+        p.drawPixmap(0, 0, primPix);
     else
-        p.drawImage(0, 0, secPix);
+        p.drawPixmap(0, 0, secPix);
 
     if (_smooth) {
         p.restore();
@@ -212,8 +212,8 @@ void QFxBlendedImage::paintGLContents(GLPainter &p)
     if (dirty) {
         prim.clear();
         sec.clear();
-        prim.setImage(primPix);
-        sec.setImage(secPix);
+        prim.setImage(primPix.toImage());
+        sec.setImage(secPix.toImage());
 
         dirty = false;
     }
@@ -292,6 +292,6 @@ void QFxBlendedImage::paintGLContents(GLPainter &p)
 }
 #endif
 
-QML_DEFINE_TYPE(QFxBlendedImage,BlendedImage);
+QML_DEFINE_TYPE(QFxBlendedImage,BlendedImage)
 
 QT_END_NAMESPACE

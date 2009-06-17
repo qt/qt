@@ -61,6 +61,7 @@ public:
         QMetaObject *metaObject;
         CreateFunc createFunc;
         int propertyOffset;
+        int methodOffset;
     };
 
     QmlProxyMetaObject(QObject *, QList<ProxyData> *);

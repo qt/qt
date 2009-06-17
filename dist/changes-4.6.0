@@ -40,12 +40,30 @@ information about a particular change.
    reasons for this is that Qt Software focuses on OpenGL for desktop
    hardware accelerated rendering.
 
- - QStyleOptionGraphicsItem::exposedRect and QStyleOptionGraphicsItem::matrix
-   does no longer contain fine-grained values when passed in drawItems()/paint()
-   unless the QGraphicsItem::ItemUsesExtendedStyleOptions flag is enabled.
-   By default, exposedRect is initialized to the item's bounding rect
-   and the matrix is untransformed.
+ - When mixing OpenGL and QPainter calls you need to first call syncState()
+   on the paint engine, for example "painter->paintEngine()->syncState()".
+   This is to ensure that the engine flushes any pending drawing and sets up
+   the GL modelview/projection matrices properly.
 
- - QStyleOptionGraphicsItem::levelOfDetails is obsoleted and its value
-   is always initialized to 1. For a more fine-grained value use
-   QStyleOptionGraphicsItem::levelOfDetailFromTransform(const QTransform &).
+ - Graphics View has undergone heavy optimization work, and as a result of
+   this work, the following behavior changes were introduced.
+
+   a) QStyleOptionGraphicsItem::exposedRect now contains the item's bounding
+      rectangle, and QStyleOptionGraphicsItem::matrix is uninitialized by
+      default. You can enable an exact exposed rectangle and a correct matrix
+      by enabling the flag QGraphicsItem::ItemUsesExtendedStyleOptions.
+
+   b) QStyleOptionGraphicsItem::levelOfDetails is obsoleted and its value is
+      always initialized to 1. Instead you can call
+      QStyleOptionGraphicsItem::levelOfDetailFromTransform(const QTransform &)
+      to determine the level of detail.
+
+   c) QGraphicsView no longer calls QGraphicsView::drawItems(), and in turn
+      QGraphicsScene::drawItems(), by default. You can get the old behavior
+      back by enabling QGraphicsView::IndirectPainting.
+
+   d) QGraphicsItem no longer calls itemChange() for position and
+      transformation changes. If you want to receive notifications for changes
+      to the item's position and transformation, you can set the flag
+      QGraphicsItem::ItemSendsGeometryChanges (which is enabled by default by
+      QGraphicsWidget and QGraphicsProxyWidget).

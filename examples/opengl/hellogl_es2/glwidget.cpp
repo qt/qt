@@ -190,7 +190,7 @@ void GLWidget::initializeGL ()
         "    color = clamp(color, 0.0, 1.0);\n"
         "    gl_Position = matrix * vertex;\n"
         "}\n";
-    vshader1->setSourceCode(vsrc1);
+    vshader1->compile(vsrc1);
 
     QGLShader *fshader1 = new QGLShader(QGLShader::FragmentShader, this);
     const char *fsrc1 =
@@ -199,7 +199,7 @@ void GLWidget::initializeGL ()
         "{\n"
         "    gl_FragColor = color;\n"
         "}\n";
-    fshader1->setSourceCode(fsrc1);
+    fshader1->compile(fsrc1);
 
     program1.addShader(vshader1);
     program1.addShader(fshader1);
@@ -224,7 +224,7 @@ void GLWidget::initializeGL ()
         "    gl_Position = matrix * vertex;\n"
         "    texc = texCoord;\n"
         "}\n";
-    vshader2->setSourceCode(vsrc2);
+    vshader2->compile(vsrc2);
 
     QGLShader *fshader2 = new QGLShader(QGLShader::FragmentShader);
     const char *fsrc2 =
@@ -237,7 +237,7 @@ void GLWidget::initializeGL ()
         "    color = color * 0.2 + color * 0.8 * angle;\n"
         "    gl_FragColor = vec4(clamp(color, 0.0, 1.0), 1.0);\n"
         "}\n";
-    fshader2->setSourceCode(fsrc2);
+    fshader2->compile(fsrc2);
 
     program2.addShader(vshader2);
     program2.addShader(fshader2);

@@ -282,7 +282,7 @@ void QTableViewPrivate::trimHiddenSelections(QItemSelectionRange *range) const
 void QTableViewPrivate::setSpan(int row, int column, int rowSpan, int columnSpan)
 {
     if (row < 0 || column < 0 || rowSpan <= 0 || columnSpan <= 0) {
-        qWarning() << "QTableView::setSpan: invalid span given: (" << row << "," << column << "," << rowSpan << "," << columnSpan << ")";
+        qWarning() << "QTableView::setSpan: invalid span given: (" << row << ',' << column << ',' << rowSpan << ',' << columnSpan << ')';
         return;
     }
     QSpanCollection::Span *sp = spans.spanAt(column, row);
@@ -1844,14 +1844,14 @@ void QTableView::setSortingEnabled(bool enable)
         disconnect(horizontalHeader(), SIGNAL(sectionPressed(int)),
                    this, SLOT(selectColumn(int)));
         connect(horizontalHeader(), SIGNAL(sortIndicatorChanged(int,Qt::SortOrder)),
-                this, SLOT(sortByColumn(int)));
+                this, SLOT(sortByColumn(int)), Qt::UniqueConnection);
         sortByColumn(horizontalHeader()->sortIndicatorSection(),
                      horizontalHeader()->sortIndicatorOrder());
     } else {
         connect(d->horizontalHeader, SIGNAL(sectionEntered(int)),
-                this, SLOT(_q_selectColumn(int)));
+                this, SLOT(_q_selectColumn(int)), Qt::UniqueConnection);
         connect(horizontalHeader(), SIGNAL(sectionPressed(int)),
-                this, SLOT(selectColumn(int)));
+                this, SLOT(selectColumn(int)), Qt::UniqueConnection);
         disconnect(horizontalHeader(), SIGNAL(sortIndicatorChanged(int,Qt::SortOrder)),
                    this, SLOT(sortByColumn(int)));
     }

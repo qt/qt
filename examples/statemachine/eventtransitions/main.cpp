@@ -40,11 +40,6 @@
 ****************************************************************************/
 
 #include <QtGui>
-#ifdef QT_STATEMACHINE_SOLUTION
-#include <qstatemachine.h>
-#include <qstate.h>
-#include <qeventtransition.h>
-#endif
 
 //! [0]
 class Window : public QWidget

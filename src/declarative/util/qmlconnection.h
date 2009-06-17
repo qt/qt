@@ -51,6 +51,7 @@ QT_BEGIN_HEADER
 QT_BEGIN_NAMESPACE
 
 QT_MODULE(Declarative)
+
 class QmlBoundSignal;
 class QmlContext;
 class QmlConnectionPrivate;
@@ -59,11 +60,11 @@ class Q_DECLARATIVE_EXPORT QmlConnection : public QObject, public QmlParserStatu
     Q_OBJECT
     Q_DECLARE_PRIVATE(QmlConnection)
 
-    Q_INTERFACES(QmlParserStatus);
-    Q_CLASSINFO("DefaultProperty", "script");
-    Q_PROPERTY(QObject *sender READ signalSender WRITE setSignalSender);
-    Q_PROPERTY(QString script READ script WRITE setScript);
-    Q_PROPERTY(QString signal READ signal WRITE setSignal);
+    Q_INTERFACES(QmlParserStatus)
+    Q_CLASSINFO("DefaultProperty", "script")
+    Q_PROPERTY(QObject *sender READ signalSender WRITE setSignalSender)
+    Q_PROPERTY(QString script READ script WRITE setScript)
+    Q_PROPERTY(QString signal READ signal WRITE setSignal)
 
 public:
     QmlConnection(QObject *parent=0);
@@ -81,11 +82,10 @@ private:
     void connectIfValid();
     void componentComplete();
 };
-QML_DECLARE_TYPE(QmlConnection);
-
-#endif
-
+QML_DECLARE_TYPE(QmlConnection)
 
 QT_END_NAMESPACE
 
 QT_END_HEADER
+
+#endif

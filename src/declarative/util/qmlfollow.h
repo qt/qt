@@ -45,12 +45,12 @@
 #include <QtDeclarative/qmlpropertyvaluesource.h>
 #include <QtDeclarative/qml.h>
 
-
 QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
 QT_MODULE(Declarative)
+
 class QmlFollowPrivate;
 class Q_DECLARATIVE_EXPORT QmlFollow : public QmlPropertyValueSource, 
                                  public QmlParserStatus
@@ -59,14 +59,14 @@ class Q_DECLARATIVE_EXPORT QmlFollow : public QmlPropertyValueSource,
     Q_DECLARE_PRIVATE(QmlFollow)
     Q_INTERFACES(QmlParserStatus)
 
-    Q_PROPERTY(qreal source READ sourceValue WRITE setSourceValue);
-    Q_PROPERTY(qreal velocity READ velocity WRITE setVelocity);
-    Q_PROPERTY(qreal spring READ spring WRITE setSpring);
-    Q_PROPERTY(qreal damping READ damping WRITE setDamping);
-    Q_PROPERTY(qreal epsilon READ epsilon WRITE setEpsilon);
-    Q_PROPERTY(bool enabled READ enabled WRITE setEnabled);
+    Q_PROPERTY(qreal source READ sourceValue WRITE setSourceValue)
+    Q_PROPERTY(qreal velocity READ velocity WRITE setVelocity)
+    Q_PROPERTY(qreal spring READ spring WRITE setSpring)
+    Q_PROPERTY(qreal damping READ damping WRITE setDamping)
+    Q_PROPERTY(qreal epsilon READ epsilon WRITE setEpsilon)
+    Q_PROPERTY(bool enabled READ enabled WRITE setEnabled)
+    Q_PROPERTY(qreal followValue READ value NOTIFY valueChanged)
 
-    Q_PROPERTY(qreal followValue READ value NOTIFY valueChanged); 
 public:
     QmlFollow(QObject *parent=0);
     ~QmlFollow();
@@ -92,12 +92,10 @@ Q_SIGNALS:
     void valueChanged(qreal);
 };
 
-QML_DECLARE_TYPE(QmlFollow);
-
-
-#endif // QFXFOLLOW_H
-
+QML_DECLARE_TYPE(QmlFollow)
 
 QT_END_NAMESPACE
 
 QT_END_HEADER
+
+#endif // QFXFOLLOW_H

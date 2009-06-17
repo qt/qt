@@ -53,6 +53,8 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Core)
 
+#ifndef QT_NO_STATEMACHINE
+
 class Q_CORE_EXPORT QSignalEvent : public QEvent
 {
 public:
@@ -69,6 +71,8 @@ private:
     int m_signalIndex;
     QList<QVariant> m_arguments;
 };
+
+#endif //QT_NO_STATEMACHINE
 
 QT_END_NAMESPACE
 

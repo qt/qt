@@ -64,7 +64,7 @@ namespace QPerformanceLog
     void displayData(LogData *);
     void clear(LogData *);
 #endif
-};
+}
 
 #ifdef Q_ENABLE_PERFORMANCE_LOG
 
@@ -126,49 +126,9 @@ namespace QPerformanceLog
 
 #else // Q_ENABLE_PERFORMANCE_LOG
 
-#define Q_DECLARE_PERFORMANCE_METRIC(name) \
-    enum { name = ValueChoice<0, ValueTracker<0, __LINE__>::value, __LINE__>::value };  \
-    template<int L> \
-    struct ValueTracker<name, L> \
-    { \
-        enum { value = name }; \
-    }; \
-
-#define Q_DECLARE_PERFORMANCE_LOG(name) \
-    namespace name { \
-        inline void displayData() { }; \
-        inline void clear() { }; \
-    } \
-    template<int N> \
-    class name ## Timer { \
-    public: \
-            name ## Timer() { \
-            } \
-            ~ name ## Timer() { \
-            } \
-    }; \
-    namespace name { \
-        template<int N, int L> \
-        struct ValueTracker \
-        { \
-            enum { value = -1 }; \
-        }; \
-        template<int DefNextValue, int NextValue, int L> \
-        struct ValueChoice \
-        { \
-            enum { value = ValueChoice<DefNextValue + 1, ValueTracker<DefNextValue + 1, L>::value, L>::value }; \
-        }; \
-        template<int DefNextValue, int L> \
-        struct ValueChoice<DefNextValue, -1, L> \
-        { \
-            enum { value = DefNextValue }; \
-        }; \
-    } \
-    namespace name 
-
-#define Q_DEFINE_PERFORMANCE_LOG(name, desc) \
-    namespace name
-
+#define Q_DECLARE_PERFORMANCE_METRIC(name)
+#define Q_DECLARE_PERFORMANCE_LOG(name) namespace name
+#define Q_DEFINE_PERFORMANCE_LOG(name, desc) namespace name
 #define Q_DEFINE_PERFORMANCE_METRIC(name, desc) 
 
 #endif // Q_ENABLE_PERFORMANCE_LOG

@@ -64,7 +64,7 @@ public:
     \brief The ParentChange element allows you to reparent an object in a state.
 */
 
-QML_DEFINE_TYPE(QmlParentChange,ParentChange);
+QML_DEFINE_TYPE(QmlParentChange,ParentChange)
 QmlParentChange::QmlParentChange(QObject *parent)
     : QmlStateOperation(*(new QmlParentChangePrivate), parent)
 {
@@ -147,7 +147,7 @@ public:
     \qmlclass RunScript QmlRunScript
     \brief The RunScript element allows you to run a script in a state.
 */
-QML_DEFINE_TYPE(QmlRunScript,RunScript);
+QML_DEFINE_TYPE(QmlRunScript,RunScript)
 QmlRunScript::QmlRunScript(QObject *parent)
 : QmlStateOperation(*(new QmlRunScriptPrivate), parent)
 {
@@ -268,7 +268,7 @@ public:
     QString binding;
 };
 
-QML_DEFINE_TYPE(QmlSetProperty,SetProperty);
+QML_DEFINE_TYPE(QmlSetProperty,SetProperty)
 
 QmlSetProperty::QmlSetProperty(QObject *parent)
     : QmlStateOperation(*(new QmlSetPropertyPrivate), parent)

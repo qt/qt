@@ -53,7 +53,7 @@
 #include <glheaders.h>
 #endif
 #include "qboxlayout.h"
-#include "qsimplecanvasserver_p.h"
+#include "qsimplecanvasdebugplugin_p.h"
 #include "qsimplecanvas.h"
 
 
@@ -533,8 +533,8 @@ void QSimpleCanvasGraphicsView::paintEvent(QPaintEvent *pe)
     int frametimer = canvas->frameTimer.elapsed();
     gfxCanvasTiming.append(QSimpleCanvasTiming(r, frametimer, canvas->lrpTime, tbf));
     canvas->lrpTime = 0;
-    if (canvas->canvasServer)
-        canvas->canvasServer->addTiming(canvas->lrpTime, frametimer, tbf);
+    if (canvas->debugPlugin)
+        canvas->debugPlugin->addTiming(canvas->lrpTime, frametimer, tbf);
 }
 
 void QSimpleCanvasGraphicsView::focusInEvent(QFocusEvent *)
@@ -573,11 +573,9 @@ void QSimpleCanvasPrivate::init(QSimpleCanvas::CanvasMode mode)
     if (continuousUpdate())
         qWarning("QSimpleCanvas: Continuous update enabled");
 
-    QByteArray env = qgetenv("GFX_CANVAS_SERVER_PORT");
-    if (!env.isEmpty()){ 
-        int port = env.toInt();
-        if (port >= 1024)
-            canvasServer = new QSimpleCanvasServer(port, q);
+    if (QmlDebugServerPlugin::isDebuggingEnabled()) {
+        debugPlugin = new QSimpleCanvasDebugPlugin(q);
+        new QSimpleCanvasSceneDebugPlugin(q);
     }
 
     root = new QSimpleCanvasRootLayer(q);
@@ -832,24 +830,25 @@ void QSimpleCanvas::queueUpdate()
 
 void QSimpleCanvas::addDirty(QSimpleCanvasItem *c)
 {
+    Q_ASSERT(d->isSimpleCanvas());
     queueUpdate();
-    if (d->isSimpleCanvas()) {
-        d->oldDirty |= c->d_func()->data()->lastPaintRect;
+    d->oldDirty |= c->d_func()->data()->lastPaintRect;
 #if defined(QFX_RENDER_OPENGL)
-        // Check for filters
-        QSimpleCanvasItem *fi = c->parent();
-        while(fi) {
-            if (fi->d_func()->data()->dirty) {
-                break;
-            } else if (fi->filter()) {
-                fi->update();
-                break;
-            }
-            fi = fi->parent();
+    // ### Is this parent crawl going to be a problem for scenes with nots
+    // of things changing?
+    // Check for filters
+    QSimpleCanvasItem *fi = c->parent();
+    while(fi) {
+        if (fi->d_func()->data()->dirty) {
+            break;
+        } else if (fi->filter()) {
+            fi->update();
+            break;
         }
-#endif
-        d->dirtyItems.append(c);
+        fi = fi->parent();
     }
+#endif
+    d->dirtyItems.append(c);
 }
 
 QRect QSimpleCanvasPrivate::dirtyItemClip() const
@@ -869,7 +868,7 @@ QRect QSimpleCanvasPrivate::dirtyItemClip() const
     return rv;
 }
 
-QRegion QSimpleCanvasPrivate::resetDirty()
+QRect QSimpleCanvasPrivate::resetDirty()
 {
     if (isSimpleCanvas()) {
 #if defined(QFX_RENDER_OPENGL)
@@ -885,11 +884,11 @@ QRegion QSimpleCanvasPrivate::resetDirty()
         oldDirty = QRect();
 
         if (fullUpdate())
-            return QRegion();
+            return QRect();
         else
-            return QRegion(r);
+            return r;
     } else {
-        return QRegion();
+        return QRect();
     }
 }
 
@@ -916,19 +915,23 @@ QSimpleCanvasItem *QSimpleCanvas::focusItem(QSimpleCanvasItem *item) const
 bool QSimpleCanvas::event(QEvent *e)
 {
     if (e->type() == QEvent::User && d->isSimpleCanvas()) {
+        int tbf = d->frameTimer.restart();
         d->timer = 0;
         d->isSetup = true;
 #if defined(QFX_RENDER_OPENGL1)
         unsigned int zero = 0;
         d->root->d_func()->setupPainting(0, rect(), &zero);
+#elif defined(QFX_RENDER_OPENGL2)
+        ++d->paintVersion;
+        d->opaqueList = 0;
+        int z = 0;
+        d->root->d_func()->setupPainting(0, z, &d->opaqueList);
 #else
         ++d->paintVersion;
         d->root->d_func()->setupPainting(0, rect());
 #endif
 
-        QRegion r = d->resetDirty();
-
-        int tbf = d->frameTimer.restart();
+        QRect r = d->resetDirty();
 
 #if defined(QFX_RENDER_QPAINTER)
         if (r.isEmpty() || fullUpdate())
@@ -937,12 +940,12 @@ bool QSimpleCanvas::event(QEvent *e)
             repaint(r);
         emit framePainted();
 #else 
-        QRect br = r.boundingRect();
-        QRect nr(br.x(), height() - br.y() - br.height(), br.width(), br.height());
+
+        QRect nr(r.x(), height() - r.y() - r.height(), r.width(), r.height());
 
         if (r.isEmpty() || fullUpdate())
             d->egl.updateGL();
-        else
+        else 
             d->egl.updateGL(nr);
         emit framePainted();
 #endif
@@ -950,8 +953,8 @@ bool QSimpleCanvas::event(QEvent *e)
 
         int frametimer = d->frameTimer.elapsed();
         gfxCanvasTiming.append(QSimpleCanvasTiming(r, frametimer, d->lrpTime, tbf));
-        if (d->canvasServer)
-            d->canvasServer->addTiming(d->lrpTime, frametimer, tbf);
+        if (d->debugPlugin)
+            d->debugPlugin->addTiming(d->lrpTime, frametimer, tbf);
         d->lrpTime = 0;
         if (continuousUpdate())
             queueUpdate();

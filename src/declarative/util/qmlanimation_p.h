@@ -169,7 +169,7 @@ private:
 
 class QmlAbstractAnimationPrivate : public QObjectPrivate
 {
-    Q_DECLARE_PUBLIC(QmlAbstractAnimation);
+    Q_DECLARE_PUBLIC(QmlAbstractAnimation)
 public:
     QmlAbstractAnimationPrivate()
     : running(false), finishPlaying(false), repeat(false),
@@ -196,7 +196,7 @@ public:
 
 class QmlPauseAnimationPrivate : public QmlAbstractAnimationPrivate
 {
-    Q_DECLARE_PUBLIC(QmlPauseAnimation);
+    Q_DECLARE_PUBLIC(QmlPauseAnimation)
 public:
     QmlPauseAnimationPrivate()
     : QmlAbstractAnimationPrivate(), pa(0) {}
@@ -208,7 +208,7 @@ public:
 
 class QmlColorAnimationPrivate : public QmlAbstractAnimationPrivate
 {
-    Q_DECLARE_PUBLIC(QmlColorAnimation);
+    Q_DECLARE_PUBLIC(QmlColorAnimation)
 public:
     QmlColorAnimationPrivate()
     : QmlAbstractAnimationPrivate(), fromSourced(false), fromIsDefined(false), toIsDefined(false),
@@ -242,7 +242,7 @@ public:
 
 class QmlRunScriptActionPrivate : public QmlAbstractAnimationPrivate
 {
-    Q_DECLARE_PUBLIC(QmlRunScriptAction);
+    Q_DECLARE_PUBLIC(QmlRunScriptAction)
 public:
     QmlRunScriptActionPrivate()
         : QmlAbstractAnimationPrivate(), proxy(this), rsa(0) {}
@@ -261,7 +261,7 @@ public:
 
 class QmlSetPropertyActionPrivate : public QmlAbstractAnimationPrivate
 {
-    Q_DECLARE_PUBLIC(QmlSetPropertyAction);
+    Q_DECLARE_PUBLIC(QmlSetPropertyAction)
 public:
     QmlSetPropertyActionPrivate()
     : QmlAbstractAnimationPrivate(), proxy(this), spa(0) {}
@@ -283,7 +283,7 @@ public:
 
 class QmlParentChangeActionPrivate : public QmlAbstractAnimationPrivate
 {
-    Q_DECLARE_PUBLIC(QmlParentChangeAction);
+    Q_DECLARE_PUBLIC(QmlParentChangeAction)
 public:
     QmlParentChangeActionPrivate()
     : QmlAbstractAnimationPrivate() {}
@@ -296,7 +296,7 @@ public:
 
 class QmlNumericAnimationPrivate : public QmlAbstractAnimationPrivate
 {
-    Q_DECLARE_PUBLIC(QmlNumericAnimation);
+    Q_DECLARE_PUBLIC(QmlNumericAnimation)
 public:
     QmlNumericAnimationPrivate()
     : QmlAbstractAnimationPrivate(), fromSourced(false), na(0), value(this, &QmlNumericAnimationPrivate::valueChanged) {}
@@ -322,7 +322,7 @@ public:
 
 class QmlAnimationGroupPrivate : public QmlAbstractAnimationPrivate
 {
-    Q_DECLARE_PUBLIC(QmlAnimationGroup);
+    Q_DECLARE_PUBLIC(QmlAnimationGroup)
 public:
     QmlAnimationGroupPrivate()
     : QmlAbstractAnimationPrivate(), animations(this), ag(0) {}
@@ -361,7 +361,7 @@ public:
 
 class QmlVariantAnimationPrivate : public QmlAbstractAnimationPrivate
 {
-    Q_DECLARE_PUBLIC(QmlVariantAnimation);
+    Q_DECLARE_PUBLIC(QmlVariantAnimation)
 public:
     QmlVariantAnimationPrivate()
     : QmlAbstractAnimationPrivate(), fromSourced(false), fromIsDefined(false), toIsDefined(false),

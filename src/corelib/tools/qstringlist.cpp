@@ -621,8 +621,6 @@ int QtPrivate::QStringList_lastIndexOf(const QStringList *that, QRegExp &rx, int
     the list, searching forward from index position \a from. Returns
     -1 if no item matched.
 
-    By default, this function is case sensitive.
-
     \sa lastIndexOf(), contains(), QList::indexOf()
 */
 

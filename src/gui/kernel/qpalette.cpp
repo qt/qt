@@ -125,7 +125,7 @@ QDataStream &operator>>(QDataStream &s, QColorGroup &g)
 {
     return qt_stream_in_qcolorgroup(s, g);
 }
-#endif
+#endif // QT_NO_DATASTREAM
 
 /*!
     Constructs a palette with the specified \a active, \a disabled and
@@ -158,7 +158,7 @@ void QPalette::setColorGroup(ColorGroup cg, const QColorGroup &g)
                   g.brush(LinkVisited), g.brush(ToolTipBase), g.brush(ToolTipText));
 }
 
-#endif
+#endif // QT3_SUPPORT
 
 /*!
    \fn const QColor &QPalette::color(ColorRole role) const

@@ -565,8 +565,9 @@ bool QFileDialogPrivate::canBeNativeDialog()
 }
 
 /*!
-    Sets the given \a option to be enabled if \a on is true;
-    otherwise, clears the given \a option.
+    \since 4.5
+    Sets the given \a option to be enabled if \a on is true; otherwise,
+    clears the given \a option.
 
     \sa options, testOption()
 */
@@ -637,8 +638,9 @@ QFileDialog::Options QFileDialog::options() const
 
     \since 4.5
 
-    Opens the dialog and connects its accepted() signal to the slot specified
-    by \a receiver and \a member.
+    This function connects one of its signals to the slot specified by \a receiver
+    and \a member. The specific signal depends is filesSelected() if fileMode is
+    ExistingFiles and fileSelected() if fileMode is anything else.
 
     The signal will be disconnected from the slot when the dialog is closed.
 */
@@ -776,6 +778,7 @@ void QFileDialog::selectFile(const QString &filename)
     }
 
     QModelIndex index = d->model->index(filename);
+    QString file;
     if (!index.isValid()) {
         // save as dialog where we want to input a default value
         QString text = filename;
@@ -790,13 +793,13 @@ void QFileDialog::selectFile(const QString &filename)
                 )
                 text = text.remove(0,1);
         }
-        if (!isVisible() || !d->lineEdit()->hasFocus())
-            d->lineEdit()->setText(text);
+        file = text;
     } else {
-        d->qFileDialogUi->listView->selectionModel()->clear();
-        if (!isVisible() || !d->lineEdit()->hasFocus())
-            d->lineEdit()->setText(index.data().toString());
+        file = index.data().toString();
     }
+    d->qFileDialogUi->listView->selectionModel()->clear();
+    if (!isVisible() || !d->lineEdit()->hasFocus())
+        d->lineEdit()->setText(file);
 }
 
 /**
@@ -837,8 +840,8 @@ QStringList QFileDialogPrivate::addDefaultSuffixToFiles(const QStringList filesT
             // This check is needed since we might be at the root directory
             // and on Windows it already ends with slash.
             QString path = rootPath();
-            if (!path.endsWith(QLatin1String("/")))
-                path += QLatin1String("/");
+            if (!path.endsWith(QLatin1Char('/')))
+                path += QLatin1Char('/');
             path += name;
             files.append(path);
         }
@@ -2107,6 +2110,7 @@ void QFileDialogPrivate::createWidgets()
 #else
     model->setNameFilterDisables(false);
 #endif
+    model->d_func()->disableRecursiveSort = true;
     QFileDialog::connect(model, SIGNAL(fileRenamed(const QString &, const QString &, const QString &)), q, SLOT(_q_fileRenamed(const QString &, const QString &, const QString &)));
     QFileDialog::connect(model, SIGNAL(rootPathChanged(const QString &)),
             q, SLOT(_q_pathChanged(const QString &)));
@@ -2649,7 +2653,7 @@ void QFileDialogPrivate::_q_deleteCurrent()
 
 void QFileDialogPrivate::_q_autoCompleteFileName(const QString &text)
 {
-    if (text.startsWith(QLatin1String("//")) || text.startsWith(QLatin1String("\\"))) {
+    if (text.startsWith(QLatin1String("//")) || text.startsWith(QLatin1Char('\\'))) {
         qFileDialogUi->listView->selectionModel()->clearSelection();
         return;
     }
@@ -2691,7 +2695,7 @@ void QFileDialogPrivate::_q_updateOkButton()
     QStringList files = q->selectedFiles();
     QString lineEditText = lineEdit()->text();
 
-    if (lineEditText.startsWith(QLatin1String("//")) || lineEditText.startsWith(QLatin1String("\\"))) {
+    if (lineEditText.startsWith(QLatin1String("//")) || lineEditText.startsWith(QLatin1Char('\\'))) {
         button->setEnabled(true);
         if (acceptMode == QFileDialog::AcceptSave)
             button->setText(isOpenDirectory ? QFileDialog::tr("&Open") : acceptLabel);
@@ -3197,7 +3201,7 @@ QStringList QFSCompletor::splitPath(const QString &path) const
         doubleSlash.clear();
 #endif
 
-    QRegExp re(QLatin1String("[") + QRegExp::escape(sep) + QLatin1String("]"));
+    QRegExp re(QLatin1Char('[') + QRegExp::escape(sep) + QLatin1Char(']'));
 
 #ifdef Q_OS_WIN
     QStringList parts = pathCopy.split(re, QString::SkipEmptyParts);

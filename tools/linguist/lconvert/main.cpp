@@ -97,6 +97,11 @@ static int usage(const QStringList &args)
         "           Drop obsolete messages.\n\n"
         "    --no-finished\n"
         "           Drop finished messages.\n\n"
+        "    --locations {absolute|relative|none}\n"
+        "           Override how source code references are saved in ts files.\n"
+        "           Default is absolute.\n}n"
+        "    --no-ui-lines\n"
+        "           Drop line numbers from references to .ui files.\n\n"
         "    --verbose\n"
         "           be a bit more verbose\n\n"
         "Long options can be specified with only one leading dash, too.\n\n"
@@ -129,6 +134,8 @@ int main(int argc, char *argv[])
     bool noObsolete = false;
     bool noFinished = false;
     bool verbose = false;
+    bool noUiLines = false;
+    Translator::LocationsType locations = Translator::DefaultLocations;
 
     ConversionData cd;
     Translator tr;
@@ -180,6 +187,19 @@ int main(int argc, char *argv[])
             noObsolete = true;
         } else if (args[i] == QLatin1String("-no-finished")) {
             noFinished = true;
+        } else if (args[i] == QLatin1String("-locations")) {
+            if (++i >= args.size())
+                return usage(args);
+            if (args[i] == QLatin1String("none"))
+                locations = Translator::NoLocations;
+            else if (args[i] == QLatin1String("relative"))
+                locations = Translator::RelativeLocations;
+            else if (args[i] == QLatin1String("absolute"))
+                locations = Translator::AbsoluteLocations;
+            else
+                return usage(args);
+        } else if (args[i] == QLatin1String("-no-ui-lines")) {
+            noUiLines = true;
         } else if (args[i] == QLatin1String("-verbose")) {
             verbose = true;
         } else if (args[i].startsWith(QLatin1Char('-'))) {
@@ -224,6 +244,10 @@ int main(int argc, char *argv[])
         tr.stripFinishedMessages();
     if (dropTranslations)
         tr.dropTranslations();
+    if (noUiLines)
+        tr.dropUiLines();
+    if (locations != Translator::DefaultLocations)
+        tr.setLocationsType(locations);
 
     if (!tr.save(outFileName, cd, outFormat)) {
         qWarning("%s", qPrintable(cd.error()));

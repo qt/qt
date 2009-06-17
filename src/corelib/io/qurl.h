@@ -81,12 +81,17 @@ public:
     Q_DECLARE_FLAGS(FormattingOptions, FormattingOption)
 
     QUrl();
+#ifdef Q_EXPLICIT_URL_QSTRING_CONVERSION
+    explicit
+#endif
     QUrl(const QString &url);
     QUrl(const QString &url, ParsingMode mode);
     // ### Qt 5: merge the two constructors, with mode = TolerantMode
     QUrl(const QUrl &copy);
     QUrl &operator =(const QUrl &copy);
+#ifndef Q_EXPLICIT_URL_QSTRING_CONVERSION
     QUrl &operator =(const QString &url);
+#endif
     ~QUrl();
 
     void setUrl(const QString &url);
@@ -223,7 +228,7 @@ public:
     inline QT3_SUPPORT QString ref() const { return fragment(); }
     inline QT3_SUPPORT void setRef(const QString &txt) { setFragment(txt); }
     inline QT3_SUPPORT bool hasRef() const { return !fragment().isEmpty(); }
-    inline QT3_SUPPORT void addPath(const QString &p) { setPath(path() + QLatin1String("/") + p); }
+    inline QT3_SUPPORT void addPath(const QString &p) { setPath(path() + QLatin1Char('/') + p); }
     QT3_SUPPORT void setFileName(const QString &txt);
     QT3_SUPPORT QString fileName() const;
     QT3_SUPPORT QString dirPath() const;
@@ -235,7 +240,9 @@ public:
     {
         url = QString::fromLatin1(QUrl::toPercentEncoding(url).constData());
     }
+#ifndef Q_EXPLICIT_URL_QSTRING_CONVERSION
     inline QT3_SUPPORT operator QString() const { return toString(); }
+#endif
     inline QT3_SUPPORT bool cdUp()
     {
         *this = resolved(QUrl(QLatin1String("..")));

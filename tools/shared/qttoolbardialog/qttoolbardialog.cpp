@@ -637,10 +637,10 @@ QToolBar *QtFullToolBarManager::createToolBar(const QString &toolBarName)
         return 0;
     QToolBar *toolBar = new QToolBar(toolBarName, mainWindow());
     int i = 1;
-    const QString prefix = QLatin1String("_Custom_Toolbar_");
-    QString name = QString(QLatin1String("%1%2")).arg(prefix).arg(i);
+    const QString prefix = QLatin1String("_Custom_Toolbar_%1");
+    QString name = prefix.arg(i);
     while (d_ptr->toolBarByName(name))
-        name = QString(QLatin1String("%1%2")).arg(prefix).arg(++i);
+        name = prefix.arg(++i);
     toolBar->setObjectName(name);
     mainWindow()->addToolBar(toolBar);
     d_ptr->customToolBars.append(toolBar);

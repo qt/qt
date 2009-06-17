@@ -3303,10 +3303,6 @@
         \o output_function
         \o Specifies a custom qmake function that is used to specify the filename to be created.
     \row
-        \o variables
-        \o Indicates that the variables specified here are replaced with $(QMAKE_COMP_VARNAME) when refered to
-           in the pro file as $(VARNAME).
-    \row
         \o variable_out
         \o The variable that the files created from the output should be added to.
     \endtable

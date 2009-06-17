@@ -43,13 +43,8 @@
 #define __SUBMARINE__H__
 
 //Qt
-#if defined(QT_EXPERIMENTAL_SOLUTION)
-#include "qvariantanimation.h"
-#include "qgraphicswidget.h"
-#else
 #include <QtCore/QVariantAnimation>
 #include <QtGui/QGraphicsWidget>
-#endif
 
 class PixmapItem;
 
@@ -80,7 +75,7 @@ public:
 
     virtual int type() const;
 
-Q_SIGNALS:
+signals:
     void subMarineDestroyed();
     void subMarineExecutionFinished();
     void subMarineStateChanged();

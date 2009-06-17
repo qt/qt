@@ -298,8 +298,11 @@ void QMotifStyle::unpolish(QWidget* widget)
 {
     QCommonStyle::unpolish(widget);
 #ifndef QT_NO_PROGRESSBAR
-    if (qobject_cast<QProgressBar *>(widget))
+    if (qobject_cast<QProgressBar *>(widget)) {
+        Q_D(QMotifStyle);
         widget->removeEventFilter(this);
+        d->bars.removeAll(static_cast<QProgressBar*>(widget));
+     }
 #endif
 }
 

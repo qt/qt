@@ -156,9 +156,9 @@ struct styleStruct {
     int height;
     bool operator==(const styleStruct &str) const
     {
-        return str.key == key && str.state == state && str.direction == direction
+        return  str.state == state && str.direction == direction
                 && str.complex == complex && str.palette == palette && str.width == width
-                && str.height == height;
+                && str.height == height && str.key == key;
     }
 };
 

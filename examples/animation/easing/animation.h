@@ -44,11 +44,7 @@
 
 #include <QtGui>
 
-#if defined(QT_EXPERIMENTAL_SOLUTION)
-# include "qpropertyanimation.h"
-#else
-# include <QtCore/qpropertyanimation.h>
-#endif
+#include <QtCore/qpropertyanimation.h>
 
 class Animation : public QPropertyAnimation {
 public:

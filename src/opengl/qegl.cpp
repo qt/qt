@@ -119,7 +119,7 @@ bool QEglContext::chooseConfig
             if (red == props.value(EGL_RED_SIZE) &&
                     green == props.value(EGL_GREEN_SIZE) &&
                     blue == props.value(EGL_BLUE_SIZE) &&
-                    (props.value(EGL_ALPHA_SIZE) == EGL_DONT_CARE ||
+                    (props.value(EGL_ALPHA_SIZE) == 0 ||
                      alpha == props.value(EGL_ALPHA_SIZE))) {
                 cfg = configs[index];
                 delete [] configs;
@@ -405,7 +405,62 @@ int QEglProperties::value(int name) const
         if (props[index] == name)
             return props[index + 1];
     }
-    return EGL_DONT_CARE;
+
+    // If the attribute has not been explicitly set, return the EGL default
+    // The following defaults were taken from the EGL 1.4 spec:
+    switch(name) {
+    case EGL_BUFFER_SIZE: return 0;
+    case EGL_RED_SIZE: return 0;
+    case EGL_GREEN_SIZE: return 0;
+    case EGL_BLUE_SIZE: return 0;
+    case EGL_ALPHA_SIZE: return 0;
+#if defined(EGL_LUMINANCE_SIZE)
+    case EGL_LUMINANCE_SIZE: return 0;
+#endif
+#if defined(EGL_ALPHA_MASK_SIZE)
+    case EGL_ALPHA_MASK_SIZE: return 0;
+#endif
+    case EGL_BIND_TO_TEXTURE_RGB: return EGL_DONT_CARE;
+    case EGL_BIND_TO_TEXTURE_RGBA: return EGL_DONT_CARE;
+#if defined(EGL_COLOR_BUFFER_TYPE)
+    case EGL_COLOR_BUFFER_TYPE: return EGL_RGB_BUFFER;
+#endif
+    case EGL_CONFIG_CAVEAT: return EGL_DONT_CARE;
+    case EGL_CONFIG_ID: return EGL_DONT_CARE;
+    case EGL_DEPTH_SIZE: return 0;
+    case EGL_LEVEL: return 0;
+    case EGL_NATIVE_RENDERABLE: return EGL_DONT_CARE;
+    case EGL_NATIVE_VISUAL_TYPE: return EGL_DONT_CARE;
+    case EGL_MAX_SWAP_INTERVAL: return EGL_DONT_CARE;
+    case EGL_MIN_SWAP_INTERVAL: return EGL_DONT_CARE;
+#if defined(EGL_RENDERABLE_TYPE)
+    case EGL_RENDERABLE_TYPE: return EGL_OPENGL_ES_BIT;
+#endif
+    case EGL_SAMPLE_BUFFERS: return 0;
+    case EGL_SAMPLES: return 0;
+    case EGL_STENCIL_SIZE: return 0;
+    case EGL_SURFACE_TYPE: return EGL_WINDOW_BIT;
+    case EGL_TRANSPARENT_TYPE: return EGL_NONE;
+    case EGL_TRANSPARENT_RED_VALUE: return EGL_DONT_CARE;
+    case EGL_TRANSPARENT_GREEN_VALUE: return EGL_DONT_CARE;
+    case EGL_TRANSPARENT_BLUE_VALUE: return EGL_DONT_CARE;
+
+#if defined(EGL_VERSION_1_3)
+    case EGL_CONFORMANT: return 0;
+    case EGL_MATCH_NATIVE_PIXMAP: return EGL_NONE;
+#endif
+
+    case EGL_MAX_PBUFFER_HEIGHT:
+    case EGL_MAX_PBUFFER_WIDTH:
+    case EGL_MAX_PBUFFER_PIXELS:
+    case EGL_NATIVE_VISUAL_ID:
+    case EGL_NONE:
+        qWarning("QEglProperties::value() - Attibute %d does not affect config selection", name);
+        return EGL_DONT_CARE;
+    default:
+        qWarning("QEglProperties::value() - Attibute %d is unknown in EGL <=1.4", name);
+        return EGL_DONT_CARE;
+    }
 }
 
 // Set the value associated with a property, replacing an existing
@@ -535,7 +590,7 @@ QString QEglProperties::toString() const
     if (val != EGL_DONT_CARE) {
         str += QLatin1String("id=");
         str += QString::number(val);
-        str += QLatin1String(" ");
+        str += QLatin1Char(' ');
     }
 
 #ifdef EGL_RENDERABLE_TYPE
@@ -570,11 +625,11 @@ QString QEglProperties::toString() const
         bufferSize = EGL_DONT_CARE;
     str += QLatin1String(" rgba=");
     str += QString::number(red);
-    str += QLatin1String(",");
+    str += QLatin1Char(',');
     str += QString::number(green);
-    str += QLatin1String(",");
+    str += QLatin1Char(',');
     str += QString::number(blue);
-    str += QLatin1String(",");
+    str += QLatin1Char(',');
     str += QString::number(alpha);
     if (bufferSize != EGL_DONT_CARE) {
         // Only report buffer size if different than r+g+b+a.
@@ -593,13 +648,13 @@ QString QEglProperties::toString() const
 #endif
 
     val = value(EGL_DEPTH_SIZE);
-    if (val != EGL_DONT_CARE) {
+    if (val != 0) {
         addTag(str, QLatin1String(" depth="));
         str += QString::number(val);
     }
 
     val = value(EGL_STENCIL_SIZE);
-    if (val != EGL_DONT_CARE) {
+    if (val != 0) {
         addTag(str, QLatin1String(" stencil="));
         str += QString::number(val);
     }
@@ -649,7 +704,7 @@ QString QEglProperties::toString() const
     }
 
     val = value(EGL_LEVEL);
-    if (val != EGL_DONT_CARE) {
+    if (val != 0) {
         addTag(str, QLatin1String(" level="));
         str += QString::number(val);
     }
@@ -661,7 +716,7 @@ QString QEglProperties::toString() const
     if (height != EGL_DONT_CARE || width != EGL_DONT_CARE) {
         addTag(str, QLatin1String(" max-pbuffer-size="));
         str += QString::number(width);
-        str += QLatin1String("x");
+        str += QLatin1Char('x');
         str += QString::number(height);
         if (pixels != (width * height)) {
             addTag(str, QLatin1String(" max-pbuffer-pixels="));
@@ -700,13 +755,13 @@ QString QEglProperties::toString() const
 #endif
 
     val = value(EGL_SAMPLES);
-    if (val != EGL_DONT_CARE) {
+    if (val != 0) {
         addTag(str, QLatin1String(" samples="));
         str += QString::number(val);
     }
 
     val = value(EGL_SAMPLE_BUFFERS);
-    if (val != EGL_DONT_CARE) {
+    if (val != 0) {
         addTag(str, QLatin1String(" sample-buffers="));
         str += QString::number(val);
     }
@@ -715,9 +770,9 @@ QString QEglProperties::toString() const
     if (val == EGL_TRANSPARENT_RGB) {
         addTag(str, QLatin1String(" transparent-rgb="));
         str += QString::number(value(EGL_TRANSPARENT_RED_VALUE));
-        str += QLatin1String(",");
+        str += QLatin1Char(',');
         str += QString::number(value(EGL_TRANSPARENT_GREEN_VALUE));
-        str += QLatin1String(",");
+        str += QLatin1Char(',');
         str += QString::number(value(EGL_TRANSPARENT_BLUE_VALUE));
     }
 
@@ -755,7 +810,7 @@ QString QEglProperties::toString() const
 
 #ifdef EGL_LUMINANCE_SIZE
     val = value(EGL_LUMINANCE_SIZE);
-    if (val != EGL_DONT_CARE) {
+    if (val != 0) {
         addTag(str, QLatin1String(" luminance="));
         str += QString::number(val);
     }
@@ -763,7 +818,7 @@ QString QEglProperties::toString() const
 
 #ifdef EGL_ALPHA_MASK_SIZE
     val = value(EGL_ALPHA_MASK_SIZE);
-    if (val != EGL_DONT_CARE) {
+    if (val != 0) {
         addTag(str, QLatin1String(" alpha-mask="));
         str += QString::number(val);
     }
@@ -771,7 +826,7 @@ QString QEglProperties::toString() const
 
 #ifdef EGL_CONFORMANT
     val = value(EGL_CONFORMANT);
-    if (val != EGL_DONT_CARE) {
+    if (val != 0) {
         if (val)
             addTag(str, QLatin1String(" conformant=true"));
         else

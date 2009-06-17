@@ -1,0 +1,8 @@
+MyExtendedObject
+{
+    baseProperty: baseExtendedProperty
+    baseExtendedProperty: 13
+
+    coreProperty: extendedProperty
+    extendedProperty: 9
+}

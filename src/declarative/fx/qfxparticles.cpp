@@ -105,7 +105,7 @@ public:
 
 //---------------------------------------------------------------------------
 
-QML_DEFINE_TYPE(QFxParticleMotion,ParticleMotion);
+QML_DEFINE_TYPE(QFxParticleMotion,ParticleMotion)
 
 /*!
     \class QFxParticleMotion
@@ -165,7 +165,7 @@ void QFxParticleMotion::destroy(QFxParticle &particle)
     \brief The QFxParticleMotionLinear class moves the particles linearly.
 */
 
-QML_DEFINE_TYPE(QFxParticleMotionLinear,ParticleMotionLinear);
+QML_DEFINE_TYPE(QFxParticleMotionLinear,ParticleMotionLinear)
 
 void QFxParticleMotionLinear::advance(QFxParticle &p, int interval)
 {
@@ -187,7 +187,7 @@ void QFxParticleMotionLinear::advance(QFxParticle &p, int interval)
     \brief The QFxParticleMotionGravity class moves the particles towards a point.
 */
 
-QML_DEFINE_TYPE(QFxParticleMotionGravity,ParticleMotionGravity);
+QML_DEFINE_TYPE(QFxParticleMotionGravity,ParticleMotionGravity)
 
 /*!
     \qmlproperty int ParticleMotionGravity::xattractor
@@ -289,7 +289,7 @@ Rect {
     This property holds how quickly the paricles will move from side to side.
 */
 
-QML_DEFINE_TYPE(QFxParticleMotionWander,ParticleMotionWander);
+QML_DEFINE_TYPE(QFxParticleMotionWander,ParticleMotionWander)
 
 void QFxParticleMotionWander::advance(QFxParticle &p, int interval)
 {
@@ -395,9 +395,8 @@ public:
     void createParticle(int time);
     void updateOpacity(QFxParticle &p, int age);
 
-    QString source;
     QUrl url;
-    QSimpleCanvasConfig::Image image;
+    QPixmap image;
     int count;
     int lifeSpan;
     int lifeSpanDev;
@@ -546,7 +545,7 @@ void QFxParticlesPrivate::updateOpacity(QFxParticle &p, int age)
     }
 }
 
-QML_DEFINE_TYPE(QFxParticles,Particles);
+QML_DEFINE_TYPE(QFxParticles,Particles)
 
 /*!
     \qmlclass Particles
@@ -642,10 +641,10 @@ QFxParticles::~QFxParticles()
     \property QFxParticles::source
     \brief the URL of the particle image.
 */
-QString QFxParticles::source() const
+QUrl QFxParticles::source() const
 {
     Q_D(const QFxParticles);
-    return d->source;
+    return d->url;
 }
 
 void QFxParticles::imageLoaded()
@@ -659,27 +658,26 @@ void QFxParticles::imageLoaded()
     update();
 }
 
-void QFxParticles::setSource(const QString &name)
+void QFxParticles::setSource(const QUrl &name)
 {
     Q_D(QFxParticles);
 
-    if (name == d->source)
+    if (name == d->url)
         return;
 
-    if (!d->source.isEmpty())
+    if (!d->url.isEmpty())
         QFxPixmap::cancelGet(d->url, this);
     if (name.isEmpty()) {
-        d->source = name;
-        d->url = QUrl();
-        d->image = QSimpleCanvasConfig::Image();
+        d->url = name;
+        d->image = QPixmap();
 #if defined(QFX_RENDER_OPENGL)
         d->texDirty = true;
         d->tex.clear();
 #endif
         update();
     } else {
-        d->source = name;
-        d->url = qmlContext(this)->resolvedUrl(name);
+        d->url = name;
+        Q_ASSERT(!name.isRelative());
         QFxPixmap::get(qmlEngine(this), d->url, this, SLOT(imageLoaded()));
     }
 }
@@ -1124,7 +1122,7 @@ void QFxParticlesPainter::paintContents(QPainter &p)
     for (int i = 0; i < d->particles.count(); ++i) {
         const QFxParticle &particle = d->particles.at(i);
         p.setOpacity(particle.opacity);
-        p.drawImage(particle.x - myX, particle.y - myY, d->image);
+        p.drawPixmap(particle.x - myX, particle.y - myY, d->image);
     }
     update();//Should I need this? (GV does)
 }
@@ -1143,7 +1141,7 @@ void QFxParticlesPainter::paintGLContents(GLPainter &p)
     updateSize();
 
     if (d->texDirty && !d->image.isNull()) {
-        d->tex.setImage(d->image);
+        d->tex.setImage(d->image.toImage());
         d->tex.setHorizontalWrap(GLTexture::Repeat);
         d->tex.setVerticalWrap(GLTexture::Repeat);
     }

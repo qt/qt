@@ -76,12 +76,17 @@
     \sa {opengl/pbuffers}{Pbuffers Example}
 */
 
+#include <QtCore/qglobal.h>
+
+#if !defined(QT_OPENGL_ES_1) && !defined(QT_OPENGL_ES_1_CL)
+#include <private/qpaintengineex_opengl2_p.h>
+#endif
 
 #include <qglpixelbuffer.h>
 #include <private/qglpixelbuffer_p.h>
 #include <qimage.h>
 
-#if !defined(QT_OPENGL_ES_2)
+#ifndef QT_OPENGL_ES_2
 #include <private/qpaintengine_opengl_p.h>
 #endif
 
@@ -363,29 +368,39 @@ bool QGLPixelBuffer::isValid() const
     return !d->invalid;
 }
 
-#if !defined(QT_OPENGL_ES_2)
-Q_GLOBAL_STATIC(QOpenGLPaintEngine, qt_buffer_paintengine)
+#if !defined(QT_OPENGL_ES_1) && !defined(QT_OPENGL_ES_1_CL)
+Q_GLOBAL_STATIC(QGL2PaintEngineEx, qt_buffer_2_engine)
+#endif
+
+#ifndef QT_OPENGL_ES_2
+Q_GLOBAL_STATIC(QOpenGLPaintEngine, qt_buffer_engine)
 #endif
 
 /*! \reimp */
 QPaintEngine *QGLPixelBuffer::paintEngine() const
 {
-#if !defined(QT_OPENGL_ES_2)
-    return qt_buffer_paintengine();
+#if defined(QT_OPENGL_ES_1) || defined(QT_OPENGL_ES_1_CL)
+    return qt_buffer_engine();
+#elif defined(QT_OPENGL_ES_2)
+    return qt_buffer_2_engine();
 #else
-    return 0;
+    if (d_ptr->qctx->d_func()->internal_context || qt_gl_preferGL2Engine())
+        return qt_buffer_2_engine();
+    else
+        return qt_buffer_engine();
 #endif
 }
 
-extern int qt_defaultDpi();
+extern int qt_defaultDpiX();
+extern int qt_defaultDpiY();
 
 /*! \reimp */
 int QGLPixelBuffer::metric(PaintDeviceMetric metric) const
 {
     Q_D(const QGLPixelBuffer);
 
-    float dpmx = qt_defaultDpi()*100./2.54;
-    float dpmy = qt_defaultDpi()*100./2.54;
+    float dpmx = qt_defaultDpiX()*100./2.54;
+    float dpmy = qt_defaultDpiY()*100./2.54;
     int w = d->req_size.width();
     int h = d->req_size.height();
     switch (metric) {
@@ -408,16 +423,16 @@ int QGLPixelBuffer::metric(PaintDeviceMetric metric) const
         return 32;//d->depth;
 
     case PdmDpiX:
-        return (int)(dpmx * 0.0254);
+        return qRound(dpmx * 0.0254);
 
     case PdmDpiY:
-        return (int)(dpmy * 0.0254);
+        return qRound(dpmy * 0.0254);
 
     case PdmPhysicalDpiX:
-        return (int)(dpmx * 0.0254);
+        return qRound(dpmx * 0.0254);
 
     case PdmPhysicalDpiY:
-        return (int)(dpmy * 0.0254);
+        return qRound(dpmy * 0.0254);
 
     default:
         qWarning("QGLPixelBuffer::metric(), Unhandled metric type: %d\n", metric);

@@ -3,7 +3,7 @@
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
 ** Contact: Qt Software Information (qt-info@nokia.com)
 **
-** This file is part of the $MODULE$ of the Qt Toolkit.
+** This file is part of the QtGui module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -740,6 +740,43 @@ QMatrix4x4& QMatrix4x4::scale(const QVector3D& vector)
     \overload
 
     Multiplies this matrix by another that scales coordinates by the
+    components \a x, and \a y.  Returns this matrix.
+
+    \sa translate(), rotate()
+*/
+QMatrix4x4& QMatrix4x4::scale(qreal x, qreal y)
+{
+    float vx(x);
+    float vy(y);
+    if (flagBits == Identity) {
+        m[0][0] = vx;
+        m[1][1] = vy;
+        flagBits = Scale;
+    } else if (flagBits == Scale || flagBits == (Scale | Translation)) {
+        m[0][0] *= vx;
+        m[1][1] *= vy;
+    } else if (flagBits == Translation) {
+        m[0][0] = vx;
+        m[1][1] = vy;
+        flagBits |= Scale;
+    } else {
+        m[0][0] *= vx;
+        m[0][1] *= vx;
+        m[0][2] *= vx;
+        m[0][3] *= vx;
+        m[1][0] *= vy;
+        m[1][1] *= vy;
+        m[1][2] *= vy;
+        m[1][3] *= vy;
+        flagBits = General;
+    }
+    return *this;
+}
+
+/*!
+    \overload
+
+    Multiplies this matrix by another that scales coordinates by the
     components \a x, \a y, and \a z.  Returns this matrix.
 
     \sa translate(), rotate()
@@ -867,6 +904,46 @@ QMatrix4x4& QMatrix4x4::translate(const QVector3D& vector)
 }
 
 #endif
+
+/*!
+    \overload
+
+    Multiplies this matrix by another that translates coordinates
+    by the components \a x, and \a y.  Returns this matrix.
+
+    \sa scale(), rotate()
+*/
+QMatrix4x4& QMatrix4x4::translate(qreal x, qreal y)
+{
+    float vx(x);
+    float vy(y);
+    if (flagBits == Identity) {
+        m[3][0] = vx;
+        m[3][1] = vy;
+        flagBits = Translation;
+    } else if (flagBits == Translation) {
+        m[3][0] += vx;
+        m[3][1] += vy;
+    } else if (flagBits == Scale) {
+        m[3][0] = m[0][0] * vx;
+        m[3][1] = m[1][1] * vy;
+        m[3][2] = 0.;
+        flagBits |= Translation;
+    } else if (flagBits == (Scale | Translation)) {
+        m[3][0] += m[0][0] * vx;
+        m[3][1] += m[1][1] * vy;
+    } else {
+        m[3][0] += m[0][0] * vx + m[1][0] * vy;
+        m[3][1] += m[0][1] * vx + m[1][1] * vy;
+        m[3][2] += m[0][2] * vx + m[1][2] * vy;
+        m[3][3] += m[0][3] * vx + m[1][3] * vy;
+        if (flagBits == Rotation)
+            flagBits |= Translation;
+        else if (flagBits != (Rotation | Translation))
+            flagBits = General;
+    }
+    return *this;
+}
 
 /*!
     \overload
@@ -1411,8 +1488,6 @@ QTransform QMatrix4x4::toTransform() const
 #endif
 
 /*!
-    \fn QRect QMatrix4x4::mapRect(const QRect& rect) const
-
     Maps \a rect by multiplying this matrix by the corners
     of \a rect and then forming a new rectangle from the results.
     The returned rectangle will be an ordinary 2D rectangle
@@ -1420,10 +1495,43 @@ QTransform QMatrix4x4::toTransform() const
 
     \sa map()
 */
+QRect QMatrix4x4::mapRect(const QRect& rect) const
+{
+    if (flagBits == (Translation | Scale) || flagBits == Scale) {
+        qreal x = rect.x() * m[0][0] + m[3][0];
+        qreal y = rect.y() * m[1][1] + m[3][1];
+        qreal w = rect.width() * m[0][0];
+        qreal h = rect.height() * m[1][1];
+        if (w < 0) {
+            w = -w;
+            x -= w;
+        }
+        if (h < 0) {
+            h = -h;
+            y -= h;
+        }
+        return QRect(qRound(x), qRound(y), qRound(w), qRound(h));
+    } else if (flagBits == Translation) {
+        return QRect(qRound(rect.x() + m[3][0]),
+                     qRound(rect.y() + m[3][1]),
+                     rect.width(), rect.height());
+    }
+
+    QPoint tl = map(rect.topLeft());
+    QPoint tr = map(QPoint(rect.x() + rect.width(), rect.y()));
+    QPoint bl = map(QPoint(rect.x(), rect.y() + rect.height()));
+    QPoint br = map(QPoint(rect.x() + rect.width(),
+                           rect.y() + rect.height()));
+
+    int xmin = qMin(qMin(tl.x(), tr.x()), qMin(bl.x(), br.x()));
+    int xmax = qMax(qMax(tl.x(), tr.x()), qMax(bl.x(), br.x()));
+    int ymin = qMin(qMin(tl.y(), tr.y()), qMin(bl.y(), br.y()));
+    int ymax = qMax(qMax(tl.y(), tr.y()), qMax(bl.y(), br.y()));
+
+    return QRect(xmin, ymin, xmax - xmin, ymax - ymin);
+}
 
 /*!
-    \fn QRectF QMatrix4x4::mapRect(const QRectF& rect) const
-
     Maps \a rect by multiplying this matrix by the corners
     of \a rect and then forming a new rectangle from the results.
     The returned rectangle will be an ordinary 2D rectangle
@@ -1431,6 +1539,36 @@ QTransform QMatrix4x4::toTransform() const
 
     \sa map()
 */
+QRectF QMatrix4x4::mapRect(const QRectF& rect) const
+{
+    if (flagBits == (Translation | Scale) || flagBits == Scale) {
+        qreal x = rect.x() * m[0][0] + m[3][0];
+        qreal y = rect.y() * m[1][1] + m[3][1];
+        qreal w = rect.width() * m[0][0];
+        qreal h = rect.height() * m[1][1];
+        if (w < 0) {
+            w = -w;
+            x -= w;
+        }
+        if (h < 0) {
+            h = -h;
+            y -= h;
+        }
+        return QRectF(x, y, w, h);
+    } else if (flagBits == Translation) {
+        return rect.translated(m[3][0], m[3][1]);
+    }
+
+    QPointF tl = map(rect.topLeft()); QPointF tr = map(rect.topRight());
+    QPointF bl = map(rect.bottomLeft()); QPointF br = map(rect.bottomRight());
+
+    qreal xmin = qMin(qMin(tl.x(), tr.x()), qMin(bl.x(), br.x()));
+    qreal xmax = qMax(qMax(tl.x(), tr.x()), qMax(bl.x(), br.x()));
+    qreal ymin = qMin(qMin(tl.y(), tr.y()), qMin(bl.y(), br.y()));
+    qreal ymax = qMax(qMax(tl.y(), tr.y()), qMax(bl.y(), br.y()));
+
+    return QRectF(QPointF(xmin, ymin), QPointF(xmax, ymax));
+}
 
 /*!
     \fn float *QMatrix4x4::data()

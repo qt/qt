@@ -43,7 +43,6 @@
 
 #if !defined(QT_NO_STYLE_PLASTIQUE) || defined(QT_PLUGIN)
 
-static bool UsePixmapCache = true;
 static const bool AnimateBusyProgressBar = true;
 static const bool AnimateProgressBar = false;
 // #define QPlastique_MaskButtons
@@ -491,7 +490,7 @@ static void qBrushSetAlphaF(QBrush *brush, qreal alpha)
         QPixmap texture = brush->texture();
         QPixmap pixmap;
         QString name = QString::fromLatin1("qbrushtexture-alpha-%1-%2").arg(alpha).arg(texture.cacheKey());
-        if (UsePixmapCache && !QPixmapCache::find(name, pixmap)) {
+        if (!QPixmapCache::find(name, pixmap)) {
             QImage image = texture.toImage();
             QRgb *rgb = reinterpret_cast<QRgb *>(image.bits());
             int pixels = image.width() * image.height();
@@ -552,7 +551,7 @@ static QBrush qBrushLight(QBrush brush, int light)
         QPixmap texture = brush.texture();
         QPixmap pixmap;
         QString name = QString::fromLatin1("qbrushtexture-light-%1-%2").arg(light).arg(texture.cacheKey());
-        if (UsePixmapCache && !QPixmapCache::find(name, pixmap)) {
+        if (!QPixmapCache::find(name, pixmap)) {
             QImage image = texture.toImage();
             QRgb *rgb = reinterpret_cast<QRgb *>(image.bits());
             int pixels = image.width() * image.height();
@@ -611,7 +610,7 @@ static QBrush qBrushDark(QBrush brush, int dark)
         QPixmap texture = brush.texture();
         QPixmap pixmap;
         QString name = QString::fromLatin1("qbrushtexture-dark-%1-%2").arg(dark).arg(brush.texture().cacheKey());
-        if (UsePixmapCache && !QPixmapCache::find(name, pixmap)) {
+        if (!QPixmapCache::find(name, pixmap)) {
             QImage image = texture.toImage();
             QRgb *rgb = reinterpret_cast<QRgb *>(image.bits());
             int pixels = image.width() * image.height();
@@ -750,8 +749,7 @@ static void qt_plastique_draw_gradient(QPainter *painter, const QRect &rect, con
     QPainter *p = painter;
     QRect r = rect;
 
-    bool doPixmapCache = UsePixmapCache
-	&& painter->deviceTransform().isIdentity()
+    bool doPixmapCache = painter->deviceTransform().isIdentity()
 	&& painter->worldMatrix().isIdentity();
     if (doPixmapCache && QPixmapCache::find(gradientName, cache)) {
         painter->drawPixmap(rect, cache);
@@ -1006,8 +1004,6 @@ QPlastiqueStylePrivate::QPlastiqueStylePrivate() :
     , progressBarAnimateTimer(0)
 #endif
 {
-    if (!qgetenv("QT_STYLE_NO_PIXMAPCACHE").isNull())
-        UsePixmapCache = false;
 }
 
 /*!
@@ -1517,7 +1513,7 @@ void QPlastiqueStyle::drawPrimitive(PrimitiveElement element, const QStyleOption
         }
 #endif
         QString pixmapName = uniqueName(QLatin1String("toolbarhandle"), option, rect.size());
-        if (!UsePixmapCache || !QPixmapCache::find(pixmapName, cache)) {
+        if (!QPixmapCache::find(pixmapName, cache)) {
             cache = QPixmap(rect.size());
             cache.fill(Qt::transparent);
             QPainter cachePainter(&cache);
@@ -1547,8 +1543,7 @@ void QPlastiqueStyle::drawPrimitive(PrimitiveElement element, const QStyleOption
                                            handle);
             }
             cachePainter.end();
-            if (UsePixmapCache)
-                QPixmapCache::insert(pixmapName, cache);
+            QPixmapCache::insert(pixmapName, cache);
         }
         painter->drawPixmap(rect.topLeft(), cache);
         break;
@@ -2786,7 +2781,7 @@ void QPlastiqueStyle::drawControl(ControlElement element, const QStyleOption *op
             QString progressBarName = uniqueName(QLatin1String("progressBarContents"),
                                                  option, rect.size());
             QPixmap cache;
-            if ((!UsePixmapCache || !QPixmapCache::find(progressBarName, cache)) && rect.height() > 7) {
+            if (!QPixmapCache::find(progressBarName, cache) && rect.height() > 7) {
                 QSize size = rect.size();
                 cache = QPixmap(QSize(size.width() - 6 + 30, size.height() - 6));
                 cache.fill(Qt::white);
@@ -2819,8 +2814,7 @@ void QPlastiqueStyle::drawControl(ControlElement element, const QStyleOption *op
                     leftEdge += 10;
                 }
 
-                if (UsePixmapCache)
-                    QPixmapCache::insert(progressBarName, cache);
+                QPixmapCache::insert(progressBarName, cache);
             }
             painter->setClipRect(progressBar.adjusted(1, 0, -1, -1));
 
@@ -2845,10 +2839,10 @@ void QPlastiqueStyle::drawControl(ControlElement element, const QStyleOption *op
         if (const QStyleOptionHeader *header = qstyleoption_cast<const QStyleOptionHeader *>(option)) {
             QPixmap cache;
             QString pixmapName = uniqueName(QLatin1String("headersection"), option, option->rect.size());
-            pixmapName += QLatin1String("-") + QString::number(int(header->position));
-            pixmapName += QLatin1String("-") + QString::number(int(header->orientation));
+            pixmapName += QString::number(- int(header->position));
+            pixmapName += QString::number(- int(header->orientation));
 
-            if (!UsePixmapCache || !QPixmapCache::find(pixmapName, cache)) {
+            if (!QPixmapCache::find(pixmapName, cache)) {
                 cache = QPixmap(option->rect.size());
                 cache.fill(Qt::white);
                 QRect pixmapRect(0, 0, option->rect.width(), option->rect.height());
@@ -2892,8 +2886,7 @@ void QPlastiqueStyle::drawControl(ControlElement element, const QStyleOption *op
                 cachePainter.drawLines(lines, 2);
 
                 cachePainter.end();
-                if (UsePixmapCache)
-                    QPixmapCache::insert(pixmapName, cache);
+                QPixmapCache::insert(pixmapName, cache);
             }
             painter->drawPixmap(option->rect.topLeft(), cache);
 
@@ -3093,7 +3086,7 @@ void QPlastiqueStyle::drawControl(ControlElement element, const QStyleOption *op
         if ((option->state & State_Selected)) {
             QPixmap cache;
             QString pixmapName = uniqueName(QLatin1String("menubaritem"), option, option->rect.size());
-            if (!UsePixmapCache || !QPixmapCache::find(pixmapName, cache)) {
+            if (!QPixmapCache::find(pixmapName, cache)) {
                 cache = QPixmap(option->rect.size());
                 cache.fill(Qt::white);
                 QRect pixmapRect(0, 0, option->rect.width(), option->rect.height());
@@ -3143,8 +3136,7 @@ void QPlastiqueStyle::drawControl(ControlElement element, const QStyleOption *op
                 lines[1] = QLine(rect.right() - 1, rect.top() + 1, rect.right() - 1, rect.bottom() - 2);
                 cachePainter.drawLines(lines, 2);
                 cachePainter.end();
-                if (UsePixmapCache)
-                    QPixmapCache::insert(pixmapName, cache);
+                QPixmapCache::insert(pixmapName, cache);
             }
             painter->drawPixmap(option->rect.topLeft(), cache);
         } else {
@@ -3458,7 +3450,7 @@ void QPlastiqueStyle::drawControl(ControlElement element, const QStyleOption *op
 
             QString addLinePixmapName = uniqueName(QLatin1String("scrollbar_addline"), option, option->rect.size());
             QPixmap cache;
-            if (!UsePixmapCache || !QPixmapCache::find(addLinePixmapName, cache)) {
+            if (!QPixmapCache::find(addLinePixmapName, cache)) {
                 cache = QPixmap(option->rect.size());
                 cache.fill(Qt::white);
                 QRect pixmapRect(0, 0, cache.width(), cache.height());
@@ -3517,8 +3509,7 @@ void QPlastiqueStyle::drawControl(ControlElement element, const QStyleOption *op
                     addLinePainter.drawImage(QPoint(pixmapRect.center().x() - 3, pixmapRect.center().y() - 2), arrow);
                 }
                 addLinePainter.end();
-                if (UsePixmapCache)
-                    QPixmapCache::insert(addLinePixmapName, cache);
+                QPixmapCache::insert(addLinePixmapName, cache);
             }
             painter->drawPixmap(option->rect.topLeft(), cache);
         }
@@ -3536,7 +3527,7 @@ void QPlastiqueStyle::drawControl(ControlElement element, const QStyleOption *op
                 groovePixmapName += QLatin1String("-addpage");
 
             QPixmap cache;
-            if (!UsePixmapCache || !QPixmapCache::find(groovePixmapName, cache)) {
+            if (!QPixmapCache::find(groovePixmapName, cache)) {
                 cache = QPixmap(option->rect.size());
                 cache.fill(option->palette.background().color());
                 QPainter groovePainter(&cache);
@@ -3562,8 +3553,7 @@ void QPlastiqueStyle::drawControl(ControlElement element, const QStyleOption *op
                 }
 
                 groovePainter.end();
-                if (UsePixmapCache)
-                    QPixmapCache::insert(groovePixmapName, cache);
+                QPixmapCache::insert(groovePixmapName, cache);
             }
             painter->drawPixmap(option->rect.topLeft(), cache);
         }
@@ -3591,7 +3581,7 @@ void QPlastiqueStyle::drawControl(ControlElement element, const QStyleOption *op
 
             QString subLinePixmapName = uniqueName(QLatin1String("scrollbar_subline"), option, button1.size());
             QPixmap cache;
-            if (!UsePixmapCache || !QPixmapCache::find(subLinePixmapName, cache)) {
+            if (!QPixmapCache::find(subLinePixmapName, cache)) {
                 cache = QPixmap(button1.size());
                 cache.fill(Qt::white);
                 QRect pixmapRect(0, 0, cache.width(), cache.height());
@@ -3651,8 +3641,7 @@ void QPlastiqueStyle::drawControl(ControlElement element, const QStyleOption *op
                     subLinePainter.drawImage(QPoint(pixmapRect.center().x() - 3, pixmapRect.center().y() - 2), arrow);
                 }
                 subLinePainter.end();
-                if (UsePixmapCache)
-                    QPixmapCache::insert(subLinePixmapName, cache);
+                QPixmapCache::insert(subLinePixmapName, cache);
             }
             painter->drawPixmap(button1.topLeft(), cache);
             painter->drawPixmap(button2.topLeft(), cache);
@@ -3670,7 +3659,7 @@ void QPlastiqueStyle::drawControl(ControlElement element, const QStyleOption *op
                     sliderPixmapName += QLatin1String("-horizontal");
 
                 QPixmap cache;
-                if (!UsePixmapCache || !QPixmapCache::find(sliderPixmapName, cache)) {
+                if (!QPixmapCache::find(sliderPixmapName, cache)) {
                     cache = QPixmap(option->rect.size());
                     cache.fill(Qt::white);
                     QRect pixmapRect(0, 0, cache.width(), cache.height());
@@ -3741,8 +3730,7 @@ void QPlastiqueStyle::drawControl(ControlElement element, const QStyleOption *op
                     }
                     sliderPainter.end();
                     // insert the slider into the cache
-                    if (UsePixmapCache)
-                        QPixmapCache::insert(sliderPixmapName, cache);
+                    QPixmapCache::insert(sliderPixmapName, cache);
                 }
                 painter->drawPixmap(option->rect.topLeft(), cache);
             }
@@ -3892,7 +3880,7 @@ void QPlastiqueStyle::drawComplexControl(ComplexControl control, const QStyleOpt
                 if ((option->activeSubControls & SC_SliderHandle) && (option->state & State_Sunken))
                     handlePixmapName += QLatin1String("-sunken");
 
-                if (!UsePixmapCache || !QPixmapCache::find(handlePixmapName, cache)) {
+                if (!QPixmapCache::find(handlePixmapName, cache)) {
                     cache = QPixmap(handle.size());
                     cache.fill(Qt::white);
                     QRect pixmapRect(0, 0, handle.width(), handle.height());
@@ -3975,8 +3963,7 @@ void QPlastiqueStyle::drawComplexControl(ComplexControl control, const QStyleOpt
                     }
                     handlePainter.drawImage(pixmapRect, image);
                     handlePainter.end();
-                    if (UsePixmapCache)
-                        QPixmapCache::insert(handlePixmapName, cache);
+                    QPixmapCache::insert(handlePixmapName, cache);
                 }
 
                 painter->drawPixmap(handle.topLeft(), cache);
@@ -4581,7 +4568,8 @@ void QPlastiqueStyle::drawComplexControl(ComplexControl control, const QStyleOpt
             }
 
             // Draw the focus rect
-            if (((option->state & State_HasFocus) && (option->state & State_KeyboardFocusChange)) && !comboBox->editable) {
+            if ((option->state & State_HasFocus) && !comboBox->editable
+                && ((option->state & State_KeyboardFocusChange) || styleHint(SH_UnderlineShortcut, option, widget))) {
                 QStyleOptionFocusRect focus;
                 focus.rect = subControlRect(CC_ComboBox, option, SC_ComboBoxEditField, widget)
                              .adjusted(-2, 0, 2, 0);
@@ -5460,6 +5448,11 @@ int QPlastiqueStyle::styleHint(StyleHint hint, const QStyleOption *option, const
     case SH_Menu_SubMenuPopupDelay:
         ret = 96; // from Plastik
         break;
+#ifndef Q_OS_WIN
+    case SH_Menu_AllowActiveAndDisabled:
+        ret = false;
+        break;
+#endif
     default:
         ret = QWindowsStyle::styleHint(hint, option, widget, returnData);
         break;

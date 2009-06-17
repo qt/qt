@@ -51,6 +51,7 @@
 #include <qlineedit.h>
 #include <qboxlayout.h>
 #include <qaction.h>
+#include <qwidgetaction.h>
 #include "../../shared/util.h"
 
 
@@ -153,6 +154,8 @@ private slots:
     void popupMouseGrabber();
     void windowFlags_data();
     void windowFlags();
+    void shortcutsDeletion();
+    void painterStateProtectionOnWindowFrame();
 
     // Task fixes
     void task236127_bspTreeIndexFails();
@@ -2264,6 +2267,55 @@ void tst_QGraphicsWidget::windowFlags()
     QGraphicsWidget window(0, Qt::Window);
     widget5->setParentItem(&window);
     QCOMPARE(widget5->windowFlags(), Qt::WindowFlags(outputFlags));
+}
+
+void tst_QGraphicsWidget::shortcutsDeletion()
+{
+    QGraphicsWidget *widget = new QGraphicsWidget;
+    QGraphicsWidget *widget2 = new QGraphicsWidget;
+    widget->setMinimumSize(40, 40);
+    QWidgetAction *del = new QWidgetAction(widget);
+    del->setIcon(QIcon("edit-delete"));
+    del->setShortcut(Qt::Key_Delete);
+    del->setShortcutContext(Qt::WidgetShortcut);
+    widget2->addAction(del);
+    widget2->addAction(del);
+    delete widget;
+}
+
+class MessUpPainterWidget : public QGraphicsWidget
+{
+public:
+    MessUpPainterWidget(QGraphicsItem * parent = 0, Qt::WindowFlags wFlags = 0)
+    : QGraphicsWidget(parent, wFlags)
+    {}
+
+    void paintWindowFrame(QPainter * painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
+    {
+        QCOMPARE(painter->opacity(), 1.0);
+        painter->setOpacity(0.0);
+        QGraphicsWidget::paintWindowFrame(painter, option, widget);
+    }
+    void paint(QPainter * painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
+    {
+        QCOMPARE(painter->opacity(), 1.0);
+        painter->drawRect(0, 0, 100, 100);
+        QGraphicsWidget::paint(painter, option, widget);
+    }
+
+};
+
+void tst_QGraphicsWidget::painterStateProtectionOnWindowFrame()
+{
+    MessUpPainterWidget *widget = new MessUpPainterWidget(0, Qt::Window);
+    QGraphicsScene scene(0, 0, 300, 300);
+    QGraphicsView view(&scene);
+    scene.addItem(widget);
+    view.show();
+#ifdef Q_WS_X11
+    qt_x11_wait_for_window_manager(&view);
+#endif
+    QTest::qWait(500);
 }
 
 class ProxyStyle : public QCommonStyle

@@ -54,7 +54,7 @@
 //
 
 #include "qparallelanimationgroup.h"
-#include "qanimationgroup_p.h"
+#include "private/qanimationgroup_p.h"
 #include <QtCore/QHash>
 
 QT_BEGIN_NAMESPACE

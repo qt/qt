@@ -626,7 +626,7 @@ void Win32MakefileGenerator::writeStandardParts(QTextStream &t)
     // do this here so we can set DEST_TARGET to be the complete path to the final target if it is needed.
     QString orgDestDir = var("DESTDIR");
     QString destDir = Option::fixPathToTargetOS(orgDestDir, false);
-    if (orgDestDir.endsWith('/') || orgDestDir.endsWith(Option::dir_sep))
+    if (!destDir.isEmpty() && (orgDestDir.endsWith('/') || orgDestDir.endsWith(Option::dir_sep)))
         destDir += Option::dir_sep;
     QString target = QString(project->first("TARGET")+project->first("TARGET_EXT"));
     target.remove("\"");

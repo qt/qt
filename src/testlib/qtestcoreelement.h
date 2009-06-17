@@ -42,10 +42,14 @@
 #ifndef QTESTCOREELEMENT_H
 #define QTESTCOREELEMENT_H
 
-#include "qtestcorelist.h"
-#include "qtestelementattribute.h"
+#include <QtTest/qtestcorelist.h>
+#include <QtTest/qtestelementattribute.h>
+
+QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
+
+QT_MODULE(Test)
 
 template <class ElementType>
 class QTestCoreElement: public QTestCoreList<ElementType>
@@ -162,5 +166,7 @@ const QTestElementAttribute *QTestCoreElement<ElementType>::attribute(QTest::Att
 }
 
 QT_END_NAMESPACE
+
+QT_END_HEADER
 
 #endif

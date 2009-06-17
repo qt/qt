@@ -49,18 +49,10 @@
 #include "custompropertyanimation.h"
 #include "qanimationstate.h"
 
-#if defined(QT_EXPERIMENTAL_SOLUTION)
-# include "qpropertyanimation.h"
-# include "qstatemachine.h"
-# include "qfinalstate.h"
-# include "qsequentialanimationgroup.h"
-# include "qpauseanimation.h"
-#else
 #include <QtCore/QPropertyAnimation>
 #include <QtCore/QStateMachine>
 #include <QtCore/QFinalState>
 #include <QtCore/QSequentialAnimationGroup>
-#endif
 
 static QAbstractAnimation *setupDestroyAnimation(SubMarine *sub)
 {

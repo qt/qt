@@ -42,44 +42,49 @@
 #include "qfxpixmap.h"
 #include <QHash>
 #include <QNetworkReply>
+#include <QPixmapCache>
 #include <qfxperf.h>
 #include <QtDeclarative/qmlengine.h>
 #include <QFile>
 
-
 QT_BEGIN_NAMESPACE
-class QFxPixmapCacheItem;
-typedef QHash<QString, QFxPixmapCacheItem *> QFxPixmapCache;
-static QFxPixmapCache qfxPixmapCache;
+class QSharedNetworkReply;
+typedef QHash<QString, QSharedNetworkReply *> QFxSharedNetworkReplyHash;
+static QFxSharedNetworkReplyHash qfxActiveNetworkReplies;
 
-class QFxPixmapCacheItem
+class QSharedNetworkReply
 {
 public:
-    QFxPixmapCacheItem() : reply(0), refCount(1) {}
-    QString key;
+    QSharedNetworkReply(QNetworkReply *r) : reply(r), refCount(1) {}
+    ~QSharedNetworkReply()
+    {
+        reply->deleteLater();
+    }
     QNetworkReply *reply;
-#if defined(QFX_RENDER_OPENGL)
-    QImage image;
-#else
-    QImage image;
-    QImage opaqueImage;
-#endif
 
     int refCount;
-    void addRef() { ++refCount; }
-    void release() { Q_ASSERT(refCount > 0); --refCount; if (refCount == 0) { qfxPixmapCache.remove(key); delete this; } }
+    void addRef()
+    {
+        ++refCount;
+    }
+    void release()
+    {
+        Q_ASSERT(refCount > 0);
+        --refCount;
+        if (refCount == 0) {
+            QString key = reply->url().toString();
+            qfxActiveNetworkReplies.remove(key);
+            delete this;
+        }
+    }
 };
-
-static QFxPixmapCacheItem qfxPixmapCacheDummyItem;
 
 class QFxPixmapPrivate
 {
 public:
-    QFxPixmapPrivate()
-    : opaque(false), pixmap(&qfxPixmapCacheDummyItem) { pixmap->addRef(); }
+    QFxPixmapPrivate() {}
 
-    bool opaque;
-    QFxPixmapCacheItem *pixmap;
+    QPixmap pixmap;
 };
 
 /*!
@@ -102,131 +107,71 @@ QFxPixmap::QFxPixmap(const QUrl &url)
 #ifdef Q_ENABLE_PERFORMANCE_LOG
     QFxPerfTimer<QFxPerf::PixmapLoad> perf;
 #endif
-    QString key = url.toString();
-    QFxPixmapCache::Iterator iter = qfxPixmapCache.find(key);
-    if (iter == qfxPixmapCache.end()) {
-        qWarning() << "QFxPixmap: URL not loaded" << url;
-    } else {
-        QNetworkReply *reply = (*iter)->reply;
-        if (reply) {
-            if (reply->error()) {
-                qWarning() << "Error loading" << url << reply->errorString();
+#ifndef QT_NO_LOCALFILE_OPTIMIZED_QML
+    if (url.scheme()==QLatin1String("file")) {
+        d->pixmap.load(url.toLocalFile());
+    } else
+#endif
+    {
+        QString key = url.toString();
+        if (!QPixmapCache::find(key,&d->pixmap)) {
+            QFxSharedNetworkReplyHash::Iterator iter = qfxActiveNetworkReplies.find(key);
+            if (iter == qfxActiveNetworkReplies.end()) {
+                // API usage error
+                qWarning() << "QFxPixmap: URL not loaded" << url;
             } else {
-                (*iter)->image.load(reply, 0);
+                if ((*iter)->reply->error()) {
+                    qWarning() << "Network error loading" << url << (*iter)->reply->errorString();
+                } else {
+                    QImage img;
+                    if (img.load((*iter)->reply, 0)) {
+                        d->pixmap = QPixmap::fromImage(img);
+                        QPixmapCache::insert(key, d->pixmap);
+                    } else {
+                        qWarning() << "Format error loading" << url;
+                    }
+                }
+                (*iter)->release();
             }
-            reply->deleteLater();
-            (*iter)->reply = 0;
         }
-        (*iter)->addRef();
     }
-
-    d->pixmap = *iter;
 }
 
 QFxPixmap::QFxPixmap(const QFxPixmap &o)
 : d(new QFxPixmapPrivate)
 {
-    d->opaque = o.d->opaque;
-    o.d->pixmap->addRef();
-    d->pixmap->release();
     d->pixmap = o.d->pixmap;
 }
 
 QFxPixmap::~QFxPixmap()
 {
-    d->pixmap->release();
     delete d;
 }
 
 QFxPixmap &QFxPixmap::operator=(const QFxPixmap &o)
 {
-    d->opaque = o.d->opaque;
-    o.d->pixmap->addRef();
-    d->pixmap->release();
     d->pixmap = o.d->pixmap;
     return *this;
 }
 
 bool QFxPixmap::isNull() const
 {
-    return d->pixmap->image.isNull();
-}
-
-bool QFxPixmap::opaque() const
-{
-    return d->opaque;
-}
-
-void QFxPixmap::setOpaque(bool o)
-{
-    d->opaque = o;
+    return d->pixmap.isNull();
 }
 
 int QFxPixmap::width() const
 {
-    return d->pixmap->image.width();
+    return d->pixmap.width();
 }
 
 int QFxPixmap::height() const
 {
-    return d->pixmap->image.height();
+    return d->pixmap.height();
 }
 
-QPixmap QFxPixmap::pixmap() const
+QFxPixmap::operator const QPixmap &() const
 {
-    return QPixmap::fromImage(d->pixmap->image);
-}
-
-void QFxPixmap::setPixmap(const QPixmap &pix)
-{
-    QFxPixmapCache::Iterator iter = qfxPixmapCache.find(QString::number(pix.cacheKey()));
-    if (iter == qfxPixmapCache.end()) {
-        QFxPixmapCacheItem *item = new QFxPixmapCacheItem;
-        item->key = QString::number(pix.cacheKey());
-        if (d->pixmap)
-            d->pixmap->release();
-        d->pixmap = item;
-        d->pixmap->image = pix.toImage();
-        qfxPixmapCache.insert(QString::number(pix.cacheKey()), item);
-    } else {
-        (*iter)->addRef();
-        d->pixmap = *iter;
-    }
-
-#if 0
-    int size = 0;
-    for (QFxPixmapCache::Iterator iter = qfxPixmapCache.begin(); iter != qfxPixmapCache.end(); ++iter) {
-        size += (*iter)->image.width() * (*iter)->image.height();
-    }
-    qWarning() << qfxPixmapCache.count() << size;
-#endif
-}
-
-QFxPixmap::operator const QSimpleCanvasConfig::Image &() const
-{
-#if defined(QFX_RENDER_OPENGL)
-    return d->pixmap->image;
-#else
-    if (d->opaque) {
-        if (!d->pixmap->image.isNull() && d->pixmap->opaqueImage.isNull()) {
-#ifdef Q_ENABLE_PERFORMANCE_LOG
-            QFxPerfTimer<QFxPerf::PixmapLoad> perf;
-#endif
-            d->pixmap->opaqueImage = d->pixmap->image.convertToFormat(QPixmap::defaultDepth() == 16 ?
-                                                                      QImage::Format_RGB16 :
-                                                                      QImage::Format_RGB32);
-        }
-        return d->pixmap->opaqueImage;
-    } else {
-        if (!d->pixmap->image.isNull() && d->pixmap->image.format() != QImage::Format_ARGB32_Premultiplied) {
-#ifdef Q_ENABLE_PERFORMANCE_LOG
-            QFxPerfTimer<QFxPerf::PixmapLoad> perf;
-#endif
-            d->pixmap->image = d->pixmap->image.convertToFormat(QImage::Format_ARGB32_Premultiplied);
-        }
-        return d->pixmap->image;
-    }
-#endif
+    return d->pixmap;
 }
 
 /*!
@@ -239,37 +184,33 @@ QFxPixmap::operator const QSimpleCanvasConfig::Image &() const
 */
 QNetworkReply *QFxPixmap::get(QmlEngine *engine, const QUrl& url, QObject* obj, const char* slot)
 {
-    QString key = url.toString();
-    QFxPixmapCache::Iterator iter = qfxPixmapCache.find(key);
-    if (iter == qfxPixmapCache.end()) {
-        QFxPixmapCacheItem *item = new QFxPixmapCacheItem;
-        item->addRef(); // XXX - will never get deleted.  Need to revisit caching
-        item->key = key;
 #ifndef QT_NO_LOCALFILE_OPTIMIZED_QML
-        if (url.scheme()==QLatin1String("file")) {
-            item->image.load(url.toLocalFile(), 0);
-        } else
+    if (url.scheme()==QLatin1String("file")) {
+        QObject dummy;
+        QObject::connect(&dummy, SIGNAL(destroyed()), obj, slot);
+        return 0;
+    }
 #endif
-        {
-            QNetworkRequest req(url);
-            req.setAttribute(QNetworkRequest::CacheLoadControlAttribute, QNetworkRequest::PreferCache);
-            item->reply = engine->networkAccessManager()->get(req);
-        }
-        iter = qfxPixmapCache.insert(item->key, item);
+
+    QString key = url.toString();
+    if (QPixmapCache::find(key,0)) {
+        QObject dummy;
+        QObject::connect(&dummy, SIGNAL(destroyed()), obj, slot);
+        return 0;
+    }
+
+    QFxSharedNetworkReplyHash::Iterator iter = qfxActiveNetworkReplies.find(key);
+    if (iter == qfxActiveNetworkReplies.end()) {
+        QNetworkRequest req(url);
+        req.setAttribute(QNetworkRequest::CacheLoadControlAttribute, QNetworkRequest::PreferCache);
+        QSharedNetworkReply *item = new QSharedNetworkReply(engine->networkAccessManager()->get(req));
+        iter = qfxActiveNetworkReplies.insert(key, item);
     } else {
         (*iter)->addRef();
     }
-    if ((*iter)->reply) {
-        // still loading
-        QObject::connect((*iter)->reply, SIGNAL(finished()), obj, slot);
-        return (*iter)->reply;
-    } else {
-        // already loaded
-        QObject dummy;
-        QObject::connect(&dummy, SIGNAL(destroyed()), obj, slot);
-    }
 
-    return 0;
+    QObject::connect((*iter)->reply, SIGNAL(finished()), obj, slot);
+    return (*iter)->reply;
 }
 
 /*!
@@ -282,12 +223,11 @@ QNetworkReply *QFxPixmap::get(QmlEngine *engine, const QUrl& url, QObject* obj, 
 void QFxPixmap::cancelGet(const QUrl& url, QObject* obj)
 {
     QString key = url.toString();
-    QFxPixmapCache::Iterator iter = qfxPixmapCache.find(key);
-    if (iter == qfxPixmapCache.end())
+    QFxSharedNetworkReplyHash::Iterator iter = qfxActiveNetworkReplies.find(key);
+    if (iter == qfxActiveNetworkReplies.end())
         return;
-    if ((*iter)->reply)
-        QObject::disconnect((*iter)->reply, 0, obj, 0);
-    // XXX - loading not cancelled. Need to revisit caching
+    QObject::disconnect((*iter)->reply, 0, obj, 0);
+    (*iter)->release();
 }
 
 QT_END_NAMESPACE

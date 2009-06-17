@@ -623,14 +623,14 @@ int QResourceRoot::findNode(const QString &_path, const QLocale &locale) const
         QString root = mappingRoot();
         if(!root.isEmpty()) {
             if(root == path) {
-                path = QLatin1String("/");
+                path = QLatin1Char('/');
             } else {
-                if(!root.endsWith(QLatin1String("/")))
-                    root += QLatin1String("/");
+                if(!root.endsWith(QLatin1Char('/')))
+                    root += QLatin1Char('/');
                 if(path.size() >= root.size() && path.startsWith(root))
                     path = path.mid(root.length()-1);
                 if(path.isEmpty())
-                    path = QLatin1String("/");
+                    path = QLatin1Char('/');
             }
         }
     }

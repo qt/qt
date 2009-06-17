@@ -76,8 +76,10 @@ class QTextCursor;
 class QTextDocument;
 class QTextLength;
 
+#ifndef QT_NO_DATASTREAM
 Q_GUI_EXPORT QDataStream &operator<<(QDataStream &, const QTextLength &);
 Q_GUI_EXPORT QDataStream &operator>>(QDataStream &, QTextLength &);
+#endif
 
 class Q_GUI_EXPORT QTextLength
 {
@@ -119,8 +121,10 @@ private:
 inline QTextLength::QTextLength(Type atype, qreal avalue)
     : lengthType(atype), fixedValueOrPercentage(avalue) {}
 
+#ifndef QT_NO_DATASTREAM
 Q_GUI_EXPORT QDataStream &operator<<(QDataStream &, const QTextFormat &);
 Q_GUI_EXPORT QDataStream &operator>>(QDataStream &, QTextFormat &);
+#endif
 
 class Q_GUI_EXPORT QTextFormat
 {

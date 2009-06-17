@@ -51,8 +51,8 @@ QT_BEGIN_NAMESPACE
 QSimpleCanvasItemData::QSimpleCanvasItemData()
 : buttons(Qt::NoButton), flip(QSimpleCanvasItem::NoFlip), 
   dirty(false), transformValid(true), doNotPaint(false), 
-  doNotPaintChildren(false), x(0), y(0), z(0), visible(1),
-  transformUser(0), transformVersion(0), activeOpacity(1)
+  doNotPaintChildren(false), x(0), y(0), z(0), 
+  visible(1), transformUser(0), transformVersion(0), activeOpacity(1)
 {
 }
 
@@ -1300,6 +1300,9 @@ void QSimpleCanvasItem::setOptions(Options options, bool set)
         d->options &= ~IsFocusRealm;
     }
 
+    if (d->graphicsItem)
+        d->graphicsItem->setFlag(QGraphicsItem::ItemHasNoContents, !(d->options & HasContents));
+
     if ((old & MouseFilter) != (d->options & MouseFilter)) {
         if (d->graphicsItem) {
             if (d->options & MouseFilter)
@@ -1487,6 +1490,7 @@ void QSimpleCanvasItemPrivate::convertToGraphicsItem(QGraphicsItem *parent)
     Q_Q(QSimpleCanvasItem);
     Q_ASSERT(!graphicsItem);
     graphicsItem = new QSimpleGraphicsItem(q);
+    graphicsItem->setFlag(QGraphicsItem::ItemHasNoContents, !(q->options() & QSimpleCanvasItem::HasContents));
     if (parent)
         graphicsItem->setParentItem(parent);
 
@@ -1852,12 +1856,12 @@ QSimpleCanvasItem *QSimpleCanvasItem::findNextFocus(QSimpleCanvasItem *item)
     return 0;
 }
 
-QImage QSimpleCanvasItem::string(const QString &str, const QColor &c, const QFont &f)
+QPixmap QSimpleCanvasItem::string(const QString &str, const QColor &c, const QFont &f)
 {
     QFontMetrics fm(f);
     QSize size(fm.width(str), fm.height()*(str.count(QLatin1Char('\n'))+1)); //fm.boundingRect(str).size();
-    QImage img(size, QImage::Format_ARGB32_Premultiplied);
-    img.fill(0);
+    QPixmap img(size);
+    img.fill(Qt::transparent);
     QPainter p(&img);
     p.setPen(c);
     p.setFont(f);

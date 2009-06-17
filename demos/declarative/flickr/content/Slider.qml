@@ -9,14 +9,21 @@ Item {
     property int xMax: Slider.width - Handle.width - 4
 
     Rect {
-        id: Container; anchors.fill: parent; gradientColor: "#66000000";
-        pen.color: "white"; pen.width: 0;  color: "#66343434"; radius: 8
+        id: Container; anchors.fill: parent
+        pen.color: "white"; pen.width: 0; radius: 8
+        gradient: Gradient {
+            GradientStop { position: 0.0; color: "#66343434" }
+            GradientStop { position: 1.0; color: "#66000000" }
+        }   
     }
 
     Rect {
         id: Handle
-        x: Slider.width / 2 - Handle.width / 2; y: 2; width: 30; height: Slider.height-4
-        color: "lightgray"; gradientColor: "gray"; radius: 6
+        x: Slider.width / 2 - Handle.width / 2; y: 2; width: 30; height: Slider.height-4; radius: 6
+        gradient: Gradient {
+            GradientStop { position: 0.0; color: "lightgray" }
+            GradientStop { position: 1.0; color: "gray" }
+        }   
 
         MouseRegion {
             anchors.fill: parent; drag.target: parent

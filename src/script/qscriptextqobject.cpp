@@ -1667,12 +1667,27 @@ void QScript::QObjectConnectionManager::execute(int slotIndex, void **argv)
         activation_data->m_members[i].object(nameId, i,
                                              QScriptValue::Undeletable
                                              | QScriptValue::SkipInEnumeration);
+        QScriptValueImpl actual;
         if (i < argc) {
-            int argType = QMetaType::type(parameterTypes.at(i));
-            activation_data->m_values[i] = eng->create(argType, argv[i + 1]);
+            void *arg = argv[i + 1];
+            QByteArray typeName = parameterTypes.at(i);
+            int argType = QMetaType::type(typeName);
+            if (!argType) {
+                if (typeName == "QVariant") {
+                    actual = eng->valueFromVariant(*reinterpret_cast<QVariant*>(arg));
+                } else {
+                    qWarning("QScriptEngine: Unable to handle unregistered datatype '%s' "
+                             "when invoking handler of signal %s::%s",
+                             typeName.constData(), meta->className(), method.signature());
+                    actual = eng->undefinedValue();
+                }
+            } else {
+                actual = eng->create(argType, arg);
+            }
         } else {
-            activation_data->m_values[i] = eng->undefinedValue();
+            actual = eng->undefinedValue();
         }
+        activation_data->m_values[i] = actual;
     }
 
     QScriptValueImpl senderObject;
@@ -1882,8 +1897,6 @@ void QScript::QtFunction::execute(QScriptContextPrivate *context)
 #endif
         return;
     }
-
-    QScriptValueImpl result = eng_p->undefinedValue();
 
     const QMetaObject *meta = qobj->metaObject();
 

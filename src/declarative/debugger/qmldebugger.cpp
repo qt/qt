@@ -61,11 +61,10 @@
 #include <QtDeclarative/qmlexpression.h>
 #include <private/qmlpropertyview_p.h>
 #include <private/qmlwatches_p.h>
-#include <private/qmlcanvasdebugger_p.h>
 
 QmlDebugger::QmlDebugger(QWidget *parent)
 : QWidget(parent), m_tree(0), m_warnings(0), m_watchTable(0), m_watches(0), 
-  m_canvas(0), m_properties(0), m_text(0), m_highlightedItem(0)
+  m_properties(0), m_text(0), m_highlightedItem(0)
 {
     QHBoxLayout *layout = new QHBoxLayout;
     setLayout(layout);
@@ -110,11 +109,6 @@ QmlDebugger::QmlDebugger(QWidget *parent)
                      this, SLOT(highlightObject(quint32)));
     tabs->addTab(m_properties, tr("Properties"));
     tabs->setCurrentWidget(m_properties);
-
-    m_canvas = new QmlCanvasDebugger(m_watches, this);
-    QObject::connect(m_canvas, SIGNAL(objectClicked(quint32)), 
-                     this, SLOT(highlightObject(quint32)));
-    tabs->addTab(m_canvas, tr("Canvas"));
 
     splitter->addWidget(tabs);
     splitter->setStretchFactor(1, 2);
@@ -288,7 +282,7 @@ bool QmlDebugger::makeItem(QObject *obj, QmlDebuggerItem *item)
                 if(!toolTipString.isEmpty()) 
                     toolTipString.prepend(QLatin1Char('\n'));
                 toolTipString.prepend(tr("Root type: ") + text);
-                text = p->typeName;
+                text = QString::fromAscii(p->typeName);
             }
 
             if(!toolTipString.isEmpty())
@@ -339,7 +333,7 @@ bool operator<(const QPair<quint32, QPair<int, QString> > &lhs,
 
 void QmlDebugger::setCanvas(QSimpleCanvas *c)
 {
-    m_canvas->setCanvas(c);
+    Q_UNUSED(c);
 }
 
 void QmlDebugger::setDebugObject(QObject *obj)

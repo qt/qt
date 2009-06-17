@@ -1131,9 +1131,9 @@ void QGridLayoutEngine::dump(int indent) const
         QString message = QLatin1String("[ ");
         for (int column = 0; column < internalGridColumnCount(); ++column) {
             message += QString::number(q_items.indexOf(itemAt(row, column))).rightJustified(3);
-            message += QLatin1String(" ");
+            message += QLatin1Char(' ');
         }
-        message += QLatin1String("]");
+        message += QLatin1Char(']');
         qDebug("%*s  %s", indent, "", qPrintable(message));
     }
 
@@ -1157,7 +1157,7 @@ void QGridLayoutEngine::dump(int indent) const
             message += QLatin1String((message.isEmpty() ? "[" : ", "));
             message += QString::number(cellPos->at(i));
         }
-        message += QLatin1String("]");
+        message += QLatin1Char(']');
         qDebug("%*s %s %s", indent, "", (pass == 0 ? "rows:" : "columns:"), qPrintable(message));
         cellPos = &q_xx;
     }

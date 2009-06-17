@@ -55,7 +55,7 @@ static const int FlickThreshold = 5;
 
 QT_BEGIN_NAMESPACE
 
-QML_DEFINE_TYPE(QFxPathView,PathView);
+QML_DEFINE_TYPE(QFxPathView,PathView)
 
 class QFxPathViewAttached : public QObject
 {

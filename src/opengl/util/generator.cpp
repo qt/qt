@@ -48,6 +48,7 @@
 #include <QTextStream>
 
 #include <QtDebug>
+#include <cstdlib>
 
 QT_BEGIN_NAMESPACE
 
@@ -116,7 +117,7 @@ QList<QStringPair> readConf(const QString &confFile)
         lineStream >> enumerator;
 
         if (lineStream.atEnd()) {
-            qDebug() << "Error in file" << confFile << "(" << enumerator << ")";
+            qDebug() << "Error in file" << confFile << '(' << enumerator << ')';
             exit(0);
         }
 

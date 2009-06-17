@@ -280,10 +280,9 @@ public:
             if (listItem->index == -1) {
                 ++skip;
             } else if (listItem->index != visibleIndex + i - skip) {
-                qDebug() << "index" << visibleIndex << i << listItem->index;
                 for (int j = 0; j < visibleItems.count(); j++)
                     qDebug() << " index" << j << "item index" << visibleItems.at(j)->index;
-                abort();
+                qFatal("index %d %d %d", visibleIndex, i, listItem->index);
             }
         }
     }
@@ -1421,7 +1420,7 @@ QObject *QFxGridView::qmlAttachedProperties(QObject *obj)
     return QFxGridViewAttached::properties(obj);
 }
 
-QML_DEFINE_TYPE(QFxGridView,GridView);
+QML_DEFINE_TYPE(QFxGridView,GridView)
 
 QT_END_NAMESPACE
 

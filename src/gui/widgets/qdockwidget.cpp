@@ -69,6 +69,9 @@ extern QString qt_setWindowTitle_helperHelper(const QString&, const QWidget*); /
 
 extern QHash<QByteArray, QFont> *qt_app_fonts_hash(); // qapplication.cpp
 
+static inline bool hasFeature(const QDockWidgetPrivate *priv, QDockWidget::DockWidgetFeature feature)
+{ return (priv->features & feature) == feature; }
+
 static inline bool hasFeature(const QDockWidget *dockwidget, QDockWidget::DockWidgetFeature feature)
 { return (dockwidget->features() & feature) == feature; }
 
@@ -221,7 +224,8 @@ void QDockWidgetLayout::addItem(QLayoutItem*)
 QLayoutItem *QDockWidgetLayout::itemAt(int index) const
 {
     int cnt = 0;
-    foreach (QLayoutItem *item, item_list) {
+    for (int i = 0; i < item_list.count(); ++i) {
+        QLayoutItem *item = item_list.at(i);
         if (item == 0)
             continue;
         if (index == cnt++)
@@ -250,8 +254,8 @@ QLayoutItem *QDockWidgetLayout::takeAt(int index)
 int QDockWidgetLayout::count() const
 {
     int result = 0;
-    foreach (QLayoutItem *item, item_list) {
-        if (item != 0)
+    for (int i = 0; i < item_list.count(); ++i) {
+        if (item_list.at(i))
             ++result;
     }
     return result;
@@ -646,25 +650,25 @@ void QDockWidgetPrivate::_q_toggleView(bool b)
 void QDockWidgetPrivate::updateButtons()
 {
     Q_Q(QDockWidget);
-    QDockWidgetLayout *layout = qobject_cast<QDockWidgetLayout*>(q->layout());
+    QDockWidgetLayout *dwLayout = qobject_cast<QDockWidgetLayout*>(layout);
 
     QStyleOptionDockWidget opt;
     q->initStyleOption(&opt);
 
-    bool customTitleBar = layout->widgetForRole(QDockWidgetLayout::TitleBar) != 0;
-    bool nativeDeco = layout->nativeWindowDeco();
+    bool customTitleBar = dwLayout->widgetForRole(QDockWidgetLayout::TitleBar) != 0;
+    bool nativeDeco = dwLayout->nativeWindowDeco();
     bool hideButtons = nativeDeco || customTitleBar;
 
-    bool canClose = hasFeature(q, QDockWidget::DockWidgetClosable);
-    bool canFloat = hasFeature(q, QDockWidget::DockWidgetFloatable);
+    bool canClose = hasFeature(this, QDockWidget::DockWidgetClosable);
+    bool canFloat = hasFeature(this, QDockWidget::DockWidgetFloatable);
 
     QAbstractButton *button
-        = qobject_cast<QAbstractButton*>(layout->widgetForRole(QDockWidgetLayout::FloatButton));
+        = qobject_cast<QAbstractButton*>(dwLayout->widgetForRole(QDockWidgetLayout::FloatButton));
     button->setIcon(q->style()->standardIcon(QStyle::SP_TitleBarNormalButton, &opt, q));
     button->setVisible(canFloat && !hideButtons);
 
     button
-        = qobject_cast <QAbstractButton*>(layout->widgetForRole(QDockWidgetLayout::CloseButton));
+        = qobject_cast <QAbstractButton*>(dwLayout->widgetForRole(QDockWidgetLayout::CloseButton));
     button->setIcon(q->style()->standardIcon(QStyle::SP_TitleBarCloseButton, &opt, q));
     button->setVisible(canClose && !hideButtons);
 
@@ -687,7 +691,7 @@ void QDockWidgetPrivate::initDrag(const QPoint &pos, bool nca)
     if (state != 0)
         return;
 
-    QMainWindow *win = qobject_cast<QMainWindow*>(q->parentWidget());
+    QMainWindow *win = qobject_cast<QMainWindow*>(parent);
     Q_ASSERT(win != 0);
     QMainWindowLayout *layout = qobject_cast<QMainWindowLayout*>(win->layout());
     Q_ASSERT(layout != 0);
@@ -740,15 +744,15 @@ void QDockWidgetPrivate::endDrag(bool abort)
     q->releaseMouse();
 
     if (state->dragging) {
-        QMainWindowLayout *layout =
+        QMainWindowLayout *mwLayout =
             qobject_cast<QMainWindowLayout *>(q->parentWidget()->layout());
-        Q_ASSERT(layout != 0);
+        Q_ASSERT(mwLayout != 0);
 
-        if (abort || !layout->plug(state->widgetItem)) {
-            if (hasFeature(q, QDockWidget::DockWidgetFloatable)) {
+        if (abort || !mwLayout->plug(state->widgetItem)) {
+            if (hasFeature(this, QDockWidget::DockWidgetFloatable)) {
                 if (state->ownWidgetItem)
                     delete state->widgetItem;
-                layout->restore();
+                mwLayout->restore();
 #ifdef Q_WS_X11
                 // get rid of the X11BypassWindowManager window flag and activate the resizer
                 Qt::WindowFlags flags = q->windowFlags();
@@ -758,14 +762,14 @@ void QDockWidgetPrivate::endDrag(bool abort)
                 q->show();
 #else
                 QDockWidgetLayout *myLayout
-                    = qobject_cast<QDockWidgetLayout*>(q->layout());
+                    = qobject_cast<QDockWidgetLayout*>(layout);
                 resizer->setActive(QWidgetResizeHandler::Resize,
                                     myLayout->widgetForRole(QDockWidgetLayout::TitleBar) != 0);
 #endif
                 undockedGeometry = q->geometry();
                 q->activateWindow();
             } else {
-                layout->revert(state->widgetItem);
+                mwLayout->revert(state->widgetItem);
             }
         }
     }
@@ -777,7 +781,7 @@ bool QDockWidgetPrivate::isAnimating() const
 {
     Q_Q(const QDockWidget);
 
-    QMainWindow *mainWin = qobject_cast<QMainWindow*>(q->parentWidget());
+    QMainWindow *mainWin = qobject_cast<QMainWindow*>(parent);
     if (mainWin == 0)
         return false;
 
@@ -794,18 +798,18 @@ bool QDockWidgetPrivate::mousePressEvent(QMouseEvent *event)
 #if !defined(QT_NO_MAINWINDOW)
     Q_Q(QDockWidget);
 
-    QDockWidgetLayout *layout
-        = qobject_cast<QDockWidgetLayout*>(q->layout());
+    QDockWidgetLayout *dwLayout
+        = qobject_cast<QDockWidgetLayout*>(layout);
 
-    if (!layout->nativeWindowDeco()) {
-        QRect titleArea = layout->titleArea();
+    if (!dwLayout->nativeWindowDeco()) {
+        QRect titleArea = dwLayout->titleArea();
 
         if (event->button() != Qt::LeftButton ||
             !titleArea.contains(event->pos()) ||
             // check if the tool window is movable... do nothing if it
             // is not (but allow moving if the window is floating)
-            (!hasFeature(q, QDockWidget::DockWidgetMovable) && !q->isFloating()) ||
-            qobject_cast<QMainWindow*>(q->parentWidget()) == 0 ||
+            (!hasFeature(this, QDockWidget::DockWidgetMovable) && !q->isFloating()) ||
+            qobject_cast<QMainWindow*>(parent) == 0 ||
             isAnimating() || state != 0) {
             return false;
         }
@@ -813,7 +817,7 @@ bool QDockWidgetPrivate::mousePressEvent(QMouseEvent *event)
         initDrag(event->pos(), false);
 
         if (state)
-            state->ctrlDrag = hasFeature(q, QDockWidget::DockWidgetFloatable) && event->modifiers() & Qt::ControlModifier;
+            state->ctrlDrag = hasFeature(this, QDockWidget::DockWidgetFloatable) && event->modifiers() & Qt::ControlModifier;
 
         return true;
     }
@@ -824,15 +828,13 @@ bool QDockWidgetPrivate::mousePressEvent(QMouseEvent *event)
 
 bool QDockWidgetPrivate::mouseDoubleClickEvent(QMouseEvent *event)
 {
-    Q_Q(QDockWidget);
+    QDockWidgetLayout *dwLayout = qobject_cast<QDockWidgetLayout*>(layout);
 
-    QDockWidgetLayout *layout = qobject_cast<QDockWidgetLayout*>(q->layout());
-
-    if (!layout->nativeWindowDeco()) {
-        QRect titleArea = layout->titleArea();
+    if (!dwLayout->nativeWindowDeco()) {
+        QRect titleArea = dwLayout->titleArea();
 
         if (event->button() == Qt::LeftButton && titleArea.contains(event->pos()) &&
-            hasFeature(q, QDockWidget::DockWidgetFloatable)) {
+            hasFeature(this, QDockWidget::DockWidgetFloatable)) {
             _q_toggleTopLevel();
             return true;
         }
@@ -850,7 +852,7 @@ bool QDockWidgetPrivate::mouseMoveEvent(QMouseEvent *event)
         return ret;
 
     QDockWidgetLayout *dwlayout
-        = qobject_cast<QDockWidgetLayout*>(q->layout());
+        = qobject_cast<QDockWidgetLayout*>(layout);
     QMainWindowLayout *mwlayout
         = qobject_cast<QMainWindowLayout*>(q->parentWidget()->layout());
     if (!dwlayout->nativeWindowDeco()) {
@@ -923,7 +925,7 @@ void QDockWidgetPrivate::nonClientAreaMouseEvent(QMouseEvent *event)
                 break;
             if (state != 0)
                 break;
-            if (qobject_cast<QMainWindow*>(q->parentWidget()) == 0)
+            if (qobject_cast<QMainWindow*>(parent) == 0)
                 break;
             if (isAnimating())
                 break;
@@ -996,9 +998,9 @@ void QDockWidgetPrivate::unplug(const QRect &rect)
     Q_Q(QDockWidget);
     QRect r = rect;
     r.moveTopLeft(q->mapToGlobal(QPoint(0, 0)));
-    QDockWidgetLayout *layout = qobject_cast<QDockWidgetLayout*>(q->layout());
-    if (layout->nativeWindowDeco(true))
-        r.adjust(0, layout->titleHeight(), 0, 0);
+    QDockWidgetLayout *dwLayout = qobject_cast<QDockWidgetLayout*>(layout);
+    if (dwLayout->nativeWindowDeco(true))
+        r.adjust(0, dwLayout->titleHeight(), 0, 0);
     setWindowState(true, true, r);
 }
 
@@ -1019,12 +1021,12 @@ void QDockWidgetPrivate::setWindowState(bool floating, bool unplug, const QRect 
 
     Qt::WindowFlags flags = floating ? Qt::Tool : Qt::Widget;
 
-    QDockWidgetLayout *layout = qobject_cast<QDockWidgetLayout*>(q->layout());
-    const bool nativeDeco = layout->nativeWindowDeco(floating);
+    QDockWidgetLayout *dwLayout = qobject_cast<QDockWidgetLayout*>(layout);
+    const bool nativeDeco = dwLayout->nativeWindowDeco(floating);
 
     if (nativeDeco) {
         flags |= Qt::CustomizeWindowHint | Qt::WindowTitleHint;
-        if (hasFeature(q, QDockWidget::DockWidgetClosable))
+        if (hasFeature(this, QDockWidget::DockWidgetClosable))
             flags |= Qt::WindowCloseButtonHint;
     } else {
         flags |= Qt::FramelessWindowHint;
@@ -1051,7 +1053,7 @@ void QDockWidgetPrivate::setWindowState(bool floating, bool unplug, const QRect 
 
     if (floating != wasFloating) {
         emit q->topLevelChanged(floating);
-        if (!floating && q->parentWidget()) {
+        if (!floating && parent) {
             QMainWindowLayout *mwlayout = qobject_cast<QMainWindowLayout *>(q->parentWidget()->layout());
             if (mwlayout)
                 emit q->dockLocationChanged(mwlayout->dockWidgetArea(q));

@@ -594,7 +594,7 @@ static inline QDebug operator<<(QDebug debug, const QNetworkAddressEntry &entry)
         debug.nospace() << ", netmask = " << entry.netmask();
     if (!entry.broadcast().isNull())
         debug.nospace() << ", broadcast = " << entry.broadcast();
-    debug.nospace() << ")";
+    debug.nospace() << ')';
     return debug.space();
 }
 

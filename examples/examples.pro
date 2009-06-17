@@ -1,5 +1,6 @@
 TEMPLATE      = subdirs
 SUBDIRS       = \
+                animation \
                 desktop \
                 dialogs \
                 draganddrop \
@@ -26,7 +27,6 @@ SUBDIRS       = \
 
 contains(QT_CONFIG, phonon):!static: SUBDIRS += phonon
 contains(QT_CONFIG, webkit): SUBDIRS += webkit
-contains(QT_CONFIG, animation): SUBDIRS += animation
 embedded:SUBDIRS += qws
 !wince*: {
 	!contains(QT_EDITION, Console):contains(QT_BUILD_PARTS, tools):SUBDIRS += designer

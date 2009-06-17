@@ -42,8 +42,8 @@
 /*!
     \class QPropertyAnimation
     \brief The QPropertyAnimation class animates Qt properties
-    \ingroup group_animation
-    \preliminary
+    \since 4.6
+    \ingroup animation
 
     QPropertyAnimation interpolates over \l{Qt's Property System}{Qt
     properties}. As property values are stored in \l{QVariant}s, the
@@ -87,40 +87,37 @@
     \sa QVariantAnimation, QAnimationGroup, {The Animation Framework}
 */
 
-#ifndef QT_NO_ANIMATION
-
 #include "qpropertyanimation.h"
 #include "qanimationgroup.h"
-#include <QtCore/qdebug.h>
-
 #include "qpropertyanimation_p.h"
 
 #include <QtCore/qmath.h>
 #include <QtCore/qmutex.h>
+#include <private/qmutexpool_p.h>
+
+#ifndef QT_NO_ANIMATION
 
 QT_BEGIN_NAMESPACE
 
 typedef QPair<QObject *, QByteArray> QPropertyAnimationPair;
 typedef QHash<QPropertyAnimationPair, QPropertyAnimation*> QPropertyAnimationHash;
-Q_GLOBAL_STATIC(QPropertyAnimationHash, _q_runningAnimations);
-Q_GLOBAL_STATIC_WITH_ARGS(QMutex, guardHashLock, (QMutex::Recursive) )
+Q_GLOBAL_STATIC(QPropertyAnimationHash, _q_runningAnimations)
 
 void QPropertyAnimationPrivate::updateMetaProperty()
 {
     if (!target || propertyName.isEmpty())
         return;
 
-    if (hasMetaProperty == 0 && !property.isValid()) {
+    if (!hasMetaProperty && !property.isValid()) {
         const QMetaObject *mo = target->metaObject();
         propertyIndex = mo->indexOfProperty(propertyName);
         if (propertyIndex != -1) {
-            hasMetaProperty = 1;
+            hasMetaProperty = true;
             property = mo->property(propertyIndex);
             propertyType = property.userType();
         } else {
             if (!target->dynamicPropertyNames().contains(propertyName))
                 qWarning("QPropertyAnimation: you're trying to animate a non-existing property %s of your QObject", propertyName.constData());
-            hasMetaProperty = 2;
         }
     }
 
@@ -133,7 +130,7 @@ void QPropertyAnimationPrivate::updateProperty(const QVariant &newValue)
     if (!target || state == QAbstractAnimation::Stopped)
         return;
 
-    if (hasMetaProperty == 1) {
+    if (hasMetaProperty) {
         if (newValue.userType() == propertyType) {
           //no conversion is needed, we directly call the QObject::qt_metacall
           void *data = const_cast<void*>(newValue.constData());
@@ -144,6 +141,14 @@ void QPropertyAnimationPrivate::updateProperty(const QVariant &newValue)
     } else {
         target->setProperty(propertyName.constData(), newValue);
     }
+}
+
+void QPropertyAnimationPrivate::_q_targetDestroyed()
+{
+    Q_Q(QPropertyAnimation);
+    //we stop here so that this animation is removed from the global hash
+    q->stop();
+    target = 0;
 }
 
 /*!
@@ -188,14 +193,27 @@ QObject *QPropertyAnimation::targetObject() const
     Q_D(const QPropertyAnimation);
     return d->target;
 }
+
 void QPropertyAnimation::setTargetObject(QObject *target)
 {
     Q_D(QPropertyAnimation);
     if (d->target == target)
         return;
 
+    if (d->state != QAbstractAnimation::Stopped) {
+        qWarning("QPropertyAnimation::setTargetObject: you can't change the target of a running animation");
+        return;
+    }
+
+    //we need to get notified when the target is destroyed
+    if (d->target)
+        disconnect(d->target, SIGNAL(destroyed()), this, SLOT(_q_targetDestroyed()));
+
+    if (target)
+        connect(target, SIGNAL(destroyed()), SLOT(_q_targetDestroyed()));
+
     d->target = target;
-    d->hasMetaProperty = 0;
+    d->hasMetaProperty = false;
     d->updateMetaProperty();
 }
 
@@ -211,11 +229,17 @@ QByteArray QPropertyAnimation::propertyName() const
     Q_D(const QPropertyAnimation);
     return d->propertyName;
 }
+
 void QPropertyAnimation::setPropertyName(const QByteArray &propertyName)
 {
     Q_D(QPropertyAnimation);
+    if (d->state != QAbstractAnimation::Stopped) {
+        qWarning("QPropertyAnimation::setPropertyName: you can't change the property name of a running animation");
+        return;
+    }
+
     d->propertyName = propertyName;
-    d->hasMetaProperty = 0;
+    d->hasMetaProperty = false;
     d->updateMetaProperty();
 }
 
@@ -258,27 +282,32 @@ void QPropertyAnimation::updateState(QAbstractAnimation::State oldState,
     }
 
     QVariantAnimation::updateState(oldState, newState);
-    QMutexLocker locker(guardHashLock());
-    QPropertyAnimationHash * hash = _q_runningAnimations();
-    QPropertyAnimationPair key(d->target, d->propertyName);
-    if (newState == Running) {
-        d->updateMetaProperty();
-        QPropertyAnimation *oldAnim = hash->value(key, 0);
-        if (oldAnim) {
-            // try to stop the top level group
-            QAbstractAnimation *current = oldAnim;
-            while (current->group() && current->state() != Stopped)
-                current = current->group();
-            current->stop();
-        }
-        hash->insert(key, this);
 
-        // update the default start value
-        if (oldState == Stopped) {
-            d->setDefaultStartValue(d->target->property(d->propertyName.constData()));
+    QPropertyAnimation *animToStop = 0;
+    {
+        QPropertyAnimationHash * hash = _q_runningAnimations();
+        QMutexLocker locker(QMutexPool::globalInstanceGet(hash));
+        QPropertyAnimationPair key(d->target, d->propertyName);
+        if (newState == Running) {
+            d->updateMetaProperty();
+            animToStop = hash->value(key, 0);
+            hash->insert(key, this);
+            // update the default start value
+            if (oldState == Stopped) {
+                d->setDefaultStartValue(d->target->property(d->propertyName.constData()));
+            }
+        } else if (hash->value(key) == this) {
+            hash->remove(key);
         }
-    } else if (hash->value(key) == this) {
-        hash->remove(key);
+    }
+
+    //we need to do that after the mutex was unlocked
+    if (animToStop) {
+        // try to stop the top level group
+        QAbstractAnimation *current = animToStop;
+        while (current->group() && current->state() != Stopped)
+            current = current->group();
+        current->stop();
     }
 }
 

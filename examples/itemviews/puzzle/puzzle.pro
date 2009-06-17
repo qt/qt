@@ -12,3 +12,8 @@ target.path = $$[QT_INSTALL_EXAMPLES]/itemviews/puzzle
 sources.files = $$SOURCES $$HEADERS $$RESOURCES *.pro *.jpg
 sources.path = $$[QT_INSTALL_EXAMPLES]/itemviews/puzzle
 INSTALLS += target sources
+
+wince* {
+   DEPLOYMENT_PLUGIN += qjpeg qgif qtiff
+}
+

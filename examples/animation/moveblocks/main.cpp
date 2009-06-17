@@ -41,16 +41,6 @@
 
 #include <QtCore>
 #include <QtGui>
-#if defined(QT_EXPERIMENTAL_SOLUTION)
-#include "qstatemachine.h"
-#include "qstate.h"
-#include "qabstracttransition.h"
-#include "qpropertyanimation.h"
-#include "qsequentialanimationgroup.h"
-#include "qparallelanimationgroup.h"
-#include "qgraphicswidget.h"
-#endif
-#include <time.h>
 
 class StateSwitchEvent: public QEvent
 {
@@ -297,7 +287,7 @@ int main(int argc, char **argv)
     window.resize(300, 300);
     window.show();
 
-    qsrand(time(0));
+    qsrand(QTime(0,0,0).secsTo(QTime::currentTime()));
 
     return app.exec();
 }

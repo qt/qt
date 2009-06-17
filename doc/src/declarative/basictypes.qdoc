@@ -82,6 +82,26 @@
     \raw HTML
     \endraw
 
+    \target basicqmlurl
+    \raw HTML
+    <br>
+    <table>
+    <tr><td><div class="qmltype">url</div></td></tr>
+    </table>
+    \endraw
+
+    URLs are resource locators, such as file names. They can be either absolute, like "http://qtsoftware.com",
+    or relative, like "pics/logo.png". Relative URLs are resolved relative to the URL of the component where
+    the URL is converted from a JavaScript string expression to a url property value.
+
+    Setting a url looks like this:
+    \code
+    Image { source: "pics/logo.png" }
+    \endcode
+
+    \raw HTML
+    \endraw
+
     \target basicqmlcolor
     \raw HTML
     <br>

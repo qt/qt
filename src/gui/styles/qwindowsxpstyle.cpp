@@ -261,7 +261,7 @@ void QWindowsXPStylePrivate::cleanup(bool force)
     use_xp = false;
     cleanupHandleMap();
     if (limboWidget) {
-        if (qApp->closingDown())
+        if (QApplication::closingDown())
             delete limboWidget;
         else
             limboWidget->deleteLater();
@@ -2275,7 +2275,7 @@ void QWindowsXPStyle::drawControl(ControlElement element, const QStyleOption *op
 
             if (isFloating) {
                 titleRect.adjust(0, -fw, 0, 0);
-                if (widget != 0 && widget->windowIcon().cacheKey() != qApp->windowIcon().cacheKey())
+                if (widget != 0 && widget->windowIcon().cacheKey() != QApplication::windowIcon().cacheKey())
                     titleRect.adjust(titleRect.height() + mw, 0, 0, 0);
             } else {
                 titleRect.adjust(mw, 0, 0, 0);
@@ -2322,7 +2322,7 @@ void QWindowsXPStyle::drawControl(ControlElement element, const QStyleOption *op
                 // Figure out maximal button space on title bar
 
                 QIcon ico = widget->windowIcon();
-                bool hasIcon = (ico.cacheKey() != qApp->windowIcon().cacheKey());
+                bool hasIcon = (ico.cacheKey() != QApplication::windowIcon().cacheKey());
                 if (hasIcon) {
                     QPixmap pxIco = ico.pixmap(titleHeight);
                     if (!verticalTitleBar && QApplication::layoutDirection() == Qt::RightToLeft)

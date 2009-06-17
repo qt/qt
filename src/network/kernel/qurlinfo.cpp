@@ -726,6 +726,6 @@ bool QUrlInfo::isValid() const
     return d != 0;
 }
 
-#endif // QT_NO_URLINFO
-
 QT_END_NAMESPACE
+
+#endif // QT_NO_URLINFO

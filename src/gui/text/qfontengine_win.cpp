@@ -1333,9 +1333,10 @@ bool QFontEngineWin::getSfntTableData(uint tag, uchar *buffer, uint *length) con
 #    define CLEARTYPE_QUALITY       5
 #endif
 
+extern bool qt_cleartype_enabled;
 
 QNativeImage *QFontEngineWin::drawGDIGlyph(HFONT font, glyph_t glyph, int margin,
-                                           const QTransform &t)
+                                           const QTransform &t, QImage::Format mask_format)
 {
     glyph_metrics_t gm = boundingBox(glyph);
 
@@ -1406,9 +1407,13 @@ QNativeImage *QFontEngineWin::drawGDIGlyph(HFONT font, glyph_t glyph, int margin
 #endif
 #endif
 
-    QNativeImage *ni = new QNativeImage(iw + 2 * margin + 2,
-                                        ih + 2 * margin + 2,
-                                        QNativeImage::systemFormat(), true);
+    QNativeImage *ni = new QNativeImage(iw + 2 * margin + 4,
+                                        ih + 2 * margin + 4,
+                                        QNativeImage::systemFormat(), !qt_cleartype_enabled);
+
+    /*If cleartype is enabled we use the standard system format even on Windows CE 
+      and not the special textbuffer format we have to use if cleartype is disabled*/
+
     ni->image.fill(0xffffffff);
 
     HDC hdc = ni->hdc;
@@ -1437,7 +1442,6 @@ QNativeImage *QFontEngineWin::drawGDIGlyph(HFONT font, glyph_t glyph, int margin
 }
 
 
-extern bool qt_cleartype_enabled;
 extern uint qt_pow_gamma[256];
 
 QImage QFontEngineWin::alphaMapForGlyph(glyph_t glyph, const QTransform &xform)
@@ -1448,8 +1452,12 @@ QImage QFontEngineWin::alphaMapForGlyph(glyph_t glyph, const QTransform &xform)
         lf.lfQuality = ANTIALIASED_QUALITY;
         font = CreateFontIndirectW(&lf);
     }
+    QImage::Format mask_format = QNativeImage::systemFormat();
+#ifndef Q_OS_WINCE
+    mask_format = QImage::Format_RGB32;
+#endif
 
-    QNativeImage *mask = drawGDIGlyph(font, glyph, 2, xform);
+    QNativeImage *mask = drawGDIGlyph(font, glyph, 0, xform, mask_format);
     if (mask == 0)
         return QImage();
 
@@ -1466,22 +1474,20 @@ QImage QFontEngineWin::alphaMapForGlyph(glyph_t glyph, const QTransform &xform)
     // Alpha channel of the ni.image pixels...
     for (int y=0; y<mask->height(); ++y) {
         uchar *dest = indexed.scanLine(y);
-        if (mask->systemFormat() == QImage::Format_RGB16) {
+        if (mask->image.format() == QImage::Format_RGB16) {
             const qint16 *src = (qint16 *) ((const QImage &) mask->image).scanLine(y);
-            for (int x=0; x<mask->width(); ++x) {
-#ifdef Q_OS_WINCE
+            for (int x=0; x<mask->width(); ++x)
                 dest[x] = 255 - qGray(src[x]);
-#else
-                dest[x] = 255 - (qt_pow_gamma[qGray(src[x])] * 255. / 2047.);
-#endif
-            }
         } else {
             const uint *src = (uint *) ((const QImage &) mask->image).scanLine(y);
             for (int x=0; x<mask->width(); ++x) {
 #ifdef Q_OS_WINCE
                 dest[x] = 255 - qGray(src[x]);
 #else
-                dest[x] = 255 - (qt_pow_gamma[qGray(src[x])] * 255. / 2047.);
+                if (QNativeImage::systemFormat() == QImage::Format_RGB16)
+                    dest[x] = 255 - qGray(src[x]);
+                else
+                    dest[x] = 255 - (qt_pow_gamma[qGray(src[x])] * 255. / 2047.);
 #endif
             }
         }
@@ -1507,7 +1513,7 @@ QImage QFontEngineWin::alphaRGBMapForGlyph(glyph_t glyph, int margin, const QTra
     SystemParametersInfo(SPI_GETFONTSMOOTHINGCONTRAST, 0, &contrast, 0);
     SystemParametersInfo(SPI_SETFONTSMOOTHINGCONTRAST, 0, (void *) 1000, 0);
 
-    QNativeImage *mask = drawGDIGlyph(font, glyph, margin, t);
+    QNativeImage *mask = drawGDIGlyph(font, glyph, margin, t, QImage::Format_RGB32);
     SystemParametersInfo(SPI_SETFONTSMOOTHINGCONTRAST, 0, (void *) contrast, 0);
 
     if (mask == 0)

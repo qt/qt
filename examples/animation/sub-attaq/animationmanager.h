@@ -44,7 +44,9 @@
 
 #include <QtCore/QObject>
 
+QT_BEGIN_NAMESPACE
 class QAbstractAnimation;
+QT_END_NAMESPACE
 
 class AnimationManager : public QObject
 {

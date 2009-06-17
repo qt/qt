@@ -1170,7 +1170,7 @@ void QLabelPrivate::updateShortcut()
         shortcutCursor.deleteChar(); // remove the ampersand
         shortcutCursor.movePosition(QTextCursor::NextCharacter, QTextCursor::KeepAnchor);
     } else {
-        if (!text.contains(QLatin1String("&")))
+        if (!text.contains(QLatin1Char('&')))
             return;
         hasShortcut = true;
         shortcutId = q->grabShortcut(QKeySequence::mnemonic(text));

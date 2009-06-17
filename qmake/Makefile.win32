@@ -41,7 +41,7 @@ CFLAGS	     = -c -Fo$@ \
 CXXFLAGS    = $(CFLAGS)
 LFLAGS	    =
 LIBS	    = ole32.lib advapi32.lib
-LINKQMAKE   = $(LINK) $(LFLAGS) -DEBUG -OUT:qmake.exe $(OBJS) $(QTOBJS) $(LIBS)
+LINKQMAKE   = $(LINK) $(LFLAGS) -OUT:qmake.exe $(OBJS) $(QTOBJS) $(LIBS)
 ADDCLEAN    = vc60.pdb vc70.pdb qmake.pdb qmake.ilk
 !ELSE
 

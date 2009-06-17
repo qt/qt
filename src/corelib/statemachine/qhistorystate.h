@@ -50,6 +50,8 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Core)
 
+#ifndef QT_NO_STATEMACHINE
+
 class QHistoryStatePrivate;
 class Q_CORE_EXPORT QHistoryState : public QAbstractState
 {
@@ -83,6 +85,8 @@ private:
     Q_DISABLE_COPY(QHistoryState)
     Q_DECLARE_PRIVATE(QHistoryState)
 };
+
+#endif //QT_NO_STATEMACHINE
 
 QT_END_NAMESPACE
 

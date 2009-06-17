@@ -57,18 +57,18 @@ class Q_DECLARATIVE_EXPORT QFxBlendedImage : public QFxItem
 {
     Q_OBJECT
 
-    Q_PROPERTY(QString primaryUrl READ primaryUrl WRITE setPrimaryUrl)
-    Q_PROPERTY(QString secondaryUrl READ secondaryUrl WRITE setSecondaryUrl)
+    Q_PROPERTY(QUrl primaryUrl READ primaryUrl WRITE setPrimaryUrl)
+    Q_PROPERTY(QUrl secondaryUrl READ secondaryUrl WRITE setSecondaryUrl)
     Q_PROPERTY(qreal blend READ blend WRITE setBlend)
     Q_PROPERTY(bool smooth READ smoothTransform WRITE setSmoothTransform)
 public:
     QFxBlendedImage(QFxItem *parent=0);
 
-    QString primaryUrl() const;
-    void setPrimaryUrl(const QString &);
+    QUrl primaryUrl() const;
+    void setPrimaryUrl(const QUrl &);
 
-    QString secondaryUrl() const;
-    void setSecondaryUrl(const QString &);
+    QUrl secondaryUrl() const;
+    void setSecondaryUrl(const QUrl &);
 
     qreal blend() const;
     void setBlend(qreal);
@@ -87,8 +87,6 @@ private Q_SLOTS:
     void secondaryLoaded();
 
 private:
-    QString primSrc;
-    QString secSrc;
     QUrl primUrl;
     QUrl secUrl;
 
@@ -99,10 +97,10 @@ private:
     GLTexture prim;
     GLTexture sec;
 #endif
-    QFxPixmap primPix;
-    QFxPixmap secPix;
+    QPixmap primPix;
+    QPixmap secPix;
 };
-QML_DECLARE_TYPE(QFxBlendedImage);
+QML_DECLARE_TYPE(QFxBlendedImage)
 
 
 QT_END_NAMESPACE

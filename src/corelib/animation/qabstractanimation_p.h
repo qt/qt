@@ -56,19 +56,13 @@
 #include <QtCore/qbasictimer.h>
 #include <QtCore/qdatetime.h>
 #include <QtCore/qtimer.h>
-#ifndef QT_EXPERIMENTAL_SOLUTION
 #include <private/qobject_p.h>
-#endif
 
 QT_BEGIN_NAMESPACE
 
 class QAnimationGroup;
 class QAbstractAnimation;
-#ifdef QT_EXPERIMENTAL_SOLUTION
-class QAbstractAnimationPrivate
-#else
 class QAbstractAnimationPrivate : public QObjectPrivate
-#endif
 {
 public:
     QAbstractAnimationPrivate()
@@ -101,30 +95,41 @@ public:
     int currentLoop;
 
     QAnimationGroup *group;
-#ifdef QT_EXPERIMENTAL_SOLUTION
-    QAbstractAnimation *q_ptr;
-#endif
 
 private:
     Q_DECLARE_PUBLIC(QAbstractAnimation)
 };
 
 
-class Q_CORE_EXPORT QUnifiedTimer : public QObject
+class QUnifiedTimer : public QObject
 {
 private:
     QUnifiedTimer();
 
 public:
-    static QUnifiedTimer *instance();
+    //XXX this is needed by dui
+    static Q_CORE_EXPORT QUnifiedTimer *instance();
 
     void registerAnimation(QAbstractAnimation *animation);
     void unregisterAnimation(QAbstractAnimation *animation);
 
-    void setTimingInterval(int interval);
-    void setConsistentTiming(bool consistent);
+    //defines the timing interval. Default is DEFAULT_TIMER_INTERVAL
+    void setTimingInterval(int interval)
+    {
+        timingInterval = interval;
+        if (animationTimer.isActive()) {
+            //we changed the timing interval
+            animationTimer.start(timingInterval, this);
+        }
+    }
 
-    int elapsedTime() const;
+    /*
+       this allows to have a consistent timer interval at each tick from the timer
+       not taking the real time that passed into account.
+    */
+    void setConsistentTiming(bool consistent) { consistentTiming = consistent; }
+
+    int elapsedTime() const { return lastTick; }
 
 protected:
     void timerEvent(QTimerEvent *);

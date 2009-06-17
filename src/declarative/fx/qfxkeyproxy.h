@@ -69,7 +69,7 @@ private:
     QFxKeyProxyPrivate *d;
 };
 
-QML_DECLARE_TYPE(QFxKeyProxy);
+QML_DECLARE_TYPE(QFxKeyProxy)
 
 QT_END_NAMESPACE
 

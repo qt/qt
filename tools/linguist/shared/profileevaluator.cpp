@@ -894,7 +894,7 @@ QStringList ProFileEvaluator::Private::qmakeFeaturePaths()
 {
     QStringList concat;
     {
-        const QString base_concat = QDir::separator() + QString(QLatin1String("features"));
+        const QString base_concat = QDir::separator() + QLatin1String("features");
         concat << base_concat + QDir::separator() + QLatin1String("mac");
         concat << base_concat + QDir::separator() + QLatin1String("macx");
         concat << base_concat + QDir::separator() + QLatin1String("unix");
@@ -903,7 +903,7 @@ QStringList ProFileEvaluator::Private::qmakeFeaturePaths()
         concat << base_concat + QDir::separator() + QLatin1String("qnx6");
         concat << base_concat;
     }
-    const QString mkspecs_concat = QDir::separator() + QString(QLatin1String("mkspecs"));
+    const QString mkspecs_concat = QDir::separator() + QLatin1String("mkspecs");
     QStringList feature_roots;
     QByteArray mkspec_path = qgetenv("QMAKEFEATURES");
     if (!mkspec_path.isNull())

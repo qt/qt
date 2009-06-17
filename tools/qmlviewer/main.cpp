@@ -50,28 +50,18 @@ void usage()
 int main(int argc, char ** argv)
 {
     //### default to using raster graphics backend for now
-    int newargc = argc + 2;
-    char **newargv;
     bool gsSpecified = false;
     for (int i = 0; i < argc; ++i) {
-        if (!qstrcmp(argv[i], "-graphicssystem")) {
+        QString arg = argv[i];
+        if (arg == "-graphicssystem") {
             gsSpecified = true;
-            newargc -= 2;
             break;
         }
     }
-    newargv = new char * [newargc];
-    for (int i = 0; i < argc; ++i) {
-        newargv[i] = argv[i];
-    }
-    if (!gsSpecified) {
-        char system[] = "-graphicssystem";
-        newargv[argc] = system;
-        char raster[] = "raster";
-        newargv[argc+1] = raster;
-    }
+    if (!gsSpecified)
+        QApplication::setGraphicsSystem("raster");
 
-    QApplication app(newargc, newargv);
+    QApplication app(argc, argv);
     app.setApplicationName("viewer");
 
     bool frameless = false;
@@ -90,8 +80,8 @@ int main(int argc, char ** argv)
     QString testDir;
     QString translationFile;
 
-    for (int i = 1; i < newargc; ++i) {
-        QString arg = newargv[i];
+    for (int i = 1; i < argc; ++i) {
+        QString arg = argv[i];
         if (arg == "-frameless") {
             frameless = true;
         } else if (arg == "-skin") {
@@ -116,23 +106,23 @@ int main(int argc, char ** argv)
             devkeys = true;
         } else if (arg == "-recordtest") {
             testMode = QFxTestEngine::RecordTest;
-            if(i + 1 >= newargc) 
+            if(i + 1 >= argc)
                 usage();
-            testDir = newargv[i + 1];
+            testDir = argv[i + 1];
             ++i;
         } else if (arg == "-runtest") {
             testMode = QFxTestEngine::PlaybackTest;
-            if(i + 1 >= newargc) 
+            if(i + 1 >= argc)
                 usage();
-            testDir = newargv[i + 1];
+            testDir = argv[i + 1];
             ++i;
         } else if (arg == QLatin1String("-v") || arg == QLatin1String("-version")) {
             fprintf(stderr, "Qt Declarative UI Viewer version %s\n", QT_VERSION_STR);
             return 0;
         } else if (arg == "-translation") {
-            if(i + 1 >= newargc)
+            if(i + 1 >= argc)
                 usage();
-            translationFile = newargv[i + 1];
+            translationFile = argv[i + 1];
             ++i;
         } else if (arg == "-L") {
             libraries << QString(argv[++i]);
@@ -164,11 +154,11 @@ int main(int argc, char ** argv)
         viewer.setDeviceKeys(true);
     viewer.setRecordDither(dither);
     viewer.setRecordArgs(recordargs);
+    viewer.show();
     if (!fileName.isEmpty())
         viewer.openQml(fileName);
     else
         viewer.open();
-    viewer.show();
 
     return app.exec();
 }

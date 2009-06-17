@@ -70,12 +70,6 @@ static inline bool qtransform_equals_no_translate(const QTransform &a, const QTr
     }
 }
 
-
-
-QFontEngineGlyphCache::~QFontEngineGlyphCache()
-{
-}
-
 // Harfbuzz helper functions
 
 static HB_Bool hb_stringToGlyphs(HB_Font font, const HB_UChar16 *string, hb_uint32 length, HB_Glyph *glyphs, hb_uint32 *numGlyphs, HB_Bool rightToLeft)
@@ -915,7 +909,7 @@ void QFontEngine::loadKerningPairs(QFixed scalingFactor)
 end:
     qSort(kerning_pairs);
 //    for (int i = 0; i < kerning_pairs.count(); ++i)
-//        qDebug() << "i" << i << "left_right" << hex << kerning_pairs.at(i).left_right;
+//        qDebug() << 'i' << i << "left_right" << hex << kerning_pairs.at(i).left_right;
 }
 
 #else
@@ -1644,12 +1638,6 @@ bool QFontEngineMulti::canRender(const QChar *string, int len)
     }
 
     return allExist;
-}
-
-QFontEngine *QFontEngineMulti::engine(int at) const
-{
-    Q_ASSERT(at < engines.size());
-    return engines.at(at);
 }
 
 QImage QFontEngineMulti::alphaMapForGlyph(glyph_t)

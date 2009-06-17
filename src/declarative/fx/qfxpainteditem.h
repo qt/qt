@@ -60,8 +60,8 @@ public:
     QFxPaintedItem(QFxItem *parent=0);
     ~QFxPaintedItem();
 
-    Q_PROPERTY(QSize contentsSize READ contentsSize WRITE setContentsSize);
-    Q_PROPERTY(bool smooth READ isSmooth WRITE setSmooth);
+    Q_PROPERTY(QSize contentsSize READ contentsSize WRITE setContentsSize)
+    Q_PROPERTY(bool smooth READ isSmooth WRITE setSmooth)
 
 #if defined(QFX_RENDER_QPAINTER)
     void paintContents(QPainter &painter);
@@ -88,7 +88,7 @@ private:
     Q_DISABLE_COPY(QFxPaintedItem)
     Q_DECLARE_PRIVATE(QFxPaintedItem)
 };
-QML_DECLARE_TYPE(QFxPaintedItem);
+QML_DECLARE_TYPE(QFxPaintedItem)
 
 
 QT_END_NAMESPACE

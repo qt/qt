@@ -45,12 +45,7 @@
 //Qt
 #include <QtGui/QGraphicsScene>
 #include <QtCore/QSet>
-
-#if defined(QT_EXPERIMENTAL_SOLUTION)
-# include "qstate.h"
-#else
-# include <QtCore/QState>
-#endif
+#include <QtCore/QState>
 
 
 class Boat;
@@ -59,7 +54,9 @@ class Torpedo;
 class Bomb;
 class PixmapItem;
 class ProgressItem;
+QT_BEGIN_NAMESPACE
 class QAction;
+QT_END_NAMESPACE
 
 class GraphicsScene : public QGraphicsScene
 {
@@ -93,7 +90,7 @@ public:
     void clearScene();
     QGraphicsPixmapItem *addWelcomeItem(const QPixmap &pm);
 
-Q_SIGNALS:
+signals:
     void subMarineDestroyed(int);
     void allSubMarineDestroyed(int);
 

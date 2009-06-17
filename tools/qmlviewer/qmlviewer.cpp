@@ -39,6 +39,7 @@
 #include <QAction>
 #include <QFileDialog>
 #include <QTimer>
+#include <QNetworkProxyFactory>
 
 class PreviewDeviceSkin : public DeviceSkin
 {
@@ -153,6 +154,8 @@ QmlViewer::QmlViewer(QFxTestEngine::TestMode testMode, const QString &testDir, Q
     if (mb)
         layout->addWidget(mb);
     layout->addWidget(canvas);
+
+    setupProxy();
 }
 
 QMenuBar *QmlViewer::menuBar() const
@@ -161,18 +164,6 @@ QMenuBar *QmlViewer::menuBar() const
         mb = new QMenuBar((QWidget*)this);
 
     return mb;
-}
-
-QSize QmlViewer::sizeHint() const
-{
-    if (skin)
-        return QWidget::sizeHint();
-    else {
-        // Kludge to force QMainWindow to be EXACTLY the right size for the canvas.
-        QSize sh = canvas->sizeHint();
-        sh.setHeight(sh.height()+menuBar()->sizeHint().height());
-        return sh;
-    }
 }
 
 void QmlViewer::createMenu(QMenuBar *menu, QMenu *flatmenu)
@@ -687,6 +678,21 @@ void QmlViewer::timerEvent(QTimerEvent *event)
 void QmlViewer::setDeviceKeys(bool on)
 {
     devicemode = on;
+}
+
+void QmlViewer::setupProxy()
+{
+    class SystemProxyFactory : public QNetworkProxyFactory
+    {
+    public:
+        virtual QList<QNetworkProxy> queryProxy(const QNetworkProxyQuery &query)
+        {
+            return QNetworkProxyFactory::systemProxyForQuery(query);
+        }
+    };
+
+    QNetworkAccessManager * nam = canvas->engine()->networkAccessManager();
+    nam->setProxyFactory(new SystemProxyFactory);
 }
 
 void QmlViewer::setCacheEnabled(bool on)

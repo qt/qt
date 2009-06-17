@@ -113,7 +113,9 @@ void PluginView::show()
     if (isParentVisible() && platformPluginWidget())
         platformPluginWidget()->setVisible(true);
 
-    Widget::show();
+    // do not call parent impl. here as it will set the platformWidget
+    // (same as platformPluginWidget in the Qt port) to visible, even
+    // when parent isn't visible.
 }
 
 void PluginView::hide()
@@ -123,7 +125,9 @@ void PluginView::hide()
     if (isParentVisible() && platformPluginWidget())
         platformPluginWidget()->setVisible(false);
 
-    Widget::hide();
+    // do not call parent impl. here as it will set the platformWidget
+    // (same as platformPluginWidget in the Qt port) to invisible, even
+    // when parent isn't visible.
 }
 
 void PluginView::paint(GraphicsContext* context, const IntRect& rect)

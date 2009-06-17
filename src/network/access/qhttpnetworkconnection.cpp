@@ -64,7 +64,7 @@
 
 QT_BEGIN_NAMESPACE
 
-const int QHttpNetworkConnectionPrivate::channelCount = 2;
+const int QHttpNetworkConnectionPrivate::channelCount = 6;
 
 QHttpNetworkConnectionPrivate::QHttpNetworkConnectionPrivate(const QString &hostName, quint16 port, bool encrypt)
 : hostName(hostName), port(port), encrypt(encrypt),
@@ -74,6 +74,7 @@ QHttpNetworkConnectionPrivate::QHttpNetworkConnectionPrivate(const QString &host
 #endif
 
 {
+    channels = new Channel[channelCount];
 }
 
 QHttpNetworkConnectionPrivate::~QHttpNetworkConnectionPrivate()
@@ -82,6 +83,7 @@ QHttpNetworkConnectionPrivate::~QHttpNetworkConnectionPrivate()
         channels[i].socket->close();
         delete channels[i].socket;
     }
+    delete []channels;
 }
 
 void QHttpNetworkConnectionPrivate::connectSignals(QAbstractSocket *socket)
@@ -468,7 +470,7 @@ bool QHttpNetworkConnectionPrivate::sendRequest(QAbstractSocket *socket)
     return true;
 }
 
-bool QHttpNetworkConnectionPrivate::emitSignals(QHttpNetworkReply *reply)
+bool QHttpNetworkConnectionPrivate::shouldEmitSignals(QHttpNetworkReply *reply)
 {
     // for 401 & 407 don't emit the data signals. Content along with these
     // responses are send only if the authentication fails.
@@ -484,7 +486,7 @@ bool QHttpNetworkConnectionPrivate::expectContent(QHttpNetworkReply *reply)
         || reply->d_func()->statusCode == 204 || reply->d_func()->statusCode == 304)
         return false;
     if (reply->d_func()->request.operation() == QHttpNetworkRequest::Head)
-        return !emitSignals(reply);
+        return !shouldEmitSignals(reply);
     if (reply->d_func()->contentLength() == 0)
         return false;
     return true;
@@ -528,7 +530,7 @@ bool QHttpNetworkConnectionPrivate::expand(QAbstractSocket *socket, QHttpNetwork
             if (inflated.size()) {
                 reply->d_func()->totalProgress += inflated.size();
                 appendData(*reply, inflated, false);
-                if (emitSignals(reply)) {
+                if (shouldEmitSignals(reply)) {
                     emit reply->readyRead();
                     // make sure that the reply is valid
                     if (channels[i].reply != reply)
@@ -613,7 +615,7 @@ void QHttpNetworkConnectionPrivate::receiveReply(QAbstractSocket *socket, QHttpN
                     reply->d_func()->state = QHttpNetworkReplyPrivate::ReadingStatusState;
                     break; // ignore
                 }
-                if (emitSignals(reply))
+                if (shouldEmitSignals(reply))
                     emit reply->headerChanged();
                 if (!expectContent(reply)) {
                     reply->d_func()->state = QHttpNetworkReplyPrivate::AllDoneState;
@@ -631,7 +633,7 @@ void QHttpNetworkConnectionPrivate::receiveReply(QAbstractSocket *socket, QHttpN
                 appendData(*reply, fragment.data(), reply->d_func()->autoDecompress);
                 if (!reply->d_func()->autoDecompress) {
                     reply->d_func()->totalProgress += fragment.size();
-                    if (emitSignals(reply)) {
+                    if (shouldEmitSignals(reply)) {
                         emit reply->readyRead();
                         // make sure that the reply is valid
                         if (channels[i].reply != reply)
@@ -673,7 +675,7 @@ void QHttpNetworkConnectionPrivate::allDone(QAbstractSocket *socket, QHttpNetwor
         expand(socket, reply, true); // ### if expand returns false, its an error
 #endif
     // while handling 401 & 407, we might reset the status code, so save this.
-    bool emitFinished = emitSignals(reply);
+    bool emitFinished = shouldEmitSignals(reply);
     handleStatus(socket, reply);
     // ### at this point there should be no more data on the socket
     // close if server requested
@@ -828,7 +830,7 @@ bool QHttpNetworkConnectionPrivate::handleAuthenticateChallenge(QAbstractSocket 
             if (priv->phase != QAuthenticatorPrivate::Done) {
                 // send any pending requests
                 copyCredentials(i,  auth, isProxy);
-                QMetaObject::invokeMethod(q, "_q_restartPendingRequest", Qt::QueuedConnection);
+                QMetaObject::invokeMethod(q, "_q_restartAuthPendingRequests", Qt::QueuedConnection);
             }
         }
         // changing values in QAuthenticator will reset the 'phase'
@@ -907,7 +909,7 @@ QHttpNetworkReply* QHttpNetworkConnectionPrivate::queueRequest(const QHttpNetwor
     return reply;
 }
 
-void QHttpNetworkConnectionPrivate::unqueueRequest(QAbstractSocket *socket)
+void QHttpNetworkConnectionPrivate::unqueueAndSendRequest(QAbstractSocket *socket)
 {
     Q_ASSERT(socket);
 
@@ -918,13 +920,12 @@ void QHttpNetworkConnectionPrivate::unqueueRequest(QAbstractSocket *socket)
             HttpMessagePair &messagePair = highPriorityQueue[j];
             if (!messagePair.second->d_func()->requestIsPrepared)
                 prepareRequest(messagePair);
-            if (!messagePair.second->d_func()->requestIsBuffering) {
-                channels[i].request = messagePair.first;
-                channels[i].reply = messagePair.second;
-                sendRequest(socket);
-                highPriorityQueue.removeAt(j);
-                return;
-            }
+
+            channels[i].request = messagePair.first;
+            channels[i].reply = messagePair.second;
+            sendRequest(socket);
+            highPriorityQueue.removeAt(j);
+            return;
         }
     }
 
@@ -933,13 +934,11 @@ void QHttpNetworkConnectionPrivate::unqueueRequest(QAbstractSocket *socket)
             HttpMessagePair &messagePair = lowPriorityQueue[j];
             if (!messagePair.second->d_func()->requestIsPrepared)
                 prepareRequest(messagePair);
-            if (!messagePair.second->d_func()->requestIsBuffering) {
-                channels[i].request = messagePair.first;
-                channels[i].reply = messagePair.second;
-                sendRequest(socket);
-                lowPriorityQueue.removeAt(j);
-                return;
-            }
+            channels[i].request = messagePair.first;
+            channels[i].reply = messagePair.second;
+            sendRequest(socket);
+            lowPriorityQueue.removeAt(j);
+            return;
         }
     }
 }
@@ -1093,29 +1092,30 @@ void QHttpNetworkConnectionPrivate::_q_disconnected()
 
 void QHttpNetworkConnectionPrivate::_q_startNextRequest()
 {
-    // send the current request again
-    if (channels[0].resendCurrent || channels[1].resendCurrent) {
-        int i = channels[0].resendCurrent ? 0:1;
-        QAbstractSocket *socket = channels[i].socket;
-        channels[i].resendCurrent = false;
-        channels[i].state = IdleState;
-        if (channels[i].reply)
-            sendRequest(socket);
-        return;
+    //resend the necessary ones.
+    for (int i = 0; i < channelCount; ++i) {
+        if (channels[i].resendCurrent) {
+            channels[i].resendCurrent = false;
+            channels[i].state = IdleState;
+            if (channels[i].reply)
+                sendRequest(channels[i].socket);
+        }
     }
-    // send the request using the idle socket
-    QAbstractSocket *socket = channels[0].socket;
-    if (isSocketBusy(socket)) {
-        socket = (isSocketBusy(channels[1].socket) ? 0 :channels[1].socket);
+    QAbstractSocket *socket = 0;
+    for (int i = 0; i < channelCount; ++i) {
+        QAbstractSocket *chSocket = channels[i].socket;
+        // send the request using the idle socket
+        if (!isSocketBusy(chSocket)) {
+            socket = chSocket;
+            break;
+        }
     }
-
-    if (!socket) {
+    if (!socket)
         return; // this will be called after finishing current request.
-    }
-    unqueueRequest(socket);
+    unqueueAndSendRequest(socket);
 }
 
-void QHttpNetworkConnectionPrivate::_q_restartPendingRequest()
+void QHttpNetworkConnectionPrivate::_q_restartAuthPendingRequests()
 {
     // send the request using the idle socket
     for (int i = 0 ; i < channelCount; ++i) {

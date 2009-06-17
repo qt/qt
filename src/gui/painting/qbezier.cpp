@@ -673,10 +673,10 @@ static int IntersectBB(const QBezier &a, const QBezier &b)
 #ifdef QDEBUG_BEZIER
 static QDebug operator<<(QDebug dbg, const QBezier &bz)
 {
-    dbg <<"["<<bz.x1<<", "<<bz.y1<<"], "
-        <<"["<<bz.x2<<", "<<bz.y2<<"], "
-        <<"["<<bz.x3<<", "<<bz.y3<<"], "
-        <<"["<<bz.x4<<", "<<bz.y4<<"]";
+    dbg << '[' << bz.x1<< ", " << bz.y1 << "], "
+        << '[' << bz.x2 <<", " << bz.y2 << "], "
+        << '[' << bz.x3 <<", " << bz.y3 << "], "
+        << '[' << bz.x4 <<", " << bz.y4 << ']';
     return dbg;
 }
 #endif

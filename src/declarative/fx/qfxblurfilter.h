@@ -73,7 +73,7 @@ protected:
 private:
     QFxBlurFilterPrivate *d;
 };
-QML_DECLARE_TYPE(QFxBlurFilter);
+QML_DECLARE_TYPE(QFxBlurFilter)
 
 
 QT_END_NAMESPACE

@@ -44,6 +44,7 @@
 
 #include <QtCore/qobject.h>
 #include <QtCore/qmap.h>
+#include <QtScript/qscriptvalue.h>
 
 QT_BEGIN_HEADER
 
@@ -57,6 +58,7 @@ class QmlExpression;
 class QmlContext;
 class QUrl;
 class QScriptEngine;
+class QScriptContext;
 class QNetworkAccessManager;
 class Q_DECLARATIVE_EXPORT QmlEngine : public QObject
 {
@@ -85,6 +87,12 @@ public:
 
     static QmlContext *contextForObject(const QObject *);
     static void setContextForObject(QObject *, QmlContext *);
+
+    static QScriptValue qmlScriptObject(QObject*, QmlEngine*);
+
+    static QScriptValue createComponent(QScriptContext*, QScriptEngine*);
+    static QScriptValue createQMLObject(QScriptContext*, QScriptEngine*);
+
 private:
     // LK: move to the private class
     QScriptEngine *scriptEngine();

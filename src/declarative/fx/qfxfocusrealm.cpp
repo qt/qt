@@ -43,7 +43,7 @@
 
 
 QT_BEGIN_NAMESPACE
-QML_DEFINE_TYPE(QFxFocusRealm,FocusRealm);
+QML_DEFINE_TYPE(QFxFocusRealm,FocusRealm)
 
 /*!
     \qmlclass FocusRealm

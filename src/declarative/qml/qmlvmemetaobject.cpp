@@ -134,6 +134,9 @@ int QmlVMEMetaObject::metaCall(QMetaObject::Call c, int id, void **a)
                     case QVariant::String:
                         *reinterpret_cast<QString *>(a[0]) = data[propId].toString();
                         break;
+                    case QVariant::Url:
+                        *reinterpret_cast<QUrl *>(a[0]) = data[propId].toUrl();
+                        break;
                     case QVariant::Color:
                         *reinterpret_cast<QColor *>(a[0]) = data[propId].value<QColor>();
                         break;

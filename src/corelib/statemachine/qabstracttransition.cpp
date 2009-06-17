@@ -40,6 +40,9 @@
 ****************************************************************************/
 
 #include "qabstracttransition.h"
+
+#ifndef QT_NO_STATEMACHINE
+
 #include "qabstracttransition_p.h"
 #include "qabstractstate.h"
 #include "qstate.h"
@@ -108,15 +111,9 @@ QAbstractTransitionPrivate *QAbstractTransitionPrivate::get(QAbstractTransition 
     return q->d_func();
 }
 
-const QAbstractTransitionPrivate *QAbstractTransitionPrivate::get(const QAbstractTransition *q)
-{
-    return q->d_func();
-}
-
 QStateMachine *QAbstractTransitionPrivate::machine() const
 {
-    Q_Q(const QAbstractTransition);
-    QObject *par = q->parent();
+    QObject *par = parent;
     while (par != 0) {
         if (QStateMachine *mach = qobject_cast<QStateMachine*>(par))
             return mach;
@@ -139,8 +136,7 @@ void QAbstractTransitionPrivate::callOnTransition(QEvent *e)
 
 QState *QAbstractTransitionPrivate::sourceState() const
 {
-    Q_Q(const QAbstractTransition);
-    return qobject_cast<QState*>(q->parent());
+    return qobject_cast<QState*>(parent);
 }
 
 /*!
@@ -321,7 +317,7 @@ QList<QAbstractAnimation*> QAbstractTransition::animations() const
 #endif
 
 /*!
-  \fn QAbstractTransition::eventTest(QEvent *event) const
+  \fn QAbstractTransition::eventTest(QEvent *event)
 
   This function is called to determine whether the given \a event should cause
   this transition to trigger. Reimplement this function and return true if the
@@ -345,3 +341,5 @@ bool QAbstractTransition::event(QEvent *e)
 }
 
 QT_END_NAMESPACE
+
+#endif //QT_NO_STATEMACHINE

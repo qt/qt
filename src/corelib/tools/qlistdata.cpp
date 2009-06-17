@@ -1173,7 +1173,8 @@ void **QListData::erase(void **xi)
 
 /*! \typedef QList::iterator::iterator_category
 
-    \internal
+  A synonym for \e {std::random_access_iterator_tag} indicating
+  this iterator is a random access iterator.
 */
 
 /*! \typedef QList::iterator::difference_type
@@ -1432,7 +1433,8 @@ void **QListData::erase(void **xi)
 
 /*! \typedef QList::const_iterator::iterator_category
 
-    \internal
+  A synonym for \e {std::random_access_iterator_tag} indicating
+  this iterator is a random access iterator.
 */
 
 /*! \typedef QList::const_iterator::difference_type

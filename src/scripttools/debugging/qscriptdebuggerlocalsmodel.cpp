@@ -807,7 +807,7 @@ QVariant QScriptDebuggerLocalsModel::data(const QModelIndex &index, int role) co
             QString str = node->property.valueAsString();
             if (node->property.value().type() == QScriptDebuggerValue::StringValue) {
                 // escape
-                str.replace(QLatin1String("\""), QLatin1String("\\\""));
+                str.replace(QLatin1Char('\"'), QLatin1String("\\\""));
                 str.prepend(QLatin1Char('\"'));
                 str.append(QLatin1Char('\"'));
             }

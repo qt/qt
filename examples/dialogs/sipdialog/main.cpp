@@ -48,6 +48,6 @@ int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
     Dialog dialog;
-    dialog.exec();
+    return dialog.exec();
 }
 //! [main() function]

@@ -65,9 +65,8 @@ template <typename T> class QSet;
 template <class Key, class T> class QHash;
 template <class Key, class T> class QMap;
 
-class QDataStreamPrivate;
-
 #ifndef QT_NO_DATASTREAM
+class QDataStreamPrivate;
 class Q_CORE_EXPORT QDataStream
 {
 public:

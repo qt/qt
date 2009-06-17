@@ -163,7 +163,6 @@ public:
 void QShortcutPrivate::redoGrab(QShortcutMap &map)
 {
     Q_Q(QShortcut);
-    QWidget *parent = q->parentWidget();
     if (!parent) {
         qWarning("QShortcut: No widget parent defined");
         return;

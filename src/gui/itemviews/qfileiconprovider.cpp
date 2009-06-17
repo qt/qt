@@ -215,8 +215,7 @@ QIcon QFileIconProvider::icon(IconType type) const
 QIcon QFileIconProviderPrivate::getWinIcon(const QFileInfo &fileInfo) const
 {
     QIcon retIcon;
-    QString fileExtension = fileInfo.suffix().toUpper();
-    fileExtension.prepend( QLatin1String(".") );
+    const QString fileExtension = QLatin1Char('.') + fileInfo.suffix().toUpper();
 
     QString key;
     if (fileInfo.isFile() && !fileInfo.isExecutable() && !fileInfo.isSymLink())

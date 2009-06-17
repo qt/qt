@@ -528,6 +528,10 @@
                              Qt::DirectConnection; otherwise the
                              signal is queued, as with
                              Qt::QueuedConnection.
+    \value UniqueConnection  Same as AutoConnection, but there will be a check that the signal is
+                             not already connected to the same slot before connecting, otherwise,
+                             the connection will fail.
+                             \since 4.6
 
     With queued connections, the parameters must be of types that are known to
     Qt's meta-object system, because Qt needs to copy the arguments to store them
@@ -2670,11 +2674,14 @@
   \enum Qt::TileRule
   \since 4.6
 
-  This enum describes how to repeat or stretch the parts of an image when drawing.
+  This enum describes how to repeat or stretch the parts of an image
+  when drawing.
 
   \value Stretch   Scale the image to fit to the available area.
-  \value Repeat    Tile the image until there is no more space. May crop the last image.
-  \value Round     Like Repeat, but scales the images down to ensure that the last image is not cropped.
 
-  \sa qDrawBorderPixmap()
+  \value Repeat    Tile the image until there is no more space. May crop
+  the last image.
+
+  \value Round 	   Like Repeat, but scales the images down to ensure that
+  the last image is not cropped.
 */

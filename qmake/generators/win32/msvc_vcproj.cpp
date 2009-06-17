@@ -574,7 +574,7 @@ void VcprojGenerator::writeSubDirs(QTextStream &t)
                         }
 
                         // We assume project filename is [QMAKE_ORIG_TARGET].vcproj
-                        QString vcproj = unescapeFilePath(fixFilename(tmp_vcproj.project->first("QMAKE_ORIG_TARGET")) + project->first("VCPROJ_EXTENSION"));
+                        QString vcproj = unescapeFilePath(tmp_vcproj.project->first("QMAKE_ORIG_TARGET") + project->first("VCPROJ_EXTENSION"));
                         QString vcprojDir = qmake_getpwd();
 
                         // If file doesn't exsist, then maybe the users configuration

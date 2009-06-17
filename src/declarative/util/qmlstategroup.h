@@ -44,22 +44,22 @@
 
 #include <QtDeclarative/qmlstate.h>
 
-
 QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
 QT_MODULE(Declarative)
+
 class QmlStateGroupPrivate;
-class QmlStateGroup : public QObject, public QmlParserStatus
+class Q_DECLARATIVE_EXPORT QmlStateGroup : public QObject, public QmlParserStatus
 {
     Q_OBJECT
     Q_INTERFACES(QmlParserStatus)
-    Q_DECLARE_PRIVATE(QmlStateGroup);
+    Q_DECLARE_PRIVATE(QmlStateGroup)
 
-    Q_PROPERTY(QString state READ state WRITE setState NOTIFY stateChanged);
-    Q_PROPERTY(QmlList<QmlState *>* states READ statesProperty DESIGNABLE false);
-    Q_PROPERTY(QmlList<QmlTransition *>* transitions READ transitionsProperty DESIGNABLE false);
+    Q_PROPERTY(QString state READ state WRITE setState NOTIFY stateChanged)
+    Q_PROPERTY(QmlList<QmlState *>* states READ statesProperty DESIGNABLE false)
+    Q_PROPERTY(QmlList<QmlTransition *>* transitions READ transitionsProperty DESIGNABLE false)
 
 public:
     QmlStateGroup(QObject * = 0);
@@ -85,11 +85,10 @@ private:
     friend class QmlState;
     void updateAutoState();
 };
-QML_DECLARE_TYPE(QmlStateGroup);
-
-#endif // QMLSTATEGROUP_H
-
+QML_DECLARE_TYPE(QmlStateGroup)
 
 QT_END_NAMESPACE
 
 QT_END_HEADER
+
+#endif // QMLSTATEGROUP_H

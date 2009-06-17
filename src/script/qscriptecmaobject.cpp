@@ -113,7 +113,7 @@ QScriptValueImpl Object::method_toString(QScriptContextPrivate *context, QScript
     QString s = QLatin1String("[object ");
     QScriptValueImpl self = context->thisObject();
     s += self.classInfo()->name();
-    s += QLatin1String("]");
+    s += QLatin1Char(']');
     return (QScriptValueImpl(eng, s));
 }
 

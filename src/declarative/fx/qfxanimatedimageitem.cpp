@@ -77,7 +77,7 @@ Item {
     \endqml
     \endtable
 */
-QML_DEFINE_TYPE(QFxAnimatedImageItem, AnimatedImage);
+QML_DEFINE_TYPE(QFxAnimatedImageItem, AnimatedImage)
 
 QFxAnimatedImageItem::QFxAnimatedImageItem(QFxItem *parent)
     : QFxImage(*(new QFxAnimatedImageItemPrivate), parent)
@@ -152,10 +152,10 @@ int QFxAnimatedImageItem::frameCount() const
     return d->_movie->frameCount();
 }
 
-void QFxAnimatedImageItem::setSource(const QString &url)
+void QFxAnimatedImageItem::setSource(const QUrl &url)
 {
     Q_D(QFxAnimatedImageItem);
-    if (url == d->source)
+    if (url == d->url)
         return;
 
     delete d->_movie;
@@ -166,8 +166,7 @@ void QFxAnimatedImageItem::setSource(const QString &url)
         d->reply = 0;
     }
 
-    d->source = url;
-    d->url = qmlContext(this)->resolvedUrl(url);
+    d->url = url;
 
     if (url.isEmpty()) {
         delete d->_movie;

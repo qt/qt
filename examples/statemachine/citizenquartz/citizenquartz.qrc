@@ -1,6 +1,0 @@
-<!DOCTYPE RCC><RCC version="1.0">
-<qresource>
-    <file>sound/alarm.wav</file>
-    <file>images/alarm.png</file>
-</qresource>
-</RCC>

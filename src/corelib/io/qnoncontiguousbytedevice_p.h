@@ -77,7 +77,7 @@ protected:
     virtual ~QNonContiguousByteDevice();
 
     bool resetDisabled;
-signals:
+Q_SIGNALS:
     void readyRead();
     void readProgress(qint64 current, qint64 total);
 };
@@ -96,7 +96,6 @@ public:
 
 class QNonContiguousByteDeviceByteArrayImpl : public QNonContiguousByteDevice
 {
-    Q_OBJECT
 public:
     QNonContiguousByteDeviceByteArrayImpl(QByteArray *ba);
     ~QNonContiguousByteDeviceByteArrayImpl();
@@ -112,7 +111,6 @@ protected:
 
 class QNonContiguousByteDeviceRingBufferImpl : public QNonContiguousByteDevice
 {
-    Q_OBJECT
 public:
     QNonContiguousByteDeviceRingBufferImpl(QRingBuffer *rb);
     ~QNonContiguousByteDeviceRingBufferImpl();
@@ -129,7 +127,6 @@ protected:
 
 class QNonContiguousByteDeviceIoDeviceImpl : public QNonContiguousByteDevice
 {
-    Q_OBJECT
 public:
     QNonContiguousByteDeviceIoDeviceImpl(QIODevice *d);
     ~QNonContiguousByteDeviceIoDeviceImpl();
@@ -151,7 +148,6 @@ protected:
 
 class QNonContiguousByteDeviceBufferImpl : public QNonContiguousByteDevice
 {
-    Q_OBJECT
 public:
     QNonContiguousByteDeviceBufferImpl(QBuffer *b);
     ~QNonContiguousByteDeviceBufferImpl();
@@ -169,7 +165,6 @@ protected:
 // ... and the reverse thing
 class QByteDeviceWrappingIoDevice : public QIODevice
 {
-    Q_OBJECT
 public:
     QByteDeviceWrappingIoDevice (QNonContiguousByteDevice *bd);
     ~QByteDeviceWrappingIoDevice ();

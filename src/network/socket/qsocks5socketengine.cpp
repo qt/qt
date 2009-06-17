@@ -153,7 +153,7 @@ static inline QString dump(const QByteArray &) { return QString(); }
 */
 static bool qt_socks5_set_host_address_and_port(const QHostAddress &address, quint16 port, QByteArray *pBuf)
 {
-    QSOCKS5_DEBUG << "setting [" << address << ":" << port << "]";
+    QSOCKS5_DEBUG << "setting [" << address << ':' << port << ']';
 
     union {
         quint16 port;
@@ -186,7 +186,7 @@ static bool qt_socks5_set_host_address_and_port(const QHostAddress &address, qui
 */
 static bool qt_socks5_set_host_name_and_port(const QString &hostname, quint16 port, QByteArray *pBuf)
 {
-    QSOCKS5_DEBUG << "setting [" << hostname << ":" << port << "]";
+    QSOCKS5_DEBUG << "setting [" << hostname << ':' << port << ']';
 
     QByteArray encodedHostName = QUrl::toAce(hostname);
     QByteArray &buf = *pBuf;
@@ -265,7 +265,7 @@ static bool qt_socks5_get_host_address_and_port(const QByteArray &buf, QHostAddr
     }
 
     if (ret) {
-        QSOCKS5_DEBUG << "got [" << address << ":" << port << "]";
+        QSOCKS5_DEBUG << "got [" << address << ':' << port << ']';
         *pAddress = address;
         *pPort = port;
         *pPos = pos;
@@ -1124,7 +1124,7 @@ bool QSocks5SocketEngine::connectInternal()
 bool QSocks5SocketEngine::connectToHost(const QHostAddress &address, quint16 port)
 {
     Q_D(QSocks5SocketEngine);
-    QSOCKS5_DEBUG << "connectToHost" << address << ":" << port;
+    QSOCKS5_DEBUG << "connectToHost" << address << ':' << port;
 
     setPeerAddress(address);
     setPeerPort(port);
@@ -1379,7 +1379,7 @@ bool QSocks5SocketEngine::bind(const QHostAddress &address, quint16 port)
             //### reset and error
             return false;
         }
-        QSOCKS5_DEBUG << "udp actual address and port" << d->localAddress << ":" << d->localPort;
+        QSOCKS5_DEBUG << "udp actual address and port" << d->localAddress << ':' << d->localPort;
         return true;
 #endif // QT_NO_UDPSOCKET
     }
@@ -1478,7 +1478,7 @@ qint64 QSocks5SocketEngine::bytesAvailable() const
 qint64 QSocks5SocketEngine::read(char *data, qint64 maxlen)
 {
     Q_D(QSocks5SocketEngine);
-    QSOCKS5_Q_DEBUG << "read( , maxlen = " << maxlen << ")";
+    QSOCKS5_Q_DEBUG << "read( , maxlen = " << maxlen << ')';
     if (d->mode == QSocks5SocketEnginePrivate::ConnectMode) {
         if (d->connectData->readBuffer.size() == 0) {
             if (d->data->controlSocket->state() == QAbstractSocket::UnconnectedState) {
@@ -1766,7 +1766,7 @@ void QSocks5SocketEngine::setReadNotificationEnabled(bool enable)
 {
     Q_D(QSocks5SocketEngine);
 
-    QSOCKS5_Q_DEBUG << "setReadNotificationEnabled(" << enable << ")";
+    QSOCKS5_Q_DEBUG << "setReadNotificationEnabled(" << enable << ')';
 
     bool emitSignal = false;
     if (!d->readNotificationEnabled

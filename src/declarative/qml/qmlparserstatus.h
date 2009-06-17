@@ -66,7 +66,7 @@ private:
     friend class QmlEnginePrivate;
     QmlParserStatus **d;
 };
-Q_DECLARE_INTERFACE(QmlParserStatus, "com.trolltech.qml.QmlParserStatus");
+Q_DECLARE_INTERFACE(QmlParserStatus, "com.trolltech.qml.QmlParserStatus")
 
 
 QT_END_NAMESPACE

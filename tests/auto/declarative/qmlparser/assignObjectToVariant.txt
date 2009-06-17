@@ -1,0 +1,4 @@
+Object {
+    property var a;
+    a: MyQmlObject {}
+}

@@ -281,14 +281,7 @@ void QFontDatabase::load(const QFontPrivate *d, int script)
     }
 
     //find the font
-    QStringList family_list = req.family.split(QLatin1Char(','));
-    // append the substitute list for each family in family_list
-    {
-	    QStringList subs_list;
-	    for(QStringList::ConstIterator it = family_list.constBegin(); it != family_list.constEnd(); ++it)
-		    subs_list += QFont::substitutes(*it);
-	    family_list += subs_list;
-    }
+    QStringList family_list = familyList(req);
 
     const char *stylehint = styleHint(req);
     if (stylehint)

@@ -1,9 +1,4 @@
-TEMPLATE = app
-TARGET = 
-DEPENDPATH += .
-INCLUDEPATH += .
-
-SOURCES += main.cpp
+SOURCES = main.cpp
 
 # install
 target.path = $$[QT_INSTALL_EXAMPLES]/statemachine/trafficlight

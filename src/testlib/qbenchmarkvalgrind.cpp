@@ -133,12 +133,12 @@ QString QBenchmarkValgrindUtils::getNewestFileName()
     QString base = QBenchmarkGlobalData::current->callgrindOutFileBase;
     Q_ASSERT(!base.isEmpty());
 
-    nameFilters << QString(QLatin1String("%1.*")).arg(base);
+    nameFilters << QString::fromLatin1("%1.*").arg(base);
     QFileInfoList fiList = QDir().entryInfoList(nameFilters, QDir::Files | QDir::Readable);
     Q_ASSERT(!fiList.empty());
     int hiSuffix = -1;
     QFileInfo lastFileInfo;
-    const QString pattern = QString(QLatin1String("%1.(\\d+)")).arg(base);
+    const QString pattern = QString::fromLatin1("%1.(\\d+)").arg(base);
     const QRegExp rx(pattern);
     foreach (QFileInfo fileInfo, fiList) {
         const int index = rx.indexIn(fileInfo.fileName());
@@ -168,8 +168,8 @@ void QBenchmarkValgrindUtils::cleanup()
     QString base = QBenchmarkGlobalData::current->callgrindOutFileBase;
     Q_ASSERT(!base.isEmpty());
     nameFilters
-        << QString(QLatin1String("%1")).arg(base) // overall summary
-        << QString(QLatin1String("%1.*")).arg(base); // individual dumps
+        << base // overall summary
+        << QString::fromLatin1("%1.*").arg(base); // individual dumps
     QFileInfoList fiList = QDir().entryInfoList(nameFilters, QDir::Files | QDir::Readable);
     foreach (QFileInfo fileInfo, fiList) {
         const bool removeOk = QFile::remove(fileInfo.fileName());
@@ -180,7 +180,7 @@ void QBenchmarkValgrindUtils::cleanup()
 
 QString QBenchmarkValgrindUtils::outFileBase(qint64 pid)
 {
-    return QString(QLatin1String("callgrind.out.%1")).arg(
+    return QString::fromLatin1("callgrind.out.%1").arg(
         pid != -1 ? pid : QCoreApplication::applicationPid());
 }
 

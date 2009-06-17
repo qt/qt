@@ -36,6 +36,8 @@ private slots:
     void arrayExpressions();
     void contextPropertiesTriggerReeval();
     void objectPropertiesTriggerReeval();
+    void deferredProperties();
+    void extensionObjects();
 
 private:
     QmlEngine engine;
@@ -335,6 +337,38 @@ void tst_qmlbindengine::objectPropertiesTriggerReeval()
         expr.changed = false;
         QCOMPARE(expr.value(), QVariant("Donkey"));
     }
+}
+
+void tst_qmlbindengine::deferredProperties()
+{
+    QmlComponent component(&engine, TEST_FILE("deferredProperties.txt"));
+    MyDeferredObject *object = 
+        qobject_cast<MyDeferredObject *>(component.create());
+    QVERIFY(object != 0);
+    QCOMPARE(object->value(), 0);
+    QVERIFY(object->objectProperty() == 0);
+    QVERIFY(object->objectProperty2() != 0);
+    qmlExecuteDeferred(object);
+    QCOMPARE(object->value(), 10);
+    QVERIFY(object->objectProperty() != 0);
+    MyQmlObject *qmlObject = 
+        qobject_cast<MyQmlObject *>(object->objectProperty());
+    QVERIFY(qmlObject != 0);
+}
+
+void tst_qmlbindengine::extensionObjects()
+{
+    QmlComponent component(&engine, TEST_FILE("extensionObjects.txt"));
+    MyExtendedObject *object = 
+        qobject_cast<MyExtendedObject *>(component.create());
+    QVERIFY(object != 0);
+    QCOMPARE(object->baseProperty(), 13);
+    QCOMPARE(object->coreProperty(), 9);
+
+    object->setProperty("extendedProperty", QVariant(11));
+    object->setProperty("baseExtendedProperty", QVariant(92));
+    QCOMPARE(object->coreProperty(), 11);
+    QCOMPARE(object->baseProperty(), 92);
 }
 
 QTEST_MAIN(tst_qmlbindengine)

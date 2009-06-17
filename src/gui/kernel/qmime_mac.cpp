@@ -218,7 +218,7 @@ QString QMacPasteboardMimeAny::flavorFor(const QString &mime)
     if(mime == QLatin1String("application/x-qt-mime-type-name"))
         return QString();
     QString ret = QLatin1String("com.trolltech.anymime.") + mime;
-    return ret.replace(QLatin1String("/"), QLatin1String("--"));
+    return ret.replace(QLatin1Char('/'), QLatin1String("--"));
 }
 
 QString QMacPasteboardMimeAny::mimeFor(QString flav)
@@ -394,7 +394,7 @@ QString QMacPasteboardMimeUnicodeText::flavorFor(const QString &mime)
     int i = mime.indexOf(QLatin1String("charset="));
     if (i >= 0) {
         QString cs(mime.mid(i+8).toLower());
-        i = cs.indexOf(QLatin1String(";"));
+        i = cs.indexOf(QLatin1Char(';'));
         if (i>=0)
             cs = cs.left(i);
         if (cs == QLatin1String("system"))

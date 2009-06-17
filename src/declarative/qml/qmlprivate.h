@@ -43,7 +43,7 @@
 #define QMLPRIVATE_H
 
 #include <QtCore/qglobal.h>
-#ifndef Q_OS_WIN32
+#ifndef Q_OS_WIN
 #include <stdint.h>
 #endif
 #include <QtCore/qvariant.h>
@@ -123,6 +123,19 @@ namespace QmlPrivate
         }
     };
 
+#if defined(Q_CC_MSVC)
+    template <typename T>  
+    class has_attachedPropertiesMember
+    {
+    public:
+        __if_exists(T::qmlAttachedProperties) {
+            static bool const value = true;
+        }
+        __if_not_exists(T::qmlAttachedProperties) {
+            static bool const value = false;
+        }
+    };
+#else
     template <typename T>  
     class has_attachedPropertiesMember
     {  
@@ -140,6 +153,7 @@ namespace QmlPrivate
     public: 
         static bool const value = sizeof(test<T>(0)) == sizeof(yes_type);
     };
+#endif
 
     template <typename T, bool hasMember>
     class has_attachedPropertiesMethod 
@@ -237,7 +251,7 @@ namespace QmlPrivate
             return new T(other);
         }
     };
-};
+}
 
 template<typename T>
 int QmlPrivate::list_op(QmlPrivate::ListOp op, int val, 

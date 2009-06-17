@@ -161,7 +161,7 @@ public:
     void calcActionRects(QMap<QAction*, QRect> &actionRects, QList<QAction*> &actionList) const;
     void updateActions();
     QRect popupGeometry(int screen=-1) const;
-    QList<QAction *> filterActions(const QList<QAction *> &actions) const;
+    QList<QAction *> filteredActions() const;
     uint ncols : 4; //4 bits is probably plenty
     uint collapsibleSeparators : 1;
 
@@ -220,7 +220,7 @@ public:
     virtual QList<QPointer<QWidget> > calcCausedStack() const;
     QMenuCaused causedPopup;
     void hideUpToMenuBar();
-    void hideMenu(QMenu *menu);
+    void hideMenu(QMenu *menu, bool justRegister = false);
 
     //index mappings
     inline QAction *actionAt(int i) const { return q_func()->actions().at(i); }

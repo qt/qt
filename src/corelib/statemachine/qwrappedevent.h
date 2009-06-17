@@ -50,6 +50,8 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Core)
 
+#ifndef QT_NO_STATEMACHINE
+
 class QObject;
 
 class Q_CORE_EXPORT QWrappedEvent : public QEvent
@@ -68,6 +70,8 @@ private:
 private:
     Q_DISABLE_COPY(QWrappedEvent)
 };
+
+#endif //QT_NO_STATEMACHINE
 
 QT_END_NAMESPACE
 

@@ -86,15 +86,15 @@
     \endif
 
     \raw HTML
-        <table cellpadding="2" cellspacing="1" border="0" width="100%" bgcolor="#e5e5e5">
+        <table cellpadding="2" cellspacing="1" border="0" width="100%" class="indextable">
         <tr>
-        <th bgcolor="#66b036" width="33%">
+        <th class="titleheader" width="33%">
         Getting Started
         </th>
-        <th bgcolor="#66b036" width="33%">
+        <th class="titleheader" width="33%">
         General
         </th>
-        <th bgcolor="#66b036" width="33%">
+        <th class="titleheader" width="33%">
         Developer Resources
         </th>
         </tr>
@@ -128,13 +128,13 @@
         </td>
         </tr>
         <tr>
-        <th bgcolor="#66b036">
+        <th class="titleheader">
         API Reference
         </th>
-        <th bgcolor="#66b036">
+        <th class="titleheader">
         Core Features
         </th>
-        <th bgcolor="#66b036">
+        <th class="titleheader">
         Key Technologies
         </th>
         </tr>
@@ -153,6 +153,7 @@
         <li><a href="overviews.html">All Overviews and HOWTOs</a></li>
         <li><a href="gallery.html">Qt Widget Gallery</a></li>
         <li><a href="http://doc.trolltech.com/extras/qt43-class-chart.pdf">Class Chart</a></li>
+        <li><a href="qtglobal.html">Qt Global Declarations</a></li>
         </ul>
         </td>
         <td valign="top">
@@ -194,13 +195,13 @@
         </td>
         </tr>
         <tr>
-        <th bgcolor="#66b036">
+        <th class="titleheader">
         Add-ons &amp; Services
         </th>
-        <th bgcolor="#66b036">
+        <th class="titleheader">
         Tools
         </th>
-        <th bgcolor="#66b036">
+        <th class="titleheader">
         Licenses &amp; Credits
         </th>
         </tr>
@@ -208,10 +209,10 @@
         <td valign="top">
         <ul>
         <li><a href="http://www.qtsoftware.com/products/add-on-products">Qt Solutions</a></li>
-        <li><a href="http://www.qtsoftware.com/products/qt/3rdparty/">Partner Add-ons</a></li>
+        <li><a href="http://www.qtsoftware.com/products/appdev">Partner Add-ons</a></li>
         <li><a href="http://qt-apps.org">Third-Party Qt Components (qt-apps.org)</a></li>
-        <li><a href="http://www.qtsoftware.com/support/">Support</a></li>
-        <li><a href="http://www.qtsoftware.com/support/training/">Training</a></li>
+        <li><a href="http://www.qtsoftware.com/support-services/support-services/">Support</a></li>
+        <li><a href="http://www.qtsoftware.com/support-services/training/">Training</a></li>
         </ul>
         </td>
         <td valign="top">

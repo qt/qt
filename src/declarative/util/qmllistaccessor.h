@@ -75,8 +75,8 @@ private:
     QVariant d;
 };
 
-#endif // QMLLISTACCESSOR_H
-
 QT_END_NAMESPACE
 
 QT_END_HEADER
+
+#endif // QMLLISTACCESSOR_H

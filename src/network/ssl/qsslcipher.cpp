@@ -231,7 +231,7 @@ QDebug operator<<(QDebug debug, const QSslCipher &cipher)
     debug << "QSslCipher(name=" << qPrintable(cipher.name())
           << ", bits=" << cipher.usedBits()
           << ", proto=" << qPrintable(cipher.protocolString())
-          << ")";
+          << ')';
     return debug;
 }
 #endif

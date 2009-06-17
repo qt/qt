@@ -40,6 +40,9 @@
 ****************************************************************************/
 
 #include "qhistorystate.h"
+
+#ifndef QT_NO_STATEMACHINE
+
 #include "qhistorystate_p.h"
 
 QT_BEGIN_NAMESPACE
@@ -122,11 +125,6 @@ QHistoryStatePrivate::QHistoryStatePrivate()
 }
 
 QHistoryStatePrivate *QHistoryStatePrivate::get(QHistoryState *q)
-{
-    return q->d_func();
-}
-
-const QHistoryStatePrivate *QHistoryStatePrivate::get(const QHistoryState *q)
 {
     return q->d_func();
 }
@@ -226,3 +224,5 @@ bool QHistoryState::event(QEvent *e)
 }
 
 QT_END_NAMESPACE
+
+#endif //QT_NO_STATEMACHINE

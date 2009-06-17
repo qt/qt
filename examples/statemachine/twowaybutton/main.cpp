@@ -40,10 +40,6 @@
 ****************************************************************************/
 
 #include <QtGui>
-#ifdef QT_STATEMACHINE_SOLUTION
-#include <qstate.h>
-#include <qstatemachine.h>
-#endif
 
 //! [0]
 int main(int argc, char **argv)

@@ -154,17 +154,15 @@ QFilePrivate::setError(QFile::FileError err)
 void
 QFilePrivate::setError(QFile::FileError err, const QString &errStr)
 {
-    Q_Q(QFile);
     error = err;
-    q->setErrorString(errStr);
+    errorString = errStr;
 }
 
 void
 QFilePrivate::setError(QFile::FileError err, int errNum)
 {
-    Q_Q(QFile);
     error = err;
-    q->setErrorString(qt_error_string(errNum));
+    errorString = qt_error_string(errNum);
 }
 
 //************* QFile
@@ -719,38 +717,47 @@ QFile::rename(const QString &newName)
             return true;
         }
 
-        QFile in(fileName());
+        if (isSequential()) {
+            d->setError(QFile::RenameError, tr("Will not rename sequential file using block copy"));
+            return false;
+        }
+
         QFile out(newName);
-        if (in.open(QIODevice::ReadOnly)) {
+        if (open(QIODevice::ReadOnly)) {
             if (out.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
                 bool error = false;
                 char block[4096];
-                qint64 read;
-                while ((read = in.read(block, sizeof(block))) > 0) {
-                    if (read != out.write(block, read)) {
+                qint64 bytes;
+                while ((bytes = read(block, sizeof(block))) > 0) {
+                    if (bytes != out.write(block, bytes)) {
                         d->setError(QFile::RenameError, out.errorString());
                         error = true;
                         break;
                     }
                 }
-                if (read == -1) {
-                    d->setError(QFile::RenameError, in.errorString());
+                if (bytes == -1) {
+                    d->setError(QFile::RenameError, errorString());
                     error = true;
                 }
                 if(!error) {
-                    if (!in.remove()) {
+                    if (!remove()) {
                         d->setError(QFile::RenameError, tr("Cannot remove source file"));
                         error = true;
                     }
                 }
                 if (error)
                     out.remove();
-                else
+                else {
+                    setPermissions(permissions());
+                    unsetError();
                     setFileName(newName);
+                }
+                close();
                 return !error;
             }
+            close();
         }
-        d->setError(QFile::RenameError, out.isOpen() ? in.errorString() : out.errorString());
+        d->setError(QFile::RenameError, out.isOpen() ? errorString() : out.errorString());
     }
     return false;
 }

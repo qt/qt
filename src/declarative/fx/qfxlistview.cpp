@@ -324,8 +324,7 @@ public:
             if (listItem->index == -1) {
                 ++skip;
             } else if (listItem->index != visibleIndex + i - skip) {
-                qDebug() << "index" << visibleIndex << i << listItem->index;
-                abort();
+                qFatal("index %d %d %d", visibleIndex, i, listItem->index);
             }
         }
     }
@@ -1643,7 +1642,7 @@ QObject *QFxListView::qmlAttachedProperties(QObject *obj)
     return QFxListViewAttached::properties(obj);
 }
 
-QML_DEFINE_TYPE(QFxListView,ListView);
+QML_DEFINE_TYPE(QFxListView,ListView)
 
 QT_END_NAMESPACE
 #include "qfxlistview.moc"

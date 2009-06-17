@@ -43,11 +43,16 @@
 #include "mainwindow.h"
 #include "graphicsscene.h"
 
-#ifndef QT_NO_OPENGL
+//Qt
+#include <QGraphicsView>
+
+#ifdef QT_NO_OPENGL
+    #include <QtGui/QMenuBar>
+    #include <QtGui/QLayout>
+    #include <QtGui/QApplication>
+#else
     #include <QtOpenGL/QtOpenGL>
 #endif
-//Qt
-#include <QtGui/QGraphicsView>
 
 MainWindow::MainWindow() : QMainWindow(0)
 {

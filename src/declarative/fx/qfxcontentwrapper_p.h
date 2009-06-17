@@ -60,7 +60,7 @@
 QT_BEGIN_NAMESPACE
 class QFxContentWrapperPrivate : public QFxItemPrivate
 {
-    Q_DECLARE_PUBLIC(QFxContentWrapper);
+    Q_DECLARE_PUBLIC(QFxContentWrapper)
 public:
     QFxContentWrapperPrivate() { }
 

@@ -66,7 +66,7 @@ public:
     virtual void created(QFxParticle &);
     virtual void destroy(QFxParticle &);
 };
-QML_DECLARE_TYPE(QFxParticleMotion);
+QML_DECLARE_TYPE(QFxParticleMotion)
 
 class Q_DECLARATIVE_EXPORT QFxParticleMotionLinear : public QFxParticleMotion
 {
@@ -77,7 +77,7 @@ public:
 
     virtual void advance(QFxParticle &, int interval);
 };
-QML_DECLARE_TYPE(QFxParticleMotionLinear);
+QML_DECLARE_TYPE(QFxParticleMotionLinear)
 
 class Q_DECLARATIVE_EXPORT QFxParticleMotionGravity : public QFxParticleMotion
 {
@@ -106,7 +106,7 @@ private:
     int _yAttr;
     qreal _accel;
 };
-QML_DECLARE_TYPE(QFxParticleMotionGravity);
+QML_DECLARE_TYPE(QFxParticleMotionGravity)
 
 class Q_DECLARATIVE_EXPORT QFxParticleMotionWander : public QFxParticleMotion
 {
@@ -128,15 +128,15 @@ public:
         qreal y_var;
     };
 
-    Q_PROPERTY(int xvariance READ xVariance WRITE setXVariance);
+    Q_PROPERTY(int xvariance READ xVariance WRITE setXVariance)
     int xVariance() const { return int(_xvariance * 1000); }
     void setXVariance(int var) { _xvariance = var / 1000.0; }
 
-    Q_PROPERTY(int yvariance READ yVariance WRITE setYVariance);
+    Q_PROPERTY(int yvariance READ yVariance WRITE setYVariance)
     int yVariance() const { return int(_yvariance * 1000); }
     void setYVariance(int var) { _yvariance = var / 1000.0; }
 
-    Q_PROPERTY(int pace READ pace WRITE setPace);
+    Q_PROPERTY(int pace READ pace WRITE setPace)
     int pace() const { return int(_pace * 1000); }
     void setPace(int pace) { _pace = pace / 1000.0; }
 
@@ -146,34 +146,34 @@ private:
     qreal _yvariance;
     qreal _pace;
 };
-QML_DECLARE_TYPE(QFxParticleMotionWander);
+QML_DECLARE_TYPE(QFxParticleMotionWander)
 
 class QFxParticlesPrivate;
 class Q_DECLARATIVE_EXPORT QFxParticles : public QFxItem
 {
     Q_OBJECT
 
-    Q_PROPERTY(QString source READ source WRITE setSource);
-    Q_PROPERTY(int count READ count WRITE setCount);
-    Q_PROPERTY(int lifeSpan READ lifeSpan WRITE setLifeSpan);
-    Q_PROPERTY(int lifeSpanDeviation READ lifeSpanDeviation WRITE setLifeSpanDeviation);
-    Q_PROPERTY(int fadeInDuration READ fadeInDuration WRITE setFadeInDuration);
-    Q_PROPERTY(int fadeOutDuration READ fadeOutDuration WRITE setFadeOutDuration);
-    Q_PROPERTY(qreal angle READ angle WRITE setAngle);
-    Q_PROPERTY(qreal angleDeviation READ angleDeviation WRITE setAngleDeviation);
-    Q_PROPERTY(qreal velocity READ velocity WRITE setVelocity);
-    Q_PROPERTY(qreal velocityDeviation READ velocityDeviation WRITE setVelocityDeviation);
-    Q_PROPERTY(bool streamIn READ streamIn WRITE setStreamIn);
-    Q_PROPERTY(bool emitting READ emitting WRITE setEmitting);
-    Q_PROPERTY(QFxParticleMotion *motion READ motion WRITE setMotion);
-    Q_CLASSINFO("DefaultProperty", "motion");
+    Q_PROPERTY(QUrl source READ source WRITE setSource)
+    Q_PROPERTY(int count READ count WRITE setCount)
+    Q_PROPERTY(int lifeSpan READ lifeSpan WRITE setLifeSpan)
+    Q_PROPERTY(int lifeSpanDeviation READ lifeSpanDeviation WRITE setLifeSpanDeviation)
+    Q_PROPERTY(int fadeInDuration READ fadeInDuration WRITE setFadeInDuration)
+    Q_PROPERTY(int fadeOutDuration READ fadeOutDuration WRITE setFadeOutDuration)
+    Q_PROPERTY(qreal angle READ angle WRITE setAngle)
+    Q_PROPERTY(qreal angleDeviation READ angleDeviation WRITE setAngleDeviation)
+    Q_PROPERTY(qreal velocity READ velocity WRITE setVelocity)
+    Q_PROPERTY(qreal velocityDeviation READ velocityDeviation WRITE setVelocityDeviation)
+    Q_PROPERTY(bool streamIn READ streamIn WRITE setStreamIn)
+    Q_PROPERTY(bool emitting READ emitting WRITE setEmitting)
+    Q_PROPERTY(QFxParticleMotion *motion READ motion WRITE setMotion)
+    Q_CLASSINFO("DefaultProperty", "motion")
 
 public:
     QFxParticles(QFxItem *parent=0);
     ~QFxParticles();
 
-    QString source() const;
-    void setSource(const QString &);
+    QUrl source() const;
+    void setSource(const QUrl &);
 
     int count() const;
     void setCount(int cnt);
@@ -231,7 +231,7 @@ private:
     Q_DISABLE_COPY(QFxParticles)
     Q_DECLARE_PRIVATE(QFxParticles)
 };
-QML_DECLARE_TYPE(QFxParticles);
+QML_DECLARE_TYPE(QFxParticles)
 
 QT_END_NAMESPACE
 

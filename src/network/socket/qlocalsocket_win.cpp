@@ -144,7 +144,7 @@ void QLocalSocket::connectToServer(const QString &name, OpenMode openMode)
                        0,              // no sharing
                        NULL,           // default security attributes
                        OPEN_EXISTING,  // opens existing pipe
-                       0,              // default attributes
+                       FILE_FLAG_OVERLAPPED,
                        NULL);          // no template file
         }, {
         localSocket = CreateFileA(
@@ -153,7 +153,7 @@ void QLocalSocket::connectToServer(const QString &name, OpenMode openMode)
                        0,              // no sharing
                        NULL,           // default security attributes
                        OPEN_EXISTING,  // opens existing pipe
-                       0,              // default attributes
+                       FILE_FLAG_OVERLAPPED,
                        NULL);          // no template file
         });
         if (localSocket != INVALID_HANDLE_VALUE)

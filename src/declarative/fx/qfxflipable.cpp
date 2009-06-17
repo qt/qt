@@ -44,7 +44,7 @@
 #include "qfxtransform.h"
 #include <QtDeclarative/qmlinfo.h>
 
-QML_DEFINE_TYPE(QFxFlipable,Flipable);
+QML_DEFINE_TYPE(QFxFlipable,Flipable)
 
 class QFxFlipablePrivate : public QFxItemPrivate
 {

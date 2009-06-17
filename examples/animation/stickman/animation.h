@@ -47,7 +47,9 @@
 #include <QString>
 
 class Frame;
+QT_BEGIN_NAMESPACE
 class QIODevice;
+QT_END_NAMESPACE
 class Animation
 {
 public:

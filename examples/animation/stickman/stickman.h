@@ -47,7 +47,9 @@
 const int LimbCount = 16;
 
 class Node;
+QT_BEGIN_NAMESPACE
 class QTimer;
+QT_END_NAMESPACE
 class StickMan: public QObject, public QGraphicsItem
 {
     Q_OBJECT

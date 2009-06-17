@@ -559,7 +559,7 @@ void Scene::initGL()
          << ":/res/boxes/cubemap_negy.jpg" << ":/res/boxes/cubemap_posz.jpg" << ":/res/boxes/cubemap_negz.jpg";
     m_environment = new GLTextureCube(list, qMin(1024, m_maxTextureSize));
     m_environmentShader = new QGLShader(QGLShader::FragmentShader);
-    m_environmentShader->setSourceCode(environmentShaderText);
+    m_environmentShader->compile(environmentShaderText);
     m_environmentProgram = new QGLShaderProgram;
     m_environmentProgram->addShader(m_vertexShader);
     m_environmentProgram->addShader(m_environmentShader);

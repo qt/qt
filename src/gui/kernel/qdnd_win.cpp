@@ -549,7 +549,7 @@ QOleDropSource::QueryContinueDrag(BOOL fEscapePressed, DWORD grfKeyState)
                 return ResultFromScode(DRAGDROP_S_DROP);
         }
 #endif
-        qApp->processEvents();
+        QApplication::processEvents();
         return NOERROR;
     }
 }

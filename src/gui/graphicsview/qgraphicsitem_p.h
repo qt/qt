@@ -56,6 +56,8 @@
 #include "qgraphicsitem.h"
 #include "qpixmapcache.h"
 
+#include <QtCore/qpoint.h>
+
 #if !defined(QT_NO_GRAPHICSVIEW) || (QT_EDITION & QT_MODULE_GRAPHICSVIEW) != QT_MODULE_GRAPHICSVIEW
 
 QT_BEGIN_NAMESPACE
@@ -93,24 +95,12 @@ class Q_AUTOTEST_EXPORT QGraphicsItemPrivate
 {
     Q_DECLARE_PUBLIC(QGraphicsItem)
 public:
-    struct TransformData
-    {
-        TransformData() : rotationX(0),rotationY(0),rotationZ(0),scaleX(1),scaleY(1), dirty(true)  {}
-        QTransform baseTransform;
-        QTransform transform;
-        QPointF transformCenter;
-        qreal rotationX,rotationY,rotationZ,scaleX,scaleY;
-        bool dirty;
-    };
     enum Extra {
-        ExtraTransform,
         ExtraToolTip,
         ExtraCursor,
         ExtraCacheData,
         ExtraMaxDeviceCoordCacheSize,
-        ExtraBoundingRegionGranularity,
-        ExtraOpacity,
-        ExtraEffectiveOpacity
+        ExtraBoundingRegionGranularity
     };
 
     enum AncestorFlag {
@@ -122,9 +112,10 @@ public:
 
     inline QGraphicsItemPrivate()
         : z(0),
+        opacity(1.),
         scene(0),
         parent(0),
-        siblingIndex(-1),
+        transformData(0),
         index(-1),
         depth(0),
         acceptedMouseButtons(0x1f),
@@ -138,13 +129,10 @@ public:
         isMemberOfGroup(0),
         handlesChildEvents(0),
         itemDiscovered(0),
-        hasTransform(0),
         hasCursor(0),
         ancestorFlags(0),
         cacheMode(0),
         hasBoundingRegionGranularity(0),
-        hasOpacity(0),
-        hasEffectiveOpacity(0),
         isWidget(0),
         dirty(0),
         dirtyChildren(0),
@@ -152,10 +140,17 @@ public:
         dirtyClipPath(1),
         emptyClipPath(0),
         inSetPosHelper(0),
+        needSortChildren(1),
+        allChildrenDirty(0),
+        fullUpdatePending(0),
         flags(0),
-        allChildrenCombineOpacity(1),
+        dirtyChildrenBoundingRect(1),
+        paintedViewBoundingRectsNeedRepaint(0),
+        dirtySceneTransform(1),
+        geometryChanged(0),
+        inDestructor(0),
+        isObject(0),
         globalStackingOrder(-1),
-        sceneTransformIndex(-1),
         q_ptr(0)
     {
     }
@@ -168,26 +163,29 @@ public:
     void setIsMemberOfGroup(bool enabled);
     void remapItemPos(QEvent *event, QGraphicsItem *item);
     QPointF genericMapFromScene(const QPointF &pos, const QWidget *viewport) const;
-    bool itemIsUntransformable() const;
+    inline bool itemIsUntransformable() const
+    {
+        return (flags & QGraphicsItem::ItemIgnoresTransformations)
+            || (ancestorFlags & AncestorIgnoresTransformations);
+    }
 
+    void combineTransformToParent(QTransform *x, const QTransform *viewTransform = 0) const;
+    void combineTransformFromParent(QTransform *x, const QTransform *viewTransform = 0) const;
+    
     // ### Qt 5: Remove. Workaround for reimplementation added after Qt 4.4.
     virtual QVariant inputMethodQueryHelper(Qt::InputMethodQuery query) const;
     static bool movableAncestorIsSelected(const QGraphicsItem *item);
 
     void setPosHelper(const QPointF &pos);
+    void setTransformHelper(const QTransform &transform);
     void setVisibleHelper(bool newVisible, bool explicitly, bool update = true);
     void setEnabledHelper(bool newEnabled, bool explicitly, bool update = true);
     bool discardUpdateRequest(bool ignoreClipping = false, bool ignoreVisibleBit = false,
                               bool ignoreDirtyBit = false, bool ignoreOpacity = false) const;
-    void updateHelper(const QRectF &rect = QRectF(), bool force = false, bool maybeDirtyClipPath = false);
-    void fullUpdateHelper(bool childrenOnly = false, bool maybeDirtyClipPath = false, bool ignoreOpacity = false);
-    void updateEffectiveOpacity();
-    void resolveEffectiveOpacity(qreal effectiveParentOpacity);
     void resolveDepth(int parentDepth);
-    void invalidateSceneTransformCache();
     void addChild(QGraphicsItem *child);
     void removeChild(QGraphicsItem *child);
-    void setParentItemHelper(QGraphicsItem *parent, bool deleting);
+    void setParentItemHelper(QGraphicsItem *parent);
     void childrenBoundingRectHelper(QTransform *x, QRectF *rect);
     void initStyleOption(QStyleOptionGraphicsItem *option, const QTransform &worldTransform,
                          const QRegion &exposedRegion, bool allItems = false) const;
@@ -281,12 +279,67 @@ public:
 
     void invalidateCachedClipPathRecursively(bool childrenOnly = false, const QRectF &emptyIfOutsideThisRect = QRectF());
     void updateCachedClipPathFromSetPosHelper(const QPointF &newPos);
+    void ensureSceneTransformRecursive(QGraphicsItem **topMostDirtyItem);
+
+    inline void invalidateChildrenSceneTransform()
+    {
+        for (int i = 0; i < children.size(); ++i)
+            children.at(i)->d_ptr->dirtySceneTransform = 1;
+    }
+
+    inline qreal calcEffectiveOpacity() const
+    {
+        qreal o = opacity;
+        QGraphicsItem *p = parent;
+        int myFlags = flags;
+        while (p) {
+            int parentFlags = p->d_ptr->flags;
+
+            // If I have a parent, and I don't ignore my parent's opacity, and my
+            // parent propagates to me, then combine my local opacity with my parent's
+            // effective opacity into my effective opacity.
+            if ((myFlags & QGraphicsItem::ItemIgnoresParentOpacity)
+                || (parentFlags & QGraphicsItem::ItemDoesntPropagateOpacityToChildren)) {
+                break;
+            }
+
+            o *= p->d_ptr->opacity;
+            p = p->d_ptr->parent;
+            myFlags = parentFlags;
+        }
+        return o;
+    }
 
     inline bool isFullyTransparent() const
-    { return hasEffectiveOpacity && qFuzzyIsNull(q_func()->effectiveOpacity()); }
+    {
+        if (opacity < 0.001)
+            return true;
+        if (!parent)
+            return false;
+
+        return calcEffectiveOpacity() < 0.001;
+    }
+
+    inline qreal effectiveOpacity() const {
+        if (!parent || !opacity)
+            return opacity;
+
+        return calcEffectiveOpacity();
+    }
 
     inline bool childrenCombineOpacity() const
-    { return allChildrenCombineOpacity || children.isEmpty(); }
+    {
+        if (!children.size())
+            return true;
+        if (flags & QGraphicsItem::ItemDoesntPropagateOpacityToChildren)
+            return false;
+
+        for (int i = 0; i < children.size(); ++i) {
+            if (children.at(i)->d_ptr->flags & QGraphicsItem::ItemIgnoresParentOpacity)
+                return false;
+        }
+        return true;
+    }
 
     inline bool isClippedAway() const
     { return !dirtyClipPath && q_func()->isClipped() && (emptyClipPath || cachedClipPath.isEmpty()); }
@@ -301,13 +354,21 @@ public:
                || (childrenCombineOpacity() && isFullyTransparent());
     }
 
+    inline QTransform transformToParent() const;
+
     QPainterPath cachedClipPath;
+    QRectF childrenBoundingRect;
+    QRectF needsRepaint;
+    QMap<QWidget *, QRect> paintedViewBoundingRects;
     QPointF pos;
     qreal z;
+    qreal opacity;
     QGraphicsScene *scene;
     QGraphicsItem *parent;
     QList<QGraphicsItem *> children;
-    int siblingIndex;
+    struct TransformData;
+    TransformData *transformData;
+    QTransform sceneTransform;
     int index;
     int depth;
 
@@ -323,13 +384,10 @@ public:
     quint32 isMemberOfGroup : 1;
     quint32 handlesChildEvents : 1;
     quint32 itemDiscovered : 1;
-    quint32 hasTransform : 1;
     quint32 hasCursor : 1;
     quint32 ancestorFlags : 3;
     quint32 cacheMode : 2;
     quint32 hasBoundingRegionGranularity : 1;
-    quint32 hasOpacity : 1;
-    quint32 hasEffectiveOpacity : 1;
     quint32 isWidget : 1;
     quint32 dirty : 1;    
     quint32 dirtyChildren : 1;    
@@ -337,18 +395,66 @@ public:
     quint32 dirtyClipPath : 1;
     quint32 emptyClipPath : 1;
     quint32 inSetPosHelper : 1;
+    quint32 needSortChildren : 1;
+    quint32 allChildrenDirty : 1;
+    quint32 fullUpdatePending : 1;
 
     // New 32 bits
-    quint32 flags : 10;
-    quint32 allChildrenCombineOpacity : 1;
-    quint32 padding : 21; // feel free to use
+    quint32 flags : 12;
+    quint32 dirtyChildrenBoundingRect : 1;
+    quint32 paintedViewBoundingRectsNeedRepaint : 1;
+    quint32 dirtySceneTransform  : 1;
+    quint32 geometryChanged : 1;
+    quint32 inDestructor : 1;
+    quint32 isObject : 1;
+    quint32 unused : 14; // feel free to use
 
     // Optional stacking order
     int globalStackingOrder;
-    int sceneTransformIndex;
-
     QGraphicsItem *q_ptr;
 };
+
+struct QGraphicsItemPrivate::TransformData {
+    QTransform transform;
+    qreal xScale;
+    qreal yScale;
+    qreal xRotation;
+    qreal yRotation;
+    qreal zRotation;
+    qreal horizontalShear;
+    qreal verticalShear;
+    qreal xOrigin;
+    qreal yOrigin;
+
+    TransformData() :
+        xScale(1.0), yScale(1.0), xRotation(0.0), yRotation(0.0), zRotation(0.0),
+        horizontalShear(0.0), verticalShear(0.0), xOrigin(0.0), yOrigin(0.0)
+    {}
+
+    QTransform computedFullTransform() const
+    {
+        QTransform x;
+        x.translate(xOrigin, yOrigin);
+        x = transform * x;
+        x.rotate(xRotation, Qt::XAxis);
+        x.rotate(yRotation, Qt::YAxis);
+        x.rotate(zRotation, Qt::ZAxis);
+        x.shear(horizontalShear, verticalShear);
+        x.scale(xScale, yScale);
+        x.translate(-xOrigin, -yOrigin);
+        return x;
+    }
+};
+
+/*
+   return the full transform of the item to the parent.  This include the position and all the transform data
+*/
+inline QTransform QGraphicsItemPrivate::transformToParent() const
+{
+    QTransform matrix;
+    combineTransformToParent(&matrix);
+    return matrix;
+}
 
 QT_END_NAMESPACE
 

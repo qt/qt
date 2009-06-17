@@ -43,7 +43,7 @@
 
 
 QT_BEGIN_NAMESPACE
-QML_DEFINE_TYPE(QNumberFormat,NumberFormat);
+QML_DEFINE_TYPE(QNumberFormat,NumberFormat)
 
 QNumberFormat::QNumberFormat(QObject *parent) : QObject(parent), _number(0), _type(Decimal),
                                  _groupingSize(0)

@@ -139,7 +139,6 @@ extern bool qt_cleartype_enabled;
  * Span functions
  */
 static void qt_span_fill_clipRect(int count, const QSpan *spans, void *userData);
-static void qt_span_fill_clipRegion(int count, const QSpan *spans, void *userData);
 static void qt_span_fill_clipped(int count, const QSpan *spans, void *userData);
 static void qt_span_clip(int count, const QSpan *spans, void *userData);
 static void qt_merge_clip(const QClipData *c1, const QClipData *c2, QClipData *result);
@@ -363,7 +362,8 @@ void QRasterPaintEngine::init()
     d->basicStroker.setCubicToHook(qt_ft_outline_cubic_to);
     d->dashStroker = 0;
 
-    d->baseClip = 0;
+    d->baseClip = new QClipData(d->device->height());
+    d->baseClip->setClipRect(QRect(0, 0, d->device->width(), d->device->height()));
 
     d->image_filler.init(d->rasterBuffer, this);
     d->image_filler.type = QSpanData::Texture;
@@ -447,6 +447,8 @@ QRasterPaintEngine::~QRasterPaintEngine()
     delete d->outlineMapper;
     delete d->rasterizer;
     delete d->dashStroker;
+
+    delete d->baseClip;
 }
 
 /*!
@@ -483,12 +485,12 @@ bool QRasterPaintEngine::begin(QPaintDevice *device)
     d->rasterizer->setClipRect(d->deviceRect);
 
     s->penData.init(d->rasterBuffer, this);
-    s->penData.setup(s->pen.brush(), s->intOpacity);
+    s->penData.setup(s->pen.brush(), s->intOpacity, s->composition_mode);
     s->stroker = &d->basicStroker;
     d->basicStroker.setClipRect(d->deviceRect);
 
     s->brushData.init(d->rasterBuffer, this);
-    s->brushData.setup(s->brush, s->intOpacity);
+    s->brushData.setup(s->brush, s->intOpacity, s->composition_mode);
 
     d->rasterBuffer->compositionMode = QPainter::CompositionMode_SourceOver;
 
@@ -534,18 +536,13 @@ bool QRasterPaintEngine::begin(QPaintDevice *device)
 */
 bool QRasterPaintEngine::end()
 {
-    Q_D(QRasterPaintEngine);
 #ifdef QT_DEBUG_DRAW
+    Q_D(QRasterPaintEngine);
     qDebug() << "QRasterPaintEngine::end devRect:" << d->deviceRect;
     if (d->baseClip) {
         dumpClip(d->rasterBuffer->width(), d->rasterBuffer->height(), d->baseClip);
     }
 #endif
-
-    if (d->baseClip) {
-        delete d->baseClip;
-        d->baseClip = 0;
-    }
 
     return true;
 }
@@ -773,7 +770,7 @@ void QRasterPaintEngine::updatePen(const QPen &pen)
     s->strokeFlags = 0;
 
     s->penData.clip = d->clip();
-    s->penData.setup(pen_style == Qt::NoPen ? QBrush() : pen.brush(), s->intOpacity);
+    s->penData.setup(pen_style == Qt::NoPen ? QBrush() : pen.brush(), s->intOpacity, s->composition_mode);
 
     if (s->strokeFlags & QRasterPaintEngine::DirtyTransform
         || pen.brush().transform().type() >= QTransform::TxNone) {
@@ -873,7 +870,7 @@ void QRasterPaintEngine::updateBrush(const QBrush &brush)
     QRasterPaintEngineState *s = state();
     // must set clip prior to setup, as setup uses it...
     s->brushData.clip = d->clip();
-    s->brushData.setup(brush, s->intOpacity);
+    s->brushData.setup(brush, s->intOpacity, s->composition_mode);
     if (s->fillFlags & DirtyTransform
         || brush.transform().type() >= QTransform::TxNone)
         d_func()->updateMatrixData(&s->brushData, brush, d->brushMatrix());
@@ -1028,6 +1025,10 @@ void QRasterPaintEnginePrivate::drawImage(const QPointF &pt,
 {
     if (alpha == 0 || !clip.isValid())
         return;
+
+    if (alpha ==0)
+        return;
+
     Q_ASSERT(img.depth() >= 8);
 
     int srcBPL = img.bytesPerLine();
@@ -1057,7 +1058,7 @@ void QRasterPaintEnginePrivate::drawImage(const QPointF &pt,
         int d = x + iw - cx2;
         iw -= d;
     }
-    if (iw < 0)
+    if (iw <= 0)
         return;
 
     // adapt the y paremeters...
@@ -1074,7 +1075,7 @@ void QRasterPaintEnginePrivate::drawImage(const QPointF &pt,
         int d = y + ih - cy2;
         ih -= d;
     }
-    if (ih < 0)
+    if (ih <= 0)
         return;
 
     // call the blend function...
@@ -1096,11 +1097,10 @@ void QRasterPaintEnginePrivate::systemStateChanged()
     if (!systemClip.isEmpty()) {
         QRegion clippedDeviceRgn = systemClip & clipRect;
         deviceRect = clippedDeviceRgn.boundingRect();
-        delete baseClip;
-        baseClip = new QClipData(device->height());
         baseClip->setClipRegion(clippedDeviceRgn);
     } else {
         deviceRect = clipRect;
+        baseClip->setClipRect(deviceRect);
     }
 #ifdef QT_DEBUG_DRAW
     qDebug() << "systemStateChanged" << this << "deviceRect" << deviceRect << clipRect << systemClip;
@@ -1172,6 +1172,25 @@ static void checkClipRatios(QRasterPaintEnginePrivate *d)
 }
 #endif
 
+static void qrasterpaintengine_state_setNoClip(QRasterPaintEngineState *s)
+{
+    if (s->flags.has_clip_ownership)
+        delete s->clip;
+    s->clip = 0;
+    s->flags.has_clip_ownership = false;
+}
+
+static void qrasterpaintengine_dirty_clip(QRasterPaintEnginePrivate *d, QRasterPaintEngineState *s)
+{
+    s->fillFlags |= QPaintEngine::DirtyClipPath;
+    s->strokeFlags |= QPaintEngine::DirtyClipPath;
+    s->pixmapFlags |= QPaintEngine::DirtyClipPath;
+
+    d->solid_color_filler.clip = d->clip();
+    d->solid_color_filler.adjustSpanMethods();
+}
+
+
 /*!
     \internal
 */
@@ -1183,12 +1202,12 @@ void QRasterPaintEngine::clip(const QVectorPath &path, Qt::ClipOperation op)
     if (path.elements()) {
         for (int i=0; i<path.elementCount(); ++i) {
             qDebug() << " - " << path.elements()[i]
-                     << "(" << path.points()[i*2] << ", " << path.points()[i*2+1] << ")";
+                     << '(' << path.points()[i*2] << ", " << path.points()[i*2+1] << ')';
         }
     } else {
         for (int i=0; i<path.elementCount(); ++i) {
             qDebug() << " ---- "
-                     << "(" << path.points()[i*2] << ", " << path.points()[i*2+1] << ")";
+                     << '(' << path.points()[i*2] << ", " << path.points()[i*2+1] << ')';
         }
     }
 #endif
@@ -1220,10 +1239,7 @@ void QRasterPaintEngine::clip(const QVectorPath &path, Qt::ClipOperation op)
     }
 
     if (op == Qt::NoClip) {
-        if (s->flags.has_clip_ownership)
-            delete s->clip;
-        s->clip = 0;
-        s->flags.has_clip_ownership = false;
+        qrasterpaintengine_state_setNoClip(s);
 
     } else {
         QClipData *base = d->baseClip;
@@ -1265,17 +1281,7 @@ void QRasterPaintEngine::clip(const QVectorPath &path, Qt::ClipOperation op)
         s->clip = newClip;
         s->flags.has_clip_ownership = true;
     }
-
-    s->fillFlags |= DirtyClipPath;
-    s->strokeFlags |= DirtyClipPath;
-    s->pixmapFlags |= DirtyClipPath;
-
-    d->solid_color_filler.clip = d->clip();
-    d->solid_color_filler.adjustSpanMethods();
-
-#ifdef QT_CLIPPING_RATIOS
-    checkClipRatios(d);
-#endif
+    qrasterpaintengine_dirty_clip(d, s);
 }
 
 
@@ -1293,10 +1299,7 @@ void QRasterPaintEngine::clip(const QRect &rect, Qt::ClipOperation op)
     QRasterPaintEngineState *s = state();
 
     if (op == Qt::NoClip) {
-        if (s->flags.has_clip_ownership)
-            delete s->clip;
-        s->clip = d->baseClip;
-        s->flags.has_clip_ownership = false;
+        qrasterpaintengine_state_setNoClip(s);
 
     } else if (op == Qt::UniteClip || s->matrix.type() > QTransform::TxScale) {
         QPaintEngineEx::clip(rect, op);
@@ -1340,37 +1343,63 @@ void QRasterPaintEngine::clip(const QRect &rect, Qt::ClipOperation op)
             return;
         }
     }
-
-    s->brushData.clip = d->clip();
-    s->penData.clip = d->clip();
-
-    s->fillFlags |= DirtyClipPath;
-    s->strokeFlags |= DirtyClipPath;
-    s->pixmapFlags |= DirtyClipPath;
-
-    d->solid_color_filler.clip = d->clip();
-    d->solid_color_filler.adjustSpanMethods();
-
-
-#ifdef QT_CLIPPING_RATIOS
-    checkClipRatios(d);
-#endif
+    qrasterpaintengine_dirty_clip(d, s);
 }
+
 
 /*!
     \internal
 */
 void QRasterPaintEngine::clip(const QRegion &region, Qt::ClipOperation op)
 {
-    QPaintEngineEx::clip(region, op);
-}
+#ifdef QT_DEBUG_DRAW
+    qDebug() << "QRasterPaintEngine::clip(): " << region << op;
+#endif
 
-/*!
-    \internal
-*/
-void QRasterPaintEngine::clip(const QPainterPath &path, Qt::ClipOperation op)
-{
-    QPaintEngineEx::clip(path, op);
+    Q_D(QRasterPaintEngine);
+
+    if (region.numRects() == 1) {
+        clip(region.boundingRect(), op);
+        return;
+    }
+
+    QRasterPaintEngineState *s = state();
+    const QClipData *clip = d->clip();
+    const QClipData *baseClip = d->baseClip;
+
+    if (op == Qt::NoClip) {
+        qrasterpaintengine_state_setNoClip(s);
+    } else if (s->matrix.type() > QTransform::TxScale
+               || op == Qt::UniteClip
+               || (op == Qt::IntersectClip && !clip->hasRectClip && !clip->hasRegionClip)
+               || (op == Qt::ReplaceClip && !baseClip->hasRectClip && !baseClip->hasRegionClip)) {
+        QPaintEngineEx::clip(region, op);
+    } else {
+        const QClipData *curClip;
+        QClipData *newClip;
+
+        if (op == Qt::IntersectClip)
+            curClip = clip;
+        else
+            curClip = baseClip;
+
+        if (s->flags.has_clip_ownership) {
+            newClip = s->clip;
+            Q_ASSERT(newClip);
+        } else {
+            newClip = new QClipData(d->rasterBuffer->height());
+            s->clip = newClip;
+            s->flags.has_clip_ownership = true;
+        }
+
+        QRegion r = s->matrix.map(region);
+        if (curClip->hasRectClip)
+            newClip->setClipRegion(r & curClip->clipRect);
+        else if (curClip->hasRegionClip)
+            newClip->setClipRegion(r & clip->clipRegion);
+
+        qrasterpaintengine_dirty_clip(d, s);
+    }
 }
 
 /*!
@@ -1412,7 +1441,7 @@ static void fillRect_normalized(const QRect &r, QSpanData *data,
 {
     int x1, x2, y1, y2;
 
-    bool rectClipped = false;
+    bool rectClipped = true;
 
     if (data->clip) {
         x1 = qMax(r.x(), data->clip->xmin);
@@ -1742,12 +1771,17 @@ void QRasterPaintEngine::stroke(const QVectorPath &path, const QPen &pen)
 
 static inline QRect toNormalizedFillRect(const QRectF &rect)
 {
-    const int x1 = qRound(rect.x() + aliasedCoordinateDelta);
-    const int y1 = qRound(rect.y() + aliasedCoordinateDelta);
-    const int x2 = qRound(rect.right() + aliasedCoordinateDelta);
-    const int y2 = qRound(rect.bottom() + aliasedCoordinateDelta);
+    int x1 = int(rect.x() + aliasedCoordinateDelta);
+    int y1 = int(rect.y() + aliasedCoordinateDelta);
+    int x2 = int(rect.right() + aliasedCoordinateDelta);
+    int y2 = int(rect.bottom() + aliasedCoordinateDelta);
 
-    return QRect(x1, y1, x2 - x1, y2 - y1).normalized();
+    if (x2 < x1)
+        qSwap(x1, x2);
+    if (y2 < y1)
+        qSwap(y1, y2);
+
+    return QRect(x1, y1, x2 - x1, y2 - y1);
 }
 
 /*!
@@ -1818,8 +1852,7 @@ void QRasterPaintEngine::fill(const QVectorPath &path, const QBrush &brush)
     }
 
     // ### Optimize for non transformed ellipses and rectangles...
-    QRealRect r = path.controlPointRect();
-    QRectF cpRect(r.x1, r.y1, r.x2 - r.x1, r.y2 - r.y1);
+    QRectF cpRect = path.controlPointRect();
     const QRect deviceRect = s->matrix.mapRect(cpRect).toRect();
     ProcessSpans blend = d->getBrushFunc(deviceRect, &s->brushData);
 
@@ -1907,9 +1940,12 @@ void QRasterPaintEngine::fillRect(const QRectF &r, const QColor &color)
     QRasterPaintEngineState *s = state();
 
     d->solid_color_filler.solid.color = PREMUL(ARGB_COMBINE_ALPHA(color.rgba(), s->intOpacity));
+    if ((d->solid_color_filler.solid.color & 0xff000000) == 0
+        && s->composition_mode == QPainter::CompositionMode_SourceOver) {
+        return;
+    }
     d->solid_color_filler.clip = d->clip();
     d->solid_color_filler.adjustSpanMethods();
-
     fillRect(r, &d->solid_color_filler);
 }
 
@@ -3076,7 +3112,7 @@ bool QRasterPaintEnginePrivate::isUnclipped_normalized(const QRect &r) const
     if (cl->clipRect == deviceRect)
         return true;
 
-    if (cl->hasRegionClip) {
+    if (cl->hasRectClip) {
         // inline contains() for performance (we know the rects are normalized)
         const QRect &r1 = cl->clipRect;
         return (r.left() >= r1.left() && r.right() <= r1.right()
@@ -3880,11 +3916,7 @@ static void qt_merge_clip(const QClipData *c1, const QClipData *c2, QClipData *r
 {
     Q_ASSERT(c1->clipSpanHeight == c2->clipSpanHeight && c1->clipSpanHeight == result->clipSpanHeight);
 
-    // ### buffer overflow possible
-    const int BUFFER_SIZE = 4096;
-    int buffer[BUFFER_SIZE];
-    int *b = buffer;
-    int bsize = BUFFER_SIZE;
+    QVarLengthArray<short, 4096> buffer;
 
     QClipData::ClipLine *c1ClipLines = const_cast<QClipData *>(c1)->clipLines();
     QClipData::ClipLine *c2ClipLines = const_cast<QClipData *>(c2)->clipLines();
@@ -3911,11 +3943,8 @@ static void qt_merge_clip(const QClipData *c1, const QClipData *c2, QClipData *r
         // find required length
         int max = qMax(c1_spans[c1_count - 1].x + c1_spans[c1_count - 1].len,
                        c2_spans[c2_count - 1].x + c2_spans[c2_count - 1].len);
-        if (max > bsize) {
-            b = (int *)realloc(bsize == BUFFER_SIZE ? 0 : b, max*sizeof(int));
-            bsize = max;
-        }
-        memset(buffer, 0, BUFFER_SIZE * sizeof(int));
+        buffer.resize(max);
+        memset(buffer.data(), 0, buffer.size() * sizeof(short));
 
         // Fill with old spans.
         for (int i = 0; i < c1_count; ++i) {
@@ -3951,8 +3980,6 @@ static void qt_merge_clip(const QClipData *c1, const QClipData *c2, QClipData *r
             result->appendSpan(sx, x - sx, y, coverage);
         }
     }
-    if (b != buffer)
-        free(b);
 }
 
 void QRasterPaintEnginePrivate::initializeRasterizer(QSpanData *data)
@@ -4283,7 +4310,7 @@ QClipData::QClipData(int height)
     clipSpanHeight = height;
     m_clipLines = 0;
 
-    allocated = height;
+    allocated = 0;
     m_spans = 0;
     xmin = xmax = ymin = ymax = 0;
     count = 0;
@@ -4305,8 +4332,11 @@ void QClipData::initialize()
     if (m_spans)
         return;
 
-    m_clipLines = (ClipLine *)calloc(sizeof(ClipLine), clipSpanHeight);
+    if (!m_clipLines)
+        m_clipLines = (ClipLine *)calloc(sizeof(ClipLine), clipSpanHeight);
+
     m_spans = (QSpan *)malloc(clipSpanHeight*sizeof(QSpan));
+    allocated = clipSpanHeight;
 
     if (hasRectClip) {
         int y = 0;
@@ -4351,6 +4381,7 @@ void QClipData::initialize()
 
         int y = 0;
         int firstInBand = 0;
+        count = 0;
         while (firstInBand < numRects) {
             const int currMinY = rects.at(firstInBand).y();
             const int currMaxY = currMinY + rects.at(firstInBand).height();
@@ -4411,20 +4442,37 @@ void QClipData::fixup()
     ymax = m_spans[count-1].y + 1;
     xmin = INT_MAX;
     xmax = 0;
+
+    bool isRect = true;
+    int left = m_spans[0].x;
+    int right = m_spans[0].x + m_spans[0].len;
+
     for (int i = 0; i < count; ++i) {
-//           qDebug() << "    " << spans[i].x << spans[i].y << spans[i].len << spans[i].coverage;
         if (m_spans[i].y != y) {
+            if (m_spans[i].y != y + 1 && y != -1) {
+                isRect = false;
+            }
             y = m_spans[i].y;
             m_clipLines[y].spans = m_spans+i;
             m_clipLines[y].count = 0;
 //              qDebug() << "        new line: y=" << y;
         }
         ++m_clipLines[y].count;
+        int sl = (int) m_spans[i].x;
+        int sr = sl + m_spans[i].len;
+
         xmin = qMin(xmin, (int)m_spans[i].x);
         xmax = qMax(xmax, (int)m_spans[i].x + m_spans[i].len);
+
+        if (sl != left || sr != right)
+            isRect = false;
     }
-    ++xmax;
-//     qDebug("xmin=%d,xmax=%d,ymin=%d,ymax=%d", xmin, xmax, ymin, ymax);
+//     qDebug("xmin=%d,xmax=%d,ymin=%d,ymax=%d %s", xmin, xmax, ymin, ymax, isRect ? "rectangular" : "");
+
+    if (isRect) {
+        hasRectClip = true;
+        clipRect.setRect(xmin, ymin, xmax - xmin, ymax - ymin);
+    }
 }
 
 /*
@@ -4432,11 +4480,12 @@ void QClipData::fixup()
  */
 void QClipData::setClipRect(const QRect &rect)
 {
-    if (rect == clipRect)
+    if (hasRectClip && rect == clipRect)
         return;
 
 //    qDebug() << "setClipRect" << clipSpanHeight << count << allocated << rect;
     hasRectClip = true;
+    hasRegionClip = false;
     clipRect = rect;
 
     xmin = rect.x();
@@ -4445,7 +4494,7 @@ void QClipData::setClipRect(const QRect &rect)
     ymax = qMin(rect.y() + rect.height(), clipSpanHeight);
 
     if (m_spans) {
-        delete m_spans;
+        free(m_spans);
         m_spans = 0;
     }
 
@@ -4463,6 +4512,7 @@ void QClipData::setClipRegion(const QRegion &region)
     }
 
     hasRegionClip = true;
+    hasRectClip = false;
     clipRegion = region;
 
     { // set bounding rect
@@ -4474,7 +4524,7 @@ void QClipData::setClipRegion(const QRegion &region)
     }
 
     if (m_spans) {
-        delete m_spans;
+        free(m_spans);
         m_spans = 0;
     }
 
@@ -4720,29 +4770,6 @@ static void qt_span_fill_clipRect(int count, const QSpan *spans,
                                fillData->clip->clipRect);
     if (count > 0)
         fillData->unclipped_blend(count, spans, fillData);
-}
-
-static void qt_span_fill_clipRegion(int count, const QSpan *spans,
-                                    void *userData)
-{
-    QSpanData *fillData = reinterpret_cast<QSpanData *>(userData);
-    Q_ASSERT(fillData->blend && fillData->unclipped_blend);
-
-    Q_ASSERT(fillData->clip);
-    Q_ASSERT(!fillData->clip->clipRegion.isEmpty());
-
-    const int NSPANS = 256;
-    QSpan cspans[NSPANS];
-    int currentClip = 0;
-    while (currentClip < count) {
-        const int unclipped = qt_intersect_spans(const_cast<QSpan*>(spans),
-                                                 count, &currentClip,
-                                                 &cspans[0], NSPANS,
-                                                 fillData->clip->clipRegion);
-        if (unclipped > 0)
-            fillData->unclipped_blend(unclipped, cspans, fillData);
-    }
-
 }
 
 static void qt_span_clip(int count, const QSpan *spans, void *userData)
@@ -5017,7 +5044,7 @@ void QSpanData::init(QRasterBuffer *rb, const QRasterPaintEngine *pe)
 
 extern QImage qt_imageForBrush(int brushStyle, bool invert);
 
-void QSpanData::setup(const QBrush &brush, int alpha)
+void QSpanData::setup(const QBrush &brush, int alpha, QPainter::CompositionMode compositionMode)
 {
     Qt::BrushStyle brushStyle = qbrush_style(brush);
     switch (brushStyle) {
@@ -5025,6 +5052,10 @@ void QSpanData::setup(const QBrush &brush, int alpha)
         type = Solid;
         QColor c = qbrush_color(brush);
         solid.color = PREMUL(ARGB_COMBINE_ALPHA(c.rgba(), alpha));
+        if ((solid.color & 0xff000000) == 0
+            && compositionMode == QPainter::CompositionMode_SourceOver) {
+            type = None;
+        }
         break;
     }
 
@@ -5165,8 +5196,6 @@ void QSpanData::adjustSpanMethods()
         blend = unclipped_blend;
     } else if (clip->hasRectClip) {
         blend = clip->clipRect.isEmpty() ? 0 : qt_span_fill_clipRect;
-    } else if (clip->hasRegionClip) {
-        blend = clip->clipRegion.isEmpty() ? 0 : qt_span_fill_clipRegion;
     } else {
         blend = qt_span_fill_clipped;
     }
@@ -6165,7 +6194,7 @@ void dumpClip(int width, int height, QClipData *clip)
     Q_ASSERT(x1 >= 0);
 
     fprintf(stderr,"clip %d: %d %d - %d %d\n", counter, x0, y0, x1, y1);
-    clipImg.save(QString(QLatin1String("clip-%0.png")).arg(counter++));
+    clipImg.save(QString::fromLatin1("clip-%0.png").arg(counter++));
 }
 #endif
 

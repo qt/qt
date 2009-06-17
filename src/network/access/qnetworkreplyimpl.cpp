@@ -414,7 +414,8 @@ void QNetworkReplyImplPrivate::appendDownstreamData(const QByteArray &data)
 void QNetworkReplyImplPrivate::appendDownstreamData(QIODevice *data)
 {
     Q_Q(QNetworkReplyImpl);
-    Q_ASSERT(q->isOpen());
+    if (!q->isOpen())
+        return;
 
     // read until EOF from data
     if (copyDevice) {

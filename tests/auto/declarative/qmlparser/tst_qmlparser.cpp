@@ -26,6 +26,7 @@ private slots:
     void interfaceQmlList();
     void interfaceQList();
     void assignObjectToSignal();
+    void assignObjectToVariant();
     void assignLiteralSignalProperty();
     void assignQmlComponent();
     void assignBasicTypes();
@@ -70,8 +71,8 @@ private:
                                   error.description().toUtf8(); \
             actual << errorStr; \
         } \
-        if (qgetenv("DEBUG") != "") \
-            qWarning() << expected << actual;  \
+        if (qgetenv("DEBUG") != "" && expected != actual) \
+            qWarning() << "Expected:" << expected << "Actual:" << actual;  \
         QCOMPARE(expected, actual); \
     }
 
@@ -129,12 +130,12 @@ void tst_qmlparser::errors_data()
 
     QTest::newRow("unsupportedProperty") << "unsupportedProperty.txt" << "unsupportedProperty.errors.txt" << false;
     QTest::newRow("nullDotProperty") << "nullDotProperty.txt" << "nullDotProperty.errors.txt" << true;
-    QTest::newRow("fakeDotProperty") << "fakeDotProperty.txt" << "fakeDotProperty.errors.txt" << true;
+    QTest::newRow("fakeDotProperty") << "fakeDotProperty.txt" << "fakeDotProperty.errors.txt" << false;
     QTest::newRow("duplicateIDs") << "duplicateIDs.txt" << "duplicateIDs.errors.txt" << false;
     QTest::newRow("unregisteredObject") << "unregisteredObject.txt" << "unregisteredObject.errors.txt" << false;
     QTest::newRow("empty") << "empty.txt" << "empty.errors.txt" << false;
     QTest::newRow("missingObject") << "missingObject.txt" << "missingObject.errors.txt" << false;
-    QTest::newRow("failingComponent") << "failingComponent.txt" << "failingComponent.errors.txt" << true;
+    QTest::newRow("failingComponent") << "failingComponent.txt" << "failingComponent.errors.txt" << false;
     QTest::newRow("missingSignal") << "missingSignal.txt" << "missingSignal.errors.txt" << false;
 }
 
@@ -206,6 +207,15 @@ void tst_qmlparser::assignObjectToSignal()
     QVERIFY(object != 0);
     QTest::ignoreMessage(QtWarningMsg, "MyQmlObject::basicSlot");
     emit object->basicSignal();
+}
+
+void tst_qmlparser::assignObjectToVariant()
+{
+    QmlComponent component(&engine, TEST_FILE("assignObjectToVariant.txt"));
+    QObject *object = component.create();
+    QVERIFY(object != 0);
+    QVariant v = object->property("a");
+    QVERIFY(v.userType() == qMetaTypeId<QObject *>());
 }
 
 void tst_qmlparser::assignLiteralSignalProperty()

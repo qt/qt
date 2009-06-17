@@ -3468,7 +3468,7 @@ void QSettings::setPath(Format format, Scope scope, const QString &path)
     \typedef QSettings::SettingsMap
 
     Typedef for QMap<QString, QVariant>.
-
+	
     \sa registerFormat()
 */
 
@@ -3479,6 +3479,11 @@ void QSettings::setPath(Format format, Scope scope, const QString &path)
 
     \snippet doc/src/snippets/code/src_corelib_io_qsettings.cpp 27
 
+    \c ReadFunc is used in \c registerFormat() as a pointer to a function
+    that reads a set of key/value pairs. \c ReadFunc should read all the 
+    options in one pass, and return all the settings in the \c SettingsMap 
+    container, which is initially empty.
+
     \sa WriteFunc, registerFormat()
 */
 
@@ -3488,6 +3493,10 @@ void QSettings::setPath(Format format, Scope scope, const QString &path)
     Typedef for a pointer to a function with the following signature:
 
     \snippet doc/src/snippets/code/src_corelib_io_qsettings.cpp 28
+
+    \c WriteFunc is used in \c registerFormat() as a pointer to a function 
+    that writes a set of key/value pairs. \c WriteFunc is only called once,
+    so you need to output the settings in one go.
 
     \sa ReadFunc, registerFormat()
 */
@@ -3504,7 +3513,7 @@ void QSettings::setPath(Format format, Scope scope, const QString &path)
     extension associated to the format (without the '.').
 
     The \a readFunc and \a writeFunc parameters are pointers to
-    functions that read and write a set of (key, value) pairs. The
+    functions that read and write a set of key/value pairs. The
     QIODevice parameter to the read and write functions is always
     opened in binary mode (i.e., without the QIODevice::Text flag).
 

@@ -52,7 +52,6 @@
 #include <qml.h>
 #include "private/qmlcomponent_p.h"
 #include <qmlcomponent.h>
-#include <qmlbasicscript.h>
 #include "private/qmetaobjectbuilder_p.h"
 #include <private/qmlvmemetaobject_p.h>
 #include <private/qmlcompiler_p.h>
@@ -84,18 +83,23 @@ const QMetaObject *Object::metaObject() const
 
 QmlParser::Property *Object::getDefaultProperty()
 {
-    if (!defaultProperty)
+    if (!defaultProperty) {
         defaultProperty = new Property;
+        defaultProperty->parent = this;
+    }
     return defaultProperty;
 }
 
 Property *QmlParser::Object::getProperty(const QByteArray &name, bool create)
 {
     if (!properties.contains(name)) {
-        if (create)
-            properties.insert(name, new Property(name));
-        else
+        if (create) {
+            Property *property = new Property(name);
+            property->parent = this;
+            properties.insert(name, property);
+        } else {
             return 0;
+        }
     }
     return properties[name];
 }
@@ -154,12 +158,12 @@ void QmlParser::Object::dump(int indent) const
 }
 
 QmlParser::Property::Property()
-: type(0), index(-1), value(0), isDefault(true)
+: parent(0), type(0), index(-1), value(0), isDefault(true)
 {
 }
 
 QmlParser::Property::Property(const QByteArray &n)
-: type(0), index(-1), value(0), name(n), isDefault(false)
+: parent(0), type(0), index(-1), value(0), name(n), isDefault(false)
 {
 }
 
@@ -281,10 +285,14 @@ QmlParser::Variant::Variant(double v, const QString &asWritten)
 {
 }
 
-QmlParser::Variant::Variant(const QString &v, Type type)
-: t(type), s(v)
+QmlParser::Variant::Variant(const QString &v)
+: t(String), s(v)
 {
-    Q_ASSERT(type == String || type == Script);
+}
+
+QmlParser::Variant::Variant(const QString &v, QmlJS::AST::Node *n)
+: t(Script), n(n), s(v)
+{
 }
 
 QmlParser::Variant &QmlParser::Variant::operator=(const Variant &o)
@@ -332,6 +340,14 @@ QString QmlParser::Variant::asScript() const
     case Script:
         return s;
     }
+}
+
+QmlJS::AST::Node *QmlParser::Variant::asAST() const
+{
+    if (type() == Script)
+        return n;
+    else
+        return 0;
 }
 
 QT_END_NAMESPACE

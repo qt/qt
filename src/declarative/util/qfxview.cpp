@@ -84,11 +84,6 @@ static QVariant stringToKeySequence(const QString &str)
     return QVariant::fromValue(QKeySequence(str));
 }
 
-static QVariant stringToUrl(const QString &str)
-{
-    return QVariant(QUrl(str));
-}
-
 class QFxViewPrivate
 {
 public:
@@ -166,7 +161,6 @@ void QFxViewPrivate::init()
     QmlMetaType::registerCustomStringConverter(QVariant::Pixmap, &stringToPixmap);
     QmlMetaType::registerCustomStringConverter(QVariant::Icon, &stringToIcon);
     QmlMetaType::registerCustomStringConverter(QVariant::KeySequence, &stringToKeySequence);
-    QmlMetaType::registerCustomStringConverter(QVariant::Url, &stringToUrl);
 
 #ifdef Q_ENABLE_PERFORMANCE_LOG
     QFxPerfTimer<QFxPerf::FontDatabase> perf;

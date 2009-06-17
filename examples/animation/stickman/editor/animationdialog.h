@@ -45,8 +45,10 @@
 #include <QDialog>
 #include <QMessageBox>
 
+QT_BEGIN_NAMESPACE
 class QSpinBox;
 class QLineEdit;
+QT_END_NAMESPACE
 class StickMan;
 class Animation;
 class AnimationDialog: public QDialog

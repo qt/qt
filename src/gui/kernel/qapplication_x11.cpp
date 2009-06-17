@@ -157,6 +157,8 @@ static const char * x11_atomnames = {
     "WM_TAKE_FOCUS\0"
     "_NET_WM_PING\0"
     "_NET_WM_CONTEXT_HELP\0"
+    "_NET_WM_SYNC_REQUEST\0"
+    "_NET_WM_SYNC_REQUEST_COUNTER\0"
 
     // ICCCM window state
     "WM_STATE\0"
@@ -508,6 +510,7 @@ static Bool qt_xfixes_scanner(Display*, XEvent *event, XPointer arg)
 class QETWidget : public QWidget                // event translator widget
 {
 public:
+    QWidgetPrivate* d_func() { return QWidget::d_func(); }
     bool translateMouseEvent(const XEvent *);
     void translatePaintEvent(const XEvent *);
     bool translateConfigEvent(const XEvent *);
@@ -718,6 +721,44 @@ static int qt_xio_errhandler(Display *)
 }
 #endif
 
+#ifndef QT_NO_XSYNC
+struct qt_sync_request_event_data
+{
+    WId window;
+};
+
+#if defined(Q_C_CALLBACKS)
+extern "C" {
+#endif
+
+static Bool qt_sync_request_scanner(Display*, XEvent *event, XPointer arg)
+{
+    qt_sync_request_event_data *data =
+        reinterpret_cast<qt_sync_request_event_data*>(arg);
+    if (event->type == ClientMessage &&
+        event->xany.window == data->window &&
+        event->xclient.message_type == ATOM(WM_PROTOCOLS) &&
+        (Atom)event->xclient.data.l[0] == ATOM(_NET_WM_SYNC_REQUEST)) {
+        QWidget *w = QWidget::find(event->xany.window);
+        if (QTLWExtra *tlw = ((QETWidget*)w)->d_func()->maybeTopData()) {
+            const ulong timestamp = (const ulong) event->xclient.data.l[1];
+            if (timestamp > X11->time)
+                X11->time = timestamp;
+            if (timestamp == CurrentTime || timestamp > tlw->syncRequestTimestamp) {
+                tlw->syncRequestTimestamp = timestamp;
+                tlw->newCounterValueLo = event->xclient.data.l[2];
+                tlw->newCounterValueHi = event->xclient.data.l[3];
+            }
+        }
+        return true;
+    }
+    return false;
+}
+
+#if defined(Q_C_CALLBACKS)
+}
+#endif
+#endif // QT_NO_XSYNC
 
 static void qt_x11_create_intern_atoms()
 {
@@ -2090,6 +2131,13 @@ void qt_init(QApplicationPrivate *priv, int,
 #endif // QT_RUNTIME_XCURSOR
 #endif // QT_NO_XCURSOR
 
+#ifndef QT_NO_XSYNC
+        int xsync_evbase, xsync_errbase;
+        int major, minor;
+        if (XSyncQueryExtension(X11->display, &xsync_evbase, &xsync_errbase))
+            XSyncInitialize(X11->display, &major, &minor);
+#endif // QT_NO_XSYNC
+
 #ifndef QT_NO_XINERAMA
 #ifdef QT_RUNTIME_XINERAMA
         X11->ptrXineramaQueryExtension = 0;
@@ -2954,10 +3002,10 @@ QWidget *QApplication::topLevelAt(const QPoint &p)
                     Window wid = widget->internalWinId();
                     while (ctarget && !w) {
                         X11->ignoreBadwindow();
-                        XTranslateCoordinates(X11->display,
-                                              QX11Info::appRootWindow(screen),
-                                              ctarget, x, y, &unused, &unused, &ctarget);
-                        if (X11->badwindow())
+                        if (!XTranslateCoordinates(X11->display,
+                                                   QX11Info::appRootWindow(screen),
+                                                   ctarget, x, y, &unused, &unused, &ctarget)
+                                || X11->badwindow())
                             break;
                         if (ctarget == wid) {
                             // Found!
@@ -3116,6 +3164,19 @@ int QApplication::x11ClientMessage(QWidget* w, XEvent* event, bool passive_only)
                     XSendEvent(event->xclient.display, event->xclient.window,
                                 False, SubstructureNotifyMask|SubstructureRedirectMask, event);
                 }
+#ifndef QT_NO_XSYNC
+            } else if (a == ATOM(_NET_WM_SYNC_REQUEST)) {
+                const ulong timestamp = (const ulong) event->xclient.data.l[1];
+                if (timestamp > X11->time)
+                    X11->time = timestamp;
+                if (QTLWExtra *tlw = w->d_func()->maybeTopData()) {
+                    if (timestamp == CurrentTime || timestamp > tlw->syncRequestTimestamp) {
+                        tlw->syncRequestTimestamp = timestamp;
+                        tlw->newCounterValueLo = event->xclient.data.l[2];
+                        tlw->newCounterValueHi = event->xclient.data.l[3];
+                    }
+                }
+#endif
             }
         } else if (event->xclient.message_type == ATOM(_QT_SCROLL_DONE)) {
             widget->translateScrollDoneEvent(event);
@@ -4144,7 +4205,9 @@ bool QETWidget::translateMouseEvent(const XEvent *event)
                 || ((nextEvent.type == EnterNotify || nextEvent.type == LeaveNotify)
                     && qt_button_down == this)
                 || (nextEvent.type == ClientMessage
-                    && nextEvent.xclient.message_type == ATOM(_QT_SCROLL_DONE))) {
+                    && (nextEvent.xclient.message_type == ATOM(_QT_SCROLL_DONE) ||
+                    (nextEvent.xclient.message_type == ATOM(WM_PROTOCOLS) &&
+                     (Atom)nextEvent.xclient.data.l[0] == ATOM(_NET_WM_SYNC_REQUEST))))) {
                 qApp->x11ProcessEvent(&nextEvent);
                 continue;
             } else if (nextEvent.type != MotionNotify ||
@@ -5200,6 +5263,14 @@ bool QETWidget::translateConfigEvent(const XEvent *event)
                                    otherEvent.xconfigure.border_width;
                 }
             }
+#ifndef QT_NO_XSYNC
+            qt_sync_request_event_data sync_event;
+            sync_event.window = internalWinId();
+            for (XEvent ev;;) {
+                if (!XCheckIfEvent(X11->display, &ev, &qt_sync_request_scanner, (XPointer)&sync_event))
+                    break;
+            }
+#endif // QT_NO_XSYNC
         }
 
         QRect cr (geometry());
@@ -5285,6 +5356,20 @@ bool QETWidget::translateConfigEvent(const XEvent *event)
         if (d->extra && d->extra->topextra)
             d->extra->topextra->inTopLevelResize = false;
     }
+#ifndef QT_NO_XSYNC
+    if (QTLWExtra *tlwExtra = d->maybeTopData()) {
+        if (tlwExtra->newCounterValueLo != 0 || tlwExtra->newCounterValueHi != 0) {
+            XSyncValue value;
+            XSyncIntsToValue(&value,
+                             tlwExtra->newCounterValueLo,
+                             tlwExtra->newCounterValueHi);
+
+            XSyncSetCounter(X11->display, tlwExtra->syncUpdateCounter, value);
+            tlwExtra->newCounterValueHi = 0;
+            tlwExtra->newCounterValueLo = 0;
+        }
+    }
+#endif
     return true;
 }
 

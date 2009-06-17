@@ -2440,7 +2440,7 @@ QDebug operator<<(QDebug debug, QStyle::State state)
 
     qSort(states);
     debug << states.join(QLatin1String(" | "));
-    debug << ")";
+    debug << ')';
     return debug;
 }
 #endif

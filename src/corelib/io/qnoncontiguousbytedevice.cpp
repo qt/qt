@@ -143,11 +143,11 @@ QT_BEGIN_NAMESPACE
 
 QNonContiguousByteDevice::QNonContiguousByteDevice() : QObject((QObject*)0), resetDisabled(false)
 {
-};
+}
 
 QNonContiguousByteDevice::~QNonContiguousByteDevice()
 {
-};
+}
 
 void QNonContiguousByteDevice::disableReset()
 {
@@ -253,7 +253,7 @@ QNonContiguousByteDeviceRingBufferImpl::QNonContiguousByteDeviceRingBufferImpl(Q
 
 QNonContiguousByteDeviceRingBufferImpl::~QNonContiguousByteDeviceRingBufferImpl()
 {
-};
+}
 
 const char* QNonContiguousByteDeviceRingBufferImpl::readPointer(qint64 maximumLength, qint64 &len)
 {
@@ -268,19 +268,19 @@ const char* QNonContiguousByteDeviceRingBufferImpl::readPointer(qint64 maximumLe
         len = qMin(len, maximumLength);
 
     return returnValue;
-};
+}
 
 bool QNonContiguousByteDeviceRingBufferImpl::advanceReadPointer(qint64 amount)
 {
     currentPosition += amount;
     emit readProgress(currentPosition, size());
     return true;
-};
+}
 
 bool QNonContiguousByteDeviceRingBufferImpl::atEnd()
 {
     return currentPosition >= size();
-};
+}
 
 bool QNonContiguousByteDeviceRingBufferImpl::reset()
 {
@@ -289,12 +289,12 @@ bool QNonContiguousByteDeviceRingBufferImpl::reset()
 
     currentPosition = 0;
     return true;
-};
+}
 
 qint64 QNonContiguousByteDeviceRingBufferImpl::size()
 {
     return ringBuffer->size();
-};
+}
 
 QNonContiguousByteDeviceIoDeviceImpl::QNonContiguousByteDeviceIoDeviceImpl(QIODevice *d)
     : QNonContiguousByteDevice(),
@@ -306,12 +306,12 @@ QNonContiguousByteDeviceIoDeviceImpl::QNonContiguousByteDeviceIoDeviceImpl(QIODe
     initialPosition = d->pos();
     connect(device, SIGNAL(readyRead()), this, SIGNAL(readyRead()), Qt::QueuedConnection);
     connect(device, SIGNAL(readChannelFinished()), this, SIGNAL(readyRead()), Qt::QueuedConnection);
-};
+}
 
 QNonContiguousByteDeviceIoDeviceImpl::~QNonContiguousByteDeviceIoDeviceImpl()
 {
     delete currentReadBuffer;
-};
+}
 
 const char* QNonContiguousByteDeviceIoDeviceImpl::readPointer(qint64 maximumLength, qint64 &len)
 {
@@ -347,7 +347,7 @@ const char* QNonContiguousByteDeviceIoDeviceImpl::readPointer(qint64 maximumLeng
 
     len = haveRead;
     return currentReadBuffer->data();
-};
+}
 
 bool QNonContiguousByteDeviceIoDeviceImpl::advanceReadPointer(qint64 amount)
 {
@@ -377,12 +377,12 @@ bool QNonContiguousByteDeviceIoDeviceImpl::advanceReadPointer(qint64 amount)
         emit readProgress(totalAdvancements, size());
 
     return true;
-};
+}
 
 bool QNonContiguousByteDeviceIoDeviceImpl::atEnd()
 {
     return eof == true;
-};
+}
 
 bool QNonContiguousByteDeviceIoDeviceImpl::reset()
 {
@@ -395,7 +395,7 @@ bool QNonContiguousByteDeviceIoDeviceImpl::reset()
     }
 
     return false;
-};
+}
 
 qint64 QNonContiguousByteDeviceIoDeviceImpl::size()
 {
@@ -405,7 +405,7 @@ qint64 QNonContiguousByteDeviceIoDeviceImpl::size()
         return -1;
 
     return device->size() - initialPosition;
-};
+}
 
 QByteDeviceWrappingIoDevice::QByteDeviceWrappingIoDevice(QNonContiguousByteDevice *bd) : QIODevice((QObject*)0)
 {
@@ -458,7 +458,9 @@ qint64 QByteDeviceWrappingIoDevice::readData( char * data, qint64 maxSize)
 
 qint64 QByteDeviceWrappingIoDevice::writeData( const char* data, qint64 maxSize)
 {
-     return -1;
+    Q_UNUSED(data);
+    Q_UNUSED(maxSize);
+    return -1;
 }
 
 /*!
@@ -495,7 +497,7 @@ QNonContiguousByteDevice* QNonContiguousByteDeviceFactory::create(QIODevice *dev
 
     // generic QIODevice
     return new QNonContiguousByteDeviceIoDeviceImpl(device); // FIXME
-};
+}
 
 /*!
     \fn static QNonContiguousByteDevice* QNonContiguousByteDeviceFactory::create(QRingBuffer *ringBuffer);
@@ -507,7 +509,7 @@ QNonContiguousByteDevice* QNonContiguousByteDeviceFactory::create(QIODevice *dev
 QNonContiguousByteDevice* QNonContiguousByteDeviceFactory::create(QRingBuffer *ringBuffer)
 {
     return new QNonContiguousByteDeviceRingBufferImpl(ringBuffer);
-};
+}
 
 /*!
     \fn static QNonContiguousByteDevice* QNonContiguousByteDeviceFactory::create(QByteArray *byteArray);
@@ -519,7 +521,7 @@ QNonContiguousByteDevice* QNonContiguousByteDeviceFactory::create(QRingBuffer *r
 QNonContiguousByteDevice* QNonContiguousByteDeviceFactory::create(QByteArray *byteArray)
 {
     return new QNonContiguousByteDeviceByteArrayImpl(byteArray);
-};
+}
 
 /*!
     \fn static QIODevice* QNonContiguousByteDeviceFactory::wrap(QNonContiguousByteDevice* byteDevice);

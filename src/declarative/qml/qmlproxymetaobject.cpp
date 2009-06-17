@@ -50,7 +50,7 @@ QmlProxyMetaObject::QmlProxyMetaObject(QObject *obj, QList<ProxyData> *mList)
     qWarning() << "QmlProxyMetaObject" << obj->metaObject()->className();
 #endif
 
-    *static_cast<QMetaObject *>(this) = *metaObjects->last().metaObject;
+    *static_cast<QMetaObject *>(this) = *metaObjects->first().metaObject;
 
     QObjectPrivate *op = QObjectPrivate::get(obj);
     if (op->metaObject)
@@ -78,6 +78,7 @@ QmlProxyMetaObject::~QmlProxyMetaObject()
     proxies = 0;
 }
 
+#include <QDebug>
 int QmlProxyMetaObject::metaCall(QMetaObject::Call c, int id, void **a)
 {
     if ((c == QMetaObject::ReadProperty ||
@@ -93,14 +94,37 @@ int QmlProxyMetaObject::metaCall(QMetaObject::Call c, int id, void **a)
                              sizeof(QObject *) * metaObjects->count());
                 }
 
-                if (!proxies[ii])
-                    proxies[ii] = data.createFunc(object);
+                if (!proxies[ii]) {
+                    QObject *proxy = data.createFunc(object);
+                    const QMetaObject *metaObject = proxy->metaObject();
+                    proxies[ii] = proxy;
+
+                    int localOffset = data.metaObject->methodOffset();
+                    int methodOffset = metaObject->methodOffset();
+                    int methods = metaObject->methodCount() - methodOffset;
+
+                    // ### - Can this be done more optimally?
+                    for (int jj = 0; jj < methods; ++jj) {
+                        QMetaMethod method = 
+                            metaObject->method(jj + methodOffset);
+                        if (method.methodType() == QMetaMethod::Signal)
+                            QMetaObject::connect(proxy, methodOffset + jj,
+                                                 object, localOffset + jj);
+                    }
+                }
 
                 int proxyOffset = proxies[ii]->metaObject()->propertyOffset();
                 int proxyId = id - data.propertyOffset + proxyOffset;
 
                 return proxies[ii]->qt_metacall(c, proxyId, a);
             }
+        }
+    } else if (c == QMetaObject::InvokeMetaMethod &&
+               id >= metaObjects->last().methodOffset) {
+        QMetaMethod m = object->metaObject()->method(id);
+        if (m.methodType() == QMetaMethod::Signal) {
+            QMetaObject::activate(object, id, a);
+            return -1;
         }
     }
 

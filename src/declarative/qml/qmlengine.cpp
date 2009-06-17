@@ -71,15 +71,15 @@
 #include <qmlcomponent.h>
 #include "private/qmlmetaproperty_p.h"
 #include <private/qmlbindablevalue_p.h>
-
+#include <private/qmlvme_p.h>
 
 QT_BEGIN_NAMESPACE
 
-DEFINE_BOOL_CONFIG_OPTION(qmlDebugger, QML_DEBUGGER);
+DEFINE_BOOL_CONFIG_OPTION(qmlDebugger, QML_DEBUGGER)
 
-Q_DECLARE_METATYPE(QmlMetaProperty);
+Q_DECLARE_METATYPE(QmlMetaProperty)
 
-QML_DEFINE_TYPE(QObject,Object);
+QML_DEFINE_TYPE(QObject,Object)
 
 static QScriptValue qmlMetaProperty_emit(QScriptContext *ctx, QScriptEngine *engine)
 {
@@ -203,6 +203,13 @@ void QmlEnginePrivate::init()
         debugger->attachTo(&scriptEngine);
     }
 #endif
+    //###needed for the other funcs, but should it be exposed?
+    scriptEngine.globalObject().setProperty(QLatin1String("qmlEngine"),
+            scriptEngine.newQObject(q));
+    scriptEngine.globalObject().setProperty(QLatin1String("evalQml"),
+            scriptEngine.newFunction(QmlEngine::createQMLObject, 1));
+    scriptEngine.globalObject().setProperty(QLatin1String("createComponent"),
+            scriptEngine.newFunction(QmlEngine::createComponent, 1));
 }
 
 QmlContext *QmlEnginePrivate::setCurrentBindContext(QmlContext *c)
@@ -212,28 +219,9 @@ QmlContext *QmlEnginePrivate::setCurrentBindContext(QmlContext *c)
     return old;
 }
 
-QmlEnginePrivate::CapturedProperty::CapturedProperty(QObject *obj, int n)
-: object(obj), notifyIndex(n)
-{
-}
-
 QmlEnginePrivate::CapturedProperty::CapturedProperty(const QmlMetaProperty &p)
-: object(p.object()), name(p.name()), notifyIndex(p.property().notifySignalIndex())
+: object(p.object()), notifyIndex(p.property().notifySignalIndex())
 {
-}
-
-QmlEnginePrivate::CapturedProperty::CapturedProperty(const CapturedProperty &o)
-: object(o.object), name(o.name), notifyIndex(o.notifyIndex)
-{
-}
-
-QmlEnginePrivate::CapturedProperty &
-QmlEnginePrivate::CapturedProperty::operator=(const CapturedProperty &o)
-{
-    object = o.object;
-    name = o.name;
-    notifyIndex = o.notifyIndex;
-    return *this;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -718,6 +706,19 @@ void QmlEngine::setContextForObject(QObject *object, QmlContext *context)
     context->d_func()->contextObjects.append(object);
 }
 
+void qmlExecuteDeferred(QObject *object)
+{
+    QmlInstanceDeclarativeData *data = QmlInstanceDeclarativeData::get(object);
+
+    if (data && data->deferredComponent) {
+        QmlVME vme;
+        vme.runDeferred(object);
+
+        data->deferredComponent->release();
+        data->deferredComponent = 0;
+    }
+}
+
 QmlContext *qmlContext(const QObject *obj)
 {
     return QmlEngine::contextForObject(obj);
@@ -731,36 +732,21 @@ QmlEngine *qmlEngine(const QObject *obj)
 
 QObject *qmlAttachedPropertiesObjectById(int id, const QObject *object)
 {
-    QObjectPrivate *priv = QObjectPrivate::get(const_cast<QObject *>(object));
+    QmlExtendedDeclarativeData *edata = 
+        QmlExtendedDeclarativeData::get(const_cast<QObject *>(object), true);
 
-
-    QmlSimpleDeclarativeData *data = static_cast<QmlSimpleDeclarativeData *>(priv->declarativeData);
-
-    QmlExtendedDeclarativeData *edata = (data && data->flags & QmlSimpleDeclarativeData::Extended)?static_cast<QmlExtendedDeclarativeData *>(data):0;
-
-    if (edata) {
-        QObject *rv = edata->attachedProperties.value(id);
-        if (rv)
-            return rv;
-    }
+    QObject *rv = edata->attachedProperties.value(id);
+    if (rv)
+        return rv;
 
     QmlAttachedPropertiesFunc pf = QmlMetaType::attachedPropertiesFuncById(id);
     if (!pf)
         return 0;
 
-    QObject *rv = pf(const_cast<QObject *>(object));
+    rv = pf(const_cast<QObject *>(object));
 
-    if (rv) {
-        if (!edata) {
-
-            edata = new QmlExtendedDeclarativeData;
-            if (data) edata->context = data->context;
-            priv->declarativeData = edata;
-
-        }
-
+    if (rv) 
         edata->attachedProperties.insert(id, rv);
-    }
 
     return rv;
 }
@@ -771,9 +757,11 @@ void QmlSimpleDeclarativeData::destroyed(QObject *object)
         context->d_func()->contextObjects.removeAll(object);
 }
 
-void QmlExtendedDeclarativeData::destroyed(QObject *object)
+void QmlInstanceDeclarativeData::destroyed(QObject *object)
 {
     QmlSimpleDeclarativeData::destroyed(object);
+    if (deferredComponent)
+        deferredComponent->release();
     delete this;
 }
 
@@ -808,7 +796,144 @@ QmlEngine *QmlEngine::activeEngine()
         return engines->top();
 }
 
+/*!
+    Creates a QScriptValue allowing you to use \a object in QML script.
+    \a engine is the QmlEngine it is to be created in.
 
+    The QScriptValue returned is a QtScript Object, not a QtScript QObject, due
+    to the special needs of QML requiring more functionality than a standard
+    QtScript QObject.
+
+    You'll want to use this function if you are writing C++ code which
+    dynamically creates and returns objects when called from QtScript,
+    and these objects are visual items in the QML tree.
+
+    \sa QScriptEngine::newQObject()
+*/
+QScriptValue QmlEngine::qmlScriptObject(QObject* object, QmlEngine* engine)
+{
+    return engine->scriptEngine()->newObject(new QmlObjectScriptClass(engine),
+            engine->scriptEngine()->newQObject(object));
+}
+
+/*!
+    This function is intended for use inside QML only. In C++ just create a
+    component object as usual.
+
+    This function takes the URL of a QML file as its only argument. It returns
+    a component object which can be used to create and load that QML file.
+
+    Example QmlJS is below, remember that QML files that might be loaded
+    over the network cannot be expected to be ready immediately.
+    \code
+        var component;
+        var sprite;
+        function finishCreation(){
+            if(component.isReady()){
+                sprite = component.createObject();
+                if(sprite == 0){
+                    // Error Handling
+                }else{
+                    sprite.parent = page;
+                    sprite.x = 200;
+                    //...
+                }
+            }else if(component.isError()){
+                // Error Handling
+            }
+        }
+
+        component = createComponent("Sprite.qml");
+        if(component.isReady()){
+            finishCreation();
+        }else{
+            component.statusChanged.connect(finishCreation);
+        }
+    \endcode
+
+    If you are certain the files will be local, you could simplify to
+
+    \code
+        component = createComponent("Sprite.qml");
+        sprite = component.createObject();
+        if(sprite == 0){
+            // Error Handling
+        }else{
+            sprite.parent = page;
+            sprite.x = 200;
+            //...
+        }
+    \endcode
+
+    \sa QmlComponent::createObject()
+*/
+QScriptValue QmlEngine::createComponent(QScriptContext *ctxt, QScriptEngine *engine)
+{
+    QmlComponent* c;
+    QmlEngine* activeEngine = qobject_cast<QmlEngine*>(
+            engine->globalObject().property(QLatin1String("qmlEngine")).toQObject());
+    if(ctxt->argumentCount() != 1 || !activeEngine){
+        c = new QmlComponent(activeEngine);
+    }else{
+        QUrl url = QUrl(ctxt->argument(0).toString());
+        c = new QmlComponent(activeEngine, url, activeEngine);
+    }
+    return engine->newQObject(c);
+}
+
+/*!
+    Creates a new object from the specified string of qml. If a second argument
+    is provided, this is treated as the filepath that the qml came from.
+
+    This function is intended for use inside QML only. It is intended to behave
+    similarly to eval, but for creating QML elements. Thus, it is called as
+    evalQml() in QtScript.
+
+    Returns the created object, or null if there is an error. In the case of an
+    error, details of the error are output using qWarning().
+*/
+QScriptValue QmlEngine::createQMLObject(QScriptContext *ctxt, QScriptEngine *engine)
+{
+    QmlEngine* activeEngine = qobject_cast<QmlEngine*>(
+            engine->globalObject().property(QLatin1String("qmlEngine")).toQObject());
+    if(ctxt->argumentCount() < 1 || !activeEngine){
+        if(ctxt->argumentCount() < 1){
+            qWarning() << "createQMLObject requires a string argument.";
+        }else{
+            qWarning() << "createQMLObject cannot find engine.";
+        }
+        return engine->nullValue();
+    }
+
+    QString qml = ctxt->argument(0).toString();
+    QUrl url;
+    if(ctxt->argumentCount() > 1)
+        url = QUrl(ctxt->argument(1).toString());
+    QmlComponent component(activeEngine, qml.toUtf8(), url);
+    if(component.isError()) {
+        QList<QmlError> errors = component.errors();
+        foreach (const QmlError &error, errors) {
+            qWarning() << error;
+        }
+
+        return engine->nullValue();
+    }
+
+    QObject *obj = component.create();
+    if(component.isError()) {
+        QList<QmlError> errors = component.errors();
+        foreach (const QmlError &error, errors) {
+            qWarning() << error;
+        }
+
+        return engine->nullValue();
+    }
+
+    if(obj){
+        return qmlScriptObject(obj, activeEngine);
+    }
+    return engine->nullValue();
+}
 
 QmlExpressionPrivate::QmlExpressionPrivate(QmlExpression *b)
 : q(b), ctxt(0), sseData(0), proxy(0), me(0), trackChange(false), line(-1), id(0), log(0)
@@ -820,15 +945,9 @@ QmlExpressionPrivate::QmlExpressionPrivate(QmlExpression *b, void *expr, QmlRefC
 {
 }
 
-QmlExpressionPrivate::QmlExpressionPrivate(QmlExpression *b, const QString &expr, bool ssecompile)
+QmlExpressionPrivate::QmlExpressionPrivate(QmlExpression *b, const QString &expr)
 : q(b), ctxt(0), expression(expr), sseData(0), proxy(0), me(0), trackChange(true), line(-1), id(0), log(0)
 {
-    if (ssecompile) {
-#ifdef Q_ENABLE_PERFORMANCE_LOG
-        QFxPerfTimer<QFxPerf::BindCompile> pt;
-#endif
-        sse.compile(expr.toLatin1());
-    }
 }
 
 QmlExpressionPrivate::~QmlExpressionPrivate()
@@ -863,19 +982,6 @@ QmlExpression::QmlExpression(QmlContext *ctxt, void *expr,
     d->me = me;
 }
 
-/*! \internal */
-QmlExpression::QmlExpression(QmlContext *ctxt, const QString &expr, 
-                             QObject *me, bool ssecompile)
-: d(new QmlExpressionPrivate(this, expr, ssecompile))
-{
-    d->ctxt = ctxt;
-    if(ctxt && ctxt->engine())
-        d->id = ctxt->engine()->d_func()->getUniqueId();
-    if(ctxt)
-        ctxt->d_func()->childExpressions.insert(this);
-    d->me = me;
-}
-
 /*!
     Create a QmlExpression object.
 
@@ -885,7 +991,7 @@ QmlExpression::QmlExpression(QmlContext *ctxt, const QString &expr,
 */
 QmlExpression::QmlExpression(QmlContext *ctxt, const QString &expression, 
                              QObject *scope)
-: d(new QmlExpressionPrivate(this, expression, true))
+: d(new QmlExpressionPrivate(this, expression))
 {
     d->ctxt = ctxt;
     if(ctxt && ctxt->engine())
@@ -956,10 +1062,7 @@ void QmlExpression::setExpression(const QString &expression)
 
     d->expression = expression;
 
-    if (d->expression.isEmpty())
-        d->sse.clear();
-    else
-        d->sse.compile(expression.toLatin1());
+    d->sse.clear();
 }
 
 /*!
@@ -1026,7 +1129,7 @@ QVariant QmlExpression::value()
         for (int i = context()->d_func()->scopeChain.size() - 1; i > -1; --i) {
             scriptEngine->currentContext()->pushScope(context()->d_func()->scopeChain.at(i));
         }
-        QScriptValue svalue = scriptEngine->evaluate(expression(), d->fileName, d->line);
+        QScriptValue svalue = scriptEngine->evaluate(expression(), d->fileName.toString(), d->line);
         if (scriptEngine->hasUncaughtException()) {
             if (scriptEngine->uncaughtException().isError()){
                 QScriptValue exception = scriptEngine->uncaughtException();
@@ -1103,8 +1206,9 @@ QVariant QmlExpression::value()
                         QMetaObject::connect(prop.object, prop.notifyIndex,
                                              d->proxy, changedIndex);
                     } else {
-                        QString warn = QLatin1String("Expression depends on property without a NOTIFY signal: [") + QLatin1String(prop.object->metaObject()->className()) + QLatin1String("].") + prop.name;
-                        log.addWarning(warn);
+                        // ### FIXME
+                        //QString warn = QLatin1String("Expression depends on property without a NOTIFY signal: [") + QLatin1String(prop.object->metaObject()->className()) + QLatin1String("].") + prop.name;
+                        //log.addWarning(warn);
                     }
                 }
                 d->addLog(log);
@@ -1184,7 +1288,7 @@ void QmlExpression::setTrackChange(bool trackChange)
     Set the location of this expression to \a line of \a fileName. This information
     is used by the script engine.
 */
-void QmlExpression::setSourceLocation(const QString &fileName, int line)
+void QmlExpression::setSourceLocation(const QUrl &fileName, int line)
 {
     d->fileName = fileName;
     d->line = line;
@@ -1245,13 +1349,7 @@ QmlExpressionObject::QmlExpressionObject(QObject *parent)
     the expression's execution.
 */
 QmlExpressionObject::QmlExpressionObject(QmlContext *ctxt, const QString &expression, QObject *scope, QObject *parent)
-: QObject(parent), QmlExpression(ctxt, expression, scope, true)
-{
-}
-
-/*!  \internal */
-QmlExpressionObject::QmlExpressionObject(QmlContext *ctxt, const QString &expr, QObject *scope, bool sse)
-: QmlExpression(ctxt, expr, scope, sse)
+: QObject(parent), QmlExpression(ctxt, expression, scope)
 {
 }
 
@@ -1303,9 +1401,6 @@ QmlContextScriptClass::queryProperty(const QScriptValue &object,
                                          QueryFlags flags, uint *id)
 {
     Q_UNUSED(flags);
-#ifdef Q_ENABLE_PERFORMANCE_LOG
-    QFxPerfTimer<QFxPerf::ContextQuery> perf;
-#endif
     QmlContext *bindContext = 
         static_cast<QmlContext*>(object.data().toQObject());
     QueryFlags rv = 0;
@@ -1336,9 +1431,6 @@ QScriptValue QmlContextScriptClass::property(const QScriptValue &object,
                                                  const QScriptString &name, 
                                                  uint id)
 {
-#ifdef Q_ENABLE_PERFORMANCE_LOG
-    QFxPerfTimer<QFxPerf::ContextProperty> perf;
-#endif
     QmlContext *bindContext = 
         static_cast<QmlContext*>(object.data().toQObject());
 
@@ -1397,9 +1489,6 @@ void QmlContextScriptClass::setProperty(QScriptValue &object,
 {
     Q_UNUSED(name);
 
-#ifdef Q_ENABLE_PERFORMANCE_LOG
-    QFxPerfTimer<QFxPerf::ObjectSetProperty> perf;
-#endif
     QmlContext *bindContext = 
         static_cast<QmlContext*>(object.data().toQObject());
 
@@ -1433,16 +1522,35 @@ void QmlContextScriptClass::setProperty(QScriptValue &object,
 /////////////////////////////////////////////////////////////
 /*
     The QmlObjectScriptClass handles property access for QObjects
-    via QtScript.
+    via QtScript. It is also used to provide a more useful API in
+    QtScript for QML.
  */
+
+QScriptValue QmlObjectDestroy(QScriptContext *context, QScriptEngine *engine)
+{
+    QObject* obj = context->thisObject().data().toQObject();
+    if(obj)
+        delete obj;
+    context->thisObject().setData(QScriptValue(engine, 0));
+    return engine->nullValue();
+}
+
 QmlObjectScriptClass::QmlObjectScriptClass(QmlEngine *bindEngine)
     : QmlScriptClass(bindEngine)
 {
     engine = bindEngine;
+    prototypeObject = engine->scriptEngine()->newObject();
+    prototypeObject.setProperty("destroy",
+            engine->scriptEngine()->newFunction(QmlObjectDestroy));
 }
 
 QmlObjectScriptClass::~QmlObjectScriptClass()
 {
+}
+
+QScriptValue QmlObjectScriptClass::prototype() const
+{
+    return prototypeObject;
 }
 
 QScriptClass::QueryFlags QmlObjectScriptClass::queryProperty(const QScriptValue &object,
@@ -1450,9 +1558,6 @@ QScriptClass::QueryFlags QmlObjectScriptClass::queryProperty(const QScriptValue 
                                     QueryFlags flags, uint *id)
 {
     Q_UNUSED(flags);
-#ifdef Q_ENABLE_PERFORMANCE_LOG
-    QFxPerfTimer<QFxPerf::ObjectQuery> perf;
-#endif
     QObject *obj = object.data().toQObject();
     QueryFlags rv = 0;
     QString propName = name.toString();
@@ -1471,9 +1576,6 @@ QScriptValue QmlObjectScriptClass::property(const QScriptValue &object,
                                 const QScriptString &name, 
                                 uint id)
 {
-#ifdef Q_ENABLE_PERFORMANCE_LOG
-    QFxPerfTimer<QFxPerf::ObjectProperty> perf;
-#endif
     QObject *obj = object.data().toQObject();
 
 #ifdef PROPERTY_DEBUG
@@ -1500,9 +1602,6 @@ void QmlObjectScriptClass::setProperty(QScriptValue &object,
 {
     Q_UNUSED(name);
 
-#ifdef Q_ENABLE_PERFORMANCE_LOG
-    QFxPerfTimer<QFxPerf::ObjectSetProperty> perf;
-#endif
     QObject *obj = object.data().toQObject();
 
 #ifdef PROPERTY_DEBUG

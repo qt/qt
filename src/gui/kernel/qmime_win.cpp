@@ -852,7 +852,7 @@ QVariant QWindowsMimeHtml::convertToMime(const QString &mime, IDataObject *pData
         if (end > start && start > 0) {
             html = "<!--StartFragment-->" + html.mid(start, end - start);
             html += "<!--EndFragment-->";
-            html.replace("\r", "");
+            html.replace('\r', "");
             result = QString::fromUtf8(html);
         }
     }
@@ -1262,16 +1262,16 @@ QVector<FORMATETC> QLastResortMimes::formatsForMime(const QString &mimeType, con
     }
     return formatetcs;
 }
-static const char *x_qt_windows_mime = "application/x-qt-windows-mime;value=\"";
+static const char x_qt_windows_mime[] = "application/x-qt-windows-mime;value=\"";
 
-bool isCustomMimeType(const QString &mimeType)
+static bool isCustomMimeType(const QString &mimeType)
 {
     return mimeType.startsWith(QLatin1String(x_qt_windows_mime), Qt::CaseInsensitive);
 }
 
-QString customMimeType(const QString &mimeType)
+static QString customMimeType(const QString &mimeType)
 {
-    int len = QString(QLatin1String(x_qt_windows_mime)).length();
+    int len = sizeof(x_qt_windows_mime) - 1;
     int n = mimeType.lastIndexOf(QLatin1Char('\"'))-len;
     return mimeType.mid(len, n);
 }

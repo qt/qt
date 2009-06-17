@@ -208,7 +208,8 @@ public:
             readOnly(true),
             setRootPath(false),
             filters(QDir::AllEntries | QDir::NoDotAndDotDot | QDir::AllDirs),
-            nameFilterDisables(true) // false on windows, true on mac and unix
+            nameFilterDisables(true), // false on windows, true on mac and unix
+            disableRecursiveSort(false)
     {
         delayedSortTimer.setSingleShot(true);
     }
@@ -294,6 +295,10 @@ public:
     QDir::Filters filters;
     QHash<const QFileSystemNode*, bool> bypassFilters;
     bool nameFilterDisables;
+    //This flag is an optimization for the QFileDialog
+    //It enable a sort which is not recursive, it means
+    //we sort only what we see.
+    bool disableRecursiveSort;
 #ifndef QT_NO_REGEXP
     QList<QRegExp> nameFilters;
 #endif

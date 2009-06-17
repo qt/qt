@@ -133,7 +133,7 @@ class QSimpleCanvasFilter;
 class QGraphicsQSimpleCanvasItem;
 class QSimpleCanvasItemPrivate : public QObjectPrivate
 {
-    Q_DECLARE_PUBLIC(QSimpleCanvasItem);
+    Q_DECLARE_PUBLIC(QSimpleCanvasItem)
 public:
     QSimpleCanvasItemPrivate()
     : parent(0), canvas(0), debuggerStatus(0), filter(0),
@@ -161,7 +161,7 @@ public:
 
     QSimpleCanvasItem::ClipType clip:3;
     QSimpleCanvasItem::TransformOrigin origin:4;
-    int options:9;
+    int options:10;
     bool focusable:1;
     bool wantsActiveFocusPanelPendingCanvas:1;
     bool hasBeenActiveFocusPanel:1;
@@ -218,9 +218,11 @@ public:
 #endif
         float opacity;
         bool forceParamRefresh;
+
+        QSimpleCanvasItem::GLPainter *painter;
     };
 #if defined(QFX_RENDER_OPENGL2)
-    QRectF setupPainting(int version, const QRect &bounding);
+    QRectF setupPainting(int version, int &z, QSimpleCanvasItem **);
 #elif defined(QFX_RENDER_OPENGL1)
     QRectF setupPainting(int version, const QRect &bounding, unsigned int *zero);
 #endif
@@ -239,6 +241,8 @@ public:
 
 #endif
 
+    QSimpleCanvasItem *nextOpaque;
+
     void zOrderChildren();
     bool freshenNeeded() const;
     void doFreshenTransforms() const;
@@ -250,16 +254,16 @@ public:
                                InRealm = 0x02, 
                                InActiveFocusedRealm = 0x04
     };
-    Q_DECLARE_FLAGS(FocusStateCheckDatas, FocusStateCheckData);
+    Q_DECLARE_FLAGS(FocusStateCheckDatas, FocusStateCheckData)
     enum FocusStateCheckRData { NoCheckRData = 0x00, 
                                 SeenFocus = 0x01, 
                                 SeenActiveFocus = 0x02 };
-    Q_DECLARE_FLAGS(FocusStateCheckRDatas, FocusStateCheckRData);
+    Q_DECLARE_FLAGS(FocusStateCheckRDatas, FocusStateCheckRData)
     bool checkFocusState(FocusStateCheckDatas, FocusStateCheckRDatas *);
 };
 
-Q_DECLARE_OPERATORS_FOR_FLAGS(QSimpleCanvasItemPrivate::FocusStateCheckDatas);
-Q_DECLARE_OPERATORS_FOR_FLAGS(QSimpleCanvasItemPrivate::FocusStateCheckRDatas);
+Q_DECLARE_OPERATORS_FOR_FLAGS(QSimpleCanvasItemPrivate::FocusStateCheckDatas)
+Q_DECLARE_OPERATORS_FOR_FLAGS(QSimpleCanvasItemPrivate::FocusStateCheckRDatas)
 
 #endif // QSIMPLECANVASITEM_P_H
 

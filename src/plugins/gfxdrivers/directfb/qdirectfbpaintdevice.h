@@ -61,8 +61,6 @@ public:
     void lockDirectFB(uint flags);
     void unlockDirectFB();
 
-    inline bool forceRasterPrimitives() const { return forceRaster; }
-
     // Reimplemented from QCustomRasterPaintDevice:
     void* memory() const;
     QImage::Format format() const;
@@ -77,7 +75,6 @@ protected:
           dfbSurface(0),
           lockedImage(0),
           screen(scr),
-          forceRaster(false),
           lock(0),
           mem(0)
     {}
@@ -95,7 +92,6 @@ protected:
     QImage *lockedImage;
     QDirectFBScreen *screen;
     int bpl;
-    bool forceRaster;
     uint lock;
     uchar *mem;
 private:

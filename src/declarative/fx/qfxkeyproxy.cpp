@@ -43,7 +43,7 @@
 
 
 QT_BEGIN_NAMESPACE
-QML_DEFINE_TYPE(QFxKeyProxy,KeyProxy);
+QML_DEFINE_TYPE(QFxKeyProxy,KeyProxy)
 
 /*!
     \qmlclass KeyProxy

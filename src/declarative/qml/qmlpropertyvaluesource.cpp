@@ -48,7 +48,7 @@ QT_BEGIN_NAMESPACE
     \class QmlPropertyValueSource
     \brief The QmlPropertyValueSource class is inherited by property value sources such as animations and bindings.
  */
-QML_DEFINE_NOCREATE_TYPE(QmlPropertyValueSource);
+QML_DEFINE_NOCREATE_TYPE(QmlPropertyValueSource)
 
 /*!
     Constructs a QmlPropertyValueSource with parent \a parent.

@@ -49,6 +49,7 @@
 #endif
 
 #include <qfxperf.h>
+#include "qfxevents_p.h"
 #include <QTextLayout>
 #include <QTextLine>
 #include <QTextDocument>
@@ -58,7 +59,7 @@
 
 
 QT_BEGIN_NAMESPACE
-QML_DEFINE_TYPE(QFxTextEdit, TextEdit);
+QML_DEFINE_TYPE(QFxTextEdit, TextEdit)
 
 /*!
     \qmlclass TextEdit
@@ -158,6 +159,8 @@ QString QFxTextEdit::text() const
 void QFxTextEdit::setText(const QString &text)
 {
     Q_D(QFxTextEdit);
+    if (QFxTextEdit::text() == text)
+        return;
     d->text = text;
     d->richText = d->format == RichText || (d->format == AutoText && Qt::mightBeRichText(text));
     if (d->richText) {
@@ -472,6 +475,21 @@ void QFxTextEdit::setPreserveSelection(bool on)
     d->preserveSelection = on;
 }
 
+qreal QFxTextEdit::textMargin() const
+{
+    Q_D(const QFxTextEdit);
+    return d->textMargin;
+}
+
+void QFxTextEdit::setTextMargin(qreal margin)
+{
+    Q_D(QFxTextEdit);
+    if (d->textMargin == margin)
+        return;
+    d->textMargin = margin;
+    d->document->setDocumentMargin(d->textMargin);
+}
+
 void QFxTextEdit::geometryChanged(const QRectF &newGeometry, 
                                   const QRectF &oldGeometry)
 {
@@ -657,7 +675,16 @@ Handles the given key \a event.
 void QFxTextEdit::keyPressEvent(QKeyEvent *event)
 {
     Q_D(QFxTextEdit);
-    QTextCursor c = textCursor();
+    //### experiment with allowing 'overrides' to key events
+    QFxKeyEvent ke(*event);
+    emit keyPress(&ke);
+    event->setAccepted(ke.isAccepted());
+    if (event->isAccepted())
+        return;
+
+    //### this causes non-standard cursor behavior in some cases.
+    //     is it still needed?
+    /*QTextCursor c = textCursor();
     QTextCursor::MoveOperation op = QTextCursor::NoMove;
     if (event == QKeySequence::MoveToNextChar) {
         op = QTextCursor::Right;
@@ -675,7 +702,7 @@ void QFxTextEdit::keyPressEvent(QKeyEvent *event)
 
     if (op != QTextCursor::NoMove && !c.movePosition(op))
         event->ignore();
-    else
+    else*/
         d->control->processEvent(event, QPointF(0, 0));
 }
 
@@ -686,6 +713,13 @@ Handles the given key \a event.
 void QFxTextEdit::keyReleaseEvent(QKeyEvent *event)
 {
     Q_D(QFxTextEdit);
+    //### experiment with allowing 'overrides' to key events
+    QFxKeyEvent ke(*event);
+    emit keyRelease(&ke);
+    event->setAccepted(ke.isAccepted());
+    if (event->isAccepted())
+        return;
+
     d->control->processEvent(event, QPointF(0, 0));
 }
 
@@ -734,6 +768,18 @@ void QFxTextEdit::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
     d->control->processEvent(event, QPointF(0, 0));
     if (!event->isAccepted())
         QFxPaintedItem::mousePressEvent(event);
+}
+
+/*!
+\overload
+Handles the given mouse \a event.
+*/
+void QFxTextEdit::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event)
+{
+    Q_D(QFxTextEdit);
+    d->control->processEvent(event, QPointF(0, 0));
+    if (!event->isAccepted())
+        QFxPaintedItem::mouseDoubleClickEvent(event);
 }
 
 /*!
@@ -819,7 +865,7 @@ void QFxTextEditPrivate::init()
 
     document = control->document();
     document->setDefaultFont(font.font());
-    document->setDocumentMargin(0);
+    document->setDocumentMargin(textMargin);
     document->setUndoRedoEnabled(false); // flush undo buffer.
     document->setUndoRedoEnabled(true);
     updateDefaultTextOption();
@@ -827,9 +873,13 @@ void QFxTextEditPrivate::init()
 
 void QFxTextEdit::q_textChanged()
 {
+    if (!widthValid())
+        updateSize();   //### optimize: we get 3 calls to updateSize every time a letter is typed
     emit textChanged(text());
 }
 
+//### we should perhaps be a bit smarter here -- depending on what has changed, we shouldn't
+//    need to do all the calculations each time
 void QFxTextEdit::updateSize()
 {
     Q_D(QFxTextEdit);
@@ -849,7 +899,7 @@ void QFxTextEdit::updateSize()
             else if (d->vAlign == AlignVCenter)
                 yoff = dy/2;
         }
-        setBaselineOffset(fm.ascent() + yoff);
+        setBaselineOffset(fm.ascent() + yoff + d->textMargin);
         if (!widthValid()) {
             int newWidth = (int)d->document->idealWidth();
             d->document->setTextWidth(newWidth); // ### QTextDoc> Alignment will not work unless textWidth is set

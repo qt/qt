@@ -43,6 +43,7 @@
 #include <QtTest/QtTest>
 #include "../../../src/gui/dialogs/qfilesystemmodel_p.h"
 #include <QFileIconProvider>
+#include <QTreeView>
 #include "../../shared/util.h"
 #include <QTime>
 #include <QStyle>
@@ -102,6 +103,7 @@ private slots:
     void setData_data();
     void setData();
 
+    void sort_data();
     void sort();
 
     void mkdir();
@@ -452,8 +454,12 @@ void tst_QFileSystemModel::rowsInserted()
     } else {
         QCOMPARE(model->index(model->rowCount(root) - 1, 0, root).data().toString(), QString("b"));
     }
-    if (spy0.count() > 0)
-    if (count == 0) QCOMPARE(spy0.count(), 0); else QVERIFY(spy0.count() >= 1);
+    if (spy0.count() > 0) {
+        if (count == 0)
+            QCOMPARE(spy0.count(), 0);
+        else
+            QVERIFY(spy0.count() >= 1);
+    }
     if (count == 0) QCOMPARE(spy1.count(), 0); else QVERIFY(spy1.count() >= 1);
 
     QVERIFY(createFiles(tmp, QStringList(".hidden_file"), 5 + count));
@@ -722,6 +728,19 @@ void tst_QFileSystemModel::setData()
     QTRY_COMPARE(model->rowCount(root), files.count());
 }
 
+class MyFriendFileSystemModel : public QFileSystemModel
+{
+    friend class tst_QFileSystemModel;
+    Q_DECLARE_PRIVATE(QFileSystemModel)
+};
+
+void tst_QFileSystemModel::sort_data()
+{
+    QTest::addColumn<bool>("fileDialogMode");
+    QTest::newRow("standard usage") << false;
+    QTest::newRow("QFileDialog usage") << true;
+}
+
 void tst_QFileSystemModel::sort()
 {
     QTemporaryFile file;
@@ -733,8 +752,48 @@ void tst_QFileSystemModel::sort()
     model->sort(0, Qt::AscendingOrder);
     model->sort(0, Qt::DescendingOrder);
     QVERIFY(idx.column() != 0);
-}
 
+    QFETCH(bool, fileDialogMode);
+
+    MyFriendFileSystemModel *myModel = new MyFriendFileSystemModel();
+    QTreeView *tree = new QTreeView();
+
+    if (fileDialogMode)
+        myModel->d_func()->disableRecursiveSort = true;
+
+    const QString dirPath = QString("%1/sortTemp").arg(QDir::tempPath());
+    QDir dir(dirPath);
+    dir.mkpath(dirPath);
+    QVERIFY(dir.exists());
+    dir.mkdir("a");
+    dir.mkdir("b");
+    dir.mkdir("c");
+    dir.mkdir("d");
+    dir.mkdir("e");
+    dir.mkdir("f");
+    dir.mkdir("g");
+    QTemporaryFile tempFile(dirPath + "/rXXXXXX");
+    tempFile.open();
+    myModel->setRootPath(QDir::rootPath());
+    tree->setModel(myModel);
+    tree->show();
+    QTest::qWait(500);
+    tree->expand(myModel->index(dir.absolutePath(), 0));
+    while (dir.cdUp())
+    {
+        tree->expand(myModel->index(dir.absolutePath(), 0));
+    }
+    QTest::qWait(250);
+    //File dialog Mode means sub trees are not sorted, only the current root
+    if (fileDialogMode)
+        QVERIFY(myModel->index(0, 1, myModel->index(dirPath, 0)).data(QFileSystemModel::FilePathRole).toString() != dirPath + QLatin1String("/a"));
+    else
+        QCOMPARE(myModel->index(0, 1, myModel->index(dirPath, 0)).data(QFileSystemModel::FilePathRole).toString(), dirPath + QLatin1String("/a"));
+
+    delete tree;
+    delete myModel;
+
+}
 
 void tst_QFileSystemModel::mkdir()
 {

@@ -140,15 +140,6 @@ static void qt_native_close(int fd)
     } while (ret == -1 && errno == EINTR);
 }
 
-static void qt_native_sigaction(int signum, const struct sigaction *act,
-                                struct sigaction *oldact)
-{
-    int ret;
-    do {
-        ret = ::sigaction(signum, act, oldact);
-    } while (ret == -1 && errno == EINTR);
-}
-
 static void qt_native_dup2(int oldfd, int newfd)
 {
     int ret;
@@ -255,7 +246,7 @@ QProcessManager::QProcessManager()
     memset(&action, 0, sizeof(action));
     action.sa_handler = qt_sa_sigchld_handler;
     action.sa_flags = SA_NOCLDSTOP;
-    qt_native_sigaction(SIGCHLD, &action, &oldAction);
+    ::sigaction(SIGCHLD, &action, &oldAction);
     if (oldAction.sa_handler != qt_sa_sigchld_handler)
 	qt_sa_old_sigchld_handler = oldAction.sa_handler;
 }
@@ -282,9 +273,9 @@ QProcessManager::~QProcessManager()
     memset(&action, 0, sizeof(action));
     action.sa_handler = qt_sa_old_sigchld_handler;
     action.sa_flags = SA_NOCLDSTOP;
-    qt_native_sigaction(SIGCHLD, &action, &oldAction);
+    ::sigaction(SIGCHLD, &action, &oldAction);
     if (oldAction.sa_handler != qt_sa_sigchld_handler) {
-        qt_native_sigaction(SIGCHLD, &oldAction, 0);
+        ::sigaction(SIGCHLD, &oldAction, 0);
     }
 }
 
@@ -394,17 +385,10 @@ static void qt_create_pipe(int *pipe)
         qt_native_close(pipe[0]);
     if (pipe[1] != -1)
         qt_native_close(pipe[1]);
-#ifdef Q_OS_IRIX
-    if (::socketpair(AF_UNIX, SOCK_STREAM, 0, pipe) == -1) {
-        qWarning("QProcessPrivate::createPipe: Cannot create pipe %p: %s",
-                 pipe, qPrintable(qt_error_string(errno)));
-    }
-#else
     if (::pipe(pipe) != 0) {
         qWarning("QProcessPrivate::createPipe: Cannot create pipe %p: %s",
                  pipe, qPrintable(qt_error_string(errno)));
     }
-#endif
     ::fcntl(pipe[0], F_SETFD, FD_CLOEXEC);
     ::fcntl(pipe[1], F_SETFD, FD_CLOEXEC);
 }
@@ -596,28 +580,26 @@ void QProcessPrivate::startProcess()
     processManager()->start();
 
     // Initialize pipes
+    if (!createChannel(stdinChannel) ||
+        !createChannel(stdoutChannel) ||
+        !createChannel(stderrChannel))
+        return;
     qt_create_pipe(childStartedPipe);
+    qt_create_pipe(deathPipe);
+    ::fcntl(deathPipe[0], F_SETFD, FD_CLOEXEC);
+    ::fcntl(deathPipe[1], F_SETFD, FD_CLOEXEC);
+
     if (threadData->eventDispatcher) {
         startupSocketNotifier = new QSocketNotifier(childStartedPipe[0],
                                                     QSocketNotifier::Read, q);
         QObject::connect(startupSocketNotifier, SIGNAL(activated(int)),
                          q, SLOT(_q_startupNotification()));
-    }
 
-    qt_create_pipe(deathPipe);
-    ::fcntl(deathPipe[0], F_SETFD, FD_CLOEXEC);
-    ::fcntl(deathPipe[1], F_SETFD, FD_CLOEXEC);
-    if (threadData->eventDispatcher) {
         deathNotifier = new QSocketNotifier(deathPipe[0],
                                             QSocketNotifier::Read, q);
         QObject::connect(deathNotifier, SIGNAL(activated(int)),
                          q, SLOT(_q_processDied()));
     }
-
-    if (!createChannel(stdinChannel) ||
-        !createChannel(stdoutChannel) ||
-        !createChannel(stderrChannel))
-        return;
 
     // Start the process (platform dependent)
     q->setProcessState(QProcess::Starting);
@@ -906,7 +888,7 @@ static void qt_ignore_sigpipe()
         struct sigaction noaction;
         memset(&noaction, 0, sizeof(noaction));
         noaction.sa_handler = SIG_IGN;
-        qt_native_sigaction(SIGPIPE, &noaction, 0);
+        ::sigaction(SIGPIPE, &noaction, 0);
     }
 }
 
@@ -1276,7 +1258,7 @@ bool QProcessPrivate::startDetached(const QString &program, const QStringList &a
         struct sigaction noaction;
         memset(&noaction, 0, sizeof(noaction));
         noaction.sa_handler = SIG_IGN;
-        qt_native_sigaction(SIGPIPE, &noaction, 0);
+        ::sigaction(SIGPIPE, &noaction, 0);
 
         ::setsid();
 
@@ -1322,7 +1304,7 @@ bool QProcessPrivate::startDetached(const QString &program, const QStringList &a
             struct sigaction noaction;
             memset(&noaction, 0, sizeof(noaction));
             noaction.sa_handler = SIG_IGN;
-            qt_native_sigaction(SIGPIPE, &noaction, 0);
+            ::sigaction(SIGPIPE, &noaction, 0);
 
             // '\1' means execv failed
             char c = '\1';
@@ -1333,7 +1315,7 @@ bool QProcessPrivate::startDetached(const QString &program, const QStringList &a
             struct sigaction noaction;
             memset(&noaction, 0, sizeof(noaction));
             noaction.sa_handler = SIG_IGN;
-            qt_native_sigaction(SIGPIPE, &noaction, 0);
+            ::sigaction(SIGPIPE, &noaction, 0);
 
             // '\2' means internal error
             char c = '\2';

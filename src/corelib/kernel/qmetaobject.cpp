@@ -2038,6 +2038,11 @@ QVariant::Type QMetaProperty::type() const
         if (enumMetaTypeId == 0)
             return QVariant::Int;
     }
+#ifdef QT_COORD_TYPE
+    // qreal metatype must be resolved at runtime.
+    if (strcmp(typeName(), "qreal") == 0)
+        return QVariant::Type(qMetaTypeId<qreal>());
+#endif
 
     return QVariant::UserType;
 }

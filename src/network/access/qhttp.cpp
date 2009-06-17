@@ -64,9 +64,9 @@
 # include "qtimer.h"
 #endif
 
-QT_BEGIN_NAMESPACE
-
 #ifndef QT_NO_HTTP
+
+QT_BEGIN_NAMESPACE
 
 class QHttpNormalRequest;
 class QHttpRequest

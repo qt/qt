@@ -3,7 +3,7 @@
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
 ** Contact: Qt Software Information (qt-info@nokia.com)
 **
-** This file is part of the $MODULE$ of the Qt Toolkit.
+** This file is part of the QtGui module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -116,7 +116,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn void QGenericMatrix::fill(qreal value)
+    \fn void QGenericMatrix::fill(T value)
 
     Fills all elements of this matrix with \a value.
 */

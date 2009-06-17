@@ -75,7 +75,7 @@ QVariant Node::itemChange(GraphicsItemChange change, const QVariant &value)
     return QGraphicsItem::itemChange(change, value);
 }
 
-void Node::mousePressEvent(QGraphicsSceneMouseEvent *event)
+void Node::mousePressEvent(QGraphicsSceneMouseEvent *)
 {
     m_dragging = true;
 }
@@ -86,7 +86,7 @@ void Node::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
         setPos(mapToParent(event->pos()));    
 }
 
-void Node::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
+void Node::mouseReleaseEvent(QGraphicsSceneMouseEvent *)
 {
     m_dragging = false;
 }

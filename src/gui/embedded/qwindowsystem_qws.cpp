@@ -2210,7 +2210,7 @@ void QWSServer::sendMouseEvent(const QPoint& pos, int state, int wheel)
 {
     bool block = qwsServerPrivate->screensaverblockevent(MOUSE, qwsServerPrivate->screensaverinterval, state);
 #ifdef EVENT_BLOCK_DEBUG
-    qDebug() << "sendMouseEvent" << pos.x() << pos.y() << state << (block?"block":"pass");
+    qDebug() << "sendMouseEvent" << pos.x() << pos.y() << state << (block ? "block" : "pass");
 #endif
 
     if (state || wheel)
@@ -4110,7 +4110,7 @@ void QWSServer::processKeyEvent(int unicode, int keycode, Qt::KeyboardModifiers 
         block = qwsServerPrivate->screensaverblockevent(KEY, qwsServerPrivate->screensaverinterval, isPress);
 
 #ifdef EVENT_BLOCK_DEBUG
-    qDebug() << "processKeyEvent" << unicode << keycode << modifiers << isPress << autoRepeat << (block?"block":"pass");
+    qDebug() << "processKeyEvent" << unicode << keycode << modifiers << isPress << autoRepeat << (block ? "block" : "pass");
 #endif
 
     // If we press a key and it's going to be blocked, wake up the screen

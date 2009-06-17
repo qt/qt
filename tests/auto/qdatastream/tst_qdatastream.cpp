@@ -462,7 +462,7 @@ void tst_QDataStream::writeQString(QDataStream* s)
 {
     QString test(QStringData(dataIndex(QTest::currentDataTag())));
     *s << test;
-    *s << QString("Faen her spyr man");
+    *s << QString("Her er det noe tekst");
     *s << test;
     *s << QString();
     *s << test;
@@ -480,7 +480,7 @@ void tst_QDataStream::readQString(QDataStream *s)
     *s >> S;
     QCOMPARE(S, test);
     *s >> S;
-    QCOMPARE(S, QString("Faen her spyr man"));
+    QCOMPARE(S, QString("Her er det noe tekst"));
     *s >> S;
     QCOMPARE(S, test);
     *s >> S;
@@ -533,7 +533,7 @@ void tst_QDataStream::writeQRegExp(QDataStream* s)
 {
     QRegExp test(QRegExpData(dataIndex(QTest::currentDataTag())));
     *s << test;
-    *s << QString("Faen her spyr man");
+    *s << QString("Her er det noe tekst");
     *s << test;
     *s << QString("nonempty");
     *s << test;
@@ -550,7 +550,7 @@ void tst_QDataStream::readQRegExp(QDataStream *s)
     *s >> R;
     QCOMPARE(R, test);
     *s >> S;
-    QCOMPARE(S, QString("Faen her spyr man"));
+    QCOMPARE(S, QString("Her er det noe tekst"));
     *s >> R;
     QCOMPARE(R, test);
     *s >> S;

@@ -64,7 +64,7 @@ QT_MODULE(Gui)
 
 class QGraphicsSystem;
 
-struct Q_GUI_EXPORT QGraphicsSystemFactoryInterface : public QFactoryInterface
+struct QGraphicsSystemFactoryInterface : public QFactoryInterface
 {
     virtual QGraphicsSystem *create(const QString &key) = 0;
 };

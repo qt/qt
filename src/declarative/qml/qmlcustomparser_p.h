@@ -74,7 +74,7 @@ private:
     friend class QmlCustomParserPropertyPrivate;
     QmlCustomParserPropertyPrivate *d;
 };
-Q_DECLARE_METATYPE(QmlCustomParserProperty);
+Q_DECLARE_METATYPE(QmlCustomParserProperty)
 
 class QmlCustomParserNodePrivate;
 class Q_DECLARATIVE_EXPORT QmlCustomParserNode
@@ -93,7 +93,7 @@ private:
     friend class QmlCustomParserNodePrivate;
     QmlCustomParserNodePrivate *d;
 };
-Q_DECLARE_METATYPE(QmlCustomParserNode);
+Q_DECLARE_METATYPE(QmlCustomParserNode)
 
 class Q_DECLARATIVE_EXPORT QmlCustomParser
 {

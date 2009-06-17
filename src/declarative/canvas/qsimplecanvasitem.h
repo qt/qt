@@ -45,6 +45,9 @@
 #include <QtDeclarative/qfxglobal.h>
 #include <QtDeclarative/qmldebuggerstatus.h>
 #include <QtDeclarative/qsimplecanvas.h>
+#if defined(QFX_RENDER_OPENGL)
+#include <QtDeclarative/gltexture.h>
+#endif
 #include <QtCore/qobject.h>
 #include <QtGui/qgraphicsitem.h>
 
@@ -74,7 +77,7 @@ class Q_DECLARATIVE_EXPORT QSimpleCanvasItem : public QObject
     Q_CAST_INTERFACES(QmlDebuggerStatus)
     Q_DECLARE_PRIVATE(QSimpleCanvasItem)
     Q_ENUMS(TransformOrigin)
-    Q_PROPERTY(TransformOrigin transformOrigin READ transformOrigin WRITE setTransformOrigin);
+    Q_PROPERTY(TransformOrigin transformOrigin READ transformOrigin WRITE setTransformOrigin)
 
 public:
     enum ClipType { NoClip = 0x00,
@@ -90,8 +93,9 @@ public:
                   SimpleItem = 0x00000020,
                   IsFocusPanel = 0x00000040,
                   IsFocusRealm = 0x00000080,
-                  AcceptsInputMethods = 0x00000100};
-    Q_DECLARE_FLAGS(Options, Option);
+                  AcceptsInputMethods = 0x00000100,
+                  IsOpaque = 0x00000200 };
+    Q_DECLARE_FLAGS(Options, Option)
 
     QSimpleCanvasItem(QSimpleCanvasItem *parent=0);
     virtual ~QSimpleCanvasItem();
@@ -167,7 +171,8 @@ public:
     class GLPainter 
     {
     public:
-        GLPainter(QSimpleCanvasItem *i) : item(i), activeOpacity(1) {}
+        GLPainter();
+        GLPainter(QSimpleCanvasItem *i);
         QSimpleCanvasItem *item;
         QSimpleCanvas::Matrix activeTransform;
         qreal activeOpacity;
@@ -175,9 +180,16 @@ public:
 
         QGLShaderProgram *useTextureShader();
         QGLShaderProgram *useColorShader(const QColor &);
-        void  drawImage(const QPointF &, const GLTexture &);
-        void  drawImage(const QRectF &, const GLTexture &);
+        void drawPixmap(const QPointF &, const GLTexture &);
+        void drawPixmap(const QRectF &, const GLTexture &);
+        void fillRect(const QRectF &, const QColor &);
+
+        void invalidate();
+        
+        bool blendEnabled;
+
     private:
+        int flags;
         GLPainter(const GLPainter &);
         GLPainter &operator=(const GLPainter &);
     };
@@ -227,8 +239,30 @@ public:
     static QSimpleCanvasItem *findNextFocus(QSimpleCanvasItem *item);
 
     GLBasicShaders *basicShaders() const;
+
+#if defined(QFX_RENDER_OPENGL)
+    class CachedTexture : public GLTexture 
+    {
+    public:
+        void addRef();
+        void release();
+
+        int pixmapWidth() const;
+        int pixmapHeight() const;
+
+    private:
+        CachedTexture();
+        friend class QSimpleCanvasItem;
+        QSimpleCanvasPrivate *d;
+        QString s;
+        int r, w, h;
+    };
+
+    CachedTexture *cachedTexture(const QString &);
+    CachedTexture *cachedTexture(const QString &, const QPixmap &);
+#endif
   
-    static QImage string(const QString &, const QColor & = Qt::black, const QFont & = QFont());
+    static QPixmap string(const QString &, const QColor & = Qt::black, const QFont & = QFont());
 
 protected:
     virtual void geometryChanged(const QRectF &newGeometry, 
@@ -276,7 +310,7 @@ public:
     QSimpleCanvasItem(QSimpleCanvasItemPrivate &dd, QSimpleCanvasItem *parent);
 };
 
-Q_DECLARE_OPERATORS_FOR_FLAGS(QSimpleCanvasItem::Options);
+Q_DECLARE_OPERATORS_FOR_FLAGS(QSimpleCanvasItem::Options)
 
 class QSimpleCanvasLayer : public QSimpleCanvasItem
 {

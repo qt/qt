@@ -66,7 +66,7 @@ int main()
         QPicture picture;
         picture.load("drawing.pic");           // load picture
         QPainter painter;
-        painter.begin(&myWidget);              // paint in myWidget
+        painter.begin(&myImage);               // paint in myImage
         painter.drawPicture(0, 0, picture);    // draw the picture at (0,0)
         painter.end();                         // painting done
 //! [1]

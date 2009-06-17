@@ -206,7 +206,7 @@ static OPENFILENAMEA *qt_win_make_OFNA(QWidget *parent,
     if (parent)
         parent = parent->window();
     else
-        parent = qApp->activeWindow();
+        parent = QApplication::activeWindow();
 
     aTitle = title.toLocal8Bit();
     aInitDir = QDir::toNativeSeparators(initialDirectory).toLocal8Bit();
@@ -214,10 +214,10 @@ static OPENFILENAMEA *qt_win_make_OFNA(QWidget *parent,
         aInitSel = "";
     } else {
         aInitSel = QDir::toNativeSeparators(initialSelection).toLocal8Bit();
-	aInitSel.replace("<", "");
-	aInitSel.replace(">", "");
-	aInitSel.replace("\"", "");
-	aInitSel.replace("|", "");
+	    aInitSel.replace('<', "");
+	    aInitSel.replace('>', "");
+	    aInitSel.replace('\"', "");
+	    aInitSel.replace('|', "");
     }
     int maxLen = mode == QFileDialog::ExistingFiles ? maxMultiLen : maxNameLen;
     aInitSel.resize(maxLen + 1);                // make room for return value
@@ -279,17 +279,17 @@ static OPENFILENAME* qt_win_make_OFN(QWidget *parent,
     if (parent)
         parent = parent->window();
     else
-        parent = qApp->activeWindow();
+        parent = QApplication::activeWindow();
 
     tInitDir = QDir::toNativeSeparators(initialDirectory);
     tFilters = filters;
     tTitle = title;
     QString initSel = QDir::toNativeSeparators(initialSelection);
     if (!initSel.isEmpty()) {
-	initSel.replace(QLatin1String("<"), QLatin1String(""));
-	initSel.replace(QLatin1String(">"), QLatin1String(""));
-	initSel.replace(QLatin1String("\""), QLatin1String(""));
-	initSel.replace(QLatin1String("|"), QLatin1String(""));
+	    initSel.remove(QLatin1Char('<'));
+	    initSel.remove(QLatin1Char('>'));
+	    initSel.remove(QLatin1Char('\"'));
+	    initSel.remove(QLatin1Char('|'));
     }
 
     int maxLen = mode == QFileDialog::ExistingFiles ? maxMultiLen : maxNameLen;
@@ -692,7 +692,7 @@ QString qt_win_get_existing_directory(const QFileDialogArgs &args)
     if (parent)
         parent = parent->window();
     else
-        parent = qApp->activeWindow();
+        parent = QApplication::activeWindow();
     if (parent)
         parent->createWinId();
 
@@ -811,7 +811,7 @@ QString qt_win_get_existing_directory(const QFileDialogArgs &args)
         QDir::setCurrent(currentDir);
 
     if (!result.isEmpty())
-        result.replace(QLatin1String("\\"), QLatin1String("/"));
+        result.replace(QLatin1Char('\\'), QLatin1Char('/'));
     return result;
 }
 

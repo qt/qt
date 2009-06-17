@@ -82,6 +82,8 @@ private slots:
     void operator_gt_eq();
     void fromString_data();
     void fromString();
+    void fromString_format_data();
+    void fromString_format();
     void toString_format_data();
     void toString_format();
     void isLeapYear();
@@ -616,6 +618,30 @@ void tst_QDate::fromString()
     QCOMPARE( QDate::fromString( str1, Qt::TextDate ), d1 );
     if (!str2.isEmpty())
         QCOMPARE( QDate::fromString( str2, Qt::ISODate ), d1 );
+}
+
+void tst_QDate::fromString_format_data()
+{
+    QTest::addColumn<QString>("string");
+    QTest::addColumn<QString>("format");
+    QTest::addColumn<QDate>("date");
+
+    //year with yy is always 19xx for compatibility
+    QTest::newRow( "data0" ) << QString("21052006") << QString("ddMMyyyy") << QDate(2006,5,21);
+    QTest::newRow( "data1" ) << QString("210506") << QString("ddMMyy") << QDate(1906,5,21);
+    QTest::newRow( "data2" ) << QString("21/5/2006") << QString("d/M/yyyy") << QDate(2006,5,21);
+    QTest::newRow( "data3" ) << QString("21/5/06") << QString("d/M/yy") << QDate(1906,5,21);
+    QTest::newRow( "data4" ) << QString("20060521") << QString("yyyyMMdd") << QDate(2006,5,21);
+    QTest::newRow( "data5" ) << QString("060521") << QString("yyMMdd") << QDate(1906,5,21);
+}
+
+void tst_QDate::fromString_format()
+{
+    QFETCH( QString, string );
+    QFETCH( QString, format );
+    QFETCH( QDate, date );
+
+    QCOMPARE( QDate::fromString( string, format ), date );
 }
 
 void tst_QDate::toString_format_data()

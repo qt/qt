@@ -267,7 +267,7 @@ QByteArray QSslCertificate::serialNumber() const
 
 /*!
     Returns a cryptographic digest of this certificate. By default,
-    and MD5 digest will be generated, but you can also specify a
+    an MD5 digest will be generated, but you can also specify a
     custom \a algorithm.
 */
 QByteArray QSslCertificate::digest(QCryptographicHash::Algorithm algorithm) const
@@ -766,16 +766,16 @@ QDebug operator<<(QDebug debug, const QSslCertificate &certificate)
 {
     debug << "QSslCertificate("
           << certificate.version()
-          << "," << certificate.serialNumber()
-          << "," << certificate.digest().toBase64()
-          << "," << certificate.issuerInfo(QSslCertificate::Organization)
-          << "," << certificate.subjectInfo(QSslCertificate::Organization)
-          << "," << certificate.alternateSubjectNames()
+          << ',' << certificate.serialNumber()
+          << ',' << certificate.digest().toBase64()
+          << ',' << certificate.issuerInfo(QSslCertificate::Organization)
+          << ',' << certificate.subjectInfo(QSslCertificate::Organization)
+          << ',' << certificate.alternateSubjectNames()
 #ifndef QT_NO_TEXTSTREAM
-          << "," << certificate.effectiveDate()
-          << "," << certificate.expiryDate()
+          << ',' << certificate.effectiveDate()
+          << ',' << certificate.expiryDate()
 #endif
-          << ")";
+          << ')';
     return debug;
 }
 QDebug operator<<(QDebug debug, QSslCertificate::SubjectInfo info)

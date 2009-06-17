@@ -71,9 +71,9 @@ QT_BEGIN_NAMESPACE
 #define INT_MAX 2147483647
 #endif
 
-QML_DEFINE_NOCREATE_TYPE(QFxContents);
-QML_DEFINE_TYPE(QFxItem,Item);
-QML_DEFINE_NOCREATE_TYPE(QSimpleCanvasFilter);
+QML_DEFINE_NOCREATE_TYPE(QFxContents)
+QML_DEFINE_TYPE(QFxItem,Item)
+QML_DEFINE_NOCREATE_TYPE(QSimpleCanvasFilter)
 
 /*!
     \group group_animation
@@ -792,12 +792,12 @@ QFxItem *QFxItem::qmlItem() const
 }
 
 /*!
-    \qmlproperty string Item::qml
-    This property holds the dynamic QML for the item.
+    \qmlproperty url Item::qml
+    This property holds the dynamic URL of the QML for the item.
 
     This property is used for dynamically loading QML into the
     item. Querying for the QML only has meaning if the QML has been
-    dynamically set; otherwise an empty string is returned.
+    dynamically set; otherwise an empty URL is returned.
 */
 
 /*! \fn void QFxItem::qmlChanged()
@@ -809,32 +809,31 @@ QFxItem *QFxItem::qmlItem() const
 
 /*!
     \property QFxItem::qml
-    This property holds the dynamic QML for the item.
+    This property holds the dynamic URL of the QML for the item.
 
     This property is used for dynamically loading QML into the
     item. Querying for the QML only has meaning if the QML has been
-    dynamically set; otherwise an empty string is returned.
+    dynamically set; otherwise an empty URL is returned.
 */
-QString QFxItem::qml() const
+QUrl QFxItem::qml() const
 {
     Q_D(const QFxItem);
     return d->_qml;
 }
 
-void QFxItem::setQml(const QString &qml)
+void QFxItem::setQml(const QUrl &qml)
 {
     Q_D(QFxItem);
     if (d->_qml == qml)
         return;
 
     if (!d->_qml.isEmpty()) {
-        QmlChildren::Iterator iter = d->_qmlChildren.find(d->_qml);
+        QmlChildren::Iterator iter = d->_qmlChildren.find(d->_qml.toString());
         if (iter != d->_qmlChildren.end())
             (*iter)->setOpacity(0.);
     }
 
     d->_qml = qml;
-    d->_qmlurl = qmlContext(this)->resolvedUri(qml);
     d->qmlItem = 0;
 
     if (d->_qml.isEmpty()) {
@@ -842,14 +841,14 @@ void QFxItem::setQml(const QString &qml)
         return;
     }
 
-    QmlChildren::Iterator iter = d->_qmlChildren.find(d->_qml);
+    QmlChildren::Iterator iter = d->_qmlChildren.find(d->_qml.toString());
     if (iter != d->_qmlChildren.end()) {
         (*iter)->setOpacity(1.);
         d->qmlItem = (*iter);
         emit qmlChanged();
     } else {
         d->_qmlcomp = 
-            new QmlComponent(qmlEngine(this), d->_qmlurl, this);
+            new QmlComponent(qmlEngine(this), d->_qml, this);
         if (!d->_qmlcomp->isLoading())
             qmlLoaded();
         else
@@ -902,11 +901,11 @@ void QFxItem::qmlLoaded()
         QFxItem *qmlChild = qobject_cast<QFxItem *>(obj);
         if (qmlChild) {
             qmlChild->setItemParent(this);
-            d->_qmlChildren.insert(d->_qml, qmlChild);
+            d->_qmlChildren.insert(d->_qml.toString(), qmlChild);
             d->qmlItem = qmlChild;
         } else {
             delete qmlChild;
-            d->_qml = QString();
+            d->_qml = QUrl();
         }
         delete d->_qmlcomp;
         d->_qmlcomp = 0;
@@ -1491,9 +1490,8 @@ void QFxItem::setRotation(qreal rotation)
     trans.rotate(d->_rotation, 0, 0, 1);
     trans.translate(-to.x(), -to.y());
 #else
-    QTransform trans;
-    QPointF to = transformOriginPoint();
-    trans.translate(to.x(), to.y());
+    QPointF to = d->transformOrigin();
+    QTransform trans = QTransform::fromTranslate(to.x(), to.y());
     trans.rotate(d->_rotation);
     trans.translate(-to.x(), -to.y());
 #endif
@@ -1964,7 +1962,7 @@ void QFxItem::newChild(const QString &type)
 {
     Q_D(QFxItem);
 
-    QUrl url = qmlContext(this)->resolvedUri(type);
+    QUrl url = qmlContext(this)->resolvedUri(QUrl(type));
     if (url.isEmpty())
         return;
 

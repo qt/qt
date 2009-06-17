@@ -71,16 +71,10 @@ public:
 
     bool isNull() const;
 
-    bool opaque() const;
-    void setOpaque(bool);
-
     int width() const;
     int height() const;
 
-    QPixmap pixmap() const;
-    void setPixmap(const QPixmap &pix);
-
-    operator const QSimpleCanvasConfig::Image &() const;
+    operator const QPixmap &() const;
 
 private:
     QFxPixmapPrivate *d;

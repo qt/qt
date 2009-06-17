@@ -216,9 +216,9 @@ namespace QTest {
     template <typename T> QString formatResult(T number, int significantDigits)
     {
         if (number < T(0))
-            return QString(QLatin1String("NAN"));
+            return QLatin1String("NAN");
         if (number == T(0))
-            return QString(QLatin1String("0"));
+            return QLatin1String("0");
 
         QString beforeDecimalPoint = QString::number(qint64(number), 'f', 0);
         QString afterDecimalPoint = QString::number(number, 'f', 20);

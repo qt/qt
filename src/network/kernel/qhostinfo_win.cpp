@@ -72,21 +72,6 @@ struct qt_addrinfo
     qt_addrinfo *ai_next;
 };
 
-// sockaddr_in6 size changed between old and new SDK
-// Only the new version is the correct one, so always
-// use this structure.
-struct qt_in6_addr {
-    uchar qt_s6_addr[16];
-};
-
-struct qt_sockaddr_in6 {
-    short   sin6_family;            /* AF_INET6 */
-    u_short sin6_port;              /* Transport level port number */
-    u_long  sin6_flowinfo;          /* IPv6 flow information */
-    struct  qt_in6_addr sin6_addr;  /* IPv6 address */
-    u_long  sin6_scope_id;          /* set of interfaces for a scope */
-};
-
 //###
 #define QT_SOCKLEN_T int
 #ifndef NI_MAXHOST // already defined to 1025 in ws2tcpip.h?

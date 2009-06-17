@@ -851,7 +851,7 @@ void QCommonStylePrivate::lookupIconTheme() const
     dataDirs.prepend(QDir::homePath() + QLatin1String("/:"));
     QStringList kdeDirs = QString::fromLocal8Bit(getenv("KDEDIRS")).split(QLatin1Char(':'));
     foreach (const QString &dirName, kdeDirs)
-        dataDirs.append(QLatin1String(":") + dirName + QLatin1String("/share"));
+        dataDirs.append(QLatin1Char(':') + dirName + QLatin1String("/share"));
     iconDirs = dataDirs.split(QLatin1Char(':'));
 
     QFileInfo fileInfo(QLatin1String("/usr/share/icons/default.kde"));
@@ -893,7 +893,7 @@ QIconTheme QCommonStylePrivate::parseIndexFile(const QString &themeName) const
                 parents = line.split(QLatin1Char(','));
             }
 
-            if (line.startsWith(QLatin1String("["))) {
+            if (line.startsWith(QLatin1Char('['))) {
                 line = line.trimmed();
                 line.chop(1);
                 QString dirName = line.right(line.length() - 1);
@@ -1695,7 +1695,7 @@ void QCommonStyle::drawControl(ControlElement element, const QStyleOption *opt,
 
                     if (toolbutton->toolButtonStyle == Qt::ToolButtonTextUnderIcon) {
                         pr.setHeight(pmSize.height() + 6);
-                        tr.adjust(0, pr.height(), 0, -3);
+                        tr.adjust(0, pr.height() - 1, 0, -3);
                         pr.translate(shiftX, shiftY);
                         if (!hasArrow) {
                             drawItemPixmap(p, pr, Qt::AlignCenter, pm);
@@ -3130,7 +3130,7 @@ QRect QCommonStyle::subElementRect(SubElement sr, const QStyleOption *opt,
                 if (dw->isFloating())
                     icon = dw->windowIcon();
                 if (!icon.isNull()
-                        && icon.cacheKey() != qApp->windowIcon().cacheKey()) {
+                        && icon.cacheKey() != QApplication::windowIcon().cacheKey()) {
                     QSize sz = icon.actualSize(QSize(r.height(), r.height()));
                     if (verticalTitleBar)
                         sz.transpose();
@@ -5309,7 +5309,7 @@ QPixmap QCommonStyle::standardPixmap(StandardPixmap sp, const QStyleOption *opti
 #ifdef Q_WS_X11
     Q_D(const QCommonStyle);
     QPixmap pixmap;
-    if (qApp->desktopSettingsAware()) {
+    if (QApplication::desktopSettingsAware()) {
         d->lookupIconTheme();
         switch (sp) {
         case SP_DirHomeIcon:
@@ -5730,7 +5730,7 @@ QIcon QCommonStyle::standardIconImplementation(StandardPixmap standardIcon, cons
     QIcon icon;
 #ifdef Q_WS_X11
     Q_D(const QCommonStyle);
-    if (qApp->desktopSettingsAware()) {
+    if (QApplication::desktopSettingsAware()) {
         d->lookupIconTheme();
         QPixmap pixmap;
         switch (standardIcon) {

@@ -165,6 +165,7 @@ void EffectWidgetPrivate::autogenerateUi()
                 if (minValue == -1. && maxValue == 1.) {
                     //Special case values between -1 and 1.0 to use a slider for improved usability
                     QSlider *slider = new QSlider(Qt::Horizontal, q);
+                    control = slider;
                     slider->setRange(-SLIDER_RANGE, +SLIDER_RANGE);
                     slider->setValue(int(SLIDER_RANGE * value.toDouble()));
                     slider->setTickPosition(QSlider::TicksBelow);
@@ -188,10 +189,10 @@ void EffectWidgetPrivate::autogenerateUi()
             break;
         }
 
+        if (control) {
 #ifndef QT_NO_TOOLTIP
         control->setToolTip(para.description());
 #endif
-        if (control) {
 #ifndef QT_NO_SHORTCUT
             label->setBuddy(control);
 #endif

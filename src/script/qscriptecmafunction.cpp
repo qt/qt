@@ -197,7 +197,7 @@ QString Function::buildFunction(QScriptContextPrivate *context)
     // the formals
     for (int i = 0; i < argc - 1; ++i) {
         if (i != 0)
-            code += QLatin1String(",");
+            code += QLatin1Char(',');
 
         code += context->argument(i).toString();
     }

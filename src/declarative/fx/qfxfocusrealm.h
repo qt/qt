@@ -58,7 +58,7 @@ public:
     virtual ~QFxFocusRealm();
 };
 
-QML_DECLARE_TYPE(QFxFocusRealm);
+QML_DECLARE_TYPE(QFxFocusRealm)
 
 QT_END_NAMESPACE
 

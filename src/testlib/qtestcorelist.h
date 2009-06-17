@@ -44,7 +44,11 @@
 
 #include <QtCore/qglobal.h>
 
+QT_BEGIN_HEADER
+
 QT_BEGIN_NAMESPACE
+
+QT_MODULE(Test)
 
 template <class T>
 class QTestCoreList
@@ -126,5 +130,7 @@ int QTestCoreList<T>::count()
 }
 
 QT_END_NAMESPACE
+
+QT_END_HEADER
 
 #endif

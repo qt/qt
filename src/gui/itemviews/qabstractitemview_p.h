@@ -99,7 +99,7 @@ public:
     QVariant data(const QModelIndex &, int) const { return QVariant(); }
 };
 
-class QAbstractItemViewPrivate : public QAbstractScrollAreaPrivate
+class Q_AUTOTEST_EXPORT QAbstractItemViewPrivate : public QAbstractScrollAreaPrivate
 {
     Q_DECLARE_PUBLIC(QAbstractItemView)
 

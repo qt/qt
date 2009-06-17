@@ -138,7 +138,8 @@ public:
     mutable int designAdvancesSize;
 
 private:
-    QNativeImage *drawGDIGlyph(HFONT font, glyph_t, int margin, const QTransform &xform);
+    QNativeImage *drawGDIGlyph(HFONT font, glyph_t, int margin, const QTransform &xform,
+                               QImage::Format mask_format);
 
 };
 

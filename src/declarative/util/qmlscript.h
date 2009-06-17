@@ -55,11 +55,11 @@ class QmlScriptPrivate;
 class Q_DECLARATIVE_EXPORT QmlScript : public QObject
 {
     Q_OBJECT
-    Q_DECLARE_PRIVATE(QmlScript);
+    Q_DECLARE_PRIVATE(QmlScript)
 
-    Q_PROPERTY(QString script READ script WRITE setScript);
-    Q_PROPERTY(QString source READ source WRITE setSource);
-    Q_CLASSINFO("DefaultProperty", "script");
+    Q_PROPERTY(QString script READ script WRITE setScript)
+    Q_PROPERTY(QUrl source READ source WRITE setSource)
+    Q_CLASSINFO("DefaultProperty", "script")
 
 public:
     QmlScript(QObject *parent=0);
@@ -67,13 +67,13 @@ public:
     QString script() const;
     void setScript(const QString &);
 
-    QString source() const;
-    void setSource(const QString &);
+    QUrl source() const;
+    void setSource(const QUrl &);
 
 private Q_SLOTS:
     void replyFinished();
 };
-QML_DECLARE_TYPE(QmlScript);
+QML_DECLARE_TYPE(QmlScript)
 
 QT_END_NAMESPACE
 QT_END_HEADER

@@ -3,7 +3,7 @@
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
 ** Contact: Qt Software Information (qt-info@nokia.com)
 **
-** This file is part of the $MODULE$ of the Qt Toolkit.
+** This file is part of the test suite of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -166,6 +166,9 @@ private slots:
     void convertQTransform();
 
     void fill();
+
+    void mapRect_data();
+    void mapRect();
 
 private:
     static void setMatrix(QMatrix2x2& m, const qreal *values);
@@ -1975,6 +1978,14 @@ void tst_QMatrix::scale4x4_data()
          0.0f, 0.0f, 0.0f, 1.0f};
     QTest::newRow("complex")
         << (qreal)2.0f << (qreal)11.0f << (qreal)-6.5f << (void *)complexScale;
+
+    static const qreal complexScale2D[] =
+        {2.0f, 0.0f, 0.0f, 0.0f,
+         0.0f, -11.0f, 0.0f, 0.0f,
+         0.0f, 0.0f, 1.0f, 0.0f,
+         0.0f, 0.0f, 0.0f, 1.0f};
+    QTest::newRow("complex2D")
+        << (qreal)2.0f << (qreal)-11.0f << (qreal)1.0f << (void *)complexScale2D;
 }
 void tst_QMatrix::scale4x4()
 {
@@ -1992,6 +2003,12 @@ void tst_QMatrix::scale4x4()
     QMatrix4x4 m2;
     m2.scale(x, y, z);
     QVERIFY(isSame(m2, (const qreal *)resultValues));
+
+    if (z == 1.0f) {
+        QMatrix4x4 m2b;
+        m2b.scale(x, y);
+        QVERIFY(m2b == m2);
+    }
 
     QVector3D v1(2.0f, 3.0f, -4.0f);
     QVector3D v2 = m1 * v1;
@@ -2044,6 +2061,12 @@ void tst_QMatrix::scale4x4()
         QMatrix4x4 m5;
         m5.scale(x);
         QVERIFY(isSame(m5, (const qreal *)resultValues));
+    }
+
+    if (z == 1.0f) {
+        QMatrix4x4 m4b(m3);
+        m4b.scale(x, y);
+        QVERIFY(m4b == m4);
     }
 
     // Test coverage when the special matrix type is unknown.
@@ -2101,6 +2124,14 @@ void tst_QMatrix::translate4x4_data()
          0.0f, 0.0f, 0.0f, 1.0f};
     QTest::newRow("complex")
         << (qreal)2.0f << (qreal)11.0f << (qreal)-6.5f << (void *)complexTranslate;
+
+    static const qreal complexTranslate2D[] =
+        {1.0f, 0.0f, 0.0f, 2.0f,
+         0.0f, 1.0f, 0.0f, -11.0f,
+         0.0f, 0.0f, 1.0f, 0.0f,
+         0.0f, 0.0f, 0.0f, 1.0f};
+    QTest::newRow("complex2D")
+        << (qreal)2.0f << (qreal)-11.0f << (qreal)0.0f << (void *)complexTranslate2D;
 }
 void tst_QMatrix::translate4x4()
 {
@@ -2118,6 +2149,12 @@ void tst_QMatrix::translate4x4()
     QMatrix4x4 m2;
     m2.translate(x, y, z);
     QVERIFY(isSame(m2, (const qreal *)resultValues));
+
+    if (z == 0.0f) {
+        QMatrix4x4 m2b;
+        m2b.translate(x, y);
+        QVERIFY(m2b == m2);
+    }
 
     QVector3D v1(2.0f, 3.0f, -4.0f);
     QVector3D v2 = m1 * v1;
@@ -2153,6 +2190,12 @@ void tst_QMatrix::translate4x4()
     QMatrix4x4 m4(m3);
     m4.translate(x, y, z);
     QVERIFY(m4 == m3 * m1);
+
+    if (z == 0.0f) {
+        QMatrix4x4 m4b(m3);
+        m4b.translate(x, y);
+        QVERIFY(m4b == m4);
+    }
 }
 
 // Test the generation and use of 4x4 rotation matrices.
@@ -3178,6 +3221,117 @@ void tst_QMatrix::fill()
          2.5f, 2.5f, 2.5f, 2.5f};
     m2.fill(2.5f);
     QVERIFY(isSame(m2, fillValues4x3));
+}
+
+// Test the mapRect() function for QRect and QRectF.
+void tst_QMatrix::mapRect_data()
+{
+    QTest::addColumn<qreal>("x");
+    QTest::addColumn<qreal>("y");
+    QTest::addColumn<qreal>("width");
+    QTest::addColumn<qreal>("height");
+
+    QTest::newRow("null")
+        << (qreal)0.0f << (qreal)0.0f << (qreal)0.0f << (qreal)0.0f;
+    QTest::newRow("rect")
+        << (qreal)1.0f << (qreal)-20.5f << (qreal)100.0f << (qreal)63.75f;
+}
+void tst_QMatrix::mapRect()
+{
+    QFETCH(qreal, x);
+    QFETCH(qreal, y);
+    QFETCH(qreal, width);
+    QFETCH(qreal, height);
+
+    QRectF rect(x, y, width, height);
+    QRect recti(qRound(x), qRound(y), qRound(width), qRound(height));
+
+    QMatrix4x4 m1;
+    QVERIFY(m1.mapRect(rect) == rect);
+    QVERIFY(m1.mapRect(recti) == recti);
+
+    QMatrix4x4 m2;
+    m2.translate(-100.5f, 64.0f);
+    QRectF translated = rect.translated(-100.5f, 64.0f);
+    QRect translatedi = QRect(qRound(recti.x() - 100.5f), recti.y() + 64,
+                              recti.width(), recti.height());
+    QVERIFY(m2.mapRect(rect) == translated);
+    QVERIFY(m2.mapRect(recti) == translatedi);
+
+    QMatrix4x4 m3;
+    m3.scale(-100.5f, 64.0f);
+    qreal scalex = x * -100.5f;
+    qreal scaley = y * 64.0f;
+    qreal scalewid = width * -100.5f;
+    qreal scaleht = height * 64.0f;
+    if (scalewid < 0.0f) {
+        scalewid = -scalewid;
+        scalex -= scalewid;
+    }
+    if (scaleht < 0.0f) {
+        scaleht = -scaleht;
+        scaley -= scaleht;
+    }
+    QRectF scaled(scalex, scaley, scalewid, scaleht);
+    QVERIFY(m3.mapRect(rect) == scaled);
+    scalex = recti.x() * -100.5f;
+    scaley = recti.y() * 64.0f;
+    scalewid = recti.width() * -100.5f;
+    scaleht = recti.height() * 64.0f;
+    if (scalewid < 0.0f) {
+        scalewid = -scalewid;
+        scalex -= scalewid;
+    }
+    if (scaleht < 0.0f) {
+        scaleht = -scaleht;
+        scaley -= scaleht;
+    }
+    QRect scaledi(qRound(scalex), qRound(scaley),
+                  qRound(scalewid), qRound(scaleht));
+    QVERIFY(m3.mapRect(recti) == scaledi);
+
+    QMatrix4x4 m4;
+    m4.translate(-100.5f, 64.0f);
+    m4.scale(-2.5f, 4.0f);
+    qreal transx1 = x * -2.5f - 100.5f;
+    qreal transy1 = y * 4.0f + 64.0f;
+    qreal transx2 = (x + width) * -2.5f - 100.5f;
+    qreal transy2 = (y + height) * 4.0f + 64.0f;
+    if (transx1 > transx2)
+        qSwap(transx1, transx2);
+    if (transy1 > transy2)
+        qSwap(transy1, transy2);
+    QRectF trans(transx1, transy1, transx2 - transx1, transy2 - transy1);
+    QVERIFY(m4.mapRect(rect) == trans);
+    transx1 = recti.x() * -2.5f - 100.5f;
+    transy1 = recti.y() * 4.0f + 64.0f;
+    transx2 = (recti.x() + recti.width()) * -2.5f - 100.5f;
+    transy2 = (recti.y() + recti.height()) * 4.0f + 64.0f;
+    if (transx1 > transx2)
+        qSwap(transx1, transx2);
+    if (transy1 > transy2)
+        qSwap(transy1, transy2);
+    QRect transi(qRound(transx1), qRound(transy1),
+                 qRound(transx2) - qRound(transx1),
+                 qRound(transy2) - qRound(transy1));
+    QVERIFY(m4.mapRect(recti) == transi);
+
+    m4.rotate(45.0f, 0.0f, 0.0f, 1.0f);
+
+    QTransform t4;
+    t4.translate(-100.5f, 64.0f);
+    t4.scale(-2.5f, 4.0f);
+    t4.rotate(45.0f);
+    QRectF mr = m4.mapRect(rect);
+    QRectF tr = t4.mapRect(rect);
+    QVERIFY(fuzzyCompare(mr.x(), tr.x()));
+    QVERIFY(fuzzyCompare(mr.y(), tr.y()));
+    QVERIFY(fuzzyCompare(mr.width(), tr.width()));
+    QVERIFY(fuzzyCompare(mr.height(), tr.height()));
+
+    QRect mri = m4.mapRect(recti);
+    QRect tri = t4.mapRect(recti);
+    QVERIFY(mri == tri);
 }
 
 QTEST_APPLESS_MAIN(tst_QMatrix)

@@ -45,12 +45,12 @@
 #include <QtCore/qobject.h>
 #include <QtDeclarative/qml.h>
 
-
 QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
 QT_MODULE(Declarative)
+
 class QmlFontPrivate;
 class Q_DECLARATIVE_EXPORT QmlFont : public QObject
 {
@@ -83,10 +83,10 @@ public:
 Q_SIGNALS:
     void updated();
 };
-QML_DECLARE_TYPE(QmlFont);
-
+QML_DECLARE_TYPE(QmlFont)
 
 QT_END_NAMESPACE
 
 QT_END_HEADER
+
 #endif // QMLFONT_H

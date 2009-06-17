@@ -1914,9 +1914,6 @@ QPixmap QX11PixmapData::transformed(const QTransform &transform,
     }
 }
 
-/*!
-  \internal
-*/
 int QPixmap::x11SetDefaultScreen(int screen)
 {
     int old = defaultScreen;
@@ -1924,9 +1921,6 @@ int QPixmap::x11SetDefaultScreen(int screen)
     return old;
 }
 
-/*!
-  \internal
-*/
 void QPixmap::x11SetScreen(int screen)
 {
     if (paintingActive()) {
@@ -2034,14 +2028,6 @@ bool QX11PixmapData::hasAlphaChannel() const
     return d == 32;
 }
 
-/*!
-    Returns information about the configuration of the X display used to display
-    the widget.
-
-    \warning This function is only available on X11.
-
-    \sa {QPixmap#Pixmap Information}{Pixmap Information}
-*/
 const QX11Info &QPixmap::x11Info() const
 {
     if (data->classId() == QPixmapData::X11Class)
@@ -2097,20 +2083,6 @@ QPaintEngine* QX11PixmapData::paintEngine() const
         that->pengine = new QX11PaintEngine;
     return that->pengine;
 }
-
-/*!
-    Returns the X11 Picture handle of the pixmap for XRender
-    support.
-
-    This function will return 0 if XRender support is not compiled
-    into Qt, if the XRender extension is not supported on the X11
-    display, or if the handle could not be created. Use of this
-    function is not portable.
-
-    \warning This function is only available on X11.
-
-    \sa {QPixmap#Pixmap Information}{Pixmap Information}
-*/
 
 Qt::HANDLE QPixmap::x11PictureHandle() const
 {

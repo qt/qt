@@ -43,7 +43,7 @@
 
 
 QT_BEGIN_NAMESPACE
-QML_DEFINE_TYPE(QFxFocusPanel,FocusPanel);
+QML_DEFINE_TYPE(QFxFocusPanel,FocusPanel)
 
 /*!
    \qmlclass FocusPanel

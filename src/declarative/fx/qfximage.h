@@ -58,7 +58,7 @@ class Q_DECLARATIVE_EXPORT QFxImage : public QFxItem
     Q_ENUMS(Status)
 
     Q_PROPERTY(Status status READ status NOTIFY statusChanged)
-    Q_PROPERTY(QString source READ source WRITE setSource NOTIFY sourceChanged)
+    Q_PROPERTY(QUrl source READ source WRITE setSource NOTIFY sourceChanged)
     Q_PROPERTY(qreal progress READ progress NOTIFY progressChanged)
 
     Q_PROPERTY(QFxScaleGrid *scaleGrid READ scaleGrid)
@@ -88,8 +88,8 @@ public:
     Status status() const;
     qreal progress() const;
 
-    QString source() const;
-    virtual void setSource(const QString &url);
+    QUrl source() const;
+    virtual void setSource(const QUrl &url);
 
     virtual void dump(int depth);
     virtual QString propertyInfo() const;
@@ -102,7 +102,7 @@ public:
 #endif
 
 Q_SIGNALS:
-    void sourceChanged(const QString &);
+    void sourceChanged(const QUrl &);
     void statusChanged(Status);
     void progressChanged(qreal progress);
 
@@ -120,7 +120,7 @@ private:
     Q_DECLARE_PRIVATE(QFxImage)
     void setGridScaledImage(const QFxGridScaledImage& sci);
 };
-QML_DECLARE_TYPE(QFxImage);
+QML_DECLARE_TYPE(QFxImage)
 
 QT_END_NAMESPACE
 

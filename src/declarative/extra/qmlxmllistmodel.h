@@ -57,11 +57,9 @@ class Q_DECLARATIVE_EXPORT XmlListModelRole : public QObject
     Q_OBJECT
     Q_PROPERTY(QString name READ name WRITE setName)
     Q_PROPERTY(QString query READ query WRITE setQuery)
-    Q_PROPERTY(bool isCData READ isCData WRITE setIsCData)
-    Q_PROPERTY(bool isStringList READ isStringList WRITE setIsStringList)
 
 public:
-    XmlListModelRole() : m_isList(false), m_isCData(false) {}
+    XmlListModelRole() {}
     ~XmlListModelRole() {}
 
     QString name() const { return m_name; }
@@ -70,19 +68,11 @@ public:
     QString query() const { return m_query; }
     void setQuery(const QString &query) { m_query = query; }
 
-    bool isStringList() const { return m_isList; }
-    void setIsStringList(bool b) { m_isList = b; }
-
-    bool isCData() const { return m_isCData; }
-    void setIsCData(bool b) { m_isCData = b; }
-
 private:
     QString m_name;
     QString m_query;
-    bool m_isList;
-    bool m_isCData;
 };
-QML_DECLARE_TYPE(XmlListModelRole);
+QML_DECLARE_TYPE(XmlListModelRole)
 
 class QmlXmlListModelPrivate;
 class Q_DECLARATIVE_EXPORT QmlXmlListModel : public QListModelInterface, public QmlParserStatus
@@ -93,7 +83,7 @@ class Q_DECLARATIVE_EXPORT QmlXmlListModel : public QListModelInterface, public 
 
     Q_PROPERTY(Status status READ status NOTIFY statusChanged)
     Q_PROPERTY(qreal progress READ progress NOTIFY progressChanged)
-    Q_PROPERTY(QString source READ source WRITE setSource)
+    Q_PROPERTY(QUrl source READ source WRITE setSource)
     Q_PROPERTY(QString query READ query WRITE setQuery)
     Q_PROPERTY(QString namespaceDeclarations READ namespaceDeclarations WRITE setNamespaceDeclarations)
     Q_PROPERTY(QmlList<XmlListModelRole *> *roles READ roleObjects)
@@ -109,8 +99,8 @@ public:
 
     QmlList<XmlListModelRole *> *roleObjects();
 
-    QString source() const;
-    void setSource(const QString&);
+    QUrl source() const;
+    void setSource(const QUrl&);
 
     QString query() const;
     void setQuery(const QString&);
@@ -141,7 +131,7 @@ private:
     Q_DISABLE_COPY(QmlXmlListModel)
 };
 
-QML_DECLARE_TYPE(QmlXmlListModel);
+QML_DECLARE_TYPE(QmlXmlListModel)
 
 QT_END_NAMESPACE
 

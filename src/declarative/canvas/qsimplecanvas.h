@@ -88,27 +88,11 @@ namespace QSimpleCanvasConfig
 
 #elif defined(QFX_RENDER_QPAINTER)
     typedef QTransform Matrix;
-    typedef QImage Image;
 
     inline Matrix transformToMatrix(const QTransform &t)
     { return t; }
     inline QTransform matrixToTransform(const Matrix &t)
     { return t; }
-    inline bool needConvert(ImageType type, const Image &img) {
-        QImage::Format f = img.format();
-        return !((type == Opaque && f == QImage::Format_RGB16) ||
-                 (type == Translucent && f == QImage::Format_ARGB32_Premultiplied));
-    }
-    inline Image convert(ImageType type, const Image &img) {
-        if (type == Opaque)
-            return img.convertToFormat(QImage::Format_RGB16);
-        else
-            return img.convertToFormat(QImage::Format_ARGB32_Premultiplied);
-    }
-    inline Image create(const QSize &s) 
-    { return QImage(s, QImage::Format_ARGB32_Premultiplied); }
-    inline const Image &toImage(const QImage &i)
-    { return i; }
 #endif
 }
 

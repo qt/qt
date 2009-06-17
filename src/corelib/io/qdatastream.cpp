@@ -622,11 +622,16 @@ QDataStream &QDataStream::operator>>(qint16 &i)
             setStatus(ReadPastEnd);
         }
     } else {
-        register uchar *p = (uchar *)(&i);
+        union {
+            qint16 val1;
+            char val2[2];
+        } x;
+        char *p = x.val2;
         char b[2];
         if (dev->read(b, 2) == 2) {
             *p++ = b[1];
             *p = b[0];
+            i = x.val1;
         } else {
             setStatus(ReadPastEnd);
         }
@@ -660,13 +665,18 @@ QDataStream &QDataStream::operator>>(qint32 &i)
             setStatus(ReadPastEnd);
         }
     } else {                                        // swap bytes
-        uchar *p = (uchar *)(&i);
+        union {
+            qint32 val1;
+            char val2[4];
+        } x;
+        char *p = x.val2;
         char b[4];
         if (dev->read(b, 4) == 4) {
             *p++ = b[3];
             *p++ = b[2];
             *p++ = b[1];
             *p   = b[0];
+            i = x.val1;
         } else {
             setStatus(ReadPastEnd);
         }
@@ -703,7 +713,12 @@ QDataStream &QDataStream::operator>>(qint64 &i)
             setStatus(ReadPastEnd);
         }
     } else {                                        // swap bytes
-        uchar *p = (uchar *)(&i);
+        union {
+            qint64 val1;
+            char val2[8];
+        } x;
+
+        char *p = x.val2;
         char b[8];
         if (dev->read(b, 8) == 8) {
             *p++ = b[7];
@@ -714,6 +729,7 @@ QDataStream &QDataStream::operator>>(qint64 &i)
             *p++ = b[2];
             *p++ = b[1];
             *p   = b[0];
+            i = x.val1;
         } else {
             setStatus(ReadPastEnd);
         }
@@ -751,13 +767,19 @@ QDataStream &QDataStream::operator>>(float &f)
             setStatus(ReadPastEnd);
         }
     } else {                                        // swap bytes
-        uchar *p = (uchar *)(&f);
+        union {
+            float val1;
+            char val2[4];
+        } x;
+
+        char *p = x.val2;
         char b[4];
         if (dev->read(b, 4) == 4) {
             *p++ = b[3];
             *p++ = b[2];
             *p++ = b[1];
             *p = b[0];
+            f = x.val1;
         } else {
             setStatus(ReadPastEnd);
         }
@@ -788,7 +810,11 @@ QDataStream &QDataStream::operator>>(double &f)
             setStatus(ReadPastEnd);
         }
     } else {                                        // swap bytes
-        register uchar *p = (uchar *)(&f);
+        union {
+            double val1;
+            char val2[8];
+        } x;
+        char *p = x.val2;
         char b[8];
         if (dev->read(b, 8) == 8) {
             *p++ = b[7];
@@ -799,13 +825,18 @@ QDataStream &QDataStream::operator>>(double &f)
             *p++ = b[2];
             *p++ = b[1];
             *p   = b[0];
+            f = x.val1;
         } else {
             setStatus(ReadPastEnd);
         }
     }
 #else
     //non-standard floating point format
-    register uchar *p = (uchar *)(&f);
+    union {
+        double val1;
+        char val2[8];
+    } x;
+    char *p = x.val2;
     char b[8];
     if (dev->read(b, 8) == 8) {
         if (noswap) {
@@ -827,6 +858,7 @@ QDataStream &QDataStream::operator>>(double &f)
             *p++ = b[Q_DF(1)];
             *p = b[Q_DF(0)];
         }
+        f = x.val1;
     } else {
         setStatus(ReadPastEnd);
     }
@@ -970,7 +1002,12 @@ QDataStream &QDataStream::operator<<(qint16 i)
     if (noswap) {
         dev->write((char *)&i, sizeof(qint16));
     } else {                                        // swap bytes
-        register uchar *p = (uchar *)(&i);
+        union {
+            qint16 val1;
+            char val2[2];
+        } x;
+        x.val1 = i;
+        char *p = x.val2;
         char b[2];
         b[1] = *p++;
         b[0] = *p;
@@ -992,7 +1029,12 @@ QDataStream &QDataStream::operator<<(qint32 i)
     if (noswap) {
         dev->write((char *)&i, sizeof(qint32));
     } else {                                        // swap bytes
-        register uchar *p = (uchar *)(&i);
+        union {
+            qint32 val1;
+            char val2[4];
+        } x;
+        x.val1 = i;
+        char *p = x.val2;
         char b[4];
         b[3] = *p++;
         b[2] = *p++;
@@ -1022,13 +1064,18 @@ QDataStream &QDataStream::operator<<(qint64 i)
 {
     CHECK_STREAM_PRECOND(*this)
     if (version() < 6) {
-	quint32 i1 = i & 0xffffffff;
-	quint32 i2 = i >> 32;
-	*this << i2 << i1;
+        quint32 i1 = i & 0xffffffff;
+        quint32 i2 = i >> 32;
+        *this << i2 << i1;
     } else if (noswap) {                        // no conversion needed
         dev->write((char *)&i, sizeof(qint64));
     } else {                                        // swap bytes
-        register uchar *p = (uchar *)(&i);
+        union {
+            qint64 val1;
+            char val2[8];
+        } x;
+        x.val1 = i;
+        char *p = x.val2;
         char b[8];
         b[7] = *p++;
         b[6] = *p++;
@@ -1077,7 +1124,12 @@ QDataStream &QDataStream::operator<<(float f)
     if (noswap) {                                // no conversion needed
         dev->write((char *)&g, sizeof(float));
     } else {                                // swap bytes
-        register uchar *p = (uchar *)(&g);
+        union {
+            float val1;
+            char val2[4];
+        } x;
+        x.val1 = f;
+        char *p = x.val2;
         char b[4];
         b[3] = *p++;
         b[2] = *p++;
@@ -1103,7 +1155,12 @@ QDataStream &QDataStream::operator<<(double f)
     if (noswap) {
         dev->write((char *)&f, sizeof(double));
     } else {
-        register uchar *p = (uchar *)(&f);
+        union {
+            double val1;
+            char val2[8];
+        } x;
+        x.val1 = f;
+        char *p = x.val2;
         char b[8];
         b[7] = *p++;
         b[6] = *p++;
@@ -1116,7 +1173,12 @@ QDataStream &QDataStream::operator<<(double f)
         dev->write(b, 8);
     }
 #else
-    register uchar *p = (uchar *)(&f);
+    union {
+        double val1;
+        char val2[8];
+    } x;
+    x.val1 = f;
+    char *p = x.val2;
     char b[8];
     if (noswap) {
         b[Q_DF(0)] = *p++;

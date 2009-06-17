@@ -299,14 +299,14 @@
 
     We also declare two private QString objects, \c oldName and \c oldAddress.
     These objects are needed to hold the name and address of the contact that
-    was last displayed, before the user clicked "Add". So, when the user clicks
-    "Cancel", we can revert to displaying the details of the last contact.
+    was last displayed, before the user clicked \gui Add. So, when the user clicks
+    \gui Cancel, we can revert to displaying the details of the last contact.
 
     \section1 Implementing the AddressBook Class
 
     Within the constructor of \c AddressBook, we set the \c nameLine and
     \c addressText to read-only, so that we can only display but not edit
-    existing cotact details.
+    existing contact details.
 
     \dots
     \snippet tutorials/addressbook/part2/addressbook.cpp setting readonly 1
@@ -321,7 +321,7 @@
     The \c addButton is displayed by invoking the \l{QPushButton::show()}
     {show()} function, while the \c submitButton and \c cancelButton are
     hidden by invoking \l{QPushButton::hide()}{hide()}. These two push
-    buttons will only be displayed when the user clicks "Add" and this is
+    buttons will only be displayed when the user clicks \gui Add and this is
     handled by the \c addContact() function discussed below.
 
     \snippet tutorials/addressbook/part2/addressbook.cpp connecting signals and slots
@@ -365,7 +365,7 @@
     \list 1
     \o We extract the contact's details from \c nameLine and \c addressText
     and store them in QString objects. We also validate to make sure that the
-    user did not click "Submit" with empty input fields; otherwise, a
+    user did not click \gui Submit with empty input fields; otherwise, a
     QMessageBox is displayed to remind the user for a name and address.
 
     \snippet tutorials/addressbook/part2/addressbook.cpp submitContact part1
@@ -377,8 +377,8 @@
     \snippet tutorials/addressbook/part2/addressbook.cpp submitContact part2
 
     If the contact already exists, again, we display a QMessageBox to inform
-    the user about this, to prevent the user from adding duplicate contacts.
-    Our \c contacts object is based on key-value pairs of name and addresses,
+    the user about this, preventing the user from adding duplicate contacts.
+    Our \c contacts object is based on key-value pairs of name and address,
     hence, we want to ensure that \e key is unique.
 
     \o Once we have handled both cases mentioned above, we restore the push
@@ -399,9 +399,9 @@
 
     \snippet tutorials/addressbook/part2/addressbook.cpp cancel
 
-    The general idea to add a contact is to give the user the flexibility to
-    click "Submit" or "Cancel" at any time. The flowchart below further
-    explains this concept:
+    The general idea behind adding a contact is to give the user the
+    flexibility to click \gui Submit or \gui Cancel at any time. The flowchart below
+    further explains this concept:
 
     \image addressbook-tutorial-part2-add-flowchart.png
 */
@@ -457,7 +457,7 @@
     \snippet tutorials/addressbook/part3/addressbook.cpp connecting navigation signals
 
     The image below is our expected graphical user interface. Notice that it
-    is getting closer to our expected final output.
+    is getting closer to our final application.
 
     \image addressbook-tutorial-part3-screenshot.png
 
@@ -513,7 +513,7 @@
     \list
         \o If the iterator is at the end of \c contacts, we clear the
         display and return.
-        \o If the iterator is the beginning of \c contacts, we move it to
+        \o If the iterator is at the beginning of \c contacts, we move it to
         the end.
         \o We then decrement the iterator by one.
     \endlist
@@ -532,7 +532,7 @@
     \example tutorials/addressbook/part4
     \title Address Book 4 - Editing and Removing Addresses
 
-    In this chapter, we look at ways to modify the contents of contact stored
+    In this chapter, we look at ways to modify the contents of contacts stored
     in the address book application.
 
     \image addressbook-tutorial-screenshot.png
@@ -542,7 +542,7 @@
     edit and remove functions so that a contact's details can be changed
     when needed. However, this requires a little improvement, in the form of
     enums. In our previous chapters, we had two modes: \c{AddingMode} and
-    \c{NavigationMode} - but they weren't defined as enums. Instead, we
+    \c{NavigationMode} - but they were not defined as enums. Instead, we
     enabled and disabled the corresponding buttons manually, resulting in
     multiple lines of repeated code.
 
@@ -576,8 +576,7 @@
     \dots
     \snippet tutorials/addressbook/part4/addressbook.h mode declaration
 
-    Lastly, we declare \c currentMode to keep track of the current mode of the
-    enum.
+    Lastly, we declare \c currentMode to keep track of the enum's current mode.
 
     \section1 Implementing the AddressBook Class
 

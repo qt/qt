@@ -403,6 +403,7 @@ QAction *QAbstractFormBuilder::create(DomAction *ui_action, QObject *parent)
     if (!a)
         return 0;
 
+    m_actions.insert(ui_action->attributeName(), a);
     applyProperties(a, ui_action->elementProperty());
     return a;
 }
@@ -415,7 +416,7 @@ QActionGroup *QAbstractFormBuilder::create(DomActionGroup *ui_action_group, QObj
     QActionGroup *a = createActionGroup(parent, ui_action_group->attributeName());
     if (!a)
         return 0;
-
+    m_actionGroups.insert(ui_action_group->attributeName(), a);
     applyProperties(a, ui_action_group->elementProperty());
 
     foreach (DomAction *ui_action, ui_action_group->elementAction()) {
@@ -1184,8 +1185,6 @@ QAction *QAbstractFormBuilder::createAction(QObject *parent, const QString &name
 {
     QAction *action = new QAction(parent);
     action->setObjectName(name);
-    m_actions.insert(name, action);
-
     return action;
 }
 
@@ -1196,8 +1195,6 @@ QActionGroup *QAbstractFormBuilder::createActionGroup(QObject *parent, const QSt
 {
     QActionGroup *g = new QActionGroup(parent);
     g->setObjectName(name);
-    m_actionGroups.insert(name, g);
-
     return g;
 }
 

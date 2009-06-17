@@ -137,7 +137,7 @@ QEasingCurve stringToCurve(const QString &curve)
     return easingCurve;
 }
 
-QML_DEFINE_NOCREATE_TYPE(QmlAbstractAnimation);
+QML_DEFINE_NOCREATE_TYPE(QmlAbstractAnimation)
 
 /*!
     \qmlclass Animation
@@ -554,7 +554,7 @@ void QmlAbstractAnimation::timelineComplete()
     \l{xmlPauseAnimation} {&lt;PauseAnimation&gt;}.
 */
 
-QML_DEFINE_TYPE(QmlPauseAnimation,PauseAnimation);
+QML_DEFINE_TYPE(QmlPauseAnimation,PauseAnimation)
 QmlPauseAnimation::QmlPauseAnimation(QObject *parent)
 : QmlAbstractAnimation(*(new QmlPauseAnimationPrivate), parent)
 {
@@ -924,7 +924,7 @@ void QmlColorAnimationPrivate::valueChanged(qreal v)
         property.write(newColor);
     }
 }
-QML_DEFINE_TYPE(QmlColorAnimation,ColorAnimation);
+QML_DEFINE_TYPE(QmlColorAnimation,ColorAnimation)
 
 /*!
     \qmlclass RunScriptAction QmlRunScriptAction
@@ -1018,7 +1018,7 @@ QAbstractAnimation *QmlRunScriptAction::qtAnimation()
     return d->rsa;
 }
 
-QML_DEFINE_TYPE(QmlRunScriptAction, RunScriptAction);
+QML_DEFINE_TYPE(QmlRunScriptAction, RunScriptAction)
 
 /*!
     \qmlclass SetPropertyAction QmlSetPropertyAction
@@ -1168,11 +1168,16 @@ void QmlSetPropertyAction::transition(QmlStateActions &actions,
         }
     };
 
-    QStringList props = d->properties.split(QLatin1Char(','));
+    QStringList props = d->properties.isEmpty() ? QStringList() : d->properties.split(QLatin1Char(','));
     for (int ii = 0; ii < props.count(); ++ii)
         props[ii] = props.at(ii).trimmed();
     if (!d->propertyName.isEmpty() && !props.contains(d->propertyName))
         props.append(d->propertyName);
+
+    if (d->userProperty.isValid() && props.isEmpty() && !target()) {
+        props.append(d->userProperty.value.name());
+        d->target = d->userProperty.value.object();
+   }
 
     QmlSetPropertyAnimationAction *data = new QmlSetPropertyAnimationAction;
 
@@ -1215,7 +1220,7 @@ void QmlSetPropertyAction::transition(QmlStateActions &actions,
     }
 }
 
-QML_DEFINE_TYPE(QmlSetPropertyAction,SetPropertyAction);
+QML_DEFINE_TYPE(QmlSetPropertyAction,SetPropertyAction)
 
 /*!
     \qmlclass ParentChangeAction QmlParentChangeAction
@@ -1325,7 +1330,7 @@ void QmlParentChangeAction::transition(QmlStateActions &actions,
     }
 }
 
-QML_DEFINE_TYPE(QmlParentChangeAction,ParentChangeAction);
+QML_DEFINE_TYPE(QmlParentChangeAction,ParentChangeAction)
 
 /*!
     \qmlclass NumericAnimation QmlNumericAnimation
@@ -1649,11 +1654,16 @@ void QmlNumericAnimation::transition(QmlStateActions &actions,
         }
     };
 
-    QStringList props = d->properties.split(QLatin1Char(','));
+    QStringList props = d->properties.isEmpty() ? QStringList() : d->properties.split(QLatin1Char(','));
     for (int ii = 0; ii < props.count(); ++ii)
         props[ii] = props.at(ii).trimmed();
     if (!d->propertyName.isEmpty() && !props.contains(d->propertyName))
         props.append(d->propertyName);
+
+   if (d->userProperty.isValid() && props.isEmpty() && !target()) {
+        props.append(d->userProperty.value.name());
+        d->target = d->userProperty.value.object();
+   }
 
     NTransitionData *data = new NTransitionData;
 
@@ -1707,7 +1717,7 @@ void QmlNumericAnimation::transition(QmlStateActions &actions,
     }
 }
 
-QML_DEFINE_TYPE(QmlNumericAnimation,NumericAnimation);
+QML_DEFINE_TYPE(QmlNumericAnimation,NumericAnimation)
 
 QmlAnimationGroup::QmlAnimationGroup(QObject *parent)
 : QmlAbstractAnimation(*(new QmlAnimationGroupPrivate), parent)
@@ -1785,6 +1795,12 @@ void QmlSequentialAnimation::transition(QmlStateActions &actions,
         inc = -1;
         from = d->animations.count() - 1;
     }
+    
+    //### needed for Behavior
+    if (d->userProperty.isValid() && d->propertyName.isEmpty() && !target()) {
+        for (int i = 0; i < d->animations.count(); ++i)
+            d->animations.at(i)->setTarget(d->userProperty);
+   }
 
     //XXX removing and readding isn't ideal; we do it to get around the problem mentioned below.
     for (int i = d->ag->animationCount()-1; i >= 0; --i)
@@ -1799,7 +1815,7 @@ void QmlSequentialAnimation::transition(QmlStateActions &actions,
     //d->ag->setDirection(direction == Backward ? QAbstractAnimation::Backward : QAbstractAnimation::Forward);
 }
 
-QML_DEFINE_TYPE(QmlSequentialAnimation,SequentialAnimation);
+QML_DEFINE_TYPE(QmlSequentialAnimation,SequentialAnimation)
 
 /*!
     \qmlclass ParallelAnimation QmlParallelAnimation
@@ -1870,12 +1886,18 @@ void QmlParallelAnimation::transition(QmlStateActions &actions,
 {
     Q_D(QmlAnimationGroup);
 
+     //### needed for Behavior
+    if (d->userProperty.isValid() && d->propertyName.isEmpty() && !target()) {
+        for (int i = 0; i < d->animations.count(); ++i)
+            d->animations.at(i)->setTarget(d->userProperty);
+   }
+
     for (int ii = 0; ii < d->animations.count(); ++ii) {
         d->animations.at(ii)->transition(actions, modified, direction);
     }
 }
 
-QML_DEFINE_TYPE(QmlParallelAnimation,ParallelAnimation);
+QML_DEFINE_TYPE(QmlParallelAnimation,ParallelAnimation)
 
 QVariant QmlVariantAnimationPrivate::interpolateVariant(const QVariant &from, const QVariant &to, qreal progress)
 {
@@ -2262,6 +2284,6 @@ void QmlVariantAnimation::transition(QmlStateActions &actions,
 }
 
 //XXX whats the best name for this? (just Animation?)
-QML_DEFINE_TYPE(QmlVariantAnimation,VariantAnimation);
+QML_DEFINE_TYPE(QmlVariantAnimation,VariantAnimation)
 
 QT_END_NAMESPACE

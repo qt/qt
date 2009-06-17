@@ -110,6 +110,14 @@ bool isVariantType(const char* type)
     return qvariant_nameToType(type) != 0;
 }
 
+/*!
+  Returns true if the type is qreal.
+*/
+static bool isQRealType(const char *type)
+{
+    return strcmp(type, "qreal") == 0;
+}
+
 Generator::Generator(ClassDef *classDef, const QList<QByteArray> &metaTypes, FILE *outfile)
     : out(outfile), cdef(classDef), metaTypes(metaTypes)
 {
@@ -549,7 +557,7 @@ void Generator::generateProperties()
         uint flags = Invalid;
         if (!isVariantType(p.type)) {
             flags |= EnumOrFlag;
-        } else {
+        } else if (!isQRealType(p.type)) {
             flags |= qvariant_nameToType(p.type) << 24;
         }
         if (!p.read.isEmpty())
@@ -593,10 +601,12 @@ void Generator::generateProperties()
         if (p.notifyId != -1)
             flags |= Notify;
 
-        fprintf(out, "    %4d, %4d, 0x%.8x,\n",
-                 strreg(p.name),
-                 strreg(p.type),
-                 flags);
+        fprintf(out, "    %4d, %4d, ",
+                strreg(p.name),
+                strreg(p.type));
+        if (!(flags >> 24) && isQRealType(p.type))
+            fprintf(out, "(QMetaType::QReal << 24) | ");
+        fprintf(out, "0x%.8x,\n", flags);
     }
 
     if(cdef->notifyableProperties) {
@@ -758,9 +768,6 @@ void Generator::generateMetacall()
                 else if (cdef->enumDeclarations.value(p.type, false))
                     fprintf(out, "        case %d: *reinterpret_cast<int*>(_v) = QFlag(%s()); break;\n",
                             propindex, p.read.constData());
-                else if (p.type == "qreal")
-                    fprintf(out, "        case %d: *reinterpret_cast< double*>(_v) = %s(); break;\n",
-                            propindex, p.read.constData());
                 else
                     fprintf(out, "        case %d: *reinterpret_cast< %s*>(_v) = %s(); break;\n",
                             propindex, p.type.constData(), p.read.constData());
@@ -784,9 +791,6 @@ void Generator::generateMetacall()
                     continue;
                 if (cdef->enumDeclarations.value(p.type, false)) {
                     fprintf(out, "        case %d: %s(QFlag(*reinterpret_cast<int*>(_v))); break;\n",
-                            propindex, p.write.constData());
-                } else if(p.type == "qreal") {
-                    fprintf(out, "        case %d: %s(*reinterpret_cast< double*>(_v)); break;\n",
                             propindex, p.write.constData());
                 } else {
                     fprintf(out, "        case %d: %s(*reinterpret_cast< %s*>(_v)); break;\n",
@@ -1171,8 +1175,8 @@ void Generator::_generateFunctions(QList<FunctionDef> &list, int type)
         for (int j = 0; j < f.arguments.count(); ++j) {
             const ArgumentDef &a = f.arguments.at(j);
             if (j) {
-                sig += ",";
-                arguments += ",";
+                sig += ',';
+                arguments += ',';
             }
             sig += a.normalizedType;
             arguments += a.name;

@@ -258,10 +258,8 @@ void QMessageBoxPrivate::init(const QString &title, const QString &text)
 
 int QMessageBoxPrivate::layoutMinimumWidth()
 {
-    Q_Q(QMessageBox);
-
-    q->layout()->activate();
-    return q->layout()->totalMinimumSize().width();
+    layout->activate();
+    return layout->totalMinimumSize().width();
 }
 
 void QMessageBoxPrivate::updateSize()
@@ -334,15 +332,15 @@ void QMessageBoxPrivate::updateSize()
         label->setSizePolicy(policy);
     }
 
-    QFontMetrics fm(qApp->font("QWorkspaceTitleBar"));
+    QFontMetrics fm(QApplication::font("QWorkspaceTitleBar"));
     int windowTitleWidth = qMin(fm.width(q->windowTitle()) + 50, hardLimit);
     if (windowTitleWidth > width)
         width = windowTitleWidth;
 
-    q->layout()->activate();
-    int height = (q->layout()->hasHeightForWidth())
-                     ? q->layout()->totalHeightForWidth(width)
-                     : q->layout()->totalMinimumSize().height();
+    layout->activate();
+    int height = (layout->hasHeightForWidth())
+                     ? layout->totalHeightForWidth(width)
+                     : layout->totalMinimumSize().height();
     q->setFixedSize(width, height);
     QCoreApplication::removePostedEvents(q, QEvent::LayoutRequest);
 }
@@ -363,7 +361,7 @@ void QMessageBoxPrivate::hideSpecial()
             QPushButton *pb = list.at(i);
             QString text = pb->text();
             text.remove(QChar::fromLatin1('&'));
-            if (text == qApp->translate("QMessageBox", "OK" ))
+            if (text == QApplication::translate("QMessageBox", "OK" ))
                 pb->setFixedSize(0,0);
         }
 }
@@ -1210,8 +1208,8 @@ bool QMessageBox::event(QEvent *e)
         case QEvent::HelpRequest: {
           QString bName =
               (e->type() == QEvent::OkRequest)
-              ? qApp->translate("QMessageBox", "OK")
-              : qApp->translate("QMessageBox", "Help");
+              ? QApplication::translate("QMessageBox", "OK")
+              : QApplication::translate("QMessageBox", "Help");
           QList<QPushButton*> list = qFindChildren<QPushButton*>(this);
           for (int i=0; i<list.size(); ++i) {
               QPushButton *pb = list.at(i);
@@ -1310,7 +1308,7 @@ void QMessageBox::keyPressEvent(QKeyEvent *e)
         if (e == QKeySequence::Copy) {
             QString separator = QString::fromLatin1("---------------------------\n");
             QString textToCopy = separator;
-            separator.prepend(QLatin1String("\n"));
+            separator.prepend(QLatin1Char('\n'));
             textToCopy += windowTitle() + separator; // title
             textToCopy += d->label->text() + separator; // text
 
@@ -1324,7 +1322,7 @@ void QMessageBox::keyPressEvent(QKeyEvent *e)
             }
             textToCopy += buttonTexts + separator;
 
-            qApp->clipboard()->setText(textToCopy);
+            QApplication::clipboard()->setText(textToCopy);
             return;
         }
 #endif //QT_NO_SHORTCUT QT_NO_CLIPBOARD Q_OS_WIN
@@ -1684,10 +1682,13 @@ void QMessageBox::aboutQt(QWidget *parent, const QString &title)
     }
 #endif
 
-    QString translatedTextAboutQt;
-    translatedTextAboutQt = QMessageBox::tr(
+    QString translatedTextAboutQtCaption;
+    translatedTextAboutQtCaption = QMessageBox::tr(
         "<h3>About Qt</h3>"
         "<p>This program uses Qt version %1.</p>"
+        ).arg(QLatin1String(QT_VERSION_STR));
+    QString translatedTextAboutQtText;
+    translatedTextAboutQtText = QMessageBox::tr(
         "<p>Qt is a C++ toolkit for cross-platform application "
         "development.</p>"
         "<p>Qt provides single-source portability across MS&nbsp;Windows, "
@@ -1696,7 +1697,7 @@ void QMessageBox::aboutQt(QWidget *parent, const QString &title)
         "and Qt for Windows CE.</p>"
         "<p>Qt is available under three different licensing options designed "
         "to accommodate the needs of our various users.</p>"
-        "Qt licensed under our commercial license agreement is appropriate "
+        "<p>Qt licensed under our commercial license agreement is appropriate "
         "for development of proprietary/commercial software where you do not "
         "want to share any source code with third parties or otherwise cannot "
         "comply with the terms of the GNU LGPL version 2.1 or GNU GPL version "
@@ -1715,12 +1716,12 @@ void QMessageBox::aboutQt(QWidget *parent, const QString &title)
         "<p>Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).</p>"
         "<p>Qt is a Nokia product. See <a href=\"http://www.qtsoftware.com/qt/\">www.qtsoftware.com/qt</a> "
         "for more information.</p>"
-       ).arg(QLatin1String(QT_VERSION_STR));
-
+        );
     QMessageBox *msgBox = new QMessageBox(parent);
     msgBox->setAttribute(Qt::WA_DeleteOnClose);
     msgBox->setWindowTitle(title.isEmpty() ? tr("About Qt") : title);
-    msgBox->setText(translatedTextAboutQt);
+    msgBox->setText(translatedTextAboutQtCaption);
+    msgBox->setInformativeText(translatedTextAboutQtText);
 
     QPixmap pm(QLatin1String(":/trolltech/qmessagebox/images/qtlogo-64.png"));
     if (!pm.isNull())

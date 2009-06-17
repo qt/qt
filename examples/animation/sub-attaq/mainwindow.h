@@ -44,9 +44,10 @@
 
 //Qt
 #include <QtGui/QMainWindow>
-
 class GraphicsScene;
+QT_BEGIN_NAMESPACE
 class QGraphicsView;
+QT_END_NAMESPACE
 
 class MainWindow : public QMainWindow
 {

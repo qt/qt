@@ -58,12 +58,10 @@
          \o Translate applications to reach international markets.
     \row \o \l{qmake Manual}{qmake}
          \o Create makefiles from simple platform-independent project files (\c .pro files).
-    \omit
-    \row \o \l{emb-qvfb.html}{qvfb}
+    \row \o \l{The Virtual Framebuffer}{qvfb}
          \o Run and test embedded applications on the desktop.
-    \row \o \l{emb-makeqpf.html}{makeqpf}
+    \row \o \l{makeqpf}
          \o Create pre-rendered fonts for embedded devices.
-    \endomit
     \row \o \l{moc}{Meta-Object Compiler (moc)}
          \o Generate meta-object information for QObject subclasses.
     \row \o \l{User Interface Compiler (uic)}

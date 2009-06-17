@@ -77,7 +77,7 @@ public:
     QPainter *p = painter; \
     QString unique = uniqueName((a), option, option->rect.size()); \
     int txType = painter->deviceTransform().type() | painter->worldTransform().type(); \
-    bool doPixmapCache = UsePixmapCache && txType <= QTransform::TxTranslate; \
+    bool doPixmapCache = txType <= QTransform::TxTranslate; \
     if (doPixmapCache && QPixmapCache::find(unique, internalPixmapCache)) { \
         painter->drawPixmap(option->rect.topLeft(), internalPixmapCache); \
     } else { \

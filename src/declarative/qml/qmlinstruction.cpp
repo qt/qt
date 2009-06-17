@@ -70,8 +70,11 @@ void QmlCompiledComponent::dump(QmlInstruction *instr, int idx)
     case QmlInstruction::StoreMetaObject:
         qWarning() << idx << "\t" << line << "\t" << "STORE_META\t\t" << instr->storeMeta.data << "\t" << instr->storeMeta.slotData;
         break;
-    case QmlInstruction::StoreReal:
-        qWarning() << idx << "\t" << line << "\t" << "STORE_REAL\t\t" << instr->storeReal.propertyIndex << "\t" << instr->storeReal.value;
+    case QmlInstruction::StoreFloat:
+        qWarning() << idx << "\t" << line << "\t" << "STORE_FLOAT\t\t" << instr->storeFloat.propertyIndex << "\t" << instr->storeFloat.value;
+        break;
+    case QmlInstruction::StoreDouble:
+        qWarning() << idx << "\t" << line << "\t" << "STORE_DOUBLE\t\t" << instr->storeDouble.propertyIndex << "\t" << instr->storeDouble.value;
         break;
     case QmlInstruction::StoreInteger:
         qWarning() << idx << "\t" << line << "\t" << "STORE_INTEGER\t\t" << instr->storeInteger.propertyIndex << "\t" << instr->storeInteger.value;
@@ -81,6 +84,9 @@ void QmlCompiledComponent::dump(QmlInstruction *instr, int idx)
         break;
     case QmlInstruction::StoreString:
         qWarning() << idx << "\t" << line << "\t" << "STORE_STRING\t\t" << instr->storeString.propertyIndex << "\t" << instr->storeString.value << "\t\t" << primitives.at(instr->storeString.value);
+        break;
+    case QmlInstruction::StoreUrl:
+        qWarning() << idx << "\t" << line << "\t" << "STORE_URL\t\t" << instr->storeUrl.propertyIndex << "\t" << instr->storeUrl.value << "\t\t" << primitives.at(instr->storeUrl.value);
         break;
     case QmlInstruction::StoreColor:
         qWarning() << idx << "\t" << line << "\t" << "STORE_COLOR\t\t" << instr->storeColor.propertyIndex << "\t" << QString::number(instr->storeColor.value, 16);
@@ -116,7 +122,7 @@ void QmlCompiledComponent::dump(QmlInstruction *instr, int idx)
         qWarning() << idx << "\t" << line << "\t" << "STORE_VARIANT\t\t" << instr->storeString.propertyIndex << "\t" << instr->storeString.value << "\t\t" << primitives.at(instr->storeString.value);
         break;
     case QmlInstruction::StoreObject:
-        qWarning() << idx << "\t" << line << "\t" << "STORE_OBJECT\t\t" << instr->storeObject.propertyIndex << "\t" << instr->storeObject.cast;
+        qWarning() << idx << "\t" << line << "\t" << "STORE_OBJECT\t\t" << instr->storeObject.propertyIndex;
         break;
     case QmlInstruction::AssignCustomType:
         qWarning() << idx << "\t" << line << "\t" << "ASSIGN_CUSTOMTYPE\t\t" << instr->assignCustomType.propertyIndex << "\t" << instr->assignCustomType.valueIndex;
@@ -127,9 +133,6 @@ void QmlCompiledComponent::dump(QmlInstruction *instr, int idx)
     case QmlInstruction::AssignSignalObject:
         qWarning() << idx << "\t" << line << "\t" << "ASSIGN_SIGNAL_OBJECT\t" << instr->assignSignalObject.signal << "\t\t\t" << datas.at(instr->assignSignalObject.signal);
         break;
-    case QmlInstruction::AssignValueSource:
-        qWarning() << idx << "\t" << line << "\t" << "ASSIGN_VALUE_SOURCE\t" << instr->assignValueSource.property << "\t\t\t" << datas.at(instr->assignValueSource.property);
-        break;
     case QmlInstruction::StoreBinding:
         qWarning() << idx << "\t" << line << "\t" << "STORE_BINDING\t\t" << instr->assignBinding.property << "\t" << instr->assignBinding.value << "\t\t" << instr->assignBinding.context << primitives.at(instr->assignBinding.value);
         break;
@@ -139,23 +142,14 @@ void QmlCompiledComponent::dump(QmlInstruction *instr, int idx)
     case QmlInstruction::StoreValueSource:
         qWarning() << idx << "\t" << line << "\t" << "STORE_VALUE_SOURCE\t" << instr->assignValueSource.property;
         break;
-    case QmlInstruction::TryBeginObject:
-        qWarning() << idx << "\t" << line << "\t" << "TRY_BEGIN";
-        break;
     case QmlInstruction::BeginObject:
         qWarning() << idx << "\t" << line << "\t" << "BEGIN\t\t\t" << instr->begin.castValue;
-        break;
-    case QmlInstruction::TryCompleteObject:
-        qWarning() << idx << "\t" << line << "\t" << "TRY_COMPLETE";
         break;
     case QmlInstruction::CompleteObject:
         qWarning() << idx << "\t" << line << "\t" << "COMPLETE\t\t" << instr->complete.castValue;
         break;
-    case QmlInstruction::AssignObject:
-		qWarning() << idx << "\t" << line << "\t" << "ASSIGN_OBJECT\t\t" << instr->assignObject.property << "\t" << instr->assignObject.castValue << "\t\t" << ((instr->assignObject.property == -1)?QByteArray("default"):datas.at(instr->assignObject.property));
-        break;
     case QmlInstruction::AssignObjectList:
-        qWarning() << idx << "\t" << line << "\t" << "ASSIGN_OBJECT_LIST\t" << instr->assignObject.property << "\t" << instr->assignObject.castValue << "\t\t" << ((instr->assignObject.property == -1)?QByteArray("default"):datas.at(instr->assignObject.property));
+        qWarning() << idx << "\t" << line << "\t" << "ASSIGN_OBJECT_LIST\t";
         break;
     case QmlInstruction::FetchAttached:
         qWarning() << idx << "\t" << line << "\t" << "FETCH_ATTACHED\t\t" << instr->fetchAttached.id;
@@ -169,23 +163,14 @@ void QmlCompiledComponent::dump(QmlInstruction *instr, int idx)
     case QmlInstruction::FetchObject:
         qWarning() << idx << "\t" << line << "\t" << "FETCH\t\t\t" << instr->fetch.property;
         break;
-    case QmlInstruction::ResolveFetchObject:
-        qWarning() << idx << "\t" << line << "\t" << "RESOLVE_FETCH\t\t" << instr->fetch.property << "\t\t\t" << datas.at(instr->fetch.property);
-        break;
     case QmlInstruction::PopFetchedObject:
         qWarning() << idx << "\t" << line << "\t" << "POP";
         break;
     case QmlInstruction::PopQList:
         qWarning() << idx << "\t" << line << "\t" << "POP_QLIST";
         break;
-    case QmlInstruction::NoOp:
-        qWarning() << idx << "\t" << line << "\t" << "NOOP";
-        break;
     case QmlInstruction::PushProperty:
         qWarning() << idx << "\t" << line << "\t" << "PUSH_PROPERTY" << "\t\t" << instr->pushProperty.property;
-        break;
-    case QmlInstruction::AssignStackObject:
-        qWarning() << idx << "\t" << line << "\t" << "ASSIGN_STACK_OBJ" << "\t" << instr->assignStackObject.property << "\t" << instr->assignStackObject.object;
         break;
     case QmlInstruction::StoreStackObject:
         qWarning() << idx << "\t" << line << "\t" << "STORE_STACK_OBJ" << "\t" << instr->assignStackObject.property << "\t" << instr->assignStackObject.object;

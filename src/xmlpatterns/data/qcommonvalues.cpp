@@ -57,7 +57,7 @@ using namespace QPatternist;
 
 // STATIC DATA
 const AtomicString::Ptr               CommonValues::EmptyString
-                                    (new AtomicString(QString(QLatin1String(""))));
+                                    (new AtomicString(QLatin1String("")));
 const AtomicString::Ptr               CommonValues::TrueString
                                     (new AtomicString(QLatin1String("true")));
 const AtomicString::Ptr               CommonValues::FalseString

@@ -272,12 +272,12 @@ static QString qt_create_commandline(const QString &program, const QStringList &
     QString args;
     if (!program.isEmpty()) {
         QString programName = program;
-        if (!programName.startsWith(QLatin1Char('\"')) && !programName.endsWith(QLatin1Char('\"')) && programName.contains(QLatin1String(" ")))
-            programName = QLatin1String("\"") + programName + QLatin1String("\"");
-        programName.replace(QLatin1String("/"), QLatin1String("\\"));
+        if (!programName.startsWith(QLatin1Char('\"')) && !programName.endsWith(QLatin1Char('\"')) && programName.contains(QLatin1Char(' ')))
+            programName = QLatin1Char('\"') + programName + QLatin1Char('\"');
+        programName.replace(QLatin1Char('/'), QLatin1Char('\\'));
 
         // add the prgram as the first arg ... it works better
-        args = programName + QLatin1String(" ");
+        args = programName + QLatin1Char(' ');
     }
 
     for (int i=0; i<arguments.size(); ++i) {
@@ -285,16 +285,16 @@ static QString qt_create_commandline(const QString &program, const QStringList &
         // in the case of \" already being in the string the \ must also be escaped
         tmp.replace( QLatin1String("\\\""), QLatin1String("\\\\\"") );
         // escape a single " because the arguments will be parsed
-        tmp.replace( QLatin1String("\""), QLatin1String("\\\"") );
+        tmp.replace( QLatin1Char('\"'), QLatin1String("\\\"") );
         if (tmp.isEmpty() || tmp.contains(QLatin1Char(' ')) || tmp.contains(QLatin1Char('\t'))) {
             // The argument must not end with a \ since this would be interpreted
             // as escaping the quote -- rather put the \ behind the quote: e.g.
             // rather use "foo"\ than "foo\"
-            QString endQuote(QLatin1String("\""));
+            QString endQuote(QLatin1Char('\"'));
             int i = tmp.length();
             while (i>0 && tmp.at(i-1) == QLatin1Char('\\')) {
                 --i;
-                endQuote += QLatin1String("\\");
+                endQuote += QLatin1Char('\\');
             }
             args += QLatin1String(" \"") + tmp.left(i) + endQuote;
         } else {
@@ -427,7 +427,7 @@ void QProcessPrivate::startProcess()
         QString fullPathProgram = program;
         if (!QDir::isAbsolutePath(fullPathProgram))
             fullPathProgram = QFileInfo(fullPathProgram).absoluteFilePath();
-        fullPathProgram.replace(QLatin1String("/"), QLatin1String("\\"));
+        fullPathProgram.replace(QLatin1Char('/'), QLatin1Char('\\'));
         success = CreateProcessW((WCHAR*)fullPathProgram.utf16(),
                                  (WCHAR*)args.utf16(),
                                  0, 0, false, 0, 0, 0, 0, pid);
@@ -887,8 +887,8 @@ bool QProcessPrivate::startDetached(const QString &program, const QStringList &a
 #if defined(Q_OS_WINCE)
         QString fullPathProgram = program;
         if (!QDir::isAbsolutePath(fullPathProgram))
-            fullPathProgram.prepend(QDir::currentPath().append(QLatin1String("/")));
-        fullPathProgram.replace(QLatin1String("/"), QLatin1String("\\"));
+            fullPathProgram.prepend(QDir::currentPath().append(QLatin1Char('/')));
+        fullPathProgram.replace(QLatin1Char('/'), QLatin1Char('\\'));
         success = CreateProcessW((WCHAR*)fullPathProgram.utf16(),
                                  (WCHAR*)args.utf16(),
                                  0, 0, false, CREATE_NEW_CONSOLE, 0, 0, 0, &pinfo);

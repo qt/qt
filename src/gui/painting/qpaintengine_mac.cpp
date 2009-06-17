@@ -131,8 +131,8 @@ QMacCGContext::QMacCGContext(QPainter *p)
 
             QPainterState *state = static_cast<QPainterState *>(pe->state);
             Q_ASSERT(state);
-            if (!state->redirection_offset.isNull())
-                CGContextTranslateCTM(context, -state->redirection_offset.x(), -state->redirection_offset.y());
+            if (!state->redirectionMatrix.isIdentity())
+                CGContextTranslateCTM(context, state->redirectionMatrix.dx(), state->redirectionMatrix.dy());
         }
     }
     CGContextRetain(context);

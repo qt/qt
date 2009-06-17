@@ -57,16 +57,16 @@ class Q_DECLARATIVE_EXPORT QmlSqlConnection : public QObject, public QmlParserSt
     Q_OBJECT
     Q_INTERFACES(QmlParserStatus)
 
-    Q_PROPERTY(QString name READ name WRITE setName);
-    Q_PROPERTY(QStringList tables READ tables);
-    Q_PROPERTY(QString databaseName READ databaseName WRITE setDatabaseName);
-    Q_PROPERTY(QString driver READ driver WRITE setDriver);
-    Q_PROPERTY(QString connectOptions READ connectOptions WRITE setConnectOptions);
-    Q_PROPERTY(QString hostName READ hostName WRITE setHostName);
-    Q_PROPERTY(int port READ port WRITE setPort);
-    Q_PROPERTY(QString userName READ userName WRITE setUserName);
-    Q_PROPERTY(QString password READ password WRITE setPassword);
-    Q_PROPERTY(QString lastError READ lastError);
+    Q_PROPERTY(QString name READ name WRITE setName)
+    Q_PROPERTY(QStringList tables READ tables)
+    Q_PROPERTY(QString databaseName READ databaseName WRITE setDatabaseName)
+    Q_PROPERTY(QString driver READ driver WRITE setDriver)
+    Q_PROPERTY(QString connectOptions READ connectOptions WRITE setConnectOptions)
+    Q_PROPERTY(QString hostName READ hostName WRITE setHostName)
+    Q_PROPERTY(int port READ port WRITE setPort)
+    Q_PROPERTY(QString userName READ userName WRITE setUserName)
+    Q_PROPERTY(QString password READ password WRITE setPassword)
+    Q_PROPERTY(QString lastError READ lastError)
     Q_CLASSINFO("DefaultProperty", "name")
 public:
     QmlSqlConnection(QObject *parent = 0);
@@ -108,7 +108,7 @@ private:
     Q_DECLARE_PRIVATE(QmlSqlConnection)
 };
 
-QML_DECLARE_TYPE(QmlSqlConnection);
+QML_DECLARE_TYPE(QmlSqlConnection)
 
 QT_END_NAMESPACE
 

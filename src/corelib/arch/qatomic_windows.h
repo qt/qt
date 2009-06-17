@@ -220,6 +220,9 @@ Q_INLINE_TEMPLATE T *QBasicAtomicPointer<T>::fetchAndAddOrdered(qptrdiff valueTo
 
 #if !defined(Q_OS_WINCE)
 // use compiler intrinsics for all atomic functions
+//those functions need to be define in the global namespace
+QT_END_NAMESPACE
+
 extern "C" {
     long __cdecl _InterlockedIncrement(volatile long *);
     long __cdecl _InterlockedDecrement(volatile long *);
@@ -252,6 +255,9 @@ extern "C" {
 #    define _InterlockedExchangeAddPointer(a,b) \
         _InterlockedExchangeAdd(reinterpret_cast<volatile long *>(a), long(b))
 #  endif
+
+QT_BEGIN_NAMESPACE
+
 inline bool QBasicAtomicInt::ref()
 {
     return _InterlockedIncrement(reinterpret_cast<volatile long *>(&_q_value)) != 0;
@@ -335,6 +341,8 @@ Q_INLINE_TEMPLATE T *QBasicAtomicPointer<T>::fetchAndAddOrdered(qptrdiff valueTo
 #define Q_ARGUMENT_TYPE
 #endif
 
+QT_END_NAMESPACE
+
 extern "C" {
 long __cdecl InterlockedIncrement(long Q_ARGUMENT_TYPE * lpAddend);
 long __cdecl InterlockedDecrement(long Q_ARGUMENT_TYPE * lpAddend);
@@ -350,6 +358,8 @@ long __cdecl InterlockedExchangeAdd(long Q_ARGUMENT_TYPE * Addend, long Value);
 #  pragma intrinsic (_InterlockedCompareExchange)
 #  pragma intrinsic (_InterlockedExchangeAdd)
 #endif
+
+QT_BEGIN_NAMESPACE
 
 #endif
 
@@ -409,6 +419,8 @@ Q_INLINE_TEMPLATE T *QBasicAtomicPointer<T>::fetchAndAddOrdered(qptrdiff valueTo
 // MinGW's definition, such that we pick up variations in the headers.
 #ifndef __INTERLOCKED_DECLARED
 #define __INTERLOCKED_DECLARED
+QT_END_NAMESPACE
+
 extern "C" {
     __declspec(dllimport) long __stdcall InterlockedCompareExchange(long *, long, long);
     __declspec(dllimport) long __stdcall InterlockedIncrement(long *);
@@ -416,6 +428,8 @@ extern "C" {
     __declspec(dllimport) long __stdcall InterlockedExchange(long *, long);
     __declspec(dllimport) long __stdcall InterlockedExchangeAdd(long *, long);
 }
+
+QT_BEGIN_NAMESPACE
 #endif
 
 inline bool QBasicAtomicInt::ref()

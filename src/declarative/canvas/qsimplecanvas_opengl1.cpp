@@ -386,16 +386,16 @@ void QSimpleCanvasPrivate::release(QGLFramebufferObject *)
 {
 }
 
-void  QSimpleCanvasItem::GLPainter::drawImage(const QPointF &point, 
+void  QSimpleCanvasItem::GLPainter::drawPixmap(const QPointF &point, 
                                           const GLTexture &texture)
 {
-    drawImage(QRectF(point, QSizeF(texture.width(), texture.height())), texture);
+    drawPixmap(QRectF(point, QSizeF(texture.width(), texture.height())), texture);
 }
 
-void  QSimpleCanvasItem::GLPainter::drawImage(const QRectF &rect, 
+void  QSimpleCanvasItem::GLPainter::drawPixmap(const QRectF &rect, 
                                           const GLTexture &img)
 {
-    qFatal("Cannot call QSimpleCanvasItem::GLPainter::drawImage() when using OpenGL ES 1.1");
+    qFatal("Cannot call QSimpleCanvasItem::GLPainter::drawPixmap() when using OpenGL ES 1.1");
 }
 
 QT_END_NAMESPACE

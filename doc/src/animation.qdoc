@@ -271,10 +271,10 @@
 
     \code
         QPushButton *bonnie = new QPushButton("Bonnie");
-        bonnie.show();
+        bonnie->show();
 
         QPushButton *clyde = new QPushButton("Clyde");
-        clyde.show();
+        clyde->show();
 
         QPropertyAnimation *anim1 = new QPropertyAnimation(bonnie, "geometry");
         // Set up anim1
@@ -327,14 +327,14 @@
     \section1 Animations and States
 
     When using a \l{The State Machine Framework}{state machine}, we
-    have a special state, QAnimationState, that will play one or more
-    animations.
+    can associate an animation to a transition between states using a
+    QSignalTransition or QEventTransition class. These classes are both
+    derived from QAbstractClass, which defines the convenience function
+    addAnimation() that enables the appending of one or more animations
+    triggered when the transition occurs.
 
-    The QState::addAnimatedTransition() convenience function lets you
-    associate an animation to a state transition. The function will
-    create the QAnimationState for you, and insert it into the state
-    machine. We also have the possibility to associate properties with
-    the states rather than setting the start and end values ourselves.
+    We also have the possibility to associate properties with the
+    states rather than setting the start and end values ourselves.
     Below is a complete code example that animates the geometry of a
     QPushButton.
 
@@ -345,18 +345,19 @@
         QStateMachine *machine = new QStateMachine;
 
         QState *state1 = new QState(machine->rootState());
-        state1->setPropertyOnEntry(button, "geometry",
-                               QRect(0, 0, 100, 30));
+        state1->assignProperty(button, "geometry", QRect(0, 0, 100, 30));
         machine->setInitialState(state1);
 
         QState *state2 = new QState(machine->rootState());
-        state2->setPropertyOnEntry(button, "geometry",
-                                   QRect(250, 250, 100, 30));
+        state2->assignProperty(button, "geometry", QRect(250, 250, 100, 30));
 
-        state1->addAnimatedTransition(button, SIGNAL(clicked()), state2,
-            new QPropertyAnimation(button, "geometry"));
-        state2->addAnimatedTransition(button, SIGNAL(clicked()), state1,
-            new QPropertyAnimation(button, "geometry"));
+        QSignalTransition *transition1 = state1->addTransition(button,
+            SIGNAL(clicked()), state2);
+        transition1->addAnimation(new QPropertyAnimation(button, "geometry"));
+
+        QSignalTransition *transition2 = state2->addTransition(button,
+            SIGNAL(clicked()), state1);
+        transition2->addAnimation(new QPropertyAnimation(button, "geometry"));
 
         machine->start();
     \endcode

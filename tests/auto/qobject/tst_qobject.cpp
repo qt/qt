@@ -106,6 +106,7 @@ private slots:
     void childDeletesItsSibling();
     void dynamicProperties();
     void floatProperty();
+    void qrealProperty();
     void property();
     void recursiveSignalEmission();
     void blockingQueuedConnection();
@@ -116,6 +117,7 @@ private slots:
     void dumpObjectInfo();
     void connectToSender();
     void qobjectConstCast();
+    void uniqConnection();
 protected:
 };
 
@@ -204,12 +206,20 @@ public:
 	sequence_slot3 = 0;
 	sequence_slot2 = 0;
 	sequence_slot1 = 0;
+        count_slot1 = 0;
+        count_slot2 = 0;
+        count_slot3 = 0;
+        count_slot4 = 0;
     }
 
     int sequence_slot1;
     int sequence_slot2;
     int sequence_slot3;
     int sequence_slot4;
+    int count_slot1;
+    int count_slot2;
+    int count_slot3;
+    int count_slot4;
 
     bool called(int slot) {
         switch (slot) {
@@ -224,10 +234,10 @@ public:
     static int sequence;
 
 public slots:
-    void slot1() { sequence_slot1 = ++sequence; }
-    void slot2() { sequence_slot2 = ++sequence; }
-    void slot3() { sequence_slot3 = ++sequence; }
-    void slot4() { sequence_slot4 = ++sequence; }
+    void slot1() { sequence_slot1 = ++sequence; count_slot1++; }
+    void slot2() { sequence_slot2 = ++sequence; count_slot2++; }
+    void slot3() { sequence_slot3 = ++sequence; count_slot3++; }
+    void slot4() { sequence_slot4 = ++sequence; count_slot4++; }
 
 };
 
@@ -1104,6 +1114,7 @@ class PropertyObject : public QObject
     Q_PROPERTY(QVariant variant READ variant WRITE setVariant)
     Q_PROPERTY(CustomType* custom READ custom WRITE setCustom)
     Q_PROPERTY(float myFloat READ myFloat WRITE setMyFloat)
+    Q_PROPERTY(qreal myQReal READ myQReal WRITE setMyQReal)
 
 public:
     enum Alpha {
@@ -1139,6 +1150,9 @@ public:
     void setMyFloat(float value) { m_float = value; }
     inline float myFloat() const { return m_float; }
 
+    void setMyQReal(qreal value) { m_qreal = value; }
+    qreal myQReal() const { return m_qreal; }
+
 private:
     Alpha m_alpha;
     Priority m_priority;
@@ -1147,6 +1161,7 @@ private:
     QVariant m_variant;
     CustomType *m_custom;
     float m_float;
+    qreal m_qreal;
 };
 
 Q_DECLARE_METATYPE(PropertyObject::Priority)
@@ -2339,6 +2354,27 @@ void tst_QObject::floatProperty()
     QVERIFY(qVariantValue<float>(v) == 128.0f);
 }
 
+void tst_QObject::qrealProperty()
+{
+    PropertyObject obj;
+    const int idx = obj.metaObject()->indexOfProperty("myQReal");
+    QVERIFY(idx > 0);
+    QMetaProperty prop = obj.metaObject()->property(idx);
+    QVERIFY(prop.isValid());
+    QVERIFY(prop.type() == uint(QMetaType::type("qreal")));
+    QVERIFY(!prop.write(&obj, QVariant("Hello")));
+
+    QVERIFY(prop.write(&obj, qVariantFromValue(128.0f)));
+    QVariant v = prop.read(&obj);
+    QCOMPARE(v.userType(), qMetaTypeId<qreal>());
+    QVERIFY(qVariantValue<qreal>(v) == 128.0);
+
+    QVERIFY(prop.write(&obj, qVariantFromValue(double(127))));
+    v = prop.read(&obj);
+    QCOMPARE(v.userType(), qMetaTypeId<qreal>());
+    QVERIFY(qVariantValue<qreal>(v) == 127.0);
+}
+
 class DynamicPropertyObject : public PropertyObject
 {
 public:
@@ -2781,6 +2817,70 @@ void tst_QObject::qobjectConstCast()
 
     QVERIFY(qobject_cast<FooObject *>(ptr));
     QVERIFY(qobject_cast<const FooObject *>(cptr));
+}
+
+void tst_QObject::uniqConnection()
+{
+    SenderObject *s = new SenderObject;
+    ReceiverObject *r1 = new ReceiverObject;
+    ReceiverObject *r2 = new ReceiverObject;
+    r1->reset();
+    r2->reset();
+    ReceiverObject::sequence = 0;
+
+    QVERIFY( connect( s, SIGNAL( signal1() ), r1, SLOT( slot1() ) , Qt::UniqueConnection) );
+    QVERIFY( connect( s, SIGNAL( signal1() ), r2, SLOT( slot1() ) , Qt::UniqueConnection) );
+    QVERIFY( connect( s, SIGNAL( signal1() ), r1, SLOT( slot3() ) , Qt::UniqueConnection) );
+    QVERIFY( connect( s, SIGNAL( signal3() ), r1, SLOT( slot3() ) , Qt::UniqueConnection) );
+
+    s->emitSignal1();
+    s->emitSignal2();
+    s->emitSignal3();
+    s->emitSignal4();
+
+    QCOMPARE( r1->count_slot1, 1 );
+    QCOMPARE( r1->count_slot2, 0 );
+    QCOMPARE( r1->count_slot3, 2 );
+    QCOMPARE( r1->count_slot4, 0 );
+    QCOMPARE( r2->count_slot1, 1 );
+    QCOMPARE( r2->count_slot2, 0 );
+    QCOMPARE( r2->count_slot3, 0 );
+    QCOMPARE( r2->count_slot4, 0 );
+    QCOMPARE( r1->sequence_slot1, 1 );
+    QCOMPARE( r2->sequence_slot1, 2 );
+    QCOMPARE( r1->sequence_slot3, 4 );
+
+    r1->reset();
+    r2->reset();
+    ReceiverObject::sequence = 0;
+
+    QVERIFY( connect( s, SIGNAL( signal4() ), r1, SLOT( slot4() ) , Qt::UniqueConnection) );
+    QVERIFY( connect( s, SIGNAL( signal4() ), r2, SLOT( slot4() ) , Qt::UniqueConnection) );
+    QVERIFY(!connect( s, SIGNAL( signal4() ), r2, SLOT( slot4() ) , Qt::UniqueConnection) );
+    QVERIFY( connect( s, SIGNAL( signal1() ), r2, SLOT( slot4() ) , Qt::UniqueConnection) );
+    QVERIFY(!connect( s, SIGNAL( signal4() ), r1, SLOT( slot4() ) , Qt::UniqueConnection) );
+
+    s->emitSignal4();
+    QCOMPARE( r1->count_slot4, 1 );
+    QCOMPARE( r2->count_slot4, 1 );
+    QCOMPARE( r1->sequence_slot4, 1 );
+    QCOMPARE( r2->sequence_slot4, 2 );
+
+    r1->reset();
+    r2->reset();
+    ReceiverObject::sequence = 0;
+
+    connect( s, SIGNAL( signal4() ), r1, SLOT( slot4() ) );
+
+    s->emitSignal4();
+    QCOMPARE( r1->count_slot4, 2 );
+    QCOMPARE( r2->count_slot4, 1 );
+    QCOMPARE( r1->sequence_slot4, 3 );
+    QCOMPARE( r2->sequence_slot4, 2 );
+
+    delete s;
+    delete r1;
+    delete r2;
 }
 
 QTEST_MAIN(tst_QObject)

@@ -1732,7 +1732,7 @@ bool QIBaseDriver::subscribeToNotificationImplementation(const QString &name)
                    eBuffer->resultBuffer);
 
     if (status[0] == 1 && status[1]) {
-        setLastError(QSqlError(QString(QLatin1String("Could not subscribe to event notifications for %1.")).arg(name)));
+        setLastError(QSqlError(QString::fromLatin1("Could not subscribe to event notifications for %1.").arg(name)));
         d->eventBuffers.remove(name);
         qFreeEventBuffer(eBuffer);
         return false;
@@ -1760,7 +1760,7 @@ bool QIBaseDriver::unsubscribeFromNotificationImplementation(const QString &name
     isc_cancel_events(status, &d->ibase, &eBuffer->eventId);
 
     if (status[0] == 1 && status[1]) {
-        setLastError(QSqlError(QString(QLatin1String("Could not unsubscribe from event notifications for %1.")).arg(name)));
+        setLastError(QSqlError(QString::fromLatin1("Could not unsubscribe from event notifications for %1.").arg(name)));
         return false;
     }
 
@@ -1818,7 +1818,7 @@ void QIBaseDriver::qHandleEventNotification(void *updatedResultBuffer)
 QString QIBaseDriver::escapeIdentifier(const QString &identifier, IdentifierType) const
 {
     QString res = identifier;
-    if(!identifier.isEmpty() && identifier.left(1) != QString(QLatin1Char('"')) && identifier.right(1) != QString(QLatin1Char('"')) ) {
+    if(!identifier.isEmpty() && !identifier.startsWith(QLatin1Char('"')) && !identifier.endsWith(QLatin1Char('"')) ) {
         res.replace(QLatin1Char('"'), QLatin1String("\"\""));
         res.prepend(QLatin1Char('"')).append(QLatin1Char('"'));
         res.replace(QLatin1Char('.'), QLatin1String("\".\""));

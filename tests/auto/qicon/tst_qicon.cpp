@@ -72,6 +72,8 @@ private slots:
     void svg();
     void addFile();
     void availableSizes();
+    void streamAvailableSizes_data();
+    void streamAvailableSizes();
 
     void task184901_badCache();
     void task223279_inconsistentAddFile();
@@ -539,6 +541,47 @@ void tst_QIcon::availableSizes()
         QVERIFY(QIcon(QLatin1String("non-existing.png")).availableSizes().isEmpty());
     }
 }
+
+void tst_QIcon::streamAvailableSizes_data()
+{
+    QTest::addColumn<QIcon>("icon");
+
+    QIcon icon;
+    icon.addFile(":/image.png", QSize(32,32));
+    QTest::newRow( "32x32" ) << icon;
+    icon.addFile(":/image.png", QSize(64,64));
+    QTest::newRow( "64x64" ) << icon;
+    icon.addFile(":/image.png", QSize(128,128));
+    QTest::newRow( "128x128" ) << icon;
+    icon.addFile(":/image.png", QSize(256,256));
+    QTest::newRow( "256x256" ) << icon;
+}
+
+void tst_QIcon::streamAvailableSizes()
+{
+    QFETCH(QIcon, icon);
+
+    QByteArray ba;
+    // write to QByteArray
+    {
+        QBuffer buffer(&ba);
+        buffer.open(QIODevice::WriteOnly);
+        QDataStream stream(&buffer);
+        stream << icon;
+    }
+
+    // read from QByteArray
+    {
+        QBuffer buffer(&ba);
+        buffer.open(QIODevice::ReadOnly);
+        QDataStream stream(&buffer);
+        QIcon i;
+        stream >> i;
+        QCOMPARE(i.isNull(), icon.isNull());
+        QCOMPARE(i.availableSizes(), icon.availableSizes());
+    }
+}
+
 
 static inline bool operator<(const QSize &lhs, const QSize &rhs)
 {

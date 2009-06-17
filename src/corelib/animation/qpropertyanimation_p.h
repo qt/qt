@@ -55,9 +55,8 @@
 
 #include "qpropertyanimation.h"
 #include <QtCore/qmetaobject.h>
-#include <QtCore/qpointer.h>
 
-#include "qvariantanimation_p.h"
+#include "private/qvariantanimation_p.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -70,14 +69,16 @@ public:
     {
     }
 
-    QPointer<QObject> target;
+    void _q_targetDestroyed();
+
+    QObject *target;
 
     //for the QProperty
     QMetaProperty property;
     int propertyType;
     int propertyIndex;
 
-    int hasMetaProperty;
+    bool hasMetaProperty;
     QByteArray propertyName;
     void updateProperty(const QVariant &);
     void updateMetaProperty();

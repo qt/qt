@@ -94,8 +94,8 @@ public:
     void drawOutline();
     void drawOutline(int yOffset);
 
-    QImage wrappedTextImage(bool drawStyle);
-    QImage richTextImage(bool drawStyle);
+    QPixmap wrappedTextImage(bool drawStyle);
+    QPixmap richTextImage(bool drawStyle);
     QSize setupTextLayout(QTextLayout *layout);
 
     QString text;
@@ -118,8 +118,8 @@ public:
 #if defined(QFX_RENDER_OPENGL)
     GLTexture tex;
 #endif
-    QSimpleCanvasConfig::Image imgCache;
-    QImage imgStyleCache;
+    QPixmap imgCache;
+    QPixmap imgStyleCache;
     QFxText::HAlignment hAlign;
     QFxText::VAlignment vAlign;
     Qt::TextElideMode elideMode;

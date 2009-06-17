@@ -94,7 +94,14 @@ template <typename T>
 class QVector
 {
     typedef QVectorTypedData<T> Data;
-    union { QVectorData *d; Data *p; };
+    union {
+        QVectorData *d;
+#if defined(Q_CC_SUN) && (__SUNPRO_CC <= 0x550)
+        QVectorTypedData<T> *p;
+#else
+        Data *p;
+#endif
+    };
 
 public:
     inline QVector() : d(&QVectorData::shared_null) { d->ref.ref(); }

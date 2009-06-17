@@ -55,7 +55,7 @@ class Q_DECLARATIVE_EXPORT QFxComponentInstance : public QFxItem
 {
     Q_OBJECT
     Q_PROPERTY(QmlComponent *component READ component WRITE setComponent)
-    Q_PROPERTY(QFxItem *instance READ instance);
+    Q_PROPERTY(QFxItem *instance READ instance)
     Q_CLASSINFO("DefaultProperty", "component")
 public:
     QFxComponentInstance(QFxItem *parent=0);
@@ -80,7 +80,7 @@ protected:
 private:
     Q_DECLARE_PRIVATE(QFxComponentInstance)
 };
-QML_DECLARE_TYPE(QFxComponentInstance);
+QML_DECLARE_TYPE(QFxComponentInstance)
 
 QT_END_NAMESPACE
 

@@ -333,7 +333,7 @@ public:
         this->stream = stream;
     }
 
-public slots:
+public Q_SLOTS:
     inline void flushStream() { stream->flush(); }
 
 private:
@@ -561,7 +561,7 @@ bool QTextStreamPrivate::fillReadBuffer(qint64 maxBytes)
     if (!codec || autoDetectUnicode) {
         autoDetectUnicode = false;
 
-        codec = QTextCodec::codecForUtfText(QByteArray::fromRawData(buf, bytesRead), 0);
+        codec = QTextCodec::codecForUtfText(QByteArray::fromRawData(buf, bytesRead), codec);
         if (!codec) {
             codec = QTextCodec::codecForLocale();
             writeConverterState.flags |= QTextCodec::IgnoreHeader;
@@ -2292,7 +2292,7 @@ bool QTextStreamPrivate::putNumber(qulonglong number, bool negative)
         // ShowBase flag set zero should be written as '00'
         if (number == 0 && base == 8 && numberFlags & QTextStream::ShowBase
             && result == QLatin1String("0")) {
-            result.prepend(QLatin1String("0"));
+            result.prepend(QLatin1Char('0'));
         }
     }
     return putString(result, true);

@@ -94,7 +94,7 @@ public:
         // Shape rendering specifiers...
         OddEvenFill             = 0x1000,
         WindingFill             = 0x2000,
-        ImplicitClose           = 0x4000,
+        ImplicitClose           = 0x4000
     };
 
     // ### Falcon: introduca a struct XY for points so lars is not so confused...
@@ -112,7 +112,7 @@ public:
     {
     }
 
-    const QRealRect &controlPointRect() const;
+    QRectF controlPointRect() const;
 
     inline Hint shape() const { return (Hint) (m_hints & ShapeHintMask); }
 

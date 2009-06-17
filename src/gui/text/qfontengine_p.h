@@ -93,7 +93,6 @@ struct QGlyphLayout;
 
 class Q_GUI_EXPORT QFontEngine : public QObject
 {
-    Q_OBJECT
 public:
     enum Type {
         Box,
@@ -353,7 +352,7 @@ private:
     int _size;
 };
 
-class Q_GUI_EXPORT QFontEngineMulti : public QFontEngine
+class QFontEngineMulti : public QFontEngine
 {
 public:
     explicit QFontEngineMulti(int engineCount);
@@ -389,7 +388,9 @@ public:
     inline virtual const char *name() const
     { return "Multi"; }
 
-    QFontEngine *engine(int at) const;
+    QFontEngine *engine(int at) const
+    {Q_ASSERT(at < engines.size()); return engines.at(at); }
+
 
 protected:
     friend class QPSPrintEnginePrivate;

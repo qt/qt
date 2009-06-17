@@ -77,7 +77,60 @@ private:
     QColor _color;
     bool _valid;
 };
-QML_DECLARE_TYPE(QFxPen);
+QML_DECLARE_TYPE(QFxPen)
+
+class Q_DECLARATIVE_EXPORT QFxGradientStop : public QObject
+{
+    Q_OBJECT
+
+    Q_PROPERTY(qreal position READ position WRITE setPosition)
+    Q_PROPERTY(QColor color READ color WRITE setColor)
+
+public:
+    QFxGradientStop(QObject *parent=0) : QObject(parent) {}
+
+    qreal position() const { return m_position; }
+    void setPosition(qreal position) { m_position = position; updateGradient(); }
+
+    QColor color() const { return m_color; }
+    void setColor(const QColor &color) { m_color = color; updateGradient(); }
+
+private:
+    void updateGradient();
+
+private:
+    qreal m_position;
+    QColor m_color;
+};
+QML_DECLARE_TYPE(QFxGradientStop)
+
+class Q_DECLARATIVE_EXPORT QFxGradient : public QObject
+{
+    Q_OBJECT
+
+    Q_PROPERTY(QList<QFxGradientStop *> *stops READ stops)
+    Q_CLASSINFO("DefaultProperty", "stops")
+
+public:
+    QFxGradient(QObject *parent=0) : QObject(parent), m_gradient(0) {}
+    ~QFxGradient() { delete m_gradient; }
+
+    QList<QFxGradientStop *> *stops() { return &m_stops; }
+
+    const QGradient *gradient() const;
+
+Q_SIGNALS:
+    void updated();
+
+private:
+    void doUpdate();
+
+private:
+    QList<QFxGradientStop *> m_stops;
+    mutable QGradient *m_gradient;
+    friend class QFxGradientStop;
+};
+QML_DECLARE_TYPE(QFxGradient)
 
 class QFxRectPrivate;
 class Q_DECLARATIVE_EXPORT QFxRect : public QFxItem
@@ -86,7 +139,7 @@ class Q_DECLARATIVE_EXPORT QFxRect : public QFxItem
 
     Q_PROPERTY(QColor color READ color WRITE setColor)
     Q_PROPERTY(QColor tintColor READ tintColor WRITE setTintColor)
-    Q_PROPERTY(QColor gradientColor READ gradientColor WRITE setGradientColor)
+    Q_PROPERTY(QFxGradient *gradient READ gradient WRITE setGradient)
     Q_PROPERTY(QFxPen * pen READ pen)
     Q_PROPERTY(qreal radius READ radius WRITE setRadius)
 public:
@@ -98,10 +151,10 @@ public:
     QColor tintColor() const;
     void setTintColor(const QColor &);
 
-    QColor gradientColor() const;
-    void setGradientColor(const QColor &);
-
     QFxPen *pen();
+
+    QFxGradient *gradient() const;
+    void setGradient(QFxGradient *gradient);
 
     qreal radius() const;
     void setRadius(qreal radius);
@@ -131,7 +184,7 @@ private:
     Q_DISABLE_COPY(QFxRect)
     Q_DECLARE_PRIVATE(QFxRect)
 };
-QML_DECLARE_TYPE(QFxRect);
+QML_DECLARE_TYPE(QFxRect)
 
 QT_END_NAMESPACE
 

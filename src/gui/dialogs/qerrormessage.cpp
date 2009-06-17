@@ -300,7 +300,7 @@ QErrorMessage * QErrorMessage::qtHandler()
     if (!qtMessageHandler) {
         qtMessageHandler = new QErrorMessage(0);
         qAddPostRoutine(deleteStaticcQErrorMessage); // clean up
-        qtMessageHandler->setWindowTitle(qApp->applicationName());
+        qtMessageHandler->setWindowTitle(QApplication::applicationName());
         qInstallMsgHandler(jump);
     }
     return qtMessageHandler;

@@ -71,10 +71,12 @@ public:
         //
         // Precomputed single assignment
         //
-        //    StoreReal - Store a qreal in a core property
+        //    StoreFloat - Store a float in a core property
+        //    StoreDouble - Store a double in a core property
         //    StoreInteger - Store a int or uint in a core property
         //    StoreBool - Store a bool in a core property
         //    StoreString - Store a QString in a core property
+        //    StoreUrl - Store a QUrl in a core property
         //    StoreColor - Store a QColor in a core property
         //    StoreDate - Store a QDate in a core property
         //    StoreTime - Store a QTime in a core property
@@ -82,15 +84,16 @@ public:
         //    StoreVariant - Store a QVariant in a core property
         //    StoreObject - Pop the object on the top of the object stack and
         //                  store it in a core property
-        StoreReal,                /* storeReal */
-        StoreInstructionsStart = StoreReal,
+        StoreFloat,               /* storeFloat */
+        StoreDouble,              /* storeDouble */
         StoreInteger,             /* storeInteger */
         StoreBool,                /* storeBool */
         StoreString,              /* storeString */
+        StoreUrl,                 /* storeUrl */
         StoreColor,               /* storeColor */
         StoreDate,                /* storeDate */
         StoreTime,                /* storeTime */
-        StoreDateTime,             /* storeDateTime */
+        StoreDateTime,            /* storeDateTime */
         StorePoint,               /* storeRealPair */
         StorePointF,              /* storeRealPair */
         StoreSize,                /* storeRealPair */
@@ -99,11 +102,10 @@ public:
         StoreRectF,               /* storeRect */
         StoreVariant,             /* storeString */
         StoreObject,              /* storeObject */
-        StoreInstructionsEnd = StoreObject,
+        StoreVariantObject,       /* storeObject */
+        StoreInterface,           /* storeObject */
 
         StoreSignal,              /* storeSignal */
-
-        StoreObjectQmlList,
 
         // XXX need to handle storing objects in variants
 
@@ -113,24 +115,21 @@ public:
         AssignSignalObject,       /* assignSignalObject */
         AssignCustomType,          /* assignCustomType */
 
-        AssignValueSource,        /* assignValueSource */
         StoreBinding,             /* assignBinding */
         StoreCompiledBinding,     /* assignBinding */
         StoreValueSource,         /* assignValueSource */
 
-        TryBeginObject, 
         BeginObject,              /* begin */
-        TryCompleteObject, 
         CompleteObject,           /* complete */
 
-        AssignObject,             /* assignObject */
-        AssignObjectList,         /* assignObject */
+        StoreObjectQmlList,       /* NA */
+        StoreObjectQList,         /* NA */
+        AssignObjectList,         /* NA */
 
         FetchAttached,            /* fetchAttached */
         FetchQmlList,             /* fetchQmlList */ 
         FetchQList,               /* fetch */
         FetchObject,              /* fetch */
-        ResolveFetchObject,       /* fetch */
 
         //
         // Stack manipulation
@@ -140,25 +139,21 @@ public:
         PopFetchedObject,
         PopQList,
 
+        // 
+        // Deferred creation
+        //
+        Defer,                    /* defer */
+
         //
         // Expression optimizations
         //
         //    PushProperty - Save the property for later use
-        //    AssignStackObject - Assign the stack object
         //    StoreStackObject - Assign the stack object (no checks)
         PushProperty,            /* pushProperty */
-        AssignStackObject,       /* assignStackObject */
-        StoreStackObject,        /* assignStackObject */
-
-
-        // 
-        // Miscellaneous
-        //
-        //    NoOp - Do nothing
-        NoOp
+        StoreStackObject         /* assignStackObject */
     };
     QmlInstruction()
-        : type(NoOp), line(0) {}
+        : line(0) {}
 
     Type type;
     unsigned short line;
@@ -180,10 +175,6 @@ public:
             int value;
             int save;
         } setId;
-        struct {
-            int property;
-            int castValue;
-        } assignObject;
         struct {
             int property;
         } assignValueSource;
@@ -210,7 +201,11 @@ public:
         struct {
             int propertyIndex;
             float value;
-        } storeReal;
+        } storeFloat;
+        struct {
+            int propertyIndex;
+            double value;
+        } storeDouble;
         struct {
             int propertyIndex;
             int value;
@@ -223,6 +218,10 @@ public:
             int propertyIndex;
             int value;
         } storeString;
+        struct {
+            int propertyIndex;
+            int value;
+        } storeUrl;
         struct {
             int propertyIndex;
             unsigned int value;
@@ -249,7 +248,6 @@ public:
         } storeRect;
         struct {
             int propertyIndex;
-            int cast;
         } storeObject;
         struct {
             int propertyIndex;
@@ -277,6 +275,9 @@ public:
             int property;
             int object;
         } assignStackObject;
+        struct {
+            int deferCount;
+        } defer;
     };
 
     void dump(QmlCompiledComponent *);

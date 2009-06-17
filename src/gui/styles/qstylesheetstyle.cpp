@@ -867,7 +867,7 @@ static QStyle::StandardPixmap subControlIcon(int pe)
 QRenderRule::QRenderRule(const QVector<Declaration> &declarations, const QWidget *widget)
 : features(0), hasFont(false), pal(0), b(0), bg(0), bd(0), ou(0), geo(0), p(0), img(0), clipset(0)
 {
-    QPalette palette = qApp->palette(); // ###: ideally widget's palette
+    QPalette palette = QApplication::palette(); // ###: ideally widget's palette
     ValueExtractor v(declarations, palette);
     features = v.extractStyleFeatures();
 
@@ -1555,7 +1555,7 @@ QVector<QCss::StyleRule> QStyleSheetStyle::styleRules(const QWidget *w) const
         if (widCacheIt == styleSheetCache->constEnd()) {
             parser.init(wid->styleSheet());
             if (!parser.parse(&ss)) {
-                parser.init(QLatin1String("* {") + wid->styleSheet() + QLatin1String("}"));
+                parser.init(QLatin1String("* {") + wid->styleSheet() + QLatin1Char('}'));
                 if (!parser.parse(&ss))
                    qWarning("Could not parse stylesheet of widget %p", wid);
             }
@@ -2584,7 +2584,7 @@ static void updateWidgets(const QList<const QWidget *>& widgets)
             continue;
         widget->style()->polish(widget);
         QEvent event(QEvent::StyleChange);
-        qApp->sendEvent(widget, &event);
+        QApplication::sendEvent(widget, &event);
         widget->update();
         widget->updateGeometry();
     }
@@ -2630,9 +2630,9 @@ QStyle *QStyleSheetStyle::baseStyle() const
 {
     if (base)
         return base;
-    if (QStyleSheetStyle *me = qobject_cast<QStyleSheetStyle *>(qApp->style()))
+    if (QStyleSheetStyle *me = qobject_cast<QStyleSheetStyle *>(QApplication::style()))
         return me->base;
-    return qApp->style();
+    return QApplication::style();
 }
 
 void QStyleSheetStyle::widgetDestroyed(QObject *o)
@@ -2702,14 +2702,10 @@ void QStyleSheetStyle::polish(QWidget *w)
         QRenderRule rule = renderRule(sa, PseudoElement_None, PseudoClass_Enabled);
         if ((rule.hasBorder() && rule.border()->hasBorderImage())
             || (rule.hasBackground() && !rule.background()->pixmap.isNull())) {
-            QObject::disconnect(sa->horizontalScrollBar(), SIGNAL(valueChanged(int)),
-                             sa, SLOT(update()));
-            QObject::disconnect(sa->verticalScrollBar(), SIGNAL(valueChanged(int)),
-                             sa, SLOT(update()));
             QObject::connect(sa->horizontalScrollBar(), SIGNAL(valueChanged(int)),
-                             sa, SLOT(update()));
+                             sa, SLOT(update()), Qt::UniqueConnection);
             QObject::connect(sa->verticalScrollBar(), SIGNAL(valueChanged(int)),
-                             sa, SLOT(update()));
+                             sa, SLOT(update()), Qt::UniqueConnection);
         }
     }
 #endif
@@ -2854,7 +2850,7 @@ void QStyleSheetStyle::drawComplexControl(ComplexControl cc, const QStyleOptionC
                 rule.drawBackgroundImage(p, cmbOpt.rect);
                 rule.configurePalette(&cmbOpt.palette, QPalette::ButtonText, QPalette::Button);
                 bool customDropDown = (opt->subControls & QStyle::SC_ComboBoxArrow)
-                                      && hasStyleRule(w, PseudoElement_ComboBoxDropDown);
+                                && (hasStyleRule(w, PseudoElement_ComboBoxDropDown) || hasStyleRule(w, PseudoElement_ComboBoxArrow));
                 if (customDropDown)
                     cmbOpt.subControls &= ~QStyle::SC_ComboBoxArrow;
                 if (rule.baseStyleCanDraw()) {
@@ -2900,11 +2896,11 @@ void QStyleSheetStyle::drawComplexControl(ComplexControl cc, const QStyleOptionC
             if (rule.hasNativeBorder() && !upRuleMatch && !downRuleMatch) {
                 rule.drawBackgroundImage(p, spinOpt.rect);
                 customUp = (opt->subControls & QStyle::SC_SpinBoxUp)
-                           && hasStyleRule(w, PseudoElement_SpinBoxUpButton);
+                        && (hasStyleRule(w, PseudoElement_SpinBoxUpButton) || hasStyleRule(w, PseudoElement_UpArrow));
                 if (customUp)
                     spinOpt.subControls &= ~QStyle::SC_SpinBoxUp;
                 customDown = (opt->subControls & QStyle::SC_SpinBoxDown)
-                             && hasStyleRule(w, PseudoElement_SpinBoxDownButton);
+                        && (hasStyleRule(w, PseudoElement_SpinBoxDownButton) || hasStyleRule(w, PseudoElement_DownArrow));
                 if (customDown)
                     spinOpt.subControls &= ~QStyle::SC_SpinBoxDown;
                 if (rule.baseStyleCanDraw()) {
@@ -3577,7 +3573,7 @@ void QStyleSheetStyle::drawControl(ControlElement ce, const QStyleOption *opt, Q
                     mi.rect = positionRect(w, subRule, subRule2, PseudoElement_MenuRightArrow, opt->rect, mi.direction);
                     drawPrimitive(arrow, &mi, p, w);
                 }
-            } else if (hasStyleRule(w, PseudoElement_MenuCheckMark)) {
+            } else if (hasStyleRule(w, PseudoElement_MenuCheckMark) || hasStyleRule(w, PseudoElement_MenuRightArrow)) {
                 QWindowsStyle::drawControl(ce, &mi, p, w);
             } else {
                 if (rule.hasDrawable() && !subRule.hasDrawable() && !(opt->state & QStyle::State_Selected)) {
@@ -4343,6 +4339,16 @@ void QStyleSheetStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *op
         pseudoElement = PseudoElement_ScrollAreaCorner;
         break;
 
+    case PE_IndicatorSpinDown:
+    case PE_IndicatorSpinMinus:
+        pseudoElement = PseudoElement_SpinBoxDownArrow;
+        break;
+
+    case PE_IndicatorSpinUp:
+    case PE_IndicatorSpinPlus:
+        pseudoElement = PseudoElement_SpinBoxUpArrow;
+        break;
+
     default:
         break;
     }
@@ -5082,9 +5088,12 @@ int QStyleSheetStyle::styleHint(StyleHint sh, const QStyleOption *opt, const QWi
 #ifndef QT_NO_COMBOBOX
             if (qobject_cast<const QComboBox *>(w)) {
                 QAbstractItemView *view = qFindChild<QAbstractItemView *>(w);
-                QRenderRule subRule = renderRule(view, PseudoElement_None);
-                if (subRule.hasBox() || !subRule.hasNativeBorder())
-                    return QFrame::NoFrame;
+                if (view) {
+                    view->ensurePolished();
+                    QRenderRule subRule = renderRule(view, PseudoElement_None);
+                    if (subRule.hasBox() || !subRule.hasNativeBorder())
+                        return QFrame::NoFrame;
+                }
             }
 #endif // QT_NO_COMBOBOX
             break;

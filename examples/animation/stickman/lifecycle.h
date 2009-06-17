@@ -45,11 +45,13 @@
 #include <Qt>
 
 class StickMan;
+QT_BEGIN_NAMESPACE
 class QStateMachine;
 class QAnimationGroup;
 class QState;
 class QAbstractState;
 class QAbstractTransition;
+QT_END_NAMESPACE
 class GraphicsView;
 class LifeCycle
 {
@@ -63,8 +65,6 @@ public:
     void start();
 
 private:
-    void connectByAnimation(QState *s1, QAbstractState *s2, 
-                            QAbstractTransition *transition = 0);
     QState *makeState(QState *parentState, const QString &animationFileName);
 
     StickMan *m_stickMan;

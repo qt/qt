@@ -18,7 +18,7 @@ Item {
                     Role { name: "title"; query: "title/string()" }
                     Role { name: "imagePath"; query: "media:thumbnail/@url/string()" }
                     Role { name: "url"; query: "media:content/@url/string()" }
-                    Role { name: "description"; query: "description/string()"; isCData: true }
+                    Role { name: "description"; query: "description/string()" }
                     Role { name: "tags"; query: "media:category/string()" }
                     Role { name: "photoWidth"; query: "media:content/@width/string()" }
                     Role { name: "photoHeight"; query: "media:content/@height/string()" }

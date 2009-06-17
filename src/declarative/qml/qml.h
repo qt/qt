@@ -59,13 +59,13 @@ QT_BEGIN_NAMESPACE
 QT_MODULE(Declarative)
 
 #define QML_DECLARE_TYPE(TYPE) \
-    Q_DECLARE_METATYPE(TYPE *); \
-    Q_DECLARE_METATYPE(QList<TYPE *> *); \
-    Q_DECLARE_METATYPE(QmlList<TYPE *> *);
+    Q_DECLARE_METATYPE(TYPE *) \
+    Q_DECLARE_METATYPE(QList<TYPE *> *) \
+    Q_DECLARE_METATYPE(QmlList<TYPE *> *)
 
 #define QML_DECLARE_TYPE_HASMETATYPE(TYPE) \
-    Q_DECLARE_METATYPE(QList<TYPE *> *); \
-    Q_DECLARE_METATYPE(QmlList<TYPE *> *);
+    Q_DECLARE_METATYPE(QList<TYPE *> *) \
+    Q_DECLARE_METATYPE(QmlList<TYPE *> *)
 
 #define QML_DECLARE_INTERFACE(INTERFACE) \
     QML_DECLARE_TYPE(INTERFACE)
@@ -90,6 +90,7 @@ QT_MODULE(Declarative)
 
 class QmlContext;
 class QmlEngine;
+Q_DECLARATIVE_EXPORT void qmlExecuteDeferred(QObject *);
 Q_DECLARATIVE_EXPORT QmlContext *qmlContext(const QObject *);
 Q_DECLARATIVE_EXPORT QmlEngine *qmlEngine(const QObject *);
 Q_DECLARATIVE_EXPORT QObject *qmlAttachedPropertiesObjectById(int, const QObject *);
@@ -109,8 +110,8 @@ QObject *qmlAttachedPropertiesObject(const QObject *obj)
     return qmlAttachedPropertiesObjectById(idx, obj);
 }
 
-QML_DECLARE_TYPE(QObject);
-Q_DECLARE_METATYPE(QVariant);
+QML_DECLARE_TYPE(QObject)
+Q_DECLARE_METATYPE(QVariant)
 
 QT_END_NAMESPACE
 

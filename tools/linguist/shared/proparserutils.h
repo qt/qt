@@ -282,7 +282,7 @@ static QStringList split_value_list(const QString &vals, bool do_semicolon=false
 static QStringList qmake_mkspec_paths()
 {
     QStringList ret;
-    const QString concat = QDir::separator() + QString(QLatin1String("mkspecs"));
+    const QString concat = QDir::separator() + QLatin1String("mkspecs");
     QByteArray qmakepath = qgetenv("QMAKEPATH");
     if (!qmakepath.isEmpty()) {
         const QStringList lst = splitPathList(QString::fromLocal8Bit(qmakepath));

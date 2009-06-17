@@ -50,7 +50,7 @@ QT_BEGIN_NAMESPACE
 
 class QmlBindableValuePrivate : public QObjectPrivate
 {
-    Q_DECLARE_PUBLIC(QmlBindableValue);
+    Q_DECLARE_PUBLIC(QmlBindableValue)
 public:
     QmlBindableValuePrivate();
 

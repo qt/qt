@@ -105,6 +105,7 @@ namespace QWSKeyboard {
     };
 };
 
+#ifndef QT_NO_DATASTREAM
 inline QDataStream &operator>>(QDataStream &ds, QWSKeyboard::Mapping &m)
 {
     return ds >> m.keycode >> m.unicode >> m.qtcode >> m.modifiers >> m.flags >> m.special;
@@ -124,6 +125,6 @@ inline QDataStream &operator<<(QDataStream &ds, const QWSKeyboard::Composing &c)
 {
     return ds << c.first << c.second << c.result;
 }
-
+#endif // QT_NO_DATASTREAM
 
 #endif // QWSKEYBOARD_H

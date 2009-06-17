@@ -131,6 +131,8 @@ private slots:
     void nullSize();
 
     void premultipliedAlphaConsistency();
+
+    void compareIndexed();
 };
 
 tst_QImage::tst_QImage()
@@ -1760,6 +1762,32 @@ void tst_QImage::premultipliedAlphaConsistency()
         QVERIFY(qGreen(pixel) <= qAlpha(pixel));
         QVERIFY(qBlue(pixel) <= qAlpha(pixel));
     }
+}
+
+void tst_QImage::compareIndexed()
+{
+    QImage img(256, 1, QImage::Format_Indexed8);
+
+    QVector<QRgb> colorTable(256);
+    for (int i = 0; i < 256; ++i)
+        colorTable[i] = qRgb(i, i, i);
+    img.setColorTable(colorTable);
+
+    for (int i = 0; i < 256; ++i) {
+        img.setPixel(i, 0, i);
+    }
+
+    QImage imgInverted(256, 1, QImage::Format_Indexed8);
+    QVector<QRgb> invertedColorTable(256);
+    for (int i = 0; i < 256; ++i)
+        invertedColorTable[255-i] = qRgb(i, i, i);
+    imgInverted.setColorTable(invertedColorTable);
+
+    for (int i = 0; i < 256; ++i) {
+        imgInverted.setPixel(i, 0, (255-i));
+    }
+
+    QCOMPARE(img, imgInverted);
 }
 
 QTEST_MAIN(tst_QImage)

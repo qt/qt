@@ -71,7 +71,7 @@
 #include <private/qfxpainteditem_p.h>
 
 QT_BEGIN_NAMESPACE
-QML_DEFINE_TYPE(QFxWebView,WebView);
+QML_DEFINE_TYPE(QFxWebView,WebView)
 
 static const int MAX_DOUBLECLICK_TIME=500; // XXX need better gesture system
 
@@ -161,7 +161,7 @@ public:
         int age;
         QRect area;
 #if defined(QFX_RENDER_QPAINTER)
-        QSimpleCanvasConfig::Image image;
+        QPixmap image;
 #else
         GLTexture image;
 #endif
@@ -287,7 +287,7 @@ void QFxWebView::componentComplete()
     Q_D(QFxWebView);
     switch (d->pending) {
         case QFxWebViewPrivate::PendingUrl:
-            setUrl(d->pending_url.toString());
+            setUrl(d->pending_url);
             break;
         case QFxWebViewPrivate::PendingHtml:
             setHtml(d->pending_string, d->pending_url);
@@ -339,7 +339,7 @@ void QFxWebView::doLoadFinished(bool ok)
 }
 
 /*!
-    \qmlproperty string WebView::url
+    \qmlproperty url WebView::url
     This property holds the URL to the page displayed in this item.
 
     Note that after this property is set, it may take some time
@@ -358,24 +358,22 @@ void QFxWebView::doLoadFinished(bool ok)
     Emitted when loading of the URL successfully starts after
     setUrl() is called.
 */
-QString QFxWebView::url() const
+QUrl QFxWebView::url() const
 {
-    return page()->mainFrame()->url().toString();
+    return page()->mainFrame()->url();
 }
 
-void QFxWebView::setUrl(const QString &n)
+void QFxWebView::setUrl(const QUrl &url)
 {
     Q_D(QFxWebView);
-    if (n == page()->mainFrame()->url().toString())
+    if (url == page()->mainFrame()->url())
         return;
 
     page()->setViewportSize(QSize(
         d->idealwidth>0 ? d->idealwidth : width(),
         d->idealheight>0 ? d->idealheight : height()));
 
-    QUrl url(n);
-    if (url.isRelative())
-        url = qmlContext(this)->resolvedUrl(n);
+    Q_ASSERT(!url.isRelative());
 
     if (isComponentComplete())
         page()->mainFrame()->load(url);
@@ -942,7 +940,7 @@ void QFxWebView::setHtml(const QString &html, const QUrl &baseUrl)
         d->idealwidth>0 ? d->idealwidth : width(),
         d->idealheight>0 ? d->idealheight : height()));
     if (isComponentComplete())
-        page()->mainFrame()->setHtml(html, qmlContext(this)->resolvedUrl(baseUrl));
+        page()->mainFrame()->setHtml(html, baseUrl);
     else {
         d->pending = d->PendingHtml;
         d->pending_url = baseUrl;
@@ -1067,7 +1065,7 @@ QFxWebView *QFxWebPage::view()
 
 QObject *QFxWebPage::createPlugin(const QString &, const QUrl &url, const QStringList &paramNames, const QStringList &paramValues)
 {
-    QUrl comp = qmlContext(view())->resolvedUri(url.toString());
+    QUrl comp = qmlContext(view())->resolvedUri(url);
     return new QWidget_Dummy_Plugin(comp,view(),paramNames,paramValues);
 }
 

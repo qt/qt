@@ -1032,6 +1032,7 @@
     \value Stream The MediaSource object describes a data stream.
                   This is the type used for \l{QIODevice}s. Note
                   that a stream opened with a QUrl, will still be of the Url type.
+    \value Empty The media source doesn't have a source.
 
     \sa MediaSource::type()
 */
@@ -2024,6 +2025,15 @@
 
     \sa SeekSlider, tick()
 */
+
+/*!
+    \fn void Phonon::MediaObject::clear()
+
+    Stops and removes all playing and enqueued media sources.
+
+    \sa setCurrentSource()
+*/
+
 
 /*!
     \fn void Phonon::MediaObject::stateChanged(Phonon::State newstate, Phonon::State oldstate)
@@ -3027,6 +3037,12 @@
 */
 
 /*!
+   \typedef Phonon::AudioOutputInterface
+   \inmodule Phonon
+   \internal
+*/
+
+/*!
     \class Phonon::AudioOutputInterface40
     \inmodule Phonon
     \since 4.4
@@ -3251,7 +3267,19 @@
 /*!
     \fn bool Phonon::Path::operator!=(const Path &p) const;
 
-    Returns true if this Path is not equal to \a p; otherwise returns false;
+    Returns true if this Path is not equal to \a p; otherwise returns false.
+*/
+
+/*!
+    \fn MediaNode *Phonon::Path::source() const;
+
+    Returns the source MediaNode used by the path.
+*/
+
+/*!
+    \fn MediaNode *Phonon::Path::sink() const;
+
+    Returns the sink MediaNode used by the path.
 */
 
 /*!
@@ -4878,7 +4906,7 @@
 */
 
 /*!
-    \typedef typedef void (*CleanUpFunction)()
+    \typedef Phonon::CleanUpFunction
     \inmodule Phonon
     \internal
 */

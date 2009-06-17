@@ -1375,7 +1375,7 @@ void QColorDialogPrivate::init(const QColor &initial)
 #else
     // small displays (e.g. PDAs) cannot fit the full color dialog,
     // so just use the color picker.
-    smallDisplay = (qApp->desktop()->width() < 480 || qApp->desktop()->height() < 350);
+    smallDisplay = (QApplication::desktop()->width() < 480 || QApplication::desktop()->height() < 350);
     const int lumSpace = topLay->spacing() / 2;
 #endif
 
@@ -1750,7 +1750,7 @@ void QColorDialog::setVisible(bool visible)
     \overload
     \since 4.5
 
-    Opens the dialog and connects its accepted() signal to the slot specified
+    Opens the dialog and connects its colorSelected() signal to the slot specified
     by \a receiver and \a member.
 
     The signal will be disconnected from the slot when the dialog is closed.

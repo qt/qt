@@ -114,13 +114,6 @@ bool QGLContext::chooseContext(const QGLContext* shareContext)
         eglSwapInterval(d->eglContext->display(), d->glFormat.swapInterval());
 #endif
 
-    // Create the EGL surface to draw into.
-    if (!d->eglContext->createSurface(device())) {
-        delete d->eglContext;
-        d->eglContext = 0;
-        return false;
-    }
-
     return true;
 }
 
@@ -262,48 +255,11 @@ void QGLWidget::setContext(QGLContext *context, const QGLContext* shareContext, 
             d_func()->xinfo = parentWidget()->d_func()->xinfo;
     }
 
-    bool visible = isVisible();
-    if (visible)
-        hide();
-
-    XVisualInfo vi;
-
-    if (parentWidget()) {
-        vi.depth = parentWidget()->x11Info().depth();
-        vi.screen = parentWidget()->x11Info().screen();
-        vi.visual = (Visual *)(parentWidget()->x11Info().visual());
-    } else {
-        int err = XMatchVisualInfo(x11Info().display(), x11Info().screen(), x11Info().depth(), TrueColor, &vi);
-        if (err == 0) {
-            qWarning("Error: Couldn't get a matching X visual for format");
-            return;
-        }
-    }
-
-    XSetWindowAttributes a;
-
-    Window p = RootWindow(X11->display, vi.screen);
-    if (parentWidget())
-        p = parentWidget()->winId();
-
-    QColormap colmap = QColormap::instance(vi.screen);
-    a.background_pixel = colmap.pixel(palette().color(backgroundRole()));
-    a.border_pixel = colmap.pixel(Qt::black);
-
-    Window w = XCreateWindow(X11->display, p, x(), y(), width(), height(),
-                              0, vi.depth, InputOutput, vi.visual,
-                              CWBackPixel|CWBorderPixel, &a);
-
-    if (deleteOldContext)
-        delete oldcx;
-    oldcx = 0;
-
-    create(w); // Create with the ID of the window we've just created
-
-    d->eglSurfaceWindowId = w; // Remember the window id we created the surface for
-
-    if (visible)
-        show();
+    // If the application has set WA_TranslucentBackground and not explicitly set
+    // the alpha buffer size to zero, modify the format so it have an alpha channel
+    QGLFormat& fmt = d->glcx->d_func()->glFormat;
+    if (testAttribute(Qt::WA_TranslucentBackground) && fmt.alphaBufferSize() == -1)
+        fmt.setAlphaBufferSize(1);
 
     bool createFailed = false;
     if (!d->glcx->isValid()) {
@@ -322,6 +278,138 @@ void QGLWidget::setContext(QGLContext *context, const QGLContext* shareContext, 
         return;
     }
 
+    bool visible = isVisible();
+    if (visible)
+        hide();
+
+    XVisualInfo vi;
+    memset(&vi, 0, sizeof(XVisualInfo));
+
+    // Check to see if EGL is suggesting an appropriate visual id:
+    EGLint nativeVisualId;
+    QEglContext* qeglCtx = d->glcx->d_func()->eglContext;
+    qeglCtx->configAttrib(EGL_NATIVE_VISUAL_ID, &nativeVisualId);
+    vi.visualid = nativeVisualId;
+
+    if (vi.visualid) {
+        // EGL has suggested a visual id, so get the rest of the visual info for that id:
+        XVisualInfo *chosenVisualInfo;
+        int matchingCount = 0;
+        chosenVisualInfo = XGetVisualInfo(x11Info().display(), VisualIDMask, &vi, &matchingCount);
+        if (chosenVisualInfo) {
+            qDebug("Using X Visual ID (%d) provided by EGL", (int)vi.visualid);
+            vi = *chosenVisualInfo;
+            XFree(chosenVisualInfo);
+        }
+        else {
+            qWarning("Warning: EGL suggested using X visual ID %d for config %d, but this seems to be invalid!",
+                     nativeVisualId, (int)qeglCtx->config());
+            vi.visualid = 0;
+        }
+    }
+
+    // If EGL does not know the visual ID, so try to select an appropriate one ourselves, first
+    // using XRender if we're supposed to have an alpha, then falling back to XGetVisualInfo
+
+    bool useArgb = context->format().alpha() && !context->deviceIsPixmap();
+#if !defined(QT_NO_XRENDER)
+    if (vi.visualid == 0 && useArgb) {
+        // Try to use XRender to find an ARGB visual we can use
+        vi.screen  = x11Info().screen();
+        vi.depth   = 32;
+        vi.c_class = TrueColor;
+        XVisualInfo *matchingVisuals;
+        int matchingCount = 0;
+        matchingVisuals = XGetVisualInfo(x11Info().display(),
+                                         VisualScreenMask|VisualDepthMask|VisualClassMask,
+                                         &vi, &matchingCount);
+
+        for (int i = 0; i < matchingCount; ++i) {
+            XRenderPictFormat *format;
+            format = XRenderFindVisualFormat(x11Info().display(), matchingVisuals[i].visual);
+            if (format->type == PictTypeDirect && format->direct.alphaMask) {
+                vi = matchingVisuals[i];
+                qDebug("Using X Visual ID (%d) for ARGB visual as provided by XRender", (int)vi.visualid);
+                break;
+            }
+        }
+        XFree(matchingVisuals);
+    }
+#endif
+
+    if (vi.visualid == 0) {
+        EGLint depth;
+        qeglCtx->configAttrib(EGL_BUFFER_SIZE, &depth);
+        int err;
+        err = XMatchVisualInfo(x11Info().display(), x11Info().screen(), depth, TrueColor, &vi);
+        if (err == 0) {
+            qWarning("Warning: Can't find an X visual which matches the EGL config(%d)'s depth (%d)!",
+                     (int)qeglCtx->config(), depth);
+            depth = x11Info().depth();
+            err = XMatchVisualInfo(x11Info().display(), x11Info().screen(), depth, TrueColor, &vi);
+            if (err == 0) {
+                qWarning("Error: Couldn't get any matching X visual!");
+                return;
+            } else
+                qWarning("         - Falling back to X11 suggested depth (%d)", depth);
+        } else
+            qDebug("Using X Visual ID (%d) for EGL provided depth (%d)", (int)vi.visualid, depth);
+
+        // Don't try to use ARGB now unless the visual is 32-bit - even then it might stil fail :-(
+        if (useArgb)
+            useArgb = vi.depth == 32;
+    }
+
+//    qDebug("Visual Info:");
+//    qDebug("   bits_per_rgb=%d", vi.bits_per_rgb);
+//    qDebug("   red_mask=0x%x", vi.red_mask);
+//    qDebug("   green_mask=0x%x", vi.green_mask);
+//    qDebug("   blue_mask=0x%x", vi.blue_mask);
+//    qDebug("   colormap_size=%d", vi.colormap_size);
+//    qDebug("   c_class=%d", vi.c_class);
+//    qDebug("   depth=%d", vi.depth);
+//    qDebug("   screen=%d", vi.screen);
+//    qDebug("   visualid=%d", vi.visualid);
+
+    XSetWindowAttributes a;
+
+    Window p = RootWindow(x11Info().display(), x11Info().screen());
+    if (parentWidget())
+        p = parentWidget()->winId();
+
+    QColormap colmap = QColormap::instance(vi.screen);
+    a.background_pixel = colmap.pixel(palette().color(backgroundRole()));
+    a.border_pixel = colmap.pixel(Qt::black);
+
+    unsigned int valueMask = CWBackPixel|CWBorderPixel;
+    if(useArgb) {
+        a.colormap = XCreateColormap(x11Info().display(), p, vi.visual, AllocNone);
+        valueMask |= CWColormap;
+    }
+
+    Window w = XCreateWindow(x11Info().display(), p, x(), y(), width(), height(),
+                             0, vi.depth, InputOutput, vi.visual, valueMask, &a);
+
+    if (deleteOldContext)
+        delete oldcx;
+    oldcx = 0;
+
+    create(w); // Create with the ID of the window we've just created
+
+
+    // Create the EGL surface to draw into.
+    if (!d->glcx->d_func()->eglContext->createSurface(this)) {
+        delete d->glcx->d_func()->eglContext;
+        d->glcx->d_func()->eglContext = 0;
+        return;
+    }
+
+    d->eglSurfaceWindowId = w; // Remember the window id we created the surface for
+
+    if (visible)
+        show();
+
+    XFlush(X11->display);
     d->glcx->setWindowCreated(true);
 }
 

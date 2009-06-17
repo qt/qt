@@ -194,6 +194,8 @@ bool QmlDomDocument::load(QmlEngine *engine, const QByteArray &data, const QUrl 
         d->imports += QUrl(td->data.imports().at(i).uri);
     }
 
+    d->automaticSemicolonOffsets = td->data.automaticSemicolonOffsets();
+
     if (td->data.tree()) {
         if (compilerDump()) {
             qWarning() << "-AST------------------------------------------------------------------------------";
@@ -249,6 +251,14 @@ QmlDomObject QmlDomDocument::rootObject() const
     rv.d->object = d->root;
     if (rv.d->object) rv.d->object->addref();
     return rv;
+}
+
+QList<int> QmlDomDocument::automaticSemicolonOffsets() const
+{
+    if (d)
+        return d->automaticSemicolonOffsets;
+    else
+        return QList<int>();
 }
 
 QmlDomPropertyPrivate::QmlDomPropertyPrivate()
@@ -1170,7 +1180,7 @@ QmlDomValue::Type QmlDomValue::type() const
     case QmlParser::Value::SignalExpression:
         return Literal;
     case QmlParser::Value::Id:
-        return Invalid;
+        return Literal;
     }
     return Invalid;
 }
@@ -1415,6 +1425,40 @@ void QmlDomList::setValues(const QList<QmlDomValue> &values)
     qWarning("QmlDomList::setValues(const QList<QmlDomValue> &): Not implemented");
 }
 
+/*!
+    Returns the position in the input data where the list started, or 0 if
+ the property is invalid.
+*/
+int QmlDomList::position() const
+{
+    if (d && d->property) {
+        return d->property->listValueRange.offset;
+    } else
+        return 0;
+}
+
+/*!
+    Returns the length in the input data from where the list started upto
+ the end of it, or 0 if the property is invalid.
+*/
+int QmlDomList::length() const
+{
+    if (d && d->property)
+        return d->property->listValueRange.length;
+    else
+        return 0;
+}
+
+/*!
+  Returns a list of positions of the commas in the QML file.
+*/
+QList<int> QmlDomList:: commaPositions() const
+{
+    if (d && d->property)
+        return d->property->listCommaPositions;
+    else
+        return QList<int>();
+}
 
 /*!
     \class QmlDomComponent

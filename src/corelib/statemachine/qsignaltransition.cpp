@@ -40,6 +40,9 @@
 ****************************************************************************/
 
 #include "qsignaltransition.h"
+
+#ifndef QT_NO_STATEMACHINE
+
 #include "qsignaltransition_p.h"
 #include "qsignalevent.h"
 #include "qstate.h"
@@ -118,19 +121,20 @@ QSignalTransitionPrivate *QSignalTransitionPrivate::get(QSignalTransition *q)
     return q->d_func();
 }
 
-void QSignalTransitionPrivate::invalidate()
+void QSignalTransitionPrivate::unregister()
 {
     Q_Q(QSignalTransition);
-    if (signalIndex != -1) {
-        QState *source = sourceState();
-        QStatePrivate *source_d = QStatePrivate::get(source);
-        QStateMachinePrivate *mach = QStateMachinePrivate::get(source_d->machine());
-        if (mach) {
-            mach->unregisterSignalTransition(q);
-            if (mach->configuration.contains(source))
-                mach->registerSignalTransition(q);
-        }
-    }
+    if ((signalIndex == -1) || !machine())
+        return;
+    QStateMachinePrivate::get(machine())->unregisterSignalTransition(q);
+}
+
+void QSignalTransitionPrivate::maybeRegister()
+{
+    Q_Q(QSignalTransition);
+    if (!machine() || !machine()->configuration().contains(sourceState()))
+        return;
+    QStateMachinePrivate::get(machine())->registerSignalTransition(q);
 }
 
 /*!
@@ -193,8 +197,9 @@ void QSignalTransition::setSenderObject(QObject *sender)
     Q_D(QSignalTransition);
     if (sender == d->sender)
         return;
+    d->unregister();
     d->sender = sender;
-    d->invalidate();
+    d->maybeRegister();
 }
 
 /*!
@@ -214,8 +219,9 @@ void QSignalTransition::setSignal(const QByteArray &signal)
     Q_D(QSignalTransition);
     if (signal == d->signal)
         return;
+    d->unregister();
     d->signal = signal;
-    d->invalidate();
+    d->maybeRegister();
 }
 
 /*!
@@ -255,3 +261,5 @@ bool QSignalTransition::event(QEvent *e)
 }
 
 QT_END_NAMESPACE
+
+#endif //QT_NO_STATEMACHINE

@@ -47,18 +47,18 @@
 
 
 QT_BEGIN_NAMESPACE
-QML_DECLARE_TYPE(TestObject);
-QML_DEFINE_TYPE(TestObject,TestObject);
-QML_DECLARE_TYPE(TestFrame);
-QML_DEFINE_TYPE(TestFrame,TestFrame);
-QML_DECLARE_TYPE(TestFullFrame);
-QML_DEFINE_TYPE(TestFullFrame,TestFullFrame);
-QML_DECLARE_TYPE(TestMouse);
-QML_DEFINE_TYPE(TestMouse,TestMouse);
-QML_DECLARE_TYPE(TestKey);
-QML_DEFINE_TYPE(TestKey,TestKey);
-QML_DECLARE_TYPE(TestLog);
-QML_DEFINE_TYPE(TestLog,TestLog);
+QML_DECLARE_TYPE(TestObject)
+QML_DEFINE_TYPE(TestObject,TestObject)
+QML_DECLARE_TYPE(TestFrame)
+QML_DEFINE_TYPE(TestFrame,TestFrame)
+QML_DECLARE_TYPE(TestFullFrame)
+QML_DEFINE_TYPE(TestFullFrame,TestFullFrame)
+QML_DECLARE_TYPE(TestMouse)
+QML_DEFINE_TYPE(TestMouse,TestMouse)
+QML_DECLARE_TYPE(TestKey)
+QML_DEFINE_TYPE(TestKey,TestKey)
+QML_DECLARE_TYPE(TestLog)
+QML_DEFINE_TYPE(TestLog,TestLog)
 
 static QString padding(int pad)
 {

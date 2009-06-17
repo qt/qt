@@ -90,7 +90,7 @@ class Q_DECLARATIVE_EXPORT QFxWebView : public QFxPaintedItem
 
     Q_PROPERTY(int idealWidth READ idealWidth WRITE setIdealWidth NOTIFY idealWidthChanged)
     Q_PROPERTY(int idealHeight READ idealHeight WRITE setIdealHeight NOTIFY idealHeightChanged)
-    Q_PROPERTY(QString url READ url WRITE setUrl NOTIFY urlChanged)
+    Q_PROPERTY(QUrl url READ url WRITE setUrl NOTIFY urlChanged)
     Q_PROPERTY(qreal progress READ progress NOTIFY progressChanged)
 
     Q_PROPERTY(bool interactive READ interactive WRITE setInteractive NOTIFY interactiveChanged)
@@ -108,8 +108,8 @@ public:
     QFxWebView(QFxItem *parent=0);
     ~QFxWebView();
 
-    QString url() const;
-    void setUrl(const QString &);
+    QUrl url() const;
+    void setUrl(const QUrl &);
 
     QString title() const;
 
@@ -207,7 +207,7 @@ private:
     Q_DISABLE_COPY(QFxWebView)
     Q_DECLARE_PRIVATE(QFxWebView)
 };
-QML_DECLARE_TYPE(QFxWebView);
+QML_DECLARE_TYPE(QFxWebView)
 
 
 QT_END_NAMESPACE

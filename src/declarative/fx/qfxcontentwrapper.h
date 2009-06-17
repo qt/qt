@@ -73,7 +73,7 @@ protected:
 private:
     Q_DECLARE_PRIVATE(QFxContentWrapper)
 };
-QML_DECLARE_TYPE(QFxContentWrapper);
+QML_DECLARE_TYPE(QFxContentWrapper)
 
 class Q_DECLARATIVE_EXPORT QFxContent : public QFxItem
 {
@@ -81,7 +81,7 @@ class Q_DECLARATIVE_EXPORT QFxContent : public QFxItem
 public:
     QFxContent(QFxItem *parent=0) : QFxItem(parent) {}
 };
-QML_DECLARE_TYPE(QFxContent);
+QML_DECLARE_TYPE(QFxContent)
 
 QT_END_NAMESPACE
 

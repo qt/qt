@@ -44,12 +44,12 @@
 
 #include <QtDeclarative/qml.h>
 
-
 QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
 QT_MODULE(Declarative)
+
 /*****************************************************************************
  *****************************************************************************
  XXX Experimental
@@ -63,8 +63,8 @@ class QmlPackage : public QObject
     Q_OBJECT
     Q_DECLARE_PRIVATE(QmlPackage)
 
-    Q_CLASSINFO("DefaultProperty", "data");
-    Q_PROPERTY(QmlList<QObject *> *data READ data SCRIPTABLE false);
+    Q_CLASSINFO("DefaultProperty", "data")
+    Q_PROPERTY(QmlList<QObject *> *data READ data SCRIPTABLE false)
 
 public:
     QmlPackage(QObject *parent=0);
@@ -77,11 +77,10 @@ public:
 
     static QmlPackageAttached *qmlAttachedProperties(QObject *);
 };
-QML_DECLARE_TYPE(QmlPackage);
-
-#endif // QMLPACKAGE_H
-
+QML_DECLARE_TYPE(QmlPackage)
 
 QT_END_NAMESPACE
 
 QT_END_HEADER
+
+#endif // QMLPACKAGE_H

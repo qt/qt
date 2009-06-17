@@ -101,9 +101,9 @@ public:
     QSystemSemaphore::SystemSemaphoreError error;
 };
 
+QT_END_NAMESPACE
+
 #endif // QT_NO_SYSTEMSEMAPHORE
 
-
-QT_END_NAMESPACE
 #endif // QSYSTEMSEMAPHORE_P_H
 

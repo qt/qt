@@ -60,6 +60,7 @@
 QT_BEGIN_NAMESPACE
 
 class QPaintEngine;
+class QGLFramebufferObject;
 
 class QGLPixmapData : public QPixmapData
 {
@@ -72,6 +73,7 @@ public:
     void resize(int width, int height);
     void fromImage(const QImage &image,
                    Qt::ImageConversionFlags flags);
+    void copy(const QPixmapData *data, const QRect &rect);
 
     bool scroll(int dx, int dy, const QRect &rect);
 
@@ -80,12 +82,27 @@ public:
     QImage toImage() const;
     QPaintEngine* paintEngine() const;
 
-    GLuint bind() const;
+    GLuint bind(bool copyBack = true) const;
     GLuint textureId() const;
 
     bool isValidContext(const QGLContext *ctx) const;
 
     void ensureCreated() const;
+
+    bool isUninitialized() const { return m_dirty && m_source.isNull(); }
+
+    bool needsFill() const { return m_hasFillColor; }
+    QColor fillColor() const { return m_fillColor; }
+
+    QSize size() const { return QSize(m_width, m_height); }
+    int width() const { return m_width; }
+    int height() const { return m_height; }
+
+    QGLFramebufferObject *fbo() const;
+
+    void makeCurrent();
+    void doneCurrent();
+    void swapBuffers();
 
 protected:
     int metric(QPaintDevice::PaintDeviceMetric metric) const;
@@ -94,12 +111,26 @@ private:
     QGLPixmapData(const QGLPixmapData &other);
     QGLPixmapData &operator=(const QGLPixmapData &other);
 
+    void copyBackFromRenderFbo(bool keepCurrentFboBound) const;
+
+    static bool useFramebufferObjects();
+
     int m_width;
     int m_height;
 
-    mutable GLuint m_texture;
-    mutable bool m_dirty;
+    mutable QGLFramebufferObject *m_renderFbo;
+    mutable GLuint m_textureId;
+    mutable QPaintEngine *m_engine;
+    mutable QGLContext *m_ctx;
     mutable QImage m_source;
+
+    // the texture is not in sync with the source image
+    mutable bool m_dirty;
+
+    // fill has been called and no painting has been done, so the pixmap is
+    // represented by a single fill color
+    mutable QColor m_fillColor;
+    mutable bool m_hasFillColor;
 };
 
 QT_END_NAMESPACE

@@ -44,7 +44,6 @@ public:
     void setCacheEnabled(bool);
     void addLibraryPath(const QString& lib);
 
-    QSize sizeHint() const;
     QMenuBar *menuBar() const;
 
 public slots:
@@ -69,6 +68,8 @@ private slots:
     void setScaleView();
 
 private:
+    void setupProxy();
+
     QString currentFileName;
     PreviewDeviceSkin *skin;
     QSize skinscreensize;

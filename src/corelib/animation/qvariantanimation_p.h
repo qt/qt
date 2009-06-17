@@ -54,34 +54,20 @@
 //
 
 #include "qvariantanimation.h"
-#if defined(QT_EXPERIMENTAL_SOLUTION)
-# include "qeasingcurve.h"
-#else
-# include <QtCore/qeasingcurve.h>
-#endif
+#include <QtCore/qeasingcurve.h>
 #include <QtCore/qmetaobject.h>
 #include <QtCore/qvector.h>
 
-#include "qabstractanimation_p.h"
+#include "private/qabstractanimation_p.h"
 
 QT_BEGIN_NAMESPACE
 
-class Q_CORE_EXPORT QVariantAnimationPrivate : public QAbstractAnimationPrivate
+class QVariantAnimationPrivate : public QAbstractAnimationPrivate
 {
     Q_DECLARE_PUBLIC(QVariantAnimation)
 public:
 
-    QVariantAnimationPrivate() : duration(250), hasStartValue(false)
-    {
-    }
-
-    void init()
-    {
-        //we keep the mask so that we emit valueChanged only when needed (for performance reasons)
-        changedSignalMask = (1 << q_func()->metaObject()->indexOfSignal("valueChanged(QVariant)"));
-        currentInterval.start.first = currentInterval.end.first = 2; //will force the initial refresh
-        interpolator = 0;
-    }
+    QVariantAnimationPrivate();
 
     static QVariantAnimationPrivate *get(QVariantAnimation *q)
     {
@@ -104,18 +90,20 @@ public:
         QVariantAnimation::KeyValue start, end;
     } currentInterval;
 
-    mutable QVariantAnimation::Interpolator interpolator;
+    QVariantAnimation::Interpolator interpolator;
 
-    quint32 changedSignalMask;
+    const quint32 changedSignalMask;
 
-    void setCurrentValue();
     void setCurrentValueForProgress(const qreal progress);
     void recalculateCurrentInterval(bool force=false);
     void setValueAt(qreal, const QVariant &);
     QVariant valueAt(qreal step) const;
     void convertValues(int t);
 
-    static QVariantAnimation::Interpolator getInterpolator(int interpolationType);
+    void updateInterpolator();
+
+    //XXX this is needed by dui
+    static Q_CORE_EXPORT QVariantAnimation::Interpolator getInterpolator(int interpolationType);
 };
 
 //this should make the interpolation faster

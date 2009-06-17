@@ -78,7 +78,7 @@ public:
         int age;
         QRect area;
 #if defined(QFX_RENDER_QPAINTER) 
-        QSimpleCanvasConfig::Image image;
+        QPixmap image;
 #else
         GLTexture image;
 #endif

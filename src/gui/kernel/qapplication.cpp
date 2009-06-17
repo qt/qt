@@ -405,7 +405,7 @@ QPalette *QApplicationPrivate::set_pal = 0;        // default palette set by pro
 QGraphicsSystem *QApplicationPrivate::graphics_system = 0; // default graphics system
 QString QApplicationPrivate::graphics_system_name;         // graphics system id - for delayed initialization
 
-Q_GLOBAL_STATIC(QMutex, applicationFontMutex);
+Q_GLOBAL_STATIC(QMutex, applicationFontMutex)
 QFont *QApplicationPrivate::app_font = 0;        // default application font
 QFont *QApplicationPrivate::sys_font = 0;        // default system font
 QFont *QApplicationPrivate::set_font = 0;        // default font set by programmer
@@ -491,8 +491,6 @@ QWidgetList * qt_modal_stack=0;                // stack of modal widgets
 */
 void QApplicationPrivate::process_cmdline()
 {
-    Q_Q(QApplication);
-    Q_UNUSED(q);// only static members being used.
     // process platform-indep command line
     if (!qt_is_gui_used || !argc)
         return;
@@ -537,7 +535,7 @@ void QApplicationPrivate::process_cmdline()
 #endif
         } else if (qstrcmp(arg, "-reverse") == 0) {
             force_reverse = true;
-            q->setLayoutDirection(Qt::RightToLeft);
+            QApplication::setLayoutDirection(Qt::RightToLeft);
         } else if (qstrcmp(arg, "-widgetcount") == 0) {
             widgetCount = true;
         } else if (arg == "-graphicssystem" && i < argc-1) {
@@ -838,9 +836,11 @@ void QApplicationPrivate::initialize()
     // trigger registering of QVariant's GUI types
     extern int qRegisterGuiVariant();
     qRegisterGuiVariant();
+#ifndef QT_NO_STATEMACHINE
     // trigger registering of QStateMachine's GUI types
     extern int qRegisterGuiStateMachine();
     qRegisterGuiStateMachine();
+#endif
 
     is_app_running = true; // no longer starting up
 
@@ -1062,9 +1062,11 @@ QApplication::~QApplication()
     QApplicationPrivate::fade_tooltip = false;
     QApplicationPrivate::widgetCount = false;
 
+#ifndef QT_NO_STATEMACHINE
     // trigger unregistering of QStateMachine's GUI types
     extern int qUnregisterGuiStateMachine();
     qUnregisterGuiStateMachine();
+#endif
     // trigger unregistering of QVariant's GUI types
     extern int qUnregisterGuiVariant();
     qUnregisterGuiVariant();
@@ -2573,14 +2575,14 @@ void QApplicationPrivate::dispatchEnterLeave(QWidget* enter, QWidget* leave) {
     QEvent leaveEvent(QEvent::Leave);
     for (int i = 0; i < leaveList.size(); ++i) {
         w = leaveList.at(i);
-        if (!qApp->activeModalWidget() || QApplicationPrivate::tryModalHelper(w, 0)) {
+        if (!QApplication::activeModalWidget() || QApplicationPrivate::tryModalHelper(w, 0)) {
 #if defined(Q_WS_WIN) || defined(Q_WS_X11)
             if (leaveAfterRelease == w)
                 leaveAfterRelease = 0;
 #endif
             QApplication::sendEvent(w, &leaveEvent);
             if (w->testAttribute(Qt::WA_Hover) &&
-                (!qApp->activePopupWidget() || qApp->activePopupWidget() == w->window())) {
+                (!QApplication::activePopupWidget() || QApplication::activePopupWidget() == w->window())) {
                 Q_ASSERT(instance());
                 QHoverEvent he(QEvent::HoverLeave, QPoint(-1, -1), w->mapFromGlobal(QApplicationPrivate::instance()->hoverGlobalPos));
                 qApp->d_func()->notify_helper(w, &he);
@@ -2591,10 +2593,10 @@ void QApplicationPrivate::dispatchEnterLeave(QWidget* enter, QWidget* leave) {
     QEvent enterEvent(QEvent::Enter);
     for (int i = 0; i < enterList.size(); ++i) {
         w = enterList.at(i);
-        if (!qApp->activeModalWidget() || QApplicationPrivate::tryModalHelper(w, 0)) {
+        if (!QApplication::activeModalWidget() || QApplicationPrivate::tryModalHelper(w, 0)) {
             QApplication::sendEvent(w, &enterEvent);
             if (w->testAttribute(Qt::WA_Hover) &&
-                (!qApp->activePopupWidget() || qApp->activePopupWidget() == w->window())) {
+                (!QApplication::activePopupWidget() || QApplication::activePopupWidget() == w->window())) {
                 QHoverEvent he(QEvent::HoverEnter, w->mapFromGlobal(posEnter), QPoint(-1, -1));
                 qApp->d_func()->notify_helper(w, &he);
             }
@@ -2668,7 +2670,7 @@ bool QApplicationPrivate::isBlockedByModal(QWidget *widget)
     widget = widget->window();
     if (!modalState())
         return false;
-    if (qApp->activePopupWidget() == widget)
+    if (QApplication::activePopupWidget() == widget)
         return false;
 
     for (int i = 0; i < qt_modal_stack->size(); ++i) {
@@ -2757,7 +2759,7 @@ bool QApplicationPrivate::isBlockedByModal(QWidget *widget)
 void QApplicationPrivate::enterModal(QWidget *widget)
 {
     QSet<QWidget*> blocked;
-    QList<QWidget*> windows = qApp->topLevelWidgets();
+    QList<QWidget*> windows = QApplication::topLevelWidgets();
     for (int i = 0; i < windows.count(); ++i) {
         QWidget *window = windows.at(i);
         if (window->windowType() != Qt::Tool && isBlockedByModal(window))
@@ -2766,7 +2768,7 @@ void QApplicationPrivate::enterModal(QWidget *widget)
 
     enterModal_sys(widget);
 
-    windows = qApp->topLevelWidgets();
+    windows = QApplication::topLevelWidgets();
     QEvent e(QEvent::WindowBlocked);
     for (int i = 0; i < windows.count(); ++i) {
         QWidget *window = windows.at(i);
@@ -2780,7 +2782,7 @@ void QApplicationPrivate::enterModal(QWidget *widget)
 void QApplicationPrivate::leaveModal(QWidget *widget)
 {
     QSet<QWidget*> blocked;
-    QList<QWidget*> windows = qApp->topLevelWidgets();
+    QList<QWidget*> windows = QApplication::topLevelWidgets();
     for (int i = 0; i < windows.count(); ++i) {
         QWidget *window = windows.at(i);
         if (window->windowType() != Qt::Tool && isBlockedByModal(window))
@@ -2789,7 +2791,7 @@ void QApplicationPrivate::leaveModal(QWidget *widget)
 
     leaveModal_sys(widget);
 
-    windows = qApp->topLevelWidgets();
+    windows = QApplication::topLevelWidgets();
     QEvent e(QEvent::WindowUnblocked);
     for (int i = 0; i < windows.count(); ++i) {
         QWidget *window = windows.at(i);
@@ -2812,7 +2814,7 @@ bool QApplicationPrivate::tryModalHelper(QWidget *widget, QWidget **rettop)
         *rettop = top;
 
     // the active popup widget always gets the input event
-    if (qApp->activePopupWidget())
+    if (QApplication::activePopupWidget())
         return true;
 
 #if defined(Q_WS_MAC) && defined(QT_MAC_USE_COCOA)
@@ -2878,7 +2880,7 @@ bool QApplicationPrivate::sendMouseEvent(QWidget *receiver, QMouseEvent *event,
     QPointer<QWidget> receiverGuard = receiver;
     QPointer<QWidget> nativeGuard = nativeWidget;
     QPointer<QWidget> alienGuard = alienWidget;
-    QPointer<QWidget> activePopupWidget = qApp->activePopupWidget();
+    QPointer<QWidget> activePopupWidget = QApplication::activePopupWidget();
 
     const bool graphicsWidget = nativeWidget->testAttribute(Qt::WA_DontShowOnScreen);
 
@@ -3775,7 +3777,7 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
                 QPoint diff = relpos - w->mapFromGlobal(d->hoverGlobalPos);
                 while (w) {
                     if (w->testAttribute(Qt::WA_Hover) &&
-                        (!qApp->activePopupWidget() || qApp->activePopupWidget() == w->window())) {
+                        (!QApplication::activePopupWidget() || QApplication::activePopupWidget() == w->window())) {
                         QHoverEvent he(QEvent::HoverMove, relpos, relpos - diff);
                         d->notify_helper(w, &he);
                     }
@@ -4034,7 +4036,7 @@ bool QApplicationPrivate::notify_helper(QObject *receiver, QEvent * e)
 #if !defined(Q_WS_WINCE) || (defined(GWES_ICONCURS) && !defined(QT_NO_CURSOR))
         // toggle HasMouse widget state on enter and leave
         if ((e->type() == QEvent::Enter || e->type() == QEvent::DragEnter) &&
-            (!qApp->activePopupWidget() || qApp->activePopupWidget() == widget->window()))
+            (!QApplication::activePopupWidget() || QApplication::activePopupWidget() == widget->window()))
             widget->setAttribute(Qt::WA_UnderMouse, true);
         else if (e->type() == QEvent::Leave || e->type() == QEvent::DragLeave)
             widget->setAttribute(Qt::WA_UnderMouse, false);
@@ -4564,9 +4566,9 @@ void QSessionManager::requestPhase2()
     \oldcode
     app.setWinStyleHighlightColor(color);
     \newcode
-    QPalette palette(qApp->palette());
+    QPalette palette(QApplication::palette());
     palette.setColor(QPalette::Highlight, color);
-    qApp->setPalette(palette);
+    QApplication::setPalette(palette);
     \endcode
 */
 
@@ -4585,7 +4587,7 @@ void QSessionManager::requestPhase2()
 /*!
     \fn const QColor &QApplication::winStyleHighlightColor()
 
-    Use qApp->palette().color(QPalette::Active, QPalette::Highlight) instead.
+    Use QApplication::palette().color(QPalette::Active, QPalette::Highlight) instead.
 */
 
 /*!

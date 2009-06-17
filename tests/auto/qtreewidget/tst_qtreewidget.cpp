@@ -2434,6 +2434,10 @@ void tst_QTreeWidget::itemOperatorLessThan()
         item1.setText(0, "b");
         item2.setText(0, "a");
         QCOMPARE(item1 < item2, true);
+        tw.sortItems(0, Qt::AscendingOrder);
+        item1.setData(0, Qt::DisplayRole, 11);
+        item2.setData(0, Qt::DisplayRole, 2);
+        QCOMPARE(item1 < item2, false);
     }
 }
 

@@ -292,7 +292,7 @@ QScriptValue QScriptDebuggerBackendPrivate::trace(QScriptContext *context,
     QString str;
     for (int i = 0; i < context->argumentCount(); ++i) {
         if (i > 0)
-            str.append(QLatin1String(" "));
+            str.append(QLatin1Char(' '));
         str.append(context->argument(i).toString());
     }
     QScriptDebuggerEvent e(QScriptDebuggerEvent::Trace);

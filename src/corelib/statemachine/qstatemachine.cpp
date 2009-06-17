@@ -40,6 +40,9 @@
 ****************************************************************************/
 
 #include "qstatemachine.h"
+
+#ifndef QT_NO_STATEMACHINE
+
 #include "qstate.h"
 #include "qstate_p.h"
 #include "qstatemachine_p.h"
@@ -92,7 +95,7 @@ QT_BEGIN_NAMESPACE
     QAbstractState) and transitions (descendants of
     QAbstractTransition) between those states; these states and
     transitions define a state graph. Once a state graph has been
-    built, the state machine can execute it. \l{QStateMachine}'s
+    built, the state machine can execute it. QStateMachine's
     execution algorithm is based on the \l{State Chart XML: State
     Machine Notation for Control Abstraction}{State Chart XML (SCXML)}
     algorithm. The framework's \l{The State Machine
@@ -354,7 +357,7 @@ bool QStateMachinePrivate::isPreempted(const QAbstractState *s, const QSet<QAbst
             QAbstractState *lca = findLCA(lst);
             if (isDescendantOf(s, lca)) {
 #ifdef QSTATEMACHINE_DEBUG
-                qDebug() << q_func() << ":" << transitions << "preempts selection of a transition from"
+                qDebug() << q_func() << ':' << transitions << "preempts selection of a transition from"
                          << s << "because" << s << "is a descendant of" << lca;
 #endif
                 return true;
@@ -403,7 +406,7 @@ QSet<QAbstractTransition*> QStateMachinePrivate::selectTransitions(QEvent *event
 void QStateMachinePrivate::microstep(QEvent *event, const QList<QAbstractTransition*> &enabledTransitions)
 {
 #ifdef QSTATEMACHINE_DEBUG
-    qDebug() << q_func() << ": begin microstep( enabledTransitions:" << enabledTransitions << ")";
+    qDebug() << q_func() << ": begin microstep( enabledTransitions:" << enabledTransitions << ')';
     qDebug() << q_func() << ": configuration before exiting states:" << configuration;
 #endif
     QList<QAbstractState*> exitedStates = exitStates(event, enabledTransitions);
@@ -421,7 +424,7 @@ void QStateMachinePrivate::microstep(QEvent *event, const QList<QAbstractTransit
 
 QList<QAbstractState*> QStateMachinePrivate::exitStates(QEvent *event, const QList<QAbstractTransition*> &enabledTransitions)
 {
-//    qDebug() << "exitStates(" << enabledTransitions << ")";
+//    qDebug() << "exitStates(" << enabledTransitions << ')';
     QSet<QAbstractState*> statesToExit;
 //    QSet<QAbstractState*> statesToSnapshot;
     for (int i = 0; i < enabledTransitions.size(); ++i) {
@@ -470,7 +473,7 @@ QList<QAbstractState*> QStateMachinePrivate::exitStates(QEvent *event, const QLi
                 }
 #ifdef QSTATEMACHINE_DEBUG
                 qDebug() << q_func() << ": recorded" << ((QHistoryStatePrivate::get(h)->historyType == QHistoryState::DeepHistory) ? "deep" : "shallow")
-                         << "history for" << s << "in" << h << ":" << QHistoryStatePrivate::get(h)->configuration;
+                         << "history for" << s << "in" << h << ':' << QHistoryStatePrivate::get(h)->configuration;
 #endif
             }
         }
@@ -503,7 +506,7 @@ QList<QAbstractState*> QStateMachinePrivate::enterStates(QEvent *event, const QL
 #ifdef QSTATEMACHINE_DEBUG
     Q_Q(QStateMachine);
 #endif
-//    qDebug() << "enterStates(" << enabledTransitions << ")";
+//    qDebug() << "enterStates(" << enabledTransitions << ')';
     QSet<QAbstractState*> statesToEnter;
     QSet<QAbstractState*> statesForDefaultEntry;
 
@@ -609,7 +612,7 @@ void QStateMachinePrivate::addStatesToEnter(QAbstractState *s, QState *root,
 	#ifdef QSTATEMACHINE_DEBUG
 			qDebug() <<q_func() << ": restoring"
 					<< ((QHistoryStatePrivate::get(h)->historyType == QHistoryState::DeepHistory) ? "deep" : "shallow")
-					<< "history from" << s << ":" << hconf;
+					<< "history from" << s << ':' << hconf;
 	#endif
 		} else {
 			QList<QAbstractState*> hlst;
@@ -624,7 +627,7 @@ void QStateMachinePrivate::addStatesToEnter(QAbstractState *s, QState *root,
 					addStatesToEnter(s0, root, statesToEnter, statesForDefaultEntry);
 				}
 	#ifdef QSTATEMACHINE_DEBUG
-				qDebug() << q_func() << ": initial history targets for" << s << ":" << hlst;                    
+				qDebug() << q_func() << ": initial history targets for" << s << ':' << hlst;
 	#endif
 			}
 		}
@@ -678,9 +681,11 @@ void QStateMachinePrivate::applyProperties(const QList<QAbstractTransition*> &tr
                                            const QList<QAbstractState*> &exitedStates,
                                            const QList<QAbstractState*> &enteredStates)
 {
-    Q_Q(QStateMachine);
 #ifdef QT_NO_ANIMATION
     Q_UNUSED(transitionList);
+    Q_UNUSED(exitedStates);
+#else
+    Q_Q(QStateMachine);
 #endif
     // Process the property assignments of the entered states.
     QHash<QAbstractState*, QList<QPropertyAssignment> > propertyAssignmentsForState;
@@ -801,8 +806,7 @@ void QStateMachinePrivate::applyProperties(const QList<QAbstractTransition*> &tr
                         stateForAnimation.insert(a, s);
                         animationsForState[s].append(a);
                         // ### connect to just the top-level animation?
-                        QObject::disconnect(a, SIGNAL(finished()), q, SLOT(_q_animationFinished()));
-                        QObject::connect(a, SIGNAL(finished()), q, SLOT(_q_animationFinished()));
+                        QObject::connect(a, SIGNAL(finished()), q, SLOT(_q_animationFinished()), Qt::UniqueConnection);
                     }
                     it2 = assignments.erase(it2);
                 } else {
@@ -851,7 +855,11 @@ void QStateMachinePrivate::applyProperties(const QList<QAbstractTransition*> &tr
     // Emit polished signal for entered states that have no animated properties.
     for (int i = 0; i < enteredStates.size(); ++i) {
         QState *s = qobject_cast<QState*>(enteredStates.at(i));
-        if (s && !animationsForState.contains(s))
+        if (s 
+#ifndef QT_NO_ANIMATION
+            && !animationsForState.contains(s)
+#endif
+            )
             QStatePrivate::get(s)->emitPolished();
     }
 }
@@ -968,7 +976,7 @@ QVariant QStateMachinePrivate::restorableValue(QObject *object, const QByteArray
 */
 void QStateMachinePrivate::unregisterRestorable(QObject *object, const QByteArray &propertyName)
 {
-//    qDebug() << "unregisterRestorable(" << object << propertyName << ")";
+//    qDebug() << "unregisterRestorable(" << object << propertyName << ')';
     RestorableId id(object, propertyName);
     registeredRestorables.remove(id);
 }
@@ -1296,22 +1304,6 @@ void QStateMachinePrivate::unregisterTransition(QAbstractTransition *transition)
 #endif
 }
 
-static int senderSignalIndex(const QObject *sender)
-{
-    QObjectPrivate *d = QObjectPrivate::get(const_cast<QObject*>(sender));
-    QMutexLocker(&d->threadData->mutex);
-    if (!d->currentSender)
-        return -1;
-
-    // Return -1 if d->currentSender isn't in d->senders
-    bool found = false;
-    for (int i = 0; !found && i < d->senders.count(); ++i)
-        found = (d->senders.at(i)->sender == d->currentSender->sender);
-    if (!found)
-        return -1;
-    return d->currentSender->signal;
-}
-
 void QStateMachinePrivate::registerSignalTransition(QSignalTransition *transition)
 {
     Q_Q(QStateMachine);
@@ -1340,8 +1332,8 @@ void QStateMachinePrivate::registerSignalTransition(QSignalTransition *transitio
         if (!ok) {
 #ifdef QSTATEMACHINE_DEBUG
             qDebug() << q << ": FAILED to add signal transition from" << transition->sourceState()
-                     << ": ( sender =" << sender << ", signal =" << (signal.mid(1))
-                     << ", targets =" << transition->targetStates() << ")";
+                     << ": ( sender =" << sender << ", signal =" << signal
+                     << ", targets =" << transition->targetStates() << ')';
 #endif
             return;
         }
@@ -1350,8 +1342,8 @@ void QStateMachinePrivate::registerSignalTransition(QSignalTransition *transitio
     QSignalTransitionPrivate::get(transition)->signalIndex = signalIndex;
 #ifdef QSTATEMACHINE_DEBUG
     qDebug() << q << ": added signal transition from" << transition->sourceState()
-             << ": ( sender =" << sender << ", signal =" << (signal.mid(1))
-             << ", targets =" << transition->targetStates() << ")";
+             << ": ( sender =" << sender << ", signal =" << signal
+             << ", targets =" << transition->targetStates() << ')';
 #endif
 }
 
@@ -1412,7 +1404,7 @@ void QStateMachinePrivate::registerEventTransition(QEventTransition *transition)
 #ifdef QSTATEMACHINE_DEBUG
     qDebug() << q << ": added event transition from" << transition->sourceState()
              << ": ( object =" << object << ", event =" << transition->eventType()
-             << ", targets =" << transition->targetStates() << ")";
+             << ", targets =" << transition->targetStates() << ')';
 #endif
 }
 
@@ -1442,8 +1434,7 @@ void QStateMachinePrivate::unregisterEventTransition(QEventTransition *transitio
 void QStateMachinePrivate::handleTransitionSignal(const QObject *sender, int signalIndex,
                                                   void **argv)
 {
-    const QVector<int> &connectedSignalIndexes = connections[sender];
-    Q_ASSERT(connectedSignalIndexes.at(signalIndex) != 0);
+    Q_ASSERT(connections[sender].at(signalIndex) != 0);
     const QMetaObject *meta = sender->metaObject();
     QMetaMethod method = meta->method(signalIndex);
     QList<QByteArray> parameterTypes = method.parameterTypes();
@@ -1456,7 +1447,7 @@ void QStateMachinePrivate::handleTransitionSignal(const QObject *sender, int sig
 
 #ifdef QSTATEMACHINE_DEBUG
     qDebug() << q_func() << ": sending signal event ( sender =" << sender
-             << ", signal =" << sender->metaObject()->method(signalIndex).signature() << ")";
+             << ", signal =" << sender->metaObject()->method(signalIndex).signature() << ')';
 #endif
     internalEventQueue.append(new QSignalEvent(sender, signalIndex, vargs));
     scheduleProcess();
@@ -2083,10 +2074,15 @@ int QSignalEventGenerator::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
         switch (_id) {
         case 0: {
 // ### in Qt 4.6 we can use QObject::senderSignalIndex()
-            int signalIndex = senderSignalIndex(this);
+            QObjectPrivate *d = static_cast<QObjectPrivate *>(d_ptr);
+            int signalIndex = -1;
+            QObject *sender = this->sender();
+            if (sender && d->currentSender)
+                signalIndex = d->currentSender->signal;
+
             Q_ASSERT(signalIndex != -1);
             QStateMachine *machine = qobject_cast<QStateMachine*>(parent());
-            QStateMachinePrivate::get(machine)->handleTransitionSignal(sender(), signalIndex, _a);
+            QStateMachinePrivate::get(machine)->handleTransitionSignal(sender, signalIndex, _a);
             break;
         }
         default: ;
@@ -2214,3 +2210,5 @@ QWrappedEvent::~QWrappedEvent()
 QT_END_NAMESPACE
 
 #include "moc_qstatemachine.cpp"
+
+#endif //QT_NO_STATEMACHINE

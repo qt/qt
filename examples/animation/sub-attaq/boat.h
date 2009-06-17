@@ -46,22 +46,19 @@
 #include <QtCore/QObject>
 #include <QtGui/QKeyEvent>
 
-#if defined(QT_EXPERIMENTAL_SOLUTION)
-# include "qtgraphicswidget.h"
-#else
-# include <QtGui/QGraphicsWidget>
-#endif
+#include <QtGui/QGraphicsWidget>
 
 class PixmapItem;
 class Bomb;
+QT_BEGIN_NAMESPACE
 class QVariantAnimation;
 class QAbstractAnimation;
 class QStateMachine;
+QT_END_NAMESPACE
 
 class Boat : public QGraphicsWidget
 {
 Q_OBJECT
-Q_PROPERTY(QPointF pos READ pos WRITE setPos)
 public:
     enum Movement {
        None = 0,
@@ -87,7 +84,7 @@ public:
 
     virtual int type() const;
 
-Q_SIGNALS:
+signals:
     void boatDestroyed();
     void boatExecutionFinished();
 

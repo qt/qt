@@ -55,24 +55,24 @@ class QFxListViewPrivate;
 class Q_DECLARATIVE_EXPORT QFxListView : public QFxFlickable
 {
     Q_OBJECT
-    Q_DECLARE_PRIVATE(QFxListView);
+    Q_DECLARE_PRIVATE(QFxListView)
 
-    Q_ENUMS(CurrentItemPositioning);
-    Q_PROPERTY(QVariant model READ model WRITE setModel);
-    Q_CLASSINFO("DefaultProperty", "delegate");
-    Q_PROPERTY(QmlComponent *delegate READ delegate WRITE setDelegate);
-    Q_PROPERTY(int currentIndex READ currentIndex WRITE setCurrentIndex NOTIFY currentIndexChanged);
-    Q_PROPERTY(QFxItem *current READ currentItem NOTIFY currentIndexChanged);
-    Q_PROPERTY(int count READ count NOTIFY countChanged);
-    Q_PROPERTY(QmlComponent *highlight READ highlight WRITE setHighlight);
-    Q_PROPERTY(bool autoHighlight READ autoHighlight WRITE setAutoHighlight);
-    Q_PROPERTY(CurrentItemPositioning currentItemPositioning READ currentItemPositioning WRITE setCurrentItemPositioning);
-    Q_PROPERTY(int snapPosition READ snapPosition WRITE setSnapPosition);
-    Q_PROPERTY(Qt::Orientation orientation READ orientation WRITE setOrientation);
-    Q_PROPERTY(bool wrap READ isWrapEnabled WRITE setWrapEnabled);
-    Q_PROPERTY(int cacheBuffer READ cacheBuffer WRITE setCacheBuffer);
-    Q_PROPERTY(QString sectionExpression READ sectionExpression WRITE setSectionExpression NOTIFY sectionExpressionChanged);
-    Q_PROPERTY(QString currentSection READ currentSection NOTIFY currentSectionChanged);
+    Q_ENUMS(CurrentItemPositioning)
+    Q_PROPERTY(QVariant model READ model WRITE setModel)
+    Q_CLASSINFO("DefaultProperty", "delegate")
+    Q_PROPERTY(QmlComponent *delegate READ delegate WRITE setDelegate)
+    Q_PROPERTY(int currentIndex READ currentIndex WRITE setCurrentIndex NOTIFY currentIndexChanged)
+    Q_PROPERTY(QFxItem *current READ currentItem NOTIFY currentIndexChanged)
+    Q_PROPERTY(int count READ count NOTIFY countChanged)
+    Q_PROPERTY(QmlComponent *highlight READ highlight WRITE setHighlight)
+    Q_PROPERTY(bool autoHighlight READ autoHighlight WRITE setAutoHighlight)
+    Q_PROPERTY(CurrentItemPositioning currentItemPositioning READ currentItemPositioning WRITE setCurrentItemPositioning)
+    Q_PROPERTY(int snapPosition READ snapPosition WRITE setSnapPosition)
+    Q_PROPERTY(Qt::Orientation orientation READ orientation WRITE setOrientation)
+    Q_PROPERTY(bool wrap READ isWrapEnabled WRITE setWrapEnabled)
+    Q_PROPERTY(int cacheBuffer READ cacheBuffer WRITE setCacheBuffer)
+    Q_PROPERTY(QString sectionExpression READ sectionExpression WRITE setSectionExpression NOTIFY sectionExpressionChanged)
+    Q_PROPERTY(QString currentSection READ currentSection NOTIFY currentSectionChanged)
 
 public:
     QFxListView(QFxItem *parent=0);
@@ -145,7 +145,7 @@ private Q_SLOTS:
     void destroyingItem(QFxItem *item);
 };
 
-QML_DECLARE_TYPE(QFxListView);
+QML_DECLARE_TYPE(QFxListView)
 
 QT_END_NAMESPACE
 

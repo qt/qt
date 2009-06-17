@@ -127,11 +127,11 @@ QByteArray QHttpNetworkRequestPrivate::header(const QHttpNetworkRequest &request
 {
     QByteArray ba = request.d->methodName();
     QByteArray uri = request.d->uri(throughProxy);
-    ba += " " + uri;
+    ba += ' ' + uri;
 
     QString majorVersion = QString::number(request.majorVersion());
     QString minorVersion = QString::number(request.minorVersion());
-    ba += " HTTP/" + majorVersion.toLatin1() + "." + minorVersion.toLatin1() + "\r\n";
+    ba += " HTTP/" + majorVersion.toLatin1() + '.' + minorVersion.toLatin1() + "\r\n";
 
     QList<QPair<QByteArray, QByteArray> > fields = request.header();
     QList<QPair<QByteArray, QByteArray> >::const_iterator it = fields.constBegin();

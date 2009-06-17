@@ -89,6 +89,7 @@ private:
     struct termios         m_tty_attr;
     char                   m_last_keycode;
     int                    m_vt_qws;
+    int                    m_originalKbdMode;
 };
 
 
@@ -150,6 +151,9 @@ QWSTtyKbPrivate::QWSTtyKbPrivate(QWSTtyKeyboardHandler *h, const QString &device
         tcgetattr(m_tty_fd, &termdata);
 
 #if defined(Q_OS_LINUX)
+        // record the original mode so we can restore it again in the constructor
+        ::ioctl(m_tty_fd, KDGKBMODE, m_originalKbdMode);
+
         // PLEASE NOTE:
         // The tty keycode interface can only report keycodes 0x01 .. 0x7f
         // KEY_MAX is however defined to 0x1ff. In practice this is sufficient
@@ -206,7 +210,7 @@ QWSTtyKbPrivate::~QWSTtyKbPrivate()
 {
     if (m_tty_fd >= 0) {
 #if defined(Q_OS_LINUX)
-        ::ioctl(m_tty_fd, KDSKBMODE, K_XLATE);
+        ::ioctl(m_tty_fd, KDSKBMODE, m_originalKbdMode);
 #endif
         tcsetattr(m_tty_fd, TCSANOW, &m_tty_attr);
     }

@@ -357,6 +357,6 @@ QmlSetProperties::ActionList QmlSetProperties::actions()
     return list;
 }
 
-QML_DEFINE_CUSTOM_TYPE(QmlSetProperties,SetProperties,QmlSetPropertiesParser);
+QML_DEFINE_CUSTOM_TYPE(QmlSetProperties,SetProperties,QmlSetPropertiesParser)
 
 QT_END_NAMESPACE

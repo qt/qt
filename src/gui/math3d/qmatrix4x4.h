@@ -3,7 +3,7 @@
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
 ** Contact: Qt Software Information (qt-info@nokia.com)
 **
-** This file is part of the $MODULE$ of the Qt Toolkit.
+** This file is part of the QtGui module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -130,9 +130,11 @@ public:
     QMatrix4x4& translate(const QVector3D& vector);
     QMatrix4x4& rotate(qreal angle, const QVector3D& vector);
 #endif
-    QMatrix4x4& scale(qreal x, qreal y, qreal z = 1.0f);
+    QMatrix4x4& scale(qreal x, qreal y);
+    QMatrix4x4& scale(qreal x, qreal y, qreal z);
     QMatrix4x4& scale(qreal factor);
-    QMatrix4x4& translate(qreal x, qreal y, qreal z = 0.0f);
+    QMatrix4x4& translate(qreal x, qreal y);
+    QMatrix4x4& translate(qreal x, qreal y, qreal z);
     QMatrix4x4& rotate(qreal angle, qreal x, qreal y, qreal z = 0.0f);
 #ifndef QT_NO_QUATERNION
     QMatrix4x4& rotate(const QQuaternion& quaternion);
@@ -629,26 +631,43 @@ inline QVector3D operator*(const QVector3D& vector, const QMatrix4x4& matrix)
 inline QVector3D operator*(const QMatrix4x4& matrix, const QVector3D& vector)
 {
     float x, y, z, w;
-    x = vector.xp * matrix.m[0][0] +
-        vector.yp * matrix.m[1][0] +
-        vector.zp * matrix.m[2][0] +
-        matrix.m[3][0];
-    y = vector.xp * matrix.m[0][1] +
-        vector.yp * matrix.m[1][1] +
-        vector.zp * matrix.m[2][1] +
-        matrix.m[3][1];
-    z = vector.xp * matrix.m[0][2] +
-        vector.yp * matrix.m[1][2] +
-        vector.zp * matrix.m[2][2] +
-        matrix.m[3][2];
-    w = vector.xp * matrix.m[0][3] +
-        vector.yp * matrix.m[1][3] +
-        vector.zp * matrix.m[2][3] +
-        matrix.m[3][3];
-    if (w == 1.0f)
-        return QVector3D(x, y, z, 1);
-    else
-        return QVector3D(x / w, y / w, z / w, 1);
+    if (matrix.flagBits == QMatrix4x4::Identity) {
+        return vector;
+    } else if (matrix.flagBits == QMatrix4x4::Translation) {
+        return QVector3D(vector.xp + matrix.m[3][0],
+                         vector.yp + matrix.m[3][1],
+                         vector.zp + matrix.m[3][2], 1);
+    } else if (matrix.flagBits ==
+                    (QMatrix4x4::Translation | QMatrix4x4::Scale)) {
+        return QVector3D(vector.xp * matrix.m[0][0] + matrix.m[3][0],
+                         vector.yp * matrix.m[1][1] + matrix.m[3][1],
+                         vector.zp * matrix.m[2][2] + matrix.m[3][2], 1);
+    } else if (matrix.flagBits == QMatrix4x4::Scale) {
+        return QVector3D(vector.xp * matrix.m[0][0],
+                         vector.yp * matrix.m[1][1],
+                         vector.zp * matrix.m[2][2], 1);
+    } else {
+        x = vector.xp * matrix.m[0][0] +
+            vector.yp * matrix.m[1][0] +
+            vector.zp * matrix.m[2][0] +
+            matrix.m[3][0];
+        y = vector.xp * matrix.m[0][1] +
+            vector.yp * matrix.m[1][1] +
+            vector.zp * matrix.m[2][1] +
+            matrix.m[3][1];
+        z = vector.xp * matrix.m[0][2] +
+            vector.yp * matrix.m[1][2] +
+            vector.zp * matrix.m[2][2] +
+            matrix.m[3][2];
+        w = vector.xp * matrix.m[0][3] +
+            vector.yp * matrix.m[1][3] +
+            vector.zp * matrix.m[2][3] +
+            matrix.m[3][3];
+        if (w == 1.0f)
+            return QVector3D(x, y, z, 1);
+        else
+            return QVector3D(x / w, y / w, z / w, 1);
+    }
 }
 
 #endif
@@ -750,19 +769,33 @@ inline QPoint operator*(const QMatrix4x4& matrix, const QPoint& point)
     float x, y, w;
     xin = point.x();
     yin = point.y();
-    x = xin * matrix.m[0][0] +
-        yin * matrix.m[1][0] +
-        matrix.m[3][0];
-    y = xin * matrix.m[0][1] +
-        yin * matrix.m[1][1] +
-        matrix.m[3][1];
-    w = xin * matrix.m[0][3] +
-        yin * matrix.m[1][3] +
-        matrix.m[3][3];
-    if (w == 1.0f)
-        return QPoint(qRound(x), qRound(y));
-    else
-        return QPoint(qRound(x / w), qRound(y / w));
+    if (matrix.flagBits == QMatrix4x4::Identity) {
+        return point;
+    } else if (matrix.flagBits == QMatrix4x4::Translation) {
+        return QPoint(qRound(xin + matrix.m[3][0]),
+                      qRound(yin + matrix.m[3][1]));
+    } else if (matrix.flagBits ==
+                    (QMatrix4x4::Translation | QMatrix4x4::Scale)) {
+        return QPoint(qRound(xin * matrix.m[0][0] + matrix.m[3][0]),
+                      qRound(yin * matrix.m[1][1] + matrix.m[3][1]));
+    } else if (matrix.flagBits == QMatrix4x4::Scale) {
+        return QPoint(qRound(xin * matrix.m[0][0]),
+                      qRound(yin * matrix.m[1][1]));
+    } else {
+        x = xin * matrix.m[0][0] +
+            yin * matrix.m[1][0] +
+            matrix.m[3][0];
+        y = xin * matrix.m[0][1] +
+            yin * matrix.m[1][1] +
+            matrix.m[3][1];
+        w = xin * matrix.m[0][3] +
+            yin * matrix.m[1][3] +
+            matrix.m[3][3];
+        if (w == 1.0f)
+            return QPoint(qRound(x), qRound(y));
+        else
+            return QPoint(qRound(x / w), qRound(y / w));
+    }
 }
 
 inline QPointF operator*(const QMatrix4x4& matrix, const QPointF& point)
@@ -771,19 +804,33 @@ inline QPointF operator*(const QMatrix4x4& matrix, const QPointF& point)
     float x, y, w;
     xin = point.x();
     yin = point.y();
-    x = xin * matrix.m[0][0] +
-        yin * matrix.m[1][0] +
-        matrix.m[3][0];
-    y = xin * matrix.m[0][1] +
-        yin * matrix.m[1][1] +
-        matrix.m[3][1];
-    w = xin * matrix.m[0][3] +
-        yin * matrix.m[1][3] +
-        matrix.m[3][3];
-    if (w == 1.0f) {
-        return QPointF(qreal(x), qreal(y));
+    if (matrix.flagBits == QMatrix4x4::Identity) {
+        return point;
+    } else if (matrix.flagBits == QMatrix4x4::Translation) {
+        return QPointF(xin + matrix.m[3][0],
+                       yin + matrix.m[3][1]);
+    } else if (matrix.flagBits ==
+                    (QMatrix4x4::Translation | QMatrix4x4::Scale)) {
+        return QPointF(xin * matrix.m[0][0] + matrix.m[3][0],
+                       yin * matrix.m[1][1] + matrix.m[3][1]);
+    } else if (matrix.flagBits == QMatrix4x4::Scale) {
+        return QPointF(xin * matrix.m[0][0],
+                       yin * matrix.m[1][1]);
     } else {
-        return QPointF(qreal(x / w), qreal(y / w));
+        x = xin * matrix.m[0][0] +
+            yin * matrix.m[1][0] +
+            matrix.m[3][0];
+        y = xin * matrix.m[0][1] +
+            yin * matrix.m[1][1] +
+            matrix.m[3][1];
+        w = xin * matrix.m[0][3] +
+            yin * matrix.m[1][3] +
+            matrix.m[3][3];
+        if (w == 1.0f) {
+            return QPointF(qreal(x), qreal(y));
+        } else {
+            return QPointF(qreal(x / w), qreal(y / w));
+        }
     }
 }
 
@@ -900,32 +947,6 @@ inline QVector4D QMatrix4x4::map(const QVector4D& point) const
 }
 
 #endif
-
-inline QRect QMatrix4x4::mapRect(const QRect& rect) const
-{
-    QPoint tl = map(rect.topLeft()); QPoint tr = map(rect.topRight());
-    QPoint bl = map(rect.bottomLeft()); QPoint br = map(rect.bottomRight());
-
-    int xmin = qMin(qMin(tl.x(), tr.x()), qMin(bl.x(), br.x()));
-    int xmax = qMax(qMax(tl.x(), tr.x()), qMax(bl.x(), br.x()));
-    int ymin = qMin(qMin(tl.y(), tr.y()), qMin(bl.y(), br.y()));
-    int ymax = qMax(qMax(tl.y(), tr.y()), qMax(bl.y(), br.y()));
-
-    return QRect(QPoint(xmin, ymin), QPoint(xmax, ymax));
-}
-
-inline QRectF QMatrix4x4::mapRect(const QRectF& rect) const
-{
-    QPointF tl = map(rect.topLeft()); QPointF tr = map(rect.topRight());
-    QPointF bl = map(rect.bottomLeft()); QPointF br = map(rect.bottomRight());
-
-    qreal xmin = qMin(qMin(tl.x(), tr.x()), qMin(bl.x(), br.x()));
-    qreal xmax = qMax(qMax(tl.x(), tr.x()), qMax(bl.x(), br.x()));
-    qreal ymin = qMin(qMin(tl.y(), tr.y()), qMin(bl.y(), br.y()));
-    qreal ymax = qMax(qMax(tl.y(), tr.y()), qMax(bl.y(), br.y()));
-
-    return QRectF(QPointF(xmin, ymin), QPointF(xmax, ymax));
-}
 
 inline float *QMatrix4x4::data()
 {

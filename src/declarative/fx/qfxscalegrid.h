@@ -44,7 +44,6 @@
 
 #include <QtCore/QString>
 #include <QtCore/QObject>
-#include <QtGui/QImage>
 #include <QtDeclarative/qfxglobal.h>
 #include <QtDeclarative/qsimplecanvas.h>
 #include <QtDeclarative/qfxpixmap.h>
@@ -111,7 +110,7 @@ private:
     int _b;
     QString _pix;
 };
-QML_DECLARE_TYPE(QFxScaleGrid);
+QML_DECLARE_TYPE(QFxScaleGrid)
 
 
 QT_END_NAMESPACE

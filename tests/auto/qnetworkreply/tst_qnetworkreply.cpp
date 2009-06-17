@@ -161,6 +161,10 @@ private Q_SLOTS:
     void putToHttp();
     void postToHttp_data();
     void postToHttp();
+    void deleteFromHttp_data();
+    void deleteFromHttp();
+    void putGetDeleteGetFromHttp_data();
+    void putGetDeleteGetFromHttp();
 
     void ioGetFromData_data();
     void ioGetFromData();
@@ -239,6 +243,8 @@ private Q_SLOTS:
     void proxyChange();
     void authorizationError_data();
     void authorizationError();
+
+    void httpConnectionCount();
 };
 
 QT_BEGIN_NAMESPACE
@@ -903,6 +909,10 @@ QString tst_QNetworkReply::runSimpleRequest(QNetworkAccessManager::Operation op,
         reply = manager.post(request, data);
         break;
 
+    case QNetworkAccessManager::DeleteOperation:
+        reply = manager.deleteResource(request);
+        break;
+
     default:
         Q_ASSERT_X(false, "tst_QNetworkReply", "Invalid/unknown operation requested");
     }
@@ -1476,6 +1486,97 @@ void tst_QNetworkReply::postToHttp()
     QFETCH(QByteArray, md5sum);
     QByteArray uploadedData = reply->readAll().trimmed();
     QCOMPARE(uploadedData, md5sum.toHex());
+}
+
+void tst_QNetworkReply::deleteFromHttp_data()
+{
+    QTest::addColumn<QUrl>("url");
+    QTest::addColumn<int>("resultCode");
+    QTest::addColumn<QNetworkReply::NetworkError>("error");
+
+    // for status codes to expect, see http://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html
+
+    QTest::newRow("405-method-not-allowed") << QUrl("http://" + QtNetworkSettings::serverName() + "/index.html") << 405 << QNetworkReply::ContentOperationNotPermittedError;
+    QTest::newRow("200-ok") << QUrl("http://" + QtNetworkSettings::serverName() + "/cgi-bin/http-delete.cgi?200-ok") << 200 << QNetworkReply::NoError;
+    QTest::newRow("202-accepted") << QUrl("http://" + QtNetworkSettings::serverName() + "/cgi-bin/http-delete.cgi?202-accepted") << 202 << QNetworkReply::NoError;
+    QTest::newRow("204-no-content") << QUrl("http://" + QtNetworkSettings::serverName() + "/cgi-bin/http-delete.cgi?204-no-content") << 204 << QNetworkReply::NoError;
+    QTest::newRow("404-not-found") << QUrl("http://" + QtNetworkSettings::serverName() + "/cgi-bin/http-delete.cgi?404-not-found") << 404 << QNetworkReply::ContentNotFoundError;
+}
+
+void tst_QNetworkReply::deleteFromHttp()
+{
+    QFETCH(QUrl, url);
+    QFETCH(int, resultCode);
+    QFETCH(QNetworkReply::NetworkError, error);
+    QNetworkRequest request(url);
+    QNetworkReplyPtr reply;
+    runSimpleRequest(QNetworkAccessManager::DeleteOperation, request, reply, 0);
+    QCOMPARE(reply->url(), url);
+    QCOMPARE(reply->error(), error);
+    QCOMPARE(reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt(), resultCode);
+}
+
+void tst_QNetworkReply::putGetDeleteGetFromHttp_data()
+{
+    QTest::addColumn<QUrl>("putUrl");
+    QTest::addColumn<int>("putResultCode");
+    QTest::addColumn<QNetworkReply::NetworkError>("putError");
+    QTest::addColumn<QUrl>("deleteUrl");
+    QTest::addColumn<int>("deleteResultCode");
+    QTest::addColumn<QNetworkReply::NetworkError>("deleteError");
+    QTest::addColumn<QUrl>("get2Url");
+    QTest::addColumn<int>("get2ResultCode");
+    QTest::addColumn<QNetworkReply::NetworkError>("get2Error");
+
+    QUrl url("http://" + QtNetworkSettings::serverName());
+    url.setPath(QString("/dav/qnetworkaccess-putToHttp-%1-%2")
+                .arg(QTest::currentDataTag())
+                .arg(uniqueExtension));
+
+    // first use case: put, get (to check it is there), delete, get (to check it is not there anymore)
+    QTest::newRow("success") << url << 201 << QNetworkReply::NoError << url << 204 << QNetworkReply::NoError << url << 404 << QNetworkReply::ContentNotFoundError;
+
+    QUrl wrongUrl("http://" + QtNetworkSettings::serverName());
+    wrongUrl.setPath(QString("/dav/qnetworkaccess-thisURLisNotAvailable"));
+
+    // second use case: put, get (to check it is there), delete wrong URL, get (to check it is still there)
+    QTest::newRow("delete-error") << url << 201 << QNetworkReply::NoError << wrongUrl << 404 << QNetworkReply::ContentNotFoundError << url << 200 << QNetworkReply::NoError;
+
+}
+
+void tst_QNetworkReply::putGetDeleteGetFromHttp()
+{
+    QFETCH(QUrl, putUrl);
+    QFETCH(int, putResultCode);
+    QFETCH(QNetworkReply::NetworkError, putError);
+    QFETCH(QUrl, deleteUrl);
+    QFETCH(int, deleteResultCode);
+    QFETCH(QNetworkReply::NetworkError, deleteError);
+    QFETCH(QUrl, get2Url);
+    QFETCH(int, get2ResultCode);
+    QFETCH(QNetworkReply::NetworkError, get2Error);
+
+    QNetworkRequest putRequest(putUrl);
+    QNetworkRequest deleteRequest(deleteUrl);
+    QNetworkRequest get2Request(get2Url);
+    QNetworkReplyPtr reply;
+
+    RUN_REQUEST(runSimpleRequest(QNetworkAccessManager::PutOperation, putRequest, reply, 0));
+    QCOMPARE(reply->error(), putError);
+    QCOMPARE(reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt(), putResultCode);
+
+    runSimpleRequest(QNetworkAccessManager::GetOperation, putRequest, reply, 0);
+    QCOMPARE(reply->error(), QNetworkReply::NoError);
+    QCOMPARE(reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt(), 200);
+
+    runSimpleRequest(QNetworkAccessManager::DeleteOperation, deleteRequest, reply, 0);
+    QCOMPARE(reply->error(), deleteError);
+    QCOMPARE(reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt(), deleteResultCode);
+
+    runSimpleRequest(QNetworkAccessManager::GetOperation, get2Request, reply, 0);
+    QCOMPARE(reply->error(), get2Error);
+    QCOMPARE(reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt(), get2ResultCode);
+
 }
 
 void tst_QNetworkReply::ioGetFromData_data()
@@ -3564,6 +3665,35 @@ void tst_QNetworkReply::authorizationError()
 
     QFETCH(QString, httpBody);
     QCOMPARE(QString(reply->readAll()), httpBody);
+}
+
+void tst_QNetworkReply::httpConnectionCount()
+{
+    QTcpServer server;
+    QVERIFY(server.listen());
+    QCoreApplication::instance()->processEvents();
+
+    for (int i = 0; i < 10; i++) {
+        QNetworkRequest request (QUrl("http://127.0.0.1:" + QString::number(server.serverPort()) + "/" +  QString::number(i)));
+        QNetworkReply* reply = manager.get(request);
+        reply->setParent(this);
+    }
+
+    int pendingConnectionCount = 0;
+    QTime time;
+    time.start();
+
+    while(pendingConnectionCount != 6) {
+        QCoreApplication::instance()->processEvents();
+        while (server.nextPendingConnection())
+            pendingConnectionCount++;
+
+        // at max. wait 10 sec
+        if (time.elapsed() > 10000)
+            break;
+    }
+
+    QCOMPARE(pendingConnectionCount, 6);
 }
 
 QTEST_MAIN(tst_QNetworkReply)

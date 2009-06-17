@@ -119,42 +119,6 @@ QPixmap QPixmap::grabWindow(WId winId, int x, int y, int w, int h )
     return pixmap;
 }
 
-
-
-/*!
-    \enum QPixmap::HBitmapFormat
-
-    This enum defines how the conversion between \c HBITMAP
-    and QPixmap is performed.
-
-    \warning This enum is only available on Windows.
-
-    \value NoAlpha The alpha channel is ignored and always treated as
-    being set to fully opaque. This is preferred if the \c HBITMAP is
-    used with standard GDI calls, such as \c BitBlt().
-
-    \value PremultipliedAlpha The \c HBITMAP is treated as having an
-    alpha channel and premultiplied colors. This is preferred if the
-    \c HBITMAP is accessed through the \c AlphaBlend() GDI function.
-
-    \value Alpha The \c HBITMAP is treated as having a plain alpha
-    channel. This is the preferred format if the \c HBITMAP is going
-    to be used as an application icon or systray icon.
-
-    \sa fromWinHBITMAP(), toWinHBITMAP()
-*/
-
-/*!
-    Creates a \c HBITMAP equivalent to the QPixmap, based on the given
-    \a format. Returns the \c HBITMAP handle.
-
-    It is the caller's responsibility to free the \c HBITMAP data
-    after use.
-
-    \warning This function is only available on Windows.
-
-    \sa fromWinHBITMAP()
-*/
 HBITMAP QPixmap::toWinHBITMAP(HBitmapFormat format) const
 {
     HBITMAP bitmap = 0;
@@ -209,15 +173,6 @@ HBITMAP QPixmap::toWinHBITMAP(HBitmapFormat format) const
     return bitmap;
 }
 
-/*!
-    Returns a QPixmap that is equivalent to the given \a bitmap. The
-    conversion is based on the specified \a format.
-
-    \warning This function is only available on Windows.
-
-    \sa toWinHBITMAP(), {QPixmap#Pixmap Conversion}{Pixmap Conversion}
-
-*/
 QPixmap QPixmap::fromWinHBITMAP(HBITMAP bitmap, HBitmapFormat format)
 {
     // Verify size

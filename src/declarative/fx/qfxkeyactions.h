@@ -310,7 +310,7 @@ private:
     QFxKeyActionsPrivate *d;
 };
 
-QML_DECLARE_TYPE(QFxKeyActions);
+QML_DECLARE_TYPE(QFxKeyActions)
 
 QT_END_NAMESPACE
 

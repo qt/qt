@@ -41,11 +41,6 @@
 
 #include <QtCore>
 #include <stdio.h>
-#ifdef QT_STATEMACHINE_SOLUTION
-#include <qstate.h>
-#include <qstatemachine.h>
-#include <qabstracttransition.h>
-#endif
 
 //! [0]
 class PingEvent : public QEvent

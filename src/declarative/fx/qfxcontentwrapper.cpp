@@ -44,7 +44,7 @@
 
 
 QT_BEGIN_NAMESPACE
-QML_DEFINE_TYPE(QFxContentWrapper,ContentWrapper);
+QML_DEFINE_TYPE(QFxContentWrapper,ContentWrapper)
 
 /*!
     \qmlclass ContentWrapper QFxContentWrapper
@@ -129,7 +129,7 @@ QFxItem *QFxContentWrapper::findContent(QList<QSimpleCanvasItem *> &nodes)
     return findContent(nodes);
 }
 
-QML_DEFINE_TYPE(QFxContent,Content);
+QML_DEFINE_TYPE(QFxContent,Content)
 
 /*!
     \qmlclass Content QFxContent
