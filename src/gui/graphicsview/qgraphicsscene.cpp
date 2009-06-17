@@ -220,7 +220,8 @@
 #include "qgraphicswidget.h"
 #include "qgraphicswidget_p.h"
 #include "qgraphicssceneindex.h"
-#include "qgraphicsscenebsptreeindex_p_p.h"
+#include "qgraphicsscenebsptreeindex.h"
+#include "qgraphicsscenelinearindex.h"
 
 #include <QtCore/qdebug.h>
 #include <QtCore/qlist.h>
@@ -1574,6 +1575,8 @@ void QGraphicsScene::setItemIndexMethod(ItemIndexMethod method)
 }
 
 /*!
+    \internal
+
     \brief the item indexing method.
     This method allow to apply an indexing algorithm \a index to the scene, to speed up
     item discovery functions like items() and itemAt().
@@ -1595,6 +1598,8 @@ void QGraphicsScene::setSceneIndex(QGraphicsSceneIndex *index)
 }
 
 /*!
+    \internal
+
     This method return the current indexing algorithm of the scene.
 
     \sa setSceneIndex(), QGraphicsSceneIndex

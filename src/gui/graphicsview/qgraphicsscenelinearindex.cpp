@@ -1,4 +1,4 @@
-#include "qgraphicsscenelinearindex_p.h"
+#include "qgraphicsscenelinearindex.h"
 
 /*!
     \class QGraphicsSceneLinearIndex
@@ -8,6 +8,7 @@
     \ingroup multimedia
     \ingroup graphicsview-api
     \mainclass
+    \internal
 
     QGraphicsSceneLinearIndex index is default linear implementation to discover items.
     It basically store all items in a list and return them to the scene.

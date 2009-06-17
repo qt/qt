@@ -554,7 +554,7 @@
 #include "qgraphicsview.h"
 #include "qgraphicswidget.h"
 #include "qgraphicsproxywidget.h"
-#include "qgraphicsscenebsptreeindex_p_p.h"
+#include "qgraphicsscenebsptreeindex_p.h"
 #include <QtCore/qbitarray.h>
 #include <QtCore/qdebug.h>
 #include <QtCore/qpoint.h>

@@ -46,6 +46,7 @@
     \ingroup multimedia
     \ingroup graphicsview-api
     \mainclass
+    \internal
 
     The QGraphicsSceneIndex class provides a base class to implement
     a custom indexing algorithm for discovering items in QGraphicsScene. You
@@ -57,7 +58,6 @@
 
 #include "qgraphicssceneindex.h"
 #include "qgraphicssceneindex_p.h"
-#include "qgraphicsscenebsptreeindex_p_p.h"
 #include "qgraphicsscene.h"
 #include "qgraphicsitem_p.h"
 #include "qgraphicsscene_p.h"

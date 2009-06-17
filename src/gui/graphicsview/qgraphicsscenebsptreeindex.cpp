@@ -47,6 +47,7 @@
     \ingroup multimedia
     \ingroup graphicsview-api
     \mainclass
+    \internal
 
     QGraphicsSceneBspTreeIndex index use a BSP(Binary Space Partitioning)
     implementation to discover items quickly. This implementation is
@@ -74,11 +75,11 @@
     \sa QGraphicsScene, QGraphicsView, QGraphicsSceneIndex
 */
 
-#include "qgraphicsscenebsptreeindex_p.h"
+#include "qgraphicsscenebsptreeindex.h"
 
 #ifndef QT_NO_GRAPHICSVIEW
 
-#include "qgraphicsscenebsptreeindex_p_p.h"
+#include "qgraphicsscenebsptreeindex_p.h"
 #include "qgraphicssceneindex_p.h"
 #include "qgraphicsitem_p.h"
 #include "qgraphicsscene_p.h"
@@ -754,7 +755,7 @@ bool QGraphicsSceneBspTreeIndex::event(QEvent *event)
 
 QT_END_NAMESPACE
 
-#include "moc_qgraphicsscenebsptreeindex_p.cpp"
+#include "moc_qgraphicsscenebsptreeindex.cpp"
 
 #endif  // QT_NO_GRAPHICSVIEW
 

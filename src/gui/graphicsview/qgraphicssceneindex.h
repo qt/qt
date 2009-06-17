@@ -42,6 +42,17 @@
 #ifndef QGRAPHICSSCENEINDEX_H
 #define QGRAPHICSSCENEINDEX_H
 
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists for the convenience
+// of qapplication_*.cpp, qwidget*.cpp and qfiledialog.cpp.  This header
+// file may change from version to version without notice, or even be removed.
+//
+// We mean it.
+//
+
 #include <QtCore/qnamespace.h>
 #include <QtCore/qobject.h>
 #include <QtGui/qtransform.h>
@@ -61,7 +72,7 @@ class QRectF;
 class QPointF;
 template<typename T> class QList;
 
-class Q_GUI_EXPORT QGraphicsSceneIndex: public QObject
+class Q_AUTOTEST_EXPORT QGraphicsSceneIndex: public QObject
 {
     Q_OBJECT
 

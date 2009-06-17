@@ -39,80 +39,81 @@
 **
 ****************************************************************************/
 
-#ifndef QGRAPHICSSCENELINEARINDEX_P_H
-#define QGRAPHICSSCENELINEARINDEX_P_H
+#include <QtCore/qglobal.h>
 
 //
 //  W A R N I N G
 //  -------------
 //
 // This file is not part of the Qt API.  It exists for the convenience
-// of other Qt classes.  This header file may change from version to
-// version without notice, or even be removed.
+// of qapplication_*.cpp, qwidget*.cpp and qfiledialog.cpp.  This header
+// file may change from version to version without notice, or even be removed.
 //
 // We mean it.
 //
 
-#include <QtCore/qlist.h>
+#ifndef QGRAPHICSBSPTREEINDEX_H
+#define QGRAPHICSBSPTREEINDEX_H
+
+QT_BEGIN_HEADER
+
+QT_BEGIN_NAMESPACE
+
+QT_MODULE(Gui)
 
 #if !defined(QT_NO_GRAPHICSVIEW) || (QT_EDITION & QT_MODULE_GRAPHICSVIEW) != QT_MODULE_GRAPHICSVIEW
 
 #include <QtCore/qrect.h>
 #include <QtCore/qlist.h>
-#include <QtGui/qgraphicssceneindex.h>
 #include <QtGui/qgraphicsitem.h>
+#include <QtGui/qgraphicsscene.h>
+#include <QtGui/qgraphicssceneindex.h>
 
-QT_BEGIN_NAMESPACE
+#include "qgraphicsscene_bsp_p.h"
 
-class Q_AUTOTEST_EXPORT QGraphicsSceneLinearIndex : public QGraphicsSceneIndex
+class QGraphicsSceneBspTreeIndexPrivate;
+
+class Q_AUTOTEST_EXPORT QGraphicsSceneBspTreeIndex : public QGraphicsSceneIndex
 {
     Q_OBJECT
-
+    Q_PROPERTY(int bspTreeDepth READ bspTreeDepth WRITE setBspTreeDepth)
 public:
-    QGraphicsSceneLinearIndex(QGraphicsScene *scene = 0): QGraphicsSceneIndex(scene)
-    {
-    }
+    QGraphicsSceneBspTreeIndex(QGraphicsScene *scene = 0);
+    QRectF indexedRect() const;
 
-    QList<QGraphicsItem *> items(Qt::SortOrder order = Qt::AscendingOrder) const {
-        Q_UNUSED(order);
-        return m_items;
-    }
+    QList<QGraphicsItem *> estimateItems(const QRectF &rect, Qt::SortOrder order, const QTransform &deviceTransform) const;
 
-    virtual QList<QGraphicsItem *> estimateItems(const QRectF &rect, Qt::SortOrder order, const QTransform &deviceTransform) const {
-        Q_UNUSED(rect);
-        Q_UNUSED(order);
-        Q_UNUSED(deviceTransform);
-        return m_items;
-    }
+    QList<QGraphicsItem *> items(Qt::SortOrder order = Qt::AscendingOrder) const;
 
-    virtual QRectF indexedRect() const {
-        return m_sceneRect;
-    }
+    int bspTreeDepth();
+    void setBspTreeDepth(int depth);
 
-protected :
-    void sceneRectChanged(const QRectF &rect) {
-        m_sceneRect = rect;
-    }
+protected:
+    bool event(QEvent *event);
+    void clear();
 
-    virtual void clear() {
-        m_items.clear();
-    }
+    void addItem(QGraphicsItem *item);
+    void removeItem(QGraphicsItem *item);
+    void deleteItem(QGraphicsItem *item);
+    void prepareBoundingRectChange(const QGraphicsItem *item);
 
-    virtual void addItem(QGraphicsItem *item) {
-        m_items << item;
-    }
+    void sceneRectChanged(const QRectF &rect);
+    void itemChanged(const QGraphicsItem *item, QGraphicsItem::GraphicsItemChange change, const QVariant &value);
 
-    virtual void removeItem(QGraphicsItem *item) {
-        m_items.removeAll(item);
-    }
+private :
+    Q_DECLARE_PRIVATE(QGraphicsSceneBspTreeIndex)
+    Q_DISABLE_COPY(QGraphicsSceneBspTreeIndex)
+    Q_PRIVATE_SLOT(d_func(), void _q_updateSortCache())
+    Q_PRIVATE_SLOT(d_func(), void _q_updateIndex())
 
-private:
-    QRectF m_sceneRect;
-    QList<QGraphicsItem*> m_items;
+    friend class QGraphicsScene;
+    friend class QGraphicsScenePrivate;
 };
-
-QT_END_NAMESPACE
 
 #endif // QT_NO_GRAPHICSVIEW
 
-#endif // QGRAPHICSSCENELINEARINDEX_P_H
+QT_END_NAMESPACE
+
+QT_END_HEADER
+
+#endif // QGRAPHICSBSPTREEINDEX_H

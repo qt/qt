@@ -39,63 +39,112 @@
 **
 ****************************************************************************/
 
-#include <QtCore/qglobal.h>
+#ifndef QGRAPHICSSCENEBSPTREEINDEX_P_H
+#define QGRAPHICSSCENEBSPTREEINDEX_P_H
 
-#ifndef QGRAPHICSBSPTREEINDEX_H
-#define QGRAPHICSBSPTREEINDEX_H
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists for the convenience
+// of qapplication_*.cpp, qwidget*.cpp and qfiledialog.cpp.  This header
+// file may change from version to version without notice, or even be removed.
+//
+// We mean it.
+//
+
+#include "qgraphicsscenebsptreeindex.h"
 
 #if !defined(QT_NO_GRAPHICSVIEW) || (QT_EDITION & QT_MODULE_GRAPHICSVIEW) != QT_MODULE_GRAPHICSVIEW
 
+#include <private/qgraphicssceneindex_p.h>
+#include <private/qgraphicsitem_p.h>
+
 QT_BEGIN_NAMESPACE
 
-#include <QtCore/qrect.h>
-#include <QtCore/qlist.h>
-#include <QtGui/qgraphicsitem.h>
-#include <QtGui/qgraphicsscene.h>
-#include <QtGui/qgraphicssceneindex.h>
+static const int QGRAPHICSSCENE_INDEXTIMER_TIMEOUT = 2000;
 
-#include "qgraphicsscene_bsp_p.h"
+class QGraphicsScene;
 
-class QGraphicsSceneBspTreeIndexPrivate;
-class Q_AUTOTEST_EXPORT QGraphicsSceneBspTreeIndex : public QGraphicsSceneIndex
+class QGraphicsSceneBspTreeIndexPrivate : public QGraphicsSceneIndexPrivate
 {
-    Q_OBJECT
-    Q_PROPERTY(int bspTreeDepth READ bspTreeDepth WRITE setBspTreeDepth)
+    Q_DECLARE_PUBLIC(QGraphicsSceneBspTreeIndex)
 public:
-    QGraphicsSceneBspTreeIndex(QGraphicsScene *scene = 0);
-    QRectF indexedRect() const;
+    QGraphicsSceneBspTreeIndexPrivate(QGraphicsScene *scene);
 
-    QList<QGraphicsItem *> estimateItems(const QRectF &rect, Qt::SortOrder order, const QTransform &deviceTransform) const;
+    QGraphicsSceneBspTree bsp;
+    QRectF sceneRect;
+    int bspTreeDepth;
+    int indexTimerId;
+    bool restartIndexTimer;
+    bool regenerateIndex;
+    int lastItemCount;
 
-    QList<QGraphicsItem *> items(Qt::SortOrder order = Qt::AscendingOrder) const;
+    QList<QGraphicsItem *> indexedItems;
+    QList<QGraphicsItem *> unindexedItems;
+    QList<int> freeItemIndexes;
 
-    int bspTreeDepth();
-    void setBspTreeDepth(int depth);
+    bool purgePending;
+    QSet<QGraphicsItem *> removedItems;
+    void purgeRemovedItems();
 
-protected:
-    bool event(QEvent *event);
-    void clear();
+    void _q_updateIndex();
+    void startIndexTimer(int interval = QGRAPHICSSCENE_INDEXTIMER_TIMEOUT);
+    void resetIndex();
 
-    void addItem(QGraphicsItem *item);
-    void removeItem(QGraphicsItem *item);
-    void deleteItem(QGraphicsItem *item);
-    void prepareBoundingRectChange(const QGraphicsItem *item);
+    void addToIndex(QGraphicsItem *item);
+    void removeFromIndex(QGraphicsItem *item);
 
-    void sceneRectChanged(const QRectF &rect);
-    void itemChanged(const QGraphicsItem *item, QGraphicsItem::GraphicsItemChange change, const QVariant &value);
+    void _q_updateSortCache();
+    bool sortCacheEnabled;
+    bool updatingSortCache;
+    void invalidateSortCache();
 
-private :
-    Q_DECLARE_PRIVATE(QGraphicsSceneBspTreeIndex)
-    Q_DISABLE_COPY(QGraphicsSceneBspTreeIndex)
-    Q_PRIVATE_SLOT(d_func(), void _q_updateSortCache())
-    Q_PRIVATE_SLOT(d_func(), void _q_updateIndex())
+    static void climbTree(QGraphicsItem *item, int *stackingOrder);
+    static bool closestItemFirst_withoutCache(const QGraphicsItem *item1, const QGraphicsItem *item2);
+    static bool closestItemLast_withoutCache(const QGraphicsItem *item1, const QGraphicsItem *item2);
 
-    friend class QGraphicsScene;
-    friend class QGraphicsScenePrivate;
+    static inline bool closestItemFirst_withCache(const QGraphicsItem *item1, const QGraphicsItem *item2)
+    {
+        return item1->d_ptr->globalStackingOrder < item2->d_ptr->globalStackingOrder;
+    }
+    static inline bool closestItemLast_withCache(const QGraphicsItem *item1, const QGraphicsItem *item2)
+    {
+        return item1->d_ptr->globalStackingOrder >= item2->d_ptr->globalStackingOrder;
+    }
+
+    static void sortItems(QList<QGraphicsItem *> *itemList, Qt::SortOrder order, bool cached);
 };
+
+
+/*!
+    \internal
+*/
+inline bool qt_closestLeaf(const QGraphicsItem *item1, const QGraphicsItem *item2)
+{
+    // Return true if sibling item1 is on top of item2.
+    const QGraphicsItemPrivate *d1 = item1->d_ptr;
+    const QGraphicsItemPrivate *d2 = item2->d_ptr;
+    bool f1 = d1->flags & QGraphicsItem::ItemStacksBehindParent;
+    bool f2 = d2->flags & QGraphicsItem::ItemStacksBehindParent;
+    if (f1 != f2) return f2;
+    qreal z1 = d1->z;
+    qreal z2 = d2->z;
+    return z1 > z2;
+}
+
+/*!
+    \internal
+*/
+static inline bool qt_notclosestLeaf(const QGraphicsItem *item1, const QGraphicsItem *item2)
+{
+    return qt_closestLeaf(item2, item1);
+}
+
 
 QT_END_NAMESPACE
 
-#endif // QT_NO_GRAPHICSVIEW
+#endif // QGRAPHICSSCENEBSPTREEINDEX_P_H
 
-#endif // QGRAPHICSBSPTREEINDEX_H
+#endif
+
