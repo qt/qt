@@ -66,7 +66,7 @@
 QT_BEGIN_NAMESPACE
 
 class QNetworkAccessFtpIODevice;
-class QNetworkAccessFtpFtp;
+class QNetworkAccessCachedFtpConnection;
 
 class QNetworkAccessFtpBackend: public QNetworkAccessBackend
 {
@@ -101,7 +101,7 @@ public slots:
 
 private:
     friend class QNetworkAccessFtpIODevice;
-    QPointer<QNetworkAccessFtpFtp> ftp;
+    QPointer<QNetworkAccessCachedFtpConnection> ftp;
     QIODevice *uploadDevice;
     qint64 totalBytes;
     int helpId, sizeId, mdtmId;

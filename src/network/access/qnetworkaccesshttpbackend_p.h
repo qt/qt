@@ -66,7 +66,7 @@
 
 QT_BEGIN_NAMESPACE
 
-class QNetworkAccessHttpBackendCache;
+class QNetworkAccessCachedHttpConnection;
 
 class QNetworkAccessHttpBackendIODevice;
 
@@ -106,7 +106,7 @@ private slots:
 
 private:
     QHttpNetworkReply *httpReply;
-    QPointer<QNetworkAccessHttpBackendCache> http;
+    QPointer<QNetworkAccessCachedHttpConnection> http;
     QByteArray cacheKey;
     QNetworkAccessBackendUploadIODevice *uploadDevice;
 
