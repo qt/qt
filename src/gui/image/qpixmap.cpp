@@ -552,7 +552,7 @@ bool QPixmap::isQBitmap() const
 */
 bool QPixmap::isNull() const
 {
-    return data->width() == 0;
+    return data->isNull();
 }
 
 /*!

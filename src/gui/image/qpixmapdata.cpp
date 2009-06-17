@@ -49,9 +49,17 @@ const uchar qt_pixmap_bit_mask[] = { 0x01, 0x02, 0x04, 0x08,
                                      0x10, 0x20, 0x40, 0x80 };
 
 QPixmapData::QPixmapData(PixelType pixelType, int objectId)
-    : ref(0), detach_no(0), type(pixelType), id(objectId), ser_no(0), is_cached(false)
+    : w(0),
+      h(0),
+      d(0),
+      is_null(true),
+      ref(0),
+      detach_no(0),
+      type(pixelType),
+      id(objectId),
+      ser_no(0),
+      is_cached(false)
 {
-
 }
 
 QPixmapData::~QPixmapData()

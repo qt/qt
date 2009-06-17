@@ -108,8 +108,6 @@ private:
 
     Qt::HANDLE hd;
 
-    int w, h;
-    short d;
     uint uninit : 1;
     uint read_only : 1;
 

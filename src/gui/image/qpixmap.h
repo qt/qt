@@ -79,11 +79,11 @@ public:
     QPixmap &operator=(const QPixmap &);
     operator QVariant() const;
 
-    bool isNull() const;
+    bool isNull() const; // ### Qt 5: make inline
     int devType() const;
 
-    int width() const;
-    int height() const;
+    int width() const; // ### Qt 5: make inline
+    int height() const; // ### Qt 5: make inline
     QSize size() const;
     QRect rect() const;
     int depth() const;

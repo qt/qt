@@ -82,6 +82,10 @@ void QDirectFBPixmapData::resize(int width, int height)
         return;
     }
 
+    w = width;
+    h = height;
+    is_null = (w <= 0 || h <= 0);
+    d = metric(QPaintDevice::PdmDepth);
     setSerialNumber(++global_ser_no);
 }
 
@@ -191,6 +195,10 @@ void QDirectFBPixmapData::fromImage(const QImage &i,
         invalidate();
         return;
     }
+    w = metric(QPaintDevice::PdmWidth);
+    h = metric(QPaintDevice::PdmHeight);
+    is_null = (w <= 0 || h <= 0);
+    d = metric(QPaintDevice::PdmDepth);
     setSerialNumber(++global_ser_no);
 }
 

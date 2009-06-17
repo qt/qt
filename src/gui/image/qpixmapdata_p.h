@@ -99,13 +99,18 @@ public:
 
     virtual QImage* buffer();
 
-    int width() const { return metric(QPaintDevice::PdmWidth); }
-    int height() const { return metric(QPaintDevice::PdmHeight); }
-    int numColors() const { return metric(QPaintDevice::PdmNumColors); }
-    int depth() const { return metric(QPaintDevice::PdmDepth); }
+    inline int width() const { return w; }
+    inline int height() const { return h; }
+    inline int numColors() const { return metric(QPaintDevice::PdmNumColors); }
+    inline int depth() const { return d; }
+    inline bool isNull() const { return is_null; }
 
 protected:
     void setSerialNumber(int serNo);
+    int w;
+    int h;
+    int d;
+    bool is_null;
 
 private:
     friend class QPixmap;
