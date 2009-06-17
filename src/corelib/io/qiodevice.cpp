@@ -1454,11 +1454,11 @@ QByteArray QIODevice::peek(qint64 maxSize)
 }
 
 /*!
-    Blocks until data is available for reading and the readyRead()
+    Blocks until new data is available for reading and the readyRead()
     signal has been emitted, or until \a msecs milliseconds have
     passed. If msecs is -1, this function will not time out.
 
-    Returns true if data is available for reading; otherwise returns
+    Returns true if new data is available for reading; otherwise returns
     false (if the operation timed out or if an error occurred).
 
     This function can operate without an event loop. It is
