@@ -321,15 +321,15 @@ void tst_QSequentialAnimationGroup::setCurrentTimeWithUncontrolledAnimation()
 
     // sequence operating on different object/properties
     QAnimationGroup *sequence = new QSequentialAnimationGroup();
-    QVariantAnimation *a1_s_o1 = new QPropertyAnimation(&s_o1, "value");
-    QVariantAnimation *a1_s_o2 = new QPropertyAnimation(&s_o2, "value");
+    QAbstractAnimation *a1_s_o1 = new QPropertyAnimation(&s_o1, "value");
+    QAbstractAnimation *a1_s_o2 = new QPropertyAnimation(&s_o2, "value");
     sequence->addAnimation(a1_s_o1);
     sequence->addAnimation(a1_s_o2);
 
-    UncontrolledAnimation *notTimeDriven = new UncontrolledAnimation(&t_o1, "value");
+    QAbstractAnimation *notTimeDriven = new UncontrolledAnimation(&t_o1, "value");
     QCOMPARE(notTimeDriven->totalDuration(), -1);
 
-    QVariantAnimation *loopsForever = new QPropertyAnimation(&t_o2, "value");
+    QAbstractAnimation *loopsForever = new QPropertyAnimation(&t_o2, "value");
     loopsForever->setLoopCount(-1);
     QCOMPARE(loopsForever->totalDuration(), -1);
 
@@ -818,7 +818,7 @@ void tst_QSequentialAnimationGroup::restart()
 
     QCOMPARE(seqCurrentAnimChangedSpy.count(), 6);
     for(int i=0; i<seqCurrentAnimChangedSpy.count(); i++)
-            QCOMPARE(anims[i%3], qVariantValue<QAbstractAnimation*>(seqCurrentAnimChangedSpy.at(i).at(0)));
+            QCOMPARE(static_cast<QAbstractAnimation*>(anims[i%3]), qVariantValue<QAbstractAnimation*>(seqCurrentAnimChangedSpy.at(i).at(0)));
 
     group.start();
 
@@ -836,9 +836,9 @@ void tst_QSequentialAnimationGroup::looping()
 
     // sequence operating on same object/property
     QSequentialAnimationGroup *sequence = new QSequentialAnimationGroup();
-    QVariantAnimation *a1_s_o1 = new QPropertyAnimation(&s_o1, "value");
-    QVariantAnimation *a2_s_o1 = new QPropertyAnimation(&s_o1, "value");
-    QVariantAnimation *a3_s_o1 = new QPropertyAnimation(&s_o1, "value");
+    QAbstractAnimation *a1_s_o1 = new QPropertyAnimation(&s_o1, "value");
+    QAbstractAnimation *a2_s_o1 = new QPropertyAnimation(&s_o1, "value");
+    QAbstractAnimation *a3_s_o1 = new QPropertyAnimation(&s_o1, "value");
 
     QSignalSpy a1Spy(a1_s_o1, SIGNAL(stateChanged(QAbstractAnimation::State, QAbstractAnimation::State)));
     QSignalSpy a2Spy(a2_s_o1, SIGNAL(stateChanged(QAbstractAnimation::State, QAbstractAnimation::State)));
@@ -951,18 +951,19 @@ void tst_QSequentialAnimationGroup::startDelay()
 void tst_QSequentialAnimationGroup::clearGroup()
 {
     QSequentialAnimationGroup group;
+	
+	static const int animationCount = 20;
 
-    for (int i = 0; i < 10; ++i) {
+    for (int i = 0; i < animationCount/2; ++i) {
         QSequentialAnimationGroup *subGroup = new QSequentialAnimationGroup(&group);
         group.addPause(100);
         subGroup->addPause(10);
     }
 
-    QCOMPARE(group.animationCount(), 20);
+    QCOMPARE(group.animationCount(), animationCount);
 
-    int count = group.animationCount();
-    QPointer<QAbstractAnimation> *children = new QPointer<QAbstractAnimation>[count];
-    for (int i = 0; i < count; ++i) {
+    QPointer<QAbstractAnimation> children[animationCount];
+    for (int i = 0; i < animationCount; ++i) {
         QVERIFY(group.animationAt(i) != 0);
         children[i] = group.animationAt(i);
     }
@@ -970,10 +971,8 @@ void tst_QSequentialAnimationGroup::clearGroup()
     group.clearAnimations();
     QCOMPARE(group.animationCount(), 0);
     QCOMPARE(group.currentTime(), 0);
-    for (int i = 0; i < count; ++i)
-        QCOMPARE(children[i], QPointer<QAbstractAnimation>());
-
-    delete[] children;
+    for (int i = 0; i < animationCount; ++i)
+        QVERIFY(children[i].isNull());
 }
 
 void tst_QSequentialAnimationGroup::groupWithZeroDurationAnimations()
@@ -995,7 +994,7 @@ void tst_QSequentialAnimationGroup::groupWithZeroDurationAnimations()
 
     //this should just run fine and change nothing
     group.setCurrentTime(0);
-    QCOMPARE(group.currentAnimation(), a1);
+    QCOMPARE(group.currentAnimation(), static_cast<QAbstractAnimation*>(a1));
 
     QVariantAnimation *a2 = new QPropertyAnimation(&o2, "myOtherProperty");
     a2->setDuration(500);
@@ -1457,7 +1456,7 @@ void tst_QSequentialAnimationGroup::finishWithUncontrolledAnimation()
     group.setCurrentTime(300);
     QCOMPARE(group.state(), QAnimationGroup::Stopped);
     QCOMPARE(notTimeDriven.currentTime(), actualDuration);
-    QCOMPARE(group.currentAnimation(), &anim);
+    QCOMPARE(group.currentAnimation(), static_cast<QAbstractAnimation*>(&anim));
 
     //3rd case:
     //now let's add a perfectly defined animation at the end
@@ -1474,7 +1473,7 @@ void tst_QSequentialAnimationGroup::finishWithUncontrolledAnimation()
     QCOMPARE(notTimeDriven.state(), QAnimationGroup::Stopped);
     QCOMPARE(group.state(), QAnimationGroup::Running);
     QCOMPARE(anim.state(), QAnimationGroup::Running);
-    QCOMPARE(group.currentAnimation(), &anim);
+    QCOMPARE(group.currentAnimation(), static_cast<QAbstractAnimation*>(&anim));
     QCOMPARE(animStateChangedSpy.count(), 1);
     QTest::qWait(300); //wait for the end of anim
 
@@ -1494,21 +1493,21 @@ void tst_QSequentialAnimationGroup::addRemoveAnimation()
 
     QCOMPARE(group.duration(), 0);
     QCOMPARE(group.currentTime(), 0);
-    QVariantAnimation *anim1 = new QPropertyAnimation;
+    QAbstractAnimation *anim1 = new QPropertyAnimation;
     group.addAnimation(anim1);
     QCOMPARE(group.duration(), 250);
     QCOMPARE(group.currentTime(), 0);
     QCOMPARE(group.currentAnimation(), anim1);
 
     //let's append an animation
-    QVariantAnimation *anim2 = new QPropertyAnimation;
+    QAbstractAnimation *anim2 = new QPropertyAnimation;
     group.addAnimation(anim2);
     QCOMPARE(group.duration(), 500);
     QCOMPARE(group.currentTime(), 0);
     QCOMPARE(group.currentAnimation(), anim1);
 
     //let's prepend an animation
-    QVariantAnimation *anim0 = new QPropertyAnimation;
+    QAbstractAnimation *anim0 = new QPropertyAnimation;
     group.insertAnimationAt(0, anim0);
     QCOMPARE(group.duration(), 750);
     QCOMPARE(group.currentTime(), 0);
@@ -1545,7 +1544,7 @@ void tst_QSequentialAnimationGroup::currentAnimation()
     QPropertyAnimation anim;
     anim.setDuration(0);
     group.addAnimation(&anim);
-    QCOMPARE(group.currentAnimation(), &anim);
+    QCOMPARE(group.currentAnimation(), static_cast<QAbstractAnimation*>(&anim));
 }
 
 void tst_QSequentialAnimationGroup::currentAnimationWithZeroDuration()
@@ -1572,21 +1571,21 @@ void tst_QSequentialAnimationGroup::currentAnimationWithZeroDuration()
     group.addAnimation(&zero3);
     group.addAnimation(&zero4);
 
-    QCOMPARE(group.currentAnimation(), &zero1);
+    QCOMPARE(group.currentAnimation(), static_cast<QAbstractAnimation*>(&zero1));
 
     group.setCurrentTime(0);
-    QCOMPARE(group.currentAnimation(), &anim);
+    QCOMPARE(group.currentAnimation(), static_cast<QAbstractAnimation*>(&anim));
 
     group.setCurrentTime(group.duration());
-    QCOMPARE(group.currentAnimation(), &zero4);
+    QCOMPARE(group.currentAnimation(), static_cast<QAbstractAnimation*>(&zero4));
 
     group.setDirection(QAbstractAnimation::Backward);
 
     group.setCurrentTime(0);
-    QCOMPARE(group.currentAnimation(), &zero1);
+    QCOMPARE(group.currentAnimation(), static_cast<QAbstractAnimation*>(&zero1));
 
     group.setCurrentTime(group.duration());
-    QCOMPARE(group.currentAnimation(), &anim);
+    QCOMPARE(group.currentAnimation(), static_cast<QAbstractAnimation*>(&anim));
 }
 
 void tst_QSequentialAnimationGroup::insertAnimation()
