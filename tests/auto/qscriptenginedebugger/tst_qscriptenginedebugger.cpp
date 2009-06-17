@@ -163,6 +163,14 @@ void tst_QScriptEngineDebugger::attachAndDetach()
         debugger2.attachTo(&engine);
     }
 #endif
+    {
+        QScriptEngine *engine = new QScriptEngine;
+        QScriptEngineDebugger debugger;
+        debugger.attachTo(engine);
+        delete engine;
+        QScriptEngine engine2;
+        debugger.attachTo(&engine2);
+    }
 }
 
 void tst_QScriptEngineDebugger::action()
