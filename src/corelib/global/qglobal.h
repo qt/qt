@@ -795,6 +795,9 @@ namespace QT_NAMESPACE {}
 #  define Q_WS_WIN
 #endif
 
+// forward declare std::exception
+namespace std { class exception; }
+
 QT_BEGIN_HEADER
 QT_BEGIN_NAMESPACE
 
@@ -2315,8 +2318,6 @@ QT3_SUPPORT Q_CORE_EXPORT const char *qInstallPathSysconf();
 
 #if defined(Q_OS_SYMBIAN)
 
-// forward declare std::exception
-namespace std { class exception; }
 
 Q_CORE_EXPORT void qt_translateSymbianErrorToException(int error);
 Q_CORE_EXPORT void qt_translateExceptionToSymbianErrorL(const std::exception& ex);

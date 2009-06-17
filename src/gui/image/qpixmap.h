@@ -51,6 +51,10 @@
 
 QT_BEGIN_HEADER
 
+#if defined(Q_OS_SYMBIAN)
+class CFbsBitmap;
+#endif
+
 QT_BEGIN_NAMESPACE
 
 QT_MODULE(Gui)
@@ -59,12 +63,7 @@ class QImageWriter;
 class QColor;
 class QVariant;
 class QX11Info;
-
 class QPixmapData;
-
-#if defined(Q_OS_SYMBIAN)
-class CFbsBitmap;
-#endif
 
 class Q_GUI_EXPORT QPixmap : public QPaintDevice
 {
