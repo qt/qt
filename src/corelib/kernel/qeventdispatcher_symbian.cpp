@@ -231,6 +231,9 @@ void QTimerActiveObject::RunL()
 
 void QTimerActiveObject::Run()
 {
+    if (!okToRun())
+        return;
+
     if (m_timerInfo->interval > 0) {
         // Start a new timer immediately so that we don't lose time.
         iStatus = KRequestPending;
@@ -644,9 +647,9 @@ bool QEventDispatcherSymbian::processEvents ( QEventLoop::ProcessEventsFlags fla
     QT_TRY {
         Q_D(QAbstractEventDispatcher);
     
-    // It is safe if this counter overflows. The main importance is that each
-    // iteration count is different from the last.
-    m_iterationCount++;
+        // It is safe if this counter overflows. The main importance is that each
+        // iteration count is different from the last.
+        m_iterationCount++;
 
         RThread &thread = d->threadData->symbian_thread_handle;
     
@@ -719,7 +722,7 @@ bool QEventDispatcherSymbian::processEvents ( QEventLoop::ProcessEventsFlags fla
                 break;
             }
             block = false;
-        if (timeState == TimeStarted && time.elapsed() > 100) {
+            if (timeState == TimeStarted && time.elapsed() > 100) {
                 priority = m_processHandle.Priority();
                 m_processHandle.SetPriority(EPriorityLow);
                 time.start();
