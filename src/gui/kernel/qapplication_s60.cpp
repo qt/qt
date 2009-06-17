@@ -343,7 +343,7 @@ void QSymbianControl::HandleLongTapEventL( const TPoint& aPenEventLocation, cons
     QMouseEvent mEvent(QEvent::MouseButtonPress, alienWidget->mapFrom(qwidget, widgetPos), globalPos,
         Qt::RightButton, QApplicationPrivate::mouse_buttons, Qt::NoModifier);
     sendMouseEvent(alienWidget, &mEvent);
-    m_previousEventLongTap = false;
+    m_previousEventLongTap = true;
 }
 
 void QSymbianControl::HandlePointerEventL(const TPointerEvent& pEvent)
@@ -821,18 +821,21 @@ void QApplicationPrivate::openPopup(QWidget *popup)
         WId id = popup->effectiveWinId();
         id->SetPointerCapture(true);
         id->SetGloballyCapturing(true);
-
         autoGrabWindow = id;
     }
 
     // popups are not focus-handled by the window system (the first
     // popup grabbed the keyboard), so we have to do that manually: A
     // new popup gets the focus
-    if (popup->focusWidget()) {
-        popup->focusWidget()->setFocus(Qt::PopupFocusReason);
+    if (QApplication::focusWidget())
+        static_cast<QSymbianControl*>(QApplication::focusWidget()->effectiveWinId())->CancelLongTapTimer();
+    QWidget *fw = popup->focusWidget();
+    if (fw) {
+        fw->setFocus(Qt::PopupFocusReason);
     } else if (QApplicationPrivate::popupWidgets->count() == 1) { // this was the first popup
-        if (QWidget *fw = QApplication::focusWidget()) {
-            static_cast<QSymbianControl*>(fw->effectiveWinId())->CancelLongTapTimer();
+        fw = QApplication::focusWidget();
+        if (fw) {
+//            static_cast<QSymbianControl*>(fw->effectiveWinId())->CancelLongTapTimer();
             QFocusEvent e(QEvent::FocusOut, Qt::PopupFocusReason);
             q_func()->sendEvent(fw, &e);
         }
