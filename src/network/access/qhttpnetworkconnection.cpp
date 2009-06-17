@@ -113,12 +113,15 @@ void QHttpNetworkConnectionPrivate::connectSignals(QAbstractSocket *socket)
 
 #ifndef QT_NO_OPENSSL
     QSslSocket *sslSocket = qobject_cast<QSslSocket*>(socket);
-    QObject::connect(sslSocket, SIGNAL(encrypted()),
-                     q, SLOT(_q_encrypted()),
-                     Qt::DirectConnection);
-    QObject::connect(sslSocket, SIGNAL(sslErrors(const QList<QSslError>&)),
-               q, SLOT(_q_sslErrors(const QList<QSslError>&)),
-               Qt::DirectConnection);
+    if (sslSocket) {
+        // won't be a sslSocket if encrypt is false
+        QObject::connect(sslSocket, SIGNAL(encrypted()),
+                         q, SLOT(_q_encrypted()),
+                         Qt::DirectConnection);
+        QObject::connect(sslSocket, SIGNAL(sslErrors(const QList<QSslError>&)),
+                         q, SLOT(_q_sslErrors(const QList<QSslError>&)),
+                         Qt::DirectConnection);
+    }
 #endif
 }
 
@@ -126,10 +129,14 @@ void QHttpNetworkConnectionPrivate::init()
 {
     for (int i = 0; i < channelCount; ++i) {
 #ifndef QT_NO_OPENSSL
-        channels[i].socket = new QSslSocket;
+        if (encrypt)
+            channels[i].socket = new QSslSocket;
+        else
+            channels[i].socket = new QTcpSocket;
 #else
         channels[i].socket = new QTcpSocket;
 #endif
+
         connectSignals(channels[i].socket);
     }
 }
@@ -404,8 +411,9 @@ bool QHttpNetworkConnectionPrivate::sendRequest(QAbstractSocket *socket)
 
 #ifndef QT_NO_OPENSSL
         QSslSocket *sslSocket = qobject_cast<QSslSocket*>(socket);
-        while ((sslSocket->encryptedBytesToWrite() + sslSocket->bytesToWrite()) <= socketBufferFill
-               && channels[i].bytesTotal != channels[i].written)
+        // if it is really an ssl socket, check more than just bytesToWrite()
+        while ((socket->bytesToWrite() + (sslSocket ? sslSocket->encryptedBytesToWrite() : 0))
+                <= socketBufferFill && channels[i].bytesTotal != channels[i].written)
 #else
         while (socket->bytesToWrite() <= socketBufferFill
                && channels[i].bytesTotal != channels[i].written)
@@ -1355,6 +1363,9 @@ void QHttpNetworkConnectionPrivate::_q_sslErrors(const QList<QSslError> &errors)
 
 QSslConfiguration QHttpNetworkConnectionPrivate::sslConfiguration(const QHttpNetworkReply &reply) const
 {
+    if (!encrypt)
+        return QSslConfiguration();
+
     for (int i = 0; i < channelCount; ++i)
         if (channels[i].reply == &reply)
             return static_cast<QSslSocket *>(channels[0].socket)->sslConfiguration();
@@ -1364,6 +1375,9 @@ QSslConfiguration QHttpNetworkConnectionPrivate::sslConfiguration(const QHttpNet
 void QHttpNetworkConnection::setSslConfiguration(const QSslConfiguration &config)
 {
     Q_D(QHttpNetworkConnection);
+    if (!d->encrypt)
+        return;
+
     // set the config on all channels
     for (int i = 0; i < d->channelCount; ++i)
         static_cast<QSslSocket *>(d->channels[i].socket)->setSslConfiguration(config);
@@ -1372,6 +1386,9 @@ void QHttpNetworkConnection::setSslConfiguration(const QSslConfiguration &config
 void QHttpNetworkConnection::ignoreSslErrors(int channel)
 {
     Q_D(QHttpNetworkConnection);
+    if (!d->encrypt)
+        return;
+
     if (channel == -1) { // ignore for all channels
         for (int i = 0; i < d->channelCount; ++i) {
             static_cast<QSslSocket *>(d->channels[i].socket)->ignoreSslErrors();
