@@ -75,10 +75,6 @@
 #include "qscriptdebuggerjob_p_p.h"
 #include "qscriptxmlparser_p.h"
 
-#include "qscriptenginedebuggerfrontend_p.h"
-#include "qscriptdebuggerbackend_p.h"
-#include <QtScript/qscriptengine.h>
-
 #include "private/qobject_p.h"
 
 #include <QtScript/qscriptcontext.h>
