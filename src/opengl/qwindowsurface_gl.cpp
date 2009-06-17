@@ -184,11 +184,13 @@ QGLGraphicsSystem::QGLGraphicsSystem()
 class QGLGlobalShareWidget
 {
 public:
-    QGLGlobalShareWidget() : widget(0) {}
+    QGLGlobalShareWidget() : widget(0), initializing(false) {}
 
     QGLWidget *shareWidget() {
-        if (!widget && !cleanedUp) {
+        if (!initializing && !widget && !cleanedUp) {
+            initializing = true;
             widget = new QGLWidget;
+            initializing = false;
         }
         return widget;
     }
@@ -204,6 +206,7 @@ public:
 
 private:
     QGLWidget *widget;
+    bool initializing;
 };
 
 bool QGLGlobalShareWidget::cleanedUp = false;
