@@ -315,7 +315,7 @@ QMenu *QStackedWidgetEventFilter::addContextMenuActions(QMenu *popup)
     QMenu *pageMenu = 0;
     const int count = stackedWidget()->count();
     const bool hasSeveralPages = count > 1;
-    m_actionDeletePage->setEnabled(hasSeveralPages);
+    m_actionDeletePage->setEnabled(count);
     if (count) {
         const QString pageSubMenuLabel = tr("Page %1 of %2").arg(stackedWidget()->currentIndex() + 1).arg(count);
         pageMenu = popup->addMenu(pageSubMenuLabel);
@@ -327,10 +327,13 @@ QMenu *QStackedWidgetEventFilter::addContextMenuActions(QMenu *popup)
                                                 qdesigner_internal::PromotionTaskMenu::SuppressGlobalEdit,
                                                 pageMenu);
         }
+        QMenu *insertPageMenu = popup->addMenu(tr("Insert Page"));
+        insertPageMenu->addAction(m_actionInsertPageAfter);
+        insertPageMenu->addAction(m_actionInsertPage);
+    } else {
+        QAction *insertPageAction = popup->addAction(tr("Insert Page"));
+        connect(insertPageAction, SIGNAL(triggered()), this, SLOT(addPage()));
     }
-    QMenu *insertPageMenu = popup->addMenu(tr("Insert Page"));
-    insertPageMenu->addAction(m_actionInsertPageAfter);
-    insertPageMenu->addAction(m_actionInsertPage);
     popup->addAction(m_actionNextPage);
     m_actionNextPage->setEnabled(hasSeveralPages);
     popup->addAction(m_actionPreviousPage);
