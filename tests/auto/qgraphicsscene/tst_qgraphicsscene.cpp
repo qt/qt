@@ -2726,8 +2726,8 @@ void tst_QGraphicsScene::update()
     qRegisterMetaType<QList<QRectF> >("QList<QRectF>");
     QSignalSpy spy(&scene, SIGNAL(changed(QList<QRectF>)));
 
-    // When deleted, the item will lazy-remove itself
-    delete rect;
+    // We update the scene.
+    scene.update();
 
     // This function forces a purge, which will post an update signal
     scene.itemAt(0, 0);
