@@ -193,7 +193,17 @@ QObject *QmlVME::run(QStack<QObject *> &stack, QmlContext *ctxt, QmlCompiledComp
                 }
                 if (!stack.isEmpty()) {
                     QObject *parent = stack.top();
-                    o->setParent(parent);
+                    if (o->isWidgetType()) { 
+                        QWidget *widget = static_cast<QWidget*>(o); 
+                        if (parent->isWidgetType()) { 
+                            QWidget *parentWidget = static_cast<QWidget*>(parent); 
+                            widget->setParent(parentWidget); 
+                        } else { 
+                            // TODO: parent might be a layout 
+                        } 
+                    } else { 
+                        o->setParent(parent); 
+                    } 
                 }
                 stack.push(o);
             }
