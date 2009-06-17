@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtNetwork module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -124,6 +124,9 @@
 #include <QtCore/qstringlist.h>
 
 QT_BEGIN_NAMESPACE
+
+// forward declaration
+static QMap<QString, QString> _q_mapFromOnelineName(char *name);
 
 /*!
     Constructs a QSslCertificate by reading \a format encoded data
@@ -300,6 +303,10 @@ static QString _q_SubjectInfoToString(QSslCertificate::SubjectInfo info)
 */
 QString QSslCertificate::issuerInfo(SubjectInfo info) const
 {
+    if (d->issuerInfo.isEmpty() && d->x509)
+        d->issuerInfo =
+                _q_mapFromOnelineName(q_X509_NAME_oneline(q_X509_get_issuer_name(d->x509), 0, 0));
+
     return d->issuerInfo.value(_q_SubjectInfoToString(info));
 }
 
@@ -327,6 +334,10 @@ QString QSslCertificate::issuerInfo(const QByteArray &tag) const
 */
 QString QSslCertificate::subjectInfo(SubjectInfo info) const
 {
+    if (d->subjectInfo.isEmpty() && d->x509)
+        d->subjectInfo =
+                _q_mapFromOnelineName(q_X509_NAME_oneline(q_X509_get_subject_name(d->x509), 0, 0));
+
     return d->subjectInfo.value(_q_SubjectInfoToString(info));
 }
 
@@ -610,7 +621,7 @@ QByteArray QSslCertificatePrivate::QByteArray_from_X509(X509 *x509, QSsl::Encodi
     // Convert to Base64 - wrap at 64 characters.
     array = array.toBase64();
     QByteArray tmp;
-    for (int i = 0; i < array.size() - 64; i += 64) {
+    for (int i = 0; i <= array.size() - 64; i += 64) {
         tmp += QByteArray::fromRawData(array.data() + i, 64);
         tmp += "\n";
     }
@@ -661,11 +672,6 @@ QSslCertificate QSslCertificatePrivate::QSslCertificate_from_X509(X509 *x509)
     QSslCertificate certificate;
     if (!x509 || !QSslSocket::supportsSsl())
         return certificate;
-
-    certificate.d->issuerInfo =
-        _q_mapFromOnelineName(q_X509_NAME_oneline(q_X509_get_issuer_name(x509), 0, 0));
-    certificate.d->subjectInfo =
-        _q_mapFromOnelineName(q_X509_NAME_oneline(q_X509_get_subject_name(x509), 0, 0));
 
     ASN1_TIME *nbef = q_X509_get_notBefore(x509);
     ASN1_TIME *naft = q_X509_get_notAfter(x509);

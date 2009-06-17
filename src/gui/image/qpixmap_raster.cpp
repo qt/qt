@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -85,6 +85,10 @@ void QRasterPixmapData::resize(int width, int height)
 #endif
 
     image = QImage(width, height, format);
+    w = width;
+    h = height;
+    d = image.depth();
+    is_null = (w <= 0 || h <= 0);
 
     if (pixelType() == BitmapType && !image.isNull()) {
         image.setNumColors(2);
@@ -168,6 +172,10 @@ void QRasterPixmapData::fromImage(const QImage &sourceImage,
         }
     }
 #endif
+    w = image.d->width;
+    h = image.d->height;
+    d = image.d->depth;
+    is_null = (w <= 0 || h <= 0);
 
     setSerialNumber(image.serialNumber());
 }
@@ -329,9 +337,9 @@ int QRasterPixmapData::metric(QPaintDevice::PaintDeviceMetric metric) const
     // override the image dpi with the screen dpi when rendering to a pixmap
     switch (metric) {
     case QPaintDevice::PdmWidth:
-        return d->width;
+        return w;
     case QPaintDevice::PdmHeight:
-        return d->height;
+        return h;
     case QPaintDevice::PdmWidthMM:
         return qRound(d->width * 25.4 / qt_defaultDpiX());
     case QPaintDevice::PdmHeightMM:
@@ -339,7 +347,7 @@ int QRasterPixmapData::metric(QPaintDevice::PaintDeviceMetric metric) const
     case QPaintDevice::PdmNumColors:
         return d->colortable.size();
     case QPaintDevice::PdmDepth:
-        return d->depth;
+        return this->d;
     case QPaintDevice::PdmDpiX: // fall-through
     case QPaintDevice::PdmPhysicalDpiX:
         return qt_defaultDpiX();

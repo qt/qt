@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -49,9 +49,17 @@ const uchar qt_pixmap_bit_mask[] = { 0x01, 0x02, 0x04, 0x08,
                                      0x10, 0x20, 0x40, 0x80 };
 
 QPixmapData::QPixmapData(PixelType pixelType, int objectId)
-    : ref(0), detach_no(0), type(pixelType), id(objectId), ser_no(0), is_cached(false)
+    : w(0),
+      h(0),
+      d(0),
+      is_null(true),
+      ref(0),
+      detach_no(0),
+      type(pixelType),
+      id(objectId),
+      ser_no(0),
+      is_cached(false)
 {
-
 }
 
 QPixmapData::~QPixmapData()

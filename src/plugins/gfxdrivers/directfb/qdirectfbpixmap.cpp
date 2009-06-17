@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the plugins of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -82,6 +82,10 @@ void QDirectFBPixmapData::resize(int width, int height)
         return;
     }
 
+    w = width;
+    h = height;
+    is_null = (w <= 0 || h <= 0);
+    d = metric(QPaintDevice::PdmDepth);
     setSerialNumber(++global_ser_no);
 }
 
@@ -191,6 +195,10 @@ void QDirectFBPixmapData::fromImage(const QImage &i,
         invalidate();
         return;
     }
+    w = metric(QPaintDevice::PdmWidth);
+    h = metric(QPaintDevice::PdmHeight);
+    is_null = (w <= 0 || h <= 0);
+    d = metric(QPaintDevice::PdmDepth);
     setSerialNumber(++global_ser_no);
 }
 

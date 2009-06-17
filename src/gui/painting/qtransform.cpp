@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -438,9 +438,10 @@ QTransform QTransform::fromTranslate(qreal dx, qreal dy)
 {
     QTransform transform(1, 0, 0, 0, 1, 0, dx, dy, 1, true);
     if (dx == 0 && dy == 0)
-        transform.m_dirty = TxNone;
+        transform.m_type = TxNone;
     else
-        transform.m_dirty = TxTranslate;
+        transform.m_type = TxTranslate;
+    transform.m_dirty = TxNone;
     return transform;
 }
 
@@ -491,9 +492,10 @@ QTransform QTransform::fromScale(qreal sx, qreal sy)
 {
     QTransform transform(sx, 0, 0, 0, sy, 0, 0, 0, 1, true);
     if (sx == 1. && sy == 1.)
-        transform.m_dirty = TxNone;
+        transform.m_type = TxNone;
     else
-        transform.m_dirty = TxScale;
+        transform.m_type = TxScale;
+    transform.m_dirty = TxNone;
     return transform;
 }
 

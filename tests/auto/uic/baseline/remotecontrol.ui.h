@@ -77,7 +77,7 @@ public:
         centralWidget->setObjectName(QString::fromUtf8("centralWidget"));
         gridLayout = new QGridLayout(centralWidget);
         gridLayout->setSpacing(6);
-        gridLayout->setMargin(11);
+        gridLayout->setContentsMargins(11, 11, 11, 11);
         gridLayout->setObjectName(QString::fromUtf8("gridLayout"));
         label = new QLabel(centralWidget);
         label->setObjectName(QString::fromUtf8("label"));
@@ -107,7 +107,7 @@ public:
         actionGroupBox->setEnabled(false);
         gridLayout1 = new QGridLayout(actionGroupBox);
         gridLayout1->setSpacing(6);
-        gridLayout1->setMargin(11);
+        gridLayout1->setContentsMargins(11, 11, 11, 11);
         gridLayout1->setObjectName(QString::fromUtf8("gridLayout1"));
         label_2 = new QLabel(actionGroupBox);
         label_2->setObjectName(QString::fromUtf8("label_2"));
