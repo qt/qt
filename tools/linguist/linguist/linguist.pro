@@ -99,6 +99,7 @@ RESOURCES += linguist.qrc
 
 TRANSLATIONS=$$[QT_INSTALL_TRANSLATIONS]/linguist_ja.ts \
              $$[QT_INSTALL_TRANSLATIONS]/linguist_pl.ts \
+             $$[QT_INSTALL_TRANSLATIONS]/linguist_ru.ts \
              $$[QT_INSTALL_TRANSLATIONS]/linguist_untranslated.ts \
              $$[QT_INSTALL_TRANSLATIONS]/linguist_zh_CN.ts \
              $$[QT_INSTALL_TRANSLATIONS]/linguist_zh_TW.ts \
