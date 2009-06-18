@@ -286,8 +286,11 @@ void QFxFlowView::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
 
         clearTimeLine();
 
-        m_items.removeAll(m_dragItem);
-        m_items.insert(m_dragIdx, m_dragItem);
+        if (m_dragIdx != -1) {
+            m_items.removeAll(m_dragItem);
+            m_items.insert(m_dragIdx, m_dragItem);
+        }
+
         reflow(true);
         m_dragItem = 0;
         m_dragIdx = -1;
