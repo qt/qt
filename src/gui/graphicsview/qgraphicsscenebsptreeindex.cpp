@@ -548,14 +548,9 @@ void QGraphicsSceneBspTreeIndexPrivate::removeFromBspTree(QGraphicsItem *item)
         // ### remove from child index only if applicable
         return;
     }
-    int index = item->d_func()->index;
-    if (index != -1) {
-        bsp.removeItem(item, item->sceneBoundingRect());
-        freeItemIndexes << index;
-        indexedItems[index] = 0;
-        item->d_func()->index = -1;
-        unindexedItems << item;
 
+    if (item->d_func()->index != -1) {
+        bsp.removeItem(item, item->sceneBoundingRect());
         //prepareGeometryChange will call prepareBoundingRectChange
         foreach (QGraphicsItem *child, item->children())
             child->prepareGeometryChange();
@@ -570,10 +565,20 @@ void QGraphicsSceneBspTreeIndexPrivate::removeFromBspTree(QGraphicsItem *item)
 void QGraphicsSceneBspTreeIndex::prepareBoundingRectChange(const QGraphicsItem *item)
 {
     Q_D(QGraphicsSceneBspTreeIndex);
-    // Note: This will access item's sceneBoundingRect(), which (as this is
-    // C++) is why we cannot call removeItem() from QGraphicsItem's
-    // destructor.
-    d->removeFromBspTree(const_cast<QGraphicsItem *>(item));
+    if (!item->d_ptr->itemIsUntransformable()) {
+        // Note: This will access item's sceneBoundingRect(), which (as this is
+        // C++) is why we cannot call removeItem() from QGraphicsItem's
+        // destructor.
+        QGraphicsItem *thatItem = const_cast<QGraphicsItem *>(item);
+        d->removeFromBspTree(thatItem);
+        int index = item->d_func()->index;
+        if (index != -1) {
+            d->freeItemIndexes << index;
+            d->indexedItems[index] = 0;
+            thatItem->d_func()->index = -1;
+            d->unindexedItems << thatItem;
+        }
+    }
 }
 
 /*!
@@ -725,7 +730,13 @@ void QGraphicsSceneBspTreeIndex::itemChange(const QGraphicsItem *item, QGraphics
         if (ignoredTransform != willIgnoreTransform) {
             QGraphicsItem *thatItem = const_cast<QGraphicsItem *>(item);
             removeItem(thatItem);
-            addItem(thatItem);
+            thatItem->d_ptr->index = -1;
+            if (willIgnoreTransform) {
+                d->untransformableItems << thatItem;
+            } else {
+                d->unindexedItems << thatItem;
+                d->startIndexTimer(0);
+            }
         }
         break;
     }
@@ -741,7 +752,13 @@ void QGraphicsSceneBspTreeIndex::itemChange(const QGraphicsItem *item, QGraphics
         if (ignoredTransform != willIgnoreTransform) {
             QGraphicsItem *thatItem = const_cast<QGraphicsItem *>(item);
             removeItem(thatItem);
-            addItem(thatItem);
+            thatItem->d_ptr->index = -1;
+            if (willIgnoreTransform) {
+                d->untransformableItems << thatItem;
+            } else {
+                d->unindexedItems << thatItem;
+                d->startIndexTimer(0);
+            }
         }
         break;
     }
