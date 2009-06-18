@@ -606,7 +606,8 @@ Qt::DropActions BookmarkModel::supportedDropActions() const
 Qt::ItemFlags BookmarkModel::flags(const QModelIndex &index) const
 {
     Qt::ItemFlags defaultFlags = QStandardItemModel::flags(index);
-    if (index.data(Qt::UserRole + 10).toString() == QLatin1String("Folder"))
+    if ((!index.isValid()) // can only happen for the invisible root item
+        || index.data(Qt::UserRole + 10).toString() == QLatin1String("Folder"))
         return (Qt::ItemIsDropEnabled | defaultFlags) &~ Qt::ItemIsDragEnabled;
 
     return (Qt::ItemIsDragEnabled | defaultFlags) &~ Qt::ItemIsDropEnabled;
