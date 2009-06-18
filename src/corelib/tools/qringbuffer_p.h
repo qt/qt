@@ -199,8 +199,12 @@ public:
 
     inline void clear() {
         if(!buffers.isEmpty()) {
-            // remove all but the first
-            buffers.erase(buffers.begin() + 1, buffers.end());
+            QByteArray tmp = buffers[0];
+            buffers.clear();
+            buffers << tmp;
+			//TODO merge this optimization ?
+			//buffers.erase(buffers.begin() + 1, buffers.end());
+            //>>>>>>> 08ae7ee1fb930e7d4b4039e2294cba69f9380964:src/corelib/tools/qringbuffer_p.h
             if (buffers.at(0).size() != basicBlockSize)
                 buffers[0].resize(basicBlockSize);
         }

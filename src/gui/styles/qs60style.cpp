@@ -478,7 +478,9 @@ void QS60StylePrivate::setThemePalette(QApplication *app) const
     Q_UNUSED(app)
     QPalette widgetPalette = QPalette(Qt::white);
     setThemePalette(&widgetPalette);
-    QApplication::setPalette(widgetPalette);
+    QApplication::setPalette(widgetPalette); //calling QApplication::setPalette clears palette hash
+    setThemePaletteHash(&widgetPalette);
+    storeThemePalette(&widgetPalette);
 }
 
 void QS60StylePrivate::setThemePalette(QStyleOption *option) const
@@ -664,7 +666,7 @@ void QS60StylePrivate::setThemePalette(QWidget *widget) const
 {
     if(!widget)
         return;
-    QPalette widgetPalette = widget->palette();
+    QPalette widgetPalette = QApplication::palette(widget);
 
     //header view and its viewport need to be set 100% transparent button color, since drawing code will
     //draw transparent theme graphics to table column and row headers.
@@ -716,9 +718,6 @@ void QS60StylePrivate::setThemePalette(QPalette *palette) const
     palette->setColor(QPalette::Midlight, palette->color(QPalette::Button).lighter(125));
     palette->setColor(QPalette::Mid, palette->color(QPalette::Button).darker(150));
     palette->setColor(QPalette::Shadow, Qt::black);
-
-    setThemePaletteHash(palette);
-    storeThemePalette(palette);
 }
 
 void QS60StylePrivate::deleteThemePalette()
@@ -791,6 +790,18 @@ void QS60StylePrivate::setThemePaletteHash(QPalette *palette) const
     QApplication::setPalette(widgetPalette, "QLineEdit");
     widgetPalette = *palette;
 
+    widgetPalette.setColor(QPalette::All, QPalette::Text,
+        s60Color(QS60StyleEnums::CL_QsnTextColors, 34, 0));
+    widgetPalette.setColor(QPalette::All, QPalette::HighlightedText,
+        s60Color(QS60StyleEnums::CL_QsnTextColors, 24, 0));
+    QApplication::setPalette(widgetPalette, "QTextEdit");
+    widgetPalette = *palette;
+    
+    widgetPalette.setColor(QPalette::All, QPalette::HighlightedText,
+        s60Color(QS60StyleEnums::CL_QsnTextColors, 24, 0));
+    QApplication::setPalette(widgetPalette, "QComboBox");
+    widgetPalette = *palette;
+    
     widgetPalette.setColor(QPalette::WindowText, mainAreaTextColor);
     widgetPalette.setColor(QPalette::Button, QApplication::palette().color(QPalette::Button));
     widgetPalette.setColor(QPalette::Dark, mainAreaTextColor.darker());
@@ -1662,7 +1673,7 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
     case CE_MenuItem:
         if (const QStyleOptionMenuItem *menuItem = qstyleoption_cast<const QStyleOptionMenuItem *>(option)) {
             QStyleOptionMenuItem optionMenuItem = *menuItem;
-            
+
             bool drawSubMenuIndicator = false;
             switch(menuItem->menuItemType) {
                 case QStyleOptionMenuItem::Scroller:

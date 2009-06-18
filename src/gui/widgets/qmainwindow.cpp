@@ -482,7 +482,7 @@ void QMainWindow::setMenuBar(QMenuBar *menuBar)
     }
     d->layout->setMenuBar(menuBar);
     if (menuBar) {
-        QAction* menu = new QAction(QString::fromLatin1("Menu"), this);
+        QAction* menu = new QAction(QString::fromLatin1("Options"), this);
         menu->setSoftKeyRole(QAction::MenuSoftKey);
         setSoftKey(menu);
     }
@@ -1400,7 +1400,7 @@ bool QMainWindow::event(QEvent *event)
         case QEvent::WindowActivate:
             if (d->layout->menuBar()) {
                 // ### TODO: This is evil, there is no need to create a new action every time
-                QAction* menu = new QAction(QString::fromLatin1("Menu"), this);
+                QAction* menu = new QAction(QString::fromLatin1("Options"), this);
                 menu->setSoftKeyRole(QAction::MenuSoftKey);
                 setSoftKey(menu);
             }

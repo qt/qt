@@ -61,6 +61,11 @@ Features
 - QSslSocket
     * Added support for -openssl option i.e. runtime resolving of OpenSSL
       symbols
+
+- QWidget
+    * Basic widgets are now navigatable and usable via keypad on SDK 3
+      FP 1 and FP 2.
+
 - todo
     * todo
 
@@ -169,6 +174,8 @@ Optimizations
     * Fix for frame masks with color depth other than EGrey2.
     * Fix for squeezed QTabBars.
     * Fix memory leak when color skinning graphics.
+    * Show focus/Editfocus visualization for KeyPad navigation on
+      SDK 3 FP 1 and FP 2
 
 - QDesktopServices
     * Switched QDesktopServices mail-to URL handling to RSendAs in Symbian,
@@ -199,6 +206,21 @@ Optimizations
     * Fix to Open C bug: select sometimes returns -1 and errno is
       ECONNREFUSED
 
+- QWidget
+    * Added API for setting softkeys
+
+- QMenuBar
+    * Native menus are handled properly even when application has multiple QMainWindows
+    * Fixed a bug causing both native and qt menu to be created
+    * Fix for disappearing options menu after coming back from dialog
+
+- QFontDataBase
+    * Now, also fonts from the user's /resources/fonts direactories are
+      available.
+
+- QFontMetrics
+    * Fixed the boundingRect calculation for text.
+
 ****************************************************************************
 *                          Examples and demos                              *
 ****************************************************************************
@@ -224,12 +246,15 @@ Optimizations
       since the issue has been fixed in qmake.
     * Included drilldown to demonstrate QtSql usage
     * Updated screenshots to S60 style
+    * Added softkeys example
+
+- Softkeys
+    * New example showing how to use softkeys API in QWidget
 
 
 ****************************************************************************
 *                          Tools                                           *
 ****************************************************************************
-
 - qmake
     * Support for generating Symbian "test" targets: CONFIG += symbian_test.
     * Support for Symbian Build System, version 2 (aka Raptor) via
@@ -259,7 +284,7 @@ Optimizations
     * Will now patch also vendor id.
 
 ****************************************************************************
-*                          Documnetation                                   *
+*                          Documentation                                   *
 ****************************************************************************
 - qmake-manual
     * 250370: Added documentation for ICON keyword
