@@ -1897,6 +1897,8 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
         if (option->state & State_HasFocus)
             drawPrimitive(PE_FrameFocusRect, option, painter, widget);
         break;
+    case CE_MenuScroller:
+        break;
     default:
         QCommonStyle::drawControl(element, option, painter, widget);
     }
