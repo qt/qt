@@ -172,6 +172,8 @@ public:
 
     bool eventFilter(QObject *, QEvent *e);
 
+    bool isInteractive() const;
+
 Q_SIGNALS:
     void stopped() const;
     void started() const;

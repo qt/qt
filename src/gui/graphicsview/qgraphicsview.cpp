@@ -846,19 +846,22 @@ void QGraphicsViewPrivate::processPendingUpdates()
     dirtyRegion = QRegion();
 }
 
-void QGraphicsViewPrivate::updateRegion(const QRegion &r)
+bool QGraphicsViewPrivate::updateRegion(const QRegion &r)
 {
-    if (r.isEmpty() || fullUpdatePending)
-        return;
+    if (fullUpdatePending || viewportUpdateMode == QGraphicsView::NoViewportUpdate || r.isEmpty())
+        return false;
 
-    // Rect intersects viewport - update everything?
+    const QRect boundingRect = r.boundingRect();
+    if (!boundingRect.intersects(viewport->rect()))
+        return false; // Update region outside viewport.
+
     switch (viewportUpdateMode) {
     case QGraphicsView::FullViewportUpdate:
         fullUpdatePending = true;
         viewport->update();
         break;
     case QGraphicsView::BoundingRectViewportUpdate:
-        dirtyBoundingRect |= r.boundingRect();
+        dirtyBoundingRect |= boundingRect;
         if (dirtyBoundingRect.contains(viewport->rect())) {
             fullUpdatePending = true;
             viewport->update();
@@ -876,18 +879,20 @@ void QGraphicsViewPrivate::updateRegion(const QRegion &r)
         }
         break;
     }
-    case QGraphicsView::NoViewportUpdate:
-        // Unreachable
+    default:
         break;
     }
+
+    return true;
 }
 
-void QGraphicsViewPrivate::updateRect(const QRect &r)
+bool QGraphicsViewPrivate::updateRect(const QRect &r)
 {
-    if (r.isEmpty() || fullUpdatePending)
-        return;
+    if (fullUpdatePending || viewportUpdateMode == QGraphicsView::NoViewportUpdate
+        || !r.intersects(viewport->rect())) {
+        return false;
+    }
 
-    // Rect intersects viewport - update everything?
     switch (viewportUpdateMode) {
     case QGraphicsView::FullViewportUpdate:
         fullUpdatePending = true;
@@ -907,10 +912,11 @@ void QGraphicsViewPrivate::updateRect(const QRect &r)
         else
             dirtyRegion += r.adjusted(-2, -2, 2, 2);
         break;
-    case QGraphicsView::NoViewportUpdate:
-        // Unreachable
+    default:
         break;
     }
+
+    return true;
 }
 
 QStyleOptionGraphicsItem *QGraphicsViewPrivate::allocStyleOptionsArray(int numItems)
@@ -3288,10 +3294,6 @@ void QGraphicsView::paintEvent(QPaintEvent *event)
 
     // Determine the exposed region
     d->exposedRegion = event->region();
-    if (!d->accelerateScrolling)
-        d->exposedRegion = viewport()->rect();
-    else if (d->viewportUpdateMode == BoundingRectViewportUpdate)
-        d->exposedRegion = event->rect();
     QRectF exposedSceneRect = mapToScene(d->exposedRegion.boundingRect()).boundingRect();
 
     // Set up the painter
@@ -3305,8 +3307,10 @@ void QGraphicsView::paintEvent(QPaintEvent *event)
     painter.setRenderHints(d->renderHints, true);
 
     // Set up viewport transform
-    const QTransform viewTransform = viewportTransform();
-    painter.setWorldTransform(viewTransform);
+    const bool viewTransformed = isTransformed();
+    if (viewTransformed)
+        painter.setWorldTransform(viewportTransform());
+    const QTransform viewTransform = painter.worldTransform();
 
     // Draw background
     if ((d->cacheMode & CacheBackground)
@@ -3331,16 +3335,21 @@ void QGraphicsView::paintEvent(QPaintEvent *event)
         if (!d->backgroundPixmapExposed.isEmpty()) {
             QPainter backgroundPainter(&d->backgroundPixmap);
             backgroundPainter.setClipRegion(d->backgroundPixmapExposed, Qt::ReplaceClip);
-            backgroundPainter.setTransform(viewportTransform());
+            if (viewTransformed)
+                backgroundPainter.setTransform(viewTransform);
             backgroundPainter.setCompositionMode(QPainter::CompositionMode_Source);
             drawBackground(&backgroundPainter, exposedSceneRect);
             d->backgroundPixmapExposed = QRegion();
         }
 
         // Blit the background from the background pixmap
-        painter.setWorldTransform(QTransform());
-        painter.drawPixmap(QPoint(), d->backgroundPixmap);
-        painter.setWorldTransform(viewTransform);
+        if (viewTransformed) {
+            painter.setWorldTransform(QTransform());
+            painter.drawPixmap(QPoint(), d->backgroundPixmap);
+            painter.setWorldTransform(viewTransform);
+        } else {
+            painter.drawPixmap(QPoint(), d->backgroundPixmap);
+        }
     } else {
         if (!(d->optimizationFlags & DontSavePainterState))
             painter.save();
@@ -3363,8 +3372,10 @@ void QGraphicsView::paintEvent(QPaintEvent *event)
             const int numItems = itemList.size();
             QGraphicsItem **itemArray = &itemList[0]; // Relies on QList internals, but is perfectly valid.
             QStyleOptionGraphicsItem *styleOptionArray = d->allocStyleOptionsArray(numItems);
-            for (int i = 0; i < numItems; ++i)
-                itemArray[i]->d_ptr->initStyleOption(&styleOptionArray[i], viewTransform, d->exposedRegion, allItems);
+            for (int i = 0; i < numItems; ++i) {
+                itemArray[i]->d_ptr->initStyleOption(&styleOptionArray[i], viewTransform,
+                                                     d->exposedRegion, allItems);
+            }
             // Draw the items.
             drawItems(&painter, numItems, itemArray, styleOptionArray);
             d->freeStyleOptionsArray(styleOptionArray);

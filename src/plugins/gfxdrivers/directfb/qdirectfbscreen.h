@@ -118,6 +118,7 @@ public:
                                      SurfaceCreationOptions options);
     void releaseDFBSurface(IDirectFBSurface *surface);
 
+    using QScreen::depth;
     static int depth(DFBSurfacePixelFormat format);
 
     static DFBSurfacePixelFormat getSurfacePixelFormat(QImage::Format format);

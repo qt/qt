@@ -126,7 +126,7 @@ public:
   mode in which it accepts input from the user. The
   evaluationResumed() signal is emitted when script evaluation is
   resumed, i.e, when execution control is given back to the script
-  engine.
+  engine. The state() function returns the debugger's current state.
 
   When calling QScriptEngine::evaluate() it is useful to pass a
   descriptive script name (file name) as second argument, as this is
@@ -224,6 +224,16 @@ public:
     \value FindNextInScriptAction Finds next occurrence in the CodeWidget.
     \value FindPreviousInScriptAction Finds previous occurrence in the CodeWidget.
     \value GoToLineAction Shows the "Go to Line" dialog.
+*/
+
+/*!
+    \enum QScriptEngineDebugger::DebuggerState
+    \since 4.6
+
+    This enum specifies the current state of the debugger.
+
+    \value RunningState   The debugger is running.  (Script evaluation is allowed.)
+    \value SuspendedState The debugger has suspended script evaluation.
 */
 
 class QScriptEngineDebuggerPrivate
@@ -384,6 +394,20 @@ void QScriptEngineDebugger::detach()
         d->frontend->detach();
     if (d->debugger)
         d->debugger->setFrontend(0);
+}
+
+/*!
+  \since 4.6
+
+  Returns the current state of the debugger.
+
+  \sa evaluationResumed()
+  \sa evaluationSuspended()
+*/
+QScriptEngineDebugger::DebuggerState QScriptEngineDebugger::state() const
+{
+    Q_D(const QScriptEngineDebugger);
+    return !d->debugger || !d->debugger->isInteractive() ? SuspendedState : RunningState;
 }
 
 /*!
