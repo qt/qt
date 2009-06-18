@@ -60,13 +60,24 @@ Rect {
                             SetProperties { target: MyContent; x: 0; y: 0; }
                         }
                     ]
-                    transitions: Transition {
-                        fromState: "*"; toState: "*"; 
+                    transitions: [
+                    Transition {
+                        fromState: "*"; toState: "InGrid"
                         SequentialAnimation { 
                             ParentChangeAction{} 
+                            PauseAnimation { duration: 50 * List.FlowView.column }
+                            NumericAnimation { properties: "x,y,rotation"; easing: "easeInOutQuad" } 
+                        } 
+                    },
+                    Transition {
+                        fromState: "*"; toState: "InList"
+                        SequentialAnimation { 
+                            ParentChangeAction{} 
+                            PauseAnimation { duration: 50 * (Grid.FlowView.row * 2 + Grid.FlowView.column) }
                             NumericAnimation { properties: "x,y,rotation"; easing: "easeInOutQuad" } 
                         } 
                     }
+                    ]
                 }
 
             }

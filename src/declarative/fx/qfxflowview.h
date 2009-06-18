@@ -52,6 +52,7 @@ QT_BEGIN_NAMESPACE
 QT_MODULE(Declarative)
 class QFxVisualItemModel;
 class QFxFlowViewValue;
+class QFxFlowViewAttached;
 class Q_DECLARATIVE_EXPORT QFxFlowView : public QFxItem
 {
     Q_OBJECT
@@ -74,6 +75,8 @@ public:
     virtual void mousePressEvent(QGraphicsSceneMouseEvent *event);
     virtual void mouseReleaseEvent(QGraphicsSceneMouseEvent *event);
     virtual void mouseMoveEvent(QGraphicsSceneMouseEvent *event);
+
+    static QFxFlowViewAttached *qmlAttachedProperties(QObject *);
 
 private:
     QRectF rectForItem(int idx) const;

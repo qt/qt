@@ -44,6 +44,27 @@
 
 QT_BEGIN_NAMESPACE
 
+class QFxFlowViewAttached : public QObject
+{
+Q_OBJECT
+Q_PROPERTY(int row READ row NOTIFY posChanged);
+Q_PROPERTY(int column READ column NOTIFY posChanged);
+public:
+    QFxFlowViewAttached(QObject *parent);
+
+    int row() const;
+    int column() const;
+
+signals:
+    void posChanged();
+
+private:
+    friend class QFxFlowView;
+    int m_row;
+    int m_column;
+};
+
+
 QFxFlowView::QFxFlowView()
 : m_columns(0), m_model(0), m_vertical(false), m_dragItem(0), m_dragIdx(-1)
 {
@@ -122,16 +143,28 @@ void QFxFlowView::reflow(bool animate)
     qreal y = 0;
     qreal maxY = 0;
     qreal x = 0;
+    int row = 0;
+    int column = -1;
     if (animate)
         clearTimeLine();
+
     for (int ii = 0; ii < m_items.count(); ++ii) {
         if (0 == (ii % m_columns)) {
             y += maxY;
             maxY = 0;
             x = 0;
+            row = 0;
+            column++;
         }
 
         QFxItem *item = m_items.at(ii);
+        QFxFlowViewAttached *att = 
+            (QFxFlowViewAttached *)qmlAttachedPropertiesObject<QFxFlowView>(item);
+        att->m_row = row;
+        att->m_column = column;
+        emit att->posChanged();
+
+
         if (animate) {
             if (vertical())
                 moveItem(item, QPointF(y, x));
@@ -153,6 +186,7 @@ void QFxFlowView::reflow(bool animate)
             x += item->width();
             maxY = qMax(maxY, item->height());
         }
+        ++row;
     }
 }
 
@@ -297,6 +331,26 @@ void QFxFlowView::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
     }
 }
 
+QFxFlowViewAttached::QFxFlowViewAttached(QObject *parent)
+: QObject(parent), m_row(0), m_column(0)
+{
+}
+
+int QFxFlowViewAttached::row() const
+{
+    return m_row;
+}
+
+int QFxFlowViewAttached::column() const
+{
+    return m_column;
+}
+
+QFxFlowViewAttached *QFxFlowView::qmlAttachedProperties(QObject *obj)
+{
+    return new QFxFlowViewAttached(obj);
+}
+
 void QFxFlowView::clearTimeLine()
 {
     m_timeline.clear();
@@ -318,6 +372,9 @@ void QFxFlowView::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
         }
     }
 }
+
 QML_DEFINE_TYPE(QFxFlowView,FlowView);
+
+#include "qfxflowview.moc"
 
 QT_END_NAMESPACE
