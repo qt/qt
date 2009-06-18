@@ -50,6 +50,7 @@
 #define QMAC_QAQUASTYLE_SIZE_CONSTRAIN
 //#define DEBUG_SIZE_CONSTRAINT
 
+#include <private/qapplication_p.h>
 #include <private/qcombobox_p.h>
 #include <private/qmacstylepixmaps_mac_p.h>
 #include <private/qpaintengine_mac_p.h>
@@ -103,7 +104,6 @@
 QT_BEGIN_NAMESPACE
 
 extern QRegion qt_mac_convert_mac_region(RgnHandle); //qregion_mac.cpp
-extern QHash<QByteArray, QFont> *qt_app_fonts_hash(); // qapplication.cpp
 
 // The following constants are used for adjusting the size
 // of push buttons so that they are drawn inside their bounds.

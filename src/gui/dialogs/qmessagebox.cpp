@@ -45,6 +45,7 @@
 
 #include <QtGui/qdialogbuttonbox.h>
 #include "private/qlabel_p.h"
+#include "private/qapplication_p.h"
 #include <QtCore/qlist.h>
 #include <QtCore/qdebug.h>
 #include <QtGui/qstyle.h>
@@ -72,8 +73,6 @@ extern bool qt_wince_is_pocket_pc(); //defined in qguifunctions_wince.cpp
 #endif
 
 QT_BEGIN_NAMESPACE
-
-extern QHash<QByteArray, QFont> *qt_app_fonts_hash();
 
 enum Button { Old_Ok = 1, Old_Cancel = 2, Old_Yes = 3, Old_No = 4, Old_Abort = 5, Old_Retry = 6,
               Old_Ignore = 7, Old_YesAll = 8, Old_NoAll = 9, Old_ButtonMask = 0xFF,
