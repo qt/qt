@@ -45,14 +45,12 @@
 #ifdef Q_OS_SYMBIAN
 #include <QDir>
 #include <QDesktopWidget>
-#include "sym_iap_util.h"
 #endif
 
 int main(int argc, char *argv[])
 {
     Q_INIT_RESOURCE(ftp);
 #ifdef Q_OS_SYMBIAN
-    qt_SetDefaultIap();
     // Change current directory from default private to c:\data
     // in order that user can access the downloaded content
     QDir::setCurrent( "c:\\data" );
