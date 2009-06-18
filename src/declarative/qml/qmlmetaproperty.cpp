@@ -814,6 +814,16 @@ void QmlMetaPropertyPrivate::writeValueProperty(const QVariant &value)
 
 
         default:
+            {
+                if ((uint)t >= QVariant::UserType && vt == QVariant::String) {
+                    QmlMetaType::StringConverter con = QmlMetaType::customStringConverter(t);
+                    if (con) {
+                        QVariant v = con(value.toString());
+                        prop.write(object, v);
+                        return;
+                    }
+                }
+            }
             break;
         }
         prop.write(object, value);
