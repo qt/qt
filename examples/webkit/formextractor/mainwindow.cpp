@@ -48,6 +48,7 @@ MainWindow::MainWindow()
     createMenus();
     centralWidget = new FormExtractor(this);
     setCentralWidget(centralWidget);
+    setUnifiedTitleAndToolBarOnMac(true);
 }
 
 void MainWindow::createActions()
