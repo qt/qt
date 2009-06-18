@@ -5306,6 +5306,16 @@ void QGraphicsScenePrivate::markDirty(QGraphicsItem *item, const QRectF &rect, b
     }
 }
 
+static inline bool updateHelper(QGraphicsViewPrivate *view, QGraphicsItemPrivate *item,
+                                const QRectF &rect, const QTransform &xform)
+{
+    Q_ASSERT(view);
+    Q_ASSERT(item);
+    if (item->hasBoundingRegionGranularity)
+        return view->updateRegion(xform.map(QRegion(rect.toRect())));
+    return view->updateRect(xform.mapRect(rect).toRect());
+}
+
 void QGraphicsScenePrivate::processDirtyItemsRecursive(QGraphicsItem *item, bool dirtyAncestorContainsChildren,
                                                        qreal parentOpacity)
 {
@@ -5401,14 +5411,14 @@ void QGraphicsScenePrivate::processDirtyItemsRecursive(QGraphicsItem *item, bool
 
                 bool valid = false;
                 if (untransformableItem) {
-                    valid = item->d_ptr->updateHelper(viewPrivate, dirtyRect,
-                                                      item->deviceTransform(view->viewportTransform()));
+                    valid = updateHelper(viewPrivate, item->d_ptr, dirtyRect,
+                                         item->deviceTransform(view->viewportTransform()));
                 } else if (!view->isTransformed()) {
-                    valid = item->d_ptr->updateHelper(viewPrivate, dirtyRect, item->d_ptr->sceneTransform);
+                    valid = updateHelper(viewPrivate, item->d_ptr, dirtyRect, item->d_ptr->sceneTransform);
                 } else {
                     QTransform deviceTransform = item->d_ptr->sceneTransform;
                     deviceTransform *= view->viewportTransform();
-                    valid = item->d_ptr->updateHelper(viewPrivate, dirtyRect, deviceTransform);
+                    valid = updateHelper(viewPrivate, item->d_ptr, dirtyRect, deviceTransform);
                 }
                 if (!valid)
                     paintedViewBoundingRect = QRect();

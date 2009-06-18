@@ -366,14 +366,6 @@ public:
                || (childrenCombineOpacity() && isFullyTransparent());
     }
 
-    inline bool updateHelper(QGraphicsViewPrivate *view, const QRectF &rect, const QTransform &xform) const
-    {
-        Q_ASSERT(view);
-        if (hasBoundingRegionGranularity)
-            return view->updateRegion(xform.map(QRegion(rect.toRect())));
-        return view->updateRect(xform.mapRect(rect).toRect());
-    }
-
     inline QTransform transformToParent() const;
 
     QPainterPath cachedClipPath;
