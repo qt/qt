@@ -42,10 +42,9 @@
 
 #include <QtTest/QtTest>
 #include <QtGui/qgraphicsscene.h>
-#include <QtGui/qgraphicssceneindex.h>
 #include <private/qgraphicsscenebsptreeindex_p.h>
+#include <private/qgraphicssceneindex_p.h>
 #include <private/qgraphicsscenelinearindex_p.h>
-
 
 //TESTED_CLASS=
 //TESTED_FILES=
@@ -118,6 +117,7 @@ void tst_QGraphicsSceneIndex::customIndex_data()
 
 void tst_QGraphicsSceneIndex::customIndex()
 {
+#if 0
     QFETCH(QString, indexMethod);
     QGraphicsSceneIndex *index = createIndex(indexMethod);
 
@@ -126,6 +126,7 @@ void tst_QGraphicsSceneIndex::customIndex()
 
     scene.addRect(0, 0, 30, 40);
     QCOMPARE(scene.items(QRectF(0, 0, 10, 10)).count(), 1);
+#endif
 }
 
 void tst_QGraphicsSceneIndex::scatteredItems_data()
@@ -136,10 +137,14 @@ void tst_QGraphicsSceneIndex::scatteredItems_data()
 void tst_QGraphicsSceneIndex::scatteredItems()
 {
     QFETCH(QString, indexMethod);
-    QGraphicsSceneIndex *index = createIndex(indexMethod);
 
     QGraphicsScene scene;
+#if 1
+    scene.setItemIndexMethod(indexMethod == "linear" ? QGraphicsScene::NoIndex : QGraphicsScene::BspTreeIndex);
+#else
+    QGraphicsSceneIndex *index = createIndex(indexMethod);
     scene.setSceneIndex(index);
+#endif
 
     for (int i = 0; i < 10; ++i)
         scene.addRect(i*50, i*50, 40, 35);
@@ -161,10 +166,14 @@ void tst_QGraphicsSceneIndex::overlappedItems_data()
 void tst_QGraphicsSceneIndex::overlappedItems()
 {
     QFETCH(QString, indexMethod);
-    QGraphicsSceneIndex *index = createIndex(indexMethod);
 
     QGraphicsScene scene;
+#if 1
+    scene.setItemIndexMethod(indexMethod == "linear" ? QGraphicsScene::NoIndex : QGraphicsScene::BspTreeIndex);
+#else
+    QGraphicsSceneIndex *index = createIndex(indexMethod);
     scene.setSceneIndex(index);
+#endif
 
     for (int i = 0; i < 10; ++i)
         for (int j = 0; j < 10; ++j)
@@ -191,10 +200,14 @@ void tst_QGraphicsSceneIndex::movingItems_data()
 void tst_QGraphicsSceneIndex::movingItems()
 {
     QFETCH(QString, indexMethod);
-    QGraphicsSceneIndex *index = createIndex(indexMethod);
 
     QGraphicsScene scene;
+#if 1
+    scene.setItemIndexMethod(indexMethod == "linear" ? QGraphicsScene::NoIndex : QGraphicsScene::BspTreeIndex);
+#else
+    QGraphicsSceneIndex *index = createIndex(indexMethod);
     scene.setSceneIndex(index);
+#endif
 
     for (int i = 0; i < 10; ++i)
         scene.addRect(i*50, i*50, 40, 35);
