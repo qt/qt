@@ -1304,6 +1304,21 @@ QByteArray::QByteArray(int size, char ch)
 }
 
 /*!
+    \internal 
+
+    Constructs a byte array of size \a size with uninitialized contents.
+*/
+
+QByteArray::QByteArray(int size, enum Qt::Uninitialized)
+{
+    d = static_cast<Data *>(qMalloc(sizeof(Data)+size));
+    d->ref = 1;
+    d->alloc = d->size = size;
+    d->data = d->array;
+    d->array[size] = '\0';
+}
+
+/*!
     Sets the size of the byte array to \a size bytes.
 
     If \a size is greater than the current size, the byte array is
