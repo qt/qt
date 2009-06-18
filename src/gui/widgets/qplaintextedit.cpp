@@ -1725,8 +1725,7 @@ static void fillBackground(QPainter *p, const QRectF &rect, QBrush brush, QRectF
     p->save();
     if (brush.style() >= Qt::LinearGradientPattern && brush.style() <= Qt::ConicalGradientPattern) {
         if (!gradientRect.isNull()) {
-            QTransform m;
-            m.translate(gradientRect.left(), gradientRect.top());
+            QTransform m = QTransform::fromTranslate(gradientRect.left(), gradientRect.top());
             m.scale(gradientRect.width(), gradientRect.height());
             brush.setTransform(m);
             const_cast<QGradient *>(brush.gradient())->setCoordinateMode(QGradient::LogicalMode);

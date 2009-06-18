@@ -5073,7 +5073,7 @@ void QGraphicsScenePrivate::drawSubtreeRecursive(QGraphicsItem *item, QPainter *
     // Calculate the full transform for this item.
     bool wasDirtyParentSceneTransform = false;
     bool dontDrawItem = true;
-    QTransform transform;
+    QTransform transform(Qt::Uninitialized);
     if (item) {
         if (item->d_ptr->itemIsUntransformable()) {
             transform = item->deviceTransform(viewTransform);

@@ -3951,10 +3951,8 @@ QImage QImage::scaled(const QSize& s, Qt::AspectRatioMode aspectMode, Qt::Transf
     if (newSize == size())
         return copy();
 
-    QImage img;
-    QTransform wm;
-    wm.scale((qreal)newSize.width() / width(), (qreal)newSize.height() / height());
-    img = transformed(wm, mode);
+    QTransform wm = QTransform::fromScale((qreal)newSize.width() / width(), (qreal)newSize.height() / height());
+    QImage img = transformed(wm, mode);
     return img;
 }
 
@@ -3981,9 +3979,8 @@ QImage QImage::scaledToWidth(int w, Qt::TransformationMode mode) const
     if (w <= 0)
         return QImage();
 
-    QTransform wm;
     qreal factor = (qreal) w / width();
-    wm.scale(factor, factor);
+    QTransform wm = QTransform::fromScale(factor, factor);
     return transformed(wm, mode);
 }
 
@@ -4010,9 +4007,8 @@ QImage QImage::scaledToHeight(int h, Qt::TransformationMode mode) const
     if (h <= 0)
         return QImage();
 
-    QTransform wm;
     qreal factor = (qreal) h / height();
-    wm.scale(factor, factor);
+    QTransform wm = QTransform::fromScale(factor, factor);
     return transformed(wm, mode);
 }
 

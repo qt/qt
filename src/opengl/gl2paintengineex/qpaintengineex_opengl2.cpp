@@ -1063,8 +1063,7 @@ void QGL2PaintEngineExPrivate::drawCachedGlyphs(const QPointF &p, const QTextIte
 
     QVarLengthArray<QFixedPoint> positions;
     QVarLengthArray<glyph_t> glyphs;
-    QTransform matrix;
-    matrix.translate(p.x(), p.y());
+    QTransform matrix = QTransform::fromTranslate(p.x(), p.y());
     ti.fontEngine->getGlyphPositions(ti.glyphs, matrix, ti.flags, glyphs, positions);
 
     QFontEngineGlyphCache::Type glyphType = ti.fontEngine->glyphFormat >= 0

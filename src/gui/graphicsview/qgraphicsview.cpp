@@ -1940,8 +1940,7 @@ void QGraphicsView::render(QPainter *painter, const QRectF &target, const QRect 
     itemList.clear();
 
     // Setup painter matrix.
-    QTransform moveMatrix;
-    moveMatrix.translate(-d->horizontalScroll(), -d->verticalScroll());
+    QTransform moveMatrix = QTransform::fromTranslate(-d->horizontalScroll(), -d->verticalScroll());
     QTransform painterMatrix = d->matrix * moveMatrix;
     painterMatrix *= QTransform()
                      .translate(targetRect.left(), targetRect.top())
@@ -2292,9 +2291,9 @@ QPolygonF QGraphicsView::mapToScene(const QPolygon &polygon) const
 QPainterPath QGraphicsView::mapToScene(const QPainterPath &path) const
 {
     Q_D(const QGraphicsView);
-    QTransform moveMatrix;
-    moveMatrix.translate(d->horizontalScroll(), d->verticalScroll());
-    return (moveMatrix * d->matrix.inverted()).map(path);
+    QTransform matrix = QTransform::fromTranslate(d->horizontalScroll(), d->verticalScroll());
+    matrix *= d->matrix.inverted();
+    return matrix.map(path);
 }
 
 /*!
@@ -2388,9 +2387,9 @@ QPolygon QGraphicsView::mapFromScene(const QPolygonF &polygon) const
 QPainterPath QGraphicsView::mapFromScene(const QPainterPath &path) const
 {
     Q_D(const QGraphicsView);
-    QTransform moveMatrix;
-    moveMatrix.translate(-d->horizontalScroll(), -d->verticalScroll());
-    return (d->matrix * moveMatrix).map(path);
+    QTransform matrix = d->matrix;
+    matrix *= QTransform::fromTranslate(-d->horizontalScroll(), -d->verticalScroll());
+    return matrix.map(path);
 }
 
 /*!
@@ -3553,8 +3552,7 @@ QTransform QGraphicsView::transform() const
 QTransform QGraphicsView::viewportTransform() const
 {
     Q_D(const QGraphicsView);
-    QTransform moveMatrix;
-    moveMatrix.translate(-d->horizontalScroll(), -d->verticalScroll());
+    QTransform moveMatrix = QTransform::fromTranslate(-d->horizontalScroll(), -d->verticalScroll());
     return d->identityMatrix ? moveMatrix : d->matrix * moveMatrix;
 }
 
