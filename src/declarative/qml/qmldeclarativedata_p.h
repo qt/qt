@@ -64,7 +64,7 @@ class QmlCompiledComponent;
 class QmlInstanceDeclarativeData : public QmlSimpleDeclarativeData
 {
 public:
-    QmlInstanceDeclarativeData() { flags |= Instance; }
+    QmlInstanceDeclarativeData() : deferredComponent(0) { flags |= Instance; }
 
     virtual void destroyed(QObject *);
 
