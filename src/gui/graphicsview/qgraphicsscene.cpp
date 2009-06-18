@@ -5408,7 +5408,7 @@ void QGraphicsScenePrivate::processDirtyItemsRecursive(QGraphicsItem *item, bool
                 } else {
                     QTransform deviceTransform = item->d_ptr->sceneTransform;
                     deviceTransform *= view->viewportTransform();
-                    valid = !item->d_ptr->updateHelper(viewPrivate, dirtyRect, deviceTransform);
+                    valid = item->d_ptr->updateHelper(viewPrivate, dirtyRect, deviceTransform);
                 }
                 if (!valid)
                     paintedViewBoundingRect = QRect();
