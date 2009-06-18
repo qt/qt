@@ -26,10 +26,12 @@ Rect {
     ListView {
         clip: true
         orientation: "Horizontal"
-        anchors.fill: parent
+        width: parent.width
+        height: 86
+        y: 17
         model: FeedModel
         delegate: 
-            Item { width: 90; height: 120 
+            Item { width: 90; height: 86 
                 Rect {
                     anchors.centeredIn: parent
                     width: 86; height: 86; 
