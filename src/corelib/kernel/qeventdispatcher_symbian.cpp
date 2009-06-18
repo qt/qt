@@ -249,7 +249,7 @@ void QTimerActiveObject::Run()
         SymbianTimerInfoPtr timerInfoPtr(m_timerInfo);
 
         m_timerInfo->dispatcher->timerFired(m_timerInfo->timerId);
-            
+
         iStatus = KRequestPending;
         SetActive();
         TRequestStatus *status = &iStatus;
@@ -618,7 +618,7 @@ QEventDispatcherSymbian::~QEventDispatcherSymbian()
 void QEventDispatcherSymbian::startingUp()
 {
     if( !CActiveScheduler::Current() ) {
-        m_activeScheduler = new(ELeave)CActiveScheduler();
+        m_activeScheduler = new(ELeave)CQtActiveScheduler();
         CActiveScheduler::Install(m_activeScheduler);
     }
     m_wakeUpAO = new(ELeave) QWakeUpActiveObject(this);
@@ -652,7 +652,7 @@ bool QEventDispatcherSymbian::processEvents ( QEventLoop::ProcessEventsFlags fla
         m_iterationCount++;
 
         RThread &thread = d->threadData->symbian_thread_handle;
-    
+
         bool block;
         if (flags & QEventLoop::WaitForMoreEvents) {
             block = true;
@@ -660,7 +660,7 @@ bool QEventDispatcherSymbian::processEvents ( QEventLoop::ProcessEventsFlags fla
         } else {
             block = false;
         }
-    
+
         bool oldNoSocketEventsValue = m_noSocketEvents;
         if (flags & QEventLoop::ExcludeSocketNotifiers) {
             m_noSocketEvents = true;
@@ -668,10 +668,10 @@ bool QEventDispatcherSymbian::processEvents ( QEventLoop::ProcessEventsFlags fla
             m_noSocketEvents = false;
             handledAnyEvent = sendDeferredSocketEvents();
         }
-    
+
         bool handledSymbianEvent = false;
         m_interrupt = false;
-    
+
         /*
          * This QTime variable is used to measure the time it takes to finish
          * the event loop. If we take too long in the loop, other processes
@@ -687,9 +687,9 @@ bool QEventDispatcherSymbian::processEvents ( QEventLoop::ProcessEventsFlags fla
             SubsequentRun,
             TimeStarted
         } timeState = FirstRun;
-    
+
         TProcessPriority priority;
-    
+
         while (1) {
             if (block) {
                 // This is where Qt will spend most of its time.
@@ -701,19 +701,19 @@ bool QEventDispatcherSymbian::processEvents ( QEventLoop::ProcessEventsFlags fla
                 // This one should return without delay.
                 CActiveScheduler::Current()->WaitForAnyRequest();
             }
-    
+
             if (timeState == SubsequentRun) {
                 time.start();
                 timeState = TimeStarted;
             }
-    
+
             TInt error;
             handledSymbianEvent = CActiveScheduler::RunIfReady(error, CActive::EPriorityIdle);
             if (error) {
                 qWarning("CActiveScheduler::RunIfReady() returned error: %i\n", error);
                 CActiveScheduler::Current()->Error(error);
             }
-            
+
             if (!handledSymbianEvent) {
                 qFatal("QEventDispatcherSymbian::processEvents(): Caught Symbian stray signal");
             }
@@ -735,14 +735,14 @@ bool QEventDispatcherSymbian::processEvents ( QEventLoop::ProcessEventsFlags fla
             if (timeState == FirstRun)
                 timeState = SubsequentRun;
         };
-    
+
         emit awake();
-    
+
         m_noSocketEvents = oldNoSocketEventsValue;
     } QT_CATCH (const std::exception& ex) {
-#ifndef QT_NO_EXCEPTIONS    
+#ifndef QT_NO_EXCEPTIONS
         CActiveScheduler::Current()->Error(qt_translateExceptionToSymbianError(ex));
-#endif        
+#endif
     }
 
     return handledAnyEvent;
@@ -970,6 +970,22 @@ QList<QEventDispatcherSymbian::TimerInfo> QEventDispatcherSymbian::registeredTim
     }
 
     return list;
+}
+
+/*
+ * This active scheduler class implements a simple report and continue policy, for Symbian OS leaves
+ * or exceptions from Qt that fall back to the scheduler.
+ * It will be used in cases where there is no existing active scheduler installed.
+ * Apps which link to qts60main.lib will have the UI active scheduler installed in the main thread
+ * instead of this one. But this would be used in other threads in the UI.
+ * An app could replace this behaviour by installing an alternative active scheduler.
+ */
+void CQtActiveScheduler::Error(TInt aError) const
+{
+    QT_TRY {
+        qWarning("Error from active scheduler %d", aError);
+    }
+    QT_CATCH (const std::bad_alloc&) {}    // ignore alloc fails, nothing more can be done
 }
 
 QT_END_NAMESPACE

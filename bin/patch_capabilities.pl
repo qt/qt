@@ -31,13 +31,22 @@ if (@ARGV)
         # Start with no binaries listed.
         my @binaries = ();
 
-        # Open the ".pkg" file.
+        my $tempPkgFileName = $pkgFileName."_@@TEMP@@";
+        unlink($tempPkgFileName);
+        open (NEW_PKG, ">>".$tempPkgFileName);
         open (PKG, "<".$pkgFileName);
 
         # Parse each line.
         while (<PKG>)
         {
             my $line = $_;
+            my $newLine = $line;
+            if ( $line =~ m/^\#.*\(0x[0-9|a-f|A-F]*\).*$/)
+            {
+                $newLine =~ s/\(0x./\(0xE/;
+            }
+            print NEW_PKG $newLine;
+
             chomp ($line);
 
             # If the line specifies a file, parse the source and destination locations.
@@ -54,8 +63,11 @@ if (@ARGV)
             }
         }
 
-        # Close the ".pkg" file.
         close (PKG);
+        close (NEW_PKG);
+
+        unlink($pkgFileName);
+        rename($tempPkgFileName, $pkgFileName);
 
         print ("\n");
 
