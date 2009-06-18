@@ -123,6 +123,9 @@ public:
 public slots:
     void exec();
 
+protected:
+    void timerEvent(QTimerEvent *);
+
 private slots:
     void resetBinds();
     void resetQuery();

@@ -73,7 +73,7 @@ Rect {
         font.bold: true
         text: fieldText.label
         opacity: textEdit.text == '' ? 1 : 0
-        opacity: Behaviour {
+        opacity: Behavior {
             NumericAnimation {
                 property: "opacity"
                 duration: 250

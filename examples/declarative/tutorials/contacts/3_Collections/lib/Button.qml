@@ -48,7 +48,7 @@ Item {
             }
         ]
     }
-    opacity: Behaviour {
+    opacity: Behavior {
         NumericAnimation {
             property: "opacity"
             duration: 250

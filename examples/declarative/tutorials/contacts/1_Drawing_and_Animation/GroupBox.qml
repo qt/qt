@@ -47,7 +47,7 @@ FocusRealm {
             anchors.fill: parent
             onClicked: { parent.parent.focus=true }
         }
-        opacity: Behaviour {
+        opacity: Behavior {
             NumericAnimation {
                 property: "opacity"
                 duration: 250

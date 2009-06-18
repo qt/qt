@@ -41,8 +41,27 @@ Rect {
                             anchors.fill: parent
                             onClicked: {
                                 Details.qml = 'Contact.qml';
-                                wrapper.state='opened';
+                                wrapper.state ='opened';
                                 contacts.mode = 'edit';
+                            }
+                        }
+                    ]
+                    states: [
+                        State {
+                            name: "currentItem"
+                            when: wrapper.ListView.isCurrentItem
+                            SetProperty {
+                                target: label
+                                property: "color"
+                                value: "black"
+                            }
+                        }
+                    ]
+                    transitions: [
+                        Transition {
+                            ColorAnimation {
+                                duration: 250
+                                property: "color"
                             }
                         }
                     ]
@@ -190,10 +209,26 @@ Rect {
         anchors.left: parent.left
         anchors.right: parent.right
         anchors.top: cancelEditButton.bottom
-        anchors.bottom: searchBarWrapper.bottom
+        anchors.bottom: searchBarWrapper.top
+        anchors.topMargin: 5
         clip: true
         model: contactList
         delegate: contactDelegate
+        highlight: [
+            Rect {
+                id: contactHighlight
+                pen.width: 0
+                color: 'white'
+                opacity: contacts.mode == 'list' ? 1 : 0
+                opacity: Behavior {
+                    NumericAnimation {
+                        property: "opacity"
+                        duration: 250
+                    }
+                }
+            }
+        ]
+        autoHighlight: true
         focus: false
     }
     FocusRealm {
