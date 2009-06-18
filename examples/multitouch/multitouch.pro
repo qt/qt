@@ -1,2 +1,2 @@
 TEMPLATE = subdirs
-SUBDIRS = pinchzoom fingerpaint knobs
+SUBDIRS = pinchzoom fingerpaint knobs dials

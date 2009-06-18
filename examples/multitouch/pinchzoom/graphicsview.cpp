@@ -48,6 +48,7 @@ GraphicsView::GraphicsView(QGraphicsScene *scene, QWidget *parent)
     : QGraphicsView(scene, parent)
 {
     setAttribute(Qt::WA_AcceptTouchEvents);
+    setDragMode(ScrollHandDrag);
 }
 
 bool GraphicsView::event(QEvent *event)
@@ -58,12 +59,7 @@ bool GraphicsView::event(QEvent *event)
     case QEvent::TouchEnd:
     {
         QList<QTouchEvent::TouchPoint> touchPoints = static_cast<QTouchEvent *>(event)->touchPoints();
-        if (touchPoints.count() == 1) {
-            const QTouchEvent::TouchPoint &touchPoint = touchPoints.first();
-            QPointF delta = touchPoint.pos() - touchPoint.lastPos();
-            horizontalScrollBar()->setValue(horizontalScrollBar()->value() - delta.x());
-            verticalScrollBar()->setValue(verticalScrollBar()->value() - delta.y());
-        } else if (touchPoints.count() == 2) {
+        if (touchPoints.count() == 2) {
             // determine scale factor
             const QTouchEvent::TouchPoint &touchPoint0 = touchPoints.first();
             const QTouchEvent::TouchPoint &touchPoint1 = touchPoints.last();
