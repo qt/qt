@@ -1,4 +1,4 @@
-QT      +=  webkit
+QT      +=  webkit network
 HEADERS =   googlechat.h
 SOURCES =   main.cpp \
             googlechat.cpp
