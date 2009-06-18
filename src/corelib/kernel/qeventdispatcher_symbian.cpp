@@ -979,10 +979,10 @@ QList<QEventDispatcherSymbian::TimerInfo> QEventDispatcherSymbian::registeredTim
  */
 void CQtActiveScheduler::Error(TInt aError) const
 {
-    try {
+    QT_TRY {
         qWarning("Error from active scheduler %d", aError);
     }
-    catch (const std::bad_alloc&) {}    // ignore alloc fails, nothing more can be done
+    QT_CATCH (const std::bad_alloc&) {}    // ignore alloc fails, nothing more can be done
 }
 
 QT_END_NAMESPACE

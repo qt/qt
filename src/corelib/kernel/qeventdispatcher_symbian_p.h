@@ -210,10 +210,10 @@ private:
 };
 
 class Q_CORE_EXPORT CQtActiveScheduler : public CActiveScheduler
-    {
+{
 public: // from CActiveScheduler
     virtual void Error(TInt aError) const;
-    };
+};
 
 class Q_CORE_EXPORT QEventDispatcherSymbian : public QAbstractEventDispatcher
 {
