@@ -135,8 +135,8 @@ void tst_QTouchEvent::touchEventAcceptedByDefault()
     QWidget widget;
     widget.setAttribute(Qt::WA_AcceptTouchEvents);
 
-    // QWidget doesn't handle touch event by default, so sending it fails
-    // (but the event is accepted)
+    // QWidget handles touch event by converting them into a mouse event, so the event is both
+    // accepted and handled (res == true)
     QList<QTouchEvent::TouchPoint> touchPoints;
     touchPoints.append(QTouchEvent::TouchPoint(0));
     QTouchEvent touchEvent(QEvent::TouchBegin,
@@ -144,7 +144,7 @@ void tst_QTouchEvent::touchEventAcceptedByDefault()
                            Qt::TouchPointPressed,
                            touchPoints);
     bool res = QApplication::sendEvent(&widget, &touchEvent);
-    QVERIFY(!res);
+    QVERIFY(res);
     QVERIFY(touchEvent.isAccepted());
 
     // tst_QTouchEventWidget does handle, sending succeeds
@@ -244,8 +244,6 @@ void tst_QTouchEvent::touchUpdateAndEndNeverPropagate()
 
 void tst_QTouchEvent::basicRawEventTranslation()
 {
-    extern Q_GUI_EXPORT bool qt_translateRawTouchEvent(const QList<QTouchEvent::TouchPoint> &, QWidget *);
-
     tst_QTouchEventWidget touchWidget;
     touchWidget.setAttribute(Qt::WA_AcceptTouchEvents);
 
@@ -259,8 +257,7 @@ void tst_QTouchEvent::basicRawEventTranslation()
     // this should be translated to a TouchBegin
     rawTouchPoint.setState(Qt::TouchPointPressed);
     rawTouchPoint.setScreenPos(screenPos);
-    bool res = qt_translateRawTouchEvent(QList<QTouchEvent::TouchPoint>() << rawTouchPoint, &touchWidget);
-    QVERIFY(res);
+    qt_translateRawTouchEvent(QList<QTouchEvent::TouchPoint>() << rawTouchPoint, &touchWidget);
     QVERIFY(touchWidget.seenTouchBegin);
     QVERIFY(!touchWidget.seenTouchUpdate);
     QVERIFY(!touchWidget.seenTouchEnd);
@@ -285,8 +282,7 @@ void tst_QTouchEvent::basicRawEventTranslation()
     // moving the point should translate to TouchUpdate
     rawTouchPoint.setState(Qt::TouchPointMoved);
     rawTouchPoint.setScreenPos(screenPos + delta);
-    res = qt_translateRawTouchEvent(QList<QTouchEvent::TouchPoint>() << rawTouchPoint, &touchWidget);
-    QVERIFY(res);
+    qt_translateRawTouchEvent(QList<QTouchEvent::TouchPoint>() << rawTouchPoint, &touchWidget);
     QVERIFY(touchWidget.seenTouchBegin);
     QVERIFY(touchWidget.seenTouchUpdate);
     QVERIFY(!touchWidget.seenTouchEnd);
@@ -311,8 +307,7 @@ void tst_QTouchEvent::basicRawEventTranslation()
     // releasing the point translates to TouchEnd
     rawTouchPoint.setState(Qt::TouchPointReleased);
     rawTouchPoint.setScreenPos(screenPos + delta + delta);
-    res = qt_translateRawTouchEvent(QList<QTouchEvent::TouchPoint>() << rawTouchPoint, &touchWidget);
-    QVERIFY(res);
+    qt_translateRawTouchEvent(QList<QTouchEvent::TouchPoint>() << rawTouchPoint, &touchWidget);
     QVERIFY(touchWidget.seenTouchBegin);
     QVERIFY(touchWidget.seenTouchUpdate);
     QVERIFY(touchWidget.seenTouchEnd);
