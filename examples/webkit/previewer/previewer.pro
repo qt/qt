@@ -1,4 +1,4 @@
-QT      +=  webkit
+QT      +=  webkit network
 HEADERS =   previewer.h \
             mainwindow.h
 SOURCES =   main.cpp \

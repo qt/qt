@@ -1,4 +1,4 @@
-QT          +=  webkit
+QT          +=  webkit network
 TARGET       =  formExtractor
 TEMPLATE     =  app
 SOURCES     +=  main.cpp \
