@@ -112,15 +112,14 @@ static void setDefaultIapL() {
         User::LeaveIfError(conn.GetDesSetting(TPtrC(KIapNameSetting), iap8Name));
         iap8Name.ZeroTerminate();
 
+        conn.Stop();
+        CleanupStack::PopAndDestroy(&conn);
+        CleanupStack::PopAndDestroy(&serv);
+
         struct ifreq ifReq;
         strcpy( ifReq.ifr_name, (char*)iap8Name.Ptr());
         User::LeaveIfError(setdefaultif( &ifReq ));
 
-        conn.Stop();
-        conn.Close();
-        serv.Close();
-        CleanupStack::PopAndDestroy(&conn);
-        CleanupStack::PopAndDestroy(&serv);
     }
     monitor.Close();
     CleanupStack::PopAndDestroy(&monitor);
