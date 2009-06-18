@@ -1019,7 +1019,7 @@ QString::QString(int size, QChar ch)
     \internal
 */
 
-QString::QString(int size, Uninitialized)
+QString::QString(int size, enum Qt::Uninitialized)
 {
     d = (Data*) qMalloc(sizeof(Data)+size*sizeof(QChar));
     d->ref = 1;
