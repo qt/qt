@@ -220,7 +220,7 @@ Rect {
                 pen.width: 0
                 color: 'white'
                 opacity: contacts.mode == 'list' ? 1 : 0
-                opacity: Behaviour {
+                opacity: Behavior {
                     NumericAnimation {
                         property: "opacity"
                         duration: 250
