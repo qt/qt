@@ -3,7 +3,7 @@ TARGET = browser
 QT += webkit network
 
 CONFIG += qt warn_on
-contains(QT_BUILD_PARTS, tools): CONFIG += uitools
+contains(QT_BUILD_PARTS, tools):!symbian: CONFIG += uitools
 else: DEFINES += QT_NO_UITOOLS
 
 FORMS += \
