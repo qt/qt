@@ -289,7 +289,7 @@ void QSQLiteResult::virtual_hook(int id, void *data)
             sqlite3_reset(d->stmt);
         break;
     default:
-        QSqlResult::virtual_hook(id, data);
+        QSqlCachedResult::virtual_hook(id, data);
     }
 }
 

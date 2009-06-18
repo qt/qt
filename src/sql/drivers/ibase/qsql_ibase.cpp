@@ -1103,6 +1103,19 @@ bool QIBaseResult::gotoNext(QSqlCachedResult::ValueCache& row, int rowIdx)
             // null value
             QVariant v;
             v.convert(qIBaseTypeName2(d->sqlda->sqlvar[i].sqltype, d->sqlda->sqlvar[i].sqlscale < 0));
+            if(v.type() == QVariant::Double) {
+                switch(numericalPrecisionPolicy()) {
+                case QSql::LowPrecisionInt32:
+                    v.convert(QVariant::Int);
+                    break;
+                case QSql::LowPrecisionInt64:
+                    v.convert(QVariant::LongLong);
+                    break;
+                case QSql::HighPrecision:
+                    v.convert(QVariant::String);
+                    break;
+                }
+            }
             row[idx] = v;
             continue;
         }
@@ -1167,6 +1180,27 @@ bool QIBaseResult::gotoNext(QSqlCachedResult::ValueCache& row, int rowIdx)
             // unknown type - don't even try to fetch
             row[idx] = QVariant();
             break;
+        }
+        if (d->sqlda->sqlvar[i].sqlscale < 0) {
+            QVariant v = row[idx];
+            switch(numericalPrecisionPolicy()) {
+            case QSql::LowPrecisionInt32:
+                if(v.convert(QVariant::Int))
+                    row[idx]=v;
+                break;
+            case QSql::LowPrecisionInt64:
+                if(v.convert(QVariant::LongLong))
+                    row[idx]=v;
+                break;
+            case QSql::LowPrecisionDouble:
+                if(v.convert(QVariant::Double))
+                    row[idx]=v;
+                break;
+            case QSql::HighPrecision:
+                if(v.convert(QVariant::String))
+                    row[idx]=v;
+                break;
+            }
         }
     }
 
@@ -1339,7 +1373,6 @@ bool QIBaseDriver::hasFeature(DriverFeature f) const
     case LastInsertId:
     case BatchOperations:
     case SimpleLocking:
-    case LowPrecisionNumbers:
     case FinishQuery:
     case MultipleResultSets:
         return false;
@@ -1349,6 +1382,7 @@ bool QIBaseDriver::hasFeature(DriverFeature f) const
     case Unicode:
     case BLOB:
     case EventNotifications:
+    case LowPrecisionNumbers:
         return true;
     }
     return false;
