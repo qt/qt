@@ -3221,20 +3221,6 @@ int QApplication::x11ProcessEvent(XEvent* event)
     Q_D(QApplication);
     QScopedLoopLevelCounter loopLevelCounter(d->threadData);
 
-#ifdef QT_RX71_MULTITOUCH
-    switch (event->type) {
-    case ButtonPress:
-    case ButtonRelease:
-    case MotionNotify:
-        // if multitouch is active, we have to block all pointer events from X11
-        if (d->hasRX71MultiTouch)
-            return 1;
-        break;
-    default:
-        break;
-    }
-#endif
-
 #ifdef ALIEN_DEBUG
     //qDebug() << "QApplication::x11ProcessEvent:" << event->type;
 #endif
@@ -6223,52 +6209,7 @@ void QApplicationPrivate::_q_readRX71MultiTouchEvents()
     for (int i = 0; i < allRX71TouchPoints.count(); ++i)
         touchPoints.append(allRX71TouchPoints.at(i).touchPoint);
 
-    if (!translateRawTouchEvent(0, touchPoints))
-        fakeMouseEventFromRX71TouchEvent();
-}
-
-void QApplicationPrivate::fakeMouseEventFromRX71TouchEvent()
-{
-    // we only fake mouse events from the first touch point
-    const QTouchEvent::TouchPoint &touchPoint = allRX71TouchPoints.first().touchPoint;
-
-    QEvent::Type mouseEventType;
-    switch (touchPoint.state()) {
-    case Qt::TouchPointPressed:
-        mouseEventType = QEvent::MouseButtonPress;
-        break;
-    case Qt::TouchPointMoved:
-        mouseEventType = QEvent::MouseMove;
-        break;
-    case Qt::TouchPointReleased:
-        mouseEventType = QEvent::MouseButtonRelease;
-        break;
-    case Qt::TouchPointStationary:
-    default:
-        // finger didn't move, ignore the event
-        return;
-    }
-
-    QPoint screenPos = touchPoint.screenPos().toPoint();
-    Q_Q(QApplication);
-    QWidget *window = q->activePopupWidget();
-    if (!window)
-        window = q->topLevelAt(screenPos);
-    if (!window)
-        return;
-
-    QPoint pos = window->mapFromGlobal(screenPos);
-    QWidget *widget = window->childAt(pos);
-    if (!widget)
-        widget = window;
-
-    QMouseEvent mouseEvent(mouseEventType,
-                           pos,
-                           screenPos,
-                           Qt::LeftButton,
-                           Qt::LeftButton,
-                           q->keyboardModifiers());
-    (void) QApplication::sendEvent(widget, &mouseEvent);
+    translateRawTouchEvent(0, touchPoints);
 }
 
 #else // !QT_RX71_MULTITOUCH

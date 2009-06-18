@@ -5296,7 +5296,7 @@ int QApplicationPrivate::findClosestTouchPointId(const QPointF &screenPos)
     return closestTouchPointId;
 }
 
-bool QApplicationPrivate::translateRawTouchEvent(QWidget *window,
+void QApplicationPrivate::translateRawTouchEvent(QWidget *window,
                                                  const QList<QTouchEvent::TouchPoint> &touchPoints)
 {
     QApplicationPrivate *d = self;
@@ -5365,13 +5365,13 @@ bool QApplicationPrivate::translateRawTouchEvent(QWidget *window,
 
         StatesAndTouchPoints &maskAndPoints = widgetsNeedingEvents[widget];
         maskAndPoints.first |= touchPoint.state();
+        if (touchPoint.isPrimary())
+            maskAndPoints.first |= Qt::TouchPointPrimary;
         maskAndPoints.second.append(touchPoint);
     }
 
     if (widgetsNeedingEvents.isEmpty())
-        return false;
-
-    bool returnValue = false;
+        return;
 
     QHash<QWidget *, StatesAndTouchPoints>::ConstIterator it = widgetsNeedingEvents.constBegin();
     const QHash<QWidget *, StatesAndTouchPoints>::ConstIterator end = widgetsNeedingEvents.constEnd();
@@ -5381,7 +5381,7 @@ bool QApplicationPrivate::translateRawTouchEvent(QWidget *window,
             continue;
 
         QEvent::Type eventType;
-        switch(it.value().first) {
+        switch (it.value().first & Qt::TouchPointStateMask) {
         case Qt::TouchPointPressed:
             eventType = QEvent::TouchBegin;
             break;
@@ -5402,15 +5402,13 @@ bool QApplicationPrivate::translateRawTouchEvent(QWidget *window,
                                it.value().second);
         updateTouchPointsForWidget(widget, &touchEvent);
 
-        bool res = false;
         switch (touchEvent.type()) {
         case QEvent::TouchBegin:
         {
             // if the TouchBegin handler recurses, we assume that means the event
             // has been implicitly accepted and continue to send touch events
             widget->setAttribute(Qt::WA_WState_AcceptedTouchBeginEvent);
-            res = QApplication::sendSpontaneousEvent(widget, &touchEvent)
-                  && touchEvent.isAccepted();
+            (void ) QApplication::sendSpontaneousEvent(widget, &touchEvent);
             break;
         }
         default:
@@ -5418,20 +5416,16 @@ bool QApplicationPrivate::translateRawTouchEvent(QWidget *window,
                 if (touchEvent.type() == QEvent::TouchEnd)
                     widget->setAttribute(Qt::WA_WState_AcceptedTouchBeginEvent, false);
                 (void) QApplication::sendSpontaneousEvent(widget, &touchEvent);
-                res = true;
             }
             break;
         }
-        returnValue = returnValue || res;
     }
-
-    return returnValue;
 }
 
-Q_GUI_EXPORT bool qt_translateRawTouchEvent(const QList<QTouchEvent::TouchPoint> &touchPoints,
+Q_GUI_EXPORT void qt_translateRawTouchEvent(const QList<QTouchEvent::TouchPoint> &touchPoints,
                                             QWidget *window)
 {
-    return QApplicationPrivate::translateRawTouchEvent(window, touchPoints);
+    QApplicationPrivate::translateRawTouchEvent(window, touchPoints);
 }
 
 QT_END_NAMESPACE

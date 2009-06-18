@@ -7883,6 +7883,43 @@ bool QWidget::event(QEvent *event)
     case QEvent::Gesture:
         event->ignore();
         break;
+    case QEvent::TouchBegin:
+    case QEvent::TouchUpdate:
+    case QEvent::TouchEnd:
+    {
+        QTouchEvent *touchEvent = static_cast<QTouchEvent *>(event);
+        const QTouchEvent::TouchPoint &touchPoint = touchEvent->touchPoints().first();
+        if (touchPoint.isPrimary())
+            break;
+
+        // fake a mouse event!
+        QEvent::Type eventType = QEvent::None;
+        switch (touchEvent->type()) {
+        case QEvent::TouchBegin:
+            eventType = QEvent::MouseButtonPress;
+            break;
+        case QEvent::TouchUpdate:
+            eventType = QEvent::MouseMove;
+            break;
+        case QEvent::TouchEnd:
+            eventType = QEvent::MouseButtonRelease;
+            break;
+        default:
+            Q_ASSERT(!true);
+            break;
+        }
+        if (eventType == QEvent::None)
+            break;
+
+        QMouseEvent mouseEvent(eventType,
+                               touchPoint.pos().toPoint(),
+                               touchPoint.screenPos().toPoint(),
+                               Qt::LeftButton,
+                               Qt::LeftButton,
+                               touchEvent->modifiers());
+        (void) QApplication::sendEvent(this, &mouseEvent);
+        break;
+    }
 #ifndef QT_NO_PROPERTIES
     case QEvent::DynamicPropertyChange: {
         const QByteArray &propName = static_cast<QDynamicPropertyChangeEvent *>(event)->propertyName();

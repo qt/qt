@@ -110,7 +110,7 @@ public:
 
     QAtomicInt ref;
     int id;
-    Qt::TouchPointState state;
+    Qt::TouchPointStates state;
     QRectF rect, sceneRect, screenRect;
     QPointF startPos, startScenePos, startScreenPos;
     QPointF lastPos, lastScenePos, lastScreenPos;

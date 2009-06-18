@@ -3724,6 +3724,9 @@ void QGestureEvent::accept(const QString &type)
     \value TouchPointMoved The touch point moved.
     \value TouchPointStationary The touch point did not move.
     \value TouchPointReleased The touch point was released.
+
+    \omitvalue TouchPointStateMask
+    \omitvalue TouchPointPrimary
 */
 
 /*! \class QTouchEvent::TouchPoint
@@ -3833,7 +3836,16 @@ int QTouchEvent::TouchPoint::id() const
 */
 Qt::TouchPointState QTouchEvent::TouchPoint::state() const
 {
-    return d->state;
+    return Qt::TouchPointState(int(d->state) & Qt::TouchPointStateMask);
+}
+
+/*!
+    Returns true if this touch point is the primary touch point. The primary touch point is the
+    point for which the windowing system generates mouse events.
+*/
+bool QTouchEvent::TouchPoint::isPrimary() const
+{
+    return (d->state & Qt::TouchPointPrimary) != 0;
 }
 
 /*!
@@ -3956,7 +3968,7 @@ void QTouchEvent::TouchPoint::setId(int id)
 }
 
 /*! \internal */
-void QTouchEvent::TouchPoint::setState(Qt::TouchPointState state)
+void QTouchEvent::TouchPoint::setState(Qt::TouchPointStates state)
 {
     if (d->ref != 1)
         d = d->detach();

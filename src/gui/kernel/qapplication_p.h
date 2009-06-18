@@ -447,7 +447,7 @@ public:
     int findClosestTouchPointId(const QPointF &screenPos);
     void appendTouchPoint(const QTouchEvent::TouchPoint &touchPoint);
     void removeTouchPoint(int touchPointId);
-    static bool translateRawTouchEvent(QWidget *widget,
+    static void translateRawTouchEvent(QWidget *widget,
                                        const QList<QTouchEvent::TouchPoint> &touchPoints);
 
 #if defined(Q_WS_WIN)

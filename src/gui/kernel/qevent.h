@@ -772,6 +772,7 @@ public:
         int id() const;
 
         Qt::TouchPointState state() const;
+        bool isPrimary() const;
 
         QPointF pos() const;
         QPointF startPos() const;
@@ -793,7 +794,7 @@ public:
 
         // internal
         void setId(int id);
-        void setState(Qt::TouchPointState state);
+        void setState(Qt::TouchPointStates state);
         void setPos(const QPointF &pos);
         void setScenePos(const QPointF &scenePos);
         void setScreenPos(const QPointF &screenPos);

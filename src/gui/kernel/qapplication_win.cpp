@@ -4047,29 +4047,27 @@ bool QApplicationPrivate::translateTouchEvent(const MSG &msg)
                                       qreal(touchInput.cyContact) / qreal(100.)));
         screenRect.moveCenter(screenPos);
 
+        Qt::TouchPointStates state;
         if (touchInput.dwFlags & TOUCHEVENTF_DOWN) {
-            touchPoint.setState(Qt::TouchPointPressed);
-            touchPoint.setScreenPos(screenPos);
-            touchPoint.setRect(screenRect);
+            state = Qt::TouchPointPressed;
         } else if (touchInput.dwFlags & TOUCHEVENTF_UP) {
-            touchPoint.setState(Qt::TouchPointReleased);
-            touchPoint.setScreenPos(screenPos);
-            touchPoint.setRect(screenRect);
+            state = Qt::TouchPointReleased;
         } else {
-            touchPoint.setState(screenPos == touchPoint.screenPos()
-                                 ? Qt::TouchPointStationary
-                                 : Qt::TouchPointMoved);
-            touchPoint.setScreenPos(screenPos);
-            touchPoint.setRect(screenRect);
+            state = (screenPos == touchPoint.screenPos()
+                     ? Qt::TouchPointStationary
+                     : Qt::TouchPointMoved);
         }
+        if (touchInput.dwFlags & TOUCHEVENTF_PRIMARY)
+            state |= Qt::TouchPointPrimary;
+        touchPoint.setState(state);
+        touchPoint.setScreenRect(screenRect);
 
         touchPoints.append(touchPoint);
     }
     QApplicationPrivate::CloseTouchInputHandle((HANDLE) msg.lParam);
 
-    extern bool qt_translateRawTouchEvent(const QList<QTouchEvent::TouchPoint> &, QWidget *);
-    qt_tabletChokeMouse = qt_translateRawTouchEvent(touchPoints, widgetForHwnd);
-    return qt_tabletChokeMouse;
+    translateRawTouchEvent(widgetForHwnd, touchPoints);
+    return true;
 }
 
 QT_END_NAMESPACE
