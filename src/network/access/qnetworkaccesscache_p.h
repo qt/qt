@@ -64,6 +64,9 @@ QT_BEGIN_NAMESPACE
 class QNetworkRequest;
 class QUrl;
 
+// this class is not about caching files but about
+// caching objects used by QNetworkAccessManager, e.g. existing TCP connections
+// or credentials.
 class QNetworkAccessCache: public QObject
 {
     Q_OBJECT

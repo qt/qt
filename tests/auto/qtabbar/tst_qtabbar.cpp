@@ -370,7 +370,7 @@ void tst_QTabBar::tabButton()
 
     tabbar.setTabButton(0, position, button);
 
-    QCOMPARE(tabbar.tabButton(0, position), static_cast<const QWidget *>(button));
+    QCOMPARE(tabbar.tabButton(0, position), static_cast<QWidget *>(button));
     QTRY_VERIFY(!button->isHidden());
     QVERIFY(tabbar.tabButton(0, otherSide) == 0);
     QCOMPARE(button->parent(), static_cast<QObject *>(&tabbar));

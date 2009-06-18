@@ -351,8 +351,7 @@ QString QUtf16Codec::convertToUnicode(const char *chars, int len, ConverterState
     if (headerdone && endian == Detect)
         endian = (QSysInfo::ByteOrder == QSysInfo::BigEndian) ? BE : LE;
 
-    QString result;
-    result.resize(len); // worst case
+    QString result(len, Qt::Uninitialized); // worst case
     QChar *qch = (QChar *)result.unicode();
     while (len--) {
         if (half) {

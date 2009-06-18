@@ -43,6 +43,7 @@
 
 /*!
     \class QLatin1Literal
+    \internal
     \reentrant
     \since 4.6
 
@@ -83,6 +84,7 @@
 
 /*!
     \class QStringBuilder
+    \internal
     \reentrant
     \since 4.6
 

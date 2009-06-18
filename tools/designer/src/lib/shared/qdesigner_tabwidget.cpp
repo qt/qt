@@ -368,7 +368,7 @@ QMenu *QTabWidgetEventFilter::addContextMenuActions(QMenu *popup)
 {
     QMenu *pageMenu = 0;
     const int count = m_tabWidget->count();
-    m_actionDeletePage->setEnabled(count > 1);
+    m_actionDeletePage->setEnabled(count);
     if (count) {
         const int currentIndex = m_tabWidget->currentIndex();
         const QString pageSubMenuLabel = tr("Page %1 of %2").arg(currentIndex + 1).arg(count);
@@ -381,11 +381,13 @@ QMenu *QTabWidgetEventFilter::addContextMenuActions(QMenu *popup)
                                                 qdesigner_internal::PromotionTaskMenu::SuppressGlobalEdit,
                                                 pageMenu);
         }
+        QMenu *insertPageMenu = popup->addMenu(tr("Insert Page"));
+        insertPageMenu->addAction(m_actionInsertPageAfter);
+        insertPageMenu->addAction(m_actionInsertPage);
+    } else {
+        QAction *insertPageAction = popup->addAction(tr("Insert Page"));
+        connect(insertPageAction, SIGNAL(triggered()), this, SLOT(addPage()));
     }
-
-    QMenu *insertPageMenu = popup->addMenu(tr("Insert Page"));
-    insertPageMenu->addAction(m_actionInsertPageAfter);
-    insertPageMenu->addAction(m_actionInsertPage);
     popup->addSeparator();
     return pageMenu;
 }

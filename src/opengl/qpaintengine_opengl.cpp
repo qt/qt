@@ -662,6 +662,7 @@ public:
         , txop(QTransform::TxNone)
         , inverseScale(1)
         , moveToCount(0)
+        , last_created_state(0)
         , shader_ctx(0)
         , grad_palette(0)
         , drawable_texture(0)
@@ -787,6 +788,8 @@ public:
     void copyDrawable(const QRectF &rect);
 
     void updateGLMatrix() const;
+
+    mutable QPainterState *last_created_state;
 
     QGLContext *shader_ctx;
     GLuint grad_palette;
@@ -2218,6 +2221,8 @@ void QOpenGLPaintEnginePrivate::enableClipping()
 void QOpenGLPaintEnginePrivate::updateDepthClip()
 {
     Q_Q(QOpenGLPaintEngine);
+
+    ++q->state()->depthClipId;
 
     glDisable(GL_DEPTH_TEST);
     glDisable(GL_SCISSOR_TEST);
@@ -4201,8 +4206,7 @@ void QOpenGLPaintEnginePrivate::drawImageAsPath(const QRectF &r, const QImage &i
     qreal scaleX = r.width() / sr.width();
     qreal scaleY = r.height() / sr.height();
 
-    QTransform brush_matrix;
-    brush_matrix.translate(r.left(), r.top());
+    QTransform brush_matrix = QTransform::fromTranslate(r.left(), r.top());
     brush_matrix.scale(scaleX, scaleY);
     brush_matrix.translate(-sr.left(), -sr.top());
 
@@ -4223,8 +4227,7 @@ void QOpenGLPaintEnginePrivate::drawTiledImageAsPath(const QRectF &r, const QIma
     QBrush old_brush = cbrush;
     QPointF old_brush_origin = brush_origin;
 
-    QTransform brush_matrix;
-    brush_matrix.translate(r.left(), r.top());
+    QTransform brush_matrix = QTransform::fromTranslate(r.left(), r.top());
     brush_matrix.scale(sx, sy);
 
     cbrush = QBrush(img);
@@ -4866,8 +4869,7 @@ void QOpenGLPaintEngine::drawTextItem(const QPointF &p, const QTextItem &textIte
     // add the glyphs used to the glyph texture cache
     QVarLengthArray<QFixedPoint> positions;
     QVarLengthArray<glyph_t> glyphs;
-    QTransform matrix;
-    matrix.translate(qRound(p.x()), qRound(p.y()));
+    QTransform matrix = QTransform::fromTranslate(qRound(p.x()), qRound(p.y()));
     ti.fontEngine->getGlyphPositions(ti.glyphs, matrix, ti.flags, glyphs, positions);
 
     // make sure the glyphs we want to draw are in the cache
@@ -5501,9 +5503,20 @@ void QOpenGLPaintEngine::clip(const QVectorPath &path, Qt::ClipOperation op)
 void QOpenGLPaintEngine::setState(QPainterState *s)
 {
     Q_D(QOpenGLPaintEngine);
+    QOpenGLPaintEngineState *new_state = static_cast<QOpenGLPaintEngineState *>(s);
+    QOpenGLPaintEngineState *old_state = state();
+
     QPaintEngineEx::setState(s);
+
+    // are we in a save() ?
+    if (s == d->last_created_state) {
+        d->last_created_state = 0;
+        return;
+    }
+
     if (isActive()) {
-        d->updateDepthClip();
+        if (old_state->depthClipId != new_state->depthClipId)
+            d->updateDepthClip();
         penChanged();
         brushChanged();
         opacityChanged();
@@ -5515,12 +5528,15 @@ void QOpenGLPaintEngine::setState(QPainterState *s)
 
 QPainterState *QOpenGLPaintEngine::createState(QPainterState *orig) const
 {
+    const Q_D(QOpenGLPaintEngine);
+
     QOpenGLPaintEngineState *s;
     if (!orig)
         s = new QOpenGLPaintEngineState();
     else
         s = new QOpenGLPaintEngineState(*static_cast<QOpenGLPaintEngineState *>(orig));
 
+    d->last_created_state = s;
     return s;
 }
 
@@ -5534,11 +5550,13 @@ QOpenGLPaintEngineState::QOpenGLPaintEngineState(QOpenGLPaintEngineState &other)
     clipRegion = other.clipRegion;
     hasClipping = other.hasClipping;
     fastClip = other.fastClip;
+    depthClipId = other.depthClipId;
 }
 
 QOpenGLPaintEngineState::QOpenGLPaintEngineState()
 {
     hasClipping = false;
+    depthClipId = 0;
 }
 
 QOpenGLPaintEngineState::~QOpenGLPaintEngineState()

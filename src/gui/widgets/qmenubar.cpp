@@ -1253,7 +1253,8 @@ void QMenuBar::mouseMoveEvent(QMouseEvent *e)
 void QMenuBar::leaveEvent(QEvent *)
 {
     Q_D(QMenuBar);
-    if(!hasFocus() && !d->popupState)
+    if((!hasFocus() && !d->popupState) ||
+        (d->currentAction && d->currentAction->menu() == 0))
         d->setCurrentAction(0);
 }
 

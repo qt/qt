@@ -829,7 +829,7 @@ void MainWindow::removeSubstitute()
 
     int item = sublistbox->currentItem();
     QStringList subs = QFont::substitutes(familysubcombo->currentText());
-    subs.remove(subs.at(sublistbox->currentItem()));
+    subs.removeAt(sublistbox->currentItem());
     sublistbox->clear();
     sublistbox->insertStringList(subs);
     if (uint(item) > sublistbox->count())
@@ -909,7 +909,7 @@ void MainWindow::removeFontpath()
         return;
 
     int item = fontpathlistbox->currentItem();
-    fontpaths.remove(fontpaths.at(fontpathlistbox->currentItem()));
+    fontpaths.removeAt(fontpathlistbox->currentItem());
     fontpathlistbox->clear();
     fontpathlistbox->insertStringList(fontpaths);
     if (uint(item) > fontpathlistbox->count())

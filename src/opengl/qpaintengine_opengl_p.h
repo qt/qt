@@ -69,6 +69,7 @@ public:
     QRegion clipRegion;
     bool hasClipping;
     QRect fastClip;
+    uint depthClipId;
 };
 
 class QOpenGLPaintEngine : public QPaintEngineEx

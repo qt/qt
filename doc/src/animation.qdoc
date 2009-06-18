@@ -208,12 +208,6 @@
     Note that QObject must be the first class inherited as the
     meta-object system demands this.
 
-    \warning The QItemAnimation class, which was initially intended
-    for animating \l{QGraphicsItem}s may be deprecated or removed from
-    the animation framework.
-
-    \omit (need something about the list of animations). \endomit
-
     \section1 Easing Curves
 
     As mentioned, QPropertyAnimation performs an interpolation between

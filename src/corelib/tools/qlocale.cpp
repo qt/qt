@@ -185,8 +185,7 @@ static QString languageToCode(QLocale::Language language)
 
     const unsigned char *c = language_code_list + 3*(uint(language));
 
-    QString code;
-    code.resize(c[2] == 0 ? 2 : 3);
+    QString code(c[2] == 0 ? 2 : 3, Qt::Uninitialized);
 
     code[0] = ushort(c[0]);
     code[1] = ushort(c[1]);
@@ -201,8 +200,7 @@ static QString countryToCode(QLocale::Country country)
     if (country == QLocale::AnyCountry)
         return QString();
 
-    QString code;
-    code.resize(2);
+    QString code(2, Qt::Uninitialized);
     const unsigned char *c = country_code_list + 2*(uint(country));
     code[0] = ushort(c[0]);
     code[1] = ushort(c[1]);

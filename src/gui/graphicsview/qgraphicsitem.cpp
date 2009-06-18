@@ -978,7 +978,8 @@ void QGraphicsItemPrivate::childrenBoundingRectHelper(QTransform *x, QRectF *rec
         bool hasPos = !childd->pos.isNull();
         if (hasPos || childd->transformData) {
             // COMBINE
-            QTransform matrix = childd->transformToParent() * *x;
+            QTransform matrix = childd->transformToParent();
+            matrix *= *x;
             *rect |= matrix.mapRect(child->boundingRect());
             if (!childd->children.isEmpty())
                 childd->childrenBoundingRectHelper(&matrix, rect);
@@ -3195,8 +3196,7 @@ QTransform QGraphicsItem::deviceTransform(const QTransform &viewportTransform) c
     QPointF mappedPoint = (untransformedAncestor->sceneTransform() * viewportTransform).map(QPointF(0, 0));
 
     // COMBINE
-    QTransform matrix;
-    matrix.translate(mappedPoint.x(), mappedPoint.y());
+    QTransform matrix = QTransform::fromTranslate(mappedPoint.x(), mappedPoint.y());
     if (untransformedAncestor->d_ptr->transformData)
         matrix = untransformedAncestor->d_ptr->transformData->computedFullTransform(&matrix);
 
@@ -3294,9 +3294,8 @@ QTransform QGraphicsItem::itemTransform(const QGraphicsItem *other, bool *ok) co
     bool cousins = other != commonAncestor && this != commonAncestor;
     if (cousins) {
         bool good = false;
-        QTransform thisToScene;
-        QTransform otherToScene;
-        thisToScene = itemTransform(commonAncestor, &good);
+        QTransform thisToScene = itemTransform(commonAncestor, &good);
+        QTransform otherToScene(Qt::Uninitialized);
         if (good)
             otherToScene = other->itemTransform(commonAncestor, &good);
         if (!good) {
@@ -4143,8 +4142,7 @@ QRegion QGraphicsItem::boundingRegion(const QTransform &itemToDeviceTransform) c
     p.end();
 
     // Transform QRegion back to device space
-    QTransform unscale;
-    unscale.scale(1 / granularity, 1 / granularity);
+    QTransform unscale = QTransform::fromScale(1 / granularity, 1 / granularity);
     QRegion r;
     QBitmap colorMask = QBitmap::fromImage(mask.createMaskFromColor(0));
     foreach (const QRect &rect, QRegion( colorMask ).rects()) {

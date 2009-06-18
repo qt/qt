@@ -94,9 +94,7 @@ public:
     bool needsFill() const { return m_hasFillColor; }
     QColor fillColor() const { return m_fillColor; }
 
-    QSize size() const { return QSize(m_width, m_height); }
-    int width() const { return m_width; }
-    int height() const { return m_height; }
+    QSize size() const { return QSize(w, h); }
 
     QGLFramebufferObject *fbo() const;
 
@@ -116,9 +114,6 @@ private:
     static bool useFramebufferObjects();
 
     QImage fillImage(const QColor &color) const;
-
-    int m_width;
-    int m_height;
 
     mutable QGLFramebufferObject *m_renderFbo;
     mutable GLuint m_textureId;

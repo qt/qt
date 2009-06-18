@@ -111,9 +111,11 @@ void tst_QScriptEngineDebugger::attachAndDetach()
 {
     {
         QScriptEngineDebugger debugger;
+        QCOMPARE(debugger.state(), QScriptEngineDebugger::SuspendedState);
         debugger.attachTo(0);
         QScriptEngine engine;
         debugger.attachTo(&engine);
+        QCOMPARE(debugger.state(), QScriptEngineDebugger::SuspendedState);
     }
     {
         QScriptEngineDebugger debugger;
@@ -129,11 +131,9 @@ void tst_QScriptEngineDebugger::attachAndDetach()
         QVERIFY(!engine.globalObject().property("print").strictlyEquals(oldPrint));
 
         debugger.detach();
-        QEXPECT_FAIL("", "Task 256184", Continue);
-        QVERIFY(!engine.globalObject().property("print").isValid());
-        QEXPECT_FAIL("", "Task 256184", Continue);
+        QVERIFY(engine.globalObject().property("print").strictlyEquals(oldPrint));
         QVERIFY(!engine.globalObject().property("__FILE__").isValid());
-//        QVERIFY(!engine.globalObject().property("__LINE__").isValid());
+        QVERIFY(!engine.globalObject().property("__LINE__").isValid());
     }
     {
         QScriptEngineDebugger debugger;
@@ -161,6 +161,14 @@ void tst_QScriptEngineDebugger::attachAndDetach()
         debugger2.attachTo(&engine);
     }
 #endif
+    {
+        QScriptEngine *engine = new QScriptEngine;
+        QScriptEngineDebugger debugger;
+        debugger.attachTo(engine);
+        delete engine;
+        QScriptEngine engine2;
+        debugger.attachTo(&engine2);
+    }
 }
 
 void tst_QScriptEngineDebugger::action()

@@ -129,18 +129,14 @@ int QDirectFBPaintDevice::metric(QPaintDevice::PaintDeviceMetric metric) const
     if (!dfbSurface)
         return 0;
 
-    int w, h;
-    dfbSurface->GetSize(dfbSurface, &w, &h);
-
     switch (metric) {
     case QPaintDevice::PdmWidth:
-        return w;
     case QPaintDevice::PdmHeight:
-        return h;
+        return (metric == PdmWidth ? size().width() : size().height());
     case QPaintDevice::PdmWidthMM:
-        return (w * 1000) / dotsPerMeterX();
+        return (size().width() * 1000) / dotsPerMeterX();
     case QPaintDevice::PdmHeightMM:
-        return (h * 1000) / dotsPerMeterY();
+        return (size().height() * 1000) / dotsPerMeterY();
     case QPaintDevice::PdmPhysicalDpiX:
     case QPaintDevice::PdmDpiX:
         return (dotsPerMeterX() * 254) / 10000; // 0.0254 meters-per-inch

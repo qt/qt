@@ -83,7 +83,6 @@ public:
     QPaintEngine* paintEngine() const;
 
 private:
-    int w, h, d;
 
     uint has_alpha : 1, has_mask : 1, uninit : 1;
 

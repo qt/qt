@@ -4611,6 +4611,46 @@ void fetchWacomToolId(int &deviceType, qint64 &serialId)
 }
 #endif
 
+struct qt_tablet_motion_data
+{
+    Time timestamp;
+    int tabletMotionType;
+    bool error; // found a reason to stop searching
+};
+
+static Bool qt_mouseMotion_scanner(Display *, XEvent *event, XPointer arg)
+{
+    qt_tablet_motion_data *data = (qt_tablet_motion_data *) arg;
+    if (data->error)
+        return false;
+
+    if (event->type == MotionNotify)
+        return true;
+
+    data->error = event->type != data->tabletMotionType; // we stop compression when another event gets in between.
+    return false;
+}
+
+static Bool qt_tabletMotion_scanner(Display *, XEvent *event, XPointer arg)
+{
+    qt_tablet_motion_data *data = (qt_tablet_motion_data *) arg;
+    if (data->error)
+        return false;
+
+    if (event->type == data->tabletMotionType) {
+        if (data->timestamp > 0) {
+            if ((reinterpret_cast<const XDeviceMotionEvent*>(event))->time > data->timestamp) {
+                data->error = true;
+                return false;
+            }
+        }
+        return true;
+    }
+
+    data->error = event->type != MotionNotify; // we stop compression when another event gets in between.
+    return false;
+}
+
 bool QETWidget::translateXinputEvent(const XEvent *ev, QTabletDeviceData *tablet)
 {
 #if defined (Q_OS_IRIX)
@@ -4637,7 +4677,6 @@ bool QETWidget::translateXinputEvent(const XEvent *ev, QTabletDeviceData *tablet
     qreal rotation = 0;
     int deviceType = QTabletEvent::NoDevice;
     int pointerType = QTabletEvent::UnknownPointer;
-    XEvent xinputMotionEvent;
     XEvent mouseMotionEvent;
     const XDeviceMotionEvent *motion = 0;
     XDeviceButtonEvent *button = 0;
@@ -4645,8 +4684,6 @@ bool QETWidget::translateXinputEvent(const XEvent *ev, QTabletDeviceData *tablet
     QEvent::Type t;
     Qt::KeyboardModifiers modifiers = 0;
     bool reinsertMouseEvent = false;
-    bool neverFoundMouseEvent = true;
-    XEvent xinputMotionEventNext;
     XEvent mouseMotionEventSave;
 #if !defined (Q_OS_IRIX)
     XID device_id;
@@ -4654,72 +4691,41 @@ bool QETWidget::translateXinputEvent(const XEvent *ev, QTabletDeviceData *tablet
 
     if (ev->type == tablet->xinput_motion) {
         motion = reinterpret_cast<const XDeviceMotionEvent*>(ev);
-        for (;;) {
-            // get the corresponding mouseMotionEvent for motion
-            if (XCheckTypedWindowEvent(X11->display, internalWinId(), MotionNotify, &mouseMotionEvent)) {
+
+        // Do event compression.  Skip over tablet+mouse move events if there are newer ones.
+        qt_tablet_motion_data tabletMotionData;
+        tabletMotionData.tabletMotionType = tablet->xinput_motion;
+        while (true) {
+            // Find first mouse event since we expect them in pairs inside Qt
+            tabletMotionData.error =false;
+            tabletMotionData.timestamp = 0;
+            if (XCheckIfEvent(X11->display, &mouseMotionEvent, &qt_mouseMotion_scanner, (XPointer) &tabletMotionData)) {
                 mouseMotionEventSave = mouseMotionEvent;
                 reinsertMouseEvent = true;
-                neverFoundMouseEvent = false;
-
-                if (mouseMotionEvent.xmotion.time > motion->time) {
-                    XEvent xinputMotionEventLoop = *ev;
-
-                    // xinput event is older than the mouse event --> search for the corresponding xinput event for the given mouse event
-                    while (mouseMotionEvent.xmotion.time > (reinterpret_cast<const XDeviceMotionEvent*>(&xinputMotionEventLoop))->time) {
-                        if (XCheckTypedWindowEvent(X11->display, internalWinId(), tablet->xinput_motion, &xinputMotionEventLoop)) {
-                            xinputMotionEvent = xinputMotionEventLoop;
-                        }
-                        else {
-                            break;
-                        }
-                    }
-                    motion = reinterpret_cast<const XDeviceMotionEvent*>(&xinputMotionEvent);
-                }
-
-                // get the next xinputMotionEvent, for the next loop run
-                if (!XCheckTypedWindowEvent(X11->display, internalWinId(), tablet->xinput_motion, &xinputMotionEventNext)) {
-                    XPutBackEvent(X11->display, &mouseMotionEvent);
-                    reinsertMouseEvent = false;
-                    break;
-                }
-
-                if (mouseMotionEvent.xmotion.time != motion->time) {
-                    // reinsert in order
-                    if (mouseMotionEvent.xmotion.time >= motion->time) {
-                        XPutBackEvent(X11->display, &mouseMotionEvent);
-                        XPutBackEvent(X11->display, &xinputMotionEventNext);
-                        // next entry in queue is xinputMotionEventNext
-                    }
-                    else {
-                        XPutBackEvent(X11->display, &xinputMotionEventNext);
-                        XPutBackEvent(X11->display, &mouseMotionEvent);
-                        // next entry in queue is mouseMotionEvent
-                    }
-                    reinsertMouseEvent = false;
-                    break;
-                }
-            }
-            else {
+            } else {
                 break;
             }
 
-            xinputMotionEvent = xinputMotionEventNext;
-            motion = (reinterpret_cast<const XDeviceMotionEvent*>(&xinputMotionEvent));
+            // Now discard any duplicate tablet events.
+            XEvent dummy;
+            tabletMotionData.error = false;
+            tabletMotionData.timestamp = mouseMotionEvent.xmotion.time;
+            while (XCheckIfEvent(X11->display, &dummy, &qt_tabletMotion_scanner, (XPointer) &tabletMotionData)) {
+                motion = reinterpret_cast<const XDeviceMotionEvent*>(&dummy);
+            }
+
+            // now check if there are more recent tablet motion events since we'll compress the current one with
+            // newer ones in that case
+            tabletMotionData.error = false;
+            tabletMotionData.timestamp = 0;
+            if (! XCheckIfEvent(X11->display, &dummy, &qt_tabletMotion_scanner, (XPointer) &tabletMotionData)) {
+                break; // done with compression
+            }
+            motion = reinterpret_cast<const XDeviceMotionEvent*>(&dummy);
         }
 
         if (reinsertMouseEvent) {
-          XPutBackEvent(X11->display, &mouseMotionEventSave);
-        }
-
-        if (neverFoundMouseEvent) {
-            XEvent xinputMotionEventLoop;
-            bool eventFound = false;
-            // xinput event without mouseMotionEvent --> search the newest xinputMotionEvent
-            while (XCheckTypedWindowEvent(X11->display, internalWinId(), tablet->xinput_motion, &xinputMotionEventLoop)) {
-                xinputMotionEvent = xinputMotionEventLoop;
-                eventFound = true;
-            }
-            if (eventFound) motion = reinterpret_cast<const XDeviceMotionEvent*>(&xinputMotionEvent);
+            XPutBackEvent(X11->display, &mouseMotionEventSave);
         }
 
         t = QEvent::TabletMove;

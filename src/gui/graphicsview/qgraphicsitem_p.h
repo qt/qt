@@ -55,6 +55,7 @@
 
 #include "qgraphicsitem.h"
 #include "qpixmapcache.h"
+#include "qgraphicsview_p.h"
 
 #include <QtCore/qpoint.h>
 
@@ -150,6 +151,8 @@ public:
         geometryChanged(0),
         inDestructor(0),
         isObject(0),
+        ignoreVisible(0),
+        ignoreOpacity(0),
         globalStackingOrder(-1),
         q_ptr(0)
     {
@@ -336,6 +339,15 @@ public:
         return calcEffectiveOpacity();
     }
 
+    inline qreal combineOpacityFromParent(qreal parentOpacity) const
+    {
+        if (parent && !(flags & QGraphicsItem::ItemIgnoresParentOpacity)
+            && !(parent->d_ptr->flags & QGraphicsItem::ItemDoesntPropagateOpacityToChildren)) {
+            return parentOpacity * opacity;
+        }
+        return opacity;
+    }
+
     inline bool childrenCombineOpacity() const
     {
         if (!children.size())
@@ -416,7 +428,9 @@ public:
     quint32 geometryChanged : 1;
     quint32 inDestructor : 1;
     quint32 isObject : 1;
-    quint32 unused : 14; // feel free to use
+    quint32 ignoreVisible : 1;
+    quint32 ignoreOpacity : 1;
+    quint32 unused : 12; // feel free to use
 
     // Optional stacking order
     int globalStackingOrder;

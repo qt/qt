@@ -1171,9 +1171,9 @@ void QStateMachinePrivate::_q_start()
     transitions.append(initialTransition);
     QEvent nullEvent(QEvent::None);
     executeTransitionContent(&nullEvent, transitions);
-    enterStates(&nullEvent, transitions);
+    QList<QAbstractState*> enteredStates = enterStates(&nullEvent, transitions);
     applyProperties(transitions, QList<QAbstractState*>() << start,
-                    QList<QAbstractState*>() << initial);
+                    enteredStates);
     delete start;
 
 #ifdef QSTATEMACHINE_DEBUG

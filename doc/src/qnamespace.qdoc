@@ -2685,3 +2685,9 @@
   \value Round 	   Like Repeat, but scales the images down to ensure that
   the last image is not cropped.
 */
+
+/*!
+    \enum Uninitialized
+    \internal
+*/
+

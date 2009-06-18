@@ -71,9 +71,10 @@
     After loading a certificate, you can find information about the
     certificate, its subject, and its issuer, by calling one of the
     many accessor functions, including version(), serialNumber(),
-    issuerInfo() and subjectInfo(). You can call notValidBefore() and
-    notValidAfter() to check when the certificate was issued, and when
-    it expires. The publicKey() function returns the certificate
+    issuerInfo() and subjectInfo(). You can call effectiveDate() and
+    expiryDate() to check when the certificate starts being
+    effective and when it expires.
+    The publicKey() function returns the certificate
     subject's public key as a QSslKey. You can call issuerInfo() or
     subjectInfo() to get detailed information about the certificate
     issuer and its subject.

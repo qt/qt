@@ -167,8 +167,8 @@ public:
         dirtyBoundingRect = QRect();
         dirtyRegion = QRegion();
     }
-    void updateRect(const QRect &rect);
-    void updateRegion(const QRegion &region);
+    bool updateRect(const QRect &rect);
+    bool updateRegion(const QRegion &region);
     bool updateSceneSlotReimplementedChecked;
     QRegion exposedRegion;
 

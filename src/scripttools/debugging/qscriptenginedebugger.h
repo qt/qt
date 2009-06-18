@@ -92,6 +92,11 @@ public:
         GoToLineAction
     };
 
+    enum DebuggerState {
+        RunningState,
+        SuspendedState
+    };
+
     QScriptEngineDebugger(QObject *parent = 0);
     ~QScriptEngineDebugger();
 
@@ -107,6 +112,8 @@ public:
 
     QWidget *widget(DebuggerWidget widget) const;
     QAction *action(DebuggerAction action) const;
+
+    DebuggerState state() const;
 
 Q_SIGNALS:
     void evaluationSuspended();
