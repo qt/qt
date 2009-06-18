@@ -413,7 +413,7 @@ void tst_QStateMachine::customGlobalErrorState()
     machine.start();
     QCoreApplication::processEvents();
 
-    QCOMPARE(machine.errorState(), customErrorState);
+    QCOMPARE(machine.errorState(), static_cast<QAbstractState*>(customErrorState));
     QCOMPARE(machine.configuration().count(), 1);
     QVERIFY(machine.configuration().contains(initialState));
 
@@ -1724,18 +1724,18 @@ void tst_QStateMachine::signalTransitions()
         QStateMachine machine;
         QState *s0 = new QState(machine.rootState());
         QTest::ignoreMessage(QtWarningMsg, "QState::addTransition: sender cannot be null");
-        QCOMPARE(s0->addTransition(0, SIGNAL(noSuchSignal()), 0), (QAbstractTransition*)0);
+        QCOMPARE(s0->addTransition(0, SIGNAL(noSuchSignal()), 0), (QSignalTransition*)0);
 
         SignalEmitter emitter;
         QTest::ignoreMessage(QtWarningMsg, "QState::addTransition: signal cannot be null");
-        QCOMPARE(s0->addTransition(&emitter, 0, 0), (QAbstractTransition*)0);
+        QCOMPARE(s0->addTransition(&emitter, 0, 0), (QSignalTransition*)0);
 
         QTest::ignoreMessage(QtWarningMsg, "QState::addTransition: cannot add transition to null state");
-        QCOMPARE(s0->addTransition(&emitter, SIGNAL(signalWithNoArg()), 0), (QAbstractTransition*)0);
+        QCOMPARE(s0->addTransition(&emitter, SIGNAL(signalWithNoArg()), 0), (QSignalTransition*)0);
 
         QFinalState *s1 = new QFinalState(machine.rootState());
         QTest::ignoreMessage(QtWarningMsg, "QState::addTransition: no such signal SignalEmitter::noSuchSignal()");
-        QCOMPARE(s0->addTransition(&emitter, SIGNAL(noSuchSignal()), s1), (QAbstractTransition*)0);
+        QCOMPARE(s0->addTransition(&emitter, SIGNAL(noSuchSignal()), s1), (QSignalTransition*)0);
 
         QSignalTransition *trans = s0->addTransition(&emitter, SIGNAL(signalWithNoArg()), s1);
         QVERIFY(trans != 0);

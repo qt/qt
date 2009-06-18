@@ -149,6 +149,7 @@ private slots:
     void check_shortcutPress();
     void check_menuPosition();
     void task223138_triggered();
+    void task256322_highlight();
     
 #if defined(QT3_SUPPORT)
     void indexBasedInsertion_data();
@@ -1518,6 +1519,41 @@ void tst_QMenuBar::task223138_triggered()
     QCOMPARE(menubarSpy.count(), 1);
     QCOMPARE(menuSpy.count(), 1);
     QCOMPARE(submenuSpy.count(), 1);
+}
+
+void tst_QMenuBar::task256322_highlight()
+{
+    QMainWindow win;
+    QMenu menu;
+    QAction *file = win.menuBar()->addMenu(&menu);
+    file->setText("file");
+    QMenu menu2;
+    QAction *file2 = win.menuBar()->addMenu(&menu2);
+    file2->setText("file2");
+    QAction *nothing = win.menuBar()->addAction("nothing");
+
+    win.show();
+
+    QTest::mouseClick(win.menuBar(), Qt::LeftButton, 0, win.menuBar()->actionGeometry(file).center());
+    QVERIFY(menu.isVisible());
+    QVERIFY(!menu2.isVisible());
+    QCOMPARE(win.menuBar()->activeAction(), file);
+
+    QTest::mouseMove(win.menuBar(), win.menuBar()->actionGeometry(file2).center());
+    QVERIFY(!menu.isVisible());
+    QVERIFY(menu2.isVisible());
+    QCOMPARE(win.menuBar()->activeAction(), file2);
+
+    QTest::mouseMove(win.menuBar(), win.menuBar()->actionGeometry(nothing).center());
+    QVERIFY(!menu.isVisible());
+    QVERIFY(!menu2.isVisible());
+    QCOMPARE(win.menuBar()->activeAction(), nothing);
+
+    QTest::mouseMove(&win, win.menuBar()->geometry().bottomLeft() + QPoint(1,1));
+
+    QVERIFY(!menu.isVisible());
+    QVERIFY(!menu2.isVisible());
+    QVERIFY(!win.menuBar()->activeAction());
 }
 
 
