@@ -136,7 +136,7 @@ public:
 protected:
     void DoCancel();
     void RunL();
-    
+
 private:
     void Run();
 
@@ -209,6 +209,12 @@ private:
     bool m_quit;
 };
 
+class Q_CORE_EXPORT CQtActiveScheduler : public CActiveScheduler
+    {
+public: // from CActiveScheduler
+    virtual void Error(TInt aError) const;
+    };
+
 class Q_CORE_EXPORT QEventDispatcherSymbian : public QAbstractEventDispatcher
 {
     Q_DECLARE_PRIVATE(QAbstractEventDispatcher)
@@ -253,7 +259,7 @@ private:
 private:
     QSelectThread m_selectThread;
 
-    CActiveScheduler *m_activeScheduler;
+    CQtActiveScheduler *m_activeScheduler;
 
     QHash<int, SymbianTimerInfoPtr> m_timerList;
     QHash<QSocketNotifier *, QSocketActiveObject *> m_notifiers;
