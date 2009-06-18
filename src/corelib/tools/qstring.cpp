@@ -3849,8 +3849,7 @@ QString QString::fromUtf8(const char *str, int size)
     if (size < 0)
         size = qstrlen(str);
 
-    QString result;
-    result.resize(size); // worst case
+    QString result(size, Qt::Uninitialized); // worst case
     ushort *qch = result.d->data;
     uint uc = 0;
     uint min_uc = 0;
@@ -3965,8 +3964,7 @@ QString QString::fromUcs4(const uint *unicode, int size)
             ++size;
     }
 
-    QString s;
-    s.resize(size*2); // worst case
+    QString s(size * 2, Qt::Uninitialized); // worst case
     ushort *uc = s.d->data;
     for (int i = 0; i < size; ++i) {
         uint u = unicode[i];
@@ -4029,8 +4027,7 @@ QString QString::simplified() const
 {
     if (d->size == 0)
         return *this;
-    QString result;
-    result.resize(d->size);
+    QString result(d->size, Qt::Uninitialized);
     const QChar *from = (const QChar*) d->data;
     const QChar *fromend = (const QChar*) from+d->size;
     int outc=0;
@@ -4882,8 +4879,7 @@ QString QString::toLower() const
             c = QChar::surrogateToUcs4(*(p - 1), c);
         const QUnicodeTables::Properties *prop = qGetProp(c);
         if (prop->lowerCaseDiff || prop->lowerCaseSpecial) {
-            QString s;
-            s.resize(d->size);
+            QString s(d->size, Qt::Uninitialized);
             memcpy(s.d->data, d->data, (p - d->data)*sizeof(ushort));
             ushort *pp = s.d->data + (p - d->data);
             while (p < e) {
@@ -4974,8 +4970,7 @@ QString QString::toUpper() const
             c = QChar::surrogateToUcs4(*(p - 1), c);
         const QUnicodeTables::Properties *prop = qGetProp(c);
         if (prop->upperCaseDiff || prop->upperCaseSpecial) {
-            QString s;
-            s.resize(d->size);
+            QString s(d->size, Qt::Uninitialized);
             memcpy(s.d->data, d->data, (p - d->data)*sizeof(ushort));
             ushort *pp = s.d->data + (p - d->data);
             while (p < e) {
@@ -6272,8 +6267,7 @@ static QString replaceArgEscapes(const QString &s, const ArgEscapeData &d, int f
                      + d.locale_occurrences
                      *qMax(abs_field_width, larg.length());
 
-    QString result;
-    result.resize(result_len);
+    QString result(result_len, Qt::Uninitialized);
     QChar *result_buff = (QChar*) result.unicode();
 
     QChar *rc = result_buff;
