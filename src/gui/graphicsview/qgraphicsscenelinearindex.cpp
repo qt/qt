@@ -1,5 +1,3 @@
-#include "qgraphicsscenelinearindex.h"
-
 /*!
     \class QGraphicsSceneLinearIndex
     \brief The QGraphicsSceneLinearIndex class provides an implementation of
@@ -15,6 +13,8 @@
 
     \sa QGraphicsScene, QGraphicsView, QGraphicsSceneIndex, QGraphicsSceneBspTreeIndex
 */
+
+#include <private/qgraphicsscenelinearindex_p.h>
 
 /*!
     \fn QGraphicsSceneLinearIndex::QGraphicsSceneLinearIndex(QGraphicsScene *scene = 0):

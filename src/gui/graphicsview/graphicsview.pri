@@ -16,7 +16,7 @@ HEADERS += graphicsview/qgraphicsgridlayout.h \
     graphicsview/qgraphicsscenebsptreeindex_p.h \
     graphicsview/qgraphicssceneevent.h \
     graphicsview/qgraphicssceneindex_p.h \
-    graphicsview/qgraphicsscenelinearindex.h \
+    graphicsview/qgraphicsscenelinearindex_p.h \
     graphicsview/qgraphicsview.h \
     graphicsview/qgraphicsview_p.h \
     graphicsview/qgraphicswidget.h \

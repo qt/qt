@@ -218,7 +218,7 @@
 #include "qgraphicswidget.h"
 #include "qgraphicswidget_p.h"
 #include "qgraphicsscenebsptreeindex.h"
-#include "qgraphicsscenelinearindex.h"
+#include <private/qgraphicsscenelinearindex_p.h>
 
 #include <QtCore/qdebug.h>
 #include <QtCore/qlist.h>
