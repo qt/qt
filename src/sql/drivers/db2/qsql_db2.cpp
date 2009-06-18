@@ -1043,26 +1043,22 @@ QVariant QDB2Result::data(int field)
         case QVariant::Double:
             {
             QString value=qGetStringData(d->hStmt, field, info.length() + 1, isNull);
-            bool ok=false;
-            switch(d->precisionPolicy) {
+            switch(numericalPrecisionPolicy()) {
                 case QSql::LowPrecisionInt32:
-                    v = new QVariant(value.toInt(&ok));
+                    v = new QVariant(qGetIntData(d->hStmt, field, isNull));
                     break;
                 case QSql::LowPrecisionInt64:
-                    v = new QVariant(value.toLongLong(&ok));
+                    v = new QVariant(qGetBigIntData(d->hStmt, field, isNull));
                     break;
                 case QSql::LowPrecisionDouble:
-                    v = new QVariant(value.toDouble(&ok));
+                    v = new QVariant(qGetDoubleData(d->hStmt, field, isNull));
                     break;
                 case QSql::HighPrecision:
                 default:
                     // length + 1 for the comma
-                    v = new QVariant(value);
-                    ok = true;
+                    v = new QVariant(qGetStringData(d->hStmt, field, info.length() + 1, isNull));
                     break;
             }
-            if(!ok)
-                v = new QVariant();
             break;
             }
         case QVariant::String:
@@ -1145,6 +1141,10 @@ void QDB2Result::virtual_hook(int id, void *data)
     case QSqlResult::NextResult:
         Q_ASSERT(data);
         *static_cast<bool*>(data) = nextResult();
+        break;
+    case QSqlResult::DetachFromResultSet:
+        if (d->hStmt)
+            SQLCloseCursor(d->hStmt);
         break;
     default:
         QSqlResult::virtual_hook(id, data);
@@ -1477,7 +1477,6 @@ bool QDB2Driver::hasFeature(DriverFeature f) const
         case BatchOperations:
         case LastInsertId:
         case SimpleLocking:
-        case LowPrecisionNumbers:
         case EventNotifications:
             return false;
         case BLOB:
@@ -1485,6 +1484,8 @@ bool QDB2Driver::hasFeature(DriverFeature f) const
         case MultipleResultSets:
         case PreparedQueries:
         case PositionalPlaceholders:
+        case LowPrecisionNumbers:
+        case FinishQuery:
             return true;
         case Unicode:
         // this is the query that shows the codepage for the types:
