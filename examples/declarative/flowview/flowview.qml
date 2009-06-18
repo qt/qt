@@ -9,10 +9,23 @@ Rect {
         anchors.centeredIn: parent
         width: 800
         height: 480
+        clip: true
 
         states: State { 
             name: "rotated"
             SetProperties { target: ListView; z: 2 }
+            SetProperties { target: TopBar; y: -30 }
+            SetProperties { target: BottomBar; y: 480 }
+            SetProperties { target: LeftBar; x: 0 }
+            SetProperties { target: RightBar; x: 770 }
+        }
+        transitions: Transition {
+            fromState: "" ; toState: "rotated"
+            reversible: true
+            SequentialAnimation {
+                NumericAnimation { filter: [TopBar, BottomBar]; properties: "x,y"; easing: "easeInOutQuad" }
+                NumericAnimation { filter: [LeftBar, RightBar]; properties: "x,y"; easing: "easeInOutQuad"}
+            }
         }
 
         color: "lightsteelblue"
@@ -20,17 +33,17 @@ Rect {
         VisualModel {
             id: Model
             model: ListModel {
-                ListElement { stuff: "red" }
-                ListElement { stuff: "yellow" }
-                ListElement { stuff: "blue" }
-                ListElement { stuff: "green" }
-                ListElement { stuff: "orange" }
-                ListElement { stuff: "lightblue" }
+                ListElement { background: "red"; weblet: "rect.qml"  }
+                ListElement { background: "yellow"; weblet: "rect.qml"  }
+                ListElement { background: "blue"; weblet: "rect.qml"  }
+                ListElement { background: "green"; weblet: "flickr.qml"  }
+                ListElement { background: "orange"; weblet: "rect.qml"  }
+                ListElement { background: "lightblue"; weblet: "rect.qml"  }
             }
             delegate: Package {
                 Item { id: List; Package.name: "list"; width:120; height: 400; }
-                Item { id: Grid; Package.name: "grid"; width:400; height: 133; }
-                Rect { id: MyContent; width:400; height: 133; color: stuff; }
+                Item { id: Grid; Package.name: "grid"; width:400; height: 120; }
+                Item { id: MyContent; width:400; height: 120; qml: weblet }
 
                 StateGroup {
                     states: [
@@ -38,7 +51,7 @@ Rect {
                             name: "InList"
                             when: MyPhone.state == "rotated"
                             ParentChange { target: MyContent; parent: List }
-                            SetProperties { target: MyContent; x: 133; y: 0; rotation: 90}
+                            SetProperties { target: MyContent; x: 120; y: 0; rotation: 90}
                         },
                         State { 
                             name: "InGrid"
@@ -51,17 +64,12 @@ Rect {
                         fromState: "*"; toState: "*"; 
                         SequentialAnimation { 
                             ParentChangeAction{} 
-                            NumericAnimation { properties: "x,y,rotation" } 
+                            NumericAnimation { properties: "x,y,rotation"; easing: "easeInOutQuad" } 
                         } 
                     }
                 }
 
             }
-        }
-
-        Rect {
-            width: 800
-            height: 30
         }
 
         Item {
@@ -78,7 +86,7 @@ Rect {
 
             FlowView {
                 z: 1
-                y: 40
+                y: 60
                 width: 800
                 height: 400
                 column: 2
@@ -87,9 +95,27 @@ Rect {
         }
 
         Rect {
+            id: TopBar
             width: 800
             height: 30
-            anchors.bottom: parent.bottom
+        }
+        Rect {
+            id: BottomBar
+            width: 800
+            height: 30
+            y: 450
+        }
+        Rect {
+            id: LeftBar
+            x: -30
+            width: 30
+            height: 480
+        }
+        Rect {
+            id: RightBar
+            x: 800
+            width: 30
+            height: 480
         }
     }
 
