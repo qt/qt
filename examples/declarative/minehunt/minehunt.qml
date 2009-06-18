@@ -28,7 +28,7 @@ Item {
                         anchors.verticalCenter: parent.verticalCenter
                         source: "pics/flag.png"
                         opacity: modelData.hasFlag
-                        opacity: Behaviour {
+                        opacity: Behavior {
                             NumericAnimation {
                                 property: "opacity"
                                 duration: 250
