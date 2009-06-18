@@ -85,36 +85,20 @@
   The following snippet shows the code needed to create such a state machine.
   First, we create the state machine and states:
 
-  \code
-    QStateMachine machine;
-    QState *s1 = new QState();
-    QState *s2 = new QState();
-    QState *s3 = new QState();
-  \endcode
+  \snippet doc/src/snippets/statemachine/main.cpp 0
 
   Then, we create the transitions by using the QState::addTransition()
   function:
 
-  \code
-    s1->addTransition(button, SIGNAL(clicked()), s2);
-    s2->addTransition(button, SIGNAL(clicked()), s3);
-    s3->addTransition(button, SIGNAL(clicked()), s1);
-  \endcode
+  \snippet doc/src/snippets/statemachine/main.cpp 1
 
   Next, we add the states to the machine and set the machine's initial state:
 
-  \code
-    machine.addState(s1);
-    machine.addState(s2);
-    machine.addState(s3);
-    machine.setInitialState(s1);
-  \endcode
+  \snippet doc/src/snippets/statemachine/main.cpp 2
 
   Finally, we start the state machine:
 
-  \code
-    machine.start();
-  \endcode
+  \snippet doc/src/snippets/statemachine/main.cpp 3
 
   The state machine executes asynchronously, i.e. it becomes part of your
   application's event loop.
@@ -127,11 +111,7 @@
   entered. In the following snippet, the value that should be assigned to a
   QLabel's text property is specified for each state:
 
-  \code
-    s1->assignProperty(label, "text", "In state s1");
-    s2->assignProperty(label, "text", "In state s2");
-    s3->assignProperty(label, "text", "In state s3");
-  \endcode
+  \snippet doc/src/snippets/statemachine/main.cpp 4
 
   When any of the states is entered, the label's text will be changed
   accordingly.
@@ -142,10 +122,7 @@
   state \c s3 is entered, and the button's showMinimized() slot will be called
   when \c s3 is exited:
 
-  \code
-    QObject::connect(s3, SIGNAL(entered()), button, SLOT(showMaximized()));
-    QObject::connect(s3, SIGNAL(exited()), button, SLOT(showMinimized()));
-  \endcode
+  \snippet doc/src/snippets/statemachine/main.cpp 5
 
   Custom states can reimplement QAbstractState::onEntry() and
   QAbstractState::onExit().
@@ -194,22 +171,9 @@
   initial one (i.e. which child state the state machine should enter when the
   parent state is the target of a transition).
 
-  \code
-    QState *s1 = new QState();
-    QState *s11 = new QState(s1);
-    QState *s12 = new QState(s1);
-    QState *s13 = new QState(s1);
-    s1->setInitialState(s11);
-    machine.addState(s1);
-  \endcode
+  \snippet doc/src/snippets/statemachine/main2.cpp 0
 
-  \code
-    QFinalState *s2 = new QFinalState();
-    s1->addTransition(quitButton, SIGNAL(clicked()), s2);
-    machine.addState(s2);
-
-    QObject::connect(&machine, SIGNAL(finished()), QApplication::instance(), SLOT(quit()));
-  \endcode
+  \snippet doc/src/snippets/statemachine/main2.cpp 1
 
   In this case we want the application to quit when the state machine is
   finished, so the machine's finished() signal is connected to the
@@ -219,9 +183,7 @@
   following code adds a transition that effectively causes the Quit button to
   be ignored when the state machine is in state \c s12.
 
-  \code
-    s12>addTransition(quitButton, SIGNAL(clicked()), s12);
-  \endcode
+  \snippet doc/src/snippets/statemachine/main2.cpp 2
 
   A transition can have any state as its target, i.e. the target state does
   not have to be on the same level in the state hierarchy as the source state.
@@ -259,21 +221,7 @@
   simply display a message box when \c s3 is entered, then immediately return
   to the previous child state of \c s1 via the history state.
 
-  \code
-    QHistoryState *s1h = s1->addHistoryState();
-
-    QState *s3 = new QState();
-    s3->assignProperty(label, "text", "In s3");
-    QMessageBox mbox;
-    mbox.addButton(QMessageBox::Ok);
-    mbox.setText("Interrupted!");
-    mbox.setIcon(QMessageBox::Information);
-    QObject::connect(s3, SIGNAL(entered()), &mbox, SLOT(exec()));
-    s3->addTransition(s1h);
-    machine.addState(s3);
-
-    s1->addTransition(interruptButton, SIGNAL(clicked()), s3);
-  \endcode
+  \snippet doc/src/snippets/statemachine/main2.cpp 3
 
   \section1 Using Parallel States to Avoid a Combinatorial Explosion of States
 
@@ -305,12 +253,7 @@
   To create a parallel state group, pass QState::ParallelStates to the QState
   constructor.
 
-  \code
-    QState *s1 = new QState(QState::ParallelStates);
-    // s11 and s12 will be entered in parallel
-    QState *s11 = new QState(s1);
-    QState *s12 = new QState(s1);
-  \endcode
+  \snippet doc/src/snippets/statemachine/main3.cpp 0
 
   When a parallel state group is entered, all its child states will be
   simultaneously entered. Transitions within the individual child states
@@ -334,9 +277,7 @@
   finished(). We use a signal transition to cause this event to trigger a
   state change:
 
-  \code
-  s1->addTransition(s1, SIGNAL(finished()), s2);
-  \endcode
+  \snippet doc/src/snippets/statemachine/main3.cpp 1
 
   Using final states in composite states is useful when you want to hide the
   internal details of a composite state; i.e. the only thing the outside world
@@ -372,42 +313,12 @@
   Here we define our own custom event type, \c StringEvent, for posting
   strings to the state machine:
 
-  \code
-    struct StringEvent : public QEvent
-    {
-        StringEvent(const QString &val)
-        : QEvent(QEvent::Type(QEvent::User+1)),
-          value(val) {}
-
-        QString value;
-    };
-  \endcode
+  \snippet doc/src/snippets/statemachine/main4.cpp 0
 
   Next, we define a transition that only triggers when the event's string
   matches a particular string (a \e guarded transition):
 
-  \code
-    class StringTransition : public QAbstractTransition
-    {
-    public:
-        StringTransition(const QString &value)
-            : m_value(value) {}
-
-    protected:
-        virtual bool eventTest(QEvent *e) const
-        {
-            if (e->type() != QEvent::Type(QEvent::User+1)) // StringEvent
-                return false;
-            StringEvent *se = static_cast<StringEvent*>(e);
-            return (m_value == se->value);
-        }
-    
-        virtual void onTransition(QEvent *) {}
-
-    private:
-        QString m_value;
-    };
-  \endcode
+  \snippet doc/src/snippets/statemachine/main4.cpp 1
 
   In the eventTest() reimplementation, we first check if the event type is the
   desired one; if so, we cast the event to a StringEvent and perform the
@@ -422,31 +333,11 @@
 
   Here's what the implementation of the statechart looks like:
 
-  \code
-    QStateMachine machine;
-    QState *s1 = new QState();
-    QState *s2 = new QState();
-    QFinalState *done = new QFinalState();
-
-    StringTransition *t1 = new StringTransition("Hello");
-    t1->setTargetState(s2);
-    s1->addTransition(t1);
-    StringTransition *t2 = new StringTransition("world");
-    t2->setTargetState(done);
-    s2->addTransition(t2);
-
-    machine.addState(s1);
-    machine.addState(s2);
-    machine.addState(done);
-    machine.setInitialState(s1);
-  \endcode
+  \snippet doc/src/snippets/statemachine/main4.cpp 2
 
   Once the machine is started, we can post events to it.
 
-  \code
-  machine.postEvent(new StringEvent("Hello"));
-  machine.postEvent(new StringEvent("world"));
-  \endcode
+  \snippet doc/src/snippets/statemachine/main4.cpp 3
 
   An event that is not handled by any relevant transition will be silently
   consumed by the state machine. It can be useful to group states and provide
