@@ -3087,7 +3087,6 @@ void Configure::buildHostTools()
         << "src/tools/moc"
         << "src/tools/rcc"
         << "src/tools/uic"
-        << "tools/linguist/lrelease"
         << "tools/checksdk";
 
     if (dictionary[ "CETEST" ] == "yes")

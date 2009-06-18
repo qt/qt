@@ -703,7 +703,7 @@ static inline qreal qRoundF(qreal v)
 
 void QRasterizer::rasterizeLine(const QPointF &a, const QPointF &b, qreal width, bool squareCap)
 {
-    if (a == b || width == 0)
+    if (a == b || width == 0 || d->clipRect.isEmpty())
         return;
 
     QPointF pa = a;

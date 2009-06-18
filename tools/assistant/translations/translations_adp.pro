@@ -34,6 +34,7 @@ HEADERS += ../compat/helpwindow.h \
 TRANSLATIONS=$$[QT_INSTALL_TRANSLATIONS]/assistant_adp_de.ts \
              $$[QT_INSTALL_TRANSLATIONS]/assistant_adp_ja.ts \
              $$[QT_INSTALL_TRANSLATIONS]/assistant_adp_pl.ts \
+             $$[QT_INSTALL_TRANSLATIONS]/assistant_adp_ru.ts \
              $$[QT_INSTALL_TRANSLATIONS]/assistant_adp_untranslated.ts \
              $$[QT_INSTALL_TRANSLATIONS]/assistant_adp_zh_CN.ts \
              $$[QT_INSTALL_TRANSLATIONS]/assistant_adp_zh_TW.ts
