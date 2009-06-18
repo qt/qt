@@ -2222,6 +2222,8 @@ void QOpenGLPaintEnginePrivate::updateDepthClip()
 {
     Q_Q(QOpenGLPaintEngine);
 
+    ++q->state()->depthClipId;
+
     glDisable(GL_DEPTH_TEST);
     glDisable(GL_SCISSOR_TEST);
 
@@ -5504,6 +5506,9 @@ void QOpenGLPaintEngine::clip(const QVectorPath &path, Qt::ClipOperation op)
 void QOpenGLPaintEngine::setState(QPainterState *s)
 {
     Q_D(QOpenGLPaintEngine);
+    QOpenGLPaintEngineState *new_state = static_cast<QOpenGLPaintEngineState *>(s);
+    QOpenGLPaintEngineState *old_state = state();
+
     QPaintEngineEx::setState(s);
 
     // are we in a save() ?
@@ -5513,7 +5518,8 @@ void QOpenGLPaintEngine::setState(QPainterState *s)
     }
 
     if (isActive()) {
-        d->updateDepthClip();
+        if (old_state->depthClipId != new_state->depthClipId)
+            d->updateDepthClip();
         penChanged();
         brushChanged();
         opacityChanged();
@@ -5547,11 +5553,13 @@ QOpenGLPaintEngineState::QOpenGLPaintEngineState(QOpenGLPaintEngineState &other)
     clipRegion = other.clipRegion;
     hasClipping = other.hasClipping;
     fastClip = other.fastClip;
+    depthClipId = other.depthClipId;
 }
 
 QOpenGLPaintEngineState::QOpenGLPaintEngineState()
 {
     hasClipping = false;
+    depthClipId = 0;
 }
 
 QOpenGLPaintEngineState::~QOpenGLPaintEngineState()
