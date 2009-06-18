@@ -76,6 +76,7 @@ MainWindow::MainWindow()
 
     setCentralWidget(widget);
     setWindowTitle(tr("Diagramscene"));
+    setUnifiedTitleAndToolBarOnMac(true);
 }
 //! [0]
 
