@@ -1129,8 +1129,8 @@ void QInputDialog::done(int result)
     is \a parent. The dialog will be modal and uses the specified widget
     \a flags.
 
-    This function returns the text which has been entered in the line
-    edit. It will not return an empty string.
+    If the dialog is accepted, this function returns the text in the dialog's
+    line edit. If the dialog is rejected, a null QString is returned.
 
     Use this static function like this:
 
@@ -1159,7 +1159,7 @@ QString QInputDialog::getText(QWidget *parent, const QString &title, const QStri
     if (ret) {
         return dialog.textValue();
     } else {
-        return text;
+        return QString();
     }
 }
 
