@@ -91,3 +91,5 @@ sources.path = $$[QT_INSTALL_DEMOS]/browser
 INSTALLS += target sources
 
 include($$QT_SOURCE_TREE/demos/demobase.pri)
+
+symbian:TARGET.UID3 = 0xA000CF70

@@ -47,10 +47,11 @@
 #include <e32std.h>
 #include "private/qcore_symbian_p.h"
 
-// Located in qlocale.cpp
-extern void getLangAndCountry(const QString &name, QLocale::Language &lang, QLocale::Country &cntry);
 
 QT_BEGIN_NAMESPACE
+
+// Located in qlocale.cpp
+extern void getLangAndCountry(const QString &name, QLocale::Language &lang, QLocale::Country &cntry);
 
 static TExtendedLocale _s60Locale;
 
