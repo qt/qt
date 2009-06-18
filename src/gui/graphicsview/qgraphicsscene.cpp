@@ -217,7 +217,6 @@
 #include "qgraphicsview_p.h"
 #include "qgraphicswidget.h"
 #include "qgraphicswidget_p.h"
-#include "qgraphicssceneindex.h"
 #include "qgraphicsscenebsptreeindex.h"
 #include "qgraphicsscenelinearindex.h"
 
@@ -244,6 +243,7 @@
 #include <QtGui/qtooltip.h>
 #include <QtGui/qtransform.h>
 #include <private/qapplication_p.h>
+#include <private/qgraphicssceneindex_p.h>
 #include <private/qobject_p.h>
 #ifdef Q_WS_X11
 #include <private/qt_x11_p.h>
@@ -772,6 +772,7 @@ QList<QGraphicsItem *> QGraphicsScenePrivate::itemsAtPosition(const QPoint &scre
                                                               const QPointF &scenePos,
                                                               QWidget *widget) const
 {
+    Q_UNUSED(screenPos);
     Q_Q(const QGraphicsScene);
     QGraphicsView *view = widget ? qobject_cast<QGraphicsView *>(widget->parentWidget()) : 0;
     return q->items(scenePos, Qt::IntersectsItemShape, Qt::AscendingOrder,
@@ -1806,7 +1807,7 @@ void QGraphicsScene::setSelectionArea(const QPainterPath &path)
 */
 void QGraphicsScene::setSelectionArea(const QPainterPath &path, Qt::ItemSelectionMode mode)
 {
-    setSelectionArea(path, Qt::IntersectsItemShape, QTransform());
+    setSelectionArea(path, mode, QTransform());
 }
 
 /*!

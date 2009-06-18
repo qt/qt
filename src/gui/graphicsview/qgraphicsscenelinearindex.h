@@ -65,8 +65,8 @@ QT_MODULE(Gui)
 
 #include <QtCore/qrect.h>
 #include <QtCore/qlist.h>
-#include <QtGui/qgraphicssceneindex.h>
 #include <QtGui/qgraphicsitem.h>
+#include <private/qgraphicssceneindex_p.h>
 
 class Q_AUTOTEST_EXPORT QGraphicsSceneLinearIndex : public QGraphicsSceneIndex
 {

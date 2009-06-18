@@ -80,12 +80,12 @@
 #ifndef QT_NO_GRAPHICSVIEW
 
 #include "qgraphicsscenebsptreeindex_p.h"
-#include "qgraphicssceneindex_p.h"
 #include "qgraphicsitem_p.h"
 #include "qgraphicsscene_p.h"
 
-#include <QtCore/qmath.h>
+#include <private/qgraphicssceneindex_p.h>
 
+#include <QtCore/qmath.h>
 #include <QtCore/qdebug.h>
 
 QT_BEGIN_NAMESPACE

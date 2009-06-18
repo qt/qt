@@ -56,12 +56,11 @@
     \sa QGraphicsScene, QGraphicsView
 */
 
-#include "qgraphicssceneindex.h"
-#include "qgraphicssceneindex_p.h"
 #include "qgraphicsscene.h"
 #include "qgraphicsitem_p.h"
 #include "qgraphicsscene_p.h"
 #include "qgraphicswidget.h"
+#include <private/qgraphicssceneindex_p.h>
 
 #ifndef QT_NO_GRAPHICSVIEW
 
@@ -621,6 +620,6 @@ void QGraphicsSceneIndex::sceneRectChanged(const QRectF &rect)
 
 QT_END_NAMESPACE
 
-#include "moc_qgraphicssceneindex.cpp"
+#include "moc_qgraphicssceneindex_p.cpp"
 
 #endif // QT_NO_GRAPHICSVIEW

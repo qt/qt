@@ -58,7 +58,6 @@
 #if !defined(QT_NO_GRAPHICSVIEW) || (QT_EDITION & QT_MODULE_GRAPHICSVIEW) != QT_MODULE_GRAPHICSVIEW
 
 #include "qgraphicsscenebsptreeindex_p.h"
-#include "qgraphicssceneindex.h"
 #include "qgraphicsview.h"
 #include "qgraphicsitem_p.h"
 
@@ -74,6 +73,7 @@
 
 QT_BEGIN_NAMESPACE
 
+class QGraphicsSceneIndex;
 class QGraphicsView;
 class QGraphicsWidget;
 

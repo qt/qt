@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef QGRAPHICSSCENEINDEX_P_H
-#define QGRAPHICSSCENEINDEX_P_H
+#ifndef QGRAPHICSSCENEINDEX_H
+#define QGRAPHICSSCENEINDEX_H
 
 //
 //  W A R N I N G
@@ -53,20 +53,77 @@
 // We mean it.
 //
 
-#include "qgraphicssceneindex.h"
-
-#if !defined(QT_NO_GRAPHICSVIEW) || (QT_EDITION & QT_MODULE_GRAPHICSVIEW) != QT_MODULE_GRAPHICSVIEW
-
+#include <QtCore/qnamespace.h>
+#include <QtCore/qobject.h>
+#include <QtGui/qtransform.h>
+#include <QtGui/qgraphicsitem.h>
 #include <private/qobject_p.h>
-#include <private/qgraphicsitem_p.h>
+
+QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
+QT_MODULE(Gui)
+
+#if !defined(QT_NO_GRAPHICSVIEW) || (QT_EDITION & QT_MODULE_GRAPHICSVIEW) != QT_MODULE_GRAPHICSVIEW
+
 class QGraphicsScene;
 class QGraphicsSceneIndexIntersector;
-class QGraphicsSceneIndexRectIntersector;
 class QGraphicsSceneIndexPointIntersector;
+class QGraphicsSceneIndexRectIntersector;
 class QGraphicsSceneIndexPathIntersector;
+class QGraphicsSceneIndexPrivate;
+class QPointF;
+class QRectF;
+template<typename T> class QList;
+
+class Q_AUTOTEST_EXPORT QGraphicsSceneIndex : public QObject
+{
+    Q_OBJECT
+
+public:
+    QGraphicsSceneIndex(QGraphicsScene *scene = 0);
+    virtual ~QGraphicsSceneIndex();
+
+    QGraphicsScene *scene() const;
+
+    virtual QRectF indexedRect() const;
+
+    virtual QList<QGraphicsItem *> items(Qt::SortOrder order = Qt::AscendingOrder) const  = 0;
+    virtual QList<QGraphicsItem *> items(const QPointF &pos, Qt::ItemSelectionMode mode,
+                                         Qt::SortOrder order, const QTransform &deviceTransform = QTransform()) const;
+    virtual QList<QGraphicsItem *> items(const QRectF &rect, Qt::ItemSelectionMode mode,
+                                         Qt::SortOrder order, const QTransform &deviceTransform = QTransform()) const;
+    virtual QList<QGraphicsItem *> items(const QPolygonF &polygon, Qt::ItemSelectionMode mode,
+                                         Qt::SortOrder order, const QTransform &deviceTransform = QTransform()) const;
+    virtual QList<QGraphicsItem *> items(const QPainterPath &path, Qt::ItemSelectionMode mode,
+                                         Qt::SortOrder order, const QTransform &deviceTransform = QTransform()) const;
+    virtual QList<QGraphicsItem *> estimateItems(const QPointF &point,
+                                                 Qt::SortOrder order, const QTransform &deviceTransform) const;
+    virtual QList<QGraphicsItem *> estimateItems(const QRectF &rect,
+                                                 Qt::SortOrder order, const QTransform &deviceTransform) const = 0;
+
+protected:
+    virtual void clear();
+    virtual void addItem(QGraphicsItem *item) = 0;
+    virtual void removeItem(QGraphicsItem *item) = 0;
+    virtual void deleteItem(QGraphicsItem *item);
+
+    virtual void itemChange(const QGraphicsItem *item, QGraphicsItem::GraphicsItemChange, const QVariant &value);
+    virtual void prepareBoundingRectChange(const QGraphicsItem *item);
+    virtual void sceneRectChanged(const QRectF &rect);
+
+    QGraphicsSceneIndex(QObjectPrivate &dd, QGraphicsScene *scene);
+
+    friend class QGraphicsScene;
+    friend class QGraphicsScenePrivate;
+    friend class QGraphicsItem;
+    friend class QGraphicsItemPrivate;
+    friend class QGraphicsSceneBspTreeIndex;
+private:
+    Q_DISABLE_COPY(QGraphicsSceneIndex)
+    Q_DECLARE_PRIVATE(QGraphicsSceneIndex)
+};
 
 class QGraphicsSceneIndexPrivate : public QObjectPrivate
 {
@@ -96,8 +153,10 @@ public:
                            const QTransform &transform, const QTransform &deviceTransform) const = 0;
 };
 
+#endif // QT_NO_GRAPHICSVIEW
+
 QT_END_NAMESPACE
 
-#endif // QGRAPHICSSCENEINDEX_P_H
+QT_END_HEADER
 
-#endif
+#endif // QGRAPHICSSCENEINDEX_H

@@ -67,7 +67,7 @@ QT_MODULE(Gui)
 #include <QtCore/qlist.h>
 #include <QtGui/qgraphicsitem.h>
 #include <QtGui/qgraphicsscene.h>
-#include <QtGui/qgraphicssceneindex.h>
+#include <private/qgraphicssceneindex_p.h>
 
 #include "qgraphicsscene_bsp_p.h"
 
