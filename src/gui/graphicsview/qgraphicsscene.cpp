@@ -774,41 +774,8 @@ QList<QGraphicsItem *> QGraphicsScenePrivate::itemsAtPosition(const QPoint &scre
 {
     Q_Q(const QGraphicsScene);
     QGraphicsView *view = widget ? qobject_cast<QGraphicsView *>(widget->parentWidget()) : 0;
-    QList<QGraphicsItem *> items;
-    if (view)
-        items = view->items(view->viewport()->mapFromGlobal(screenPos));
-    else
-        items = q->items(scenePos);
-    return items;
-}
-
-/*!
-    \internal
-
-    Checks if item collides with the path and mode, but also checks that if it
-    doesn't collide, maybe its frame rect will.
-*/
-bool QGraphicsScenePrivate::itemCollidesWithPath(QGraphicsItem *item,
-                                                 const QPainterPath &path,
-                                                 Qt::ItemSelectionMode mode)
-{
-    if (item->collidesWithPath(path, mode))
-        return true;
-    if (item->isWidget()) {
-        // Check if this is a window, and if its frame rect collides.
-        QGraphicsWidget *widget = static_cast<QGraphicsWidget *>(item);
-        if (widget->isWindow()) {
-            QRectF frameRect = widget->windowFrameRect();
-            QPainterPath framePath;
-            framePath.addRect(frameRect);
-            bool intersects = path.intersects(frameRect);
-            if (mode == Qt::IntersectsItemShape || mode == Qt::IntersectsItemBoundingRect)
-                return intersects || path.contains(frameRect.topLeft())
-                    || framePath.contains(path.elementAt(0));
-            return !intersects && path.contains(frameRect.topLeft());
-        }
-    }
-    return false;
+    return q->items(scenePos, Qt::IntersectsItemShape, Qt::AscendingOrder,
+                    view ? view->viewportTransform() : QTransform());
 }
 
 /*!
@@ -820,7 +787,7 @@ void QGraphicsScenePrivate::storeMouseButtonsForMouseGrabber(QGraphicsSceneMouse
         if (event->buttons() & i) {
             mouseGrabberButtonDownPos.insert(Qt::MouseButton(i),
                                              mouseGrabberItems.last()->d_ptr->genericMapFromScene(event->scenePos(),
-                                                                                          event->widget()));
+                                                                                                  event->widget()));
             mouseGrabberButtonDownScenePos.insert(Qt::MouseButton(i), event->scenePos());
             mouseGrabberButtonDownScreenPos.insert(Qt::MouseButton(i), event->screenPos());
         }
@@ -1282,6 +1249,8 @@ QGraphicsScene::~QGraphicsScene()
 QRectF QGraphicsScene::sceneRect() const
 {
     Q_D(const QGraphicsScene);
+    /// ### Remove? The growing items bounding rect might be managed
+    // by the scene.
     return d->index->indexedRect();
 }
 void QGraphicsScene::setSceneRect(const QRectF &rect)
@@ -1332,6 +1301,8 @@ void QGraphicsScene::setSceneRect(const QRectF &rect)
 void QGraphicsScene::render(QPainter *painter, const QRectF &target, const QRectF &source,
                             Qt::AspectRatioMode aspectRatioMode)
 {
+    // ### Switch to using the recursive rendering algorithm instead.
+
     // Default source rect = scene rect
     QRectF sourceRect = source;
     if (sourceRect.isNull())
@@ -1431,14 +1402,16 @@ void QGraphicsScene::setItemIndexMethod(ItemIndexMethod method)
 
     d->indexMethod = method;
 
-    QList<QGraphicsItem *> oldItems = d->index->items();
+    QList<QGraphicsItem *> oldItems = d->index->items(Qt::AscendingOrder);
     delete d->index;
     if (method == BspTreeIndex)
         d->index = new QGraphicsSceneBspTreeIndex(this);
     else
         d->index = new QGraphicsSceneLinearIndex(this);
-    for (int i = 0; i < oldItems.size(); ++i)
+    for (int i = oldItems.size() - 1; i >= 0; --i)
         d->index->addItem(oldItems.at(i));
+
+    d->index->sceneRectChanged(d->sceneRect);
 }
 
 /*!
@@ -1476,7 +1449,7 @@ void QGraphicsScene::setItemIndexMethod(ItemIndexMethod method)
 int QGraphicsScene::bspTreeDepth() const
 {
     Q_D(const QGraphicsScene);
-    QGraphicsSceneBspTreeIndex *bspTree = qobject_cast<QGraphicsSceneBspTreeIndex*>(d->index);
+    QGraphicsSceneBspTreeIndex *bspTree = qobject_cast<QGraphicsSceneBspTreeIndex *>(d->index);
     return bspTree ? bspTree->bspTreeDepth() : 0;
 }
 void QGraphicsScene::setBspTreeDepth(int depth)
@@ -1487,14 +1460,11 @@ void QGraphicsScene::setBspTreeDepth(int depth)
         return;
     }
 
-    QGraphicsSceneBspTreeIndex *bspTree = qobject_cast<QGraphicsSceneBspTreeIndex*>(d->index);
+    QGraphicsSceneBspTreeIndex *bspTree = qobject_cast<QGraphicsSceneBspTreeIndex *>(d->index);
     if (!bspTree) {
         qWarning("QGraphicsScene::setBspTreeDepth: can not apply if indexing method is not BSP");
         return;
     }
-    if (bspTree->bspTreeDepth() == depth)
-        return;
-
     bspTree->setBspTreeDepth(depth);
 }
 
@@ -1502,37 +1472,21 @@ void QGraphicsScene::setBspTreeDepth(int depth)
     \property QGraphicsScene::sortCacheEnabled
     \brief whether sort caching is enabled
     \since 4.5
+    \obsolete
 
-    When enabled, this property adds a cache that speeds up sorting and
-    transformations for scenes with deep hierarchies (i.e., items with many
-    levels of descendents), at the cost of using more memory (approx. 100 more
-    bytes of memory per item).
-
-    Items that are not part of a deep hierarchy suffer no penalty from this
-    cache.
+    Since Qt 4.6, this property has no effect.
 */
 bool QGraphicsScene::isSortCacheEnabled() const
 {
     Q_D(const QGraphicsScene);
-    QGraphicsSceneBspTreeIndex *bspTree = qobject_cast<QGraphicsSceneBspTreeIndex*>(d->index);
-    if (!bspTree) {
-        qWarning("QGraphicsScene::isSortCacheEnabled: can not apply if indexing method is not BSP");
-        return false;
-    }
-    return bspTree->d_func()->sortCacheEnabled;
+    return d->sortCacheEnabled;
 }
 void QGraphicsScene::setSortCacheEnabled(bool enabled)
 {
     Q_D(QGraphicsScene);
-    QGraphicsSceneBspTreeIndex *bspTree = qobject_cast<QGraphicsSceneBspTreeIndex*>(d->index);
-    if (!bspTree) {
-        qWarning("QGraphicsScene::isSortCacheEnabled: can not apply if indexing method is not BSP");
+    if (d->sortCacheEnabled == enabled)
         return;
-    }
-    if (enabled == bspTree->d_func()->sortCacheEnabled)
-        return;
-    if ((bspTree->d_func()->sortCacheEnabled = enabled))
-        bspTree->d_func()->invalidateSortCache();
+    d->sortCacheEnabled = enabled;
 }
 
 /*!
@@ -1544,6 +1498,7 @@ void QGraphicsScene::setSortCacheEnabled(bool enabled)
 */
 QRectF QGraphicsScene::itemsBoundingRect() const
 {
+    // Does not take untransformable items into account.
     QRectF boundingRect;
     foreach (QGraphicsItem *item, items())
         boundingRect |= item->sceneBoundingRect();
@@ -1558,7 +1513,19 @@ QRectF QGraphicsScene::itemsBoundingRect() const
 QList<QGraphicsItem *> QGraphicsScene::items() const
 {
     Q_D(const QGraphicsScene);
-    return d->index->items();
+    return d->index->items(Qt::AscendingOrder);
+}
+
+/*!
+    Returns an ordered list of all items on the scene. \a order decides the
+    sorting.
+
+    \sa addItem(), removeItem()
+*/
+QList<QGraphicsItem *> QGraphicsScene::items(Qt::SortOrder order) const
+{
+    Q_D(const QGraphicsScene);
+    return d->index->items(order);
 }
 
 /*!
@@ -1732,6 +1699,7 @@ QList<QGraphicsItem *> QGraphicsScene::collidingItems(const QGraphicsItem *item,
         return QList<QGraphicsItem *>();
     }
 
+    // Does not support ItemIgnoresTransformations.
     QList<QGraphicsItem *> tmp;
     foreach (QGraphicsItem *itemInVicinity, d->index->estimateItems(item->sceneBoundingRect(), Qt::AscendingOrder, QTransform())) {
         if (item != itemInVicinity && item->collidesWithItem(itemInVicinity, mode))
@@ -1753,6 +1721,13 @@ QList<QGraphicsItem *> QGraphicsScene::collidingItems(const QGraphicsItem *item,
 QGraphicsItem *QGraphicsScene::itemAt(const QPointF &pos) const
 {
     QList<QGraphicsItem *> itemsAtPoint = items(pos);
+    return itemsAtPoint.isEmpty() ? 0 : itemsAtPoint.first();
+}
+
+QGraphicsItem *QGraphicsScene::itemAt(const QPointF &pos, const QTransform &deviceTransform) const
+{
+    QList<QGraphicsItem *> itemsAtPoint = items(pos, Qt::IntersectsItemShape,
+                                                Qt::AscendingOrder, deviceTransform);
     return itemsAtPoint.isEmpty() ? 0 : itemsAtPoint.first();
 }
 
@@ -1831,6 +1806,21 @@ void QGraphicsScene::setSelectionArea(const QPainterPath &path)
 */
 void QGraphicsScene::setSelectionArea(const QPainterPath &path, Qt::ItemSelectionMode mode)
 {
+    setSelectionArea(path, Qt::IntersectsItemShape, QTransform());
+}
+
+/*!
+    \overload
+    \since 4.3
+
+    Sets the selection area to \a path using \a mode to determine if items are
+    included in the selection area.
+
+    \sa clearSelection(), selectionArea()
+*/
+void QGraphicsScene::setSelectionArea(const QPainterPath &path, Qt::ItemSelectionMode mode,
+                                      const QTransform &deviceTransform)
+{
     Q_D(QGraphicsScene);
 
     // Note: with boolean path operations, we can improve performance here
@@ -1846,7 +1836,7 @@ void QGraphicsScene::setSelectionArea(const QPainterPath &path, Qt::ItemSelectio
     bool changed = false;
 
     // Set all items in path to selected.
-    foreach (QGraphicsItem *item, items(path, mode)) {
+    foreach (QGraphicsItem *item, items(path, mode, Qt::AscendingOrder, deviceTransform)) {
         if (item->flags() & QGraphicsItem::ItemIsSelectable) {
             if (!item->isSelected())
                 changed = true;
@@ -1904,7 +1894,10 @@ void QGraphicsScene::clear()
 {
     Q_D(QGraphicsScene);
     QList<QGraphicsItem *> items = d->index->items();
+#if 1
     QList<QGraphicsItem *> toDelete;
+    // ### As the item list is already in ascending order,
+    // the items should be deleted in topological order.
     // Recursive descent delete
     for (int i = 0; i < items.size(); ++i) {
         if (QGraphicsItem *item = items.at(i)) {
@@ -1912,11 +1905,13 @@ void QGraphicsScene::clear()
                 toDelete << item;
         }
     }
-    //We delete all top level items
+    // We delete all top level items
     qDeleteAll(toDelete);
+#else
+    qDeleteAll(items);
+#endif
     d->lastItemCount = 0;
     d->index->clear();
-    d->largestUntransformableItem = QRectF();
     d->allItemsIgnoreHoverEvents = true;
     d->allItemsUseDefaultCursor = true;
 }
@@ -4129,16 +4124,6 @@ void QGraphicsScenePrivate::drawSubtreeRecursive(QGraphicsItem *item, QPainter *
         children = &this->topLevelItems;
     } else {
         QRectF sceneRect = viewTransform.inverted().mapRect(QRectF(exposedRegion->boundingRect().adjusted(-1, -1, 1, 1)));
-        if (!largestUntransformableItem.isEmpty()) {
-            // ### Nuke this when we move the indexing code into a separate
-            // class.  All the largestUntransformableItem code should then go
-            // away, and the estimate function should return untransformable
-            // items as well.
-            QRectF untr = largestUntransformableItem;
-            QRectF ltri = viewTransform.inverted().mapRect(untr);
-            ltri.adjust(-untr.width(), -untr.height(), untr.width(), untr.height());
-            sceneRect.adjust(-ltri.width(), -ltri.height(), ltri.width(), ltri.height());
-        }
         tmp = index->estimateItems(sceneRect, Qt::DescendingOrder, viewTransform);
 
         QList<QGraphicsItem *> tli;

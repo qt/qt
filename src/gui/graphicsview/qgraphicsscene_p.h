@@ -96,7 +96,6 @@ public:
     QRectF sceneRect;
     bool hasSceneRect;
     QRectF growingItemsBoundingRect;
-    QRectF largestUntransformableItem;
 
     void _q_emitUpdated();
     QList<QRectF> updatedRects;
@@ -162,7 +161,6 @@ public:
     QList<QGraphicsItem *> itemsAtPosition(const QPoint &screenPos,
                                            const QPointF &scenePos,
                                            QWidget *widget) const;
-    static bool itemCollidesWithPath(QGraphicsItem *item, const QPainterPath &path, Qt::ItemSelectionMode mode);
     void storeMouseButtonsForMouseGrabber(QGraphicsSceneMouseEvent *event);
 
     QList<QGraphicsView *> views;
@@ -187,6 +185,8 @@ public:
     void sendMouseEvent(QGraphicsSceneMouseEvent *mouseEvent);
     void mousePressEventHandler(QGraphicsSceneMouseEvent *mouseEvent);
     QGraphicsWidget *windowForItem(const QGraphicsItem *item) const;
+
+    bool sortCacheEnabled; // for compatibility
 
     void drawItemHelper(QGraphicsItem *item, QPainter *painter,
                         const QStyleOptionGraphicsItem *option, QWidget *widget,

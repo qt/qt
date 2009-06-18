@@ -75,9 +75,12 @@ public:
     QGraphicsSceneIndexPrivate(QGraphicsScene *scene);
     ~QGraphicsSceneIndexPrivate();
 
-    void recursive_items_helper(QGraphicsItem *item, QGraphicsSceneIndexIntersector *intersector, QList<QGraphicsItem *> *items,
-                           const QTransform &parentTransform, const QTransform &viewTransform,
-                           Qt::ItemSelectionMode mode, Qt::SortOrder order, qreal parentOpacity = 1.0) const;
+    static bool itemCollidesWithPath(const QGraphicsItem *item, const QPainterPath &path, Qt::ItemSelectionMode mode);
+
+    void recursive_items_helper(QGraphicsItem *item, QRectF exposeRect,
+                                QGraphicsSceneIndexIntersector *intersector, QList<QGraphicsItem *> *items,
+                                const QTransform &parentTransform, const QTransform &viewTransform,
+                                Qt::ItemSelectionMode mode, Qt::SortOrder order, qreal parentOpacity = 1.0) const;
    QGraphicsScene *scene;
    QGraphicsSceneIndexPointIntersector *pointIntersector;
    QGraphicsSceneIndexRectIntersector *rectIntersector;
@@ -87,14 +90,10 @@ public:
 class QGraphicsSceneIndexIntersector
 {
 public:
-    QGraphicsSceneIndexIntersector(QGraphicsScene *scene) : scene(scene) { }
+    QGraphicsSceneIndexIntersector() { }
     virtual ~QGraphicsSceneIndexIntersector() { }
-    virtual bool intersect(const QRectF &rect) const = 0;
-    Qt::ItemSelectionMode mode;
-    QGraphicsItem *item;
-    QGraphicsScene *scene;
-    QRectF rect;
-    QTransform transform;
+    virtual bool intersect(const QGraphicsItem *item, const QRectF &exposeRect, Qt::ItemSelectionMode mode,
+                           const QTransform &transform, const QTransform &deviceTransform) const = 0;
 };
 
 QT_END_NAMESPACE

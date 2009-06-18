@@ -857,6 +857,11 @@ void QGraphicsItemPrivate::setParentItemHelper(QGraphicsItem *newParent)
     if (newParent == parent)
         return;
 
+    if (scene) {
+        // Deliver the change to the index
+        scene->d_func()->index->itemChange(q, QGraphicsItem::ItemParentChange, newParentVariant);
+    }
+
     if (QGraphicsWidget *w = isWidget ? static_cast<QGraphicsWidget *>(q) : q->parentWidget()) {
         // Update the child focus chain; when reparenting a widget that has a
         // focus child, ensure that that focus child clears its focus child
@@ -950,11 +955,6 @@ void QGraphicsItemPrivate::setParentItemHelper(QGraphicsItem *newParent)
 
     // Deliver post-change notification
     q->itemChange(QGraphicsItem::ItemParentHasChanged, newParentVariant);
-
-    if (scene) {
-        // Deliver the change to the index
-        scene->d_func()->index->itemChanged(q, QGraphicsItem::ItemParentHasChanged, newParentVariant);
-    }
 
     if (isObject)
         emit static_cast<QGraphicsObject *>(q)->parentChanged();
@@ -1426,6 +1426,8 @@ void QGraphicsItem::setFlags(GraphicsItemFlags flags)
     flags = GraphicsItemFlags(itemChange(ItemFlagsChange, quint32(flags)).toUInt());
     if (quint32(d_ptr->flags) == quint32(flags))
         return;
+    if (d_ptr->scene)
+        d_ptr->scene->d_func()->index->itemChange(this, ItemFlagsChange, quint32(flags));
 
     // Flags that alter the geometry of the item (or its children).
     const quint32 geomChangeFlagsMask = (ItemClipsChildrenToShape | ItemClipsToShape | ItemIgnoresTransformations);
@@ -3577,17 +3579,20 @@ void QGraphicsItem::setZValue(qreal z)
     qreal newZ = qreal(newZVariant.toDouble());
     if (newZ == d_ptr->z)
         return;
+
+    if (d_ptr->scene) {
+        // Z Value has changed, we have to notify the index.
+        d_ptr->scene->d_func()->index->itemChange(this, ItemZValueChange, newZVariant);
+    }
+
     d_ptr->z = newZ;
     if (d_ptr->parent)
         d_ptr->parent->d_ptr->needSortChildren = 1;
     else if (d_ptr->scene)
         d_ptr->scene->d_func()->needSortTopLevelItems = 1;
 
-    if (d_ptr->scene) {
+    if (d_ptr->scene)
         d_ptr->scene->d_func()->markDirty(this, QRectF(), /*invalidateChildren=*/true);
-        //Z Value has changed, we have to notify the index.
-        d_ptr->scene->d_func()->index->itemChanged(this, ItemZValueChange, z);
-    }
 
     itemChange(ItemZValueHasChanged, newZVariant);
 
@@ -9655,17 +9660,11 @@ QDebug operator<<(QDebug debug, QGraphicsItem *item)
         return debug;
     }
 
-    QStringList flags;
-    if (item->isVisible()) flags << QLatin1String("isVisible");
-    if (item->isEnabled()) flags << QLatin1String("isEnabled");
-    if (item->isSelected()) flags << QLatin1String("isSelected");
-    if (item->hasFocus()) flags << QLatin1String("HasFocus");
-
     debug << "QGraphicsItem(this =" << ((void*)item)
           << ", parent =" << ((void*)item->parentItem())
           << ", pos =" << item->pos()
-          << ", z =" << item->zValue() << ", flags = {"
-          << flags.join(QLatin1String("|")) << " })";
+          << ", z =" << item->zValue() << ", flags = "
+          << item->flags() << ")";
     return debug;
 }
 

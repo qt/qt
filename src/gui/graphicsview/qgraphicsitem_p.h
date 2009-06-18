@@ -158,6 +158,15 @@ public:
     inline virtual ~QGraphicsItemPrivate()
     { }
 
+    static const QGraphicsItemPrivate *get(const QGraphicsItem *item)
+    {
+        return item->d_ptr;
+    }
+    static QGraphicsItemPrivate *get(QGraphicsItem *item)
+    {
+        return item->d_ptr;
+    }
+
     void updateAncestorFlag(QGraphicsItem::GraphicsItemFlag childFlag,
                             AncestorFlag flag = NoFlag, bool enabled = false, bool root = true);
     void setIsMemberOfGroup(bool enabled);

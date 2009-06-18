@@ -170,11 +170,6 @@ void QGraphicsSceneBspTreeIndexPrivate::_q_updateIndex()
         unindexedItems = indexedItems;
         lastItemCount = indexedItems.size();
         q->scene()->update();
-
-        // Take this opportunity to reset our largest-item counter for
-        // untransformable items. When the items are inserted into the BSP
-        // tree, we'll get an accurate calculation.
-        scenePrivate->largestUntransformableItem = QRectF();
     }
 
     // Insert all unindexed items into the tree.
@@ -185,19 +180,6 @@ void QGraphicsSceneBspTreeIndexPrivate::_q_updateIndex()
                 continue;
 
             bsp.insertItem(item, rect);
-
-            // If the item ignores view transformations, update our
-            // largest-item-counter to ensure that the view can accurately
-            // discover untransformable items when drawing.
-            if (item->d_ptr->itemIsUntransformable()) {
-                QGraphicsItem *topmostUntransformable = item;
-                while (topmostUntransformable && (topmostUntransformable->d_ptr->ancestorFlags
-                                                  & QGraphicsItemPrivate::AncestorIgnoresTransformations)) {
-                    topmostUntransformable = topmostUntransformable->parentItem();
-                }
-                // ### Verify that this is the correct largest untransformable rectangle.
-                scenePrivate->largestUntransformableItem |= item->mapToItem(topmostUntransformable, item->boundingRect()).boundingRect();
-            }
         }
     }
     unindexedItems.clear();
@@ -467,17 +449,23 @@ void QGraphicsSceneBspTreeIndex::addItem(QGraphicsItem *item)
     // Indexing requires sceneBoundingRect(), but because \a item might
     // not be completely constructed at this point, we need to store it in
     // a temporary list and schedule an indexing for later.
-    d->unindexedItems << item;
-    item->d_func()->index = -1;
-    d->startIndexTimer(0);
+    item->d_ptr->index = -1;
+    if (item->d_ptr->itemIsUntransformable()) {
+        d->untransformableItems << item;
+    } else {
+        d->unindexedItems << item;
+        d->startIndexTimer(0);
+    }
 }
 
 /*!
     This really add the item in the BSP.
     \internal
 */
-void QGraphicsSceneBspTreeIndexPrivate::addToIndex(QGraphicsItem *item)
+void QGraphicsSceneBspTreeIndexPrivate::addToBspTree(QGraphicsItem *item)
 {
+    if (item->d_ptr->itemIsUntransformable())
+        return;
     if (item->d_func()->index != -1) {
         bsp.insertItem(item, item->sceneBoundingRect());
         foreach (QGraphicsItem *child, item->children())
@@ -496,10 +484,11 @@ void QGraphicsSceneBspTreeIndexPrivate::addToIndex(QGraphicsItem *item)
 void QGraphicsSceneBspTreeIndex::removeItem(QGraphicsItem *item)
 {
     Q_D(QGraphicsSceneBspTreeIndex);
+
     // Note: This will access item's sceneBoundingRect(), which (as this is
     // C++) is why we cannot call removeItem() from QGraphicsItem's
     // destructor.
-    d->removeFromIndex(item);
+    d->removeFromBspTree(item);
 
     // Invalidate any sort caching; arrival of a new item means we need to
     // resort.
@@ -511,7 +500,10 @@ void QGraphicsSceneBspTreeIndex::removeItem(QGraphicsItem *item)
         d->freeItemIndexes << index;
         d->indexedItems[index] = 0;
     } else {
-        d->unindexedItems.removeAll(item);
+        if (item->d_ptr->itemIsUntransformable())
+            d->untransformableItems.removeOne(item);
+        else
+            d->unindexedItems.removeOne(item);
     }
 }
 
@@ -539,7 +531,10 @@ void QGraphicsSceneBspTreeIndex::deleteItem(QGraphicsItem *item)
     } else {
         // Recently added items are purged immediately. unindexedItems() never
         // contains stale items.
-        d->unindexedItems.removeAll(item);
+        if (item->d_ptr->itemIsUntransformable())
+            d->untransformableItems.removeOne(item);
+        else
+            d->unindexedItems.removeOne(item);
         scene()->update();
     }
 }
@@ -548,8 +543,11 @@ void QGraphicsSceneBspTreeIndex::deleteItem(QGraphicsItem *item)
     Really remove the item from the BSP
     \internal
 */
-void QGraphicsSceneBspTreeIndexPrivate::removeFromIndex(QGraphicsItem *item)
+void QGraphicsSceneBspTreeIndexPrivate::removeFromBspTree(QGraphicsItem *item)
 {
+    if (item->d_ptr->itemIsUntransformable())
+        return;
+
     if (item->d_func()->ancestorFlags & QGraphicsItemPrivate::AncestorClipsChildren) {
         // ### remove from child index only if applicable
         return;
@@ -579,7 +577,7 @@ void QGraphicsSceneBspTreeIndex::prepareBoundingRectChange(const QGraphicsItem *
     // Note: This will access item's sceneBoundingRect(), which (as this is
     // C++) is why we cannot call removeItem() from QGraphicsItem's
     // destructor.
-    d->removeFromIndex(const_cast<QGraphicsItem *>(item));
+    d->removeFromBspTree(const_cast<QGraphicsItem *>(item));
 }
 
 /*!
@@ -633,7 +631,8 @@ QList<QGraphicsItem *> QGraphicsSceneBspTreeIndex::items(Qt::SortOrder order) co
     Q_D(const QGraphicsSceneBspTreeIndex);
     const_cast<QGraphicsSceneBspTreeIndexPrivate*>(d)->purgeRemovedItems();
     QList<QGraphicsItem *> itemList;
-     // If freeItemIndexes is empty, we know there are no holes in indexedItems and
+
+    // If freeItemIndexes is empty, we know there are no holes in indexedItems and
     // unindexedItems.
     if (d->freeItemIndexes.isEmpty()) {
         if (d->unindexedItems.isEmpty()) {
@@ -649,6 +648,7 @@ QList<QGraphicsItem *> QGraphicsSceneBspTreeIndex::items(Qt::SortOrder order) co
                 itemList << item;
         }
     }
+    itemList += d->untransformableItems;
     if (order != -1) {
         //We sort descending order
         d->sortItems(&itemList, order, d->sortCacheEnabled);
@@ -692,6 +692,8 @@ int QGraphicsSceneBspTreeIndex::bspTreeDepth()
 void QGraphicsSceneBspTreeIndex::setBspTreeDepth(int depth)
 {
     Q_D(QGraphicsSceneBspTreeIndex);
+    if (d->bspTreeDepth == depth)
+        return;
     d->bspTreeDepth = depth;
     d->resetIndex();
 }
@@ -716,19 +718,41 @@ void QGraphicsSceneBspTreeIndex::sceneRectChanged(const QRectF &rect)
     update the BSP tree if necessary.
 
 */
-void QGraphicsSceneBspTreeIndex::itemChanged(const QGraphicsItem *item, QGraphicsItem::GraphicsItemChange change, const QVariant &value)
+void QGraphicsSceneBspTreeIndex::itemChange(const QGraphicsItem *item, QGraphicsItem::GraphicsItemChange change, const QVariant &value)
 {
     Q_D(QGraphicsSceneBspTreeIndex);
     switch (change) {
-        case QGraphicsItem::ItemZValueChange:
-        case QGraphicsItem::ItemParentChange: {
-            d->invalidateSortCache();
-            break;
+    case QGraphicsItem::ItemFlagsChange: {
+        // Handle ItemIgnoresTransformations
+        bool ignoredTransform = item->flags() & QGraphicsItem::ItemIgnoresTransformations;
+        bool willIgnoreTransform = value.toUInt() & QGraphicsItem::ItemIgnoresTransformations;
+        if (ignoredTransform != willIgnoreTransform) {
+            QGraphicsItem *thatItem = const_cast<QGraphicsItem *>(item);
+            removeItem(thatItem);
+            addItem(thatItem);
         }
-        default:
-            break;
+        break;
     }
-    return QGraphicsSceneIndex::itemChanged(item, change, value);
+    case QGraphicsItem::ItemZValueChange:
+        d->invalidateSortCache();
+        break;
+    case QGraphicsItem::ItemParentChange: {
+        d->invalidateSortCache();
+        // Handle ItemIgnoresTransformations
+        QGraphicsItem *newParent = qVariantValue<QGraphicsItem *>(value);
+        bool ignoredTransform = item->d_ptr->itemIsUntransformable();
+        bool willIgnoreTransform = (item->flags() & QGraphicsItem::ItemIgnoresTransformations) || (newParent && newParent->d_ptr->itemIsUntransformable());
+        if (ignoredTransform != willIgnoreTransform) {
+            QGraphicsItem *thatItem = const_cast<QGraphicsItem *>(item);
+            removeItem(thatItem);
+            addItem(thatItem);
+        }
+        break;
+    }
+    default:
+        break;
+    }
+    return QGraphicsSceneIndex::itemChange(item, change, value);
 }
 /*!
     \reimp

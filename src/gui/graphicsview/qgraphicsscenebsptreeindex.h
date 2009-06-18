@@ -98,7 +98,7 @@ protected:
     void prepareBoundingRectChange(const QGraphicsItem *item);
 
     void sceneRectChanged(const QRectF &rect);
-    void itemChanged(const QGraphicsItem *item, QGraphicsItem::GraphicsItemChange change, const QVariant &value);
+    void itemChange(const QGraphicsItem *item, QGraphicsItem::GraphicsItemChange change, const QVariant &value);
 
 private :
     Q_DECLARE_PRIVATE(QGraphicsSceneBspTreeIndex)

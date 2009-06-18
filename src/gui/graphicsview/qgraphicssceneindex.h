@@ -104,7 +104,7 @@ protected:
     virtual void removeItem(QGraphicsItem *item) = 0;
     virtual void deleteItem(QGraphicsItem *item);
 
-    virtual void itemChanged(const QGraphicsItem *item, QGraphicsItem::GraphicsItemChange, const QVariant &value);
+    virtual void itemChange(const QGraphicsItem *item, QGraphicsItem::GraphicsItemChange, const QVariant &value);
     virtual void prepareBoundingRectChange(const QGraphicsItem *item);
     virtual void sceneRectChanged(const QRectF &rect);
 

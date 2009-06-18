@@ -82,6 +82,7 @@ public:
 
     QList<QGraphicsItem *> indexedItems;
     QList<QGraphicsItem *> unindexedItems;
+    QList<QGraphicsItem *> untransformableItems;
     QList<int> freeItemIndexes;
 
     bool purgePending;
@@ -92,8 +93,8 @@ public:
     void startIndexTimer(int interval = QGRAPHICSSCENE_INDEXTIMER_TIMEOUT);
     void resetIndex();
 
-    void addToIndex(QGraphicsItem *item);
-    void removeFromIndex(QGraphicsItem *item);
+    void addToBspTree(QGraphicsItem *item);
+    void removeFromBspTree(QGraphicsItem *item);
 
     void _q_updateSortCache();
     bool sortCacheEnabled;
