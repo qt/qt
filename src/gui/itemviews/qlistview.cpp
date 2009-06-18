@@ -827,6 +827,8 @@ void QListView::rowsAboutToBeRemoved(const QModelIndex &parent, int start, int e
 */
 void QListView::mouseMoveEvent(QMouseEvent *e)
 {
+    if (!isVisible())
+	return;
     Q_D(QListView);
     QAbstractItemView::mouseMoveEvent(e);
     if (state() == DragSelectingState
