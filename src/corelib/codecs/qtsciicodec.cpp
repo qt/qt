@@ -82,8 +82,7 @@ QByteArray QTsciiCodec::convertFromUnicode(const QChar *uc, int len, ConverterSt
     }
     int invalid = 0;
 
-    QByteArray rstr;
-    rstr.resize(len);
+    QByteArray rstr(len, Qt::Uninitialized);
     uchar* cursor = (uchar*)rstr.data();
     for (int i = 0; i < len; i++) {
         QChar ch = uc[i];

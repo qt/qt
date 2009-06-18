@@ -2992,8 +2992,7 @@ QByteArray QByteArray::simplified() const
 {
     if (d->size == 0)
         return *this;
-    QByteArray result;
-    result.resize(d->size);
+    QByteArray result(d->size, Qt::Uninitialized);
     const char *from = d->data;
     const char *fromend = from + d->size;
     int outc=0;
@@ -3444,8 +3443,7 @@ QByteArray QByteArray::toBase64() const
     const char padchar = '=';
     int padlen = 0;
 
-    QByteArray tmp;
-    tmp.resize(((d->size * 4) / 3) + 3);
+    QByteArray tmp((d->size * 4) / 3 + 3, Qt::Uninitialized);
 
     int i = 0;
     char *out = tmp.data();
@@ -3783,8 +3781,7 @@ QByteArray QByteArray::fromBase64(const QByteArray &base64)
 {
     unsigned int buf = 0;
     int nbits = 0;
-    QByteArray tmp;
-    tmp.resize((base64.size() * 3) / 4);
+    QByteArray tmp((base64.size() * 3) / 4, Qt::Uninitialized);
 
     int offset = 0;
     for (int i = 0; i < base64.size(); ++i) {
@@ -3832,8 +3829,7 @@ QByteArray QByteArray::fromBase64(const QByteArray &base64)
 */
 QByteArray QByteArray::fromHex(const QByteArray &hexEncoded)
 {
-    QByteArray res;
-    res.resize((hexEncoded.size() + 1)/ 2);
+    QByteArray res((hexEncoded.size() + 1)/ 2, Qt::Uninitialized);
     uchar *result = (uchar *)res.data() + res.size();
 
     bool odd_digit = true;
@@ -3870,8 +3866,7 @@ QByteArray QByteArray::fromHex(const QByteArray &hexEncoded)
 */
 QByteArray QByteArray::toHex() const
 {
-    QByteArray hex;
-    hex.resize(d->size*2);
+    QByteArray hex(d->size * 2, Qt::Uninitialized);
     char *hexData = hex.data();
     const uchar *data = (const uchar *)d->data;
     for (int i = 0; i < d->size; ++i) {
