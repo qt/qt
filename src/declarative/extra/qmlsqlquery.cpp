@@ -51,6 +51,9 @@
 #include <QSqlDatabase>
 #include <QSqlDriver>
 
+#include <QContiguousCache>
+#include <QTimerEvent>
+
 QT_BEGIN_NAMESPACE
 QML_DEFINE_TYPE(QmlSqlBind, SqlBind)
 QML_DEFINE_TYPE(QmlSqlQuery, SqlQuery)
@@ -192,11 +195,20 @@ class QmlSqlQueryPrivate : public QObjectPrivate
 {
     Q_DECLARE_PUBLIC(QmlSqlQuery)
 public:
-    QmlSqlQueryPrivate(QmlSqlQuery *owner) : isSel(false), query(NULL), requireCache(false), count(-1), binds(owner) {}
+    QmlSqlQueryPrivate(QmlSqlQuery *owner)
+        : isSel(false), query(NULL), requireCache(false), count(-1),
+        cacheNear(100), cacheRetain(100), cacheSize(1000),
+        cacheInterval(250), scheduledRow(-1), cacheTimer(-1),
+        binds(owner) {}
     void prepareQuery() const;
     void bindQuery() const;
-    void cacheQuery() const;
     void grabRoles() const;
+
+    void clearCache();
+    void initCache() const;
+    void hitCache(int row) const;
+
+    void enactShift(int row) const;
 
     QString queryText;
     bool isSel;
@@ -206,7 +218,14 @@ public:
     mutable int count;
     mutable QList<int> roles;
     mutable QStringList roleNames;
-    mutable QVector< QVector< QVariant > > cache;
+
+    typedef QContiguousCache<QVariant> Column;
+    mutable QVector< Column * > cache;
+
+    int cacheNear, cacheRetain, cacheSize, cacheInterval;
+
+    mutable int scheduledRow;
+    mutable int cacheTimer;
 
     class QmlSqlBindList : public QmlList<QmlSqlBind *>
     {
@@ -408,12 +427,13 @@ QHash<int,QVariant> QmlSqlQuery::data(int row, const QList<int> &roles) const
 
     if (!d->requireCache)
         d->query->seek(row);
+    else
+        d->hitCache(row);
 
     for (int i = 0; i < roles.count(); ++i) {
         int column = roles[i];
-        Q_ASSERT(column >= 0 && column < d->cache.size());
         if (d->requireCache) 
-            result.insert(column, d->cache[column].at(row));
+            result.insert(column, d->cache[column]->at(row));
         else
             result.insert(column, d->query->value(column));
     }
@@ -511,7 +531,7 @@ void QmlSqlQuery::resetBinds()
     if (!d->query)
         return;
     int oldcount = d->count;
-    d->cache.resize(0);
+    d->clearCache();
     d->roles.clear();
     d->roleNames.clear();
     d->bindQuery();
@@ -520,7 +540,7 @@ void QmlSqlQuery::resetBinds()
             if (!d->query->exec())
                 qWarning() << "failed to execute query" << d->query->lastQuery() << d->query->boundValues() << d->query->lastError().text();
         }
-        d->cacheQuery(); // may finish query
+        d->initCache(); // may finish query
         emitChanges(oldcount);
     }
 }
@@ -540,12 +560,12 @@ void QmlSqlQuery::exec()
 
     if (d->isSel) {
         int oldcount = d->count;
-        d->cache.resize(0);
+        d->clearCache();
         d->roles.clear();
         d->roleNames.clear();
         if (!d->query->exec())
             qWarning() << "failed to execute query" << d->query->lastQuery() << d->query->boundValues() << d->query->lastError().text();
-        d->cacheQuery(); // may finish query
+        d->initCache(); // may finish query
         emitChanges(oldcount);
     } else {
         if (!d->query->exec())
@@ -565,7 +585,7 @@ void QmlSqlQuery::resetQuery()
     Q_ASSERT(d->query != 0);
     delete d->query;
     d->query = 0;
-    d->cache.resize(0);
+    d->clearCache();
     d->roles.clear();
     d->roleNames.clear();
     int oldcount = d->count;
@@ -588,6 +608,22 @@ void QmlSqlQuery::emitChanges(int oldcount)
         emit itemsRemoved(d->count, oldcount-d->count);
     if (d->count > 0 && oldcount > 0)
         emit itemsChanged(0, qMin(d->count, oldcount), roles());
+}
+
+/*
+    \internal
+
+    Handles delayed caching of the query.
+*/
+void QmlSqlQuery::timerEvent(QTimerEvent *event)
+{
+    Q_D(QmlSqlQuery);
+    if (event->timerId() == d->cacheTimer) {
+        killTimer(d->cacheTimer);
+        d->cacheTimer = -1;
+        d->enactShift(d->scheduledRow);
+        d->scheduledRow = -1;
+    }
 }
 
 /*
@@ -625,7 +661,7 @@ void QmlSqlQueryPrivate::prepareQuery() const
     if (isSel) {
         if (!query->exec())
             qWarning() << "failed to execute query" << query->lastQuery() << query->boundValues() << query->lastError().text();
-        cacheQuery();
+        initCache();
     }
 }
 
@@ -645,31 +681,95 @@ void QmlSqlQueryPrivate::bindQuery() const
 }
 
 /*
-    If the query is connected to a database with simple locking or
-    that cannot ask for the count of a result set, caches the required
-    data of the query and finishes the query to release locks.
-
-    Otherwise just caches the count of the query.
+    Clears cached query results
 */
-void QmlSqlQueryPrivate::cacheQuery() const
+void QmlSqlQueryPrivate::clearCache()
+{
+    for (int i = 0; i < cache.size(); ++i)
+        delete cache[i];
+    cache.resize(0);
+}
+
+/*
+    If caching is required, initializes the cache with
+    column definitions and initial rows.
+
+    Otherwise caches the count for the query.
+*/
+void QmlSqlQueryPrivate::initCache() const
 {
     if (requireCache) {
         int row = 0;
-        while (query->next()) {
+        if (query->next()) {
             if (roleNames.isEmpty()) {
                 grabRoles();
                 cache.resize(roleNames.count());
+                for (int i = 0; i < cache.size(); ++i)
+                    cache[i] = new Column(cacheSize);
             }
             Q_ASSERT(cache.size() > 0);
-            for (int i = 0; i < cache.size(); ++i) {
-                cache[i].append(query->value(i));
-            }
-            row++;
+            do {
+                for (int i = 0; i < cache.size(); ++i)
+                    cache[i]->insert(row, query->value(i));
+                row++;
+            } while (!cache[0]->isFull() && query->next());
+            while(query->next()) row++;
         }
         count = row;
         query->finish();
     } else {
         count = query->size();
+    }
+}
+
+/*
+    Schedules future background cache loading based of
+    the given row.
+
+    Should only be called if caching is active.
+*/
+void QmlSqlQueryPrivate::hitCache(int row) const
+{
+    Q_Q(const QmlSqlQuery);
+
+    Q_ASSERT(cache.size() > 0 && requireCache);
+    if (cache[0]->containsIndex(row)) {
+        int fi = cache[0]->firstIndex();
+        int li = cache[0]->lastIndex();
+        if (fi > 0 && row < fi + cacheNear)
+            scheduledRow = qMax(0, row + cacheRetain - cacheSize);
+        else if (li < count-1 && row > li - cacheNear)
+            scheduledRow = qMax(0, row - cacheRetain);
+
+        if (scheduledRow != -1 && cacheTimer == -1)
+            cacheTimer = ((QmlSqlQuery *)q)->startTimer(cacheInterval);
+    } else {
+        if (cacheTimer != -1) {
+            ((QmlSqlQuery *)q)->killTimer(cacheTimer);
+            cacheTimer = -1;
+        }
+        scheduledRow = -1;
+        qDebug() << "cache miss for row:" << row << "count:" << count;
+        enactShift(row);
+    }
+}
+
+/*
+    Load items from sql centered around row.
+*/
+void QmlSqlQueryPrivate::enactShift(int targetRow) const
+{
+    Q_ASSERT(query && cache.size());
+    query->exec();
+    int row = targetRow < cache[0]->firstIndex() ? targetRow : qMax(targetRow, cache[0]->lastIndex()+1);
+
+    if (query->seek(row)) {
+        do {
+            for (int i = 0; i < cache.size(); ++i) {
+                cache[i]->insert(row, query->value(i));
+            }
+            row++;
+        } while(row < targetRow + cacheSize && query->next());
     }
 }
 
