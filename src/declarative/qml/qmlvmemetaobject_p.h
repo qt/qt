@@ -69,6 +69,7 @@ private:
     QBitArray vTypes;
     QList<QString> *slotData;
     int slotDataIdx;
+    QAbstractDynamicMetaObject *parent;
 };
 
 QT_END_NAMESPACE
