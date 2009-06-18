@@ -3931,7 +3931,7 @@ QPointF QTouchEvent::TouchPoint::lastScreenPos() const
 */
 QRectF QTouchEvent::TouchPoint::rect() const
 {
-    return d->screenRect;
+    return d->rect;
 }
 
 /*!
