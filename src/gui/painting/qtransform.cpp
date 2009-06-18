@@ -232,6 +232,11 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
+    \fn QTransform::QTransform(Qt::Uninitialized)
+    \internal
+*/
+
+/*!
     Constructs an identity matrix.
 
     All elements are set to zero except \c m11 and \c m22 (specifying

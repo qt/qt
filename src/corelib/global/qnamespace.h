@@ -1542,6 +1542,10 @@ public:
         BottomLeftSection,
         TitleBarArea    // For move
     };
+
+    enum Uninitialized {
+        Uninitialized
+    };
 }
 #ifdef Q_MOC_RUN
  ;
