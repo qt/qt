@@ -217,7 +217,7 @@
 #include "qgraphicsview_p.h"
 #include "qgraphicswidget.h"
 #include "qgraphicswidget_p.h"
-#include "qgraphicsscenebsptreeindex.h"
+#include <private/qgraphicsscenebsptreeindex_p.h>
 #include <private/qgraphicsscenelinearindex_p.h>
 
 #include <QtCore/qdebug.h>

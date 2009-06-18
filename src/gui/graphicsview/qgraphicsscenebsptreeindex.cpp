@@ -75,14 +75,10 @@
     \sa QGraphicsScene, QGraphicsView, QGraphicsSceneIndex
 */
 
-#include "qgraphicsscenebsptreeindex.h"
-
 #ifndef QT_NO_GRAPHICSVIEW
 
-#include "qgraphicsscenebsptreeindex_p.h"
-#include "qgraphicsitem_p.h"
-#include "qgraphicsscene_p.h"
-
+#include <private/qgraphicsscene_p.h>
+#include <private/qgraphicsscenebsptreeindex_p.h>
 #include <private/qgraphicssceneindex_p.h>
 
 #include <QtCore/qmath.h>
@@ -783,7 +779,7 @@ bool QGraphicsSceneBspTreeIndex::event(QEvent *event)
 
 QT_END_NAMESPACE
 
-#include "moc_qgraphicsscenebsptreeindex.cpp"
+#include "moc_qgraphicsscenebsptreeindex_p.cpp"
 
 #endif  // QT_NO_GRAPHICSVIEW
 

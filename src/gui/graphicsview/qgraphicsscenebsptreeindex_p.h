@@ -39,8 +39,7 @@
 **
 ****************************************************************************/
 
-#ifndef QGRAPHICSSCENEBSPTREEINDEX_P_H
-#define QGRAPHICSSCENEBSPTREEINDEX_P_H
+#include <QtCore/qglobal.h>
 
 //
 //  W A R N I N G
@@ -53,18 +52,66 @@
 // We mean it.
 //
 
-#include "qgraphicsscenebsptreeindex.h"
+#ifndef QGRAPHICSBSPTREEINDEX_H
+#define QGRAPHICSBSPTREEINDEX_H
+
+QT_BEGIN_HEADER
+
+QT_BEGIN_NAMESPACE
+
+QT_MODULE(Gui)
 
 #if !defined(QT_NO_GRAPHICSVIEW) || (QT_EDITION & QT_MODULE_GRAPHICSVIEW) != QT_MODULE_GRAPHICSVIEW
 
-#include <private/qgraphicssceneindex_p.h>
+#include <QtCore/qrect.h>
+#include <QtCore/qlist.h>
+#include <QtGui/qgraphicsitem.h>
+#include <QtGui/qgraphicsscene.h>
 #include <private/qgraphicsitem_p.h>
-
-QT_BEGIN_NAMESPACE
+#include <private/qgraphicssceneindex_p.h>
+#include <private/qgraphicsscene_bsp_p.h>
 
 static const int QGRAPHICSSCENE_INDEXTIMER_TIMEOUT = 2000;
 
 class QGraphicsScene;
+class QGraphicsSceneBspTreeIndexPrivate;
+
+class Q_AUTOTEST_EXPORT QGraphicsSceneBspTreeIndex : public QGraphicsSceneIndex
+{
+    Q_OBJECT
+    Q_PROPERTY(int bspTreeDepth READ bspTreeDepth WRITE setBspTreeDepth)
+public:
+    QGraphicsSceneBspTreeIndex(QGraphicsScene *scene = 0);
+    QRectF indexedRect() const;
+
+    QList<QGraphicsItem *> estimateItems(const QRectF &rect, Qt::SortOrder order, const QTransform &deviceTransform) const;
+
+    QList<QGraphicsItem *> items(Qt::SortOrder order = Qt::AscendingOrder) const;
+
+    int bspTreeDepth();
+    void setBspTreeDepth(int depth);
+
+protected:
+    bool event(QEvent *event);
+    void clear();
+
+    void addItem(QGraphicsItem *item);
+    void removeItem(QGraphicsItem *item);
+    void deleteItem(QGraphicsItem *item);
+    void prepareBoundingRectChange(const QGraphicsItem *item);
+
+    void sceneRectChanged(const QRectF &rect);
+    void itemChange(const QGraphicsItem *item, QGraphicsItem::GraphicsItemChange change, const QVariant &value);
+
+private :
+    Q_DECLARE_PRIVATE(QGraphicsSceneBspTreeIndex)
+    Q_DISABLE_COPY(QGraphicsSceneBspTreeIndex)
+    Q_PRIVATE_SLOT(d_func(), void _q_updateSortCache())
+    Q_PRIVATE_SLOT(d_func(), void _q_updateIndex())
+
+    friend class QGraphicsScene;
+    friend class QGraphicsScenePrivate;
+};
 
 class QGraphicsSceneBspTreeIndexPrivate : public QGraphicsSceneIndexPrivate
 {
@@ -183,9 +230,10 @@ static inline bool QRectF_intersects(const QRectF &s, const QRectF &r)
     return !(t1 >= b2 || t2 >= b1);
 }
 
+#endif // QT_NO_GRAPHICSVIEW
+
 QT_END_NAMESPACE
 
-#endif // QGRAPHICSSCENEBSPTREEINDEX_P_H
+QT_END_HEADER
 
-#endif
-
+#endif // QGRAPHICSBSPTREEINDEX_H
