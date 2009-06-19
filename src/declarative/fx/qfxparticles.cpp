@@ -630,6 +630,9 @@ QFxParticles::QFxParticles(QFxParticlesPrivate &dd, QFxItem *parent)
 
 QFxParticles::~QFxParticles()
 {
+    Q_D(QFxParticles);
+    if (!d->url.isEmpty())
+        QFxPixmap::cancelGet(d->url, this);
 }
 
 /*!
