@@ -58,16 +58,7 @@
 #include "qsimplecanvas.h"
 #include "qlistmodelinterface.h"
 
-#if defined(QFX_RENDER_OPENGL2)
-#include <QtOpenGL/qglframebufferobject.h>
-#include <glsave.h>
-#endif
-#if defined(QFX_RENDER_OPENGL)
-#include <gltexture.h>
-#endif
-
 #include "qfxwebview.h"
-#include <qsimplecanvasfilter.h>
 #include <private/qfxpainteditem_p.h>
 
 QT_BEGIN_NAMESPACE
@@ -160,11 +151,7 @@ public:
         ~ImageCacheItem() { }
         int age;
         QRect area;
-#if defined(QFX_RENDER_QPAINTER)
         QPixmap image;
-#else
-        GLTexture image;
-#endif
     };
     QList<ImageCacheItem*> imagecache;
     void dirtyCache(const QRect& dirt)

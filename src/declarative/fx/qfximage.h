@@ -93,13 +93,7 @@ public:
 
     virtual void dump(int depth);
     virtual QString propertyInfo() const;
-#if defined(QFX_RENDER_QPAINTER)
     void paintContents(QPainter &painter);
-#elif defined(QFX_RENDER_OPENGL)
-    void paintGLContents(GLPainter &);
-    uint glSimpleItemData(float *vertices, float *texVertices,
-                          GLTexture **texture, uint count);
-#endif
 
 Q_SIGNALS:
     void sourceChanged(const QUrl &);

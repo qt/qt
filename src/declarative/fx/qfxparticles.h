@@ -44,10 +44,6 @@
 
 #include <QtDeclarative/qfxitem.h>
 
-#if defined(QFX_RENDER_OPENGL)
-#include "gltexture.h"
-#endif
-
 QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
@@ -214,11 +210,7 @@ public:
     virtual void dump(int depth);
     virtual QString propertyInfo() const;
 
-#if defined(QFX_RENDER_QPAINTER) 
     void paintContents(QPainter &p);
-#elif defined(QFX_RENDER_OPENGL2)
-    void paintGLContents(GLPainter &);
-#endif
 
 protected:
     virtual void componentComplete();

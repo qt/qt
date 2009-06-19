@@ -45,9 +45,6 @@
 #include <QtDeclarative/qfxglobal.h>
 #include <QtDeclarative/qmldebuggerstatus.h>
 #include <QtDeclarative/qsimplecanvas.h>
-#if defined(QFX_RENDER_OPENGL)
-#include <QtDeclarative/gltexture.h>
-#endif
 #include <QtCore/qobject.h>
 #include <QtGui/qgraphicsitem.h>
 
@@ -66,9 +63,6 @@ class QSimpleCanvasLayer;
 class QPointF;
 class QRectF;
 class QGraphicsSceneHoverEvent;
-class QSimpleCanvasFilter;
-class GLTexture;
-class QGLShaderProgram;
 
 class Q_DECLARATIVE_EXPORT QSimpleCanvasItem : public QObject
 {
@@ -168,39 +162,9 @@ public:
 
     QRect itemBoundingRect();
 
-    class GLPainter 
-    {
-    public:
-        GLPainter();
-        GLPainter(QSimpleCanvasItem *i);
-        QSimpleCanvasItem *item;
-        QSimpleCanvas::Matrix activeTransform;
-        qreal activeOpacity;
-        QRect sceneClipRect;
-
-        QGLShaderProgram *useTextureShader();
-        QGLShaderProgram *useColorShader(const QColor &);
-        void drawPixmap(const QPointF &, const GLTexture &);
-        void drawPixmap(const QRectF &, const GLTexture &);
-        void fillRect(const QRectF &, const QColor &);
-
-        void invalidate();
-        
-        bool blendEnabled;
-
-    private:
-        int flags;
-        GLPainter(const GLPainter &);
-        GLPainter &operator=(const GLPainter &);
-    };
-
-
     void setPaintMargin(qreal margin);
     QRectF boundingRect() const;
     virtual void paintContents(QPainter &);
-    virtual void paintGLContents(GLPainter &);
-    virtual uint glSimpleItemData(float *vertices, float *texVertices,
-                                  GLTexture **texture, uint count);
 
     void update();
 
@@ -216,9 +180,6 @@ public:
 
     QSimpleCanvas::Matrix transform() const;
     void setTransform(const QSimpleCanvas::Matrix &);
-
-    QSimpleCanvasFilter *filter() const;
-    void setFilter(QSimpleCanvasFilter *);
 
     QSimpleCanvasItem *mouseGrabberItem() const;
     void ungrabMouse();
@@ -238,30 +199,6 @@ public:
     static QSimpleCanvasItem *findPrevFocus(QSimpleCanvasItem *item);
     static QSimpleCanvasItem *findNextFocus(QSimpleCanvasItem *item);
 
-    GLBasicShaders *basicShaders() const;
-
-#if defined(QFX_RENDER_OPENGL)
-    class CachedTexture : public GLTexture 
-    {
-    public:
-        void addRef();
-        void release();
-
-        int pixmapWidth() const;
-        int pixmapHeight() const;
-
-    private:
-        CachedTexture();
-        friend class QSimpleCanvasItem;
-        QSimpleCanvasPrivate *d;
-        QString s;
-        int r, w, h;
-    };
-
-    CachedTexture *cachedTexture(const QString &);
-    CachedTexture *cachedTexture(const QString &, const QPixmap &);
-#endif
-  
     static QPixmap string(const QString &, const QColor & = Qt::black, const QFont & = QFont());
 
 protected:
@@ -299,12 +236,8 @@ private:
     friend class QSimpleCanvas;
     friend class QSimpleCanvasPrivate;
     friend class QSimpleCanvasRootLayer;
-    friend class QSimpleCanvasItem::GLPainter;
-    friend class QSimpleCanvasFilter;
     friend class QGraphicsQSimpleCanvasItem;
     friend class QSimpleGraphicsItem;
-    friend class CanvasEGLWidget;
-    friend class QSimpleCanvasFilterPrivate;
 
 public:
     QSimpleCanvasItem(QSimpleCanvasItemPrivate &dd, QSimpleCanvasItem *parent);

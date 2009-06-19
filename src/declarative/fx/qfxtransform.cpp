@@ -254,7 +254,6 @@ bool QFxRotation::isIdentity() const
     return (_angle == 0.);
 }
 
-#if defined(QFX_RENDER_QPAINTER)
 QTransform QFxRotation::transform() const
 {
     if (_dirty) {
@@ -266,19 +265,6 @@ QTransform QFxRotation::transform() const
     }
     return _transform;
 }
-#elif defined(QFX_RENDER_OPENGL)
-QMatrix4x4 QFxRotation::transform() const
-{
-    if (_dirty) {
-        _transform = QMatrix4x4();
-        _dirty = false;
-        _transform.translate(_originX, _originY);
-        _transform.rotate(_angle, 0, 0, 1);
-        _transform.translate(-_originX, -_originY);
-    }
-    return _transform;
-}
-#endif
 
 void QFxRotation::update()
 {
@@ -351,7 +337,6 @@ bool QFxRotation3D::isIdentity() const
     return (_angle == 0.) || (_axis.endZ() == 0. && _axis.endY() == _axis.startY() && _axis.endX() == _axis.startX());
 }
 
-#if defined(QFX_RENDER_QPAINTER)
 const qreal inv_dist_to_plane = 1. / 1024.;
 QTransform QFxRotation3D::transform() const
 {
@@ -396,29 +381,6 @@ QTransform QFxRotation3D::transform() const
 
     return _transform;
 }
-#elif defined(QFX_RENDER_OPENGL)
-QMatrix4x4 QFxRotation3D::transform() const
-{
-    if (_dirty) {
-        _dirty = false;
-        _transform = QMatrix4x4();
-
-        if (!isIdentity()) {
-            if (angle() != 0.) {
-                qreal x = _axis.endX() - _axis.startX();
-                qreal y = _axis.endY() - _axis.startY();
-                qreal z = _axis.endZ();
-
-                _transform.translate(_axis.startX(), _axis.startY(), 0);
-                _transform.rotate(angle(), x, y, z);
-                _transform.translate(-_axis.startX(), -_axis.startY(), 0);
-            }
-        }
-    }
-
-    return _transform;
-}
-#endif
 
 void QFxRotation3D::update()
 {
@@ -506,7 +468,6 @@ bool QFxTranslation3D::isIdentity() const
     return (_distance == 0.) || (_axis.endZ() == 0. && _axis.endY() == _axis.startY() && _axis.endX() == _axis.startX());
 }
 
-#if defined(QFX_RENDER_QPAINTER)
 QTransform QFxTranslation3D::transform() const
 {
     if (_dirty) {
@@ -526,35 +487,14 @@ QTransform QFxTranslation3D::transform() const
 
     return _transform;
 }
-#elif defined(QFX_RENDER_OPENGL)
-QMatrix4x4 QFxTranslation3D::transform() const
-{
-    if (_dirty) {
-        _dirty = false;
-        _transform = QMatrix4x4();
-
-        if (!isIdentity()) {
-            if (distance() != 0.)
-                _transform.translate((_axis.endX() - _axis.startX()) * distance(),
-                                     (_axis.endY() - _axis.startY()) * distance(),
-                                     (_axis.endZ()) * distance());
-
-        }
-    }
-
-    return _transform;
-}
-#endif
 
 void QFxTranslation3D::update()
 {
     _dirty = true;
 
-#if !defined(QFX_RENDER_OPENGL)
     if (_axis.endZ() != 0. && distance() != 0.) {
         qmlInfo(this) << "QTransform cannot translate along Z-axis.";
     }
-#endif
 
     QFxTransform::update();
 }
@@ -578,24 +518,6 @@ QFxPerspective::QFxPerspective(QObject *parent)
 QFxPerspective::~QFxPerspective()
 {
 }
-
-#if defined(QFX_RENDER_OPENGL)
-bool QFxPerspective::isIdentity() const
-{
-    return false;
-}
-
-QMatrix4x4 QFxPerspective::transform() const
-{
-    QMatrix4x4 rv;
-    rv.translate(_x, _y);
-    rv.perspective(_angle, _aspect, 1, 1024 * 1024);
-    rv.translate(-_x, -_y, -1);
-    rv.scale(1, 1, 1. / _scale);
-
-    return rv;
-}
-#endif
 
 /*!
     \qmlproperty real Perspective::angle
@@ -863,7 +785,6 @@ bool QFxSquish::isIdentity() const
     return false;
 }
 
-#if defined(QFX_RENDER_QPAINTER)
 QTransform QFxSquish::transform() const
 {
     QPolygonF poly;
@@ -875,21 +796,5 @@ QTransform QFxSquish::transform() const
     QTransform::quadToQuad(poly, poly2, t);
     return t;
 }
-#elif defined(QFX_RENDER_OPENGL)
-QMatrix4x4 QFxSquish::transform() const
-{
-    QPolygonF poly;
-    poly << p << QPointF(p.x() + s.width(), p.y()) << QPointF(p.x() + s.width(), p.y() + s.height()) << QPointF(p.x(), p.y() + s.height());
-    QPolygonF poly2;
-    poly2 << p1 << p2 << p4 << p3;
-
-    QTransform t;
-    QMatrix4x4 rv;
-    if (QTransform::quadToQuad(poly, poly2, t))
-        rv = QMatrix4x4(t);
-
-    return rv;
-}
-#endif
 
 QT_END_NAMESPACE

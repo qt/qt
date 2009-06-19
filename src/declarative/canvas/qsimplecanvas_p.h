@@ -47,41 +47,6 @@
 #include <qstack.h>
 #include <qdatetime.h>
 
-#if defined(QFX_RENDER_OPENGL)
-
-#if defined(QFX_RENDER_OPENGL2)
-#include "glbasicshaders.h"
-#endif
-
-#include <QGLWidget>
-QT_BEGIN_NAMESPACE
-
-class CanvasEGLWidget : public QGLWidget
-{
-public:
-    CanvasEGLWidget(QSimpleCanvas *parent, QSimpleCanvasPrivate *canvas)
-    : 
-        QGLWidget(parent), 
-    _canvas(canvas)
-    {
-    }
-
-    virtual void paintGL();
-    virtual void resizeGL(int,int);
-    virtual void resizeEvent(QResizeEvent *e);
-    virtual void initializeGL();
-
-    void updateGL();
-    void updateGL(const QRect &);
-
-    QRect map(const QRectF &) const;
-private:
-    QRect _clip;
-    QSimpleCanvasPrivate *_canvas;
-    QSimpleCanvas::Matrix defaultTransform;
-    QSimpleCanvas::Matrix invDefaultTransform;
-};
-#endif
 
 #include <QGraphicsView>
 #include <QGraphicsScene>
@@ -101,7 +66,6 @@ private:
     QGraphicsScene _scene;
 };
 
-class QGLFramebufferObject;
 class QSimpleCanvasDebugPlugin;
 class QSimpleCanvasPrivate
 {
@@ -110,9 +74,6 @@ public:
     : q(canvas), timer(0), root(0), lrpTime(0), debugPlugin(0), focusItem(0), 
       lastFocusItem(0), lastMouseItem(0),
       isSetup(false), view(0)
-#if defined(QFX_RENDER_OPENGL)
-      ,egl(q, this), basicShadersInstance(0)
-#endif
       , paintVersion(1)
     {
     }
@@ -122,11 +83,7 @@ public:
     bool isSimpleCanvas() const { return mode == QSimpleCanvas::SimpleCanvas; }
     bool isGraphicsView() const { return mode == QSimpleCanvas::GraphicsView; }
 
-#if defined(QFX_RENDER_OPENGL)
-    QRectF oldDirty;
-#else
     QRect oldDirty;
-#endif
     QRect resetDirty();
     void paint(QPainter &p);
 
@@ -174,27 +131,6 @@ public:
 
     QSimpleCanvasGraphicsView *view;
 
-#if defined(QFX_RENDER_OPENGL)
-    CanvasEGLWidget egl;
-    GLBasicShaders *basicShaders() const
-    {
-#if defined(QFX_RENDER_OPENGL2)
-        if (!basicShadersInstance)
-            basicShadersInstance = new GLBasicShaders;
-        return basicShadersInstance;
-#else
-        return 0;
-#endif
-    }
-    mutable GLBasicShaders *basicShadersInstance;
-
-    QHash<QString, QSimpleCanvasItem::CachedTexture *> cachedTextures;
-
-    QList<QGLFramebufferObject *> frameBuffers;
-    QGLFramebufferObject *acquire(int, int);
-    void release(QGLFramebufferObject *);
-    void paintGL();
-#endif
     int paintVersion;
 };
 

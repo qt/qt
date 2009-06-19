@@ -51,38 +51,9 @@ QT_BEGIN_HEADER
 QT_BEGIN_NAMESPACE
 
 QT_MODULE(Declarative)
-#if defined(QT_OPENGL_ES_1)
-#define QFX_CONFIGURATION_OPENGL1
-#elif defined(QT_OPENGL_ES_2)
-#define QFX_CONFIGURATION_OPENGL2
-#else
+
 #define QFX_CONFIGURATION_SOFTWARE
-#endif
-
-/*
-    The choices of renderer are:
-        QFX_RENDER_QPAINTER
-        QFX_RENDER_OPENGL1
-        QFX_RENDER_OPENGL2
-    To simplify code, if either of the OpenGL renderers are used, 
-    QFX_RENDER_OPENGL is also defined.
-*/
-    
-#if defined(QFX_CONFIGURATION_OPENGL2)
-
-#define QFX_RENDER_OPENGL
-#define QFX_RENDER_OPENGL2
-
-#elif defined(QFX_CONFIGURATION_OPENGL1)
-
-#define QFX_RENDER_OPENGL
-#define QFX_RENDER_OPENGL1
-
-#elif defined(QFX_CONFIGURATION_SOFTWARE)
-
 #define QFX_RENDER_QPAINTER
-
-#endif
 
 #define DEFINE_BOOL_CONFIG_OPTION(name, var) \
     static bool name() \

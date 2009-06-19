@@ -44,10 +44,6 @@
 
 #include <private/qtextcontrol_p.h>
 
-#if defined(QFX_RENDER_OPENGL2)
-#include "glbasicshaders.h"
-#endif
-
 #include <qfxperf.h>
 #include <QTextLayout>
 #include <QTextLine>
@@ -695,14 +691,9 @@ void QFxTextPrivate::checkImgCache()
             break;
         }
 
-#if defined(QFX_RENDER_OPENGL)
-    tex.setImage(imgCache.toImage(), GLTexture::PowerOfTwo);
-#endif
-
     imgDirty = false;
 }
 
-#if defined(QFX_RENDER_QPAINTER)
 void QFxText::paintContents(QPainter &p)
 {
     Q_D(QFxText);
@@ -751,85 +742,6 @@ void QFxText::paintContents(QPainter &p)
     if (needClip)
         p.restore();
 }
-
-#elif defined(QFX_RENDER_OPENGL2)
-void QFxText::paintGLContents(GLPainter &p)
-{
-    //return;
-    Q_D(QFxText);
-    d->checkImgCache();
-    if (d->imgCache.isNull())
-        return;
-
-    int w = width();
-    int h = height();
-
-    float x = 0;
-    float y = 0;
-
-    switch (d->hAlign) {
-    case AlignLeft:
-        x = 0;
-        break;
-    case AlignRight:
-        x = w - d->imgCache.width();
-        break;
-    case AlignHCenter:
-        x = (w - d->imgCache.width()) / 2;
-        break;
-    }
-
-    switch (d->vAlign) {
-    case AlignTop:
-        y = 0;
-        break;
-    case AlignBottom:
-        y = h - d->imgCache.height();
-        break;
-    case AlignVCenter:
-        y = (h - d->imgCache.height()) / 2;
-        break;
-    }
-
-    float widthV = d->imgCache.width();
-    float heightV = d->imgCache.height();
-    float glWidth = d->tex.glWidth();
-    float glHeight = d->tex.glHeight();
-
-    QGLShaderProgram *shader = p.useTextureShader();
-
-    float deltaX = 0.5 / qreal(d->tex.glSize().width());
-    float deltaY = 0.5 / qreal(d->tex.glSize().height());
-    glWidth -= deltaX;
-    glHeight -= deltaY;
-
-    GLfloat vertices[] = { x, y + heightV,
-                           x + widthV, y + heightV,
-                           x, y, 
-
-                           x + widthV, y + heightV,
-                           x, y, 
-                           x + widthV, y };
-
-    GLfloat texVertices[] = { deltaX, deltaY, 
-                              glWidth, deltaY, 
-                              deltaX, glHeight,
-
-                              glWidth, deltaY, 
-                              deltaX, glHeight,
-                              glWidth, glHeight };
-
-    shader->setAttributeArray(SingleTextureShader::Vertices, vertices, 2);
-    shader->setAttributeArray(SingleTextureShader::TextureCoords, texVertices, 2);
-
-    glBindTexture(GL_TEXTURE_2D, d->tex.texture());
-    glDrawArrays(GL_TRIANGLES, 0, 6);
-
-    shader->disableAttributeArray(SingleTextureShader::Vertices);
-    shader->disableAttributeArray(SingleTextureShader::TextureCoords);
-}
-
-#endif
 
 void QFxText::componentComplete()
 {

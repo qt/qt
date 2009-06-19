@@ -44,9 +44,6 @@
 
 #include <QtCore/QObject>
 #include <QtGui/QTransform>
-#if defined(QFX_RENDER_OPENGL)
-#include <QtGui/qmatrix4x4.h>
-#endif
 #include <QtDeclarative/qfxitem.h>
 
 QT_BEGIN_HEADER

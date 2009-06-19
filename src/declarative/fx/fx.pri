@@ -2,7 +2,6 @@ HEADERS += \
            fx/qfxanchors.h \
            fx/qfxanchors_p.h \
            fx/qfxanimatedimageitem.h \
-           fx/qfxblendedimage.h \
            fx/qfxcomponentinstance.h \
            fx/qfxcomponentinstance_p.h \
            fx/qfxcontentwrapper.h \
@@ -50,7 +49,6 @@ HEADERS += \
 SOURCES += \
            fx/qfxanchors.cpp \
            fx/qfxanimatedimageitem.cpp \
-           fx/qfxblendedimage.cpp \
            fx/qfxcomponentinstance.cpp \
            fx/qfxcontentwrapper.cpp \
            fx/qfxevents.cpp \

@@ -117,11 +117,7 @@ public:
     virtual void dump(int depth);
     virtual QString propertyInfo() const;
 
-#if defined(QFX_RENDER_QPAINTER) 
     void paintContents(QPainter &p);
-#elif defined(QFX_RENDER_OPENGL)
-    void paintGLContents(GLPainter &);
-#endif
 
     virtual void componentComplete();
 

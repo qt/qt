@@ -86,9 +86,6 @@ public:
     QString style;
     QColor  styleColor;
     bool imgDirty;
-#if defined(QFX_RENDER_OPENGL)
-    GLTexture texture;
-#endif
     QPixmap imgCache;
     QPixmap imgStyleCache;
     QFxTextEdit::HAlignment hAlign;

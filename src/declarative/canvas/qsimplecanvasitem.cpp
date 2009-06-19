@@ -199,20 +199,6 @@ void QSimpleCanvasItem::paintContents(QPainter &)
 {
 }
 
-void QSimpleCanvasItem::paintGLContents(GLPainter &)
-{
-}
-
-uint QSimpleCanvasItem::glSimpleItemData(float *vertices, float *texVertices,
-                                     GLTexture **texture, uint count)
-{
-    Q_UNUSED(vertices);
-    Q_UNUSED(texVertices);
-    Q_UNUSED(texture);
-    Q_UNUSED(count);
-    return 0;
-}
-
 void QSimpleCanvasItem::canvasChanged()
 {
 }
@@ -227,15 +213,6 @@ void QSimpleCanvasItem::activeFocusChanged(bool)
 
 void QSimpleCanvasItem::parentChanged(QSimpleCanvasItem *, QSimpleCanvasItem *)
 {
-}
-
-GLBasicShaders *QSimpleCanvasItem::basicShaders() const
-{
-#if defined(QFX_RENDER_OPENGL2)
-    return canvas()->d->basicShaders();
-#else
-    return 0;
-#endif
 }
 
 /*!
@@ -668,27 +645,6 @@ void QSimpleCanvasItem::remChild(QSimpleCanvasItem *c)
     childrenChanged();
 }
 
-QSimpleCanvasFilter *QSimpleCanvasItem::filter() const
-{
-    Q_D(const QSimpleCanvasItem);
-    return d->filter;
-}
-
-/*!
-QSimpleCanvasItem takes ownership of filter.
-*/
-void QSimpleCanvasItem::setFilter(QSimpleCanvasFilter *f)
-{
-    Q_D(QSimpleCanvasItem);
-    if (!d || f == d->filter)
-        return;
-
-    d->filter = f;
-    if (d->filter)
-        d->filter->setItem(this);
-    update();
-}
-
 const QList<QSimpleCanvasItem *> &QSimpleCanvasItem::children() const
 {
     Q_D(const QSimpleCanvasItem);
@@ -795,66 +751,22 @@ QRect QSimpleCanvasItem::itemBoundingRect()
 
 QPointF QSimpleCanvasItemPrivate::adjustFrom(const QPointF &p) const
 {
-#if defined(QFX_RENDER_OPENGL)
-    if (!canvas)
-        return p;
-
-    QPointF rv(-1. + 2. * p.x() / qreal(canvas->width()),
-               1 - 2. * p.y() / qreal(canvas->height()));
-
-    return rv;
-#else
     return p;
-#endif
 }
 
 QRectF QSimpleCanvasItemPrivate::adjustFrom(const QRectF &r) const
 {
-#if defined(QFX_RENDER_OPENGL)
-    if (!canvas)
-        return r;
-
-    qreal width = r.width() * 2. / qreal(canvas->width());
-    qreal height = r.height() * 2. / qreal(canvas->height());
-    qreal x = -1. + 2. * r.x() / qreal(canvas->width());
-    qreal y = 1. - 2. * r.y() / qreal(canvas->height()) - height;
-
-    return QRectF(x, y, width, height);
-#else
     return r;
-#endif
 }
 
 QPointF QSimpleCanvasItemPrivate::adjustTo(const QPointF &p) const
 {
-#if defined(QFX_RENDER_OPENGL)
-    if (!canvas)
-        return p;
-
-    QPointF rv(0.5 * (p.x() + 1.) * qreal(canvas->width()),
-               0.5 * (1. - p.y()) * qreal(canvas->height()));
-
-    return rv;
-#else
     return p;
-#endif
 }
 
 QRectF QSimpleCanvasItemPrivate::adjustTo(const QRectF &r) const
 {
-#if defined(QFX_RENDER_OPENGL)
-    if (!canvas)
-        return r;
-
-    qreal width = 0.5 * r.width() * qreal(canvas->width());
-    qreal height = 0.5 * r.height() * qreal(canvas->height());
-    qreal x = 0.5 * (r.x() + 1.) * qreal(canvas->width());
-    qreal y = 0.5 * (1. - r.y()) * qreal(canvas->height()) - height;
-
-    return QRectF(x, y, width, height);
-#else
     return r;
-#endif
 }
 
 QPointF QSimpleCanvasItem::mapFromScene(const QPointF &p) const
@@ -865,20 +777,7 @@ QPointF QSimpleCanvasItem::mapFromScene(const QPointF &p) const
     } else {
         QPointF mp = d->adjustFrom(p);
         d->freshenTransforms();
-#if defined(QFX_RENDER_OPENGL)
-        // m20X + m21Y + m22Z + m23 = 1
-        // Z = (1 - m23 - m20X - m21Y) / m22
-
-        QMatrix4x4 inv = d->data()->transformActive.inverted(); 
-        qreal z_s = (1 - inv(2,3) - inv(2,0) * mp.x() - inv(2, 1) * mp.y()) / inv(2, 2);
-
-        QVector3D vec(mp.x(), mp.y(), z_s);
-        QVector3D r = inv.map(vec);
-
-        return r.toPointF();
-#else
         return d->data()->transformActive.inverted().map(mp);
-#endif
     }
 }
 
@@ -890,32 +789,7 @@ QRectF QSimpleCanvasItem::mapFromScene(const QRectF &r) const
     } else {
         QRectF mr = d->adjustFrom(r);
         d->freshenTransforms();
-#if defined(QFX_RENDER_OPENGL)
-        // m20X + m21Y + m22Z + m23 = 1
-        // Z = (1 - m23 - m20X - m21Y) / m22
-
-        QMatrix4x4 inv = d->data()->transformActive.inverted(); 
-        qreal tl_z_s = (1 - inv(2,3) - inv(2,0) * mr.topLeft().x() - inv(2, 1) * mr.topLeft().y()) / inv(2, 2);
-        qreal tr_z_s = (1 - inv(2,3) - inv(2,0) * mr.topRight().x() - inv(2, 1) * mr.topRight().y()) / inv(2, 2);
-        qreal bl_z_s = (1 - inv(2,3) - inv(2,0) * mr.bottomLeft().x() - inv(2, 1) * mr.bottomLeft().y()) / inv(2, 2);
-        qreal br_z_s = (1 - inv(2,3) - inv(2,0) * mr.bottomRight().x() - inv(2, 1) * mr.bottomRight().y()) / inv(2, 2);
-
-        QVector3D tl(mr.topLeft().x(), mr.topLeft().y(), tl_z_s);
-        QVector3D tr(mr.topRight().x(), mr.topRight().y(), tr_z_s);
-        QVector3D bl(mr.bottomLeft().x(), mr.bottomLeft().y(), bl_z_s);
-        QVector3D br(mr.bottomRight().x(), mr.bottomRight().y(), br_z_s);
-
-        tl = inv.map(tl); tr = inv.map(tr); bl = inv.map(bl); br = inv.map(br);
-
-        qreal xmin = qMin(qMin(tl.x(), tr.x()), qMin(bl.x(), br.x()));
-        qreal xmax = qMax(qMax(tl.x(), tr.x()), qMax(bl.x(), br.x()));
-        qreal ymin = qMin(qMin(tl.y(), tr.y()), qMin(bl.y(), br.y()));
-        qreal ymax = qMax(qMax(tl.y(), tr.y()), qMax(bl.y(), br.y()));
-
-        return QRectF(QPointF(xmin, ymin), QPointF(xmax, ymax));
-#else
         return d->data()->transformActive.inverted().mapRect(mr);
-#endif
     }
 }
 
@@ -992,20 +866,12 @@ void QSimpleCanvasItemPrivate::doFreshenTransforms() const
         }
 
         Q_Q(const QSimpleCanvasItem);
-#if defined(QFX_RENDER_OPENGL)
-        if (q->d_func()->data()->transformUser)
-            data()->transformActive *= *q->d_func()->data()->transformUser;
-#endif
 
         if (data()->flip) {
             QRectF br = q->boundingRect();
             data()->transformActive.translate(br.width() / 2., br.height() / 2);
-#if defined(QFX_RENDER_OPENGL)
-            data()->transformActive.rotate(180, (data()->flip & QSimpleCanvasItem::VerticalFlip)?1:0, (data()->flip & QSimpleCanvasItem::HorizontalFlip)?1:0, 0);
-#else
             data()->transformActive.scale((data()->flip & QSimpleCanvasItem::HorizontalFlip)?-1:1,
                                        (data()->flip & QSimpleCanvasItem::VerticalFlip)?-1:1);
-#endif
             data()->transformActive.translate(-br.width() / 2., -br.height() / 2);
         }
     }
@@ -1345,8 +1211,6 @@ QSimpleCanvasItem::~QSimpleCanvasItem()
             if (prnt && d->canvas->d->focusPanelData.value(prnt) == this)
                 d->canvas->d->focusPanelData.remove(prnt);
         }
-        if (d->filter)
-            delete d->filter;
 
         qDeleteAll(children());
         if (parent())
@@ -1371,8 +1235,6 @@ QSimpleCanvasItem::~QSimpleCanvasItem()
             QSimpleCanvasItem *child = d->children.takeFirst();
             delete child;
         }
-
-        delete d->filter;
 
         if (parent() && d->data_ptr && d->data()->dirty) {
             QSimpleCanvasLayer *l = parent()->layer();

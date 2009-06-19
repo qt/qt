@@ -49,9 +49,6 @@
 #include "qtimer.h"
 #include "qdatetime.h"
 #include "qgraphicssceneevent.h"
-#if defined(QFX_RENDER_OPENGL)
-#include <glheaders.h>
-#endif
 #include "qboxlayout.h"
 #include "qsimplecanvasdebugplugin_p.h"
 #include "qsimplecanvas.h"
@@ -601,13 +598,6 @@ void QSimpleCanvasPrivate::init(QSimpleCanvas::CanvasMode mode)
         view->scene()->setItemIndexMethod(QGraphicsScene::NoIndex);
         view->viewport()->setFocusPolicy(Qt::NoFocus);
     }
-
-#if defined(QFX_RENDER_OPENGL) && defined(Q_WS_X11)
-    QTimer *t = new QTimer(q);
-    t->setInterval(200);
-    QObject::connect(t, SIGNAL(timeout()), &egl, SLOT(updateGL()));
-    t->start();
-#endif
 }
 
 QSimpleCanvas::~QSimpleCanvas()
@@ -795,9 +785,6 @@ bool QSimpleCanvas::focusNextPrevChild(bool)
 
 void QSimpleCanvas::showEvent(QShowEvent *e)
 {
-#if defined(QFX_RENDER_OPENGL)
-    d->egl.resize(width(), height());
-#endif
     if (d->isGraphicsView())
         d->view->setSceneRect(rect());
 
@@ -806,9 +793,6 @@ void QSimpleCanvas::showEvent(QShowEvent *e)
 
 void QSimpleCanvas::resizeEvent(QResizeEvent *e)
 {
-#if defined(QFX_RENDER_OPENGL)
-    d->egl.resize(width(), height());
-#endif
     if (d->isGraphicsView())
         d->view->setSceneRect(rect());
     QWidget::resizeEvent(e);
@@ -833,21 +817,6 @@ void QSimpleCanvas::addDirty(QSimpleCanvasItem *c)
     Q_ASSERT(d->isSimpleCanvas());
     queueUpdate();
     d->oldDirty |= c->d_func()->data()->lastPaintRect;
-#if defined(QFX_RENDER_OPENGL)
-    // ### Is this parent crawl going to be a problem for scenes with nots
-    // of things changing?
-    // Check for filters
-    QSimpleCanvasItem *fi = c->parent();
-    while(fi) {
-        if (fi->d_func()->data()->dirty) {
-            break;
-        } else if (fi->filter()) {
-            fi->update();
-            break;
-        }
-        fi = fi->parent();
-    }
-#endif
     d->dirtyItems.append(c);
 }
 
@@ -855,15 +824,8 @@ QRect QSimpleCanvasPrivate::dirtyItemClip() const
 {
     QRect rv;
     if (isSimpleCanvas()) {
-#if defined(QFX_RENDER_OPENGL)
-        QRectF r;
-        for (int ii = 0; ii < dirtyItems.count(); ++ii)
-            r |= dirtyItems.at(ii)->d_func()->data()->lastPaintRect;
-        rv = egl.map(r);
-#else
         for (int ii = 0; ii < dirtyItems.count(); ++ii)
             rv |= dirtyItems.at(ii)->d_func()->data()->lastPaintRect;
-#endif
     }
     return rv;
 }
@@ -871,11 +833,7 @@ QRect QSimpleCanvasPrivate::dirtyItemClip() const
 QRect QSimpleCanvasPrivate::resetDirty()
 {
     if (isSimpleCanvas()) {
-#if defined(QFX_RENDER_OPENGL)
-        QRect r = egl.map(oldDirty) |  dirtyItemClip();
-#else
         QRect r = oldDirty | dirtyItemClip();
-#endif
         if (!r.isEmpty())
             r.adjust(-1,-1,2,2);    //make sure we get everything (since we rounded from floats to ints)
         for (int ii = 0; ii < dirtyItems.count(); ++ii)
@@ -918,37 +876,16 @@ bool QSimpleCanvas::event(QEvent *e)
         int tbf = d->frameTimer.restart();
         d->timer = 0;
         d->isSetup = true;
-#if defined(QFX_RENDER_OPENGL1)
-        unsigned int zero = 0;
-        d->root->d_func()->setupPainting(0, rect(), &zero);
-#elif defined(QFX_RENDER_OPENGL2)
-        ++d->paintVersion;
-        d->opaqueList = 0;
-        int z = 0;
-        d->root->d_func()->setupPainting(0, z, &d->opaqueList);
-#else
         ++d->paintVersion;
         d->root->d_func()->setupPainting(0, rect());
-#endif
 
         QRect r = d->resetDirty();
 
-#if defined(QFX_RENDER_QPAINTER)
         if (r.isEmpty() || fullUpdate())
             repaint();
         else 
             repaint(r);
         emit framePainted();
-#else 
-
-        QRect nr(r.x(), height() - r.y() - r.height(), r.width(), r.height());
-
-        if (r.isEmpty() || fullUpdate())
-            d->egl.updateGL();
-        else 
-            d->egl.updateGL(nr);
-        emit framePainted();
-#endif
         d->isSetup = false;
 
         int frametimer = d->frameTimer.elapsed();
@@ -1016,14 +953,10 @@ void QSimpleCanvas::checkState()
 QImage QSimpleCanvas::asImage() const
 { 
     if (d->isSimpleCanvas()) {
-#if defined(QFX_RENDER_QPAINTER)
         QImage img(width(),height(),QImage::Format_RGB32);
         QPainter p(&img);
         const_cast<QSimpleCanvas*>(this)->d->paint(p);
         return img;
-#elif defined(QFX_RENDER_OPENGL)
-        return d->egl.grabFrameBuffer();
-#endif
     } else {
         QImage img(width(),height(),QImage::Format_RGB32);
         QPainter p(&img);

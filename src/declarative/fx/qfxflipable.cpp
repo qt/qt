@@ -220,21 +220,12 @@ void QFxFlipablePrivate::setBackTransform()
     axisRotation.setAngle(rotation);
 
     QSimpleCanvas::Matrix mat;
-#ifdef QFX_RENDER_OPENGL
-    mat.translate(back->width()/2,back->height()/2, 0);
-    if (back->width() && p1.x() >= p2.x())
-        mat.rotate(180, 0, 1, 0);
-    if (back->height() && p2.y() >= p3.y())
-        mat.rotate(180, 1, 0, 0);
-    mat.translate(-back->width()/2,-back->height()/2, 0);
-#else
     mat.translate(back->width()/2,back->height()/2);
     if (back->width() && p1.x() >= p2.x())
         mat.rotate(180, Qt::YAxis);
     if (back->height() && p2.y() >= p3.y())
         mat.rotate(180, Qt::XAxis);
     mat.translate(-back->width()/2,-back->height()/2);
-#endif
     back->setTransform(mat);
 }
 
@@ -318,21 +309,12 @@ void QFxFlipable::transformChanged(const QSimpleCanvas::Matrix &trans)
         d->current = newSide;
         if (d->current==Back) {
             QSimpleCanvas::Matrix mat;
-#ifdef QFX_RENDER_OPENGL
-            mat.translate(d->back->width()/2,d->back->height()/2, 0);
-            if (d->back->width() && p1.x() >= p2.x())
-                mat.rotate(180, 0, 1, 0);
-            if (d->back->height() && p2.y() >= p3.y())
-                mat.rotate(180, 1, 0, 0);
-            mat.translate(-d->back->width()/2,-d->back->height()/2, 0);
-#else
             mat.translate(d->back->width()/2,d->back->height()/2);
             if (d->back->width() && p1.x() >= p2.x())
                 mat.rotate(180, Qt::YAxis);
             if (d->back->height() && p2.y() >= p3.y())
                 mat.rotate(180, Qt::XAxis);
             mat.translate(-d->back->width()/2,-d->back->height()/2);
-#endif
             d->back->setTransform(mat);
         }
         if (d->front)

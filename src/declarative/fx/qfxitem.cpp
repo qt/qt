@@ -62,7 +62,6 @@
 #include "qfxitem_p.h"
 #include "qfxitem.h"
 #include "qfxevents_p.h"
-#include <qsimplecanvasfilter.h>
 #include <qmlcomponent.h>
 
 
@@ -73,7 +72,6 @@ QT_BEGIN_NAMESPACE
 
 QML_DEFINE_NOCREATE_TYPE(QFxContents)
 QML_DEFINE_TYPE(QFxItem,Item)
-QML_DEFINE_NOCREATE_TYPE(QSimpleCanvasFilter)
 
 /*!
     \group group_animation
@@ -1483,18 +1481,10 @@ void QFxItem::setRotation(qreal rotation)
     if (d->_rotation == rotation)
         return;
     d->_rotation = rotation;
-#if defined(QFX_RENDER_OPENGL)
-    QMatrix4x4 trans;
-    QPointF to = transformOriginPoint();
-    trans.translate(to.x(), to.y());
-    trans.rotate(d->_rotation, 0, 0, 1);
-    trans.translate(-to.x(), -to.y());
-#else
     QPointF to = d->transformOrigin();
     QTransform trans = QTransform::fromTranslate(to.x(), to.y());
     trans.rotate(d->_rotation);
     trans.translate(-to.x(), -to.y());
-#endif
     setTransform(trans);
     emit rotationChanged();
 }

@@ -160,13 +160,7 @@ public:
     void setRadius(qreal radius);
 
     virtual void dump(int depth);
-#if defined(QFX_RENDER_QPAINTER)
     void paintContents(QPainter &painter);
-#endif
-
-#if defined(QFX_RENDER_OPENGL)
-    void paintGLContents(GLPainter &);
-#endif
 
 private Q_SLOTS:
     void doUpdate();

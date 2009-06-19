@@ -131,7 +131,6 @@ class Q_DECLARATIVE_EXPORT QFxItem : public QSimpleCanvasItem, public QmlParserS
     Q_PROPERTY(qreal rotation READ rotation WRITE setRotation NOTIFY rotationChanged)
     Q_PROPERTY(qreal scale READ scale WRITE setScale NOTIFY scaleChanged)
     Q_PROPERTY(qreal opacity READ opacity WRITE setOpacity NOTIFY opacityChanged)
-    Q_PROPERTY(QSimpleCanvasFilter *filter READ filter WRITE setFilter)
     Q_PROPERTY(bool clip READ clip WRITE setClip)
     Q_PROPERTY(bool focusable READ isFocusable WRITE setFocusable)
     Q_PROPERTY(bool focus READ hasFocus WRITE setFocus NOTIFY focusChanged)
@@ -268,8 +267,6 @@ private:
     Q_DECLARE_PRIVATE(QFxItem)
 };
 QML_DECLARE_TYPE(QFxItem)
-
-QML_DECLARE_TYPE(QSimpleCanvasFilter)
 
 QT_END_NAMESPACE
 

@@ -44,10 +44,6 @@
 
 #include <QtDeclarative/qfxglobal.h>
 
-#ifdef QFX_RENDER_OPENGL
-#include <QtGui/qmatrix4x4.h>
-#endif
-
 #include <QtGui/QTransform>
 #include <QtGui/QPainter>
 #include <QtCore/QDebug>
@@ -65,42 +61,18 @@ namespace QSimpleCanvasConfig
 {
     enum ImageType { Opaque, Translucent };
 
-#ifdef QFX_RENDER_OPENGL
-    typedef QMatrix4x4 Matrix;
-    typedef QImage Image;
-
-    inline Matrix transformToMatrix(const QTransform &)
-    { 
-        return Matrix(); // XXX 
-    }
-    inline QTransform matrixToTransform(const Matrix &)
-    { 
-        return QTransform(); // XXX 
-    }
-    inline bool needConvert(ImageType, const Image &) 
-    { return false; }
-    inline Image convert(ImageType, const Image &i)
-    { return i; }
-    inline Image create(const QSize &s) 
-    { return QImage(s, QImage::Format_ARGB32); }
-    inline const Image &toImage(const QImage &i)
-    { return i; }
-
-#elif defined(QFX_RENDER_QPAINTER)
     typedef QTransform Matrix;
 
     inline Matrix transformToMatrix(const QTransform &t)
     { return t; }
     inline QTransform matrixToTransform(const Matrix &t)
     { return t; }
-#endif
 }
 
 class QSimpleCanvas;
 class QSimpleCanvasLayer;
 
 class QGraphicsSceneMouseEvent;
-class GLBasicShaders;
 class QSimpleCanvasItem;
 class QSimpleCanvasPrivate;
 class Q_DECLARATIVE_EXPORT QSimpleCanvas : public QWidget
@@ -157,7 +129,6 @@ private:
     friend class QSimpleCanvasPrivate;
     friend class QSimpleCanvasItem;
     friend class QSimpleCanvasItemPrivate;
-    friend class QSimpleCanvasFilter;
     friend class QSimpleGraphicsItem;
 
     void queueUpdate();

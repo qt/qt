@@ -45,11 +45,6 @@
 #include "private/qobject_p.h"
 #include "qsimplecanvas.h"
 #include "qsimplecanvasitem.h"
-#include "qsimplecanvasfilter.h"
-
-#if defined(QFX_RENDER_OPENGL2)
-#include <glbasicshaders.h>
-#endif
 
 #include "qgraphicsitem.h"
 
@@ -106,11 +101,7 @@ public:
 
     float activeOpacity;
 
-#if defined(QFX_RENDER_OPENGL)
-    QRectF lastPaintRect;
-#else
     QRect lastPaintRect;
-#endif
 };
 
 class QSimpleCanvasItemDebuggerStatus : public QmlDebuggerStatus
@@ -129,14 +120,13 @@ public:
     bool selected;
 };
 
-class QSimpleCanvasFilter;
 class QGraphicsQSimpleCanvasItem;
 class QSimpleCanvasItemPrivate : public QObjectPrivate
 {
     Q_DECLARE_PUBLIC(QSimpleCanvasItem)
 public:
     QSimpleCanvasItemPrivate()
-    : parent(0), canvas(0), debuggerStatus(0), filter(0),
+    : parent(0), canvas(0), debuggerStatus(0), 
       clip(QSimpleCanvasItem::NoClip),
       origin(QSimpleCanvasItem::TopLeft), options(QSimpleCanvasItem::NoOption),
       focusable(false), wantsActiveFocusPanelPendingCanvas(false),
@@ -157,7 +147,6 @@ public:
     QList<QSimpleCanvasItem *> children;
 
     QSimpleCanvasItemDebuggerStatus *debuggerStatus;
-    QSimpleCanvasFilter *filter;
 
     QSimpleCanvasItem::ClipType clip:3;
     QSimpleCanvasItem::TransformOrigin origin:4;
@@ -203,43 +192,9 @@ public:
     void setParentInternal(QSimpleCanvasItem *);
     void convertToGraphicsItem(QGraphicsItem * = 0);
 
-#if defined(QFX_RENDER_QPAINTER)
     void paint(QPainter &);
     void paintChild(QPainter &, QSimpleCanvasItem *);
     QRect setupPainting(int version, const QRect &bounding);
-#else
-    struct GLPaintParameters
-    {
-        QRect sceneRect;
-        QRectF boundingRect;
-        QRect clipRect;
-#if defined(QFX_RENDER_OPENGL2)
-        uchar stencilValue;
-#endif
-        float opacity;
-        bool forceParamRefresh;
-
-        QSimpleCanvasItem::GLPainter *painter;
-    };
-#if defined(QFX_RENDER_OPENGL2)
-    QRectF setupPainting(int version, int &z, QSimpleCanvasItem **);
-#elif defined(QFX_RENDER_OPENGL1)
-    QRectF setupPainting(int version, const QRect &bounding, unsigned int *zero);
-#endif
-    void setupChildState(QSimpleCanvasItem *);
-
-    void paint(GLPaintParameters &, QSimpleCanvasFilter::Layer = QSimpleCanvasFilter::All);
-#if defined(QFX_RENDER_OPENGL1)
-    void paintNoClip(GLPaintParameters &, QSimpleCanvasFilter::Layer = QSimpleCanvasFilter::All);
-#endif
-    void paintChild(const GLPaintParameters &, QSimpleCanvasItem *);
-    void simplePaintChild(const GLPaintParameters &, QSimpleCanvasItem *);
-
-    inline GLBasicShaders *basicShaders() const;
-
-    QSimpleCanvas::Matrix localTransform() const;
-
-#endif
 
     QSimpleCanvasItem *nextOpaque;
 

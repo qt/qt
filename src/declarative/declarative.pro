@@ -26,6 +26,4 @@ include(widgets/widgets.pri)
 include(test/test.pri)
 include(debugger/debugger.pri)
 
-contains(QT_CONFIG, opengles2)|contains(QT_CONFIG, opengles1):include(opengl/opengl.pri)
-
 symbian:TARGET.UID3=0x2001E623

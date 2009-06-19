@@ -44,10 +44,6 @@
 
 #include <private/qtextcontrol_p.h>
 
-#if defined(QFX_RENDER_OPENGL2)
-#include "glbasicshaders.h"
-#endif
-
 #include <qfxperf.h>
 #include "qfxevents_p.h"
 #include <QTextLayout>

@@ -63,11 +63,7 @@ public:
     Q_PROPERTY(QSize contentsSize READ contentsSize WRITE setContentsSize)
     Q_PROPERTY(bool smooth READ isSmooth WRITE setSmooth)
 
-#if defined(QFX_RENDER_QPAINTER)
     void paintContents(QPainter &painter);
-#elif defined(QFX_RENDER_OPENGL)
-    void paintGLContents(GLPainter &);
-#endif
 
     bool isSmooth() const;
     QSize contentsSize() const;

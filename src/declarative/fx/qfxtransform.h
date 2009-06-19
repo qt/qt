@@ -44,9 +44,6 @@
 
 #include <QtCore/QObject>
 #include <QtGui/QTransform>
-#if defined(QFX_RENDER_OPENGL)
-#include <QtGui/qmatrix4x4.h>
-#endif
 #include <QtDeclarative/qfxitem.h>
 
 QT_BEGIN_HEADER
@@ -233,10 +230,6 @@ public:
     qreal scale() const { return _scale; }
     void setScale(qreal v) { _scale = v; update(); }
 
-#if defined(QFX_RENDER_OPENGL)
-    virtual bool isIdentity() const;
-    virtual QMatrix4x4 transform() const;
-#endif
 private:
     qreal _scale;
     qreal _x;
