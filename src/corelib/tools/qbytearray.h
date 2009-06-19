@@ -127,7 +127,7 @@ public:
     QByteArray(const char *);
     QByteArray(const char *, int size);
     QByteArray(int size, char c);
-    QByteArray(int size, enum Qt::Uninitialized);
+    QByteArray(int size, Qt::Initialization);
     inline QByteArray(const QByteArray &);
     inline ~QByteArray();
 

@@ -1309,7 +1309,7 @@ QByteArray::QByteArray(int size, char ch)
     Constructs a byte array of size \a size with uninitialized contents.
 */
 
-QByteArray::QByteArray(int size, enum Qt::Uninitialized)
+QByteArray::QByteArray(int size, Qt::Initialization)
 {
     d = static_cast<Data *>(qMalloc(sizeof(Data)+size));
     d->ref = 1;
