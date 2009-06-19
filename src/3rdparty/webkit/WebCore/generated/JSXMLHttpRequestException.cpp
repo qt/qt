@@ -76,7 +76,7 @@ public:
     JSXMLHttpRequestExceptionConstructor(ExecState* exec)
         : DOMObject(JSXMLHttpRequestExceptionConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
     {
-        putDirect(exec->propertyNames().prototype, JSXMLHttpRequestExceptionPrototype::self(exec), None);
+        putDirect(exec->propertyNames().prototype, JSXMLHttpRequestExceptionPrototype::self(exec, exec->lexicalGlobalObject()), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -114,9 +114,9 @@ static const HashTable JSXMLHttpRequestExceptionPrototypeTable =
 
 const ClassInfo JSXMLHttpRequestExceptionPrototype::s_info = { "XMLHttpRequestExceptionPrototype", 0, &JSXMLHttpRequestExceptionPrototypeTable, 0 };
 
-JSObject* JSXMLHttpRequestExceptionPrototype::self(ExecState* exec)
+JSObject* JSXMLHttpRequestExceptionPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSXMLHttpRequestException>(exec);
+    return getDOMPrototype<JSXMLHttpRequestException>(exec, globalObject);
 }
 
 bool JSXMLHttpRequestExceptionPrototype::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -138,9 +138,9 @@ JSXMLHttpRequestException::~JSXMLHttpRequestException()
 
 }
 
-JSObject* JSXMLHttpRequestException::createPrototype(ExecState* exec)
+JSObject* JSXMLHttpRequestException::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSXMLHttpRequestExceptionPrototype(JSXMLHttpRequestExceptionPrototype::createStructure(exec->lexicalGlobalObject()->objectPrototype()));
+    return new (exec) JSXMLHttpRequestExceptionPrototype(JSXMLHttpRequestExceptionPrototype::createStructure(globalObject->objectPrototype()));
 }
 
 bool JSXMLHttpRequestException::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

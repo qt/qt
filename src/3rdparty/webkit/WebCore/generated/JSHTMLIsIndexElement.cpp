@@ -74,7 +74,7 @@ public:
     JSHTMLIsIndexElementConstructor(ExecState* exec)
         : DOMObject(JSHTMLIsIndexElementConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
     {
-        putDirect(exec->propertyNames().prototype, JSHTMLIsIndexElementPrototype::self(exec), None);
+        putDirect(exec->propertyNames().prototype, JSHTMLIsIndexElementPrototype::self(exec, exec->lexicalGlobalObject()), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -109,9 +109,9 @@ static const HashTable JSHTMLIsIndexElementPrototypeTable =
 
 const ClassInfo JSHTMLIsIndexElementPrototype::s_info = { "HTMLIsIndexElementPrototype", 0, &JSHTMLIsIndexElementPrototypeTable, 0 };
 
-JSObject* JSHTMLIsIndexElementPrototype::self(ExecState* exec)
+JSObject* JSHTMLIsIndexElementPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSHTMLIsIndexElement>(exec);
+    return getDOMPrototype<JSHTMLIsIndexElement>(exec, globalObject);
 }
 
 const ClassInfo JSHTMLIsIndexElement::s_info = { "HTMLIsIndexElement", &JSHTMLInputElement::s_info, &JSHTMLIsIndexElementTable, 0 };
@@ -121,9 +121,9 @@ JSHTMLIsIndexElement::JSHTMLIsIndexElement(PassRefPtr<Structure> structure, Pass
 {
 }
 
-JSObject* JSHTMLIsIndexElement::createPrototype(ExecState* exec)
+JSObject* JSHTMLIsIndexElement::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSHTMLIsIndexElementPrototype(JSHTMLIsIndexElementPrototype::createStructure(JSHTMLInputElementPrototype::self(exec)));
+    return new (exec) JSHTMLIsIndexElementPrototype(JSHTMLIsIndexElementPrototype::createStructure(JSHTMLInputElementPrototype::self(exec, globalObject)));
 }
 
 bool JSHTMLIsIndexElement::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

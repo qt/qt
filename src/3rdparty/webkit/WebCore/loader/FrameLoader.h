@@ -453,6 +453,8 @@ namespace WebCore {
 
         void applyUserAgent(ResourceRequest& request);
 
+        bool shouldInterruptLoadForXFrameOptions(const String&, const KURL&);
+
     private:
         PassRefPtr<HistoryItem> createHistoryItem(bool useOriginal);
         PassRefPtr<HistoryItem> createHistoryItemTree(Frame* targetFrame, bool clipAtTarget);
@@ -614,6 +616,7 @@ namespace WebCore {
 
         bool m_didCallImplicitClose;
         bool m_wasUnloadEventEmitted;
+        bool m_unloadEventBeingDispatched;
         bool m_isComplete;
         bool m_isLoadingMainResource;
 

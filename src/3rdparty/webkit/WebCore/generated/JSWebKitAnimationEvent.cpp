@@ -73,7 +73,7 @@ public:
     JSWebKitAnimationEventConstructor(ExecState* exec)
         : DOMObject(JSWebKitAnimationEventConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
     {
-        putDirect(exec->propertyNames().prototype, JSWebKitAnimationEventPrototype::self(exec), None);
+        putDirect(exec->propertyNames().prototype, JSWebKitAnimationEventPrototype::self(exec, exec->lexicalGlobalObject()), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -109,9 +109,9 @@ static const HashTable JSWebKitAnimationEventPrototypeTable =
 
 const ClassInfo JSWebKitAnimationEventPrototype::s_info = { "WebKitAnimationEventPrototype", 0, &JSWebKitAnimationEventPrototypeTable, 0 };
 
-JSObject* JSWebKitAnimationEventPrototype::self(ExecState* exec)
+JSObject* JSWebKitAnimationEventPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSWebKitAnimationEvent>(exec);
+    return getDOMPrototype<JSWebKitAnimationEvent>(exec, globalObject);
 }
 
 bool JSWebKitAnimationEventPrototype::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -126,9 +126,9 @@ JSWebKitAnimationEvent::JSWebKitAnimationEvent(PassRefPtr<Structure> structure, 
 {
 }
 
-JSObject* JSWebKitAnimationEvent::createPrototype(ExecState* exec)
+JSObject* JSWebKitAnimationEvent::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSWebKitAnimationEventPrototype(JSWebKitAnimationEventPrototype::createStructure(JSEventPrototype::self(exec)));
+    return new (exec) JSWebKitAnimationEventPrototype(JSWebKitAnimationEventPrototype::createStructure(JSEventPrototype::self(exec, globalObject)));
 }
 
 bool JSWebKitAnimationEvent::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

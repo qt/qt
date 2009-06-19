@@ -55,7 +55,14 @@ JSValuePtr JSDocument::location(ExecState* exec) const
     if (!frame)
         return jsNull();
 
-    return toJS(exec, frame->domWindow()->location());
+    Location* location = frame->domWindow()->location();
+    if (DOMObject* wrapper = getCachedDOMObjectWrapper(exec->globalData(), location))
+        return wrapper;
+
+    JSDOMWindow* window = static_cast<JSDOMWindow*>(exec->lexicalGlobalObject());
+    JSLocation* jsLocation = new (exec) JSLocation(getDOMStructure<JSLocation>(exec, window), location);
+    cacheDOMObjectWrapper(exec->globalData(), location, jsLocation);
+    return jsLocation;
 }
 
 void JSDocument::setLocation(ExecState* exec, JSValuePtr value)

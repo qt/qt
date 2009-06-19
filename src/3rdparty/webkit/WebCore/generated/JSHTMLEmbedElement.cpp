@@ -82,7 +82,7 @@ public:
     JSHTMLEmbedElementConstructor(ExecState* exec)
         : DOMObject(JSHTMLEmbedElementConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
     {
-        putDirect(exec->propertyNames().prototype, JSHTMLEmbedElementPrototype::self(exec), None);
+        putDirect(exec->propertyNames().prototype, JSHTMLEmbedElementPrototype::self(exec, exec->lexicalGlobalObject()), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -118,9 +118,9 @@ static const HashTable JSHTMLEmbedElementPrototypeTable =
 
 const ClassInfo JSHTMLEmbedElementPrototype::s_info = { "HTMLEmbedElementPrototype", 0, &JSHTMLEmbedElementPrototypeTable, 0 };
 
-JSObject* JSHTMLEmbedElementPrototype::self(ExecState* exec)
+JSObject* JSHTMLEmbedElementPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSHTMLEmbedElement>(exec);
+    return getDOMPrototype<JSHTMLEmbedElement>(exec, globalObject);
 }
 
 bool JSHTMLEmbedElementPrototype::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -135,9 +135,9 @@ JSHTMLEmbedElement::JSHTMLEmbedElement(PassRefPtr<Structure> structure, PassRefP
 {
 }
 
-JSObject* JSHTMLEmbedElement::createPrototype(ExecState* exec)
+JSObject* JSHTMLEmbedElement::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSHTMLEmbedElementPrototype(JSHTMLEmbedElementPrototype::createStructure(JSHTMLElementPrototype::self(exec)));
+    return new (exec) JSHTMLEmbedElementPrototype(JSHTMLEmbedElementPrototype::createStructure(JSHTMLElementPrototype::self(exec, globalObject)));
 }
 
 bool JSHTMLEmbedElement::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

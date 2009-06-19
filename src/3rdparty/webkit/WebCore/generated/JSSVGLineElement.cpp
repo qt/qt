@@ -106,9 +106,9 @@ static const HashTable JSSVGLineElementPrototypeTable =
 
 const ClassInfo JSSVGLineElementPrototype::s_info = { "SVGLineElementPrototype", 0, &JSSVGLineElementPrototypeTable, 0 };
 
-JSObject* JSSVGLineElementPrototype::self(ExecState* exec)
+JSObject* JSSVGLineElementPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSSVGLineElement>(exec);
+    return getDOMPrototype<JSSVGLineElement>(exec, globalObject);
 }
 
 bool JSSVGLineElementPrototype::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -123,9 +123,9 @@ JSSVGLineElement::JSSVGLineElement(PassRefPtr<Structure> structure, PassRefPtr<S
 {
 }
 
-JSObject* JSSVGLineElement::createPrototype(ExecState* exec)
+JSObject* JSSVGLineElement::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSSVGLineElementPrototype(JSSVGLineElementPrototype::createStructure(JSSVGElementPrototype::self(exec)));
+    return new (exec) JSSVGLineElementPrototype(JSSVGLineElementPrototype::createStructure(JSSVGElementPrototype::self(exec, globalObject)));
 }
 
 bool JSSVGLineElement::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

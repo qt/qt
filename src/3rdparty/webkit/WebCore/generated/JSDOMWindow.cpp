@@ -36,7 +36,6 @@
 #include "Document.h"
 #include "Element.h"
 #include "EventListener.h"
-#include "History.h"
 #include "JSAttr.h"
 #include "JSBarInfo.h"
 #include "JSCDATASection.h"
@@ -145,9 +144,7 @@
 #include "JSHTMLTitleElement.h"
 #include "JSHTMLUListElement.h"
 #include "JSHTMLVideoElement.h"
-#include "JSHistory.h"
 #include "JSKeyboardEvent.h"
-#include "JSLocation.h"
 #include "JSMediaError.h"
 #include "JSMediaList.h"
 #include "JSMessageEvent.h"
@@ -205,7 +202,6 @@
 #include "JSXPathException.h"
 #include "JSXPathResult.h"
 #include "KURL.h"
-#include "Location.h"
 #include "Navigator.h"
 #include "Screen.h"
 #include "Storage.h"
@@ -547,8 +543,7 @@ JSValuePtr jsDOMWindowScreen(ExecState* exec, const Identifier&, const PropertyS
 
 JSValuePtr jsDOMWindowHistory(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
-    DOMWindow* imp = static_cast<DOMWindow*>(static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->impl());
-    return toJS(exec, WTF::getPtr(imp->history()));
+    return static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->history(exec);
 }
 
 JSValuePtr jsDOMWindowLocationbar(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -617,8 +612,7 @@ JSValuePtr jsDOMWindowClientInformation(ExecState* exec, const Identifier&, cons
 
 JSValuePtr jsDOMWindowLocation(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
-    DOMWindow* imp = static_cast<DOMWindow*>(static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->impl());
-    return toJS(exec, WTF::getPtr(imp->location()));
+    return static_cast<JSDOMWindow*>(asObject(slot.slotBase()))->location(exec);
 }
 
 JSValuePtr jsDOMWindowFrameElement(ExecState* exec, const Identifier&, const PropertySlot& slot)

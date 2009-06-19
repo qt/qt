@@ -51,9 +51,9 @@ static const HashTable JSSQLTransactionPrototypeTable =
 
 const ClassInfo JSSQLTransactionPrototype::s_info = { "SQLTransactionPrototype", 0, &JSSQLTransactionPrototypeTable, 0 };
 
-JSObject* JSSQLTransactionPrototype::self(ExecState* exec)
+JSObject* JSSQLTransactionPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSSQLTransaction>(exec);
+    return getDOMPrototype<JSSQLTransaction>(exec, globalObject);
 }
 
 bool JSSQLTransactionPrototype::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -75,9 +75,9 @@ JSSQLTransaction::~JSSQLTransaction()
 
 }
 
-JSObject* JSSQLTransaction::createPrototype(ExecState* exec)
+JSObject* JSSQLTransaction::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSSQLTransactionPrototype(JSSQLTransactionPrototype::createStructure(exec->lexicalGlobalObject()->objectPrototype()));
+    return new (exec) JSSQLTransactionPrototype(JSSQLTransactionPrototype::createStructure(globalObject->objectPrototype()));
 }
 
 JSValuePtr jsSQLTransactionPrototypeFunctionExecuteSql(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)

@@ -96,9 +96,9 @@ static const HashTable JSSVGFilterElementPrototypeTable =
 
 const ClassInfo JSSVGFilterElementPrototype::s_info = { "SVGFilterElementPrototype", 0, &JSSVGFilterElementPrototypeTable, 0 };
 
-JSObject* JSSVGFilterElementPrototype::self(ExecState* exec)
+JSObject* JSSVGFilterElementPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSSVGFilterElement>(exec);
+    return getDOMPrototype<JSSVGFilterElement>(exec, globalObject);
 }
 
 bool JSSVGFilterElementPrototype::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -113,9 +113,9 @@ JSSVGFilterElement::JSSVGFilterElement(PassRefPtr<Structure> structure, PassRefP
 {
 }
 
-JSObject* JSSVGFilterElement::createPrototype(ExecState* exec)
+JSObject* JSSVGFilterElement::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSSVGFilterElementPrototype(JSSVGFilterElementPrototype::createStructure(JSSVGElementPrototype::self(exec)));
+    return new (exec) JSSVGFilterElementPrototype(JSSVGFilterElementPrototype::createStructure(JSSVGElementPrototype::self(exec, globalObject)));
 }
 
 bool JSSVGFilterElement::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

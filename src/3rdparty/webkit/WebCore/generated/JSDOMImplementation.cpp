@@ -78,7 +78,7 @@ public:
     JSDOMImplementationConstructor(ExecState* exec)
         : DOMObject(JSDOMImplementationConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
     {
-        putDirect(exec->propertyNames().prototype, JSDOMImplementationPrototype::self(exec), None);
+        putDirect(exec->propertyNames().prototype, JSDOMImplementationPrototype::self(exec, exec->lexicalGlobalObject()), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -118,9 +118,9 @@ static const HashTable JSDOMImplementationPrototypeTable =
 
 const ClassInfo JSDOMImplementationPrototype::s_info = { "DOMImplementationPrototype", 0, &JSDOMImplementationPrototypeTable, 0 };
 
-JSObject* JSDOMImplementationPrototype::self(ExecState* exec)
+JSObject* JSDOMImplementationPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSDOMImplementation>(exec);
+    return getDOMPrototype<JSDOMImplementation>(exec, globalObject);
 }
 
 bool JSDOMImplementationPrototype::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -142,9 +142,9 @@ JSDOMImplementation::~JSDOMImplementation()
 
 }
 
-JSObject* JSDOMImplementation::createPrototype(ExecState* exec)
+JSObject* JSDOMImplementation::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSDOMImplementationPrototype(JSDOMImplementationPrototype::createStructure(exec->lexicalGlobalObject()->objectPrototype()));
+    return new (exec) JSDOMImplementationPrototype(JSDOMImplementationPrototype::createStructure(globalObject->objectPrototype()));
 }
 
 bool JSDOMImplementation::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

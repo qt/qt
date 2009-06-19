@@ -80,7 +80,7 @@ public:
     JSMessagePortConstructor(ExecState* exec)
         : DOMObject(JSMessagePortConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
     {
-        putDirect(exec->propertyNames().prototype, JSMessagePortPrototype::self(exec), None);
+        putDirect(exec->propertyNames().prototype, JSMessagePortPrototype::self(exec, exec->lexicalGlobalObject()), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -126,9 +126,9 @@ static const HashTable* getJSMessagePortPrototypeTable(ExecState* exec)
 }
 const ClassInfo JSMessagePortPrototype::s_info = { "MessagePortPrototype", 0, 0, getJSMessagePortPrototypeTable };
 
-JSObject* JSMessagePortPrototype::self(ExecState* exec)
+JSObject* JSMessagePortPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSMessagePort>(exec);
+    return getDOMPrototype<JSMessagePort>(exec, globalObject);
 }
 
 bool JSMessagePortPrototype::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -154,9 +154,9 @@ JSMessagePort::~JSMessagePort()
 
 }
 
-JSObject* JSMessagePort::createPrototype(ExecState* exec)
+JSObject* JSMessagePort::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSMessagePortPrototype(JSMessagePortPrototype::createStructure(exec->lexicalGlobalObject()->objectPrototype()));
+    return new (exec) JSMessagePortPrototype(JSMessagePortPrototype::createStructure(globalObject->objectPrototype()));
 }
 
 bool JSMessagePort::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

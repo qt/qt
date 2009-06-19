@@ -105,9 +105,9 @@ static const HashTable JSSVGPolygonElementPrototypeTable =
 
 const ClassInfo JSSVGPolygonElementPrototype::s_info = { "SVGPolygonElementPrototype", 0, &JSSVGPolygonElementPrototypeTable, 0 };
 
-JSObject* JSSVGPolygonElementPrototype::self(ExecState* exec)
+JSObject* JSSVGPolygonElementPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSSVGPolygonElement>(exec);
+    return getDOMPrototype<JSSVGPolygonElement>(exec, globalObject);
 }
 
 bool JSSVGPolygonElementPrototype::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -122,9 +122,9 @@ JSSVGPolygonElement::JSSVGPolygonElement(PassRefPtr<Structure> structure, PassRe
 {
 }
 
-JSObject* JSSVGPolygonElement::createPrototype(ExecState* exec)
+JSObject* JSSVGPolygonElement::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSSVGPolygonElementPrototype(JSSVGPolygonElementPrototype::createStructure(JSSVGElementPrototype::self(exec)));
+    return new (exec) JSSVGPolygonElementPrototype(JSSVGPolygonElementPrototype::createStructure(JSSVGElementPrototype::self(exec, globalObject)));
 }
 
 bool JSSVGPolygonElement::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

@@ -97,9 +97,9 @@ static const HashTable JSSVGMaskElementPrototypeTable =
 
 const ClassInfo JSSVGMaskElementPrototype::s_info = { "SVGMaskElementPrototype", 0, &JSSVGMaskElementPrototypeTable, 0 };
 
-JSObject* JSSVGMaskElementPrototype::self(ExecState* exec)
+JSObject* JSSVGMaskElementPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSSVGMaskElement>(exec);
+    return getDOMPrototype<JSSVGMaskElement>(exec, globalObject);
 }
 
 bool JSSVGMaskElementPrototype::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -114,9 +114,9 @@ JSSVGMaskElement::JSSVGMaskElement(PassRefPtr<Structure> structure, PassRefPtr<S
 {
 }
 
-JSObject* JSSVGMaskElement::createPrototype(ExecState* exec)
+JSObject* JSSVGMaskElement::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSSVGMaskElementPrototype(JSSVGMaskElementPrototype::createStructure(JSSVGElementPrototype::self(exec)));
+    return new (exec) JSSVGMaskElementPrototype(JSSVGMaskElementPrototype::createStructure(JSSVGElementPrototype::self(exec, globalObject)));
 }
 
 bool JSSVGMaskElement::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

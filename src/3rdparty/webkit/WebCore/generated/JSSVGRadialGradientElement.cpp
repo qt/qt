@@ -73,9 +73,9 @@ static const HashTable JSSVGRadialGradientElementPrototypeTable =
 
 const ClassInfo JSSVGRadialGradientElementPrototype::s_info = { "SVGRadialGradientElementPrototype", 0, &JSSVGRadialGradientElementPrototypeTable, 0 };
 
-JSObject* JSSVGRadialGradientElementPrototype::self(ExecState* exec)
+JSObject* JSSVGRadialGradientElementPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSSVGRadialGradientElement>(exec);
+    return getDOMPrototype<JSSVGRadialGradientElement>(exec, globalObject);
 }
 
 const ClassInfo JSSVGRadialGradientElement::s_info = { "SVGRadialGradientElement", &JSSVGGradientElement::s_info, &JSSVGRadialGradientElementTable, 0 };
@@ -85,9 +85,9 @@ JSSVGRadialGradientElement::JSSVGRadialGradientElement(PassRefPtr<Structure> str
 {
 }
 
-JSObject* JSSVGRadialGradientElement::createPrototype(ExecState* exec)
+JSObject* JSSVGRadialGradientElement::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSSVGRadialGradientElementPrototype(JSSVGRadialGradientElementPrototype::createStructure(JSSVGGradientElementPrototype::self(exec)));
+    return new (exec) JSSVGRadialGradientElementPrototype(JSSVGRadialGradientElementPrototype::createStructure(JSSVGGradientElementPrototype::self(exec, globalObject)));
 }
 
 bool JSSVGRadialGradientElement::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

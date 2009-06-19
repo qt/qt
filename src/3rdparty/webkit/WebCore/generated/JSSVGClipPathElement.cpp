@@ -103,9 +103,9 @@ static const HashTable JSSVGClipPathElementPrototypeTable =
 
 const ClassInfo JSSVGClipPathElementPrototype::s_info = { "SVGClipPathElementPrototype", 0, &JSSVGClipPathElementPrototypeTable, 0 };
 
-JSObject* JSSVGClipPathElementPrototype::self(ExecState* exec)
+JSObject* JSSVGClipPathElementPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSSVGClipPathElement>(exec);
+    return getDOMPrototype<JSSVGClipPathElement>(exec, globalObject);
 }
 
 bool JSSVGClipPathElementPrototype::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -120,9 +120,9 @@ JSSVGClipPathElement::JSSVGClipPathElement(PassRefPtr<Structure> structure, Pass
 {
 }
 
-JSObject* JSSVGClipPathElement::createPrototype(ExecState* exec)
+JSObject* JSSVGClipPathElement::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSSVGClipPathElementPrototype(JSSVGClipPathElementPrototype::createStructure(JSSVGElementPrototype::self(exec)));
+    return new (exec) JSSVGClipPathElementPrototype(JSSVGClipPathElementPrototype::createStructure(JSSVGElementPrototype::self(exec, globalObject)));
 }
 
 bool JSSVGClipPathElement::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

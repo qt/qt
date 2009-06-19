@@ -73,7 +73,7 @@ public:
     JSTextEventConstructor(ExecState* exec)
         : DOMObject(JSTextEventConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
     {
-        putDirect(exec->propertyNames().prototype, JSTextEventPrototype::self(exec), None);
+        putDirect(exec->propertyNames().prototype, JSTextEventPrototype::self(exec, exec->lexicalGlobalObject()), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -109,9 +109,9 @@ static const HashTable JSTextEventPrototypeTable =
 
 const ClassInfo JSTextEventPrototype::s_info = { "TextEventPrototype", 0, &JSTextEventPrototypeTable, 0 };
 
-JSObject* JSTextEventPrototype::self(ExecState* exec)
+JSObject* JSTextEventPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSTextEvent>(exec);
+    return getDOMPrototype<JSTextEvent>(exec, globalObject);
 }
 
 bool JSTextEventPrototype::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -126,9 +126,9 @@ JSTextEvent::JSTextEvent(PassRefPtr<Structure> structure, PassRefPtr<TextEvent> 
 {
 }
 
-JSObject* JSTextEvent::createPrototype(ExecState* exec)
+JSObject* JSTextEvent::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSTextEventPrototype(JSTextEventPrototype::createStructure(JSUIEventPrototype::self(exec)));
+    return new (exec) JSTextEventPrototype(JSTextEventPrototype::createStructure(JSUIEventPrototype::self(exec, globalObject)));
 }
 
 bool JSTextEvent::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

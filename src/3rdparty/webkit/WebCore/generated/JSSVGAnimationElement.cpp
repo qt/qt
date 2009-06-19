@@ -87,9 +87,9 @@ static const HashTable JSSVGAnimationElementPrototypeTable =
 
 const ClassInfo JSSVGAnimationElementPrototype::s_info = { "SVGAnimationElementPrototype", 0, &JSSVGAnimationElementPrototypeTable, 0 };
 
-JSObject* JSSVGAnimationElementPrototype::self(ExecState* exec)
+JSObject* JSSVGAnimationElementPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSSVGAnimationElement>(exec);
+    return getDOMPrototype<JSSVGAnimationElement>(exec, globalObject);
 }
 
 bool JSSVGAnimationElementPrototype::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -104,9 +104,9 @@ JSSVGAnimationElement::JSSVGAnimationElement(PassRefPtr<Structure> structure, Pa
 {
 }
 
-JSObject* JSSVGAnimationElement::createPrototype(ExecState* exec)
+JSObject* JSSVGAnimationElement::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSSVGAnimationElementPrototype(JSSVGAnimationElementPrototype::createStructure(JSSVGElementPrototype::self(exec)));
+    return new (exec) JSSVGAnimationElementPrototype(JSSVGAnimationElementPrototype::createStructure(JSSVGElementPrototype::self(exec, globalObject)));
 }
 
 bool JSSVGAnimationElement::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

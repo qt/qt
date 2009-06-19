@@ -84,7 +84,7 @@ public:
     JSHTMLFormElementConstructor(ExecState* exec)
         : DOMObject(JSHTMLFormElementConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
     {
-        putDirect(exec->propertyNames().prototype, JSHTMLFormElementPrototype::self(exec), None);
+        putDirect(exec->propertyNames().prototype, JSHTMLFormElementPrototype::self(exec, exec->lexicalGlobalObject()), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -121,9 +121,9 @@ static const HashTable JSHTMLFormElementPrototypeTable =
 
 const ClassInfo JSHTMLFormElementPrototype::s_info = { "HTMLFormElementPrototype", 0, &JSHTMLFormElementPrototypeTable, 0 };
 
-JSObject* JSHTMLFormElementPrototype::self(ExecState* exec)
+JSObject* JSHTMLFormElementPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSHTMLFormElement>(exec);
+    return getDOMPrototype<JSHTMLFormElement>(exec, globalObject);
 }
 
 bool JSHTMLFormElementPrototype::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -138,9 +138,9 @@ JSHTMLFormElement::JSHTMLFormElement(PassRefPtr<Structure> structure, PassRefPtr
 {
 }
 
-JSObject* JSHTMLFormElement::createPrototype(ExecState* exec)
+JSObject* JSHTMLFormElement::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSHTMLFormElementPrototype(JSHTMLFormElementPrototype::createStructure(JSHTMLElementPrototype::self(exec)));
+    return new (exec) JSHTMLFormElementPrototype(JSHTMLFormElementPrototype::createStructure(JSHTMLElementPrototype::self(exec, globalObject)));
 }
 
 bool JSHTMLFormElement::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

@@ -53,9 +53,9 @@ static const HashTable JSSVGAnimateTransformElementPrototypeTable =
 
 const ClassInfo JSSVGAnimateTransformElementPrototype::s_info = { "SVGAnimateTransformElementPrototype", 0, &JSSVGAnimateTransformElementPrototypeTable, 0 };
 
-JSObject* JSSVGAnimateTransformElementPrototype::self(ExecState* exec)
+JSObject* JSSVGAnimateTransformElementPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSSVGAnimateTransformElement>(exec);
+    return getDOMPrototype<JSSVGAnimateTransformElement>(exec, globalObject);
 }
 
 const ClassInfo JSSVGAnimateTransformElement::s_info = { "SVGAnimateTransformElement", &JSSVGAnimationElement::s_info, 0, 0 };
@@ -65,9 +65,9 @@ JSSVGAnimateTransformElement::JSSVGAnimateTransformElement(PassRefPtr<Structure>
 {
 }
 
-JSObject* JSSVGAnimateTransformElement::createPrototype(ExecState* exec)
+JSObject* JSSVGAnimateTransformElement::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSSVGAnimateTransformElementPrototype(JSSVGAnimateTransformElementPrototype::createStructure(JSSVGAnimationElementPrototype::self(exec)));
+    return new (exec) JSSVGAnimateTransformElementPrototype(JSSVGAnimateTransformElementPrototype::createStructure(JSSVGAnimationElementPrototype::self(exec, globalObject)));
 }
 
 

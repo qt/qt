@@ -85,9 +85,9 @@ static const HashTable JSSVGMatrixPrototypeTable =
 
 const ClassInfo JSSVGMatrixPrototype::s_info = { "SVGMatrixPrototype", 0, &JSSVGMatrixPrototypeTable, 0 };
 
-JSObject* JSSVGMatrixPrototype::self(ExecState* exec)
+JSObject* JSSVGMatrixPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSSVGMatrix>(exec);
+    return getDOMPrototype<JSSVGMatrix>(exec, globalObject);
 }
 
 bool JSSVGMatrixPrototype::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -110,9 +110,9 @@ JSSVGMatrix::~JSSVGMatrix()
 
 }
 
-JSObject* JSSVGMatrix::createPrototype(ExecState* exec)
+JSObject* JSSVGMatrix::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSSVGMatrixPrototype(JSSVGMatrixPrototype::createStructure(exec->lexicalGlobalObject()->objectPrototype()));
+    return new (exec) JSSVGMatrixPrototype(JSSVGMatrixPrototype::createStructure(globalObject->objectPrototype()));
 }
 
 bool JSSVGMatrix::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

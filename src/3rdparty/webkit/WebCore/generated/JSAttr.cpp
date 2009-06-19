@@ -79,7 +79,7 @@ public:
     JSAttrConstructor(ExecState* exec)
         : DOMObject(JSAttrConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
     {
-        putDirect(exec->propertyNames().prototype, JSAttrPrototype::self(exec), None);
+        putDirect(exec->propertyNames().prototype, JSAttrPrototype::self(exec, exec->lexicalGlobalObject()), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -114,9 +114,9 @@ static const HashTable JSAttrPrototypeTable =
 
 const ClassInfo JSAttrPrototype::s_info = { "AttrPrototype", 0, &JSAttrPrototypeTable, 0 };
 
-JSObject* JSAttrPrototype::self(ExecState* exec)
+JSObject* JSAttrPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSAttr>(exec);
+    return getDOMPrototype<JSAttr>(exec, globalObject);
 }
 
 const ClassInfo JSAttr::s_info = { "Attr", &JSEventTargetNode::s_info, &JSAttrTable, 0 };
@@ -126,9 +126,9 @@ JSAttr::JSAttr(PassRefPtr<Structure> structure, PassRefPtr<Attr> impl)
 {
 }
 
-JSObject* JSAttr::createPrototype(ExecState* exec)
+JSObject* JSAttr::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSAttrPrototype(JSAttrPrototype::createStructure(JSEventTargetNodePrototype::self(exec)));
+    return new (exec) JSAttrPrototype(JSAttrPrototype::createStructure(JSEventTargetNodePrototype::self(exec, globalObject)));
 }
 
 bool JSAttr::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

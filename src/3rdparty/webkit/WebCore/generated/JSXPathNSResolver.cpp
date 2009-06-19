@@ -57,9 +57,9 @@ static const HashTable JSXPathNSResolverPrototypeTable =
 
 const ClassInfo JSXPathNSResolverPrototype::s_info = { "XPathNSResolverPrototype", 0, &JSXPathNSResolverPrototypeTable, 0 };
 
-JSObject* JSXPathNSResolverPrototype::self(ExecState* exec)
+JSObject* JSXPathNSResolverPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSXPathNSResolver>(exec);
+    return getDOMPrototype<JSXPathNSResolver>(exec, globalObject);
 }
 
 bool JSXPathNSResolverPrototype::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -81,9 +81,9 @@ JSXPathNSResolver::~JSXPathNSResolver()
 
 }
 
-JSObject* JSXPathNSResolver::createPrototype(ExecState* exec)
+JSObject* JSXPathNSResolver::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSXPathNSResolverPrototype(JSXPathNSResolverPrototype::createStructure(exec->lexicalGlobalObject()->objectPrototype()));
+    return new (exec) JSXPathNSResolverPrototype(JSXPathNSResolverPrototype::createStructure(globalObject->objectPrototype()));
 }
 
 JSValuePtr jsXPathNSResolverPrototypeFunctionLookupNamespaceURI(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)

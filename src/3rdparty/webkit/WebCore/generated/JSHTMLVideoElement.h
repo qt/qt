@@ -34,7 +34,7 @@ class JSHTMLVideoElement : public JSHTMLMediaElement {
     typedef JSHTMLMediaElement Base;
 public:
     JSHTMLVideoElement(PassRefPtr<JSC::Structure>, PassRefPtr<HTMLVideoElement>);
-    static JSC::JSObject* createPrototype(JSC::ExecState*);
+    static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
     virtual void put(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::JSValuePtr, JSC::PutPropertySlot&);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
@@ -51,7 +51,7 @@ public:
 
 class JSHTMLVideoElementPrototype : public JSC::JSObject {
 public:
-    static JSC::JSObject* self(JSC::ExecState*);
+    static JSC::JSObject* self(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
     static const JSC::ClassInfo s_info;
     JSHTMLVideoElementPrototype(PassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }

@@ -74,7 +74,7 @@ public:
     JSStorageConstructor(ExecState* exec)
         : DOMObject(JSStorageConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
     {
-        putDirect(exec->propertyNames().prototype, JSStoragePrototype::self(exec), None);
+        putDirect(exec->propertyNames().prototype, JSStoragePrototype::self(exec, exec->lexicalGlobalObject()), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -114,9 +114,9 @@ static const HashTable JSStoragePrototypeTable =
 
 const ClassInfo JSStoragePrototype::s_info = { "StoragePrototype", 0, &JSStoragePrototypeTable, 0 };
 
-JSObject* JSStoragePrototype::self(ExecState* exec)
+JSObject* JSStoragePrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSStorage>(exec);
+    return getDOMPrototype<JSStorage>(exec, globalObject);
 }
 
 bool JSStoragePrototype::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -138,9 +138,9 @@ JSStorage::~JSStorage()
 
 }
 
-JSObject* JSStorage::createPrototype(ExecState* exec)
+JSObject* JSStorage::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSStoragePrototype(JSStoragePrototype::createStructure(exec->lexicalGlobalObject()->objectPrototype()));
+    return new (exec) JSStoragePrototype(JSStoragePrototype::createStructure(globalObject->objectPrototype()));
 }
 
 bool JSStorage::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

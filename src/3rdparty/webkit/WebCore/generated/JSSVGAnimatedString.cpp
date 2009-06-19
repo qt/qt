@@ -71,9 +71,9 @@ static const HashTable JSSVGAnimatedStringPrototypeTable =
 
 const ClassInfo JSSVGAnimatedStringPrototype::s_info = { "SVGAnimatedStringPrototype", 0, &JSSVGAnimatedStringPrototypeTable, 0 };
 
-JSObject* JSSVGAnimatedStringPrototype::self(ExecState* exec)
+JSObject* JSSVGAnimatedStringPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSSVGAnimatedString>(exec);
+    return getDOMPrototype<JSSVGAnimatedString>(exec, globalObject);
 }
 
 const ClassInfo JSSVGAnimatedString::s_info = { "SVGAnimatedString", 0, &JSSVGAnimatedStringTable, 0 };
@@ -91,9 +91,9 @@ JSSVGAnimatedString::~JSSVGAnimatedString()
 
 }
 
-JSObject* JSSVGAnimatedString::createPrototype(ExecState* exec)
+JSObject* JSSVGAnimatedString::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSSVGAnimatedStringPrototype(JSSVGAnimatedStringPrototype::createStructure(exec->lexicalGlobalObject()->objectPrototype()));
+    return new (exec) JSSVGAnimatedStringPrototype(JSSVGAnimatedStringPrototype::createStructure(globalObject->objectPrototype()));
 }
 
 bool JSSVGAnimatedString::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

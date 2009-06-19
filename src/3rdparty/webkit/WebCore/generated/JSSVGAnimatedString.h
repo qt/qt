@@ -35,7 +35,7 @@ class JSSVGAnimatedString : public DOMObject {
 public:
     JSSVGAnimatedString(PassRefPtr<JSC::Structure>, PassRefPtr<SVGAnimatedString>, SVGElement* context);
     virtual ~JSSVGAnimatedString();
-    static JSC::JSObject* createPrototype(JSC::ExecState*);
+    static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
     virtual void put(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::JSValuePtr, JSC::PutPropertySlot&);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
@@ -59,7 +59,7 @@ SVGAnimatedString* toSVGAnimatedString(JSC::JSValuePtr);
 
 class JSSVGAnimatedStringPrototype : public JSC::JSObject {
 public:
-    static JSC::JSObject* self(JSC::ExecState*);
+    static JSC::JSObject* self(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
     static const JSC::ClassInfo s_info;
     JSSVGAnimatedStringPrototype(PassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }

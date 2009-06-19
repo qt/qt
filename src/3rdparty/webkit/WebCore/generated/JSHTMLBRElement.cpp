@@ -71,7 +71,7 @@ public:
     JSHTMLBRElementConstructor(ExecState* exec)
         : DOMObject(JSHTMLBRElementConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
     {
-        putDirect(exec->propertyNames().prototype, JSHTMLBRElementPrototype::self(exec), None);
+        putDirect(exec->propertyNames().prototype, JSHTMLBRElementPrototype::self(exec, exec->lexicalGlobalObject()), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -106,9 +106,9 @@ static const HashTable JSHTMLBRElementPrototypeTable =
 
 const ClassInfo JSHTMLBRElementPrototype::s_info = { "HTMLBRElementPrototype", 0, &JSHTMLBRElementPrototypeTable, 0 };
 
-JSObject* JSHTMLBRElementPrototype::self(ExecState* exec)
+JSObject* JSHTMLBRElementPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSHTMLBRElement>(exec);
+    return getDOMPrototype<JSHTMLBRElement>(exec, globalObject);
 }
 
 const ClassInfo JSHTMLBRElement::s_info = { "HTMLBRElement", &JSHTMLElement::s_info, &JSHTMLBRElementTable, 0 };
@@ -118,9 +118,9 @@ JSHTMLBRElement::JSHTMLBRElement(PassRefPtr<Structure> structure, PassRefPtr<HTM
 {
 }
 
-JSObject* JSHTMLBRElement::createPrototype(ExecState* exec)
+JSObject* JSHTMLBRElement::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSHTMLBRElementPrototype(JSHTMLBRElementPrototype::createStructure(JSHTMLElementPrototype::self(exec)));
+    return new (exec) JSHTMLBRElementPrototype(JSHTMLBRElementPrototype::createStructure(JSHTMLElementPrototype::self(exec, globalObject)));
 }
 
 bool JSHTMLBRElement::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

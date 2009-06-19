@@ -88,9 +88,9 @@ static const HashTable JSSVGFESpecularLightingElementPrototypeTable =
 
 const ClassInfo JSSVGFESpecularLightingElementPrototype::s_info = { "SVGFESpecularLightingElementPrototype", 0, &JSSVGFESpecularLightingElementPrototypeTable, 0 };
 
-JSObject* JSSVGFESpecularLightingElementPrototype::self(ExecState* exec)
+JSObject* JSSVGFESpecularLightingElementPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSSVGFESpecularLightingElement>(exec);
+    return getDOMPrototype<JSSVGFESpecularLightingElement>(exec, globalObject);
 }
 
 bool JSSVGFESpecularLightingElementPrototype::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -105,9 +105,9 @@ JSSVGFESpecularLightingElement::JSSVGFESpecularLightingElement(PassRefPtr<Struct
 {
 }
 
-JSObject* JSSVGFESpecularLightingElement::createPrototype(ExecState* exec)
+JSObject* JSSVGFESpecularLightingElement::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSSVGFESpecularLightingElementPrototype(JSSVGFESpecularLightingElementPrototype::createStructure(JSSVGElementPrototype::self(exec)));
+    return new (exec) JSSVGFESpecularLightingElementPrototype(JSSVGFESpecularLightingElementPrototype::createStructure(JSSVGElementPrototype::self(exec, globalObject)));
 }
 
 bool JSSVGFESpecularLightingElement::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

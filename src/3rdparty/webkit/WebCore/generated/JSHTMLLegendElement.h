@@ -31,7 +31,7 @@ class JSHTMLLegendElement : public JSHTMLElement {
     typedef JSHTMLElement Base;
 public:
     JSHTMLLegendElement(PassRefPtr<JSC::Structure>, PassRefPtr<HTMLLegendElement>);
-    static JSC::JSObject* createPrototype(JSC::ExecState*);
+    static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
     virtual void put(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::JSValuePtr, JSC::PutPropertySlot&);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
@@ -48,7 +48,7 @@ public:
 
 class JSHTMLLegendElementPrototype : public JSC::JSObject {
 public:
-    static JSC::JSObject* self(JSC::ExecState*);
+    static JSC::JSObject* self(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
     static const JSC::ClassInfo s_info;
     JSHTMLLegendElementPrototype(PassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }

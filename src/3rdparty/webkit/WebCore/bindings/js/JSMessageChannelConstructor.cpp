@@ -51,7 +51,7 @@ JSMessageChannelConstructor::JSMessageChannelConstructor(ExecState* exec, Script
     else
         ASSERT_NOT_REACHED();
 
-    putDirect(exec->propertyNames().prototype, JSMessageChannelPrototype::self(exec), None);
+    putDirect(exec->propertyNames().prototype, JSMessageChannelPrototype::self(exec, exec->lexicalGlobalObject()), None);
 }
 
 JSMessageChannelConstructor::~JSMessageChannelConstructor()

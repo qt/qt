@@ -76,7 +76,7 @@ public:
     JSCSSImportRuleConstructor(ExecState* exec)
         : DOMObject(JSCSSImportRuleConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
     {
-        putDirect(exec->propertyNames().prototype, JSCSSImportRulePrototype::self(exec), None);
+        putDirect(exec->propertyNames().prototype, JSCSSImportRulePrototype::self(exec, exec->lexicalGlobalObject()), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -111,9 +111,9 @@ static const HashTable JSCSSImportRulePrototypeTable =
 
 const ClassInfo JSCSSImportRulePrototype::s_info = { "CSSImportRulePrototype", 0, &JSCSSImportRulePrototypeTable, 0 };
 
-JSObject* JSCSSImportRulePrototype::self(ExecState* exec)
+JSObject* JSCSSImportRulePrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSCSSImportRule>(exec);
+    return getDOMPrototype<JSCSSImportRule>(exec, globalObject);
 }
 
 const ClassInfo JSCSSImportRule::s_info = { "CSSImportRule", &JSCSSRule::s_info, &JSCSSImportRuleTable, 0 };
@@ -123,9 +123,9 @@ JSCSSImportRule::JSCSSImportRule(PassRefPtr<Structure> structure, PassRefPtr<CSS
 {
 }
 
-JSObject* JSCSSImportRule::createPrototype(ExecState* exec)
+JSObject* JSCSSImportRule::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSCSSImportRulePrototype(JSCSSImportRulePrototype::createStructure(JSCSSRulePrototype::self(exec)));
+    return new (exec) JSCSSImportRulePrototype(JSCSSImportRulePrototype::createStructure(JSCSSRulePrototype::self(exec, globalObject)));
 }
 
 bool JSCSSImportRule::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

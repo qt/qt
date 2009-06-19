@@ -100,7 +100,7 @@ public:
     JSElementConstructor(ExecState* exec)
         : DOMObject(JSElementConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
     {
-        putDirect(exec->propertyNames().prototype, JSElementPrototype::self(exec), None);
+        putDirect(exec->propertyNames().prototype, JSElementPrototype::self(exec, exec->lexicalGlobalObject()), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -160,9 +160,9 @@ static const HashTable JSElementPrototypeTable =
 
 const ClassInfo JSElementPrototype::s_info = { "ElementPrototype", 0, &JSElementPrototypeTable, 0 };
 
-JSObject* JSElementPrototype::self(ExecState* exec)
+JSObject* JSElementPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSElement>(exec);
+    return getDOMPrototype<JSElement>(exec, globalObject);
 }
 
 bool JSElementPrototype::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -177,9 +177,9 @@ JSElement::JSElement(PassRefPtr<Structure> structure, PassRefPtr<Element> impl)
 {
 }
 
-JSObject* JSElement::createPrototype(ExecState* exec)
+JSObject* JSElement::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSElementPrototype(JSElementPrototype::createStructure(JSEventTargetNodePrototype::self(exec)));
+    return new (exec) JSElementPrototype(JSElementPrototype::createStructure(JSEventTargetNodePrototype::self(exec, globalObject)));
 }
 
 JSValuePtr jsElementTagName(ExecState* exec, const Identifier&, const PropertySlot& slot)

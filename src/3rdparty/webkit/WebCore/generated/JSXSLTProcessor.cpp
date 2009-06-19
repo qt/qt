@@ -64,9 +64,9 @@ static const HashTable JSXSLTProcessorPrototypeTable =
 
 const ClassInfo JSXSLTProcessorPrototype::s_info = { "XSLTProcessorPrototype", 0, &JSXSLTProcessorPrototypeTable, 0 };
 
-JSObject* JSXSLTProcessorPrototype::self(ExecState* exec)
+JSObject* JSXSLTProcessorPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSXSLTProcessor>(exec);
+    return getDOMPrototype<JSXSLTProcessor>(exec, globalObject);
 }
 
 bool JSXSLTProcessorPrototype::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -88,9 +88,9 @@ JSXSLTProcessor::~JSXSLTProcessor()
 
 }
 
-JSObject* JSXSLTProcessor::createPrototype(ExecState* exec)
+JSObject* JSXSLTProcessor::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSXSLTProcessorPrototype(JSXSLTProcessorPrototype::createStructure(exec->lexicalGlobalObject()->objectPrototype()));
+    return new (exec) JSXSLTProcessorPrototype(JSXSLTProcessorPrototype::createStructure(globalObject->objectPrototype()));
 }
 
 JSValuePtr jsXSLTProcessorPrototypeFunctionImportStylesheet(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)

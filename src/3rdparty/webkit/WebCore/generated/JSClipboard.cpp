@@ -73,7 +73,7 @@ public:
     JSClipboardConstructor(ExecState* exec)
         : DOMObject(JSClipboardConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
     {
-        putDirect(exec->propertyNames().prototype, JSClipboardPrototype::self(exec), None);
+        putDirect(exec->propertyNames().prototype, JSClipboardPrototype::self(exec, exec->lexicalGlobalObject()), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -112,9 +112,9 @@ static const HashTable JSClipboardPrototypeTable =
 
 const ClassInfo JSClipboardPrototype::s_info = { "ClipboardPrototype", 0, &JSClipboardPrototypeTable, 0 };
 
-JSObject* JSClipboardPrototype::self(ExecState* exec)
+JSObject* JSClipboardPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSClipboard>(exec);
+    return getDOMPrototype<JSClipboard>(exec, globalObject);
 }
 
 bool JSClipboardPrototype::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -136,9 +136,9 @@ JSClipboard::~JSClipboard()
 
 }
 
-JSObject* JSClipboard::createPrototype(ExecState* exec)
+JSObject* JSClipboard::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSClipboardPrototype(JSClipboardPrototype::createStructure(exec->lexicalGlobalObject()->objectPrototype()));
+    return new (exec) JSClipboardPrototype(JSClipboardPrototype::createStructure(globalObject->objectPrototype()));
 }
 
 bool JSClipboard::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

@@ -69,9 +69,9 @@ static const HashTable JSDatabasePrototypeTable =
 
 const ClassInfo JSDatabasePrototype::s_info = { "DatabasePrototype", 0, &JSDatabasePrototypeTable, 0 };
 
-JSObject* JSDatabasePrototype::self(ExecState* exec)
+JSObject* JSDatabasePrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSDatabase>(exec);
+    return getDOMPrototype<JSDatabase>(exec, globalObject);
 }
 
 bool JSDatabasePrototype::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -93,9 +93,9 @@ JSDatabase::~JSDatabase()
 
 }
 
-JSObject* JSDatabase::createPrototype(ExecState* exec)
+JSObject* JSDatabase::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSDatabasePrototype(JSDatabasePrototype::createStructure(exec->lexicalGlobalObject()->objectPrototype()));
+    return new (exec) JSDatabasePrototype(JSDatabasePrototype::createStructure(globalObject->objectPrototype()));
 }
 
 bool JSDatabase::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

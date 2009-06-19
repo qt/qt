@@ -70,9 +70,9 @@ static const HashTable JSSVGAnimatedRectPrototypeTable =
 
 const ClassInfo JSSVGAnimatedRectPrototype::s_info = { "SVGAnimatedRectPrototype", 0, &JSSVGAnimatedRectPrototypeTable, 0 };
 
-JSObject* JSSVGAnimatedRectPrototype::self(ExecState* exec)
+JSObject* JSSVGAnimatedRectPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSSVGAnimatedRect>(exec);
+    return getDOMPrototype<JSSVGAnimatedRect>(exec, globalObject);
 }
 
 const ClassInfo JSSVGAnimatedRect::s_info = { "SVGAnimatedRect", 0, &JSSVGAnimatedRectTable, 0 };
@@ -90,9 +90,9 @@ JSSVGAnimatedRect::~JSSVGAnimatedRect()
 
 }
 
-JSObject* JSSVGAnimatedRect::createPrototype(ExecState* exec)
+JSObject* JSSVGAnimatedRect::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSSVGAnimatedRectPrototype(JSSVGAnimatedRectPrototype::createStructure(exec->lexicalGlobalObject()->objectPrototype()));
+    return new (exec) JSSVGAnimatedRectPrototype(JSSVGAnimatedRectPrototype::createStructure(globalObject->objectPrototype()));
 }
 
 bool JSSVGAnimatedRect::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

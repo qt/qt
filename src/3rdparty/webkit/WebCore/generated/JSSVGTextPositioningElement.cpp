@@ -74,9 +74,9 @@ static const HashTable JSSVGTextPositioningElementPrototypeTable =
 
 const ClassInfo JSSVGTextPositioningElementPrototype::s_info = { "SVGTextPositioningElementPrototype", 0, &JSSVGTextPositioningElementPrototypeTable, 0 };
 
-JSObject* JSSVGTextPositioningElementPrototype::self(ExecState* exec)
+JSObject* JSSVGTextPositioningElementPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSSVGTextPositioningElement>(exec);
+    return getDOMPrototype<JSSVGTextPositioningElement>(exec, globalObject);
 }
 
 const ClassInfo JSSVGTextPositioningElement::s_info = { "SVGTextPositioningElement", &JSSVGTextContentElement::s_info, &JSSVGTextPositioningElementTable, 0 };
@@ -86,9 +86,9 @@ JSSVGTextPositioningElement::JSSVGTextPositioningElement(PassRefPtr<Structure> s
 {
 }
 
-JSObject* JSSVGTextPositioningElement::createPrototype(ExecState* exec)
+JSObject* JSSVGTextPositioningElement::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSSVGTextPositioningElementPrototype(JSSVGTextPositioningElementPrototype::createStructure(JSSVGTextContentElementPrototype::self(exec)));
+    return new (exec) JSSVGTextPositioningElementPrototype(JSSVGTextPositioningElementPrototype::createStructure(JSSVGTextContentElementPrototype::self(exec, globalObject)));
 }
 
 bool JSSVGTextPositioningElement::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

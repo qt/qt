@@ -71,7 +71,7 @@ public:
     JSDOMStringListConstructor(ExecState* exec)
         : DOMObject(JSDOMStringListConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
     {
-        putDirect(exec->propertyNames().prototype, JSDOMStringListPrototype::self(exec), None);
+        putDirect(exec->propertyNames().prototype, JSDOMStringListPrototype::self(exec, exec->lexicalGlobalObject()), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -108,9 +108,9 @@ static const HashTable JSDOMStringListPrototypeTable =
 
 const ClassInfo JSDOMStringListPrototype::s_info = { "DOMStringListPrototype", 0, &JSDOMStringListPrototypeTable, 0 };
 
-JSObject* JSDOMStringListPrototype::self(ExecState* exec)
+JSObject* JSDOMStringListPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSDOMStringList>(exec);
+    return getDOMPrototype<JSDOMStringList>(exec, globalObject);
 }
 
 bool JSDOMStringListPrototype::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -132,9 +132,9 @@ JSDOMStringList::~JSDOMStringList()
 
 }
 
-JSObject* JSDOMStringList::createPrototype(ExecState* exec)
+JSObject* JSDOMStringList::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSDOMStringListPrototype(JSDOMStringListPrototype::createStructure(exec->lexicalGlobalObject()->objectPrototype()));
+    return new (exec) JSDOMStringListPrototype(JSDOMStringListPrototype::createStructure(globalObject->objectPrototype()));
 }
 
 bool JSDOMStringList::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

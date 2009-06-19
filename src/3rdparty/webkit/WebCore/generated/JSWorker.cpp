@@ -80,9 +80,9 @@ static const HashTable JSWorkerPrototypeTable =
 
 const ClassInfo JSWorkerPrototype::s_info = { "WorkerPrototype", 0, &JSWorkerPrototypeTable, 0 };
 
-JSObject* JSWorkerPrototype::self(ExecState* exec)
+JSObject* JSWorkerPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSWorker>(exec);
+    return getDOMPrototype<JSWorker>(exec, globalObject);
 }
 
 bool JSWorkerPrototype::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -104,9 +104,9 @@ JSWorker::~JSWorker()
 
 }
 
-JSObject* JSWorker::createPrototype(ExecState* exec)
+JSObject* JSWorker::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSWorkerPrototype(JSWorkerPrototype::createStructure(exec->lexicalGlobalObject()->objectPrototype()));
+    return new (exec) JSWorkerPrototype(JSWorkerPrototype::createStructure(globalObject->objectPrototype()));
 }
 
 bool JSWorker::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

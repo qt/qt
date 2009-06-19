@@ -71,7 +71,7 @@ public:
     JSHTMLBlockquoteElementConstructor(ExecState* exec)
         : DOMObject(JSHTMLBlockquoteElementConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
     {
-        putDirect(exec->propertyNames().prototype, JSHTMLBlockquoteElementPrototype::self(exec), None);
+        putDirect(exec->propertyNames().prototype, JSHTMLBlockquoteElementPrototype::self(exec, exec->lexicalGlobalObject()), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -106,9 +106,9 @@ static const HashTable JSHTMLBlockquoteElementPrototypeTable =
 
 const ClassInfo JSHTMLBlockquoteElementPrototype::s_info = { "HTMLBlockquoteElementPrototype", 0, &JSHTMLBlockquoteElementPrototypeTable, 0 };
 
-JSObject* JSHTMLBlockquoteElementPrototype::self(ExecState* exec)
+JSObject* JSHTMLBlockquoteElementPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSHTMLBlockquoteElement>(exec);
+    return getDOMPrototype<JSHTMLBlockquoteElement>(exec, globalObject);
 }
 
 const ClassInfo JSHTMLBlockquoteElement::s_info = { "HTMLBlockquoteElement", &JSHTMLElement::s_info, &JSHTMLBlockquoteElementTable, 0 };
@@ -118,9 +118,9 @@ JSHTMLBlockquoteElement::JSHTMLBlockquoteElement(PassRefPtr<Structure> structure
 {
 }
 
-JSObject* JSHTMLBlockquoteElement::createPrototype(ExecState* exec)
+JSObject* JSHTMLBlockquoteElement::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSHTMLBlockquoteElementPrototype(JSHTMLBlockquoteElementPrototype::createStructure(JSHTMLElementPrototype::self(exec)));
+    return new (exec) JSHTMLBlockquoteElementPrototype(JSHTMLBlockquoteElementPrototype::createStructure(JSHTMLElementPrototype::self(exec, globalObject)));
 }
 
 bool JSHTMLBlockquoteElement::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

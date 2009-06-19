@@ -73,7 +73,7 @@ public:
     JSMediaListConstructor(ExecState* exec)
         : DOMObject(JSMediaListConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
     {
-        putDirect(exec->propertyNames().prototype, JSMediaListPrototype::self(exec), None);
+        putDirect(exec->propertyNames().prototype, JSMediaListPrototype::self(exec, exec->lexicalGlobalObject()), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -111,9 +111,9 @@ static const HashTable JSMediaListPrototypeTable =
 
 const ClassInfo JSMediaListPrototype::s_info = { "MediaListPrototype", 0, &JSMediaListPrototypeTable, 0 };
 
-JSObject* JSMediaListPrototype::self(ExecState* exec)
+JSObject* JSMediaListPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSMediaList>(exec);
+    return getDOMPrototype<JSMediaList>(exec, globalObject);
 }
 
 bool JSMediaListPrototype::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -135,9 +135,9 @@ JSMediaList::~JSMediaList()
 
 }
 
-JSObject* JSMediaList::createPrototype(ExecState* exec)
+JSObject* JSMediaList::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSMediaListPrototype(JSMediaListPrototype::createStructure(exec->lexicalGlobalObject()->objectPrototype()));
+    return new (exec) JSMediaListPrototype(JSMediaListPrototype::createStructure(globalObject->objectPrototype()));
 }
 
 bool JSMediaList::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

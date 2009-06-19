@@ -75,7 +75,7 @@ public:
     JSNodeListConstructor(ExecState* exec)
         : DOMObject(JSNodeListConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
     {
-        putDirect(exec->propertyNames().prototype, JSNodeListPrototype::self(exec), None);
+        putDirect(exec->propertyNames().prototype, JSNodeListPrototype::self(exec, exec->lexicalGlobalObject()), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -111,9 +111,9 @@ static const HashTable JSNodeListPrototypeTable =
 
 const ClassInfo JSNodeListPrototype::s_info = { "NodeListPrototype", 0, &JSNodeListPrototypeTable, 0 };
 
-JSObject* JSNodeListPrototype::self(ExecState* exec)
+JSObject* JSNodeListPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSNodeList>(exec);
+    return getDOMPrototype<JSNodeList>(exec, globalObject);
 }
 
 bool JSNodeListPrototype::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -135,9 +135,9 @@ JSNodeList::~JSNodeList()
 
 }
 
-JSObject* JSNodeList::createPrototype(ExecState* exec)
+JSObject* JSNodeList::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSNodeListPrototype(JSNodeListPrototype::createStructure(exec->lexicalGlobalObject()->objectPrototype()));
+    return new (exec) JSNodeListPrototype(JSNodeListPrototype::createStructure(globalObject->objectPrototype()));
 }
 
 bool JSNodeList::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

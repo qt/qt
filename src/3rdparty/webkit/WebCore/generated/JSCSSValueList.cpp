@@ -73,7 +73,7 @@ public:
     JSCSSValueListConstructor(ExecState* exec)
         : DOMObject(JSCSSValueListConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
     {
-        putDirect(exec->propertyNames().prototype, JSCSSValueListPrototype::self(exec), None);
+        putDirect(exec->propertyNames().prototype, JSCSSValueListPrototype::self(exec, exec->lexicalGlobalObject()), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -109,9 +109,9 @@ static const HashTable JSCSSValueListPrototypeTable =
 
 const ClassInfo JSCSSValueListPrototype::s_info = { "CSSValueListPrototype", 0, &JSCSSValueListPrototypeTable, 0 };
 
-JSObject* JSCSSValueListPrototype::self(ExecState* exec)
+JSObject* JSCSSValueListPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSCSSValueList>(exec);
+    return getDOMPrototype<JSCSSValueList>(exec, globalObject);
 }
 
 bool JSCSSValueListPrototype::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -126,9 +126,9 @@ JSCSSValueList::JSCSSValueList(PassRefPtr<Structure> structure, PassRefPtr<CSSVa
 {
 }
 
-JSObject* JSCSSValueList::createPrototype(ExecState* exec)
+JSObject* JSCSSValueList::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSCSSValueListPrototype(JSCSSValueListPrototype::createStructure(JSCSSValuePrototype::self(exec)));
+    return new (exec) JSCSSValueListPrototype(JSCSSValueListPrototype::createStructure(JSCSSValuePrototype::self(exec, globalObject)));
 }
 
 bool JSCSSValueList::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

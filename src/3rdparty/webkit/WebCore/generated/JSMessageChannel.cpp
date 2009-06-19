@@ -71,9 +71,9 @@ static const HashTable* getJSMessageChannelPrototypeTable(ExecState* exec)
 }
 const ClassInfo JSMessageChannelPrototype::s_info = { "MessageChannelPrototype", 0, 0, getJSMessageChannelPrototypeTable };
 
-JSObject* JSMessageChannelPrototype::self(ExecState* exec)
+JSObject* JSMessageChannelPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSMessageChannel>(exec);
+    return getDOMPrototype<JSMessageChannel>(exec, globalObject);
 }
 
 static const HashTable* getJSMessageChannelTable(ExecState* exec)
@@ -94,9 +94,9 @@ JSMessageChannel::~JSMessageChannel()
 
 }
 
-JSObject* JSMessageChannel::createPrototype(ExecState* exec)
+JSObject* JSMessageChannel::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSMessageChannelPrototype(JSMessageChannelPrototype::createStructure(exec->lexicalGlobalObject()->objectPrototype()));
+    return new (exec) JSMessageChannelPrototype(JSMessageChannelPrototype::createStructure(globalObject->objectPrototype()));
 }
 
 bool JSMessageChannel::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

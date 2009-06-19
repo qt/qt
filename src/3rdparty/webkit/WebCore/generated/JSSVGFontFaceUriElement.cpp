@@ -53,9 +53,9 @@ static const HashTable JSSVGFontFaceUriElementPrototypeTable =
 
 const ClassInfo JSSVGFontFaceUriElementPrototype::s_info = { "SVGFontFaceUriElementPrototype", 0, &JSSVGFontFaceUriElementPrototypeTable, 0 };
 
-JSObject* JSSVGFontFaceUriElementPrototype::self(ExecState* exec)
+JSObject* JSSVGFontFaceUriElementPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSSVGFontFaceUriElement>(exec);
+    return getDOMPrototype<JSSVGFontFaceUriElement>(exec, globalObject);
 }
 
 const ClassInfo JSSVGFontFaceUriElement::s_info = { "SVGFontFaceUriElement", &JSSVGElement::s_info, 0, 0 };
@@ -65,9 +65,9 @@ JSSVGFontFaceUriElement::JSSVGFontFaceUriElement(PassRefPtr<Structure> structure
 {
 }
 
-JSObject* JSSVGFontFaceUriElement::createPrototype(ExecState* exec)
+JSObject* JSSVGFontFaceUriElement::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSSVGFontFaceUriElementPrototype(JSSVGFontFaceUriElementPrototype::createStructure(JSSVGElementPrototype::self(exec)));
+    return new (exec) JSSVGFontFaceUriElementPrototype(JSSVGFontFaceUriElementPrototype::createStructure(JSSVGElementPrototype::self(exec, globalObject)));
 }
 
 
