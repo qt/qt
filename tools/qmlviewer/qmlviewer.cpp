@@ -208,7 +208,7 @@ void QmlViewer::createMenu(QMenuBar *menu, QMenu *flatmenu)
     skinActions->addAction(skinAction);
     skinMenu->addAction(skinAction);
     connect(skinAction, SIGNAL(triggered()), this, SLOT(setScaleSkin()));
-    skinAction = new QAction(tr("Scale view"), parent);
+    skinAction = new QAction(tr("Resize view"), parent);
     skinAction->setCheckable(true);
     skinAction->setChecked(!scaleSkin);
     skinActions->addAction(skinAction);
