@@ -40,18 +40,18 @@ public:
 
     static const ClassInfo s_info;
 
-    static FunctionPrototype* createPrototype(ExecState* exec)
+    static FunctionPrototype* createPrototype(ExecState*, JSGlobalObject* globalObject)
     {
-        return exec->lexicalGlobalObject()->functionPrototype();
+        return globalObject->functionPrototype();
     }
 
-    static PassRefPtr<Structure> createStructure(JSValuePtr prototype)
+    static PassRefPtr<Structure> createStructure(JSValue prototype)
     {
         return Structure::create(prototype, TypeInfo(ObjectType, ImplementsHasInstance));
     }
 
 private:
-    static JSValuePtr lengthGetter(ExecState*, const Identifier&, const PropertySlot&);
+    static JSValue lengthGetter(ExecState*, const Identifier&, const PropertySlot&);
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual CallType getCallData(CallData&);
 

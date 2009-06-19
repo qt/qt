@@ -79,6 +79,9 @@ public:
 
     void _q_onLoadProgressChanged(int);
     void _q_webActionTriggered(bool checked);
+#ifndef NDEBUG
+    void _q_cleanupLeakMessages();
+#endif
     void updateAction(QWebPage::WebAction action);
     void updateNavigationActions();
     void updateEditorActions();
@@ -154,6 +157,7 @@ public:
     QWebPage::LinkDelegationPolicy linkPolicy;
 
     QSize viewportSize;
+    QSize fixedLayoutSize;
     QWebHistory history;
     QWebHitTestResult hitTestResult;
 #ifndef QT_NO_CONTEXTMENU
@@ -162,6 +166,7 @@ public:
     QWebSettings *settings;
     QPalette palette;
     bool editable;
+    bool useFixedLayout;
 
     QAction *actions[QWebPage::WebActionCount];
 

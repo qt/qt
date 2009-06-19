@@ -21,7 +21,7 @@
 #include "config.h"
 
 
-#if ENABLE(SVG) && ENABLE(SVG_FILTERS)
+#if ENABLE(SVG) && ENABLE(FILTERS)
 
 #include "SVGElement.h"
 #include "JSSVGFEMergeElement.h"
@@ -43,7 +43,7 @@ using namespace JSC;
 
 namespace WebCore {
 
-ASSERT_CLASS_FITS_IN_CELL(JSSVGFEMergeElement)
+ASSERT_CLASS_FITS_IN_CELL(JSSVGFEMergeElement);
 
 /* Hash table */
 
@@ -83,9 +83,9 @@ static const HashTable JSSVGFEMergeElementPrototypeTable =
 
 const ClassInfo JSSVGFEMergeElementPrototype::s_info = { "SVGFEMergeElementPrototype", 0, &JSSVGFEMergeElementPrototypeTable, 0 };
 
-JSObject* JSSVGFEMergeElementPrototype::self(ExecState* exec)
+JSObject* JSSVGFEMergeElementPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSSVGFEMergeElement>(exec);
+    return getDOMPrototype<JSSVGFEMergeElement>(exec, globalObject);
 }
 
 bool JSSVGFEMergeElementPrototype::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -100,9 +100,9 @@ JSSVGFEMergeElement::JSSVGFEMergeElement(PassRefPtr<Structure> structure, PassRe
 {
 }
 
-JSObject* JSSVGFEMergeElement::createPrototype(ExecState* exec)
+JSObject* JSSVGFEMergeElement::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSSVGFEMergeElementPrototype(JSSVGFEMergeElementPrototype::createStructure(JSSVGElementPrototype::self(exec)));
+    return new (exec) JSSVGFEMergeElementPrototype(JSSVGFEMergeElementPrototype::createStructure(JSSVGElementPrototype::self(exec, globalObject)));
 }
 
 bool JSSVGFEMergeElement::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -110,68 +110,76 @@ bool JSSVGFEMergeElement::getOwnPropertySlot(ExecState* exec, const Identifier& 
     return getStaticValueSlot<JSSVGFEMergeElement, Base>(exec, &JSSVGFEMergeElementTable, this, propertyName, slot);
 }
 
-JSValuePtr jsSVGFEMergeElementX(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGFEMergeElementX(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGFEMergeElement* imp = static_cast<SVGFEMergeElement*>(static_cast<JSSVGFEMergeElement*>(asObject(slot.slotBase()))->impl());
     RefPtr<SVGAnimatedLength> obj = imp->xAnimated();
     return toJS(exec, obj.get(), imp);
 }
 
-JSValuePtr jsSVGFEMergeElementY(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGFEMergeElementY(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGFEMergeElement* imp = static_cast<SVGFEMergeElement*>(static_cast<JSSVGFEMergeElement*>(asObject(slot.slotBase()))->impl());
     RefPtr<SVGAnimatedLength> obj = imp->yAnimated();
     return toJS(exec, obj.get(), imp);
 }
 
-JSValuePtr jsSVGFEMergeElementWidth(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGFEMergeElementWidth(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGFEMergeElement* imp = static_cast<SVGFEMergeElement*>(static_cast<JSSVGFEMergeElement*>(asObject(slot.slotBase()))->impl());
     RefPtr<SVGAnimatedLength> obj = imp->widthAnimated();
     return toJS(exec, obj.get(), imp);
 }
 
-JSValuePtr jsSVGFEMergeElementHeight(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGFEMergeElementHeight(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGFEMergeElement* imp = static_cast<SVGFEMergeElement*>(static_cast<JSSVGFEMergeElement*>(asObject(slot.slotBase()))->impl());
     RefPtr<SVGAnimatedLength> obj = imp->heightAnimated();
     return toJS(exec, obj.get(), imp);
 }
 
-JSValuePtr jsSVGFEMergeElementResult(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGFEMergeElementResult(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGFEMergeElement* imp = static_cast<SVGFEMergeElement*>(static_cast<JSSVGFEMergeElement*>(asObject(slot.slotBase()))->impl());
     RefPtr<SVGAnimatedString> obj = imp->resultAnimated();
     return toJS(exec, obj.get(), imp);
 }
 
-JSValuePtr jsSVGFEMergeElementClassName(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGFEMergeElementClassName(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGFEMergeElement* imp = static_cast<SVGFEMergeElement*>(static_cast<JSSVGFEMergeElement*>(asObject(slot.slotBase()))->impl());
     RefPtr<SVGAnimatedString> obj = imp->classNameAnimated();
     return toJS(exec, obj.get(), imp);
 }
 
-JSValuePtr jsSVGFEMergeElementStyle(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGFEMergeElementStyle(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGFEMergeElement* imp = static_cast<SVGFEMergeElement*>(static_cast<JSSVGFEMergeElement*>(asObject(slot.slotBase()))->impl());
     return toJS(exec, WTF::getPtr(imp->style()));
 }
 
-JSValuePtr jsSVGFEMergeElementPrototypeFunctionGetPresentationAttribute(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsSVGFEMergeElementPrototypeFunctionGetPresentationAttribute(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSSVGFEMergeElement::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSSVGFEMergeElement::s_info))
         return throwError(exec, TypeError);
     JSSVGFEMergeElement* castedThisObj = static_cast<JSSVGFEMergeElement*>(asObject(thisValue));
     SVGFEMergeElement* imp = static_cast<SVGFEMergeElement*>(castedThisObj->impl());
-    const UString& name = args.at(exec, 0)->toString(exec);
+    const UString& name = args.at(0).toString(exec);
 
 
-    JSC::JSValuePtr result = toJS(exec, WTF::getPtr(imp->getPresentationAttribute(name)));
+    JSC::JSValue result = toJS(exec, WTF::getPtr(imp->getPresentationAttribute(name)));
     return result;
 }
 
 
 }
 
-#endif // ENABLE(SVG) && ENABLE(SVG_FILTERS)
+#endif // ENABLE(SVG) && ENABLE(FILTERS)

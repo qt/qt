@@ -33,16 +33,16 @@ namespace JSC {
 
         typedef char Type;
         static const Type TypeReusable = 1;
+        static const Type TypeInt32    = 2;
         
-        static const Type TypeMaybeNumber = 2;
-        static const Type TypeMaybeString = 4;
-        static const Type TypeMaybeNull = 8;
-        static const Type TypeMaybeBool = 16;
-        static const Type TypeMaybeOther = 32;
+        static const Type TypeMaybeNumber = 0x04;
+        static const Type TypeMaybeString = 0x08;
+        static const Type TypeMaybeNull   = 0x10;
+        static const Type TypeMaybeBool   = 0x20;
+        static const Type TypeMaybeOther  = 0x40;
 
-        static const Type TypeReusableNumber = 3;
-        static const Type TypeStringOrReusableNumber = 4;
-    
+        static const Type TypeBits = TypeMaybeNumber | TypeMaybeString | TypeMaybeNull | TypeMaybeBool | TypeMaybeOther;
+
         explicit ResultType(Type type)
             : m_type(type)
         {
@@ -50,66 +50,86 @@ namespace JSC {
         
         bool isReusable()
         {
-            return (m_type & TypeReusable);
+            return m_type & TypeReusable;
+        }
+
+        bool isInt32()
+        {
+            return m_type & TypeInt32;
         }
 
         bool definitelyIsNumber()
         {
-            return ((m_type & ~TypeReusable) == TypeMaybeNumber);
+            return (m_type & TypeBits) == TypeMaybeNumber;
         }
         
-        bool isNotNumber()
+        bool definitelyIsString()
         {
-            return ((m_type & TypeMaybeNumber) == 0);
-        }
-        
-        bool mightBeNumber()
-        {
-            return !isNotNumber();
+            return (m_type & TypeBits) == TypeMaybeString;
         }
 
+        bool mightBeNumber()
+        {
+            return m_type & TypeMaybeNumber;
+        }
+
+        bool isNotNumber()
+        {
+            return !mightBeNumber();
+        }
+        
         static ResultType nullType()
         {
             return ResultType(TypeMaybeNull);
         }
         
-        static ResultType boolean()
+        static ResultType booleanType()
         {
             return ResultType(TypeMaybeBool);
         }
         
-        static ResultType constNumber()
+        static ResultType numberType()
         {
             return ResultType(TypeMaybeNumber);
         }
         
-        static ResultType reusableNumber()
+        static ResultType numberTypeCanReuse()
         {
             return ResultType(TypeReusable | TypeMaybeNumber);
         }
         
-        static ResultType reusableNumberOrString()
+        static ResultType numberTypeCanReuseIsInt32()
+        {
+            return ResultType(TypeReusable | TypeInt32 | TypeMaybeNumber);
+        }
+        
+        static ResultType stringOrNumberTypeCanReuse()
         {
             return ResultType(TypeReusable | TypeMaybeNumber | TypeMaybeString);
         }
         
-        static ResultType string()
+        static ResultType stringType()
         {
             return ResultType(TypeMaybeString);
         }
         
-        static ResultType unknown()
+        static ResultType unknownType()
         {
-            return ResultType(TypeMaybeNumber | TypeMaybeString | TypeMaybeNull | TypeMaybeBool | TypeMaybeOther);
+            return ResultType(TypeBits);
         }
         
         static ResultType forAdd(ResultType op1, ResultType op2)
         {
             if (op1.definitelyIsNumber() && op2.definitelyIsNumber())
-                return reusableNumber();
-            if (op1.isNotNumber() || op2.isNotNumber())
-                return string();
-            return reusableNumberOrString();
+                return numberTypeCanReuse();
+            if (op1.definitelyIsString() || op2.definitelyIsString())
+                return stringType();
+            return stringOrNumberTypeCanReuse();
+        }
+        
+        static ResultType forBitOp()
+        {
+            return numberTypeCanReuseIsInt32();
         }
 
     private:
@@ -118,8 +138,11 @@ namespace JSC {
     
     struct OperandTypes
     {
-        OperandTypes(ResultType first = ResultType::unknown(), ResultType second = ResultType::unknown())
+        OperandTypes(ResultType first = ResultType::unknownType(), ResultType second = ResultType::unknownType())
         {
+            // We have to initialize one of the int to ensure that
+            // the entire struct is initialized.
+            m_u.i = 0;
             m_u.rds.first = first.m_type;
             m_u.rds.second = second.m_type;
         }

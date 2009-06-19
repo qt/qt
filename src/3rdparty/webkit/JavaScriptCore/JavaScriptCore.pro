@@ -21,13 +21,16 @@ CONFIG(QTDIR_build) {
 }
 
 isEmpty(GENERATED_SOURCES_DIR):GENERATED_SOURCES_DIR = tmp
-GENERATED_SOURCES_DIR_SLASH = $$GENERATED_SOURCES_DIR/
-win32-*: GENERATED_SOURCES_DIR_SLASH ~= s|/|\|
+GENERATED_SOURCES_DIR_SLASH = $${GENERATED_SOURCES_DIR}$${QMAKE_DIR_SEP}
 
 INCLUDEPATH += $$GENERATED_SOURCES_DIR
 
 !CONFIG(QTDIR_build) {
-     OBJECTS_DIR = tmp
+    CONFIG(debug, debug|release) {
+        OBJECTS_DIR = obj/debug
+    } else { # Release
+        OBJECTS_DIR = obj/release
+    }
 }
 
 include($$OUTPUT_DIR/config.pri)
@@ -64,7 +67,7 @@ include(JavaScriptCore.pri)
 
 QMAKE_EXTRA_TARGETS += generated_files
 
-qt-port: lessThan(QT_MINOR_VERSION, 4) {
+lessThan(QT_MINOR_VERSION, 4) {
     DEFINES += QT_BEGIN_NAMESPACE="" QT_END_NAMESPACE=""
 }
 

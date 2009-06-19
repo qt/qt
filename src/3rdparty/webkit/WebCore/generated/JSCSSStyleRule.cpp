@@ -36,7 +36,7 @@ using namespace JSC;
 
 namespace WebCore {
 
-ASSERT_CLASS_FITS_IN_CELL(JSCSSStyleRule)
+ASSERT_CLASS_FITS_IN_CELL(JSCSSStyleRule);
 
 /* Hash table */
 
@@ -74,13 +74,13 @@ public:
     JSCSSStyleRuleConstructor(ExecState* exec)
         : DOMObject(JSCSSStyleRuleConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
     {
-        putDirect(exec->propertyNames().prototype, JSCSSStyleRulePrototype::self(exec), None);
+        putDirect(exec->propertyNames().prototype, JSCSSStyleRulePrototype::self(exec, exec->lexicalGlobalObject()), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
     static const ClassInfo s_info;
 
-    static PassRefPtr<Structure> createStructure(JSValuePtr proto) 
+    static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
         return Structure::create(proto, TypeInfo(ObjectType, ImplementsHasInstance)); 
     }
@@ -109,9 +109,9 @@ static const HashTable JSCSSStyleRulePrototypeTable =
 
 const ClassInfo JSCSSStyleRulePrototype::s_info = { "CSSStyleRulePrototype", 0, &JSCSSStyleRulePrototypeTable, 0 };
 
-JSObject* JSCSSStyleRulePrototype::self(ExecState* exec)
+JSObject* JSCSSStyleRulePrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSCSSStyleRule>(exec);
+    return getDOMPrototype<JSCSSStyleRule>(exec, globalObject);
 }
 
 const ClassInfo JSCSSStyleRule::s_info = { "CSSStyleRule", &JSCSSRule::s_info, &JSCSSStyleRuleTable, 0 };
@@ -121,9 +121,9 @@ JSCSSStyleRule::JSCSSStyleRule(PassRefPtr<Structure> structure, PassRefPtr<CSSSt
 {
 }
 
-JSObject* JSCSSStyleRule::createPrototype(ExecState* exec)
+JSObject* JSCSSStyleRule::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSCSSStyleRulePrototype(JSCSSStyleRulePrototype::createStructure(JSCSSRulePrototype::self(exec)));
+    return new (exec) JSCSSStyleRulePrototype(JSCSSStyleRulePrototype::createStructure(JSCSSRulePrototype::self(exec, globalObject)));
 }
 
 bool JSCSSStyleRule::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -131,28 +131,30 @@ bool JSCSSStyleRule::getOwnPropertySlot(ExecState* exec, const Identifier& prope
     return getStaticValueSlot<JSCSSStyleRule, Base>(exec, &JSCSSStyleRuleTable, this, propertyName, slot);
 }
 
-JSValuePtr jsCSSStyleRuleSelectorText(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsCSSStyleRuleSelectorText(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     CSSStyleRule* imp = static_cast<CSSStyleRule*>(static_cast<JSCSSStyleRule*>(asObject(slot.slotBase()))->impl());
     return jsStringOrNull(exec, imp->selectorText());
 }
 
-JSValuePtr jsCSSStyleRuleStyle(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsCSSStyleRuleStyle(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     CSSStyleRule* imp = static_cast<CSSStyleRule*>(static_cast<JSCSSStyleRule*>(asObject(slot.slotBase()))->impl());
     return toJS(exec, WTF::getPtr(imp->style()));
 }
 
-JSValuePtr jsCSSStyleRuleConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsCSSStyleRuleConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     return static_cast<JSCSSStyleRule*>(asObject(slot.slotBase()))->getConstructor(exec);
 }
-void JSCSSStyleRule::put(ExecState* exec, const Identifier& propertyName, JSValuePtr value, PutPropertySlot& slot)
+void JSCSSStyleRule::put(ExecState* exec, const Identifier& propertyName, JSValue value, PutPropertySlot& slot)
 {
     lookupPut<JSCSSStyleRule, Base>(exec, propertyName, value, &JSCSSStyleRuleTable, this, slot);
 }
 
-void setJSCSSStyleRuleSelectorText(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSCSSStyleRuleSelectorText(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     CSSStyleRule* imp = static_cast<CSSStyleRule*>(static_cast<JSCSSStyleRule*>(thisObject)->impl());
     ExceptionCode ec = 0;
@@ -160,7 +162,7 @@ void setJSCSSStyleRuleSelectorText(ExecState* exec, JSObject* thisObject, JSValu
     setDOMException(exec, ec);
 }
 
-JSValuePtr JSCSSStyleRule::getConstructor(ExecState* exec)
+JSValue JSCSSStyleRule::getConstructor(ExecState* exec)
 {
     return getDOMConstructor<JSCSSStyleRuleConstructor>(exec);
 }

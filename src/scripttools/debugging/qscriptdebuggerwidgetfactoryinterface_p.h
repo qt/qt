@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtSCriptTools module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -61,6 +61,11 @@ class QScriptDebugOutputWidgetInterface;
 class QScriptDebuggerConsoleWidgetInterface;
 class QScriptErrorLogWidgetInterface;
 class QScriptDebuggerCodeFinderWidgetInterface;
+class QScriptDebuggerStackWidgetInterface;
+class QScriptDebuggerScriptsWidgetInterface;
+class QScriptDebuggerLocalsWidgetInterface;
+class QScriptDebuggerCodeWidgetInterface;
+class QScriptBreakpointsWidgetInterface;
 
 class Q_AUTOTEST_EXPORT QScriptDebuggerWidgetFactoryInterface
 {
@@ -71,6 +76,11 @@ public:
     virtual QScriptDebuggerConsoleWidgetInterface *createConsoleWidget() = 0;
     virtual QScriptErrorLogWidgetInterface *createErrorLogWidget() = 0;
     virtual QScriptDebuggerCodeFinderWidgetInterface *createCodeFinderWidget() = 0;
+    virtual QScriptDebuggerStackWidgetInterface *createStackWidget() = 0;
+    virtual QScriptDebuggerScriptsWidgetInterface *createScriptsWidget() = 0;
+    virtual QScriptDebuggerLocalsWidgetInterface *createLocalsWidget() = 0;
+    virtual QScriptDebuggerCodeWidgetInterface *createCodeWidget() = 0;
+    virtual QScriptBreakpointsWidgetInterface *createBreakpointsWidget() = 0;
 };
 
 QT_END_NAMESPACE

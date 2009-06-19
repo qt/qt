@@ -24,6 +24,7 @@
 #include "CSSImageValue.h"
 #include "CSSParser.h"
 #include "CSSProperty.h"
+#include "CSSPropertyLonghand.h"
 #include "CSSPropertyNames.h"
 #include "CSSRule.h"
 #include "CSSStyleSheet.h"
@@ -31,7 +32,6 @@
 #include "Document.h"
 #include "ExceptionCode.h"
 #include "StyledElement.h"
-#include <wtf/StdLibExtras.h>
 
 using namespace std;
 
@@ -81,7 +81,7 @@ CSSMutableStyleDeclaration::CSSMutableStyleDeclaration(CSSRule* parent, const CS
     , m_iteratorCount(0)
 #endif
 {
-    m_properties.reserveCapacity(numProperties);
+    m_properties.reserveInitialCapacity(numProperties);
     for (int i = 0; i < numProperties; ++i) {
         ASSERT(properties[i]);
         m_properties.append(*properties[i]);
@@ -217,9 +217,10 @@ String CSSMutableStyleDeclaration::getPropertyValue(int propertyID) const
             return getLayeredShorthandValue(properties, 6);
         }
         case CSSPropertyWebkitTransformOrigin: {
-            const int properties[2] = { CSSPropertyWebkitTransformOriginX,
-                                        CSSPropertyWebkitTransformOriginY };
-            return getShorthandValue(properties, 2);
+            const int properties[3] = { CSSPropertyWebkitTransformOriginX,
+                                        CSSPropertyWebkitTransformOriginY,
+                                        CSSPropertyWebkitTransformOriginZ };
+            return getShorthandValue(properties, 3);
         }
         case CSSPropertyWebkitTransition: {
             const int properties[4] = { CSSPropertyWebkitTransitionProperty, CSSPropertyWebkitTransitionDuration,
@@ -363,207 +364,9 @@ PassRefPtr<CSSValue> CSSMutableStyleDeclaration::getPropertyCSSValue(int propert
     return property ? property->value() : 0;
 }
 
-struct PropertyLonghand {
-    PropertyLonghand()
-        : m_properties(0)
-        , m_length(0)
-    {
-    }
-
-    PropertyLonghand(const int* firstProperty, unsigned numProperties)
-        : m_properties(firstProperty)
-        , m_length(numProperties)
-    {
-    }
-
-    const int* properties() const { return m_properties; }
-    unsigned length() const { return m_length; }
-
-private:
-    const int* m_properties;
-    unsigned m_length;
-};
-    
-typedef HashMap<int, PropertyLonghand> ShorthandMap;
-
-static void initShorthandMap(ShorthandMap& shorthandMap)
-{
-    #define SET_SHORTHAND_MAP_ENTRY(map, propID, array) \
-        map.set(propID, PropertyLonghand(array, sizeof(array) / sizeof(array[0])))
-
-    // FIXME: The 'font' property has "shorthand nature" but is not parsed as a shorthand.
-
-    // Do not change the order of the following four shorthands, and keep them together.
-    static const int borderProperties[4][3] = {
-        { CSSPropertyBorderTopColor, CSSPropertyBorderTopStyle, CSSPropertyBorderTopWidth },
-        { CSSPropertyBorderRightColor, CSSPropertyBorderRightStyle, CSSPropertyBorderRightWidth },
-        { CSSPropertyBorderBottomColor, CSSPropertyBorderBottomStyle, CSSPropertyBorderBottomWidth },
-        { CSSPropertyBorderLeftColor, CSSPropertyBorderLeftStyle, CSSPropertyBorderLeftWidth }
-    };
-    SET_SHORTHAND_MAP_ENTRY(shorthandMap, CSSPropertyBorderTop, borderProperties[0]);
-    SET_SHORTHAND_MAP_ENTRY(shorthandMap, CSSPropertyBorderRight, borderProperties[1]);
-    SET_SHORTHAND_MAP_ENTRY(shorthandMap, CSSPropertyBorderBottom, borderProperties[2]);
-    SET_SHORTHAND_MAP_ENTRY(shorthandMap, CSSPropertyBorderLeft, borderProperties[3]);
-
-    shorthandMap.set(CSSPropertyBorder, PropertyLonghand(borderProperties[0], sizeof(borderProperties) / sizeof(borderProperties[0][0])));
-
-    static const int borderColorProperties[] = {
-        CSSPropertyBorderTopColor,
-        CSSPropertyBorderRightColor,
-        CSSPropertyBorderBottomColor,
-        CSSPropertyBorderLeftColor
-    };
-    SET_SHORTHAND_MAP_ENTRY(shorthandMap, CSSPropertyBorderColor, borderColorProperties);
-
-    static const int borderStyleProperties[] = {
-        CSSPropertyBorderTopStyle,
-        CSSPropertyBorderRightStyle,
-        CSSPropertyBorderBottomStyle,
-        CSSPropertyBorderLeftStyle
-    };
-    SET_SHORTHAND_MAP_ENTRY(shorthandMap, CSSPropertyBorderStyle, borderStyleProperties);
-
-    static const int borderWidthProperties[] = {
-        CSSPropertyBorderTopWidth,
-        CSSPropertyBorderRightWidth,
-        CSSPropertyBorderBottomWidth,
-        CSSPropertyBorderLeftWidth
-    };
-    SET_SHORTHAND_MAP_ENTRY(shorthandMap, CSSPropertyBorderWidth, borderWidthProperties);
-
-    static const int backgroundPositionProperties[] = { CSSPropertyBackgroundPositionX, CSSPropertyBackgroundPositionY };
-    SET_SHORTHAND_MAP_ENTRY(shorthandMap, CSSPropertyBackgroundPosition, backgroundPositionProperties);
-
-    static const int borderSpacingProperties[] = { CSSPropertyWebkitBorderHorizontalSpacing, CSSPropertyWebkitBorderVerticalSpacing };
-    SET_SHORTHAND_MAP_ENTRY(shorthandMap, CSSPropertyBorderSpacing, borderSpacingProperties);
-
-    static const int listStyleProperties[] = {
-        CSSPropertyListStyleImage,
-        CSSPropertyListStylePosition,
-        CSSPropertyListStyleType
-    };
-    SET_SHORTHAND_MAP_ENTRY(shorthandMap, CSSPropertyListStyle, listStyleProperties);
-
-    static const int marginProperties[] = {
-        CSSPropertyMarginTop,
-        CSSPropertyMarginRight,
-        CSSPropertyMarginBottom,
-        CSSPropertyMarginLeft
-    };
-    SET_SHORTHAND_MAP_ENTRY(shorthandMap, CSSPropertyMargin, marginProperties);
-
-    static const int marginCollapseProperties[] = { CSSPropertyWebkitMarginTopCollapse, CSSPropertyWebkitMarginBottomCollapse };
-    SET_SHORTHAND_MAP_ENTRY(shorthandMap, CSSPropertyWebkitMarginCollapse, marginCollapseProperties);
-
-    static const int marqueeProperties[] = {
-        CSSPropertyWebkitMarqueeDirection,
-        CSSPropertyWebkitMarqueeIncrement,
-        CSSPropertyWebkitMarqueeRepetition,
-        CSSPropertyWebkitMarqueeStyle,
-        CSSPropertyWebkitMarqueeSpeed
-    };
-    SET_SHORTHAND_MAP_ENTRY(shorthandMap, CSSPropertyWebkitMarquee, marqueeProperties);
-
-    static const int outlineProperties[] = {
-        CSSPropertyOutlineColor,
-        CSSPropertyOutlineOffset,
-        CSSPropertyOutlineStyle,
-        CSSPropertyOutlineWidth
-    };
-    SET_SHORTHAND_MAP_ENTRY(shorthandMap, CSSPropertyOutline, outlineProperties);
-
-    static const int paddingProperties[] = {
-        CSSPropertyPaddingTop,
-        CSSPropertyPaddingRight,
-        CSSPropertyPaddingBottom,
-        CSSPropertyPaddingLeft
-    };
-    SET_SHORTHAND_MAP_ENTRY(shorthandMap, CSSPropertyPadding, paddingProperties);
-
-    static const int textStrokeProperties[] = { CSSPropertyWebkitTextStrokeColor, CSSPropertyWebkitTextStrokeWidth };
-    SET_SHORTHAND_MAP_ENTRY(shorthandMap, CSSPropertyWebkitTextStroke, textStrokeProperties);
-
-    static const int backgroundProperties[] = {
-        CSSPropertyBackgroundAttachment,
-        CSSPropertyWebkitBackgroundClip,
-        CSSPropertyBackgroundColor,
-        CSSPropertyBackgroundImage,
-        CSSPropertyWebkitBackgroundOrigin,
-        CSSPropertyBackgroundPositionX,
-        CSSPropertyBackgroundPositionY,
-        CSSPropertyBackgroundRepeat,
-    };
-    SET_SHORTHAND_MAP_ENTRY(shorthandMap, CSSPropertyBackground, backgroundProperties);
-
-    static const int columnsProperties[] = { CSSPropertyWebkitColumnWidth, CSSPropertyWebkitColumnCount };
-    SET_SHORTHAND_MAP_ENTRY(shorthandMap, CSSPropertyWebkitColumns, columnsProperties);
-
-    static const int columnRuleProperties[] = {
-        CSSPropertyWebkitColumnRuleColor,
-        CSSPropertyWebkitColumnRuleStyle,
-        CSSPropertyWebkitColumnRuleWidth
-    };
-    SET_SHORTHAND_MAP_ENTRY(shorthandMap, CSSPropertyWebkitColumnRule, columnRuleProperties);
-
-    static const int overflowProperties[] = { CSSPropertyOverflowX, CSSPropertyOverflowY };
-    SET_SHORTHAND_MAP_ENTRY(shorthandMap, CSSPropertyOverflow, overflowProperties);
-
-    static const int borderRadiusProperties[] = {
-        CSSPropertyWebkitBorderTopRightRadius,
-        CSSPropertyWebkitBorderTopLeftRadius,
-        CSSPropertyWebkitBorderBottomLeftRadius,
-        CSSPropertyWebkitBorderBottomRightRadius
-    };
-    SET_SHORTHAND_MAP_ENTRY(shorthandMap, CSSPropertyWebkitBorderRadius, borderRadiusProperties);
-
-    static const int maskPositionProperties[] = { CSSPropertyWebkitMaskPositionX, CSSPropertyWebkitMaskPositionY };
-    SET_SHORTHAND_MAP_ENTRY(shorthandMap, CSSPropertyWebkitMaskPosition, maskPositionProperties);
-
-    static const int maskProperties[] = {
-        CSSPropertyWebkitMaskAttachment,
-        CSSPropertyWebkitMaskClip,
-        CSSPropertyWebkitMaskImage,
-        CSSPropertyWebkitMaskOrigin,
-        CSSPropertyWebkitMaskPositionX,
-        CSSPropertyWebkitMaskPositionY,
-        CSSPropertyWebkitMaskRepeat,
-    };
-    SET_SHORTHAND_MAP_ENTRY(shorthandMap, CSSPropertyWebkitMask, maskProperties);
-
-    static const int animationProperties[] = {
-        CSSPropertyWebkitAnimationName,
-        CSSPropertyWebkitAnimationDuration,
-        CSSPropertyWebkitAnimationTimingFunction,
-        CSSPropertyWebkitAnimationDelay,
-        CSSPropertyWebkitAnimationIterationCount,
-        CSSPropertyWebkitAnimationDirection
-    };
-    SET_SHORTHAND_MAP_ENTRY(shorthandMap, CSSPropertyWebkitAnimation, animationProperties);
-
-    static const int transitionProperties[] = {
-        CSSPropertyWebkitTransitionProperty,
-        CSSPropertyWebkitTransitionDuration,
-        CSSPropertyWebkitTransitionTimingFunction,
-        CSSPropertyWebkitTransitionDelay
-    };
-    SET_SHORTHAND_MAP_ENTRY(shorthandMap, CSSPropertyWebkitTransition, transitionProperties);
-
-    static const int transformOriginProperties[] = {
-        CSSPropertyWebkitTransformOriginX,
-        CSSPropertyWebkitTransformOriginY
-    };
-    SET_SHORTHAND_MAP_ENTRY(shorthandMap, CSSPropertyWebkitTransformOrigin, transformOriginProperties);
-    
-    #undef SET_SHORTHAND_MAP_ENTRY
-}
-
 bool CSSMutableStyleDeclaration::removeShorthandProperty(int propertyID, bool notifyChanged) 
 {
-    DEFINE_STATIC_LOCAL(ShorthandMap, shorthandMap, ());
-    if (shorthandMap.isEmpty())
-        initShorthandMap(shorthandMap);
-
-    PropertyLonghand longhand = shorthandMap.get(propertyID);
+    CSSPropertyLonghand longhand = longhandForProperty(propertyID);
     if (longhand.length()) {
         removePropertiesInSet(longhand.properties(), longhand.length(), notifyChanged);
         return true;
@@ -594,12 +397,12 @@ String CSSMutableStyleDeclaration::removeProperty(int propertyID, bool notifyCha
     m_properties.remove(foundProperty - m_properties.data());
 
     if (notifyChanged)
-        setChanged();
+        setNeedsStyleRecalc();
 
     return value;
 }
 
-void CSSMutableStyleDeclaration::setChanged()
+void CSSMutableStyleDeclaration::setNeedsStyleRecalc()
 {
     if (m_node) {
         // FIXME: Ideally, this should be factored better and there
@@ -607,10 +410,10 @@ void CSSMutableStyleDeclaration::setChanged()
         // for inline style declarations that handles this
         bool isInlineStyleDeclaration = m_node->isStyledElement() && this == static_cast<StyledElement*>(m_node)->inlineStyleDecl();
         if (isInlineStyleDeclaration) {
-            m_node->setChanged(InlineStyleChange);
+            m_node->setNeedsStyleRecalc(InlineStyleChange);
             static_cast<StyledElement*>(m_node)->invalidateStyleAttribute();
         } else
-            m_node->setChanged(FullStyleChange);
+            m_node->setNeedsStyleRecalc(FullStyleChange);
         return;
     }
 
@@ -671,7 +474,7 @@ bool CSSMutableStyleDeclaration::setProperty(int propertyID, const String& value
         // CSS DOM requires raising SYNTAX_ERR here, but this is too dangerous for compatibility,
         // see <http://bugs.webkit.org/show_bug.cgi?id=7296>.
     } else if (notifyChanged)
-        setChanged();
+        setNeedsStyleRecalc();
 
     return success;
 }
@@ -695,7 +498,7 @@ bool CSSMutableStyleDeclaration::setProperty(int propertyID, int value, bool imp
     CSSProperty property(propertyID, CSSPrimitiveValue::createIdentifier(value), important);
     setPropertyInternal(property);
     if (notifyChanged)
-        setChanged();
+        setNeedsStyleRecalc();
     return true;
 }
 
@@ -704,7 +507,7 @@ void CSSMutableStyleDeclaration::setStringProperty(int propertyId, const String 
     ASSERT(!m_iteratorCount);
 
     setPropertyInternal(CSSProperty(propertyId, CSSPrimitiveValue::create(value, type), important));
-    setChanged();
+    setNeedsStyleRecalc();
 }
 
 void CSSMutableStyleDeclaration::setImageProperty(int propertyId, const String& url, bool important)
@@ -712,7 +515,7 @@ void CSSMutableStyleDeclaration::setImageProperty(int propertyId, const String& 
     ASSERT(!m_iteratorCount);
 
     setPropertyInternal(CSSProperty(propertyId, CSSImageValue::create(url), important));
-    setChanged();
+    setNeedsStyleRecalc();
 }
 
 void CSSMutableStyleDeclaration::parseDeclaration(const String& styleDeclaration)
@@ -722,7 +525,7 @@ void CSSMutableStyleDeclaration::parseDeclaration(const String& styleDeclaration
     m_properties.clear();
     CSSParser parser(useStrictParsing());
     parser.parseDeclaration(this, styleDeclaration);
-    setChanged();
+    setNeedsStyleRecalc();
 }
 
 void CSSMutableStyleDeclaration::addParsedProperties(const CSSProperty* const* properties, int numProperties)
@@ -741,7 +544,7 @@ void CSSMutableStyleDeclaration::addParsedProperties(const CSSProperty* const* p
                 m_variableDependentValueCount++;
         }
     }
-    // FIXME: This probably should have a call to setChanged() if something changed. We may also wish to add
+    // FIXME: This probably should have a call to setNeedsStyleRecalc() if something changed. We may also wish to add
     // a notifyChanged argument to this function to follow the model of other functions in this class.
 }
 
@@ -823,7 +626,7 @@ void CSSMutableStyleDeclaration::setCssText(const String& text, ExceptionCode& e
     CSSParser parser(useStrictParsing());
     parser.parseDeclaration(this, text);
     // FIXME: Detect syntax errors and set ec.
-    setChanged();
+    setNeedsStyleRecalc();
 }
 
 void CSSMutableStyleDeclaration::merge(CSSMutableStyleDeclaration* other, bool argOverridesOnConflict)
@@ -841,7 +644,7 @@ void CSSMutableStyleDeclaration::merge(CSSMutableStyleDeclaration* other, bool a
         } else
             m_properties.append(toMerge);
     }
-    // FIXME: This probably should have a call to setChanged() if something changed. We may also wish to add
+    // FIXME: This probably should have a call to setNeedsStyleRecalc() if something changed. We may also wish to add
     // a notifyChanged argument to this function to follow the model of other functions in this class.
 }
 
@@ -899,8 +702,8 @@ void CSSMutableStyleDeclaration::removePropertiesInSet(const int* set, unsigned 
     for (unsigned i = 0; i < length; ++i)
         toRemove.add(set[i]);
     
-    Vector<CSSProperty> newProperties;
-    newProperties.reserveCapacity(m_properties.size());
+    Vector<CSSProperty, 4> newProperties;
+    newProperties.reserveInitialCapacity(m_properties.size());
     
     unsigned size = m_properties.size();
     for (unsigned n = 0; n < size; ++n) {
@@ -917,7 +720,7 @@ void CSSMutableStyleDeclaration::removePropertiesInSet(const int* set, unsigned 
     m_properties = newProperties;
     
     if (changed && notifyChanged)
-        setChanged();
+        setNeedsStyleRecalc();
 }
 
 PassRefPtr<CSSMutableStyleDeclaration> CSSMutableStyleDeclaration::makeMutable()

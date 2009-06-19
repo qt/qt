@@ -35,7 +35,7 @@ using namespace JSC;
 
 namespace WebCore {
 
-ASSERT_CLASS_FITS_IN_CELL(JSHTMLFrameSetElement)
+ASSERT_CLASS_FITS_IN_CELL(JSHTMLFrameSetElement);
 
 /* Hash table */
 
@@ -73,13 +73,13 @@ public:
     JSHTMLFrameSetElementConstructor(ExecState* exec)
         : DOMObject(JSHTMLFrameSetElementConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
     {
-        putDirect(exec->propertyNames().prototype, JSHTMLFrameSetElementPrototype::self(exec), None);
+        putDirect(exec->propertyNames().prototype, JSHTMLFrameSetElementPrototype::self(exec, exec->lexicalGlobalObject()), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
     static const ClassInfo s_info;
 
-    static PassRefPtr<Structure> createStructure(JSValuePtr proto) 
+    static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
         return Structure::create(proto, TypeInfo(ObjectType, ImplementsHasInstance)); 
     }
@@ -108,9 +108,9 @@ static const HashTable JSHTMLFrameSetElementPrototypeTable =
 
 const ClassInfo JSHTMLFrameSetElementPrototype::s_info = { "HTMLFrameSetElementPrototype", 0, &JSHTMLFrameSetElementPrototypeTable, 0 };
 
-JSObject* JSHTMLFrameSetElementPrototype::self(ExecState* exec)
+JSObject* JSHTMLFrameSetElementPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSHTMLFrameSetElement>(exec);
+    return getDOMPrototype<JSHTMLFrameSetElement>(exec, globalObject);
 }
 
 const ClassInfo JSHTMLFrameSetElement::s_info = { "HTMLFrameSetElement", &JSHTMLElement::s_info, &JSHTMLFrameSetElementTable, 0 };
@@ -120,9 +120,9 @@ JSHTMLFrameSetElement::JSHTMLFrameSetElement(PassRefPtr<Structure> structure, Pa
 {
 }
 
-JSObject* JSHTMLFrameSetElement::createPrototype(ExecState* exec)
+JSObject* JSHTMLFrameSetElement::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSHTMLFrameSetElementPrototype(JSHTMLFrameSetElementPrototype::createStructure(JSHTMLElementPrototype::self(exec)));
+    return new (exec) JSHTMLFrameSetElementPrototype(JSHTMLFrameSetElementPrototype::createStructure(JSHTMLElementPrototype::self(exec, globalObject)));
 }
 
 bool JSHTMLFrameSetElement::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -134,40 +134,42 @@ bool JSHTMLFrameSetElement::getOwnPropertySlot(ExecState* exec, const Identifier
     return getStaticValueSlot<JSHTMLFrameSetElement, Base>(exec, &JSHTMLFrameSetElementTable, this, propertyName, slot);
 }
 
-JSValuePtr jsHTMLFrameSetElementCols(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLFrameSetElementCols(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     HTMLFrameSetElement* imp = static_cast<HTMLFrameSetElement*>(static_cast<JSHTMLFrameSetElement*>(asObject(slot.slotBase()))->impl());
     return jsString(exec, imp->cols());
 }
 
-JSValuePtr jsHTMLFrameSetElementRows(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLFrameSetElementRows(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     HTMLFrameSetElement* imp = static_cast<HTMLFrameSetElement*>(static_cast<JSHTMLFrameSetElement*>(asObject(slot.slotBase()))->impl());
     return jsString(exec, imp->rows());
 }
 
-JSValuePtr jsHTMLFrameSetElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLFrameSetElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     return static_cast<JSHTMLFrameSetElement*>(asObject(slot.slotBase()))->getConstructor(exec);
 }
-void JSHTMLFrameSetElement::put(ExecState* exec, const Identifier& propertyName, JSValuePtr value, PutPropertySlot& slot)
+void JSHTMLFrameSetElement::put(ExecState* exec, const Identifier& propertyName, JSValue value, PutPropertySlot& slot)
 {
     lookupPut<JSHTMLFrameSetElement, Base>(exec, propertyName, value, &JSHTMLFrameSetElementTable, this, slot);
 }
 
-void setJSHTMLFrameSetElementCols(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSHTMLFrameSetElementCols(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     HTMLFrameSetElement* imp = static_cast<HTMLFrameSetElement*>(static_cast<JSHTMLFrameSetElement*>(thisObject)->impl());
     imp->setCols(valueToStringWithNullCheck(exec, value));
 }
 
-void setJSHTMLFrameSetElementRows(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSHTMLFrameSetElementRows(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     HTMLFrameSetElement* imp = static_cast<HTMLFrameSetElement*>(static_cast<JSHTMLFrameSetElement*>(thisObject)->impl());
     imp->setRows(valueToStringWithNullCheck(exec, value));
 }
 
-JSValuePtr JSHTMLFrameSetElement::getConstructor(ExecState* exec)
+JSValue JSHTMLFrameSetElement::getConstructor(ExecState* exec)
 {
     return getDOMConstructor<JSHTMLFrameSetElementConstructor>(exec);
 }

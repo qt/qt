@@ -53,13 +53,13 @@ public:
         SignalSlotDialogClass->resize(617, 535);
         vboxLayout = new QVBoxLayout(SignalSlotDialogClass);
         vboxLayout->setSpacing(6);
-        vboxLayout->setMargin(11);
+        vboxLayout->setContentsMargins(11, 11, 11, 11);
         vboxLayout->setObjectName(QString::fromUtf8("vboxLayout"));
         slotGroupBox = new QGroupBox(SignalSlotDialogClass);
         slotGroupBox->setObjectName(QString::fromUtf8("slotGroupBox"));
         vboxLayout1 = new QVBoxLayout(slotGroupBox);
         vboxLayout1->setSpacing(6);
-        vboxLayout1->setMargin(11);
+        vboxLayout1->setContentsMargins(11, 11, 11, 11);
         vboxLayout1->setObjectName(QString::fromUtf8("vboxLayout1"));
         slotListView = new QListView(slotGroupBox);
         slotListView->setObjectName(QString::fromUtf8("slotListView"));
@@ -93,7 +93,7 @@ public:
         signalGroupBox->setObjectName(QString::fromUtf8("signalGroupBox"));
         vboxLayout2 = new QVBoxLayout(signalGroupBox);
         vboxLayout2->setSpacing(6);
-        vboxLayout2->setMargin(11);
+        vboxLayout2->setContentsMargins(11, 11, 11, 11);
         vboxLayout2->setObjectName(QString::fromUtf8("vboxLayout2"));
         signalListView = new QListView(signalGroupBox);
         signalListView->setObjectName(QString::fromUtf8("signalListView"));

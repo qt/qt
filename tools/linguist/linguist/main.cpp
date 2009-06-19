@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the Qt Linguist of the Qt Toolkit.
 **
@@ -34,12 +34,13 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
 
 #include "mainwindow.h"
+#include "globals.h"
 
 #include <QtCore/QFile>
 #include <QtCore/QLibraryInfo>
@@ -92,13 +93,11 @@ int main(int argc, char **argv)
 
     app.setOrganizationName(QLatin1String("Trolltech"));
     app.setApplicationName(QLatin1String("Linguist"));
-    QString keybase(QString::number( (QT_VERSION >> 16) & 0xff ) +
-        QLatin1Char('.') + QString::number( (QT_VERSION >> 8) & 0xff ) + QLatin1Char('/') );
 
     QSettings config;
 
     QWidget tmp;
-    tmp.restoreGeometry(config.value(keybase + QLatin1String("Geometry/WindowGeometry")).toByteArray());
+    tmp.restoreGeometry(config.value(settingPath("Geometry/WindowGeometry")).toByteArray());
 
     QSplashScreen *splash = 0;
     int screenId = QApplication::desktop()->screenNumber(tmp.geometry().center());

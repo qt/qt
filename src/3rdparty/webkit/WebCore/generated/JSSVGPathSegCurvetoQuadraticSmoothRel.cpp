@@ -36,7 +36,7 @@ using namespace JSC;
 
 namespace WebCore {
 
-ASSERT_CLASS_FITS_IN_CELL(JSSVGPathSegCurvetoQuadraticSmoothRel)
+ASSERT_CLASS_FITS_IN_CELL(JSSVGPathSegCurvetoQuadraticSmoothRel);
 
 /* Hash table */
 
@@ -70,9 +70,9 @@ static const HashTable JSSVGPathSegCurvetoQuadraticSmoothRelPrototypeTable =
 
 const ClassInfo JSSVGPathSegCurvetoQuadraticSmoothRelPrototype::s_info = { "SVGPathSegCurvetoQuadraticSmoothRelPrototype", 0, &JSSVGPathSegCurvetoQuadraticSmoothRelPrototypeTable, 0 };
 
-JSObject* JSSVGPathSegCurvetoQuadraticSmoothRelPrototype::self(ExecState* exec)
+JSObject* JSSVGPathSegCurvetoQuadraticSmoothRelPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSSVGPathSegCurvetoQuadraticSmoothRel>(exec);
+    return getDOMPrototype<JSSVGPathSegCurvetoQuadraticSmoothRel>(exec, globalObject);
 }
 
 const ClassInfo JSSVGPathSegCurvetoQuadraticSmoothRel::s_info = { "SVGPathSegCurvetoQuadraticSmoothRel", &JSSVGPathSeg::s_info, &JSSVGPathSegCurvetoQuadraticSmoothRelTable, 0 };
@@ -82,9 +82,9 @@ JSSVGPathSegCurvetoQuadraticSmoothRel::JSSVGPathSegCurvetoQuadraticSmoothRel(Pas
 {
 }
 
-JSObject* JSSVGPathSegCurvetoQuadraticSmoothRel::createPrototype(ExecState* exec)
+JSObject* JSSVGPathSegCurvetoQuadraticSmoothRel::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSSVGPathSegCurvetoQuadraticSmoothRelPrototype(JSSVGPathSegCurvetoQuadraticSmoothRelPrototype::createStructure(JSSVGPathSegPrototype::self(exec)));
+    return new (exec) JSSVGPathSegCurvetoQuadraticSmoothRelPrototype(JSSVGPathSegCurvetoQuadraticSmoothRelPrototype::createStructure(JSSVGPathSegPrototype::self(exec, globalObject)));
 }
 
 bool JSSVGPathSegCurvetoQuadraticSmoothRel::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -92,35 +92,37 @@ bool JSSVGPathSegCurvetoQuadraticSmoothRel::getOwnPropertySlot(ExecState* exec, 
     return getStaticValueSlot<JSSVGPathSegCurvetoQuadraticSmoothRel, Base>(exec, &JSSVGPathSegCurvetoQuadraticSmoothRelTable, this, propertyName, slot);
 }
 
-JSValuePtr jsSVGPathSegCurvetoQuadraticSmoothRelX(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGPathSegCurvetoQuadraticSmoothRelX(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGPathSegCurvetoQuadraticSmoothRel* imp = static_cast<SVGPathSegCurvetoQuadraticSmoothRel*>(static_cast<JSSVGPathSegCurvetoQuadraticSmoothRel*>(asObject(slot.slotBase()))->impl());
     return jsNumber(exec, imp->x());
 }
 
-JSValuePtr jsSVGPathSegCurvetoQuadraticSmoothRelY(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGPathSegCurvetoQuadraticSmoothRelY(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGPathSegCurvetoQuadraticSmoothRel* imp = static_cast<SVGPathSegCurvetoQuadraticSmoothRel*>(static_cast<JSSVGPathSegCurvetoQuadraticSmoothRel*>(asObject(slot.slotBase()))->impl());
     return jsNumber(exec, imp->y());
 }
 
-void JSSVGPathSegCurvetoQuadraticSmoothRel::put(ExecState* exec, const Identifier& propertyName, JSValuePtr value, PutPropertySlot& slot)
+void JSSVGPathSegCurvetoQuadraticSmoothRel::put(ExecState* exec, const Identifier& propertyName, JSValue value, PutPropertySlot& slot)
 {
     lookupPut<JSSVGPathSegCurvetoQuadraticSmoothRel, Base>(exec, propertyName, value, &JSSVGPathSegCurvetoQuadraticSmoothRelTable, this, slot);
 }
 
-void setJSSVGPathSegCurvetoQuadraticSmoothRelX(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSSVGPathSegCurvetoQuadraticSmoothRelX(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     SVGPathSegCurvetoQuadraticSmoothRel* imp = static_cast<SVGPathSegCurvetoQuadraticSmoothRel*>(static_cast<JSSVGPathSegCurvetoQuadraticSmoothRel*>(thisObject)->impl());
-    imp->setX(value->toFloat(exec));
+    imp->setX(value.toFloat(exec));
     if (static_cast<JSSVGPathSegCurvetoQuadraticSmoothRel*>(thisObject)->context())
         static_cast<JSSVGPathSegCurvetoQuadraticSmoothRel*>(thisObject)->context()->svgAttributeChanged(static_cast<JSSVGPathSegCurvetoQuadraticSmoothRel*>(thisObject)->impl()->associatedAttributeName());
 }
 
-void setJSSVGPathSegCurvetoQuadraticSmoothRelY(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSSVGPathSegCurvetoQuadraticSmoothRelY(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     SVGPathSegCurvetoQuadraticSmoothRel* imp = static_cast<SVGPathSegCurvetoQuadraticSmoothRel*>(static_cast<JSSVGPathSegCurvetoQuadraticSmoothRel*>(thisObject)->impl());
-    imp->setY(value->toFloat(exec));
+    imp->setY(value.toFloat(exec));
     if (static_cast<JSSVGPathSegCurvetoQuadraticSmoothRel*>(thisObject)->context())
         static_cast<JSSVGPathSegCurvetoQuadraticSmoothRel*>(thisObject)->context()->svgAttributeChanged(static_cast<JSSVGPathSegCurvetoQuadraticSmoothRel*>(thisObject)->impl()->associatedAttributeName());
 }

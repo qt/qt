@@ -30,7 +30,6 @@
 #include "Event.h"
 #include "EventException.h"
 #include "EventNames.h"
-#include "Frame.h"
 #include "XMLHttpRequest.h"
 #include "XMLHttpRequestProgressEvent.h"
 #include <wtf/Assertions.h>
@@ -40,6 +39,11 @@ namespace WebCore {
 XMLHttpRequestUpload::XMLHttpRequestUpload(XMLHttpRequest* xmlHttpRequest)
     : m_xmlHttpRequest(xmlHttpRequest)
 {
+}
+
+bool XMLHttpRequestUpload::hasListeners() const
+{
+    return m_onAbortListener || m_onErrorListener || m_onLoadListener || m_onLoadStartListener || m_onProgressListener || !m_eventListeners.isEmpty();
 }
 
 ScriptExecutionContext* XMLHttpRequestUpload::scriptExecutionContext() const

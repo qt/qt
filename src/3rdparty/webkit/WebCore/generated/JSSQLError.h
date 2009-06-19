@@ -21,6 +21,9 @@
 #ifndef JSSQLError_h
 #define JSSQLError_h
 
+
+#if ENABLE(DATABASE)
+
 #include "JSDOMBinding.h"
 #include <runtime/JSGlobalObject.h>
 #include <runtime/ObjectPrototype.h>
@@ -34,12 +37,12 @@ class JSSQLError : public DOMObject {
 public:
     JSSQLError(PassRefPtr<JSC::Structure>, PassRefPtr<SQLError>);
     virtual ~JSSQLError();
-    static JSC::JSObject* createPrototype(JSC::ExecState*);
+    static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
     static const JSC::ClassInfo s_info;
 
-    static PassRefPtr<JSC::Structure> createStructure(JSC::JSValuePtr prototype)
+    static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
     {
         return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType));
     }
@@ -50,12 +53,13 @@ private:
     RefPtr<SQLError> m_impl;
 };
 
-JSC::JSValuePtr toJS(JSC::ExecState*, SQLError*);
-SQLError* toSQLError(JSC::JSValuePtr);
+JSC::JSValue toJS(JSC::ExecState*, SQLError*);
+SQLError* toSQLError(JSC::JSValue);
 
 class JSSQLErrorPrototype : public JSC::JSObject {
+    typedef JSC::JSObject Base;
 public:
-    static JSC::JSObject* self(JSC::ExecState*);
+    static JSC::JSObject* self(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
     static const JSC::ClassInfo s_info;
     JSSQLErrorPrototype(PassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
@@ -63,9 +67,11 @@ public:
 
 // Attributes
 
-JSC::JSValuePtr jsSQLErrorCode(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValuePtr jsSQLErrorMessage(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsSQLErrorCode(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsSQLErrorMessage(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
 
 } // namespace WebCore
+
+#endif // ENABLE(DATABASE)
 
 #endif

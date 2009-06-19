@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -266,7 +266,8 @@ public:
     void markDirty(QGraphicsItem *item, const QRectF &rect = QRectF(), bool invalidateChildren = false,
                    bool maybeDirtyClipPath = false, bool force = false, bool ignoreOpacity = false,
                    bool removingItemFromScene = false);
-    void processDirtyItemsRecursive(QGraphicsItem *item, bool dirtyAncestorContainsChildren = false);
+    void processDirtyItemsRecursive(QGraphicsItem *item, bool dirtyAncestorContainsChildren = false,
+                                    qreal parentOpacity = qreal(1.0));
 
     inline void resetDirtyItem(QGraphicsItem *item)
     {
@@ -278,6 +279,8 @@ public:
         item->d_ptr->needsRepaint = QRectF();
         item->d_ptr->allChildrenDirty = 0;
         item->d_ptr->fullUpdatePending = 0;
+        item->d_ptr->ignoreVisible = 0;
+        item->d_ptr->ignoreOpacity = 0;
     }
 
     QStyle *style;

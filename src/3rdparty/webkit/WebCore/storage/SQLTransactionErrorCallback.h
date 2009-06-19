@@ -29,6 +29,8 @@
 #ifndef SQLTransactionErrorCallback_h
 #define SQLTransactionErrorCallback_h
 
+#if ENABLE(DATABASE)
+
 #include <wtf/Threading.h>
 
 namespace WebCore {
@@ -38,10 +40,12 @@ namespace WebCore {
     class SQLTransactionErrorCallback : public ThreadSafeShared<SQLTransactionErrorCallback> {
     public:
         virtual ~SQLTransactionErrorCallback() { }
-        virtual bool handleEvent(SQLError*) = 0;
+        virtual void handleEvent(SQLError*) = 0;
     };
     
 }
+
+#endif
 
 #endif // SQLTransactionErrorCallback_h
 

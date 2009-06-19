@@ -22,11 +22,11 @@
 #ifndef SVGFEConvolveMatrix_h
 #define SVGFEConvolveMatrix_h
 
-#if ENABLE(SVG) && ENABLE(SVG_FILTERS)
+#if ENABLE(SVG) && ENABLE(FILTERS)
 #include "FilterEffect.h"
 #include "FloatPoint.h"
 #include "FloatSize.h"
-
+#include "Filter.h"
 #include <wtf/Vector.h>
 
 namespace WebCore {
@@ -68,8 +68,8 @@ namespace WebCore {
         bool preserveAlpha() const;
         void setPreserveAlpha(bool);
 
-        virtual void apply();
-        virtual void dump();
+        void apply(Filter*);
+        void dump();
         TextStream& externalRepresentation(TextStream& ts) const;
 
     private:
@@ -90,6 +90,6 @@ namespace WebCore {
 
 } // namespace WebCore
 
-#endif // ENABLE(SVG) && ENABLE(SVG_FILTERS)
+#endif // ENABLE(SVG) && ENABLE(FILTERS)
 
 #endif // SVGFEConvolveMatrix_h

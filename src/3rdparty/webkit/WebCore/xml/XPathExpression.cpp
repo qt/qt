@@ -1,6 +1,6 @@
 /*
- * Copyright 2005 Frerich Raabe <raabe@kde.org>
- * Copyright (C) 2006 Apple Computer, Inc.
+ * Copyright (C) 2005 Frerich Raabe <raabe@kde.org>
+ * Copyright (C) 2006, 2009 Apple Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -30,9 +30,8 @@
 #if ENABLE(XPATH)
 
 #include "Document.h"
-#include "ExceptionCode.h"
-#include "Node.h"
 #include "PlatformString.h"
+#include "XPathException.h"
 #include "XPathExpressionNode.h"
 #include "XPathNSResolver.h"
 #include "XPathParser.h"
@@ -67,16 +66,20 @@ PassRefPtr<XPathResult> XPathExpression::evaluate(Node* contextNode, unsigned sh
         return 0;
     }
 
-    EventTargetNode* eventTarget = contextNode->ownerDocument()
-        ? contextNode->ownerDocument()
-        : static_cast<EventTargetNode*>(contextNode);
-
     EvaluationContext& evaluationContext = Expression::evaluationContext();
     evaluationContext.node = contextNode;
     evaluationContext.size = 1;
     evaluationContext.position = 1;
-    RefPtr<XPathResult> result = XPathResult::create(eventTarget, m_topExpression->evaluate());
+    evaluationContext.hadTypeConversionError = false;
+    RefPtr<XPathResult> result = XPathResult::create(contextNode->document(), m_topExpression->evaluate());
     evaluationContext.node = 0; // Do not hold a reference to the context node, as this may prevent the whole document from being destroyed in time.
+
+    if (evaluationContext.hadTypeConversionError) {
+        // It is not specified what to do if type conversion fails while evaluating an expression, and INVALID_EXPRESSION_ERR is not exactly right
+        // when the failure happens in an otherwise valid expression because of a variable. But XPathEvaluator does not support variables, so it's close enough.
+        ec = XPathException::INVALID_EXPRESSION_ERR;
+        return 0;
+    }
 
     if (type != XPathResult::ANY_TYPE) {
         ec = 0;

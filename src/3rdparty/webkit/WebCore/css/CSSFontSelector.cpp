@@ -65,12 +65,12 @@ CSSFontSelector::CSSFontSelector(Document* document)
     // seem to be any such guarantee.
 
     ASSERT(m_document);
-    FontCache::addClient(this);
+    fontCache()->addClient(this);
 }
 
 CSSFontSelector::~CSSFontSelector()
 {
-    FontCache::removeClient(this);
+    fontCache()->removeClient(this);
     deleteAllValues(m_fontFaces);
     deleteAllValues(m_locallyInstalledFontFaces);
     deleteAllValues(m_fonts);
@@ -93,7 +93,7 @@ void CSSFontSelector::addFontFaceRule(const CSSFontFaceRule* fontFaceRule)
     RefPtr<CSSValue> fontFamily = style->getPropertyCSSValue(CSSPropertyFontFamily);
     RefPtr<CSSValue> src = style->getPropertyCSSValue(CSSPropertySrc);
     RefPtr<CSSValue> unicodeRange = style->getPropertyCSSValue(CSSPropertyUnicodeRange);
-    if (!fontFamily || !src || !fontFamily->isValueList() || !src->isValueList() || unicodeRange && !unicodeRange->isValueList())
+    if (!fontFamily || !src || !fontFamily->isValueList() || !src->isValueList() || (unicodeRange && !unicodeRange->isValueList()))
         return;
 
     CSSValueList* familyList = static_cast<CSSValueList*>(fontFamily.get());
@@ -233,10 +233,7 @@ void CSSFontSelector::addFontFaceRule(const CSSFontFaceRule* fontFaceRule)
     int srcLength = srcList->length();
 
     bool foundLocal = false;
-
-#if ENABLE(SVG_FONTS)
     bool foundSVGFont = false;
-#endif
 
     for (int i = 0; i < srcLength; i++) {
         // An item in the list either specifies a string (local font name) or a URL (remote font to download).
@@ -246,9 +243,10 @@ void CSSFontSelector::addFontFaceRule(const CSSFontFaceRule* fontFaceRule)
 #if ENABLE(SVG_FONTS)
         foundSVGFont = item->isSVGFontFaceSrc() || item->svgFontFaceElement();
 #endif
-
         if (!item->isLocal()) {
-            if (item->isSupportedFormat() && m_document) {
+            Settings* settings = m_document ? m_document->frame() ? m_document->frame()->settings() : 0 : 0;
+            bool allowDownloading = foundSVGFont || (settings && settings->downloadableBinaryFontsEnabled());
+            if (allowDownloading && item->isSupportedFormat() && m_document) {
                 CachedFont* cachedFont = m_document->docLoader()->requestFont(item->resource());
                 if (cachedFont) {
 #if ENABLE(SVG_FONTS)
@@ -338,7 +336,7 @@ void CSSFontSelector::addFontFaceRule(const CSSFontFaceRule* fontFaceRule)
             Vector<RefPtr<CSSFontFace> >* familyLocallyInstalledFaces;
 
             Vector<unsigned> locallyInstalledFontsTraitsMasks;
-            FontCache::getTraitsInFamily(familyName, locallyInstalledFontsTraitsMasks);
+            fontCache()->getTraitsInFamily(familyName, locallyInstalledFontsTraitsMasks);
             unsigned numLocallyInstalledFaces = locallyInstalledFontsTraitsMasks.size();
             if (numLocallyInstalledFaces) {
                 familyLocallyInstalledFaces = new Vector<RefPtr<CSSFontFace> >;
@@ -397,7 +395,7 @@ static FontData* fontDataForGenericFamily(Document* document, const FontDescript
         genericFamily = settings->standardFontFamily();
 
     if (!genericFamily.isEmpty())
-        return FontCache::getCachedFontData(FontCache::getCachedFontPlatformData(fontDescription, genericFamily));
+        return fontCache()->getCachedFontData(fontCache()->getCachedFontPlatformData(fontDescription, genericFamily));
 
     return 0;
 }
@@ -433,7 +431,9 @@ static inline bool compareFontFaces(CSSFontFace* first, CSSFontFace* second)
     // or the next darker otherwise."
     // For '400', we made up our own rule (which then '500' follows).
 
-    static const FontTraitsMask weightFallbackRules[9][8] = {
+    static const unsigned fallbackRuleSets = 9;
+    static const unsigned rulesPerSet = 8;
+    static const FontTraitsMask weightFallbackRuleSets[fallbackRuleSets][rulesPerSet] = {
         { FontWeight200Mask, FontWeight300Mask, FontWeight400Mask, FontWeight500Mask, FontWeight600Mask, FontWeight700Mask, FontWeight800Mask, FontWeight900Mask },
         { FontWeight100Mask, FontWeight300Mask, FontWeight400Mask, FontWeight500Mask, FontWeight600Mask, FontWeight700Mask, FontWeight800Mask, FontWeight900Mask },
         { FontWeight200Mask, FontWeight100Mask, FontWeight400Mask, FontWeight500Mask, FontWeight600Mask, FontWeight700Mask, FontWeight800Mask, FontWeight900Mask },
@@ -445,14 +445,16 @@ static inline bool compareFontFaces(CSSFontFace* first, CSSFontFace* second)
         { FontWeight800Mask, FontWeight700Mask, FontWeight600Mask, FontWeight500Mask, FontWeight400Mask, FontWeight300Mask, FontWeight200Mask, FontWeight100Mask }
     };
 
-    const FontTraitsMask* weightFallbackRule = weightFallbackRules[0];
+    unsigned ruleSetIndex = 0;
     unsigned w = FontWeight100Bit;
     while (!(desiredTraitsMaskForComparison & (1 << w))) {
         w++;
-        weightFallbackRule += 8;
+        ruleSetIndex++;
     }
 
-    for (unsigned i = 0; i < 8; ++i) {
+    ASSERT(ruleSetIndex < fallbackRuleSets);
+    const FontTraitsMask* weightFallbackRule = weightFallbackRuleSets[ruleSetIndex];
+    for (unsigned i = 0; i < rulesPerSet; ++i) {
         if (secondTraitsMask & weightFallbackRule[i])
             return false;
         if (firstTraitsMask & weightFallbackRule[i])

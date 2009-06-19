@@ -37,7 +37,7 @@ using namespace JSC;
 
 namespace WebCore {
 
-ASSERT_CLASS_FITS_IN_CELL(JSFileList)
+ASSERT_CLASS_FITS_IN_CELL(JSFileList);
 
 /* Hash table */
 
@@ -74,13 +74,13 @@ public:
     JSFileListConstructor(ExecState* exec)
         : DOMObject(JSFileListConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
     {
-        putDirect(exec->propertyNames().prototype, JSFileListPrototype::self(exec), None);
+        putDirect(exec->propertyNames().prototype, JSFileListPrototype::self(exec, exec->lexicalGlobalObject()), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
     static const ClassInfo s_info;
 
-    static PassRefPtr<Structure> createStructure(JSValuePtr proto) 
+    static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
         return Structure::create(proto, TypeInfo(ObjectType, ImplementsHasInstance)); 
     }
@@ -110,9 +110,9 @@ static const HashTable JSFileListPrototypeTable =
 
 const ClassInfo JSFileListPrototype::s_info = { "FileListPrototype", 0, &JSFileListPrototypeTable, 0 };
 
-JSObject* JSFileListPrototype::self(ExecState* exec)
+JSObject* JSFileListPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSFileList>(exec);
+    return getDOMPrototype<JSFileList>(exec, globalObject);
 }
 
 bool JSFileListPrototype::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -131,12 +131,11 @@ JSFileList::JSFileList(PassRefPtr<Structure> structure, PassRefPtr<FileList> imp
 JSFileList::~JSFileList()
 {
     forgetDOMObject(*Heap::heap(this)->globalData(), m_impl.get());
-
 }
 
-JSObject* JSFileList::createPrototype(ExecState* exec)
+JSObject* JSFileList::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSFileListPrototype(JSFileListPrototype::createStructure(exec->lexicalGlobalObject()->objectPrototype()));
+    return new (exec) JSFileListPrototype(JSFileListPrototype::createStructure(globalObject->objectPrototype()));
 }
 
 bool JSFileList::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -164,13 +163,14 @@ bool JSFileList::getOwnPropertySlot(ExecState* exec, unsigned propertyName, Prop
     return getOwnPropertySlot(exec, Identifier::from(exec, propertyName), slot);
 }
 
-JSValuePtr jsFileListLength(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsFileListLength(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     FileList* imp = static_cast<FileList*>(static_cast<JSFileList*>(asObject(slot.slotBase()))->impl());
     return jsNumber(exec, imp->length());
 }
 
-JSValuePtr jsFileListConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsFileListConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     return static_cast<JSFileList*>(asObject(slot.slotBase()))->getConstructor(exec);
 }
@@ -181,41 +181,42 @@ void JSFileList::getPropertyNames(ExecState* exec, PropertyNameArray& propertyNa
      Base::getPropertyNames(exec, propertyNames);
 }
 
-JSValuePtr JSFileList::getConstructor(ExecState* exec)
+JSValue JSFileList::getConstructor(ExecState* exec)
 {
     return getDOMConstructor<JSFileListConstructor>(exec);
 }
 
-JSValuePtr jsFileListPrototypeFunctionItem(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsFileListPrototypeFunctionItem(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSFileList::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSFileList::s_info))
         return throwError(exec, TypeError);
     JSFileList* castedThisObj = static_cast<JSFileList*>(asObject(thisValue));
     FileList* imp = static_cast<FileList*>(castedThisObj->impl());
-    int index = args.at(exec, 0)->toInt32(exec);
+    int index = args.at(0).toInt32(exec);
     if (index < 0) {
         setDOMException(exec, INDEX_SIZE_ERR);
         return jsUndefined();
     }
 
 
-    JSC::JSValuePtr result = toJS(exec, WTF::getPtr(imp->item(index)));
+    JSC::JSValue result = toJS(exec, WTF::getPtr(imp->item(index)));
     return result;
 }
 
 
-JSValuePtr JSFileList::indexGetter(ExecState* exec, const Identifier& propertyName, const PropertySlot& slot)
+JSValue JSFileList::indexGetter(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     JSFileList* thisObj = static_cast<JSFileList*>(asObject(slot.slotBase()));
     return toJS(exec, static_cast<FileList*>(thisObj->impl())->item(slot.index()));
 }
-JSC::JSValuePtr toJS(JSC::ExecState* exec, FileList* object)
+JSC::JSValue toJS(JSC::ExecState* exec, FileList* object)
 {
     return getDOMObjectWrapper<JSFileList>(exec, object);
 }
-FileList* toFileList(JSC::JSValuePtr value)
+FileList* toFileList(JSC::JSValue value)
 {
-    return value->isObject(&JSFileList::s_info) ? static_cast<JSFileList*>(asObject(value))->impl() : 0;
+    return value.isObject(&JSFileList::s_info) ? static_cast<JSFileList*>(asObject(value))->impl() : 0;
 }
 
 }

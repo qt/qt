@@ -148,9 +148,6 @@ extern const WebCore::QualifiedName varTag;
 extern const WebCore::QualifiedName videoTag;
 extern const WebCore::QualifiedName wbrTag;
 extern const WebCore::QualifiedName xmpTag;
-
-
-WebCore::QualifiedName** getHTMLTags(size_t* size);
 // Attributes
 extern const WebCore::QualifiedName abbrAttr;
 extern const WebCore::QualifiedName acceptAttr;
@@ -171,6 +168,7 @@ extern const WebCore::QualifiedName aria_pressedAttr;
 extern const WebCore::QualifiedName aria_valuemaxAttr;
 extern const WebCore::QualifiedName aria_valueminAttr;
 extern const WebCore::QualifiedName aria_valuenowAttr;
+extern const WebCore::QualifiedName autobufferAttr;
 extern const WebCore::QualifiedName autocompleteAttr;
 extern const WebCore::QualifiedName autofocusAttr;
 extern const WebCore::QualifiedName autoplayAttr;
@@ -289,6 +287,8 @@ extern const WebCore::QualifiedName onmouseoutAttr;
 extern const WebCore::QualifiedName onmouseoverAttr;
 extern const WebCore::QualifiedName onmouseupAttr;
 extern const WebCore::QualifiedName onmousewheelAttr;
+extern const WebCore::QualifiedName onofflineAttr;
+extern const WebCore::QualifiedName ononlineAttr;
 extern const WebCore::QualifiedName onpasteAttr;
 extern const WebCore::QualifiedName onresetAttr;
 extern const WebCore::QualifiedName onresizeAttr;
@@ -327,6 +327,7 @@ extern const WebCore::QualifiedName selectedAttr;
 extern const WebCore::QualifiedName shapeAttr;
 extern const WebCore::QualifiedName sizeAttr;
 extern const WebCore::QualifiedName spanAttr;
+extern const WebCore::QualifiedName spellcheckAttr;
 extern const WebCore::QualifiedName srcAttr;
 extern const WebCore::QualifiedName standbyAttr;
 extern const WebCore::QualifiedName startAttr;
@@ -351,10 +352,10 @@ extern const WebCore::QualifiedName vlinkAttr;
 extern const WebCore::QualifiedName vspaceAttr;
 extern const WebCore::QualifiedName widthAttr;
 extern const WebCore::QualifiedName wrapAttr;
-
-
-WebCore::QualifiedName** getHTMLAttr(size_t* size);
 #endif
+
+WebCore::QualifiedName** getHTMLTags(size_t* size);
+WebCore::QualifiedName** getHTMLAttrs(size_t* size);
 
 void init();
 

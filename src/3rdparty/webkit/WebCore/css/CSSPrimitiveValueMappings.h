@@ -29,7 +29,12 @@
 
 #include "CSSPrimitiveValue.h"
 #include "CSSValueKeywords.h"
-#include "RenderStyle.h"
+#include "GraphicsTypes.h"
+#include "Path.h"
+#include "RenderStyleConstants.h"
+#include "SVGRenderStyleDefs.h"
+#include "TextDirection.h"
+#include "ThemeTypes.h"
 
 namespace WebCore {
 
@@ -216,6 +221,15 @@ template<> inline CSSPrimitiveValue::CSSPrimitiveValue(ControlPart e)
         case MediaSliderThumbPart:
             m_value.ident = CSSValueMediaSliderthumb;
             break;
+        case MediaTimelineContainerPart:
+            m_value.ident = CSSValueMediaTimelineContainer;
+            break;
+        case MediaCurrentTimePart:
+            m_value.ident = CSSValueMediaCurrentTimeDisplay;
+            break;
+        case MediaTimeRemainingPart:
+            m_value.ident = CSSValueMediaTimeRemainingDisplay;
+            break;
         case MenulistPart:
             m_value.ident = CSSValueMenulist;
             break;
@@ -283,13 +297,13 @@ template<> inline CSSPrimitiveValue::CSSPrimitiveValue(EFillBox e)
 {
     switch (e) {
         case BorderFillBox:
-            m_value.ident = CSSValueBorder;
+            m_value.ident = CSSValueBorderBox;
             break;
         case PaddingFillBox:
-            m_value.ident = CSSValuePadding;
+            m_value.ident = CSSValuePaddingBox;
             break;
         case ContentFillBox:
-            m_value.ident = CSSValueContent;
+            m_value.ident = CSSValueContentBox;
             break;
         case TextFillBox:
             m_value.ident = CSSValueText;
@@ -301,10 +315,13 @@ template<> inline CSSPrimitiveValue::operator EFillBox() const
 {
     switch (m_value.ident) {
         case CSSValueBorder:
+        case CSSValueBorderBox:
             return BorderFillBox;
         case CSSValuePadding:
+        case CSSValuePaddingBox:
             return PaddingFillBox;
         case CSSValueContent:
+        case CSSValueContentBox:
             return ContentFillBox;
         case CSSValueText:
             return TextFillBox;

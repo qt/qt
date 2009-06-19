@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtSql module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -72,10 +72,11 @@ public:
     uint isOpen : 1;
     uint isOpenError : 1;
     QSqlError error;
+    QSql::NumericalPrecisionPolicy precisionPolicy;
 };
 
 inline QSqlDriverPrivate::QSqlDriverPrivate()
-    : QObjectPrivate(), isOpen(false), isOpenError(false)
+    : QObjectPrivate(), isOpen(false), isOpenError(false), precisionPolicy(QSql::LowPrecisionDouble)
 {
 }
 
@@ -910,6 +911,30 @@ QString QSqlDriver::stripDelimitersImplementation(const QString &identifier, Ide
         ret = identifier;
     }
     return ret;
+}
+
+/*!
+  Sets the default numerical precision policy used by queries created
+  by this driver to \a precisionPolicy.
+
+  Note: Setting the default precision policy to \a precisionPolicy
+  doesn't affect any currently active queries.
+
+  \sa QSql::NumericalPrecisionPolicy, numericalPrecisionPolicy(), QSqlQuery::setNumericalPrecisionPolicy(), QSqlQuery::numericalPrecisionPolicy()
+*/
+void QSqlDriver::setNumericalPrecisionPolicy(QSql::NumericalPrecisionPolicy precisionPolicy)
+{
+    d_func()->precisionPolicy = precisionPolicy;
+}
+
+/*!
+  Returns the current default precision policy for the database connection.
+
+  \sa QSql::NumericalPrecisionPolicy, setNumericalPrecisionPolicy(), QSqlQuery::numericalPrecisionPolicy(), QSqlQuery::setNumericalPrecisionPolicy()
+*/
+QSql::NumericalPrecisionPolicy QSqlDriver::numericalPrecisionPolicy() const
+{
+    return d_func()->precisionPolicy;
 }
 
 QT_END_NAMESPACE

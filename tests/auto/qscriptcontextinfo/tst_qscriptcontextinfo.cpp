@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the test suite of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -95,6 +95,7 @@ private slots:
     void builtinFunctionNames();
     void nullContext();
     void streaming();
+    void assignmentAndComparison();
 };
 
 tst_QScriptContextInfo::tst_QScriptContextInfo()
@@ -551,6 +552,25 @@ void tst_QScriptContextInfo::streaming()
             QCOMPARE(info.functionMetaIndex(), info2.functionMetaIndex());
         }
     }
+}
+
+void tst_QScriptContextInfo::assignmentAndComparison()
+{
+    QScriptEngine eng;
+    eng.globalObject().setProperty("getContextInfoList", eng.newFunction(getContextInfoList));
+    QString fileName = "ciao.qs";
+    int lineNumber = 456;
+    QScriptValue ret = eng.evaluate("function bar(a, b, c) {\n return getContextInfoList();\n}\nbar()",
+                                    fileName, lineNumber);
+    QList<QScriptContextInfo> lst = qscriptvalue_cast<QList<QScriptContextInfo> >(ret);
+    QCOMPARE(lst.size(), 3);
+    QScriptContextInfo ci = lst.at(0);
+    QScriptContextInfo same = ci;
+    QVERIFY(ci == same);
+    QVERIFY(!(ci != same));
+    QScriptContextInfo other = lst.at(1);
+    QVERIFY(!(ci == other));
+    QVERIFY(ci != other);
 }
 
 QTEST_MAIN(tst_QScriptContextInfo)

@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the test suite of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -1905,6 +1905,22 @@ void tst_QScriptExtQObject::cppConnectAndDisconnect()
         m_myObject->clearDisconnectedSignal();
         QVERIFY(qScriptDisconnect(m_myObject, SIGNAL(mySignal()), QScriptValue(), fun));
         QCOMPARE(m_myObject->disconnectedSignal().constData(), SIGNAL(mySignal()));
+    }
+
+    // bad args
+    QVERIFY(!qScriptConnect(0, SIGNAL(foo()), QScriptValue(), fun));
+    QVERIFY(!qScriptConnect(&edit, 0, QScriptValue(), fun));
+    QVERIFY(!qScriptConnect(&edit, SIGNAL(foo()), QScriptValue(), fun));
+    QVERIFY(!qScriptConnect(&edit, SIGNAL(textChanged(QString)), QScriptValue(), QScriptValue()));
+    QVERIFY(!qScriptDisconnect(0, SIGNAL(foo()), QScriptValue(), fun));
+    QVERIFY(!qScriptDisconnect(&edit, 0, QScriptValue(), fun));
+    QVERIFY(!qScriptDisconnect(&edit, SIGNAL(foo()), QScriptValue(), fun));
+    QVERIFY(!qScriptDisconnect(&edit, SIGNAL(textChanged(QString)), QScriptValue(), QScriptValue()));
+    {
+        QScriptEngine eng2;
+        QScriptValue receiverInDifferentEngine = eng2.newObject();
+        QVERIFY(!qScriptConnect(&edit, SIGNAL(textChanged(QString)), receiverInDifferentEngine, fun));
+        QVERIFY(!qScriptDisconnect(&edit, SIGNAL(textChanged(QString)), receiverInDifferentEngine, fun));
     }
 }
 

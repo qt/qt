@@ -34,7 +34,7 @@ using namespace JSC;
 
 namespace WebCore {
 
-ASSERT_CLASS_FITS_IN_CELL(JSHTMLParagraphElement)
+ASSERT_CLASS_FITS_IN_CELL(JSHTMLParagraphElement);
 
 /* Hash table */
 
@@ -71,13 +71,13 @@ public:
     JSHTMLParagraphElementConstructor(ExecState* exec)
         : DOMObject(JSHTMLParagraphElementConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
     {
-        putDirect(exec->propertyNames().prototype, JSHTMLParagraphElementPrototype::self(exec), None);
+        putDirect(exec->propertyNames().prototype, JSHTMLParagraphElementPrototype::self(exec, exec->lexicalGlobalObject()), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
     static const ClassInfo s_info;
 
-    static PassRefPtr<Structure> createStructure(JSValuePtr proto) 
+    static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
         return Structure::create(proto, TypeInfo(ObjectType, ImplementsHasInstance)); 
     }
@@ -106,9 +106,9 @@ static const HashTable JSHTMLParagraphElementPrototypeTable =
 
 const ClassInfo JSHTMLParagraphElementPrototype::s_info = { "HTMLParagraphElementPrototype", 0, &JSHTMLParagraphElementPrototypeTable, 0 };
 
-JSObject* JSHTMLParagraphElementPrototype::self(ExecState* exec)
+JSObject* JSHTMLParagraphElementPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSHTMLParagraphElement>(exec);
+    return getDOMPrototype<JSHTMLParagraphElement>(exec, globalObject);
 }
 
 const ClassInfo JSHTMLParagraphElement::s_info = { "HTMLParagraphElement", &JSHTMLElement::s_info, &JSHTMLParagraphElementTable, 0 };
@@ -118,9 +118,9 @@ JSHTMLParagraphElement::JSHTMLParagraphElement(PassRefPtr<Structure> structure, 
 {
 }
 
-JSObject* JSHTMLParagraphElement::createPrototype(ExecState* exec)
+JSObject* JSHTMLParagraphElement::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSHTMLParagraphElementPrototype(JSHTMLParagraphElementPrototype::createStructure(JSHTMLElementPrototype::self(exec)));
+    return new (exec) JSHTMLParagraphElementPrototype(JSHTMLParagraphElementPrototype::createStructure(JSHTMLElementPrototype::self(exec, globalObject)));
 }
 
 bool JSHTMLParagraphElement::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -128,28 +128,29 @@ bool JSHTMLParagraphElement::getOwnPropertySlot(ExecState* exec, const Identifie
     return getStaticValueSlot<JSHTMLParagraphElement, Base>(exec, &JSHTMLParagraphElementTable, this, propertyName, slot);
 }
 
-JSValuePtr jsHTMLParagraphElementAlign(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLParagraphElementAlign(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     HTMLParagraphElement* imp = static_cast<HTMLParagraphElement*>(static_cast<JSHTMLParagraphElement*>(asObject(slot.slotBase()))->impl());
     return jsString(exec, imp->align());
 }
 
-JSValuePtr jsHTMLParagraphElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLParagraphElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     return static_cast<JSHTMLParagraphElement*>(asObject(slot.slotBase()))->getConstructor(exec);
 }
-void JSHTMLParagraphElement::put(ExecState* exec, const Identifier& propertyName, JSValuePtr value, PutPropertySlot& slot)
+void JSHTMLParagraphElement::put(ExecState* exec, const Identifier& propertyName, JSValue value, PutPropertySlot& slot)
 {
     lookupPut<JSHTMLParagraphElement, Base>(exec, propertyName, value, &JSHTMLParagraphElementTable, this, slot);
 }
 
-void setJSHTMLParagraphElementAlign(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSHTMLParagraphElementAlign(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     HTMLParagraphElement* imp = static_cast<HTMLParagraphElement*>(static_cast<JSHTMLParagraphElement*>(thisObject)->impl());
     imp->setAlign(valueToStringWithNullCheck(exec, value));
 }
 
-JSValuePtr JSHTMLParagraphElement::getConstructor(ExecState* exec)
+JSValue JSHTMLParagraphElement::getConstructor(ExecState* exec)
 {
     return getDOMConstructor<JSHTMLParagraphElementConstructor>(exec);
 }

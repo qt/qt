@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -158,6 +158,10 @@ QByteArray QItemEditorFactory::valuePropertyName(QVariant::Type type) const
 */
 QItemEditorFactory::~QItemEditorFactory()
 {
+    //we make sure we delete all the QItemEditorCreatorBase
+    //this has to be done only once, hence the QSet
+    QSet<QItemEditorCreatorBase*> set = creatorMap.values().toSet();
+    qDeleteAll(set);
 }
 
 /*!
@@ -170,8 +174,16 @@ QItemEditorFactory::~QItemEditorFactory()
 */
 void QItemEditorFactory::registerEditor(QVariant::Type type, QItemEditorCreatorBase *creator)
 {
-   delete creatorMap.value(type, 0);
-   creatorMap[type] = creator;
+    QHash<QVariant::Type, QItemEditorCreatorBase *>::iterator it = creatorMap.find(type);
+    if (it != creatorMap.end()) {
+        QItemEditorCreatorBase *oldCreator = it.value();
+        Q_ASSERT(oldCreator);
+        creatorMap.erase(it);
+        if (!creatorMap.values().contains(oldCreator))
+            delete oldCreator; // if it is no more in use we can delete it
+    }
+
+    creatorMap[type] = creator;
 }
 
 class QDefaultItemEditorFactory : public QItemEditorFactory

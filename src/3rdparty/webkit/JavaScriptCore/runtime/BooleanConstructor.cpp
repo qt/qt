@@ -41,7 +41,7 @@ BooleanConstructor::BooleanConstructor(ExecState* exec, PassRefPtr<Structure> st
 JSObject* constructBoolean(ExecState* exec, const ArgList& args)
 {
     BooleanObject* obj = new (exec) BooleanObject(exec->lexicalGlobalObject()->booleanObjectStructure());
-    obj->setInternalValue(jsBoolean(args.at(exec, 0)->toBoolean(exec)));
+    obj->setInternalValue(jsBoolean(args.at(0).toBoolean(exec)));
     return obj;
 }
 
@@ -57,9 +57,9 @@ ConstructType BooleanConstructor::getConstructData(ConstructData& constructData)
 }
 
 // ECMA 15.6.1
-static JSValuePtr callBooleanConstructor(ExecState* exec, JSObject*, JSValuePtr, const ArgList& args)
+static JSValue JSC_HOST_CALL callBooleanConstructor(ExecState* exec, JSObject*, JSValue, const ArgList& args)
 {
-    return jsBoolean(args.at(exec, 0)->toBoolean(exec));
+    return jsBoolean(args.at(0).toBoolean(exec));
 }
 
 CallType BooleanConstructor::getCallData(CallData& callData)
@@ -68,7 +68,7 @@ CallType BooleanConstructor::getCallData(CallData& callData)
     return CallTypeHost;
 }
 
-JSObject* constructBooleanFromImmediateBoolean(ExecState* exec, JSValuePtr immediateBooleanValue)
+JSObject* constructBooleanFromImmediateBoolean(ExecState* exec, JSValue immediateBooleanValue)
 {
     BooleanObject* obj = new (exec) BooleanObject(exec->lexicalGlobalObject()->booleanObjectStructure());
     obj->setInternalValue(immediateBooleanValue);

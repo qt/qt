@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtOpenGL module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -129,9 +129,11 @@
 
     Brushes & image drawing are implementations of "qcolorp vec4 srcPixel()":
         qglslImageSrcFragShader
+        qglslImageSrcWithPatternFragShader
         qglslNonPremultipliedImageSrcFragShader
         qglslSolidBrushSrcFragShader
         qglslTextureBrushSrcFragShader
+        qglslTextureBrushWithPatternFragShader
         qglslPatternBrushSrcFragShader
         qglslLinearGradientBrushSrcFragShader
         qglslRadialGradientBrushSrcFragShader
@@ -265,7 +267,9 @@ public:
     enum MaskType {NoMask, PixelMask, SubPixelMask, SubPixelWithGammaMask};
     enum PixelSrcType {
         ImageSrc = Qt::TexturePattern+1,
-        NonPremultipliedImageSrc = Qt::TexturePattern+2
+        NonPremultipliedImageSrc = Qt::TexturePattern+2,
+        PatternSrc = Qt::TexturePattern+3,
+        TextureSrcWithPattern = Qt::TexturePattern+4
     };
 
     // There are optimisations we can do, depending on the brush transform:
@@ -313,9 +317,11 @@ public:
         MainFragmentShader,
 
         ImageSrcFragmentShader,
+        ImageSrcWithPatternFragmentShader,
         NonPremultipliedImageSrcFragmentShader,
         SolidBrushSrcFragmentShader,
         TextureBrushSrcFragmentShader,
+        TextureBrushSrcWithPatternFragmentShader,
         PatternBrushSrcFragmentShader,
         LinearGradientBrushSrcFragmentShader,
         RadialGradientBrushSrcFragmentShader,

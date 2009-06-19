@@ -56,7 +56,7 @@ public:
         const jchar *uc = getUCharactersFromJStringInEnv (e, s);
         {
             JSLock lock(false);
-            _rep = UString((UChar *)uc,_size).rep();
+            _rep = UString(reinterpret_cast<const UChar*>(uc), _size).rep();
         }
         releaseUCharactersForJStringInEnv (e, s, uc);
     }
@@ -112,10 +112,10 @@ class JavaField : public Field
 public:
     JavaField (JNIEnv *env, jobject aField);
 
-    virtual JSValuePtr valueFromInstance(ExecState *exec, const Instance *instance) const;
-    virtual void setValueToInstance(ExecState *exec, const Instance *instance, JSValuePtr aValue) const;
+    virtual JSValue valueFromInstance(ExecState *exec, const Instance *instance) const;
+    virtual void setValueToInstance(ExecState *exec, const Instance *instance, JSValue aValue) const;
     
-    virtual const char *name() const { return _name.UTF8String(); }
+    UString::Rep* name() const { return ((UString)_name).rep(); }
     virtual RuntimeType type() const { return _type.UTF8String(); }
 
     JNIType getJNIType() const { return _JNIType; }
@@ -137,7 +137,7 @@ public:
     JavaMethod(JNIEnv* env, jobject aMethod);
     ~JavaMethod();
 
-    virtual const char *name() const { return _name.UTF8String(); };
+    UString::Rep* name() const { return ((UString)_name).rep(); }
     RuntimeType returnType() const { return _returnType.UTF8String(); };
     JavaParameter* parameterAt(int i) const { return &_parameters[i]; };
     int numParameters() const { return _numParameters; };
@@ -168,13 +168,13 @@ public:
 
     RootObject* rootObject() const;
 
-    virtual void setValueAt(ExecState *exec, unsigned int index, JSValuePtr aValue) const;
-    virtual JSValuePtr valueAt(ExecState *exec, unsigned int index) const;
+    virtual void setValueAt(ExecState *exec, unsigned int index, JSValue aValue) const;
+    virtual JSValue valueAt(ExecState *exec, unsigned int index) const;
     virtual unsigned int getLength() const;
     
     jobject javaArray() const { return _array->_instance; }
 
-    static JSValuePtr convertJObjectToArray (ExecState* exec, jobject anObject, const char* type, PassRefPtr<RootObject>);
+    static JSValue convertJObjectToArray (ExecState* exec, jobject anObject, const char* type, PassRefPtr<RootObject>);
 
 private:
     RefPtr<JObjectWrapper> _array;

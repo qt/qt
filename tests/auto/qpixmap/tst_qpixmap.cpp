@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the test suite of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -47,6 +47,8 @@
 #include <qmatrix.h>
 #include <qdesktopwidget.h>
 #include <qpaintengine.h>
+
+#include <private/qpixmapdata_p.h>
 
 #include <QSet>
 
@@ -140,6 +142,38 @@ private slots:
     void fromData();
 };
 
+static bool lenientCompare(const QPixmap &actual, const QPixmap &expected)
+{
+    QImage expectedImage = expected.toImage().convertToFormat(QImage::Format_RGB32);
+    QImage actualImage = actual.toImage().convertToFormat(QImage::Format_RGB32);
+
+    if (expectedImage.size() != actualImage.size())
+        return false;
+
+    int size = actual.width() * actual.height();
+
+    QRgb *a = (QRgb *)actualImage.bits();
+    QRgb *e = (QRgb *)expectedImage.bits();
+    for (int i = 0; i < size; ++i) {
+        QColor ca(a[i]);
+        QColor ce(e[i]);
+
+        bool result = true;
+
+        if (qAbs(ca.red() - ce.red()) > 2)
+            result = false;
+        if (qAbs(ca.green() - ce.green()) > 2)
+            result = false;
+        if (qAbs(ca.blue() - ce.blue()) > 2)
+            result = false;
+
+        if (!result)
+            return false;
+    }
+
+    return true;
+}
+
 Q_DECLARE_METATYPE(QImage)
 Q_DECLARE_METATYPE(QPixmap)
 Q_DECLARE_METATYPE(QMatrix)
@@ -202,7 +236,7 @@ void tst_QPixmap::setAlphaChannel()
     pixmap.setAlphaChannel(alphaChannel);
 
 #ifdef Q_WS_X11
-    if (!pixmap.x11PictureHandle())
+    if (pixmap.pixmapData()->classId() == QPixmapData::X11Class && !pixmap.x11PictureHandle())
         QSKIP("Requires XRender support", SkipAll);
 #endif
 
@@ -261,7 +295,7 @@ void tst_QPixmap::fromImage()
 
     const QPixmap pixmap = QPixmap::fromImage(image);
 #ifdef Q_WS_X11
-    if (!pixmap.x11PictureHandle())
+    if (pixmap.pixmapData()->classId() == QPixmapData::X11Class && !pixmap.x11PictureHandle())
         QSKIP("Requires XRender support", SkipAll);
 #endif
     const QImage result = pixmap.toImage();
@@ -392,9 +426,9 @@ void tst_QPixmap::scroll()
 #else
     QString fileName = QString(":/images/%1.png").arg(QTest::currentDataTag());
 #endif
-    QImage output(fileName);
+    QPixmap output(fileName);
     QVERIFY(input.isNull() == output.isNull());
-    QCOMPARE(pixmap.toImage(), output);
+    QVERIFY(lenientCompare(pixmap, output));
     QCOMPARE(exp, exposed);
 }
 
@@ -463,7 +497,7 @@ void tst_QPixmap::fill()
         pm = QPixmap(400, 400);
 
 #if defined(Q_WS_X11)
-    if (!bitmap && !pm.x11PictureHandle())
+    if (!bitmap && pm.pixmapData()->classId() == QPixmapData::X11Class && !pm.x11PictureHandle())
         QSKIP("Requires XRender support", SkipSingle);
 #endif
 
@@ -475,7 +509,7 @@ void tst_QPixmap::fill()
     QImage image = pm.toImage();
     if (bitmap && syscolor) {
         int pixelindex = (pixel == Qt::color0) ? 0 : 1;
-        QVERIFY(image.pixelIndex(0,0) == pixelindex);
+        QCOMPARE(image.pixelIndex(0,0), pixelindex);
     }
     QImage::Format format = compareColor.alpha() != 255
                             ? QImage::Format_ARGB32
@@ -493,7 +527,7 @@ void tst_QPixmap::fill_transparent()
 {
     QPixmap pixmap(10, 10);
 #ifdef Q_WS_X11
-    if (!pixmap.x11PictureHandle())
+    if (pixmap.pixmapData()->classId() == QPixmapData::X11Class && !pixmap.x11PictureHandle())
         QSKIP("Requires XRender support", SkipAll);
 #endif
     pixmap.fill(Qt::transparent);
@@ -613,7 +647,7 @@ void tst_QPixmap::testMetrics()
 
     QCOMPARE(pixmap.width(), 100);
     QCOMPARE(pixmap.height(), 100);
-    QCOMPARE(pixmap.depth(), QPixmap::defaultDepth());
+    QVERIFY(pixmap.depth() >= QPixmap::defaultDepth());
 
     QBitmap bitmap(100, 100);
 
@@ -675,7 +709,11 @@ void tst_QPixmap::drawBitmap()
     painter2.setPen(Qt::red);
     painter2.drawPixmap(0,0,10,10, bitmap);
     painter2.end();
-    QCOMPARE(pixmap.toImage().pixel(5,5), QColor(Qt::red).rgb());
+
+    QPixmap expected(10, 10);
+    expected.fill(Qt::red);
+
+    QVERIFY(lenientCompare(pixmap, expected));
 }
 
 void tst_QPixmap::grabWidget()
@@ -688,8 +726,7 @@ void tst_QPixmap::grabWidget()
     expected.fill(Qt::green);
 
     QPixmap actual = QPixmap::grabWidget(&widget, QRect(64, 64, 64, 64));
-
-    QCOMPARE(actual, expected);
+    QVERIFY(lenientCompare(actual, expected));
 }
 
 void tst_QPixmap::grabWindow()
@@ -720,7 +757,7 @@ void tst_QPixmap::grabWindow()
 
     QPixmap grabWindowPixmap = QPixmap::grabWindow(child.winId());
     QPixmap grabWidgetPixmap = QPixmap::grabWidget(&child);
-    QCOMPARE(grabWindowPixmap, grabWidgetPixmap);
+    lenientCompare(grabWindowPixmap, grabWidgetPixmap);
 }
 
 void tst_QPixmap::isNull()
@@ -960,10 +997,10 @@ void tst_QPixmap::copy()
     }
 
     QPixmap dest = src.copy(10, 10, 10, 10);
-    QImage result = dest.toImage().convertToFormat(QImage::Format_RGB32);
-    QImage expected(10, 10, QImage::Format_RGB32);
-    expected.fill(0xff0000ff);
-    QCOMPARE(result, expected);
+
+    QPixmap expected(10, 10);
+    expected.fill(Qt::blue);
+    QVERIFY(lenientCompare(dest, expected));
 }
 
 #ifdef QT3_SUPPORT
@@ -1031,27 +1068,33 @@ void tst_QPixmap::transformed()
     }
 
     QPixmap p2(10, 20);
-    p2.fill(Qt::red);
     {
         QPainter p(&p2);
-        p.drawRect(0, 0, p2.width() - 1, p2.height() - 1);
+        p.rotate(90);
+        p.drawPixmap(0, -p1.height(), p1);
+    }
+
+    QPixmap p3(20, 10);
+    {
+        QPainter p(&p3);
+        p.rotate(180);
+        p.drawPixmap(-p1.width(), -p1.height(), p1);
+    }
+
+    QPixmap p4(10, 20);
+    {
+        QPainter p(&p4);
+        p.rotate(270);
+        p.drawPixmap(-p1.width(), 0, p1);
     }
 
     QPixmap p1_90 = p1.transformed(QTransform().rotate(90));
     QPixmap p1_180 = p1.transformed(QTransform().rotate(180));
     QPixmap p1_270 = p1.transformed(QTransform().rotate(270));
 
-    QCOMPARE(p1_90.size(), p2.size());
-    QCOMPARE(p1_90.toImage().convertToFormat(QImage::Format_ARGB32_Premultiplied),
-             p2.toImage().convertToFormat(QImage::Format_ARGB32_Premultiplied));
-
-    QCOMPARE(p1_180.size(), p1.size());
-    QCOMPARE(p1_180.toImage().convertToFormat(QImage::Format_ARGB32_Premultiplied),
-             p1.toImage().convertToFormat(QImage::Format_ARGB32_Premultiplied));
-
-    QCOMPARE(p1_270.size(), p2.size());
-    QCOMPARE(p1_270.toImage().convertToFormat(QImage::Format_ARGB32_Premultiplied),
-             p2.toImage().convertToFormat(QImage::Format_ARGB32_Premultiplied));
+    QVERIFY(lenientCompare(p1_90, p2));
+    QVERIFY(lenientCompare(p1_180, p3));
+    QVERIFY(lenientCompare(p1_270, p4));
 }
 
 void tst_QPixmap::transformed2()
@@ -1079,9 +1122,7 @@ void tst_QPixmap::transformed2()
     p.drawRect(3, 6, 3, 3);
     p.end();
 
-    QCOMPARE(actual.size(), expected.size());
-    QCOMPARE(actual.toImage().convertToFormat(QImage::Format_ARGB32_Premultiplied),
-             expected.toImage().convertToFormat(QImage::Format_ARGB32_Premultiplied));
+    QVERIFY(lenientCompare(actual, expected));
 }
 
 void tst_QPixmap::fromImage_crash()

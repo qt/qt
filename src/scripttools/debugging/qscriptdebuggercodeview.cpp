@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtSCriptTools module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -214,7 +214,6 @@ bool QScriptDebuggerCodeView::event(QEvent *e)
         if (contents.isEmpty())
             return false;
         int linePosition = cursor.position() - block.position();
-        linePosition -= 3;
         if (linePosition < 0)
             linePosition = 0;
 
@@ -233,7 +232,7 @@ bool QScriptDebuggerCodeView::event(QEvent *e)
             // ignore string literals
             return false;
         }
-        int pos2 = linePosition;
+        int pos2 = linePosition - 1;
         while ((pos2 < contents.size()-1) && isIdentChar(contents.at(pos2+1)))
             ++pos2;
         QString ident = contents.mid(pos, pos2 - pos + 1);

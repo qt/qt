@@ -34,10 +34,10 @@
 #include <unicode/ucnv.h>
 #include <unicode/ucnv_cb.h>
 #include <wtf/Assertions.h>
+#include <wtf/PassOwnPtr.h>
 #include <wtf/StringExtras.h>
 #include <wtf/Threading.h>
 
-using std::auto_ptr;
 using std::min;
 
 namespace WebCore {
@@ -55,9 +55,9 @@ static UConverter*& cachedConverterICU()
     return threadGlobalData().cachedConverterICU().converter;
 }
 
-static auto_ptr<TextCodec> newTextCodecICU(const TextEncoding& encoding, const void*)
+static PassOwnPtr<TextCodec> newTextCodecICU(const TextEncoding& encoding, const void*)
 {
-    return auto_ptr<TextCodec>(new TextCodecICU(encoding));
+    return new TextCodecICU(encoding);
 }
 
 void TextCodecICU::registerBaseEncodingNames(EncodingNameRegistrar registrar)
@@ -330,7 +330,7 @@ String TextCodecICU::decode(const char* bytes, size_t length, bool flush, bool s
 
     // <http://bugs.webkit.org/show_bug.cgi?id=17014>
     // Simplified Chinese pages use the code A3A0 to mean "full-width space", but ICU decodes it as U+E5E5.
-    if (m_encoding == "GBK" || m_encoding == "gb18030")
+    if (strcmp(m_encoding.name(), "GBK") == 0 || strcasecmp(m_encoding.name(), "gb18030") == 0)
         resultString.replace(0xE5E5, ideographicSpace);
 
     return resultString;
@@ -428,7 +428,7 @@ CString TextCodecICU::encode(const UChar* characters, size_t length, Unencodable
     // until then, we change the backslash into a yen sign.
     // Encoding will change the yen sign back into a backslash.
     String copy(characters, length);
-    copy.replace('\\', m_encoding.backslashAsCurrencySymbol());
+    copy = m_encoding.displayString(copy.impl());
 
     const UChar* source = copy.characters();
     const UChar* sourceLimit = source + copy.length();

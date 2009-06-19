@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the test suite of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -1034,7 +1034,7 @@ void tst_QItemDelegate::editorEvent()
     option.rect = rect;
     option.state |= QStyle::State_Enabled;
 
-    const int checkMargin = qApp->style()->pixelMetric(QStyle::PM_FocusFrameHMargin, 0, 0) + 1; 
+    const int checkMargin = qApp->style()->pixelMetric(QStyle::PM_FocusFrameHMargin, 0, 0) + 1;
     QPoint pos = inCheck ? qApp->style()->subElementRect(QStyle::SE_ViewItemCheckIndicator, &option, 0).center() + QPoint(checkMargin, 0) : QPoint(200,200);
 
     QEvent *event = new QMouseEvent((QEvent::Type)type,
@@ -1057,7 +1057,7 @@ void tst_QItemDelegate::enterKey_data()
     QTest::addColumn<int>("widget");
     QTest::addColumn<int>("key");
     QTest::addColumn<bool>("expectedFocus");
-    
+
     QTest::newRow("lineedit enter") << 1 << int(Qt::Key_Enter) << false;
     QTest::newRow("textedit enter") << 2 << int(Qt::Key_Enter) << true;
     QTest::newRow("plaintextedit enter") << 3 << int(Qt::Key_Enter) << true;
@@ -1071,17 +1071,17 @@ void tst_QItemDelegate::enterKey()
     QFETCH(int, widget);
     QFETCH(int, key);
     QFETCH(bool, expectedFocus);
-    
+
     QStandardItemModel model;
     model.appendRow(new QStandardItem());
-    
+
     QListView view;
     view.setModel(&model);
     view.show();
     QApplication::setActiveWindow(&view);
     view.setFocus();
     QTest::qWait(30);
-    
+
     struct TestDelegate : public QItemDelegate
     {
         int widgetType;
@@ -1089,7 +1089,7 @@ void tst_QItemDelegate::enterKey()
         {
             QWidget *editor = 0;
             switch(widgetType) {
-                case 1: 
+                case 1:
                     editor = new QLineEdit(parent);
                     break;
                 case 2:
@@ -1103,25 +1103,25 @@ void tst_QItemDelegate::enterKey()
             return editor;
         }
     } delegate;
-    
+
     delegate.widgetType = widget;
-    
+
     view.setItemDelegate(&delegate);
     QModelIndex index = model.index(0, 0);
     view.setCurrentIndex(index); // the editor will only selectAll on the current index
     view.edit(index);
     QTest::qWait(30);
-    
+
     QList<QWidget*> lineEditors = qFindChildren<QWidget *>(view.viewport(), QString::fromLatin1("TheEditor"));
     QCOMPARE(lineEditors.count(), 1);
-    
-    QWidget *editor = lineEditors.at(0);
+
+    QPointer<QWidget> editor = lineEditors.at(0);
     QCOMPARE(editor->hasFocus(), true);
-    
+
     QTest::keyClick(editor, Qt::Key(key));
     QApplication::processEvents();
-    
-    QCOMPARE(editor->hasFocus(), expectedFocus);
+
+    QCOMPARE(editor && editor->hasFocus(), expectedFocus);
 }
 
 

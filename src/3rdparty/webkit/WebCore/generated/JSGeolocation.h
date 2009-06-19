@@ -34,36 +34,37 @@ class JSGeolocation : public DOMObject {
 public:
     JSGeolocation(PassRefPtr<JSC::Structure>, PassRefPtr<Geolocation>);
     virtual ~JSGeolocation();
-    static JSC::JSObject* createPrototype(JSC::ExecState*);
+    static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
     static const JSC::ClassInfo s_info;
 
-    static PassRefPtr<JSC::Structure> createStructure(JSC::JSValuePtr prototype)
+    static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
     {
         return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType));
     }
 
 
     // Custom functions
-    JSC::JSValuePtr getCurrentPosition(JSC::ExecState*, const JSC::ArgList&);
-    JSC::JSValuePtr watchPosition(JSC::ExecState*, const JSC::ArgList&);
+    JSC::JSValue getCurrentPosition(JSC::ExecState*, const JSC::ArgList&);
+    JSC::JSValue watchPosition(JSC::ExecState*, const JSC::ArgList&);
     Geolocation* impl() const { return m_impl.get(); }
 
 private:
     RefPtr<Geolocation> m_impl;
 };
 
-JSC::JSValuePtr toJS(JSC::ExecState*, Geolocation*);
-Geolocation* toGeolocation(JSC::JSValuePtr);
+JSC::JSValue toJS(JSC::ExecState*, Geolocation*);
+Geolocation* toGeolocation(JSC::JSValue);
 
 class JSGeolocationPrototype : public JSC::JSObject {
+    typedef JSC::JSObject Base;
 public:
-    static JSC::JSObject* self(JSC::ExecState*);
+    static JSC::JSObject* self(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
     static const JSC::ClassInfo s_info;
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier&, JSC::PropertySlot&);
-    static PassRefPtr<JSC::Structure> createStructure(JSC::JSValuePtr prototype)
+    static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
     {
         return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType));
     }
@@ -72,12 +73,12 @@ public:
 
 // Functions
 
-JSC::JSValuePtr jsGeolocationPrototypeFunctionGetCurrentPosition(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr, const JSC::ArgList&);
-JSC::JSValuePtr jsGeolocationPrototypeFunctionWatchPosition(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr, const JSC::ArgList&);
-JSC::JSValuePtr jsGeolocationPrototypeFunctionClearWatch(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr, const JSC::ArgList&);
+JSC::JSValue JSC_HOST_CALL jsGeolocationPrototypeFunctionGetCurrentPosition(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
+JSC::JSValue JSC_HOST_CALL jsGeolocationPrototypeFunctionWatchPosition(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
+JSC::JSValue JSC_HOST_CALL jsGeolocationPrototypeFunctionClearWatch(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
 // Attributes
 
-JSC::JSValuePtr jsGeolocationLastPosition(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsGeolocationLastPosition(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
 
 } // namespace WebCore
 

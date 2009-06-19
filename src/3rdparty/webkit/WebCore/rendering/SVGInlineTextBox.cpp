@@ -38,12 +38,11 @@
 
 #include <float.h>
 
-using std::max;
-
 namespace WebCore {
 
 SVGInlineTextBox::SVGInlineTextBox(RenderObject* obj)
     : InlineTextBox(obj)
+    , m_height(0)
 {
 }
 
@@ -77,7 +76,7 @@ SVGRootInlineBox* SVGInlineTextBox::svgRootInlineBox() const
 float SVGInlineTextBox::calculateGlyphWidth(RenderStyle* style, int offset, int extraCharsAvailable, int& charsConsumed, String& glyphName) const
 {
     ASSERT(style);
-    return style->font().floatWidth(svgTextRunForInlineTextBox(textObject()->text()->characters() + offset, 1, style, this, 0), extraCharsAvailable, charsConsumed, glyphName);
+    return style->font().floatWidth(svgTextRunForInlineTextBox(textRenderer()->text()->characters() + offset, 1, style, this, 0), extraCharsAvailable, charsConsumed, glyphName);
 }
 
 float SVGInlineTextBox::calculateGlyphHeight(RenderStyle* style, int, int) const
@@ -125,14 +124,14 @@ struct SVGInlineTextBoxClosestCharacterToPositionWalker {
         , m_distance(FLT_MAX)
         , m_x(x)
         , m_y(y)
-        , m_offset(0)
+        , m_offsetOfHitCharacter(0)
     {
     }
 
     void chunkPortionCallback(SVGInlineTextBox* textBox, int startOffset, const TransformationMatrix& chunkCtm,
                               const Vector<SVGChar>::iterator& start, const Vector<SVGChar>::iterator& end)
     {
-        RenderStyle* style = textBox->textObject()->style();
+        RenderStyle* style = textBox->textRenderer()->style();
 
         Vector<SVGChar>::iterator closestCharacter = 0;
         unsigned int closestOffset = UINT_MAX;
@@ -164,7 +163,7 @@ struct SVGInlineTextBoxClosestCharacterToPositionWalker {
         if (closestOffset != UINT_MAX) {
             // Record current chunk, if it contains the current closest character next to the mouse.
             m_character = closestCharacter;
-            m_offset = closestOffset;
+            m_offsetOfHitCharacter = closestOffset;
         }
     }
 
@@ -173,12 +172,12 @@ struct SVGInlineTextBoxClosestCharacterToPositionWalker {
         return m_character;
     }
 
-    int offset() const
+    int offsetOfHitCharacter() const
     {
         if (!m_character)
             return 0;
 
-        return m_offset;
+        return m_offsetOfHitCharacter;
     }
 
 private:
@@ -187,7 +186,7 @@ private:
 
     int m_x;
     int m_y;
-    int m_offset;
+    int m_offsetOfHitCharacter;
 };
 
 // Helper class for selectionRect()
@@ -199,7 +198,7 @@ struct SVGInlineTextBoxSelectionRectWalker {
     void chunkPortionCallback(SVGInlineTextBox* textBox, int startOffset, const TransformationMatrix& chunkCtm,
                               const Vector<SVGChar>::iterator& start, const Vector<SVGChar>::iterator& end)
     {
-        RenderStyle* style = textBox->textObject()->style();
+        RenderStyle* style = textBox->textRenderer()->style();
 
         for (Vector<SVGChar>::iterator it = start; it != end; ++it) {
             if (it->isHidden())
@@ -221,7 +220,7 @@ private:
     FloatRect m_selectionRect;
 };
 
-SVGChar* SVGInlineTextBox::closestCharacterToPosition(int x, int y, int& offset) const
+SVGChar* SVGInlineTextBox::closestCharacterToPosition(int x, int y, int& offsetOfHitCharacter) const
 {
     SVGRootInlineBox* rootBox = svgRootInlineBox();
     if (!rootBox)
@@ -232,25 +231,30 @@ SVGChar* SVGInlineTextBox::closestCharacterToPosition(int x, int y, int& offset)
 
     rootBox->walkTextChunks(&walker, this);
 
-    offset = walkerCallback.offset();
+    offsetOfHitCharacter = walkerCallback.offsetOfHitCharacter();
     return walkerCallback.character();
 }
 
-bool SVGInlineTextBox::svgCharacterHitsPosition(int x, int y, int& offset) const
+bool SVGInlineTextBox::svgCharacterHitsPosition(int x, int y, int& closestOffsetInBox) const
 {
-    SVGChar* charAtPosPtr = closestCharacterToPosition(x, y, offset);
+    int offsetOfHitCharacter = 0;
+    SVGChar* charAtPosPtr = closestCharacterToPosition(x, y, offsetOfHitCharacter);
     if (!charAtPosPtr)
         return false;
 
     SVGChar& charAtPos = *charAtPosPtr;
-    RenderStyle* style = textObject()->style(m_firstLine);
-    FloatRect glyphRect = calculateGlyphBoundaries(style, offset, charAtPos);
+    RenderStyle* style = textRenderer()->style(m_firstLine);
+    FloatRect glyphRect = calculateGlyphBoundaries(style, offsetOfHitCharacter, charAtPos);
 
+    // FIXME: Why?
     if (direction() == RTL)
-        offset++;
+        offsetOfHitCharacter++;
 
-    // FIXME: todo list
-    // (#13910) This code does not handle bottom-to-top/top-to-bottom vertical text.
+    // The caller actually the closest offset before/after the hit char
+    // closestCharacterToPosition returns us offsetOfHitCharacter.
+    closestOffsetInBox = offsetOfHitCharacter;
+
+    // FIXME: (bug 13910) This code does not handle bottom-to-top/top-to-bottom vertical text.
 
     // Check whether y position hits the current character 
     if (y < charAtPos.y - glyphRect.height() || y > charAtPos.y)
@@ -258,21 +262,21 @@ bool SVGInlineTextBox::svgCharacterHitsPosition(int x, int y, int& offset) const
 
     // Check whether x position hits the current character
     if (x < charAtPos.x) {
-        if (offset > 0 && direction() == LTR)
+        if (closestOffsetInBox > 0 && direction() == LTR)
             return true;
-        else if (offset < (int) end() && direction() == RTL)
+        else if (closestOffsetInBox < (int) end() && direction() == RTL)
             return true;
 
         return false;
     }
 
-    // If we are past the last glyph of this box, don't mark it as 'hit' anymore.
-    if (x >= charAtPos.x + glyphRect.width() && offset == (int) end())
-        return false;
-
-    // Snap to character at half of it's advance
+    // Adjust the closest offset to after the char if x was after the char midpoint
     if (x >= charAtPos.x + glyphRect.width() / 2.0)
-        offset += direction() == RTL ? -1 : 1;
+        closestOffsetInBox += direction() == RTL ? -1 : 1;
+
+    // If we are past the last glyph of this box, don't mark it as 'hit'
+    if (x >= charAtPos.x + glyphRect.width() && closestOffsetInBox == (int) end())
+        return false;
 
     return true;
 }
@@ -296,8 +300,8 @@ bool SVGInlineTextBox::nodeAtPoint(const HitTestRequest&, HitTestResult& result,
     ASSERT(!isLineBreak());
 
     IntRect rect = selectionRect(0, 0, 0, len());
-    if (object()->style()->visibility() == VISIBLE && rect.contains(x, y)) {
-        object()->updateHitTestResult(result, IntPoint(x - tx, y - ty));
+    if (renderer()->style()->visibility() == VISIBLE && rect.contains(x, y)) {
+        renderer()->updateHitTestResult(result, IntPoint(x - tx, y - ty));
         return true;
     }
 
@@ -324,12 +328,12 @@ IntRect SVGInlineTextBox::selectionRect(int, int, int startPos, int endPos)
 
 void SVGInlineTextBox::paintCharacters(RenderObject::PaintInfo& paintInfo, int tx, int ty, const SVGChar& svgChar, const UChar* chars, int length, SVGPaintServer* activePaintServer)
 {
-    if (object()->style()->visibility() != VISIBLE || paintInfo.phase == PaintPhaseOutline)
+    if (renderer()->style()->visibility() != VISIBLE || paintInfo.phase == PaintPhaseOutline)
         return;
 
     ASSERT(paintInfo.phase != PaintPhaseSelfOutline && paintInfo.phase != PaintPhaseChildOutlines);
 
-    RenderText* text = textObject();
+    RenderText* text = textRenderer();
     ASSERT(text);
 
     bool isPrinting = text->document()->printing();
@@ -346,9 +350,7 @@ void SVGInlineTextBox::paintCharacters(RenderObject::PaintInfo& paintInfo, int t
 
     // Set our font
     RenderStyle* styleToUse = text->style(isFirstLineStyle());
-    const Font* font = &styleToUse->font();
-    if (*font != paintInfo.context->font())
-        paintInfo.context->setFont(*font);
+    const Font& font = styleToUse->font();
 
     TransformationMatrix ctm = svgChar.characterTransform();
     if (!ctm.isIdentity())
@@ -365,8 +367,8 @@ void SVGInlineTextBox::paintCharacters(RenderObject::PaintInfo& paintInfo, int t
 
         if (containsComposition && !useCustomUnderlines)
             paintCompositionBackground(paintInfo.context, tx, ty, styleToUse, font, 
-                                                text->document()->frame()->editor()->compositionStart(),
-                                                text->document()->frame()->editor()->compositionEnd());
+                                       text->document()->frame()->editor()->compositionStart(),
+                                       text->document()->frame()->editor()->compositionEnd());
         
         paintDocumentMarkers(paintInfo.context, tx, ty, styleToUse, font, true);
 
@@ -395,7 +397,7 @@ void SVGInlineTextBox::paintCharacters(RenderObject::PaintInfo& paintInfo, int t
     run.setActivePaintServer(activePaintServer);
 #endif
 
-    paintInfo.context->drawText(run, origin);
+    paintInfo.context->drawText(font, run, origin);
 
     if (paintInfo.phase != PaintPhaseSelection) {
         paintDocumentMarkers(paintInfo.context, tx, ty, styleToUse, font, false);
@@ -434,7 +436,7 @@ void SVGInlineTextBox::paintCharacters(RenderObject::PaintInfo& paintInfo, int t
         paintInfo.context->concatCTM(ctm.inverse());
 }
 
-void SVGInlineTextBox::paintSelection(int boxStartOffset, const SVGChar& svgChar, const UChar*, int length, GraphicsContext* p, RenderStyle* style, const Font* f)
+void SVGInlineTextBox::paintSelection(int boxStartOffset, const SVGChar& svgChar, const UChar*, int length, GraphicsContext* p, RenderStyle* style, const Font& font)
 {
     if (selectionState() == RenderObject::SelectionNone)
         return;
@@ -446,7 +448,7 @@ void SVGInlineTextBox::paintSelection(int boxStartOffset, const SVGChar& svgChar
         return;
 
     Color textColor = style->color();
-    Color color = object()->selectionBackgroundColor();
+    Color color = renderer()->selectionBackgroundColor();
     if (!color.isValid() || color.alpha() == 0)
         return;
 
@@ -473,9 +475,9 @@ void SVGInlineTextBox::paintSelection(int boxStartOffset, const SVGChar& svgChar
     p->save();
 
     int adjust = startPos >= boxStartOffset ? boxStartOffset : 0;
-    p->drawHighlightForText(svgTextRunForInlineTextBox(textObject()->text()->characters() + start() + boxStartOffset, length, style, this, svgChar.x),
-                            IntPoint((int) svgChar.x, (int) svgChar.y - f->ascent()),
-                            f->ascent() + f->descent(), color, startPos - adjust, endPos - adjust);
+    p->drawHighlightForText(font, svgTextRunForInlineTextBox(textRenderer()->text()->characters() + start() + boxStartOffset, length, style, this, svgChar.x),
+                            IntPoint((int) svgChar.x, (int) svgChar.y - font.ascent()),
+                            font.ascent() + font.descent(), color, startPos - adjust, endPos - adjust);
 
     p->restore();
 }
@@ -498,7 +500,7 @@ static inline Path pathForDecoration(ETextDecoration decoration, RenderObject* o
 
 void SVGInlineTextBox::paintDecoration(ETextDecoration decoration, GraphicsContext* context, int tx, int ty, int width, const SVGChar& svgChar, const SVGTextDecorationInfo& info)
 {
-    if (object()->style()->visibility() != VISIBLE)
+    if (renderer()->style()->visibility() != VISIBLE)
         return;
 
     // This function does NOT accept combinated text decorations. It's meant to be invoked for just one.
@@ -510,10 +512,11 @@ void SVGInlineTextBox::paintDecoration(ETextDecoration decoration, GraphicsConte
     if (!isFilled && !isStroked)
         return;
 
+    int baseline = renderer()->style(m_firstLine)->font().ascent();
     if (decoration == UNDERLINE)
-        ty += m_baseline;
+        ty += baseline;
     else if (decoration == LINE_THROUGH)
-        ty += 2 * m_baseline / 3;
+        ty += 2 * baseline / 3;
 
     context->save();
     context->beginPath();

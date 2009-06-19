@@ -21,6 +21,9 @@
 #ifndef JSJavaScriptCallFrame_h
 #define JSJavaScriptCallFrame_h
 
+
+#if ENABLE(JAVASCRIPT_DEBUGGER)
+
 #include "JSDOMBinding.h"
 #include <runtime/JSGlobalObject.h>
 #include <runtime/ObjectPrototype.h>
@@ -34,40 +37,41 @@ class JSJavaScriptCallFrame : public DOMObject {
 public:
     JSJavaScriptCallFrame(PassRefPtr<JSC::Structure>, PassRefPtr<JavaScriptCallFrame>);
     virtual ~JSJavaScriptCallFrame();
-    static JSC::JSObject* createPrototype(JSC::ExecState*);
+    static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
     static const JSC::ClassInfo s_info;
 
-    static PassRefPtr<JSC::Structure> createStructure(JSC::JSValuePtr prototype)
+    static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
     {
         return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType));
     }
 
 
     // Custom attributes
-    JSC::JSValuePtr scopeChain(JSC::ExecState*) const;
-    JSC::JSValuePtr thisObject(JSC::ExecState*) const;
-    JSC::JSValuePtr type(JSC::ExecState*) const;
+    JSC::JSValue scopeChain(JSC::ExecState*) const;
+    JSC::JSValue thisObject(JSC::ExecState*) const;
+    JSC::JSValue type(JSC::ExecState*) const;
 
     // Custom functions
-    JSC::JSValuePtr evaluate(JSC::ExecState*, const JSC::ArgList&);
+    JSC::JSValue evaluate(JSC::ExecState*, const JSC::ArgList&);
     JavaScriptCallFrame* impl() const { return m_impl.get(); }
 
 private:
     RefPtr<JavaScriptCallFrame> m_impl;
 };
 
-JSC::JSValuePtr toJS(JSC::ExecState*, JavaScriptCallFrame*);
-JavaScriptCallFrame* toJavaScriptCallFrame(JSC::JSValuePtr);
+JSC::JSValue toJS(JSC::ExecState*, JavaScriptCallFrame*);
+JavaScriptCallFrame* toJavaScriptCallFrame(JSC::JSValue);
 
 class JSJavaScriptCallFramePrototype : public JSC::JSObject {
+    typedef JSC::JSObject Base;
 public:
-    static JSC::JSObject* self(JSC::ExecState*);
+    static JSC::JSObject* self(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
     static const JSC::ClassInfo s_info;
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier&, JSC::PropertySlot&);
-    static PassRefPtr<JSC::Structure> createStructure(JSC::JSValuePtr prototype)
+    static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
     {
         return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType));
     }
@@ -76,17 +80,19 @@ public:
 
 // Functions
 
-JSC::JSValuePtr jsJavaScriptCallFramePrototypeFunctionEvaluate(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr, const JSC::ArgList&);
+JSC::JSValue JSC_HOST_CALL jsJavaScriptCallFramePrototypeFunctionEvaluate(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
 // Attributes
 
-JSC::JSValuePtr jsJavaScriptCallFrameCaller(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValuePtr jsJavaScriptCallFrameSourceID(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValuePtr jsJavaScriptCallFrameLine(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValuePtr jsJavaScriptCallFrameScopeChain(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValuePtr jsJavaScriptCallFrameThisObject(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValuePtr jsJavaScriptCallFrameFunctionName(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
-JSC::JSValuePtr jsJavaScriptCallFrameType(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsJavaScriptCallFrameCaller(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsJavaScriptCallFrameSourceID(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsJavaScriptCallFrameLine(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsJavaScriptCallFrameScopeChain(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsJavaScriptCallFrameThisObject(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsJavaScriptCallFrameFunctionName(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsJavaScriptCallFrameType(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
 
 } // namespace WebCore
+
+#endif // ENABLE(JAVASCRIPT_DEBUGGER)
 
 #endif

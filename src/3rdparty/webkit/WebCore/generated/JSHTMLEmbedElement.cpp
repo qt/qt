@@ -40,7 +40,7 @@ using namespace JSC;
 
 namespace WebCore {
 
-ASSERT_CLASS_FITS_IN_CELL(JSHTMLEmbedElement)
+ASSERT_CLASS_FITS_IN_CELL(JSHTMLEmbedElement);
 
 /* Hash table */
 
@@ -82,13 +82,13 @@ public:
     JSHTMLEmbedElementConstructor(ExecState* exec)
         : DOMObject(JSHTMLEmbedElementConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
     {
-        putDirect(exec->propertyNames().prototype, JSHTMLEmbedElementPrototype::self(exec), None);
+        putDirect(exec->propertyNames().prototype, JSHTMLEmbedElementPrototype::self(exec, exec->lexicalGlobalObject()), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
     static const ClassInfo s_info;
 
-    static PassRefPtr<Structure> createStructure(JSValuePtr proto) 
+    static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
         return Structure::create(proto, TypeInfo(ObjectType, ImplementsHasInstance)); 
     }
@@ -118,9 +118,9 @@ static const HashTable JSHTMLEmbedElementPrototypeTable =
 
 const ClassInfo JSHTMLEmbedElementPrototype::s_info = { "HTMLEmbedElementPrototype", 0, &JSHTMLEmbedElementPrototypeTable, 0 };
 
-JSObject* JSHTMLEmbedElementPrototype::self(ExecState* exec)
+JSObject* JSHTMLEmbedElementPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSHTMLEmbedElement>(exec);
+    return getDOMPrototype<JSHTMLEmbedElement>(exec, globalObject);
 }
 
 bool JSHTMLEmbedElementPrototype::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -135,9 +135,9 @@ JSHTMLEmbedElement::JSHTMLEmbedElement(PassRefPtr<Structure> structure, PassRefP
 {
 }
 
-JSObject* JSHTMLEmbedElement::createPrototype(ExecState* exec)
+JSObject* JSHTMLEmbedElement::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSHTMLEmbedElementPrototype(JSHTMLEmbedElementPrototype::createStructure(JSHTMLElementPrototype::self(exec)));
+    return new (exec) JSHTMLEmbedElementPrototype(JSHTMLEmbedElementPrototype::createStructure(JSHTMLElementPrototype::self(exec, globalObject)));
 }
 
 bool JSHTMLEmbedElement::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -151,97 +151,104 @@ bool JSHTMLEmbedElement::getOwnPropertySlot(ExecState* exec, const Identifier& p
     return getStaticValueSlot<JSHTMLEmbedElement, Base>(exec, &JSHTMLEmbedElementTable, this, propertyName, slot);
 }
 
-JSValuePtr jsHTMLEmbedElementAlign(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLEmbedElementAlign(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     HTMLEmbedElement* imp = static_cast<HTMLEmbedElement*>(static_cast<JSHTMLEmbedElement*>(asObject(slot.slotBase()))->impl());
     return jsString(exec, imp->align());
 }
 
-JSValuePtr jsHTMLEmbedElementHeight(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLEmbedElementHeight(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     HTMLEmbedElement* imp = static_cast<HTMLEmbedElement*>(static_cast<JSHTMLEmbedElement*>(asObject(slot.slotBase()))->impl());
     return jsString(exec, imp->height());
 }
 
-JSValuePtr jsHTMLEmbedElementName(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLEmbedElementName(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     HTMLEmbedElement* imp = static_cast<HTMLEmbedElement*>(static_cast<JSHTMLEmbedElement*>(asObject(slot.slotBase()))->impl());
     return jsString(exec, imp->name());
 }
 
-JSValuePtr jsHTMLEmbedElementSrc(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLEmbedElementSrc(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     HTMLEmbedElement* imp = static_cast<HTMLEmbedElement*>(static_cast<JSHTMLEmbedElement*>(asObject(slot.slotBase()))->impl());
     return jsString(exec, imp->src());
 }
 
-JSValuePtr jsHTMLEmbedElementType(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLEmbedElementType(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     HTMLEmbedElement* imp = static_cast<HTMLEmbedElement*>(static_cast<JSHTMLEmbedElement*>(asObject(slot.slotBase()))->impl());
     return jsString(exec, imp->type());
 }
 
-JSValuePtr jsHTMLEmbedElementWidth(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLEmbedElementWidth(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     HTMLEmbedElement* imp = static_cast<HTMLEmbedElement*>(static_cast<JSHTMLEmbedElement*>(asObject(slot.slotBase()))->impl());
     return jsString(exec, imp->width());
 }
 
-JSValuePtr jsHTMLEmbedElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsHTMLEmbedElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     return static_cast<JSHTMLEmbedElement*>(asObject(slot.slotBase()))->getConstructor(exec);
 }
-void JSHTMLEmbedElement::put(ExecState* exec, const Identifier& propertyName, JSValuePtr value, PutPropertySlot& slot)
+void JSHTMLEmbedElement::put(ExecState* exec, const Identifier& propertyName, JSValue value, PutPropertySlot& slot)
 {
     if (customPut(exec, propertyName, value, slot))
         return;
     lookupPut<JSHTMLEmbedElement, Base>(exec, propertyName, value, &JSHTMLEmbedElementTable, this, slot);
 }
 
-void setJSHTMLEmbedElementAlign(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSHTMLEmbedElementAlign(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     HTMLEmbedElement* imp = static_cast<HTMLEmbedElement*>(static_cast<JSHTMLEmbedElement*>(thisObject)->impl());
     imp->setAlign(valueToStringWithNullCheck(exec, value));
 }
 
-void setJSHTMLEmbedElementHeight(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSHTMLEmbedElementHeight(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     HTMLEmbedElement* imp = static_cast<HTMLEmbedElement*>(static_cast<JSHTMLEmbedElement*>(thisObject)->impl());
     imp->setHeight(valueToStringWithNullCheck(exec, value));
 }
 
-void setJSHTMLEmbedElementName(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSHTMLEmbedElementName(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     HTMLEmbedElement* imp = static_cast<HTMLEmbedElement*>(static_cast<JSHTMLEmbedElement*>(thisObject)->impl());
     imp->setName(valueToStringWithNullCheck(exec, value));
 }
 
-void setJSHTMLEmbedElementSrc(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSHTMLEmbedElementSrc(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     HTMLEmbedElement* imp = static_cast<HTMLEmbedElement*>(static_cast<JSHTMLEmbedElement*>(thisObject)->impl());
     imp->setSrc(valueToStringWithNullCheck(exec, value));
 }
 
-void setJSHTMLEmbedElementType(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSHTMLEmbedElementType(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     HTMLEmbedElement* imp = static_cast<HTMLEmbedElement*>(static_cast<JSHTMLEmbedElement*>(thisObject)->impl());
     imp->setType(valueToStringWithNullCheck(exec, value));
 }
 
-void setJSHTMLEmbedElementWidth(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSHTMLEmbedElementWidth(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     HTMLEmbedElement* imp = static_cast<HTMLEmbedElement*>(static_cast<JSHTMLEmbedElement*>(thisObject)->impl());
     imp->setWidth(valueToStringWithNullCheck(exec, value));
 }
 
-JSValuePtr JSHTMLEmbedElement::getConstructor(ExecState* exec)
+JSValue JSHTMLEmbedElement::getConstructor(ExecState* exec)
 {
     return getDOMConstructor<JSHTMLEmbedElementConstructor>(exec);
 }
 
-JSValuePtr jsHTMLEmbedElementPrototypeFunctionGetSVGDocument(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsHTMLEmbedElementPrototypeFunctionGetSVGDocument(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSHTMLEmbedElement::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSHTMLEmbedElement::s_info))
         return throwError(exec, TypeError);
     JSHTMLEmbedElement* castedThisObj = static_cast<JSHTMLEmbedElement*>(asObject(thisValue));
     HTMLEmbedElement* imp = static_cast<HTMLEmbedElement*>(castedThisObj->impl());
@@ -250,7 +257,7 @@ JSValuePtr jsHTMLEmbedElementPrototypeFunctionGetSVGDocument(ExecState* exec, JS
         return jsUndefined();
 
 
-    JSC::JSValuePtr result = toJS(exec, WTF::getPtr(imp->getSVGDocument(ec)));
+    JSC::JSValue result = toJS(exec, WTF::getPtr(imp->getSVGDocument(ec)));
     setDOMException(exec, ec);
     return result;
 }

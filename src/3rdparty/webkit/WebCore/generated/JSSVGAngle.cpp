@@ -39,7 +39,7 @@ using namespace JSC;
 
 namespace WebCore {
 
-ASSERT_CLASS_FITS_IN_CELL(JSSVGAngle)
+ASSERT_CLASS_FITS_IN_CELL(JSSVGAngle);
 
 /* Hash table */
 
@@ -84,13 +84,13 @@ public:
     JSSVGAngleConstructor(ExecState* exec)
         : DOMObject(JSSVGAngleConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
     {
-        putDirect(exec->propertyNames().prototype, JSSVGAnglePrototype::self(exec), None);
+        putDirect(exec->propertyNames().prototype, JSSVGAnglePrototype::self(exec, exec->lexicalGlobalObject()), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
     static const ClassInfo s_info;
 
-    static PassRefPtr<Structure> createStructure(JSValuePtr proto) 
+    static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
         return Structure::create(proto, TypeInfo(ObjectType, ImplementsHasInstance)); 
     }
@@ -126,9 +126,9 @@ static const HashTable JSSVGAnglePrototypeTable =
 
 const ClassInfo JSSVGAnglePrototype::s_info = { "SVGAnglePrototype", 0, &JSSVGAnglePrototypeTable, 0 };
 
-JSObject* JSSVGAnglePrototype::self(ExecState* exec)
+JSObject* JSSVGAnglePrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSSVGAngle>(exec);
+    return getDOMPrototype<JSSVGAngle>(exec, globalObject);
 }
 
 bool JSSVGAnglePrototype::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -148,12 +148,11 @@ JSSVGAngle::JSSVGAngle(PassRefPtr<Structure> structure, PassRefPtr<SVGAngle> imp
 JSSVGAngle::~JSSVGAngle()
 {
     forgetDOMObject(*Heap::heap(this)->globalData(), m_impl.get());
-
 }
 
-JSObject* JSSVGAngle::createPrototype(ExecState* exec)
+JSObject* JSSVGAngle::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSSVGAnglePrototype(JSSVGAnglePrototype::createStructure(exec->lexicalGlobalObject()->objectPrototype()));
+    return new (exec) JSSVGAnglePrototype(JSSVGAnglePrototype::createStructure(globalObject->objectPrototype()));
 }
 
 bool JSSVGAngle::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -161,56 +160,60 @@ bool JSSVGAngle::getOwnPropertySlot(ExecState* exec, const Identifier& propertyN
     return getStaticValueSlot<JSSVGAngle, Base>(exec, &JSSVGAngleTable, this, propertyName, slot);
 }
 
-JSValuePtr jsSVGAngleUnitType(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGAngleUnitType(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGAngle* imp = static_cast<SVGAngle*>(static_cast<JSSVGAngle*>(asObject(slot.slotBase()))->impl());
     return jsNumber(exec, imp->unitType());
 }
 
-JSValuePtr jsSVGAngleValue(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGAngleValue(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGAngle* imp = static_cast<SVGAngle*>(static_cast<JSSVGAngle*>(asObject(slot.slotBase()))->impl());
     return jsNumber(exec, imp->value());
 }
 
-JSValuePtr jsSVGAngleValueInSpecifiedUnits(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGAngleValueInSpecifiedUnits(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGAngle* imp = static_cast<SVGAngle*>(static_cast<JSSVGAngle*>(asObject(slot.slotBase()))->impl());
     return jsNumber(exec, imp->valueInSpecifiedUnits());
 }
 
-JSValuePtr jsSVGAngleValueAsString(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGAngleValueAsString(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGAngle* imp = static_cast<SVGAngle*>(static_cast<JSSVGAngle*>(asObject(slot.slotBase()))->impl());
     return jsString(exec, imp->valueAsString());
 }
 
-JSValuePtr jsSVGAngleConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGAngleConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     return static_cast<JSSVGAngle*>(asObject(slot.slotBase()))->getConstructor(exec);
 }
-void JSSVGAngle::put(ExecState* exec, const Identifier& propertyName, JSValuePtr value, PutPropertySlot& slot)
+void JSSVGAngle::put(ExecState* exec, const Identifier& propertyName, JSValue value, PutPropertySlot& slot)
 {
     lookupPut<JSSVGAngle, Base>(exec, propertyName, value, &JSSVGAngleTable, this, slot);
 }
 
-void setJSSVGAngleValue(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSSVGAngleValue(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     SVGAngle* imp = static_cast<SVGAngle*>(static_cast<JSSVGAngle*>(thisObject)->impl());
-    imp->setValue(value->toFloat(exec));
+    imp->setValue(value.toFloat(exec));
     if (static_cast<JSSVGAngle*>(thisObject)->context())
         static_cast<JSSVGAngle*>(thisObject)->context()->svgAttributeChanged(static_cast<JSSVGAngle*>(thisObject)->impl()->associatedAttributeName());
 }
 
-void setJSSVGAngleValueInSpecifiedUnits(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSSVGAngleValueInSpecifiedUnits(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     SVGAngle* imp = static_cast<SVGAngle*>(static_cast<JSSVGAngle*>(thisObject)->impl());
-    imp->setValueInSpecifiedUnits(value->toFloat(exec));
+    imp->setValueInSpecifiedUnits(value.toFloat(exec));
     if (static_cast<JSSVGAngle*>(thisObject)->context())
         static_cast<JSSVGAngle*>(thisObject)->context()->svgAttributeChanged(static_cast<JSSVGAngle*>(thisObject)->impl()->associatedAttributeName());
 }
 
-void setJSSVGAngleValueAsString(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSSVGAngleValueAsString(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     SVGAngle* imp = static_cast<SVGAngle*>(static_cast<JSSVGAngle*>(thisObject)->impl());
     imp->setValueAsString(valueToStringWithNullCheck(exec, value));
@@ -218,31 +221,33 @@ void setJSSVGAngleValueAsString(ExecState* exec, JSObject* thisObject, JSValuePt
         static_cast<JSSVGAngle*>(thisObject)->context()->svgAttributeChanged(static_cast<JSSVGAngle*>(thisObject)->impl()->associatedAttributeName());
 }
 
-JSValuePtr JSSVGAngle::getConstructor(ExecState* exec)
+JSValue JSSVGAngle::getConstructor(ExecState* exec)
 {
     return getDOMConstructor<JSSVGAngleConstructor>(exec);
 }
 
-JSValuePtr jsSVGAnglePrototypeFunctionNewValueSpecifiedUnits(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsSVGAnglePrototypeFunctionNewValueSpecifiedUnits(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSSVGAngle::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSSVGAngle::s_info))
         return throwError(exec, TypeError);
     JSSVGAngle* castedThisObj = static_cast<JSSVGAngle*>(asObject(thisValue));
     SVGAngle* imp = static_cast<SVGAngle*>(castedThisObj->impl());
-    unsigned short unitType = args.at(exec, 0)->toInt32(exec);
-    float valueInSpecifiedUnits = args.at(exec, 1)->toFloat(exec);
+    unsigned short unitType = args.at(0).toInt32(exec);
+    float valueInSpecifiedUnits = args.at(1).toFloat(exec);
 
     imp->newValueSpecifiedUnits(unitType, valueInSpecifiedUnits);
     return jsUndefined();
 }
 
-JSValuePtr jsSVGAnglePrototypeFunctionConvertToSpecifiedUnits(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsSVGAnglePrototypeFunctionConvertToSpecifiedUnits(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSSVGAngle::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSSVGAngle::s_info))
         return throwError(exec, TypeError);
     JSSVGAngle* castedThisObj = static_cast<JSSVGAngle*>(asObject(thisValue));
     SVGAngle* imp = static_cast<SVGAngle*>(castedThisObj->impl());
-    unsigned short unitType = args.at(exec, 0)->toInt32(exec);
+    unsigned short unitType = args.at(0).toInt32(exec);
 
     imp->convertToSpecifiedUnits(unitType);
     return jsUndefined();
@@ -250,38 +255,38 @@ JSValuePtr jsSVGAnglePrototypeFunctionConvertToSpecifiedUnits(ExecState* exec, J
 
 // Constant getters
 
-JSValuePtr jsSVGAngleSVG_ANGLETYPE_UNKNOWN(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsSVGAngleSVG_ANGLETYPE_UNKNOWN(ExecState* exec, const Identifier&, const PropertySlot&)
 {
     return jsNumber(exec, static_cast<int>(0));
 }
 
-JSValuePtr jsSVGAngleSVG_ANGLETYPE_UNSPECIFIED(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsSVGAngleSVG_ANGLETYPE_UNSPECIFIED(ExecState* exec, const Identifier&, const PropertySlot&)
 {
     return jsNumber(exec, static_cast<int>(1));
 }
 
-JSValuePtr jsSVGAngleSVG_ANGLETYPE_DEG(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsSVGAngleSVG_ANGLETYPE_DEG(ExecState* exec, const Identifier&, const PropertySlot&)
 {
     return jsNumber(exec, static_cast<int>(2));
 }
 
-JSValuePtr jsSVGAngleSVG_ANGLETYPE_RAD(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsSVGAngleSVG_ANGLETYPE_RAD(ExecState* exec, const Identifier&, const PropertySlot&)
 {
     return jsNumber(exec, static_cast<int>(3));
 }
 
-JSValuePtr jsSVGAngleSVG_ANGLETYPE_GRAD(ExecState* exec, const Identifier&, const PropertySlot&)
+JSValue jsSVGAngleSVG_ANGLETYPE_GRAD(ExecState* exec, const Identifier&, const PropertySlot&)
 {
     return jsNumber(exec, static_cast<int>(4));
 }
 
-JSC::JSValuePtr toJS(JSC::ExecState* exec, SVGAngle* object, SVGElement* context)
+JSC::JSValue toJS(JSC::ExecState* exec, SVGAngle* object, SVGElement* context)
 {
     return getDOMObjectWrapper<JSSVGAngle>(exec, object, context);
 }
-SVGAngle* toSVGAngle(JSC::JSValuePtr value)
+SVGAngle* toSVGAngle(JSC::JSValue value)
 {
-    return value->isObject(&JSSVGAngle::s_info) ? static_cast<JSSVGAngle*>(asObject(value))->impl() : 0;
+    return value.isObject(&JSSVGAngle::s_info) ? static_cast<JSSVGAngle*>(asObject(value))->impl() : 0;
 }
 
 }

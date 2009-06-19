@@ -137,7 +137,6 @@ public:
     virtual void setFocus();
 
     void setCursor(const Cursor&);
-    Cursor cursor();
 
     virtual void show();
     virtual void hide();
@@ -151,6 +150,7 @@ public:
 
     virtual bool isFrameView() const { return false; }
     virtual bool isPluginView() const { return false; }
+    virtual bool isScrollbar() const { return false; }
 
     void removeFromParent();
     virtual void setParent(ScrollView* view);
@@ -193,7 +193,7 @@ private:
     
     IntRect m_frame; // Not used when a native widget exists.
 
-#if PLATFORM(MAC) || PLATFORM(GTK)
+#if PLATFORM(MAC)
     WidgetPrivate* m_data;
 #endif
 };

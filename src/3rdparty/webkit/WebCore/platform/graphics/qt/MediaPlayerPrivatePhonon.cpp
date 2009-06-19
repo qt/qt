@@ -1,5 +1,6 @@
 /*
     Copyright (C) 2008 Nokia Corporation and/or its subsidiary(-ies)
+    Copyright (C) 2009 Apple Inc. All rights reserved.
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -76,7 +77,7 @@ namespace WebCore {
 MediaPlayerPrivate::MediaPlayerPrivate(MediaPlayer* player)
     : m_player(player)
     , m_networkState(MediaPlayer::Empty)
-    , m_readyState(MediaPlayer::DataUnavailable)
+    , m_readyState(MediaPlayer::HaveNothing)
     , m_mediaObject(new MediaObject())
     , m_videoWidget(new VideoWidget(0))
     , m_audioOutput(new AudioOutput())
@@ -110,6 +111,18 @@ MediaPlayerPrivate::MediaPlayerPrivate(MediaPlayer* player)
     connect(m_mediaObject, SIGNAL(totalTimeChanged(qint64)), this, SLOT(totalTimeChanged(qint64)));
 }
 
+MediaPlayerPrivateInterface* MediaPlayerPrivate::create(MediaPlayer* player) 
+{ 
+    return new MediaPlayerPrivate(player);
+}
+
+void MediaPlayerPrivate::registerMediaEngine(MediaEngineRegistrar registrar)
+{
+    if (isAvailable())
+        registrar(create, getSupportedTypes, supportsType);
+}
+
+
 MediaPlayerPrivate::~MediaPlayerPrivate()
 {
     LOG(Media, "MediaPlayerPrivatePhonon::dtor deleting videowidget");
@@ -131,6 +144,13 @@ void MediaPlayerPrivate::getSupportedTypes(HashSet<String>&)
     notImplemented();
 }
 
+MediaPlayer::SupportsType MediaPlayerPrivate::supportsType(const String& type, const String& codecs)
+{
+    // FIXME: do the real thing
+    notImplemented();
+    return MediaPlayer::IsNotSupported;
+}
+
 bool MediaPlayerPrivate::hasVideo() const
 {
     bool hasVideo = m_mediaObject->hasVideo();
@@ -138,7 +158,7 @@ bool MediaPlayerPrivate::hasVideo() const
     return hasVideo;
 }
 
-void MediaPlayerPrivate::load(String url)
+void MediaPlayerPrivate::load(const String& url)
 {
     LOG(Media, "MediaPlayerPrivatePhonon::load(\"%s\")", url.utf8().data());
 
@@ -149,8 +169,8 @@ void MediaPlayerPrivate::load(String url)
     }
 
     // And we don't have any data yet
-    if (m_readyState != MediaPlayer::DataUnavailable) {
-        m_readyState = MediaPlayer::DataUnavailable;
+    if (m_readyState != MediaPlayer::HaveNothing) {
+        m_readyState = MediaPlayer::HaveNothing;
         m_player->readyStateChanged();
     }
 
@@ -205,7 +225,7 @@ bool MediaPlayerPrivate::seeking() const
 
 float MediaPlayerPrivate::duration() const
 {
-    if (m_networkState < MediaPlayer::LoadedMetaData)
+    if (m_readyState < MediaPlayer::HaveMetadata)
         return 0.0f;
 
     float duration = m_mediaObject->totalTime() / 1000.0f;
@@ -309,18 +329,19 @@ void MediaPlayerPrivate::updateStates()
     Phonon::State phononState = m_mediaObject->state();
 
     if (phononState == Phonon::StoppedState) {
-        if (oldNetworkState < MediaPlayer::LoadedMetaData) {
-            m_networkState = MediaPlayer::LoadedMetaData;
-            m_readyState = MediaPlayer::DataUnavailable;
+        if (m_readyState < MediaPlayer::HaveMetadata) {
+            m_networkState = MediaPlayer::Loading; // FIXME: should this be MediaPlayer::Idle?
+            m_readyState = MediaPlayer::HaveMetadata;
             m_mediaObject->pause();
         }
     } else if (phononState == Phonon::PausedState) {
         m_networkState = MediaPlayer::Loaded;
-        m_readyState = MediaPlayer::CanPlayThrough;
+        m_readyState = MediaPlayer::HaveEnoughData;
     } else if (phononState == Phonon::ErrorState) {
          if (!m_mediaObject || m_mediaObject->errorType() == Phonon::FatalError) {
-             m_networkState = MediaPlayer::LoadFailed;
-             m_readyState = MediaPlayer::DataUnavailable;
+             // FIXME: is it possile to differentiate between different types of errors
+             m_networkState = MediaPlayer::NetworkError;
+             m_readyState = MediaPlayer::HaveNothing;
              cancelLoad();
          } else {
              m_mediaObject->pause();
@@ -328,7 +349,7 @@ void MediaPlayerPrivate::updateStates()
     }
 
     if (seeking())
-        m_readyState = MediaPlayer::DataUnavailable;
+        m_readyState = MediaPlayer::HaveNothing;
 
     if (m_networkState != oldNetworkState) {
         const QMetaObject* metaObj = this->metaObject();
@@ -357,19 +378,18 @@ void MediaPlayerPrivate::setVisible(bool visible)
     m_videoWidget->setVisible(m_isVisible);
 }
 
-void MediaPlayerPrivate::setRect(const IntRect& newRect)
+void MediaPlayerPrivate::setSize(const IntSize& newSize)
 {
     if (!m_videoWidget)
         return;
 
-    LOG(Media, "MediaPlayerPrivatePhonon::setRect(%d,%d %dx%d)",
-                newRect.x(), newRect.y(),
-                newRect.width(), newRect.height());
+    LOG(Media, "MediaPlayerPrivatePhonon::setSize(%d,%d)",
+                newSize.width(), newSize.height());
 
     QRect currentRect = m_videoWidget->rect();
 
-    if (newRect.width() != currentRect.width() || newRect.height() != currentRect.height())
-        m_videoWidget->resize(newRect.width(), newRect.height());
+    if (newSize.width() != currentRect.width() || newSize.height() != currentRect.height())
+        m_videoWidget->resize(newSize.width(), newSize.height());
 }
 
 IntSize MediaPlayerPrivate::naturalSize() const
@@ -380,7 +400,7 @@ IntSize MediaPlayerPrivate::naturalSize() const
         return IntSize();
     }
 
-    if (m_networkState < MediaPlayer::LoadedMetaData) {
+    if (m_readyState < MediaPlayer::HaveMetadata) {
         LOG(Media, "MediaPlayerPrivatePhonon::naturalSize() -> %dx%d",
                            0, 0);
         return IntSize();

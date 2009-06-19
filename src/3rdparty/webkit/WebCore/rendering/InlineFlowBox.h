@@ -25,9 +25,9 @@
 
 namespace WebCore {
 
+class HitTestRequest;
 class HitTestResult;
-
-struct HitTestRequest;
+class RenderLineBoxList;
 
 class InlineFlowBox : public InlineRunBox {
 public:
@@ -36,6 +36,9 @@ public:
         , m_firstChild(0)
         , m_lastChild(0)
         , m_maxHorizontalVisualOverflow(0)
+        , m_includeLeftEdge(false)
+        , m_includeRightEdge(false)
+        , m_hasTextChildren(true)
 #ifndef NDEBUG
         , m_hasBadChildList(false)
 #endif
@@ -51,10 +54,6 @@ public:
 #ifndef NDEBUG
     virtual ~InlineFlowBox();
 #endif
-
-    RenderFlow* flowObject();
-
-    virtual bool isInlineFlowBox() { return true; }
 
     InlineFlowBox* prevFlowBox() const { return static_cast<InlineFlowBox*>(m_prevLine); }
     InlineFlowBox* nextFlowBox() const { return static_cast<InlineFlowBox*>(m_nextLine); }
@@ -80,6 +79,10 @@ public:
     virtual void attachLine();
     virtual void adjustPosition(int dx, int dy);
 
+    virtual void extractLineBoxFromRenderObject();
+    virtual void attachLineBoxToRenderObject();
+    virtual void removeLineBoxFromRenderObject();
+
     virtual void clearTruncation();
 
     virtual void paintBoxDecorations(RenderObject::PaintInfo&, int tx, int ty);
@@ -93,17 +96,23 @@ public:
     virtual void paint(RenderObject::PaintInfo&, int tx, int ty);
     virtual bool nodeAtPoint(const HitTestRequest&, HitTestResult&, int x, int y, int tx, int ty);
 
-    int marginBorderPaddingLeft();
-    int marginBorderPaddingRight();
-    int marginLeft();
-    int marginRight();
-    int borderLeft() { if (includeLeftEdge()) return object()->borderLeft(); return 0; }
-    int borderRight() { if (includeRightEdge()) return object()->borderRight(); return 0; }
-    int paddingLeft() { if (includeLeftEdge()) return object()->paddingLeft(); return 0; }
-    int paddingRight() { if (includeRightEdge()) return object()->paddingRight(); return 0; }
+    virtual RenderLineBoxList* rendererLineBoxes() const;
 
-    bool includeLeftEdge() { return m_includeLeftEdge; }
-    bool includeRightEdge() { return m_includeRightEdge; }
+    int marginBorderPaddingLeft() const { return marginLeft() + borderLeft() + paddingLeft(); }
+    int marginBorderPaddingRight() const { return marginRight() + borderRight() + paddingRight(); }
+    int marginLeft() const { if (includeLeftEdge()) return boxModelObject()->marginLeft(); return 0; }
+    int marginRight() const { if (includeRightEdge()) return boxModelObject()->marginRight(); return 0; }
+    int borderLeft() const { if (includeLeftEdge()) return renderer()->style()->borderLeftWidth(); return 0; }
+    int borderRight() const { if (includeRightEdge()) return renderer()->style()->borderRightWidth(); return 0; }
+    int borderTop() const { return renderer()->style()->borderTopWidth(); }
+    int borderBottom() const { return renderer()->style()->borderBottomWidth(); }
+    int paddingLeft() const { if (includeLeftEdge()) return boxModelObject()->paddingLeft(); return 0; }
+    int paddingRight() const { if (includeRightEdge()) return boxModelObject()->paddingRight(); return 0; }
+    int paddingTop() const { return boxModelObject()->paddingTop(); }
+    int paddingBottom() const { return boxModelObject()->paddingBottom(); }
+
+    bool includeLeftEdge() const { return m_includeLeftEdge; }
+    bool includeRightEdge() const { return m_includeRightEdge; }
     void setEdges(bool includeLeft, bool includeRight)
     {
         m_includeLeftEdge = includeLeft;
@@ -115,33 +124,40 @@ public:
     int getFlowSpacingWidth();
     bool onEndChain(RenderObject* endObject);
     virtual int placeBoxesHorizontally(int x, int& leftPosition, int& rightPosition, bool& needsWordSpacing);
-    virtual void verticallyAlignBoxes(int& heightOfBlock);
+    virtual int verticallyAlignBoxes(int heightOfBlock);
     void computeLogicalBoxHeights(int& maxPositionTop, int& maxPositionBottom,
                                   int& maxAscent, int& maxDescent, bool strictMode);
     void adjustMaxAscentAndDescent(int& maxAscent, int& maxDescent,
                                    int maxPositionTop, int maxPositionBottom);
     void placeBoxesVertically(int y, int maxHeight, int maxAscent, bool strictMode,
                               int& topPosition, int& bottomPosition, int& selectionTop, int& selectionBottom);
-    void shrinkBoxesWithNoTextChildren(int topPosition, int bottomPosition);
     
     virtual void setVerticalOverflowPositions(int /*top*/, int /*bottom*/) { }
     virtual void setVerticalSelectionPositions(int /*top*/, int /*bottom*/) { }
-    int maxHorizontalVisualOverflow() const { return m_maxHorizontalVisualOverflow; }
+    short maxHorizontalVisualOverflow() const { return m_maxHorizontalVisualOverflow; }
 
     void removeChild(InlineBox* child);
 
     virtual RenderObject::SelectionState selectionState();
 
     virtual bool canAccommodateEllipsis(bool ltr, int blockEdge, int ellipsisWidth);
-    virtual int placeEllipsisBox(bool ltr, int blockEdge, int ellipsisWidth, bool&);
+    virtual int placeEllipsisBox(bool ltr, int blockLeftEdge, int blockRightEdge, int ellipsisWidth, bool&);
+
+    bool hasTextChildren() const { return m_hasTextChildren; }
 
     void checkConsistency() const;
     void setHasBadChildList();
 
 private:
+    virtual bool isInlineFlowBox() const { return true; }
+
     InlineBox* m_firstChild;
     InlineBox* m_lastChild;
-    int m_maxHorizontalVisualOverflow;
+    short m_maxHorizontalVisualOverflow;
+    
+    bool m_includeLeftEdge : 1;
+    bool m_includeRightEdge : 1;
+    bool m_hasTextChildren : 1;
 
 #ifndef NDEBUG
     bool m_hasBadChildList;
@@ -165,7 +181,7 @@ inline void InlineFlowBox::setHasBadChildList()
 
 #ifndef NDEBUG
 // Outside the WebCore namespace for ease of invocation from gdb.
-void showTree(const WebCore::InlineBox*);
+void showTree(const WebCore::InlineFlowBox*);
 #endif
 
 #endif // InlineFlowBox_h

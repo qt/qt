@@ -24,6 +24,8 @@
 #include "qwebpage_p.h"
 
 #include "Cache.h"
+#include "CrossOriginPreflightResultCache.h"
+#include "FontCache.h"
 #include "Page.h"
 #include "PageCache.h"
 #include "Settings.h"
@@ -52,6 +54,7 @@ public:
     QHash<int, int> fontSizes;
     QHash<int, bool> attributes;
     QUrl userStyleSheetLocation;
+    QString defaultTextEncoding;
     QString localStorageDatabasePath;
     QString offlineWebApplicationCachePath;
     qint64 offlineStorageDefaultQuota;
@@ -161,6 +164,9 @@ void QWebSettingsPrivate::apply()
         QUrl location = !userStyleSheetLocation.isEmpty() ? userStyleSheetLocation : global->userStyleSheetLocation;
         settings->setUserStyleSheetLocation(WebCore::KURL(location));
 
+        QString encoding = !defaultTextEncoding.isEmpty() ? defaultTextEncoding: global->defaultTextEncoding;
+        settings->setDefaultTextEncodingName(encoding);
+
         QString localStoragePath = !localStorageDatabasePath.isEmpty() ? localStorageDatabasePath : global->localStorageDatabasePath;
         settings->setLocalStorageDatabasePath(localStoragePath);
 
@@ -183,6 +189,10 @@ void QWebSettingsPrivate::apply()
         value = attributes.value(QWebSettings::LocalStorageDatabaseEnabled,
                                       global->attributes.value(QWebSettings::LocalStorageDatabaseEnabled));
         settings->setLocalStorageEnabled(value);
+
+        value = attributes.value(QWebSettings::AllowUniversalAccessFromFileUrls,
+                                      global->attributes.value(QWebSettings::AllowUniversalAccessFromFileUrls));
+        settings->setAllowUniversalAccessFromFileURLs(value);
     } else {
         QList<QWebSettingsPrivate *> settings = *::allSettings();
         for (int i = 0; i < settings.count(); ++i)
@@ -318,6 +328,8 @@ QWebSettings *QWebSettings::globalSettings()
         web application cache feature is enabled or not.
     \value LocalStorageDatabaseEnabled Specifies whether support for the HTML 5
         local storage feature is enabled or not.
+    \value AllowUniversalAccessFromFileUrls Specifies whether documents from file
+        Urls should be granted universal access (e.g., to HTTP and HTTPS documents).
 */
 
 /*!
@@ -346,6 +358,7 @@ QWebSettings::QWebSettings()
     d->attributes.insert(QWebSettings::OfflineStorageDatabaseEnabled, true);
     d->attributes.insert(QWebSettings::OfflineWebApplicationCacheEnabled, true);
     d->attributes.insert(QWebSettings::LocalStorageDatabaseEnabled, true);
+    d->attributes.insert(QWebSettings::AllowUniversalAccessFromFileUrls, true);
     d->offlineStorageDefaultQuota = 5 * 1024 * 1024;
 
 }
@@ -429,6 +442,33 @@ void QWebSettings::setUserStyleSheetUrl(const QUrl &location)
 QUrl QWebSettings::userStyleSheetUrl() const
 {
     return d->userStyleSheetLocation;
+}
+
+/*!
+    \since 4.6
+    Specifies the default text encoding system.
+
+    The \a encoding, must be a string describing an encoding such as "utf-8",
+    "iso-8859-1", etc. If left empty a default value will be used. For a more
+    extensive list of encoding names see \l{QTextCodec}
+
+    \sa defaultTextEncoding()
+*/
+void QWebSettings::setDefaultTextEncoding(const QString &encoding)
+{
+    d->defaultTextEncoding = encoding;
+    d->apply();
+}
+
+/*!
+    \since 4.6
+    Returns the default text encoding.
+
+    \sa setDefaultTextEncoding()
+*/
+QString QWebSettings::defaultTextEncoding() const
+{
+    return d->defaultTextEncoding;
 }
 
 /*!
@@ -532,6 +572,40 @@ void QWebSettings::setWebGraphic(WebGraphic type, const QPixmap &graphic)
 QPixmap QWebSettings::webGraphic(WebGraphic type)
 {
     return graphics()->value(type);
+}
+
+/*!
+    Frees up as much memory as possible by cleaning all memory caches such
+    as page, object and font cache.
+
+    \since 4.6
+ */
+void QWebSettings::clearMemoryCaches()
+{
+    // Turn the cache on and off.  Disabling the object cache will remove all
+    // resources from the cache.  They may still live on if they are referenced
+    // by some Web page though.
+    if (!WebCore::cache()->disabled()) {
+        WebCore::cache()->setDisabled(true);
+        WebCore::cache()->setDisabled(false);
+    }
+
+    int pageCapacity = WebCore::pageCache()->capacity();
+    // Setting size to 0, makes all pages be released.
+    WebCore::pageCache()->setCapacity(0);
+    WebCore::pageCache()->releaseAutoreleasedPagesNow();
+    WebCore::pageCache()->setCapacity(pageCapacity);
+
+    // Invalidating the font cache and freeing all inactive font data.
+    WebCore::fontCache()->invalidate();
+
+#if ENABLE(OFFLINE_WEB_APPLICATIONS)
+    // Empty the application cache.
+    WebCore::cacheStorage().empty();
+#endif
+
+    // Empty the Cross-Origin Preflight cache
+    WebCore::CrossOriginPreflightResultCache::shared().empty();
 }
 
 /*!

@@ -23,13 +23,14 @@
 #include "Collector.h"
 
 #include "ArgList.h"
-#include "CollectorHeapIterator.h"
 #include "CallFrame.h"
+#include "CollectorHeapIterator.h"
+#include "Interpreter.h"
 #include "JSGlobalObject.h"
 #include "JSLock.h"
 #include "JSString.h"
 #include "JSValue.h"
-#include "Interpreter.h"
+#include "Nodes.h"
 #include "Tracing.h"
 #include <algorithm>
 #include <setjmp.h>
@@ -37,11 +38,12 @@
 #include <wtf/FastMalloc.h>
 #include <wtf/HashCountedSet.h>
 #include <wtf/UnusedParam.h>
+#include <wtf/VMTags.h>
 
 #if PLATFORM(DARWIN)
 
-#include <mach/mach_port.h>
 #include <mach/mach_init.h>
+#include <mach/mach_port.h>
 #include <mach/task.h>
 #include <mach/thread_act.h>
 #include <mach/vm_map.h>
@@ -74,9 +76,7 @@ extern int *__libc_stack_end;
 
 #if PLATFORM(SOLARIS)
 #include <thread.h>
-#endif
-
-#if PLATFORM(OPENBSD)
+#else
 #include <pthread.h>
 #endif
 
@@ -199,7 +199,7 @@ static NEVER_INLINE CollectorBlock* allocateBlock()
 #if PLATFORM(DARWIN)
     vm_address_t address = 0;
     // FIXME: tag the region as a JavaScriptCore heap when we get a registered VM tag: <rdar://problem/6054788>.
-    vm_map(current_task(), &address, BLOCK_SIZE, BLOCK_OFFSET_MASK, VM_FLAGS_ANYWHERE, MEMORY_OBJECT_NULL, 0, FALSE, VM_PROT_DEFAULT, VM_PROT_DEFAULT, VM_INHERIT_DEFAULT);
+    vm_map(current_task(), &address, BLOCK_SIZE, BLOCK_OFFSET_MASK, VM_FLAGS_ANYWHERE | VM_TAG_FOR_COLLECTOR_MEMORY, MEMORY_OBJECT_NULL, 0, FALSE, VM_PROT_DEFAULT, VM_PROT_DEFAULT, VM_INHERIT_DEFAULT);
 #elif PLATFORM(SYMBIAN)
     // no memory map in symbian, need to hack with fastMalloc
     void* address = fastMalloc(BLOCK_SIZE);
@@ -365,6 +365,9 @@ collect:
         // didn't find a block, and GC didn't reclaim anything, need to allocate a new block
         size_t numBlocks = heap.numBlocks;
         if (usedBlocks == numBlocks) {
+            static const size_t maxNumBlocks = ULONG_MAX / sizeof(CollectorBlock*) / GROWTH_FACTOR;
+            if (numBlocks > maxNumBlocks)
+                CRASH();
             numBlocks = max(MIN_ARRAY_SIZE, numBlocks * GROWTH_FACTOR);
             heap.numBlocks = numBlocks;
             heap.blocks = static_cast<CollectorBlock**>(fastRealloc(heap.blocks, numBlocks * sizeof(CollectorBlock*)));
@@ -483,6 +486,15 @@ static inline void* currentThreadStackBase()
     stack_t stack;
     pthread_stackseg_np(thread, &stack);
     return stack.ss_sp;
+#elif PLATFORM(SYMBIAN)
+    static void* stackBase = 0;
+    if (stackBase == 0) {
+        TThreadStackInfo info;
+        RThread thread;
+        thread.StackInfo(info);
+        stackBase = (void*)info.iBase;
+    }
+    return (void*)stackBase;
 #elif PLATFORM(UNIX)
 #ifdef UCLIBC_USE_PROC_SELF_MAPS
     // Read /proc/self/maps and locate the line whose address
@@ -548,15 +560,6 @@ static inline void* currentThreadStackBase()
     }
     return static_cast<char*>(stackBase) + stackSize;
 #endif
-#elif PLATFORM(SYMBIAN)
-    static void* stackBase = 0;
-    if (stackBase == 0) {
-        TThreadStackInfo info;
-        RThread thread;
-        thread.StackInfo(info);
-        stackBase = (void*)info.iBase;
-    }
-    return (void*)stackBase;
 #else
 #error Need a way to get the stack base on this platform
 #endif
@@ -768,7 +771,7 @@ typedef CONTEXT PlatformThreadRegisters;
 #error Need a thread register struct for this platform
 #endif
 
-size_t getPlatformThreadRegisters(const PlatformThread& platformThread, PlatformThreadRegisters& regs)
+static size_t getPlatformThreadRegisters(const PlatformThread& platformThread, PlatformThreadRegisters& regs)
 {
 #if PLATFORM(DARWIN)
 
@@ -906,45 +909,45 @@ void Heap::setGCProtectNeedsLocking()
         m_protectedValuesMutex.set(new Mutex);
 }
 
-void Heap::protect(JSValuePtr k)
+void Heap::protect(JSValue k)
 {
     ASSERT(k);
     ASSERT(JSLock::currentThreadIsHoldingLock() || !m_globalData->isSharedInstance);
 
-    if (JSImmediate::isImmediate(k))
+    if (!k.isCell())
         return;
 
     if (m_protectedValuesMutex)
         m_protectedValuesMutex->lock();
 
-    m_protectedValues.add(k->asCell());
+    m_protectedValues.add(k.asCell());
 
     if (m_protectedValuesMutex)
         m_protectedValuesMutex->unlock();
 }
 
-void Heap::unprotect(JSValuePtr k)
+void Heap::unprotect(JSValue k)
 {
     ASSERT(k);
     ASSERT(JSLock::currentThreadIsHoldingLock() || !m_globalData->isSharedInstance);
 
-    if (JSImmediate::isImmediate(k))
+    if (!k.isCell())
         return;
 
     if (m_protectedValuesMutex)
         m_protectedValuesMutex->lock();
 
-    m_protectedValues.remove(k->asCell());
+    m_protectedValues.remove(k.asCell());
 
     if (m_protectedValuesMutex)
         m_protectedValuesMutex->unlock();
 }
 
-Heap* Heap::heap(JSValuePtr v)
+Heap* Heap::heap(JSValue v)
 {
-    if (JSImmediate::isImmediate(v))
+    if (!v.isCell())
         return 0;
-    return Heap::cellBlock(v->asCell())->heap;
+    return Heap::cellBlock(v.asCell())->heap;
 }
 
 void Heap::markProtectedObjects()
@@ -1084,11 +1087,13 @@ bool Heap::collect()
     markStackObjectsConservatively();
     markProtectedObjects();
     if (m_markListSet && m_markListSet->size())
-        ArgList::markLists(*m_markListSet);
-    if (m_globalData->exception && !m_globalData->exception->marked())
-        m_globalData->exception->mark();
+        MarkedArgumentBuffer::markLists(*m_markListSet);
+    if (m_globalData->exception && !m_globalData->exception.marked())
+        m_globalData->exception.mark();
     m_globalData->interpreter->registerFile().markCallFrames(this);
     m_globalData->smallStrings.mark();
+    if (m_globalData->scopeNodeBeingReparsed)
+        m_globalData->scopeNodeBeingReparsed->mark();
 
     JAVASCRIPTCORE_GC_MARKED();
 
@@ -1105,7 +1110,7 @@ bool Heap::collect()
 
 size_t Heap::objectCount() 
 {
-    return primaryHeap.numLiveObjects + numberHeap.numLiveObjects; 
+    return primaryHeap.numLiveObjects + numberHeap.numLiveObjects - m_globalData->smallStrings.count(); 
 }
 
 template <HeapType heapType> 
@@ -1175,16 +1180,16 @@ size_t Heap::protectedObjectCount()
     return result;
 }
 
-static const char* typeName(JSCell* val)
+static const char* typeName(JSCell* cell)
 {
-    if (val->isString())
+    if (cell->isString())
         return "string";
-    if (val->isNumber())
+    if (cell->isNumber())
         return "number";
-    if (val->isGetterSetter())
+    if (cell->isGetterSetter())
         return "gettersetter";
-    ASSERT(val->isObject());
-    const ClassInfo* info = static_cast<JSObject*>(val)->classInfo();
+    ASSERT(cell->isObject());
+    const ClassInfo* info = static_cast<JSObject*>(cell)->classInfo();
     return info ? info->className : "Object";
 }
 

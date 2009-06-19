@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the tools applications of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -2067,28 +2067,29 @@ void HtmlGenerator::generateCompactList(const Node *relative,
                           << "&nbsp;</b>";
                 }
                 out() << "</td>\n";
+                    
+                if (!paragraphName[currentParagraphNo[i]].isEmpty()) {
+                    QMap<QString, const Node *>::Iterator it;
+                    it = paragraph[currentParagraphNo[i]].begin();
+                    for (j = 0; j < currentOffsetInParagraph[i]; j++)
+                        ++it;
 
-                // bad loop
-                QMap<QString, const Node *>::Iterator it;
-                it = paragraph[currentParagraphNo[i]].begin();
-                for (j = 0; j < currentOffsetInParagraph[i]; j++)
-                    ++it;
-
-                out() << "<td>";
-                // Previously, we used generateFullName() for this, but we
-                // require some special formatting.
-                out() << "<a href=\""
-                      << linkForNode(it.value(), relative)
-                      << "\">";
-                QStringList pieces = fullName(it.value(), relative, marker).split("::");
-                out() << protect(pieces.last());
-                out() << "</a>";
-                if (pieces.size() > 1) {
-                    out() << " (";
-                    generateFullName(it.value()->parent(), relative, marker);
-                    out() << ")";
-                }
-                out() << "</td>\n";
+                    out() << "<td>";
+                    // Previously, we used generateFullName() for this, but we
+                    // require some special formatting.
+                    out() << "<a href=\""
+                        << linkForNode(it.value(), relative)
+                        << "\">";
+                    QStringList pieces = fullName(it.value(), relative, marker).split("::");
+                    out() << protect(pieces.last());
+                    out() << "</a>";
+                    if (pieces.size() > 1) {
+                        out() << " (";
+                        generateFullName(it.value()->parent(), relative, marker);
+                        out() << ")";
+                    }
+                    out() << "</td>\n";
+                 }
 
                 currentOffset[i]++;
                 currentOffsetInParagraph[i]++;

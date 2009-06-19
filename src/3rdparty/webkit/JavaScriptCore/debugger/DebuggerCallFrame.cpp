@@ -46,6 +46,17 @@ const UString* DebuggerCallFrame::functionName() const
         return 0;
     return &function->name(&m_callFrame->globalData());
 }
+    
+UString DebuggerCallFrame::calculatedFunctionName() const
+{
+    if (!m_callFrame->codeBlock())
+        return 0;
+    
+    JSFunction* function = static_cast<JSFunction*>(m_callFrame->callee());
+    if (!function)
+        return 0;
+    return function->calculatedDisplayName(&m_callFrame->globalData());
+}
 
 DebuggerCallFrame::Type DebuggerCallFrame::type() const
 {
@@ -63,10 +74,10 @@ JSObject* DebuggerCallFrame::thisObject() const
     return asObject(m_callFrame->thisValue());
 }
 
-JSValuePtr DebuggerCallFrame::evaluate(const UString& script, JSValuePtr& exception) const
+JSValue DebuggerCallFrame::evaluate(const UString& script, JSValue& exception) const
 {
     if (!m_callFrame->codeBlock())
-        return noValue();
+        return JSValue();
 
     int errLine;
     UString errMsg;

@@ -22,12 +22,6 @@
 
 #include "config.h"
 
-// Dump SVGElementInstance object tree - useful to debug instanceRoot problems
-// #define DUMP_INSTANCE_TREE
-
-// Dump the deep-expanded shadow tree (where the renderes are built from)
-// #define DUMP_SHADOW_TREE
-
 #if ENABLE(SVG)
 #include "SVGUseElement.h"
 
@@ -37,6 +31,7 @@
 #include "Event.h"
 #include "EventListener.h"
 #include "HTMLNames.h"
+#include "MappedAttribute.h"
 #include "NodeRenderStyle.h"
 #include "RegisteredEventListener.h"
 #include "RenderSVGTransformableContainer.h"
@@ -50,6 +45,12 @@
 #include "SVGSymbolElement.h"
 #include "XLinkNames.h"
 #include "XMLSerializer.h"
+
+// Dump SVGElementInstance object tree - useful to debug instanceRoot problems
+// #define DUMP_INSTANCE_TREE
+
+// Dump the deep-expanded shadow tree (where the renderers are built from)
+// #define DUMP_SHADOW_TREE
 
 namespace WebCore {
 
@@ -138,7 +139,7 @@ void SVGUseElement::svgAttributeChanged(const QualifiedName& attrName)
         buildPendingResource();
 
         if (m_shadowTreeRootElement)
-            m_shadowTreeRootElement->setChanged();
+            m_shadowTreeRootElement->setNeedsStyleRecalc();
     }
 }
 
@@ -152,7 +153,7 @@ void SVGUseElement::childrenChanged(bool changedByParser, Node* beforeChange, No
     buildPendingResource();
 
     if (m_shadowTreeRootElement)
-        m_shadowTreeRootElement->setChanged();
+        m_shadowTreeRootElement->setNeedsStyleRecalc();
 }
  
 static bool shadowTreeContainsChangedNodes(SVGElementInstance* target)
@@ -169,11 +170,11 @@ static bool shadowTreeContainsChangedNodes(SVGElementInstance* target)
 
 void SVGUseElement::recalcStyle(StyleChange change)
 {
-    if (attached() && changed() && shadowTreeContainsChangedNodes(m_targetElementInstance.get())) {
+    if (attached() && needsStyleRecalc() && shadowTreeContainsChangedNodes(m_targetElementInstance.get())) {
         buildPendingResource();
 
         if (m_shadowTreeRootElement)
-            m_shadowTreeRootElement->setChanged();
+            m_shadowTreeRootElement->setNeedsStyleRecalc();
     }
 
     SVGStyledElement::recalcStyle(change);
@@ -186,7 +187,7 @@ void SVGUseElement::recalcStyle(StyleChange change)
     // Mimic Element::recalcStyle(). The main difference is that we don't call attach() on the
     // shadow tree root element, but call attachShadowTree() here. Calling attach() will crash
     // as the shadow tree root element has no (direct) parent node. Yes, shadow trees are tricky.
-    if (change >= Inherit || m_shadowTreeRootElement->changed()) {
+    if (change >= Inherit || m_shadowTreeRootElement->needsStyleRecalc()) {
         RefPtr<RenderStyle> newStyle = document()->styleSelector()->styleForElement(m_shadowTreeRootElement.get());
         StyleChange ch = Node::diff(m_shadowTreeRootElement->renderStyle(), newStyle.get());
         if (ch == Detach) {
@@ -195,8 +196,8 @@ void SVGUseElement::recalcStyle(StyleChange change)
             attachShadowTree();
 
             // attach recalulates the style for all children. No need to do it twice.
-            m_shadowTreeRootElement->setChanged(NoStyleChange);
-            m_shadowTreeRootElement->setHasChangedChild(false);
+            m_shadowTreeRootElement->setNeedsStyleRecalc(NoStyleChange);
+            m_shadowTreeRootElement->setChildNeedsStyleRecalc(false);
             return;
         }
     }
@@ -564,10 +565,10 @@ void SVGUseElement::buildShadowTree(SVGElement* target, SVGElementInstance* targ
     if (isDisallowedElement(target))
         return;
 
-    RefPtr<Node> newChild = targetInstance->correspondingElement()->cloneNode(true);
+    RefPtr<Element> newChild = targetInstance->correspondingElement()->cloneElementWithChildren();
 
     // We don't walk the target tree element-by-element, and clone each element,
-    // but instead use cloneNode(deep=true). This is an optimization for the common
+    // but instead use cloneElementWithChildren(). This is an optimization for the common
     // case where <use> doesn't contain disallowed elements (ie. <foreignObject>).
     // Though if there are disallowed elements in the subtree, we have to remove them.
     // For instance: <use> on <g> containing <foreignObject> (indirect case).
@@ -643,10 +644,10 @@ void SVGUseElement::expandUseElementsInShadowTree(Node* element)
                 return;
             }
 
-            RefPtr<Node> newChild = target->cloneNode(true);
+            RefPtr<Element> newChild = target->cloneElementWithChildren();
 
             // We don't walk the target tree element-by-element, and clone each element,
-            // but instead use cloneNode(deep=true). This is an optimization for the common
+            // but instead use cloneElementWithChildren(). This is an optimization for the common
             // case where <use> doesn't contain disallowed elements (ie. <foreignObject>).
             // Though if there are disallowed elements in the subtree, we have to remove them.
             // For instance: <use> on <g> containing <foreignObject> (indirect case).
@@ -719,9 +720,8 @@ void SVGUseElement::expandSymbolElementsInShadowTree(Node* element)
             removeDisallowedElementsFromSubtree(svgElement.get());
 
         // Replace <symbol> with <svg>.
-        // ASSERT(element->parentNode());
-        if (element->parentNode())
-            element->parentNode()->replaceChild(svgElement.release(), element, ec);
+        ASSERT(element->parentNode()); 
+        element->parentNode()->replaceChild(svgElement.release(), element, ec);
         ASSERT(ec == 0);
 
         // Immediately stop here, and restart expanding.

@@ -27,6 +27,7 @@
 #include "JSStringRefCF.h"
 
 #include "APICast.h"
+#include "InitializeThreading.h"
 #include "JSStringRef.h"
 #include "OpaqueJSString.h"
 #include <runtime/UString.h>
@@ -35,7 +36,11 @@
 
 JSStringRef JSStringCreateWithCFString(CFStringRef string)
 {
-    CFIndex length = CFStringGetLength(string);
+    JSC::initializeThreading();
+
+    // We cannot use CFIndex here since CFStringGetLength can return values larger than
+    // it can hold.  (<rdar://problem/6806478>)
+    size_t length = CFStringGetLength(string);
     if (length) {
         OwnArrayPtr<UniChar> buffer(new UniChar[length]);
         CFStringGetCharacters(string, CFRangeMake(0, length), buffer.get());
@@ -44,7 +49,7 @@ JSStringRef JSStringCreateWithCFString(CFStringRef string)
     } else {
         return OpaqueJSString::create(0, 0).releaseRef();
     }
-    }
+}
 
 CFStringRef JSStringCopyCFString(CFAllocatorRef alloc, JSStringRef string)
 {

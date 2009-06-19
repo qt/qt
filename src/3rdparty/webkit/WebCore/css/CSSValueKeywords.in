@@ -506,6 +506,9 @@ media-seek-back-button
 media-seek-forward-button
 media-slider
 media-sliderthumb
+media-timeline-container
+media-current-time-display
+media-time-remaining-display
 menulist
 menulist-button
 menulist-text
@@ -534,9 +537,13 @@ round
 #
 # CSS_PROP_BACKGROUND_CLIP/ORIGIN
 #
+# border/content/padding are deprecated and ultimately will only apply to the -webkit- form of these properties.
+# border-box/content-box/padding-box should be used instead.
+#
 border
 content
 padding
+padding-box
 
 #
 # CSS_PROP_BOX_SIZING
@@ -570,6 +577,12 @@ lines
 #
 running
 paused
+
+#
+# CSS_PROP__WEBKIT_TRANSFORM_STYLE
+#
+flat
+preserve-3d
 
 #
 # CSS_PROP__WEBKIT_TRANSITION_TIMING_FUNCTION

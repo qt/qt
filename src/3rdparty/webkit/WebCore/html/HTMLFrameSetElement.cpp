@@ -29,8 +29,9 @@
 #include "Event.h"
 #include "EventNames.h"
 #include "HTMLNames.h"
+#include "ScriptEventListener.h"
 #include "Length.h"
-#include "Length.h"
+#include "MappedAttribute.h"
 #include "MouseEvent.h"
 #include "RenderFrameSet.h"
 #include "Text.h"
@@ -88,13 +89,13 @@ void HTMLFrameSetElement::parseMappedAttribute(MappedAttribute *attr)
         if (!attr->isNull()) {
             if (m_rows) delete [] m_rows;
             m_rows = newLengthArray(attr->value().string(), m_totalRows);
-            setChanged();
+            setNeedsStyleRecalc();
         }
     } else if (attr->name() == colsAttr) {
         if (!attr->isNull()) {
             delete [] m_cols;
             m_cols = newLengthArray(attr->value().string(), m_totalCols);
-            setChanged();
+            setNeedsStyleRecalc();
         }
     } else if (attr->name() == frameborderAttr) {
         if (!attr->isNull()) {
@@ -125,11 +126,11 @@ void HTMLFrameSetElement::parseMappedAttribute(MappedAttribute *attr)
             m_borderColorSet = true;
         }
     } else if (attr->name() == onloadAttr) {
-        document()->setWindowInlineEventListenerForTypeAndAttribute(eventNames().loadEvent, attr);
+        document()->setWindowAttributeEventListener(eventNames().loadEvent, createAttributeEventListener(document()->frame(), attr));
     } else if (attr->name() == onbeforeunloadAttr) {
-        document()->setWindowInlineEventListenerForTypeAndAttribute(eventNames().beforeunloadEvent, attr);
+        document()->setWindowAttributeEventListener(eventNames().beforeunloadEvent, createAttributeEventListener(document()->frame(), attr));
     } else if (attr->name() == onunloadAttr) {
-        document()->setWindowInlineEventListenerForTypeAndAttribute(eventNames().unloadEvent, attr);
+        document()->setWindowAttributeEventListener(eventNames().unloadEvent, createAttributeEventListener(document()->frame(), attr));
     } else
         HTMLElement::parseMappedAttribute(attr);
 }
@@ -186,9 +187,9 @@ void HTMLFrameSetElement::defaultEventHandler(Event* evt)
 
 void HTMLFrameSetElement::recalcStyle(StyleChange ch)
 {
-    if (changed() && renderer()) {
+    if (needsStyleRecalc() && renderer()) {
         renderer()->setNeedsLayout(true);
-        setChanged(NoStyleChange);
+        setNeedsStyleRecalc(NoStyleChange);
     }
     HTMLElement::recalcStyle(ch);
 }

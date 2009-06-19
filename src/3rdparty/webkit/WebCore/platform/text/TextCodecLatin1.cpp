@@ -30,8 +30,7 @@
 #include "PlatformString.h"
 #include "StringBuffer.h"
 #include <stdio.h>
-
-using std::auto_ptr;
+#include <wtf/PassOwnPtr.h>
 
 namespace WebCore {
 
@@ -104,9 +103,9 @@ void TextCodecLatin1::registerEncodingNames(EncodingNameRegistrar registrar)
     registrar("x-ansi", "US-ASCII");
 }
 
-static auto_ptr<TextCodec> newStreamingTextDecoderWindowsLatin1(const TextEncoding&, const void*)
+static PassOwnPtr<TextCodec> newStreamingTextDecoderWindowsLatin1(const TextEncoding&, const void*)
 {
-    return auto_ptr<TextCodec>(new TextCodecLatin1);
+    return new TextCodecLatin1;
 }
 
 void TextCodecLatin1::registerCodecs(TextCodecRegistrar registrar)
@@ -120,7 +119,8 @@ void TextCodecLatin1::registerCodecs(TextCodecRegistrar registrar)
 
 String TextCodecLatin1::decode(const char* bytes, size_t length, bool, bool, bool&)
 {
-    StringBuffer characters(length);
+    UChar* characters;
+    String result = String::createUninitialized(length, characters);
 
     // Convert the string a fast way and simultaneously do an efficient check to see if it's all ASCII.
     unsigned char ored = 0;
@@ -131,7 +131,7 @@ String TextCodecLatin1::decode(const char* bytes, size_t length, bool, bool, boo
     }
 
     if (!(ored & 0x80))
-        return String::adopt(characters);
+        return result;
 
     // Convert the slightly slower way when there are non-ASCII characters.
     for (size_t i = 0; i < length; ++i) {
@@ -139,7 +139,7 @@ String TextCodecLatin1::decode(const char* bytes, size_t length, bool, bool, boo
         characters[i] = table[c];
     }
 
-    return String::adopt(characters);
+    return result;
 }
 
 static CString encodeComplexWindowsLatin1(const UChar* characters, size_t length, UnencodableHandling handling)

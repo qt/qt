@@ -37,7 +37,7 @@ using namespace JSC;
 
 namespace WebCore {
 
-ASSERT_CLASS_FITS_IN_CELL(JSStyleSheetList)
+ASSERT_CLASS_FITS_IN_CELL(JSStyleSheetList);
 
 /* Hash table */
 
@@ -74,13 +74,13 @@ public:
     JSStyleSheetListConstructor(ExecState* exec)
         : DOMObject(JSStyleSheetListConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
     {
-        putDirect(exec->propertyNames().prototype, JSStyleSheetListPrototype::self(exec), None);
+        putDirect(exec->propertyNames().prototype, JSStyleSheetListPrototype::self(exec, exec->lexicalGlobalObject()), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
     static const ClassInfo s_info;
 
-    static PassRefPtr<Structure> createStructure(JSValuePtr proto) 
+    static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
         return Structure::create(proto, TypeInfo(ObjectType, ImplementsHasInstance)); 
     }
@@ -110,9 +110,9 @@ static const HashTable JSStyleSheetListPrototypeTable =
 
 const ClassInfo JSStyleSheetListPrototype::s_info = { "StyleSheetListPrototype", 0, &JSStyleSheetListPrototypeTable, 0 };
 
-JSObject* JSStyleSheetListPrototype::self(ExecState* exec)
+JSObject* JSStyleSheetListPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSStyleSheetList>(exec);
+    return getDOMPrototype<JSStyleSheetList>(exec, globalObject);
 }
 
 bool JSStyleSheetListPrototype::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -131,12 +131,11 @@ JSStyleSheetList::JSStyleSheetList(PassRefPtr<Structure> structure, PassRefPtr<S
 JSStyleSheetList::~JSStyleSheetList()
 {
     forgetDOMObject(*Heap::heap(this)->globalData(), m_impl.get());
-
 }
 
-JSObject* JSStyleSheetList::createPrototype(ExecState* exec)
+JSObject* JSStyleSheetList::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSStyleSheetListPrototype(JSStyleSheetListPrototype::createStructure(exec->lexicalGlobalObject()->objectPrototype()));
+    return new (exec) JSStyleSheetListPrototype(JSStyleSheetListPrototype::createStructure(globalObject->objectPrototype()));
 }
 
 bool JSStyleSheetList::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -168,13 +167,14 @@ bool JSStyleSheetList::getOwnPropertySlot(ExecState* exec, unsigned propertyName
     return getOwnPropertySlot(exec, Identifier::from(exec, propertyName), slot);
 }
 
-JSValuePtr jsStyleSheetListLength(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsStyleSheetListLength(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     StyleSheetList* imp = static_cast<StyleSheetList*>(static_cast<JSStyleSheetList*>(asObject(slot.slotBase()))->impl());
     return jsNumber(exec, imp->length());
 }
 
-JSValuePtr jsStyleSheetListConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsStyleSheetListConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     return static_cast<JSStyleSheetList*>(asObject(slot.slotBase()))->getConstructor(exec);
 }
@@ -185,37 +185,38 @@ void JSStyleSheetList::getPropertyNames(ExecState* exec, PropertyNameArray& prop
      Base::getPropertyNames(exec, propertyNames);
 }
 
-JSValuePtr JSStyleSheetList::getConstructor(ExecState* exec)
+JSValue JSStyleSheetList::getConstructor(ExecState* exec)
 {
     return getDOMConstructor<JSStyleSheetListConstructor>(exec);
 }
 
-JSValuePtr jsStyleSheetListPrototypeFunctionItem(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsStyleSheetListPrototypeFunctionItem(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSStyleSheetList::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSStyleSheetList::s_info))
         return throwError(exec, TypeError);
     JSStyleSheetList* castedThisObj = static_cast<JSStyleSheetList*>(asObject(thisValue));
     StyleSheetList* imp = static_cast<StyleSheetList*>(castedThisObj->impl());
-    unsigned index = args.at(exec, 0)->toInt32(exec);
+    unsigned index = args.at(0).toInt32(exec);
 
 
-    JSC::JSValuePtr result = toJS(exec, WTF::getPtr(imp->item(index)));
+    JSC::JSValue result = toJS(exec, WTF::getPtr(imp->item(index)));
     return result;
 }
 
 
-JSValuePtr JSStyleSheetList::indexGetter(ExecState* exec, const Identifier& propertyName, const PropertySlot& slot)
+JSValue JSStyleSheetList::indexGetter(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     JSStyleSheetList* thisObj = static_cast<JSStyleSheetList*>(asObject(slot.slotBase()));
     return toJS(exec, static_cast<StyleSheetList*>(thisObj->impl())->item(slot.index()));
 }
-JSC::JSValuePtr toJS(JSC::ExecState* exec, StyleSheetList* object)
+JSC::JSValue toJS(JSC::ExecState* exec, StyleSheetList* object)
 {
     return getDOMObjectWrapper<JSStyleSheetList>(exec, object);
 }
-StyleSheetList* toStyleSheetList(JSC::JSValuePtr value)
+StyleSheetList* toStyleSheetList(JSC::JSValue value)
 {
-    return value->isObject(&JSStyleSheetList::s_info) ? static_cast<JSStyleSheetList*>(asObject(value))->impl() : 0;
+    return value.isObject(&JSStyleSheetList::s_info) ? static_cast<JSStyleSheetList*>(asObject(value))->impl() : 0;
 }
 
 }

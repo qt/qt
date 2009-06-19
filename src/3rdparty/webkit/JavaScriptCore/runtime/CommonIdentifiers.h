@@ -24,7 +24,7 @@
 #include "Identifier.h"
 #include <wtf/Noncopyable.h>
 
-// ArgList of property names, passed to a macro so we can do set them up various
+// MarkedArgumentBuffer of property names, passed to a macro so we can do set them up various
 // ways without repeating the list.
 #define JSC_COMMON_IDENTIFIERS_EACH_PROPERTY_NAME(macro) \
     macro(__defineGetter__) \
@@ -63,7 +63,8 @@
     macro(toPrecision) \
     macro(toString) \
     macro(UTC) \
-    macro(valueOf)
+    macro(valueOf) \
+    macro(displayName)
 
 namespace JSC {
 

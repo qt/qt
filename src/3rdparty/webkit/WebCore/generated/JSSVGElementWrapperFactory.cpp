@@ -44,29 +44,6 @@
 #include "JSSVGDefsElement.h"
 #include "JSSVGDescElement.h"
 #include "JSSVGEllipseElement.h"
-#include "JSSVGFEBlendElement.h"
-#include "JSSVGFEColorMatrixElement.h"
-#include "JSSVGFEComponentTransferElement.h"
-#include "JSSVGFECompositeElement.h"
-#include "JSSVGFEDiffuseLightingElement.h"
-#include "JSSVGFEDisplacementMapElement.h"
-#include "JSSVGFEDistantLightElement.h"
-#include "JSSVGFEFloodElement.h"
-#include "JSSVGFEFuncAElement.h"
-#include "JSSVGFEFuncBElement.h"
-#include "JSSVGFEFuncGElement.h"
-#include "JSSVGFEFuncRElement.h"
-#include "JSSVGFEGaussianBlurElement.h"
-#include "JSSVGFEImageElement.h"
-#include "JSSVGFEMergeElement.h"
-#include "JSSVGFEMergeNodeElement.h"
-#include "JSSVGFEOffsetElement.h"
-#include "JSSVGFEPointLightElement.h"
-#include "JSSVGFESpecularLightingElement.h"
-#include "JSSVGFESpotLightElement.h"
-#include "JSSVGFETileElement.h"
-#include "JSSVGFETurbulenceElement.h"
-#include "JSSVGFilterElement.h"
 #include "JSSVGFontElement.h"
 #include "JSSVGFontFaceElement.h"
 #include "JSSVGFontFaceFormatElement.h"
@@ -119,29 +96,6 @@
 #include "SVGDefsElement.h"
 #include "SVGDescElement.h"
 #include "SVGEllipseElement.h"
-#include "SVGFEBlendElement.h"
-#include "SVGFEColorMatrixElement.h"
-#include "SVGFEComponentTransferElement.h"
-#include "SVGFECompositeElement.h"
-#include "SVGFEDiffuseLightingElement.h"
-#include "SVGFEDisplacementMapElement.h"
-#include "SVGFEDistantLightElement.h"
-#include "SVGFEFloodElement.h"
-#include "SVGFEFuncAElement.h"
-#include "SVGFEFuncBElement.h"
-#include "SVGFEFuncGElement.h"
-#include "SVGFEFuncRElement.h"
-#include "SVGFEGaussianBlurElement.h"
-#include "SVGFEImageElement.h"
-#include "SVGFEMergeElement.h"
-#include "SVGFEMergeNodeElement.h"
-#include "SVGFEOffsetElement.h"
-#include "SVGFEPointLightElement.h"
-#include "SVGFESpecularLightingElement.h"
-#include "SVGFESpotLightElement.h"
-#include "SVGFETileElement.h"
-#include "SVGFETurbulenceElement.h"
-#include "SVGFilterElement.h"
 #include "SVGFontElement.h"
 #include "SVGFontFaceElement.h"
 #include "SVGFontFaceFormatElement.h"
@@ -249,121 +203,6 @@ static JSNode* createSVGDescElementWrapper(ExecState* exec, PassRefPtr<SVGElemen
 static JSNode* createSVGEllipseElementWrapper(ExecState* exec, PassRefPtr<SVGElement> element)
 {
     return CREATE_DOM_NODE_WRAPPER(exec, SVGEllipseElement, element.get());
-}
-
-static JSNode* createSVGFEBlendElementWrapper(ExecState* exec, PassRefPtr<SVGElement> element)
-{
-    return CREATE_DOM_NODE_WRAPPER(exec, SVGFEBlendElement, element.get());
-}
-
-static JSNode* createSVGFEColorMatrixElementWrapper(ExecState* exec, PassRefPtr<SVGElement> element)
-{
-    return CREATE_DOM_NODE_WRAPPER(exec, SVGFEColorMatrixElement, element.get());
-}
-
-static JSNode* createSVGFEComponentTransferElementWrapper(ExecState* exec, PassRefPtr<SVGElement> element)
-{
-    return CREATE_DOM_NODE_WRAPPER(exec, SVGFEComponentTransferElement, element.get());
-}
-
-static JSNode* createSVGFECompositeElementWrapper(ExecState* exec, PassRefPtr<SVGElement> element)
-{
-    return CREATE_DOM_NODE_WRAPPER(exec, SVGFECompositeElement, element.get());
-}
-
-static JSNode* createSVGFEDiffuseLightingElementWrapper(ExecState* exec, PassRefPtr<SVGElement> element)
-{
-    return CREATE_DOM_NODE_WRAPPER(exec, SVGFEDiffuseLightingElement, element.get());
-}
-
-static JSNode* createSVGFEDisplacementMapElementWrapper(ExecState* exec, PassRefPtr<SVGElement> element)
-{
-    return CREATE_DOM_NODE_WRAPPER(exec, SVGFEDisplacementMapElement, element.get());
-}
-
-static JSNode* createSVGFEDistantLightElementWrapper(ExecState* exec, PassRefPtr<SVGElement> element)
-{
-    return CREATE_DOM_NODE_WRAPPER(exec, SVGFEDistantLightElement, element.get());
-}
-
-static JSNode* createSVGFEFloodElementWrapper(ExecState* exec, PassRefPtr<SVGElement> element)
-{
-    return CREATE_DOM_NODE_WRAPPER(exec, SVGFEFloodElement, element.get());
-}
-
-static JSNode* createSVGFEFuncAElementWrapper(ExecState* exec, PassRefPtr<SVGElement> element)
-{
-    return CREATE_DOM_NODE_WRAPPER(exec, SVGFEFuncAElement, element.get());
-}
-
-static JSNode* createSVGFEFuncBElementWrapper(ExecState* exec, PassRefPtr<SVGElement> element)
-{
-    return CREATE_DOM_NODE_WRAPPER(exec, SVGFEFuncBElement, element.get());
-}
-
-static JSNode* createSVGFEFuncGElementWrapper(ExecState* exec, PassRefPtr<SVGElement> element)
-{
-    return CREATE_DOM_NODE_WRAPPER(exec, SVGFEFuncGElement, element.get());
-}
-
-static JSNode* createSVGFEFuncRElementWrapper(ExecState* exec, PassRefPtr<SVGElement> element)
-{
-    return CREATE_DOM_NODE_WRAPPER(exec, SVGFEFuncRElement, element.get());
-}
-
-static JSNode* createSVGFEGaussianBlurElementWrapper(ExecState* exec, PassRefPtr<SVGElement> element)
-{
-    return CREATE_DOM_NODE_WRAPPER(exec, SVGFEGaussianBlurElement, element.get());
-}
-
-static JSNode* createSVGFEImageElementWrapper(ExecState* exec, PassRefPtr<SVGElement> element)
-{
-    return CREATE_DOM_NODE_WRAPPER(exec, SVGFEImageElement, element.get());
-}
-
-static JSNode* createSVGFEMergeElementWrapper(ExecState* exec, PassRefPtr<SVGElement> element)
-{
-    return CREATE_DOM_NODE_WRAPPER(exec, SVGFEMergeElement, element.get());
-}
-
-static JSNode* createSVGFEMergeNodeElementWrapper(ExecState* exec, PassRefPtr<SVGElement> element)
-{
-    return CREATE_DOM_NODE_WRAPPER(exec, SVGFEMergeNodeElement, element.get());
-}
-
-static JSNode* createSVGFEOffsetElementWrapper(ExecState* exec, PassRefPtr<SVGElement> element)
-{
-    return CREATE_DOM_NODE_WRAPPER(exec, SVGFEOffsetElement, element.get());
-}
-
-static JSNode* createSVGFEPointLightElementWrapper(ExecState* exec, PassRefPtr<SVGElement> element)
-{
-    return CREATE_DOM_NODE_WRAPPER(exec, SVGFEPointLightElement, element.get());
-}
-
-static JSNode* createSVGFESpecularLightingElementWrapper(ExecState* exec, PassRefPtr<SVGElement> element)
-{
-    return CREATE_DOM_NODE_WRAPPER(exec, SVGFESpecularLightingElement, element.get());
-}
-
-static JSNode* createSVGFESpotLightElementWrapper(ExecState* exec, PassRefPtr<SVGElement> element)
-{
-    return CREATE_DOM_NODE_WRAPPER(exec, SVGFESpotLightElement, element.get());
-}
-
-static JSNode* createSVGFETileElementWrapper(ExecState* exec, PassRefPtr<SVGElement> element)
-{
-    return CREATE_DOM_NODE_WRAPPER(exec, SVGFETileElement, element.get());
-}
-
-static JSNode* createSVGFETurbulenceElementWrapper(ExecState* exec, PassRefPtr<SVGElement> element)
-{
-    return CREATE_DOM_NODE_WRAPPER(exec, SVGFETurbulenceElement, element.get());
-}
-
-static JSNode* createSVGFilterElementWrapper(ExecState* exec, PassRefPtr<SVGElement> element)
-{
-    return CREATE_DOM_NODE_WRAPPER(exec, SVGFilterElement, element.get());
 }
 
 static JSNode* createSVGFontElementWrapper(ExecState* exec, PassRefPtr<SVGElement> element)
@@ -563,29 +402,6 @@ JSNode* createJSSVGWrapper(ExecState* exec, PassRefPtr<SVGElement> element)
        map.set(defsTag.localName().impl(), createSVGDefsElementWrapper);
        map.set(descTag.localName().impl(), createSVGDescElementWrapper);
        map.set(ellipseTag.localName().impl(), createSVGEllipseElementWrapper);
-       map.set(feBlendTag.localName().impl(), createSVGFEBlendElementWrapper);
-       map.set(feColorMatrixTag.localName().impl(), createSVGFEColorMatrixElementWrapper);
-       map.set(feComponentTransferTag.localName().impl(), createSVGFEComponentTransferElementWrapper);
-       map.set(feCompositeTag.localName().impl(), createSVGFECompositeElementWrapper);
-       map.set(feDiffuseLightingTag.localName().impl(), createSVGFEDiffuseLightingElementWrapper);
-       map.set(feDisplacementMapTag.localName().impl(), createSVGFEDisplacementMapElementWrapper);
-       map.set(feDistantLightTag.localName().impl(), createSVGFEDistantLightElementWrapper);
-       map.set(feFloodTag.localName().impl(), createSVGFEFloodElementWrapper);
-       map.set(feFuncATag.localName().impl(), createSVGFEFuncAElementWrapper);
-       map.set(feFuncBTag.localName().impl(), createSVGFEFuncBElementWrapper);
-       map.set(feFuncGTag.localName().impl(), createSVGFEFuncGElementWrapper);
-       map.set(feFuncRTag.localName().impl(), createSVGFEFuncRElementWrapper);
-       map.set(feGaussianBlurTag.localName().impl(), createSVGFEGaussianBlurElementWrapper);
-       map.set(feImageTag.localName().impl(), createSVGFEImageElementWrapper);
-       map.set(feMergeTag.localName().impl(), createSVGFEMergeElementWrapper);
-       map.set(feMergeNodeTag.localName().impl(), createSVGFEMergeNodeElementWrapper);
-       map.set(feOffsetTag.localName().impl(), createSVGFEOffsetElementWrapper);
-       map.set(fePointLightTag.localName().impl(), createSVGFEPointLightElementWrapper);
-       map.set(feSpecularLightingTag.localName().impl(), createSVGFESpecularLightingElementWrapper);
-       map.set(feSpotLightTag.localName().impl(), createSVGFESpotLightElementWrapper);
-       map.set(feTileTag.localName().impl(), createSVGFETileElementWrapper);
-       map.set(feTurbulenceTag.localName().impl(), createSVGFETurbulenceElementWrapper);
-       map.set(filterTag.localName().impl(), createSVGFilterElementWrapper);
        map.set(fontTag.localName().impl(), createSVGFontElementWrapper);
        map.set(font_faceTag.localName().impl(), createSVGFontFaceElementWrapper);
        map.set(font_face_formatTag.localName().impl(), createSVGFontFaceFormatElementWrapper);

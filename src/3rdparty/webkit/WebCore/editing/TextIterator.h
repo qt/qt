@@ -46,7 +46,7 @@ inline bool isCollapsibleWhitespace(UChar c)
 }
 
 String plainText(const Range*);
-UChar* plainTextToMallocAllocatedBuffer(const Range*, unsigned& bufferLength);
+UChar* plainTextToMallocAllocatedBuffer(const Range*, unsigned& bufferLength, bool isDisplayString);
 PassRefPtr<Range> findPlainText(const Range*, const String&, bool forward, bool caseSensitive);
 
 // Iterates through the DOM range, returning all the text, and 0-length boundaries
@@ -216,6 +216,25 @@ private:
     TextIterator m_textIterator;
 };
     
+class BackwardsCharacterIterator {
+public:
+    BackwardsCharacterIterator();
+    explicit BackwardsCharacterIterator(const Range*);
+
+    void advance(int);
+
+    bool atEnd() const { return m_textIterator.atEnd(); }
+
+    PassRefPtr<Range> range() const;
+
+private:
+    int m_offset;
+    int m_runOffset;
+    bool m_atBreak;
+
+    SimplifiedBackwardsTextIterator m_textIterator;
+};
+
 // Very similar to the TextIterator, except that the chunks of text returned are "well behaved",
 // meaning they never end split up a word.  This is useful for spellcheck or (perhaps one day) searching.
 class WordAwareIterator {

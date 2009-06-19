@@ -29,7 +29,7 @@
 
 #include "CharacterNames.h"
 #include "Document.h"
-#include "Element.h"
+#include "HTMLElement.h"
 #include "HTMLNames.h"
 #include "htmlediting.h"
 #include "InlineTextBox.h"
@@ -38,6 +38,7 @@
 #include "RenderTableCell.h"
 #include "RenderTableRow.h"
 #include "RenderTextControl.h"
+#include "VisiblePosition.h"
 #include "visible_units.h"
 
 #if USE(ICU_UNICODE) && !UCONFIG_NO_COLLATION
@@ -102,6 +103,8 @@ TextIterator::TextIterator()
     , m_endContainer(0)
     , m_endOffset(0)
     , m_positionNode(0)
+    , m_textCharacters(0)
+    , m_textLength(0)
     , m_lastCharacter(0)
     , m_emitCharactersBetweenAllVisiblePositions(false)
     , m_enterTextControls(false)
@@ -115,6 +118,8 @@ TextIterator::TextIterator(const Range* r, bool emitCharactersBetweenAllVisibleP
     , m_endContainer(0)
     , m_endOffset(0)
     , m_positionNode(0)
+    , m_textCharacters(0)
+    , m_textLength(0)
     , m_emitCharactersBetweenAllVisiblePositions(emitCharactersBetweenAllVisiblePositions)
     , m_enterTextControls(enterTextControls)
 {
@@ -223,7 +228,9 @@ void TextIterator::advance()
             if (!m_handledNode) {
                 if (renderer->isText() && m_node->nodeType() == Node::TEXT_NODE) // FIXME: What about CDATA_SECTION_NODE?
                     m_handledNode = handleTextNode();
-                else if (renderer && (renderer->isImage() || renderer->isWidget() || (renderer->element() && renderer->element()->isControl())))
+                else if (renderer && (renderer->isImage() || renderer->isWidget() ||
+                         (renderer->node() && renderer->node()->isElementNode() &&
+                          static_cast<Element*>(renderer->node())->isFormControlElement())))
                     m_handledNode = handleReplacedElement();
                 else
                     m_handledNode = handleNonTextNode();
@@ -246,7 +253,7 @@ void TextIterator::advance()
                     parentNode = m_node->shadowParentNode();
                 }
                 while (!next && parentNode) {
-                    if (pastEnd && parentNode == m_endContainer || m_endContainer->isDescendantOf(parentNode))
+                    if ((pastEnd && parentNode == m_endContainer) || m_endContainer->isDescendantOf(parentNode))
                         return;
                     bool haveRenderer = m_node->renderer();
                     m_node = parentNode;
@@ -285,7 +292,7 @@ static inline bool compareBoxStart(const InlineTextBox *first, const InlineTextB
 
 bool TextIterator::handleTextNode()
 {
-    RenderText* renderer = static_cast<RenderText*>(m_node->renderer());
+    RenderText* renderer = toRenderText(m_node->renderer());
     if (renderer->style()->visibility() != VISIBLE)
         return false;
         
@@ -332,12 +339,12 @@ bool TextIterator::handleTextNode()
 
 void TextIterator::handleTextBox()
 {    
-    RenderText *renderer = static_cast<RenderText *>(m_node->renderer());
+    RenderText *renderer = toRenderText(m_node->renderer());
     String str = renderer->text();
     int start = m_offset;
     int end = (m_node == m_endContainer) ? m_endOffset : INT_MAX;
     while (m_textBox) {
-        int textBoxStart = m_textBox->m_start;
+        int textBoxStart = m_textBox->start();
         int runStart = max(textBoxStart, start);
 
         // Check for collapsed space at the start of this run.
@@ -354,7 +361,7 @@ void TextIterator::handleTextBox()
                 emitCharacter(' ', m_node, 0, runStart, runStart);
             return;
         }
-        int textBoxEnd = textBoxStart + m_textBox->m_len;
+        int textBoxEnd = textBoxStart + m_textBox->len();
         int runEnd = min(textBoxEnd, end);
         
         // Determine what the next text box will be, but don't advance yet
@@ -387,7 +394,7 @@ void TextIterator::handleTextBox()
                 return;
 
             // Advance and return
-            int nextRunStart = nextTextBox ? nextTextBox->m_start : str.length();
+            int nextRunStart = nextTextBox ? nextTextBox->start() : str.length();
             if (nextRunStart > runEnd)
                 m_lastTextNodeEndedWithCollapsedSpace = true; // collapsed space between runs or at the end
             m_textBox = nextTextBox;
@@ -413,8 +420,8 @@ bool TextIterator::handleReplacedElement()
         return false;
     }
 
-    if (m_enterTextControls && (renderer->isTextArea() || renderer->isTextField())) {
-        m_node = static_cast<RenderTextControl*>(renderer)->innerTextElement();
+    if (m_enterTextControls && renderer->isTextControl()) {
+        m_node = toRenderTextControl(renderer)->innerTextElement();
         m_offset = 0;
         m_inShadowContent = true;
         return false;
@@ -535,7 +542,7 @@ static bool shouldEmitExtraNewlineForNode(Node* node)
     // result even without margin collapsing. For example: <div><p>text</p></div>
     // will work right even if both the <div> and the <p> have bottom margins.
     RenderObject* r = node->renderer();
-    if (!r)
+    if (!r || !r->isBox())
         return false;
     
     // NOTE: We only do this for a select set of nodes, and fwiw WinIE appears
@@ -549,7 +556,7 @@ static bool shouldEmitExtraNewlineForNode(Node* node)
         || node->hasTagName(pTag)) {
         RenderStyle* style = r->style();
         if (style) {
-            int bottomMargin = r->collapsedMarginBottom();
+            int bottomMargin = toRenderBox(r)->collapsedMarginBottom();
             int fontSize = style->fontDescription().computedPixelSize();
             if (bottomMargin * 2 >= fontSize)
                 return true;
@@ -606,11 +613,13 @@ bool TextIterator::shouldRepresentNodeOffsetZero()
     if (!m_node->renderer() || m_node->renderer()->style()->visibility() != VISIBLE)
         return false;
     
-    // The currPos.isNotNull() check is needed because positions in non-html content
-    // (like svg) do not have visible positions, and we don't want to emit for them either.
+    // The startPos.isNotNull() check is needed because the start could be before the body,
+    // and in that case we'll get null. We don't want to put in newlines at the start in that case.
+    // The currPos.isNotNull() check is needed because positions in non-HTML content
+    // (like SVG) do not have visible positions, and we don't want to emit for them either.
     VisiblePosition startPos = VisiblePosition(m_startContainer, m_startOffset, DOWNSTREAM);
     VisiblePosition currPos = VisiblePosition(m_node, 0, DOWNSTREAM);
-    return currPos.isNotNull() && !inSameLine(startPos, currPos);
+    return startPos.isNotNull() && currPos.isNotNull() && !inSameLine(startPos, currPos);
 }
 
 bool TextIterator::shouldEmitSpaceBeforeAndAfterNode(Node* node)
@@ -712,7 +721,7 @@ void TextIterator::emitCharacter(UChar c, Node *textNode, Node *offsetBaseNode, 
 
 void TextIterator::emitText(Node* textNode, int textStartOffset, int textEndOffset)
 {
-    RenderText* renderer = static_cast<RenderText*>(m_node->renderer());
+    RenderText* renderer = toRenderText(m_node->renderer());
     String str = renderer->text();
     ASSERT(str.characters());
 
@@ -857,7 +866,7 @@ void SimplifiedBackwardsTextIterator::advance()
             if (!m_handledNode &&
                 canHaveChildrenForEditing(m_node) && 
                 m_node->parentNode() && 
-                (!m_node->lastChild() || m_node == m_endNode && m_endOffset == 0)) {
+                (!m_node->lastChild() || (m_node == m_endNode && m_endOffset == 0))) {
                 exitNode();
                 if (m_positionNode) {
                     m_handledNode = true;
@@ -895,7 +904,7 @@ bool SimplifiedBackwardsTextIterator::handleTextNode()
 {
     m_lastTextNode = m_node;
 
-    RenderText *renderer = static_cast<RenderText *>(m_node->renderer());
+    RenderText *renderer = toRenderText(m_node->renderer());
     String str = renderer->text();
 
     if (!renderer->firstTextBox() && str.length() > 0)
@@ -1056,7 +1065,7 @@ void CharacterIterator::advance(int count)
 String CharacterIterator::string(int numChars)
 {
     Vector<UChar> result;
-    result.reserveCapacity(numChars);
+    result.reserveInitialCapacity(numChars);
     while (numChars > 0 && !atEnd()) {
         int runSize = min(numChars, length());
         result.append(characters(), runSize);
@@ -1078,6 +1087,81 @@ static PassRefPtr<Range> characterSubrange(CharacterIterator& it, int offset, in
     return Range::create(start->startContainer()->document(), 
         start->startContainer(), start->startOffset(), 
         end->endContainer(), end->endOffset());
+}
+
+BackwardsCharacterIterator::BackwardsCharacterIterator()
+    : m_offset(0)
+    , m_runOffset(0)
+    , m_atBreak(true)
+{
+}
+
+BackwardsCharacterIterator::BackwardsCharacterIterator(const Range* range)
+    : m_offset(0)
+    , m_runOffset(0)
+    , m_atBreak(true)
+    , m_textIterator(range)
+{
+    while (!atEnd() && !m_textIterator.length())
+        m_textIterator.advance();
+}
+
+PassRefPtr<Range> BackwardsCharacterIterator::range() const
+{
+    RefPtr<Range> r = m_textIterator.range();
+    if (!m_textIterator.atEnd()) {
+        if (m_textIterator.length() <= 1)
+            ASSERT(m_runOffset == 0);
+        else {
+            Node* n = r->startContainer();
+            ASSERT(n == r->endContainer());
+            int offset = r->endOffset() - m_runOffset;
+            ExceptionCode ec = 0;
+            r->setStart(n, offset - 1, ec);
+            r->setEnd(n, offset, ec);
+            ASSERT(!ec);
+        }
+    }
+    return r.release();
+}
+
+void BackwardsCharacterIterator::advance(int count)
+{
+    if (count <= 0) {
+        ASSERT(!count);
+        return;
+    }
+
+    m_atBreak = false;
+
+    int remaining = m_textIterator.length() - m_runOffset;
+    if (count < remaining) {
+        m_runOffset += count;
+        m_offset += count;
+        return;
+    }
+
+    count -= remaining;
+    m_offset += remaining;
+
+    for (m_textIterator.advance(); !atEnd(); m_textIterator.advance()) {
+        int runLength = m_textIterator.length();
+        if (runLength == 0)
+            m_atBreak = true;
+        else {
+            if (count < runLength) {
+                m_runOffset = count;
+                m_offset += count;
+                return;
+            }
+            
+            count -= runLength;
+            m_offset += runLength;
+        }
+    }
+
+    m_atBreak = true;
+    m_runOffset = 0;
 }
 
 // --------
@@ -1224,7 +1308,7 @@ inline SearchBuffer::SearchBuffer(const String& target, bool isCaseSensitive)
     ASSERT(!m_target.isEmpty());
 
     size_t targetLength = target.length();
-    m_buffer.reserveCapacity(max(targetLength * 8, minimumSearchBufferSize));
+    m_buffer.reserveInitialCapacity(max(targetLength * 8, minimumSearchBufferSize));
     m_overlap = m_buffer.capacity() / 4;
 
     // Grab the single global searcher.
@@ -1480,7 +1564,7 @@ PassRefPtr<Range> TextIterator::rangeFromLocationAndLength(Element *scope, int r
                 Position runEnd = VisiblePosition(runStart).next().deepEquivalent();
                 if (runEnd.isNotNull()) {
                     ExceptionCode ec = 0;
-                    textRunRange->setEnd(runEnd.node(), runEnd.offset(), ec);
+                    textRunRange->setEnd(runEnd.node(), runEnd.deprecatedEditingOffset(), ec);
                     ASSERT(!ec);
                 }
             }
@@ -1530,7 +1614,7 @@ PassRefPtr<Range> TextIterator::rangeFromLocationAndLength(Element *scope, int r
 
 // --------
     
-UChar* plainTextToMallocAllocatedBuffer(const Range* r, unsigned& bufferLength) 
+UChar* plainTextToMallocAllocatedBuffer(const Range* r, unsigned& bufferLength, bool isDisplayString) 
 {
     UChar* result = 0;
 
@@ -1541,7 +1625,7 @@ UChar* plainTextToMallocAllocatedBuffer(const Range* r, unsigned& bufferLength)
     typedef pair<UChar*, unsigned> TextSegment;
     Vector<TextSegment>* textSegments = 0;
     Vector<UChar> textBuffer;
-    textBuffer.reserveCapacity(cMaxSegmentSize);
+    textBuffer.reserveInitialCapacity(cMaxSegmentSize);
     for (TextIterator it(r); !it.atEnd(); it.advance()) {
         if (textBuffer.size() && textBuffer.size() + it.length() > cMaxSegmentSize) {
             UChar* newSegmentBuffer = static_cast<UChar*>(malloc(textBuffer.size() * sizeof(UChar)));
@@ -1585,13 +1669,17 @@ exit:
             free(textSegments->at(i).first);
         delete textSegments;
     }
+    
+    if (isDisplayString && r->ownerDocument())
+        r->ownerDocument()->displayBufferModifiedByEncoding(result, bufferLength);
+
     return result;
 }
 
 String plainText(const Range* r)
 {
     unsigned length;
-    UChar* buf = plainTextToMallocAllocatedBuffer(r, length);
+    UChar* buf = plainTextToMallocAllocatedBuffer(r, length, false);
     if (!buf)
         return "";
     String result(buf, length);

@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the qmake application of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -230,14 +230,6 @@ static QScriptValue qscript_projectWrapper(QScriptEngine *eng, QMakeProject *pro
     for(QMap<QString, QStringList>::ConstIterator it = place.begin(); it != place.end(); ++it)
         ret.setProperty(it.key(), qScriptValueFromValue(eng, it.value()));
     return ret;
-}
-
-static QScriptValue qscript_toArray(QScriptEngine *eng, const QStringList &elts)
-{
-    QScriptValue a = eng->newArray();
-    for (int i = 0; i < elts.count(); ++i)
-        a.setProperty(i, QScriptValue(eng, elts.at(i)));
-    return a;
 }
 
 QT_END_NAMESPACE

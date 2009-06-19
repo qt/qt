@@ -23,7 +23,6 @@
 #include "CharacterData.h"
 
 #include "CString.h"
-#include "Document.h"
 #include "EventNames.h"
 #include "ExceptionCode.h"
 #include "MutationEvent.h"
@@ -31,14 +30,14 @@
 
 namespace WebCore {
 
-CharacterData::CharacterData(Document *doc)
-    : EventTargetNode(doc)
+CharacterData::CharacterData(Document *doc, bool isText)
+    : Node(doc, false, false, isText)
     , m_data(StringImpl::empty())
 {
 }
 
-CharacterData::CharacterData(Document* document, const String& text)
-    : EventTargetNode(document)
+CharacterData::CharacterData(Document* document, const String& text, bool isText)
+    : Node(document, false, false, isText)
 {
     m_data = text.impl() ? text.impl() : StringImpl::empty();
 }
@@ -61,7 +60,7 @@ void CharacterData::setData(const String& data, ExceptionCode&)
         detach();
         attach();
     } else if (renderer())
-        static_cast<RenderText*>(renderer())->setText(m_data);
+        toRenderText(renderer())->setText(m_data);
     
     dispatchModifiedEvent(oldStr.get());
     
@@ -89,7 +88,7 @@ void CharacterData::appendData(const String& arg, ExceptionCode&)
         detach();
         attach();
     } else if (renderer())
-        static_cast<RenderText*>(renderer())->setTextWithOffset(m_data, oldStr->length(), 0);
+        toRenderText(renderer())->setTextWithOffset(m_data, oldStr->length(), 0);
     
     dispatchModifiedEvent(oldStr.get());
 }
@@ -110,7 +109,7 @@ void CharacterData::insertData(unsigned offset, const String& arg, ExceptionCode
         detach();
         attach();
     } else if (renderer())
-        static_cast<RenderText*>(renderer())->setTextWithOffset(m_data, offset, 0);
+        toRenderText(renderer())->setTextWithOffset(m_data, offset, 0);
 
     dispatchModifiedEvent(oldStr.get());
     
@@ -139,7 +138,7 @@ void CharacterData::deleteData(unsigned offset, unsigned count, ExceptionCode& e
         detach();
         attach();
     } else if (renderer())
-        static_cast<RenderText*>(renderer())->setTextWithOffset(m_data, offset, count);
+        toRenderText(renderer())->setTextWithOffset(m_data, offset, count);
 
     dispatchModifiedEvent(oldStr.get());
 
@@ -169,7 +168,7 @@ void CharacterData::replaceData(unsigned offset, unsigned count, const String& a
         detach();
         attach();
     } else if (renderer())
-        static_cast<RenderText*>(renderer())->setTextWithOffset(m_data, offset, count);
+        toRenderText(renderer())->setTextWithOffset(m_data, offset, count);
     
     dispatchModifiedEvent(oldStr.get());
     
@@ -199,7 +198,7 @@ void CharacterData::dispatchModifiedEvent(StringImpl* prevValue)
         parentNode()->childrenChanged();
     if (document()->hasListenerType(Document::DOMCHARACTERDATAMODIFIED_LISTENER)) {
         ExceptionCode ec;
-        dispatchEvent(MutationEvent::create(eventNames().DOMCharacterDataModifiedEvent, true, false, 0, prevValue, m_data, String(), 0), ec);
+        dispatchMutationEvent(eventNames().DOMCharacterDataModifiedEvent, true, 0, prevValue, m_data, ec); 
     }
     dispatchSubtreeModifiedEvent();
 }
@@ -225,7 +224,7 @@ bool CharacterData::rendererIsNeeded(RenderStyle *style)
 {
     if (!m_data || !length())
         return false;
-    return EventTargetNode::rendererIsNeeded(style);
+    return Node::rendererIsNeeded(style);
 }
 
 bool CharacterData::offsetInCharacters() const

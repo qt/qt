@@ -30,11 +30,11 @@
 #include "FloatRect.h"
 #include "ImageObserver.h"
 #include "IntRect.h"
-#include "PlatformString.h"
-#include "SystemTime.h"
-#include "Timer.h"
-#include <wtf/Vector.h>
 #include "MIMETypeRegistry.h"
+#include "PlatformString.h"
+#include "Timer.h"
+#include <wtf/CurrentTime.h>
+#include <wtf/Vector.h>
 
 namespace WebCore {
 
@@ -53,6 +53,7 @@ BitmapImage::BitmapImage(ImageObserver* observer)
     , m_repetitionsComplete(0)
     , m_desiredFrameStartTime(0)
     , m_isSolidColor(false)
+    , m_checkedForSolidColor(false)
     , m_animationFinished(false)
     , m_allDataReceived(false)
     , m_haveSize(false)
@@ -75,8 +76,13 @@ void BitmapImage::destroyDecodedData(bool destroyAll)
 {
     int framesCleared = 0;
     const size_t clearBeforeFrame = destroyAll ? m_frames.size() : m_currentFrame;
-    for (size_t i = 0; i < clearBeforeFrame; ++i)
-        framesCleared += clearFrame(i);
+    for (size_t i = 0; i < clearBeforeFrame; ++i) {
+        // The underlying frame isn't actually changing (we're just trying to
+        // save the memory for the framebuffer data), so we don't need to clear
+        // the metadata.
+        if (m_frames[i].clear(false))
+          ++framesCleared;
+    }
 
     destroyMetadataAndNotify(framesCleared);
 
@@ -89,7 +95,7 @@ void BitmapImage::destroyDecodedDataIfNecessary(bool destroyAll)
     // Animated images >5MB are considered large enough that we'll only hang on
     // to one frame at a time.
     static const unsigned cLargeAnimationCutoff = 5242880;
-    if (frameCount() * frameBytes(m_size) > cLargeAnimationCutoff)
+    if (m_frames.size() * frameBytes(m_size) > cLargeAnimationCutoff)
         destroyDecodedData(destroyAll);
 }
 
@@ -102,15 +108,6 @@ void BitmapImage::destroyMetadataAndNotify(int framesCleared)
     m_decodedSize += deltaBytes;
     if (deltaBytes && imageObserver())
         imageObserver()->decodedSizeChanged(this, deltaBytes);
-}
-
-int BitmapImage::clearFrame(size_t frame)
-{
-    if (!m_frames[frame].m_frame)
-        return 0;
-
-    m_frames[frame].clear();
-    return 1;
 }
 
 void BitmapImage::cacheFrame(size_t index)
@@ -160,7 +157,9 @@ IntSize BitmapImage::currentFrameSize() const
 
 bool BitmapImage::dataChanged(bool allDataReceived)
 {
-    destroyMetadataAndNotify(m_frames.isEmpty() ? 0 : clearFrame(m_frames.size() - 1));
+    // Because we're modifying the current frame, clear its (now possibly
+    // inaccurate) metadata as well.
+    destroyMetadataAndNotify((!m_frames.isEmpty() && m_frames[m_frames.size() - 1].clear(true)) ? 1 : 0);
     
     // Feed all the data we've seen so far to the image decoder.
     m_allDataReceived = allDataReceived;
@@ -287,7 +286,7 @@ void BitmapImage::startAnimation(bool catchUpIfNecessary)
 
     // Don't advance the animation to an incomplete frame.
     size_t nextFrame = (m_currentFrame + 1) % frameCount();
-    if (!frameIsCompleteAtIndex(nextFrame))
+    if (!m_allDataReceived && !frameIsCompleteAtIndex(nextFrame))
         return;
 
     // Don't advance past the last frame if we haven't decoded the whole image

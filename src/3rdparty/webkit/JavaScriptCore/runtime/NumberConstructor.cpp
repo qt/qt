@@ -29,11 +29,11 @@ namespace JSC {
 
 ASSERT_CLASS_FITS_IN_CELL(NumberConstructor);
 
-static JSValuePtr numberConstructorNaNValue(ExecState*, const Identifier&, const PropertySlot&);
-static JSValuePtr numberConstructorNegInfinity(ExecState*, const Identifier&, const PropertySlot&);
-static JSValuePtr numberConstructorPosInfinity(ExecState*, const Identifier&, const PropertySlot&);
-static JSValuePtr numberConstructorMaxValue(ExecState*, const Identifier&, const PropertySlot&);
-static JSValuePtr numberConstructorMinValue(ExecState*, const Identifier&, const PropertySlot&);
+static JSValue numberConstructorNaNValue(ExecState*, const Identifier&, const PropertySlot&);
+static JSValue numberConstructorNegInfinity(ExecState*, const Identifier&, const PropertySlot&);
+static JSValue numberConstructorPosInfinity(ExecState*, const Identifier&, const PropertySlot&);
+static JSValue numberConstructorMaxValue(ExecState*, const Identifier&, const PropertySlot&);
+static JSValue numberConstructorMinValue(ExecState*, const Identifier&, const PropertySlot&);
 
 } // namespace JSC
 
@@ -68,36 +68,36 @@ bool NumberConstructor::getOwnPropertySlot(ExecState* exec, const Identifier& pr
     return getStaticValueSlot<NumberConstructor, InternalFunction>(exec, ExecState::numberTable(exec), this, propertyName, slot);
 }
 
-JSValuePtr numberConstructorNaNValue(ExecState* exec, const Identifier&, const PropertySlot&)
+static JSValue numberConstructorNaNValue(ExecState* exec, const Identifier&, const PropertySlot&)
 {
     return jsNaN(exec);
 }
 
-JSValuePtr numberConstructorNegInfinity(ExecState* exec, const Identifier&, const PropertySlot&)
+static JSValue numberConstructorNegInfinity(ExecState* exec, const Identifier&, const PropertySlot&)
 {
-    return jsNumberCell(exec, -Inf);
+    return jsNumber(exec, -Inf);
 }
 
-JSValuePtr numberConstructorPosInfinity(ExecState* exec, const Identifier&, const PropertySlot&)
+static JSValue numberConstructorPosInfinity(ExecState* exec, const Identifier&, const PropertySlot&)
 {
-    return jsNumberCell(exec, Inf);
+    return jsNumber(exec, Inf);
 }
 
-JSValuePtr numberConstructorMaxValue(ExecState* exec, const Identifier&, const PropertySlot&)
+static JSValue numberConstructorMaxValue(ExecState* exec, const Identifier&, const PropertySlot&)
 {
-    return jsNumberCell(exec, 1.7976931348623157E+308);
+    return jsNumber(exec, 1.7976931348623157E+308);
 }
 
-JSValuePtr numberConstructorMinValue(ExecState* exec, const Identifier&, const PropertySlot&)
+static JSValue numberConstructorMinValue(ExecState* exec, const Identifier&, const PropertySlot&)
 {
-    return jsNumberCell(exec, 5E-324);
+    return jsNumber(exec, 5E-324);
 }
 
 // ECMA 15.7.1
 static JSObject* constructWithNumberConstructor(ExecState* exec, JSObject*, const ArgList& args)
 {
     NumberObject* object = new (exec) NumberObject(exec->lexicalGlobalObject()->numberObjectStructure());
-    double n = args.isEmpty() ? 0 : args.at(exec, 0)->toNumber(exec);
+    double n = args.isEmpty() ? 0 : args.at(0).toNumber(exec);
     object->setInternalValue(jsNumber(exec, n));
     return object;
 }
@@ -109,9 +109,9 @@ ConstructType NumberConstructor::getConstructData(ConstructData& constructData)
 }
 
 // ECMA 15.7.2
-static JSValuePtr callNumberConstructor(ExecState* exec, JSObject*, JSValuePtr, const ArgList& args)
+static JSValue JSC_HOST_CALL callNumberConstructor(ExecState* exec, JSObject*, JSValue, const ArgList& args)
 {
-    return jsNumber(exec, args.isEmpty() ? 0 : args.at(exec, 0)->toNumber(exec));
+    return jsNumber(exec, args.isEmpty() ? 0 : args.at(0).toNumber(exec));
 }
 
 CallType NumberConstructor::getCallData(CallData& callData)

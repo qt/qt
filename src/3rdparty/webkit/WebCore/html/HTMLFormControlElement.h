@@ -24,7 +24,6 @@
 #ifndef HTMLFormControlElement_h
 #define HTMLFormControlElement_h
 
-#include "FormControlElement.h"
 #include "HTMLElement.h"
 
 namespace WebCore {
@@ -32,7 +31,7 @@ namespace WebCore {
 class FormDataList;
 class HTMLFormElement;
 
-class HTMLFormControlElement : public HTMLElement, public FormControlElement {
+class HTMLFormControlElement : public HTMLElement {
 public:
     HTMLFormControlElement(const QualifiedName& tagName, Document*, HTMLFormElement*);
     virtual ~HTMLFormControlElement();
@@ -42,10 +41,8 @@ public:
 
     HTMLFormElement* form() const { return m_form; }
 
-    virtual const AtomicString& type() const = 0;
-
-    virtual bool isControl() const { return true; }
-    virtual bool isEnabled() const { return !disabled(); }
+    virtual bool isTextFormControl() const { return false; }
+    virtual bool isEnabledFormControl() const { return !disabled(); }
 
     virtual void parseMappedAttribute(MappedAttribute*);
     virtual void attach();
@@ -54,10 +51,10 @@ public:
 
     virtual void reset() {}
 
-    virtual bool valueMatchesRenderer() const { return m_valueMatchesRenderer; }
-    virtual void setValueMatchesRenderer(bool b = true) { m_valueMatchesRenderer = b; }
+    virtual bool formControlValueMatchesRenderer() const { return m_valueMatchesRenderer; }
+    virtual void setFormControlValueMatchesRenderer(bool b) { m_valueMatchesRenderer = b; }
 
-    void onChange();
+    virtual void dispatchFormControlChangeEvent();
 
     bool disabled() const;
     void setDisabled(bool);
@@ -68,7 +65,7 @@ public:
     virtual bool isMouseFocusable() const;
     virtual bool isEnumeratable() const { return false; }
 
-    virtual bool isReadOnlyControl() const { return m_readOnly; }
+    virtual bool isReadOnlyFormControl() const { return m_readOnly; }
     void setReadOnly(bool);
 
     // Determines whether or not a control will be automatically focused
@@ -77,10 +74,15 @@ public:
 
     virtual void recalcStyle(StyleChange);
 
-    virtual const AtomicString& name() const;
+    virtual const AtomicString& formControlName() const;
+    virtual const AtomicString& formControlType() const = 0;
+
+    const AtomicString& type() const { return formControlType(); }
+    const AtomicString& name() const { return formControlName(); }
+
     void setName(const AtomicString& name);
 
-    virtual bool isGenericFormElement() const { return true; }
+    virtual bool isFormControlElement() const { return true; }
     virtual bool isRadioButton() const { return false; }
 
     /* Override in derived classes to get the encoded name=value pair for submitting.
@@ -117,14 +119,9 @@ public:
 
     virtual void finishParsingChildren();
 
-    virtual bool saveState(String& value) const = 0;
-
 protected:
     virtual void willMoveToNewOwnerDocument();
     virtual void didMoveToNewOwnerDocument();
-
-private:
-    virtual void restoreState(const String& value) = 0;
 };
 
 } //namespace

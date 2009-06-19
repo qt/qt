@@ -97,7 +97,7 @@ public:
         Statistics->resize(336, 164);
         gridLayout = new QGridLayout(Statistics);
         gridLayout->setSpacing(6);
-        gridLayout->setMargin(11);
+        gridLayout->setContentsMargins(11, 11, 11, 11);
         gridLayout->setObjectName(QString::fromUtf8("gridLayout"));
         gridLayout->setObjectName(QString::fromUtf8("unnamed"));
         hboxLayout = new QHBoxLayout();
@@ -126,7 +126,7 @@ public:
         frame4->setFrameShadow(QFrame::Raised);
         gridLayout1 = new QGridLayout(frame4);
         gridLayout1->setSpacing(6);
-        gridLayout1->setMargin(11);
+        gridLayout1->setContentsMargins(11, 11, 11, 11);
         gridLayout1->setObjectName(QString::fromUtf8("gridLayout1"));
         gridLayout1->setObjectName(QString::fromUtf8("unnamed"));
         textLabel4 = new QLabel(frame4);

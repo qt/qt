@@ -20,6 +20,7 @@
  *
  */
 
+#include "config.h"
 #include "TextBreakIterator.h"
 
 #if QT_VERSION >= 0x040400
@@ -61,6 +62,11 @@ namespace WebCore {
 
         *iterator = QTextBoundaryFinder(QTextBoundaryFinder::Grapheme, (const QChar *)string, length, buffer, sizeof(buffer));
         return static_cast<TextBreakIterator*>(iterator);
+    }
+
+    TextBreakIterator* cursorMovementIterator(const UChar* string, int length)
+    {
+        return characterBreakIterator(string, length);
     }
 
     TextBreakIterator* lineBreakIterator(const UChar* string, int length)
@@ -248,6 +254,11 @@ TextBreakIterator* characterBreakIterator(const UChar* string, int length)
     iterator->layout.setText(QString(reinterpret_cast<const QChar*>(string), length));
     
     return iterator;
+}
+
+TextBreakIterator* cursorMovementIterator(const UChar* string, int length)
+{
+    return characterBreakIterator(string, length);
 }
 
 TextBreakIterator* lineBreakIterator(const UChar*, int)
