@@ -74,7 +74,7 @@ public:
     JSCSSPageRuleConstructor(ExecState* exec)
         : DOMObject(JSCSSPageRuleConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
     {
-        putDirect(exec->propertyNames().prototype, JSCSSPageRulePrototype::self(exec), None);
+        putDirect(exec->propertyNames().prototype, JSCSSPageRulePrototype::self(exec, exec->lexicalGlobalObject()), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -109,9 +109,9 @@ static const HashTable JSCSSPageRulePrototypeTable =
 
 const ClassInfo JSCSSPageRulePrototype::s_info = { "CSSPageRulePrototype", 0, &JSCSSPageRulePrototypeTable, 0 };
 
-JSObject* JSCSSPageRulePrototype::self(ExecState* exec)
+JSObject* JSCSSPageRulePrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSCSSPageRule>(exec);
+    return getDOMPrototype<JSCSSPageRule>(exec, globalObject);
 }
 
 const ClassInfo JSCSSPageRule::s_info = { "CSSPageRule", &JSCSSRule::s_info, &JSCSSPageRuleTable, 0 };
@@ -121,9 +121,9 @@ JSCSSPageRule::JSCSSPageRule(PassRefPtr<Structure> structure, PassRefPtr<CSSPage
 {
 }
 
-JSObject* JSCSSPageRule::createPrototype(ExecState* exec)
+JSObject* JSCSSPageRule::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSCSSPageRulePrototype(JSCSSPageRulePrototype::createStructure(JSCSSRulePrototype::self(exec)));
+    return new (exec) JSCSSPageRulePrototype(JSCSSPageRulePrototype::createStructure(JSCSSRulePrototype::self(exec, globalObject)));
 }
 
 bool JSCSSPageRule::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

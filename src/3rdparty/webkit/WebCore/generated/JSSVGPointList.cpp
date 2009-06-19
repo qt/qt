@@ -77,9 +77,9 @@ static const HashTable JSSVGPointListPrototypeTable =
 
 const ClassInfo JSSVGPointListPrototype::s_info = { "SVGPointListPrototype", 0, &JSSVGPointListPrototypeTable, 0 };
 
-JSObject* JSSVGPointListPrototype::self(ExecState* exec)
+JSObject* JSSVGPointListPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSSVGPointList>(exec);
+    return getDOMPrototype<JSSVGPointList>(exec, globalObject);
 }
 
 bool JSSVGPointListPrototype::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -102,9 +102,9 @@ JSSVGPointList::~JSSVGPointList()
 
 }
 
-JSObject* JSSVGPointList::createPrototype(ExecState* exec)
+JSObject* JSSVGPointList::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSSVGPointListPrototype(JSSVGPointListPrototype::createStructure(exec->lexicalGlobalObject()->objectPrototype()));
+    return new (exec) JSSVGPointListPrototype(JSSVGPointListPrototype::createStructure(globalObject->objectPrototype()));
 }
 
 bool JSSVGPointList::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

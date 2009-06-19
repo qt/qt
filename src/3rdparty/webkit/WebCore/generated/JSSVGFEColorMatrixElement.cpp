@@ -97,7 +97,7 @@ public:
     JSSVGFEColorMatrixElementConstructor(ExecState* exec)
         : DOMObject(JSSVGFEColorMatrixElementConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
     {
-        putDirect(exec->propertyNames().prototype, JSSVGFEColorMatrixElementPrototype::self(exec), None);
+        putDirect(exec->propertyNames().prototype, JSSVGFEColorMatrixElementPrototype::self(exec, exec->lexicalGlobalObject()), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -138,9 +138,9 @@ static const HashTable JSSVGFEColorMatrixElementPrototypeTable =
 
 const ClassInfo JSSVGFEColorMatrixElementPrototype::s_info = { "SVGFEColorMatrixElementPrototype", 0, &JSSVGFEColorMatrixElementPrototypeTable, 0 };
 
-JSObject* JSSVGFEColorMatrixElementPrototype::self(ExecState* exec)
+JSObject* JSSVGFEColorMatrixElementPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSSVGFEColorMatrixElement>(exec);
+    return getDOMPrototype<JSSVGFEColorMatrixElement>(exec, globalObject);
 }
 
 bool JSSVGFEColorMatrixElementPrototype::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -155,9 +155,9 @@ JSSVGFEColorMatrixElement::JSSVGFEColorMatrixElement(PassRefPtr<Structure> struc
 {
 }
 
-JSObject* JSSVGFEColorMatrixElement::createPrototype(ExecState* exec)
+JSObject* JSSVGFEColorMatrixElement::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSSVGFEColorMatrixElementPrototype(JSSVGFEColorMatrixElementPrototype::createStructure(JSSVGElementPrototype::self(exec)));
+    return new (exec) JSSVGFEColorMatrixElementPrototype(JSSVGFEColorMatrixElementPrototype::createStructure(JSSVGElementPrototype::self(exec, globalObject)));
 }
 
 bool JSSVGFEColorMatrixElement::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

@@ -88,9 +88,9 @@ static const HashTable JSSVGFEGaussianBlurElementPrototypeTable =
 
 const ClassInfo JSSVGFEGaussianBlurElementPrototype::s_info = { "SVGFEGaussianBlurElementPrototype", 0, &JSSVGFEGaussianBlurElementPrototypeTable, 0 };
 
-JSObject* JSSVGFEGaussianBlurElementPrototype::self(ExecState* exec)
+JSObject* JSSVGFEGaussianBlurElementPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSSVGFEGaussianBlurElement>(exec);
+    return getDOMPrototype<JSSVGFEGaussianBlurElement>(exec, globalObject);
 }
 
 bool JSSVGFEGaussianBlurElementPrototype::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -105,9 +105,9 @@ JSSVGFEGaussianBlurElement::JSSVGFEGaussianBlurElement(PassRefPtr<Structure> str
 {
 }
 
-JSObject* JSSVGFEGaussianBlurElement::createPrototype(ExecState* exec)
+JSObject* JSSVGFEGaussianBlurElement::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSSVGFEGaussianBlurElementPrototype(JSSVGFEGaussianBlurElementPrototype::createStructure(JSSVGElementPrototype::self(exec)));
+    return new (exec) JSSVGFEGaussianBlurElementPrototype(JSSVGFEGaussianBlurElementPrototype::createStructure(JSSVGElementPrototype::self(exec, globalObject)));
 }
 
 bool JSSVGFEGaussianBlurElement::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

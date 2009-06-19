@@ -74,7 +74,7 @@ public:
     JSHTMLMapElementConstructor(ExecState* exec)
         : DOMObject(JSHTMLMapElementConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
     {
-        putDirect(exec->propertyNames().prototype, JSHTMLMapElementPrototype::self(exec), None);
+        putDirect(exec->propertyNames().prototype, JSHTMLMapElementPrototype::self(exec, exec->lexicalGlobalObject()), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -109,9 +109,9 @@ static const HashTable JSHTMLMapElementPrototypeTable =
 
 const ClassInfo JSHTMLMapElementPrototype::s_info = { "HTMLMapElementPrototype", 0, &JSHTMLMapElementPrototypeTable, 0 };
 
-JSObject* JSHTMLMapElementPrototype::self(ExecState* exec)
+JSObject* JSHTMLMapElementPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSHTMLMapElement>(exec);
+    return getDOMPrototype<JSHTMLMapElement>(exec, globalObject);
 }
 
 const ClassInfo JSHTMLMapElement::s_info = { "HTMLMapElement", &JSHTMLElement::s_info, &JSHTMLMapElementTable, 0 };
@@ -121,9 +121,9 @@ JSHTMLMapElement::JSHTMLMapElement(PassRefPtr<Structure> structure, PassRefPtr<H
 {
 }
 
-JSObject* JSHTMLMapElement::createPrototype(ExecState* exec)
+JSObject* JSHTMLMapElement::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSHTMLMapElementPrototype(JSHTMLMapElementPrototype::createStructure(JSHTMLElementPrototype::self(exec)));
+    return new (exec) JSHTMLMapElementPrototype(JSHTMLMapElementPrototype::createStructure(JSHTMLElementPrototype::self(exec, globalObject)));
 }
 
 bool JSHTMLMapElement::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

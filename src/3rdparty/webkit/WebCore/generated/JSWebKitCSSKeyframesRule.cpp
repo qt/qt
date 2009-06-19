@@ -77,7 +77,7 @@ public:
     JSWebKitCSSKeyframesRuleConstructor(ExecState* exec)
         : DOMObject(JSWebKitCSSKeyframesRuleConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
     {
-        putDirect(exec->propertyNames().prototype, JSWebKitCSSKeyframesRulePrototype::self(exec), None);
+        putDirect(exec->propertyNames().prototype, JSWebKitCSSKeyframesRulePrototype::self(exec, exec->lexicalGlobalObject()), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -115,9 +115,9 @@ static const HashTable JSWebKitCSSKeyframesRulePrototypeTable =
 
 const ClassInfo JSWebKitCSSKeyframesRulePrototype::s_info = { "WebKitCSSKeyframesRulePrototype", 0, &JSWebKitCSSKeyframesRulePrototypeTable, 0 };
 
-JSObject* JSWebKitCSSKeyframesRulePrototype::self(ExecState* exec)
+JSObject* JSWebKitCSSKeyframesRulePrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSWebKitCSSKeyframesRule>(exec);
+    return getDOMPrototype<JSWebKitCSSKeyframesRule>(exec, globalObject);
 }
 
 bool JSWebKitCSSKeyframesRulePrototype::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -132,9 +132,9 @@ JSWebKitCSSKeyframesRule::JSWebKitCSSKeyframesRule(PassRefPtr<Structure> structu
 {
 }
 
-JSObject* JSWebKitCSSKeyframesRule::createPrototype(ExecState* exec)
+JSObject* JSWebKitCSSKeyframesRule::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSWebKitCSSKeyframesRulePrototype(JSWebKitCSSKeyframesRulePrototype::createStructure(JSCSSRulePrototype::self(exec)));
+    return new (exec) JSWebKitCSSKeyframesRulePrototype(JSWebKitCSSKeyframesRulePrototype::createStructure(JSCSSRulePrototype::self(exec, globalObject)));
 }
 
 bool JSWebKitCSSKeyframesRule::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

@@ -73,7 +73,7 @@ public:
     JSHTMLFontElementConstructor(ExecState* exec)
         : DOMObject(JSHTMLFontElementConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
     {
-        putDirect(exec->propertyNames().prototype, JSHTMLFontElementPrototype::self(exec), None);
+        putDirect(exec->propertyNames().prototype, JSHTMLFontElementPrototype::self(exec, exec->lexicalGlobalObject()), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -108,9 +108,9 @@ static const HashTable JSHTMLFontElementPrototypeTable =
 
 const ClassInfo JSHTMLFontElementPrototype::s_info = { "HTMLFontElementPrototype", 0, &JSHTMLFontElementPrototypeTable, 0 };
 
-JSObject* JSHTMLFontElementPrototype::self(ExecState* exec)
+JSObject* JSHTMLFontElementPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSHTMLFontElement>(exec);
+    return getDOMPrototype<JSHTMLFontElement>(exec, globalObject);
 }
 
 const ClassInfo JSHTMLFontElement::s_info = { "HTMLFontElement", &JSHTMLElement::s_info, &JSHTMLFontElementTable, 0 };
@@ -120,9 +120,9 @@ JSHTMLFontElement::JSHTMLFontElement(PassRefPtr<Structure> structure, PassRefPtr
 {
 }
 
-JSObject* JSHTMLFontElement::createPrototype(ExecState* exec)
+JSObject* JSHTMLFontElement::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSHTMLFontElementPrototype(JSHTMLFontElementPrototype::createStructure(JSHTMLElementPrototype::self(exec)));
+    return new (exec) JSHTMLFontElementPrototype(JSHTMLFontElementPrototype::createStructure(JSHTMLElementPrototype::self(exec, globalObject)));
 }
 
 bool JSHTMLFontElement::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

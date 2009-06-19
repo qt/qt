@@ -71,7 +71,7 @@ public:
     JSHTMLTableCaptionElementConstructor(ExecState* exec)
         : DOMObject(JSHTMLTableCaptionElementConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
     {
-        putDirect(exec->propertyNames().prototype, JSHTMLTableCaptionElementPrototype::self(exec), None);
+        putDirect(exec->propertyNames().prototype, JSHTMLTableCaptionElementPrototype::self(exec, exec->lexicalGlobalObject()), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -106,9 +106,9 @@ static const HashTable JSHTMLTableCaptionElementPrototypeTable =
 
 const ClassInfo JSHTMLTableCaptionElementPrototype::s_info = { "HTMLTableCaptionElementPrototype", 0, &JSHTMLTableCaptionElementPrototypeTable, 0 };
 
-JSObject* JSHTMLTableCaptionElementPrototype::self(ExecState* exec)
+JSObject* JSHTMLTableCaptionElementPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSHTMLTableCaptionElement>(exec);
+    return getDOMPrototype<JSHTMLTableCaptionElement>(exec, globalObject);
 }
 
 const ClassInfo JSHTMLTableCaptionElement::s_info = { "HTMLTableCaptionElement", &JSHTMLElement::s_info, &JSHTMLTableCaptionElementTable, 0 };
@@ -118,9 +118,9 @@ JSHTMLTableCaptionElement::JSHTMLTableCaptionElement(PassRefPtr<Structure> struc
 {
 }
 
-JSObject* JSHTMLTableCaptionElement::createPrototype(ExecState* exec)
+JSObject* JSHTMLTableCaptionElement::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSHTMLTableCaptionElementPrototype(JSHTMLTableCaptionElementPrototype::createStructure(JSHTMLElementPrototype::self(exec)));
+    return new (exec) JSHTMLTableCaptionElementPrototype(JSHTMLTableCaptionElementPrototype::createStructure(JSHTMLElementPrototype::self(exec, globalObject)));
 }
 
 bool JSHTMLTableCaptionElement::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

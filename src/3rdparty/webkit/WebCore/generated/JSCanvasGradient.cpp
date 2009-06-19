@@ -52,9 +52,9 @@ static const HashTable JSCanvasGradientPrototypeTable =
 
 const ClassInfo JSCanvasGradientPrototype::s_info = { "CanvasGradientPrototype", 0, &JSCanvasGradientPrototypeTable, 0 };
 
-JSObject* JSCanvasGradientPrototype::self(ExecState* exec)
+JSObject* JSCanvasGradientPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSCanvasGradient>(exec);
+    return getDOMPrototype<JSCanvasGradient>(exec, globalObject);
 }
 
 bool JSCanvasGradientPrototype::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -76,9 +76,9 @@ JSCanvasGradient::~JSCanvasGradient()
 
 }
 
-JSObject* JSCanvasGradient::createPrototype(ExecState* exec)
+JSObject* JSCanvasGradient::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSCanvasGradientPrototype(JSCanvasGradientPrototype::createStructure(exec->lexicalGlobalObject()->objectPrototype()));
+    return new (exec) JSCanvasGradientPrototype(JSCanvasGradientPrototype::createStructure(globalObject->objectPrototype()));
 }
 
 JSValuePtr jsCanvasGradientPrototypeFunctionAddColorStop(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)

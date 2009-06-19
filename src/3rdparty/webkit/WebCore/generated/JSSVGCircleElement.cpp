@@ -105,9 +105,9 @@ static const HashTable JSSVGCircleElementPrototypeTable =
 
 const ClassInfo JSSVGCircleElementPrototype::s_info = { "SVGCircleElementPrototype", 0, &JSSVGCircleElementPrototypeTable, 0 };
 
-JSObject* JSSVGCircleElementPrototype::self(ExecState* exec)
+JSObject* JSSVGCircleElementPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSSVGCircleElement>(exec);
+    return getDOMPrototype<JSSVGCircleElement>(exec, globalObject);
 }
 
 bool JSSVGCircleElementPrototype::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -122,9 +122,9 @@ JSSVGCircleElement::JSSVGCircleElement(PassRefPtr<Structure> structure, PassRefP
 {
 }
 
-JSObject* JSSVGCircleElement::createPrototype(ExecState* exec)
+JSObject* JSSVGCircleElement::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSSVGCircleElementPrototype(JSSVGCircleElementPrototype::createStructure(JSSVGElementPrototype::self(exec)));
+    return new (exec) JSSVGCircleElementPrototype(JSSVGCircleElementPrototype::createStructure(JSSVGElementPrototype::self(exec, globalObject)));
 }
 
 bool JSSVGCircleElement::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

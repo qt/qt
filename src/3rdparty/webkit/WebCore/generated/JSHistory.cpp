@@ -70,9 +70,9 @@ static const HashTable JSHistoryPrototypeTable =
 
 const ClassInfo JSHistoryPrototype::s_info = { "HistoryPrototype", 0, &JSHistoryPrototypeTable, 0 };
 
-JSObject* JSHistoryPrototype::self(ExecState* exec)
+JSObject* JSHistoryPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSHistory>(exec);
+    return getDOMPrototype<JSHistory>(exec, globalObject);
 }
 
 bool JSHistoryPrototype::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -94,9 +94,9 @@ JSHistory::~JSHistory()
 
 }
 
-JSObject* JSHistory::createPrototype(ExecState* exec)
+JSObject* JSHistory::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSHistoryPrototype(JSHistoryPrototype::createStructure(exec->lexicalGlobalObject()->objectPrototype()));
+    return new (exec) JSHistoryPrototype(JSHistoryPrototype::createStructure(globalObject->objectPrototype()));
 }
 
 bool JSHistory::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

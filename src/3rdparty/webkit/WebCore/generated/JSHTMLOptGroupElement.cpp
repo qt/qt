@@ -72,7 +72,7 @@ public:
     JSHTMLOptGroupElementConstructor(ExecState* exec)
         : DOMObject(JSHTMLOptGroupElementConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
     {
-        putDirect(exec->propertyNames().prototype, JSHTMLOptGroupElementPrototype::self(exec), None);
+        putDirect(exec->propertyNames().prototype, JSHTMLOptGroupElementPrototype::self(exec, exec->lexicalGlobalObject()), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -107,9 +107,9 @@ static const HashTable JSHTMLOptGroupElementPrototypeTable =
 
 const ClassInfo JSHTMLOptGroupElementPrototype::s_info = { "HTMLOptGroupElementPrototype", 0, &JSHTMLOptGroupElementPrototypeTable, 0 };
 
-JSObject* JSHTMLOptGroupElementPrototype::self(ExecState* exec)
+JSObject* JSHTMLOptGroupElementPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSHTMLOptGroupElement>(exec);
+    return getDOMPrototype<JSHTMLOptGroupElement>(exec, globalObject);
 }
 
 const ClassInfo JSHTMLOptGroupElement::s_info = { "HTMLOptGroupElement", &JSHTMLElement::s_info, &JSHTMLOptGroupElementTable, 0 };
@@ -119,9 +119,9 @@ JSHTMLOptGroupElement::JSHTMLOptGroupElement(PassRefPtr<Structure> structure, Pa
 {
 }
 
-JSObject* JSHTMLOptGroupElement::createPrototype(ExecState* exec)
+JSObject* JSHTMLOptGroupElement::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSHTMLOptGroupElementPrototype(JSHTMLOptGroupElementPrototype::createStructure(JSHTMLElementPrototype::self(exec)));
+    return new (exec) JSHTMLOptGroupElementPrototype(JSHTMLOptGroupElementPrototype::createStructure(JSHTMLElementPrototype::self(exec, globalObject)));
 }
 
 bool JSHTMLOptGroupElement::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

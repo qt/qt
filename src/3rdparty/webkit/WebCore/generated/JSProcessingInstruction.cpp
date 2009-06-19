@@ -74,7 +74,7 @@ public:
     JSProcessingInstructionConstructor(ExecState* exec)
         : DOMObject(JSProcessingInstructionConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
     {
-        putDirect(exec->propertyNames().prototype, JSProcessingInstructionPrototype::self(exec), None);
+        putDirect(exec->propertyNames().prototype, JSProcessingInstructionPrototype::self(exec, exec->lexicalGlobalObject()), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -109,9 +109,9 @@ static const HashTable JSProcessingInstructionPrototypeTable =
 
 const ClassInfo JSProcessingInstructionPrototype::s_info = { "ProcessingInstructionPrototype", 0, &JSProcessingInstructionPrototypeTable, 0 };
 
-JSObject* JSProcessingInstructionPrototype::self(ExecState* exec)
+JSObject* JSProcessingInstructionPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSProcessingInstruction>(exec);
+    return getDOMPrototype<JSProcessingInstruction>(exec, globalObject);
 }
 
 const ClassInfo JSProcessingInstruction::s_info = { "ProcessingInstruction", &JSNode::s_info, &JSProcessingInstructionTable, 0 };
@@ -121,9 +121,9 @@ JSProcessingInstruction::JSProcessingInstruction(PassRefPtr<Structure> structure
 {
 }
 
-JSObject* JSProcessingInstruction::createPrototype(ExecState* exec)
+JSObject* JSProcessingInstruction::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSProcessingInstructionPrototype(JSProcessingInstructionPrototype::createStructure(JSNodePrototype::self(exec)));
+    return new (exec) JSProcessingInstructionPrototype(JSProcessingInstructionPrototype::createStructure(JSNodePrototype::self(exec, globalObject)));
 }
 
 bool JSProcessingInstruction::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

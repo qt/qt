@@ -81,7 +81,7 @@ public:
     JSSVGExceptionConstructor(ExecState* exec)
         : DOMObject(JSSVGExceptionConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
     {
-        putDirect(exec->propertyNames().prototype, JSSVGExceptionPrototype::self(exec), None);
+        putDirect(exec->propertyNames().prototype, JSSVGExceptionPrototype::self(exec, exec->lexicalGlobalObject()), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -120,9 +120,9 @@ static const HashTable JSSVGExceptionPrototypeTable =
 
 const ClassInfo JSSVGExceptionPrototype::s_info = { "SVGExceptionPrototype", 0, &JSSVGExceptionPrototypeTable, 0 };
 
-JSObject* JSSVGExceptionPrototype::self(ExecState* exec)
+JSObject* JSSVGExceptionPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSSVGException>(exec);
+    return getDOMPrototype<JSSVGException>(exec, globalObject);
 }
 
 bool JSSVGExceptionPrototype::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -145,9 +145,9 @@ JSSVGException::~JSSVGException()
 
 }
 
-JSObject* JSSVGException::createPrototype(ExecState* exec)
+JSObject* JSSVGException::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSSVGExceptionPrototype(JSSVGExceptionPrototype::createStructure(exec->lexicalGlobalObject()->objectPrototype()));
+    return new (exec) JSSVGExceptionPrototype(JSSVGExceptionPrototype::createStructure(globalObject->objectPrototype()));
 }
 
 bool JSSVGException::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

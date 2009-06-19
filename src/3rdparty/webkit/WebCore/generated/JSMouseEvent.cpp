@@ -94,7 +94,7 @@ public:
     JSMouseEventConstructor(ExecState* exec)
         : DOMObject(JSMouseEventConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
     {
-        putDirect(exec->propertyNames().prototype, JSMouseEventPrototype::self(exec), None);
+        putDirect(exec->propertyNames().prototype, JSMouseEventPrototype::self(exec, exec->lexicalGlobalObject()), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -130,9 +130,9 @@ static const HashTable JSMouseEventPrototypeTable =
 
 const ClassInfo JSMouseEventPrototype::s_info = { "MouseEventPrototype", 0, &JSMouseEventPrototypeTable, 0 };
 
-JSObject* JSMouseEventPrototype::self(ExecState* exec)
+JSObject* JSMouseEventPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSMouseEvent>(exec);
+    return getDOMPrototype<JSMouseEvent>(exec, globalObject);
 }
 
 bool JSMouseEventPrototype::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -147,9 +147,9 @@ JSMouseEvent::JSMouseEvent(PassRefPtr<Structure> structure, PassRefPtr<MouseEven
 {
 }
 
-JSObject* JSMouseEvent::createPrototype(ExecState* exec)
+JSObject* JSMouseEvent::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSMouseEventPrototype(JSMouseEventPrototype::createStructure(JSUIEventPrototype::self(exec)));
+    return new (exec) JSMouseEventPrototype(JSMouseEventPrototype::createStructure(JSUIEventPrototype::self(exec, globalObject)));
 }
 
 bool JSMouseEvent::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

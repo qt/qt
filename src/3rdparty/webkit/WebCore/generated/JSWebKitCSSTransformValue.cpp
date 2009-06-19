@@ -80,7 +80,7 @@ public:
     JSWebKitCSSTransformValueConstructor(ExecState* exec)
         : DOMObject(JSWebKitCSSTransformValueConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
     {
-        putDirect(exec->propertyNames().prototype, JSWebKitCSSTransformValuePrototype::self(exec), None);
+        putDirect(exec->propertyNames().prototype, JSWebKitCSSTransformValuePrototype::self(exec, exec->lexicalGlobalObject()), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -126,9 +126,9 @@ static const HashTable JSWebKitCSSTransformValuePrototypeTable =
 
 const ClassInfo JSWebKitCSSTransformValuePrototype::s_info = { "WebKitCSSTransformValuePrototype", 0, &JSWebKitCSSTransformValuePrototypeTable, 0 };
 
-JSObject* JSWebKitCSSTransformValuePrototype::self(ExecState* exec)
+JSObject* JSWebKitCSSTransformValuePrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSWebKitCSSTransformValue>(exec);
+    return getDOMPrototype<JSWebKitCSSTransformValue>(exec, globalObject);
 }
 
 bool JSWebKitCSSTransformValuePrototype::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -143,9 +143,9 @@ JSWebKitCSSTransformValue::JSWebKitCSSTransformValue(PassRefPtr<Structure> struc
 {
 }
 
-JSObject* JSWebKitCSSTransformValue::createPrototype(ExecState* exec)
+JSObject* JSWebKitCSSTransformValue::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSWebKitCSSTransformValuePrototype(JSWebKitCSSTransformValuePrototype::createStructure(JSCSSValueListPrototype::self(exec)));
+    return new (exec) JSWebKitCSSTransformValuePrototype(JSWebKitCSSTransformValuePrototype::createStructure(JSCSSValueListPrototype::self(exec, globalObject)));
 }
 
 bool JSWebKitCSSTransformValue::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

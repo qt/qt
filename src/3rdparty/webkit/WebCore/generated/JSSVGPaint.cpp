@@ -87,7 +87,7 @@ public:
     JSSVGPaintConstructor(ExecState* exec)
         : DOMObject(JSSVGPaintConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
     {
-        putDirect(exec->propertyNames().prototype, JSSVGPaintPrototype::self(exec), None);
+        putDirect(exec->propertyNames().prototype, JSSVGPaintPrototype::self(exec, exec->lexicalGlobalObject()), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -134,9 +134,9 @@ static const HashTable JSSVGPaintPrototypeTable =
 
 const ClassInfo JSSVGPaintPrototype::s_info = { "SVGPaintPrototype", 0, &JSSVGPaintPrototypeTable, 0 };
 
-JSObject* JSSVGPaintPrototype::self(ExecState* exec)
+JSObject* JSSVGPaintPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSSVGPaint>(exec);
+    return getDOMPrototype<JSSVGPaint>(exec, globalObject);
 }
 
 bool JSSVGPaintPrototype::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -151,9 +151,9 @@ JSSVGPaint::JSSVGPaint(PassRefPtr<Structure> structure, PassRefPtr<SVGPaint> imp
 {
 }
 
-JSObject* JSSVGPaint::createPrototype(ExecState* exec)
+JSObject* JSSVGPaint::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSSVGPaintPrototype(JSSVGPaintPrototype::createStructure(JSSVGColorPrototype::self(exec)));
+    return new (exec) JSSVGPaintPrototype(JSSVGPaintPrototype::createStructure(JSSVGColorPrototype::self(exec, globalObject)));
 }
 
 bool JSSVGPaint::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

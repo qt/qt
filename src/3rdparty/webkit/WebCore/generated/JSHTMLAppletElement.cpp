@@ -83,7 +83,7 @@ public:
     JSHTMLAppletElementConstructor(ExecState* exec)
         : DOMObject(JSHTMLAppletElementConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
     {
-        putDirect(exec->propertyNames().prototype, JSHTMLAppletElementPrototype::self(exec), None);
+        putDirect(exec->propertyNames().prototype, JSHTMLAppletElementPrototype::self(exec, exec->lexicalGlobalObject()), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -118,9 +118,9 @@ static const HashTable JSHTMLAppletElementPrototypeTable =
 
 const ClassInfo JSHTMLAppletElementPrototype::s_info = { "HTMLAppletElementPrototype", 0, &JSHTMLAppletElementPrototypeTable, 0 };
 
-JSObject* JSHTMLAppletElementPrototype::self(ExecState* exec)
+JSObject* JSHTMLAppletElementPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSHTMLAppletElement>(exec);
+    return getDOMPrototype<JSHTMLAppletElement>(exec, globalObject);
 }
 
 const ClassInfo JSHTMLAppletElement::s_info = { "HTMLAppletElement", &JSHTMLElement::s_info, &JSHTMLAppletElementTable, 0 };
@@ -130,9 +130,9 @@ JSHTMLAppletElement::JSHTMLAppletElement(PassRefPtr<Structure> structure, PassRe
 {
 }
 
-JSObject* JSHTMLAppletElement::createPrototype(ExecState* exec)
+JSObject* JSHTMLAppletElement::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSHTMLAppletElementPrototype(JSHTMLAppletElementPrototype::createStructure(JSHTMLElementPrototype::self(exec)));
+    return new (exec) JSHTMLAppletElementPrototype(JSHTMLAppletElementPrototype::createStructure(JSHTMLElementPrototype::self(exec, globalObject)));
 }
 
 bool JSHTMLAppletElement::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

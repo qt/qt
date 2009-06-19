@@ -87,9 +87,9 @@ static const HashTable JSSVGSymbolElementPrototypeTable =
 
 const ClassInfo JSSVGSymbolElementPrototype::s_info = { "SVGSymbolElementPrototype", 0, &JSSVGSymbolElementPrototypeTable, 0 };
 
-JSObject* JSSVGSymbolElementPrototype::self(ExecState* exec)
+JSObject* JSSVGSymbolElementPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSSVGSymbolElement>(exec);
+    return getDOMPrototype<JSSVGSymbolElement>(exec, globalObject);
 }
 
 bool JSSVGSymbolElementPrototype::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -104,9 +104,9 @@ JSSVGSymbolElement::JSSVGSymbolElement(PassRefPtr<Structure> structure, PassRefP
 {
 }
 
-JSObject* JSSVGSymbolElement::createPrototype(ExecState* exec)
+JSObject* JSSVGSymbolElement::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSSVGSymbolElementPrototype(JSSVGSymbolElementPrototype::createStructure(JSSVGElementPrototype::self(exec)));
+    return new (exec) JSSVGSymbolElementPrototype(JSSVGSymbolElementPrototype::createStructure(JSSVGElementPrototype::self(exec, globalObject)));
 }
 
 bool JSSVGSymbolElement::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

@@ -106,9 +106,9 @@ static const HashTable JSSVGForeignObjectElementPrototypeTable =
 
 const ClassInfo JSSVGForeignObjectElementPrototype::s_info = { "SVGForeignObjectElementPrototype", 0, &JSSVGForeignObjectElementPrototypeTable, 0 };
 
-JSObject* JSSVGForeignObjectElementPrototype::self(ExecState* exec)
+JSObject* JSSVGForeignObjectElementPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSSVGForeignObjectElement>(exec);
+    return getDOMPrototype<JSSVGForeignObjectElement>(exec, globalObject);
 }
 
 bool JSSVGForeignObjectElementPrototype::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -123,9 +123,9 @@ JSSVGForeignObjectElement::JSSVGForeignObjectElement(PassRefPtr<Structure> struc
 {
 }
 
-JSObject* JSSVGForeignObjectElement::createPrototype(ExecState* exec)
+JSObject* JSSVGForeignObjectElement::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSSVGForeignObjectElementPrototype(JSSVGForeignObjectElementPrototype::createStructure(JSSVGElementPrototype::self(exec)));
+    return new (exec) JSSVGForeignObjectElementPrototype(JSSVGForeignObjectElementPrototype::createStructure(JSSVGElementPrototype::self(exec, globalObject)));
 }
 
 bool JSSVGForeignObjectElement::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

@@ -53,9 +53,9 @@ static const HashTable JSSVGTSpanElementPrototypeTable =
 
 const ClassInfo JSSVGTSpanElementPrototype::s_info = { "SVGTSpanElementPrototype", 0, &JSSVGTSpanElementPrototypeTable, 0 };
 
-JSObject* JSSVGTSpanElementPrototype::self(ExecState* exec)
+JSObject* JSSVGTSpanElementPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSSVGTSpanElement>(exec);
+    return getDOMPrototype<JSSVGTSpanElement>(exec, globalObject);
 }
 
 const ClassInfo JSSVGTSpanElement::s_info = { "SVGTSpanElement", &JSSVGTextPositioningElement::s_info, 0, 0 };
@@ -65,9 +65,9 @@ JSSVGTSpanElement::JSSVGTSpanElement(PassRefPtr<Structure> structure, PassRefPtr
 {
 }
 
-JSObject* JSSVGTSpanElement::createPrototype(ExecState* exec)
+JSObject* JSSVGTSpanElement::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSSVGTSpanElementPrototype(JSSVGTSpanElementPrototype::createStructure(JSSVGTextPositioningElementPrototype::self(exec)));
+    return new (exec) JSSVGTSpanElementPrototype(JSSVGTSpanElementPrototype::createStructure(JSSVGTextPositioningElementPrototype::self(exec, globalObject)));
 }
 
 

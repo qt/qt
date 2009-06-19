@@ -82,9 +82,9 @@ static const HashTable JSConsolePrototypeTable =
 
 const ClassInfo JSConsolePrototype::s_info = { "ConsolePrototype", 0, &JSConsolePrototypeTable, 0 };
 
-JSObject* JSConsolePrototype::self(ExecState* exec)
+JSObject* JSConsolePrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSConsole>(exec);
+    return getDOMPrototype<JSConsole>(exec, globalObject);
 }
 
 bool JSConsolePrototype::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -106,9 +106,9 @@ JSConsole::~JSConsole()
 
 }
 
-JSObject* JSConsole::createPrototype(ExecState* exec)
+JSObject* JSConsole::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSConsolePrototype(JSConsolePrototype::createStructure(exec->lexicalGlobalObject()->objectPrototype()));
+    return new (exec) JSConsolePrototype(JSConsolePrototype::createStructure(globalObject->objectPrototype()));
 }
 
 bool JSConsole::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

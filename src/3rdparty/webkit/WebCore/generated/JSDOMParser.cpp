@@ -72,7 +72,7 @@ public:
     JSDOMParserConstructor(ExecState* exec)
         : DOMObject(JSDOMParserConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
     {
-        putDirect(exec->propertyNames().prototype, JSDOMParserPrototype::self(exec), None);
+        putDirect(exec->propertyNames().prototype, JSDOMParserPrototype::self(exec, exec->lexicalGlobalObject()), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -117,9 +117,9 @@ static const HashTable JSDOMParserPrototypeTable =
 
 const ClassInfo JSDOMParserPrototype::s_info = { "DOMParserPrototype", 0, &JSDOMParserPrototypeTable, 0 };
 
-JSObject* JSDOMParserPrototype::self(ExecState* exec)
+JSObject* JSDOMParserPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSDOMParser>(exec);
+    return getDOMPrototype<JSDOMParser>(exec, globalObject);
 }
 
 bool JSDOMParserPrototype::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -141,9 +141,9 @@ JSDOMParser::~JSDOMParser()
 
 }
 
-JSObject* JSDOMParser::createPrototype(ExecState* exec)
+JSObject* JSDOMParser::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSDOMParserPrototype(JSDOMParserPrototype::createStructure(exec->lexicalGlobalObject()->objectPrototype()));
+    return new (exec) JSDOMParserPrototype(JSDOMParserPrototype::createStructure(globalObject->objectPrototype()));
 }
 
 bool JSDOMParser::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

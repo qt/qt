@@ -74,7 +74,7 @@ public:
     JSNamedNodeMapConstructor(ExecState* exec)
         : DOMObject(JSNamedNodeMapConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
     {
-        putDirect(exec->propertyNames().prototype, JSNamedNodeMapPrototype::self(exec), None);
+        putDirect(exec->propertyNames().prototype, JSNamedNodeMapPrototype::self(exec, exec->lexicalGlobalObject()), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -116,9 +116,9 @@ static const HashTable JSNamedNodeMapPrototypeTable =
 
 const ClassInfo JSNamedNodeMapPrototype::s_info = { "NamedNodeMapPrototype", 0, &JSNamedNodeMapPrototypeTable, 0 };
 
-JSObject* JSNamedNodeMapPrototype::self(ExecState* exec)
+JSObject* JSNamedNodeMapPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSNamedNodeMap>(exec);
+    return getDOMPrototype<JSNamedNodeMap>(exec, globalObject);
 }
 
 bool JSNamedNodeMapPrototype::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -140,9 +140,9 @@ JSNamedNodeMap::~JSNamedNodeMap()
 
 }
 
-JSObject* JSNamedNodeMap::createPrototype(ExecState* exec)
+JSObject* JSNamedNodeMap::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSNamedNodeMapPrototype(JSNamedNodeMapPrototype::createStructure(exec->lexicalGlobalObject()->objectPrototype()));
+    return new (exec) JSNamedNodeMapPrototype(JSNamedNodeMapPrototype::createStructure(globalObject->objectPrototype()));
 }
 
 bool JSNamedNodeMap::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

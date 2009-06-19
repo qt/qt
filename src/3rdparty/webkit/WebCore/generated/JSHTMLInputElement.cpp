@@ -98,7 +98,7 @@ public:
     JSHTMLInputElementConstructor(ExecState* exec)
         : DOMObject(JSHTMLInputElementConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
     {
-        putDirect(exec->propertyNames().prototype, JSHTMLInputElementPrototype::self(exec), None);
+        putDirect(exec->propertyNames().prototype, JSHTMLInputElementPrototype::self(exec, exec->lexicalGlobalObject()), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -136,9 +136,9 @@ static const HashTable JSHTMLInputElementPrototypeTable =
 
 const ClassInfo JSHTMLInputElementPrototype::s_info = { "HTMLInputElementPrototype", 0, &JSHTMLInputElementPrototypeTable, 0 };
 
-JSObject* JSHTMLInputElementPrototype::self(ExecState* exec)
+JSObject* JSHTMLInputElementPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSHTMLInputElement>(exec);
+    return getDOMPrototype<JSHTMLInputElement>(exec, globalObject);
 }
 
 bool JSHTMLInputElementPrototype::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -153,9 +153,9 @@ JSHTMLInputElement::JSHTMLInputElement(PassRefPtr<Structure> structure, PassRefP
 {
 }
 
-JSObject* JSHTMLInputElement::createPrototype(ExecState* exec)
+JSObject* JSHTMLInputElement::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSHTMLInputElementPrototype(JSHTMLInputElementPrototype::createStructure(JSHTMLElementPrototype::self(exec)));
+    return new (exec) JSHTMLInputElementPrototype(JSHTMLInputElementPrototype::createStructure(JSHTMLElementPrototype::self(exec, globalObject)));
 }
 
 bool JSHTMLInputElement::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

@@ -82,7 +82,7 @@ public:
     JSHTMLLinkElementConstructor(ExecState* exec)
         : DOMObject(JSHTMLLinkElementConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
     {
-        putDirect(exec->propertyNames().prototype, JSHTMLLinkElementPrototype::self(exec), None);
+        putDirect(exec->propertyNames().prototype, JSHTMLLinkElementPrototype::self(exec, exec->lexicalGlobalObject()), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -117,9 +117,9 @@ static const HashTable JSHTMLLinkElementPrototypeTable =
 
 const ClassInfo JSHTMLLinkElementPrototype::s_info = { "HTMLLinkElementPrototype", 0, &JSHTMLLinkElementPrototypeTable, 0 };
 
-JSObject* JSHTMLLinkElementPrototype::self(ExecState* exec)
+JSObject* JSHTMLLinkElementPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSHTMLLinkElement>(exec);
+    return getDOMPrototype<JSHTMLLinkElement>(exec, globalObject);
 }
 
 const ClassInfo JSHTMLLinkElement::s_info = { "HTMLLinkElement", &JSHTMLElement::s_info, &JSHTMLLinkElementTable, 0 };
@@ -129,9 +129,9 @@ JSHTMLLinkElement::JSHTMLLinkElement(PassRefPtr<Structure> structure, PassRefPtr
 {
 }
 
-JSObject* JSHTMLLinkElement::createPrototype(ExecState* exec)
+JSObject* JSHTMLLinkElement::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSHTMLLinkElementPrototype(JSHTMLLinkElementPrototype::createStructure(JSHTMLElementPrototype::self(exec)));
+    return new (exec) JSHTMLLinkElementPrototype(JSHTMLLinkElementPrototype::createStructure(JSHTMLElementPrototype::self(exec, globalObject)));
 }
 
 bool JSHTMLLinkElement::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

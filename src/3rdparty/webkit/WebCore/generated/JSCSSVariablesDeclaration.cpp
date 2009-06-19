@@ -77,7 +77,7 @@ public:
     JSCSSVariablesDeclarationConstructor(ExecState* exec)
         : DOMObject(JSCSSVariablesDeclarationConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
     {
-        putDirect(exec->propertyNames().prototype, JSCSSVariablesDeclarationPrototype::self(exec), None);
+        putDirect(exec->propertyNames().prototype, JSCSSVariablesDeclarationPrototype::self(exec, exec->lexicalGlobalObject()), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -116,9 +116,9 @@ static const HashTable JSCSSVariablesDeclarationPrototypeTable =
 
 const ClassInfo JSCSSVariablesDeclarationPrototype::s_info = { "CSSVariablesDeclarationPrototype", 0, &JSCSSVariablesDeclarationPrototypeTable, 0 };
 
-JSObject* JSCSSVariablesDeclarationPrototype::self(ExecState* exec)
+JSObject* JSCSSVariablesDeclarationPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSCSSVariablesDeclaration>(exec);
+    return getDOMPrototype<JSCSSVariablesDeclaration>(exec, globalObject);
 }
 
 bool JSCSSVariablesDeclarationPrototype::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -140,9 +140,9 @@ JSCSSVariablesDeclaration::~JSCSSVariablesDeclaration()
 
 }
 
-JSObject* JSCSSVariablesDeclaration::createPrototype(ExecState* exec)
+JSObject* JSCSSVariablesDeclaration::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSCSSVariablesDeclarationPrototype(JSCSSVariablesDeclarationPrototype::createStructure(exec->lexicalGlobalObject()->objectPrototype()));
+    return new (exec) JSCSSVariablesDeclarationPrototype(JSCSSVariablesDeclarationPrototype::createStructure(globalObject->objectPrototype()));
 }
 
 bool JSCSSVariablesDeclaration::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

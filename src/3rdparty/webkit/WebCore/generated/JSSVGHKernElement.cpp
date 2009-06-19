@@ -53,9 +53,9 @@ static const HashTable JSSVGHKernElementPrototypeTable =
 
 const ClassInfo JSSVGHKernElementPrototype::s_info = { "SVGHKernElementPrototype", 0, &JSSVGHKernElementPrototypeTable, 0 };
 
-JSObject* JSSVGHKernElementPrototype::self(ExecState* exec)
+JSObject* JSSVGHKernElementPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSSVGHKernElement>(exec);
+    return getDOMPrototype<JSSVGHKernElement>(exec, globalObject);
 }
 
 const ClassInfo JSSVGHKernElement::s_info = { "SVGHKernElement", &JSSVGElement::s_info, 0, 0 };
@@ -65,9 +65,9 @@ JSSVGHKernElement::JSSVGHKernElement(PassRefPtr<Structure> structure, PassRefPtr
 {
 }
 
-JSObject* JSSVGHKernElement::createPrototype(ExecState* exec)
+JSObject* JSSVGHKernElement::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSSVGHKernElementPrototype(JSSVGHKernElementPrototype::createStructure(JSSVGElementPrototype::self(exec)));
+    return new (exec) JSSVGHKernElementPrototype(JSSVGHKernElementPrototype::createStructure(JSSVGElementPrototype::self(exec, globalObject)));
 }
 
 

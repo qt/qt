@@ -53,9 +53,9 @@ static const HashTable JSSVGPathSegClosePathPrototypeTable =
 
 const ClassInfo JSSVGPathSegClosePathPrototype::s_info = { "SVGPathSegClosePathPrototype", 0, &JSSVGPathSegClosePathPrototypeTable, 0 };
 
-JSObject* JSSVGPathSegClosePathPrototype::self(ExecState* exec)
+JSObject* JSSVGPathSegClosePathPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSSVGPathSegClosePath>(exec);
+    return getDOMPrototype<JSSVGPathSegClosePath>(exec, globalObject);
 }
 
 const ClassInfo JSSVGPathSegClosePath::s_info = { "SVGPathSegClosePath", &JSSVGPathSeg::s_info, 0, 0 };
@@ -65,9 +65,9 @@ JSSVGPathSegClosePath::JSSVGPathSegClosePath(PassRefPtr<Structure> structure, Pa
 {
 }
 
-JSObject* JSSVGPathSegClosePath::createPrototype(ExecState* exec)
+JSObject* JSSVGPathSegClosePath::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSSVGPathSegClosePathPrototype(JSSVGPathSegClosePathPrototype::createStructure(JSSVGPathSegPrototype::self(exec)));
+    return new (exec) JSSVGPathSegClosePathPrototype(JSSVGPathSegClosePathPrototype::createStructure(JSSVGPathSegPrototype::self(exec, globalObject)));
 }
 
 

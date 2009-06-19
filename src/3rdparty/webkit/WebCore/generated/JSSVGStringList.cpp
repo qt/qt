@@ -79,9 +79,9 @@ static const HashTable JSSVGStringListPrototypeTable =
 
 const ClassInfo JSSVGStringListPrototype::s_info = { "SVGStringListPrototype", 0, &JSSVGStringListPrototypeTable, 0 };
 
-JSObject* JSSVGStringListPrototype::self(ExecState* exec)
+JSObject* JSSVGStringListPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSSVGStringList>(exec);
+    return getDOMPrototype<JSSVGStringList>(exec, globalObject);
 }
 
 bool JSSVGStringListPrototype::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -104,9 +104,9 @@ JSSVGStringList::~JSSVGStringList()
 
 }
 
-JSObject* JSSVGStringList::createPrototype(ExecState* exec)
+JSObject* JSSVGStringList::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSSVGStringListPrototype(JSSVGStringListPrototype::createStructure(exec->lexicalGlobalObject()->objectPrototype()));
+    return new (exec) JSSVGStringListPrototype(JSSVGStringListPrototype::createStructure(globalObject->objectPrototype()));
 }
 
 bool JSSVGStringList::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

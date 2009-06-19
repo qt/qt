@@ -75,9 +75,9 @@ static const HashTable JSSVGZoomEventPrototypeTable =
 
 const ClassInfo JSSVGZoomEventPrototype::s_info = { "SVGZoomEventPrototype", 0, &JSSVGZoomEventPrototypeTable, 0 };
 
-JSObject* JSSVGZoomEventPrototype::self(ExecState* exec)
+JSObject* JSSVGZoomEventPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSSVGZoomEvent>(exec);
+    return getDOMPrototype<JSSVGZoomEvent>(exec, globalObject);
 }
 
 const ClassInfo JSSVGZoomEvent::s_info = { "SVGZoomEvent", &JSUIEvent::s_info, &JSSVGZoomEventTable, 0 };
@@ -87,9 +87,9 @@ JSSVGZoomEvent::JSSVGZoomEvent(PassRefPtr<Structure> structure, PassRefPtr<SVGZo
 {
 }
 
-JSObject* JSSVGZoomEvent::createPrototype(ExecState* exec)
+JSObject* JSSVGZoomEvent::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSSVGZoomEventPrototype(JSSVGZoomEventPrototype::createStructure(JSUIEventPrototype::self(exec)));
+    return new (exec) JSSVGZoomEventPrototype(JSSVGZoomEventPrototype::createStructure(JSUIEventPrototype::self(exec, globalObject)));
 }
 
 bool JSSVGZoomEvent::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

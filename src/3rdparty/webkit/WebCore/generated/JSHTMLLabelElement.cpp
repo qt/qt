@@ -75,7 +75,7 @@ public:
     JSHTMLLabelElementConstructor(ExecState* exec)
         : DOMObject(JSHTMLLabelElementConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
     {
-        putDirect(exec->propertyNames().prototype, JSHTMLLabelElementPrototype::self(exec), None);
+        putDirect(exec->propertyNames().prototype, JSHTMLLabelElementPrototype::self(exec, exec->lexicalGlobalObject()), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -110,9 +110,9 @@ static const HashTable JSHTMLLabelElementPrototypeTable =
 
 const ClassInfo JSHTMLLabelElementPrototype::s_info = { "HTMLLabelElementPrototype", 0, &JSHTMLLabelElementPrototypeTable, 0 };
 
-JSObject* JSHTMLLabelElementPrototype::self(ExecState* exec)
+JSObject* JSHTMLLabelElementPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSHTMLLabelElement>(exec);
+    return getDOMPrototype<JSHTMLLabelElement>(exec, globalObject);
 }
 
 const ClassInfo JSHTMLLabelElement::s_info = { "HTMLLabelElement", &JSHTMLElement::s_info, &JSHTMLLabelElementTable, 0 };
@@ -122,9 +122,9 @@ JSHTMLLabelElement::JSHTMLLabelElement(PassRefPtr<Structure> structure, PassRefP
 {
 }
 
-JSObject* JSHTMLLabelElement::createPrototype(ExecState* exec)
+JSObject* JSHTMLLabelElement::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSHTMLLabelElementPrototype(JSHTMLLabelElementPrototype::createStructure(JSHTMLElementPrototype::self(exec)));
+    return new (exec) JSHTMLLabelElementPrototype(JSHTMLLabelElementPrototype::createStructure(JSHTMLElementPrototype::self(exec, globalObject)));
 }
 
 bool JSHTMLLabelElement::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

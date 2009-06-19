@@ -75,9 +75,9 @@ static const HashTable JSSVGPathSegArcAbsPrototypeTable =
 
 const ClassInfo JSSVGPathSegArcAbsPrototype::s_info = { "SVGPathSegArcAbsPrototype", 0, &JSSVGPathSegArcAbsPrototypeTable, 0 };
 
-JSObject* JSSVGPathSegArcAbsPrototype::self(ExecState* exec)
+JSObject* JSSVGPathSegArcAbsPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSSVGPathSegArcAbs>(exec);
+    return getDOMPrototype<JSSVGPathSegArcAbs>(exec, globalObject);
 }
 
 const ClassInfo JSSVGPathSegArcAbs::s_info = { "SVGPathSegArcAbs", &JSSVGPathSeg::s_info, &JSSVGPathSegArcAbsTable, 0 };
@@ -87,9 +87,9 @@ JSSVGPathSegArcAbs::JSSVGPathSegArcAbs(PassRefPtr<Structure> structure, PassRefP
 {
 }
 
-JSObject* JSSVGPathSegArcAbs::createPrototype(ExecState* exec)
+JSObject* JSSVGPathSegArcAbs::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSSVGPathSegArcAbsPrototype(JSSVGPathSegArcAbsPrototype::createStructure(JSSVGPathSegPrototype::self(exec)));
+    return new (exec) JSSVGPathSegArcAbsPrototype(JSSVGPathSegArcAbsPrototype::createStructure(JSSVGPathSegPrototype::self(exec, globalObject)));
 }
 
 bool JSSVGPathSegArcAbs::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

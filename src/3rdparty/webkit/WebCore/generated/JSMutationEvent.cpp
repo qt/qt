@@ -81,7 +81,7 @@ public:
     JSMutationEventConstructor(ExecState* exec)
         : DOMObject(JSMutationEventConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
     {
-        putDirect(exec->propertyNames().prototype, JSMutationEventPrototype::self(exec), None);
+        putDirect(exec->propertyNames().prototype, JSMutationEventPrototype::self(exec, exec->lexicalGlobalObject()), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -120,9 +120,9 @@ static const HashTable JSMutationEventPrototypeTable =
 
 const ClassInfo JSMutationEventPrototype::s_info = { "MutationEventPrototype", 0, &JSMutationEventPrototypeTable, 0 };
 
-JSObject* JSMutationEventPrototype::self(ExecState* exec)
+JSObject* JSMutationEventPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSMutationEvent>(exec);
+    return getDOMPrototype<JSMutationEvent>(exec, globalObject);
 }
 
 bool JSMutationEventPrototype::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -137,9 +137,9 @@ JSMutationEvent::JSMutationEvent(PassRefPtr<Structure> structure, PassRefPtr<Mut
 {
 }
 
-JSObject* JSMutationEvent::createPrototype(ExecState* exec)
+JSObject* JSMutationEvent::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSMutationEventPrototype(JSMutationEventPrototype::createStructure(JSEventPrototype::self(exec)));
+    return new (exec) JSMutationEventPrototype(JSMutationEventPrototype::createStructure(JSEventPrototype::self(exec, globalObject)));
 }
 
 bool JSMutationEvent::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

@@ -36,7 +36,7 @@ class JSSVGNumber : public DOMObject {
 public:
     JSSVGNumber(PassRefPtr<JSC::Structure>, PassRefPtr<JSSVGPODTypeWrapper<float> >, SVGElement* context);
     virtual ~JSSVGNumber();
-    static JSC::JSObject* createPrototype(JSC::ExecState*);
+    static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
     virtual void put(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::JSValuePtr, JSC::PutPropertySlot&);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
@@ -60,7 +60,7 @@ float toSVGNumber(JSC::JSValuePtr);
 
 class JSSVGNumberPrototype : public JSC::JSObject {
 public:
-    static JSC::JSObject* self(JSC::ExecState*);
+    static JSC::JSObject* self(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
     static const JSC::ClassInfo s_info;
     JSSVGNumberPrototype(PassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }

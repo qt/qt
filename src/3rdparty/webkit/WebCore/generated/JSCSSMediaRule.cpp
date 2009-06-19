@@ -75,7 +75,7 @@ public:
     JSCSSMediaRuleConstructor(ExecState* exec)
         : DOMObject(JSCSSMediaRuleConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
     {
-        putDirect(exec->propertyNames().prototype, JSCSSMediaRulePrototype::self(exec), None);
+        putDirect(exec->propertyNames().prototype, JSCSSMediaRulePrototype::self(exec, exec->lexicalGlobalObject()), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -112,9 +112,9 @@ static const HashTable JSCSSMediaRulePrototypeTable =
 
 const ClassInfo JSCSSMediaRulePrototype::s_info = { "CSSMediaRulePrototype", 0, &JSCSSMediaRulePrototypeTable, 0 };
 
-JSObject* JSCSSMediaRulePrototype::self(ExecState* exec)
+JSObject* JSCSSMediaRulePrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSCSSMediaRule>(exec);
+    return getDOMPrototype<JSCSSMediaRule>(exec, globalObject);
 }
 
 bool JSCSSMediaRulePrototype::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -129,9 +129,9 @@ JSCSSMediaRule::JSCSSMediaRule(PassRefPtr<Structure> structure, PassRefPtr<CSSMe
 {
 }
 
-JSObject* JSCSSMediaRule::createPrototype(ExecState* exec)
+JSObject* JSCSSMediaRule::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSCSSMediaRulePrototype(JSCSSMediaRulePrototype::createStructure(JSCSSRulePrototype::self(exec)));
+    return new (exec) JSCSSMediaRulePrototype(JSCSSMediaRulePrototype::createStructure(JSCSSRulePrototype::self(exec, globalObject)));
 }
 
 bool JSCSSMediaRule::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

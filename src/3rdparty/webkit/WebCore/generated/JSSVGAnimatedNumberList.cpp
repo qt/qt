@@ -70,9 +70,9 @@ static const HashTable JSSVGAnimatedNumberListPrototypeTable =
 
 const ClassInfo JSSVGAnimatedNumberListPrototype::s_info = { "SVGAnimatedNumberListPrototype", 0, &JSSVGAnimatedNumberListPrototypeTable, 0 };
 
-JSObject* JSSVGAnimatedNumberListPrototype::self(ExecState* exec)
+JSObject* JSSVGAnimatedNumberListPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSSVGAnimatedNumberList>(exec);
+    return getDOMPrototype<JSSVGAnimatedNumberList>(exec, globalObject);
 }
 
 const ClassInfo JSSVGAnimatedNumberList::s_info = { "SVGAnimatedNumberList", 0, &JSSVGAnimatedNumberListTable, 0 };
@@ -90,9 +90,9 @@ JSSVGAnimatedNumberList::~JSSVGAnimatedNumberList()
 
 }
 
-JSObject* JSSVGAnimatedNumberList::createPrototype(ExecState* exec)
+JSObject* JSSVGAnimatedNumberList::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSSVGAnimatedNumberListPrototype(JSSVGAnimatedNumberListPrototype::createStructure(exec->lexicalGlobalObject()->objectPrototype()));
+    return new (exec) JSSVGAnimatedNumberListPrototype(JSSVGAnimatedNumberListPrototype::createStructure(globalObject->objectPrototype()));
 }
 
 bool JSSVGAnimatedNumberList::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

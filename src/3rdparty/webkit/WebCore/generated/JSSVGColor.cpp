@@ -80,7 +80,7 @@ public:
     JSSVGColorConstructor(ExecState* exec)
         : DOMObject(JSSVGColorConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
     {
-        putDirect(exec->propertyNames().prototype, JSSVGColorPrototype::self(exec), None);
+        putDirect(exec->propertyNames().prototype, JSSVGColorPrototype::self(exec, exec->lexicalGlobalObject()), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -122,9 +122,9 @@ static const HashTable JSSVGColorPrototypeTable =
 
 const ClassInfo JSSVGColorPrototype::s_info = { "SVGColorPrototype", 0, &JSSVGColorPrototypeTable, 0 };
 
-JSObject* JSSVGColorPrototype::self(ExecState* exec)
+JSObject* JSSVGColorPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSSVGColor>(exec);
+    return getDOMPrototype<JSSVGColor>(exec, globalObject);
 }
 
 bool JSSVGColorPrototype::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -139,9 +139,9 @@ JSSVGColor::JSSVGColor(PassRefPtr<Structure> structure, PassRefPtr<SVGColor> imp
 {
 }
 
-JSObject* JSSVGColor::createPrototype(ExecState* exec)
+JSObject* JSSVGColor::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSSVGColorPrototype(JSSVGColorPrototype::createStructure(JSCSSValuePrototype::self(exec)));
+    return new (exec) JSSVGColorPrototype(JSSVGColorPrototype::createStructure(JSCSSValuePrototype::self(exec, globalObject)));
 }
 
 bool JSSVGColor::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

@@ -106,9 +106,9 @@ static const HashTable JSSVGEllipseElementPrototypeTable =
 
 const ClassInfo JSSVGEllipseElementPrototype::s_info = { "SVGEllipseElementPrototype", 0, &JSSVGEllipseElementPrototypeTable, 0 };
 
-JSObject* JSSVGEllipseElementPrototype::self(ExecState* exec)
+JSObject* JSSVGEllipseElementPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSSVGEllipseElement>(exec);
+    return getDOMPrototype<JSSVGEllipseElement>(exec, globalObject);
 }
 
 bool JSSVGEllipseElementPrototype::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -123,9 +123,9 @@ JSSVGEllipseElement::JSSVGEllipseElement(PassRefPtr<Structure> structure, PassRe
 {
 }
 
-JSObject* JSSVGEllipseElement::createPrototype(ExecState* exec)
+JSObject* JSSVGEllipseElement::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSSVGEllipseElementPrototype(JSSVGEllipseElementPrototype::createStructure(JSSVGElementPrototype::self(exec)));
+    return new (exec) JSSVGEllipseElementPrototype(JSSVGEllipseElementPrototype::createStructure(JSSVGElementPrototype::self(exec, globalObject)));
 }
 
 bool JSSVGEllipseElement::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

@@ -72,9 +72,9 @@ static const HashTable JSSVGPathSegCurvetoCubicSmoothRelPrototypeTable =
 
 const ClassInfo JSSVGPathSegCurvetoCubicSmoothRelPrototype::s_info = { "SVGPathSegCurvetoCubicSmoothRelPrototype", 0, &JSSVGPathSegCurvetoCubicSmoothRelPrototypeTable, 0 };
 
-JSObject* JSSVGPathSegCurvetoCubicSmoothRelPrototype::self(ExecState* exec)
+JSObject* JSSVGPathSegCurvetoCubicSmoothRelPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSSVGPathSegCurvetoCubicSmoothRel>(exec);
+    return getDOMPrototype<JSSVGPathSegCurvetoCubicSmoothRel>(exec, globalObject);
 }
 
 const ClassInfo JSSVGPathSegCurvetoCubicSmoothRel::s_info = { "SVGPathSegCurvetoCubicSmoothRel", &JSSVGPathSeg::s_info, &JSSVGPathSegCurvetoCubicSmoothRelTable, 0 };
@@ -84,9 +84,9 @@ JSSVGPathSegCurvetoCubicSmoothRel::JSSVGPathSegCurvetoCubicSmoothRel(PassRefPtr<
 {
 }
 
-JSObject* JSSVGPathSegCurvetoCubicSmoothRel::createPrototype(ExecState* exec)
+JSObject* JSSVGPathSegCurvetoCubicSmoothRel::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSSVGPathSegCurvetoCubicSmoothRelPrototype(JSSVGPathSegCurvetoCubicSmoothRelPrototype::createStructure(JSSVGPathSegPrototype::self(exec)));
+    return new (exec) JSSVGPathSegCurvetoCubicSmoothRelPrototype(JSSVGPathSegCurvetoCubicSmoothRelPrototype::createStructure(JSSVGPathSegPrototype::self(exec, globalObject)));
 }
 
 bool JSSVGPathSegCurvetoCubicSmoothRel::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

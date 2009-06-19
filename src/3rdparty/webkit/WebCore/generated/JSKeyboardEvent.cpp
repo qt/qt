@@ -79,7 +79,7 @@ public:
     JSKeyboardEventConstructor(ExecState* exec)
         : DOMObject(JSKeyboardEventConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
     {
-        putDirect(exec->propertyNames().prototype, JSKeyboardEventPrototype::self(exec), None);
+        putDirect(exec->propertyNames().prototype, JSKeyboardEventPrototype::self(exec, exec->lexicalGlobalObject()), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -115,9 +115,9 @@ static const HashTable JSKeyboardEventPrototypeTable =
 
 const ClassInfo JSKeyboardEventPrototype::s_info = { "KeyboardEventPrototype", 0, &JSKeyboardEventPrototypeTable, 0 };
 
-JSObject* JSKeyboardEventPrototype::self(ExecState* exec)
+JSObject* JSKeyboardEventPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSKeyboardEvent>(exec);
+    return getDOMPrototype<JSKeyboardEvent>(exec, globalObject);
 }
 
 bool JSKeyboardEventPrototype::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -132,9 +132,9 @@ JSKeyboardEvent::JSKeyboardEvent(PassRefPtr<Structure> structure, PassRefPtr<Key
 {
 }
 
-JSObject* JSKeyboardEvent::createPrototype(ExecState* exec)
+JSObject* JSKeyboardEvent::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSKeyboardEventPrototype(JSKeyboardEventPrototype::createStructure(JSUIEventPrototype::self(exec)));
+    return new (exec) JSKeyboardEventPrototype(JSKeyboardEventPrototype::createStructure(JSUIEventPrototype::self(exec, globalObject)));
 }
 
 bool JSKeyboardEvent::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

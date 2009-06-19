@@ -70,9 +70,9 @@ static const HashTable JSSVGAnimatedAnglePrototypeTable =
 
 const ClassInfo JSSVGAnimatedAnglePrototype::s_info = { "SVGAnimatedAnglePrototype", 0, &JSSVGAnimatedAnglePrototypeTable, 0 };
 
-JSObject* JSSVGAnimatedAnglePrototype::self(ExecState* exec)
+JSObject* JSSVGAnimatedAnglePrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSSVGAnimatedAngle>(exec);
+    return getDOMPrototype<JSSVGAnimatedAngle>(exec, globalObject);
 }
 
 const ClassInfo JSSVGAnimatedAngle::s_info = { "SVGAnimatedAngle", 0, &JSSVGAnimatedAngleTable, 0 };
@@ -90,9 +90,9 @@ JSSVGAnimatedAngle::~JSSVGAnimatedAngle()
 
 }
 
-JSObject* JSSVGAnimatedAngle::createPrototype(ExecState* exec)
+JSObject* JSSVGAnimatedAngle::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSSVGAnimatedAnglePrototype(JSSVGAnimatedAnglePrototype::createStructure(exec->lexicalGlobalObject()->objectPrototype()));
+    return new (exec) JSSVGAnimatedAnglePrototype(JSSVGAnimatedAnglePrototype::createStructure(globalObject->objectPrototype()));
 }
 
 bool JSSVGAnimatedAngle::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

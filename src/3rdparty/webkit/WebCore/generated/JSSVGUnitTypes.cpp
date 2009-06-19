@@ -75,7 +75,7 @@ public:
     JSSVGUnitTypesConstructor(ExecState* exec)
         : DOMObject(JSSVGUnitTypesConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
     {
-        putDirect(exec->propertyNames().prototype, JSSVGUnitTypesPrototype::self(exec), None);
+        putDirect(exec->propertyNames().prototype, JSSVGUnitTypesPrototype::self(exec, exec->lexicalGlobalObject()), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -113,9 +113,9 @@ static const HashTable JSSVGUnitTypesPrototypeTable =
 
 const ClassInfo JSSVGUnitTypesPrototype::s_info = { "SVGUnitTypesPrototype", 0, &JSSVGUnitTypesPrototypeTable, 0 };
 
-JSObject* JSSVGUnitTypesPrototype::self(ExecState* exec)
+JSObject* JSSVGUnitTypesPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSSVGUnitTypes>(exec);
+    return getDOMPrototype<JSSVGUnitTypes>(exec, globalObject);
 }
 
 bool JSSVGUnitTypesPrototype::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -138,9 +138,9 @@ JSSVGUnitTypes::~JSSVGUnitTypes()
 
 }
 
-JSObject* JSSVGUnitTypes::createPrototype(ExecState* exec)
+JSObject* JSSVGUnitTypes::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSSVGUnitTypesPrototype(JSSVGUnitTypesPrototype::createStructure(exec->lexicalGlobalObject()->objectPrototype()));
+    return new (exec) JSSVGUnitTypesPrototype(JSSVGUnitTypesPrototype::createStructure(globalObject->objectPrototype()));
 }
 
 bool JSSVGUnitTypes::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

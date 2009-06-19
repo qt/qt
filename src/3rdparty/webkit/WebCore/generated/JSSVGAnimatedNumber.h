@@ -35,7 +35,7 @@ class JSSVGAnimatedNumber : public DOMObject {
 public:
     JSSVGAnimatedNumber(PassRefPtr<JSC::Structure>, PassRefPtr<SVGAnimatedNumber>, SVGElement* context);
     virtual ~JSSVGAnimatedNumber();
-    static JSC::JSObject* createPrototype(JSC::ExecState*);
+    static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
     virtual void put(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::JSValuePtr, JSC::PutPropertySlot&);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
@@ -59,7 +59,7 @@ SVGAnimatedNumber* toSVGAnimatedNumber(JSC::JSValuePtr);
 
 class JSSVGAnimatedNumberPrototype : public JSC::JSObject {
 public:
-    static JSC::JSObject* self(JSC::ExecState*);
+    static JSC::JSObject* self(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
     static const JSC::ClassInfo s_info;
     JSSVGAnimatedNumberPrototype(PassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }

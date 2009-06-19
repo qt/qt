@@ -74,7 +74,7 @@ public:
     JSHTMLCanvasElementConstructor(ExecState* exec)
         : DOMObject(JSHTMLCanvasElementConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
     {
-        putDirect(exec->propertyNames().prototype, JSHTMLCanvasElementPrototype::self(exec), None);
+        putDirect(exec->propertyNames().prototype, JSHTMLCanvasElementPrototype::self(exec, exec->lexicalGlobalObject()), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -111,9 +111,9 @@ static const HashTable JSHTMLCanvasElementPrototypeTable =
 
 const ClassInfo JSHTMLCanvasElementPrototype::s_info = { "HTMLCanvasElementPrototype", 0, &JSHTMLCanvasElementPrototypeTable, 0 };
 
-JSObject* JSHTMLCanvasElementPrototype::self(ExecState* exec)
+JSObject* JSHTMLCanvasElementPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSHTMLCanvasElement>(exec);
+    return getDOMPrototype<JSHTMLCanvasElement>(exec, globalObject);
 }
 
 bool JSHTMLCanvasElementPrototype::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -128,9 +128,9 @@ JSHTMLCanvasElement::JSHTMLCanvasElement(PassRefPtr<Structure> structure, PassRe
 {
 }
 
-JSObject* JSHTMLCanvasElement::createPrototype(ExecState* exec)
+JSObject* JSHTMLCanvasElement::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSHTMLCanvasElementPrototype(JSHTMLCanvasElementPrototype::createStructure(JSHTMLElementPrototype::self(exec)));
+    return new (exec) JSHTMLCanvasElementPrototype(JSHTMLCanvasElementPrototype::createStructure(JSHTMLElementPrototype::self(exec, globalObject)));
 }
 
 bool JSHTMLCanvasElement::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

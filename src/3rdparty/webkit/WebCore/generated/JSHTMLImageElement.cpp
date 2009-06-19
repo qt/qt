@@ -88,7 +88,7 @@ public:
     JSHTMLImageElementConstructor(ExecState* exec)
         : DOMObject(JSHTMLImageElementConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
     {
-        putDirect(exec->propertyNames().prototype, JSHTMLImageElementPrototype::self(exec), None);
+        putDirect(exec->propertyNames().prototype, JSHTMLImageElementPrototype::self(exec, exec->lexicalGlobalObject()), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -123,9 +123,9 @@ static const HashTable JSHTMLImageElementPrototypeTable =
 
 const ClassInfo JSHTMLImageElementPrototype::s_info = { "HTMLImageElementPrototype", 0, &JSHTMLImageElementPrototypeTable, 0 };
 
-JSObject* JSHTMLImageElementPrototype::self(ExecState* exec)
+JSObject* JSHTMLImageElementPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSHTMLImageElement>(exec);
+    return getDOMPrototype<JSHTMLImageElement>(exec, globalObject);
 }
 
 const ClassInfo JSHTMLImageElement::s_info = { "HTMLImageElement", &JSHTMLElement::s_info, &JSHTMLImageElementTable, 0 };
@@ -135,9 +135,9 @@ JSHTMLImageElement::JSHTMLImageElement(PassRefPtr<Structure> structure, PassRefP
 {
 }
 
-JSObject* JSHTMLImageElement::createPrototype(ExecState* exec)
+JSObject* JSHTMLImageElement::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSHTMLImageElementPrototype(JSHTMLImageElementPrototype::createStructure(JSHTMLElementPrototype::self(exec)));
+    return new (exec) JSHTMLImageElementPrototype(JSHTMLImageElementPrototype::createStructure(JSHTMLElementPrototype::self(exec, globalObject)));
 }
 
 bool JSHTMLImageElement::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

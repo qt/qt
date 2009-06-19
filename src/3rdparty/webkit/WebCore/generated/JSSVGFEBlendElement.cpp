@@ -97,7 +97,7 @@ public:
     JSSVGFEBlendElementConstructor(ExecState* exec)
         : DOMObject(JSSVGFEBlendElementConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
     {
-        putDirect(exec->propertyNames().prototype, JSSVGFEBlendElementPrototype::self(exec), None);
+        putDirect(exec->propertyNames().prototype, JSSVGFEBlendElementPrototype::self(exec, exec->lexicalGlobalObject()), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -139,9 +139,9 @@ static const HashTable JSSVGFEBlendElementPrototypeTable =
 
 const ClassInfo JSSVGFEBlendElementPrototype::s_info = { "SVGFEBlendElementPrototype", 0, &JSSVGFEBlendElementPrototypeTable, 0 };
 
-JSObject* JSSVGFEBlendElementPrototype::self(ExecState* exec)
+JSObject* JSSVGFEBlendElementPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSSVGFEBlendElement>(exec);
+    return getDOMPrototype<JSSVGFEBlendElement>(exec, globalObject);
 }
 
 bool JSSVGFEBlendElementPrototype::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -156,9 +156,9 @@ JSSVGFEBlendElement::JSSVGFEBlendElement(PassRefPtr<Structure> structure, PassRe
 {
 }
 
-JSObject* JSSVGFEBlendElement::createPrototype(ExecState* exec)
+JSObject* JSSVGFEBlendElement::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSSVGFEBlendElementPrototype(JSSVGFEBlendElementPrototype::createStructure(JSSVGElementPrototype::self(exec)));
+    return new (exec) JSSVGFEBlendElementPrototype(JSSVGFEBlendElementPrototype::createStructure(JSSVGElementPrototype::self(exec, globalObject)));
 }
 
 bool JSSVGFEBlendElement::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

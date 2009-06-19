@@ -72,9 +72,9 @@ static const HashTable JSScreenPrototypeTable =
 
 const ClassInfo JSScreenPrototype::s_info = { "ScreenPrototype", 0, &JSScreenPrototypeTable, 0 };
 
-JSObject* JSScreenPrototype::self(ExecState* exec)
+JSObject* JSScreenPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSScreen>(exec);
+    return getDOMPrototype<JSScreen>(exec, globalObject);
 }
 
 const ClassInfo JSScreen::s_info = { "Screen", 0, &JSScreenTable, 0 };
@@ -91,9 +91,9 @@ JSScreen::~JSScreen()
 
 }
 
-JSObject* JSScreen::createPrototype(ExecState* exec)
+JSObject* JSScreen::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSScreenPrototype(JSScreenPrototype::createStructure(exec->lexicalGlobalObject()->objectPrototype()));
+    return new (exec) JSScreenPrototype(JSScreenPrototype::createStructure(globalObject->objectPrototype()));
 }
 
 bool JSScreen::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

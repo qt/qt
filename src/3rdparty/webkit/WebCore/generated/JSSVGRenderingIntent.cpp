@@ -78,7 +78,7 @@ public:
     JSSVGRenderingIntentConstructor(ExecState* exec)
         : DOMObject(JSSVGRenderingIntentConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
     {
-        putDirect(exec->propertyNames().prototype, JSSVGRenderingIntentPrototype::self(exec), None);
+        putDirect(exec->propertyNames().prototype, JSSVGRenderingIntentPrototype::self(exec, exec->lexicalGlobalObject()), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -119,9 +119,9 @@ static const HashTable JSSVGRenderingIntentPrototypeTable =
 
 const ClassInfo JSSVGRenderingIntentPrototype::s_info = { "SVGRenderingIntentPrototype", 0, &JSSVGRenderingIntentPrototypeTable, 0 };
 
-JSObject* JSSVGRenderingIntentPrototype::self(ExecState* exec)
+JSObject* JSSVGRenderingIntentPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSSVGRenderingIntent>(exec);
+    return getDOMPrototype<JSSVGRenderingIntent>(exec, globalObject);
 }
 
 bool JSSVGRenderingIntentPrototype::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -144,9 +144,9 @@ JSSVGRenderingIntent::~JSSVGRenderingIntent()
 
 }
 
-JSObject* JSSVGRenderingIntent::createPrototype(ExecState* exec)
+JSObject* JSSVGRenderingIntent::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSSVGRenderingIntentPrototype(JSSVGRenderingIntentPrototype::createStructure(exec->lexicalGlobalObject()->objectPrototype()));
+    return new (exec) JSSVGRenderingIntentPrototype(JSSVGRenderingIntentPrototype::createStructure(globalObject->objectPrototype()));
 }
 
 bool JSSVGRenderingIntent::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

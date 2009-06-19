@@ -49,9 +49,9 @@ static const HashTable JSCanvasPatternPrototypeTable =
 
 const ClassInfo JSCanvasPatternPrototype::s_info = { "CanvasPatternPrototype", 0, &JSCanvasPatternPrototypeTable, 0 };
 
-JSObject* JSCanvasPatternPrototype::self(ExecState* exec)
+JSObject* JSCanvasPatternPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSCanvasPattern>(exec);
+    return getDOMPrototype<JSCanvasPattern>(exec, globalObject);
 }
 
 const ClassInfo JSCanvasPattern::s_info = { "CanvasPattern", 0, 0, 0 };
@@ -68,9 +68,9 @@ JSCanvasPattern::~JSCanvasPattern()
 
 }
 
-JSObject* JSCanvasPattern::createPrototype(ExecState* exec)
+JSObject* JSCanvasPattern::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSCanvasPatternPrototype(JSCanvasPatternPrototype::createStructure(exec->lexicalGlobalObject()->objectPrototype()));
+    return new (exec) JSCanvasPatternPrototype(JSCanvasPatternPrototype::createStructure(globalObject->objectPrototype()));
 }
 
 JSC::JSValuePtr toJS(JSC::ExecState* exec, CanvasPattern* object)

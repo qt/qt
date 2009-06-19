@@ -34,7 +34,7 @@ class JSSVGAnimateElement : public JSSVGAnimationElement {
     typedef JSSVGAnimationElement Base;
 public:
     JSSVGAnimateElement(PassRefPtr<JSC::Structure>, PassRefPtr<SVGAnimateElement>);
-    static JSC::JSObject* createPrototype(JSC::ExecState*);
+    static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
     static const JSC::ClassInfo s_info;
 
@@ -43,7 +43,7 @@ public:
 
 class JSSVGAnimateElementPrototype : public JSC::JSObject {
 public:
-    static JSC::JSObject* self(JSC::ExecState*);
+    static JSC::JSObject* self(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
     static const JSC::ClassInfo s_info;
     JSSVGAnimateElementPrototype(PassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }

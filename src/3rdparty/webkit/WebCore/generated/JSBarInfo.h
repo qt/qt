@@ -34,7 +34,7 @@ class JSBarInfo : public DOMObject {
 public:
     JSBarInfo(PassRefPtr<JSC::Structure>, PassRefPtr<BarInfo>);
     virtual ~JSBarInfo();
-    static JSC::JSObject* createPrototype(JSC::ExecState*);
+    static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
     static const JSC::ClassInfo s_info;
@@ -55,7 +55,7 @@ BarInfo* toBarInfo(JSC::JSValuePtr);
 
 class JSBarInfoPrototype : public JSC::JSObject {
 public:
-    static JSC::JSObject* self(JSC::ExecState*);
+    static JSC::JSObject* self(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
     static const JSC::ClassInfo s_info;
     JSBarInfoPrototype(PassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }

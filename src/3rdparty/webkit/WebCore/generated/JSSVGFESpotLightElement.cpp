@@ -76,9 +76,9 @@ static const HashTable JSSVGFESpotLightElementPrototypeTable =
 
 const ClassInfo JSSVGFESpotLightElementPrototype::s_info = { "SVGFESpotLightElementPrototype", 0, &JSSVGFESpotLightElementPrototypeTable, 0 };
 
-JSObject* JSSVGFESpotLightElementPrototype::self(ExecState* exec)
+JSObject* JSSVGFESpotLightElementPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSSVGFESpotLightElement>(exec);
+    return getDOMPrototype<JSSVGFESpotLightElement>(exec, globalObject);
 }
 
 const ClassInfo JSSVGFESpotLightElement::s_info = { "SVGFESpotLightElement", &JSSVGElement::s_info, &JSSVGFESpotLightElementTable, 0 };
@@ -88,9 +88,9 @@ JSSVGFESpotLightElement::JSSVGFESpotLightElement(PassRefPtr<Structure> structure
 {
 }
 
-JSObject* JSSVGFESpotLightElement::createPrototype(ExecState* exec)
+JSObject* JSSVGFESpotLightElement::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSSVGFESpotLightElementPrototype(JSSVGFESpotLightElementPrototype::createStructure(JSSVGElementPrototype::self(exec)));
+    return new (exec) JSSVGFESpotLightElementPrototype(JSSVGFESpotLightElementPrototype::createStructure(JSSVGElementPrototype::self(exec, globalObject)));
 }
 
 bool JSSVGFESpotLightElement::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

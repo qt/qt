@@ -69,9 +69,9 @@ static const HashTable JSSVGAnimatedEnumerationPrototypeTable =
 
 const ClassInfo JSSVGAnimatedEnumerationPrototype::s_info = { "SVGAnimatedEnumerationPrototype", 0, &JSSVGAnimatedEnumerationPrototypeTable, 0 };
 
-JSObject* JSSVGAnimatedEnumerationPrototype::self(ExecState* exec)
+JSObject* JSSVGAnimatedEnumerationPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSSVGAnimatedEnumeration>(exec);
+    return getDOMPrototype<JSSVGAnimatedEnumeration>(exec, globalObject);
 }
 
 const ClassInfo JSSVGAnimatedEnumeration::s_info = { "SVGAnimatedEnumeration", 0, &JSSVGAnimatedEnumerationTable, 0 };
@@ -89,9 +89,9 @@ JSSVGAnimatedEnumeration::~JSSVGAnimatedEnumeration()
 
 }
 
-JSObject* JSSVGAnimatedEnumeration::createPrototype(ExecState* exec)
+JSObject* JSSVGAnimatedEnumeration::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSSVGAnimatedEnumerationPrototype(JSSVGAnimatedEnumerationPrototype::createStructure(exec->lexicalGlobalObject()->objectPrototype()));
+    return new (exec) JSSVGAnimatedEnumerationPrototype(JSSVGAnimatedEnumerationPrototype::createStructure(globalObject->objectPrototype()));
 }
 
 bool JSSVGAnimatedEnumeration::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

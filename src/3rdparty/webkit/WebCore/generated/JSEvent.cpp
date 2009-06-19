@@ -103,7 +103,7 @@ public:
     JSEventConstructor(ExecState* exec)
         : DOMObject(JSEventConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
     {
-        putDirect(exec->propertyNames().prototype, JSEventPrototype::self(exec), None);
+        putDirect(exec->propertyNames().prototype, JSEventPrototype::self(exec, exec->lexicalGlobalObject()), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -164,9 +164,9 @@ static const HashTable* getJSEventPrototypeTable(ExecState* exec)
 }
 const ClassInfo JSEventPrototype::s_info = { "EventPrototype", 0, 0, getJSEventPrototypeTable };
 
-JSObject* JSEventPrototype::self(ExecState* exec)
+JSObject* JSEventPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSEvent>(exec);
+    return getDOMPrototype<JSEvent>(exec, globalObject);
 }
 
 bool JSEventPrototype::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -192,9 +192,9 @@ JSEvent::~JSEvent()
 
 }
 
-JSObject* JSEvent::createPrototype(ExecState* exec)
+JSObject* JSEvent::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSEventPrototype(JSEventPrototype::createStructure(exec->lexicalGlobalObject()->objectPrototype()));
+    return new (exec) JSEventPrototype(JSEventPrototype::createStructure(globalObject->objectPrototype()));
 }
 
 bool JSEvent::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
