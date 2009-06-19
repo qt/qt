@@ -2512,9 +2512,10 @@ void QWidgetPrivate::create_sys(WId window, bool initializeWindow, bool destroyO
         setFocus_sys();
     if (!topLevel && initializeWindow)
         setWSGeometry();
-
     if (destroyid)
         qt_mac_destructView(destroyid);
+    if (q->testAttribute(Qt::WA_AcceptTouchEvents))
+        registerTouchWindow();
 }
 
 /*!
@@ -4488,6 +4489,23 @@ void QWidgetPrivate::registerDropSite(bool on)
     if (on && [view isKindOfClass:[QT_MANGLE_NAMESPACE(QCocoaView) class]]) {
         [static_cast<QT_MANGLE_NAMESPACE(QCocoaView) *>(view) registerDragTypes];
     }
+#endif
+}
+
+void QWidgetPrivate::registerTouchWindow()
+{
+#if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_6
+    if (QSysInfo::MacintoshVersion < QSysInfo::MV_10_6)
+        return;
+    Q_Q(QWidget);
+    if (!q->testAttribute(Qt::WA_WState_Created))
+        return;
+#ifndef QT_MAC_USE_COCOA
+    // Needs implementation!
+#else
+    NSView *view = qt_mac_nativeview_for(q);
+    [view setAcceptsTouchEvents:YES];
+#endif
 #endif
 }
 
