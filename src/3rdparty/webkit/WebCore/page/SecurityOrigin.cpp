@@ -58,14 +58,15 @@ SecurityOrigin::SecurityOrigin(const KURL& url)
     , m_host(url.host().isNull() ? "" : url.host().lower())
     , m_port(url.port())
     , m_noAccess(false)
+    , m_universalAccess(false)
     , m_domainWasSetInDOM(false)
 {
     // These protocols do not create security origins; the owner frame provides the origin
     if (m_protocol == "about" || m_protocol == "javascript")
         m_protocol = "";
 
-    // data: URLs are not allowed access to anything other than themselves.
-    if (m_protocol == "data")
+    // Some URLs are not allowed access to anything other than themselves.
+    if (FrameLoader::shouldTreatURLSchemeAsNoAccess(m_protocol))
         m_noAccess = true;
 
     // document.domain starts as m_host, but can be set by the DOM.
@@ -84,6 +85,7 @@ SecurityOrigin::SecurityOrigin(const SecurityOrigin* other)
     , m_domain(other->m_domain.copy())
     , m_port(other->m_port)
     , m_noAccess(other->m_noAccess)
+    , m_universalAccess(other->m_universalAccess)
     , m_domainWasSetInDOM(other->m_domainWasSetInDOM)
     , m_canLoadLocalResources(other->m_canLoadLocalResources)
 {
@@ -96,6 +98,8 @@ bool SecurityOrigin::isEmpty() const
 
 PassRefPtr<SecurityOrigin> SecurityOrigin::create(const KURL& url)
 {
+    if (!url.isValid())
+        return adoptRef(new SecurityOrigin(KURL()));
     return adoptRef(new SecurityOrigin(url));
 }
 
@@ -117,7 +121,7 @@ void SecurityOrigin::setDomainFromDOM(const String& newDomain)
 
 bool SecurityOrigin::canAccess(const SecurityOrigin* other) const
 {  
-    if (isLocal())
+    if (m_universalAccess)
         return true;
 
     if (m_noAccess || other->m_noAccess)
@@ -158,7 +162,7 @@ bool SecurityOrigin::canAccess(const SecurityOrigin* other) const
 
 bool SecurityOrigin::canRequest(const KURL& url) const
 {
-    if (isLocal())
+    if (m_universalAccess)
         return true;
 
     if (m_noAccess)
@@ -182,9 +186,14 @@ void SecurityOrigin::grantLoadLocalResources()
     m_canLoadLocalResources = true;
 }
 
+void SecurityOrigin::grantUniversalAccess()
+{
+    m_universalAccess = true;
+}
+
 bool SecurityOrigin::isLocal() const
 {
-    return FrameLoader::shouldTreatSchemeAsLocal(m_protocol);
+    return FrameLoader::shouldTreatURLSchemeAsLocal(m_protocol);
 }
 
 bool SecurityOrigin::isSecureTransitionTo(const KURL& url) const
@@ -209,7 +218,7 @@ String SecurityOrigin::toString() const
         return String("file://");
 
     Vector<UChar> result;
-    result.reserveCapacity(m_protocol.length() + m_host.length() + 10);
+    result.reserveInitialCapacity(m_protocol.length() + m_host.length() + 10);
     append(result, m_protocol);
     append(result, "://");
     append(result, m_host);
@@ -224,7 +233,7 @@ String SecurityOrigin::toString() const
 
 PassRefPtr<SecurityOrigin> SecurityOrigin::createFromString(const String& originString)
 {
-    return SecurityOrigin::create(KURL(originString));
+    return SecurityOrigin::create(KURL(KURL(), originString));
 }
 
 static const char SeparatorCharacter = '_';
@@ -237,12 +246,13 @@ PassRefPtr<SecurityOrigin> SecurityOrigin::createFromDatabaseIdentifier(const St
         return create(KURL());
         
     // Make sure there's a second separator
-    int separator2 = databaseIdentifier.find(SeparatorCharacter, separator1 + 1);
+    int separator2 = databaseIdentifier.reverseFind(SeparatorCharacter);
     if (separator2 == -1)
         return create(KURL());
         
-    // Make sure there's not a third separator
-    if (databaseIdentifier.reverseFind(SeparatorCharacter) != separator2)
+    // Ensure there were at least 2 seperator characters. Some hostnames on intranets have
+    // underscores in them, so we'll assume that any additional underscores are part of the host.
+    if (separator1 != separator2)
         return create(KURL());
         
     // Make sure the port section is a valid port number or doesn't exist
@@ -257,7 +267,7 @@ PassRefPtr<SecurityOrigin> SecurityOrigin::createFromDatabaseIdentifier(const St
     // Split out the 3 sections of data
     String protocol = databaseIdentifier.substring(0, separator1);
     String host = databaseIdentifier.substring(separator1 + 1, separator2 - separator1 - 1);
-    return create(KURL(protocol + "://" + host + ":" + String::number(port)));
+    return create(KURL(KURL(), protocol + "://" + host + ":" + String::number(port)));
 }
 
 String SecurityOrigin::databaseIdentifier() const 
@@ -268,6 +278,9 @@ String SecurityOrigin::databaseIdentifier() const
 
 bool SecurityOrigin::equal(const SecurityOrigin* other) const 
 {
+    if (other == this)
+        return true;
+    
     if (!isSameSchemeHostPort(other))
         return false;
 

@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -55,6 +55,7 @@
 
 #include "qgraphicsitem.h"
 #include "qpixmapcache.h"
+#include "qgraphicsview_p.h"
 
 #include <QtCore/qpoint.h>
 
@@ -150,6 +151,8 @@ public:
         geometryChanged(0),
         inDestructor(0),
         isObject(0),
+        ignoreVisible(0),
+        ignoreOpacity(0),
         globalStackingOrder(-1),
         q_ptr(0)
     {
@@ -327,6 +330,15 @@ public:
         return calcEffectiveOpacity();
     }
 
+    inline qreal combineOpacityFromParent(qreal parentOpacity) const
+    {
+        if (parent && !(flags & QGraphicsItem::ItemIgnoresParentOpacity)
+            && !(parent->d_ptr->flags & QGraphicsItem::ItemDoesntPropagateOpacityToChildren)) {
+            return parentOpacity * opacity;
+        }
+        return opacity;
+    }
+
     inline bool childrenCombineOpacity() const
     {
         if (!children.size())
@@ -407,7 +419,9 @@ public:
     quint32 geometryChanged : 1;
     quint32 inDestructor : 1;
     quint32 isObject : 1;
-    quint32 unused : 14; // feel free to use
+    quint32 ignoreVisible : 1;
+    quint32 ignoreOpacity : 1;
+    quint32 unused : 12; // feel free to use
 
     // Optional stacking order
     int globalStackingOrder;
@@ -425,23 +439,35 @@ struct QGraphicsItemPrivate::TransformData {
     qreal verticalShear;
     qreal xOrigin;
     qreal yOrigin;
+    bool onlyTransform;
 
     TransformData() :
         xScale(1.0), yScale(1.0), xRotation(0.0), yRotation(0.0), zRotation(0.0),
-        horizontalShear(0.0), verticalShear(0.0), xOrigin(0.0), yOrigin(0.0)
+        horizontalShear(0.0), verticalShear(0.0), xOrigin(0.0), yOrigin(0.0),
+        onlyTransform(true)
     {}
 
-    QTransform computedFullTransform() const
+    QTransform computedFullTransform(QTransform *postmultiplyTransform = 0) const
     {
-        QTransform x;
-        x.translate(xOrigin, yOrigin);
-        x = transform * x;
+        if (onlyTransform) {
+            if (!postmultiplyTransform)
+                return transform;
+            QTransform x(transform);
+            x *= *postmultiplyTransform;
+            return x;
+        }
+
+        QTransform x(transform);
+        if (xOrigin != 0 || yOrigin != 0)
+            x *= QTransform::fromTranslate(xOrigin, yOrigin);
         x.rotate(xRotation, Qt::XAxis);
         x.rotate(yRotation, Qt::YAxis);
         x.rotate(zRotation, Qt::ZAxis);
         x.shear(horizontalShear, verticalShear);
         x.scale(xScale, yScale);
         x.translate(-xOrigin, -yOrigin);
+        if (postmultiplyTransform)
+            x *= *postmultiplyTransform;
         return x;
     }
 };

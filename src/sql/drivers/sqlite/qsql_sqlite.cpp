@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtSql module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -115,13 +115,12 @@ public:
     uint skipRow: 1; // skip the next fetchNext()?
     uint utf8: 1;
     QSqlRecord rInf;
-    QSql::NumericalPrecisionPolicy precisionPolicy;
 };
 
 static const uint initial_cache_size = 128;
 
 QSQLiteResultPrivate::QSQLiteResultPrivate(QSQLiteResult* res) : q(res), access(0),
-    stmt(0), skippedStatus(false), skipRow(false), utf8(false), precisionPolicy(QSql::HighPrecision)
+    stmt(0), skippedStatus(false), skipRow(false), utf8(false)
 {
 }
 
@@ -212,7 +211,7 @@ bool QSQLiteResultPrivate::fetchNext(QSqlCachedResult::ValueCache &values, int i
                 values[i + idx] = sqlite3_column_int64(stmt, i);
                 break;
             case SQLITE_FLOAT:
-                switch(precisionPolicy) {
+                switch(q->numericalPrecisionPolicy()) {
                     case QSql::LowPrecisionInt32:
                         values[i + idx] = sqlite3_column_int(stmt, i);
                         break;
@@ -288,10 +287,6 @@ void QSQLiteResult::virtual_hook(int id, void *data)
     case QSqlResult::DetachFromResultSet:
         if (d->stmt)
             sqlite3_reset(d->stmt);
-        break;
-    case QSqlResult::SetNumericalPrecision:
-        Q_ASSERT(data);
-        d->precisionPolicy = *reinterpret_cast<QSql::NumericalPrecisionPolicy *>(data);
         break;
     default:
         QSqlResult::virtual_hook(id, data);
@@ -481,11 +476,11 @@ bool QSQLiteDriver::hasFeature(DriverFeature f) const
     case PositionalPlaceholders:
     case SimpleLocking:
     case FinishQuery:
+    case LowPrecisionNumbers:
         return true;
     case QuerySize:
     case NamedPlaceholders:
     case BatchOperations:
-    case LowPrecisionNumbers:
     case EventNotifications:
     case MultipleResultSets:
         return false;
@@ -661,13 +656,9 @@ QSqlIndex QSQLiteDriver::primaryIndex(const QString &tblname) const
     if (!isOpen())
         return QSqlIndex();
 
-    QString table = tblname;
-    if (isIdentifierEscaped(table, QSqlDriver::TableName))
-        table = stripDelimiters(table, QSqlDriver::TableName);
-
     QSqlQuery q(createResult());
     q.setForwardOnly(true);
-    return qGetTableInfo(q, table, true);
+    return qGetTableInfo(q, tblname, true);
 }
 
 QSqlRecord QSQLiteDriver::record(const QString &tbl) const
@@ -675,13 +666,9 @@ QSqlRecord QSQLiteDriver::record(const QString &tbl) const
     if (!isOpen())
         return QSqlRecord();
 
-    QString table = tbl;
-    if (isIdentifierEscaped(table, QSqlDriver::TableName))
-        table = stripDelimiters(table, QSqlDriver::TableName);
-
     QSqlQuery q(createResult());
     q.setForwardOnly(true);
-    return qGetTableInfo(q, table);
+    return qGetTableInfo(q, tbl);
 }
 
 QVariant QSQLiteDriver::handle() const
@@ -689,10 +676,10 @@ QVariant QSQLiteDriver::handle() const
     return qVariantFromValue(d->access);
 }
 
-QString QSQLiteDriver::escapeIdentifier(const QString &identifier, IdentifierType type) const
+QString QSQLiteDriver::escapeIdentifier(const QString &identifier, IdentifierType /*type*/) const
 {
     QString res = identifier;
-    if(!identifier.isEmpty() && !isIdentifierEscaped(identifier, type) ) {
+    if(!identifier.isEmpty() && identifier.left(1) != QString(QLatin1Char('"')) && identifier.right(1) != QString(QLatin1Char('"')) ) {
         res.replace(QLatin1Char('"'), QLatin1String("\"\""));
         res.prepend(QLatin1Char('"')).append(QLatin1Char('"'));
         res.replace(QLatin1Char('.'), QLatin1String("\".\""));

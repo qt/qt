@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -698,6 +698,8 @@ bool QRegion::intersects(const QRegion &region) const
 
     if (!rect_intersects(boundingRect(), region.boundingRect()))
         return false;
+    if (numRects() == 1 && region.numRects() == 1)
+        return true;
 
     const QVector<QRect> myRects = rects();
     const QVector<QRect> otherRects = region.rects();
@@ -723,6 +725,8 @@ bool QRegion::intersects(const QRect &rect) const
     const QRect r = rect.normalized();
     if (!rect_intersects(boundingRect(), r))
         return false;
+    if (numRects() == 1)
+        return true;
 
     const QVector<QRect> myRects = rects();
     for (QVector<QRect>::const_iterator it = myRects.constBegin(); it < myRects.constEnd(); ++it)

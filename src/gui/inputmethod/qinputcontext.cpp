@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -78,7 +78,7 @@ QT_BEGIN_NAMESPACE
 
     \ingroup i18n
 
-    An input method is responsible to input complex text that cannot
+    An input method is responsible for inputting complex text that cannot
     be inputted via simple keymap. It converts a sequence of input
     events (typically key events) into a text string through the input
     method specific converting process. The class of the processes are
@@ -89,11 +89,11 @@ QT_BEGIN_NAMESPACE
     To abstract such different input method specific intermediate
     information, Qt offers the QInputContext as base class. The
     concept is well known as 'input context' in the input method
-    domain. an input context is created for a text widget in response
+    domain. An input context is created for a text widget in response
     to a demand. It is ensured that an input context is prepared for
     an input method before input to a text widget.
 
-    Multiple input contexts that is belonging to a single input method
+    Multiple input contexts that belong to a single input method
     may concurrently coexist. Suppose multi-window text editor. Each
     text widget of window A and B holds different QInputContext
     instance which contains different state information such as

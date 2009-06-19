@@ -31,13 +31,15 @@
 
 using std::auto_ptr;
 
+#ifndef yyparse
 extern int jscyyparse(void*);
+#endif
 
 namespace JSC {
 
 void Parser::parse(JSGlobalData* globalData, int* errLine, UString* errMsg)
 {
-    ASSERT(!m_sourceElements);
+    m_sourceElements = 0;
 
     int defaultErrLine;
     UString defaultErrMsg;
@@ -55,14 +57,13 @@ void Parser::parse(JSGlobalData* globalData, int* errLine, UString* errMsg)
 
     int parseError = jscyyparse(globalData);
     bool lexError = lexer.sawError();
+    int lineNumber = lexer.lineNumber();
     lexer.clear();
 
-    ParserRefCounted::deleteNewObjects(globalData);
-
     if (parseError || lexError) {
-        *errLine = lexer.lineNo();
+        *errLine = lineNumber;
         *errMsg = "Parse error";
-        m_sourceElements.clear();
+        m_sourceElements = 0;
     }
 }
 
@@ -75,14 +76,17 @@ void Parser::reparseInPlace(JSGlobalData* globalData, FunctionBodyNode* function
     parse(globalData, 0, 0);
     ASSERT(m_sourceElements);
 
-    functionBodyNode->adoptData(std::auto_ptr<ScopeNodeData>(new ScopeNodeData(m_sourceElements.get(),
-                                                                               m_varDeclarations ? &m_varDeclarations->data : 0, 
-                                                                               m_funcDeclarations ? &m_funcDeclarations->data : 0,
-                                                                               m_numConstants)));
+    functionBodyNode->adoptData(std::auto_ptr<ScopeNodeData>(new ScopeNodeData(globalData->parser->arena(),
+        m_sourceElements,
+        m_varDeclarations ? &m_varDeclarations->data : 0, 
+        m_funcDeclarations ? &m_funcDeclarations->data : 0,
+        m_numConstants)));
     bool usesArguments = functionBodyNode->usesArguments();
     functionBodyNode->setFeatures(m_features);
     if (usesArguments && !functionBodyNode->usesArguments())
         functionBodyNode->setUsesArguments();
+
+    ASSERT(globalData->parser->arena().isEmpty());
 
     m_source = 0;
     m_sourceElements = 0;
@@ -90,8 +94,8 @@ void Parser::reparseInPlace(JSGlobalData* globalData, FunctionBodyNode* function
     m_funcDeclarations = 0;
 }
 
-void Parser::didFinishParsing(SourceElements* sourceElements, ParserRefCountedData<DeclarationStacks::VarStack>* varStack, 
-                              ParserRefCountedData<DeclarationStacks::FunctionStack>* funcStack, CodeFeatures features, int lastLine, int numConstants)
+void Parser::didFinishParsing(SourceElements* sourceElements, ParserArenaData<DeclarationStacks::VarStack>* varStack, 
+                              ParserArenaData<DeclarationStacks::FunctionStack>* funcStack, CodeFeatures features, int lastLine, int numConstants)
 {
     m_sourceElements = sourceElements;
     m_varDeclarations = varStack;

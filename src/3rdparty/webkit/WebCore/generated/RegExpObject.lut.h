@@ -14,10 +14,5 @@ static const struct HashTableValue regExpTableValues[6] = {
 };
 
 extern const struct HashTable regExpTable =
-#if ENABLE(PERFECT_HASH_SIZE)
-    { 31, regExpTableValues, 0 };
-#else
     { 17, 15, regExpTableValues, 0 };
-#endif
-
 } // namespace

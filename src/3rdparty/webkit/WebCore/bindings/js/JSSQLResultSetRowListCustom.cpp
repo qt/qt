@@ -29,6 +29,8 @@
 #include "config.h"
 #include "JSSQLResultSetRowList.h"
 
+#if ENABLE(DATABASE)
+
 #include "ExceptionCode.h"
 #include "SQLValue.h"
 #include "SQLResultSetRowList.h"
@@ -37,10 +39,10 @@ using namespace JSC;
 
 namespace WebCore {
 
-JSValuePtr JSSQLResultSetRowList::item(ExecState* exec, const ArgList& args)
+JSValue JSSQLResultSetRowList::item(ExecState* exec, const ArgList& args)
 {
     bool indexOk;
-    int index = args.at(exec, 0)->toInt32(exec, indexOk);
+    int index = args.at(0).toInt32(exec, indexOk);
     if (!indexOk) {
         setDOMException(exec, TYPE_MISMATCH_ERR);
         return jsUndefined();
@@ -56,7 +58,7 @@ JSValuePtr JSSQLResultSetRowList::item(ExecState* exec, const ArgList& args)
     unsigned valuesIndex = index * numColumns;
     for (unsigned i = 0; i < numColumns; i++) {
         const SQLValue& value = m_impl->values()[valuesIndex + i];
-        JSValuePtr jsValue = noValue();
+        JSValue jsValue;
 
         switch (value.type()) {
             case SQLValue::StringValue:
@@ -79,3 +81,5 @@ JSValuePtr JSSQLResultSetRowList::item(ExecState* exec, const ArgList& args)
 }
 
 }
+
+#endif

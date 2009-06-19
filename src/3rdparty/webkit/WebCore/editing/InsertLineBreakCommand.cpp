@@ -28,13 +28,14 @@
 
 #include "CSSMutableStyleDeclaration.h"
 #include "Document.h"
-#include "Element.h"
 #include "Frame.h"
+#include "HTMLElement.h"
+#include "HTMLNames.h"
+#include "Range.h"
+#include "RenderObject.h"
 #include "Text.h"
 #include "VisiblePosition.h"
-#include "Range.h"
 #include "htmlediting.h"
-#include "HTMLNames.h"
 #include "visible_units.h"
 
 namespace WebCore {
@@ -88,7 +89,7 @@ bool InsertLineBreakCommand::shouldUseBreakElement(const Position& insertionPos)
 void InsertLineBreakCommand::doApply()
 {
     deleteSelection();
-    Selection selection = endingSelection();
+    VisibleSelection selection = endingSelection();
     if (selection.isNone())
         return;
     
@@ -107,38 +108,37 @@ void InsertLineBreakCommand::doApply()
     
     // FIXME: Need to merge text nodes when inserting just after or before text.
     
-    if (isEndOfParagraph(caret) && !lineBreakExistsAtPosition(caret)) {
+    if (isEndOfParagraph(caret) && !lineBreakExistsAtVisiblePosition(caret)) {
         bool needExtraLineBreak = !pos.node()->hasTagName(hrTag) && !pos.node()->hasTagName(tableTag);
         
         insertNodeAt(nodeToInsert.get(), pos);
         
         if (needExtraLineBreak)
-            insertNodeBefore(nodeToInsert->cloneNode(false).get(), nodeToInsert.get());
+            insertNodeBefore(nodeToInsert->cloneNode(false), nodeToInsert);
         
         VisiblePosition endingPosition(Position(nodeToInsert.get(), 0));
-        setEndingSelection(Selection(endingPosition));
-    } else if (pos.offset() <= caretMinOffset(pos.node())) {
+        setEndingSelection(VisibleSelection(endingPosition));
+    } else if (pos.deprecatedEditingOffset() <= caretMinOffset(pos.node())) {
         insertNodeAt(nodeToInsert.get(), pos);
         
         // Insert an extra br or '\n' if the just inserted one collapsed.
         if (!isStartOfParagraph(VisiblePosition(Position(nodeToInsert.get(), 0))))
             insertNodeBefore(nodeToInsert->cloneNode(false).get(), nodeToInsert.get());
         
-        setEndingSelection(Selection(positionAfterNode(nodeToInsert.get()), DOWNSTREAM));
-    } else if (pos.offset() >= caretMaxOffset(pos.node())) {
+        setEndingSelection(VisibleSelection(positionAfterNode(nodeToInsert.get()), DOWNSTREAM));
+    // If we're inserting after all of the rendered text in a text node, or into a non-text node,
+    // a simple insertion is sufficient.
+    } else if (pos.deprecatedEditingOffset() >= caretMaxOffset(pos.node()) || !pos.node()->isTextNode()) {
         insertNodeAt(nodeToInsert.get(), pos);
-        setEndingSelection(Selection(positionAfterNode(nodeToInsert.get()), DOWNSTREAM));
+        setEndingSelection(VisibleSelection(positionAfterNode(nodeToInsert.get()), DOWNSTREAM));
     } else {
         // Split a text node
         ASSERT(pos.node()->isTextNode());
         
         // Do the split
-        ExceptionCode ec = 0;
-        Text *textNode = static_cast<Text *>(pos.node());
-        RefPtr<Text> textBeforeNode = document()->createTextNode(textNode->substringData(0, selection.start().offset(), ec));
-        deleteTextFromNode(textNode, 0, pos.offset());
-        insertNodeBefore(textBeforeNode.get(), textNode);
-        insertNodeBefore(nodeToInsert.get(), textNode);
+        Text* textNode = static_cast<Text*>(pos.node());
+        splitTextNode(textNode, pos.deprecatedEditingOffset());
+        insertNodeBefore(nodeToInsert, textNode);
         Position endingPosition = Position(textNode, 0);
         
         // Handle whitespace that occurs after the split
@@ -158,7 +158,7 @@ void InsertLineBreakCommand::doApply()
             }
         }
         
-        setEndingSelection(Selection(endingPosition, DOWNSTREAM));
+        setEndingSelection(VisibleSelection(endingPosition, DOWNSTREAM));
     }
 
     // Handle the case where there is a typing style.
@@ -170,10 +170,9 @@ void InsertLineBreakCommand::doApply()
         // leaves and then comes back, new input will have the right style.
         // FIXME: We shouldn't always apply the typing style to the line break here,
         // see <rdar://problem/5794462>.
-        applyStyle(typingStyle, Position(nodeToInsert.get(), 0),
-                                Position(nodeToInsert.get(), maxDeepOffset(nodeToInsert.get())));
+        applyStyle(typingStyle, firstDeepEditingPositionForNode(nodeToInsert.get()), lastDeepEditingPositionForNode(nodeToInsert.get()));
         // Even though this applyStyle operates on a Range, it still sets an endingSelection().
-        // It tries to set a Selection around the content it operated on. So, that Selection
+        // It tries to set a VisibleSelection around the content it operated on. So, that VisibleSelection
         // will either (a) select the line break we inserted, or it will (b) be a caret just 
         // before the line break (if the line break is at the end of a block it isn't selectable).
         // So, this next call sets the endingSelection() to a caret just after the line break 

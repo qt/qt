@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtOpenGL module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -130,7 +130,7 @@ static const char* const qglslPatternBrushSrcFragmentShader = "\
     uniform lowp    vec4      patternColor; \
     varying mediump vec2      patternTexCoords;\
     lowp vec4 srcPixel() { \
-        return patternColor * texture2D(brushTexture, patternTexCoords).r; \
+        return patternColor * (1.0 - texture2D(brushTexture, patternTexCoords).r); \
     }\n";
 
 
@@ -278,6 +278,13 @@ static const char* const qglslTextureBrushSrcFragmentShader = "\
         return texture2D(brushTexture, brushTextureCoords); \
     }";
 
+static const char* const qglslTextureBrushSrcWithPatternFragmentShader = "\
+    varying mediump vec2      brushTextureCoords; \
+    uniform lowp    vec4      patternColor; \
+    uniform         sampler2D brushTexture; \
+    lowp vec4 srcPixel() { \
+        return patternColor * (1.0 - texture2D(brushTexture, brushTextureCoords).r); \
+    }";
 
 // Solid Fill Brush
 static const char* const qglslSolidBrushSrcFragmentShader = "\
@@ -292,6 +299,14 @@ static const char* const qglslImageSrcFragmentShader = "\
     lowp vec4 srcPixel() { \
         return texture2D(imageTexture, textureCoords); \
     }";
+
+static const char* const qglslImageSrcWithPatternFragmentShader = "\
+    varying highp vec2      textureCoords; \
+    uniform lowp  vec4      patternColor; \
+    uniform       sampler2D imageTexture; \
+    lowp vec4 srcPixel() { \
+        return patternColor * (1.0 - texture2D(imageTexture, textureCoords).r); \
+    }\n";
 
 static const char* const qglslNonPremultipliedImageSrcFragmentShader = "\
     varying highp vec2      textureCoords; \

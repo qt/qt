@@ -39,7 +39,7 @@ using namespace JSC;
 
 namespace WebCore {
 
-ASSERT_CLASS_FITS_IN_CELL(JSSVGElementInstanceList)
+ASSERT_CLASS_FITS_IN_CELL(JSSVGElementInstanceList);
 
 /* Hash table */
 
@@ -73,9 +73,9 @@ static const HashTable JSSVGElementInstanceListPrototypeTable =
 
 const ClassInfo JSSVGElementInstanceListPrototype::s_info = { "SVGElementInstanceListPrototype", 0, &JSSVGElementInstanceListPrototypeTable, 0 };
 
-JSObject* JSSVGElementInstanceListPrototype::self(ExecState* exec)
+JSObject* JSSVGElementInstanceListPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSSVGElementInstanceList>(exec);
+    return getDOMPrototype<JSSVGElementInstanceList>(exec, globalObject);
 }
 
 bool JSSVGElementInstanceListPrototype::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -94,12 +94,11 @@ JSSVGElementInstanceList::JSSVGElementInstanceList(PassRefPtr<Structure> structu
 JSSVGElementInstanceList::~JSSVGElementInstanceList()
 {
     forgetDOMObject(*Heap::heap(this)->globalData(), m_impl.get());
-
 }
 
-JSObject* JSSVGElementInstanceList::createPrototype(ExecState* exec)
+JSObject* JSSVGElementInstanceList::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSSVGElementInstanceListPrototype(JSSVGElementInstanceListPrototype::createStructure(exec->lexicalGlobalObject()->objectPrototype()));
+    return new (exec) JSSVGElementInstanceListPrototype(JSSVGElementInstanceListPrototype::createStructure(globalObject->objectPrototype()));
 }
 
 bool JSSVGElementInstanceList::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -107,32 +106,34 @@ bool JSSVGElementInstanceList::getOwnPropertySlot(ExecState* exec, const Identif
     return getStaticValueSlot<JSSVGElementInstanceList, Base>(exec, &JSSVGElementInstanceListTable, this, propertyName, slot);
 }
 
-JSValuePtr jsSVGElementInstanceListLength(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGElementInstanceListLength(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGElementInstanceList* imp = static_cast<SVGElementInstanceList*>(static_cast<JSSVGElementInstanceList*>(asObject(slot.slotBase()))->impl());
     return jsNumber(exec, imp->length());
 }
 
-JSValuePtr jsSVGElementInstanceListPrototypeFunctionItem(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsSVGElementInstanceListPrototypeFunctionItem(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSSVGElementInstanceList::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSSVGElementInstanceList::s_info))
         return throwError(exec, TypeError);
     JSSVGElementInstanceList* castedThisObj = static_cast<JSSVGElementInstanceList*>(asObject(thisValue));
     SVGElementInstanceList* imp = static_cast<SVGElementInstanceList*>(castedThisObj->impl());
-    unsigned index = args.at(exec, 0)->toInt32(exec);
+    unsigned index = args.at(0).toInt32(exec);
 
 
-    JSC::JSValuePtr result = toJS(exec, WTF::getPtr(imp->item(index)));
+    JSC::JSValue result = toJS(exec, WTF::getPtr(imp->item(index)));
     return result;
 }
 
-JSC::JSValuePtr toJS(JSC::ExecState* exec, SVGElementInstanceList* object)
+JSC::JSValue toJS(JSC::ExecState* exec, SVGElementInstanceList* object)
 {
     return getDOMObjectWrapper<JSSVGElementInstanceList>(exec, object);
 }
-SVGElementInstanceList* toSVGElementInstanceList(JSC::JSValuePtr value)
+SVGElementInstanceList* toSVGElementInstanceList(JSC::JSValue value)
 {
-    return value->isObject(&JSSVGElementInstanceList::s_info) ? static_cast<JSSVGElementInstanceList*>(asObject(value))->impl() : 0;
+    return value.isObject(&JSSVGElementInstanceList::s_info) ? static_cast<JSSVGElementInstanceList*>(asObject(value))->impl() : 0;
 }
 
 }

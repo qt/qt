@@ -63,8 +63,16 @@ namespace JSC {
 
         virtual void mark();
 
-        void fillArgList(ExecState*, ArgList&);
+        void fillArgList(ExecState*, MarkedArgumentBuffer&);
 
+        uint32_t numProvidedArguments(ExecState* exec) const 
+        {
+            if (UNLIKELY(d->overrodeLength))
+                return get(exec, exec->propertyNames().length).toUInt32(exec);
+            return d->numArguments; 
+        }
+        
+        void copyToRegisters(ExecState* exec, Register* buffer, uint32_t maxSize);
         void copyRegisters();
         bool isTornOff() const { return d->registerArray; }
         void setActivation(JSActivation* activation)
@@ -73,7 +81,7 @@ namespace JSC {
             d->registers = &activation->registerAt(0);
         }
 
-        static PassRefPtr<Structure> createStructure(JSValuePtr prototype) 
+        static PassRefPtr<Structure> createStructure(JSValue prototype) 
         { 
             return Structure::create(prototype, TypeInfo(ObjectType)); 
         }
@@ -82,8 +90,8 @@ namespace JSC {
         void getArgumentsData(CallFrame*, JSFunction*&, ptrdiff_t& firstParameterIndex, Register*& argv, int& argc);
         virtual bool getOwnPropertySlot(ExecState*, const Identifier& propertyName, PropertySlot&);
         virtual bool getOwnPropertySlot(ExecState*, unsigned propertyName, PropertySlot&);
-        virtual void put(ExecState*, const Identifier& propertyName, JSValuePtr, PutPropertySlot&);
-        virtual void put(ExecState*, unsigned propertyName, JSValuePtr, PutPropertySlot&);
+        virtual void put(ExecState*, const Identifier& propertyName, JSValue, PutPropertySlot&);
+        virtual void put(ExecState*, unsigned propertyName, JSValue, PutPropertySlot&);
         virtual bool deleteProperty(ExecState*, const Identifier& propertyName);
         virtual bool deleteProperty(ExecState*, unsigned propertyName);
 
@@ -94,9 +102,9 @@ namespace JSC {
         OwnPtr<ArgumentsData> d;
     };
 
-    Arguments* asArguments(JSValuePtr);
+    Arguments* asArguments(JSValue);
 
-    inline Arguments* asArguments(JSValuePtr value)
+    inline Arguments* asArguments(JSValue value)
     {
         ASSERT(asObject(value)->inherits(&Arguments::info));
         return static_cast<Arguments*>(asObject(value));

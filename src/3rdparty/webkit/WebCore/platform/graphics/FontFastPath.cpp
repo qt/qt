@@ -39,11 +39,13 @@ using namespace Unicode;
 
 namespace WebCore {
 
-const GlyphData& Font::glyphDataForCharacter(UChar32 c, bool mirror, bool forceSmallCaps) const
+GlyphData Font::glyphDataForCharacter(UChar32 c, bool mirror, bool forceSmallCaps) const
 {
+    ASSERT(isMainThread());
+
     bool useSmallCapsFont = forceSmallCaps;
     if (m_fontDescription.smallCaps()) {
-        UChar32 upperC = Unicode::toUpper(c);
+        UChar32 upperC = toUpper(c);
         if (upperC != c) {
             c = upperC;
             useSmallCapsFont = true;
@@ -70,7 +72,7 @@ const GlyphData& Font::glyphDataForCharacter(UChar32 c, bool mirror, bool forceS
         while (true) {
             page = node->page();
             if (page) {
-                const GlyphData& data = page->glyphDataForCharacter(c);
+                GlyphData data = page->glyphDataForCharacter(c);
                 if (data.fontData)
                     return data;
                 if (node->isSystemFallback())
@@ -88,7 +90,7 @@ const GlyphData& Font::glyphDataForCharacter(UChar32 c, bool mirror, bool forceS
         while (true) {
             page = node->page();
             if (page) {
-                const GlyphData& data = page->glyphDataForCharacter(c);
+                GlyphData data = page->glyphDataForCharacter(c);
                 if (data.fontData) {
                     // The smallCapsFontData function should not normally return 0.
                     // But if it does, we will just render the capital letter big.
@@ -99,7 +101,7 @@ const GlyphData& Font::glyphDataForCharacter(UChar32 c, bool mirror, bool forceS
                     GlyphPageTreeNode* smallCapsNode = GlyphPageTreeNode::getRootChild(smallCapsFontData, pageNumber);
                     const GlyphPage* smallCapsPage = smallCapsNode->page();
                     if (smallCapsPage) {
-                        const GlyphData& data = smallCapsPage->glyphDataForCharacter(c);
+                        GlyphData data = smallCapsPage->glyphDataForCharacter(c);
                         if (data.fontData)
                             return data;
                     }
@@ -144,13 +146,13 @@ const GlyphData& Font::glyphDataForCharacter(UChar32 c, bool mirror, bool forceS
         codeUnits[1] = U16_TRAIL(c);
         codeUnitsLength = 2;
     }
-    const SimpleFontData* characterFontData = FontCache::getFontDataForCharacters(*this, codeUnits, codeUnitsLength);
+    const SimpleFontData* characterFontData = fontCache()->getFontDataForCharacters(*this, codeUnits, codeUnitsLength);
     if (useSmallCapsFont && characterFontData)
         characterFontData = characterFontData->smallCapsFontData(m_fontDescription);
     if (characterFontData) {
         // Got the fallback glyph and font.
         GlyphPage* fallbackPage = GlyphPageTreeNode::getRootChild(characterFontData, pageNumber)->page();
-        const GlyphData& data = fallbackPage && fallbackPage->glyphDataForCharacter(c).fontData ? fallbackPage->glyphDataForCharacter(c) : characterFontData->missingGlyphData();
+        GlyphData data = fallbackPage && fallbackPage->fontDataForCharacter(c) ? fallbackPage->glyphDataForCharacter(c) : characterFontData->missingGlyphData();
         // Cache it so we don't have to do system fallback again next time.
         if (!useSmallCapsFont)
             page->setGlyphDataForCharacter(c, data.glyph, data.fontData);
@@ -159,7 +161,7 @@ const GlyphData& Font::glyphDataForCharacter(UChar32 c, bool mirror, bool forceS
 
     // Even system fallback can fail; use the missing glyph in that case.
     // FIXME: It would be nicer to use the missing glyph from the last resort font instead.
-    const GlyphData& data = primaryFont()->missingGlyphData();
+    GlyphData data = primaryFont()->missingGlyphData();
     if (!useSmallCapsFont)
         page->setGlyphDataForCharacter(c, data.glyph, data.fontData);
     return data;
@@ -296,9 +298,9 @@ void Font::drawGlyphBuffer(GraphicsContext* context, const GlyphBuffer& glyphBuf
     drawGlyphs(context, fontData, glyphBuffer, lastFrom, nextGlyph - lastFrom, startPoint);
 }
 
-float Font::floatWidthForSimpleText(const TextRun& run, GlyphBuffer* glyphBuffer) const
+float Font::floatWidthForSimpleText(const TextRun& run, GlyphBuffer* glyphBuffer, HashSet<const SimpleFontData*>* fallbackFonts) const
 {
-    WidthIterator it(this, run);
+    WidthIterator it(this, run, fallbackFonts);
     it.advance(run.length(), glyphBuffer);
     return it.m_runWidthSoFar;
 }

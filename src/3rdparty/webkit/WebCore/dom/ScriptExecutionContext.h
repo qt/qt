@@ -27,6 +27,7 @@
 #ifndef ScriptExecutionContext_h
 #define ScriptExecutionContext_h
 
+#include "Console.h"
 #include "KURL.h"
 #include <wtf/HashMap.h>
 #include <wtf/HashSet.h>
@@ -36,9 +37,16 @@
 namespace WebCore {
 
     class ActiveDOMObject;
+    class DOMTimer;
     class MessagePort;
     class SecurityOrigin;
+    class ScriptString;
     class String;
+
+    enum MessageDestination {
+        InspectorControllerDestination,
+        ConsoleDestination,
+    };
 
     class ScriptExecutionContext {
     public:
@@ -51,10 +59,15 @@ namespace WebCore {
         const KURL& url() const { return virtualURL(); }
         KURL completeURL(const String& url) const { return virtualCompleteURL(url); }
 
+        virtual String userAgent(const KURL&) const = 0;
+
         SecurityOrigin* securityOrigin() const { return m_securityOrigin.get(); }
 
         virtual void reportException(const String& errorMessage, int lineNumber, const String& sourceURL) = 0;
-
+        virtual void addMessage(MessageDestination, MessageSource, MessageLevel, const String& message, unsigned lineNumber, const String& sourceURL) = 0;
+        virtual void resourceRetrievedByXMLHttpRequest(unsigned long identifier, const ScriptString& sourceString) = 0;
+        virtual void scriptImported(unsigned long, const String&) = 0;
+        
         // Active objects are not garbage collected even if inaccessible, e.g. because their activity may result in callbacks being invoked.
         bool canSuspendActiveDOMObjects();
         // Active objects can be asked to suspend even if canSuspendActiveDOMObjects() returns 'false' -
@@ -85,6 +98,10 @@ namespace WebCore {
 
         virtual void postTask(PassRefPtr<Task>) = 0; // Executes the task on context's thread asynchronously.
 
+        void addTimeout(int timeoutId, DOMTimer*);
+        void removeTimeout(int timeoutId);
+        DOMTimer* findTimeout(int timeoutId);
+
     protected:
         // Explicitly override the security origin for this script context.
         // Note: It is dangerous to change the security origin of a script context
@@ -100,6 +117,8 @@ namespace WebCore {
         HashSet<MessagePort*> m_messagePorts;
 
         HashMap<ActiveDOMObject*, void*> m_activeDOMObjects;
+
+        HashMap<int, DOMTimer*> m_timeouts;
 
         virtual void refScriptExecutionContext() = 0;
         virtual void derefScriptExecutionContext() = 0;

@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtNetwork module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -256,7 +256,11 @@ int q_RAND_status();
 void q_RSA_free(RSA *a);
 void q_sk_free(STACK *a);
 int q_sk_num(STACK *a);
+#if OPENSSL_VERSION_NUMBER >= 0x10000000L
+void * q_sk_value(STACK *a, int b);
+#else
 char * q_sk_value(STACK *a, int b);
+#endif
 int q_SSL_accept(SSL *a);
 int q_SSL_clear(SSL *a);
 char *q_SSL_CIPHER_description(SSL_CIPHER *a, char *b, int c);
@@ -269,7 +273,11 @@ int q_SSL_CTX_check_private_key(SSL_CTX *a);
 #endif
 long q_SSL_CTX_ctrl(SSL_CTX *a, int b, long c, void *d);
 void q_SSL_CTX_free(SSL_CTX *a);
+#if OPENSSL_VERSION_NUMBER >= 0x10000000L
+SSL_CTX *q_SSL_CTX_new(const SSL_METHOD *a);
+#else
 SSL_CTX *q_SSL_CTX_new(SSL_METHOD *a);
+#endif
 int q_SSL_CTX_set_cipher_list(SSL_CTX *a, const char *b);
 int q_SSL_CTX_set_default_verify_paths(SSL_CTX *a);
 void q_SSL_CTX_set_verify(SSL_CTX *a, int b, int (*c)(int, X509_STORE_CTX *));
@@ -286,7 +294,11 @@ STACK_OF(SSL_CIPHER) *q_SSL_get_ciphers(const SSL *a);
 #else
 STACK_OF(SSL_CIPHER) *q_SSL_get_ciphers(SSL *a);
 #endif
+#if OPENSSL_VERSION_NUMBER >= 0x10000000L
+const SSL_CIPHER *q_SSL_get_current_cipher(SSL *a);
+#else
 SSL_CIPHER *q_SSL_get_current_cipher(SSL *a);
+#endif
 int q_SSL_get_error(SSL *a, int b);
 STACK_OF(X509) *q_SSL_get_peer_cert_chain(SSL *a);
 X509 *q_SSL_get_peer_certificate(SSL *a);
@@ -304,6 +316,16 @@ void q_SSL_set_bio(SSL *a, BIO *b, BIO *c);
 void q_SSL_set_accept_state(SSL *a);
 void q_SSL_set_connect_state(SSL *a);
 int q_SSL_shutdown(SSL *a);
+#if OPENSSL_VERSION_NUMBER >= 0x10000000L
+const SSL_METHOD *q_SSLv2_client_method();
+const SSL_METHOD *q_SSLv3_client_method();
+const SSL_METHOD *q_SSLv23_client_method();
+const SSL_METHOD *q_TLSv1_client_method();
+const SSL_METHOD *q_SSLv2_server_method();
+const SSL_METHOD *q_SSLv3_server_method();
+const SSL_METHOD *q_SSLv23_server_method();
+const SSL_METHOD *q_TLSv1_server_method();
+#else
 SSL_METHOD *q_SSLv2_client_method();
 SSL_METHOD *q_SSLv3_client_method();
 SSL_METHOD *q_SSLv23_client_method();
@@ -312,6 +334,7 @@ SSL_METHOD *q_SSLv2_server_method();
 SSL_METHOD *q_SSLv3_server_method();
 SSL_METHOD *q_SSLv23_server_method();
 SSL_METHOD *q_TLSv1_server_method();
+#endif
 int q_SSL_write(SSL *a, const void *b, int c);
 int q_X509_cmp(X509 *a, X509 *b);
 #ifdef SSLEAY_MACROS

@@ -381,11 +381,24 @@ void* TCMalloc_SystemAlloc(size_t size, size_t *actual_size, size_t alignment) {
   return NULL;
 }
 
+#if HAVE(MADV_FREE_REUSE)
+
 void TCMalloc_SystemRelease(void* start, size_t length)
 {
-  UNUSED_PARAM(start);
-  UNUSED_PARAM(length);
-#if HAVE(MADV_DONTNEED)
+    while (madvise(start, length, MADV_FREE_REUSABLE) == -1 && errno == EAGAIN) { }
+}
+
+#elif HAVE(MADV_FREE) || HAVE(MADV_DONTNEED)
+
+void TCMalloc_SystemRelease(void* start, size_t length)
+{
+    // MADV_FREE clears the modified bit on pages, which allows
+    // them to be discarded immediately.
+#if HAVE(MADV_FREE)
+    const int advice = MADV_FREE;
+#else
+    const int advice = MADV_DONTNEED;
+#endif
   if (FLAGS_malloc_devmem_start) {
     // It's not safe to use MADV_DONTNEED if we've been mapping
     // /dev/mem for heap memory
@@ -412,26 +425,45 @@ void TCMalloc_SystemRelease(void* start, size_t length)
     // Note -- ignoring most return codes, because if this fails it
     // doesn't matter...
     while (madvise(reinterpret_cast<char*>(new_start), new_end - new_start,
-                   MADV_DONTNEED) == -1 &&
+                   advice) == -1 &&
            errno == EAGAIN) {
       // NOP
     }
-    return;
   }
-#endif
+}
 
-#if HAVE(MMAP)
+#elif HAVE(MMAP)
+
+void TCMalloc_SystemRelease(void* start, size_t length)
+{
   void* newAddress = mmap(start, length, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS | MAP_FIXED, -1, 0);
   // If the mmap failed then that's ok, we just won't return the memory to the system.
   ASSERT_UNUSED(newAddress, newAddress == start || newAddress == reinterpret_cast<void*>(MAP_FAILED));
-  return;
-#endif
 }
 
-#if HAVE(VIRTUALALLOC)
+#else
+
+// Platforms that don't support returning memory use an empty inline version of TCMalloc_SystemRelease
+// declared in TCSystemAlloc.h
+
+#endif
+
+#if HAVE(MADV_FREE_REUSE)
+
 void TCMalloc_SystemCommit(void* start, size_t length)
 {
-    UNUSED_PARAM(start);
-    UNUSED_PARAM(length);
+    while (madvise(start, length, MADV_FREE_REUSE) == -1 && errno == EAGAIN) { }
 }
+
+#elif HAVE(VIRTUALALLOC)
+
+void TCMalloc_SystemCommit(void*, size_t)
+{
+}
+
+#else
+
+// Platforms that don't need to explicitly commit memory use an empty inline version of TCMalloc_SystemCommit
+// declared in TCSystemAlloc.h
+
 #endif

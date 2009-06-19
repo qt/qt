@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2004 Apple Computer, Inc.  All rights reserved.
+ * Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009 Apple Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -28,8 +28,8 @@
 
 #include "CString.h"
 #include "Document.h"
-#include "Element.h"
-#include "FloatRect.h"
+#include "FloatQuad.h"
+#include "HTMLElement.h"
 #include "HTMLNames.h"
 #include "InlineTextBox.h"
 #include "Logging.h"
@@ -81,7 +81,7 @@ VisiblePosition VisiblePosition::previous(bool stayInEditableContent) const
     Position pos = previousVisuallyDistinctCandidate(m_deepPosition);
     
     // return null visible position if there is no previous visible position
-    if (pos.atStart())
+    if (pos.atStartOfTree())
         return VisiblePosition();
         
     VisiblePosition prev = VisiblePosition(pos, DOWNSTREAM);
@@ -125,7 +125,7 @@ Position VisiblePosition::leftVisuallyDistinctCandidate() const
         if (!box)
             return primaryDirection == LTR ? previousVisuallyDistinctCandidate(m_deepPosition) : nextVisuallyDistinctCandidate(m_deepPosition);
 
-        RenderObject* renderer = box->object();
+        RenderObject* renderer = box->renderer();
 
         while (true) {
             if ((renderer->isReplaced() || renderer->isBR()) && offset == box->caretRightmostOffset())
@@ -147,7 +147,7 @@ Position VisiblePosition::leftVisuallyDistinctCandidate() const
 
                 // Reposition at the other logical position corresponding to our edge's visual position and go for another round.
                 box = prevBox;
-                renderer = box->object();
+                renderer = box->renderer();
                 offset = prevBox->caretRightmostOffset();
                 continue;
             }
@@ -176,7 +176,7 @@ Position VisiblePosition::leftVisuallyDistinctCandidate() const
                         break;
                     box = prevBox;
                 }
-                renderer = box->object();
+                renderer = box->renderer();
                 offset = box->caretRightmostOffset();
                 if (box->direction() == primaryDirection)
                     break;
@@ -185,7 +185,7 @@ Position VisiblePosition::leftVisuallyDistinctCandidate() const
 
             if (prevBox) {
                 box = prevBox;
-                renderer = box->object();
+                renderer = box->renderer();
                 offset = box->caretRightmostOffset();
                 if (box->bidiLevel() > level) {
                     do {
@@ -215,15 +215,15 @@ Position VisiblePosition::leftVisuallyDistinctCandidate() const
                         break;
                     level = box->bidiLevel();
                 }
-                renderer = box->object();
+                renderer = box->renderer();
                 offset = primaryDirection == LTR ? box->caretMinOffset() : box->caretMaxOffset();
             }
             break;
         }
 
-        p = Position(renderer->element(), offset);
+        p = Position(renderer->node(), offset);
 
-        if (p.isCandidate() && p.downstream() != downstreamStart || p.atStart() || p.atEnd())
+        if ((p.isCandidate() && p.downstream() != downstreamStart) || p.atStartOfTree() || p.atEndOfTree())
             return p;
     }
 }
@@ -231,7 +231,8 @@ Position VisiblePosition::leftVisuallyDistinctCandidate() const
 VisiblePosition VisiblePosition::left(bool stayInEditableContent) const
 {
     Position pos = leftVisuallyDistinctCandidate();
-    if (pos.atStart() || pos.atEnd())
+    // FIXME: Why can't we move left from the last position in a tree?
+    if (pos.atStartOfTree() || pos.atEndOfTree())
         return VisiblePosition();
 
     VisiblePosition left = VisiblePosition(pos, DOWNSTREAM);
@@ -266,7 +267,7 @@ Position VisiblePosition::rightVisuallyDistinctCandidate() const
         if (!box)
             return primaryDirection == LTR ? nextVisuallyDistinctCandidate(m_deepPosition) : previousVisuallyDistinctCandidate(m_deepPosition);
 
-        RenderObject* renderer = box->object();
+        RenderObject* renderer = box->renderer();
 
         while (true) {
             if ((renderer->isReplaced() || renderer->isBR()) && offset == box->caretLeftmostOffset())
@@ -288,7 +289,7 @@ Position VisiblePosition::rightVisuallyDistinctCandidate() const
 
                 // Reposition at the other logical position corresponding to our edge's visual position and go for another round.
                 box = nextBox;
-                renderer = box->object();
+                renderer = box->renderer();
                 offset = nextBox->caretLeftmostOffset();
                 continue;
             }
@@ -318,7 +319,7 @@ Position VisiblePosition::rightVisuallyDistinctCandidate() const
                         break;
                     box = nextBox;
                 }
-                renderer = box->object();
+                renderer = box->renderer();
                 offset = box->caretLeftmostOffset();
                 if (box->direction() == primaryDirection)
                     break;
@@ -327,7 +328,7 @@ Position VisiblePosition::rightVisuallyDistinctCandidate() const
 
             if (nextBox) {
                 box = nextBox;
-                renderer = box->object();
+                renderer = box->renderer();
                 offset = box->caretLeftmostOffset();
                 if (box->bidiLevel() > level) {
                     do {
@@ -357,15 +358,15 @@ Position VisiblePosition::rightVisuallyDistinctCandidate() const
                         break;
                     level = box->bidiLevel();
                 }
-                renderer = box->object();
+                renderer = box->renderer();
                 offset = primaryDirection == LTR ? box->caretMaxOffset() : box->caretMinOffset();
             }
             break;
         }
 
-        p = Position(renderer->element(), offset);
+        p = Position(renderer->node(), offset);
 
-        if (p.isCandidate() && p.downstream() != downstreamStart || p.atStart() || p.atEnd())
+        if ((p.isCandidate() && p.downstream() != downstreamStart) || p.atStartOfTree() || p.atEndOfTree())
             return p;
     }
 }
@@ -373,7 +374,8 @@ Position VisiblePosition::rightVisuallyDistinctCandidate() const
 VisiblePosition VisiblePosition::right(bool stayInEditableContent) const
 {
     Position pos = rightVisuallyDistinctCandidate();
-    if (pos.atStart() || pos.atEnd())
+    // FIXME: Why can't we move left from the last position in a tree?
+    if (pos.atStartOfTree() || pos.atEndOfTree())
         return VisiblePosition();
 
     VisiblePosition right = VisiblePosition(pos, DOWNSTREAM);
@@ -399,7 +401,7 @@ VisiblePosition VisiblePosition::honorEditableBoundaryAtOrBefore(const VisiblePo
         
     // Return pos itself if the two are from the very same editable region, or both are non-editable
     // FIXME: In the non-editable case, just because the new position is non-editable doesn't mean movement
-    // to it is allowed.  Selection::adjustForEditableContent has this problem too.
+    // to it is allowed.  VisibleSelection::adjustForEditableContent has this problem too.
     if (highestEditableRoot(pos.deepEquivalent()) == highestRoot)
         return pos;
   
@@ -425,7 +427,7 @@ VisiblePosition VisiblePosition::honorEditableBoundaryAtOrAfter(const VisiblePos
     
     // Return pos itself if the two are from the very same editable region, or both are non-editable
     // FIXME: In the non-editable case, just because the new position is non-editable doesn't mean movement
-    // to it is allowed.  Selection::adjustForEditableContent has this problem too.
+    // to it is allowed.  VisibleSelection::adjustForEditableContent has this problem too.
     if (highestEditableRoot(pos.deepEquivalent()) == highestRoot)
         return pos;
 
@@ -438,7 +440,7 @@ VisiblePosition VisiblePosition::honorEditableBoundaryAtOrAfter(const VisiblePos
     return firstEditablePositionAfterPositionInRoot(pos.deepEquivalent(), highestRoot);
 }
 
-Position canonicalizeCandidate(const Position& candidate)
+static Position canonicalizeCandidate(const Position& candidate)
 {
     if (candidate.isNull())
         return Position();
@@ -478,24 +480,24 @@ Position VisiblePosition::canonicalPosition(const Position& position)
 
     // The new position must be in the same editable element. Enforce that first.
     // Unless the descent is from a non-editable html element to an editable body.
-    if (node->hasTagName(htmlTag) && !node->isContentEditable())
+    if (node->hasTagName(htmlTag) && !node->isContentEditable() && node->document()->body() && node->document()->body()->isContentEditable())
         return next.isNotNull() ? next : prev;
 
     Node* editingRoot = editableRootForPosition(position);
         
     // If the html element is editable, descending into its body will look like a descent 
     // from non-editable to editable content since rootEditableElement() always stops at the body.
-    if (editingRoot && editingRoot->hasTagName(htmlTag) || position.node()->isDocumentNode())
+    if ((editingRoot && editingRoot->hasTagName(htmlTag)) || position.node()->isDocumentNode())
         return next.isNotNull() ? next : prev;
         
     bool prevIsInSameEditableElement = prevNode && editableRootForPosition(prev) == editingRoot;
     bool nextIsInSameEditableElement = nextNode && editableRootForPosition(next) == editingRoot;
     if (prevIsInSameEditableElement && !nextIsInSameEditableElement)
         return prev;
-        
+
     if (nextIsInSameEditableElement && !prevIsInSameEditableElement)
         return next;
-        
+
     if (!nextIsInSameEditableElement && !prevIsInSameEditableElement)
         return Position();
 
@@ -509,7 +511,7 @@ Position VisiblePosition::canonicalPosition(const Position& position)
     return next;
 }
 
-UChar VisiblePosition::characterAfter() const
+UChar32 VisiblePosition::characterAfter() const
 {
     // We canonicalize to the first of two equivalent candidates, but the second of the two candidates
     // is the one that will be inside the text node containing the character after this visible position.
@@ -518,10 +520,15 @@ UChar VisiblePosition::characterAfter() const
     if (!node || !node->isTextNode())
         return 0;
     Text* textNode = static_cast<Text*>(pos.node());
-    int offset = pos.offset();
-    if ((unsigned)offset >= textNode->length())
+    unsigned offset = pos.deprecatedEditingOffset();
+    unsigned length = textNode->length();
+    if (offset >= length)
         return 0;
-    return textNode->data()[offset];
+
+    UChar32 ch;
+    const UChar* characters = textNode->data().characters();
+    U16_NEXT(characters, offset, length, ch);
+    return ch;
 }
 
 IntRect VisiblePosition::localCaretRect(RenderObject*& renderer) const
@@ -541,7 +548,7 @@ IntRect VisiblePosition::localCaretRect(RenderObject*& renderer) const
     getInlineBoxAndOffset(inlineBox, caretOffset);
 
     if (inlineBox)
-        renderer = inlineBox->object();
+        renderer = inlineBox->renderer();
 
     return renderer->localCaretRect(inlineBox, caretOffset);
 }
@@ -574,7 +581,7 @@ void VisiblePosition::debugPosition(const char* msg) const
     if (isNull())
         fprintf(stderr, "Position [%s]: null\n", msg);
     else
-        fprintf(stderr, "Position [%s]: %s [%p] at %d\n", msg, m_deepPosition.node()->nodeName().utf8().data(), m_deepPosition.node(), m_deepPosition.offset());
+        fprintf(stderr, "Position [%s]: %s [%p] at %d\n", msg, m_deepPosition.node()->nodeName().utf8().data(), m_deepPosition.node(), m_deepPosition.deprecatedEditingOffset());
 }
 
 #ifndef NDEBUG
@@ -593,9 +600,12 @@ void VisiblePosition::showTreeForThis() const
 
 PassRefPtr<Range> makeRange(const VisiblePosition &start, const VisiblePosition &end)
 {
+    if (start.isNull() || end.isNull())
+        return 0;
+    
     Position s = rangeCompliantEquivalent(start);
     Position e = rangeCompliantEquivalent(end);
-    return Range::create(s.node()->document(), s.node(), s.offset(), e.node(), e.offset());
+    return Range::create(s.node()->document(), s.node(), s.deprecatedEditingOffset(), e.node(), e.deprecatedEditingOffset());
 }
 
 VisiblePosition startVisiblePosition(const Range *r, EAffinity affinity)
@@ -616,7 +626,7 @@ bool setStart(Range *r, const VisiblePosition &visiblePosition)
         return false;
     Position p = rangeCompliantEquivalent(visiblePosition);
     int code = 0;
-    r->setStart(p.node(), p.offset(), code);
+    r->setStart(p.node(), p.deprecatedEditingOffset(), code);
     return code == 0;
 }
 
@@ -626,7 +636,7 @@ bool setEnd(Range *r, const VisiblePosition &visiblePosition)
         return false;
     Position p = rangeCompliantEquivalent(visiblePosition);
     int code = 0;
-    r->setEnd(p.node(), p.offset(), code);
+    r->setEnd(p.node(), p.deprecatedEditingOffset(), code);
     return code == 0;
 }
 

@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -1051,7 +1051,7 @@ QSize QMacStylePrivate::pushButtonSizeFromContents(const QStyleOptionButton *btn
                 : btn->fontMetrics.boundingRect(QRect(), Qt::AlignCenter, btn->text);
     csz.setWidth(iconSize.width() + textRect.width()
              + ((btn->features & QStyleOptionButton::HasMenu)
-                            ? q->pixelMetric(QStyle::PM_MenuButtonIndicator, btn, 0) : 0));
+                            ? q->proxy()->pixelMetric(QStyle::PM_MenuButtonIndicator, btn, 0) : 0));
     csz.setHeight(qMax(iconSize.height(), textRect.height()));
     return csz;
 }
@@ -2222,7 +2222,7 @@ int QMacStyle::pixelMetric(PixelMetric metric, const QStyleOption *opt, const QW
         ret = closeButtonSize;
         break;
     case PM_ToolBarIconSize:
-        ret = pixelMetric(PM_LargeIconSize);
+        ret = proxy()->pixelMetric(PM_LargeIconSize);
         break;
     case PM_FocusFrameVMargin:
     case PM_FocusFrameHMargin:
@@ -2746,7 +2746,7 @@ int QMacStyle::styleHint(StyleHint sh, const QStyleOption *opt, const QWidget *w
                 QPixmap pix(pixmapSize);
                 pix.fill(QColor(fillR, fillG, fillB));
                 QPainter pix_paint(&pix);
-                drawControl(CE_FocusFrame, opt, &pix_paint, w);
+                proxy()->drawControl(CE_FocusFrame, opt, &pix_paint, w);
                 pix_paint.end();
                 img = pix.toImage();
             }
@@ -3061,7 +3061,7 @@ void QMacStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, QPai
                 twf.rect = twf.rect.adjusted(0, -10, 0, 0);
                 break;
             }
-            drawPrimitive(PE_FrameTabWidget, &twf, p, w);
+            proxy()->drawPrimitive(PE_FrameTabWidget, &twf, p, w);
             p->restore();
         }
         break;
@@ -3159,7 +3159,7 @@ void QMacStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, QPai
         if (const QStyleOptionHeader *header = qstyleoption_cast<const QStyleOptionHeader *>(opt)) {
             // In HITheme, up is down, down is up and hamburgers eat people.
             if (header->sortIndicator != QStyleOptionHeader::None)
-                drawPrimitive(
+                proxy()->drawPrimitive(
                     (header->sortIndicator == QStyleOptionHeader::SortDown) ?
                     PE_IndicatorArrowUp : PE_IndicatorArrowDown, header, p, w);
         }
@@ -3293,7 +3293,7 @@ void QMacStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, QPai
                 fdi.isFocused = (frame->state & State_HasFocus);
                 int lw = frame->lineWidth;
                 if (lw <= 0)
-                    lw = pixelMetric(PM_DefaultFrameWidth, frame, w);
+                    lw = proxy()->pixelMetric(PM_DefaultFrameWidth, frame, w);
                 { //clear to base color
                     p->save();
                     p->setPen(QPen(baseColor, lw));
@@ -3506,16 +3506,16 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
                 QIcon::Mode mode = QIcon::Disabled;
                 if (opt->state & State_Enabled)
                     mode = QIcon::Normal;
-                QPixmap pixmap = header->icon.pixmap(pixelMetric(PM_SmallIconSize), mode);
+                QPixmap pixmap = header->icon.pixmap(proxy()->pixelMetric(PM_SmallIconSize), mode);
 
                 QRect pixr = header->rect;
                 pixr.setY(header->rect.center().y() - (pixmap.height() - 1) / 2);
-                drawItemPixmap(p, pixr, Qt::AlignVCenter, pixmap);
+                proxy()->drawItemPixmap(p, pixr, Qt::AlignVCenter, pixmap);
                 textr.translate(pixmap.width() + 2, 0);
             }
 
-            drawItemText(p, textr, header->textAlignment | Qt::AlignVCenter, header->palette,
-                         header->state & State_Enabled, header->text, QPalette::ButtonText);
+            proxy()->drawItemText(p, textr, header->textAlignment | Qt::AlignVCenter, header->palette,
+                                       header->state & State_Enabled, header->text, QPalette::ButtonText);
         }
         break;
     case CE_ToolButtonLabel:
@@ -3530,8 +3530,8 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
                 int alignment = 0;
                 bool down = tb->state & (State_Sunken | State_On);
                 if (down) {
-                    shiftX = pixelMetric(PM_ButtonShiftHorizontal, tb, w);
-                    shiftY = pixelMetric(PM_ButtonShiftVertical, tb, w);
+                    shiftX = proxy()->pixelMetric(PM_ButtonShiftHorizontal, tb, w);
+                    shiftY = proxy()->pixelMetric(PM_ButtonShiftVertical, tb, w);
                 }
                 // The down state is special for QToolButtons in a toolbar on the Mac
                 // The text is a bit bolder and gets a drop shadow and the icons are also darkened.
@@ -3574,7 +3574,7 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
                             pr.translate(shiftX, shiftY);
                             pixmap = darkenPixmap(pixmap);
                         }
-                        drawItemPixmap(p, pr, Qt::AlignCenter, pixmap);
+                        proxy()->drawItemPixmap(p, pr, Qt::AlignCenter, pixmap);
                         break; }
                     }
 
@@ -3655,7 +3655,7 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
             HIThemeDrawButton(&newRect, &bdi, cg, kHIThemeOrientationNormal, 0);
 
             if (btn->features & QStyleOptionButton::HasMenu) {
-                int mbi = pixelMetric(QStyle::PM_MenuButtonIndicator, btn, w);
+                int mbi = proxy()->pixelMetric(QStyle::PM_MenuButtonIndicator, btn, w);
                 QRect ir = btn->rect;
                 HIRect arrowRect = CGRectMake(ir.right() - mbi - PushButtonRightOffset,
                                               ir.height() / 2 - 4, mbi, ir.height() / 2);
@@ -3742,7 +3742,7 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
                     if (hasIcon) {
                         int contentW = textRect.width();
                         if (hasMenu)
-                            contentW += pixelMetric(PM_MenuButtonIndicator) + 4;
+                            contentW += proxy()->pixelMetric(PM_MenuButtonIndicator) + 4;
                         QIcon::Mode mode = btn->state & State_Enabled ? QIcon::Normal : QIcon::Disabled;
                         if (mode == QIcon::Normal && btn->state & State_HasFocus)
                             mode = QIcon::Active;
@@ -3756,7 +3756,7 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
                         int iconTopOffset = freeContentRect.y() + (freeContentRect.height() - pixmap.height()) / 2;
                         QRect iconDestRect(iconLeftOffset, iconTopOffset, pixmap.width(), pixmap.height());
                         QRect visualIconDestRect = visualRect(btn->direction, freeContentRect, iconDestRect);
-                        drawItemPixmap(p, visualIconDestRect, Qt::AlignLeft | Qt::AlignVCenter, pixmap);
+                        proxy()->drawItemPixmap(p, visualIconDestRect, Qt::AlignLeft | Qt::AlignVCenter, pixmap);
                         int newOffset = iconDestRect.x() + iconDestRect.width()
                                         + PushButtonContentPadding - textRect.x();
                         textRect.adjust(newOffset, 0, newOffset, 0);
@@ -3764,8 +3764,8 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
                     // Draw the text:
                     if (hasText) {
                         textRect = visualRect(btn->direction, freeContentRect, textRect);
-                        drawItemText(p, textRect, Qt::AlignLeft | Qt::AlignVCenter | Qt::TextShowMnemonic, btn->palette,
-                                     (btn->state & State_Enabled), btn->text, QPalette::ButtonText);
+                        proxy()->drawItemText(p, textRect, Qt::AlignLeft | Qt::AlignVCenter | Qt::TextShowMnemonic, btn->palette,
+                                                   (btn->state & State_Enabled), btn->text, QPalette::ButtonText);
                     }
                 }
             }
@@ -3922,7 +3922,8 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
                     QRect nr = subElementRect(SE_TabBarTabText, opt, w);
                     nr.moveTop(+1);
                     int alignment = Qt::AlignCenter | Qt::TextShowMnemonic | Qt::TextHideMnemonic;
-                    drawItemText(p, nr, alignment, np, tab->state & State_Enabled, tab->text, QPalette::WindowText);
+                    proxy()->drawItemText(p, nr, alignment, np, tab->state & State_Enabled,
+                                               tab->text, QPalette::WindowText);
                     p->restore();
                 }
 
@@ -4045,8 +4046,8 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
         }
         break;
     case CE_FocusFrame: {
-        int xOff = pixelMetric(PM_FocusFrameHMargin, opt, w) + 1;
-        int yOff = pixelMetric(PM_FocusFrameVMargin, opt, w) + 1;
+        int xOff = proxy()->pixelMetric(PM_FocusFrameHMargin, opt, w) + 1;
+        int yOff = proxy()->pixelMetric(PM_FocusFrameVMargin, opt, w) + 1;
         HIRect hirect = CGRectMake(xOff+opt->rect.x(), yOff+opt->rect.y(), opt->rect.width() - 2 * xOff,
                                    opt->rect.height() - 2 * yOff);
         HIThemeDrawFocusRect(&hirect, true, QMacCGContext(p), kHIThemeOrientationNormal);
@@ -4169,7 +4170,7 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
                 QIcon::Mode mode = (mi->state & State_Enabled) ? QIcon::Normal
                                                                : QIcon::Disabled;
                 // Always be normal or disabled to follow the Mac style.
-                int smallIconSize = pixelMetric(PM_SmallIconSize);
+                int smallIconSize = proxy()->pixelMetric(PM_SmallIconSize);
                 QSize iconSize(smallIconSize, smallIconSize);
                 if (const QComboBox *comboBox = qobject_cast<const QComboBox *>(w)) {
                     iconSize = comboBox->iconSize();
@@ -4279,7 +4280,7 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
                 drawItemPixmap(p, mi->rect,
                                   Qt::AlignCenter | Qt::TextHideMnemonic | Qt::TextDontClip
                                   | Qt::TextSingleLine,
-                                  mi->icon.pixmap(pixelMetric(PM_SmallIconSize),
+                                  mi->icon.pixmap(proxy()->pixelMetric(PM_SmallIconSize),
                           (mi->state & State_Enabled) ? QIcon::Normal : QIcon::Disabled));
             } else {
                 drawItemText(p, mi->rect,
@@ -4916,7 +4917,7 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
                         treeOpt.state |= State_Children;
                         if (item.state & State_Open)
                             treeOpt.state |= State_Open;
-                        drawPrimitive(PE_IndicatorBranch, &treeOpt, p, widget);
+                        proxy()->drawPrimitive(PE_IndicatorBranch, &treeOpt, p, widget);
                     }
                     y += item.totalHeight;
                 }
@@ -4930,7 +4931,7 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
                 SInt32 frame_size;
                 GetThemeMetric(kThemeMetricEditTextFrameOutset, &frame_size);
 
-                QRect lineeditRect = subControlRect(CC_SpinBox, sb, SC_SpinBoxEditField, widget);
+                QRect lineeditRect = proxy()->subControlRect(CC_SpinBox, sb, SC_SpinBoxEditField, widget);
                 lineeditRect.adjust(-frame_size, -frame_size, +frame_size, +frame_size);
 
                 HIThemeFrameDrawInfo fdi;
@@ -4974,9 +4975,9 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
                 bdi.value = kThemeButtonOff;
                 bdi.adornment = kThemeAdornmentNone;
 
-                QRect updown = subControlRect(CC_SpinBox, sb, SC_SpinBoxUp, widget);
+                QRect updown = proxy()->subControlRect(CC_SpinBox, sb, SC_SpinBoxUp, widget);
 
-                updown |= subControlRect(CC_SpinBox, sb, SC_SpinBoxDown, widget);
+                updown |= proxy()->subControlRect(CC_SpinBox, sb, SC_SpinBoxDown, widget);
                 HIRect newRect = qt_hirectForQRect(updown);
                 QRect off_rct;
                 HIRect outRect;
@@ -5089,7 +5090,7 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
                                           &titleRegion2);
                     ptrHIShapeGetBounds(titleRegion2, &tmpRect);
                     if (tmpRect.size.width != 1) {
-                        int iconExtent = pixelMetric(PM_SmallIconSize);
+                        int iconExtent = proxy()->pixelMetric(PM_SmallIconSize);
                         iw = titlebar->icon.actualSize(QSize(iconExtent, iconExtent)).width();
                     }
                 }
@@ -5107,7 +5108,8 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
                     else
                         x += br.width() / 2 - p->fontMetrics().width(titlebar->text) / 2;
                     if (iw)
-                        p->drawPixmap(x - iw, y, titlebar->icon.pixmap(pixelMetric(PM_SmallIconSize), QIcon::Normal));
+                        p->drawPixmap(x - iw, y, 
+                                      titlebar->icon.pixmap(proxy()->pixelMetric(PM_SmallIconSize), QIcon::Normal));
                     drawItemText(p, br, Qt::AlignCenter, opt->palette, tds == kThemeStateActive,
                                     titlebar->text, QPalette::Text);
                     p->restore();
@@ -5144,7 +5146,7 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
                 tti.truncationPosition = kHIThemeTextTruncationNone;
                 tti.truncationMaxLines = 1 + groupBox->text.count(QLatin1Char('\n'));
                 QCFString groupText = qt_mac_removeMnemonics(groupBox->text);
-                QRect r = subControlRect(CC_GroupBox, groupBox, SC_GroupBoxLabel, widget);
+                QRect r = proxy()->subControlRect(CC_GroupBox, groupBox, SC_GroupBoxLabel, widget);
                 HIRect bounds = qt_hirectForQRect(r);
                 HIThemeDrawTextBox(groupText, &bounds, &tti, cg, kHIThemeOrientationNormal);
                 p->restore();
@@ -5157,12 +5159,12 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
             if (widget && qobject_cast<QToolBar *>(widget->parentWidget())) {
                 if (tb->subControls & SC_ToolButtonMenu) {
                     QStyleOption arrowOpt(0);
-                    arrowOpt.rect = subControlRect(cc, tb, SC_ToolButtonMenu, widget);
+                    arrowOpt.rect = proxy()->subControlRect(cc, tb, SC_ToolButtonMenu, widget);
                     arrowOpt.rect.setY(arrowOpt.rect.y() + arrowOpt.rect.height() / 2);
                     arrowOpt.rect.setHeight(arrowOpt.rect.height() / 2);
                     arrowOpt.state = tb->state;
                     arrowOpt.palette = tb->palette;
-                    drawPrimitive(PE_IndicatorArrowDown, &arrowOpt, p, widget);
+                    proxy()->drawPrimitive(PE_IndicatorArrowDown, &arrowOpt, p, widget);
                 } else if ((tb->features & QStyleOptionToolButton::HasMenu)
                             && (tb->toolButtonStyle != Qt::ToolButtonTextOnly && !tb->icon.isNull())) {
                     drawToolbarButtonArrow(tb->rect, tds, cg);
@@ -5185,7 +5187,7 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
                         p->setPen(oldPen);
                     }
                 }
-                drawControl(CE_ToolButtonLabel, opt, p, widget);
+                proxy()->drawControl(CE_ToolButtonLabel, opt, p, widget);
             } else {
                 ThemeButtonKind bkind = kThemeBevelButton;
                 switch (d->aquaSizeConstrain(opt, widget)) {
@@ -5206,8 +5208,8 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
                 }
 
                 QRect button, menuarea;
-                button   = subControlRect(cc, tb, SC_ToolButton, widget);
-                menuarea = subControlRect(cc, tb, SC_ToolButtonMenu, widget);
+                button   = proxy()->subControlRect(cc, tb, SC_ToolButton, widget);
+                menuarea = proxy()->subControlRect(cc, tb, SC_ToolButtonMenu, widget);
                 State bflags = tb->state,
                 mflags = tb->state;
                 if (tb->subControls & SC_ToolButton)
@@ -5270,11 +5272,11 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
                 } else if (tb->features & QStyleOptionToolButton::HasMenu) {
                     drawToolbarButtonArrow(tb->rect, tds, cg);
                 }
-                QRect buttonRect = subControlRect(CC_ToolButton, tb, SC_ToolButton, widget);
-                int fw = pixelMetric(PM_DefaultFrameWidth, opt, widget);
+                QRect buttonRect = proxy()->subControlRect(CC_ToolButton, tb, SC_ToolButton, widget);
+                int fw = proxy()->pixelMetric(PM_DefaultFrameWidth, opt, widget);
                 QStyleOptionToolButton label = *tb;
                 label.rect = buttonRect.adjusted(fw, fw, -fw, -fw);
-                drawControl(CE_ToolButtonLabel, &label, p, widget);
+                proxy()->drawControl(CE_ToolButtonLabel, &label, p, widget);
             }
         }
         break;
@@ -5505,7 +5507,7 @@ QRect QMacStyle::subControlRect(ComplexControl cc, const QStyleOptionComplex *op
             else if (sc == SC_TitleBarLabel)
                 wrc = kWindowTitleTextRgn;
             else if (sc == SC_TitleBarSysMenu)
-                ret.setRect(-1024, -1024, 10, pixelMetric(PM_TitleBarHeight,
+                ret.setRect(-1024, -1024, 10, proxy()->pixelMetric(PM_TitleBarHeight,
                                                              titlebar, widget));
             if (wrc != kWindowGlobalPortRgn) {
                 QCFType<HIShapeRef> region;
@@ -5602,7 +5604,7 @@ QRect QMacStyle::subControlRect(ComplexControl cc, const QStyleOptionComplex *op
 
                 QRect labelRect = alignedRect(groupBox->direction, groupBox->textAlignment,
                                               QSize(tw, h), ret);
-                int indicatorWidth = pixelMetric(PM_IndicatorWidth, opt, widget);
+                int indicatorWidth = proxy()->pixelMetric(PM_IndicatorWidth, opt, widget);
                 bool rtl = groupBox->direction == Qt::RightToLeft;
                 if (sc == SC_GroupBoxLabel) {
                     if (checkable) {
@@ -5624,7 +5626,7 @@ QRect QMacStyle::subControlRect(ComplexControl cc, const QStyleOptionComplex *op
                 if (sc == SC_GroupBoxCheckBox) {
                     int left = rtl ? labelRect.right() - indicatorWidth : labelRect.left();
                     ret.setRect(left, ret.top(),
-                                indicatorWidth, pixelMetric(PM_IndicatorHeight, opt, widget));
+                                indicatorWidth, proxy()->pixelMetric(PM_IndicatorHeight, opt, widget));
                 }
                 break;
             }
@@ -5662,7 +5664,7 @@ QRect QMacStyle::subControlRect(ComplexControl cc, const QStyleOptionComplex *op
             QAquaWidgetSize aquaSize = d->aquaSizeConstrain(spin, widget);
             int spinner_w;
             int spinBoxSep;
-            int fw = pixelMetric(PM_SpinBoxFrameWidth, spin, widget);
+            int fw = proxy()->pixelMetric(PM_SpinBoxFrameWidth, spin, widget);
             switch (aquaSize) {
             default:
             case QAquaSizeUnknown:
@@ -5784,7 +5786,7 @@ QSize QMacStyle::sizeFromContents(ContentsType ct, const QStyleOption *opt,
                 sz.transpose();
             if (newStyleTabs) {
                 int defaultTabHeight;
-                int defaultExtraSpace = pixelMetric(PM_TabBarTabHSpace, tab, widget); // Remove spurious gcc warning (AFAIK)
+                int defaultExtraSpace = proxy()->pixelMetric(PM_TabBarTabHSpace, tab, widget); // Remove spurious gcc warning (AFAIK)
                 QFontMetrics fm = opt->fontMetrics;
                 switch (AquaSize) {
                 case QAquaSizeUnknown:
@@ -5891,7 +5893,7 @@ QSize QMacStyle::sizeFromContents(ContentsType ct, const QStyleOption *opt,
                         h = qMax(h, iconSize.height() + 4);
                         maxpmw = qMax(maxpmw, iconSize.width());
                     } else {
-                        int iconExtent = pixelMetric(PM_SmallIconSize);
+                        int iconExtent = proxy()->pixelMetric(PM_SmallIconSize);
                         h = qMax(h, mi->icon.actualSize(QSize(iconExtent, iconExtent)).height() + 4);
                     }
                 }
@@ -5938,7 +5940,7 @@ QSize QMacStyle::sizeFromContents(ContentsType ct, const QStyleOption *opt,
         QStyleHintReturnMask menuMask;
         QStyleOption myOption = *opt;
         myOption.rect.setSize(sz);
-        if (styleHint(SH_Menu_Mask, &myOption, widget, &menuMask)) {
+        if (proxy()->styleHint(SH_Menu_Mask, &myOption, widget, &menuMask)) {
             sz = menuMask.region.boundingRect().size();
         }
         break; }

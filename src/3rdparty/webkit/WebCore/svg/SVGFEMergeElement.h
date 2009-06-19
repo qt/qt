@@ -23,7 +23,7 @@
 #ifndef SVGFEMergeElement_h
 #define SVGFEMergeElement_h
 
-#if ENABLE(SVG) && ENABLE(SVG_FILTERS)
+#if ENABLE(SVG) && ENABLE(FILTERS)
 #include "SVGFEMerge.h"
 #include "SVGFilterPrimitiveStandardAttributes.h"
 
@@ -34,11 +34,7 @@ namespace WebCore {
         SVGFEMergeElement(const QualifiedName&, Document*);
         virtual ~SVGFEMergeElement();
 
-        virtual SVGFilterEffect* filterEffect(SVGResourceFilter*) const;
-        bool build(FilterBuilder*);
-
-    private:
-        mutable RefPtr<FEMerge> m_filterEffect;
+        virtual bool build(SVGResourceFilter*);
     };
 
 } // namespace WebCore

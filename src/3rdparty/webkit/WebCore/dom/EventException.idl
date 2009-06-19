@@ -30,14 +30,15 @@ module events {
 
     // Introduced in DOM Level 2:
     interface [
-        GenerateConstructor
+        GenerateConstructor,
+        NoStaticTables
     ] EventException {
 
         readonly attribute unsigned short   code;
         readonly attribute DOMString        name;
         readonly attribute DOMString        message;
 
-#if defined(LANGUAGE_JAVASCRIPT)
+#if defined(LANGUAGE_JAVASCRIPT) && LANGUAGE_JAVASCRIPT
         // Override in a Mozilla compatible format
         [DontEnum] DOMString toString();
 #endif

@@ -63,7 +63,8 @@ public:
         PrintElementBackgrounds,
         OfflineStorageDatabaseEnabled,
         OfflineWebApplicationCacheEnabled,
-        LocalStorageDatabaseEnabled
+        LocalStorageDatabaseEnabled,
+        AllowUniversalAccessFromFileUrls
     };
     enum WebGraphic {
         MissingImageGraphic,
@@ -95,6 +96,9 @@ public:
     void setUserStyleSheetUrl(const QUrl &location);
     QUrl userStyleSheetUrl() const;
 
+    void setDefaultTextEncoding(const QString &encoding);
+    QString defaultTextEncoding() const;
+
     static void setIconDatabasePath(const QString &location);
     static QString iconDatabasePath();
     static void clearIconDatabase();
@@ -111,6 +115,8 @@ public:
     static QString offlineStoragePath();
     static void setOfflineStorageDefaultQuota(qint64 maximumSize);
     static qint64 offlineStorageDefaultQuota();
+
+    static void clearMemoryCaches();
 
     inline QWebSettingsPrivate* handle() const { return d; }
 

@@ -30,20 +30,27 @@
 #include "Document.h"
 #include "FrameView.h"
 #include "GraphicsContext.h"
+#include "htmlediting.h"
 #include "HTMLElement.h"
 #include "HTMLNames.h"
 #include "ImageBuffer.h"
+#include "FloatQuad.h"
 #include "Frame.h"
 #include "Page.h"
 #include "RenderArena.h"
 #include "RenderFlexibleBox.h"
+#include "RenderInline.h"
 #include "RenderLayer.h"
-#include "RenderReplica.h"
 #include "RenderTableCell.h"
 #include "RenderTheme.h"
 #include "RenderView.h"
+#include "TransformState.h"
 #include <algorithm>
 #include <math.h>
+
+#if ENABLE(WML)
+#include "WMLNames.h"
+#endif
 
 using namespace std;
 
@@ -55,24 +62,19 @@ using namespace HTMLNames;
 typedef WTF::HashMap<const RenderBox*, int> OverrideSizeMap;
 static OverrideSizeMap* gOverrideSizeMap = 0;
 
-bool RenderBox::s_wasFloating = false;
 bool RenderBox::s_hadOverflowClip = false;
 
 RenderBox::RenderBox(Node* node)
-    : RenderObject(node)
-    , m_width(0)
-    , m_height(0)
-    , m_x(0)
-    , m_y(0)
+    : RenderBoxModelObject(node)
     , m_marginLeft(0)
     , m_marginRight(0)
     , m_marginTop(0)
     , m_marginBottom(0)
     , m_minPrefWidth(-1)
     , m_maxPrefWidth(-1)
-    , m_layer(0)
     , m_inlineBoxWrapper(0)
 {
+    setIsBox();
 }
 
 RenderBox::~RenderBox()
@@ -87,106 +89,70 @@ void RenderBox::destroy()
     if (hasOverrideSize())
         gOverrideSizeMap->remove(this);
 
-    // This must be done before we destroy the RenderObject.
-    if (m_layer)
-        m_layer->clearClipRects();
-
     if (style() && (style()->height().isPercent() || style()->minHeight().isPercent() || style()->maxHeight().isPercent()))
         RenderBlock::removePercentHeightDescendant(this);
 
-    RenderObject::destroy();
+    RenderBoxModelObject::destroy();
 }
 
-void RenderBox::styleWillChange(RenderStyle::Diff diff, const RenderStyle* newStyle)
+void RenderBox::removeFloatingOrPositionedChildFromBlockLists()
 {
-    s_wasFloating = isFloating();
+    ASSERT(isFloatingOrPositioned());
+
+    if (documentBeingDestroyed())
+        return;
+
+    if (isFloating()) {
+        RenderBlock* outermostBlock = containingBlock();
+        for (RenderBlock* p = outermostBlock; p && !p->isRenderView(); p = p->containingBlock()) {
+            if (p->containsFloat(this))
+                outermostBlock = p;
+        }
+
+        if (outermostBlock)
+            outermostBlock->markAllDescendantsWithFloatsForLayout(this, false);
+    }
+
+    if (isPositioned()) {
+        RenderObject* p;
+        for (p = parent(); p; p = p->parent()) {
+            if (p->isRenderBlock())
+                toRenderBlock(p)->removePositionedObject(this);
+        }
+    }
+}
+
+void RenderBox::styleWillChange(StyleDifference diff, const RenderStyle* newStyle)
+{
     s_hadOverflowClip = hasOverflowClip();
 
-    RenderObject::styleWillChange(diff, newStyle);
+    if (style()) {
+        // The background of the root element or the body element could propagate up to
+        // the canvas.  Just dirty the entire canvas when our style changes substantially.
+        if (diff >= StyleDifferenceRepaint && node() &&
+                (node()->hasTagName(htmlTag) || node()->hasTagName(bodyTag)))
+            view()->repaint();
+        
+        // When a layout hint happens and an object's position style changes, we have to do a layout
+        // to dirty the render tree using the old position value now.
+        if (diff == StyleDifferenceLayout && parent() && style()->position() != newStyle->position()) {
+            markContainingBlocksForLayout();
+            if (style()->position() == StaticPosition)
+                repaint();
+            if (isFloating() && !isPositioned() && (newStyle->position() == AbsolutePosition || newStyle->position() == FixedPosition))
+                removeFloatingOrPositionedChildFromBlockLists();
+        }
+    }
+
+    RenderBoxModelObject::styleWillChange(diff, newStyle);
 }
 
-void RenderBox::styleDidChange(RenderStyle::Diff diff, const RenderStyle* oldStyle)
+void RenderBox::styleDidChange(StyleDifference diff, const RenderStyle* oldStyle)
 {
-    // We need to ensure that view->maximalOutlineSize() is valid for any repaints that happen
-    // during the style change (it's used by absoluteClippedOverflowRect()).
-    if (style()->outlineWidth() > 0 && style()->outlineSize() > maximalOutlineSize(PaintPhaseOutline))
-        static_cast<RenderView*>(document()->renderer())->setMaximalOutlineSize(style()->outlineSize());
-
-    RenderObject::styleDidChange(diff, oldStyle);
+    RenderBoxModelObject::styleDidChange(diff, oldStyle);
 
     if (needsLayout() && oldStyle && (oldStyle->height().isPercent() || oldStyle->minHeight().isPercent() || oldStyle->maxHeight().isPercent()))
         RenderBlock::removePercentHeightDescendant(this);
-
-    // The root and the RenderView always paint their backgrounds/borders.
-    if (isRoot() || isRenderView())
-        setHasBoxDecorations(true);
-
-    setInline(style()->isDisplayInlineType());
-
-    switch (style()->position()) {
-        case AbsolutePosition:
-        case FixedPosition:
-            setPositioned(true);
-            break;
-        default:
-            setPositioned(false);
-
-            if (style()->isFloating())
-                setFloating(true);
-
-            if (style()->position() == RelativePosition)
-                setRelPositioned(true);
-            break;
-    }
-
-    // We also handle <body> and <html>, whose overflow applies to the viewport.
-    if (!isRoot() && (isRenderBlock() || isTableRow() || isTableSection()) && style()->overflowX() != OVISIBLE) {
-        bool boxHasOverflowClip = true;
-        if (isBody()) {
-            // Overflow on the body can propagate to the viewport under the following conditions.
-            // (1) The root element is <html>.
-            // (2) We are the primary <body> (can be checked by looking at document.body).
-            // (3) The root element has visible overflow.
-            if (document()->documentElement()->hasTagName(htmlTag) &&
-                document()->body() == element() &&
-                document()->documentElement()->renderer()->style()->overflowX() == OVISIBLE)
-                boxHasOverflowClip = false;
-        }
-        
-        // Check for overflow clip.
-        // It's sufficient to just check one direction, since it's illegal to have visible on only one overflow value.
-        if (boxHasOverflowClip) {
-            if (!s_hadOverflowClip)
-                // Erase the overflow
-                repaint();
-            setHasOverflowClip();
-        }
-    }
-
-    setHasTransform(style()->hasTransform());
-    setHasReflection(style()->boxReflect());
-
-    if (requiresLayer()) {
-        if (!m_layer) {
-            if (s_wasFloating && isFloating())
-                setChildNeedsLayout(true);
-            m_layer = new (renderArena()) RenderLayer(this);
-            setHasLayer(true);
-            m_layer->insertOnlyThisLayer();
-            if (parent() && !needsLayout() && containingBlock())
-                m_layer->updateLayerPositions();
-        }
-    } else if (m_layer && !isRoot() && !isRenderView()) {
-        ASSERT(m_layer->parent());
-        RenderLayer* layer = m_layer;
-        m_layer = 0;
-        setHasLayer(false);
-        setHasTransform(false); // Either a transform wasn't specified or the object doesn't support transforms, so just null out the bit.
-        setHasReflection(false);
-        layer->removeOnlyThisLayer();
-        if (s_wasFloating && isFloating())
-            setChildNeedsLayout(true);
-    }
 
     // If our zoom factor changes and we have a defined scrollLeft/Top, we need to adjust that value into the
     // new zoomed coordinate space.
@@ -203,12 +169,263 @@ void RenderBox::styleDidChange(RenderStyle::Diff diff, const RenderStyle* oldSty
         }
     }
 
-    if (m_layer)
-        m_layer->styleChanged(diff, oldStyle);
-
     // Set the text color if we're the body.
     if (isBody())
         document()->setTextColor(style()->color());
+}
+
+void RenderBox::updateBoxModelInfoFromStyle()
+{
+    RenderBoxModelObject::updateBoxModelInfoFromStyle();
+
+    bool isRootObject = isRoot();
+    bool isViewObject = isRenderView();
+
+    // The root and the RenderView always paint their backgrounds/borders.
+    if (isRootObject || isViewObject)
+        setHasBoxDecorations(true);
+
+    setPositioned(style()->position() == AbsolutePosition || style()->position() == FixedPosition);
+    setFloating(!isPositioned() && style()->isFloating());
+
+    // We also handle <body> and <html>, whose overflow applies to the viewport.
+    if (style()->overflowX() != OVISIBLE && !isRootObject && (isRenderBlock() || isTableRow() || isTableSection())) {
+        bool boxHasOverflowClip = true;
+        if (isBody()) {
+            // Overflow on the body can propagate to the viewport under the following conditions.
+            // (1) The root element is <html>.
+            // (2) We are the primary <body> (can be checked by looking at document.body).
+            // (3) The root element has visible overflow.
+            if (document()->documentElement()->hasTagName(htmlTag) &&
+                document()->body() == node() &&
+                document()->documentElement()->renderer()->style()->overflowX() == OVISIBLE)
+                boxHasOverflowClip = false;
+        }
+        
+        // Check for overflow clip.
+        // It's sufficient to just check one direction, since it's illegal to have visible on only one overflow value.
+        if (boxHasOverflowClip) {
+            if (!s_hadOverflowClip)
+                // Erase the overflow
+                repaint();
+            setHasOverflowClip();
+        }
+    }
+
+    setHasTransform(style()->hasTransformRelatedProperty());
+    setHasReflection(style()->boxReflect());
+}
+
+void RenderBox::layout()
+{
+    ASSERT(needsLayout());
+
+    RenderObject* child = firstChild();
+    if (!child) {
+        setNeedsLayout(false);
+        return;
+    }
+
+    LayoutStateMaintainer statePusher(view(), this, IntSize(x(), y()));
+    while (child) {
+        child->layoutIfNeeded();
+        ASSERT(!child->needsLayout());
+        child = child->nextSibling();
+    }
+    statePusher.pop();
+    setNeedsLayout(false);
+}
+
+// More IE extensions.  clientWidth and clientHeight represent the interior of an object
+// excluding border and scrollbar.
+int RenderBox::clientWidth() const
+{
+    return width() - borderLeft() - borderRight() - verticalScrollbarWidth();
+}
+
+int RenderBox::clientHeight() const
+{
+    return height() - borderTop() - borderBottom() - horizontalScrollbarHeight();
+}
+
+// scrollWidth/scrollHeight will be the same as overflowWidth/overflowHeight unless the
+// object has overflow:hidden/scroll/auto specified and also has overflow.
+// FIXME: It's not completely clear how scrollWidth/Height should behave for 
+// objects with visible overflow.
+int RenderBox::scrollWidth() const
+{
+    if (hasOverflowClip())
+        return layer()->scrollWidth();
+    return overflowWidth();
+}
+
+int RenderBox::scrollHeight() const
+{
+    if (hasOverflowClip())
+        return layer()->scrollHeight();
+    return overflowHeight();
+}
+
+int RenderBox::scrollLeft() const
+{
+    return hasOverflowClip() ? layer()->scrollXOffset() : 0;
+}
+
+int RenderBox::scrollTop() const
+{
+    return hasOverflowClip() ? layer()->scrollYOffset() : 0;
+}
+
+void RenderBox::setScrollLeft(int newLeft)
+{
+    if (hasOverflowClip())
+        layer()->scrollToXOffset(newLeft);
+}
+
+void RenderBox::setScrollTop(int newTop)
+{
+    if (hasOverflowClip())
+        layer()->scrollToYOffset(newTop);
+}
+
+void RenderBox::absoluteRects(Vector<IntRect>& rects, int tx, int ty)
+{
+    rects.append(IntRect(tx, ty, width(), height()));
+}
+
+void RenderBox::absoluteQuads(Vector<FloatQuad>& quads)
+{
+    quads.append(localToAbsoluteQuad(FloatRect(0, 0, width(), height())));
+}
+
+IntRect RenderBox::absoluteContentBox() const
+{
+    IntRect rect = contentBoxRect();
+    FloatPoint absPos = localToAbsolute(FloatPoint());
+    rect.move(absPos.x(), absPos.y());
+    return rect;
+}
+
+FloatQuad RenderBox::absoluteContentQuad() const
+{
+    IntRect rect = contentBoxRect();
+    return localToAbsoluteQuad(FloatRect(rect));
+}
+
+IntRect RenderBox::outlineBoundsForRepaint(RenderBoxModelObject* repaintContainer) const
+{
+    IntRect box = borderBoundingBox();
+    adjustRectForOutlineAndShadow(box);
+
+    FloatQuad containerRelativeQuad = localToContainerQuad(FloatRect(box), repaintContainer);
+    box = containerRelativeQuad.enclosingBoundingBox();
+
+    // FIXME: layoutDelta needs to be applied in parts before/after transforms and
+    // repaint containers. https://bugs.webkit.org/show_bug.cgi?id=23308
+    box.move(view()->layoutDelta());
+
+    return box;
+}
+
+void RenderBox::addFocusRingRects(GraphicsContext* graphicsContext, int tx, int ty)
+{
+    graphicsContext->addFocusRingRect(IntRect(tx, ty, width(), height()));
+}
+
+
+IntRect RenderBox::reflectionBox() const
+{
+    IntRect result;
+    if (!style()->boxReflect())
+        return result;
+    IntRect box = borderBoxRect();
+    result = box;
+    switch (style()->boxReflect()->direction()) {
+        case ReflectionBelow:
+            result.move(0, box.height() + reflectionOffset());
+            break;
+        case ReflectionAbove:
+            result.move(0, -box.height() - reflectionOffset());
+            break;
+        case ReflectionLeft:
+            result.move(-box.width() - reflectionOffset(), 0);
+            break;
+        case ReflectionRight:
+            result.move(box.width() + reflectionOffset(), 0);
+            break;
+    }
+    return result;
+}
+
+int RenderBox::reflectionOffset() const
+{
+    if (!style()->boxReflect())
+        return 0;
+    if (style()->boxReflect()->direction() == ReflectionLeft || style()->boxReflect()->direction() == ReflectionRight)
+        return style()->boxReflect()->offset().calcValue(borderBoxRect().width());
+    return style()->boxReflect()->offset().calcValue(borderBoxRect().height());
+}
+
+IntRect RenderBox::reflectedRect(const IntRect& r) const
+{
+    if (!style()->boxReflect())
+        return IntRect();
+
+    IntRect box = borderBoxRect();
+    IntRect result = r;
+    switch (style()->boxReflect()->direction()) {
+        case ReflectionBelow:
+            result.setY(box.bottom() + reflectionOffset() + (box.bottom() - r.bottom()));
+            break;
+        case ReflectionAbove:
+            result.setY(box.y() - reflectionOffset() - box.height() + (box.bottom() - r.bottom()));
+            break;
+        case ReflectionLeft:
+            result.setX(box.x() - reflectionOffset() - box.width() + (box.right() - r.right()));
+            break;
+        case ReflectionRight:
+            result.setX(box.right() + reflectionOffset() + (box.right() - r.right()));
+            break;
+    }
+    return result;
+}
+
+int RenderBox::verticalScrollbarWidth() const
+{
+    return includeVerticalScrollbarSize() ? layer()->verticalScrollbarWidth() : 0;
+}
+
+int RenderBox::horizontalScrollbarHeight() const
+{
+    return includeHorizontalScrollbarSize() ? layer()->horizontalScrollbarHeight() : 0;
+}
+
+bool RenderBox::scroll(ScrollDirection direction, ScrollGranularity granularity, float multiplier)
+{
+    RenderLayer* l = layer();
+    if (l && l->scroll(direction, granularity, multiplier))
+        return true;
+    RenderBlock* b = containingBlock();
+    if (b && !b->isRenderView())
+        return b->scroll(direction, granularity, multiplier);
+    return false;
+}
+    
+bool RenderBox::canBeProgramaticallyScrolled(bool) const
+{
+    return (hasOverflowClip() && (scrollsOverflow() || (node() && node()->isContentEditable()))) || (node() && node()->isDocumentNode());
+}
+
+void RenderBox::autoscroll()
+{
+    if (layer())
+        layer()->autoscroll();
+}
+
+void RenderBox::panScroll(const IntPoint& source)
+{
+    if (layer())
+        layer()->panScrollFromPoint(source);
 }
 
 int RenderBox::minPrefWidth() const
@@ -251,22 +468,12 @@ void RenderBox::setOverrideSize(int s)
 
 int RenderBox::overrideWidth() const
 {
-    return hasOverrideSize() ? overrideSize() : m_width;
+    return hasOverrideSize() ? overrideSize() : width();
 }
 
 int RenderBox::overrideHeight() const
 {
-    return hasOverrideSize() ? overrideSize() : m_height;
-}
-
-void RenderBox::setPos(int xPos, int yPos)
-{
-    // Optimize for the case where we don't move at all.
-    if (xPos == m_x && yPos == m_y)
-        return;
-
-    m_x = xPos;
-    m_y = yPos;
+    return hasOverrideSize() ? overrideSize() : height();
 }
 
 int RenderBox::calcBorderBoxWidth(int width) const
@@ -300,27 +507,23 @@ int RenderBox::calcContentBoxHeight(int height) const
 }
 
 // Hit Testing
-bool RenderBox::nodeAtPoint(const HitTestRequest& request, HitTestResult& result, int x, int y, int tx, int ty, HitTestAction action)
+bool RenderBox::nodeAtPoint(const HitTestRequest& request, HitTestResult& result, int xPos, int yPos, int tx, int ty, HitTestAction action)
 {
-    tx += m_x;
-    ty += m_y;
+    tx += x();
+    ty += y();
 
     // Check kids first.
     for (RenderObject* child = lastChild(); child; child = child->previousSibling()) {
-        // FIXME: We have to skip over inline flows, since they can show up inside table rows
-        // at the moment (a demoted inline <form> for example). If we ever implement a
-        // table-specific hit-test method (which we should do for performance reasons anyway),
-        // then we can remove this check.
-        if (!child->hasLayer() && !child->isInlineFlow() && child->nodeAtPoint(request, result, x, y, tx, ty, action)) {
-            updateHitTestResult(result, IntPoint(x - tx, y - ty));
+        if (!child->hasLayer() && child->nodeAtPoint(request, result, xPos, yPos, tx, ty, action)) {
+            updateHitTestResult(result, IntPoint(xPos - tx, yPos - ty));
             return true;
         }
     }
 
     // Check our bounds next. For this purpose always assume that we can only be hit in the
     // foreground phase (which is true for replaced elements like images).
-    if (visibleToHitTesting() && action == HitTestForeground && IntRect(tx, ty, m_width, m_height).contains(x, y)) {
-        updateHitTestResult(result, IntPoint(x - tx, y - ty));
+    if (visibleToHitTesting() && action == HitTestForeground && IntRect(tx, ty, width(), height()).contains(xPos, yPos)) {
+        updateHitTestResult(result, IntPoint(xPos - tx, yPos - ty));
         return true;
     }
 
@@ -331,8 +534,8 @@ bool RenderBox::nodeAtPoint(const HitTestRequest& request, HitTestResult& result
 
 void RenderBox::paint(PaintInfo& paintInfo, int tx, int ty)
 {
-    tx += m_x;
-    ty += m_y;
+    tx += x();
+    ty += y();
 
     // default implementation. Just pass paint through to the children
     PaintInfo childInfo(paintInfo);
@@ -345,7 +548,7 @@ void RenderBox::paintRootBoxDecorations(PaintInfo& paintInfo, int tx, int ty)
 {
     const FillLayer* bgLayer = style()->backgroundLayers();
     Color bgColor = style()->backgroundColor();
-    if (!style()->hasBackground() && element() && element()->hasTagName(HTMLNames::htmlTag)) {
+    if (!style()->hasBackground() && node() && node()->hasTagName(HTMLNames::htmlTag)) {
         // Locate the <body> element using the DOM.  This is easier than trying
         // to crawl around a render tree with potential :before/:after content and
         // anonymous blocks created by inline <body> tags etc.  We can locate the <body>
@@ -398,8 +601,7 @@ void RenderBox::paintBoxDecorations(PaintInfo& paintInfo, int tx, int ty)
     }
 
     int w = width();
-    int h = height() + borderTopExtra() + borderBottomExtra();
-    ty -= borderTopExtra();
+    int h = height();
 
     // border-fit can adjust where we paint our border and background.  If set, we snugly fit our line box descendants.  (The iChat
     // balloon layout is an example of this).
@@ -440,8 +642,7 @@ void RenderBox::paintMask(PaintInfo& paintInfo, int tx, int ty)
         return;
 
     int w = width();
-    int h = height() + borderTopExtra() + borderBottomExtra();
-    ty -= borderTopExtra();
+    int h = height();
 
     // border-fit can adjust where we paint our border and background.  If set, we snugly fit our line box descendants.  (The iChat
     // balloon layout is an example of this).
@@ -462,13 +663,24 @@ void RenderBox::paintMaskImages(const PaintInfo& paintInfo, int my, int mh, int 
     // Figure out if we need to push a transparency layer to render our mask.
     bool pushTransparencyLayer = false;
     StyleImage* maskBoxImage = style()->maskBoxImage().image();
-    if ((maskBoxImage && style()->maskLayers()->hasImage()) || style()->maskLayers()->next())
+    if (maskBoxImage && style()->maskLayers()->hasImage()) {
+        pushTransparencyLayer = true;
+    } else {
         // We have to use an extra image buffer to hold the mask. Multiple mask images need
         // to composite together using source-over so that they can then combine into a single unified mask that
         // can be composited with the content using destination-in.  SVG images need to be able to set compositing modes
         // as they draw images contained inside their sub-document, so we paint all our images into a separate buffer
         // and composite that buffer as the mask.
-        pushTransparencyLayer = true;
+        // We have to check that the mask images to be rendered contain at least one image that can be actually used in rendering
+        // before pushing the transparency layer.
+        for (const FillLayer* fillLayer = style()->maskLayers()->next(); fillLayer; fillLayer = fillLayer->next()) {
+            if (fillLayer->hasImage() && fillLayer->image()->canRender(style()->effectiveZoom())) {
+                pushTransparencyLayer = true;
+                // We found one image that can be used in rendering, exit the loop
+                break;
+            }
+        }
+    }
     
     CompositeOperator compositeOp = CompositeDestinationIn;
     if (pushTransparencyLayer) {
@@ -486,7 +698,7 @@ void RenderBox::paintMaskImages(const PaintInfo& paintInfo, int my, int mh, int 
 
 IntRect RenderBox::maskClipRect()
 {
-    IntRect bbox = borderBox();
+    IntRect bbox = borderBoxRect();
     if (style()->maskBoxImage().image())
         return bbox;
     
@@ -519,63 +731,25 @@ void RenderBox::paintFillLayer(const PaintInfo& paintInfo, const Color& c, const
     paintFillLayerExtended(paintInfo, c, fillLayer, clipY, clipH, tx, ty, width, height, 0, op);
 }
 
-IntSize RenderBox::calculateBackgroundSize(const FillLayer* bgLayer, int scaledWidth, int scaledHeight) const
-{
-    StyleImage* bg = bgLayer->image();
-    bg->setImageContainerSize(IntSize(scaledWidth, scaledHeight)); // Use the box established by background-origin.
-
-    if (bgLayer->isSizeSet()) {
-        int w = scaledWidth;
-        int h = scaledHeight;
-        Length bgWidth = bgLayer->size().width();
-        Length bgHeight = bgLayer->size().height();
-
-        if (bgWidth.isFixed())
-            w = bgWidth.value();
-        else if (bgWidth.isPercent())
-            w = bgWidth.calcValue(scaledWidth);
-        
-        if (bgHeight.isFixed())
-            h = bgHeight.value();
-        else if (bgHeight.isPercent())
-            h = bgHeight.calcValue(scaledHeight);
-        
-        // If one of the values is auto we have to use the appropriate
-        // scale to maintain our aspect ratio.
-        if (bgWidth.isAuto() && !bgHeight.isAuto())
-            w = bg->imageSize(this, style()->effectiveZoom()).width() * h / bg->imageSize(this, style()->effectiveZoom()).height();        
-        else if (!bgWidth.isAuto() && bgHeight.isAuto())
-            h = bg->imageSize(this, style()->effectiveZoom()).height() * w / bg->imageSize(this, style()->effectiveZoom()).width();
-        else if (bgWidth.isAuto() && bgHeight.isAuto()) {
-            // If both width and height are auto, we just want to use the image's
-            // intrinsic size.
-            w = bg->imageSize(this, style()->effectiveZoom()).width();
-            h = bg->imageSize(this, style()->effectiveZoom()).height();
-        }
-        
-        return IntSize(max(1, w), max(1, h));
-    } else
-        return bg->imageSize(this, style()->effectiveZoom());
-}
-
 void RenderBox::imageChanged(WrappedImagePtr image, const IntRect*)
 {
-    if (isInlineFlow() ||
-        style()->borderImage().image() && style()->borderImage().image()->data() == image ||
-        style()->maskBoxImage().image() && style()->maskBoxImage().image()->data() == image) {
+    if (!parent())
+        return;
+
+    if ((style()->borderImage().image() && style()->borderImage().image()->data() == image) ||
+        (style()->maskBoxImage().image() && style()->maskBoxImage().image()->data() == image)) {
         repaint();
         return;
     }
 
     bool didFullRepaint = repaintLayerRectsForImage(image, style()->backgroundLayers(), true);
-    if (!didFullRepaint) {
+    if (!didFullRepaint)
         repaintLayerRectsForImage(image, style()->maskLayers(), false);
-    }
 }
 
 bool RenderBox::repaintLayerRectsForImage(WrappedImagePtr image, const FillLayer* layers, bool drawingBackground)
 {
-    IntRect absoluteRect;
+    IntRect rendererRect;
     RenderBox* layerRenderer = 0;
 
     for (const FillLayer* curLayer = layers; curLayer; curLayer = curLayer->next()) {
@@ -590,285 +764,33 @@ bool RenderBox::repaintLayerRectsForImage(WrappedImagePtr image, const FillLayer
                     int rw;
                     int rh;
 
-                    if (FrameView* frameView = static_cast<RenderView*>(layerRenderer)->frameView()) {
+                    if (FrameView* frameView = toRenderView(layerRenderer)->frameView()) {
                         rw = frameView->contentsWidth();
                         rh = frameView->contentsHeight();
                     } else {
                         rw = layerRenderer->width();
                         rh = layerRenderer->height();
                     }
-                    absoluteRect = IntRect(-layerRenderer->marginLeft(),
+                    rendererRect = IntRect(-layerRenderer->marginLeft(),
                         -layerRenderer->marginTop(),
                         max(layerRenderer->width() + layerRenderer->marginLeft() + layerRenderer->marginRight() + layerRenderer->borderLeft() + layerRenderer->borderRight(), rw),
                         max(layerRenderer->height() + layerRenderer->marginTop() + layerRenderer->marginBottom() + layerRenderer->borderTop() + layerRenderer->borderBottom(), rh));
                 } else {
                     layerRenderer = this;
-                    absoluteRect = borderBox();
+                    rendererRect = borderBoxRect();
                 }
-
-                layerRenderer->computeAbsoluteRepaintRect(absoluteRect);
             }
 
             IntRect repaintRect;
             IntPoint phase;
             IntSize tileSize;
-            layerRenderer->calculateBackgroundImageGeometry(curLayer, absoluteRect.x(), absoluteRect.y(), absoluteRect.width(), absoluteRect.height(), repaintRect, phase, tileSize);
-            view()->repaintViewRectangle(repaintRect);
-            if (repaintRect == absoluteRect)
+            layerRenderer->calculateBackgroundImageGeometry(curLayer, rendererRect.x(), rendererRect.y(), rendererRect.width(), rendererRect.height(), repaintRect, phase, tileSize);
+            layerRenderer->repaintRectangle(repaintRect);
+            if (repaintRect == rendererRect)
                 return true;
         }
     }
     return false;
-}
-
-void RenderBox::calculateBackgroundImageGeometry(const FillLayer* bgLayer, int tx, int ty, int w, int h, IntRect& destRect, IntPoint& phase, IntSize& tileSize)
-{
-    int pw;
-    int ph;
-    int left = 0;
-    int right = 0;
-    int top = 0;
-    int bottom = 0;
-    int cx;
-    int cy;
-    int rw = 0;
-    int rh = 0;
-
-    // CSS2 chapter 14.2.1
-
-    if (bgLayer->attachment()) {
-        // Scroll
-        if (bgLayer->origin() != BorderFillBox) {
-            left = borderLeft();
-            right = borderRight();
-            top = borderTop();
-            bottom = borderBottom();
-            if (bgLayer->origin() == ContentFillBox) {
-                left += paddingLeft();
-                right += paddingRight();
-                top += paddingTop();
-                bottom += paddingBottom();
-            }
-        }
-        
-        // The background of the box generated by the root element covers the entire canvas including
-        // its margins.  Since those were added in already, we have to factor them out when computing the
-        // box used by background-origin/size/position.
-        if (isRoot()) {
-            rw = width() - left - right;
-            rh = height() - top - bottom; 
-            left += marginLeft();
-            right += marginRight();
-            top += marginTop();
-            bottom += marginBottom();
-        }
-        cx = tx;
-        cy = ty;
-        pw = w - left - right;
-        ph = h - top - bottom;
-    } else {
-        // Fixed
-        IntRect vr = viewRect();
-        cx = vr.x();
-        cy = vr.y();
-        pw = vr.width();
-        ph = vr.height();
-    }
-
-    int sx = 0;
-    int sy = 0;
-    int cw;
-    int ch;
-
-    IntSize scaledImageSize;
-    if (isRoot() && bgLayer->attachment())
-        scaledImageSize = calculateBackgroundSize(bgLayer, rw, rh);
-    else
-        scaledImageSize = calculateBackgroundSize(bgLayer, pw, ph);
-        
-    int scaledImageWidth = scaledImageSize.width();
-    int scaledImageHeight = scaledImageSize.height();
-
-    EFillRepeat backgroundRepeat = bgLayer->repeat();
-    
-    int xPosition;
-    if (isRoot() && bgLayer->attachment())
-        xPosition = bgLayer->xPosition().calcMinValue(rw - scaledImageWidth, true);
-    else
-        xPosition = bgLayer->xPosition().calcMinValue(pw - scaledImageWidth, true);
-    if (backgroundRepeat == RepeatFill || backgroundRepeat == RepeatXFill) {
-        cw = pw + left + right;
-        sx = scaledImageWidth ? scaledImageWidth - (xPosition + left) % scaledImageWidth : 0;
-    } else {
-        cx += max(xPosition + left, 0);
-        sx = -min(xPosition + left, 0);
-        cw = scaledImageWidth + min(xPosition + left, 0);
-    }
-    
-    int yPosition;
-    if (isRoot() && bgLayer->attachment())
-        yPosition = bgLayer->yPosition().calcMinValue(rh - scaledImageHeight, true);
-    else 
-        yPosition = bgLayer->yPosition().calcMinValue(ph - scaledImageHeight, true);
-    if (backgroundRepeat == RepeatFill || backgroundRepeat == RepeatYFill) {
-        ch = ph + top + bottom;
-        sy = scaledImageHeight ? scaledImageHeight - (yPosition + top) % scaledImageHeight : 0;
-    } else {
-        cy += max(yPosition + top, 0);
-        sy = -min(yPosition + top, 0);
-        ch = scaledImageHeight + min(yPosition + top, 0);
-    }
-
-    if (!bgLayer->attachment()) {
-        sx += max(tx - cx, 0);
-        sy += max(ty - cy, 0);
-    }
-
-    destRect = IntRect(cx, cy, cw, ch);
-    destRect.intersect(IntRect(tx, ty, w, h));
-    phase = IntPoint(sx, sy);
-    tileSize = IntSize(scaledImageWidth, scaledImageHeight);
-}
-
-void RenderBox::paintFillLayerExtended(const PaintInfo& paintInfo, const Color& c, const FillLayer* bgLayer, int clipY, int clipH,
-                                       int tx, int ty, int w, int h, InlineFlowBox* box, CompositeOperator op)
-{
-    GraphicsContext* context = paintInfo.context;
-    bool includeLeftEdge = box ? box->includeLeftEdge() : true;
-    bool includeRightEdge = box ? box->includeRightEdge() : true;
-    int bLeft = includeLeftEdge ? borderLeft() : 0;
-    int bRight = includeRightEdge ? borderRight() : 0;
-    int pLeft = includeLeftEdge ? paddingLeft() : 0;
-    int pRight = includeRightEdge ? paddingRight() : 0;
-
-    bool clippedToBorderRadius = false;
-    if (style()->hasBorderRadius() && (includeLeftEdge || includeRightEdge)) {
-        context->save();
-        context->addRoundedRectClip(IntRect(tx, ty, w, h),
-            includeLeftEdge ? style()->borderTopLeftRadius() : IntSize(),
-            includeRightEdge ? style()->borderTopRightRadius() : IntSize(),
-            includeLeftEdge ? style()->borderBottomLeftRadius() : IntSize(),
-            includeRightEdge ? style()->borderBottomRightRadius() : IntSize());
-        clippedToBorderRadius = true;
-    }
-
-    if (bgLayer->clip() == PaddingFillBox || bgLayer->clip() == ContentFillBox) {
-        // Clip to the padding or content boxes as necessary.
-        bool includePadding = bgLayer->clip() == ContentFillBox;
-        int x = tx + bLeft + (includePadding ? pLeft : 0);
-        int y = ty + borderTop() + (includePadding ? paddingTop() : 0);
-        int width = w - bLeft - bRight - (includePadding ? pLeft + pRight : 0);
-        int height = h - borderTop() - borderBottom() - (includePadding ? paddingTop() + paddingBottom() : 0);
-        context->save();
-        context->clip(IntRect(x, y, width, height));
-    } else if (bgLayer->clip() == TextFillBox) {
-        // We have to draw our text into a mask that can then be used to clip background drawing.
-        // First figure out how big the mask has to be.  It should be no bigger than what we need
-        // to actually render, so we should intersect the dirty rect with the border box of the background.
-        IntRect maskRect(tx, ty, w, h);
-        maskRect.intersect(paintInfo.rect);
-        
-        // Now create the mask.
-        auto_ptr<ImageBuffer> maskImage = ImageBuffer::create(maskRect.size(), false);
-        if (!maskImage.get())
-            return;
-        
-        GraphicsContext* maskImageContext = maskImage->context();
-        maskImageContext->translate(-maskRect.x(), -maskRect.y());
-        
-        // Now add the text to the clip.  We do this by painting using a special paint phase that signals to
-        // InlineTextBoxes that they should just add their contents to the clip.
-        PaintInfo info(maskImageContext, maskRect, PaintPhaseTextClip, true, 0, 0);
-        if (box)
-            box->paint(info, tx - box->xPos(), ty - box->yPos());
-        else
-            paint(info, tx, ty);
-            
-        // The mask has been created.  Now we just need to clip to it.
-        context->save();
-        context->clipToImageBuffer(maskRect, maskImage.get());
-    }
-    
-    StyleImage* bg = bgLayer->image();
-    bool shouldPaintBackgroundImage = bg && bg->canRender(style()->effectiveZoom());
-    Color bgColor = c;
-
-    // When this style flag is set, change existing background colors and images to a solid white background.
-    // If there's no bg color or image, leave it untouched to avoid affecting transparency.
-    // We don't try to avoid loading the background images, because this style flag is only set
-    // when printing, and at that point we've already loaded the background images anyway. (To avoid
-    // loading the background images we'd have to do this check when applying styles rather than
-    // while rendering.)
-    if (style()->forceBackgroundsToWhite()) {
-        // Note that we can't reuse this variable below because the bgColor might be changed
-        bool shouldPaintBackgroundColor = !bgLayer->next() && bgColor.isValid() && bgColor.alpha() > 0;
-        if (shouldPaintBackgroundImage || shouldPaintBackgroundColor) {
-            bgColor = Color::white;
-            shouldPaintBackgroundImage = false;
-        }
-    }
-
-    // Only fill with a base color (e.g., white) if we're the root document, since iframes/frames with
-    // no background in the child document should show the parent's background.
-    bool isTransparent = false;
-    if (!bgLayer->next() && isRoot() && !(bgColor.isValid() && bgColor.alpha() > 0) && view()->frameView()) {
-        Node* elt = document()->ownerElement();
-        if (elt) {
-            if (!elt->hasTagName(frameTag)) {
-                // Locate the <body> element using the DOM.  This is easier than trying
-                // to crawl around a render tree with potential :before/:after content and
-                // anonymous blocks created by inline <body> tags etc.  We can locate the <body>
-                // render object very easily via the DOM.
-                HTMLElement* body = document()->body();
-                isTransparent = !body || !body->hasLocalName(framesetTag); // Can't scroll a frameset document anyway.
-            }
-        } else
-            isTransparent = view()->frameView()->isTransparent();
-
-        // FIXME: This needs to be dynamic.  We should be able to go back to blitting if we ever stop being transparent.
-        if (isTransparent)
-            view()->frameView()->setUseSlowRepaints(); // The parent must show behind the child.
-    }
-
-    // Paint the color first underneath all images.
-    if (!bgLayer->next()) {
-        IntRect rect(tx, clipY, w, clipH);
-        // If we have an alpha and we are painting the root element, go ahead and blend with the base background color.
-        if (isRoot() && (!bgColor.isValid() || bgColor.alpha() < 0xFF) && !isTransparent) {
-            Color baseColor = view()->frameView()->baseBackgroundColor();
-            if (baseColor.alpha() > 0) {
-                context->save();
-                context->setCompositeOperation(CompositeCopy);
-                context->fillRect(rect, baseColor);
-                context->restore();
-            } else
-                context->clearRect(rect);
-        }
-
-        if (bgColor.isValid() && bgColor.alpha() > 0)
-            context->fillRect(rect, bgColor);
-    }
-
-    // no progressive loading of the background image
-    if (shouldPaintBackgroundImage) {
-        IntRect destRect;
-        IntPoint phase;
-        IntSize tileSize;
-
-        calculateBackgroundImageGeometry(bgLayer, tx, ty, w, h, destRect, phase, tileSize);
-        if (!destRect.isEmpty()) {
-            CompositeOperator compositeOp = op == CompositeSourceOver ? bgLayer->composite() : op;
-            context->drawTiledImage(bg->image(this, tileSize), destRect, phase, tileSize, compositeOp);
-        }
-    }
-
-    if (bgLayer->clip() != BorderFillBox)
-        // Undo the background clip
-        context->restore();
-
-    if (clippedToBorderRadius)
-        // Undo the border radius clip
-        context->restore();
 }
 
 #if PLATFORM(MAC)
@@ -885,18 +807,63 @@ void RenderBox::paintCustomHighlight(int tx, int ty, const AtomicString& type, b
     InlineBox* boxWrap = inlineBoxWrapper();
     RootInlineBox* r = boxWrap ? boxWrap->root() : 0;
     if (r) {
-        FloatRect rootRect(tx + r->xPos(), ty + r->selectionTop(), r->width(), r->selectionHeight());
-        FloatRect imageRect(tx + m_x, rootRect.y(), width(), rootRect.height());
+        FloatRect rootRect(tx + r->x(), ty + r->selectionTop(), r->width(), r->selectionHeight());
+        FloatRect imageRect(tx + x(), rootRect.y(), width(), rootRect.height());
         page->chrome()->client()->paintCustomHighlight(node(), type, imageRect, rootRect, behindText, false);
     } else {
-        FloatRect imageRect(tx + m_x, ty + m_y, width(), height());
+        FloatRect imageRect(tx + x(), ty + y(), width(), height());
         page->chrome()->client()->paintCustomHighlight(node(), type, imageRect, imageRect, behindText, false);
     }
 }
 
 #endif
 
-IntRect RenderBox::getOverflowClipRect(int tx, int ty)
+bool RenderBox::pushContentsClip(PaintInfo& paintInfo, int tx, int ty)
+{
+    if (paintInfo.phase == PaintPhaseBlockBackground || paintInfo.phase == PaintPhaseSelfOutline || paintInfo.phase == PaintPhaseMask)
+        return false;
+        
+    bool isControlClip = hasControlClip();
+    bool isOverflowClip = hasOverflowClip() && !layer()->isSelfPaintingLayer();
+    
+    if (!isControlClip && !isOverflowClip)
+        return false;
+    
+    if (paintInfo.phase == PaintPhaseOutline)
+        paintInfo.phase = PaintPhaseChildOutlines;
+    else if (paintInfo.phase == PaintPhaseChildBlockBackground) {
+        paintInfo.phase = PaintPhaseBlockBackground;
+        paintObject(paintInfo, tx, ty);
+        paintInfo.phase = PaintPhaseChildBlockBackgrounds;
+    }
+    IntRect clipRect(isControlClip ? controlClipRect(tx, ty) : overflowClipRect(tx, ty));
+    paintInfo.context->save();
+    if (style()->hasBorderRadius()) {
+        IntSize topLeft, topRight, bottomLeft, bottomRight;
+        IntRect borderRect = IntRect(tx, ty, width(), height());
+        style()->getBorderRadiiForRect(borderRect, topLeft, topRight, bottomLeft, bottomRight);
+
+        paintInfo.context->addRoundedRectClip(borderRect, topLeft, topRight, bottomLeft, bottomRight);
+    }
+    
+    paintInfo.context->clip(clipRect);
+    return true;
+}
+
+void RenderBox::popContentsClip(PaintInfo& paintInfo, PaintPhase originalPhase, int tx, int ty)
+{
+    ASSERT(hasControlClip() || (hasOverflowClip() && !layer()->isSelfPaintingLayer()));
+
+    paintInfo.context->restore();
+    if (originalPhase == PaintPhaseOutline) {
+        paintInfo.phase = PaintPhaseSelfOutline;
+        paintObject(paintInfo, tx, ty);
+        paintInfo.phase = originalPhase;
+    } else if (originalPhase == PaintPhaseChildBlockBackground)
+        paintInfo.phase = originalPhase;
+}
+
+IntRect RenderBox::overflowClipRect(int tx, int ty)
 {
     // FIXME: When overflow-clip (CSS3) is implemented, we'll obtain the property
     // here.
@@ -906,103 +873,68 @@ IntRect RenderBox::getOverflowClipRect(int tx, int ty)
 
     int clipX = tx + bLeft;
     int clipY = ty + bTop;
-    int clipWidth = m_width - bLeft - borderRight();
-    int clipHeight = m_height - bTop - borderBottom() + borderTopExtra() + borderBottomExtra();
+    int clipWidth = width() - bLeft - borderRight();
+    int clipHeight = height() - bTop - borderBottom();
 
     // Subtract out scrollbars if we have them.
-    if (m_layer) {
-        clipWidth -= m_layer->verticalScrollbarWidth();
-        clipHeight -= m_layer->horizontalScrollbarHeight();
+    if (layer()) {
+        clipWidth -= layer()->verticalScrollbarWidth();
+        clipHeight -= layer()->horizontalScrollbarHeight();
     }
 
     return IntRect(clipX, clipY, clipWidth, clipHeight);
 }
 
-IntRect RenderBox::getClipRect(int tx, int ty)
+IntRect RenderBox::clipRect(int tx, int ty)
 {
     int clipX = tx;
     int clipY = ty;
-    int clipWidth = m_width;
-    int clipHeight = m_height;
+    int clipWidth = width();
+    int clipHeight = height();
 
     if (!style()->clipLeft().isAuto()) {
-        int c = style()->clipLeft().calcValue(m_width);
+        int c = style()->clipLeft().calcValue(width());
         clipX += c;
         clipWidth -= c;
     }
 
     if (!style()->clipRight().isAuto())
-        clipWidth -= m_width - style()->clipRight().calcValue(m_width);
+        clipWidth -= width() - style()->clipRight().calcValue(width());
 
     if (!style()->clipTop().isAuto()) {
-        int c = style()->clipTop().calcValue(m_height);
+        int c = style()->clipTop().calcValue(height());
         clipY += c;
         clipHeight -= c;
     }
 
     if (!style()->clipBottom().isAuto())
-        clipHeight -= m_height - style()->clipBottom().calcValue(m_height);
+        clipHeight -= height() - style()->clipBottom().calcValue(height());
 
     return IntRect(clipX, clipY, clipWidth, clipHeight);
 }
 
-int RenderBox::containingBlockWidth() const
+int RenderBox::containingBlockWidthForContent() const
 {
     RenderBlock* cb = containingBlock();
-    if (!cb)
-        return 0;
     if (shrinkToAvoidFloats())
-        return cb->lineWidth(m_y);
+        return cb->lineWidth(y(), false);
     return cb->availableWidth();
 }
 
-IntSize RenderBox::offsetForPositionedInContainer(RenderObject* container) const
+void RenderBox::mapLocalToContainer(RenderBoxModelObject* repaintContainer, bool fixed, bool useTransforms, TransformState& transformState) const
 {
-    if (!container->isRelPositioned() || !container->isInlineFlow())
-        return IntSize();
+    if (repaintContainer == this)
+        return;
 
-    // When we have an enclosing relpositioned inline, we need to add in the offset of the first line
-    // box from the rest of the content, but only in the cases where we know we're positioned
-    // relative to the inline itself.
-
-    IntSize offset;
-    RenderFlow* flow = static_cast<RenderFlow*>(container);
-    int sx;
-    int sy;
-    if (flow->firstLineBox()) {
-        sx = flow->firstLineBox()->xPos();
-        sy = flow->firstLineBox()->yPos();
-    } else {
-        sx = flow->staticX();
-        sy = flow->staticY();
-    }
-
-    if (!hasStaticX())
-        offset.setWidth(sx);
-    // This is not terribly intuitive, but we have to match other browsers.  Despite being a block display type inside
-    // an inline, we still keep our x locked to the left of the relative positioned inline.  Arguably the correct
-    // behavior would be to go flush left to the block that contains the inline, but that isn't what other browsers
-    // do.
-    else if (!style()->isOriginalDisplayInlineType())
-        // Avoid adding in the left border/padding of the containing block twice.  Subtract it out.
-        offset.setWidth(sx - (containingBlock()->borderLeft() + containingBlock()->paddingLeft()));
-
-    if (!hasStaticY())
-        offset.setHeight(sy);
-
-    return offset;
-}
-
-FloatPoint RenderBox::localToAbsolute(FloatPoint localPoint, bool fixed, bool useTransforms) const
-{
     if (RenderView* v = view()) {
-        if (LayoutState* layoutState = v->layoutState()) {
+        if (v->layoutStateEnabled() && !repaintContainer) {
+            LayoutState* layoutState = v->layoutState();
             IntSize offset = layoutState->m_offset;
-            offset.expand(m_x, m_y);
-            localPoint += offset;
-            if (style()->position() == RelativePosition && m_layer)
-                localPoint += m_layer->relativePositionOffset();
-            return localPoint;
+            offset.expand(x(), y());
+            if (style()->position() == RelativePosition && layer())
+                offset += layer()->relativePositionOffset();
+            transformState.move(offset);
+            return;
         }
     }
 
@@ -1010,73 +942,53 @@ FloatPoint RenderBox::localToAbsolute(FloatPoint localPoint, bool fixed, bool us
         fixed = true;
 
     RenderObject* o = container();
-    if (o) {
-        if (useTransforms && m_layer && m_layer->transform()) {
-            fixed = false;  // Elements with transforms act as a containing block for fixed position descendants
-            localPoint = m_layer->transform()->mapPoint(localPoint);
-        }
+    if (!o)
+        return;
 
-        localPoint += offsetFromContainer(o);
+    bool hasTransform = hasLayer() && layer()->transform();
+    if (hasTransform)
+        fixed = false;  // Elements with transforms act as a containing block for fixed position descendants
 
-        return o->localToAbsoluteForContent(localPoint, fixed, useTransforms);
-    }
-    
-    return FloatPoint();
+    IntSize containerOffset = offsetFromContainer(o);
+
+    bool preserve3D = useTransforms && (o->style()->preserves3D() || style()->preserves3D());
+    if (useTransforms && shouldUseTransformFromContainer(o)) {
+        TransformationMatrix t;
+        getTransformFromContainer(o, containerOffset, t);
+        transformState.applyTransform(t, preserve3D ? TransformState::AccumulateTransform : TransformState::FlattenTransform);
+    } else
+        transformState.move(containerOffset.width(), containerOffset.height(), preserve3D ? TransformState::AccumulateTransform : TransformState::FlattenTransform);
+
+    o->mapLocalToContainer(repaintContainer, fixed, useTransforms, transformState);
 }
 
-FloatPoint RenderBox::absoluteToLocal(FloatPoint containerPoint, bool fixed, bool useTransforms) const
+void RenderBox::mapAbsoluteToLocalPoint(bool fixed, bool useTransforms, TransformState& transformState) const
 {
     // We don't expect absoluteToLocal() to be called during layout (yet)
-    ASSERT(!view() || !view()->layoutState());
+    ASSERT(!view() || !view()->layoutStateEnabled());
     
     if (style()->position() == FixedPosition)
         fixed = true;
 
-    if (useTransforms && m_layer && m_layer->transform())
-        fixed = false;
+    bool hasTransform = hasLayer() && layer()->transform();
+    if (hasTransform)
+        fixed = false;  // Elements with transforms act as a containing block for fixed position descendants
     
     RenderObject* o = container();
-    if (o) {
-        FloatPoint localPoint = o->absoluteToLocal(containerPoint, fixed, useTransforms);
+    if (!o)
+        return;
 
-        // Take into account space above a vertically aligned table cell
-        // (see localToAbsoluteForContent())
-        localPoint.move(0.0f, -static_cast<float>(borderTopExtra()));
+    o->mapAbsoluteToLocalPoint(fixed, useTransforms, transformState);
 
-        localPoint -= offsetFromContainer(o);
+    IntSize containerOffset = offsetFromContainer(o);
 
-        if (useTransforms && m_layer && m_layer->transform())
-            localPoint = m_layer->transform()->inverse().mapPoint(localPoint);
-        
-        return localPoint;
-    }
-    
-    return FloatPoint();
-}
-
-FloatQuad RenderBox::localToAbsoluteQuad(const FloatQuad& localQuad, bool fixed) const
-{
-    if (style()->position() == FixedPosition)
-        fixed = true;
-
-    RenderObject* o = container();
-    if (o) {
-        FloatQuad quad = localQuad;
-        if (m_layer && m_layer->transform()) {
-            fixed = false;  // Elements with transforms act as a containing block for fixed position descendants
-            quad = m_layer->transform()->mapQuad(quad);
-        }
-
-        quad += offsetFromContainer(o);
-
-        // Take into account space above a vertically aligned table cell
-        // (see localToAbsoluteForContent())
-        quad.move(0.0f, static_cast<float>(o->borderTopExtra()));
-
-        return o->localToAbsoluteQuad(quad, fixed);
-    }
-    
-    return FloatQuad();
+    bool preserve3D = useTransforms && (o->style()->preserves3D() || style()->preserves3D());
+    if (useTransforms && shouldUseTransformFromContainer(o)) {
+        TransformationMatrix t;
+        getTransformFromContainer(o, containerOffset, t);
+        transformState.applyTransform(t, preserve3D ? TransformState::AccumulateTransform : TransformState::FlattenTransform);
+    } else
+        transformState.move(-containerOffset.width(), -containerOffset.height(), preserve3D ? TransformState::AccumulateTransform : TransformState::FlattenTransform);
 }
 
 IntSize RenderBox::offsetFromContainer(RenderObject* o) const
@@ -1090,24 +1002,29 @@ IntSize RenderBox::offsetFromContainer(RenderObject* o) const
     if (!isInline() || isReplaced()) {
         RenderBlock* cb;
         if (o->isBlockFlow() && style()->position() != AbsolutePosition && style()->position() != FixedPosition
-                && (cb = static_cast<RenderBlock*>(o))->hasColumns()) {
-            IntRect rect(m_x, m_y, 1, 1);
+                && (cb = toRenderBlock(o))->hasColumns()) {
+            IntRect rect(x(), y(), 1, 1);
             cb->adjustRectForColumns(rect);
             offset.expand(rect.x(), rect.y());
         } else
-            offset.expand(m_x, m_y);
+            offset.expand(x(), y());
     }
 
     if (o->hasOverflowClip())
-        offset -= o->layer()->scrolledContentOffset();
+        offset -= toRenderBox(o)->layer()->scrolledContentOffset();
 
-    if (style()->position() == AbsolutePosition)
-        offset += offsetForPositionedInContainer(o);
+    if (style()->position() == AbsolutePosition && o->isRelPositioned() && o->isRenderInline())
+        offset += toRenderInline(o)->relativePositionedInlineOffset(this);
 
     return offset;
 }
 
-void RenderBox::dirtyLineBoxes(bool fullLayout, bool /*isRootLineBox*/)
+InlineBox* RenderBox::createInlineBox()
+{
+    return new (renderArena()) InlineBox(this);
+}
+
+void RenderBox::dirtyLineBoxes(bool fullLayout)
 {
     if (m_inlineBoxWrapper) {
         if (fullLayout) {
@@ -1118,23 +1035,23 @@ void RenderBox::dirtyLineBoxes(bool fullLayout, bool /*isRootLineBox*/)
     }
 }
 
-void RenderBox::position(InlineBox* box)
+void RenderBox::positionLineBox(InlineBox* box)
 {
     if (isPositioned()) {
         // Cache the x position only if we were an INLINE type originally.
         bool wasInline = style()->isOriginalDisplayInlineType();
-        if (wasInline && hasStaticX()) {
+        if (wasInline && style()->hasStaticX()) {
             // The value is cached in the xPos of the box.  We only need this value if
             // our object was inline originally, since otherwise it would have ended up underneath
             // the inlines.
-            setStaticX(box->xPos());
+            layer()->setStaticX(box->x());
             setChildNeedsLayout(true, false); // Just go ahead and mark the positioned object as needing layout, so it will update its position properly.
-        } else if (!wasInline && hasStaticY()) {
+        } else if (!wasInline && style()->hasStaticY()) {
             // Our object was a block originally, so we make our normal flow position be
             // just below the line box (as though all the inlines that came before us got
             // wrapped in an anonymous block, which is what would have happened had we been
-            // in flow).  This value was cached in the yPos() of the box.
-            setStaticY(box->yPos());
+            // in flow).  This value was cached in the y() of the box.
+            layer()->setStaticY(box->y());
             setChildNeedsLayout(true, false); // Just go ahead and mark the positioned object as needing layout, so it will update its position properly.
         }
 
@@ -1142,8 +1059,7 @@ void RenderBox::position(InlineBox* box)
         box->remove();
         box->destroy(renderArena());
     } else if (isReplaced()) {
-        m_x = box->xPos();
-        m_y = box->yPos();
+        setLocation(box->x(), box->y());
         m_inlineBoxWrapper = box;
     }
 }
@@ -1158,7 +1074,7 @@ void RenderBox::deleteLineBoxWrapper()
     }
 }
 
-IntRect RenderBox::absoluteClippedOverflowRect()
+IntRect RenderBox::clippedOverflowRectForRepaint(RenderBoxModelObject* repaintContainer)
 {
     if (style()->visibility() != VISIBLE && !enclosingLayer()->hasVisibleContent())
         return IntRect();
@@ -1166,9 +1082,12 @@ IntRect RenderBox::absoluteClippedOverflowRect()
     IntRect r = overflowRect(false);
 
     RenderView* v = view();
-    if (v)
+    if (v) {
+        // FIXME: layoutDelta needs to be applied in parts before/after transforms and
+        // repaint containers. https://bugs.webkit.org/show_bug.cgi?id=23308
         r.move(v->layoutDelta());
-
+    }
+    
     if (style()) {
         if (style()->hasAppearance())
             // The theme may wish to inflate the rect used when repainting.
@@ -1181,18 +1100,24 @@ IntRect RenderBox::absoluteClippedOverflowRect()
             r.inflate(v->maximalOutlineSize());
         }
     }
-    computeAbsoluteRepaintRect(r);
+    computeRectForRepaint(repaintContainer, r);
     return r;
 }
 
-void RenderBox::computeAbsoluteRepaintRect(IntRect& rect, bool fixed)
+void RenderBox::computeRectForRepaint(RenderBoxModelObject* repaintContainer, IntRect& rect, bool fixed)
 {
     if (RenderView* v = view()) {
-        if (LayoutState* layoutState = v->layoutState()) {
-            if (style()->position() == RelativePosition && m_layer)
-                rect.move(m_layer->relativePositionOffset());
+        // LayoutState is only valid for root-relative repainting
+        if (v->layoutStateEnabled() && !repaintContainer) {
+            LayoutState* layoutState = v->layoutState();
 
-            rect.move(m_x, m_y);
+            if (layer() && layer()->transform())
+                rect = layer()->transform()->mapRect(rect);
+
+            if (style()->position() == RelativePosition && layer())
+                rect.move(layer()->relativePositionOffset());
+
+            rect.move(x(), y());
             rect.move(layoutState->m_offset);
             if (layoutState->m_clipped)
                 rect.intersect(layoutState->m_clipRect);
@@ -1203,18 +1128,21 @@ void RenderBox::computeAbsoluteRepaintRect(IntRect& rect, bool fixed)
     if (hasReflection())
         rect.unite(reflectedRect(rect));
 
+    if (repaintContainer == this)
+        return;
+
     RenderObject* o = container();
     if (!o)
         return;
 
     IntPoint topLeft = rect.location();
-    topLeft.move(m_x, m_y);
+    topLeft.move(x(), y());
 
     if (style()->position() == FixedPosition)
         fixed = true;
 
     if (o->isBlockFlow() && style()->position() != AbsolutePosition && style()->position() != FixedPosition) {
-        RenderBlock* cb = static_cast<RenderBlock*>(o);
+        RenderBlock* cb = toRenderBlock(o);
         if (cb->hasColumns()) {
             IntRect repaintRect(topLeft, rect.size());
             cb->adjustRectForColumns(repaintRect);
@@ -1225,90 +1153,61 @@ void RenderBox::computeAbsoluteRepaintRect(IntRect& rect, bool fixed)
 
     // We are now in our parent container's coordinate space.  Apply our transform to obtain a bounding box
     // in the parent's coordinate space that encloses us.
-    if (m_layer && m_layer->transform()) {
+    if (layer() && layer()->transform()) {
         fixed = false;
-        rect = m_layer->transform()->mapRect(rect);
+        rect = layer()->transform()->mapRect(rect);
         // FIXME: this clobbers topLeft adjustment done for multicol above
         topLeft = rect.location();
-        topLeft.move(m_x, m_y);
+        topLeft.move(x(), y());
     }
 
-    if (style()->position() == AbsolutePosition)
-        topLeft += offsetForPositionedInContainer(o);
-    else if (style()->position() == RelativePosition && m_layer) {
+    if (style()->position() == AbsolutePosition && o->isRelPositioned() && o->isRenderInline())
+        topLeft += toRenderInline(o)->relativePositionedInlineOffset(this);
+    else if (style()->position() == RelativePosition && layer()) {
         // Apply the relative position offset when invalidating a rectangle.  The layer
         // is translated, but the render box isn't, so we need to do this to get the
         // right dirty rect.  Since this is called from RenderObject::setStyle, the relative position
         // flag on the RenderObject has been cleared, so use the one on the style().
-        topLeft += m_layer->relativePositionOffset();
+        topLeft += layer()->relativePositionOffset();
     }
     
     // FIXME: We ignore the lightweight clipping rect that controls use, since if |o| is in mid-layout,
     // its controlClipRect will be wrong. For overflow clip we use the values cached by the layer.
     if (o->hasOverflowClip()) {
+        RenderBox* containerBox = toRenderBox(o);
+
         // o->height() is inaccurate if we're in the middle of a layout of |o|, so use the
         // layer's size instead.  Even if the layer's size is wrong, the layer itself will repaint
         // anyway if its size does change.
-        topLeft -= o->layer()->scrolledContentOffset(); // For overflow:auto/scroll/hidden.
+        topLeft -= containerBox->layer()->scrolledContentOffset(); // For overflow:auto/scroll/hidden.
 
         IntRect repaintRect(topLeft, rect.size());
-        IntRect boxRect(0, 0, o->layer()->width(), o->layer()->height());
+        IntRect boxRect(0, 0, containerBox->layer()->width(), containerBox->layer()->height());
         rect = intersection(repaintRect, boxRect);
         if (rect.isEmpty())
             return;
     } else
         rect.setLocation(topLeft);
     
-    o->computeAbsoluteRepaintRect(rect, fixed);
+    o->computeRectForRepaint(repaintContainer, rect, fixed);
 }
 
 void RenderBox::repaintDuringLayoutIfMoved(const IntRect& rect)
 {
-    int newX = m_x;
-    int newY = m_y;
-    int newWidth = m_width;
-    int newHeight = m_height;
+    int newX = x();
+    int newY = y();
+    int newWidth = width();
+    int newHeight = height();
     if (rect.x() != newX || rect.y() != newY) {
         // The child moved.  Invalidate the object's old and new positions.  We have to do this
         // since the object may not have gotten a layout.
-        m_x = rect.x();
-        m_y = rect.y();
-        m_width = rect.width();
-        m_height = rect.height();
+        m_frameRect = rect;
         repaint();
         repaintOverhangingFloats(true);
-
-        m_x = newX;
-        m_y = newY;
-        m_width = newWidth;
-        m_height = newHeight;
+        m_frameRect = IntRect(newX, newY, newWidth, newHeight);
         repaint();
         repaintOverhangingFloats(true);
     }
-}
-
-int RenderBox::relativePositionOffsetX() const
-{
-    if (!style()->left().isAuto()) {
-        if (!style()->right().isAuto() && containingBlock()->style()->direction() == RTL)
-            return -style()->right().calcValue(containingBlockWidth());
-        return style()->left().calcValue(containingBlockWidth());
-    }
-    if (!style()->right().isAuto())
-        return -style()->right().calcValue(containingBlockWidth());
-    return 0;
-}
-
-int RenderBox::relativePositionOffsetY() const
-{
-    if (!style()->top().isAuto()) {
-        if (!style()->top().isPercent() || containingBlock()->style()->height().isFixed())
-            return style()->top().calcValue(containingBlockHeight());
-    } else if (!style()->bottom().isAuto()) {
-        if (!style()->bottom().isPercent() || containingBlock()->style()->height().isFixed())
-            return -style()->bottom().calcValue(containingBlockHeight());
-    }
-    return 0;
 }
 
 void RenderBox::calcWidth()
@@ -1326,7 +1225,7 @@ void RenderBox::calcWidth()
     // width.  Use the width from the style context.
     if (hasOverrideSize() &&  parent()->style()->boxOrient() == HORIZONTAL
             && parent()->isFlexibleBox() && parent()->isFlexingChildren()) {
-        m_width = overrideSize();
+        setWidth(overrideSize());
         return;
     }
 
@@ -1334,10 +1233,10 @@ void RenderBox::calcWidth()
     bool stretching = (parent()->style()->boxAlign() == BSTRETCH);
     bool treatAsReplaced = shouldCalculateSizeAsReplaced() && (!inVerticalBox || !stretching);
 
-    Length width = (treatAsReplaced) ? Length(calcReplacedWidth(), Fixed) : style()->width();
+    Length w = (treatAsReplaced) ? Length(calcReplacedWidth(), Fixed) : style()->width();
 
     RenderBlock* cb = containingBlock();
-    int containerWidth = max(0, containingBlockWidth());
+    int containerWidth = max(0, containingBlockWidthForContent());
 
     Length marginLeft = style()->marginLeft();
     Length marginRight = style()->marginRight();
@@ -1347,42 +1246,42 @@ void RenderBox::calcWidth()
         m_marginLeft = marginLeft.calcMinValue(containerWidth);
         m_marginRight = marginRight.calcMinValue(containerWidth);
         if (treatAsReplaced)
-            m_width = max(width.value() + borderLeft() + borderRight() + paddingLeft() + paddingRight(), minPrefWidth());
+            setWidth(max(w.value() + borderLeft() + borderRight() + paddingLeft() + paddingRight(), minPrefWidth()));
 
         return;
     }
 
     // Width calculations
     if (treatAsReplaced)
-        m_width = width.value() + borderLeft() + borderRight() + paddingLeft() + paddingRight();
+        setWidth(w.value() + borderLeft() + borderRight() + paddingLeft() + paddingRight());
     else {
         // Calculate Width
-        m_width = calcWidthUsing(Width, containerWidth);
+        setWidth(calcWidthUsing(Width, containerWidth));
 
         // Calculate MaxWidth
         if (!style()->maxWidth().isUndefined()) {
             int maxW = calcWidthUsing(MaxWidth, containerWidth);
-            if (m_width > maxW) {
-                m_width = maxW;
-                width = style()->maxWidth();
+            if (width() > maxW) {
+                setWidth(maxW);
+                w = style()->maxWidth();
             }
         }
 
         // Calculate MinWidth
         int minW = calcWidthUsing(MinWidth, containerWidth);
-        if (m_width < minW) {
-            m_width = minW;
-            width = style()->minWidth();
+        if (width() < minW) {
+            setWidth(minW);
+            w = style()->minWidth();
         }
     }
 
     if (stretchesToMinIntrinsicWidth()) {
-        m_width = max(m_width, minPrefWidth());
-        width = Length(m_width, Fixed);
+        setWidth(max(width(), minPrefWidth()));
+        w = Length(width(), Fixed);
     }
 
     // Margin calculations
-    if (width.isAuto()) {
+    if (w.isAuto()) {
         m_marginLeft = marginLeft.calcMinValue(containerWidth);
         m_marginRight = marginRight.calcMinValue(containerWidth);
     } else {
@@ -1391,18 +1290,18 @@ void RenderBox::calcWidth()
         calcHorizontalMargins(marginLeft, marginRight, containerWidth);
     }
 
-    if (containerWidth && containerWidth != (m_width + m_marginLeft + m_marginRight)
+    if (containerWidth && containerWidth != (width() + m_marginLeft + m_marginRight)
             && !isFloating() && !isInline() && !cb->isFlexibleBox()) {
         if (cb->style()->direction() == LTR)
-            m_marginRight = containerWidth - m_width - m_marginLeft;
+            m_marginRight = containerWidth - width() - m_marginLeft;
         else
-            m_marginLeft = containerWidth - m_width - m_marginRight;
+            m_marginLeft = containerWidth - width() - m_marginRight;
     }
 }
 
 int RenderBox::calcWidthUsing(WidthType widthType, int cw)
 {
-    int width = m_width;
+    int widthResult = width();
     Length w;
     if (widthType == Width)
         w = style()->width();
@@ -1415,24 +1314,23 @@ int RenderBox::calcWidthUsing(WidthType widthType, int cw)
         int marginLeft = style()->marginLeft().calcMinValue(cw);
         int marginRight = style()->marginRight().calcMinValue(cw);
         if (cw)
-            width = cw - marginLeft - marginRight;
+            widthResult = cw - marginLeft - marginRight;
 
         if (sizesToIntrinsicWidth(widthType)) {
-            width = max(width, minPrefWidth());
-            width = min(width, maxPrefWidth());
+            widthResult = max(widthResult, minPrefWidth());
+            widthResult = min(widthResult, maxPrefWidth());
         }
     } else
-        width = calcBorderBoxWidth(w.calcValue(cw));
+        widthResult = calcBorderBoxWidth(w.calcValue(cw));
 
-    return width;
+    return widthResult;
 }
 
 bool RenderBox::sizesToIntrinsicWidth(WidthType widthType) const
 {
     // Marquees in WinIE are like a mixture of blocks and inline-blocks.  They size as though they're blocks,
     // but they allow text to sit on the same line as the marquee.
-    if (isFloating() || (isCompact() && isInline())
-            || (isInlineBlockOrInlineTable() && !isHTMLMarquee()))
+    if (isFloating() || (isInlineBlockOrInlineTable() && !isHTMLMarquee()))
         return true;
 
     // This code may look a bit strange.  Basically width:intrinsic should clamp the size when testing both
@@ -1467,20 +1365,20 @@ void RenderBox::calcHorizontalMargins(const Length& marginLeft, const Length& ma
         return;
     }
 
-    if ((marginLeft.isAuto() && marginRight.isAuto() && m_width < containerWidth)
+    if ((marginLeft.isAuto() && marginRight.isAuto() && width() < containerWidth)
             || (!marginLeft.isAuto() && !marginRight.isAuto() && containingBlock()->style()->textAlign() == WEBKIT_CENTER)) {
-        m_marginLeft = max(0, (containerWidth - m_width) / 2);
-        m_marginRight = containerWidth - m_width - m_marginLeft;
-    } else if ((marginRight.isAuto() && m_width < containerWidth)
+        m_marginLeft = max(0, (containerWidth - width()) / 2);
+        m_marginRight = containerWidth - width() - m_marginLeft;
+    } else if ((marginRight.isAuto() && width() < containerWidth)
             || (!marginLeft.isAuto() && containingBlock()->style()->direction() == RTL && containingBlock()->style()->textAlign() == WEBKIT_LEFT)) {
         m_marginLeft = marginLeft.calcValue(containerWidth);
-        m_marginRight = containerWidth - m_width - m_marginLeft;
-    } else if ((marginLeft.isAuto() && m_width < containerWidth)
+        m_marginRight = containerWidth - width() - m_marginLeft;
+    } else if ((marginLeft.isAuto() && width() < containerWidth)
             || (!marginRight.isAuto() && containingBlock()->style()->direction() == LTR && containingBlock()->style()->textAlign() == WEBKIT_RIGHT)) {
         m_marginRight = marginRight.calcValue(containerWidth);
-        m_marginLeft = containerWidth - m_width - m_marginRight;
+        m_marginLeft = containerWidth - width() - m_marginRight;
     } else {
-        // This makes auto margins 0 if we failed a m_width < containerWidth test above (css2.1, 10.3.3).
+        // This makes auto margins 0 if we failed a width() < containerWidth test above (css2.1, 10.3.3).
         m_marginLeft = marginLeft.calcMinValue(containerWidth);
         m_marginRight = marginRight.calcMinValue(containerWidth);
     }
@@ -1492,6 +1390,7 @@ void RenderBox::calcHeight()
     if (isTableCell() || (isInline() && !isReplaced()))
         return;
 
+    Length h;
     if (isPositioned())
         calcAbsoluteVertical();
     else {
@@ -1501,7 +1400,6 @@ void RenderBox::calcHeight()
         if (isTable())
             return;
 
-        Length h;
         bool inHorizontalBox = parent()->isFlexibleBox() && parent()->style()->boxOrient() == HORIZONTAL;
         bool stretching = parent()->style()->boxAlign() == BSTRETCH;
         bool treatAsReplaced = shouldCalculateSizeAsReplaced() && (!inHorizontalBox || !stretching);
@@ -1522,44 +1420,49 @@ void RenderBox::calcHeight()
         // Block children of horizontal flexible boxes fill the height of the box.
         if (h.isAuto() && parent()->isFlexibleBox() && parent()->style()->boxOrient() == HORIZONTAL
                 && parent()->isStretchingChildren()) {
-            h = Length(parent()->contentHeight() - marginTop() - marginBottom() -
+            h = Length(parentBox()->contentHeight() - marginTop() - marginBottom() -
                        borderTop() - paddingTop() - borderBottom() - paddingBottom(), Fixed);
             checkMinMaxHeight = false;
         }
 
-        int height;
+        int heightResult;
         if (checkMinMaxHeight) {
-            height = calcHeightUsing(style()->height());
-            if (height == -1)
-                height = m_height;
+            heightResult = calcHeightUsing(style()->height());
+            if (heightResult == -1)
+                heightResult = height();
             int minH = calcHeightUsing(style()->minHeight()); // Leave as -1 if unset.
-            int maxH = style()->maxHeight().isUndefined() ? height : calcHeightUsing(style()->maxHeight());
+            int maxH = style()->maxHeight().isUndefined() ? heightResult : calcHeightUsing(style()->maxHeight());
             if (maxH == -1)
-                maxH = height;
-            height = min(maxH, height);
-            height = max(minH, height);
-        } else
+                maxH = heightResult;
+            heightResult = min(maxH, heightResult);
+            heightResult = max(minH, heightResult);
+        } else {
             // The only times we don't check min/max height are when a fixed length has
             // been given as an override.  Just use that.  The value has already been adjusted
             // for box-sizing.
-            height = h.value() + borderTop() + borderBottom() + paddingTop() + paddingBottom();
+            heightResult = h.value() + borderTop() + borderBottom() + paddingTop() + paddingBottom();
+        }
 
-        m_height = height;
+        setHeight(heightResult);
     }
 
     // WinIE quirk: The <html> block always fills the entire canvas in quirks mode.  The <body> always fills the
     // <html> block in quirks mode.  Only apply this quirk if the block is normal flow and no height
-    // is specified.
-    if (stretchesToViewHeight() && !document()->printing()) {
+    // is specified. When we're printing, we also need this quirk if the body or root has a percentage 
+    // height since we don't set a height in RenderView when we're printing. So without this quirk, the 
+    // height has nothing to be a percentage of, and it ends up being 0. That is bad.
+    bool printingNeedsBaseHeight = document()->printing() && h.isPercent()
+        && (isRoot() || isBody() && document()->documentElement()->renderer()->style()->height().isPercent());
+    if (stretchesToViewHeight() || printingNeedsBaseHeight) {
         int margins = collapsedMarginTop() + collapsedMarginBottom();
-        int visHeight = view()->viewHeight();
+        int visHeight = document()->printing() ? view()->frameView()->visibleHeight() : view()->viewHeight();
         if (isRoot())
-            m_height = max(m_height, visHeight - margins);
+            setHeight(max(height(), visHeight - margins));
         else {
-            int marginsBordersPadding = margins + parent()->marginTop() + parent()->marginBottom()
-                + parent()->borderTop() + parent()->borderBottom()
-                + parent()->paddingTop() + parent()->paddingBottom();
-            m_height = max(m_height, visHeight - marginsBordersPadding);
+            int marginsBordersPadding = margins + parentBox()->marginTop() + parentBox()->marginBottom()
+                + parentBox()->borderTop() + parentBox()->borderBottom()
+                + parentBox()->paddingTop() + parentBox()->paddingBottom();
+            setHeight(max(height(), visHeight - marginsBordersPadding));
         }
     }
 }
@@ -1630,7 +1533,7 @@ int RenderBox::calcPercentageHeight(const Length& height)
         if (result != -1)
             result = cb->calcContentBoxHeight(result);
     } else if (cb->isRenderView() || (cb->isBody() && style()->htmlHacks()) || isPositionedWithSpecifiedHeight) {
-        // Don't allow this to affect the block' m_height member variable, since this
+        // Don't allow this to affect the block' height() member variable, since this
         // can get called while the block is still laying out its kids.
         int oldHeight = cb->height();
         cb->calcHeight();
@@ -1669,7 +1572,7 @@ int RenderBox::calcReplacedWidthUsing(Length width) const
         case Fixed:
             return calcContentBoxWidth(width.value());
         case Percent: {
-            const int cw = isPositioned() ? containingBlockWidthForPositioned(container()) : containingBlockWidth();
+            const int cw = isPositioned() ? containingBlockWidthForPositioned(toRenderBoxModelObject(container())) : containingBlockWidthForContent();
             if (cw > 0)
                 return calcContentBoxWidth(width.calcMinValue(cw));
         }
@@ -1698,12 +1601,12 @@ int RenderBox::calcReplacedHeightUsing(Length height) const
             RenderObject* cb = isPositioned() ? container() : containingBlock();
             while (cb->isAnonymous()) {
                 cb = cb->containingBlock();
-                static_cast<RenderBlock*>(cb)->addPercentHeightDescendant(const_cast<RenderBox*>(this));
+                toRenderBlock(cb)->addPercentHeightDescendant(const_cast<RenderBox*>(this));
             }
 
             if (cb->isPositioned() && cb->style()->height().isAuto() && !(cb->style()->top().isAuto() || cb->style()->bottom().isAuto())) {
                 ASSERT(cb->isRenderBlock());
-                RenderBlock* block = static_cast<RenderBlock*>(cb);
+                RenderBlock* block = toRenderBlock(cb);
                 int oldHeight = block->height();
                 block->calcHeight();
                 int newHeight = block->calcContentBoxHeight(block->contentHeight());
@@ -1711,7 +1614,7 @@ int RenderBox::calcReplacedHeightUsing(Length height) const
                 return calcContentBoxHeight(height.calcValue(newHeight));
             }
             
-            int availableHeight = isPositioned() ? containingBlockHeightForPositioned(cb) : cb->availableHeight();
+            int availableHeight = isPositioned() ? containingBlockHeightForPositioned(toRenderBoxModelObject(cb)) : toRenderBox(cb)->availableHeight();
 
             // It is necessary to use the border-box to match WinIE's broken
             // box model.  This is essential for sizing inside
@@ -1742,7 +1645,7 @@ int RenderBox::availableHeightUsing(const Length& h) const
         return calcContentBoxHeight(h.value());
 
     if (isRenderView())
-        return static_cast<const RenderView*>(this)->frameView()->visibleHeight();
+        return toRenderView(this)->frameView()->visibleHeight();
 
     // We need to stop here, since we don't want to increase the height of the table
     // artificially.  We're going to rely on this cell getting expanded to some new
@@ -1754,7 +1657,7 @@ int RenderBox::availableHeightUsing(const Length& h) const
        return calcContentBoxHeight(h.calcValue(containingBlock()->availableHeight()));
 
     if (isRenderBlock() && isPositioned() && style()->height().isAuto() && !(style()->top().isAuto() || style()->bottom().isAuto())) {
-        RenderBlock* block = const_cast<RenderBlock*>(static_cast<const RenderBlock*>(this));
+        RenderBlock* block = const_cast<RenderBlock*>(toRenderBlock(this));
         int oldHeight = block->height();
         block->calcHeight();
         int newHeight = block->calcContentBoxHeight(block->contentHeight());
@@ -1781,65 +1684,46 @@ void RenderBox::calcVerticalMargins()
     m_marginBottom = style()->marginBottom().calcMinValue(cw);
 }
 
-int RenderBox::staticX() const
+int RenderBox::containingBlockWidthForPositioned(const RenderBoxModelObject* containingBlock) const
 {
-    return m_layer ? m_layer->staticX() : 0;
-}
-
-int RenderBox::staticY() const
-{
-    return m_layer ? m_layer->staticY() : 0;
-}
-
-void RenderBox::setStaticX(int staticX)
-{
-    ASSERT(isPositioned() || isRelPositioned());
-    m_layer->setStaticX(staticX);
-}
-
-void RenderBox::setStaticY(int staticY)
-{
-    ASSERT(isPositioned() || isRelPositioned());
+    if (containingBlock->isBox()) {
+        const RenderBox* containingBlockBox = toRenderBox(containingBlock);
+        return containingBlockBox->width() - containingBlockBox->borderLeft() - containingBlockBox->borderRight() - containingBlockBox->verticalScrollbarWidth();
+    }
     
-    if (staticY == m_layer->staticY())
-        return;
-    
-    m_layer->setStaticY(staticY);
-    setChildNeedsLayout(true, false);
-}
+    ASSERT(containingBlock->isRenderInline() && containingBlock->isRelPositioned());
 
-int RenderBox::containingBlockWidthForPositioned(const RenderObject* containingBlock) const
-{
-    if (containingBlock->isInlineFlow()) {
-        ASSERT(containingBlock->isRelPositioned());
+    const RenderInline* flow = toRenderInline(containingBlock);
+    InlineFlowBox* first = flow->firstLineBox();
+    InlineFlowBox* last = flow->lastLineBox();
 
-        const RenderFlow* flow = static_cast<const RenderFlow*>(containingBlock);
-        InlineFlowBox* first = flow->firstLineBox();
-        InlineFlowBox* last = flow->lastLineBox();
+    // If the containing block is empty, return a width of 0.
+    if (!first || !last)
+        return 0;
 
-        // If the containing block is empty, return a width of 0.
-        if (!first || !last)
-            return 0;
-
-        int fromLeft;
-        int fromRight;
-        if (containingBlock->style()->direction() == LTR) {
-            fromLeft = first->xPos() + first->borderLeft();
-            fromRight = last->xPos() + last->width() - last->borderRight();
-        } else {
-            fromRight = first->xPos() + first->width() - first->borderRight();
-            fromLeft = last->xPos() + last->borderLeft();
-        }
-
-        return max(0, (fromRight - fromLeft));
+    int fromLeft;
+    int fromRight;
+    if (containingBlock->style()->direction() == LTR) {
+        fromLeft = first->x() + first->borderLeft();
+        fromRight = last->x() + last->width() - last->borderRight();
+    } else {
+        fromRight = first->x() + first->width() - first->borderRight();
+        fromLeft = last->x() + last->borderLeft();
     }
 
-    return containingBlock->width() - containingBlock->borderLeft() - containingBlock->borderRight() - containingBlock->verticalScrollbarWidth();
+    return max(0, (fromRight - fromLeft));
 }
 
-int RenderBox::containingBlockHeightForPositioned(const RenderObject* containingBlock) const
-{
-    return containingBlock->height() - containingBlock->borderTop() - containingBlock->borderBottom();
+int RenderBox::containingBlockHeightForPositioned(const RenderBoxModelObject* containingBlock) const
+{   
+    int heightResult = 0;
+    if (containingBlock->isBox())
+         heightResult = toRenderBox(containingBlock)->height();
+    else if (containingBlock->isRenderInline()) {
+        ASSERT(containingBlock->isRelPositioned());
+        heightResult = toRenderInline(containingBlock)->linesBoundingBox().height();
+    }
+    return heightResult - containingBlock->borderTop() - containingBlock->borderBottom();
 }
 
 void RenderBox::calcAbsoluteHorizontal()
@@ -1864,7 +1748,7 @@ void RenderBox::calcAbsoluteHorizontal()
     // NOTE: 'static' is not a legal value for 'left' or 'right' as of CSS 2.1.
 
     // FIXME 3: Can perhaps optimize out cases when max-width/min-width are greater
-    // than or less than the computed m_width.  Be careful of box-sizing and
+    // than or less than the computed width().  Be careful of box-sizing and
     // percentage issues.
 
     // The following is based off of the W3C Working Draft from April 11, 2006 of
@@ -1876,8 +1760,8 @@ void RenderBox::calcAbsoluteHorizontal()
 
     // We don't use containingBlock(), since we may be positioned by an enclosing
     // relative positioned inline.
-    const RenderObject* containerBlock = container();
-
+    const RenderBoxModelObject* containerBlock = toRenderBoxModelObject(container());
+    
     const int containerWidth = containingBlockWidthForPositioned(containerBlock);
 
     // To match WinIE, in quirks mode use the parent's 'direction' property
@@ -1919,25 +1803,35 @@ void RenderBox::calcAbsoluteHorizontal()
     if (left.isAuto() && right.isAuto()) {
         if (containerDirection == LTR) {
             // 'staticX' should already have been set through layout of the parent.
-            int staticPosition = staticX() - containerBlock->borderLeft();
-            for (RenderObject* po = parent(); po && po != containerBlock; po = po->parent())
-                staticPosition += po->xPos();
+            int staticPosition = layer()->staticX() - containerBlock->borderLeft();
+            for (RenderObject* po = parent(); po && po != containerBlock; po = po->parent()) {
+                if (po->isBox())
+                    staticPosition += toRenderBox(po)->x();
+            }
             left.setValue(Fixed, staticPosition);
         } else {
             RenderObject* po = parent();
             // 'staticX' should already have been set through layout of the parent.
-            int staticPosition = staticX() + containerWidth + containerBlock->borderRight() - po->width();
-            for (; po && po != containerBlock; po = po->parent())
-                staticPosition -= po->xPos();
+            int staticPosition = layer()->staticX() + containerWidth + containerBlock->borderRight();
+            if (po->isBox())
+                staticPosition -= toRenderBox(po)->width();
+            for (; po && po != containerBlock; po = po->parent()) {
+                if (po->isBox())
+                    staticPosition -= toRenderBox(po)->x();
+            }
             right.setValue(Fixed, staticPosition);
         }
     }
 
     // Calculate constraint equation values for 'width' case.
+    int widthResult;
+    int xResult;
     calcAbsoluteHorizontalValues(style()->width(), containerBlock, containerDirection,
                                  containerWidth, bordersPlusPadding,
                                  left, right, marginLeft, marginRight,
-                                 m_width, m_marginLeft, m_marginRight, m_x);
+                                 widthResult, m_marginLeft, m_marginRight, xResult);
+    setWidth(widthResult);
+    setX(xResult);
 
     // Calculate constraint equation values for 'max-width' case.
     if (!style()->maxWidth().isUndefined()) {
@@ -1951,11 +1845,11 @@ void RenderBox::calcAbsoluteHorizontal()
                                      left, right, marginLeft, marginRight,
                                      maxWidth, maxMarginLeft, maxMarginRight, maxXPos);
 
-        if (m_width > maxWidth) {
-            m_width = maxWidth;
+        if (width() > maxWidth) {
+            setWidth(maxWidth);
             m_marginLeft = maxMarginLeft;
             m_marginRight = maxMarginRight;
-            m_x = maxXPos;
+            m_frameRect.setX(maxXPos);
         }
     }
 
@@ -1971,25 +1865,28 @@ void RenderBox::calcAbsoluteHorizontal()
                                      left, right, marginLeft, marginRight,
                                      minWidth, minMarginLeft, minMarginRight, minXPos);
 
-        if (m_width < minWidth) {
-            m_width = minWidth;
+        if (width() < minWidth) {
+            setWidth(minWidth);
             m_marginLeft = minMarginLeft;
             m_marginRight = minMarginRight;
-            m_x = minXPos;
+            m_frameRect.setX(minXPos);
         }
     }
 
-    if (stretchesToMinIntrinsicWidth() && m_width < minPrefWidth() - bordersPlusPadding)
+    if (stretchesToMinIntrinsicWidth() && width() < minPrefWidth() - bordersPlusPadding) {
         calcAbsoluteHorizontalValues(Length(minPrefWidth() - bordersPlusPadding, Fixed), containerBlock, containerDirection,
                                      containerWidth, bordersPlusPadding,
                                      left, right, marginLeft, marginRight,
-                                     m_width, m_marginLeft, m_marginRight, m_x);
+                                     widthResult, m_marginLeft, m_marginRight, xResult);
+        setWidth(widthResult);
+        setX(xResult);
+    }
 
-    // Put m_width into correct form.
-    m_width += bordersPlusPadding;
+    // Put width() into correct form.
+    setWidth(width() + bordersPlusPadding);
 }
 
-void RenderBox::calcAbsoluteHorizontalValues(Length width, const RenderObject* containerBlock, TextDirection containerDirection,
+void RenderBox::calcAbsoluteHorizontalValues(Length width, const RenderBoxModelObject* containerBlock, TextDirection containerDirection,
                                              const int containerWidth, const int bordersPlusPadding,
                                              const Length left, const Length right, const Length marginLeft, const Length marginRight,
                                              int& widthValue, int& marginLeftValue, int& marginRightValue, int& xPos)
@@ -2145,15 +2042,15 @@ void RenderBox::calcAbsoluteHorizontalValues(Length width, const RenderObject* c
     // Use computed values to calculate the horizontal position.
 
     // FIXME: This hack is needed to calculate the xPos for a 'rtl' relatively
-    // positioned, inline containing block because right now, it is using the xPos
+    // positioned, inline because right now, it is using the xPos
     // of the first line box when really it should use the last line box.  When
     // this is fixed elsewhere, this block should be removed.
-    if (containerBlock->isInline() && containerBlock->style()->direction() == RTL) {
-        const RenderFlow* flow = static_cast<const RenderFlow*>(containerBlock);
+    if (containerBlock->isRenderInline() && containerBlock->style()->direction() == RTL) {
+        const RenderInline* flow = toRenderInline(containerBlock);
         InlineFlowBox* firstLine = flow->firstLineBox();
         InlineFlowBox* lastLine = flow->lastLineBox();
         if (firstLine && lastLine && firstLine != lastLine) {
-            xPos = leftValue + marginLeftValue + lastLine->borderLeft() + (lastLine->xPos() - firstLine->xPos());
+            xPos = leftValue + marginLeftValue + lastLine->borderLeft() + (lastLine->x() - firstLine->x());
             return;
         }
     }
@@ -2176,7 +2073,7 @@ void RenderBox::calcAbsoluteVertical()
 
 
     // We don't use containingBlock(), since we may be positioned by an enclosing relpositioned inline.
-    const RenderObject* containerBlock = container();
+    const RenderBoxModelObject* containerBlock = toRenderBoxModelObject(container());
 
     const int containerHeight = containingBlockHeightForPositioned(containerBlock);
 
@@ -2207,21 +2104,23 @@ void RenderBox::calcAbsoluteVertical()
     // Calculate the static distance if needed.
     if (top.isAuto() && bottom.isAuto()) {
         // staticY should already have been set through layout of the parent()
-        int staticTop = staticY() - containerBlock->borderTop();
+        int staticTop = layer()->staticY() - containerBlock->borderTop();
         for (RenderObject* po = parent(); po && po != containerBlock; po = po->parent()) {
-            if (!po->isTableRow())
-                staticTop += po->yPos();
+            if (po->isBox() && !po->isTableRow())
+                staticTop += toRenderBox(po)->y();
         }
         top.setValue(Fixed, staticTop);
     }
 
 
-    int height; // Needed to compute overflow.
+    int h; // Needed to compute overflow.
+    int y;
 
     // Calculate constraint equation values for 'height' case.
     calcAbsoluteVerticalValues(style()->height(), containerBlock, containerHeight, bordersPlusPadding,
                                top, bottom, marginTop, marginBottom,
-                               height, m_marginTop, m_marginBottom, m_y);
+                               h, m_marginTop, m_marginBottom, y);
+    setY(y);
 
     // Avoid doing any work in the common case (where the values of min-height and max-height are their defaults).
     // see FIXME 3
@@ -2237,11 +2136,11 @@ void RenderBox::calcAbsoluteVertical()
                                    top, bottom, marginTop, marginBottom,
                                    maxHeight, maxMarginTop, maxMarginBottom, maxYPos);
 
-        if (height > maxHeight) {
-            height = maxHeight;
+        if (h > maxHeight) {
+            h = maxHeight;
             m_marginTop = maxMarginTop;
             m_marginBottom = maxMarginBottom;
-            m_y = maxYPos;
+            m_frameRect.setY(maxYPos);
         }
     }
 
@@ -2256,19 +2155,19 @@ void RenderBox::calcAbsoluteVertical()
                                    top, bottom, marginTop, marginBottom,
                                    minHeight, minMarginTop, minMarginBottom, minYPos);
 
-        if (height < minHeight) {
-            height = minHeight;
+        if (h < minHeight) {
+            h = minHeight;
             m_marginTop = minMarginTop;
             m_marginBottom = minMarginBottom;
-            m_y = minYPos;
+            m_frameRect.setY(minYPos);
         }
     }
 
     // Set final height value.
-    m_height = height + bordersPlusPadding;
+    setHeight(h + bordersPlusPadding);
 }
 
-void RenderBox::calcAbsoluteVerticalValues(Length height, const RenderObject* containerBlock,
+void RenderBox::calcAbsoluteVerticalValues(Length h, const RenderBoxModelObject* containerBlock,
                                            const int containerHeight, const int bordersPlusPadding,
                                            const Length top, const Length bottom, const Length marginTop, const Length marginBottom,
                                            int& heightValue, int& marginTopValue, int& marginBottomValue, int& yPos)
@@ -2277,17 +2176,17 @@ void RenderBox::calcAbsoluteVerticalValues(Length height, const RenderObject* co
     // converted to the static position in calcAbsoluteVertical()
     ASSERT(!(top.isAuto() && bottom.isAuto()));
 
-    int contentHeight = m_height - bordersPlusPadding;
+    int contentHeight = height() - bordersPlusPadding;
 
     int topValue = 0;
 
-    bool heightIsAuto = height.isAuto();
+    bool heightIsAuto = h.isAuto();
     bool topIsAuto = top.isAuto();
     bool bottomIsAuto = bottom.isAuto();
 
     // Height is never unsolved for tables.
     if (isTable()) {
-        height.setValue(Fixed, contentHeight);
+        h.setValue(Fixed, contentHeight);
         heightIsAuto = false;
     }
 
@@ -2303,7 +2202,7 @@ void RenderBox::calcAbsoluteVerticalValues(Length height, const RenderObject* co
         // NOTE:  It is not necessary to solve for 'bottom' in the over constrained
         // case because the value is not used for any further calculations.
 
-        heightValue = calcContentBoxHeight(height.calcValue(containerHeight));
+        heightValue = calcContentBoxHeight(h.calcValue(containerHeight));
         topValue = top.calcValue(containerHeight);
 
         const int availableSpace = containerHeight - (topValue + heightValue + bottom.calcValue(containerHeight) + bordersPlusPadding);
@@ -2370,7 +2269,7 @@ void RenderBox::calcAbsoluteVerticalValues(Length height, const RenderObject* co
             heightValue = contentHeight;
         } else if (topIsAuto && !heightIsAuto && !bottomIsAuto) {
             // RULE 4: (solve of top)
-            heightValue = calcContentBoxHeight(height.calcValue(containerHeight));
+            heightValue = calcContentBoxHeight(h.calcValue(containerHeight));
             topValue = availableSpace - (heightValue + bottom.calcValue(containerHeight));
         } else if (!topIsAuto && heightIsAuto && !bottomIsAuto) {
             // RULE 5: (solve of height)
@@ -2378,7 +2277,7 @@ void RenderBox::calcAbsoluteVerticalValues(Length height, const RenderObject* co
             heightValue = max(0, availableSpace - (topValue + bottom.calcValue(containerHeight)));
         } else if (!topIsAuto && !heightIsAuto && bottomIsAuto) {
             // RULE 6: (no need solve of bottom)
-            heightValue = calcContentBoxHeight(height.calcValue(containerHeight));
+            heightValue = calcContentBoxHeight(h.calcValue(containerHeight));
             topValue = top.calcValue(containerHeight);
         }
     }
@@ -2397,7 +2296,7 @@ void RenderBox::calcAbsoluteHorizontalReplaced()
 
     // We don't use containingBlock(), since we may be positioned by an enclosing
     // relative positioned inline.
-    const RenderObject* containerBlock = container();
+    const RenderBoxModelObject* containerBlock = toRenderBoxModelObject(container());
 
     const int containerWidth = containingBlockWidthForPositioned(containerBlock);
 
@@ -2419,8 +2318,8 @@ void RenderBox::calcAbsoluteHorizontalReplaced()
     // NOTE: This value of width is FINAL in that the min/max width calculations
     // are dealt with in calcReplacedWidth().  This means that the steps to produce
     // correct max/min in the non-replaced version, are not necessary.
-    m_width = calcReplacedWidth() + borderLeft() + borderRight() + paddingLeft() + paddingRight();
-    const int availableSpace = containerWidth - m_width;
+    setWidth(calcReplacedWidth() + borderLeft() + borderRight() + paddingLeft() + paddingRight());
+    const int availableSpace = containerWidth - width();
 
     /*-----------------------------------------------------------------------*\
      * 2. If both 'left' and 'right' have the value 'auto', then if 'direction'
@@ -2432,16 +2331,20 @@ void RenderBox::calcAbsoluteHorizontalReplaced()
         // see FIXME 1
         if (containerDirection == LTR) {
             // 'staticX' should already have been set through layout of the parent.
-            int staticPosition = staticX() - containerBlock->borderLeft();
-            for (RenderObject* po = parent(); po && po != containerBlock; po = po->parent())
-                staticPosition += po->xPos();
+            int staticPosition = layer()->staticX() - containerBlock->borderLeft();
+            for (RenderObject* po = parent(); po && po != containerBlock; po = po->parent()) {
+                if (po->isBox())
+                    staticPosition += toRenderBox(po)->x();
+            }
             left.setValue(Fixed, staticPosition);
         } else {
             RenderObject* po = parent();
             // 'staticX' should already have been set through layout of the parent.
-            int staticPosition = staticX() + containerWidth + containerBlock->borderRight() - po->width();
-            for (; po && po != containerBlock; po = po->parent())
-                staticPosition -= po->xPos();
+            int staticPosition = layer()->staticX() + containerWidth + containerBlock->borderRight();
+            for ( ; po && po != containerBlock; po = po->parent()) {
+                if (po->isBox())
+                    staticPosition += toRenderBox(po)->x();
+            }
             right.setValue(Fixed, staticPosition);
         }
     }
@@ -2538,7 +2441,7 @@ void RenderBox::calcAbsoluteHorizontalReplaced()
     \*-----------------------------------------------------------------------*/
     // NOTE:  It is not necessary to solve for 'right' when the direction is
     // LTR because the value is not used.
-    int totalWidth = m_width + leftValue + rightValue +  m_marginLeft + m_marginRight;
+    int totalWidth = width() + leftValue + rightValue +  m_marginLeft + m_marginRight;
     if (totalWidth > containerWidth && (containerDirection == RTL))
         leftValue = containerWidth - (totalWidth - leftValue);
 
@@ -2549,16 +2452,16 @@ void RenderBox::calcAbsoluteHorizontalReplaced()
     // of the first line box when really it should use the last line box.  When
     // this is fixed elsewhere, this block should be removed.
     if (containerBlock->isInline() && containerBlock->style()->direction() == RTL) {
-        const RenderFlow* flow = static_cast<const RenderFlow*>(containerBlock);
+        const RenderInline* flow = toRenderInline(containerBlock);
         InlineFlowBox* firstLine = flow->firstLineBox();
         InlineFlowBox* lastLine = flow->lastLineBox();
         if (firstLine && lastLine && firstLine != lastLine) {
-            m_x = leftValue + m_marginLeft + lastLine->borderLeft() + (lastLine->xPos() - firstLine->xPos());
+            m_frameRect.setX(leftValue + m_marginLeft + lastLine->borderLeft() + (lastLine->x() - firstLine->x()));
             return;
         }
     }
 
-    m_x = leftValue + m_marginLeft + containerBlock->borderLeft();
+    m_frameRect.setX(leftValue + m_marginLeft + containerBlock->borderLeft());
 }
 
 void RenderBox::calcAbsoluteVerticalReplaced()
@@ -2570,7 +2473,7 @@ void RenderBox::calcAbsoluteVerticalReplaced()
     // the numbers correspond to numbers in spec)
 
     // We don't use containingBlock(), since we may be positioned by an enclosing relpositioned inline.
-    const RenderObject* containerBlock = container();
+    const RenderBoxModelObject* containerBlock = toRenderBoxModelObject(container());
 
     const int containerHeight = containingBlockHeightForPositioned(containerBlock);
 
@@ -2588,8 +2491,8 @@ void RenderBox::calcAbsoluteVerticalReplaced()
     // NOTE: This value of height is FINAL in that the min/max height calculations
     // are dealt with in calcReplacedHeight().  This means that the steps to produce
     // correct max/min in the non-replaced version, are not necessary.
-    m_height = calcReplacedHeight() + borderTop() + borderBottom() + paddingTop() + paddingBottom();
-    const int availableSpace = containerHeight - m_height;
+    setHeight(calcReplacedHeight() + borderTop() + borderBottom() + paddingTop() + paddingBottom());
+    const int availableSpace = containerHeight - height();
 
     /*-----------------------------------------------------------------------*\
      * 2. If both 'top' and 'bottom' have the value 'auto', replace 'top'
@@ -2598,10 +2501,10 @@ void RenderBox::calcAbsoluteVerticalReplaced()
     // see FIXME 2
     if (top.isAuto() && bottom.isAuto()) {
         // staticY should already have been set through layout of the parent().
-        int staticTop = staticY() - containerBlock->borderTop();
+        int staticTop = layer()->staticY() - containerBlock->borderTop();
         for (RenderObject* po = parent(); po && po != containerBlock; po = po->parent()) {
-            if (!po->isTableRow())
-                staticTop += po->yPos();
+            if (po->isBox() && !po->isTableRow())
+                staticTop += toRenderBox(po)->y();
         }
         top.setValue(Fixed, staticTop);
     }
@@ -2690,7 +2593,7 @@ void RenderBox::calcAbsoluteVerticalReplaced()
     // or not.
 
     // Use computed values to calculate the vertical position.
-    m_y = topValue + m_marginTop + containerBlock->borderTop();
+    m_frameRect.setY(topValue + m_marginTop + containerBlock->borderTop());
 }
 
 IntRect RenderBox::localCaretRect(InlineBox* box, int caretOffset, int* extraWidthToEndOfLine)
@@ -2701,12 +2604,11 @@ IntRect RenderBox::localCaretRect(InlineBox* box, int caretOffset, int* extraWid
     // FIXME: Paint the carets inside empty blocks differently than the carets before/after elements.
 
     // FIXME: What about border and padding?
-    const int caretWidth = 1;
-    IntRect rect(xPos(), yPos(), caretWidth, m_height);
+    IntRect rect(x(), y(), caretWidth, height());
     TextDirection direction = box ? box->direction() : style()->direction();
 
     if ((!caretOffset) ^ (direction == LTR))
-        rect.move(IntSize(m_width - caretWidth, 0));
+        rect.move(IntSize(width() - caretWidth, 0));
 
     if (box) {
         RootInlineBox* rootBox = box->root();
@@ -2724,22 +2626,22 @@ IntRect RenderBox::localCaretRect(InlineBox* box, int caretOffset, int* extraWid
     //
     // FIXME: ignoring :first-line, missing good reason to take care of
     int fontHeight = style()->font().height();
-    if (fontHeight > rect.height() || !isReplaced() && !isTable())
+    if (fontHeight > rect.height() || (!isReplaced() && !isTable()))
         rect.setHeight(fontHeight);
 
     if (extraWidthToEndOfLine)
-        *extraWidthToEndOfLine = xPos() + m_width - rect.right();
+        *extraWidthToEndOfLine = x() + width() - rect.right();
 
     // Move to local coords
-    rect.move(-xPos(), -yPos());
+    rect.move(-x(), -y());
     return rect;
 }
 
 int RenderBox::lowestPosition(bool /*includeOverflowInterior*/, bool includeSelf) const
 {
-    if (!includeSelf || !m_width)
+    if (!includeSelf || !width())
         return 0;
-    int bottom = m_height;
+    int bottom = height();
     if (isRelPositioned())
         bottom += relativePositionOffsetY();
     return bottom;
@@ -2747,9 +2649,9 @@ int RenderBox::lowestPosition(bool /*includeOverflowInterior*/, bool includeSelf
 
 int RenderBox::rightmostPosition(bool /*includeOverflowInterior*/, bool includeSelf) const
 {
-    if (!includeSelf || !m_height)
+    if (!includeSelf || !height())
         return 0;
-    int right = m_width;
+    int right = width();
     if (isRelPositioned())
         right += relativePositionOffsetX();
     return right;
@@ -2757,12 +2659,133 @@ int RenderBox::rightmostPosition(bool /*includeOverflowInterior*/, bool includeS
 
 int RenderBox::leftmostPosition(bool /*includeOverflowInterior*/, bool includeSelf) const
 {
-    if (!includeSelf || !m_height)
-        return m_width;
+    if (!includeSelf || !height())
+        return width();
     int left = 0;
     if (isRelPositioned())
         left += relativePositionOffsetX();
     return left;
 }
+
+bool RenderBox::isAfterContent(RenderObject* child) const
+{
+    return (child && child->style()->styleType() == AFTER && (!child->isText() || child->isBR()));
+}
+
+VisiblePosition RenderBox::positionForPoint(const IntPoint& point)
+{
+    // no children...return this render object's element, if there is one, and offset 0
+    if (!firstChild())
+        return createVisiblePosition(firstDeepEditingPositionForNode(node()));
+
+    int xPos = point.x();
+    int yPos = point.y();
+
+    if (isTable() && node()) {
+        int right = contentWidth() + borderRight() + paddingRight() + borderLeft() + paddingLeft();
+        int bottom = contentHeight() + borderTop() + paddingTop() + borderBottom() + paddingBottom();
+        
+        if (xPos < 0 || xPos > right || yPos < 0 || yPos > bottom) {
+            if (xPos <= right / 2)
+                return createVisiblePosition(firstDeepEditingPositionForNode(node()));
+            return createVisiblePosition(lastDeepEditingPositionForNode(node()));
+        }
+    }
+
+    // Pass off to the closest child.
+    int minDist = INT_MAX;
+    RenderBox* closestRenderer = 0;
+    int newX = xPos;
+    int newY = yPos;
+    if (isTableRow()) {
+        newX += x();
+        newY += y();
+    }
+    for (RenderObject* renderObject = firstChild(); renderObject; renderObject = renderObject->nextSibling()) {
+        if ((!renderObject->firstChild() && !renderObject->isInline() && !renderObject->isBlockFlow() )
+            || renderObject->style()->visibility() != VISIBLE)
+            continue;
+        
+        if (!renderObject->isBox())
+            continue;
+        
+        RenderBox* renderer = toRenderBox(renderObject);
+
+        int top = renderer->borderTop() + renderer->paddingTop() + (isTableRow() ? 0 : renderer->y());
+        int bottom = top + renderer->contentHeight();
+        int left = renderer->borderLeft() + renderer->paddingLeft() + (isTableRow() ? 0 : renderer->x());
+        int right = left + renderer->contentWidth();
+        
+        if (xPos <= right && xPos >= left && yPos <= top && yPos >= bottom) {
+            if (renderer->isTableRow())
+                return renderer->positionForCoordinates(xPos + newX - renderer->x(), yPos + newY - renderer->y());
+            return renderer->positionForCoordinates(xPos - renderer->x(), yPos - renderer->y());
+        }
+
+        // Find the distance from (x, y) to the box.  Split the space around the box into 8 pieces
+        // and use a different compare depending on which piece (x, y) is in.
+        IntPoint cmp;
+        if (xPos > right) {
+            if (yPos < top)
+                cmp = IntPoint(right, top);
+            else if (yPos > bottom)
+                cmp = IntPoint(right, bottom);
+            else
+                cmp = IntPoint(right, yPos);
+        } else if (xPos < left) {
+            if (yPos < top)
+                cmp = IntPoint(left, top);
+            else if (yPos > bottom)
+                cmp = IntPoint(left, bottom);
+            else
+                cmp = IntPoint(left, yPos);
+        } else {
+            if (yPos < top)
+                cmp = IntPoint(xPos, top);
+            else
+                cmp = IntPoint(xPos, bottom);
+        }
+        
+        int x1minusx2 = cmp.x() - xPos;
+        int y1minusy2 = cmp.y() - yPos;
+        
+        int dist = x1minusx2 * x1minusx2 + y1minusy2 * y1minusy2;
+        if (dist < minDist) {
+            closestRenderer = renderer;
+            minDist = dist;
+        }
+    }
+    
+    if (closestRenderer)
+        return closestRenderer->positionForCoordinates(newX - closestRenderer->x(), newY - closestRenderer->y());
+    
+    return createVisiblePosition(firstDeepEditingPositionForNode(node()));
+}
+
+bool RenderBox::shrinkToAvoidFloats() const
+{
+    // FIXME: Technically we should be able to shrink replaced elements on a line, but this is difficult to accomplish, since this
+    // involves doing a relayout during findNextLineBreak and somehow overriding the containingBlockWidth method to return the
+    // current remaining width on a line.
+    if ((isInline() && !isHTMLMarquee()) || !avoidsFloats())
+        return false;
+
+    // All auto-width objects that avoid floats should always use lineWidth.
+    return style()->width().isAuto();
+}
+
+bool RenderBox::avoidsFloats() const
+{
+    return isReplaced() || hasOverflowClip() || isHR();
+}
+
+#if ENABLE(SVG)
+
+TransformationMatrix RenderBox::localTransform() const
+{
+    return TransformationMatrix(1, 0, 0, 1, x(), y());
+}
+
+#endif
 
 } // namespace WebCore

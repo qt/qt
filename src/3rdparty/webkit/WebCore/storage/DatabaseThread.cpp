@@ -25,8 +25,11 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
 #include "config.h"
 #include "DatabaseThread.h"
+
+#if ENABLE(DATABASE)
 
 #include "AutodrainedPool.h"
 #include "Database.h"
@@ -35,7 +38,7 @@
 
 namespace WebCore {
 
-DatabaseThread::DatabaseThread(Document* document)
+DatabaseThread::DatabaseThread()
     : m_threadID(0)
 {
     m_selfRef = this;
@@ -53,7 +56,7 @@ bool DatabaseThread::start()
     if (m_threadID)
         return true;
 
-    m_threadID = createThread(DatabaseThread::databaseThreadStart, this, "WebCore::Database");
+    m_threadID = createThread(DatabaseThread::databaseThreadStart, this, "WebCore: Database");
 
     return m_threadID;
 }
@@ -134,3 +137,4 @@ void DatabaseThread::unscheduleDatabaseTasks(Database* database)
 }
 
 } // namespace WebCore
+#endif

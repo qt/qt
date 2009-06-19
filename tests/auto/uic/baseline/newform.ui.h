@@ -89,14 +89,14 @@ public:
         vboxLayout->setSpacing(6);
 #endif
 #ifndef Q_OS_MAC
-        vboxLayout->setMargin(9);
+        vboxLayout->setContentsMargins(9, 9, 9, 9);
 #endif
         vboxLayout->setObjectName(QString::fromUtf8("vboxLayout"));
         hboxLayout = new QHBoxLayout();
 #ifndef Q_OS_MAC
         hboxLayout->setSpacing(6);
 #endif
-        hboxLayout->setMargin(1);
+        hboxLayout->setContentsMargins(1, 1, 1, 1);
         hboxLayout->setObjectName(QString::fromUtf8("hboxLayout"));
         treeWidget = new QTreeWidget(NewForm);
         treeWidget->setObjectName(QString::fromUtf8("treeWidget"));

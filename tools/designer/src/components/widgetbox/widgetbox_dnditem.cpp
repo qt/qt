@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the Qt Designer of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -50,6 +50,7 @@
 #include <formwindowbase_p.h>
 #include <qdesigner_utils_p.h>
 #include <qdesigner_dockwidget_p.h>
+#include <qsimpleresource_p.h>
 
 #include <QtDesigner/QDesignerFormEditorInterface>
 #include <QtDesigner/QDesignerFormWindowManagerInterface>
@@ -84,6 +85,7 @@ protected:
 
     virtual QWidget *create(DomWidget *ui_widget, QWidget *parents);
     virtual QWidget *createWidget(const QString &widgetName, QWidget *parentWidget, const QString &name);
+    virtual void createCustomWidgets(DomCustomWidgets *);
 };
 
 WidgetBoxResource::WidgetBoxResource(QDesignerFormEditorInterface *core) :
@@ -118,6 +120,14 @@ QWidget *WidgetBoxResource::create(DomWidget *ui_widget, QWidget *parent)
     result->setFocusPolicy(Qt::NoFocus);
     result->setObjectName(ui_widget->attributeName());
     return result;
+}
+
+void WidgetBoxResource::createCustomWidgets(DomCustomWidgets *dc)
+{
+    // Make a promotion entry in  case someone has a promoted widget
+    // in the scratchpad.
+    QSimpleResource::handleDomCustomWidgets(core(), dc);
+
 }
 
 /*******************************************************************************

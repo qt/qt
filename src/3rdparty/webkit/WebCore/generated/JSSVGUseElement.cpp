@@ -55,7 +55,7 @@ using namespace JSC;
 
 namespace WebCore {
 
-ASSERT_CLASS_FITS_IN_CELL(JSSVGUseElement)
+ASSERT_CLASS_FITS_IN_CELL(JSSVGUseElement);
 
 /* Hash table */
 
@@ -111,9 +111,9 @@ static const HashTable JSSVGUseElementPrototypeTable =
 
 const ClassInfo JSSVGUseElementPrototype::s_info = { "SVGUseElementPrototype", 0, &JSSVGUseElementPrototypeTable, 0 };
 
-JSObject* JSSVGUseElementPrototype::self(ExecState* exec)
+JSObject* JSSVGUseElementPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSSVGUseElement>(exec);
+    return getDOMPrototype<JSSVGUseElement>(exec, globalObject);
 }
 
 bool JSSVGUseElementPrototype::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -128,9 +128,9 @@ JSSVGUseElement::JSSVGUseElement(PassRefPtr<Structure> structure, PassRefPtr<SVG
 {
 }
 
-JSObject* JSSVGUseElement::createPrototype(ExecState* exec)
+JSObject* JSSVGUseElement::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSSVGUseElementPrototype(JSSVGUseElementPrototype::createStructure(JSSVGElementPrototype::self(exec)));
+    return new (exec) JSSVGUseElementPrototype(JSSVGUseElementPrototype::createStructure(JSSVGElementPrototype::self(exec, globalObject)));
 }
 
 bool JSSVGUseElement::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -138,212 +138,236 @@ bool JSSVGUseElement::getOwnPropertySlot(ExecState* exec, const Identifier& prop
     return getStaticValueSlot<JSSVGUseElement, Base>(exec, &JSSVGUseElementTable, this, propertyName, slot);
 }
 
-JSValuePtr jsSVGUseElementX(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGUseElementX(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGUseElement* imp = static_cast<SVGUseElement*>(static_cast<JSSVGUseElement*>(asObject(slot.slotBase()))->impl());
     RefPtr<SVGAnimatedLength> obj = imp->xAnimated();
     return toJS(exec, obj.get(), imp);
 }
 
-JSValuePtr jsSVGUseElementY(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGUseElementY(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGUseElement* imp = static_cast<SVGUseElement*>(static_cast<JSSVGUseElement*>(asObject(slot.slotBase()))->impl());
     RefPtr<SVGAnimatedLength> obj = imp->yAnimated();
     return toJS(exec, obj.get(), imp);
 }
 
-JSValuePtr jsSVGUseElementWidth(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGUseElementWidth(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGUseElement* imp = static_cast<SVGUseElement*>(static_cast<JSSVGUseElement*>(asObject(slot.slotBase()))->impl());
     RefPtr<SVGAnimatedLength> obj = imp->widthAnimated();
     return toJS(exec, obj.get(), imp);
 }
 
-JSValuePtr jsSVGUseElementHeight(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGUseElementHeight(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGUseElement* imp = static_cast<SVGUseElement*>(static_cast<JSSVGUseElement*>(asObject(slot.slotBase()))->impl());
     RefPtr<SVGAnimatedLength> obj = imp->heightAnimated();
     return toJS(exec, obj.get(), imp);
 }
 
-JSValuePtr jsSVGUseElementInstanceRoot(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGUseElementInstanceRoot(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGUseElement* imp = static_cast<SVGUseElement*>(static_cast<JSSVGUseElement*>(asObject(slot.slotBase()))->impl());
     return toJS(exec, WTF::getPtr(imp->instanceRoot()));
 }
 
-JSValuePtr jsSVGUseElementAnimatedInstanceRoot(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGUseElementAnimatedInstanceRoot(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGUseElement* imp = static_cast<SVGUseElement*>(static_cast<JSSVGUseElement*>(asObject(slot.slotBase()))->impl());
     return toJS(exec, WTF::getPtr(imp->animatedInstanceRoot()));
 }
 
-JSValuePtr jsSVGUseElementHref(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGUseElementHref(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGUseElement* imp = static_cast<SVGUseElement*>(static_cast<JSSVGUseElement*>(asObject(slot.slotBase()))->impl());
     RefPtr<SVGAnimatedString> obj = imp->hrefAnimated();
     return toJS(exec, obj.get(), imp);
 }
 
-JSValuePtr jsSVGUseElementRequiredFeatures(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGUseElementRequiredFeatures(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGUseElement* imp = static_cast<SVGUseElement*>(static_cast<JSSVGUseElement*>(asObject(slot.slotBase()))->impl());
     return toJS(exec, WTF::getPtr(imp->requiredFeatures()), imp);
 }
 
-JSValuePtr jsSVGUseElementRequiredExtensions(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGUseElementRequiredExtensions(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGUseElement* imp = static_cast<SVGUseElement*>(static_cast<JSSVGUseElement*>(asObject(slot.slotBase()))->impl());
     return toJS(exec, WTF::getPtr(imp->requiredExtensions()), imp);
 }
 
-JSValuePtr jsSVGUseElementSystemLanguage(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGUseElementSystemLanguage(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGUseElement* imp = static_cast<SVGUseElement*>(static_cast<JSSVGUseElement*>(asObject(slot.slotBase()))->impl());
     return toJS(exec, WTF::getPtr(imp->systemLanguage()), imp);
 }
 
-JSValuePtr jsSVGUseElementXmllang(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGUseElementXmllang(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGUseElement* imp = static_cast<SVGUseElement*>(static_cast<JSSVGUseElement*>(asObject(slot.slotBase()))->impl());
     return jsString(exec, imp->xmllang());
 }
 
-JSValuePtr jsSVGUseElementXmlspace(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGUseElementXmlspace(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGUseElement* imp = static_cast<SVGUseElement*>(static_cast<JSSVGUseElement*>(asObject(slot.slotBase()))->impl());
     return jsString(exec, imp->xmlspace());
 }
 
-JSValuePtr jsSVGUseElementExternalResourcesRequired(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGUseElementExternalResourcesRequired(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGUseElement* imp = static_cast<SVGUseElement*>(static_cast<JSSVGUseElement*>(asObject(slot.slotBase()))->impl());
     RefPtr<SVGAnimatedBoolean> obj = imp->externalResourcesRequiredAnimated();
     return toJS(exec, obj.get(), imp);
 }
 
-JSValuePtr jsSVGUseElementClassName(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGUseElementClassName(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGUseElement* imp = static_cast<SVGUseElement*>(static_cast<JSSVGUseElement*>(asObject(slot.slotBase()))->impl());
     RefPtr<SVGAnimatedString> obj = imp->classNameAnimated();
     return toJS(exec, obj.get(), imp);
 }
 
-JSValuePtr jsSVGUseElementStyle(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGUseElementStyle(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGUseElement* imp = static_cast<SVGUseElement*>(static_cast<JSSVGUseElement*>(asObject(slot.slotBase()))->impl());
     return toJS(exec, WTF::getPtr(imp->style()));
 }
 
-JSValuePtr jsSVGUseElementTransform(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGUseElementTransform(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGUseElement* imp = static_cast<SVGUseElement*>(static_cast<JSSVGUseElement*>(asObject(slot.slotBase()))->impl());
     RefPtr<SVGAnimatedTransformList> obj = imp->transformAnimated();
     return toJS(exec, obj.get(), imp);
 }
 
-JSValuePtr jsSVGUseElementNearestViewportElement(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGUseElementNearestViewportElement(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGUseElement* imp = static_cast<SVGUseElement*>(static_cast<JSSVGUseElement*>(asObject(slot.slotBase()))->impl());
     return toJS(exec, WTF::getPtr(imp->nearestViewportElement()));
 }
 
-JSValuePtr jsSVGUseElementFarthestViewportElement(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGUseElementFarthestViewportElement(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGUseElement* imp = static_cast<SVGUseElement*>(static_cast<JSSVGUseElement*>(asObject(slot.slotBase()))->impl());
     return toJS(exec, WTF::getPtr(imp->farthestViewportElement()));
 }
 
-void JSSVGUseElement::put(ExecState* exec, const Identifier& propertyName, JSValuePtr value, PutPropertySlot& slot)
+void JSSVGUseElement::put(ExecState* exec, const Identifier& propertyName, JSValue value, PutPropertySlot& slot)
 {
     lookupPut<JSSVGUseElement, Base>(exec, propertyName, value, &JSSVGUseElementTable, this, slot);
 }
 
-void setJSSVGUseElementXmllang(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSSVGUseElementXmllang(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     SVGUseElement* imp = static_cast<SVGUseElement*>(static_cast<JSSVGUseElement*>(thisObject)->impl());
-    imp->setXmllang(value->toString(exec));
+    imp->setXmllang(value.toString(exec));
 }
 
-void setJSSVGUseElementXmlspace(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSSVGUseElementXmlspace(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     SVGUseElement* imp = static_cast<SVGUseElement*>(static_cast<JSSVGUseElement*>(thisObject)->impl());
-    imp->setXmlspace(value->toString(exec));
+    imp->setXmlspace(value.toString(exec));
 }
 
-JSValuePtr jsSVGUseElementPrototypeFunctionHasExtension(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsSVGUseElementPrototypeFunctionHasExtension(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSSVGUseElement::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSSVGUseElement::s_info))
         return throwError(exec, TypeError);
     JSSVGUseElement* castedThisObj = static_cast<JSSVGUseElement*>(asObject(thisValue));
     SVGUseElement* imp = static_cast<SVGUseElement*>(castedThisObj->impl());
-    const UString& extension = args.at(exec, 0)->toString(exec);
+    const UString& extension = args.at(0).toString(exec);
 
 
-    JSC::JSValuePtr result = jsBoolean(imp->hasExtension(extension));
+    JSC::JSValue result = jsBoolean(imp->hasExtension(extension));
     return result;
 }
 
-JSValuePtr jsSVGUseElementPrototypeFunctionGetPresentationAttribute(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsSVGUseElementPrototypeFunctionGetPresentationAttribute(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSSVGUseElement::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSSVGUseElement::s_info))
         return throwError(exec, TypeError);
     JSSVGUseElement* castedThisObj = static_cast<JSSVGUseElement*>(asObject(thisValue));
     SVGUseElement* imp = static_cast<SVGUseElement*>(castedThisObj->impl());
-    const UString& name = args.at(exec, 0)->toString(exec);
+    const UString& name = args.at(0).toString(exec);
 
 
-    JSC::JSValuePtr result = toJS(exec, WTF::getPtr(imp->getPresentationAttribute(name)));
+    JSC::JSValue result = toJS(exec, WTF::getPtr(imp->getPresentationAttribute(name)));
     return result;
 }
 
-JSValuePtr jsSVGUseElementPrototypeFunctionGetBBox(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsSVGUseElementPrototypeFunctionGetBBox(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSSVGUseElement::s_info))
-        return throwError(exec, TypeError);
-    JSSVGUseElement* castedThisObj = static_cast<JSSVGUseElement*>(asObject(thisValue));
-    SVGUseElement* imp = static_cast<SVGUseElement*>(castedThisObj->impl());
-
-
-    JSC::JSValuePtr result = toJS(exec, JSSVGStaticPODTypeWrapper<FloatRect>::create(imp->getBBox()).get(), imp);
-    return result;
-}
-
-JSValuePtr jsSVGUseElementPrototypeFunctionGetCTM(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
-{
-    if (!thisValue->isObject(&JSSVGUseElement::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSSVGUseElement::s_info))
         return throwError(exec, TypeError);
     JSSVGUseElement* castedThisObj = static_cast<JSSVGUseElement*>(asObject(thisValue));
     SVGUseElement* imp = static_cast<SVGUseElement*>(castedThisObj->impl());
 
 
-    JSC::JSValuePtr result = toJS(exec, JSSVGStaticPODTypeWrapper<TransformationMatrix>::create(imp->getCTM()).get(), imp);
+    JSC::JSValue result = toJS(exec, JSSVGStaticPODTypeWrapper<FloatRect>::create(imp->getBBox()).get(), imp);
     return result;
 }
 
-JSValuePtr jsSVGUseElementPrototypeFunctionGetScreenCTM(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsSVGUseElementPrototypeFunctionGetCTM(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSSVGUseElement::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSSVGUseElement::s_info))
         return throwError(exec, TypeError);
     JSSVGUseElement* castedThisObj = static_cast<JSSVGUseElement*>(asObject(thisValue));
     SVGUseElement* imp = static_cast<SVGUseElement*>(castedThisObj->impl());
 
 
-    JSC::JSValuePtr result = toJS(exec, JSSVGStaticPODTypeWrapper<TransformationMatrix>::create(imp->getScreenCTM()).get(), imp);
+    JSC::JSValue result = toJS(exec, JSSVGStaticPODTypeWrapper<TransformationMatrix>::create(imp->getCTM()).get(), imp);
     return result;
 }
 
-JSValuePtr jsSVGUseElementPrototypeFunctionGetTransformToElement(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsSVGUseElementPrototypeFunctionGetScreenCTM(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSSVGUseElement::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSSVGUseElement::s_info))
+        return throwError(exec, TypeError);
+    JSSVGUseElement* castedThisObj = static_cast<JSSVGUseElement*>(asObject(thisValue));
+    SVGUseElement* imp = static_cast<SVGUseElement*>(castedThisObj->impl());
+
+
+    JSC::JSValue result = toJS(exec, JSSVGStaticPODTypeWrapper<TransformationMatrix>::create(imp->getScreenCTM()).get(), imp);
+    return result;
+}
+
+JSValue JSC_HOST_CALL jsSVGUseElementPrototypeFunctionGetTransformToElement(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
+{
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSSVGUseElement::s_info))
         return throwError(exec, TypeError);
     JSSVGUseElement* castedThisObj = static_cast<JSSVGUseElement*>(asObject(thisValue));
     SVGUseElement* imp = static_cast<SVGUseElement*>(castedThisObj->impl());
     ExceptionCode ec = 0;
-    SVGElement* element = toSVGElement(args.at(exec, 0));
+    SVGElement* element = toSVGElement(args.at(0));
 
 
-    JSC::JSValuePtr result = toJS(exec, JSSVGStaticPODTypeWrapper<TransformationMatrix>::create(imp->getTransformToElement(element, ec)).get(), imp);
+    JSC::JSValue result = toJS(exec, JSSVGStaticPODTypeWrapper<TransformationMatrix>::create(imp->getTransformToElement(element, ec)).get(), imp);
     setDOMException(exec, ec);
     return result;
 }

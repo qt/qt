@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the documentation of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -71,7 +71,7 @@
 
     As an example, we show a media graph for an audio stream:
 
-    \image conceptaudio.png 
+    \image conceptaudio.png
 
     The playback is started and managed by the media object, which
     send the media stream to any sinks connected to it by a path. The
@@ -119,7 +119,7 @@
 
     The input of sinks in a Phonon media graph comes from a
     \l{Phonon::}{MediaObject}, though it might have been processed
-    through other nodes on the way. 
+    through other nodes on the way.
 
     While the \l{Phonon::}{MediaObject} controls the playback, the
     sink has basic controls for manipulation of the media. With an
@@ -222,9 +222,9 @@
     The setting of a Category, Phonon::MusicCategory in this case,
     does not affect the actual playback; the category can be used by
     KDE to control the playback through, for instance, the control
-    panel. 
+    panel.
 
-    \omit Not sure about this 
+    \omit Not sure about this
     Users of KDE can often also choose to send sound with the
     CommunicationCategory, e.g., given to VoIP, to their headset,
     while sound with MusicCategory is sent to the sound card.
@@ -238,7 +238,7 @@
 
     The AudioOutput node will work with all audio formats supported by
     the back end, so you don't need to know what format a specific
-    media source has. 
+    media source has.
 
     For a an extensive example of audio playback, see the \l{Music
     Player Example}{Phonon Music Player}.
@@ -313,7 +313,7 @@
 
     <code>
 
-    <code walkthrough> 
+    <code walkthrough>
 
     \endomit
 
@@ -325,7 +325,7 @@
     hardware or intermediate technology. For the programmer, this
     implies that the media nodes, e.g., media objects, processors, and
     sinks, are produced by the back end. Also, it is responsible for
-    building the graph, i.e., connecting the nodes. 
+    building the graph, i.e., connecting the nodes.
 
     The backends of Qt use the media systems DirectShow (which
     requires DirectX) on Windows, QuickTime on Mac, and GStreamer on
@@ -335,12 +335,12 @@
 
     Backends expose information about the underlying system. It can
     tell which media formats are supported, e.g., \c AVI, \c mp3, or
-    \c OGG. 
+    \c OGG.
 
     A user can often add support for new formats and filters to the
     underlying system, by, for instance, installing the DivX codex. We
     can therefore not give an exact overview of which formats are
-    available with the Qt backends.  
+    available with the Qt backends.
 
     \omit Not sure I want a separate section for this
     \section2 Communication with the Backends
@@ -366,7 +366,7 @@
 
     \endomit
 
-    \section2 Querying Backends for Support    
+    \section2 Querying Backends for Support
 
     As mentioned, Phonon depends on the backend to provide its
     functionality. Depending on the individual backend, full support
@@ -379,7 +379,7 @@
     \l{Phonon::BackendCapabilities::}{isMimeTypeAvailable()} functions
     to query which MIME types the backend can produce nodes for. The
     types are listed as strings, which for any type is equal for any
-    backend or platform. 
+    backend or platform.
 
     The backend will emit a signal -
     \l{Phonon::BackendCapabilities::}{Notifier::capabilitiesChanged()}
@@ -611,7 +611,7 @@
 
     Qt Commercial Edition licensees that wish to distribute applications that
     use the Phonon module need to be aware of their obligations under the
-    GNU Lesser General Public License (LGPL). 
+    GNU Lesser General Public License (LGPL).
 
     Developers using the Open Source Edition can choose to redistribute
     the module under the appropriate version of the GNU LGPL; version 2.1
@@ -624,7 +624,7 @@
 
     Copyright (C) 2005-2007 Matthias Kretz <kretz@kde.org> \BR
     Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-    Contact: Qt Software Information (qt-info@nokia.com)
+    Contact: Nokia Corporation (qt-info@nokia.com)
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public

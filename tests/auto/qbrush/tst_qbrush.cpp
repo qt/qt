@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the test suite of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -44,6 +44,7 @@
 
 #include "qbrush.h"
 #include <QPainter>
+#include <QBitmap>
 
 #include <qdebug.h>
 
@@ -76,6 +77,7 @@ private slots:
     void textures();
     
     void nullBrush();
+    void isOpaque();
 };
 
 Q_DECLARE_METATYPE(QBrush)
@@ -377,6 +379,15 @@ void tst_QBrush::nullBrush()
 {
     QBrush brush(QColor(100,0,0), Qt::NoBrush);
     QCOMPARE(brush.color(), QColor(100,0,0));
+}
+
+void tst_QBrush::isOpaque()
+{
+    QBitmap bm(8, 8);
+    bm.fill(Qt::black);
+
+    QBrush brush(bm);
+    QVERIFY(!brush.isOpaque());
 }
 
 QTEST_MAIN(tst_QBrush)

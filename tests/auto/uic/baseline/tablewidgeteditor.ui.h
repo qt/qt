@@ -169,7 +169,7 @@ public:
         sizePolicy.setHeightForWidth(widget->sizePolicy().hasHeightForWidth());
         widget->setSizePolicy(sizePolicy);
         verticalLayout = new QVBoxLayout(widget);
-        verticalLayout->setMargin(0);
+        verticalLayout->setContentsMargins(0, 0, 0, 0);
         verticalLayout->setObjectName(QString::fromUtf8("verticalLayout"));
         columnsBox = new QGroupBox(widget);
         columnsBox->setObjectName(QString::fromUtf8("columnsBox"));

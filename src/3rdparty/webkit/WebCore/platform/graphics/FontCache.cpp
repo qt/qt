@@ -43,6 +43,16 @@ using namespace WTF;
 
 namespace WebCore {
 
+FontCache* fontCache()
+{
+    DEFINE_STATIC_LOCAL(FontCache, globalFontCache, ());
+    return &globalFontCache;
+}
+
+FontCache::FontCache()
+{
+}
+
 struct FontPlatformDataCacheKey {
     FontPlatformDataCacheKey(const AtomicString& family = AtomicString(), unsigned size = 0, unsigned weight = 0, bool italic = false,
                              bool isPrinterFont = false, FontRenderingMode renderingMode = NormalRenderingMode)
@@ -129,8 +139,13 @@ static const AtomicString& alternateFamilyName(const AtomicString& familyName)
     DEFINE_STATIC_LOCAL(AtomicString, courierNew, ("Courier New"));
     if (equalIgnoringCase(familyName, courier))
         return courierNew;
+#if !PLATFORM(WIN_OS)
+    // On Windows, Courier New (truetype font) is always present and
+    // Courier is a bitmap font. So, we don't want to map Courier New to
+    // Courier.
     if (equalIgnoringCase(familyName, courierNew))
         return courier;
+#endif
 
     // Alias Times and Times New Roman.
     DEFINE_STATIC_LOCAL(AtomicString, times, ("Times"));
@@ -147,6 +162,21 @@ static const AtomicString& alternateFamilyName(const AtomicString& familyName)
         return helvetica;
     if (equalIgnoringCase(familyName, helvetica))
         return arial;
+
+#if PLATFORM(WIN_OS)
+    // On Windows, bitmap fonts are blocked altogether so that we have to 
+    // alias MS Sans Serif (bitmap font) -> Microsoft Sans Serif (truetype font)
+    DEFINE_STATIC_LOCAL(AtomicString, msSans, ("MS Sans Serif"));
+    DEFINE_STATIC_LOCAL(AtomicString, microsoftSans, ("Microsoft Sans Serif"));
+    if (equalIgnoringCase(familyName, msSans))
+        return microsoftSans;
+
+    // Alias MS Serif (bitmap) -> Times New Roman (truetype font). There's no 
+    // 'Microsoft Sans Serif-equivalent' for Serif. 
+    static AtomicString msSerif("MS Serif");
+    if (equalIgnoringCase(familyName, msSerif))
+        return timesNewRoman;
+#endif
 
     return emptyAtom;
 }
@@ -206,7 +236,7 @@ struct FontDataCacheKeyTraits : WTF::GenericHashTraits<FontPlatformData> {
     static const bool needsDestruction = true;
     static const FontPlatformData& emptyValue()
     {
-        DEFINE_STATIC_LOCAL(FontPlatformData, key, ());
+        DEFINE_STATIC_LOCAL(FontPlatformData, key, (0.f, false, false));
         return key;
     }
     static void constructDeletedValue(FontPlatformData& slot)
@@ -277,12 +307,13 @@ void FontCache::purgeInactiveFontData(int count)
 
     isPurging = true;
 
+    Vector<const SimpleFontData*, 20> fontDataToDelete;
     ListHashSet<const SimpleFontData*>::iterator end = gInactiveFontData->end();
     ListHashSet<const SimpleFontData*>::iterator it = gInactiveFontData->begin();
     for (int i = 0; i < count && it != end; ++it, ++i) {
         const SimpleFontData* fontData = *it.get();
         gFontDataCache->remove(fontData->platformData());
-        delete fontData;
+        fontDataToDelete.append(fontData);
     }
 
     if (it == end) {
@@ -293,8 +324,12 @@ void FontCache::purgeInactiveFontData(int count)
             gInactiveFontData->remove(gInactiveFontData->begin());
     }
 
+    size_t fontDataToDeleteCount = fontDataToDelete.size();
+    for (size_t i = 0; i < fontDataToDeleteCount; ++i)
+        delete fontDataToDelete[i];
+
     Vector<FontPlatformDataCacheKey> keysToRemove;
-    keysToRemove.reserveCapacity(gFontPlatformDataCache->size());
+    keysToRemove.reserveInitialCapacity(gFontPlatformDataCache->size());
     FontPlatformDataCache::iterator platformDataEnd = gFontPlatformDataCache->end();
     for (FontPlatformDataCache::iterator platformData = gFontPlatformDataCache->begin(); platformData != platformDataEnd; ++platformData) {
         if (platformData->second && !gFontDataCache->contains(*platformData->second))
@@ -414,7 +449,7 @@ void FontCache::invalidate()
 
     Vector<RefPtr<FontSelector> > clients;
     size_t numClients = gClients->size();
-    clients.reserveCapacity(numClients);
+    clients.reserveInitialCapacity(numClients);
     HashSet<FontSelector*>::iterator end = gClients->end();
     for (HashSet<FontSelector*>::iterator it = gClients->begin(); it != end; ++it)
         clients.append(*it);

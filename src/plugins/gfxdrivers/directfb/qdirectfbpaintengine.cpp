@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the plugins of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -377,7 +377,7 @@ void QDirectFBPaintEngine::clip(const QVectorPath &path, Qt::ClipOperation op)
 {
     Q_D(QDirectFBPaintEngine);
     d->dirtyClip = true;
-    const QPoint bottom = d->transform.map(QPoint(0, int(path.controlPointRect().y2)));
+    const QPoint bottom = d->transform.map(QPoint(0, int(path.controlPointRect().bottom())));
     if (bottom.y() >= d->lastLockedHeight)
         d->lock();
     QRasterPaintEngine::clip(path, op);
@@ -532,7 +532,9 @@ void QDirectFBPaintEngine::drawImage(const QRectF &r, const QImage &image,
     d->prepareForBlit(QDirectFBScreen::hasAlpha(imgSurface));
     d->blit(r, imgSurface, sr);
     if (release) {
+#if (Q_DIRECTFB_VERSION >= 0x010000)
         imgSurface->ReleaseSource(imgSurface);
+#endif
         imgSurface->Release(imgSurface);
     }
 #endif
@@ -804,13 +806,13 @@ QDirectFBPaintEnginePrivate::~QDirectFBPaintEnginePrivate()
     delete surfaceCache;
 }
 
-bool QDirectFBPaintEnginePrivate::dfbCanHandleClip(const QRect &rect) const
+bool QDirectFBPaintEnginePrivate::dfbCanHandleClip(const QRect &) const
 {
     // TODO: Check to see if DirectFB can handle the clip for the given rect
     return dfbHandledClip;
 }
 
-bool QDirectFBPaintEnginePrivate::dfbCanHandleClip(const QRectF &rect) const
+bool QDirectFBPaintEnginePrivate::dfbCanHandleClip(const QRectF &) const
 {
     // TODO: Check to see if DirectFB can handle the clip for the given rect
     return dfbHandledClip;
@@ -897,7 +899,9 @@ void QDirectFBPaintEnginePrivate::end()
 {
     lockedMemory = 0;
     dfbDevice = 0;
+#if (Q_DIRECTFB_VERSION >= 0x010000)
     surface->ReleaseSource(surface);
+#endif
     surface->SetClip(surface, NULL);
     surface = 0;
 }

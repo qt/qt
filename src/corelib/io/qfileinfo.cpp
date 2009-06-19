@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -59,7 +59,6 @@ QFileInfoPrivate::QFileInfoPrivate(const QFileInfo *copy)
         data = copy->d_func()->data;
     } else {
         data = new QFileInfoPrivate::Data;
-        data->clear();
     }
 }
 
@@ -134,11 +133,11 @@ void QFileInfoPrivate::detach()
 
 QString QFileInfoPrivate::getFileName(QAbstractFileEngine::FileName name) const
 {
-    if(data->cache_enabled && data->fileNames.contains((int)name))
-        return data->fileNames.value(name);
+    if(data->cache_enabled && !data->fileNames[(int)name].isNull())
+        return data->fileNames[(int)name];
     QString ret = data->fileEngine->fileName(name);
     if(data->cache_enabled)
-        data->fileNames.insert((int)name, ret);
+        data->fileNames[(int)name] = ret;
     return ret;
 }
 

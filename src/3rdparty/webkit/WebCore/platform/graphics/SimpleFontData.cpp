@@ -32,18 +32,24 @@
 
 #include "Font.h"
 #include "FontCache.h"
+
 #if ENABLE(SVG_FONTS)
 #include "SVGFontData.h"
+#include "SVGFontElement.h"
 #include "SVGFontFaceElement.h"
+#include "SVGGlyphElement.h"
 #endif
 
 #include <wtf/MathExtras.h>
+#include <wtf/UnusedParam.h>
+
+using namespace std;
 
 namespace WebCore {
 
 SimpleFontData::SimpleFontData(const FontPlatformData& f, bool customFont, bool loading, SVGFontData* svgFontData)
     : m_unitsPerEm(defaultUnitsPerEm)
-    , m_font(f)
+    , m_platformData(f)
     , m_treatAsFixedPitch(false)
 #if ENABLE(SVG_FONTS)
     , m_svgFontData(svgFontData)
@@ -52,24 +58,40 @@ SimpleFontData::SimpleFontData(const FontPlatformData& f, bool customFont, bool 
     , m_isLoading(loading)
     , m_smallCapsFontData(0)
 {
-#if ENABLE(SVG_FONTS)
+#if !ENABLE(SVG_FONTS)
+    UNUSED_PARAM(svgFontData);
+#else
     if (SVGFontFaceElement* svgFontFaceElement = svgFontData ? svgFontData->svgFontFaceElement() : 0) {
-       m_unitsPerEm = svgFontFaceElement->unitsPerEm();
+        m_unitsPerEm = svgFontFaceElement->unitsPerEm();
 
-       double scale = f.size();
-       if (m_unitsPerEm)
-           scale /= m_unitsPerEm;
+        double scale = f.size();
+        if (m_unitsPerEm)
+            scale /= m_unitsPerEm;
 
         m_ascent = static_cast<int>(svgFontFaceElement->ascent() * scale);
         m_descent = static_cast<int>(svgFontFaceElement->descent() * scale);
         m_xHeight = static_cast<int>(svgFontFaceElement->xHeight() * scale);
         m_lineGap = 0.1f * f.size();
         m_lineSpacing = m_ascent + m_descent + m_lineGap;
-    
+
+        SVGFontElement* associatedFontElement = svgFontFaceElement->associatedFontElement();
+
+        Vector<SVGGlyphIdentifier> spaceGlyphs;
+        associatedFontElement->getGlyphIdentifiersForString(String(" ", 1), spaceGlyphs);
+        m_spaceWidth = spaceGlyphs.isEmpty() ? m_xHeight : static_cast<float>(spaceGlyphs.first().horizontalAdvanceX * scale);
+
+        Vector<SVGGlyphIdentifier> numeralZeroGlyphs;
+        associatedFontElement->getGlyphIdentifiersForString(String("0", 1), numeralZeroGlyphs);
+        m_avgCharWidth = numeralZeroGlyphs.isEmpty() ? m_spaceWidth : static_cast<float>(numeralZeroGlyphs.first().horizontalAdvanceX * scale);
+
+        Vector<SVGGlyphIdentifier> letterWGlyphs;
+        associatedFontElement->getGlyphIdentifiersForString(String("W", 1), letterWGlyphs);
+        m_maxCharWidth = letterWGlyphs.isEmpty() ? m_ascent : static_cast<float>(letterWGlyphs.first().horizontalAdvanceX * scale);
+
+        // FIXME: is there a way we can get the space glyph from the SVGGlyphIdentifier above?
         m_spaceGlyph = 0;
-        m_spaceWidth = 0;
-        m_adjustedSpaceWidth = 0;
         determinePitch();
+        m_adjustedSpaceWidth = roundf(m_spaceWidth);
         m_missingGlyphData.fontData = this;
         m_missingGlyphData.glyph = 0;
         return;
@@ -78,9 +100,31 @@ SimpleFontData::SimpleFontData(const FontPlatformData& f, bool customFont, bool 
 
     platformInit();
     platformGlyphInit();
+    platformCharWidthInit();
 }
 
 #if !PLATFORM(QT)
+// Estimates of avgCharWidth and maxCharWidth for platforms that don't support accessing these values from the font.
+void SimpleFontData::initCharWidths()
+{
+    GlyphPage* glyphPageZero = GlyphPageTreeNode::getRootChild(this, 0)->page();
+
+    // Treat the width of a '0' as the avgCharWidth.
+    if (m_avgCharWidth <= 0.f && glyphPageZero) {
+        static const UChar32 digitZeroChar = '0';
+        Glyph digitZeroGlyph = glyphPageZero->glyphDataForCharacter(digitZeroChar).glyph;
+        if (digitZeroGlyph)
+            m_avgCharWidth = widthForGlyph(digitZeroGlyph);
+    }
+
+    // If we can't retrieve the width of a '0', fall back to the x height.
+    if (m_avgCharWidth <= 0.f)
+        m_avgCharWidth = m_xHeight;
+
+    if (m_maxCharWidth <= 0.f)
+        m_maxCharWidth = max<float>(m_avgCharWidth, m_ascent);
+}
+
 void SimpleFontData::platformGlyphInit()
 {
     GlyphPage* glyphPageZero = GlyphPageTreeNode::getRootChild(this, 0)->page();
@@ -124,31 +168,17 @@ void SimpleFontData::platformGlyphInit()
 
 SimpleFontData::~SimpleFontData()
 {
-    if (!isCustomFont()) {
-        if (m_smallCapsFontData)
-            FontCache::releaseFontData(m_smallCapsFontData);
-        GlyphPageTreeNode::pruneTreeFontData(this);
-    }
-
 #if ENABLE(SVG_FONTS)
     if (!m_svgFontData || !m_svgFontData->svgFontFaceElement())
 #endif
         platformDestroy();
-}
 
-#if !PLATFORM(QT)
-float SimpleFontData::widthForGlyph(Glyph glyph) const
-{
-    float width = m_glyphToWidthMap.widthForGlyph(glyph);
-    if (width != cGlyphWidthUnknown)
-        return width;
-    
-    width = platformWidthForGlyph(glyph);
-    m_glyphToWidthMap.setWidthForGlyph(glyph, width);
-    
-    return width;
+    if (!isCustomFont()) {
+        if (m_smallCapsFontData)
+            fontCache()->releaseFontData(m_smallCapsFontData);
+        GlyphPageTreeNode::pruneTreeFontData(this);
+    }
 }
-#endif
 
 const SimpleFontData* SimpleFontData::fontDataForCharacter(UChar32) const
 {

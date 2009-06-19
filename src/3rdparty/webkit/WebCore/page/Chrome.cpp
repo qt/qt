@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2006, 2007 Apple Inc. All rights reserved.
+ * Copyright (C) 2006, 2007, 2009 Apple Inc. All rights reserved.
  * Copyright (C) 2008 Nokia Corporation and/or its subsidiary(-ies)
  *
  * This library is free software; you can redistribute it and/or
@@ -28,13 +28,14 @@
 #include "FloatRect.h"
 #include "Frame.h"
 #include "FrameTree.h"
+#include "Geolocation.h"
 #include "HTMLFormElement.h"
 #include "HTMLInputElement.h"
 #include "HTMLNames.h"
 #include "HitTestResult.h"
 #include "InspectorController.h"
 #include "Page.h"
-#include "PageGroup.h"
+#include "PageGroupLoadDeferrer.h"
 #include "ResourceHandle.h"
 #include "ScriptController.h"
 #include "SecurityOrigin.h"
@@ -52,14 +53,6 @@ namespace WebCore {
 
 using namespace HTMLNames;
 using namespace std;
-
-class PageGroupLoadDeferrer : Noncopyable {
-public:
-    PageGroupLoadDeferrer(Page*, bool deferSelf);
-    ~PageGroupLoadDeferrer();
-private:
-    Vector<RefPtr<Frame>, 16> m_deferredFrames;
-};
 
 Chrome::Chrome(Page* page, ChromeClient* client)
     : m_page(page)
@@ -151,13 +144,14 @@ void Chrome::takeFocus(FocusDirection direction) const
 Page* Chrome::createWindow(Frame* frame, const FrameLoadRequest& request, const WindowFeatures& features) const
 {
     Page* newPage = m_client->createWindow(frame, request, features);
+
 #if ENABLE(DOM_STORAGE)
-    
     if (newPage) {
         if (SessionStorage* oldSessionStorage = m_page->sessionStorage(false))
-                newPage->setSessionStorage(oldSessionStorage->copy(newPage));
+            newPage->setSessionStorage(oldSessionStorage->copy(newPage));
     }
 #endif
+
     return newPage;
 }
 
@@ -259,10 +253,7 @@ void Chrome::runJavaScriptAlert(Frame* frame, const String& message)
     PageGroupLoadDeferrer deferrer(m_page, true);
 
     ASSERT(frame);
-    String text = message;
-    text.replace('\\', frame->backslashAsCurrencySymbol());
-
-    m_client->runJavaScriptAlert(frame, text);
+    m_client->runJavaScriptAlert(frame, frame->displayStringModifiedByEncoding(message));
 }
 
 bool Chrome::runJavaScriptConfirm(Frame* frame, const String& message)
@@ -272,10 +263,7 @@ bool Chrome::runJavaScriptConfirm(Frame* frame, const String& message)
     PageGroupLoadDeferrer deferrer(m_page, true);
 
     ASSERT(frame);
-    String text = message;
-    text.replace('\\', frame->backslashAsCurrencySymbol());
-    
-    return m_client->runJavaScriptConfirm(frame, text);
+    return m_client->runJavaScriptConfirm(frame, frame->displayStringModifiedByEncoding(message));
 }
 
 bool Chrome::runJavaScriptPrompt(Frame* frame, const String& prompt, const String& defaultValue, String& result)
@@ -285,15 +273,10 @@ bool Chrome::runJavaScriptPrompt(Frame* frame, const String& prompt, const Strin
     PageGroupLoadDeferrer deferrer(m_page, true);
 
     ASSERT(frame);
-    String promptText = prompt;
-    promptText.replace('\\', frame->backslashAsCurrencySymbol());
-    String defaultValueText = defaultValue;
-    defaultValueText.replace('\\', frame->backslashAsCurrencySymbol());
-    
-    bool ok = m_client->runJavaScriptPrompt(frame, promptText, defaultValueText, result);
+    bool ok = m_client->runJavaScriptPrompt(frame, frame->displayStringModifiedByEncoding(prompt), frame->displayStringModifiedByEncoding(defaultValue), result);
     
     if (ok)
-        result.replace(frame->backslashAsCurrencySymbol(), '\\');
+        result = frame->displayStringModifiedByEncoding(result);
     
     return ok;
 }
@@ -301,10 +284,7 @@ bool Chrome::runJavaScriptPrompt(Frame* frame, const String& prompt, const Strin
 void Chrome::setStatusbarText(Frame* frame, const String& status)
 {
     ASSERT(frame);
-    String text = status;
-    text.replace('\\', frame->backslashAsCurrencySymbol());
-    
-    m_client->setStatusbarText(text);
+    m_client->setStatusbarText(frame->displayStringModifiedByEncoding(status));
 }
 
 bool Chrome::shouldInterruptJavaScript()
@@ -391,20 +371,26 @@ void Chrome::print(Frame* frame)
     m_client->print(frame);
 }
 
-void Chrome::disableSuddenTermination()
+void Chrome::requestGeolocationPermissionForFrame(Frame* frame, Geolocation* geolocation)
 {
-    m_client->disableSuddenTermination();
-}
+    // Defer loads in case the client method runs a new event loop that would 
+    // otherwise cause the load to continue while we're in the middle of executing JavaScript.
+    PageGroupLoadDeferrer deferrer(m_page, true);
 
-void Chrome::enableSuddenTermination()
-{
-    m_client->enableSuddenTermination();
+    ASSERT(frame);
+    m_client->requestGeolocationPermissionForFrame(frame, geolocation);
 }
 
 void Chrome::runOpenPanel(Frame* frame, PassRefPtr<FileChooser> fileChooser)
 {
     m_client->runOpenPanel(frame, fileChooser);
 }
+
+bool Chrome::setCursor(PlatformCursorHandle cursor)
+{
+    return m_client->setCursor(cursor);
+}
+
 // --------
 
 #if ENABLE(DASHBOARD_SUPPORT)
@@ -437,14 +423,6 @@ String ChromeClient::generateReplacementFile(const String&)
     return String(); 
 }
 
-void ChromeClient::disableSuddenTermination()
-{
-}
-
-void ChromeClient::enableSuddenTermination()
-{
-}
-
 bool ChromeClient::paintCustomScrollbar(GraphicsContext*, const FloatRect&, ScrollbarControlSize, 
                                         ScrollbarControlState, ScrollbarPart, bool,
                                         float, float, ScrollbarControlPartMask)
@@ -455,50 +433,6 @@ bool ChromeClient::paintCustomScrollbar(GraphicsContext*, const FloatRect&, Scro
 bool ChromeClient::paintCustomScrollCorner(GraphicsContext*, const FloatRect&)
 {
     return false;
-}
-
-// --------
-
-PageGroupLoadDeferrer::PageGroupLoadDeferrer(Page* page, bool deferSelf)
-{
-    const HashSet<Page*>& pages = page->group().pages();
-
-    HashSet<Page*>::const_iterator end = pages.end();
-    for (HashSet<Page*>::const_iterator it = pages.begin(); it != end; ++it) {
-        Page* otherPage = *it;
-        if ((deferSelf || otherPage != page)) {
-            if (!otherPage->defersLoading())
-                m_deferredFrames.append(otherPage->mainFrame());
-
-#if !PLATFORM(MAC)
-            for (Frame* frame = otherPage->mainFrame(); frame; frame = frame->tree()->traverseNext()) {
-                if (Document* document = frame->document())
-                    document->suspendActiveDOMObjects();
-            }
-#endif
-        }
-    }
-
-    size_t count = m_deferredFrames.size();
-    for (size_t i = 0; i < count; ++i)
-        if (Page* page = m_deferredFrames[i]->page())
-            page->setDefersLoading(true);
-}
-
-PageGroupLoadDeferrer::~PageGroupLoadDeferrer()
-{
-    for (size_t i = 0; i < m_deferredFrames.size(); ++i) {
-        if (Page* page = m_deferredFrames[i]->page()) {
-            page->setDefersLoading(false);
-
-#if !PLATFORM(MAC)
-            for (Frame* frame = page->mainFrame(); frame; frame = frame->tree()->traverseNext()) {
-                if (Document* document = frame->document())
-                    document->resumeActiveDOMObjects();
-            }
-#endif
-        }
-    }
 }
 
 

@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -972,7 +972,7 @@ void Q_GUI_EXPORT qt_mac_set_menubar_merge(bool b) { qt_mac_no_menubar_merge = !
 /*****************************************************************************
   QMenu bindings
  *****************************************************************************/
-QMenuPrivate::QMacMenuPrivate::QMacMenuPrivate() : menu(0)
+QMenuPrivate::QMacMenuPrivate::QMacMenuPrivate(QMenuPrivate *menu) : menu(0), qmenu(menu)
 {
 }
 
@@ -1300,22 +1300,61 @@ QMenuPrivate::QMacMenuPrivate::syncAction(QMacMenuAction *action)
 #else
     int itemIndex = [menu indexOfItem:item];
     Q_ASSERT(itemIndex != -1);
-    if (action->action->isSeparator()) {
+
+    // Separator handling: Menu items and separators can be added to a QMenu in
+    // any order (for example, add all the separators first and then "fill inn" 
+    // the menu items). Create NSMenuItem seperatorItems for the Qt separators, 
+    // and make sure that there are no double separators and no seprators 
+    // at the top or bottom of the menu.
+    bool itemIsSeparator = action->action->isSeparator();
+    bool previousItemIsSeparator = false;
+    if (itemIndex > 0) {
+        if ([[menu itemAtIndex : itemIndex - 1] isSeparatorItem])
+            previousItemIsSeparator = true;
+    }
+    bool nexItemIsSeparator = false;
+    if (itemIndex > 0 && itemIndex < [menu numberOfItems] -1) {
+        if ([[menu itemAtIndex : itemIndex + 1] isSeparatorItem])
+            nexItemIsSeparator = true;
+    }
+    bool itemIsAtBottomOfMenu = (itemIndex == [menu numberOfItems]  - 1);
+    bool itemIsAtTopOfMenu = (itemIndex == 0);
+        
+
+    if (itemIsSeparator) {
+        // Create separators items for actions that are now separators
         action->menuItem = [NSMenuItem separatorItem];
         [action->menuItem retain];
+
+        // Hide duplicate/top/bottom separators.
+        if (qmenu->collapsibleSeparators && (previousItemIsSeparator || itemIsAtBottomOfMenu || itemIsAtTopOfMenu)) {
+            [action->menuItem setHidden : true];
+        }
+
         [menu insertItem: action->menuItem atIndex:itemIndex];
         [menu removeItem:item];
         [item release];
         item = action->menuItem;
         return;
-    } else if ([item isSeparatorItem]) {
-        // I'm no longer a separator...
-        action->menuItem = createNSMenuItem(action->action->text());
-        [menu insertItem:action->menuItem atIndex:itemIndex];
-        [menu removeItem:item];
-        [item release];
-        item = action->menuItem;
+    } else {
+        // Create standard menu items for actions that are no longer separators
+        if ([item isSeparatorItem]) {
+            action->menuItem = createNSMenuItem(action->action->text());
+            [menu insertItem:action->menuItem atIndex:itemIndex];
+            [menu removeItem:item];
+            [item release];
+            item = action->menuItem;
+        }
+
+        // Show separators that should now be visible since a non-separator
+        // item (the current item) was added.
+        if (previousItemIsSeparator) {
+            [[menu itemAtIndex : itemIndex - 1] setHidden : false];
+        } else if (itemIsAtTopOfMenu && nexItemIsSeparator) {
+            [[menu itemAtIndex : itemIndex + 1] setHidden : false];
+        }
     }
+
 #endif
 
     //find text (and accel)
@@ -1499,7 +1538,7 @@ QMenuPrivate::macMenu(OSMenuRef merge)
     if (mac_menu && mac_menu->menu)
         return mac_menu->menu;
     if (!mac_menu)
-        mac_menu = new QMacMenuPrivate;
+        mac_menu = new QMacMenuPrivate(this);
     mac_menu->menu = qt_mac_create_menu(q);
     if (merge) {
 #ifndef QT_MAC_USE_COCOA

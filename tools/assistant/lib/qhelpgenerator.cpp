@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the Qt Assistant of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -467,8 +467,9 @@ bool QHelpGenerator::insertFiles(const QStringList &files, const QString &rootPa
 
     emit statusChanged(tr("Insert files..."));
     QList<int> filterAtts;
-    foreach (QString filterAtt, filterAttributes) {
-        d->query->prepare(QLatin1String("SELECT Id FROM FilterAttributeTable WHERE Name=?"));
+    foreach (const QString &filterAtt, filterAttributes) {
+        d->query->prepare(QLatin1String("SELECT Id FROM FilterAttributeTable "
+            "WHERE Name=?"));
         d->query->bindValue(0, filterAtt);
         d->query->exec();
         if (d->query->next())
@@ -482,76 +483,76 @@ bool QHelpGenerator::insertFiles(const QStringList &files, const QString &rootPa
     if (filterSetId < 0)
         return false;
     ++filterSetId;
-    foreach (int attId, filterAtts) {
-        d->query->prepare(QLatin1String("INSERT INTO FileAttributeSetTable VALUES(?, ?)"));
+    foreach (const int &attId, filterAtts) {
+        d->query->prepare(QLatin1String("INSERT INTO FileAttributeSetTable "
+            "VALUES(?, ?)"));
         d->query->bindValue(0, filterSetId);
         d->query->bindValue(1, attId);
         d->query->exec();
     }
-
-    QString title;
-    QString charSet;
-    QMap<int, QSet<int> > tmpFileFilterMap;
-    QList<FileNameTableData> fileNameDataList;
-    QList<QByteArray> fileDataList;
 
     int tableFileId = 1;
     d->query->exec(QLatin1String("SELECT MAX(Id) FROM FileDataTable"));
     if (d->query->next())
         tableFileId = d->query->value(0).toInt() + 1;
 
+    QString title;
+    QString charSet;
     FileNameTableData fileNameData;
+    QList<QByteArray> fileDataList;
+    QMap<int, QSet<int> > tmpFileFilterMap;
+    QList<FileNameTableData> fileNameDataList;
 
     int i = 0;
-    foreach (QString file, files) {
-        QFileInfo fi(rootPath + QDir::separator() + file);
+    foreach (const QString &file, files) {
+        const QString fileName = QDir::cleanPath(file);
+        if (fileName.startsWith(QLatin1String("../"))) {
+            emit warning(tr("The referenced file %1 must be inside or within a "
+                "subdirectory of (%2). Skipping it.").arg(fileName).arg(rootPath));
+            continue;
+        }
+
+        QFile fi(rootPath + QDir::separator() + fileName);
         if (!fi.exists()) {
             emit warning(tr("The file %1 does not exist! Skipping it.")
-                .arg(fi.absoluteFilePath()));
+                .arg(QDir::cleanPath(rootPath + QDir::separator() + fileName)));
             continue;
         }
 
-        QFile f(fi.absoluteFilePath());
-        if (!f.open(QIODevice::ReadOnly)) {
+        if (!fi.open(QIODevice::ReadOnly)) {
             emit warning(tr("Cannot open file %1! Skipping it.")
-                .arg(fi.absoluteFilePath()));
+                .arg(QDir::cleanPath(rootPath + QDir::separator() + fileName)));
             continue;
         }
 
-        title.clear();
-        QByteArray data;
-        data = f.readAll();
-
-        if (fi.suffix() == QLatin1String("html") || fi.suffix() == QLatin1String("htm")) {
-            charSet = QHelpGlobal::charsetFromData(data);
-            QTextStream stream(&data);
-            stream.setCodec(QTextCodec::codecForName(charSet.toLatin1().constData()));
-            title = QHelpGlobal::documentTitle(stream.readAll());
+        QByteArray data = fi.readAll();
+        if (fileName.endsWith(QLatin1String(".html"))
+            || fileName.endsWith(QLatin1String(".htm"))) {
+                charSet = QHelpGlobal::charsetFromData(data);
+                QTextStream stream(&data);
+                stream.setCodec(QTextCodec::codecForName(charSet.toLatin1().constData()));
+                title = QHelpGlobal::documentTitle(stream.readAll());
         } else {
-            title = fi.fileName();
+            title = fileName.mid(fileName.lastIndexOf(QLatin1Char('/')) + 1);
         }
-
-        QString fName = QDir::cleanPath(file);
-        if (fName.startsWith(QLatin1String("./")))
-            fName = fName.mid(2);
 
         int fileId = -1;
-        if (!d->fileMap.contains(fName)) {
+        if (!d->fileMap.contains(fileName)) {
             fileDataList.append(qCompress(data));
 
-            fileNameData.name = fName;
+            fileNameData.name = fileName;
             fileNameData.fileId = tableFileId;
             fileNameData.title = title;
             fileNameDataList.append(fileNameData);
 
-            d->fileMap.insert(fName, tableFileId);
+            d->fileMap.insert(fileName, tableFileId);
             d->fileFilterMap.insert(tableFileId, filterAtts.toSet());
             tmpFileFilterMap.insert(tableFileId, filterAtts.toSet());
 
             ++tableFileId;
         } else {
-            fileId = d->fileMap.value(fName);
-            foreach (int filter, filterAtts) {
+            fileId = d->fileMap.value(fileName);
+            foreach (const int &filter, filterAtts) {
                 if (!d->fileFilterMap.value(fileId).contains(filter)
                     && !tmpFileFilterMap.value(fileId).contains(filter)) {
                         d->fileFilterMap[fileId].insert(filter);
@@ -565,20 +566,22 @@ bool QHelpGenerator::insertFiles(const QStringList &files, const QString &rootPa
         d->query->exec(QLatin1String("BEGIN"));
         QMap<int, QSet<int> >::const_iterator it = tmpFileFilterMap.constBegin();
         while (it != tmpFileFilterMap.constEnd()) {
-            QSet<int>::const_iterator i = it.value().constBegin();
-            while (i != it.value().constEnd()) {
-                d->query->prepare(QLatin1String("INSERT INTO FileFilterTable VALUES(?, ?)"));
-                d->query->bindValue(0, *i);
+            QSet<int>::const_iterator si = it.value().constBegin();
+            while (si != it.value().constEnd()) {
+                d->query->prepare(QLatin1String("INSERT INTO FileFilterTable "
+                    "VALUES(?, ?)"));
+                d->query->bindValue(0, *si);
                 d->query->bindValue(1, it.key());
                 d->query->exec();
-                ++i;
+                ++si;
             }
             ++it;
         }
 
         QList<QByteArray>::const_iterator fileIt = fileDataList.constBegin();
         while (fileIt != fileDataList.constEnd()) {
-            d->query->prepare(QLatin1String("INSERT INTO FileDataTable VALUES (Null, ?)"));
+            d->query->prepare(QLatin1String("INSERT INTO FileDataTable VALUES "
+                "(Null, ?)"));
             d->query->bindValue(0, *fileIt);
             d->query->exec();
             ++fileIt;
@@ -586,10 +589,11 @@ bool QHelpGenerator::insertFiles(const QStringList &files, const QString &rootPa
                 addProgress(d->fileStep*20.0);
         }
 
-        QList<FileNameTableData>::const_iterator fileNameIt = fileNameDataList.constBegin();
+        QList<FileNameTableData>::const_iterator fileNameIt =
+                                                  fileNameDataList.constBegin();
         while (fileNameIt != fileNameDataList.constEnd()) {
-            d->query->prepare(QLatin1String("INSERT INTO FileNameTable (FolderId, Name, FileId, Title) "
-                " VALUES (?, ?, ?, ?)"));
+            d->query->prepare(QLatin1String("INSERT INTO FileNameTable "
+                "(FolderId, Name, FileId, Title) VALUES (?, ?, ?, ?)"));
             d->query->bindValue(0, 1);
             d->query->bindValue(1, (*fileNameIt).name);
             d->query->bindValue(2, (*fileNameIt).fileId);
@@ -609,8 +613,8 @@ bool QHelpGenerator::insertFiles(const QStringList &files, const QString &rootPa
     return false;
 }
 
-bool QHelpGenerator::registerCustomFilter(const QString &filterName, const QStringList &filterAttribs,
-                                          bool forceUpdate)
+bool QHelpGenerator::registerCustomFilter(const QString &filterName,
+    const QStringList &filterAttribs, bool forceUpdate)
 {
     if (!d->query)
         return false;

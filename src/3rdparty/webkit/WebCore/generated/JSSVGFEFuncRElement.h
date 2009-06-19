@@ -22,7 +22,7 @@
 #define JSSVGFEFuncRElement_h
 
 
-#if ENABLE(SVG) && ENABLE(SVG_FILTERS)
+#if ENABLE(SVG) && ENABLE(FILTERS)
 
 #include "JSSVGComponentTransferFunctionElement.h"
 
@@ -34,7 +34,7 @@ class JSSVGFEFuncRElement : public JSSVGComponentTransferFunctionElement {
     typedef JSSVGComponentTransferFunctionElement Base;
 public:
     JSSVGFEFuncRElement(PassRefPtr<JSC::Structure>, PassRefPtr<SVGFEFuncRElement>);
-    static JSC::JSObject* createPrototype(JSC::ExecState*);
+    static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
     static const JSC::ClassInfo s_info;
 
@@ -42,8 +42,9 @@ public:
 
 
 class JSSVGFEFuncRElementPrototype : public JSC::JSObject {
+    typedef JSC::JSObject Base;
 public:
-    static JSC::JSObject* self(JSC::ExecState*);
+    static JSC::JSObject* self(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
     static const JSC::ClassInfo s_info;
     JSSVGFEFuncRElementPrototype(PassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
@@ -52,6 +53,6 @@ public:
 
 } // namespace WebCore
 
-#endif // ENABLE(SVG) && ENABLE(SVG_FILTERS)
+#endif // ENABLE(SVG) && ENABLE(FILTERS)
 
 #endif

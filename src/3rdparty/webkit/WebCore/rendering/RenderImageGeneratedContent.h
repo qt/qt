@@ -27,16 +27,14 @@
 #define RenderImageGeneratedContent_h
 
 #include "RenderImage.h"
+#include "StyleImage.h"
 #include <wtf/RefPtr.h>
-
-#include "RenderStyle.h"
 
 namespace WebCore {
 
 class StyleImage;
 
-class RenderImageGeneratedContent : public RenderImage
-{
+class RenderImageGeneratedContent : public RenderImage {
 public:
     RenderImageGeneratedContent(Node*);
     virtual ~RenderImageGeneratedContent();
@@ -53,12 +51,14 @@ protected:
     virtual bool imageHasRelativeWidth() const { return m_styleImage->imageHasRelativeWidth(); }
     virtual bool imageHasRelativeHeight() const { return m_styleImage->imageHasRelativeHeight(); }
     virtual IntSize imageSize(float multiplier) const { return m_styleImage->imageSize(this, multiplier); }
-    virtual WrappedImagePtr imagePtr() const { return m_styleImage->data(); }
+    
+    // |m_styleImage| can be 0 if we get a callback for a background image from RenderObject::setStyle.
+    virtual WrappedImagePtr imagePtr() const { return m_styleImage ? m_styleImage->data() : 0; }
 
 private:
     RefPtr<StyleImage> m_styleImage;
 };
 
-}
+} // namespace WebCore
 
-#endif
+#endif // RenderImageGeneratedContent_h

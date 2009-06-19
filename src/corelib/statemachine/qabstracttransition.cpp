@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -66,6 +66,8 @@ QT_BEGIN_NAMESPACE
   The sourceState() function returns the source of the transition. The
   targetStates() function returns the targets of the transition. The machine()
   function returns the state machine that the transition is part of.
+
+  The triggered() signal is emitted when the transition has been triggered.
 
   Transitions can cause animations to be played. Use the addAnimation()
   function to add an animation to the transition.
@@ -137,6 +139,12 @@ void QAbstractTransitionPrivate::callOnTransition(QEvent *e)
 QState *QAbstractTransitionPrivate::sourceState() const
 {
     return qobject_cast<QState*>(parent);
+}
+
+void QAbstractTransitionPrivate::emitTriggered()
+{
+    Q_Q(QAbstractTransition);
+    emit q->triggered();
 }
 
 /*!
@@ -330,6 +338,13 @@ QList<QAbstractAnimation*> QAbstractTransition::animations() const
   This function is called when the transition is triggered. The given \a event
   is what caused the transition to trigger. Reimplement this function to
   perform custom processing when the transition is triggered.
+*/
+
+/*!
+  \fn QAbstractTransition::triggered()
+
+  This signal is emitted when the transition has been triggered (after
+  onTransition() has been called).
 */
 
 /*!

@@ -37,7 +37,7 @@ using namespace JSC;
 
 namespace WebCore {
 
-ASSERT_CLASS_FITS_IN_CELL(JSStorage)
+ASSERT_CLASS_FITS_IN_CELL(JSStorage);
 
 /* Hash table */
 
@@ -74,13 +74,13 @@ public:
     JSStorageConstructor(ExecState* exec)
         : DOMObject(JSStorageConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
     {
-        putDirect(exec->propertyNames().prototype, JSStoragePrototype::self(exec), None);
+        putDirect(exec->propertyNames().prototype, JSStoragePrototype::self(exec, exec->lexicalGlobalObject()), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
     static const ClassInfo s_info;
 
-    static PassRefPtr<Structure> createStructure(JSValuePtr proto) 
+    static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
         return Structure::create(proto, TypeInfo(ObjectType, ImplementsHasInstance)); 
     }
@@ -114,9 +114,9 @@ static const HashTable JSStoragePrototypeTable =
 
 const ClassInfo JSStoragePrototype::s_info = { "StoragePrototype", 0, &JSStoragePrototypeTable, 0 };
 
-JSObject* JSStoragePrototype::self(ExecState* exec)
+JSObject* JSStoragePrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSStorage>(exec);
+    return getDOMPrototype<JSStorage>(exec, globalObject);
 }
 
 bool JSStoragePrototype::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -135,12 +135,11 @@ JSStorage::JSStorage(PassRefPtr<Structure> structure, PassRefPtr<Storage> impl)
 JSStorage::~JSStorage()
 {
     forgetDOMObject(*Heap::heap(this)->globalData(), m_impl.get());
-
 }
 
-JSObject* JSStorage::createPrototype(ExecState* exec)
+JSObject* JSStorage::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSStoragePrototype(JSStoragePrototype::createStructure(exec->lexicalGlobalObject()->objectPrototype()));
+    return new (exec) JSStoragePrototype(JSStoragePrototype::createStructure(globalObject->objectPrototype()));
 }
 
 bool JSStorage::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -157,17 +156,18 @@ bool JSStorage::getOwnPropertySlot(ExecState* exec, const Identifier& propertyNa
     return getStaticValueSlot<JSStorage, Base>(exec, &JSStorageTable, this, propertyName, slot);
 }
 
-JSValuePtr jsStorageLength(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsStorageLength(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     Storage* imp = static_cast<Storage*>(static_cast<JSStorage*>(asObject(slot.slotBase()))->impl());
     return jsNumber(exec, imp->length());
 }
 
-JSValuePtr jsStorageConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsStorageConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     return static_cast<JSStorage*>(asObject(slot.slotBase()))->getConstructor(exec);
 }
-void JSStorage::put(ExecState* exec, const Identifier& propertyName, JSValuePtr value, PutPropertySlot& slot)
+void JSStorage::put(ExecState* exec, const Identifier& propertyName, JSValue value, PutPropertySlot& slot)
 {
     if (customPut(exec, propertyName, value, slot))
         return;
@@ -181,69 +181,74 @@ void JSStorage::getPropertyNames(ExecState* exec, PropertyNameArray& propertyNam
      Base::getPropertyNames(exec, propertyNames);
 }
 
-JSValuePtr JSStorage::getConstructor(ExecState* exec)
+JSValue JSStorage::getConstructor(ExecState* exec)
 {
     return getDOMConstructor<JSStorageConstructor>(exec);
 }
 
-JSValuePtr jsStoragePrototypeFunctionKey(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsStoragePrototypeFunctionKey(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSStorage::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSStorage::s_info))
         return throwError(exec, TypeError);
     JSStorage* castedThisObj = static_cast<JSStorage*>(asObject(thisValue));
     Storage* imp = static_cast<Storage*>(castedThisObj->impl());
     ExceptionCode ec = 0;
-    unsigned index = args.at(exec, 0)->toInt32(exec);
+    unsigned index = args.at(0).toInt32(exec);
 
 
-    JSC::JSValuePtr result = jsString(exec, imp->key(index, ec));
+    JSC::JSValue result = jsString(exec, imp->key(index, ec));
     setDOMException(exec, ec);
     return result;
 }
 
-JSValuePtr jsStoragePrototypeFunctionGetItem(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsStoragePrototypeFunctionGetItem(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSStorage::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSStorage::s_info))
         return throwError(exec, TypeError);
     JSStorage* castedThisObj = static_cast<JSStorage*>(asObject(thisValue));
     Storage* imp = static_cast<Storage*>(castedThisObj->impl());
-    const UString& key = args.at(exec, 0)->toString(exec);
+    const UString& key = args.at(0).toString(exec);
 
 
-    JSC::JSValuePtr result = jsStringOrNull(exec, imp->getItem(key));
+    JSC::JSValue result = jsStringOrNull(exec, imp->getItem(key));
     return result;
 }
 
-JSValuePtr jsStoragePrototypeFunctionSetItem(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsStoragePrototypeFunctionSetItem(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSStorage::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSStorage::s_info))
         return throwError(exec, TypeError);
     JSStorage* castedThisObj = static_cast<JSStorage*>(asObject(thisValue));
     Storage* imp = static_cast<Storage*>(castedThisObj->impl());
     ExceptionCode ec = 0;
-    const UString& key = args.at(exec, 0)->toString(exec);
-    const UString& data = args.at(exec, 1)->toString(exec);
+    const UString& key = args.at(0).toString(exec);
+    const UString& data = args.at(1).toString(exec);
 
     imp->setItem(key, data, ec);
     setDOMException(exec, ec);
     return jsUndefined();
 }
 
-JSValuePtr jsStoragePrototypeFunctionRemoveItem(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsStoragePrototypeFunctionRemoveItem(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSStorage::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSStorage::s_info))
         return throwError(exec, TypeError);
     JSStorage* castedThisObj = static_cast<JSStorage*>(asObject(thisValue));
     Storage* imp = static_cast<Storage*>(castedThisObj->impl());
-    const UString& key = args.at(exec, 0)->toString(exec);
+    const UString& key = args.at(0).toString(exec);
 
     imp->removeItem(key);
     return jsUndefined();
 }
 
-JSValuePtr jsStoragePrototypeFunctionClear(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsStoragePrototypeFunctionClear(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSStorage::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSStorage::s_info))
         return throwError(exec, TypeError);
     JSStorage* castedThisObj = static_cast<JSStorage*>(asObject(thisValue));
     Storage* imp = static_cast<Storage*>(castedThisObj->impl());
@@ -252,13 +257,13 @@ JSValuePtr jsStoragePrototypeFunctionClear(ExecState* exec, JSObject*, JSValuePt
     return jsUndefined();
 }
 
-JSC::JSValuePtr toJS(JSC::ExecState* exec, Storage* object)
+JSC::JSValue toJS(JSC::ExecState* exec, Storage* object)
 {
     return getDOMObjectWrapper<JSStorage>(exec, object);
 }
-Storage* toStorage(JSC::JSValuePtr value)
+Storage* toStorage(JSC::JSValue value)
 {
-    return value->isObject(&JSStorage::s_info) ? static_cast<JSStorage*>(asObject(value))->impl() : 0;
+    return value.isObject(&JSStorage::s_info) ? static_cast<JSStorage*>(asObject(value))->impl() : 0;
 }
 
 }

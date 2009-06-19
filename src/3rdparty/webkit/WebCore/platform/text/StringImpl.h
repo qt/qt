@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 1999 Lars Knoll (knoll@kde.org)
- * Copyright (C) 2005, 2006, 2007, 2008 Apple Inc. All rights reserved.
+ * Copyright (C) 2005, 2006, 2007, 2008, 2009 Apple Inc. All rights reserved.
+ * Copyright (C) 2009 Google Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -24,10 +25,17 @@
 
 #include <limits.h>
 #include <wtf/ASCIICType.h>
-#include <wtf/Forward.h>
+#include <wtf/CrossThreadRefCounted.h>
+#include <wtf/OwnFastMallocPtr.h>
+#include <wtf/PassRefPtr.h>
+#include <wtf/PtrAndFlags.h>
 #include <wtf/RefCounted.h>
 #include <wtf/Vector.h>
 #include <wtf/unicode/Unicode.h>
+
+#if USE(JSC)
+#include <runtime/UString.h>
+#endif
 
 #if PLATFORM(CF) || (PLATFORM(QT) && PLATFORM(DARWIN))
 typedef const struct __CFString * CFStringRef;
@@ -46,6 +54,8 @@ struct CStringTranslator;
 struct HashAndCharactersTranslator;
 struct StringHash;
 struct UCharBufferTranslator;
+
+enum TextCaseSensitivity { TextCaseSensitive, TextCaseInsensitive };
 
 typedef bool (*CharacterMatchFunctionPtr)(UChar);
 
@@ -70,23 +80,34 @@ private:
     StringImpl(const UChar*, unsigned length, unsigned hash);
     StringImpl(const char*, unsigned length, unsigned hash);
 
+    typedef CrossThreadRefCounted<OwnFastMallocPtr<UChar> > SharedUChar;
+
 public:
     ~StringImpl();
 
     static PassRefPtr<StringImpl> create(const UChar*, unsigned length);
     static PassRefPtr<StringImpl> create(const char*, unsigned length);
     static PassRefPtr<StringImpl> create(const char*);
+    static PassRefPtr<StringImpl> createUninitialized(unsigned length, UChar*& data);
 
     static PassRefPtr<StringImpl> createWithTerminatingNullCharacter(const StringImpl&);
 
     static PassRefPtr<StringImpl> createStrippingNullCharacters(const UChar*, unsigned length);
     static PassRefPtr<StringImpl> adopt(StringBuffer&);
     static PassRefPtr<StringImpl> adopt(Vector<UChar>&);
+#if USE(JSC)
+    static PassRefPtr<StringImpl> create(const JSC::UString&);
+    JSC::UString ustring();
+#endif
 
+    SharedUChar* sharedBuffer();
     const UChar* characters() { return m_data; }
     unsigned length() { return m_length; }
 
-    bool hasTerminatingNullCharacter() { return m_hasTerminatingNullCharacter; }
+    bool hasTerminatingNullCharacter() const { return m_sharedBufferAndFlags.isFlagSet(HasTerminatingNullCharacter); }
+
+    bool inTable() const { return m_sharedBufferAndFlags.isFlagSet(InTable); }
+    void setInTable() { return m_sharedBufferAndFlags.setFlag(InTable); }
 
     unsigned hash() { if (m_hash == 0) m_hash = computeHash(m_data, m_length); return m_hash; }
     unsigned existingHash() const { ASSERT(m_hash); return m_hash; }
@@ -164,12 +185,30 @@ public:
     operator NSString*();
 #endif
 
+    void operator delete(void*);
+
 private:
+    // Allocation from a custom buffer is only allowed internally to avoid
+    // mismatched allocators. Callers should use create().
+    void* operator new(size_t size);
+    void* operator new(size_t size, void* address);
+
+    static PassRefPtr<StringImpl> createStrippingNullCharactersSlowCase(const UChar*, unsigned length);
+
+    enum StringImplFlags {
+        HasTerminatingNullCharacter,
+        InTable,
+    };
+
     unsigned m_length;
     const UChar* m_data;
     mutable unsigned m_hash;
-    bool m_inTable;
-    bool m_hasTerminatingNullCharacter;
+    PtrAndFlags<SharedUChar, StringImplFlags> m_sharedBufferAndFlags;
+
+    // In some cases, we allocate the StringImpl struct and its data
+    // within a single heap buffer. In this case, the m_data pointer
+    // is an "internal buffer", and does not need to be deallocated.
+    bool m_bufferIsInternal;
 };
 
 bool equal(StringImpl*, StringImpl*);
@@ -270,6 +309,29 @@ static inline bool isSpaceOrNewline(UChar c)
     // Use isASCIISpace() for basic Latin-1.
     // This will include newlines, which aren't included in Unicode DirWS.
     return c <= 0x7F ? WTF::isASCIISpace(c) : WTF::Unicode::direction(c) == WTF::Unicode::WhiteSpaceNeutral;
+}
+
+// This is a hot function because it's used when parsing HTML.
+inline PassRefPtr<StringImpl> StringImpl::createStrippingNullCharacters(const UChar* characters, unsigned length)
+{
+    ASSERT(characters);
+    ASSERT(length);
+
+    // Optimize for the case where there are no Null characters by quickly
+    // searching for nulls, and then using StringImpl::create, which will
+    // memcpy the whole buffer.  This is faster than assigning character by
+    // character during the loop. 
+
+    // Fast case.
+    int foundNull = 0;
+    for (unsigned i = 0; !foundNull && i < length; i++) {
+        int c = characters[i]; // more efficient than using UChar here (at least on Intel Mac OS)
+        foundNull |= !c;
+    }
+    if (!foundNull)
+        return StringImpl::create(characters, length);
+
+    return StringImpl::createStrippingNullCharactersSlowCase(characters, length);
 }
 
 }

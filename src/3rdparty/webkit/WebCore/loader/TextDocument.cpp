@@ -41,9 +41,10 @@ using namespace HTMLNames;
 class TextTokenizer : public Tokenizer {
 public:
     TextTokenizer(Document*);
+    virtual ~TextTokenizer();
     TextTokenizer(HTMLViewSourceDocument*);
 
-    virtual bool write(const SegmentedString&, bool appendData);
+    virtual void write(const SegmentedString&, bool appendData);
     virtual void finish();
     virtual bool isWaitingForScripts() const;
     
@@ -91,9 +92,15 @@ TextTokenizer::TextTokenizer(HTMLViewSourceDocument* doc)
     m_size = 254;
     m_buffer = static_cast<UChar*>(fastMalloc(sizeof(UChar) * m_size));
     m_dest = m_buffer;
-}    
+}
 
-bool TextTokenizer::write(const SegmentedString& s, bool)
+TextTokenizer::~TextTokenizer()
+{
+    // finish() should have been called to prevent any leaks
+    ASSERT(!m_buffer);
+}
+
+void TextTokenizer::write(const SegmentedString& s, bool)
 {
     ExceptionCode ec;
 
@@ -125,13 +132,13 @@ bool TextTokenizer::write(const SegmentedString& s, bool)
     }
 
     if (!m_preElement && !inViewSourceMode()) {
-        RefPtr<Element> rootElement = m_doc->createElementNS(xhtmlNamespaceURI, "html", ec);
+        RefPtr<Element> rootElement = m_doc->createElement(htmlTag, false);
         m_doc->appendChild(rootElement, ec);
 
-        RefPtr<Element> body = m_doc->createElementNS(xhtmlNamespaceURI, "body", ec);
+        RefPtr<Element> body = m_doc->createElement(bodyTag, false);
         rootElement->appendChild(body, ec);
 
-        RefPtr<Element> preElement = m_doc->createElementNS(xhtmlNamespaceURI, "pre", ec);
+        RefPtr<Element> preElement = m_doc->createElement(preTag, false);
         preElement->setAttribute("style", "word-wrap: break-word; white-space: pre-wrap;", ec);
 
         body->appendChild(preElement, ec);
@@ -142,7 +149,7 @@ bool TextTokenizer::write(const SegmentedString& s, bool)
     String string = String(m_buffer, m_dest - m_buffer);
     if (inViewSourceMode()) {
         static_cast<HTMLViewSourceDocument*>(m_doc)->addViewSourceText(string);
-        return false;
+        return;
     }
 
     unsigned charsLeft = string.length();
@@ -151,15 +158,15 @@ bool TextTokenizer::write(const SegmentedString& s, bool)
         RefPtr<Text> text = Text::createWithLengthLimit(m_doc, string, charsLeft);
         m_preElement->appendChild(text, ec);
     }
-
-    return false;
 }
 
 void TextTokenizer::finish()
 {
     m_preElement = 0;
     fastFree(m_buffer);
-        
+    m_buffer = 0;
+    m_dest = 0;
+
     m_doc->finishedParsing();
 }
 

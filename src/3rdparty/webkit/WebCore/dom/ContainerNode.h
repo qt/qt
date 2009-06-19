@@ -24,7 +24,7 @@
 #ifndef ContainerNode_h
 #define ContainerNode_h
 
-#include "EventTargetNode.h"
+#include "Node.h"
 #include "FloatPoint.h"
 
 namespace WebCore {
@@ -36,7 +36,7 @@ namespace Private {
     void addChildNodesToDeletionQueue(GenericNode*& head, GenericNode*& tail, GenericNodeContainer* container);
 };
 
-class ContainerNode : public EventTargetNode {
+class ContainerNode : public Node {
 public:
     ContainerNode(Document*, bool isElement = false);
     virtual ~ContainerNode();
@@ -75,8 +75,8 @@ public:
 
 protected:
     static void queuePostAttachCallback(NodeCallback, Node*);
-    static void suspendPostAttachCallbacks();
-    static void resumePostAttachCallbacks();
+    void suspendPostAttachCallbacks();
+    void resumePostAttachCallbacks();
 
     template<class GenericNode, class GenericNodeContainer>
     friend void appendChildToContainer(GenericNode* child, GenericNodeContainer* container);
@@ -96,7 +96,14 @@ private:
     Node* m_firstChild;
     Node* m_lastChild;
 };
-    
+
+inline ContainerNode::ContainerNode(Document* document, bool isElement)
+    : Node(document, isElement, true)
+    , m_firstChild(0)
+    , m_lastChild(0)
+{
+}
+
 inline unsigned Node::containerChildNodeCount() const
 {
     ASSERT(isContainerNode());

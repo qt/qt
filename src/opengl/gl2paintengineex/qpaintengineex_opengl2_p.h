@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtOpenGL module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -165,7 +165,7 @@ public:
     // fill, drawOutline, drawTexture & drawCachedGlyphs are the rendering entry points:
     void fill(const QVectorPath &path);
     void drawOutline(const QVectorPath& path);
-    void drawTexture(const QGLRect& dest, const QGLRect& src, const QSize &textureSize, bool opaque);
+    void drawTexture(const QGLRect& dest, const QGLRect& src, const QSize &textureSize, bool opaque, bool pattern = false);
     void drawCachedGlyphs(const QPointF &p, const QTextItemInt &ti);
 
     void drawVertexArrays(QGL2PEXVertexArray& vertexArray, GLenum primitive);

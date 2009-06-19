@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -498,6 +498,7 @@ void QStateMachinePrivate::executeTransitionContent(QEvent *event, const QList<Q
         qDebug() << q_func() << ": triggering" << t;
 #endif
         QAbstractTransitionPrivate::get(t)->callOnTransition(event);
+        QAbstractTransitionPrivate::get(t)->emitTriggered();
     }
 }
 
@@ -1170,9 +1171,9 @@ void QStateMachinePrivate::_q_start()
     transitions.append(initialTransition);
     QEvent nullEvent(QEvent::None);
     executeTransitionContent(&nullEvent, transitions);
-    enterStates(&nullEvent, transitions);
+    QList<QAbstractState*> enteredStates = enterStates(&nullEvent, transitions);
     applyProperties(transitions, QList<QAbstractState*>() << start,
-                    QList<QAbstractState*>() << initial);
+                    enteredStates);
     delete start;
 
 #ifdef QSTATEMACHINE_DEBUG

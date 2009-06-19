@@ -36,6 +36,44 @@ namespace WebCore {
  * and produce invalid results.
  */
 
+// The difference between two styles.  The following values are used:
+// (1) StyleDifferenceEqual - The two styles are identical
+// (2) StyleDifferenceRecompositeLayer - The layer needs its position and transform updated, but no repaint
+// (3) StyleDifferenceRepaint - The object just needs to be repainted.
+// (4) StyleDifferenceRepaintLayer - The layer and its descendant layers needs to be repainted.
+// (5) StyleDifferenceLayout - A layout is required.
+enum StyleDifference {
+    StyleDifferenceEqual,
+#if USE(ACCELERATED_COMPOSITING)
+    StyleDifferenceRecompositeLayer,
+#endif
+    StyleDifferenceRepaint,
+    StyleDifferenceRepaintLayer,
+    StyleDifferenceLayoutPositionedMovementOnly,
+    StyleDifferenceLayout
+};
+
+// When some style properties change, different amounts of work have to be done depending on
+// context (e.g. whether the property is changing on an element which has a compositing layer).
+// A simple StyleDifference does not provide enough information so we return a bit mask of
+// StyleDifferenceContextSensitiveProperties from RenderStyle::diff() too.
+enum StyleDifferenceContextSensitiveProperty {
+    ContextSensitivePropertyNone = 0,
+    ContextSensitivePropertyTransform = (1 << 0),
+    ContextSensitivePropertyOpacity = (1 << 1)
+};
+
+// Static pseudo styles. Dynamic ones are produced on the fly.
+enum PseudoId {
+    NOPSEUDO, FIRST_LINE, FIRST_LETTER, BEFORE, AFTER, SELECTION, FIRST_LINE_INHERITED, SCROLLBAR, FILE_UPLOAD_BUTTON, INPUT_PLACEHOLDER,
+    SLIDER_THUMB, SEARCH_CANCEL_BUTTON, SEARCH_DECORATION, SEARCH_RESULTS_DECORATION, SEARCH_RESULTS_BUTTON, MEDIA_CONTROLS_PANEL,
+    MEDIA_CONTROLS_PLAY_BUTTON, MEDIA_CONTROLS_MUTE_BUTTON, MEDIA_CONTROLS_TIMELINE, MEDIA_CONTROLS_TIMELINE_CONTAINER,
+    MEDIA_CONTROLS_CURRENT_TIME_DISPLAY, MEDIA_CONTROLS_TIME_REMAINING_DISPLAY, MEDIA_CONTROLS_SEEK_BACK_BUTTON, 
+    MEDIA_CONTROLS_SEEK_FORWARD_BUTTON, MEDIA_CONTROLS_FULLSCREEN_BUTTON, 
+    SCROLLBAR_THUMB, SCROLLBAR_BUTTON, SCROLLBAR_TRACK, SCROLLBAR_TRACK_PIECE, SCROLLBAR_CORNER, RESIZER,
+
+    FIRST_INTERNAL_PSEUDOID = FILE_UPLOAD_BUTTON
+};
 
 // These have been defined in the order of their precedence for border-collapsing. Do
 // not change this order!
@@ -163,18 +201,13 @@ enum EListStyleType {
      HIRAGANA, KATAKANA, HIRAGANA_IROHA, KATAKANA_IROHA, LNONE
 };
 
-enum ContentType {
+enum StyleContentType {
     CONTENT_NONE, CONTENT_OBJECT, CONTENT_TEXT, CONTENT_COUNTER
 };
 
 enum EBorderFit { BorderFitBorder, BorderFitLines };
 
 enum ETimingFunctionType { LinearTimingFunction, CubicBezierTimingFunction };
-
-enum EAnimPlayState {
-    AnimPlayStatePlaying = 0x0,
-    AnimPlayStatePaused = 0x1
-};
 
 enum EWhiteSpace {
     NORMAL, PRE, PRE_WRAP, PRE_LINE, NOWRAP, KHTML_NOWRAP
@@ -261,6 +294,14 @@ enum EDisplay {
 enum EPointerEvents {
     PE_NONE, PE_AUTO, PE_STROKE, PE_FILL, PE_PAINTED, PE_VISIBLE,
     PE_VISIBLE_STROKE, PE_VISIBLE_FILL, PE_VISIBLE_PAINTED, PE_ALL
+};
+
+enum ETransformStyle3D {
+    TransformStyle3DFlat, TransformStyle3DPreserve3D
+};
+
+enum EBackfaceVisibility {
+    BackfaceVisibilityVisible, BackfaceVisibilityHidden
 };
 
 } // namespace WebCore
