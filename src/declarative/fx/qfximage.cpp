@@ -127,6 +127,10 @@ QFxImage::~QFxImage()
     Q_D(QFxImage);
     if (d->sciReply)
         d->sciReply->deleteLater();
+    if (!d->url.isEmpty())
+        QFxPixmap::cancelGet(d->url, this);
+    if (!d->sciurl.isEmpty())
+        QFxPixmap::cancelGet(d->sciurl, this);
 #if defined(QFX_RENDER_OPENGL)
     if (d->tex) {
         d->tex->release();
@@ -972,6 +976,13 @@ void QFxImage::setGridScaledImage(const QFxGridScaledImage& sci)
         d->status = Error;
         emit statusChanged(d->status);
     } else {
+        QFxScaleGrid *sg = scaleGrid();
+        sg->setTop(sci.gridTop());
+        sg->setBottom(sci.gridBottom());
+        sg->setLeft(sci.gridLeft());
+        sg->setRight(sci.gridRight());
+        setOptions(QFxImage::SimpleItem, false);
+
         d->sciurl = d->url.resolved(QUrl(sci.pixmapUrl()));
         d->reply = QFxPixmap::get(qmlEngine(this), d->sciurl, this, SLOT(requestFinished()));
         if (d->reply) {
@@ -981,12 +992,6 @@ void QFxImage::setGridScaledImage(const QFxGridScaledImage& sci)
             d->progress = 1.0;
             emit progressChanged(d->progress);
         }
-        QFxScaleGrid *sg = scaleGrid();
-        sg->setTop(sci.gridTop());
-        sg->setBottom(sci.gridBottom());
-        sg->setLeft(sci.gridLeft());
-        sg->setRight(sci.gridRight());
-        setOptions(QFxImage::SimpleItem, false);
     }
 }
 

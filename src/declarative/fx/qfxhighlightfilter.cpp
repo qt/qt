@@ -114,6 +114,8 @@ QFxHighlightFilter::QFxHighlightFilter(QObject *parent)
 
 QFxHighlightFilter::~QFxHighlightFilter()
 {
+    if (!d->url.isEmpty())
+        QFxPixmap::cancelGet(d->url, this);
     delete d;
     d = 0;
 }
