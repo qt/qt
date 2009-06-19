@@ -246,6 +246,7 @@ void tst_QTouchEvent::basicRawEventTranslation()
 {
     tst_QTouchEventWidget touchWidget;
     touchWidget.setAttribute(Qt::WA_AcceptTouchEvents);
+    touchWidget.setGeometry(100, 100, 400, 300);
 
     QPointF pos = touchWidget.rect().center();
     QPointF screenPos = touchWidget.mapToGlobal(pos.toPoint());
