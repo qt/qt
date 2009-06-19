@@ -3,7 +3,6 @@ HEADERS += \
            fx/qfxanchors_p.h \
            fx/qfxanimatedimageitem.h \
            fx/qfxblendedimage.h \
-           fx/qfxblurfilter.h \
            fx/qfxcomponentinstance.h \
            fx/qfxcomponentinstance_p.h \
            fx/qfxcontentwrapper.h \
@@ -16,7 +15,6 @@ HEADERS += \
            fx/qfxfocusrealm.h \
            fx/qfxgridview.h \
            fx/qfxflowview.h \
-           fx/qfxhighlightfilter.h \
            fx/qfximage.h \
            fx/qfxpainteditem.h \
            fx/qfxpainteditem_p.h \
@@ -36,11 +34,9 @@ HEADERS += \
            fx/qfxpathview_p.h \
            fx/qfxrect.h \
            fx/qfxrect_p.h \
-           fx/qfxreflectionfilter.h \
            fx/qfxrepeater.h \
            fx/qfxrepeater_p.h \
            fx/qfxscalegrid.h \
-           fx/qfxshadowfilter.h \
            fx/qfxtextedit.h \
            fx/qfxtextedit_p.h \
            fx/qfxtext.h \
@@ -55,7 +51,6 @@ SOURCES += \
            fx/qfxanchors.cpp \
            fx/qfxanimatedimageitem.cpp \
            fx/qfxblendedimage.cpp \
-           fx/qfxblurfilter.cpp \
            fx/qfxcomponentinstance.cpp \
            fx/qfxcontentwrapper.cpp \
            fx/qfxevents.cpp \
@@ -65,7 +60,6 @@ SOURCES += \
            fx/qfxfocusrealm.cpp \
            fx/qfxgridview.cpp \
            fx/qfxflowview.cpp \
-           fx/qfxhighlightfilter.cpp \
            fx/qfximage.cpp \
            fx/qfxpainteditem.cpp \
            fx/qfxitem.cpp \
@@ -77,10 +71,8 @@ SOURCES += \
            fx/qfxpath.cpp \
            fx/qfxpathview.cpp \
            fx/qfxrect.cpp \
-           fx/qfxreflectionfilter.cpp \
            fx/qfxrepeater.cpp \
            fx/qfxscalegrid.cpp \
-           fx/qfxshadowfilter.cpp \
            fx/qfxtext.cpp \
            fx/qfxtextedit.cpp \
            fx/qfxtransform.cpp \
