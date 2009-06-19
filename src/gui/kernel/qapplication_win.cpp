@@ -4027,6 +4027,7 @@ bool QApplicationPrivate::translateTouchEvent(const MSG &msg)
 
     QVector<TOUCHINPUT> winTouchInputs(msg.wParam);
     memset(winTouchInputs.data(), 0, sizeof(TOUCHINPUT) * winTouchInputs.count());
+    Qt::TouchPointStates allStates = 0;
     QApplicationPrivate::GetTouchInputInfo((HANDLE) msg.lParam, msg.wParam, winTouchInputs.data(), sizeof(TOUCHINPUT));
     for (int i = 0; i < winTouchInputs.count(); ++i) {
         const TOUCHINPUT &touchInput = winTouchInputs.at(i);
@@ -4062,9 +4063,16 @@ bool QApplicationPrivate::translateTouchEvent(const MSG &msg)
         touchPoint.setState(state);
         touchPoint.setScreenRect(screenRect);
 
+        allStates |= state;
+
         touchPoints.append(touchPoint);
     }
     QApplicationPrivate::CloseTouchInputHandle((HANDLE) msg.lParam);
+
+    if ((allStates & Qt::TouchPointStateMask) == Qt::TouchPointReleased) {
+        // all touch points released, forget the ids we've seen, they may not be reused
+        touchInputIDToTouchPointID.clear();
+    }
 
     translateRawTouchEvent(widgetForHwnd, touchPoints);
     return true;
