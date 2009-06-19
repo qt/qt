@@ -541,10 +541,6 @@ public:
     uint usesDoubleBufferedGLContext : 1;
 
     // *************************** Platform specific ************************************
-#if defined(Q_WS_X11) || defined(Q_WS_MAC)
-    void registerTouchWindow();
-#endif
-
 #if defined(Q_WS_X11) // <----------------------------------------------------------- X11
     QX11Info xinfo;
     Qt::HANDLE picture;
@@ -567,6 +563,7 @@ public:
     void unregisterOleDnd(QWidget *widget, QOleDropTarget *target);
 #endif
     void grabMouseWhileInWindow();
+    void registerTouchWindow();
 #elif defined(Q_WS_MAC) // <--------------------------------------------------------- MAC
     // This is new stuff
     uint needWindowChange : 1;
@@ -632,6 +629,7 @@ public:
     static OSStatus qt_window_event(EventHandlerCallRef er, EventRef event, void *);
     static OSStatus qt_widget_event(EventHandlerCallRef er, EventRef event, void *);
     static bool qt_widget_rgn(QWidget *, short, RgnHandle, bool);
+    void registerTouchWindow();
 #elif defined(Q_WS_QWS) // <--------------------------------------------------------- QWS
     void setMaxWindowState_helper();
     void setFullScreenSize_helper();
