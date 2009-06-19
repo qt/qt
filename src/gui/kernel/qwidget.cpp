@@ -9928,12 +9928,12 @@ void QWidget::setAttribute(Qt::WidgetAttribute attribute, bool on)
         }
 
         break;
-#if defined(Q_WS_WIN)
     case Qt::WA_AcceptTouchEvents:
+#if defined(Q_WS_WIN) || defined(Q_WS_MAC)
         if (on)
             d->registerTouchWindow();
-        break;
 #endif
+        break;
     default:
         break;
     }

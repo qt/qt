@@ -49,6 +49,7 @@
 #include <private/qt_cocoa_helpers_mac_p.h>
 #include <private/qdnd_p.h>
 #include <private/qmacinputcontext_p.h>
+#include <private/qmultitouch_mac_p.h>
 
 #include <qscrollarea.h>
 #include <qhash.h>
@@ -68,6 +69,7 @@ Q_GLOBAL_STATIC(DnDParams, qMacDnDParams);
 
 extern void qt_mac_update_cursor_at_global_pos(const QPoint &globalPos); // qcursor_mac.mm
 extern bool qt_sendSpontaneousEvent(QObject *, QEvent *); // qapplication.cpp
+extern bool qt_translateRawTouchEvent(const QList<QTouchEvent::TouchPoint> &touchPoints, QWidget *window); // qapplication.cpp
 extern OSViewRef qt_mac_nativeview_for(const QWidget *w); // qwidget_mac.mm
 extern const QStringList& qEnabledDraggedTypes(); // qmime_mac.cpp
 extern QPointer<QWidget> qt_mouseover; //qapplication_mac.mm
@@ -702,6 +704,11 @@ extern "C" {
 
 - (void)mouseUp:(NSEvent *)theEvent
 {
+#if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_6
+    if (QSysInfo::MacintoshVersion >= QSysInfo::MV_10_6)
+        QCocoaTouch::setMouseInDraggingState(false);
+#endif
+
     bool mouseOK = qt_mac_handleMouseEvent(self, theEvent, QEvent::MouseButtonRelease, Qt::LeftButton);
 
     if (!mouseOK)
@@ -709,7 +716,7 @@ extern "C" {
 }
 
 - (void)rightMouseDown:(NSEvent *)theEvent
-{        
+{
     bool mouseOK = qt_mac_handleMouseEvent(self, theEvent, QEvent::MouseButtonPress, Qt::RightButton);
 
     if (!mouseOK)
@@ -745,6 +752,11 @@ extern "C" {
 
 - (void)mouseDragged:(NSEvent *)theEvent
 {
+#if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_6
+    if (QSysInfo::MacintoshVersion >= QSysInfo::MV_10_6)
+        QCocoaTouch::setMouseInDraggingState(true);
+#endif
+
     qMacDnDParams()->view = self;
     qMacDnDParams()->theEvent = theEvent;
     bool mouseOK = qt_mac_handleMouseEvent(self, theEvent, QEvent::MouseMove, Qt::LeftButton);
@@ -867,6 +879,58 @@ extern "C" {
     if (!qt_mac_handleTabletEvent(self, tabletEvent))
         [super tabletPoint:tabletEvent];
 }
+
+#if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_6
+- (void)touchesBeganWithEvent:(NSEvent *)event; 
+{
+    qt_translateRawTouchEvent(QCocoaTouch::getCurrentTouchPointList(event), qwidget);
+}
+
+- (void)touchesMovedWithEvent:(NSEvent *)event;
+{
+    qt_translateRawTouchEvent(QCocoaTouch::getCurrentTouchPointList(event), qwidget);
+}
+
+- (void)touchesEndedWithEvent:(NSEvent *)event;
+{
+    qt_translateRawTouchEvent(QCocoaTouch::getCurrentTouchPointList(event), qwidget);
+}
+
+- (void)touchesCancelledWithEvent:(NSEvent *)event;
+{
+    qt_translateRawTouchEvent(QCocoaTouch::getCurrentTouchPointList(event), qwidget);
+}
+
+- (void)magnifyWithEvent:(NSEvent *)event;
+{
+    Q_UNUSED(event);
+//    qDebug() << "magnifyWithEvent";
+}
+
+- (void)rotateWithEvent:(NSEvent *)event;
+{
+    Q_UNUSED(event);
+//    qDebug() << "rotateWithEvent";
+}
+
+- (void)swipeWithEvent:(NSEvent *)event;
+{
+    Q_UNUSED(event);
+//    qDebug() << "swipeWithEvent";
+}
+
+- (void)beginGestureWithEvent:(NSEvent *)event;
+{
+    Q_UNUSED(event);
+//    qDebug() << "beginGestureWithEvent";
+}
+
+- (void)endGestureWithEvent:(NSEvent *)event;
+{
+    Q_UNUSED(event);
+//    qDebug() << "endGestureWithEvent";
+}
+#endif // MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_6
 
 - (void)frameDidChange:(NSNotification *)note
 {
