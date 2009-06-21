@@ -37,25 +37,25 @@ class JSSVGPathSegList : public DOMObject {
 public:
     JSSVGPathSegList(PassRefPtr<JSC::Structure>, PassRefPtr<SVGPathSegList>, SVGElement* context);
     virtual ~JSSVGPathSegList();
-    static JSC::JSObject* createPrototype(JSC::ExecState*);
+    static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
     static const JSC::ClassInfo s_info;
 
-    static PassRefPtr<JSC::Structure> createStructure(JSC::JSValuePtr prototype)
+    static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
     {
         return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType));
     }
 
 
     // Custom functions
-    JSC::JSValuePtr clear(JSC::ExecState*, const JSC::ArgList&);
-    JSC::JSValuePtr initialize(JSC::ExecState*, const JSC::ArgList&);
-    JSC::JSValuePtr getItem(JSC::ExecState*, const JSC::ArgList&);
-    JSC::JSValuePtr insertItemBefore(JSC::ExecState*, const JSC::ArgList&);
-    JSC::JSValuePtr replaceItem(JSC::ExecState*, const JSC::ArgList&);
-    JSC::JSValuePtr removeItem(JSC::ExecState*, const JSC::ArgList&);
-    JSC::JSValuePtr appendItem(JSC::ExecState*, const JSC::ArgList&);
+    JSC::JSValue clear(JSC::ExecState*, const JSC::ArgList&);
+    JSC::JSValue initialize(JSC::ExecState*, const JSC::ArgList&);
+    JSC::JSValue getItem(JSC::ExecState*, const JSC::ArgList&);
+    JSC::JSValue insertItemBefore(JSC::ExecState*, const JSC::ArgList&);
+    JSC::JSValue replaceItem(JSC::ExecState*, const JSC::ArgList&);
+    JSC::JSValue removeItem(JSC::ExecState*, const JSC::ArgList&);
+    JSC::JSValue appendItem(JSC::ExecState*, const JSC::ArgList&);
     SVGPathSegList* impl() const { return m_impl.get(); }
     SVGElement* context() const { return m_context.get(); }
 
@@ -64,16 +64,17 @@ private:
     RefPtr<SVGPathSegList > m_impl;
 };
 
-JSC::JSValuePtr toJS(JSC::ExecState*, SVGPathSegList*, SVGElement* context);
-SVGPathSegList* toSVGPathSegList(JSC::JSValuePtr);
+JSC::JSValue toJS(JSC::ExecState*, SVGPathSegList*, SVGElement* context);
+SVGPathSegList* toSVGPathSegList(JSC::JSValue);
 
 class JSSVGPathSegListPrototype : public JSC::JSObject {
+    typedef JSC::JSObject Base;
 public:
-    static JSC::JSObject* self(JSC::ExecState*);
+    static JSC::JSObject* self(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
     static const JSC::ClassInfo s_info;
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier&, JSC::PropertySlot&);
-    static PassRefPtr<JSC::Structure> createStructure(JSC::JSValuePtr prototype)
+    static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
     {
         return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType));
     }
@@ -82,16 +83,16 @@ public:
 
 // Functions
 
-JSC::JSValuePtr jsSVGPathSegListPrototypeFunctionClear(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr, const JSC::ArgList&);
-JSC::JSValuePtr jsSVGPathSegListPrototypeFunctionInitialize(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr, const JSC::ArgList&);
-JSC::JSValuePtr jsSVGPathSegListPrototypeFunctionGetItem(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr, const JSC::ArgList&);
-JSC::JSValuePtr jsSVGPathSegListPrototypeFunctionInsertItemBefore(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr, const JSC::ArgList&);
-JSC::JSValuePtr jsSVGPathSegListPrototypeFunctionReplaceItem(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr, const JSC::ArgList&);
-JSC::JSValuePtr jsSVGPathSegListPrototypeFunctionRemoveItem(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr, const JSC::ArgList&);
-JSC::JSValuePtr jsSVGPathSegListPrototypeFunctionAppendItem(JSC::ExecState*, JSC::JSObject*, JSC::JSValuePtr, const JSC::ArgList&);
+JSC::JSValue JSC_HOST_CALL jsSVGPathSegListPrototypeFunctionClear(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
+JSC::JSValue JSC_HOST_CALL jsSVGPathSegListPrototypeFunctionInitialize(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
+JSC::JSValue JSC_HOST_CALL jsSVGPathSegListPrototypeFunctionGetItem(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
+JSC::JSValue JSC_HOST_CALL jsSVGPathSegListPrototypeFunctionInsertItemBefore(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
+JSC::JSValue JSC_HOST_CALL jsSVGPathSegListPrototypeFunctionReplaceItem(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
+JSC::JSValue JSC_HOST_CALL jsSVGPathSegListPrototypeFunctionRemoveItem(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
+JSC::JSValue JSC_HOST_CALL jsSVGPathSegListPrototypeFunctionAppendItem(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
 // Attributes
 
-JSC::JSValuePtr jsSVGPathSegListNumberOfItems(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+JSC::JSValue jsSVGPathSegListNumberOfItems(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
 
 } // namespace WebCore
 

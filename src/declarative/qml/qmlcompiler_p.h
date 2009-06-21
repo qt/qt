@@ -180,6 +180,7 @@ private:
     void finalizeBinding(const BindingReference &); 
 
     bool canConvert(int, QmlParser::Object *);
+    QStringList deferredProperties(QmlParser::Object *);
 
     struct IdReference {
         QString id;

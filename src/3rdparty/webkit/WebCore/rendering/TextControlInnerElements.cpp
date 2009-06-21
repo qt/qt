@@ -35,15 +35,19 @@
 #include "HTMLNames.h"
 #include "HTMLTextAreaElement.h"
 #include "MouseEvent.h"
+#include "RenderLayer.h"
 #include "RenderTextControlSingleLine.h"
 
 namespace WebCore {
 
 class RenderTextControlInnerBlock : public RenderBlock {
 public:
-    RenderTextControlInnerBlock(Node* node) : RenderBlock(node) { }
+    RenderTextControlInnerBlock(Node* node, bool isMultiLine) : RenderBlock(node), m_multiLine(isMultiLine) { }
 
     virtual bool nodeAtPoint(const HitTestRequest&, HitTestResult&, int x, int y, int tx, int ty, HitTestAction);
+    virtual VisiblePosition positionForPoint(const IntPoint&);
+    private:
+        bool m_multiLine;
 };
 
 bool RenderTextControlInnerBlock::nodeAtPoint(const HitTestRequest& request, HitTestResult& result, int x, int y, int tx, int ty, HitTestAction hitTestAction)
@@ -55,6 +59,22 @@ bool RenderTextControlInnerBlock::nodeAtPoint(const HitTestRequest& request, Hit
         placeholderIsVisible = static_cast<RenderTextControlSingleLine*>(renderer)->placeholderIsVisible();
 
     return RenderBlock::nodeAtPoint(request, result, x, y, tx, ty, placeholderIsVisible ? HitTestBlockBackground : hitTestAction);
+}
+
+VisiblePosition RenderTextControlInnerBlock::positionForPoint(const IntPoint& point)
+{
+    int contentsX = point.x();
+    int contentsY = point.y();
+
+    // Multiline text controls have the scroll on shadowAncestorNode, so we need to take that
+    // into account here.
+    if (m_multiLine) {
+        RenderTextControl* renderer = static_cast<RenderTextControl*>(node()->shadowAncestorNode()->renderer());
+        if (renderer->hasOverflowClip())
+            renderer->layer()->addScrolledContentOffset(contentsX, contentsY);
+    }
+
+    return RenderBlock::positionForPoint(IntPoint(contentsX, contentsY));
 }
 
 TextControlInnerElement::TextControlInnerElement(Document* doc, Node* shadowParent)
@@ -98,14 +118,15 @@ void TextControlInnerTextElement::defaultEventHandler(Event* evt)
     // FIXME: In the future, we should add a way to have default event listeners.  Then we would add one to the text field's inner div, and we wouldn't need this subclass.
     Node* shadowAncestor = shadowAncestorNode();
     if (shadowAncestor && shadowAncestor->renderer()) {
-        ASSERT(shadowAncestor->renderer()->isTextField() || shadowAncestor->renderer()->isTextArea());
-        if (evt->isBeforeTextInsertedEvent())
+        ASSERT(shadowAncestor->renderer()->isTextControl());
+        if (evt->isBeforeTextInsertedEvent()) {
             if (shadowAncestor->renderer()->isTextField())
                 static_cast<HTMLInputElement*>(shadowAncestor)->defaultEventHandler(evt);
             else
                 static_cast<HTMLTextAreaElement*>(shadowAncestor)->defaultEventHandler(evt);
+        }
         if (evt->type() == eventNames().webkitEditableContentChangedEvent)
-            static_cast<RenderTextControl*>(shadowAncestor->renderer())->subtreeHasChanged();
+            toRenderTextControl(shadowAncestor->renderer())->subtreeHasChanged();
     }
     if (!evt->defaultHandled())
         HTMLDivElement::defaultEventHandler(evt);
@@ -113,7 +134,13 @@ void TextControlInnerTextElement::defaultEventHandler(Event* evt)
 
 RenderObject* TextControlInnerTextElement::createRenderer(RenderArena* arena, RenderStyle*)
 {
-    return new (arena) RenderTextControlInnerBlock(this);
+    bool multiLine = false;
+    Node* shadowAncestor = shadowAncestorNode();
+    if (shadowAncestor && shadowAncestor->renderer()) {
+        ASSERT(shadowAncestor->renderer()->isTextField() || shadowAncestor->renderer()->isTextArea());
+        multiLine = shadowAncestor->renderer()->isTextArea();
+    }
+    return new (arena) RenderTextControlInnerBlock(this, multiLine);
 }
 
 SearchFieldResultsButtonElement::SearchFieldResultsButtonElement(Document* doc)

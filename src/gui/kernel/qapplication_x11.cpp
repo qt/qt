@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -127,6 +127,10 @@ extern "C" {
 #include "qwidget_p.h"
 
 #include <private/qbackingstore_p.h>
+
+#if _POSIX_VERSION+0 < 200112L && !defined(Q_OS_BSD4)
+# define QT_NO_UNSETENV
+#endif
 
 QT_BEGIN_NAMESPACE
 
@@ -799,6 +803,14 @@ Q_GUI_EXPORT void qt_x11_apply_settings_in_all_apps()
                     PropModeReplace, (unsigned char *)stamp.data(), stamp.size());
 }
 
+static int kdeSessionVersion()
+{
+    static int kdeVersion = 0;
+    if (!kdeVersion)
+        kdeVersion = QString::fromLocal8Bit(qgetenv("KDE_SESSION_VERSION")).toInt();
+    return kdeVersion;
+}
+
 /*! \internal
     Gets the current KDE 3 or 4 home path
 */
@@ -808,10 +820,9 @@ QString QApplicationPrivate::kdeHome()
     if (kdeHomePath.isEmpty()) {
         kdeHomePath = QString::fromLocal8Bit(qgetenv("KDEHOME"));
         if (kdeHomePath.isEmpty()) {
-            int kdeSessionVersion = QString::fromLocal8Bit(qgetenv("KDE_SESSION_VERSION")).toInt();
             QDir homeDir(QDir::homePath());
             QString kdeConfDir(QLatin1String("/.kde"));
-            if (4 == kdeSessionVersion && homeDir.exists(QLatin1String(".kde4")))
+            if (4 == kdeSessionVersion() && homeDir.exists(QLatin1String(".kde4")))
                 kdeConfDir = QLatin1String("/.kde4");
             kdeHomePath = QDir::homePath() + kdeConfDir;
         }
@@ -880,13 +891,11 @@ bool QApplicationPrivate::x11_apply_settings()
             QApplicationPrivate::setSystemPalette(pal);
     }
 
-    int kdeSessionVersion = QString::fromLocal8Bit(qgetenv("KDE_SESSION_VERSION")).toInt();
-
     if (!appFont) {
         QFont font(QApplication::font());
         QString fontDescription;
         // Override Qt font if KDE4 settings can be used
-        if (4 == kdeSessionVersion) {
+        if (4 == kdeSessionVersion()) {
             QSettings kdeSettings(kdeHome() + QLatin1String("/share/config/kdeglobals"), QSettings::IniFormat);
             fontDescription = kdeSettings.value(QLatin1String("font")).toString();
             if (fontDescription.isEmpty()) {
@@ -916,29 +925,16 @@ bool QApplicationPrivate::x11_apply_settings()
 
     // read new QStyle
     QString stylename = settings.value(QLatin1String("style")).toString();
-    if (stylename.isEmpty() && !QApplicationPrivate::styleOverride && X11->use_xrender) {
-        QStringList availableStyles = QStyleFactory::keys();
-        // Override Qt style if KDE4 settings can be used
-        if (4 == kdeSessionVersion) {
-            QSettings kdeSettings(kdeHome() + QLatin1String("/share/config/kdeglobals"), QSettings::IniFormat);
-            QString kde4Style = kdeSettings.value(QLatin1String("widgetStyle"),
-                                                  QLatin1String("Oxygen")).toString();
-            foreach (const QString &style, availableStyles) {
-                if (style.toLower() == kde4Style.toLower())
-                    stylename = kde4Style;
-            }
-        // Set QGtkStyle for GNOME
-        } else if (X11->desktopEnvironment == DE_GNOME) {
-            QString gtkStyleKey = QString::fromLatin1("GTK+");
-            if (availableStyles.contains(gtkStyleKey))
-                stylename = gtkStyleKey;
-        }
+
+
+    if (stylename.isEmpty() && QApplicationPrivate::styleOverride.isNull() && X11->use_xrender) {
+        stylename = x11_desktop_style();
     }
 
     static QString currentStyleName = stylename;
     if (QCoreApplication::startingUp()) {
-        if (!stylename.isEmpty() && !QApplicationPrivate::styleOverride)
-            QApplicationPrivate::styleOverride = new QString(stylename);
+        if (!stylename.isEmpty() && QApplicationPrivate::styleOverride.isNull())
+            QApplicationPrivate::styleOverride = stylename;
     } else {
         if (currentStyleName != stylename) {
             currentStyleName = stylename;
@@ -1765,7 +1761,7 @@ void qt_init(QApplicationPrivate *priv, int,
         X11->pattern_fills[i].screen = -1;
 #endif
 
-    X11->startupId = X11->originalStartupId = 0;
+    X11->startupId = 0;
 
     int argc = priv->argc;
     char **argv = priv->argv;
@@ -2102,14 +2098,6 @@ void qt_init(QApplicationPrivate *priv, int,
                 X11->use_xfixes = (major >= 1);
                 X11->xfixes_major = major;
             }
-        }
-        if (X11->use_xfixes && X11->ptrXFixesSelectSelectionInput) {
-            const unsigned long eventMask =
-                XFixesSetSelectionOwnerNotifyMask | XFixesSelectionWindowDestroyNotifyMask | XFixesSelectionClientCloseNotifyMask;
-            X11->ptrXFixesSelectSelectionInput(X11->display, QX11Info::appRootWindow(0),
-                                               XA_PRIMARY, eventMask);
-            X11->ptrXFixesSelectSelectionInput(X11->display, QX11Info::appRootWindow(0),
-                                               ATOM(CLIPBOARD), eventMask);
         }
 #endif // QT_NO_XFIXES
 
@@ -2571,10 +2559,15 @@ void qt_init(QApplicationPrivate *priv, int,
 #endif // QT_NO_TABLET
 
         X11->startupId = getenv("DESKTOP_STARTUP_ID");
-        X11->originalStartupId = X11->startupId;
-        static char desktop_startup_id[] = "DESKTOP_STARTUP_ID=";
-        putenv(desktop_startup_id);
-
+        if (X11->startupId) {
+#ifndef QT_NO_UNSETENV
+            unsetenv("DESKTOP_STARTUP_ID");
+#else
+            // it's a small memory leak, however we won't crash if Qt is
+            // unloaded and someones tries to use the envoriment.
+            putenv(strdup("DESKTOP_STARTUP_ID="));
+#endif
+        }
    } else {
         // read some non-GUI settings when not using the X server...
 
@@ -2633,31 +2626,49 @@ void qt_init(QApplicationPrivate *priv, int,
 /*!
     \internal
 */
-void QApplicationPrivate::x11_initialize_style()
+QString QApplicationPrivate::x11_desktop_style()
 {
-    if (QApplicationPrivate::app_style)
-        return;
+    QString stylename;
+    QStringList availableStyles = QStyleFactory::keys();
+    // Override Qt style if KDE4 settings can be used
+    if (4 == kdeSessionVersion()) {
+        QSettings kdeSettings(kdeHome() + QLatin1String("/share/config/kdeglobals"), QSettings::IniFormat);
+        QString kde4Style = kdeSettings.value(QLatin1String("widgetStyle"),
+                                              QLatin1String("Oxygen")).toString();
+        foreach (const QString &style, availableStyles) {
+            if (style.toLower() == kde4Style.toLower())
+                stylename = kde4Style;
+        }
+    // Set QGtkStyle for GNOME
+    } else if (X11->desktopEnvironment == DE_GNOME) {
+        QString gtkStyleKey = QString::fromLatin1("GTK+");
+        if (availableStyles.contains(gtkStyleKey))
+            stylename = gtkStyleKey;
+    }
 
-    switch(X11->desktopEnvironment) {
+    if (stylename.isEmpty()) {
+        switch(X11->desktopEnvironment) {
         case DE_KDE:
             if (X11->use_xrender)
-                QApplicationPrivate::app_style = QStyleFactory::create(QLatin1String("plastique"));
+                stylename = QLatin1String("plastique");
             else
-                QApplicationPrivate::app_style = QStyleFactory::create(QLatin1String("windows"));
+                stylename = QLatin1String("windows");
             break;
         case DE_GNOME:
             if (X11->use_xrender)
-                QApplicationPrivate::app_style = QStyleFactory::create(QLatin1String("cleanlooks"));
+                stylename = QLatin1String("cleanlooks");
             else
-                QApplicationPrivate::app_style = QStyleFactory::create(QLatin1String("windows"));
+                stylename = QLatin1String("windows");
             break;
         case DE_CDE:
-            QApplicationPrivate::app_style = QStyleFactory::create(QLatin1String("cde"));
+            stylename = QLatin1String("cde");
             break;
         default:
             // Don't do anything
             break;
+        }
     }
+    return stylename;
 }
 
 void QApplicationPrivate::initializeWidgetPaletteHash()
@@ -2687,10 +2698,6 @@ void qt_cleanup()
         devices->clear();
 #endif
     }
-
-    // restore original value back. This is also done in QWidgetPrivate::show_sys.
-    if (X11->originalStartupId)
-        putenv(X11->originalStartupId);
 
 #ifndef QT_NO_XRENDER
     for (int i = 0; i < X11->solid_fill_count; ++i) {
@@ -4604,6 +4611,46 @@ void fetchWacomToolId(int &deviceType, qint64 &serialId)
 }
 #endif
 
+struct qt_tablet_motion_data
+{
+    Time timestamp;
+    int tabletMotionType;
+    bool error; // found a reason to stop searching
+};
+
+static Bool qt_mouseMotion_scanner(Display *, XEvent *event, XPointer arg)
+{
+    qt_tablet_motion_data *data = (qt_tablet_motion_data *) arg;
+    if (data->error)
+        return false;
+
+    if (event->type == MotionNotify)
+        return true;
+
+    data->error = event->type != data->tabletMotionType; // we stop compression when another event gets in between.
+    return false;
+}
+
+static Bool qt_tabletMotion_scanner(Display *, XEvent *event, XPointer arg)
+{
+    qt_tablet_motion_data *data = (qt_tablet_motion_data *) arg;
+    if (data->error)
+        return false;
+
+    if (event->type == data->tabletMotionType) {
+        if (data->timestamp > 0) {
+            if ((reinterpret_cast<const XDeviceMotionEvent*>(event))->time > data->timestamp) {
+                data->error = true;
+                return false;
+            }
+        }
+        return true;
+    }
+
+    data->error = event->type != MotionNotify; // we stop compression when another event gets in between.
+    return false;
+}
+
 bool QETWidget::translateXinputEvent(const XEvent *ev, QTabletDeviceData *tablet)
 {
 #if defined (Q_OS_IRIX)
@@ -4630,7 +4677,6 @@ bool QETWidget::translateXinputEvent(const XEvent *ev, QTabletDeviceData *tablet
     qreal rotation = 0;
     int deviceType = QTabletEvent::NoDevice;
     int pointerType = QTabletEvent::UnknownPointer;
-    XEvent xinputMotionEvent;
     XEvent mouseMotionEvent;
     const XDeviceMotionEvent *motion = 0;
     XDeviceButtonEvent *button = 0;
@@ -4638,8 +4684,6 @@ bool QETWidget::translateXinputEvent(const XEvent *ev, QTabletDeviceData *tablet
     QEvent::Type t;
     Qt::KeyboardModifiers modifiers = 0;
     bool reinsertMouseEvent = false;
-    bool neverFoundMouseEvent = true;
-    XEvent xinputMotionEventNext;
     XEvent mouseMotionEventSave;
 #if !defined (Q_OS_IRIX)
     XID device_id;
@@ -4647,72 +4691,41 @@ bool QETWidget::translateXinputEvent(const XEvent *ev, QTabletDeviceData *tablet
 
     if (ev->type == tablet->xinput_motion) {
         motion = reinterpret_cast<const XDeviceMotionEvent*>(ev);
-        for (;;) {
-            // get the corresponding mouseMotionEvent for motion
-            if (XCheckTypedWindowEvent(X11->display, internalWinId(), MotionNotify, &mouseMotionEvent)) {
+
+        // Do event compression.  Skip over tablet+mouse move events if there are newer ones.
+        qt_tablet_motion_data tabletMotionData;
+        tabletMotionData.tabletMotionType = tablet->xinput_motion;
+        while (true) {
+            // Find first mouse event since we expect them in pairs inside Qt
+            tabletMotionData.error =false;
+            tabletMotionData.timestamp = 0;
+            if (XCheckIfEvent(X11->display, &mouseMotionEvent, &qt_mouseMotion_scanner, (XPointer) &tabletMotionData)) {
                 mouseMotionEventSave = mouseMotionEvent;
                 reinsertMouseEvent = true;
-                neverFoundMouseEvent = false;
-
-                if (mouseMotionEvent.xmotion.time > motion->time) {
-                    XEvent xinputMotionEventLoop = *ev;
-
-                    // xinput event is older than the mouse event --> search for the corresponding xinput event for the given mouse event
-                    while (mouseMotionEvent.xmotion.time > (reinterpret_cast<const XDeviceMotionEvent*>(&xinputMotionEventLoop))->time) {
-                        if (XCheckTypedWindowEvent(X11->display, internalWinId(), tablet->xinput_motion, &xinputMotionEventLoop)) {
-                            xinputMotionEvent = xinputMotionEventLoop;
-                        }
-                        else {
-                            break;
-                        }
-                    }
-                    motion = reinterpret_cast<const XDeviceMotionEvent*>(&xinputMotionEvent);
-                }
-
-                // get the next xinputMotionEvent, for the next loop run
-                if (!XCheckTypedWindowEvent(X11->display, internalWinId(), tablet->xinput_motion, &xinputMotionEventNext)) {
-                    XPutBackEvent(X11->display, &mouseMotionEvent);
-                    reinsertMouseEvent = false;
-                    break;
-                }
-
-                if (mouseMotionEvent.xmotion.time != motion->time) {
-                    // reinsert in order
-                    if (mouseMotionEvent.xmotion.time >= motion->time) {
-                        XPutBackEvent(X11->display, &mouseMotionEvent);
-                        XPutBackEvent(X11->display, &xinputMotionEventNext);
-                        // next entry in queue is xinputMotionEventNext
-                    }
-                    else {
-                        XPutBackEvent(X11->display, &xinputMotionEventNext);
-                        XPutBackEvent(X11->display, &mouseMotionEvent);
-                        // next entry in queue is mouseMotionEvent
-                    }
-                    reinsertMouseEvent = false;
-                    break;
-                }
-            }
-            else {
+            } else {
                 break;
             }
 
-            xinputMotionEvent = xinputMotionEventNext;
-            motion = (reinterpret_cast<const XDeviceMotionEvent*>(&xinputMotionEvent));
+            // Now discard any duplicate tablet events.
+            XEvent dummy;
+            tabletMotionData.error = false;
+            tabletMotionData.timestamp = mouseMotionEvent.xmotion.time;
+            while (XCheckIfEvent(X11->display, &dummy, &qt_tabletMotion_scanner, (XPointer) &tabletMotionData)) {
+                motion = reinterpret_cast<const XDeviceMotionEvent*>(&dummy);
+            }
+
+            // now check if there are more recent tablet motion events since we'll compress the current one with
+            // newer ones in that case
+            tabletMotionData.error = false;
+            tabletMotionData.timestamp = 0;
+            if (! XCheckIfEvent(X11->display, &dummy, &qt_tabletMotion_scanner, (XPointer) &tabletMotionData)) {
+                break; // done with compression
+            }
+            motion = reinterpret_cast<const XDeviceMotionEvent*>(&dummy);
         }
 
         if (reinsertMouseEvent) {
-          XPutBackEvent(X11->display, &mouseMotionEventSave);
-        }
-
-        if (neverFoundMouseEvent) {
-            XEvent xinputMotionEventLoop;
-            bool eventFound = false;
-            // xinput event without mouseMotionEvent --> search the newest xinputMotionEvent
-            while (XCheckTypedWindowEvent(X11->display, internalWinId(), tablet->xinput_motion, &xinputMotionEventLoop)) {
-                xinputMotionEvent = xinputMotionEventLoop;
-                eventFound = true;
-            }
-            if (eventFound) motion = reinterpret_cast<const XDeviceMotionEvent*>(&xinputMotionEvent);
+            XPutBackEvent(X11->display, &mouseMotionEventSave);
         }
 
         t = QEvent::TabletMove;

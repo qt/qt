@@ -2,8 +2,7 @@
     Copyright (C) 2006 Alexander Kellett <lypanov@kde.org>
     Copyright (C) 2006 Apple Computer, Inc.
     Copyright (C) 2007 Rob Buis <buis@kde.org>
-
-    This file is part of the WebKit project.
+    Copyright (C) 2009 Google, Inc.
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -29,23 +28,33 @@
 #include "TransformationMatrix.h"
 #include "FloatRect.h"
 #include "RenderImage.h"
+#include "SVGRenderSupport.h"
 
 namespace WebCore {
 
     class SVGImageElement;
     class SVGPreserveAspectRatio;
 
-    class RenderSVGImage : public RenderImage {
+    class RenderSVGImage : public RenderImage, SVGRenderBase {
     public:
         RenderSVGImage(SVGImageElement*);
         virtual ~RenderSVGImage();
-        
-        virtual TransformationMatrix localTransform() const { return m_localTransform; }
-        
-        virtual FloatRect relativeBBox(bool includeStroke = true) const;
-        virtual IntRect absoluteClippedOverflowRect();
-        virtual void absoluteRects(Vector<IntRect>&, int tx, int ty, bool topLevel = true);
-        virtual void absoluteQuads(Vector<FloatQuad>&, bool topLevel = true);
+
+        virtual const char* renderName() const { return "RenderSVGImage"; }
+        virtual bool isSVGImage() const { return true; }
+
+        virtual TransformationMatrix localToParentTransform() const { return m_localTransform; }
+
+        virtual FloatRect objectBoundingBox() const;
+        virtual FloatRect repaintRectInLocalCoordinates() const;
+
+        virtual IntRect clippedOverflowRectForRepaint(RenderBoxModelObject* repaintContainer);
+        virtual void computeRectForRepaint(RenderBoxModelObject* repaintContainer, IntRect&, bool fixed = false);
+
+        virtual void mapLocalToContainer(RenderBoxModelObject* repaintContainer, bool useTransforms, bool fixed, TransformState&) const;
+
+        virtual void absoluteRects(Vector<IntRect>&, int tx, int ty);
+        virtual void absoluteQuads(Vector<FloatQuad>&);
         virtual void addFocusRingRects(GraphicsContext*, int tx, int ty);
 
         virtual void imageChanged(WrappedImagePtr, const IntRect* = 0);
@@ -54,17 +63,16 @@ namespace WebCore {
         virtual void layout();
         virtual void paint(PaintInfo&, int parentX, int parentY);
 
-        bool requiresLayer();
+        bool requiresLayer() const { return false; }
 
+        virtual bool nodeAtFloatPoint(const HitTestRequest&, HitTestResult&, const FloatPoint& pointInParent, HitTestAction);
         virtual bool nodeAtPoint(const HitTestRequest&, HitTestResult&, int _x, int _y, int _tx, int _ty, HitTestAction);
 
-        bool calculateLocalTransform();
-
     private:
-        void calculateAbsoluteBounds();
+        virtual TransformationMatrix localTransform() const { return m_localTransform; }
+
         TransformationMatrix m_localTransform;
         FloatRect m_localBounds;
-        IntRect m_absoluteBounds;
     };
 
 } // namespace WebCore

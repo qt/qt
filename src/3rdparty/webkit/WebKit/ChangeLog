@@ -1,3 +1,320 @@
+2009-06-04  Sam Weinig  <sam@webkit.org>
+
+        Reviewed by Alice Liu.
+
+        Move WebView internal data into WebViewData.h/mm.
+
+        * WebKit.xcodeproj/project.pbxproj:
+
+2009-06-03  Sam Weinig  <sam@webkit.org>
+
+        Reviewed by Mark Rowe.
+
+        Added WebDelegateImplementationCaching.h/mm
+
+        * WebKit.xcodeproj/project.pbxproj:
+
+2009-06-03  Sam Weinig  <sam@webkit.org>
+
+        Reviewed by Mark Rowe.
+
+        Add WebViewInternal.mm.
+
+        * WebKit.xcodeproj/project.pbxproj:
+
+2009-06-03  Dan Bernstein  <mitz@apple.com>
+
+        Reviewed by Anders Carlsson.
+
+        - WebKit project part of eliminating WebCoreTextRenderer
+
+        * WebKit.xcodeproj/project.pbxproj: Changed WebKitNSStringExtras.m to
+            compile as Objective-C++.
+
+2009-06-01  Darin Adler  <darin@apple.com>
+
+        Reviewed by Maciej Stachowiak.
+
+        Bug 26113: break WebTextCompletionController out into its own source file
+        https://bugs.webkit.org/show_bug.cgi?id=26113
+
+        * WebKit.xcodeproj/project.pbxproj: Add WebTextCompletionController.h/mm.
+
+2009-05-28  Mark Rowe  <mrowe@apple.com>
+
+        Rubber-stamped by Anders Carlsson.
+
+        Symlink WebKitPluginHost.app in to place if needed.
+
+        * WebKit.xcodeproj/project.pbxproj:
+
+2009-05-24  Darin Adler  <darin@apple.com>
+
+        * StringsNotToBeLocalized.txt: Updated for recent changes. Got rid of most full-file exceptions.
+
+2009-05-16  Anders Carlsson  <andersca@apple.com>
+
+        Reviewed by Sam Weinig and Dan Bernstein.
+
+        Fix <rdar://problem/6889644>.
+        
+        * English.lproj/Localizable.strings:
+
+2009-05-10  Alexey Proskuryakov  <ap@webkit.org>
+
+        Reviewed by Dan Bernstein.
+
+        <rdar://problem/6870383> Have to enter credentials twice when downloading from a protected page
+
+        * WebKit.xcodeproj/project.pbxproj: Renamed Misc/WebDownload.m as WebDownload.mm, so that
+        it could use C++ code from AuthenticaitonMac.h.
+
+2009-04-27  Douglas R. Davidson  <ddavidso@apple.com>
+
+        Add localizable strings for 
+        <rdar://problem/6724106> WebViews need to implement text checking
+
+        Reviewed by Justin Garcia.
+
+        * English.lproj/Localizable.strings:
+
+2009-04-27  Kevin Decker  <kdecker@apple.com>
+
+        Reviewed by Anders Carlsson.
+                
+        <rdar://problem/6352982>
+
+        * WebKit.xcodeproj/project.pbxproj: Added WebNetscapeContainerCheckContextInfo.mm to the project.
+
+2009-04-23  Kevin Decker  <kdecker@apple.com>
+
+        Reviewed by Anders Carlsson.
+
+        * WebKit.xcodeproj/project.pbxproj: Added WebNetscapeContainerCheckPrivate.mm and header to the project.
+
+2009-04-21  Adam Roben  <aroben@apple.com>
+
+        Update StringsNotToBeLocalized.txt for recent changes
+
+        Rubber-stamped by John Sullivan.
+
+        * StringsNotToBeLocalized.txt:
+
+2009-04-19  Darin Adler  <darin@apple.com>
+
+        * StringsNotToBeLocalized.txt: Updated for recent changes.
+
+2009-04-17  David Kilzer  <ddkilzer@apple.com>
+
+        Simplify FEATURE_DEFINES definition
+
+        Reviewed by Darin Adler.
+
+        This moves FEATURE_DEFINES and its related ENABLE_FEATURE_NAME
+        variables to their own FeatureDefines.xcconfig file.  It also
+        extracts a new ENABLE_GEOLOCATION variable so that
+        FEATURE_DEFINES only needs to be defined once.
+
+        * WebKit.xcodeproj/project.pbxproj: Added
+        FeatureDefines.xcconfig file.
+
+2009-04-10  Timothy Hatcher  <timothy@apple.com>
+
+        Remove DOMDocumentPrivate.h now that <rdar://problem/6730996> is fixed.
+
+        Rubber-stamped by Mark Rowe.
+
+        * WebKit.xcodeproj/project.pbxproj:
+
+2009-04-09  Mike Thole  <mthole@apple.com>
+
+        Reviewed by Adam Roben.
+
+        * WebKit.xcodeproj/project.pbxproj:
+            Set the Localizable.strings encoding to UTF-16.
+
+2009-04-07  Anders Carlsson  <andersca@apple.com>
+
+        Try to fix the Leopard build once more.
+
+        * WebKit.xcodeproj/project.pbxproj:
+
+2009-04-07  Anders Carlsson  <andersca@apple.com>
+
+        Another attempt at fixing the build.
+        
+        * WebKit.xcodeproj/project.pbxproj:
+
+2009-04-02  Adele Peterson  <adele@apple.com>
+
+        Reviewed by Darin Adler.
+
+        * WebKit.xcodeproj/project.pbxproj: 
+        Add WebDOMOperationsInternal.h and make WebDOMOperationsPrivate.h private. 
+
+2009-04-01  Greg Bolsinga  <bolsinga@apple.com>
+
+        Reviewed by Mark Rowe.
+
+        https://bugs.webkit.org/show_bug.cgi?id=24990
+        Put SECTORDER_FLAGS into xcconfig files.
+
+        * WebKit.xcodeproj/project.pbxproj:
+
+2009-03-27  Darin Adler  <darin@apple.com>
+
+        * StringsNotToBeLocalized.txt: Updated for recent changes.
+
+2009-03-16  Darin Adler  <darin@apple.com>
+
+        Reviewed by Dan Bernstein.
+
+        * English.lproj/Localizable.strings: Updated.
+        * StringsNotToBeLocalized.txt: Updated for recent changes.
+
+2009-03-13  Greg Bolsinga  <bolsinga@apple.com>
+
+        Reviewed by Simon Fraser.
+
+        Update Geolocation perimission dialogs to be asynchronous.
+        https://bugs.webkit.org/show_bug.cgi?id=24505
+
+        Add WebGeolocation, a wrapper around WebCore::Geolocation. It mimics the
+        coding style set by WebSecurityOrigin.
+
+        * WebKit.xcodeproj/project.pbxproj:
+
+2009-03-13  Anders Carlsson  <andersca@apple.com>
+
+        Reviewed by Dan Bernstein.
+
+        <rdar://problem/6610666> Revise the Cocoa event model text API
+        
+        Remove nptextinput.h
+        
+        * WebKit.xcodeproj/project.pbxproj:
+
+2009-03-03  David Kilzer  <ddkilzer@apple.com>
+
+        <rdar://problem/6581203> WebCore and WebKit should install the same set of headers during installhdrs phase as build phase
+
+        Reviewed by Mark Rowe.
+
+        The fix is to add INSTALLHDRS_COPY_PHASE = YES and
+        INSTALLHDRS_SCRIPT_PHASE = YES to WebKit.xcconfig, then to
+        make sure various build phase scripts work with the installhdrs
+        build phase.
+
+        * WebKit.xcodeproj/project.pbxproj:
+        - Added shell code to prevent running "Check For Global
+          Initializers", "Check For Exit Time Destructors" and "Check
+          For Weak VTables" scripts during the installhdrs build phase.
+        - Removed UMBRELLA_FRAMEWORKS_DIR from the Debug and Release
+          targets since it's no longer needed after defining
+          WEBCORE_PRIVATE_HEADERS_DIR in WebKit.xcconfig.
+
+2009-03-03  David Kilzer  <ddkilzer@apple.com>
+
+        Remove last vestiges of JAVASCRIPTCORE_PRIVATE_HEADERS_DIR from WebKit
+
+        Reviewed by Adam Roben.
+
+        Use of JAVASCRIPTCORE_PRIVATE_HEADERS_DIR was removed in r37465
+        since NPAPI headers had migrated from JavaScriptCore to WebCore
+        before that.
+
+        * WebKit.xcodeproj/project.pbxproj: Removed
+        JAVASCRIPTCORE_PRIVATE_HEADERS_DIR build setting from from Debug
+        and Release configurations.
+
+2009-03-02  Anders Carlsson  <andersca@apple.com>
+
+        WebNetscapePluginPackage.mm is an Objective-C++ file.
+
+        * WebKit.xcodeproj/project.pbxproj:
+
+2009-03-02  Anders Carlsson  <andersca@apple.com>
+
+        Reviewed by John Sullivan.
+
+        Rename WebNetscapePluginPackage.m to WebNetscapePluginPackage.mm
+        
+        * WebKit.xcodeproj/project.pbxproj:
+
+2009-02-20  Anders Carlsson  <andersca@apple.com>
+
+        Reviewed by Dan Bernstein.
+
+        Add new files.
+        
+        * WebKit.xcodeproj/project.pbxproj:
+
+2009-02-13  Darin Adler  <darin@apple.com>
+
+        * StringsNotToBeLocalized.txt: Updated for recent changes.
+
+2009-02-07  Darin Adler  <darin@apple.com>
+
+        * StringsNotToBeLocalized.txt: Updated for recent changes.
+
+2009-02-04  Timothy Hatcher  <timothy@apple.com>
+
+        Removed the WebDefaultScriptDebugDelegate now that we have CallScriptDebugDelegate.
+
+        <rdar://problem/6508457> Launching widget in Dashcode debugger is
+        super-slow due forwardInvocation: calling debug delegate
+
+        Reviewed by Oliver Hunt.
+
+        * WebKit.xcodeproj/project.pbxproj:
+
+2009-02-02  Anders Carlsson  <andersca@apple.com>
+
+        Reviewed by Dan Bernstein.
+        
+        Remove WebKitPluginContainerView.{h|mm}, they aren't used anywhere.
+        
+        * WebKit.xcodeproj/project.pbxproj:
+
+2009-01-26  Mark Rowe  <mrowe@apple.com>
+
+        Rubber-stamped by Sam Weinig.
+
+        Clean up after r40240.
+
+        * WebKit.xcodeproj/project.pbxproj: Reinstate WebKitPluginHost.defs.
+
+2009-01-25  Darin Adler  <darin@apple.com>
+
+        Try to fix full build on Mac Leopard.
+
+        * WebKit.xcodeproj/project.pbxproj: Removed WebKitPluginClient.defs from the WebKit target.
+        Maybe this is temporary, but I had to do it to get the full build to succeed.
+
+2009-01-25  Mark Rowe  <mrowe@apple.com>
+
+        Rubber-stamped by Dan Bernstein.
+
+        Improve the consistency of settings in our .xcconfig files.
+
+        * WebKit.xcodeproj/project.pbxproj:
+
+2009-01-23  Brady Eidson  <beidson@apple.com>
+
+        Rubberstamped by Darin Adler
+
+        Rename CachedPagePlatformData to CachedFramePlatformData to more accurately reflect its true role.
+
+        * WebKit.xcodeproj/project.pbxproj:
+
+2009-01-20  Anders Carlsson  <andersca@apple.com>
+
+        Reviewed by Sam Weinig.
+
+        Add ProxyInstance files.
+        
+        * WebKit.xcodeproj/project.pbxproj:
+
 2009-01-04  David Kilzer  <ddkilzer@apple.com>
 
         Don't install internal headers in WebKit framework

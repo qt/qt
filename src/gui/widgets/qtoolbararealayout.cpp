@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -440,9 +440,10 @@ void QToolBarAreaLayoutInfo::moveToolBar(QToolBar *toolbar, int pos)
 
                     //we check if the previous is near its size hint
                     //in which case we try to stick to it
-                    if (qAbs(pick(o, previous.sizeHint()) - (previous.size + extra)) < QApplication::startDragDistance()) {
-                        //we stick to the default space
-                        extra = 0;
+                    const int diff = pick(o, previous.sizeHint()) - (previous.size + extra);
+                    if (qAbs(diff) < QApplication::startDragDistance()) {
+                        //we stick to the default place and size
+                        extra += diff;
                     }
 
                     //update for the current item

@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the qmake application of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -289,12 +289,11 @@ SubdirsMetaMakefileGenerator::init()
 
     if(Option::recursive) {
         QString old_output_dir = QDir::cleanPath(Option::output_dir);
-        if(!old_output_dir.endsWith('/'))
-           old_output_dir += '/';
 	QString old_output = Option::output.fileName();
         QString oldpwd = QDir::cleanPath(qmake_getpwd());
-        if(!oldpwd.endsWith('/'))
-           oldpwd += '/';
+        QString thispwd = oldpwd;
+        if(!thispwd.endsWith('/'))
+           thispwd += '/';
         const QStringList &subdirs = project->values("SUBDIRS");
         static int recurseDepth = -1;
         ++recurseDepth;
@@ -314,8 +313,8 @@ SubdirsMetaMakefileGenerator::init()
                 sub_name = subdir.baseName();
             if(!subdir.isRelative()) { //we can try to make it relative
                 QString subdir_path = subdir.filePath();
-                if(subdir_path.startsWith(oldpwd))
-                    subdir = QFileInfo(subdir_path.mid(oldpwd.length()));
+                if(subdir_path.startsWith(thispwd))
+                    subdir = QFileInfo(subdir_path.mid(thispwd.length()));
             }
 
             //handle sub project
@@ -332,8 +331,6 @@ SubdirsMetaMakefileGenerator::init()
             }
             qmake_setpwd(sub->input_dir);
             Option::output_dir = sub->output_dir;
-            if(Option::output_dir.at(Option::output_dir.length()-1) != QLatin1Char('/'))
-                Option::output_dir += QLatin1Char('/');
             sub_proj->read(subdir.fileName());
             if(!sub_proj->variables()["QMAKE_FAILED_REQUIREMENTS"].isEmpty()) {
                 fprintf(stderr, "Project file(%s) not recursed because all requirements not met:\n\t%s\n",

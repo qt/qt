@@ -4,7 +4,7 @@
 
 namespace JSC {
 
-static const struct HashTableValue arrayTableValues[20] = {
+static const struct HashTableValue arrayTableValues[22] = {
    { "toString", DontEnum|Function, (intptr_t)arrayProtoFuncToString, (intptr_t)0 },
    { "toLocaleString", DontEnum|Function, (intptr_t)arrayProtoFuncToLocaleString, (intptr_t)0 },
    { "concat", DontEnum|Function, (intptr_t)arrayProtoFuncConcat, (intptr_t)1 },
@@ -23,15 +23,12 @@ static const struct HashTableValue arrayTableValues[20] = {
    { "indexOf", DontEnum|Function, (intptr_t)arrayProtoFuncIndexOf, (intptr_t)1 },
    { "lastIndexOf", DontEnum|Function, (intptr_t)arrayProtoFuncLastIndexOf, (intptr_t)1 },
    { "filter", DontEnum|Function, (intptr_t)arrayProtoFuncFilter, (intptr_t)1 },
+   { "reduce", DontEnum|Function, (intptr_t)arrayProtoFuncReduce, (intptr_t)1 },
+   { "reduceRight", DontEnum|Function, (intptr_t)arrayProtoFuncReduceRight, (intptr_t)1 },
    { "map", DontEnum|Function, (intptr_t)arrayProtoFuncMap, (intptr_t)1 },
    { 0, 0, 0, 0 }
 };
 
 extern const struct HashTable arrayTable =
-#if ENABLE(PERFECT_HASH_SIZE)
-    { 127, arrayTableValues, 0 };
-#else
     { 65, 63, arrayTableValues, 0 };
-#endif
-
 } // namespace

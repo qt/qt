@@ -36,7 +36,7 @@ using namespace JSC;
 
 namespace WebCore {
 
-ASSERT_CLASS_FITS_IN_CELL(JSSVGPathSegLinetoRel)
+ASSERT_CLASS_FITS_IN_CELL(JSSVGPathSegLinetoRel);
 
 /* Hash table */
 
@@ -70,9 +70,9 @@ static const HashTable JSSVGPathSegLinetoRelPrototypeTable =
 
 const ClassInfo JSSVGPathSegLinetoRelPrototype::s_info = { "SVGPathSegLinetoRelPrototype", 0, &JSSVGPathSegLinetoRelPrototypeTable, 0 };
 
-JSObject* JSSVGPathSegLinetoRelPrototype::self(ExecState* exec)
+JSObject* JSSVGPathSegLinetoRelPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSSVGPathSegLinetoRel>(exec);
+    return getDOMPrototype<JSSVGPathSegLinetoRel>(exec, globalObject);
 }
 
 const ClassInfo JSSVGPathSegLinetoRel::s_info = { "SVGPathSegLinetoRel", &JSSVGPathSeg::s_info, &JSSVGPathSegLinetoRelTable, 0 };
@@ -82,9 +82,9 @@ JSSVGPathSegLinetoRel::JSSVGPathSegLinetoRel(PassRefPtr<Structure> structure, Pa
 {
 }
 
-JSObject* JSSVGPathSegLinetoRel::createPrototype(ExecState* exec)
+JSObject* JSSVGPathSegLinetoRel::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSSVGPathSegLinetoRelPrototype(JSSVGPathSegLinetoRelPrototype::createStructure(JSSVGPathSegPrototype::self(exec)));
+    return new (exec) JSSVGPathSegLinetoRelPrototype(JSSVGPathSegLinetoRelPrototype::createStructure(JSSVGPathSegPrototype::self(exec, globalObject)));
 }
 
 bool JSSVGPathSegLinetoRel::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -92,35 +92,37 @@ bool JSSVGPathSegLinetoRel::getOwnPropertySlot(ExecState* exec, const Identifier
     return getStaticValueSlot<JSSVGPathSegLinetoRel, Base>(exec, &JSSVGPathSegLinetoRelTable, this, propertyName, slot);
 }
 
-JSValuePtr jsSVGPathSegLinetoRelX(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGPathSegLinetoRelX(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGPathSegLinetoRel* imp = static_cast<SVGPathSegLinetoRel*>(static_cast<JSSVGPathSegLinetoRel*>(asObject(slot.slotBase()))->impl());
     return jsNumber(exec, imp->x());
 }
 
-JSValuePtr jsSVGPathSegLinetoRelY(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGPathSegLinetoRelY(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGPathSegLinetoRel* imp = static_cast<SVGPathSegLinetoRel*>(static_cast<JSSVGPathSegLinetoRel*>(asObject(slot.slotBase()))->impl());
     return jsNumber(exec, imp->y());
 }
 
-void JSSVGPathSegLinetoRel::put(ExecState* exec, const Identifier& propertyName, JSValuePtr value, PutPropertySlot& slot)
+void JSSVGPathSegLinetoRel::put(ExecState* exec, const Identifier& propertyName, JSValue value, PutPropertySlot& slot)
 {
     lookupPut<JSSVGPathSegLinetoRel, Base>(exec, propertyName, value, &JSSVGPathSegLinetoRelTable, this, slot);
 }
 
-void setJSSVGPathSegLinetoRelX(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSSVGPathSegLinetoRelX(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     SVGPathSegLinetoRel* imp = static_cast<SVGPathSegLinetoRel*>(static_cast<JSSVGPathSegLinetoRel*>(thisObject)->impl());
-    imp->setX(value->toFloat(exec));
+    imp->setX(value.toFloat(exec));
     if (static_cast<JSSVGPathSegLinetoRel*>(thisObject)->context())
         static_cast<JSSVGPathSegLinetoRel*>(thisObject)->context()->svgAttributeChanged(static_cast<JSSVGPathSegLinetoRel*>(thisObject)->impl()->associatedAttributeName());
 }
 
-void setJSSVGPathSegLinetoRelY(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSSVGPathSegLinetoRelY(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     SVGPathSegLinetoRel* imp = static_cast<SVGPathSegLinetoRel*>(static_cast<JSSVGPathSegLinetoRel*>(thisObject)->impl());
-    imp->setY(value->toFloat(exec));
+    imp->setY(value.toFloat(exec));
     if (static_cast<JSSVGPathSegLinetoRel*>(thisObject)->context())
         static_cast<JSSVGPathSegLinetoRel*>(thisObject)->context()->svgAttributeChanged(static_cast<JSSVGPathSegLinetoRel*>(thisObject)->impl()->associatedAttributeName());
 }

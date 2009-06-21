@@ -71,7 +71,7 @@
 #include <qmlcomponent.h>
 #include "private/qmlmetaproperty_p.h"
 #include <private/qmlbindablevalue_p.h>
-
+#include <private/qmlvme_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -706,6 +706,19 @@ void QmlEngine::setContextForObject(QObject *object, QmlContext *context)
     context->d_func()->contextObjects.append(object);
 }
 
+void qmlExecuteDeferred(QObject *object)
+{
+    QmlInstanceDeclarativeData *data = QmlInstanceDeclarativeData::get(object);
+
+    if (data && data->deferredComponent) {
+        QmlVME vme;
+        vme.runDeferred(object);
+
+        data->deferredComponent->release();
+        data->deferredComponent = 0;
+    }
+}
+
 QmlContext *qmlContext(const QObject *obj)
 {
     return QmlEngine::contextForObject(obj);
@@ -719,36 +732,21 @@ QmlEngine *qmlEngine(const QObject *obj)
 
 QObject *qmlAttachedPropertiesObjectById(int id, const QObject *object)
 {
-    QObjectPrivate *priv = QObjectPrivate::get(const_cast<QObject *>(object));
+    QmlExtendedDeclarativeData *edata = 
+        QmlExtendedDeclarativeData::get(const_cast<QObject *>(object), true);
 
-
-    QmlSimpleDeclarativeData *data = static_cast<QmlSimpleDeclarativeData *>(priv->declarativeData);
-
-    QmlExtendedDeclarativeData *edata = (data && data->flags & QmlSimpleDeclarativeData::Extended)?static_cast<QmlExtendedDeclarativeData *>(data):0;
-
-    if (edata) {
-        QObject *rv = edata->attachedProperties.value(id);
-        if (rv)
-            return rv;
-    }
+    QObject *rv = edata->attachedProperties.value(id);
+    if (rv)
+        return rv;
 
     QmlAttachedPropertiesFunc pf = QmlMetaType::attachedPropertiesFuncById(id);
     if (!pf)
         return 0;
 
-    QObject *rv = pf(const_cast<QObject *>(object));
+    rv = pf(const_cast<QObject *>(object));
 
-    if (rv) {
-        if (!edata) {
-
-            edata = new QmlExtendedDeclarativeData;
-            if (data) edata->context = data->context;
-            priv->declarativeData = edata;
-
-        }
-
+    if (rv) 
         edata->attachedProperties.insert(id, rv);
-    }
 
     return rv;
 }
@@ -759,9 +757,11 @@ void QmlSimpleDeclarativeData::destroyed(QObject *object)
         context->d_func()->contextObjects.removeAll(object);
 }
 
-void QmlExtendedDeclarativeData::destroyed(QObject *object)
+void QmlInstanceDeclarativeData::destroyed(QObject *object)
 {
     QmlSimpleDeclarativeData::destroyed(object);
+    if (deferredComponent)
+        deferredComponent->release();
     delete this;
 }
 
@@ -808,7 +808,7 @@ QmlEngine *QmlEngine::activeEngine()
     dynamically creates and returns objects when called from QtScript,
     and these objects are visual items in the QML tree.
 
-    \sa QmlEngine::newQObject()
+    \sa QScriptEngine::newQObject()
 */
 QScriptValue QmlEngine::qmlScriptObject(QObject* object, QmlEngine* engine)
 {
@@ -823,7 +823,7 @@ QScriptValue QmlEngine::qmlScriptObject(QObject* object, QmlEngine* engine)
     This function takes the URL of a QML file as its only argument. It returns
     a component object which can be used to create and load that QML file.
 
-    Example JavaScript is below, remember that QML files that might be loaded
+    Example QmlJS is below, remember that QML files that might be loaded
     over the network cannot be expected to be ready immediately.
     \code
         var component;
@@ -865,6 +865,7 @@ QScriptValue QmlEngine::qmlScriptObject(QObject* object, QmlEngine* engine)
         }
     \endcode
 
+    \sa QmlComponent::createObject()
 */
 QScriptValue QmlEngine::createComponent(QScriptContext *ctxt, QScriptEngine *engine)
 {
@@ -1128,7 +1129,7 @@ QVariant QmlExpression::value()
         for (int i = context()->d_func()->scopeChain.size() - 1; i > -1; --i) {
             scriptEngine->currentContext()->pushScope(context()->d_func()->scopeChain.at(i));
         }
-        QScriptValue svalue = scriptEngine->evaluate(expression(), d->fileName, d->line);
+        QScriptValue svalue = scriptEngine->evaluate(expression(), d->fileName.toString(), d->line);
         if (scriptEngine->hasUncaughtException()) {
             if (scriptEngine->uncaughtException().isError()){
                 QScriptValue exception = scriptEngine->uncaughtException();

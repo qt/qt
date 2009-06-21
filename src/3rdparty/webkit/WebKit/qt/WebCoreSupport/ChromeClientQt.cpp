@@ -228,8 +228,8 @@ void ChromeClientQt::setResizable(bool)
     notImplemented();
 }
 
-void ChromeClientQt::addMessageToConsole(const String& message, unsigned int lineNumber,
-                                         const String& sourceID)
+void ChromeClientQt::addMessageToConsole(MessageSource, MessageLevel, const String& message,
+                                         unsigned int lineNumber, const String& sourceID)
 {
     QString x = message;
     QString y = sourceID;
@@ -345,8 +345,9 @@ PlatformWidget ChromeClientQt::platformWindow() const
     return m_webPage->view();
 }
 
-void ChromeClientQt::contentsSizeChanged(Frame*, const IntSize&) const
+void ChromeClientQt::contentsSizeChanged(Frame* frame, const IntSize& size) const
 {
+    emit QWebFramePrivate::kit(frame)->contentsSizeChanged(size);
 }
 
 void ChromeClientQt::mouseDidMoveOverElement(const HitTestResult& result, unsigned modifierFlags)
@@ -386,15 +387,17 @@ void ChromeClientQt::print(Frame *frame)
     emit m_webPage->printRequested(QWebFramePrivate::kit(frame));
 }
 
+#if ENABLE(DATABASE)
 void ChromeClientQt::exceededDatabaseQuota(Frame* frame, const String& databaseName)
 {
     quint64 quota = QWebSettings::offlineStorageDefaultQuota();
-#if ENABLE(DATABASE)
+
     if (!DatabaseTracker::tracker().hasEntryForOrigin(frame->document()->securityOrigin()))
         DatabaseTracker::tracker().setQuota(frame->document()->securityOrigin(), quota);
-#endif
+
     emit m_webPage->databaseQuotaExceeded(QWebFramePrivate::kit(frame), databaseName);
 }
+#endif
 
 void ChromeClientQt::runOpenPanel(Frame* frame, PassRefPtr<FileChooser> prpFileChooser)
 {
@@ -426,6 +429,18 @@ void ChromeClientQt::runOpenPanel(Frame* frame, PassRefPtr<FileChooser> prpFileC
         if (!file.isEmpty())
             fileChooser->chooseFile(file);
     }
+}
+
+bool ChromeClientQt::setCursor(PlatformCursorHandle)
+{
+    notImplemented();
+    return false;
+}
+
+void ChromeClientQt::requestGeolocationPermissionForFrame(Frame*, Geolocation*)
+{
+    // See the comment in WebCore/page/ChromeClient.h
+    notImplemented();
 }
 
 }

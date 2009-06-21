@@ -289,6 +289,7 @@ DEFINE_GLOBAL(QualifiedName, aria_pressedAttr, nullAtom, "aria_pressed", xhtmlNa
 DEFINE_GLOBAL(QualifiedName, aria_valuemaxAttr, nullAtom, "aria_valuemax", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, aria_valueminAttr, nullAtom, "aria_valuemin", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, aria_valuenowAttr, nullAtom, "aria_valuenow", xhtmlNamespaceURI);
+DEFINE_GLOBAL(QualifiedName, autobufferAttr, nullAtom, "autobuffer", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, autocompleteAttr, nullAtom, "autocomplete", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, autofocusAttr, nullAtom, "autofocus", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, autoplayAttr, nullAtom, "autoplay", xhtmlNamespaceURI);
@@ -406,6 +407,8 @@ DEFINE_GLOBAL(QualifiedName, onmouseoutAttr, nullAtom, "onmouseout", xhtmlNamesp
 DEFINE_GLOBAL(QualifiedName, onmouseoverAttr, nullAtom, "onmouseover", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, onmouseupAttr, nullAtom, "onmouseup", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, onmousewheelAttr, nullAtom, "onmousewheel", xhtmlNamespaceURI);
+DEFINE_GLOBAL(QualifiedName, onofflineAttr, nullAtom, "onoffline", xhtmlNamespaceURI);
+DEFINE_GLOBAL(QualifiedName, ononlineAttr, nullAtom, "ononline", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, onpasteAttr, nullAtom, "onpaste", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, onresetAttr, nullAtom, "onreset", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, onresizeAttr, nullAtom, "onresize", xhtmlNamespaceURI);
@@ -444,6 +447,7 @@ DEFINE_GLOBAL(QualifiedName, selectedAttr, nullAtom, "selected", xhtmlNamespaceU
 DEFINE_GLOBAL(QualifiedName, shapeAttr, nullAtom, "shape", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, sizeAttr, nullAtom, "size", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, spanAttr, nullAtom, "span", xhtmlNamespaceURI);
+DEFINE_GLOBAL(QualifiedName, spellcheckAttr, nullAtom, "spellcheck", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, srcAttr, nullAtom, "src", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, standbyAttr, nullAtom, "standby", xhtmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, startAttr, nullAtom, "start", xhtmlNamespaceURI);
@@ -492,6 +496,7 @@ WebCore::QualifiedName** getHTMLAttrs(size_t* size)
         (WebCore::QualifiedName*)&aria_valuemaxAttr,
         (WebCore::QualifiedName*)&aria_valueminAttr,
         (WebCore::QualifiedName*)&aria_valuenowAttr,
+        (WebCore::QualifiedName*)&autobufferAttr,
         (WebCore::QualifiedName*)&autocompleteAttr,
         (WebCore::QualifiedName*)&autofocusAttr,
         (WebCore::QualifiedName*)&autoplayAttr,
@@ -609,6 +614,8 @@ WebCore::QualifiedName** getHTMLAttrs(size_t* size)
         (WebCore::QualifiedName*)&onmouseoverAttr,
         (WebCore::QualifiedName*)&onmouseupAttr,
         (WebCore::QualifiedName*)&onmousewheelAttr,
+        (WebCore::QualifiedName*)&onofflineAttr,
+        (WebCore::QualifiedName*)&ononlineAttr,
         (WebCore::QualifiedName*)&onpasteAttr,
         (WebCore::QualifiedName*)&onresetAttr,
         (WebCore::QualifiedName*)&onresizeAttr,
@@ -647,6 +654,7 @@ WebCore::QualifiedName** getHTMLAttrs(size_t* size)
         (WebCore::QualifiedName*)&shapeAttr,
         (WebCore::QualifiedName*)&sizeAttr,
         (WebCore::QualifiedName*)&spanAttr,
+        (WebCore::QualifiedName*)&spellcheckAttr,
         (WebCore::QualifiedName*)&srcAttr,
         (WebCore::QualifiedName*)&standbyAttr,
         (WebCore::QualifiedName*)&startAttr,
@@ -672,7 +680,7 @@ WebCore::QualifiedName** getHTMLAttrs(size_t* size)
         (WebCore::QualifiedName*)&widthAttr,
         (WebCore::QualifiedName*)&wrapAttr,
     };
-    *size = 198;
+    *size = 202;
     return HTMLAttr;
 }
 
@@ -931,6 +939,7 @@ void init()
     const char *aria_valuemaxAttrString = "aria-valuemax";
     const char *aria_valueminAttrString = "aria-valuemin";
     const char *aria_valuenowAttrString = "aria-valuenow";
+    const char *autobufferAttrString = "autobuffer";
     const char *autocompleteAttrString = "autocomplete";
     const char *autofocusAttrString = "autofocus";
     const char *autoplayAttrString = "autoplay";
@@ -1047,6 +1056,8 @@ void init()
     const char *onmouseoverAttrString = "onmouseover";
     const char *onmouseupAttrString = "onmouseup";
     const char *onmousewheelAttrString = "onmousewheel";
+    const char *onofflineAttrString = "onoffline";
+    const char *ononlineAttrString = "ononline";
     const char *onpasteAttrString = "onpaste";
     const char *onresetAttrString = "onreset";
     const char *onresizeAttrString = "onresize";
@@ -1085,6 +1096,7 @@ void init()
     const char *shapeAttrString = "shape";
     const char *sizeAttrString = "size";
     const char *spanAttrString = "span";
+    const char *spellcheckAttrString = "spellcheck";
     const char *srcAttrString = "src";
     const char *standbyAttrString = "standby";
     const char *startAttrString = "start";
@@ -1128,6 +1140,7 @@ void init()
     new ((void*)&aria_valuemaxAttr) QualifiedName(nullAtom, aria_valuemaxAttrString, nullAtom);
     new ((void*)&aria_valueminAttr) QualifiedName(nullAtom, aria_valueminAttrString, nullAtom);
     new ((void*)&aria_valuenowAttr) QualifiedName(nullAtom, aria_valuenowAttrString, nullAtom);
+    new ((void*)&autobufferAttr) QualifiedName(nullAtom, autobufferAttrString, nullAtom);
     new ((void*)&autocompleteAttr) QualifiedName(nullAtom, autocompleteAttrString, nullAtom);
     new ((void*)&autofocusAttr) QualifiedName(nullAtom, autofocusAttrString, nullAtom);
     new ((void*)&autoplayAttr) QualifiedName(nullAtom, autoplayAttrString, nullAtom);
@@ -1245,6 +1258,8 @@ void init()
     new ((void*)&onmouseoverAttr) QualifiedName(nullAtom, onmouseoverAttrString, nullAtom);
     new ((void*)&onmouseupAttr) QualifiedName(nullAtom, onmouseupAttrString, nullAtom);
     new ((void*)&onmousewheelAttr) QualifiedName(nullAtom, onmousewheelAttrString, nullAtom);
+    new ((void*)&onofflineAttr) QualifiedName(nullAtom, onofflineAttrString, nullAtom);
+    new ((void*)&ononlineAttr) QualifiedName(nullAtom, ononlineAttrString, nullAtom);
     new ((void*)&onpasteAttr) QualifiedName(nullAtom, onpasteAttrString, nullAtom);
     new ((void*)&onresetAttr) QualifiedName(nullAtom, onresetAttrString, nullAtom);
     new ((void*)&onresizeAttr) QualifiedName(nullAtom, onresizeAttrString, nullAtom);
@@ -1283,6 +1298,7 @@ void init()
     new ((void*)&shapeAttr) QualifiedName(nullAtom, shapeAttrString, nullAtom);
     new ((void*)&sizeAttr) QualifiedName(nullAtom, sizeAttrString, nullAtom);
     new ((void*)&spanAttr) QualifiedName(nullAtom, spanAttrString, nullAtom);
+    new ((void*)&spellcheckAttr) QualifiedName(nullAtom, spellcheckAttrString, nullAtom);
     new ((void*)&srcAttr) QualifiedName(nullAtom, srcAttrString, nullAtom);
     new ((void*)&standbyAttr) QualifiedName(nullAtom, standbyAttrString, nullAtom);
     new ((void*)&startAttr) QualifiedName(nullAtom, startAttrString, nullAtom);

@@ -5,7 +5,7 @@
  * Copyright (C) 2007 Samuel Weinig (sam@webkit.org)
  * Copyright (C) 2008 Nokia Corporation and/or its subsidiary(-ies)
  * Copyright (C) 2008 Holger Hans Peter Freyther
- * Copyright (C) 2008 Torch Mobile Inc. All rights reserved. (http://www.torchmobile.com/)
+ * Copyright (C) 2008, 2009 Torch Mobile Inc. All rights reserved. (http://www.torchmobile.com/)
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -50,15 +50,22 @@
 #include "ScriptSourceCode.h"
 #include "ScriptValue.h"
 #include "TextResourceDecoder.h"
+#include "XMLTokenizerScope.h"
 #include <libxml/parser.h>
 #include <libxml/parserInternals.h>
 #include <wtf/Platform.h>
 #include <wtf/StringExtras.h>
 #include <wtf/Threading.h>
+#include <wtf/UnusedParam.h>
 #include <wtf/Vector.h>
 
 #if ENABLE(XSLT)
 #include <libxslt/xslt.h>
+#endif
+
+#if ENABLE(XHTMLMP)
+#include "HTMLNames.h"
+#include "HTMLScriptElement.h"
 #endif
 
 using namespace std;
@@ -81,12 +88,12 @@ public:
         callback->xmlPrefix = xmlStrdup(xmlPrefix);
         callback->xmlURI = xmlStrdup(xmlURI);
         callback->nb_namespaces = nb_namespaces;
-        callback->namespaces = reinterpret_cast<xmlChar**>(xmlMalloc(sizeof(xmlChar*) * nb_namespaces * 2));
+        callback->namespaces = static_cast<xmlChar**>(xmlMalloc(sizeof(xmlChar*) * nb_namespaces * 2));
         for (int i = 0; i < nb_namespaces * 2 ; i++)
             callback->namespaces[i] = xmlStrdup(namespaces[i]);
         callback->nb_attributes = nb_attributes;
         callback->nb_defaulted = nb_defaulted;
-        callback->attributes = reinterpret_cast<xmlChar**>(xmlMalloc(sizeof(xmlChar*) * nb_attributes * 5));
+        callback->attributes = static_cast<xmlChar**>(xmlMalloc(sizeof(xmlChar*) * nb_attributes * 5));
         for (int i = 0; i < nb_attributes; i++) {
             // Each attribute has 5 elements in the array:
             // name, prefix, uri, value and an end pointer.
@@ -203,8 +210,8 @@ private:
         
         virtual void call(XMLTokenizer* tokenizer) {
             tokenizer->startElementNs(xmlLocalName, xmlPrefix, xmlURI, 
-                                      nb_namespaces, (const xmlChar**)namespaces,
-                                      nb_attributes, nb_defaulted, (const xmlChar**)(attributes));
+                                      nb_namespaces, const_cast<const xmlChar**>(namespaces),
+                                      nb_attributes, nb_defaulted, const_cast<const xmlChar**>(attributes));
         }
 
         xmlChar* xmlLocalName;
@@ -324,14 +331,13 @@ private:
 // --------------------------------
 
 static int globalDescriptor = 0;
-static DocLoader* globalDocLoader = 0;
 static ThreadIdentifier libxmlLoaderThread = 0;
 
 static int matchFunc(const char*)
 {
     // Only match loads initiated due to uses of libxml2 from within XMLTokenizer to avoid
     // interfering with client applications that also use libxml2.  http://bugs.webkit.org/show_bug.cgi?id=17353
-    return globalDocLoader && currentThread() == libxmlLoaderThread;
+    return XMLTokenizerScope::currentDocLoader && currentThread() == libxmlLoaderThread;
 }
 
 class OffsetBuffer {
@@ -381,8 +387,8 @@ static bool shouldAllowExternalLoad(const KURL& url)
     // retrieved content.  If we had more context, we could potentially allow
     // the parser to load a DTD.  As things stand, we take the conservative
     // route and allow same-origin requests only.
-    if (!globalDocLoader->doc()->securityOrigin()->canRequest(url)) {
-        globalDocLoader->printAccessDeniedMessage(url);
+    if (!XMLTokenizerScope::currentDocLoader->doc()->securityOrigin()->canRequest(url)) {
+        XMLTokenizerScope::currentDocLoader->printAccessDeniedMessage(url);
         return false;
     }
 
@@ -391,10 +397,10 @@ static bool shouldAllowExternalLoad(const KURL& url)
 
 static void* openFunc(const char* uri)
 {
-    ASSERT(globalDocLoader);
+    ASSERT(XMLTokenizerScope::currentDocLoader);
     ASSERT(currentThread() == libxmlLoaderThread);
 
-    KURL url(uri);
+    KURL url(KURL(), uri);
 
     if (!shouldAllowExternalLoad(url))
         return &globalDescriptor;
@@ -402,15 +408,16 @@ static void* openFunc(const char* uri)
     ResourceError error;
     ResourceResponse response;
     Vector<char> data;
-    
-    DocLoader* docLoader = globalDocLoader;
-    globalDocLoader = 0;
-    // FIXME: We should restore the original global error handler as well.
 
-    if (docLoader->frame()) 
-        docLoader->frame()->loader()->loadResourceSynchronously(url, error, response, data);
 
-    globalDocLoader = docLoader;
+    {
+        DocLoader* docLoader = XMLTokenizerScope::currentDocLoader;
+        XMLTokenizerScope scope(0);
+        // FIXME: We should restore the original global error handler as well.
+
+        if (docLoader->frame()) 
+            docLoader->frame()->loader()->loadResourceSynchronously(url, AllowStoredCredentials, error, response, data);
+    }
 
     // We have to check the URL again after the load to catch redirects.
     // See <https://bugs.webkit.org/show_bug.cgi?id=21963>.
@@ -451,11 +458,6 @@ static void errorFunc(void*, const char*, ...)
     // FIXME: It would be nice to display error messages somewhere.
 }
 #endif
-
-void setLoaderForLibXMLCallbacks(DocLoader* docLoader)
-{
-    globalDocLoader = docLoader;
-}
 
 static bool didInit = false;
 
@@ -529,6 +531,10 @@ XMLTokenizer::XMLTokenizer(Document* _doc, FrameView* _view)
     , m_sawXSLTransform(false)
     , m_sawFirstElement(false)
     , m_isXHTMLDocument(false)
+#if ENABLE(XHTMLMP)
+    , m_isXHTMLMPDocument(false)
+    , m_hasDocTypeDeclaration(false)
+#endif
     , m_parserPaused(false)
     , m_requestingScript(false)
     , m_finishCalled(false)
@@ -552,6 +558,10 @@ XMLTokenizer::XMLTokenizer(DocumentFragment* fragment, Element* parentElement)
     , m_sawXSLTransform(false)
     , m_sawFirstElement(false)
     , m_isXHTMLDocument(false)
+#if ENABLE(XHTMLMP)
+    , m_isXHTMLMPDocument(false)
+    , m_hasDocTypeDeclaration(false)
+#endif
     , m_parserPaused(false)
     , m_requestingScript(false)
     , m_finishCalled(false)
@@ -582,7 +592,7 @@ XMLTokenizer::XMLTokenizer(DocumentFragment* fragment, Element* parentElement)
         return;
     
     for (Element* element = elemStack.last(); !elemStack.isEmpty(); elemStack.removeLast()) {
-        if (NamedAttrMap* attrs = element->attributes()) {
+        if (NamedNodeMap* attrs = element->attributes()) {
             for (unsigned i = 0; i < attrs->length(); i++) {
                 Attribute* attr = attrs->attributeItem(i);
                 if (attr->localName() == "xmlns")
@@ -624,6 +634,7 @@ void XMLTokenizer::doWrite(const String& parseString)
         const unsigned char BOMHighByte = *reinterpret_cast<const unsigned char*>(&BOM);
         xmlSwitchEncoding(m_context, BOMHighByte == 0xFF ? XML_CHAR_ENCODING_UTF16LE : XML_CHAR_ENCODING_UTF16BE);
 
+        XMLTokenizerScope scope(m_doc->docLoader());
         xmlParseChunk(m_context, reinterpret_cast<const char*>(parseString.characters()), sizeof(UChar) * parseString.length(), 0);
     }
     
@@ -705,8 +716,14 @@ void XMLTokenizer::startElementNs(const xmlChar* xmlLocalName, const xmlChar* xm
                                                          nb_attributes, nb_defaulted, libxmlAttributes);
         return;
     }
-    
-    m_sawFirstElement = true;
+
+#if ENABLE(XHTMLMP) 
+    // check if the DOCTYPE Declaration of XHTMLMP document exists
+    if (!m_hasDocTypeDeclaration && m_doc->isXHTMLMPDocument()) {
+        handleError(fatal, "DOCTYPE declaration lost.", lineNumber(), columnNumber());
+        return;
+    }
+#endif
 
     exitText();
 
@@ -721,14 +738,35 @@ void XMLTokenizer::startElementNs(const xmlChar* xmlLocalName, const xmlChar* xm
             uri = m_defaultNamespaceURI;
     }
 
-    ExceptionCode ec = 0;
+#if ENABLE(XHTMLMP)
+    if (!m_sawFirstElement && isXHTMLMPDocument()) {
+        // As per the section 7.1 of OMA-WAP-XHTMLMP-V1_1-20061020-A.pdf, 
+        // we should make sure that the root element MUST be 'html' and 
+        // ensure the name of the default namespace on the root elment 'html' 
+        // MUST be 'http://www.w3.org/1999/xhtml'
+        if (localName != HTMLNames::htmlTag.localName()) {
+            handleError(fatal, "XHTMLMP document expects 'html' as root element.", lineNumber(), columnNumber());
+            return;
+        }
+
+        if (uri.isNull()) {
+            m_defaultNamespaceURI = HTMLNames::xhtmlNamespaceURI; 
+            uri = m_defaultNamespaceURI;
+        }
+    }
+#endif
+
+    bool isFirstElement = !m_sawFirstElement;
+    m_sawFirstElement = true;
+
     QualifiedName qName(prefix, localName, uri);
-    RefPtr<Element> newElement = m_doc->createElement(qName, true, ec);
+    RefPtr<Element> newElement = m_doc->createElement(qName, true);
     if (!newElement) {
         stopParsing();
         return;
     }
     
+    ExceptionCode ec = 0;
     handleElementNamespaces(newElement.get(), libxmlNamespaces, nb_namespaces, ec);
     if (ec) {
         stopParsing();
@@ -737,7 +775,7 @@ void XMLTokenizer::startElementNs(const xmlChar* xmlLocalName, const xmlChar* xm
 
     ScriptController* jsProxy = m_doc->frame() ? m_doc->frame()->script() : 0;
     if (jsProxy && m_doc->frame()->script()->isEnabled())
-        jsProxy->setEventHandlerLineno(lineNumber());
+        jsProxy->setEventHandlerLineNumber(lineNumber());
 
     handleElementAttributes(newElement.get(), libxmlAttributes, nb_attributes, ec);
     if (ec) {
@@ -746,11 +784,12 @@ void XMLTokenizer::startElementNs(const xmlChar* xmlLocalName, const xmlChar* xm
     }
 
     if (jsProxy)
-        jsProxy->setEventHandlerLineno(0);
+        jsProxy->setEventHandlerLineNumber(0);
 
     newElement->beginParsingChildren();
 
-    if (isScriptElement(newElement.get()))
+    ScriptElement* scriptElement = toScriptElement(newElement.get());
+    if (scriptElement)
         m_scriptStartLine = lineNumber();
 
     if (!m_currentNode->addChild(newElement.get())) {
@@ -761,6 +800,9 @@ void XMLTokenizer::startElementNs(const xmlChar* xmlLocalName, const xmlChar* xm
     setCurrentNode(newElement.get());
     if (m_view && !newElement->attached())
         newElement->attach();
+
+    if (isFirstElement && m_doc->frame())
+        m_doc->frame()->loader()->dispatchDocumentElementAvailable();
 }
 
 void XMLTokenizer::endElementNs()
@@ -778,15 +820,29 @@ void XMLTokenizer::endElementNs()
     Node* n = m_currentNode;
     RefPtr<Node> parent = n->parentNode();
     n->finishParsingChildren();
-    
+
+    if (!n->isElementNode() || !m_view) {
+        setCurrentNode(parent.get());
+        return;
+    }
+
+    Element* element = static_cast<Element*>(n);
+    ScriptElement* scriptElement = toScriptElement(element);
+    if (!scriptElement) {
+        setCurrentNode(parent.get());
+        return;
+    }
+
     // don't load external scripts for standalone documents (for now)
-    if (n->isElementNode() && m_view && isScriptElement(static_cast<Element*>(n))) {
-        ASSERT(!m_pendingScript);
-        m_requestingScript = true;
+    ASSERT(!m_pendingScript);
+    m_requestingScript = true;
 
-        Element* element = static_cast<Element*>(n); 
-        ScriptElement* scriptElement = castToScriptElement(element);
-
+#if ENABLE(XHTMLMP)
+    if (!scriptElement->shouldExecuteAsJavaScript())
+        m_doc->setShouldProcessNoscriptElement(true);
+    else 
+#endif
+    {
         String scriptHref = scriptElement->sourceAttributeValue();
         if (!scriptHref.isEmpty()) {
             // we have a src attribute 
@@ -802,10 +858,8 @@ void XMLTokenizer::endElementNs()
                 m_scriptElement = 0;
         } else
             m_view->frame()->loader()->executeScript(ScriptSourceCode(scriptElement->scriptContent(), m_doc->url(), m_scriptStartLine));
-
-        m_requestingScript = false;
     }
-
+    m_requestingScript = false;
     setCurrentNode(parent.get());
 }
 
@@ -833,7 +887,8 @@ void XMLTokenizer::error(ErrorType type, const char* message, va_list args)
     vsnprintf(m, sizeof(m) - 1, message, args);
 #else
     char* m;
-    vasprintf(&m, message, args);
+    if (vasprintf(&m, message, args) == -1)
+        return;
 #endif
     
     if (m_parserPaused)
@@ -932,6 +987,9 @@ void XMLTokenizer::startDocument(const xmlChar* version, const xmlChar* encoding
 void XMLTokenizer::endDocument()
 {
     exitText();
+#if ENABLE(XHTMLMP)
+    m_hasDocTypeDeclaration = false;
+#endif
 }
 
 void XMLTokenizer::internalSubset(const xmlChar* name, const xmlChar* externalID, const xmlChar* systemID)
@@ -945,8 +1003,10 @@ void XMLTokenizer::internalSubset(const xmlChar* name, const xmlChar* externalID
     }
     
     if (m_doc) {
-#if ENABLE(WML)
+#if ENABLE(WML) || ENABLE(XHTMLMP)
         String extId = toString(externalID);
+#endif
+#if ENABLE(WML)
         if (isWMLDocument()
             && extId != "-//WAPFORUM//DTD WML 1.3//EN"
             && extId != "-//WAPFORUM//DTD WML 1.2//EN"
@@ -954,8 +1014,31 @@ void XMLTokenizer::internalSubset(const xmlChar* name, const xmlChar* externalID
             && extId != "-//WAPFORUM//DTD WML 1.0//EN")
             handleError(fatal, "Invalid DTD Public ID", lineNumber(), columnNumber());
 #endif
+#if ENABLE(XHTMLMP)
+        String dtdName = toString(name);
+        if (extId == "-//WAPFORUM//DTD XHTML Mobile 1.0//EN"
+            || extId == "-//WAPFORUM//DTD XHTML Mobile 1.1//EN") {
+            if (dtdName != HTMLNames::htmlTag.localName()) {
+                handleError(fatal, "Invalid DOCTYPE declaration, expected 'html' as root element.", lineNumber(), columnNumber());
+                return;
+            } 
 
+            if (m_doc->isXHTMLMPDocument())
+                setIsXHTMLMPDocument(true);
+            else
+                setIsXHTMLDocument(true);
+
+            m_hasDocTypeDeclaration = true;
+        }
+#endif
+
+#if ENABLE(XHTMLMP)
+        m_doc->addChild(DocumentType::create(m_doc, dtdName, extId, toString(systemID)));
+#elif ENABLE(WML)
+        m_doc->addChild(DocumentType::create(m_doc, toString(name), extId, toString(systemID)));
+#else
         m_doc->addChild(DocumentType::create(m_doc, toString(name), toString(externalID), toString(systemID)));
+#endif
     }
 }
 
@@ -970,6 +1053,8 @@ static inline XMLTokenizer* getTokenizer(void* closure)
 static inline bool hackAroundLibXMLEntityBug(void* closure)
 {
 #if LIBXML_VERSION >= 20627
+    UNUSED_PARAM(closure);
+
     // This bug has been fixed in libxml 2.6.27.
     return false;
 #else
@@ -1052,19 +1137,22 @@ static void normalErrorHandler(void* closure, const char* message, ...)
     va_end(args);
 }
 
-// Using a global variable entity and marking it XML_INTERNAL_PREDEFINED_ENTITY is
+// Using a static entity and marking it XML_INTERNAL_PREDEFINED_ENTITY is
 // a hack to avoid malloc/free. Using a global variable like this could cause trouble
 // if libxml implementation details were to change
-static xmlChar sharedXHTMLEntityResult[5] = {0,0,0,0,0};
-static xmlEntity sharedXHTMLEntity = {
-    0, XML_ENTITY_DECL, 0, 0, 0, 0, 0, 0, 0, 
-    sharedXHTMLEntityResult, sharedXHTMLEntityResult, 0,
-    XML_INTERNAL_PREDEFINED_ENTITY, 0, 0, 0, 0, 0,
-#if LIBXML_VERSION >= 20627
-    // xmlEntity gained an extra member in 2.6.27.
-    1
-#endif
-};
+static xmlChar sharedXHTMLEntityResult[5] = {0, 0, 0, 0, 0};
+
+static xmlEntityPtr sharedXHTMLEntity()
+{
+    static xmlEntity entity;
+    if (!entity.type) {
+        entity.type = XML_ENTITY_DECL;
+        entity.orig = sharedXHTMLEntityResult;
+        entity.content = sharedXHTMLEntityResult;
+        entity.etype = XML_INTERNAL_PREDEFINED_ENTITY;
+    }
+    return &entity;
+}
 
 static xmlEntityPtr getXHTMLEntity(const xmlChar* name)
 {
@@ -1074,11 +1162,12 @@ static xmlEntityPtr getXHTMLEntity(const xmlChar* name)
 
     CString value = String(&c, 1).utf8();
     ASSERT(value.length() < 5);
-    sharedXHTMLEntity.length = value.length();
-    sharedXHTMLEntity.name = name;
-    memcpy(sharedXHTMLEntityResult, value.data(), sharedXHTMLEntity.length + 1);
+    xmlEntityPtr entity = sharedXHTMLEntity();
+    entity->length = value.length();
+    entity->name = name;
+    memcpy(sharedXHTMLEntityResult, value.data(), entity->length + 1);
 
-    return &sharedXHTMLEntity;
+    return entity;
 }
 
 static xmlEntityPtr getEntityHandler(void* closure, const xmlChar* name)
@@ -1092,6 +1181,9 @@ static xmlEntityPtr getEntityHandler(void* closure, const xmlChar* name)
 
     ent = xmlGetDocEntity(ctxt->myDoc, name);
     if (!ent && (getTokenizer(closure)->isXHTMLDocument()
+#if ENABLE(XHTMLMP)
+                 || getTokenizer(closure)->isXHTMLMPDocument()
+#endif
 #if ENABLE(WML)
                  || getTokenizer(closure)->isWMLDocument()
 #endif
@@ -1133,7 +1225,10 @@ static void externalSubsetHandler(void* closure, const xmlChar*, const xmlChar* 
         || (extId == "-//W3C//DTD XHTML Basic 1.0//EN")
         || (extId == "-//W3C//DTD XHTML 1.1 plus MathML 2.0//EN")
         || (extId == "-//W3C//DTD XHTML 1.1 plus MathML 2.0 plus SVG 1.1//EN")
-        || (extId == "-//WAPFORUM//DTD XHTML Mobile 1.0//EN"))
+#if !ENABLE(XHTMLMP)
+        || (extId == "-//WAPFORUM//DTD XHTML Mobile 1.0//EN")
+#endif
+       )
         getTokenizer(closure)->setIsXHTMLDocument(true); // controls if we replace entities or not.
 }
 
@@ -1171,6 +1266,7 @@ void XMLTokenizer::initializeParserContext(const char* chunk)
     m_sawXSLTransform = false;
     m_sawFirstElement = false;
 
+    XMLTokenizerScope scope(m_doc->docLoader());
     if (m_parsingFragment)
         m_context = createMemoryParser(&sax, this, chunk);
     else
@@ -1192,8 +1288,11 @@ void XMLTokenizer::doEnd()
 
     if (m_context) {
         // Tell libxml we're done.
-        xmlParseChunk(m_context, 0, 0, 1);
-        
+        {
+            XMLTokenizerScope scope(m_doc->docLoader());
+            xmlParseChunk(m_context, 0, 0, 1);
+        }
+
         if (m_context->myDoc)
             xmlFreeDoc(m_context->myDoc);
         xmlFreeParserCtxt(m_context);
@@ -1213,21 +1312,12 @@ void* xmlDocPtrForString(DocLoader* docLoader, const String& source, const Strin
     const UChar BOM = 0xFEFF;
     const unsigned char BOMHighByte = *reinterpret_cast<const unsigned char*>(&BOM);
 
-    xmlGenericErrorFunc oldErrorFunc = xmlGenericError;
-    void* oldErrorContext = xmlGenericErrorContext;
-    
-    setLoaderForLibXMLCallbacks(docLoader);        
-    xmlSetGenericErrorFunc(0, errorFunc);
-    
+    XMLTokenizerScope scope(docLoader, errorFunc, 0);
     xmlDocPtr sourceDoc = xmlReadMemory(reinterpret_cast<const char*>(source.characters()),
                                         source.length() * sizeof(UChar),
                                         url.latin1().data(),
                                         BOMHighByte == 0xFF ? "UTF-16LE" : "UTF-16BE", 
                                         XSLT_PARSE_OPTIONS);
-    
-    setLoaderForLibXMLCallbacks(0);
-    xmlSetGenericErrorFunc(oldErrorContext, oldErrorFunc);
-    
     return sourceDoc;
 }
 #endif
@@ -1281,7 +1371,8 @@ bool parseXMLDocumentFragment(const String& chunk, DocumentFragment* fragment, E
 
     XMLTokenizer tokenizer(fragment, parent);
     
-    tokenizer.initializeParserContext(chunk.utf8().data());
+    CString chunkAsUtf8 = chunk.utf8();
+    tokenizer.initializeParserContext(chunkAsUtf8.data());
 
     xmlParseContent(tokenizer.m_context);
 
@@ -1289,7 +1380,7 @@ bool parseXMLDocumentFragment(const String& chunk, DocumentFragment* fragment, E
 
     // Check if all the chunk has been processed.
     long bytesProcessed = xmlByteConsumed(tokenizer.m_context);
-    if (bytesProcessed == -1 || ((unsigned long)bytesProcessed) == sizeof(UChar) * chunk.length())
+    if (bytesProcessed == -1 || ((unsigned long)bytesProcessed) != chunkAsUtf8.length())
         return false;
 
     // No error if the chunk is well formed or it is not but we have no error.

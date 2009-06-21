@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -414,7 +414,7 @@ void QPainterPrivate::draw_helper(const QPainterPath &originalPath, DrawOperatio
             bool old_txinv = txinv;
             QTransform old_invMatrix = invMatrix;
             txinv = true;
-            invMatrix = state->redirectionMatrix;
+            invMatrix = QTransform();
             QPainterPath clipPath = q->clipPath();
             QRectF r = clipPath.boundingRect().intersected(absPathRect);
             absPathRect = r.toAlignedRect();
@@ -653,18 +653,7 @@ void QPainterPrivate::updateInvMatrix()
 {
     Q_ASSERT(txinv == false);
     txinv = true;                                // creating inverted matrix
-    QTransform m;
-
-    if (state->VxF)
-        m = viewTransform();
-
-    if (state->WxF) {
-        if (state->VxF)
-            m = state->worldMatrix * m;
-        else
-            m = state->worldMatrix;
-    }
-    invMatrix = m.inverted();                // invert matrix
+    invMatrix = state->matrix.inverted();
 }
 
 void QPainterPrivate::updateEmulationSpecifier(QPainterState *s)
@@ -2569,7 +2558,7 @@ void QPainter::setClipRect(const QRectF &rect, Qt::ClipOperation op)
         QVectorPath vp(pts, 4, 0, QVectorPath::RectangleHint);
         d->state->clipEnabled = true;
         d->extended->clip(vp, op);
-        d->state->clipInfo << QPainterClipInfo(rect, op, combinedTransform());
+        d->state->clipInfo << QPainterClipInfo(rect, op, d->state->matrix);
         d->state->clipOperation = op;
         return;
     }
@@ -2612,7 +2601,7 @@ void QPainter::setClipRect(const QRect &rect, Qt::ClipOperation op)
     if (d->extended) {
         d->state->clipEnabled = true;
         d->extended->clip(rect, op);
-        d->state->clipInfo << QPainterClipInfo(rect, op, combinedTransform());
+        d->state->clipInfo << QPainterClipInfo(rect, op, d->state->matrix);
         d->state->clipOperation = op;
         return;
     }
@@ -2624,7 +2613,7 @@ void QPainter::setClipRect(const QRect &rect, Qt::ClipOperation op)
     d->state->clipOperation = op;
     if (op == Qt::NoClip || op == Qt::ReplaceClip)
         d->state->clipInfo.clear();
-    d->state->clipInfo << QPainterClipInfo(rect, op, combinedTransform());
+    d->state->clipInfo << QPainterClipInfo(rect, op, d->state->matrix);
     d->state->clipEnabled = true;
     d->state->dirtyFlags |= QPaintEngine::DirtyClipRegion | QPaintEngine::DirtyClipEnabled;
     d->updateState(d->state);
@@ -2665,7 +2654,7 @@ void QPainter::setClipRegion(const QRegion &r, Qt::ClipOperation op)
     if (d->extended) {
         d->state->clipEnabled = true;
         d->extended->clip(r, op);
-        d->state->clipInfo << QPainterClipInfo(r, op, combinedTransform());
+        d->state->clipInfo << QPainterClipInfo(r, op, d->state->matrix);
         d->state->clipOperation = op;
         return;
     }
@@ -2677,7 +2666,7 @@ void QPainter::setClipRegion(const QRegion &r, Qt::ClipOperation op)
     d->state->clipOperation = op;
     if (op == Qt::NoClip || op == Qt::ReplaceClip)
         d->state->clipInfo.clear();
-    d->state->clipInfo << QPainterClipInfo(r, op, combinedTransform());
+    d->state->clipInfo << QPainterClipInfo(r, op, d->state->matrix);
     d->state->clipEnabled = true;
     d->state->dirtyFlags |= QPaintEngine::DirtyClipRegion | QPaintEngine::DirtyClipEnabled;
     d->updateState(d->state);
@@ -3062,7 +3051,7 @@ void QPainter::setClipPath(const QPainterPath &path, Qt::ClipOperation op)
     if (d->extended) {
         d->state->clipEnabled = true;
         d->extended->clip(path, op);
-        d->state->clipInfo << QPainterClipInfo(path, op, combinedTransform());
+        d->state->clipInfo << QPainterClipInfo(path, op, d->state->matrix);
         d->state->clipOperation = op;
         return;
     }
@@ -3076,7 +3065,7 @@ void QPainter::setClipPath(const QPainterPath &path, Qt::ClipOperation op)
     d->state->clipOperation = op;
     if (op == Qt::NoClip || op == Qt::ReplaceClip)
         d->state->clipInfo.clear();
-    d->state->clipInfo << QPainterClipInfo(path, op, combinedTransform());
+    d->state->clipInfo << QPainterClipInfo(path, op, d->state->matrix);
     d->state->clipEnabled = true;
     d->state->dirtyFlags |= QPaintEngine::DirtyClipPath | QPaintEngine::DirtyClipEnabled;
     d->updateState(d->state);

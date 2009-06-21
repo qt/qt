@@ -1,0 +1,5 @@
+MyDeferredObject {
+    value: 10
+    objectProperty: MyQmlObject {}
+    objectProperty2: MyQmlObject { id: blah }
+}

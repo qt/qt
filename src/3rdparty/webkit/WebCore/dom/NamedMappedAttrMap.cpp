@@ -27,6 +27,7 @@
 
 #include "Document.h"
 #include "Element.h"
+#include "MappedAttribute.h"
 
 namespace WebCore {
 
@@ -34,7 +35,7 @@ void NamedMappedAttrMap::clearAttributes()
 {
     m_classNames.clear();
     m_mappedAttributeCount = 0;
-    NamedAttrMap::clearAttributes();
+    NamedNodeMap::clearAttributes();
 }
 
 bool NamedMappedAttrMap::isMappedAttributeMap() const
@@ -75,12 +76,12 @@ bool NamedMappedAttrMap::mapsEquivalent(const NamedMappedAttrMap* otherMap) cons
 
 void NamedMappedAttrMap::setClass(const String& classStr) 
 { 
-    if (!m_element->hasClass()) { 
+    if (!element()->hasClass()) { 
         m_classNames.clear(); 
         return;
     }
 
-    m_classNames.set(classStr, m_element->document()->inCompatMode()); 
+    m_classNames.set(classStr, element()->document()->inCompatMode()); 
 }
 
 }

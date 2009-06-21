@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -448,10 +448,10 @@ static const char * const tis_620locales[] = {
 // static const char * const tcvnlocales[] = {
 //     "vi", "vi_VN", 0 };
 
-static bool try_locale_list(const char * const locale[], const char * lang)
+static bool try_locale_list(const char * const locale[], const QByteArray &lang)
 {
     int i;
-    for(i=0; locale[i] && *locale[i] && strcmp(locale[i], lang); i++)
+    for(i=0; locale[i] && lang != locale[i]; i++)
         ;
     return locale[i] != 0;
 }
@@ -503,13 +503,12 @@ static QTextCodec * ru_RU_hack(const char * i) {
 #endif
 
 #if !defined(Q_OS_WIN32) && !defined(Q_OS_WINCE)
-static QTextCodec *checkForCodec(const char *name) {
+static QTextCodec *checkForCodec(const QByteArray &name) {
     QTextCodec *c = QTextCodec::codecForName(name);
     if (!c) {
-        const char *at = strchr(name, '@');
-        if (at) {
-            QByteArray n(name, at - name);
-            c = QTextCodec::codecForName(n.data());
+        const int index = name.indexOf('@');
+        if (index != -1) {
+            c = QTextCodec::codecForName(name.left(index));
         }
     }
     return c;
@@ -550,21 +549,19 @@ static void setupLocaleMapper()
         // definitely knows it, but since we cannot fully trust it, get ready
         // to fall back to environment variables.
 #if !defined(QT_NO_SETLOCALE)
-        char * ctype = qstrdup(setlocale(LC_CTYPE, 0));
+        const QByteArray ctype = setlocale(LC_CTYPE, 0);
 #else
-        char * ctype = qstrdup("");
+        const QByteArray ctype;
 #endif
 
         // Get the first nonempty value from $LC_ALL, $LC_CTYPE, and $LANG
         // environment variables.
-        char * lang = qstrdup(qgetenv("LC_ALL").constData());
-        if (!lang || lang[0] == 0 || strcmp(lang, "C") == 0) {
-            if (lang) delete [] lang;
-            lang = qstrdup(qgetenv("LC_CTYPE").constData());
+        QByteArray lang = qgetenv("LC_ALL");
+        if (lang.isEmpty() || lang == "C") {
+            lang = qgetenv("LC_CTYPE");
         }
-        if (!lang || lang[0] == 0 || strcmp(lang, "C") == 0) {
-            if (lang) delete [] lang;
-            lang = qstrdup(qgetenv("LANG").constData());
+        if (lang.isEmpty() || lang == "C") {
+            lang = qgetenv("LANG");
         }
 
         // Now try these in order:
@@ -577,35 +574,35 @@ static void setupLocaleMapper()
         // 7. guess locale from lang
 
         // 1. CODESET from ctype if it contains a .CODESET part (e.g. en_US.ISO8859-15)
-        char * codeset = ctype ? strchr(ctype, '.') : 0;
-        if (codeset && *codeset == '.')
-            localeMapper = checkForCodec(codeset + 1);
+        int indexOfDot = ctype.indexOf('.');
+        if (indexOfDot != -1)
+            localeMapper = checkForCodec( ctype.mid(indexOfDot + 1) );
 
         // 2. CODESET from lang if it contains a .CODESET part
-        codeset = lang ? strchr(lang, '.') : 0;
-        if (!localeMapper && codeset && *codeset == '.')
-            localeMapper = checkForCodec(codeset + 1);
+        if (!localeMapper) {
+            indexOfDot = lang.indexOf('.');
+            if (indexOfDot != -1)
+                localeMapper = checkForCodec( lang.mid(indexOfDot + 1) );
+        }
 
         // 3. ctype (maybe the locale is named "ISO-8859-1" or something)
-        if (!localeMapper && ctype && *ctype != 0 && strcmp (ctype, "C") != 0)
+        if (!localeMapper && !ctype.isEmpty() && ctype != "C")
             localeMapper = checkForCodec(ctype);
 
         // 4. locale (ditto)
-        if (!localeMapper && lang && *lang != 0)
+        if (!localeMapper && !lang.isEmpty())
             localeMapper = checkForCodec(lang);
 
         // 5. "@euro"
-        if ((!localeMapper && ctype && strstr(ctype, "@euro")) || (lang && strstr(lang, "@euro")))
+        if ((!localeMapper && ctype.contains("@euro")) || lang.contains("@euro"))
             localeMapper = checkForCodec("ISO 8859-15");
 
         // 6. guess locale from ctype unless ctype is "C"
         // 7. guess locale from lang
-        char * try_by_name = ctype;
-        if (ctype && *ctype != 0 && strcmp (ctype, "C") != 0)
-            try_by_name = lang;
+        const QByteArray &try_by_name = (!ctype.isEmpty() && ctype != "C") ? lang : ctype;
 
         // Now do the guessing.
-        if (lang && *lang && !localeMapper && try_by_name && *try_by_name) {
+        if (!lang.isEmpty() && !localeMapper && !try_by_name.isEmpty()) {
             if (try_locale_list(iso8859_15locales, lang))
                 localeMapper = QTextCodec::codecForName("ISO 8859-15");
             else if (try_locale_list(iso8859_2locales, lang))
@@ -638,8 +635,6 @@ static void setupLocaleMapper()
                 localeMapper = ru_RU_hack(lang);
         }
 
-        delete [] ctype;
-        delete [] lang;
     }
 
     // If everything failed, we default to 8859-1

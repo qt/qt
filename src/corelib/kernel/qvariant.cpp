@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -591,6 +591,15 @@ static bool convert(const QVariant::Private *d, QVariant::Type t, void *result, 
         ok = &dummy;
 
     switch (uint(t)) {
+    case QVariant::Url: 
+        switch (d->type) {
+        case QVariant::String:
+            *static_cast<QUrl *>(result) = QUrl(*v_cast<QString>(d));
+            break;
+        default:
+            return false;
+        }
+        break;
     case QVariant::String: {
         QString *str = static_cast<QString *>(result);
         switch (d->type) {
@@ -640,6 +649,8 @@ static bool convert(const QVariant::Private *d, QVariant::Type t, void *result, 
             if (v_cast<QStringList>(d)->count() == 1)
                 *str = v_cast<QStringList>(d)->at(0);
             break;
+        case QVariant::Url:
+            *str = v_cast<QUrl>(d)->toString();
         default:
             return false;
         }
@@ -2484,7 +2495,8 @@ static const quint32 qCanConvertMatrix[QVariant::LastCoreType + 1] =
 /*QString*/       1 << QVariant::StringList | 1 << QVariant::ByteArray  | 1 << QVariant::Int
                 | 1 << QVariant::UInt       | 1 << QVariant::Bool       | 1 << QVariant::Double
                 | 1 << QVariant::Date       | 1 << QVariant::Time       | 1 << QVariant::DateTime
-                | 1 << QVariant::LongLong   | 1 << QVariant::ULongLong  | 1 << QVariant::Char,
+                | 1 << QVariant::LongLong   | 1 << QVariant::ULongLong  | 1 << QVariant::Char
+                | 1 << QVariant::Url,
 
 /*QStringList*/   1 << QVariant::List       | 1 << QVariant::String,
 
@@ -2499,7 +2511,7 @@ static const quint32 qCanConvertMatrix[QVariant::LastCoreType + 1] =
 
 /*QDateTime*/     1 << QVariant::String     | 1 << QVariant::Date,
 
-/*QUrl*/          0,
+/*QUrl*/          1 << QVariant::String,
 
 /*QLocale*/       0,
 

@@ -58,12 +58,14 @@ class QmlVME
 public:
     QmlVME();
 
-    QObject *run(QmlContext *, QmlCompiledComponent *, int start = -1, int end = -1);
+    QObject *run(QmlContext *, QmlCompiledComponent *, int start = -1, int count = -1);
+    void runDeferred(QObject *);
 
     bool isError() const;
     QList<QmlError> errors() const;
 
 private:
+    QObject *run(QStack<QObject *> &, QmlContext *, QmlCompiledComponent *, int start, int count);
     QList<QmlError> vmeErrors;
 };
 

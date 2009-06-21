@@ -325,6 +325,10 @@ QFxItem *QFxAnchors::fill() const
 void QFxAnchors::setFill(QFxItem *f)
 {
     Q_D(QFxAnchors);
+    if (f != d->item->itemParent() && f->itemParent() != d->item->itemParent()){
+        qmlInfo(d->item) << "Can't anchor to an item that isn't a parent or sibling.";
+        return;
+    }
     d->remDepend(d->fill);
     d->fill = f;
     d->addDepend(d->fill);
@@ -847,7 +851,10 @@ bool QFxAnchorsPrivate::checkHAnchorValid(QFxAnchorLine anchor) const
     if (anchor.anchorLine & QFxAnchorLine::Vertical_Mask) {
         qmlInfo(item) << "Can't anchor a horizontal edge to a vertical edge.";
         return false;
-    }else if (anchor.item == item){
+    } else if (anchor.item != item->itemParent() && anchor.item->itemParent() != item->itemParent()){
+        qmlInfo(item) << "Can't anchor to an item that isn't a parent or sibling.";
+        return false;
+    } else if (anchor.item == item){
         qmlInfo(item) << "Can't anchor item to self.";
         return false;
     }
@@ -878,7 +885,10 @@ bool QFxAnchorsPrivate::checkVAnchorValid(QFxAnchorLine anchor) const
     if (anchor.anchorLine & QFxAnchorLine::Horizontal_Mask) {
         qmlInfo(item) << "Can't anchor a vertical edge to a horizontal edge.";
         return false;
-    }else if (anchor.item == item){
+    } else if (anchor.item != item->itemParent() && anchor.item->itemParent() != item->itemParent()){
+        qmlInfo(item) << "Can't anchor to an item that isn't a parent or sibling.";
+        return false;
+    } else if (anchor.item == item){
         qmlInfo(item) << "Can't anchor item to self.";
         return false;
     }

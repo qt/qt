@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -1052,7 +1052,7 @@ void QWidgetPrivate::adjustFlags(Qt::WindowFlags &flags, QWidget *w)
 void QWidgetPrivate::init(QWidget *parentWidget, Qt::WindowFlags f)
 {
     Q_Q(QWidget);
-    if (qApp->type() == QApplication::Tty)
+    if (QApplication::type() == QApplication::Tty)
         qFatal("QWidget: Cannot create a QWidget when no GUI is being used");
 
     Q_ASSERT(uncreatedWidgets);
@@ -1067,7 +1067,7 @@ void QWidgetPrivate::init(QWidget *parentWidget, Qt::WindowFlags f)
     q->data = &data;
 
 #ifndef QT_NO_THREAD
-    if (!q->parent()) {
+    if (!parent) {
         Q_ASSERT_X(q->thread() == qApp->thread(), "QWidget",
                    "Widgets must be created in the GUI thread.");
     }
@@ -1345,7 +1345,7 @@ QWidget::~QWidget()
 #ifdef QT3_SUPPORT
     if (QApplicationPrivate::main_widget == this) {        // reset main widget
         QApplicationPrivate::main_widget = 0;
-        qApp->quit();
+        QApplication::quit();
     }
 #endif
 
@@ -1371,6 +1371,12 @@ QWidget::~QWidget()
 
     // set all QPointers for this object to zero
     QObjectPrivate::clearGuards(this);
+
+    if(d->declarativeData) {
+        QDeclarativeData *dd = d->declarativeData;
+        d->declarativeData = 0;
+        dd->destroyed(this);
+    }
 
     if (!d->children.isEmpty())
         d->deleteChildren();
@@ -2034,8 +2040,8 @@ void QWidgetPrivate::deactivateWidgetCleanup()
 {
     Q_Q(QWidget);
     // If this was the active application window, reset it
-    if (qApp->activeWindow() == q)
-        qApp->setActiveWindow(0);
+    if (QApplication::activeWindow() == q)
+        QApplication::setActiveWindow(0);
     // If the is the active mouse press widget, reset it
     if (q == qt_button_down)
         qt_button_down = 0;
@@ -2236,7 +2242,7 @@ QStyle *QWidget::style() const
 
     if (d->extra && d->extra->style)
         return d->extra->style;
-    return qApp->style();
+    return QApplication::style();
 }
 
 /*!
@@ -4993,7 +4999,7 @@ void QWidgetPrivate::drawWidget(QPaintDevice *pdev, const QRegion &rgn, const QP
                     QPoint scrollAreaOffset;
 
 #ifndef QT_NO_SCROLLAREA
-                    QAbstractScrollArea *scrollArea = qobject_cast<QAbstractScrollArea *>(q->parent());
+                    QAbstractScrollArea *scrollArea = qobject_cast<QAbstractScrollArea *>(parent);
                     if (scrollArea && scrollArea->viewport() == q) {
                         QObjectData *scrollPrivate = static_cast<QWidget *>(scrollArea)->d_ptr;
                         QAbstractScrollAreaPrivate *priv = static_cast<QAbstractScrollAreaPrivate *>(scrollPrivate);
@@ -5372,7 +5378,7 @@ QIcon QWidget::windowIcon() const
             return *d->extra->topextra->icon;
         w = w->parentWidget();
     }
-    return qApp->windowIcon();
+    return QApplication::windowIcon();
 }
 
 void QWidgetPrivate::setWindowIcon_helper()
@@ -5636,7 +5642,7 @@ bool QWidget::hasFocus() const
     infinite recursion.
 
     \sa hasFocus(), clearFocus(), focusInEvent(), focusOutEvent(),
-    setFocusPolicy(), QApplication::focusWidget(), grabKeyboard(),
+    setFocusPolicy(), focusWidget(), QApplication::focusWidget(), grabKeyboard(),
     grabMouse(), {Keyboard Focus}
 */
 
@@ -5894,7 +5900,7 @@ QWidget *QWidget::previousInFocusChain() const
 bool QWidget::isActiveWindow() const
 {
     QWidget *tlw = window();
-    if(tlw == qApp->activeWindow() || (isVisible() && (tlw->windowType() == Qt::Popup)))
+    if(tlw == QApplication::activeWindow() || (isVisible() && (tlw->windowType() == Qt::Popup)))
         return true;
 
 #ifndef QT_NO_GRAPHICSVIEW
@@ -5915,7 +5921,7 @@ bool QWidget::isActiveWindow() const
            !tlw->isModal() &&
            (!tlw->parentWidget() || tlw->parentWidget()->isActiveWindow()))
            return true;
-        QWidget *w = qApp->activeWindow();
+        QWidget *w = QApplication::activeWindow();
         while(w && tlw->windowType() == Qt::Tool &&
               !w->isModal() && w->parentWidget()) {
             w = w->parentWidget()->window();
@@ -7085,7 +7091,7 @@ bool QWidgetPrivate::close_helper(CloseMode mode)
 
 #ifdef QT3_SUPPORT
     if (isMain)
-        qApp->quit();
+        QApplication::quit();
 #endif
     // Attempt to close the application only if this widget has the
     // WA_QuitOnClose flag set set and has a non-visible parent
@@ -7268,10 +7274,10 @@ QSize QWidgetPrivate::adjustedSize() const
 
     if (q->isWindow()) {
         Qt::Orientations exp;
-        if (QLayout *l = q->layout()) {
-            if (l->hasHeightForWidth())
-                s.setHeight(l->totalHeightForWidth(s.width()));
-            exp = l->expandingDirections();
+        if (layout) {
+            if (layout->hasHeightForWidth())
+                s.setHeight(layout->totalHeightForWidth(s.width()));
+            exp = layout->expandingDirections();
         } else
         {
             if (q->sizePolicy().hasHeightForWidth())
@@ -7784,7 +7790,7 @@ bool QWidget::event(QEvent *event)
             QList<QObject*> childList = d->children;
             for (int i = 0; i < childList.size(); ++i) {
                 QObject *o = childList.at(i);
-                if (o != qApp->activeModalWidget()) {
+                if (o != QApplication::activeModalWidget()) {
                     if (qobject_cast<QWidget *>(o) && static_cast<QWidget *>(o)->isWindow()) {
                         // do not forward the event to child windows,
                         // QApplication does this for us
@@ -8007,9 +8013,9 @@ void QWidget::mousePressEvent(QMouseEvent *event)
     if ((windowType() == Qt::Popup)) {
         event->accept();
         QWidget* w;
-        while ((w = qApp->activePopupWidget()) && w != this){
+        while ((w = QApplication::activePopupWidget()) && w != this){
             w->close();
-            if (qApp->activePopupWidget() == w) // widget does not want to dissappear
+            if (QApplication::activePopupWidget() == w) // widget does not want to dissappear
                 w->hide(); // hide at least
         }
         if (!rect().contains(event->pos())){

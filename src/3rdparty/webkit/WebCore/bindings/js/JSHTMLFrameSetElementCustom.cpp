@@ -27,6 +27,7 @@
 #include "JSHTMLFrameSetElement.h"
 
 #include "Document.h"
+#include "HTMLCollection.h"
 #include "HTMLFrameElement.h"
 #include "HTMLFrameSetElement.h"
 #include "HTMLNames.h"
@@ -46,7 +47,7 @@ bool JSHTMLFrameSetElement::canGetItemsForName(ExecState*, HTMLFrameSetElement* 
     return frame && frame->hasTagName(frameTag);
 }
 
-JSValuePtr JSHTMLFrameSetElement::nameGetter(ExecState*, const Identifier& propertyName, const PropertySlot& slot)
+JSValue JSHTMLFrameSetElement::nameGetter(ExecState*, const Identifier& propertyName, const PropertySlot& slot)
 {
     JSHTMLElement* thisObj = static_cast<JSHTMLElement*>(asObject(slot.slotBase()));
     HTMLElement* element = static_cast<HTMLElement*>(thisObj->impl());

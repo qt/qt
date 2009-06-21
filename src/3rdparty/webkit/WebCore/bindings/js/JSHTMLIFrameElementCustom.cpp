@@ -38,13 +38,13 @@ using namespace JSC;
 
 namespace WebCore {
 
-void JSHTMLIFrameElement::setSrc(ExecState* exec, JSValuePtr value)
+void JSHTMLIFrameElement::setSrc(ExecState* exec, JSValue value)
 {
     HTMLIFrameElement* imp = static_cast<HTMLIFrameElement*>(impl());
 
     String srcValue = valueToStringWithNullCheck(exec, value);
 
-    if (protocolIs(parseURL(srcValue), "javascript")) {
+    if (protocolIsJavaScript(parseURL(srcValue))) {
         if (!checkNodeSecurity(exec, imp->contentDocument()))
             return;
     }

@@ -35,7 +35,7 @@ using namespace JSC;
 
 namespace WebCore {
 
-ASSERT_CLASS_FITS_IN_CELL(JSSVGAnimateElement)
+ASSERT_CLASS_FITS_IN_CELL(JSSVGAnimateElement);
 
 /* Hash table for prototype */
 
@@ -53,9 +53,9 @@ static const HashTable JSSVGAnimateElementPrototypeTable =
 
 const ClassInfo JSSVGAnimateElementPrototype::s_info = { "SVGAnimateElementPrototype", 0, &JSSVGAnimateElementPrototypeTable, 0 };
 
-JSObject* JSSVGAnimateElementPrototype::self(ExecState* exec)
+JSObject* JSSVGAnimateElementPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSSVGAnimateElement>(exec);
+    return getDOMPrototype<JSSVGAnimateElement>(exec, globalObject);
 }
 
 const ClassInfo JSSVGAnimateElement::s_info = { "SVGAnimateElement", &JSSVGAnimationElement::s_info, 0, 0 };
@@ -65,9 +65,9 @@ JSSVGAnimateElement::JSSVGAnimateElement(PassRefPtr<Structure> structure, PassRe
 {
 }
 
-JSObject* JSSVGAnimateElement::createPrototype(ExecState* exec)
+JSObject* JSSVGAnimateElement::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSSVGAnimateElementPrototype(JSSVGAnimateElementPrototype::createStructure(JSSVGAnimationElementPrototype::self(exec)));
+    return new (exec) JSSVGAnimateElementPrototype(JSSVGAnimateElementPrototype::createStructure(JSSVGAnimationElementPrototype::self(exec, globalObject)));
 }
 
 

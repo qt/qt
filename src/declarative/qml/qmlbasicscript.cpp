@@ -17,12 +17,12 @@
 #include <QStack>
 #include <qfxperf.h>
 #include <private/qmlrefcount_p.h>
-#include <private/javascriptast_p.h>
-#include <private/javascriptengine_p.h>
+#include <private/qmljsast_p.h>
+#include <private/qmljsengine_p.h>
 
 QT_BEGIN_NAMESPACE
 
-using namespace JavaScript;
+using namespace QmlJS;
 
 struct ScriptInstruction {
     enum {
@@ -270,16 +270,16 @@ struct QmlBasicScriptCompiler
     QmlParser::Object *component;
     QHash<QString, QPair<QmlParser::Object *, int> > ids;
 
-    bool compile(JavaScript::AST::Node *);
+    bool compile(QmlJS::AST::Node *);
 
-    bool compileExpression(JavaScript::AST::Node *);
+    bool compileExpression(QmlJS::AST::Node *);
 
-    bool tryConstant(JavaScript::AST::Node *);
-    bool parseConstant(JavaScript::AST::Node *);
-    bool tryName(JavaScript::AST::Node *);
-    bool parseName(JavaScript::AST::Node *, QmlParser::Object ** = 0);
-    bool tryBinaryExpression(JavaScript::AST::Node *);
-    bool compileBinaryExpression(JavaScript::AST::Node *);
+    bool tryConstant(QmlJS::AST::Node *);
+    bool parseConstant(QmlJS::AST::Node *);
+    bool tryName(QmlJS::AST::Node *);
+    bool parseName(QmlJS::AST::Node *, QmlParser::Object ** = 0);
+    bool tryBinaryExpression(QmlJS::AST::Node *);
+    bool compileBinaryExpression(QmlJS::AST::Node *);
 
     QByteArray data;
     QList<ScriptInstruction> bytecode;
@@ -288,10 +288,10 @@ struct QmlBasicScriptCompiler
 /*!
     \internal
     \class QmlBasicScript
-    \brief The QmlBasicScript class provides a fast implementation of a limited subset of JavaScript bindings.
+    \brief The QmlBasicScript class provides a fast implementation of a limited subset of QmlJS bindings.
 
     QmlBasicScript instances are used to accelerate binding.  Instead of using
-    the slower, fully fledged JavaScript engine, many simple bindings can be
+    the slower, fully fledged QmlJS engine, many simple bindings can be
     evaluated using the QmlBasicScript engine.
 
     To see if the QmlBasicScript engine can handle a binding, call compile()
@@ -495,12 +495,12 @@ bool QmlBasicScript::compile(const Expression &expression)
     return d != 0;
 }
 
-bool QmlBasicScriptCompiler::compile(JavaScript::AST::Node *node)
+bool QmlBasicScriptCompiler::compile(QmlJS::AST::Node *node)
 {
     return compileExpression(node);
 }
 
-bool QmlBasicScriptCompiler::tryConstant(JavaScript::AST::Node *node)
+bool QmlBasicScriptCompiler::tryConstant(QmlJS::AST::Node *node)
 {
     if (node->kind == AST::Node::Kind_TrueLiteral || 
         node->kind == AST::Node::Kind_FalseLiteral)
@@ -516,7 +516,7 @@ bool QmlBasicScriptCompiler::tryConstant(JavaScript::AST::Node *node)
     return false;
 }
 
-bool QmlBasicScriptCompiler::parseConstant(JavaScript::AST::Node *node)
+bool QmlBasicScriptCompiler::parseConstant(QmlJS::AST::Node *node)
 {
     ScriptInstruction instr;
 
@@ -534,7 +534,7 @@ bool QmlBasicScriptCompiler::parseConstant(JavaScript::AST::Node *node)
     return true;
 }
 
-bool QmlBasicScriptCompiler::tryName(JavaScript::AST::Node *node)
+bool QmlBasicScriptCompiler::tryName(QmlJS::AST::Node *node)
 {
     return node->kind == AST::Node::Kind_IdentifierExpression ||
            node->kind == AST::Node::Kind_FieldMemberExpression;
@@ -629,7 +629,7 @@ bool QmlBasicScriptCompiler::parseName(AST::Node *node,
     return true;
 }
 
-bool QmlBasicScriptCompiler::compileExpression(JavaScript::AST::Node *node)
+bool QmlBasicScriptCompiler::compileExpression(QmlJS::AST::Node *node)
 {
     if (tryBinaryExpression(node))
         return compileBinaryExpression(node);
@@ -828,7 +828,7 @@ QVariant QmlBasicScript::run(QmlContext *context, void *voidCache, CacheState *c
 
                 if (instr.type == ScriptInstruction::Load) {
 
-                    if (n.type == QmlBasicScriptNodeCache::Invalid) {
+                    if (n.type == QmlBasicScriptNodeCache::Invalid || state == Reset) {
                         context->engine()->d_func()->loadCache(n, QLatin1String(id), static_cast<QmlContextPrivate*>(context->d_ptr));
                         state = Incremental;
                     }
@@ -852,7 +852,7 @@ QVariant QmlBasicScript::run(QmlContext *context, void *voidCache, CacheState *c
                             CacheState dummy;
                             return run(context, voidCache, &dummy);
                         }
-                    } else if (n.type == QmlBasicScriptNodeCache::Invalid) {
+                    } else if (n.type == QmlBasicScriptNodeCache::Invalid || state == Reset) {
                         context->engine()->d_func()->fetchCache(n, QLatin1String(id), obj);
                         guard(n);
                         state = Incremental;

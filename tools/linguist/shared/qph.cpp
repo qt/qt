@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the Qt Linguist of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -54,32 +54,18 @@ QT_BEGIN_NAMESPACE
 class QPHReader : public QXmlStreamReader
 {
 public:
-    QPHReader(QIODevice &dev, ConversionData &cd)
-      : QXmlStreamReader(&dev), m_cd(cd)
+    QPHReader(QIODevice &dev)
+      : QXmlStreamReader(&dev)
     {}
 
     // the "real thing"
     bool read(Translator &translator);
 
 private:
-    bool elementStarts(const QString &str) const
-    {
-        return isStartElement() && name() == str;
-    }
-
     bool isWhiteSpace() const
     {
         return isCharacters() && text().toString().trimmed().isEmpty();
     }
-
-    // needed to expand <byte ... />
-    QString readContents();
-    // needed to join <lengthvariant>s
-    QString readTransContents();
-
-    void handleError();
-
-    ConversionData &m_cd;
 
     enum DataField { NoField, SourceField, TargetField, DefinitionField };
     DataField m_currentField;
@@ -126,10 +112,10 @@ bool QPHReader::read(Translator &translator)
     return true;
 }
 
-static bool loadQPH(Translator &translator, QIODevice &dev, ConversionData &cd)
+static bool loadQPH(Translator &translator, QIODevice &dev, ConversionData &)
 {
     translator.setLocationsType(Translator::NoLocations);
-    QPHReader reader(dev, cd);
+    QPHReader reader(dev);
     return reader.read(translator);
 }
 

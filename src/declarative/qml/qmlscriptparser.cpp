@@ -42,12 +42,12 @@
 #include "qmlscriptparser_p.h"
 #include "qmlparser_p.h"
 
-#include "parser/javascriptengine_p.h"
-#include "parser/javascriptparser_p.h"
-#include "parser/javascriptlexer_p.h"
-#include "parser/javascriptnodepool_p.h"
-#include "parser/javascriptastvisitor_p.h"
-#include "parser/javascriptast_p.h"
+#include "parser/qmljsengine_p.h"
+#include "parser/qmljsparser_p.h"
+#include "parser/qmljslexer_p.h"
+#include "parser/qmljsnodepool_p.h"
+#include "parser/qmljsastvisitor_p.h"
+#include "parser/qmljsast_p.h"
 
 #include "rewriter/textwriter_p.h"
 
@@ -59,7 +59,7 @@
 
 QT_BEGIN_NAMESPACE
 
-using namespace JavaScript;
+using namespace QmlJS;
 using namespace QmlParser;
 
 namespace {
@@ -628,6 +628,8 @@ bool ProcessAST::visit(AST::UiScriptBinding *node)
                                        node->statement);
     }
 
+    prop->location.range.length = prop->location.range.offset + prop->location.range.length - node->qualifiedId->identifierToken.offset;
+    prop->location.range.offset = node->qualifiedId->identifierToken.offset;
     Value *v = new Value;
     v->value = primitive;
     v->location = location(node->statement->firstSourceLocation(),
@@ -715,7 +717,7 @@ bool ProcessAST::visit(AST::UiSourceElement *node)
             obj->dynamicSlots << slot;
         } else {
             QmlError error;
-            error.setDescription(QCoreApplication::translate("QmlParser","JavaScript declaration outside Script element"));
+            error.setDescription(QCoreApplication::translate("QmlParser","QmlJS declaration outside Script element"));
             error.setLine(node->firstSourceLocation().startLine);
             error.setColumn(node->firstSourceLocation().startColumn);
             _parser->_errors << error;

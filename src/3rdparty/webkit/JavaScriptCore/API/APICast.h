@@ -26,7 +26,10 @@
 #ifndef APICast_h
 #define APICast_h
 
+#include "JSNumberCell.h"
 #include "JSValue.h"
+#include <wtf/Platform.h>
+#include <wtf/UnusedParam.h>
 
 namespace JSC {
     class ExecState;
@@ -34,7 +37,6 @@ namespace JSC {
     class JSGlobalData;
     class JSObject;
     class JSValue;
-    class JSValuePtr;
 }
 
 typedef const struct OpaqueJSContextGroup* JSContextGroupRef;
@@ -56,9 +58,18 @@ inline JSC::ExecState* toJS(JSGlobalContextRef c)
     return reinterpret_cast<JSC::ExecState*>(c);
 }
 
-inline JSC::JSValuePtr toJS(JSValueRef v)
+inline JSC::JSValue toJS(JSC::ExecState* exec, JSValueRef v)
 {
-    return JSC::JSValuePtr::decode(reinterpret_cast<JSC::JSValueEncodedAsPointer*>(const_cast<OpaqueJSValue*>(v)));
+    JSC::JSValue jsValue = JSC::JSValue::decode(reinterpret_cast<JSC::EncodedJSValue>(const_cast<OpaqueJSValue*>(v)));
+#if USE(ALTERNATE_JSIMMEDIATE)
+    UNUSED_PARAM(exec);
+#else
+    if (jsValue && jsValue.isNumber()) {
+        ASSERT(jsValue.isAPIMangledNumber());
+        return JSC::jsNumber(exec, jsValue.uncheckedGetNumber());
+    }
+#endif
+    return jsValue;
 }
 
 inline JSC::JSObject* toJS(JSObjectRef o)
@@ -76,14 +87,17 @@ inline JSC::JSGlobalData* toJS(JSContextGroupRef g)
     return reinterpret_cast<JSC::JSGlobalData*>(const_cast<OpaqueJSContextGroup*>(g));
 }
 
-inline JSValueRef toRef(JSC::JSValuePtr v)
+inline JSValueRef toRef(JSC::ExecState* exec, JSC::JSValue v)
 {
-    return reinterpret_cast<JSValueRef>(JSC::JSValuePtr::encode(v));
-}
-
-inline JSValueRef* toRef(JSC::JSValuePtr* v)
-{
-    return reinterpret_cast<JSValueRef*>(v);
+#if USE(ALTERNATE_JSIMMEDIATE)
+    UNUSED_PARAM(exec);
+#else
+    if (v && v.isNumber()) {
+        ASSERT(!v.isAPIMangledNumber());
+        return reinterpret_cast<JSValueRef>(JSC::JSValue::encode(JSC::jsAPIMangledNumber(exec, v.uncheckedGetNumber())));
+    }
+#endif
+    return reinterpret_cast<JSValueRef>(JSC::JSValue::encode(v));
 }
 
 inline JSObjectRef toRef(JSC::JSObject* o)

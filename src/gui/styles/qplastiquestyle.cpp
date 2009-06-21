@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -1129,7 +1129,7 @@ void QPlastiqueStyle::drawPrimitive(PrimitiveElement element, const QStyleOption
 
     switch (element) {
     case PE_IndicatorButtonDropDown:
-        drawPrimitive(PE_PanelButtonTool, option, painter, widget);
+        proxy()->drawPrimitive(PE_PanelButtonTool, option, painter, widget);
         break;
     case PE_FrameDefaultButton: {
         if (!(option->state & QStyle::State_Enabled))
@@ -1175,7 +1175,7 @@ void QPlastiqueStyle::drawPrimitive(PrimitiveElement element, const QStyleOption
                 break;
             }
 
-            int borderThickness = pixelMetric(PM_TabBarBaseOverlap, twf, widget);
+            int borderThickness = proxy()->pixelMetric(PM_TabBarBaseOverlap, twf, widget);
             bool reverse = (twf->direction == Qt::RightToLeft);
 
             painter->save();
@@ -1354,7 +1354,7 @@ void QPlastiqueStyle::drawPrimitive(PrimitiveElement element, const QStyleOption
                 painter->setPen(oldPen);
             } else {
                 frameV2.state &= ~(State_Sunken | State_HasFocus);
-                drawPrimitive(PE_Frame, &frameV2, painter, widget);
+                proxy()->drawPrimitive(PE_Frame, &frameV2, painter, widget);
             }
         }
         break;
@@ -1853,13 +1853,13 @@ void QPlastiqueStyle::drawPrimitive(PrimitiveElement element, const QStyleOption
         QStyleOptionButton button;
         button.QStyleOption::operator=(*option);
         button.state &= ~State_MouseOver;
-        drawPrimitive(PE_IndicatorCheckBox, &button, painter, widget);
+        proxy()->drawPrimitive(PE_IndicatorCheckBox, &button, painter, widget);
         break;
     }
     case PE_FrameWindow: {
         painter->save();
         bool active = (option->state & State_Active);
-        int titleBarStop = option->rect.top() + pixelMetric(PM_TitleBarHeight, option, widget);
+        int titleBarStop = option->rect.top() + proxy()->pixelMetric(PM_TitleBarHeight, option, widget);
 
         QPalette palette = option->palette;
         if (!active)
@@ -2069,7 +2069,7 @@ void QPlastiqueStyle::drawControl(ControlElement element, const QStyleOption *op
                                && !leftCornerWidget;
             bool reverseShadow = false;
 
-            int borderThickness = pixelMetric(PM_TabBarBaseOverlap, tab, widget);
+            int borderThickness = proxy()->pixelMetric(PM_TabBarBaseOverlap, tab, widget);
             int marginLeft = 0;
             if ((atBeginning && !selected) || (selected && leftCornerWidget && ((tab->position == QStyleOptionTab::Beginning) || onlyTab))) {
                 marginLeft = 1;
@@ -2642,8 +2642,7 @@ void QPlastiqueStyle::drawControl(ControlElement element, const QStyleOption *op
             // same rendering code for both orientations.
             if (vertical) {
                 rect = QRect(rect.left(), rect.top(), rect.height(), rect.width()); // flip width and height
-                QTransform m;
-                m.translate(rect.height()-1, 0);
+                QTransform m = QTransform::fromTranslate(rect.height()-1, 0);
                 m.rotate(90.0);
                 painter->setTransform(m, true);
             }
@@ -2909,7 +2908,7 @@ void QPlastiqueStyle::drawControl(ControlElement element, const QStyleOption *op
                 int w = 0;
                 if (!menuItem->text.isEmpty()) {
                     painter->setFont(menuItem->font);
-                    drawItemText(painter, menuItem->rect.adjusted(5, 0, -5, 0), Qt::AlignLeft | Qt::AlignVCenter,
+                    proxy()->drawItemText(painter, menuItem->rect.adjusted(5, 0, -5, 0), Qt::AlignLeft | Qt::AlignVCenter,
                                  menuItem->palette, menuItem->state & State_Enabled, menuItem->text,
                                  QPalette::Text);
                     w = menuItem->fontMetrics.width(menuItem->text) + 5;
@@ -2952,7 +2951,7 @@ void QPlastiqueStyle::drawControl(ControlElement element, const QStyleOption *op
                     if (checked)
                         button.state |= State_On;
                     button.palette = menuItem->palette;
-                    drawPrimitive(PE_IndicatorRadioButton, &button, painter, widget);
+                    proxy()->drawPrimitive(PE_IndicatorRadioButton, &button, painter, widget);
                 } else {
                     if (menuItem->icon.isNull()) {
                         QStyleOptionButton button;
@@ -2961,7 +2960,7 @@ void QPlastiqueStyle::drawControl(ControlElement element, const QStyleOption *op
                         if (checked)
                             button.state |= State_On;
                         button.palette = menuItem->palette;
-                        drawPrimitive(PE_IndicatorCheckBox, &button, painter, widget);
+                        proxy()->drawPrimitive(PE_IndicatorCheckBox, &button, painter, widget);
                     } else if (checked) {
                         int iconSize = qMax(menuItem->maxIconWidth, 20);
                         QRect sunkenRect(option->rect.left() + 1,
@@ -3073,7 +3072,7 @@ void QPlastiqueStyle::drawControl(ControlElement element, const QStyleOption *op
                                            newMI.palette.highlightedText().color());
                 else
                     newMI.palette.setColor(QPalette::ButtonText, textBrush.color());
-                drawPrimitive(arrow, &newMI, painter, widget);
+                proxy()->drawPrimitive(arrow, &newMI, painter, widget);
             }
 
             painter->restore();
@@ -3570,7 +3569,7 @@ void QPlastiqueStyle::drawControl(ControlElement element, const QStyleOption *op
             // The SubLine (up/left) buttons
             QRect button1;
             QRect button2;
-            int scrollBarExtent = pixelMetric(PM_ScrollBarExtent, option, widget);
+            int scrollBarExtent = proxy()->pixelMetric(PM_ScrollBarExtent, option, widget);
             if (horizontal) {
                 button1.setRect(scrollBarSubLine.left(), scrollBarSubLine.top(), scrollBarExtent, scrollBarSubLine.height());
                 button2.setRect(scrollBarSubLine.right() - (scrollBarExtent - 1), scrollBarSubLine.top(), scrollBarExtent, scrollBarSubLine.height());
@@ -3710,7 +3709,7 @@ void QPlastiqueStyle::drawControl(ControlElement element, const QStyleOption *op
                                      pixmapRect.right() - 1, pixmapRect.bottom() - 1);
                     sliderPainter.drawLines(lines, 2);
 
-                    int sliderMinLength = pixelMetric(PM_ScrollBarSliderMin, scrollBar, widget);
+                    int sliderMinLength = proxy()->pixelMetric(PM_ScrollBarSliderMin, scrollBar, widget);
                     if ((horizontal && scrollBar->rect.width() > sliderMinLength)
                         || (!horizontal && scrollBar->rect.height() > sliderMinLength)) {
                         QImage pattern(horizontal ? qt_scrollbar_slider_pattern_horizontal
@@ -3749,7 +3748,7 @@ void QPlastiqueStyle::drawControl(ControlElement element, const QStyleOption *op
                 QWindowsStyle::drawControl(element, option, painter, widget);
             } else if (!comboBox->currentIcon.isNull()) {
                 {
-                    QRect editRect = subControlRect(CC_ComboBox, comboBox, SC_ComboBoxEditField, widget);
+                    QRect editRect = proxy()->subControlRect(CC_ComboBox, comboBox, SC_ComboBoxEditField, widget);
                     if (comboBox->direction == Qt::RightToLeft)
                         editRect.adjust(0, 2, -2, -2);
                     else
@@ -3766,7 +3765,7 @@ void QPlastiqueStyle::drawControl(ControlElement element, const QStyleOption *op
                                                Qt::AlignLeft | Qt::AlignVCenter,
                                                iconRect.size(), editRect);
                         painter->fillRect(iconRect, option->palette.brush(QPalette::Base));
-                        drawItemPixmap(painter, iconRect, Qt::AlignCenter, pixmap);
+                        proxy()->drawItemPixmap(painter, iconRect, Qt::AlignCenter, pixmap);
                     }
                     painter->restore();
                 }
@@ -3809,9 +3808,9 @@ void QPlastiqueStyle::drawComplexControl(ComplexControl control, const QStyleOpt
 #ifndef QT_NO_SLIDER
     case CC_Slider:
         if (const QStyleOptionSlider *slider = qstyleoption_cast<const QStyleOptionSlider *>(option)) {
-            QRect grooveRegion = subControlRect(CC_Slider, option, SC_SliderGroove, widget);
-            QRect handle = subControlRect(CC_Slider, option, SC_SliderHandle, widget);
-            QRect ticks = subControlRect(CC_Slider, option, SC_SliderTickmarks, widget);
+            QRect grooveRegion = proxy()->subControlRect(CC_Slider, option, SC_SliderGroove, widget);
+            QRect handle = proxy()->subControlRect(CC_Slider, option, SC_SliderHandle, widget);
+            QRect ticks = proxy()->subControlRect(CC_Slider, option, SC_SliderTickmarks, widget);
             bool horizontal = slider->orientation == Qt::Horizontal;
             bool ticksAbove = slider->tickPosition & QSlider::TicksAbove;
             bool ticksBelow = slider->tickPosition & QSlider::TicksBelow;
@@ -3972,15 +3971,15 @@ void QPlastiqueStyle::drawComplexControl(ComplexControl control, const QStyleOpt
                     QStyleOptionFocusRect fropt;
                     fropt.QStyleOption::operator=(*slider);
                     fropt.rect = subElementRect(SE_SliderFocusRect, slider, widget);
-                    drawPrimitive(PE_FrameFocusRect, &fropt, painter, widget);
+                    proxy()->drawPrimitive(PE_FrameFocusRect, &fropt, painter, widget);
                 }
             }
 
             if (option->subControls & SC_SliderTickmarks) {
                 QPen oldPen = painter->pen();
                 painter->setPen(borderColor);
-                int tickSize = pixelMetric(PM_SliderTickmarkOffset, option, widget);
-                int available = pixelMetric(PM_SliderSpaceAvailable, slider, widget);
+                int tickSize = proxy()->pixelMetric(PM_SliderTickmarkOffset, option, widget);
+                int available = proxy()->pixelMetric(PM_SliderSpaceAvailable, slider, widget);
                 int interval = slider->tickInterval;
                 if (interval <= 0) {
                     interval = slider->singleStep;
@@ -3994,7 +3993,7 @@ void QPlastiqueStyle::drawComplexControl(ComplexControl control, const QStyleOpt
                     interval = 1;
 
                 int v = slider->minimum;
-                int len = pixelMetric(PM_SliderLength, slider, widget);
+                int len = proxy()->pixelMetric(PM_SliderLength, slider, widget);
                 QVarLengthArray<QLine, 32> lines;
                 while (v <= slider->maximum + 1) {
                     if (v == slider->maximum + 1 && interval == 1)
@@ -4049,8 +4048,8 @@ void QPlastiqueStyle::drawComplexControl(ComplexControl control, const QStyleOpt
             bool reverse = (spinBox->direction == Qt::RightToLeft);
 
             // Rects
-            QRect upRect = subControlRect(CC_SpinBox, option, SC_SpinBoxUp, widget);
-            QRect downRect = subControlRect(CC_SpinBox, option, SC_SpinBoxDown, widget);
+            QRect upRect = proxy()->subControlRect(CC_SpinBox, option, SC_SpinBoxUp, widget);
+            QRect downRect = proxy()->subControlRect(CC_SpinBox, option, SC_SpinBoxDown, widget);
             QRect buttonRect = upRect | downRect;
 
             // Brushes
@@ -4071,7 +4070,7 @@ void QPlastiqueStyle::drawComplexControl(ComplexControl control, const QStyleOpt
             } else {
                 d->drawPartialFrame(painter,
                                     option,
-                                    subControlRect(CC_SpinBox, spinBox, SC_SpinBoxEditField, widget),
+                                    proxy()->subControlRect(CC_SpinBox, spinBox, SC_SpinBoxEditField, widget),
                                     widget);
             }
             // Paint buttons
@@ -4411,7 +4410,7 @@ void QPlastiqueStyle::drawComplexControl(ComplexControl control, const QStyleOpt
                 Q_D(const QPlastiqueStyle);
                 d->drawPartialFrame(painter,
                                 option,
-                                subControlRect(CC_ComboBox, option, SC_ComboBoxEditField, widget),
+                                proxy()->subControlRect(CC_ComboBox, option, SC_ComboBoxEditField, widget),
                                 widget);
 
                 QBrush border = qMapBrushToRect(option->palette.shadow(), buttonRect);
@@ -4535,7 +4534,7 @@ void QPlastiqueStyle::drawComplexControl(ComplexControl control, const QStyleOpt
                 if (!sunken) {
                     buttonOption.state &= ~State_Sunken;
                 }
-                drawPrimitive(PE_PanelButtonCommand, &buttonOption, painter, widget);
+                proxy()->drawPrimitive(PE_PanelButtonCommand, &buttonOption, painter, widget);
 
                 // Draw the menu button separator line
                 QBrush border = qMapBrushToRect(option->palette.shadow(), rect);
@@ -4571,9 +4570,9 @@ void QPlastiqueStyle::drawComplexControl(ComplexControl control, const QStyleOpt
             if ((option->state & State_HasFocus) && !comboBox->editable
                 && ((option->state & State_KeyboardFocusChange) || styleHint(SH_UnderlineShortcut, option, widget))) {
                 QStyleOptionFocusRect focus;
-                focus.rect = subControlRect(CC_ComboBox, option, SC_ComboBoxEditField, widget)
+                focus.rect = proxy()->subControlRect(CC_ComboBox, option, SC_ComboBoxEditField, widget)
                              .adjusted(-2, 0, 2, 0);
-                drawPrimitive(PE_FrameFocusRect, &focus, painter, widget);
+                proxy()->drawPrimitive(PE_FrameFocusRect, &focus, painter, widget);
             }
 
             painter->setPen(oldPen);
@@ -4603,7 +4602,7 @@ void QPlastiqueStyle::drawComplexControl(ComplexControl control, const QStyleOpt
                 QStyleOptionDockWidgetV2 dockwidget;
                 dockwidget.QStyleOption::operator=(*option);
                 dockwidget.title = titleBar->text;
-                drawControl(CE_DockWidgetTitle, &dockwidget, painter, widget);
+                proxy()->drawControl(CE_DockWidgetTitle, &dockwidget, painter, widget);
             } else
 #endif // QT3_SUPPORT
 
@@ -4676,7 +4675,7 @@ void QPlastiqueStyle::drawComplexControl(ComplexControl control, const QStyleOpt
                     }
                 }
                 // draw title
-                QRect textRect = subControlRect(CC_TitleBar, titleBar, SC_TitleBarLabel, widget);
+                QRect textRect = proxy()->subControlRect(CC_TitleBar, titleBar, SC_TitleBarLabel, widget);
 
                 QFont font = painter->font();
                 font.setBold(true);
@@ -4703,7 +4702,7 @@ void QPlastiqueStyle::drawComplexControl(ComplexControl control, const QStyleOpt
                 bool hover = (titleBar->activeSubControls & SC_TitleBarMinButton) && (titleBar->state & State_MouseOver);
                 bool sunken = (titleBar->activeSubControls & SC_TitleBarMinButton) && (titleBar->state & State_Sunken);
 
-                QRect minButtonRect = subControlRect(CC_TitleBar, titleBar, SC_TitleBarMinButton, widget);
+                QRect minButtonRect = proxy()->subControlRect(CC_TitleBar, titleBar, SC_TitleBarMinButton, widget);
                 qt_plastique_draw_mdibutton(painter, titleBar, minButtonRect, hover, sunken);
 
                 int xoffset = minButtonRect.width() / 3;
@@ -4747,7 +4746,7 @@ void QPlastiqueStyle::drawComplexControl(ComplexControl control, const QStyleOpt
                 bool hover = (titleBar->activeSubControls & SC_TitleBarMaxButton) && (titleBar->state & State_MouseOver);
                 bool sunken = (titleBar->activeSubControls & SC_TitleBarMaxButton) && (titleBar->state & State_Sunken);
 
-                QRect maxButtonRect = subControlRect(CC_TitleBar, titleBar, SC_TitleBarMaxButton, widget);
+                QRect maxButtonRect = proxy()->subControlRect(CC_TitleBar, titleBar, SC_TitleBarMaxButton, widget);
                 qt_plastique_draw_mdibutton(painter, titleBar, maxButtonRect, hover, sunken);
 
                 int xoffset = maxButtonRect.width() / 3;
@@ -4772,7 +4771,7 @@ void QPlastiqueStyle::drawComplexControl(ComplexControl control, const QStyleOpt
                 bool hover = (titleBar->activeSubControls & SC_TitleBarCloseButton) && (titleBar->state & State_MouseOver);
                 bool sunken = (titleBar->activeSubControls & SC_TitleBarCloseButton) && (titleBar->state & State_Sunken);
 
-                QRect closeButtonRect = subControlRect(CC_TitleBar, titleBar, SC_TitleBarCloseButton, widget);
+                QRect closeButtonRect = proxy()->subControlRect(CC_TitleBar, titleBar, SC_TitleBarCloseButton, widget);
                 qt_plastique_draw_mdibutton(painter, titleBar, closeButtonRect, hover, sunken);
 
                 int xoffset = closeButtonRect.width() / 3;
@@ -4818,7 +4817,7 @@ void QPlastiqueStyle::drawComplexControl(ComplexControl control, const QStyleOpt
                 bool hover = (titleBar->activeSubControls & SC_TitleBarNormalButton) && (titleBar->state & State_MouseOver);
                 bool sunken = (titleBar->activeSubControls & SC_TitleBarNormalButton) && (titleBar->state & State_Sunken);
 
-                QRect normalButtonRect = subControlRect(CC_TitleBar, titleBar, SC_TitleBarNormalButton, widget);
+                QRect normalButtonRect = proxy()->subControlRect(CC_TitleBar, titleBar, SC_TitleBarNormalButton, widget);
                 qt_plastique_draw_mdibutton(painter, titleBar, normalButtonRect, hover, sunken);
                 int xoffset = int(normalButtonRect.width() / 3.5);
                 int yoffset = int(normalButtonRect.height() / 3.5);
@@ -4864,7 +4863,7 @@ void QPlastiqueStyle::drawComplexControl(ComplexControl control, const QStyleOpt
                 bool hover = (titleBar->activeSubControls & SC_TitleBarContextHelpButton) && (titleBar->state & State_MouseOver);
                 bool sunken = (titleBar->activeSubControls & SC_TitleBarContextHelpButton) && (titleBar->state & State_Sunken);
 
-                QRect contextHelpButtonRect = subControlRect(CC_TitleBar, titleBar, SC_TitleBarContextHelpButton, widget);
+                QRect contextHelpButtonRect = proxy()->subControlRect(CC_TitleBar, titleBar, SC_TitleBarContextHelpButton, widget);
 
                 qt_plastique_draw_mdibutton(painter, titleBar, contextHelpButtonRect, hover, sunken);
 
@@ -4891,7 +4890,7 @@ void QPlastiqueStyle::drawComplexControl(ComplexControl control, const QStyleOpt
                 bool hover = (titleBar->activeSubControls & SC_TitleBarShadeButton) && (titleBar->state & State_MouseOver);
                 bool sunken = (titleBar->activeSubControls & SC_TitleBarShadeButton) && (titleBar->state & State_Sunken);
 
-                QRect shadeButtonRect = subControlRect(CC_TitleBar, titleBar, SC_TitleBarShadeButton, widget);
+                QRect shadeButtonRect = proxy()->subControlRect(CC_TitleBar, titleBar, SC_TitleBarShadeButton, widget);
                 qt_plastique_draw_mdibutton(painter, titleBar, shadeButtonRect, hover, sunken);
 
                 int xoffset = shadeButtonRect.width() / 3;
@@ -4915,7 +4914,7 @@ void QPlastiqueStyle::drawComplexControl(ComplexControl control, const QStyleOpt
                 bool hover = (titleBar->activeSubControls & SC_TitleBarUnshadeButton) && (titleBar->state & State_MouseOver);
                 bool sunken = (titleBar->activeSubControls & SC_TitleBarUnshadeButton) && (titleBar->state & State_Sunken);
 
-                QRect unshadeButtonRect = subControlRect(CC_TitleBar, titleBar, SC_TitleBarUnshadeButton, widget);
+                QRect unshadeButtonRect = proxy()->subControlRect(CC_TitleBar, titleBar, SC_TitleBarUnshadeButton, widget);
                 qt_plastique_draw_mdibutton(painter, titleBar, unshadeButtonRect, hover, sunken);
 
                 int xoffset = unshadeButtonRect.width() / 3;
@@ -4940,7 +4939,7 @@ void QPlastiqueStyle::drawComplexControl(ComplexControl control, const QStyleOpt
                 bool hover = (titleBar->activeSubControls & SC_TitleBarSysMenu) && (titleBar->state & State_MouseOver);
                 bool sunken = (titleBar->activeSubControls & SC_TitleBarSysMenu) && (titleBar->state & State_Sunken);
 
-                QRect iconRect = subControlRect(CC_TitleBar, titleBar, SC_TitleBarSysMenu, widget);
+                QRect iconRect = proxy()->subControlRect(CC_TitleBar, titleBar, SC_TitleBarSysMenu, widget);
                 if (hover)
                     qt_plastique_draw_mdibutton(painter, titleBar, iconRect, hover, sunken);
 
@@ -4952,7 +4951,7 @@ void QPlastiqueStyle::drawComplexControl(ComplexControl control, const QStyleOpt
                     QPixmap pm = standardPixmap(SP_TitleBarMenuButton, &tool, widget);
                     tool.rect = iconRect;
                     painter->save();
-                    drawItemPixmap(painter, iconRect, Qt::AlignCenter, pm);
+                    proxy()->drawItemPixmap(painter, iconRect, Qt::AlignCenter, pm);
                     painter->restore();
                 }
             }
@@ -4987,7 +4986,7 @@ QSize QPlastiqueStyle::sizeFromContents(ContentsType type, const QStyleOption *o
 #ifndef QT_NO_SLIDER
     case CT_Slider:
         if (const QStyleOptionSlider *slider = qstyleoption_cast<const QStyleOptionSlider *>(option)) {
-            int tickSize = pixelMetric(PM_SliderTickmarkOffset, option, widget);
+            int tickSize = proxy()->pixelMetric(PM_SliderTickmarkOffset, option, widget);
             if (slider->tickPosition & QSlider::TicksBelow) {
                 if (slider->orientation == Qt::Horizontal)
                     newSize.rheight() += tickSize;
@@ -5006,8 +5005,8 @@ QSize QPlastiqueStyle::sizeFromContents(ContentsType type, const QStyleOption *o
 #ifndef QT_NO_SCROLLBAR
     case CT_ScrollBar:
         if (const QStyleOptionSlider *scrollBar = qstyleoption_cast<const QStyleOptionSlider *>(option)) {
-            int scrollBarExtent = pixelMetric(PM_ScrollBarExtent, option, widget);
-            int scrollBarSliderMinimum = pixelMetric(PM_ScrollBarSliderMin, option, widget);
+            int scrollBarExtent = proxy()->pixelMetric(PM_ScrollBarExtent, option, widget);
+            int scrollBarSliderMinimum = proxy()->pixelMetric(PM_ScrollBarSliderMin, option, widget);
             if (scrollBar->orientation == Qt::Horizontal) {
                 newSize = QSize(scrollBarExtent * 3 + scrollBarSliderMinimum, scrollBarExtent);
             } else {
@@ -5088,7 +5087,7 @@ QRect QPlastiqueStyle::subControlRect(ComplexControl control, const QStyleOption
 #ifndef QT_NO_SLIDER
     case CC_Slider:
         if (const QStyleOptionSlider *slider = qstyleoption_cast<const QStyleOptionSlider *>(option)) {
-            int tickSize = pixelMetric(PM_SliderTickmarkOffset, option, widget);
+            int tickSize = proxy()->pixelMetric(PM_SliderTickmarkOffset, option, widget);
 
             switch (subControl) {
             case SC_SliderHandle:
@@ -5141,10 +5140,10 @@ QRect QPlastiqueStyle::subControlRect(ComplexControl control, const QStyleOption
 #ifndef QT_NO_SCROLLBAR
     case CC_ScrollBar:
         if (const QStyleOptionSlider *scrollBar = qstyleoption_cast<const QStyleOptionSlider *>(option)) {
-            int scrollBarExtent = pixelMetric(PM_ScrollBarExtent, scrollBar, widget);
+            int scrollBarExtent = proxy()->pixelMetric(PM_ScrollBarExtent, scrollBar, widget);
             int sliderMaxLength = ((scrollBar->orientation == Qt::Horizontal) ?
                                    scrollBar->rect.width() : scrollBar->rect.height()) - (scrollBarExtent * 3);
-            int sliderMinLength = pixelMetric(PM_ScrollBarSliderMin, scrollBar, widget);
+            int sliderMinLength = proxy()->pixelMetric(PM_ScrollBarSliderMin, scrollBar, widget);
             int sliderLength;
 
             // calculate slider length
@@ -5266,7 +5265,7 @@ QRect QPlastiqueStyle::subControlRect(ComplexControl control, const QStyleOption
             break;
         case SC_ComboBoxEditField: {
             if (const QStyleOptionComboBox *box = qstyleoption_cast<const QStyleOptionComboBox *>(option)) {
-                int frameWidth = pixelMetric(PM_DefaultFrameWidth);
+                int frameWidth = proxy()->pixelMetric(PM_DefaultFrameWidth);
                 rect = visualRect(option->direction, option->rect, rect);
 
                 if (box->editable) {
@@ -5471,31 +5470,31 @@ QStyle::SubControl QPlastiqueStyle::hitTestComplexControl(ComplexControl control
 #ifndef QT_NO_SCROLLBAR
     case CC_ScrollBar:
         if (const QStyleOptionSlider *scrollBar = qstyleoption_cast<const QStyleOptionSlider *>(option)) {
-            QRect slider = subControlRect(control, scrollBar, SC_ScrollBarSlider, widget);
+            QRect slider = proxy()->subControlRect(control, scrollBar, SC_ScrollBarSlider, widget);
             if (slider.contains(pos)) {
                 ret = SC_ScrollBarSlider;
                 break;
             }
 
-            QRect scrollBarAddLine = subControlRect(control, scrollBar, SC_ScrollBarAddLine, widget);
+            QRect scrollBarAddLine = proxy()->subControlRect(control, scrollBar, SC_ScrollBarAddLine, widget);
             if (scrollBarAddLine.contains(pos)) {
                 ret = SC_ScrollBarAddLine;
                 break;
             }
 
-            QRect scrollBarSubPage = subControlRect(control, scrollBar, SC_ScrollBarSubPage, widget);
+            QRect scrollBarSubPage = proxy()->subControlRect(control, scrollBar, SC_ScrollBarSubPage, widget);
             if (scrollBarSubPage.contains(pos)) {
                 ret = SC_ScrollBarSubPage;
                 break;
             }
 
-            QRect scrollBarAddPage = subControlRect(control, scrollBar, SC_ScrollBarAddPage, widget);
+            QRect scrollBarAddPage = proxy()->subControlRect(control, scrollBar, SC_ScrollBarAddPage, widget);
             if (scrollBarAddPage.contains(pos)) {
                 ret = SC_ScrollBarAddPage;
                 break;
             }
 
-            QRect scrollBarSubLine = subControlRect(control, scrollBar, SC_ScrollBarSubLine, widget);
+            QRect scrollBarSubLine = proxy()->subControlRect(control, scrollBar, SC_ScrollBarSubLine, widget);
             if (scrollBarSubLine.contains(pos)) {
                 ret = SC_ScrollBarSubLine;
                 break;

@@ -57,6 +57,7 @@
 @interface NSObject (WebPlugin)
 - (id)objectForWebScript;
 - (NPObject *)createPluginScriptableObject;
+- (PassRefPtr<JSC::Bindings::Instance>)createPluginBindingsInstance:(PassRefPtr<JSC::Bindings::RootObject>)rootObject;
 @end
 
 using namespace JSC::Bindings;
@@ -71,6 +72,9 @@ PassScriptInstance ScriptController::createScriptInstanceForWidget(Widget* widge
 
     RefPtr<RootObject> rootObject = createRootObject(widgetView);
 
+    if ([widgetView respondsToSelector:@selector(createPluginBindingsInstance:)])
+        return [widgetView createPluginBindingsInstance:rootObject.release()];
+        
     if ([widgetView respondsToSelector:@selector(objectForWebScript)]) {
         id objectForWebScript = [widgetView objectForWebScript];
         if (!objectForWebScript)
@@ -137,7 +141,7 @@ void ScriptController::disconnectPlatformScriptObjects()
 
 static pthread_t mainThread;
 
-static void updateRenderingForBindings(JSC::ExecState*, JSC::JSObject* rootObject)
+static void updateStyleIfNeededForBindings(JSC::ExecState*, JSC::JSObject* rootObject)
 {
     if (pthread_self() != mainThread)
         return;
@@ -153,18 +157,14 @@ static void updateRenderingForBindings(JSC::ExecState*, JSC::JSObject* rootObjec
     if (!frame)
         return;
 
-    Document* document = frame->document();
-    if (!document)
-        return;
-
-    document->updateRendering();
+    frame->document()->updateStyleIfNeeded();
 }
 
 void ScriptController::initJavaJSBindings()
 {
     mainThread = pthread_self();
     JSC::Bindings::JavaJSObject::initializeJNIThreading();
-    JSC::Bindings::Instance::setDidExecuteFunction(updateRenderingForBindings);
+    JSC::Bindings::Instance::setDidExecuteFunction(updateStyleIfNeededForBindings);
 }
 
 #endif

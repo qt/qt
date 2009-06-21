@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -116,11 +116,9 @@ QSize QMenuBarExtension::sizeHint() const
 */
 QAction *QMenuBarPrivate::actionAt(QPoint p) const
 {
-    Q_Q(const QMenuBar);
-    QList<QAction*> items = q->actions();
-    for(int i = 0; i < items.size(); ++i) {
-        if(actionRect(items.at(i)).contains(p))
-            return items.at(i);
+    for(int i = 0; i < actions.size(); ++i) {
+        if(actionRect(actions.at(i)).contains(p))
+            return actions.at(i);
     }
     return 0;
 }
@@ -259,9 +257,9 @@ void QMenuBarPrivate::updateGeometries()
     }
     q->updateGeometry();
 #ifdef QT3_SUPPORT
-    if (q->parentWidget() != 0) {
+    if (parent) {
         QMenubarUpdatedEvent menubarUpdated(q);
-        QApplication::sendEvent(q->parentWidget(), &menubarUpdated);
+        QApplication::sendEvent(parent, &menubarUpdated);
     }
 #endif
 }
@@ -284,7 +282,7 @@ void QMenuBarPrivate::setKeyboardMode(bool b)
     }
     keyboardState = b;
     if(b) {
-        QWidget *fw = qApp->focusWidget();
+        QWidget *fw = QApplication::focusWidget();
         if (fw != q)
             keyboardFocusWidget = fw;
         if(!currentAction && !actionList.isEmpty())
@@ -294,7 +292,7 @@ void QMenuBarPrivate::setKeyboardMode(bool b)
         if(!popupState)
             setCurrentAction(0);
         if(keyboardFocusWidget) {
-            if (qApp->focusWidget() == q)
+            if (QApplication::focusWidget() == q)
                 keyboardFocusWidget->setFocus(Qt::MenuBarFocusReason);
             keyboardFocusWidget = 0;
         }
@@ -413,15 +411,14 @@ void QMenuBarPrivate::calcActionRects(int max_width, int start, QMap<QAction*, Q
     actionList.clear();
     const int itemSpacing = q->style()->pixelMetric(QStyle::PM_MenuBarItemSpacing, 0, q);
     int max_item_height = 0, separator = -1, separator_start = 0, separator_len = 0;
-    QList<QAction*> items = q->actions();
 
     //calculate size
     const QFontMetrics fm = q->fontMetrics();
     const int hmargin = q->style()->pixelMetric(QStyle::PM_MenuBarHMargin, 0, q),
               vmargin = q->style()->pixelMetric(QStyle::PM_MenuBarVMargin, 0, q),
                 icone = q->style()->pixelMetric(QStyle::PM_SmallIconSize, 0, q);
-    for(int i = 0; i < items.count(); i++) {
-        QAction *action = items.at(i);
+    for(int i = 0; i < actions.count(); i++) {
+        QAction *action = actions.at(i);
         if(!action->isVisible())
             continue;
 
@@ -534,7 +531,6 @@ void QMenuBarPrivate::_q_actionHovered()
         emit q->hovered(action);
 #ifndef QT_NO_ACCESSIBILITY
         if (QAccessible::isActive()) {
-            QList<QAction*> actions = q->actions();
             int actionIndex = actions.indexOf(action);
             ++actionIndex;
             QAccessible::updateAccessibility(q, actionIndex, QAccessible::Focus);
@@ -1257,7 +1253,8 @@ void QMenuBar::mouseMoveEvent(QMouseEvent *e)
 void QMenuBar::leaveEvent(QEvent *)
 {
     Q_D(QMenuBar);
-    if(!hasFocus() && !d->popupState)
+    if((!hasFocus() && !d->popupState) ||
+        (d->currentAction && d->currentAction->menu() == 0))
         d->setCurrentAction(0);
 }
 

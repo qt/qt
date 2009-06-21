@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the examples of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -167,22 +167,22 @@ void Window::reformatHeaders()
 //! [8]
 void Window::reformatCalendarPage()
 {
-    QTextCharFormat mayFirstFormat;
-    if (mayFirstCheckBox->isChecked())
-        mayFirstFormat.setForeground(Qt::red);
-
-    QTextCharFormat firstFridayFormat;
-    if (firstFridayCheckBox->isChecked())
+    if (firstFridayCheckBox->isChecked()) {
+        QDate firstFriday(calendar->yearShown(), calendar->monthShown(), 1);
+        while (firstFriday.dayOfWeek() != Qt::Friday)
+            firstFriday = firstFriday.addDays(1);
+        QTextCharFormat firstFridayFormat;
         firstFridayFormat.setForeground(Qt::blue);
+        calendar->setDateTextFormat(firstFriday, firstFridayFormat);
+    }
 
-    QDate date(calendar->yearShown(), calendar->monthShown(), 1); 
-
-    calendar->setDateTextFormat(QDate(date.year(), 5, 1), mayFirstFormat);
-
-    date.setDate(date.year(), date.month(), 1);
-    while (date.dayOfWeek() != Qt::Friday)
-        date = date.addDays(1);
-    calendar->setDateTextFormat(date, firstFridayFormat);
+    //May First in Red takes precedence
+    if (mayFirstCheckBox->isChecked()) {
+        const QDate mayFirst(calendar->yearShown(), 5, 1);
+        QTextCharFormat mayFirstFormat;
+        mayFirstFormat.setForeground(Qt::red);
+        calendar->setDateTextFormat(mayFirst, mayFirstFormat);
+    }
 }
 //! [8]
 

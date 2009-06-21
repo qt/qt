@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -263,7 +263,7 @@ void QTextBrowserPrivate::setSource(const QUrl &url)
     Q_Q(QTextBrowser);
 #ifndef QT_NO_CURSOR
     if (q->isVisible())
-        qApp->setOverrideCursor(Qt::WaitCursor);
+        QApplication::setOverrideCursor(Qt::WaitCursor);
 #endif
     textOrSourceChanged = true;
 
@@ -295,9 +295,9 @@ void QTextBrowserPrivate::setSource(const QUrl &url)
 
         if (q->isVisible()) {
             QString firstTag = txt.left(txt.indexOf(QLatin1Char('>')) + 1);
-            if (firstTag.left(3) == QLatin1String("<qt") && firstTag.contains(QLatin1String("type")) && firstTag.contains(QLatin1String("detail"))) {
+            if (firstTag.startsWith(QLatin1String("<qt")) && firstTag.contains(QLatin1String("type")) && firstTag.contains(QLatin1String("detail"))) {
 #ifndef QT_NO_CURSOR
-                qApp->restoreOverrideCursor();
+                QApplication::restoreOverrideCursor();
 #endif
 #ifndef QT_NO_WHATSTHIS
                 QWhatsThis::showText(QCursor::pos(), txt, q);
@@ -342,7 +342,7 @@ void QTextBrowserPrivate::setSource(const QUrl &url)
 
 #ifndef QT_NO_CURSOR
     if (q->isVisible())
-        qApp->restoreOverrideCursor();
+        QApplication::restoreOverrideCursor();
 #endif
     emit q->sourceChanged(url);
 }

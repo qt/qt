@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the Qt Linguist of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -50,6 +50,7 @@
 #include "errorsview.h"
 #include "finddialog.h"
 #include "formpreviewview.h"
+#include "globals.h"
 #include "messageeditor.h"
 #include "messagemodel.h"
 #include "phrasebookbox.h"
@@ -96,14 +97,6 @@ QT_BEGIN_NAMESPACE
 
 static const int MessageMS = 2500;
 
-const QString &settingsPrefix()
-{
-    static QString prefix = QString(QLatin1String("%1.%2/"))
-        .arg((QT_VERSION >> 16) & 0xff)
-        .arg((QT_VERSION >> 8) & 0xff);
-    return prefix;
-}
-
 enum Ending {
     End_None,
     End_FullStop,
@@ -121,11 +114,10 @@ static bool hasFormPreview(const QString &fileName)
 static Ending ending(QString str, QLocale::Language lang)
 {
     str = str.simplified();
-    int ch = 0;
-    if (!str.isEmpty())
-        ch = str.right(1)[0].unicode();
+    if (str.isEmpty())
+        return End_None;
 
-    switch (ch) {
+    switch (str.at(str.length() - 1).unicode()) {
     case 0x002e: // full stop
         if (str.endsWith(QLatin1String("...")))
             return End_Ellipsis;
@@ -2494,25 +2486,24 @@ void MainWindow::updateDanger(const MultiDataIndex &index, bool verbose)
 
 void MainWindow::readConfig()
 {
-    QString keybase = settingsPrefix();
     QSettings config;
 
     QRect r(pos(), size());
-    restoreGeometry(config.value(keybase + QLatin1String("Geometry/WindowGeometry")).toByteArray());
-    restoreState(config.value(keybase + QLatin1String("MainWindowState")).toByteArray());
+    restoreGeometry(config.value(settingPath("Geometry/WindowGeometry")).toByteArray());
+    restoreState(config.value(settingPath("MainWindowState")).toByteArray());
 
     m_ui.actionAccelerators->setChecked(
-        config.value(keybase + QLatin1String("Validators/Accelerator"), true).toBool());
+        config.value(settingPath("Validators/Accelerator"), true).toBool());
     m_ui.actionEndingPunctuation->setChecked(
-        config.value(keybase + QLatin1String("Validators/EndingPunctuation"), true).toBool());
+        config.value(settingPath("Validators/EndingPunctuation"), true).toBool());
     m_ui.actionPhraseMatches->setChecked(
-        config.value(keybase + QLatin1String("Validators/PhraseMatch"), true).toBool());
+        config.value(settingPath("Validators/PhraseMatch"), true).toBool());
     m_ui.actionPlaceMarkerMatches->setChecked(
-        config.value(keybase + QLatin1String("Validators/PlaceMarkers"), true).toBool());
+        config.value(settingPath("Validators/PlaceMarkers"), true).toBool());
 
     recentFiles().readConfig();
 
-    int size = config.beginReadArray(keybase + QLatin1String("OpenedPhraseBooks"));
+    int size = config.beginReadArray(settingPath("OpenedPhraseBooks"));
     for (int i = 0; i < size; ++i) {
         config.setArrayIndex(i);
         openPhraseBook(config.value(QLatin1String("FileName")).toString());
@@ -2522,23 +2513,22 @@ void MainWindow::readConfig()
 
 void MainWindow::writeConfig()
 {
-    QString keybase = settingsPrefix();
     QSettings config;
-    config.setValue(keybase + QLatin1String("Geometry/WindowGeometry"),
+    config.setValue(settingPath("Geometry/WindowGeometry"),
         saveGeometry());
-    config.setValue(keybase + QLatin1String("Validators/Accelerator"),
+    config.setValue(settingPath("Validators/Accelerator"),
         m_ui.actionAccelerators->isChecked());
-    config.setValue(keybase + QLatin1String("Validators/EndingPunctuation"),
+    config.setValue(settingPath("Validators/EndingPunctuation"),
         m_ui.actionEndingPunctuation->isChecked());
-    config.setValue(keybase + QLatin1String("Validators/PhraseMatch"),
+    config.setValue(settingPath("Validators/PhraseMatch"),
         m_ui.actionPhraseMatches->isChecked());
-    config.setValue(keybase + QLatin1String("Validators/PlaceMarkers"),
+    config.setValue(settingPath("Validators/PlaceMarkers"),
         m_ui.actionPlaceMarkerMatches->isChecked());
-    config.setValue(keybase + QLatin1String("MainWindowState"),
+    config.setValue(settingPath("MainWindowState"),
         saveState());
     recentFiles().writeConfig();
 
-    config.beginWriteArray(keybase + QLatin1String("OpenedPhraseBooks"),
+    config.beginWriteArray(settingPath("OpenedPhraseBooks"),
         m_phraseBooks.size());
     for (int i = 0; i < m_phraseBooks.size(); ++i) {
         config.setArrayIndex(i);

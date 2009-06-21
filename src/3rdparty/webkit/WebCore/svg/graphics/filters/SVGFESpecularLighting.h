@@ -22,10 +22,11 @@
 #ifndef SVGFESpecularLighting_h
 #define SVGFESpecularLighting_h
 
-#if ENABLE(SVG) && ENABLE(SVG_FILTERS)
+#if ENABLE(SVG) && ENABLE(FILTERS)
 #include "Color.h"
-#include "SVGLightSource.h"
 #include "FilterEffect.h"
+#include "SVGLightSource.h"
+#include "Filter.h"
 
 namespace WebCore {
 
@@ -56,8 +57,8 @@ namespace WebCore {
         const LightSource* lightSource() const;
         void setLightSource(LightSource*);
 
-        virtual void apply();
-        virtual void dump();
+        void apply(Filter*);
+        void dump();
         TextStream& externalRepresentation(TextStream& ts) const;
 
     private:
@@ -76,6 +77,6 @@ namespace WebCore {
 
 } // namespace WebCore
 
-#endif // ENABLE(SVG) && ENABLE(SVG_FILTERS)
+#endif // ENABLE(SVG) && ENABLE(FILTERS)
 
 #endif // SVGFESpecularLighting_h

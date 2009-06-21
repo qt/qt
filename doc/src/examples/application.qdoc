@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the documentation of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -45,7 +45,7 @@
 
     The Application example shows how to implement a standard GUI
     application with menus, toolbars, and a status bar. The example
-    itself is a simple text editor program built around QTextEdit.
+    itself is a simple text editor program built around QPlainTextEdit.
 
     \image application.png Screenshot of the Application example
 
@@ -103,7 +103,7 @@
     \snippet examples/mainwindows/application/mainwindow.cpp 1
     \snippet examples/mainwindows/application/mainwindow.cpp 2
 
-    In the constructor, we start by creating a QTextEdit widget as a
+    In the constructor, we start by creating a QPlainTextEdit widget as a
     child of the main window (the \c this object). Then we call
     QMainWindow::setCentralWidget() to tell that this is going to be
     the widget that occupies the central area of the main window,
@@ -114,9 +114,9 @@
     functions that set up the user interface. After that, we call \c
     readSettings() to restore the user's preferences.
 
-    We establish a signal-slot connection between the QTextEdit's
+    We establish a signal-slot connection between the QPlainTextEdit's
     document object and our \c documentWasModified() slot. Whenever
-    the user modifies the text in the QTextEdit, we want to update
+    the user modifies the text in the QPlainTextEdit, we want to update
     the title bar to show that the file was modified.
 
     At the end, we set the window title using the private
@@ -141,7 +141,7 @@
     The \c newFile() slot is invoked when the user selects
     \menu{File|New} from the menu. We call \c maybeSave() to save any
     pending changes and if the user accepts to go on, we clear the
-    QTextEdit and call the private function \c setCurrentFile() to
+    QPlainTextEdit and call the private function \c setCurrentFile() to
     update the window title and clear the
     \l{QWidget::windowModified}{windowModified} flag.
 
@@ -187,7 +187,7 @@
     \snippet examples/mainwindows/application/mainwindow.cpp 16
 
     The \c documentWasModified() slot is invoked each time the text
-    in the QTextEdit changes because of user edits. We call
+    in the QPlainTextEdit changes because of user edits. We call
     QWidget::setWindowModified() to make the title bar show that the
     file was modified. How this is done varies on each platform.
 
@@ -227,8 +227,8 @@
     \snippet examples/mainwindows/application/mainwindow.cpp 24
 
     The \gui{Edit|Cut} and \gui{Edit|Copy} actions must be available
-    only when the QTextEdit contains selected text. We disable them
-    by default and connect the QTextEdit::copyAvailable() signal to
+    only when the QPlainTextEdit contains selected text. We disable them
+    by default and connect the QPlainTextEdit::copyAvailable() signal to
     the QAction::setEnabled() slot, ensuring that the actions are
     disabled when the text editor has no selection.
 

@@ -47,6 +47,16 @@ public:
             m_operations[i]->apply(t, sz);
     }
     
+    // Return true if any of the operation types are 3D operation types (even if the
+    // values describe affine transforms)
+    bool has3DOperation() const
+    {
+        for (unsigned i = 0; i < m_operations.size(); ++i)
+            if (m_operations[i]->is3DOperation())
+                return true;
+        return false;
+    }
+    
     Vector<RefPtr<TransformOperation> >& operations() { return m_operations; }
     const Vector<RefPtr<TransformOperation> >& operations() const { return m_operations; }
 

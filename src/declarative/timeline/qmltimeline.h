@@ -128,7 +128,7 @@ class Q_DECLARATIVE_EXPORT QmlTimeLineValue : public QmlTimeLineObject
 public:
     QmlTimeLineValue(qreal v = 0.) : _v(v) {}
 
-    qreal value() const { return _v; }
+    virtual qreal value() const { return _v; }
     virtual void setValue(qreal v) { _v = v; }
 
     QmlTimeLine *timeLine() const { return _t; }

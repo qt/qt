@@ -15,6 +15,7 @@ HEADERS += \
            fx/qfxfocuspanel.h \
            fx/qfxfocusrealm.h \
            fx/qfxgridview.h \
+           fx/qfxflowview.h \
            fx/qfxhighlightfilter.h \
            fx/qfximage.h \
            fx/qfxpainteditem.h \
@@ -63,6 +64,7 @@ SOURCES += \
            fx/qfxfocuspanel.cpp \
            fx/qfxfocusrealm.cpp \
            fx/qfxgridview.cpp \
+           fx/qfxflowview.cpp \
            fx/qfxhighlightfilter.cpp \
            fx/qfximage.cpp \
            fx/qfxpainteditem.cpp \

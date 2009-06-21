@@ -48,7 +48,7 @@ public:
             DownloadItem->setObjectName(QString::fromUtf8("DownloadItem"));
         DownloadItem->resize(423, 110);
         horizontalLayout = new QHBoxLayout(DownloadItem);
-        horizontalLayout->setMargin(0);
+        horizontalLayout->setContentsMargins(0, 0, 0, 0);
         horizontalLayout->setObjectName(QString::fromUtf8("horizontalLayout"));
         fileIcon = new QLabel(DownloadItem);
         fileIcon->setObjectName(QString::fromUtf8("fileIcon"));

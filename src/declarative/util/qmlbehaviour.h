@@ -88,10 +88,8 @@ private Q_SLOTS:
 };
 QML_DECLARE_TYPE(QmlBehaviour)
 
-
-#endif // QMLBEHAVIOUR_H
-
-
 QT_END_NAMESPACE
 
 QT_END_HEADER
+
+#endif // QMLBEHAVIOUR_H

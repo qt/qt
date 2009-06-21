@@ -253,8 +253,8 @@ struct SVGTextRunWalker {
         bool haveAltGlyph = false;
         SVGGlyphIdentifier altGlyphIdentifier;
         if (RenderObject* renderObject = run.referencingRenderObject()) {
-            if (renderObject->element() && renderObject->element()->hasTagName(SVGNames::altGlyphTag)) {
-                SVGGlyphElement* glyphElement = static_cast<SVGAltGlyphElement*>(renderObject->element())->glyphElement();
+            if (renderObject->node() && renderObject->node()->hasTagName(SVGNames::altGlyphTag)) {
+                SVGGlyphElement* glyphElement = static_cast<SVGAltGlyphElement*>(renderObject->node())->glyphElement();
                 if (glyphElement) {
                     haveAltGlyph = true;
                     altGlyphIdentifier = glyphElement->buildGlyphIdentifier();
@@ -340,7 +340,7 @@ struct SVGTextRunWalkerMeasuredLengthData {
     const Font* font;
 };
 
-bool floatWidthUsingSVGFontCallback(const SVGGlyphIdentifier& identifier, SVGTextRunWalkerMeasuredLengthData& data)
+static bool floatWidthUsingSVGFontCallback(const SVGGlyphIdentifier& identifier, SVGTextRunWalkerMeasuredLengthData& data)
 {
     if (data.at >= data.from && data.at < data.to)
         data.length += identifier.horizontalAdvanceX * data.scale;
@@ -349,7 +349,7 @@ bool floatWidthUsingSVGFontCallback(const SVGGlyphIdentifier& identifier, SVGTex
     return data.at < data.to;
 }
 
-void floatWidthMissingGlyphCallback(const TextRun& run, SVGTextRunWalkerMeasuredLengthData& data)
+static void floatWidthMissingGlyphCallback(const TextRun& run, SVGTextRunWalkerMeasuredLengthData& data)
 {
     // Handle system font fallback
     FontDescription fontDescription(data.font->fontDescription());
@@ -407,7 +407,7 @@ static float floatWidthOfSubStringUsingSVGFont(const Font* font, const TextRun& 
         if (RenderObject* renderObject = run.referencingRenderObject()) {
             isVerticalText = isVerticalWritingMode(renderObject->style()->svgStyle());
 
-            if (SVGElement* element = static_cast<SVGElement*>(renderObject->element()))
+            if (SVGElement* element = static_cast<SVGElement*>(renderObject->node()))
                 language = element->getAttribute(XMLNames::langAttr);
         }
 
@@ -442,13 +442,13 @@ struct SVGTextRunWalkerDrawTextData {
     Vector<UChar> fallbackCharacters;
 };
 
-bool drawTextUsingSVGFontCallback(const SVGGlyphIdentifier& identifier, SVGTextRunWalkerDrawTextData& data)
+static bool drawTextUsingSVGFontCallback(const SVGGlyphIdentifier& identifier, SVGTextRunWalkerDrawTextData& data)
 {
     data.glyphIdentifiers.append(identifier);
     return true;
 }
 
-void drawTextMissingGlyphCallback(const TextRun& run, SVGTextRunWalkerDrawTextData& data)
+static void drawTextMissingGlyphCallback(const TextRun& run, SVGTextRunWalkerDrawTextData& data)
 {
     ASSERT(run.length() == 1);
     data.glyphIdentifiers.append(SVGGlyphIdentifier());
@@ -496,7 +496,7 @@ void Font::drawTextUsingSVGFont(GraphicsContext* context, const TextRun& run,
         if (run.referencingRenderObject()) {
             isVerticalText = isVerticalWritingMode(run.referencingRenderObject()->style()->svgStyle());    
 
-            if (SVGElement* element = static_cast<SVGElement*>(run.referencingRenderObject()->element()))
+            if (SVGElement* element = static_cast<SVGElement*>(run.referencingRenderObject()->node()))
                 language = element->getAttribute(XMLNames::langAttr);
         }
 
@@ -533,6 +533,9 @@ void Font::drawTextUsingSVGFont(GraphicsContext* context, const TextRun& run,
                     context->beginPath();
                     context->addPath(identifier.pathData);
 
+                    // FIXME: setup() tries to get objectBoundingBox() from run.referencingRenderObject()
+                    // which is wrong.  We need to change setup() to take a bounding box instead, or pass
+                    // a RenderObject which would return the bounding box for identifier.pathData
                     if (activePaintServer->setup(context, run.referencingRenderObject(), targetType)) {
                         // Spec: Any properties specified on a text elements which represents a length, such as the
                         // 'stroke-width' property, might produce surprising results since the length value will be
@@ -553,10 +556,10 @@ void Font::drawTextUsingSVGFont(GraphicsContext* context, const TextRun& run,
                     currentPoint.move(identifier.horizontalAdvanceX * scale, 0.0f);
             } else {
                 // Handle system font fallback
-                FontDescription fontDescription(context->font().fontDescription());
+                FontDescription fontDescription(m_fontDescription);
                 fontDescription.setFamily(FontFamily());
                 Font font(fontDescription, 0, 0); // spacing handled by SVG text code.
-                font.update(context->font().fontSelector());
+                font.update(fontSelector());
 
                 TextRun fallbackCharacterRun(run);
                 fallbackCharacterRun.setText(&data.fallbackCharacters[run.rtl() ? data.fallbackCharacters.size() - fallbackCharacterIndex - 1 : fallbackCharacterIndex], 1);

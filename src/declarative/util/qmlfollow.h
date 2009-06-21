@@ -45,12 +45,12 @@
 #include <QtDeclarative/qmlpropertyvaluesource.h>
 #include <QtDeclarative/qml.h>
 
-
 QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
 QT_MODULE(Declarative)
+
 class QmlFollowPrivate;
 class Q_DECLARATIVE_EXPORT QmlFollow : public QmlPropertyValueSource, 
                                  public QmlParserStatus
@@ -94,10 +94,8 @@ Q_SIGNALS:
 
 QML_DECLARE_TYPE(QmlFollow)
 
-
-#endif // QFXFOLLOW_H
-
-
 QT_END_NAMESPACE
 
 QT_END_HEADER
+
+#endif // QFXFOLLOW_H

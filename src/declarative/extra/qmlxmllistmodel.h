@@ -57,11 +57,9 @@ class Q_DECLARATIVE_EXPORT XmlListModelRole : public QObject
     Q_OBJECT
     Q_PROPERTY(QString name READ name WRITE setName)
     Q_PROPERTY(QString query READ query WRITE setQuery)
-    Q_PROPERTY(bool isCData READ isCData WRITE setIsCData)
-    Q_PROPERTY(bool isStringList READ isStringList WRITE setIsStringList)
 
 public:
-    XmlListModelRole() : m_isList(false), m_isCData(false) {}
+    XmlListModelRole() {}
     ~XmlListModelRole() {}
 
     QString name() const { return m_name; }
@@ -70,17 +68,9 @@ public:
     QString query() const { return m_query; }
     void setQuery(const QString &query) { m_query = query; }
 
-    bool isStringList() const { return m_isList; }
-    void setIsStringList(bool b) { m_isList = b; }
-
-    bool isCData() const { return m_isCData; }
-    void setIsCData(bool b) { m_isCData = b; }
-
 private:
     QString m_name;
     QString m_query;
-    bool m_isList;
-    bool m_isCData;
 };
 QML_DECLARE_TYPE(XmlListModelRole)
 

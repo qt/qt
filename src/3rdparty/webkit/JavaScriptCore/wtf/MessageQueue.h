@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2008 Apple Inc. All rights reserved.
+ * Copyright (C) 2009 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -29,12 +30,19 @@
 #ifndef MessageQueue_h
 #define MessageQueue_h
 
+#include <limits>
 #include <wtf/Assertions.h>
 #include <wtf/Deque.h>
 #include <wtf/Noncopyable.h>
 #include <wtf/Threading.h>
 
 namespace WTF {
+
+    enum MessageQueueWaitResult {
+        MessageQueueTerminated,       // Queue was destroyed while waiting for message.
+        MessageQueueTimeout,          // Timeout was specified and it expired.
+        MessageQueueMessageReceived,  // A message was successfully received and returned.
+    };
 
     template<typename DataType>
     class MessageQueue : Noncopyable {
@@ -44,6 +52,8 @@ namespace WTF {
         void append(const DataType&);
         void prepend(const DataType&);
         bool waitForMessage(DataType&);
+        template<typename Predicate>
+        MessageQueueWaitResult waitForMessageFilteredWithTimeout(DataType&, Predicate&, double absoluteTime);
         void kill();
 
         bool tryGetMessage(DataType&);
@@ -52,7 +62,11 @@ namespace WTF {
         // The result of isEmpty() is only valid if no other thread is manipulating the queue at the same time.
         bool isEmpty();
 
+        static double infiniteTime() { return std::numeric_limits<double>::max(); }
+
     private:
+        static bool alwaysTruePredicate(DataType&) { return true; }
+
         mutable Mutex m_mutex;
         ThreadCondition m_condition;
         Deque<DataType> m_queue;
@@ -78,18 +92,34 @@ namespace WTF {
     template<typename DataType>
     inline bool MessageQueue<DataType>::waitForMessage(DataType& result)
     {
+        MessageQueueWaitResult exitReason = waitForMessageFilteredWithTimeout(result, MessageQueue<DataType>::alwaysTruePredicate, infiniteTime());
+        ASSERT(exitReason == MessageQueueTerminated || exitReason == MessageQueueMessageReceived);
+        return exitReason == MessageQueueMessageReceived;
+    }
+
+    template<typename DataType>
+    template<typename Predicate>
+    inline MessageQueueWaitResult MessageQueue<DataType>::waitForMessageFilteredWithTimeout(DataType& result, Predicate& predicate, double absoluteTime)
+    {
         MutexLocker lock(m_mutex);
-        
-        while (!m_killed && m_queue.isEmpty())
-            m_condition.wait(m_mutex);
+        bool timedOut = false;
+
+        DequeConstIterator<DataType> found = m_queue.end();
+        while (!m_killed && !timedOut && (found = m_queue.findIf(predicate)) == m_queue.end())
+            timedOut = !m_condition.timedWait(m_mutex, absoluteTime);
+
+        ASSERT(!timedOut || absoluteTime != infiniteTime());
 
         if (m_killed)
-            return false;
+            return MessageQueueTerminated;
 
-        ASSERT(!m_queue.isEmpty());
-        result = m_queue.first();
-        m_queue.removeFirst();
-        return true;
+        if (timedOut)
+            return MessageQueueTimeout;
+
+        ASSERT(found != m_queue.end());
+        result = *found;
+        m_queue.remove(found);
+        return MessageQueueMessageReceived;
     }
 
     template<typename DataType>
@@ -129,8 +159,13 @@ namespace WTF {
         MutexLocker lock(m_mutex);
         return m_killed;
     }
-}
+} // namespace WTF
 
 using WTF::MessageQueue;
+// MessageQueueWaitResult enum and all its values.
+using WTF::MessageQueueWaitResult;
+using WTF::MessageQueueTerminated;
+using WTF::MessageQueueTimeout;
+using WTF::MessageQueueMessageReceived;
 
 #endif // MessageQueue_h

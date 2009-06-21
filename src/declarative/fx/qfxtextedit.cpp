@@ -682,7 +682,9 @@ void QFxTextEdit::keyPressEvent(QKeyEvent *event)
     if (event->isAccepted())
         return;
 
-    QTextCursor c = textCursor();
+    //### this causes non-standard cursor behavior in some cases.
+    //     is it still needed?
+    /*QTextCursor c = textCursor();
     QTextCursor::MoveOperation op = QTextCursor::NoMove;
     if (event == QKeySequence::MoveToNextChar) {
         op = QTextCursor::Right;
@@ -700,7 +702,7 @@ void QFxTextEdit::keyPressEvent(QKeyEvent *event)
 
     if (op != QTextCursor::NoMove && !c.movePosition(op))
         event->ignore();
-    else
+    else*/
         d->control->processEvent(event, QPointF(0, 0));
 }
 

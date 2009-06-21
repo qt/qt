@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtNetwork module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -1413,6 +1413,7 @@ QString QHttpRequestHeader::toString() const
  ****************************************************/
 /*!
     \class QHttp
+    \obsolete
     \reentrant
 
     \brief The QHttp class provides an implementation of the HTTP protocol.
@@ -1422,10 +1423,11 @@ QString QHttpRequestHeader::toString() const
     \mainclass
 
     This class provides a direct interface to HTTP that allows you to
-    have more control over the requests and that allows you to access
-    the response header fields. However, for new applications, it is
+    download and upload data with the HTTP protocol.
+    However, for new applications, it is
     recommended to use QNetworkAccessManager and QNetworkReply, as
-    those classes possess a simpler, yet more powerful API.
+    those classes possess a simpler, yet more powerful API
+    and a more modern protocol implementation.
 
     The class works asynchronously, so there are no blocking
     functions. If an operation cannot be executed immediately, the

@@ -29,6 +29,8 @@
 #ifndef JSCustomSQLTransactionErrorCallback_h
 #define JSCustomSQLTransactionErrorCallback_h
 
+#if ENABLE(DATABASE)
+
 #include "SQLTransactionErrorCallback.h"
 
 #include <runtime/JSObject.h>
@@ -48,7 +50,7 @@ class JSCustomSQLTransactionErrorCallback : public SQLTransactionErrorCallback {
 public:
     static PassRefPtr<JSCustomSQLTransactionErrorCallback> create(JSC::JSObject* callback, Frame* frame) { return adoptRef(new JSCustomSQLTransactionErrorCallback(callback, frame)); }
     
-    virtual bool handleEvent(SQLError*);
+    virtual void handleEvent(SQLError*);
 
 private:
     JSCustomSQLTransactionErrorCallback(JSC::JSObject* callback, Frame*);
@@ -58,5 +60,6 @@ private:
 };
 
 }
+#endif // ENABLE(DATABASE)
 
 #endif // JSCustomSQLTransactionErrorCallback_h

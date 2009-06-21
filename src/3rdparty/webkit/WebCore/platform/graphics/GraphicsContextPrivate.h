@@ -27,24 +27,11 @@
 #define GraphicsContextPrivate_h
 
 #include "TransformationMatrix.h"
-#include "Font.h"
 #include "Gradient.h"
 #include "GraphicsContext.h"
 #include "Pattern.h"
 
 namespace WebCore {
-
-// FIXME: This is a place-holder until we decide to add
-// real color space support to WebCore.  At that time, ColorSpace will be a
-// class and instances will be held  off of Colors.   There will be
-// special singleton Gradient and Pattern color spaces to mark when
-// a fill or stroke is using a gradient or pattern instead of a solid color.
-// https://bugs.webkit.org/show_bug.cgi?id=20558
-    enum ColorSpace {
-        SolidColorSpace,
-        PatternColorSpace,
-        GradientColorSpace
-    };
 
     struct GraphicsContextState {
         GraphicsContextState()
@@ -59,13 +46,13 @@ namespace WebCore {
             , fillRule(RULE_NONZERO)
             , fillColorSpace(SolidColorSpace)
             , fillColor(Color::black)
+            , shouldAntialias(true)
             , paintingDisabled(false)
             , shadowBlur(0)
             , shadowsIgnoreTransforms(false)
         {
         }
 
-        Font font;
         int textDrawingMode;
         
         StrokeStyle strokeStyle;
@@ -81,11 +68,12 @@ namespace WebCore {
         RefPtr<Pattern> strokePattern;
         
         WindRule fillRule;
-        GradientSpreadMethod spreadMethod;
         ColorSpace fillColorSpace;
         Color fillColor;
         RefPtr<Gradient> fillGradient;
         RefPtr<Pattern> fillPattern;
+
+        bool shouldAntialias;
 
         bool paintingDisabled;
         

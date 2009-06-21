@@ -19,6 +19,7 @@
 */
 
 #include "config.h"
+
 #if ENABLE(SVG)
 #include "SVGStyledElement.h"
 
@@ -28,11 +29,12 @@
 #include "CString.h"
 #include "Document.h"
 #include "HTMLNames.h"
+#include "MappedAttribute.h"
 #include "PlatformString.h"
+#include "RenderObject.h"
 #include "SVGElement.h"
 #include "SVGElementInstance.h"
 #include "SVGNames.h"
-#include "RenderObject.h"
 #include "SVGRenderStyle.h"
 #include "SVGResource.h"
 #include "SVGSVGElement.h"
@@ -165,7 +167,7 @@ void SVGStyledElement::parseMappedAttribute(MappedAttribute* attr)
     int propId = SVGStyledElement::cssPropertyIdForSVGAttributeName(attrName);
     if (propId > 0) {
         addCSSProperty(attr, propId, attr->value());
-        setChanged();
+        setNeedsStyleRecalc();
         return;
     }
     
@@ -240,7 +242,10 @@ PassRefPtr<RenderStyle> SVGStyledElement::resolveStyle(RenderStyle* parentStyle)
 
 PassRefPtr<CSSValue> SVGStyledElement::getPresentationAttribute(const String& name)
 {
-    Attribute* attr = mappedAttributes()->getAttributeItem(name, false);
+    if (!mappedAttributes())
+        return 0;
+
+    Attribute* attr = mappedAttributes()->getAttributeItem(QualifiedName(nullAtom, name, nullAtom));
     if (!attr || !attr->isMappedAttribute() || !attr->style())
         return 0;
 

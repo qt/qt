@@ -81,6 +81,17 @@ QFxBlendedImage::QFxBlendedImage(QFxItem *parent)
 }
 
 /*!
+    Cancels any pending image loads and destroys the image.
+*/
+QFxBlendedImage::~QFxBlendedImage()
+{
+    if (!primUrl.isEmpty())
+        QFxPixmap::cancelGet(primUrl,this);
+    if (!secUrl.isEmpty())
+        QFxPixmap::cancelGet(secUrl,this);
+}
+
+/*!
     \qmlproperty string BlendedImage::primaryUrl
     The URL of the first image to be displayed in this item.
 */

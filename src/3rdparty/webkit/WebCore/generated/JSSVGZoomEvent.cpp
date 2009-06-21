@@ -38,7 +38,7 @@ using namespace JSC;
 
 namespace WebCore {
 
-ASSERT_CLASS_FITS_IN_CELL(JSSVGZoomEvent)
+ASSERT_CLASS_FITS_IN_CELL(JSSVGZoomEvent);
 
 /* Hash table */
 
@@ -75,21 +75,21 @@ static const HashTable JSSVGZoomEventPrototypeTable =
 
 const ClassInfo JSSVGZoomEventPrototype::s_info = { "SVGZoomEventPrototype", 0, &JSSVGZoomEventPrototypeTable, 0 };
 
-JSObject* JSSVGZoomEventPrototype::self(ExecState* exec)
+JSObject* JSSVGZoomEventPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSSVGZoomEvent>(exec);
+    return getDOMPrototype<JSSVGZoomEvent>(exec, globalObject);
 }
 
 const ClassInfo JSSVGZoomEvent::s_info = { "SVGZoomEvent", &JSUIEvent::s_info, &JSSVGZoomEventTable, 0 };
 
-JSSVGZoomEvent::JSSVGZoomEvent(PassRefPtr<Structure> structure, PassRefPtr<SVGZoomEvent> impl, SVGElement* context)
+JSSVGZoomEvent::JSSVGZoomEvent(PassRefPtr<Structure> structure, PassRefPtr<SVGZoomEvent> impl, SVGElement*)
     : JSUIEvent(structure, impl)
 {
 }
 
-JSObject* JSSVGZoomEvent::createPrototype(ExecState* exec)
+JSObject* JSSVGZoomEvent::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSSVGZoomEventPrototype(JSSVGZoomEventPrototype::createStructure(JSUIEventPrototype::self(exec)));
+    return new (exec) JSSVGZoomEventPrototype(JSSVGZoomEventPrototype::createStructure(JSUIEventPrototype::self(exec, globalObject)));
 }
 
 bool JSSVGZoomEvent::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -97,32 +97,37 @@ bool JSSVGZoomEvent::getOwnPropertySlot(ExecState* exec, const Identifier& prope
     return getStaticValueSlot<JSSVGZoomEvent, Base>(exec, &JSSVGZoomEventTable, this, propertyName, slot);
 }
 
-JSValuePtr jsSVGZoomEventZoomRectScreen(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGZoomEventZoomRectScreen(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGZoomEvent* imp = static_cast<SVGZoomEvent*>(static_cast<JSSVGZoomEvent*>(asObject(slot.slotBase()))->impl());
     return toJS(exec, JSSVGStaticPODTypeWrapper<FloatRect>::create(imp->zoomRectScreen()).get(), 0);
 }
 
-JSValuePtr jsSVGZoomEventPreviousScale(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGZoomEventPreviousScale(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGZoomEvent* imp = static_cast<SVGZoomEvent*>(static_cast<JSSVGZoomEvent*>(asObject(slot.slotBase()))->impl());
     return jsNumber(exec, imp->previousScale());
 }
 
-JSValuePtr jsSVGZoomEventPreviousTranslate(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGZoomEventPreviousTranslate(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGZoomEvent* imp = static_cast<SVGZoomEvent*>(static_cast<JSSVGZoomEvent*>(asObject(slot.slotBase()))->impl());
     return toJS(exec, JSSVGStaticPODTypeWrapper<FloatPoint>::create(imp->previousTranslate()).get(), 0);
 }
 
-JSValuePtr jsSVGZoomEventNewScale(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGZoomEventNewScale(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGZoomEvent* imp = static_cast<SVGZoomEvent*>(static_cast<JSSVGZoomEvent*>(asObject(slot.slotBase()))->impl());
     return jsNumber(exec, imp->newScale());
 }
 
-JSValuePtr jsSVGZoomEventNewTranslate(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGZoomEventNewTranslate(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGZoomEvent* imp = static_cast<SVGZoomEvent*>(static_cast<JSSVGZoomEvent*>(asObject(slot.slotBase()))->impl());
     return toJS(exec, JSSVGStaticPODTypeWrapper<FloatPoint>::create(imp->newTranslate()).get(), 0);
 }

@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the test suite of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -74,6 +74,9 @@ private slots:
     void utf8Codec_data();
     void utf8Codec();
 
+    void utf8bom_data();
+    void utf8bom();
+
     void utfHeaders_data();
     void utfHeaders();
 
@@ -92,8 +95,8 @@ void tst_QTextCodec::toUnicode_data()
     QTest::addColumn<QString>("fileName");
     QTest::addColumn<QString>("codecName");
 
-    QTest::newRow( "korean-eucKR" ) << "korean.txt" << "eucKR";
-    QTest::newRow( "UTF-8" ) << "utf8.txt" << "UTF-8";
+    QTest::newRow( "korean-eucKR" ) << SRCDIR "korean.txt" << "eucKR";
+    QTest::newRow( "UTF-8" ) << SRCDIR "utf8.txt" << "UTF-8";
 }
 
 void tst_QTextCodec::toUnicode()
@@ -234,7 +237,7 @@ void tst_QTextCodec::fromUnicode()
 
 void tst_QTextCodec::toUnicode_codecForHtml()
 {
-    QFile file(QString("QT4-crashtest.txt"));
+    QFile file(QString(SRCDIR "QT4-crashtest.txt"));
     QVERIFY(file.open(QFile::ReadOnly));
 
     QByteArray data = file.readAll();
@@ -1513,6 +1516,63 @@ void tst_QTextCodec::utf8Codec()
     QCOMPARE(str, res);
 }
 
+void tst_QTextCodec::utf8bom_data()
+{
+    QTest::addColumn<QByteArray>("data");
+    QTest::addColumn<QString>("result");
+
+    QTest::newRow("nobom")
+        << QByteArray("\302\240", 2)
+        << QString("\240");
+
+    {
+        static const ushort data[] = { 0x201d };
+        QTest::newRow("nobom 2")
+            << QByteArray("\342\200\235", 3)
+            << QString::fromUtf16(data, sizeof(data)/sizeof(short));
+    }
+
+    {
+        static const ushort data[] = { 0xf000 };
+        QTest::newRow("bom1")
+            << QByteArray("\357\200\200", 3)
+            << QString::fromUtf16(data, sizeof(data)/sizeof(short));
+    }
+
+    {
+        static const ushort data[] = { 0xfec0 };
+        QTest::newRow("bom2")
+            << QByteArray("\357\273\200", 3)
+            << QString::fromUtf16(data, sizeof(data)/sizeof(short));
+    }
+
+    {
+        QTest::newRow("normal-bom")
+            << QByteArray("\357\273\277a", 4)
+            << QString("a");
+    }
+
+    {
+        static const ushort data[] = { 0x61, 0xfeff, 0x62 };
+        QTest::newRow("middle-bom")
+            << QByteArray("a\357\273\277b", 5)
+            << QString::fromUtf16(data, sizeof(data)/sizeof(short));
+    }
+}
+
+void tst_QTextCodec::utf8bom()
+{
+    QFETCH(QByteArray, data);
+    QFETCH(QString, result);
+
+    QTextCodec *const codec = QTextCodec::codecForMib(106); // UTF-8
+    Q_ASSERT(codec);
+
+    QCOMPARE(codec->toUnicode(data.constData(), data.length(), 0), result);
+
+    QTextCodec::ConverterState state;
+    QCOMPARE(codec->toUnicode(data.constData(), data.length(), &state), result);
+}
 
 void tst_QTextCodec::utfHeaders_data()
 {

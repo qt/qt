@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the examples of the Qt Toolkit.
 **
@@ -34,12 +34,14 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
 
 #include "formextractor.h"
+
+#include <QWebElement>
 
 FormExtractor::FormExtractor(QWidget *parent, Qt::WFlags flags)
     : QWidget(parent, flags)
@@ -55,17 +57,28 @@ FormExtractor::~FormExtractor()
 {
 }
 
-void FormExtractor::setValues(const QString &firstName, const QString &lastName,
-                              const QString &gender, bool updates)
+void FormExtractor::submit()
 {
-    ui.firstNameEdit->setText(firstName);
-    ui.lastNameEdit->setText(lastName);
-    ui.genderEdit->setText(gender);
+    QWebFrame *frame = ui.webView->page()->mainFrame();
 
-    if (updates == false)
-        ui.updatesEdit->setText("No");
-    else
+    QWebElement firstName = frame->findFirstElement("#firstname");
+    QWebElement lastName = frame->findFirstElement("#lastname");
+    QWebElement maleGender = frame->findFirstElement("#genderMale");
+    QWebElement femaleGender = frame->findFirstElement("#genderFemale");
+    QWebElement updates = frame->findFirstElement("#updates");
+
+    ui.firstNameEdit->setText(firstName.scriptableProperty("value").toString());
+    ui.lastNameEdit->setText(lastName.scriptableProperty("value").toString());
+
+    if (maleGender.scriptableProperty("checked").toBool())
+        ui.genderEdit->setText(maleGender.scriptableProperty("value").toString());
+    else if (femaleGender.scriptableProperty("checked").toBool())
+        ui.genderEdit->setText(femaleGender.scriptableProperty("value").toString());
+
+    if (updates.scriptableProperty("checked").toBool())
         ui.updatesEdit->setText("Yes");
+    else
+        ui.updatesEdit->setText("No");
 }
 
 void FormExtractor::populateJavaScriptWindowObject()

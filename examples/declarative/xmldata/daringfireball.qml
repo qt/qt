@@ -19,7 +19,6 @@ Rect {
             Role {
                 name: "content"
                 query: "content/string()"
-                isCData: true
             }
         },
         Component {

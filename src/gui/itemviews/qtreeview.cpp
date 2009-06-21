@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -1319,7 +1319,7 @@ bool QTreeViewPrivate::expandOrCollapseItemAtPos(const QPoint &pos)
             expand(i, true);
         if (!isAnimating()) {
             q->updateGeometries();
-            q->viewport()->update();
+            viewport->update();
         }
         return true;
     }
@@ -3201,19 +3201,18 @@ int QTreeViewPrivate::itemHeight(int item) const
 */
 int QTreeViewPrivate::coordinateForItem(int item) const
 {
-    Q_Q(const QTreeView);
     if (verticalScrollMode == QAbstractItemView::ScrollPerPixel) {
         if (uniformRowHeights)
-            return (item * defaultItemHeight) - q->verticalScrollBar()->value();
+            return (item * defaultItemHeight) - vbar->value();
         // ### optimize (spans or caching)
         int y = 0;
         for (int i = 0; i < viewItems.count(); ++i) {
             if (i == item)
-                return y - q->verticalScrollBar()->value();
+                return y - vbar->value();
             y += itemHeight(i);
         }
     } else { // ScrollPerItem
-        int topViewItemIndex = q->verticalScrollBar()->value();
+        int topViewItemIndex = vbar->value();
         if (uniformRowHeights)
             return defaultItemHeight * (item - topViewItemIndex);
         if (item >= topViewItemIndex) {
@@ -3253,7 +3252,6 @@ int QTreeViewPrivate::coordinateForItem(int item) const
 */
 int QTreeViewPrivate::itemAtCoordinate(int coordinate) const
 {
-    Q_Q(const QTreeView);
     const int itemCount = viewItems.count();
     if (itemCount == 0)
         return -1;
@@ -3261,19 +3259,19 @@ int QTreeViewPrivate::itemAtCoordinate(int coordinate) const
         return -1;
     if (verticalScrollMode == QAbstractItemView::ScrollPerPixel) {
         if (uniformRowHeights) {
-            const int viewItemIndex = (coordinate + q->verticalScrollBar()->value()) / defaultItemHeight;
+            const int viewItemIndex = (coordinate + vbar->value()) / defaultItemHeight;
             return ((viewItemIndex >= itemCount || viewItemIndex < 0) ? -1 : viewItemIndex);
         }
         // ### optimize
         int viewItemCoordinate = 0;
-        const int contentsCoordinate = coordinate + q->verticalScrollBar()->value();
+        const int contentsCoordinate = coordinate + vbar->value();
         for (int viewItemIndex = 0; viewItemIndex < viewItems.count(); ++viewItemIndex) {
             viewItemCoordinate += itemHeight(viewItemIndex);
             if (viewItemCoordinate >= contentsCoordinate)
                 return (viewItemIndex >= itemCount ? -1 : viewItemIndex);
         }
     } else { // ScrollPerItem
-        int topViewItemIndex = q->verticalScrollBar()->value();
+        int topViewItemIndex = vbar->value();
         if (uniformRowHeights) {
             if (coordinate < 0)
                 coordinate -= defaultItemHeight - 1;
@@ -3365,8 +3363,7 @@ QModelIndex QTreeViewPrivate::modelIndex(int i, int column) const
 
 int QTreeViewPrivate::firstVisibleItem(int *offset) const
 {
-    Q_Q(const QTreeView);
-    const int value = q->verticalScrollBar()->value();
+    const int value = vbar->value();
     if (verticalScrollMode == QAbstractItemView::ScrollPerItem) {
         if (offset)
             *offset = 0;
@@ -3443,9 +3440,9 @@ void QTreeViewPrivate::updateScrollBars()
     if (verticalScrollMode == QAbstractItemView::ScrollPerItem) {
         if (!viewItems.isEmpty())
             itemsInViewport = qMax(1, itemsInViewport);
-        q->verticalScrollBar()->setRange(0, viewItems.count() - itemsInViewport);
-        q->verticalScrollBar()->setPageStep(itemsInViewport);
-        q->verticalScrollBar()->setSingleStep(1);
+        vbar->setRange(0, viewItems.count() - itemsInViewport);
+        vbar->setPageStep(itemsInViewport);
+        vbar->setSingleStep(1);
     } else { // scroll per pixel
         int contentsHeight = 0;
         if (uniformRowHeights) {
@@ -3454,9 +3451,9 @@ void QTreeViewPrivate::updateScrollBars()
             for (int i = 0; i < viewItems.count(); ++i)
                 contentsHeight += itemHeight(i);
         }
-        q->verticalScrollBar()->setRange(0, contentsHeight - viewportSize.height());
-        q->verticalScrollBar()->setPageStep(viewportSize.height());
-        q->verticalScrollBar()->setSingleStep(qMax(viewportSize.height() / (itemsInViewport + 1), 2));
+        vbar->setRange(0, contentsHeight - viewportSize.height());
+        vbar->setPageStep(viewportSize.height());
+        vbar->setSingleStep(qMax(viewportSize.height() / (itemsInViewport + 1), 2));
     }
 
     const int columnCount = header->count();
@@ -3472,23 +3469,23 @@ void QTreeViewPrivate::updateScrollBars()
     if (columnCount > 0)
         columnsInViewport = qMax(1, columnsInViewport);
     if (horizontalScrollMode == QAbstractItemView::ScrollPerItem) {
-        q->horizontalScrollBar()->setRange(0, columnCount - columnsInViewport);
-        q->horizontalScrollBar()->setPageStep(columnsInViewport);
-        q->horizontalScrollBar()->setSingleStep(1);
+        hbar->setRange(0, columnCount - columnsInViewport);
+        hbar->setPageStep(columnsInViewport);
+        hbar->setSingleStep(1);
     } else { // scroll per pixel
         const int horizontalLength = header->length();
         const QSize maxSize = q->maximumViewportSize();
-        if (maxSize.width() >= horizontalLength && q->verticalScrollBar()->maximum() <= 0)
+        if (maxSize.width() >= horizontalLength && vbar->maximum() <= 0)
             viewportSize = maxSize;
-        q->horizontalScrollBar()->setPageStep(viewportSize.width());
-        q->horizontalScrollBar()->setRange(0, qMax(horizontalLength - viewportSize.width(), 0));
-        q->horizontalScrollBar()->setSingleStep(qMax(viewportSize.width() / (columnsInViewport + 1), 2));
+        hbar->setPageStep(viewportSize.width());
+        hbar->setRange(0, qMax(horizontalLength - viewportSize.width(), 0));
+        hbar->setSingleStep(qMax(viewportSize.width() / (columnsInViewport + 1), 2));
     }
 }
 
 int QTreeViewPrivate::itemDecorationAt(const QPoint &pos) const
 {
-    const_cast<QTreeView *>(q_func())->executeDelayedItemsLayout();
+    executePostedLayout();
     int x = pos.x();
     int column = header->logicalIndexAt(x);
     if (column != 0)

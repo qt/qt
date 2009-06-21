@@ -55,14 +55,18 @@ QmlVMEMetaObject::QmlVMEMetaObject(QObject *obj,
                                    QList<QString> *strData,
                                    int slotData,
                                    QmlRefCount *rc)
-: object(obj), ref(rc), slotData(strData), slotDataIdx(slotData)
+: object(obj), ref(rc), slotData(strData), slotDataIdx(slotData), parent(0)
 {
     if (ref)
         ref->addref();
 
     *static_cast<QMetaObject *>(this) = *other;
     this->d.superdata = obj->metaObject();
-    QObjectPrivate::get(obj)->metaObject = this;
+
+    QObjectPrivate *op = QObjectPrivate::get(obj);
+    if (op->metaObject)
+        parent = static_cast<QAbstractDynamicMetaObject*>(op->metaObject);
+    op->metaObject = this;
 
     baseProp = propertyOffset();
     baseSig = methodOffset();
@@ -101,6 +105,8 @@ QmlVMEMetaObject::~QmlVMEMetaObject()
 {
     if (ref)
         ref->release();
+    if (parent)
+        delete parent;
     delete [] data;
 }
 
@@ -172,6 +178,10 @@ int QmlVMEMetaObject::metaCall(QMetaObject::Call c, int id, void **a)
         }
     }
 
-    return object->qt_metacall(c, id, a);
+    if (parent)
+        return parent->metaCall(c, id, a);
+    else
+        return object->qt_metacall(c, id, a);
 }
+
 QT_END_NAMESPACE

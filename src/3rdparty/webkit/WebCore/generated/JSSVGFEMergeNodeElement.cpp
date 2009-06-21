@@ -21,7 +21,7 @@
 #include "config.h"
 
 
-#if ENABLE(SVG) && ENABLE(SVG_FILTERS)
+#if ENABLE(SVG) && ENABLE(FILTERS)
 
 #include "SVGElement.h"
 #include "JSSVGFEMergeNodeElement.h"
@@ -36,7 +36,7 @@ using namespace JSC;
 
 namespace WebCore {
 
-ASSERT_CLASS_FITS_IN_CELL(JSSVGFEMergeNodeElement)
+ASSERT_CLASS_FITS_IN_CELL(JSSVGFEMergeNodeElement);
 
 /* Hash table */
 
@@ -69,9 +69,9 @@ static const HashTable JSSVGFEMergeNodeElementPrototypeTable =
 
 const ClassInfo JSSVGFEMergeNodeElementPrototype::s_info = { "SVGFEMergeNodeElementPrototype", 0, &JSSVGFEMergeNodeElementPrototypeTable, 0 };
 
-JSObject* JSSVGFEMergeNodeElementPrototype::self(ExecState* exec)
+JSObject* JSSVGFEMergeNodeElementPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSSVGFEMergeNodeElement>(exec);
+    return getDOMPrototype<JSSVGFEMergeNodeElement>(exec, globalObject);
 }
 
 const ClassInfo JSSVGFEMergeNodeElement::s_info = { "SVGFEMergeNodeElement", &JSSVGElement::s_info, &JSSVGFEMergeNodeElementTable, 0 };
@@ -81,9 +81,9 @@ JSSVGFEMergeNodeElement::JSSVGFEMergeNodeElement(PassRefPtr<Structure> structure
 {
 }
 
-JSObject* JSSVGFEMergeNodeElement::createPrototype(ExecState* exec)
+JSObject* JSSVGFEMergeNodeElement::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSSVGFEMergeNodeElementPrototype(JSSVGFEMergeNodeElementPrototype::createStructure(JSSVGElementPrototype::self(exec)));
+    return new (exec) JSSVGFEMergeNodeElementPrototype(JSSVGFEMergeNodeElementPrototype::createStructure(JSSVGElementPrototype::self(exec, globalObject)));
 }
 
 bool JSSVGFEMergeNodeElement::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -91,8 +91,9 @@ bool JSSVGFEMergeNodeElement::getOwnPropertySlot(ExecState* exec, const Identifi
     return getStaticValueSlot<JSSVGFEMergeNodeElement, Base>(exec, &JSSVGFEMergeNodeElementTable, this, propertyName, slot);
 }
 
-JSValuePtr jsSVGFEMergeNodeElementIn1(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGFEMergeNodeElementIn1(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     SVGFEMergeNodeElement* imp = static_cast<SVGFEMergeNodeElement*>(static_cast<JSSVGFEMergeNodeElement*>(asObject(slot.slotBase()))->impl());
     RefPtr<SVGAnimatedString> obj = imp->in1Animated();
     return toJS(exec, obj.get(), imp);
@@ -101,4 +102,4 @@ JSValuePtr jsSVGFEMergeNodeElementIn1(ExecState* exec, const Identifier&, const 
 
 }
 
-#endif // ENABLE(SVG) && ENABLE(SVG_FILTERS)
+#endif // ENABLE(SVG) && ENABLE(FILTERS)

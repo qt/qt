@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the test suite of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -56,6 +56,7 @@ class tst_QInputDialog : public QObject
 {
     Q_OBJECT
     QWidget *parent;
+    QDialog::DialogCode doneCode;
     void (*testFunc)(QInputDialog *);
     static void testFuncGetInteger(QInputDialog *dialog);
     static void testFuncGetDouble(QInputDialog *dialog);
@@ -67,10 +68,12 @@ private slots:
     void getInteger();
     void getDouble_data();
     void getDouble();
+    void task255502getDouble();
     void getText_data();
     void getText();
     void getItem_data();
     void getItem();
+    void task256299_getTextReturnNullStringOnRejected();
 };
 
 QString stripFraction(const QString &s)
@@ -244,8 +247,9 @@ void tst_QInputDialog::timerEvent(QTimerEvent *event)
     killTimer(event->timerId());
     QInputDialog *dialog = qFindChild<QInputDialog *>(parent);
     Q_ASSERT(dialog);
-    testFunc(dialog);
-    dialog->done(QDialog::Accepted); // cause static function call to return
+    if (testFunc)
+        testFunc(dialog);
+    dialog->done(doneCode); // cause static function call to return
 }
 
 void tst_QInputDialog::getInteger_data()
@@ -265,6 +269,7 @@ void tst_QInputDialog::getInteger()
     QFETCH(int, max);
     Q_ASSERT(min < max);
     parent = new QWidget;
+    doneCode = QDialog::Accepted;
     testFunc = &tst_QInputDialog::testFuncGetInteger;
     startTimer(0);
     bool ok = false;
@@ -304,6 +309,7 @@ void tst_QInputDialog::getDouble()
     QFETCH(int, decimals);
     Q_ASSERT(min < max && decimals >= 0 && decimals <= 13);
     parent = new QWidget;
+    doneCode = QDialog::Accepted;
     testFunc = &tst_QInputDialog::testFuncGetDouble;
     startTimer(0);
     bool ok = false;
@@ -313,6 +319,21 @@ void tst_QInputDialog::getDouble()
     const double value = static_cast<int>(min + (max - min) / 2);
     const double result =
         QInputDialog::getDouble(parent, "", "", value, min, max, decimals, &ok);
+    QVERIFY(ok);
+    QCOMPARE(result, value);
+    delete parent;
+}
+
+void tst_QInputDialog::task255502getDouble()
+{
+    parent = new QWidget;
+    doneCode = QDialog::Accepted;
+    testFunc = &tst_QInputDialog::testFuncGetDouble;
+    startTimer(0);
+    bool ok = false;
+    const double value = 0.001;
+    const double result =
+        QInputDialog::getDouble(parent, "", "", value, -1, 1, 4, &ok);
     QVERIFY(ok);
     QCOMPARE(result, value);
     delete parent;
@@ -332,12 +353,26 @@ void tst_QInputDialog::getText()
 {
     QFETCH(QString, text);
     parent = new QWidget;
+    doneCode = QDialog::Accepted;
     testFunc = &tst_QInputDialog::testFuncGetText;
     startTimer(0);
     bool ok = false;
     const QString result = QInputDialog::getText(parent, "", "", QLineEdit::Normal, text, &ok);
     QVERIFY(ok);
     QCOMPARE(result, text);
+    delete parent;
+}
+
+void tst_QInputDialog::task256299_getTextReturnNullStringOnRejected()
+{
+    parent = new QWidget;
+    doneCode = QDialog::Rejected;
+    testFunc = 0;
+    startTimer(0);
+    bool ok = true;
+    const QString result = QInputDialog::getText(parent, "", "", QLineEdit::Normal, "foobar", &ok);
+    QVERIFY(!ok);
+    QVERIFY(result.isNull());
     delete parent;
 }
 
@@ -358,6 +393,7 @@ void tst_QInputDialog::getItem()
     QFETCH(QStringList, items);
     QFETCH(bool, editable);
     parent = new QWidget;
+    doneCode = QDialog::Accepted;
     testFunc = &tst_QInputDialog::testFuncGetItem;
     startTimer(0);
     bool ok = false;

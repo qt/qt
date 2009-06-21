@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the tools applications of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -770,7 +770,8 @@ void Moc::generate(FILE *out)
     if (classList.size() && classList.first().classname == "Qt")
         fprintf(out, "#include <QtCore/qobject.h>\n");
 
-    fprintf(out, "#include <QtCore/qmetatype.h>\n");
+    if (mustIncludeQMetaTypeH)
+        fprintf(out, "#include <QtCore/qmetatype.h>\n");
 
     fprintf(out, "#if !defined(Q_MOC_OUTPUT_REVISION)\n"
             "#error \"The header file '%s' doesn't include <QObject>.\"\n", (const char *)fn);
@@ -903,6 +904,9 @@ void Moc::parseProperty(ClassDef *def)
         type = "qlonglong";
     else if (type == "ULongLong")
         type = "qulonglong";
+    else if (type == "qreal")
+        mustIncludeQMetaTypeH = true;
+
     propDef.type = type;
 
     next();
@@ -964,7 +968,7 @@ void Moc::parseProperty(ClassDef *def)
         msg += " has no READ accessor function. The property will be invalid.";
         warning(msg.constData());
     }
-    if(!propDef.notify.isEmpty()) 
+    if(!propDef.notify.isEmpty())
         def->notifyableProperties++;
 
     def->propertyList += propDef;

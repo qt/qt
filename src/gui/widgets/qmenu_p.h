@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -161,7 +161,7 @@ public:
     void calcActionRects(QMap<QAction*, QRect> &actionRects, QList<QAction*> &actionList) const;
     void updateActions();
     QRect popupGeometry(int screen=-1) const;
-    QList<QAction *> filterActions(const QList<QAction *> &actions) const;
+    QList<QAction *> filteredActions() const;
     uint ncols : 4; //4 bits is probably plenty
     uint collapsibleSeparators : 1;
 
@@ -263,8 +263,9 @@ public:
     struct QMacMenuPrivate {
         QList<QMacMenuAction*> actionItems;
         OSMenuRef menu;
-        QMacMenuPrivate();
-        ~QMacMenuPrivate();
+        QMenuPrivate *qmenu;
+        QMacMenuPrivate(QMenuPrivate *menu);
+        ~QMacMenuPrivate();    
 
         bool merged(const QAction *action) const;
         void addAction(QAction *, QMacMenuAction* =0, QMenuPrivate *qmenu = 0);

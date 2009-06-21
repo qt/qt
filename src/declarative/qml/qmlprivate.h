@@ -123,13 +123,57 @@ namespace QmlPrivate
         }
     };
 
-    template<typename T, typename Sign = T *(*)(QObject *)>
-    struct has_qmlAttachedProperties
+#if defined(Q_CC_MSVC)
+    template <typename T>  
+    class has_attachedPropertiesMember
     {
-        template <typename U, U> struct type_check;
-        template <typename _1> static char check(type_check<Sign, &_1::qmlAttachedProperties> *);
-        template <typename   > static int check(...);
-        static bool const value = sizeof(check<T>(0)) == sizeof(char);
+    public:
+        __if_exists(T::qmlAttachedProperties) {
+            static bool const value = true;
+        }
+        __if_not_exists(T::qmlAttachedProperties) {
+            static bool const value = false;
+        }
+    };
+#else
+    template <typename T>  
+    class has_attachedPropertiesMember
+    {  
+        typedef int yes_type;
+        typedef char no_type;
+        template <int> 
+        struct Selector {};
+
+        template <typename S> 
+        static yes_type test(Selector<sizeof(&S::qmlAttachedProperties)>*); 
+
+        template <typename S> 
+        static no_type test(...); 
+
+    public: 
+        static bool const value = sizeof(test<T>(0)) == sizeof(yes_type);
+    };
+#endif
+
+    template <typename T, bool hasMember>
+    class has_attachedPropertiesMethod 
+    {
+        typedef int yes_type;
+        typedef char no_type;
+
+        template<typename ReturnType>
+        static yes_type check(ReturnType *(*)(QObject *));
+        static no_type check(...);
+
+    public:
+        static bool const value = sizeof(check(&T::qmlAttachedProperties)) == sizeof(yes_type);
+    }; 
+
+    template <typename T>
+    class has_attachedPropertiesMethod<T, false>
+    {
+    public:
+        static bool const value = false;
     };
 
     template<typename T, int N>
@@ -161,13 +205,13 @@ namespace QmlPrivate
     template<typename T>
     inline QmlAttachedPropertiesFunc attachedPropertiesFunc()
     {
-        return AttachedPropertySelector<T, has_qmlAttachedProperties<T>::value >::func();
+        return AttachedPropertySelector<T, has_attachedPropertiesMethod<T, has_attachedPropertiesMember<T>::value>::value>::func();
     }
 
     template<typename T>
     inline const QMetaObject *attachedPropertiesMetaObject()
     {
-        return AttachedPropertySelector<T, has_qmlAttachedProperties<T>::value >::metaObject();
+        return AttachedPropertySelector<T, has_attachedPropertiesMethod<T, has_attachedPropertiesMember<T>::value>::value>::metaObject();
     }
 
     struct MetaTypeIds {

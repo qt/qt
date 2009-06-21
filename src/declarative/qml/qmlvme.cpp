@@ -44,6 +44,7 @@
 #include <private/qmlboundsignal_p.h>
 #include <private/qmlstringconverters_p.h>
 #include "private/qmetaobjectbuilder_p.h"
+#include "private/qmldeclarativedata_p.h"
 #include <qml.h>
 #include <private/qmlcustomparser_p.h>
 #include <qperformancelog.h>
@@ -88,22 +89,46 @@ QmlVME::QmlVME()
 struct ListInstance
 {
     ListInstance() {}
-    /*
-    ListInstance(const QVariant &l, int t)
-        : list(l), type(t), qmlListInterface(0) {}
-        */
     ListInstance(QList<void *> *q, int t)
-        : type(t), qListInterface(q) {}
+        : type(t), qListInterface(q), qmlListInterface(0) {}
     ListInstance(QmlPrivate::ListInterface *q, int t)
-        : type(t), qmlListInterface(q) {}
+        : type(t), qListInterface(0), qmlListInterface(q) {}
 
-    //QVariant list;
     int type;
     QList<void *> *qListInterface;
     QmlPrivate::ListInterface *qmlListInterface;
 };
 
 QObject *QmlVME::run(QmlContext *ctxt, QmlCompiledComponent *comp, int start, int count)
+{
+    QStack<QObject *> stack;
+
+    if (start == -1) start = 0;
+    if (count == -1) count = comp->bytecode.count();
+
+    return run(stack, ctxt, comp, start, count);
+}
+
+void QmlVME::runDeferred(QObject *object)
+{
+    QmlInstanceDeclarativeData *data = QmlInstanceDeclarativeData::get(object);
+
+    if (!data || !data->context || !data->deferredComponent)
+        return;
+
+    QmlContext *ctxt = data->context;
+    ctxt->activate();
+    QmlCompiledComponent *comp = data->deferredComponent;
+    int start = data->deferredIdx + 1;
+    int count = data->deferredComponent->bytecode.at(data->deferredIdx).defer.deferCount;
+    QStack<QObject *> stack;
+    stack.push(object);
+
+    run(stack, ctxt, comp, start, count);
+    ctxt->deactivate();
+}
+
+QObject *QmlVME::run(QStack<QObject *> &stack, QmlContext *ctxt, QmlCompiledComponent *comp, int start, int count)
 {
     // XXX - All instances of QmlContext::activeContext() here should be 
     // replaced with the use of ctxt.  However, this cannot be done until 
@@ -125,16 +150,12 @@ QObject *QmlVME::run(QmlContext *ctxt, QmlCompiledComponent *comp, int start, in
     QmlEnginePrivate::SimpleList<QmlBindableValue> bindValues;
     QmlEnginePrivate::SimpleList<QmlParserStatus> parserStatus;
 
-    QStack<QObject *> stack;
     QStack<ListInstance> qliststack;
 
     QStack<QmlMetaProperty> pushedProperties;
     QObject **savedObjects = 0;
 
     vmeErrors.clear();
-
-    if (start == -1) start = 0;
-    if (count == -1) count = comp->bytecode.count();
 
     for (int ii = start; !isError() && ii < (start + count); ++ii) {
         QmlInstruction &instr = comp->bytecode[ii];
@@ -172,7 +193,17 @@ QObject *QmlVME::run(QmlContext *ctxt, QmlCompiledComponent *comp, int start, in
                 }
                 if (!stack.isEmpty()) {
                     QObject *parent = stack.top();
-                    o->setParent(parent);
+                    if (o->isWidgetType()) { 
+                        QWidget *widget = static_cast<QWidget*>(o); 
+                        if (parent->isWidgetType()) { 
+                            QWidget *parentWidget = static_cast<QWidget*>(parent); 
+                            widget->setParent(parentWidget); 
+                        } else { 
+                            // TODO: parent might be a layout 
+                        } 
+                    } else { 
+                        o->setParent(parent); 
+                    } 
                 }
                 stack.push(o);
             }
@@ -742,6 +773,20 @@ QObject *QmlVME::run(QmlContext *ctxt, QmlCompiledComponent *comp, int start, in
         case QmlInstruction::PopQList:
             {
                 qliststack.pop();
+            }
+            break;
+
+        case QmlInstruction::Defer:
+            {
+                if (instr.defer.deferCount) {
+                    QObject *target = stack.top();
+                    QmlInstanceDeclarativeData *data = 
+                        QmlInstanceDeclarativeData::get(target, true);
+                    comp->addref();
+                    data->deferredComponent = comp;
+                    data->deferredIdx = ii;
+                    ii += instr.defer.deferCount;
+                }
             }
             break;
 

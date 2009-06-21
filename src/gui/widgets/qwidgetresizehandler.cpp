@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -258,7 +258,7 @@ void QWidgetResizeHandler::mouseMoveEvent(QMouseEvent *e)
 
 #ifdef Q_WS_X11
     // Workaround for window managers which refuse to move a tool window partially offscreen.
-    QRect desktop = qApp->desktop()->availableGeometry(widget);
+    QRect desktop = QApplication::desktop()->availableGeometry(widget);
     pp.rx() = qMax(pp.x(), desktop.left());
     pp.ry() = qMax(pp.y(), desktop.top());
     p.rx() = qMin(p.x(), desktop.right());

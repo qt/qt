@@ -122,6 +122,61 @@ public:
     int millipedeLegs() const { return 1000; }
 };
 
+class MyDeferredObject : public QObject
+{
+    Q_OBJECT
+    Q_PROPERTY(int value READ value WRITE setValue)
+    Q_PROPERTY(QObject *objectProperty READ objectProperty WRITE setObjectProperty);
+    Q_PROPERTY(QObject *objectProperty2 READ objectProperty2 WRITE setObjectProperty2);
+    Q_CLASSINFO("DeferredPropertyNames", "value,objectProperty,objectProperty2");
+
+public:
+    MyDeferredObject() : m_value(0), m_object(0), m_object2(0) {}
+
+    int value() const { return m_value; }
+    void setValue(int v) { m_value = v; }
+
+    QObject *objectProperty() const { return m_object; }
+    void setObjectProperty(QObject *obj) { m_object = obj; }
+
+    QObject *objectProperty2() const { return m_object2; }
+    void setObjectProperty2(QObject *obj) { m_object2 = obj; }
+private:
+    int m_value;
+    QObject *m_object;
+    QObject *m_object2;
+};
+QML_DECLARE_TYPE(MyDeferredObject);
+
+class MyBaseExtendedObject : public QObject
+{
+Q_OBJECT
+Q_PROPERTY(int baseProperty READ baseProperty WRITE setBaseProperty);
+public:
+    MyBaseExtendedObject() : m_value(0) {}
+
+    int baseProperty() const { return m_value; }
+    void setBaseProperty(int v) { m_value = v; }
+
+private:
+    int m_value;
+};
+QML_DECLARE_TYPE(MyBaseExtendedObject);
+
+class MyExtendedObject : public MyBaseExtendedObject
+{
+Q_OBJECT
+Q_PROPERTY(int coreProperty READ coreProperty WRITE setCoreProperty);
+public:
+    MyExtendedObject() : m_value(0) {}
+
+    int coreProperty() const { return m_value; }
+    void setCoreProperty(int v) { m_value = v; }
+
+private:
+    int m_value;
+};
+QML_DECLARE_TYPE(MyExtendedObject);
 
 #endif // TESTTYPES_H
 

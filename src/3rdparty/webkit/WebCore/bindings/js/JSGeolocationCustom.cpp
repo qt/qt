@@ -39,35 +39,42 @@ using namespace JSC;
 
 namespace WebCore {
 
-static PassRefPtr<PositionOptions> createPositionOptions(ExecState* exec, JSValuePtr value)
+static PassRefPtr<PositionOptions> createPositionOptions(ExecState* exec, JSValue value)
 {
-    if (!value->isObject())
+    if (!value.isObject())
         return 0;
 
     JSObject* object = asObject(value);
 
-    JSValuePtr enableHighAccuracyValue = object->get(exec, Identifier(exec, "enableHighAccuracy"));
+    JSValue enableHighAccuracyValue = object->get(exec, Identifier(exec, "enableHighAccuracy"));
     if (exec->hadException())
         return 0;
-    bool enableHighAccuracy = enableHighAccuracyValue->toBoolean(exec);
-    if (exec->hadException())
-        return 0;
-
-    JSValuePtr timeoutValue = object->get(exec, Identifier(exec, "timeout"));
-    if (exec->hadException())
-        return 0;
-    unsigned timeout = timeoutValue->toUInt32(exec);
+    bool enableHighAccuracy = enableHighAccuracyValue.toBoolean(exec);
     if (exec->hadException())
         return 0;
 
-    return PositionOptions::create(enableHighAccuracy, timeout);
+    JSValue timeoutValue = object->get(exec, Identifier(exec, "timeout"));
+    if (exec->hadException())
+        return 0;
+    unsigned timeout = timeoutValue.toUInt32(exec);
+    if (exec->hadException())
+        return 0;
+
+    JSValue maximumAgeValue = object->get(exec, Identifier(exec, "maximumAge"));
+    if (exec->hadException())
+        return 0;
+    unsigned maximumAge = maximumAgeValue.toUInt32(exec);
+    if (exec->hadException())
+        return 0;
+
+    return PositionOptions::create(enableHighAccuracy, timeout, maximumAge);
 }
 
-JSValuePtr JSGeolocation::getCurrentPosition(ExecState* exec, const ArgList& args)
+JSValue JSGeolocation::getCurrentPosition(ExecState* exec, const ArgList& args)
 {
     // Arguments: PositionCallback, (optional)PositionErrorCallback, (optional)PositionOptions
     RefPtr<PositionCallback> positionCallback;
-    JSObject* object = args.at(exec, 0)->getObject();
+    JSObject* object = args.at(0).getObject();
     if (exec->hadException())
         return jsUndefined();
     if (!object) {
@@ -79,8 +86,8 @@ JSValuePtr JSGeolocation::getCurrentPosition(ExecState* exec, const ArgList& arg
         positionCallback = JSCustomPositionCallback::create(object, frame);
     
     RefPtr<PositionErrorCallback> positionErrorCallback;
-    if (!args.at(exec, 1)->isUndefinedOrNull()) {
-        JSObject* object = args.at(exec, 1)->getObject();
+    if (!args.at(1).isUndefinedOrNull()) {
+        JSObject* object = args.at(1).getObject();
         if (!object) {
             setDOMException(exec, TYPE_MISMATCH_ERR);
             return jsUndefined();
@@ -91,22 +98,22 @@ JSValuePtr JSGeolocation::getCurrentPosition(ExecState* exec, const ArgList& arg
     }
     
     RefPtr<PositionOptions> positionOptions;
-    if (!args.at(exec, 2)->isUndefinedOrNull()) {
-        positionOptions = createPositionOptions(exec, args.at(exec, 2));
+    if (!args.at(2).isUndefinedOrNull()) {
+        positionOptions = createPositionOptions(exec, args.at(2));
         if (exec->hadException())
             return jsUndefined();
     }
 
-    m_impl->getCurrentPosition(positionCallback.release(), positionErrorCallback.release(), positionOptions.get());
+    m_impl->getCurrentPosition(positionCallback.release(), positionErrorCallback.release(), positionOptions.release());
     
     return jsUndefined();
 }
 
-JSValuePtr JSGeolocation::watchPosition(ExecState* exec, const ArgList& args)
+JSValue JSGeolocation::watchPosition(ExecState* exec, const ArgList& args)
 {
     // Arguments: PositionCallback, (optional)PositionErrorCallback, (optional)PositionOptions
     RefPtr<PositionCallback> positionCallback;
-    JSObject* object = args.at(exec, 0)->getObject();
+    JSObject* object = args.at(0).getObject();
     if (exec->hadException())
         return jsUndefined();
     if (!object) {
@@ -118,8 +125,8 @@ JSValuePtr JSGeolocation::watchPosition(ExecState* exec, const ArgList& args)
         positionCallback = JSCustomPositionCallback::create(object, frame);
     
     RefPtr<PositionErrorCallback> positionErrorCallback;
-    if (!args.at(exec, 1)->isUndefinedOrNull()) {
-        JSObject* object = args.at(exec, 1)->getObject();
+    if (!args.at(1).isUndefinedOrNull()) {
+        JSObject* object = args.at(1).getObject();
         if (!object) {
             setDOMException(exec, TYPE_MISMATCH_ERR);
             return jsUndefined();
@@ -130,13 +137,13 @@ JSValuePtr JSGeolocation::watchPosition(ExecState* exec, const ArgList& args)
     }
     
     RefPtr<PositionOptions> positionOptions;
-    if (!args.at(exec, 2)->isUndefinedOrNull()) {
-        positionOptions = createPositionOptions(exec, args.at(exec, 2));
+    if (!args.at(2).isUndefinedOrNull()) {
+        positionOptions = createPositionOptions(exec, args.at(2));
         if (exec->hadException())
             return jsUndefined();
     }
 
-    int watchID = m_impl->watchPosition(positionCallback.release(), positionErrorCallback.release(), positionOptions.get());
+    int watchID = m_impl->watchPosition(positionCallback.release(), positionErrorCallback.release(), positionOptions.release());
     return jsNumber(exec, watchID);
 }
 

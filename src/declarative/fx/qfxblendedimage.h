@@ -63,6 +63,7 @@ class Q_DECLARATIVE_EXPORT QFxBlendedImage : public QFxItem
     Q_PROPERTY(bool smooth READ smoothTransform WRITE setSmoothTransform)
 public:
     QFxBlendedImage(QFxItem *parent=0);
+    ~QFxBlendedImage();
 
     QUrl primaryUrl() const;
     void setPrimaryUrl(const QUrl &);

@@ -173,6 +173,10 @@ namespace WebCore {
 
         virtual bool isPluginView() const { return true; }
 
+        Frame* parentFrame() const { return m_parentFrame; }
+
+        void focusPluginElement();
+
 #if PLATFORM(WIN_OS) && !PLATFORM(WX) && ENABLE(NETSCAPE_PLUGIN_API)
         static LRESULT CALLBACK PluginViewWndProc(HWND, UINT, WPARAM, LPARAM);
         LRESULT wndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
@@ -202,7 +206,13 @@ namespace WebCore {
         void setCallingPlugin(bool) const;
 
         void invalidateWindowlessPluginRect(const IntRect&);
-        
+
+#if PLATFORM(WIN_OS) && !PLATFORM(WX) && ENABLE(NETSCAPE_PLUGIN_API)
+        void paintWindowedPluginIntoContext(GraphicsContext*, const IntRect&) const;
+        static HDC WINAPI hookedBeginPaint(HWND, PAINTSTRUCT*);
+        static BOOL WINAPI hookedEndPaint(HWND, const PAINTSTRUCT*);
+#endif
+
         Frame* m_parentFrame;
         RefPtr<PluginPackage> m_plugin;
         Element* m_element;
@@ -238,7 +248,7 @@ namespace WebCore {
 
         CString m_mimeType;
         CString m_userAgent;
-        
+
         NPP m_instance;
         NPP_t m_instanceStruct;
         NPWindow m_npWindow;
@@ -261,6 +271,7 @@ namespace WebCore {
         WNDPROC m_pluginWndProc;
         unsigned m_lastMessage;
         bool m_isCallingPluginWndProc;
+        HDC m_wmPrintHDC;
 #endif
 
 #if (PLATFORM(QT) && PLATFORM(WIN_OS)) || defined(XP_MACOSX)
@@ -277,13 +288,19 @@ public:
 
 private:
 
-#if defined(XP_MACOSX)
+#if PLATFORM(GTK) || defined(Q_WS_X11)
+        void setNPWindowIfNeeded();
+#elif defined(XP_MACOSX)
         NP_CGContext m_npCgContext;
         OwnPtr<Timer<PluginView> > m_nullEventTimer;
 
         void setNPWindowIfNeeded();
         void nullEventTimerFired(Timer<PluginView>*);
         Point globalMousePosForPlugin() const;
+#endif
+
+#if defined(Q_WS_X11)
+        bool m_hasPendingGeometryChange;
 #endif
 
         IntRect m_clipRect; // The clip rect to apply to a windowed plug-in
@@ -299,4 +316,4 @@ private:
 
 } // namespace WebCore
 
-#endif 
+#endif

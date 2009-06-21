@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the documentation of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -531,7 +531,7 @@
     \value UniqueConnection  Same as AutoConnection, but there will be a check that the signal is
                              not already connected to the same slot before connecting, otherwise,
                              the connection will fail.
-                             \since 4.6
+                             This value was introduced in Qt 4.6.
 
     With queued connections, the parameters must be of types that are known to
     Qt's meta-object system, because Qt needs to copy the arguments to store them
@@ -2061,9 +2061,9 @@
                             should be taken over by the target application,
                             i.e., the source application should not delete
                             the data.
-
-                            On X11 this value is used to do a move.
-
+			    \br
+			    On X11 this value is used to do a move.
+			    \br
                             TargetMoveAction is not used on the Mac.
 */
 
@@ -2674,11 +2674,20 @@
   \enum Qt::TileRule
   \since 4.6
 
-  This enum describes how to repeat or stretch the parts of an image when drawing.
+  This enum describes how to repeat or stretch the parts of an image
+  when drawing.
 
   \value Stretch   Scale the image to fit to the available area.
-  \value Repeat    Tile the image until there is no more space. May crop the last image.
-  \value Round     Like Repeat, but scales the images down to ensure that the last image is not cropped.
 
-  \sa qDrawBorderPixmap()
+  \value Repeat    Tile the image until there is no more space. May crop
+  the last image.
+
+  \value Round 	   Like Repeat, but scales the images down to ensure that
+  the last image is not cropped.
 */
+
+/*!
+    \enum Uninitialized
+    \internal
+*/
+

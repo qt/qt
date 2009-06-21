@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the Qt Linguist of the Qt Toolkit.
 **
@@ -34,14 +34,13 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
 
 #include "translator.h"
 
-#include <QtCore/QCoreApplication>
 #include <QtCore/QByteArray>
 #include <QtCore/QDebug>
 #include <QtCore/QDir>
@@ -101,7 +100,7 @@ static const uchar arabicRules[] =
       Q_EQ, 1, Q_NEWRULE,
       Q_EQ, 2, Q_NEWRULE,
       Q_MOD_100 | Q_BETWEEN, 3, 10, Q_NEWRULE,
-      Q_MOD_100 | Q_NEQ, 0 };
+      Q_MOD_100 | Q_NOT | Q_BETWEEN, 0, 2 };
 static const uchar tagalogRules[] =
     { Q_LEQ, 1, Q_NEWRULE,
       Q_MOD_10 | Q_EQ, 4, Q_OR, Q_MOD_10 | Q_EQ, 6, Q_OR, Q_MOD_10 | Q_EQ, 9 };
@@ -127,7 +126,7 @@ static const char * const malteseForms[] =
 static const char * const welshForms[] =
     { "Nullar", "Singular", "Dual", "Sexal", "Plural", 0 };
 static const char * const arabicForms[] =
-    { "Nullar", "Singular", "Dual", "Minority Plural", "Plural", "Plural Form for 100, 200, ...", 0 };
+    { "Nullar", "Singular", "Dual", "Minority Plural", "Plural", "Plural (100-102, ...)", 0 };
 static const char * const tagalogForms[] =
     { "Singular", "Plural (consonant-ended)", "Plural (vowel-ended)", 0 };
 static const char * const catalanForms[] = { "Singular", "Undecal (11)", "Plural", 0 };
@@ -246,6 +245,7 @@ static const QLocale::Language englishStyleLanguages[] = {
     QLocale::Turkmen,
     QLocale::Twi,
     QLocale::Uigur,
+    QLocale::Urdu,
     QLocale::Uzbek,
     QLocale::Volapuk,
     QLocale::Wolof,

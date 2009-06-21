@@ -76,7 +76,7 @@ Rect {
         text: "Remove"
         opacity: 0
     }
-    opacity: Behaviour {
+    opacity: Behavior {
         NumericAnimation {
             property: "opacity"
             duration: 250

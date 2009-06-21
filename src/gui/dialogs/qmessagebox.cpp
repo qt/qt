@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -258,10 +258,8 @@ void QMessageBoxPrivate::init(const QString &title, const QString &text)
 
 int QMessageBoxPrivate::layoutMinimumWidth()
 {
-    Q_Q(QMessageBox);
-
-    q->layout()->activate();
-    return q->layout()->totalMinimumSize().width();
+    layout->activate();
+    return layout->totalMinimumSize().width();
 }
 
 void QMessageBoxPrivate::updateSize()
@@ -334,15 +332,15 @@ void QMessageBoxPrivate::updateSize()
         label->setSizePolicy(policy);
     }
 
-    QFontMetrics fm(qApp->font("QWorkspaceTitleBar"));
+    QFontMetrics fm(QApplication::font("QWorkspaceTitleBar"));
     int windowTitleWidth = qMin(fm.width(q->windowTitle()) + 50, hardLimit);
     if (windowTitleWidth > width)
         width = windowTitleWidth;
 
-    q->layout()->activate();
-    int height = (q->layout()->hasHeightForWidth())
-                     ? q->layout()->totalHeightForWidth(width)
-                     : q->layout()->totalMinimumSize().height();
+    layout->activate();
+    int height = (layout->hasHeightForWidth())
+                     ? layout->totalHeightForWidth(width)
+                     : layout->totalMinimumSize().height();
     q->setFixedSize(width, height);
     QCoreApplication::removePostedEvents(q, QEvent::LayoutRequest);
 }
@@ -363,7 +361,7 @@ void QMessageBoxPrivate::hideSpecial()
             QPushButton *pb = list.at(i);
             QString text = pb->text();
             text.remove(QChar::fromLatin1('&'));
-            if (text == qApp->translate("QMessageBox", "OK" ))
+            if (text == QApplication::translate("QMessageBox", "OK" ))
                 pb->setFixedSize(0,0);
         }
 }
@@ -1210,8 +1208,8 @@ bool QMessageBox::event(QEvent *e)
         case QEvent::HelpRequest: {
           QString bName =
               (e->type() == QEvent::OkRequest)
-              ? qApp->translate("QMessageBox", "OK")
-              : qApp->translate("QMessageBox", "Help");
+              ? QApplication::translate("QMessageBox", "OK")
+              : QApplication::translate("QMessageBox", "Help");
           QList<QPushButton*> list = qFindChildren<QPushButton*>(this);
           for (int i=0; i<list.size(); ++i) {
               QPushButton *pb = list.at(i);
@@ -1324,7 +1322,7 @@ void QMessageBox::keyPressEvent(QKeyEvent *e)
             }
             textToCopy += buttonTexts + separator;
 
-            qApp->clipboard()->setText(textToCopy);
+            QApplication::clipboard()->setText(textToCopy);
             return;
         }
 #endif //QT_NO_SHORTCUT QT_NO_CLIPBOARD Q_OS_WIN

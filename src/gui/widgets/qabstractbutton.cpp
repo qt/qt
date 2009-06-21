@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -319,20 +319,16 @@ QList<QAbstractButton *>QAbstractButtonPrivate::queryButtonList() const
         return group->d_func()->buttonList;
 #endif
 
-    Q_Q(const QAbstractButton);
-    QList<QAbstractButton*>candidates;
-    if (q->parentWidget()) {
-        candidates =  qFindChildren<QAbstractButton *>(q->parentWidget());
-        if (autoExclusive) {
-            for (int i = candidates.count() - 1; i >= 0; --i) {
-                QAbstractButton *candidate = candidates.at(i);
-                if (!candidate->autoExclusive()
+    QList<QAbstractButton*>candidates = qFindChildren<QAbstractButton *>(parent);
+    if (autoExclusive) {
+        for (int i = candidates.count() - 1; i >= 0; --i) {
+            QAbstractButton *candidate = candidates.at(i);
+            if (!candidate->autoExclusive()
 #ifndef QT_NO_BUTTONGROUP
-                    || candidate->group()
+                || candidate->group()
 #endif
-                    )
-                    candidates.removeAt(i);
-            }
+                )
+                candidates.removeAt(i);
         }
     }
     return candidates;
@@ -383,7 +379,7 @@ void QAbstractButtonPrivate::moveFocus(int key)
 #else
     bool exclusive = autoExclusive;
 #endif
-    QWidget *f = qApp->focusWidget();
+    QWidget *f = QApplication::focusWidget();
     QAbstractButton *fb = qobject_cast<QAbstractButton *>(f);
     if (!fb || !buttonList.contains(fb))
         return;

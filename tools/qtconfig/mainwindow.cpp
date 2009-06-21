@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the tools applications of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -829,7 +829,7 @@ void MainWindow::removeSubstitute()
 
     int item = sublistbox->currentItem();
     QStringList subs = QFont::substitutes(familysubcombo->currentText());
-    subs.remove(subs.at(sublistbox->currentItem()));
+    subs.removeAt(sublistbox->currentItem());
     sublistbox->clear();
     sublistbox->insertStringList(subs);
     if (uint(item) > sublistbox->count())
@@ -909,7 +909,7 @@ void MainWindow::removeFontpath()
         return;
 
     int item = fontpathlistbox->currentItem();
-    fontpaths.remove(fontpaths.at(fontpathlistbox->currentItem()));
+    fontpaths.removeAt(fontpathlistbox->currentItem());
     fontpathlistbox->clear();
     fontpathlistbox->insertStringList(fontpaths);
     if (uint(item) > fontpathlistbox->count())

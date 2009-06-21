@@ -35,7 +35,7 @@ using namespace JSC;
 
 namespace WebCore {
 
-ASSERT_CLASS_FITS_IN_CELL(JSLocation)
+ASSERT_CLASS_FITS_IN_CELL(JSLocation);
 
 /* Hash table */
 
@@ -79,14 +79,21 @@ static const HashTable JSLocationPrototypeTable =
 
 const ClassInfo JSLocationPrototype::s_info = { "LocationPrototype", 0, &JSLocationPrototypeTable, 0 };
 
-JSObject* JSLocationPrototype::self(ExecState* exec)
+JSObject* JSLocationPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMPrototype<JSLocation>(exec);
+    return getDOMPrototype<JSLocation>(exec, globalObject);
 }
 
 bool JSLocationPrototype::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
     return getStaticFunctionSlot<JSObject>(exec, &JSLocationPrototypeTable, this, propertyName, slot);
+}
+
+void JSLocationPrototype::put(ExecState* exec, const Identifier& propertyName, JSValue value, PutPropertySlot& slot)
+{
+    if (customPut(exec, propertyName, value, slot))
+        return;
+    Base::put(exec, propertyName, value, slot);
 }
 
 const ClassInfo JSLocation::s_info = { "Location", 0, &JSLocationTable, 0 };
@@ -100,12 +107,11 @@ JSLocation::JSLocation(PassRefPtr<Structure> structure, PassRefPtr<Location> imp
 JSLocation::~JSLocation()
 {
     forgetDOMObject(*Heap::heap(this)->globalData(), m_impl.get());
-
 }
 
-JSObject* JSLocation::createPrototype(ExecState* exec)
+JSObject* JSLocation::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return new (exec) JSLocationPrototype(JSLocationPrototype::createStructure(exec->lexicalGlobalObject()->objectPrototype()));
+    return new (exec) JSLocationPrototype(JSLocationPrototype::createStructure(globalObject->objectPrototype()));
 }
 
 bool JSLocation::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
@@ -115,97 +121,105 @@ bool JSLocation::getOwnPropertySlot(ExecState* exec, const Identifier& propertyN
     return getStaticValueSlot<JSLocation, Base>(exec, &JSLocationTable, this, propertyName, slot);
 }
 
-JSValuePtr jsLocationHref(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsLocationHref(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     Location* imp = static_cast<Location*>(static_cast<JSLocation*>(asObject(slot.slotBase()))->impl());
     return jsString(exec, imp->href());
 }
 
-JSValuePtr jsLocationProtocol(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsLocationProtocol(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     Location* imp = static_cast<Location*>(static_cast<JSLocation*>(asObject(slot.slotBase()))->impl());
     return jsString(exec, imp->protocol());
 }
 
-JSValuePtr jsLocationHost(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsLocationHost(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     Location* imp = static_cast<Location*>(static_cast<JSLocation*>(asObject(slot.slotBase()))->impl());
     return jsString(exec, imp->host());
 }
 
-JSValuePtr jsLocationHostname(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsLocationHostname(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     Location* imp = static_cast<Location*>(static_cast<JSLocation*>(asObject(slot.slotBase()))->impl());
     return jsString(exec, imp->hostname());
 }
 
-JSValuePtr jsLocationPort(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsLocationPort(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     Location* imp = static_cast<Location*>(static_cast<JSLocation*>(asObject(slot.slotBase()))->impl());
     return jsString(exec, imp->port());
 }
 
-JSValuePtr jsLocationPathname(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsLocationPathname(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     Location* imp = static_cast<Location*>(static_cast<JSLocation*>(asObject(slot.slotBase()))->impl());
     return jsString(exec, imp->pathname());
 }
 
-JSValuePtr jsLocationSearch(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsLocationSearch(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     Location* imp = static_cast<Location*>(static_cast<JSLocation*>(asObject(slot.slotBase()))->impl());
     return jsString(exec, imp->search());
 }
 
-JSValuePtr jsLocationHash(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsLocationHash(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    UNUSED_PARAM(exec);
     Location* imp = static_cast<Location*>(static_cast<JSLocation*>(asObject(slot.slotBase()))->impl());
     return jsString(exec, imp->hash());
 }
 
-void JSLocation::put(ExecState* exec, const Identifier& propertyName, JSValuePtr value, PutPropertySlot& slot)
+void JSLocation::put(ExecState* exec, const Identifier& propertyName, JSValue value, PutPropertySlot& slot)
 {
     if (customPut(exec, propertyName, value, slot))
         return;
     lookupPut<JSLocation, Base>(exec, propertyName, value, &JSLocationTable, this, slot);
 }
 
-void setJSLocationHref(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSLocationHref(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     static_cast<JSLocation*>(thisObject)->setHref(exec, value);
 }
 
-void setJSLocationProtocol(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSLocationProtocol(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     static_cast<JSLocation*>(thisObject)->setProtocol(exec, value);
 }
 
-void setJSLocationHost(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSLocationHost(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     static_cast<JSLocation*>(thisObject)->setHost(exec, value);
 }
 
-void setJSLocationHostname(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSLocationHostname(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     static_cast<JSLocation*>(thisObject)->setHostname(exec, value);
 }
 
-void setJSLocationPort(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSLocationPort(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     static_cast<JSLocation*>(thisObject)->setPort(exec, value);
 }
 
-void setJSLocationPathname(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSLocationPathname(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     static_cast<JSLocation*>(thisObject)->setPathname(exec, value);
 }
 
-void setJSLocationSearch(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSLocationSearch(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     static_cast<JSLocation*>(thisObject)->setSearch(exec, value);
 }
 
-void setJSLocationHash(ExecState* exec, JSObject* thisObject, JSValuePtr value)
+void setJSLocationHash(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     static_cast<JSLocation*>(thisObject)->setHash(exec, value);
 }
@@ -217,45 +231,49 @@ void JSLocation::getPropertyNames(ExecState* exec, PropertyNameArray& propertyNa
      Base::getPropertyNames(exec, propertyNames);
 }
 
-JSValuePtr jsLocationPrototypeFunctionAssign(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsLocationPrototypeFunctionAssign(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSLocation::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSLocation::s_info))
         return throwError(exec, TypeError);
     JSLocation* castedThisObj = static_cast<JSLocation*>(asObject(thisValue));
     return castedThisObj->assign(exec, args);
 }
 
-JSValuePtr jsLocationPrototypeFunctionReplace(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsLocationPrototypeFunctionReplace(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSLocation::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSLocation::s_info))
         return throwError(exec, TypeError);
     JSLocation* castedThisObj = static_cast<JSLocation*>(asObject(thisValue));
     return castedThisObj->replace(exec, args);
 }
 
-JSValuePtr jsLocationPrototypeFunctionReload(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsLocationPrototypeFunctionReload(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSLocation::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSLocation::s_info))
         return throwError(exec, TypeError);
     JSLocation* castedThisObj = static_cast<JSLocation*>(asObject(thisValue));
     return castedThisObj->reload(exec, args);
 }
 
-JSValuePtr jsLocationPrototypeFunctionToString(ExecState* exec, JSObject*, JSValuePtr thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsLocationPrototypeFunctionToString(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
-    if (!thisValue->isObject(&JSLocation::s_info))
+    UNUSED_PARAM(args);
+    if (!thisValue.isObject(&JSLocation::s_info))
         return throwError(exec, TypeError);
     JSLocation* castedThisObj = static_cast<JSLocation*>(asObject(thisValue));
     return castedThisObj->toString(exec, args);
 }
 
-JSC::JSValuePtr toJS(JSC::ExecState* exec, Location* object)
+JSC::JSValue toJS(JSC::ExecState* exec, Location* object)
 {
     return getDOMObjectWrapper<JSLocation>(exec, object);
 }
-Location* toLocation(JSC::JSValuePtr value)
+Location* toLocation(JSC::JSValue value)
 {
-    return value->isObject(&JSLocation::s_info) ? static_cast<JSLocation*>(asObject(value))->impl() : 0;
+    return value.isObject(&JSLocation::s_info) ? static_cast<JSLocation*>(asObject(value))->impl() : 0;
 }
 
 }

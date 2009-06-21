@@ -134,9 +134,16 @@ void QmlBindableValue::update()
         } else {
 
             QVariant value = this->value();
+            if ((uint)d->property.propertyType() >= QVariant::UserType &&
+                value.type() == QVariant::String) {
+                QmlMetaType::StringConverter con = QmlMetaType::customStringConverter(d->property.propertyType());
+                if (con)
+                    value = con(value.toString());
+            }
+
             if (d->property.propertyType() == QVariant::Url && 
                 value.canConvert(QVariant::String) && !value.isNull()) 
-                value.setValue(context()->resolvedUrl(value.toString()));
+                value.setValue(context()->resolvedUrl(QUrl(value.toString())));
 
             d->property.write(value);
         }

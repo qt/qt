@@ -44,12 +44,12 @@
 
 #include <QtDeclarative/qml.h>
 
-
 QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
 QT_MODULE(Declarative)
+
 /*****************************************************************************
  *****************************************************************************
  XXX Experimental
@@ -79,9 +79,8 @@ public:
 };
 QML_DECLARE_TYPE(QmlPackage)
 
-#endif // QMLPACKAGE_H
-
-
 QT_END_NAMESPACE
 
 QT_END_HEADER
+
+#endif // QMLPACKAGE_H

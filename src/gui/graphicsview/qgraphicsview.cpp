@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -217,6 +217,8 @@ static const int QGRAPHICSVIEW_PREALLOC_STYLE_OPTIONS = 503; // largest prime < 
     minimizing the areas that require redrawing, which improves performance. A
     common side effect is that items that do draw with antialiasing can leave
     painting traces behind on the scene as they are moved.
+
+    \omitvalue IndirectPainting
 */
 
 /*!
@@ -387,7 +389,7 @@ void QGraphicsViewPrivate::recalculateContentSize()
     int left =  q_round_bound(viewRect.left());
     int right = q_round_bound(viewRect.right() - width);
     if (left >= right) {
-        q->horizontalScrollBar()->setRange(0, 0);
+        hbar->setRange(0, 0);
 
         switch (alignment & Qt::AlignHorizontal_Mask) {
         case Qt::AlignLeft:
@@ -402,9 +404,9 @@ void QGraphicsViewPrivate::recalculateContentSize()
             break;
         }
     } else {
-        q->horizontalScrollBar()->setRange(left, right);
-        q->horizontalScrollBar()->setPageStep(width);
-        q->horizontalScrollBar()->setSingleStep(width / 20);
+        hbar->setRange(left, right);
+        hbar->setPageStep(width);
+        hbar->setSingleStep(width / 20);
         leftIndent = 0;
     }
 
@@ -413,7 +415,7 @@ void QGraphicsViewPrivate::recalculateContentSize()
     int top = q_round_bound(viewRect.top());
     int bottom = q_round_bound(viewRect.bottom()  - height);
     if (top >= bottom) {
-        q->verticalScrollBar()->setRange(0, 0);
+        vbar->setRange(0, 0);
 
         switch (alignment & Qt::AlignVertical_Mask) {
         case Qt::AlignTop:
@@ -428,9 +430,9 @@ void QGraphicsViewPrivate::recalculateContentSize()
             break;
         }
     } else {
-        q->verticalScrollBar()->setRange(top, bottom);
-        q->verticalScrollBar()->setPageStep(height);
-        q->verticalScrollBar()->setSingleStep(height / 20);
+        vbar->setRange(top, bottom);
+        vbar->setPageStep(height);
+        vbar->setSingleStep(height / 20);
         topIndent = 0;
     }
 
@@ -442,7 +444,7 @@ void QGraphicsViewPrivate::recalculateContentSize()
     // scroll instead.
     if (oldLeftIndent != leftIndent || oldTopIndent != topIndent) {
         dirtyScroll = true;
-        q->viewport()->update();
+        updateAll();
     } else if (q->isRightToLeft() && !leftIndent) {
         // In reverse mode, the horizontal scroll always changes after the content
         // size has changed, as the scroll is calculated by summing the min and
@@ -468,7 +470,7 @@ void QGraphicsViewPrivate::centerView(QGraphicsView::ViewportAnchor anchor)
         if (q->underMouse()) {
             // Last scene pos: lastMouseMoveScenePoint
             // Current mouse pos:
-            QPointF transformationDiff = q->mapToScene(q->viewport()->rect().center())
+            QPointF transformationDiff = q->mapToScene(viewport->rect().center())
                                          - q->mapToScene(q->mapFromGlobal(QCursor::pos()));
             q->centerOn(lastMouseMoveScenePoint + transformationDiff);;
         } else {
@@ -490,7 +492,7 @@ void QGraphicsViewPrivate::centerView(QGraphicsView::ViewportAnchor anchor)
 void QGraphicsViewPrivate::updateLastCenterPoint()
 {
     Q_Q(QGraphicsView);
-    lastCenterPoint = q->mapToScene(q->viewport()->rect().center());
+    lastCenterPoint = q->mapToScene(viewport->rect().center());
 }
 
 /*!
@@ -528,15 +530,15 @@ void QGraphicsViewPrivate::updateScroll()
     scrollX = qint64(-leftIndent);
     if (q->isRightToLeft()) {
         if (!leftIndent) {
-            scrollX += q->horizontalScrollBar()->minimum();
-            scrollX += q->horizontalScrollBar()->maximum();
-            scrollX -= q->horizontalScrollBar()->value();
+            scrollX += hbar->minimum();
+            scrollX += hbar->maximum();
+            scrollX -= hbar->value();
         }
     } else {
-        scrollX += q->horizontalScrollBar()->value();
+        scrollX += hbar->value();
     }
 
-    scrollY = qint64(q->verticalScrollBar()->value() - topIndent);
+    scrollY = qint64(vbar->value() - topIndent);
 
     dirtyScroll = false;
 }
@@ -576,7 +578,7 @@ void QGraphicsViewPrivate::mouseMoveEventHandler(QMouseEvent *event)
         return;
 
     QGraphicsSceneMouseEvent mouseEvent(QEvent::GraphicsSceneMouseMove);
-    mouseEvent.setWidget(q->viewport());
+    mouseEvent.setWidget(viewport);
     mouseEvent.setButtonDownScenePos(mousePressButton, mousePressScenePoint);
     mouseEvent.setButtonDownScreenPos(mousePressButton, mousePressScreenPoint);
     mouseEvent.setScenePos(q->mapToScene(event->pos()));
@@ -623,7 +625,7 @@ void QGraphicsViewPrivate::mouseMoveEventHandler(QMouseEvent *event)
     if (hasStoredOriginalCursor) {
         // Restore the original viewport cursor.
         hasStoredOriginalCursor = false;
-        q->viewport()->setCursor(originalCursor);
+        viewport->setCursor(originalCursor);
     }
 #endif
 }
@@ -655,8 +657,6 @@ QRegion QGraphicsViewPrivate::rubberBandRegion(const QWidget *widget, const QRec
 #ifndef QT_NO_CURSOR
 void QGraphicsViewPrivate::_q_setViewportCursor(const QCursor &cursor)
 {
-    Q_Q(QGraphicsView);
-    QWidget *viewport = q->viewport();
     if (!hasStoredOriginalCursor) {
         hasStoredOriginalCursor = true;
         originalCursor = viewport->cursor();
@@ -682,9 +682,9 @@ void QGraphicsViewPrivate::_q_unsetViewportCursor()
     // Restore the original viewport cursor.
     hasStoredOriginalCursor = false;
     if (dragMode == QGraphicsView::ScrollHandDrag)
-        q->viewport()->setCursor(Qt::OpenHandCursor);
+        viewport->setCursor(Qt::OpenHandCursor);
     else
-        q->viewport()->setCursor(originalCursor);
+        viewport->setCursor(originalCursor);
 }
 #endif
 
@@ -723,7 +723,7 @@ void QGraphicsViewPrivate::populateSceneDragDropEvent(QGraphicsSceneDragDropEven
     dest->setProposedAction(source->proposedAction());
     dest->setDropAction(source->dropAction());
     dest->setMimeData(source->mimeData());
-    dest->setWidget(q->viewport());
+    dest->setWidget(viewport);
     dest->setSource(source->source());
 #else
     Q_UNUSED(dest)
@@ -814,7 +814,7 @@ void QGraphicsViewPrivate::processPendingUpdates()
 
     if (viewportUpdateMode == QGraphicsView::BoundingRectViewportUpdate) {
         if (optimizationFlags & QGraphicsView::DontAdjustForAntialiasing)
-            viewport->update(dirtyBoundingRect);
+            viewport->update(dirtyBoundingRect.adjusted(-1, -1, 1, 1));
         else
             viewport->update(dirtyBoundingRect.adjusted(-2, -2, 2, 2));
     } else {
@@ -825,82 +825,77 @@ void QGraphicsViewPrivate::processPendingUpdates()
     dirtyRegion = QRegion();
 }
 
-void QGraphicsViewPrivate::updateAll()
+bool QGraphicsViewPrivate::updateRegion(const QRegion &r)
 {
-    Q_Q(QGraphicsView);
-    q->viewport()->update();
-    fullUpdatePending = true;
-    dirtyBoundingRect = QRect();
-    dirtyRegion = QRegion();
-}
+    if (fullUpdatePending || viewportUpdateMode == QGraphicsView::NoViewportUpdate || r.isEmpty())
+        return false;
 
-void QGraphicsViewPrivate::updateRegion(const QRegion &r)
-{
-    if (r.isEmpty() || fullUpdatePending)
-        return;
+    const QRect boundingRect = r.boundingRect();
+    if (!boundingRect.intersects(viewport->rect()))
+        return false; // Update region outside viewport.
 
-    Q_Q(QGraphicsView);
-
-    // Rect intersects viewport - update everything?
     switch (viewportUpdateMode) {
     case QGraphicsView::FullViewportUpdate:
         fullUpdatePending = true;
-        q->viewport()->update();
+        viewport->update();
         break;
     case QGraphicsView::BoundingRectViewportUpdate:
-        dirtyBoundingRect |= r.boundingRect();
-        if (dirtyBoundingRect.contains(q->viewport()->rect())) {
+        dirtyBoundingRect |= boundingRect;
+        if (dirtyBoundingRect.contains(viewport->rect())) {
             fullUpdatePending = true;
-            q->viewport()->update();
+            viewport->update();
         }
         break;
     case QGraphicsView::SmartViewportUpdate: // ### DEPRECATE
     case QGraphicsView::MinimalViewportUpdate:
-        if (optimizationFlags & QGraphicsView::DontAdjustForAntialiasing) {
-            dirtyRegion += r;
-        } else {
-            const QVector<QRect> &rects = r.rects();
-            for (int i = 0; i < rects.size(); ++i)
+    {
+        const QVector<QRect> &rects = r.rects();
+        for (int i = 0; i < rects.size(); ++i) {
+            if (optimizationFlags & QGraphicsView::DontAdjustForAntialiasing)
+                dirtyRegion += rects.at(i).adjusted(-1, -1, 1, 1);
+            else
                 dirtyRegion += rects.at(i).adjusted(-2, -2, 2, 2);
         }
         break;
-    case QGraphicsView::NoViewportUpdate:
-        // Unreachable
+    }
+    default:
         break;
     }
+
+    return true;
 }
 
-void QGraphicsViewPrivate::updateRect(const QRect &r)
+bool QGraphicsViewPrivate::updateRect(const QRect &r)
 {
-    if (r.isEmpty() || fullUpdatePending)
-        return;
+    if (fullUpdatePending || viewportUpdateMode == QGraphicsView::NoViewportUpdate
+        || !r.intersects(viewport->rect())) {
+        return false;
+    }
 
-    Q_Q(QGraphicsView);
-
-    // Rect intersects viewport - update everything?
     switch (viewportUpdateMode) {
     case QGraphicsView::FullViewportUpdate:
         fullUpdatePending = true;
-        q->viewport()->update();
+        viewport->update();
         break;
     case QGraphicsView::BoundingRectViewportUpdate:
         dirtyBoundingRect |= r;
-        if (dirtyBoundingRect.contains(q->viewport()->rect())) {
+        if (dirtyBoundingRect.contains(viewport->rect())) {
             fullUpdatePending = true;
-            q->viewport()->update();
+            viewport->update();
         }
         break;
     case QGraphicsView::SmartViewportUpdate: // ### DEPRECATE
     case QGraphicsView::MinimalViewportUpdate:
         if (optimizationFlags & QGraphicsView::DontAdjustForAntialiasing)
-            dirtyRegion += r;
+            dirtyRegion += r.adjusted(-1, -1, 1, 1);
         else
             dirtyRegion += r.adjusted(-2, -2, 2, 2);
         break;
-    case QGraphicsView::NoViewportUpdate:
-        // Unreachable
+    default:
         break;
     }
+
+    return true;
 }
 
 QStyleOptionGraphicsItem *QGraphicsViewPrivate::allocStyleOptionsArray(int numItems)
@@ -1091,7 +1086,7 @@ void QGraphicsView::setRenderHints(QPainter::RenderHints hints)
     if (hints == d->renderHints)
         return;
     d->renderHints = hints;
-    viewport()->update();
+    d->updateAll();
 }
 
 /*!
@@ -1109,7 +1104,7 @@ void QGraphicsView::setRenderHint(QPainter::RenderHint hint, bool enabled)
     else
         d->renderHints &= ~hint;
     if (oldHints != d->renderHints)
-        viewport()->update();
+        d->updateAll();
 }
 
 /*!
@@ -1396,7 +1391,7 @@ void QGraphicsView::resetCachedContent()
     if (d->cacheMode & CacheBackground) {
         // Background caching is enabled.
         d->mustResizeBackgroundPixmap = true;
-        viewport()->update();
+        d->updateAll();
     } else if (d->mustResizeBackgroundPixmap) {
         // Background caching is disabled.
         // Cleanup, free some resources.
@@ -1485,7 +1480,7 @@ void QGraphicsView::setScene(QGraphicsScene *scene)
         return;
 
     // Always update the viewport when the scene changes.
-    viewport()->update();
+    d->updateAll();
 
     // Remove the previously assigned scene.
     if (d->scene) {
@@ -1945,8 +1940,7 @@ void QGraphicsView::render(QPainter *painter, const QRectF &target, const QRect 
     itemList.clear();
 
     // Setup painter matrix.
-    QTransform moveMatrix;
-    moveMatrix.translate(-d->horizontalScroll(), -d->verticalScroll());
+    QTransform moveMatrix = QTransform::fromTranslate(-d->horizontalScroll(), -d->verticalScroll());
     QTransform painterMatrix = d->matrix * moveMatrix;
     painterMatrix *= QTransform()
                      .translate(targetRect.left(), targetRect.top())
@@ -2297,9 +2291,9 @@ QPolygonF QGraphicsView::mapToScene(const QPolygon &polygon) const
 QPainterPath QGraphicsView::mapToScene(const QPainterPath &path) const
 {
     Q_D(const QGraphicsView);
-    QTransform moveMatrix;
-    moveMatrix.translate(d->horizontalScroll(), d->verticalScroll());
-    return (moveMatrix * d->matrix.inverted()).map(path);
+    QTransform matrix = QTransform::fromTranslate(d->horizontalScroll(), d->verticalScroll());
+    matrix *= d->matrix.inverted();
+    return matrix.map(path);
 }
 
 /*!
@@ -2393,9 +2387,9 @@ QPolygon QGraphicsView::mapFromScene(const QPolygonF &polygon) const
 QPainterPath QGraphicsView::mapFromScene(const QPainterPath &path) const
 {
     Q_D(const QGraphicsView);
-    QTransform moveMatrix;
-    moveMatrix.translate(-d->horizontalScroll(), -d->verticalScroll());
-    return (d->matrix * moveMatrix).map(path);
+    QTransform matrix = d->matrix;
+    matrix *= QTransform::fromTranslate(-d->horizontalScroll(), -d->verticalScroll());
+    return matrix.map(path);
 }
 
 /*!
@@ -2441,7 +2435,7 @@ void QGraphicsView::setBackgroundBrush(const QBrush &brush)
 {
     Q_D(QGraphicsView);
     d->backgroundBrush = brush;
-    viewport()->update();
+    d->updateAll();
 
     if (d->cacheMode & CacheBackground) {
         // Invalidate the background pixmap
@@ -2471,7 +2465,7 @@ void QGraphicsView::setForegroundBrush(const QBrush &brush)
 {
     Q_D(QGraphicsView);
     d->foregroundBrush = brush;
-    viewport()->update();
+    d->updateAll();
 }
 
 /*!
@@ -2693,6 +2687,7 @@ bool QGraphicsView::viewportEvent(QEvent *event)
     case QEvent::Paint:
         // Reset full update
         d->fullUpdatePending = false;
+        d->dirtyScrollOffset = QPoint();
         if (d->scene) {
             // Check if this view reimplements the updateScene slot; if it
             // does, we can't do direct update delivery and have to fall back
@@ -3069,7 +3064,7 @@ void QGraphicsView::mouseMoveEvent(QMouseEvent *event)
                 if (d->viewportUpdateMode != FullViewportUpdate)
                     viewport()->update(d->rubberBandRegion(viewport(), d->rubberBandRect));
                 else
-                    viewport()->update();
+                    d->updateAll();
             }
 
             // Stop rubber banding if the user has let go of all buttons (even
@@ -3091,7 +3086,7 @@ void QGraphicsView::mouseMoveEvent(QMouseEvent *event)
                 if (d->viewportUpdateMode != FullViewportUpdate)
                     viewport()->update(d->rubberBandRegion(viewport(), d->rubberBandRect));
                 else
-                    viewport()->update();
+                    d->updateAll();
             }
             // Set the new selection area
             QPainterPath selectionArea;
@@ -3134,7 +3129,7 @@ void QGraphicsView::mouseReleaseEvent(QMouseEvent *event)
                 if (d->viewportUpdateMode != FullViewportUpdate)
                     viewport()->update(d->rubberBandRegion(viewport(), d->rubberBandRect));
                 else
-                    viewport()->update();
+                    d->updateAll();
             }
             d->rubberBanding = false;
             d->rubberBandRect = QRect();
@@ -3237,15 +3232,10 @@ void QGraphicsView::paintEvent(QPaintEvent *event)
 
     // Determine the exposed region
     d->exposedRegion = event->region();
-    if (!d->accelerateScrolling)
-        d->exposedRegion = viewport()->rect();
-    else if (d->viewportUpdateMode == BoundingRectViewportUpdate)
-        d->exposedRegion = event->rect();
     QRectF exposedSceneRect = mapToScene(d->exposedRegion.boundingRect()).boundingRect();
 
     // Set up the painter
     QPainter painter(viewport());
-    QTransform original = painter.worldTransform();
 #ifndef QT_NO_RUBBERBAND
     if (d->rubberBanding && !d->rubberBandRect.isEmpty())
         painter.save();
@@ -3255,8 +3245,10 @@ void QGraphicsView::paintEvent(QPaintEvent *event)
     painter.setRenderHints(d->renderHints, true);
 
     // Set up viewport transform
-    const QTransform viewTransform = viewportTransform();
-    painter.setTransform(viewTransform, true);
+    const bool viewTransformed = isTransformed();
+    if (viewTransformed)
+        painter.setWorldTransform(viewportTransform());
+    const QTransform viewTransform = painter.worldTransform();
 
     // Draw background
     if ((d->cacheMode & CacheBackground)
@@ -3281,17 +3273,21 @@ void QGraphicsView::paintEvent(QPaintEvent *event)
         if (!d->backgroundPixmapExposed.isEmpty()) {
             QPainter backgroundPainter(&d->backgroundPixmap);
             backgroundPainter.setClipRegion(d->backgroundPixmapExposed, Qt::ReplaceClip);
-            backgroundPainter.setTransform(viewportTransform());
+            if (viewTransformed)
+                backgroundPainter.setTransform(viewTransform);
             backgroundPainter.setCompositionMode(QPainter::CompositionMode_Source);
             drawBackground(&backgroundPainter, exposedSceneRect);
             d->backgroundPixmapExposed = QRegion();
         }
 
         // Blit the background from the background pixmap
-        QTransform oldMatrix = painter.worldTransform();
-        painter.setWorldTransform(original);
-        painter.drawPixmap(QPoint(), d->backgroundPixmap);
-        painter.setWorldTransform(oldMatrix);
+        if (viewTransformed) {
+            painter.setWorldTransform(QTransform());
+            painter.drawPixmap(QPoint(), d->backgroundPixmap);
+            painter.setWorldTransform(viewTransform);
+        } else {
+            painter.drawPixmap(QPoint(), d->backgroundPixmap);
+        }
     } else {
         if (!(d->optimizationFlags & DontSavePainterState))
             painter.save();
@@ -3314,8 +3310,10 @@ void QGraphicsView::paintEvent(QPaintEvent *event)
             const int numItems = itemList.size();
             QGraphicsItem **itemArray = &itemList[0]; // Relies on QList internals, but is perfectly valid.
             QStyleOptionGraphicsItem *styleOptionArray = d->allocStyleOptionsArray(numItems);
-            for (int i = 0; i < numItems; ++i)
-                itemArray[i]->d_ptr->initStyleOption(&styleOptionArray[i], viewTransform, d->exposedRegion, allItems);
+            for (int i = 0; i < numItems; ++i) {
+                itemArray[i]->d_ptr->initStyleOption(&styleOptionArray[i], viewTransform,
+                                                     d->exposedRegion, allItems);
+            }
             // Draw the items.
             drawItems(&painter, numItems, itemArray, styleOptionArray);
             d->freeStyleOptionsArray(styleOptionArray);
@@ -3392,7 +3390,6 @@ void QGraphicsView::scrollContentsBy(int dx, int dy)
 
     if (d->viewportUpdateMode != QGraphicsView::NoViewportUpdate) {
         if (d->viewportUpdateMode != QGraphicsView::FullViewportUpdate) {
-            d->dirtyRegion.translate(dx, dy);
             if (d->accelerateScrolling) {
 #ifndef QT_NO_RUBBERBAND
                 // Update new and old rubberband regions
@@ -3402,12 +3399,15 @@ void QGraphicsView::scrollContentsBy(int dx, int dy)
                     viewport()->update(rubberBandRegion);
                 }
 #endif
+                d->dirtyScrollOffset.rx() += dx;
+                d->dirtyScrollOffset.ry() += dy;
+                d->dirtyRegion.translate(dx, dy);
                 viewport()->scroll(dx, dy);
             } else {
-                viewport()->update();
+                d->updateAll();
             }
         } else {
-            viewport()->update();
+            d->updateAll();
         }
     }
 
@@ -3552,8 +3552,7 @@ QTransform QGraphicsView::transform() const
 QTransform QGraphicsView::viewportTransform() const
 {
     Q_D(const QGraphicsView);
-    QTransform moveMatrix;
-    moveMatrix.translate(-d->horizontalScroll(), -d->verticalScroll());
+    QTransform moveMatrix = QTransform::fromTranslate(-d->horizontalScroll(), -d->verticalScroll());
     return d->identityMatrix ? moveMatrix : d->matrix * moveMatrix;
 }
 
@@ -3620,7 +3619,7 @@ void QGraphicsView::setTransform(const QTransform &matrix, bool combine )
     d->transforming = false;
 
     // Any matrix operation requires a full update.
-    viewport()->update();
+    d->updateAll();
 }
 
 /*!

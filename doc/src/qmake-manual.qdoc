@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the documentation of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -3302,10 +3302,6 @@
     \row
         \o output_function
         \o Specifies a custom qmake function that is used to specify the filename to be created.
-    \row
-        \o variables
-        \o Indicates that the variables specified here are replaced with $(QMAKE_COMP_VARNAME) when refered to
-           in the pro file as $(VARNAME).
     \row
         \o variable_out
         \o The variable that the files created from the output should be added to.

@@ -59,10 +59,10 @@ void ProfileGenerator::addParentForConsoleStart(ExecState* exec)
     int lineNumber;
     intptr_t sourceID;
     UString sourceURL;
-    JSValuePtr function;
+    JSValue function;
 
     exec->interpreter()->retrieveLastCaller(exec, lineNumber, sourceID, sourceURL, function);
-    m_currentNode = ProfileNode::create(Profiler::createCallIdentifier(&exec->globalData(), function ? function->toThisObject(exec) : 0, sourceURL, lineNumber), m_head.get(), m_head.get());
+    m_currentNode = ProfileNode::create(Profiler::createCallIdentifier(&exec->globalData(), function ? function.toThisObject(exec) : 0, sourceURL, lineNumber), m_head.get(), m_head.get());
     m_head->insertNode(m_currentNode.get());
 }
 

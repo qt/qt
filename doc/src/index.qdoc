@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the documentation of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -86,15 +86,15 @@
     \endif
 
     \raw HTML
-        <table cellpadding="2" cellspacing="1" border="0" width="100%" bgcolor="#e5e5e5">
+        <table cellpadding="2" cellspacing="1" border="0" width="100%" class="indextable">
         <tr>
-        <th bgcolor="#66b036" width="33%">
+        <th class="titleheader" width="33%">
         Getting Started
         </th>
-        <th bgcolor="#66b036" width="33%">
+        <th class="titleheader" width="33%">
         General
         </th>
-        <th bgcolor="#66b036" width="33%">
+        <th class="titleheader" width="33%">
         Developer Resources
         </th>
         </tr>
@@ -128,13 +128,13 @@
         </td>
         </tr>
         <tr>
-        <th bgcolor="#66b036">
+        <th class="titleheader">
         API Reference
         </th>
-        <th bgcolor="#66b036">
+        <th class="titleheader">
         Core Features
         </th>
-        <th bgcolor="#66b036">
+        <th class="titleheader">
         Key Technologies
         </th>
         </tr>
@@ -195,13 +195,13 @@
         </td>
         </tr>
         <tr>
-        <th bgcolor="#66b036">
+        <th class="titleheader">
         Add-ons &amp; Services
         </th>
-        <th bgcolor="#66b036">
+        <th class="titleheader">
         Tools
         </th>
-        <th bgcolor="#66b036">
+        <th class="titleheader">
         Licenses &amp; Credits
         </th>
         </tr>

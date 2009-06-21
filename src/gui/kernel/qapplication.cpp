@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -391,6 +391,7 @@ Qt::MouseButtons QApplicationPrivate::mouse_buttons = Qt::NoButton;
 Qt::KeyboardModifiers QApplicationPrivate::modifier_buttons = Qt::NoModifier;
 
 QStyle *QApplicationPrivate::app_style = 0;        // default application style
+QString QApplicationPrivate::styleOverride;        // style override
 
 #ifndef QT_NO_STYLE_STYLESHEET
 QString QApplicationPrivate::styleSheet;           // default application stylesheet
@@ -438,7 +439,6 @@ bool QApplicationPrivate::animate_tooltip = false;
 bool QApplicationPrivate::fade_tooltip = false;
 bool QApplicationPrivate::animate_toolbox = false;
 bool QApplicationPrivate::widgetCount = false;
-QString* QApplicationPrivate::styleOverride = 0;
 #if defined(Q_WS_WIN) && !defined(Q_WS_WINCE)
 bool QApplicationPrivate::inSizeMove = false;
 #endif
@@ -491,8 +491,6 @@ QWidgetList * qt_modal_stack=0;                // stack of modal widgets
 */
 void QApplicationPrivate::process_cmdline()
 {
-    Q_Q(QApplication);
-    Q_UNUSED(q);// only static members being used.
     // process platform-indep command line
     if (!qt_is_gui_used || !argc)
         return;
@@ -537,7 +535,7 @@ void QApplicationPrivate::process_cmdline()
 #endif
         } else if (qstrcmp(arg, "-reverse") == 0) {
             force_reverse = true;
-            q->setLayoutDirection(Qt::RightToLeft);
+            QApplication::setLayoutDirection(Qt::RightToLeft);
         } else if (qstrcmp(arg, "-widgetcount") == 0) {
             widgetCount = true;
         } else if (arg == "-graphicssystem" && i < argc-1) {
@@ -550,9 +548,7 @@ void QApplicationPrivate::process_cmdline()
                 delete app_style;
                 app_style = 0;
             }
-            if (!styleOverride)
-                styleOverride = new QString;
-            *styleOverride = s;
+            styleOverride = s;
         }
     }
 
@@ -1289,44 +1285,14 @@ QStyle *QApplication::style()
         return 0;
     }
 
-#if defined(Q_WS_X11)
-    if(!QApplicationPrivate::styleOverride)
-        QApplicationPrivate::x11_initialize_style(); // run-time search for default style
-#endif
     if (!QApplicationPrivate::app_style) {
         // Compile-time search for default style
         //
         QString style;
-        if (QApplicationPrivate::styleOverride) {
-            style = *QApplicationPrivate::styleOverride;
-            delete QApplicationPrivate::styleOverride;
-            QApplicationPrivate::styleOverride = 0;
-        } else {
-#if defined(Q_WS_WIN) && defined(Q_WS_WINCE)
-    if (qt_wince_is_smartphone() || qt_wince_is_pocket_pc())
-        style = QLatin1String("WindowsMobile");
-     else
-        style = QLatin1String("WindowsCE");
-
-#elif defined(Q_WS_WIN)
-            if ((QSysInfo::WindowsVersion >= QSysInfo::WV_VISTA
-                && QSysInfo::WindowsVersion < QSysInfo::WV_NT_based))
-                style = QLatin1String("WindowsVista");
-                else if ((QSysInfo::WindowsVersion >= QSysInfo::WV_XP
-                && QSysInfo::WindowsVersion < QSysInfo::WV_NT_based))
-                style = QLatin1String("WindowsXP");
-            else
-                style = QLatin1String("Windows");                // default styles for Windows
-#elif defined(Q_WS_X11) && defined(Q_OS_SOLARIS)
-            style = QLatin1String("CDE");                        // default style for X11 on Solaris
-#elif defined(Q_WS_X11) && defined(Q_OS_IRIX)
-            style = QLatin1String("SGI");                        // default style for X11 on IRIX
-#elif defined(Q_WS_X11) || defined(Q_WS_QWS)
-            style = QLatin1String("Plastique");                  // default style for X11 and small devices
-#elif defined(Q_WS_MAC)
-                style = QLatin1String("Macintosh");              // default style for all Mac's
-#endif
-        }
+        if (!QApplicationPrivate::styleOverride.isEmpty())
+            style = QApplicationPrivate::styleOverride;
+        else
+            style = QApplicationPrivate::desktopStyleKey();
 
         QStyle *&app_style = QApplicationPrivate::app_style;
         app_style = QStyleFactory::create(style);
@@ -1414,9 +1380,8 @@ void QApplication::setStyle(QStyle *style)
     } else
 #endif // QT_NO_STYLE_STYLESHEET
         QApplicationPrivate::app_style = style;
-
     QApplicationPrivate::app_style->setParent(qApp); // take ownership
-
+    
     // take care of possible palette requirements of certain gui
     // styles. Do it before polishing the application since the style
     // might call QApplication::setPalette() itself
@@ -1936,6 +1901,40 @@ void QApplicationPrivate::setSystemFont(const QFont &font)
 
     if (!QApplicationPrivate::set_font)
         QApplication::setFont(*sys_font);
+}
+
+/*! \internal
+*/
+QString QApplicationPrivate::desktopStyleKey()
+{
+QString desktopstyle;
+#if defined(Q_WS_WIN) && defined(Q_WS_WINCE)
+    if (qt_wince_is_smartphone() || qt_wince_is_pocket_pc())
+        desktopstyle = QLatin1String("WindowsMobile");
+     else
+        desktopstyle = QLatin1String("WindowsCE");
+
+#elif defined(Q_WS_WIN)
+            if ((QSysInfo::WindowsVersion >= QSysInfo::WV_VISTA
+                && QSysInfo::WindowsVersion < QSysInfo::WV_NT_based))
+                desktopstyle = QLatin1String("WindowsVista");
+                else if ((QSysInfo::WindowsVersion >= QSysInfo::WV_XP
+                && QSysInfo::WindowsVersion < QSysInfo::WV_NT_based))
+                desktopstyle = QLatin1String("WindowsXP");
+            else
+                desktopstyle = QLatin1String("Windows");                // default styles for Windows
+#elif defined(Q_WS_X11) && defined(Q_OS_SOLARIS)
+            desktopstyle = QLatin1String("CDE");                        // default style for X11 on Solaris
+#elif defined(Q_WS_X11) && defined(Q_OS_IRIX)
+            desktopstyle = QLatin1String("SGI");                        // default style for X11 on IRIX
+#elif defined(Q_WS_QWS)
+            desktopstyle = QLatin1String("Plastique");                  // default style for X11 and small devices
+#elif defined(Q_WS_X11)
+            desktopstyle = QApplicationPrivate::x11_desktop_style();     // default runtime dependant style for X11
+#elif defined(Q_WS_MAC)
+                desktopstyle = QLatin1String("Macintosh");              // default style for all Mac's
+#endif
+    return desktopstyle;
 }
 
 /*!
@@ -2577,14 +2576,14 @@ void QApplicationPrivate::dispatchEnterLeave(QWidget* enter, QWidget* leave) {
     QEvent leaveEvent(QEvent::Leave);
     for (int i = 0; i < leaveList.size(); ++i) {
         w = leaveList.at(i);
-        if (!qApp->activeModalWidget() || QApplicationPrivate::tryModalHelper(w, 0)) {
+        if (!QApplication::activeModalWidget() || QApplicationPrivate::tryModalHelper(w, 0)) {
 #if defined(Q_WS_WIN) || defined(Q_WS_X11)
             if (leaveAfterRelease == w)
                 leaveAfterRelease = 0;
 #endif
             QApplication::sendEvent(w, &leaveEvent);
             if (w->testAttribute(Qt::WA_Hover) &&
-                (!qApp->activePopupWidget() || qApp->activePopupWidget() == w->window())) {
+                (!QApplication::activePopupWidget() || QApplication::activePopupWidget() == w->window())) {
                 Q_ASSERT(instance());
                 QHoverEvent he(QEvent::HoverLeave, QPoint(-1, -1), w->mapFromGlobal(QApplicationPrivate::instance()->hoverGlobalPos));
                 qApp->d_func()->notify_helper(w, &he);
@@ -2595,10 +2594,10 @@ void QApplicationPrivate::dispatchEnterLeave(QWidget* enter, QWidget* leave) {
     QEvent enterEvent(QEvent::Enter);
     for (int i = 0; i < enterList.size(); ++i) {
         w = enterList.at(i);
-        if (!qApp->activeModalWidget() || QApplicationPrivate::tryModalHelper(w, 0)) {
+        if (!QApplication::activeModalWidget() || QApplicationPrivate::tryModalHelper(w, 0)) {
             QApplication::sendEvent(w, &enterEvent);
             if (w->testAttribute(Qt::WA_Hover) &&
-                (!qApp->activePopupWidget() || qApp->activePopupWidget() == w->window())) {
+                (!QApplication::activePopupWidget() || QApplication::activePopupWidget() == w->window())) {
                 QHoverEvent he(QEvent::HoverEnter, w->mapFromGlobal(posEnter), QPoint(-1, -1));
                 qApp->d_func()->notify_helper(w, &he);
             }
@@ -2672,7 +2671,7 @@ bool QApplicationPrivate::isBlockedByModal(QWidget *widget)
     widget = widget->window();
     if (!modalState())
         return false;
-    if (qApp->activePopupWidget() == widget)
+    if (QApplication::activePopupWidget() == widget)
         return false;
 
     for (int i = 0; i < qt_modal_stack->size(); ++i) {
@@ -2761,7 +2760,7 @@ bool QApplicationPrivate::isBlockedByModal(QWidget *widget)
 void QApplicationPrivate::enterModal(QWidget *widget)
 {
     QSet<QWidget*> blocked;
-    QList<QWidget*> windows = qApp->topLevelWidgets();
+    QList<QWidget*> windows = QApplication::topLevelWidgets();
     for (int i = 0; i < windows.count(); ++i) {
         QWidget *window = windows.at(i);
         if (window->windowType() != Qt::Tool && isBlockedByModal(window))
@@ -2770,7 +2769,7 @@ void QApplicationPrivate::enterModal(QWidget *widget)
 
     enterModal_sys(widget);
 
-    windows = qApp->topLevelWidgets();
+    windows = QApplication::topLevelWidgets();
     QEvent e(QEvent::WindowBlocked);
     for (int i = 0; i < windows.count(); ++i) {
         QWidget *window = windows.at(i);
@@ -2784,7 +2783,7 @@ void QApplicationPrivate::enterModal(QWidget *widget)
 void QApplicationPrivate::leaveModal(QWidget *widget)
 {
     QSet<QWidget*> blocked;
-    QList<QWidget*> windows = qApp->topLevelWidgets();
+    QList<QWidget*> windows = QApplication::topLevelWidgets();
     for (int i = 0; i < windows.count(); ++i) {
         QWidget *window = windows.at(i);
         if (window->windowType() != Qt::Tool && isBlockedByModal(window))
@@ -2793,7 +2792,7 @@ void QApplicationPrivate::leaveModal(QWidget *widget)
 
     leaveModal_sys(widget);
 
-    windows = qApp->topLevelWidgets();
+    windows = QApplication::topLevelWidgets();
     QEvent e(QEvent::WindowUnblocked);
     for (int i = 0; i < windows.count(); ++i) {
         QWidget *window = windows.at(i);
@@ -2816,7 +2815,7 @@ bool QApplicationPrivate::tryModalHelper(QWidget *widget, QWidget **rettop)
         *rettop = top;
 
     // the active popup widget always gets the input event
-    if (qApp->activePopupWidget())
+    if (QApplication::activePopupWidget())
         return true;
 
 #if defined(Q_WS_MAC) && defined(QT_MAC_USE_COCOA)
@@ -2882,7 +2881,7 @@ bool QApplicationPrivate::sendMouseEvent(QWidget *receiver, QMouseEvent *event,
     QPointer<QWidget> receiverGuard = receiver;
     QPointer<QWidget> nativeGuard = nativeWidget;
     QPointer<QWidget> alienGuard = alienWidget;
-    QPointer<QWidget> activePopupWidget = qApp->activePopupWidget();
+    QPointer<QWidget> activePopupWidget = QApplication::activePopupWidget();
 
     const bool graphicsWidget = nativeWidget->testAttribute(Qt::WA_DontShowOnScreen);
 
@@ -3567,10 +3566,12 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
 #if !defined(QT_NO_WHEELEVENT) || !defined(QT_NO_TABLETEVENT)
         else if (
 #  ifndef QT_NO_WHEELEVENT
-                 e->type() == QEvent::Wheel ||
+                 e->type() == QEvent::Wheel
+#  else
+                 false
 #  endif
 #  ifndef QT_NO_TABLETEVENT
-                 e->type() == QEvent::TabletMove
+                 || e->type() == QEvent::TabletMove
                  || e->type() == QEvent::TabletPress
                  || e->type() == QEvent::TabletRelease
 #  endif
@@ -3779,7 +3780,7 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
                 QPoint diff = relpos - w->mapFromGlobal(d->hoverGlobalPos);
                 while (w) {
                     if (w->testAttribute(Qt::WA_Hover) &&
-                        (!qApp->activePopupWidget() || qApp->activePopupWidget() == w->window())) {
+                        (!QApplication::activePopupWidget() || QApplication::activePopupWidget() == w->window())) {
                         QHoverEvent he(QEvent::HoverMove, relpos, relpos - diff);
                         d->notify_helper(w, &he);
                     }
@@ -4038,7 +4039,7 @@ bool QApplicationPrivate::notify_helper(QObject *receiver, QEvent * e)
 #if !defined(Q_WS_WINCE) || (defined(GWES_ICONCURS) && !defined(QT_NO_CURSOR))
         // toggle HasMouse widget state on enter and leave
         if ((e->type() == QEvent::Enter || e->type() == QEvent::DragEnter) &&
-            (!qApp->activePopupWidget() || qApp->activePopupWidget() == widget->window()))
+            (!QApplication::activePopupWidget() || QApplication::activePopupWidget() == widget->window()))
             widget->setAttribute(Qt::WA_UnderMouse, true);
         else if (e->type() == QEvent::Leave || e->type() == QEvent::DragLeave)
             widget->setAttribute(Qt::WA_UnderMouse, false);
@@ -4568,9 +4569,9 @@ void QSessionManager::requestPhase2()
     \oldcode
     app.setWinStyleHighlightColor(color);
     \newcode
-    QPalette palette(qApp->palette());
+    QPalette palette(QApplication::palette());
     palette.setColor(QPalette::Highlight, color);
-    qApp->setPalette(palette);
+    QApplication::setPalette(palette);
     \endcode
 */
 
@@ -4589,7 +4590,7 @@ void QSessionManager::requestPhase2()
 /*!
     \fn const QColor &QApplication::winStyleHighlightColor()
 
-    Use qApp->palette().color(QPalette::Active, QPalette::Highlight) instead.
+    Use QApplication::palette().color(QPalette::Active, QPalette::Highlight) instead.
 */
 
 /*!
