@@ -4,8 +4,6 @@ Qt 4.5.2-tower
 The Qt for S60 "Tower" release is the fifth pre-release from the Qt for
 S60 porting project. "Tower" is based on the Qt 4.5 codebase.
 
-Up to and including SHA: not yet started :D
-
 Lists just S60 fixes, for general 4.5.0 changes go to:
 
   http://www.qtsoftware.com/developer/changes/changes-4.5.0
@@ -30,8 +28,11 @@ New modules
 - QtSql
     * Implemented QtSql module with sqlite3 backend. For now backend is
       provided only in binary format.
+
 - QtWebkit
-    * Experimental webkit build for s60. Can be enabled by passing -webkit to configure.
+    * Experimental webkit build for s60. Can be enabled by passing -webkit 
+      to configure.
+
 - Phonon
     * The Phonon library is now part of Qt, but it comes without a backend.
       This means that applications can build and run against the Phonon
@@ -61,17 +62,18 @@ Ported classes
 
 - QSound
     * Implemented CMdaAudioPlayerUtility based Symbian backend for QSound.
+
 - QLocalSocket and QLocalServer
-    * Added support for QLocalSocket and QLocalServer on Symbian
+    * Added support for QLocalSocket and QLocalServer on Symbian.
 
 Features
 --------
 - QApplication
-    * Implemented QApplication::beep() for Symbian
+    * Implemented QApplication::beep() for Symbian.
 
 - QSslSocket
     * Added support for -openssl option i.e. runtime resolving of OpenSSL
-      symbols
+      symbols.
 
 - QWidget
     * Basic widgets are now navigatable and usable via keypad on SDK 3
@@ -87,32 +89,34 @@ Optimizations
     * Optimized drawing operations for RVCT builds, particulary for ARMV6.
 
 - qwidget_s60.cpp
-    * Avoid unnecessary calls to FocusChanged in Symbian
+    * Avoid unnecessary calls to FocusChanged in Symbian.
 
 ****************************************************************************
 *                          Code clean-up                                   *
 ****************************************************************************
 
 - Cleanup qeventdispatcher_unix.cpp
-    * 247268: All qeventdispatcher_unix.cpp changes were reverted since,
+    * 247268: All qeventdispatcher_unix.cpp changes were reverted since
     this file is not anymore used in Symbian OS branch.
+
 - Cleanup QtNetwork workarounds implemented earlier due to Open C bugs.
-    * 247287: Removed getaddrinfo workaround
-    * 247288: Removed waitForConnected workaround
-    * 247289: Removed qt_socket_accept workaround
-    * 247290: Removed qt_socket_connect workaround
-    * 247290: Removed E32IONREAD workaround
-    * 247293: Removed nativeHasPendingDatagrams workaround
+    * 247287: Removed getaddrinfo workaround.
+    * 247288: Removed waitForConnected workaround.
+    * 247289: Removed qt_socket_accept workaround.
+    * 247290: Removed qt_socket_connect workaround.
+    * 247290: Removed E32IONREAD workaround.
+    * 247293: Removed nativeHasPendingDatagrams workaround.
     * 247295: Removed QNativeSocketEnginePrivate::nativeRead EPIPE
-      workaround
+      workaround.
+
 - Other code clean-ups
     * 247278: Removed unnecessary includes from qbackingstore.cpp.
-    * Fixed Q_OS_SYMBIAN ifdef usage in qfiledialog_p.h
+    * Fixed Q_OS_SYMBIAN ifdef usage in qfiledialog_p.h.
     * 247272: Removed qtestnetworkservers.h dependency, used
-      network-settings.h
+      network-settings.h.
     * Revert "Work around compiler bug on Nokia Metrowerks compiler."
-    * Remove UI highlights being inverted colors based on highlight text colors.
-
+    * Remove UI highlights being inverted colors based on highlight text 
+      colors.
 
 ****************************************************************************
 *                          Build issues                                    *
@@ -122,33 +126,31 @@ Optimizations
     * QT_NO_DEBUG now properly defined in release mode.
 - QTest
     * Fixed testlib export macros for RVCT builds.
-- namespaces
-    * Now builds when -qtnamespace option is defined 
+
+- Namespaces
+    * Now builds when -qtnamespace option is defined.
 
 ****************************************************************************
 *                          Changes to existing classes                     *
 ****************************************************************************
 
 - QDesktopServices
-    * Fixed forwardslash/backslash usage as an path separator
+    * Fixed forwardslash/backslash usage as an path separator.
 
 - QPluginLoader
     * QPluginLoader will look for plugin stubs from the same folder on other
       drives if it can't find them from the indicated drive.
 
-- QEventDispatcher
-    * Lowered the timeout for reprioritizing the process to 100ms
-
 - QNetworkInterface
-    * Fixed R-handle leak in Symbian version of qnetworkinterface_unix.cpp
+    * Fixed R-handle leak in Symbian version of qnetworkinterface_unix.cpp.
     * Introduced a new qnetworkinterface_symbian.cpp, because there wasn't
-      really anything common to UNIX equivalent
+      really anything common to UNIX equivalent.
 
 - QHostInfo
     * Added support for host lookups with multiple ipv4 addresses.
 
 - QUdpSocket
-    *  Updated BindFlag documentation to reflect behaviour on Symbian OS
+    * Updated BindFlag documentation to reflect behaviour on Symbian OS.
 
 - QLocale
     * Removed workaround for missing tzname symbol, fixes QLocal timeZone
@@ -158,7 +160,7 @@ Optimizations
     * Fixed temporary file rename in Symbian OS.
 
 - QThread
-    * Fix for thread termination in Symbian OS.
+    * Fixed thread termination in Symbian OS.
 
 - QIoDevice
     * Fixed compilation error when QIODEVICE_DEBUG is defined.
@@ -166,13 +168,16 @@ Optimizations
 - QS60Style
     * Added subElementRect implementation for SE_ItemViewItemCheckIndicator.
     * Added support for E90 layouts.
-    * Added support for QScrollArea, QTextEditor, QGroupBox, QTreeView, QToolBar and QDial styling.
+    * Added support for QScrollArea, QTextEditor, QGroupBox, QTreeView, 
+      QToolBar and QDial styling.
     * Better support for theme and layout changes.
     * Better support for themed palettes and themed text colors.
     * Better support for multiselection in item views.
     * Better theming for QTable and QPanel.
-    * Better support of highlight graphics and texts for QLists, QTreeViews, QCalendarWidgets and QComboBoxes.
-    * Support polishing fonts. Fonts are no longer changed within the drawing code.
+    * Better support of highlight graphics and texts for QLists, QTreeViews, 
+      QCalendarWidgets and QComboBoxes.
+    * Support polishing fonts. Fonts are no longer changed within the drawing 
+      code.
     * Draw spinbox arrowbuttons side-by-side, instead one on top of the other.
     * Harmonize widget drawing so that widgets are of similar height.
     * Support check states for QLists and QPushButtons.
@@ -183,12 +188,13 @@ Optimizations
     * Separate theme background for QDialogs.
     * Clarify QToolButton pressed state.
     * Removed linedrawing of panels and groupboxes.
-    * Fix palette-polution for a style that is activated from an application after S60Style has been in use.
+    * Fix palette-polution for a style that is activated from an application 
+      after S60Style has been in use.
     * Fix for frame masks with color depth other than EGrey2.
     * Fix for squeezed QTabBars.
     * Fix memory leak when color skinning graphics.
     * Show focus/Editfocus visualization for KeyPad navigation on
-      SDK 3 FP 1 and FP 2
+      SDK 3 FP 1 and FP 2.
 
 - QDesktopServices
     * Switched QDesktopServices mail-to URL handling to RSendAs in Symbian,
@@ -211,36 +217,37 @@ Optimizations
 - QApplication
     * 252798: Fixed layout when orientation changed via
       AknAppUi::SetOrientationL.
-    * Generating MouseEvents has gone through several changes
+    * Generating MouseEvents has gone through several changes.
 
 - QUdpSocket
     * Wrote hack for QUdpSocket::writeDatagram return value in Symbian OS.
 
 - QNativeSocketEnginePrivate (non-public)
-    * Changed select to listen also expectfds in Symbain OS for given
-      sockets (Workaround to Open C bug).
-    * Fix to Open C bug: Socket connect failure is indicated exception set.
+    * Socket connect and listen failure is indicated in exception set. 
+      (Workaround to Open C bug)
 
 - QEventDispatcherSymbian (non-public)
-    * Fixed ASSERT panic in Symbian event dispatcher
-    * 246600: Fix problem in eventdispatcher destructor / AO canceling
-    * Fixed active scheduler removal when calling QThread::terminate
+    * Lowered the timeout for reprioritizing the process to 100ms.
+    * Fixed ASSERT panic in Symbian event dispatcher.
+    * 246600: Fix problem in eventdispatcher destructor / AO canceling.
+    * Fixed active scheduler removal when calling QThread::terminate.
     * Fix to Open C bug: select sometimes returns -1 and errno is
-      ECONNREFUSED
+      ECONNREFUSED.
     * Fix a crash when using QEventLoop::ExcludeSocketNotifiers flag.
     * Changed to round robin scheduling for Qt's active objects. Other
       active objects will still be scheduled like before.
 
 - QWidget
-    * Added API for setting softkeys
+    * Added API for setting softkeys.
 
 - QMenuBar
-    * Native menus are handled properly even when application has multiple QMainWindows
-    * Fixed a bug causing both native and qt menu to be created
-    * Fix for disappearing options menu after coming back from dialog
+    * Native menus are handled properly even when application has multiple 
+      QMainWindows.
+    * Fixed a bug causing both native and qt menu to be created.
+    * Fix for disappearing options menu after coming back from dialog.
 
 - QFontDataBase
-    * Now, also fonts from the user's /resources/fonts direactories are
+    * Now, also fonts from the user's /resources/fonts directories are
       available.
 
 - QFontMetrics
@@ -249,15 +256,16 @@ Optimizations
 ****************************************************************************
 *                          Examples and demos                              *
 ****************************************************************************
+
 - Drilldown
-    * Added to demonstrate QtSql usage in Symbian OS
+    * Added to demonstrate QtSql usage in Symbian OS.
 
 - Deform, Pathstroke, and Wiggly
     * Removed Symbian specific animation timer fixes since more generic
       fix was made to event dispatcher.
 
 - Ftp
-    * Enabled default iap setting for FTP example
+    * Enabled default IAP setting for FTP example.
 
 - DesktopServices
     * Implemented content filters for desktopservices example.
@@ -269,17 +277,17 @@ Optimizations
 - Fluidlauncher
     * Removed ugly workaround to make emulator deployment work correctly,
       since the issue has been fixed in qmake.
-    * Included drilldown to demonstrate QtSql usage
-    * Updated screenshots to S60 style
-    * Added softkeys example
+    * Included drilldown to demonstrate QtSql usage.
+    * Updated screenshots to S60 style.
+    * Added softkeys example.
 
 - Softkeys
-    * New example showing how to use softkeys API in QWidget
-
+    * New example showing how to use softkeys API in QWidget.
 
 ****************************************************************************
 *                          Tools                                           *
 ****************************************************************************
+
 - qmake
     * Support for generating Symbian "test" targets: CONFIG += symbian_test.
     * Support for Symbian Build System, version 2 (aka Raptor) via
@@ -306,13 +314,15 @@ Optimizations
     * Now creates packages with .sis suffix.
 
 - Patch_capabilities script
-    * Will now patch also vendor id.
+    * Will now patch also vendor id in binaries and the UID in the pkg file.   
+
 
 ****************************************************************************
 *                          Documentation                                   *
 ****************************************************************************
+
 - qmake-manual
-    * 250370: Added documentation for ICON keyword
+    * 250370: Added documentation for ICON keyword.
 
 ****************************************************************************
 *                          Plugins                                         *
