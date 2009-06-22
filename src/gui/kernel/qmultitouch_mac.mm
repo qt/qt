@@ -57,20 +57,12 @@ bool QCocoaTouch::_maskMouseHover = true;
 
 QCocoaTouch::QCocoaTouch(NSTouch *nstouch)
 {
-    // Keep the identity that Cocoa assigns the
-    // touches, and use it as key in the touch hash:
-    _identity = int([nstouch identity]);
-
-    if (_currentTouches.size() == 0){
-        // The first touch should always have
-        // 0 as id that we use in Qt:
-        _touchPoint.setId(0);
+    if (_currentTouches.size() == 0)
         _idAssignmentCount = 0;
-    } else {
-        _touchPoint.setId(++_idAssignmentCount);
-    }
 
+    _touchPoint.setId(_idAssignmentCount++);
     _touchPoint.setPressure(1.0);
+    _identity = int([nstouch identity]);
     _currentTouches.insert(_identity, this);
     updateTouchData(nstouch, NSTouchPhaseBegan);
 }
@@ -212,7 +204,7 @@ QList<QTouchEvent::TouchPoint> QCocoaTouch::getCurrentTouchPointList(NSEvent *ev
         // touch (if the user adds a second finger without lifting
         // the first), we promote it to be the primary touch:
         qcocoaTouch->_touchPoint.setId(0);
-        _idAssignmentCount = 0;
+        _idAssignmentCount = 1;
     }
 
     return touchPoints;
