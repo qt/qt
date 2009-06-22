@@ -1981,6 +1981,31 @@ void tst_QStateMachine::signalTransitions()
         QCOMPARE(machine.configuration().size(), 1);
         QVERIFY(machine.configuration().contains(s3));
     }
+    // signature normalization
+    {
+        QStateMachine machine;
+        SignalEmitter emitter;
+        QState *s0 = new QState(machine.rootState());
+        QFinalState *s1 = new QFinalState(machine.rootState());
+        QSignalTransition *t0 = s0->addTransition(&emitter, SIGNAL( signalWithNoArg( ) ), s1);
+        QVERIFY(t0 != 0);
+        QCOMPARE(t0->signal(), QByteArray(SIGNAL( signalWithNoArg( ) )));
+
+        QSignalTransition *t1 = s0->addTransition(&emitter, SIGNAL( signalWithStringArg( const QString & ) ), s1);
+        QVERIFY(t1 != 0);
+        QCOMPARE(t1->signal(), QByteArray(SIGNAL( signalWithStringArg( const QString & ) )));
+
+        QSignalSpy startedSpy(&machine, SIGNAL(started()));
+        QSignalSpy finishedSpy(&machine, SIGNAL(finished()));
+        machine.setInitialState(s0);
+        machine.start();
+        QTRY_COMPARE(startedSpy.count(), 1);
+        QCOMPARE(finishedSpy.count(), 0);
+
+        emitter.emitSignalWithNoArg();
+
+        QTRY_COMPARE(finishedSpy.count(), 1);
+    }
 }
 
 void tst_QStateMachine::eventTransitions()
