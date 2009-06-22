@@ -4,7 +4,7 @@ Qt 4.5.2-tower
 The Qt for S60 "Tower" release is the fifth pre-release from the Qt for
 S60 porting project. "Tower" is based on the Qt 4.5 codebase (mostly Qt 4.5.2).
 
-This list of changes lists S60 spesific fixes only,
+This list of changes lists S60 specific fixes only,
 for general 4.5.x changes go to:
 
   http://www.qtsoftware.com/developer/changes/changes-4.5.0
