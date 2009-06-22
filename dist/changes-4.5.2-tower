@@ -38,6 +38,17 @@ New modules
       library, but there is currently no S60 backend plugin providing actual
       multimedia playback. Possible alternatives such as Helix and MMF are
       being investigated.
+- Input methods
+    * Added events to support opening and closing the virtual keyboard, called
+      software input panel in Qt.
+    * Added an option to QApplication to choose between single or double click
+      input panel activation.
+    * Added input method hints API to Qt. These can be used to instruct input methods
+      to only allow certain characters or tailor their appearance.
+    * Added Qt::ImAnchorPosition to support querying for selections through input
+      methods.
+    * Added QInputMethodEvent::Selection to support setting the selection through
+      input methods.
 
 New classes
 ------------
@@ -107,6 +118,8 @@ Optimizations
 *                          Build issues                                    *
 ****************************************************************************
 
+- Macros
+    * QT_NO_DEBUG now properly defined in release mode.
 - QTest
     * Fixed testlib export macros for RVCT builds.
 - namespaces
@@ -183,8 +196,17 @@ Optimizations
       correctly. Currently e-mail sending with qdesktopservices::openUrl
       works in Symbian only if e-mail account already exists.
 
+- QInputContext
+    * Added QInputContext::s60FilterEvent().
+
 - QCoeFepInputContext (non-public)
     * Fixes FEP crash when changing the focused Qt widget to NULL.
+    * Fixed a bug where the virtual keyboard could not be opened if there
+      was only one input widget.
+    * Fixed a crash in FEP when exiting application.
+
+- QKeyMapper (non-public)
+    * Fixed a broken keymapping where Enter key would be mapped to Tab.
 
 - QApplication
     * 252798: Fixed layout when orientation changed via
@@ -205,6 +227,9 @@ Optimizations
     * Fixed active scheduler removal when calling QThread::terminate
     * Fix to Open C bug: select sometimes returns -1 and errno is
       ECONNREFUSED
+    * Fix a crash when using QEventLoop::ExcludeSocketNotifiers flag.
+    * Changed to round robin scheduling for Qt's active objects. Other
+      active objects will still be scheduled like before.
 
 - QWidget
     * Added API for setting softkeys
