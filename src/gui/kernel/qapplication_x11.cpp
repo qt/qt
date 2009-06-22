@@ -1085,10 +1085,8 @@ static void qt_set_input_encoding()
 }
 
 // Reads a KDE color setting
-static QColor kdeColor(const QString &key)
+static QColor kdeColor(const QString &key, const QSettings &kdeSettings)
 {
-    QSettings kdeSettings(QApplicationPrivate::kdeHome() +
-                          QLatin1String("/share/config/kdeglobals"), QSettings::IniFormat);
     QVariant variant = kdeSettings.value(key);
     if (variant.isValid()) {
         QStringList values = variant.toStringList();
@@ -1307,36 +1305,40 @@ static void qt_set_x11_resources(const char* font = 0, const char* fg = 0,
         }
 
         if (kdeColors) {
+            const QSettings &theKdeSettings =
+                      QSettings(QApplicationPrivate::kdeHome()
+                      + QLatin1String("/share/config/kdeglobals"), QSettings::IniFormat);
+
             // Setup KDE palette
             QColor color;
-            color = kdeColor(QLatin1String("buttonBackground"));
+            color = kdeColor(QLatin1String("buttonBackground"), theKdeSettings);
             if (!color.isValid())
-                color = kdeColor(QLatin1String("Colors:Button/BackgroundNormal"));
+                color = kdeColor(QLatin1String("Colors:Button/BackgroundNormal"), theKdeSettings);
             if (color.isValid())
                 btn = color;
 
-            color = kdeColor(QLatin1String("background"));
+            color = kdeColor(QLatin1String("background"), theKdeSettings);
             if (!color.isValid())
-                color = kdeColor(QLatin1String("Colors:Window/BackgroundNormal"));
+                color = kdeColor(QLatin1String("Colors:Window/BackgroundNormal"), theKdeSettings);
             if (color.isValid())
                 bg = color;
 
-            color = kdeColor(QLatin1String("foreground"));
+            color = kdeColor(QLatin1String("foreground"), theKdeSettings);
             if (!color.isValid())
-                color = kdeColor(QLatin1String("Colors:View/ForegroundNormal"));
+                color = kdeColor(QLatin1String("Colors:View/ForegroundNormal"), theKdeSettings);
             if (color.isValid()) {
                 fg = color;
             }
 
-            color = kdeColor(QLatin1String("windowForeground"));
+            color = kdeColor(QLatin1String("windowForeground"), theKdeSettings);
             if (!color.isValid())
-                color = kdeColor(QLatin1String("Colors:Window/ForegroundNormal"));
+                color = kdeColor(QLatin1String("Colors:Window/ForegroundNormal"), theKdeSettings);
             if (color.isValid())
                 wfg = color;
 
-            color = kdeColor(QLatin1String("windowBackground"));
+            color = kdeColor(QLatin1String("windowBackground"), theKdeSettings);
             if (!color.isValid())
-                color = kdeColor(QLatin1String("Colors:View/BackgroundNormal"));
+                color = kdeColor(QLatin1String("Colors:View/BackgroundNormal"), theKdeSettings);
             if (color.isValid())
                 base = color;
         }
@@ -1355,29 +1357,33 @@ static void qt_set_x11_resources(const char* font = 0, const char* fg = 0,
         }
         // Use KDE3 or KDE4 color settings if present
         if (kdeColors) {
-            QColor color = kdeColor(QLatin1String("selectBackground"));
+            const QSettings &theKdeSettings =
+                      QSettings(QApplicationPrivate::kdeHome()
+                      + QLatin1String("/share/config/kdeglobals"), QSettings::IniFormat);
+
+            QColor color = kdeColor(QLatin1String("selectBackground"), theKdeSettings);
             if (!color.isValid())
-                color = kdeColor(QLatin1String("Colors:Selection/BackgroundNormal"));
+                color = kdeColor(QLatin1String("Colors:Selection/BackgroundNormal"), theKdeSettings);
             if (color.isValid())
                 highlight = color;
 
-            color = kdeColor(QLatin1String("selectForeground"));
+            color = kdeColor(QLatin1String("selectForeground"), theKdeSettings);
             if (!color.isValid())
-                color = kdeColor(QLatin1String("Colors:Selection/ForegroundNormal"));
+                color = kdeColor(QLatin1String("Colors:Selection/ForegroundNormal"), theKdeSettings);
             if (color.isValid())
                 highlightText = color;
 
-            color = kdeColor(QLatin1String("alternateBackground"));
+            color = kdeColor(QLatin1String("alternateBackground"), theKdeSettings);
             if (!color.isValid())
-                color = kdeColor(QLatin1String("Colors:View/BackgroundAlternate"));
+                color = kdeColor(QLatin1String("Colors:View/BackgroundAlternate"), theKdeSettings);
             if (color.isValid())
                 pal.setColor(QPalette::AlternateBase, color);
             else
                 pal.setBrush(QPalette::AlternateBase, pal.base().color().darker(110));
 
-            color = kdeColor(QLatin1String("buttonForeground"));
+            color = kdeColor(QLatin1String("buttonForeground"), theKdeSettings);
             if (!color.isValid())
-                color = kdeColor(QLatin1String("Colors:Button/ForegroundNormal"));
+                color = kdeColor(QLatin1String("Colors:Button/ForegroundNormal"), theKdeSettings);
             if (color.isValid())
                 pal.setColor(QPalette::ButtonText, color);
         }

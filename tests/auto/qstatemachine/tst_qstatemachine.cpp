@@ -118,6 +118,7 @@ private slots:
     void postEvent();
     void stateFinished();
     void parallelStates();
+    void parallelRootState();
     void allSourceToTargetConfigurations();
     void signalTransitions();
     void eventTransitions();
@@ -1633,6 +1634,29 @@ void tst_QStateMachine::parallelStates()
     QVERIFY(machine.configuration().contains(s2));
 }
 
+void tst_QStateMachine::parallelRootState()
+{
+    QStateMachine machine;
+    QState *root = machine.rootState();
+    QCOMPARE(root->childMode(), QState::ExclusiveStates);
+    root->setChildMode(QState::ParallelStates);
+    QCOMPARE(root->childMode(), QState::ParallelStates);
+
+    QState *s1 = new QState(root);
+    QFinalState *s1_f = new QFinalState(s1);
+    s1->setInitialState(s1_f);
+    QState *s2 = new QState(root);
+    QFinalState *s2_f = new QFinalState(s2);
+    s2->setInitialState(s2_f);
+
+    QSignalSpy startedSpy(&machine, SIGNAL(started()));
+    QTest::ignoreMessage(QtWarningMsg, "QStateMachine::start: No initial state set for machine. Refusing to start.");
+    machine.start();
+    QCoreApplication::processEvents();
+    QEXPECT_FAIL("", "parallel root state is not supported (task 256587)", Continue);
+    QCOMPARE(startedSpy.count(), 1);
+}
+
 void tst_QStateMachine::allSourceToTargetConfigurations()
 {
     QStateMachine machine;
@@ -1956,6 +1980,31 @@ void tst_QStateMachine::signalTransitions()
         QTRY_COMPARE(finishedSpy.count(), 3);
         QCOMPARE(machine.configuration().size(), 1);
         QVERIFY(machine.configuration().contains(s3));
+    }
+    // signature normalization
+    {
+        QStateMachine machine;
+        SignalEmitter emitter;
+        QState *s0 = new QState(machine.rootState());
+        QFinalState *s1 = new QFinalState(machine.rootState());
+        QSignalTransition *t0 = s0->addTransition(&emitter, SIGNAL( signalWithNoArg( ) ), s1);
+        QVERIFY(t0 != 0);
+        QCOMPARE(t0->signal(), QByteArray(SIGNAL( signalWithNoArg( ) )));
+
+        QSignalTransition *t1 = s0->addTransition(&emitter, SIGNAL( signalWithStringArg( const QString & ) ), s1);
+        QVERIFY(t1 != 0);
+        QCOMPARE(t1->signal(), QByteArray(SIGNAL( signalWithStringArg( const QString & ) )));
+
+        QSignalSpy startedSpy(&machine, SIGNAL(started()));
+        QSignalSpy finishedSpy(&machine, SIGNAL(finished()));
+        machine.setInitialState(s0);
+        machine.start();
+        QTRY_COMPARE(startedSpy.count(), 1);
+        QCOMPARE(finishedSpy.count(), 0);
+
+        emitter.emitSignalWithNoArg();
+
+        QTRY_COMPARE(finishedSpy.count(), 1);
     }
 }
 

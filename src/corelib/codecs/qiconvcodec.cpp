@@ -225,11 +225,10 @@ QString QIconvCodec::convertToUnicode(const char* chars, int len, ConverterState
     char *inBytes = const_cast<char *>(chars);
 #endif
 
-    QByteArray in;
     if (remainingCount) {
         // we have to prepend the remaining bytes from the previous conversion
         inBytesLeft += remainingCount;
-        in.resize(inBytesLeft);
+        QByteArray in(inBytesLeft, Qt::Uninitialized);
         inBytes = in.data();
 
         memcpy(in.data(), remainingBuffer, remainingCount);
@@ -238,9 +237,8 @@ QString QIconvCodec::convertToUnicode(const char* chars, int len, ConverterState
         remainingCount = 0;
     }
 
-    QByteArray ba;
     size_t outBytesLeft = len * 2 + 2;
-    ba.resize(outBytesLeft);
+    QByteArray ba(outBytesLeft, Qt::Uninitialized);
     char *outBytes = ba.data();
     do {
         size_t ret = iconv(state->cd, &inBytes, &inBytesLeft, &outBytes, &outBytesLeft);
@@ -328,8 +326,7 @@ QByteArray QIconvCodec::convertFromUnicode(const QChar *uc, int len, ConverterSt
         state = new IconvState(QIconvCodec::createIconv_t(0, UTF16));
         if (state->cd != reinterpret_cast<iconv_t>(-1)) {
             size_t outBytesLeft = len + 3; // +3 for the BOM
-            QByteArray ba;
-            ba.resize(outBytesLeft);
+            QByteArray ba(outBytesLeft, Qt::Uninitialized);
             outBytes = ba.data();
 
 #if !defined(NO_BOM)
@@ -358,18 +355,16 @@ QByteArray QIconvCodec::convertFromUnicode(const QChar *uc, int len, ConverterSt
     }
  
     size_t outBytesLeft = len;
-    QByteArray ba;
-    ba.resize(outBytesLeft);
+    QByteArray ba(outBytesLeft, Qt::Uninitialized);
     outBytes = ba.data();
 
     // now feed iconv() the real data
     inBytes = const_cast<char *>(reinterpret_cast<const char *>(uc));
     inBytesLeft = len * sizeof(QChar);
 
-    QByteArray in;
     if (convState && convState->remainingChars) {
         // we have one surrogate char to be prepended
-        in.resize(sizeof(QChar) + len);
+        QByteArray in(sizeof(QChar) + len, Qt::Uninitialized);
         inBytes = in.data();
 
         QChar remaining = convState->state_data[0];

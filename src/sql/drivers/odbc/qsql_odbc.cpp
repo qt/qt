@@ -598,6 +598,7 @@ QChar QODBCDriverPrivate::quoteChar() const
     return quote;
 }
 
+
 bool QODBCDriverPrivate::setConnectionOptions(const QString& connOpts)
 {
     // Set any connection attributes

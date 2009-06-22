@@ -237,6 +237,7 @@ void QDirectFBPixmapData::copy(const QPixmapData *data, const QRect &rect)
     w = rect.width();
     h = rect.height();
     d = otherData->d;
+    is_null = (w <= 0 || h <= 0);
     DFBResult result = dfbSurface->Blit(dfbSurface, src, &blitRect, 0, 0);
 #if (Q_DIRECTFB_VERSION >= 0x010000)
     dfbSurface->ReleaseSource(dfbSurface);
@@ -330,6 +331,8 @@ QPixmap QDirectFBPixmapData::transformed(const QTransform &transform,
     data->dfbSurface->StretchBlit(data->dfbSurface, dfbSurface, 0, &destRect);
     data->w = size.width();
     data->h = size.height();
+    data->is_null = (data->w <= 0 || data->h <= 0);
+
 #if (Q_DIRECTFB_VERSION >= 0x010000)
     data->dfbSurface->ReleaseSource(data->dfbSurface);
 #endif
