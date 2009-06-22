@@ -197,10 +197,10 @@ Optimizations
     * Fixed the boundingRect calculation for text.
 
 - QGraphicsView
-    * Added support for input methods to the the viewport.
+    * Added support for virtual keyboard to the the viewport.
 
 - QGraphicsTextItem
-    * Added support for input methods.
+    * Added support for virtual keyboard.
 
 - QHostInfo
     * Added support for host lookups with multiple ipv4 addresses.
@@ -240,7 +240,7 @@ Optimizations
     * Added fromSymbianCFbsBitmap() and toSymbianCFbsBitmap().
 
 - QPlainTextEdit
-    * Added support for input methods.
+    * Added support for virtual keyboard.
 
 - QPluginLoader
     * QPluginLoader will look for plugin stubs from the same folder on other
@@ -291,7 +291,7 @@ Optimizations
     * Disable keypad navigation for autotests by default
 
 - QTextEdit
-    * Added support for input methods.
+    * Added support for virtual keyboard.
 
 - QThread
     * Fixed thread termination in Symbian OS.
