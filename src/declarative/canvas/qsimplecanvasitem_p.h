@@ -53,8 +53,8 @@
 
 #include "qgraphicsitem.h"
 
-
 QT_BEGIN_NAMESPACE
+
 class QSimpleGraphicsItem : public QGraphicsItem
 {
 public:
@@ -265,6 +265,6 @@ public:
 Q_DECLARE_OPERATORS_FOR_FLAGS(QSimpleCanvasItemPrivate::FocusStateCheckDatas)
 Q_DECLARE_OPERATORS_FOR_FLAGS(QSimpleCanvasItemPrivate::FocusStateCheckRDatas)
 
-#endif // QSIMPLECANVASITEM_P_H
-
 QT_END_NAMESPACE
+
+#endif // QSIMPLECANVASITEM_P_H

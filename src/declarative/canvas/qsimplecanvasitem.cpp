@@ -1027,7 +1027,16 @@ void QSimpleCanvasItem::setTransform(const QSimpleCanvas::Matrix &m)
     Q_D(QSimpleCanvasItem);
     if (d->graphicsItem) {
         d->graphicsItem->transform = QSimpleCanvasConfig::matrixToTransform(m);
-        d->graphicsItem->setTransform(QTransform::fromScale(d->scale, d->scale) * d->graphicsItem->transform);
+        QTransform t;
+        if (d->scale != 1) {
+            QPointF to = transformOriginPoint();
+            if (to.x() != 0. || to.y() != 0.)
+                t.translate(to.x(), to.y());
+            t.scale(d->scale, d->scale);
+            if (to.x() != 0. || to.y() != 0.)
+                t.translate(-to.x(), -to.y());
+        }
+        d->graphicsItem->setTransform(t * d->graphicsItem->transform);
     } else {
         if (!d->data()->transformUser)
             d->data()->transformUser = new QSimpleCanvas::Matrix;
