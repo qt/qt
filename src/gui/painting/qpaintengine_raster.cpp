@@ -3996,7 +3996,7 @@ void QRasterPaintEnginePrivate::initializeRasterizer(QSpanData *data)
     const QClipData *c = clip();
     if (c) {
         const QRect r(QPoint(c->xmin, c->ymin),
-                      QPoint(c->xmax, c->ymax));
+                      QSize(c->xmax - c->xmin, c->ymax - c->ymin));
         clipRect = clipRect.intersected(r);
         blend = data->blend;
     } else {

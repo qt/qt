@@ -3378,6 +3378,7 @@ void QSvgHandler::init()
 {
     m_doc = 0;
     m_style = 0;
+    m_animEnd = 0;
     m_defaultCoords = LT_PX;
     m_defaultPen = QPen(Qt::black, 1, Qt::NoPen, Qt::FlatCap, Qt::SvgMiterJoin);
     m_defaultPen.setMiterLimit(4);

@@ -2848,8 +2848,7 @@ void QGtkStyle::drawControl(ControlElement element,
             if (vertical) {
                 rect.translate(xt, -yt * 2);
                 rect = QRect(rect.left(), rect.top(), rect.height(), rect.width()); // Flip width and height
-                QTransform m;
-                m.translate(rect.height(), 0);
+                QTransform m = QTransform::fromTranslate(rect.height(), 0);
                 m.rotate(90.0);
                 painter->setTransform(m);
             }

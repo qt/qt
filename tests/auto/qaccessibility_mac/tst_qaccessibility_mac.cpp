@@ -833,9 +833,14 @@ void tst_accessibility_mac::testTabWidget()
     // Window is not reported properly on 10.5
     if (QSysInfo::MacintoshVersion < QSysInfo::MV_10_5) {
         QVERIFY(equal(window(tabGroup), form));
-        QVERIFY(equal(window(tabButton1), form));
+
+    //   ### hangs on 10.4
+#if (MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_5)
+    QVERIFY(equal(window(tabButton1), form));
+#endif
     }
-#if (MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_4)
+//   ### hangs on 10.4
+#if (MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_5)
     QVERIFY(equal(topLevelUIElement(tabGroup), form));
     QVERIFY(equal(topLevelUIElement(tabButton1), form));    
 #endif
@@ -1423,7 +1428,6 @@ void tst_accessibility_mac::testListView()
     const AXUIElementRef listElement = childByRole(scrollAreaElement, "AXList");
     QVERIFY(listElement);
     QVERIFY(equal(::parent(listElement), scrollAreaElement));
-
     // Window is not reported properly on 10.5
     if (QSysInfo::MacintoshVersion < QSysInfo::MV_10_5) 
         QVERIFY(equal(::window(listElement), windowElement));
@@ -1438,9 +1442,11 @@ void tst_accessibility_mac::testListView()
     QVERIFY(value(A) == "A");
     QVERIFY(equal(::parent(A), listElement));
     QVERIFY(enabled(A));
-    // Window is not reported properly on 10.5
-    if (QSysInfo::MacintoshVersion < QSysInfo::MV_10_5) 
-        QVERIFY(equal(::window(A), windowElement));
+
+    // Window is not reported properly on 10.5, this test
+    // hangs on 10.4. Disable it for now.
+    //    if (QSysInfo::MacintoshVersion < QSysInfo::MV_10_5) 
+    //        QVERIFY(equal(::window(A), windowElement));
     
     QVERIFY(above(A, B));
     QVERIFY(!above(B, A));

@@ -112,8 +112,6 @@ static void ensureInitialized()
     are supplied that take a request and optional data, and each return a
     QNetworkReply object. The returned object is used to obtain any data
     returned in response to the corresponding request.
-    the reply to is where most of the signals as well
-    as the downloaded data are posted.
 
     A simple download off the network could be accomplished with:
     \snippet doc/src/snippets/code/src_network_access_qnetworkaccessmanager.cpp 0
@@ -122,7 +120,8 @@ static void ensureInitialized()
     takes is the QNetworkReply object containing the downloaded data
     as well as meta-data (headers, etc.).
 
-    \note The slot is responsible for deleting the object at that point.
+    \note After the request has finished, it is the responsibility of the user
+    to delete the QNetworkReply object at an appropriate time.
 
     A more involved example, assuming the manager is already existent,
     can be:

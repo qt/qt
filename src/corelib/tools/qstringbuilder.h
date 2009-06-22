@@ -80,7 +80,7 @@ public:
     operator QString() const
     {
         QString s(QConcatenable< QStringBuilder<A, B> >::size(*this),
-            QString::Uninitialized());
+            Qt::Uninitialized);
         
         QChar *d = s.data();
         QConcatenable< QStringBuilder<A, B> >::appendTo(*this, d);

@@ -1546,6 +1546,10 @@ public:
         TitleBarArea    // For move
     };
 
+    enum Initialization {
+        Uninitialized
+    };
+
     enum TouchPointState {
         TouchPointPressed    = 0x01,
         TouchPointMoved      = 0x02,

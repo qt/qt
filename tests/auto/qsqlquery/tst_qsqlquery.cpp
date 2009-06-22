@@ -177,9 +177,10 @@ private slots:
 #ifdef NOT_READY_YET
     void task_217003_data() { generic_data(); }
     void task_217003();
-
     void task_229811();
     void task_229811_data() { generic_data(); }
+    void task_234422_data() {  generic_data(); }
+    void task_234422();
 #endif
     void task_250026_data() { generic_data("QODBC"); }
     void task_250026();
@@ -2775,6 +2776,44 @@ void tst_QSqlQuery::task_229811()
 
     q.exec("DROP TABLE " + tableName );
 }
+
+void tst_QSqlQuery::task_234422()
+{
+    QFETCH( QString, dbName );
+    QSqlDatabase db = QSqlDatabase::database( dbName );
+    CHECK_DATABASE( db );
+
+    QSqlQuery query(db);
+    QStringList m_airlines;
+    QStringList m_countries;
+
+    m_airlines << "Lufthansa" << "SAS" << "United" << "KLM" << "Aeroflot";
+    m_countries << "DE" << "SE" << "US" << "NL" << "RU";
+
+    QString tableName = qTableName( "task_234422" );
+
+    query.exec("DROP TABLE " + tableName);
+    QVERIFY_SQL(query,exec("CREATE TABLE " + tableName + " (id int primary key, "
+                "name varchar(20), homecountry varchar(2))"));
+    for (int i = 0; i < m_airlines.count(); ++i) {
+        QVERIFY(query.exec(QString("INSERT INTO " + tableName + " values(%1, '%2', '%3')")
+                    .arg(i).arg(m_airlines[i], m_countries[i])));
+    }
+
+    QVERIFY_SQL(query, exec("SELECT name FROM " + tableName));
+    QVERIFY(query.isSelect());
+    QVERIFY(query.first());
+    QVERIFY(query.next());
+    QCOMPARE(query.at(), 1);
+
+    QSqlQuery query2(query);
+
+    QVERIFY_SQL(query2,exec());
+    QVERIFY(query2.first());
+    QCOMPARE(query2.at(), 0);
+    QCOMPARE(query.at(), 1);
+}
+
 #endif
 
 QTEST_MAIN( tst_QSqlQuery )

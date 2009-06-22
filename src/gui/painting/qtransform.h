@@ -71,6 +71,7 @@ public:
         TxProject   = 0x10
     };
 
+    inline explicit QTransform(Qt::Initialization) : affine(Qt::Uninitialized) {}
     QTransform();
     QTransform(qreal h11, qreal h12, qreal h13,
                qreal h21, qreal h22, qreal h23,

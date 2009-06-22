@@ -42,6 +42,7 @@ HEADERS += ../lib/qhelpcollectionhandler_p.h \
 TRANSLATIONS=$$[QT_INSTALL_TRANSLATIONS]/qt_help_de.ts \
              $$[QT_INSTALL_TRANSLATIONS]/qt_help_ja.ts \
              $$[QT_INSTALL_TRANSLATIONS]/qt_help_pl.ts \
+             $$[QT_INSTALL_TRANSLATIONS]/qt_help_ru.ts \
              $$[QT_INSTALL_TRANSLATIONS]/qt_help_untranslated.ts \
              $$[QT_INSTALL_TRANSLATIONS]/qt_help_zh_CN.ts \
              $$[QT_INSTALL_TRANSLATIONS]/qt_help_zh_TW.ts \

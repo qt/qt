@@ -579,8 +579,7 @@ public:
     bool isSimpleText() const { if (!d->clean) updateProperties(); return d->simpletext; }
     bool isRightToLeft() const { if (!d->clean) updateProperties(); return d->righttoleft; }
 
-    struct Uninitialized {};
-    QString(int size, Uninitialized);
+    QString(int size, Qt::Initialization);
 
 private:
 #if defined(QT_NO_CAST_FROM_ASCII) && !defined(Q_NO_DECLARED_NOT_DEFINED)

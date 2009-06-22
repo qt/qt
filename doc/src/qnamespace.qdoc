@@ -2692,6 +2692,11 @@
   the last image is not cropped.
 */
 
+/*!
+    \enum Qt::Initialization
+    \internal
+*/
+
 /*! \enum Qt::GestureType
     \since 4.6
 

@@ -42,8 +42,8 @@
 #ifndef QBYTEARRAY_H
 #define QBYTEARRAY_H
 
-#include <QtCore/qglobal.h>
 #include <QtCore/qatomic.h>
+#include <QtCore/qnamespace.h>
 
 #include <string.h>
 #include <stdarg.h>
@@ -127,6 +127,7 @@ public:
     QByteArray(const char *);
     QByteArray(const char *, int size);
     QByteArray(int size, char c);
+    QByteArray(int size, Qt::Initialization);
     inline QByteArray(const QByteArray &);
     inline ~QByteArray();
 

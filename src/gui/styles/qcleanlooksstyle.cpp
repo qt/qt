@@ -1738,8 +1738,7 @@ void QCleanlooksStyle::drawControl(ControlElement element, const QStyleOption *o
             // same rendering code for both orientations.
             if (vertical) {
                 rect = QRect(rect.left(), rect.top(), rect.height(), rect.width()); // flip width and height
-                QTransform m;
-                m.translate(rect.height()-1, -1.0);
+                QTransform m = QTransform::fromTranslate(rect.height()-1, -1.0);
                 m.rotate(90.0);
                 painter->setTransform(m, true);
             }

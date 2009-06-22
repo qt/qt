@@ -663,8 +663,7 @@ void QWin32PrintEngine::drawPixmap(const QRectF &targetRect,
     qreal scaleX = 1.0f;
     qreal scaleY = 1.0f;
 
-    QTransform scaleMatrix;
-    scaleMatrix.scale(r.width() / pixmap.width(), r.height() / pixmap.height());
+    QTransform scaleMatrix = QTransform::fromScale(r.width() / pixmap.width(), r.height() / pixmap.height());
     QTransform adapted = QPixmap::trueMatrix(d->painterMatrix * scaleMatrix,
                                              pixmap.width(), pixmap.height());
 
@@ -1875,8 +1874,7 @@ static void draw_text_item_win(const QPointF &_pos, const QTextItemInt &ti, HDC 
             QVarLengthArray<QFixedPoint> positions;
             QVarLengthArray<glyph_t> _glyphs;
 
-            QTransform matrix;
-            matrix.translate(baseline_pos.x(), baseline_pos.y());
+            QTransform matrix = QTransform::fromTranslate(baseline_pos.x(), baseline_pos.y());
             ti.fontEngine->getGlyphPositions(ti.glyphs, matrix, ti.flags,
                 _glyphs, positions);
             if (_glyphs.size() == 0) {

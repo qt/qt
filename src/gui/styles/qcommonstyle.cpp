@@ -1963,8 +1963,7 @@ void QCommonStyle::drawControl(ControlElement element, const QStyleOption *opt,
                     newRot = -90;
                 }
                 tr.setRect(0, 0, tr.height(), tr.width());
-                QTransform m;
-                m.translate(newX, newY);
+                QTransform m = QTransform::fromTranslate(newX, newY);
                 m.rotate(newRot);
                 p->setTransform(m, true);
             }

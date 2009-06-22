@@ -97,8 +97,7 @@ QString QFontLaoCodec::convertToUnicode(const char *, int, ConverterState *) con
 
 QByteArray QFontLaoCodec::convertFromUnicode(const QChar *uc, int len, ConverterState *) const
 {
-    QByteArray rstring;
-    rstring.resize(len);
+    QByteArray rstring(len, Qt::Uninitialized);
     uchar *rdata = (uchar *) rstring.data();
     const QChar *sdata = uc;
     int i = 0;
