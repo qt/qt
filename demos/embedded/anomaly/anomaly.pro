@@ -21,9 +21,12 @@ SOURCES += src/Main.cpp \
     src/ControlStrip.cpp
 RESOURCES += src/anomaly.qrc
 
+include($$QT_SOURCE_TREE/demos/demobase.pri)
+
 symbian {
     HEADERS += $$QT_SOURCE_TREE/examples/network/ftp/sym_iap_util.h
     LIBS += -lesock -lconnmon
     TARGET.CAPABILITY = NetworkServices
     TARGET.EPOCHEAPSIZE = 0x20000 0x2000000
+    TARGET.UID3 = 0xA000CF71
 }
