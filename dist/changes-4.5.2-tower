@@ -218,6 +218,8 @@ Optimizations
     * 252798: Fixed layout when orientation changed via
       AknAppUi::SetOrientationL.
     * Generating MouseEvents has gone through several changes.
+    * qt_init() has been changed: auto flush is always enabled for
+      window server sessions on 3.1 SDK for both UDEB and UREL.
 
 - QUdpSocket
     * Wrote hack for QUdpSocket::writeDatagram return value in Symbian OS.
@@ -253,6 +255,27 @@ Optimizations
 - QFontMetrics
     * Fixed the boundingRect calculation for text.
 
+- QPlainTextEdit
+    * Added support for input methods.
+
+- QTextEdit
+    * Added support for input methods.
+
+- QGraphicsTextItem
+    * Added support for input methods.
+
+- QGraphicsView
+    * Added support for input methods to the the viewport.
+
+- QLocalSocket
+    * Connecting to QLocalServer is always done in blocking mode.
+
+- QSelectThread
+    * We force monitoring sockets exception status as well, and not
+      just read/write.
+    * Notification related to the particular socket signaled via exception
+      fd_set will be mapped to the appropriate read/write notification.
+
 ****************************************************************************
 *                          Examples and demos                              *
 ****************************************************************************
@@ -266,6 +289,8 @@ Optimizations
 
 - Ftp
     * Enabled default IAP setting for FTP example.
+    * IAP dialog will show after FTP UI is on screen.
+    * If active IAP exist that one will be used.
 
 - DesktopServices
     * Implemented content filters for desktopservices example.
@@ -345,6 +370,8 @@ Optimizations
       of Qt libs is desired.
     * QtCore and QtSql made UNPAGED as workaround for an obscure crash
       when they are paged.
+    * qt_libs.pro updated to reflect Open C dependencies, as Qt requires
+      1.5.0 and newer release.
 
 - todo
     * todo
