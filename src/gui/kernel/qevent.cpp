@@ -3735,9 +3735,8 @@ void QGestureEvent::accept(const QString &type)
 */
 
 /*!
-    Constructs a QTouchEvent with the given \a type and \a
-    touchPoints. The \a modifiers are the current keyboard modifiers
-    at the time of the event.
+    Constructs a QTouchEvent with the given \a type and \a touchPoints. The \a touchPointStates and
+    \a modifiers are the current touch point states and keyboard modifiers at the time of the event.
 */
 QTouchEvent::QTouchEvent(QEvent::Type type,
                          Qt::KeyboardModifiers modifiers,
@@ -3784,7 +3783,7 @@ QTouchEvent::~QTouchEvent()
     Sets a bitwise OR of all the touch point states for this event.
 */
 
-/*! \fn void QTouchEvent::setTouchPoints(QList<QTouchEvent::TouchPoint> &touchPoints)
+/*! \fn void QTouchEvent::setTouchPoints(const QList<QTouchEvent::TouchPoint> &touchPoints)
 
     \internal
 

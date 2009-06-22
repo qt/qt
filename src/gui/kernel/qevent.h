@@ -766,7 +766,7 @@ public:
     {
     public:
         TouchPoint(int id = -1);
-        TouchPoint(const TouchPoint &other);
+        TouchPoint(const QTouchEvent::TouchPoint &other);
         ~TouchPoint();
 
         int id() const;
@@ -808,7 +808,7 @@ public:
         void setSceneRect(const QRectF &sceneRect);
         void setScreenRect(const QRectF &screenRect);
         void setPressure(qreal pressure);
-        TouchPoint &operator=(const TouchPoint &other);
+        QTouchEvent::TouchPoint &operator=(const QTouchEvent::TouchPoint &other);
 
     private:
         QTouchEventTouchPointPrivate *d;
