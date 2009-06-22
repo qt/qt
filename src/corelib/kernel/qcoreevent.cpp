@@ -222,7 +222,6 @@ QT_BEGIN_NAMESPACE
     \value ZOrderChange                     The widget's z-order has changed. This event is never sent to top level windows.
     \value KeyboardLayoutChange             The keyboard layout has changed.
     \value DynamicPropertyChange            A dynamic property was added, changed or removed from the object.
-    \value RawTouch                         A raw event from a touch-screen or track-pad device (QTouchEvent)
     \value TouchBegin                       Beginning of a sequence of touch-screen and/or track-pad events (QTouchEvent)
     \value TouchUpdate                      Touch-screen event (QTouchEvent)
     \value TouchEnd                         End of touch-event sequence (QTouchEvent)
