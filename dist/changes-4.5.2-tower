@@ -2,13 +2,14 @@ Qt 4.5.2-tower
 ---------------
 
 The Qt for S60 "Tower" release is the fifth pre-release from the Qt for
-S60 porting project. "Tower" is based on the Qt 4.5 codebase.
+S60 porting project. "Tower" is based on the Qt 4.5 codebase (mostly Qt 4.5.2).
 
-Up to and including SHA: not yet started :D
-
-Lists just S60 fixes, for general 4.5.0 changes go to:
+This list of changes lists S60 spesific fixes,
+for general 4.5.x changes go to:
 
   http://www.qtsoftware.com/developer/changes/changes-4.5.0
+  http://www.qtsoftware.com/developer/changes/changes-4.5.1
+  http://www.qtsoftware.com/developer/changes/changes-4.5.2 (partially in Tower)
 
 Some of the changes listed in this file include issue tracking numbers
 corresponding to tasks in the Task Tracker:
@@ -30,8 +31,10 @@ New modules
 - QtSql
     * Implemented QtSql module with sqlite3 backend. For now backend is
       provided only in binary format.
+
 - QtWebkit
-    * Experimental webkit build for s60. Can be enabled by passing -webkit to configure.
+    * Experimental webkit build for S60. Can be enabled by passing -webkit to configure.
+
 - Phonon
     * The Phonon library is now part of Qt, but it comes without a backend.
       This means that applications can build and run against the Phonon
@@ -39,22 +42,18 @@ New modules
       multimedia playback. Possible alternatives such as Helix and MMF are
       being investigated.
 
-New classes
-------------
-
-- todo
-    * todo
-
 Ported classes
 --------------
 
 - QSound
     * Implemented CMdaAudioPlayerUtility based Symbian backend for QSound.
+
 - QLocalSocket and QLocalServer
     * Added support for QLocalSocket and QLocalServer on Symbian
 
 Features
 --------
+
 - QApplication
     * Implemented QApplication::beep() for Symbian
 
@@ -65,9 +64,6 @@ Features
 - QWidget
     * Basic widgets are now navigatable and usable via keypad on SDK 3
       FP 1 and FP 2.
-
-- todo
-    * todo
 
 Optimizations
 -------------
@@ -85,6 +81,7 @@ Optimizations
 - Cleanup qeventdispatcher_unix.cpp
     * 247268: All qeventdispatcher_unix.cpp changes were reverted since,
     this file is not anymore used in Symbian OS branch.
+
 - Cleanup QtNetwork workarounds implemented earlier due to Open C bugs.
     * 247287: Removed getaddrinfo workaround
     * 247288: Removed waitForConnected workaround
@@ -94,6 +91,7 @@ Optimizations
     * 247293: Removed nativeHasPendingDatagrams workaround
     * 247295: Removed QNativeSocketEnginePrivate::nativeRead EPIPE
       workaround
+
 - Other code clean-ups
     * 247278: Removed unnecessary includes from qbackingstore.cpp.
     * Fixed Q_OS_SYMBIAN ifdef usage in qfiledialog_p.h
@@ -109,6 +107,7 @@ Optimizations
 
 - QTest
     * Fixed testlib export macros for RVCT builds.
+
 - namespaces
     * Now builds when -qtnamespace option is defined 
 
@@ -224,6 +223,7 @@ Optimizations
 ****************************************************************************
 *                          Examples and demos                              *
 ****************************************************************************
+
 - Drilldown
     * Added to demonstrate QtSql usage in Symbian OS
 
@@ -299,7 +299,6 @@ Optimizations
       run on any supported device, even if with reduced functionality on
       some.
 
-
 ****************************************************************************
 *                   Important Behavior Changes                             *
 ****************************************************************************
@@ -310,6 +309,3 @@ Optimizations
       of Qt libs is desired.
     * QtCore and QtSql made UNPAGED as workaround for an obscure crash
       when they are paged.
-
-- todo
-    * todo
