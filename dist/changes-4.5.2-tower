@@ -55,6 +55,12 @@ New modules
     * Experimental webkit build for S60. Can be enabled by passing -webkit
       to configure.
 
+New classes
+------------
+
+- QScopedPointer
+    * Smart pointer, which deletes pointer when destroyed.
+
 Ported classes
 --------------
 
@@ -86,6 +92,11 @@ Features
     * Widgets can now be made semi-transparent on systems that support it
       using Qt::WA_TranslucentBackground.
 
+- Exception safety
+    * Improving the exception safety of Qt, not yet complete.
+    * Added support for translating between Symbian leaves and standard C++
+      exceptions.
+
 Optimizations
 -------------
 
@@ -100,6 +111,15 @@ Optimizations
 
 - qwindowsurface_s60.cpp
     * Avoid updating raster buffer pointer on window hide
+    
+Documentation
+-------------
+
+- exceptionsafety.qdoc
+    * A guide to exception safety in Qt.
+    
+- symbian-exceptionsafety.qdoc
+    * A guide to integrating exception safety in Qt with Symbian.
 
 ****************************************************************************
 *                          Code clean-up                                   *
@@ -307,6 +327,9 @@ Optimizations
       setting the respective palette role.
     * Add support for Qt::WA_TranslucentBackground.
 
+- Many classes
+    * Improved exception safety.
+
 ****************************************************************************
 *                          Examples and demos                              *
 ****************************************************************************
@@ -408,3 +431,6 @@ Optimizations
       workaround for an obscure crash when they are paged.
     * qt_libs.pro updated to reflect Open C dependencies, as Qt requires
       1.5.0 and newer release.
+    * Qt libs are now build with the "STDCPP" mmp flag. On platforms from 
+      TB9.2, Qt code will throw std::bad_alloc exceptions on allocation
+      failure.
