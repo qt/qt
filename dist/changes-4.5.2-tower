@@ -162,6 +162,8 @@ Optimizations
 - QDebug
     * Fixed debug printing (incl. qWarning, qFatal) for strings longer
       than 256 characters.
+    * introduce a breakpoint to get the emulator to stop in the debugger 
+      when qFatal is called
 
 - QDesktopServices
     * Fixed forwardslash/backslash usage as an path separator.
@@ -364,6 +366,8 @@ Optimizations
       by qmake for symbian-* mkspecs.
     * Qt's VERSION variable will now generate VERSION keyword in mmp files.
     * Made Open C include paths handling bit more robust.
+    * Support both Symbian Foundation header structure in /epoc32/include,
+      as well as old Symbian/S60 structure
 
 - Release package creation
     * Removed the obsolete script to create release package.
@@ -400,7 +404,7 @@ Optimizations
     * Qt libs are now built with "All -Tcb" capabilities always. It is now
       always necessary to run patch_capabilities.pl script if self-signing
       of Qt libs is desired.
-    * QtCore and QtSql made UNPAGED as workaround for an obscure crash
-      when they are paged.
+    * QtCore and QtSql made UNPAGED when installed via SIS file as a 
+      workaround for an obscure crash when they are paged.
     * qt_libs.pro updated to reflect Open C dependencies, as Qt requires
       1.5.0 and newer release.
