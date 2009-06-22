@@ -289,10 +289,6 @@ public:
                               QGraphicsLayoutItem *&secondItem,
                               QGraphicsAnchorLayout::Edge &secondEdge);
 
-    // Child manipulation methods
-    QGraphicsItem *parentItem() const;
-    void addChildItem(QGraphicsLayoutItem *child);
-
     // Activation methods
     void simplifyGraph(Orientation orientation);
     void restoreSimplifiedGraph(Orientation orientation);

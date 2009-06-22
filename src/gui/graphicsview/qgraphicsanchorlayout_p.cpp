@@ -673,36 +673,6 @@ void QGraphicsAnchorLayoutPrivate::correctEdgeDirection(QGraphicsLayoutItem *&fi
 /*!
   \internal
 
-  XXX: REMOVE THIS ONCE WE INHERIT SOMEONE ELSE!
-*/
-QGraphicsItem *QGraphicsAnchorLayoutPrivate::parentItem() const
-{
-    Q_Q(const QGraphicsLayoutItem);
-
-    const QGraphicsLayoutItem *parent = q;
-    while (parent && parent->isLayout()) {
-        parent = parent->parentLayoutItem();
-    }
-    return parent ? parent->graphicsItem() : 0;
-}
-
-/*!
-  \internal
-*/
-void QGraphicsAnchorLayoutPrivate::addChildItem(QGraphicsLayoutItem *child)
-{
-    // XXX: Re-implement this!!
-    if (child) {
-        Q_Q(QGraphicsAnchorLayout);
-        child->setParentLayoutItem(q);
-
-        child->graphicsItem()->setParentItem(parentItem());
-    }
-}
-
-/*!
-  \internal
-
   Called on activation. Uses Linear Programming to define minimum, preferred
   and maximum sizes for the layout. Also calculates the sizes that each item
   should assume when the layout is in one of such situations.

@@ -105,11 +105,11 @@ void QGraphicsAnchorLayout::anchor(QGraphicsLayoutItem *firstItem,
     // Ensure that the internal anchors have been created for both items.
     if (firstItem != this && !d->items.contains(firstItem)) {
         d->createItemEdges(firstItem);
-        d->addChildItem(firstItem);
+        d->addChildLayoutItem(firstItem);
     }
     if (secondItem != this && !d->items.contains(secondItem)) {
         d->createItemEdges(secondItem);
-        d->addChildItem(secondItem);
+        d->addChildLayoutItem(secondItem);
     }
 
     // Use heuristics to find out what the user meant with this anchor.

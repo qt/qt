@@ -94,8 +94,7 @@ public:
 protected:
 
 private:
-
-//    Q_DISABLE_COPY(QGraphicsAnchorLayout)  //### TO UNCOMMENT
+    Q_DISABLE_COPY(QGraphicsAnchorLayout)
     Q_DECLARE_PRIVATE(QGraphicsAnchorLayout)
 };
 
