@@ -17,6 +17,8 @@ private slots:
     void basicAnchors();
     void loops();
     void illegalSets();
+    void reset();
+    void nullItem();
 };
 
 /*
@@ -152,6 +154,30 @@ void tst_anchors::illegalSets()
 
         delete view;
     }
+}
+
+void tst_anchors::reset()
+{
+    QFxItem *aItem = new QFxItem;
+    QFxAnchorLine anchor;
+    anchor.item = aItem;
+    anchor.anchorLine = QFxAnchorLine::Top;
+
+    QFxItem *item = new QFxItem;
+    item->anchors()->setBottom(anchor);
+    QCOMPARE(item->anchors()->usedAnchors().testFlag(QFxAnchors::HasBottomAnchor), true);
+
+    item->anchors()->resetBottom();
+    QCOMPARE(item->anchors()->usedAnchors().testFlag(QFxAnchors::HasBottomAnchor), false);
+}
+
+void tst_anchors::nullItem()
+{
+    QFxAnchorLine anchor;
+
+    QTest::ignoreMessage(QtWarningMsg, "QML QFxItem (unknown location): Can't anchor to a null item. ");
+    QFxItem *item = new QFxItem;
+    item->anchors()->setBottom(anchor);
 }
 
 QTEST_MAIN(tst_anchors)
