@@ -118,6 +118,7 @@ private slots:
     void postEvent();
     void stateFinished();
     void parallelStates();
+    void parallelRootState();
     void allSourceToTargetConfigurations();
     void signalTransitions();
     void eventTransitions();
@@ -1631,6 +1632,29 @@ void tst_QStateMachine::parallelStates()
     QTRY_COMPARE(finishedSpy.count(), 1);
     QCOMPARE(machine.configuration().size(), 1);
     QVERIFY(machine.configuration().contains(s2));
+}
+
+void tst_QStateMachine::parallelRootState()
+{
+    QStateMachine machine;
+    QState *root = machine.rootState();
+    QCOMPARE(root->childMode(), QState::ExclusiveStates);
+    root->setChildMode(QState::ParallelStates);
+    QCOMPARE(root->childMode(), QState::ParallelStates);
+
+    QState *s1 = new QState(root);
+    QFinalState *s1_f = new QFinalState(s1);
+    s1->setInitialState(s1_f);
+    QState *s2 = new QState(root);
+    QFinalState *s2_f = new QFinalState(s2);
+    s2->setInitialState(s2_f);
+
+    QSignalSpy startedSpy(&machine, SIGNAL(started()));
+    QTest::ignoreMessage(QtWarningMsg, "QStateMachine::start: No initial state set for machine. Refusing to start.");
+    machine.start();
+    QCoreApplication::processEvents();
+    QEXPECT_FAIL("", "parallel root state is not supported (task 256587)", Continue);
+    QCOMPARE(startedSpy.count(), 1);
 }
 
 void tst_QStateMachine::allSourceToTargetConfigurations()
