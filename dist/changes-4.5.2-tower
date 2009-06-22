@@ -138,7 +138,6 @@ Optimizations
 - QTest
     * Fixed testlib export macros for RVCT builds.
 
-
 - Namespaces
     * Now builds when -qtnamespace option is defined.
 
