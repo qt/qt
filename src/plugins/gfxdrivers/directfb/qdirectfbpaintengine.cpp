@@ -897,7 +897,6 @@ void QDirectFBPaintEnginePrivate::begin(QPaintDevice *device)
     setCompositionMode(q->state()->compositionMode());
     dirtyClip = true;
     setPen(q->state()->pen);
-    setDFBColor(pen.color());
 }
 
 void QDirectFBPaintEnginePrivate::end()
