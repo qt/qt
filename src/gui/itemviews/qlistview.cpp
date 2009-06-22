@@ -2232,7 +2232,7 @@ QListViewItem QStaticListViewBase::indexToListViewItem(const QModelIndex &index)
 {
     if (flowPositions.isEmpty()
         || segmentPositions.isEmpty()
-        || index.row() > flowPositions.count())
+        || index.row() >= flowPositions.count())
         return QListViewItem();
 
     const int segment = qBinarySearch<int>(segmentStartRows, index.row(),
