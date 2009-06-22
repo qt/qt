@@ -70,7 +70,7 @@ QT_BEGIN_NAMESPACE
 class QCocoaTouch
 {
     public:
-        static QList<QTouchEvent::TouchPoint> getCurrentTouchPointList(NSEvent *event, bool maskMouseHover);
+        static QList<QTouchEvent::TouchPoint> getCurrentTouchPointList(NSEvent *event, bool acceptSingleTouch);
         static void setMouseInDraggingState(bool inDraggingState);
 
     private:
@@ -79,7 +79,7 @@ class QCocoaTouch
         static QPointF _trackpadReferencePos;
         static int _idAssignmentCount;
         static int _touchCount;
-        static bool _maskMouseHover;
+        static bool _updateInternalStateOnly;
 
         QTouchEvent::TouchPoint _touchPoint;
         QPointF _trackpadPos;

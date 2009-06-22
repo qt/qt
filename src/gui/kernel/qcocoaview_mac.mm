@@ -873,22 +873,26 @@ extern "C" {
 #if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_6
 - (void)touchesBeganWithEvent:(NSEvent *)event; 
 {
-    qt_translateRawTouchEvent(QCocoaTouch::getCurrentTouchPointList(event, true), qwidget);
+    bool all = qwidget->testAttribute(Qt::WA_TouchPadAcceptSingleTouchEvents);
+    qt_translateRawTouchEvent(QCocoaTouch::getCurrentTouchPointList(event, all), qwidget);
 }
 
 - (void)touchesMovedWithEvent:(NSEvent *)event;
 {
-    qt_translateRawTouchEvent(QCocoaTouch::getCurrentTouchPointList(event, true), qwidget);
+    bool all = qwidget->testAttribute(Qt::WA_TouchPadAcceptSingleTouchEvents);
+    qt_translateRawTouchEvent(QCocoaTouch::getCurrentTouchPointList(event, all), qwidget);
 }
 
 - (void)touchesEndedWithEvent:(NSEvent *)event;
 {
-    qt_translateRawTouchEvent(QCocoaTouch::getCurrentTouchPointList(event, true), qwidget);
+    bool all = qwidget->testAttribute(Qt::WA_TouchPadAcceptSingleTouchEvents);
+    qt_translateRawTouchEvent(QCocoaTouch::getCurrentTouchPointList(event, all), qwidget);
 }
 
 - (void)touchesCancelledWithEvent:(NSEvent *)event;
 {
-    qt_translateRawTouchEvent(QCocoaTouch::getCurrentTouchPointList(event, true), qwidget);
+    bool all = qwidget->testAttribute(Qt::WA_TouchPadAcceptSingleTouchEvents);
+    qt_translateRawTouchEvent(QCocoaTouch::getCurrentTouchPointList(event, all), qwidget);
 }
 
 - (void)magnifyWithEvent:(NSEvent *)event;

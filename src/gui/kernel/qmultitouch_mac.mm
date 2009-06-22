@@ -53,7 +53,7 @@ QPointF QCocoaTouch::_screenReferencePos;
 QPointF QCocoaTouch::_trackpadReferencePos;
 int QCocoaTouch::_idAssignmentCount = 0;
 int QCocoaTouch::_touchCount = 0;
-bool QCocoaTouch::_maskMouseHover = true;
+bool QCocoaTouch::_updateInternalStateOnly = true;
 
 QCocoaTouch::QCocoaTouch(NSTouch *nstouch)
 {
@@ -128,7 +128,8 @@ Qt::TouchPointState QCocoaTouch::toTouchPointState(NSTouchPhase nsState)
     return qtState;
 }
 
-QList<QTouchEvent::TouchPoint> QCocoaTouch::getCurrentTouchPointList(NSEvent *event, bool maskMouseHover)
+QList<QTouchEvent::TouchPoint>
+QCocoaTouch::getCurrentTouchPointList(NSEvent *event, bool acceptSingleTouch)
 {
     QList<QTouchEvent::TouchPoint> touchPoints;
     NSSet *ended = [event touchesMatchingPhase:NSTouchPhaseEnded | NSTouchPhaseCancelled inView:nil];
@@ -138,27 +139,27 @@ QList<QTouchEvent::TouchPoint> QCocoaTouch::getCurrentTouchPointList(NSEvent *ev
     _touchCount = [active count];
 
     // First: remove touches that were ended by the user. If we are
-    // currently masking the mouse hover touch, a corresponding 'begin'
-    // has never been posted to the app. So we should not send
-    // the following remove either.
+    // currently not accepting single touches, a corresponding 'begin'
+    // has never been send to the app for these events.
+    // So should therefore not send the following removes either.
 
     for (int i=0; i<int([ended count]); ++i) {
         NSTouch *touch = [[ended allObjects] objectAtIndex:i];
         QCocoaTouch *qcocoaTouch = findQCocoaTouch(touch);
         if (qcocoaTouch) {
             qcocoaTouch->updateTouchData(touch, [touch phase]);
-            if (!_maskMouseHover)
+            if (!_updateInternalStateOnly)
                 touchPoints.append(qcocoaTouch->_touchPoint);
             delete qcocoaTouch;
         }
     }
 
-    bool wasMaskingMouseHover = _maskMouseHover;
-    _maskMouseHover = maskMouseHover && _touchCount < 2;
+    bool wasUpdateInternalStateOnly = _updateInternalStateOnly;
+    _updateInternalStateOnly = !acceptSingleTouch && _touchCount < 2;
 
     // Next: update, or create, existing touches.
     // We always keep track of all touch points, even
-    // when masking the mouse hover touch:
+    // when not accepting single touches.
 
     for (int i=0; i<int([active count]); ++i) {
         NSTouch *touch = [[active allObjects] objectAtIndex:i];
@@ -166,8 +167,8 @@ QList<QTouchEvent::TouchPoint> QCocoaTouch::getCurrentTouchPointList(NSEvent *ev
         if (!qcocoaTouch)
             qcocoaTouch = new QCocoaTouch(touch);
         else
-            qcocoaTouch->updateTouchData(touch, wasMaskingMouseHover ? NSTouchPhaseBegan : [touch phase]);
-        if (!_maskMouseHover)
+            qcocoaTouch->updateTouchData(touch, wasUpdateInternalStateOnly ? NSTouchPhaseBegan : [touch phase]);
+        if (!_updateInternalStateOnly)
             touchPoints.append(qcocoaTouch->_touchPoint);
     }
 
@@ -180,23 +181,22 @@ QList<QTouchEvent::TouchPoint> QCocoaTouch::getCurrentTouchPointList(NSEvent *ev
         touchPoints.clear();
         QList<QCocoaTouch *> list = _currentTouches.values();
         foreach (QCocoaTouch *qcocoaTouch, _currentTouches.values()) {
-            if (!_maskMouseHover) {
+            if (!_updateInternalStateOnly) {
                 qcocoaTouch->_touchPoint.setState(Qt::TouchPointReleased);
                 touchPoints.append(qcocoaTouch->_touchPoint);
             }
             delete qcocoaTouch;
         }
         _currentTouches.clear();
-        _maskMouseHover = maskMouseHover;
+        _updateInternalStateOnly = !acceptSingleTouch;
         return touchPoints;
     }
 
-    // Finally: If we in this call _started_ to mask the mouse
-    // hover touch, we need to fake a relase for it now (and refake
-    // a begin for it later, if needed).
+    // Finally: If this call _started_ to reject single
+    // touches, we need to fake a relase for the remaining
+    // touch now (and refake a begin for it later, if needed).
 
-    if (_maskMouseHover && !wasMaskingMouseHover && !_currentTouches.isEmpty()) {
-        // If one touch is still active, fake a release event for it.
+    if (_updateInternalStateOnly && !wasUpdateInternalStateOnly && !_currentTouches.isEmpty()) {
         QCocoaTouch *qcocoaTouch = _currentTouches.values().first();
         qcocoaTouch->_touchPoint.setState(Qt::TouchPointReleased);
         touchPoints.append(qcocoaTouch->_touchPoint);
