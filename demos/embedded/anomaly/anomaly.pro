@@ -28,4 +28,5 @@ symbian {
     LIBS += -lesock -lconnmon
     TARGET.CAPABILITY = NetworkServices
     TARGET.EPOCHEAPSIZE = 0x20000 0x2000000
+    TARGET.UID3 = 0xA000CF71
 }
