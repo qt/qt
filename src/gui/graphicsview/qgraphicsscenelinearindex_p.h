@@ -73,42 +73,35 @@ class Q_AUTOTEST_EXPORT QGraphicsSceneLinearIndex : public QGraphicsSceneIndex
     Q_OBJECT
 
 public:
-    QGraphicsSceneLinearIndex(QGraphicsScene *scene = 0): QGraphicsSceneIndex(scene)
+    QGraphicsSceneLinearIndex(QGraphicsScene *scene = 0) : QGraphicsSceneIndex(scene)
+    { }
+
+    QList<QGraphicsItem *> items(Qt::SortOrder order = Qt::AscendingOrder) const
+    { Q_UNUSED(order); return m_items; }
+
+    virtual QList<QGraphicsItem *> estimateItems(const QRectF &rect, Qt::SortOrder order, const QTransform &deviceTransform) const
     {
-    }
-
-    QList<QGraphicsItem *> items(Qt::SortOrder order = Qt::AscendingOrder) const {
-        Q_UNUSED(order);
-        return m_items;
-    }
-
-    virtual QList<QGraphicsItem *> estimateItems(const QRectF &rect, Qt::SortOrder order, const QTransform &deviceTransform) const {
         Q_UNUSED(rect);
         Q_UNUSED(order);
         Q_UNUSED(deviceTransform);
         return m_items;
     }
 
-    virtual QRectF indexedRect() const {
-        return m_sceneRect;
-    }
+    virtual QRectF indexedRect() const
+    { return m_sceneRect; }
 
 protected :
-    void sceneRectChanged(const QRectF &rect) {
-        m_sceneRect = rect;
-    }
+    void sceneRectChanged(const QRectF &rect)
+    { m_sceneRect = rect; }
 
-    virtual void clear() {
-        m_items.clear();
-    }
+    virtual void clear()
+    { m_items.clear(); }
 
-    virtual void addItem(QGraphicsItem *item) {
-        m_items << item;
-    }
+    virtual void addItem(QGraphicsItem *item)
+    { m_items << item; }
 
-    virtual void removeItem(QGraphicsItem *item) {
-        m_items.removeAll(item);
-    }
+    virtual void removeItem(QGraphicsItem *item)
+    { m_items.removeOne(item); }
 
 private:
     QRectF m_sceneRect;
