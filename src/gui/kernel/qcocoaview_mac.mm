@@ -704,11 +704,6 @@ extern "C" {
 
 - (void)mouseUp:(NSEvent *)theEvent
 {
-#if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_6
-    if (QSysInfo::MacintoshVersion >= QSysInfo::MV_10_6)
-        QCocoaTouch::setMouseInDraggingState(false);
-#endif
-
     bool mouseOK = qt_mac_handleMouseEvent(self, theEvent, QEvent::MouseButtonRelease, Qt::LeftButton);
 
     if (!mouseOK)
@@ -752,11 +747,6 @@ extern "C" {
 
 - (void)mouseDragged:(NSEvent *)theEvent
 {
-#if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_6
-    if (QSysInfo::MacintoshVersion >= QSysInfo::MV_10_6)
-        QCocoaTouch::setMouseInDraggingState(true);
-#endif
-
     qMacDnDParams()->view = self;
     qMacDnDParams()->theEvent = theEvent;
     bool mouseOK = qt_mac_handleMouseEvent(self, theEvent, QEvent::MouseMove, Qt::LeftButton);
@@ -883,22 +873,22 @@ extern "C" {
 #if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_6
 - (void)touchesBeganWithEvent:(NSEvent *)event; 
 {
-    qt_translateRawTouchEvent(QCocoaTouch::getCurrentTouchPointList(event), qwidget);
+    qt_translateRawTouchEvent(QCocoaTouch::getCurrentTouchPointList(event, true), qwidget);
 }
 
 - (void)touchesMovedWithEvent:(NSEvent *)event;
 {
-    qt_translateRawTouchEvent(QCocoaTouch::getCurrentTouchPointList(event), qwidget);
+    qt_translateRawTouchEvent(QCocoaTouch::getCurrentTouchPointList(event, true), qwidget);
 }
 
 - (void)touchesEndedWithEvent:(NSEvent *)event;
 {
-    qt_translateRawTouchEvent(QCocoaTouch::getCurrentTouchPointList(event), qwidget);
+    qt_translateRawTouchEvent(QCocoaTouch::getCurrentTouchPointList(event, true), qwidget);
 }
 
 - (void)touchesCancelledWithEvent:(NSEvent *)event;
 {
-    qt_translateRawTouchEvent(QCocoaTouch::getCurrentTouchPointList(event), qwidget);
+    qt_translateRawTouchEvent(QCocoaTouch::getCurrentTouchPointList(event, true), qwidget);
 }
 
 - (void)magnifyWithEvent:(NSEvent *)event;

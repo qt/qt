@@ -53,8 +53,6 @@
 #ifndef QMULTITOUCH_MAC_P_H
 #define QMULTITOUCH_MAC_P_H
 
-#if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_6
-
 #ifdef QT_MAC_USE_COCOA
 #import <Cocoa/Cocoa.h>
 #endif
@@ -63,6 +61,8 @@
 #include <qhash.h>
 #include <QtCore>
 
+#if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_6
+
 QT_BEGIN_NAMESPACE
 
 #ifdef QT_MAC_USE_COCOA
@@ -70,15 +70,16 @@ QT_BEGIN_NAMESPACE
 class QCocoaTouch
 {
     public:
-        static QList<QTouchEvent::TouchPoint> getCurrentTouchPointList(NSEvent *event);
+        static QList<QTouchEvent::TouchPoint> getCurrentTouchPointList(NSEvent *event, bool maskMouseHover);
         static void setMouseInDraggingState(bool inDraggingState);
 
     private:
         static QHash<int, QCocoaTouch*> _currentTouches;
         static QPointF _screenReferencePos;
         static QPointF _trackpadReferencePos;
-        static bool _inMouseDraggingState;
         static int _idAssignmentCount;
+        static int _touchCount;
+        static bool _maskMouseHover;
 
         QTouchEvent::TouchPoint _touchPoint;
         QPointF _trackpadPos;
@@ -90,7 +91,6 @@ class QCocoaTouch
         void updateTouchData(NSTouch *nstouch, NSTouchPhase phase);
         static QCocoaTouch *findQCocoaTouch(NSTouch *nstouch);
         static Qt::TouchPointState toTouchPointState(NSTouchPhase nsState);
-        static void validateCurrentTouchList(NSEvent *event);
 };
 
 #endif // QT_MAC_USE_COCOA
