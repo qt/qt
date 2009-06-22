@@ -598,6 +598,7 @@ QChar QODBCDriverPrivate::quoteChar() const
     return quote;
 }
 
+
 bool QODBCDriverPrivate::setConnectionOptions(const QString& connOpts)
 {
     // Set any connection attributes
@@ -2441,6 +2442,9 @@ bool QODBCDriver::isIdentifierEscapedImplementation(const QString &identifier, I
     return identifier.size() > 2
         && identifier.startsWith(quote) //left delimited
         && identifier.endsWith(quote); //right delimited
+        return true;
+    else
+        return false;
 }
 
 QT_END_NAMESPACE
