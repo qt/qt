@@ -192,7 +192,7 @@ bool ScribbleArea::event(QEvent *event)
 
                     QPainter painter(&image);
                     painter.setPen(Qt::NoPen);
-                    painter.setBrush(myPenColors.at(touchPoint.id()));
+                    painter.setBrush(myPenColors.at(touchPoint.id() % myPenColors.count()));
                     painter.drawEllipse(rect);
                     painter.end();
 
