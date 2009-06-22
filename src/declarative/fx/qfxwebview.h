@@ -81,6 +81,7 @@ class Q_DECLARATIVE_EXPORT QFxWebView : public QFxPaintedItem
     Q_PROPERTY(QString title READ title NOTIFY titleChanged)
     Q_PROPERTY(QPixmap icon READ icon NOTIFY iconChanged)
     Q_PROPERTY(qreal textSizeMultiplier READ textSizeMultiplier WRITE setTextSizeMultiplier DESIGNABLE false)
+    Q_PROPERTY(qreal zoomFactor READ zoomFactor WRITE setZoomFactor NOTIFY zoomFactorChanged)
     Q_PROPERTY(QString status READ status NOTIFY statusChanged)
 
     Q_PROPERTY(int mouseX READ mouseX)
@@ -117,6 +118,9 @@ public:
 
     qreal textSizeMultiplier() const;
     void setTextSizeMultiplier(qreal);
+
+    qreal zoomFactor() const;
+    void setZoomFactor(qreal);
 
     bool interactive() const;
     void setInteractive(bool);
@@ -170,6 +174,7 @@ Q_SIGNALS:
     void titleChanged(const QString&);
     void iconChanged();
     void statusChanged();
+    void zoomFactorChanged();
 
     void loadStarted();
     void loadFinished();
