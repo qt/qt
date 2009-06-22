@@ -92,7 +92,6 @@ public:
 
 /*!
     \qmlproperty QString SqlConnection::name
-    \default
 
     Defines the connection's name.  The name allows the connection to be
     retrieved using the connection property of SqlQuery or when

@@ -69,7 +69,6 @@ class Q_DECLARATIVE_EXPORT QFxText : public QFxItem
     Q_PROPERTY(bool wrap READ wrap WRITE setWrap)
     Q_PROPERTY(Qt::TextElideMode elide READ elideMode WRITE setElideMode)
     Q_PROPERTY(QString activeLink READ activeLink)
-    Q_CLASSINFO("DefaultProperty", "text")
 
 public:
     QFxText(QFxItem *parent=0);
