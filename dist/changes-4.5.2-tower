@@ -310,6 +310,9 @@ Optimizations
 *                          Examples and demos                              *
 ****************************************************************************
 
+- Anomaly browser 
+    * Added to demonstrate QtWebkit usage.
+
 - Deform, Pathstroke, and Wiggly
     * Removed Symbian specific animation timer fixes since more generic
       fix was made to event dispatcher.
@@ -327,6 +330,7 @@ Optimizations
     * Included drilldown to demonstrate QtSql usage.
     * Updated screenshots to S60 style.
     * Added softkeys example.
+    * Added Anomaly browser to fluidlauncher.
 
 - Ftp
     * Enabled default IAP setting for FTP example.
