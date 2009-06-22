@@ -58,11 +58,12 @@ class QFxAnchorsPrivate;
 class QFxAnchorLine
 {
 public:
-    QFxAnchorLine() : item(0), anchorLine(Left)
+    QFxAnchorLine() : item(0), anchorLine(Invalid)
     {
     }
 
     enum AnchorLine {
+        Invalid = 0x0,
         Left = 0x01,
         Right = 0x02,
         Top = 0x04,

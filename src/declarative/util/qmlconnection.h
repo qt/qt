@@ -61,7 +61,6 @@ class Q_DECLARATIVE_EXPORT QmlConnection : public QObject, public QmlParserStatu
     Q_DECLARE_PRIVATE(QmlConnection)
 
     Q_INTERFACES(QmlParserStatus)
-    Q_CLASSINFO("DefaultProperty", "script")
     Q_PROPERTY(QObject *sender READ signalSender WRITE setSignalSender)
     Q_PROPERTY(QString script READ script WRITE setScript)
     Q_PROPERTY(QString signal READ signal WRITE setSignal)

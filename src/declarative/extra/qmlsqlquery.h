@@ -96,8 +96,6 @@ class Q_DECLARATIVE_EXPORT QmlSqlQuery : public QListModelInterface, public QmlP
     Q_PROPERTY(QString lastError READ lastError)
     
     Q_PROPERTY(QmlList<QmlSqlBind *> *bindings READ bindings)
-
-    Q_CLASSINFO("DefaultProperty", "query")
 public:
     QmlSqlQuery(QObject *parent = 0);
     ~QmlSqlQuery();

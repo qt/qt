@@ -35,7 +35,7 @@ The following table lists the Qml elements provided by the Qt Declarative module
 \o \l SetPropertyAction
 \o \l ParentChangeAction
 \o \l Transition
-\o \l Behaviour
+\o \l Behavior
 \o \l Follow
 \endlist
 
