@@ -25,20 +25,6 @@ S60 at the moment.
 New modules
 -----------
 
-- QtSql
-    * Implemented QtSql module with sqlite3 backend. For now backend is
-      provided only in binary format.
-
-- QtWebkit
-    * Experimental webkit build for s60. Can be enabled by passing -webkit 
-      to configure.
-
-- Phonon
-    * The Phonon library is now part of Qt, but it comes without a backend.
-      This means that applications can build and run against the Phonon
-      library, but there is currently no S60 backend plugin providing actual
-      multimedia playback. Possible alternatives such as Helix and MMF are
-      being investigated.
 - Input methods
     * Added events to support opening and closing the virtual keyboard, called
       software input panel in Qt.
@@ -51,6 +37,21 @@ New modules
     * Added QInputMethodEvent::Selection to support setting the selection through
       input methods.
 
+- Phonon
+    * The Phonon library is now part of Qt, but it comes without a backend.
+      This means that applications can build and run against the Phonon
+      library, but there is currently no S60 backend plugin providing actual
+      multimedia playback. Possible alternatives such as Helix and MMF are
+      being investigated.
+
+- QtSql
+    * Implemented QtSql module with sqlite3 backend. For now backend is
+      provided only in binary format.
+
+- QtWebkit
+    * Experimental webkit build for s60. Can be enabled by passing -webkit
+      to configure.
+
 New classes
 ------------
 
@@ -60,19 +61,22 @@ New classes
 Ported classes
 --------------
 
-- QSound
-    * Implemented CMdaAudioPlayerUtility based Symbian backend for QSound.
+- QColormap
+    * Added basic implementation of QColormap for Symbian.
 
 - QLocalSocket and QLocalServer
     * Added support for QLocalSocket and QLocalServer on Symbian.
 
-- QColormap
-    * Added basic implementation of QColormap for Symbian.
+- QSound
+    * Implemented CMdaAudioPlayerUtility based Symbian backend for QSound.
 
 Features
 --------
 - QApplication
     * Implemented QApplication::beep() for Symbian.
+
+- QPixmap
+    * Added supported for converting to/from CFbsBitmap
 
 - QSslSocket
     * Added support for -openssl option i.e. runtime resolving of OpenSSL
@@ -84,9 +88,6 @@ Features
     * Widgets can now be made semi-transparent on systems that support it
       using Qt::WA_TranslucentBackground.
 
-- QPixmap
-    * Added supported for converting to/from CFbsBitmap
-
 - todo
     * todo
 
@@ -96,14 +97,14 @@ Optimizations
 - qdrawhelper
     * Optimized drawing operations for RVCT builds, particulary for ARMV6.
 
+- QFont
+    * Use cached DPI for metrics.
+
 - qwidget_s60.cpp
     * Avoid unnecessary calls to FocusChanged in Symbian.
 
 - qwindowsurface_s60.cpp
     * Avoid updating raster buffer pointer on window hide
-
-- QFont
-    * Use cached DPI for metrics.
 
 ****************************************************************************
 *                          Code clean-up                                   *
@@ -138,6 +139,7 @@ Optimizations
 
 - Macros
     * QT_NO_DEBUG now properly defined in release mode.
+
 - QTest
     * Fixed testlib export macros for RVCT builds.
 
@@ -148,36 +150,105 @@ Optimizations
 *                          Changes to existing classes                     *
 ****************************************************************************
 
+- QApplication
+    * 252798: Fixed layout when orientation changed via
+      AknAppUi::SetOrientationL.
+    * Generating MouseEvents has gone through several changes.
+    * qt_init() has been changed: auto flush is always enabled for
+      window server sessions on 3.1 SDK for both UDEB and UREL.
+    * Added support for '-graphics-system' command line option
+
+- QCoeFepInputContext (non-public)
+    * Fixes FEP crash when changing the focused Qt widget to NULL.
+    * Fixed a bug where the virtual keyboard could not be opened if there
+      was only one input widget.
+    * Fixed a crash in FEP when exiting application.
+
+- QDebug
+    * Fixed debug printing (incl. qWarning, qFatal) for strings longer
+      than 256 characters.
+
 - QDesktopServices
     * Fixed forwardslash/backslash usage as an path separator.
+    * Switched QDesktopServices mail-to URL handling to RSendAs in Symbian,
+      due to the fact that CSendUi requires extensive capabilities to work
+      correctly. Currently e-mail sending with qdesktopservices::openUrl
+      works in Symbian only if e-mail account already exists.
 
-- QPluginLoader
-    * QPluginLoader will look for plugin stubs from the same folder on other
-      drives if it can't find them from the indicated drive.
+- QDesktopWidget
+    * 253930: Implement proper resize behavior and emit necessary signals.
+
+- QEventDispatcherSymbian (non-public)
+    * Lowered the timeout for reprioritizing the process to 100ms.
+    * Fixed ASSERT panic in Symbian event dispatcher.
+    * 246600: Fix problem in eventdispatcher destructor / AO canceling.
+    * Fixed active scheduler removal when calling QThread::terminate.
+    * Fix to Open C bug: select sometimes returns -1 and errno is
+      ECONNREFUSED.
+    * Fix a crash when using QEventLoop::ExcludeSocketNotifiers flag.
+    * Changed to round robin scheduling for Qt's active objects. Other
+      active objects will still be scheduled like before.
+    * Fixed crash if events are posted before QApplication construction
+
+- QFontDataBase
+    * Now, also fonts from the user's /resources/fonts directories are
+      available.
+
+- QFontEngine
+    * Fix the vertical advance of glyph metrics.
+
+- QFontMetrics
+    * Fixed the boundingRect calculation for text.
+
+- QGraphicsView
+    * Added support for input methods to the the viewport.
+
+- QGraphicsTextItem
+    * Added support for input methods.
+
+- QHostInfo
+    * Added support for host lookups with multiple ipv4 addresses.
+
+- QInputContext
+    * Added QInputContext::s60FilterEvent().
+
+- QIoDevice
+    * Fixed compilation error when QIODEVICE_DEBUG is defined.
+
+- QKeyMapper (non-public)
+    * Fixed a broken keymapping where Enter key would be mapped to Tab.
+
+- QLocale
+    * Removed workaround for missing tzname symbol, fixes QLocal timeZone
+      implementation for Symbian.
+
+- QLocalSocket
+    * Connecting to QLocalServer is always done in blocking mode.
+
+- QMenuBar
+    * Native menus are handled properly even when application has multiple
+      QMainWindows.
+    * Fixed a bug causing both native and qt menu to be created.
+    * Fix for disappearing options menu after coming back from dialog.
+
+- QNativeSocketEnginePrivate (non-public)
+    * Socket connect and listen failure is indicated in exception set.
+      (Workaround to Open C bug)
 
 - QNetworkInterface
     * Fixed R-handle leak in Symbian version of qnetworkinterface_unix.cpp.
     * Introduced a new qnetworkinterface_symbian.cpp, because there wasn't
       really anything common to UNIX equivalent.
 
-- QHostInfo
-    * Added support for host lookups with multiple ipv4 addresses.
+- QPixmap
+    * Added fromSymbianCFbsBitmap() and toSymbianCFbsBitmap().
 
-- QUdpSocket
-    * Updated BindFlag documentation to reflect behaviour on Symbian OS.
+- QPlainTextEdit
+    * Added support for input methods.
 
-- QLocale
-    * Removed workaround for missing tzname symbol, fixes QLocal timeZone
-      implementation for Symbian.
-
-- QTemporaryFile
-    * Fixed temporary file rename in Symbian OS.
-
-- QThread
-    * Fixed thread termination in Symbian OS.
-
-- QIoDevice
-    * Fixed compilation error when QIODEVICE_DEBUG is defined.
+- QPluginLoader
+    * QPluginLoader will look for plugin stubs from the same folder on other
+      drives if it can't find them from the indicated drive.
 
 - QS60Style
     * Added subElementRect implementation for SE_ItemViewItemCheckIndicator.
@@ -211,50 +282,27 @@ Optimizations
       SDK 3 FP 1 and FP 2.
     * Fix for overwriting user specified palettes.
 
-- QDesktopServices
-    * Switched QDesktopServices mail-to URL handling to RSendAs in Symbian,
-      due to the fact that CSendUi requires extensive capabilities to work
-      correctly. Currently e-mail sending with qdesktopservices::openUrl
-      works in Symbian only if e-mail account already exists.
+- QSelectThread (non-public)
+    * We force monitoring sockets exception status as well, and not
+      just read/write.
+    * Notification related to the particular socket signaled via exception
+      fd_set will be mapped to the appropriate read/write notification.
 
-- QInputContext
-    * Added QInputContext::s60FilterEvent().
+- QTemporaryFile
+    * Fixed temporary file rename in Symbian OS.
 
-- QCoeFepInputContext (non-public)
-    * Fixes FEP crash when changing the focused Qt widget to NULL.
-    * Fixed a bug where the virtual keyboard could not be opened if there
-      was only one input widget.
-    * Fixed a crash in FEP when exiting application.
+- QTest
+    * Disable keypad navigation for autotests by default
 
-- QKeyMapper (non-public)
-    * Fixed a broken keymapping where Enter key would be mapped to Tab.
+- QTextEdit
+    * Added support for input methods.
 
-- QApplication
-    * 252798: Fixed layout when orientation changed via
-      AknAppUi::SetOrientationL.
-    * Generating MouseEvents has gone through several changes.
-    * qt_init() has been changed: auto flush is always enabled for
-      window server sessions on 3.1 SDK for both UDEB and UREL.
-    * Added support for '-graphics-system' command line option
+- QThread
+    * Fixed thread termination in Symbian OS.
 
 - QUdpSocket
+    * Updated BindFlag documentation to reflect behaviour on Symbian OS.
     * Wrote hack for QUdpSocket::writeDatagram return value in Symbian OS.
-
-- QNativeSocketEnginePrivate (non-public)
-    * Socket connect and listen failure is indicated in exception set. 
-      (Workaround to Open C bug)
-
-- QEventDispatcherSymbian (non-public)
-    * Lowered the timeout for reprioritizing the process to 100ms.
-    * Fixed ASSERT panic in Symbian event dispatcher.
-    * 246600: Fix problem in eventdispatcher destructor / AO canceling.
-    * Fixed active scheduler removal when calling QThread::terminate.
-    * Fix to Open C bug: select sometimes returns -1 and errno is
-      ECONNREFUSED.
-    * Fix a crash when using QEventLoop::ExcludeSocketNotifiers flag.
-    * Changed to round robin scheduling for Qt's active objects. Other
-      active objects will still be scheduled like before.
-    * Fixed crash if events are posted before QApplication construction
 
 - QWidget
     * Added API for setting softkeys.
@@ -262,78 +310,20 @@ Optimizations
       setting the respective palette role.
     * Add support for Qt::WA_TranslucentBackground.
 
-- QMenuBar
-    * Native menus are handled properly even when application has multiple 
-      QMainWindows.
-    * Fixed a bug causing both native and qt menu to be created.
-    * Fix for disappearing options menu after coming back from dialog.
-
-- QFontDataBase
-    * Now, also fonts from the user's /resources/fonts directories are
-      available.
-
-- QFontMetrics
-    * Fixed the boundingRect calculation for text.
-
-- QFontEngine
-    * Fix the vertical advance of glyph metrics.
-
-- QPlainTextEdit
-    * Added support for input methods.
-
-- QTextEdit
-    * Added support for input methods.
-
-- QGraphicsTextItem
-    * Added support for input methods.
-
-- QGraphicsView
-    * Added support for input methods to the the viewport.
-
-- QLocalSocket
-    * Connecting to QLocalServer is always done in blocking mode.
-
-- QSelectThread
-    * We force monitoring sockets exception status as well, and not
-      just read/write.
-    * Notification related to the particular socket signaled via exception
-      fd_set will be mapped to the appropriate read/write notification.
-
-- QDebug
-    * Fixed debug printing (incl. qWarning, qFatal) for strings longer
-      than 256 characters.
-
-- QDesktopWidget
-    * 253930: Implement proper resize behavior and emit necessary signals.
-
-- QTest
-    * Disable keypad navigation for autotests by default
-
-- QPixmap
-    * Added fromSymbianCFbsBitmap() and toSymbianCFbsBitmap().
-
 ****************************************************************************
 *                          Examples and demos                              *
 ****************************************************************************
-
-- Drilldown
-    * Added to demonstrate QtSql usage in Symbian OS.
 
 - Deform, Pathstroke, and Wiggly
     * Removed Symbian specific animation timer fixes since more generic
       fix was made to event dispatcher.
 
-- Ftp
-    * Enabled default IAP setting for FTP example.
-    * IAP dialog will show after FTP UI is on screen.
-    * If active IAP exist that one will be used.
-
 - DesktopServices
     * Implemented content filters for desktopservices example.
     * Added error handling to qdesktopservices example when openUrl fails.
 
-- SecureSocketClient
-    * Fixed build issue caused by lack of cursor.
+- Drilldown
+    * Added to demonstrate QtSql usage in Symbian OS.
 
 - Fluidlauncher
     * Removed ugly workaround to make emulator deployment work correctly,
@@ -342,12 +332,26 @@ Optimizations
     * Updated screenshots to S60 style.
     * Added softkeys example.
 
+- Ftp
+    * Enabled default IAP setting for FTP example.
+    * IAP dialog will show after FTP UI is on screen.
+    * If active IAP exist that one will be used.
+
+- SecureSocketClient
+    * Fixed build issue caused by lack of cursor.
+
 - Softkeys
     * New example showing how to use softkeys API in QWidget.
 
 ****************************************************************************
 *                          Tools                                           *
 ****************************************************************************
+
+- configure
+    * -cetest is no longer a supported switch for configure.
+    * -stl option is enabled by default for Symbian OS
+    * -openssl option is enabled by default for Symbian OS.
+    * -fpu option enables vfpu type selection for ARM targets.
 
 - qmake
     * Support for generating Symbian "test" targets: CONFIG += symbian_test.
@@ -361,12 +365,6 @@ Optimizations
       by qmake for symbian-* mkspecs.
     * Qt's VERSION variable will now generate VERSION keyword in mmp files.
     * Made Open C include paths handling bit more robust.
-
-- configure
-    * -cetest is no longer a supported switch for configure.
-    * -stl option is enabled by default for Symbian OS
-    * -openssl option is enabled by default for Symbian OS.
-    * -fpu option enables vfpu type selection for ARM targets.
 
 - Release package creation
     * Removed the obsolete script to create release package.
