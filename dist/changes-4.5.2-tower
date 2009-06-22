@@ -2,11 +2,14 @@ Qt 4.5.2-tower
 ---------------
 
 The Qt for S60 "Tower" release is the fifth pre-release from the Qt for
-S60 porting project. "Tower" is based on the Qt 4.5 codebase.
+S60 porting project. "Tower" is based on the Qt 4.5 codebase (mostly Qt 4.5.2).
 
-Lists just S60 fixes, for general 4.5.0 changes go to:
+This list of changes lists S60 spesific fixes only,
+for general 4.5.x changes go to:
 
   http://www.qtsoftware.com/developer/changes/changes-4.5.0
+  http://www.qtsoftware.com/developer/changes/changes-4.5.1
+  http://www.qtsoftware.com/developer/changes/changes-4.5.2 (partially in Tower)
 
 Some of the changes listed in this file include issue tracking numbers
 corresponding to tasks in the Task Tracker:
@@ -49,14 +52,8 @@ New modules
       provided only in binary format.
 
 - QtWebkit
-    * Experimental webkit build for s60. Can be enabled by passing -webkit
+    * Experimental webkit build for S60. Can be enabled by passing -webkit
       to configure.
-
-New classes
-------------
-
-- todo
-    * todo
 
 Ported classes
 --------------
@@ -72,6 +69,7 @@ Ported classes
 
 Features
 --------
+
 - QApplication
     * Implemented QApplication::beep() for Symbian.
 
@@ -87,9 +85,6 @@ Features
       FP 1 and FP 2.
     * Widgets can now be made semi-transparent on systems that support it
       using Qt::WA_TranslucentBackground.
-
-- todo
-    * todo
 
 Optimizations
 -------------
@@ -142,6 +137,7 @@ Optimizations
 
 - QTest
     * Fixed testlib export macros for RVCT builds.
+
 
 - Namespaces
     * Now builds when -qtnamespace option is defined.
@@ -393,7 +389,6 @@ Optimizations
       run on any supported device, even if with reduced functionality on
       some.
 
-
 ****************************************************************************
 *                   Important Behavior Changes                             *
 ****************************************************************************
@@ -406,6 +401,3 @@ Optimizations
       when they are paged.
     * qt_libs.pro updated to reflect Open C dependencies, as Qt requires
       1.5.0 and newer release.
-
-- todo
-    * todo
