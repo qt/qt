@@ -686,8 +686,11 @@ void QDirectFBPaintEngine::fillRect(const QRectF &rect, const QBrush &brush)
     if (!d->unsupportedCompositionMode && d->dfbCanHandleClip(rect) && !d->matrixRotShear) {
         switch (brush.style()) {
         case Qt::SolidPattern: {
+            const QColor color = brush.color();
+            if (!color.isValid())
+                return;
             d->unlock();
-            d->setDFBColor(brush.color());
+            d->setDFBColor(color);
             const QRect r = d->transform.mapRect(rect).toRect();
             d->surface->FillRectangle(d->surface, r.x(), r.y(),
                                       r.width(), r.height());
@@ -711,6 +714,8 @@ void QDirectFBPaintEngine::fillRect(const QRectF &rect, const QBrush &brush)
 
 void QDirectFBPaintEngine::fillRect(const QRectF &rect, const QColor &color)
 {
+    if (!color.isValid())
+        return;
     Q_D(QDirectFBPaintEngine);
     d->updateClip();
     if (d->unsupportedCompositionMode || !d->dfbCanHandleClip() || d->matrixRotShear) {
