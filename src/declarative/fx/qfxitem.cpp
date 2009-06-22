@@ -1433,7 +1433,7 @@ void QFxItem::setBaselineOffset(int offset)
   \qmlproperty real Item::rotation
   This property holds the rotation of the item in degrees.
 
-  This specifies how many degrees to rotate the item around its origin (0,0).
+  This specifies how many degrees to rotate the item around its transformOrigin.
   The default rotation is 0 degrees (i.e. not rotated at all).
 
   \table
@@ -1468,7 +1468,7 @@ void QFxItem::setBaselineOffset(int offset)
   \property QFxItem::rotation
   This property holds the rotation of the item in degrees.
 
-  This specifies how many degrees to rotate the item around its origin (0,0).
+  This specifies how many degrees to rotate the item around its transformOrigin.
   The default rotation is 0 degrees (i.e. not rotated at all).
 */
 qreal QFxItem::rotation() const
@@ -1511,7 +1511,7 @@ void QFxItem::setRotation(qreal rotation)
   By default, items are displayed at a scale of 1 (i.e. at their
   normal size).
 
-  Scaling is from the item's origin (0,0).
+  Scaling is from the item's transformOrigin.
 
   \table
   \row
@@ -1547,7 +1547,7 @@ void QFxItem::setRotation(qreal rotation)
   By default, items are displayed at a scale of 1 (i.e. at their
   normal size).
 
-  Scaling is from the item's origin (0,0).
+  Scaling is from the item's transformOrigin.
 */
 qreal QFxItem::scale() const
 {
