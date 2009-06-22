@@ -4710,11 +4710,6 @@ void tst_QGraphicsItem::itemClipsChildrenToShape()
     scene.render(&painter);
     painter.end();
 
-    QGraphicsView view(&scene);
-    view.show();
-
-    QTest::qWait(5000);
-
     QCOMPARE(image.pixel(16, 16), QColor(255, 0, 0).rgba());
     QCOMPARE(image.pixel(32, 32), QColor(0, 0, 255).rgba());
     QCOMPARE(image.pixel(50, 50), QColor(0, 255, 0).rgba());
