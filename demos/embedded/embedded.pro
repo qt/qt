@@ -7,7 +7,9 @@ contains(QT_CONFIG, svg) {
                desktopservices
 }
 
-SUBDIRS += anomaly
+contains(QT_CONFIG, webkit) {
+    SUBDIRS += anomaly
+}
 
 # install
 sources.files = README *.pro
