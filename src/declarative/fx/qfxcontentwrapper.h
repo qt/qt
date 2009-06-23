@@ -64,7 +64,7 @@ public:
 
 private:
     void create();
-    QFxItem *findContent(QList<QSimpleCanvasItem *> &nodes);
+    QFxItem *findContent(QList<QGraphicsItem *> &nodes);
 
 protected:
     void componentComplete();

@@ -30,7 +30,7 @@ class QmlViewer : public QWidget
 {
 Q_OBJECT
 public:
-    QmlViewer(QFxTestEngine::TestMode = QFxTestEngine::NoTest, const QString &testDir = QString(), QWidget *parent=0, Qt::WindowFlags flags=0);
+    QmlViewer(const QString &testDir = QString(), QWidget *parent=0, Qt::WindowFlags flags=0);
 
     void setRecordDither(const QString& s) { record_dither = s; }
     void setRecordPeriod(int ms);
@@ -90,8 +90,6 @@ private:
     QString currentSkin;
     bool scaleSkin;
     mutable QMenuBar *mb;
-
-    QFxTestEngine *testEngine;
 };
 
 #endif

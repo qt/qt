@@ -138,7 +138,6 @@ public:
     qreal textMargin() const;
     void setTextMargin(qreal margin);
 
-    virtual void dump(int depth);
     virtual QString propertyInfo() const;
 
     virtual void componentComplete();

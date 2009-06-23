@@ -305,14 +305,6 @@ void QFxImage::setSmoothTransform(bool s)
     update();
 }
 
-void QFxImage::dump(int depth)
-{
-    Q_D(QFxImage);
-    QByteArray ba(depth * 4, ' ');
-    qWarning() << ba.constData() << "URL:" << d->url;
-    QFxItem::dump(depth);
-}
-
 void QFxImage::paintContents(QPainter &p)
 {
     Q_D(QFxImage);

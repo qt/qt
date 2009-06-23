@@ -506,13 +506,6 @@ void QFxTextPrivate::updateSize()
 // ### text layout handling should be profiled and optimized as needed
 // what about QStackTextEngine engine(tmp, d->font.font()); QTextLayout textLayout(&engine);
 
-void QFxText::dump(int depth)
-{
-    QByteArray ba(depth * 4, ' ');
-    qWarning() << ba.constData() << propertyInfo();
-    QFxItem::dump(depth);
-}
-
 QString QFxText::propertyInfo() const
 {
     Q_D(const QFxText);

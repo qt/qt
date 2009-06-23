@@ -106,7 +106,7 @@ void QFxContentWrapper::componentComplete()
     if (content()->size() < 1)
         return;
 
-    QList<QSimpleCanvasItem *> nodes;
+    QList<QGraphicsItem *> nodes;
     nodes.append(this);
     QFxItem *target = findContent(nodes);
     if (!target)
@@ -118,9 +118,9 @@ void QFxContentWrapper::componentComplete()
         myContent.at(ii)->setParent(target);
 }
 
-QFxItem *QFxContentWrapper::findContent(QList<QSimpleCanvasItem *> &nodes)
+QFxItem *QFxContentWrapper::findContent(QList<QGraphicsItem *> &nodes)
 {
-    QSimpleCanvasItem *item = nodes.takeFirst();
+    QGraphicsItem *item = nodes.takeFirst();
     if (qobject_cast<QFxContent*>(item))
         return static_cast<QFxItem *>(item);
     nodes << item->children();

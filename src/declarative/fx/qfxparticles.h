@@ -207,7 +207,6 @@ public:
     QFxParticleMotion *motion() const;
     void setMotion(QFxParticleMotion *);
 
-    virtual void dump(int depth);
     virtual QString propertyInfo() const;
 
     void paintContents(QPainter &p);

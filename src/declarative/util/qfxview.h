@@ -44,9 +44,9 @@
 
 #include <QtCore/qdatetime.h>
 #include <QtGui/qgraphicssceneevent.h>
+#include <QtGui/qgraphicsview.h>
 #include <QtGui/qwidget.h>
 #include <QtDeclarative/qfxglobal.h>
-#include <QtDeclarative/qsimplecanvas.h>
 
 QT_BEGIN_HEADER
 
@@ -60,12 +60,11 @@ class QmlContext;
 class QmlError;
 
 class QFxViewPrivate;
-class Q_DECLARATIVE_EXPORT QFxView : public QSimpleCanvas
+class Q_DECLARATIVE_EXPORT QFxView : public QGraphicsView
 {
 Q_OBJECT
 public:
     explicit QFxView(QWidget *parent = 0);
-    QFxView(QSimpleCanvas::CanvasMode mode, QWidget* parent = 0);
 
     virtual ~QFxView();
 
@@ -85,8 +84,6 @@ public:
     void setContentResizable(bool);
     bool contentResizable() const;
     QSize sizeHint() const;
-
-    void dumpRoot();
 
     static void printErrorLine(const QmlError &);
 Q_SIGNALS:

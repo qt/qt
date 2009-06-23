@@ -43,6 +43,7 @@
 #define QFXRECT_H
 
 #include <QtDeclarative/qfxitem.h>
+#include <QtGui/qbrush.h>
 
 
 QT_BEGIN_HEADER
@@ -159,7 +160,6 @@ public:
     qreal radius() const;
     void setRadius(qreal radius);
 
-    virtual void dump(int depth);
     void paintContents(QPainter &painter);
 
 private Q_SLOTS:

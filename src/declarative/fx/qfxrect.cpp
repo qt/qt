@@ -356,14 +356,6 @@ void QFxRect::setRadius(qreal radius)
     update();
 }
 
-void QFxRect::dump(int depth)
-{
-    Q_D(QFxRect);
-    QByteArray ba(depth * 4, ' ');
-    qWarning() << ba.constData() << "QFxRect:" << d->color;
-    QFxItem::dump(depth);
-}
-
 /*!
     \qmlproperty color Rect::color
     This property holds the color used to fill the rect.

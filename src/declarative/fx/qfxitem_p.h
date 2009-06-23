@@ -54,17 +54,18 @@
 //
 
 #include <QtDeclarative/qfxitem.h>
-#include <private/qsimplecanvasitem_p.h>
 #include <private/qmlnullablevalue_p.h>
 #include <QtDeclarative/qml.h>
 #include <QtDeclarative/qmlcontext.h>
 #include <QtCore/qlist.h>
+#include <private/qgraphicsitem_p.h>
+#include <QtCore/qdebug.h>
 
 QT_BEGIN_NAMESPACE
 
 class QNetworkReply;
 
-class QFxItemPrivate : public QSimpleCanvasItemPrivate
+class QFxItemPrivate : public QGraphicsItemPrivate
 {
     Q_DECLARE_PUBLIC(QFxItem)
 
@@ -75,8 +76,11 @@ public:
     : _anchors(0), _contents(0), qmlItem(0), _qmlcomp(0),
       _baselineOffset(0), _rotation(0.),
       _classComplete(true), _componentComplete(true), _keepMouse(false), 
-      visible(true), _anchorLines(0), visibleOp(1), reparentedChildren(0),
-      _stateGroup(0)
+      visible(true), _anchorLines(0), visibleOp(1), 
+      _stateGroup(0), canvas(0), origin(QFxItem::TopLeft), 
+      options(QFxItem::NoOption),
+      widthValid(false), heightValid(false), width(0), height(0), 
+      paintmargin(0), scale(1)
     {}
     ~QFxItemPrivate() 
     { delete _anchors; }
@@ -89,6 +93,7 @@ public:
             q->setItemParent(parent);
         _baselineOffset.invalidate();
         q->setAcceptedMouseButtons(Qt::NoButton);
+        q->setFlag(QGraphicsItem::ItemHasNoContents, true);
     }
 
     QString _id;
@@ -168,10 +173,27 @@ public:
 
     float visibleOp;
 
-    int reparentedChildren;
-
     QmlStateGroup *states();
     QmlStateGroup *_stateGroup;
+
+
+    QGraphicsScene *canvas;
+
+    QFxItem::TransformOrigin origin:4;
+    int options:10;
+    bool widthValid:1;
+    bool heightValid:1;
+
+    qreal width;
+    qreal height;
+    qreal paintmargin;
+    qreal scale;
+
+    QPointF transformOrigin() const;
+    QTransform transform;
+
+    void gvRemoveMouseFilter();
+    void gvAddMouseFilter();
 };
 
 QT_END_NAMESPACE

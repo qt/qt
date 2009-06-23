@@ -54,7 +54,6 @@
 //
 
 #include <private/qfxitem_p.h>
-#include <QtDeclarative/qsimplecanvas.h>
 
 QT_BEGIN_NAMESPACE
 

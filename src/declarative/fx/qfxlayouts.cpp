@@ -314,8 +314,9 @@ void QFxBaseLayout::preLayout()
         delete d->stateGroup; d->stateGroup = 0;
     }
     QSet<QFxItem *> allItems;
-    for (int ii = 0; ii < this->QSimpleCanvasItem::children().count(); ++ii) {
-        QFxItem *child = qobject_cast<QFxItem *>(this->QSimpleCanvasItem::children().at(ii));
+    QList<QGraphicsItem *> children = childItems();
+    for (int ii = 0; ii < children.count(); ++ii) {
+        QFxItem *child = qobject_cast<QFxItem *>(children.at(ii));
         if (!child)
             continue;
         if (!d->_items.contains(child)){
@@ -624,8 +625,10 @@ void QFxVerticalLayout::doLayout()
             applyRemove(changes, item);
         }
     }
-    for (int ii = 0; ii < this->QSimpleCanvasItem::children().count(); ++ii) {
-        QFxItem *child = qobject_cast<QFxItem *>(this->QSimpleCanvasItem::children().at(ii));
+
+    QList<QGraphicsItem *> children = childItems();
+    for (int ii = 0; ii < children.count(); ++ii) {
+        QFxItem *child = qobject_cast<QFxItem *>(children.at(ii));
         if (!child || !child->isVisible())
             continue;
 
@@ -790,8 +793,9 @@ void QFxHorizontalLayout::doLayout()
             applyRemove(changes, item);
         }
     }
-    for (int ii = 0; ii < this->QSimpleCanvasItem::children().count(); ++ii) {
-        QFxItem *child = qobject_cast<QFxItem *>(this->QSimpleCanvasItem::children().at(ii));
+    QList<QGraphicsItem *> children = childItems();
+    for (int ii = 0; ii < children.count(); ++ii) {
+        QFxItem *child = qobject_cast<QFxItem *>(children.at(ii));
         if (!child || !child->isVisible())
             continue;
 
@@ -1019,15 +1023,17 @@ void QFxGridLayout::doLayout()
     QList<int> maxColWidth;
     QList<int> maxRowHeight;
     int childIndex =0;
+    QList<QGraphicsItem *> children = childItems();
     for (int i=0; i<r; i++){
         for (int j=0; j<c; j++){
             if (j==0)
                 maxRowHeight << 0;
             if (i==0)
                 maxColWidth << 0;
-            if (childIndex == this->QSimpleCanvasItem::children().count())
+
+            if (childIndex == children.count())
                 continue;
-            QFxItem *child = qobject_cast<QFxItem *>(this->QSimpleCanvasItem::children().at(childIndex++));
+            QFxItem *child = qobject_cast<QFxItem *>(children.at(childIndex++));
             if (!child || !child->isVisible())
                 continue;
             if (child->width() > maxColWidth[j])
@@ -1047,7 +1053,7 @@ void QFxGridLayout::doLayout()
             applyRemove(changes, item);
         }
     }
-    foreach(QSimpleCanvasItem* schild, this->QSimpleCanvasItem::children()){
+    foreach(QGraphicsItem* schild, children){
         QFxItem *child = qobject_cast<QFxItem *>(schild);
         if (!child || !child->isVisible())
             continue;

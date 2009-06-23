@@ -76,7 +76,6 @@ int main(int argc, char ** argv)
     QString skin;
     bool devkeys = false;
     bool cache = false;
-    QFxTestEngine::TestMode testMode = QFxTestEngine::NoTest;
     QString testDir;
     QString translationFile;
 
@@ -104,18 +103,6 @@ int main(int argc, char ** argv)
             autorecord_to = range.mid(dash+1).toInt();
         } else if (arg == "-devicekeys") {
             devkeys = true;
-        } else if (arg == "-recordtest") {
-            testMode = QFxTestEngine::RecordTest;
-            if(i + 1 >= argc)
-                usage();
-            testDir = argv[i + 1];
-            ++i;
-        } else if (arg == "-runtest") {
-            testMode = QFxTestEngine::PlaybackTest;
-            if(i + 1 >= argc)
-                usage();
-            testDir = argv[i + 1];
-            ++i;
         } else if (arg == QLatin1String("-v") || arg == QLatin1String("-version")) {
             fprintf(stderr, "Qt Declarative UI Viewer version %s\n", QT_VERSION_STR);
             return 0;
@@ -139,7 +126,7 @@ int main(int argc, char ** argv)
         app.installTranslator(&qmlTranslator);
     }
 
-    QmlViewer viewer(testMode, testDir, 0, frameless ? Qt::FramelessWindowHint : Qt::Widget);
+    QmlViewer viewer(testDir, 0, frameless ? Qt::FramelessWindowHint : Qt::Widget);
     foreach (QString lib, libraries)
         viewer.addLibraryPath(lib);
     viewer.setCacheEnabled(cache);

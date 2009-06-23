@@ -114,7 +114,6 @@ public:
 
     QString activeLink() const;
 
-    virtual void dump(int depth);
     virtual QString propertyInfo() const;
 
     void paintContents(QPainter &p);

@@ -91,7 +91,6 @@ public:
     QUrl source() const;
     virtual void setSource(const QUrl &url);
 
-    virtual void dump(int depth);
     virtual QString propertyInfo() const;
     void paintContents(QPainter &painter);
 

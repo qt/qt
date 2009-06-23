@@ -1037,14 +1037,6 @@ void QFxParticles::setMotion(QFxParticleMotion *motion)
     d->motion = motion;
 }
 
-void QFxParticles::dump(int depth)
-{
-    Q_D(QFxParticles);
-    QByteArray ba(depth * 4, ' ');
-    qWarning() << ba.constData() << "URL:" << d->url << "Count:" << d->count;
-    QFxItem::dump(depth);
-}
-
 QString QFxParticles::propertyInfo() const
 {
     Q_D(const QFxParticles);
@@ -1057,8 +1049,8 @@ void QFxParticlesPainter::updateSize(){
     setWidth(1000);
     setHeight(1000);
     return ;
-    const int parentX = parent()->x();
-    const int parentY = parent()->y();
+    const int parentX = parentItem()->x();
+    const int parentY = parentItem()->y();
     //Have to use statistical approach to needed size as arbitrary particle
     //motions make it impossible to calculate.
     //max/min vars stored to give a never shrinking rect
@@ -1096,8 +1088,8 @@ void QFxParticlesPainter::paintContents(QPainter &p)
         return;
 
     updateSize();
-    const int myX = x() + parent()->x();
-    const int myY = y() + parent()->y();
+    const int myX = x() + parentItem()->x();
+    const int myY = y() + parentItem()->y();
 
     for (int i = 0; i < d->particles.count(); ++i) {
         const QFxParticle &particle = d->particles.at(i);

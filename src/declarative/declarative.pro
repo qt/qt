@@ -18,12 +18,10 @@ include(../qbase.pri)
 include(3rdparty/3rdparty.pri)
 include(util/util.pri)
 include(fx/fx.pri)
-include(canvas/canvas.pri)
 include(qml/qml.pri)
 include(timeline/timeline.pri)
 include(extra/extra.pri)
 include(widgets/widgets.pri)
-include(test/test.pri)
 include(debugger/debugger.pri)
 
 symbian:TARGET.UID3=0x2001E623

@@ -373,8 +373,8 @@ void QFxMouseRegion::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
         QPointF startLocalPos;
         QPointF curLocalPos;
         if (drag()->target()->parent()) {
-            startLocalPos = drag()->target()->parent()->mapFromScene(d->startScene);
-            curLocalPos = drag()->target()->parent()->mapFromScene(event->scenePos());
+            startLocalPos = drag()->target()->parentItem()->mapFromScene(d->startScene);
+            curLocalPos = drag()->target()->parentItem()->mapFromScene(event->scenePos());
         } else {
             startLocalPos = d->startScene;
             curLocalPos = event->scenePos();

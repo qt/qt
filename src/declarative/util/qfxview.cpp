@@ -64,7 +64,6 @@
 
 
 QT_BEGIN_NAMESPACE
-DEFINE_BOOL_CONFIG_OPTION(itemTreeDump, ITEMTREE_DUMP);
 DEFINE_BOOL_CONFIG_OPTION(qmlDebugger, QML_DEBUGGER);
 
 static QVariant stringToPixmap(const QString &str)
@@ -104,6 +103,8 @@ public:
     bool resizable;
 
     void init();
+
+    QGraphicsScene scene;
 };
 
 /*!
@@ -133,21 +134,7 @@ public:
   Constructs a QFxView with the given \a parent.
 */
 QFxView::QFxView(QWidget *parent)
-: QSimpleCanvas(parent), d(new QFxViewPrivate(this))
-{
-    setSizePolicy(QSizePolicy::Preferred,QSizePolicy::Preferred);
-    d->init();
-}
-
-/*!
-  \fn QFxView::QFxView(QSimpleCanvas::CanvasMode mode, QWidget *parent)
-  \internal
-  Constructs a QFxView with the given \a parent. The canvas
-  \a mode can be QSimpleCanvas::GraphicsView or
-  QSimpleCanvas::SimpleCanvas.
-*/
-QFxView::QFxView(QSimpleCanvas::CanvasMode mode, QWidget *parent)
-: QSimpleCanvas(mode, parent), d(new QFxViewPrivate(this))
+: QGraphicsView(parent), d(new QFxViewPrivate(this))
 {
     setSizePolicy(QSizePolicy::Preferred,QSizePolicy::Preferred);
     d->init();
@@ -166,6 +153,20 @@ void QFxViewPrivate::init()
     QFxPerfTimer<QFxPerf::FontDatabase> perf;
 #endif
     QFontDatabase database;
+
+    q->setScene(&scene);
+
+    q->setOptimizationFlags(QGraphicsView::DontSavePainterState);
+    q->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    q->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    q->setFrameStyle(0);
+
+    // These seem to give the best performance
+    q->setViewportUpdateMode(QGraphicsView::BoundingRectViewportUpdate);
+    scene.setItemIndexMethod(QGraphicsScene::NoIndex);
+    q->viewport()->setFocusPolicy(Qt::NoFocus);
+
+
 }
 
 /*!
@@ -320,15 +321,14 @@ void QFxView::continueExecute()
 
     if (obj) {
         if (QFxItem *item = qobject_cast<QFxItem *>(obj)) {
-            item->QSimpleCanvasItem::setParent(QSimpleCanvas::root());
 
-            if (itemTreeDump())
-                item->dump();
+            d->scene.addItem(item);
 
             if(qmlDebugger()) {
                 QmlDebugger *debugger = new QmlDebugger;
                 debugger->setDebugObject(item);
-                debugger->setCanvas(this);
+                // ### GV
+                //debugger->setCanvas(this);
                 debugger->show();
                 raise();
                 debugger->raise();
@@ -532,7 +532,8 @@ void QFxView::resizeEvent(QResizeEvent *e)
         d->root->setWidth(width());
         d->root->setHeight(height());
     }
-    QSimpleCanvas::resizeEvent(e);
+    setSceneRect(rect());
+    QGraphicsView::resizeEvent(e);
 }
 
 /*! \fn void QFxView::focusInEvent(QFocusEvent *e)
@@ -554,11 +555,4 @@ void QFxView::focusOutEvent(QFocusEvent *)
     // Do nothing (do not call QWidget::update())
 }
 
-/*!
-  \internal
- */
-void QFxView::dumpRoot()
-{
-    root()->dump();
-}
 QT_END_NAMESPACE

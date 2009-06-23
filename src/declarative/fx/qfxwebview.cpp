@@ -55,7 +55,6 @@
 #include "qmlstate.h"
 #include "qfxtransform.h"
 #include "qfxscalegrid.h"
-#include "qsimplecanvas.h"
 #include "qlistmodelinterface.h"
 
 #include "qfxwebview.h"
@@ -533,13 +532,6 @@ void QFxWebView::setCacheSize(int pixels)
         }
     }
     d->max_imagecache_size = pixels;
-}
-
-void QFxWebView::dump(int depth)
-{
-    QByteArray ba(depth * 4, ' ');
-    qWarning() << ba.constData() << "url:" << url();
-    QFxPaintedItem::dump(depth);
 }
 
 void QFxWebView::drawContents(QPainter *p, const QRect &r)

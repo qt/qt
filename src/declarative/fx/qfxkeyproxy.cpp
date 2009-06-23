@@ -93,24 +93,12 @@ QList<QFxItem *> *QFxKeyProxy::targets() const
 
 void QFxKeyProxy::keyPressEvent(QKeyEvent *e)
 {
-    for (int ii = 0; ii < d->targets.count(); ++ii) {
-        QSimpleCanvasItem *i = canvas()->focusItem(d->targets.at(ii));
-        if (i)
-            i->keyPressEvent(e);
-        if (e->isAccepted())
-            return;
-    }
+    // ### GV
 }
 
 void QFxKeyProxy::keyReleaseEvent(QKeyEvent *e)
 {
-    for (int ii = 0; ii < d->targets.count(); ++ii) {
-        QSimpleCanvasItem *i = canvas()->focusItem(d->targets.at(ii));
-        if (i)
-            i->keyReleaseEvent(e);
-        if (e->isAccepted())
-            return;
-    }
+    // ### GV
 }
 
 QT_END_NAMESPACE

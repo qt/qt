@@ -40,6 +40,7 @@
 #include <QFileDialog>
 #include <QTimer>
 #include <QNetworkProxyFactory>
+#include <QKeyEvent>
 
 class PreviewDeviceSkin : public DeviceSkin
 {
@@ -124,10 +125,9 @@ void PreviewDeviceSkin::slotPopupMenu()
 }
 
 
-QmlViewer::QmlViewer(QFxTestEngine::TestMode testMode, const QString &testDir, QWidget *parent, Qt::WindowFlags flags)
+QmlViewer::QmlViewer(const QString &testDir, QWidget *parent, Qt::WindowFlags flags)
     : QWidget(parent, flags), frame_stream(0), scaleSkin(true), mb(0)
 {
-    testEngine = 0;
     devicemode = false;
     skin = 0;
     canvas = 0;
@@ -141,9 +141,6 @@ QmlViewer::QmlViewer(QFxTestEngine::TestMode testMode, const QString &testDir, Q
     canvas->setAttribute(Qt::WA_OpaquePaintEvent);
     canvas->setAttribute(Qt::WA_NoSystemBackground);
     canvas->setContentResizable(!skin || !scaleSkin);
-
-    if(testMode != QFxTestEngine::NoTest)
-        testEngine = new QFxTestEngine(testMode, testDir, canvas, this);
 
     QObject::connect(canvas, SIGNAL(sceneResized(QSize)), this, SLOT(sceneResized(QSize)));
 
@@ -294,7 +291,8 @@ void QmlViewer::takeSnapShot()
 {
     static int snapshotcount = 1;
     QString snapFileName = QString(QLatin1String("snapshot%1.png")).arg(snapshotcount);
-    canvas->asImage().save(snapFileName);
+    // ### GV
+    // canvas->asImage().save(snapFileName);
     qDebug() << "Wrote" << snapFileName;
     ++snapshotcount;
 }
@@ -516,22 +514,11 @@ void QmlViewer::keyPressEvent(QKeyEvent *event)
         toggleRecording();
     } else if (event->key() == Qt::Key_F3 || (event->key() == Qt::Key_3 && devicemode)) {
         takeSnapShot();
-    } else if (event->key() == Qt::Key_F4 || (event->key() == Qt::Key_4 && devicemode)) {
-        canvas->dumpItems();
-        canvas->checkState();
     } else if (event->key() == Qt::Key_F5 || (event->key() == Qt::Key_5 && devicemode)) {
         reload();
-    } else if (event->key() == Qt::Key_F6 || (event->key() == Qt::Key_6 && devicemode)) {
-        canvas->dumpRoot();
-    } else if (event->key() == Qt::Key_F7 || (event->key() == Qt::Key_7 && devicemode)) {
-        canvas->dumpTiming();
     } else if (event->key() == Qt::Key_F8 || (event->key() == Qt::Key_8 && devicemode)) {
         QPerformanceLog::displayData();
         QPerformanceLog::clear();
-    } else if (event->key() == Qt::Key_F9) {
-        if(testEngine) testEngine->save();
-    } else if (event->key() == Qt::Key_F10) {
-        if(testEngine) testEngine->captureFullFrame();
     }
 
     QWidget::keyPressEvent(event);
@@ -659,10 +646,12 @@ void QmlViewer::timerEvent(QTimerEvent *event)
 {
     if (event->timerId() == recordTimer.timerId()) {
         if (frame_stream) {
-            QImage frame(canvas->asImage());
-            frame_stream->write((char*)frame.bits(),frame.numBytes());
+            // ### GV
+            // QImage frame(canvas->asImage());
+            // frame_stream->write((char*)frame.bits(),frame.numBytes());
         } else {
-            frames.append(new QImage(canvas->asImage()));
+            // ### GV
+            // frames.append(new QImage(canvas->asImage()));
         }
         if (record_autotime && autoTimer.elapsed() >= record_autotime)
             setRecording(false);

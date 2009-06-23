@@ -140,7 +140,6 @@ public:
     QAction *forwardAction() const;
     QAction *stopAction() const;
 
-    virtual void dump(int depth);
     virtual QString propertyInfo() const;
 
     QWebPage *page() const;

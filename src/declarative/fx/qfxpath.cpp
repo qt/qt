@@ -43,6 +43,7 @@
 #include "qfxpath_p.h"
 #include <qfxperf.h>
 #include <private/qbezier_p.h>
+#include <QSet>
 
 
 QT_BEGIN_NAMESPACE

@@ -495,16 +495,6 @@ void QFxTextEdit::geometryChanged(const QRectF &newGeometry,
 }
 
 /*!
-    \internal
-*/
-void QFxTextEdit::dump(int depth)
-{
-    QByteArray ba(depth * 4, ' ');
-    qWarning() << ba.constData() << propertyInfo();
-    QFxPaintedItem::dump(depth);
-}
-
-/*!
    \internal
 */
 QString QFxTextEdit::propertyInfo() const

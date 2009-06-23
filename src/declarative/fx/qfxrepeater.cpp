@@ -243,7 +243,7 @@ void QFxRepeater::componentComplete()
 /*!
     \internal
  */
-void QFxRepeater::parentChanged(QSimpleCanvasItem *o, QSimpleCanvasItem *n)
+void QFxRepeater::parentChanged(QFxItem *o, QFxItem *n)
 {
     QFxItem::parentChanged(o, n);
     regenerate();

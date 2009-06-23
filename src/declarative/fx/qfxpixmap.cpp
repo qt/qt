@@ -46,6 +46,7 @@
 #include <qfxperf.h>
 #include <QtDeclarative/qmlengine.h>
 #include <QFile>
+#include <QtCore/qdebug.h>
 
 QT_BEGIN_NAMESPACE
 class QSharedNetworkReply;

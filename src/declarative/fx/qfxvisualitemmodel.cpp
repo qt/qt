@@ -51,6 +51,7 @@
 #include "qmlopenmetaobject.h"
 #include "qmllistaccessor.h"
 #include "qfxvisualitemmodel.h"
+#include <QtCore/qdebug.h>
 
 
 QT_BEGIN_NAMESPACE
