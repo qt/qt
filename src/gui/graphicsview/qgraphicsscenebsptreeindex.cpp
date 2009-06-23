@@ -157,7 +157,7 @@ void QGraphicsSceneBspTreeIndexPrivate::_q_updateIndex()
     // Regenerate the tree.
     if (regenerateIndex) {
         regenerateIndex = false;
-        bsp.initialize(q->scene()->sceneRect(), bspTreeDepth);
+        bsp.initialize(sceneRect, bspTreeDepth);
         unindexedItems = indexedItems;
         lastItemCount = indexedItems.size();
     }
@@ -689,6 +689,7 @@ void QGraphicsSceneBspTreeIndex::setBspTreeDepth(int depth)
 void QGraphicsSceneBspTreeIndex::sceneRectChanged()
 {
     Q_D(QGraphicsSceneBspTreeIndex);
+    d->sceneRect = d->scene->sceneRect();
     d->resetIndex();
 }
 
