@@ -92,7 +92,7 @@ public:
     void purge();
 };
 
-class Q_AUTOTEST_EXPORT QGraphicsItemPrivate
+class Q_GUI_EXPORT QGraphicsItemPrivate
 {
     Q_DECLARE_PUBLIC(QGraphicsItem)
 public:
