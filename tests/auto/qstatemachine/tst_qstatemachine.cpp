@@ -151,6 +151,8 @@ private slots:
     void defaultGlobalRestorePolicy();
     void globalRestorePolicySetToRestore();
     void globalRestorePolicySetToDoNotRestore();
+
+    void noInitialStateForInitialState();
     
     //void restorePolicyNotInherited();
     //void mixedRestoreProperties();
@@ -345,7 +347,7 @@ void tst_QStateMachine::transitionEntersParent()
 void tst_QStateMachine::defaultErrorState()
 {
     QStateMachine machine;
-    QVERIFY(machine.errorState() != 0);
+    QCOMPARE(machine.errorState(), reinterpret_cast<QAbstractState *>(0));
 
     QState *brokenState = new QState();
     brokenState->setObjectName("MyInitialState");
@@ -364,9 +366,7 @@ void tst_QStateMachine::defaultErrorState()
 
     QCOMPARE(machine.error(), QStateMachine::NoInitialStateError);
     QCOMPARE(machine.errorString(), QString::fromLatin1("Missing initial state in compound state 'MyInitialState'"));
-
-    QCOMPARE(machine.configuration().count(), 1);
-    QVERIFY(machine.configuration().contains(machine.errorState()));
+    QCOMPARE(machine.isRunning(), false);
 }
 
 class CustomErrorState: public QState
@@ -424,6 +424,7 @@ void tst_QStateMachine::customGlobalErrorState()
 
     QCoreApplication::processEvents();
     
+    QCOMPARE(machine.isRunning(), true);
     QCOMPARE(machine.configuration().count(), 1);
     QVERIFY(machine.configuration().contains(customErrorState));
     QCOMPARE(customErrorState->error, QStateMachine::NoInitialStateError);
@@ -459,6 +460,7 @@ void tst_QStateMachine::customLocalErrorStateInBrokenState()
     machine.postEvent(new QEvent(QEvent::Type(QEvent::User + 1)));
     QCoreApplication::processEvents();
 
+    QCOMPARE(machine.isRunning(), true);
     QCOMPARE(machine.configuration().count(), 1);
     QVERIFY(machine.configuration().contains(customErrorState));
     QCOMPARE(customErrorState->error, QStateMachine::NoInitialStateError);
@@ -494,8 +496,7 @@ void tst_QStateMachine::customLocalErrorStateInOtherState()
     machine.postEvent(new QEvent(QEvent::Type(QEvent::User + 1)));
     QCoreApplication::processEvents();
 
-    QCOMPARE(machine.configuration().count(), 1);
-    QVERIFY(machine.configuration().contains(machine.errorState()));
+    QCOMPARE(machine.isRunning(), false);
 }
 
 void tst_QStateMachine::customLocalErrorStateInParentOfBrokenState()
@@ -529,6 +530,7 @@ void tst_QStateMachine::customLocalErrorStateInParentOfBrokenState()
     machine.postEvent(new QEvent(QEvent::Type(QEvent::User + 1)));
     QCoreApplication::processEvents();
 
+    QCOMPARE(machine.isRunning(), true);
     QCOMPARE(machine.configuration().count(), 1);
     QVERIFY(machine.configuration().contains(customErrorState));
 }
@@ -607,6 +609,7 @@ void tst_QStateMachine::errorStateHasChildren()
     machine.postEvent(new QEvent(QEvent::Type(QEvent::User + 1)));
     QCoreApplication::processEvents();
 
+    QCOMPARE(machine.isRunning(), true);
     QCOMPARE(machine.configuration().count(), 2);
     QVERIFY(machine.configuration().contains(customErrorState));
     QVERIFY(machine.configuration().contains(childOfErrorState)); 
@@ -620,7 +623,6 @@ void tst_QStateMachine::errorStateHasErrors()
     customErrorState->setObjectName("customErrorState");
     machine.addState(customErrorState);
 
-    QAbstractState *oldErrorState = machine.errorState();
     machine.setErrorState(customErrorState);
 
     QState *childOfErrorState = new QState(customErrorState);
@@ -647,8 +649,7 @@ void tst_QStateMachine::errorStateHasErrors()
     QTest::ignoreMessage(QtWarningMsg, "Unrecoverable error detected in running state machine: Missing initial state in compound state 'customErrorState'");
     QCoreApplication::processEvents();
 
-    QCOMPARE(machine.configuration().count(), 1);
-    QVERIFY(machine.configuration().contains(oldErrorState)); // Fall back to default
+    QCOMPARE(machine.isRunning(), false);
     QCOMPARE(machine.error(), QStateMachine::NoInitialStateError);
     QCOMPARE(machine.errorString(), QString::fromLatin1("Missing initial state in compound state 'customErrorState'"));
 }
@@ -680,8 +681,7 @@ void tst_QStateMachine::errorStateIsRootState()
     QTest::ignoreMessage(QtWarningMsg, "Unrecoverable error detected in running state machine: Missing initial state in compound state 'brokenState'");
     QCoreApplication::processEvents();
 
-    QCOMPARE(machine.configuration().count(), 1);    
-    QVERIFY(machine.configuration().contains(machine.errorState()));
+    QCOMPARE(machine.isRunning(), false);
 }
 
 void tst_QStateMachine::errorStateEntersParentFirst()
@@ -759,7 +759,6 @@ void tst_QStateMachine::errorStateEntersParentFirst()
 void tst_QStateMachine::customErrorStateIsNull()
 {
     QStateMachine machine;
-    QAbstractState *oldErrorState = machine.errorState();
     machine.rootState()->setErrorState(0);
 
     QState *initialState = new QState();
@@ -780,8 +779,7 @@ void tst_QStateMachine::customErrorStateIsNull()
     QCoreApplication::processEvents();
 
     QCOMPARE(machine.errorState(), reinterpret_cast<QAbstractState *>(0));
-    QCOMPARE(machine.configuration().count(), 1);
-    QVERIFY(machine.configuration().contains(oldErrorState));
+    QCOMPARE(machine.isRunning(), false);
 }
 
 void tst_QStateMachine::clearError()
@@ -797,6 +795,7 @@ void tst_QStateMachine::clearError()
     machine.start();
     QCoreApplication::processEvents();
 
+    QCOMPARE(machine.isRunning(), true);
     QCOMPARE(machine.error(), QStateMachine::NoInitialStateError);
     QCOMPARE(machine.errorString(), QString::fromLatin1("Missing initial state in compound state 'brokenState'"));
 
@@ -862,6 +861,7 @@ void tst_QStateMachine::historyStateHasNowhereToGo()
     machine.postEvent(new QEvent(QEvent::User));
     QCoreApplication::processEvents();
 
+    QCOMPARE(machine.isRunning(), true);
     QCOMPARE(machine.configuration().count(), 1);
     QVERIFY(machine.configuration().contains(machine.errorState()));
     QCOMPARE(machine.error(), QStateMachine::NoDefaultStateInHistoryStateError);
@@ -920,8 +920,7 @@ void tst_QStateMachine::transitionToStateNotInGraph()
     QTest::ignoreMessage(QtWarningMsg, "Unrecoverable error detected in running state machine: No common ancestor for targets and source of transition from state 'initialState'");
     QCoreApplication::processEvents();
 
-    QCOMPARE(machine.configuration().count(), 1);
-    QVERIFY(machine.configuration().contains(qobject_cast<QState*>(machine.rootState())->errorState()));
+    QCOMPARE(machine.isRunning(), false);
 }
 
 void tst_QStateMachine::customErrorStateNotInGraph()
@@ -932,7 +931,7 @@ void tst_QStateMachine::customErrorStateNotInGraph()
     errorState.setObjectName("errorState");
     QTest::ignoreMessage(QtWarningMsg, "QState::setErrorState: error state cannot belong to a different state machine");
     machine.setErrorState(&errorState);
-    QVERIFY(&errorState != machine.errorState());
+    QCOMPARE(machine.errorState(), reinterpret_cast<QAbstractState *>(0));
 
     QState *initialBrokenState = new QState(machine.rootState());
     initialBrokenState->setObjectName("initialBrokenState");
@@ -942,9 +941,8 @@ void tst_QStateMachine::customErrorStateNotInGraph()
     machine.start();
     QTest::ignoreMessage(QtWarningMsg, "Unrecoverable error detected in running state machine: Missing initial state in compound state 'initialBrokenState'");
     QCoreApplication::processEvents();
-    
-    QCOMPARE(machine.configuration().count(), 1);
-    QVERIFY(machine.configuration().contains(machine.errorState()));        
+
+    QCOMPARE(machine.isRunning(), false);
 }
 
 void tst_QStateMachine::restoreProperties()
@@ -1019,8 +1017,7 @@ void tst_QStateMachine::addAndRemoveState()
 {
     QStateMachine machine;
     QStatePrivate *root_d = QStatePrivate::get(machine.rootState());
-    QCOMPARE(root_d->childStates().size(), 1); // the error state
-    QCOMPARE(root_d->childStates().at(0), (QAbstractState*)machine.errorState());
+    QCOMPARE(root_d->childStates().size(), 0); 
 
     QTest::ignoreMessage(QtWarningMsg, "QStateMachine::addState: cannot add null state");
     machine.addState(0);
@@ -1031,9 +1028,8 @@ void tst_QStateMachine::addAndRemoveState()
     machine.addState(s1);
     QCOMPARE(s1->machine(), &machine);
     QCOMPARE(s1->parentState(), machine.rootState());
-    QCOMPARE(root_d->childStates().size(), 2);
-    QCOMPARE(root_d->childStates().at(0), (QAbstractState*)machine.errorState());
-    QCOMPARE(root_d->childStates().at(1), (QAbstractState*)s1);
+    QCOMPARE(root_d->childStates().size(), 1);
+    QCOMPARE(root_d->childStates().at(0), (QAbstractState*)s1);
 
     QTest::ignoreMessage(QtWarningMsg, "QStateMachine::addState: state has already been added to this machine");
     machine.addState(s1);
@@ -1042,24 +1038,21 @@ void tst_QStateMachine::addAndRemoveState()
     QCOMPARE(s2->parentState(), (QState*)0);
     machine.addState(s2);
     QCOMPARE(s2->parentState(), machine.rootState());
-    QCOMPARE(root_d->childStates().size(), 3);
-    QCOMPARE(root_d->childStates().at(0), (QAbstractState*)machine.errorState());
-    QCOMPARE(root_d->childStates().at(1), (QAbstractState*)s1);
-    QCOMPARE(root_d->childStates().at(2), (QAbstractState*)s2);
+    QCOMPARE(root_d->childStates().size(), 2);
+    QCOMPARE(root_d->childStates().at(0), (QAbstractState*)s1);
+    QCOMPARE(root_d->childStates().at(1), (QAbstractState*)s2);
 
     QTest::ignoreMessage(QtWarningMsg, "QStateMachine::addState: state has already been added to this machine");
     machine.addState(s2);
 
     machine.removeState(s1);
     QCOMPARE(s1->parentState(), (QState*)0);
-    QCOMPARE(root_d->childStates().size(), 2);
-    QCOMPARE(root_d->childStates().at(0), (QAbstractState*)machine.errorState());
-    QCOMPARE(root_d->childStates().at(1), (QAbstractState*)s2);
+    QCOMPARE(root_d->childStates().size(), 1);
+    QCOMPARE(root_d->childStates().at(0), (QAbstractState*)s2);
 
     machine.removeState(s2);
     QCOMPARE(s2->parentState(), (QState*)0);
-    QCOMPARE(root_d->childStates().size(), 1);
-    QCOMPARE(root_d->childStates().at(0), (QAbstractState*)machine.errorState());
+    QCOMPARE(root_d->childStates().size(), 0);
 
     QTest::ignoreMessage(QtWarningMsg, "QStateMachine::removeState: cannot remove null state");
     machine.removeState(0);
@@ -2393,12 +2386,10 @@ void tst_QStateMachine::targetStateWithNoParent()
     QSignalSpy finishedSpy(&machine, SIGNAL(finished()));
     machine.start();
     QTest::ignoreMessage(QtWarningMsg, "Unrecoverable error detected in running state machine: No common ancestor for targets and source of transition from state 's1'");
-    QTRY_COMPARE(machine.isRunning(), true);
     QTRY_COMPARE(startedSpy.count(), 1);
-    QCOMPARE(stoppedSpy.count(), 0);
+    QCOMPARE(machine.isRunning(), false);    
+    QCOMPARE(stoppedSpy.count(), 1);
     QCOMPARE(finishedSpy.count(), 0);
-    QCOMPARE(machine.configuration().size(), 1);
-    QVERIFY(machine.configuration().contains(machine.errorState()));
     QCOMPARE(machine.error(), QStateMachine::NoCommonAncestorForTransitionError);
 }
 
@@ -2451,6 +2442,25 @@ void tst_QStateMachine::defaultGlobalRestorePolicy()
 
     QCOMPARE(propertyHolder->property("a").toInt(), 3);
     QCOMPARE(propertyHolder->property("b").toInt(), 4);    
+}
+
+void tst_QStateMachine::noInitialStateForInitialState()
+{
+    QStateMachine machine;
+
+    QState *initialState = new QState(machine.rootState());
+    initialState->setObjectName("initialState");
+    machine.setInitialState(initialState);
+
+    QState *childState = new QState(initialState);
+
+    QTest::ignoreMessage(QtWarningMsg, "Unrecoverable error detected in running state machine: "
+                                       "Missing initial state in compound state 'initialState'");
+    machine.start();
+    QCoreApplication::processEvents();
+
+    QCOMPARE(machine.isRunning(), false);
+    QCOMPARE(int(machine.error()), int(QStateMachine::NoInitialStateError));
 }
 
 /*

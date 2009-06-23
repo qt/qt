@@ -175,7 +175,6 @@ public:
     QString errorString;
     QSet<QAbstractState *> pendingErrorStates;
     QSet<QAbstractState *> pendingErrorStatesForDefaultEntry;
-    QAbstractState *initialErrorStateForRoot;
 
 #ifndef QT_NO_ANIMATION
     bool animationsEnabled;
