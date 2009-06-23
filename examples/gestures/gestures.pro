@@ -1,11 +1,12 @@
 TEMPLATE      = \
               subdirs
 SUBDIRS       = \
-              browser \
               imageviewer \
               graphicsview \
               collidingmice \
               pannablewebview
+
+contains(QT_CONFIG, webkit):contains(QT_CONFIG, svg):SUBDIRS += browser
 
 # install
 target.path = $$[QT_INSTALL_EXAMPLES]/gestures
