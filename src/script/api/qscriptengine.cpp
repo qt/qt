@@ -2468,7 +2468,7 @@ QScriptValue QScriptEngine::toObject(const QScriptValue &value)
 {
     Q_D(QScriptEngine);
     JSC::JSValue jscValue = d->scriptValueToJSCValue(value);
-    if (!jscValue)
+    if (!jscValue || jscValue.isUndefined() || jscValue.isNull())
         return QScriptValue();
     JSC::ExecState* exec = d->globalObject->globalExec();
     JSC::JSValue result = jscValue.toObject(exec);
