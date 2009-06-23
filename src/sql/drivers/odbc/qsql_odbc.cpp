@@ -1776,7 +1776,6 @@ void QODBCDriverPrivate::checkUnicode()
                     sizeof(fFunc),
                     NULL);
     if ((r == SQL_SUCCESS || r == SQL_SUCCESS_WITH_INFO) && (fFunc & SQL_CVT_WVARCHAR)) {
-        sql_varchar_type = QVariant::String;
         unicode = true;
     }
 
@@ -1786,7 +1785,6 @@ void QODBCDriverPrivate::checkUnicode()
                     sizeof(fFunc),
                     NULL);
     if ((r == SQL_SUCCESS || r == SQL_SUCCESS_WITH_INFO) && (fFunc & SQL_CVT_WLONGVARCHAR)) {
-        sql_longvarchar_type = QVariant::String;
         unicode = true;
     }
 }
