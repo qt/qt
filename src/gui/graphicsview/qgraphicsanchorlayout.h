@@ -78,6 +78,13 @@ public:
     void removeAnchor(QGraphicsLayoutItem *firstItem, Edge firstEdge,
                       QGraphicsLayoutItem *secondItem, Edge secondEdge);
 
+    inline void fillWidth(QGraphicsLayoutItem *item,
+                          QGraphicsLayoutItem *relativeTo = 0);
+    inline void fillHeight(QGraphicsLayoutItem *item,
+                           QGraphicsLayoutItem *relativeTo = 0);
+    inline void fill(QGraphicsLayoutItem *item,
+                     QGraphicsLayoutItem *relativeTo = 0);
+
     void setSpacing(qreal spacing, Qt::Orientations orientations = Qt::Horizontal|Qt::Vertical);
     qreal spacing(Qt::Orientation) const;
 
@@ -98,6 +105,35 @@ private:
     Q_DECLARE_PRIVATE(QGraphicsAnchorLayout)
 };
 
+void QGraphicsAnchorLayout::fillWidth(QGraphicsLayoutItem *item,
+                                      QGraphicsLayoutItem *relativeTo)
+{
+    if (!relativeTo)
+        relativeTo = this;
+
+    anchor(relativeTo, Left, item, Left);
+    anchor(item, Right, relativeTo, Right);
+}
+
+void QGraphicsAnchorLayout::fillHeight(QGraphicsLayoutItem *item,
+                                       QGraphicsLayoutItem *relativeTo)
+{
+    if (!relativeTo)
+        relativeTo = this;
+
+    anchor(relativeTo, Top, item, Top);
+    anchor(item, Bottom, relativeTo, Bottom);
+}
+
+void QGraphicsAnchorLayout::fill(QGraphicsLayoutItem *item,
+                                 QGraphicsLayoutItem *relativeTo)
+{
+    if (!relativeTo)
+        relativeTo = this;
+
+    fillWidth(item, relativeTo);
+    fillHeight(item, relativeTo);
+}
 
 #endif
 
