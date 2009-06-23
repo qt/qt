@@ -1,9 +1,9 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Contact: Qt Software Information (qt-info@nokia.com)
 **
-** This file is part of the Qt Designer of the Qt Toolkit.
+** This file is part of the examples of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -34,50 +34,40 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at qt-sales@nokia.com.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
 
-#ifndef VIDEOPLAYERTASKMENU_H
-#define VIDEOPLAYERTASKMENU_H
 
+#ifndef FREEZETABLEWIDGET_H
+#define FREEZETABLEWIDGET_H
 
-#include <QtCore/QObject>
-#include <QtDesigner/QDesignerTaskMenuExtension>
-#include <QtDesigner/private/extensionfactory_p.h>
+#include <QTableView>
 
-#include <Phonon/BackendCapabilities>
-#include <Phonon/VideoPlayer>
+//! [Widget definition]
+class FreezeTableWidget : public QTableView {
+     Q_OBJECT
 
-QT_BEGIN_NAMESPACE
-
-class VideoPlayerTaskMenu: public QObject, public QDesignerTaskMenuExtension
-{
-    Q_OBJECT
-    Q_INTERFACES(QDesignerTaskMenuExtension)
 public:
-    explicit VideoPlayerTaskMenu(Phonon::VideoPlayer *object, QObject *parent = 0);
-    virtual QList<QAction*> taskActions() const;
+      FreezeTableWidget(QAbstractItemModel * model);
+      ~FreezeTableWidget();
 
-private slots:
-    void slotLoad();
-    void slotMimeTypes();
-    void mediaObjectStateChanged(Phonon::State newstate, Phonon::State oldstate);
+
+protected:
+      virtual void resizeEvent(QResizeEvent *event);
+      virtual QModelIndex moveCursor(CursorAction cursorAction, Qt::KeyboardModifiers modifiers);
 
 private:
-    Phonon::VideoPlayer *m_widget;
-    QAction *m_displayMimeTypesAction;
-    QAction *m_loadAction;
-    QAction *m_playAction;
-    QAction *m_pauseAction;
-    QAction *m_stopAction;
+      QTableView *frozenTableView;
+      void init();
+      void updateFrozenTableGeometry();
 
-    QList<QAction*> m_taskActions;
+
+private slots:
+      void updateSectionWidth(int logicalIndex,int, int newSize);
+      void updateSectionHeight(int logicalIndex, int, int newSize);
+
 };
-
-typedef qdesigner_internal::ExtensionFactory<QDesignerTaskMenuExtension, Phonon::VideoPlayer, VideoPlayerTaskMenu>  VideoPlayerTaskMenuFactory;
-
-QT_END_NAMESPACE
-
-#endif // VIDEOPLAYERTASKMENU_H
+//! [Widget definition]
+#endif
