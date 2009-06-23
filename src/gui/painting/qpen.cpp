@@ -462,8 +462,8 @@ QVector<qreal> QPen::dashPattern() const
     Sets the dash pattern for this pen to the given \a pattern. This
     implicitly converts the style of the pen to Qt::CustomDashLine.
 
-    The pattern must be specified as an even number of entries where
-    the entries 1, 3, 5... are the dashes and 2, 4, 6... are the
+    The pattern must be specified as an even number of positive entries
+    where the entries 1, 3, 5... are the dashes and 2, 4, 6... are the
     spaces. For example:
 
     \table 100%
