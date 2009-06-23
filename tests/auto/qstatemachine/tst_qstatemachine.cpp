@@ -1067,10 +1067,10 @@ void tst_QStateMachine::addAndRemoveState()
     {
         QStateMachine machine2;
         {
-            char warning[256];
-            sprintf(warning, "QStateMachine::removeState: state %p's machine (%p) is different from this machine (%p)",
-                    machine2.rootState(), &machine2, &machine);
-            QTest::ignoreMessage(QtWarningMsg, warning);
+            QString warning;
+            warning.sprintf("QStateMachine::removeState: state %p's machine (%p) is different from this machine (%p)",
+                            machine2.rootState(), &machine2, &machine);
+            QTest::ignoreMessage(QtWarningMsg, qPrintable(warning));
             machine.removeState(machine2.rootState());
         }
         // ### check this behavior
@@ -1129,9 +1129,9 @@ void tst_QStateMachine::stateEntryAndExit()
             QCOMPARE(trans->sourceState(), (QState*)s2);
             QCOMPARE(trans->targetState(), (QAbstractState*)s3);
             {
-                char warning[256];
-                sprintf(warning, "QState::removeTransition: transition %p's source state (%p) is different from this state (%p)", trans, s2, s1);
-                QTest::ignoreMessage(QtWarningMsg, warning);
+                QString warning;
+                warning.sprintf("QState::removeTransition: transition %p's source state (%p) is different from this state (%p)", trans, s2, s1);
+                QTest::ignoreMessage(QtWarningMsg, qPrintable(warning));
                 s1->removeTransition(trans);
             }
             s2->removeTransition(trans);
@@ -1147,9 +1147,9 @@ void tst_QStateMachine::stateEntryAndExit()
         machine.setInitialState(s1);
         QCOMPARE(machine.initialState(), (QAbstractState*)s1);
         {
-            char warning[256];
-            sprintf(warning, "QState::setInitialState: state %p is not a child of this state (%p)", machine.rootState(), machine.rootState());
-            QTest::ignoreMessage(QtWarningMsg, warning);
+            QString warning;
+            warning.sprintf("QState::setInitialState: state %p is not a child of this state (%p)", machine.rootState(), machine.rootState());
+            QTest::ignoreMessage(QtWarningMsg, qPrintable(warning));
             machine.setInitialState(machine.rootState());
             QCOMPARE(machine.initialState(), (QAbstractState*)s1);
         }
@@ -1614,9 +1614,9 @@ void tst_QStateMachine::parallelStates()
         s1_2_1->addTransition(s1_2_f);
       s1_2->setInitialState(s1_2_1);
     {
-        char warning[256];
-        sprintf(warning, "QState::setInitialState: ignoring attempt to set initial state of parallel state group %p", s1);
-        QTest::ignoreMessage(QtWarningMsg, warning);
+        QString warning;
+        warning.sprintf("QState::setInitialState: ignoring attempt to set initial state of parallel state group %p", s1);
+        QTest::ignoreMessage(QtWarningMsg, qPrintable(warning));
         s1->setInitialState(0);
     }
     machine.addState(s1);
@@ -2286,9 +2286,9 @@ void tst_QStateMachine::historyStates()
             QCOMPARE(s0h->defaultState(), (QAbstractState*)0);
             s0h->setDefaultState(s00);
             QCOMPARE(s0h->defaultState(), (QAbstractState*)s00);
-            char warning[256];
-            sprintf(warning, "QHistoryState::setDefaultState: state %p does not belong to this history state's group (%p)", s0, s0);
-            QTest::ignoreMessage(QtWarningMsg, warning);
+            QString warning;
+            warning.sprintf("QHistoryState::setDefaultState: state %p does not belong to this history state's group (%p)", s0, s0);
+            QTest::ignoreMessage(QtWarningMsg, qPrintable(warning));
             s0h->setDefaultState(s0);
           QState *s1 = new QState(root);
           QFinalState *s2 = new QFinalState(root);
