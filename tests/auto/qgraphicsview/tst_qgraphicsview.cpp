@@ -371,6 +371,7 @@ void tst_QGraphicsView::interactive()
     QCOMPARE(item->events.size(), 0);
 
     QPoint itemPoint = view.mapFromScene(item->scenePos());
+
     QVERIFY(view.itemAt(itemPoint));
 
     for (int i = 0; i < 100; ++i) {

@@ -802,13 +802,15 @@ void QGraphicsViewPrivate::processPendingUpdates()
         return;
     }
 
+    if (optimizationFlags & QGraphicsView::DontAdjustForAntialiasing)
+        dirtyBoundingRect.adjust(-1, -1, 1, 1);
+    else
+        dirtyBoundingRect.adjust(-2, -2, 2, 2);
+
     if (viewportUpdateMode == QGraphicsView::BoundingRectViewportUpdate) {
-        if (optimizationFlags & QGraphicsView::DontAdjustForAntialiasing)
-            viewport->update(dirtyBoundingRect.adjusted(-1, -1, 1, 1));
-        else
-            viewport->update(dirtyBoundingRect.adjusted(-2, -2, 2, 2));
+        viewport->update((dirtyRegion + dirtyBoundingRect).boundingRect());
     } else {
-        viewport->update(dirtyRegion); // Already adjusted in updateRect/Region.
+        viewport->update(dirtyRegion + dirtyBoundingRect); // Already adjusted in updateRect/Region.
     }
 
     dirtyBoundingRect = QRect();
@@ -2087,9 +2089,7 @@ QGraphicsItem *QGraphicsView::itemAt(const QPoint &pos) const
     Q_D(const QGraphicsView);
     if (!d->scene)
         return 0;
-    // ### Use QGraphicsScene::itemAt() instead.
-    QList<QGraphicsItem *> itemsAtPos = d->scene->items(pos, Qt::IntersectsItemShape, Qt::AscendingOrder,
-                                                        viewportTransform());
+    QList<QGraphicsItem *> itemsAtPos = items(pos);
     return itemsAtPos.isEmpty() ? 0 : itemsAtPos.first();
 }
 

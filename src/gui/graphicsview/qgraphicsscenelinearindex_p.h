@@ -87,13 +87,7 @@ public:
         return m_items;
     }
 
-    virtual QRectF indexedRect() const
-    { return m_sceneRect; }
-
 protected :
-    void sceneRectChanged(const QRectF &rect)
-    { m_sceneRect = rect; }
-
     virtual void clear()
     { m_items.clear(); }
 
@@ -104,7 +98,6 @@ protected :
     { m_items.removeOne(item); }
 
 private:
-    QRectF m_sceneRect;
     QList<QGraphicsItem*> m_items;
 };
 

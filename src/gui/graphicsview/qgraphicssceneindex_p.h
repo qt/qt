@@ -87,8 +87,6 @@ public:
 
     QGraphicsScene *scene() const;
 
-    virtual QRectF indexedRect() const;
-
     virtual QList<QGraphicsItem *> items(Qt::SortOrder order = Qt::AscendingOrder) const  = 0;
     virtual QList<QGraphicsItem *> items(const QPointF &pos, Qt::ItemSelectionMode mode,
                                          Qt::SortOrder order, const QTransform &deviceTransform = QTransform()) const;
@@ -111,7 +109,7 @@ protected:
 
     virtual void itemChange(const QGraphicsItem *item, QGraphicsItem::GraphicsItemChange, const QVariant &value);
     virtual void prepareBoundingRectChange(const QGraphicsItem *item);
-    virtual void sceneRectChanged(const QRectF &rect);
+    virtual void sceneRectChanged();
 
     QGraphicsSceneIndex(QObjectPrivate &dd, QGraphicsScene *scene);
 

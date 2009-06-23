@@ -122,7 +122,6 @@ void QGraphicsSceneBspTreeIndexPrivate::_q_updateIndex()
     if (!indexTimerId)
         return;
 
-    QGraphicsScenePrivate * scenePrivate = q->scene()->d_func();
     q->killTimer(indexTimerId);
     indexTimerId = 0;
 
@@ -144,10 +143,6 @@ void QGraphicsSceneBspTreeIndexPrivate::_q_updateIndex()
         }
     }
 
-    // Update growing scene rect.
-    QRectF oldGrowingItemsBoundingRect = scenePrivate->growingItemsBoundingRect;
-    scenePrivate->growingItemsBoundingRect |= unindexedItemsBoundingRect;
-
     // Determine whether we should regenerate the BSP tree.
     if (bspTreeDepth == 0) {
         int oldDepth = intmaxlog(lastItemCount);
@@ -165,7 +160,6 @@ void QGraphicsSceneBspTreeIndexPrivate::_q_updateIndex()
         bsp.initialize(q->scene()->sceneRect(), bspTreeDepth);
         unindexedItems = indexedItems;
         lastItemCount = indexedItems.size();
-        q->scene()->update();
     }
 
     // Insert all unindexed items into the tree.
@@ -179,10 +173,6 @@ void QGraphicsSceneBspTreeIndexPrivate::_q_updateIndex()
         }
     }
     unindexedItems.clear();
-
-    // Notify scene rect changes.
-    if (!scenePrivate->hasSceneRect && scenePrivate->growingItemsBoundingRect != oldGrowingItemsBoundingRect)
-        emit q->scene()->sceneRectChanged(scenePrivate->growingItemsBoundingRect);
 }
 
 
@@ -248,7 +238,7 @@ void QGraphicsSceneBspTreeIndexPrivate::climbTree(QGraphicsItem *item, int *stac
 {
     if (!item->d_ptr->children.isEmpty()) {
         QList<QGraphicsItem *> childList = item->d_ptr->children;
-        qSort(childList.begin(), childList.end(), qt_closestLeaf);
+        qStableSort(childList.begin(), childList.end(), qt_closestLeaf);
         for (int i = 0; i < childList.size(); ++i) {
             QGraphicsItem *item = childList.at(i);
             if (!(item->flags() & QGraphicsItem::ItemStacksBehindParent))
@@ -287,7 +277,7 @@ void QGraphicsSceneBspTreeIndexPrivate::_q_updateSortCache()
             topLevels << item;
     }
 
-    qSort(topLevels.begin(), topLevels.end(), qt_closestLeaf);
+    qStableSort(topLevels.begin(), topLevels.end(), qt_closestLeaf);
     for (int i = 0; i < topLevels.size(); ++i)
         climbTree(topLevels.at(i), &stackingOrder);
 }
@@ -379,15 +369,15 @@ void QGraphicsSceneBspTreeIndexPrivate::sortItems(QList<QGraphicsItem *> *itemLi
 {
     if (sortCacheEnabled) {
         if (order == Qt::AscendingOrder) {
-            qSort(itemList->begin(), itemList->end(), closestItemFirst_withCache);
+            qStableSort(itemList->begin(), itemList->end(), closestItemFirst_withCache);
         } else if (order == Qt::DescendingOrder) {
-            qSort(itemList->begin(), itemList->end(), closestItemLast_withCache);
+            qStableSort(itemList->begin(), itemList->end(), closestItemLast_withCache);
         }
     } else {
         if (order == Qt::AscendingOrder) {
-            qSort(itemList->begin(), itemList->end(), closestItemFirst_withoutCache);
+            qStableSort(itemList->begin(), itemList->end(), closestItemFirst_withoutCache);
         } else if (order == Qt::DescendingOrder) {
-            qSort(itemList->begin(), itemList->end(), closestItemLast_withoutCache);
+            qStableSort(itemList->begin(), itemList->end(), closestItemLast_withoutCache);
         }
     }
 }
@@ -399,17 +389,6 @@ QGraphicsSceneBspTreeIndex::QGraphicsSceneBspTreeIndex(QGraphicsScene *scene)
     : QGraphicsSceneIndex(*new QGraphicsSceneBspTreeIndexPrivate(scene), scene)
 {
 
-}
-
-/*!
-    \reimp
-    Return the rect indexed by the BSP index.
-*/
-QRectF QGraphicsSceneBspTreeIndex::indexedRect() const
-{
-    Q_D(const QGraphicsSceneBspTreeIndex);
-    const_cast<QGraphicsSceneBspTreeIndexPrivate*>(d)->_q_updateIndex();
-    return scene()->d_func()->hasSceneRect ? scene()->d_func()->sceneRect : scene()->d_func()->growingItemsBoundingRect;
 }
 
 /*!
@@ -705,10 +684,9 @@ void QGraphicsSceneBspTreeIndex::setBspTreeDepth(int depth)
     This method react to the  \a rect change of the scene and
     reset the BSP tree index.
 */
-void QGraphicsSceneBspTreeIndex::sceneRectChanged(const QRectF &rect)
+void QGraphicsSceneBspTreeIndex::sceneRectChanged()
 {
     Q_D(QGraphicsSceneBspTreeIndex);
-    d->sceneRect = rect;
     d->resetIndex();
 }
 

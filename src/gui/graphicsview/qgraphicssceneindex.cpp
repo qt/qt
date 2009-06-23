@@ -56,6 +56,7 @@
     \sa QGraphicsScene, QGraphicsView
 */
 
+#include "qdebug.h"
 #include "qgraphicsscene.h"
 #include "qgraphicsitem_p.h"
 #include "qgraphicsscene_p.h"
@@ -131,14 +132,10 @@ public:
                 keep = QGraphicsSceneIndexPrivate::itemCollidesWithPath(item, pointPath, mode);
             }
         } else {
-            QRectF sceneBrect = transform.mapRect(brect);
-            keep = sceneBrect.contains(scenePoint);
-            if (keep && (mode == Qt::ContainsItemShape || mode == Qt::IntersectsItemShape)) {
-                QPainterPath pointPath;
-                pointPath.addRect(QRectF(transform.inverted().map(scenePoint), QSizeF(1, 1)));
-                keep = QGraphicsSceneIndexPrivate::itemCollidesWithPath(item, pointPath, mode);
-            }
+            QRectF sceneBoundingRect = transform.mapRect(brect);
+            keep = sceneBoundingRect.intersects(QRectF(scenePoint, QSizeF(1, 1))) && item->contains(transform.inverted().map(scenePoint));
         }
+
         return keep;
     }
 
@@ -363,15 +360,6 @@ QGraphicsScene* QGraphicsSceneIndex::scene() const
 {
     Q_D(const QGraphicsSceneIndex);
     return d->scene;
-}
-
-/*!
-    Returns the indexed area for the index
-*/
-QRectF QGraphicsSceneIndex::indexedRect() const
-{
-    Q_D(const QGraphicsSceneIndex);
-    return d->scene->d_func()->sceneRect;
 }
 
 /*!
@@ -613,9 +601,8 @@ void QGraphicsSceneIndex::prepareBoundingRectChange(const QGraphicsItem *item)
     rectangle. \a rect is the new value of the scene rectangle.
     \sa QGraphicsScene::sceneRect()
 */
-void QGraphicsSceneIndex::sceneRectChanged(const QRectF &rect)
+void QGraphicsSceneIndex::sceneRectChanged()
 {
-    Q_UNUSED(rect);
 }
 
 QT_END_NAMESPACE

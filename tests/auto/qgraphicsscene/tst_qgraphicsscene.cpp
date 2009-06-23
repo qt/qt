@@ -271,28 +271,46 @@ void tst_QGraphicsScene::construction()
 void tst_QGraphicsScene::sceneRect()
 {
     QGraphicsScene scene;
+    QSignalSpy sceneRectChanged(&scene, SIGNAL(sceneRectChanged(QRectF)));
     QCOMPARE(scene.sceneRect(), QRectF());
+    QCOMPARE(sceneRectChanged.count(), 0);
 
     QGraphicsItem *item = scene.addRect(QRectF(0, 0, 10, 10));
-    qApp->processEvents();
     item->setPos(-5, -5);
-    qApp->processEvents();
+    QCOMPARE(sceneRectChanged.count(), 0);
 
     QCOMPARE(scene.itemAt(0, 0), item);
     QCOMPARE(scene.itemAt(10, 10), (QGraphicsItem *)0);
+    QCOMPARE(sceneRectChanged.count(), 0);
+    QCOMPARE(scene.sceneRect(), QRectF(-5, -5, 10, 10));
+    QCOMPARE(sceneRectChanged.count(), 1);
+    QCOMPARE(sceneRectChanged.last().at(0).toRectF(), scene.sceneRect());
+
+    item->setPos(0, 0);
     QCOMPARE(scene.sceneRect(), QRectF(-5, -5, 15, 15));
+    QCOMPARE(sceneRectChanged.count(), 2);
+    QCOMPARE(sceneRectChanged.last().at(0).toRectF(), scene.sceneRect());
 
     scene.setSceneRect(-100, -100, 10, 10);
+    QCOMPARE(sceneRectChanged.count(), 3);
+    QCOMPARE(sceneRectChanged.last().at(0).toRectF(), scene.sceneRect());
 
     QCOMPARE(scene.itemAt(0, 0), item);
     QCOMPARE(scene.itemAt(10, 10), (QGraphicsItem *)0);
     QCOMPARE(scene.sceneRect(), QRectF(-100, -100, 10, 10));
+    item->setPos(10, 10);
+    QCOMPARE(scene.sceneRect(), QRectF(-100, -100, 10, 10));
+    QCOMPARE(sceneRectChanged.count(), 3);
+    QCOMPARE(sceneRectChanged.last().at(0).toRectF(), scene.sceneRect());
 
     scene.setSceneRect(QRectF());
 
-    QCOMPARE(scene.itemAt(0, 0), item);
-    QCOMPARE(scene.itemAt(10, 10), (QGraphicsItem *)0);
-    QCOMPARE(scene.sceneRect(), QRectF(-5, -5, 15, 15));
+    QCOMPARE(scene.itemAt(10, 10), item);
+    QCOMPARE(scene.itemAt(20, 20), (QGraphicsItem *)0);
+    QCOMPARE(sceneRectChanged.count(), 4);
+    QCOMPARE(scene.sceneRect(), QRectF(-5, -5, 25, 25));
+    QCOMPARE(sceneRectChanged.count(), 5);
+    QCOMPARE(sceneRectChanged.last().at(0).toRectF(), scene.sceneRect());
 }
 
 void tst_QGraphicsScene::itemIndexMethod()

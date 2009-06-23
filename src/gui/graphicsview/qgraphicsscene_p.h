@@ -95,6 +95,7 @@ public:
 
     QRectF sceneRect;
     bool hasSceneRect;
+    bool dirtyGrowingItemsBoundingRect;
     QRectF growingItemsBoundingRect;
 
     void _q_emitUpdated();

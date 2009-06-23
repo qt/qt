@@ -273,6 +273,7 @@ QGraphicsScenePrivate::QGraphicsScenePrivate()
       index(0),
       lastItemCount(0),
       hasSceneRect(false),
+      dirtyGrowingItemsBoundingRect(true),
       updateAll(false),
       calledEmitUpdated(false),
       processDirtyItemsEmitted(false),
@@ -378,8 +379,9 @@ void QGraphicsScenePrivate::unregisterTopLevelItem(QGraphicsItem *item)
 */
 void QGraphicsScenePrivate::_q_updateLater()
 {
+    QRectF null;
     foreach (QGraphicsItem *item, pendingUpdateItems)
-        item->update();
+        markDirty(item, null);
     pendingUpdateItems.clear();
 }
 
@@ -409,8 +411,11 @@ void QGraphicsScenePrivate::_q_processDirtyItems()
     const bool wasPendingSceneUpdate = calledEmitUpdated;
     const QRectF oldGrowingItemsBoundingRect = growingItemsBoundingRect;
     processDirtyItemsRecursive(0);
-    if (!hasSceneRect && oldGrowingItemsBoundingRect != growingItemsBoundingRect)
+    dirtyGrowingItemsBoundingRect = false;
+    if (oldGrowingItemsBoundingRect != growingItemsBoundingRect) {
+        index->sceneRectChanged();
         emit q_func()->sceneRectChanged(growingItemsBoundingRect);
+    }
 
     if (wasPendingSceneUpdate)
         return;
@@ -1250,9 +1255,18 @@ QGraphicsScene::~QGraphicsScene()
 QRectF QGraphicsScene::sceneRect() const
 {
     Q_D(const QGraphicsScene);
-    /// ### Remove? The growing items bounding rect might be managed
-    // by the scene.
-    return d->index->indexedRect();
+    if (!d->hasSceneRect && d->dirtyGrowingItemsBoundingRect) {
+        // Lazily update the growing items bounding rect
+        QGraphicsScenePrivate *thatd = const_cast<QGraphicsScenePrivate *>(d);
+        QRectF oldGrowingBoundingRect = thatd->growingItemsBoundingRect;
+        thatd->growingItemsBoundingRect |= itemsBoundingRect();
+        thatd->dirtyGrowingItemsBoundingRect = false;
+        if (oldGrowingBoundingRect != thatd->growingItemsBoundingRect) {
+            thatd->index->sceneRectChanged();
+            emit const_cast<QGraphicsScene *>(this)->sceneRectChanged(thatd->growingItemsBoundingRect);
+        }
+    }
+    return d->hasSceneRect ? d->sceneRect : d->growingItemsBoundingRect;
 }
 void QGraphicsScene::setSceneRect(const QRectF &rect)
 {
@@ -1260,8 +1274,8 @@ void QGraphicsScene::setSceneRect(const QRectF &rect)
     if (rect != d->sceneRect) {
         d->hasSceneRect = !rect.isNull();
         d->sceneRect = rect;
-        d->index->sceneRectChanged(rect);
-        emit sceneRectChanged(rect);
+        d->index->sceneRectChanged();
+        emit sceneRectChanged(d->hasSceneRect ? rect : d->growingItemsBoundingRect);
     }
 }
 
@@ -1411,8 +1425,6 @@ void QGraphicsScene::setItemIndexMethod(ItemIndexMethod method)
         d->index = new QGraphicsSceneLinearIndex(this);
     for (int i = oldItems.size() - 1; i >= 0; --i)
         d->index->addItem(oldItems.at(i));
-
-    d->index->sceneRectChanged(d->sceneRect);
 }
 
 /*!
@@ -2057,6 +2069,8 @@ void QGraphicsScene::addItem(QGraphicsItem *item)
         if (d->pendingUpdateItems.isEmpty())
             QMetaObject::invokeMethod(this, "_q_updateLater", Qt::QueuedConnection);
         d->pendingUpdateItems << item;
+    } else {
+        d->dirtyGrowingItemsBoundingRect = true;
     }
 
     // Disable selectionChanged() for individual items
@@ -4235,6 +4249,7 @@ void QGraphicsScenePrivate::markDirty(QGraphicsItem *item, const QRectF &rect, b
                                       bool removingItemFromScene)
 {
     Q_ASSERT(item);
+    dirtyGrowingItemsBoundingRect = true;
     if (updateAll)
         return;
 
