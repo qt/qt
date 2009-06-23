@@ -232,7 +232,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn QTransform::QTransform(Qt::Uninitialized)
+    \fn QTransform::QTransform(Qt::Initialization)
     \internal
 */
 

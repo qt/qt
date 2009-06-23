@@ -25,7 +25,7 @@ QVector<qreal> dashes;
 qreal space = 4;
 
 dashes << 1 << space << 3 << space << 9 << space
-           << 27 << space << 9;
+           << 27 << space << 9 << space;
 
 pen.setDashPattern(dashes);
 //! [2]
@@ -36,6 +36,6 @@ QPen pen;
 QVector<qreal> dashes;
 qreal space = 4;
 dashes << 1 << space << 3 << space << 9 << space
-           << 27 << space << 9;
+           << 27 << space << 9 << space;
 pen.setDashPattern(dashes);
 //! [3]

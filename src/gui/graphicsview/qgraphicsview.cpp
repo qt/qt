@@ -3200,8 +3200,8 @@ void QGraphicsView::paintEvent(QPaintEvent *event)
 
     // Items
     if (!(d->optimizationFlags & IndirectPainting)) {
-        d->scene->d_func()->drawSubtreeRecursive(0, &painter, viewTransform, &d->exposedRegion,
-                                                 viewport(), 0);
+        d->scene->d_func()->drawItems(&painter, viewTransformed ? &viewTransform : 0,
+                                      &d->exposedRegion, viewport());
     } else {
         // Find all exposed items
         bool allItems = false;

@@ -198,9 +198,8 @@ QRectF QSvgPath::bounds() const
 }
 
 QSvgPolygon::QSvgPolygon(QSvgNode *parent, const QPolygonF &poly)
-    : QSvgNode(parent), m_poly(poly)
+    : QSvgNode(parent), m_poly(poly), m_fillRule(Qt::WindingFill)
 {
-
 }
 
 QRectF QSvgPolygon::bounds() const
@@ -217,7 +216,7 @@ QRectF QSvgPolygon::bounds() const
 
 void QSvgPolygon::draw(QPainter *p, QSvgExtraStates &states)
 {
-    QT_SVG_DRAW_SHAPE(p->drawPolygon(m_poly));
+    QT_SVG_DRAW_SHAPE(p->drawPolygon(m_poly, m_fillRule));
 }
 
 

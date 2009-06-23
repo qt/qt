@@ -3,7 +3,7 @@
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtOpenGL module of the Qt Toolkit.
+** This file is part of the QtGui module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -44,19 +44,37 @@
 #include <QtGui/qwidget.h>
 #include "qegl_p.h"
 
-#if defined(QT_OPENGL_ES) || defined(QT_OPENVG)
+#if !defined(QT_NO_EGL)
 
-#include <qglscreen_qws.h>
+#include <qscreen_qws.h>
 #include <qscreenproxy_qws.h>
-#include <private/qglwindowsurface_qws_p.h>
 #include <qapplication.h>
 #include <qdesktopwidget.h>
 
 QT_BEGIN_NAMESPACE
 
-static QGLScreen *glScreenForDevice(QPaintDevice *device)
+// Create the surface for a QPixmap, QImage, or QWidget.
+// We don't have QGLScreen to create EGL surfaces for us,
+// so surface creation needs to be done in QtOpenGL or
+// QtOpenVG for Qt/Embedded.
+bool QEglContext::createSurface(QPaintDevice *device, const QEglProperties *properties)
+{
+    Q_UNUSED(device);
+    Q_UNUSED(properties);
+    return false;
+}
+
+EGLDisplay QEglContext::getDisplay(QPaintDevice *device)
+{
+    Q_UNUSED(device);
+    return eglGetDisplay(EGLNativeDisplayType(EGL_DEFAULT_DISPLAY));
+}
+
+static QScreen *screenForDevice(QPaintDevice *device)
 {
     QScreen *screen = qt_screen;
+    if (!screen)
+        return 0;
     if (screen->classId() == QScreen::MultiClass) {
         int screenNumber;
         if (device && device->devType() == QInternal::Widget)
@@ -68,58 +86,26 @@ static QGLScreen *glScreenForDevice(QPaintDevice *device)
     while (screen->classId() == QScreen::ProxyClass) {
         screen = static_cast<QProxyScreen *>(screen)->screen();
     }
-    if (screen->classId() == QScreen::GLClass)
-        return static_cast<QGLScreen *>(screen);
-    else
-        return 0;
+    return screen;
 }
 
-// Create the surface for a QPixmap, QImage, or QWidget.
-bool QEglContext::createSurface(QPaintDevice *device)
+// Set pixel format and other properties based on a paint device.
+void QEglProperties::setPaintDeviceFormat(QPaintDevice *dev)
 {
-    // Get the screen surface functions, which are used to create native ids.
-    QGLScreen *glScreen = glScreenForDevice(device);
-    if (!glScreen)
-        return false;
-    QGLScreenSurfaceFunctions *funcs = glScreen->surfaceFunctions();
-    if (!funcs)
-        return false;
+    if (!dev)
+        return;
 
-    // Create the native drawable for the paint device.
-    int devType = device->devType();
-    EGLNativePixmapType pixmapDrawable = 0;
-    EGLNativeWindowType windowDrawable = 0;
-    bool ok;
-    if (devType == QInternal::Pixmap) {
-        ok = funcs->createNativePixmap(static_cast<QPixmap *>(device), &pixmapDrawable);
-    } else if (devType == QInternal::Image) {
-        ok = funcs->createNativeImage(static_cast<QImage *>(device), &pixmapDrawable);
-    } else {
-        ok = funcs->createNativeWindow(static_cast<QWidget *>(device), &windowDrawable);
-    }
-    if (!ok) {
-        qWarning("QEglContext::createSurface(): Cannot create the native EGL drawable");
-        return false;
-    }
-
-    // Create the EGL surface to draw into, based on the native drawable.
-    if (devType == QInternal::Widget)
-        surf = eglCreateWindowSurface(dpy, cfg, windowDrawable, 0);
+    // Find the QGLScreen for this paint device.
+    QScreen *screen = screenForDevice(dev);
+    if (!screen)
+        return;
+    int devType = dev->devType();
+    if (devType == QInternal::Image)
+        setPixelFormat(static_cast<QImage *>(dev)->format());
     else
-        surf = eglCreatePixmapSurface(dpy, cfg, pixmapDrawable, 0);
-    if (surf == EGL_NO_SURFACE) {
-        qWarning("QEglContext::createSurface(): Unable to create EGL surface, error = 0x%x", eglGetError());
-        return false;
-    }
-    return true;
-}
-
-EGLDisplay QEglContext::getDisplay(QPaintDevice *device)
-{
-    Q_UNUSED(device);
-    return eglGetDisplay(EGLNativeDisplayType(EGL_DEFAULT_DISPLAY));
+        setPixelFormat(screen->pixelFormat());
 }
 
 QT_END_NAMESPACE
 
-#endif // QT_OPENGL_ES || QT_OPENVG
+#endif // !QT_NO_EGL

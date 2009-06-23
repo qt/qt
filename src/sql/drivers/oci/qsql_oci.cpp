@@ -1899,7 +1899,7 @@ void QOCIResult::virtual_hook(int id, void *data)
         QOCICols::execBatch(d, boundValues(), *reinterpret_cast<bool *>(data));
         break;
     default:
-        QSqlResult::virtual_hook(id, data);
+        QSqlCachedResult::virtual_hook(id, data);
     }
 }
 

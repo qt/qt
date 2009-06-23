@@ -49,6 +49,7 @@
 #include <QDir>
 #include <QDebug>
 #include <QPrintEngine>
+#include <QWidget>
 
 // For QApplicationPrivate::graphics_system_name
 #include <private/qapplication_p.h>

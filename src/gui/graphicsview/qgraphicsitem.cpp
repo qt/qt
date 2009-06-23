@@ -787,7 +787,7 @@ QPointF QGraphicsItemPrivate::genericMapFromScene(const QPointF &pos,
 void QGraphicsItemPrivate::combineTransformToParent(QTransform *x, const QTransform *viewTransform) const
 {
     // COMBINE
-    if (itemIsUntransformable() && viewTransform) {
+    if (viewTransform && itemIsUntransformable()) {
         *x = q_ptr->deviceTransform(*viewTransform);
     } else {
         if (transformData)
@@ -809,7 +809,7 @@ void QGraphicsItemPrivate::combineTransformToParent(QTransform *x, const QTransf
 void QGraphicsItemPrivate::combineTransformFromParent(QTransform *x, const QTransform *viewTransform) const
 {
     // COMBINE
-    if (itemIsUntransformable() && viewTransform) {
+    if (viewTransform && itemIsUntransformable()) {
         *x = q_ptr->deviceTransform(*viewTransform);
     } else {
         x->translate(pos.x(), pos.y());

@@ -156,16 +156,14 @@ QT_BEGIN_NAMESPACE
     transitions, e.g., \l{QSignalTransition}s as in this example. See
     the QState class description for further details.
 
-    If an error is encountered, the machine will enter the
-    \l{errorState}{error state}, which is a special state created by
-    the machine. The types of errors possible are described by the
+    If an error is encountered, the machine will look for an
+    \l{errorState}{error state}, and if one is available, it will
+    enter this state. The types of errors possible are described by the
     \l{QStateMachine::}{Error} enum. After the error state is entered,
     the type of the error can be retrieved with error(). The execution
-    of the state graph will not stop when the error state is entered.
-    So it is possible to handle the error, for instance, by connecting
-    to the \l{QAbstractState::}{entered()} signal of the error state.
-    It is also possible to set a custom error state with
-    setErrorState().
+    of the state graph will not stop when the error state is entered. If 
+    no error state applies to the erroneous state, the machine will stop 
+    executing and an error message will be printed to the console.
 
     \omit This stuff will be moved elsewhere
 This is
@@ -238,7 +236,6 @@ QStateMachinePrivate::QStateMachinePrivate()
     error = QStateMachine::NoError;
     globalRestorePolicy = QStateMachine::DoNotRestoreProperties;
     rootState = 0;
-    initialErrorStateForRoot = 0;
     signalEventGenerator = 0;
 #ifndef QT_NO_ANIMATION
     animationsEnabled = true;
@@ -984,27 +981,25 @@ void QStateMachinePrivate::unregisterRestorable(QObject *object, const QByteArra
 
 QAbstractState *QStateMachinePrivate::findErrorState(QAbstractState *context)
 {
-    // If the user sets the root state's error state to 0, we return the initial error state
-    if (context == 0)
-        return initialErrorStateForRoot;
-
     // Find error state recursively in parent hierarchy if not set explicitly for context state
     QAbstractState *errorState = 0;
-    
-    QState *s = qobject_cast<QState*>(context);
-    if (s)
-        errorState = s->errorState();
+    if (context != 0) {
+        QState *s = qobject_cast<QState*>(context);
+        if (s != 0)
+            errorState = s->errorState();
 
-    if (!errorState)
-        errorState = findErrorState(context->parentState());
+        if (errorState == 0)
+            errorState = findErrorState(context->parentState());
+    }
     
     return errorState;   
 }
 
 void QStateMachinePrivate::setError(QStateMachine::Error errorCode, QAbstractState *currentContext)
 {
+    Q_Q(QStateMachine);
+    
     error = errorCode;
-
     switch (errorCode) {
     case QStateMachine::NoInitialStateError:        
         Q_ASSERT(currentContext != 0);
@@ -1036,16 +1031,19 @@ void QStateMachinePrivate::setError(QStateMachine::Error errorCode, QAbstractSta
     QAbstractState *currentErrorState = findErrorState(currentContext);
 
     // Avoid infinite loop if the error state itself has an error
-    if (currentContext == currentErrorState) {
-        Q_ASSERT(currentContext != initialErrorStateForRoot); // RootErrorState is broken
-        currentErrorState = initialErrorStateForRoot;
-    }
+    if (currentContext == currentErrorState)
+        currentErrorState = 0;    
 
-    Q_ASSERT(currentErrorState != 0);
     Q_ASSERT(currentErrorState != rootState);
-    
-    QState *lca = findLCA(QList<QAbstractState*>() << currentErrorState << currentContext);
-    addStatesToEnter(currentErrorState, lca, pendingErrorStates, pendingErrorStatesForDefaultEntry);
+
+    if (currentErrorState != 0) {    
+        QState *lca = findLCA(QList<QAbstractState*>() << currentErrorState << currentContext);
+        addStatesToEnter(currentErrorState, lca, pendingErrorStates, pendingErrorStatesForDefaultEntry);
+    } else {
+        qWarning("Unrecoverable error detected in running state machine: %s", 
+                 qPrintable(errorString));
+        q->stop();
+    }
 }
 
 #ifndef QT_NO_ANIMATION
@@ -1148,9 +1146,6 @@ void QStateMachinePrivate::_q_start()
         return;
     }
     QAbstractState *initial = rootState->initialState();
-    if (initial == 0)
-        setError(QStateMachine::NoInitialStateError, rootState);    
-
     configuration.clear();
     qDeleteAll(internalEventQueue);
     internalEventQueue.clear();
@@ -1316,11 +1311,15 @@ void QStateMachinePrivate::registerSignalTransition(QSignalTransition *transitio
     QByteArray signal = QSignalTransitionPrivate::get(transition)->signal;
     if (signal.startsWith('0'+QSIGNAL_CODE))
         signal.remove(0, 1);
-    int signalIndex = sender->metaObject()->indexOfSignal(signal);
+    const QMetaObject *meta = sender->metaObject();
+    int signalIndex = meta->indexOfSignal(signal);
     if (signalIndex == -1) {
-        qWarning("QSignalTransition: no such signal: %s::%s",
-                 sender->metaObject()->className(), signal.constData());
-        return;
+        signalIndex = meta->indexOfSignal(QMetaObject::normalizedSignature(signal));
+        if (signalIndex == -1) {
+            qWarning("QSignalTransition: no such signal: %s::%s",
+                     meta->className(), signal.constData());
+            return;
+        }
     }
     QVector<int> &connectedSignalIndexes = connections[sender];
     if (connectedSignalIndexes.size() <= signalIndex)
@@ -1479,27 +1478,6 @@ QStateMachine::~QStateMachine()
 
 namespace {
 
-class RootErrorState : public QAbstractState 
-{
-public:
-    RootErrorState(QState *parent) 
-        : QAbstractState(parent) 
-    {
-        setObjectName(QString::fromLatin1("DefaultErrorState"));
-    }
-
-    void onEntry(QEvent *)
-    {
-        QAbstractStatePrivate *d = QAbstractStatePrivate::get(this);
-        QStateMachine *machine = d->machine();
-
-        qWarning("Unrecoverable error detected in running state machine: %s", 
-                 qPrintable(machine->errorString()));
-    }
-
-    void onExit(QEvent *) {}
-};
-
 class RootState : public QState
 {
 public:
@@ -1522,9 +1500,7 @@ QState *QStateMachine::rootState() const
     Q_D(const QStateMachine);
     if (!d->rootState) {
         const_cast<QStateMachinePrivate*>(d)->rootState = new RootState(0);
-        const_cast<QStateMachinePrivate*>(d)->initialErrorStateForRoot = new RootErrorState(d->rootState);
         d->rootState->setParent(const_cast<QStateMachine*>(this));
-        d->rootState->setErrorState(d->initialErrorStateForRoot);
     }
     return d->rootState;
 }
@@ -1548,17 +1524,13 @@ QAbstractState *QStateMachine::errorState() const
   If the erroneous state has an error state set, this will be entered by the machine. If no error
   state has been set, the state machine will search the parent hierarchy recursively for an 
   error state. The error state of the root state can thus be seen as a global error state that 
-  applies for the states for which a more specific error state has not been set.
+  applies for all states for which a more specific error state has not been set.
   
   Before entering the error state, the state machine will set the error code returned by error() and 
-  error  message returned by errorString(). 
+  error message returned by errorString(). 
 
-  The default error state will print a warning to the console containing the information returned by 
-  errorString(). By setting a new error state on either the state machine itself, or on specific 
-  states, you can fine tune error handling in the state machine. 
-
-  If the root state's error state is set to 0, or if the error state selected by the machine itself
-  contains an error, the default error state will be used.
+  If there is no error state available for the erroneous state, the state machine will print a 
+  warning message on the console and stop executing.
 
   \sa QState::setErrorState(), rootState()
 */

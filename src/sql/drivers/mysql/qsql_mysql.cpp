@@ -254,6 +254,9 @@ static QVariant::Type qDecodeMYSQLType(int mysqltype, uint flags)
     case FIELD_TYPE_FLOAT :
     case FIELD_TYPE_DOUBLE :
     case FIELD_TYPE_DECIMAL :
+#if defined(FIELD_TYPE_NEWDECIMAL)
+    case FIELD_TYPE_NEWDECIMAL:
+#endif
         type = QVariant::Double;
         break;
     case FIELD_TYPE_DATE :

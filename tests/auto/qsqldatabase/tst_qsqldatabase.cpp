@@ -249,7 +249,7 @@ struct FieldDef {
 // excluding the primary key field
 static int createFieldTable(const FieldDef fieldDefs[], QSqlDatabase db)
 {
-    tst_Databases::safeDropTables(db, QStringList() << qTableName("qtestfields"));
+    tst_Databases::safeDropTable(db, qTableName("qtestfields"));
     QSqlQuery q(db);
     // construct a create table statement consisting of all fieldtypes
     QString qs = "create table " + qTableName("qtestfields");
@@ -357,6 +357,7 @@ void tst_QSqlDatabase::dropTestTables(QSqlDatabase db)
         tableNames <<  (qTableName("qtest") + " test");
 
     tst_Databases::safeDropTables(db, tableNames);
+    tst_Databases::safeDropView(db, qTableName("qtest_view"));
 }
 
 void tst_QSqlDatabase::populateTestTables(QSqlDatabase db)
@@ -539,11 +540,6 @@ void tst_QSqlDatabase::tables()
     if (tempTables)
         QVERIFY(tables.contains(qTableName("temp_tab"), Qt::CaseInsensitive));
     QVERIFY(tables.contains(qTableName("qtest"), Qt::CaseInsensitive));
-
-    if (tst_Databases::isMSAccess(db))
-        QSqlQuery("drop table " + qTableName("qtest_view"), db);
-    else
-        QSqlQuery("drop view " + qTableName("qtest_view"), db);
 
     if (db.driverName().startsWith("QPSQL")) {
         QVERIFY(tables.contains(qTableName("qtest") + " test"));
@@ -1625,7 +1621,7 @@ void tst_QSqlDatabase::precisionPolicy()
     q.bindValue(1, 123);
     QVERIFY_SQL(q, exec());
     q.bindValue(0, 2);
-    q.bindValue(1, QString("1850000000000.0001"));
+    q.bindValue(1, 1850000000000.0001);
     QVERIFY_SQL(q, exec());
 
     // These are expected to pass
@@ -1633,29 +1629,39 @@ void tst_QSqlDatabase::precisionPolicy()
     QString query = QString("SELECT num FROM %1 WHERE id = 1").arg(tableName);
     QVERIFY_SQL(q, exec(query));
     QVERIFY_SQL(q, next());
+    if(db.driverName().startsWith("QSQLITE"))
+        QEXPECT_FAIL("", "SQLite returns this value as determined by contents of the field, not the declaration", Continue);
     QCOMPARE(q.value(0).type(), QVariant::String);
 
     q.setNumericalPrecisionPolicy(QSql::LowPrecisionInt64);
     QVERIFY_SQL(q, exec(query));
     QVERIFY_SQL(q, next());
+    if(q.value(0).type() != QVariant::LongLong)
+        QEXPECT_FAIL("", "SQLite returns this value as determined by contents of the field, not the declaration", Continue);
     QCOMPARE(q.value(0).type(), QVariant::LongLong);
     QCOMPARE(q.value(0).toLongLong(), (qlonglong)123);
 
     q.setNumericalPrecisionPolicy(QSql::LowPrecisionInt32);
     QVERIFY_SQL(q, exec(query));
     QVERIFY_SQL(q, next());
+    if(db.driverName().startsWith("QSQLITE"))
+        QEXPECT_FAIL("", "SQLite returns this value as determined by contents of the field, not the declaration", Continue);
     QCOMPARE(q.value(0).type(), QVariant::Int);
     QCOMPARE(q.value(0).toInt(), 123);
 
     q.setNumericalPrecisionPolicy(QSql::LowPrecisionDouble);
     QVERIFY_SQL(q, exec(query));
     QVERIFY_SQL(q, next());
+    if(db.driverName().startsWith("QSQLITE"))
+        QEXPECT_FAIL("", "SQLite returns this value as determined by contents of the field, not the declaration", Continue);
     QCOMPARE(q.value(0).type(), QVariant::Double);
     QCOMPARE(q.value(0).toDouble(), (double)123);
 
     query = QString("SELECT num FROM %1 WHERE id = 2").arg(tableName);
     QVERIFY_SQL(q, exec(query));
     QVERIFY_SQL(q, next());
+    if(db.driverName().startsWith("QSQLITE"))
+        QEXPECT_FAIL("", "SQLite returns this value as determined by contents of the field, not the declaration", Continue);
     QCOMPARE(q.value(0).type(), QVariant::Double);
     QCOMPARE(q.value(0).toDouble(), QString("1850000000000.0001").toDouble());
 
@@ -1663,21 +1669,27 @@ void tst_QSqlDatabase::precisionPolicy()
     q.setNumericalPrecisionPolicy(QSql::HighPrecision);
     QVERIFY_SQL(q, exec(query));
     QVERIFY_SQL(q, next());
+    if(db.driverName().startsWith("QSQLITE"))
+        QEXPECT_FAIL("", "SQLite returns this value as determined by contents of the field, not the declaration", Continue);
     QCOMPARE(q.value(0).type(), QVariant::String);
 
     q.setNumericalPrecisionPolicy(QSql::LowPrecisionInt64);
     QEXPECT_FAIL("QOCI", "Oracle fails here, to retrieve next", Continue);
     QVERIFY_SQL(q, exec(query));
     QVERIFY_SQL(q, next());
+    if(db.driverName().startsWith("QSQLITE"))
+        QEXPECT_FAIL("", "SQLite returns this value as determined by contents of the field, not the declaration", Continue);
     QCOMPARE(q.value(0).type(), QVariant::LongLong);
 
     QSql::NumericalPrecisionPolicy oldPrecision= db.numericalPrecisionPolicy();
-    db.setNumericalPrecisionPolicy(QSql::LowPrecisionDouble);
+    db.setNumericalPrecisionPolicy(QSql::LowPrecisionInt64);
     QSqlQuery q2(db);
     q2.exec(QString("SELECT num FROM %1 WHERE id = 2").arg(tableName));
     QVERIFY_SQL(q2, exec(query));
     QVERIFY_SQL(q2, next());
-    QCOMPARE(q2.value(0).type(), QVariant::Double);
+    if(db.driverName().startsWith("QSQLITE"))
+        QEXPECT_FAIL("", "SQLite returns this value as determined by contents of the field, not the declaration", Continue);
+    QCOMPARE(q2.value(0).type(), QVariant::LongLong);
     db.setNumericalPrecisionPolicy(oldPrecision);
 }
 

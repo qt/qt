@@ -179,7 +179,7 @@ private:
 
 };
 
-class QStroker : public QStrokerOps
+class Q_GUI_EXPORT QStroker : public QStrokerOps
 {
 public:
 

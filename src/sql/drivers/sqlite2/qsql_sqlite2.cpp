@@ -260,7 +260,7 @@ void QSQLite2Result::virtual_hook(int id, void *data)
         d->finalize();
         break;
     default:
-        QSqlResult::virtual_hook(id, data);
+        QSqlCachedResult::virtual_hook(id, data);
     }
 }
 

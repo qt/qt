@@ -52,6 +52,10 @@
 #include <qwidget.h>
 #endif
 
+#ifdef Q_WS_MAC
+#include <private/qpaintengine_mac_p.h>
+#endif
+
 QT_BEGIN_NAMESPACE
 
 #ifdef Q_WS_WIN
@@ -225,10 +229,10 @@ QImage::Format QNativeImage::systemFormat()
 
 #elif defined(Q_WS_MAC)
 
-QNativeImage::QNativeImage(int width, int height, QImage::Format format, bool /* isTextBuffer */, QWidget *)
+QNativeImage::QNativeImage(int width, int height, QImage::Format format, bool /* isTextBuffer */, QWidget *widget)
     : image(width, height, format)
 {
-    cgColorSpace = CGColorSpaceCreateDeviceRGB();
+    cgColorSpace = QCoreGraphicsPaintEngine::macDisplayColorSpace(widget);
     uint cgflags = kCGImageAlphaNoneSkipFirst;
 
 #ifdef kCGBitmapByteOrder32Host //only needed because CGImage.h added symbols in the minor version
