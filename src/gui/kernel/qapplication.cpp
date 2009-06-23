@@ -5260,7 +5260,6 @@ void QApplicationPrivate::updateTouchPointsForWidget(QWidget *widget, QTouchEven
 
         rect.moveCenter(widget->mapFromGlobal(screenPos.toPoint()) + delta);
         touchPoint.setRect(rect);
-
         touchPoint.setStartPos(widget->mapFromGlobal(touchPoint.startScreenPos().toPoint()) + delta);
         touchPoint.setLastPos(widget->mapFromGlobal(touchPoint.lastScreenPos().toPoint()) + delta);
     }
@@ -5333,6 +5332,8 @@ void QApplicationPrivate::translateRawTouchEvent(QWidget *window,
             touchPoint.setLastScreenPos(touchPoint.screenPos());
             touchPoint.setStartNormalizedPos(touchPoint.normalizedPos());
             touchPoint.setLastNormalizedPos(touchPoint.normalizedPos());
+            if (touchPoint.pressure() < qreal(0.))
+                touchPoint.setPressure(qreal(1.));
             d->appCurrentTouchPoints.insert(touchPoint.id(), touchPoint);
             break;
         }
@@ -5347,6 +5348,8 @@ void QApplicationPrivate::translateRawTouchEvent(QWidget *window,
             touchPoint.setLastScreenPos(previousTouchPoint.screenPos());
             touchPoint.setStartNormalizedPos(previousTouchPoint.startNormalizedPos());
             touchPoint.setLastNormalizedPos(previousTouchPoint.normalizedPos());
+            if (touchPoint.pressure() < qreal(0.))
+                touchPoint.setPressure(qreal(0.));
             break;
         }
         default:
@@ -5359,6 +5362,8 @@ void QApplicationPrivate::translateRawTouchEvent(QWidget *window,
             touchPoint.setLastScreenPos(previousTouchPoint.screenPos());
             touchPoint.setStartNormalizedPos(previousTouchPoint.startNormalizedPos());
             touchPoint.setLastNormalizedPos(previousTouchPoint.normalizedPos());
+            if (touchPoint.pressure() < qreal(0.))
+                touchPoint.setPressure(qreal(0.));
             d->appCurrentTouchPoints[touchPoint.id()] = touchPoint;
             break;
         }
