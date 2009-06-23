@@ -117,8 +117,6 @@ class Q_DECLARATIVE_EXPORT QFxItem : public QSimpleCanvasItem, public QmlParserS
     Q_PROPERTY(qreal y READ y WRITE setY NOTIFY topChanged)
     Q_PROPERTY(qreal z READ z WRITE setZ)
     Q_PROPERTY(int width READ width WRITE setWidth NOTIFY widthChanged)
-    Q_PROPERTY(bool flipVertically READ flipVertically WRITE setFlipVertically)
-    Q_PROPERTY(bool flipHorizontally READ flipHorizontally WRITE setFlipHorizontally)
     Q_PROPERTY(int height READ height WRITE setHeight NOTIFY heightChanged)
     Q_PROPERTY(int baselineOffset READ baselineOffset WRITE setBaselineOffset NOTIFY baselineOffsetChanged)
     Q_PROPERTY(QFxAnchorLine left READ left)
@@ -173,11 +171,6 @@ public:
     QUrl qml() const;
     void setQml(const QUrl &);
 
-    bool flipVertically() const;
-    void setFlipVertically(bool);
-    bool flipHorizontally() const;
-    void setFlipHorizontally(bool);
-
     int baselineOffset() const;
     void setBaselineOffset(int);
 
@@ -231,7 +224,7 @@ Q_SIGNALS:
     void newChildCreated(const QString &url, QScriptValue);
 
 protected:
-    virtual void transformChanged(const QSimpleCanvas::Matrix &);
+    virtual void transformChanged(const QTransform &);
     virtual void classBegin();
     virtual void classComplete();
     virtual void componentComplete();
@@ -264,7 +257,7 @@ private:
     friend class QmlStatePrivate;
     friend class QFxAnchors;
     Q_DISABLE_COPY(QFxItem)
-    Q_DECLARE_PRIVATE(QFxItem)
+    Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr, QFxItem)
 };
 QML_DECLARE_TYPE(QFxItem)
 

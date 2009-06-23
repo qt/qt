@@ -48,19 +48,23 @@
 
 
 QT_BEGIN_NAMESPACE
-QSimpleCanvasItemData::QSimpleCanvasItemData()
-: buttons(Qt::NoButton), flip(QSimpleCanvasItem::NoFlip), 
-  dirty(false), transformValid(true), doNotPaint(false), 
-  doNotPaintChildren(false), x(0), y(0), z(0), 
-  visible(1), transformUser(0), transformVersion(0), activeOpacity(1)
+
+static QHash<QGraphicsScene*,QSimpleCanvas*> sceneMap;
+
+QSimpleCanvasGraphicsView::QSimpleCanvasGraphicsView(QSimpleCanvasPrivate *parent)
+: QGraphicsView(parent->q), canvas(parent)
 {
+    setScene(&_scene);
+    sceneMap[&_scene] = parent->q;
+    setFrameShape(QFrame::NoFrame);
+    viewport()->setAttribute(Qt::WA_OpaquePaintEvent);
 }
 
-QSimpleCanvasItemData::~QSimpleCanvasItemData()
+QSimpleCanvasGraphicsView::~QSimpleCanvasGraphicsView()
 {
-    if (transformUser)
-        delete transformUser;
+    sceneMap.remove(&_scene);
 }
+
 
 /*!
   \internal
@@ -105,23 +109,106 @@ bool QSimpleCanvasItem::mouseFilter(QGraphicsSceneMouseEvent *)
     return false;
 }
 
+bool QSimpleCanvasItem::sceneEvent(QEvent *event)
+{
+    bool rv = QGraphicsItem::sceneEvent(event);
+    if (event->type() == QEvent::UngrabMouse)
+        mouseUngrabEvent();
+    return rv;
+}
+
+QVariant QSimpleCanvasItem::itemChange(GraphicsItemChange change, 
+                                       const QVariant &value)
+{
+    Q_D(QSimpleCanvasItem);
+    if (change == ItemSceneHasChanged) {
+        QSimpleCanvas *oldCanvas = d->canvas;
+        d->canvas = sceneMap[scene()];
+        if (d->canvas){
+            if (hasFocus())
+                canvas()->d->setFocusItem(this, Qt::OtherFocusReason);
+            if (options() & QSimpleCanvasItem::IsFocusPanel) {
+                if (d->wantsActiveFocusPanelPendingCanvas) {
+                    d->hasBeenActiveFocusPanel = true;
+                    canvas()->d->setActiveFocusPanel(this);
+                    d->wantsActiveFocusPanelPendingCanvas = false;
+                }
+            }
+        }
+        if (options() & QSimpleCanvasItem::MouseFilter)
+            d->gvRemoveMouseFilter();
+
+        if (oldCanvas != d->canvas)
+            canvasChanged();
+
+        if (options() & QSimpleCanvasItem::MouseFilter)
+            d->gvAddMouseFilter();
+    } 
+
+    return QGraphicsItem::itemChange(change, value);
+}
+
+
 void QSimpleCanvasItem::mousePressEvent(QGraphicsSceneMouseEvent *e)
 {
+#if 0
+    QSimpleCanvasItem *p = owner->parent();
+    while(p) {
+        if (p->options() & QSimpleCanvasItem::ChildMouseFilter) {
+            if (p->mouseFilter(event))
+                return;
+        }
+        p = p->parent();
+    }
+    owner->mousePressEvent(event);
+#endif
     e->ignore();
 }
 
 void QSimpleCanvasItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *e)
 {
+#if 0
+    QSimpleCanvasItem *p = owner->parent();
+    while(p) {
+        if (p->options() & QSimpleCanvasItem::ChildMouseFilter) {
+            if (p->mouseFilter(event))
+                return;
+        }
+        p = p->parent();
+    }
+    owner->mouseReleaseEvent(event);
+    ungrabMouse();
+#endif
     e->ignore();
 }
 
 void QSimpleCanvasItem::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *e)
 {
+#if 0
+    QSimpleCanvasItem *p = owner->parent();
+    while(p) {
+        if (p->options() & QSimpleCanvasItem::ChildMouseFilter) {
+            if (p->mouseFilter(event))
+                return;
+        }
+        p = p->parent();
+    }
+#endif
     e->ignore();
 }
 
 void QSimpleCanvasItem::mouseMoveEvent(QGraphicsSceneMouseEvent *e)
 {
+#if 0
+    QSimpleCanvasItem *p = owner->parent();
+    while(p) {
+        if (p->options() & QSimpleCanvasItem::ChildMouseFilter) {
+            if (p->mouseFilter(event))
+                return;
+        }
+        p = p->parent();
+    }
+#endif
     e->ignore();
 }
 
@@ -156,6 +243,8 @@ void QSimpleCanvasItem::focusOutEvent(QFocusEvent *e)
 
 void QSimpleCanvasItem::focusInEvent(QFocusEvent *e)
 {
+    if (!hasFocus())
+        setFocus(true);
     e->ignore();
 }
 
@@ -292,36 +381,6 @@ QSimpleCanvasItem *QSimpleCanvasItem::parent() const
     return d->parent;
 }
 
-void QSimpleCanvasItemPrivate::zOrderChildren()
-{
-    if (!needsZOrder || children.count() <= 1)
-        return;
-
-    needsZOrder = false;
-    // This is a bubble sort for a reason - it is the fastest sort for a mostly
-    // ordered list.  We only expect z ordering to change infrequently.
-    bool swap = true;
-    int c = 0;
-    while(swap) {
-        ++c;
-        swap = false;
-        QSimpleCanvasItem *item = children.first();
-        qreal z = item->z();
-        for (int ii = 1; ii < children.count(); ++ii) {
-            QSimpleCanvasItem *i2 = children.at(ii);
-            qreal z2 = i2->z();
-            if (z2 < z) {
-                swap = true;
-                children[ii] = item;
-                children[ii - 1] = i2;
-            } else {
-                item = i2;
-                z = z2;
-            }
-        }
-    }
-}
-
 void QSimpleCanvasItemPrivate::canvasChanged(QSimpleCanvas *newCanvas, QSimpleCanvas *oldCanvas)
 {
     Q_Q(QSimpleCanvasItem);
@@ -363,37 +422,10 @@ void QSimpleCanvasItem::setFocus(bool focus)
     }
 }
 
-qreal QSimpleCanvasItem::x() const
-{
-    Q_D(const QSimpleCanvasItem);
-    if (d->graphicsItem)
-        return d->graphicsItem->x();
-    else if (d->data_ptr)
-        return d->data()->x;
-    else
-        return 0;
-}
-
-qreal QSimpleCanvasItem::y() const
-{
-    Q_D(const QSimpleCanvasItem);
-    if (d->graphicsItem)
-        return d->graphicsItem->y();
-    else if (d->data_ptr)
-        return d->data()->y;
-    else
-        return 0;
-}
-
 qreal QSimpleCanvasItem::z() const
 {
     Q_D(const QSimpleCanvasItem);
-    if (d->graphicsItem)
-        return d->graphicsItem->zValue();
-    else if (d->data_ptr)
-        return d->data()->z;
-    else
-        return 0;
+    return zValue();
 }
 
 void QSimpleCanvasItem::setX(qreal x)
@@ -404,12 +436,7 @@ void QSimpleCanvasItem::setX(qreal x)
 
     qreal oldX = this->x();
 
-    if (d->graphicsItem) {
-        d->graphicsItem->setPos(x, y());
-    } else {
-        d->data()->x = x;
-        update();
-    }
+    QGraphicsItem::setPos(x, y());
 
     geometryChanged(QRectF(this->x(), y(), width(), height()), 
                     QRectF(oldX, y(), width(), height()));
@@ -417,18 +444,12 @@ void QSimpleCanvasItem::setX(qreal x)
 
 void QSimpleCanvasItem::setY(qreal y)
 {
-    Q_D(QSimpleCanvasItem);
     if (y == this->y())
         return;
 
     qreal oldY = this->y();
 
-    if (d->graphicsItem) {
-        d->graphicsItem->setPos(x(), y);
-    } else {
-        d->data()->y = y;
-        update();
-    }
+    QGraphicsItem::setPos(x(), y);
 
     geometryChanged(QRectF(x(), this->y(), width(), height()), 
                     QRectF(x(), oldY, width(), height()));
@@ -436,30 +457,15 @@ void QSimpleCanvasItem::setY(qreal y)
 
 void QSimpleCanvasItem::setZ(qreal z)
 {
-    Q_D(QSimpleCanvasItem);
     if (z == this->z())
         return;
 
-    if (d->graphicsItem) {
+    if (z < 0)
+        setFlag(QGraphicsItem::ItemStacksBehindParent, true);
+    else
+        setFlag(QGraphicsItem::ItemStacksBehindParent, false);
 
-        if (z < 0)
-            d->graphicsItem->setFlag(QGraphicsItem::ItemStacksBehindParent, 
-                                     true);
-        else
-            d->graphicsItem->setFlag(QGraphicsItem::ItemStacksBehindParent, 
-                                     false);
-
-        d->graphicsItem->setZValue(z);
-
-    } else {
-        if (d->data()->z == z)
-            return;
-
-        d->data()->z = z;
-        if (parent())
-            static_cast<QSimpleCanvasItemPrivate*>(parent()->d_ptr)->needsZOrder = true;
-        update();
-    }
+    setZValue(z);
 }
 
 qreal QSimpleCanvasItem::width() const
@@ -550,17 +556,10 @@ bool QSimpleCanvasItem::heightValid() const
 
 void QSimpleCanvasItem::setPos(const QPointF &point)
 {
-    Q_D(QSimpleCanvasItem);
     qreal oldX = x();
     qreal oldY = y();
 
-    if (d->graphicsItem) {
-        d->graphicsItem->setPos(point);
-    } else {
-        d->data()->x = point.x();
-        d->data()->y = point.y();
-        update();
-    }
+    QGraphicsItem::setPos(point);
 
     geometryChanged(QRectF(x(), y(), width(), height()), 
                     QRectF(oldX, oldY, width(), height()));
@@ -576,18 +575,14 @@ void QSimpleCanvasItem::setScale(qreal s)
 {
     Q_D(QSimpleCanvasItem);
     d->scale = s;
-    if (d->graphicsItem) {
-        QTransform t;
-        QPointF to = transformOriginPoint();
-        if (to.x() != 0. || to.y() != 0.)
-            t.translate(to.x(), to.y());
-        t.scale(s, s);
-        if (to.x() != 0. || to.y() != 0.)
-            t.translate(-to.x(), -to.y());
-        d->graphicsItem->setTransform(t * d->graphicsItem->transform);
-    } else {
-        update();
-    }
+    QTransform t;
+    QPointF to = transformOriginPoint();
+    if (to.x() != 0. || to.y() != 0.)
+        t.translate(to.x(), to.y());
+    t.scale(s, s);
+    if (to.x() != 0. || to.y() != 0.)
+        t.translate(-to.x(), -to.y());
+    setTransform(t * d->transform);
 }
 
 bool QSimpleCanvasItem::isVisible() const
@@ -602,39 +597,18 @@ bool QSimpleCanvasItem::isVisible() const
 
 qreal QSimpleCanvasItem::visible() const
 {
-    Q_D(const QSimpleCanvasItem);
-    if (d->graphicsItem)
-        return d->graphicsItem->opacity();
-    else if (d->data_ptr)
-        return d->data()->visible;
-    else
-        return 1;
+    return opacity();
 }
 
 void QSimpleCanvasItem::setVisible(qreal v)
 {
-    Q_D(QSimpleCanvasItem);
-    if (d->graphicsItem) {
-        d->graphicsItem->setOpacity(v);
-    } else {
-        if (v == visible())
-            return;
-        if (v == 0)
-            update();
-
-        d->data()->visible = v;
-
-        if (v != 0)
-            update();
-    }
+    setOpacity(v);
 }
 
 void QSimpleCanvasItem::addChild(QSimpleCanvasItem *c)
 {
     Q_D(QSimpleCanvasItem);
     d->children.append(c);
-    if (!d->graphicsItem) 
-        d->needsZOrder = true;
     childrenChanged();
 }
 
@@ -663,28 +637,6 @@ QSimpleCanvasLayer *QSimpleCanvasItem::layer()
         return parent()->layer();
     else
         return 0;
-}
-
-void QSimpleCanvasItem::update()
-{
-    Q_D(QSimpleCanvasItem);
-    if (d->graphicsItem) {
-        d->graphicsItem->update();
-    } else {
-        if (!parent())
-            return;
-
-        if (d->data()->dirty || 0. == d->data()->visible) return;
-
-        QSimpleCanvasLayer *l = layer(); 
-        if (l == this && parent())
-            l = parent()->layer();
-        if (l) {
-            l->addDirty(this);
-            d->data()->dirty = true;
-            d->data()->transformValid = false;
-        }
-    }
 }
 
 bool QSimpleCanvasItem::clip() const
@@ -717,238 +669,55 @@ void QSimpleCanvasItem::setClipType(ClipType c)
 {
     Q_D(QSimpleCanvasItem);
     d->clip = c;
-    if (d->graphicsItem)
-        d->graphicsItem->setFlag(QGraphicsItem::ItemClipsChildrenToShape, bool(c));
-    else
-        update();
+    setFlag(QGraphicsItem::ItemClipsChildrenToShape, bool(c));
 }
-
-Qt::MouseButtons QSimpleCanvasItem::acceptedMouseButtons() const
-{
-    Q_D(const QSimpleCanvasItem);
-    if (d->graphicsItem)
-        return d->graphicsItem->acceptedMouseButtons();
-    else if (d->data_ptr)
-        return (Qt::MouseButtons)d->data()->buttons;
-    else
-        return Qt::NoButton;
-}
-
-void QSimpleCanvasItem::setAcceptedMouseButtons(Qt::MouseButtons buttons)
-{
-    Q_D(QSimpleCanvasItem);
-    if (d->graphicsItem)
-        d->graphicsItem->setAcceptedMouseButtons(buttons);
-    else
-        d->data()->buttons = buttons;
-}
-
 
 QRect QSimpleCanvasItem::itemBoundingRect()
 {
     return boundingRect().toAlignedRect();
 }
 
-QPointF QSimpleCanvasItemPrivate::adjustFrom(const QPointF &p) const
-{
-    return p;
-}
-
-QRectF QSimpleCanvasItemPrivate::adjustFrom(const QRectF &r) const
-{
-    return r;
-}
-
-QPointF QSimpleCanvasItemPrivate::adjustTo(const QPointF &p) const
-{
-    return p;
-}
-
-QRectF QSimpleCanvasItemPrivate::adjustTo(const QRectF &r) const
-{
-    return r;
-}
-
 QPointF QSimpleCanvasItem::mapFromScene(const QPointF &p) const
 {
-    Q_D(const QSimpleCanvasItem);
-    if (d->graphicsItem) {
-        return d->graphicsItem->mapFromScene(p);
-    } else {
-        QPointF mp = d->adjustFrom(p);
-        d->freshenTransforms();
-        return d->data()->transformActive.inverted().map(mp);
-    }
+    return QGraphicsItem::mapFromScene(p);
 }
 
 QRectF QSimpleCanvasItem::mapFromScene(const QRectF &r) const
 {
-    Q_D(const QSimpleCanvasItem);
-    if (d->graphicsItem) {
-        return d->graphicsItem->mapFromScene(r).boundingRect();
-    } else {
-        QRectF mr = d->adjustFrom(r);
-        d->freshenTransforms();
-        return d->data()->transformActive.inverted().mapRect(mr);
-    }
+    return QGraphicsItem::mapFromScene(r).boundingRect();
 }
 
 QPointF QSimpleCanvasItem::mapToScene(const QPointF &p) const
 {
-    Q_D(const QSimpleCanvasItem);
-    if (d->graphicsItem) {
-        return d->graphicsItem->mapToScene(p);
-    } else {
-        d->freshenTransforms();
-        QPointF rp = d->data()->transformActive.map(p);
-        return d->adjustTo(rp);
-    }
+    return QGraphicsItem::mapToScene(p);
 }
 
 QRectF QSimpleCanvasItem::mapToScene(const QRectF &r) const
 {
-    Q_D(const QSimpleCanvasItem);
-    if (d->graphicsItem) {
-        return d->graphicsItem->mapToScene(r).boundingRect();
-    } else {
-        d->freshenTransforms();
-        QRectF rr = d->data()->transformActive.mapRect(r);
-        return d->adjustTo(rr);
-    }
+    return QGraphicsItem::mapToScene(r).boundingRect();
 }
 
-void QSimpleCanvasItemPrivate::freshenTransforms() const
-{
-    if (freshenNeeded()) 
-        doFreshenTransforms();
-}
-
-bool QSimpleCanvasItemPrivate::freshenNeeded() const
-{
-#if 0
-    return parent && 
-        (data()->transformVersion == -1 ||
-         data()->parentTransformVersion == -1 ||
-         parent->d_func()->data()->transformVersion != data()->parentTransformVersion);
-#else
-    const QSimpleCanvasItemPrivate *me = this;
-    while(me) {
-        if (me->data_ptr && !me->data_ptr->transformValid)
-            return true;
-        if (me->parent)
-            me = me->parent->d_func();
-        else
-            me = 0;
-    }
-    return false;
-#endif
-}
-
-void QSimpleCanvasItemPrivate::doFreshenTransforms() const
-{
-    Q_Q(const QSimpleCanvasItem);
-    if (parent)
-        parent->d_func()->doFreshenTransforms();
-
-    if (freshenNeeded()) {
-        if (parent)
-            data()->transformActive = parent->d_func()->data()->transformActive;
-        else
-            data()->transformActive = QSimpleCanvas::Matrix();
-        data()->transformActive.translate(q->x(), q->y());
-        if (scale != 1.) {
-            QPointF to = transformOrigin();
-            if (to.x() != 0. || to.y() != 0.)
-                data()->transformActive.translate(to.x(), to.y());
-            data()->transformActive.scale(scale, scale);
-            if (to.x() != 0. || to.y() != 0.)
-                data()->transformActive.translate(-to.x(), -to.y());
-        }
-
-        Q_Q(const QSimpleCanvasItem);
-
-        if (data()->flip) {
-            QRectF br = q->boundingRect();
-            data()->transformActive.translate(br.width() / 2., br.height() / 2);
-            data()->transformActive.scale((data()->flip & QSimpleCanvasItem::HorizontalFlip)?-1:1,
-                                       (data()->flip & QSimpleCanvasItem::VerticalFlip)?-1:1);
-            data()->transformActive.translate(-br.width() / 2., -br.height() / 2);
-        }
-    }
-}
-
-QSimpleCanvas::Matrix QSimpleCanvasItem::transform() const
+QTransform QSimpleCanvasItem::transform() const
 {
     Q_D(const QSimpleCanvasItem);
-    if (d->graphicsItem)
-        return QSimpleCanvasConfig::transformToMatrix(d->graphicsItem->transform);
-    else if (d->data()->transformUser)
-        return *d->data()->transformUser;
-    else
-        return QSimpleCanvas::Matrix();
+    return d->transform;
 }
 
-void QSimpleCanvasItem::setTransform(const QSimpleCanvas::Matrix &m)
+void QSimpleCanvasItem::setTransform(const QTransform &m)
 {
     Q_D(QSimpleCanvasItem);
-    if (d->graphicsItem) {
-        d->graphicsItem->transform = QSimpleCanvasConfig::matrixToTransform(m);
-        d->graphicsItem->setTransform(QTransform::fromScale(d->scale, d->scale) * d->graphicsItem->transform);
-    } else {
-        if (!d->data()->transformUser)
-            d->data()->transformUser = new QSimpleCanvas::Matrix;
-        *d->data()->transformUser = m;
-        update();
-    }
+    d->transform = m;
+    QGraphicsItem::setTransform(QTransform::fromScale(d->scale, d->scale) * d->transform);
 }
 
 QSimpleCanvasItem *QSimpleCanvasItem::mouseGrabberItem() const
 {
-    Q_D(const QSimpleCanvasItem);
-    if (d->graphicsItem) {
-        QGraphicsScene *s = d->graphicsItem->scene();
-        if (s) {
-            QGraphicsItem *item = s->mouseGrabberItem();
-            QSimpleGraphicsItem *dgi = static_cast<QSimpleGraphicsItem *>(item);
-            return dgi?static_cast<QSimpleCanvasItem*>(dgi->owner):0;
-        }
-    } else {
-        QSimpleCanvas *c = canvas();
-        if (c)
-            return c->d->lastMouseItem;
+    QGraphicsScene *s = scene();
+    if (s) {
+        QGraphicsItem *item = s->mouseGrabberItem();
+        return static_cast<QSimpleCanvasItem*>(item); // ###
     }
     return 0;
-}
-
-void QSimpleCanvasItem::ungrabMouse()
-{
-    Q_D(QSimpleCanvasItem);
-    if (d->graphicsItem) {
-        d->graphicsItem->ungrabMouse();
-    } else {
-        QSimpleCanvas *c = canvas();
-        if (c && c->d->lastMouseItem == this) {
-            c->d->lastMouseItem->mouseUngrabEvent();
-            c->d->lastMouseItem = 0;
-        }
-    }
-}
-
-void QSimpleCanvasItem::grabMouse()
-{
-    Q_D(QSimpleCanvasItem);
-    if (d->graphicsItem) {
-        d->graphicsItem->grabMouse();
-    } else {
-        QSimpleCanvas *c = canvas();
-        if (c) {
-            if (c->d->lastMouseItem != this) {
-                if (c->d->lastMouseItem)
-                    c->d->lastMouseItem->mouseUngrabEvent();
-                c->d->lastMouseItem = this;
-            }
-        }
-    }
 }
 
 bool QSimpleCanvasItem::isFocusable() const
@@ -976,159 +745,32 @@ void QSimpleCanvasItemPrivate::setFocus(bool f)
 
 void QSimpleCanvasItemPrivate::setActiveFocus(bool f)
 {
+    Q_Q(QSimpleCanvasItem);
     hasActiveFocus = f;
 
-    if (graphicsItem) {
-        if (f) {
-            if (!(graphicsItem->flags() & QGraphicsItem::ItemIsFocusable))
-                graphicsItem->setFlag(QGraphicsItem::ItemIsFocusable);
-            graphicsItem->setFocus();
-        } else {
-            graphicsItem->clearFocus();
-            if ((graphicsItem->flags() & QGraphicsItem::ItemIsFocusable) && !focusable)
-                graphicsItem->setFlag(QGraphicsItem::ItemIsFocusable, false);
-        }
-
+    if (f) {
+        if (!(q->flags() & QGraphicsItem::ItemIsFocusable))
+            q->setFlag(QGraphicsItem::ItemIsFocusable);
+        q->QGraphicsItem::setFocus();
+    } else {
+        q->clearFocus();
+        if ((q->flags() & QGraphicsItem::ItemIsFocusable) && !focusable)
+            q->setFlag(QGraphicsItem::ItemIsFocusable, false);
     }
-}
-
-QSimpleCanvasItem::Flip QSimpleCanvasItem::flip() const
-{
-    Q_D(const QSimpleCanvasItem);
-    if (d->graphicsItem)
-        return NoFlip;
-    else if (d->data_ptr)
-        return d->data()->flip;
-    else
-        return NoFlip;
-}
-
-void QSimpleCanvasItem::setFlip(Flip f)
-{
-    Q_D(QSimpleCanvasItem);
-    if (d->graphicsItem)
-        return;
-
-    if (d->data()->flip == f)
-        return;
-
-    d->data()->flip = f;
-    update();
-}
-
-/*!
-    Places the item under \a item in the parent item's stack.
-
-    The item itself and \a item must be siblings, or this method has no effect.
-
-    \sa stackOver(), stackAt()
- */
-void QSimpleCanvasItem::stackUnder(QSimpleCanvasItem *item)
-{
-    Q_D(QSimpleCanvasItem);
-    if (d->graphicsItem)
-        return; // XXX
-
-    QSimpleCanvasItem *p = parent();
-    if (!p || !item || item == this) return;
-
-    QSimpleCanvasItemPrivate *parent_d_ptr = static_cast<QSimpleCanvasItemPrivate*>(p->d_ptr);
-    int idx = parent_d_ptr->children.indexOf(item);
-    if (idx == -1) return;
-
-    parent_d_ptr->children.removeAll(this);
-    idx = parent_d_ptr->children.indexOf(item);
-    parent_d_ptr->children.insert(idx + 1, this);
-    parent_d_ptr->needsZOrder = true;
-
-    p->childrenChanged();
-}
-
-/*!
-    Places the item over \a item in the parent item's stack.
-
-    The item itself and \a item must be siblings, or this method has no effect.
-
-    \sa stackUnder(), stackAt()
- */
-void QSimpleCanvasItem::stackOver(QSimpleCanvasItem *item)
-{
-    Q_D(QSimpleCanvasItem);
-    if (d->graphicsItem)
-        return; // XXX
-
-    QSimpleCanvasItem *p = parent();
-    if (!p || !item || item == this) return;
-
-    QSimpleCanvasItemPrivate *parent_d_ptr = static_cast<QSimpleCanvasItemPrivate*>(p->d_ptr);
-    int idx = parent_d_ptr->children.indexOf(item);
-    if (idx == -1) return;
-
-    parent_d_ptr->children.removeAll(this);
-    idx = parent_d_ptr->children.indexOf(item);
-    parent_d_ptr->children.insert(idx, this);
-    parent_d_ptr->needsZOrder = true;
-
-    p->childrenChanged();
-}
-
-/*!
-    Places the item at position \a index in the parent item's stack.
-
-    If index is zero or less, the item is placed at the beginning of the 
-    stack.  If the index is greater than the number of items in the stack, the
-    item is placed at the end.
-
-    \sa stackOver(), stackUnder()
- */
-void QSimpleCanvasItem::stackAt(int index)
-{
-    Q_D(QSimpleCanvasItem);
-    if (d->graphicsItem)
-        return; // XXX
-
-    QSimpleCanvasItem *p = parent();
-    if (!p) return;
-
-    QSimpleCanvasItemPrivate *parent_d_ptr = static_cast<QSimpleCanvasItemPrivate*>(p->d_ptr);
-    parent_d_ptr->children.removeAll(this);
-
-    if (index < 0) index = 0;
-    if (index > parent_d_ptr->children.size()) index = parent_d_ptr->children.size();
-
-    parent_d_ptr->children.insert(index, this);
-    parent_d_ptr->needsZOrder = true;
-    p->childrenChanged();
-}
-
-/*!
-    Returns the current stacking index for the child \a item. 
-
-    If \a item is not a child, -1 is returned.
-
-    \sa stackAt()
- */
-int QSimpleCanvasItem::indexForChild(QSimpleCanvasItem *item)
-{
-    Q_D(QSimpleCanvasItem);
-    return d->children.indexOf(item);
 }
 
 bool QSimpleCanvasItem::eventFilter(QObject *o, QEvent *e)
 {
-    Q_D(QSimpleCanvasItem);
-    if (d->graphicsItem) {
-        switch(e->type()) {
-        case QEvent::GraphicsSceneMouseDoubleClick:
-        case QEvent::GraphicsSceneMouseMove:
-        case QEvent::GraphicsSceneMousePress:
-        case QEvent::GraphicsSceneMouseRelease:
-            if (mouseFilter(static_cast<QGraphicsSceneMouseEvent *>(e))) 
-                return true;
-            break;
-        default:
-            break;
-        }
+    switch(e->type()) {
+    case QEvent::GraphicsSceneMouseDoubleClick:
+    case QEvent::GraphicsSceneMouseMove:
+    case QEvent::GraphicsSceneMousePress:
+    case QEvent::GraphicsSceneMouseRelease:
+        if (mouseFilter(static_cast<QGraphicsSceneMouseEvent *>(e))) 
+            return true;
+        break;
+    default:
+        break;
     }
 
     return QObject::eventFilter(o, e);
@@ -1166,102 +808,49 @@ void QSimpleCanvasItem::setOptions(Options options, bool set)
         d->options &= ~IsFocusRealm;
     }
 
-    if (d->graphicsItem)
-        d->graphicsItem->setFlag(QGraphicsItem::ItemHasNoContents, !(d->options & HasContents));
+    setFlag(QGraphicsItem::ItemHasNoContents, !(d->options & HasContents));
 
     if ((old & MouseFilter) != (d->options & MouseFilter)) {
-        if (d->graphicsItem) {
-            if (d->options & MouseFilter)
-                d->gvAddMouseFilter();
-            else
-                d->gvRemoveMouseFilter();
-
-        } else {
-            QSimpleCanvas *c = canvas();
-            if (c) {
-                if (d->options & MouseFilter)
-                    c->d->installMouseFilter(this);
-                else
-                    c->d->removeMouseFilter(this);
-            }
-        }
+        if (d->options & MouseFilter)
+            d->gvAddMouseFilter();
+        else
+            d->gvRemoveMouseFilter();
     }
 }
 
 QSimpleCanvasItem::QSimpleCanvasItem(QSimpleCanvasItemPrivate &dd, QSimpleCanvasItem *parent)
-: QObject(dd, parent)
+: QGraphicsObject(dd, parent, 0) 
 {
+    setFlag(QGraphicsItem::ItemHasNoContents, true);
 }
 
 QSimpleCanvasItem::QSimpleCanvasItem(QSimpleCanvasItem *p)
-: QObject(*(new QSimpleCanvasItemPrivate), p)
+: QGraphicsObject(*(new QSimpleCanvasItemPrivate), p, 0) 
 {
+    setFlag(QGraphicsItem::ItemHasNoContents, true);
 }
 
 QSimpleCanvasItem::~QSimpleCanvasItem()
 { 
     Q_D(QSimpleCanvasItem);
-    if (d->graphicsItem) {
-        if ((d->options & (IsFocusPanel|IsFocusRealm)) && d->canvas)
-            d->canvas->d->focusPanelData.remove(this);
-        if (d->hasFocus && d->canvas) {
-            QSimpleCanvasItem *prnt = parent();
-            while (prnt && !(prnt->options() & (IsFocusPanel|IsFocusRealm)))
-                prnt = prnt->parent();
-            if (prnt && d->canvas->d->focusPanelData.value(prnt) == this)
-                d->canvas->d->focusPanelData.remove(prnt);
-        }
-
-        qDeleteAll(children());
-        if (parent())
-            parent()->remChild(this);
-        delete d->graphicsItem;
-    } else {
-        update();
-        setOptions(MouseFilter, false);
-
-        if (d->canvas){
-            if (d->canvas->focusItem() == this)
-                d->canvas->d->focusItem = 0;
-            if (d->canvas->d->lastFocusItem == this)
-                d->canvas->d->lastFocusItem = 0;
-            if (d->hasBeenActiveFocusPanel) 
-                d->canvas->d->clearFocusPanel(this);
-            if (d->hasFocus)
-                d->canvas->d->clearFocusItem(this);
-        }
-
-        while(!d->children.isEmpty()) {
-            QSimpleCanvasItem *child = d->children.takeFirst();
-            delete child;
-        }
-
-        if (parent() && d->data_ptr && d->data()->dirty) {
-            QSimpleCanvasLayer *l = parent()->layer();
-            if (l) {
-                l->remDirty(this);
-            }
-        }
-        if (d->parent)
-            d->parent->remChild(this);
-
-
-        if (d->data_ptr)
-            delete d->data_ptr;
+    if ((d->options & (IsFocusPanel|IsFocusRealm)) && d->canvas)
+        d->canvas->d->focusPanelData.remove(this);
+    if (d->hasFocus && d->canvas) {
+        QSimpleCanvasItem *prnt = parent();
+        while (prnt && !(prnt->options() & (IsFocusPanel|IsFocusRealm)))
+            prnt = prnt->parent();
+        if (prnt && d->canvas->d->focusPanelData.value(prnt) == this)
+            d->canvas->d->focusPanelData.remove(prnt);
     }
+
+    qDeleteAll(children());
+    if (parent())
+        parent()->remChild(this);
 }
 
 QSimpleCanvasItem::operator QGraphicsItem *()
 {
-    Q_D(QSimpleCanvasItem);
-    if (!d->graphicsItem) {
-        if (parent()) {
-            qWarning("QSimpleCanvasItem: Only the root item can be converted into a QGraphicsItem");
-            return 0;
-        }
-        d->convertToGraphicsItem();
-    }
-    return d->graphicsItem;
+    return this;
 }
 
 QSimpleCanvasItem::operator QmlDebuggerStatus *()
@@ -1305,82 +894,14 @@ void QSimpleCanvasItemPrivate::setParentInternal(QSimpleCanvasItem *p)
 {
     Q_Q(QSimpleCanvasItem);
     QSimpleCanvasItem *oldParent = parent;
-    if (graphicsItem) {
-        if (oldParent)
-            oldParent->remChild(q);
+    if (oldParent)
+        oldParent->remChild(q);
 
-        parent = p;
-        graphicsItem->setParentItem(p->d_func()->graphicsItem);
+    parent = p;
+    q->setParentItem(p);
 
-        if (parent)
-            p->addChild(q);
-
-    } else {
-        bool canvasChange = false;
-        if (p)
-            canvasChange = (p->d_func()->canvas != canvas);
-        QSimpleCanvas *old = canvas;
-
-        QSimpleCanvasLayer *o = q->layer();
-        if (q->parent()) {
-            q->update();
-            q->parent()->remChild(q);
-        }
-        parent = p;
-        QSimpleCanvasLayer *n = 0;
-        if (q->parent()) {
-            q->parent()->addChild(q);
-            n = q->layer();
-        }
-
-        if (o != n) {
-            data()->dirty = false;
-            data()->transformValid = false;
-            if (o) o->remDirty(q);
-            if (n) n->addDirty(q);
-        }
-
-        if (canvasChange)
-            canvasChanged(p->d_func()->canvas, old);
-
-        q->update();
-    }
-}
-
-void QSimpleCanvasItemPrivate::convertToGraphicsItem(QGraphicsItem *parent)
-{
-    Q_Q(QSimpleCanvasItem);
-    Q_ASSERT(!graphicsItem);
-    graphicsItem = new QSimpleGraphicsItem(q);
-    graphicsItem->setFlag(QGraphicsItem::ItemHasNoContents, !(q->options() & QSimpleCanvasItem::HasContents));
     if (parent)
-        graphicsItem->setParentItem(parent);
-
-    QSimpleCanvasItemData *old = data_ptr;
-    data_ptr = 0;
-
-    if (old) {
-        q->QSimpleCanvasItem::setX(old->x);
-        q->QSimpleCanvasItem::setY(old->y);
-        q->QSimpleCanvasItem::setZ(old->z);
-        q->QSimpleCanvasItem::setVisible(old->visible);
-        if (old->transformUser)
-            q->QSimpleCanvasItem::setTransform(*old->transformUser);
-        q->QSimpleCanvasItem::setFlip(old->flip);
-        q->QSimpleCanvasItem::setAcceptedMouseButtons((Qt::MouseButtons)old->buttons);
-        delete old;
-    }
-
-    if (scale != 1) {
-        qreal s = scale;
-        scale = 1;
-        q->QSimpleCanvasItem::setScale(s);
-    }
-
-    q->setClipType(clip);
-
-    for (int ii = 0; ii < children.count(); ++ii) 
-        static_cast<QSimpleCanvasItemPrivate*>(children.at(ii)->d_ptr)->convertToGraphicsItem(graphicsItem);
+        p->addChild(q);
 }
 
 /*!
@@ -1394,14 +915,6 @@ void QSimpleCanvasItem::setParent(QSimpleCanvasItem *p)
     if (p == parent() || !p) return;
 
     QObject::setParent(p);
-
-    if (d->graphicsItem && !static_cast<QSimpleCanvasItemPrivate*>(p->d_ptr)->graphicsItem)
-        qWarning("QSimpleCanvasItem: Cannot reparent a QGraphicsView item to a QSimpleCanvas item");
-
-    if (static_cast<QSimpleCanvasItemPrivate*>(p->d_ptr)->graphicsItem && !d->graphicsItem) {
-        d->setParentInternal(0);
-        d->convertToGraphicsItem();
-    }
 
     QSimpleCanvasItem *oldParent = d->parent;
     d->setParentInternal(p);
@@ -1462,7 +975,7 @@ int QSimpleCanvasItemPrivate::dump(int indent)
     QFxItem *i = qobject_cast<QFxItem *>(q);
     if (i)
         name = i->id().toLatin1();
-    qWarning().nospace() << ba.constData() << state.constData() << " " << children.count() << " " << q << " " << name.constData();
+    qWarning().nospace() << ba.constData() << state.constData() << " " << children.count() << " " << " " << name.constData();
 
     int rv = 0;
 
@@ -1731,8 +1244,31 @@ QPixmap QSimpleCanvasItem::string(const QString &str, const QColor &c, const QFo
     return img;
 }
 
+void QSimpleCanvasItem::paint(QPainter *p, const QStyleOptionGraphicsItem *, QWidget *)
+{
+    paintContents(*p);
+}
+
 void QSimpleCanvasItem::geometryChanged(const QRectF &, const QRectF &)
 {
+}
+
+void QSimpleCanvasItemPrivate::gvRemoveMouseFilter()
+{
+    Q_Q(QSimpleCanvasItem);
+    QGraphicsScene *scene = q->scene();
+    if (!scene) return;
+
+    scene->removeEventFilter(q);
+}
+
+void QSimpleCanvasItemPrivate::gvAddMouseFilter()
+{
+    Q_Q(QSimpleCanvasItem);
+    QGraphicsScene *scene = q->scene();
+    if (!scene) return;
+
+    scene->installEventFilter(q);
 }
 
 QT_END_NAMESPACE

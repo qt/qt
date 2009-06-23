@@ -62,7 +62,7 @@ QFxItem *QFxRepeaterPrivate::addItem(QmlContext *ctxt, QFxItem *lastItem)
     QFxItem *item = qobject_cast<QFxItem *>(nobj);
     if (item) {
         item->setParent(q->itemParent());
-        item->stackUnder(lastItem);
+//        item->stackUnder(lastItem);
         deletables << nobj;
     } else {
         delete nobj;

@@ -426,6 +426,10 @@ public:
     // Optional stacking order
     int globalStackingOrder;
     QGraphicsItem *q_ptr;
+
+    static QGraphicsItemPrivate *get(QGraphicsItem *o) {
+        return o->d_func();
+    }
 };
 
 struct QGraphicsItemPrivate::TransformData {

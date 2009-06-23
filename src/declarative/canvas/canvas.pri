@@ -1,9 +1,7 @@
 SOURCES += \
            canvas/qsimplecanvas.cpp \
            canvas/qsimplecanvasitem.cpp \
-           canvas/qsimplecanvasdebugplugin.cpp \
-           canvas/qsimplecanvas_software.cpp \
-           canvas/qsimplecanvas_graphicsview.cpp
+           canvas/qsimplecanvasdebugplugin.cpp 
 
 HEADERS += \
            canvas/qsimplecanvas.h \

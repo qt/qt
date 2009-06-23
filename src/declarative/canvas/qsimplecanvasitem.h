@@ -64,12 +64,12 @@ class QPointF;
 class QRectF;
 class QGraphicsSceneHoverEvent;
 
-class Q_DECLARATIVE_EXPORT QSimpleCanvasItem : public QObject
+class Q_DECLARATIVE_EXPORT QSimpleCanvasItem : public QGraphicsObject
 {
     Q_OBJECT
     Q_CAST_INTERFACES(QGraphicsItem)
     Q_CAST_INTERFACES(QmlDebuggerStatus)
-    Q_DECLARE_PRIVATE(QSimpleCanvasItem)
+    Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr, QSimpleCanvasItem)
     Q_ENUMS(TransformOrigin)
     Q_PROPERTY(TransformOrigin transformOrigin READ transformOrigin WRITE setTransformOrigin)
 
@@ -104,11 +104,6 @@ public:
     Options options() const;
     void setOptions(Options, bool set = true);
 
-    Qt::MouseButtons acceptedMouseButtons() const;
-    void setAcceptedMouseButtons(Qt::MouseButtons buttons);
-
-    qreal x() const;
-    qreal y() const;
     qreal z() const;
     QPointF pos() const;
     void setX(qreal);
@@ -140,13 +135,6 @@ public:
     qreal scale() const;
     virtual void setScale(qreal);
 
-    enum Flip { NoFlip = 0, 
-                VerticalFlip = 0x01, 
-                HorizontalFlip = 0x02, 
-                VerticalAndHorizontalFlip = 0x03 };
-    Flip flip() const;
-    void setFlip(Flip);
-
     qreal visible() const;
     virtual void setVisible(qreal);
     bool isVisible() const;
@@ -155,18 +143,12 @@ public:
 
     QSimpleCanvasItem *parent() const;
     void setParent(QSimpleCanvasItem *);
-    void stackUnder(QSimpleCanvasItem *);
-    void stackOver(QSimpleCanvasItem *);
-    void stackAt(int idx);
-    int indexForChild(QSimpleCanvasItem *);
 
     QRect itemBoundingRect();
 
     void setPaintMargin(qreal margin);
     QRectF boundingRect() const;
     virtual void paintContents(QPainter &);
-
-    void update();
 
     virtual QSimpleCanvasLayer *layer();
 
@@ -178,12 +160,10 @@ public:
     QPointF mapToScene(const QPointF &) const;
     QRectF mapToScene(const QRectF &) const;
 
-    QSimpleCanvas::Matrix transform() const;
-    void setTransform(const QSimpleCanvas::Matrix &);
+    QTransform transform() const;
+    void setTransform(const QTransform &);
 
     QSimpleCanvasItem *mouseGrabberItem() const;
-    void ungrabMouse();
-    void grabMouse();
 
     virtual bool isFocusable() const;
     void setFocusable(bool);
@@ -202,6 +182,7 @@ public:
     static QPixmap string(const QString &, const QColor & = Qt::black, const QFont & = QFont());
 
 protected:
+    virtual void paint(QPainter *, const QStyleOptionGraphicsItem *, QWidget *);
     virtual void geometryChanged(const QRectF &newGeometry, 
                                  const QRectF &oldGeometry);
     virtual void addChild(QSimpleCanvasItem *);
@@ -215,6 +196,8 @@ protected:
 
 public:
     // Events
+    virtual bool sceneEvent(QEvent *);
+    virtual QVariant itemChange(GraphicsItemChange, const QVariant &);
     virtual bool mouseFilter(QGraphicsSceneMouseEvent *);
     virtual void mousePressEvent(QGraphicsSceneMouseEvent *event);
     virtual void mouseReleaseEvent(QGraphicsSceneMouseEvent *event);
@@ -241,6 +224,7 @@ private:
 
 public:
     QSimpleCanvasItem(QSimpleCanvasItemPrivate &dd, QSimpleCanvasItem *parent);
+
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QSimpleCanvasItem::Options)

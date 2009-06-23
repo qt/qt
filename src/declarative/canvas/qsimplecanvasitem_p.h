@@ -43,6 +43,7 @@
 #define QSIMPLECANVASITEM_P_H
 
 #include "private/qobject_p.h"
+#include "private/qgraphicsitem_p.h"
 #include "qsimplecanvas.h"
 #include "qsimplecanvasitem.h"
 
@@ -50,60 +51,6 @@
 
 
 QT_BEGIN_NAMESPACE
-class QSimpleGraphicsItem : public QGraphicsItem
-{
-public:
-    QSimpleGraphicsItem(QSimpleCanvasItem *);
-    virtual ~QSimpleGraphicsItem();
-
-    virtual void paint(QPainter *, const QStyleOptionGraphicsItem *, QWidget *);
-    virtual QRectF boundingRect() const;
-
-    QTransform transform;
-protected:
-    virtual void mousePressEvent(QGraphicsSceneMouseEvent *event);
-    virtual void mouseReleaseEvent(QGraphicsSceneMouseEvent *event);
-    virtual void mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event);
-    virtual void mouseMoveEvent(QGraphicsSceneMouseEvent *event);
-    virtual bool sceneEvent(QEvent *);
-    virtual QVariant itemChange(GraphicsItemChange, const QVariant &);
-    virtual void keyPressEvent(QKeyEvent *event);
-    virtual void keyReleaseEvent(QKeyEvent *event);
-    virtual void focusInEvent(QFocusEvent *event);
-
-private:
-    friend class QSimpleCanvasItem;
-    QSimpleCanvasItem *owner;
-};
-
-class QSimpleCanvasItemData 
-{
-public:
-    QSimpleCanvasItemData();
-    ~QSimpleCanvasItemData();
-
-    // 5 bits is all that's needed to store Qt::MouseButtons
-    int buttons:5;
-    QSimpleCanvasItem::Flip flip:2;
-    bool dirty:1;
-    bool transformValid:1;
-    bool doNotPaint:1;
-    bool doNotPaintChildren:1;
-
-    qreal x;
-    qreal y;
-    qreal z;
-    float visible;
-
-    QSimpleCanvas::Matrix *transformUser;
-    QSimpleCanvas::Matrix transformActive;
-    int transformVersion;
-
-    float activeOpacity;
-
-    QRect lastPaintRect;
-};
-
 class QSimpleCanvasItemDebuggerStatus : public QmlDebuggerStatus
 {
 public:
@@ -121,7 +68,7 @@ public:
 };
 
 class QGraphicsQSimpleCanvasItem;
-class QSimpleCanvasItemPrivate : public QObjectPrivate
+class QSimpleCanvasItemPrivate : public QGraphicsItemPrivate
 {
     Q_DECLARE_PUBLIC(QSimpleCanvasItem)
 public:
@@ -131,9 +78,8 @@ public:
       origin(QSimpleCanvasItem::TopLeft), options(QSimpleCanvasItem::NoOption),
       focusable(false), wantsActiveFocusPanelPendingCanvas(false),
       hasBeenActiveFocusPanel(false),
-      hasFocus(false), hasActiveFocus(false), needsZOrder(false), 
-      widthValid(false), heightValid(false), width(0), height(0), paintmargin(0), scale(1), 
-      graphicsItem(0), data_ptr(0)
+      hasFocus(false), hasActiveFocus(false), 
+      widthValid(false), heightValid(false), width(0), height(0), paintmargin(0), scale(1)
     {
     }
 
@@ -156,7 +102,6 @@ public:
     bool hasBeenActiveFocusPanel:1;
     bool hasFocus:1;
     bool hasActiveFocus:1;
-    bool needsZOrder:1;
     bool widthValid:1;
     bool heightValid:1;
 
@@ -168,39 +113,16 @@ public:
     qreal paintmargin;
     qreal scale;
 
-    QSimpleGraphicsItem *graphicsItem;
-    inline QSimpleCanvasItemData *data() const { 
-        if (!data_ptr) data_ptr = new QSimpleCanvasItemData;
-        return data_ptr; 
-    }
-    mutable QSimpleCanvasItemData *data_ptr;
+    QTransform transform;
 
     void gvRemoveMouseFilter();
     void gvAddMouseFilter();
 
     void canvasChanged(QSimpleCanvas *newCanvas, QSimpleCanvas *oldCanvas);
 
-    void freshenTransforms() const;
-
-    QPointF adjustFrom(const QPointF &) const;
-    QRectF adjustFrom(const QRectF &) const;
-    QPointF adjustTo(const QPointF &) const;
-    QRectF adjustTo(const QRectF &) const;
-
     QPointF transformOrigin() const;
 
     void setParentInternal(QSimpleCanvasItem *);
-    void convertToGraphicsItem(QGraphicsItem * = 0);
-
-    void paint(QPainter &);
-    void paintChild(QPainter &, QSimpleCanvasItem *);
-    QRect setupPainting(int version, const QRect &bounding);
-
-    QSimpleCanvasItem *nextOpaque;
-
-    void zOrderChildren();
-    bool freshenNeeded() const;
-    void doFreshenTransforms() const;
 
     // Debugging
     int dump(int);

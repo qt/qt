@@ -57,18 +57,6 @@ QT_BEGIN_HEADER
 QT_BEGIN_NAMESPACE
 
 QT_MODULE(Declarative)
-namespace QSimpleCanvasConfig
-{
-    enum ImageType { Opaque, Translucent };
-
-    typedef QTransform Matrix;
-
-    inline Matrix transformToMatrix(const QTransform &t)
-    { return t; }
-    inline QTransform matrixToTransform(const Matrix &t)
-    { return t; }
-}
-
 class QSimpleCanvas;
 class QSimpleCanvasLayer;
 
@@ -79,8 +67,6 @@ class Q_DECLARATIVE_EXPORT QSimpleCanvas : public QWidget
 {
 Q_OBJECT
 public:
-    typedef QSimpleCanvasConfig::Matrix Matrix;
-
     enum CanvasMode { GraphicsView, SimpleCanvas };
 
     QSimpleCanvas(QWidget *parent = 0);
@@ -107,7 +93,6 @@ Q_SIGNALS:
 
 protected:
     virtual bool event(QEvent *);
-    virtual void paintEvent(QPaintEvent *);
     virtual void keyPressEvent(QKeyEvent *);
     virtual void keyReleaseEvent(QKeyEvent *);
     virtual void mousePressEvent(QMouseEvent *);
@@ -129,12 +114,9 @@ private:
     friend class QSimpleCanvasPrivate;
     friend class QSimpleCanvasItem;
     friend class QSimpleCanvasItemPrivate;
-    friend class QSimpleGraphicsItem;
 
     void queueUpdate();
     QSimpleCanvasPrivate *d;
-    void addDirty(QSimpleCanvasItem *);
-    void remDirty(QSimpleCanvasItem *);
 };
 
 

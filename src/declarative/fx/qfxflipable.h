@@ -84,7 +84,7 @@ public:
     Side side() const;
 
 protected:
-    virtual void transformChanged(const QSimpleCanvas::Matrix &);
+    virtual void transformChanged(const QTransform &);
 
 Q_SIGNALS:
     void sideChanged();
@@ -92,7 +92,7 @@ Q_SIGNALS:
 private:
     Q_PRIVATE_SLOT(d_func(), void _q_updateAxis())
     Q_DISABLE_COPY(QFxFlipable)
-    Q_DECLARE_PRIVATE(QFxFlipable)
+    Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr, QFxFlipable)
 };
 QML_DECLARE_TYPE(QFxFlipable)
 

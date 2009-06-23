@@ -138,7 +138,7 @@ protected:
 
 private:
     Q_DISABLE_COPY(QFxText)
-    Q_DECLARE_PRIVATE(QFxText)
+    Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr, QFxText)
 };
 QML_DECLARE_TYPE(QFxText)
 

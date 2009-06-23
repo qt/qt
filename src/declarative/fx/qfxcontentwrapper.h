@@ -71,7 +71,7 @@ protected:
     QFxContentWrapper(QFxContentWrapperPrivate &dd, QFxItem *parent);
 
 private:
-    Q_DECLARE_PRIVATE(QFxContentWrapper)
+    Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr, QFxContentWrapper)
 };
 QML_DECLARE_TYPE(QFxContentWrapper)
 

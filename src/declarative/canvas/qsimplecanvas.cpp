@@ -114,12 +114,10 @@ private:
 
 void QSimpleCanvasRootLayer::addDirty(QSimpleCanvasItem *i)
 {
-    _canvas->addDirty(i);
 }
 
 void QSimpleCanvasRootLayer::remDirty(QSimpleCanvasItem *i)
 {
-    _canvas->remDirty(i);
 }
 
 void QSimpleCanvasPrivate::clearFocusPanel(QSimpleCanvasItem *panel)
@@ -558,6 +556,7 @@ QSimpleCanvas::QSimpleCanvas(QWidget *parent)
 
 void QSimpleCanvasPrivate::init(QSimpleCanvas::CanvasMode mode)
 {
+    mode = QSimpleCanvas::GraphicsView;
     this->mode = mode;
 
     if (mode == QSimpleCanvas::SimpleCanvas)
@@ -590,8 +589,7 @@ void QSimpleCanvasPrivate::init(QSimpleCanvas::CanvasMode mode)
         view->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
         view->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
         view->setFrameStyle(0);
-        static_cast<QSimpleCanvasItemPrivate*>(root->d_ptr)->convertToGraphicsItem();
-        view->scene()->addItem(static_cast<QSimpleCanvasItemPrivate*>(root->d_ptr)->graphicsItem);
+        view->scene()->addItem(root);
 
         // These seem to give the best performance
         view->setViewportUpdateMode(QGraphicsView::BoundingRectViewportUpdate);
@@ -604,24 +602,6 @@ QSimpleCanvas::~QSimpleCanvas()
 {
     delete d->root;
     delete d;
-}
-
-void QSimpleCanvasPrivate::paint(QPainter &p)
-{
-#if defined(QFX_RENDER_QPAINTER)
-    if (!isSetup) {
-        ++paintVersion;
-        root->d_func()->setupPainting(0, q->rect());
-    }
-
-    lrpTimer.start();
-
-    root->d_func()->paint(p);
-
-    lrpTime = lrpTimer.elapsed();
-#else
-    Q_UNUSED(p);
-#endif
 }
 
 QSimpleCanvas::CanvasMode QSimpleCanvas::canvasMode() const
@@ -798,55 +778,11 @@ void QSimpleCanvas::resizeEvent(QResizeEvent *e)
     QWidget::resizeEvent(e);
 }
 
-
-void QSimpleCanvas::remDirty(QSimpleCanvasItem *c)
-{
-    d->dirtyItems.removeAll(c);
-}
-
 void QSimpleCanvas::queueUpdate()
 {
     if (!d->timer)  {
         QCoreApplication::postEvent(this, new QEvent(QEvent::User));
         d->timer = 1;
-    }
-}
-
-void QSimpleCanvas::addDirty(QSimpleCanvasItem *c)
-{
-    Q_ASSERT(d->isSimpleCanvas());
-    queueUpdate();
-    d->oldDirty |= c->d_func()->data()->lastPaintRect;
-    d->dirtyItems.append(c);
-}
-
-QRect QSimpleCanvasPrivate::dirtyItemClip() const
-{
-    QRect rv;
-    if (isSimpleCanvas()) {
-        for (int ii = 0; ii < dirtyItems.count(); ++ii)
-            rv |= dirtyItems.at(ii)->d_func()->data()->lastPaintRect;
-    }
-    return rv;
-}
-
-QRect QSimpleCanvasPrivate::resetDirty()
-{
-    if (isSimpleCanvas()) {
-        QRect r = oldDirty | dirtyItemClip();
-        if (!r.isEmpty())
-            r.adjust(-1,-1,2,2);    //make sure we get everything (since we rounded from floats to ints)
-        for (int ii = 0; ii < dirtyItems.count(); ++ii)
-            static_cast<QSimpleCanvasItemPrivate*>(dirtyItems.at(ii)->d_ptr)->data()->dirty = false;
-        dirtyItems.clear();
-        oldDirty = QRect();
-
-        if (fullUpdate())
-            return QRect();
-        else
-            return r;
-    } else {
-        return QRect();
     }
 }
 
@@ -872,49 +808,12 @@ QSimpleCanvasItem *QSimpleCanvas::focusItem(QSimpleCanvasItem *item) const
 
 bool QSimpleCanvas::event(QEvent *e)
 {
-    if (e->type() == QEvent::User && d->isSimpleCanvas()) {
-        int tbf = d->frameTimer.restart();
-        d->timer = 0;
-        d->isSetup = true;
-        ++d->paintVersion;
-        d->root->d_func()->setupPainting(0, rect());
-
-        QRect r = d->resetDirty();
-
-        if (r.isEmpty() || fullUpdate())
-            repaint();
-        else 
-            repaint(r);
-        emit framePainted();
-        d->isSetup = false;
-
-        int frametimer = d->frameTimer.elapsed();
-        gfxCanvasTiming.append(QSimpleCanvasTiming(r, frametimer, d->lrpTime, tbf));
-        if (d->debugPlugin)
-            d->debugPlugin->addTiming(d->lrpTime, frametimer, tbf);
-        d->lrpTime = 0;
-        if (continuousUpdate())
-            queueUpdate();
-
-        return true;
-    }
-
     if (e->type() == QEvent::ShortcutOverride) {
         if (QSimpleCanvasItem *focus = focusItem())
             return focus->event(e);
     }
 
     return QWidget::event(e);
-}
-
-void QSimpleCanvas::paintEvent(QPaintEvent *)
-{
-#if defined(QFX_RENDER_QPAINTER)
-    if (d->mode == SimpleCanvas) {
-        QPainter p(this);
-        d->paint(p);
-    }
-#endif
 }
 
 void QSimpleCanvas::dumpTiming()
@@ -952,16 +851,9 @@ void QSimpleCanvas::checkState()
 */
 QImage QSimpleCanvas::asImage() const
 { 
-    if (d->isSimpleCanvas()) {
-        QImage img(width(),height(),QImage::Format_RGB32);
-        QPainter p(&img);
-        const_cast<QSimpleCanvas*>(this)->d->paint(p);
-        return img;
-    } else {
-        QImage img(width(),height(),QImage::Format_RGB32);
-        QPainter p(&img);
-        d->view->render(&p);
-        return img;
-    }
+    QImage img(width(),height(),QImage::Format_RGB32);
+    QPainter p(&img);
+    d->view->render(&p);
+    return img;
 }
 QT_END_NAMESPACE

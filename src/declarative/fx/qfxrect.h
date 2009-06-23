@@ -176,7 +176,7 @@ protected:
 
 private:
     Q_DISABLE_COPY(QFxRect)
-    Q_DECLARE_PRIVATE(QFxRect)
+    Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr, QFxRect)
 };
 QML_DECLARE_TYPE(QFxRect)
 

@@ -115,7 +115,7 @@ private:
     void applyTransition(const QList<QPair<QString, QVariant> >& changes, QFxItem* target,
             QmlTransition* transition);
     Q_DISABLE_COPY(QFxBaseLayout)
-    Q_DECLARE_PRIVATE(QFxBaseLayout)
+    Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr, QFxBaseLayout)
 };
 
 class Q_DECLARATIVE_EXPORT QFxVerticalLayout : public QFxBaseLayout

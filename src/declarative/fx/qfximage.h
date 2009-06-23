@@ -111,7 +111,7 @@ private Q_SLOTS:
 
 private:
     Q_DISABLE_COPY(QFxImage)
-    Q_DECLARE_PRIVATE(QFxImage)
+    Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr, QFxImage)
     void setGridScaledImage(const QFxGridScaledImage& sci);
 };
 QML_DECLARE_TYPE(QFxImage)

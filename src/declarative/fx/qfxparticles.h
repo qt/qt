@@ -221,7 +221,7 @@ private Q_SLOTS:
 
 private:
     Q_DISABLE_COPY(QFxParticles)
-    Q_DECLARE_PRIVATE(QFxParticles)
+    Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr, QFxParticles)
 };
 QML_DECLARE_TYPE(QFxParticles)
 

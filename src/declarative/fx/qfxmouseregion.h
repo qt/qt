@@ -152,7 +152,7 @@ protected:
 
 private:
     Q_DISABLE_COPY(QFxMouseRegion)
-    Q_DECLARE_PRIVATE(QFxMouseRegion)
+    Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr, QFxMouseRegion)
 };
 QML_DECLARE_TYPE(QFxMouseRegion)
 

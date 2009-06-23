@@ -205,7 +205,7 @@ private:
     void init();
     virtual void componentComplete();
     Q_DISABLE_COPY(QFxWebView)
-    Q_DECLARE_PRIVATE(QFxWebView)
+    Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr, QFxWebView)
 };
 QML_DECLARE_TYPE(QFxWebView)
 

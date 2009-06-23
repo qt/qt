@@ -84,8 +84,6 @@ public:
     bool isGraphicsView() const { return mode == QSimpleCanvas::GraphicsView; }
 
     QRect oldDirty;
-    QRect resetDirty();
-    void paint(QPainter &p);
 
     QSimpleCanvasItem *opaqueList;
 

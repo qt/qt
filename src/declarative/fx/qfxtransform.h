@@ -62,7 +62,7 @@ public:
     void update();
 
     virtual bool isIdentity() const;
-    virtual QSimpleCanvas::Matrix transform() const;
+    virtual QTransform transform() const;
 };
 QML_DECLARE_TYPE(QFxTransform)
 
@@ -127,7 +127,7 @@ public:
     void setAngle(qreal);
 
     virtual bool isIdentity() const;
-    virtual QSimpleCanvas::Matrix transform() const;
+    virtual QTransform transform() const;
 
 Q_SIGNALS:
     void angleChanged();
@@ -140,7 +140,7 @@ private:
     qreal _angle;
 
     mutable bool _dirty;
-    mutable QSimpleCanvas::Matrix _transform;
+    mutable QTransform _transform;
 };
 QML_DECLARE_TYPE(QFxRotation)
 
@@ -160,7 +160,7 @@ public:
     void setAngle(qreal);
 
     virtual bool isIdentity() const;
-    virtual QSimpleCanvas::Matrix transform() const;
+    virtual QTransform transform() const;
 
 private Q_SLOTS:
     void update();
@@ -169,7 +169,7 @@ private:
     qreal _angle;
 
     mutable bool _dirty;
-    mutable QSimpleCanvas::Matrix _transform;
+    mutable QTransform _transform;
 };
 QML_DECLARE_TYPE(QFxRotation3D)
 
@@ -189,7 +189,7 @@ public:
     void setDistance(qreal);
 
     virtual bool isIdentity() const;
-    virtual QSimpleCanvas::Matrix transform() const;
+    virtual QTransform transform() const;
 
 private Q_SLOTS:
     void update();
@@ -198,7 +198,7 @@ private:
     qreal _distance;
 
     mutable bool _dirty;
-    mutable QSimpleCanvas::Matrix _transform;
+    mutable QTransform _transform;
 };
 QML_DECLARE_TYPE(QFxTranslation3D)
 
@@ -296,7 +296,7 @@ public:
     void setbottomRight_x(qreal);
 
     virtual bool isIdentity() const;
-    virtual QSimpleCanvas::Matrix transform() const;
+    virtual QTransform transform() const;
 
 private:
     QPointF p;

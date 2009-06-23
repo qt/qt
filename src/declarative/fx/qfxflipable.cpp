@@ -219,7 +219,7 @@ void QFxFlipablePrivate::setBackTransform()
     p3 = axisRotation.transform().map(p3);
     axisRotation.setAngle(rotation);
 
-    QSimpleCanvas::Matrix mat;
+    QTransform mat;
     mat.translate(back->width()/2,back->height()/2);
     if (back->width() && p1.x() >= p2.x())
         mat.rotate(180, Qt::YAxis);
@@ -284,7 +284,7 @@ QFxFlipable::Side QFxFlipable::side() const
 //in some cases the user may want to specify a more complex transformation.
 //in that case, we still allow the generic use of transform.
 //(the logic here should be kept in sync with setBackTransform and setRotation)
-void QFxFlipable::transformChanged(const QSimpleCanvas::Matrix &trans)
+void QFxFlipable::transformChanged(const QTransform &trans)
 {
     Q_D(QFxFlipable);
     QPointF p1(0, 0);
@@ -308,7 +308,7 @@ void QFxFlipable::transformChanged(const QSimpleCanvas::Matrix &trans)
     if (newSide != d->current) {
         d->current = newSide;
         if (d->current==Back) {
-            QSimpleCanvas::Matrix mat;
+            QTransform mat;
             mat.translate(d->back->width()/2,d->back->height()/2);
             if (d->back->width() && p1.x() >= p2.x())
                 mat.rotate(180, Qt::YAxis);

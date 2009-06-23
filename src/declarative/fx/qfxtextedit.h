@@ -200,7 +200,7 @@ private:
 
     friend class QmlFont;
     Q_DISABLE_COPY(QFxTextEdit)
-    Q_DECLARE_PRIVATE(QFxTextEdit)
+    Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr, QFxTextEdit)
 };
 QML_DECLARE_TYPE(QFxTextEdit)
 

@@ -122,7 +122,7 @@ void QSimpleCanvasSceneDebugPlugin::refresh(QDataStream &ds,
 {
     ds << QmlDebugServerPlugin::objectToString(item) << item->x() << item->y() 
        << item->z() << item->width() << item->height() 
-       << (int)item->transformOrigin() << item->scale() << (int)item->flip() 
+       << (int)item->transformOrigin() << item->scale() << (int)0
        << item->transform()
        << item->hasActiveFocus() << (int)item->options();
 

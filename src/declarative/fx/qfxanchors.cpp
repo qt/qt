@@ -223,7 +223,7 @@ void QFxAnchorsPrivate::addDepend(QFxItem *item)
     if (!item)
         return;
     QFxItemPrivate *p = 
-        static_cast<QFxItemPrivate *>(QObjectPrivate::get(item));
+        static_cast<QFxItemPrivate *>(QGraphicsItemPrivate::get(item));
     p->dependantAnchors.append(q);
 }
 
@@ -233,7 +233,7 @@ void QFxAnchorsPrivate::remDepend(QFxItem *item)
     if (!item)
         return;
     QFxItemPrivate *p = 
-        static_cast<QFxItemPrivate *>(QObjectPrivate::get(item));
+        static_cast<QFxItemPrivate *>(QGraphicsItemPrivate::get(item));
     p->dependantAnchors.removeAll(q);
 }
 

@@ -82,7 +82,7 @@ protected Q_SLOTS:
 private:
     void init();
     Q_DISABLE_COPY(QFxPaintedItem)
-    Q_DECLARE_PRIVATE(QFxPaintedItem)
+    Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr, QFxPaintedItem)
 };
 QML_DECLARE_TYPE(QFxPaintedItem)
 

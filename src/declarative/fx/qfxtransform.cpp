@@ -71,9 +71,9 @@ bool QFxTransform::isIdentity() const
     return true;
 }
 
-QSimpleCanvas::Matrix QFxTransform::transform() const
+QTransform QFxTransform::transform() const
 {
-    return QSimpleCanvas::Matrix();
+    return QTransform();
 }
 
 void QFxTransform::update()

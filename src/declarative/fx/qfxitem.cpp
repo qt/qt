@@ -1070,52 +1070,6 @@ void QFxItem::geometryChanged(const QRectF &newGeometry,
     }
 }
 
-/*!
-  \qmlproperty bool Item::flipVertically
-  \qmlproperty bool Item::flipHorizontally
-
-  When set, the item will be displayed flipped horizontally or vertically
-  about its center.
- */
-
-/*!
-  \property QFxItem::flipVertically
-
-  When set, the item will be displayed flipped horizontally or vertically
-  about its center.
- */
-bool QFxItem::flipVertically() const
-{
-    return flip() & VerticalFlip;
-}
-
-void QFxItem::setFlipVertically(bool v)
-{
-    if (v)
-        setFlip((QSimpleCanvasItem::Flip)(flip() | VerticalFlip));
-    else
-        setFlip((QSimpleCanvasItem::Flip)(flip() & ~VerticalFlip));
-}
-
-/*!
-  \property QFxItem::flipHorizontally
-
-  When set, the item will be displayed flipped horizontally or vertically
-  about its center.
- */
-bool QFxItem::flipHorizontally() const
-{
-    return flip() & HorizontalFlip;
-}
-
-void QFxItem::setFlipHorizontally(bool v)
-{
-    if (v)
-        setFlip((QSimpleCanvasItem::Flip)(flip() | HorizontalFlip));
-    else
-        setFlip((QSimpleCanvasItem::Flip)(flip() & ~HorizontalFlip));
-}
-
 /*! \fn void QFxItem::keyPress(QFxKeyEvent *event)
   This signal is emitted by keyPressEvent() for the \a event.
  */
@@ -2035,7 +1989,7 @@ void QFxItem::reparentItems()
 void QFxItem::updateTransform()
 {
     Q_D(QFxItem);
-    QSimpleCanvas::Matrix trans;
+    QTransform trans;
     for (int ii = d->_transform.count() - 1; ii >= 0; --ii) {
         QFxTransform *a = d->_transform.at(ii);
         if (!a->isIdentity()) 
@@ -2049,7 +2003,7 @@ void QFxItem::updateTransform()
 /*!
     \internal
 */
-void QFxItem::transformChanged(const QSimpleCanvas::Matrix &)
+void QFxItem::transformChanged(const QTransform &)
 {
 }
 

@@ -88,7 +88,7 @@ protected:
 
 private:
     Q_DISABLE_COPY(QFxAnimatedImageItem)
-    Q_DECLARE_PRIVATE(QFxAnimatedImageItem)
+    Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr, QFxAnimatedImageItem)
 };
 
 QML_DECLARE_TYPE(QFxAnimatedImageItem)
