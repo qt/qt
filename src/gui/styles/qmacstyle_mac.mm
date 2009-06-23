@@ -3325,6 +3325,10 @@ void QMacStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, QPai
         drawTabCloseButton(p, hover, active, selected);
         } break;
     case PE_PanelStatusBar: {
+        if (QSysInfo::MacintoshVersion <= QSysInfo::MV_10_4) {
+            QWindowsStyle::drawPrimitive(pe, opt, p, w);
+            break;
+        }
         // Use the Leopard style only if the status bar is the status bar for a
         // QMainWindow with a unifed toolbar.
         if (w == 0 || w->parent() == 0 || qobject_cast<QMainWindow *>(w->parent()) == 0 ||
