@@ -82,7 +82,6 @@ class QCocoaTouch
         static bool _updateInternalStateOnly;
 
         QTouchEvent::TouchPoint _touchPoint;
-        QPointF _trackpadPos;
         int _identity;
 
         QCocoaTouch(NSTouch *nstouch);

@@ -83,17 +83,18 @@ void QCocoaTouch::updateTouchData(NSTouch *nstouch, NSTouchPhase phase)
     // where on screen the touchpoint should be according to the
     // reference position:
     NSPoint npos = [nstouch normalizedPosition];
-    _trackpadPos = QPointF(npos.x, npos.y);
+    QPointF qnpos = QPointF(npos.x, 1 - npos.y);
+    _touchPoint.setNormalizedPos(qnpos);
 
     if (_touchPoint.id() == 0 && phase == NSTouchPhaseBegan) {
-        _trackpadReferencePos = _trackpadPos;
+        _trackpadReferencePos = qnpos;
         _screenReferencePos = QCursor::pos();
     }
 
     NSSize dsize = [nstouch deviceSize];
-    float ppiX = (_trackpadPos.x() - _trackpadReferencePos.x()) * dsize.width;
-    float ppiY = (_trackpadPos.y() - _trackpadReferencePos.y()) * dsize.height;
-    QPointF relativePos = _trackpadReferencePos - QPointF(ppiX, 1 - ppiY);
+    float ppiX = (qnpos.x() - _trackpadReferencePos.x()) * dsize.width;
+    float ppiY = (qnpos.y() - _trackpadReferencePos.y()) * dsize.height;
+    QPointF relativePos = _trackpadReferencePos - QPointF(ppiX, ppiY);
     _touchPoint.setScreenPos(_screenReferencePos - relativePos);
 }
 
