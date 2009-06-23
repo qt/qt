@@ -1311,9 +1311,7 @@ static void qt_set_x11_resources(const char* font = 0, const char* fg = 0,
         }
 
         if (kdeColors) {
-            const QSettings &theKdeSettings =
-                      QSettings(QApplicationPrivate::kdeHome()
-                      + QLatin1String("/share/config/kdeglobals"), QSettings::IniFormat);
+            QSettings theKdeSettings(QApplicationPrivate::kdeHome() + QLatin1String("/share/config/kdeglobals"), QSettings::IniFormat);
 
             // Setup KDE palette
             QColor color;
@@ -1363,9 +1361,7 @@ static void qt_set_x11_resources(const char* font = 0, const char* fg = 0,
         }
         // Use KDE3 or KDE4 color settings if present
         if (kdeColors) {
-            const QSettings &theKdeSettings =
-                      QSettings(QApplicationPrivate::kdeHome()
-                      + QLatin1String("/share/config/kdeglobals"), QSettings::IniFormat);
+            QSettings theKdeSettings(QApplicationPrivate::kdeHome() + QLatin1String("/share/config/kdeglobals"), QSettings::IniFormat);
 
             QColor color = kdeColor(QLatin1String("selectBackground"), theKdeSettings);
             if (!color.isValid())
