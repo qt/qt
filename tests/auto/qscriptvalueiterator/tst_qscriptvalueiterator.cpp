@@ -159,6 +159,8 @@ void tst_QScriptValueIterator::iterateBackward_data()
 
 void tst_QScriptValueIterator::iterateBackward()
 {
+    QSKIP("Not implemented", SkipAll);
+
     QFETCH(QStringList, propertyNames);
     QFETCH(QStringList, propertyValues);
     QMap<QString, QString> pmap;
@@ -227,6 +229,7 @@ void tst_QScriptValueIterator::iterateArray()
     }
     QCOMPARE(it.hasNext(), false);
 
+    QVERIFY(it.hasPrevious());
     for (int i = length - 1; i >= 0; --i) {
         it.previous();
         QString indexStr = QScriptValue(&engine, i).toString();
@@ -262,6 +265,7 @@ void tst_QScriptValueIterator::iterateBackAndForth()
         QScriptValueIterator it(object);
         it.next();
         QCOMPARE(it.name(), QLatin1String("foo"));
+        QVERIFY(it.hasPrevious());
         it.previous();
         QCOMPARE(it.name(), QLatin1String("foo"));
         it.next();
@@ -359,6 +363,7 @@ void tst_QScriptValueIterator::iterateString()
     }
     QCOMPARE(it.hasNext(), false);
 
+    QVERIFY(it.hasPrevious());
     for (int i = length - 1; i >= 0; --i) {
         it.previous();
         QString indexStr = QScriptValue(&engine, i).toString();
