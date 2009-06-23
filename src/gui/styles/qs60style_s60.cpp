@@ -853,6 +853,10 @@ TRect QS60StyleModeSpecifics::innerRectFromElement(QS60StylePrivate::SkinFrameEl
             widthShrink = widthShrink>>1;
             heightShrink = heightShrink>>1;
             break;
+        case QS60StylePrivate::SF_ListHighlight:
+            widthShrink = widthShrink-2;
+            heightShrink = heightShrink-2;
+            break;
         default:
             break;
     }

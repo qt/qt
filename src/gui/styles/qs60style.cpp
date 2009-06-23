@@ -1394,8 +1394,10 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
             } else { QCommonStyle::drawPrimitive(PE_PanelItemViewItem, option, painter, widget);}
 
             // draw the focus rect
-            if (isSelected)
-                QS60StylePrivate::drawSkinElement(QS60StylePrivate::SE_ListHighlight, painter, option->rect, flags);
+            if (isSelected) {
+                const QRect highlightRect = option->rect.adjusted(1,1,-1,-1);
+                QS60StylePrivate::drawSkinElement(QS60StylePrivate::SE_ListHighlight, painter, highlightRect, flags);
+            }
 
              // draw the icon
              const QIcon::Mode mode = (voptAdj.state & QStyle::State_Enabled) ? QIcon::Normal : QIcon::Disabled;
@@ -1796,39 +1798,24 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
             painter->restore();
         }
         break;
-    case CE_HeaderEmptyArea:
-        {
-            QS60StylePrivate::SkinElementFlags adjFlags = flags;
-            QRect emptyAreaRect = option->rect;
-            const int frameWidth = QS60StylePrivate::pixelMetric(PM_DefaultFrameWidth);
-            if (option->state & QStyle::State_Horizontal) {
-                emptyAreaRect.adjust(-frameWidth,-frameWidth,frameWidth,-frameWidth);
-            } else {
-                if ( option->direction == Qt::LeftToRight ) {
-                emptyAreaRect.adjust(-frameWidth,-frameWidth,0,frameWidth);
-                    adjFlags |= QS60StylePrivate::SF_PointWest;
-                } else {
-                emptyAreaRect.adjust(frameWidth,frameWidth,0,-frameWidth);
-                    adjFlags |= QS60StylePrivate::SF_PointEast;
-                }
-            }
-            QS60StylePrivate::drawSkinElement(QS60StylePrivate::SE_TableHeaderItem, painter, emptyAreaRect, adjFlags);
-        }
+    case CE_HeaderEmptyArea: // no need to draw this
         break;
     case CE_Header:
         if ( const QStyleOptionHeader *header = qstyleoption_cast<const QStyleOptionHeader *>(option)) {
             QS60StylePrivate::SkinElementFlags adjFlags = flags;
             QRect mtyRect = header->rect;
-            QRect parentRect = widget->parentWidget()->rect();
             const int frameWidth = QS60StylePrivate::pixelMetric(PM_DefaultFrameWidth);
             if (header->orientation == Qt::Horizontal) {
-                mtyRect.adjust(-frameWidth,-frameWidth,frameWidth,-frameWidth);
+                if (header->position == QStyleOptionHeader::OnlyOneSection)
+                    mtyRect.adjust(frameWidth,1,frameWidth,-frameWidth);
+                else
+                    mtyRect.adjust(-frameWidth,1,frameWidth,-frameWidth);
             } else {
                 if ( header->direction == Qt::LeftToRight ) {
-                    mtyRect.adjust(-frameWidth,-frameWidth,0,frameWidth);
+                    mtyRect.adjust(1,-frameWidth,0,frameWidth);
                     adjFlags |= QS60StylePrivate::SF_PointWest;
                 } else {
-                    mtyRect.adjust(frameWidth,frameWidth,0,-frameWidth);
+                    mtyRect.adjust(-1,frameWidth,0,-frameWidth);
                     adjFlags |= QS60StylePrivate::SF_PointEast;
                 }
             }
@@ -1892,8 +1879,11 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
         break;
 #endif //QT_NO_TOOLBAR
     case CE_ShapedFrame:
-        if (qobject_cast<const QTextEdit *>(widget))
+        if (qobject_cast<const QTextEdit *>(widget)) {
             QS60StylePrivate::drawSkinElement(QS60StylePrivate::SE_Editor, painter, option->rect, flags);
+        } else if (qobject_cast<const QAbstractScrollArea *>(widget) && qobject_cast<const QTableView *>(widget)) {
+            QS60StylePrivate::drawSkinElement(QS60StylePrivate::SE_TableItem, painter, option->rect, flags);
+            }
         if (option->state & State_HasFocus)
             drawPrimitive(PE_FrameFocusRect, option, painter, widget);
         break;
@@ -2136,8 +2126,6 @@ void QS60Style::drawPrimitive(PrimitiveElement element, const QStyleOption *opti
 #ifndef QT_NO_ITEMVIEWS
     case PE_PanelItemViewItem:
     case PE_PanelItemViewRow: // ### Qt 5: remove
-        if (qobject_cast<const QTableView *>(widget) && qstyleoption_cast<const QStyleOptionViewItemV4 *>(option))
-             QS60StylePrivate::drawSkinElement(QS60StylePrivate::SE_TableItem, painter, option->rect, flags);
         break;
 #endif //QT_NO_ITEMVIEWS
 
