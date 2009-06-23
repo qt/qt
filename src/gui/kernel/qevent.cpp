@@ -3873,6 +3873,15 @@ QPointF QTouchEvent::TouchPoint::screenPos() const
 }
 
 /*!
+    Returns the position of this touch point. The coordinates are normalized to size of the touch
+    device, i.e. (0,0) is the top-left corner and (1,1) is the bottom-right corner.
+*/
+QPointF QTouchEvent::TouchPoint::normalizedPos() const
+{
+    return d->normalizedPos;
+}
+
+/*!
     Returns the starting position of this touch point, relative to the
     widget that received the event.
 */
@@ -3895,6 +3904,15 @@ QPointF QTouchEvent::TouchPoint::startScenePos() const
 QPointF QTouchEvent::TouchPoint::startScreenPos() const
 {
     return d->startScreenPos;
+}
+
+/*!
+    Returns the starting position of this touch point. The coordinates are normalized to size of
+    the touch device, i.e. (0,0) is the top-left corner and (1,1) is the bottom-right corner.
+*/
+QPointF QTouchEvent::TouchPoint::startNormalizedPos() const
+{
+    return d->startNormalizedPos;
 }
 
 /*!
@@ -3922,6 +3940,16 @@ QPointF QTouchEvent::TouchPoint::lastScenePos() const
 QPointF QTouchEvent::TouchPoint::lastScreenPos() const
 {
     return d->lastScreenPos;
+}
+
+/*!
+    Returns the position of this touch point from the previous touch event. The coordinates are
+    normalized to size of the touch device, i.e. (0,0) is the top-left corner and (1,1) is the
+    bottom-right corner.
+*/
+QPointF QTouchEvent::TouchPoint::lastNormalizedPos() const
+{
+    return d->lastNormalizedPos;
 }
 
 /*!
@@ -3999,6 +4027,14 @@ void QTouchEvent::TouchPoint::setScreenPos(const QPointF &screenPos)
 }
 
 /*! \internal */
+void QTouchEvent::TouchPoint::setNormalizedPos(const QPointF &normalizedPos)
+{
+    if (d->ref != 1)
+        d = d->detach();
+    d->normalizedPos = normalizedPos;
+}
+
+/*! \internal */
 void QTouchEvent::TouchPoint::setStartPos(const QPointF &startPos)
 {
     if (d->ref != 1)
@@ -4023,6 +4059,14 @@ void QTouchEvent::TouchPoint::setStartScreenPos(const QPointF &startScreenPos)
 }
 
 /*! \internal */
+void QTouchEvent::TouchPoint::setStartNormalizedPos(const QPointF &startNormalizedPos)
+{
+    if (d->ref != 1)
+        d = d->detach();
+    d->startNormalizedPos = startNormalizedPos;
+}
+
+/*! \internal */
 void QTouchEvent::TouchPoint::setLastPos(const QPointF &lastPos)
 {
     if (d->ref != 1)
@@ -4044,6 +4088,14 @@ void QTouchEvent::TouchPoint::setLastScreenPos(const QPointF &lastScreenPos)
     if (d->ref != 1)
         d = d->detach();
     d->lastScreenPos = lastScreenPos;
+}
+
+/*! \internal */
+void QTouchEvent::TouchPoint::setLastNormalizedPos(const QPointF &lastNormalizedPos)
+{
+    if (d->ref != 1)
+        d = d->detach();
+    d->lastNormalizedPos = lastNormalizedPos;
 }
 
 /*! \internal */

@@ -112,8 +112,9 @@ public:
     int id;
     Qt::TouchPointStates state;
     QRectF rect, sceneRect, screenRect;
-    QPointF startPos, startScenePos, startScreenPos;
-    QPointF lastPos, lastScenePos, lastScreenPos;
+    QPointF normalizedPos,
+            startPos, startScenePos, startScreenPos, startNormalizedPos,
+            lastPos, lastScenePos, lastScreenPos, lastNormalizedPos;
     qreal pressure;
 };
 

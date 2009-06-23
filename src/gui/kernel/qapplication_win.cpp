@@ -4023,6 +4023,8 @@ bool QApplicationPrivate::translateTouchEvent(const MSG &msg)
     if (!widgetForHwnd)
         return false;
 
+    QRect screenGeometry = q->desktop()->screenGeometry(widgetForHwnd);
+
     QList<QTouchEvent::TouchPoint> touchPoints;
 
     QVector<TOUCHINPUT> winTouchInputs(msg.wParam);
@@ -4062,6 +4064,8 @@ bool QApplicationPrivate::translateTouchEvent(const MSG &msg)
             state |= Qt::TouchPointPrimary;
         touchPoint.setState(state);
         touchPoint.setScreenRect(screenRect);
+        touchPoint.setNormalizedPos(screenPos.x() / screenGeometry.width(),
+                                    screenPos.y() / screenGeometry.height());
 
         allStates |= state;
 

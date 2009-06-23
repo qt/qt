@@ -786,6 +786,10 @@ public:
         QPointF startScreenPos() const;
         QPointF lastScreenPos() const;
 
+        QPointF normalizedPos() const;
+        QPointF startNormalizedPos() const;
+        QPointF lastNormalizedPos() const;
+
         QRectF rect() const;
         QRectF sceneRect() const;
         QRectF screenRect() const;
@@ -798,12 +802,15 @@ public:
         void setPos(const QPointF &pos);
         void setScenePos(const QPointF &scenePos);
         void setScreenPos(const QPointF &screenPos);
+        void setNormalizedPos(const QPointF &normalizedPos);
         void setStartPos(const QPointF &startPos);
         void setStartScenePos(const QPointF &startScenePos);
         void setStartScreenPos(const QPointF &startScreenPos);
+        void setStartNormalizedPos(const QPointF &startNormalizedPos);
         void setLastPos(const QPointF &lastPos);
         void setLastScenePos(const QPointF &lastScenePos);
         void setLastScreenPos(const QPointF &lastScreenPos);
+        void setLastNormalizedPos(const QPointF &lastNormalizedPos);
         void setRect(const QRectF &rect);
         void setSceneRect(const QRectF &sceneRect);
         void setScreenRect(const QRectF &screenRect);

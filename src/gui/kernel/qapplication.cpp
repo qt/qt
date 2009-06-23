@@ -5331,6 +5331,8 @@ void QApplicationPrivate::translateRawTouchEvent(QWidget *window,
             d->widgetForTouchPointId[touchPoint.id()] = widget;
             touchPoint.setStartScreenPos(touchPoint.screenPos());
             touchPoint.setLastScreenPos(touchPoint.screenPos());
+            touchPoint.setStartNormalizedPos(touchPoint.normalizedPos());
+            touchPoint.setLastNormalizedPos(touchPoint.normalizedPos());
             d->appCurrentTouchPoints.insert(touchPoint.id(), touchPoint);
             break;
         }
@@ -5343,6 +5345,8 @@ void QApplicationPrivate::translateRawTouchEvent(QWidget *window,
             QTouchEvent::TouchPoint previousTouchPoint = d->appCurrentTouchPoints.take(touchPoint.id());
             touchPoint.setStartScreenPos(previousTouchPoint.startScreenPos());
             touchPoint.setLastScreenPos(previousTouchPoint.screenPos());
+            touchPoint.setStartNormalizedPos(previousTouchPoint.startNormalizedPos());
+            touchPoint.setLastNormalizedPos(previousTouchPoint.normalizedPos());
             break;
         }
         default:
@@ -5353,6 +5357,8 @@ void QApplicationPrivate::translateRawTouchEvent(QWidget *window,
             QTouchEvent::TouchPoint previousTouchPoint = d->appCurrentTouchPoints.value(touchPoint.id());
             touchPoint.setStartScreenPos(previousTouchPoint.startScreenPos());
             touchPoint.setLastScreenPos(previousTouchPoint.screenPos());
+            touchPoint.setStartNormalizedPos(previousTouchPoint.startNormalizedPos());
+            touchPoint.setLastNormalizedPos(previousTouchPoint.normalizedPos());
             d->appCurrentTouchPoints[touchPoint.id()] = touchPoint;
             break;
         }
