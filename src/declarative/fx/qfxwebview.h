@@ -96,8 +96,6 @@ class Q_DECLARATIVE_EXPORT QFxWebView : public QFxPaintedItem
 
     Q_PROPERTY(bool interactive READ interactive WRITE setInteractive NOTIFY interactiveChanged)
 
-    Q_PROPERTY(int cacheSize READ cacheSize WRITE setCacheSize)
-
     Q_PROPERTY(QObject* reload READ reloadAction)
     Q_PROPERTY(QObject* back READ backAction)
     Q_PROPERTY(QObject* forward READ forwardAction)
@@ -124,9 +122,6 @@ public:
 
     bool interactive() const;
     void setInteractive(bool);
-
-    int cacheSize() const;
-    void setCacheSize(int pixels);
 
     int mouseX() const;
     int mouseY() const;

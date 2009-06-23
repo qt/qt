@@ -86,7 +86,7 @@ public:
 
     QList<ImageCacheItem*> imagecache;
 
-    const int max_imagecache_size;
+    int max_imagecache_size;
     bool smooth;
     QSize contentsSize;
 };
