@@ -210,17 +210,16 @@ void tst_QGraphicsLinearLayout::qgraphicslinearlayout()
     layout.setOrientation(Qt::Vertical);
     layout.orientation();
     QTest::ignoreMessage(QtWarningMsg, "QGraphicsLinearLayout::insertItem: cannot insert null item");
-    //QCOMPARE(layout.count(), 0);
+    QCOMPARE(layout.count(), 0);
     layout.addItem(0);
-    //QCOMPARE(layout.count(), 0);
+    QCOMPARE(layout.count(), 0);
     layout.addStretch(0);
-    //QCOMPARE(layout.count(), 1);
+    QCOMPARE(layout.count(), 0);
     QTest::ignoreMessage(QtWarningMsg, "QGraphicsLinearLayout::insertItem: cannot insert null item");
     layout.insertItem(0, 0);
     layout.insertStretch(0, 0);
     layout.removeItem(0);
-    layout.removeAt(0);
-    //QCOMPARE(layout.count(), 1);
+    QCOMPARE(layout.count(), 0);
     layout.setSpacing(0);
     layout.spacing();
     QTest::ignoreMessage(QtWarningMsg, "QGraphicsLinearLayout::setStretchFactor: cannot assign a stretch factor to a null item");
@@ -231,8 +230,7 @@ void tst_QGraphicsLinearLayout::qgraphicslinearlayout()
     QCOMPARE(layout.alignment(0), 0);
     layout.setGeometry(QRectF());
     layout.geometry();
-    //QCOMPARE(layout.count(), 1);
-    layout.itemAt(0);
+    QCOMPARE(layout.count(), 0);
     layout.invalidate();
     layout.sizeHint(Qt::MinimumSize, QSizeF());
 }
@@ -537,7 +535,10 @@ void tst_QGraphicsLinearLayout::insertItem()
     QSizeF oldSizeHint = layout.sizeHint(Qt::PreferredSize, QSizeF());
     layout.insertItem(insertItemAt, item);
     QCOMPARE(layout.count(), itemCount + layoutCount + 1);
-    QCOMPARE(layout.itemAt(insertItemAt), insertItemAt == -1 ? (QGraphicsLayoutItem*)0 : item);
+    
+    if (insertItemAt >= 0 && (itemCount + layoutCount >= 0)) {
+        QCOMPARE(layout.itemAt(itemCount + layoutCount), item);
+    }
 
     layout.activate();
     QSizeF newSizeHint = layout.sizeHint(Qt::PreferredSize, QSizeF());
@@ -599,8 +600,7 @@ void tst_QGraphicsLinearLayout::insertStretch()
     }
     widget->setLayout(layout);
     layout->insertStretch(insertItemAt, stretch);
-    QCOMPARE(layout->itemAt(insertItemAt), (QGraphicsLayoutItem*)0);
-    QCOMPARE(layout->count(), itemCount + layoutCount + 1);
+    QCOMPARE(layout->count(), itemCount + layoutCount);
 
     layout->activate();
     view.show();
@@ -669,7 +669,6 @@ void tst_QGraphicsLinearLayout::invalidate()
 void tst_QGraphicsLinearLayout::itemAt_data()
 {
     QTest::addColumn<int>("index");
-    QTest::newRow("-1") << -1;
     QTest::newRow("0") << 0;
     QTest::newRow("1") << 1;
     QTest::newRow("2") << 2;
@@ -681,7 +680,10 @@ void tst_QGraphicsLinearLayout::itemAt()
     // see also the insertItem() etc tests
     QFETCH(int, index);
     SubQGraphicsLinearLayout layout;
-    QCOMPARE(layout.itemAt(index), (QGraphicsLayoutItem*)0);
+    for (int i = 0; i < 3; ++i)
+        layout.addItem(new QGraphicsWidget);
+
+    QVERIFY(layout.itemAt(index) != 0);
 }
 
 void tst_QGraphicsLinearLayout::orientation_data()
@@ -779,19 +781,18 @@ void tst_QGraphicsLinearLayout::removeAt()
         layout.addItem(new SubQGraphicsLinearLayout);
     QSizeF oldSizeHint = layout.sizeHint(Qt::PreferredSize, QSizeF());
 
-    QGraphicsLayoutItem *w = layout.itemAt(removeItemAt);
-    QGraphicsLayoutItem *wParent = 0;
+    QGraphicsLayoutItem *w = 0;
+    if (removeItemAt >= 0 && removeItemAt < layout.count())
+        w = layout.itemAt(removeItemAt);
     if (w) {
-        wParent = w->parentLayoutItem();
+        QGraphicsLayoutItem *wParent = w->parentLayoutItem();
         QCOMPARE(wParent, static_cast<QGraphicsLayoutItem *>(&layout));
-    }
-    layout.removeAt(removeItemAt);
-    if (w) {
+        layout.removeAt(removeItemAt);
         wParent = w->parentLayoutItem();
         QCOMPARE(wParent, static_cast<QGraphicsLayoutItem *>(0));
+        delete w;
     }
-    delete w;
-    QCOMPARE(layout.count(), itemCount + layoutCount - ((removeItemAt == -1) ? 0 : 1));
+    QCOMPARE(layout.count(), itemCount + layoutCount - (w ? 1 : 0));
 
     layout.activate();
     QSizeF newSizeHint = layout.sizeHint(Qt::PreferredSize, QSizeF());
@@ -829,11 +830,15 @@ void tst_QGraphicsLinearLayout::removeItem()
     for (int i = 0; i < layoutCount; ++i)
         layout.addItem(new SubQGraphicsLinearLayout);
 
-    QGraphicsLayoutItem *w = layout.itemAt(removeItemAt);
+    QGraphicsLayoutItem *w = 0;
+    if (removeItemAt >= 0 && removeItemAt < layout.count())
+        w = layout.itemAt(removeItemAt);
     QSizeF oldSizeHint = layout.sizeHint(Qt::PreferredSize, QSizeF());
-    layout.removeItem(w);
-    delete w;
-    QCOMPARE(layout.count(), itemCount + layoutCount - ((removeItemAt == -1) ? 0 : 1));
+    if (w) {
+        layout.removeItem(w);
+        delete w;
+    }
+    QCOMPARE(layout.count(), itemCount + layoutCount - (w ? 1 : 0));
 
     layout.activate();
     QSizeF newSizeHint = layout.sizeHint(Qt::PreferredSize, QSizeF());

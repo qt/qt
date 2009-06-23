@@ -153,8 +153,11 @@ void tst_QGraphicsGridLayout::qgraphicsgridlayout()
     layout.columnStretchFactor(0);
     layout.count();
     layout.horizontalSpacing();
+    QTest::ignoreMessage(QtWarningMsg, "QGraphicsGridLayout::itemAt: invalid row, column 0, 0");
     layout.itemAt(0, 0);
+    QTest::ignoreMessage(QtWarningMsg, "QGraphicsGridLayout::itemAt: invalid index 0");
     layout.itemAt(0);
+    QTest::ignoreMessage(QtWarningMsg, "QGraphicsGridLayout::removeAt: invalid index 0");
     layout.removeAt(0);
     layout.rowAlignment(0);
     layout.rowCount();
