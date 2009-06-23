@@ -550,6 +550,15 @@ bool loadQM(Translator &translator, QIODevice &dev, ConversionData &cd)
     if (codec->name() != "UTF-8")
         utf8Codec = QTextCodec::codecForName("UTF-8");
 
+    QString strProN = QLatin1String("%n");
+    QLocale::Language l;
+    QLocale::Country c;
+    Translator::languageAndCountry(translator.languageCode(), &l, &c);
+    QStringList numerusForms;
+    bool guessPlurals = true;
+    if (getNumerusInfo(l, c, 0, &numerusForms))
+        guessPlurals = (numerusForms.count() == 1);
+
     QString context, contextUtf8;
     bool contextIsSystem, contextIsUtf8, contextNeeds8Bit;
     QString sourcetext, sourcetextUtf8;
@@ -634,6 +643,15 @@ bool loadQM(Translator &translator, QIODevice &dev, ConversionData &cd)
     end:;
         TranslatorMessage msg;
         msg.setType(TranslatorMessage::Finished);
+        if (translations.count() > 1) {
+            // If guessPlurals is not false here, plural form discard messages
+            // will be spewn out later.
+            msg.setPlural(true);
+        } else if (guessPlurals) {
+            // This might cause false positives, so it is a fallback only.
+            if (sourcetext.contains(strProN))
+                msg.setPlural(true);
+        }
         msg.setTranslations(translations);
         translations.clear();
         if (contextNeeds8Bit || sourcetextNeeds8Bit || commentNeeds8Bit) {
