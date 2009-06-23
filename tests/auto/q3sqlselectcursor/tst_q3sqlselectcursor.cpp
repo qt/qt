@@ -114,7 +114,7 @@ void tst_Q3SqlSelectCursor::createTestTables( QSqlDatabase db )
 
 void tst_Q3SqlSelectCursor::dropTestTables( QSqlDatabase db )
 {
-    tst_Databases::safeDropTables( db, QStringList() << qTableName( "qtest" ) );
+    tst_Databases::safeDropTable( db, qTableName( "qtest" ) );
 }
 
 void tst_Q3SqlSelectCursor::populateTestTables( QSqlDatabase db )

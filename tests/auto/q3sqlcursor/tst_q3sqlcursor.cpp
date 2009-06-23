@@ -132,6 +132,11 @@ void tst_Q3SqlCursor::createTestTables( QSqlDatabase db )
     if ( !db.isValid() )
 	return;
     QSqlQuery q( db );
+
+    if (tst_Databases::isSqlServer(db)) {
+        QVERIFY_SQL(q, exec("SET ANSI_DEFAULTS ON"));
+    }
+
     // please never ever change this table; otherwise fix all tests ;)
     if ( tst_Databases::isMSAccess( db ) ) {
 	QVERIFY_SQL(q, exec( "create table " + qTableName( "qtest" ) + " ( id int not null, t_varchar varchar(40) not null,"
@@ -753,12 +758,12 @@ void tst_Q3SqlCursor::insertFieldNameContainsWS() {
     QString tableName = qTableName("qtestws");
 
     QSqlQuery q(db);
-    q.exec(QString("DROP TABLE %1").arg(tableName));
+    tst_Databases::safeDropTable(db, tableName);
     QString query = QString("CREATE TABLE %1 (id int, \"first Name\" varchar(20), "
-                            "lastName varchar(20))");
-    QVERIFY_SQL(q, exec(query.arg(tableName)));
+                            "lastName varchar(20))").arg(tableName);
+    QVERIFY_SQL(q, exec(query));
 
-    Q3SqlCursor cur(QString("%1").arg(tableName), true, db);
+    Q3SqlCursor cur(tableName, true, db);
     cur.select();
 
     QSqlRecord *r = cur.primeInsert();
@@ -774,8 +779,8 @@ void tst_Q3SqlCursor::insertFieldNameContainsWS() {
     QVERIFY(cur.value(0) == 1);
     QCOMPARE(cur.value(1).toString(), QString("Kong"));
     QCOMPARE(cur.value(2).toString(), QString("Harald"));
-    
-    q.exec(QString("DROP TABLE %1").arg(tableName));
+
+    tst_Databases::safeDropTable(db, tableName);
 
 }
 
