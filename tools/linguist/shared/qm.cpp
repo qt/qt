@@ -545,8 +545,7 @@ bool loadQM(Translator &translator, QIODevice &dev, ConversionData &cd)
     size_t numItems = offsetLength / (2 * sizeof(quint32));
     //qDebug() << "NUMITEMS: " << numItems;
 
-    // FIXME: that's just a guess, the original locale data is lost...
-    QTextCodec *codec = QTextCodec::codecForLocale();
+    QTextCodec *codec = QTextCodec::codecForName(cd.m_codecForSource);
     QTextCodec *utf8Codec = 0;
     if (codec->name() != "UTF-8")
         utf8Codec = QTextCodec::codecForName("UTF-8");
@@ -649,7 +648,7 @@ bool loadQM(Translator &translator, QIODevice &dev, ConversionData &cd)
             }
             if (!(contextIsSystem && sourcetextIsSystem && commentIsSystem)) {
                 cd.appendError(QLatin1String(
-                        "Cannot read file with current system character codec"));
+                        "Cannot read file with specified input codec"));
                 return false;
             }
             // The message is 8-bit in the file's encoding (utf-8 or not).
